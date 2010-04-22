@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <GL/glew.h>
+#include <GL/osmew.h>
+
 #include <algorithm>
 
-#include "gpu/command_buffer/service/gl_context_osmesa.h"
+#include "app/gfx/gl/gl_context_osmesa.h"
 
-namespace gpu {
+namespace gfx {
 
 OSMesaGLContext::OSMesaGLContext()
 #if !defined(UNIT_TEST)
@@ -103,4 +106,4 @@ void OSMesaGLContext::Resize(const gfx::Size& new_size) {
     MakeCurrent();
 }
 
-}  // namespace gpu
+}  // namespace gfx

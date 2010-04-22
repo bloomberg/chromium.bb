@@ -2,17 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/command_buffer/service/gl_context.h"
-#include "gpu/command_buffer/service/gl_utils.h"
-#include "gpu/command_buffer/common/logging.h"
+#include <GL/glew.h>
 
-namespace gpu {
+#include "app/gfx/gl/gl_context.h"
+#include "base/logging.h"
 
-GLContext::GLContext() {
-}
-
-GLContext::~GLContext() {
-}
+namespace gfx {
 
 // GLEW initialization is extremely expensive because it looks up
 // hundreds of function pointers. Realistically we are not going to
@@ -88,4 +83,4 @@ bool GLContext::InitializeCommon() {
 
   return true;
 }
-}  // namespace gpu
+}  // namespace gfx

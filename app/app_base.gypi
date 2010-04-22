@@ -85,6 +85,12 @@
         '../third_party/sqlite/sqlite.gyp:sqlite',
         '../third_party/zlib/zlib.gyp:zlib',
       ],
+      'defines': [
+        'GLEW_STATIC',
+      ],
+      'include_dirs': [
+        '../third_party/glew/include',
+      ],
       # TODO(gregoryd): The direct_dependent_settings should be shared with
       # the 64-bit target, but it doesn't work due to a bug in gyp
       'direct_dependent_settings': {
@@ -117,6 +123,16 @@
         'file_download_interface.h',
         'gfx/font_util.h',
         'gfx/font_util.cc',
+        'gfx/gl/gl_context.cc',
+        'gfx/gl/gl_context.h',
+        'gfx/gl/gl_context_osmesa.cc',
+        'gfx/gl/gl_context_osmesa.h',
+        'gfx/gl/gl_context_linux.cc',
+        'gfx/gl/gl_context_linux.h',
+        'gfx/gl/gl_context_mac.cc',
+        'gfx/gl/gl_context_mac.h',
+        'gfx/gl/gl_context_win.cc',
+        'gfx/gl/gl_context_win.h',
         'gtk_dnd_util.cc',
         'gtk_dnd_util.h',
         'gtk_signal.cc',
@@ -181,6 +197,7 @@
         'x11_util.cc',
         'x11_util.h',
         'x11_util_internal.h',
+        '../third_party/glew/src/glew.c',
       ],
       'conditions': [
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {

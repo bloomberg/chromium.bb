@@ -5,12 +5,12 @@
 // This file implements the StubGLContext.
 
 #include "build/build_config.h"
-#include "gpu/command_buffer/service/gl_context.h"
+#include "app/gfx/gl/gl_context.h"
 
 namespace gpu {
 
 // A GLContext that does nothing for unit tests.
-class StubGLContext : public GLContext {
+class StubGLContext : public gfx::GLContext {
  public:
 
   // Implement GLContext.
@@ -23,17 +23,22 @@ class StubGLContext : public GLContext {
   virtual void* GetHandle() { return NULL; }
 };
 
+}  // namespace gpu
+
+namespace gfx {
+
 #if !defined(OS_MACOSX)
 
-GLContext* GLContext::CreateViewGLContext(gfx::PluginWindowHandle /* window */,
+GLContext* GLContext::CreateViewGLContext(PluginWindowHandle /* window */,
                                           bool /* multisampled */) {
-  return new StubGLContext;
+  return new gpu::StubGLContext;
 }
 
 #endif  // OS_MACOSX
 
-GLContext* GLContext::CreateOffscreenGLContext(void* /* shared_handle */) {
-  return new StubGLContext;
+GLContext* GLContext::CreateOffscreenGLContext(
+    void* /* shared_handle */) {
+  return new gpu::StubGLContext;
 }
 
-}  // namespace gpu
+}  // namespace gfx

@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_COMMAND_BUFFER_SERVICE_GL_CONTEXT_H_
-#define GPU_COMMAND_BUFFER_SERVICE_GL_CONTEXT_H_
+#ifndef APP_GFX_GL_GL_CONTEXT_H_
+#define APP_GFX_GL_GL_CONTEXT_H_
 
+#include "base/logging.h"
 #include "build/build_config.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/size.h"
-#include "gpu/command_buffer/common/logging.h"
 
-namespace gpu {
+namespace gfx {
 
 bool InitializeGLEW();
 
 // Encapsulates an OpenGL context, hiding platform specific management.
 class GLContext {
  public:
-  GLContext();
-  virtual ~GLContext();
+  GLContext() {}
+  virtual ~GLContext() {}
 
   // Destroys the GL context.
   virtual void Destroy() = 0;
@@ -59,6 +59,6 @@ class GLContext {
   DISALLOW_COPY_AND_ASSIGN(GLContext);
 };
 
-}  // namespace gpu
+}  // namespace gfx
 
-#endif  // GPU_COMMAND_BUFFER_SERVICE_GL_CONTEXT_H_
+#endif  // APP_GFX_GL_GL_CONTEXT_H_
