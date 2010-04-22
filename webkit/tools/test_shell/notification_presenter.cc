@@ -31,9 +31,12 @@ bool TestNotificationPresenter::show(const WebNotification& notification) {
            notification.url().spec().data());
   } else {
     printf("DESKTOP NOTIFICATION: icon %s, title %s, text %s\n",
-           notification.iconURL().spec().data(),
-           notification.title().utf8().data(),
-           notification.body().utf8().data());
+           notification.iconURL().isEmpty() ? "" :
+               notification.iconURL().spec().data(),
+           notification.title().isEmpty() ? "" :
+               notification.title().utf8().data(),
+           notification.body().isEmpty() ? "" :
+               notification.body().utf8().data());
   }
 
   WebNotification event_target(notification);
