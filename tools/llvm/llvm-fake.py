@@ -53,11 +53,6 @@ LIBDIR_ARM_2 = BASE + '/arm-newlib/arm-none-linux-gnueabi/lib'
 
 # arm libgcc
 LIBDIR_ARM_1 = BASE + '/arm-none-linux-gnueabi/llvm-gcc-4.2/lib/gcc/arm-none-linux-gnueabi/4.2.1/'
-# x86 startup code
-LIBDIR_X8632_2 = BASE + '/../linux_x86/sdk/nacl-sdk/nacl64/lib/32'
-
-# x86 libgcc
-LIBDIR_X8632_1 = BASE + '/../linux_x86/sdk/nacl-sdk/lib/gcc/nacl64/4.4.3/32/'
 
 # NOTE: ugly work around for some llvm-ld shortcomings:
 #       we need to keep some symbols alive which are referenced by
@@ -76,6 +71,7 @@ PNACL_X8664_ROOT = BASE + '/../pnacl-untrusted/x8664'
 
 PNACL_BITCODE_ROOT = BASE + '/../pnacl-untrusted/bitcode'
 
+REACHABLE_FUNCTION_SYMBOLS_BC = PNACL_BITCODE_ROOT + '/reachable_function_symbols.o'
 ######################################################################
 # FLAGS
 ######################################################################
@@ -110,21 +106,23 @@ LLVM_GCC_COMPILE_FLAGS = [
 
 BASE_ARM = BASE + '/arm-none-linux-gnueabi'
 
+BASE_ARM_GCC = BASE + '/arm-none-linux-gnueabi/llvm-gcc-4.2'
+
 LLVM_GCC_COMPILE_FLAGS_HEADERS = [
     # NOTE: the two competing approaches here
     #       make the gcc driver "right" or
     #       put all the logic/knowloedge into this driver.
     #       Currently, we have a messy mixture.
     '-isystem',
-    BASE_ARM +'/llvm-gcc-4.2/lib/gcc/arm-none-linux-gnueabi/4.2.1/include',
+    BASE_ARM_GCC + '/lib/gcc/arm-none-linux-gnueabi/4.2.1/include',
     '-isystem',
-    BASE_ARM +'/llvm-gcc-4.2/lib/gcc/arm-none-linux-gnueabi/4.2.1/install-tools/include',
+    BASE_ARM_GCC + '/lib/gcc/arm-none-linux-gnueabi/4.2.1/install-tools/include',
     '-isystem',
-    BASE_ARM + '/llvm-gcc-4.2/include/c++/4.2.1',
+    BASE_ARM_GCC + '/include/c++/4.2.1',
     '-isystem',
-    BASE_ARM + '/llvm-gcc-4.2/include/c++/4.2.1/arm-none-linux-gnueabi',
+    BASE_ARM_GCC + '/include/c++/4.2.1/arm-none-linux-gnueabi',
     '-isystem',
-    BASE_ARM + '/llvm-gcc-4.2//arm-none-linux-gnueabi/include',
+    BASE_ARM_GCC + '/arm-none-linux-gnueabi/include',
 
     # NOTE: order important
 #    '-isystem',
@@ -637,7 +635,7 @@ def GenerateCombinedBitcodeFile(argv, arch):
       if arch == 'arm':
         # Splice in the extra symbols.
         args_bit_ld = (args_bit_ld[:last_bitcode_pos] +
-                       [REACHABLE_FUNCTION_SYMBOLS] +
+                       [REACHABLE_FUNCTION_SYMBOLS_BC] +
                        args_bit_ld[last_bitcode_pos:])
 
   # NOTE: .bc will be appended output by LLVM_LD

@@ -115,9 +115,10 @@ if [ ${MODE} = 'organize-native-code' ] ; then
   Banner "arm native code: ${PNACL_ARM_ROOT}"
   mkdir -p ${PNACL_ARM_ROOT}
   cp ${arm_src}/arm-none-linux-gnueabi/llvm-gcc-4.2/lib/gcc/arm-none-linux-gnueabi/4.2.1/libgcc.a ${PNACL_ARM_ROOT}
-  cp ${arm_src}/arm-newlib/arm-none-linux-gnueabi/lib/crt*.o ${PNACL_ARM_ROOT}
-  cp ${arm_src}/arm-newlib/arm-none-linux-gnueabi/lib/libcrt*.a ${PNACL_ARM_ROOT}
-  cp ${arm_src}/arm-newlib/arm-none-linux-gnueabi/lib/intrinsics.o ${PNACL_ARM_ROOT}
+  cp ${arm_src}/arm-newlib/arm-none-linux-gnueabi/lib/crt*.o \
+     ${arm_src}/arm-newlib/arm-none-linux-gnueabi/lib/libcrt*.a \
+     ${arm_src}/arm-newlib/arm-none-linux-gnueabi/lib/intrinsics.o \
+     ${PNACL_ARM_ROOT}
   ls -l ${PNACL_ARM_ROOT}
 
   Banner "x86-32 native code: ${PNACL_X8632_ROOT}"
@@ -178,8 +179,6 @@ if [ ${MODE} = 'build-bitcode' ] ; then
   rm -rf ${PNACL_BITCODE_ROOT}
   mkdir -p ${PNACL_BITCODE_ROOT}
 
-  readonly libdir="toolchain/linux_arm-untrusted/arm-newlib/arm-none-linux-gnueabi/lib/"
-
   export TARGET_CODE=bc-arm
   Banner "Newlib"
   tools/llvm/untrusted-toolchain-creator.sh newlib-libonly ${PNACL_BITCODE_ROOT}
@@ -192,16 +191,9 @@ if [ ${MODE} = 'build-bitcode' ] ; then
       extra_sdk_update
 
 
-  cp ${libdir}/libav.a ${PNACL_BITCODE_ROOT}
-  cp ${libdir}/libgio.a ${PNACL_BITCODE_ROOT}
-  cp ${libdir}/libnacl.a ${PNACL_BITCODE_ROOT}
-  cp ${libdir}/libnosys.a ${PNACL_BITCODE_ROOT}
-  cp ${libdir}/libpthread.a ${PNACL_BITCODE_ROOT}
-  cp ${libdir}/libsrpc.a ${PNACL_BITCODE_ROOT}
-
-  cp ${libdir}/libgoogle_*.a ${PNACL_BITCODE_ROOT}
-
-  cp ${libdir}/reachable_function_symbols.o ${PNACL_BITCODE_ROOT}
+  rm ${PNACL_BITCODE_ROOT}/crt*.o
+  rm ${PNACL_BITCODE_ROOT}/intrinsics.o
+  rm ${PNACL_BITCODE_ROOT}/libcrt_platform.a
 
   Banner "Summary  ${PNACL_BITCODE_ROOT}"
   ls -l ${PNACL_BITCODE_ROOT}
