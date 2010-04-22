@@ -293,11 +293,11 @@ ACTION_P(VerifyAddressBarUrlWithGcf, mock) {
 
 TEST(ChromeFrameTest, FullTabModeIE_DisallowedUrls) {
   CloseIeAtEndOfScope last_resort_close_ie;
-  chrome_frame_test::TimedMsgLoop loop;
   // If a navigation fails then IE issues a navigation to an interstitial
   // page. Catch this to track navigation errors as the NavigateError
   // notification does not seem to fire reliably.
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  chrome_frame_test::TimedMsgLoop loop;
 
   EXPECT_CALL(mock, OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
                                       testing::StrCaseEq(kChromeFrameFileUrl)),
@@ -328,8 +328,8 @@ const wchar_t kKeyEventUrl[] = L"http://localhost:1337/files/keyevent.html";
 // http://code.google.com/p/chromium/issues/detail?id=26549
 TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_KeyboardTest) {
   CloseIeAtEndOfScope last_resort_close_ie;
-  chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  chrome_frame_test::TimedMsgLoop loop;
 
   mock.ExpectNavigationAndSwitch(kKeyEventUrl);
 
@@ -356,8 +356,8 @@ const wchar_t kAboutVersion[] = L"about:version";
 
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_FocusTest) {
   CloseIeAtEndOfScope last_resort_close_ie;
-  chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  chrome_frame_test::TimedMsgLoop loop;
 
   mock.ExpectNavigationAndSwitch(kAboutVersionUrl);
 
@@ -392,8 +392,8 @@ const wchar_t kWindowOpenPopupUrl[] =
 // http://code.google.com/p/chromium/issues/detail?id=26549
 TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_WindowOpenInChrome) {
   CloseIeAtEndOfScope last_resort_close_ie;
-  chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  chrome_frame_test::TimedMsgLoop loop;
 
   mock.ExpectNavigationAndSwitch(kWindowOpenUrl);
 
@@ -438,8 +438,8 @@ const wchar_t kSubFrameUrl3[] =
 // Test new window behavior with ctrl+N
 TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_CtrlN) {
   CloseIeAtEndOfScope last_resort_close_ie;
-  chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  chrome_frame_test::TimedMsgLoop loop;
 
   // Ideally we want to use a mock to watch for finer grained
   // events for New Window, but for Crl+N we don't get any
@@ -475,8 +475,8 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_CtrlN) {
 // Test page reload with ctrl+R
 TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_CtrlR) {
   CloseIeAtEndOfScope last_resort_close_ie;
-  chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  chrome_frame_test::TimedMsgLoop loop;
 
   // In sequence since we want to do different things on two loads
   // on the same mock for the same URLs
@@ -510,8 +510,8 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_CtrlR) {
 // Test window close with ctrl+w
 TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_CtrlW) {
   CloseIeAtEndOfScope last_resort_close_ie;
-  chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  chrome_frame_test::TimedMsgLoop loop;
 
   mock.ExpectNavigationAndSwitch(kKeyEventUrl);
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kKeyEventUrl)))
@@ -533,8 +533,8 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_CtrlW) {
 // Test address bar navigation with Alt+d and URL
 TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_AltD) {
   CloseIeAtEndOfScope last_resort_close_ie;
-  chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  chrome_frame_test::TimedMsgLoop loop;
   ::testing::InSequence sequence;
 
   mock.ExpectNavigationAndSwitchSequence(kSubFrameUrl1);
@@ -573,8 +573,8 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_AltD) {
 TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_AboutChromeFrame) {
   CloseIeAtEndOfScope last_resort_close_ie;
 
-  chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  chrome_frame_test::TimedMsgLoop loop;
 
   mock.ExpectNavigationAndSwitch(kSubFrameUrl1);
 
@@ -620,8 +620,8 @@ template <typename T> T** ReceivePointer(scoped_refptr<T>& p) {  // NOLINT
 // Launch and navigate chrome frame to a set of URLs and test back forward
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForward) {
   CloseIeAtEndOfScope last_resort_close_ie;
-  chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  chrome_frame_test::TimedMsgLoop loop;
   ::testing::InSequence sequence;   // Everything in sequence
 
   mock.ExpectNavigationAndSwitchSequence(kSubFrameUrl1);
@@ -688,8 +688,8 @@ const wchar_t kAnchor3Url[] = L"http://localhost:1337/files/anchor.html#a3";
 // http://code.google.com/p/chromium/issues/detail?id=26549
 TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
   CloseIeAtEndOfScope last_resort_close_ie;
-  chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  chrome_frame_test::TimedMsgLoop loop;
   ::testing::InSequence sequence;   // Everything in sequence
 
   // Back/Forward state at this point:
@@ -801,8 +801,8 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
 // http://code.google.com/p/chromium/issues/detail?id=35370
 TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_ViewSource) {
   CloseIeAtEndOfScope last_resort_close_ie;
-  chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  chrome_frame_test::TimedMsgLoop loop;
   ::testing::InSequence sequence;   // Everything in sequence
 
   // After navigation invoke view soruce action using IWebBrowser2::ExecWB
@@ -856,8 +856,8 @@ const wchar_t kBeforeUnloadMain[] =
 
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_UnloadEventTest) {
   CloseIeAtEndOfScope last_resort_close_ie;
-  chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  chrome_frame_test::TimedMsgLoop loop;
   ::testing::InSequence sequence;   // Everything in sequence
 
   mock.ExpectNavigationAndSwitchSequence(kBeforeUnloadTest);
@@ -891,8 +891,8 @@ TEST_F(ChromeFrameTestWithWebServer,
   const wchar_t kDownloadFromNewWin[] =
       L"http://localhost:1337/files/full_tab_download_from_new_window.html";
 
-  chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  chrome_frame_test::TimedMsgLoop loop;
 
   mock.ExpectNavigationAndSwitch(kDownloadFromNewWin);
 
@@ -930,8 +930,8 @@ TEST_F(ChromeFrameTestWithWebServer,
 TEST_F(ChromeFrameTestWithWebServer,
        FLAKY_FullTabModeIE_ContextMenuBackForward) {
   CloseIeAtEndOfScope last_resort_close_ie;
-  chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  chrome_frame_test::TimedMsgLoop loop;
 
   ::testing::InSequence sequence;   // Everything in sequence
 
@@ -976,8 +976,8 @@ TEST_F(ChromeFrameTestWithWebServer,
 // http://code.google.com/p/chromium/issues/detail?id=26549
 TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_ContextMenuReload) {
   CloseIeAtEndOfScope last_resort_close_ie;
-  chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  chrome_frame_test::TimedMsgLoop loop;
 
   ::testing::InSequence sequence;   // Everything in sequence
 
@@ -1010,8 +1010,8 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_ContextMenuReload) {
 TEST_F(ChromeFrameTestWithWebServer,
        FLAKY_FullTabModeIE_ContextMenuViewSource) {
   CloseIeAtEndOfScope last_resort_close_ie;
-  chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  chrome_frame_test::TimedMsgLoop loop;
   ::testing::InSequence sequence;   // Everything in sequence
 
   // View source using Rt-Click + UP + UP + UP + UP + ENTER
@@ -1056,8 +1056,8 @@ TEST_F(ChromeFrameTestWithWebServer,
 TEST_F(ChromeFrameTestWithWebServer,
        FLAKY_FullTabModeIE_ContextMenuPageInfo) {
   CloseIeAtEndOfScope last_resort_close_ie;
-  chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  chrome_frame_test::TimedMsgLoop loop;
   ::testing::InSequence sequence;   // Everything in sequence
 
   // View page information using Rt-Click + UP + UP + UP + ENTER
@@ -1090,8 +1090,8 @@ TEST_F(ChromeFrameTestWithWebServer,
 TEST_F(ChromeFrameTestWithWebServer,
        FLAKY_FullTabModeIE_ContextMenuInspector) {
   CloseIeAtEndOfScope last_resort_close_ie;
-  chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  chrome_frame_test::TimedMsgLoop loop;
   ::testing::InSequence sequence;   // Everything in sequence
 
   // Open developer tools using Rt-Click + UP + UP + ENTER
@@ -1126,8 +1126,8 @@ TEST_F(ChromeFrameTestWithWebServer,
 TEST_F(ChromeFrameTestWithWebServer,
        FLAKY_FullTabModeIE_ContextMenuSaveAs) {
   CloseIeAtEndOfScope last_resort_close_ie;
-  chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  chrome_frame_test::TimedMsgLoop loop;
   ::testing::InSequence sequence;   // Everything in sequence
 
   // Open'Save As' dialog using Rt-Click + DOWN + DOWN + DOWN + DOWN + ENTER
@@ -1173,8 +1173,8 @@ TEST_F(ChromeFrameTestWithWebServer,
 TEST_F(ChromeFrameTestWithWebServer,
        FLAKY_FullTabModeIE_KeyboardBackForwardTest) {
   CloseIeAtEndOfScope last_resort_close_ie;
-  chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  chrome_frame_test::TimedMsgLoop loop;
 
   ::testing::InSequence sequence;   // Everything in sequence
 
@@ -1225,8 +1225,8 @@ TEST_F(ChromeFrameTestWithWebServer,
 // http://code.google.com/p/chromium/issues/detail?id=38566
 TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_MenuSaveAs) {
   CloseIeAtEndOfScope last_resort_close_ie;
-  chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  chrome_frame_test::TimedMsgLoop loop;
   ::testing::InSequence sequence;   // Everything in sequence
 
   // Open'Save As' dialog using Alt+F, a, note the small 'f'
@@ -1273,8 +1273,8 @@ const wchar_t kHostBrowserUrl[] =
 TEST_F(ChromeFrameTestWithWebServer,
        FLAKY_FullTabMode_SwitchFromIEToChromeFrame) {
   CloseIeAtEndOfScope last_resort_close_ie;
-  chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  chrome_frame_test::TimedMsgLoop loop;
 
   EXPECT_CALL(mock, OnFileDownload(VARIANT_TRUE, _))
               .Times(testing::AnyNumber());
@@ -1327,8 +1327,8 @@ TEST(IEPrivacy, NavigationToRestrictedSite) {
     return;
   }
   CloseIeAtEndOfScope last_resort_close_ie;
-  chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  chrome_frame_test::TimedMsgLoop loop;
   ChromeFrameHTTPServer server;
   server.SetUp();
 
@@ -1531,8 +1531,8 @@ TEST_F(ChromeFrameTestWithWebServer,
   }
 
   CloseIeAtEndOfScope last_resort_close_ie;
-  chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  chrome_frame_test::TimedMsgLoop loop;
   ::testing::InSequence sequence;
 
   mock.ExpectNavigationAndSwitchSequence(kSubFrameUrl1);
