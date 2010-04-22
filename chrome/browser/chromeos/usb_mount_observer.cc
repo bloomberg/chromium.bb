@@ -39,14 +39,16 @@ void USBMountObserver::Observe(NotificationType type,
 void USBMountObserver::OpenFileBrowse(const std::string& url,
                                       const std::string& device_path,
                                       bool small) {
-  Browser *browser;
+  Browser* browser;
+  Profile* profile;
+  profile = BrowserList::GetLastActive()->profile();
   if (small) {
-    browser = FileBrowseUI::OpenPopup(profile_,
+    browser = FileBrowseUI::OpenPopup(profile,
                                       url,
                                       FileBrowseUI::kSmallPopupWidth,
                                       FileBrowseUI::kSmallPopupHeight);
   } else {
-    browser = FileBrowseUI::OpenPopup(profile_,
+    browser = FileBrowseUI::OpenPopup(profile,
                                       url,
                                       FileBrowseUI::kPopupWidth,
                                       FileBrowseUI::kPopupHeight);
@@ -152,12 +154,14 @@ void USBMountObserver::RemoveBrowserFromVector(const std::string& path) {
   for (BrowserList::const_iterator it = BrowserList::begin();
        it != BrowserList::end(); ++it) {
     if ((*it)->type() == Browser::TYPE_POPUP) {
-      const GURL& url =
-          (*it)->GetTabContentsAt((*it)->selected_index())->GetURL();
-      if (url.SchemeIs(chrome::kChromeUIScheme) &&
-          url.host() == chrome::kChromeUIFileBrowseHost &&
-          url.ref().find(mount_path) != std::string::npos) {
-        close_these.push_back(*it);
+      if (*it && (*it)->GetTabContentsAt((*it)->selected_index())) {
+        const GURL& url =
+            (*it)->GetTabContentsAt((*it)->selected_index())->GetURL();
+        if (url.SchemeIs(chrome::kChromeUIScheme) &&
+            url.host() == chrome::kChromeUIFileBrowseHost &&
+            url.ref().find(mount_path) != std::string::npos) {
+          close_these.push_back(*it);
+        }
       }
     }
   }

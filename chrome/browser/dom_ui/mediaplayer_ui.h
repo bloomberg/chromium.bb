@@ -94,10 +94,6 @@ class MediaPlayer : public NotificationObserver,
     return Singleton<MediaPlayer>::get();
   }
 
-  // Sets the profile to use when opening up new browser
-  // windows.
-  void set_profile(Profile* profile) { profile_ = profile; }
-
  private:
   MediaPlayer();
 
@@ -111,9 +107,6 @@ class MediaPlayer : public NotificationObserver,
 
   // Registers the listeners for the close events on the browser windows.
   void RegisterListeners();
-
-  // Should be set via a set_profile before Popup*() is called.
-  Profile* profile_;
 
   // Set when the register handler is called.  When the media player is
   // closed, this pointer is set back to NULL.

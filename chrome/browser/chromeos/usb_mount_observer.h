@@ -33,8 +33,6 @@ class USBMountObserver : public chromeos::MountLibrary::Observer,
   USBMountObserver() {}
   ~USBMountObserver() {}
 
-  void set_profile(Profile* profile) { profile_ = profile; }
-
   static USBMountObserver* Get() {
     return Singleton<USBMountObserver>::get();
   }
@@ -57,7 +55,6 @@ class USBMountObserver : public chromeos::MountLibrary::Observer,
                       const std::string& device_path,
                       bool small);
 
-  Profile* profile_;
   std::vector<BrowserWithPath> browsers_;
   NotificationRegistrar registrar_;
 

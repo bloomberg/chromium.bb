@@ -410,9 +410,6 @@ bool BrowserInit::LaunchBrowser(
     chromeos::MountLibrary* lib =
         chromeos::CrosLibrary::Get()->GetMountLibrary();
     chromeos::USBMountObserver* observe = chromeos::USBMountObserver::Get();
-    MediaPlayer* player = MediaPlayer::Get();
-    player->set_profile(profile);
-    observe->set_profile(profile);
     lib->AddObserver(observe);
 
     // Connect the chromeos notifications

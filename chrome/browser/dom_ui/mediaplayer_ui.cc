@@ -18,6 +18,7 @@
 #include "base/weak_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
@@ -121,8 +122,6 @@ class MediaplayerHandler : public DOMMessageHandler,
   void SetCurrentPlaylist(const std::vector<GURL>& playlist, int offset);
 
  private:
-  // Profile to use when opening up new browsers.
-  Profile* profile_;
   // The current playlist of urls.
   std::vector<GURL> current_playlist_;
   // The offset into the current_playlist_ of the currently playing item.
@@ -184,8 +183,7 @@ void MediaplayerUIHTMLSource::StartDataRequest(const std::string& path,
 //
 ////////////////////////////////////////////////////////////////////////////////
 MediaplayerHandler::MediaplayerHandler(bool is_playlist)
-    : profile_(NULL),
-      current_offset_(0),
+    : current_offset_(0),
       is_playlist_(is_playlist) {
 }
 
@@ -200,7 +198,6 @@ DOMMessageHandler* MediaplayerHandler::Attach(DOMUI* dom_ui) {
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,
           make_scoped_refptr(new DOMUIFavIconSource(dom_ui->GetProfile()))));
-  profile_ = dom_ui->GetProfile();
 
   return DOMMessageHandler::Attach(dom_ui);
 }
@@ -474,7 +471,8 @@ void MediaPlayer::RemoveHandler(MediaplayerHandler* handler) {
 }
 
 void MediaPlayer::PopupPlaylist() {
-  playlist_browser_ = Browser::CreateForPopup(profile_);
+  Profile* profile = BrowserList::GetLastActive()->profile();
+  playlist_browser_ = Browser::CreateForPopup(profile);
   playlist_browser_->AddTabWithURL(
       GURL(kMediaplayerPlaylistURL), GURL(), PageTransition::LINK,
       true, -1, false, NULL);
@@ -492,7 +490,8 @@ void MediaPlayer::PopupMediaPlayer() {
         NewRunnableMethod(this, &MediaPlayer::PopupMediaPlayer));
     return;
   }
-  mediaplayer_browser_ = Browser::CreateForPopup(profile_);
+  Profile* profile = BrowserList::GetLastActive()->profile();
+  mediaplayer_browser_ = Browser::CreateForPopup(profile);
   mediaplayer_browser_->AddTabWithURL(
       GURL(kMediaplayerURL), GURL(), PageTransition::LINK,
       true, -1, false, NULL);
@@ -540,8 +539,7 @@ URLRequestJob* MediaPlayer::MaybeInterceptResponse(
 }
 
 MediaPlayer::MediaPlayer()
-    : profile_(NULL),
-      handler_(NULL),
+    : handler_(NULL),
       playlist_(NULL),
       playlist_browser_(NULL),
       mediaplayer_browser_(NULL),
