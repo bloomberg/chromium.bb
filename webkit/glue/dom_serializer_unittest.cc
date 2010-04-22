@@ -582,8 +582,7 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithEntitiesInText) {
 
 // Test situation of html entities in attribute value when serializing
 // HTML DOM.
-// Disabled, bug 42281
-TEST_F(DomSerializerTests, DISABLED_SerializeHTMLDOMWithEntitiesInAttributeValue) {
+TEST_F(DomSerializerTests, SerializeHTMLDOMWithEntitiesInAttributeValue) {
   FilePath page_file_path = data_dir_;
   page_file_path = page_file_path.AppendASCII(
       "dom_serializer/htmlentities_in_attribute_value.htm");
@@ -593,7 +592,7 @@ TEST_F(DomSerializerTests, DISABLED_SerializeHTMLDOMWithEntitiesInAttributeValue
   ASSERT_TRUE(file_url.SchemeIsFile());
   // Test contents.
   static const char* const original_contents =
-      "<HTML><BODY title=\"&amp;&lt;&gt;&quot;&#39;\"></BODY></HTML>";
+      "<html><body title=\"&amp;&lt;&gt;&quot;&#39;\"></body></html>";
   // Load the test contents.
   LoadContents(original_contents, file_url, WebString());
   // Get value of BODY's title attribute in DOM.
@@ -618,14 +617,14 @@ TEST_F(DomSerializerTests, DISABLED_SerializeHTMLDOMWithEntitiesInAttributeValue
   original_str += original_contents;
   if (!doc.isNull()) {
     WebString encoding = web_frame->encoding();
-    std::string htmlTag("<HTML>");
+    std::string htmlTag("<html>");
     std::string::size_type pos = original_str.find(htmlTag);
     ASSERT_NE(std::string::npos, pos);
     pos += htmlTag.length();
-    std::string head_part("<HEAD>");
+    std::string head_part("<head>");
     head_part +=
         WebPageSerializer::generateMetaCharsetDeclaration(encoding).utf8();
-    head_part += "</HEAD>";
+    head_part += "</head>";
     original_str.insert(pos, head_part);
   }
   ASSERT_EQ(original_str, serialized_contents);
