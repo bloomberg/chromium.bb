@@ -543,8 +543,7 @@ TEST_F(WorkerTest, DISABLED_LimitTotal) {
 #endif
 }
 
-// http://crbug.com/36630 termination issues, disabled on all paltforms.
-TEST_F(WorkerTest, DISABLED_WorkerClose) {
+TEST_F(WorkerTest, WorkerClose) {
   scoped_refptr<TabProxy> tab(GetActiveTab());
   ASSERT_TRUE(tab.get());
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir),
