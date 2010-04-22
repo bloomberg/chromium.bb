@@ -1264,12 +1264,15 @@ def GenerateOutput(target_list, target_dicts, data, params):
   if generator_flags.get('auto_regeneration', True):
     build_files_args = [gyp.common.RelativePath(filename, options.depth)
                         for filename in params['build_files_arg']]
+    gyp_binary = gyp.common.FixIfRelativePath(params['gyp_binary'],
+                                              options.depth)
+    if not gyp_binary.startswith(os.sep):
+      gyp_binary = os.path.join('.', gyp_binary)
     root_makefile.write("%s: %s\n\t%s\n" % (
         makefile_name,
         ' '.join(map(Sourceify, build_files)),
         gyp.common.EncodePOSIXShellList(
-            [gyp.common.FixIfRelativePath(params['gyp_binary'], options.depth),
-             '-fmake'] +
+            [gyp_binary, '-fmake'] +
             gyp.RegenerateFlags(options) +
             build_files_args)))
 
