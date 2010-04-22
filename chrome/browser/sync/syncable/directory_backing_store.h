@@ -81,7 +81,6 @@ class DirectoryBackingStore {
   FRIEND_TEST(DirectoryBackingStoreTest, MigrateVersion69To70);
   FRIEND_TEST(DirectoryBackingStoreTest, MigrateVersion70To71);
   FRIEND_TEST(DirectoryBackingStoreTest, ModelTypeIds);
-  FRIEND_TEST(DirectoryBackingStoreTest, Corruption);
   FRIEND_TEST(MigrationTest, ToCurrentVersion);
 
   // General Directory initialization and load helpers.
@@ -149,7 +148,7 @@ class DirectoryBackingStore {
   int GetVersion();
   bool MigrateToSpecifics(const char* old_columns,
                           const char* specifics_column,
-                          void (*handler_function) (
+                          void (*handler_function)(
                               SQLStatement* old_value_query,
                               int old_value_column,
                               sync_pb::EntitySpecifics* mutable_new_value));
