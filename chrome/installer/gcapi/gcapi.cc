@@ -426,7 +426,7 @@ DLLEXPORT BOOL __stdcall LaunchGoogleChromeWithDimensions(int x,
   // yet. Wait for it to appear for 10 seconds, but exit if it takes longer
   // than that.
   while (!handle && seconds_elapsed < 10) {
-    handle = FindWindowEx(NULL, handle, L"Chrome_WidgetWin_0", NULL);
+    handle = FindWindowEx(NULL, handle, L"Chrome_WindowImpl_0", NULL);
     if (!handle) {
       Sleep(1000);
       seconds_elapsed++;
@@ -440,10 +440,10 @@ DLLEXPORT BOOL __stdcall LaunchGoogleChromeWithDimensions(int x,
   // but we only want the window that has child windows.
 
   // This loop iterates through all of the top-level Windows named
-  // Chrome_WidgetWin_0, and looks for the first one with any children.
-  while (handle && !FindWindowEx(handle, NULL, L"Chrome_WidgetWin_0", NULL)) {
+  // Chrome_WindowImpl_0, and looks for the first one with any children.
+  while (handle && !FindWindowEx(handle, NULL, L"Chrome_WindowImpl_0", NULL)) {
     // Get the next top-level Chrome window.
-    handle = FindWindowEx(NULL, handle, L"Chrome_WidgetWin_0", NULL);
+    handle = FindWindowEx(NULL, handle, L"Chrome_WindowImpl_0", NULL);
   }
 
   return (handle &&
