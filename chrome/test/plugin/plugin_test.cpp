@@ -1,31 +1,6 @@
-// Copyright 2008-2009, Google Inc.
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//    * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//    * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//    * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 // Tests for the top plugins to catch regressions in our plugin host code, as
 // well as in the out of process code.  Currently this tests:
@@ -37,10 +12,14 @@
 //     comes with XP.  np-mswmp.dll can be downloaded from Microsoft and
 //     needs SP2 or Vista.
 
+#include "build/build_config.h"
+
+#if defined(OS_WIN)
 #include <windows.h>
 #include <shellapi.h>
 #include <shlobj.h>
 #include <comutil.h>
+#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -51,7 +30,6 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/registry.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_paths.h"
@@ -59,15 +37,18 @@
 #include "chrome/test/ui/ui_test.h"
 #include "net/base/net_util.h"
 #include "third_party/npapi/bindings/npapi.h"
-#include "webkit/default_plugin/plugin_impl.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_list.h"
 
-const char kTestCompleteCookie[] = "status";
-const char kTestCompleteSuccess[] = "OK";
+#if defined(OS_WIN)
+#include "base/registry.h"
+// TODO(port) ?
+#include "webkit/default_plugin/plugin_impl.h"
+#endif
 
 class PluginTest : public UITest {
  protected:
+#if defined(OS_WIN)
   virtual void SetUp() {
     const testing::TestInfo* const test_info =
         testing::UnitTest::GetInstance()->current_test_info();
@@ -91,8 +72,9 @@ class PluginTest : public UITest {
 
     UITest::SetUp();
   }
+#endif
 
-  void TestPlugin(const std::wstring& test_case,
+  void TestPlugin(const std::string& test_case,
                   int timeout,
                   bool mock_http) {
     GURL url = GetTestUrl(test_case, mock_http);
@@ -103,22 +85,25 @@ class PluginTest : public UITest {
   // Generate the URL for testing a particular test.
   // HTML for the tests is all located in test_directory\plugin\<testcase>
   // Set |mock_http| to true to use mock HTTP server.
-  GURL GetTestUrl(const std::wstring &test_case, bool mock_http) {
+  GURL GetTestUrl(const std::string &test_case, bool mock_http) {
+    static const FilePath::CharType kPluginPath[] = FILE_PATH_LITERAL("plugin");
     if (mock_http) {
-      return URLRequestMockHTTPJob::GetMockUrl(
-                 FilePath(L"plugin/" + test_case));
+      FilePath plugin_path = FilePath(kPluginPath).AppendASCII(test_case);
+      return URLRequestMockHTTPJob::GetMockUrl(plugin_path);
     }
 
     FilePath path;
     PathService::Get(chrome::DIR_TEST_DATA, &path);
-    path = path.AppendASCII("plugin");
-    path = path.Append(FilePath::FromWStringHack(test_case));
+    path = path.Append(kPluginPath).AppendASCII(test_case);
     return net::FilePathToFileURL(path);
   }
 
   // Waits for the test case to finish.
   void WaitForFinish(const int wait_time, bool mock_http) {
-    GURL url = GetTestUrl(L"done", mock_http);
+    static const char kTestCompleteCookie[] = "status";
+    static const char kTestCompleteSuccess[] = "OK";
+
+    GURL url = GetTestUrl("done", mock_http);
     scoped_refptr<TabProxy> tab(GetActiveTab());
 
     ASSERT_TRUE(WaitUntilCookieValue(tab, url, kTestCompleteCookie,
@@ -127,46 +112,46 @@ class PluginTest : public UITest {
 };
 
 TEST_F(PluginTest, Quicktime) {
-  TestPlugin(L"quicktime.html", action_max_timeout_ms(), false);
+  TestPlugin("quicktime.html", action_max_timeout_ms(), false);
 }
 
 TEST_F(PluginTest, MediaPlayerNew) {
-  TestPlugin(L"wmp_new.html", action_max_timeout_ms(), false);
+  TestPlugin("wmp_new.html", action_max_timeout_ms(), false);
 }
 
 // http://crbug.com/4809
 TEST_F(PluginTest, DISABLED_MediaPlayerOld) {
-  TestPlugin(L"wmp_old.html", action_max_timeout_ms(), false);
+  TestPlugin("wmp_old.html", action_max_timeout_ms(), false);
 }
 
 TEST_F(PluginTest, Real) {
-  TestPlugin(L"real.html", action_max_timeout_ms(), false);
+  TestPlugin("real.html", action_max_timeout_ms(), false);
 }
 
 TEST_F(PluginTest, Flash) {
-  TestPlugin(L"flash.html", action_max_timeout_ms(), false);
+  TestPlugin("flash.html", action_max_timeout_ms(), false);
 }
 
 TEST_F(PluginTest, FlashOctetStream) {
-  TestPlugin(L"flash-octet-stream.html", action_max_timeout_ms(), false);
+  TestPlugin("flash-octet-stream.html", action_max_timeout_ms(), false);
 }
 
 TEST_F(PluginTest, FlashSecurity) {
-  TestPlugin(L"flash.html", action_max_timeout_ms(), false);
+  TestPlugin("flash.html", action_max_timeout_ms(), false);
 }
 
 // http://crbug.com/16114
 // Flaky, http://crbug.com/21538
 TEST_F(PluginTest, FLAKY_FlashLayoutWhilePainting) {
-  TestPlugin(L"flash-layout-while-painting.html", action_max_timeout_ms(), true);
+  TestPlugin("flash-layout-while-painting.html", action_max_timeout_ms(), true);
 }
 
 // http://crbug.com/8690
 TEST_F(PluginTest, DISABLED_Java) {
-  TestPlugin(L"Java.html", action_max_timeout_ms(), false);
+  TestPlugin("Java.html", action_max_timeout_ms(), false);
 }
 
 // Flaky, http://crbug.com/22666
 TEST_F(PluginTest, FLAKY_Silverlight) {
-  TestPlugin(L"silverlight.html", action_max_timeout_ms(), false);
+  TestPlugin("silverlight.html", action_max_timeout_ms(), false);
 }

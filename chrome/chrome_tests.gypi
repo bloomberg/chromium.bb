@@ -1865,6 +1865,39 @@
         }],
       ],
     },
+    {
+      'target_name': 'plugin_tests',
+      'type': 'executable',
+      'msvs_guid': 'A1CAA831-C507-4B2E-87F3-AEC63C9907F9',
+      'dependencies': [
+        'chrome_resources',
+        'chrome_strings',
+        'test_support_common',
+        'test_support_ui',
+        '../skia/skia.gyp:skia',
+        '../testing/gtest.gyp:gtest',
+        '../third_party/libxml/libxml.gyp:libxml',
+        '../third_party/libxslt/libxslt.gyp:libxslt',
+        '../third_party/npapi/npapi.gyp:npapi',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'test/plugin/plugin_test.cpp',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'dependencies': [
+            '<(allocator_target)',
+            'security_tests',  # run time dependency
+          ],
+          'include_dirs': [
+            '<(DEPTH)/third_party/wtl/include',
+          ],
+        },],
+      ],
+    },
   ],
   'conditions': [
     ['OS!="mac"', {
@@ -1937,37 +1970,6 @@
     },],  # OS!="mac"
     ['OS=="win"', {
       'targets': [
-        {
-          'target_name': 'plugin_tests',
-          'type': 'executable',
-          'msvs_guid': 'A1CAA831-C507-4B2E-87F3-AEC63C9907F9',
-          'dependencies': [
-            'chrome_resources',
-            'chrome_strings',
-            'security_tests',  # run time dependency
-            'test_support_common',
-            'test_support_ui',
-            '../skia/skia.gyp:skia',
-            '../testing/gtest.gyp:gtest',
-            '../third_party/libxml/libxml.gyp:libxml',
-            '../third_party/libxslt/libxslt.gyp:libxslt',
-            '../third_party/npapi/npapi.gyp:npapi',
-          ],
-          'include_dirs': [
-            '..',
-            '<(DEPTH)/third_party/wtl/include',
-          ],
-          'sources': [
-            'test/plugin/plugin_test.cpp',
-          ],
-          'conditions': [
-            ['OS=="win"', {
-              'dependencies': [
-                '<(allocator_target)',
-              ],
-            },],
-          ],
-        },
         {
           'target_name': 'security_tests',
           'type': 'shared_library',
