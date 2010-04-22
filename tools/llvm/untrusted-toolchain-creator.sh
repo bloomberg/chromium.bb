@@ -766,6 +766,13 @@ BuildAndInstallNewlib() {
       "${STD_ENV_FOR_NEWLIB[@]}" \
       ${MAKE_OPTS}
 
+
+  if [ $# == 1 ] ; then
+    SubBanner "installing lib[cgm].a to $1"
+    cp ${tmpdir}//newlib-1.17.0/arm-none-linux-gnueabi/newlib/lib[cgm].a $1
+    return
+  fi
+
   RunWithLog "Install newlib"  ${TMP}/newlib.install.log \
     env -i PATH="/usr/bin:/bin" \
       make \
@@ -976,6 +983,16 @@ fi
 if [ ${MODE} = 'newlib' ] ; then
   UntarAndPatchNewlib
   BuildAndInstallNewlib
+  exit 0
+fi
+
+#@
+#@ newlib-libonly <target-dir>
+#@
+#@   build and install newlib
+if [ ${MODE} = 'newlib-libonly' ] ; then
+  UntarAndPatchNewlib
+  BuildAndInstallNewlib $1
   exit 0
 fi
 

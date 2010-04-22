@@ -16,6 +16,11 @@ NACL_SDK_INSTALL=\
 # NOTE: this is used as a destination for extra sdk builds
 export NACL_SDK_LIB="${NACL_SDK_INSTALL}/lib"
 
+# if we use bitcode we need to redirect to the bitcode libdir
+if [ ${TARGET_CODE} == "bc-arm" -o  ${TARGET_CODE} == "bc-x86" ] ; then
+  export NACL_SDK_LIB="$(pwd)/toolchain/pnacl-untrusted/bitcode"
+fi
+
 export NACL_SDK_INCLUDE="${NACL_SDK_INSTALL}/include"
 
 # NOTE: NACL_* defines are currently needed for building extra_sdk, e.g.

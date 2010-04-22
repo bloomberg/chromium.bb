@@ -68,6 +68,14 @@ REACHABLE_FUNCTION_SYMBOLS = LIBDIR_ARM_2 + '/reachable_function_symbols.o'
 # We probably can drop this once we have switched to codesourcery 2009Q4
 HACK_ASM = ['sed', '-e', 's/vmrs.*apsr_nzcv, fpscr/fmrx r15, fpscr/g']
 
+PNACL_ARM_ROOT =  BASE + '/../pnacl-untrusted/arm'
+
+PNACL_X8632_ROOT = BASE + '/../pnacl-untrusted/x8632'
+
+PNACL_X8664_ROOT = BASE + '/../pnacl-untrusted/x8664'
+
+PNACL_BITCODE_ROOT = BASE + '/../pnacl-untrusted/bitcode'
+
 ######################################################################
 # FLAGS
 ######################################################################
@@ -535,23 +543,25 @@ def MassageFinalLinkCommandArm(args):
   return out
 
 
-# TODO(robertm): this is a crude hack so far
-def MassageFinalLinkCommandX8632(args):
-  out = LD_FLAGS_X8632
+
+def MassageFinalLinkCommandPnacl(args, native_dir, flags):
+  out = flags
 
   # add init code
   if '-nostdlib' not in args:
-    out.append(LIBDIR_X8632_2 + '/crt1.o')
-    out.append(LIBDIR_X8632_2 + '/crti.o')
-    out.append(LIBDIR_X8632_2 + '/intrinsics.o')
+    out.append(native_dir + '/crt1.o')
+    out.append(native_dir + '/crti.o')
+    out.append(native_dir + '/intrinsics.o')
+
   out += args
+
+  # add fini code
   if '-nostdlib' not in args:
     # NOTE: there is a circular dependency between libgcc and libc: raise()
-    out.append(LIBDIR_X8632_2 + '/libcrt_platform.a')
-    out.append(LIBDIR_X8632_2 + '/crtn.o')
-    out.append('-L' + LIBDIR_X8632_1)
+    out.append(native_dir + '/libcrt_platform.a')
+    out.append(native_dir + '/crtn.o')
+    out.append('-L' + native_dir)
     out.append('-lgcc')
-
   return out
 
 
@@ -663,7 +673,9 @@ def Incarnation_bcldarm(argv):
 
   Run([AS_ARM] + AS_FLAGS_ARM + [asm_combined, '-o', obj_combined])
 
-  args_native_ld = MassageFinalLinkCommandArm([obj_combined] + args_native_ld)
+  args_native_ld = MassageFinalLinkCommandPnacl([obj_combined] + args_native_ld,
+                                                PNACL_ARM_ROOT,
+                                                LD_FLAGS_ARM)
 
   Run([LD_ARM] +  args_native_ld)
 
@@ -703,7 +715,9 @@ def Incarnation_bcldx8632(argv):
 
   Run([AS_X8632] + AS_FLAGS_X8632 + [asm_combined, '-o', obj_combined])
 
-  args_native_ld = MassageFinalLinkCommandX8632([obj_combined] + args_native_ld)
+  args_native_ld = MassageFinalLinkCommandPnacl([obj_combined] + args_native_ld,
+                                                PNACL_X8632_ROOT,
+                                                LD_FLAGS_X8632)
 
   Run([LD_X8632] +  args_native_ld)
 
