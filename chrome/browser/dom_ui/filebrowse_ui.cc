@@ -966,9 +966,13 @@ Browser* FileBrowseUI::OpenPopup(Profile* profile,
   // Create new browser if no matching pop up found.
   if (browser == NULL) {
     browser = Browser::CreateForPopup(profile);
-
-    std::string url(kFilebrowseURLHash);
-    url.append(hashArgument);
+    std::string url;
+    if (hashArgument.empty()) {
+      url = chrome::kChromeUIFileBrowseURL;
+    } else {
+      url = kFilebrowseURLHash;
+      url.append(hashArgument);
+    }
 
     browser->AddTabWithURL(
         GURL(url), GURL(), PageTransition::LINK,
