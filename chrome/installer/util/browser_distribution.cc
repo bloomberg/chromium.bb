@@ -142,6 +142,10 @@ bool BrowserDistribution::ShouldUseAlternateIcon() {
   return false;
 }
 
+bool BrowserDistribution::GetChromeChannel(std::wstring* channel) {
+  return false;
+}
+
 void BrowserDistribution::UpdateDiffInstallStatus(bool system_install,
     bool incremental_install, installer_util::InstallStatus install_status) {
 }

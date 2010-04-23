@@ -24,6 +24,7 @@ class GoogleChromeSxSDistribution : public GoogleChromeDistribution {
   virtual std::wstring GetUninstallRegPath();
   virtual bool CanSetAsDefault();
   virtual bool ShouldUseAlternateIcon();
+  virtual bool GetChromeChannel(std::wstring* channel);
 
  private:
   friend class BrowserDistribution;

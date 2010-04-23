@@ -9,6 +9,7 @@
 #include "base/time.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "chrome/installer/util/install_util.h"
 
 namespace {
 
@@ -145,8 +146,11 @@ bool GoogleUpdateSettings::ClearReferral() {
 
 bool GoogleUpdateSettings::GetChromeChannel(bool system_install,
     std::wstring* channel) {
-  HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  if (dist->GetChromeChannel(channel))
+    return true;
+
+  HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   std::wstring reg_path = dist->GetStateKey();
   RegKey key(root_key, reg_path.c_str(), KEY_READ);
   std::wstring update_branch;
@@ -171,5 +175,3 @@ bool GoogleUpdateSettings::GetChromeChannel(bool system_install,
 
   return true;
 }
-
-

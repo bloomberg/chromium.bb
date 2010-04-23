@@ -62,6 +62,8 @@ class BrowserDistribution {
 
   virtual bool ShouldUseAlternateIcon();
 
+  virtual bool GetChromeChannel(std::wstring* channel);
+
   virtual void UpdateDiffInstallStatus(bool system_install,
       bool incremental_install, installer_util::InstallStatus install_status);
 

@@ -41,3 +41,8 @@ bool GoogleChromeSxSDistribution::CanSetAsDefault() {
 bool GoogleChromeSxSDistribution::ShouldUseAlternateIcon() {
   return true;
 }
+
+bool GoogleChromeSxSDistribution::GetChromeChannel(std::wstring* channel) {
+  *channel = L"SxS";
+  return true;
+}
