@@ -310,8 +310,7 @@ o3djs.effect.glsl.endPixelShaderMain = function(color) {
  */
 o3djs.effect.o3d.entryPoints = function() {
   return '// #o3d VertexShaderEntryPoint vertexShaderFunction\n' +
-    '// #o3d PixelShaderEntryPoint pixelShaderFunction\n' +
-    '// #o3d MatrixLoadOrder RowMajor\n';
+    '// #o3d PixelShaderEntryPoint pixelShaderFunction\n';
 };
 
 
@@ -321,6 +320,11 @@ o3djs.effect.o3d.entryPoints = function() {
  */
 o3djs.effect.glsl.entryPoints = function() {
   return '';
+};
+
+o3djs.effect.glsl.matrixLoadOrder =
+o3djs.effect.o3d.matrixLoadOrder = function() {
+  return '// #o3d MatrixLoadOrder RowMajor\n';
 };
 
 
@@ -617,7 +621,8 @@ o3djs.effect.buildCheckerShaderString = function() {
     ' outColor = directionalIntensity * check;\n' +
     p.endPixelShaderMain(
         p.FLOAT4 + '(outColor.rgb, check.a)') +
-    '\n' + p.entryPoints();
+    '\n' + p.entryPoints() +
+    p.matrixLoadOrder();
 };
 
 
@@ -887,7 +892,8 @@ o3djs.effect.buildStandardShaderString = function(material,
            p.beginPixelShaderMain() +
            getColorParam(material, 'emissive') +
            p.endPixelShaderMain('emissive') +
-           p.entryPoints();
+           p.entryPoints() +
+           p.matrixLoadOrder();
   };
 
   /**
@@ -931,7 +937,8 @@ o3djs.effect.buildStandardShaderString = function(material,
            '      lightColor *' +
            ' (ambient * diffuse + diffuse * litR.y)).rgb,\n' +
            '          diffuse.a)') +
-           p.entryPoints();
+           p.entryPoints() +
+           p.matrixLoadOrder();
   };
 
   /**
@@ -990,7 +997,8 @@ o3djs.effect.buildStandardShaderString = function(material,
         '                        + specular * litR.z *' +
         ' specularFactor)).rgb,\n' +
         '      diffuse.a)') +
-        p.entryPoints();
+        p.entryPoints() +
+        p.matrixLoadOrder();
   };
 
   /**
@@ -1045,7 +1053,8 @@ o3djs.effect.buildStandardShaderString = function(material,
         '                        + specular * litR.z *' +
         ' specularFactor)).rgb,\n' +
         '      diffuse.a)') +
-        p.entryPoints();
+        p.entryPoints() +
+        p.matrixLoadOrder();
   };
 
   /**
