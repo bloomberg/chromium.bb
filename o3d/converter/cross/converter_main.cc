@@ -69,6 +69,9 @@ int CrossMain(int argc, char**argv) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 
   FilePath in_filename, out_filename;
+  const FilePath converter_tool = FilePath(argv[0]).DirName().Append(
+      o3d::UTF8ToFilePath("convert.py"));
+
 
   std::vector<std::wstring> values = command_line->GetLooseValues();
   if (values.size() == 1) {
@@ -109,7 +112,12 @@ int CrossMain(int argc, char**argv) {
         << "    directory named archive/ and writes files inside.\n"
         << "--convert-dds-to-png\n"
         << "    Convert all DDS textures to PNGs. For cube map textures,\n"
-        << "    writes six separate PNGs with suffixes _posx, _negx, etc.\n";
+        << "    writes six separate PNGs with suffixes _posx, _negx, etc.\n"
+        << "--convert-cg-to-glsl\n"
+        << "    Convert shaders using an external tool.\n"
+        << "--converter-tool=<filename> [default: "
+        << converter_tool.value() << "]\n"
+        << "    Specifies the shader converter tool.\n";
     return EXIT_FAILURE;
   }
 
@@ -119,6 +127,10 @@ int CrossMain(int argc, char**argv) {
   options.binary = !command_line->HasSwitch("no-binary");
   options.archive = !command_line->HasSwitch("no-archive");
   options.convert_dds_to_png = command_line->HasSwitch("convert-dds-to-png");
+  options.convert_cg_to_glsl = command_line->HasSwitch("convert-cg-to-glsl");
+  options.converter_tool = command_line->HasSwitch("converter-tool") ?
+      o3d::WideToFilePath(command_line->GetSwitchValue("converter-tool")) :
+      converter_tool;
   if (command_line->HasSwitch("base-path")) {
     options.base_path = o3d::WideToFilePath(
         command_line->GetSwitchValue("base-path"));

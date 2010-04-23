@@ -25,7 +25,12 @@ import sys
 #   instruction and keeping the MatrixLoadOrder instruction as is.
 
 
-CGC = '/usr/bin/cgc'
+if os.name == 'nt':
+  CGC = 'c:/Program Files/NVIDIA Corporation/Cg/bin/cgc.exe'
+  if not os.path.exists(CGC):
+    CGC = 'c:/Program Files (x86)/NVIDIA Corporation/Cg/bin/cgc.exe'
+else:
+  CGC = '/usr/bin/cgc'
 
 # cgc complains about TANGENT1 and BINORMAL1 semantics, so we hack it by
 # replacing standard semantics with ATTR8-ATTR12 and then renaming them back to
@@ -139,7 +144,7 @@ def fix_glsl_body(body, input_mapping):
 
 
 def fix_glsl(glsl_shader):
-  header, body = re.split(r'\n\n', glsl_shader, 1)
+  header, body = re.split(os.linesep*2, glsl_shader, 1)
   assert all(l.startswith('//') for l in header.splitlines())
   input_mapping = get_input_mapping(header)
   return header + '\n\n' + fix_glsl_body(body, input_mapping)
@@ -156,15 +161,15 @@ def cg_to_glsl(cg_shader):
 
   vertex_entry = re.search(r'#o3d\s+VertexShaderEntryPoint\s+(\w+)',
       cg_shader).group(1)
-  p = subprocess.Popen(CGC+' -profile glslv -entry %s' % vertex_entry,
-      shell=True,
+  p = subprocess.Popen([CGC]+('-profile glslv -entry %s' %
+                              vertex_entry).split(' '),
       stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   glsl_vertex, err_v = p.communicate(cg_shader)
 
   fragment_entry = re.search(r'#o3d\s+PixelShaderEntryPoint\s+(\w+)',
       cg_shader).group(1)
-  p = subprocess.Popen(CGC+' -profile glslf -entry %s' % fragment_entry,
-      shell=True,
+  p = subprocess.Popen([CGC]+('-profile glslf -entry %s' %
+                              fragment_entry).split(' '),
       stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   glsl_fragment, err_f = p.communicate(cg_shader)
 
@@ -185,8 +190,6 @@ def check_cg():
   if not os.path.exists(CGC):
     print >>sys.stderr, CGC+' is not found, use --cgc option to specify its'
     print >>sys.stderr, 'location.  You may need to install nvidia cg toolkit.'
-    print >>sys.stderr, 'In Ubuntu distribution it can be done by running:'
-    print >>sys.stderr, '  "apt-get install nvidia-cg-toolkit"'
     sys.exit(1)
 
 
@@ -204,19 +207,22 @@ def main(cg_shader):
 
 
 if __name__ == '__main__':
-    cmdline_parser = optparse.OptionParser()
-    cmdline_parser.add_option('--cgc', dest='CGC', default='/usr/bin/cgc',
-        help='path to cgc [default: %default]')
-    options, args = cmdline_parser.parse_args()
-    CGC = options.CGC
-    check_cg()
+  cmdline_parser = optparse.OptionParser()
+  cmdline_parser.add_option('-i', dest='file', default=None,
+      help='input shader; standard input if omitted')
+  cmdline_parser.add_option('--cgc', dest='CGC', default=CGC,
+      help='path to cgc [default: %default]')
+  options, args = cmdline_parser.parse_args()
+  CGC = options.CGC
+  check_cg()
 
-    try:
-      input = sys.stdin.read()
-    except KeyboardInterrupt:
-      input = None
+  try:
+    f = sys.stdin if options.file is None else open(options.file)
+    input = f.read()
+  except KeyboardInterrupt:
+    input = None
 
-    if not input:
-      cmdline_parser.print_help()
-    else:
-      main(input)
+  if not input:
+    cmdline_parser.print_help()
+  else:
+    main(input)

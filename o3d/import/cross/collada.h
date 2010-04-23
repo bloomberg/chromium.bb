@@ -162,7 +162,9 @@ class Collada {
           condition_document(false),
           up_axis(0.0f, 0.0f, 0.0f),
           base_path(FilePath::kCurrentDirectory),
-          convert_dds_to_png(false) {}
+          convert_dds_to_png(false),
+          convert_cg_to_glsl(false),
+          converter_tool() {}
     // Whether or not to generate mip-maps on the textures we load.
     bool generate_mipmaps;
 
@@ -187,6 +189,12 @@ class Collada {
     // True means convert DDS files to PNGs. For cube map textures, this
     // implies writing six separate PNGs.
     bool convert_dds_to_png;
+
+    // If true, run converter tool on shaders.
+    bool convert_cg_to_glsl;
+
+    // Path to the shader converter tool.
+    FilePath converter_tool;
   };
 
   // Collada Param Names.

@@ -35,6 +35,7 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/process_util.h"
 #include "base/string_util.h"
 #include "core/cross/class_manager.h"
 #include "core/cross/curve.h"
@@ -508,6 +509,26 @@ void BindParams(Param* input_param,
 
   bool ok = input_param->Bind(output_param);
   DCHECK_EQ(ok, true);
+}
+
+// Runs effect_string through the filter, replacing it in place.
+bool ConvertCgToGlsl(const FilePath& converter, String* effect_string) {
+  FilePath temporary_file_name;
+  FILE* temporary_file = file_util::CreateAndOpenTemporaryFile(
+      &temporary_file_name);
+  if (!temporary_file)
+    return false;
+
+  fwrite(effect_string->c_str(), 1, effect_string->length(), temporary_file);
+  file_util::CloseFile(temporary_file);
+
+  CommandLine cmd_line(converter);
+  cmd_line.AppendLooseValue(L"-i");
+  cmd_line.AppendLooseValue(o3d::FilePathToWide(temporary_file_name));
+  bool rc = ::base::GetAppOutput(cmd_line, effect_string);
+
+  file_util::Delete(temporary_file_name, false);
+  return rc;
 }
 }  // namespace anonymous
 
@@ -2178,6 +2199,12 @@ Effect* Collada::BuildEffect(FCDocument* doc, FCDEffect* collada_effect) {
                                     << "'";
         return NULL;
       }
+
+      if (options_.convert_cg_to_glsl) {
+        if (!ConvertCgToGlsl(options_.converter_tool, &effect_string))
+          O3D_ERROR(service_locator_) << "Shader conversion failed.";
+      }
+
       if (options_.keep_original_data) {
         // Cache the original data by URI so we can recover it later.
         original_data_map_.AddData(file_path, effect_string, service_locator_);

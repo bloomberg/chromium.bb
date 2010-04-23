@@ -299,6 +299,8 @@ bool Convert(const FilePath& in_filename,
   collada_options.file_paths = options.file_paths;
   collada_options.up_axis = options.up_axis;
   collada_options.convert_dds_to_png = options.convert_dds_to_png;
+  collada_options.convert_cg_to_glsl = options.convert_cg_to_glsl;
+  collada_options.converter_tool = options.converter_tool;
   Collada collada(pack.Get(), collada_options);
   bool result = collada.ImportFile(in_filename, root, param_float);
   if (!result || !error_collector.errors().empty()) {
