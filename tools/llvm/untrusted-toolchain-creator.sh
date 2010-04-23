@@ -59,7 +59,7 @@ readonly NEWLIB_TARBALL=$(pwd)/../third_party/newlib/newlib-1.17.0.tar.gz
 readonly NEWLIB_PATCH=$(pwd)/tools/patches/newlib-1.17.0_arm.patch
 
 
-readonly MAKE_OPTS="-j6 VERBOSE=1"
+readonly MAKE_OPTS="-j8 VERBOSE=1"
 
 readonly TMP=/tmp/crosstool-untrusted
 
@@ -198,8 +198,7 @@ CreateTarBall() {
 }
 
 
-# try to keep the tarball small
-PruneDirs() {
+PruneCodeSourcery() {
   Banner "pruning code sourcery tree"
   local CS_ROOT=${INSTALL_ROOT}/codesourcery/arm-2007q3
   SubBanner "Size before: $(du -msc  ${CS_ROOT})"
@@ -214,7 +213,10 @@ PruneDirs() {
   rm -rf ${CS_ROOT}/arm-none-linux-gnueabi/lib
 
   SubBanner "Size after: $(du -msc  ${CS_ROOT})"
+}
 
+# try to keep the tarball small
+PruneLLVM() {
   Banner "pruning llvm sourcery tree"
   local LLVM_ROOT=${INSTALL_ROOT}/arm-none-linux-gnueabi
   SubBanner "Size before: $(du -msc  ${LLVM_ROOT})"
@@ -344,8 +346,6 @@ ConfigureAndBuildGccStage1() {
 
   Banner "Building llvmgcc-stage1 in ${tmpdir}"
 
-  SetupSysRoot
-
   rm -rf ${tmpdir}
   mkdir -p ${tmpdir}
   cd ${tmpdir}
@@ -451,6 +451,28 @@ BuildLibiberty() {
              ${MAKE_OPTS} all-target-libiberty
 }
 
+STD_ENV_FOR_LIBSTDCPP=(
+  CC="${CC_FOR_SFI_TARGET}"
+  CXX="${CXX_FOR_SFI_TARGET}"
+  RAW_CXX_FOR_TARGET="${CXX_FOR_SFI_TARGET}"
+  LD="${LD_FOR_SFI_TARGET}"
+  CFLAGS="${CXXFLAGS_FOR_SFI_TARGET}"
+  CPPFLAGS="${CXXFLAGS_FOR_SFI_TARGET}"
+  CXXFLAGS="${CXXFLAGS_FOR_SFI_TARGET}"
+  CFLAGS_FOR_TARGET="${CFLAGS_FOR_SFI_TARGET}"
+  CPPFLAGS_FOR_TARGET="${CXXFLAGS_FOR_SFI_TARGET}"
+  CC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
+  GCC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
+  CXX_FOR_TARGET="${CXX_FOR_SFI_TARGET}"
+  AR_FOR_TARGET="${AR_FOR_SFI_TARGET}"
+  NM_FOR_TARGET="${NM_FOR_SFI_TARGET}"
+  RANLIB_FOR_TARGET="${RANLIB_FOR_SFI_TARGET}"
+  AS_FOR_TARGET="${ILLEGAL_TOOL}"
+  LD_FOR_TARGET="${ILLEGAL_TOOL}"
+  OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}" )
+
+
+
 
 BuildLibstdcpp() {
   local tmpdir=$1
@@ -463,24 +485,7 @@ BuildLibstdcpp() {
 
   RunWithLog "Configure libstdc++" ${TMP}/llvm-gcc.configure_libstdcpp.log \
       env -i PATH=/usr/bin/:/bin:${CODE_SOURCERY_ROOT}/bin \
-        CC="${CC_FOR_SFI_TARGET}" \
-        CXX="${CXX_FOR_SFI_TARGET}" \
-        RAW_CXX_FOR_TARGET="${CXX_FOR_SFI_TARGET}" \
-        LD="${LD_FOR_SFI_TARGET}" \
-        CFLAGS="${CXXFLAGS_FOR_SFI_TARGET}" \
-        CPPFLAGS="${CXXFLAGS_FOR_SFI_TARGET}" \
-        CXXFLAGS="${CXXFLAGS_FOR_SFI_TARGET}" \
-        CFLAGS_FOR_TARGET="${CFLAGS_FOR_SFI_TARGET}" \
-        CPPFLAGS_FOR_TARGET="${CXXFLAGS_FOR_SFI_TARGET}" \
-        CC_FOR_TARGET="${CC_FOR_SFI_TARGET}" \
-        GCC_FOR_TARGET="${CC_FOR_SFI_TARGET}" \
-        CXX_FOR_TARGET="${CXX_FOR_SFI_TARGET}" \
-        AS_FOR_TARGET="${CROSS_TARGET_AS}" \
-        LD_FOR_TARGET="${LD_FOR_SFI_TARGET}" \
-        AR_FOR_TARGET="${CROSS_TARGET_AR}" \
-        NM_FOR_TARGET="${CROSS_TARGET_NM}" \
-        OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}" \
-        RANLIB_FOR_TARGET="${CROSS_TARGET_RANLIB}" \
+        "${STD_ENV_FOR_LIBSTDCPP[@]}" \
         ${src_dir}/libstdc++-v3/configure \
           --host=arm-none-linux-gnueabi \
           --prefix=${LLVMGCC_INSTALL_DIR} \
@@ -499,7 +504,9 @@ BuildLibstdcpp() {
 
   RunWithLog "Make libstdc++" ${TMP}/llvm-gcc.make_libstdcpp.log \
     env -i PATH=/usr/bin/:/bin:${CODE_SOURCERY_ROOT}/bin \
-        make  ${MAKE_OPTS}
+        make \
+        "${STD_ENV_FOR_LIBSTDCPP[@]}" \
+        ${MAKE_OPTS}
 
 #  RunWithLog "Install libstdc++" ${TMP}/llvm-gcc.install_libstdcpp.log \
 #    env -i PATH=/usr/bin/:/bin:${CODE_SOURCERY_ROOT}/bin \
@@ -892,10 +899,14 @@ if [ ${MODE} = 'untrusted_sdk' ] ; then
   RecordRevisionInfo
 
   DownloadOrCopyCodeSourceryTarballAndInstall
+  PruneCodeSourcery
+
   ConfigureAndBuildLlvm
   UntarPatchConfigureAndBuildSfiLlc
 
   UntarAndPatchNewlib
+  SetupSysRoot
+
   ConfigureAndBuildGccStage1
 
   InstallUntrustedLinkerScript
@@ -913,7 +924,7 @@ if [ ${MODE} = 'untrusted_sdk' ] ; then
 
   InstallExamples
 
-  PruneDirs
+  #PruneLLVM
 
   CreateTarBall $1
 
@@ -952,7 +963,6 @@ fi
 #@
 #@   install pre-gcc
 if [ ${MODE} = 'gcc-stage1' ] ; then
-  UntarAndPatchNewlib
   ConfigureAndBuildGccStage1
   exit 0
 fi
@@ -996,6 +1006,18 @@ if [ ${MODE} = 'newlib-libonly' ] ; then
   exit 0
 fi
 
+#@
+#@ libstdcpp-libonly <target-dir>
+#@
+#@   build and install libstc++
+#@   NOTE: this depends on TON of previous phases
+#@   TODO: document the exact details
+if [ ${MODE} = 'libstdcpp-libonly' ] ; then
+  BuildLibstdcpp ${TMP}/llvm-gcc/build
+  cp ${TMP}/llvm-gcc/build/${CROSS_TARGET}/libstdc++-v3/src/.libs/libstdc++.a \
+    $1
+  exit 0
+fi
 
 #@
 #@ extrasdk
@@ -1045,7 +1067,8 @@ fi
 #@
 #@   prune tree to make tarball smaller
 if [ ${MODE} = 'prune' ] ; then
-  PruneDirs
+  PruneCodeSourcery
+  PruneLLVM
   exit 0
 fi
 
