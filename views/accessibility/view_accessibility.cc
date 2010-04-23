@@ -666,6 +666,9 @@ bool ViewAccessibility::IsValidNav(int nav_dir, int start_id, int lower_bound,
 }
 
 void ViewAccessibility::SetState(VARIANT* msaa_state, views::View* view) {
+  // Ensure the output param is initialized to zero.
+  msaa_state->lVal = 0;
+
   // Default state; all views can have accessibility focus.
   msaa_state->lVal |= STATE_SYSTEM_FOCUSABLE;
 
