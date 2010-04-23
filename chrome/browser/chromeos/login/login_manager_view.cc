@@ -103,12 +103,8 @@ void LoginManagerView::Init() {
       views::Background::CreateBackgroundPainter(true, painter));
 
   // Set up fonts.
-  gfx::Font title_font =
-      gfx::Font::CreateFont(L"Droid Sans", 10).DeriveFont(0, gfx::Font::BOLD);
-  gfx::Font label_font = gfx::Font::CreateFont(L"Droid Sans", 8);
-  gfx::Font button_font = label_font;
-  gfx::Font field_font = label_font;
-  gfx::Font version_font = gfx::Font::CreateFont(L"Droid Sans", 6);
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  gfx::Font title_font = rb.GetFont(ResourceBundle::MediumBoldFont);
 
   title_label_ = new views::Label();
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -116,32 +112,27 @@ void LoginManagerView::Init() {
   AddChildView(title_label_);
 
   username_field_ = new views::Textfield;
-  username_field_->SetFont(field_font);
   AddChildView(username_field_);
 
   password_field_ = new views::Textfield(views::Textfield::STYLE_PASSWORD);
-  password_field_->SetFont(field_font);
   AddChildView(password_field_);
 
   sign_in_button_ = new views::NativeButton(this, std::wstring());
-  sign_in_button_->set_font(button_font);
   AddChildView(sign_in_button_);
 
   create_account_link_ = new views::Link(std::wstring());
   create_account_link_->SetController(this);
-  create_account_link_->SetFont(label_font);
   AddChildView(create_account_link_);
 
   os_version_label_ = new views::Label();
   os_version_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   os_version_label_->SetColor(kVersionColor);
-  os_version_label_->SetFont(version_font);
+  os_version_label_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
   AddChildView(os_version_label_);
 
   error_label_ = new views::Label();
   error_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   error_label_->SetColor(kErrorColor);
-  error_label_->SetFont(label_font);
   AddChildView(error_label_);
 
   language_switch_model_.InitLanguageMenu();

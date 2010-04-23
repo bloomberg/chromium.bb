@@ -9,6 +9,7 @@
 #include <string>
 
 #include "app/l10n_util.h"
+#include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/network_screen_delegate.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
@@ -66,20 +67,18 @@ void NetworkSelectionView::Init() {
   set_background(
       views::Background::CreateBackgroundPainter(true, painter));
 
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   gfx::Font welcome_label_font =
-      gfx::Font::CreateFont(L"Droid Sans", 20).DeriveFont(0, gfx::Font::BOLD);
-  gfx::Font label_font = gfx::Font::CreateFont(L"Droid Sans", 9);
-  gfx::Font button_font = label_font;
+      rb.GetFont(ResourceBundle::LargeFont).DeriveFont(0, gfx::Font::BOLD);
 
   welcome_label_ = new views::Label();
   welcome_label_->SetColor(kWelcomeColor);
   welcome_label_->SetFont(welcome_label_font);
 
   select_network_label_ = new views::Label();
-  select_network_label_->SetFont(label_font);
+  select_network_label_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
 
   connecting_network_label_ = new views::Label();
-  connecting_network_label_->SetFont(label_font);
   connecting_network_label_->SetVisible(false);
 
   network_combobox_ = new views::Combobox(delegate_);
@@ -89,7 +88,6 @@ void NetworkSelectionView::Init() {
       NULL, std::wstring(), delegate_->language_switch_model(), true);
 
   offline_button_ = new views::NativeButton(delegate_, std::wstring());
-  offline_button_->set_font(button_font);
 
   AddChildView(welcome_label_);
   AddChildView(select_network_label_);
