@@ -733,7 +733,14 @@ void WidgetGtk::WillProcessEvent(GdkEvent* event) {
 }
 
 void WidgetGtk::DidProcessEvent(GdkEvent* event) {
-  if (root_view_->NeedsPainting(true))
+  // Under gtk 2.18.6 (also observed in 2.18.3), gdk_window_process_updates()
+  // ued in PaintNow() method may issue another exposure event and drive
+  // nested message loop, which causes recursive call to PaintNow on the same
+  // WidgetGtk instance.
+  // Invoke PaintNow only if the event is originated from this WidgetGtk's
+  // window_contents_. See bug://crbug.com/42235 for details.
+  if (window_contents_ && event->any.window == window_contents_->window &&
+      root_view_->NeedsPainting(true))
     PaintNow(root_view_->GetScheduledPaintRect());
 }
 
