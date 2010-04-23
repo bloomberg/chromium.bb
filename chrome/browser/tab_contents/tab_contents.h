@@ -25,6 +25,7 @@
 #include "chrome/browser/find_notification_details.h"
 #include "chrome/browser/jsmessage_box_client.h"
 #include "chrome/browser/net/url_request_context_getter.h"
+#include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
@@ -76,7 +77,6 @@ class Extension;
 class AutocompleteHistoryManager;
 class LoadNotificationDetails;
 class OmniboxSearchHint;
-class PasswordManager;
 class PluginInstaller;
 class Profile;
 struct RendererPreferences;
@@ -102,7 +102,8 @@ class TabContents : public PageNavigator,
                     public RenderViewHostManager::Delegate,
                     public SelectFileDialog::Listener,
                     public JavaScriptMessageBoxClient,
-                    public ImageLoadingTracker::Observer {
+                    public ImageLoadingTracker::Observer,
+                    public PasswordManager::Delegate {
  public:
   // Flags passed to the TabContentsDelegate.NavigationStateChanged to tell it
   // what has changed. Combine them to update more than one thing.
@@ -453,7 +454,7 @@ class TabContents : public PageNavigator,
   // Infobars ------------------------------------------------------------------
 
   // Adds an InfoBar for the specified |delegate|.
-  void AddInfoBar(InfoBarDelegate* delegate);
+  virtual void AddInfoBar(InfoBarDelegate* delegate);
 
   // Removes the InfoBar for the specified |delegate|.
   void RemoveInfoBar(InfoBarDelegate* delegate);
@@ -689,6 +690,13 @@ class TabContents : public PageNavigator,
   // |bookmark_drag|.
   virtual void SetBookmarkDragDelegate(
       RenderViewHostDelegate::BookmarkDrag* bookmark_drag);
+
+  // PasswordManager::Delegate implementation.
+  virtual void FillPasswordForm(
+      const webkit_glue::PasswordFormDomManager::FillData& form_data);
+  virtual void AddSavePasswordInfoBar(PasswordFormManager* form_to_save);
+  virtual Profile* GetProfileForPasswordManager();
+  virtual bool DidLastPageLoadEncounterSSLErrors();
 
  private:
   friend class NavigationController;

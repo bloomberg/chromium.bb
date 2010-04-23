@@ -8,14 +8,13 @@
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/login_model.h"
+#include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/pref_member.h"
-#include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/password_form_dom_manager.h"
 
 class PasswordFormManager;
 class PrefService;
-class TabContents;
 
 // Per-tab password manager. Handles creation and management of UI elements,
 // receiving password form data from the renderer and managing the password
@@ -23,9 +22,37 @@ class TabContents;
 // for purposes of supporting HTTP authentication dialogs.
 class PasswordManager : public LoginModel {
  public:
+  // An abstraction of operations in the external environment (TabContents)
+  // that the PasswordManager depends on.  This allows for more targeted
+  // unit testing.
+  class Delegate {
+   public:
+    Delegate() {}
+    virtual ~Delegate() {}
+
+    // Fill forms matching |form_data| in |tab_contents|.  By default, goes
+    // through the RenderViewHost to FillPasswordForm.  Tests can override this
+    // to sever the dependency on the entire rendering stack.
+    virtual void FillPasswordForm(
+        const webkit_glue::PasswordFormDomManager::FillData& form_data) = 0;
+
+    // A mechanism to show an infobar in the current tab at our request.
+    virtual void AddSavePasswordInfoBar(PasswordFormManager* form_to_save) = 0;
+
+    // Get the profile for which we are managing passwords.
+    virtual Profile* GetProfileForPasswordManager() = 0;
+
+    // If any SSL certificate errors were encountered as a result of the last
+    // page load.
+    virtual bool DidLastPageLoadEncounterSSLErrors() = 0;
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Delegate);
+  };
+
   static void RegisterUserPrefs(PrefService* prefs);
 
-  explicit PasswordManager(TabContents* tab_contents);
+  // The delegate passed in is required to outlive the PasswordManager.
+  explicit PasswordManager(Delegate* delegate);
   ~PasswordManager();
 
   // Called by a PasswordFormManager when it decides a form can be autofilled
@@ -88,8 +115,9 @@ class PasswordManager : public LoginModel {
   // time a user submits a login form and gets to the next page.
   scoped_ptr<PasswordFormManager> provisional_save_manager_;
 
-  // The containing TabContents.
-  TabContents* tab_contents_;
+  // Our delegate for carrying out external operations.  This is typically the
+  // containing TabContents.
+  Delegate* delegate_;
 
   // The LoginModelObserver (i.e LoginView) requiring autofill.
   LoginModelObserver* observer_;

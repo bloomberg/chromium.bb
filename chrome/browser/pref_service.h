@@ -127,7 +127,7 @@ class PrefService : public NonThreadSafe {
 
   // If the pref at the given path changes, we call the observer's Observe
   // method with NOTIFY_PREF_CHANGED.
-  void AddPrefObserver(const wchar_t* path, NotificationObserver* obs);
+  virtual void AddPrefObserver(const wchar_t* path, NotificationObserver* obs);
   void RemovePrefObserver(const wchar_t* path, NotificationObserver* obs);
 
   // Removes a user pref and restores the pref to its default value.

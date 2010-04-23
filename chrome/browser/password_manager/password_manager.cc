@@ -13,100 +13,34 @@
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
-#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
 
 using webkit_glue::PasswordForm;
 using webkit_glue::PasswordFormMap;
-
-// After a successful *new* login attempt, we take the PasswordFormManager in
-// provisional_save_manager_ and move it to a SavePasswordInfoBarDelegate while
-// the user makes up their mind with the "save password" infobar. Note if the
-// login is one we already know about, the end of the line is
-// provisional_save_manager_ because we just update it on success and so such
-// forms never end up in an infobar.
-class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
- public:
-  SavePasswordInfoBarDelegate(TabContents* tab_contents,
-                              PasswordFormManager* form_to_save) :
-      ConfirmInfoBarDelegate(tab_contents),
-      form_to_save_(form_to_save) {
-  }
-
-  virtual ~SavePasswordInfoBarDelegate() { }
-
-  // Overridden from ConfirmInfoBarDelegate:
-  virtual void InfoBarClosed() {
-    delete this;
-  }
-
-  virtual std::wstring GetMessageText() const {
-    return l10n_util::GetString(IDS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT);
-  }
-
-  virtual SkBitmap* GetIcon() const {
-    return ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        IDR_INFOBAR_SAVE_PASSWORD);
-  }
-
-  virtual int GetButtons() const {
-    return BUTTON_OK | BUTTON_CANCEL;
-  }
-
-  virtual std::wstring GetButtonLabel(InfoBarButton button) const {
-    if (button == BUTTON_OK)
-      return l10n_util::GetString(IDS_PASSWORD_MANAGER_SAVE_BUTTON);
-    if (button == BUTTON_CANCEL)
-      return l10n_util::GetString(IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON);
-    NOTREACHED();
-    return std::wstring();
-  }
-
-  virtual bool Accept() {
-    DCHECK(form_to_save_.get());
-    form_to_save_->Save();
-    return true;
-  }
-
-  virtual bool Cancel() {
-    DCHECK(form_to_save_.get());
-    form_to_save_->PermanentlyBlacklist();
-    return true;
-  }
-
- private:
-  // The PasswordFormManager managing the form we're asking the user about,
-  // and should update as per her decision.
-  scoped_ptr<PasswordFormManager> form_to_save_;
-
-  DISALLOW_COPY_AND_ASSIGN(SavePasswordInfoBarDelegate);
-};
 
 // static
 void PasswordManager::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kPasswordManagerEnabled, true);
 }
 
-PasswordManager::PasswordManager(TabContents* tab_contents)
+PasswordManager::PasswordManager(Delegate* delegate)
     : login_managers_deleter_(&pending_login_managers_),
-      tab_contents_(tab_contents),
+      delegate_(delegate),
       observer_(NULL) {
+  DCHECK(delegate_);
   password_manager_enabled_.Init(prefs::kPasswordManagerEnabled,
-      tab_contents->profile()->GetPrefs(), NULL);
+      delegate_->GetProfileForPasswordManager()->GetPrefs(), NULL);
 }
 
 PasswordManager::~PasswordManager() {
 }
 
 void PasswordManager::ProvisionallySavePassword(PasswordForm form) {
-  if (!tab_contents_->profile() ||
-      tab_contents_->profile()->IsOffTheRecord() ||
+  if (!delegate_->GetProfileForPasswordManager() ||
+      delegate_->GetProfileForPasswordManager()->IsOffTheRecord() ||
       !*password_manager_enabled_)
     return;
 
@@ -142,8 +76,7 @@ void PasswordManager::ProvisionallySavePassword(PasswordForm form) {
     return;
 
   form.ssl_valid = form.origin.SchemeIsSecure() &&
-      !tab_contents_->controller().ssl_manager()->
-          ProcessedSSLErrorFromRequest();
+      !delegate_->DidLastPageLoadEncounterSSLErrors();
   form.preferred = true;
   manager->ProvisionallySave(form);
   provisional_save_manager_.reset(manager);
@@ -168,16 +101,13 @@ void PasswordManager::DidStopLoading() {
   if (!provisional_save_manager_.get())
     return;
 
-  DCHECK(!tab_contents_->profile()->IsOffTheRecord());
+  DCHECK(!delegate_->GetProfileForPasswordManager()->IsOffTheRecord());
   DCHECK(!provisional_save_manager_->IsBlacklisted());
 
-  if (!tab_contents_->profile() ||
-      !tab_contents_->profile()->GetWebDataService(Profile::IMPLICIT_ACCESS))
+  if (!delegate_->GetProfileForPasswordManager())
     return;
   if (provisional_save_manager_->IsNewLogin()) {
-    tab_contents_->AddInfoBar(
-        new SavePasswordInfoBarDelegate(tab_contents_,
-                                        provisional_save_manager_.release()));
+    delegate_->AddSavePasswordInfoBar(provisional_save_manager_.release());
   } else {
     // If the save is not a new username entry, then we just want to save this
     // data (since the user already has related data saved), so don't prompt.
@@ -188,15 +118,13 @@ void PasswordManager::DidStopLoading() {
 
 void PasswordManager::PasswordFormsSeen(
     const std::vector<PasswordForm>& forms) {
-  if (!tab_contents_->profile() ||
-      !tab_contents_->profile()->GetWebDataService(Profile::EXPLICIT_ACCESS))
+  if (!delegate_->GetProfileForPasswordManager())
     return;
   if (!*password_manager_enabled_)
     return;
 
   // Ask the SSLManager for current security.
-  bool had_ssl_error = tab_contents_->controller().ssl_manager()->
-      ProcessedSSLErrorFromRequest();
+  bool had_ssl_error = delegate_->DidLastPageLoadEncounterSSLErrors();
 
   std::vector<PasswordForm>::const_iterator iter;
   for (iter = forms.begin(); iter != forms.end(); iter++) {
@@ -212,7 +140,7 @@ void PasswordManager::PasswordFormsSeen(
     } else {
       bool ssl_valid = iter->origin.SchemeIsSecure() && !had_ssl_error;
       PasswordFormManager* manager =
-          new PasswordFormManager(tab_contents_->profile(),
+          new PasswordFormManager(delegate_->GetProfileForPasswordManager(),
                                   this, *iter, ssl_valid);
       pending_login_managers_.push_back(manager);
       manager->FetchMatchingLoginsFromWebDatabase();
@@ -224,7 +152,6 @@ void PasswordManager::Autofill(
     const PasswordForm& form_for_autofill,
     const PasswordFormMap& best_matches,
     const PasswordForm* const preferred_match) const {
-  DCHECK(tab_contents_);
   DCHECK(preferred_match);
   switch (form_for_autofill.scheme) {
     case PasswordForm::SCHEME_HTML: {
@@ -238,7 +165,7 @@ void PasswordManager::Autofill(
                                                         preferred_match,
                                                         action_mismatch,
                                                         &fill_data);
-      tab_contents_->render_view_host()->FillPasswordForm(fill_data);
+      delegate_->FillPasswordForm(fill_data);
       return;
     }
     default:

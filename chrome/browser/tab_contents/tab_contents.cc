@@ -76,9 +76,11 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/url_constants.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/platform_locale_settings.h"
+#include "grit/theme_resources.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -3054,3 +3056,84 @@ void TabContents::SetAppIcon(const SkBitmap& app_icon) {
   app_icon_ = app_icon;
   NotifyNavigationStateChanged(INVALIDATE_TITLE);
 }
+
+// After a successful *new* login attempt, we take the PasswordFormManager in
+// provisional_save_manager_ and move it to a SavePasswordInfoBarDelegate while
+// the user makes up their mind with the "save password" infobar. Note if the
+// login is one we already know about, the end of the line is
+// provisional_save_manager_ because we just update it on success and so such
+// forms never end up in an infobar.
+class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
+ public:
+  SavePasswordInfoBarDelegate(TabContents* tab_contents,
+                              PasswordFormManager* form_to_save) :
+      ConfirmInfoBarDelegate(tab_contents),
+      form_to_save_(form_to_save) {
+  }
+
+  virtual ~SavePasswordInfoBarDelegate() { }
+
+  // Overridden from ConfirmInfoBarDelegate:
+  virtual void InfoBarClosed() {
+    delete this;
+  }
+
+  virtual std::wstring GetMessageText() const {
+    return l10n_util::GetString(IDS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT);
+  }
+
+  virtual SkBitmap* GetIcon() const {
+    return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+        IDR_INFOBAR_SAVE_PASSWORD);
+  }
+
+  virtual int GetButtons() const {
+    return BUTTON_OK | BUTTON_CANCEL;
+  }
+
+  virtual std::wstring GetButtonLabel(InfoBarButton button) const {
+    if (button == BUTTON_OK)
+      return l10n_util::GetString(IDS_PASSWORD_MANAGER_SAVE_BUTTON);
+    if (button == BUTTON_CANCEL)
+      return l10n_util::GetString(IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON);
+    NOTREACHED();
+    return std::wstring();
+  }
+
+  virtual bool Accept() {
+    DCHECK(form_to_save_.get());
+    form_to_save_->Save();
+    return true;
+  }
+
+  virtual bool Cancel() {
+    DCHECK(form_to_save_.get());
+    form_to_save_->PermanentlyBlacklist();
+    return true;
+  }
+
+ private:
+  // The PasswordFormManager managing the form we're asking the user about,
+  // and should update as per her decision.
+  scoped_ptr<PasswordFormManager> form_to_save_;
+
+  DISALLOW_COPY_AND_ASSIGN(SavePasswordInfoBarDelegate);
+};
+
+void TabContents::FillPasswordForm(
+    const webkit_glue::PasswordFormDomManager::FillData& form_data) {
+  render_view_host()->FillPasswordForm(form_data);
+}
+
+void TabContents::AddSavePasswordInfoBar(PasswordFormManager* form_to_save) {
+  AddInfoBar(new SavePasswordInfoBarDelegate(this, form_to_save));
+}
+
+Profile* TabContents::GetProfileForPasswordManager() {
+  return profile();
+}
+
+bool TabContents::DidLastPageLoadEncounterSSLErrors() {
+  return controller().ssl_manager()->ProcessedSSLErrorFromRequest();
+}
+

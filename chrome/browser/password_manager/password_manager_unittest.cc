@@ -1,0 +1,206 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "base/file_path.h"
+#include "base/string_util.h"
+#include "chrome/browser/password_manager/password_manager.h"
+#include "chrome/browser/password_manager/password_store.h"
+#include "chrome/browser/pref_service.h"
+#include "chrome/common/url_constants.h"
+#include "chrome/test/testing_profile.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+using webkit_glue::PasswordForm;
+using testing::_;
+using testing::DoAll;
+using ::testing::Exactly;
+using ::testing::WithArg;
+using ::testing::Return;
+
+class MockPasswordManagerDelegate : public PasswordManager::Delegate {
+ public:
+  MOCK_METHOD1(FillPasswordForm, void(
+     const webkit_glue::PasswordFormDomManager::FillData&));
+  MOCK_METHOD1(AddSavePasswordInfoBar, void(PasswordFormManager*));
+  MOCK_METHOD0(GetProfileForPasswordManager, Profile*());
+  MOCK_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
+};
+
+class TestingProfileWithPasswordStore : public TestingProfile {
+ public:
+  explicit TestingProfileWithPasswordStore(PasswordStore* store)
+      : store_(store) {}
+  virtual PasswordStore* GetPasswordStore(ServiceAccessType access) {
+    return store_;
+  }
+ private:
+  PasswordStore* store_;
+};
+
+class MockPasswordStore : public PasswordStore {
+ public:
+  MOCK_METHOD1(RemoveLogin, void(const PasswordForm&));
+  MOCK_METHOD2(GetLogins, int(const PasswordForm&, PasswordStoreConsumer*));
+  MOCK_METHOD1(AddLogin, void(const PasswordForm&));
+  MOCK_METHOD1(UpdateLogin, void(const PasswordForm&));
+  MOCK_METHOD1(AddLoginImpl, void(const PasswordForm&));
+  MOCK_METHOD1(UpdateLoginImpl, void(const PasswordForm&));
+  MOCK_METHOD1(RemoveLoginImpl, void(const PasswordForm&));
+  MOCK_METHOD2(RemoveLoginsCreatedBetweenImpl, void(const base::Time&,
+               const base::Time&));
+  MOCK_METHOD2(GetLoginsImpl, void(GetLoginsRequest*, const PasswordForm&));
+  MOCK_METHOD1(GetAutofillableLoginsImpl, void(GetLoginsRequest*));
+  MOCK_METHOD1(GetBlacklistLoginsImpl, void(GetLoginsRequest*));
+};
+
+ACTION_P2(InvokeConsumer, handle, forms) {
+  arg0->OnPasswordStoreRequestDone(handle, forms);
+}
+
+ACTION_P(SaveToScopedPtr, scoped) {
+  scoped->reset(arg0);
+}
+
+class PasswordManagerTest : public testing::Test {
+ public:
+  PasswordManagerTest() {}
+ protected:
+
+  virtual void SetUp() {
+    store_ = new MockPasswordStore();
+    profile_.reset(new TestingProfileWithPasswordStore(store_));
+    EXPECT_CALL(delegate_, GetProfileForPasswordManager())
+        .WillRepeatedly(Return(profile_.get()));
+    manager_.reset(new PasswordManager(&delegate_));
+    EXPECT_CALL(delegate_, DidLastPageLoadEncounterSSLErrors())
+        .WillRepeatedly(Return(false));
+  }
+
+  virtual void TearDown() {
+    manager_.reset();
+    store_ = NULL;
+  }
+
+  PasswordForm MakeSimpleForm() {
+    PasswordForm form;
+    form.origin = GURL("http://www.google.com/a/LoginAuth");
+    form.action = GURL("http://www.google.com/a/Login");
+    form.username_element = ASCIIToUTF16("Email");
+    form.password_element = ASCIIToUTF16("Passwd");
+    form.username_value = ASCIIToUTF16("google");
+    form.password_value = ASCIIToUTF16("password");
+    form.submit_element = ASCIIToUTF16("signIn");
+    form.signon_realm = "http://www.google.com";
+    return form;
+  }
+
+  PasswordManager* manager() { return manager_.get(); }
+
+  scoped_ptr<Profile> profile_;
+  scoped_refptr<MockPasswordStore> store_;
+  MockPasswordManagerDelegate delegate_;  // Owned by manager_.
+  scoped_ptr<PasswordManager> manager_;
+};
+
+MATCHER_P(FormMatches, form, "") {
+  return form.signon_realm == arg.signon_realm &&
+         form.origin == arg.origin &&
+         form.action == arg.action &&
+         form.username_element == arg.username_element &&
+         form.password_element == arg.password_element &&
+         form.submit_element == arg.submit_element;
+}
+
+TEST_F(PasswordManagerTest, FormSubmitEmptyStore) {
+  // Test that observing a newly submitted form shows the save password bar.
+  std::vector<PasswordForm*> result;  // Empty password store.
+  EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
+  EXPECT_CALL(*store_, GetLogins(_,_))
+      .WillOnce(DoAll(WithArg<1>(InvokeConsumer(0, result)), Return(0)));
+  std::vector<PasswordForm> observed;
+  PasswordForm form(MakeSimpleForm());
+  observed.push_back(form);
+  manager()->PasswordFormsSeen(observed);  // The initial load.
+
+  // And the form submit contract is to call ProvisionallySavePassword.
+  manager()->ProvisionallySavePassword(form);
+
+  scoped_ptr<PasswordFormManager> form_to_save;
+  EXPECT_CALL(delegate_, AddSavePasswordInfoBar(_))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_to_save)));
+
+  // Now the password manager waits for the navigation to complete.
+  manager()->DidStopLoading();
+
+  EXPECT_FALSE(NULL == form_to_save.get());
+  EXPECT_CALL(*store_, AddLogin(FormMatches(form)));
+
+  // Simulate saving the form, as if the info bar was accepted.
+  form_to_save->Save();
+}
+
+TEST_F(PasswordManagerTest, FormSubmitNoGoodMatch) {
+  // Same as above, except with an existing form for the same signon realm,
+  // but different origin.  Detailed cases like this are covered by
+  // PasswordFormManagerTest.
+  std::vector<PasswordForm*> result;
+  PasswordForm* existing_different = new PasswordForm(MakeSimpleForm());
+  existing_different->username_value = ASCIIToUTF16("google2");
+  result.push_back(existing_different);
+  EXPECT_CALL(delegate_, FillPasswordForm(_));
+  EXPECT_CALL(*store_, GetLogins(_,_))
+      .WillOnce(DoAll(WithArg<1>(InvokeConsumer(0, result)), Return(0)));
+
+  std::vector<PasswordForm> observed;
+  PasswordForm form(MakeSimpleForm());
+  observed.push_back(form);
+  manager()->PasswordFormsSeen(observed);  // The initial load.
+  manager()->ProvisionallySavePassword(form);
+
+  // We still expect an add, since we didn't have a good match.
+  scoped_ptr<PasswordFormManager> form_to_save;
+  EXPECT_CALL(delegate_, AddSavePasswordInfoBar(_))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_to_save)));
+
+  manager()->DidStopLoading();
+
+  EXPECT_CALL(*store_, AddLogin(FormMatches(form)));
+  // Simulate saving the form.
+  form_to_save->Save();
+}
+
+TEST_F(PasswordManagerTest, FormSeenThenLeftPage) {
+  std::vector<PasswordForm*> result;  // Empty password store.
+  EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
+  EXPECT_CALL(*store_, GetLogins(_,_))
+    .WillOnce(DoAll(WithArg<1>(InvokeConsumer(0, result)), Return(0)));
+  std::vector<PasswordForm> observed;
+  PasswordForm form(MakeSimpleForm());
+  observed.push_back(form);
+  manager()->PasswordFormsSeen(observed);  // The initial load.
+
+  manager()->DidNavigate();
+
+  // No expected calls.
+  manager()->DidStopLoading();
+}
+
+TEST_F(PasswordManagerTest, FormSubmitFailedLogin) {
+  std::vector<PasswordForm*> result;  // Empty password store.
+  EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
+  EXPECT_CALL(*store_, GetLogins(_,_))
+    .WillOnce(DoAll(WithArg<1>(InvokeConsumer(0, result)), Return(0)));
+  std::vector<PasswordForm> observed;
+  PasswordForm form(MakeSimpleForm());
+  observed.push_back(form);
+  manager()->PasswordFormsSeen(observed);  // The initial load.
+
+  manager()->ProvisionallySavePassword(form);
+
+  manager()->PasswordFormsSeen(observed);  // Simulated re-appearance.
+
+  // No expected calls to the PasswordStore...
+  manager()->DidStopLoading();
+}
