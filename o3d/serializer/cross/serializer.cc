@@ -458,11 +458,12 @@ class CustomVisitor : public VisitorBase<CustomVisitor> {
         Buffer* buffer = field->buffer();
         if (buffer) {
           unsigned num_elements = buffer->num_elements();
+          unsigned num_floats = num_elements * field->num_components();
           scoped_array<float> data(
-              new float[num_elements * field->num_components()]);
+              new float[num_floats]);
           field->GetAsFloats(
               0, data.get(), field->num_components(), num_elements);
-          for (size_t jj = 0; jj < num_elements; ++jj) {
+          for (size_t jj = 0; jj < num_floats; ++jj) {
             Serialize(writer_, data[jj]);
           }
         }
@@ -840,7 +841,7 @@ Serializer::Serializer(ServiceLocator* service_locator,
       new PropertiesVisitor(writer_, binary);
   sections_[CUSTOM_SECTION].name_ = "custom";
   sections_[CUSTOM_SECTION].visitor_ = new CustomVisitor(
-      writer_, binary ? &binary_archive_manager_ : false);
+      writer_, binary ? &binary_archive_manager_ : NULL);
   param_visitor_ = new ParamVisitor(writer_);
   binary_visitor_ = binary ? new BinaryVisitor(&binary_archive_manager_) : NULL;
 }

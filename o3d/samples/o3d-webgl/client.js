@@ -752,7 +752,12 @@ o3d.Client.prototype.clearTickCallback = function() {
  */
 o3d.Client.prototype.setErrorCallback =
     function(error_callback) {
-  this.error_callback = error_callback;
+  // Other code expects to not see a null error callback.
+  if (error_callback) {
+    this.error_callback = error_callback;
+  } else {
+    this.error_callback = function(string) {};
+  }
 };
 
 
@@ -764,7 +769,7 @@ o3d.Client.prototype.setErrorCallback =
  * time or if you call ClearErrorCallback.
  */
 o3d.Client.prototype.clearErrorCallback = function() {
-  this.error_callback = null;
+  this.setErrorCallback(null);
 };
 
 

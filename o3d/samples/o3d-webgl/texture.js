@@ -57,12 +57,18 @@ o3d.Texture = function() {
   this.alphaIsOne = true;
 
   /**
-   * The the associated gl texture.
+   * The associated gl texture.
    * @type {WebGLTexture}
    * @private
    */
   this.texture_ = null;
 
+  /**
+   * The associated GL texture target: TEXTURE_2D or TEXTURE_CUBE_MAP.
+   * @type {number}
+   * @private
+   */
+  this.texture_target_ = 0;
 };
 o3d.inherit('Texture', 'ParamObject');
 
@@ -274,7 +280,7 @@ o3d.Texture2D.prototype.setFromBitmap =
   this.gl.texImage2D(this.gl.TEXTURE_2D,
                      0,  // Level.
                      bitmap.canvas_,
-                     bitmap.defer_flip_verically_to_texture_);
+                     bitmap.defer_flip_vertically_to_texture_);
   if (bitmap.defer_mipmaps_to_texture_) {
     this.generateMips();
   }

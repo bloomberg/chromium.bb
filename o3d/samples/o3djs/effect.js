@@ -77,6 +77,7 @@ o3djs.effect.o3d = {
   VARYING_DECLARATION_PREFIX: '',
   VERTEX_VARYING_PREFIX: 'output.',
   PIXEL_VARYING_PREFIX: 'input.',
+  TEXTURE: 'tex',
   BEGIN_IN_STRUCT: 'struct InVertex {\n',
   BEGIN_OUT_STRUCT: 'struct OutVertex {\n',
   END_STRUCT: '};\n'
@@ -103,14 +104,31 @@ o3djs.effect.glsl = {
     VARYING_DECLARATION_PREFIX: 'v_',
     VERTEX_VARYING_PREFIX: 'v_',
     PIXEL_VARYING_PREFIX: 'v_',
+    TEXTURE: 'texture',
     BEGIN_IN_STRUCT: '',
     BEGIN_OUT_STRUCT: '',
-    END_STRUCT: ''
+    END_STRUCT: '',
+    // Only used in GLSL version of getAttributeName_.
+    semanticNameMap: {
+      'POSITION'  : 'position',
+      'NORMAL'    : 'normal',
+      'TANGENT'   : 'tangent',
+      'BINORMAL'  : 'binormal',
+      'COLOR'     : 'color',
+      'TEXCOORD0' : 'texCoord0',
+      'TEXCOORD1' : 'texCoord1',
+      'TEXCOORD2' : 'texCoord2',
+      'TEXCOORD3' : 'texCoord3',
+      'TEXCOORD4' : 'texCoord4',
+      'TEXCOORD5' : 'texCoord5',
+      'TEXCOORD6' : 'texCoord6',
+      'TEXCOORD7' : 'texCoord7'
+    }
 };
 
 
 /**
- * The string that goes between the stream name and the semicolon too indicate
+ * The string that goes between the stream name and the semicolon to indicate
  * the semantic.
  * @param {string} name Name of the semantic.
  * @return {string}
@@ -121,13 +139,33 @@ o3djs.effect.glsl.semanticSuffix = function(name) {
 
 
 /**
- * The string that goes between the stream name and the semicolon too indicate
+ * The string that goes between the stream name and the semicolon to indicate
  * the semantic.
  * @param {string} name Name of the semantic.
  * @return {string}
  */
 o3djs.effect.o3d.semanticSuffix = function(name) {
   return ' : ' + name;
+};
+
+
+/**
+ * Attribute variables in GLSL need to be named by their semantic in
+ * order for the implementation to hook them up correctly.
+ * @private
+ */
+o3djs.effect.glsl.getAttributeName_ = function(name, semantic) {
+  var p = o3djs.effect;
+  return p.semanticNameMap[semantic];
+};
+
+
+/**
+ * This passes through the name in the Cg implementation.
+ * @private
+ */
+o3djs.effect.o3d.getAttributeName_ = function(name, semantic) {
+  return name;
 };
 
 
@@ -366,7 +404,7 @@ o3djs.effect.buildAttributeDecls =
     str += o3djs.effect.ATTRIBUTE + o3djs.effect.FLOAT3 + ' ' + 'normal' +
     o3djs.effect.semanticSuffix('NORMAL') + ';\n';
   }
-  str += o3djs.effect.buildTexCoords(material) +
+  str += o3djs.effect.buildTexCoords(material, false) +
          o3djs.effect.buildBumpInputCoords(bumpSampler) +
          o3djs.effect.END_STRUCT;
   return str;
@@ -397,7 +435,7 @@ o3djs.effect.buildVaryingDecls =
       p.VARYING + p.FLOAT4 + ' ' +
       p.VARYING_DECLARATION_PREFIX + 'position' +
       p.semanticSuffix('POSITION') + ';\n' +
-      p.buildTexCoords(material) +
+      p.buildTexCoords(material, true) +
       p.buildBumpOutputCoords(bumpSampler);
   if (diffuse || specular) {
     str += p.VARYING + p.FLOAT3 + ' ' +
@@ -430,18 +468,34 @@ o3djs.effect.interpolant_ = 0;
 
 /**
  * Builds the texture coordinate declaration for a given color input
- * (usually emissive, anmbient, diffuse or specular).  If the color
+ * (usually emissive, ambient, diffuse or specular).  If the color
  * input does not have a sampler, no TEXCOORD declaration is built.
  * @param {!o3d.Material} material The material to inspect.
+ * @param {boolean} varying Whether these vertex declarations should
+ *     be written as varying values.
  * @param {string} name The name of the color input.
  * @return {string} The code for the texture coordinate declaration.
  */
-o3djs.effect.buildTexCoord = function(material, name) {
+o3djs.effect.buildTexCoord = function(material, varying, name) {
   var p = o3djs.effect;
+  // In the GLSL version we need to name the incoming attributes by
+  // the semantic name in order for them to get hooked up correctly.
   if (material.getParam(name + 'Sampler')) {
-    return '  ' + p.FLOAT2 + ' ' + name + 'UV' +
-        p.semanticSuffix(
-            'TEXCOORD' + p.interpolant_++ + '') + ';\n';
+    if (varying) {
+      return '  ' + p.VARYING + p.FLOAT2 + ' ' +
+          p.VARYING_DECLARATION_PREFIX + name + 'UV' +
+          p.semanticSuffix(
+              'TEXCOORD' + p.interpolant_++ + '') + ';\n';
+    } else {
+      var desiredName = name + 'UV';
+      var semantic = 'TEXCOORD' + p.interpolant_++;
+      var outputName = p.getAttributeName_(desiredName, semantic);
+      if (p.semanticNameMap) {
+        p.nameToSemanticMap_[desiredName] = semantic;
+      }
+      return '  ' + p.ATTRIBUTE + p.FLOAT2 + ' ' + outputName +
+          p.semanticSuffix(semantic) + ';\n';
+    }
   } else {
     return '';
   }
@@ -451,15 +505,20 @@ o3djs.effect.buildTexCoord = function(material, name) {
  * Builds all the texture coordinate declarations for a vertex attribute
  * declaration.
  * @param {!o3d.Material} material The material to inspect.
+ * @param {boolean} varying Whether these vertex declarations should
+ *     be written as varying values.
  * @return {string} The code for the texture coordinate declarations.
  */
-o3djs.effect.buildTexCoords = function(material) {
+o3djs.effect.buildTexCoords = function(material, varying) {
   var p = o3djs.effect;
   p.interpolant_ = 0;
-  return p.buildTexCoord(material, 'emissive') +
-         p.buildTexCoord(material, 'ambient') +
-         p.buildTexCoord(material, 'diffuse') +
-         p.buildTexCoord(material, 'specular');
+  if (!varying) {
+    p.nameToSemanticMap_ = {};
+  }
+  return p.buildTexCoord(material, varying, 'emissive') +
+         p.buildTexCoord(material, varying, 'ambient') +
+         p.buildTexCoord(material, varying, 'diffuse') +
+         p.buildTexCoord(material, varying, 'specular');
 };
 
 
@@ -476,8 +535,14 @@ o3djs.effect.buildTexCoords = function(material) {
 o3djs.effect.buildUVPassthrough = function(material, name) {
   var p = o3djs.effect;
   if (material.getParam(name + 'Sampler')) {
-    return '  ' + p.VERTEX_VARYING_PREFIX + name + 'UV = ' +
-        p.ATTRIBUTE_PREFIX + name + 'UV;\n';
+    var sourceName = name + 'UV';
+    var destName = sourceName;
+    var semantic = p.nameToSemanticMap_[sourceName];
+    if (semantic) {
+      sourceName = p.getAttributeName_(sourceName, semantic);
+    }
+    return '  ' + p.VERTEX_VARYING_PREFIX + destName + ' = ' +
+        p.ATTRIBUTE_PREFIX + sourceName + ';\n';
   } else {
     return '';
   }
@@ -493,6 +558,11 @@ o3djs.effect.buildUVPassthrough = function(material, name) {
  */
 o3djs.effect.buildUVPassthroughs = function(material) {
   var p = o3djs.effect;
+  // TODO(petersont): in the GLSL implementation we need to generate
+  // the code for these attributes before we can pass their values
+  // through, because in this implementation their names must be their
+  // semantics (i.e., "texCoord4") rather than these chosen names.
+  // Currently bumpUV is the only one which does not obey this rule.
   return p.buildUVPassthrough(material, 'emissive') +
          p.buildUVPassthrough(material, 'ambient') +
          p.buildUVPassthrough(material, 'diffuse') +
@@ -839,7 +909,7 @@ o3djs.effect.buildStandardShaderString = function(material,
     if (samplerParam) {
       var type = getSamplerType(samplerParam);
       descriptions.push(name + type + 'Texture');
-      return 'sampler' + type + ' ' + name + 'Sampler;\n'
+      return 'uniform sampler' + type + ' ' + name + 'Sampler;\n'
     } else if (opt_addColorParam) {
       descriptions.push(name + 'Color');
       return 'uniform ' + p.FLOAT4 + ' ' + name + ';\n';
@@ -862,9 +932,9 @@ o3djs.effect.buildStandardShaderString = function(material,
     var samplerParam = material.getParam(name + 'Sampler');
     if (samplerParam) {
       var type = getSamplerType(samplerParam);
-      return '  ' + p.FLOAT4 + ' ' + name + ' = tex' + type +
+      return '  ' + p.FLOAT4 + ' ' + name + ' = ' + p.TEXTURE + type +
              '(' + name + 'Sampler, ' +
-             p.ATTRIBUTE_PREFIX + name + 'UV);\n'
+             p.PIXEL_VARYING_PREFIX + name + 'UV);\n'
     } else {
       return '';
     }

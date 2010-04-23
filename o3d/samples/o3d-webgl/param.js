@@ -820,12 +820,14 @@ o3d.ParamSampler.prototype.applyToLocation = function(gl, location) {
   gl.activeTexture(gl.TEXTURE0 + i);
 
   var value = null;
+  var target = 0;
 
   if (this.value && this.value.texture && this.value.texture.texture_) {
     value = this.value.texture.texture_;
+    target = this.value.texture.texture_target_;
   }
 
-  gl.bindTexture(gl.TEXTURE_2D, value);
+  gl.bindTexture(target, value);
   gl.uniform1i(location, i);
   o3d.Param.texture_index_++;
 };

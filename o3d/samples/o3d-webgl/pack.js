@@ -205,6 +205,7 @@ o3d.Pack.prototype.createTexture2D =
   texture.height = height;
   texture.levels = levels;
   texture.texture_ = this.gl.createTexture();
+  texture.texture_target_ = this.gl.TEXTURE_2D;
 
   if (width != undefined && height != undefined) {
     this.gl.bindTexture(this.gl.TEXTURE_2D, texture.texture_);
@@ -246,6 +247,7 @@ o3d.Pack.prototype.createTextureCUBE =
   var texture = this.createObject('TextureCUBE');
   texture.edgeLength = edgeLength;
   texture.texture_ = this.gl.createTexture();
+  texture.texture_target_ = this.gl.TEXTURE_CUBE_MAP;
 
   this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, texture.texture_);
   for (var ii = 0; ii < 6; ++ii) {
@@ -412,14 +414,13 @@ o3d.Pack.prototype.createBitmapsFromRawData =
 
   canvas.width = bitmap.width;
   canvas.height = bitmap.height;
-
-  bitmap.canvas_ = canvas;
   var context = canvas.getContext('2d');
-  // Flip it.
-  context.translate(0, bitmap.height);
-  context.scale(1, -1);
   context.drawImage(raw_data.image_,
       0, 0, bitmap.width, bitmap.height);
+
+  bitmap.canvas_ = canvas;
+  // Most images require a vertical flip.
+  bitmap.flipVertically();
 
   // TODO(petersont): I'm not sure how to get the format.
   bitmap.format = o3d.Texture.ARGB8;
