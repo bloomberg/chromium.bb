@@ -52,6 +52,8 @@ class TabContentsDragSource : public MessageLoopForUI::Observer {
                        GdkDragContext*);
   CHROMEGTK_CALLBACK_4(TabContentsDragSource, void, OnDragDataGet,
                        GdkDragContext*, GtkSelectionData*, guint, guint);
+  CHROMEGTK_CALLBACK_1(TabContentsDragSource, gboolean, OnDragIconExpose,
+                       GdkEventExpose*);
 
   gfx::NativeView GetContentNativeView() const;
 
@@ -64,7 +66,7 @@ class TabContentsDragSource : public MessageLoopForUI::Observer {
 
   // The image used for depicting the drag, and the offset between the cursor
   // and the top left pixel.
-  SkBitmap drag_image_;
+  GdkPixbuf* drag_pixbuf_;
   gfx::Point image_offset_;
 
   // The mime type for the file contents of the current drag (if any).

@@ -30,6 +30,7 @@ using WebKit::WebDragOperationNone;
 TabContentsDragSource::TabContentsDragSource(
     TabContentsView* tab_contents_view)
     : tab_contents_view_(tab_contents_view),
+      drag_pixbuf_(NULL),
       drag_failed_(false),
       drag_widget_(NULL),
       drag_icon_(NULL) {
@@ -104,7 +105,9 @@ void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
   }
 
   drop_data_.reset(new WebDropData(drop_data));
-  drag_image_ = image;
+
+  if (!image.isNull())
+    drag_pixbuf_ = gfx::GdkPixbufFromSkBitmap(&image);
   image_offset_ = image_offset;
 
   GtkTargetList* list = gtk_dnd_util::GetTargetListFromCodeMask(targets_mask);
@@ -315,14 +318,19 @@ void TabContentsDragSource::OnDragBegin(GtkWidget* sender,
                         generated_download_file_name.value().length());
   }
 
-  if (!drag_image_.isNull()) {
-    GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&drag_image_);
-    GtkWidget* image = gtk_image_new_from_pixbuf(pixbuf);
-    gtk_widget_show(image);
-    g_object_unref(pixbuf);
+  if (drag_pixbuf_) {
     drag_icon_ = gtk_window_new(GTK_WINDOW_POPUP);
     g_object_ref_sink(drag_icon_);
-    gtk_container_add(GTK_CONTAINER(drag_icon_), image);
+    g_signal_connect(drag_icon_, "expose-event",
+                     G_CALLBACK(OnDragIconExposeThunk), this);
+    gtk_widget_set_size_request(drag_icon_,
+                                gdk_pixbuf_get_width(drag_pixbuf_),
+                                gdk_pixbuf_get_height(drag_pixbuf_));
+
+    GdkScreen* screen = gtk_widget_get_screen(GTK_WIDGET(drag_icon_));
+    GdkColormap* rgba = gdk_screen_get_rgba_colormap(screen);
+    if (rgba)
+      gtk_widget_set_colormap(GTK_WIDGET(drag_icon_), rgba);
 
     gtk_drag_set_icon_widget(drag_context, drag_icon_,
                              image_offset_.x(), image_offset_.y());
@@ -334,6 +342,10 @@ void TabContentsDragSource::OnDragEnd(GtkWidget* sender,
   if (drag_icon_) {
     g_object_unref(drag_icon_);
     drag_icon_ = NULL;
+  }
+  if (drag_pixbuf_) {
+    g_object_unref(drag_pixbuf_);
+    drag_pixbuf_ = NULL;
   }
 
   MessageLoopForUI::current()->RemoveObserver(this);
@@ -363,4 +375,17 @@ void TabContentsDragSource::OnDragEnd(GtkWidget* sender,
 
 gfx::NativeView TabContentsDragSource::GetContentNativeView() const {
   return tab_contents_view_->GetContentNativeView();
+}
+
+gboolean TabContentsDragSource::OnDragIconExpose(GtkWidget* sender,
+                                                 GdkEventExpose* event) {
+  cairo_t* cr = gdk_cairo_create(event->window);
+  gdk_cairo_rectangle(cr, &event->area);
+  cairo_clip(cr);
+  cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+  gdk_cairo_set_source_pixbuf(cr, drag_pixbuf_, 0, 0);
+  cairo_paint(cr);
+  cairo_destroy(cr);
+
+  return TRUE;
 }
