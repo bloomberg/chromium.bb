@@ -225,6 +225,13 @@ class ToolbarView : public AccessibleToolbarView,
 
   // Used to post tasks to switch to the next/previous menu.
   ScopedRunnableMethodFactory<ToolbarView> method_factory_;
+
+  // If non-null the destuctor sets this to true. This is set to a non-null
+  // while the menu is showing and used to detect if the menu was deleted while
+  // running.
+  bool* destroyed_flag_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(ToolbarView);
 };
 
 #endif  // CHROME_BROWSER_VIEWS_TOOLBAR_VIEW_H_

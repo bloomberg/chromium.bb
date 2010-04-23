@@ -68,7 +68,8 @@ ToolbarView::ToolbarView(Browser* browser)
       profiles_menu_contents_(NULL),
       last_focused_view_storage_id_(-1),
       menu_bar_emulation_mode_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      destroyed_flag_(NULL) {
   SetID(VIEW_ID_TOOLBAR);
   browser_->command_updater()->AddCommandObserver(IDC_BACK, this);
   browser_->command_updater()->AddCommandObserver(IDC_FORWARD, this);
@@ -86,6 +87,8 @@ ToolbarView::ToolbarView(Browser* browser)
 }
 
 ToolbarView::~ToolbarView() {
+  if (destroyed_flag_)
+    *destroyed_flag_ = true;
   if (menu_bar_emulation_mode_) {
     focus_manager_->UnregisterAccelerators(this);
     focus_manager_->RemoveFocusChangeListener(this);
@@ -721,12 +724,19 @@ void ToolbarView::LoadRightSideControlsImages() {
 }
 
 void ToolbarView::RunPageMenu(const gfx::Point& pt) {
+  bool destroyed_flag = false;
+  destroyed_flag_ = &destroyed_flag;
+
   page_menu_model_.reset(new PageMenuModel(this, browser_));
   page_menu_menu_.reset(new views::Menu2(page_menu_model_.get()));
   for (unsigned int i = 0; i < menu_listeners_.size(); i++) {
     page_menu_menu_->AddMenuListener(menu_listeners_[i]);
   }
   page_menu_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
+
+  if (destroyed_flag)
+    return;
+
   for (unsigned int i = 0; i < menu_listeners_.size(); i++) {
     page_menu_menu_->RemoveMenuListener(menu_listeners_[i]);
   }
@@ -734,12 +744,19 @@ void ToolbarView::RunPageMenu(const gfx::Point& pt) {
 }
 
 void ToolbarView::RunAppMenu(const gfx::Point& pt) {
+  bool destroyed_flag = false;
+  destroyed_flag_ = &destroyed_flag;
+
   if (app_menu_model_->BuildProfileSubMenu())
     app_menu_menu_->Rebuild();
   for (unsigned int i = 0; i < menu_listeners_.size(); i++) {
     app_menu_menu_->AddMenuListener(menu_listeners_[i]);
   }
   app_menu_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
+
+  if (destroyed_flag)
+    return;
+
   for (unsigned int i = 0; i < menu_listeners_.size(); i++) {
     app_menu_menu_->RemoveMenuListener(menu_listeners_[i]);
   }
