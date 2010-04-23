@@ -667,4 +667,55 @@ TEST(FormStructureTest, HeuristicsCreditCardInfoWithUnknownCardField) {
   EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(6)->heuristic_type());
 }
 
+TEST(FormStructureTest, ThreeAddressLines) {
+  scoped_ptr<FormStructure> form_structure;
+  FormData form;
+
+  form.method = ASCIIToUTF16("post");
+  form.fields.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("Address Line1"),
+                             ASCIIToUTF16("Address"),
+                             string16(),
+                             ASCIIToUTF16("text")));
+  form.fields.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("Address Line2"),
+                             ASCIIToUTF16("Address"),
+                             string16(),
+                             ASCIIToUTF16("text")));
+  form.fields.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("Address Line3"),
+                             ASCIIToUTF16("Address"),
+                             string16(),
+                             ASCIIToUTF16("text")));
+  form_structure.reset(new FormStructure(form));
+  EXPECT_TRUE(form_structure->IsAutoFillable());
+
+  // Check that heuristics are initialized as UNKNOWN_TYPE.
+  std::vector<AutoFillField*>::const_iterator iter;
+  size_t i;
+  for (iter = form_structure->begin(), i = 0;
+       iter != form_structure->end();
+       ++iter, ++i) {
+    // Expect last element to be NULL.
+    if (i == form_structure->field_count()) {
+      ASSERT_EQ(static_cast<AutoFillField*>(NULL), *iter);
+    } else {
+      ASSERT_NE(static_cast<AutoFillField*>(NULL), *iter);
+      EXPECT_EQ(UNKNOWN_TYPE, (*iter)->heuristic_type());
+    }
+  }
+
+  // Compute heuristic types.
+  form_structure->GetHeuristicAutoFillTypes();
+  ASSERT_EQ(3U, form_structure->field_count());
+
+  // Check that heuristics are no longer UNKNOWN_TYPE.
+  // Address Line 1.
+  EXPECT_EQ(ADDRESS_HOME_LINE1, form_structure->field(0)->heuristic_type());
+  // Address Line 2.
+  EXPECT_EQ(ADDRESS_HOME_LINE2, form_structure->field(1)->heuristic_type());
+  // Address Line 3.
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(2)->heuristic_type());
+}
+
 }  // namespace

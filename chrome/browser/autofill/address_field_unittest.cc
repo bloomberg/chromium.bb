@@ -105,6 +105,42 @@ TEST_F(AddressFieldTest, ParseTwoLineAddress) {
   EXPECT_EQ(ADDRESS_HOME_LINE2, field_type_map_[ASCIIToUTF16("addr2")]);
 }
 
+TEST_F(AddressFieldTest, ParseThreeLineAddress) {
+  list_.push_back(
+      new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Address Line1"),
+                                               ASCIIToUTF16("Address"),
+                                               string16(),
+                                               ASCIIToUTF16("text")),
+                        ASCIIToUTF16("addr1")));
+  list_.push_back(
+      new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Address Line2"),
+                                               ASCIIToUTF16("Address"),
+                                               string16(),
+                                               ASCIIToUTF16("text")),
+                        ASCIIToUTF16("addr2")));
+  list_.push_back(
+      new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Address Line3"),
+                                               ASCIIToUTF16("Address"),
+                                               string16(),
+                                               ASCIIToUTF16("text")),
+                        ASCIIToUTF16("addr3")));
+  list_.push_back(NULL);
+  iter_ = list_.begin();
+  field_.reset(AddressField::Parse(&iter_, false));
+  ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
+  EXPECT_EQ(kShippingAddress, field_->FindType());
+  EXPECT_TRUE(field_->IsFullAddress());
+  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("addr1")) != field_type_map_.end());
+  EXPECT_EQ(ADDRESS_HOME_LINE1, field_type_map_[ASCIIToUTF16("addr1")]);
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("addr2")) != field_type_map_.end());
+  EXPECT_EQ(ADDRESS_HOME_LINE2, field_type_map_[ASCIIToUTF16("addr2")]);
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("addr3")) == field_type_map_.end());
+}
+
 TEST_F(AddressFieldTest, ParseTwoLineAddressEcml) {
   list_.push_back(
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Address"),

@@ -218,6 +218,19 @@ bool AddressField::ParseAddressLines(
 
   if (!ParseEmptyText(iter, &address_field->address2_))
     ParseText(iter, pattern, &address_field->address2_);
+
+  // Try for a third line, which we will promptly discard.
+  if (address_field->address2_ != NULL) {
+    if (is_ecml) {
+      pattern = GetEcmlPattern(kEcmlShipToAddress3,
+                               kEcmlBillToAddress3, '|');
+      ParseText(iter, pattern);
+    } else {
+      pattern = ASCIIToUTF16("line3");
+      ParseLabelText(iter, pattern, NULL);
+    }
+  }
+
   return true;
 }
 
