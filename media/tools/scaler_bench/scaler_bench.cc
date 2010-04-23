@@ -165,13 +165,13 @@ int main(int argc, const char** argv) {
     source_height = 0;
   }
 
-  std::string dest_width_param(cmd_line->GetSwitchValueASCII("dst-w"));
+  std::string dest_width_param(cmd_line->GetSwitchValueASCII("dest-w"));
   if (!dest_width_param.empty() &&
       !StringToInt(dest_width_param, &dest_width)) {
     dest_width = 0;
   }
 
-  std::string dest_height_param(cmd_line->GetSwitchValueASCII("dst-h"));
+  std::string dest_height_param(cmd_line->GetSwitchValueASCII("dest-h"));
   if (!dest_height_param.empty() &&
       !StringToInt(dest_height_param, &dest_height)) {
     dest_height = 0;
@@ -199,6 +199,12 @@ int main(int argc, const char** argv) {
   std::cout << "Skia: " << BenchmarkSkia()
             << "ms/frame" << std::endl;
   std::cout << "No filtering: " << BenchmarkFilter(media::FILTER_NONE)
+            << "ms/frame" << std::endl;
+  std::cout << "Bilinear Vertical: "
+            << BenchmarkFilter(media::FILTER_BILINEAR_V)
+            << "ms/frame" << std::endl;
+  std::cout << "Bilinear Horizontal: "
+            << BenchmarkFilter(media::FILTER_BILINEAR_H)
             << "ms/frame" << std::endl;
   std::cout << "Bilinear: " << BenchmarkFilter(media::FILTER_BILINEAR)
             << "ms/frame" << std::endl;
