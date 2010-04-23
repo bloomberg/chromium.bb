@@ -139,31 +139,31 @@ void VideoDecoderImpl::DoDecode(Buffer* buffer, Task* done_cb) {
   }
 
   // Otherwise, attempt to decode a single frame.
-  AVFrame* yuv_frame = avcodec_alloc_frame();
   bool* got_frame = new bool;
+  scoped_refptr<VideoFrame>* video_frame = new scoped_refptr<VideoFrame>(NULL);
   decode_engine_->DecodeFrame(
       buffer,
-      yuv_frame,
+      video_frame,
       got_frame,
       NewRunnableMethod(this,
                         &VideoDecoderImpl::OnDecodeComplete,
-                        yuv_frame,
+                        video_frame,
                         got_frame,
                         done_runner.release()));
 }
 
-void VideoDecoderImpl::OnDecodeComplete(AVFrame* yuv_frame, bool* got_frame,
-                                        Task* done_cb) {
+void VideoDecoderImpl::OnDecodeComplete(scoped_refptr<VideoFrame>* video_frame,
+                                        bool* got_frame, Task* done_cb) {
   // Note: The |done_runner| must be declared *last* to ensure proper
   // destruction order.
-  scoped_ptr_malloc<AVFrame, ScopedPtrAVFree> yuv_frame_deleter(yuv_frame);
   scoped_ptr<bool> got_frame_deleter(got_frame);
+  scoped_ptr<scoped_refptr<VideoFrame> > video_frame_deleter(video_frame);
   AutoTaskRunner done_runner(done_cb);
 
   // If we actually got data back, enqueue a frame.
   if (*got_frame) {
     last_pts_ = FindPtsAndDuration(*time_base_, pts_heap_, last_pts_,
-                                   yuv_frame);
+                                   video_frame->get());
 
     // Pop off a pts on a successful decode since we are "using up" one
     // timestamp.
@@ -179,12 +179,9 @@ void VideoDecoderImpl::OnDecodeComplete(AVFrame* yuv_frame, bool* got_frame,
       NOTREACHED() << "Attempting to decode more frames than were input.";
     }
 
-    if (!EnqueueVideoFrame(
-            decode_engine_->GetSurfaceFormat(), last_pts_, yuv_frame)) {
-      // On an EnqueueEmptyFrame error, error out the whole pipeline and
-      // set the state to kDecodeFinished.
-      SignalPipelineError();
-    }
+    (*video_frame)->SetTimestamp(last_pts_.timestamp);
+    (*video_frame)->SetDuration(last_pts_.duration);
+    EnqueueVideoFrame(*video_frame);
   } else {
     // When in kFlushCodec, any errored decode, or a 0-lengthed frame,
     // is taken as a signal to stop decoding.
@@ -195,59 +192,9 @@ void VideoDecoderImpl::OnDecodeComplete(AVFrame* yuv_frame, bool* got_frame,
   }
 }
 
-bool VideoDecoderImpl::EnqueueVideoFrame(VideoFrame::Format surface_format,
-                                         const TimeTuple& time,
-                                         const AVFrame* frame) {
-  // TODO(fbarchard): Work around for FFmpeg http://crbug.com/27675
-  // The decoder is in a bad state and not decoding correctly.
-  // Checking for NULL avoids a crash in CopyPlane().
-  if (!frame->data[VideoFrame::kYPlane] ||
-      !frame->data[VideoFrame::kUPlane] ||
-      !frame->data[VideoFrame::kVPlane]) {
-    return true;
-  }
-
-  scoped_refptr<VideoFrame> video_frame;
-  VideoFrame::CreateFrame(surface_format, width_, height_,
-                          time.timestamp, time.duration, &video_frame);
-  if (!video_frame) {
-    return false;
-  }
-
-  // Copy the frame data since FFmpeg reuses internal buffers for AVFrame
-  // output, meaning the data is only valid until the next
-  // avcodec_decode_video() call.
-  // TODO(scherkus): figure out pre-allocation/buffer cycling scheme.
-  // TODO(scherkus): is there a cleaner way to figure out the # of planes?
-  CopyPlane(VideoFrame::kYPlane, *video_frame, frame);
-  CopyPlane(VideoFrame::kUPlane, *video_frame, frame);
-  CopyPlane(VideoFrame::kVPlane, *video_frame, frame);
+void VideoDecoderImpl::EnqueueVideoFrame(
+    const scoped_refptr<VideoFrame>& video_frame) {
   EnqueueResult(video_frame);
-  return true;
-}
-
-void VideoDecoderImpl::CopyPlane(size_t plane,
-                                 const VideoFrame& video_frame,
-                                 const AVFrame* frame) {
-  DCHECK(video_frame.width() % 2 == 0);
-  const uint8* source = frame->data[plane];
-  const size_t source_stride = frame->linesize[plane];
-  uint8* dest = video_frame.data(plane);
-  const size_t dest_stride = video_frame.stride(plane);
-  size_t bytes_per_line = video_frame.width();
-  size_t copy_lines = video_frame.height();
-  if (plane != VideoFrame::kYPlane) {
-    bytes_per_line /= 2;
-    if (video_frame.format() == VideoFrame::YV12) {
-      copy_lines = (copy_lines + 1) / 2;
-    }
-  }
-  DCHECK(bytes_per_line <= source_stride && bytes_per_line <= dest_stride);
-  for (size_t i = 0; i < copy_lines; ++i) {
-    memcpy(dest, source, bytes_per_line);
-    source += source_stride;
-    dest += dest_stride;
-  }
 }
 
 void VideoDecoderImpl::EnqueueEmptyFrame() {
@@ -260,29 +207,24 @@ VideoDecoderImpl::TimeTuple VideoDecoderImpl::FindPtsAndDuration(
     const AVRational& time_base,
     const PtsHeap& pts_heap,
     const TimeTuple& last_pts,
-    const AVFrame* frame) {
+    const VideoFrame* frame) {
   TimeTuple pts;
 
-  // Default |repeat_pict| to 0 because if there is no frame information,
-  // we just assume the frame only plays for one time_base.
-  int repeat_pict = 0;
+  // First search the VideoFrame for the pts. This is the most authoritative.
+  // Make a special exclusion for the value pts == 0.  Though this is
+  // technically a valid value, it seems a number of ffmpeg codecs will
+  // mistakenly always set pts to 0.
+  DCHECK(frame);
+  base::TimeDelta timestamp = frame->GetTimestamp();
+  if (timestamp != StreamSample::kInvalidTimestamp &&
+      timestamp.ToInternalValue() != 0) {
+    pts.timestamp = ConvertTimestamp(time_base, timestamp.ToInternalValue());
+    pts.duration = ConvertTimestamp(time_base, 1 + frame->GetRepeatCount());
+    return pts;
+  }
 
-  // First search the AVFrame for the pts. This is the most authoritative.
-  // Make a special exclusion for the value frame->pts == 0.  Though this
-  // is technically a valid value, it seems a number of ffmpeg codecs will
-  // mistakenly always set frame->pts to 0.
-  //
-  // Oh, and we have to cast AV_NOPTS_VALUE since it ends up becoming unsigned
-  // because the value they use doesn't fit in a signed 64-bit number which
-  // produces a signedness comparison warning on gcc.
-  if (frame &&
-      (frame->pts != static_cast<int64_t>(AV_NOPTS_VALUE)) &&
-      (frame->pts != 0)) {
-    pts.timestamp = ConvertTimestamp(time_base, frame->pts);
-    repeat_pict = frame->repeat_pict;
-  } else if (!pts_heap.IsEmpty()) {
-    // If the frame did not have pts, try to get the pts from the
-    // |pts_heap|.
+  if (!pts_heap.IsEmpty()) {
+    // If the frame did not have pts, try to get the pts from the |pts_heap|.
     pts.timestamp = pts_heap.Top();
   } else {
     DCHECK(last_pts.timestamp != StreamSample::kInvalidTimestamp);
@@ -292,9 +234,7 @@ VideoDecoderImpl::TimeTuple VideoDecoderImpl::FindPtsAndDuration(
   }
 
   // Fill in the duration while accounting for repeated frames.
-  //
-  // TODO(ajwong): Make sure this formula is correct.
-  pts.duration = ConvertTimestamp(time_base, 1 + repeat_pict);
+  pts.duration = ConvertTimestamp(time_base, 1);
 
   return pts;
 }

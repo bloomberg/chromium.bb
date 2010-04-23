@@ -5,6 +5,8 @@
 #ifndef MEDIA_FILTERS_FFMPEG_VIDEO_DECODE_ENGINE_H_
 #define MEDIA_FILTERS_FFMPEG_VIDEO_DECODE_ENGINE_H_
 
+#include "base/scoped_ptr.h"
+#include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/video_decode_engine.h"
 
 // FFmpeg types.
@@ -24,7 +26,8 @@ class FFmpegVideoDecodeEngine : public VideoDecodeEngine {
 
   // Implementation of the VideoDecodeEngine Interface.
   virtual void Initialize(AVStream* stream, Task* done_cb);
-  virtual void DecodeFrame(Buffer* buffer, AVFrame* yuv_frame,
+  virtual void DecodeFrame(Buffer* buffer,
+                           scoped_refptr<VideoFrame>* video_frame,
                            bool* got_result, Task* done_cb);
   virtual void Flush(Task* done_cb);
   virtual VideoFrame::Format GetSurfaceFormat() const;
@@ -40,6 +43,7 @@ class FFmpegVideoDecodeEngine : public VideoDecodeEngine {
  private:
   AVCodecContext* codec_context_;
   State state_;
+  scoped_ptr_malloc<AVFrame, ScopedPtrAVFree> av_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegVideoDecodeEngine);
 };

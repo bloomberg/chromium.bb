@@ -91,7 +91,7 @@ void OmxVideoDecodeEngine::OnHardwareError() {
 // decoder. So when a read complete callback is received, a corresponding
 // decode request must exist.
 void OmxVideoDecodeEngine::DecodeFrame(Buffer* buffer,
-                                       AVFrame* yuv_frame,
+                                       scoped_refptr<VideoFrame>* video_frame,
                                        bool* got_result,
                                        Task* done_cb) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
@@ -110,7 +110,7 @@ void OmxVideoDecodeEngine::DecodeFrame(Buffer* buffer,
 
   // Enqueue the decode request and the associated buffer.
   decode_request_queue_.push_back(
-      DecodeRequest(yuv_frame, got_result, done_cb));
+      DecodeRequest(video_frame, got_result, done_cb));
 
   // Submit a read request to the decoder.
   omx_codec_->Read(NewCallback(this, &OmxVideoDecodeEngine::OnReadComplete));
@@ -178,45 +178,47 @@ void OmxVideoDecodeEngine::BufferReady(int buffer_id,
     MergeBytesFrameQueue(buffer, size);
   }
 
+  // Notify OmxCodec that we have finished using this buffer.
+  if (callback) {
+    callback->Run(buffer_id);
+    delete callback;
+  }
+
   // We assume that when we receive a read complete callback from
   // OmxCodec there was a read request made.
   CHECK(!decode_request_queue_.empty());
-  const DecodeRequest request = decode_request_queue_.front();
+  DecodeRequest request = decode_request_queue_.front();
   decode_request_queue_.pop_front();
   *request.got_result = false;
+
+  // Notify the read request to this object has been fulfilled.
+  AutoTaskRunner done_cb_runner(request.done_cb);
 
   // Detect if we have received a full decoded frame.
   if (DecodedFrameAvailable()) {
     // |frame| carries the decoded frame.
     scoped_ptr<YuvFrame> frame(yuv_frame_queue_.front());
     yuv_frame_queue_.pop_front();
+
+    VideoFrame::CreateFrame(GetSurfaceFormat(),
+                            width_, height_,
+                            StreamSample::kInvalidTimestamp,
+                            StreamSample::kInvalidTimestamp,
+                            request.frame);
+    if (!request.frame->get()) {
+      // TODO(jiesun): this is also an error case handled as normal.
+      return;
+    }
     *request.got_result = true;
 
-    // TODO(ajwong): This is a memcpy(). Avoid this.
-    // TODO(ajwong): This leaks memory. Fix by not using AVFrame.
+    // TODO(jiesun): Assume YUV 420 format.
     const int pixels = width_ * height_;
-    request.frame->data[0] = y_buffer_.get();
-    request.frame->data[1] = u_buffer_.get();
-    request.frame->data[2] = v_buffer_.get();
-    request.frame->linesize[0] = width_;
-    request.frame->linesize[1] = width_ / 2;
-    request.frame->linesize[2] = width_ / 2;
-
-    memcpy(request.frame->data[0], frame->data, pixels);
-    memcpy(request.frame->data[1], frame->data + pixels,
+    memcpy((*request.frame)->data(VideoFrame::kYPlane), frame->data, pixels);
+    memcpy((*request.frame)->data(VideoFrame::kUPlane), frame->data + pixels,
            pixels / 4);
-    memcpy(request.frame->data[2],
+    memcpy((*request.frame)->data(VideoFrame::kVPlane),
            frame->data + pixels + pixels /4,
            pixels / 4);
-  }
-
-  // Notify the read request to this object has been fulfilled.
-  request.done_cb->Run();
-
-  // Notify OmxCodec that we have finished using this buffer.
-  if (callback) {
-    callback->Run(buffer_id);
-    delete callback;
   }
 }
 

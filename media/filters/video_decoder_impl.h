@@ -12,7 +12,6 @@
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 // FFmpeg types.
-struct AVFrame;
 struct AVRational;
 
 namespace media {
@@ -61,21 +60,16 @@ class VideoDecoderImpl : public DecoderBase<VideoDecoder, VideoFrame> {
   virtual void DoSeek(base::TimeDelta time, Task* done_cb);
   virtual void DoDecode(Buffer* buffer, Task* done_cb);
 
-  virtual bool EnqueueVideoFrame(VideoFrame::Format surface_format,
-                                 const TimeTuple& time,
-                                 const AVFrame* frame);
+  virtual void EnqueueVideoFrame(const scoped_refptr<VideoFrame>& video_frame);
 
   // Create an empty video frame and queue it.
   virtual void EnqueueEmptyFrame();
 
-  virtual void CopyPlane(size_t plane, const VideoFrame& video_frame,
-                         const AVFrame* frame);
-
   // Methods that pickup after the decode engine has finished its action.
   virtual void OnInitializeComplete(bool* success /* Not owned */,
                                     Task* done_cb);
-  virtual void OnDecodeComplete(AVFrame* yuv_frame, bool* got_frame,
-                                Task* done_cb);
+  virtual void OnDecodeComplete(scoped_refptr<VideoFrame>* video_frame,
+                                bool* got_frame, Task* done_cb);
 
   // Attempt to get the PTS and Duration for this frame by examining the time
   // info provided via packet stream (stored in |pts_heap|), or the info
@@ -88,7 +82,7 @@ class VideoDecoderImpl : public DecoderBase<VideoDecoder, VideoFrame> {
   virtual TimeTuple FindPtsAndDuration(const AVRational& time_base,
                                        const PtsHeap& pts_heap,
                                        const TimeTuple& last_pts,
-                                       const AVFrame* frame);
+                                       const VideoFrame* frame);
 
   // Signals the pipeline that a decode error occurs, and moves the decoder
   // into the kDecodeFinished state.

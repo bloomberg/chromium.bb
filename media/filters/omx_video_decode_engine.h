@@ -18,7 +18,6 @@
 class MessageLoop;
 
 // FFmpeg types.
-struct AVFrame;
 struct AVRational;
 struct AVStream;
 
@@ -34,7 +33,8 @@ class OmxVideoDecodeEngine : public VideoDecodeEngine,
 
   // Implementation of the VideoDecodeEngine Interface.
   virtual void Initialize(AVStream* stream, Task* done_cb);
-  virtual void DecodeFrame(Buffer* buffer, AVFrame* yuv_frame,
+  virtual void DecodeFrame(Buffer* buffer,
+                           scoped_refptr<VideoFrame>* video_frame,
                            bool* got_result, Task* done_cb);
   virtual void Flush(Task* done_cb);
   virtual VideoFrame::Format GetSurfaceFormat() const;
@@ -83,13 +83,13 @@ class OmxVideoDecodeEngine : public VideoDecodeEngine,
   // A struct to hold parameters of a decode request. Objects pointed by
   // these parameters are owned by the caller.
   struct DecodeRequest {
-    DecodeRequest(AVFrame* f, bool* b, Task* cb)
+    DecodeRequest(scoped_refptr<VideoFrame>* f, bool* b, Task* cb)
         : frame(f),
           got_result(b),
           done_cb(cb) {
     }
 
-    AVFrame* frame;
+    scoped_refptr<VideoFrame>* frame;
     bool* got_result;
     Task* done_cb;
   };

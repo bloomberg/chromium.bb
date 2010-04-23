@@ -40,7 +40,8 @@ class VideoDecodeEngine {
   //
   // TODO(ajwong): Should this function just allocate a new yuv_frame and return
   // it via a "GetNextFrame()" method or similar?
-  virtual void DecodeFrame(Buffer* buffer, AVFrame* yuv_frame,
+  virtual void DecodeFrame(Buffer* buffer,
+                           scoped_refptr<VideoFrame>* video_frame,
                            bool* got_result, Task* done_cb) = 0;
 
   // Flushes the decode engine of any buffered input packets.
