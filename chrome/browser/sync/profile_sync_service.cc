@@ -241,16 +241,20 @@ void ProfileSyncService::StartUp() {
 }
 
 void ProfileSyncService::Shutdown(bool sync_disabled) {
-  if (backend_.get())
-    backend_->Shutdown(sync_disabled);
+
+  // Move aside the backend so nobody else tries to use it while we are
+  // shutting it down.
+  scoped_ptr<SyncBackendHost> doomed_backend(backend_.release());
+
+  if (doomed_backend.get())
+    doomed_backend->Shutdown(sync_disabled);
 
   // Stop all data type controllers, if needed.
   if (data_type_manager_.get() &&
       data_type_manager_->state() != DataTypeManager::STOPPED) {
     data_type_manager_->Stop();
   }
-
-  backend_.reset();
+  doomed_backend.reset();
   data_type_manager_.reset();
 
   // Clear various flags.
@@ -285,8 +289,10 @@ void ProfileSyncService::DisableForUser() {
     // TODO(timsteele): Focus wizard.
     return;
   }
-  Shutdown(true);
+  // Clear prefs (including  SyncSetupHasCompleted) before shutting down so
+  // PSS clients don't think we're set up while we're shutting down.
   ClearPreferences();
+  Shutdown(true);
 
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
 }
@@ -569,7 +575,8 @@ void ProfileSyncService::DeactivateDataType(
     DataTypeController* data_type_controller,
     ChangeProcessor* change_processor) {
   change_processor->Stop();
-  backend_->DeactivateDataType(data_type_controller, change_processor);
+  if (backend_.get())
+    backend_->DeactivateDataType(data_type_controller, change_processor);
 }
 
 void ProfileSyncService::Observe(NotificationType type,
