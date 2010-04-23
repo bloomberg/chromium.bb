@@ -75,6 +75,7 @@ class BalloonViewImpl : public BalloonView,
 
   // views::WidgetDelegate interface.
   void DisplayChanged();
+  void WorkAreaChanged();
 
   // views::ButtonListener interface.
   virtual void ButtonPressed(views::Button* sender, const views::Event&);

@@ -137,6 +137,10 @@ void BalloonViewImpl::DisplayChanged() {
   collection_->DisplayChanged();
 }
 
+void BalloonViewImpl::WorkAreaChanged() {
+  collection_->DisplayChanged();
+}
+
 void BalloonViewImpl::ButtonPressed(views::Button* sender,
                                     const views::Event&) {
   // The only button currently is the close button.

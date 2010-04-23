@@ -15,6 +15,10 @@ class WidgetDelegate {
 
   // Called with the display changes (color depth or resolution).
   virtual void DisplayChanged() = 0;
+
+  // Called when the work area (the desktop area minus taskbars,
+  // menubars, etc.) changes in size.
+  virtual void WorkAreaChanged() = 0;
 };
 
 }  // namespace views

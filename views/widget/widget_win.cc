@@ -889,6 +889,8 @@ LRESULT WidgetWin::OnSetText(const wchar_t* text) {
 }
 
 void WidgetWin::OnSettingChange(UINT flags, const wchar_t* section) {
+  if (flags == SPI_SETWORKAREA && GetWidgetDelegate())
+    GetWidgetDelegate()->WorkAreaChanged();
   SetMsgHandled(FALSE);
 }
 
