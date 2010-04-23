@@ -110,9 +110,11 @@ STDMETHODIMP Bho::BeforeNavigate2(IDispatch* dispatch, VARIANT* url,
   }
 
   DLOG(INFO) << "BeforeNavigate2: " << url->bstrVal;
+
   ScopedComPtr<IBrowserService> browser_service;
   DoQueryService(SID_SShellBrowser, web_browser2, browser_service.Receive());
   if (!browser_service || !CheckForCFNavigation(browser_service, false)) {
+    // TODO(tommi): Remove? Isn't this done below by calling set_referrer("")?
     referrer_.clear();
   }
 

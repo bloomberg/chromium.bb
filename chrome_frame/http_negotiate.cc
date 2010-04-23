@@ -203,19 +203,17 @@ HRESULT HttpNegotiatePatch::BeginningTransaction(
     return hr;
   }
 
-  ScopedComPtr<IWebBrowser2> browser2;
-  DoQueryService(IID_ITargetFrame2, me, browser2.Receive());
-  if (browser2) {
-    VARIANT_BOOL is_top_level = VARIANT_FALSE;
-    browser2->get_TopLevelContainer(&is_top_level);
+  NavigationManager* mgr = NavigationManager::GetThreadInstance();
+  if (mgr && mgr->IsTopLevelUrl(url)) {
+    ScopedComPtr<IWebBrowser2> browser2;
+    DoQueryService(IID_ITargetFrame2, me, browser2.Receive());
+    if (browser2) {
+      VARIANT_BOOL is_top_level = VARIANT_FALSE;
+      browser2->get_TopLevelContainer(&is_top_level);
 
-    DLOG(INFO) << "called OnBeginningTransaction " << is_top_level;
-
-    if (is_top_level != VARIANT_FALSE) {
-      std::string referrer = FindReferrerFromHeaders(headers,
-                                                    *additional_headers);
-      NavigationManager* mgr = NavigationManager::GetThreadInstance();
-      if (mgr) {
+      if (is_top_level != VARIANT_FALSE) {
+        std::string referrer = FindReferrerFromHeaders(headers,
+                                                       *additional_headers);
         // When we switch from IE to CF the BeginningTransaction function is
         // called twice. The first call contains the referrer while the
         // second call does not. We set the referrer only if the URL in the
@@ -225,12 +223,12 @@ HRESULT HttpNegotiatePatch::BeginningTransaction(
           DCHECK(mgr->referrer().empty());
           mgr->set_referrer(referrer);
         }
-      } else {
-        DLOG(INFO) << "No NavigationManager";
       }
+    } else {
+      DLOG(INFO) << "No IWebBrowser2";
     }
   } else {
-    DLOG(INFO) << "No IWebBrowser2";
+    DLOG(INFO) << "No NavigationManager";
   }
 
   static const char kLowerCaseUserAgent[] = "user-agent";
