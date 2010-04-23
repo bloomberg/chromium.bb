@@ -2294,13 +2294,15 @@ void Browser::LoadingStateChanged(TabContents* source) {
 
     if (!source->is_loading() &&
         pending_web_app_action_ == UPDATE_SHORTCUT) {
-      // Schedule a shortcut update when web application info is available.
+      // Schedule a shortcut update when web application info is available if
+      // last committed entry is not NULL. Last committed entry could be NULL
+      // when an interstitial page is injected (e.g. bad https certificate,
+      // malware site etc). When this happens, we abort the shortcut update.
       NavigationEntry* entry = source->controller().GetLastCommittedEntry();
       if (entry) {
         source->render_view_host()->GetApplicationInfo(entry->page_id());
       } else {
         pending_web_app_action_ = NONE;
-        NOTREACHED();
       }
     }
   }
