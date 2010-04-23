@@ -331,6 +331,8 @@ class ExternalTabContainer : public TabContentsDelegate,
   // Set to true if the ExternalTabContainer if infobars should be enabled.
   bool infobars_enabled_;
 
+  views::FocusManager* focus_manager_;
+
   DISALLOW_COPY_AND_ASSIGN(ExternalTabContainer);
 };
 

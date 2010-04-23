@@ -55,7 +55,8 @@ ExternalTabContainer::ExternalTabContainer(
       enabled_extension_automation_(false),
       waiting_for_unload_event_(false),
       pending_(false),
-      infobars_enabled_(true) {
+      infobars_enabled_(true),
+      focus_manager_(NULL) {
 }
 
 ExternalTabContainer::~ExternalTabContainer() {
@@ -182,9 +183,8 @@ void ExternalTabContainer::Uninitialize() {
     tab_contents_ = NULL;
   }
 
-  views::FocusManager* focus_manager = GetFocusManager();
-  if (focus_manager) {
-    focus_manager->UnregisterAccelerators(this);
+  if (focus_manager_) {
+    focus_manager_->UnregisterAccelerators(this);
   }
 
   request_context_ = NULL;
@@ -234,7 +234,7 @@ void ExternalTabContainer::ProcessUnhandledAccelerator(const MSG& msg) {
   NativeWebKeyboardEvent keyboard_event(msg.hwnd, msg.message, msg.wParam,
                                         msg.lParam);
   unhandled_keyboard_event_handler_.HandleKeyboardEvent(keyboard_event,
-                                                        GetFocusManager());
+                                                        focus_manager_);
 }
 
 void ExternalTabContainer::FocusThroughTabTraversal(
@@ -895,8 +895,8 @@ void ExternalTabContainer::LoadAccelerators() {
 
   CopyAcceleratorTable(accelerator_table, accelerators, count);
 
-  views::FocusManager* focus_manager = GetFocusManager();
-  DCHECK(focus_manager);
+  focus_manager_ = GetFocusManager();
+  DCHECK(focus_manager_);
 
   // Let's fill our own accelerator table.
   for (int i = 0; i < count; ++i) {
@@ -909,7 +909,8 @@ void ExternalTabContainer::LoadAccelerators() {
     accelerator_table_[accelerator] = accelerators[i].cmd;
 
     // Also register with the focus manager.
-    focus_manager->RegisterAccelerator(accelerator, this);
+    if (focus_manager_)
+      focus_manager_->RegisterAccelerator(accelerator, this);
   }
 }
 
