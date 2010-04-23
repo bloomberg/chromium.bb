@@ -135,7 +135,7 @@ TEST_F(ToolbarControllerTest, FocusLocation) {
   NSWindow* window = test_window();
   [window makeFirstResponder:[window contentView]];
   EXPECT_EQ([window firstResponder], [window contentView]);
-  [bar_ focusLocationBar];
+  [bar_ focusLocationBar:YES];
   EXPECT_NE([window firstResponder], [window contentView]);
   NSView* locationBar = [[bar_ toolbarViews] objectAtIndex:kLocationIndex];
   EXPECT_EQ([window firstResponder], [(id)locationBar currentEditor]);
