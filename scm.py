@@ -172,9 +172,9 @@ class GIT(object):
     for ref in remotes:
       match = git_svn_re.search(
           GIT.Capture(['cat-file', '-p', ref], cwd)[0])
-      if match and match.group(1) not in svn_refs:
-        # To prefer local refs over remote ones we only set the first occurence.
-        # The assumption being local refs are usually first.
+      # Prefer origin/HEAD over all others.
+      if match and (match.group(1) not in svn_refs or
+                    ref == "refs/remotes/origin/HEAD"):
         svn_refs[match.group(1)] = ref
 
     svn_branch = ''
