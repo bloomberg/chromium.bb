@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,4 +84,12 @@ void StringPrefMember::UpdateValueFromPref() {
 
 void StringPrefMember::UpdatePref(const std::wstring& value) {
   prefs()->SetString(pref_name().c_str(), value);
+}
+
+void FilePathPrefMember::UpdateValueFromPref() {
+  value_ = prefs()->GetFilePath(pref_name().c_str());
+}
+
+void FilePathPrefMember::UpdatePref(const FilePath& value) {
+  prefs()->SetFilePath(pref_name().c_str(), value);
 }

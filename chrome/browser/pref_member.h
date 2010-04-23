@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// A helper class that stays in sync with a preference (bool, int, real, or
-// string).  For example:
+// A helper class that stays in sync with a preference (bool, int, real,
+// string or filepath).  For example:
 //
 // class MyClass {
 //  public:
@@ -27,6 +27,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
 #include "chrome/common/notification_observer.h"
 
 class PrefService;
@@ -171,6 +172,19 @@ class StringPrefMember : public PrefMember<std::wstring> {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StringPrefMember);
+};
+
+class FilePathPrefMember : public PrefMember<FilePath> {
+ public:
+  FilePathPrefMember() : PrefMember<FilePath>() { }
+  virtual ~FilePathPrefMember() { }
+
+ protected:
+  virtual void UpdateValueFromPref();
+  virtual void UpdatePref(const FilePath& value);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FilePathPrefMember);
 };
 
 #endif  // CHROME_BROWSER_PREF_MEMBER_H_

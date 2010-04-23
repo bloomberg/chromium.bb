@@ -1051,7 +1051,7 @@ class DownloadSection : public AdvancedSection,
   views::NativeButton* reset_file_handlers_button_;
 
   // Pref members.
-  StringPrefMember default_download_location_;
+  FilePathPrefMember default_download_location_;
   BooleanPrefMember ask_for_save_location_;
 
   // Updates the directory displayed in the default download location view with
@@ -1083,9 +1083,8 @@ void DownloadSection::ButtonPressed(
        l10n_util::GetString(IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_TITLE);
     select_file_dialog_->SelectFile(SelectFileDialog::SELECT_FOLDER,
                                     dialog_title,
-                                    FilePath::FromWStringHack(
-                                        profile()->GetPrefs()->GetString(
-                                        prefs::kDownloadDefaultDirectory)),
+                                    profile()->GetPrefs()->GetFilePath(
+                                        prefs::kDownloadDefaultDirectory),
                                     NULL, 0, std::wstring(),
                                     GetWindow()->GetNativeWindow(),
                                     NULL);
@@ -1112,7 +1111,7 @@ void DownloadSection::FileSelected(const FilePath& path,
                                    int index, void* params) {
   UserMetricsRecordAction(UserMetricsAction("Options_SetDownloadDirectory"),
                           profile()->GetPrefs());
-  default_download_location_.SetValue(path.ToWStringHack());
+  default_download_location_.SetValue(path);
   // We need to call this manually here since because we're setting the value
   // through the pref member which avoids notifying the listener that set the
   // value.
@@ -1207,7 +1206,7 @@ void DownloadSection::NotifyPrefChanged(const std::wstring* pref_name) {
 
 void DownloadSection::UpdateDownloadDirectoryDisplay() {
   download_default_download_location_display_->SetFile(
-      FilePath::FromWStringHack(default_download_location_.GetValue()));
+      default_download_location_.GetValue());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
