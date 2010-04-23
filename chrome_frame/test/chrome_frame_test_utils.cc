@@ -691,11 +691,15 @@ void WebBrowserEventSink::ConnectToChromeFrame() {
 
 void WebBrowserEventSink::DisconnectFromChromeFrame() {
   if (chrome_frame_) {
-    ScopedVariant dummy(static_cast<IDispatch*>(NULL));
-    chrome_frame_->put_onmessage(dummy);
-    chrome_frame_->put_onload(dummy);
-    chrome_frame_->put_onloaderror(dummy);
+    // Use a local ref counted copy of the IChromeFrame interface as the
+    // outgoing calls could cause the interface to be deleted due to a message
+    // pump running in the context of the outgoing call.
+    ScopedComPtr<IChromeFrame> chrome_frame(chrome_frame_);
     chrome_frame_.Release();
+    ScopedVariant dummy(static_cast<IDispatch*>(NULL));
+    chrome_frame->put_onmessage(dummy);
+    chrome_frame->put_onload(dummy);
+    chrome_frame->put_onloaderror(dummy);
   }
 }
 

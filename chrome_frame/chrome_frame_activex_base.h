@@ -895,7 +895,8 @@ END_MSG_MAP()
     DCHECK_GE(param_count, 0);
     DCHECK(params);
 
-    if (V_VT(&script_object) != VT_DISPATCH) {
+    if (V_VT(&script_object) != VT_DISPATCH ||
+        script_object.pdispVal == NULL) {
       return S_FALSE;
     }
 
