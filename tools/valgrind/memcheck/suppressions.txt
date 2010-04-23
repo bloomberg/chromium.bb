@@ -2627,3 +2627,12 @@
    fun:_ZN19NotificationService6NotifyE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
    fun:_ZN14ThreadNotifier10NotifyTaskE16NotificationTypeRK19NotificationDetails
 }
+{
+   bug_42389
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   ...
+   fun:gdk_pixbuf_loader_write
+   fun:_ZN10IconLoader9ParseIconEv
+}
