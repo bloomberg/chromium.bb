@@ -110,16 +110,15 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
   ResourceDispatcherHostRequestInfo* info = rdh_->InfoForRequest(request);
   if (info->resource_type() == ResourceType::MAIN_FRAME) {
     GURL request_url(request->url());
-    std::string host(request_url.host());
     ChromeURLRequestContext* context =
         static_cast<ChromeURLRequestContext*>(request->context());
-    if (!host.empty() && context) {
-      receiver_->Send(new ViewMsg_SetContentSettingsForLoadingHost(
-          info->route_id(), host,
+    if (context) {
+      receiver_->Send(new ViewMsg_SetContentSettingsForLoadingURL(
+          info->route_id(), request_url,
           context->host_content_settings_map()->GetContentSettings(
               request_url)));
-      receiver_->Send(new ViewMsg_SetZoomLevelForLoadingHost(info->route_id(),
-          host, context->host_zoom_map()->GetZoomLevel(host)));
+      receiver_->Send(new ViewMsg_SetZoomLevelForLoadingURL(info->route_id(),
+          request_url, context->host_zoom_map()->GetZoomLevel(request_url)));
     }
   }
 

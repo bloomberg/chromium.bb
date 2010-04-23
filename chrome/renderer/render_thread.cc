@@ -61,6 +61,7 @@
 #include "chrome/renderer/user_script_slave.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_platform_file.h"
+#include "net/base/net_util.h"
 #include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebColor.h"
@@ -171,14 +172,14 @@ class RenderViewContentSettingsSetter : public RenderViewVisitor {
 
 class RenderViewZoomer : public RenderViewVisitor {
  public:
-  RenderViewZoomer(const std::string& host, int zoom_level)
-      : host_(host),
-        zoom_level_(zoom_level) {
+  RenderViewZoomer(const GURL& url, int zoom_level)
+      : zoom_level_(zoom_level) {
+    host_ = net::GetHostOrSpecFromURL(url);
   }
 
   virtual bool Visit(RenderView* render_view) {
     WebView* webview = render_view->webview();  // Guaranteed non-NULL.
-    if (GURL(webview->mainFrame()->url()).host() == host_)
+    if (net::GetHostOrSpecFromURL(GURL(webview->mainFrame()->url())) == host_)
       webview->setZoomLevel(false, zoom_level_);
     return true;
   }
@@ -457,9 +458,9 @@ void RenderThread::OnSetContentSettingsForCurrentURL(
   RenderView::ForEach(&setter);
 }
 
-void RenderThread::OnSetZoomLevelForCurrentHost(const std::string& host,
-                                                int zoom_level) {
-  RenderViewZoomer zoomer(host, zoom_level);
+void RenderThread::OnSetZoomLevelForCurrentURL(const GURL& url,
+                                               int zoom_level) {
+  RenderViewZoomer zoomer(url, zoom_level);
   RenderView::ForEach(&zoomer);
 }
 
@@ -531,8 +532,8 @@ void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewMsg_VisitedLink_Reset, OnResetVisitedLinks)
     IPC_MESSAGE_HANDLER(ViewMsg_SetContentSettingsForCurrentURL,
                         OnSetContentSettingsForCurrentURL)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForCurrentHost,
-                        OnSetZoomLevelForCurrentHost)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForCurrentURL,
+                        OnSetZoomLevelForCurrentURL)
     IPC_MESSAGE_HANDLER(ViewMsg_SetIsIncognitoProcess, OnSetIsIncognitoProcess)
     IPC_MESSAGE_HANDLER(ViewMsg_SetNextPageID, OnSetNextPageID)
     IPC_MESSAGE_HANDLER(ViewMsg_SetCSSColors, OnSetCSSColors)

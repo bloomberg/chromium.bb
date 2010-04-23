@@ -13,6 +13,8 @@
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
+#include "googleurl/src/gurl.h"
+#include "net/base/net_util.h"
 
 HostZoomMap::HostZoomMap(Profile* profile)
     : profile_(profile),
@@ -50,19 +52,19 @@ void HostZoomMap::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kPerHostZoomLevels);
 }
 
-int HostZoomMap::GetZoomLevel(const std::string& host) const {
+int HostZoomMap::GetZoomLevel(const GURL& url) const {
+  std::string host(net::GetHostOrSpecFromURL(url));
   AutoLock auto_lock(lock_);
   HostZoomLevels::const_iterator i(host_zoom_levels_.find(host));
   return (i == host_zoom_levels_.end()) ? 0 : i->second;
 }
 
-void HostZoomMap::SetZoomLevel(const std::string& host, int level) {
+void HostZoomMap::SetZoomLevel(const GURL& url, int level) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   if (!profile_)
     return;
 
-  if (host.empty())
-    return;
+  std::string host(net::GetHostOrSpecFromURL(url));
 
   {
     AutoLock auto_lock(lock_);

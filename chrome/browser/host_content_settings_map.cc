@@ -28,6 +28,7 @@ namespace {
 //   - host (matches an exact hostname)
 //   - a.b.c.d (matches an exact IPv4 ip)
 //   - [a:b:c:d:e:f:g:h] (matches an exact IPv6 ip)
+//   - file:///tmp/test.html (a complete URL without a host)
 const int kContentSettingsPatternVersion = 1;
 
 // The format of a domain wildcard.
@@ -36,17 +37,14 @@ const char kDomainWildcard[] = "[*.]";
 // The length of kDomainWildcard (without the trailing '\0')
 const size_t kDomainWildcardLength = arraysize(kDomainWildcard) - 1;
 
-// Returns the host part of an URL, or the spec, if no host is present.
-std::string HostFromURL(const GURL& url) {
-  return url.has_host() ? net::TrimEndingDot(url.host()) : url.spec();
-}
 }  // namespace
 
 // static
 HostContentSettingsMap::Pattern HostContentSettingsMap::Pattern::FromURL(
     const GURL& url) {
   return Pattern(!url.has_host() || url.HostIsIPAddress() ?
-                 HostFromURL(url) : std::string(kDomainWildcard) + url.host());
+      net::GetHostOrSpecFromURL(url) :
+      std::string(kDomainWildcard) + url.host());
 }
 
 bool HostContentSettingsMap::Pattern::IsValid() const {
@@ -66,7 +64,7 @@ bool HostContentSettingsMap::Pattern::Matches(const GURL& url) const {
   if (!IsValid())
     return false;
 
-  const std::string host(HostFromURL(url));
+  const std::string host(net::GetHostOrSpecFromURL(url));
   if (pattern_.length() < kDomainWildcardLength ||
       !StartsWithASCII(pattern_, kDomainWildcard, false))
     return pattern_ == host;
@@ -227,7 +225,7 @@ ContentSettings HostContentSettingsMap::GetContentSettings(
 
   AutoLock auto_lock(lock_);
 
-  const std::string host(HostFromURL(url));
+  const std::string host(net::GetHostOrSpecFromURL(url));
 
   // Check for exact matches first.
   HostContentSettings::const_iterator i(host_content_settings_.find(host));

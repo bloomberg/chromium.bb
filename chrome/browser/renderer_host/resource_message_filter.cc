@@ -514,7 +514,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
 #endif
       IPC_MESSAGE_HANDLER(ViewHostMsg_ResourceTypeStats, OnResourceTypeStats)
       IPC_MESSAGE_HANDLER(ViewHostMsg_V8HeapStats, OnV8HeapStats)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_DidZoomHost, OnDidZoomHost)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_DidZoomURL, OnDidZoomURL)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ResolveProxy, OnResolveProxy)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetDefaultPrintSettings,
                                       OnGetDefaultPrintSettings)
@@ -1039,26 +1039,26 @@ void ResourceMessageFilter::OnV8HeapStatsOnUIThread(
       static_cast<size_t>(v8_memory_used));
 }
 
-void ResourceMessageFilter::OnDidZoomHost(const std::string& host,
-                                          int zoom_level) {
+void ResourceMessageFilter::OnDidZoomURL(const GURL& url,
+                                         int zoom_level) {
   ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(this,
                         &ResourceMessageFilter::UpdateHostZoomLevelsOnUIThread,
-                        host, zoom_level));
+                        url, zoom_level));
 }
 
 void ResourceMessageFilter::UpdateHostZoomLevelsOnUIThread(
-    const std::string& host,
+    const GURL& url,
     int zoom_level) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  host_zoom_map_->SetZoomLevel(host, zoom_level);
+  host_zoom_map_->SetZoomLevel(url, zoom_level);
 
   // Notify renderers.
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
     RenderProcessHost* render_process_host = i.GetCurrentValue();
     render_process_host->Send(
-        new ViewMsg_SetZoomLevelForCurrentHost(host, zoom_level));
+        new ViewMsg_SetZoomLevelForCurrentURL(url, zoom_level));
   }
 }
 

@@ -594,10 +594,10 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_StopFinding, OnStopFinding)
     IPC_MESSAGE_HANDLER(ViewMsg_FindReplyACK, OnFindReplyAck)
     IPC_MESSAGE_HANDLER(ViewMsg_Zoom, OnZoom)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetContentSettingsForLoadingHost,
-                        OnSetContentSettingsForLoadingHost)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForLoadingHost,
-                        OnSetZoomLevelForLoadingHost)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetContentSettingsForLoadingURL,
+                        OnSetContentSettingsForLoadingURL)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForLoadingURL,
+                        OnSetZoomLevelForLoadingURL)
     IPC_MESSAGE_HANDLER(ViewMsg_SetPageEncoding, OnSetPageEncoding)
     IPC_MESSAGE_HANDLER(ViewMsg_ResetPageEncodingToDefault,
                         OnResetPageEncodingToDefault)
@@ -1235,7 +1235,7 @@ void RenderView::UpdateURL(WebFrame* frame) {
     // Set content settings. Default them from the parent window if one exists.
     // This makes sure about:blank windows work as expected.
     HostContentSettings::iterator host_content_settings =
-        host_content_settings_.find(GURL(request.url()).host());
+        host_content_settings_.find(GURL(request.url()));
     if (host_content_settings != host_content_settings_.end()) {
       SetContentSettings(host_content_settings->second);
 
@@ -1251,7 +1251,7 @@ void RenderView::UpdateURL(WebFrame* frame) {
 
     // Set zoom level.
     HostZoomLevels::iterator host_zoom =
-        host_zoom_levels_.find(GURL(request.url()).host());
+        host_zoom_levels_.find(GURL(request.url()));
     if (host_zoom != host_zoom_levels_.end()) {
       webview()->setZoomLevel(false, host_zoom->second);
       // This zoom level was merely recorded transiently for this load.  We can
@@ -3596,23 +3596,20 @@ void RenderView::OnZoom(PageZoom::Function function) {
   int new_zoom_level = webview()->setZoomLevel(false,
       (function == PageZoom::RESET) ? 0 : (zoom_level + function));
 
-  // Tell the browser which host got zoomed so it can update the saved values.
-  // Pages like the safe browsing interstitial can have empty hosts; don't
-  // record those.
-  std::string host(GURL(webview()->mainFrame()->url()).host());
-  if (!host.empty())
-    Send(new ViewHostMsg_DidZoomHost(host, new_zoom_level));
+  // Tell the browser which url got zoomed so it can update the saved values.
+  Send(new ViewHostMsg_DidZoomURL(
+      GURL(webview()->mainFrame()->url()), new_zoom_level));
 }
 
-void RenderView::OnSetContentSettingsForLoadingHost(
-    std::string host,
+void RenderView::OnSetContentSettingsForLoadingURL(
+    const GURL& url,
     const ContentSettings& content_settings) {
-  host_content_settings_[host] = content_settings;
+  host_content_settings_[url] = content_settings;
 }
 
-void RenderView::OnSetZoomLevelForLoadingHost(std::string host,
-                                              int zoom_level) {
-  host_zoom_levels_[host] = zoom_level;
+void RenderView::OnSetZoomLevelForLoadingURL(const GURL& url,
+                                             int zoom_level) {
+  host_zoom_levels_[url] = zoom_level;
 }
 
 void RenderView::OnSetPageEncoding(const std::string& encoding_name) {

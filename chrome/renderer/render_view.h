@@ -549,8 +549,8 @@ class RenderView : public RenderWidget,
 #endif
   FRIEND_TEST(RenderViewTest, JSBlockSentAfterPageLoad);
 
-  typedef std::map<std::string, ContentSettings> HostContentSettings;
-  typedef std::map<std::string, int> HostZoomLevels;
+  typedef std::map<GURL, ContentSettings> HostContentSettings;
+  typedef std::map<GURL, int> HostZoomLevels;
 
   explicit RenderView(RenderThreadBase* render_thread,
                       const WebPreferences& webkit_preferences,
@@ -653,10 +653,10 @@ class RenderView : public RenderWidget,
   void OnStopFinding(const ViewMsg_StopFinding_Params& params);
   void OnFindReplyAck();
   void OnDeterminePageLanguage();
-  void OnSetContentSettingsForLoadingHost(
-      std::string host, const ContentSettings& content_settings);
+  void OnSetContentSettingsForLoadingURL(
+      const GURL& url, const ContentSettings& content_settings);
   void OnZoom(PageZoom::Function function);
-  void OnSetZoomLevelForLoadingHost(std::string host, int zoom_level);
+  void OnSetZoomLevelForLoadingURL(const GURL& url, int zoom_level);
   void OnSetPageEncoding(const std::string& encoding_name);
   void OnResetPageEncodingToDefault();
   void OnGetAllSavableResourceLinksForCurrentPage(const GURL& page_url);
