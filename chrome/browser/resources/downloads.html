@@ -578,8 +578,10 @@ Download.prototype.update = function(download) {
     }
     showInline(this.controlPause_, this.state_ == Download.States.IN_PROGRESS);
     showInline(this.controlResume_, this.state_ == Download.States.PAUSED);
-    showInline(this.controlCancel_, this.state_ == Download.States.IN_PROGRESS ||
-                                    this.state_ == Download.States.PAUSED);
+    var showCancel = this.state_ == Download.States.IN_PROGRESS ||
+                     this.state_ == Download.States.PAUSED;
+    showInline(this.controlCancel_, showCancel);
+    showInline(this.controlRemove_, !showCancel);
 
     this.nodeSince_.innerHTML = this.since_;
     this.nodeDate_.innerHTML = this.date_;
