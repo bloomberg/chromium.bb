@@ -57,7 +57,6 @@ class Button : public View {
 
   // Accessibility data.
   std::wstring accessible_shortcut_;
-  std::wstring accessible_name_;
 
   // The id tag associated with this button. Used to disambiguate buttons in
   // the ButtonListener implementation.

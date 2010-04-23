@@ -85,9 +85,6 @@ class InfoBarContainer : public views::View,
   // The TabContents for which we are currently showing InfoBars.
   TabContents* tab_contents_;
 
-  // Storage of the string needed for accessibility.
-  std::wstring accessible_name_;
-
   DISALLOW_COPY_AND_ASSIGN(InfoBarContainer);
 };
 

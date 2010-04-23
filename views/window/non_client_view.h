@@ -229,9 +229,6 @@ class NonClientView : public View {
   // dynamically as the system settings change.
   scoped_ptr<NonClientFrameView> frame_view_;
 
-  // The accessible name of this view.
-  std::wstring accessible_name_;
-
   DISALLOW_COPY_AND_ASSIGN(NonClientView);
 };
 

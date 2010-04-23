@@ -73,9 +73,6 @@ class ProgressBar : public View {
   // The view class name.
   static const char kViewClassName[];
 
-  // The storage string for the accessibility name associated with this control.
-  std::wstring accessible_name_;
-
   DISALLOW_COPY_AND_ASSIGN(ProgressBar);
 };
 

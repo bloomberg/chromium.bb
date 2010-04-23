@@ -350,9 +350,6 @@ class BookmarkBarView::ButtonSeparatorView : public views::View {
   }
 
  private:
-  // Storage of strings needed for accessibility.
-  std::wstring accessible_name_;
-
   DISALLOW_COPY_AND_ASSIGN(ButtonSeparatorView);
 };
 

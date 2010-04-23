@@ -639,9 +639,6 @@ class LocationBarView : public LocationBar,
   // Used schedule a task for the first run info bubble.
   ScopedRunnableMethodFactory<LocationBarView> first_run_bubble_;
 
-  // Storage of string needed for accessibility.
-  std::wstring accessible_name_;
-
   DISALLOW_IMPLICIT_CONSTRUCTORS(LocationBarView);
 };
 

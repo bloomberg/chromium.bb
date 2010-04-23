@@ -430,9 +430,6 @@ class TabStrip : public BaseTabStrip,
   // cursor.
   int available_width_for_tabs_;
 
-  // Storage of strings needed for accessibility.
-  std::wstring accessible_name_;
-
   // The size of the new tab button must be hardcoded because we need to be
   // able to lay it out before we are able to get its image from the
   // ThemeProvider.  It also makes sense to do this, because the size of the

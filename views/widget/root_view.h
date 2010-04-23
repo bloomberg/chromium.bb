@@ -318,9 +318,6 @@ class RootView : public View,
   // wrapped inside native components, and is used for the focus traversal.
   View* focus_traversable_parent_view_;
 
-  // Storage of strings needed for accessibility.
-  std::wstring accessible_name_;
-
   // Tracks drag state for a view.
   View::DragInfo drag_info;
 

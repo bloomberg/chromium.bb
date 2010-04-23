@@ -564,9 +564,6 @@ class BrowserView : public BrowserBubbleHost,
   // A bottom bar for showing extensions.
   ExtensionShelf* extension_shelf_;
 
-  // The accessible name of this view.
-  std::wstring accessible_name_;
-
   scoped_ptr<BrowserExtender> browser_extender_;
 
   // Last focused view that issued a tab traversal.

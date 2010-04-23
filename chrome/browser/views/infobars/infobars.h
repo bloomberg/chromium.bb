@@ -132,9 +132,6 @@ class InfoBar : public views::View,
   // the stack in ViewHierarchyChanged to unwind).
   void DeleteSelf();
 
-  // Storage of string needed for accessibility.
-  std::wstring accessible_name_;
-
   // The InfoBar's container
   InfoBarContainer* container_;
 

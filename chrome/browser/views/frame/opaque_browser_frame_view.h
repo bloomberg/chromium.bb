@@ -133,9 +133,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // The bounds of the ClientView.
   gfx::Rect client_view_bounds_;
 
-  // The accessible name of this view.
-  std::wstring accessible_name_;
-
   DISALLOW_EVIL_CONSTRUCTORS(OpaqueBrowserFrameView);
 };
 

@@ -55,9 +55,6 @@ class AccessibleToolbarView : public views::View {
   // dealt within the WillLoseFocus method.
   void SetFocusToLastFocusedView();
 
-  // Storage of strings needed for accessibility.
-  std::wstring accessible_name_;
-
   // Selected child view currently having accessibility focus.
   views::View* selected_focused_view_;
 

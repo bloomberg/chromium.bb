@@ -73,9 +73,6 @@ class TabContentsContainer : public views::View,
   // Handles registering for our notifications.
   NotificationRegistrar registrar_;
 
-  // Storage of the string needed for accessibility.
-  std::wstring accessible_name_;
-
   DISALLOW_COPY_AND_ASSIGN(TabContentsContainer);
 };
 

@@ -79,9 +79,6 @@ class Combobox : public View {
   // The current selection.
   int selected_item_;
 
-  // The accessible name of this control.
-  std::wstring accessible_name_;
-
   DISALLOW_COPY_AND_ASSIGN(Combobox);
 };
 

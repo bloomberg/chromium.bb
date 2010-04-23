@@ -285,9 +285,6 @@ class Textfield : public View {
   //             NativeControlWin.
   bool initialized_;
 
-  // The storage string for the accessibility name associated with this control.
-  std::wstring accessible_name_;
-
   // Text to display when empty.
   string16 text_to_display_when_empty_;
 

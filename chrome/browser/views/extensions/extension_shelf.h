@@ -142,9 +142,6 @@ class ExtensionShelf : public DetachableToolbarView,
   // The model representing the toolstrips on the shelf.
   ExtensionShelfModel* model_;
 
-  // Storage of strings needed for accessibility.
-  std::wstring accessible_name_;
-
   // Animation controlling showing and hiding of the shelf.
   scoped_ptr<SlideAnimation> size_animation_;
 

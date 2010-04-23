@@ -59,9 +59,6 @@ class ResizeGripper : public ImageView {
   // The mouse position at start (in screen coordinates).
   int initial_position_;
 
-  // The storage string for the accessibility name associated with this control.
-  std::wstring accessible_name_;
-
   DISALLOW_COPY_AND_ASSIGN(ResizeGripper);
 };
 

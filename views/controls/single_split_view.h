@@ -83,9 +83,6 @@ class SingleSplitView : public views::View {
 
   bool resize_leading_on_bounds_change_;
 
-  // The accessible name of this view.
-  std::wstring accessible_name_;
-
   DISALLOW_COPY_AND_ASSIGN(SingleSplitView);
 };
 
