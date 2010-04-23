@@ -80,11 +80,12 @@ static TestEnvironment* test_environment;
 
 void SetUpTestEnvironment() {
   base::EnableTerminationOnHeapCorruption();
-  // Load ICU data tables
-  icu_util::Initialize();
   BeforeInitialize();
   test_environment = new TestEnvironment;
   AfterIniitalize();
+  // Load ICU data tables.  This has to run after TestEnvironment is created
+  // because on Linux, we need base::AtExitManager.
+  icu_util::Initialize();
 }
 
 void TearDownTestEnvironment() {
