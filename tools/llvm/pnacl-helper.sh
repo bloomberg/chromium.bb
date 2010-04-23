@@ -190,6 +190,15 @@ if [ ${MODE} = 'build-bitcode' ] ; then
   rm ${PNACL_BITCODE_ROOT}/intrinsics.o
   rm ${PNACL_BITCODE_ROOT}/libcrt_platform.a
 
+  # TODO: cpp suppport is still broken so we fake the library
+  exit 0
+fi
+
+#@
+#@ build-bitcode-cpp
+#@
+#@   build bitcode for cpp - currently broken
+if [ ${MODE} = 'build-bitcode-cpp' ] ; then
   Banner "C++"
   tools/llvm/untrusted-toolchain-creator.sh libstdcpp-libonly \
       ${PNACL_BITCODE_ROOT}

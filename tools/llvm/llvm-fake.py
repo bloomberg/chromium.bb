@@ -636,7 +636,7 @@ def GenerateCombinedBitcodeFile(argv, arch):
         args_bit_ld = (args_bit_ld[:last_bitcode_pos] +
                        [REACHABLE_FUNCTION_SYMBOLS_BC] +
                        args_bit_ld[last_bitcode_pos:] +
-                       ['-lstdc++',
+                       [ #'-lstdc++',
                        '-lc',
                         ])
 
