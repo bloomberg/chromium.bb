@@ -16,6 +16,8 @@
 #     headers, but not build ffmpegsumo itself.  Users are expected to build
 #     and provide their own version of ffmpegsumo.  Default value is 1.
 
+# TODO(ajwong): Determine if we want to statically link libz.
+
 {
   'target_defaults': {
     'conditions': [
@@ -83,11 +85,11 @@
             'source/patched-ffmpeg-mt/libavcodec/eval.c',
             'source/patched-ffmpeg-mt/libavcodec/faanidct.c',
             'source/patched-ffmpeg-mt/libavcodec/fft.c',
-            'source/patched-ffmpeg-mt/libavcodec/golomb.c',
+            'source/patched-ffmpeg-mt/libavcodec/golomb.c', # TODO(fbarchard): Move to Chrome
             'source/patched-ffmpeg-mt/libavcodec/imgconvert.c',
             'source/patched-ffmpeg-mt/libavcodec/jrevdct.c',
             'source/patched-ffmpeg-mt/libavcodec/mdct.c',
-            'source/patched-ffmpeg-mt/libavcodec/mpeg12data.c',
+            'source/patched-ffmpeg-mt/libavcodec/mpeg12data.c', # TODO(fbarchard): Move to ChromeOS
             'source/patched-ffmpeg-mt/libavcodec/opt.c',
             'source/patched-ffmpeg-mt/libavcodec/options.c',
             'source/patched-ffmpeg-mt/libavcodec/parser.c',
@@ -95,6 +97,7 @@
             'source/patched-ffmpeg-mt/libavcodec/raw.c',
             'source/patched-ffmpeg-mt/libavcodec/simple_idct.c',
             'source/patched-ffmpeg-mt/libavcodec/utils.c',
+            'source/patched-ffmpeg-mt/libavformat/vorbiscomment.c',
             'source/patched-ffmpeg-mt/libavcodec/vorbis.c',
             'source/patched-ffmpeg-mt/libavcodec/vorbis_data.c',
             'source/patched-ffmpeg-mt/libavcodec/vorbis_dec.c',
@@ -116,7 +119,6 @@
             'source/patched-ffmpeg-mt/libavformat/options.c',
             'source/patched-ffmpeg-mt/libavformat/riff.c',
             'source/patched-ffmpeg-mt/libavformat/utils.c',
-            'source/patched-ffmpeg-mt/libavformat/vorbiscomment.c',
             'source/patched-ffmpeg-mt/libavutil/avstring.c',
             'source/patched-ffmpeg-mt/libavutil/crc.c',
             'source/patched-ffmpeg-mt/libavutil/log.c',
@@ -184,8 +186,6 @@
                 'source/patched-ffmpeg-mt/libavcodec/pcm.c',
                 'source/patched-ffmpeg-mt/libavformat/raw.c',
                 'source/patched-ffmpeg-mt/libavformat/wav.c',
-                'source/patched-ffmpeg-mt/libavformat/matroska.c',
-                'source/patched-ffmpeg-mt/libavformat/matroskadec.c',
               ],
             }],  # ffmpeg_branding
             ['ffmpeg_branding=="ChromeOS"', {
