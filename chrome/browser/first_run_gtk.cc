@@ -4,6 +4,7 @@
 
 #include "chrome/browser/first_run.h"
 
+#include "app/app_switches.h"
 #include "app/resource_bundle.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -93,6 +94,48 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
       value)
     FirstRun::SetShowWelcomePagePref();
 
+  // We need to be able to create the first run sentinel or else we cannot
+  // proceed because ImportSettings will launch the importer process which
+  // would end up here if the sentinel is not present.
+  if (!FirstRun::CreateSentinel())
+    return false;
+
+  std::wstring import_bookmarks_path;
+  installer_util::GetDistroStringPreference(prefs.get(),
+      installer_util::master_preferences::kDistroImportBookmarksFromFilePref,
+      &import_bookmarks_path);
+
+  if (!import_bookmarks_path.empty()) {
+    // There are bookmarks to import from a file.
+    if (!FirstRun::ImportBookmarks(import_bookmarks_path)) {
+      LOG(WARNING) << "silent bookmark import failed";
+    }
+  }
   return false;
 }
 
+//  TODO(port): This is just a piece of the silent import functionality from
+// ImportSettings for Windows.  It would be nice to get the rest of it ported.
+bool FirstRun::ImportBookmarks(const std::wstring& import_bookmarks_path) {
+  const CommandLine& cmdline = *CommandLine::ForCurrentProcess();
+  CommandLine import_cmd(cmdline.GetProgram());
+
+  // Propagate user data directory switch.
+  if (cmdline.HasSwitch(switches::kUserDataDir)) {
+    import_cmd.AppendSwitchWithValue(
+        switches::kUserDataDir,
+        cmdline.GetSwitchValueASCII(switches::kUserDataDir));
+  }
+  // Since ImportSettings is called before the local state is stored on disk
+  // we pass the language as an argument. GetApplicationLocale checks the
+  // current command line as fallback.
+  import_cmd.AppendSwitchWithValue(
+      switches::kLang,
+      ASCIIToWide(g_browser_process->GetApplicationLocale()));
+
+  import_cmd.CommandLine::AppendSwitchWithValue(
+      switches::kImportFromFile, import_bookmarks_path);
+  // Time to launch the process that is going to do the import. We'll wait
+  // for the process to return.
+  return base::LaunchApp(import_cmd, true, false, NULL);
+}
