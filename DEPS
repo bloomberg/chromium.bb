@@ -42,7 +42,7 @@ deps = {
    "/trunk/deps/third_party/hunspell128@41000",
 
   "src/third_party/protobuf2/src":
-    "http://protobuf.googlecode.com/svn/trunk@305",
+    "http://protobuf.googlecode.com/svn/trunk@327",
 
   "src/third_party/cacheinvalidation/files":
     "http://google-cache-invalidation-api.googlecode.com/svn/trunk@10",
