@@ -180,6 +180,11 @@ o3d.Effect.prototype.bindAttributesAndLinkIfReady = function() {
       this.gl.bindAttribLocation(this.program_, i, attributes[i]);
     }
     this.gl.linkProgram(this.program_);
+    if (!this.gl.getProgramParameter(this.program_, this.gl.LINK_STATUS)) {
+      var log = this.gl.getShaderInfoLog(this.program_);
+      this.gl.client.error_callback(
+          'Program link failed with error log:\n' + log);
+    }
     this.getUniforms_();
     this.getAttributes_();
   }
@@ -205,9 +210,9 @@ o3d.Effect.prototype.loadShaderFromString = function(shaderString, type) {
   this.gl.shaderSource(shader, shaderString);
   this.gl.compileShader(shader);
 
-  var log = this.gl.getShaderInfoLog(shader);
-  if (log != '') {
+  if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
     success = false;
+    var log = this.gl.getShaderInfoLog(shader);
     this.gl.client.error_callback(
         'Shader compile failed with error log:\n' + log);
   }
