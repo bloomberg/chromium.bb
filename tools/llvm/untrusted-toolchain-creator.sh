@@ -924,7 +924,7 @@ if [ ${MODE} = 'untrusted_sdk' ] ; then
 
   InstallExamples
 
-  #PruneLLVM
+  PruneLLVM
 
   CreateTarBall $1
 
@@ -963,6 +963,8 @@ fi
 #@
 #@   install pre-gcc
 if [ ${MODE} = 'gcc-stage1' ] ; then
+  UntarAndPatchNewlib
+  SetupSysRoot
   ConfigureAndBuildGccStage1
   exit 0
 fi
@@ -1010,12 +1012,16 @@ fi
 #@ libstdcpp-libonly <target-dir>
 #@
 #@   build and install libstc++
-#@   NOTE: this depends on TON of previous phases
-#@   TODO: document the exact details
 if [ ${MODE} = 'libstdcpp-libonly' ] ; then
-  BuildLibstdcpp ${TMP}/llvm-gcc/build
-  cp ${TMP}/llvm-gcc/build/${CROSS_TARGET}/libstdc++-v3/src/.libs/libstdc++.a \
-    $1
+  tmp=${TMP}/libstdcpp
+  rm -rf ${tmp}
+  mkdir -p ${tmp}
+  cd ${tmp}
+  tar jxf ${LLVMGCC_TARBALL}
+  # we do not bother with the patches as they do not apply to this lib
+  mkdir ${tmp}/build
+  BuildLibstdcpp ${tmp}/build
+  cp ${tmp}/build/${CROSS_TARGET}/libstdc++-v3/src/.libs/libstdc++.a $1
   exit 0
 fi
 

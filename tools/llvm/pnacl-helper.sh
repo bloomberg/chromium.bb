@@ -12,9 +12,6 @@
 set -o nounset
 set -o errexit
 
-
-
-
 readonly PNACL_TOOLCHAIN_ROOT=$(pwd)/toolchain/pnacl-untrusted
 
 readonly PNACL_ARM_ROOT=${PNACL_TOOLCHAIN_ROOT}/arm
@@ -36,7 +33,6 @@ Banner() {
 Usage() {
   egrep "^#@" $0 | cut --bytes=3-
 }
-
 
 ######################################################################
 #
@@ -100,7 +96,6 @@ if [ ${MODE} = 'download-toolchains' ] ; then
   ./scons platform=x86-64 --download sdl=none
   exit 0
 fi
-
 
 #@
 #@ organize-native-code
@@ -170,7 +165,6 @@ if [ ${MODE} = 'verify' ] ; then
   exit 0
 fi
 
-
 #@
 #@ build-bitcode
 #@
@@ -181,7 +175,8 @@ if [ ${MODE} = 'build-bitcode' ] ; then
 
   export TARGET_CODE=bc-arm
   Banner "Newlib"
-  tools/llvm/untrusted-toolchain-creator.sh newlib-libonly ${PNACL_BITCODE_ROOT}
+  tools/llvm/untrusted-toolchain-creator.sh newlib-libonly \
+       ${PNACL_BITCODE_ROOT}
 
   Banner "Extra SDK"
   ./scons MODE=nacl_extra_sdk platform=arm sdl=none naclsdk_validate=0 \
@@ -190,23 +185,17 @@ if [ ${MODE} = 'build-bitcode' ] ; then
       install_libpthread \
       extra_sdk_update
 
-
+  # NOTE: as collateral damage we also generate these as native code
   rm ${PNACL_BITCODE_ROOT}/crt*.o
   rm ${PNACL_BITCODE_ROOT}/intrinsics.o
   rm ${PNACL_BITCODE_ROOT}/libcrt_platform.a
 
+  Banner "C++"
+  tools/llvm/untrusted-toolchain-creator.sh libstdcpp-libonly \
+      ${PNACL_BITCODE_ROOT}
+
   Banner "Summary  ${PNACL_BITCODE_ROOT}"
   ls -l ${PNACL_BITCODE_ROOT}
-  exit 0
-fi
-
-
-#@
-#@ sanity-check
-#@
-#@
-if [ ${MODE} = 'build-bitcode' ] ; then
-
   exit 0
 fi
 

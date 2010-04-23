@@ -632,11 +632,13 @@ def GenerateCombinedBitcodeFile(argv, arch):
   #       which kept alive via REACHABLE_FUNCTION_SYMBOLS
   if '-nostdlib' not in argv:
     if last_bitcode_pos != None:
-      if arch == 'arm':
         # Splice in the extra symbols.
         args_bit_ld = (args_bit_ld[:last_bitcode_pos] +
                        [REACHABLE_FUNCTION_SYMBOLS_BC] +
-                       args_bit_ld[last_bitcode_pos:])
+                       args_bit_ld[last_bitcode_pos:] +
+                       ['-lstdc++',
+                       '-lc',
+                        ])
 
   # NOTE: .bc will be appended output by LLVM_LD
   Run([LLVM_LD] + args_bit_ld + ['-disable-internalize', '-o', output])
