@@ -524,7 +524,7 @@ class URLRequestLiveSubSection : public SubSection {
 
     out->append("<ol>");
     for (size_t i = 0; i < requests.size(); ++i) {
-      // Reverse the list order, so we dispay from most recent to oldest.
+      // Reverse the list order, so we display from most recent to oldest.
       size_t index = requests.size() - i - 1;
       OutputURLAndLoadLog(requests[index], out);
     }
@@ -726,8 +726,8 @@ void ProcessQueryStringCommands(URLRequestContext* context,
 // logging, and clear some of the already logged data.
 void DrawControlsHeader(URLRequestContext* context, std::string* data) {
   bool is_full_logging_enabled =
-      GetURLRequestTracker(context)->IsUnbounded() &&
-      GetSocketStreamTracker(context)->IsUnbounded();
+      GetURLRequestTracker(context)->is_unbounded() &&
+      GetSocketStreamTracker(context)->is_unbounded();
 
   data->append("<div style='margin-bottom: 10px'>");
 

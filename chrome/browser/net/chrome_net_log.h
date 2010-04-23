@@ -41,7 +41,7 @@ class ChromeNetLog : public net::NetLog {
                         const Source& source,
                         EventPhase phase,
                         EventParameters* extra_parameters);
-  virtual int NextID();
+  virtual uint32 NextID();
   virtual bool HasListener() const;
 
   void AddObserver(Observer* observer);
@@ -52,7 +52,7 @@ class ChromeNetLog : public net::NetLog {
   }
 
  private:
-  int next_id_;
+  uint32 next_id_;
   scoped_ptr<PassiveLogCollector> passive_collector_;
   ObserverList<Observer, true> observers_;
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,14 +9,11 @@
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_log.h"
 #include "net/socket/client_socket.h"
 #include "net/socket/ssl_client_socket.h"
 #include "talk/base/asyncsocket.h"
 #include "talk/base/ssladapter.h"
-
-namespace net {
-class BoundNetLog;
-}  // namespace net
 
 namespace notifier {
 
@@ -37,12 +34,12 @@ class TransportSocket : public net::ClientSocket, public sigslot::has_slots<> {
 
   // net::ClientSocket implementation
 
-  virtual int Connect(net::CompletionCallback* callback,
-                      const net::BoundNetLog& /* net_log */);
+  virtual int Connect(net::CompletionCallback* callback);
   virtual void Disconnect();
   virtual bool IsConnected() const;
   virtual bool IsConnectedAndIdle() const;
   virtual int GetPeerAddress(net::AddressList* address) const;
+  virtual const net::BoundNetLog& NetLog() const { return net_log_; }
 
   // net::Socket implementation
 
@@ -68,6 +65,8 @@ class TransportSocket : public net::ClientSocket, public sigslot::has_slots<> {
   int read_buffer_len_;
   scoped_refptr<net::IOBuffer> write_buffer_;
   int write_buffer_len_;
+
+  net::BoundNetLog net_log_;
 
   talk_base::AsyncSocket *socket_;
   talk_base::SocketAddress addr_;

@@ -124,9 +124,10 @@ int TCPConnectJob::DoResolveHostComplete(int result) {
 
 int TCPConnectJob::DoTCPConnect() {
   next_state_ = kStateTCPConnectComplete;
-  set_socket(client_socket_factory_->CreateTCPClientSocket(addresses_));
+  set_socket(client_socket_factory_->CreateTCPClientSocket(
+        addresses_, net_log().net_log()));
   connect_start_time_ = base::TimeTicks::Now();
-  return socket()->Connect(&callback_, net_log());
+  return socket()->Connect(&callback_);
 }
 
 int TCPConnectJob::DoTCPConnectComplete(int result) {

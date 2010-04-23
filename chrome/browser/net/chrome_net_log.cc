@@ -12,7 +12,7 @@
 #include "chrome/browser/net/passive_log_collector.h"
 
 ChromeNetLog::ChromeNetLog()
-    : next_id_(0),
+    : next_id_(1),
       passive_collector_(new PassiveLogCollector) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   AddObserver(passive_collector_.get());
@@ -35,7 +35,7 @@ void ChromeNetLog::AddEntry(EventType type,
                     OnAddEntry(type, time, source, phase, extra_parameters));
 }
 
-int ChromeNetLog::NextID() {
+uint32 ChromeNetLog::NextID() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   return next_id_++;
 }
@@ -43,7 +43,7 @@ int ChromeNetLog::NextID() {
 bool ChromeNetLog::HasListener() const {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   // TODO(eroman): Hack to get refactor working.
-  return passive_collector_->url_request_tracker()->IsUnbounded();
+  return passive_collector_->url_request_tracker()->is_unbounded();
 }
 
 void ChromeNetLog::AddObserver(Observer* observer) {

@@ -12,6 +12,7 @@
 #include "base/time.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "net/base/net_log.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class PassiveLogCollector : public ChromeNetLog::Observer {
  public:
@@ -19,7 +20,7 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
   // including an "order" field that identifies when it was captured relative
   // to other events.
   struct Entry {
-    Entry(int order,
+    Entry(uint32 order,
           net::NetLog::EventType type,
           const base::TimeTicks& time,
           net::NetLog::Source source,
@@ -29,7 +30,7 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
           extra_parameters(extra_parameters) {
     }
 
-    int order;
+    uint32 order;
     net::NetLog::EventType type;
     base::TimeTicks time;
     net::NetLog::Source source;
@@ -40,10 +41,29 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
   typedef std::vector<Entry> EntryList;
 
   struct RequestInfo {
-    RequestInfo() : num_entries_truncated(0) {}
-    std::string url;
+    RequestInfo()
+        : source_id(net::NetLog::Source::kInvalidId),
+          num_entries_truncated(0),
+          total_bytes_transmitted(0),
+          total_bytes_received(0),
+          bytes_transmitted(0),
+          bytes_received(0),
+          last_tx_rx_position(0) {}
+    uint32 source_id;
     EntryList entries;
     size_t num_entries_truncated;
+    net::NetLog::Source subordinate_source;
+
+    // Only used in RequestTracker.
+    std::string url;
+
+    // Only used in SocketTracker.
+    uint64 total_bytes_transmitted;
+    uint64 total_bytes_received;
+    uint64 bytes_transmitted;
+    uint64 bytes_received;
+    uint32 last_tx_rx_position;  // The |order| of the last Tx or Rx entry.
+    base::TimeTicks last_tx_rx_time;  // The |time| of the last Tx or Rx entry.
   };
 
   typedef std::vector<RequestInfo> RequestInfoList;
@@ -61,14 +81,12 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     RequestInfoList GetRecentlyDeceased() const;
     void SetUnbounded(bool unbounded);
 
-    bool IsUnbounded() const { return is_unbounded_; }
+    bool is_unbounded() const { return is_unbounded_; }
 
     void Clear();
 
     // Appends all the captured entries to |out|. The ordering is undefined.
     void AppendAllEntries(EntryList* out) const;
-
-    const RequestInfo* GetRequestInfoFromGraveyard(int id) const;
 
    protected:
     enum Action {
@@ -81,12 +99,19 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     // to perform for this map entry on completion.
     virtual Action DoAddEntry(const Entry& entry, RequestInfo* out_info) = 0;
 
-    bool is_unbounded() const { return is_unbounded_; }
+    // Finds a request, either in the live entries or the graveyard and returns
+    // it.
+    RequestInfo* GetRequestInfo(uint32 id);
+
+    // When GetLiveRequests() is called, RequestTrackerBase calls this method
+    // for each entry after adding it to the list which will be returned
+    // to the caller.
+    virtual void OnLiveRequest(RequestInfo* info) const {}
 
    private:
-    typedef base::hash_map<int, RequestInfo> SourceIDToInfoMap;
+    typedef base::hash_map<uint32, RequestInfo> SourceIDToInfoMap;
 
-    void RemoveFromLiveRequests(int source_id);
+    void RemoveFromLiveRequests(uint32 source_id);
     void InsertIntoGraveyard(const RequestInfo& info);
 
     SourceIDToInfoMap live_requests_;
@@ -105,10 +130,32 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
 
     ConnectJobTracker();
 
+    void AppendLogEntries(RequestInfo* out_info, bool unbounded,
+                          uint32 connect_id);
+
    protected:
     virtual Action DoAddEntry(const Entry& entry, RequestInfo* out_info);
    private:
     DISALLOW_COPY_AND_ASSIGN(ConnectJobTracker);
+  };
+
+  // Specialization of RequestTrackerBase for handling Sockets.
+  class SocketTracker : public RequestTrackerBase {
+   public:
+    static const size_t kMaxGraveyardSize;
+
+    SocketTracker();
+
+    void AppendLogEntries(RequestInfo* out_info, bool unbounded,
+                          uint32 socket_id, bool clear);
+
+   protected:
+    virtual Action DoAddEntry(const Entry& entry, RequestInfo* out_info);
+
+   private:
+    void ClearInfo(RequestInfo* info);
+
+    DISALLOW_COPY_AND_ASSIGN(SocketTracker);
   };
 
   // Specialization of RequestTrackerBase for handling URLRequest/SocketStream.
@@ -117,17 +164,22 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     static const size_t kMaxGraveyardSize;
     static const size_t kMaxGraveyardURLSize;
 
-    explicit RequestTracker(ConnectJobTracker* connect_job_tracker);
+    RequestTracker(ConnectJobTracker* connect_job_tracker,
+                   SocketTracker* socket_tracker);
+
+    void IntegrateSubordinateSource(RequestInfo* info,
+                                    bool clear_entries) const;
 
    protected:
     virtual Action DoAddEntry(const Entry& entry, RequestInfo* out_info);
 
-   private:
-    // Searches through |connect_job_tracker_| for information on the
-    // ConnectJob specified in |entry|, and appends it to |live_entry|.
-    void AddConnectJobInfo(const Entry& entry, RequestInfo* live_entry);
+    virtual void OnLiveRequest(RequestInfo* info) const {
+      IntegrateSubordinateSource(info, false);
+    }
 
+   private:
     ConnectJobTracker* connect_job_tracker_;
+    SocketTracker* socket_tracker_;
 
     DISALLOW_COPY_AND_ASSIGN(RequestTracker);
   };
@@ -178,14 +230,18 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
   void GetAllCapturedEvents(EntryList* out) const;
 
  private:
+  FRIEND_TEST(PassiveLogCollectorTest, LostConnectJob);
+  FRIEND_TEST(PassiveLogCollectorTest, LostSocket);
+
   ConnectJobTracker connect_job_tracker_;
+  SocketTracker socket_tracker_;
   RequestTracker url_request_tracker_;
   RequestTracker socket_stream_tracker_;
   InitProxyResolverTracker init_proxy_resolver_tracker_;
 
   // The count of how many events have flowed through this log. Used to set the
   // "order" field on captured events.
-  int num_events_seen_;
+  uint32 num_events_seen_;
 
   DISALLOW_COPY_AND_ASSIGN(PassiveLogCollector);
 };

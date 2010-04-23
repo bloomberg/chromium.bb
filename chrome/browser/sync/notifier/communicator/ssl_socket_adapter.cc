@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,7 +102,7 @@ int SSLSocketAdapter::BeginSSL() {
       net::ClientSocketFactory::GetDefaultFactory()->CreateSSLClientSocket(
           transport_socket_, hostname_.c_str(), ssl_config));
 
-  int result = ssl_socket_->Connect(&connected_callback_, NULL);
+  int result = ssl_socket_->Connect(&connected_callback_);
 
   if (result == net::ERR_IO_PENDING || result == net::OK) {
     return 0;
@@ -238,8 +238,7 @@ TransportSocket::TransportSocket(talk_base::AsyncSocket* socket,
     socket_->SignalConnectEvent.connect(this, &TransportSocket::OnConnectEvent);
 }
 
-int TransportSocket::Connect(net::CompletionCallback* callback,
-                             const net::BoundNetLog& /* net_log */) {
+int TransportSocket::Connect(net::CompletionCallback* callback) {
   connect_callback_ = callback;
   return socket_->Connect(addr_);
 }

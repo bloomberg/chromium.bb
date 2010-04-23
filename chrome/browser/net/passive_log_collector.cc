@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/string_util.h"
+#include "base/format_macros.h"
 #include "chrome/browser/chrome_thread.h"
 
 namespace {
@@ -18,7 +19,7 @@ const size_t kMaxLiveRequests = 200;
 // Sort function on source ID.
 bool OrderBySourceID(const PassiveLogCollector::RequestInfo& a,
                      const PassiveLogCollector::RequestInfo& b) {
-  return a.entries[0].source.id < b.entries[0].source.id;
+  return a.source_id < b.source_id;
 }
 
 void AddEntryToRequestInfo(const PassiveLogCollector::Entry& entry,
@@ -56,6 +57,23 @@ bool SortByOrderComparator(const PassiveLogCollector::Entry& a,
   return a.order < b.order;
 }
 
+void SetSubordinateSource(PassiveLogCollector::RequestInfo* info,
+                          const PassiveLogCollector::Entry& entry) {
+  info->subordinate_source.id = static_cast<net::NetLogIntegerParameter*>(
+      entry.extra_parameters.get())->value();
+  switch (entry.type) {
+    case net::NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID:
+      info->subordinate_source.type = net::NetLog::SOURCE_CONNECT_JOB;
+      break;
+    case net::NetLog::TYPE_SOCKET_POOL_SOCKET_ID:
+      info->subordinate_source.type = net::NetLog::SOURCE_SOCKET;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
 }  // namespace
 
 //----------------------------------------------------------------------------
@@ -63,8 +81,8 @@ bool SortByOrderComparator(const PassiveLogCollector::Entry& a,
 //----------------------------------------------------------------------------
 
 PassiveLogCollector::PassiveLogCollector()
-    : url_request_tracker_(&connect_job_tracker_),
-      socket_stream_tracker_(&connect_job_tracker_),
+    : url_request_tracker_(&connect_job_tracker_, &socket_tracker_),
+      socket_stream_tracker_(&connect_job_tracker_, &socket_tracker_),
       num_events_seen_(0) {
 }
 
@@ -89,6 +107,9 @@ void PassiveLogCollector::OnAddEntry(
       break;
     case net::NetLog::SOURCE_CONNECT_JOB:
       connect_job_tracker_.OnAddEntry(entry);
+      break;
+    case net::NetLog::SOURCE_SOCKET:
+      socket_tracker_.OnAddEntry(entry);
       break;
     case net::NetLog::SOURCE_INIT_PROXY_RESOLVER:
       init_proxy_resolver_tracker_.OnAddEntry(entry);
@@ -134,6 +155,7 @@ PassiveLogCollector::RequestTrackerBase::RequestTrackerBase(
 
 void PassiveLogCollector::RequestTrackerBase::OnAddEntry(const Entry& entry) {
   RequestInfo& info = live_requests_[entry.source.id];
+  info.source_id = entry.source.id;  // In case this is a new entry.
   Action result = DoAddEntry(entry, &info);
 
   switch (result) {
@@ -165,6 +187,11 @@ PassiveLogCollector::RequestTrackerBase::GetLiveRequests() const {
        it != live_requests_.end();
        ++it) {
     list.push_back(it->second);
+    // We pass the copy (made by the list insert), so changes made in
+    // OnLiveRequest are only seen by our caller.
+    OnLiveRequest(&list.back());
+    std::sort(list.back().entries.begin(), list.back().entries.end(),
+              SortByOrderComparator);
   }
 
   std::sort(list.begin(), list.end(), OrderBySourceID);
@@ -190,12 +217,16 @@ PassiveLogCollector::RequestTrackerBase::GetRecentlyDeceased() const {
   return list;
 }
 
-const PassiveLogCollector::RequestInfo*
-PassiveLogCollector::RequestTrackerBase::GetRequestInfoFromGraveyard(
-    int source_id) const {
-  // Scan through the graveyard to find an entry for |source_id|.
+PassiveLogCollector::RequestInfo*
+PassiveLogCollector::RequestTrackerBase::GetRequestInfo(uint32 source_id) {
+  // Look for it in the live requests first.
+  SourceIDToInfoMap::iterator it = live_requests_.find(source_id);
+  if (it != live_requests_.end())
+    return &(it->second);
+
+  // Otherwise, scan through the graveyard to find an entry for |source_id|.
   for (size_t i = 0; i < graveyard_.size(); ++i) {
-    if (graveyard_[i].entries[0].source.id == source_id) {
+    if (graveyard_[i].source_id == source_id) {
       return &graveyard_[i];
     }
   }
@@ -203,7 +234,7 @@ PassiveLogCollector::RequestTrackerBase::GetRequestInfoFromGraveyard(
 }
 
 void PassiveLogCollector::RequestTrackerBase::RemoveFromLiveRequests(
-    int source_id) {
+    uint32 source_id) {
   // Remove from |live_requests_|.
   SourceIDToInfoMap::iterator it = live_requests_.find(source_id);
   // TODO(eroman): Shouldn't have this 'if', is it actually really necessary?
@@ -260,7 +291,7 @@ void PassiveLogCollector::RequestTrackerBase::InsertIntoGraveyard(
 // ConnectJobTracker
 //----------------------------------------------------------------------------
 
-const size_t PassiveLogCollector::ConnectJobTracker::kMaxGraveyardSize = 3;
+const size_t PassiveLogCollector::ConnectJobTracker::kMaxGraveyardSize = 15;
 
 PassiveLogCollector::ConnectJobTracker::ConnectJobTracker()
     : RequestTrackerBase(kMaxGraveyardSize) {
@@ -269,8 +300,11 @@ PassiveLogCollector::ConnectJobTracker::ConnectJobTracker()
 PassiveLogCollector::RequestTrackerBase::Action
 PassiveLogCollector::ConnectJobTracker::DoAddEntry(const Entry& entry,
                                                    RequestInfo* out_info) {
-  // Save the entry (possibly truncating).
   AddEntryToRequestInfo(entry, is_unbounded(), out_info);
+
+  if (entry.type == net::NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID) {
+    SetSubordinateSource(out_info, entry);
+  }
 
   // If this is the end of the connect job, move the request to the graveyard.
   if (entry.type == net::NetLog::TYPE_SOCKET_POOL_CONNECT_JOB &&
@@ -281,6 +315,118 @@ PassiveLogCollector::ConnectJobTracker::DoAddEntry(const Entry& entry,
   return ACTION_NONE;
 }
 
+void PassiveLogCollector::ConnectJobTracker::AppendLogEntries(
+    RequestInfo* out_info, bool unbounded, uint32 connect_id) {
+  RequestInfo* connect_info = GetRequestInfo(connect_id);
+  if (!connect_info) {
+    net::NetLogStringParameter* text = new net::NetLogStringParameter(
+        StringPrintf("Used ConnectJob id=%u", connect_id));
+    Entry new_entry(0, net::NetLog::TYPE_TODO_STRING, base::TimeTicks(),
+                    net::NetLog::Source(net::NetLog::SOURCE_CONNECT_JOB,
+                                        connect_id),
+                    net::NetLog::PHASE_NONE, text);
+    AddEntryToRequestInfo(new_entry, unbounded, out_info);
+    return;
+  }
+
+  AppendToRequestInfo(*connect_info, unbounded, out_info);
+  std::sort(out_info->entries.begin(), out_info->entries.end(),
+            &SortByOrderComparator);
+  out_info->num_entries_truncated += connect_info->num_entries_truncated;
+
+  if (connect_info->subordinate_source.is_valid())
+    AppendLogEntries(out_info, unbounded, connect_info->subordinate_source.id);
+}
+
+//----------------------------------------------------------------------------
+// SocketTracker
+//----------------------------------------------------------------------------
+
+const size_t PassiveLogCollector::SocketTracker::kMaxGraveyardSize = 15;
+
+PassiveLogCollector::SocketTracker::SocketTracker()
+    : RequestTrackerBase(kMaxGraveyardSize) {
+}
+
+PassiveLogCollector::RequestTrackerBase::Action
+PassiveLogCollector::SocketTracker::DoAddEntry(const Entry& entry,
+                                               RequestInfo* out_info) {
+  int int_arg;
+  switch (entry.type) {
+    case net::NetLog::TYPE_SOCKET_BYTES_SENT:
+      int_arg = static_cast<net::NetLogIntegerParameter*>(
+          entry.extra_parameters.get())->value();
+      out_info->total_bytes_transmitted += int_arg;
+      out_info->bytes_transmitted += int_arg;
+      out_info->last_tx_rx_time = entry.time;
+      out_info->last_tx_rx_position = entry.order;
+      break;
+    case net::NetLog::TYPE_SOCKET_BYTES_RECEIVED:
+      int_arg = static_cast<net::NetLogIntegerParameter*>(
+          entry.extra_parameters.get())->value();
+      out_info->total_bytes_received += int_arg;
+      out_info->bytes_received += int_arg;
+      out_info->last_tx_rx_time = entry.time;
+      out_info->last_tx_rx_position = entry.order;
+      break;
+    case net::NetLog::TYPE_TCP_SOCKET_DONE:
+      return ACTION_MOVE_TO_GRAVEYARD;
+    default:
+      AddEntryToRequestInfo(entry, is_unbounded(), out_info);
+      break;
+  }
+  return ACTION_NONE;
+}
+
+void PassiveLogCollector::SocketTracker::AppendLogEntries(
+    RequestInfo* out_info, bool unbounded, uint32 socket_id, bool clear) {
+  RequestInfo* socket_info = GetRequestInfo(socket_id);
+  if (!socket_info) {
+    net::NetLogStringParameter* text = new net::NetLogStringParameter(
+        StringPrintf("Used Socket id=%u.", socket_id));
+    Entry new_entry(0, net::NetLog::TYPE_TODO_STRING, base::TimeTicks(),
+                    net::NetLog::Source(net::NetLog::SOURCE_SOCKET, socket_id),
+                    net::NetLog::PHASE_NONE, text);
+    AddEntryToRequestInfo(new_entry, unbounded, out_info);
+    return;
+  }
+
+  AppendToRequestInfo(*socket_info, unbounded, out_info);
+  out_info->num_entries_truncated += socket_info->num_entries_truncated;
+
+  // Synthesize a log entry for bytes sent and received.
+  if (socket_info->bytes_transmitted > 0 || socket_info->bytes_received > 0) {
+    net::NetLogStringParameter* text = new net::NetLogStringParameter(
+        StringPrintf("Tx/Rx: %"PRIu64"/%"PRIu64" [%"PRIu64"/%"PRIu64
+                     " total on socket] (Bytes)",
+                     socket_info->bytes_transmitted,
+                     socket_info->bytes_received,
+                     socket_info->total_bytes_transmitted,
+                     socket_info->total_bytes_received));
+    Entry new_entry(socket_info->last_tx_rx_position,
+                    net::NetLog::TYPE_TODO_STRING,
+                    socket_info->last_tx_rx_time,
+                    net::NetLog::Source(net::NetLog::SOURCE_SOCKET, socket_id),
+                    net::NetLog::PHASE_NONE,
+                    text);
+    AddEntryToRequestInfo(new_entry, unbounded, out_info);
+  }
+  std::sort(out_info->entries.begin(), out_info->entries.end(),
+            &SortByOrderComparator);
+
+  if (clear)
+    ClearInfo(socket_info);
+}
+
+void PassiveLogCollector::SocketTracker::ClearInfo(RequestInfo* info) {
+  info->entries.clear();
+  info->num_entries_truncated = 0;
+  info->bytes_transmitted = 0;
+  info->bytes_received = 0;
+  info->last_tx_rx_position = 0;
+  info->last_tx_rx_time = base::TimeTicks();
+}
+
 //----------------------------------------------------------------------------
 // RequestTracker
 //----------------------------------------------------------------------------
@@ -289,23 +435,61 @@ const size_t PassiveLogCollector::RequestTracker::kMaxGraveyardSize = 25;
 const size_t PassiveLogCollector::RequestTracker::kMaxGraveyardURLSize = 1000;
 
 PassiveLogCollector::RequestTracker::RequestTracker(
-    ConnectJobTracker* connect_job_tracker)
+    ConnectJobTracker* connect_job_tracker, SocketTracker* socket_tracker)
     : RequestTrackerBase(kMaxGraveyardSize),
-      connect_job_tracker_(connect_job_tracker) {
+      connect_job_tracker_(connect_job_tracker),
+      socket_tracker_(socket_tracker) {
 }
 
 PassiveLogCollector::RequestTrackerBase::Action
 PassiveLogCollector::RequestTracker::DoAddEntry(const Entry& entry,
                                                 RequestInfo* out_info) {
+  // We expect up to three events with IDs.
+  //   - Begin SOCKET_POOL_CONNECT_JOB_ID: Means a ConnectJob was created for
+  //     this request.  Including it for now, but the resulting socket may be
+  //     used for a different request.
+  //   - End SOCKET_POOL_CONNECT_JOB_ID: The named ConnectJob completed and
+  //     this request will be getting the socket from that request.
+  //   - SOCKET_POOL_SOCKET_ID: The given socket will be used for this request.
+  //
+  // The action to take when seeing these events depends on the current
+  // content of the |subordinate_source| field:
+  // |subordinate_source| is invalid (fresh state).
+  //   - Begin SOCKET_POOL_CONNECT_JOB_ID: Set |subordinate_source|.
+  //   - End SOCKET_POOL_CONNECT_JOB_ID: Integrate the named ConnectJob ID.
+  //   - SOCKET_POOL_SOCKET_ID: Set |subordinate_source|.
+  // |subordinate_source| is a ConnectJob:
+  //   - Begin SOCKET_POOL_CONNECT_JOB_ID: Set |subordinate_source|.
+  //   - End SOCKET_POOL_CONNECT_JOB_ID: Integrate the named ConnectJob ID and
+  //     clear the |subordinate_source|.
+  //   - SOCKET_POOL_SOCKET_ID: Set |subordinate_source|. (The request was
+  //     assigned a new idle socket, after starting a ConnectJob.)
+  // |subordinate_source| is a Socket:
+  //   First, integrate the subordinate socket source, then:
+  //   - Begin SOCKET_POOL_CONNECT_JOB_ID: Set |subordinate_source|.
+  //     (Connection restarted with a new ConnectJob.)
+  //   - End SOCKET_POOL_CONNECT_JOB_ID: Integrate the named ConnectJob ID and
+  //     clear the |subordinate_source|. (Connection restarted with a late bound
+  //     ConnectJob.)
+  //   - SOCKET_POOL_SOCKET_ID: Set |subordinate_source|. (Connection
+  //     restarted and got an idle socket.)
+  if (entry.type == net::NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID ||
+      entry.type == net::NetLog::TYPE_SOCKET_POOL_SOCKET_ID) {
 
-  if (entry.type == net::NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID) {
-    // If this was notification that a ConnectJob was bound to the request,
-    // copy all the logged data for that ConnectJob.
-    AddConnectJobInfo(entry, out_info);
-  } else {
-    // Otherwise just append this entry to the request info.
-    AddEntryToRequestInfo(entry, is_unbounded(), out_info);
+    if (out_info->subordinate_source.is_valid() &&
+        out_info->subordinate_source.type == net::NetLog::SOURCE_SOCKET)
+      IntegrateSubordinateSource(out_info, true);
+
+    SetSubordinateSource(out_info, entry);
+
+    if (entry.phase == net::NetLog::PHASE_END &&
+        entry.type == net::NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID) {
+      IntegrateSubordinateSource(out_info, true);
+      out_info->subordinate_source.id = net::NetLog::Source::kInvalidId;
+    }
   }
+
+  AddEntryToRequestInfo(entry, is_unbounded(), out_info);
 
   // If this was the start of a URLRequest/SocketStream, extract the URL.
   // Note: we look at the first *two* entries, since the outer REQUEST_ALIVE
@@ -321,6 +505,7 @@ PassiveLogCollector::RequestTracker::DoAddEntry(const Entry& entry,
   // If the request has ended, move it to the graveyard.
   if (entry.type == net::NetLog::TYPE_REQUEST_ALIVE &&
       entry.phase == net::NetLog::PHASE_END) {
+    IntegrateSubordinateSource(out_info, true);
     if (StartsWithASCII(out_info->url, "chrome://", false)) {
       // Avoid sending "chrome://" requests to the graveyard, since it just
       // adds to clutter.
@@ -332,31 +517,24 @@ PassiveLogCollector::RequestTracker::DoAddEntry(const Entry& entry,
   return ACTION_NONE;
 }
 
-void PassiveLogCollector::RequestTracker::AddConnectJobInfo(
-    const Entry& entry,
-    RequestInfo* live_entry) {
-  // We have just been notified of which ConnectJob the
-  // URLRequest/SocketStream was assigned. Lookup all the data we captured
-  // for the ConnectJob, and append it to the URLRequest/SocketStream's
-  // RequestInfo.
+void PassiveLogCollector::RequestTracker::IntegrateSubordinateSource(
+    RequestInfo* info, bool clear_entries) const {
+  if (!info->subordinate_source.is_valid())
+    return;
 
-  int connect_job_id = static_cast<net::NetLogIntegerParameter*>(
-      entry.extra_parameters.get())->value();
-
-  const RequestInfo* connect_job_info =
-      connect_job_tracker_->GetRequestInfoFromGraveyard(connect_job_id);
-
-  if (connect_job_info) {
-    // Append the ConnectJob information we found.
-    AppendToRequestInfo(*connect_job_info, is_unbounded(), live_entry);
-  } else {
-    // If we couldn't find the information for the ConnectJob, append a
-    // generic message instead.
-    Entry e(entry);
-    e.type = net::NetLog::TYPE_TODO_STRING;
-    e.extra_parameters = new net::NetLogStringParameter(
-        StringPrintf("Used ConnectJob id=%d", connect_job_id));
-    AddEntryToRequestInfo(e, is_unbounded(), live_entry);
+  uint32 subordinate_id = info->subordinate_source.id;
+  switch (info->subordinate_source.type) {
+    case net::NetLog::SOURCE_CONNECT_JOB:
+      connect_job_tracker_->AppendLogEntries(
+          info, connect_job_tracker_->is_unbounded(), subordinate_id);
+      break;
+    case net::NetLog::SOURCE_SOCKET:
+      socket_tracker_->AppendLogEntries(info, socket_tracker_->is_unbounded(),
+                                        subordinate_id, clear_entries);
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
 }
 

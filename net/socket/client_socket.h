@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,8 +28,7 @@ class ClientSocket : public Socket {
   //
   // Connect may also be called again after a call to the Disconnect method.
   //
-  virtual int Connect(CompletionCallback* callback,
-                      const BoundNetLog& net_log) = 0;
+  virtual int Connect(CompletionCallback* callback) = 0;
 
   // Called to disconnect a socket.  Does nothing if the socket is already
   // disconnected.  After calling Disconnect it is possible to call Connect
@@ -51,6 +50,9 @@ class ClientSocket : public Socket {
 
   // Copies the peer address to |address| and returns a network error code.
   virtual int GetPeerAddress(AddressList* address) const = 0;
+
+  // Gets the NetLog for this socket.
+  virtual const BoundNetLog& NetLog() const = 0;
 };
 
 }  // namespace net

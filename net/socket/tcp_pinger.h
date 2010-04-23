@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,8 +86,8 @@ class TCPPinger {
     }
 
     void DoConnect() {
-      sock_.reset(new TCPClientSocket(addr_));
-      int rv = sock_->Connect(&connect_callback_, NULL);
+      sock_.reset(new TCPClientSocket(addr_, NULL));
+      int rv = sock_->Connect(&connect_callback_);
       // Regardless of success or failure, if we're done now,
       // signal the customer.
       if (rv != ERR_IO_PENDING)

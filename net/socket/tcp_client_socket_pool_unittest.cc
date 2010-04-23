@@ -30,7 +30,7 @@ class MockClientSocket : public ClientSocket {
   MockClientSocket() : connected_(false) {}
 
   // ClientSocket methods:
-  virtual int Connect(CompletionCallback* callback, const BoundNetLog& /* net_log */) {
+  virtual int Connect(CompletionCallback* callback) {
     connected_ = true;
     return OK;
   }
@@ -45,6 +45,9 @@ class MockClientSocket : public ClientSocket {
   }
   virtual int GetPeerAddress(AddressList* address) const {
     return ERR_UNEXPECTED;
+  }
+  virtual const BoundNetLog& NetLog() const {
+    return net_log_;
   }
 
   // Socket methods:
@@ -61,6 +64,7 @@ class MockClientSocket : public ClientSocket {
 
  private:
   bool connected_;
+  BoundNetLog net_log_;
 };
 
 class MockFailingClientSocket : public ClientSocket {
@@ -68,7 +72,7 @@ class MockFailingClientSocket : public ClientSocket {
   MockFailingClientSocket() {}
 
   // ClientSocket methods:
-  virtual int Connect(CompletionCallback* callback, const BoundNetLog& /* net_log */) {
+  virtual int Connect(CompletionCallback* callback) {
     return ERR_CONNECTION_FAILED;
   }
 
@@ -83,6 +87,9 @@ class MockFailingClientSocket : public ClientSocket {
   virtual int GetPeerAddress(AddressList* address) const {
     return ERR_UNEXPECTED;
   }
+  virtual const BoundNetLog& NetLog() const {
+    return net_log_;
+  }
 
   // Socket methods:
   virtual int Read(IOBuffer* buf, int buf_len,
@@ -96,6 +103,9 @@ class MockFailingClientSocket : public ClientSocket {
   }
   virtual bool SetReceiveBufferSize(int32 size) { return true; }
   virtual bool SetSendBufferSize(int32 size) { return true; }
+
+ private:
+  BoundNetLog net_log_;
 };
 
 class MockPendingClientSocket : public ClientSocket {
@@ -112,7 +122,7 @@ class MockPendingClientSocket : public ClientSocket {
         is_connected_(false) {}
 
   // ClientSocket methods:
-  virtual int Connect(CompletionCallback* callback, const BoundNetLog& /* net_log */) {
+  virtual int Connect(CompletionCallback* callback) {
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         method_factory_.NewRunnableMethod(
@@ -130,6 +140,9 @@ class MockPendingClientSocket : public ClientSocket {
   }
   virtual int GetPeerAddress(AddressList* address) const{
     return ERR_UNEXPECTED;
+  }
+  virtual const BoundNetLog& NetLog() const {
+    return net_log_;
   }
 
   // Socket methods:
@@ -164,6 +177,7 @@ class MockPendingClientSocket : public ClientSocket {
   bool should_stall_;
   int delay_ms_;
   bool is_connected_;
+  BoundNetLog net_log_;
 };
 
 class MockClientSocketFactory : public ClientSocketFactory {
@@ -183,7 +197,8 @@ class MockClientSocketFactory : public ClientSocketFactory {
       : allocation_count_(0), client_socket_type_(MOCK_CLIENT_SOCKET),
         client_socket_types_(NULL), client_socket_index_(0) {}
 
-  virtual ClientSocket* CreateTCPClientSocket(const AddressList& addresses) {
+  virtual ClientSocket* CreateTCPClientSocket(const AddressList& addresses,
+                                              NetLog* /* net_log */) {
     allocation_count_++;
 
     ClientSocketType type = client_socket_type_;
