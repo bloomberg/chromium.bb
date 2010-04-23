@@ -34,6 +34,14 @@ const CGFloat kBookmarkBarFolderScrollWheelAmount =
     1 * (bookmarks::kBookmarkButtonHeight +
          bookmarks::kBookmarkVerticalPadding);
 
+// Our NSScrollView is supposed to be just barely big enough to fit its
+// contentView.  It is actually a hair too small.
+// This turns on horizontal scrolling which, although slight, is awkward.
+// Make sure our window (and NSScrollView) are wider than its documentView
+// by at least this much.
+const CGFloat kScrollViewContentWidthMargin = 2;
+
+
 // When constraining a scrolling bookmark bar folder window to the
 // screen, shrink the "constrain" by this much vertically.  Currently
 // this is 0.0 to avoid a problem with tracking areas leaving the
@@ -292,7 +300,7 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   // Finally, set our window size (make sure it fits on screen).
   NSRect windowFrame = NSMakeRect(newWindowTopLeft.x,
                                   newWindowTopLeft.y - height,
-                                  width,
+                                  width + kScrollViewContentWidthMargin,
                                   height);
 
   // Make the window fit on screen, with a distance of at least |padding| from
@@ -310,7 +318,8 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
 
   // Make the scrolled content be the right size (full size).
   NSRect mainViewFrame = NSMakeRect(0, 0,
-                                    NSWidth(windowFrame),
+                                    NSWidth(windowFrame) -
+                                        kScrollViewContentWidthMargin,
                                     NSHeight(windowFrame));
   [mainView_ setFrame:mainViewFrame];
 
