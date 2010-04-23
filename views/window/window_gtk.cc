@@ -120,7 +120,7 @@ void WindowGtk::SetBounds(const gfx::Rect& bounds,
 }
 
 void WindowGtk::Show() {
-  gtk_widget_show_all(GetNativeView());
+  gtk_widget_show(GetNativeView());
 }
 
 void WindowGtk::HideWindow() {

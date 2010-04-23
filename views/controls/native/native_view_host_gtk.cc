@@ -273,6 +273,7 @@ void NativeViewHostGtk::CreateFixed(bool needs_window) {
   DestroyFixed();
 
   fixed_ = gtk_fixed_new();
+  gtk_widget_set_name(fixed_, "views-native-view-host-fixed");
   gtk_fixed_set_has_window(GTK_FIXED(fixed_), needs_window);
   // Defeat refcounting. We need to own the fixed.
   gtk_widget_ref(fixed_);
