@@ -24,3 +24,18 @@ BUGEVAN : svg/clip-path/clip-path-child-clipped.svg = PASS FAIL
 // Enabling EventSource in chromium before landing updated expectations.
 // Remove this after rolling http://trac.webkit.org/changeset/58099.
 BUG42319 : fast/dom/prototype-inheritance.html = FAIL
+
+// Resulting from Skia r526. Adding these here while the bots chew on them to
+// generate new baselines. The only differences should be off-by-one on
+// colours.
+BUGAGL : css2.1/t0803-c5505-mrgn-00-b-ag.html = IMAGE
+BUGAGL : css2.1/t0804-c5509-padn-l-03-f-g.html = IMAGE
+BUGAGL : fast/canvas/canvas-empty-image-pattern.html = IMAGE
+BUGAGL : fast/dom/Window/btoa-pnglet.html = IMAGE
+BUGAGL : fast/replaced/image-solid-color-with-alpha.html = IMAGE
+BUGAGL : tables/mozilla/bugs/bug10565.html = IMAGE
+BUGAGL : tables/mozilla/bugs/bug10633.html = IMAGE
+BUGAGL : tables/mozilla/bugs/bug14323.html = IMAGE
+BUGAGL : tables/mozilla/bugs/bug16012.html = IMAGE
+BUGAGL : tables/mozilla/bugs/bug4427.html = IMAGE
+BUGAGL : tables/mozilla/bugs/bug4803.html = IMAGE
