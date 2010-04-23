@@ -110,6 +110,10 @@ int main(int argc, char* argv[]) {
   bool enable_gp_fault_error_box = false;
   enable_gp_fault_error_box =
       parsed_command_line.HasSwitch(test_shell::kGPFaultErrorBox);
+  
+  bool allow_external_pages = 
+      parsed_command_line.HasSwitch(test_shell::kAllowExternalPages);
+  
   TestShell::InitLogging(suppress_error_dialogs,
                          layout_test_mode,
                          enable_gp_fault_error_box);
@@ -175,7 +179,7 @@ int main(int argc, char* argv[]) {
 
   platform.InitializeGUI();
 
-  TestShell::InitializeTestShell(layout_test_mode);
+  TestShell::InitializeTestShell(layout_test_mode, allow_external_pages);
 
   if (parsed_command_line.HasSwitch(test_shell::kAllowScriptsToCloseWindows))
     TestShell::SetAllowScriptsToCloseWindows();

@@ -195,13 +195,15 @@ void TestShell::PlatformShutdown() {
 }
 
 // static
-void TestShell::InitializeTestShell(bool layout_test_mode) {
+void TestShell::InitializeTestShell(bool layout_test_mode, 
+                                    bool allow_external_pages) {
   // This should move to a per-process platform-specific initialization function
   // when one exists.
 
   window_list_ = new WindowList;
   layout_test_mode_ = layout_test_mode;
-
+  allow_external_pages_ = allow_external_pages;
+  
   web_prefs_ = new WebPreferences;
 
   // mmap the data pack which holds strings used by WebCore. This is only

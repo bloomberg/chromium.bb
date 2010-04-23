@@ -962,7 +962,8 @@ void TestWebViewDelegate::willSendRequest(
        host != "127.0.0.1" &&
        host != "255.255.255.255" &&  // Used in some tests that expect to get
                                      // back an error.
-       host != "localhost") {
+       host != "localhost" &&
+      !TestShell::allow_external_pages()) {
     printf("Blocked access to external URL %s\n", request_url.c_str());
 
     // To block the request, we set its URL to an empty one.

@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
 
   // Initialize test shell in layout test mode, which will let us load one
   // request than automatically quit.
-  TestShell::InitializeTestShell(true);
+  TestShell::InitializeTestShell(true, false);
 
   // Allocate a message loop for this thread.  Although it is not used
   // directly, its constructor sets up some necessary state.

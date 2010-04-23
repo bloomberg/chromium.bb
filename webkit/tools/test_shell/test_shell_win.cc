@@ -150,7 +150,8 @@ HINSTANCE TestShell::instance_handle_;
 /////////////////////////////////////////////////////////////////////////////
 // static methods on TestShell
 
-void TestShell::InitializeTestShell(bool layout_test_mode) {
+void TestShell::InitializeTestShell(bool layout_test_mode,
+                                    bool allow_external_pages) {
   // Start COM stuff.
   HRESULT res = OleInitialize(NULL);
   DCHECK(SUCCEEDED(res));
@@ -158,6 +159,7 @@ void TestShell::InitializeTestShell(bool layout_test_mode) {
   window_list_ = new WindowList;
   instance_handle_ = ::GetModuleHandle(NULL);
   layout_test_mode_ = layout_test_mode;
+  allow_external_pages_ = allow_external_pages;
 
   web_prefs_ = new WebPreferences;
 

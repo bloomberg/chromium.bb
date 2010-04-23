@@ -154,9 +154,11 @@ GtkWidget* CreateMenuBar(TestShell* shell) {
 }  // namespace
 
 // static
-void TestShell::InitializeTestShell(bool layout_test_mode) {
+void TestShell::InitializeTestShell(bool layout_test_mode,
+                                    bool allow_external_pages) {
   window_list_ = new WindowList;
   layout_test_mode_ = layout_test_mode;
+  allow_external_pages_ = allow_external_pages;
 
   web_prefs_ = new WebPreferences;
 

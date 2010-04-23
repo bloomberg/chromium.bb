@@ -92,10 +92,12 @@ public:
     static void CleanupLogging();
 
     // Initialization and clean up of a static member variable.
-    static void InitializeTestShell(bool layout_test_mode);
+    static void InitializeTestShell(bool layout_test_mode, 
+                                    bool allow_external_pages);
     static void ShutdownTestShell();
 
     static bool layout_test_mode() { return layout_test_mode_; }
+    static bool allow_external_pages() { return allow_external_pages_; }
 
     // Called from the destructor to let each platform do any necessary
     // cleanup.
@@ -382,6 +384,11 @@ private:
 
     // True when the app is being run using the --layout-tests switch.
     static bool layout_test_mode_;
+  
+    // True when we wish to allow test shell to load external pages like
+    // www.google.com even when in --layout-test mode (used for QA to 
+    // produce images of the rendered page)
+    static bool allow_external_pages_;
 
     // Default timeout in ms for file page loads when in layout test mode.
     static int file_test_timeout_ms_;

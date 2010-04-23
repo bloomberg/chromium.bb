@@ -241,7 +241,7 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
   SimpleAppCacheSystem appcache_system_;
   SimpleDatabaseSystem database_system_;
   SimpleWebCookieJarImpl cookie_jar_;
-
+  
 #if defined(OS_WIN)
   WebKit::WebThemeEngine* active_theme_engine_;
 #endif
