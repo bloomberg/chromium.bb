@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/scoped_ptr.h"
 #include "chrome/browser/views/keyword_editor_view.h"
 #include "gfx/size.h"
 #include "views/controls/button/native_button.h"
@@ -42,7 +41,7 @@ class SearchEngineChoice : public views::NativeButton {
 
   // These methods return data about the logo or text view associated
   // with this search engine choice.
-  views::View* GetView() { return choice_view_.get(); }
+  views::View* GetView() { return choice_view_; }
   int GetChoiceViewWidth();
   int GetChoiceViewHeight();
 
@@ -54,8 +53,9 @@ class SearchEngineChoice : public views::NativeButton {
   const TemplateURL* GetSearchEngine() { return search_engine_; }
 
  private:
-  // Either an ImageView of a logo, or a Label with text.
-  scoped_ptr<views::View> choice_view_;
+  // Either an ImageView of a logo, or a Label with text.  Owned by
+  // FirstRunSearchEngineView.
+  views::View* choice_view_;
 
   // True if choice_view_ is holding an ImageView.
   bool is_image_label_;

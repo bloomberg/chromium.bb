@@ -120,7 +120,7 @@ SearchEngineChoice::SearchEngineChoice(views::ButtonListener* listener,
       logo_image->SetImageSize(gfx::Size(kSmallLogoWidth, kSmallLogoHeight));
     // Tooltip text provides accessibility.
     logo_image->SetTooltipText(search_engine_->short_name());
-    choice_view_.reset(logo_image);
+    choice_view_ = logo_image;
   } else {
     // No logo -- we must show a text label.
     views::Label* logo_label = new views::Label(search_engine_->short_name());
@@ -128,7 +128,7 @@ SearchEngineChoice::SearchEngineChoice(views::ButtonListener* listener,
     logo_label->SetFont(logo_label->font().DeriveFont(2, gfx::Font::NORMAL));
     logo_label->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
     logo_label->SetTooltipText(search_engine_->short_name());
-    choice_view_.reset(logo_label);
+    choice_view_ = logo_label;
   }
 }
 
