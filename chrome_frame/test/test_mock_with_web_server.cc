@@ -393,6 +393,7 @@ const wchar_t kWindowOpenPopupUrl[] =
 TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_WindowOpenInChrome) {
   CloseIeAtEndOfScope last_resort_close_ie;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  ComStackObjectWithUninitialize<MockWebBrowserEventSink> new_window_mock;
   chrome_frame_test::TimedMsgLoop loop;
 
   mock.ExpectNavigationAndSwitch(kWindowOpenUrl);
@@ -402,7 +403,6 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_WindowOpenInChrome) {
     .WillOnce(DelaySendChar(&loop, 500, 'A', simulate_input::NONE));
 
   // Watch for new window
-  ComStackObjectWithUninitialize<MockWebBrowserEventSink> new_window_mock;
   mock.ExpectNewWindow(&new_window_mock);
 
   EXPECT_CALL(new_window_mock, OnLoad(testing::StrCaseEq(kWindowOpenPopupUrl)))
@@ -574,6 +574,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_AboutChromeFrame) {
   CloseIeAtEndOfScope last_resort_close_ie;
 
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  ComStackObjectWithUninitialize<MockWebBrowserEventSink> new_window_mock;
   chrome_frame_test::TimedMsgLoop loop;
 
   mock.ExpectNavigationAndSwitch(kSubFrameUrl1);
@@ -584,7 +585,6 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_AboutChromeFrame) {
           SendExtendedKeysEnter(&loop, 500, VK_UP, 1, simulate_input::NONE)));
 
   // Watch for new window
-  ComStackObjectWithUninitialize<MockWebBrowserEventSink> new_window_mock;
   mock.ExpectNewWindow(&new_window_mock);
 
   EXPECT_CALL(new_window_mock, OnLoad(testing::StrCaseEq(kAboutVersion)))
@@ -802,6 +802,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
 TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_ViewSource) {
   CloseIeAtEndOfScope last_resort_close_ie;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  ComStackObjectWithUninitialize<MockWebBrowserEventSink> view_source_mock;
   chrome_frame_test::TimedMsgLoop loop;
   ::testing::InSequence sequence;   // Everything in sequence
 
@@ -824,7 +825,6 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_ViewSource) {
   std::wstring url_in_new_window = kChromeProtocolPrefix;
   url_in_new_window += view_source_url;
 
-  ComStackObjectWithUninitialize<MockWebBrowserEventSink> view_source_mock;
   mock.ExpectNewWindow(&view_source_mock);
   EXPECT_CALL(view_source_mock, OnLoad(testing::StrCaseEq(view_source_url)))
       .WillOnce(testing::DoAll(
@@ -1011,6 +1011,7 @@ TEST_F(ChromeFrameTestWithWebServer,
        FLAKY_FullTabModeIE_ContextMenuViewSource) {
   CloseIeAtEndOfScope last_resort_close_ie;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  ComStackObjectWithUninitialize<MockWebBrowserEventSink> view_source_mock;
   chrome_frame_test::TimedMsgLoop loop;
   ::testing::InSequence sequence;   // Everything in sequence
 
@@ -1030,7 +1031,6 @@ TEST_F(ChromeFrameTestWithWebServer,
   std::wstring url_in_new_window = kChromeProtocolPrefix;
   url_in_new_window += view_source_url;
 
-  ComStackObjectWithUninitialize<MockWebBrowserEventSink> view_source_mock;
   mock.ExpectNewWindow(&view_source_mock);
   EXPECT_CALL(view_source_mock, OnLoad(testing::StrCaseEq(view_source_url)))
       .WillOnce(testing::DoAll(
