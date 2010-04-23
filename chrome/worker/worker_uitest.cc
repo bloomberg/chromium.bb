@@ -229,6 +229,11 @@ TEST_F(WorkerTest, WorkerContextGc) {
   RunWorkerFastLayoutTest("worker-context-gc.html");
 }
 
+// All kinds of crashes on Linux http://crbug.com/22898	
+#if defined(OS_LINUX)	
+#define WorkerContextMultiPort DISABLED_WorkerContextMultiPort	
+#endif
+
 TEST_F(WorkerTest, WorkerContextMultiPort) {
   RunWorkerFastLayoutTest("worker-context-multi-port.html");
 }
