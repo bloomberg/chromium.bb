@@ -99,7 +99,7 @@ Page.prototype.getBrowseResultDOM = function() {
   node.appendChild(time);
   node.appendChild(this.getTitleDOM_());
   return node;
-}
+};
 
 /**
  * @return {DOMObject} Gets the DOM representation of the page for
@@ -115,23 +115,45 @@ Page.prototype.getSearchResultDOM = function() {
   titleCell.valign = 'top';
   titleCell.appendChild(this.getTitleDOM_());
   var snippet = createElementWithClassName('div', 'snippet');
-  snippet.appendChild(document.createTextNode(this.snippet_));
-  this.highlightNodeContent_(snippet);
+  this.addHighlightedText_(snippet,
+                           this.snippet_,
+                           this.model_.getSearchText());
   titleCell.appendChild(snippet);
   row.appendChild(titleCell);
 
   return row;
-}
+};
 
 // Page, private: -------------------------------------------------------------
 /**
- * Highlights the content of a node with the current search text.
- * @param {DOMObject} node to highlight
+ * Add child text nodes to a node such that occurrences of the spcified text is
+ * highligted.
+ * @param {Node} node The node under which new text nodes will be made as
+ *     children.
+ * @param {string} content Text to be added beneath |node| as one or more
+ *     text nodes.
+ * @param {string} highlightText Occurences of this text inside |content| will
+ *     be highlighted.
  */
-Page.prototype.highlightNodeContent_ = function(node) {
-  node.innerHTML = Page.getHighlightedText_(node.innerHTML,
-                                            this.model_.getSearchText());
-}
+Page.prototype.addHighlightedText_ = function(node, content, highlightText) {
+  var i = 0;
+  if (highlightText) {
+    var re = new RegExp(Page.pregQuote_(highlightText), 'gim');
+    var match;
+    while (match = re.exec(content)) {
+      if (match.index > i)
+        node.appendChild(document.createTextNode(content.slice(i,
+                                                               match.index)));
+      i = re.lastIndex;
+      // Mark the highlighted text in bold.
+      var b = document.createElement('b');
+      b.textContent = content.substring(match.index, i);
+      node.appendChild(b);
+    }
+  }
+  if (i < content.length)
+    node.appendChild(document.createTextNode(content.slice(i)));
+};
 
 /**
  * @return {DOMObject} DOM representation for the title block.
@@ -143,9 +165,8 @@ Page.prototype.getTitleDOM_ = function() {
   link.href = this.url_;
   link.style.backgroundImage =
       'url(chrome://favicon/' + encodeURIForCSS(this.url_) + ')';
-  link.appendChild(document.createTextNode(this.title_));
   link.id = "id-" + this.id_;
-  this.highlightNodeContent_(link);
+  this.addHighlightedText_(link, this.title_, this.model_.getSearchText());
 
   node.appendChild(link);
 
@@ -155,21 +176,9 @@ Page.prototype.getTitleDOM_ = function() {
   }
 
   return node;
-}
+};
 
 // Page, private, static: -----------------------------------------------------
-/**
- * Case-insensitively highlights a string.
- * @param {string} str The source string
- * @param {string} opt_highlight The string to highlight with
- * @return {string} The highlighted string
- */
-Page.getHighlightedText_ = function(str, opt_highlight ) {
-  if (!opt_highlight) return str;
-
-  var r = new RegExp(Page.pregQuote_(opt_highlight), 'gim');
-  return str.replace(r, "<b>\$&</b>");
-}
 
 /**
  * Quote a string so it can be used in a regular expression.
@@ -178,7 +187,7 @@ Page.getHighlightedText_ = function(str, opt_highlight ) {
  */
 Page.pregQuote_ = function(str) {
   return str.replace(/([\\\.\+\*\?\[\^\]\$\(\)\{\}\=\!\<\>\|\:])/g, "\\$1");
-}
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // HistoryModel:
@@ -205,7 +214,7 @@ function HistoryModel() {
  */
 HistoryModel.prototype.setView = function(view) {
   this.view_ = view;
-}
+};
 
 /**
  * Start a new search - this will clear out our model.
@@ -218,7 +227,7 @@ HistoryModel.prototype.setSearchText = function(searchText, opt_page) {
   this.searchText_ = searchText;
   this.requestedPage_ = opt_page ? opt_page : 0;
   this.getSearchResults_();
-}
+};
 
 /**
  * Reload our model with the current parameters.
@@ -230,14 +239,14 @@ HistoryModel.prototype.reload = function() {
   this.searchText_ = search;
   this.requestedPage_ = page;
   this.getSearchResults_();
-}
+};
 
 /**
  * @return {String} The current search text.
  */
 HistoryModel.prototype.getSearchText = function() {
   return this.searchText_;
-}
+};
 
 /**
  * Tell the model that the view will want to see the current page. When
@@ -248,7 +257,7 @@ HistoryModel.prototype.requestPage = function(page) {
   this.requestedPage_ = page;
   this.changed = true;
   this.updateSearch_(false);
-}
+};
 
 /**
  * Receiver for history query.
@@ -292,14 +301,14 @@ HistoryModel.prototype.addResults = function(info, results) {
   }
 
   this.updateSearch_(info.finished);
-}
+};
 
 /**
  * @return {Number} The number of pages in the model.
  */
 HistoryModel.prototype.getSize = function() {
   return this.pages_.length;
-}
+};
 
 /**
  * @return {boolean} Whether our history query has covered all of
@@ -307,7 +316,7 @@ HistoryModel.prototype.getSize = function() {
  */
 HistoryModel.prototype.isComplete = function() {
   return this.complete_;
-}
+};
 
 /**
  * Get a list of pages between specified index positions.
@@ -321,7 +330,7 @@ HistoryModel.prototype.getNumberedRange = function(start, end) {
 
   var end = end > this.getSize() ? this.getSize() : end;
   return this.pages_.slice(start, end);
-}
+};
 
 /**
  * @return {boolean} Whether we are in edit mode where history items can be
@@ -329,14 +338,14 @@ HistoryModel.prototype.getNumberedRange = function(start, end) {
  */
 HistoryModel.prototype.getEditMode = function() {
   return this.editMode_;
-}
+};
 
 /**
  * @param {boolean} edit_mode Control whether we are in edit mode.
  */
 HistoryModel.prototype.setEditMode = function(edit_mode) {
   this.editMode_ = edit_mode;
-}
+};
 
 // HistoryModel, Private: -----------------------------------------------------
 HistoryModel.prototype.clearModel_ = function() {
@@ -359,7 +368,7 @@ HistoryModel.prototype.clearModel_ = function() {
   if (this.view_) {
     this.view_.clear_();
   }
-}
+};
 
 /**
  * Figure out if we need to do more searches to fill the currently requested
@@ -386,7 +395,7 @@ HistoryModel.prototype.updateSearch_ = function(finished) {
       this.changed = false;
     }
   }
-}
+};
 
 /**
  * Get search results for a selected depth. Our history system is optimized
@@ -410,7 +419,7 @@ HistoryModel.prototype.getSearchResults_ = function(depth) {
   }
 
   this.inFlight_ = true;
-}
+};
 
 /**
  * Check to see if we have data for a given page.
@@ -419,7 +428,7 @@ HistoryModel.prototype.getSearchResults_ = function(depth) {
  */
 HistoryModel.prototype.haveDataForPage_ = function(page) {
   return (page * RESULTS_PER_PAGE < this.getSize());
-}
+};
 
 /**
  * Check to see if we have data to fill a page.
@@ -428,7 +437,7 @@ HistoryModel.prototype.haveDataForPage_ = function(page) {
  */
 HistoryModel.prototype.canFillPage_ = function(page) {
   return ((page + 1) * RESULTS_PER_PAGE <= this.getSize());
-}
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // HistoryView:
@@ -440,7 +449,7 @@ HistoryModel.prototype.canFillPage_ = function(page) {
  */
 function HistoryView(model) {
   this.summaryTd_ = $('results-summary');
-  this.summaryTd_.innerHTML = localStrings.getString('loading');
+  this.summaryTd_.textContent = localStrings.getString('loading');
   this.editButtonTd_ = $('edit-button');
   this.editingControlsDiv_ = $('editing-controls');
   this.resultDiv_ = $('results-display');
@@ -480,7 +489,7 @@ HistoryView.prototype.setSearch = function(term, opt_page) {
   }
   this.updateEditControls_();
   pageState.setUIState(this.model_.getEditMode(), term, this.pageIndex_);
-}
+};
 
 /**
  * Controls edit mode where history can be deleted.
@@ -490,7 +499,7 @@ HistoryView.prototype.setEditMode = function(edit_mode) {
   this.model_.setEditMode(edit_mode);
   pageState.setUIState(this.model_.getEditMode(), this.model_.getSearchText(),
                        this.pageIndex_);
-}
+};
 
 /**
  * Toggles the edit mode and triggers UI update.
@@ -499,14 +508,14 @@ HistoryView.prototype.toggleEditMode = function() {
   var editMode = !this.model_.getEditMode();
   this.setEditMode(editMode);
   this.updateEditControls_();
-}
+};
 
 /**
  * Reload the current view.
  */
 HistoryView.prototype.reload = function() {
   this.model_.reload();
-}
+};
 
 /**
  * Switch to a specified page.
@@ -519,14 +528,14 @@ HistoryView.prototype.setPage = function(page) {
   this.model_.requestPage(page);
   pageState.setUIState(this.model_.getEditMode(), this.model_.getSearchText(),
       this.pageIndex_);
-}
+};
 
 /**
  * @return {number} The page number being viewed.
  */
 HistoryView.prototype.getPage = function() {
   return this.pageIndex_;
-}
+};
 
 /**
  * Callback for the history model to let it know that it has data ready for us
@@ -534,7 +543,7 @@ HistoryView.prototype.getPage = function() {
  */
 HistoryView.prototype.onModelReady = function() {
   this.displayResults_();
-}
+};
 
 // HistoryView, private: ------------------------------------------------------
 /**
@@ -542,18 +551,19 @@ HistoryView.prototype.onModelReady = function() {
  * to clear them out when we switch to a new page or reload.
  */
 HistoryView.prototype.clear_ = function() {
-  this.resultDiv_.innerHTML = '';
+  this.resultDiv_.textContent = '';
+
   var pages = this.currentPages_;
   for (var i = 0; i < pages.length; i++) {
     pages[i].isRendered = false;
   }
   this.currentPages_ = [];
-}
+};
 
 HistoryView.prototype.setPageRendered_ = function(page) {
   page.isRendered = true;
   this.currentPages_.push(page);
-}
+};
 
 /**
  * Update the page with results.
@@ -609,7 +619,7 @@ HistoryView.prototype.displayResults_ = function() {
   this.displaySummaryBar_();
   this.displayNavBar_();
   this.updateEntryAnchorWidth_();
-}
+};
 
 /**
  * Update the summary bar with descriptive text.
@@ -620,9 +630,9 @@ HistoryView.prototype.displaySummaryBar_ = function() {
     this.summaryTd_.textContent = localStrings.getStringF('searchresultsfor',
         searchText);
   } else {
-    this.summaryTd_.innerHTML = localStrings.getString('history');
+    this.summaryTd_.textContent = localStrings.getString('history');
   }
-}
+};
 
 /**
  * Update the widgets related to edit mode.
@@ -686,38 +696,45 @@ HistoryView.prototype.updateRemoveButton_ = function(e) {
  * Update the pagination tools.
  */
 HistoryView.prototype.displayNavBar_ = function() {
-  var navOutput = '';
+  this.pageDiv_.textContent = '';
+
   if (this.pageIndex_ > 0) {
-    navOutput += this.createPageNavHTML_(0, localStrings.getString('newest'));
-    navOutput += this.createPageNavHTML_(this.pageIndex_ - 1,
-                                         localStrings.getString('newer'));
+    this.pageDiv_.appendChild(
+        this.createPageNav_(0, localStrings.getString('newest')));
+    this.pageDiv_.appendChild(
+        this.createPageNav_(this.pageIndex_ - 1,
+                            localStrings.getString('newer')));
   }
 
   // TODO(feldstein): this causes the navbar to not show up when your first
   // page has the exact amount of results as RESULTS_PER_PAGE.
   if (this.model_.getSize() > (this.pageIndex_ + 1) * RESULTS_PER_PAGE) {
-    navOutput += this.createPageNavHTML_(this.pageIndex_ + 1,
-                                         localStrings.getString('older'));
+    this.pageDiv_.appendChild(
+        this.createPageNav_(this.pageIndex_ + 1,
+                            localStrings.getString('older')));
   }
-  this.pageDiv_.innerHTML = navOutput;
-}
+};
 
 /**
- * Get the HTML representation of a page navigation link.
+ * Make a DOM object representation of a page navigation link.
  * @param {number} page The page index the navigation element should link to
  * @param {string} name The text content of the link
- * @return {string} HTML representation of the pagination link
+ * @return {HTMLAnchorElement} the pagination link
  */
-HistoryView.prototype.createPageNavHTML_ = function(page, name) {
+HistoryView.prototype.createPageNav_ = function(page, name) {
+  anchor = document.createElement('a');
+  anchor.className = 'page-navigation';
+  anchor.textContent = name;
   var hashString = PageState.getHashString(this.model_.getEditMode(),
                                            this.model_.getSearchText(), page);
-  return '<a href="chrome://history/' +
-              (hashString ? '#' + hashString : '') +
-              '"' +
-            'class="page-navigation"' +
-            'onclick="setPage(' + page + '); return false;"' +
-            '>' + name + '</a>';
-}
+  var link = 'chrome://history/' + (hashString ? '#' + hashString : '');
+  anchor.href = link;
+  anchor.onclick = function() {
+    setPage(page);
+    return false;
+  };
+  return anchor;
+};
 
 /**
  * Updates the CSS rule for the entry anchor.
@@ -809,7 +826,7 @@ PageState.prototype.getHashData = function() {
   }
 
   return result;
-}
+};
 
 /**
  * Set the hash to a specified state, this will create an entry in the
@@ -826,7 +843,7 @@ PageState.prototype.setUIState = function(editMode, term, page) {
       currentHash.p != page) {
     window.location.hash = PageState.getHashString(editMode, term, page);
   }
-}
+};
 
 /**
  * Static method to get the hash string for a specified state
@@ -847,7 +864,7 @@ PageState.getHashString = function(editMode, term, page) {
   }
 
   return newHash.join('&');
-}
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // Document Functions:
