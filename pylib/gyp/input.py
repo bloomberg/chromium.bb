@@ -317,11 +317,14 @@ def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
   # If depth is set, predefine the DEPTH variable to be a relative path from
   # this build file's directory to the directory identified by depth.
   if depth:
+    # TODO(dglazkov) The backslash/forward-slash replacement at the end is a
+    # temporary measure. This should really be addressed by keeping all paths
+    # in POSIX until actual project generation.
     d = gyp.common.RelativePath(depth, os.path.dirname(build_file_path))
     if d == '':
       variables['DEPTH'] = '.'
     else:
-      variables['DEPTH'] = d
+      variables['DEPTH'] = d.replace('\\', '/')
 
   # If the generator needs absolue paths, then do so.
   if absolute_build_file_paths:
