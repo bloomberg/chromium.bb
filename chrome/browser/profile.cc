@@ -7,6 +7,7 @@
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #include "base/command_line.h"
+#include "base/env_var.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -729,21 +730,44 @@ void ProfileImpl::InitExtensions() {
       GetPath().AppendASCII(ExtensionsService::kInstallDirectoryName),
       true);
 
-  // Register the bookmark manager extension.
+  // Register the component extensions.
+  std::map<std::string, int> component_extensions;
+
+  // Bookmark manager.
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableTabbedBookmarkManager)) {
-    FilePath bookmark_manager_path;
-    if (PathService::Get(chrome::DIR_BOOKMARK_MANAGER,
-                         &bookmark_manager_path)) {
-      std::string manifest =
-          ResourceBundle::GetSharedInstance().GetRawDataResource(
-              IDR_BOOKMARKS_MANIFEST).as_string();
-      extensions_service_->register_component_extension(
-          ExtensionsService::ComponentExtensionInfo(manifest,
-                                                    bookmark_manager_path));
+    component_extensions["bookmark_manager"] = IDR_BOOKMARKS_MANIFEST;
+  }
+
+  // Some sample apps to make our lives easier while we are developing extension
+  // apps. This way we don't have to constantly install these over and over.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExtensionApps)) {
+#if defined(OS_WIN)
+    std::string user_domain;
+    if (base::EnvVarGetter::Create()->GetEnv("USERDOMAIN", &user_domain) &&
+        user_domain == "GOOGLE") {
+      component_extensions["gmail_app"] = IDR_GMAIL_APP_MANIFEST;
+      component_extensions["calendar_app"] = IDR_CALENDAR_APP_MANIFEST;
+      component_extensions["docs_app"] = IDR_DOCS_APP_MANIFEST;
+    }
+#endif
+  }
+
+  for (std::map<std::string, int>::iterator iter = component_extensions.begin();
+       iter != component_extensions.end(); ++iter) {
+    FilePath path;
+    if (PathService::Get(chrome::DIR_RESOURCES, &path)) {
+      path = path.AppendASCII(iter->first);
     } else {
       NOTREACHED();
     }
+
+    std::string manifest =
+        ResourceBundle::GetSharedInstance().GetRawDataResource(
+            iter->second).as_string();
+    extensions_service_->register_component_extension(
+        ExtensionsService::ComponentExtensionInfo(manifest, path));
   }
 
   extensions_service_->Init();

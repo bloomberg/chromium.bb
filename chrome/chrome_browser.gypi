@@ -3251,6 +3251,36 @@
             'browser/resources/bookmark_manager/images/folder_open_rtl.png',
           ]
         },
+        {
+          'destination': '<(PRODUCT_DIR)/resources/gmail_app',
+          'files': [
+            'browser/resources/gmail_app/manifest.json',
+            'browser/resources/gmail_app/128.png',
+            'browser/resources/gmail_app/48.png',
+            'browser/resources/gmail_app/32.png',
+            'browser/resources/gmail_app/24.png',
+          ]
+        },
+        {
+          'destination': '<(PRODUCT_DIR)/resources/calendar_app',
+          'files': [
+            'browser/resources/calendar_app/manifest.json',
+            'browser/resources/calendar_app/128.png',
+            'browser/resources/calendar_app/48.png',
+            'browser/resources/calendar_app/32.png',
+            'browser/resources/calendar_app/24.png',
+          ]
+        },
+        {
+          'destination': '<(PRODUCT_DIR)/resources/docs_app',
+          'files': [
+            'browser/resources/docs_app/manifest.json',
+            'browser/resources/docs_app/128.png',
+            'browser/resources/docs_app/48.png',
+            'browser/resources/docs_app/32.png',
+            'browser/resources/docs_app/24.png',
+          ]
+        },
       ]
     },
     {

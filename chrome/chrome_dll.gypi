@@ -393,6 +393,9 @@
                   'files': [
                     '<(PRODUCT_DIR)/resources/inspector/',
                     '<(PRODUCT_DIR)/resources/bookmark_manager/',
+                    '<(PRODUCT_DIR)/resources/gmail_app/',
+                    '<(PRODUCT_DIR)/resources/calendar_app/',
+                    '<(PRODUCT_DIR)/resources/docs_app/',
                     '<(PRODUCT_DIR)/resources/net_internals/'
                   ],
                   'conditions': [

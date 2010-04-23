@@ -1,0 +1,21 @@
+{
+   "key": "XX2fMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCfjDZDDE/CHFEYjpPSDjdI3zphzGo7fSxO3+/pQs++FwvA+OpKKhmBga2Sa+f53ujDlPR8Q6mCvy1lXM4M4zD4Hg3lH2LC1wT/YXxJ28afRYW1yEo6/pbpHazij3+FneGMT2xcTyGvgoacJHXOTUqWyCN7qMOCiFDwQ6Uk1zJOPQIDAQAB",
+   "name": "Google Mail",
+   "version": "1",
+   "icons": {
+      "128": "128.png",
+      "24": "24.png",
+      "32": "32.png",
+      "48": "48.png"
+   },
+   "permissions": [ "notifications" ],
+   "web_content": {
+      "enabled": true,
+      "origin": "https://mail.google.com/",
+      "paths": [ "mail" ]
+   },
+   "launch": {
+      "type": "tab",
+      "web_url": "https://mail.google.com/"
+   }
+}
