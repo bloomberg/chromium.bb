@@ -41,6 +41,7 @@ namespace values = extension_manifest_values;
 namespace errors = extension_manifest_errors;
 
 namespace {
+
 const int kPEMOutputColumns = 65;
 
 // KEY MARKERS
@@ -59,6 +60,23 @@ const int kRSAKeySize = 1024;
 static void ConvertHexadecimalToIDAlphabet(std::string* id) {
   for (size_t i = 0; i < id->size(); ++i)
     (*id)[i] = HexStringToInt(id->substr(i, 1)) + 'a';
+}
+
+const char* kValidUserScriptSchemes[] = {
+  chrome::kHttpScheme,
+  chrome::kHttpsScheme,
+  chrome::kFileScheme,
+  chrome::kFtpScheme,
+};
+
+// Whether the URL pattern is allowed for user scripts.
+bool ValidUrlPatternInUserScript(const URLPattern& pattern) {
+  const std::string scheme = pattern.scheme();
+  for (size_t i = 0; i < arraysize(kValidUserScriptSchemes); ++i) {
+    if (scheme == kValidUserScriptSchemes[i])
+      return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -239,7 +257,7 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
     }
 
     URLPattern pattern;
-    if (!pattern.Parse(match_str)) {
+    if (!pattern.Parse(match_str) || !ValidUrlPatternInUserScript(pattern)) {
       *error = ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidMatch,
           IntToString(definition_index), IntToString(j));
       return false;

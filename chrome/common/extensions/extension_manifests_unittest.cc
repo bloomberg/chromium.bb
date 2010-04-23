@@ -6,6 +6,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
+#include "base/string_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -60,7 +61,7 @@ class ManifestTest : public testing::Test {
     EXPECT_FALSE(extension.get()) <<
         "Expected failure loading extension '" << name <<
         "', but didn't get one.";
-    EXPECT_EQ(expected_error, error);
+    EXPECT_TRUE(MatchPatternASCII(error, expected_error));
   }
 
   bool enable_apps_;
@@ -176,5 +177,14 @@ TEST_F(ManifestTest, Override) {
   extension.reset(LoadAndExpectSuccess("override_history.json"));
   EXPECT_EQ(extension->url().spec() + "history.html",
             extension->GetChromeURLOverrides().find("history")->second.spec());
+}
 
+TEST_F(ManifestTest, ChromeURLPermissionInvalid) {
+  LoadAndExpectError("permission_chrome_url_invalid.json",
+      errors::kInvalidPermissionScheme);
+}
+
+TEST_F(ManifestTest, ChromeURLContentScriptInvalid) {
+  LoadAndExpectError("content_script_chrome_url_invalid.json",
+      errors::kInvalidMatch);
 }

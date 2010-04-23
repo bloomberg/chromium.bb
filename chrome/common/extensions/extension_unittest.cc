@@ -156,6 +156,10 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
   EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidMatch));
 
+  matches->Set(0, Value::CreateStringValue("chrome://*/*"));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidMatch));
+
   // Test missing and invalid files array
   input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
   input_value->GetList(keys::kContentScripts, &content_scripts);
