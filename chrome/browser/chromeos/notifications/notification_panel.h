@@ -125,6 +125,9 @@ class NotificationPanel : public PanelController::Delegate,
   // Scroll the panel so that the |balloon| is visible.
   void ScrollBalloonToVisible(Balloon* balloon);
 
+  // Update the container's bounds so that it can show all notifications.
+  void UpdateContainerBounds();
+
   // Update the notification's control view state.
   void UpdateControl();
 
@@ -153,18 +156,22 @@ class NotificationPanel : public PanelController::Delegate,
     return state_ != CLOSED && state_ != MINIMIZED;
   }
 
-  // Contains all notifications.
-  BalloonContainer* balloon_container_;
+  // Contains all notifications. This is owned by the panel so that we can
+  // re-attach to the widget when closing and opening the panel.
+  scoped_ptr<BalloonContainer> balloon_container_;
 
   // The notification panel's widget.
-  scoped_ptr<views::Widget> panel_widget_;
+  views::Widget* panel_widget_;
+
+  // The notification panel's widget.
+  views::Widget* container_host_;
 
   // Panel controller for the notification panel.
+  // This is owned by the panel to compute the panel size before
+  // actually opening the panel.
   scoped_ptr<PanelController> panel_controller_;
 
   // A scrollable parent of the BalloonContainer.
-  // This is owned by the panel so that we can re-attache to the widget
-  // when closing and opening the panel.
   scoped_ptr<views::ScrollView> scroll_view_;
 
   // Panel's state.

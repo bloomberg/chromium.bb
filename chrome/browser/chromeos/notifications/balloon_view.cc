@@ -85,13 +85,14 @@ class NotificationControlView : public views::View,
     AddChildView(options_menu_button_);
 
     // The control view will never be resized, so just layout once.
-    gfx::Size button_size = close_button_->GetPreferredSize();
-    close_button_->SetBounds(
-        0, 0, button_size.width(), button_size.height());
     gfx::Size options_size = options_menu_button_->GetPreferredSize();
     options_menu_button_->SetBounds(
-        0, button_size.height() + kControlButtonsMargin,
-        options_size.width(), options_size.height());
+        0, 0, options_size.width(), options_size.height());
+
+    gfx::Size button_size = close_button_->GetPreferredSize();
+    close_button_->SetBounds(
+        options_size.width() + kControlButtonsMargin, 0,
+        button_size.width(), button_size.height());
 
     SizeToPreferredSize();
   }
@@ -254,12 +255,13 @@ void BalloonViewImpl::ViewHierarchyChanged(
   if (is_add && GetWidget() && !control_view_host_.get() && controls_) {
     control_view_host_.reset(
         new views::WidgetGtk(views::WidgetGtk::TYPE_CHILD));
+    control_view_host_->EnableDoubleBuffer(true);
     control_view_host_->Init(GetParentNativeView(), gfx::Rect());
     NotificationControlView* control = new NotificationControlView(this);
     control_view_host_->set_delete_on_destroy(false);
     control_view_host_->SetContentsView(control);
   }
-  if (!is_add && GetWidget() && control_view_host_.get() && controls_) {
+  if (!is_add && this == child && control_view_host_.get() && controls_) {
     control_view_host_.release()->CloseNow();
   }
 }

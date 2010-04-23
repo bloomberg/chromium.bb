@@ -95,7 +95,7 @@ class NotificationTest : public InProcessBrowserTest,
                          PanelController::State state) {
     if (under_chromeos_ && state != state_) {
       expected_ = state;
-      ui_test_utils::RunMessageLoop();
+      ui_test_utils::RunAllPendingInMessageLoop();
     }
   }
 
@@ -360,6 +360,11 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestStateTransition2) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationTest, TestCleanupOnExit) {
+  NotificationRegistrar registrar;
+  registrar.Add(this,
+                NotificationType::PANEL_STATE_CHANGED,
+                NotificationService::AllSources());
+
   BalloonCollectionImpl* collection = GetBalloonCollectionImpl();
   NotificationPanel* panel = GetNotificationPanel();
   NotificationPanelTester* tester = panel->GetTester();
