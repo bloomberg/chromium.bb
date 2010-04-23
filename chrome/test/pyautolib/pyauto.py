@@ -296,6 +296,10 @@ class Main(object):
     parser.add_option(
         '', '--list-missing-tests', action='store_true', default=False,
         help='Print a list of tests not included in PYAUTO_TESTS, and exit')
+    parser.add_option(
+        '', '--repeat', type='int', default=1,
+        help='Number of times to repeat the tests. Useful to determine '
+             'flakiness. Defaults to 1.')
 
     self._options, self._args = parser.parse_args()
 
@@ -378,6 +382,7 @@ class Main(object):
           logging.warn("%s missing. Cannot load tests." % pyauto_tests_file)
         else:
           args = self._GetTestNamesFrom(pyauto_tests_file)
+    args = args * self._options.repeat
     logging.debug("Loading tests from %s", args)
     loaded_tests = unittest.defaultTestLoader.loadTestsFromNames(args)
     return loaded_tests
