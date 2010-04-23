@@ -480,15 +480,19 @@ def ExpandVariables(input, is_late, variables, build_file):
   # Look for the pattern that gets expanded into variables
   if not is_late:
     variable_re = early_variable_re
+    expansion_symbol = '<'
   else:
     variable_re = late_variable_re
+    expansion_symbol = '>'
 
   input_str = str(input)
-
-  # Get the entire list of matches as a list of MatchObject instances.
-  # (using findall here would return strings, and we want
-  # MatchObjects).
-  matches = [match for match in variable_re.finditer(input_str)]
+  # Do a quick scan to determine if an expensive regex search is warranted.
+  if expansion_symbol in input_str:
+    # Get the entire list of matches as a list of MatchObject instances.
+    # (using findall here would return strings instead of MatchObjects).
+    matches = [match for match in variable_re.finditer(input_str)]
+  else:
+    matches = None
 
   output = input_str
   if matches:
