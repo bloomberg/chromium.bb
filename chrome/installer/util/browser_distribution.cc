@@ -138,6 +138,10 @@ bool BrowserDistribution::CanSetAsDefault() {
   return true;
 }
 
+bool BrowserDistribution::ShouldUseAlternateIcon() {
+  return false;
+}
+
 void BrowserDistribution::UpdateDiffInstallStatus(bool system_install,
     bool incremental_install, installer_util::InstallStatus install_status) {
 }

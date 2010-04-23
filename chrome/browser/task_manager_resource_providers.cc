@@ -42,7 +42,7 @@
 #include "skia/ext/skia_utils_mac.h"
 #endif
 #if defined(OS_WIN)
-#include <atlbase.h>
+#include "chrome/browser/app_icon_win.h"
 #include "gfx/icon_util.h"
 #endif  // defined(OS_WIN)
 
@@ -834,8 +834,7 @@ TaskManagerBrowserProcessResource::TaskManagerBrowserProcessResource()
   DCHECK(success);
 #if defined(OS_WIN)
   if (!default_icon_) {
-    HICON icon = LoadIcon(_AtlBaseModule.GetResourceInstance(),
-                          MAKEINTRESOURCE(IDR_MAINFRAME));
+    HICON icon = GetAppIcon();
     if (icon) {
       ICONINFO icon_info = {0};
       BITMAP bitmap_info = {0};

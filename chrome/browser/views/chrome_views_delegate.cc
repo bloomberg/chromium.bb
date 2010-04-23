@@ -6,12 +6,14 @@
 
 #include "app/clipboard/clipboard.h"
 #include "base/scoped_ptr.h"
-#include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/window_sizer.h"
-#include "chrome/common/chrome_constants.h"
 #include "gfx/rect.h"
+
+#if defined(OS_WIN)
+#include "chrome/browser/app_icon_win.h"
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // ChromeViewsDelegate, views::ViewsDelegate implementation:
@@ -77,8 +79,7 @@ bool ChromeViewsDelegate::GetSavedMaximizedState(
 
 #if defined(OS_WIN)
 HICON ChromeViewsDelegate::GetDefaultWindowIcon() const {
-  return LoadIcon(GetModuleHandle(chrome::kBrowserResourcesDll),
-                  MAKEINTRESOURCE(IDR_MAINFRAME));
+  return GetAppIcon();
 }
 #endif
 

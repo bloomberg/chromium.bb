@@ -12,16 +12,15 @@
 #include "app/resource_bundle.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/path_service.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/common/chrome_constants.h"
 #include "gfx/canvas.h"
 #include "gfx/favicon_size.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
 
 #if defined(OS_WIN)
+#include "chrome/browser/app_icon_win.h"
 #include "gfx/icon_util.h"
 #endif
 
@@ -39,12 +38,7 @@ void TabIconView::InitializeIfNeeded() {
 #if defined(OS_WIN)
     // The default window icon is the application icon, not the default
     // favicon.
-    std::wstring exe_path;
-    PathService::Get(base::DIR_EXE, &exe_path);
-    file_util::AppendToPath(&exe_path,
-        chrome::kBrowserProcessExecutableName);
-
-    HICON app_icon = ExtractIcon(NULL, exe_path.c_str(), 0);
+    HICON app_icon = GetAppIcon();
     g_default_fav_icon =
         IconUtil::CreateSkBitmapFromHICON(app_icon, gfx::Size(16, 16));
     DestroyIcon(app_icon);

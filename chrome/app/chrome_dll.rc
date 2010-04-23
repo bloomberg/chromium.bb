@@ -193,6 +193,7 @@ END
 
 #if defined(GOOGLE_CHROME_BUILD)
 IDR_MAINFRAME       ICON                        "theme\google_chrome\chrome.ico"
+IDI_SXS             ICON                        "theme\google_chrome\chrome_sxs.ico"
 #else
 IDR_MAINFRAME       ICON                        "theme\chromium\chromium.ico"
 #endif

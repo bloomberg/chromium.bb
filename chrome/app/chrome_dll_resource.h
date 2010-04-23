@@ -37,6 +37,7 @@
 #define IDI_THROBBER_22                 123
 #define IDI_THROBBER_23                 124
 #define IDI_THROBBER_24                 125
+#define IDI_SXS                         126
 
 // Values around 1600 are used by installer/setup/build/
 
@@ -279,4 +280,3 @@
 // Context menu items added by extensions.
 #define IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST 49000
 #define IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST 50000
-

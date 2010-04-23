@@ -60,6 +60,8 @@ class BrowserDistribution {
 
   virtual bool CanSetAsDefault();
 
+  virtual bool ShouldUseAlternateIcon();
+
   virtual void UpdateDiffInstallStatus(bool system_install,
       bool incremental_install, installer_util::InstallStatus install_status);
 

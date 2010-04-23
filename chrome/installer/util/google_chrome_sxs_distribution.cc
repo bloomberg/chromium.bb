@@ -37,3 +37,7 @@ std::wstring GoogleChromeSxSDistribution::GetUninstallRegPath() {
 bool GoogleChromeSxSDistribution::CanSetAsDefault() {
   return false;
 }
+
+bool GoogleChromeSxSDistribution::ShouldUseAlternateIcon() {
+  return true;
+}

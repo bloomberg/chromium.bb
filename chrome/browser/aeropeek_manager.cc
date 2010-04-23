@@ -14,7 +14,7 @@
 #include "base/scoped_handle_win.h"
 #include "base/scoped_native_library.h"
 #include "base/win_util.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/app_icon_win.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
@@ -986,8 +986,7 @@ HICON AeroPeekWindow::OnGetIcon(UINT index) {
   // We save this application icon to avoid calling LoadIcon() twice or more.
   if (favicon_bitmap_.isNull()) {
     if (!frame_icon_) {
-      frame_icon_ = LoadIcon(GetModuleHandle(chrome::kBrowserResourcesDll),
-                             MAKEINTRESOURCE(IDR_MAINFRAME));
+      frame_icon_ = GetAppIcon();
     }
     return frame_icon_;
   }

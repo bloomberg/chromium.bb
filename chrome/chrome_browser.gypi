@@ -61,6 +61,8 @@
         'browser/app_controller_cppsafe_mac.h',
         'browser/app_controller_mac.h',
         'browser/app_controller_mac.mm',
+        'browser/app_icon_win.cc',
+        'browser/app_icon_win.h',
         'browser/app_menu_model.cc',
         'browser/app_menu_model.h',
         'browser/app_modal_dialog.cc',
