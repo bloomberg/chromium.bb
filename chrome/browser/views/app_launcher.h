@@ -36,16 +36,6 @@ class TabContentsDelegateImpl;
 //
 // To show the app launcher invoke Show.
 //
-// AppLauncher creates a RenderViewHost and corresponding RenderWidgetHostView
-// to display the html page. AppLauncher acts as the RenderViewHostDelegate for
-// the RenderViewHost. Clicking on a link results in creating a new
-// TabContents (assigned to pending_contents_). One of two things can then
-// happen:
-// . If the page is a popup (ShowCreatedWindow passed NEW_POPUP), the
-//   TabContents is added to the Browser.
-// . If the page requests a URL to be open (OpenURLFromTab), OpenURL is
-//   invoked on the browser.
-//
 // When a new url is opened, or the user clicks outsides the bounds of the
 // widget the app launcher is closed.
 class AppLauncher : public InfoBubbleDelegate,
@@ -84,7 +74,7 @@ class AppLauncher : public InfoBubbleDelegate,
                               TabContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
-                              bool user_gesture) {}
+                              bool user_gesture);
   virtual void ActivateContents(TabContents* contents) {}
   virtual void LoadingStateChanged(TabContents* source) {}
   virtual void CloseContents(TabContents* source) {}
@@ -112,9 +102,6 @@ class AppLauncher : public InfoBubbleDelegate,
 
   // The view with the navigation bar and render view, shown in the info-bubble.
   InfoBubbleContentsView* info_bubble_content_;
-
-  // TabContents created when the user clicks a link.
-  scoped_ptr<TabContents> pending_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLauncher);
 };

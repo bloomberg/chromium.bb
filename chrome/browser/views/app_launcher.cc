@@ -52,6 +52,8 @@ const int kNavigationBarHeight = 25;
 const int kAutocompleteEditFontDelta = 3;
 
 // Command line switch for specifying url of the page.
+// TODO: nuke when we convert to the real app page. Also nuke code in
+// AddNewContents
 const wchar_t kURLSwitch[] = L"main-menu-url";
 
 // Returns the URL of the menu.
@@ -343,11 +345,25 @@ void AppLauncher::OpenURLFromTab(TabContents* source,
   Hide();
 }
 
+void AppLauncher::AddNewContents(TabContents* source,
+                                 TabContents* new_contents,
+                                 WindowOpenDisposition disposition,
+                                 const gfx::Rect& initial_pos,
+                                 bool user_gesture) {
+#if defined(OS_CHROMEOS)
+  // ChromeOS uses the kURLSwitch to specify a page that opens popups. We need
+  // to do this so the popups are opened when the user clicks on the page.
+  // TODO: nuke when convert to the real app page.
+  new_contents->set_delegate(NULL);
+  browser_->GetSelectedTabContents()->AddNewContents(
+      new_contents, disposition, initial_pos, user_gesture);
+  Hide();
+#endif
+}
+
 void AppLauncher::InfoBubbleClosing(InfoBubble* info_bubble,
                                     bool closed_by_escape) {
-  // The stack may have pending_contents_ on it. Delay deleting the
-  // pending_contents_ as TabContents doesn't deal well with being deleted
-  // while on the stack.
+  // Delay deleting to be safe (we, and our tabcontents may be on the stack).
   MessageLoop::current()->PostTask(FROM_HERE,
                                    new DeleteTask<AppLauncher>(this));
 }
