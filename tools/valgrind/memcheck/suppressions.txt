@@ -2620,7 +2620,6 @@
    Memcheck:Leak
    fun:_Znw*
    ...
-   fun:_ZN15AutoFillProfileC2Ev
    fun:_ZN15AutoFillProfileC1Ev
    fun:_ZNK15AutoFillProfile5CloneEv
    fun:_ZN12browser_sync23AutofillChangeProcessor29ObserveAutofillProfileChangedEP21AutofillProfileChangePN8sync_api16WriteTransactionERKNS3_8ReadNodeE
