@@ -18,7 +18,6 @@ class NotificationsPermissionTest : public UITest {
   }
 };
 
-#if defined(OS_WIN)
 TEST_F(NotificationsPermissionTest, FLAKY_TestUserGestureInfobar) {
   const wchar_t kDocRoot[] = L"chrome/test/data";
   scoped_refptr<HTTPTestServer> server =
@@ -29,16 +28,18 @@ TEST_F(NotificationsPermissionTest, FLAKY_TestUserGestureInfobar) {
   ASSERT_TRUE(browser.get());
   scoped_refptr<TabProxy> tab(browser->GetActiveTab());
   ASSERT_TRUE(tab.get());
-  tab->NavigateToURL(server->TestServerPageW(
-      L"files/notifications/notifications_request_function.html"));
+  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
+            tab->NavigateToURL(server->TestServerPageW(
+                L"files/notifications/notifications_request_function.html")));
   WaitUntilTabCount(1);
 
   // Request permission by calling request() while eval'ing an inline script;
   // That's considered a user gesture to webkit, and should produce an infobar.
   bool result;
-  tab->ExecuteAndExtractBool(L"",
+  ASSERT_TRUE(tab->ExecuteAndExtractBool(
+      L"",
       L"window.domAutomationController.send(request());",
-      &result);
+      &result));
   EXPECT_TRUE(result);
 
   EXPECT_TRUE(tab->WaitForInfoBarCount(1, action_max_timeout_ms()));
@@ -57,12 +58,12 @@ TEST_F(NotificationsPermissionTest, TestNoUserGestureInfobar) {
 
   // Load a page which just does a request; no user gesture should result
   // in no infobar.
-  tab->NavigateToURL(server->TestServerPageW(
-      L"files/notifications/notifications_request_inline.html"));
+  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
+            tab->NavigateToURL(server->TestServerPageW(
+                L"files/notifications/notifications_request_inline.html")));
   WaitUntilTabCount(1);
 
   int info_bar_count;
-  tab->GetInfoBarCount(&info_bar_count);
+  ASSERT_TRUE(tab->GetInfoBarCount(&info_bar_count));
   EXPECT_EQ(0, info_bar_count);
 }
-#endif  // OS_WIN
