@@ -298,6 +298,7 @@ def FixupArmEnvironment():
       sys.executable + " -c 'import os ; print os.environ'"],
       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (stdout, stderr) = p.communicate()
+  assert p.returncode == 0, stderr
   arm_env = eval(stdout)
   for k in arm_env:
     if k.startswith('NACL_') or k.startswith('ARM_'):
