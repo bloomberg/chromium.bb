@@ -51,6 +51,10 @@ class PrefService : public NonThreadSafe {
     // Returns true if the current value matches the default value.
     bool IsDefaultValue() const;
 
+    // Returns true if the Preference is managed, i.e. not changeable
+    // by the user.
+    bool IsManaged() const { return false; }
+
    private:
     friend class PrefService;
 

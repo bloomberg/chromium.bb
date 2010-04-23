@@ -458,6 +458,10 @@ void PrefService::SetBoolean(const wchar_t* path, bool value) {
     NOTREACHED() << "Trying to write an unregistered pref: " << path;
     return;
   }
+  if (pref->IsManaged()) {
+    NOTREACHED() << "Preference is managed: " << path;
+    return;
+  }
   if (pref->type() != Value::TYPE_BOOLEAN) {
     NOTREACHED() << "Wrong type for SetBoolean: " << path;
     return;
@@ -475,6 +479,10 @@ void PrefService::SetInteger(const wchar_t* path, int value) {
   const Preference* pref = FindPreference(path);
   if (!pref) {
     NOTREACHED() << "Trying to write an unregistered pref: " << path;
+    return;
+  }
+  if (pref->IsManaged()) {
+    NOTREACHED() << "Preference is managed: " << path;
     return;
   }
   if (pref->type() != Value::TYPE_INTEGER) {
@@ -496,6 +504,10 @@ void PrefService::SetReal(const wchar_t* path, double value) {
     NOTREACHED() << "Trying to write an unregistered pref: " << path;
     return;
   }
+  if (pref->IsManaged()) {
+    NOTREACHED() << "Preference is managed: " << path;
+    return;
+  }
   if (pref->type() != Value::TYPE_REAL) {
     NOTREACHED() << "Wrong type for SetReal: " << path;
     return;
@@ -515,6 +527,10 @@ void PrefService::SetString(const wchar_t* path, const std::wstring& value) {
     NOTREACHED() << "Trying to write an unregistered pref: " << path;
     return;
   }
+  if (pref->IsManaged()) {
+    NOTREACHED() << "Preference is managed: " << path;
+    return;
+  }
   if (pref->type() != Value::TYPE_STRING) {
     NOTREACHED() << "Wrong type for SetString: " << path;
     return;
@@ -532,6 +548,10 @@ void PrefService::SetFilePath(const wchar_t* path, const FilePath& value) {
   const Preference* pref = FindPreference(path);
   if (!pref) {
     NOTREACHED() << "Trying to write an unregistered pref: " << path;
+    return;
+  }
+  if (pref->IsManaged()) {
+    NOTREACHED() << "Preference is managed: " << path;
     return;
   }
   if (pref->type() != Value::TYPE_STRING) {
@@ -558,6 +578,10 @@ void PrefService::SetInt64(const wchar_t* path, int64 value) {
   const Preference* pref = FindPreference(path);
   if (!pref) {
     NOTREACHED() << "Trying to write an unregistered pref: " << path;
+    return;
+  }
+  if (pref->IsManaged()) {
+    NOTREACHED() << "Preference is managed: " << path;
     return;
   }
   if (pref->type() != Value::TYPE_STRING) {
