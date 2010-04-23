@@ -77,7 +77,7 @@ bool Nigori::Init(const std::string& username, const std::string& password) {
       SymmetricKey::HMAC_SHA1, salt_password.str(),
       kSaltSalt,
       kSaltIterations,
-      kSaltKeySize));
+      kSaltKeySizeInBits));
   DCHECK(user_salt.get());
 
   std::string raw_user_salt;

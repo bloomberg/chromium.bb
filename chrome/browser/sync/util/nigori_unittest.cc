@@ -10,13 +10,7 @@
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_NSS)
-#define MAYBE(name) name
-#else
-#define MAYBE(name) DISABLED_ ## name
-#endif
-
-TEST(NigoriTest, MAYBE(PermuteIsConstant)) {
+TEST(NigoriTest, PermuteIsConstant) {
   browser_sync::Nigori nigori1("example.com");
   EXPECT_TRUE(nigori1.Init("username", "password"));
 
@@ -37,7 +31,7 @@ TEST(NigoriTest, MAYBE(PermuteIsConstant)) {
   EXPECT_EQ(permuted1, permuted2);
 }
 
-TEST(NigoriTest, MAYBE(EncryptDifferentIv)) {
+TEST(NigoriTest, EncryptDifferentIv) {
   browser_sync::Nigori nigori("example.com");
   EXPECT_TRUE(nigori.Init("username", "password"));
 
@@ -52,7 +46,7 @@ TEST(NigoriTest, MAYBE(EncryptDifferentIv)) {
   EXPECT_NE(encrypted1, encrypted2);
 }
 
-TEST(NigoriTest, MAYBE(EncryptDecrypt)) {
+TEST(NigoriTest, EncryptDecrypt) {
   browser_sync::Nigori nigori("example.com");
   EXPECT_TRUE(nigori.Init("username", "password"));
 
@@ -67,7 +61,7 @@ TEST(NigoriTest, MAYBE(EncryptDecrypt)) {
   EXPECT_EQ(plaintext, decrypted);
 }
 
-TEST(NigoriTest, MAYBE(CorruptedIv)) {
+TEST(NigoriTest, CorruptedIv) {
   browser_sync::Nigori nigori("example.com");
   EXPECT_TRUE(nigori.Init("username", "password"));
 
@@ -85,7 +79,7 @@ TEST(NigoriTest, MAYBE(CorruptedIv)) {
   EXPECT_NE(plaintext, decrypted);
 }
 
-TEST(NigoriTest, MAYBE(CorruptedCiphertext)) {
+TEST(NigoriTest, CorruptedCiphertext) {
   browser_sync::Nigori nigori("example.com");
   EXPECT_TRUE(nigori.Init("username", "password"));
 

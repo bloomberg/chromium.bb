@@ -24,7 +24,7 @@ CSSM_KEY_TYPE CheckKeyParams(base::SymmetricKey::Algorithm algorithm,
     return CSSM_ALGID_AES;
   } else {
     CHECK(algorithm == base::SymmetricKey::HMAC_SHA1);
-    CHECK(key_size_in_bits >= 80 && (key_size_in_bits % 8) == 0)
+    CHECK(key_size_in_bits >= 64 && (key_size_in_bits % 8) == 0)
         << "Invalid key size " << key_size_in_bits << " bits";
     return CSSM_ALGID_SHA1HMAC_LEGACY;
   }
