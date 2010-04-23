@@ -335,7 +335,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_KeyboardTest) {
 
   const wchar_t* input = L"Chrome";
   EXPECT_CALL(mock, OnLoad(testing::StrEq(kKeyEventUrl)))
-      .WillOnce(DelaySendString(&loop, 500, input));
+      .WillOnce(testing::DoAll(
+          DelaySendMouseClick(&mock, &loop, 0, 10, 10, simulate_input::LEFT),
+          DelaySendString(&loop, 500, input)));
 
   EXPECT_CALL(mock, OnMessage(testing::StrEq(input), _, _))
       .WillOnce(CloseBrowserMock(&mock));
@@ -400,8 +402,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_WindowOpenInChrome) {
 
   const wchar_t* input = L"A";
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kWindowOpenUrl)))
-    .WillOnce(DelaySendChar(&loop, 500, 'A', simulate_input::NONE));
-
+      .WillOnce(testing::DoAll(
+          DelaySendMouseClick(&mock, &loop, 0, 10, 10, simulate_input::LEFT),
+          DelaySendChar(&loop, 500, 'A', simulate_input::NONE)));
   // Watch for new window
   mock.ExpectNewWindow(&new_window_mock);
 

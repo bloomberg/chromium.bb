@@ -634,6 +634,8 @@ HRESULT WebBrowserEventSink::LaunchIEAndNavigate(
     EXPECT_TRUE(hr == S_OK);
     hr = Navigate(navigate_url);
   }
+
+  DLOG_IF(WARNING, FAILED(hr)) << "Failed to launch IE. Error:" << hr;
   return hr;
 }
 
