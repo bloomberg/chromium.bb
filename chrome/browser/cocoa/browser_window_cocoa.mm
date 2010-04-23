@@ -11,7 +11,6 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_list.h"
-#import "chrome/browser/cocoa/bookmark_manager_controller.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/bug_report_window_controller.h"
 #import "chrome/browser/cocoa/chrome_browser_window.h"
@@ -266,7 +265,8 @@ void BrowserWindowCocoa::ShowTaskManager() {
 }
 
 void BrowserWindowCocoa::ShowBookmarkManager() {
-  [BookmarkManagerController showBookmarkManager:browser_->profile()];
+  // TODO(viettrungluu): Remove function when no callers remain. crbug.com/38908
+  NOTIMPLEMENTED();
 }
 
 void BrowserWindowCocoa::ShowBookmarkBubble(const GURL& url,

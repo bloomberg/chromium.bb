@@ -19,7 +19,6 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chrome_thread.h"
 #import "chrome/browser/cocoa/about_window_controller.h"
-#import "chrome/browser/cocoa/bookmark_manager_controller.h"
 #import "chrome/browser/cocoa/bookmark_menu_bridge.h"
 #import "chrome/browser/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
@@ -711,18 +710,11 @@ void RecordLastRunAppBundlePath() {
       UserMetrics::RecordAction(UserMetricsAction("ShowBookmarkManager"),
                                 defaultProfile);
       if (Browser* browser = ActivateBrowser(defaultProfile)) {
-        // Call through browser which takes care of opening a tab or the old
-        // bookmark manager window.
+        // Open a bookmark manager tab.
         browser->OpenBookmarkManager();
       } else {
-        // We have no browser window. Only create a window if we are using the
-        // new tabbed bookmark manager.
-        if (CommandLine::ForCurrentProcess()->HasSwitch(
-                switches::kDisableTabbedBookmarkManager)) {
-          [BookmarkManagerController showBookmarkManager:defaultProfile];
-        } else {
-          Browser::OpenBookmarkManagerWindow(defaultProfile);
-        }
+        // No browser window, so create one for the bookmark manager tab.
+        Browser::OpenBookmarkManagerWindow(defaultProfile);
       }
       break;
     case IDC_SHOW_HISTORY:

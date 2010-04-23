@@ -734,10 +734,7 @@ void ProfileImpl::InitExtensions() {
   std::map<std::string, int> component_extensions;
 
   // Bookmark manager.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableTabbedBookmarkManager)) {
-    component_extensions["bookmark_manager"] = IDR_BOOKMARKS_MANIFEST;
-  }
+  component_extensions["bookmark_manager"] = IDR_BOOKMARKS_MANIFEST;
 
   // Some sample apps to make our lives easier while we are developing extension
   // apps. This way we don't have to constantly install these over and over.

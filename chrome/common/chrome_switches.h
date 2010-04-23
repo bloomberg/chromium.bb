@@ -70,7 +70,6 @@ extern const char kDisableSyncBookmarks[];
 extern const char kDisableSyncPreferences[];
 extern const char kDisableSyncThemes[];
 extern const char kDisableSyncTypedUrls[];
-extern const char kDisableTabbedBookmarkManager[];
 extern const char kDisableWebResources[];
 extern const char kDisableWebSecurity[];
 extern const char kDisableWebSockets[];

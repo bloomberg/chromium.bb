@@ -20,7 +20,6 @@
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/bindings_policy.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 
@@ -94,11 +93,8 @@ void ExtensionDOMUI::ResetExtensionFunctionDispatcher(
 }
 
 void ExtensionDOMUI::ResetExtensionBookmarkManagerEventRouter() {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableTabbedBookmarkManager)) {
-    extension_bookmark_manager_event_router_.reset(
-        new ExtensionBookmarkManagerEventRouter(GetProfile(), tab_contents()));
-  }
+  extension_bookmark_manager_event_router_.reset(
+      new ExtensionBookmarkManagerEventRouter(GetProfile(), tab_contents()));
 }
 
 void ExtensionDOMUI::RenderViewCreated(RenderViewHost* render_view_host) {

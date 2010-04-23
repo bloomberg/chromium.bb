@@ -1466,12 +1466,7 @@ void Browser::ToggleExtensionShelf() {
 
 void Browser::OpenBookmarkManager() {
   UserMetrics::RecordAction(UserMetricsAction("ShowBookmarkManager"), profile_);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableTabbedBookmarkManager)) {
-    window_->ShowBookmarkManager();
-  } else {
-    ShowBookmarkManagerTab();
-  }
+  ShowBookmarkManagerTab();
 }
 
 void Browser::ShowAppMenu() {

@@ -193,10 +193,6 @@ const char kDisableSyncThemes[]             = "disable-sync-themes";
 // Disable syncing of typed urls.
 const char kDisableSyncTypedUrls[]          = "disable-sync-typed-urls";
 
-// Disable the tabbed bookmark manager. This makes us use the native bookmark
-// manager instead.
-const char kDisableTabbedBookmarkManager[]  = "disable-tabbed-bookmark-manager";
-
 // Enables the backend service for web resources, used in the new tab page for
 // loading tips and recommendations from a JSON feed.
 const char kDisableWebResources[]           = "disable-web-resources";
