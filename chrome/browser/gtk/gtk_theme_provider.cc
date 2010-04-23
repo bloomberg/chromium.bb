@@ -307,8 +307,8 @@ void GtkThemeProvider::GetScrollbarColors(GdkColor* thumb_active_color,
   gtk_widget_realize(scrollbar);
 
   // Draw scrollbar thumb part and track into offscreen image
-  int kWidth        = 100;
-  int kHeight       = 20;
+  const int kWidth  = 100;
+  const int kHeight = 20;
   GtkStyle*  style  = gtk_rc_get_style(scrollbar);
   GdkPixmap* pm     = gdk_pixmap_new(window->window, kWidth, kHeight, -1);
   GdkRectangle rect = { 0, 0, kWidth, kHeight };
