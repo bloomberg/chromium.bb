@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,6 +65,9 @@ class SSLUITest : public InProcessBrowserTest {
               entry->page_type());
     EXPECT_EQ(SECURITY_STYLE_AUTHENTICATION_BROKEN,
               entry->ssl().security_style());
+    // CERT_STATUS_UNABLE_TO_CHECK_REVOCATION doesn't lower the security style
+    // to SECURITY_STYLE_AUTHENTICATION_BROKEN.
+    ASSERT_NE(net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION, error);
     EXPECT_EQ(error, entry->ssl().cert_status() & net::CERT_STATUS_ALL_ERRORS);
     EXPECT_FALSE(entry->ssl().has_mixed_content());
     EXPECT_FALSE(entry->ssl().has_unsafe_content());

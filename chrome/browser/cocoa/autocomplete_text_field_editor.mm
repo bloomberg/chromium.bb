@@ -33,6 +33,35 @@ class Extension;
   return self;
 }
 
+// If the entire field is selected, drag the same data as would be
+// dragged from the field's location icon.  In some cases the textual
+// contents will not contain relevant data (for instance, "http://" is
+// stripped from URLs).
+- (BOOL)dragSelectionWithEvent:(NSEvent *)event
+                        offset:(NSSize)mouseOffset
+                     slideBack:(BOOL)slideBack {
+  const NSRange allRange = NSMakeRange(0, [[self textStorage] length]);
+  if (NSEqualRanges(allRange, [self selectedRange])) {
+    NSPasteboard* pboard = [[self delegate] locationDragPasteboard];
+    if (pboard) {
+      NSPoint p;
+      NSImage* image = [self dragImageForSelectionWithEvent:event origin:&p];
+
+      [self dragImage:image
+                   at:p
+               offset:mouseOffset
+                event:event
+           pasteboard:pboard
+               source:self
+            slideBack:slideBack];
+      return YES;
+    }
+  }
+  return [super dragSelectionWithEvent:event
+                                offset:mouseOffset
+                             slideBack:slideBack];
+}
+
 - (void)copy:(id)sender {
   AutocompleteTextFieldObserver* observer = [self observer];
   DCHECK(observer);

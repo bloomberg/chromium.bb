@@ -13,7 +13,6 @@
 
 class AutocompleteEditController;
 class AutocompletePopupViewMac;
-class BubblePositioner;
 class Clipboard;
 class Profile;
 class ToolbarModel;
@@ -24,7 +23,6 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
                                 public AutocompleteTextFieldObserver {
  public:
   AutocompleteEditViewMac(AutocompleteEditController* controller,
-                          const BubblePositioner* bubble_positioner,
                           ToolbarModel* toolbar_model,
                           Profile* profile,
                           CommandUpdater* command_updater,
@@ -48,6 +46,10 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
                        const std::wstring& keyword);
 
   virtual std::wstring GetText() const;
+
+  virtual bool IsEditingOrEmpty() const;
+  virtual int GetIcon() const;
+
   virtual void SetUserText(const std::wstring& text) {
     SetUserText(text, text, true);
   }
@@ -97,6 +99,10 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   // Helper to get appropriate contents from |clipboard|.  Returns
   // empty string if no appropriate data is found on |clipboard|.
   static std::wstring GetClipboardText(Clipboard* clipboard);
+
+  // If |resource_id| has a PDF image which can be used, return it.
+  // Otherwise return the PNG image from the resource bundle.
+  static NSImage* ImageForResource(int resource_id);
 
  private:
   // Called when the user hits backspace in |field_|.  Checks whether

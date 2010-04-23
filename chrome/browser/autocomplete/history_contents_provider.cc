@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -207,11 +207,9 @@ AutocompleteMatch HistoryContentsProvider::ResultToMatch(
   // Also show star in popup.
   AutocompleteMatch match(this, score, false, MatchInTitle(result) ?
       AutocompleteMatch::HISTORY_TITLE : AutocompleteMatch::HISTORY_BODY);
-  match.fill_into_edit = StringForURLDisplay(result.url(), true);
+  match.fill_into_edit = StringForURLDisplay(result.url(), true, trim_http_);
   match.destination_url = result.url();
   match.contents = match.fill_into_edit;
-  if (trim_http_)
-    TrimHttpPrefix(&match.contents);
   match.contents_class.push_back(
       ACMatchClassification(0, ACMatchClassification::URL));
   match.description = result.title();

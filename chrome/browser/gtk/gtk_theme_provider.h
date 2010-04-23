@@ -163,6 +163,13 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // Takes the base frame image |base_id| and tints it with |tint_id|.
   SkBitmap* GenerateTabImage(int base_id) const;
 
+  // Tints an icon based on tint.
+  SkBitmap* GenerateTintedIcon(int base_id, color_utils::HSL tint) const;
+
+  // Returns a tint that's the color of the current highlighted text in an
+  // entry.
+  void GetEntryForegroundHSL(color_utils::HSL* tint) const;
+
   // A notification from the GtkChromeButton GObject destructor that we should
   // remove it from our internal list.
   CHROMEGTK_CALLBACK_0(GtkThemeProvider, void, OnDestroyChromeButton);

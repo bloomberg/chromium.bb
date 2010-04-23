@@ -45,6 +45,7 @@
         'l10n_util_unittest.cc',
         'os_exchange_data_win_unittest.cc',
         'run_all_unittests.cc',
+        'slide_animation_unittest.cc',
         'system_monitor_unittest.cc',
         'test_suite.h',
         'text_elider_unittest.cc',

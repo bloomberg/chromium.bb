@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,10 @@
 #include "app/drag_drop_types.h"
 #include "app/l10n_util.h"
 #include "app/os_exchange_data.h"
+#include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/search_versus_navigate_classifier.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/frame/browser_frame.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
@@ -141,13 +142,13 @@ bool BrowserRootView::GetPasteAndGoURL(const OSExchangeData& data, GURL* url) {
   if (!data.GetString(&text) || text.empty())
     return false;
 
-  GURL destination_url;
-  browser_view_->browser()->profile()->GetSearchVersusNavigateClassifier()->
-      Classify(text, std::wstring(), NULL, &destination_url, NULL, NULL, NULL);
-  if (!destination_url.is_valid())
+  AutocompleteMatch match;
+  browser_view_->browser()->profile()->GetAutocompleteClassifier()->Classify(
+      text, std::wstring(), &match, NULL);
+  if (!match.destination_url.is_valid())
     return false;
 
   if (url)
-    *url = destination_url;
+    *url = match.destination_url;
   return true;
 }

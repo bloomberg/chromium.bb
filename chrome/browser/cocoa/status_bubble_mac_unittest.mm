@@ -141,7 +141,7 @@ TEST_F(StatusBubbleMacTest, SetURL) {
   EXPECT_TRUE([GetURLText() isEqualToString:@"foopy://"]);
   bubble_->SetURL(GURL("http://www.cnn.com"), L"");
   EXPECT_TRUE(IsVisible());
-  EXPECT_TRUE([GetURLText() isEqualToString:@"http://www.cnn.com/"]);
+  EXPECT_TRUE([GetURLText() isEqualToString:@"www.cnn.com/"]);
 }
 
 // Test hiding bubble that's already hidden.
@@ -162,7 +162,7 @@ TEST_F(StatusBubbleMacTest, SetStatusAndURL) {
   EXPECT_TRUE([GetBubbleViewText() isEqualToString:@"Status"]);
   bubble_->SetURL(GURL("http://www.nytimes.com/"), L"");
   EXPECT_TRUE(IsVisible());
-  EXPECT_TRUE([GetBubbleViewText() isEqualToString:@"http://www.nytimes.com/"]);
+  EXPECT_TRUE([GetBubbleViewText() isEqualToString:@"www.nytimes.com/"]);
   bubble_->SetURL(GURL(), L"");
   EXPECT_TRUE(IsVisible());
   EXPECT_TRUE([GetBubbleViewText() isEqualToString:@"Status"]);
@@ -170,13 +170,13 @@ TEST_F(StatusBubbleMacTest, SetStatusAndURL) {
   EXPECT_FALSE(IsVisible());
   bubble_->SetURL(GURL("http://www.nytimes.com/"), L"");
   EXPECT_TRUE(IsVisible());
-  EXPECT_TRUE([GetBubbleViewText() isEqualToString:@"http://www.nytimes.com/"]);
+  EXPECT_TRUE([GetBubbleViewText() isEqualToString:@"www.nytimes.com/"]);
   bubble_->SetStatus(L"Status");
   EXPECT_TRUE(IsVisible());
   EXPECT_TRUE([GetBubbleViewText() isEqualToString:@"Status"]);
   bubble_->SetStatus(L"");
   EXPECT_TRUE(IsVisible());
-  EXPECT_TRUE([GetBubbleViewText() isEqualToString:@"http://www.nytimes.com/"]);
+  EXPECT_TRUE([GetBubbleViewText() isEqualToString:@"www.nytimes.com/"]);
   bubble_->SetURL(GURL(), L"");
   EXPECT_FALSE(IsVisible());
 }

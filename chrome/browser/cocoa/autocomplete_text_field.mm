@@ -124,14 +124,10 @@
     return;
   }
 
-  // If the user clicked on one of the icons (security icon, Page
-  // Actions, etc), let the icon handle the click.
-  for (AutocompleteTextFieldIcon* icon in [cell layedOutIcons:bounds]) {
-    const NSRect iconRect = [icon rect];
-    if (NSMouseInRect(location, iconRect, flipped)) {
-      [icon view]->OnMousePressed(iconRect);
-      return;
-    }
+  // Give the cell a chance to intercept clicks in page-actions and
+  // other decorative items.
+  if ([cell mouseDown:theEvent inRect:bounds ofView:self]) {
+    return;
   }
 
   NSText* editor = [self currentEditor];
@@ -199,6 +195,7 @@
 
 // Show the I-beam cursor unless the mouse is over an image within the field
 // (Page Actions or the security icon) in which case show the arrow cursor.
+// TODO(rohitrao): Should default to the arrow cursor.  http://crbug.com/41612
 - (void)resetCursorRects {
   NSRect fieldBounds = [self bounds];
   [self addCursorRect:fieldBounds cursor:[NSCursor IBeamCursor]];
@@ -206,8 +203,17 @@
   AutocompleteTextFieldCell* cell = [self autocompleteTextFieldCell];
   for (AutocompleteTextFieldIcon* icon in [cell layedOutIcons:fieldBounds])
     [self addCursorRect:[icon rect] cursor:[NSCursor arrowCursor]];
+
+  // Special-case the location image, since it is not in |-layedOutIcons|.
+  const NSRect locationIconFrame = [cell locationIconFrameForFrame:fieldBounds];
+  [self addCursorRect:locationIconFrame cursor:[NSCursor arrowCursor]];
 }
 
+// TODO(shess): -resetFieldEditorFrameIfNeeded is the place where
+// changes to the cell layout should be flushed.  LocationBarViewMac
+// and ToolbarController are calling this routine directly, and I
+// think they are probably wrong.
+// http://crbug.com/40053
 - (void)updateCursorAndToolTipRects {
   // This will force |resetCursorRects| to be called, as it is not to be called
   // directly.
@@ -369,6 +375,15 @@
 - (NSMenu*)actionMenuForEvent:(NSEvent*)event {
   return [[self autocompleteTextFieldCell]
            actionMenuForEvent:event inRect:[self bounds] ofView:self];
+}
+
+- (NSRect)starIconFrame {
+  AutocompleteTextFieldCell* cell = [self autocompleteTextFieldCell];
+  return [cell starIconFrameForFrame:[self bounds]];
+}
+
+- (NSPasteboard*)locationDragPasteboard {
+  return [[self autocompleteTextFieldCell] locationDragPasteboard];
 }
 
 @end

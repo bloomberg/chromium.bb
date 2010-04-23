@@ -25,6 +25,7 @@ void FreePixels(guchar* pixels, gpointer data) {
 namespace gfx {
 
 const GdkColor kGdkWhite = GDK_COLOR_RGB(0xff, 0xff, 0xff);
+const GdkColor kGdkGray  = GDK_COLOR_RGB(0x7f, 0x7f, 0x7f);
 const GdkColor kGdkBlack = GDK_COLOR_RGB(0x00, 0x00, 0x00);
 const GdkColor kGdkGreen = GDK_COLOR_RGB(0x00, 0xff, 0x00);
 

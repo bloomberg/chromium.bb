@@ -16,12 +16,13 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/dom_view.h"
 #include "chrome/browser/views/info_bubble.h"
 #include "chrome/browser/views/frame/browser_view.h"
+#include "chrome/browser/views/toolbar_view.h"
 #include "chrome/common/url_constants.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
@@ -45,10 +46,11 @@ const int kNavigationEntryYMargin = 1;
 // Padding between the navigation bar and the render view contents.
 const int kNavigationBarBottomPadding = 3;
 
-// NavigationBar size.
-const int kNavigationBarHeight = 25;
+// NavigationBar constants.
+const int kNavigationBarHeight = 23;
+const int kNavigationBarBorderThickness = 1;
 
-// The delta applied to the default font size for the omnibox.
+// The delta applied to the default font size for the Omnibox.
 const int kAutocompleteEditFontDelta = 3;
 
 // Command line switch for specifying url of the page.
@@ -74,8 +76,7 @@ static GURL GetMenuURL() {
 // mode.
 
 class NavigationBar : public views::View,
-                      public AutocompleteEditController,
-                      public BubblePositioner {
+                      public AutocompleteEditController {
  public:
   explicit NavigationBar(AppLauncher* app_launcher)
       : app_launcher_(app_launcher),
@@ -83,7 +84,12 @@ class NavigationBar : public views::View,
     SetFocusable(true);
     location_entry_view_ = new views::NativeViewHost;
     AddChildView(location_entry_view_);
-    set_border(views::Border::CreateSolidBorder(1, SK_ColorGRAY));
+    set_border(views::Border::CreateSolidBorder(kNavigationBarBorderThickness,
+                                                SK_ColorGRAY));
+
+    AddChildView(&popup_positioning_view_);
+    popup_positioning_view_.SetVisible(false);
+    popup_positioning_view_.set_parent_owned(false);
   }
 
   virtual ~NavigationBar() {
@@ -113,7 +119,8 @@ class NavigationBar : public views::View,
         new AutocompleteEditViewWin(font, this, browser->toolbar_model(),
                                     this, GetWidget()->GetNativeView(),
                                     browser->profile(),
-                                    browser->command_updater(), false, this);
+                                    browser->command_updater(), false,
+                                    &popup_positioning_view_);
     location_entry_.reset(autocomplete_view);
     autocomplete_view->Update(NULL);
     // The Update call above sets the autocomplete text to the current one in
@@ -123,10 +130,11 @@ class NavigationBar : public views::View,
     AutocompleteEditViewGtk* autocomplete_view =
         new AutocompleteEditViewGtk(this, browser->toolbar_model(),
                                     browser->profile(),
-                                    browser->command_updater(), false, this);
+                                    browser->command_updater(), false,
+                                    &popup_positioning_view_);
     autocomplete_view->Init();
-    gtk_widget_show_all(autocomplete_view->widget());
-    gtk_widget_hide(autocomplete_view->widget());
+    gtk_widget_show_all(autocomplete_view->GetNativeView());
+    gtk_widget_hide(autocomplete_view->GetNativeView());
     location_entry_.reset(autocomplete_view);
 #else
     NOTIMPLEMENTED();
@@ -143,21 +151,10 @@ class NavigationBar : public views::View,
         bounds.width() - 2 * (kNavigationEntryPadding +
                               kNavigationEntryXMargin),
         bounds.height() - kNavigationEntryYMargin * 2);
-  }
 
-  // BubblePositioner implementation.
-  virtual gfx::Rect GetLocationStackBounds() const {
-    gfx::Rect bounds = location_entry_view_->GetBounds(
-        views::View::APPLY_MIRRORING_TRANSFORMATION);
-    gfx::Point origin(bounds.x(), bounds.bottom() + kNavigationEntryPadding);
-    views::View::ConvertPointToScreen(this, &origin);
-    gfx::Rect rect = gfx::Rect(origin, gfx::Size(500, 0));
-    if (UILayoutIsRightToLeft()) {
-      // Align the window to the right side of the entry view when
-      // UI is RTL mode.
-      rect.set_x(rect.x() - (rect.width() - location_entry_view_->width()));
-    }
-    return rect;
+    gfx::Rect popup_positioning_bounds(bounds);
+    popup_positioning_bounds.Inset(0, -(kNavigationBarBorderThickness + 1));
+    popup_positioning_view_.SetBounds(popup_positioning_bounds);
   }
 
   // AutocompleteController implementation.
@@ -196,6 +193,11 @@ class NavigationBar : public views::View,
 #else
   NOTIMPLEMENTED();
 #endif
+
+  // This invisible view is provided to the popup in place of |this|, so the
+  // popup can size itself against it using the same offsets it does with the
+  // LocationBarView.
+  views::View popup_positioning_view_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationBar);
 };
@@ -239,6 +241,7 @@ InfoBubbleContentsView::InfoBubbleContentsView(AppLauncher* app_launcher)
     : app_launcher_(app_launcher),
       navigation_bar_(NULL),
       dom_view_(NULL) {
+  DCHECK(app_launcher);
 }
 
 InfoBubbleContentsView::~InfoBubbleContentsView() {
@@ -301,6 +304,7 @@ void InfoBubbleContentsView::Layout() {
 AppLauncher::AppLauncher(Browser* browser)
     : browser_(browser),
       info_bubble_(NULL) {
+  DCHECK(browser);
   info_bubble_content_ = new InfoBubbleContentsView(this);
 }
 
@@ -308,12 +312,15 @@ AppLauncher::~AppLauncher() {
 }
 
 // static
-AppLauncher* AppLauncher::Show(Browser* browser, const gfx::Rect& bounds) {
+AppLauncher* AppLauncher::Show(Browser* browser,
+                               const gfx::Rect& bounds,
+                               const gfx::Point& bubble_anchor) {
   AppLauncher* app_launcher = new AppLauncher(browser);
   BrowserView* browser_view = static_cast<BrowserView*>(browser->window());
   app_launcher->info_bubble_ =
-      InfoBubble::Show(browser_view->frame()->GetWindow(), bounds,
-                       app_launcher->info_bubble_content_, app_launcher);
+      PinnedContentsInfoBubble::Show(browser_view->frame()->GetWindow(),
+          bounds, bubble_anchor, app_launcher->info_bubble_content_,
+          app_launcher);
   app_launcher->info_bubble_content_->BubbleShown();
   return app_launcher;
 }
@@ -328,7 +335,17 @@ AppLauncher* AppLauncher::ShowForNewTab(Browser* browser) {
   gfx::Point origin = bounds.origin();
   views::RootView::ConvertPointToScreen(tabstrip, &origin);
   bounds.set_origin(origin);
-  return Show(browser, bounds);
+
+  // Figure out where the location bar is, so we can pin the bubble to
+  // make our url bar appear exactly over it.
+  views::RootView* root_view = views::Widget::GetWidgetFromNativeWindow(
+      browser_view->GetNativeHandle())->GetRootView();
+  views::View* location_bar = root_view->GetViewByID(VIEW_ID_LOCATION_BAR);
+  gfx::Point location_bar_origin = location_bar->bounds().origin();
+  views::RootView::ConvertPointToScreen(location_bar->GetParent(),
+                                        &location_bar_origin);
+
+  return Show(browser, bounds, location_bar_origin);
 }
 
 void AppLauncher::Hide() {
@@ -367,7 +384,6 @@ void AppLauncher::InfoBubbleClosing(InfoBubble* info_bubble,
   MessageLoop::current()->PostTask(FROM_HERE,
                                    new DeleteTask<AppLauncher>(this));
 }
-
 
 void AppLauncher::AddTabWithURL(const GURL& url,
                                 PageTransition::Type transition) {

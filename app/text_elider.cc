@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,8 +37,8 @@ std::wstring ElideUrl(const GURL& url,
                       const std::wstring& languages) {
   // Get a formatted string and corresponding parsing of the url.
   url_parse::Parsed parsed;
-  std::wstring url_string = net::FormatUrl(url, languages, true,
-      UnescapeRule::SPACES, &parsed, NULL, NULL);
+  std::wstring url_string = net::FormatUrl(url, languages,
+      net::kFormatUrlOmitAll, UnescapeRule::SPACES, &parsed, NULL, NULL);
   if (available_pixel_width <= 0)
     return url_string;
 
@@ -363,7 +363,8 @@ SortedDisplayURL::SortedDisplayURL(const GURL& url,
   string16 host_minus_www = WideToUTF16Hack(net::StripWWW(host));
   url_parse::Parsed parsed;
   display_url_ = WideToUTF16Hack(net::FormatUrl(url, languages,
-      true, UnescapeRule::SPACES, &parsed, &prefix_end_, NULL));
+      net::kFormatUrlOmitAll, UnescapeRule::SPACES, &parsed, &prefix_end_,
+      NULL));
   if (sort_host_.length() > host_minus_www.length()) {
     prefix_end_ += sort_host_.length() - host_minus_www.length();
     sort_host_.swap(host_minus_www);

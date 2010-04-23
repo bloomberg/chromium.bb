@@ -282,10 +282,9 @@ void BookmarkEditorView::Init() {
     std::wstring languages = profile_
         ? profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)
         : std::wstring();
-    // The following URL is user-editable.  We specify omit_username_password=
-    // false and unescape=false to show the original URL except IDN.
+    // The following URL is user-editable, so we don't strip anything from it.
     url_text = net::FormatUrl(details_.existing_node->GetURL(), languages,
-                              false, UnescapeRule::NONE, NULL, NULL, NULL);
+        net::kFormatUrlOmitNothing, UnescapeRule::NONE, NULL, NULL, NULL);
   }
   url_tf_.SetText(url_text);
   url_tf_.SetController(this);

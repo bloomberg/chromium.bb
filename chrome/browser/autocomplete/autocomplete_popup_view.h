@@ -13,15 +13,7 @@
 
 #include "build/build_config.h"
 
-class AutocompleteEditView;
 class AutocompletePopupModel;
-class BubblePositioner;
-namespace gfx {
-class Font;
-}
-class AutocompleteEditViewWin;
-class AutocompleteEditModel;
-class Profile;
 
 class AutocompletePopupView {
  public:
@@ -48,17 +40,6 @@ class AutocompletePopupView {
 
   // Returns the popup's model.
   virtual AutocompletePopupModel* GetModel() = 0;
-
-#if !defined(OS_MACOSX)
-  // Create a popup view implementation. It may make sense for this to become
-  // platform independent eventually.
-  static AutocompletePopupView* CreatePopupView(
-      const gfx::Font& font,
-      AutocompleteEditView* edit_view,
-      AutocompleteEditModel* edit_model,
-      Profile* profile,
-      const BubblePositioner* bubble_positioner);
-#endif
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_VIEW_H_

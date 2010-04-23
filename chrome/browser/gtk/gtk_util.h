@@ -17,6 +17,8 @@
 typedef struct _GtkWidget GtkWidget;
 
 class GtkThemeProvider;
+class GURL;
+class Profile;
 struct RendererPreferences;  // from common/renderer_preferences.h
 
 namespace event_utils {
@@ -269,6 +271,11 @@ void SetWMLastUserActionTime(GtkWindow* window);
 // retrieved from the X server. NOTE: You should almost never need to use this
 // function, instead using the timestamp from the latest GDK event.
 guint32 XTimeNow();
+
+// Uses the autocomplete controller for |profile| to convert the contents of the
+// PRIMARY selection to a parsed URL. Returns true and sets |url| on success,
+// otherwise returns false.
+bool URLFromPrimarySelection(Profile* profile, GURL* url);
 
 }  // namespace gtk_util
 

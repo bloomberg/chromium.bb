@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@ TEST(ThemeResourcesUtil, SpotCheckIds) {
   const TestCase kTestCases[] = {
     {"back", IDR_BACK},
     {"go", IDR_GO},
-    {"star", IDR_STAR},
+    {"omnibox_star", IDR_OMNIBOX_STAR},
     {"sad_tab", IDR_SAD_TAB},
   };
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {

@@ -170,8 +170,9 @@ static std::string FixupPath(const std::string& text) {
   // Here, we know the input looks like a file.
   GURL file_url = net::FilePathToFileURL(FilePath(filename));
   if (file_url.is_valid()) {
-    return WideToUTF8(net::FormatUrl(file_url, std::wstring(), true,
-        UnescapeRule::NORMAL, NULL, NULL, NULL));
+    return WideToUTF8(net::FormatUrl(file_url, std::wstring(),
+        net::kFormatUrlOmitUsernamePassword, UnescapeRule::NORMAL, NULL,
+        NULL, NULL));
   }
 
   // Invalid file URL, just return the input.
@@ -557,7 +558,8 @@ std::string URLFixerUpper::FixupRelativeFile(const FilePath& base_dir,
     GURL file_url = net::FilePathToFileURL(full_path);
     if (file_url.is_valid())
       return WideToUTF8(net::FormatUrl(file_url, std::wstring(),
-          true, UnescapeRule::NORMAL, NULL, NULL, NULL));
+          net::kFormatUrlOmitUsernamePassword, UnescapeRule::NORMAL, NULL,
+          NULL, NULL));
     // Invalid files fall through to regular processing.
   }
 

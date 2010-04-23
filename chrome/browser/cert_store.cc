@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -88,7 +88,8 @@ bool CertStore::RetrieveCert(int cert_id,
   CertMap::iterator iter = id_to_cert_.find(cert_id);
   if (iter == id_to_cert_.end())
     return false;
-  *cert = iter->second;
+  if (cert)
+    *cert = iter->second;
   return true;
 }
 

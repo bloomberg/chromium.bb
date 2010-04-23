@@ -40,6 +40,8 @@ const int kOTRBottomSpacing = 2;
 // There are 2 px on each side of the OTR avatar (between the frame border and
 // it on the left, and between it and the tabstrip on the right).
 const int kOTRSideSpacing = 2;
+// The content left/right images have a shadow built into them.
+const int kContentEdgeShadowThickness = 2;
 // The top 1 px of the tabstrip is shadow; in maximized mode we push this off
 // the top of the screen so the tabs appear flush against the screen edge.
 const int kTabstripTopShadowThickness = 1;
@@ -261,19 +263,46 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
       toolbar_bounds.x() - 1, toolbar_bounds.y() + 2,
       toolbar_bounds.width() + 2, theme_toolbar->height());
 
-  SkBitmap* toolbar_left =
-      tp->GetBitmapNamed(IDR_CONTENT_TOP_LEFT_CORNER);
-  canvas->DrawBitmapInt(*toolbar_left,
-                        toolbar_bounds.x() - toolbar_left->width(),
-                        toolbar_bounds.y());
+  // Draw rounded corners for the tab.
+  SkBitmap* toolbar_left_mask =
+      tp->GetBitmapNamed(IDR_CONTENT_TOP_LEFT_CORNER_MASK);
+  SkBitmap* toolbar_right_mask =
+      tp->GetBitmapNamed(IDR_CONTENT_TOP_RIGHT_CORNER_MASK);
 
+  // We mask out the corners by using the DestinationIn transfer mode,
+  // which keeps the RGB pixels from the destination and the alpha from
+  // the source.
+  SkPaint paint;
+  paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
+
+  // Mask out the top left corner.
+  int left_x = toolbar_bounds.x() - kContentEdgeShadowThickness -
+               kClientEdgeThickness;
+  canvas->DrawBitmapInt(*toolbar_left_mask,
+                        left_x, toolbar_bounds.y(), paint);
+
+  // Mask out the top right corner.
+  int right_x = toolbar_bounds.right() - toolbar_right_mask->width() +
+                kContentEdgeShadowThickness + kClientEdgeThickness;
+  canvas->DrawBitmapInt(*toolbar_right_mask,
+                        right_x, toolbar_bounds.y(),
+                        paint);
+
+  // Draw left edge.
+  SkBitmap* toolbar_left = tp->GetBitmapNamed(IDR_CONTENT_TOP_LEFT_CORNER);
+  canvas->DrawBitmapInt(*toolbar_left, left_x, toolbar_bounds.y());
+
+  // Draw center edge.
   SkBitmap* toolbar_center =
       tp->GetBitmapNamed(IDR_CONTENT_TOP_CENTER);
-  canvas->TileImageInt(*toolbar_center, toolbar_bounds.x(), toolbar_bounds.y(),
-                       toolbar_bounds.width(), toolbar_center->height());
+  canvas->TileImageInt(*toolbar_center, left_x + toolbar_left->width(),
+                       toolbar_bounds.y(),
+                       right_x - (left_x + toolbar_left->width()),
+                       toolbar_center->height());
 
+  // Right edge.
   canvas->DrawBitmapInt(*tp->GetBitmapNamed(IDR_CONTENT_TOP_RIGHT_CORNER),
-      toolbar_bounds.right(), toolbar_bounds.y());
+      right_x, toolbar_bounds.y());
 
   // Draw the content/toolbar separator.
   canvas->DrawLineInt(ResourceBundle::toolbar_separator_color,

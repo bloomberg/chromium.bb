@@ -55,7 +55,7 @@ TEST(TextEliderTest, TestGeneralEliding) {
   const std::wstring kEllipsisStr(kEllipsis);
   Testcase testcases[] = {
     {"http://www.google.com/intl/en/ads/",
-     L"http://www.google.com/intl/en/ads/"},
+     L"www.google.com/intl/en/ads/"},
     {"http://www.google.com/intl/en/ads/", L"www.google.com/intl/en/ads/"},
 // TODO(port): make this test case work on mac.
 #if !defined(OS_MACOSX)
@@ -73,7 +73,7 @@ TEST(TextEliderTest, TestGeneralEliding) {
     {"http://subdomain.foo.com/bar/filename.html",
      kEllipsisStr + L"foo.com/" + kEllipsisStr + L"/filename.html"},
     {"http://www.google.com/intl/en/ads/?aLongQueryWhichIsNotRequired",
-     L"http://www.google.com/intl/en/ads/?aLongQ" + kEllipsisStr},
+     L"www.google.com/intl/en/ads/?aLongQ" + kEllipsisStr},
   };
 
   RunTest(testcases, arraysize(testcases));
@@ -83,7 +83,7 @@ TEST(TextEliderTest, TestGeneralEliding) {
 TEST(TextEliderTest, TestMoreEliding) {
   const std::wstring kEllipsisStr(kEllipsis);
   Testcase testcases[] = {
-    {"http://www.google.com/foo?bar", L"http://www.google.com/foo?bar"},
+    {"http://www.google.com/foo?bar", L"www.google.com/foo?bar"},
     {"http://xyz.google.com/foo?bar", L"xyz.google.com/foo?" + kEllipsisStr},
     {"http://xyz.google.com/foo?bar", L"xyz.google.com/foo" + kEllipsisStr},
     {"http://xyz.google.com/foo?bar", L"xyz.google.com/fo" + kEllipsisStr},
@@ -91,11 +91,11 @@ TEST(TextEliderTest, TestMoreEliding) {
     {"", L""},
     {"http://foo.bar..example.com...hello/test/filename.html",
      L"foo.bar..example.com...hello/" + kEllipsisStr + L"/filename.html"},
-    {"http://foo.bar../", L"http://foo.bar../"},
-    {"http://xn--1lq90i.cn/foo", L"http://\x5317\x4eac.cn/foo"},
+    {"http://foo.bar../", L"foo.bar../"},
+    {"http://xn--1lq90i.cn/foo", L"\x5317\x4eac.cn/foo"},
     {"http://me:mypass@secrethost.com:99/foo?bar#baz",
-     L"http://secrethost.com:99/foo?bar#baz"},
-    {"http://me:mypass@ss%xxfdsf.com/foo", L"http://ss%25xxfdsf.com/foo"},
+     L"secrethost.com:99/foo?bar#baz"},
+    {"http://me:mypass@ss%xxfdsf.com/foo", L"ss%25xxfdsf.com/foo"},
     {"mailto:elgoato@elgoato.com", L"mailto:elgoato@elgoato.com"},
     {"javascript:click(0)", L"javascript:click(0)"},
     {"https://chess.eecs.berkeley.edu:4430/login/arbitfilename",
@@ -105,13 +105,13 @@ TEST(TextEliderTest, TestMoreEliding) {
 
     // Unescaping.
     {"http://www/%E4%BD%A0%E5%A5%BD?q=%E4%BD%A0%E5%A5%BD#\xe4\xbd\xa0",
-     L"http://www/\x4f60\x597d?q=\x4f60\x597d#\x4f60"},
+     L"www/\x4f60\x597d?q=\x4f60\x597d#\x4f60"},
 
     // Invalid unescaping for path. The ref will always be valid UTF-8. We don't
     // bother to do too many edge cases, since these are handled by the escaper
     // unittest.
     {"http://www/%E4%A0%E5%A5%BD?q=%E4%BD%A0%E5%A5%BD#\xe4\xbd\xa0",
-     L"http://www/%E4%A0%E5%A5%BD?q=\x4f60\x597d#\x4f60"},
+     L"www/%E4%A0%E5%A5%BD?q=\x4f60\x597d#\x4f60"},
   };
 
   RunTest(testcases, arraysize(testcases));
@@ -229,7 +229,7 @@ TEST(TextEliderTest, ElideTextLongStrings) {
 // Verifies display_url is set correctly.
 TEST(TextEliderTest, SortedDisplayURL) {
   gfx::SortedDisplayURL d_url(GURL("http://www.google.com/"), std::wstring());
-  EXPECT_EQ("http://www.google.com/", UTF16ToASCII(d_url.display_url()));
+  EXPECT_EQ("www.google.com/", UTF16ToASCII(d_url.display_url()));
 }
 
 // Verifies DisplayURL::Compare works correctly.

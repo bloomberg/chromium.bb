@@ -7,7 +7,7 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
-#include "chrome/browser/views/info_bubble.h"
+#include "chrome/browser/views/pinned_contents_info_bubble.h"
 #include "views/view.h"
 
 class Browser;
@@ -39,13 +39,17 @@ class TabContentsDelegateImpl;
 // When a new url is opened, or the user clicks outsides the bounds of the
 // widget the app launcher is closed.
 class AppLauncher : public InfoBubbleDelegate,
-                    public TabContentsDelegate  {
+                    public TabContentsDelegate {
  public:
   // Shows an application launcher bubble pointing to the |bounds| (which should
-  // be in screen coordinates).
+  // be in screen coordinates). |bubble_anchor| specifies at which coordinates
+  // the bubble contents should appear (in screen coordinates). The bubble will
+  // be moved accordingly.
   // The caller DOES NOT OWN the AppLauncher returned.  It is deleted
   // automatically when the AppLauncher is closed.
-  static AppLauncher* Show(Browser* browser, const gfx::Rect& bounds);
+  static AppLauncher* Show(Browser* browser,
+                           const gfx::Rect& bounds,
+                           const gfx::Point& bubble_anchor);
 
   // Shows an application launcher bubble pointing to the new tab button.
   // The caller DOES NOT OWN the AppLauncher returned.  It is deleted
@@ -97,8 +101,8 @@ class AppLauncher : public InfoBubbleDelegate,
   // The currently active browser. We use this to open urls.
   Browser* browser_;
 
-  // The InfoBubble displaying the omnibox and app contents.
-  InfoBubble* info_bubble_;
+  // The InfoBubble displaying the Omnibox and app contents.
+  PinnedContentsInfoBubble* info_bubble_;
 
   // The view with the navigation bar and render view, shown in the info-bubble.
   InfoBubbleContentsView* info_bubble_content_;

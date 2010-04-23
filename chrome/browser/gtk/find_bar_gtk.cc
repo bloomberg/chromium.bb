@@ -456,6 +456,7 @@ void FindBarGtk::Observe(NotificationType type,
   container_height_ = -1;
 
   if (theme_provider_->UseGtkTheme()) {
+    gtk_widget_modify_cursor(text_entry_, NULL, NULL);
     gtk_widget_modify_base(text_entry_, GTK_STATE_NORMAL, NULL);
     gtk_widget_modify_text(text_entry_, GTK_STATE_NORMAL, NULL);
 
@@ -482,6 +483,7 @@ void FindBarGtk::Observe(NotificationType type,
 
     gtk_misc_set_alignment(GTK_MISC(match_count_label_), 0.5, 0.5);
   } else {
+    gtk_widget_modify_cursor(text_entry_, &gfx::kGdkBlack, &gfx::kGdkGray);
     gtk_widget_modify_base(text_entry_, GTK_STATE_NORMAL,
                            &kEntryBackgroundColor);
     gtk_widget_modify_text(text_entry_, GTK_STATE_NORMAL,

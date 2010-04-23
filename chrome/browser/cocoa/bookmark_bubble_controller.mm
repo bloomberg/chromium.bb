@@ -98,7 +98,7 @@
       [BrowserWindowController browserWindowControllerForWindow:parentWindow_];
   [bwc lockBarVisibilityForOwner:self withAnimation:NO delay:NO];
   NSWindow* window = [self window];  // completes nib load
-  [bubble_ setArrowLocation:kTopLeft];
+  [bubble_ setArrowLocation:kTopRight];
   // Insure decent positioning even in the absence of a browser controller,
   // which will occur for some unit tests.
   NSPoint arrowtip = bwc ? [bwc pointForBubbleArrowTip] :

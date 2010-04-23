@@ -9,6 +9,7 @@
 #include "app/clipboard/clipboard.h"
 #include "app/clipboard/scoped_clipboard_writer.h"
 #include "app/resource_bundle.h"
+#include "base/nsimage_cache_mac.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/toolbar_model.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "net/base/escape.h"
 
 // Focus-handling between |field_| and |model_| is a bit subtle.
@@ -61,15 +63,6 @@ const NSColor* ColorWithRGBBytes(int rr, int gg, int bb) {
                                     blue:static_cast<float>(bb)/255.0
                                    alpha:1.0];
 }
-const NSColor* SecureBackgroundColor() {
-  return ColorWithRGBBytes(255, 245, 195);  // Yellow
-}
-const NSColor* NormalBackgroundColor() {
-  return [NSColor controlBackgroundColor];
-}
-const NSColor* InsecureBackgroundColor() {
-  return [NSColor controlBackgroundColor];
-}
 
 const NSColor* HostTextColor() {
   return [NSColor blackColor];
@@ -77,11 +70,14 @@ const NSColor* HostTextColor() {
 const NSColor* BaseTextColor() {
   return [NSColor darkGrayColor];
 }
-const NSColor* SecureSchemeColor() {
-  return ColorWithRGBBytes(0x00, 0x96, 0x14);
+const NSColor* EVSecureSchemeColor() {
+  return ColorWithRGBBytes(0x07, 0x95, 0x00);
 }
-const NSColor* InsecureSchemeColor() {
-  return ColorWithRGBBytes(0xc8, 0x00, 0x00);
+const NSColor* SecureSchemeColor() {
+  return ColorWithRGBBytes(0x00, 0x0e, 0x95);
+}
+const NSColor* SecurityErrorSchemeColor() {
+  return ColorWithRGBBytes(0xa2, 0x00, 0x00);
 }
 
 // Store's the model and view state across tab switches.
@@ -125,20 +121,57 @@ NSRange ComponentToNSRange(const url_parse::Component& component) {
 
 }  // namespace
 
+// static
+NSImage* AutocompleteEditViewMac::ImageForResource(int resource_id) {
+  NSString* image_name = nil;
+
+  switch(resource_id) {
+    // From the autocomplete popup, or the star icon at the RHS of the
+    // text field.
+    case IDR_OMNIBOX_STAR: image_name = @"omnibox_star.pdf"; break;
+    case IDR_OMNIBOX_STAR_LIT: image_name = @"omnibox_star_lit.pdf"; break;
+
+    // Values from |AutocompleteMatch::TypeToIcon()|.
+    case IDR_OMNIBOX_SEARCH: image_name = @"omnibox_search.pdf"; break;
+    case IDR_OMNIBOX_HTTP: image_name = @"omnibox_http.pdf"; break;
+    case IDR_OMNIBOX_HISTORY: image_name = @"omnibox_history.pdf"; break;
+    case IDR_OMNIBOX_MORE: image_name = @"omnibox_more.pdf"; break;
+
+    // Values from |ToolbarModel::GetIcon()|.
+    case IDR_OMNIBOX_HTTPS_VALID:
+      image_name = @"omnibox_https_valid.pdf"; break;
+    case IDR_OMNIBOX_HTTPS_WARNING:
+      image_name = @"omnibox_https_warning.pdf"; break;
+    case IDR_OMNIBOX_HTTPS_INVALID:
+      image_name = @"omnibox_https_invalid.pdf"; break;
+  }
+
+  if (image_name) {
+    if (NSImage* image = nsimage_cache::ImageNamed(image_name)) {
+      return image;
+    } else {
+      NOTREACHED()
+          << "Missing image for " << base::SysNSStringToUTF8(image_name);
+    }
+  }
+
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  return rb.GetNSImageNamed(resource_id);
+}
+
 // TODO(shess): AutocompletePopupViewMac doesn't really need an
 // NSTextField.  It wants to know where the position the popup, what
 // font to use, and it also needs to be able to attach the popup to
 // the window |field_| is in.
 AutocompleteEditViewMac::AutocompleteEditViewMac(
     AutocompleteEditController* controller,
-    const BubblePositioner* bubble_positioner,
     ToolbarModel* toolbar_model,
     Profile* profile,
     CommandUpdater* command_updater,
     AutocompleteTextField* field)
     : model_(new AutocompleteEditModel(this, controller, profile)),
-      popup_view_(new AutocompletePopupViewMac(
-          this, model_.get(), bubble_positioner, profile, field)),
+      popup_view_(new AutocompletePopupViewMac(this, model_.get(), profile,
+                                               field)),
       controller_(controller),
       toolbar_model_(toolbar_model),
       command_updater_(command_updater),
@@ -270,6 +303,17 @@ void AutocompleteEditViewMac::OpenURL(const GURL& url,
 
 std::wstring AutocompleteEditViewMac::GetText() const {
   return base::SysNSStringToWide([field_ stringValue]);
+}
+
+bool AutocompleteEditViewMac::IsEditingOrEmpty() const {
+  return model_->user_input_in_progress() ||
+      ([[field_ stringValue] length] == 0);
+}
+
+int AutocompleteEditViewMac::GetIcon() const {
+  return IsEditingOrEmpty() ?
+      AutocompleteMatch::TypeToIcon(model_->CurrentTextType()) :
+      toolbar_model_->GetIcon();
 }
 
 void AutocompleteEditViewMac::SetUserText(const std::wstring& text,
@@ -410,32 +454,23 @@ void AutocompleteEditViewMac::SetText(const std::wstring& display_text) {
   // TODO(shess): GTK has this as a member var, figure out why.
   // [Could it be to not change if no change?  If so, I'm guessing
   // AppKit may already handle that.]
-  const ToolbarModel::SecurityLevel scheme_security_level =
-      toolbar_model_->GetSchemeSecurityLevel();
-
-  if (scheme_security_level == ToolbarModel::SECURE) {
-    [field_ setBackgroundColor:SecureBackgroundColor()];
-  } else if (scheme_security_level == ToolbarModel::NORMAL) {
-    [field_ setBackgroundColor:NormalBackgroundColor()];
-  } else if (scheme_security_level == ToolbarModel::INSECURE) {
-    [field_ setBackgroundColor:InsecureBackgroundColor()];
-  } else {
-    NOTREACHED() << "Unexpected scheme_security_level: "
-                 << scheme_security_level;
-  }
+  const ToolbarModel::SecurityLevel security_level =
+      toolbar_model_->GetSecurityLevel();
 
   // Emphasize the scheme for security UI display purposes (if necessary).
   if (!model_->user_input_in_progress() && scheme.is_nonempty() &&
-      (scheme_security_level != ToolbarModel::NORMAL)) {
+      (security_level != ToolbarModel::NONE)) {
     NSColor* color;
-    if (scheme_security_level == ToolbarModel::SECURE) {
-      color = SecureSchemeColor();
-    } else {
-      color = InsecureSchemeColor();
+    if (security_level == ToolbarModel::EV_SECURE) {
+      color = EVSecureSchemeColor();
+    } else if (security_level == ToolbarModel::SECURITY_ERROR) {
+      color = SecurityErrorSchemeColor();
       // Add a strikethrough through the scheme.
       [as addAttribute:NSStrikethroughStyleAttributeName
                  value:[NSNumber numberWithInt:NSUnderlineStyleSingle]
                  range:ComponentToNSRange(scheme)];
+    } else {
+      color = SecureSchemeColor();
     }
     [as addAttribute:NSForegroundColorAttributeName value:color
                range:ComponentToNSRange(scheme)];
