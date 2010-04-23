@@ -32,6 +32,13 @@
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 
+// TODO(alokp): Remove GLES2_GPU_SERVICE_TRANSLATE_SHADER guard
+// as soon as translator is ready.
+//#define GLES2_GPU_SERVICE_TRANSLATE_SHADER
+#if defined(GLES2_GPU_SERVICE_TRANSLATE_SHADER)
+#include "third_party/angleproject/include/GLSLANG/ShaderLang.h"
+#endif  // GLES2_GPU_SERVICE_TRANSLATE_SHADER
+
 #if !defined(GL_DEPTH24_STENCIL8)
 #define GL_DEPTH24_STENCIL8 0x88F0
 #endif
@@ -1288,7 +1295,16 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
   // isn't well documented; it was discovered in the Khronos OpenGL ES
   // mailing list archives.
   glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
-#endif
+
+#if defined(GLES2_GPU_SERVICE_TRANSLATE_SHADER)
+  // Initialize GLSL ES to GLSL translator.
+  if (!ShInitialize()) {
+    DLOG(ERROR) << "Could not initialize GLSL translator.";
+    Destroy();
+    return false;
+  }
+#endif  // GLES2_GPU_SERVICE_TRANSLATE_SHADER
+#endif  // GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2
 
   return true;
 }
@@ -1644,6 +1660,13 @@ void GLES2DecoderImpl::Destroy() {
     default_context_->Destroy();
     default_context_.reset();
   }
+
+#if !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
+#if defined(GLES2_GPU_SERVICE_TRANSLATE_SHADER)
+  // Terminate GLSL translator.
+  ShFinalize();
+#endif  // GLES2_GPU_SERVICE_TRANSLATE_SHADER
+#endif  // GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2
 }
 
 void GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
@@ -2524,12 +2547,45 @@ void GLES2DecoderImpl::DoCompileShader(GLuint shader) {
     SetGLError(GL_INVALID_OPERATION);
     return;
   }
-  // TODO(gman): Run shader through compiler that converts GL ES 2.0 shader
-  // to DesktopGL shader and pass that to glShaderSource and then
-  // glCompileShader.
-  const char* ptr = info->source().c_str();
-  glShaderSource(shader, 1, &ptr, NULL);
+
+  // Translate GL ES 2.0 shader to Desktop GL shader and pass that to
+  // glShaderSource and then glCompileShader.
+  const char* shader_src = info->source().c_str();
+#if !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
+#if defined(GLES2_GPU_SERVICE_TRANSLATE_SHADER)
+  int dbg_options = 0;
+  EShLanguage language = EShLangVertex;
+  TBuiltInResource resources;
+  // TODO(alokp): Ask gman how to get appropriate values.
+  resources.maxVertexAttribs = 8;
+  resources.maxVertexUniformVectors = 128;
+  resources.maxVaryingVectors = 8;
+  resources.maxVertexTextureImageUnits = 0;
+  resources.maxCombinedTextureImageUnits = 8;
+  resources.maxTextureImageUnits = 8;
+  resources.maxFragmentUniformVectors = 16;
+  resources.maxDrawBuffers = 1;
+  ShHandle compiler = ShConstructCompiler(language, dbg_options);
+  if (!ShCompile(compiler, &shader_src, 1, EShOptNone, &resources,
+                 dbg_options)) {
+    // TODO(alokp): Ask gman where to set compile-status and info-log.
+    // May be add member variables to ShaderManager::ShaderInfo?
+    const char* info_log = ShGetInfoLog(compiler);
+    ShDestruct(compiler);
+    return;
+  }
+  shader_src = ShGetObjectCode(compiler);
+#endif  // GLES2_GPU_SERVICE_TRANSLATE_SHADER
+#endif  // GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2
+
+  glShaderSource(shader, 1, &shader_src, NULL);
   glCompileShader(shader);
+
+#if !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
+#ifdef GLES2_GPU_SERVICE_TRANSLATE_SHADER
+  ShDestruct(compiler);
+#endif  // GLES2_GPU_SERVICE_TRANSLATE_SHADER
+#endif  // GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2
 };
 
 void GLES2DecoderImpl::DoGetShaderiv(
