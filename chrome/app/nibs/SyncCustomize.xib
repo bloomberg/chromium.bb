@@ -372,7 +372,7 @@
 						<string key="label">enabled: autofillRegistered</string>
 						<reference key="source" ref="903818124"/>
 						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector" id="587129266">
+						<object class="NSNibBindingConnector" key="connector">
 							<reference key="NSSource" ref="903818124"/>
 							<reference key="NSDestination" ref="1001"/>
 							<string key="NSLabel">enabled: autofillRegistered</string>
@@ -443,43 +443,13 @@
 							<string key="NSBinding">value</string>
 							<string key="NSKeyPath">autofillPreferred</string>
 							<object class="NSDictionary" key="NSOptions">
-								<bool key="EncodedWithXMLCoder">YES</bool>
-								<object class="NSMutableArray" key="dict.sortedKeys">
-									<bool key="EncodedWithXMLCoder">YES</bool>
-									<string>NSAllowsEditingMultipleValuesSelection</string>
-									<string>NSConditionallySetsHidden</string>
-								</object>
-								<object class="NSMutableArray" key="dict.values">
-									<bool key="EncodedWithXMLCoder">YES</bool>
-									<reference ref="6"/>
-									<boolean value="YES"/>
-								</object>
+								<string key="NS.key.0">NSAllowsEditingMultipleValuesSelection</string>
+								<reference key="NS.object.0" ref="6"/>
 							</object>
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>
-					<int key="connectionID">146</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">hidden: autofillRegistered</string>
-						<reference key="source" ref="903818124"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="903818124"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">hidden: autofillRegistered</string>
-							<string key="NSBinding">hidden</string>
-							<string key="NSKeyPath">autofillRegistered</string>
-							<object class="NSDictionary" key="NSOptions">
-								<string key="NS.key.0">NSValueTransformerName</string>
-								<string key="NS.object.0">NSNegateBoolean</string>
-							</object>
-							<reference key="NSPreviousConnector" ref="587129266"/>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">147</int>
+					<int key="connectionID">148</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -734,7 +704,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">147</int>
+			<int key="maxID">148</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
