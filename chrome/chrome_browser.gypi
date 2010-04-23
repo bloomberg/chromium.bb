@@ -1136,8 +1136,6 @@
         'browser/geolocation/location_arbitrator.h',
         'browser/geolocation/location_provider.cc',
         'browser/geolocation/location_provider.h',
-        'browser/geolocation/location_provider_pool.cc',
-        'browser/geolocation/location_provider_pool.h',
         'browser/geolocation/network_location_provider.cc',
         'browser/geolocation/network_location_provider.h',
         'browser/geolocation/network_location_request.cc',
