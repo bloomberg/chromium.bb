@@ -39,7 +39,7 @@ static const string::size_type kUpdateStatementBufferSize = 2048;
 
 // Increment this version whenever updating DB tables.
 extern const int32 kCurrentDBVersion;  // Global visibility for our unittest.
-const int32 kCurrentDBVersion = 70;
+const int32 kCurrentDBVersion = 71;
 
 namespace {
 
