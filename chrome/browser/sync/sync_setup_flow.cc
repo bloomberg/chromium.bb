@@ -321,8 +321,15 @@ void SyncSetupFlow::Advance(SyncSetupWizard::State advance_state) {
       else
         flow_handler_->ShowGaiaSuccessAndSettingUp();
       break;
-    case SyncSetupWizard::FATAL_ERROR:
+    case SyncSetupWizard::FATAL_ERROR: {
+      // This shows the user the "Could not connect to server" error.
+      // TODO(sync): Update this error messaging.
+      DictionaryValue args;
+      SyncSetupFlow::GetArgsForGaiaLogin(service_, &args);
+      args.SetInteger(L"error", GoogleServiceAuthError::CONNECTION_FAILED);
+      flow_handler_->ShowGaiaLogin(args);
       break;
+    }
     case SyncSetupWizard::DONE_FIRST_TIME:
       flow_handler_->ShowFirstTimeDone(
           UTF16ToWide(service_->GetAuthenticatedUsername()));

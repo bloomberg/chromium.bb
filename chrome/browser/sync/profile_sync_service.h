@@ -392,6 +392,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   NotificationRegistrar registrar_;
 
+  ScopedRunnableMethodFactory<ProfileSyncService>
+    scoped_runnable_method_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };
 

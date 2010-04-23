@@ -148,6 +148,7 @@
         showCaptcha(args);
       }
       document.getElementById("signIn").disabled = false;
+      document.getElementById("signIn").value = templateData['signin'];
       if (args.showCustomize) {
         document.getElementById("customize").disabled = false;
         document.getElementById("customize").style.visibility = "visible";

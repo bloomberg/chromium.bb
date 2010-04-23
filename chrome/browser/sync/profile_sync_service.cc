@@ -16,6 +16,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/task.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/sync/engine/syncapi.h"
@@ -56,7 +57,8 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
       is_auth_in_progress_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(wizard_(this)),
       unrecoverable_error_detected_(false),
-      notification_method_(browser_sync::kDefaultNotificationMethod) {
+      notification_method_(browser_sync::kDefaultNotificationMethod),
+      ALLOW_THIS_IN_INITIALIZER_LIST(scoped_runnable_method_factory_(this)) {
   registrar_.Add(this,
                  NotificationType::SYNC_CONFIGURE_START,
                  NotificationService::AllSources());
@@ -330,6 +332,8 @@ const wchar_t* ProfileSyncService::GetPrefNameForDataType(
 // to do as little work as possible, to avoid further corruption or crashes.
 void ProfileSyncService::OnUnrecoverableError() {
   unrecoverable_error_detected_ = true;
+  // TODO(sync) remove this unrecoverable_error_detected_ variable_ as it only
+  // affects ShouldPushChanges().
 
   // Shut all data types down.
   if (data_type_manager_.get())
@@ -337,8 +341,20 @@ void ProfileSyncService::OnUnrecoverableError() {
 
   // Tell the wizard so it can inform the user only if it is already open.
   wizard_.Step(SyncSetupWizard::FATAL_ERROR);
+
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
   LOG(ERROR) << "Unrecoverable error detected -- ProfileSyncService unusable.";
+
+  if (WizardIsVisible()) {
+    // We've hit an error in the middle of a startup process- shutdown all the
+    // backend stuff, and then restart it, so we're in the same state as before.
+    MessageLoop::current()->PostTask(FROM_HERE,
+        scoped_runnable_method_factory_.NewRunnableMethod(
+        &ProfileSyncService::Shutdown, true));
+    MessageLoop::current()->PostTask(FROM_HERE,
+        scoped_runnable_method_factory_.NewRunnableMethod(
+        &ProfileSyncService::StartUp));
+  }
 }
 
 void ProfileSyncService::OnBackendInitialized() {
