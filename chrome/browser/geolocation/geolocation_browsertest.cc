@@ -383,11 +383,12 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_ErrorOnPermissionDenied) {
 #define MAYBE_NoInfobarForSecondTab NoInfobarForSecondTab
 #endif
 
-// TODO(joth): Fix test. http://crbug.com/40099
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DISABLED_NoInfobarForSecondTab) {
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForSecondTab) {
   Initialize(INITIALIZATION_NONE);
   AddGeolocationWatch(true);
   SetInfobarResponse(current_url_, true);
+  // Disables further prompts from this tab.
+  CheckStringValueFromJavascript("false", "geoEnableAlerts(false)");
 
   // Checks infobar will not be created a second tab.
   Initialize(INITIALIZATION_NEWTAB);
@@ -462,9 +463,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForOffTheRecord) {
 // http://crbug.com/29424
 #define MAYBE_IFramesWithFreshPosition DISABLED_IFramesWithFreshPosition
 #else
-// TODO(bulach): investigate this failure.
-// http://build.chromium.org/buildbot/waterfall/builders/XP%20Tests/builds/18549/steps/browser_tests/logs/stdio
-#define MAYBE_IFramesWithFreshPosition FLAKY_IFramesWithFreshPosition
+#define MAYBE_IFramesWithFreshPosition IFramesWithFreshPosition
 #endif
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
@@ -512,9 +511,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
 // http://crbug.com/29424
 #define MAYBE_IFramesWithCachedPosition DISABLED_IFramesWithCachedPosition
 #else
-// TODO(bulach): enable this test when we roll to
-// https://bugs.webkit.org/show_bug.cgi?id=36315
-#define MAYBE_IFramesWithCachedPosition DISABLED_IFramesWithCachedPosition
+#define MAYBE_IFramesWithCachedPosition IFramesWithCachedPosition
 #endif
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
