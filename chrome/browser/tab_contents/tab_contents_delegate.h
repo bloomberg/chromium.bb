@@ -169,7 +169,7 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   // Sets focus to the location bar or some other place that is appropriate.
   // This is called when the tab wants to encourage user input, like for the
   // new tab page.
-  virtual void SetFocusToLocationBar() {}
+  virtual void SetFocusToLocationBar(bool select_all) {}
 
   // Called when a popup select is about to be displayed. The delegate can use
   // this to disable inactive rendering for the frame in the window the select

@@ -929,7 +929,7 @@ void ToolbarView::RestoreLastFocusedView() {
     views::View* view = GetAncestorWithClassName(BrowserView::kViewClassName);
     if (view) {
       BrowserView* browser_view = static_cast<BrowserView*>(view);
-      browser_view->SetFocusToLocationBar();
+      browser_view->SetFocusToLocationBar(false);
     }
   }
 }

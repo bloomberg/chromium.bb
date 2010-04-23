@@ -52,7 +52,7 @@ class FindBarView : public DropdownBarView,
                        const string16& find_text);
 
   // Claims focus for the text field and selects its contents.
-  virtual void SetFocusAndSelection();
+  virtual void SetFocusAndSelection(bool select_all);
 
   // Overridden from views::View:
   virtual void Paint(gfx::Canvas* canvas);

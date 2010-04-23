@@ -316,7 +316,7 @@ void AutocompleteEditViewMac::SetWindowTextAndCaretPos(const std::wstring& text,
 
 void AutocompleteEditViewMac::SetForcedQuery() {
   // We need to do this first, else |SetSelectedRange()| won't work.
-  FocusLocation();
+  FocusLocation(true);
 
   const std::wstring current_text(GetText());
   if (current_text.empty() || (current_text[0] != '?')) {
@@ -825,7 +825,9 @@ void AutocompleteEditViewMac::OnControlKeyChanged(bool pressed) {
   model_->OnControlKeyChanged(pressed);
 }
 
-void AutocompleteEditViewMac::FocusLocation() {
+void AutocompleteEditViewMac::FocusLocation(bool select_all) {
+  // TODO(pkasting): Figure out Mac's weird focus-handling and do the right
+  // thing here :(
   if ([field_ isEditable]) {
     [[field_ window] makeFirstResponder:field_];
     DCHECK_EQ([field_ currentEditor], [[field_ window] firstResponder]);

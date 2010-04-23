@@ -44,8 +44,8 @@ class LocationBar {
   // Accepts the current input, overriding the disposition.
   virtual void AcceptInputWithDisposition(WindowOpenDisposition) = 0;
 
-  // Focuses and selects the contents of the location bar.
-  virtual void FocusLocation() = 0;
+  // Focuses the location bar.  Optionally also selects its contents.
+  virtual void FocusLocation(bool select_all) = 0;
 
   // Clears the location bar, inserts an annoying little "?" turd and sets
   // focus to it.

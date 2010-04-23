@@ -1659,9 +1659,10 @@ void LocationBarView::AcceptInputWithDisposition(WindowOpenDisposition disp) {
   location_entry_->model()->AcceptInput(disp, false);
 }
 
-void LocationBarView::FocusLocation() {
+void LocationBarView::FocusLocation(bool select_all) {
   location_entry_->SetFocus();
-  location_entry_->SelectAll(true);
+  if (select_all)
+    location_entry_->SelectAll(true);
 }
 
 void LocationBarView::FocusSearch() {

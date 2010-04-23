@@ -70,7 +70,7 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual bool IsFullscreen() const;
   virtual bool IsFullscreenBubbleVisible() const;
   virtual LocationBar* GetLocationBar() const;
-  virtual void SetFocusToLocationBar();
+  virtual void SetFocusToLocationBar(bool select_all);
   virtual void UpdateStopGoState(bool is_loading, bool force);
   virtual void UpdateToolbar(TabContents* contents,
                              bool should_restore_state);

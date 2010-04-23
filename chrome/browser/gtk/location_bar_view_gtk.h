@@ -97,7 +97,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   virtual PageTransition::Type GetPageTransition() const;
   virtual void AcceptInput();
   virtual void AcceptInputWithDisposition(WindowOpenDisposition);
-  virtual void FocusLocation();
+  virtual void FocusLocation(bool select_all);
   virtual void FocusSearch();
   virtual void UpdateContentSettingsIcons();
   virtual void UpdatePageActions();

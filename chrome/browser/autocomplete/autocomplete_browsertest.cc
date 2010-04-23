@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,7 +62,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, Basic) {
   // TODO(phajdan.jr): check state of IsSelectAll when it's consistent across
   // platforms.
 
-  location_bar->FocusLocation();
+  location_bar->FocusLocation(true);
 
   EXPECT_EQ(std::wstring(), location_bar->GetInputString());
   EXPECT_EQ(UTF8ToWide(chrome::kAboutBlankURL),

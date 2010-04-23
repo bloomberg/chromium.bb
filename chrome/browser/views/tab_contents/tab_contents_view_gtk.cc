@@ -267,7 +267,7 @@ void TabContentsViewGtk::Focus() {
 
 void TabContentsViewGtk::SetInitialFocus() {
   if (tab_contents()->FocusLocationBarByDefault())
-    tab_contents()->SetFocusToLocationBar();
+    tab_contents()->SetFocusToLocationBar(false);
   else
     Focus();
 }

@@ -202,7 +202,7 @@ void TabContentsViewWin::Focus() {
 
 void TabContentsViewWin::SetInitialFocus() {
   if (tab_contents()->FocusLocationBarByDefault())
-    tab_contents()->SetFocusToLocationBar();
+    tab_contents()->SetFocusToLocationBar(false);
   else
     Focus();
 }

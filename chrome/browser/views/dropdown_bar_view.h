@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@ class DropdownBarView : public views::View {
   virtual ~DropdownBarView() {}
 
   // Claims focus for the text field and selects its contents.
-  virtual void SetFocusAndSelection() = 0;
+  virtual void SetFocusAndSelection(bool select_all) = 0;
 
   // Updates the view to let it know where the host is clipping the
   // dropdown widget (while animating the opening or closing of the widget).

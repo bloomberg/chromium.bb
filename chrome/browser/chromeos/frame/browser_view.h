@@ -61,7 +61,7 @@ class BrowserView : public ::BrowserView,
   virtual void Init();
   virtual void Show();
   virtual bool IsToolbarVisible() const;
-  virtual void SetFocusToLocationBar();
+  virtual void SetFocusToLocationBar(bool select_all);
   virtual void ToggleCompactNavigationBar();
   virtual views::LayoutManager* CreateLayoutManager() const;
   virtual BaseTabStrip* CreateTabStrip(TabStripModel* tab_strip_model);
@@ -86,7 +86,7 @@ class BrowserView : public ::BrowserView,
   virtual bool IsButtonVisible(const views::View* button_view) const;
 
   // Shows the compact location bar under the selected tab.
-  void ShowCompactLocationBarUnderSelectedTab();
+  void ShowCompactLocationBarUnderSelectedTab(bool select_all);
 
   // Returns true if the ui style is in Compact mode.
   bool is_compact_style() const {

@@ -371,10 +371,9 @@ class PrefObserverBridge : public NotificationObserver {
   return locationBarView_.get();
 }
 
-- (void)focusLocationBar {
-  if (locationBarView_.get()) {
-    locationBarView_->FocusLocation();
-  }
+- (void)focusLocationBar:(BOOL)selectAll {
+  if (locationBarView_.get())
+    locationBarView_->FocusLocation(selectAll ? true : false);
 }
 
 // Called when the state for a command changes to |enabled|. Update the

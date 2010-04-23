@@ -448,7 +448,7 @@ class TabContents : public PageNavigator,
   virtual bool FocusLocationBarByDefault();
 
   // Focuses the location bar.
-  virtual void SetFocusToLocationBar();
+  virtual void SetFocusToLocationBar(bool select_all);
 
   // Infobars ------------------------------------------------------------------
 

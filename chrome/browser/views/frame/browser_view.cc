@@ -835,11 +835,11 @@ LocationBar* BrowserView::GetLocationBar() const {
   return toolbar_->location_bar();
 }
 
-void BrowserView::SetFocusToLocationBar() {
+void BrowserView::SetFocusToLocationBar(bool select_all) {
   LocationBarView* location_bar = toolbar_->location_bar();
   if (location_bar->IsFocusable()) {
     // Location bar got focus.
-    location_bar->FocusLocation();
+    location_bar->FocusLocation(select_all);
   } else {
     // If none of location bar/compact navigation bar got focus,
     // then clear focus.

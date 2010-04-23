@@ -128,6 +128,7 @@
         'test/chrome_process_util_mac.cc',
         'test/profile_mock.h',
         'test/test_browser_window.h',
+        'test/test_location_bar.h',
         'test/testing_profile.cc',
         'test/testing_profile.h',
         'test/ui_test_utils.cc',

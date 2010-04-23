@@ -1371,7 +1371,7 @@ void Browser::FocusPageAndAppMenus() {
 
 void Browser::FocusLocationBar() {
   UserMetrics::RecordAction(UserMetricsAction("FocusLocation"), profile_);
-  window_->SetFocusToLocationBar();
+  window_->SetFocusToLocationBar(true);
 }
 
 void Browser::FocusSearch() {
@@ -2474,7 +2474,7 @@ void Browser::ShowHtmlDialog(HtmlDialogUIDelegate* delegate,
   window_->ShowHTMLDialog(delegate, parent_window);
 }
 
-void Browser::SetFocusToLocationBar() {
+void Browser::SetFocusToLocationBar(bool select_all) {
   // Two differences between this and FocusLocationBar():
   // (1) This doesn't get recorded in user metrics, since it's called
   //     internally.
@@ -2482,7 +2482,7 @@ void Browser::SetFocusToLocationBar() {
   //     the focus.  FocusLocationBar() is only reached when the location bar is
   //     focusable, but this may be reached at other times, e.g. while in
   //     fullscreen mode, where we need to leave focus in a consistent state.
-  window_->SetFocusToLocationBar();
+  window_->SetFocusToLocationBar(select_all);
 }
 
 void Browser::RenderWidgetShowing() {

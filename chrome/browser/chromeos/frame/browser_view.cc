@@ -84,7 +84,7 @@ class ChromeosTab : public Tab {
   // Overridden from views::View.
   virtual void OnMouseEntered(const views::MouseEvent& event) {
     TabRenderer::OnMouseEntered(event);
-    browser_view_->ShowCompactLocationBarUnderSelectedTab();
+    browser_view_->ShowCompactLocationBarUnderSelectedTab(true);
   }
 
  private:
@@ -255,7 +255,7 @@ class BrowserViewLayout : public ::BrowserViewLayout {
      if (compact_navigation_bar_->IsVisible()) {
      // Update the size and location of the compact location bar.
      int index = browser_view()->browser()->selected_index();
-     compact_location_bar_host_->Update(index, false);
+     compact_location_bar_host_->Update(index, false, true);
      }
     */
 
@@ -412,12 +412,11 @@ bool BrowserView::IsToolbarVisible() const {
   return ::BrowserView::IsToolbarVisible();
 }
 
-void BrowserView::SetFocusToLocationBar() {
-  if (is_compact_style()) {
-    ShowCompactLocationBarUnderSelectedTab();
-  } else {
-    ::BrowserView::SetFocusToLocationBar();
-  }
+void BrowserView::SetFocusToLocationBar(bool select_all) {
+  if (is_compact_style())
+    ShowCompactLocationBarUnderSelectedTab(select_all);
+  else
+    ::BrowserView::SetFocusToLocationBar(select_all);
 }
 
 void BrowserView::ToggleCompactNavigationBar() {
@@ -516,11 +515,11 @@ bool BrowserView::IsButtonVisible(const views::View* button_view) const {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserView public:
 
-void BrowserView::ShowCompactLocationBarUnderSelectedTab() {
+void BrowserView::ShowCompactLocationBarUnderSelectedTab(bool select_all) {
   if (!is_compact_style())
     return;
   int index = browser()->selected_index();
-  compact_location_bar_host_->Update(index, true);
+  compact_location_bar_host_->Update(index, true, select_all);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

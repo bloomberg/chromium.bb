@@ -178,7 +178,7 @@ class TabStripModelObserverBridge;
 - (void)activate;
 
 // Make the location bar the first responder, if possible.
-- (void)focusLocationBar;
+- (void)focusLocationBar:(BOOL)selectAll;
 
 // Make the (currently-selected) tab contents the first responder, if possible.
 - (void)focusTabContents;

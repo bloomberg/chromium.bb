@@ -210,9 +210,9 @@ void FindBarView::UpdateForResult(const FindNotificationDetails& result,
   SchedulePaint();
 }
 
-void FindBarView::SetFocusAndSelection() {
+void FindBarView::SetFocusAndSelection(bool select_all) {
   find_text_->RequestFocus();
-  if (!find_text_->text().empty())
+  if (select_all && !find_text_->text().empty())
     find_text_->SelectAll();
 }
 

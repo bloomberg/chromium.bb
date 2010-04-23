@@ -205,8 +205,8 @@ LocationBar* BrowserWindowCocoa::GetLocationBar() const {
   return [controller_ locationBarBridge];
 }
 
-void BrowserWindowCocoa::SetFocusToLocationBar() {
-  [controller_ focusLocationBar];
+void BrowserWindowCocoa::SetFocusToLocationBar(bool select_all) {
+  [controller_ focusLocationBar:select_all ? YES : NO];
 }
 
 void BrowserWindowCocoa::UpdateStopGoState(bool is_loading, bool force) {

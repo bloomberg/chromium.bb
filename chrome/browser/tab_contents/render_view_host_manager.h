@@ -66,7 +66,7 @@ class RenderViewHostManager
     virtual bool FocusLocationBarByDefault() = 0;
 
     // Focuses the location bar.
-    virtual void SetFocusToLocationBar() = 0;
+    virtual void SetFocusToLocationBar(bool select_all) = 0;
   };
 
   // Both delegate pointers must be non-NULL and are not owned by this class.

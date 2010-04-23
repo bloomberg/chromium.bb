@@ -148,7 +148,7 @@ class TabContentsForFocusTest : public TestTabContents {
       : TestTabContents(profile, instance), focus_called_(0) {
   }
 
-  virtual void SetFocusToLocationBar() { ++focus_called_; }
+  virtual void SetFocusToLocationBar(bool select_all) { ++focus_called_; }
   int focus_called() const { return focus_called_; }
 
  private:

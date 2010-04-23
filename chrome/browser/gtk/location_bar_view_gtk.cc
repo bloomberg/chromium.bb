@@ -543,9 +543,10 @@ void LocationBarViewGtk::AcceptInputWithDisposition(
   location_entry_->model()->AcceptInput(disposition, false);
 }
 
-void LocationBarViewGtk::FocusLocation() {
+void LocationBarViewGtk::FocusLocation(bool select_all) {
   location_entry_->SetFocus();
-  location_entry_->SelectAll(true);
+  if (select_all)
+    location_entry_->SelectAll(true);
 }
 
 void LocationBarViewGtk::FocusSearch() {

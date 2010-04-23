@@ -1111,8 +1111,8 @@
 }
 
 // Make the location bar the first responder, if possible.
-- (void)focusLocationBar {
-  [toolbarController_ focusLocationBar];
+- (void)focusLocationBar:(BOOL)selectAll {
+  [toolbarController_ focusLocationBar:selectAll];
 }
 
 - (void)focusTabContents {

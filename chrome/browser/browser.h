@@ -455,7 +455,7 @@ class Browser : public TabStripModelDelegate,
 
   // Focus various bits of UI
   void FocusToolbar();
-  void FocusLocationBar();
+  void FocusLocationBar();  // Also selects any existing text.
   void FocusSearch();
   void FocusPageAndAppMenus();
 
@@ -663,7 +663,7 @@ class Browser : public TabStripModelDelegate,
   virtual void BeforeUnloadFired(TabContents* source,
                                  bool proceed,
                                  bool* proceed_to_fire_unload);
-  virtual void SetFocusToLocationBar();
+  virtual void SetFocusToLocationBar(bool select_all);
   virtual void RenderWidgetShowing();
   virtual int GetExtraRenderViewHeight() const;
   virtual void OnStartDownload(DownloadItem* download);

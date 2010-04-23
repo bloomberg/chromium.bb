@@ -62,9 +62,10 @@ CompactLocationBarView::~CompactLocationBarView() {
 ////////////////////////////////////////////////////////////////////////////////
 // CompactLocationBarView public:
 
-void CompactLocationBarView::SetFocusAndSelection() {
+void CompactLocationBarView::SetFocusAndSelection(bool select_all) {
   location_entry_->SetFocus();
-  location_entry_->SelectAll(true);
+  if (select_all)
+    location_entry_->SelectAll(true);
 }
 
 void CompactLocationBarView::Update(const TabContents* contents) {

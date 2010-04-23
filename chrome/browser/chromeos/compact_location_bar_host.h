@@ -50,7 +50,7 @@ class CompactLocationBarHost : public DropdownBarHost,
   // |index| is the index of the tab the compact location bar
   // will be attached to and |animate| specifies if the location bar
   // should animate when shown.
-  void Update(int index, bool animate);
+  void Update(int index, bool animate, bool select_all);
 
   // (Re)Starts the popup timer that hides the popup after X seconds.
   void StartAutoHideTimer();

@@ -42,8 +42,8 @@ class CompactLocationBarView : public DropdownBarView,
   explicit CompactLocationBarView(CompactLocationBarHost* host);
   ~CompactLocationBarView();
 
-  // Claims focus for the text field and selects its contents.
-  virtual void SetFocusAndSelection();
+  // Claims focus for the text field and optionally selects its contents.
+  virtual void SetFocusAndSelection(bool select_all);
 
   void Update(const TabContents* contents);
 

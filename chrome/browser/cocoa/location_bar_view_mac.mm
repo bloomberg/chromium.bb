@@ -161,8 +161,8 @@ void LocationBarViewMac::AcceptInputWithDisposition(
   edit_view_->model()->AcceptInput(disposition, false);
 }
 
-void LocationBarViewMac::FocusLocation() {
-  edit_view_->FocusLocation();
+void LocationBarViewMac::FocusLocation(bool select_all) {
+  edit_view_->FocusLocation(select_all);
 }
 
 void LocationBarViewMac::FocusSearch() {

@@ -88,7 +88,7 @@ void DropdownBarHost::Show(bool animate) {
 }
 
 void DropdownBarHost::SetFocusAndSelection() {
-  view_->SetFocusAndSelection();
+  view_->SetFocusAndSelection(true);
 }
 
 bool DropdownBarHost::IsAnimating() const {

@@ -258,6 +258,6 @@ void AccessibleToolbarView::SetFocusToLastFocusedView() {
       BrowserView* browser_view = static_cast<BrowserView*>(view);
 
       // Force the focus to be set on the location bar.
-      browser_view->SetFocusToLocationBar();
+      browser_view->SetFocusToLocationBar(false);
     }
 }

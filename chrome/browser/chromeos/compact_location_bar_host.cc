@@ -185,7 +185,7 @@ void CompactLocationBarHost::TabSelectedAt(TabContents* old_contents,
                                            bool user_gesture) {
   if (user_gesture) {
     // Show the compact location bar only when a user selected the tab.
-    Update(index, false);
+    Update(index, false, true);
   } else {
     Hide(false);
   }
@@ -194,7 +194,7 @@ void CompactLocationBarHost::TabSelectedAt(TabContents* old_contents,
 void CompactLocationBarHost::TabMoved(TabContents* contents,
                                       int from_index,
                                       int to_index) {
-  Update(to_index, false);
+  Update(to_index, false, true);
 }
 
 void CompactLocationBarHost::TabChangedAt(TabContents* contents, int index,
@@ -242,7 +242,9 @@ gfx::Rect CompactLocationBarHost::GetBoundsUnderTab(int index) const {
   return navbar_bounds.AdjustToFit(browser_view()->bounds());
 }
 
-void CompactLocationBarHost::Update(int index, bool animate_x) {
+void CompactLocationBarHost::Update(int index,
+                                    bool animate_x,
+                                    bool select_all) {
   DCHECK_GE(index, 0);
   if (IsCurrentTabIndex(index) && IsVisible()) {
     return;
@@ -252,7 +254,7 @@ void CompactLocationBarHost::Update(int index, bool animate_x) {
   bool animate = !animation()->IsShowing();
   Hide(false);
   GetClbView()->Update(browser_view()->browser()->GetSelectedTabContents());
-  GetClbView()->SetFocusAndSelection();
+  GetClbView()->SetFocusAndSelection(select_all);
   Show(animate && animate_x);
 }
 
