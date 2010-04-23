@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "native_client/src/include/portability_string.h"
 #include "native_client/src/trusted/validator_x86/nc_read_segment.h"
 
 /* Defines the maximum number of characters allowed on an input line
@@ -122,7 +123,7 @@ size_t NaClReadHexTextWithPc(FILE* file, NaClPcAddress* pc,
       /* i.e. treat line as a comment. */
       continue;
     } else if (input_line[0] == '@') {
-      *pc = (NaClPcAddress) strtoul(&input_line[1], NULL, 16);
+      *pc = (NaClPcAddress) STRTOULL(&input_line[1], NULL, 16);
     } else {
       return NaClReadHexData(file, mbase, mbase_size, input_line);
     }
