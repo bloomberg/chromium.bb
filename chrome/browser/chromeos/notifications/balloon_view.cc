@@ -38,7 +38,11 @@ namespace {
 const int kRevokePermissionCommand = 0;
 
 // Vertical margin between close button and menu button.
-const int kControlButtonsMargin = 4;
+const int kControlButtonsMargin = 6;
+
+// Top, Right margin for notification control view.
+const int kControlViewTopMargin = 4;
+const int kControlViewRightMargin = 6;
 }  // namespace
 
 namespace chromeos {
@@ -86,12 +90,16 @@ class NotificationControlView : public views::View,
 
     // The control view will never be resized, so just layout once.
     gfx::Size options_size = options_menu_button_->GetPreferredSize();
-    options_menu_button_->SetBounds(
-        0, 0, options_size.width(), options_size.height());
-
     gfx::Size button_size = close_button_->GetPreferredSize();
+
+    int height = std::max(options_size.height(), button_size.height());
+    options_menu_button_->SetBounds(
+        0, (height - options_size.height()) / 2,
+        options_size.width(), options_size.height());
+
     close_button_->SetBounds(
-        options_size.width() + kControlButtonsMargin, 0,
+        options_size.width() + kControlButtonsMargin,
+        (height - button_size.height()) / 2,
         button_size.width(), button_size.height());
 
     SizeToPreferredSize();
@@ -298,7 +306,9 @@ void BalloonViewImpl::Activated() {
       control_view_host_->GetRootView()->GetChildViewAt(0)->GetPreferredSize();
   control_view_host_->Show();
   control_view_host_->SetBounds(
-      gfx::Rect(width() - size.width(), 0, size.width(), size.height()));
+      gfx::Rect(width() - size.width() - kControlViewRightMargin,
+                kControlViewTopMargin,
+                size.width(), size.height()));
 }
 
 void BalloonViewImpl::Deactivated() {
