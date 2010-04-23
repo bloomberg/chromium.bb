@@ -12,6 +12,23 @@ cr.define('cr.ui', function() {
   const ListSelectionModel = cr.ui.ListSelectionModel;
 
   /**
+   * Whether a mouse event is inside the element viewport. This will return
+   * false if the mouseevent was generated over a border or a scrollbar.
+   * @param {!HTMLElement} el The element to test the event with.
+   * @param {!Event} e The mouse event.
+   * @param {boolean} Whether the mouse event was inside the viewport.
+   */
+  function inViewport(el, e) {
+    var rect = el.getBoundingClientRect();
+    var x = e.clientX;
+    var y = e.clientY;
+    return x >= rect.left + el.clientLeft &&
+           x < rect.left + el.clientLeft + el.clientWidth &&
+           y >= rect.top + el.clientTop &&
+           y < rect.top + el.clientTop + el.clientHeight;
+  }
+
+  /**
    * Creates a new list element.
    * @param {Object=} opt_propertyBag Optional properties.
    * @constructor
@@ -168,29 +185,18 @@ cr.define('cr.ui', function() {
      */
     handleMouseDownUp_: function(e) {
       var target = e.target;
+
+      // If the target was this element we need to make sure that the user did
+      // not click on a border or a scrollbar.
+      if (target == this && !inViewport(target, e))
+        return;
+
       while (target && target.parentNode != this) {
         target = target.parentNode;
       }
+
       this.selectionModel.handleMouseDownUp(e, target);
     },
-
-    /**
-     * Callback for mousedown events.
-     * @param {Event} e The mouse event object.
-     * @private
-     */
-    handleMouseUp_: function(e) {
-      var target = e.target;
-      while (target && target.parentNode != this) {
-        target = target.parentNode;
-      }
-      if (target) {
-        this.selectionModel.handleMouseDown(e, target);
-      } else {
-        this.selectionModel.clear();
-      }
-    },
-
 
     /**
      * Handle a keydown event.

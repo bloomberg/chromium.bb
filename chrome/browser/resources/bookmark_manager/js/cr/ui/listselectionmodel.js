@@ -106,13 +106,20 @@ cr.define('cr.ui', function() {
      */
     handleMouseDownUp: function(e, item) {
       var anchorItem = this.anchorItem;
+      var isDown = e.type == 'mousedown';
 
       this.beginChange_();
 
-      if (!item && !e.ctrlKey && !e.shiftKey && !e.metaKey) {
-        this.clear();
+      if (!item) {
+        // On Mac we always clear the selection if the user clicks a blank area.
+        // On Windows, we only clear the selection if neither Shift nor Ctrl are
+        // pressed.
+        if (cr.isMac) {
+          this.clear();
+        } else if (!isDown && !e.shiftKey && !e.ctrlKey)
+          // Keep anchor and lead items.
+          this.clearAllSelected_();
       } else {
-        var isDown = e.type == 'mousedown';
         if (cr.isMac ? e.metaKey : e.ctrlKey) {
           // Selection is handled at mouseUp on windows/linux, mouseDown on mac.
           if (cr.isMac? isDown : !isDown) {
