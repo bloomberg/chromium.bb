@@ -44,6 +44,9 @@ deps = {
   "src/third_party/protobuf2/src":
     "http://protobuf.googlecode.com/svn/trunk@305",
 
+  "src/third_party/cacheinvalidation/files":
+    "http://google-cache-invalidation-api.googlecode.com/svn/trunk@10",
+
   "src/tools/gyp":
     "http://gyp.googlecode.com/svn/trunk@816",
 
