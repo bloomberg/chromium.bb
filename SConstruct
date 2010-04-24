@@ -167,7 +167,61 @@ pre_base_env.AddMethod(EnsureRequiredBuildWarnings)
 # all test suites know so far
 TEST_SUITES = {'all_tests': None}
 
+
+
+# ----------------------------------------------------------
+# Add list of Flaky or Bad tests to skip per platform.  A
+# platform is defined as build type
+# <BUILD_TYPE>-<SUBARCH>
+bad_build_lists = dict()
+bad_build_lists['opt-win-64'] = ['ncval_test_call_long_dis',
+                                 'run_srpc_basic_test',
+                                 'run_srpc_bad_service_test']
+
+bad_build_lists['dbg-win-64'] = ['ncval_test_call_long_dis',
+                                 'run_srpc_basic_test',
+                                 'run_srpc_bad_service_test']
+
+bad_build_lists['opt-mac-32'] = ['run_npapi_geturl_browser_test',
+                                 'run_npapi_runtime_browser_test',
+                                 'run_srpc_basic_browser_test',
+                                 'run_srpc_plugin_browser_test',
+                                 'run_srpc_sockaddr_browser_test',
+                                 'run_srpc_shm_browser_test',
+                                 'run_srpc_nrd_xfer_browser_test',
+                                 'run_srpc_url_as_nacl_desc_test',
+                                 'run_srpc_url_as_nacl_desc_browser_test',
+                                 'earth_browser_test']
+
+bad_build_lists['dbg-mac-32'] = ['run_npapi_geturl_browser_test',
+                                 'run_npapi_runtime_browser_test',
+                                 'run_srpc_basic_browser_test',
+                                 'run_srpc_plugin_browser_test',
+                                 'run_srpc_sockaddr_browser_test',
+                                 'run_srpc_shm_browser_test',
+                                 'run_srpc_nrd_xfer_browser_test',
+                                 'run_srpc_url_as_nacl_desc_test',
+                                 'run_srpc_url_as_nacl_desc_browser_test',
+                                 'earth_browser_test']
+
+# ----------------------------------------------------------
+# Generic Test Wrapper
+# all test suites know so far
+
 def AddNodeToTestSuite(env, node, suite_name, node_name=None):
+  build = env['BUILD_TYPE']
+
+  # If we are testing 'NACL' we really need the trusted info
+  if build=='nacl':
+    trusted = env['TRUSTED_ENV']
+    build = trusted['BUILD_TYPE']
+    subarch = trusted['BUILD_SUBARCH']
+  else:
+    subarch = env['BUILD_SUBARCH']
+
+  # Build the test platform string
+  platform = build + '-' + subarch
+
   if not node:
     return
 
@@ -177,13 +231,11 @@ def AddNodeToTestSuite(env, node, suite_name, node_name=None):
   # a central location to disable tests from running.  NB: tests that
   # don't *build* on some platforms need to be omitted in another way.
 
-  known_bad_nacl64 = []
+  # Retrieve list of tests to skip on this platform
+  skiplist = bad_build_lists.get(platform,[])
 
-  # This should be generalized to work for multiple arch/subarch, but
-  # hopefully we won't have too many new architectures / broken tests
-  # at a time.
-  if node_name in known_bad_nacl64 and env['BUILD_SUBARCH'] == '64':
-    print '*** SKIPPING', node_name
+  if node_name in skiplist:
+    print '*** SKIPPING ', platform, ':', node_name
     return
 
   AlwaysBuild(node)
