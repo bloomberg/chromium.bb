@@ -15,7 +15,7 @@
       "paths": [ "calendar" ]
    },
    "launch": {
-      "type": "tab",
+      "container": "tab",
       "web_url": "https://www.google.com/calendar/"
    }
 }

@@ -13,7 +13,7 @@
       "origin": "https://docs.google.com/"
    },
    "launch": {
-      "type": "tab",
+      "container": "window",
       "web_url": "https://docs.google.com/"
    }
 }

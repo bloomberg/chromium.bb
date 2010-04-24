@@ -61,6 +61,16 @@ class TabStrip : public BaseTabStrip,
   // Accessors for the model and individual Tabs.
   TabStripModel* model() const { return model_; }
 
+  // Set whether the new tab button is enabled.
+  void set_new_tab_button_enabled(bool enabled) {
+    new_tab_button_enabled_ = enabled;
+  }
+
+  // Returns whether the new tab button is enabled.
+  bool new_tab_button_enabled() {
+    return new_tab_button_enabled_;
+  }
+
   // Destroys the active drag controller.
   void DestroyDragController();
 
@@ -457,6 +467,9 @@ class TabStrip : public BaseTabStrip,
 
   // Set for special animations.
   AnimationType animation_type_;
+
+  // Whether the new tab button is being displayed.
+  bool new_tab_button_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };

@@ -15,7 +15,7 @@
       "paths": [ "mail" ]
    },
    "launch": {
-      "type": "tab",
+      "container": "window",
       "web_url": "https://mail.google.com/"
    }
 }
