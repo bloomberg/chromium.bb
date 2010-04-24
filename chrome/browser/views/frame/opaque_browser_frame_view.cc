@@ -95,8 +95,6 @@ const int kNewTabCaptionMaximizedSpacing = 16;
 // How far to indent the tabstrip from the left side of the screen when there
 // is no OTR icon.
 const int kTabStripIndent = 1;
-// Spacing between extension app icon/title and tab strip.
-const int kExtensionAppTabStripLeftSpacing = 10;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -197,27 +195,10 @@ gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
   int tabstrip_x = browser_view_->ShouldShowOffTheRecordAvatar() ?
       (otr_avatar_icon_->bounds().right() + kOTRSideSpacing) :
       NonClientBorderThickness() + kTabStripIndent;
-
-  int tabstrip_y = NonClientTopBorderHeight();
-  if (!frame_->GetWindow()->IsMaximized() &&
-      !frame_->GetWindow()->IsFullscreen()) {
-    tabstrip_y += kNonClientRestoredExtraThickness;
-  }
-
   int tabstrip_width = minimize_button_->x() - tabstrip_x -
       (frame_->GetWindow()->IsMaximized() ?
       kNewTabCaptionMaximizedSpacing : kNewTabCaptionRestoredSpacing);
-
-  if (browser_view_->browser()->type() == Browser::TYPE_EXTENSION_APP) {
-    int tabstrip_offset = browser_view_->extension_app_title()->x() +
-        browser_view_->extension_app_title()->width() +
-        kExtensionAppTabStripLeftSpacing;
-
-    tabstrip_x += tabstrip_offset;
-    tabstrip_width -= tabstrip_offset;
-  }
-
-  return gfx::Rect(tabstrip_x, tabstrip_y,
+  return gfx::Rect(tabstrip_x, NonClientTopBorderHeight(),
                    std::max(0, tabstrip_width),
                    tabstrip->GetPreferredHeight());
 }
@@ -450,7 +431,9 @@ int OpaqueBrowserFrameView::NonClientTopBorderHeight() const {
   if (browser_view_->IsTabStripVisible() && window->IsMaximized())
     return FrameBorderThickness() - kTabstripTopShadowThickness;
 
-  return FrameBorderThickness();
+  return FrameBorderThickness() +
+      ((window->IsMaximized() || window->IsFullscreen()) ?
+       0 : kNonClientRestoredExtraThickness);
 }
 
 int OpaqueBrowserFrameView::CaptionButtonY() const {
@@ -832,7 +815,7 @@ void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
     client_area_top += browser_view_->GetToolbarBounds().y() +
         std::min(tp->GetBitmapNamed(IDR_CONTENT_TOP_LEFT_CORNER)->height(),
                  toolbar_bounds.height());
-  } else if (!browser_view_->IsTabStripVisible()) {
+  } else {
     // The toolbar isn't going to draw a client edge for us, so draw one
     // ourselves.
     SkBitmap* top_left = tp->GetBitmapNamed(IDR_APP_TOP_LEFT);

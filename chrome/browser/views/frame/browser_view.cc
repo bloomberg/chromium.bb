@@ -98,10 +98,6 @@ static int explicit_show_state = -1;
 
 // How round the 'new tab' style bookmarks bar is.
 static const int kNewtabBarRoundness = 5;
-
-// The maximum width of the big title shown for extension app windows.
-static const int kExtensionAppTitleMaxWidth = 150;
-
 // ------------
 
 // Returned from BrowserView::GetClassName.
@@ -388,8 +384,6 @@ BrowserView::BrowserView(Browser* browser)
       frame_(NULL),
       browser_(browser),
       active_bookmark_bar_(NULL),
-      extension_app_icon_(NULL),
-      extension_app_title_(NULL),
       tabstrip_(NULL),
       toolbar_(NULL),
       infobar_container_(NULL),
@@ -404,8 +398,7 @@ BrowserView::BrowserView(Browser* browser)
 #endif
       extension_shelf_(NULL),
       last_focused_view_storage_id_(
-          views::ViewStorage::GetSharedInstance()->CreateStorageID()),
-      extension_app_icon_loader_(this) {
+          views::ViewStorage::GetSharedInstance()->CreateStorageID()) {
   browser_->tabstrip_model()->AddObserver(this);
 }
 
@@ -1646,42 +1639,8 @@ void BrowserView::Init() {
   LoadAccelerators();
   SetAccessibleName(l10n_util::GetString(IDS_PRODUCT_NAME));
 
-  if (browser_->extension_app()) {
-    extension_app_icon_ = new views::ImageView();
-    extension_app_icon_->SetID(VIEW_ID_EXTENSION_APP_ICON);
-    AddChildView(extension_app_icon_);
-
-    extension_app_title_ = new views::Label();
-    extension_app_title_->SetFont(
-        extension_app_title_->font().DeriveFont(1, gfx::Font::BOLD));
-    extension_app_title_->SetColor(SK_ColorWHITE);
-    extension_app_title_->SetID(VIEW_ID_EXTENSION_APP_TITLE);
-    AddChildView(extension_app_title_);
-
-    extension_app_icon_loader_.LoadImage(
-        browser_->extension_app(),
-        browser_->extension_app()->GetIconPath(
-            Extension::EXTENSION_ICON_MEDIUM),
-        gfx::Size(Extension::EXTENSION_ICON_SMALL,
-                  Extension::EXTENSION_ICON_SMALL),
-        ImageLoadingTracker::CACHE);
-
-    extension_app_title_->SetText(
-        UTF8ToWide(browser_->extension_app()->name()));
-    extension_app_title_->SizeToPreferredSize();
-
-    if (extension_app_title_->width() > kExtensionAppTitleMaxWidth) {
-      extension_app_title_->SetBounds(extension_app_title_->x(),
-                                      extension_app_title_->y(),
-                                      kExtensionAppTitleMaxWidth,
-                                      extension_app_title_->height());
-    }
-  }
-
   tabstrip_ = CreateTabStrip(browser_->tabstrip_model());
   tabstrip_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_TABSTRIP));
-  if (browser_->extension_app() && tabstrip_->AsTabStrip())
-    tabstrip_->AsTabStrip()->set_new_tab_button_enabled(false);
   AddChildView(tabstrip_);
   frame_->TabStripCreated(tabstrip_);
 
@@ -1759,12 +1718,6 @@ void BrowserView::InitSystemMenu() {
   system_menu_->Rebuild();
 }
 #endif
-
-void BrowserView::OnImageLoaded(SkBitmap* image, ExtensionResource resource,
-                                int index) {
-  if (image)
-    extension_app_icon_->SetImage(*image);
-}
 
 BrowserViewLayout* BrowserView::GetBrowserViewLayout() const {
   return static_cast<BrowserViewLayout*>(GetLayoutManager());

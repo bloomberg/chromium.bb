@@ -75,8 +75,7 @@ ToolbarView::ToolbarView(Browser* browser)
   browser_->command_updater()->AddCommandObserver(IDC_FORWARD, this);
   browser_->command_updater()->AddCommandObserver(IDC_HOME, this);
   browser_->command_updater()->AddCommandObserver(IDC_RELOAD, this);
-
-  if (browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP))
+  if (browser->type() == Browser::TYPE_NORMAL)
     display_mode_ = DISPLAYMODE_NORMAL;
   else
     display_mode_ = DISPLAYMODE_LOCATION;

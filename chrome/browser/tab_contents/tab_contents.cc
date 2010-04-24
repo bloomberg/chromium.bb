@@ -2949,16 +2949,6 @@ void TabContents::Observe(NotificationType type,
 
 void TabContents::UpdateAppExtensionIcon(Extension* extension) {
   app_extension_icon_.reset();
-
-  // We don't show the big icons in tabs for TYPE_EXTENSION_APP windows because
-  // for those windows, we already have a big icon in the top-left outside any
-  // tab. Having big tab icons too looks kinda redonk.
-  if (!delegate_ ||
-      !delegate_->GetBrowser() ||
-      delegate_->GetBrowser()->type() == Browser::TYPE_EXTENSION_APP) {
-    return;
-  }
-
   if (extension) {
     app_extension_image_loader_.reset(new ImageLoadingTracker(this));
     app_extension_image_loader_->LoadImage(

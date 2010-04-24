@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,8 +27,6 @@ enum ViewID {
   VIEW_ID_TAB_9,
   VIEW_ID_TAB_LAST,
 
-  VIEW_ID_EXTENSION_APP_ICON,
-  VIEW_ID_EXTENSION_APP_TITLE,
   VIEW_ID_TAB_STRIP,
 
   // Toolbar & toolbar elements.

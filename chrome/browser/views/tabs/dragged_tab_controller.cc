@@ -716,8 +716,7 @@ TabStrip* DraggedTabController::GetTabStripForPoint(
   BrowserView* browser =
       BrowserView::GetBrowserViewForNativeWindow(local_window);
   // We don't allow drops on windows that don't have tabstrips.
-  if (!browser ||
-      !browser->browser()->SupportsWindowFeature(Browser::FEATURE_TABSTRIP))
+  if (!browser || !browser->IsBrowserTypeNormal())
     return NULL;
 
   TabStrip* other_tabstrip = browser->tabstrip()->AsTabStrip();

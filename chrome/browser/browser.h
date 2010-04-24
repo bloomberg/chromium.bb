@@ -55,21 +55,13 @@ class Browser : public TabStripModelDelegate,
   enum Type {
     TYPE_NORMAL = 1,
     TYPE_POPUP = 2,
-    // The old-style app created via "Create application shortcuts".
     TYPE_APP = 4,
-    // The new-style app created by installing a crx. This kinda needs to be
-    // separate because we require larger icons and an application name that
-    // are found in the crx. If we ever decide to create this kind of app using
-    // some other system (eg some web standard), maybe we should generalize this
-    // name to TYPE_MULTITAB or something.
-    TYPE_EXTENSION_APP = 8,
     TYPE_APP_POPUP = TYPE_APP | TYPE_POPUP,
-    TYPE_DEVTOOLS = TYPE_APP | 16,
-    TYPE_APP_PANEL = TYPE_APP | 32,
+    TYPE_DEVTOOLS = TYPE_APP | 8,
+    TYPE_APP_PANEL = TYPE_APP | 16,
     TYPE_ANY = TYPE_NORMAL |
                TYPE_POPUP |
                TYPE_APP |
-               TYPE_EXTENSION_APP |
                TYPE_DEVTOOLS |
                TYPE_APP_PANEL
   };
@@ -126,21 +118,15 @@ class Browser : public TabStripModelDelegate,
   // Like Create, but creates a tabstrip-less popup window.
   static Browser* CreateForPopup(Profile* profile);
 
-  // Like Create, but creates a toolbar-less "app" window for the specified
-  // app. |app_name| is required and is used to identify the window to the
-  // shell.  |extension| is optional. If supplied, we create a window with
-  // a bigger icon and title text, that supports tabs.
-  static Browser* CreateForApp(const std::wstring& app_name,
-                               Extension* extension,
-                               Profile* profile,
+  // Like Create, but creates a tabstrip-less and toolbar-less "app" window for
+  // the specified app. |is_panel| specifies whether the browser should be
+  // opened in an app panel window.
+  static Browser* CreateForApp(const std::wstring& app_name, Profile* profile,
                                bool is_panel);
 
   // Like Create, but creates a tabstrip-less and toolbar-less
   // DevTools "app" window.
   static Browser* CreateForDevTools(Profile* profile);
-
-  // Returns the extension app associated with this window, if any.
-  Extension* extension_app() { return extension_app_; }
 
   // Set overrides for the initial window bounds and maximized state.
   void set_override_bounds(const gfx::Rect& bounds) {
@@ -214,11 +200,10 @@ class Browser : public TabStripModelDelegate,
 
   // Opens a new application window for the specified url. If |as_panel|
   // is true, the application will be opened as a Browser::Type::APP_PANEL in
-  // app panel window, otherwise it will be opened as as either
-  // Browser::Type::APP a.k.a. "thin frame" (if |extension| is NULL) or
-  // Browser::Type::EXTENSION_APP (if |extension| is non-NULL).
-  static void OpenApplicationWindow(Profile* profile, Extension* extension,
-                                    const GURL& url, bool as_panel);
+  // app panel window, otherwise it will be opened as a Browser::Type::APP,
+  // a.k.a. "thin frame".
+  static void OpenApplicationWindow(Profile* profile, const GURL& url,
+                                    bool as_panel);
 
   // Open an application for |extension| in a new application window or panel.
   static void OpenApplicationWindow(Profile* profile, Extension* extension);
@@ -960,9 +945,6 @@ class Browser : public TabStripModelDelegate,
   // Which deferred action to perform when OnDidGetApplicationInfo is notified
   // from a TabContents. Currently, only one pending action is allowed.
   WebAppAction pending_web_app_action_;
-
-  // The extension app associated with this window, if any.
-  Extension* extension_app_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };
