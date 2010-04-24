@@ -99,6 +99,7 @@ void RegisterChromeSchemes() {
   // Don't need "chrome-internal" which was used in old versions of Chrome for
   // the new tab page.
   url_util::AddStandardScheme(kChromeUIScheme);
+  url_util::AddStandardScheme(kGearsScheme);
   url_util::AddStandardScheme(kExtensionScheme);
   url_util::AddStandardScheme(kMetadataScheme);
 
