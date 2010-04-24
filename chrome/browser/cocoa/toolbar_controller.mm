@@ -417,8 +417,7 @@ class PrefObserverBridge : public NotificationObserver {
   [[self view] setHidden:!hasLocationBar_];
 
   // Make location bar not editable when in a pop-up.
-  // TODO(viettrungluu): is this right (all the time)?
-  locationBarView_->SetEditable(toolbar ? true : false);
+  locationBarView_->SetEditable(toolbar);
 }
 
 - (NSView*)view {

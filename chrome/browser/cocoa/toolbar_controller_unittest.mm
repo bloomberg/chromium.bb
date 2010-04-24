@@ -100,7 +100,8 @@ TEST_F(ToolbarControllerTest, TitlebarOnly) {
   [bar_ setHasToolbar:NO hasLocationBar:YES];
   EXPECT_NE(view, [bar_ view]);
 
-  // Simulate a popup going fullscreen and back.
+  // Simulate a popup going fullscreen and back by performing the reparenting
+  // that happens during fullscreen transitions
   NSView* superview = [view superview];
   // TODO(jrg): find a way to add an [NSAutoreleasePool drain] in
   // here.  I don't have access to the current
@@ -115,7 +116,21 @@ TEST_F(ToolbarControllerTest, TitlebarOnly) {
   [bar_ setHasToolbar:NO hasLocationBar:YES];
 }
 
-// TODO(viettrungluu): make a version of above without location bar.
+// Make sure it works in the completely undecorated case.
+TEST_F(ToolbarControllerTest, NoLocationBar) {
+  NSView* view = [bar_ view];
+
+  [bar_ setHasToolbar:NO hasLocationBar:NO];
+  EXPECT_NE(view, [bar_ view]);
+  EXPECT_TRUE([[bar_ view] isHidden]);
+
+  // Simulate a popup going fullscreen and back by performing the reparenting
+  // that happens during fullscreen transitions
+  NSView* superview = [view superview];
+  // TODO(jrg): See TODO above.
+  [view removeFromSuperview];
+  [superview addSubview:view];
+}
 
 // Make some changes to the enabled state of a few of the buttons and ensure
 // that we're still in sync.
