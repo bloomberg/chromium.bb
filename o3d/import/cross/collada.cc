@@ -520,9 +520,19 @@ bool ConvertCgToGlsl(const FilePath& converter, String* effect_string) {
     return false;
 
   fwrite(effect_string->c_str(), 1, effect_string->length(), temporary_file);
+  effect_string->clear();
   file_util::CloseFile(temporary_file);
 
+#if defined(OS_WIN)
+  // Assumes python.exe is in PATH. Doesn't seem there's an easy way
+  // to test whether it is without launching a process.
+  FilePath python(FILE_PATH_LITERAL("python.exe"));
+  CommandLine cmd_line(python);
+  cmd_line.AppendLooseValue(FilePathToWide(converter));
+#else
   CommandLine cmd_line(converter);
+#endif
+
   cmd_line.AppendLooseValue(L"-i");
   cmd_line.AppendLooseValue(o3d::FilePathToWide(temporary_file_name));
   bool rc = ::base::GetAppOutput(cmd_line, effect_string);

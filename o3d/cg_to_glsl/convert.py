@@ -24,13 +24,15 @@ import sys
 # * prints the results to standard output, separating them with SplitMarker
 #   instruction and keeping the MatrixLoadOrder instruction as is.
 
+# Cygwin lies about the OS name ("posix" instead of "nt"), the line
+# separator, and perhaps other things. For most robust behavior, try
+# to find cgc on disk.
 
-if os.name == 'nt':
-  CGC = 'c:/Program Files/NVIDIA Corporation/Cg/bin/cgc.exe'
+CGC = '/usr/bin/cgc'
+if not os.path.exists(CGC):
+  CGC = 'c:/Program Files (x86)/NVIDIA Corporation/Cg/bin/cgc.exe'
   if not os.path.exists(CGC):
     CGC = 'c:/Program Files (x86)/NVIDIA Corporation/Cg/bin/cgc.exe'
-else:
-  CGC = '/usr/bin/cgc'
 
 # cgc complains about TANGENT1 and BINORMAL1 semantics, so we hack it by
 # replacing standard semantics with ATTR8-ATTR12 and then renaming them back to
@@ -85,8 +87,10 @@ def get_input_mapping(header):
       new_name = new_name[:new_name.index('[')]
     if new_name.startswith('$'):
       new_name = new_name[1:]
-    ret[new_name] = (correct_semantic_case(semantic) if semantic
-        else old_name_and_type.split(' ')[2])
+    if semantic:
+      ret[new_name] = correct_semantic_case(semantic)
+    else:
+      ret[new_name] = old_name_and_type.split(' ')[2]
   return ret
 
 
@@ -144,8 +148,14 @@ def fix_glsl_body(body, input_mapping):
 
 
 def fix_glsl(glsl_shader):
-  header, body = re.split(os.linesep*2, glsl_shader, 1)
-  assert all(l.startswith('//') for l in header.splitlines())
+  # Hack for Cygwin lying about os.linesep and being POSIX on Windows.
+  if '\r\n' in glsl_shader:
+    header, body = re.split('\r\n'*2, glsl_shader, 1)
+  else:
+    header, body = re.split(os.linesep*2, glsl_shader, 1)
+
+  for l in header.splitlines():
+    assert l.startswith('//')
   input_mapping = get_input_mapping(header)
   return header + '\n\n' + fix_glsl_body(body, input_mapping)
 
@@ -217,7 +227,10 @@ if __name__ == '__main__':
   check_cg()
 
   try:
-    f = sys.stdin if options.file is None else open(options.file)
+    if options.file is None:
+      f = sys.stdin
+    else:
+      f = open(options.file)
     input = f.read()
   except KeyboardInterrupt:
     input = None

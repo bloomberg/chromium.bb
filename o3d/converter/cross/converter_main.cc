@@ -115,6 +115,7 @@ int CrossMain(int argc, char**argv) {
         << "    writes six separate PNGs with suffixes _posx, _negx, etc.\n"
         << "--convert-cg-to-glsl\n"
         << "    Convert shaders using an external tool.\n"
+        << "    Requires python on PATH.\n"
         << "--converter-tool=<filename> [default: "
         << converter_tool.value() << "]\n"
         << "    Specifies the shader converter tool.\n";
