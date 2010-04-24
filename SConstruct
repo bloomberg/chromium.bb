@@ -212,7 +212,7 @@ def AddNodeToTestSuite(env, node, suite_name, node_name=None):
   build = env['BUILD_TYPE']
 
   # If we are testing 'NACL' we really need the trusted info
-  if build=='nacl':
+  if build=='nacl' and 'TRUSTED_ENV' in trusted:
     trusted = env['TRUSTED_ENV']
     build = trusted['BUILD_TYPE']
     subarch = trusted['BUILD_SUBARCH']
