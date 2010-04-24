@@ -42,6 +42,7 @@ class Checkbox : public NativeButton {
 
   // Overridden from View:
   virtual gfx::Size GetPreferredSize();
+  virtual int GetHeightForWidth(int w);
   virtual void Layout();
   virtual void SetEnabled(bool enabled);
   virtual void PaintFocusBorder(gfx::Canvas* canvas);

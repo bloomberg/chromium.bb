@@ -1600,7 +1600,7 @@ void TabStrip::StartMoveTabAnimation(int from_model_index,
 
   TabData data = {tab, gfx::Rect()};
   tab->set_mini(model_->IsMiniTab(to_model_index));
-  //tab->set_app(model_->IsAppTab(to_model_index));
+  tab->set_app(model_->IsAppTab(to_model_index));
   tab->SetBlocked(model_->IsTabBlocked(to_model_index));
 
   int to_tab_data_index = ModelIndexToTabDataIndex(to_model_index);

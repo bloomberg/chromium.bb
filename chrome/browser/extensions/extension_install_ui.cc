@@ -186,10 +186,8 @@ void ExtensionInstallUI::OnInstallSuccess(Extension* extension) {
     return;
   }
 
-  if (extension->GetFullLaunchURL().is_valid()) {
+  if (extension->GetFullLaunchURL().is_valid())
     Browser::OpenApplicationTab(profile_, extension);
-    return;
-  }
 
   // GetLastActiveWithProfile will fail on the build bots. This needs to be
   // implemented differently if any test is created which depends on
@@ -252,6 +250,13 @@ void ExtensionInstallUI::OnImageLoaded(
 
   switch (prompt_type_) {
     case INSTALL_PROMPT: {
+      if (extension_->GetFullLaunchURL().is_valid()) {
+        // Special case extension apps to not show the install dialog.
+        // TODO(finnur): http://crbug.com/42443: Don't do this for all apps.
+        delegate_->InstallUIProceed(false);  // |create_app_shortcut|.
+        return;
+      }
+
       NotificationService* service = NotificationService::current();
       service->Notify(NotificationType::EXTENSION_WILL_SHOW_CONFIRM_DIALOG,
           Source<ExtensionInstallUI>(this),

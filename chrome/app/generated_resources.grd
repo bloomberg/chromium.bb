@@ -3458,6 +3458,9 @@ each locale. -->
       <message name="IDS_MANAGE_EXTENSIONS" desc="The 'Manage Extensions...' text in the context menu for when right-clicking on extension icons">
         Manage extensions...
       </message>
+      <message name="IDS_EXTENSION_APP_INSTALLED_MANAGE_INFO" desc="Text displayed in the InfoBubble when an extension app is installed, with instructions on how to manage them">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque feugiat, magna quis vestibulum malesuada, lazy euros facilitatus nibbles, you faucibus purus lacus ac dolor!
+      </message>
       <message name="IDS_EXTENSION_INSTALLED_MANAGE_INFO" desc="Text displayed in the InfoBubble with instructions on how to find the chrome://extensions/ management page">
         You can manage your installed extensions by clicking Extensions in the Tools menu.
       </message>

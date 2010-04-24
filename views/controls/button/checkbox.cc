@@ -72,6 +72,19 @@ gfx::Size Checkbox::GetPreferredSize() {
   return prefsize;
 }
 
+int Checkbox::GetHeightForWidth(int w) {
+  if (!native_wrapper_)
+    return 0;
+
+  gfx::Size prefsize = native_wrapper_->GetView()->GetPreferredSize();
+  if (native_wrapper_->UsesNativeLabel())
+    return prefsize.height();
+
+  int width = prefsize.width() + kCheckboxLabelSpacing +
+              kLabelFocusPaddingHorizontal * 2;
+  return label_->GetHeightForWidth(std::max(prefsize.height(), w - width));
+}
+
 void Checkbox::Layout() {
   if (!native_wrapper_)
     return;
@@ -162,7 +175,7 @@ bool Checkbox::GetAccessibleRole(AccessibilityTypes::Role* role) {
 
 bool Checkbox::GetAccessibleState(AccessibilityTypes::State* state) {
   DCHECK(state);
- 
+
   *state = checked() ? AccessibilityTypes::STATE_CHECKED : 0;
   return true;
 }
