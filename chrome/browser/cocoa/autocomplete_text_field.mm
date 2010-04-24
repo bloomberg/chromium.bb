@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_cell.h"
+#import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
 #import "chrome/browser/cocoa/url_drop_target.h"
@@ -169,17 +170,17 @@
 }
 
 - (void)setAttributedStringValue:(NSAttributedString*)aString {
-  NSTextView* editor = static_cast<NSTextView*>([self currentEditor]);
+  AutocompleteTextFieldEditor* editor =
+      static_cast<AutocompleteTextFieldEditor*>([self currentEditor]);
+
   if (!editor) {
     [super setAttributedStringValue:aString];
   } else {
-    // -currentEditor is defined to return NSText*, make sure our
-    // assumptions still hold, here.
-    DCHECK([editor isKindOfClass:[NSTextView class]]);
+    // The type of the field editor must be AutocompleteTextFieldEditor,
+    // otherwise things won't work.
+    DCHECK([editor isKindOfClass:[AutocompleteTextFieldEditor class]]);
 
-    NSTextStorage* textStorage = [editor textStorage];
-    DCHECK(textStorage);
-    [textStorage setAttributedString:aString];
+    [editor setAttributedString:aString];
   }
 }
 
@@ -250,13 +251,6 @@
   [super textDidBeginEditing:aNotification];
   if (observer_) {
     observer_->OnDidBeginEditing();
-  }
-}
-
-- (void)textDidChange:(NSNotification *)aNotification {
-  [super textDidChange:aNotification];
-  if (observer_) {
-    observer_->OnDidChange();
   }
 }
 

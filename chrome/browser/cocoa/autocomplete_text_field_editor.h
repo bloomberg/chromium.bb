@@ -30,6 +30,17 @@ class Profile;
   Profile* profile_;
 
   scoped_nsobject<NSCharacterSet> forbiddenCharacters_;
+
+  // Indicates if the field editor's interpretKeyEvents: method is being called.
+  // If it's YES, then we should postpone the call to the observer's
+  // OnDidChange() method after the field editor's interpretKeyEvents: method
+  // is finished, rather than calling it in textDidChange: method. Because the
+  // input method may update the marked text after inserting some text, but we
+  // need the observer be aware of the marked text as well.
+  BOOL interpretingKeyEvents_;
+
+  // Indicates if the text has been changed by key events.
+  BOOL textChangedByKeyEvents_;
 }
 
 @property(nonatomic) Profile* profile;
@@ -38,6 +49,10 @@ class Profile;
 // implementations to allow for proper typing.
 - (AutocompleteTextField*)delegate;
 - (void)setDelegate:(AutocompleteTextField*)delegate;
+
+// Sets attributed string programatically through the field editor's text
+// storage object.
+- (void)setAttributedString:(NSAttributedString*)aString;
 
 @end
 

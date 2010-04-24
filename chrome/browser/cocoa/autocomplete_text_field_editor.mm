@@ -266,4 +266,49 @@ class Extension;
   [super insertText:aString];
 }
 
+- (void)setMarkedText:(id)aString selectedRange:(NSRange)selRange {
+  [super setMarkedText:aString selectedRange:selRange];
+
+  // Because the AutocompleteEditViewMac class treats marked text as content,
+  // we need to treat the change to marked text as content change as well.
+  [self didChangeText];
+}
+
+- (void)interpretKeyEvents:(NSArray *)eventArray {
+  DCHECK(!interpretingKeyEvents_);
+  interpretingKeyEvents_ = YES;
+  textChangedByKeyEvents_ = NO;
+  [super interpretKeyEvents:eventArray];
+
+  AutocompleteTextFieldObserver* observer = [self observer];
+  if (textChangedByKeyEvents_ && observer)
+    observer->OnDidChange();
+
+  DCHECK(interpretingKeyEvents_);
+  interpretingKeyEvents_ = NO;
+}
+
+- (void)didChangeText {
+  [super didChangeText];
+
+  AutocompleteTextFieldObserver* observer = [self observer];
+  if (observer) {
+    if (!interpretingKeyEvents_)
+      observer->OnDidChange();
+    else
+      textChangedByKeyEvents_ = YES;
+  }
+}
+
+- (void)setAttributedString:(NSAttributedString*)aString {
+  NSTextStorage* textStorage = [self textStorage];
+  DCHECK(textStorage);
+  [textStorage setAttributedString:aString];
+
+  // The text has been changed programmatically. The observer should know
+  // this change, so setting |textChangedByKeyEvents_| to NO to
+  // prevent its OnDidChange() method from being called unnecessarily.
+  textChangedByKeyEvents_ = NO;
+}
+
 @end

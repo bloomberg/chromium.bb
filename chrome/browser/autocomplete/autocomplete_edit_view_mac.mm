@@ -406,13 +406,23 @@ void AutocompleteEditViewMac::UpdatePopup() {
   if (!model_->has_focus())
     return;
 
-  // TODO(shess):
-  // Shouldn't inline autocomplete when the caret/selection isn't at
-  // the end of the text.
-  //
-  // One option would seem to be to check for a non-nil field
-  // editor, and check it's selected range against its length.
-  model_->StartAutocomplete(false);
+  // Comment copied from AutocompleteEditViewWin::UpdatePopup():
+  // Don't inline autocomplete when:
+  //   * The user is deleting text
+  //   * The caret/selection isn't at the end of the text
+  //   * The user has just pasted in something that replaced all the text
+  //   * The user is trying to compose something in an IME
+  bool prevent_inline_autocomplete = false;
+  NSTextView* editor = (NSTextView*)[field_ currentEditor];
+  if (editor) {
+    if ([editor hasMarkedText])
+      prevent_inline_autocomplete = true;
+
+    if (NSMaxRange([editor selectedRange]) < [[editor textStorage] length])
+      prevent_inline_autocomplete = true;
+  }
+
+  model_->StartAutocomplete(prevent_inline_autocomplete);
 }
 
 void AutocompleteEditViewMac::ClosePopup() {
@@ -426,6 +436,50 @@ void AutocompleteEditViewMac::SetText(const std::wstring& display_text) {
   NSString* ss = base::SysWideToNSString(display_text);
   NSMutableAttributedString* as =
       [[[NSMutableAttributedString alloc] initWithString:ss] autorelease];
+
+  ApplyTextAttributes(display_text, as);
+
+  [field_ setAttributedStringValue:as];
+
+  // TODO(shess): This may be an appropriate place to call:
+  //   controller_->OnChanged();
+  // In the current implementation, this tells LocationBarViewMac to
+  // mess around with |model_| and update |field_|.  Unfortunately,
+  // when I look at our peer implementations, it's not entirely clear
+  // to me if this is safe.  SetText() is sort of an utility method,
+  // and different callers sometimes have different needs.  Research
+  // this issue so that it can be added safely.
+
+  // TODO(shess): Also, consider whether this code couldn't just
+  // manage things directly.  Windows uses a series of overlaid view
+  // objects to accomplish the hinting stuff that OnChanged() does, so
+  // it makes sense to have it in the controller that lays those
+  // things out.  Mac instead pushes the support into a custom
+  // text-field implementation.
+}
+
+void AutocompleteEditViewMac::SetTextAndSelectedRange(
+    const std::wstring& display_text, const NSRange range) {
+  SetText(display_text);
+  SetSelectedRange(range);
+}
+
+void AutocompleteEditViewMac::EmphasizeURLComponents() {
+  NSTextView* editor = (NSTextView*)[field_ currentEditor];
+  // If the autocomplete text field is in editing mode, then we can just change
+  // its attributes through its editor. Otherwise, we simply reset its content.
+  if (editor) {
+    NSTextStorage* storage = [editor textStorage];
+    [storage beginEditing];
+    ApplyTextAttributes(GetText(), storage);
+    [storage endEditing];
+  } else {
+    SetText(GetText());
+  }
+}
+
+void AutocompleteEditViewMac::ApplyTextAttributes(
+    const std::wstring& display_text, NSMutableAttributedString* as) {
   NSFont* font = ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::BaseFont).nativeFont();
   [as addAttribute:NSFontAttributeName value:font
@@ -475,38 +529,6 @@ void AutocompleteEditViewMac::SetText(const std::wstring& display_text) {
     [as addAttribute:NSForegroundColorAttributeName value:color
                range:ComponentToNSRange(scheme)];
   }
-
-  [field_ setAttributedStringValue:as];
-
-  // TODO(shess): This may be an appropriate place to call:
-  //   controller_->OnChanged();
-  // In the current implementation, this tells LocationBarViewMac to
-  // mess around with |model_| and update |field_|.  Unfortunately,
-  // when I look at our peer implementations, it's not entirely clear
-  // to me if this is safe.  SetText() is sort of an utility method,
-  // and different callers sometimes have different needs.  Research
-  // this issue so that it can be added safely.
-
-  // TODO(shess): Also, consider whether this code couldn't just
-  // manage things directly.  Windows uses a series of overlaid view
-  // objects to accomplish the hinting stuff that OnChanged() does, so
-  // it makes sense to have it in the controller that lays those
-  // things out.  Mac instead pushes the support into a custom
-  // text-field implementation.
-}
-
-void AutocompleteEditViewMac::SetTextAndSelectedRange(
-    const std::wstring& display_text, const NSRange range) {
-  SetText(display_text);
-  SetSelectedRange(range);
-}
-
-void AutocompleteEditViewMac::EmphasizeURLComponents() {
-  if ([field_ currentEditor]) {
-    SetTextAndSelectedRange(GetText(), GetSelectedRange());
-  } else {
-    SetText(GetText());
-  }
 }
 
 void AutocompleteEditViewMac::OnTemporaryTextMaybeChanged(
@@ -532,7 +554,8 @@ bool AutocompleteEditViewMac::OnInlineAutocompleteTextMaybeChanged(
   }
 
   DCHECK_LE(user_text_length, display_text.size());
-  const NSRange range = NSMakeRange(user_text_length, display_text.size());
+  const NSRange range =
+      NSMakeRange(user_text_length, display_text.size() - user_text_length);
   SetTextAndSelectedRange(display_text, range);
   controller_->OnChanged();
   [field_ clearUndoChain];

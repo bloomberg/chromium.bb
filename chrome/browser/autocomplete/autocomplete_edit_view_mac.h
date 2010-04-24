@@ -137,6 +137,11 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   // though here we cannot really do the in-place operation they do.
   void EmphasizeURLComponents();
 
+  // Calculates text attributes according to |display_text| and applies them
+  // to the given |as| object.
+  void ApplyTextAttributes(const std::wstring& display_text,
+                           NSMutableAttributedString* as);
+
   scoped_ptr<AutocompleteEditModel> model_;
   scoped_ptr<AutocompletePopupViewMac> popup_view_;
 
