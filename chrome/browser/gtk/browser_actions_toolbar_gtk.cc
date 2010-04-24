@@ -590,6 +590,7 @@ void BrowserActionsToolbarGtk::AnimationProgressed(const Animation* animation) {
 
 void BrowserActionsToolbarGtk::AnimationEnded(const Animation* animation) {
   gtk_widget_set_size_request(button_hbox_.get(), desired_width_, -1);
+  UpdateChevronVisibility();
 }
 
 void BrowserActionsToolbarGtk::ExecuteCommandById(int command_id) {
@@ -852,5 +853,6 @@ gboolean BrowserActionsToolbarGtk::OnOverflowMenuButtonPress(
 }
 
 void BrowserActionsToolbarGtk::OnButtonShowOrHide(GtkWidget* sender) {
-  UpdateChevronVisibility();
+  if (!resize_animation_.IsAnimating())
+    UpdateChevronVisibility();
 }
