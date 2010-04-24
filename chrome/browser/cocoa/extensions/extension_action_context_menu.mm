@@ -95,7 +95,7 @@ class DevmodeObserver : public NotificationObserver {
   PrefService* pref_service_;
 };
 
-}
+}  // namespace extension_action_context_menu
 
 @interface ExtensionActionContextMenu(Private)
 // Callback for the context menu items.
@@ -178,7 +178,8 @@ int CurrentTabId() {
     [inspectorItem_.get() setTag:kExtensionContextInspect];
 
     PrefService* service = profile_->GetPrefs();
-    observer_.reset(new extension_action_context_menu::DevmodeObserver(self, service));
+    observer_.reset(
+        new extension_action_context_menu::DevmodeObserver(self, service));
 
     [self updateInspectorItem];
     return self;

@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_COCOA_EXTENSIONS_EXTENSION_ACTION_CONTEXT_MENU_H_
 #define CHROME_BROWSER_COCOA_EXTENSIONS_EXTENSION_ACTION_CONTEXT_MENU_H_
 
+#import <Cocoa/Cocoa.h>
+
 #include "base/scoped_ptr.h"
 #include "base/scoped_nsobject.h"
-
-#import <Cocoa/Cocoa.h>
 
 class AsyncUninstaller;
 class DevmodeObserver;
@@ -21,7 +21,7 @@ namespace extension_action_context_menu {
 
 class DevmodeObserver;
 
-}
+}  // namespace extension_action_context_menu
 
 // A context menu used by the Browser and Page Action components that appears
 // if a user right-clicks the view of the given extension.
