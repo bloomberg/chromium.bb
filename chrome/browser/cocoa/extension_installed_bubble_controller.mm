@@ -234,8 +234,8 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
   // Find window origin, taking into account bubble size and arrow location.
   NSPoint origin =
       [parentWindow_ convertBaseToScreen:[self calculateArrowPoint]];
-  NSSize offsets = NSMakeSize(kBubbleArrowXOffset + kBubbleArrowWidth / 2.0,
-                              0);
+  NSSize offsets = NSMakeSize(info_bubble::kBubbleArrowXOffset +
+                                  info_bubble::kBubbleArrowWidth / 2.0, 0);
   offsets = [[window contentView] convertSize:offsets toView:nil];
   origin.x -= NSWidth([window frame]) - offsets.width;
   origin.y -= NSHeight([window frame]);
@@ -250,7 +250,7 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
 // function is exposed for unit testing.
 - (NSWindow*)initializeWindow {
   NSWindow* window = [self window];  // completes nib load
-  [infoBubbleView_ setArrowLocation:kTopRight];
+  [infoBubbleView_ setArrowLocation:info_bubble::kTopRight];
 
   // Set appropriate icon, resizing if necessary.
   if ([icon_ size].width > extension_installed_bubble::kIconSize) {

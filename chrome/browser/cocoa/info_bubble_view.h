@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,10 +7,13 @@
 
 #import <Cocoa/Cocoa.h>
 
-extern const CGFloat kBubbleArrowHeight;
-extern const CGFloat kBubbleArrowWidth;
-extern const CGFloat kBubbleArrowXOffset;
-extern const CGFloat kBubbleCornerRadius;
+namespace info_bubble {
+
+// TODO(andybons): confirm constants with UI dudes.
+const CGFloat kBubbleArrowHeight = 8.0;
+const CGFloat kBubbleArrowWidth = 15.0;
+const CGFloat kBubbleArrowXOffset = 10.0;
+const CGFloat kBubbleCornerRadius = 8.0;
 
 enum BubbleArrowLocation {
   kTopLeft,
@@ -22,19 +25,21 @@ enum InfoBubbleType {
   kWhiteInfoBubble
 };
 
+}  // namespace info_bubble
+
 // Content view for a bubble with an arrow showing arbitrary content.
 // This is where nonrectangular drawing happens.
 @interface InfoBubbleView : NSView {
  @private
-  BubbleArrowLocation arrowLocation_;
+  info_bubble::BubbleArrowLocation arrowLocation_;
 
   // The type simply is used to determine what sort of background it should
   // draw.
-  InfoBubbleType bubbleType_;
+  info_bubble::InfoBubbleType bubbleType_;
 }
 
-@property (assign, nonatomic) BubbleArrowLocation arrowLocation;
-@property (assign, nonatomic) InfoBubbleType bubbleType;
+@property (assign, nonatomic) info_bubble::BubbleArrowLocation arrowLocation;
+@property (assign, nonatomic) info_bubble::InfoBubbleType bubbleType;
 
 // Returns the point location in view coordinates of the tip of the arrow.
 - (NSPoint)arrowTip;

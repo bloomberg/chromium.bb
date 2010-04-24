@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,12 +8,6 @@
 #include "base/scoped_nsobject.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
 
-// TODO(andybons): confirm constants with UI dudes.
-extern const CGFloat kBubbleArrowHeight = 8.0;
-extern const CGFloat kBubbleArrowWidth = 15.0;
-extern const CGFloat kBubbleArrowXOffset = 10.0;
-extern const CGFloat kBubbleCornerRadius = 8.0;
-
 @implementation InfoBubbleView
 
 @synthesize arrowLocation = arrowLocation_;
@@ -21,8 +15,8 @@ extern const CGFloat kBubbleCornerRadius = 8.0;
 
 - (id)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect])) {
-    arrowLocation_ = kTopLeft;
-    bubbleType_ = kGradientInfoBubble;
+    arrowLocation_ = info_bubble::kTopLeft;
+    bubbleType_ = info_bubble::kGradientInfoBubble;
   }
 
   return self;
@@ -31,23 +25,24 @@ extern const CGFloat kBubbleCornerRadius = 8.0;
 - (void)drawRect:(NSRect)rect {
   // Make room for the border to be seen.
   NSRect bounds = [self bounds];
-  bounds.size.height -= kBubbleArrowHeight;
+  bounds.size.height -= info_bubble::kBubbleArrowHeight;
   NSBezierPath* bezier = [NSBezierPath bezierPath];
-  rect.size.height -= kBubbleArrowHeight;
+  rect.size.height -= info_bubble::kBubbleArrowHeight;
 
   // Start with a rounded rectangle.
   [bezier appendBezierPathWithRoundedRect:bounds
-                                  xRadius:kBubbleCornerRadius
-                                  yRadius:kBubbleCornerRadius];
+                                  xRadius:info_bubble::kBubbleCornerRadius
+                                  yRadius:info_bubble::kBubbleCornerRadius];
 
   // Add the bubble arrow.
   CGFloat dX = 0;
   switch (arrowLocation_) {
-    case kTopLeft:
-      dX = kBubbleArrowXOffset;
+    case info_bubble::kTopLeft:
+      dX = info_bubble::kBubbleArrowXOffset;
       break;
-    case kTopRight:
-      dX = NSWidth(bounds) - kBubbleArrowXOffset - kBubbleArrowWidth;
+    case info_bubble::kTopRight:
+      dX = NSWidth(bounds) - info_bubble::kBubbleArrowXOffset -
+          info_bubble::kBubbleArrowWidth;
       break;
     default:
       NOTREACHED();
@@ -56,14 +51,16 @@ extern const CGFloat kBubbleCornerRadius = 8.0;
   NSPoint arrowStart = NSMakePoint(NSMinX(bounds), NSMaxY(bounds));
   arrowStart.x += dX;
   [bezier moveToPoint:NSMakePoint(arrowStart.x, arrowStart.y)];
-  [bezier lineToPoint:NSMakePoint(arrowStart.x + kBubbleArrowWidth/2.0,
-                                  arrowStart.y + kBubbleArrowHeight)];
-  [bezier lineToPoint:NSMakePoint(arrowStart.x + kBubbleArrowWidth,
+  [bezier lineToPoint:NSMakePoint(arrowStart.x +
+                                      info_bubble::kBubbleArrowWidth / 2.0,
+                                  arrowStart.y +
+                                      info_bubble::kBubbleArrowHeight)];
+  [bezier lineToPoint:NSMakePoint(arrowStart.x + info_bubble::kBubbleArrowWidth,
                                   arrowStart.y)];
   [bezier closePath];
 
   // Then fill the inside depending on the type of bubble.
-  if (bubbleType_ == kGradientInfoBubble) {
+  if (bubbleType_ == info_bubble::kGradientInfoBubble) {
     NSColor* base_color = [NSColor colorWithCalibratedWhite:0.5 alpha:1.0];
     NSColor* startColor =
         [base_color gtm_colorAdjustedFor:GTMColorationLightHighlight
@@ -86,7 +83,7 @@ extern const CGFloat kBubbleCornerRadius = 8.0;
                                                        nil]);
 
     [gradient.get() drawInBezierPath:bezier angle:0.0];
-  } else if (bubbleType_ == kWhiteInfoBubble) {
+  } else if (bubbleType_ == info_bubble::kWhiteInfoBubble) {
     [[NSColor whiteColor] set];
     [bezier fill];
   }
@@ -94,9 +91,11 @@ extern const CGFloat kBubbleCornerRadius = 8.0;
 
 - (NSPoint)arrowTip {
   NSRect bounds = [self bounds];
-  CGFloat tipXOffset = kBubbleArrowXOffset + kBubbleArrowWidth / 2.0;
-  CGFloat xOffset = arrowLocation_ == kTopRight ? NSMaxX(bounds) - tipXOffset :
-  NSMinX(bounds) + tipXOffset;
+  CGFloat tipXOffset =
+      info_bubble::kBubbleArrowXOffset + info_bubble::kBubbleArrowWidth / 2.0;
+  CGFloat xOffset =
+      (arrowLocation_ == info_bubble::kTopRight) ? NSMaxX(bounds) - tipXOffset :
+                                                   NSMinX(bounds) + tipXOffset;
   NSPoint arrowTip = NSMakePoint(xOffset, NSMaxY(bounds));
   return arrowTip;
 }

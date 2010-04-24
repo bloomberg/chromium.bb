@@ -702,7 +702,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
     [ExtensionPopupController showURL:popupUrl
                             inBrowser:browser_
                            anchoredAt:arrowPoint
-                        arrowLocation:kTopRight
+                        arrowLocation:info_bubble::kTopRight
                               devMode:NO];
   } else {
     ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(

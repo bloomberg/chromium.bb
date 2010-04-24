@@ -728,7 +728,7 @@ void LocationBarViewMac::PageActionImageView::OnMousePressed(NSRect bounds) {
     [ExtensionPopupController showURL:page_action_->GetPopupUrl(current_tab_id_)
                             inBrowser:BrowserList::GetLastActive()
                            anchoredAt:arrowPoint
-                        arrowLocation:kTopRight
+                        arrowLocation:info_bubble::kTopRight
                               devMode:NO];
   } else {
     ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(

@@ -369,8 +369,8 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
   DCHECK([self window]);
   DCHECK_EQ(self, [[self window] delegate]);
 
-  [bubble_ setBubbleType:kWhiteInfoBubble];
-  [bubble_ setArrowLocation:kTopRight];
+  [bubble_ setBubbleType:info_bubble::kWhiteInfoBubble];
+  [bubble_ setArrowLocation:info_bubble::kTopRight];
 
   // Adapt window size to bottom buttons. Do this before all other layouting.
   [self sizeToFitManageDoneButtons];
@@ -418,8 +418,8 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
   NSWindow* window = [self window];  // completes nib load
 
   NSPoint origin = anchor_;
-  NSSize offsets = NSMakeSize(kBubbleArrowXOffset + kBubbleArrowWidth / 2.0,
-                              0);
+  NSSize offsets = NSMakeSize(info_bubble::kBubbleArrowXOffset +
+                                  info_bubble::kBubbleArrowWidth / 2.0, 0);
   offsets = [[parentWindow_ contentView] convertSize:offsets toView:nil];
   origin.x -= NSWidth([window frame]) - offsets.width;
   origin.y -= NSHeight([window frame]);

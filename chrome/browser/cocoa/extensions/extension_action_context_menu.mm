@@ -265,7 +265,7 @@ int CurrentTabId() {
       [ExtensionPopupController showURL:url
                               inBrowser:BrowserList::GetLastActive()
                              anchoredAt:popupPoint
-                          arrowLocation:kTopRight
+                          arrowLocation:info_bubble::kTopRight
                                 devMode:YES];
       break;
     }
