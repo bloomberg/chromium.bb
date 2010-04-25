@@ -103,9 +103,6 @@ TEST_F(ToolbarControllerTest, TitlebarOnly) {
   // Simulate a popup going fullscreen and back by performing the reparenting
   // that happens during fullscreen transitions
   NSView* superview = [view superview];
-  // TODO(jrg): find a way to add an [NSAutoreleasePool drain] in
-  // here.  I don't have access to the current
-  // scoped_nsautorelease_pool to do it properly :-(
   [view removeFromSuperview];
   [superview addSubview:view];
 
@@ -127,7 +124,6 @@ TEST_F(ToolbarControllerTest, NoLocationBar) {
   // Simulate a popup going fullscreen and back by performing the reparenting
   // that happens during fullscreen transitions
   NSView* superview = [view superview];
-  // TODO(jrg): See TODO above.
   [view removeFromSuperview];
   [superview addSubview:view];
 }
