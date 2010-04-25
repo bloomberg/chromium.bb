@@ -261,9 +261,6 @@ class TranslateNotificationObserverBridge :
 }
 
 - (void)languageModified {
-  // If necessary, update state and translate.
-  [self rebuildOptionsMenu];
-
   // Selecting an item from the "from language" menu in the before translate
   // phase shouldn't trigger translation - http://crbug.com/36666
   TranslateInfoBarDelegate* delegate = [self delegate];
@@ -574,6 +571,10 @@ class TranslateNotificationObserverBridge :
   // Instantiate additional controls.
   [self constructViews];
 
+  // Set ourselves as the delegate for the options menu so we can populate it
+  // dynamically.
+  [[optionsPopUp_ menu] setDelegate:self];
+
   // Replace label_ with label1_ so we get a consistent look between all the
   // labels we display in the translate view.
   [[label_ superview] replaceSubview:label_ with:label1_.get()];
@@ -653,13 +654,20 @@ class TranslateNotificationObserverBridge :
 - (void)menuItemSelected:(id)item {
   if ([item respondsToSelector:@selector(tag)]) {
     int cmd = [item tag];
+    // Danger Will Robinson! : This call can release the infobar (e.g. invoking
+    // "About Translate" can open a new tab).
+    // Do not access member variables after this line!
     menu_model_->ExecuteCommand(cmd);
-
-    // The command many change the state of the options menu items.
-    [self rebuildOptionsMenu];
   } else {
     NOTREACHED();
   }
+}
+
+#pragma mark NSMenuDelegate
+
+// Invoked by virtue of us being set as the delegate for the options menu.
+- (void)menuNeedsUpdate:(NSMenu *)menu {
+  [self rebuildOptionsMenu];
 }
 
 #pragma mark TestingAPI
