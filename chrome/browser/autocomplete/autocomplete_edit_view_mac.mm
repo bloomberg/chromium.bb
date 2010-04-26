@@ -884,10 +884,12 @@ void AutocompleteEditViewMac::OnControlKeyChanged(bool pressed) {
 }
 
 void AutocompleteEditViewMac::FocusLocation(bool select_all) {
-  // TODO(pkasting): Figure out Mac's weird focus-handling and do the right
-  // thing here :(
   if ([field_ isEditable]) {
-    [[field_ window] makeFirstResponder:field_];
+    // If the text field has a field editor, it's the first responder, meaning
+    // that it's already focused. makeFirstResponder: will select all, so only
+    // call it if this behavior is desired.
+    if (select_all || ![field_ currentEditor])
+      [[field_ window] makeFirstResponder:field_];
     DCHECK_EQ([field_ currentEditor], [[field_ window] firstResponder]);
   }
 }
