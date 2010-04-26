@@ -437,6 +437,16 @@ DeclareBit('prebuilt', 'Disable all build steps, only support install steps')
 pre_base_env.SetBitFromOption('prebuilt', False)
 
 
+# Disable tests/platform quals that would fail on vmware + hardy + 64 as
+# currently run on some of the buildbots.
+DeclareBit('disable_hardy64_vmware_failures',
+           'Disable tests/platform quals that would fail on '
+           'vmware + hardy + 64 as currently run on some of the buildbots.')
+pre_base_env.SetBitFromOption('disable_hardy64_vmware_failures', False)
+if pre_base_env.Bit('disable_hardy64_vmware_failures'):
+  print 'Running with --disable_hardy64_vmware_failures'
+
+
 if pre_base_env.Bit('prebuilt') or ARGUMENTS.get('built_elsewhere'):
   n = pre_base_env.Command('firefox_install_command',
                            [],
