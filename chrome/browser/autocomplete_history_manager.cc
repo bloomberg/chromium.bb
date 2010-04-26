@@ -123,8 +123,7 @@ void AutocompleteHistoryManager::StoreFormEntriesInWebDatabase(
       values.push_back(*iter);
   }
 
-  profile()->GetWebDataService(Profile::EXPLICIT_ACCESS)->
-      AddFormFieldValues(values);
+  profile()->GetWebDataService(Profile::EXPLICIT_ACCESS)->AddFormFields(values);
 }
 
 void AutocompleteHistoryManager::SendSuggestions(const WDTypedResult* result) {

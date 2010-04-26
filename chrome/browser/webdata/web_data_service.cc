@@ -40,24 +40,10 @@ WebDataService::WebDataService()
     main_loop_(MessageLoop::current()) {
 }
 
-WebDataService::~WebDataService() {
-  if (is_running_ && db_) {
-    DLOG_ASSERT("WebDataService dtor called without Shutdown");
-  }
-}
-
 bool WebDataService::Init(const FilePath& profile_path) {
   FilePath path = profile_path;
   path = path.Append(chrome::kWebDataFilename);
   return InitWithPath(path);
-}
-
-bool WebDataService::InitWithPath(const FilePath& path) {
-  path_ = path;
-  is_running_ = true;
-  ScheduleTask(NewRunnableMethod(this,
-      &WebDataService::InitializeDatabaseIfNecessary));
-  return true;
 }
 
 void WebDataService::Shutdown() {
@@ -72,25 +58,6 @@ void WebDataService::UnloadDatabase() {
   ScheduleTask(NewRunnableMethod(this, &WebDataService::ShutdownDatabase));
 }
 
-void WebDataService::ScheduleCommit() {
-  if (should_commit_ == false) {
-    should_commit_ = true;
-    ScheduleTask(NewRunnableMethod(this, &WebDataService::Commit));
-  }
-}
-
-void WebDataService::ScheduleTask(Task* t) {
-  if (is_running_)
-    ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, t);
-  else
-    NOTREACHED() << "Task scheduled after Shutdown()";
-}
-
-void WebDataService::RegisterRequest(WebDataRequest* request) {
-  AutoLock l(pending_lock_);
-  pending_requests_[request->GetHandle()] = request;
-}
-
 void WebDataService::CancelRequest(Handle h) {
   AutoLock l(pending_lock_);
   RequestMap::iterator i = pending_requests_.find(h);
@@ -101,131 +68,6 @@ void WebDataService::CancelRequest(Handle h) {
   i->second->Cancel();
 }
 
-void WebDataService::AddFormFieldValues(
-    const std::vector<FormField>& element) {
-  GenericRequest<std::vector<FormField> >* request =
-      new GenericRequest<std::vector<FormField> >(
-          this, GetNextRequestHandle(), NULL, element);
-  RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this,
-                                 &WebDataService::AddFormFieldValuesImpl,
-                                 request));
-}
-
-WebDataService::Handle WebDataService::GetFormValuesForElementName(
-    const string16& name, const string16& prefix, int limit,
-    WebDataServiceConsumer* consumer) {
-  WebDataRequest* request =
-      new WebDataRequest(this, GetNextRequestHandle(), consumer);
-  RegisterRequest(request);
-  ScheduleTask(
-      NewRunnableMethod(this,
-                        &WebDataService::GetFormValuesForElementNameImpl,
-                        request,
-                        name,
-                        prefix,
-                        limit));
-  return request->GetHandle();
-}
-
-void WebDataService::RemoveFormValueForElementName(
-    const string16& name, const string16& value) {
-  GenericRequest2<string16, string16>* request =
-      new GenericRequest2<string16, string16>(this,
-                                              GetNextRequestHandle(),
-                                              NULL,
-                                              name, value);
-  RegisterRequest(request);
-  ScheduleTask(
-      NewRunnableMethod(this,
-                        &WebDataService::RemoveFormValueForElementNameImpl,
-                        request));
-}
-
-void WebDataService::AddAutoFillProfile(const AutoFillProfile& profile) {
-  GenericRequest<AutoFillProfile>* request =
-      new GenericRequest<AutoFillProfile>(
-          this, GetNextRequestHandle(), NULL, profile);
-  RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this,
-                                 &WebDataService::AddAutoFillProfileImpl,
-                                 request));
-}
-
-void WebDataService::UpdateAutoFillProfile(const AutoFillProfile& profile) {
-  GenericRequest<AutoFillProfile>* request =
-      new GenericRequest<AutoFillProfile>(
-          this, GetNextRequestHandle(), NULL, profile);
-  RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this,
-                                 &WebDataService::UpdateAutoFillProfileImpl,
-                                 request));
-}
-
-void WebDataService::RemoveAutoFillProfile(int profile_id) {
-  GenericRequest<int>* request =
-      new GenericRequest<int>(
-          this, GetNextRequestHandle(), NULL, profile_id);
-  RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this,
-                                 &WebDataService::RemoveAutoFillProfileImpl,
-                                 request));
-}
-
-WebDataService::Handle WebDataService::GetAutoFillProfiles(
-    WebDataServiceConsumer* consumer) {
-  WebDataRequest* request =
-      new WebDataRequest(this, GetNextRequestHandle(), consumer);
-  RegisterRequest(request);
-  ScheduleTask(
-      NewRunnableMethod(this,
-                        &WebDataService::GetAutoFillProfilesImpl,
-                        request));
-  return request->GetHandle();
-}
-
-void WebDataService::AddCreditCard(const CreditCard& creditcard) {
-  GenericRequest<CreditCard>* request =
-      new GenericRequest<CreditCard>(
-          this, GetNextRequestHandle(), NULL, creditcard);
-  RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this,
-                                 &WebDataService::AddCreditCardImpl,
-                                 request));
-}
-
-void WebDataService::UpdateCreditCard(const CreditCard& creditcard) {
-  GenericRequest<CreditCard>* request =
-      new GenericRequest<CreditCard>(
-          this, GetNextRequestHandle(), NULL, creditcard);
-  RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this,
-                                 &WebDataService::UpdateCreditCardImpl,
-                                 request));
-}
-
-void WebDataService::RemoveCreditCard(int creditcard_id) {
-  GenericRequest<int>* request =
-      new GenericRequest<int>(
-          this, GetNextRequestHandle(), NULL, creditcard_id);
-  RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this,
-                                 &WebDataService::RemoveCreditCardImpl,
-                                 request));
-}
-
-WebDataService::Handle WebDataService::GetCreditCards(
-    WebDataServiceConsumer* consumer) {
-  WebDataRequest* request =
-      new WebDataRequest(this, GetNextRequestHandle(), consumer);
-  RegisterRequest(request);
-  ScheduleTask(
-      NewRunnableMethod(this,
-                        &WebDataService::GetCreditCardsImpl,
-                        request));
-  return request->GetHandle();
-}
-
 bool WebDataService::IsDatabaseLoaded() {
   return db_ != NULL;
 }
@@ -233,47 +75,6 @@ bool WebDataService::IsDatabaseLoaded() {
 WebDatabase* WebDataService::GetDatabase() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   return db_;
-}
-
-void WebDataService::RequestCompleted(Handle h) {
-  pending_lock_.Acquire();
-  RequestMap::iterator i = pending_requests_.find(h);
-  if (i == pending_requests_.end()) {
-    NOTREACHED() << "Request completed called for an unknown request";
-    pending_lock_.Release();
-    return;
-  }
-
-  // Take ownership of the request object and remove it from the map.
-  scoped_ptr<WebDataRequest> request(i->second);
-  pending_requests_.erase(i);
-  pending_lock_.Release();
-
-  // Notify the consumer if needed.
-  WebDataServiceConsumer* consumer;
-  if (!request->IsCancelled() && (consumer = request->GetConsumer())) {
-    consumer->OnWebDataServiceRequestDone(request->GetHandle(),
-                                          request->GetResult());
-  } else {
-    // Nobody is taken ownership of the result, either because it is canceled
-    // or there is no consumer. Destroy results that require special handling.
-    WDTypedResult const *result = request->GetResult();
-    if (result) {
-      if (result->GetType() == AUTOFILL_PROFILES_RESULT) {
-        const WDResult<std::vector<AutoFillProfile*> >* r =
-            static_cast<const WDResult<std::vector<AutoFillProfile*> >*>(
-                result);
-        std::vector<AutoFillProfile*> profiles = r->GetValue();
-        STLDeleteElements(&profiles);
-      } else if (result->GetType() == AUTOFILL_CREDITCARDS_RESULT) {
-        const WDResult<std::vector<CreditCard*> >* r =
-            static_cast<const WDResult<std::vector<CreditCard*> >*>(result);
-
-        std::vector<CreditCard*> credit_cards = r->GetValue();
-        STLDeleteElements(&credit_cards);
-      }
-    }
-  }
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -436,19 +237,6 @@ void WebDataService::RemoveLoginsCreatedAfter(const Time& delete_begin) {
   RemoveLoginsCreatedBetween(delete_begin, Time());
 }
 
-void WebDataService::RemoveFormElementsAddedBetween(const Time& delete_begin,
-                                                    const Time& delete_end) {
-  GenericRequest2<Time, Time>* request =
-    new GenericRequest2<Time, Time>(this,
-                                    GetNextRequestHandle(),
-                                    NULL,
-                                    delete_begin,
-                                    delete_end);
-  RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this,
-      &WebDataService::RemoveFormElementsAddedBetweenImpl, request));
-}
-
 WebDataService::Handle WebDataService::GetLogins(
                                        const PasswordForm& form,
                                        WebDataServiceConsumer* consumer) {
@@ -483,12 +271,208 @@ WebDataService::Handle WebDataService::GetBlacklistLogins(
   return request->GetHandle();
 }
 
-void WebDataService::DBInitFailed(sql::InitStatus init_status) {
-  Source<WebDataService> source(this);
-  int message_id = (init_status == sql::INIT_FAILURE) ?
-      IDS_COULDNT_OPEN_PROFILE_ERROR : IDS_PROFILE_TOO_NEW_ERROR;
-  NotificationService::current()->Notify(NotificationType::PROFILE_ERROR,
-                                         source, Details<int>(&message_id));
+////////////////////////////////////////////////////////////////////////////////
+//
+// AutoFill.
+//
+////////////////////////////////////////////////////////////////////////////////
+
+void WebDataService::AddFormFields(
+    const std::vector<FormField>& fields) {
+  GenericRequest<std::vector<FormField> >* request =
+      new GenericRequest<std::vector<FormField> >(
+          this, GetNextRequestHandle(), NULL, fields);
+  RegisterRequest(request);
+  ScheduleTask(NewRunnableMethod(this,
+                                 &WebDataService::AddFormElementsImpl,
+                                 request));
+}
+
+WebDataService::Handle WebDataService::GetFormValuesForElementName(
+    const string16& name, const string16& prefix, int limit,
+    WebDataServiceConsumer* consumer) {
+  WebDataRequest* request =
+      new WebDataRequest(this, GetNextRequestHandle(), consumer);
+  RegisterRequest(request);
+  ScheduleTask(
+      NewRunnableMethod(this,
+                        &WebDataService::GetFormValuesForElementNameImpl,
+                        request,
+                        name,
+                        prefix,
+                        limit));
+  return request->GetHandle();
+}
+
+void WebDataService::RemoveFormElementsAddedBetween(const Time& delete_begin,
+                                                    const Time& delete_end) {
+  GenericRequest2<Time, Time>* request =
+    new GenericRequest2<Time, Time>(this,
+                                    GetNextRequestHandle(),
+                                    NULL,
+                                    delete_begin,
+                                    delete_end);
+  RegisterRequest(request);
+  ScheduleTask(NewRunnableMethod(this,
+      &WebDataService::RemoveFormElementsAddedBetweenImpl, request));
+}
+
+void WebDataService::RemoveFormValueForElementName(
+    const string16& name, const string16& value) {
+  GenericRequest2<string16, string16>* request =
+      new GenericRequest2<string16, string16>(this,
+                                              GetNextRequestHandle(),
+                                              NULL,
+                                              name, value);
+  RegisterRequest(request);
+  ScheduleTask(
+      NewRunnableMethod(this,
+                        &WebDataService::RemoveFormValueForElementNameImpl,
+                        request));
+}
+
+void WebDataService::AddAutoFillProfile(const AutoFillProfile& profile) {
+  GenericRequest<AutoFillProfile>* request =
+      new GenericRequest<AutoFillProfile>(
+          this, GetNextRequestHandle(), NULL, profile);
+  RegisterRequest(request);
+  ScheduleTask(NewRunnableMethod(this,
+                                 &WebDataService::AddAutoFillProfileImpl,
+                                 request));
+}
+
+void WebDataService::UpdateAutoFillProfile(const AutoFillProfile& profile) {
+  GenericRequest<AutoFillProfile>* request =
+      new GenericRequest<AutoFillProfile>(
+          this, GetNextRequestHandle(), NULL, profile);
+  RegisterRequest(request);
+  ScheduleTask(NewRunnableMethod(this,
+                                 &WebDataService::UpdateAutoFillProfileImpl,
+                                 request));
+}
+
+void WebDataService::RemoveAutoFillProfile(int profile_id) {
+  GenericRequest<int>* request =
+      new GenericRequest<int>(
+          this, GetNextRequestHandle(), NULL, profile_id);
+  RegisterRequest(request);
+  ScheduleTask(NewRunnableMethod(this,
+                                 &WebDataService::RemoveAutoFillProfileImpl,
+                                 request));
+}
+
+WebDataService::Handle WebDataService::GetAutoFillProfiles(
+    WebDataServiceConsumer* consumer) {
+  WebDataRequest* request =
+      new WebDataRequest(this, GetNextRequestHandle(), consumer);
+  RegisterRequest(request);
+  ScheduleTask(
+      NewRunnableMethod(this,
+                        &WebDataService::GetAutoFillProfilesImpl,
+                        request));
+  return request->GetHandle();
+}
+
+void WebDataService::AddCreditCard(const CreditCard& creditcard) {
+  GenericRequest<CreditCard>* request =
+      new GenericRequest<CreditCard>(
+          this, GetNextRequestHandle(), NULL, creditcard);
+  RegisterRequest(request);
+  ScheduleTask(NewRunnableMethod(this,
+                                 &WebDataService::AddCreditCardImpl,
+                                 request));
+}
+
+void WebDataService::UpdateCreditCard(const CreditCard& creditcard) {
+  GenericRequest<CreditCard>* request =
+      new GenericRequest<CreditCard>(
+          this, GetNextRequestHandle(), NULL, creditcard);
+  RegisterRequest(request);
+  ScheduleTask(NewRunnableMethod(this,
+                                 &WebDataService::UpdateCreditCardImpl,
+                                 request));
+}
+
+void WebDataService::RemoveCreditCard(int creditcard_id) {
+  GenericRequest<int>* request =
+      new GenericRequest<int>(
+          this, GetNextRequestHandle(), NULL, creditcard_id);
+  RegisterRequest(request);
+  ScheduleTask(NewRunnableMethod(this,
+                                 &WebDataService::RemoveCreditCardImpl,
+                                 request));
+}
+
+WebDataService::Handle WebDataService::GetCreditCards(
+    WebDataServiceConsumer* consumer) {
+  WebDataRequest* request =
+      new WebDataRequest(this, GetNextRequestHandle(), consumer);
+  RegisterRequest(request);
+  ScheduleTask(
+      NewRunnableMethod(this,
+                        &WebDataService::GetCreditCardsImpl,
+                        request));
+  return request->GetHandle();
+}
+
+WebDataService::~WebDataService() {
+  if (is_running_ && db_) {
+    DLOG_ASSERT("WebDataService dtor called without Shutdown");
+  }
+}
+
+bool WebDataService::InitWithPath(const FilePath& path) {
+  path_ = path;
+  is_running_ = true;
+  ScheduleTask(NewRunnableMethod(this,
+      &WebDataService::InitializeDatabaseIfNecessary));
+  return true;
+}
+
+void WebDataService::RequestCompleted(Handle h) {
+  pending_lock_.Acquire();
+  RequestMap::iterator i = pending_requests_.find(h);
+  if (i == pending_requests_.end()) {
+    NOTREACHED() << "Request completed called for an unknown request";
+    pending_lock_.Release();
+    return;
+  }
+
+  // Take ownership of the request object and remove it from the map.
+  scoped_ptr<WebDataRequest> request(i->second);
+  pending_requests_.erase(i);
+  pending_lock_.Release();
+
+  // Notify the consumer if needed.
+  WebDataServiceConsumer* consumer;
+  if (!request->IsCancelled() && (consumer = request->GetConsumer())) {
+    consumer->OnWebDataServiceRequestDone(request->GetHandle(),
+                                          request->GetResult());
+  } else {
+    // Nobody is taken ownership of the result, either because it is canceled
+    // or there is no consumer. Destroy results that require special handling.
+    WDTypedResult const *result = request->GetResult();
+    if (result) {
+      if (result->GetType() == AUTOFILL_PROFILES_RESULT) {
+        const WDResult<std::vector<AutoFillProfile*> >* r =
+            static_cast<const WDResult<std::vector<AutoFillProfile*> >*>(
+                result);
+        std::vector<AutoFillProfile*> profiles = r->GetValue();
+        STLDeleteElements(&profiles);
+      } else if (result->GetType() == AUTOFILL_CREDITCARDS_RESULT) {
+        const WDResult<std::vector<CreditCard*> >* r =
+            static_cast<const WDResult<std::vector<CreditCard*> >*>(result);
+
+        std::vector<CreditCard*> credit_cards = r->GetValue();
+        STLDeleteElements(&credit_cards);
+      }
+    }
+  }
+}
+
+void WebDataService::RegisterRequest(WebDataRequest* request) {
+  AutoLock l(pending_lock_);
+  pending_requests_[request->GetHandle()] = request;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -497,15 +481,12 @@ void WebDataService::DBInitFailed(sql::InitStatus init_status) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-void WebDataService::Commit() {
-  if (should_commit_) {
-    should_commit_ = false;
-
-    if (db_) {
-      db_->CommitTransaction();
-      db_->BeginTransaction();
-    }
-  }
+void WebDataService::DBInitFailed(sql::InitStatus init_status) {
+  Source<WebDataService> source(this);
+  int message_id = (init_status == sql::INIT_FAILURE) ?
+      IDS_COULDNT_OPEN_PROFILE_ERROR : IDS_PROFILE_TOO_NEW_ERROR;
+  NotificationService::current()->Notify(NotificationType::PROFILE_ERROR,
+                                         source, Details<int>(&message_id));
 }
 
 void WebDataService::InitializeDatabaseIfNecessary() {
@@ -554,9 +535,42 @@ void WebDataService::ShutdownDatabase() {
   }
 }
 
+void WebDataService::Commit() {
+  if (should_commit_) {
+    should_commit_ = false;
+
+    if (db_) {
+      db_->CommitTransaction();
+      db_->BeginTransaction();
+    }
+  }
+}
+
+void WebDataService::ScheduleTask(Task* t) {
+  if (is_running_)
+    ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, t);
+  else
+    NOTREACHED() << "Task scheduled after Shutdown()";
+}
+
+void WebDataService::ScheduleCommit() {
+  if (should_commit_ == false) {
+    should_commit_ = true;
+    ScheduleTask(NewRunnableMethod(this, &WebDataService::Commit));
+  }
+}
+
+int WebDataService::GetNextRequestHandle() {
+  AutoLock l(pending_lock_);
+  return ++next_request_handle_;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 //
-// Keywords.
+// Keywords implementation.
 //
+////////////////////////////////////////////////////////////////////////////////
+
 void WebDataService::AddKeywordImpl(GenericRequest<TemplateURL>* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
@@ -622,9 +636,60 @@ void WebDataService::SetBuiltinKeywordVersionImpl(
   request->RequestComplete();
 }
 
+////////////////////////////////////////////////////////////////////////////////
 //
-// Password manager support.
+// Web Apps implementation.
 //
+////////////////////////////////////////////////////////////////////////////////
+
+void WebDataService::SetWebAppImageImpl(
+    GenericRequest2<GURL, SkBitmap>* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled()) {
+    db_->SetWebAppImage(request->GetArgument1(), request->GetArgument2());
+    ScheduleCommit();
+  }
+  request->RequestComplete();
+}
+
+void WebDataService::SetWebAppHasAllImagesImpl(
+    GenericRequest2<GURL, bool>* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled()) {
+    db_->SetWebAppHasAllImages(request->GetArgument1(),
+                               request->GetArgument2());
+    ScheduleCommit();
+  }
+  request->RequestComplete();
+}
+
+void WebDataService::RemoveWebAppImpl(GenericRequest<GURL>* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled()) {
+    db_->RemoveWebApp(request->GetArgument());
+    ScheduleCommit();
+  }
+  request->RequestComplete();
+}
+
+void WebDataService::GetWebAppImagesImpl(GenericRequest<GURL>* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled()) {
+    WDAppImagesResult result;
+    result.has_all_images = db_->GetWebAppHasAllImages(request->GetArgument());
+    db_->GetWebAppImages(request->GetArgument(), &result.images);
+    request->SetResult(
+        new WDResult<WDAppImagesResult>(WEB_APP_IMAGES, result));
+  }
+  request->RequestComplete();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Password manager implementation.
+//
+////////////////////////////////////////////////////////////////////////////////
+
 void WebDataService::AddLoginImpl(GenericRequest<PasswordForm>* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
@@ -708,11 +773,11 @@ void WebDataService::GetBlacklistLoginsImpl(WebDataRequest* request) {
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Autofill support.
+// AutoFill implementation.
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-void WebDataService::AddFormFieldValuesImpl(
+void WebDataService::AddFormElementsImpl(
     GenericRequest<std::vector<FormField> >* request) {
   InitializeDatabaseIfNecessary();
   const std::vector<FormField>& form_fields = request->GetArgument();
@@ -965,54 +1030,6 @@ void WebDataService::GetCreditCardsImpl(WebDataRequest* request) {
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Web Apps implementation.
-//
-////////////////////////////////////////////////////////////////////////////////
-
-void WebDataService::SetWebAppImageImpl(
-    GenericRequest2<GURL, SkBitmap>* request) {
-  InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
-    db_->SetWebAppImage(request->GetArgument1(), request->GetArgument2());
-    ScheduleCommit();
-  }
-  request->RequestComplete();
-}
-
-void WebDataService::SetWebAppHasAllImagesImpl(
-    GenericRequest2<GURL, bool>* request) {
-  InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
-    db_->SetWebAppHasAllImages(request->GetArgument1(),
-                               request->GetArgument2());
-    ScheduleCommit();
-  }
-  request->RequestComplete();
-}
-
-void WebDataService::RemoveWebAppImpl(GenericRequest<GURL>* request) {
-  InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
-    db_->RemoveWebApp(request->GetArgument());
-    ScheduleCommit();
-  }
-  request->RequestComplete();
-}
-
-void WebDataService::GetWebAppImagesImpl(GenericRequest<GURL>* request) {
-  InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled()) {
-    WDAppImagesResult result;
-    result.has_all_images = db_->GetWebAppHasAllImages(request->GetArgument());
-    db_->GetWebAppImages(request->GetArgument(), &result.images);
-    request->SetResult(
-        new WDResult<WDAppImagesResult>(WEB_APP_IMAGES, result));
-  }
-  request->RequestComplete();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//
 // WebDataRequest implementation.
 //
 ////////////////////////////////////////////////////////////////////////////////
@@ -1063,9 +1080,4 @@ void WebDataService::WebDataRequest::RequestComplete() {
                               &WebDataService::RequestCompleted,
                               handle_);
   message_loop_->PostTask(FROM_HERE, t);
-}
-
-int WebDataService::GetNextRequestHandle() {
-  AutoLock l(pending_lock_);
-  return ++next_request_handle_;
 }

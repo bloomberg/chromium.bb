@@ -224,7 +224,7 @@ TEST_F(WebDataServiceAutofillTest, FormFillAdd) {
   std::vector<webkit_glue::FormField> form_fields;
   AppendFormField(name1_, value1_, &form_fields);
   AppendFormField(name2_, value2_, &form_fields);
-  wds_->AddFormFieldValues(form_fields);
+  wds_->AddFormFields(form_fields);
 
   // The event will be signaled when the mock observer is notified.
   done_event_.TimedWait(test_timeout_);
@@ -249,7 +249,7 @@ TEST_F(WebDataServiceAutofillTest, FormFillRemoveOne) {
       WillOnce(SignalEvent(&done_event_));
   std::vector<webkit_glue::FormField> form_fields;
   AppendFormField(name1_, value1_, &form_fields);
-  wds_->AddFormFieldValues(form_fields);
+  wds_->AddFormFields(form_fields);
 
   // The event will be signaled when the mock observer is notified.
   done_event_.TimedWait(test_timeout_);
@@ -281,7 +281,7 @@ TEST_F(WebDataServiceAutofillTest,FormFillRemoveMany) {
   std::vector<webkit_glue::FormField> form_fields;
   AppendFormField(name1_, value1_, &form_fields);
   AppendFormField(name2_, value2_, &form_fields);
-  wds_->AddFormFieldValues(form_fields);
+  wds_->AddFormFields(form_fields);
 
   // The event will be signaled when the mock observer is notified.
   done_event_.TimedWait(test_timeout_);
