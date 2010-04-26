@@ -1010,7 +1010,8 @@ TEST_F(ExternalTabUITest, FLAKY_PostMessageTarget)  {
   loop.RunFor(action_max_timeout_ms());
 }
 
-TEST_F(ExternalTabUITest, HostNetworkStack) {
+// Flaky, http://crbug.com/42545.
+TEST_F(ExternalTabUITest, FLAKY_HostNetworkStack) {
   scoped_refptr<TabProxy> tab;
   TimedMessageLoopRunner loop(MessageLoop::current());
   ASSERT_THAT(mock_, testing::NotNull());
