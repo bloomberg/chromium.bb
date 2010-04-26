@@ -125,7 +125,8 @@ void Plugin::SetWindow(const NPWindow& window) {
   demo_->InitWindowSize(window.width, window.height);
 
   if (!pgl_context_) {
-    CreateContext();
+    if (!CreateContext())
+      return;
 
     // Schedule first call to Tick.
     if (demo_->IsAnimated())
@@ -147,7 +148,9 @@ void Plugin::Tick() {
 void Plugin::Paint() {
   if (!pglMakeCurrent(pgl_context_) && pglGetError() == PGL_CONTEXT_LOST) {
     DestroyContext();
-    CreateContext();
+    if (!CreateContext())
+      return;
+
     pglMakeCurrent(pgl_context_);
   }
 
@@ -156,31 +159,50 @@ void Plugin::Paint() {
   pglMakeCurrent(PGL_NO_CONTEXT);
 }
 
-void Plugin::CreateContext() {
+bool Plugin::CreateContext() {
   DCHECK(!pgl_context_);
 
   // Initialize a 3D context.
   NPDeviceContext3DConfig config;
   config.commandBufferSize = kCommandBufferSize;
-  device3d_->initializeContext(npp_, &config, &context3d_);
+  if (NPERR_NO_ERROR != device3d_->initializeContext(npp_,
+                                                     &config,
+                                                     &context3d_)) {
+    DestroyContext();
+    return false;
+  }
+
   context3d_.repaintCallback = RepaintCallback;
 
   // Create a PGL context.
   pgl_context_ = pglCreateContext(npp_, device3d_, &context3d_);
+  if (!pgl_context_) {
+    DestroyContext();
+    return false;
+  }
 
   // Initialize demo.
   pglMakeCurrent(pgl_context_);
-  CHECK(demo_->InitGL());
+  if (!demo_->InitGL()) {
+    DestroyContext();
+    return false;
+  }
+
   pglMakeCurrent(PGL_NO_CONTEXT);
+
+  return true;
 }
 
 void Plugin::DestroyContext() {
-  DCHECK(pgl_context_);
+  if (pgl_context_) {
+    pglDestroyContext(pgl_context_);
+    pgl_context_ = NULL;
+  }
 
-  pglDestroyContext(pgl_context_);
-  pgl_context_ = NULL;
-
-  device3d_->destroyContext(npp_, &context3d_);
+  if (context3d_.commandBuffer) {
+    device3d_->destroyContext(npp_, &context3d_);
+    memset(&context3d_, 0, sizeof(context3d_));
+  }
 }
 
 }  // namespace demos

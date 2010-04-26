@@ -35,7 +35,7 @@ class Plugin : public NPObject {
   void Paint();
 
  private:
-  void CreateContext();
+  bool CreateContext();
   void DestroyContext();
 
   // This class object needs to be safely casted to NPObject* and cross
