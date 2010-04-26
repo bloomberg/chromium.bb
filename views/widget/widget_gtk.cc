@@ -16,7 +16,6 @@
 #include "app/os_exchange_data_provider_gtk.h"
 #include "base/auto_reset.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/path.h"
 #include "views/widget/default_theme_provider.h"
@@ -171,7 +170,6 @@ WidgetGtk::~WidgetGtk() {
   DCHECK(delete_on_destroy_ || widget_ == NULL);
   if (type_ != TYPE_CHILD)
     ActiveWindowWatcherX::RemoveObserver(this);
-  MessageLoopForUI::current()->RemoveObserver(this);
 
   // Defer focus manager's destruction. This is for the case when the
   // focus manager is referenced by a child WidgetGtk (e.g. TabbedPane in a
@@ -396,8 +394,6 @@ void WidgetGtk::Init(GtkWidget* parent,
                         GDK_KEY_PRESS_MASK |
                         GDK_KEY_RELEASE_MASK);
   SetRootViewForWidget(widget_, root_view_.get());
-
-  MessageLoopForUI::current()->AddObserver(this);
 
   g_signal_connect_after(G_OBJECT(window_contents_), "size_allocate",
                          G_CALLBACK(&OnSizeAllocateThunk), this);
@@ -724,24 +720,6 @@ bool WidgetGtk::ContainsNativeView(gfx::NativeView native_view) {
   // TODO(port)  See implementation in WidgetWin::ContainsNativeView.
   NOTREACHED() << "WidgetGtk::ContainsNativeView is not implemented.";
   return false;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// WidgetGtk, MessageLoopForUI::Observer implementation:
-
-void WidgetGtk::WillProcessEvent(GdkEvent* event) {
-}
-
-void WidgetGtk::DidProcessEvent(GdkEvent* event) {
-  // Under gtk 2.18.6 (also observed in 2.18.3), gdk_window_process_updates()
-  // ued in PaintNow() method may issue another exposure event and drive
-  // nested message loop, which causes recursive call to PaintNow on the same
-  // WidgetGtk instance.
-  // Invoke PaintNow only if the event is originated from this WidgetGtk's
-  // window_contents_. See bug://crbug.com/42235 for details.
-  if (window_contents_ && event->any.window == window_contents_->window &&
-      root_view_->NeedsPainting(true))
-    PaintNow(root_view_->GetScheduledPaintRect());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

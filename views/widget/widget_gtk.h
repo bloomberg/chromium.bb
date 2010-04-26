@@ -32,7 +32,6 @@ class WindowGtk;
 // Widget implementation for GTK.
 class WidgetGtk
     : public Widget,
-      public MessageLoopForUI::Observer,
       public FocusTraversable,
       public ActiveWindowWatcherX::Observer {
  public:
@@ -191,10 +190,6 @@ class WidgetGtk
                                     View *child);
   virtual bool ContainsNativeView(gfx::NativeView native_view);
 
-
-  // Overridden from MessageLoopForUI::Observer:
-  virtual void WillProcessEvent(GdkEvent* event);
-  virtual void DidProcessEvent(GdkEvent* event);
 
   // Overridden from FocusTraversable:
   virtual View* FindNextFocusableView(View* starting_view,
