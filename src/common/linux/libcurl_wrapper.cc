@@ -128,7 +128,9 @@ bool LibcurlWrapper::SendRequest(const std::string& url,
 
   CURLcode err_code = CURLE_OK;
   err_code = (*easy_perform_)(curl_);
-  *(void**) (&easy_strerror_) = dlsym(curl_lib_, "curl_easy_strerror");
+  easy_strerror_ = reinterpret_cast<const char* (*)(CURLcode)>
+                       (dlsym(curl_lib_, "curl_easy_strerror"));
+
 #ifndef NDEBUG
   if (err_code != CURLE_OK)
     fprintf(stderr, "Failed to send http request to %s, error: %s\n",
@@ -177,8 +179,8 @@ bool LibcurlWrapper::Init() {
   return true;
 }
 
-#define SET_AND_CHECK_FUNCTION_POINTER(var, function_name)      \
-  *(void**) (&var) = dlsym(curl_lib_, function_name);       \
+#define SET_AND_CHECK_FUNCTION_POINTER(var, function_name, type) \
+  var = reinterpret_cast<type>(dlsym(curl_lib_, function_name)); \
   if (!var) { \
     LOG(WARNING) << "Could not find libcurl function " << function_name; \
     init_ok_ = false; \
@@ -188,21 +190,34 @@ bool LibcurlWrapper::Init() {
 bool LibcurlWrapper::SetFunctionPointers() {
 
   SET_AND_CHECK_FUNCTION_POINTER(easy_init_,
-                                 "curl_easy_init");
+                                 "curl_easy_init",
+                                 CURL*(*)());
+
   SET_AND_CHECK_FUNCTION_POINTER(easy_setopt_,
-                                 "curl_easy_setopt");
-  SET_AND_CHECK_FUNCTION_POINTER(formadd_,
-                                 "curl_formadd");
-  SET_AND_CHECK_FUNCTION_POINTER(slist_append_,
-                                 "curl_slist_append");
+                                 "curl_easy_setopt",
+                                 CURLcode(*)(CURL*, CURLoption, ...));
+
+  SET_AND_CHECK_FUNCTION_POINTER(formadd_, "curl_formadd",
+      CURLFORMcode(*)(curl_httppost**, curl_httppost**, ...));
+
+  SET_AND_CHECK_FUNCTION_POINTER(slist_append_, "curl_slist_append",
+      curl_slist*(*)(curl_slist*, const char*));
+
   SET_AND_CHECK_FUNCTION_POINTER(easy_perform_,
-                                 "curl_easy_perform");
+                                 "curl_easy_perform",
+                                 CURLcode(*)(CURL*));
+
   SET_AND_CHECK_FUNCTION_POINTER(easy_cleanup_,
-                                 "curl_easy_cleanup");
+                                 "curl_easy_cleanup",
+                                 void(*)(CURL*));
+
   SET_AND_CHECK_FUNCTION_POINTER(slist_free_all_,
-                                 "curl_slist_free_all");
+                                 "curl_slist_free_all",
+                                 void(*)(curl_slist*));
+
   SET_AND_CHECK_FUNCTION_POINTER(formfree_,
-                                 "curl_formfree");
+                                 "curl_formfree",
+                                 void(*)(curl_httppost*));
   return true;
 }
 
