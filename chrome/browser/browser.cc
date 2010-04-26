@@ -165,7 +165,8 @@ Browser::Browser(Type type, Profile* profile)
       block_command_execution_(false),
       last_blocked_command_id_(-1),
       last_blocked_command_disposition_(CURRENT_TAB),
-      pending_web_app_action_(NONE) {
+      pending_web_app_action_(NONE),
+      extension_app_(NULL) {
   tabstrip_model_.AddObserver(this);
 
   registrar_.Add(this, NotificationType::SSL_VISIBLE_STATE_CHANGED,
@@ -255,10 +256,19 @@ Browser* Browser::CreateForPopup(Profile* profile) {
 
 // static
 Browser* Browser::CreateForApp(const std::wstring& app_name,
+                               Extension* extension,
                                Profile* profile,
                                bool is_panel) {
-  Browser* browser = new Browser(is_panel ? TYPE_APP_PANEL : TYPE_APP, profile);
+  Browser::Type type = TYPE_APP;
+
+  if (is_panel)
+    type = TYPE_APP_PANEL;
+  else if (extension)
+    type = TYPE_EXTENSION_APP;
+
+  Browser* browser = new Browser(type, profile);
   browser->app_name_ = app_name;
+  browser->extension_app_ = extension;
   browser->CreateBrowserWindow();
   return browser;
 }
@@ -410,13 +420,15 @@ bool Browser::OpenApplication(Profile* profile, const std::string& app_id) {
 }
 
 // static
-void Browser::OpenApplicationWindow(Profile* profile, const GURL& url,
-                                    bool as_panel) {
+void Browser::OpenApplicationWindow(Profile* profile, Extension* extension,
+                                    const GURL& url, bool as_panel) {
   std::wstring app_name = web_app::GenerateApplicationNameFromURL(url);
   RegisterAppPrefs(app_name);
 
-  Browser* browser = Browser::CreateForApp(app_name, profile, as_panel);
-  browser->AddTabWithURL(url, GURL(), PageTransition::START_PAGE, true, -1,
+  Browser* browser = Browser::CreateForApp(app_name, extension, profile,
+                                           as_panel);
+  browser->AddTabWithURL(extension ? extension->GetFullLaunchURL() : url,
+                         GURL(), PageTransition::START_PAGE, true, -1,
                          false, NULL);
 
   TabContents* tab_contents = browser->GetSelectedTabContents();
@@ -440,8 +452,7 @@ void Browser::OpenApplicationWindow(Profile* profile, const GURL& url,
 
 // static
 void Browser::OpenApplicationWindow(Profile* profile, Extension* extension) {
-  OpenApplicationWindow(profile,
-      extension->GetFullLaunchURL(),
+  OpenApplicationWindow(profile, extension, GURL(),
       (extension->launch_container() == Extension::LAUNCH_PANEL));
 }
 
@@ -720,7 +731,7 @@ TabContents* Browser::AddTabWithURL(const GURL& url,
                                     SiteInstance* instance,
                                     const std::string& app_extension_id) {
   TabContents* contents = NULL;
-  if (type_ == TYPE_NORMAL || tabstrip_model()->empty()) {
+  if (SupportsWindowFeature(FEATURE_TABSTRIP) || tabstrip_model()->empty()) {
     GURL url_to_load = url;
     if (url_to_load.is_empty())
       url_to_load = GetHomePage();
@@ -1262,11 +1273,18 @@ bool Browser::SupportsWindowFeature(WindowFeature feature) const {
   hide_ui_for_fullscreen = window_ && window_->IsFullscreen();
 #endif
   if (!hide_ui_for_fullscreen) {
-    if (type() == TYPE_NORMAL)
-      features |= FEATURE_TABSTRIP | FEATURE_TOOLBAR;
-    else
+    if (type() != TYPE_NORMAL && type() != TYPE_EXTENSION_APP)
       features |= FEATURE_TITLEBAR;
-    if ((type() & Browser::TYPE_APP) == 0)
+
+    if (type() == TYPE_NORMAL || type() == TYPE_EXTENSION_APP)
+      features |= FEATURE_TABSTRIP;
+
+    // Note: the toolbar is collapsed for TYPE_EXTENSION_APP but it is still
+    // there.
+    if (type() == TYPE_NORMAL || type() == TYPE_EXTENSION_APP)
+      features |= FEATURE_TOOLBAR;
+
+    if (type() != TYPE_EXTENSION_APP && (type() & Browser::TYPE_APP) == 0)
       features |= FEATURE_LOCATIONBAR;
   }
   return !!(features & feature);
@@ -1904,7 +1922,7 @@ TabContents* Browser::AddBlankTabAt(int index, bool foreground) {
 Browser* Browser::CreateNewStripWithContents(TabContents* detached_contents,
                                              const gfx::Rect& window_bounds,
                                              const DockInfo& dock_info) {
-  DCHECK(type_ == TYPE_NORMAL);
+  DCHECK(SupportsWindowFeature(FEATURE_TABSTRIP));
 
   gfx::Rect new_window_bounds = window_bounds;
   bool maximize = false;
@@ -1979,7 +1997,8 @@ void Browser::DuplicateContentsAt(int index) {
     if (type_ & TYPE_APP) {
       DCHECK((type_ & TYPE_POPUP) == 0);
       DCHECK(type_ != TYPE_APP_PANEL);
-      browser = Browser::CreateForApp(app_name_, profile_, false);
+      browser = Browser::CreateForApp(app_name_, extension_app_, profile_,
+                                      false);
     } else if (type_ == TYPE_POPUP) {
       browser = Browser::CreateForPopup(profile_);
     }
@@ -2243,9 +2262,9 @@ void Browser::AddNewContents(TabContents* source,
   DCHECK(disposition != CURRENT_TAB);  // Can't create a new contents for the
                                        // current tab.
 
-  // If this is an application we can only have one tab so we need to process
-  // this in tabbed browser window.
-  if (type_ != TYPE_NORMAL && tabstrip_model_.count() > 0 &&
+  // If this is a window with no tabstrip, we can only have one tab so we need
+  // to process this in tabbed browser window.
+  if (!SupportsWindowFeature(FEATURE_TABSTRIP) && tabstrip_model_.count() > 0 &&
       disposition != NEW_WINDOW && disposition != NEW_POPUP) {
     Browser* b = GetOrCreateTabbedBrowser(profile_);
     DCHECK(b);
@@ -2428,7 +2447,7 @@ void Browser::ConvertContentsToApplication(TabContents* contents) {
   RegisterAppPrefs(app_name);
 
   DetachContents(contents);
-  Browser* browser = Browser::CreateForApp(app_name, profile_, false);
+  Browser* browser = Browser::CreateForApp(app_name, NULL, profile_, false);
   browser->tabstrip_model()->AppendTabContents(contents, true);
   TabContents* tab_contents = browser->GetSelectedTabContents();
   tab_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
@@ -3342,9 +3361,9 @@ void Browser::OpenURLAtIndex(TabContents* source,
     }
   }
 
-  // If this is not a normal window (such as a popup or an application), we can
-  // only have one tab so a new tab always goes into a tabbed browser window.
-  if (type_ != TYPE_NORMAL &&
+  // If this browser doeesn't support tabs, we can only have one tab so a new
+  // tab always goes into a tabbed browser window.
+  if (!SupportsWindowFeature(FEATURE_TABSTRIP) &&
       disposition != CURRENT_TAB && disposition != NEW_WINDOW) {
     // If the disposition is OFF_THE_RECORD we don't want to create a new
     // browser that will itself create another OTR browser. This will result in

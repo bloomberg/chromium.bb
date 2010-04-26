@@ -248,7 +248,8 @@ TabStrip::TabStrip(TabStripModel* model)
       available_width_for_tabs_(-1),
       animation_container_(new AnimationContainer()),
       ALLOW_THIS_IN_INITIALIZER_LIST(bounds_animator_(this)),
-      animation_type_(ANIMATION_DEFAULT) {
+      animation_type_(ANIMATION_DEFAULT),
+      new_tab_button_enabled_(true) {
   Init();
 }
 
@@ -521,7 +522,12 @@ void TabStrip::Layout() {
   for (int i = 0, tab_count = GetTabCount(); i < tab_count; ++i)
     tab_data_[i].tab->SetBounds(tab_data_[i].ideal_bounds);
 
-  newtab_button_->SetBounds(newtab_button_bounds_);
+  if (new_tab_button_enabled_) {
+    newtab_button_->SetBounds(newtab_button_bounds_);
+    newtab_button_->SetVisible(true);
+  } else {
+    newtab_button_->SetVisible(false);
+  }
 
   SchedulePaint();
 }
