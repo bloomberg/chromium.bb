@@ -47,14 +47,23 @@ class ContentView : public views::View {
         window_y_(window_y),
         screen_w_(screen_w),
         screen_h_(screen_h),
+        accel_account_screen_(views::Accelerator(base::VKEY_A,
+                                                 false, true, true)),
         accel_login_screen_(views::Accelerator(base::VKEY_L,
-                                               false, true, true)) {
+                                               false, true, true)),
+        accel_network_screen_(views::Accelerator(base::VKEY_N,
+                                                 false, true, true)),
+        accel_update_screen_(views::Accelerator(base::VKEY_U,
+                                                false, true, true)) {
     if (paint_background) {
       painter_.reset(chromeos::CreateWizardPainter(
                          &chromeos::BorderDefinition::kWizardBorder));
     }
 
+    AddAccelerator(accel_account_screen_);
     AddAccelerator(accel_login_screen_);
+    AddAccelerator(accel_network_screen_);
+    AddAccelerator(accel_update_screen_);
   }
 
   ~ContentView() {
@@ -65,14 +74,23 @@ class ContentView : public views::View {
   }
 
   bool AcceleratorPressed(const views::Accelerator& accel) {
-    if (accel == accel_login_screen_) {
-      WizardController* controller = WizardController::default_controller();
-      if (controller)
-        controller->SetCurrentScreen(controller->GetLoginScreen());
-      return true;
+    WizardController* controller = WizardController::default_controller();
+    if (!controller)
+      return false;
+
+    if (accel == accel_account_screen_) {
+      controller->SetCurrentScreen(controller->GetAccountScreen());
+    } else if (accel == accel_login_screen_) {
+      controller->SetCurrentScreen(controller->GetLoginScreen());
+    } else if (accel == accel_network_screen_) {
+      controller->SetCurrentScreen(controller->GetNetworkScreen());
+    } else if (accel == accel_update_screen_) {
+      controller->SetCurrentScreen(controller->GetUpdateScreen());
+    } else {
+      return false;
     }
 
-    return false;
+    return true;
   }
 
   void PaintBackground(gfx::Canvas* canvas) {
@@ -101,7 +119,10 @@ class ContentView : public views::View {
   const int screen_w_;
   const int screen_h_;
 
+  views::Accelerator accel_account_screen_;
   views::Accelerator accel_login_screen_;
+  views::Accelerator accel_network_screen_;
+  views::Accelerator accel_update_screen_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentView);
 };
