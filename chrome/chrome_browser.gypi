@@ -1150,7 +1150,6 @@
         'browser/google_update.cc',
         'browser/google_update.h',
         'browser/google_update_settings_posix.cc',
-        'browser/google_update_settings_mac.mm',
         'browser/google_url_tracker.cc',
         'browser/google_url_tracker.h',
         'browser/google_util.cc',
