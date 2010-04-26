@@ -20,6 +20,8 @@ class ResourceType {
     OBJECT,          // an object (or embed) tag for a plugin,
                      // or a resource that a plugin requested.
     MEDIA,           // a media resource.
+    SHARED_WORKER,   // the main resource of a shared worker.
+    WORKER,          // the main resource of a dedicated worker.
     LAST_TYPE        // Place holder so we don't need to change ValidType
                      // everytime.
   };
@@ -36,12 +38,17 @@ class ResourceType {
     return type == MAIN_FRAME || type == SUB_FRAME;
   }
 
+  static bool IsSharedWorker(ResourceType::Type type) {
+    return type == SHARED_WORKER;
+  }
+
   static bool IsSubresource(ResourceType::Type type) {
     return type == STYLESHEET ||
            type == SCRIPT ||
            type == IMAGE ||
            type == FONT_RESOURCE ||
-           type == SUB_RESOURCE;
+           type == SUB_RESOURCE ||
+           type == WORKER;
   }
 
  private:

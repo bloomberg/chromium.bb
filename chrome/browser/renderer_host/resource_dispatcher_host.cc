@@ -1780,6 +1780,8 @@ net::RequestPriority ResourceDispatcherHost::DetermineRequestPriority(
     case ResourceType::SUB_RESOURCE:
     case ResourceType::OBJECT:
     case ResourceType::MEDIA:
+    case ResourceType::WORKER:
+    case ResourceType::SHARED_WORKER:
       return net::LOW;
 
     // Images are the lowest priority because they typically do not block
