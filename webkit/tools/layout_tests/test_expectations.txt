@@ -21,10 +21,6 @@ BUG41973 MAC : svg/text/text-text-05-t.svg = IMAGE
 // in upstream.
 BUGEVAN : svg/clip-path/clip-path-child-clipped.svg = PASS FAIL
 
-// Enabling EventSource in chromium before landing updated expectations.
-// Remove this after rolling http://trac.webkit.org/changeset/58099.
-BUG42319 : fast/dom/prototype-inheritance.html = FAIL
-
 // Resulting from Skia r526. Adding these here while the bots chew on them to
 // generate new baselines. The only differences should be off-by-one on
 // colours.
