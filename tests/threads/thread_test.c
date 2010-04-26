@@ -51,7 +51,7 @@ int g_verbose = 0;
                                }\
                           } while (0)
 
-#define PRINT_ERROR do { PRINT(1, ("Error")); g_errors++; } while (0)
+#define PRINT_ERROR do { PRINT(1, ("Error\n")); g_errors++; } while (0)
 
 /* TODO(adonovan): display informative errors. */
 #define EXPECT_EQ(A, B) do { if ((A)!=(B)) PRINT_ERROR; } while (0)
