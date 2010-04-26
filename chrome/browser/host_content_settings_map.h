@@ -37,6 +37,9 @@ class HostContentSettingsMap
     // Returns a pattern that matches the host of this URL and all subdomains.
     static Pattern FromURL(const GURL& url);
 
+    // Returns a pattern that matches exactly this URL.
+    static Pattern FromURLNoWildcard(const GURL& url);
+
     Pattern() {}
 
     explicit Pattern(const std::string& pattern) : pattern_(pattern) {}

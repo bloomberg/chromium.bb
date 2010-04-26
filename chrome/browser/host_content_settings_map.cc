@@ -47,6 +47,12 @@ HostContentSettingsMap::Pattern HostContentSettingsMap::Pattern::FromURL(
       std::string(kDomainWildcard) + url.host());
 }
 
+// static
+HostContentSettingsMap::Pattern
+    HostContentSettingsMap::Pattern::FromURLNoWildcard(const GURL& url) {
+  return Pattern(net::GetHostOrSpecFromURL(url));
+}
+
 bool HostContentSettingsMap::Pattern::IsValid() const {
   if (pattern_.empty())
     return false;

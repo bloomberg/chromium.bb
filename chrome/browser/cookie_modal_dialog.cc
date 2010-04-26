@@ -101,6 +101,11 @@ void CookiePromptModalDialog::AllowSiteData(bool remember,
                                             bool session_expire) {
   DCHECK(!remember || DecisionPersistable());
   if (remember && DecisionPersistable()) {
+    // Make sure there is no entry that would override the pattern we are about
+    // to insert for exactly this URL.
+    host_content_settings_map_->SetContentSetting(
+        HostContentSettingsMap::Pattern::FromURLNoWildcard(origin_),
+        CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_DEFAULT);
     host_content_settings_map_->SetContentSetting(
         HostContentSettingsMap::Pattern::FromURL(origin_),
         CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_ALLOW);
@@ -115,6 +120,11 @@ void CookiePromptModalDialog::AllowSiteData(bool remember,
 void CookiePromptModalDialog::BlockSiteData(bool remember) {
   DCHECK(!remember || DecisionPersistable());
   if (remember && DecisionPersistable()) {
+    // Make sure there is no entry that would override the pattern we are about
+    // to insert for exactly this URL.
+    host_content_settings_map_->SetContentSetting(
+        HostContentSettingsMap::Pattern::FromURLNoWildcard(origin_),
+        CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_DEFAULT);
     host_content_settings_map_->SetContentSetting(
         HostContentSettingsMap::Pattern::FromURL(origin_),
         CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_BLOCK);

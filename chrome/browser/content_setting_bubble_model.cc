@@ -121,6 +121,13 @@ class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
   }
 
   virtual void OnRadioClicked(int radio_index) {
+    // Make sure there is no entry that would override the pattern we are about
+    // to insert for exactly this URL.
+    profile()->GetHostContentSettingsMap()->SetContentSetting(
+        HostContentSettingsMap::Pattern::FromURLNoWildcard(
+            bubble_content().radio_group.url),
+        content_type(),
+        CONTENT_SETTING_DEFAULT);
     profile()->GetHostContentSettingsMap()->SetContentSetting(
         HostContentSettingsMap::Pattern::FromURL(
             bubble_content().radio_group.url),
