@@ -224,32 +224,23 @@ var chrome = chrome || {};
   // Returns the absolute position of the given element relative to the hosting
   // browser frame.
   function findAbsolutePosition(domElement) {
-    var curleft = curtop = 0;
-    var parentNode = domElement.parentNode
+    var left = domElement.offsetLeft;
+    var top = domElement.offsetTop;
 
     // Ascend through the parent hierarchy, taking into account object nesting
     // and scoll positions.
-    if (domElement.offsetParent) {
-      do {
-        if (domElement.offsetLeft) curleft += domElement.offsetLeft;
-        if (domElement.offsetTop) curtop += domElement.offsetTop;
+    for (var parentElement = domElement.offsetParent; parentElement;
+         parentElement = parentElement.offsetParent) {
+      left += parentElement.offsetLeft;
+      top += parentElement.offsetTop;
 
-        if (domElement.scrollLeft) curleft -= domElement.scrollLeft;
-        if (domElement.scrollTop) curtop -= domElement.scrollTop;
-
-        if (parentNode != domElement.offsetParent) {
-          while(parentNode != null && parentNode != domElement.offsetParent) {
-            if (parentNode.scrollLeft) curleft -= parentNode.scrollLeft;
-            if (parentNode.scrollTop) curtop -= parentNode.scrollTop;
-            parentNode = parentNode.parentNode;
-          }
-        }
-      } while ((domElement = domElement.offsetParent) != null);
+      left -= parentElement.scrollLeft;
+      top -= parentElement.scrollTop;
     }
 
     return {
-      top: curtop,
-      left: curleft
+      top: top,
+      left: left
     };
   }
 
