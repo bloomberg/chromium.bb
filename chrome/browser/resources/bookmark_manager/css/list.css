@@ -6,17 +6,17 @@ list {
 
 list > * {
   -webkit-user-select: none;
-  border: 1px solid rgba(255,255,255,0); /* transparent white */
   background-color: rgba(255,255,255,0);
+  border: 1px solid rgba(255,255,255,0); /* transparent white */
   border-radius: 2px;
-  padding: 0px 3px;
-  line-height: 20px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   cursor: default;
-  position: relative; /* to allow overlap */
+  line-height: 20px;
   margin: -1px 0;
+  overflow: hidden;
+  padding: 0px 3px;
+  position: relative; /* to allow overlap */
+  text-overflow: ellipsis;
+  white-space: pre;
 }
 
 list > [lead] {

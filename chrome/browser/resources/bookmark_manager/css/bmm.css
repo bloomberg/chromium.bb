@@ -24,12 +24,12 @@ list > * {
 }
 
 list > * > * {
+  -webkit-box-sizing: border-box;
+  -webkit-padding-start: 20px;
+  background: 0 50% no-repeat;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-  -webkit-box-sizing: border-box;
-  background: 0 50% no-repeat;
-  -webkit-padding-start: 20px;
+  white-space: pre; /* Don't collapse whitespace */
 }
 
 list > * > .label {
@@ -272,3 +272,4 @@ html[dir=rtl] .summary button {
   padding-right: 0;
   padding-left: 11px;
 }
+

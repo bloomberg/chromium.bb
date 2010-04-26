@@ -100,9 +100,10 @@ tree:focus .tree-row[selected] {
 
 .tree-label {
   -webkit-padding-start: 20px;
-  background-repeat: no-repeat;
-  background-position: 0 50%;
   background-image: url("../images/folder_closed.png");
+  background-position: 0 50%;
+  background-repeat: no-repeat;
+  white-space: pre;
 }
 
 /* We need to ensure that even empty labels take up space */
