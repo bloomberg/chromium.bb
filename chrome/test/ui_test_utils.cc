@@ -611,19 +611,7 @@ TestWebSocketServer::TestWebSocketServer(const FilePath& root_directory) {
 }
 
 CommandLine* TestWebSocketServer::CreatePythonCommandLine() {
-#if defined(OS_WIN)
-  // Get path to python interpreter
-  FilePath python_runtime;
-  if (!PathService::Get(base::DIR_SOURCE_ROOT, &python_runtime))
-    return NULL;
-  python_runtime = python_runtime
-    .Append(FILE_PATH_LITERAL("third_party"))
-    .Append(FILE_PATH_LITERAL("python_24"))
-    .Append(FILE_PATH_LITERAL("python.exe"));
-  return new CommandLine(python_runtime);
-#elif defined(OS_POSIX)
-  return new CommandLine(FilePath("python"));
-#endif
+  return new CommandLine(FilePath(FILE_PATH_LITERAL("python")));
 }
 
 void TestWebSocketServer::SetPythonPath() {
