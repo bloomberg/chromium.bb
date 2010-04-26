@@ -28,7 +28,8 @@ namespace TabControllerInternal {
 class MenuDelegate : public menus::SimpleMenuModel::Delegate {
  public:
   explicit MenuDelegate(id<TabControllerTarget> target, TabController* owner)
-      : target_(target), owner_(owner) { }
+      : target_(target),
+        owner_(owner) {}
 
   // Overridden from menus::SimpleMenuModel::Delegate
   virtual bool IsCommandIdChecked(int command_id) const { return false; }
@@ -44,20 +45,6 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
     TabStripModel::ContextMenuCommand command =
         static_cast<TabStripModel::ContextMenuCommand>(command_id);
     [target_ commandDispatch:command forController:owner_];
-  }
-
-  virtual bool IsLabelForCommandIdDynamic(int command_id) const {
-    return command_id == TabStripModel::CommandTogglePinned;
-  }
-  virtual string16 GetLabelForCommandId(int command_id) const {
-    // Display "Pin Tab" when the tab is not pinned and "Unpin Tab" when it is
-    // (this is not a checkmark menu item, per Apple's HIG).
-    if (command_id == TabStripModel::CommandTogglePinned) {
-      return l10n_util::GetStringUTF16(
-          [owner_ mini] ? IDS_TAB_CXMENU_UNPIN_TAB_MAC
-                          : IDS_TAB_CXMENU_PIN_TAB_MAC);
-    }
-    return string16();
   }
 
  private:
@@ -138,7 +125,9 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
 - (NSMenu*)menu {
   contextMenuDelegate_.reset(
       new TabControllerInternal::MenuDelegate(target_, self));
-  contextMenuModel_.reset(new TabMenuModel(contextMenuDelegate_.get()));
+  // TODO(42339): this is wrong, it should use pinned, not mini.
+  contextMenuModel_.reset(new TabMenuModel(contextMenuDelegate_.get(),
+                                           [self mini]));
   contextMenuController_.reset(
       [[MenuController alloc] initWithModel:contextMenuModel_.get()
                      useWithPopUpButtonCell:NO]);

@@ -4,30 +4,24 @@
 
 #include "chrome/browser/tab_menu_model.h"
 
-#include "chrome/browser/defaults.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "grit/generated_resources.h"
 
-TabMenuModel::TabMenuModel(menus::SimpleMenuModel::Delegate* delegate)
+TabMenuModel::TabMenuModel(menus::SimpleMenuModel::Delegate* delegate,
+                           bool is_pinned)
     : menus::SimpleMenuModel(delegate) {
-  Build();
+  Build(is_pinned);
 }
 
-void TabMenuModel::Build() {
+void TabMenuModel::Build(bool is_pinned) {
   AddItemWithStringId(TabStripModel::CommandNewTab, IDS_TAB_CXMENU_NEWTAB);
   AddSeparator();
   AddItemWithStringId(TabStripModel::CommandReload, IDS_TAB_CXMENU_RELOAD);
   AddItemWithStringId(TabStripModel::CommandDuplicate,
                       IDS_TAB_CXMENU_DUPLICATE);
-  // On Mac the HIG prefers "pin/unpin" to a checkmark. The Mac code will fix up
-  // the actual string based on the tab's state via the delegate.
-#if defined(OS_MACOSX)
-  AddItemWithStringId(TabStripModel::CommandTogglePinned,
-                      IDS_TAB_CXMENU_PIN_TAB);
-#else
-  AddCheckItemWithStringId(TabStripModel::CommandTogglePinned,
-                           IDS_TAB_CXMENU_PIN_TAB);
-#endif
+  AddItemWithStringId(
+      TabStripModel::CommandTogglePinned,
+      is_pinned ? IDS_TAB_CXMENU_UNPIN_TAB : IDS_TAB_CXMENU_PIN_TAB);
   AddSeparator();
   AddItemWithStringId(TabStripModel::CommandCloseTab,
                       IDS_TAB_CXMENU_CLOSETAB);

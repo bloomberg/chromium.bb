@@ -29,7 +29,8 @@ static const SkScalar kTabBottomCurveWidth = 3;
 class Tab::TabContextMenuContents : public menus::SimpleMenuModel::Delegate {
  public:
   explicit TabContextMenuContents(Tab* tab)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(model_(this)),
+      : ALLOW_THIS_IN_INITIALIZER_LIST(
+          model_(this, tab->delegate()->IsTabPinned(tab))),
         tab_(tab),
         last_command_(TabStripModel::CommandFirst) {
     Build();
@@ -51,9 +52,7 @@ class Tab::TabContextMenuContents : public menus::SimpleMenuModel::Delegate {
 
   // Overridden from menus::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const {
-    if (!tab_ || command_id != TabStripModel::CommandTogglePinned)
-      return false;
-    return tab_->delegate()->IsTabPinned(tab_);
+    return false;
   }
   virtual bool IsCommandIdEnabled(int command_id) const {
     return tab_ && tab_->delegate()->IsCommandEnabledForTab(
@@ -202,8 +201,7 @@ bool Tab::GetAccessibleRole(AccessibilityTypes::Role* role) {
 void Tab::ShowContextMenu(views::View* source,
                           const gfx::Point& p,
                           bool is_mouse_gesture) {
-  if (!context_menu_contents_.get())
-    context_menu_contents_.reset(new TabContextMenuContents(this));
+  context_menu_contents_.reset(new TabContextMenuContents(this));
   context_menu_contents_->RunMenuAt(p);
 }
 

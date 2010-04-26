@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,7 @@ class TabGtk::ContextMenuController : public menus::SimpleMenuModel::Delegate {
  public:
   explicit ContextMenuController(TabGtk* tab)
       : tab_(tab),
-        model_(this) {
+        model_(this, tab->delegate()->IsTabPinned(tab)) {
     menu_.reset(new MenuGtk(NULL, &model_));
   }
 
@@ -57,9 +57,7 @@ class TabGtk::ContextMenuController : public menus::SimpleMenuModel::Delegate {
  private:
   // Overridden from menus::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const {
-    if (!tab_ || command_id != TabStripModel::CommandTogglePinned)
-      return false;
-    return tab_->delegate()->IsTabPinned(tab_);
+    return false;
   }
   virtual bool IsCommandIdEnabled(int command_id) const {
     return tab_ && tab_->delegate()->IsCommandEnabledForTab(
@@ -348,8 +346,7 @@ void TabGtk::SetBounds(const gfx::Rect& bounds) {
 // TabGtk, private:
 
 void TabGtk::ShowContextMenu() {
-  if (!menu_controller_.get())
-    menu_controller_.reset(new ContextMenuController(this));
+  menu_controller_.reset(new ContextMenuController(this));
 
   menu_controller_->RunMenu();
 }
