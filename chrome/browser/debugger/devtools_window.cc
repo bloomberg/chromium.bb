@@ -7,6 +7,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/debugger/devtools_window.h"
@@ -75,7 +76,8 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
   registrar_.Add(this,
                  NotificationType::TAB_CLOSING,
                  Source<NavigationController>(&tab_contents_->controller()));
-
+  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
   inspected_tab_ = inspected_rvh->delegate()->GetAsTabContents();
 }
 
@@ -156,9 +158,8 @@ void DevToolsWindow::Activate() {
 }
 
 void DevToolsWindow::SetDocked(bool docked) {
-  if (docked_ == docked) {
+  if (docked_ == docked)
     return;
-  }
   if (docked && !GetInspectedBrowserWindow()) {
     // Cannot dock, avoid window flashing due to close-reopen cycle.
     return;
@@ -180,6 +181,7 @@ void DevToolsWindow::SetDocked(bool docked) {
       inspected_window = NULL;
     }
   }
+  UpdateTheme();
   Show(false);
 }
 
@@ -242,6 +244,7 @@ void DevToolsWindow::Observe(NotificationType type,
   if (type == NotificationType::LOAD_STOP) {
     SetAttachedWindow();
     is_loaded_ = true;
+	UpdateTheme();
     if (open_console_on_load_) {
       DoOpenConsole();
       open_console_on_load_ = false;
@@ -256,6 +259,8 @@ void DevToolsWindow::Observe(NotificationType type,
       NotifyCloseListener();
       delete this;
     }
+  } else if (type == NotificationType::BROWSER_THEME_CHANGED) {
+    UpdateTheme();
   }
 }
 
@@ -269,6 +274,35 @@ void DevToolsWindow::ScheduleOpenConsole() {
 void DevToolsWindow::DoOpenConsole() {
   tab_contents_->render_view_host()->
       ExecuteJavascriptInWebFrame(L"", L"WebInspector.showConsole();");
+}
+
+std::string SkColorToRGBAString(SkColor color) {
+  // We convert the alpha using DoubleToString because StringPrintf will use
+  // locale specific formatters (e.g., use , instead of . in German).
+  return StringPrintf("rgba(%d,%d,%d,%s)", SkColorGetR(color),
+      SkColorGetG(color), SkColorGetB(color),
+      DoubleToString(SkColorGetA(color) / 255.0).c_str());
+}
+
+void DevToolsWindow::UpdateTheme() {
+  BrowserThemeProvider* tp = profile_->GetThemeProvider();
+  CHECK(tp);
+  std::string command;
+  if (tp->GetThemeID() == BrowserThemeProvider::kDefaultThemeID || !docked_) {
+    command = "WebInspector.resetToolbarColors()";
+  } else {
+    SkColor color_toolbar =
+        tp->GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
+    SkColor color_tab_text =
+        tp->GetColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
+
+    command = StringPrintf(
+        "WebInspector.setToolbarColors(\"%s\", \"%s\")",
+        SkColorToRGBAString(color_toolbar).c_str(),
+        SkColorToRGBAString(color_tab_text).c_str());
+  }
+  tab_contents_->render_view_host()->
+      ExecuteJavascriptInWebFrame(L"", UTF8ToWide(command));
 }
 
 bool DevToolsWindow::PreHandleKeyboardEvent(

@@ -61,6 +61,7 @@ class DevToolsWindow
 
   void ScheduleOpenConsole();
   void DoOpenConsole();
+  void UpdateTheme();
 
   // Overridden from TabContentsDelegate.
   virtual void OpenURLFromTab(TabContents* source,
