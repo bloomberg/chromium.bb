@@ -11,3 +11,4 @@ EXPORTS
 	OSMesaGetIntegerv
 	OSMesaGetDepthBuffer
 	OSMesaGetColorBuffer
+	OSMesaGetProcAddress

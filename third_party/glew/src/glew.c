@@ -86,7 +86,7 @@ void* WinGetProcAddress(const GLubyte* name)
       oglImage = LoadLibraryA("opengl32.dll");
     }
     else {
-      osmesaGetProcAddress = (PFNOSMESAGETPROCADDRESSPROC) GetProcAddress(oglImage, "_OSMesaGetProcAddress@4");
+      osmesaGetProcAddress = (PFNOSMESAGETPROCADDRESSPROC) GetProcAddress(oglImage, "OSMesaGetProcAddress");
     }
   }
   if (NULL != oglImage) {

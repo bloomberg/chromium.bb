@@ -13,9 +13,6 @@
         'MesaLib/include',
         'MesaLib/src/mesa',
       ],
-      'defines': [
-        'BUILD_GL32',
-      ],
       'sources': [
         'MesaLib/src/mesa/main/accum.c',
         'MesaLib/src/mesa/main/api_arrayelt.c',
@@ -436,15 +433,13 @@
         'MesaLib/src/mesa',
         'MesaLib/src/mesa/drivers',
       ],
-      'defines': [
-        'BUILD_GL32',
-      ],
       'sources': [
         'MesaLib/src/mesa/drivers/common/driverfuncs.c',
         'MesaLib/src/mesa/drivers/common/driverfuncs.h',
         'MesaLib/src/mesa/drivers/common/meta.c',
         'MesaLib/src/mesa/drivers/common/meta.h',
         'MesaLib/src/mesa/drivers/osmesa/osmesa.c',
+        'MesaLib/src/mesa/drivers/osmesa/osmesa.def',
       ],
     },
   ],

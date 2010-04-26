@@ -15,3 +15,5 @@ The license is in MesaLib/docs/license.html.
 Modifications made with initial commit:
 - Added the file README.chromium (this file)
 
+Later modifications:
+- Added OSMesaGetProcAddress to MesaLib/src/mesa/drivers/osmesa/osmesa.def
