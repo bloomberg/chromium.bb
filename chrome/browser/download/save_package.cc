@@ -68,6 +68,9 @@ struct SavePackageParam {
 
 namespace {
 
+// A counter for uniquely identifying each save package.
+int g_save_package_id = 0;
+
 // Default name which will be used when we can not get proper name from
 // resource URL.
 const FilePath::CharType kDefaultSaveName[] =
@@ -165,6 +168,7 @@ SavePackage::SavePackage(TabContents* web_content,
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
       tab_id_(web_content->GetRenderProcessHost()->id()),
+      unique_id_(g_save_package_id++),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   DCHECK(web_content);
   const GURL& current_page_url = GetUrlToBeSaved();
@@ -190,6 +194,7 @@ SavePackage::SavePackage(TabContents* tab_contents)
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
       tab_id_(tab_contents->GetRenderProcessHost()->id()),
+      unique_id_(g_save_package_id++),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 
   const GURL& current_page_url = GetUrlToBeSaved();
@@ -216,6 +221,7 @@ SavePackage::SavePackage(TabContents* tab_contents,
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
       tab_id_(0),
+      unique_id_(g_save_package_id++),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   DCHECK(!saved_main_file_path_.empty() &&
          saved_main_file_path_.value().length() <= kMaxFilePathLength);
@@ -642,7 +648,8 @@ void SavePackage::CheckFinish() {
                         final_names,
                         dir,
                         tab_contents_->GetRenderProcessHost()->id(),
-                        tab_contents_->render_view_host()->routing_id()));
+                        tab_contents_->render_view_host()->routing_id(),
+                        id()));
 }
 
 // Successfully finished all items of this SavePackage.

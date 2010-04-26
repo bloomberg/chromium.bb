@@ -118,15 +118,11 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   // Show or Open a saved page via the Windows shell.
   void ShowDownloadInShell();
 
-  bool canceled() { return user_canceled_ || disk_error_occurred_; }
-
-  // Accessor
-  bool finished() { return finished_; }
-  SavePackageType save_type() { return save_type_; }
-
-  // Since for one tab, it can only have one SavePackage in same time.
-  // Now we actually use render_process_id as tab's unique id.
+  bool canceled() const { return user_canceled_ || disk_error_occurred_; }
+  bool finished() const { return finished_; }
+  SavePackageType save_type() const { return save_type_; }
   int tab_id() const { return tab_id_; }
+  int id() const { return unique_id_; }
 
   void GetSaveInfo();
   void ContinueGetSaveInfo(FilePath save_dir);
@@ -326,8 +322,12 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   // from outside.
   WaitState wait_state_;
 
-  // Unique id for this SavePackage.
+  // Since for one tab, it can only have one SavePackage in same time.
+  // Now we actually use render_process_id as tab's unique id.
   const int tab_id_;
+
+  // Unique ID for this SavePackage.
+  const int unique_id_;
 
   // For managing select file dialogs.
   scoped_refptr<SelectFileDialog> select_file_dialog_;

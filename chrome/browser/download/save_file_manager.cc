@@ -473,7 +473,8 @@ void SaveFileManager::RenameAllFiles(
     const FinalNameList& final_names,
     const FilePath& resource_dir,
     int render_process_id,
-    int render_view_id) {
+    int render_view_id,
+    int save_package_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 
   if (!resource_dir.empty() && !file_util::PathExists(resource_dir))
@@ -495,20 +496,19 @@ void SaveFileManager::RenameAllFiles(
       ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(
           this, &SaveFileManager::OnFinishSavePageJob, render_process_id,
-          render_view_id));
+          render_view_id, save_package_id));
 }
 
 void SaveFileManager::OnFinishSavePageJob(int render_process_id,
-                                          int render_view_id) {
+                                          int render_view_id,
+                                          int save_package_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   SavePackage* save_package =
       GetSavePackageFromRenderIds(render_process_id, render_view_id);
 
-  if (save_package) {
-    // save_package is null if save was canceled.
+  if (save_package && save_package->id() == save_package_id)
     save_package->Finish();
-  }
 }
 
 void SaveFileManager::RemoveSavedFileFromFileMap(

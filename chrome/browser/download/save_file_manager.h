@@ -136,7 +136,8 @@ class SaveFileManager
       const FinalNameList& final_names,
       const FilePath& resource_dir,
       int render_process_id,
-      int render_view_id);
+      int render_view_id,
+      int save_package_id);
 
   // When the user cancels the saving, we need to remove all remaining saved
   // files of this page saving job from save_file_map_.
@@ -190,7 +191,9 @@ class SaveFileManager
   // map:(url, SavePackage) to find the request and remove it.
   void OnErrorFinished(GURL save_url, int tab_id);
   // Notifies SavePackage that the whole page saving job is finished.
-  void OnFinishSavePageJob(int render_process_id, int render_view_id);
+  void OnFinishSavePageJob(int render_process_id,
+                           int render_view_id,
+                           int save_package_id);
 
   // Notifications sent from the UI thread and run on the file thread.
 
