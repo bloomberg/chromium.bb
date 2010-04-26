@@ -3074,7 +3074,10 @@
                 ['exclude', '^browser/browser_list_gtk.cc'],
               ],
             }],
-            ['OS=="linux" and toolkit_views==1', {
+            # These GTK files haven't been ported to views, while ChromeOS has
+            # its own separate implementation below.  So re-include them only on
+            # non-ChromeOS views Linux builds.
+            ['OS=="linux" and chromeos==0 and toolkit_views==1', {
               'sources/': [
                 ['include', '^browser/gtk/dialogs_gtk.cc'],
                 ['include', '^browser/gtk/external_protocol_dialog_gtk.cc'],
