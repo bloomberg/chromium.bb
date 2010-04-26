@@ -130,7 +130,7 @@ static inline void radeon_cs_write_qword(struct radeon_cs *cs, uint64_t qword)
 }
 
 static inline void radeon_cs_write_table(struct radeon_cs *cs,
-                                         void *data, uint32_t size)
+                                         const void *data, uint32_t size)
 {
     memcpy(cs->packets + cs->cdw, data, size * 4);
     cs->cdw += size;
