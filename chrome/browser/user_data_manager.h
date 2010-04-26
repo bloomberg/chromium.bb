@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,9 +12,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
 #include "base/ref_counted.h"
 
-class FilePath;
 class MessageLoop;
 
 // Provides an abstraction of profiles on top of the user data directory
@@ -36,7 +36,7 @@ class UserDataManager {
 
   // Creates a new instance with the given root folder for storing user data
   // folders.
-  explicit UserDataManager(const std::wstring& user_data_root);
+  explicit UserDataManager(const FilePath& user_data_root);
 
   ~UserDataManager();
 
@@ -93,7 +93,7 @@ class UserDataManager {
   static UserDataManager* instance_;
 
   // Root folder.
-  std::wstring user_data_root_;
+  FilePath user_data_root_;
 
   // Current user data folder.
   std::wstring current_folder_name_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,21 +98,20 @@ Profile* ProfileManager::GetDefaultProfile(const FilePath& user_data_dir) {
 #if defined(OS_CHROMEOS)
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (logged_in_) {
-    std::wstring profile_dir;
+    FilePath profile_dir;
     // If the user has logged in, pick up the new profile.
     // TODO(davemoore) Delete this once chromium os has started using
     // "--login-profile" instead of "--profile".
     if (command_line.HasSwitch(switches::kLoginProfile)) {
-      profile_dir = command_line.GetSwitchValue(switches::kLoginProfile);
+      profile_dir = command_line.GetSwitchValuePath(switches::kLoginProfile);
     } else if (command_line.HasSwitch(switches::kProfile)) {
-      profile_dir = command_line.GetSwitchValue(switches::kProfile);
+      profile_dir = command_line.GetSwitchValuePath(switches::kProfile);
     } else {
       // We should never be logged in with no profile dir.
       NOTREACHED();
       return NULL;
     }
-    default_profile_dir = default_profile_dir.Append(
-        FilePath::FromWStringHack(profile_dir));
+    default_profile_dir = default_profile_dir.Append(profile_dir);
     return GetProfile(default_profile_dir);
   } else {
     // If not logged in on cros, always return the incognito profile

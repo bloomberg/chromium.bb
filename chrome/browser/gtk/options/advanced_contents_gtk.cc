@@ -166,7 +166,7 @@ class DownloadSection : public OptionsPageBase {
   GtkWidget* page_;
 
   // Pref members.
-  StringPrefMember default_download_location_;
+  FilePathPrefMember default_download_location_;
   BooleanPrefMember ask_for_save_location_;
   StringPrefMember auto_open_files_;
 
@@ -266,8 +266,7 @@ void DownloadSection::NotifyPrefChanged(const std::wstring* pref_name) {
   if (!pref_name || *pref_name == prefs::kDownloadDefaultDirectory) {
     gtk_file_chooser_set_current_folder(
         GTK_FILE_CHOOSER(download_location_button_),
-        FilePath::FromWStringHack(
-            default_download_location_.GetValue()).value().c_str());
+            default_download_location_.GetValue().value().c_str());
   }
 
   if (!pref_name || *pref_name == prefs::kPromptForDownload) {
@@ -296,8 +295,8 @@ void DownloadSection::OnDownloadLocationChanged(GtkFileChooser* widget,
   g_free(folder);
   // Gtk seems to call this signal multiple times, so we only set the pref and
   // metric if something actually changed.
-  if (path.ToWStringHack() != section->default_download_location_.GetValue()) {
-    section->default_download_location_.SetValue(path.ToWStringHack());
+  if (path != section->default_download_location_.GetValue()) {
+    section->default_download_location_.SetValue(path);
     section->UserMetricsRecordAction(
         UserMetricsAction("Options_SetDownloadDirectory"),
         section->profile()->GetPrefs());

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,15 +30,6 @@
 #endif
 
 namespace {
-
-// TODO: don't use wstrings in all this code.  :(
-// But I'm not fixing it right now since this code is reported to be going
-// away.
-void DeprecatedPathServiceGet(int key, std::wstring* str) {
-  FilePath path;
-  PathService::Get(key, &path);
-  *str = path.ToWStringHack();
-}
 
 // Helper to start chrome for a given profile index. The helper takes care of
 // enumerating profiles on the file thread and then it launches Chrome for the
@@ -144,9 +135,9 @@ UserDataManager* UserDataManager::instance_ = NULL;
 // static
 UserDataManager* UserDataManager::Create() {
   DCHECK(!instance_);
-  std::wstring user_data;
-  DeprecatedPathServiceGet(chrome::DIR_USER_DATA, &user_data);
-  instance_ = new UserDataManager(user_data);
+  FilePath user_path;
+  PathService::Get(chrome::DIR_USER_DATA, &user_path);
+  instance_ = new UserDataManager(user_path);
   return instance_;
 }
 
@@ -156,10 +147,10 @@ UserDataManager* UserDataManager::Get() {
   return instance_;
 }
 
-UserDataManager::UserDataManager(const std::wstring& user_data_root)
+UserDataManager::UserDataManager(const FilePath& user_data_root)
     : user_data_root_(user_data_root) {
   // Determine current profile name and current folder name.
-  current_folder_name_ = file_util::GetFilenameFromPath(user_data_root);
+  current_folder_name_ = user_data_root.BaseName().ToWStringHack();
   bool success = GetProfileNameFromFolderName(current_folder_name_,
                                               &current_profile_name_);
   // The current profile is a default profile if the current user data folder
@@ -171,7 +162,7 @@ UserDataManager::UserDataManager(const std::wstring& user_data_root)
   // (TODO:munjal) Fix issue 5070:
   // http://code.google.com/p/chromium/issues/detail?id=5070
 
-  file_util::UpOneDirectory(&user_data_root_);
+  user_data_root_ = user_data_root_.DirName();
 }
 
 UserDataManager::~UserDataManager() {
@@ -221,9 +212,8 @@ std::wstring UserDataManager::GetFolderNameFromProfileName(
 std::wstring UserDataManager::GetUserDataFolderForProfile(
     const std::wstring& profile_name) const {
   std::wstring folder_name = GetFolderNameFromProfileName(profile_name);
-  FilePath folder_path =
-    FilePath::FromWStringHack(user_data_root_)
-        .Append(FilePath::FromWStringHack(folder_name));
+  FilePath folder_path = user_data_root_.Append(
+      FilePath::FromWStringHack(folder_name));
   return folder_path.ToWStringHack();
 }
 
@@ -236,10 +226,10 @@ void UserDataManager::LaunchChromeForProfile(
   command_line.AppendSwitch(switches::kEnableUserDataDirProfiles);
   command_line.AppendSwitchWithValue(switches::kUserDataDir,
                                      user_data_dir);
-  std::wstring local_state_path;
-  DeprecatedPathServiceGet(chrome::FILE_LOCAL_STATE, &local_state_path);
+  FilePath local_state_path;
+  PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
   command_line.AppendSwitchWithValue(switches::kParentProfile,
-                                     local_state_path);
+                                     local_state_path.ToWStringHack());
   base::LaunchApp(command_line, false, false, NULL);
 }
 
@@ -253,9 +243,8 @@ void UserDataManager::LaunchChromeForProfile(int index) const {
 void UserDataManager::GetProfiles(std::vector<std::wstring>* profiles) const {
   // This function should be called on the file thread.
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-  file_util::FileEnumerator file_enum(
-      FilePath::FromWStringHack(user_data_root_),
-      false, file_util::FileEnumerator::DIRECTORIES);
+  file_util::FileEnumerator file_enum(user_data_root_, false,
+                                      file_util::FileEnumerator::DIRECTORIES);
   std::wstring folder_name;
   while (!(folder_name = file_enum.Next().ToWStringHack()).empty()) {
     folder_name = file_util::GetFilenameFromPath(folder_name);

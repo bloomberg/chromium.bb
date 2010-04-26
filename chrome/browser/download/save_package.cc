@@ -1133,22 +1133,19 @@ FilePath SavePackage::GetSaveDirPreference(PrefService* prefs) {
   DCHECK(prefs);
 
   if (!prefs->FindPreference(prefs::kSaveFileDefaultDirectory)) {
-    FilePath default_save_path;
-    StringPrefMember default_download_path;
     DCHECK(prefs->FindPreference(prefs::kDownloadDefaultDirectory));
-    default_download_path.Init(prefs::kDownloadDefaultDirectory, prefs, NULL);
-    default_save_path =
-        FilePath::FromWStringHack(default_download_path.GetValue());
+    FilePath default_save_path = prefs->GetFilePath(
+        prefs::kDownloadDefaultDirectory);
     prefs->RegisterFilePathPref(prefs::kSaveFileDefaultDirectory,
                                 default_save_path);
   }
 
   // Get the directory from preference.
-  StringPrefMember save_file_path;
-  save_file_path.Init(prefs::kSaveFileDefaultDirectory, prefs, NULL);
-  DCHECK(!(*save_file_path).empty());
+  FilePath save_file_path = prefs->GetFilePath(
+      prefs::kSaveFileDefaultDirectory);
+  DCHECK(!save_file_path.empty());
 
-  return FilePath::FromWStringHack(*save_file_path);
+  return save_file_path;
 }
 
 void SavePackage::GetSaveInfo() {

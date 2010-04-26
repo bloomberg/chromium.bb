@@ -469,9 +469,7 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
     return static_cast<int>(in_progress_.size());
   }
 
-  FilePath download_path() {
-    return FilePath::FromWStringHack(*download_path_);
-  }
+  FilePath download_path() { return *download_path_; }
 
   // Clears the last download path, used to initialize "save as" dialogs.
   void ClearLastDownloadPath();
@@ -700,7 +698,7 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
 
   // User preferences
   BooleanPrefMember prompt_for_download_;
-  StringPrefMember download_path_;
+  FilePathPrefMember download_path_;
 
   // The user's last choice for download directory. This is only used when the
   // user wants us to prompt for a save location for each download.

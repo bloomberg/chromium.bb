@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -129,14 +129,14 @@ CPError CPB_GetCommandLineArgumentsCommon(const char* url,
   std::wstring arguments_w;
 
   // Use the same UserDataDir for new launches that we currently have set.
-  std::wstring user_data_dir = cmd.GetSwitchValue(switches::kUserDataDir);
+  FilePath user_data_dir = cmd.GetSwitchValuePath(switches::kUserDataDir);
   if (!user_data_dir.empty()) {
     // Make sure user_data_dir is an absolute path.
     if (file_util::AbsolutePath(&user_data_dir) &&
-        file_util::PathExists(FilePath::FromWStringHack(user_data_dir))) {
+        file_util::PathExists(user_data_dir)) {
       // TODO(evanm): use CommandLine APIs instead of this.
       arguments_w += std::wstring(L"--") + ASCIIToWide(switches::kUserDataDir) +
-                     L"=\"" + user_data_dir + L"\" ";
+                     L"=\"" + user_data_dir.ToWStringHack() + L"\" ";
     }
   }
 

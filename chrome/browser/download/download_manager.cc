@@ -321,11 +321,11 @@ void DownloadManager::RegisterUserPrefs(PrefService* prefs) {
   // the user if he really wants it on an unsafe place such as the desktop.
 
   if (!prefs->GetBoolean(prefs::kDownloadDirUpgraded)) {
-    FilePath current_download_dir = FilePath::FromWStringHack(
-        prefs->GetString(prefs::kDownloadDefaultDirectory));
+    FilePath current_download_dir = prefs->GetFilePath(
+        prefs::kDownloadDefaultDirectory);
     if (download_util::DownloadPathIsDangerous(current_download_dir)) {
-      prefs->SetString(prefs::kDownloadDefaultDirectory,
-                       default_download_path.ToWStringHack());
+      prefs->SetFilePath(prefs::kDownloadDefaultDirectory,
+                         default_download_path);
     }
     prefs->SetBoolean(prefs::kDownloadDirUpgraded, true);
   }
