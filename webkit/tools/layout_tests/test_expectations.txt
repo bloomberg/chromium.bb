@@ -40,3 +40,6 @@ BUGAGL : tables/mozilla/bugs/bug16012.html = IMAGE
 BUGAGL : tables/mozilla/bugs/bug4427.html = IMAGE
 BUGAGL : tables/mozilla/bugs/bug4803.html = IMAGE
 BUGAGL : tables/mozilla/bugs/bug20804.html = IMAGE
+
+// Probably just a rebaseline.
+BUGWK38109 : editing/selection/caret-rtl-2.html = IMAGE
