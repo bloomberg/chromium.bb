@@ -13,6 +13,8 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebWorkerClient.h"
 
 namespace WebKit {
+class WebApplicationCacheHost;
+class WebApplicationCacheHostClient;
 class WebWorker;
 }
 
@@ -65,6 +67,12 @@ class WebWorkerClientProxy : public WebKit::WebWorkerClient {
     // TODO(johnnyg): Notifications are not yet hooked up to workers.
     // Coming soon.
     NOTREACHED();
+    return NULL;
+  }
+
+  virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
+      WebKit::WebApplicationCacheHostClient*) {
+    // TODO(michaeln): Create and initialize an appcache host for our worker.
     return NULL;
   }
 
