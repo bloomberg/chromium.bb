@@ -964,6 +964,14 @@ class NotificationType {
     BOOKMARK_CONTEXT_MENU_SHOWN,
 #endif
 
+    // Password Store ----------------------------------------------------------
+    // This notification is sent whenenever login entries stored in the password
+    // store are changed. The detail of this notification is a list of changes
+    // represented by a vector of PasswordStoreChange. Each change includes a
+    // change type (ADD, UPDATE, or REMOVE) as well as the
+    // |webkit_glue::PasswordForm|s that were affected.
+    LOGINS_CHANGED,
+
     // Count (must be last) ----------------------------------------------------
     // Used to determine the number of notification types.  Not valid as
     // a type parameter when registering for or posting notifications.
