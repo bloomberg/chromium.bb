@@ -786,6 +786,12 @@ void RecordLastRunAppBundlePath() {
 // behavior, we should open a new window.
 - (BOOL)applicationShouldHandleReopen:(NSApplication*)theApplication
                     hasVisibleWindows:(BOOL)flag {
+  // If the browser is currently trying to quit, don't do anything and return NO
+  // to prevent AppKit from doing anything.
+  // TODO(rohitrao): Remove this code when http://crbug.com/40861 is resolved.
+  if (browser_shutdown::IsTryingToQuit())
+    return NO;
+
   // Don't do anything if there are visible windows.  This will cause
   // AppKit to unminimize the most recently minimized window.
   if (flag)
