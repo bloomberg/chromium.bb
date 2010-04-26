@@ -305,6 +305,10 @@ void BrowserThemeProvider::UseDefaultTheme() {
   UserMetrics::RecordAction(UserMetricsAction("Themes_Reset"), profile_);
 }
 
+bool BrowserThemeProvider::UsingDefaultTheme() {
+  return GetThemeID() == BrowserThemeProvider::kDefaultThemeID;
+}
+
 std::string BrowserThemeProvider::GetThemeID() const {
   std::wstring id = profile_->GetPrefs()->GetString(prefs::kCurrentThemeID);
   return WideToUTF8(id);

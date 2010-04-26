@@ -244,7 +244,7 @@ void DevToolsWindow::Observe(NotificationType type,
   if (type == NotificationType::LOAD_STOP) {
     SetAttachedWindow();
     is_loaded_ = true;
-	UpdateTheme();
+    UpdateTheme();
     if (open_console_on_load_) {
       DoOpenConsole();
       open_console_on_load_ = false;
@@ -288,7 +288,7 @@ void DevToolsWindow::UpdateTheme() {
   BrowserThemeProvider* tp = profile_->GetThemeProvider();
   CHECK(tp);
   std::string command;
-  if (tp->GetThemeID() == BrowserThemeProvider::kDefaultThemeID || !docked_) {
+  if (tp->UsingDefaultTheme() || !docked_) {
     command = "WebInspector.resetToolbarColors()";
   } else {
     SkColor color_toolbar =

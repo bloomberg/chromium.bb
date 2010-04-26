@@ -232,6 +232,10 @@ void GtkThemeProvider::SetNativeTheme() {
   NotifyThemeChanged(NULL);
 }
 
+bool GtkThemeProvider::UsingDefaultTheme() {
+  return !use_gtk_ && BrowserThemeProvider::UsingDefaultTheme();
+}
+
 void GtkThemeProvider::Observe(NotificationType type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {

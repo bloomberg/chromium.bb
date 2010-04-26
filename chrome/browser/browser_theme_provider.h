@@ -152,6 +152,10 @@ class BrowserThemeProvider : public NonThreadSafe,
   // theme is the default theme.
   virtual void SetNativeTheme() { UseDefaultTheme(); }
 
+  // Whether we're using the chrome default theme. Virtual so linux can check
+  // if we're using the GTK theme.
+  virtual bool UsingDefaultTheme();
+
   // Gets the id of the last installed theme. (The theme may have been further
   // locally customized.)
   std::string GetThemeID() const;

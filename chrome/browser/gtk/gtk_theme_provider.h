@@ -44,6 +44,7 @@ class GtkThemeProvider : public BrowserThemeProvider,
   virtual void SetTheme(Extension* extension);
   virtual void UseDefaultTheme();
   virtual void SetNativeTheme();
+  virtual bool UsingDefaultTheme();
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
