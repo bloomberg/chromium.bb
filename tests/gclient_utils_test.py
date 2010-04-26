@@ -16,11 +16,12 @@ class GclientUtilsUnittest(SuperMoxTestBase):
   def testMembersChanged(self):
     members = [
         'CheckCall', 'CheckCallError', 'Error', 'FileRead', 'FileWrite',
-        'FindGclientRoot', 'GetNamedNodeText',
-        'GetNodeNamedAttributeText', 'IsUsingGit', 'PathDifference',
-        'ParseXML', 'PrintableObject', 'RemoveDirectory', 'SplitUrlRevision',
-        'SubprocessCall', 'SubprocessCallAndFilter', 'errno', 'logging', 'os',
-        're', 'stat', 'subprocess', 'sys', 'time', 'xml',
+        'FindFileUpwards', 'FindGclientRoot', 'GetGClientRootAndEntries',
+        'GetNamedNodeText', 'GetNodeNamedAttributeText', 'IsUsingGit',
+        'PathDifference', 'ParseXML', 'PrintableObject', 'RemoveDirectory',
+        'SplitUrlRevision', 'SubprocessCall', 'SubprocessCallAndFilter',
+        'errno', 'logging', 'os', 're', 'stat', 'subprocess', 'sys', 'time',
+        'xml',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(gclient_utils, members)
