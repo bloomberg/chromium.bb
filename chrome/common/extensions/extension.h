@@ -87,12 +87,13 @@ class Extension {
   static const int kBrowserActionIconMaxSize;
 
   // Each permission is a module that the extension is permitted to use.
-  static const char* kTabPermission;
   static const char* kBookmarkPermission;
-  static const char* kNotificationPermission;
   static const char* kExperimentalPermission;
-  static const char* kUnlimitedStoragePermission;
+  static const char* kGeolocationPermission;
   static const char* kHistoryPermission;
+  static const char* kNotificationPermission;
+  static const char* kTabPermission;
+  static const char* kUnlimitedStoragePermission;
 
   static const char* kPermissionNames[];
   static const size_t kNumPermissions;

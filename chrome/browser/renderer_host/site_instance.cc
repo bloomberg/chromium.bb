@@ -43,6 +43,10 @@ SiteInstance::~SiteInstance() {
     browsing_instance_->UnregisterSiteInstance(this);
 }
 
+bool SiteInstance::HasProcess() const {
+  return (process_ != NULL);
+}
+
 RenderProcessHost* SiteInstance::GetProcess() {
   // Create a new process if ours went away or was reused.
   if (!process_) {

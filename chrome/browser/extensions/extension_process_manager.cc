@@ -208,6 +208,17 @@ void ExtensionProcessManager::UnregisterExtensionProcess(int process_id) {
 }
 
 RenderProcessHost* ExtensionProcessManager::GetExtensionProcess(
+    const GURL& url) {
+  if (!browsing_instance_->HasSiteInstance(url))
+    return NULL;
+  scoped_refptr<SiteInstance> site =
+    browsing_instance_->GetSiteInstanceForURL(url);
+  if (site->HasProcess())
+    return site->GetProcess();
+  return NULL;
+}
+
+RenderProcessHost* ExtensionProcessManager::GetExtensionProcess(
     const std::string& extension_id) {
   ProcessIDMap::const_iterator it = process_ids_.find(extension_id);
   if (it == process_ids_.end())

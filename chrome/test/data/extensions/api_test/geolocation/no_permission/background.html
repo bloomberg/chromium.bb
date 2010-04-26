@@ -1,7 +1,7 @@
 <script>
-  // These API calls should fail since geolocation is not allowed from
-  // extensions.
-  chrome.test.runTests([
+// These API calls should fail since geolocation is not enabled for this
+// extension.
+chrome.test.runTests([
   function geolocation_getCurrentPosition() {
     try {
       navigator.geolocation.getCurrentPosition(chrome.test.fail,

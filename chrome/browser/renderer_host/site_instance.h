@@ -68,6 +68,9 @@ class SiteInstance : public base::RefCounted<SiteInstance>,
   }
   int32 max_page_id() const { return max_page_id_; }
 
+  // Whether this SiteInstance has a running process associated with it.
+  bool HasProcess() const;
+
   // Returns the current process being used to render pages in this
   // SiteInstance.  If the process has crashed or otherwise gone away, then
   // this method will create a new process and update our host ID accordingly.

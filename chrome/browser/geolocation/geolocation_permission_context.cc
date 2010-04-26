@@ -8,15 +8,18 @@
 #include "app/resource_bundle.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_dispatcher_host.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_notification_task.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "grit/generated_resources.h"
@@ -150,13 +153,29 @@ void GeolocationPermissionContext::RequestGeolocationPermission(
   }
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
+  ExtensionsService* extensions = profile_->GetExtensionsService();
+  if (extensions) {
+    Extension* ext = extensions->GetExtensionByURL(requesting_frame);
+    if (!ext)
+      ext = extensions->GetExtensionByWebExtent(requesting_frame);
+    if (ext && ext->HasApiPermission(Extension::kGeolocationPermission)) {
+      ExtensionProcessManager* epm = profile_->GetExtensionProcessManager();
+      RenderProcessHost* process = epm->GetExtensionProcess(requesting_frame);
+      if (process && process->id() == render_process_id) {
+        NotifyPermissionSet(render_process_id, render_view_id, bridge_id,
+                            requesting_frame, true);
+        return;
+      }
+    }
+  }
+
   TabContents* tab_contents =
       tab_util::GetTabContentsByID(render_process_id, render_view_id);
   if (!tab_contents) {
     // The tab may have gone away, or the request may not be from a tab at all.
     LOG(WARNING) << "Attempt to use geolocation tabless renderer: "
         << render_process_id << "," << render_view_id << "," << bridge_id
-        << " (geolocation is not supported in extensions)";
+        << " (can't prompt user without a visible tab)";
     NotifyPermissionSet(render_process_id, render_view_id, bridge_id,
                         requesting_frame, false);
     return;

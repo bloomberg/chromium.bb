@@ -78,7 +78,12 @@ class ExtensionProcessManager : public NotificationObserver {
   // Unregisters an extension process with specified |process_id|.
   void UnregisterExtensionProcess(int process_id);
 
+  // Returns the extension process that |url| is associated with if it exists.
+  RenderProcessHost* GetExtensionProcess(const GURL& url);
+
   // Returns the process that the extension with the given ID is running in.
+  // NOTE: This does not currently handle app processes with no
+  // ExtensionFunctionDispatcher objects.
   RenderProcessHost* GetExtensionProcess(const std::string& extension_id);
 
   // Returns true if |host| is managed by this process manager.
