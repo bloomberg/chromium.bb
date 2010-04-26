@@ -960,7 +960,7 @@ void BookmarkBarGtk::PopupMenuForNode(GtkWidget* sender,
 
 gboolean BookmarkBarGtk::OnButtonPressed(GtkWidget* sender,
                                          GdkEventButton* event) {
-  if (event->button == 3) {
+  if (event->button == 3 && GTK_WIDGET_VISIBLE(bookmark_hbox_)) {
     const BookmarkNode* node = GetNodeForToolButton(sender);
     DCHECK(node);
     DCHECK(page_navigator_);
