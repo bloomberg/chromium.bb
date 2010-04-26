@@ -57,7 +57,7 @@ static void NavigateTabHelper(TabContents* contents, const GURL& url) {
 }
 
 // This test is flaky, see bug 42497.
-IN_PROC_BROWSER_TEST_F(AppApiTest, FLAKY_AppProcess) {
+IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
   host_resolver()->AddRule("*", "127.0.0.1");
   StartHTTPServer();
 
@@ -80,12 +80,13 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, FLAKY_AppProcess) {
             browser()->GetTabContentsAt(3)->render_view_host()->process());
 
   // Now let's do the same using window.open. The same should happen.
+  GURL base_url("http://localhost:1337/files/extensions/api_test/app_process/");
   WindowOpenHelper(browser(), host->render_view_host(),
-                   browser()->GetTabContentsAt(1)->GetURL());
+                   base_url.Resolve("path1/empty.html"));
   WindowOpenHelper(browser(), host->render_view_host(),
-                   browser()->GetTabContentsAt(2)->GetURL());
+                   base_url.Resolve("path2/empty.html"));
   WindowOpenHelper(browser(), host->render_view_host(),
-                   browser()->GetTabContentsAt(3)->GetURL());
+                   base_url.Resolve("path3/empty.html"));
 
   ASSERT_EQ(7, browser()->tab_count());
   EXPECT_EQ(host->render_process_host(),
@@ -97,8 +98,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, FLAKY_AppProcess) {
 
   // Now let's have these pages navigate, into or out of the extension web
   // extent. They should switch processes.
-  const GURL& app_url(browser()->GetTabContentsAt(1)->GetURL());
-  const GURL& non_app_url(browser()->GetTabContentsAt(3)->GetURL());
+  const GURL& app_url(base_url.Resolve("path1/empty.html"));
+  const GURL& non_app_url(base_url.Resolve("path3/empty.html"));
   NavigateTabHelper(browser()->GetTabContentsAt(1), non_app_url);
   NavigateTabHelper(browser()->GetTabContentsAt(3), app_url);
   EXPECT_NE(host->render_process_host(),
