@@ -135,6 +135,24 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
   def tearDown(self):
     self.TearDown()  # Destroy browser
 
+  def RestartBrowser(self, clear_profile=True):
+    """Restart the browser.
+
+    For use with tests that require to restart the browser.
+
+    Args:
+      clear_profile: If True, the browser profile is cleared before restart.
+                     Defaults to True, that is restarts browser with a clean
+                     profile.
+    """
+    orig_clear_state = self.get_clear_profile()
+    self.CloseBrowserAndServer()
+    self.set_clear_profile(clear_profile)
+    logging.debug('Restarting browser with clear_profile=%s' %
+                  self.get_clear_profile())
+    self.LaunchBrowserAndServer()
+    self.set_clear_profile(orig_clear_state)  # Reset to original state.
+
   @staticmethod
   def DataDir():
     """Returns the path to the data dir chrome/test/data."""

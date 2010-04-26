@@ -191,6 +191,9 @@ class PyUITestBase {
       CloseBrowserAndServer;
   void CloseBrowserAndServer();
 
+  %feature("docstring", "Determine if the profile is set to be cleared on "
+                        "next startup.") get_clear_profile;
+  bool get_clear_profile() const;
   %feature("docstring", "If False, sets the flag so that the profile is "
            "not cleared on next startup. Useful for persisting profile "
            "across restarts. By default the state is True, to clear profile.")

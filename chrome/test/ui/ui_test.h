@@ -429,6 +429,11 @@ class UITestBase {
     ui_test_name_ = name;
   }
 
+  // Fetch the state which determines whether the profile will be cleared on
+  // next startup.
+  bool get_clear_profile() const {
+    return clear_profile_;
+  }
   // Sets clear_profile_. Should be called before launching browser to have
   // any effect.
   void set_clear_profile(bool clear_profile) {
