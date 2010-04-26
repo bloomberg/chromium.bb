@@ -15,6 +15,7 @@
 #include "app/sql/connection.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/platform_thread.h"
@@ -282,19 +283,7 @@ void UITestBase::CloseBrowserAndServer() {
 }
 
 static CommandLine* CreatePythonCommandLine() {
-#if defined(OS_WIN)
-  // Get path to python interpreter
-  FilePath python_runtime;
-  if (!PathService::Get(base::DIR_SOURCE_ROOT, &python_runtime))
-    return NULL;
-  python_runtime = python_runtime
-      .Append(FILE_PATH_LITERAL("third_party"))
-      .Append(FILE_PATH_LITERAL("python_24"))
-      .Append(FILE_PATH_LITERAL("python.exe"));
-  return new CommandLine(python_runtime);
-#elif defined(OS_POSIX)
-  return new CommandLine(FilePath("python"));
-#endif
+  return new CommandLine(FilePath(FILE_PATH_LITERAL("python")));
 }
 
 static CommandLine* CreateHttpServerCommandLine() {
