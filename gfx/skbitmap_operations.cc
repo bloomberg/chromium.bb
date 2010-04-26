@@ -5,6 +5,7 @@
 #include "gfx/skbitmap_operations.h"
 
 #include <algorithm>
+#include <string.h>
 
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -209,11 +210,327 @@ SkBitmap SkBitmapOperations::CreateButtonBackground(SkColor color,
   return background;
 }
 
+namespace {
+namespace HSLShift {
+
+// TODO(viettrungluu): Some things have yet to be optimized at all.
+
+// Notes on and conventions used in the following code
+//
+// Conventions:
+//  - R, G, B, A = obvious; as variables: |r|, |g|, |b|, |a| (see also below)
+//  - H, S, L = obvious; as variables: |h|, |s|, |l| (see also below)
+//  - variables derived from S, L shift parameters: |sdec| and |sinc| for S
+//    increase and decrease factors, |ldec| and |linc| for L (see also below)
+//
+// To try to optimize HSL shifts, we do several things:
+//  - Avoid unpremultiplying (then processing) then premultiplying. This means
+//    that R, G, B values (and also L, but not H and S) should be treated as
+//    having a range of 0..A (where A is alpha).
+//  - Do things in integer/fixed-point. This avoids costly conversions between
+//    floating-point and integer, though I should study the tradeoff more
+//    carefully (presumably, at some point of processing complexity, converting
+//    and processing using simpler floating-point code will begin to win in
+//    performance). Also to be studied is the speed/type of floating point
+//    conversions; see, e.g., <http://www.stereopsis.com/sree/fpu2006.html>.
+//
+// Conventions for fixed-point arithmetic
+//  - Each function has a constant denominator (called |den|, which should be a
+//    power of 2), appropriate for the computations done in that function.
+//  - A value |x| is then typically represented by a numerator, named |x_num|,
+//    so that its actual value is |x_num / den| (casting to floating-point
+//    before division).
+//  - To obtain |x_num| from |x|, simply multiply by |den|, i.e., |x_num = x *
+//    den| (casting appropriately).
+//  - When necessary, a value |x| may also be represented as a numerator over
+//    the denominator squared (set |den2 = den * den|). In such a case, the
+//    corresponding variable is called |x_num2| (so that its actual value is
+//    |x_num^2 / den2|.
+//  - The representation of the product of |x| and |y| is be called |x_y_num| if
+//    |x * y == x_y_num / den|, and |xy_num2| if |x * y == x_y_num2 / den2|. In
+//    the latter case, notice that one can calculate |x_y_num2 = x_num * y_num|.
+
+// Routine used to process a line; typically specialized for specific kinds of
+// HSL shifts (to optimize).
+typedef void (*LineProcessor)(color_utils::HSL,
+                              const SkPMColor*,
+                              SkPMColor*,
+                              int width);
+
+enum OperationOnH { kOpHNone = 0, kOpHShift, kNumHOps };
+enum OperationOnS { kOpSNone = 0, kOpSDec, kOpSInc, kNumSOps };
+enum OperationOnL { kOpLNone = 0, kOpLDec, kOpLInc, kNumLOps };
+
+// Epsilon used to judge when shift values are close enough to various critical
+// values (typically 0.5, which yields a no-op for S and L shifts. 1/256 should
+// be small enough, but let's play it safe>
+const double epsilon = 0.0005;
+
+// Line processor: default/universal (i.e., old-school).
+void LineProcDefault(color_utils::HSL hsl_shift, const SkPMColor* in,
+                     SkPMColor* out, int width) {
+  for (int x = 0; x < width; x++) {
+    out[x] = SkPreMultiplyColor(color_utils::HSLShift(
+        SkUnPreMultiply::PMColorToColor(in[x]), hsl_shift));
+  }
+}
+
+// Line processor: no-op (i.e., copy).
+void LineProcCopy(color_utils::HSL hsl_shift, const SkPMColor* in,
+                  SkPMColor* out, int width) {
+  DCHECK(hsl_shift.h < 0);
+  DCHECK(hsl_shift.s < 0 || fabs(hsl_shift.s - 0.5) < HSLShift::epsilon);
+  DCHECK(hsl_shift.l < 0 || fabs(hsl_shift.l - 0.5) < HSLShift::epsilon);
+  memcpy(out, in, static_cast<size_t>(width) * sizeof(out[0]));
+}
+
+// Line processor: H no-op, S no-op, L decrease.
+void LineProcHnopSnopLdec(color_utils::HSL hsl_shift, const SkPMColor* in,
+                          SkPMColor* out, int width) {
+  const uint32_t den = 65536;
+
+  DCHECK(hsl_shift.h < 0);
+  DCHECK(hsl_shift.s < 0 || fabs(hsl_shift.s - 0.5) < HSLShift::epsilon);
+  DCHECK(hsl_shift.l <= 0.5 - HSLShift::epsilon && hsl_shift.l >= 0);
+
+  uint32_t ldec_num = static_cast<uint32_t>(hsl_shift.l * 2 * den);
+  for (int x = 0; x < width; x++) {
+    uint32_t a = SkGetPackedA32(in[x]);
+    uint32_t r = SkGetPackedR32(in[x]);
+    uint32_t g = SkGetPackedG32(in[x]);
+    uint32_t b = SkGetPackedB32(in[x]);
+    r = r * ldec_num / den;
+    g = g * ldec_num / den;
+    b = b * ldec_num / den;
+    out[x] = SkPackARGB32(a, r, g, b);
+  }
+}
+
+// Line processor: H no-op, S no-op, L increase.
+void LineProcHnopSnopLinc(color_utils::HSL hsl_shift, const SkPMColor* in,
+                          SkPMColor* out, int width) {
+  const uint32_t den = 65536;
+
+  DCHECK(hsl_shift.h < 0);
+  DCHECK(hsl_shift.s < 0 || fabs(hsl_shift.s - 0.5) < HSLShift::epsilon);
+  DCHECK(hsl_shift.l >= 0.5 + HSLShift::epsilon && hsl_shift.l <= 1);
+
+  uint32_t linc_num = static_cast<uint32_t>((hsl_shift.l - 0.5) * 2 * den);
+  for (int x = 0; x < width; x++) {
+    uint32_t a = SkGetPackedA32(in[x]);
+    uint32_t r = SkGetPackedR32(in[x]);
+    uint32_t g = SkGetPackedG32(in[x]);
+    uint32_t b = SkGetPackedB32(in[x]);
+    r += (a - r) * linc_num / den;
+    g += (a - g) * linc_num / den;
+    b += (a - b) * linc_num / den;
+    out[x] = SkPackARGB32(a, r, g, b);
+  }
+}
+
+// Saturation changes modifications in RGB
+//
+// (Note that as a further complication, the values we deal in are
+// premultiplied, so R/G/B values must be in the range 0..A. For mathematical
+// purposes, one may as well use r=R/A, g=G/A, b=B/A. Without loss of
+// generality, assume that R/G/B values are in the range 0..1.)
+//
+// Let Max = max(R,G,B), Min = min(R,G,B), and Med be the median value. Then L =
+// (Max+Min)/2. If L is to remain constant, Max+Min must also remain constant.
+//
+// For H to remain constant, first, the (numerical) order of R/G/B (from
+// smallest to largest) must remain the same. Second, all the ratios
+// (R-G)/(Max-Min), (R-B)/(Max-Min), (G-B)/(Max-Min) must remain constant (of
+// course, if Max = Min, then S = 0 and no saturation change is well-defined,
+// since H is not well-defined).
+//
+// Let C_max be a colour with value Max, C_min be one with value Min, and C_med
+// the remaining colour. Increasing saturation (to the maximum) is accomplished
+// by increasing the value of C_max while simultaneously decreasing C_min and
+// changing C_med so that the ratios are maintained; for the latter, it suffices
+// to keep (C_med-C_min)/(C_max-C_min) constant (and equal to
+// (Med-Min)/(Max-Min)).
+
+// Line processor: H no-op, S decrease, L no-op.
+void LineProcHnopSdecLnop(color_utils::HSL hsl_shift, const SkPMColor* in,
+                          SkPMColor* out, int width) {
+  DCHECK(hsl_shift.h < 0);
+  DCHECK(hsl_shift.s >= 0 && hsl_shift.s <= 0.5 - HSLShift::epsilon);
+  DCHECK(hsl_shift.l < 0 || fabs(hsl_shift.l - 0.5) < HSLShift::epsilon);
+
+  const int32_t denom = 65536;
+  int32_t s_numer = static_cast<int32_t>(hsl_shift.s * 2 * denom);
+  for (int x = 0; x < width; x++) {
+    int32_t a = static_cast<int32_t>(SkGetPackedA32(in[x]));
+    int32_t r = static_cast<int32_t>(SkGetPackedR32(in[x]));
+    int32_t g = static_cast<int32_t>(SkGetPackedG32(in[x]));
+    int32_t b = static_cast<int32_t>(SkGetPackedB32(in[x]));
+
+    int32_t vmax, vmin;
+    if (r > g) {  // This uses 3 compares rather than 4.
+      vmax = std::max(r, b);
+      vmin = std::min(g, b);
+    } else {
+      vmax = std::max(g, b);
+      vmin = std::min(r, b);
+    }
+
+    // Use denom * L to avoid rounding.
+    int32_t denom_l = (vmax + vmin) * (denom / 2);
+    int32_t s_numer_l = (vmax + vmin) * s_numer / 2;
+
+    r = (denom_l + r * s_numer - s_numer_l) / denom;
+    g = (denom_l + g * s_numer - s_numer_l) / denom;
+    b = (denom_l + b * s_numer - s_numer_l) / denom;
+    out[x] = SkPackARGB32(a, r, g, b);
+  }
+}
+
+// Line processor: H no-op, S decrease, L decrease.
+void LineProcHnopSdecLdec(color_utils::HSL hsl_shift, const SkPMColor* in,
+                          SkPMColor* out, int width) {
+  DCHECK(hsl_shift.h < 0);
+  DCHECK(hsl_shift.s >= 0 && hsl_shift.s <= 0.5 - HSLShift::epsilon);
+  DCHECK(hsl_shift.l >= 0 && hsl_shift.l <= 0.5 - HSLShift::epsilon);
+
+  // Can't be too big since we need room for denom*denom and a bit for sign.
+  const int32_t denom = 1024;
+  int32_t l_numer = static_cast<int32_t>(hsl_shift.l * 2 * denom);
+  int32_t s_numer = static_cast<int32_t>(hsl_shift.s * 2 * denom);
+  for (int x = 0; x < width; x++) {
+    int32_t a = static_cast<int32_t>(SkGetPackedA32(in[x]));
+    int32_t r = static_cast<int32_t>(SkGetPackedR32(in[x]));
+    int32_t g = static_cast<int32_t>(SkGetPackedG32(in[x]));
+    int32_t b = static_cast<int32_t>(SkGetPackedB32(in[x]));
+
+    int32_t vmax, vmin;
+    if (r > g) {  // This uses 3 compares rather than 4.
+      vmax = std::max(r, b);
+      vmin = std::min(g, b);
+    } else {
+      vmax = std::max(g, b);
+      vmin = std::min(r, b);
+    }
+
+    // Use denom * L to avoid rounding.
+    int32_t denom_l = (vmax + vmin) * (denom / 2);
+    int32_t s_numer_l = (vmax + vmin) * s_numer / 2;
+
+    r = (denom_l + r * s_numer - s_numer_l) * l_numer / (denom * denom);
+    g = (denom_l + g * s_numer - s_numer_l) * l_numer / (denom * denom);
+    b = (denom_l + b * s_numer - s_numer_l) * l_numer / (denom * denom);
+    out[x] = SkPackARGB32(a, r, g, b);
+  }
+}
+
+// Line processor: H no-op, S decrease, L increase.
+void LineProcHnopSdecLinc(color_utils::HSL hsl_shift, const SkPMColor* in,
+                          SkPMColor* out, int width) {
+  DCHECK(hsl_shift.h < 0);
+  DCHECK(hsl_shift.s >= 0 && hsl_shift.s <= 0.5 - HSLShift::epsilon);
+  DCHECK(hsl_shift.l >= 0.5 + HSLShift::epsilon && hsl_shift.l <= 1);
+
+  // Can't be too big since we need room for denom*denom and a bit for sign.
+  const int32_t denom = 1024;
+  int32_t l_numer = static_cast<int32_t>((hsl_shift.l - 0.5) * 2 * denom);
+  int32_t s_numer = static_cast<int32_t>(hsl_shift.s * 2 * denom);
+  for (int x = 0; x < width; x++) {
+    int32_t a = static_cast<int32_t>(SkGetPackedA32(in[x]));
+    int32_t r = static_cast<int32_t>(SkGetPackedR32(in[x]));
+    int32_t g = static_cast<int32_t>(SkGetPackedG32(in[x]));
+    int32_t b = static_cast<int32_t>(SkGetPackedB32(in[x]));
+
+    int32_t vmax, vmin;
+    if (r > g) {  // This uses 3 compares rather than 4.
+      vmax = std::max(r, b);
+      vmin = std::min(g, b);
+    } else {
+      vmax = std::max(g, b);
+      vmin = std::min(r, b);
+    }
+
+    // Use denom * L to avoid rounding.
+    int32_t denom_l = (vmax + vmin) * (denom / 2);
+    int32_t s_numer_l = (vmax + vmin) * s_numer / 2;
+
+    r = denom_l + r * s_numer - s_numer_l;
+    g = denom_l + g * s_numer - s_numer_l;
+    b = denom_l + b * s_numer - s_numer_l;
+
+    r = (r * denom + (a * denom - r) * l_numer) / (denom * denom);
+    g = (g * denom + (a * denom - g) * l_numer) / (denom * denom);
+    b = (b * denom + (a * denom - b) * l_numer) / (denom * denom);
+    out[x] = SkPackARGB32(a, r, g, b);
+  }
+}
+
+const LineProcessor kLineProcessors[kNumHOps][kNumSOps][kNumLOps] = {
+  { // H: kOpHNone
+    { // S: kOpSNone
+      LineProcCopy,         // L: kOpLNone
+      LineProcHnopSnopLdec, // L: kOpLDec
+      LineProcHnopSnopLinc  // L: kOpLInc
+    },
+    { // S: kOpSDec
+      LineProcHnopSdecLnop, // L: kOpLNone
+      LineProcHnopSdecLdec, // L: kOpLDec
+      LineProcHnopSdecLinc  // L: kOpLInc
+    },
+    { // S: kOpSInc
+      LineProcDefault, // L: kOpLNone
+      LineProcDefault, // L: kOpLDec
+      LineProcDefault  // L: kOpLInc
+    }
+  },
+  { // H: kOpHShift
+    { // S: kOpSNone
+      LineProcDefault, // L: kOpLNone
+      LineProcDefault, // L: kOpLDec
+      LineProcDefault  // L: kOpLInc
+    },
+    { // S: kOpSDec
+      LineProcDefault, // L: kOpLNone
+      LineProcDefault, // L: kOpLDec
+      LineProcDefault  // L: kOpLInc
+    },
+    { // S: kOpSInc
+      LineProcDefault, // L: kOpLNone
+      LineProcDefault, // L: kOpLDec
+      LineProcDefault  // L: kOpLInc
+    }
+  }
+};
+
+}  // namespace HSLShift
+}  // namespace
 
 // static
 SkBitmap SkBitmapOperations::CreateHSLShiftedBitmap(
     const SkBitmap& bitmap,
     color_utils::HSL hsl_shift) {
+  // Default to NOPs.
+  HSLShift::OperationOnH H_op = HSLShift::kOpHNone;
+  HSLShift::OperationOnS S_op = HSLShift::kOpSNone;
+  HSLShift::OperationOnL L_op = HSLShift::kOpLNone;
+
+  if (hsl_shift.h >= 0 && hsl_shift.h <= 1)
+    H_op = HSLShift::kOpHShift;
+
+  // Saturation shift: 0 -> fully desaturate, 0.5 -> NOP, 1 -> fully saturate.
+  if (hsl_shift.s >= 0 && hsl_shift.s <= (0.5 - HSLShift::epsilon))
+    S_op = HSLShift::kOpSDec;
+  else if (hsl_shift.s >= (0.5 + HSLShift::epsilon))
+    S_op = HSLShift::kOpSInc;
+
+  // Lightness shift: 0 -> black, 0.5 -> NOP, 1 -> white.
+  if (hsl_shift.l >= 0 && hsl_shift.l <= (0.5 - HSLShift::epsilon))
+    L_op = HSLShift::kOpLDec;
+  else if (hsl_shift.l >= (0.5 + HSLShift::epsilon))
+    L_op = HSLShift::kOpLInc;
+
+  HSLShift::LineProcessor line_proc =
+      HSLShift::kLineProcessors[H_op][S_op][L_op];
+
   DCHECK(bitmap.empty() == false);
   DCHECK(bitmap.config() == SkBitmap::kARGB_8888_Config);
 
@@ -232,10 +549,7 @@ SkBitmap SkBitmapOperations::CreateHSLShiftedBitmap(
     SkPMColor* pixels = bitmap.getAddr32(0, y);
     SkPMColor* tinted_pixels = shifted.getAddr32(0, y);
 
-    for (int x = 0; x < bitmap.width(); ++x) {
-      tinted_pixels[x] = SkPreMultiplyColor(color_utils::HSLShift(
-          SkUnPreMultiply::PMColorToColor(pixels[x]), hsl_shift));
-    }
+    (*line_proc)(hsl_shift, pixels, tinted_pixels, bitmap.width());
   }
 
   return shifted;

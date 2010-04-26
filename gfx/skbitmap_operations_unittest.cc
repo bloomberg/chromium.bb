@@ -13,11 +13,31 @@ namespace {
 
 // Returns true if each channel of the given two colors are "close." This is
 // used for comparing colors where rounding errors may cause off-by-one.
-bool ColorsClose(uint32_t a, uint32_t b) {
-  return abs(static_cast<int>(SkColorGetB(a) - SkColorGetB(b))) < 2 &&
-         abs(static_cast<int>(SkColorGetG(a) - SkColorGetG(b))) < 2 &&
-         abs(static_cast<int>(SkColorGetR(a) - SkColorGetR(b))) < 2 &&
-         abs(static_cast<int>(SkColorGetA(a) - SkColorGetA(b))) < 2;
+inline bool ColorsClose(uint32_t a, uint32_t b) {
+  return abs(static_cast<int>(SkColorGetB(a) - SkColorGetB(b))) <= 2 &&
+         abs(static_cast<int>(SkColorGetG(a) - SkColorGetG(b))) <= 2 &&
+         abs(static_cast<int>(SkColorGetR(a) - SkColorGetR(b))) <= 2 &&
+         abs(static_cast<int>(SkColorGetA(a) - SkColorGetA(b))) <= 2;
+}
+
+inline bool MultipliedColorsClose(uint32_t a, uint32_t b) {
+  return ColorsClose(SkUnPreMultiply::PMColorToColor(a),
+                     SkUnPreMultiply::PMColorToColor(b));
+}
+
+bool BitmapsClose(const SkBitmap& a, const SkBitmap& b) {
+  SkAutoLockPixels a_lock(a);
+  SkAutoLockPixels b_lock(b);
+
+  for (int y = 0; y < a.height(); y++) {
+    for (int x = 0; x < a.width(); x++) {
+      SkColor a_pixel = *a.getAddr32(x, y);
+      SkColor b_pixel = *b.getAddr32(x, y);
+      if (!ColorsClose(a_pixel, b_pixel))
+        return false;
+    }
+  }
+  return true;
 }
 
 void FillDataToBitmap(int w, int h, SkBitmap* bmp) {
@@ -32,6 +52,34 @@ void FillDataToBitmap(int w, int h, SkBitmap* bmp) {
     src_data[i * 4 + 2] = static_cast<unsigned char>(i % 255);
     src_data[i * 4 + 3] = static_cast<unsigned char>(i % 255);
   }
+}
+
+// The reference (i.e., old) implementation of |CreateHSLShiftedBitmap()|.
+SkBitmap ReferenceCreateHSLShiftedBitmap(
+    const SkBitmap& bitmap,
+    color_utils::HSL hsl_shift) {
+  SkBitmap shifted;
+  shifted.setConfig(SkBitmap::kARGB_8888_Config, bitmap.width(),
+                    bitmap.height(), 0);
+  shifted.allocPixels();
+  shifted.eraseARGB(0, 0, 0, 0);
+  shifted.setIsOpaque(false);
+
+  SkAutoLockPixels lock_bitmap(bitmap);
+  SkAutoLockPixels lock_shifted(shifted);
+
+  // Loop through the pixels of the original bitmap.
+  for (int y = 0; y < bitmap.height(); ++y) {
+    SkPMColor* pixels = bitmap.getAddr32(0, y);
+    SkPMColor* tinted_pixels = shifted.getAddr32(0, y);
+
+    for (int x = 0; x < bitmap.width(); ++x) {
+      tinted_pixels[x] = SkPreMultiplyColor(color_utils::HSLShift(
+          SkUnPreMultiply::PMColorToColor(pixels[x]), hsl_shift));
+    }
+  }
+
+  return shifted;
 }
 
 }  // namespace
@@ -165,31 +213,38 @@ TEST(SkBitmapOperationsTest, CreateMaskedBitmap) {
 // the end result is close enough to the original (rounding errors
 // notwithstanding).
 TEST(SkBitmapOperationsTest, CreateHSLShiftedBitmapToSame) {
-  int src_w = 4, src_h = 4;
+  int src_w = 16, src_h = 16;
   SkBitmap src;
   src.setConfig(SkBitmap::kARGB_8888_Config, src_w, src_h);
   src.allocPixels();
 
   for (int y = 0, i = 0; y < src_h; y++) {
     for (int x = 0; x < src_w; x++) {
-      *src.getAddr32(x, y) = SkColorSetARGB(i + 128 % 255,
-          i + 128 % 255, i + 64 % 255, i + 0 % 255);
+      *src.getAddr32(x, y) = SkPreMultiplyColor(SkColorSetARGB((i + 128) % 255,
+          (i + 128) % 255, (i + 64) % 255, (i + 0) % 255));
       i++;
     }
   }
 
   color_utils::HSL hsl = { -1, -1, -1 };
-
-  SkBitmap shifted = SkBitmapOperations::CreateHSLShiftedBitmap(src, hsl);
+  SkBitmap shifted = ReferenceCreateHSLShiftedBitmap(src, hsl);
 
   SkAutoLockPixels src_lock(src);
   SkAutoLockPixels shifted_lock(shifted);
 
-  for (int y = 0; y < src_w; y++) {
-    for (int x = 0; x < src_h; x++) {
+  for (int y = 0; y < src_h; y++) {
+    for (int x = 0; x < src_w; x++) {
       SkColor src_pixel = *src.getAddr32(x, y);
       SkColor shifted_pixel = *shifted.getAddr32(x, y);
-      EXPECT_TRUE(ColorsClose(src_pixel, shifted_pixel));
+      EXPECT_TRUE(MultipliedColorsClose(src_pixel, shifted_pixel)) <<
+          "source: (a,r,g,b) = (" << SkColorGetA(src_pixel) << "," <<
+                                     SkColorGetR(src_pixel) << "," <<
+                                     SkColorGetG(src_pixel) << "," <<
+                                     SkColorGetB(src_pixel) << "); " <<
+          "shifted: (a,r,g,b) = (" << SkColorGetA(shifted_pixel) << "," <<
+                                     SkColorGetR(shifted_pixel) << "," <<
+                                     SkColorGetG(shifted_pixel) << "," <<
+                                     SkColorGetB(shifted_pixel) << ")";
     }
   }
 }
@@ -221,6 +276,41 @@ TEST(SkBitmapOperationsTest, CreateHSLShiftedBitmapHueOnly) {
       EXPECT_TRUE(ColorsClose(*shifted.getAddr32(x, y),
                               SkColorSetARGB(255, i % 255, 0, 0)));
       i++;
+    }
+  }
+}
+
+// Validate HSL shift.
+TEST(SkBitmapOperationsTest, ValidateHSLShift) {
+  // Note: 255/51 = 5 (exactly) => 6 including 0!
+  const int inc = 51;
+  const int dim = 255 / inc + 1;
+  SkBitmap src;
+  src.setConfig(SkBitmap::kARGB_8888_Config, dim*dim, dim*dim);
+  src.allocPixels();
+
+  for (int a = 0, y = 0; a <= 255; a += inc) {
+    for (int r = 0; r <= 255; r += inc, y++) {
+      for (int g = 0, x = 0; g <= 255; g += inc) {
+        for (int b = 0; b <= 255; b+= inc, x++) {
+          *src.getAddr32(x, y) =
+              SkPreMultiplyColor(SkColorSetARGB(a, r, g, b));
+        }
+      }
+    }
+  }
+
+  // Shhhh. The spec says I should set things to -1 for "no change", but
+  // actually -0.1 will do. Don't tell anyone I did this.
+  for (double h = -0.1; h <= 1.0001; h += 0.1) {
+    for (double s = -0.1; s <= 1.0001; s += 0.1) {
+      for (double l = -0.1; l <= 1.0001; l += 0.1) {
+        color_utils::HSL hsl = { h, s, l };
+        SkBitmap ref_shifted = ReferenceCreateHSLShiftedBitmap(src, hsl);
+        SkBitmap shifted = SkBitmapOperations::CreateHSLShiftedBitmap(src, hsl);
+        EXPECT_TRUE(BitmapsClose(ref_shifted, shifted))
+            << "h = " << h << ", s = " << s << ", l = " << l;
+      }
     }
   }
 }
