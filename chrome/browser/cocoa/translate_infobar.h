@@ -5,7 +5,8 @@
 #import <Cocoa/Cocoa.h>
 #import "chrome/browser/cocoa/infobar_controller.h"
 
-#include "base/scoped_nsobject.h"
+#import "base/cocoa_protocols_mac.h"
+#import "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/translate/languages_menu_model.h"
 #include "chrome/browser/translate/options_menu_model.h"
@@ -32,7 +33,7 @@ class TranslateNotificationObserverBridge;
 // The GUI uses popup menus interspersed in a text label.  For localization
 // purposes this means we potentially need 3 labels to display the UI (the 3rd
 // is only visible in certain locales).
-@interface TranslateInfoBarController : InfoBarController {
+@interface TranslateInfoBarController : InfoBarController<NSMenuDelegate> {
  @protected
   // Infobar keeps track of the state it is displaying, which should match that
   // in the TranslateInfoBarDelegate.  UI needs to keep track separately because
