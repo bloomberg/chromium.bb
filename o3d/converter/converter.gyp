@@ -36,6 +36,7 @@
         '../import/import.gyp:o3dImport',
         '../serializer/serializer.gyp:o3dSerializer',
         '../utils/utils.gyp:o3dUtils',
+        'cgToGLSLConverterScript',
       ],
       'sources': [
         'cross/buffer_stub.cc',
@@ -120,6 +121,18 @@
           },
         ],
       ],
+    },
+    {
+      'target_name': 'cgToGLSLConverterScript',
+      'type': 'none',
+      'copies': [
+        {
+          'destination': '<(PRODUCT_DIR)',
+          'files': [
+            '../cg_to_glsl/convert.py',
+          ]
+        },
+      ]
     },
   ],
 }
