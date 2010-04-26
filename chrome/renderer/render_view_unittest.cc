@@ -951,3 +951,10 @@ TEST_F(RenderViewTest, JSBlockSentAfterPageLoad) {
   EXPECT_NE(-1, block_index);
   EXPECT_LT(navigation_index, block_index);
 }
+
+// Regression test for http://crbug.com/41562
+TEST_F(RenderViewTest, UpdateTargetURLWithInvalidURL) {
+  const GURL invalid_gurl("http://");
+  view_->setMouseOverURL(WebKit::WebURL(invalid_gurl));
+  EXPECT_EQ(invalid_gurl, view_->target_url_);
+}

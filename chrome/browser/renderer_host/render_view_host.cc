@@ -1097,7 +1097,7 @@ void RenderViewHost::OnMsgDidFailProvisionalLoadWithError(
     int error_code,
     const GURL& url,
     bool showing_repost_interstitial) {
-  LOG(INFO) << "Failed Provisional Load: " << url.spec()
+  LOG(INFO) << "Failed Provisional Load: " << url.possibly_invalid_spec()
             << ", error_code: " << error_code
             << " is_main_frame: " << is_main_frame
             << " showing_repost_interstitial: " << showing_repost_interstitial;

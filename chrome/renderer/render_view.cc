@@ -1874,7 +1874,7 @@ void RenderView::setStatusText(const WebString& text) {
 }
 
 void RenderView::UpdateTargetURL(const GURL& url, const GURL& fallback_url) {
-  GURL latest_url = url.spec().empty() ? fallback_url : url;
+  GURL latest_url = url.is_empty() ? fallback_url : url;
   if (latest_url == target_url_)
     return;
 
