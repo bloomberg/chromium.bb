@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title></title>
+<script src="http://closure-library.googlecode.com/svn/trunk/closure/goog/base.js"></script>
+<script src="parse_html_subset.js"></script>
+<script>
+
+goog.require('goog.testing.jsunit');
+
+</script>
+
+</head>
+<body>
+<script>
+
+function parseAndAssertThrows(s) {
+  assertThrows(function() {
+    parseHtmlSubset(s);
+  });
+}
+
+function parseAndAssertNotThrows(s) {
+  assertNotThrows(function() {
+    parseHtmlSubset(s);
+  });
+}
+
+function testText() {
+  parseAndAssertNotThrows('');
+  parseAndAssertNotThrows('abc');
+  parseAndAssertNotThrows('&nbsp;');
+}
+
+function testSupportedTags() {
+  parseAndAssertNotThrows('<b>bold</b>');
+  parseAndAssertNotThrows('Some <b>bold</b> text');
+  parseAndAssertNotThrows('Some <strong>strong</strong> text');
+  parseAndAssertNotThrows('<B>bold</B>');
+  parseAndAssertNotThrows('Some <B>bold</B> text');
+  parseAndAssertNotThrows('Some <STRONG>strong</STRONG> text');
+}
+
+function testInvaliTags() {
+  parseAndAssertThrows('<unknown_tag>x</unknown_tag>');
+  parseAndAssertThrows('<img>');
+  parseAndAssertThrows('<script>alert(1)<' + '/script>');
+}
+
+function testInvalidAttributes() {
+  parseAndAssertThrows('<b onclick="alert(1)">x</b>');
+  parseAndAssertThrows('<b style="color:red">x</b>');
+  parseAndAssertThrows('<b foo>x</b>');
+  parseAndAssertThrows('<b foo=bar></b>');
+}
+
+function testValidAnchors() {
+  parseAndAssertNotThrows('<a href="http://google.com">Google</a>');
+  parseAndAssertNotThrows('<a href="https://google.com">Google</a>');
+}
+
+function testInvalidAnchorHrefs() {
+  parseAndAssertThrows('<a href="ftp://google.com">Google</a>');
+  parseAndAssertThrows('<a href="http/google.com">Google</a>');
+  parseAndAssertThrows('<a href="javascript:alert(1)">Google</a>');
+}
+
+function testInvalidAnchorAttributes() {
+  parseAndAssertThrows('<a name=foo>Google</a>');
+  parseAndAssertThrows(
+      '<a onclick="alert(1)" href="http://google.com">Google</a>');
+  parseAndAssertThrows('<a foo="bar(1)" href="http://google.com">Google</a>');
+}
+
+function testAnchorTarget() {
+  parseAndAssertNotThrows(
+      '<a href="http://google.com" target="blank_">Google</a>');
+  parseAndAssertNotThrows(
+      '<a href="http://google.com" target="foo">Google</a>');
+}
+
+</script>
+
+</body>
+</html>
