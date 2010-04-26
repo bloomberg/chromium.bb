@@ -326,12 +326,6 @@ void NaClInstStateInstPrint(FILE* file, NaClInstState* state) {
   /* Print out the assembly instruction it disassembles to. */
   inst = NaClInstStateInst(state);
   NaClPrintDisassembled(file, state, inst);
-
-  /* Print out if not allowed in native client (as a comment). */
-  if (!NaClInstStateIsNaClLegal(state) &&
-      (InstInvalid != NaClInstStateInst(state)->name)) {
-    fprintf(file, "; *NACL Disallows!*");
-  }
   putc('\n', file);
 }
 

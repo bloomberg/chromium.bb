@@ -44,15 +44,10 @@ struct NaClInst* NaClInstStateInst(NaClInstState* state);
  */
 struct NaClExpVector* NaClInstStateExpVector(NaClInstState* state);
 
-/* Returns true if the instruction defined by the given state is legal
- * in native client.
+/* Returns true if the instruction defined by the given state could
+ * be decoded into a valid instruction.
  */
-Bool NaClInstStateIsNaClLegal(NaClInstState* state);
-
-/* If the instruction defined by  the given state is not legal in
- * native client, returns a set of flags describing why.
- */
-NaClDisallowsFlags NaClInstStateDisallowsFlags(NaClInstState* state);
+Bool NaClInstStateIsValid(NaClInstState* state);
 
 /* Given an iterator state, return the number of bytes matched
  * by the currently matched instruction of the corresponding

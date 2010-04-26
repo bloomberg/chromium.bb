@@ -53,8 +53,6 @@ static void NaClInstStateInit(NaClInstIter* iter, NaClInstState* state) {
   state->num_rex_prefixes = 0;
   state->prefix_mask = 0;
   state->inst = NULL;
-  state->is_nacl_legal = TRUE;
-  state->disallows_flags = NACL_EMPTY_DISALLOWS_FLAGS;
   state->nodes.number_expr_nodes = 0;
 }
 
@@ -673,11 +671,8 @@ static Bool NaClValidatePrefixFlags(NaClInstState* state) {
   return TRUE;
 }
 
-static void NaClClearInstState(NaClInstState* state, uint8_t opcode_length,
-                               Bool is_nacl_legal) {
+static void NaClClearInstState(NaClInstState* state, uint8_t opcode_length) {
   state->length = opcode_length;
-  state->is_nacl_legal = is_nacl_legal;
-  state->disallows_flags = NACL_EMPTY_DISALLOWS_FLAGS;
   state->modrm = 0;
   state->has_sib = FALSE;
   state->sib = 0;
@@ -750,7 +745,6 @@ static Bool NaClConsumeOpcodeSequence(NaClInstState* state) {
   uint8_t next_byte;
   NaClInstNode* root;
   uint8_t orig_length;
-  Bool orig_legal;
 
   /* Cut quick if first byte not applicable. */
   if (state->length >= state->length_limit) return FALSE;
@@ -763,7 +757,6 @@ static Bool NaClConsumeOpcodeSequence(NaClInstState* state) {
    * a match, and must reset state if it fails.
    */
   orig_length = state->length;
-  orig_legal = state->is_nacl_legal;
   do {
     state->length++;
     if (NULL != root->matching_inst) {
@@ -780,7 +773,7 @@ static Bool NaClConsumeOpcodeSequence(NaClInstState* state) {
   /* If reached, we updated the state, but did not find a match. Hence, revert
    * the state.
    */
-  NaClClearInstState(state, orig_length, orig_legal);
+  NaClClearInstState(state, orig_length);
   return FALSE;
 }
 
@@ -795,7 +788,6 @@ static Bool NaClConsumeOpcodeSequence(NaClInstState* state) {
 void NaClDecodeInst(NaClInstIter* iter, NaClInstState* state) {
   uint8_t opcode_length = 0;
   NaClInst* cand_insts;
-  Bool is_nacl_legal = FALSE;
   Bool found_match = FALSE;
   /* Start by consuming the prefix bytes, and getting the possible
    * candidate opcode (instruction) patterns that can match, based
@@ -807,14 +799,12 @@ void NaClDecodeInst(NaClInstIter* iter, NaClInstState* state) {
      * opcode sequences are nop's, and hence no additional processing
      * (other than opcode selection) is needed.
      */
-    is_nacl_legal = TRUE;
     found_match = TRUE;
   } else if (NaClConsumePrefixBytes(state)) {
     NaClInstPrefixDescriptor prefix_desc;
     Bool continue_loop = TRUE;
     NaClConsumeInstBytes(state, &prefix_desc);
     opcode_length = state->length;
-    is_nacl_legal = state->is_nacl_legal;
     while (continue_loop) {
       /* Try matching all possible candidates, in the order they are specified
        * (from the most specific prefix match, to the least specific prefix
@@ -826,7 +816,7 @@ void NaClDecodeInst(NaClInstIter* iter, NaClInstState* state) {
         cand_insts = NaClGetNextInstCandidates(state, &prefix_desc,
                                                &opcode_length);
         while (cand_insts != NULL) {
-          NaClClearInstState(state, opcode_length, is_nacl_legal);
+          NaClClearInstState(state, opcode_length);
           state->inst = cand_insts;
           DEBUG(printf("try opcode pattern:\n"));
           DEBUG(NaClInstPrint(stdout, state->inst));
@@ -860,68 +850,11 @@ void NaClDecodeInst(NaClInstIter* iter, NaClInstState* state) {
     DEBUG(printf("no instruction found, converting to undefined\n"));
 
     /* Can't figure out instruction, give up. */
-    NaClClearInstState(state, opcode_length, is_nacl_legal);
+    NaClClearInstState(state, opcode_length);
     state->inst = &g_Undefined_Opcode;
     if (state->length == 0 && state->length < state->length_limit) {
       /* Make sure we eat at least one byte. */
       ++state->length;
-    }
-  }
-  /* Update nacl legal flag based on opcode information. */
-  if (state->is_nacl_legal) {
-    /* Don't allow more than one (non-REX) prefix. */
-    int num_prefix_bytes = state->num_prefix_bytes;
-    if (state->rexprefix) --num_prefix_bytes;
-
-    /* Note: Explicit NOP sequences that use multiple 66 values are
-     * recognized as special cases, and need not be processed here.
-     */
-    if (num_prefix_bytes > 1) {
-      state->is_nacl_legal = FALSE;
-      state->disallows_flags |= NACL_DISALLOWS_FLAG(NaClTooManyPrefixBytes);
-      DEBUG(printf("too many prefix bytes\n"));
-    }
-    switch (state->inst->insttype) {
-      case NACLi_ILLEGAL:
-      case NACLi_UNDEFINED:
-        state->is_nacl_legal = FALSE;
-        state->disallows_flags |= NACL_DISALLOWS_FLAG(NaClMarkedIllegal);
-        DEBUG(printf("mark instruction as NaCl illegal\n"));
-        break;
-      case NACLi_INVALID:
-        state->is_nacl_legal = FALSE;
-        state->disallows_flags |= NACL_DISALLOWS_FLAG(NaClMarkedInvalid);
-        DEBUG(printf("invalid instruction opcode found\n"));
-        break;
-      case NACLi_SYSTEM:
-        state->is_nacl_legal = FALSE;
-        state->disallows_flags |= NACL_DISALLOWS_FLAG(NaClMarkedSystem);
-        DEBUG(printf("system instruction not allowed\n"));
-        break;
-      default:
-        break;
-    }
-    if (NACL_IFLAG(NaClIllegal) & state->inst->flags) {
-      state->is_nacl_legal = FALSE;
-      state->disallows_flags |= NACL_DISALLOWS_FLAG(NaClMarkedIllegal);
-      DEBUG(printf("mark instruction as NaCl illegal\n"));
-    }
-    if (NACL_TARGET_SUBARCH == 64) {
-      /* Don't allow CS, DS, ES, or SS prefix overrides,
-       * since it has no effect, unless explicitly stated
-       * otherwise.
-       */
-      if (state->prefix_mask &
-          (kPrefixSEGCS | kPrefixSEGSS | kPrefixSEGES |
-           kPrefixSEGDS)) {
-        if (NACL_EMPTY_IFLAGS ==
-            (state->inst->flags & NACL_IFLAG(IgnorePrefixSEGCS))) {
-          state->is_nacl_legal = FALSE;
-          state->disallows_flags
-              |= NACL_DISALLOWS_FLAG(NaClHasBadSegmentPrefix);
-          DEBUG(printf("segment prefix disallowed\n"));
-        }
-      }
     }
   }
 }
@@ -941,12 +874,8 @@ NaClExpVector* NaClInstStateExpVector(NaClInstState* state) {
   return &state->nodes;
 }
 
-Bool NaClInstStateIsNaClLegal(NaClInstState* state) {
-  return state->is_nacl_legal;
-}
-
-NaClDisallowsFlags NaClInstStateDisallowsFlags(NaClInstState* state) {
-  return state->disallows_flags;
+Bool NaClInstStateIsValid(NaClInstState* state) {
+  return InstInvalid != state->inst->name;
 }
 
 uint8_t NaClInstStateLength(NaClInstState* state) {

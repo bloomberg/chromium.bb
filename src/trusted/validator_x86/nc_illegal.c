@@ -25,41 +25,73 @@
 void NaClValidateInstructionLegal(NaClValidatorState* state,
                                   NaClInstIter* iter,
                                   void* ignore) {
+  int num_prefix_bytes;
+  Bool is_legal = TRUE;
   NaClInstState* inst_state = NaClInstIterGetState(iter);
-  NaClDisallowsFlags disallows_flags = NaClInstStateDisallowsFlags(inst_state);
-  Bool is_legal = NaClInstStateIsNaClLegal(inst_state);
+  NaClInst* inst = NaClInstStateInst(inst_state);
+  NaClDisallowsFlags disallows_flags = NACL_EMPTY_DISALLOWS_FLAGS;
   DEBUG({
       printf("->NaClValidateInstructionLegal\n");
       NaClInstPrint(stdout, NaClInstStateInst(inst_state));
       NaClExpVectorPrint(stdout, NaClInstStateExpVector(inst_state));
     });
-  is_legal = NaClInstStateIsNaClLegal(inst_state);
-  DEBUG(printf("is_legal = %"NACL_PRIdBool"\n", is_legal));
-  if (is_legal) {
-    /* Check other forms to disallow. */
-    NaClInst* inst = NaClInstStateInst(inst_state);
-    switch (inst->insttype) {
-      case NACLi_RETURN:
-      case NACLi_EMMX:
-        /* EMMX needs to be supported someday but isn't ready yet. */
-      case NACLi_INVALID:
-      case NACLi_ILLEGAL:
-      case NACLi_SYSTEM:
-      case NACLi_RDMSR:
-      case NACLi_RDTSCP:
-      case NACLi_SYSCALL:
-      case NACLi_SYSENTER:
-      case NACLi_LONGMODE:
-      case NACLi_SVM:
-      case NACLi_3BYTE:
-      case NACLi_CMPXCHG16B:
-      case NACLi_UNDEFINED:
-        is_legal = FALSE;
-        DEBUG(printf("is_legal = %"NACL_PRIdBool"\n", is_legal));
-        break;
-      default:
-        break;
-    }
+
+  /* Don't allow more than one (non-REX) prefix. */
+  num_prefix_bytes = inst_state->num_prefix_bytes;
+  if (inst_state->rexprefix) --num_prefix_bytes;
+
+  /* Don't allow an invalid instruction. */
+  if (!NaClInstStateIsValid(inst_state)) {
+    is_legal = FALSE;
+    disallows_flags |= NACL_DISALLOWS_FLAG(NaClMarkedInvalid);
+    DEBUG(printf("invalid instruction opcode found\n"));
+  }
+
+  /* Note: Explicit NOP sequences that use multiple 66 values are
+   * recognized as special cases, and need not be processed here.
+   */
+  if (num_prefix_bytes > 1) {
+    is_legal = FALSE;
+    disallows_flags |= NACL_DISALLOWS_FLAG(NaClTooManyPrefixBytes);
+    DEBUG(printf("too many prefix bytes\n"));
+  }
+
+  /* Check other forms to disallow. */
+  switch (inst->insttype) {
+    case NACLi_RETURN:
+    case NACLi_EMMX:
+      /* EMMX needs to be supported someday but isn't ready yet. */
+    case NACLi_ILLEGAL:
+    case NACLi_SYSTEM:
+    case NACLi_RDMSR:
+    case NACLi_RDTSCP:
+    case NACLi_LONGMODE:
+    case NACLi_SVM:
+    case NACLi_3BYTE:
+    case NACLi_CMPXCHG16B:
+    case NACLi_UNDEFINED:
+      is_legal = FALSE;
+      disallows_flags |= NACL_DISALLOWS_FLAG(NaClMarkedIllegal);
+      DEBUG(printf("mark instruction as NaCl illegal\n"));
+      break;
+    case NACLi_INVALID:
+      is_legal = FALSE;
+      disallows_flags |= NACL_DISALLOWS_FLAG(NaClMarkedInvalid);
+      DEBUG(printf("invalid instruction opcode found\n"));
+      break;
+    case NACLi_SYSCALL:
+    case NACLi_SYSENTER:
+      is_legal = FALSE;
+      disallows_flags |= NACL_DISALLOWS_FLAG(NaClMarkedSystem);
+      DEBUG(printf("system instruction not allowed\n"));
+      break;
+    default:
+      break;
+  }
+  if (NACL_IFLAG(NaClIllegal) & inst->flags) {
+    is_legal = FALSE;
+    disallows_flags |= NACL_DISALLOWS_FLAG(NaClMarkedIllegal);
+    DEBUG(printf("mark instruction as NaCl illegal\n"));
   }
   if (inst_state->num_rex_prefixes > 1) {
     /* NOTE: does not apply to NOP, since they are parsed using
@@ -78,6 +110,22 @@ void NaClValidateInstructionLegal(NaClValidatorState* state,
     is_legal = FALSE;
     disallows_flags |= NACL_DISALLOWS_FLAG(NaClCantUsePrefix67);
     DEBUG(printf("use of 67 (ADDR16) prefix not allowed\n"));
+  }
+  if (NACL_TARGET_SUBARCH == 64) {
+    /* Don't allow CS, DS, ES, or SS prefix overrides,
+     * since it has no effect, unless explicitly stated
+     * otherwise.
+     */
+    if (inst_state->prefix_mask &
+        (kPrefixSEGCS | kPrefixSEGSS | kPrefixSEGES |
+         kPrefixSEGDS)) {
+      if (NACL_EMPTY_IFLAGS ==
+          (inst->flags & NACL_IFLAG(IgnorePrefixSEGCS))) {
+        is_legal = FALSE;
+        disallows_flags |= NACL_DISALLOWS_FLAG(NaClHasBadSegmentPrefix);
+        DEBUG(printf("segment prefix disallowed\n"));
+      }
+    }
   }
   if (!is_legal) {
     /* Print out error message for each reason the instruction is disallowed. */

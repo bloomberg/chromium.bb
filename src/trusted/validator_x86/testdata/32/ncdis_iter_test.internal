@@ -88,7 +88,7 @@ NaClExpVector[10] = {
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0, ExprSize8 },
 };
-00000000: d5 0a                                        aad; *NACL Disallows!*
+00000000: d5 0a                                        aad
   { NoPrefix, {  0xd5 }, Aad,  NACLi_ILLEGAL,
     NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(Opcode32Only),
     { RegAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },

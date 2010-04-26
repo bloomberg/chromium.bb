@@ -1,0 +1,5 @@
+0000000000000000: 63 c6                                        movsxd %eax, %esi
+ERROR: This instruction has been marked illegal by Native Client
+Checking jump targets: 0 to 2
+Checking that basic blocks are aligned
+***MODULE IS UNSAFE***
