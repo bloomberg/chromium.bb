@@ -3,11 +3,24 @@
 Use the <code>chrome.history</code> module to interact with the 
 browser's record of visited pages.  You can add, remove, and query
 for URLs in the browser's history.
-
 To override the history page with your own version, see 
 <a href="override.html">Override Pages</a>.
-
 </p>
+
+<h2 id="manifest">Manifest</h2>
+
+<p>You must declare the "history" permission
+in the <a href="manifest.html">extension manifest</a>
+to use the history API.
+For example:</p>
+<pre>{
+  "name": "My extension",
+  ...
+  <b>"permissions": [
+    "history"
+  ]</b>,
+  ...
+}</pre>
 
 <h2 id="transition_types">Transition types</h2>
 
