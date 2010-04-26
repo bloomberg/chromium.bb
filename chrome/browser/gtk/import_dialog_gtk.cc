@@ -15,6 +15,15 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 
+namespace {
+
+// Returns true if the checkbox is checked.
+gboolean IsChecked(GtkWidget* widget) {
+  return gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+}
+
+}   // namespace
+
 // static
 void ImportDialogGtk::Show(GtkWindow* parent, Profile* profile,
                            int initial_state) {
@@ -93,24 +102,32 @@ ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile,
   gtk_box_pack_start(GTK_BOX(vbox), bookmarks_, FALSE, FALSE, 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bookmarks_),
       (initial_state_ & importer::FAVORITES) != 0);
+  g_signal_connect(bookmarks_, "toggled",
+                   G_CALLBACK(OnDialogWidgetClickedThunk), this);
 
   search_engines_ = gtk_check_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_IMPORT_SEARCH_ENGINES_CHKBOX).c_str());
   gtk_box_pack_start(GTK_BOX(vbox), search_engines_, FALSE, FALSE, 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(search_engines_),
       (initial_state_ & importer::SEARCH_ENGINES) != 0);
+  g_signal_connect(search_engines_, "toggled",
+                   G_CALLBACK(OnDialogWidgetClickedThunk), this);
 
   passwords_ = gtk_check_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_IMPORT_PASSWORDS_CHKBOX).c_str());
   gtk_box_pack_start(GTK_BOX(vbox), passwords_, FALSE, FALSE, 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(passwords_),
       (initial_state_ & importer::PASSWORDS) != 0);
+  g_signal_connect(passwords_, "toggled",
+                   G_CALLBACK(OnDialogWidgetClickedThunk), this);
 
   history_ = gtk_check_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_IMPORT_HISTORY_CHKBOX).c_str());
   gtk_box_pack_start(GTK_BOX(vbox), history_, FALSE, FALSE, 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(history_),
       (initial_state_ & importer::HISTORY) !=0);
+  g_signal_connect(history_, "toggled",
+                   G_CALLBACK(OnDialogWidgetClickedThunk), this);
 
   gtk_box_pack_start(GTK_BOX(content_area), vbox, FALSE, FALSE, 0);
 
@@ -136,7 +153,10 @@ ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile,
   gtk_combo_box_set_active(GTK_COMBO_BOX(combo_), 0);
 
   g_signal_connect(dialog_, "response",
-                   G_CALLBACK(HandleOnResponseDialog), this);
+                   G_CALLBACK(OnDialogResponseThunk), this);
+
+  UpdateDialogButtons();
+
   gtk_widget_show_all(dialog_);
 }
 
@@ -146,16 +166,7 @@ ImportDialogGtk::~ImportDialogGtk() {
 void ImportDialogGtk::OnDialogResponse(GtkWidget* widget, int response) {
   gtk_widget_hide_all(dialog_);
   if (response == GTK_RESPONSE_ACCEPT) {
-    uint16 items = importer::NONE;
-    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(bookmarks_)))
-      items |= importer::FAVORITES;
-    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(search_engines_)))
-      items |= importer::SEARCH_ENGINES;
-    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(passwords_)))
-      items |= importer::PASSWORDS;
-    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(history_)))
-      items |= importer::HISTORY;
-
+    uint16 items = GetCheckedItems();
     if (items == 0) {
       ImportComplete();
     } else {
@@ -168,4 +179,26 @@ void ImportDialogGtk::OnDialogResponse(GtkWidget* widget, int response) {
   } else {
     ImportCanceled();
   }
+}
+
+void ImportDialogGtk::OnDialogWidgetClicked(GtkWidget* widget) {
+  UpdateDialogButtons();
+}
+
+void ImportDialogGtk::UpdateDialogButtons() {
+  gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog_), GTK_RESPONSE_ACCEPT,
+                                    GetCheckedItems() != 0);
+}
+
+uint16 ImportDialogGtk::GetCheckedItems() {
+  uint16 items = importer::NONE;
+  if (IsChecked(bookmarks_))
+    items |= importer::FAVORITES;
+  if (IsChecked(search_engines_))
+    items |= importer::SEARCH_ENGINES;
+  if (IsChecked(passwords_))
+    items |= importer::PASSWORDS;
+  if (IsChecked(history_))
+    items |= importer::HISTORY;
+  return items;
 }

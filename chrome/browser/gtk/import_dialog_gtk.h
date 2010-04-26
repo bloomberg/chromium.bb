@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_GTK_IMPORT_DIALOG_GTK_H_
 #define CHROME_BROWSER_GTK_IMPORT_DIALOG_GTK_H_
 
+#include "app/gtk_signal.h"
 #include "chrome/browser/importer/importer.h"
 
 class AccessibleWidgetHelper;
@@ -25,12 +26,18 @@ class ImportDialogGtk : public ImportObserver {
   ImportDialogGtk(GtkWindow* parent, Profile* profile, int initial_state);
   ~ImportDialogGtk();
 
-  static void HandleOnResponseDialog(GtkWidget* widget,
-                                     int response,
-                                     ImportDialogGtk* user_data) {
-    user_data->OnDialogResponse(widget, response);
-  }
-  void OnDialogResponse(GtkWidget* widget, int response);
+  // Handler to respond to OK or Cancel responses from the dialog.
+  CHROMEGTK_CALLBACK_1(ImportDialogGtk, void, OnDialogResponse, int);
+
+  // Handler to respond to widget clicked actions from the dialog.
+  CHROMEGTK_CALLBACK_0(ImportDialogGtk, void, OnDialogWidgetClicked);
+
+  // Enable or disable the dialog buttons depending on the state of the
+  // checkboxes.
+  void UpdateDialogButtons();
+
+  // Create a bitmask from the checkboxes of the dialog.
+  uint16 GetCheckedItems();
 
   // Parent window
   GtkWindow* parent_;
