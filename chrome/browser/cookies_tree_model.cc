@@ -409,11 +409,15 @@ void CookiesTreeModel::DeleteAllStoredObjects() {
 }
 
 void CookiesTreeModel::DeleteCookieNode(CookieTreeNode* cookie_node) {
+  if (cookie_node == GetRoot())
+    return;
   cookie_node->DeleteStoredObjects();
   // find the parent and index
   CookieTreeNode* parent_node = cookie_node->GetParent();
   int cookie_node_index = parent_node->IndexOfChild(cookie_node);
   delete Remove(parent_node, cookie_node_index);
+  if (parent_node->GetChildCount() == 0)
+    DeleteCookieNode(parent_node);
 }
 
 void CookiesTreeModel::UpdateSearchResults(const std::wstring& filter) {

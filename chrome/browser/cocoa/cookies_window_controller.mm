@@ -298,14 +298,9 @@ bool CookiesTreeModelObserverBridge::HasCocoaModel() {
   // node to select.
   if (![[treeController_ selectedObjects] count]) {
     NSUInteger lastIndex = [path indexAtPosition:[path length] - 1];
-    if (lastIndex == 0) {
-      // If this was the only child node, then perform a delete again to
-      // remove the parent. When the path becomes empty, we're done.
-      path = [path indexPathByRemovingLastIndex];
-      if ([path length])
-        [self deleteNodeAtIndexPath:path];
-    } else {
-      // Otherwise, select the node that is in the list before this one.
+    if (lastIndex != 0) {
+      // If there any nodes remaining, select the node that is in the list
+      // before this one.
       path = [path indexPathByRemovingLastIndex];
       path = [path indexPathByAddingIndex:lastIndex - 1];
       [treeController_ setSelectionIndexPath:path];
