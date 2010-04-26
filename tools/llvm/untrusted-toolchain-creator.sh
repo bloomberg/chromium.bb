@@ -30,6 +30,11 @@ set -o errexit
 # NOTE: gcc and llvm have to be synchronized
 #       we have chosen toolchains which both are based on gcc-4.2.1
 
+readonly CS_URL=http://www.codesourcery.com/sgpp/lite/arm/portal/package1787/\
+public/arm-none-linux-gnueabi/\
+arm-2007q3-51-arm-none-linux-gnueabi-i686-pc-linux-gnu.tar.bz2
+
+
 readonly INSTALL_ROOT=$(pwd)/toolchain/linux_arm-untrusted
 readonly CROSS_TARGET=arm-none-linux-gnueabi
 readonly LLVM_INSTALL_DIR="${INSTALL_ROOT}/${CROSS_TARGET}/llvm"
@@ -37,7 +42,7 @@ readonly LLVMGCC_INSTALL_DIR="${INSTALL_ROOT}/${CROSS_TARGET}/llvm-gcc-4.2"
 # NOTE: NEWLIB_INSTALL_DIR also server as a SYSROOT
 readonly NEWLIB_INSTALL_DIR="${INSTALL_ROOT}/arm-newlib"
 readonly DRIVER_INSTALL_DIR="${INSTALL_ROOT}/${CROSS_TARGET}"
-readonly BINUTILS_INSTALL_DIR="${INSTALL_ROOT}/binutils"
+readonly CODE_SOURCERY_ROOT="${INSTALL_ROOT}/codesourcery/arm-2007q3"
 
 # TODO(robertm): get the code from a repo rather than use tarball + patch
 readonly LLVMGCC_TARBALL=$(pwd)/../third_party/llvm/llvm-gcc-4.2-88663.tar.bz2
@@ -49,8 +54,6 @@ readonly LLVMGCC_SFI_PATCH2=$(pwd)/tools/patches/libgcc-arm-libunwind.patch
 readonly LLVM_TARBALL=$(pwd)/../third_party/llvm/llvm-88663.tar.bz2
 readonly LLVM_SFI_PATCH=$(pwd)/tools/patches/llvm-r88663.patch
 
-readonly BINUTILS_GAS_PATCH=$(pwd)/tools/patches/binutils-2.20-gas.patch
-
 # TODO(robertm): get the code from a repo rather than use tarball + patch
 readonly NEWLIB_TARBALL=$(pwd)/../third_party/newlib/newlib-1.17.0.tar.gz
 readonly NEWLIB_PATCH=$(pwd)/tools/patches/newlib-1.17.0_arm.patch
@@ -61,15 +64,17 @@ readonly MAKE_OPTS="-j8 VERBOSE=1"
 readonly TMP=/tmp/crosstool-untrusted
 
 
+export CODE_SOURCERY_PKG_PATH=${INSTALL_ROOT}/codesourcery
+
 # These are simple compiler wrappers to force 32bit builds
 readonly  CC32=$(readlink -f tools/llvm/mygcc32)
 readonly  CXX32=$(readlink -f tools/llvm/myg++32)
 
-readonly CROSS_TARGET_AR=${BINUTILS_INSTALL_DIR}/bin/${CROSS_TARGET}-ar
-readonly CROSS_TARGET_AS=${BINUTILS_INSTALL_DIR}/bin/${CROSS_TARGET}-as
-readonly CROSS_TARGET_LD=${BINUTILS_INSTALL_DIR}/bin/${CROSS_TARGET}-ld
-readonly CROSS_TARGET_NM=${BINUTILS_INSTALL_DIR}/bin/${CROSS_TARGET}-nm
-readonly CROSS_TARGET_RANLIB=${BINUTILS_INSTALL_DIR}/bin/${CROSS_TARGET}-ranlib
+readonly CROSS_TARGET_AR=${CODE_SOURCERY_ROOT}/bin/${CROSS_TARGET}-ar
+readonly CROSS_TARGET_AS=${CODE_SOURCERY_ROOT}/bin/${CROSS_TARGET}-as
+readonly CROSS_TARGET_LD=${CODE_SOURCERY_ROOT}/bin/${CROSS_TARGET}-ld
+readonly CROSS_TARGET_NM=${CODE_SOURCERY_ROOT}/bin/${CROSS_TARGET}-nm
+readonly CROSS_TARGET_RANLIB=${CODE_SOURCERY_ROOT}/bin/${CROSS_TARGET}-ranlib
 readonly ILLEGAL_TOOL=${DRIVER_INSTALL_DIR}/llvm-fake-illegal
 
 # NOTE: this tools.sh defines: LD_FOR_TARGET, CC_FOR_TARGET, CXX_FOR_TARGET, ...
@@ -192,6 +197,24 @@ CreateTarBall() {
   tar zcf ${tarball} -C ${INSTALL_ROOT} .
 }
 
+
+PruneCodeSourcery() {
+  Banner "pruning code sourcery tree"
+  local CS_ROOT=${INSTALL_ROOT}/codesourcery/arm-2007q3
+  SubBanner "Size before: $(du -msc  ${CS_ROOT})"
+  rm -rf ${CS_ROOT}/share
+  rm -rf ${CS_ROOT}/libexec
+  # only delete cc,c++,g++,gdb,gcov
+  rm -f ${CS_ROOT}/bin/arm-none-linux-gnueabi-[cg]*
+  rm -rf ${CS_ROOT}/lib
+  rm -rf ${CS_ROOT}/include
+  rm -rf ${CS_ROOT}/arm-none-linux-gnueabi/libc
+  rm -rf ${CS_ROOT}/arm-none-linux-gnueabi/include
+  rm -rf ${CS_ROOT}/arm-none-linux-gnueabi/lib
+
+  SubBanner "Size after: $(du -msc  ${CS_ROOT})"
+}
+
 # try to keep the tarball small
 PruneLLVM() {
   Banner "pruning llvm sourcery tree"
@@ -200,6 +223,17 @@ PruneLLVM() {
   rm  -f ${LLVM_ROOT}/llvm/lib/lib*.a
   SubBanner "Size after: $(du -msc  ${LLVM_ROOT})"
 }
+
+# we mostly need the cross binutils from this toolchain
+DownloadOrCopyCodeSourceryTarballAndInstall() {
+  Banner "Install codesourcery toolchain in ${CODE_SOURCERY_ROOT}"
+  mkdir -p ${CODE_SOURCERY_ROOT}
+  local tarball="${TMP}/${CS_URL##*/}"
+  DownloadOrCopy ${CS_URL} ${tarball}
+  Run "Untaring" tar jxf ${tarball} -C ${CODE_SOURCERY_ROOT}/..
+  du -msc ${CODE_SOURCERY_ROOT}
+}
+
 
 # Build basic llvm tools
 ConfigureAndBuildLlvm() {
@@ -349,21 +383,20 @@ ConfigureAndBuildGccStage1() {
                --disable-shared \
                --target=${CROSS_TARGET} \
                --with-arch=armv6 \
-               --with-fpu=vfp \
                --with-as=${CROSS_TARGET_AS} \
                --with-ld=${CROSS_TARGET_LD}
 
- # NOTE: we add ${BINUTILS_INSTALL_DIR}/bin to PATH
+ # NOTE: we add ${CODE_SOURCERY_ROOT}/bin to PATH
  RunWithLog "Make" ${TMP}/llvm-pregcc.make.log \
-      env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
+      env -i PATH=/usr/bin/:/bin:${CODE_SOURCERY_ROOT}/bin \
              CC=${CC32} \
              CXX=${CXX32} \
              CFLAGS="-Dinhibit_libc" \
              make ${MAKE_OPTS} all
 
- # NOTE: we add ${BINUTILS_INSTALL_DIR}/bin to PATH
+ # NOTE: we add ${CODE_SOURCERY_ROOT}/bin to PATH
  RunWithLog "Install" ${TMP}/llvm-pregcc.install.log \
-      env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
+      env -i PATH=/usr/bin/:/bin:${CODE_SOURCERY_ROOT}/bin \
              CC=${CC32} \
              CXX=${CXX32} \
              CFLAGS="-Dinhibit_libc" \
@@ -395,11 +428,11 @@ BuildLibgcc() {
   cd ${tmpdir}/gcc
 
   Run "Build libgcc clean"\
-      env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
+      env -i PATH=/usr/bin/:/bin:${CODE_SOURCERY_ROOT}/bin \
              make clean-target-libgcc
 
   RunWithLog "Build libgcc" ${TMP}/llvm-gcc.make_libgcc.log \
-      env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
+      env -i PATH=/usr/bin/:/bin:${CODE_SOURCERY_ROOT}/bin \
              make \
              "${STD_ENV_FOR_GCC_ETC[@]}" \
              ${MAKE_OPTS} libgcc.a
@@ -412,7 +445,7 @@ BuildLibiberty() {
   cd ${tmpdir}
   # maybe clean libiberty first
   RunWithLog "Build libiberty" ${TMP}/llvm-gcc.make_libiberty.log \
-      env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
+      env -i PATH=/usr/bin/:/bin:${CODE_SOURCERY_ROOT}/bin \
              make \
              "${STD_ENV_FOR_GCC_ETC[@]}" \
              ${MAKE_OPTS} all-target-libiberty
@@ -451,7 +484,7 @@ BuildLibstdcpp() {
   cd ${cpp_build_dir}
 
   RunWithLog "Configure libstdc++" ${TMP}/llvm-gcc.configure_libstdcpp.log \
-      env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
+      env -i PATH=/usr/bin/:/bin:${CODE_SOURCERY_ROOT}/bin \
         "${STD_ENV_FOR_LIBSTDCPP[@]}" \
         ${src_dir}/libstdc++-v3/configure \
           --host=arm-none-linux-gnueabi \
@@ -470,13 +503,13 @@ BuildLibstdcpp() {
           --srcdir=${src_dir}/libstdc++-v3
 
   RunWithLog "Make libstdc++" ${TMP}/llvm-gcc.make_libstdcpp.log \
-    env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
+    env -i PATH=/usr/bin/:/bin:${CODE_SOURCERY_ROOT}/bin \
         make \
         "${STD_ENV_FOR_LIBSTDCPP[@]}" \
         ${MAKE_OPTS}
 
 #  RunWithLog "Install libstdc++" ${TMP}/llvm-gcc.install_libstdcpp.log \
-#    env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
+#    env -i PATH=/usr/bin/:/bin:${CODE_SOURCERY_ROOT}/bin \
 #      make  ${MAKE_OPTS} install
 }
 
@@ -527,13 +560,12 @@ ConfigureAndBuildGccStage2() {
                --disable-shared \
                --target=${CROSS_TARGET} \
                --with-arch=armv6 \
-               --with-fpu=vfp \
                --with-sysroot=${NEWLIB_INSTALL_DIR} \
                --with-as=${CROSS_TARGET_AS} \
                --with-ld=${CROSS_TARGET_LD}
 
  RunWithLog "Make" ${TMP}/llvm-gcc.make.log \
-      env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
+      env -i PATH=/usr/bin/:/bin:${CODE_SOURCERY_ROOT}/bin \
              make \
              "${STD_ENV_FOR_GCC_ETC[@]}" \
              ${MAKE_OPTS} all-gcc
@@ -569,7 +601,7 @@ ConfigureAndBuildGccStage3() {
 
   cd ${tmpdir}/build
   RunWithLog "Make" ${TMP}/llvm-gcc.install.log \
-      env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
+      env -i PATH=/usr/bin/:/bin:${CODE_SOURCERY_ROOT}/bin \
              make \
              "${STD_ENV_FOR_GCC_ETC[@]}" \
              install
@@ -713,46 +745,6 @@ STD_ENV_FOR_NEWLIB=(
     STRIP_FOR_TARGET="${ILLEGAL_TOOL}")
 
 #
-BuildAndInstallBinutils() {
-  local saved_dir=$(pwd)
-  local tmpdir="${TMP}/binutils.nacl"
-  local tarball=$(readlink -f ../third_party/binutils/binutils-2.20.tar.bz2)
-
-  Banner "Building binutils"
-
-  rm -rf ${tmpdir}
-  mkdir ${tmpdir}
-  mkdir ${tmpdir}/build
-  mkdir ${tmpdir}/src
-  cd ${tmpdir}/src
-  tar xf ${tarball}
-  SubBanner "patching binutils"
-  cd binutils-2.20
-  patch -p1 < ${BINUTILS_GAS_PATCH}
-  cd ../../build
-
-  # --enable-checking is to avoid a build failure:
-  #   tc-arm.c:2489: warning: empty body in an if-statement
-  RunWithLog "Configuring binutils"  ${TMP}/binutils.configure.log \
-    env -i \
-    PATH="/usr/bin:/bin" \
-    ../src/binutils-2.20/configure --prefix=${BINUTILS_INSTALL_DIR} \
-                                   --target=${CROSS_TARGET} \
-                                   --enable-checking \
-                                   --with-sysroot=${NEWLIB_INSTALL_DIR}
-
-  RunWithLog "Make binutils" ${TMP}/binutils.make.log \
-    env -i PATH="/usr/bin:/bin" \
-    make ${MAKE_OPTS}
-
-  RunWithLog "Install binutils"  ${TMP}/binutils.install.log \
-    env -i PATH="/usr/bin:/bin" \
-      make \
-      install ${MAKE_OPTS}
-
-  cd ${saved_dir}
-}
-
 BuildAndInstallNewlib() {
   local saved_dir=$(pwd)
   local tmpdir=${TMP}/newlib
@@ -906,7 +898,8 @@ if [ ${MODE} = 'untrusted_sdk' ] ; then
   ClearInstallDir
   RecordRevisionInfo
 
-  BuildAndInstallBinutils
+  DownloadOrCopyCodeSourceryTarballAndInstall
+  PruneCodeSourcery
 
   ConfigureAndBuildLlvm
   UntarPatchConfigureAndBuildSfiLlc
@@ -935,6 +928,15 @@ if [ ${MODE} = 'untrusted_sdk' ] ; then
 
   CreateTarBall $1
 
+  exit 0
+fi
+
+#@
+#@ install-cs
+#@
+#@   download and install codesourcery toolchain
+if [ ${MODE} = 'install-cs' ] ; then
+  DownloadOrCopyCodeSourceryTarballAndInstall
   exit 0
 fi
 
@@ -1071,6 +1073,7 @@ fi
 #@
 #@   prune tree to make tarball smaller
 if [ ${MODE} = 'prune' ] ; then
+  PruneCodeSourcery
   PruneLLVM
   exit 0
 fi

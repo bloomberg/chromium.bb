@@ -60,7 +60,7 @@ LIBDIR_ARM_1 = BASE + '/arm-none-linux-gnueabi/llvm-gcc-4.2/lib/gcc/arm-none-lin
 REACHABLE_FUNCTION_SYMBOLS = LIBDIR_ARM_2 + '/reachable_function_symbols.o'
 
 # Note: this works around an assembler bug that has been fixed only recently
-# TODO(espindola): check if we can drop this now.
+# We probably can drop this once we have switched to codesourcery 2009Q4
 HACK_ASM = ['sed', '-e', 's/vmrs.*apsr_nzcv, fpscr/fmrx r15, fpscr/g']
 
 PNACL_ARM_ROOT =  BASE + '/../pnacl-untrusted/arm'
@@ -212,12 +212,13 @@ LLVM_LD = BASE + '/arm-none-linux-gnueabi/llvm/bin/llvm-ld'
 
 OPT = BASE + '/arm-none-linux-gnueabi/llvm/bin/opt'
 
-AS_ARM = BASE + '/binutils/arm-none-linux-gnueabi/bin/as'
+# NOTE: from code sourcery
+AS_ARM = BASE + '/codesourcery/arm-2007q3/arm-none-linux-gnueabi/bin/as'
 
 # NOTE: hack, assuming presence of x86/32 toolchain
 AS_X8632 = BASE + '/../linux_x86/sdk/nacl-sdk/bin/nacl64-as'
 
-LD_ARM = BASE + '/binutils/arm-none-linux-gnueabi/bin/ld'
+LD_ARM = BASE + '/codesourcery/arm-2007q3/arm-none-linux-gnueabi/bin/ld'
 
 # NOTE: hack, assuming presence of x86/32 toolchain expected
 # TODO(robertm): clean this up - we may not need separate linkers
@@ -288,8 +289,7 @@ def SfiCompile(argv, out_pos, mode):
 
   Run(HACK_ASM + ['-i.orig', filename + '.s'])
 
-  # we use llvm-gcc since it knows the correct mfpu and march to use
-  Run([LLVM_GCC] + [filename + '.s', '-c', '-o', filename])
+  Run([AS_ARM] + [filename + '.s', '-o', filename])
 
 
 def PatchAbiVersionIntoElfHeader(filename, alignment):
