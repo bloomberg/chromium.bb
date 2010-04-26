@@ -960,8 +960,6 @@
         'browser/sync/util/crypto_helpers.cc',
         'browser/sync/util/crypto_helpers.h',
         'browser/sync/util/dbgq.h',
-        'browser/sync/util/event_sys-inl.h',
-        'browser/sync/util/event_sys.h',
         'browser/sync/util/extensions_activity_monitor.cc',
         'browser/sync/util/extensions_activity_monitor.h',
         'browser/sync/util/fast_dump.h',

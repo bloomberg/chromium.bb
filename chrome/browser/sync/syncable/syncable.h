@@ -27,9 +27,9 @@
 #include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/dbgq.h"
-#include "chrome/browser/sync/util/event_sys.h"
 #include "chrome/browser/sync/util/row_iterator.h"
 #include "chrome/browser/sync/util/sync_types.h"
+#include "chrome/common/deprecated/event_sys.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
 struct PurgeInfo;

@@ -8,8 +8,8 @@
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
-#include "chrome/browser/sync/util/event_sys-inl.h"
 #include "chrome/browser/sync/util/user_settings.h"
+#include "chrome/common/deprecated/event_sys-inl.h"
 
 namespace browser_sync {
 

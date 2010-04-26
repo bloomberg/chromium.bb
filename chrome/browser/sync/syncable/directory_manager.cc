@@ -12,7 +12,7 @@
 #include "base/port.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/browser/sync/util/event_sys-inl.h"
+#include "chrome/common/deprecated/event_sys-inl.h"
 
 namespace syncable {
 

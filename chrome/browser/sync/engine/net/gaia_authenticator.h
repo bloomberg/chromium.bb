@@ -27,8 +27,8 @@
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "chrome/browser/sync/engine/net/http_return.h"
-#include "chrome/browser/sync/util/event_sys.h"
 #include "chrome/browser/sync/util/signin.h"
+#include "chrome/common/deprecated/event_sys.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 

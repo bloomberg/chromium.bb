@@ -12,7 +12,7 @@
 #include "chrome/browser/sync/engine/net/http_return.h"
 #include "chrome/browser/sync/notifier/listener/talk_mediator_impl.h"
 #include "chrome/browser/sync/util/user_settings.h"
-#include "chrome/browser/sync/util/event_sys-inl.h"
+#include "chrome/common/deprecated/event_sys-inl.h"
 #include "chrome/test/sync/engine/mock_server_connection.h"
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
 #include "testing/gtest/include/gtest/gtest.h"

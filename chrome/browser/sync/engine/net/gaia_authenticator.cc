@@ -14,7 +14,7 @@
 #include "chrome/browser/sync/engine/all_status.h"
 #include "chrome/browser/sync/engine/net/http_return.h"
 #include "chrome/browser/sync/engine/net/url_translator.h"
-#include "chrome/browser/sync/util/event_sys-inl.h"
+#include "chrome/common/deprecated/event_sys-inl.h"
 #include "googleurl/src/gurl.h"
 
 using std::pair;

@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/sync/notifier/listener/mediator_thread_mock.h"
 #include "chrome/browser/sync/notifier/listener/talk_mediator_impl.h"
-#include "chrome/browser/sync/util/event_sys-inl.h"
+#include "chrome/common/deprecated/event_sys-inl.h"
 #include "talk/xmpp/xmppengine.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

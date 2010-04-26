@@ -13,8 +13,8 @@
 #include "chrome/browser/sync/notifier/listener/talk_mediator.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/browser/sync/util/event_sys-inl.h"
 #include "chrome/browser/sync/util/user_settings.h"
+#include "chrome/common/deprecated/event_sys-inl.h"
 
 // How authentication happens:
 //

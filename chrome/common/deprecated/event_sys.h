@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_UTIL_EVENT_SYS_H_
-#define CHROME_BROWSER_SYNC_UTIL_EVENT_SYS_H_
+#ifndef CHROME_COMMON_DEPRECATED_EVENT_SYS_H_
+#define CHROME_COMMON_DEPRECATED_EVENT_SYS_H_
+
+// TODO: This class should be removed or moved to Notifier code.
+// See Bug 42450 (http://code.google.com/p/chromium/issues/detail?id=42450).
 
 class AutoLock;
 class Lock;
@@ -39,4 +42,4 @@ EventListenerHookup* NewEventListenerHookup(EventChannel* channel,
                                             CallbackMethod cbmethod,
                                             CallbackArg0 arg0);
 
-#endif  // CHROME_BROWSER_SYNC_UTIL_EVENT_SYS_H_
+#endif  // CHROME_COMMON_DEPRECATED_EVENT_SYS_H_

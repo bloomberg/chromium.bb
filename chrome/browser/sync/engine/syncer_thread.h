@@ -25,7 +25,7 @@
 #include "chrome/browser/sync/engine/idle_query_linux.h"
 #endif
 #include "chrome/browser/sync/sessions/sync_session.h"
-#include "chrome/browser/sync/util/event_sys-inl.h"
+#include "chrome/common/deprecated/event_sys-inl.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
 class EventListenerHookup;

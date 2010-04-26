@@ -18,9 +18,9 @@
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_event.h"
 #include "chrome/browser/sync/util/closure.h"
-#include "chrome/browser/sync/util/event_sys-inl.h"
-#include "chrome/browser/sync/util/event_sys.h"
 #include "chrome/browser/sync/util/extensions_activity_monitor.h"
+#include "chrome/common/deprecated/event_sys.h"
+#include "chrome/common/deprecated/event_sys-inl.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
 namespace syncable {

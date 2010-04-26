@@ -28,7 +28,7 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/closure.h"
-#include "chrome/browser/sync/util/event_sys-inl.h"
+#include "chrome/common/deprecated/event_sys-inl.h"
 #include "chrome/test/sync/engine/mock_server_connection.h"
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
 #include "chrome/test/sync/engine/test_id_factory.h"

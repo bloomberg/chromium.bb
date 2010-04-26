@@ -17,8 +17,8 @@
 #include "base/thread.h"
 #include "chrome/browser/sync/engine/net/gaia_authenticator.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
-#include "chrome/browser/sync/util/event_sys.h"
 #include "chrome/browser/sync/util/sync_types.h"
+#include "chrome/common/deprecated/event_sys.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
 namespace syncable {

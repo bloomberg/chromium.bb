@@ -13,7 +13,7 @@
 #include "base/platform_thread.h"
 #include "base/port.h"
 #include "build/build_config.h"
-#include "chrome/browser/sync/util/event_sys-inl.h"
+#include "chrome/common/deprecated/event_sys-inl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::endl;

@@ -47,8 +47,8 @@
 #include "chrome/browser/sync/syncable/syncable_changes_version.h"
 #include "chrome/browser/sync/syncable/syncable_columns.h"
 #include "chrome/browser/sync/util/crypto_helpers.h"
-#include "chrome/browser/sync/util/event_sys-inl.h"
 #include "chrome/browser/sync/util/fast_dump.h"
+#include "chrome/common/deprecated/event_sys-inl.h"
 
 namespace {
 enum InvariantCheckLevel {

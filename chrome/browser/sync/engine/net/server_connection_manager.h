@@ -16,9 +16,9 @@
 #include "base/string_util.h"
 #include "chrome/browser/sync/engine/net/http_return.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
-#include "chrome/browser/sync/util/event_sys.h"
 #include "chrome/browser/sync/util/signin.h"
 #include "chrome/browser/sync/util/sync_types.h"
+#include "chrome/common/deprecated/event_sys.h"
 
 namespace syncable {
 class WriteTransaction;

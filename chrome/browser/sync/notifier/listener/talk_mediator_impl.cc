@@ -6,10 +6,8 @@
 
 #include "base/logging.h"
 #include "base/singleton.h"
-#include "chrome/browser/sync/engine/auth_watcher.h"
-#include "chrome/browser/sync/engine/syncer_thread.h"
 #include "chrome/browser/sync/notifier/listener/mediator_thread_impl.h"
-#include "chrome/browser/sync/util/event_sys-inl.h"
+#include "chrome/common/deprecated/event_sys-inl.h"
 #include "talk/base/cryptstring.h"
 #include "talk/base/ssladapter.h"
 #include "talk/xmpp/xmppclientsettings.h"

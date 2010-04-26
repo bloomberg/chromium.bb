@@ -8,7 +8,7 @@
 #include <map>
 #include <vector>
 
-#include "chrome/browser/sync/util/event_sys.h"
+#include "chrome/common/deprecated/event_sys.h"
 
 namespace syncable {
 class BaseTransaction;

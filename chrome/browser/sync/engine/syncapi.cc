@@ -61,9 +61,9 @@
 #include "chrome/browser/sync/util/character_set_converters.h"
 #include "chrome/browser/sync/util/closure.h"
 #include "chrome/browser/sync/util/crypto_helpers.h"
-#include "chrome/browser/sync/util/event_sys.h"
 #include "chrome/browser/sync/util/path_helpers.h"
 #include "chrome/browser/sync/util/user_settings.h"
+#include "chrome/common/deprecated/event_sys.h"
 #include "chrome/common/chrome_switches.h"
 
 #if defined(OS_WIN)

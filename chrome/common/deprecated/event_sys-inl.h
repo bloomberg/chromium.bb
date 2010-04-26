@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_UTIL_EVENT_SYS_INL_H_
-#define CHROME_BROWSER_SYNC_UTIL_EVENT_SYS_INL_H_
+#ifndef CHROME_COMMON_DEPRECATED_EVENT_SYS_INL_H_
+#define CHROME_COMMON_DEPRECATED_EVENT_SYS_INL_H_
 
 #include <map>
 
@@ -14,8 +14,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/port.h"
-#include "chrome/browser/sync/util/event_sys.h"
-#include "chrome/browser/sync/util/sync_types.h"
+#include "chrome/common/deprecated/event_sys.h"
 
 // How to use Channels:
 
@@ -339,4 +338,4 @@ EventListenerHookup* NewEventListenerHookup(EventChannel* channel,
                                                   cbmethod, arg0);
 }
 
-#endif  // CHROME_BROWSER_SYNC_UTIL_EVENT_SYS_INL_H_
+#endif  // CHROME_COMMON_DEPRECATED_EVENT_SYS_INL_H_
