@@ -114,7 +114,7 @@ TEST_F(BoundsAnimatorTest, AnimateViewTo) {
   gfx::Rect initial_bounds(0, 0, 10, 10);
   child()->SetBounds(initial_bounds);
   gfx::Rect target_bounds(10, 10, 20, 20);
-  animator()->AnimateViewTo(child(), target_bounds, false);
+  animator()->AnimateViewTo(child(), target_bounds);
   animator()->SetAnimationDelegate(child(), &delegate, false);
 
   // The animator should be animating now.
@@ -134,7 +134,7 @@ TEST_F(BoundsAnimatorTest, AnimateViewTo) {
 
 // Make sure an AnimationDelegate is deleted when canceled.
 TEST_F(BoundsAnimatorTest, DeleteDelegateOnCancel) {
-  animator()->AnimateViewTo(child(), gfx::Rect(0, 0, 10, 10), false);
+  animator()->AnimateViewTo(child(), gfx::Rect(0, 0, 10, 10));
   animator()->SetAnimationDelegate(child(), new OwnedDelegate(), true);
 
   animator()->Cancel();
@@ -150,10 +150,10 @@ TEST_F(BoundsAnimatorTest, DeleteDelegateOnCancel) {
 // Make sure an AnimationDelegate is deleted when another animation is
 // scheduled.
 TEST_F(BoundsAnimatorTest, DeleteDelegateOnNewAnimate) {
-  animator()->AnimateViewTo(child(), gfx::Rect(0, 0, 10, 10), false);
+  animator()->AnimateViewTo(child(), gfx::Rect(0, 0, 10, 10));
   animator()->SetAnimationDelegate(child(), new OwnedDelegate(), true);
 
-  animator()->AnimateViewTo(child(), gfx::Rect(0, 0, 10, 10), false);
+  animator()->AnimateViewTo(child(), gfx::Rect(0, 0, 10, 10));
 
   // Starting a new animation should both cancel the delegate and delete it.
   EXPECT_TRUE(OwnedDelegate::get_and_clear_deleted());
@@ -164,7 +164,7 @@ TEST_F(BoundsAnimatorTest, DeleteDelegateOnNewAnimate) {
 TEST_F(BoundsAnimatorTest, StopAnimating) {
   scoped_ptr<OwnedDelegate> delegate(new OwnedDelegate());
 
-  animator()->AnimateViewTo(child(), gfx::Rect(0, 0, 10, 10), false);
+  animator()->AnimateViewTo(child(), gfx::Rect(0, 0, 10, 10));
   animator()->SetAnimationDelegate(child(), new OwnedDelegate(), true);
 
   animator()->StopAnimatingView(child());

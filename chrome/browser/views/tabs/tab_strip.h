@@ -471,6 +471,9 @@ class TabStrip : public BaseTabStrip,
   // Whether the new tab button is being displayed.
   bool new_tab_button_enabled_;
 
+  // If true, we're cancelling the animation.
+  bool cancelling_animation_;
+
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };
 

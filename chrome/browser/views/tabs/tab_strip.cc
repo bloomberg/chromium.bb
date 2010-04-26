@@ -249,11 +249,16 @@ TabStrip::TabStrip(TabStripModel* model)
       animation_container_(new AnimationContainer()),
       ALLOW_THIS_IN_INITIALIZER_LIST(bounds_animator_(this)),
       animation_type_(ANIMATION_DEFAULT),
-      new_tab_button_enabled_(true) {
+      new_tab_button_enabled_(true),
+      cancelling_animation_(false) {
   Init();
 }
 
 TabStrip::~TabStrip() {
+  // The animations may reference the tabs. Shut down the animation before we
+  // delete the tabs.
+  StopAnimating(false);
+
   // TODO(beng): (1031854) Restore this line once XPFrame/VistaFrame are dead.
   // model_->RemoveObserver(this);
 
@@ -867,7 +872,7 @@ void TabStrip::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
 
   ResetAnimationState(false);
 
-  if (last_type == ANIMATION_NEW_TAB_2)
+  if (!cancelling_animation_ && last_type == ANIMATION_NEW_TAB_2)
     NewTabAnimation2Done();
 }
 
@@ -1501,15 +1506,12 @@ void TabStrip::AnimateToIdealBounds() {
   for (size_t i = 0; i < tab_data_.size(); ++i) {
     if (!tab_data_[i].tab->closing()) {
       bounds_animator_.AnimateViewTo(tab_data_[i].tab,
-                                     tab_data_[i].ideal_bounds,
-                                     false);
+                                     tab_data_[i].ideal_bounds);
     }
   }
 
   if (animation_type_ != ANIMATION_NEW_TAB_3) {
-    bounds_animator_.AnimateViewTo(newtab_button_,
-                                   newtab_button_bounds_,
-                                   false);
+    bounds_animator_.AnimateViewTo(newtab_button_, newtab_button_bounds_);
   }
 }
 
@@ -1587,7 +1589,7 @@ void TabStrip::StartRemoveTabAnimation(int model_index) {
   // Animate the tab being closed to 0x0.
   gfx::Rect tab_bounds = tab->bounds();
   tab_bounds.set_width(0);
-  bounds_animator_.AnimateViewTo(tab, tab_bounds, false);
+  bounds_animator_.AnimateViewTo(tab, tab_bounds);
 
   // Register delegate to do cleanup when done, BoundsAnimator takes
   // ownership of RemoveTabDelegate.
@@ -1635,7 +1637,9 @@ void TabStrip::StopAnimating(bool layout) {
   if (bounds_animator_.IsAnimating()) {
     // Cancelling the animation triggers OnBoundsAnimatorDone, which invokes
     // ResetAnimationState.
+    cancelling_animation_ = true;
     bounds_animator_.Cancel();
+    cancelling_animation_ = false;
   } else {
     ResetAnimationState(false);
   }

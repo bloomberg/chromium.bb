@@ -31,14 +31,13 @@ BoundsAnimator::~BoundsAnimator() {
     CleanupData(false, &(i->second), i->first);
 }
 
-void BoundsAnimator::AnimateViewTo(View* view,
-                                   const gfx::Rect& target,
-                                   bool delete_when_done) {
+void BoundsAnimator::AnimateViewTo(View* view, const gfx::Rect& target) {
+  DCHECK(view);
   DCHECK_EQ(view->GetParent(), parent_);
 
   Data existing_data;
 
-  if (data_.count(view) > 0) {
+  if (IsAnimating(view)) {
     // Don't immediatly delete the animation, that might trigger a callback from
     // the animationcontainer.
     existing_data = data_[view];
@@ -55,7 +54,6 @@ void BoundsAnimator::AnimateViewTo(View* view,
   data.start_bounds = view->bounds();
   data.target_bounds = target;
   data.animation = CreateAnimation();
-  data.delete_when_done = delete_when_done;
 
   animation_to_view_[data.animation] = view;
 
@@ -66,8 +64,11 @@ void BoundsAnimator::AnimateViewTo(View* view,
 
 void BoundsAnimator::SetAnimationForView(View* view,
                                          SlideAnimation* animation) {
+  DCHECK(animation);
+
   scoped_ptr<SlideAnimation> animation_wrapper(animation);
-  if (data_.find(view) == data_.end())
+
+  if (!IsAnimating(view))
     return;
 
   // We delay deleting the animation until the end so that we don't prematurely
@@ -83,19 +84,20 @@ void BoundsAnimator::SetAnimationForView(View* view,
 }
 
 const SlideAnimation* BoundsAnimator::GetAnimationForView(View* view) {
-  return data_.find(view) == data_.end() ? NULL : data_[view].animation;
+  return !IsAnimating(view) ? NULL : data_[view].animation;
 }
 
 void BoundsAnimator::SetAnimationDelegate(View* view,
                                           AnimationDelegate* delegate,
                                           bool delete_when_done) {
   DCHECK(IsAnimating(view));
+
   data_[view].delegate = delegate;
   data_[view].delete_delegate_when_done = delete_when_done;
 }
 
 void BoundsAnimator::StopAnimatingView(View* view) {
-  if (data_.find(view) == data_.end())
+  if (!IsAnimating(view))
     return;
 
   data_[view].animation->Stop();
@@ -130,6 +132,7 @@ SlideAnimation* BoundsAnimator::CreateAnimation() {
 
 void BoundsAnimator::RemoveFromMaps(View* view) {
   DCHECK(data_.count(view) > 0);
+  DCHECK(animation_to_view_.count(data_[view].animation) > 0);
 
   animation_to_view_.erase(data_[view].animation);
   data_.erase(view);
@@ -144,15 +147,15 @@ void BoundsAnimator::CleanupData(bool send_cancel, Data* data, View* view) {
     data->delegate = NULL;
   }
 
-  if (data->delete_when_done)
-    delete view;
-
-  delete data->animation;
-  data->animation = NULL;
+  if (data->animation) {
+    data->animation->set_delegate(NULL);
+    delete data->animation;
+    data->animation = NULL;
+  }
 }
 
 Animation* BoundsAnimator::ResetAnimationForView(View* view) {
-  if (data_.find(view) == data_.end())
+  if (!IsAnimating(view))
     return NULL;
 
   Animation* old_animation = data_[view].animation;
@@ -164,10 +167,35 @@ Animation* BoundsAnimator::ResetAnimationForView(View* view) {
   return old_animation;
 }
 
+void BoundsAnimator::AnimationEndedOrCanceled(const Animation* animation,
+                                              AnimationEndType type) {
+  DCHECK(animation_to_view_.find(animation) != animation_to_view_.end());
+
+  View* view = animation_to_view_[animation];
+  DCHECK(view);
+
+  // Make a copy of the data as Remove empties out the maps.
+  Data data = data_[view];
+
+  RemoveFromMaps(view);
+
+  if (data.delegate) {
+    if (type == ANIMATION_ENDED) {
+      data.delegate->AnimationEnded(animation);
+    } else {
+      DCHECK_EQ(ANIMATION_CANCELED, type);
+      data.delegate->AnimationCanceled(animation);
+    }
+  }
+
+  CleanupData(false, &data, view);
+}
+
 void BoundsAnimator::AnimationProgressed(const Animation* animation) {
   DCHECK(animation_to_view_.find(animation) != animation_to_view_.end());
 
   View* view = animation_to_view_[animation];
+  DCHECK(view);
   const Data& data = data_[view];
   gfx::Rect new_bounds =
       animation->CurrentValueBetween(data.start_bounds, data.target_bounds);
@@ -184,38 +212,16 @@ void BoundsAnimator::AnimationProgressed(const Animation* animation) {
     view->SetBounds(new_bounds);
   }
 
-  if (data_[view].delegate)
-    data_[view].delegate->AnimationProgressed(animation);
+  if (data.delegate)
+    data.delegate->AnimationProgressed(animation);
 }
 
 void BoundsAnimator::AnimationEnded(const Animation* animation) {
-  View* view = animation_to_view_[animation];
-  AnimationDelegate* delegate = data_[view].delegate;
-
-  // Make a copy of the data as Remove empties out the maps.
-  Data data = data_[view];
-
-  RemoveFromMaps(view);
-
-  if (delegate)
-    delegate->AnimationEnded(animation);
-
-  CleanupData(false, &data, view);
+  AnimationEndedOrCanceled(animation, ANIMATION_ENDED);
 }
 
 void BoundsAnimator::AnimationCanceled(const Animation* animation) {
-  View* view = animation_to_view_[animation];
-  AnimationDelegate* delegate = data_[view].delegate;
-
-  // Make a copy of the data as Remove empties out the maps.
-  Data data = data_[view];
-
-  RemoveFromMaps(view);
-
-  if (delegate)
-    delegate->AnimationCanceled(animation);
-
-  CleanupData(false, &data, view);
+  AnimationEndedOrCanceled(animation, ANIMATION_CANCELED);
 }
 
 void BoundsAnimator::AnimationContainerProgressed(

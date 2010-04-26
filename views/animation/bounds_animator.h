@@ -47,15 +47,11 @@ class BoundsAnimator : public AnimationDelegate,
   explicit BoundsAnimator(View* view);
   ~BoundsAnimator();
 
-  // Starts animating |view| from its current bounds to |target|. If
-  // |delete_when_done| is true the view is deleted when the animation
-  // completes. If there is already an animation running for the view it's
-  // stopped and a new one started. If an AnimationDelegate has been set for
-  // |view| it is removed (after being notified that the animation was
-  // canceled).
-  void AnimateViewTo(View* view,
-                     const gfx::Rect& target,
-                     bool delete_when_done);
+  // Starts animating |view| from its current bounds to |target|. If there is
+  // already an animation running for the view it's stopped and a new one
+  // started. If an AnimationDelegate has been set for |view| it is removed
+  // (after being notified that the animation was canceled).
+  void AnimateViewTo(View* view, const gfx::Rect& target);
 
   // Sets the animation for the specified view. BoundsAnimator takes ownership
   // of the specified animation.
@@ -98,13 +94,9 @@ class BoundsAnimator : public AnimationDelegate,
   // Tracks data about the view being animated.
   struct Data {
     Data()
-        : delete_when_done(false),
-          delete_delegate_when_done(false),
+        : delete_delegate_when_done(false),
           animation(NULL),
           delegate(NULL) {}
-
-    // Should the view be deleted when done?
-    bool delete_when_done;
 
     // If true the delegate is deleted when done.
     bool delete_delegate_when_done;
@@ -120,6 +112,12 @@ class BoundsAnimator : public AnimationDelegate,
 
     // Additional delegate for the animation, may be null.
     AnimationDelegate* delegate;
+  };
+
+  // Used by AnimationEndedOrCanceled.
+  enum AnimationEndType {
+    ANIMATION_ENDED,
+    ANIMATION_CANCELED
   };
 
   typedef std::map<View*, Data> ViewToDataMap;
@@ -138,6 +136,10 @@ class BoundsAnimator : public AnimationDelegate,
   // the animation used by view and returns the current animation. Ownership
   // of the returned animation passes to the caller.
   Animation* ResetAnimationForView(View* view);
+
+  // Invoked from AnimationEnded and AnimationCanceled.
+  void AnimationEndedOrCanceled(const Animation* animation,
+                                AnimationEndType type);
 
   // AnimationDelegate overrides.
   virtual void AnimationProgressed(const Animation* animation);
