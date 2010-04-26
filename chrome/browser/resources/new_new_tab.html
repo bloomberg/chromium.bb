@@ -70,7 +70,8 @@ var Section = {
   // LIST is no longer used
   RECENT: 4,
   TIPS: 8,
-  SYNC: 16
+  SYNC: 16,
+  DEBUG: 32
 };
 
 var shownSections = templateData['shown_sections'];
@@ -200,7 +201,7 @@ function updateSimpleSection(id, section) {
     <span class="link"><span class="link-color"></span></span>
   </div>
 
-  <div class="section" id="apps-section"></div>
+  <div class="section disabled" id="apps-section"></div>
 
   <div id="most-visited-section" class="section" section="THUMB">
     <h2 i18n-content="mostvisited"></h2>
@@ -234,10 +235,26 @@ function updateSimpleSection(id, section) {
     </span>
   </div>
 
+  <div id="debug" class="section disabled" section="DEBUG">
+    <h2>Debug</h2>
+    <div id="apps-launch-control">
+      Open apps in:<label
+      ><input type="radio" name="launch-container-type" value=""
+          checked="true">Default</label
+      ><label><input type="radio" name="launch-container-type" value="tab"
+          >Tab</label
+      ><label><input type="radio" name="launch-container-type" value="window"
+          >Window</label
+      ><label><input type="radio" name="launch-container-type" value="panel"
+          >Panel</label>
+    </div>
+  </div>
+
   <script>
     (function() {
       updateSimpleSection('recently-closed', Section.RECENT);
       updateSimpleSection('most-visited-section', Section.THUMB);
+      updateSimpleSection('debug', Section.DEBUG);
       var el = $('most-visited');
       for (var i = 1; i < 8; i++) {
         el.appendChild(el.firstElementChild.cloneNode(true)).id = 't' + i;

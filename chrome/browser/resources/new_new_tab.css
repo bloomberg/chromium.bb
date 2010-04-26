@@ -753,9 +753,19 @@ html[dir=rtl] #option-menu > [command=hide]:before {
 }
 
 #apps-section {
-  display: none;
   padding: 10px 0px;
   border-top: 0;
+}
+
+#apps-launch-control {
+  margin-top: 0.5em;
+}
+
+#apps-launch-control input {
+  position:relative;
+  top: 1px;
+  margin-right: 0.2em;
+  margin-left: 1em;
 }
 
 #apps-section a {
@@ -778,6 +788,14 @@ html[dir=rtl] #option-menu > [command=hide]:before {
   text-overflow: ellipsis;
   white-space: nowrap;
   width: 105px; /* 920 / 8 - margin * 2 */
+}
+
+#debug h2 {
+  color: red;
+}
+
+.section.disabled {
+  display: none!important;
 }
 
 .section + :not(.hidden) {

@@ -110,11 +110,31 @@ void AppLauncherHandler::HandleLaunchApp(const Value* value) {
   }
 
   std::string extension_id;
+  std::string launch_container;
+
   const ListValue* list = static_cast<const ListValue*>(value);
-  if (list->GetSize() == 0 || !list->GetString(0, &extension_id)) {
+  if (!list->GetString(0, &extension_id) ||
+      !list->GetString(1, &launch_container)) {
     NOTREACHED();
     return;
   }
 
-  Browser::OpenApplication(extensions_service_->profile(), extension_id);
+  Profile* profile = extensions_service_->profile();
+  if (launch_container.empty()) {
+    Browser::OpenApplication(profile, extension_id);
+    return;
+  }
+
+  Extension* extension =
+      extensions_service_->GetExtensionById(extension_id, false);
+  DCHECK(extension);
+
+  if (launch_container == "tab")
+    Browser::OpenApplicationTab(profile, extension);
+  else if (launch_container == "panel")
+    Browser::OpenApplicationWindow(profile, extension, GURL(), true);
+  else if (launch_container == "window")
+    Browser::OpenApplicationWindow(profile, extension, GURL(), false);
+  else
+    NOTREACHED() << "Unexpected launch container: " << launch_container << ".";
 }

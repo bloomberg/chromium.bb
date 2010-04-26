@@ -76,12 +76,22 @@ function mostVisitedPages(data, firstRun) {
 
 function getAppsCallback(data) {
   var appsSection = $('apps-section');
+  var debugSection = $('debug');
   appsSection.innerHTML = '';
-  appsSection.style.display = data.length ? 'block' : '';
 
   data.forEach(function(app) {
     appsSection.appendChild(apps.createElement(app));
   });
+
+  // TODO(aa): Figure out what to do with the debug mode when we turn apps on
+  // for everyone.
+  if (data.length) {
+    removeClass(appsSection, 'disabled');
+    removeClass(debugSection, 'disabled');
+  } else {
+    addClass(appsSection, 'disabled');
+    addClass(debugSection, 'disabled');
+  }
 }
 
 var apps = {
@@ -89,7 +99,16 @@ var apps = {
    * @this {!HTMLAnchorElement}
    */
   handleClick_: function() {
-    chrome.send('launchApp', [this.id]);
+    var launchType = '';
+    var inputElements = document.querySelectorAll(
+        '#apps-launch-control input');
+    for (var i = 0, input; input = inputElements[i]; i++) {
+      if (input.checked) {
+        launchType = input.value;
+        break;
+      }
+    }
+    chrome.send('launchApp', [this.id, launchType]);
     return false;
   },
 
@@ -338,6 +357,9 @@ function showSection(section) {
       case Section.TIPS:
         removeClass($('tip-line'), 'hidden');
         break;
+      case Section.DEBUG:
+        removeClass($('debug'), 'hidden');
+        break;
     }
   }
 }
@@ -357,6 +379,9 @@ function hideSection(section) {
         break;
       case Section.TIPS:
         addClass($('tip-line'), 'hidden');
+        break;
+      case Section.DEBUG:
+        addClass($('debug'), 'hidden');
         break;
     }
   }

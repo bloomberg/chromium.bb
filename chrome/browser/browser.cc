@@ -458,8 +458,6 @@ void Browser::OpenApplicationWindow(Profile* profile, Extension* extension) {
 
 // static
 bool Browser::OpenApplicationTab(Profile* profile, Extension* extension) {
-  DCHECK_EQ(extension->launch_container(), Extension::LAUNCH_TAB);
-
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser || browser->type() != Browser::TYPE_NORMAL)
     return false;
