@@ -226,11 +226,6 @@ void TestWebKitClient::dispatchStorageEvent(const WebKit::WebString& key,
   // The event is dispatched by the proxy.
 }
 
-WebKit::WebApplicationCacheHost* TestWebKitClient::createApplicationCacheHost(
-    WebKit::WebApplicationCacheHostClient* client) {
-  return SimpleAppCacheSystem::CreateApplicationCacheHost(client);
-}
-
 #if defined(OS_WIN)
 void TestWebKitClient::SetThemeEngine(WebKit::WebThemeEngine* engine) {
   active_theme_engine_ = engine ? engine : WebKitClientImpl::themeEngine();

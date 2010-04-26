@@ -48,9 +48,6 @@ class TestWebKitClient : public webkit_glue::WebKitClientImpl {
       const WebKit::WebString& origin, const WebKit::WebURL& url,
       bool is_local_storage);
 
-  virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
-      WebKit::WebApplicationCacheHostClient* client);
-
 #if defined(OS_WIN)
   void SetThemeEngine(WebKit::WebThemeEngine* engine);
   virtual WebKit::WebThemeEngine *themeEngine();
