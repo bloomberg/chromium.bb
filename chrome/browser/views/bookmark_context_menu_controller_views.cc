@@ -45,7 +45,9 @@ class SelectOnCreationHandler : public BookmarkEditor::Handler {
   }
 
   virtual void NodeCreated(const BookmarkNode* new_node) {
+#if defined(OS_WIN)
     BookmarkManager::SelectInTree(profile_, new_node);
+#endif
   }
 
  private:
@@ -105,12 +107,14 @@ void BookmarkContextMenuControllerViews::BuildMenu() {
     delegate_->AddItem(IDS_BOOKMARK_BAR_EDIT);
   }
 
+#if defined(OS_WIN)
   if (configuration_ == BOOKMARK_MANAGER_TABLE ||
       configuration_ == BOOKMARK_MANAGER_TABLE_OTHER ||
       configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU ||
       configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU_OTHER) {
     delegate_->AddItem(IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER);
   }
+#endif
 
   delegate_->AddSeparator();
   delegate_->AddItem(IDS_CUT);
@@ -245,6 +249,7 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
       bookmark_utils::ToggleWhenVisible(profile_);
       break;
 
+#if defined(OS_WIN)
     case IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER:
       UserMetrics::RecordAction(
           UserMetricsAction("BookmarkBar_ContextMenu_ShowInFolder"),
@@ -257,6 +262,7 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
 
       BookmarkManager::SelectInTree(profile_, selection_[0]);
       break;
+#endif
 
     case IDS_BOOKMARK_MANAGER:
       UserMetrics::RecordAction(UserMetricsAction("ShowBookmarkManager"),
@@ -329,10 +335,12 @@ bool BookmarkContextMenuControllerViews::IsCommandEnabled(int id) const {
     case IDS_BOOKMARK_BAR_REMOVE:
       return !selection_.empty() && !is_root_node;
 
+#if defined(OS_WIN)
     case IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER:
       return (configuration_ == BOOKMARK_MANAGER_TABLE_OTHER ||
               configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU_OTHER) &&
              selection_.size() == 1;
+#endif
 
     case IDS_BOOKMARK_MANAGER_SORT:
       return parent_ && parent_ != model_->root_node();

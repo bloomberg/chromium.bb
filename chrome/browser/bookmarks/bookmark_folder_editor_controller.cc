@@ -63,10 +63,16 @@ bool BookmarkFolderEditorController::IsValid(const std::wstring& text) {
 
 void BookmarkFolderEditorController::InputAccepted(const std::wstring& text) {
   if (IsNew()) {
+#if defined(OS_WIN)
+    // TODO(viettrungluu): Implement this the following for the tabbed bookmark
+    // manager?
     ALLOW_UNUSED const BookmarkNode* node =
         model_->AddGroup(node_, index_, text);
     if ((details_ & SHOW_IN_MANAGER) != 0)
       BookmarkManager::SelectInTree(profile_, node);
+#else
+    model_->AddGroup(node_, index_, text);
+#endif
   } else {
     model_->SetTitle(node_, text);
   }

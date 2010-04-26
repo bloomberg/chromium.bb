@@ -45,7 +45,11 @@ class SelectOnCreationHandler : public BookmarkEditor::Handler {
   }
 
   virtual void NodeCreated(const BookmarkNode* new_node) {
+// TODO(viettrungluu): I don't know if this is really needed, but it'll be
+// deleted soon.
+#if defined(OS_WIN)
     BookmarkManager::SelectInTree(profile_, new_node);
+#endif
   }
 
  private:
@@ -108,10 +112,14 @@ void BookmarkContextMenuController::BuildMenu() {
     AddItem(IDS_BOOKMARK_BAR_EDIT);
   }
 
+// TODO(viettrungluu): I don't know if this is really needed, but it'll be
+// deleted soon.
+#if defined(OS_WIN)
   if (configuration_ == BOOKMARK_MANAGER_TABLE_OTHER ||
       configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU_OTHER) {
     AddItem(IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER);
   }
+#endif
 
   AddSeparator();
   AddItem(IDS_CUT);
@@ -265,6 +273,9 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
       bookmark_utils::ToggleWhenVisible(profile_);
       break;
 
+// TODO(viettrungluu): I don't know if this is really needed, but it'll be
+// deleted soon.
+#if defined(OS_WIN)
     case IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER:
       UserMetrics::RecordAction(
           UserMetricsAction("BookmarkBar_ContextMenu_ShowInFolder"),
@@ -277,6 +288,7 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
 
       BookmarkManager::SelectInTree(profile_, selection_[0]);
       break;
+#endif
 
     case IDS_BOOKMARK_MANAGER:
       UserMetrics::RecordAction(UserMetricsAction("ShowBookmarkManager"),
@@ -350,10 +362,14 @@ bool BookmarkContextMenuController::IsCommandIdEnabled(int command_id) const {
     case IDS_BOOKMARK_BAR_REMOVE:
       return !selection_.empty() && !is_root_node;
 
+// TODO(viettrungluu): I don't know if this is really needed, but it'll be
+// deleted soon.
+#if defined(OS_WIN)
     case IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER:
       return (configuration_ == BOOKMARK_MANAGER_TABLE_OTHER ||
               configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU_OTHER) &&
              selection_.size() == 1;
+#endif
 
     case IDS_BOOKMARK_MANAGER_SORT:
       return parent_ && parent_ != model_->root_node();

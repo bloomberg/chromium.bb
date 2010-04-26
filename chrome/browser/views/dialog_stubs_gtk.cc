@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "chrome/browser/gtk/about_chrome_dialog.h"
 #include "chrome/browser/fonts_languages_window.h"
-#include "chrome/browser/gtk/bookmark_manager_gtk.h"
 #include "chrome/browser/gtk/clear_browsing_data_dialog_gtk.h"
 #include "chrome/browser/gtk/edit_search_engine_dialog.h"
 #include "chrome/browser/gtk/keyword_editor_view.h"
@@ -42,7 +41,8 @@ void ShowImporterView(views::Widget* parent, Profile* profile) {
 }
 
 void ShowBookmarkManagerView(Profile* profile) {
-  BookmarkManagerGtk::Show(profile);
+  // TODO(viettrungluu): remove this function (crbug.com/38908)
+  NOTIMPLEMENTED();
 }
 
 void ShowPasswordsExceptionsWindowView(Profile* profile) {

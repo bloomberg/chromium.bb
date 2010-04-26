@@ -141,8 +141,6 @@ TEST_F(BookmarkContextMenuControllerTest, EmptyNodes) {
   EXPECT_FALSE(
       controller.IsCommandIdEnabled(IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO));
   EXPECT_FALSE(controller.IsCommandIdEnabled(IDS_BOOKMARK_BAR_REMOVE));
-  EXPECT_FALSE(
-      controller.IsCommandIdEnabled(IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER));
   EXPECT_TRUE(
       controller.IsCommandIdEnabled(IDS_BOOMARK_BAR_ADD_NEW_BOOKMARK));
   EXPECT_TRUE(
@@ -163,8 +161,6 @@ TEST_F(BookmarkContextMenuControllerTest, SingleURL) {
   EXPECT_TRUE(
       controller.IsCommandIdEnabled(IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO));
   EXPECT_TRUE(controller.IsCommandIdEnabled(IDS_BOOKMARK_BAR_REMOVE));
-  EXPECT_FALSE(
-      controller.IsCommandIdEnabled(IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER));
   EXPECT_TRUE(
       controller.IsCommandIdEnabled(IDS_BOOMARK_BAR_ADD_NEW_BOOKMARK));
   EXPECT_TRUE(
@@ -186,8 +182,6 @@ TEST_F(BookmarkContextMenuControllerTest, MultipleURLs) {
   EXPECT_TRUE(
       controller.IsCommandIdEnabled(IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO));
   EXPECT_TRUE(controller.IsCommandIdEnabled(IDS_BOOKMARK_BAR_REMOVE));
-  EXPECT_FALSE(
-      controller.IsCommandIdEnabled(IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER));
   EXPECT_TRUE(
       controller.IsCommandIdEnabled(IDS_BOOMARK_BAR_ADD_NEW_BOOKMARK));
   EXPECT_TRUE(
@@ -208,8 +202,6 @@ TEST_F(BookmarkContextMenuControllerTest, SingleFolder) {
   EXPECT_FALSE(
       controller.IsCommandIdEnabled(IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO));
   EXPECT_TRUE(controller.IsCommandIdEnabled(IDS_BOOKMARK_BAR_REMOVE));
-  EXPECT_FALSE(
-      controller.IsCommandIdEnabled(IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER));
   EXPECT_TRUE(
       controller.IsCommandIdEnabled(IDS_BOOMARK_BAR_ADD_NEW_BOOKMARK));
   EXPECT_TRUE(
@@ -231,8 +223,6 @@ TEST_F(BookmarkContextMenuControllerTest, MultipleEmptyFolders) {
   EXPECT_FALSE(
       controller.IsCommandIdEnabled(IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO));
   EXPECT_TRUE(controller.IsCommandIdEnabled(IDS_BOOKMARK_BAR_REMOVE));
-  EXPECT_FALSE(
-      controller.IsCommandIdEnabled(IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER));
   EXPECT_TRUE(
       controller.IsCommandIdEnabled(IDS_BOOMARK_BAR_ADD_NEW_BOOKMARK));
   EXPECT_TRUE(
@@ -254,8 +244,6 @@ TEST_F(BookmarkContextMenuControllerTest, MultipleFoldersWithURLs) {
   EXPECT_TRUE(
       controller.IsCommandIdEnabled(IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO));
   EXPECT_TRUE(controller.IsCommandIdEnabled(IDS_BOOKMARK_BAR_REMOVE));
-  EXPECT_FALSE(
-      controller.IsCommandIdEnabled(IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER));
   EXPECT_TRUE(
       controller.IsCommandIdEnabled(IDS_BOOMARK_BAR_ADD_NEW_BOOKMARK));
   EXPECT_TRUE(
@@ -299,8 +287,6 @@ TEST_F(BookmarkContextMenuControllerTest, EmptyNodesNullParent) {
   EXPECT_FALSE(
       controller.IsCommandIdEnabled(IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO));
   EXPECT_FALSE(controller.IsCommandIdEnabled(IDS_BOOKMARK_BAR_REMOVE));
-  EXPECT_FALSE(
-      controller.IsCommandIdEnabled(IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER));
   EXPECT_FALSE(
       controller.IsCommandIdEnabled(IDS_BOOMARK_BAR_ADD_NEW_BOOKMARK));
   EXPECT_FALSE(

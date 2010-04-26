@@ -37,7 +37,6 @@
 #include "chrome/browser/gtk/about_chrome_dialog.h"
 #include "chrome/browser/gtk/accelerators_gtk.h"
 #include "chrome/browser/gtk/bookmark_bar_gtk.h"
-#include "chrome/browser/gtk/bookmark_manager_gtk.h"
 #include "chrome/browser/gtk/browser_titlebar.h"
 #include "chrome/browser/gtk/browser_toolbar_gtk.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
@@ -840,7 +839,7 @@ void BrowserWindowGtk::ShowTaskManager() {
 }
 
 void BrowserWindowGtk::ShowBookmarkManager() {
-  BookmarkManagerGtk::Show(browser_->profile());
+  // TODO(viettrungluu): remove this function (crbug.com/38908)
 }
 
 void BrowserWindowGtk::ShowBookmarkBubble(const GURL& url,

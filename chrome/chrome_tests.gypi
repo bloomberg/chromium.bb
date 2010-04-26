@@ -1300,7 +1300,6 @@
         'browser/find_bar_host_browsertest.cc',
         'browser/geolocation/access_token_store_browsertest.cc',
         'browser/geolocation/geolocation_browsertest.cc',
-        'browser/gtk/bookmark_manager_browsertest.cc',
         'browser/net/cookie_policy_browsertest.cc',
         'browser/net/ftp_browsertest.cc',
         'browser/sessions/session_restore_browsertest.cc',
