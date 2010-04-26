@@ -275,7 +275,7 @@ def ValidateSdk(env):
                              r'nacl64/include/\1',
                              env.subst(c))):
       continue
-    sys.stderr.write(env.subst('''
+    message = env.subst('''
 ERROR: NativeClient SDK does not seem present!,
        Missing: %s
 
@@ -289,8 +289,9 @@ Configuration is:
   LINK=${LINK}
   RANLIB=${RANLIB}
 
-Run again with the --download flag or build the SDK yourself.\n
-''' % c))
+Run again with the --download flag or build the SDK yourself.
+''' % c)
+    sys.stderr.write(message + "\n\n")
     sys.exit(-1)
 
 
