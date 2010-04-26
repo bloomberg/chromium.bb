@@ -193,6 +193,14 @@ void FirstRunSearchEngineView::OnTemplateURLModelChanged() {
   // first three will always be from prepopulated data.
   std::vector<const TemplateURL*> template_urls =
       search_engines_model_->GetTemplateURLs();
+
+  // If we have fewer than three search engines, signal that the search engine
+  // experiment is over, leaving imported default search engine setting intact.
+  if (template_urls.size() < 3) {
+    observer_->SearchEngineChosen(NULL);
+    return;
+  }
+
   std::vector<const TemplateURL*>::iterator search_engine_iter;
 
   // Is user's default search engine included in first three prepopulated
