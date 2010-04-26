@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,14 @@
 #include <sys/exec_elf.h>
 #else
 #include <elf.h>
+#include <fcntl.h>
 #endif
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
+#include "base/eintr_wrapper.h"
+#include "base/file_util.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -33,16 +39,22 @@ enum nsPluginVariable {
 // the current architecture (e.g. 32-bit ELF on 32-bit build).
 // Returns false on other errors as well.
 bool ELFMatchesCurrentArchitecture(const FilePath& filename) {
-  FILE* file = fopen(filename.value().c_str(), "rb");
-  if (!file)
+  // First make sure we can open the file and it is in fact, a regular file.
+  struct stat stat_buf;
+  // Open with O_NONBLOCK so we don't block on pipes.
+  int fd = open(filename.value().c_str(), O_RDONLY|O_NONBLOCK);
+  if (fd < 0)
+    return false;
+  bool ret = (fstat(fd, &stat_buf) >= 0 && S_ISREG(stat_buf.st_mode));
+  if (HANDLE_EINTR(close(fd)) < 0)
+    return false;
+  if (!ret)
     return false;
 
-  char buffer[5];
-  if (fread(buffer, 5, 1, file) != 1) {
-    fclose(file);
+  const size_t kELFBufferSize = 5;
+  char buffer[kELFBufferSize];
+  if (!file_util::ReadFile(filename, buffer, kELFBufferSize))
     return false;
-  }
-  fclose(file);
 
   if (buffer[0] != ELFMAG0 ||
       buffer[1] != ELFMAG1 ||

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,9 +94,9 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
   // 2) NS_USER_PLUGINS_DIR: ~/.mozilla/plugins.
   // This is a de-facto standard, so even though we're not Mozilla, let's
   // look in there too.
-  const char* home = getenv("HOME");
-  if (home)
-    plugin_dirs->push_back(FilePath(home).Append(".mozilla/plugins"));
+  FilePath home = file_util::GetHomeDir();
+  if (!home.empty())
+    plugin_dirs->push_back(home.Append(".mozilla/plugins"));
 
   // 3) NS_SYSTEM_PLUGINS_DIR:
   // This varies across different browsers and versions, so check 'em all.
@@ -213,4 +213,4 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
   return true;
 }
 
-} // namespace NPAPI
+}  // namespace NPAPI
