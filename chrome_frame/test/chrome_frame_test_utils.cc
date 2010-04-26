@@ -449,7 +449,10 @@ void WebBrowserEventSink::Attach(IDispatch* browser_disp) {
 void WebBrowserEventSink::Uninitialize() {
   DisconnectFromChromeFrame();
   if (web_browser2_.get()) {
-    DispEventUnadvise(web_browser2_);
+    if (m_dwEventCookie != 0xFEFEFEFE) {
+      CoDisconnectObject(this, 0);
+      DispEventUnadvise(web_browser2_);
+    }
 
     ScopedHandle process;
     // process_id_to_wait_for_ is set when we receive OnQuit.

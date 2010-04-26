@@ -60,9 +60,15 @@ base::ProcessHandle LoadCrashService() {
   return crash_service;
 }
 
+void PureCall() {
+  __debugbreak();
+}
+
 int main(int argc, char **argv) {
   base::EnableTerminationOnHeapCorruption();
   PlatformThread::SetName("ChromeFrame tests");
+
+  _set_purecall_handler(PureCall);
 
   TestSuite test_suite(argc, argv);
 

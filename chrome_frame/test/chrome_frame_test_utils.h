@@ -135,7 +135,8 @@ class WebBrowserEventSink
     : public CComObjectRootEx<CComMultiThreadModel>,
       public IDispEventSimpleImpl<0, WebBrowserEventSink,
                                   &DIID_DWebBrowserEvents2>,
-      public WindowObserver {
+      public WindowObserver,
+      public IUnknown {
  public:
   typedef IDispEventSimpleImpl<0, WebBrowserEventSink,
                                &DIID_DWebBrowserEvents2> DispEventsImpl;
@@ -155,6 +156,7 @@ class WebBrowserEventSink
   }
 
 BEGIN_COM_MAP(WebBrowserEventSink)
+  COM_INTERFACE_ENTRY(IUnknown)
 END_COM_MAP()
 
 BEGIN_SINK_MAP(WebBrowserEventSink)
@@ -240,6 +242,8 @@ END_SINK_MAP()
       ::GetWindowThreadProcessId(hwnd, &process_id_to_wait_for_);
 
     OnQuit();
+    CoDisconnectObject(this, 0);
+    DispEventUnadvise(web_browser2_);
   }
 #ifdef _DEBUG
   STDMETHOD(Invoke)(DISPID dispid, REFIID riid,
