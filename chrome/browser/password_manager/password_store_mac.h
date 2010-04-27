@@ -11,7 +11,6 @@
 #include "base/thread.h"
 #include "chrome/browser/password_manager/login_database.h"
 #include "chrome/browser/password_manager/password_store.h"
-#include "chrome/common/notification_service.h"
 
 class MacKeychain;
 
@@ -69,19 +68,11 @@ class PasswordStoreMac : public PasswordStore {
   void RemoveKeychainForms(
       const std::vector<webkit_glue::PasswordForm*>& forms);
 
-  // Allows the creation of |notification_service_| to be scheduled on the right
-  // thread.
-  void CreateNotificationService();
-
   scoped_ptr<MacKeychain> keychain_;
   scoped_ptr<LoginDatabase> login_metadata_db_;
 
   // Thread that the synchronous methods are run on.
   scoped_ptr<base::Thread> thread_;
-
-  // Since we aren't running on a well-known thread but still want to send out
-  // notifications, we need to run our own service.
-  scoped_ptr<NotificationService> notification_service_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreMac);
 };
