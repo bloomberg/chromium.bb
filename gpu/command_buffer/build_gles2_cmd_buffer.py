@@ -1032,7 +1032,11 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoEnableVertexAttribArray',
     'impl_decl': False,
   },
-  'Finish': {'impl_func': False},
+  'Finish': {
+    'impl_func': False,
+    'decoder_func': 'glFlush',
+    'gl_test_func': 'glFlush',
+  },
   'Flush': {'impl_func': False},
   'FramebufferRenderbuffer': {
     'decoder_func': 'DoFramebufferRenderbuffer',

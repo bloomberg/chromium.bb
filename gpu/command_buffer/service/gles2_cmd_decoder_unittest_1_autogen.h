@@ -763,7 +763,7 @@ TEST_F(GLES2DecoderTest1, EnableVertexAttribArrayValidArgs) {
 }
 
 TEST_F(GLES2DecoderTest1, FinishValidArgs) {
-  EXPECT_CALL(*gl_, Finish());
+  EXPECT_CALL(*gl_, Flush());
   SpecializedSetup<Finish, 0>();
   Finish cmd;
   cmd.Init();

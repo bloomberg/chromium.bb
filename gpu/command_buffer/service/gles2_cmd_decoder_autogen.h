@@ -671,7 +671,7 @@ error::Error GLES2DecoderImpl::HandleEnableVertexAttribArray(
 
 error::Error GLES2DecoderImpl::HandleFinish(
     uint32 immediate_data_size, const gles2::Finish& c) {
-  glFinish();
+  glFlush();
   return error::kNoError;
 }
 
