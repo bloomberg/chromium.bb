@@ -782,6 +782,22 @@
    fun:-[NSWindow displayIfNeeded]
 }
 {
+   bug_35955_maybe
+   Memcheck:Addr4
+   ...
+   fun:_ZN2v88internal12Bootstrapper17CreateEnvironmentENS0_6HandleINS0_6ObjectEEENS_6HandleINS_14ObjectTemplateEEEPNS_22ExtensionConfigurationE
+   fun:_ZN2v87Context3NewEPNS_22ExtensionConfigurationENS_6HandleINS_14ObjectTemplateEEENS3_INS_5ValueEEE
+   fun:_ZN7WebCore27WorkerContextExecutionProxy19initContextIfNeededEv
+   fun:_ZN7WebCore27WorkerContextExecutionProxy8evaluateERKNS_6StringES3_iPNS_27WorkerContextExecutionStateE
+   fun:_ZN7WebCore22WorkerScriptController8evaluateERKNS_16ScriptSourceCodeEPNS_11ScriptValueE
+   fun:_ZN7WebCore22WorkerScriptController8evaluateERKNS_16ScriptSourceCodeE
+   fun:_ZN7WebCore12WorkerThread12workerThreadEv
+   fun:_ZN7WebCore12WorkerThread17workerThreadStartEPv
+   fun:_ZN3WTFL16threadEntryPointEPv
+   fun:_pthread_start
+   fun:thread_start
+}
+{
    bug_36605
    Memcheck:Leak
    fun:malloc
