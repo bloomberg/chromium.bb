@@ -59,4 +59,14 @@ std::string GetProductVersion() {
   return std::string("DumpRenderTree/0.0.0.0");
 }
 
+bool GetPluginFinderURL(std::string* plugin_finder_url) {
+  return false;
+}
+
+#if defined(OS_WIN)
+bool DownloadUrl(const std::string& url, HWND caller_window) {
+  return false;
+}
+#endif
+
 }  // namespace webkit_glue
