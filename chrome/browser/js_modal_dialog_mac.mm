@@ -139,8 +139,10 @@ void JavaScriptAppModalDialog::CreateAndShowDialog() {
   [alert setInformativeText:base::SysWideToNSString(message_text_)];
   [alert setMessageText:base::SysWideToNSString(title_)];
   [alert addButtonWithTitle:default_button];
-  if (!one_button)
-    [alert addButtonWithTitle:other_button];
+  if (!one_button) {
+    NSButton* other = [alert addButtonWithTitle:other_button];
+    [other setKeyEquivalent:@"\e"];
+  }
   if (display_suppress_checkbox_) {
     [alert setShowsSuppressionButton:YES];
     NSString* suppression_title = l10n_util::GetNSStringWithFixup(
