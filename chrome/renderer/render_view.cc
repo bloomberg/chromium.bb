@@ -4945,6 +4945,16 @@ bool RenderView::ScheduleFileChooser(
   return true;
 }
 
+void RenderView::OnPageTranslated() {
+  WebFrame* frame = webview()->mainFrame();
+  if (!frame)
+    return;
+
+  // The page is translated, so try to extract the form data again.
+  form_manager_.ExtractForms(frame);
+  SendForms(frame);
+}
+
 WebKit::WebGeolocationService* RenderView::geolocationService() {
   if (!geolocation_dispatcher_.get())
     geolocation_dispatcher_.reset(new GeolocationDispatcher(this));

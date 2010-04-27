@@ -196,6 +196,9 @@ void TranslateHelper::CheckTranslateStatus() {
 
     translation_pending_ = false;
 
+    // Notify the renderer we are done.
+    render_view_->OnPageTranslated();
+
     // Notify the browser we are done.
     render_view_->Send(new ViewHostMsg_PageTranslated(
         render_view_->routing_id(), render_view_->page_id(),

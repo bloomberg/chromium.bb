@@ -74,9 +74,9 @@ FirstLastNameField* FirstLastNameField::Parse2(
   // so we match "initials" here (and just fill in a first name there,
   // American-style).
   // The ".*first$" matches fields ending in "first" (example in sample8.html).
-  if (!ParseText(&q,
-                 ASCIIToUTF16("first name|firstname|initials|fname|.*first$"),
-                 &v.first_name_))
+  string16 match =
+      ASCIIToUTF16("first name|first_name|firstname|initials|fname|.*first$");
+  if (!ParseText(&q, match, &v.first_name_))
     return NULL;
 
   // We check for a middle initial before checking for a middle name
@@ -84,19 +84,17 @@ FirstLastNameField* FirstLastNameField::Parse2(
   // as both (the label text is "MI" and the element name is
   // "txtmiddlename"); such a field probably actually represents a
   // middle initial.
-  if (ParseText(&q,
-                ASCIIToUTF16("^mi$|middle initial|middleinitial|m.i."),
-                &v.middle_name_)) {
+  match = ASCIIToUTF16("^mi$|middle initial|middleinitial|m.i.");
+  if (ParseText(&q, match, &v.middle_name_)) {
     v.middle_initial_ = true;
   } else {
-    ParseText(
-        &q, ASCIIToUTF16("middle name|mname|middlename"), &v.middle_name_);
+    match = ASCIIToUTF16("middle name|mname|middlename");
+    ParseText(&q, match, &v.middle_name_);
   }
 
   // The ".*last$" matches fields ending in "last" (example in sample8.html).
-  if (!ParseText(&q,
-                 ASCIIToUTF16("last name|lastname|lname|surname|.*last$"),
-                 &v.last_name_))
+  match = ASCIIToUTF16("last name|last_name|lastname|lname|surname|.*last$");
+  if (!ParseText(&q, match, &v.last_name_))
     return NULL;
 
   *iter = q;

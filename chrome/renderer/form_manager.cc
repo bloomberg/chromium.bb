@@ -45,13 +45,16 @@ namespace {
 // it's not necessary.
 const size_t kRequiredAutoFillFields = 3;
 
-// Returns the node value of the first child of |element| if the first child
-// is text.  This is faster alternative to |innerText()| for performance
-// critical operations when the child structure of element is known.
+// Returns the node value of the first offspring of |element| that is a text
+// node.  This is a faster alternative to |innerText()| for performance
+// critical operations when the child structure of |element| is known.
 string16 GetChildText(const WebElement& element) {
   string16 element_text;
   WebNode child = element.firstChild();
-  if (!child.isNull() && child.isTextNode()) {
+  // Find the text node.
+  while (!child.isNull() && !child.isTextNode())
+    child = child.firstChild();
+  if (!child.isNull()) {
     element_text = child.nodeValue();
     TrimWhitespace(element_text, TRIM_ALL, &element_text);
   }
