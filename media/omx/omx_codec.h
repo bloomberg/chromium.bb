@@ -12,15 +12,12 @@
 //
 // OWNERSHIP
 //
-// The OmxCodec works with two external objects, they are:
-// 1. OmxConfigurator
+// The OmxCodec works with external objects
+// OmxConfigurator
 //    This object is given to OmxCodec to perform port configuration.
-// 2. OmxOutputSink
-//    This object is given to OmxCodec to perform output buffer negotiation.
-//
-// These two external objects are provided and destroyed externally. Their
-// references are given to OmxCodec and client application is responsible
-// for cleaning them.
+//    This object is provided and destroyed externally. Its references
+//    are given to OmxCodec and client application is responsible
+//    for cleaning them.
 //
 // INTERACTION WITH EXTERNAL OBJECTS
 //
@@ -53,9 +50,8 @@
 // output_format.codec = OmxCodec::kCodecRaw;
 // scoped_ptr<OmxConfigurator> configurator(
 //     new OmxDecoderConfigurator(input_format, output_format));
-// scoped_ptr<OmxOutputSink> output_sink(new CustomOutputSink());
 //
-// decoder->Setup(configurator.get(), output_sink.get());
+// decoder->Setup(configurator.get());
 // decoder->SetErrorCallback(NewCallback(this, &Client::ErrorCallback));
 // decoder->SetFormatCallback(NewCallback(this, &Client::FormatCallback));
 //
@@ -142,7 +138,6 @@
 #include "base/callback.h"
 #include "base/scoped_ptr.h"
 #include "media/omx/omx_configurator.h"
-#include "media/omx/omx_output_sink.h"
 #include "third_party/openmax/il/OMX_Component.h"
 #include "third_party/openmax/il/OMX_Core.h"
 #include "third_party/openmax/il/OMX_Video.h"
@@ -160,8 +155,7 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
       const OmxConfigurator::MediaFormat&,
       const OmxConfigurator::MediaFormat&>::Type FormatCallback;
   typedef Callback1<Buffer*>::Type FeedCallback;
-  typedef Callback2<int,
-      OmxOutputSink::BufferUsedCallback*>::Type ReadCallback;
+  typedef Callback1<OMX_BUFFERHEADERTYPE*>::Type ReadCallback;
   typedef Callback0::Type Callback;
 
   // Initialize an OmxCodec object that runs on |message_loop|. It is
@@ -171,7 +165,7 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
 
   // Setup OmxCodec using |configurator|. |configurator| and |output_sink|
   // are not owned by this class and should be cleaned up externally.
-  void Setup(OmxConfigurator* configurator, OmxOutputSink* output_sink);
+  void Setup(OmxConfigurator* configurator);
 
   // Set the error callback. In case of error the callback will be called.
   void SetErrorCallback(Callback* callback);
@@ -373,7 +367,6 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
 
   OMX_COMPONENTTYPE* component_handle_;
   OmxConfigurator* configurator_;
-  OmxOutputSink* output_sink_;
   MessageLoop* message_loop_;
 
   scoped_ptr<FormatCallback> format_callback_;
@@ -403,11 +396,6 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   // ready to return to client.
   // TOOD(hclam): extract it to a separate class.
   std::queue<int> output_buffers_ready_;
-
-  // A set of buffers that are currently in use by the client.
-  // TODO(hclam): extract it to a separate class.
-  typedef std::vector<int> OutputBuffersInUseSet;
-  OutputBuffersInUseSet output_buffers_in_use_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OmxCodec);

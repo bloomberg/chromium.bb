@@ -12,7 +12,6 @@
 #include "base/string_util.h"
 #include "media/omx/omx_codec.h"
 #include "media/base/buffers.h"
-#include "media/omx/omx_output_sink.h"
 
 namespace media {
 
@@ -47,21 +46,15 @@ OmxCodec::~OmxCodec() {
   DCHECK_EQ(0u, input_buffers_.size());
   DCHECK_EQ(0u, output_buffers_.size());
   DCHECK(available_input_buffers_.empty());
-  DCHECK(output_buffers_in_use_.empty());
   DCHECK(pending_input_queue_.empty());
   DCHECK(output_queue_.empty());
   DCHECK(processing_input_queue_.empty());
 }
 
-void OmxCodec::Setup(OmxConfigurator* configurator,
-                     OmxOutputSink* output_sink) {
+void OmxCodec::Setup(OmxConfigurator* configurator) {
   DCHECK_EQ(kEmpty, state_);
-
   CHECK(configurator);
-  CHECK(output_sink);
-
   configurator_ = configurator;
-  output_sink_ = output_sink;
 }
 
 void OmxCodec::SetErrorCallback(Callback* callback) {
@@ -76,7 +69,6 @@ void OmxCodec::SetFormatCallback(FormatCallback* callback) {
 
 void OmxCodec::Start() {
   CHECK(configurator_);
-  CHECK(output_sink_);
 
   message_loop_->PostTask(
       FROM_HERE,
@@ -166,9 +158,7 @@ void OmxCodec::ReadTask(ReadCallback* callback) {
 
   // Don't accept read request on error state.
   if (!CanAcceptOutput()) {
-    callback->Run(
-        kEosBuffer,
-        static_cast<OmxOutputSink::BufferUsedCallback*>(NULL));
+    callback->Run(static_cast<OMX_BUFFERHEADERTYPE*>(NULL));
     delete callback;
     return;
   }
@@ -232,29 +222,14 @@ bool OmxCodec::AllocateInputBuffers() {
 bool OmxCodec::AllocateOutputBuffers() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
-  if (output_sink_->ProvidesEGLImages()) {
-    // TODO(hclam): Do the following things here:
-    // 1. Call output_sink_->AllocateEGLImages() to allocate some
-    //    EGL images from the sink component.
-    // 2. Call OMX_UseEGLImage() to assign the images to the output
-    //    port.
-    NOTIMPLEMENTED();
-  } else {
-    for (int i = 0; i < output_buffer_count_; ++i) {
-      OMX_BUFFERHEADERTYPE* buffer;
-      OMX_ERRORTYPE error =
-          OMX_AllocateBuffer(component_handle_, &buffer, output_port_,
-                             NULL, output_buffer_size_);
-      if (error != OMX_ErrorNone)
-        return false;
-      output_buffers_.push_back(buffer);
-    }
-  }
-
-  // Tell the sink component to use the buffers for output.
-  for (size_t i = 0; i < output_buffers_.size(); ++i) {
-    output_sink_->UseThisBuffer(static_cast<int>(i),
-                                output_buffers_[i]);
+  for (int i = 0; i < output_buffer_count_; ++i) {
+    OMX_BUFFERHEADERTYPE* buffer;
+    OMX_ERRORTYPE error =
+        OMX_AllocateBuffer(component_handle_, &buffer, output_port_,
+                           NULL, output_buffer_size_);
+    if (error != OMX_ErrorNone)
+      return false;
+    output_buffers_.push_back(buffer);
   }
 
   return true;
@@ -277,25 +252,10 @@ void OmxCodec::FreeInputBuffers() {
 void OmxCodec::FreeOutputBuffers() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
-  // First we need to make sure output sink is not using the buffer so
-  // tell it to stop using our buffer headers.
-  // TODO(hclam): We should make this an asynchronous call so that
-  // we'll wait until all buffers are not used.
-  for (size_t i = 0; i < output_buffers_.size(); ++i)
-    output_sink_->StopUsingThisBuffer(static_cast<int>(i));
-
   // Calls to OMX to free buffers.
   for (size_t i = 0; i < output_buffers_.size(); ++i)
     OMX_FreeBuffer(component_handle_, output_port_, output_buffers_[i]);
   output_buffers_.clear();
-
-  // If we have asked the sink component to provide us EGL images for
-  // output we need to tell it we are done with those images.
-  // TODO(hclam): Implement this correctly.
-  if (output_sink_->ProvidesEGLImages()) {
-    std::vector<EGLImageKHR> images;
-    output_sink_->ReleaseEGLImages(images);
-  }
 }
 
 void OmxCodec::FreeInputQueue() {
@@ -1119,12 +1079,10 @@ void OmxCodec::FulfillOneRead() {
     // If the buffer is real then save it to the in-use list.
     // Otherwise if it is an end-of-stream buffer then just drop it.
     if (buffer_id != kEosBuffer) {
-      output_buffers_in_use_.push_back(buffer_id);
-      callback->Run(buffer_id,
-                    NewCallback(this, &OmxCodec::BufferUsedCallback));
+      callback->Run(output_buffers_[buffer_id]);
+      BufferUsedCallback(buffer_id); //hack, we will change this really soon.
     } else {
-      callback->Run(kEosBuffer,
-                    static_cast<OmxOutputSink::BufferUsedCallback*>(NULL));
+      callback->Run(static_cast<OMX_BUFFERHEADERTYPE*>(NULL));
     }
     delete callback;
   }
@@ -1157,19 +1115,6 @@ void OmxCodec::BufferUsedTask(int buffer_id) {
 
   // Make sure an end-of-stream buffer id is not received here.
   CHECK(buffer_id != kEosBuffer);
-
-  // The use of |output_buffers_in_use_| is just a precaution. So we can
-  // actually move it to a debugging section.
-  OutputBuffersInUseSet::iterator iter =
-      std::find(output_buffers_in_use_.begin(),
-                output_buffers_in_use_.end(),
-                buffer_id);
-
-  if (iter == output_buffers_in_use_.end()) {
-    LOG(ERROR) << "Received an unknown buffer id: " << buffer_id;
-    StateTransitionTask(kError);
-  }
-  output_buffers_in_use_.erase(iter);
 
   // We'll try to issue more FillThisBuffer() to the decoder.
   // If we can't do it now then just return.

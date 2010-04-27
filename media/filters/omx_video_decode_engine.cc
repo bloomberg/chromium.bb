@@ -28,7 +28,6 @@ namespace media {
 
 OmxVideoDecodeEngine::OmxVideoDecodeEngine()
     : state_(kCreated),
-      frame_bytes_(0),
       has_fed_on_eos_(false),
       message_loop_(NULL) {
 }
@@ -45,13 +44,6 @@ void OmxVideoDecodeEngine::Initialize(AVStream* stream, Task* done_cb) {
   width_ = stream->codec->width;
   height_ = stream->codec->height;
 
-  // TODO(ajwong): Extract magic formula to something based on output
-  // pixel format.
-  frame_bytes_ = (width_ * height_ * 3) / 2;
-  y_buffer_.reset(new uint8[width_ * height_]);
-  u_buffer_.reset(new uint8[width_ * height_ / 4]);
-  v_buffer_.reset(new uint8[width_ * height_ / 4]);
-
   // TODO(ajwong): Find the right way to determine the Omx component name.
   OmxConfigurator::MediaFormat input_format, output_format;
   memset(&input_format, 0, sizeof(input_format));
@@ -60,7 +52,7 @@ void OmxVideoDecodeEngine::Initialize(AVStream* stream, Task* done_cb) {
   output_format.codec = OmxConfigurator::kCodecRaw;
   omx_configurator_.reset(
       new OmxDecoderConfigurator(input_format, output_format));
-  omx_codec_->Setup(omx_configurator_.get(), this);
+  omx_codec_->Setup(omx_configurator_.get());
   omx_codec_->SetErrorCallback(
       NewCallback(this, &OmxVideoDecodeEngine::OnHardwareError));
   omx_codec_->SetFormatCallback(
@@ -96,6 +88,10 @@ void OmxVideoDecodeEngine::DecodeFrame(Buffer* buffer,
                                        Task* done_cb) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   if (state_ != kNormal) {
+    *got_result = false;
+    *video_frame = NULL;
+    done_cb->Run();
+    delete done_cb;
     return;
   }
 
@@ -137,52 +133,10 @@ void OmxVideoDecodeEngine::Stop(Callback0::Type* done_cb) {
   state_ = kStopped;
 }
 
-bool OmxVideoDecodeEngine::AllocateEGLImages(
-    int width, int height, std::vector<EGLImageKHR>* images) {
-  NOTREACHED() << "This method is never used";
-  return false;
-}
-
-void OmxVideoDecodeEngine::ReleaseEGLImages(
-    const std::vector<EGLImageKHR>& images) {
-  NOTREACHED() << "This method is never used";
-}
-
-void OmxVideoDecodeEngine::UseThisBuffer(int buffer_id,
-                                         OMX_BUFFERHEADERTYPE* buffer) {
+void OmxVideoDecodeEngine::OnReadComplete(
+  OMX_BUFFERHEADERTYPE* buffer) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
-  omx_buffers_.push_back(std::make_pair(buffer_id, buffer));
-}
-
-void OmxVideoDecodeEngine::StopUsingThisBuffer(int id) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
-  omx_buffers_.erase(FindBuffer(id));
-}
-
-void OmxVideoDecodeEngine::BufferReady(int buffer_id,
-                                       BufferUsedCallback* callback) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
-  CHECK((buffer_id == OmxCodec::kEosBuffer) || callback);
-
-  // Obtain the corresponding OMX_BUFFERHEADERTYPE.
-  OmxBufferList::iterator iter = FindBuffer(buffer_id);
-  if (iter != omx_buffers_.end()) {
-    uint8* buffer = iter->second->pBuffer;
-    int size = iter->second->nFilledLen;
-
-    if ((size_t)size != frame_bytes_) {
-      LOG(ERROR) << "Read completed with weird size: " << size;
-    }
-
-    // Merge the buffer into previous buffers.
-    MergeBytesFrameQueue(buffer, size);
-  }
-
-  // Notify OmxCodec that we have finished using this buffer.
-  if (callback) {
-    callback->Run(buffer_id);
-    delete callback;
-  }
+  DCHECK_EQ(buffer->nFilledLen, width_*height_*3/2 );
 
   // We assume that when we receive a read complete callback from
   // OmxCodec there was a read request made.
@@ -194,73 +148,31 @@ void OmxVideoDecodeEngine::BufferReady(int buffer_id,
   // Notify the read request to this object has been fulfilled.
   AutoTaskRunner done_cb_runner(request.done_cb);
 
-  // Detect if we have received a full decoded frame.
-  if (DecodedFrameAvailable()) {
-    // |frame| carries the decoded frame.
-    scoped_ptr<YuvFrame> frame(yuv_frame_queue_.front());
-    yuv_frame_queue_.pop_front();
+  if (!buffer)  // EOF signal by OmxCodec
+    return;
 
-    VideoFrame::CreateFrame(GetSurfaceFormat(),
-                            width_, height_,
-                            StreamSample::kInvalidTimestamp,
-                            StreamSample::kInvalidTimestamp,
-                            request.frame);
-    if (!request.frame->get()) {
-      // TODO(jiesun): this is also an error case handled as normal.
-      return;
-    }
-    *request.got_result = true;
-
-    // TODO(jiesun): Assume YUV 420 format.
-    const int pixels = width_ * height_;
-    memcpy((*request.frame)->data(VideoFrame::kYPlane), frame->data, pixels);
-    memcpy((*request.frame)->data(VideoFrame::kUPlane), frame->data + pixels,
-           pixels / 4);
-    memcpy((*request.frame)->data(VideoFrame::kVPlane),
-           frame->data + pixels + pixels /4,
-           pixels / 4);
+  VideoFrame::CreateFrame(GetSurfaceFormat(),
+                          width_, height_,
+                          StreamSample::kInvalidTimestamp,
+                          StreamSample::kInvalidTimestamp,
+                          request.frame);
+  if (!request.frame->get()) {
+    // TODO(jiesun): this is also an error case handled as normal.
+    return;
   }
-}
 
-void OmxVideoDecodeEngine::OnReadComplete(
-    int buffer_id, OmxOutputSink::BufferUsedCallback* callback) {
-  BufferReady(buffer_id, callback);
-}
+  // Now we had everything ready.
+  *request.got_result = true;
 
-bool OmxVideoDecodeEngine::IsFrameComplete(const YuvFrame* frame) {
-  return frame->size == frame_bytes_;
-}
-
-bool OmxVideoDecodeEngine::DecodedFrameAvailable() {
-  return (!yuv_frame_queue_.empty() &&
-          IsFrameComplete(yuv_frame_queue_.front()));
-}
-
-void OmxVideoDecodeEngine::MergeBytesFrameQueue(uint8* buffer, int size) {
-  int amount_left = size;
-
-  // TODO(ajwong): Do the swizzle here instead of in DecodeFrame.  This
-  // should be able to avoid 1 memcpy.
-  while (amount_left > 0) {
-    if (yuv_frame_queue_.empty() || IsFrameComplete(yuv_frame_queue_.back())) {
-      yuv_frame_queue_.push_back(new YuvFrame(frame_bytes_));
-    }
-    YuvFrame* frame = yuv_frame_queue_.back();
-    int amount_to_copy = std::min((int)(frame_bytes_ - frame->size), size);
-    frame->size += amount_to_copy;
-    memcpy(frame->data, buffer, amount_to_copy);
-    amount_left -= amount_to_copy;
-  }
-}
-
-OmxVideoDecodeEngine::OmxBufferList::iterator
-OmxVideoDecodeEngine::FindBuffer(int buffer_id) {
-  for (OmxVideoDecodeEngine::OmxBufferList::iterator i = omx_buffers_.begin();
-       i != omx_buffers_.end(); ++i) {
-    if (i->first == buffer_id)
-      return i;
-  }
-  return omx_buffers_.end();
+  // TODO(jiesun): Assume YUV 420 format.
+  // TODO(jiesun): We will use VideoFrame to wrap OMX_BUFFERHEADTYPE.
+  const int pixels = width_ * height_;
+  memcpy((*request.frame)->data(VideoFrame::kYPlane), buffer->pBuffer, pixels);
+  memcpy((*request.frame)->data(VideoFrame::kUPlane), buffer->pBuffer + pixels,
+         pixels / 4);
+  memcpy((*request.frame)->data(VideoFrame::kVPlane),
+         buffer->pBuffer + pixels + pixels /4,
+         pixels / 4);
 }
 
 }  // namespace media

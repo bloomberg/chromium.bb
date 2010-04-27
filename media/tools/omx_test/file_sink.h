@@ -11,13 +11,12 @@
 #include "base/basictypes.h"
 #include "base/scoped_handle.h"
 #include "base/scoped_ptr.h"
-#include "media/omx/omx_output_sink.h"
 
 namespace media {
 
 // This class writes output of a frame decoded by OmxCodec and save it to
 // a file.
-class FileSink : public OmxOutputSink {
+class FileSink {
  public:
   FileSink(std::string output_filename,
            bool simulate_copy,
@@ -31,14 +30,7 @@ class FileSink : public OmxOutputSink {
         csc_buf_size_(0) {
   }
 
-  // OmxOutputSink implementations.
-  virtual bool ProvidesEGLImages() const { return false; }
-  virtual bool AllocateEGLImages(int width, int height,
-                                 std::vector<EGLImageKHR>* images);
-  virtual void ReleaseEGLImages(const std::vector<EGLImageKHR>& images);
-  virtual void UseThisBuffer(int buffer_id, OMX_BUFFERHEADERTYPE* buffer);
-  virtual void StopUsingThisBuffer(int id);
-  virtual void BufferReady(int buffer_id, BufferUsedCallback* callback);
+  virtual void BufferReady(int size, uint8* buffer);
 
   // Initialize this object. Returns true if successful.
   bool Initialize();
@@ -64,8 +56,6 @@ class FileSink : public OmxOutputSink {
   int copy_buf_size_;
   scoped_array<uint8> csc_buf_;
   int csc_buf_size_;
-
-  std::map<int, OMX_BUFFERHEADERTYPE*> omx_buffers_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSink);
 };

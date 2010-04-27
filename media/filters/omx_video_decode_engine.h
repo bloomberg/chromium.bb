@@ -25,8 +25,7 @@ namespace media {
 
 // TODO(hclam):
 // Extract the OmxOutputSink implementation to a strategy class.
-class OmxVideoDecodeEngine : public VideoDecodeEngine,
-                             public OmxOutputSink {
+class OmxVideoDecodeEngine : public VideoDecodeEngine {
  public:
   OmxVideoDecodeEngine();
   virtual ~OmxVideoDecodeEngine();
@@ -51,35 +50,7 @@ class OmxVideoDecodeEngine : public VideoDecodeEngine,
     message_loop_ = message_loop;
   };
 
-  // Implementation of OmxOutputSink interface.
-  virtual bool ProvidesEGLImages() const { return false; }
-  virtual bool AllocateEGLImages(int width, int height,
-                                 std::vector<EGLImageKHR>* images);
-  virtual void ReleaseEGLImages(const std::vector<EGLImageKHR>& images);
-  virtual void UseThisBuffer(int buffer_id, OMX_BUFFERHEADERTYPE* buffer);
-  virtual void StopUsingThisBuffer(int id);
-  virtual void BufferReady(int buffer_id, BufferUsedCallback* callback);
-
  private:
-  typedef std::pair<int, OMX_BUFFERHEADERTYPE*> OmxOutputUnit;
-  typedef std::vector<OmxOutputUnit> OmxBufferList;
-
-  struct YuvFrame {
-    // TODO(ajwong): Please avoid ever using this class anywhere else until
-    // we've consolidated the buffer struct.
-    YuvFrame(size_t c) {
-      size = 0;
-      capacity = c;
-      data = new unsigned char[capacity];
-    }
-    ~YuvFrame() {
-      delete [] data;
-    }
-    size_t size;
-    size_t capacity;
-    unsigned char* data;
-  };
-
   // A struct to hold parameters of a decode request. Objects pointed by
   // these parameters are owned by the caller.
   struct DecodeRequest {
@@ -96,37 +67,24 @@ class OmxVideoDecodeEngine : public VideoDecodeEngine,
 
   virtual void OnFeedDone(Buffer* buffer);
   virtual void OnHardwareError();
-  virtual void OnReadComplete(
-      int buffer_id, OmxOutputSink::BufferUsedCallback* callback);
+  virtual void OnReadComplete(OMX_BUFFERHEADERTYPE* buffer);
   virtual void OnFormatChange(
       const OmxConfigurator::MediaFormat& input_format,
       const OmxConfigurator::MediaFormat& output_format);
 
-  virtual bool DecodedFrameAvailable();
-  virtual void MergeBytesFrameQueue(uint8* buffer, int size);
-  virtual bool IsFrameComplete(const YuvFrame* frame);
-  virtual OmxBufferList::iterator FindBuffer(int buffer_id);
-
   State state_;
-  size_t frame_bytes_;
   size_t width_;
   size_t height_;
-  scoped_array<uint8> y_buffer_;
-  scoped_array<uint8> u_buffer_;
-  scoped_array<uint8> v_buffer_;
 
   // TODO(hclam): We should let OmxCodec handle this case.
   bool has_fed_on_eos_;  // Used to avoid sending an end of stream to
   // OpenMax twice since OpenMax does not always
   // handle this nicely.
-  std::list<YuvFrame*> yuv_frame_queue_;
   std::list<DecodeRequest> decode_request_queue_;
 
   scoped_refptr<media::OmxCodec> omx_codec_;
   scoped_ptr<media::OmxConfigurator> omx_configurator_;
   MessageLoop* message_loop_;
-
-  OmxBufferList omx_buffers_;
 
   DISALLOW_COPY_AND_ASSIGN(OmxVideoDecodeEngine);
 };

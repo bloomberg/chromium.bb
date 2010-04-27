@@ -115,26 +115,11 @@ class MockOmxConfigurator : public OmxConfigurator {
                           OMX_PARAM_PORTDEFINITIONTYPE* output_def));
 };
 
-class MockOmxOutputSink : public OmxOutputSink {
- public:
-  MOCK_CONST_METHOD0(ProvidesEGLImages, bool());
-  MOCK_METHOD3(AllocateEGLImages,
-               bool(int width, int height,
-                    std::vector<EGLImageKHR>* images));
-  MOCK_METHOD1(ReleaseEGLImages,
-               void(const std::vector<EGLImageKHR>& images));
-  MOCK_METHOD2(UseThisBuffer, void(int buffer_id,
-                                   OMX_BUFFERHEADERTYPE* buffer));
-  MOCK_METHOD1(StopUsingThisBuffer, void(int buffer_id));
-  MOCK_METHOD2(BufferReady, void(int buffer_id,
-                                 BufferUsedCallback* callback));
-};
-
 class OmxCodecTest : public testing::Test {
  public:
   OmxCodecTest ()
       : omx_codec_(new OmxCodec(&message_loop_)) {
-    omx_codec_->Setup(&mock_configurator_, &mock_output_sink_);
+    omx_codec_->Setup(&mock_configurator_);
   }
 
   ~OmxCodecTest() {
@@ -206,20 +191,11 @@ class OmxCodecTest : public testing::Test {
         .Times(kBufferCount)
         .WillRepeatedly(DoAll(UseBuffer(), Return(OMX_ErrorNone)));
 
-    // Don't support EGL images in this case.
-    EXPECT_CALL(mock_output_sink_, ProvidesEGLImages())
-        .WillOnce(Return(false));
-
     // Expect allocation of output buffers and send command complete.
     EXPECT_CALL(*MockOmx::get(),
                 AllocateBuffer(NotNull(), 1, IsNull(), kBufferSize))
         .Times(kBufferCount)
         .WillRepeatedly(DoAll(AllocateBuffer(), Return(OMX_ErrorNone)));
-
-    // The allocate output buffers will then be passed to output sink.
-    for (int i = 0; i < kBufferCount; ++i) {
-      EXPECT_CALL(mock_output_sink_, UseThisBuffer(i, _));
-    }
   }
 
   void ExpectToExecuting() {
@@ -262,18 +238,9 @@ class OmxCodecTest : public testing::Test {
         .Times(kBufferCount)
         .WillRepeatedly(DoAll(FreeBuffer(), Return(OMX_ErrorNone)));
 
-    // Expect free output buffer.
-    for (int i = 0; i < kBufferCount; ++i) {
-      EXPECT_CALL(mock_output_sink_, StopUsingThisBuffer(i));
-    }
-
     EXPECT_CALL(*MockOmx::get(), FreeBuffer(1, NotNull()))
         .Times(kBufferCount)
         .WillRepeatedly(DoAll(FreeBuffer(), Return(OMX_ErrorNone)));
-
-    // Report that the sink don't provide EGL images.
-    EXPECT_CALL(mock_output_sink_, ProvidesEGLImages())
-        .WillOnce(Return(false));
   }
 
   void ExpectToEmpty() {
@@ -298,9 +265,8 @@ class OmxCodecTest : public testing::Test {
     ExpectToEmpty();
   }
 
-  void ReadCallback(int buffer_id,
-                    OmxOutputSink::BufferUsedCallback* callback) {
-    output_units_.push_back(std::make_pair(buffer_id, callback));
+  void ReadCallback(OMX_BUFFERHEADERTYPE* buffer) {
+    output_units_.push_back(buffer);
   }
 
   void MakeReadRequest() {
@@ -318,13 +284,11 @@ class OmxCodecTest : public testing::Test {
         .RetiresOnSaturation();
   }
 
-  typedef std::pair<int, OmxOutputSink::BufferUsedCallback*> OutputUnit;
-  std::deque<OutputUnit> output_units_;
+  std::deque<OMX_BUFFERHEADERTYPE*> output_units_;
   std::deque<OMX_BUFFERHEADERTYPE*> fill_this_buffer_received_;
 
   MockOmx mock_omx_;
   MockOmxConfigurator mock_configurator_;
-  MockOmxOutputSink mock_output_sink_;
 
   MessageLoop message_loop_;
   scoped_refptr<OmxCodec> omx_codec_;
@@ -358,6 +322,11 @@ TEST_F(OmxCodecTest, EndOfStream) {
   // buffers already.
   EXPECT_EQ(0u, output_units_.size());
   for (int i = 0; i < kBufferCount; ++i) {
+    // Give buffers back to OmxCodec. OmxCodec will make a new
+    // FillThisBuffer() call for each read.
+    EXPECT_CALL(*MockOmx::get(), FillThisBuffer(NotNull()))
+        .WillOnce(DoAll(FillEosBuffer(), Return(OMX_ErrorNone)))
+        .RetiresOnSaturation();
     MakeReadRequest();
   }
   message_loop_.RunAllPending();
@@ -365,19 +334,11 @@ TEST_F(OmxCodecTest, EndOfStream) {
 
   // Make sure buffers received are in order.
   for (int i = 0; i < kBufferCount; ++i) {
-    EXPECT_EQ(i, output_units_[i].first);
-    EXPECT_TRUE(output_units_[i].second != NULL);
+    // TODO(jiesun): How to verify this now?
+    // EXPECT_EQ(i, output_units_[i].first);
+    EXPECT_TRUE(output_units_[i] != NULL);
   }
 
-  // Give buffers back to OmxCodec. OmxCodec will make a new
-  // FillThisBuffer() call for each read.
-  for (int i = kBufferCount - 1; i >= 0; --i) {
-    EXPECT_CALL(*MockOmx::get(), FillThisBuffer(NotNull()))
-        .WillOnce(DoAll(FillEosBuffer(), Return(OMX_ErrorNone)))
-        .RetiresOnSaturation();
-    output_units_[i].second->Run(output_units_[i].first);
-    delete output_units_[i].second;
-  }
   output_units_.clear();
 
   // Make some read requests and make sure end-of-stream buffer id
@@ -390,8 +351,7 @@ TEST_F(OmxCodecTest, EndOfStream) {
   EXPECT_EQ(2 * kBufferCount, static_cast<int>(output_units_.size()));
 
   for (size_t i = 0; i <output_units_.size(); ++i) {
-    EXPECT_EQ(OmxCodec::kEosBuffer, output_units_[i].first);
-    EXPECT_EQ(NULL, output_units_[i].second);
+    EXPECT_EQ(NULL, output_units_[i]);
   }
   output_units_.clear();
 
@@ -413,6 +373,7 @@ TEST_F(OmxCodecTest, OutputFlowControl) {
   // start. Reads issued to OmxCodec will be fulfilled now.
   EXPECT_EQ(0u, output_units_.size());
   for (int i = 0; i < kBufferCount; ++i) {
+    ExpectAndSaveFillThisBuffer();
     MakeReadRequest();
   }
   message_loop_.RunAllPending();
@@ -420,26 +381,22 @@ TEST_F(OmxCodecTest, OutputFlowControl) {
 
   // Make sure buffers received are in order.
   for (int i = 0; i < kBufferCount; ++i) {
-    EXPECT_EQ(i, output_units_[i].first);
-    EXPECT_TRUE(output_units_[i].second != NULL);
+    EXPECT_TRUE(output_units_[i] != NULL);
   }
 
-  // Give the buffer back in reverse order.
-  for (int i = kBufferCount - 1; i >= 0; --i) {
-    ExpectAndSaveFillThisBuffer();
-    output_units_[i].second->Run(output_units_[i].first);
-    delete output_units_[i].second;
-  }
   output_units_.clear();
 
   // In each loop, perform the following actions:
   // 1. Make a read request to OmxCodec.
   // 2. Fake a response for FillBufferDone().
   // 3. Expect read response received.
-  // 4. Give the buffer read back to OmxCodec.
-  // 5. Expect a FillThisBuffer() is called to OpenMAX.
   for (int i = 0; i < kBufferCount; ++i) {
     // 1. First make a read request.
+    // Since a buffer is given back to OmxCodec. A FillThisBuffer() is called
+    // to OmxCodec.
+    EXPECT_CALL(*MockOmx::get(), FillThisBuffer(NotNull()))
+         .WillOnce(Return(OMX_ErrorNone))
+         .RetiresOnSaturation();
     MakeReadRequest();
 
     // 2. Then fake a response from OpenMAX.
@@ -460,17 +417,8 @@ TEST_F(OmxCodecTest, OutputFlowControl) {
     // receive one buffer now. Also expect the buffer id be received in
     // reverse order.
     EXPECT_EQ(1u, output_units_.size());
-    EXPECT_EQ(kBufferCount - i - 1, output_units_.front().first);
+    //EXPECT_EQ(kBufferCount - i - 1, output_units_.front().first);
 
-    // 4. Since a buffer is given back to OmxCodec. A FillThisBuffer() is called
-    // to OmxCodec.
-    EXPECT_CALL(*MockOmx::get(), FillThisBuffer(NotNull()))
-        .WillOnce(Return(OMX_ErrorNone))
-        .RetiresOnSaturation();
-
-    // 5. Give this buffer back to OmxCodec.
-    output_units_.front().second->Run(output_units_.front().first);
-    delete output_units_.front().second;
     output_units_.pop_front();
 
     // Make sure actions are completed.

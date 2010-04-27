@@ -20,7 +20,6 @@
 #include "media/filters/bitstream_converter.h"
 #include "media/omx/omx_codec.h"
 #include "media/base/data_buffer.h"
-#include "media/omx/omx_output_sink.h"
 #include "media/tools/omx_test/color_space_util.h"
 #include "media/tools/omx_test/file_reader_util.h"
 #include "media/tools/omx_test/file_sink.h"
@@ -34,7 +33,6 @@ using media::OmxCodec;
 using media::OmxConfigurator;
 using media::OmxDecoderConfigurator;
 using media::OmxEncoderConfigurator;
-using media::OmxOutputSink;
 using media::YuvFileReader;
 using media::Buffer;
 using media::DataBuffer;
@@ -111,8 +109,7 @@ class TestApp {
       FeedInputBuffer();
   }
 
-  void ReadCompleteCallback(int buffer,
-                            FileSink::BufferUsedCallback* callback) {
+  void ReadCompleteCallback(OMX_BUFFERHEADERTYPE* buffer) {
     // This callback is received when the decoder has completed a decoding
     // task and given us some output data. The buffer is owned by the decoder.
     if (stopped_ || error_)
@@ -122,7 +119,7 @@ class TestApp {
       first_sample_delivered_time_ = base::TimeTicks::HighResNow();
 
     // If we are readding to the end, then stop.
-    if (buffer == OmxCodec::kEosBuffer) {
+    if (buffer == NULL) {
       codec_->Stop(NewCallback(this, &TestApp::StopCallback));
       return;
     }
@@ -131,7 +128,7 @@ class TestApp {
     codec_->Read(NewCallback(this, &TestApp::ReadCompleteCallback));
 
     if (file_sink_.get())
-      file_sink_->BufferReady(buffer, callback);
+      file_sink_->BufferReady(buffer->nFilledLen, buffer->pBuffer);
 
     // could OMX IL return patial sample for decoder?
     frame_count_++;
@@ -151,7 +148,7 @@ class TestApp {
     // Setup the |codec_| with the message loop of the current thread. Also
     // setup component name, codec format and callbacks.
     codec_ = new OmxCodec(&message_loop_);
-    codec_->Setup(configurator_.get(), file_sink_.get());
+    codec_->Setup(configurator_.get());
     codec_->SetErrorCallback(NewCallback(this, &TestApp::ErrorCallback));
     codec_->SetFormatCallback(NewCallback(this, &TestApp::FormatCallback));
 
