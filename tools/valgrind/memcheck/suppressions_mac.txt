@@ -963,6 +963,7 @@
   bug_40659
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN19extension_file_util13LoadExtensionERK8FilePathbPSs
    fun:_ZN12CrxInstaller15CompleteInstallEv
    fun:_Z16DispatchToMethodI12CrxInstallerMS0_FvvEEvPT_T0_RK6Tuple0
