@@ -397,9 +397,13 @@ STDMETHODIMP ChromeActiveDocument::SaveHistory(IStream* stream) {
 }
 
 STDMETHODIMP ChromeActiveDocument::SetPositionCookie(DWORD position_cookie) {
-  int index = static_cast<int>(position_cookie);
-  navigation_info_.navigation_index = index;
-  automation_client_->NavigateToIndex(index);
+  if (automation_client_.get()) {
+    int index = static_cast<int>(position_cookie);
+    navigation_info_.navigation_index = index;
+    automation_client_->NavigateToIndex(index);
+  } else {
+    DLOG(WARNING) << "Invalid automation client instance";
+  }
   return S_OK;
 }
 
@@ -810,6 +814,10 @@ void ChromeActiveDocument::OnOpenURL(int tab_handle,
 
 void ChromeActiveDocument::OnAttachExternalTab(int tab_handle,
     const IPC::AttachExternalTabParams& params) {
+  if (!automation_client_.get()) {
+    DLOG(WARNING) << "Invalid automation client instance";
+    return;
+  }
   DWORD flags = 0;
   if (params.user_gesture)
     flags = NWMF_USERREQUESTED;
@@ -981,6 +989,8 @@ bool ChromeActiveDocument::ParseUrl(const std::wstring& url,
 
 bool ChromeActiveDocument::LaunchUrl(const std::wstring& url,
                                      bool is_new_navigation) {
+  DCHECK(automation_client_.get() != NULL);
+
   url_.Allocate(url.c_str());
 
   if (!is_new_navigation) {
@@ -1065,7 +1075,7 @@ HRESULT ChromeActiveDocument::SetPageFontSize(const GUID* cmd_group_guid,
                                               VARIANT* in_args,
                                               VARIANT* out_args) {
   if (!automation_client_.get()) {
-    NOTREACHED() << "Invalid automtion client";
+    NOTREACHED() << "Invalid automation client";
     return E_FAIL;
   }
 
