@@ -4,47 +4,19 @@
 # be found in the LICENSE file.
 
 import os
-import shutil
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__),
+                             "..", "..", "tests"))
+
 import subprocess
-import tempfile
 import unittest
 
-
-# From http://lackingrhoticity.blogspot.com/2008/11/tempdirtestcase-python-unittest-helper.html
-class TempDirTestCase(unittest.TestCase):
-
-  def setUp(self):
-    self._on_teardown = []
-
-  def make_temp_dir(self):
-    temp_dir = tempfile.mkdtemp(prefix="tmp-%s-" % self.__class__.__name__)
-    def tear_down():
-      shutil.rmtree(temp_dir)
-    self._on_teardown.append(tear_down)
-    return temp_dir
-
-  def tearDown(self):
-    for func in reversed(self._on_teardown):
-      func()
-
-
-def write_file(filename, data):
-  fh = open(filename, "w")
-  try:
-    fh.write(data)
-  finally:
-    fh.close()
-
-
-# TODO: use subprocess.check_call when we have Python 2.5 on Windows.
-def check_call(*args, **kwargs):
-  rc = subprocess.call(*args, **kwargs)
-  if rc != 0:
-    raise Exception("Failed with return code %i" % rc)
+from testutils import write_file
+import testutils
 
 
 def run_ncval(input_file):
-  check_call(["ncval", input_file], stdout=open(os.devnull, "w"))
+  testutils.check_call(["ncval", input_file], stdout=open(os.devnull, "w"))
 
 
 # nacl-binutils' own linker scripts currently don't produce
@@ -54,7 +26,7 @@ def run_ncval(input_file):
 LDSCRIPTS_DIR = os.path.join(os.path.dirname(__file__), "ldscripts")
 
 
-class ToolchainTests(TempDirTestCase):
+class ToolchainTests(testutils.TempDirTestCase):
 
   def test_ncval_returns_errors(self):
     # Check that ncval returns a non-zero return code when there is a
@@ -71,8 +43,8 @@ int main() {
 """
     temp_dir = self.make_temp_dir()
     write_file(os.path.join(temp_dir, "code.c"), code)
-    check_call(["nacl-gcc", os.path.join(temp_dir, "code.c"),
-                "-o", os.path.join(temp_dir, "prog")])
+    testutils.check_call(["nacl-gcc", os.path.join(temp_dir, "code.c"),
+                          "-o", os.path.join(temp_dir, "prog")])
     rc = subprocess.call(["ncval", os.path.join(temp_dir, "prog")],
                          stdout=open(os.devnull, "w"))
     self.assertEquals(rc, 1)
@@ -100,9 +72,9 @@ int main() {
     write_file(os.path.join(temp_dir, "code.c"), code)
     # ncval doesn't seem to accept .o files any more.
     # TODO: fix ncval.
-    check_call(["nacl-gcc", # "-c",
-                os.path.join(temp_dir, "code.c"),
-                "-o", os.path.join(temp_dir, "prog")])
+    testutils.check_call(["nacl-gcc", # "-c",
+                          os.path.join(temp_dir, "code.c"),
+                          "-o", os.path.join(temp_dir, "prog")])
     run_ncval(os.path.join(temp_dir, "prog"))
 
   def test_library_plt_entries(self):
@@ -116,10 +88,11 @@ void foo(void) {
 """
     temp_dir = self.make_temp_dir()
     write_file(os.path.join(temp_dir, "code.c"), library_code)
-    check_call(["nacl-gcc", "-nostdlib", "-shared", "-fPIC",
-                "-Wl,-T,%s" % os.path.join(LDSCRIPTS_DIR, "elf_nacl.xs"),
-                os.path.join(temp_dir, "code.c"),
-                "-o", os.path.join(temp_dir, "code.so")])
+    testutils.check_call([
+        "nacl-gcc", "-nostdlib", "-shared", "-fPIC",
+        "-Wl,-T,%s" % os.path.join(LDSCRIPTS_DIR, "elf_nacl.xs"),
+        os.path.join(temp_dir, "code.c"),
+        "-o", os.path.join(temp_dir, "code.so")])
     run_ncval(os.path.join(temp_dir, "code.so"))
  
   def test_executable_plt_entries(self):
@@ -139,17 +112,19 @@ int _start(void) {
     temp_dir = self.make_temp_dir()
     write_file(os.path.join(temp_dir, "library.c"), library_code)
     write_file(os.path.join(temp_dir, "executable.c"), executable_code)
-    check_call(["nacl-gcc", "-nostdlib", "-shared", "-fPIC",
-                "-Wl,-T,%s" % os.path.join(LDSCRIPTS_DIR, "elf_nacl.xs"),
-                os.path.join(temp_dir, "library.c"),
-                "-o", os.path.join(temp_dir, "library.so")])
+    testutils.check_call([
+        "nacl-gcc", "-nostdlib", "-shared", "-fPIC",
+        "-Wl,-T,%s" % os.path.join(LDSCRIPTS_DIR, "elf_nacl.xs"),
+        os.path.join(temp_dir, "library.c"),
+        "-o", os.path.join(temp_dir, "library.so")])
     # TODO: Make this work with elf_nacl.x.
     # elf_nacl.xs is supposed to be for shared libraries, not executables.
-    check_call(["nacl-gcc", "-nostdlib", "-fPIC",
-                "-Wl,-T,%s" % os.path.join(LDSCRIPTS_DIR, "elf_nacl.xs"),
-                os.path.join(temp_dir, "executable.c"),
-                os.path.join(temp_dir, "library.so"),
-                "-o", os.path.join(temp_dir, "prog")])
+    testutils.check_call([
+        "nacl-gcc", "-nostdlib", "-fPIC",
+        "-Wl,-T,%s" % os.path.join(LDSCRIPTS_DIR, "elf_nacl.xs"),
+        os.path.join(temp_dir, "executable.c"),
+        os.path.join(temp_dir, "library.so"),
+        "-o", os.path.join(temp_dir, "prog")])
     run_ncval(os.path.join(temp_dir, "prog"))
     # Also validate the library as a sanity check, but it shouldn't
     # contain any PLT entries.
@@ -173,10 +148,10 @@ int _start() {
   return 0;
 }
 """)
-    check_call(["nacl-gcc", "-nostartfiles", "-nostdlib",
-                "-L%s" % temp_dir,
-                os.path.join(temp_dir, "prog.c"),
-                "-o", os.path.join(temp_dir, "prog")])
+    testutils.check_call(["nacl-gcc", "-nostartfiles", "-nostdlib",
+                          "-L%s" % temp_dir,
+                          os.path.join(temp_dir, "prog.c"),
+                          "-o", os.path.join(temp_dir, "prog")])
 
 
 if __name__ == "__main__":
