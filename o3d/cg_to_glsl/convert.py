@@ -28,18 +28,57 @@ import sys
 # separator, and perhaps other things. For most robust behavior, try
 # to find cgc on disk.
 
-CGC = '/usr/bin/cgc'
-if not os.path.exists(CGC):
-  CGC = 'c:/Program Files (x86)/NVIDIA Corporation/Cg/bin/cgc.exe'
+def find_o3d_root():
+  path = os.path.abspath(sys.path[0])
+  for i in range(0, 5):
+    path = os.path.dirname(path)
+    if (os.path.isdir(os.path.join(path, 'o3d')) and
+        os.path.isdir(os.path.join(path, 'third_party'))):
+      return path
+  return ''
+
+def default_cgc():
+  paths = [ '/usr/bin/cgc',
+            'C:/Program Files/NVIDIA Corporation/Cg/bin/cgc.exe',
+            'C:/Program Files (x86)/NVIDIA Corporation/Cg/bin/cgc.exe' ]
+  for path in paths:
+    if os.path.exists(path):
+      return path
+  script_path = os.path.abspath(sys.path[0])
+  # Try again looking in the current working directory to match
+  # the layout of the prebuilt o3dConverter binaries.
+  cur_dir_paths = [ os.path.join(script_path, 'cgc'),
+                    os.path.join(script_path, 'cgc.exe') ]
+  for path in cur_dir_paths:
+    if (os.path.exists(path)):
+      return path
+
+  # Last fallback is to use the binaries in o3d/third_party/cg/files.
+  # Unfortunately, because we can't rely on the OS name, we have to
+  # actually try running the cgc executable.
+  o3d_root = find_o3d_root();
+  cg_root = os.path.join(o3d_root, 'third_party', 'cg', 'files')
+  exes = [ os.path.join(cg_root, 'linux', 'bin', 'cgc'),
+           os.path.join(cg_root, 'linux', 'bin64', 'cgc'),
+           os.path.join(cg_root, 'mac', 'bin', 'cgc'),
+           os.path.join(cg_root, 'win', 'bin', 'cgc.exe') ]
+  for exe in exes:
+    try:
+      subprocess.call([exe, '-v'],
+                      stdout=open(os.devnull, 'w'),
+                      stderr=open(os.devnull, 'w'))
+      return exe
+    except:
+      pass
+
+  # We don't know where cgc lives.
+  return ''
+
+def check_cgc(CGC):
   if not os.path.exists(CGC):
-    CGC = 'c:/Program Files (x86)/NVIDIA Corporation/Cg/bin/cgc.exe'
-    if not os.path.exists(CGC):
-      script_path = os.path.abspath(sys.path[0])
-      # Try again looking in the current working directory to match
-      # the layout of the prebuilt o3dConverter binaries.
-      CGC = os.path.join(script_path, 'cgc')
-      if not os.path.exists(CGC):
-        CGC = os.path.join(script_path, 'cgc.exe')
+    print >>sys.stderr, CGC+' is not found, use --cgc option to specify its'
+    print >>sys.stderr, 'location.  You may need to install nvidia cg toolkit.'
+    sys.exit(1)
 
 # cgc complains about TANGENT1 and BINORMAL1 semantics, so we hack it by
 # replacing standard semantics with ATTR8-ATTR12 and then renaming them back to
@@ -173,7 +212,7 @@ def cg_rename_attributes(cg_shader):
   return cg_shader
 
 
-def cg_to_glsl(cg_shader):
+def cg_to_glsl(cg_shader, CGC):
   cg_shader = cg_rename_attributes(cg_shader)
 
   vertex_entry = re.search(r'#o3d\s+VertexShaderEntryPoint\s+(\w+)',
@@ -203,16 +242,9 @@ def get_matrixloadorder(cg_shader):
   return re.search(r'(?m)^.*#o3d\s+MatrixLoadOrder\b.*$', cg_shader).group(0)
 
 
-def check_cg():
-  if not os.path.exists(CGC):
-    print >>sys.stderr, CGC+' is not found, use --cgc option to specify its'
-    print >>sys.stderr, 'location.  You may need to install nvidia cg toolkit.'
-    sys.exit(1)
-
-
-def main(cg_shader):
+def main(cg_shader, CGC):
   matrixloadorder = get_matrixloadorder(cg_shader)
-  glsl_vertex, glsl_fragment, log = cg_to_glsl(cg_shader)
+  glsl_vertex, glsl_fragment, log = cg_to_glsl(cg_shader, CGC)
 
   print log
   print fix_glsl(glsl_vertex)
@@ -224,6 +256,7 @@ def main(cg_shader):
 
 
 if __name__ == '__main__':
+  CGC = default_cgc()
   cmdline_parser = optparse.OptionParser()
   cmdline_parser.add_option('-i', dest='file', default=None,
       help='input shader; standard input if omitted')
@@ -231,7 +264,7 @@ if __name__ == '__main__':
       help='path to cgc [default: %default]')
   options, args = cmdline_parser.parse_args()
   CGC = options.CGC
-  check_cg()
+  check_cgc(CGC)
 
   try:
     if options.file is None:
@@ -245,4 +278,4 @@ if __name__ == '__main__':
   if not input:
     cmdline_parser.print_help()
   else:
-    main(input)
+    main(input, CGC)
