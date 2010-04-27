@@ -545,6 +545,7 @@
         # All unittests in browser, common, and renderer.
         'browser/app_controller_mac_unittest.mm',
         'browser/app_menu_model_unittest.cc',
+        'browser/autocomplete/autocomplete_edit_unittest.cc',
         'browser/autocomplete/autocomplete_edit_view_mac_unittest.mm',
         'browser/autocomplete/autocomplete_unittest.cc',
         'browser/autocomplete/autocomplete_popup_view_mac_unittest.mm',

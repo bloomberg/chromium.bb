@@ -1167,36 +1167,21 @@ void AutocompleteEditViewWin::OnContextMenu(HWND window, const CPoint& point) {
 }
 
 void AutocompleteEditViewWin::OnCopy() {
-  const std::wstring text(GetSelectedText());
+  std::wstring text(GetSelectedText());
   if (text.empty())
     return;
 
+  CHARRANGE sel;
+  GURL url;
+  bool write_url = false;
+  GetSel(sel);
+  model_->AdjustTextForCopy(sel.cpMin, IsSelectAll(), &text, &url, &write_url);
   ScopedClipboardWriter scw(g_browser_process->clipboard());
-  // Check if the user is copying the whole address bar.  If they are, we
-  // assume they are trying to copy a URL and write this to the clipboard as a
-  // hyperlink.
-  if (static_cast<int>(text.length()) >= GetTextLength()) {
-    // The entire control is selected.  Let's see what the user typed.  We
-    // can't use model_->CurrentTextIsURL() or model_->GetDataForURLExport()
-    // because right now the user is probably holding down control to cause the
-    // copy, which will screw up our calculation of the desired_tld.
-    GURL url;
-    if (model_->GetURLForText(text, &url)) {
-      // If the scheme is http or https and the user isn't editing,
-      // we should copy the true URL instead of the (unescaped) display
-      // string to avoid encoding and escaping issues when pasting this text
-      // elsewhere.
-      if ((url.SchemeIs("http") || url.SchemeIs("https")) &&
-          !model_->user_input_in_progress())
-        scw.WriteText(UTF8ToWide(url.spec()));
-      else
-        scw.WriteText(text);
-      scw.WriteBookmark(text, url.spec());
-      scw.WriteHyperlink(EscapeForHTML(UTF16ToUTF8(text)), url.spec());
-      return;
-    }
-  }
   scw.WriteText(text);
+  if (write_url) {
+    scw.WriteBookmark(text, url.spec());
+    scw.WriteHyperlink(EscapeForHTML(UTF16ToUTF8(text)), url.spec());
+  }
 }
 
 void AutocompleteEditViewWin::OnCut() {
@@ -1794,10 +1779,10 @@ bool AutocompleteEditViewWin::OnKeyDownOnlyWritable(TCHAR key,
     // Cut:   Shift-Delete and Ctrl-x are treated as cut.  Ctrl-Shift-Delete and
     //        Ctrl-Shift-x are not treated as cut even though the underlying
     //        CRichTextEdit would treat them as such.
-    // Copy:  Ctrl-c is treated as copy.  Shift-Ctrl-c is not.  (This is handled
-    //        in OnKeyDownAllModes().)
-    // Paste: Shift-Insert and Ctrl-v are tread as paste.  Ctrl-Shift-Insert and
-    //        Ctrl-Shift-v are not.
+    // Copy:  Ctrl-Insert and Ctrl-c is treated as copy.  Shift-Ctrl-c is not.
+    //        (This is handled in OnKeyDownAllModes().)
+    // Paste: Shift-Insert and Ctrl-v are treated as paste.  Ctrl-Shift-Insert
+    //        and Ctrl-Shift-v are not.
     //
     // This behavior matches most, but not all Windows programs, and largely
     // conforms to what users expect.
@@ -1897,15 +1882,16 @@ bool AutocompleteEditViewWin::OnKeyDownOnlyWritable(TCHAR key,
 bool AutocompleteEditViewWin::OnKeyDownAllModes(TCHAR key,
                                                 UINT repeat_count,
                                                 UINT flags) {
-  // See KF_ALTDOWN comment atop OnKeyDownOnlyWriteable().
+  // See KF_ALTDOWN comment atop OnKeyDownOnlyWritable().
 
   switch (key) {
     case VK_CONTROL:
       model_->OnControlKeyChanged(true);
       return false;
 
+    case VK_INSERT:
     case 'C':
-      // See more detailed comments in OnKeyDownOnlyWriteable().
+      // See more detailed comments in OnKeyDownOnlyWritable().
       if ((flags & KF_ALTDOWN) || (GetKeyState(VK_CONTROL) >= 0))
         return false;
       if (GetKeyState(VK_SHIFT) >= 0)

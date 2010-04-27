@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -163,6 +165,45 @@ bool AutocompleteEditModel::GetURLForText(const std::wstring& text,
 
   *url = GURL(URLFixerUpper::FixupURL(WideToUTF8(text), std::string()));
   return true;
+}
+
+void AutocompleteEditModel::AdjustTextForCopy(int sel_start,
+                                              bool is_all_selected,
+                                              std::wstring* text,
+                                              GURL* url,
+                                              bool* write_url) {
+  *write_url = false;
+
+  if (sel_start != 0)
+    return;
+
+  // We can't use CurrentTextIsURL() or GetDataForURLExport() because right now
+  // the user is probably holding down control to cause the copy, which will
+  // screw up our calculation of the desired_tld.
+  if (!GetURLForText(*text, url))
+    return;  // Can't be parsed as a url, no need to adjust text.
+
+  if (!user_input_in_progress() && is_all_selected) {
+    *text = UTF8ToWide(url->spec());
+    *write_url = true;
+    return;
+  }
+
+  // Prefix the text with 'http://' if the text doesn't start with 'http://',
+  // the text parses as a url with a scheme of http, the user selected the
+  // entire host, and the user hasn't edited the host or manually removed the
+  // scheme.
+  if (url->SchemeIs(chrome::kHttpScheme)) {
+    std::wstring http = ASCIIToWide(chrome::kHttpScheme) +
+        ASCIIToWide(chrome::kStandardSchemeSeparator);
+    std::wstring host = UTF8ToWide(url->host());
+    if (text->compare(0, http.length(), http) != 0 &&
+        text->length() >= host.length() &&
+        permanent_text_.compare(0, host.length(), host) == 0) {
+      *text = http + *text;
+      *write_url = true;
+    }
+  }
 }
 
 void AutocompleteEditModel::SetInputInProgress(bool in_progress) {
