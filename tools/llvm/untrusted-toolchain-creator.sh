@@ -724,6 +724,8 @@ BuildAndInstallBinutils() {
 
   # --enable-checking is to avoid a build failure:
   #   tc-arm.c:2489: warning: empty body in an if-statement
+  # we build it statically to avoid depending on the libc version
+  #   of the host.
   RunWithLog "Configuring binutils"  ${TMP}/binutils.configure.log \
     env -i \
     PATH="/usr/bin:/bin" \
@@ -732,9 +734,13 @@ BuildAndInstallBinutils() {
                                    --enable-checking \
                                    --with-sysroot=${NEWLIB_INSTALL_DIR}
 
+  RunWithLog "Make configure-host" ${TMP}/binutils.configure-host.log \
+    env -i PATH="/usr/bin:/bin" \
+    make ${MAKE_OPTS} configure-host
+
   RunWithLog "Make binutils" ${TMP}/binutils.make.log \
     env -i PATH="/usr/bin:/bin" \
-    make ${MAKE_OPTS}
+    make ${MAKE_OPTS} LDFLAGS="-all-static"
 
   RunWithLog "Install binutils"  ${TMP}/binutils.install.log \
     env -i PATH="/usr/bin:/bin" \
