@@ -1024,3 +1024,30 @@
    fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
    fun:_ZN11MessageLoop11RunInternalEv
 }
+# Maybe this needs to be moved up to section 1?
+{
+   bug_42593
+   Memcheck:Leak
+   fun:calloc
+   fun:_internal_class_createInstanceFromZone
+   fun:_internal_class_createInstance
+   fun:+[NSObject allocWithZone:]
+   fun:_decodeObjectBinary
+   fun:_decodeObject
+   fun:-[NSButtonCell initWithCoder:]
+   fun:_decodeObjectBinary
+   fun:_decodeObject
+   fun:-[NSControl initWithCoder:]
+   fun:-[NSButton initWithCoder:]
+   fun:_decodeObjectBinary
+   fun:_decodeObject
+   fun:-[NSNibConnector initWithCoder:]
+   fun:-[NSNibOutletConnector initWithCoder:]
+   fun:_decodeObjectBinary
+   fun:-[NSKeyedUnarchiver _decodeArrayOfObjectsForKey:]
+   fun:-[NSArray(NSArray) initWithCoder:]
+   fun:_decodeObjectBinary
+   fun:_decodeObject
+   fun:-[NSIBObjectData initWithCoder:]
+   fun:_decodeObjectBinary
+}
