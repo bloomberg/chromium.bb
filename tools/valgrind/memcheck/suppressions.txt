@@ -2638,5 +2638,4 @@
    fun:_ZN3WTF17CStringTranslator9translateERPN7WebCore10StringImplERKPKcj
    fun:_ZN3WTF24HashSetTranslatorAdapterIPN7WebCore10StringImplENS_10HashTraitsIS3_EEPKcNS_17CStringTranslatorEE9translateERS3_RKS7_SC_j
    ...
-   fun:_ZN7WebCore9TimerBase10heapInsertEv
 }
