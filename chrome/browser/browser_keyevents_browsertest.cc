@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -447,7 +447,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CtrlKeyEvents) {
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestCtrlEnter));
 }
 
-#if defined(OS_CHROMEOS)
+#if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
 // See http://crbug.com/40037 for details.
 #define MAYBE_AccessKeys DISABLED_AccessKeys
 #else
