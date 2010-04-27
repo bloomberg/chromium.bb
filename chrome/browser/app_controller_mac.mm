@@ -499,46 +499,38 @@ void RecordLastRunAppBundlePath() {
   NSString* waitTitle = nil;
   NSString* exitTitle = nil;
 
-  std::wstring product_name = l10n_util::GetString(IDS_PRODUCT_NAME);
+  string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
 
   // Set the dialog text based on whether or not there are multiple downloads.
   if (downloadCount == 1) {
     // Dialog text: warning and explanation.
-    warningText =
-        base::SysWideToNSString(l10n_util::GetStringF(
-            IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_WARNING, product_name));
-    explanationText =
-        base::SysWideToNSString(l10n_util::GetStringF(
-            IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION, product_name));
+    warningText = l10n_util::GetNSStringF(
+        IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_WARNING, product_name);
+    explanationText = l10n_util::GetNSStringF(
+        IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION, product_name);
 
     // Cancel download and exit button text.
-    exitTitle =
-        base::SysWideToNSString(l10n_util::GetString(
-            IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL));
+    exitTitle = l10n_util::GetNSString(
+        IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL);
 
     // Wait for download button text.
-    waitTitle =
-        base::SysWideToNSString(l10n_util::GetString(
-            IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL));
+    waitTitle = l10n_util::GetNSString(
+        IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL);
   } else {
     // Dialog text: warning and explanation.
-    warningText =
-        base::SysWideToNSString(l10n_util::GetStringF(
-            IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_WARNING, product_name,
-            IntToWString(downloadCount)));
-    explanationText =
-        base::SysWideToNSString(l10n_util::GetStringF(
-            IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION, product_name));
+    warningText = l10n_util::GetNSStringF(
+        IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_WARNING, product_name,
+        IntToString16(downloadCount));
+    explanationText = l10n_util::GetNSStringF(
+        IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION, product_name);
 
     // Cancel downloads and exit button text.
-    exitTitle =
-        base::SysWideToNSString(l10n_util::GetString(
-            IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_OK_BUTTON_LABEL));
+    exitTitle = l10n_util::GetNSString(
+        IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_OK_BUTTON_LABEL);
 
     // Wait for downloads button text.
-    waitTitle =
-        base::SysWideToNSString(l10n_util::GetString(
-            IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL));
+    waitTitle = l10n_util::GetNSString(
+        IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL);
   }
 
   // 'waitButton' is the default choice.

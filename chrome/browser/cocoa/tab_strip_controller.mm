@@ -855,9 +855,7 @@ private:
   if (contents)
     titleString = base::SysUTF16ToNSString(contents->GetTitle());
   if (![titleString length]) {
-    titleString =
-      base::SysWideToNSString(
-          l10n_util::GetString(IDS_BROWSER_WINDOW_MAC_TAB_UNTITLED));
+    titleString = l10n_util::GetNSString(IDS_BROWSER_WINDOW_MAC_TAB_UNTITLED);
   }
   [tab setTitle:titleString];
 }

@@ -51,8 +51,8 @@ void EncodingMenuControllerDelegate::BuildEncodingMenu(Profile *profile,
     if (item_id == 0) {
       AddSeparatorToMenu(encoding_menu);
     } else {
-      using base::SysWideToNSString;
-      NSString *localized_title = SysUTF16ToNSString(localized_title_string16);
+      NSString *localized_title =
+          base::SysUTF16ToNSString(localized_title_string16);
       AppendMenuItem(encoding_menu, item_id, localized_title);
     }
   }
