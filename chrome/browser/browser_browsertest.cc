@@ -383,6 +383,25 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, FaviconOfOnloadRedirectToAnchorPage) {
   EXPECT_EQ(expected_favicon_url.spec(), entry->favicon().url().spec());
 }
 
+// Test that an icon can be changed from JS.
+IN_PROC_BROWSER_TEST_F(BrowserTest, FaviconChange) {
+  static const FilePath::CharType* kFile =
+      FILE_PATH_LITERAL("onload_change_favicon.html");
+  GURL file_url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
+                                          FilePath(kFile)));
+  ASSERT_TRUE(file_url.SchemeIs(chrome::kFileScheme));
+  ui_test_utils::NavigateToURL(browser(), file_url);
+
+  NavigationEntry* entry = browser()->GetSelectedTabContents()->
+      controller().GetActiveEntry();
+  static const FilePath::CharType* kIcon =
+      FILE_PATH_LITERAL("test1.png");
+  GURL expected_favicon_url(
+      ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
+                                         FilePath(kIcon)));
+  EXPECT_EQ(expected_favicon_url.spec(), entry->favicon().url().spec());
+}
+
 // TODO(sky): get these to run on a Mac.
 #if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(BrowserTest, PhantomTab) {

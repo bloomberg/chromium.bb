@@ -1027,6 +1027,9 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // TODO(darin): use a UTF-8 string to reduce data size
   IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateTitle, int32, std::wstring)
 
+  // Changes the icon url for the page in the UI.
+  IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateIconURL, int32, GURL)
+
   // Change the encoding name of the page in UI when the page has detected
   // proper encoding name.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateEncoding,

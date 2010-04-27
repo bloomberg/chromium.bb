@@ -2663,6 +2663,15 @@ void RenderView::didReceiveTitle(WebFrame* frame, const WebString& title) {
   UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
 }
 
+void RenderView::didChangeIcons(WebFrame* frame) {
+  if (!frame->parent()) {
+    Send(new ViewHostMsg_UpdateFavIconURL(
+        routing_id_,
+        page_id_,
+        frame->favIconURL()));
+  }
+}
+
 void RenderView::didFinishDocumentLoad(WebFrame* frame) {
   WebDataSource* ds = frame->dataSource();
   NavigationState* navigation_state = NavigationState::FromDataSource(ds);

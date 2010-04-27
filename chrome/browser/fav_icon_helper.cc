@@ -111,6 +111,11 @@ void FavIconHelper::UpdateFavIcon(NavigationEntry* entry,
 void FavIconHelper::UpdateFavIconURL(RenderViewHost* render_view_host,
                                      int32 page_id,
                                      const GURL& icon_url) {
+  // TODO(davemoore) Should clear on empty url. Currently we ignore it.
+  // This appears to be what FF does as well.
+  if (icon_url.is_empty())
+    return;
+
   NavigationEntry* entry = GetEntry();
   if (!entry)
     return;
