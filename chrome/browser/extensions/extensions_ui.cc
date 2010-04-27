@@ -752,7 +752,7 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
   if (!extension->options_url().is_empty())
     extension_data->SetString(L"options_url", extension->options_url().spec());
 
-  // Add list of content_script detail DictionaryValues.
+  // Add list of content_script detail DictionaryValues
   ListValue *content_script_list = new ListValue();
   UserScriptList content_scripts = extension->content_scripts();
   for (UserScriptList::const_iterator script = content_scripts.begin();
@@ -762,7 +762,7 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
   }
   extension_data->Set(L"content_scripts", content_script_list);
 
-  // Add permissions.
+  // Add permissions
   ListValue *permission_list = new ListValue;
   std::vector<URLPattern> permissions = extension->host_permissions();
   for (std::vector<URLPattern>::iterator permission = permissions.begin();
@@ -778,7 +778,7 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
        iter != pages.end(); ++iter) {
     DictionaryValue* view_value = new DictionaryValue;
     view_value->SetString(L"path",
-        iter->url.path().substr(1, std::string::npos));  // No leading slash.
+        iter->url.path().substr(1, std::string::npos));  // no leading slash
     view_value->SetInteger(L"renderViewId", iter->render_view_id);
     view_value->SetInteger(L"renderProcessId", iter->render_process_id);
     views->Append(view_value);
@@ -786,7 +786,6 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
   extension_data->Set(L"views", views);
   extension_data->SetBoolean(L"hasPopupAction",
       extension->browser_action() || extension->page_action());
-  extension_data->SetString(L"galleryUrl", extension->GalleryUrl().spec());
 
   return extension_data;
 }

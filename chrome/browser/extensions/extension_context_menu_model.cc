@@ -74,7 +74,7 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
     // hosting the extension. For other 3rd party extensions we don't have a
     // homepage url, so we just disable this menu item on those cases, at least
     // for now.
-    return extension_->GalleryUrl().is_valid();
+    return extension_->update_url().DomainIs("google.com");
   } else if (command_id == INSPECT_POPUP) {
     TabContents* contents = browser_->GetSelectedTabContents();
     if (!contents)
@@ -93,8 +93,9 @@ bool ExtensionContextMenuModel::GetAcceleratorForCommandId(
 void ExtensionContextMenuModel::ExecuteCommand(int command_id) {
   switch (command_id) {
     case NAME: {
-      browser_->OpenURL(extension_->GalleryUrl(), GURL(),
-                        NEW_FOREGROUND_TAB, PageTransition::LINK);
+      GURL url(std::string(extension_urls::kGalleryBrowsePrefix) +
+               std::string("/detail/") + extension_->id());
+      browser_->OpenURL(url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
       break;
     }
     case CONFIGURE:

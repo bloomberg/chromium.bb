@@ -1447,26 +1447,16 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
   return true;
 }
 
-GURL Extension::GalleryUrl() const {
-  if (!update_url_.DomainIs("google.com"))
-    return GURL();
-
-  GURL url(std::string(extension_urls::kGalleryBrowsePrefix) +
-           std::string("/detail/") + id_);
-
-  return url;
-}
-
 std::set<FilePath> Extension::GetBrowserImages() {
   std::set<FilePath> image_paths;
 
-  // Extension icons.
+  // extension icons
   for (std::map<int, std::string>::iterator iter = icons_.begin();
        iter != icons_.end(); ++iter) {
     image_paths.insert(FilePath::FromWStringHack(UTF8ToWide(iter->second)));
   }
 
-  // Theme images.
+  // theme images
   DictionaryValue* theme_images = GetThemeImages();
   if (theme_images) {
     for (DictionaryValue::key_iterator it = theme_images->begin_keys();
@@ -1477,7 +1467,7 @@ std::set<FilePath> Extension::GetBrowserImages() {
     }
   }
 
-  // Page action icons.
+  // page action icons
   if (page_action_.get()) {
     std::vector<std::string>* icon_paths = page_action_->icon_paths();
     for (std::vector<std::string>::iterator iter = icon_paths->begin();
@@ -1486,7 +1476,7 @@ std::set<FilePath> Extension::GetBrowserImages() {
     }
   }
 
-  // Browser action icons.
+  // browser action icons
   if (browser_action_.get()) {
     std::vector<std::string>* icon_paths = browser_action_->icon_paths();
     for (std::vector<std::string>::iterator iter = icon_paths->begin();

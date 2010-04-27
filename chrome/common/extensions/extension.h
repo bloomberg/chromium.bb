@@ -276,10 +276,6 @@ class Extension {
   const GURL& update_url() const { return update_url_; }
   const std::map<int, std::string>& icons() const { return icons_; }
 
-  // Returns the Google Gallery URL for this extension, if one exists. For
-  // third-party extensions, this returns a blank GURL.
-  GURL GalleryUrl() const;
-
   // Theme-related.
   DictionaryValue* GetThemeImages() const { return theme_images_.get(); }
   DictionaryValue* GetThemeColors() const { return theme_colors_.get(); }
