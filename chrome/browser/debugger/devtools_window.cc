@@ -181,7 +181,6 @@ void DevToolsWindow::SetDocked(bool docked) {
       inspected_window = NULL;
     }
   }
-  UpdateTheme();
   Show(false);
 }
 
@@ -288,7 +287,7 @@ void DevToolsWindow::UpdateTheme() {
   BrowserThemeProvider* tp = profile_->GetThemeProvider();
   CHECK(tp);
   std::string command;
-  if (tp->UsingDefaultTheme() || !docked_) {
+  if (tp->UsingDefaultTheme()) {
     command = "WebInspector.resetToolbarColors()";
   } else {
     SkColor color_toolbar =
