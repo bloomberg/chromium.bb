@@ -40,8 +40,8 @@
 #include <string>
 
 #include "common/dwarf/dwarf2enums.h"
+#include "common/test_assembler.h"
 #include "google_breakpad/common/breakpad_types.h"
-#include "processor/test_assembler.h"
 
 namespace google_breakpad {
 

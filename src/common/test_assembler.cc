@@ -36,7 +36,7 @@
 #include <cstdio>
 #include <iterator>
 
-#include "processor/test_assembler.h"
+#include "common/test_assembler.h"
 
 namespace google_breakpad {
 namespace TestAssembler {

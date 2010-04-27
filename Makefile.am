@@ -142,6 +142,7 @@ bin_PROGRAMS = \
 ## Tests
 check_PROGRAMS = \
 	src/client/linux/linux_client_unittest \
+	src/common/test_assembler_unittest \
 	src/processor/address_map_unittest \
 	src/processor/binarystream_unittest \
 	src/processor/basic_source_line_resolver_unittest \
@@ -158,8 +159,7 @@ check_PROGRAMS = \
 	src/processor/stackwalker_amd64_unittest \
 	src/processor/stackwalker_arm_unittest \
 	src/processor/stackwalker_x86_unittest \
-	src/processor/synth_minidump_unittest \
-	src/processor/test_assembler_unittest
+	src/processor/synth_minidump_unittest
 
 if SELFTEST
 check_PROGRAMS += \
@@ -291,9 +291,9 @@ src_processor_minidump_processor_unittest_LDADD = \
 	src/processor/tokenize.lo
 
 src_processor_minidump_unittest_SOURCES = \
+	src/common/test_assembler.cc \
 	src/processor/minidump_unittest.cc \
 	src/processor/synth_minidump.cc \
-	src/processor/test_assembler.cc \
 	src/testing/gtest/src/gtest-all.cc \
 	src/testing/gtest/src/gtest_main.cc \
 	src/testing/src/gmock-all.cc
@@ -411,8 +411,8 @@ src_processor_stackwalker_selftest_LDADD = \
 	src/processor/tokenize.lo
 
 src_processor_stackwalker_amd64_unittest_SOURCES = \
+	src/common/test_assembler.cc \
 	src/processor/stackwalker_amd64_unittest.cc \
-	src/processor/test_assembler.cc \
 	src/testing/gtest/src/gtest-all.cc \
 	src/testing/gtest/src/gtest_main.cc \
 	src/testing/src/gmock-all.cc
@@ -425,8 +425,8 @@ src_processor_stackwalker_amd64_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing
 
 src_processor_stackwalker_arm_unittest_SOURCES = \
+	src/common/test_assembler.cc \
 	src/processor/stackwalker_arm_unittest.cc \
-	src/processor/test_assembler.cc \
 	src/testing/gtest/src/gtest-all.cc \
 	src/testing/gtest/src/gtest_main.cc \
 	src/testing/src/gmock-all.cc
@@ -439,8 +439,8 @@ src_processor_stackwalker_arm_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing
 
 src_processor_stackwalker_x86_unittest_SOURCES = \
+	src/common/test_assembler.cc \
 	src/processor/stackwalker_x86_unittest.cc \
-	src/processor/test_assembler.cc \
 	src/testing/gtest/src/gtest-all.cc \
 	src/testing/gtest/src/gtest_main.cc \
 	src/testing/src/gmock-all.cc
@@ -453,28 +453,28 @@ src_processor_stackwalker_x86_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing
 
 src_processor_synth_minidump_unittest_SOURCES = \
+	src/common/test_assembler.cc \
+	src/common/test_assembler.h \
 	src/processor/synth_minidump_unittest.cc \
 	src/testing/gtest/src/gtest-all.cc \
 	src/testing/gtest/src/gtest_main.cc \
 	src/testing/src/gmock-all.cc \
 	src/processor/synth_minidump.cc \
-	src/processor/synth_minidump.h \
-	src/processor/test_assembler.cc \
-	src/processor/test_assembler.h
+	src/processor/synth_minidump.h
 src_processor_synth_minidump_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing/include \
         -I$(top_srcdir)/src/testing/gtest/include \
 	-I$(top_srcdir)/src/testing/gtest \
 	-I$(top_srcdir)/src/testing
 
-src_processor_test_assembler_unittest_SOURCES = \
-	src/processor/test_assembler_unittest.cc \
+src_common_test_assembler_unittest_SOURCES = \
+	src/common/test_assembler.cc \
+	src/common/test_assembler.h \
+	src/common/test_assembler_unittest.cc \
 	src/testing/gtest/src/gtest-all.cc \
 	src/testing/gtest/src/gtest_main.cc \
-	src/testing/src/gmock-all.cc \
-	src/processor/test_assembler.cc \
-	src/processor/test_assembler.h
-src_processor_test_assembler_unittest_CPPFLAGS = \
+	src/testing/src/gmock-all.cc
+src_common_test_assembler_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing/include \
         -I$(top_srcdir)/src/testing/gtest/include \
 	-I$(top_srcdir)/src/testing/gtest \

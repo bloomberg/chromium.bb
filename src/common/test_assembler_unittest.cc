@@ -35,7 +35,7 @@
 #include <string.h>
 
 #include "breakpad_googletest_includes.h"
-#include "processor/test_assembler.h"
+#include "common/test_assembler.h"
 
 using google_breakpad::TestAssembler::Label;
 using google_breakpad::TestAssembler::Section;

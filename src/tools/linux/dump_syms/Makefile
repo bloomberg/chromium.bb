@@ -141,8 +141,7 @@ gmock-all.o: override CPPFLAGS += $(GTEST_CPPFLAGS) $(GMOCK_CPPFLAGS)
 
 
 ### google_breakpad::TestAssembler, for constructing binary test data
-VPATH += $(SRC)/processor
-TEST_ASSEMBLER_CPPFLAGS = -I$(SRC)/processor
+VPATH += $(SRC)/common
 test_assembler.o: test_assembler.cc
 test_assembler.o: override CPPFLAGS += $(TEST_ASSEMBLER_CPPFLAGS)
 
@@ -328,7 +327,7 @@ bytereader_unittest:				\
 CPP_EXECUTABLES += bytereader_unittest
 bytereader_unittest.o: bytereader_unittest.cc
 bytereader_unittest.o: override CPPFLAGS += $(GTEST_CPPFLAGS) \
-						$(GMOCK_CPPFLAGS)
+					    $(GMOCK_CPPFLAGS)
 clean::
 	rm -f bytereader_unittest
 
