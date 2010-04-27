@@ -8,12 +8,12 @@
 # Uses LLVM toolchain in both "bitcode" and "sfi" modes of
 # TARGET_CODE.
 #
-# CS_ROOT - CodeSourcery installation.
+# BINUTILS_ROOT - binutils installation.
 # {CC, CXX, AR, NM, RANLIB, LD, ASCOM}_FOR_TARGET - locations of tools
 # LLVM_BIN_PATH - LLVM installation.
 # ILLEGAL_TOOL - A tool that should never be invoked.  Used for assertions.
 
-CS_ROOT="$(pwd)/toolchain/linux_arm-untrusted/codesourcery/arm-2007q3"
+BINUTILS_ROOT="$(pwd)/toolchain/linux_arm-untrusted/arm-none-linux-gnueabi/llvm-gcc-4.2"
 LLVM_BIN_PATH="$(pwd)/toolchain/linux_arm-untrusted/arm-none-linux-gnueabi"
 LLVM_DRIVER_PATH="$(pwd)/toolchain/linux_arm-untrusted/arm-none-linux-gnueabi"
 
@@ -22,20 +22,20 @@ case ${TARGET_CODE:=sfi} in
   sfi)  # => Libraries with Native Client SFI sandboxing.
     CC_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfigcc"
     CXX_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfig++"
-    AR_FOR_TARGET="${CS_ROOT}/arm-none-linux-gnueabi/bin/ar"
-    NM_FOR_TARGET="${CS_ROOT}/arm-none-linux-gnueabi/bin/nm"
-    RANLIB_FOR_TARGET="${CS_ROOT}/arm-none-linux-gnueabi/bin/ranlib"
+    AR_FOR_TARGET="${BINUTILS_ROOT}/arm-none-linux-gnueabi/bin/ar"
+    NM_FOR_TARGET="${BINUTILS_ROOT}/arm-none-linux-gnueabi/bin/nm"
+    RANLIB_FOR_TARGET="${BINUTILS_ROOT}/arm-none-linux-gnueabi/bin/ranlib"
     CCAS_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-cppas-arm"
     LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfild"
     ;;
   regular)  # => Libraries without sandboxing.
-    CC_FOR_TARGET="${CS_ROOT}/arm-none-linux-gnueabi/bin/gcc"
-    CXX_FOR_TARGET="${CS_ROOT}/arm-none-linux-gnueabi/bin/g++"
-    AR_FOR_TARGET="${CS_ROOT}/arm-none-linux-gnueabi/bin/ar"
-    NM_FOR_TARGET="${CS_ROOT}/arm-none-linux-gnueabi/bin/nm"
-    RANLIB_FOR_TARGET="${CS_ROOT}/arm-none-linux-gnueabi/bin/ranlib"
-    CCAS_FOR_TARGET="${CS_ROOT}/arm-none-linux-gnueabi/bin/gcc"
-    LD_FOR_TARGET="${CS_ROOT}/arm-none-linux-gnueabi/bin/ld"
+    CC_FOR_TARGET="${BINUTILS_ROOT}/arm-none-linux-gnueabi/bin/gcc"
+    CXX_FOR_TARGET="${BINUTILS_ROOT}/arm-none-linux-gnueabi/bin/g++"
+    AR_FOR_TARGET="${BINUTILS_ROOT}/arm-none-linux-gnueabi/bin/ar"
+    NM_FOR_TARGET="${BINUTILS_ROOT}/arm-none-linux-gnueabi/bin/nm"
+    RANLIB_FOR_TARGET="${BINUTILS_ROOT}/arm-none-linux-gnueabi/bin/ranlib"
+    CCAS_FOR_TARGET="${BINUTILS_ROOT}/arm-none-linux-gnueabi/bin/gcc"
+    LD_FOR_TARGET="${BINUTILS_ROOT}/arm-none-linux-gnueabi/bin/ld"
     ;;
   bc-arm)  # => Bitcode libraries => arm
     CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-bcgcc"

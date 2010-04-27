@@ -1,0 +1,72 @@
+# combined version of the patches
+# http://sourceware.org/ml/binutils-cvs/2010-03/msg00101.html
+# http://sourceware.org/ml/binutils-cvs/2010-04/msg00037.html
+
+diff -ru a/gas/config/tc-arm.c b/gas/config/tc-arm.c
+--- a/gas/config/tc-arm.c	2009-08-29 18:10:59.000000000 -0400
++++ b/gas/config/tc-arm.c	2010-04-23 13:59:01.000000000 -0400
+@@ -2479,14 +2479,27 @@
+   /* Save the mapping symbols for future reference.  Also check that
+      we do not place two mapping symbols at the same offset within a
+      frag.  We'll handle overlap between frags in
+-     check_mapping_symbols.  */
++     check_mapping_symbols.
++
++     If .fill or other data filling directive generates zero sized data,
++     the mapping symbol for the following code will have the same value
++     as the one generated for the data filling directive.  In this case,
++     we replace the old symbol with the new one at the same address.  */
+   if (value == 0)
+     {
+-      know (frag->tc_frag_data.first_map == NULL);
++      if (frag->tc_frag_data.first_map != NULL)
++	{
++	  know (S_GET_VALUE (frag->tc_frag_data.first_map) == 0);
++	  symbol_remove (frag->tc_frag_data.first_map, &symbol_rootP, &symbol_lastP);
++	}
+       frag->tc_frag_data.first_map = symbolP;
+     }
+   if (frag->tc_frag_data.last_map != NULL)
+-    know (S_GET_VALUE (frag->tc_frag_data.last_map) < S_GET_VALUE (symbolP));
++    {
++      know (S_GET_VALUE (frag->tc_frag_data.last_map) <= S_GET_VALUE (symbolP));
++      if (S_GET_VALUE (frag->tc_frag_data.last_map) == S_GET_VALUE (symbolP))
++	symbol_remove (frag->tc_frag_data.last_map, &symbol_rootP, &symbol_lastP);
++    }
+   frag->tc_frag_data.last_map = symbolP;
+ }
+ 
+diff -ru a/gas/testsuite/gas/arm/mapmisc.d b/gas/testsuite/gas/arm/mapmisc.d
+--- a/gas/testsuite/gas/arm/mapmisc.d	2009-06-30 07:57:05.000000000 -0400
++++ b/gas/testsuite/gas/arm/mapmisc.d	2010-04-23 13:58:39.000000000 -0400
+@@ -46,6 +46,7 @@
+ 0+9c l       .text	00000000 \$a
+ 0+a0 l       .text	00000000 \$d
+ 0+a4 l       .text	00000000 \$a
++0+a8 l       .text	00000000 \$a
+ 0+00 l    d  .ARM.attributes	00000000 .ARM.attributes
+ 
+ 
+@@ -93,3 +94,4 @@
+   9c:	e1a00000 	nop			; \(mov r0, r0\)
+   a0:	7778797a 	.word	0x7778797a
+   a4:	e1a00000 	nop			; \(mov r0, r0\)
++  a8:	e1a00000 	nop			; \(mov r0, r0\)
+diff -ru a/gas/testsuite/gas/arm/mapmisc.s b/gas/testsuite/gas/arm/mapmisc.s
+--- a/gas/testsuite/gas/arm/mapmisc.s	2009-03-05 10:27:59.000000000 -0500
++++ b/gas/testsuite/gas/arm/mapmisc.s	2010-04-23 13:59:01.000000000 -0400
+@@ -1,6 +1,8 @@
+ 	.text
+ 	.type foo, %function
+ foo:
++	.align 2
++	.fill 0, 0, 0
+ 	nop
+ 	.ascii "abcd"
+ 	nop
+@@ -34,3 +36,5 @@
+ 	nop
+ 	.incbin "mapmisc.dat"
+ 	nop
++	.fill 0, 0, 0
++	nop
