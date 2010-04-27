@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/language_library.h"
 #include "chrome/browser/chromeos/options/language_hangul_config_view.h"
+#include "chrome/browser/chromeos/options/language_pinyin_config_view.h"
 #include "chrome/browser/chromeos/options/options_window_view.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/language_combobox_model.h"
@@ -44,6 +45,9 @@ const char kDefaultLanguageCode[] = "eng";
 // the object via a function pointer. See also InitInputMethodConfigViewMap().
 views::DialogDelegate* CreateLanguageHangulConfigView(Profile* profile) {
   return new LanguageHangulConfigView(profile);
+}
+views::DialogDelegate* CreateLanguagePinyinConfigView(Profile* profile) {
+  return new LanguagePinyinConfigView(profile);
 }
 
 // The tags are used to identify buttons in ButtonPressed().
@@ -560,6 +564,8 @@ void LanguageConfigView::InitControlLayout() {
 void LanguageConfigView::InitInputMethodConfigViewMap() {
   input_method_config_view_map_["hangul"] =
       CreateLanguageHangulConfigView;
+  input_method_config_view_map_["pinyin"] =
+      CreateLanguagePinyinConfigView;
 }
 
 void LanguageConfigView::InitInputMethodIdMaps() {

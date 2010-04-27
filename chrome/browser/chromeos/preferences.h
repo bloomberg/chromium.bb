@@ -88,10 +88,8 @@ class Preferences : public NotificationObserver {
   StringPrefMember language_hotkey_trigger_;
   StringPrefMember language_preload_engines_;
   StringPrefMember language_hangul_keyboard_;
-  BooleanPrefMember language_pinyin_boolean_prefs_[
-      ARRAYSIZE_UNSAFE(kPinyinBooleanPrefs)];
-  IntegerPrefMember language_pinyin_int_prefs_[
-      ARRAYSIZE_UNSAFE(kPinyinIntegerPrefs)];
+  BooleanPrefMember language_pinyin_boolean_prefs_[kNumPinyinBooleanPrefs];
+  IntegerPrefMember language_pinyin_int_prefs_[kNumPinyinIntegerPrefs];
 
   DISALLOW_COPY_AND_ASSIGN(Preferences);
 };

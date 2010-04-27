@@ -7434,6 +7434,58 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The title for the Hangul input settings dialog">
         Hangul Input Settings
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTINGS_TITLE"
+               desc="The title for the Pinyin input settings dialog">
+        Pinyin Input Settings
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_CORRECT_PINYIN"
+               desc="The checkbox label for a Pinyin input method preference">
+        Automatically correct input
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_FUZZY_PINYIN"
+               desc="The checkbox label for a Pinyin input method preference">
+	Enable Fuzzy-Pinyin mode
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_SHIFT_SELECT_PINYIN"
+               desc="The checkbox label for a Pinyin input method preference">
+	Use Shift to select a candidate
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_MINUS_EQUAL_PAGE"
+               desc="The checkbox label for a Pinyin input method preference">
+	Use - and = keys to page a candidate list
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_COMMA_PERIOD_PAGE"
+               desc="The checkbox label for a Pinyin input method preference">
+	Use , and . keys to page a candidate list
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_AUTO_COMMIT"
+               desc="The checkbox label for a Pinyin input method preference">
+	Auto-commit a string
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_DOUBLE_PINYIN"
+               desc="The checkbox label for a Pinyin input method preference">
+	Enable Double-Pinyin mode
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_INIT_CHINESE"
+               desc="The checkbox label for a Pinyin input method preference">
+	Initial input language is Chinese
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_INIT_FULL"
+               desc="The checkbox label for a Pinyin input method preference">
+	Initial character width is Full
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_INIT_FULL_PUNCT"
+               desc="The checkbox label for a Pinyin input method preference">
+	Initial punctuation width is Full
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_INIT_SIMPLIFIED_CHINESE"
+               desc="The checkbox label for a Pinyin input method preference">
+	Initial Chinese mode is Simplified Chinese
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_TRAD_CANDIDATE"
+               desc="The checkbox label for a Pinyin input method preference">
+	Display candidates in Traditional Chinese
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CONFIGURE"
                desc="The label for the configure button for input methods">
         Configure...

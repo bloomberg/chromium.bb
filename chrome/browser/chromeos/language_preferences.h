@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LANGUAGE_PREFERENCES_H_
 #define CHROME_BROWSER_CHROMEOS_LANGUAGE_PREFERENCES_H_
 
+#include "base/basictypes.h"
 #include "chrome/common/pref_names.h"
+#include "grit/generated_resources.h"
 
 // Section and config names for the IBus configuration daemon.
 namespace chromeos {
@@ -50,34 +52,49 @@ const struct {
   const wchar_t* pref_name;
   const char* ibus_config_name;
   bool default_value;
+  int message_id;
 } kPinyinBooleanPrefs[] = {
-  { prefs::kLanguagePinyinCorrectPinyin, "correct_pinyin", true },
-  { prefs::kLanguagePinyinFuzzyPinyin, "fuzzy_pinyin", false },
+  { prefs::kLanguagePinyinCorrectPinyin, "correct_pinyin", true,
+    IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_CORRECT_PINYIN },
+  { prefs::kLanguagePinyinFuzzyPinyin, "fuzzy_pinyin", false,
+    IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_FUZZY_PINYIN },
   { prefs::kLanguagePinyinShiftSelectCandidate, "shift_select_candidate",
-    false },
-  { prefs::kLanguagePinyinMinusEqualPage, "minus_equal_page", true },
-  { prefs::kLanguagePinyinCommaPeriodPage, "comma_period_page", true },
-  { prefs::kLanguagePinyinAutoCommit, "auto_commit", false },
-  { prefs::kLanguagePinyinDoublePinyin, "double_pinyin", false },
-  { prefs::kLanguagePinyinInitChinese, "init_chinese", true },
-  { prefs::kLanguagePinyinInitFull, "init_full", false },
-  { prefs::kLanguagePinyinInitFullPunct, "init_full_punct", true },
+    false, IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_SHIFT_SELECT_PINYIN },
+  { prefs::kLanguagePinyinMinusEqualPage, "minus_equal_page", true,
+    IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_MINUS_EQUAL_PAGE },
+  { prefs::kLanguagePinyinCommaPeriodPage, "comma_period_page", true,
+    IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_COMMA_PERIOD_PAGE },
+  { prefs::kLanguagePinyinAutoCommit, "auto_commit", false,
+    IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_AUTO_COMMIT },
+  { prefs::kLanguagePinyinDoublePinyin, "double_pinyin", false,
+    IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_DOUBLE_PINYIN },
+  { prefs::kLanguagePinyinInitChinese, "init_chinese", true,
+    IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_INIT_CHINESE },
+  { prefs::kLanguagePinyinInitFull, "init_full", false,
+    IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_INIT_FULL },
+  { prefs::kLanguagePinyinInitFullPunct, "init_full_punct", true,
+    IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_INIT_FULL_PUNCT },
   { prefs::kLanguagePinyinInitSimplifiedChinese, "init_simplified_chinese",
-    true },
-  { prefs::kLanguagePinyinTradCandidate, "trad_candidate", false },
+    true,
+    IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_INIT_SIMPLIFIED_CHINESE },
+  { prefs::kLanguagePinyinTradCandidate, "trad_candidate", false,
+    IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_TRAD_CANDIDATE },
   // TODO(yusukes): Support PINYIN_{INCOMPLETE,CORRECT,FUZZY}_... prefs (32
   // additional boolean prefs.)
 };
+const size_t kNumPinyinBooleanPrefs = ARRAYSIZE_UNSAFE(kPinyinBooleanPrefs);
 
 const struct {
   const wchar_t* pref_name;
   const char* ibus_config_name;
   int default_value;
+  // TODO(yusukes): Add message_id if needed.
 } kPinyinIntegerPrefs[] = {
   { prefs::kLanguagePinyinDoublePinyinSchema, "double_pinyin_schema", 0 },
   // TODO(yusukes): the type of lookup_table_page_size on ibus should be uint.
   { prefs::kLanguagePinyinLookupTablePageSize, "lookup_table_page_size", 5 },
 };
+const size_t kNumPinyinIntegerPrefs = ARRAYSIZE_UNSAFE(kPinyinIntegerPrefs);
 
 // For Traditional Chinese input method (ibus-chewing)
 
@@ -87,4 +104,3 @@ const struct {
 }  // chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LANGUAGE_PREFERENCES_H_
-
