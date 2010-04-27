@@ -740,7 +740,6 @@
         'browser/cocoa/test_event_utils.mm',
         'browser/cocoa/throbber_view_unittest.mm',
         'browser/cocoa/translate_infobar_unittest.mm',
-        'browser/cocoa/toolbar_button_cell_unittest.mm',
         'browser/cocoa/toolbar_controller_unittest.mm',
         'browser/cocoa/toolbar_view_unittest.mm',
         'browser/cocoa/vertical_layout_view_unittest.mm',

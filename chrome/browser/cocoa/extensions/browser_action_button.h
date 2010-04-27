@@ -9,7 +9,7 @@
 
 #import "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/cocoa/toolbar_button_cell.h"
+#import "chrome/browser/cocoa/gradient_button_cell.h"
 
 class Extension;
 class ExtensionAction;
