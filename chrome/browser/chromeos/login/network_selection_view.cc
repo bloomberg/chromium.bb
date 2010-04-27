@@ -16,9 +16,11 @@
 #include "chrome/browser/chromeos/login/language_switch_model.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"
+#include "views/controls/throbber.h"
 #include "views/widget/widget.h"
 #include "views/widget/widget_gtk.h"
 #include "views/window/non_client_view.h"
@@ -27,6 +29,7 @@
 
 using views::Background;
 using views::Label;
+using views::SmoothedThrobber;
 using views::View;
 using views::Widget;
 using views::WidgetGtk;
@@ -36,13 +39,15 @@ namespace {
 const int kWelcomeLabelY = 150;
 const int kOfflineButtonX = 30;
 const int kSpacing = 25;
-const int kComboboxSpacing = 5;
 const int kHorizontalSpacing = 25;
 const int kNetworkComboboxWidth = 250;
 const int kNetworkComboboxHeight = 30;
 const int kLanguagesMenuWidth = 200;
 const int kLanguagesMenuHeight = 30;
 const SkColor kWelcomeColor = 0xFF1D6AB1;
+
+const int kThrobberFrameMs = 60;
+const int kThrobberStartDelayMs = 500;
 
 }  // namespace
 
@@ -54,6 +59,8 @@ NetworkSelectionView::NetworkSelectionView(NetworkScreenDelegate* delegate)
       welcome_label_(NULL),
       select_network_label_(NULL),
       connecting_network_label_(NULL),
+      offline_button_(NULL),
+      throbber_(NULL),
       delegate_(delegate) {
 }
 
@@ -79,7 +86,14 @@ void NetworkSelectionView::Init() {
   select_network_label_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
 
   connecting_network_label_ = new views::Label();
+  connecting_network_label_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
   connecting_network_label_->SetVisible(false);
+
+  throbber_ = new views::SmoothedThrobber(kThrobberFrameMs);
+  throbber_->SetFrames(
+      ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_SPINNER));
+  throbber_->set_start_delay_ms(kThrobberStartDelayMs);
+  AddChildView(throbber_);
 
   network_combobox_ = new views::Combobox(delegate_);
   network_combobox_->set_listener(delegate_);
@@ -148,9 +162,18 @@ void NetworkSelectionView::Layout() {
       width() - kHorizontalSpacing * 2,
       connecting_network_label_->GetPreferredSize().height());
 
-  select_network_x += select_network_label_->GetPreferredSize().width() +
-      kHorizontalSpacing;
-  y -= kComboboxSpacing;
+  throbber_->SetBounds(
+      width() / 2 + connecting_network_label_->GetPreferredSize().width() / 2 +
+          kHorizontalSpacing,
+      y + (connecting_network_label_->GetPreferredSize().height() -
+          throbber_->GetPreferredSize().height()) / 2,
+      throbber_->GetPreferredSize().width(),
+      throbber_->GetPreferredSize().height());
+
+  select_network_x +=
+      select_network_label_->GetPreferredSize().width() + kHorizontalSpacing;
+  y += (select_network_label_->GetPreferredSize().height() -
+      network_combobox_->GetPreferredSize().height()) / 2;
   network_combobox_->SetBounds(select_network_x, y,
                                kNetworkComboboxWidth, kNetworkComboboxHeight);
 
@@ -198,6 +221,12 @@ void NetworkSelectionView::ShowConnectingStatus(bool connecting,
   select_network_label_->SetVisible(!connecting);
   network_combobox_->SetVisible(!connecting);
   connecting_network_label_->SetVisible(connecting);
+  Layout();
+  if (connecting) {
+    throbber_->Start();
+  } else {
+    throbber_->Stop();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

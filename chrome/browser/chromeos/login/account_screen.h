@@ -27,6 +27,7 @@ class AccountScreen : public ViewScreen<AccountCreationView>,
   // AccountCreationViewDelegate implementation:
   virtual void OnUserCreated(const std::string& username,
                              const std::string& password);
+  virtual void OnPageLoaded();
   virtual void OnPageLoadFailed(const std::string& url);
 
   // Sets the url for account creation. Used in tests.

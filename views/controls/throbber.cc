@@ -21,11 +21,7 @@ Throbber::Throbber(int frame_time_ms,
       paint_while_stopped_(paint_while_stopped),
       frames_(NULL),
       frame_time_(TimeDelta::FromMilliseconds(frame_time_ms)) {
-  ResourceBundle &rb = ResourceBundle::GetSharedInstance();
-  frames_ = rb.GetBitmapNamed(IDR_THROBBER);
-  DCHECK(frames_->width() > 0 && frames_->height() > 0);
-  DCHECK(frames_->width() % frames_->height() == 0);
-  frame_count_ = frames_->width() / frames_->height();
+  SetFrames(ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_THROBBER));
 }
 
 Throbber::~Throbber() {
@@ -54,6 +50,13 @@ void Throbber::Stop() {
 
   running_ = false;
   SchedulePaint();  // Important if we're not painting while stopped
+}
+
+void Throbber::SetFrames(SkBitmap* frames) {
+  frames_ = frames;
+  DCHECK(frames_->width() > 0 && frames_->height() > 0);
+  DCHECK(frames_->width() % frames_->height() == 0);
+  frame_count_ = frames_->width() / frames_->height();
 }
 
 void Throbber::Run() {
@@ -95,14 +98,16 @@ static const int kStopDelay = 50;
 
 
 SmoothedThrobber::SmoothedThrobber(int frame_time_ms)
-    : Throbber(frame_time_ms, /* paint_while_stopped= */ false) {
+    : Throbber(frame_time_ms, /* paint_while_stopped= */ false),
+      start_delay_ms_(kStartDelay),
+      stop_delay_ms_(kStopDelay) {
 }
 
 void SmoothedThrobber::Start() {
   stop_timer_.Stop();
 
   if (!running_ && !start_timer_.IsRunning()) {
-    start_timer_.Start(TimeDelta::FromMilliseconds(kStartDelay), this,
+    start_timer_.Start(TimeDelta::FromMilliseconds(start_delay_ms_), this,
                        &SmoothedThrobber::StartDelayOver);
   }
 }
@@ -116,7 +121,7 @@ void SmoothedThrobber::Stop() {
     start_timer_.Stop();
 
   stop_timer_.Stop();
-  stop_timer_.Start(TimeDelta::FromMilliseconds(kStopDelay), this,
+  stop_timer_.Start(TimeDelta::FromMilliseconds(stop_delay_ms_), this,
                     &SmoothedThrobber::StopDelayOver);
 }
 

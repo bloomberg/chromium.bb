@@ -148,6 +148,9 @@ class LoginManagerView : public views::View,
   // (on the hidden tab, for example).
   bool focus_delayed_;
 
+  // True when login is in process.
+  bool login_in_process_;
+
   scoped_refptr<Authenticator> authenticator_;
   LanguageSwitchModel language_switch_model_;
 

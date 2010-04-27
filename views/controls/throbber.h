@@ -23,11 +23,15 @@ class Throbber : public View {
   // If |paint_while_stopped| is false, this view will be invisible when not
   // running.
   Throbber(int frame_time_ms, bool paint_while_stopped);
+  Throbber(int frame_time_ms, bool paint_while_stopped, SkBitmap* frames);
   virtual ~Throbber();
 
   // Start and stop the throbber animation
   virtual void Start();
   virtual void Stop();
+
+  // Set custom throbber frames. Otherwise IDR_THROBBER is loaded.
+  void SetFrames(SkBitmap* frames);
 
   // overridden from View
   virtual gfx::Size GetPreferredSize();
@@ -57,9 +61,13 @@ class Throbber : public View {
 class SmoothedThrobber : public Throbber {
  public:
   SmoothedThrobber(int frame_delay_ms);
+  SmoothedThrobber(int frame_delay_ms, SkBitmap* frames);
 
   virtual void Start();
   virtual void Stop();
+
+  void set_start_delay_ms(int value) { start_delay_ms_ = value; }
+  void set_stop_delay_ms(int value) { stop_delay_ms_ = value; }
 
  private:
   // Called when the startup-delay timer fires
@@ -69,6 +77,12 @@ class SmoothedThrobber : public Throbber {
   // Called when the shutdown-delay timer fires.
   // This function stops the actual throbbing.
   void StopDelayOver();
+
+  // Delay after work starts before starting throbber, in milliseconds.
+  int start_delay_ms_;
+
+  // Delay after work stops before stopping, in milliseconds.
+  int stop_delay_ms_;
 
   base::OneShotTimer<SmoothedThrobber> start_timer_;
   base::OneShotTimer<SmoothedThrobber> stop_timer_;

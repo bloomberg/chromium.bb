@@ -425,7 +425,8 @@
         <include name="IDR_COMPACTNAV_BACK" file="compactnav_back.png" type="BINDATA" />
         <include name="IDR_COMPACTNAV_FORWARD" file="compactnav_forward.png" type="BINDATA" />
         <include name="IDR_COMPACTNAV_SEPARATOR" file="compactnav_separator.png" type="BINDATA" />
- 
+        
+        <include name="IDR_SPINNER" file="spinner.png" type="BINDATA" />        
         <include name="IDR_STATUSBAR_MENU" file="statusbar_menu.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_CHARGED" file="statusbar_battery_charged.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_MISSING" file="statusbar_battery_missing.png" type="BINDATA" />

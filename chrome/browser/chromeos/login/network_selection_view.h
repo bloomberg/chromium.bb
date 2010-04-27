@@ -16,6 +16,7 @@ namespace views {
 class Combobox;
 class Label;
 class NativeButton;
+class SmoothedThrobber;
 }  // namespace views
 
 namespace chromeos {
@@ -66,6 +67,7 @@ class NetworkSelectionView : public views::View {
   views::Label* select_network_label_;
   views::Label* connecting_network_label_;
   views::NativeButton* offline_button_;
+  views::SmoothedThrobber* throbber_;
 
   // NetworkScreen delegate.
   NetworkScreenDelegate* delegate_;

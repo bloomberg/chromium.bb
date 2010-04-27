@@ -32,7 +32,6 @@
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
 #include "views/widget/widget.h"
@@ -78,12 +77,14 @@ LoginManagerView::LoginManagerView(ScreenObserver* observer)
       error_label_(NULL),
       sign_in_button_(NULL),
       create_account_link_(NULL),
+      languages_menubutton_(NULL),
       accel_focus_user_(views::Accelerator(base::VKEY_U, false, false, true)),
       accel_focus_pass_(views::Accelerator(base::VKEY_P, false, false, true)),
       observer_(observer),
       error_id_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)),
-      focus_delayed_(false) {
+      focus_delayed_(false),
+      login_in_process_(false) {
   // Create login observer to record time of login when successful.
   LogLoginSuccessObserver::Get();
   if (kStubOutLogin)
@@ -163,6 +164,7 @@ void LoginManagerView::Init() {
         ASCIIToWide(CrosLibrary::Get()->load_error_string()));
     username_field_->SetReadOnly(true);
     password_field_->SetReadOnly(true);
+    sign_in_button_->SetEnabled(false);
   }
 }
 
@@ -310,6 +312,12 @@ void LoginManagerView::SetPassword(const std::string& password) {
 }
 
 void LoginManagerView::Login() {
+  if (login_in_process_) {
+    return;
+  }
+  login_in_process_ = true;
+  sign_in_button_->SetEnabled(false);
+  create_account_link_->SetEnabled(false);
   // Disallow 0 size username.
   if (username_field_->text().empty()) {
     // Return true so that processing ends
@@ -364,6 +372,9 @@ void LoginManagerView::OnLoginFailure(const std::string& error) {
     ShowError(IDS_LOGIN_ERROR_AUTHENTICATING);
     // TODO(someone): get |error| onto the UI somehow?
   }
+  login_in_process_ = false;
+  sign_in_button_->SetEnabled(true);
+  create_account_link_->SetEnabled(true);
   SetPassword(std::string());
   password_field_->RequestFocus();
 }
@@ -388,6 +399,9 @@ void LoginManagerView::ShowError(int error_id) {
 bool LoginManagerView::HandleKeystroke(views::Textfield* s,
     const views::Textfield::Keystroke& keystroke) {
   if (!kStubOutLogin && !CrosLibrary::Get()->EnsureLoaded())
+    return false;
+
+  if (login_in_process_)
     return false;
 
   if (keystroke.GetKeyboardCode() == base::VKEY_TAB) {

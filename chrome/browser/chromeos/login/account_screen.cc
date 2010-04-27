@@ -130,9 +130,15 @@ bool AccountScreen::HandleContextMenu(const ContextMenuParams& params) {
   return true;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// AccountScreen, AccountCreationViewDelegate implementation:
 void AccountScreen::OnUserCreated(const std::string& username,
                                   const std::string& password) {
   delegate()->GetObserver(this)->OnSetUserNamePassword(username, password);
+}
+
+void AccountScreen::OnPageLoaded() {
+  view()->ShowPageContent();
 }
 
 void AccountScreen::OnPageLoadFailed(const std::string& url) {
