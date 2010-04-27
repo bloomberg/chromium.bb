@@ -119,51 +119,9 @@ void ImporterList::DetectIEProfiles() {
 #endif
 
 void ImporterList::DetectFirefoxProfiles() {
-  DictionaryValue root;
-  FilePath ini_file = GetProfilesINI();
-  ParseProfileINI(ini_file, &root);
-
-  FilePath source_path;
-  for (int i = 0; ; ++i) {
-    std::string current_profile = "Profile" + IntToString(i);
-    if (!root.HasKeyASCII(current_profile)) {
-      // Profiles are continuously numbered. So we exit when we can't
-      // find the i-th one.
-      break;
-    }
-    std::string is_relative;
-    string16 path16;
-    FilePath profile_path;
-    if (root.GetStringASCII(current_profile + ".IsRelative", &is_relative) &&
-        root.GetString(current_profile + ".Path", &path16)) {
-#if defined(OS_WIN)
-      ReplaceSubstringsAfterOffset(
-          &path16, 0, ASCIIToUTF16("/"), ASCIIToUTF16("\\"));
-#endif
-      FilePath path = FilePath::FromWStringHack(UTF16ToWide(path16));
-
-      // IsRelative=1 means the folder path would be relative to the
-      // path of profiles.ini. IsRelative=0 refers to a custom profile
-      // location.
-      if (is_relative == "1") {
-        profile_path = ini_file.DirName().Append(path);
-      } else {
-        profile_path = path;
-      }
-
-      // We only import the default profile when multiple profiles exist,
-      // since the other profiles are used mostly by developers for testing.
-      // Otherwise, Profile0 will be imported.
-      std::string is_default;
-      if ((root.GetStringASCII(current_profile + ".Default", &is_default) &&
-           is_default == "1") || i == 0) {
-        source_path = profile_path;
-        // We break out of the loop when we have found the default profile.
-        if (is_default == "1")
-          break;
-      }
-    }
-  }
+  FilePath profile_path = GetFirefoxProfilePath();
+  if (profile_path.empty())
+    return;
 
   // Detects which version of Firefox is installed.
   importer::ProfileType firefox_type;
@@ -173,7 +131,7 @@ void ImporterList::DetectFirefoxProfiles() {
   version = GetCurrentFirefoxMajorVersionFromRegistry();
 #endif
   if (version != 2 && version != 3)
-    GetFirefoxVersionAndPathFromProfile(source_path, &version, &app_path);
+    GetFirefoxVersionAndPathFromProfile(profile_path, &version, &app_path);
 
   if (version == 2) {
     firefox_type = importer::FIREFOX2;
@@ -184,20 +142,18 @@ void ImporterList::DetectFirefoxProfiles() {
     return;
   }
 
-  if (!source_path.empty()) {
-    importer::ProfileInfo* firefox = new importer::ProfileInfo();
-    firefox->description = l10n_util::GetString(IDS_IMPORT_FROM_FIREFOX);
-    firefox->browser_type = firefox_type;
-    firefox->source_path = source_path.ToWStringHack();
+  importer::ProfileInfo* firefox = new importer::ProfileInfo();
+  firefox->description = l10n_util::GetString(IDS_IMPORT_FROM_FIREFOX);
+  firefox->browser_type = firefox_type;
+  firefox->source_path = profile_path.ToWStringHack();
 #if defined(OS_WIN)
-    firefox->app_path = GetFirefoxInstallPathFromRegistry();
+  firefox->app_path = GetFirefoxInstallPathFromRegistry();
 #endif
-    if (firefox->app_path.empty())
-      firefox->app_path = app_path.ToWStringHack();
-    firefox->services_supported = importer::HISTORY | importer::FAVORITES |
-        importer::COOKIES | importer::PASSWORDS | importer::SEARCH_ENGINES;
-    source_profiles_.push_back(firefox);
-  }
+  if (firefox->app_path.empty())
+    firefox->app_path = app_path.ToWStringHack();
+  firefox->services_supported = importer::HISTORY | importer::FAVORITES |
+      importer::COOKIES | importer::PASSWORDS | importer::SEARCH_ENGINES;
+  source_profiles_.push_back(firefox);
 }
 
 void ImporterList::DetectGoogleToolbarProfiles() {

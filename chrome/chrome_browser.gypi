@@ -1467,6 +1467,8 @@
         'browser/importer/firefox_profile_lock.h',
         'browser/importer/firefox_profile_lock_posix.cc',
         'browser/importer/firefox_profile_lock_win.cc',
+        'browser/importer/firefox_proxy_settings.cc',
+        'browser/importer/firefox_proxy_settings.h',
         'browser/importer/ie_importer.cc',
         'browser/importer/ie_importer.h',
         'browser/importer/importer.cc',

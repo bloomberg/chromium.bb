@@ -36,6 +36,9 @@ std::wstring GetFirefoxInstallPathFromRegistry();
 FilePath GetFirefoxDylibPath();
 #endif  // OS_MACOSX
 
+// Returns the path to the Firefox profile.
+FilePath GetFirefoxProfilePath();
+
 // Detects version of Firefox and installation path from given Firefox profile
 bool GetFirefoxVersionAndPathFromProfile(const FilePath& profile_path,
                                          int* version,
@@ -83,5 +86,10 @@ GURL GetHomepage(const FilePath& profile_path);
 // directory.
 bool IsDefaultHomepage(const GURL& homepage, const FilePath& app_path);
 
+// Parses the prefs found in the file |pref_file| and puts the key/value pairs
+// in |prefs|. Keys are strings, and values can be strings, booleans or
+// integers.  Returns true if it succeeded, false otherwise (in which case
+// |prefs| is not filled).
+bool ParsePrefFile(const FilePath& pref_file, DictionaryValue* prefs);
 
 #endif  // CHROME_BROWSER_IMPORTER_FIREFOX_IMPORTER_UTILS_H_
