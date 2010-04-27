@@ -273,6 +273,7 @@ class TabRenderer : public views::View,
   static TabImage tab_active;
   static TabImage tab_active_nano;
   static TabImage tab_inactive;
+  static TabImage tab_inactive_nano;
   static TabImage tab_alpha;
   static TabImage tab_alpha_nano;
 

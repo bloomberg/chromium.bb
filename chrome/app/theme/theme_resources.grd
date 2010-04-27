@@ -89,6 +89,9 @@
       <include name="IDR_TAB_INACTIVE_CENTER" file="tab_inactive_center.png" type="BINDATA" />
       <include name="IDR_TAB_INACTIVE_LEFT" file="tab_inactive_left.png" type="BINDATA" />
       <include name="IDR_TAB_INACTIVE_RIGHT" file="tab_inactive_right.png" type="BINDATA" />
+      <include name="IDR_TAB_INACTIVE_NANO_CENTER" file="tab_inactive_nano_center.png" type="BINDATA" />
+      <include name="IDR_TAB_INACTIVE_NANO_LEFT" file="tab_inactive_nano_left.png" type="BINDATA" />
+      <include name="IDR_TAB_INACTIVE_NANO_RIGHT" file="tab_inactive_nano_right.png" type="BINDATA" />
       <include name="IDR_DOWNLOAD_BUTTON_CENTER_BOTTOM" file="download_button_center_bottom.png" type="BINDATA" />
       <include name="IDR_DOWNLOAD_BUTTON_CENTER_BOTTOM_H" file="download_button_center_bottom_h.png" type="BINDATA" />
       <include name="IDR_DOWNLOAD_BUTTON_CENTER_BOTTOM_P" file="download_button_center_bottom_p.png" type="BINDATA" />

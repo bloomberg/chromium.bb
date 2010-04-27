@@ -90,6 +90,7 @@ TabRenderer::TabImage TabRenderer::tab_alpha = {0};
 TabRenderer::TabImage TabRenderer::tab_active = {0};
 TabRenderer::TabImage TabRenderer::tab_active_nano = {0};
 TabRenderer::TabImage TabRenderer::tab_inactive = {0};
+TabRenderer::TabImage TabRenderer::tab_inactive_nano = {0};
 TabRenderer::TabImage TabRenderer::tab_alpha_nano = {0};
 
 // Max opacity for the mini-tab title change animation.
@@ -735,53 +736,60 @@ void TabRenderer::PaintInactiveTabBackground(gfx::Canvas* canvas) {
 
   SkBitmap* tab_bg = GetThemeProvider()->GetBitmapNamed(tab_id);
 
+  // App tabs are drawn slightly differently (as nano tabs).
+  TabImage* tab_image = data_.app ? &tab_active_nano : &tab_active;
+  TabImage* tab_inactive_image = data_.app ? &tab_inactive_nano :
+                                             &tab_inactive;
+  TabImage* alpha = data_.app ? &tab_alpha_nano : &tab_alpha;
+
   // If the theme is providing a custom background image, then its top edge
   // should be at the top of the tab. Otherwise, we assume that the background
   // image is a composited foreground + frame image.
   int bg_offset_y = GetThemeProvider()->HasCustomImage(tab_id) ?
       0 : background_offset_.y();
 
-  if (!data_.app) {
-    // Draw left edge.  Don't draw over the toolbar, as we're not the foreground
-    // tab.
-    SkBitmap tab_l = SkBitmapOperations::CreateTiledBitmap(
-        *tab_bg, offset, bg_offset_y, tab_active.l_width, height());
-    SkBitmap theme_l =
-        SkBitmapOperations::CreateMaskedBitmap(tab_l, *tab_alpha.image_l);
-    canvas->DrawBitmapInt(theme_l,
-        0, 0, theme_l.width(), theme_l.height() - kToolbarOverlap,
-        0, 0, theme_l.width(), theme_l.height() - kToolbarOverlap,
-        false);
+  // Draw left edge.  Don't draw over the toolbar, as we're not the foreground
+  // tab.
+  SkBitmap tab_l = SkBitmapOperations::CreateTiledBitmap(
+      *tab_bg, offset, bg_offset_y, tab_image->l_width, height());
+  SkBitmap theme_l =
+      SkBitmapOperations::CreateMaskedBitmap(tab_l, *alpha->image_l);
+  canvas->DrawBitmapInt(theme_l,
+      0, 0, theme_l.width(), theme_l.height() - kToolbarOverlap,
+      0, 0, theme_l.width(), theme_l.height() - kToolbarOverlap,
+      false);
 
-    // Draw right edge.  Again, don't draw over the toolbar.
-    SkBitmap tab_r = SkBitmapOperations::CreateTiledBitmap(*tab_bg,
-        offset + width() - tab_active.r_width, bg_offset_y,
-        tab_active.r_width, height());
-    SkBitmap theme_r =
-        SkBitmapOperations::CreateMaskedBitmap(tab_r, *tab_alpha.image_r);
-    canvas->DrawBitmapInt(theme_r,
-        0, 0, theme_r.width(), theme_r.height() - kToolbarOverlap,
-        width() - theme_r.width(), 0, theme_r.width(),
-        theme_r.height() - kToolbarOverlap, false);
+  // Draw right edge.  Again, don't draw over the toolbar.
+  SkBitmap tab_r = SkBitmapOperations::CreateTiledBitmap(*tab_bg,
+      offset + width() - tab_image->r_width, bg_offset_y,
+      tab_image->r_width, height());
+  SkBitmap theme_r =
+      SkBitmapOperations::CreateMaskedBitmap(tab_r, *alpha->image_r);
+  canvas->DrawBitmapInt(theme_r,
+      0, 0, theme_r.width(), theme_r.height() - kToolbarOverlap,
+      width() - theme_r.width(), 0, theme_r.width(),
+      theme_r.height() - kToolbarOverlap, false);
 
-    // Draw center.  Instead of masking out the top portion we simply skip over
-    // it by incrementing by kDropShadowHeight, since it's a simple rectangle.
-    // And again, don't draw over the toolbar.
-    canvas->TileImageInt(*tab_bg,
-       offset + tab_active.l_width, bg_offset_y + kDropShadowHeight,
-       tab_active.l_width, kDropShadowHeight,
-       width() - tab_active.l_width - tab_active.r_width,
-       height() - kDropShadowHeight - kToolbarOverlap);
+  // Draw center.  Instead of masking out the top portion we simply skip over
+  // it by incrementing by kDropShadowHeight, since it's a simple rectangle.
+  // And again, don't draw over the toolbar.
+  canvas->TileImageInt(*tab_bg,
+     offset + tab_image->l_width,
+     bg_offset_y + kDropShadowHeight + tab_image->y_offset,
+     tab_image->l_width,
+     kDropShadowHeight + tab_image->y_offset,
+     width() - tab_image->l_width - tab_image->r_width,
+     height() - kDropShadowHeight - kToolbarOverlap - tab_image->y_offset);
 
-    // Now draw the highlights/shadows around the tab edge.
-    canvas->DrawBitmapInt(*tab_inactive.image_l, 0, 0);
-    canvas->TileImageInt(*tab_inactive.image_c,
-                         tab_inactive.l_width, 0,
-                         width() - tab_inactive.l_width - tab_inactive.r_width,
-                         height());
-    canvas->DrawBitmapInt(*tab_inactive.image_r,
-                          width() - tab_inactive.r_width, 0);
-  }
+  // Now draw the highlights/shadows around the tab edge.
+  canvas->DrawBitmapInt(*tab_inactive_image->image_l, 0, 0);
+  canvas->TileImageInt(*tab_inactive_image->image_c,
+                       tab_inactive_image->l_width, 0,
+                       width() - tab_inactive_image->l_width -
+                           tab_inactive_image->r_width,
+                       height());
+  canvas->DrawBitmapInt(*tab_inactive_image->image_r,
+                        width() - tab_inactive_image->r_width, 0);
 }
 
 void TabRenderer::PaintActiveTabBackground(gfx::Canvas* canvas) {
@@ -996,6 +1004,13 @@ void TabRenderer::LoadTabImages() {
   tab_inactive.image_r = rb.GetBitmapNamed(IDR_TAB_INACTIVE_RIGHT);
   tab_inactive.l_width = tab_inactive.image_l->width();
   tab_inactive.r_width = tab_inactive.image_r->width();
+
+  tab_inactive_nano.image_l = rb.GetBitmapNamed(IDR_TAB_INACTIVE_NANO_LEFT);
+  tab_inactive_nano.image_c = rb.GetBitmapNamed(IDR_TAB_INACTIVE_NANO_CENTER);
+  tab_inactive_nano.image_r = rb.GetBitmapNamed(IDR_TAB_INACTIVE_NANO_RIGHT);
+  tab_inactive_nano.l_width = tab_inactive_nano.image_l->width();
+  tab_inactive_nano.r_width = tab_inactive_nano.image_r->width();
+  tab_inactive_nano.y_offset = kMiniTabDiffHeight;
 
   loading_animation_frames = rb.GetBitmapNamed(IDR_THROBBER);
   waiting_animation_frames = rb.GetBitmapNamed(IDR_THROBBER_WAITING);
