@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,7 @@ TEST(GoogleURLTrackerTest, CheckAndConvertURL) {
     { "http://google.evil.com/", false, "", },
     { "http://google.com.com.com/", false, "", },
     { "http://google/", false, "", },
+    { "http://wifi.corp.google.com/", false, "" },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
