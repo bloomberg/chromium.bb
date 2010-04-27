@@ -58,11 +58,6 @@
             '../build/linux/system.gyp:gtk',
           ],
         }],
-        ['OS=="linux" and toolkit_views==1', {
-          'dependencies': [
-            '../views/views.gyp:views',
-          ],
-        }],
         ['OS=="linux"', {
           'conditions': [
             ['linux_use_tcmalloc==1', {

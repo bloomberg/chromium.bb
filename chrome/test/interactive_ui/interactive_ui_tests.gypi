@@ -50,11 +50,13 @@
     '<(DEPTH)/chrome/test/unit/chrome_test_suite.h',
   ],
   'conditions': [
-    ['OS=="linux" and toolkit_views==0 and chromeos==0', {
+    ['OS=="linux"', {
       'dependencies': [
         '<(DEPTH)/build/linux/system.gyp:gtk',
         '<(DEPTH)/tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
       ],
+    }],
+    ['OS=="linux" and toolkit_views==0', {
       'sources!': [
         # TODO(port)
         '<(DEPTH)/chrome/browser/views/bookmark_bar_view_test.cc',
@@ -64,19 +66,14 @@
         '<(DEPTH)/chrome/test/interactive_ui/view_event_test_base.cc',
         '<(DEPTH)/chrome/test/interactive_ui/view_event_test_base.h',
       ],
-    }],  # OS=="linux"
-    ['OS=="linux" and (toolkit_views==1 or chromeos==1)', {
-      'dependencies': [
-        '<(DEPTH)/build/linux/system.gyp:gtk',
-        '<(DEPTH)/tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
-        '<(DEPTH)/views/views.gyp:views',
-      ],
+    }],
+    ['OS=="linux" and toolkit_views==1', {
       'sources!': [
         '<(DEPTH)/chrome/browser/gtk/bookmark_bar_gtk_interactive_uitest.cc',
         # TODO(port)
         '<(DEPTH)/chrome/test/interactive_ui/npapi_interactive_test.cc',
       ],
-    }],  # OS=="linux" and (toolkit_views==1 or chromeos==1)
+    }],
     ['target_arch!="x64" and target_arch!="arm"', {
       'dependencies': [
         # run time dependency
@@ -98,6 +95,11 @@
         '<(DEPTH)/chrome/test/interactive_ui/view_event_test_base.h',
       ],
     }],  # OS=="mac"
+    ['toolkit_views==1', {
+      'dependencies': [
+        '<(DEPTH)/views/views.gyp:views',
+      ],
+    }],
     ['OS=="win"', {
       'include_dirs': [
         '<(DEPTH)/third_party/wtl/include',
@@ -107,7 +109,6 @@
         '<(DEPTH)/chrome/chrome.gyp:chrome_dll_version',
         '<(DEPTH)/chrome/chrome.gyp:crash_service',  # run time dependency
         '<(DEPTH)/chrome/installer/installer.gyp:installer_util_strings',
-        '<(DEPTH)/views/views.gyp:views',
       ],
       'sources': [
         '<(DEPTH)/webkit/glue/resources/aliasb.cur',

@@ -2785,7 +2785,7 @@
             ['exclude', '^browser/views/'],
           ],
           'conditions': [
-            ['OS=="linux" and (toolkit_views==1 or chromeos==1)',{
+            ['OS=="linux" and toolkit_views==1',{
               'dependencies': [
                 '../views/views.gyp:views',
               ],
@@ -3077,7 +3077,7 @@
             # These GTK files haven't been ported to views, while ChromeOS has
             # its own separate implementation below.  So re-include them only on
             # non-ChromeOS views Linux builds.
-            ['OS=="linux" and chromeos==0 and toolkit_views==1', {
+            ['OS=="linux" and toolkit_views==1 and chromeos==0', {
               'sources/': [
                 ['include', '^browser/gtk/dialogs_gtk.cc'],
                 ['include', '^browser/gtk/external_protocol_dialog_gtk.cc'],
@@ -3089,7 +3089,7 @@
               ],
             }],
             # GTK build only
-            ['OS=="linux" and chromeos==0 and toolkit_views==0', {
+            ['OS=="linux" and toolkit_views==0', {
               'sources/': [
                 ['include', '^browser/printing/print_dialog_gtk.cc'],
                 ['include', '^browser/printing/print_dialog_gtk.h'],

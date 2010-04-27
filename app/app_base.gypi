@@ -209,7 +209,7 @@
             '../build/linux/system.gyp:x11',
           ],
           'conditions': [
-            ['toolkit_views==0 and chromeos==0', {
+            ['toolkit_views==0', {
               # Note: because of gyp predence rules this has to be defined as
               # 'sources/' rather than 'sources!'.
               'sources/': [
@@ -220,7 +220,7 @@
                 ['exclude', '^drag_drop_types_gtk.cc'],
               ],
             }],
-            ['toolkit_views==1 or chromeos==1', {
+            ['toolkit_views==1', {
               # Note: because of gyp predence rules this has to be defined as
               # 'sources/' rather than 'sources!'.
               'sources/': [

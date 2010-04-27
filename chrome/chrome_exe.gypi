@@ -214,11 +214,6 @@
             },
           ],
         }],
-        ['OS=="linux" and (toolkit_views==1 or chromeos==1)', {
-          'dependencies': [
-            '../views/views.gyp:views',
-          ],
-        }],
         ['OS=="mac"', {
           'variables': {
             'mac_packaging_dir':

@@ -39,9 +39,9 @@
     # Allow overridding the selection of which FFmpeg binaries to copy via an
     # environment variable.  Affects the ffmpeg_binaries target.
     'conditions': [
-      ['chromeos!=0 or toolkit_views!=0', {
+      ['chromeos==1', {
         'ffmpeg_branding%': '<(branding)OS',
-      },{  # else chromeos==0, assume Chrome/Chromium.
+      }, {  # otherwise, assume Chrome/Chromium.
         'ffmpeg_branding%': '<(branding)',
       }],
       ['armv7==1 and arm_neon==1', {

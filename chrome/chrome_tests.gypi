@@ -360,12 +360,14 @@
             'browser/process_singleton_linux_uitest.cc',
           ],
         }],
-        ['OS=="linux" and (toolkit_views==1 or chromeos==1)', {
-          'dependencies': [
-            '../views/views.gyp:views',
-          ],
+        ['OS=="linux" and toolkit_views==1', {
           'sources!': [
             'browser/download/download_uitest.cc',
+          ],
+        }],
+        ['toolkit_views==1', {
+          'dependencies': [
+            '../views/views.gyp:views',
           ],
         }],
         ['OS=="mac"', {
@@ -391,7 +393,6 @@
             'security_tests',  # run time dependency
             'test_support_common',
             '../google_update/google_update.gyp:google_update',
-            '../views/views.gyp:views',
             '<(allocator_target)',
           ],
           'link_settings': {
@@ -1047,10 +1048,12 @@
             'browser/views/bookmark_context_menu_test.cc',
           ],
         }],
-        ['OS=="linux" and (toolkit_views==1 or chromeos==1)', {
+        ['toolkit_views==1', {
           'dependencies': [
             '../views/views.gyp:views',
           ],
+        }],
+        ['OS=="linux" and toolkit_views==1', {
           'sources': [
             '<@(views_unit_tests_sources)',
           ],
@@ -1119,7 +1122,6 @@
           'dependencies': [
             'chrome_dll_version',
             'installer/installer.gyp:installer_util_strings',
-            '../views/views.gyp:views',
             'test_chrome_plugin',  # run time dependency
             '<(allocator_target)',
           ],
@@ -1361,7 +1363,7 @@
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
         }],
-        ['OS=="linux" and (toolkit_views==1 or chromeos==1)', {
+        ['OS=="linux" and toolkit_views==1', {
           'dependencies': [
             '../views/views.gyp:views',
           ],
@@ -1388,7 +1390,7 @@
             'browser/chromeos/status/power_menu_button_browsertest.cc',
           ],
         }],
-        ['OS=="linux" and toolkit_views==0 and chromeos==0', {
+        ['OS=="linux" and toolkit_views==0', {
           'sources': [
             'browser/extensions/browser_action_test_util_gtk.cc',
             'browser/gtk/view_id_util_browsertest.cc',
@@ -1451,7 +1453,7 @@
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
         }],
-        ['OS=="linux" and (toolkit_views==1 or chromeos==1)', {
+        ['OS=="linux" and toolkit_views==1', {
           'dependencies': [
             '../views/views.gyp:views',
           ],
@@ -1547,7 +1549,7 @@
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
         }],
-        ['OS=="win" or (OS=="linux" and (toolkit_views==1 or chromeos==1))', {
+        ['toolkit_views==1', {
           'dependencies': [
             '../views/views.gyp:views',
           ],
@@ -1826,13 +1828,11 @@
             'plugin',
           ],
         }],
-        # Linux-specific rules.
         ['OS=="linux"', {
            'dependencies': [
              '../build/linux/system.gyp:gtk',
            ],
         }],
-        # Windows-specific rules.
         ['OS=="win"', {
           'sources': [
             'app/chrome_dll.rc',
@@ -1941,7 +1941,7 @@
                 'browser/visitedlink_perftest.cc',
               ],
             }],
-            ['OS=="win" or (OS=="linux" and (toolkit_views==1 or chromeos==1))', {
+            ['toolkit_views==1', {
               'dependencies': [
                 '../views/views.gyp:views',
               ],

@@ -469,7 +469,7 @@
           ],
           # ChromeOS doesn't care about RPM packages.
           'conditions': [
-            ['chromeos==0 and toolkit_views==0', {
+            ['chromeos==0', {
               'dependencies': [
                 'linux_packages_trunk_rpm',
               ],
@@ -485,7 +485,7 @@
           ],
           # ChromeOS doesn't care about RPM packages.
           'conditions': [
-            ['chromeos==0 and toolkit_views==0', {
+            ['chromeos==0', {
               'dependencies': [
                 'linux_packages_unstable_rpm',
               ],
@@ -501,7 +501,7 @@
           ],
           # ChromeOS doesn't care about RPM packages.
           'conditions': [
-            ['chromeos==0 and toolkit_views==0', {
+            ['chromeos==0', {
               'dependencies': [
                 'linux_packages_beta_rpm',
               ],
@@ -517,7 +517,7 @@
           ],
           # ChromeOS doesn't care about RPM packages.
           'conditions': [
-            ['chromeos==0 and toolkit_views==0', {
+            ['chromeos==0', {
               'dependencies': [
                 'linux_packages_stable_rpm',
               ],
