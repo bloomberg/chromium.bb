@@ -1549,37 +1549,37 @@ bool WebDatabase::GetAutoFillProfileForID(int profile_id,
   return s.Succeeded();
 }
 
-static void BindCreditCardToStatement(const CreditCard& creditcard,
+static void BindCreditCardToStatement(const CreditCard& credit_card,
                                       sql::Statement* s) {
-  s->BindString(0, UTF16ToUTF8(creditcard.Label()));
-  s->BindInt(1, creditcard.unique_id());
+  s->BindString(0, UTF16ToUTF8(credit_card.Label()));
+  s->BindInt(1, credit_card.unique_id());
 
-  string16 text = creditcard.GetFieldText(AutoFillType(CREDIT_CARD_NAME));
+  string16 text = credit_card.GetFieldText(AutoFillType(CREDIT_CARD_NAME));
   s->BindString(2, UTF16ToUTF8(text));
-  text = creditcard.GetFieldText(AutoFillType(CREDIT_CARD_TYPE));
+  text = credit_card.GetFieldText(AutoFillType(CREDIT_CARD_TYPE));
   s->BindString(3, UTF16ToUTF8(text));
   text.clear();  // No unencrypted cc info.
   s->BindString(4, UTF16ToUTF8(text));
-  text = creditcard.GetFieldText(AutoFillType(CREDIT_CARD_EXP_MONTH));
+  text = credit_card.GetFieldText(AutoFillType(CREDIT_CARD_EXP_MONTH));
   s->BindString(5, UTF16ToUTF8(text));
-  text = creditcard.GetFieldText(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+  text = credit_card.GetFieldText(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR));
   s->BindString(6, UTF16ToUTF8(text));
   text.clear();
   s->BindString(7, UTF16ToUTF8(text));
-  s->BindString(8, UTF16ToUTF8(creditcard.billing_address()));
-  s->BindString(9, UTF16ToUTF8(creditcard.shipping_address()));
-  text = creditcard.GetFieldText(AutoFillType(CREDIT_CARD_NUMBER));
+  s->BindString(8, UTF16ToUTF8(credit_card.billing_address()));
+  s->BindString(9, UTF16ToUTF8(credit_card.shipping_address()));
+  text = credit_card.GetFieldText(AutoFillType(CREDIT_CARD_NUMBER));
   std::string encrypted_data;
   Encryptor::EncryptString16(text, &encrypted_data);
   s->BindBlob(10, encrypted_data.data(),
               static_cast<int>(encrypted_data.length()));
-  text = creditcard.GetFieldText(AutoFillType(CREDIT_CARD_VERIFICATION_CODE));
+  text = credit_card.GetFieldText(AutoFillType(CREDIT_CARD_VERIFICATION_CODE));
   Encryptor::EncryptString16(text, &encrypted_data);
   s->BindBlob(11, encrypted_data.data(),
               static_cast<int>(encrypted_data.length()));
 }
 
-bool WebDatabase::AddCreditCard(const CreditCard& creditcard) {
+bool WebDatabase::AddCreditCard(const CreditCard& credit_card) {
   sql::Statement s(db_.GetUniqueStatement(
       "INSERT INTO credit_cards"
       "(label, unique_id, name_on_card, type, card_number,"
@@ -1591,7 +1591,7 @@ bool WebDatabase::AddCreditCard(const CreditCard& creditcard) {
     return false;
   }
 
-  BindCreditCardToStatement(creditcard, &s);
+  BindCreditCardToStatement(credit_card, &s);
 
   if (!s.Run()) {
     NOTREACHED();
@@ -1603,11 +1603,11 @@ bool WebDatabase::AddCreditCard(const CreditCard& creditcard) {
 }
 
 static CreditCard* CreditCardFromStatement(const sql::Statement& s) {
-  CreditCard* creditcard = new CreditCard(
+  CreditCard* credit_card = new CreditCard(
       UTF8ToUTF16(s.ColumnString(0)), s.ColumnInt(1));
-  creditcard->SetInfo(AutoFillType(CREDIT_CARD_NAME),
+  credit_card->SetInfo(AutoFillType(CREDIT_CARD_NAME),
                    UTF8ToUTF16(s.ColumnString(2)));
-  creditcard->SetInfo(AutoFillType(CREDIT_CARD_TYPE),
+  credit_card->SetInfo(AutoFillType(CREDIT_CARD_TYPE),
                    UTF8ToUTF16(s.ColumnString(3)));
   string16 credit_card_number = UTF8ToUTF16(s.ColumnString(4));
   // It could be non-empty prior to version 23. After that it encrypted in
@@ -1621,10 +1621,10 @@ static CreditCard* CreditCardFromStatement(const sql::Statement& s) {
       Encryptor::DecryptString16(encrypted_cc, &credit_card_number);
     }
   }
-  creditcard->SetInfo(AutoFillType(CREDIT_CARD_NUMBER), credit_card_number);
-  creditcard->SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH),
+  credit_card->SetInfo(AutoFillType(CREDIT_CARD_NUMBER), credit_card_number);
+  credit_card->SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH),
                    UTF8ToUTF16(s.ColumnString(5)));
-  creditcard->SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
+  credit_card->SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
                    UTF8ToUTF16(s.ColumnString(6)));
 
   string16 credit_card_verification_code = UTF8ToUTF16(s.ColumnString(7));
@@ -1639,19 +1639,19 @@ static CreditCard* CreditCardFromStatement(const sql::Statement& s) {
       Encryptor::DecryptString16(encrypted_cc, &credit_card_verification_code);
     }
   }
-  creditcard->SetInfo(AutoFillType(CREDIT_CARD_VERIFICATION_CODE),
+  credit_card->SetInfo(AutoFillType(CREDIT_CARD_VERIFICATION_CODE),
                       credit_card_verification_code);
-  creditcard->set_billing_address(UTF8ToUTF16(s.ColumnString(8)));
-  creditcard->set_shipping_address(UTF8ToUTF16(s.ColumnString(9)));
+  credit_card->set_billing_address(UTF8ToUTF16(s.ColumnString(8)));
+  credit_card->set_shipping_address(UTF8ToUTF16(s.ColumnString(9)));
   // Column 10 is processed above.
   // Column 11 is processed above.
 
-  return creditcard;
+  return credit_card;
 }
 
 bool WebDatabase::GetCreditCardForLabel(const string16& label,
-                                        CreditCard** creditcard) {
-  DCHECK(creditcard);
+                                        CreditCard** credit_card) {
+  DCHECK(credit_card);
   sql::Statement s(db_.GetUniqueStatement(
       "SELECT * FROM credit_cards "
       "WHERE label = ?"));
@@ -1664,12 +1664,13 @@ bool WebDatabase::GetCreditCardForLabel(const string16& label,
   if (!s.Step())
     return false;
 
-  *creditcard = CreditCardFromStatement(s);
+  *credit_card = CreditCardFromStatement(s);
 
   return s.Succeeded();
 }
 
-bool WebDatabase::GetCreditCardForID(int card_id, CreditCard** card) {
+bool WebDatabase::GetCreditCardForID(int credit_card_id,
+                                     CreditCard** credit_card) {
   sql::Statement s(db_.GetUniqueStatement(
       "SELECT * FROM credit_cards "
       "WHERE unique_id = ?"));
@@ -1678,19 +1679,19 @@ bool WebDatabase::GetCreditCardForID(int card_id, CreditCard** card) {
     return false;
   }
 
-  s.BindInt(0, card_id);
+  s.BindInt(0, credit_card_id);
   if (!s.Step())
     return false;
 
-  *card = CreditCardFromStatement(s);
+  *credit_card = CreditCardFromStatement(s);
 
   return s.Succeeded();
 }
 
 bool WebDatabase::GetCreditCards(
-    std::vector<CreditCard*>* creditcards) {
-  DCHECK(creditcards);
-  creditcards->clear();
+    std::vector<CreditCard*>* credit_cards) {
+  DCHECK(credit_cards);
+  credit_cards->clear();
 
   sql::Statement s(db_.GetUniqueStatement("SELECT * FROM credit_cards"));
   if (!s) {
@@ -1699,13 +1700,13 @@ bool WebDatabase::GetCreditCards(
   }
 
   while (s.Step())
-    creditcards->push_back(CreditCardFromStatement(s));
+    credit_cards->push_back(CreditCardFromStatement(s));
 
   return s.Succeeded();
 }
 
-bool WebDatabase::UpdateCreditCard(const CreditCard& creditcard) {
-  DCHECK(creditcard.unique_id());
+bool WebDatabase::UpdateCreditCard(const CreditCard& credit_card) {
+  DCHECK(credit_card.unique_id());
   sql::Statement s(db_.GetUniqueStatement(
       "UPDATE credit_cards "
       "SET label=?, unique_id=?, name_on_card=?, type=?, card_number=?, "
@@ -1718,15 +1719,15 @@ bool WebDatabase::UpdateCreditCard(const CreditCard& creditcard) {
     return false;
   }
 
-  BindCreditCardToStatement(creditcard, &s);
-  s.BindInt(12, creditcard.unique_id());
+  BindCreditCardToStatement(credit_card, &s);
+  s.BindInt(12, credit_card.unique_id());
   bool result = s.Run();
   DCHECK_GT(db_.GetLastChangeCount(), 0);
   return result;
 }
 
-bool WebDatabase::RemoveCreditCard(int creditcard_id) {
-  DCHECK_NE(0, creditcard_id);
+bool WebDatabase::RemoveCreditCard(int credit_card_id) {
+  DCHECK_NE(0, credit_card_id);
   sql::Statement s(db_.GetUniqueStatement(
       "DELETE FROM credit_cards WHERE unique_id = ?"));
   if (!s) {
@@ -1734,7 +1735,7 @@ bool WebDatabase::RemoveCreditCard(int creditcard_id) {
     return false;
   }
 
-  s.BindInt(0, creditcard_id);
+  s.BindInt(0, credit_card_id);
   return s.Run();
 }
 
