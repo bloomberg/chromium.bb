@@ -18,7 +18,7 @@ class NotificationsPermissionTest : public UITest {
   }
 };
 
-TEST_F(NotificationsPermissionTest, FLAKY_TestUserGestureInfobar) {
+TEST_F(NotificationsPermissionTest, TestUserGestureInfobar) {
   const wchar_t kDocRoot[] = L"chrome/test/data";
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
