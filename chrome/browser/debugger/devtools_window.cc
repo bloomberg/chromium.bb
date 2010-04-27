@@ -286,20 +286,15 @@ std::string SkColorToRGBAString(SkColor color) {
 void DevToolsWindow::UpdateTheme() {
   BrowserThemeProvider* tp = profile_->GetThemeProvider();
   CHECK(tp);
-  std::string command;
-  if (tp->UsingDefaultTheme()) {
-    command = "WebInspector.resetToolbarColors()";
-  } else {
-    SkColor color_toolbar =
-        tp->GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
-    SkColor color_tab_text =
-        tp->GetColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
 
-    command = StringPrintf(
-        "WebInspector.setToolbarColors(\"%s\", \"%s\")",
-        SkColorToRGBAString(color_toolbar).c_str(),
-        SkColorToRGBAString(color_tab_text).c_str());
-  }
+  SkColor color_toolbar =
+      tp->GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
+  SkColor color_tab_text =
+      tp->GetColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
+  std::string command = StringPrintf(
+      "WebInspector.setToolbarColors(\"%s\", \"%s\")",
+      SkColorToRGBAString(color_toolbar).c_str(),
+      SkColorToRGBAString(color_tab_text).c_str());
   tab_contents_->render_view_host()->
       ExecuteJavascriptInWebFrame(L"", UTF8ToWide(command));
 }
