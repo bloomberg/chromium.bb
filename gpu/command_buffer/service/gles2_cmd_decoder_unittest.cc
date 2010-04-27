@@ -443,12 +443,14 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformivBadProgramFails) {
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
   // Valid id that is not a program. The GL spec requires a different error for
   // this case.
+#if GLES2_TEST_SHADER_VS_PROGRAM_IDS
   result->size = kInitialResult;
-  cmd.Init(client_texture_id_, kUniform2Location,
+  cmd.Init(client_shader_id_, kUniform2Location,
            kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(0U, result->size);
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+#endif  // GLES2_TEST_SHADER_VS_PROGRAM_IDS
   // Unlinked program
   EXPECT_CALL(*gl_, CreateProgram())
       .Times(1)
@@ -536,12 +538,14 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformfvBadProgramFails) {
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
   // Valid id that is not a program. The GL spec requires a different error for
   // this case.
+#if GLES2_TEST_SHADER_VS_PROGRAM_IDS
   result->size = kInitialResult;
-  cmd.Init(client_texture_id_, kUniform2Location,
+  cmd.Init(client_shader_id_, kUniform2Location,
            kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(0U, result->size);
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+#endif  // GLES2_TEST_SHADER_VS_PROGRAM_IDS
   // Unlinked program
   EXPECT_CALL(*gl_, CreateProgram())
       .Times(1)
@@ -740,12 +744,14 @@ TEST_F(GLES2DecoderWithShaderTest, GetActiveUniformBadProgramFails) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(0, result->success);
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+#if GLES2_TEST_SHADER_VS_PROGRAM_IDS
   result->success = 0;
-  cmd.Init(client_texture_id_, kUniformIndex, kBucketId,
+  cmd.Init(client_shader_id_, kUniformIndex, kBucketId,
            shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(0, result->success);
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+#endif  // GLES2_TEST_SHADER_VS_PROGRAM_IDS
 }
 
 TEST_F(GLES2DecoderWithShaderTest, GetActiveUniformBadIndexFails) {
@@ -818,12 +824,14 @@ TEST_F(GLES2DecoderWithShaderTest, GetActiveAttribBadProgramFails) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(0, result->success);
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+#if GLES2_TEST_SHADER_VS_PROGRAM_IDS
   result->success = 0;
-  cmd.Init(client_texture_id_, kAttribIndex, kBucketId,
+  cmd.Init(client_shader_id_, kAttribIndex, kBucketId,
            shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(0, result->success);
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+#endif  // GLES2_TEST_SHADER_VS_PROGRAM_IDS
 }
 
 TEST_F(GLES2DecoderWithShaderTest, GetActiveAttribBadIndexFails) {
@@ -865,9 +873,11 @@ TEST_F(GLES2DecoderTest, CompileShaderInvalidArgs) {
   cmd.Init(kInvalidClientId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-  cmd.Init(client_texture_id_);
+#if GLES2_TEST_SHADER_VS_PROGRAM_IDS
+  cmd.Init(client_program_id_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+#endif  // GLES2_TEST_SHADER_VS_PROGRAM_IDS
 }
 
 TEST_F(GLES2DecoderTest, ShaderSourceAndGetShaderSourceValidArgs) {
@@ -899,10 +909,12 @@ TEST_F(GLES2DecoderTest, ShaderSourceInvalidArgs) {
            kSharedMemoryId, kSharedMemoryOffset, kSourceSize);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-  cmd.Init(client_texture_id_,
+#if GLES2_TEST_SHADER_VS_PROGRAM_IDS
+  cmd.Init(client_program_id_,
            kSharedMemoryId, kSharedMemoryOffset, kSourceSize);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+#endif  // GLES2_TEST_SHADER_VS_PROGRAM_IDS
   cmd.Init(client_shader_id_,
            kInvalidSharedMemoryId, kSharedMemoryOffset, kSourceSize);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
@@ -942,9 +954,11 @@ TEST_F(GLES2DecoderTest, ShaderSourceImmediateInvalidArgs) {
   memcpy(GetImmediateDataAs<void*>(&cmd), kSource, kSourceSize);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, kSourceSize));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-  cmd.Init(client_texture_id_, kSourceSize);
+#if GLES2_TEST_SHADER_VS_PROGRAM_IDS
+  cmd.Init(client_program_id_, kSourceSize);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, kSourceSize));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+#endif  // GLES2_TEST_SHADER_VS_PROGRAM_IDS
 }
 
 TEST_F(GLES2DecoderTest, ShaderSourceBucketAndGetShaderSourceValidArgs) {
@@ -1908,7 +1922,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetMaxValueInBuffer) {
            GL_UNSIGNED_SHORT,
            kValidIndexRangeStart * 2, kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
   cmd.Init(client_element_buffer_id_, kOutOfRangeIndexRangeEnd,
            GL_UNSIGNED_SHORT,
            kValidIndexRangeStart * 2, kSharedMemoryId, kSharedMemoryOffset);

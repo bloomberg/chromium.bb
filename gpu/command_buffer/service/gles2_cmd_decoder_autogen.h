@@ -17,17 +17,9 @@ error::Error GLES2DecoderImpl::HandleActiveTexture(
 
 error::Error GLES2DecoderImpl::HandleAttachShader(
     uint32 immediate_data_size, const gles2::AttachShader& c) {
-  GLuint program;
-  if (!id_manager()->GetServiceId(c.program, &program)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
-  GLuint shader;
-  if (!id_manager()->GetServiceId(c.shader, &shader)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
-  glAttachShader(program, shader);
+  GLuint program = c.program;
+  GLuint shader = c.shader;
+  DoAttachShader(program, shader);
   return error::kNoError;
 }
 
@@ -264,11 +256,7 @@ error::Error GLES2DecoderImpl::HandleColorMask(
 
 error::Error GLES2DecoderImpl::HandleCompileShader(
     uint32 immediate_data_size, const gles2::CompileShader& c) {
-  GLuint shader;
-  if (!id_manager()->GetServiceId(c.shader, &shader)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
+  GLuint shader = c.shader;
   DoCompileShader(shader);
   return error::kNoError;
 }
@@ -403,7 +391,9 @@ error::Error GLES2DecoderImpl::HandleCopyTexSubImage2D(
 error::Error GLES2DecoderImpl::HandleCreateProgram(
     uint32 immediate_data_size, const gles2::CreateProgram& c) {
   uint32 client_id = c.client_id;
-  CreateProgramHelper(client_id);
+  if (!CreateProgramHelper(client_id)) {
+    return error::kInvalidArguments;
+  }
   return error::kNoError;
 }
 
@@ -415,7 +405,9 @@ error::Error GLES2DecoderImpl::HandleCreateShader(
     return error::kNoError;
   }
   uint32 client_id = c.client_id;
-  CreateShaderHelper(type, client_id);
+  if (!CreateShaderHelper(type, client_id)) {
+    return error::kInvalidArguments;
+  }
   return error::kNoError;
 }
 
@@ -446,7 +438,7 @@ error::Error GLES2DecoderImpl::HandleDeleteBuffers(
   if (buffers == NULL) {
     return error::kOutOfBounds;
   }
-  DeleteGLObjects<GLDeleteBuffersHelper>(n, buffers);
+  DeleteBuffersHelper(n, buffers);
   return error::kNoError;
 }
 
@@ -466,7 +458,7 @@ error::Error GLES2DecoderImpl::HandleDeleteBuffersImmediate(
   if (buffers == NULL) {
     return error::kOutOfBounds;
   }
-  DeleteGLObjects<GLDeleteBuffersHelper>(n, buffers);
+  DeleteBuffersHelper(n, buffers);
   return error::kNoError;
 }
 
@@ -486,7 +478,7 @@ error::Error GLES2DecoderImpl::HandleDeleteFramebuffers(
   if (framebuffers == NULL) {
     return error::kOutOfBounds;
   }
-  DeleteGLObjects<GLDeleteFramebuffersHelper>(n, framebuffers);
+  DeleteFramebuffersHelper(n, framebuffers);
   return error::kNoError;
 }
 
@@ -506,7 +498,7 @@ error::Error GLES2DecoderImpl::HandleDeleteFramebuffersImmediate(
   if (framebuffers == NULL) {
     return error::kOutOfBounds;
   }
-  DeleteGLObjects<GLDeleteFramebuffersHelper>(n, framebuffers);
+  DeleteFramebuffersHelper(n, framebuffers);
   return error::kNoError;
 }
 
@@ -526,7 +518,7 @@ error::Error GLES2DecoderImpl::HandleDeleteRenderbuffers(
   if (renderbuffers == NULL) {
     return error::kOutOfBounds;
   }
-  DeleteGLObjects<GLDeleteRenderbuffersHelper>(n, renderbuffers);
+  DeleteRenderbuffersHelper(n, renderbuffers);
   return error::kNoError;
 }
 
@@ -546,7 +538,7 @@ error::Error GLES2DecoderImpl::HandleDeleteRenderbuffersImmediate(
   if (renderbuffers == NULL) {
     return error::kOutOfBounds;
   }
-  DeleteGLObjects<GLDeleteRenderbuffersHelper>(n, renderbuffers);
+  DeleteRenderbuffersHelper(n, renderbuffers);
   return error::kNoError;
 }
 
@@ -566,7 +558,7 @@ error::Error GLES2DecoderImpl::HandleDeleteTextures(
   if (textures == NULL) {
     return error::kOutOfBounds;
   }
-  DeleteGLObjects<GLDeleteTexturesHelper>(n, textures);
+  DeleteTexturesHelper(n, textures);
   return error::kNoError;
 }
 
@@ -586,7 +578,7 @@ error::Error GLES2DecoderImpl::HandleDeleteTexturesImmediate(
   if (textures == NULL) {
     return error::kOutOfBounds;
   }
-  DeleteGLObjects<GLDeleteTexturesHelper>(n, textures);
+  DeleteTexturesHelper(n, textures);
   return error::kNoError;
 }
 
@@ -618,17 +610,9 @@ error::Error GLES2DecoderImpl::HandleDepthRangef(
 
 error::Error GLES2DecoderImpl::HandleDetachShader(
     uint32 immediate_data_size, const gles2::DetachShader& c) {
-  GLuint program;
-  if (!id_manager()->GetServiceId(c.program, &program)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
-  GLuint shader;
-  if (!id_manager()->GetServiceId(c.shader, &shader)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
-  glDetachShader(program, shader);
+  GLuint program = c.program;
+  GLuint shader = c.shader;
+  DoDetachShader(program, shader);
   return error::kNoError;
 }
 
@@ -702,11 +686,7 @@ error::Error GLES2DecoderImpl::HandleFramebufferRenderbuffer(
   GLenum target = static_cast<GLenum>(c.target);
   GLenum attachment = static_cast<GLenum>(c.attachment);
   GLenum renderbuffertarget = static_cast<GLenum>(c.renderbuffertarget);
-  GLuint renderbuffer;
-  if (!id_manager()->GetServiceId(c.renderbuffer, &renderbuffer)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
+  GLuint renderbuffer = c.renderbuffer;
   if (!ValidateGLenumFrameBufferTarget(target)) {
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
@@ -729,11 +709,7 @@ error::Error GLES2DecoderImpl::HandleFramebufferTexture2D(
   GLenum target = static_cast<GLenum>(c.target);
   GLenum attachment = static_cast<GLenum>(c.attachment);
   GLenum textarget = static_cast<GLenum>(c.textarget);
-  GLuint texture;
-  if (!id_manager()->GetServiceId(c.texture, &texture)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
+  GLuint texture = c.texture;
   GLint level = static_cast<GLint>(c.level);
   if (!ValidateGLenumFrameBufferTarget(target)) {
     SetGLError(GL_INVALID_ENUM);
@@ -778,7 +754,7 @@ error::Error GLES2DecoderImpl::HandleGenBuffers(
   if (buffers == NULL) {
     return error::kOutOfBounds;
   }
-  if (!GenGLObjects<GLGenBuffersHelper>(n, buffers)) {
+  if (!GenBuffersHelper(n, buffers)) {
     return error::kInvalidArguments;
   }
   return error::kNoError;
@@ -800,7 +776,7 @@ error::Error GLES2DecoderImpl::HandleGenBuffersImmediate(
   if (buffers == NULL) {
     return error::kOutOfBounds;
   }
-  if (!GenGLObjects<GLGenBuffersHelper>(n, buffers)) {
+  if (!GenBuffersHelper(n, buffers)) {
     return error::kInvalidArguments;
   }
   return error::kNoError;
@@ -833,7 +809,7 @@ error::Error GLES2DecoderImpl::HandleGenFramebuffers(
   if (framebuffers == NULL) {
     return error::kOutOfBounds;
   }
-  if (!GenGLObjects<GLGenFramebuffersHelper>(n, framebuffers)) {
+  if (!GenFramebuffersHelper(n, framebuffers)) {
     return error::kInvalidArguments;
   }
   return error::kNoError;
@@ -855,7 +831,7 @@ error::Error GLES2DecoderImpl::HandleGenFramebuffersImmediate(
   if (framebuffers == NULL) {
     return error::kOutOfBounds;
   }
-  if (!GenGLObjects<GLGenFramebuffersHelper>(n, framebuffers)) {
+  if (!GenFramebuffersHelper(n, framebuffers)) {
     return error::kInvalidArguments;
   }
   return error::kNoError;
@@ -877,7 +853,7 @@ error::Error GLES2DecoderImpl::HandleGenRenderbuffers(
   if (renderbuffers == NULL) {
     return error::kOutOfBounds;
   }
-  if (!GenGLObjects<GLGenRenderbuffersHelper>(n, renderbuffers)) {
+  if (!GenRenderbuffersHelper(n, renderbuffers)) {
     return error::kInvalidArguments;
   }
   return error::kNoError;
@@ -899,7 +875,7 @@ error::Error GLES2DecoderImpl::HandleGenRenderbuffersImmediate(
   if (renderbuffers == NULL) {
     return error::kOutOfBounds;
   }
-  if (!GenGLObjects<GLGenRenderbuffersHelper>(n, renderbuffers)) {
+  if (!GenRenderbuffersHelper(n, renderbuffers)) {
     return error::kInvalidArguments;
   }
   return error::kNoError;
@@ -921,7 +897,7 @@ error::Error GLES2DecoderImpl::HandleGenTextures(
   if (textures == NULL) {
     return error::kOutOfBounds;
   }
-  if (!GenGLObjects<GLGenTexturesHelper>(n, textures)) {
+  if (!GenTexturesHelper(n, textures)) {
     return error::kInvalidArguments;
   }
   return error::kNoError;
@@ -943,7 +919,7 @@ error::Error GLES2DecoderImpl::HandleGenTexturesImmediate(
   if (textures == NULL) {
     return error::kOutOfBounds;
   }
-  if (!GenGLObjects<GLGenTexturesHelper>(n, textures)) {
+  if (!GenTexturesHelper(n, textures)) {
     return error::kInvalidArguments;
   }
   return error::kNoError;
@@ -1149,11 +1125,7 @@ error::Error GLES2DecoderImpl::HandleGetIntegerv(
 
 error::Error GLES2DecoderImpl::HandleGetProgramiv(
     uint32 immediate_data_size, const gles2::GetProgramiv& c) {
-  GLuint program;
-  if (!id_manager()->GetServiceId(c.program, &program)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
+  GLuint program = c.program;
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef GetProgramiv::Result Result;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
@@ -1183,23 +1155,6 @@ error::Error GLES2DecoderImpl::HandleGetProgramiv(
   } else {
     SetGLError(error);
   }
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderImpl::HandleGetProgramInfoLog(
-    uint32 immediate_data_size, const gles2::GetProgramInfoLog& c) {
-  GLuint program;
-  if (!id_manager()->GetServiceId(c.program, &program)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
-  uint32 bucket_id = static_cast<uint32>(c.bucket_id);
-  GLint len = 0;
-  glGetProgramiv(program, GL_INFO_LOG_LENGTH, &len);
-  Bucket* bucket = CreateBucket(bucket_id);
-  bucket->SetSize(len + 1);
-  glGetProgramInfoLog(
-      program, len + 1, &len, bucket->GetDataAs<GLchar*>(0, len + 1));
   return error::kNoError;
 }
 
@@ -1244,11 +1199,7 @@ error::Error GLES2DecoderImpl::HandleGetRenderbufferParameteriv(
 
 error::Error GLES2DecoderImpl::HandleGetShaderiv(
     uint32 immediate_data_size, const gles2::GetShaderiv& c) {
-  GLuint shader;
-  if (!id_manager()->GetServiceId(c.shader, &shader)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
+  GLuint shader = c.shader;
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef GetShaderiv::Result Result;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
@@ -1278,40 +1229,6 @@ error::Error GLES2DecoderImpl::HandleGetShaderiv(
   } else {
     SetGLError(error);
   }
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderImpl::HandleGetShaderInfoLog(
-    uint32 immediate_data_size, const gles2::GetShaderInfoLog& c) {
-  GLuint shader;
-  if (!id_manager()->GetServiceId(c.shader, &shader)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
-  uint32 bucket_id = static_cast<uint32>(c.bucket_id);
-  GLint len = 0;
-  glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &len);
-  Bucket* bucket = CreateBucket(bucket_id);
-  bucket->SetSize(len + 1);
-  glGetShaderInfoLog(
-      shader, len + 1, &len, bucket->GetDataAs<GLchar*>(0, len + 1));
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderImpl::HandleGetShaderSource(
-    uint32 immediate_data_size, const gles2::GetShaderSource& c) {
-  GLuint shader;
-  if (!id_manager()->GetServiceId(c.shader, &shader)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
-  uint32 bucket_id = static_cast<uint32>(c.bucket_id);
-  GLint len = 0;
-  DoGetShaderiv(shader, GL_SHADER_SOURCE_LENGTH, &len);
-  Bucket* bucket = CreateBucket(bucket_id);
-  bucket->SetSize(len + 1);
-  DoGetShaderSource(
-      shader, len + 1, &len, bucket->GetDataAs<GLchar*>(0, len + 1));
   return error::kNoError;
 }
 
@@ -1481,11 +1398,7 @@ error::Error GLES2DecoderImpl::HandleHint(
 
 error::Error GLES2DecoderImpl::HandleIsBuffer(
     uint32 immediate_data_size, const gles2::IsBuffer& c) {
-  GLuint buffer;
-  if (!id_manager()->GetServiceId(c.buffer, &buffer)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
+  GLuint buffer = c.buffer;
   typedef IsBuffer::Result Result;
   Result* result_dst = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
@@ -1515,7 +1428,7 @@ error::Error GLES2DecoderImpl::HandleIsEnabled(
 
 error::Error GLES2DecoderImpl::HandleIsFramebuffer(
     uint32 immediate_data_size, const gles2::IsFramebuffer& c) {
-  GLuint framebuffer = static_cast<GLuint>(c.framebuffer);
+  GLuint framebuffer = c.framebuffer;
   typedef IsFramebuffer::Result Result;
   Result* result_dst = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
@@ -1528,7 +1441,7 @@ error::Error GLES2DecoderImpl::HandleIsFramebuffer(
 
 error::Error GLES2DecoderImpl::HandleIsProgram(
     uint32 immediate_data_size, const gles2::IsProgram& c) {
-  GLuint program = static_cast<GLuint>(c.program);
+  GLuint program = c.program;
   typedef IsProgram::Result Result;
   Result* result_dst = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
@@ -1541,7 +1454,7 @@ error::Error GLES2DecoderImpl::HandleIsProgram(
 
 error::Error GLES2DecoderImpl::HandleIsRenderbuffer(
     uint32 immediate_data_size, const gles2::IsRenderbuffer& c) {
-  GLuint renderbuffer = static_cast<GLuint>(c.renderbuffer);
+  GLuint renderbuffer = c.renderbuffer;
   typedef IsRenderbuffer::Result Result;
   Result* result_dst = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
@@ -1554,7 +1467,7 @@ error::Error GLES2DecoderImpl::HandleIsRenderbuffer(
 
 error::Error GLES2DecoderImpl::HandleIsShader(
     uint32 immediate_data_size, const gles2::IsShader& c) {
-  GLuint shader = static_cast<GLuint>(c.shader);
+  GLuint shader = c.shader;
   typedef IsShader::Result Result;
   Result* result_dst = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
@@ -1567,7 +1480,7 @@ error::Error GLES2DecoderImpl::HandleIsShader(
 
 error::Error GLES2DecoderImpl::HandleIsTexture(
     uint32 immediate_data_size, const gles2::IsTexture& c) {
-  GLuint texture = static_cast<GLuint>(c.texture);
+  GLuint texture = c.texture;
   typedef IsTexture::Result Result;
   Result* result_dst = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
@@ -1587,11 +1500,7 @@ error::Error GLES2DecoderImpl::HandleLineWidth(
 
 error::Error GLES2DecoderImpl::HandleLinkProgram(
     uint32 immediate_data_size, const gles2::LinkProgram& c) {
-  GLuint program;
-  if (!id_manager()->GetServiceId(c.program, &program)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
+  GLuint program = c.program;
   DoLinkProgram(program);
   return error::kNoError;
 }
@@ -2593,22 +2502,14 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix4fvImmediate(
 error::Error GLES2DecoderImpl::HandleUseProgram(
     uint32 immediate_data_size, const gles2::UseProgram& c) {
   GLuint program = c.program;
-  if (program != 0 && !id_manager()->GetServiceId(program, &program)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
   DoUseProgram(program);
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleValidateProgram(
     uint32 immediate_data_size, const gles2::ValidateProgram& c) {
-  GLuint program;
-  if (!id_manager()->GetServiceId(c.program, &program)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
-  glValidateProgram(program);
+  GLuint program = c.program;
+  DoValidateProgram(program);
   return error::kNoError;
 }
 
@@ -2810,11 +2711,7 @@ error::Error GLES2DecoderImpl::HandleViewport(
 
 error::Error GLES2DecoderImpl::HandleGetMaxValueInBuffer(
     uint32 immediate_data_size, const gles2::GetMaxValueInBuffer& c) {
-  GLuint buffer_id;
-  if (!id_manager()->GetServiceId(c.buffer_id, &buffer_id)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
+  GLuint buffer_id = c.buffer_id;
   GLsizei count = static_cast<GLsizei>(c.count);
   GLenum type = static_cast<GLenum>(c.type);
   GLuint offset = static_cast<GLuint>(c.offset);

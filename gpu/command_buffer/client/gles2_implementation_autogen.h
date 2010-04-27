@@ -20,34 +20,34 @@ void AttachShader(GLuint program, GLuint shader) {
 void BindAttribLocation(GLuint program, GLuint index, const char* name);
 
 void BindFramebuffer(GLenum target, GLuint framebuffer) {
-  if (IsReservedId(framebuffer)) {
+  if (IsFramebufferReservedId(framebuffer)) {
     SetGLError(GL_INVALID_OPERATION);
     return;
   }
   if (framebuffer != 0) {
-    id_allocator_.MarkAsUsed(framebuffer);
+    framebuffer_id_allocator_.MarkAsUsed(framebuffer);
   }
   helper_->BindFramebuffer(target, framebuffer);
 }
 
 void BindRenderbuffer(GLenum target, GLuint renderbuffer) {
-  if (IsReservedId(renderbuffer)) {
+  if (IsRenderbufferReservedId(renderbuffer)) {
     SetGLError(GL_INVALID_OPERATION);
     return;
   }
   if (renderbuffer != 0) {
-    id_allocator_.MarkAsUsed(renderbuffer);
+    renderbuffer_id_allocator_.MarkAsUsed(renderbuffer);
   }
   helper_->BindRenderbuffer(target, renderbuffer);
 }
 
 void BindTexture(GLenum target, GLuint texture) {
-  if (IsReservedId(texture)) {
+  if (IsTextureReservedId(texture)) {
     SetGLError(GL_INVALID_OPERATION);
     return;
   }
   if (texture != 0) {
-    id_allocator_.MarkAsUsed(texture);
+    texture_id_allocator_.MarkAsUsed(texture);
   }
   helper_->BindTexture(target, texture);
 }
@@ -154,14 +154,14 @@ void CopyTexSubImage2D(
 
 GLuint CreateProgram() {
   GLuint client_id;
-  MakeIds(1, &client_id);
+  MakeIds(&program_and_shader_id_allocator_, 1, &client_id);
   helper_->CreateProgram(client_id);
   return client_id;
 }
 
 GLuint CreateShader(GLenum type) {
   GLuint client_id;
-  MakeIds(1, &client_id);
+  MakeIds(&program_and_shader_id_allocator_, 1, &client_id);
   helper_->CreateShader(type, client_id);
   return client_id;
 }
@@ -171,7 +171,7 @@ void CullFace(GLenum mode) {
 }
 
 void DeleteFramebuffers(GLsizei n, const GLuint* framebuffers) {
-  FreeIds(n, framebuffers);
+  FreeIds(&framebuffer_id_allocator_, n, framebuffers);
   helper_->DeleteFramebuffersImmediate(n, framebuffers);
 }
 
@@ -180,7 +180,7 @@ void DeleteProgram(GLuint program) {
 }
 
 void DeleteRenderbuffers(GLsizei n, const GLuint* renderbuffers) {
-  FreeIds(n, renderbuffers);
+  FreeIds(&renderbuffer_id_allocator_, n, renderbuffers);
   helper_->DeleteRenderbuffersImmediate(n, renderbuffers);
 }
 
@@ -189,7 +189,7 @@ void DeleteShader(GLuint shader) {
 }
 
 void DeleteTextures(GLsizei n, const GLuint* textures) {
-  FreeIds(n, textures);
+  FreeIds(&texture_id_allocator_, n, textures);
   helper_->DeleteTexturesImmediate(n, textures);
 }
 
@@ -242,7 +242,7 @@ void FrontFace(GLenum mode) {
 }
 
 void GenBuffers(GLsizei n, GLuint* buffers) {
-  MakeIds(n, buffers);
+  MakeIds(&buffer_id_allocator_, n, buffers);
   helper_->GenBuffersImmediate(n, buffers);
 }
 
@@ -251,17 +251,17 @@ void GenerateMipmap(GLenum target) {
 }
 
 void GenFramebuffers(GLsizei n, GLuint* framebuffers) {
-  MakeIds(n, framebuffers);
+  MakeIds(&framebuffer_id_allocator_, n, framebuffers);
   helper_->GenFramebuffersImmediate(n, framebuffers);
 }
 
 void GenRenderbuffers(GLsizei n, GLuint* renderbuffers) {
-  MakeIds(n, renderbuffers);
+  MakeIds(&renderbuffer_id_allocator_, n, renderbuffers);
   helper_->GenRenderbuffersImmediate(n, renderbuffers);
 }
 
 void GenTextures(GLsizei n, GLuint* textures) {
-  MakeIds(n, textures);
+  MakeIds(&texture_id_allocator_, n, textures);
   helper_->GenTexturesImmediate(n, textures);
 }
 

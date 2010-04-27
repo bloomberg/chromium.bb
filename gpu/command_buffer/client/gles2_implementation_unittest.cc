@@ -645,24 +645,6 @@ TEST_F(GLES2ImplementationTest, ReservedIds) {
   gl_->BindBuffer(
       GL_ARRAY_BUFFER,
       GLES2Implementation::kClientSideElementArrayId);
-  gl_->BindFramebuffer(
-      GL_FRAMEBUFFER,
-      GLES2Implementation::kClientSideArrayId);
-  gl_->BindFramebuffer(
-      GL_FRAMEBUFFER,
-      GLES2Implementation::kClientSideElementArrayId);
-  gl_->BindRenderbuffer(
-      GL_RENDERBUFFER,
-      GLES2Implementation::kClientSideArrayId);
-  gl_->BindRenderbuffer(
-      GL_RENDERBUFFER,
-      GLES2Implementation::kClientSideElementArrayId);
-  gl_->BindTexture(
-      GL_TEXTURE_2D,
-      GLES2Implementation::kClientSideArrayId);
-  gl_->BindTexture(
-      GL_TEXTURE_2D,
-      GLES2Implementation::kClientSideElementArrayId);
   GLenum err = gl_->GetError();
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), err);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));

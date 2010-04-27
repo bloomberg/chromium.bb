@@ -27,8 +27,8 @@ class TextureManager {
    public:
     typedef scoped_refptr<TextureInfo> Ref;
 
-    explicit TextureInfo(GLuint texture_id)
-        : texture_id_(texture_id),
+    explicit TextureInfo(GLuint service_id)
+        : service_id_(service_id),
           deleted_(false),
           target_(0),
           min_filter_(GL_NEAREST_MIPMAP_LINEAR),
@@ -46,8 +46,8 @@ class TextureManager {
     bool CanRender() const;
 
     // The service side OpenGL id of the texture.
-    GLuint texture_id() const {
-      return texture_id_;
+    GLuint service_id() const {
+      return service_id_;
     }
 
     // Returns the target this texure was first bound to or 0 if it has not
@@ -135,7 +135,7 @@ class TextureManager {
     };
 
     void MarkAsDeleted() {
-      texture_id_ = 0;
+      service_id_ = 0;
       deleted_ = true;
     }
 
@@ -164,7 +164,7 @@ class TextureManager {
     std::vector<std::vector<LevelInfo> > level_infos_;
 
     // The id of the texure
-    GLuint texture_id_;
+    GLuint service_id_;
 
     // Whether this texture has been deleted.
     bool deleted_;
@@ -234,13 +234,16 @@ class TextureManager {
   }
 
   // Creates a new texture info.
-  TextureInfo* CreateTextureInfo(GLuint texture_id);
+  TextureInfo* CreateTextureInfo(GLuint client_id, GLuint service_id);
 
   // Gets the texture info for the given texture.
-  TextureInfo* GetTextureInfo(GLuint texture_id);
+  TextureInfo* GetTextureInfo(GLuint client_id);
 
   // Removes a texture info.
-  void RemoveTextureInfo(GLuint texture_id);
+  void RemoveTextureInfo(GLuint client_id);
+
+  // Gets a client id for a given service id.
+  bool GetClientId(GLuint service_id, GLuint* client_id) const;
 
   TextureInfo* GetDefaultTextureInfo(GLenum target) {
     return target == GL_TEXTURE_2D ? default_texture_2d_ :

@@ -278,26 +278,38 @@ TextureManager::TextureManager(
 }
 
 TextureManager::TextureInfo* TextureManager::CreateTextureInfo(
-    GLuint texture_id) {
-  TextureInfo::Ref info(new TextureInfo(texture_id));
+    GLuint client_id, GLuint service_id) {
+  TextureInfo::Ref info(new TextureInfo(service_id));
   std::pair<TextureInfoMap::iterator, bool> result =
-      texture_infos_.insert(std::make_pair(texture_id, info));
+      texture_infos_.insert(std::make_pair(client_id, info));
   DCHECK(result.second);
   return info.get();
 }
 
 TextureManager::TextureInfo* TextureManager::GetTextureInfo(
-    GLuint texture_id) {
-  TextureInfoMap::iterator it = texture_infos_.find(texture_id);
+    GLuint client_id) {
+  TextureInfoMap::iterator it = texture_infos_.find(client_id);
   return it != texture_infos_.end() ? it->second : NULL;
 }
 
-void TextureManager::RemoveTextureInfo(GLuint texture_id) {
-  TextureInfoMap::iterator it = texture_infos_.find(texture_id);
+void TextureManager::RemoveTextureInfo(GLuint client_id) {
+  TextureInfoMap::iterator it = texture_infos_.find(client_id);
   if (it != texture_infos_.end()) {
     it->second->MarkAsDeleted();
-    texture_infos_.erase(texture_id);
+    texture_infos_.erase(it);
   }
+}
+
+bool TextureManager::GetClientId(GLuint service_id, GLuint* client_id) const {
+  // This doesn't need to be fast. It's only used during slow queries.
+  for (TextureInfoMap::const_iterator it = texture_infos_.begin();
+       it != texture_infos_.end(); ++it) {
+    if (it->second->service_id() == service_id) {
+      *client_id = it->first;
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace gles2

@@ -24,37 +24,39 @@ class BufferManagerTest : public testing::Test {
 };
 
 TEST_F(BufferManagerTest, Basic) {
-  const GLuint kBuffer1Id = 1;
+  const GLuint kClientBuffer1Id = 1;
+  const GLuint kServiceBuffer1Id = 11;
   const GLsizeiptr kBuffer1Size = 123;
-  const GLuint kBuffer2Id = 2;
+  const GLuint kClientBuffer2Id = 2;
   // Check we can create buffer.
-  manager_.CreateBufferInfo(kBuffer1Id);
+  manager_.CreateBufferInfo(kClientBuffer1Id, kServiceBuffer1Id);
   // Check buffer got created.
-  BufferManager::BufferInfo* info1 = manager_.GetBufferInfo(kBuffer1Id);
+  BufferManager::BufferInfo* info1 = manager_.GetBufferInfo(kClientBuffer1Id);
   ASSERT_TRUE(info1 != NULL);
   EXPECT_EQ(0u, info1->target());
   EXPECT_EQ(0, info1->size());
   EXPECT_FALSE(info1->IsDeleted());
-  EXPECT_EQ(kBuffer1Id, info1->buffer_id());
+  EXPECT_EQ(kServiceBuffer1Id, info1->service_id());
   info1->set_target(GL_ELEMENT_ARRAY_BUFFER);
   EXPECT_EQ(static_cast<GLenum>(GL_ELEMENT_ARRAY_BUFFER), info1->target());
   // Check we and set its size.
   info1->SetSize(kBuffer1Size);
   EXPECT_EQ(kBuffer1Size, info1->size());
   // Check we get nothing for a non-existent buffer.
-  EXPECT_TRUE(manager_.GetBufferInfo(kBuffer2Id) == NULL);
+  EXPECT_TRUE(manager_.GetBufferInfo(kClientBuffer2Id) == NULL);
   // Check trying to a remove non-existent buffers does not crash.
-  manager_.RemoveBufferInfo(kBuffer2Id);
+  manager_.RemoveBufferInfo(kClientBuffer2Id);
   // Check we can't get the buffer after we remove it.
-  manager_.RemoveBufferInfo(kBuffer1Id);
-  EXPECT_TRUE(manager_.GetBufferInfo(kBuffer1Id) == NULL);
+  manager_.RemoveBufferInfo(kClientBuffer1Id);
+  EXPECT_TRUE(manager_.GetBufferInfo(kClientBuffer1Id) == NULL);
 }
 
 TEST_F(BufferManagerTest, SetRange) {
-  const GLuint kBufferId = 1;
+  const GLuint kClientBufferId = 1;
+  const GLuint kServiceBufferId = 11;
   const uint8 data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
-  manager_.CreateBufferInfo(kBufferId);
-  BufferManager::BufferInfo* info = manager_.GetBufferInfo(kBufferId);
+  manager_.CreateBufferInfo(kClientBufferId, kServiceBufferId);
+  BufferManager::BufferInfo* info = manager_.GetBufferInfo(kClientBufferId);
   ASSERT_TRUE(info != NULL);
   info->set_target(GL_ELEMENT_ARRAY_BUFFER);
   info->SetSize(sizeof(data));
@@ -65,11 +67,12 @@ TEST_F(BufferManagerTest, SetRange) {
 }
 
 TEST_F(BufferManagerTest, GetMaxValueForRangeUint8) {
-  const GLuint kBufferId = 1;
+  const GLuint kClientBufferId = 1;
+  const GLuint kServiceBufferId = 11;
   const uint8 data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
   const uint8 new_data[] = {100, 120, 110};
-  manager_.CreateBufferInfo(kBufferId);
-  BufferManager::BufferInfo* info = manager_.GetBufferInfo(kBufferId);
+  manager_.CreateBufferInfo(kClientBufferId, kServiceBufferId);
+  BufferManager::BufferInfo* info = manager_.GetBufferInfo(kClientBufferId);
   ASSERT_TRUE(info != NULL);
   info->set_target(GL_ELEMENT_ARRAY_BUFFER);
   info->SetSize(sizeof(data));
@@ -94,11 +97,12 @@ TEST_F(BufferManagerTest, GetMaxValueForRangeUint8) {
 }
 
 TEST_F(BufferManagerTest, GetMaxValueForRangeUint16) {
-  const GLuint kBufferId = 1;
+  const GLuint kClientBufferId = 1;
+  const GLuint kServiceBufferId = 11;
   const uint16 data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
   const uint16 new_data[] = {100, 120, 110};
-  manager_.CreateBufferInfo(kBufferId);
-  BufferManager::BufferInfo* info = manager_.GetBufferInfo(kBufferId);
+  manager_.CreateBufferInfo(kClientBufferId, kServiceBufferId);
+  BufferManager::BufferInfo* info = manager_.GetBufferInfo(kClientBufferId);
   ASSERT_TRUE(info != NULL);
   info->set_target(GL_ELEMENT_ARRAY_BUFFER);
   info->SetSize(sizeof(data));

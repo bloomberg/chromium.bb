@@ -18,25 +18,33 @@ bool ProgramManager::IsInvalidPrefix(const char* name, size_t length) {
       memcmp(name, kInvalidPrefix, sizeof(kInvalidPrefix)) == 0);
 }
 
-void ProgramManager::ProgramInfo::Update() {
-  GLint num_attribs = 0;
-  GLint max_len = 0;
+void ProgramManager::ProgramInfo::Reset() {
+  valid_ = false;
   max_uniform_name_length_ = 0;
   max_attrib_name_length_ = 0;
-  glGetProgramiv(program_id_, GL_ACTIVE_ATTRIBUTES, &num_attribs);
-  glGetProgramiv(program_id_, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_len);
+  attrib_infos_.clear();
+  uniform_infos_.clear();
+  sampler_indices_.clear();
+  location_to_index_map_.clear();
+}
+
+void ProgramManager::ProgramInfo::Update() {
+  Reset();
+  GLint num_attribs = 0;
+  GLint max_len = 0;
+  glGetProgramiv(service_id_, GL_ACTIVE_ATTRIBUTES, &num_attribs);
+  glGetProgramiv(service_id_, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_len);
   // TODO(gman): Should we check for error?
   scoped_array<char> name_buffer(new char[max_len]);
-  attrib_infos_.clear();
   for (GLint ii = 0; ii < num_attribs; ++ii) {
     GLsizei length;
     GLsizei size;
     GLenum type;
     glGetActiveAttrib(
-        program_id_, ii, max_len, &length, &size, &type, name_buffer.get());
+        service_id_, ii, max_len, &length, &size, &type, name_buffer.get());
     if (!IsInvalidPrefix(name_buffer.get(), length)) {
       // TODO(gman): Should we check for error?
-      GLint location = glGetAttribLocation(program_id_, name_buffer.get());
+      GLint location = glGetAttribLocation(service_id_, name_buffer.get());
       attrib_infos_.push_back(
           VertexAttribInfo(size, type, name_buffer.get(), location));
       max_attrib_name_length_ = std::max(max_attrib_name_length_, length);
@@ -44,10 +52,8 @@ void ProgramManager::ProgramInfo::Update() {
   }
 
   GLint num_uniforms;
-  glGetProgramiv(program_id_, GL_ACTIVE_UNIFORMS, &num_uniforms);
-  uniform_infos_.clear();
-  sampler_indices_.clear();
-  glGetProgramiv(program_id_, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_len);
+  glGetProgramiv(service_id_, GL_ACTIVE_UNIFORMS, &num_uniforms);
+  glGetProgramiv(service_id_, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_len);
   name_buffer.reset(new char[max_len]);
   GLint max_location = -1;
   int index = 0;  // this index tracks valid uniforms.
@@ -56,10 +62,10 @@ void ProgramManager::ProgramInfo::Update() {
     GLsizei size;
     GLenum type;
     glGetActiveUniform(
-        program_id_, ii, max_len, &length, &size, &type, name_buffer.get());
+        service_id_, ii, max_len, &length, &size, &type, name_buffer.get());
     // TODO(gman): Should we check for error?
     if (!IsInvalidPrefix(name_buffer.get(), length)) {
-      GLint location =  glGetUniformLocation(program_id_, name_buffer.get());
+      GLint location =  glGetUniformLocation(service_id_, name_buffer.get());
       const UniformInfo* info =
           AddUniformInfo(size, type, location, name_buffer.get());
       for (size_t jj = 0; jj < info->element_locations.size(); ++jj) {
@@ -87,6 +93,7 @@ void ProgramManager::ProgramInfo::Update() {
       location_to_index_map_[info.element_locations[jj]] = ii;
     }
   }
+  valid_ = true;
 }
 
 GLint ProgramManager::ProgramInfo::GetUniformLocation(
@@ -165,7 +172,7 @@ const ProgramManager::ProgramInfo::UniformInfo*
     for (GLsizei ii = 1; ii < info.size; ++ii) {
       std::string element_name(name + "[" + IntToString(ii) + "]");
       info.element_locations[ii] =
-          glGetUniformLocation(program_id_, element_name.c_str());
+          glGetUniformLocation(service_id_, element_name.c_str());
     }
     // Sadly there is no way to tell if this is an array except if the name
     // has an array string or the size > 1. That means an array of size 1 can
@@ -222,26 +229,26 @@ void ProgramManager::ProgramInfo::GetProgramiv(GLenum pname, GLint* params) {
       *params = max_uniform_name_length_;
       break;
     default:
-      glGetProgramiv(program_id_, pname, params);
+      glGetProgramiv(service_id_, pname, params);
       break;
   }
 }
 
-void ProgramManager::CreateProgramInfo(GLuint program_id) {
+void ProgramManager::CreateProgramInfo(GLuint client_id, GLuint service_id) {
   std::pair<ProgramInfoMap::iterator, bool> result =
       program_infos_.insert(
-          std::make_pair(program_id,
-                         ProgramInfo::Ref(new ProgramInfo(program_id))));
+          std::make_pair(client_id,
+                         ProgramInfo::Ref(new ProgramInfo(service_id))));
   DCHECK(result.second);
 }
 
-ProgramManager::ProgramInfo* ProgramManager::GetProgramInfo(GLuint program_id) {
-  ProgramInfoMap::iterator it = program_infos_.find(program_id);
+ProgramManager::ProgramInfo* ProgramManager::GetProgramInfo(GLuint client_id) {
+  ProgramInfoMap::iterator it = program_infos_.find(client_id);
   return it != program_infos_.end() ? it->second : NULL;
 }
 
-void ProgramManager::RemoveProgramInfo(GLuint program_id) {
-  ProgramInfoMap::iterator it = program_infos_.find(program_id);
+void ProgramManager::RemoveProgramInfo(GLuint client_id) {
+  ProgramInfoMap::iterator it = program_infos_.find(client_id);
   if (it != program_infos_.end()) {
     it->second->MarkAsDeleted();
     program_infos_.erase(it);

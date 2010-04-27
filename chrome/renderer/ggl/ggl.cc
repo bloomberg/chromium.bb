@@ -120,7 +120,7 @@ bool Context::Initialize(gfx::NativeViewId view, const gfx::Size& size) {
 
   // Allocate a frame buffer ID with respect to the parent.
   if (parent_) {
-    parent_->gles2_implementation_->MakeIds(1, &parent_texture_id_);
+    parent_texture_id_ = parent_->gles2_implementation_->MakeTextureId();
   }
 
   // Create a proxy to a command buffer in the GPU process.
@@ -186,7 +186,7 @@ void Context::ResizeOffscreen(const gfx::Size& size) {
 
 void Context::Destroy() {
   if (parent_ && parent_texture_id_ != 0)
-    parent_->gles2_implementation_->FreeIds(1, &parent_texture_id_);
+    parent_->gles2_implementation_->FreeTextureId(parent_texture_id_);
 
   delete gles2_implementation_;
   gles2_implementation_ = NULL;

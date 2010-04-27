@@ -38,20 +38,22 @@ class ProgramManagerTest : public testing::Test {
 };
 
 TEST_F(ProgramManagerTest, Basic) {
-  const GLuint kProgram1Id = 1;
-  const GLuint kProgram2Id = 2;
+  const GLuint kClient1Id = 1;
+  const GLuint kService1Id = 11;
+  const GLuint kClient2Id = 2;
   // Check we can create program.
-  manager_.CreateProgramInfo(kProgram1Id);
+  manager_.CreateProgramInfo(kClient1Id, kService1Id);
   // Check program got created.
-  ProgramManager::ProgramInfo* info1 = manager_.GetProgramInfo(kProgram1Id);
+  ProgramManager::ProgramInfo* info1 = manager_.GetProgramInfo(kClient1Id);
   ASSERT_TRUE(info1 != NULL);
+  EXPECT_EQ(kService1Id, info1->service_id());
   // Check we get nothing for a non-existent program.
-  EXPECT_TRUE(manager_.GetProgramInfo(kProgram2Id) == NULL);
+  EXPECT_TRUE(manager_.GetProgramInfo(kClient2Id) == NULL);
   // Check trying to a remove non-existent programs does not crash.
-  manager_.RemoveProgramInfo(kProgram2Id);
+  manager_.RemoveProgramInfo(kClient2Id);
   // Check we can't get the program after we remove it.
-  manager_.RemoveProgramInfo(kProgram1Id);
-  EXPECT_TRUE(manager_.GetProgramInfo(kProgram1Id) == NULL);
+  manager_.RemoveProgramInfo(kClient1Id);
+  EXPECT_TRUE(manager_.GetProgramInfo(kClient1Id) == NULL);
 }
 
 class ProgramManagerWithShaderTest : public testing::Test {
@@ -62,7 +64,8 @@ class ProgramManagerWithShaderTest : public testing::Test {
 
   static const GLint kNumVertexAttribs = 16;
 
-  static const GLuint kProgramId = 123;
+  static const GLuint kClientProgramId = 123;
+  static const GLuint kServiceProgramId = 456;
 
   static const char* kAttrib1Name;
   static const char* kAttrib2Name;
@@ -118,8 +121,8 @@ class ProgramManagerWithShaderTest : public testing::Test {
 
     SetupDefaultShaderExpectations();
 
-    manager_.CreateProgramInfo(kProgramId);
-    program_info_ = manager_.GetProgramInfo(kProgramId);
+    manager_.CreateProgramInfo(kClientProgramId, kServiceProgramId);
+    program_info_ = manager_.GetProgramInfo(kClientProgramId);
     program_info_->Update();
   }
 
@@ -206,7 +209,7 @@ class ProgramManagerWithShaderTest : public testing::Test {
 
   void SetupDefaultShaderExpectations() {
     SetupShader(kAttribs, kNumAttribs, kUniforms, kNumUniforms,
-                kProgramId);
+                kServiceProgramId);
   }
 
   virtual void TearDown() {
@@ -232,7 +235,8 @@ ProgramManagerWithShaderTest::AttribInfo
 // GCC requires these declarations, but MSVC requires they not be present
 #ifndef COMPILER_MSVC
 const GLint ProgramManagerWithShaderTest::kNumVertexAttribs;
-const GLuint ProgramManagerWithShaderTest::kProgramId;
+const GLuint ProgramManagerWithShaderTest::kClientProgramId;
+const GLuint ProgramManagerWithShaderTest::kServiceProgramId;
 const GLint ProgramManagerWithShaderTest::kAttrib1Size;
 const GLint ProgramManagerWithShaderTest::kAttrib2Size;
 const GLint ProgramManagerWithShaderTest::kAttrib3Size;
@@ -281,7 +285,7 @@ const char* ProgramManagerWithShaderTest::kUniform3Name = "uniform3";
 
 TEST_F(ProgramManagerWithShaderTest, GetAttribInfos) {
   const ProgramManager::ProgramInfo* program_info =
-      manager_.GetProgramInfo(kProgramId);
+      manager_.GetProgramInfo(kClientProgramId);
   ASSERT_TRUE(program_info != NULL);
   const ProgramManager::ProgramInfo::AttribInfoVector& infos =
       program_info->GetAttribInfos();
@@ -299,7 +303,7 @@ TEST_F(ProgramManagerWithShaderTest, GetAttribInfo) {
   const GLint kValidIndex = 1;
   const GLint kInvalidIndex = 1000;
   const ProgramManager::ProgramInfo* program_info =
-      manager_.GetProgramInfo(kProgramId);
+      manager_.GetProgramInfo(kClientProgramId);
   ASSERT_TRUE(program_info != NULL);
   const ProgramManager::ProgramInfo::VertexAttribInfo* info =
       program_info->GetAttribInfo(kValidIndex);
@@ -314,7 +318,7 @@ TEST_F(ProgramManagerWithShaderTest, GetAttribInfo) {
 TEST_F(ProgramManagerWithShaderTest, GetAttribLocation) {
   const char* kInvalidName = "foo";
   const ProgramManager::ProgramInfo* program_info =
-      manager_.GetProgramInfo(kProgramId);
+      manager_.GetProgramInfo(kClientProgramId);
   ASSERT_TRUE(program_info != NULL);
   EXPECT_EQ(kAttrib2Location, program_info->GetAttribLocation(kAttrib2Name));
   EXPECT_EQ(-1, program_info->GetAttribLocation(kInvalidName));
@@ -323,7 +327,7 @@ TEST_F(ProgramManagerWithShaderTest, GetAttribLocation) {
 TEST_F(ProgramManagerWithShaderTest, GetUniformInfo) {
   const GLint kInvalidIndex = 1000;
   const ProgramManager::ProgramInfo* program_info =
-      manager_.GetProgramInfo(kProgramId);
+      manager_.GetProgramInfo(kClientProgramId);
   ASSERT_TRUE(program_info != NULL);
   const ProgramManager::ProgramInfo::UniformInfo* info =
       program_info->GetUniformInfo(0);
@@ -352,7 +356,7 @@ TEST_F(ProgramManagerWithShaderTest, GetUniformInfo) {
 
 TEST_F(ProgramManagerWithShaderTest, GetUniformLocation) {
   const ProgramManager::ProgramInfo* program_info =
-      manager_.GetProgramInfo(kProgramId);
+      manager_.GetProgramInfo(kClientProgramId);
   ASSERT_TRUE(program_info != NULL);
   EXPECT_EQ(kUniform1Location, program_info->GetUniformLocation(kUniform1Name));
   EXPECT_EQ(kUniform2Location, program_info->GetUniformLocation(kUniform2Name));
@@ -380,7 +384,7 @@ TEST_F(ProgramManagerWithShaderTest, GetUniformTypeByLocation) {
   const GLint kInvalidLocation = 1234;
   GLenum type = 0u;
   const ProgramManager::ProgramInfo* program_info =
-      manager_.GetProgramInfo(kProgramId);
+      manager_.GetProgramInfo(kClientProgramId);
   ASSERT_TRUE(program_info != NULL);
   EXPECT_TRUE(program_info->GetUniformTypeByLocation(kUniform2Location, &type));
   EXPECT_EQ(kUniform2Type, type);
@@ -401,11 +405,13 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsGLUnderscoreUniform) {
     { kUniform3Name, kUniform3Size, kUniform3Type, kUniform3Location, },
   };
   const size_t kNumUniforms = arraysize(kUniforms);
-  static const GLuint kProgramId = 1234;
-  SetupShader(kAttribs, kNumAttribs, kUniforms, kNumUniforms, kProgramId);
-  manager_.CreateProgramInfo(kProgramId);
+  static const GLuint kClientProgramId = 1234;
+  static const GLuint kServiceProgramId = 5679;
+  SetupShader(kAttribs, kNumAttribs, kUniforms, kNumUniforms,
+              kServiceProgramId);
+  manager_.CreateProgramInfo(kClientProgramId, kServiceProgramId);
   ProgramManager::ProgramInfo* program_info =
-      manager_.GetProgramInfo(kProgramId);
+      manager_.GetProgramInfo(kClientProgramId);
   ASSERT_TRUE(program_info != NULL);
   program_info->Update();
   GLint value = 0;

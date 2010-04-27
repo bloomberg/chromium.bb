@@ -64,16 +64,25 @@ class ProgramManager {
     typedef std::vector<VertexAttribInfo> AttribInfoVector;
     typedef std::vector<int> SamplerIndices;
 
-    explicit ProgramInfo(GLuint program_id)
+    explicit ProgramInfo(GLuint service_id)
         : max_attrib_name_length_(0),
           max_uniform_name_length_(0),
-          program_id_(program_id) {
+          service_id_(service_id),
+          valid_(false) {
+    }
+
+    GLuint service_id() const {
+      return service_id_;
     }
 
     const SamplerIndices& sampler_indices() {
       return sampler_indices_;
     }
 
+    // Resets the program after an unsuccessful link.
+    void Reset();
+
+    // Updates the program info after a successful link.
     void Update();
 
     const AttribInfoVector& GetAttribInfos() const {
@@ -104,10 +113,14 @@ class ProgramManager {
     bool SetSamplers(GLint location, GLsizei count, const GLint* value);
 
     bool IsDeleted() const {
-      return program_id_ == 0;
+      return service_id_ == 0;
     }
 
     void GetProgramiv(GLenum pname, GLint* params);
+
+    bool IsValid() const {
+      return valid_;
+    }
 
    private:
     friend class base::RefCounted<ProgramInfo>;
@@ -116,7 +129,7 @@ class ProgramManager {
     ~ProgramInfo() { }
 
     void MarkAsDeleted() {
-      program_id_ = 0;
+      service_id_ = 0;
     }
 
     const UniformInfo* AddUniformInfo(
@@ -138,19 +151,22 @@ class ProgramManager {
     SamplerIndices sampler_indices_;
 
     // The program this ProgramInfo is tracking.
-    GLuint program_id_;
+    GLuint service_id_;
+
+    // This is true if glLinkProgram was successful.
+    bool valid_;
   };
 
   ProgramManager() { }
 
   // Creates a new program info.
-  void CreateProgramInfo(GLuint program_id);
+  void CreateProgramInfo(GLuint client_id, GLuint service_id);
 
   // Gets a program info
-  ProgramInfo* GetProgramInfo(GLuint program_id);
+  ProgramInfo* GetProgramInfo(GLuint client_id);
 
   // Deletes the program info for the given program.
-  void RemoveProgramInfo(GLuint program_id);
+  void RemoveProgramInfo(GLuint client_id);
 
   // Returns true if prefix is invalid for gl.
   static bool IsInvalidPrefix(const char* name, size_t length);

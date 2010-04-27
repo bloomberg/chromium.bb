@@ -126,11 +126,17 @@ class GLES2Implementation {
     }
   #endif
 
-  // Makes a set of Ids for glGen___ functions.
-  void MakeIds(GLsizei n, GLuint* ids);
+    void MakeIds(IdAllocator* id_allocator, GLsizei n, GLuint* ids);
 
-  // Frees a set of Ids for glDelete___ functions.
-  void FreeIds(GLsizei n, const GLuint* ids);
+    void FreeIds(IdAllocator* id_allocator, GLsizei n, const GLuint* ids);
+
+    GLuint MakeTextureId() {
+      return texture_id_allocator_.AllocateID();
+    }
+
+    void FreeTextureId(GLuint id) {
+      texture_id_allocator_.FreeID(id);
+    }
 
  private:
   // Wraps FencedAllocatorWrapper to provide aligned allocations.
@@ -203,7 +209,10 @@ class GLES2Implementation {
   void SetBucketAsString(uint32 bucket_id, const std::string& str);
 
   // Returns true if id is reserved.
-  bool IsReservedId(GLuint id);
+  bool IsBufferReservedId(GLuint id);
+  bool IsFramebufferReservedId(GLuint id) { return false;  }
+  bool IsRenderbufferReservedId(GLuint id) { return false; }
+  bool IsTextureReservedId(GLuint id) { return false; }
 
 #if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
   // Helper for GetVertexAttrib
@@ -216,7 +225,11 @@ class GLES2Implementation {
 
   GLES2Util util_;
   GLES2CmdHelper* helper_;
-  IdAllocator id_allocator_;
+  IdAllocator buffer_id_allocator_;
+  IdAllocator framebuffer_id_allocator_;
+  IdAllocator renderbuffer_id_allocator_;
+  IdAllocator program_and_shader_id_allocator_;
+  IdAllocator texture_id_allocator_;
   AlignedFencedAllocator transfer_buffer_;
   int transfer_buffer_id_;
   void* result_buffer_;

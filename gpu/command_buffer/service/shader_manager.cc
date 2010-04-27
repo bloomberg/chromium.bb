@@ -8,24 +8,36 @@
 namespace gpu {
 namespace gles2 {
 
-void ShaderManager::CreateShaderInfo(GLuint shader_id) {
+void ShaderManager::CreateShaderInfo(GLuint client_id, GLuint service_id) {
   std::pair<ShaderInfoMap::iterator, bool> result =
       shader_infos_.insert(std::make_pair(
-          shader_id, ShaderInfo::Ref(new ShaderInfo(shader_id))));
+          client_id, ShaderInfo::Ref(new ShaderInfo(service_id))));
   DCHECK(result.second);
 }
 
-ShaderManager::ShaderInfo* ShaderManager::GetShaderInfo(GLuint shader_id) {
-  ShaderInfoMap::iterator it = shader_infos_.find(shader_id);
+ShaderManager::ShaderInfo* ShaderManager::GetShaderInfo(GLuint client_id) {
+  ShaderInfoMap::iterator it = shader_infos_.find(client_id);
   return it != shader_infos_.end() ? it->second : NULL;
 }
 
-void ShaderManager::RemoveShaderInfo(GLuint shader_id) {
-  ShaderInfoMap::iterator it = shader_infos_.find(shader_id);
+void ShaderManager::RemoveShaderInfo(GLuint client_id) {
+  ShaderInfoMap::iterator it = shader_infos_.find(client_id);
   if (it != shader_infos_.end()) {
     it->second->MarkAsDeleted();
     shader_infos_.erase(it);
   }
+}
+
+bool ShaderManager::GetClientId(GLuint service_id, GLuint* client_id) const {
+  // This doesn't need to be fast. It's only used during slow queries.
+  for (ShaderInfoMap::const_iterator it = shader_infos_.begin();
+       it != shader_infos_.end(); ++it) {
+    if (it->second->service_id() == service_id) {
+      *client_id = it->first;
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace gles2

@@ -27,14 +27,14 @@ class BufferManager {
    public:
     typedef scoped_refptr<BufferInfo> Ref;
 
-    explicit BufferInfo(GLuint buffer_id)
-        : buffer_id_(buffer_id),
+    explicit BufferInfo(GLuint service_id)
+        : service_id_(service_id),
           target_(0),
           size_(0) {
     }
 
-    GLuint buffer_id() const {
-      return buffer_id_;
+    GLuint service_id() const {
+      return service_id_;
     }
 
     GLenum target() const {
@@ -65,7 +65,7 @@ class BufferManager {
                              GLuint* max_value);
 
     bool IsDeleted() {
-      return buffer_id_ == 0;
+      return service_id_ == 0;
     }
 
    private:
@@ -103,7 +103,7 @@ class BufferManager {
     ~BufferInfo() { }
 
     void MarkAsDeleted() {
-      buffer_id_ = 0;
+      service_id_ = 0;
       shadow_.reset();
       ClearCache();
     }
@@ -112,7 +112,7 @@ class BufferManager {
     void ClearCache();
 
     // Service side buffer id.
-    GLuint buffer_id_;
+    GLuint service_id_;
 
     // The type of buffer. 0 = unset, GL_BUFFER_ARRAY = vertex data,
     // GL_ELEMENT_BUFFER_ARRAY = index data.
@@ -134,13 +134,13 @@ class BufferManager {
   BufferManager() { }
 
   // Creates a BufferInfo for the given buffer.
-  void CreateBufferInfo(GLuint buffer_id);
+  void CreateBufferInfo(GLuint client_id, GLuint service_id);
 
   // Gets the buffer info for the given buffer.
-  BufferInfo* GetBufferInfo(GLuint buffer_id);
+  BufferInfo* GetBufferInfo(GLuint client_id);
 
   // Removes a buffer info for the given buffer.
-  void RemoveBufferInfo(GLuint buffer_id);
+  void RemoveBufferInfo(GLuint client_id);
 
  private:
   // Info for each buffer in the system.

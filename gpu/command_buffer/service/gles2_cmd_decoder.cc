@@ -26,7 +26,6 @@
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
-#include "gpu/command_buffer/service/id_manager.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
@@ -383,7 +382,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   virtual void Destroy();
   virtual void ResizeOffscreenFrameBuffer(const gfx::Size& size);
   virtual bool MakeCurrent();
-  virtual uint32 GetServiceIdForTesting(uint32 client_id);
   virtual GLES2Util* GetGLES2Util() { return &util_; }
   virtual gfx::GLContext* GetGLContext() { return context_; }
 
@@ -413,28 +411,17 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
     TextureManager::TextureInfo::Ref bound_texture_cube_map;
   };
 
-  friend void GLGenTexturesHelper(
-    GLES2DecoderImpl* decoder, GLsizei n, GLuint* ids);
-  friend void GLDeleteTexturesHelper(
-    GLES2DecoderImpl* decoder, GLsizei n, GLuint* ids);
-  friend void GLGenBuffersHelper(
-    GLES2DecoderImpl* decoder, GLsizei n, GLuint* ids);
-  friend void GLDeleteBuffersHelper(
-    GLES2DecoderImpl* decoder, GLsizei n, GLuint* ids);
-  friend void GLGenFramebuffersHelper(
-    GLES2DecoderImpl* decoder, GLsizei n, GLuint* ids);
-  friend void GLDeleteFramebuffersHelper(
-    GLES2DecoderImpl* decoder, GLsizei n, GLuint* ids);
-  friend void GLGenRenderbuffersHelper(
-    GLES2DecoderImpl* decoder, GLsizei n, GLuint* ids);
-  friend void GLDeleteRenderbuffersHelper(
-    GLES2DecoderImpl* decoder, GLsizei n, GLuint* ids);
+  // Helpers for the glGen and glDelete functions.
+  bool GenTexturesHelper(GLsizei n, const GLuint* client_ids);
+  void DeleteTexturesHelper(GLsizei n, const GLuint* client_ids);
+  bool GenBuffersHelper(GLsizei n, const GLuint* client_ids);
+  void DeleteBuffersHelper(GLsizei n, const GLuint* client_ids);
+  bool GenFramebuffersHelper(GLsizei n, const GLuint* client_ids);
+  void DeleteFramebuffersHelper(GLsizei n, const GLuint* client_ids);
+  bool GenRenderbuffersHelper(GLsizei n, const GLuint* client_ids);
+  void DeleteRenderbuffersHelper(GLsizei n, const GLuint* client_ids);
 
   // TODO(gman): Cache these pointers?
-  IdManager* id_manager() {
-    return group_->id_manager();
-  }
-
   BufferManager* buffer_manager() {
     return group_->buffer_manager();
   }
@@ -461,54 +448,22 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   bool UpdateOffscreenFrameBufferSize();
 
-  // Template to help call glGenXXX functions.
-  template <void gl_gen_function(GLES2DecoderImpl*, GLsizei, GLuint*)>
-  bool GenGLObjects(GLsizei n, const GLuint* client_ids) {
-    DCHECK_GE(n, 0);
-    if (!ValidateIdsAreUnused(n, client_ids)) {
-      return false;
-    }
-    scoped_array<GLuint>temp(new GLuint[n]);
-    gl_gen_function(this, n, temp.get());
-    return RegisterObjects(n, client_ids, temp.get());
-  }
-
-  // Template to help call glDeleteXXX functions.
-  template <void gl_delete_function(GLES2DecoderImpl*, GLsizei, GLuint*)>
-  bool DeleteGLObjects(GLsizei n, const GLuint* client_ids) {
-    DCHECK_GE(n, 0);
-    scoped_array<GLuint>temp(new GLuint[n]);
-    UnregisterObjects(n, client_ids, temp.get());
-    gl_delete_function(this, n, temp.get());
-    return true;
-  }
-
-  // Check that the given ids are not used.
-  bool ValidateIdsAreUnused(GLsizei n, const GLuint* client_ids);
-
-  // Register client ids with generated service ids.
-  bool RegisterObjects(
-      GLsizei n, const GLuint* client_ids, const GLuint* service_ids);
-
-  // Unregisters client ids with service ids.
-  void UnregisterObjects(
-    GLsizei n, const GLuint* client_ids, GLuint* service_ids);
-
   // Creates a TextureInfo for the given texture.
-  TextureManager::TextureInfo* CreateTextureInfo(GLuint texture) {
-    return texture_manager()->CreateTextureInfo(texture);
+  TextureManager::TextureInfo* CreateTextureInfo(
+      GLuint client_id, GLuint service_id) {
+    return texture_manager()->CreateTextureInfo(client_id, service_id);
   }
 
   // Gets the texture info for the given texture. Returns NULL if none exists.
-  TextureManager::TextureInfo* GetTextureInfo(GLuint texture) {
+  TextureManager::TextureInfo* GetTextureInfo(GLuint client_id) {
     TextureManager::TextureInfo* info =
-        texture_manager()->GetTextureInfo(texture);
+        texture_manager()->GetTextureInfo(client_id);
     return (info && !info->IsDeleted()) ? info : NULL;
   }
 
   // Deletes the texture info for the given texture.
-  void RemoveTextureInfo(GLuint texture) {
-    texture_manager()->RemoveTextureInfo(texture);
+  void RemoveTextureInfo(GLuint client_id) {
+    texture_manager()->RemoveTextureInfo(client_id);
   }
 
   // Get the size (in pixels) of the currently bound frame buffer (either FBO
@@ -540,90 +495,91 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
     uint32 pixels_size);
 
   // Creates a ProgramInfo for the given program.
-  void CreateProgramInfo(GLuint program) {
-    program_manager()->CreateProgramInfo(program);
+  void CreateProgramInfo(GLuint client_id, GLuint service_id) {
+    program_manager()->CreateProgramInfo(client_id, service_id);
   }
 
   // Gets the program info for the given program. Returns NULL if none exists.
-  // Programs that have no had glLinkProgram succesfully called on them will
-  // not exist.
-  ProgramManager::ProgramInfo* GetProgramInfo(GLuint program) {
+  ProgramManager::ProgramInfo* GetProgramInfo(GLuint client_id) {
     ProgramManager::ProgramInfo* info =
-        program_manager()->GetProgramInfo(program);
+        program_manager()->GetProgramInfo(client_id);
     return (info && !info->IsDeleted()) ? info : NULL;
   }
 
   // Deletes the program info for the given program.
-  void RemoveProgramInfo(GLuint program) {
-    program_manager()->RemoveProgramInfo(program);
+  void RemoveProgramInfo(GLuint client_id) {
+    program_manager()->RemoveProgramInfo(client_id);
   }
 
   // Creates a ShaderInfo for the given shader.
-  void CreateShaderInfo(GLuint shader) {
-    shader_manager()->CreateShaderInfo(shader);
+  void CreateShaderInfo(GLuint client_id, GLuint service_id) {
+    shader_manager()->CreateShaderInfo(client_id, service_id);
   }
 
   // Gets the shader info for the given shader. Returns NULL if none exists.
-  ShaderManager::ShaderInfo* GetShaderInfo(GLuint shader) {
-    ShaderManager::ShaderInfo* info = shader_manager()->GetShaderInfo(shader);
+  ShaderManager::ShaderInfo* GetShaderInfo(GLuint client_id) {
+    ShaderManager::ShaderInfo* info =
+        shader_manager()->GetShaderInfo(client_id);
     return (info && !info->IsDeleted()) ? info : NULL;
   }
 
   // Deletes the shader info for the given shader.
-  void RemoveShaderInfo(GLuint shader) {
-    shader_manager()->RemoveShaderInfo(shader);
+  void RemoveShaderInfo(GLuint client_id) {
+    shader_manager()->RemoveShaderInfo(client_id);
   }
 
   // Creates a buffer info for the given buffer.
-  void CreateBufferInfo(GLuint buffer) {
-    return buffer_manager()->CreateBufferInfo(buffer);
+  void CreateBufferInfo(GLuint client_id, GLuint service_id) {
+    return buffer_manager()->CreateBufferInfo(client_id, service_id);
   }
 
   // Gets the buffer info for the given buffer.
-  BufferManager::BufferInfo* GetBufferInfo(GLuint buffer) {
-    BufferManager::BufferInfo* info = buffer_manager()->GetBufferInfo(buffer);
+  BufferManager::BufferInfo* GetBufferInfo(GLuint client_id) {
+    BufferManager::BufferInfo* info =
+        buffer_manager()->GetBufferInfo(client_id);
     return (info && !info->IsDeleted()) ? info : NULL;
   }
 
   // Removes any buffers in the VertexAtrribInfos and BufferInfos. This is used
   // on glDeleteBuffers so we can make sure the user does not try to render
   // with deleted buffers.
-  void RemoveBufferInfo(GLuint buffer_id);
+  void RemoveBufferInfo(GLuint client_id);
 
   // Creates a framebuffer info for the given framebuffer.
-  void CreateFramebufferInfo(GLuint framebuffer) {
-    return framebuffer_manager()->CreateFramebufferInfo(framebuffer);
+  void CreateFramebufferInfo(GLuint client_id, GLuint service_id) {
+    return framebuffer_manager()->CreateFramebufferInfo(client_id, service_id);
   }
 
   // Gets the framebuffer info for the given framebuffer.
   FramebufferManager::FramebufferInfo* GetFramebufferInfo(
-      GLuint framebuffer) {
+      GLuint client_id) {
     FramebufferManager::FramebufferInfo* info =
-        framebuffer_manager()->GetFramebufferInfo(framebuffer);
+        framebuffer_manager()->GetFramebufferInfo(client_id);
     return (info && !info->IsDeleted()) ? info : NULL;
   }
 
   // Removes the framebuffer info for the given framebuffer.
-  void RemoveFramebufferInfo(GLuint framebuffer_id) {
-    framebuffer_manager()->RemoveFramebufferInfo(framebuffer_id);
+  void RemoveFramebufferInfo(GLuint client_id) {
+    framebuffer_manager()->RemoveFramebufferInfo(client_id);
   }
 
   // Creates a renderbuffer info for the given renderbuffer.
-  void CreateRenderbufferInfo(GLuint renderbuffer) {
-    return renderbuffer_manager()->CreateRenderbufferInfo(renderbuffer);
+  void CreateRenderbufferInfo(GLuint client_id, GLuint service_id) {
+    return renderbuffer_manager()->CreateRenderbufferInfo(
+        client_id, service_id);
   }
 
   // Gets the renderbuffer info for the given renderbuffer.
   RenderbufferManager::RenderbufferInfo* GetRenderbufferInfo(
-      GLuint renderbuffer) {
+      GLuint client_id) {
     RenderbufferManager::RenderbufferInfo* info =
-        renderbuffer_manager()->GetRenderbufferInfo(renderbuffer);
+        renderbuffer_manager()->GetRenderbufferInfo(client_id);
     return (info && !info->IsDeleted()) ? info : NULL;
   }
 
   // Removes the renderbuffer info for the given renderbuffer.
-  void RemoveRenderbufferInfo(GLuint renderbuffer_id) {
-    renderbuffer_manager()->RemoveRenderbufferInfo(renderbuffer_id);
+  void RemoveRenderbufferInfo(GLuint client_id) {
+    renderbuffer_manager()->RemoveRenderbufferInfo(client_id);
   }
 
   error::Error GetAttribLocationHelper(
@@ -636,19 +592,22 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   // Helper for glShaderSource.
   error::Error ShaderSourceHelper(
-      GLuint shader, const char* data, uint32 data_size);
+      GLuint client_id, const char* data, uint32 data_size);
 
   // Helper for glGetBooleanv, glGetFloatv and glGetIntegerv
   bool GetHelper(GLenum pname, GLint* params, GLsizei* num_written);
 
   // Wrapper for glCreateProgram
-  void CreateProgramHelper(GLuint client_id);
+  bool CreateProgramHelper(GLuint client_id);
 
   // Wrapper for glCreateShader
-  void CreateShaderHelper(GLenum type, GLuint client_id);
+  bool CreateShaderHelper(GLenum type, GLuint client_id);
 
   // Wrapper for glActiveTexture
   void DoActiveTexture(GLenum texture_unit);
+
+  // Wrapper for glAttachShader
+  void DoAttachShader(GLuint client_program_id, GLint client_shader_id);
 
   // Wrapper for glBindBuffer since we need to track the current targets.
   void DoBindBuffer(GLenum target, GLuint buffer);
@@ -675,6 +634,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   // Wrapper for glCompileShader.
   void DoCompileShader(GLuint shader);
+
+  // Wrapper for glDetachShader
+  void DoDetachShader(GLuint client_program_id, GLint client_shader_id);
 
   // Wrapper for glDrawArrays.
   void DoDrawArrays(GLenum mode, GLint first, GLsizei count);
@@ -726,10 +688,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Wrapper for glGetShaderiv
   void DoGetShaderiv(GLuint shader, GLenum pname, GLint* params);
 
-  // Wrapper for glGetShaderSource.
-  void DoGetShaderSource(
-      GLuint shader, GLsizei bufsize, GLsizei* length, char* dst);
-
   // Wrappers for glIsXXX functions.
   bool DoIsBuffer(GLuint client_id);
   bool DoIsFramebuffer(GLuint client_id);
@@ -743,7 +701,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   // Wrapper for glRenderbufferStorage.
   void DoRenderbufferStorage(
-    GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
+      GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
 
   // Wrapper for glReleaseShaderCompiler.
   void DoReleaseShaderCompiler() { }
@@ -761,6 +719,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   // Wrapper for glUseProgram
   void DoUseProgram(GLuint program);
+
+  // Wrapper for glValidateProgram.
+  void DoValidateProgram(GLuint program_client_id);
 
   // Gets the GLError through our wrapper.
   GLenum GetGLError();
@@ -947,7 +908,7 @@ ScopedTexture2DBinder::~ScopedTexture2DBinder() {
   GLES2DecoderImpl::TextureUnit& info = decoder_->texture_units_[0];
   GLuint last_id;
   if (info.bound_texture_2d)
-    last_id = info.bound_texture_2d->texture_id();
+    last_id = info.bound_texture_2d->service_id();
   else
     last_id = 0;
 
@@ -967,7 +928,7 @@ ScopedRenderBufferBinder::~ScopedRenderBufferBinder() {
   glBindRenderbufferEXT(
       GL_RENDERBUFFER,
       decoder_->bound_renderbuffer_ ?
-          decoder_->bound_renderbuffer_->renderbuffer_id() : 0);
+          decoder_->bound_renderbuffer_->service_id() : 0);
 }
 
 ScopedFrameBufferBinder::ScopedFrameBufferBinder(GLES2DecoderImpl* decoder,
@@ -981,7 +942,7 @@ ScopedFrameBufferBinder::~ScopedFrameBufferBinder() {
   ScopedGLErrorSuppressor suppressor(decoder_);
   FramebufferManager::FramebufferInfo* info =
       decoder_->bound_framebuffer_.get();
-  GLuint framebuffer_id = info ? info->framebuffer_id() : 0;
+  GLuint framebuffer_id = info ? info->service_id() : 0;
   if (framebuffer_id == 0 &&
       decoder_->offscreen_target_frame_buffer_.get()) {
     glBindFramebufferEXT(GL_FRAMEBUFFER,
@@ -1267,10 +1228,8 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
     // it can reference it.
     if (parent_) {
       GLuint service_id = offscreen_saved_color_texture_->id();
-      parent_->id_manager()->AddMapping(parent_client_texture_id,
-                                        service_id);
       TextureManager::TextureInfo* info =
-          parent_->CreateTextureInfo(service_id);
+          parent_->CreateTextureInfo(parent_client_texture_id, service_id);
       parent_->texture_manager()->SetInfoTarget(info, GL_TEXTURE_2D);
     }
 
@@ -1309,76 +1268,111 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
   return true;
 }
 
-// These commands convert from c calls to local os calls.
-void GLGenBuffersHelper(
-    GLES2DecoderImpl* decoder, GLsizei n, GLuint* ids) {
-  glGenBuffersARB(n, ids);
-  // TODO(gman): handle error
+bool GLES2DecoderImpl::GenBuffersHelper(GLsizei n, const GLuint* client_ids) {
   for (GLsizei ii = 0; ii < n; ++ii) {
-    decoder->CreateBufferInfo(ids[ii]);
+    if (GetBufferInfo(client_ids[ii])) {
+      return false;
+    }
+  }
+  scoped_array<GLuint> service_ids(new GLuint[n]);
+  glGenBuffersARB(n, service_ids.get());
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    CreateBufferInfo(client_ids[ii], service_ids[ii]);
+  }
+  return true;
+}
+
+bool GLES2DecoderImpl::GenFramebuffersHelper(
+    GLsizei n, const GLuint* client_ids) {
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    if (GetFramebufferInfo(client_ids[ii])) {
+      return false;
+    }
+  }
+  scoped_array<GLuint> service_ids(new GLuint[n]);
+  glGenFramebuffersEXT(n, service_ids.get());
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    CreateFramebufferInfo(client_ids[ii], service_ids[ii]);
+  }
+  return true;
+}
+
+bool GLES2DecoderImpl::GenRenderbuffersHelper(
+    GLsizei n, const GLuint* client_ids) {
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    if (GetRenderbufferInfo(client_ids[ii])) {
+      return false;
+    }
+  }
+  scoped_array<GLuint> service_ids(new GLuint[n]);
+  glGenRenderbuffersEXT(n, service_ids.get());
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    CreateRenderbufferInfo(client_ids[ii], service_ids[ii]);
+  }
+  return true;
+}
+
+bool GLES2DecoderImpl::GenTexturesHelper(GLsizei n, const GLuint* client_ids) {
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    if (GetTextureInfo(client_ids[ii])) {
+      return false;
+    }
+  }
+  scoped_array<GLuint> service_ids(new GLuint[n]);
+  glGenTextures(n, service_ids.get());
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    CreateTextureInfo(client_ids[ii], service_ids[ii]);
+  }
+  return true;
+}
+
+void GLES2DecoderImpl::DeleteBuffersHelper(
+    GLsizei n, const GLuint* client_ids) {
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    BufferManager::BufferInfo* info = GetBufferInfo(client_ids[ii]);
+    if (info) {
+      GLuint service_id = info->service_id();
+      glDeleteBuffersARB(1, &service_id);
+      RemoveBufferInfo(client_ids[ii]);
+    }
   }
 }
 
-void GLGenFramebuffersHelper(
-    GLES2DecoderImpl* decoder, GLsizei n, GLuint* ids) {
-  glGenFramebuffersEXT(n, ids);
-  // TODO(gman): handle error
+void GLES2DecoderImpl::DeleteFramebuffersHelper(
+    GLsizei n, const GLuint* client_ids) {
   for (GLsizei ii = 0; ii < n; ++ii) {
-    decoder->CreateFramebufferInfo(ids[ii]);
+    FramebufferManager::FramebufferInfo* info =
+        GetFramebufferInfo(client_ids[ii]);
+    if (info) {
+      GLuint service_id = info->service_id();
+      glDeleteFramebuffersEXT(1, &service_id);
+      RemoveFramebufferInfo(client_ids[ii]);
+    }
   }
 }
 
-void GLGenRenderbuffersHelper(
-    GLES2DecoderImpl* decoder, GLsizei n, GLuint* ids) {
-  glGenRenderbuffersEXT(n, ids);
-  // TODO(gman): handle error
+void GLES2DecoderImpl::DeleteRenderbuffersHelper(
+    GLsizei n, const GLuint* client_ids) {
   for (GLsizei ii = 0; ii < n; ++ii) {
-    decoder->CreateRenderbufferInfo(ids[ii]);
+    RenderbufferManager::RenderbufferInfo* info =
+        GetRenderbufferInfo(client_ids[ii]);
+    if (info) {
+      GLuint service_id = info->service_id();
+      glDeleteRenderbuffersEXT(1, &service_id);
+      RemoveRenderbufferInfo(client_ids[ii]);
+    }
   }
 }
 
-void GLGenTexturesHelper(
-    GLES2DecoderImpl* decoder, GLsizei n, GLuint* ids) {
-  glGenTextures(n, ids);
-  // TODO(gman): handle error
+void GLES2DecoderImpl::DeleteTexturesHelper(
+    GLsizei n, const GLuint* client_ids) {
   for (GLsizei ii = 0; ii < n; ++ii) {
-    decoder->CreateTextureInfo(ids[ii]);
-  }
-}
-
-void GLDeleteBuffersHelper(
-    GLES2DecoderImpl* decoder, GLsizei n, GLuint* ids) {
-  glDeleteBuffersARB(n, ids);
-  // TODO(gman): handle error
-  for (GLsizei ii = 0; ii < n; ++ii) {
-    decoder->RemoveBufferInfo(ids[ii]);
-  }
-}
-
-void GLDeleteFramebuffersHelper(
-    GLES2DecoderImpl* decoder, GLsizei n, GLuint* ids) {
-  glDeleteFramebuffersEXT(n, ids);
-  // TODO(gman): handle error
-  for (GLsizei ii = 0; ii < n; ++ii) {
-    decoder->RemoveFramebufferInfo(ids[ii]);
-  }
-}
-
-void GLDeleteRenderbuffersHelper(
-    GLES2DecoderImpl* decoder, GLsizei n, GLuint* ids) {
-  glDeleteRenderbuffersEXT(n, ids);
-  // TODO(gman): handle error
-  for (GLsizei ii = 0; ii < n; ++ii) {
-    decoder->RemoveRenderbufferInfo(ids[ii]);
-  }
-}
-
-void GLDeleteTexturesHelper(
-    GLES2DecoderImpl* decoder, GLsizei n, GLuint* ids) {
-  glDeleteTextures(n, ids);
-  // TODO(gman): handle error
-  for (GLsizei ii = 0; ii < n; ++ii) {
-    decoder->RemoveTextureInfo(ids[ii]);
+    TextureManager::TextureInfo* info = GetTextureInfo(client_ids[ii]);
+    if (info) {
+      GLuint service_id = info->service_id();
+      glDeleteTextures(1, &service_id);
+      RemoveTextureInfo(client_ids[ii]);
+    }
   }
 }
 
@@ -1390,50 +1384,6 @@ bool GLES2DecoderImpl::MakeCurrent() {
 #else
   return context_->MakeCurrent();
 #endif
-}
-
-uint32 GLES2DecoderImpl::GetServiceIdForTesting(uint32 client_id) {
-#if defined(UNIT_TEST)
-  GLuint service_id;
-  bool result = id_manager()->GetServiceId(client_id, &service_id);
-  return result ? service_id : 0u;
-#else
-  DCHECK(false);
-  return 0u;
-#endif
-}
-
-bool GLES2DecoderImpl::ValidateIdsAreUnused(
-    GLsizei n, const GLuint* client_ids) {
-  for (GLsizei ii = 0; ii < n; ++ii) {
-    GLuint service_id;
-    if (id_manager()->GetServiceId(client_ids[ii], &service_id)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-bool GLES2DecoderImpl::RegisterObjects(
-    GLsizei n, const GLuint* client_ids, const GLuint* service_ids) {
-  for (GLsizei ii = 0; ii < n; ++ii) {
-    if (!id_manager()->AddMapping(client_ids[ii], service_ids[ii])) {
-      NOTREACHED();
-      return false;
-    }
-  }
-  return true;
-}
-
-void GLES2DecoderImpl::UnregisterObjects(
-    GLsizei n, const GLuint* client_ids, GLuint* service_ids) {
-  for (GLsizei ii = 0; ii < n; ++ii) {
-    if (id_manager()->GetServiceId(client_ids[ii], &service_ids[ii])) {
-      id_manager()->RemoveMapping(client_ids[ii], service_ids[ii]);
-    } else {
-      service_ids[ii] = 0;
-    }
-  }
 }
 
 gfx::Size GLES2DecoderImpl::GetBoundFrameBufferSize() {
@@ -1479,23 +1429,26 @@ gfx::Size GLES2DecoderImpl::GetBoundFrameBufferSize() {
               GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME,
               &texture_id);
           if (texture_id != 0) {
-            TextureManager::TextureInfo* texture_info =
-                GetTextureInfo(texture_id);
-            if (texture_info) {
-              GLint level = 0;
-              GLint face = 0;
-              glGetFramebufferAttachmentParameterivEXT(
-                  GL_FRAMEBUFFER,
-                  GL_COLOR_ATTACHMENT0,
-                  GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL,
-                  &level);
-              glGetFramebufferAttachmentParameterivEXT(
-                  GL_FRAMEBUFFER,
-                  GL_COLOR_ATTACHMENT0,
-                  GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE,
-                  &face);
-              texture_info->GetLevelSize(
-                  face ? face : GL_TEXTURE_2D, level, &width, &height);
+            GLuint client_id = 0;
+            if (texture_manager()->GetClientId(texture_id, &client_id)) {
+              TextureManager::TextureInfo* texture_info =
+                 GetTextureInfo(client_id);
+              if (texture_info) {
+                GLint level = 0;
+                GLint face = 0;
+                glGetFramebufferAttachmentParameterivEXT(
+                    GL_FRAMEBUFFER,
+                    GL_COLOR_ATTACHMENT0,
+                    GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL,
+                    &level);
+                glGetFramebufferAttachmentParameterivEXT(
+                    GL_FRAMEBUFFER,
+                    GL_COLOR_ATTACHMENT0,
+                    GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE,
+                    &face);
+                texture_info->GetLevelSize(
+                    face ? face : GL_TEXTURE_2D, level, &width, &height);
+              }
             }
           }
           break;
@@ -1628,10 +1581,9 @@ void GLES2DecoderImpl::Destroy() {
       // First check the texture has been mapped into the parent. This might not
       // be the case if initialization failed midway through.
       GLuint service_id = offscreen_saved_color_texture_->id();
-      GLuint client_id;
-      if (parent_->id_manager()->GetClientId(service_id, &client_id)) {
-        parent_->texture_manager()->RemoveTextureInfo(service_id);
-        parent_->id_manager()->RemoveMapping(client_id, service_id);
+      GLuint client_id = 0;
+      if (parent_->texture_manager()->GetClientId(service_id, &client_id)) {
+        parent_->texture_manager()->RemoveTextureInfo(client_id);
       }
     }
 
@@ -1732,43 +1684,30 @@ error::Error GLES2DecoderImpl::DoCommand(
   return result;
 }
 
-void GLES2DecoderImpl::RemoveBufferInfo(GLuint buffer_id) {
-  buffer_manager()->RemoveBufferInfo(buffer_id);
-  // TODO(gman): See if we can remove the rest of this function as
-  //    buffers are now reference counted and have a "IsDeleted" function.
-  if (bound_array_buffer_ && bound_array_buffer_->buffer_id() == buffer_id) {
-    bound_array_buffer_ = NULL;
-  }
-  if (bound_element_array_buffer_ &&
-      bound_element_array_buffer_->buffer_id() == buffer_id) {
-    bound_element_array_buffer_ = NULL;
-  }
-
-  // go through VertexAttribInfo and update any info that references the buffer.
-  for (GLuint ii = 0; ii < group_->max_vertex_attribs(); ++ii) {
-    VertexAttribInfo& info = vertex_attrib_infos_[ii];
-    if (info.buffer() && info.buffer()->buffer_id() == buffer_id) {
-      info.ClearBuffer();
-    }
-  }
+void GLES2DecoderImpl::RemoveBufferInfo(GLuint client_id) {
+  buffer_manager()->RemoveBufferInfo(client_id);
 }
 
-void GLES2DecoderImpl::CreateProgramHelper(GLuint client_id) {
-  // TODO(gman): verify client_id is unused.
+bool GLES2DecoderImpl::CreateProgramHelper(GLuint client_id) {
+  if (GetProgramInfo(client_id)) {
+    return false;
+  }
   GLuint service_id = glCreateProgram();
-  if (service_id) {
-    id_manager()->AddMapping(client_id, service_id);
-    CreateProgramInfo(service_id);
+  if (service_id != 0) {
+    CreateProgramInfo(client_id, service_id);
   }
+  return true;
 }
 
-void GLES2DecoderImpl::CreateShaderHelper(GLenum type, GLuint client_id) {
-  // TODO(gman): verify client_id is unused.
-  GLuint service_id = glCreateShader(type);
-  if (service_id) {
-    id_manager()->AddMapping(client_id, service_id);
-    CreateShaderInfo(service_id);
+bool GLES2DecoderImpl::CreateShaderHelper(GLenum type, GLuint client_id) {
+  if (GetShaderInfo(client_id)) {
+    return false;
   }
+  GLuint service_id = glCreateShader(type);
+  if (service_id != 0) {
+    CreateShaderInfo(client_id, service_id);
+  }
+  return true;
 }
 
 bool GLES2DecoderImpl::ValidateGLenumCompressedTextureInternalFormat(GLenum) {
@@ -1789,23 +1728,26 @@ void GLES2DecoderImpl::DoActiveTexture(GLenum texture_unit) {
 void GLES2DecoderImpl::DoBindBuffer(GLenum target, GLuint client_id) {
   BufferManager::BufferInfo* info = NULL;
   GLuint service_id = 0;
-  if (client_id != 0 && !id_manager()->GetServiceId(client_id, &service_id)) {
-    // It's a new id so make a buffer info for it.
-    glGenBuffersARB(1, &service_id);
-    RegisterObjects(1, &client_id, &service_id);
-    CreateBufferInfo(service_id);
+  if (client_id != 0) {
+    info = GetBufferInfo(client_id);
+    if (!info) {
+      // It's a new id so make a buffer info for it.
+      glGenBuffersARB(1, &service_id);
+      CreateBufferInfo(client_id, service_id);
+      info = GetBufferInfo(client_id);
+    }
   }
-  if (service_id) {
-    info = GetBufferInfo(service_id);
+  if (info) {
     // Check the buffer exists
     // Check that we are not trying to bind it to a different target.
-    if (!info || (info->target() != 0 && info->target() != target)) {
+    if ((info->target() != 0 && info->target() != target)) {
       SetGLError(GL_INVALID_OPERATION);
       return;
     }
     if (info->target() == 0) {
       info->set_target(target);
     }
+    service_id = info->service_id();
   }
   switch (target) {
     case GL_ARRAY_BUFFER:
@@ -1824,18 +1766,15 @@ void GLES2DecoderImpl::DoBindBuffer(GLenum target, GLuint client_id) {
 void GLES2DecoderImpl::DoBindFramebuffer(GLenum target, GLuint client_id) {
   FramebufferManager::FramebufferInfo* info = NULL;
   GLuint service_id = 0;
-  if (client_id != 0 && !id_manager()->GetServiceId(client_id, &service_id)) {
-    // It's a new id so make a framebuffer info for it.
-    glGenFramebuffersEXT(1, &service_id);
-    RegisterObjects(1, &client_id, &service_id);
-    CreateFramebufferInfo(service_id);
-  }
-  if (service_id) {
-    info = GetFramebufferInfo(service_id);
-    // Check the framebuffer exists
+  if (client_id != 0) {
+    info = GetFramebufferInfo(client_id);
     if (!info) {
-      SetGLError(GL_INVALID_OPERATION);
-      return;
+      // It's a new id so make a framebuffer info for it.
+      glGenFramebuffersEXT(1, &service_id);
+      CreateFramebufferInfo(client_id, service_id);
+      info = GetFramebufferInfo(client_id);
+    } else {
+      service_id = info->service_id();
     }
   }
   bound_framebuffer_ = info;
@@ -1851,18 +1790,14 @@ void GLES2DecoderImpl::DoBindFramebuffer(GLenum target, GLuint client_id) {
 void GLES2DecoderImpl::DoBindRenderbuffer(GLenum target, GLuint client_id) {
   RenderbufferManager::RenderbufferInfo* info = NULL;
   GLuint service_id = 0;
-  if (client_id != 0 && !id_manager()->GetServiceId(client_id, &service_id)) {
-    // It's a new id so make a renderbuffer info for it.
-    glGenRenderbuffersEXT(1, &service_id);
-    RegisterObjects(1, &client_id, &service_id);
-    CreateRenderbufferInfo(service_id);
-  }
-  if (service_id) {
-    info = GetRenderbufferInfo(service_id);
-    // Check the renderbuffer exists
+  if (client_id != 0) {
+    info = GetRenderbufferInfo(client_id);
     if (!info) {
-      SetGLError(GL_INVALID_OPERATION);
-      return;
+      // It's a new id so make a renderbuffer info for it.
+      glGenRenderbuffersEXT(1, &service_id);
+      CreateRenderbufferInfo(client_id, service_id);
+    } else {
+      service_id = info->service_id();
     }
   }
   bound_renderbuffer_ = info;
@@ -1870,26 +1805,30 @@ void GLES2DecoderImpl::DoBindRenderbuffer(GLenum target, GLuint client_id) {
 }
 
 void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
+  TextureManager::TextureInfo* info = NULL;
   GLuint service_id = 0;
-  if (client_id != 0 && !id_manager()->GetServiceId(client_id, &service_id)) {
-    // It's a new id so make a texture info for it.
-    glGenTextures(1, &service_id);
-    RegisterObjects(1, &client_id, &service_id);
-    CreateTextureInfo(service_id);
+  if (client_id != 0) {
+    info = GetTextureInfo(client_id);
+    if (!info) {
+      // It's a new id so make a texture info for it.
+      glGenTextures(1, &service_id);
+      CreateTextureInfo(client_id, service_id);
+      info = GetTextureInfo(client_id);
+    }
+  } else {
+    info = texture_manager()->GetDefaultTextureInfo(target);
   }
-  TextureManager::TextureInfo* info =
-      service_id ? GetTextureInfo(service_id) :
-                   texture_manager()->GetDefaultTextureInfo(target);
+
   // Check the texture exists
   // Check that we are not trying to bind it to a different target.
-  if (!info || (info->target() != 0 && info->target() != target)) {
+  if (info->target() != 0 && info->target() != target) {
     SetGLError(GL_INVALID_OPERATION);
     return;
   }
   if (info->target() == 0) {
     texture_manager()->SetInfoTarget(info, target);
   }
-  glBindTexture(target, service_id);
+  glBindTexture(target, info->service_id());
   TextureUnit& unit = texture_units_[active_texture_unit_];
   unit.bind_target = target;
   switch (target) {
@@ -2030,8 +1969,8 @@ void GLES2DecoderImpl::DoGetProgramiv(
 
 error::Error GLES2DecoderImpl::HandleBindAttribLocation(
     uint32 immediate_data_size, const gles2::BindAttribLocation& c) {
-  GLuint program;
-  if (!id_manager()->GetServiceId(c.program, &program)) {
+  ProgramManager::ProgramInfo* info = GetProgramInfo(c.program);
+  if (!info) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -2043,14 +1982,14 @@ error::Error GLES2DecoderImpl::HandleBindAttribLocation(
     return error::kOutOfBounds;
   }
   String name_str(name, name_size);
-  glBindAttribLocation(program, index, name_str.c_str());
+  glBindAttribLocation(info->service_id(), index, name_str.c_str());
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleBindAttribLocationImmediate(
     uint32 immediate_data_size, const gles2::BindAttribLocationImmediate& c) {
-  GLuint program;
-  if (!id_manager()->GetServiceId(c.program, &program)) {
+  ProgramManager::ProgramInfo* info = GetProgramInfo(c.program);
+  if (!info) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -2062,14 +2001,14 @@ error::Error GLES2DecoderImpl::HandleBindAttribLocationImmediate(
     return error::kOutOfBounds;
   }
   String name_str(name, name_size);
-  glBindAttribLocation(program, index, name_str.c_str());
+  glBindAttribLocation(info->service_id(), index, name_str.c_str());
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleBindAttribLocationBucket(
     uint32 immediate_data_size, const gles2::BindAttribLocationBucket& c) {
-  GLuint program;
-  if (!id_manager()->GetServiceId(c.program, &program)) {
+  ProgramManager::ProgramInfo* info = GetProgramInfo(c.program);
+  if (!info) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -2080,35 +2019,37 @@ error::Error GLES2DecoderImpl::HandleBindAttribLocationBucket(
   }
   std::string name_str;
   bucket->GetAsString(&name_str);
-  glBindAttribLocation(program, index, name_str.c_str());
+  glBindAttribLocation(info->service_id(), index, name_str.c_str());
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleDeleteShader(
     uint32 immediate_data_size, const gles2::DeleteShader& c) {
-  GLuint shader = c.shader;
-  GLuint service_id;
-  if (!id_manager()->GetServiceId(shader, &service_id)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
+  GLuint client_id = c.shader;
+  if (client_id) {
+    ShaderManager::ShaderInfo* info = GetShaderInfo(client_id);
+    if (info) {
+      glDeleteShader(info->service_id());
+      RemoveShaderInfo(client_id);
+    } else {
+      SetGLError(GL_INVALID_VALUE);
+    }
   }
-  RemoveShaderInfo(service_id);
-  glDeleteShader(service_id);
-  id_manager()->RemoveMapping(shader, service_id);
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleDeleteProgram(
     uint32 immediate_data_size, const gles2::DeleteProgram& c) {
-  GLuint program = c.program;
-  GLuint service_id;
-  if (!id_manager()->GetServiceId(program, &service_id)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
+  GLuint client_id = c.program;
+  if (client_id) {
+    ProgramManager::ProgramInfo* info = GetProgramInfo(client_id);
+    if (info) {
+      glDeleteProgram(info->service_id());
+      RemoveProgramInfo(client_id);
+    } else {
+      SetGLError(GL_INVALID_VALUE);
+    }
   }
-  RemoveProgramInfo(service_id);
-  glDeleteProgram(service_id);
-  id_manager()->RemoveMapping(program, service_id);
   return error::kNoError;
 }
 
@@ -2126,13 +2067,23 @@ void GLES2DecoderImpl::DoDrawArrays(
 
 void GLES2DecoderImpl::DoFramebufferRenderbuffer(
     GLenum target, GLenum attachment, GLenum renderbuffertarget,
-    GLuint renderbuffer) {
+    GLuint client_renderbuffer_id) {
   if (!bound_framebuffer_) {
     SetGLError(GL_INVALID_OPERATION);
     return;
   }
-  glFramebufferRenderbufferEXT(target, attachment, renderbuffertarget,
-                               renderbuffer);
+  GLuint service_id = 0;
+  if (client_renderbuffer_id) {
+    RenderbufferManager::RenderbufferInfo* info =
+        GetRenderbufferInfo(client_renderbuffer_id);
+    if (!info) {
+      SetGLError(GL_INVALID_OPERATION);
+      return;
+    }
+    service_id = info->service_id();
+  }
+  glFramebufferRenderbufferEXT(
+      target, attachment, renderbuffertarget, service_id);
 }
 
 GLenum GLES2DecoderImpl::DoCheckFramebufferStatus(GLenum target) {
@@ -2143,13 +2094,22 @@ GLenum GLES2DecoderImpl::DoCheckFramebufferStatus(GLenum target) {
 }
 
 void GLES2DecoderImpl::DoFramebufferTexture2D(
-    GLenum target, GLenum attachment, GLenum textarget, GLuint texture,
-    GLint level) {
+    GLenum target, GLenum attachment, GLenum textarget,
+    GLuint client_texture_id, GLint level) {
   if (!bound_framebuffer_) {
     SetGLError(GL_INVALID_OPERATION);
     return;
   }
-  glFramebufferTexture2DEXT(target, attachment, textarget, texture, level);
+  GLuint service_id = 0;
+  if (client_texture_id) {
+    TextureManager::TextureInfo* info = GetTextureInfo(client_texture_id);
+    if (!info) {
+      SetGLError(GL_INVALID_OPERATION);
+      return;
+    }
+    service_id = info->service_id();
+  }
+  glFramebufferTexture2DEXT(target, attachment, textarget, service_id, level);
 }
 
 void GLES2DecoderImpl::DoGetFramebufferAttachmentParameteriv(
@@ -2186,10 +2146,10 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program) {
     return;
   }
   CopyRealGLErrorsToWrapper();
-  glLinkProgram(program);
+  glLinkProgram(info->service_id());
   GLenum error = glGetError();
   if (error != GL_NO_ERROR) {
-    RemoveProgramInfo(program);
+    info->Reset();
     SetGLError(error);
   } else {
     info->Update();
@@ -2262,17 +2222,23 @@ void GLES2DecoderImpl::DoUniform1iv(
 }
 
 void GLES2DecoderImpl::DoUseProgram(GLuint program) {
+  GLuint service_id = 0;
   ProgramManager::ProgramInfo* info = NULL;
   if (program) {
     info = GetProgramInfo(program);
     if (!info) {
+      SetGLError(GL_INVALID_VALUE);
+      return;
+    }
+    if (!info->IsValid()) {
       // Program was not linked successfully. (ie, glLinkProgram)
       SetGLError(GL_INVALID_OPERATION);
       return;
     }
+    service_id = info->service_id();
   }
   current_program_ = info;
-  glUseProgram(program);
+  glUseProgram(service_id);
 }
 
 GLenum GLES2DecoderImpl::GetGLError() {
@@ -2393,7 +2359,7 @@ void GLES2DecoderImpl::RestoreStateForNonRenderableTextures() {
               texture_unit.bound_texture_2d :
               texture_unit.bound_texture_cube_map;
           glBindTexture(texture_unit.bind_target,
-                        texture_info ? texture_info->texture_id() : 0);
+                        texture_info ? texture_info->service_id() : 0);
         }
       }
     }
@@ -2466,10 +2432,12 @@ GLuint GLES2DecoderImpl::DoGetMaxValueInBuffer(
     GLuint buffer_id, GLsizei count, GLenum type, GLuint offset) {
   GLuint max_vertex_accessed = 0;
   BufferManager::BufferInfo* info = GetBufferInfo(buffer_id);
-  if (info->target() != GL_ELEMENT_ARRAY_BUFFER) {
+  if (!info || info->target() != GL_ELEMENT_ARRAY_BUFFER) {
+    // TODO(gman): Should this be a GL error or a command buffer error?
     SetGLError(GL_INVALID_OPERATION);
   } else {
     if (!info->GetMaxValueForRange(offset, count, type, &max_vertex_accessed)) {
+      // TODO(gman): Should this be a GL error or a command buffer error?
       SetGLError(GL_INVALID_OPERATION);
     }
   }
@@ -2481,10 +2449,10 @@ GLuint GLES2DecoderImpl::DoGetMaxValueInBuffer(
 // of whatever context it came from (shared memory, immediate memory, bucket
 // memory.)
 error::Error GLES2DecoderImpl::ShaderSourceHelper(
-    GLuint shader, const char* data, uint32 data_size) {
-  ShaderManager::ShaderInfo* info = GetShaderInfo(shader);
+    GLuint client_id, const char* data, uint32 data_size) {
+  ShaderManager::ShaderInfo* info = GetShaderInfo(client_id);
   if (!info) {
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
   // Note: We don't actually call glShaderSource here. We wait until
@@ -2495,59 +2463,43 @@ error::Error GLES2DecoderImpl::ShaderSourceHelper(
 
 error::Error GLES2DecoderImpl::HandleShaderSource(
     uint32 immediate_data_size, const gles2::ShaderSource& c) {
-  GLuint shader;
-  if (!id_manager()->GetServiceId(c.shader, &shader)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
   uint32 data_size = c.data_size;
   const char* data = GetSharedMemoryAs<const char*>(
       c.data_shm_id, c.data_shm_offset, data_size);
   if (!data) {
     return error::kOutOfBounds;
   }
-  return ShaderSourceHelper(shader, data, data_size);
+  return ShaderSourceHelper(c.shader, data, data_size);
 }
 
 error::Error GLES2DecoderImpl::HandleShaderSourceImmediate(
   uint32 immediate_data_size, const gles2::ShaderSourceImmediate& c) {
-  GLuint shader;
-  if (!id_manager()->GetServiceId(c.shader, &shader)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
   uint32 data_size = c.data_size;
   const char* data = GetImmediateDataAs<const char*>(
       c, data_size, immediate_data_size);
   if (!data) {
     return error::kOutOfBounds;
   }
-  return ShaderSourceHelper(shader, data, data_size);
+  return ShaderSourceHelper(c.shader, data, data_size);
 }
 
 error::Error GLES2DecoderImpl::HandleShaderSourceBucket(
   uint32 immediate_data_size, const gles2::ShaderSourceBucket& c) {
-  GLuint shader;
-  if (!id_manager()->GetServiceId(c.shader, &shader)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
   Bucket* bucket = GetBucket(c.data_bucket_id);
   if (!bucket || bucket->size() == 0) {
     return error::kInvalidArguments;
   }
   return ShaderSourceHelper(
-      shader, bucket->GetDataAs<const char*>(0, bucket->size() - 1),
+      c.shader, bucket->GetDataAs<const char*>(0, bucket->size() - 1),
       bucket->size() - 1);
 }
 
-void GLES2DecoderImpl::DoCompileShader(GLuint shader) {
-  ShaderManager::ShaderInfo* info = GetShaderInfo(shader);
+void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
+  ShaderManager::ShaderInfo* info = GetShaderInfo(client_id);
   if (!info) {
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_VALUE);
     return;
   }
-
   // Translate GL ES 2.0 shader to Desktop GL shader and pass that to
   // glShaderSource and then glCompileShader.
   const char* shader_src = info->source().c_str();
@@ -2578,8 +2530,8 @@ void GLES2DecoderImpl::DoCompileShader(GLuint shader) {
 #endif  // GLES2_GPU_SERVICE_TRANSLATE_SHADER
 #endif  // GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2
 
-  glShaderSource(shader, 1, &shader_src, NULL);
-  glCompileShader(shader);
+  glShaderSource(info->service_id(), 1, &shader_src, NULL);
+  glCompileShader(info->service_id());
 
 #if !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
 #ifdef GLES2_GPU_SERVICE_TRANSLATE_SHADER
@@ -2598,74 +2550,123 @@ void GLES2DecoderImpl::DoGetShaderiv(
   if (pname == GL_SHADER_SOURCE_LENGTH) {
     *params = info->source().size();
   } else {
-    glGetShaderiv(shader, pname, params);
+    glGetShaderiv(info->service_id(), pname, params);
   }
 }
 
-void GLES2DecoderImpl::DoGetShaderSource(
-      GLuint shader, GLsizei bufsize, GLsizei* length, char* dst) {
+error::Error GLES2DecoderImpl::HandleGetShaderSource(
+    uint32 immediate_data_size, const gles2::GetShaderSource& c) {
+  GLuint shader = c.shader;
   ShaderManager::ShaderInfo* info = GetShaderInfo(shader);
   if (!info) {
-    SetGLError(GL_INVALID_OPERATION);
-    return;
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
   }
-  // bufsize is set by the service side code and should always be positive.
-  DCHECK_GT(bufsize, 0);
-  const std::string& source = info->source();
-  GLsizei size = std::min(bufsize - 1, static_cast<GLsizei>(source.size()));
-  if (length) {
-    *length = size;
+  uint32 bucket_id = static_cast<uint32>(c.bucket_id);
+  Bucket* bucket = CreateBucket(bucket_id);
+  bucket->SetFromString(info->source());
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleGetProgramInfoLog(
+    uint32 immediate_data_size, const gles2::GetProgramInfoLog& c) {
+  GLuint program = c.program;
+  ProgramManager::ProgramInfo* info = GetProgramInfo(program);
+  if (!info) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
   }
-  memcpy(dst, source.c_str(), size);
-  dst[size] = '\0';
+  uint32 bucket_id = static_cast<uint32>(c.bucket_id);
+  GLint len = 0;
+  glGetProgramiv(info->service_id(), GL_INFO_LOG_LENGTH, &len);
+  Bucket* bucket = CreateBucket(bucket_id);
+  bucket->SetSize(len + 1);
+  glGetProgramInfoLog(
+      info->service_id(),
+      len + 1, &len, bucket->GetDataAs<GLchar*>(0, len + 1));
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleGetShaderInfoLog(
+    uint32 immediate_data_size, const gles2::GetShaderInfoLog& c) {
+  GLuint shader = c.shader;
+  ShaderManager::ShaderInfo* info = GetShaderInfo(shader);
+  if (!info) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  uint32 bucket_id = static_cast<uint32>(c.bucket_id);
+  GLint len = 0;
+  glGetShaderiv(info->service_id(), GL_INFO_LOG_LENGTH, &len);
+  Bucket* bucket = CreateBucket(bucket_id);
+  bucket->SetSize(len + 1);
+  glGetShaderInfoLog(
+      info->service_id(),
+      len + 1, &len, bucket->GetDataAs<GLchar*>(0, len + 1));
+  return error::kNoError;
 }
 
 bool GLES2DecoderImpl::DoIsBuffer(GLuint client_id) {
-  GLuint service_id = 0;
-  if (!id_manager()->GetServiceId(client_id, &service_id)) {
-    return false;
-  }
-  return GetBufferInfo(service_id) != NULL;
+  return GetBufferInfo(client_id) != NULL;
 }
 
 bool GLES2DecoderImpl::DoIsFramebuffer(GLuint client_id) {
-  GLuint service_id = 0;
-  if (!id_manager()->GetServiceId(client_id, &service_id)) {
-    return false;
-  }
-  return GetFramebufferInfo(service_id) != NULL;
+  return GetFramebufferInfo(client_id) != NULL;
 }
 
 bool GLES2DecoderImpl::DoIsProgram(GLuint client_id) {
-  GLuint service_id = 0;
-  if (!id_manager()->GetServiceId(client_id, &service_id)) {
-    return false;
-  }
-  return GetProgramInfo(service_id) != NULL;
+  return GetProgramInfo(client_id) != NULL;
 }
 
 bool GLES2DecoderImpl::DoIsRenderbuffer(GLuint client_id) {
-  GLuint service_id = 0;
-  if (!id_manager()->GetServiceId(client_id, &service_id)) {
-    return false;
-  }
-  return GetRenderbufferInfo(service_id) != NULL;
+  return GetRenderbufferInfo(client_id) != NULL;
 }
 
 bool GLES2DecoderImpl::DoIsShader(GLuint client_id) {
-  GLuint service_id = 0;
-  if (!id_manager()->GetServiceId(client_id, &service_id)) {
-    return false;
-  }
-  return GetShaderInfo(service_id) != NULL;
+  return GetShaderInfo(client_id) != NULL;
 }
 
 bool GLES2DecoderImpl::DoIsTexture(GLuint client_id) {
-  GLuint service_id = 0;
-  if (!id_manager()->GetServiceId(client_id, &service_id)) {
-    return false;
+  return GetTextureInfo(client_id) != NULL;
+}
+
+void GLES2DecoderImpl::DoAttachShader(
+    GLuint program_client_id, GLint shader_client_id) {
+  ProgramManager::ProgramInfo* program_info = GetProgramInfo(program_client_id);
+  if (!program_info) {
+    SetGLError(GL_INVALID_VALUE);
+    return;
   }
-  return GetTextureInfo(service_id) != NULL;
+  ShaderManager::ShaderInfo* shader_info = GetShaderInfo(shader_client_id);
+  if (!shader_info) {
+    SetGLError(GL_INVALID_VALUE);
+    return;
+  }
+  glAttachShader(program_info->service_id(), shader_info->service_id());
+}
+
+void GLES2DecoderImpl::DoDetachShader(
+    GLuint program_client_id, GLint shader_client_id) {
+  ProgramManager::ProgramInfo* program_info = GetProgramInfo(program_client_id);
+  if (!program_info) {
+    SetGLError(GL_INVALID_VALUE);
+    return;
+  }
+  ShaderManager::ShaderInfo* shader_info = GetShaderInfo(shader_client_id);
+  if (!shader_info) {
+    SetGLError(GL_INVALID_VALUE);
+    return;
+  }
+  glDetachShader(program_info->service_id(), shader_info->service_id());
+}
+
+void GLES2DecoderImpl::DoValidateProgram(GLuint program_client_id) {
+  ProgramManager::ProgramInfo* info = GetProgramInfo(program_client_id);
+  if (!info) {
+    SetGLError(GL_INVALID_VALUE);
+    return;
+  }
+  glValidateProgram(info->service_id());
 }
 
 error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
@@ -2846,14 +2847,12 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(
 error::Error GLES2DecoderImpl::GetAttribLocationHelper(
     GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
     const std::string& name_str) {
-  GLuint program;
-  if (!id_manager()->GetServiceId(client_id, &program)) {
+  ProgramManager::ProgramInfo* info = GetProgramInfo(client_id);
+  if (!info) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
-  ProgramManager::ProgramInfo* info = GetProgramInfo(program);
-  if (!info) {
-    // Program was not linked successfully. (ie, glLinkProgram)
+  if (!info->IsValid()) {
     SetGLError(GL_INVALID_OPERATION);
     return error::kNoError;
   }
@@ -2912,14 +2911,12 @@ error::Error GLES2DecoderImpl::HandleGetAttribLocationBucket(
 error::Error GLES2DecoderImpl::GetUniformLocationHelper(
     GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
     const std::string& name_str) {
-  GLuint program;
-  if (!id_manager()->GetServiceId(client_id, &program)) {
+  ProgramManager::ProgramInfo* info = GetProgramInfo(client_id);
+  if (!info) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
-  ProgramManager::ProgramInfo* info = GetProgramInfo(program);
-  if (!info) {
-    // Program was not linked successfully. (ie, glLinkProgram)
+  if (!info->IsValid()) {
     SetGLError(GL_INVALID_OPERATION);
     return error::kNoError;
   }
@@ -3303,16 +3300,17 @@ bool GLES2DecoderImpl::GetUniformSetup(
   *result_pointer = result;
   // Set the result size to 0 so the client does not have to check for success.
   result->SetNumResults(0);
-  if (!id_manager()->GetServiceId(program, service_id)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
-  ProgramManager::ProgramInfo* info = GetProgramInfo(*service_id);
+  ProgramManager::ProgramInfo* info = GetProgramInfo(program);
   if (!info) {
+    SetGLError(GL_INVALID_VALUE);
+    return false;
+  }
+  if (!info->IsValid()) {
     // Program was not linked successfully. (ie, glLinkProgram)
     SetGLError(GL_INVALID_OPERATION);
     return false;
   }
+  *service_id = info->service_id();
   GLenum type;
   if (!info->GetUniformTypeByLocation(location, &type)) {
     // No such location.
@@ -3413,9 +3411,9 @@ error::Error GLES2DecoderImpl::HandleGetShaderPrecisionFormat(
 
 error::Error GLES2DecoderImpl::HandleGetAttachedShaders(
     uint32 immediate_data_size, const gles2::GetAttachedShaders& c) {
-  GLuint service_id;
   uint32 result_size = c.result_size;
-  if (!id_manager()->GetServiceId(c.program, &service_id)) {
+  ProgramManager::ProgramInfo* info = GetProgramInfo(c.program);
+  if (!info) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -3431,10 +3429,11 @@ error::Error GLES2DecoderImpl::HandleGetAttachedShaders(
     return error::kInvalidArguments;
   }
   GLsizei count = 0;
-  glGetAttachedShaders(service_id, max_count, &count, result->GetData());
+  glGetAttachedShaders(
+      info->service_id(), max_count, &count, result->GetData());
   for (GLsizei ii = 0; ii < count; ++ii) {
-    if (!id_manager()->GetClientId(result->GetData()[ii],
-                                  &result->GetData()[ii])) {
+    if (!shader_manager()->GetClientId(result->GetData()[ii],
+                                       &result->GetData()[ii])) {
       NOTREACHED();
       return error::kGenericError;
     }
@@ -3448,7 +3447,6 @@ error::Error GLES2DecoderImpl::HandleGetActiveUniform(
   GLuint program = c.program;
   GLuint index = c.index;
   uint32 name_bucket_id = c.name_bucket_id;
-  GLuint service_id;
   typedef gles2::GetActiveUniform::Result Result;
   Result* result = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result));
@@ -3459,14 +3457,14 @@ error::Error GLES2DecoderImpl::HandleGetActiveUniform(
   if (result->success != 0) {
     return error::kInvalidArguments;
   }
-  if (!id_manager()->GetServiceId(program, &service_id)) {
+  ProgramManager::ProgramInfo* info = GetProgramInfo(program);
+  if (!info) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
-  ProgramManager::ProgramInfo* info = GetProgramInfo(service_id);
-  if (!info) {
+  if (!info->IsValid()) {
     // Program was not linked successfully. (ie, glLinkProgram)
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
   const ProgramManager::ProgramInfo::UniformInfo* uniform_info =
@@ -3488,7 +3486,6 @@ error::Error GLES2DecoderImpl::HandleGetActiveAttrib(
   GLuint program = c.program;
   GLuint index = c.index;
   uint32 name_bucket_id = c.name_bucket_id;
-  GLuint service_id;
   typedef gles2::GetActiveAttrib::Result Result;
   Result* result = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result));
@@ -3499,12 +3496,12 @@ error::Error GLES2DecoderImpl::HandleGetActiveAttrib(
   if (result->success != 0) {
     return error::kInvalidArguments;
   }
-  if (!id_manager()->GetServiceId(program, &service_id)) {
+  ProgramManager::ProgramInfo* info = GetProgramInfo(program);
+  if (!info) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
-  ProgramManager::ProgramInfo* info = GetProgramInfo(service_id);
-  if (!info) {
+  if (!info->IsValid()) {
     // Program was not linked successfully. (ie, glLinkProgram)
     SetGLError(GL_INVALID_OPERATION);
     return error::kNoError;
@@ -3553,11 +3550,12 @@ error::Error GLES2DecoderImpl::HandleShaderBinary(
   }
   scoped_array<GLuint> service_ids(new GLuint[n]);
   for (GLsizei ii = 0; ii < n; ++ii) {
-    if (!id_manager()->GetServiceId(shaders[ii], &service_ids[ii])) {
+    ShaderManager::ShaderInfo* info = GetShaderInfo(shaders[ii]);
+    if (!info) {
       SetGLError(GL_INVALID_VALUE);
       return error::kNoError;
     }
-    // TODO(gman): Check that each shader exists.
+    service_ids[ii] = info->service_id();
   }
   // TODO(gman): call glShaderBinary
   return error::kNoError;

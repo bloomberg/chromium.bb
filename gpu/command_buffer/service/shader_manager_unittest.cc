@@ -24,24 +24,26 @@ class ShaderManagerTest : public testing::Test {
 };
 
 TEST_F(ShaderManagerTest, Basic) {
-  const GLuint kShader1Id = 1;
-  const std::string kShader1Source("hello world");
-  const GLuint kShader2Id = 2;
+  const GLuint kClient1Id = 1;
+  const GLuint kService1Id = 11;
+  const std::string kClient1Source("hello world");
+  const GLuint kClient2Id = 2;
   // Check we can create shader.
-  manager_.CreateShaderInfo(kShader1Id);
+  manager_.CreateShaderInfo(kClient1Id, kService1Id);
   // Check shader got created.
-  ShaderManager::ShaderInfo* info1 = manager_.GetShaderInfo(kShader1Id);
+  ShaderManager::ShaderInfo* info1 = manager_.GetShaderInfo(kClient1Id);
   ASSERT_TRUE(info1 != NULL);
+  EXPECT_EQ(kService1Id, info1->service_id());
   // Check we and set its source.
-  info1->Update(kShader1Source);
-  EXPECT_STREQ(kShader1Source.c_str(), info1->source().c_str());
+  info1->Update(kClient1Source);
+  EXPECT_STREQ(kClient1Source.c_str(), info1->source().c_str());
   // Check we get nothing for a non-existent shader.
-  EXPECT_TRUE(manager_.GetShaderInfo(kShader2Id) == NULL);
+  EXPECT_TRUE(manager_.GetShaderInfo(kClient2Id) == NULL);
   // Check trying to a remove non-existent shaders does not crash.
-  manager_.RemoveShaderInfo(kShader2Id);
+  manager_.RemoveShaderInfo(kClient2Id);
   // Check we can't get the shader after we remove it.
-  manager_.RemoveShaderInfo(kShader1Id);
-  EXPECT_TRUE(manager_.GetShaderInfo(kShader1Id) == NULL);
+  manager_.RemoveShaderInfo(kClient1Id);
+  EXPECT_TRUE(manager_.GetShaderInfo(kClient1Id) == NULL);
 }
 
 }  // namespace gles2

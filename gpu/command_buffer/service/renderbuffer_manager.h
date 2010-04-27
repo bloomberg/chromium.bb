@@ -24,13 +24,13 @@ class RenderbufferManager {
    public:
     typedef scoped_refptr<RenderbufferInfo> Ref;
 
-    explicit RenderbufferInfo(GLuint renderbuffer_id)
-        : renderbuffer_id_(renderbuffer_id),
+    explicit RenderbufferInfo(GLuint service_id)
+        : service_id_(service_id),
           cleared_(false) {
     }
 
-    GLuint renderbuffer_id() const {
-      return renderbuffer_id_;
+    GLuint service_id() const {
+      return service_id_;
     }
 
     bool cleared() const {
@@ -42,7 +42,7 @@ class RenderbufferManager {
     }
 
     bool IsDeleted() {
-      return renderbuffer_id_ == 0;
+      return service_id_ == 0;
     }
 
    private:
@@ -52,11 +52,11 @@ class RenderbufferManager {
     ~RenderbufferInfo() { }
 
     void MarkAsDeleted() {
-      renderbuffer_id_ = 0;
+      service_id_ = 0;
     }
 
     // Service side renderbuffer id.
-    GLuint renderbuffer_id_;
+    GLuint service_id_;
 
     // Whether this renderbuffer has been cleared
     bool cleared_;
@@ -65,13 +65,13 @@ class RenderbufferManager {
   RenderbufferManager() { }
 
   // Creates a RenderbufferInfo for the given renderbuffer.
-  void CreateRenderbufferInfo(GLuint renderbuffer_id);
+  void CreateRenderbufferInfo(GLuint client_id, GLuint service_id);
 
   // Gets the renderbuffer info for the given renderbuffer.
-  RenderbufferInfo* GetRenderbufferInfo(GLuint renderbuffer_id);
+  RenderbufferInfo* GetRenderbufferInfo(GLuint client_id);
 
   // Removes a renderbuffer info for the given renderbuffer.
-  void RemoveRenderbufferInfo(GLuint renderbuffer_id);
+  void RemoveRenderbufferInfo(GLuint client_id);
 
  private:
   // Info for each renderbuffer in the system.

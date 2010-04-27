@@ -25,12 +25,12 @@ class FramebufferManager {
    public:
     typedef scoped_refptr<FramebufferInfo> Ref;
 
-    explicit FramebufferInfo(GLuint framebuffer_id)
-        : framebuffer_id_(framebuffer_id) {
+    explicit FramebufferInfo(GLuint service_id)
+        : service_id_(service_id) {
     }
 
-    GLuint framebuffer_id() const {
-      return framebuffer_id_;
+    GLuint service_id() const {
+      return service_id_;
     }
 
     // Attaches a renderbuffer to a particlar attachment.
@@ -39,7 +39,7 @@ class FramebufferManager {
         GLenum attachment, RenderbufferManager::RenderbufferInfo* renderbuffer);
 
     bool IsDeleted() {
-      return framebuffer_id_ == 0;
+      return service_id_ == 0;
     }
 
    private:
@@ -49,12 +49,12 @@ class FramebufferManager {
     ~FramebufferInfo() { }
 
     void MarkAsDeleted() {
-      framebuffer_id_ = 0;
+      service_id_ = 0;
       renderbuffers_.clear();
     }
 
     // Service side framebuffer id.
-    GLuint framebuffer_id_;
+    GLuint service_id_;
 
     // A map of attachments to renderbuffers.
     typedef std::map<GLenum, RenderbufferManager::RenderbufferInfo::Ref>
@@ -65,13 +65,13 @@ class FramebufferManager {
   FramebufferManager() { }
 
   // Creates a FramebufferInfo for the given framebuffer.
-  void CreateFramebufferInfo(GLuint framebuffer_id);
+  void CreateFramebufferInfo(GLuint client_id, GLuint service_id);
 
   // Gets the framebuffer info for the given framebuffer.
-  FramebufferInfo* GetFramebufferInfo(GLuint framebuffer_id);
+  FramebufferInfo* GetFramebufferInfo(GLuint client_id);
 
   // Removes a framebuffer info for the given framebuffer.
-  void RemoveFramebufferInfo(GLuint framebuffer_id);
+  void RemoveFramebufferInfo(GLuint client_id);
 
  private:
   // Info for each framebuffer in the system.

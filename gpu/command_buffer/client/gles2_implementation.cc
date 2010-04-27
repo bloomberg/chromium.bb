@@ -350,8 +350,8 @@ GLES2Implementation::GLES2Implementation(
 #if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
   GLint max_vertex_attribs;
   GetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attribs);
-  id_allocator_.MarkAsUsed(kClientSideArrayId);
-  id_allocator_.MarkAsUsed(kClientSideElementArrayId);
+  buffer_id_allocator_.MarkAsUsed(kClientSideArrayId);
+  buffer_id_allocator_.MarkAsUsed(kClientSideElementArrayId);
 
   reserved_ids_[0] = kClientSideArrayId;
   reserved_ids_[1] = kClientSideElementArrayId;
@@ -369,15 +369,17 @@ GLES2Implementation::~GLES2Implementation() {
   transfer_buffer_.Free(result_buffer_);
 }
 
-void GLES2Implementation::MakeIds(GLsizei n, GLuint* ids) {
+void GLES2Implementation::MakeIds(
+    IdAllocator* id_allocator, GLsizei n, GLuint* ids) {
   for (GLsizei ii = 0; ii < n; ++ii) {
-    ids[ii] = id_allocator_.AllocateID();
+    ids[ii] = id_allocator->AllocateID();
   }
 }
 
-void GLES2Implementation::FreeIds(GLsizei n, const GLuint* ids) {
+void GLES2Implementation::FreeIds(
+    IdAllocator* id_allocator, GLsizei n, const GLuint* ids) {
   for (GLsizei ii = 0; ii < n; ++ii) {
-    id_allocator_.FreeID(ids[ii]);
+    id_allocator->FreeID(ids[ii]);
   }
 }
 
@@ -1180,7 +1182,7 @@ void GLES2Implementation::ReadPixels(
 }
 
 #if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
-bool GLES2Implementation::IsReservedId(GLuint id) {
+bool GLES2Implementation::IsBufferReservedId(GLuint id) {
   for (size_t ii = 0; ii < arraysize(reserved_ids_); ++ii) {
     if (id == reserved_ids_[ii]) {
       return true;
@@ -1189,7 +1191,7 @@ bool GLES2Implementation::IsReservedId(GLuint id) {
   return false;
 }
 #else
-bool GLES2Implementation::IsReservedId(GLuint) {  // NOLINT
+bool GLES2Implementation::IsBufferReservedId(GLuint) {  // NOLINT
   return false;
 }
 #endif
@@ -1197,12 +1199,12 @@ bool GLES2Implementation::IsReservedId(GLuint) {  // NOLINT
 #if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
 
 void GLES2Implementation::BindBuffer(GLenum target, GLuint buffer) {
-  if (IsReservedId(buffer)) {
+  if (IsBufferReservedId(buffer)) {
     SetGLError(GL_INVALID_OPERATION);
     return;
   }
   if (buffer != 0) {
-    id_allocator_.MarkAsUsed(buffer);
+    buffer_id_allocator_.MarkAsUsed(buffer);
   }
   switch (target) {
     case GL_ARRAY_BUFFER:
@@ -1218,7 +1220,7 @@ void GLES2Implementation::BindBuffer(GLenum target, GLuint buffer) {
 }
 
 void GLES2Implementation::DeleteBuffers(GLsizei n, const GLuint* buffers) {
-  FreeIds(n, buffers);
+  FreeIds(&buffer_id_allocator_, n, buffers);
   for (GLsizei ii = 0; ii < n; ++ii) {
     if (buffers[ii] == bound_array_buffer_id_) {
       bound_array_buffer_id_ = 0;

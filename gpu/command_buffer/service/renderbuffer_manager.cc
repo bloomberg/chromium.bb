@@ -10,26 +10,27 @@
 namespace gpu {
 namespace gles2 {
 
-void RenderbufferManager::CreateRenderbufferInfo(GLuint renderbuffer_id) {
+void RenderbufferManager::CreateRenderbufferInfo(
+    GLuint client_id, GLuint service_id) {
   std::pair<RenderbufferInfoMap::iterator, bool> result =
       renderbuffer_infos_.insert(
           std::make_pair(
-              renderbuffer_id,
-              RenderbufferInfo::Ref(new RenderbufferInfo(renderbuffer_id))));
+              client_id,
+              RenderbufferInfo::Ref(new RenderbufferInfo(service_id))));
   DCHECK(result.second);
 }
 
 RenderbufferManager::RenderbufferInfo* RenderbufferManager::GetRenderbufferInfo(
-    GLuint renderbuffer_id) {
-  RenderbufferInfoMap::iterator it = renderbuffer_infos_.find(renderbuffer_id);
+    GLuint client_id) {
+  RenderbufferInfoMap::iterator it = renderbuffer_infos_.find(client_id);
   return it != renderbuffer_infos_.end() ? it->second : NULL;
 }
 
-void RenderbufferManager::RemoveRenderbufferInfo(GLuint renderbuffer_id) {
-  RenderbufferInfoMap::iterator it = renderbuffer_infos_.find(renderbuffer_id);
+void RenderbufferManager::RemoveRenderbufferInfo(GLuint client_id) {
+  RenderbufferInfoMap::iterator it = renderbuffer_infos_.find(client_id);
   if (it != renderbuffer_infos_.end()) {
     it->second->MarkAsDeleted();
-    renderbuffer_infos_.erase(renderbuffer_id);
+    renderbuffer_infos_.erase(it);
   }
 }
 

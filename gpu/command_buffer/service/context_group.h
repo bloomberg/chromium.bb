@@ -16,7 +16,6 @@ class GLES2Decoder;
 class BufferManager;
 class FramebufferManager;
 class RenderbufferManager;
-class IdManager;
 class ProgramManager;
 class ShaderManager;
 class TextureManager;
@@ -37,11 +36,6 @@ class ContextGroup {
 
   uint32 max_texture_units() const {
     return max_texture_units_;
-  }
-
-  // Map of client ids to GL ids.
-  IdManager* id_manager() const {
-    return id_manager_.get();
   }
 
   BufferManager* buffer_manager() const {
@@ -75,9 +69,6 @@ class ContextGroup {
   uint32 max_vertex_attribs_;
 
   uint32 max_texture_units_;
-
-  // Map of client ids to GL ids.
-  scoped_ptr<IdManager> id_manager_;
 
   scoped_ptr<BufferManager> buffer_manager_;
 

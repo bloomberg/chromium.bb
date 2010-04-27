@@ -28,12 +28,16 @@ class ShaderManager {
    public:
     typedef scoped_refptr<ShaderInfo> Ref;
 
-    explicit ShaderInfo(GLuint shader_id)
-        : shader_id_(shader_id) {
+    explicit ShaderInfo(GLuint service_id)
+        : service_id_(service_id) {
     }
 
     void Update(const std::string& source) {
       source_ = source;
+    }
+
+    GLuint service_id() const {
+      return service_id_;
     }
 
     const std::string& source() {
@@ -41,7 +45,7 @@ class ShaderManager {
     }
 
     bool IsDeleted() {
-      return shader_id_ == 0;
+      return service_id_ == 0;
     }
 
    private:
@@ -50,11 +54,11 @@ class ShaderManager {
     ~ShaderInfo() { }
 
     void MarkAsDeleted() {
-      shader_id_ = 0;
+      service_id_ = 0;
     }
 
     // The shader this ShaderInfo is tracking.
-    GLuint shader_id_;
+    GLuint service_id_;
 
     // The shader source as passed to glShaderSource.
     std::string source_;
@@ -64,14 +68,17 @@ class ShaderManager {
   }
 
   // Creates a shader info for the given shader ID.
-  void CreateShaderInfo(GLuint shader_id);
+  void CreateShaderInfo(GLuint client_id, GLuint service_id);
 
   // Gets an existing shader info for the given shader ID. Returns NULL if none
   // exists.
-  ShaderInfo* GetShaderInfo(GLuint shader_id);
+  ShaderInfo* GetShaderInfo(GLuint client_id);
 
   // Deletes the shader info for the given shader.
-  void RemoveShaderInfo(GLuint shader_id);
+  void RemoveShaderInfo(GLuint client_id);
+
+  // Gets a client id for a given service id.
+  bool GetClientId(GLuint service_id, GLuint* client_id) const;
 
  private:
   // Info for each shader by service side shader Id.

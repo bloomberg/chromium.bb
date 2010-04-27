@@ -38,20 +38,22 @@ const GLint TextureManagerTest::kMaxCubeMapLevels;
 #endif
 
 TEST_F(TextureManagerTest, Basic) {
-  const GLuint kTexture1Id = 1;
-  const GLuint kTexture2Id = 2;
+  const GLuint kClient1Id = 1;
+  const GLuint kService1Id = 11;
+  const GLuint kClient2Id = 2;
   // Check we can create texture.
-  manager_.CreateTextureInfo(kTexture1Id);
+  manager_.CreateTextureInfo(kClient1Id, kService1Id);
   // Check texture got created.
-  TextureManager::TextureInfo* info1 = manager_.GetTextureInfo(kTexture1Id);
+  TextureManager::TextureInfo* info1 = manager_.GetTextureInfo(kClient1Id);
   ASSERT_TRUE(info1 != NULL);
+  EXPECT_EQ(kService1Id, info1->service_id());
   // Check we get nothing for a non-existent texture.
-  EXPECT_TRUE(manager_.GetTextureInfo(kTexture2Id) == NULL);
+  EXPECT_TRUE(manager_.GetTextureInfo(kClient2Id) == NULL);
   // Check trying to a remove non-existent textures does not crash.
-  manager_.RemoveTextureInfo(kTexture2Id);
+  manager_.RemoveTextureInfo(kClient2Id);
   // Check we can't get the texture after we remove it.
-  manager_.RemoveTextureInfo(kTexture1Id);
-  EXPECT_TRUE(manager_.GetTextureInfo(kTexture1Id) == NULL);
+  manager_.RemoveTextureInfo(kClient1Id);
+  EXPECT_TRUE(manager_.GetTextureInfo(kClient1Id) == NULL);
 }
 
 TEST_F(TextureManagerTest, MaxValues) {
@@ -114,7 +116,8 @@ class TextureInfoTest : public testing::Test {
   static const GLint kMaxCubeMapTextureSize = 8;
   static const GLint kMax2dLevels = 5;
   static const GLint kMaxCubeMapLevels = 4;
-  static const GLuint kTexture1Id = 1;
+  static const GLuint kClient1Id = 1;
+  static const GLuint kService1Id = 11;
 
   TextureInfoTest()
       : manager_(kMaxTextureSize, kMaxCubeMapTextureSize) {
@@ -122,8 +125,8 @@ class TextureInfoTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    manager_.CreateTextureInfo(kTexture1Id);
-    info_ = manager_.GetTextureInfo(kTexture1Id);
+    manager_.CreateTextureInfo(kClient1Id, kService1Id);
+    info_ = manager_.GetTextureInfo(kClient1Id);
     ASSERT_TRUE(info_ != NULL);
   }
 
@@ -295,7 +298,7 @@ TEST_F(TextureInfoTest, GetLevelSize) {
   EXPECT_TRUE(info_->GetLevelSize(GL_TEXTURE_2D, 1, &width, &height));
   EXPECT_EQ(4, width);
   EXPECT_EQ(5, height);
-  manager_.RemoveTextureInfo(info_->texture_id());
+  manager_.RemoveTextureInfo(kClient1Id);
   EXPECT_FALSE(info_->GetLevelSize(GL_TEXTURE_2D, 1, &width, &height));
 }
 

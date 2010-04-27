@@ -67,9 +67,6 @@ class GLES2Decoder : public CommonDecoder {
   // Make this decoder's GL context current.
   virtual bool MakeCurrent() = 0;
 
-  // Gets a service id by client id.
-  virtual uint32 GetServiceIdForTesting(uint32 client_id) = 0;
-
   // Gets the GLES2 Util which holds info.
   virtual GLES2Util* GetGLES2Util() = 0;
 

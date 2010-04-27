@@ -24,26 +24,27 @@ class RenderbufferManagerTest : public testing::Test {
 };
 
 TEST_F(RenderbufferManagerTest, Basic) {
-  const GLuint kRenderbuffer1Id = 1;
-  const GLuint kRenderbuffer2Id = 2;
+  const GLuint kClient1Id = 1;
+  const GLuint kService1Id = 11;
+  const GLuint kClient2Id = 2;
   // Check we can create renderbuffer.
-  manager_.CreateRenderbufferInfo(kRenderbuffer1Id);
+  manager_.CreateRenderbufferInfo(kClient1Id, kService1Id);
   // Check renderbuffer got created.
   RenderbufferManager::RenderbufferInfo* info1 =
-      manager_.GetRenderbufferInfo(kRenderbuffer1Id);
+      manager_.GetRenderbufferInfo(kClient1Id);
   ASSERT_TRUE(info1 != NULL);
   EXPECT_FALSE(info1->cleared());
   info1->set_cleared();
   EXPECT_TRUE(info1->cleared());
   EXPECT_FALSE(info1->IsDeleted());
-  EXPECT_EQ(kRenderbuffer1Id, info1->renderbuffer_id());
+  EXPECT_EQ(kService1Id, info1->service_id());
   // Check we get nothing for a non-existent renderbuffer.
-  EXPECT_TRUE(manager_.GetRenderbufferInfo(kRenderbuffer2Id) == NULL);
+  EXPECT_TRUE(manager_.GetRenderbufferInfo(kClient2Id) == NULL);
   // Check trying to a remove non-existent renderbuffers does not crash.
-  manager_.RemoveRenderbufferInfo(kRenderbuffer2Id);
+  manager_.RemoveRenderbufferInfo(kClient2Id);
   // Check we can't get the renderbuffer after we remove it.
-  manager_.RemoveRenderbufferInfo(kRenderbuffer1Id);
-  EXPECT_TRUE(manager_.GetRenderbufferInfo(kRenderbuffer1Id) == NULL);
+  manager_.RemoveRenderbufferInfo(kClient1Id);
+  EXPECT_TRUE(manager_.GetRenderbufferInfo(kClient1Id) == NULL);
 }
 
 }  // namespace gles2

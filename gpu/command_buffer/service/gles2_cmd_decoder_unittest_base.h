@@ -125,10 +125,6 @@ class GLES2DecoderTestBase : public testing::Test {
     return reinterpret_cast<T>(ptr);
   }
 
-  uint32 GetServiceId(uint32 client_id) {
-    return decoder_->GetServiceIdForTesting(client_id);
-  }
-
   BufferManager::BufferInfo* GetBufferInfo(GLuint service_id) {
     return group_.buffer_manager()->GetBufferInfo(service_id);
   }
