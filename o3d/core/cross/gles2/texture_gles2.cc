@@ -319,6 +319,7 @@ Texture2DGLES2* Texture2DGLES2::Create(ServiceLocator* service_locator,
                                        bool enable_render_surfaces) {
   DLOG(INFO) << "Texture2DGLES2 Create";
   DCHECK_NE(format, Texture::UNKNOWN_FORMAT);
+  DCHECK_GE(levels, 0);
   RendererGLES2 *renderer = static_cast<RendererGLES2 *>(
       service_locator->GetService<Renderer>());
   renderer->MakeCurrentLazy();
