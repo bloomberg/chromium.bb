@@ -39,6 +39,13 @@ PrintingContext::Result PrintingContext::AskUserForSettings(
   // adding a new custom view to the panel on 10.5; 10.6 has
   // NSPrintPanelShowsPrintSelection).
   NSPrintPanel* panel = [NSPrintPanel printPanel];
+
+  NSPrintPanelOptions options = [panel options];
+  options |= NSPrintPanelShowsPaperSize;
+  options |= NSPrintPanelShowsOrientation;
+  options |= NSPrintPanelShowsScaling;
+  [panel setOptions:options];
+
   // TODO(stuartmorgan): We really want a tab sheet here, not a modal window.
   // Will require restructuring the PrintingContext API to use a callback.
   NSInteger selection =
