@@ -89,7 +89,7 @@ function makeLoadLogTable_(node, entries) {
     // TODO(eroman): Do type-specific formatting.
     if (entry.orig.extra_parameters != undefined) {
        addNode(mainCell, 'br');
-      addTextNode(mainCell, 'params: ' + entry.orig.extra_parameters);
+      addTextNode(mainCell, JSON.stringify(entry.orig.extra_parameters));
     }
   }
 }

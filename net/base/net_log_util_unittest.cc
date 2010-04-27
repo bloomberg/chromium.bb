@@ -20,14 +20,6 @@ CapturingNetLog::Entry MakeEventEntry(int t,
                                 NULL);
 }
 
-CapturingNetLog::Entry MakeStringEntry(int t, const std::string& string) {
-  return CapturingNetLog::Entry(NetLog::TYPE_TODO_STRING,
-                                MakeTime(t),
-                                NetLog::Source(),
-                                NetLog::PHASE_NONE,
-                                new NetLogStringParameter(string));
-}
-
 TEST(NetLogUtilTest, Basic) {
   CapturingNetLog::EntryList log;
 
@@ -60,19 +52,24 @@ TEST(NetLogUtilTest, Basic2) {
   log.push_back(MakeEventEntry(1, NetLog::TYPE_HOST_RESOLVER_IMPL,
                                NetLog::PHASE_BEGIN));
 
-  log.push_back(MakeStringEntry(12, "Sup foo"));
-  log.push_back(MakeStringEntry(14, "Multiline\nString"));
+  // Attach a string parameter to a CANCELLED event.
+  CapturingNetLog::Entry e =
+      MakeEventEntry(12, NetLog::TYPE_CANCELLED, NetLog::PHASE_NONE);
+  e.extra_parameters =
+      new NetLogStringParameter("string_name", "string_value");
+  log.push_back(e);
 
   log.push_back(MakeEventEntry(131, NetLog::TYPE_HOST_RESOLVER_IMPL,
                                NetLog::PHASE_END));
 
   EXPECT_EQ(
-    "t=  1: +HOST_RESOLVER_IMPL   [dt=130]\n"
-    "t= 12:    \"Sup foo\"\n"
-    "t= 14:    \"Multiline\n"
-    "String\"\n"
-    "t=131: -HOST_RESOLVER_IMPL",
-    NetLogUtil::PrettyPrintAsEventTree(log, 0));
+      "t=  1: +HOST_RESOLVER_IMPL   [dt=130]\n"
+      "t= 12:    CANCELLED\n"
+      "{\n"
+      "   \"string_name\": \"string_value\"\n"
+      "}\n"
+      "t=131: -HOST_RESOLVER_IMPL",
+      NetLogUtil::PrettyPrintAsEventTree(log, 0));
 }
 
 TEST(NetLogUtilTest, UnmatchedOpen) {

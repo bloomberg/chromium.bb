@@ -320,7 +320,7 @@ void PassiveLogCollector::ConnectJobTracker::AppendLogEntries(
   RequestInfo* connect_info = GetRequestInfo(connect_id);
   if (!connect_info) {
     net::NetLogStringParameter* text = new net::NetLogStringParameter(
-        StringPrintf("Used ConnectJob id=%u", connect_id));
+        "todo", StringPrintf("Used ConnectJob id=%u", connect_id));
     Entry new_entry(0, net::NetLog::TYPE_TODO_STRING, base::TimeTicks(),
                     net::NetLog::Source(net::NetLog::SOURCE_CONNECT_JOB,
                                         connect_id),
@@ -383,7 +383,7 @@ void PassiveLogCollector::SocketTracker::AppendLogEntries(
   RequestInfo* socket_info = GetRequestInfo(socket_id);
   if (!socket_info) {
     net::NetLogStringParameter* text = new net::NetLogStringParameter(
-        StringPrintf("Used Socket id=%u.", socket_id));
+        "todo", StringPrintf("Used Socket id=%u.", socket_id));
     Entry new_entry(0, net::NetLog::TYPE_TODO_STRING, base::TimeTicks(),
                     net::NetLog::Source(net::NetLog::SOURCE_SOCKET, socket_id),
                     net::NetLog::PHASE_NONE, text);
@@ -397,6 +397,7 @@ void PassiveLogCollector::SocketTracker::AppendLogEntries(
   // Synthesize a log entry for bytes sent and received.
   if (socket_info->bytes_transmitted > 0 || socket_info->bytes_received > 0) {
     net::NetLogStringParameter* text = new net::NetLogStringParameter(
+        "stats",
         StringPrintf("Tx/Rx: %"PRIu64"/%"PRIu64" [%"PRIu64"/%"PRIu64
                      " total on socket] (Bytes)",
                      socket_info->bytes_transmitted,

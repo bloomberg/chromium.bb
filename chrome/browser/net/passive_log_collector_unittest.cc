@@ -25,7 +25,7 @@ PassiveLogCollector::Entry MakeStartLogEntryWithURL(int source_id,
       base::TimeTicks(),
       NetLog::Source(kSourceType, source_id),
       NetLog::PHASE_BEGIN,
-      new net::NetLogStringParameter(url));
+      new net::NetLogStringParameter("url", url));
 }
 
 PassiveLogCollector::Entry MakeStartLogEntry(int source_id) {
@@ -50,13 +50,18 @@ void AddStartURLRequestEntries(PassiveLogCollector* collector, uint32 id) {
   collector->OnAddEntry(NetLog::TYPE_URL_REQUEST_START, base::TimeTicks(),
                         NetLog::Source(NetLog::SOURCE_URL_REQUEST, id),
                         NetLog::PHASE_BEGIN, new net::NetLogStringParameter(
-                            StringPrintf("http://req%d", id)));
+                            "url", StringPrintf("http://req%d", id)));
 }
 
 void AddEndURLRequestEntries(PassiveLogCollector* collector, uint32 id) {
   collector->OnAddEntry(NetLog::TYPE_REQUEST_ALIVE, base::TimeTicks(),
                         NetLog::Source(NetLog::SOURCE_URL_REQUEST, id),
                         NetLog::PHASE_END, NULL);
+}
+
+std::string GetStringParam(const PassiveLogCollector::Entry& entry) {
+  return static_cast<net::NetLogStringParameter*>(
+      entry.extra_parameters.get())->value();
 }
 
 static const int kMaxNumLoadLogEntries = 1;
@@ -231,14 +236,14 @@ TEST(PassiveLogCollectorTest, BasicConnectJobAssociation) {
 
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter(11));
+                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter("x", 11));
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 11),
                  NetLog::PHASE_BEGIN, NULL);
 
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 20),
-                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter(21));
+                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter("x", 21));
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 21),
                  NetLog::PHASE_BEGIN, NULL);
@@ -275,7 +280,7 @@ TEST(PassiveLogCollectorTest, BasicSocketAssociation) {
 
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter(11));
+                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter("x", 11));
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 11),
                  NetLog::PHASE_BEGIN, NULL);
@@ -285,7 +290,7 @@ TEST(PassiveLogCollectorTest, BasicSocketAssociation) {
 
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 20),
-                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter(21));
+                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter("x", 21));
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 21),
                  NetLog::PHASE_BEGIN, NULL);
@@ -304,10 +309,10 @@ TEST(PassiveLogCollectorTest, BasicSocketAssociation) {
 
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(11));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 11));
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 20),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(21));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 21));
 
   requests = log.url_request_tracker()->GetLiveRequests();
   EXPECT_EQ(2u, requests.size());
@@ -317,10 +322,10 @@ TEST(PassiveLogCollectorTest, BasicSocketAssociation) {
 
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(15));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 15));
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 20),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(25));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 25));
 
   log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_SOCKET, 15),
@@ -377,10 +382,10 @@ TEST(PassiveLogCollectorTest, IdleSocketAssociation) {
 
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(15));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 15));
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 20),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(25));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 25));
 
   log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_SOCKET, 15),
@@ -428,7 +433,7 @@ TEST(PassiveLogCollectorTest, IdleAssociateAfterConnectJobStarted) {
 
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter(11));
+                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter("x", 11));
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 11),
                  NetLog::PHASE_BEGIN, NULL);
@@ -438,7 +443,7 @@ TEST(PassiveLogCollectorTest, IdleAssociateAfterConnectJobStarted) {
 
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 20),
-                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter(21));
+                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter("x", 21));
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 21),
                  NetLog::PHASE_BEGIN, NULL);
@@ -457,10 +462,10 @@ TEST(PassiveLogCollectorTest, IdleAssociateAfterConnectJobStarted) {
 
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(15));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 15));
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 20),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(25));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 25));
 
   log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_SOCKET, 15),
@@ -508,7 +513,7 @@ TEST(PassiveLogCollectorTest, LateBindDifferentConnectJob) {
 
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter(11));
+                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter("x", 11));
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 11),
                  NetLog::PHASE_BEGIN, NULL);
@@ -518,7 +523,7 @@ TEST(PassiveLogCollectorTest, LateBindDifferentConnectJob) {
 
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 20),
-                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter(21));
+                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter("x", 21));
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 21),
                  NetLog::PHASE_BEGIN, NULL);
@@ -550,10 +555,10 @@ TEST(PassiveLogCollectorTest, LateBindDifferentConnectJob) {
 
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(21));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 21));
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 20),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(31));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 31));
 
   requests = log.url_request_tracker()->GetLiveRequests();
   EXPECT_EQ(2u, requests.size());
@@ -563,10 +568,10 @@ TEST(PassiveLogCollectorTest, LateBindDifferentConnectJob) {
 
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(15));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 15));
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 20),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(25));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 25));
 
   log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_SOCKET, 15),
@@ -637,10 +642,10 @@ TEST(PassiveLogCollectorTest, LateBindPendingConnectJob) {
 
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(11));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 11));
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 20),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(21));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 21));
 
   requests = log.url_request_tracker()->GetLiveRequests();
   EXPECT_EQ(2u, requests.size());
@@ -650,10 +655,10 @@ TEST(PassiveLogCollectorTest, LateBindPendingConnectJob) {
 
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(15));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 15));
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 20),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(25));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 25));
 
   log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_SOCKET, 15),
@@ -701,7 +706,7 @@ TEST(PassiveLogCollectorTest, ReconnectToIdleSocket) {
   // Initial socket.
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(15));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 15));
   log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_SOCKET, 15),
                  NetLog::PHASE_NONE, NULL);
@@ -713,7 +718,7 @@ TEST(PassiveLogCollectorTest, ReconnectToIdleSocket) {
   // Reconnect.
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(17));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 17));
   log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_SOCKET, 17),
                  NetLog::PHASE_NONE, NULL);
@@ -747,7 +752,7 @@ TEST(PassiveLogCollectorTest, ReconnectToLateBoundSocket) {
   // Initial socket.
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(15));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 15));
   log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_SOCKET, 15),
                  NetLog::PHASE_NONE, NULL);
@@ -759,7 +764,7 @@ TEST(PassiveLogCollectorTest, ReconnectToLateBoundSocket) {
   // Now reconnect.
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter(11));
+                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter("x", 11));
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 11),
                  NetLog::PHASE_BEGIN, NULL);
@@ -771,7 +776,7 @@ TEST(PassiveLogCollectorTest, ReconnectToLateBoundSocket) {
   // But we get late bound to an idle socket.
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(17));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 17));
   log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_SOCKET, 17),
                  NetLog::PHASE_NONE, NULL);
@@ -805,7 +810,7 @@ TEST(PassiveLogCollectorTest, ReconnectToLateBoundConnectJob) {
   // Initial socket.
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(15));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 15));
   log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_SOCKET, 15),
                  NetLog::PHASE_NONE, NULL);
@@ -817,7 +822,7 @@ TEST(PassiveLogCollectorTest, ReconnectToLateBoundConnectJob) {
   // Now reconnect.
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter(11));
+                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter("x", 11));
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 11),
                  NetLog::PHASE_BEGIN, NULL);
@@ -835,7 +840,7 @@ TEST(PassiveLogCollectorTest, ReconnectToLateBoundConnectJob) {
                  NetLog::PHASE_END, NULL);
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(12));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 12));
 
   requests = log.url_request_tracker()->GetLiveRequests();
   EXPECT_EQ(1u, requests.size());
@@ -843,7 +848,7 @@ TEST(PassiveLogCollectorTest, ReconnectToLateBoundConnectJob) {
 
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(17));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 17));
   log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_SOCKET, 17),
                  NetLog::PHASE_NONE, NULL);
@@ -876,7 +881,7 @@ TEST(PassiveLogCollectorTest, LostConnectJob) {
 
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter(11));
+                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter("x", 11));
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 11),
                  NetLog::PHASE_BEGIN, NULL);
@@ -895,7 +900,7 @@ TEST(PassiveLogCollectorTest, LostConnectJob) {
 
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(11));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 11));
 
   requests = log.url_request_tracker()->GetLiveRequests();
   EXPECT_EQ(1u, requests.size());
@@ -912,7 +917,7 @@ TEST(PassiveLogCollectorTest, LostSocket) {
 
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(15));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 15));
   log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_SOCKET, 15),
                  NetLog::PHASE_BEGIN, NULL);
@@ -947,7 +952,7 @@ TEST(PassiveLogCollectorTest, AccumulateRxTxData) {
 
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(15));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 15));
   log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_SOCKET, 15),
                  NetLog::PHASE_NONE, NULL);
@@ -958,23 +963,23 @@ TEST(PassiveLogCollectorTest, AccumulateRxTxData) {
 
   log.OnAddEntry(NetLog::TYPE_SOCKET_BYTES_SENT , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(1));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 1));
   requests = log.url_request_tracker()->GetLiveRequests();
   EXPECT_EQ(1u, requests.size());
   EXPECT_EQ(5u, requests[0].entries.size());
   EXPECT_EQ(NetLog::TYPE_TODO_STRING, requests[0].entries[4].type);
   EXPECT_EQ("Tx/Rx: 1/0 [1/0 total on socket] (Bytes)",
-            requests[0].entries[4].extra_parameters->ToString());
+            GetStringParam(requests[0].entries[4]));
 
   log.OnAddEntry(NetLog::TYPE_SOCKET_BYTES_RECEIVED , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(2));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 2));
   requests = log.url_request_tracker()->GetLiveRequests();
   EXPECT_EQ(1u, requests.size());
   EXPECT_EQ(5u, requests[0].entries.size());
   EXPECT_EQ(NetLog::TYPE_TODO_STRING, requests[0].entries[4].type);
   EXPECT_EQ("Tx/Rx: 1/2 [1/2 total on socket] (Bytes)",
-            requests[0].entries[4].extra_parameters->ToString());
+            GetStringParam(requests[0].entries[4]));
 
   AddEndURLRequestEntries(&log, 10);
   requests = log.url_request_tracker()->GetLiveRequests();
@@ -984,13 +989,13 @@ TEST(PassiveLogCollectorTest, AccumulateRxTxData) {
   EXPECT_EQ(6u, requests[0].entries.size());
   EXPECT_EQ(NetLog::TYPE_TODO_STRING, requests[0].entries[4].type);
   EXPECT_EQ("Tx/Rx: 1/2 [1/2 total on socket] (Bytes)",
-            requests[0].entries[4].extra_parameters->ToString());
+            GetStringParam(requests[0].entries[4]));
 
   AddStartURLRequestEntries(&log, 20);
 
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_URL_REQUEST, 20),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(15));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 15));
   log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_SOCKET, 15),
                  NetLog::PHASE_NONE, NULL);
@@ -1001,16 +1006,16 @@ TEST(PassiveLogCollectorTest, AccumulateRxTxData) {
 
   log.OnAddEntry(NetLog::TYPE_SOCKET_BYTES_SENT , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(4));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 4));
   log.OnAddEntry(NetLog::TYPE_SOCKET_BYTES_RECEIVED , base::TimeTicks(),
                  NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter(8));
+                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 8));
   requests = log.url_request_tracker()->GetLiveRequests();
   EXPECT_EQ(1u, requests.size());
   EXPECT_EQ(5u, requests[0].entries.size());
   EXPECT_EQ(NetLog::TYPE_TODO_STRING, requests[0].entries[4].type);
   EXPECT_EQ("Tx/Rx: 4/8 [5/10 total on socket] (Bytes)",
-            requests[0].entries[4].extra_parameters->ToString());
+            GetStringParam(requests[0].entries[4]));
 
   AddEndURLRequestEntries(&log, 20);
   requests = log.url_request_tracker()->GetLiveRequests();

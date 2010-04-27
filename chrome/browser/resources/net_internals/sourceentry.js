@@ -155,7 +155,7 @@ SourceEntry.prototype.getDescription = function() {
   var e = this.getStartEntry_();
   if (!e || e.extra_parameters == undefined)
     return '';
-  return e.extra_parameters;  // The URL / hostname / whatever.
+  return JSON.stringify(e.extra_parameters);  // The URL / hostname / whatever.
 };
 
 /**

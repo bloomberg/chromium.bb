@@ -78,7 +78,7 @@ Value* EntryToDictionaryValue(net::NetLog::EventType type,
 
   // Set the event-specific parameters.
   if (extra_parameters)
-    entry_dict->SetString(L"extra_parameters", extra_parameters->ToString());
+    entry_dict->Set(L"extra_parameters", extra_parameters->ToValue());
 
   return entry_dict;
 }

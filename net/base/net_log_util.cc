@@ -5,7 +5,9 @@
 #include "net/base/net_log_util.h"
 
 #include "base/format_macros.h"
+#include "base/json/json_writer.h"
 #include "base/string_util.h"
+#include "base/values.h"
 #include "net/base/net_errors.h"
 
 namespace net {
@@ -49,15 +51,6 @@ class FormatHelper {
       int indentation_spaces = entries_[i].indentation * kSpacesPerIndentation;
       std::string entry_str = GetEntryString(i);
 
-      // Hack to better print known event types.
-      if (entries_[i].log_entry->type == NetLog::TYPE_TODO_STRING ||
-          entries_[i].log_entry->type == NetLog::TYPE_TODO_STRING_LITERAL) {
-        // Don't display the TODO_STRING type.
-        entry_str = StringPrintf(
-            " \"%s\"",
-            entries_[i].log_entry->extra_parameters->ToString().c_str());
-      }
-
       StringAppendF(&result, "t=%s: %s%s",
                     PadStringLeft(GetTimeString(i), max_time_width).c_str(),
                     PadStringLeft("", indentation_spaces).c_str(),
@@ -75,45 +68,19 @@ class FormatHelper {
       // Append any custom parameters.
       NetLog::EventParameters* extra_params =
           entries_[i].log_entry->extra_parameters;
-      NetLog::EventType type = entries_[i].log_entry->type;
-      NetLog::EventPhase phase = entries_[i].log_entry->phase;
 
-      if (type != NetLog::TYPE_TODO_STRING &&
-          type != NetLog::TYPE_TODO_STRING_LITERAL &&
-          extra_params) {
+      if (extra_params) {
         std::string extra_details;
-
-        // Hacks to better print known event types.
-        if (type == NetLog::TYPE_URL_REQUEST_START ||
-            type == NetLog::TYPE_SOCKET_STREAM_CONNECT) {
-          if (phase == NetLog::PHASE_BEGIN) {
-            extra_details =
-                StringPrintf("url: %s", extra_params->ToString().c_str());
-          } else if (phase == NetLog::PHASE_END) {
-            int error_code = static_cast<NetLogIntegerParameter*>(
-                extra_params)->value();
-            extra_details = StringPrintf("net error: %d (%s)",
-                                         error_code,
-                                         ErrorToString(error_code));
-          }
-        } else if (type == NetLog::TYPE_SOCKET_POOL_CONNECT_JOB) {
-          extra_details =
-              StringPrintf("group: %s", extra_params->ToString().c_str());
-        } else {
-          extra_details = extra_params->ToString();
-        }
-
-        int indentation = max_time_width + indentation_spaces +
-                          kSpacesPerIndentation + 5;
-
-        StringAppendF(
-            &result,
-            "\n%s%s",
-            PadStringLeft("", indentation).c_str(),
-            extra_details.c_str());
+        scoped_ptr<Value> extra_details_value(extra_params->ToValue());
+        base::JSONWriter::Write(extra_details_value.get(), true,
+                                &extra_details);
+        // JSON writer uses CR LF in its pretty-printer. Normalize to newlines.
+        ReplaceSubstringsAfterOffset(&extra_details, 0, "\r\n", "\n");
+        result.append("\n");
+        result.append(extra_details);
       }
 
-      if (i + 1 != entries_.size())
+      if (!extra_params && i + 1 != entries_.size())
         result += "\n";
     }
 

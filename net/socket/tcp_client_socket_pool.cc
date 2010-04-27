@@ -200,9 +200,13 @@ int TCPClientSocketPool::RequestSocket(
       static_cast<const TCPSocketParams*>(params);
 
   if (net_log.HasListener()) {
-    net_log.AddString(StringPrintf("Requested TCP socket to: %s [port %d]",
-                      casted_params->destination().hostname().c_str(),
-                      casted_params->destination().port()));
+    // TODO(eroman): Split out the host and port parameters.
+    net_log.AddEventWithString(
+        NetLog::TYPE_TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKET,
+        "host_and_port",
+        StringPrintf("%s [port %d]",
+                     casted_params->destination().hostname().c_str(),
+                     casted_params->destination().port()));
   }
 
   return base_.RequestSocket(group_name, *casted_params, priority, handle,
