@@ -49,6 +49,9 @@ PGLBoolean pglMakeCurrent(PGLContext pgl_context);
 // Get the calling thread's current PGL context.
 PGLContext pglGetCurrentContext(void);
 
+// Gets the address of a function.
+void (*pglGetProcAddress(char const * procname))();
+
 // Display everything that has been rendered since the last call.
 PGLBoolean pglSwapBuffers(void);
 

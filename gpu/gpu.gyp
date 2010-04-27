@@ -410,6 +410,7 @@
       'sources': [
         'pgl/command_buffer_pepper.cc',
         'pgl/command_buffer_pepper.h',
+        'pgl/pgl_proc_address.cc',
         'pgl/pgl.cc',
         'pgl/pgl.h',
       ],
