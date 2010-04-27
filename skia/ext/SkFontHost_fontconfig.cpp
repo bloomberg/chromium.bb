@@ -117,6 +117,7 @@ public:
 // static
 SkTypeface* SkFontHost::CreateTypeface(const SkTypeface* familyFace,
                                        const char familyName[],
+                                       const void* data, size_t bytelength,
                                        SkTypeface::Style style)
 {
     std::string resolved_family_name;
@@ -127,7 +128,7 @@ SkTypeface* SkFontHost::CreateTypeface(const SkTypeface* familyFace,
         const unsigned fileid = UniqueIdToFileId(familyFace->uniqueID());
         if (!GetFcImpl()->Match(
           &resolved_family_name, NULL, true /* fileid valid */, fileid, "",
-          NULL, NULL)) {
+          NULL, 0, NULL, NULL)) {
             return NULL;
         }
     } else if (familyName) {
@@ -138,7 +139,8 @@ SkTypeface* SkFontHost::CreateTypeface(const SkTypeface* familyFace,
     bool italic = style & SkTypeface::kItalic;
     unsigned fileid;
     if (!GetFcImpl()->Match(NULL, &fileid, false, -1, /* no fileid */
-                               resolved_family_name, &bold, &italic)) {
+                            resolved_family_name, data, bytelength,
+                            &bold, &italic)) {
         return NULL;
     }
     const SkTypeface::Style resulting_style = static_cast<SkTypeface::Style>(

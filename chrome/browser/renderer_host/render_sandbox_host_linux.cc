@@ -152,8 +152,6 @@ class SandboxIPCProcess  {
                               std::vector<int>& fds) {
     bool fileid_valid;
     uint32_t fileid;
-    bool is_bold, is_italic;
-    std::string family;
 
     if (!pickle.ReadBool(&iter, &fileid_valid))
       return;
@@ -161,18 +159,33 @@ class SandboxIPCProcess  {
       if (!pickle.ReadUInt32(&iter, &fileid))
         return;
     }
+    bool is_bold, is_italic;
     if (!pickle.ReadBool(&iter, &is_bold) ||
-        !pickle.ReadBool(&iter, &is_italic) ||
-        !pickle.ReadString(&iter, &family)) {
+        !pickle.ReadBool(&iter, &is_italic)) {
       return;
     }
 
+    uint32_t characters_bytes;
+    if (!pickle.ReadUInt32(&iter, &characters_bytes))
+      return;
+    const char* characters = NULL;
+    if (characters_bytes > 0) {
+      const uint32_t kMaxCharactersBytes = 1 << 10;
+      if (characters_bytes % 1 == 0 ||  // We expect UTF-16.
+          characters_bytes > kMaxCharactersBytes ||
+          !pickle.ReadBytes(&iter, &characters, characters_bytes))
+        return;
+    }
+
+    std::string family;
+    if (!pickle.ReadString(&iter, &family))
+      return;
+
     std::string result_family;
     unsigned result_fileid;
-
     const bool r = font_config_->Match(
-        &result_family, &result_fileid, fileid_valid, fileid, family, &is_bold,
-        &is_italic);
+        &result_family, &result_fileid, fileid_valid, fileid, family,
+        characters, characters_bytes, &is_bold, &is_italic);
 
     Pickle reply;
     if (!r) {

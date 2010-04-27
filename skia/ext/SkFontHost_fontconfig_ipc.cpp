@@ -39,19 +39,24 @@ FontConfigIPC::~FontConfigIPC() {
 bool FontConfigIPC::Match(std::string* result_family,
                           unsigned* result_fileid,
                           bool fileid_valid, unsigned fileid,
-                          const std::string& family, bool* is_bold,
-                          bool* is_italic) {
+                          const std::string& family,
+                          const void* characters, size_t characters_bytes,
+                          bool* is_bold, bool* is_italic) {
     if (family.length() > kMaxFontFamilyLength)
-      return false;
+        return false;
 
     Pickle request;
     request.WriteInt(METHOD_MATCH);
     request.WriteBool(fileid_valid);
     if (fileid_valid)
-      request.WriteUInt32(fileid);
+        request.WriteUInt32(fileid);
 
     request.WriteBool(is_bold && *is_bold);
     request.WriteBool(is_bold && *is_italic);
+
+    request.WriteUInt32(characters_bytes);
+    if (characters_bytes)
+        request.WriteBytes(characters, characters_bytes);
 
     request.WriteString(family);
 
@@ -59,15 +64,15 @@ bool FontConfigIPC::Match(std::string* result_family,
     const ssize_t r = base::SendRecvMsg(fd_, reply_buf, sizeof(reply_buf), NULL,
                                         request);
     if (r == -1)
-      return false;
+        return false;
 
     Pickle reply(reinterpret_cast<char*>(reply_buf), r);
     void* iter = NULL;
     bool result;
     if (!reply.ReadBool(&iter, &result))
-      return false;
+        return false;
     if (!result)
-      return false;
+        return false;
 
     uint32_t reply_fileid;
     std::string reply_family;
@@ -76,17 +81,17 @@ bool FontConfigIPC::Match(std::string* result_family,
         !reply.ReadString(&iter, &reply_family) ||
         !reply.ReadBool(&iter, &resulting_bold) ||
         !reply.ReadBool(&iter, &resulting_italic)) {
-      return false;
+        return false;
     }
 
     *result_fileid = reply_fileid;
     if (result_family)
-      *result_family = reply_family;
+        *result_family = reply_family;
 
     if (is_bold)
-      *is_bold = resulting_bold;
+        *is_bold = resulting_bold;
     if (is_italic)
-      *is_italic = resulting_italic;
+        *is_italic = resulting_italic;
 
     return true;
 }

@@ -597,6 +597,7 @@
             '../build/linux/system.gyp:freetype2',
             '../third_party/harfbuzz/harfbuzz.gyp:harfbuzz',
             '../third_party/harfbuzz/harfbuzz.gyp:harfbuzz_interface',
+            '../third_party/icu/icu.gyp:icuuc',
           ],
           'cflags': [
             '-Wno-unused',

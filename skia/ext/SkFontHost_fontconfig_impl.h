@@ -40,6 +40,8 @@ class FontConfigInterface {
      *  @param family (optional) the family of the font that we are trying to
      *    match. If the length of the |family| is greater then
      *    kMaxFontFamilyLength, this function should immediately return false.
+     *  @param characters (optional) UTF-16 characters the font must cover.
+     *  @param characters_bytes (optional) number of bytes in |characters|
      *  @param is_bold (optional, set to NULL to ignore, in/out)
      *  @param is_italic (optional, set to NULL to ignore, in/out)
      *  @return true iff successful.
@@ -50,6 +52,8 @@ class FontConfigInterface {
           bool fileid_valid,
           unsigned fileid,
           const std::string& family,
+          const void* characters,
+          size_t characters_bytes,
           bool* is_bold,
           bool* is_italic) = 0;
 
