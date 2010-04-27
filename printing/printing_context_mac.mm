@@ -8,6 +8,7 @@
 #import <AppKit/AppKit.h>
 
 #include "base/logging.h"
+#include "base/sys_string_conversions.h"
 
 namespace printing {
 
@@ -122,6 +123,11 @@ PrintingContext::Result PrintingContext::NewDocument(
       static_cast<PMPrintSettings>([print_info_ PMPrintSettings]);
   PMPageFormat page_format =
       static_cast<PMPageFormat>([print_info_ PMPageFormat]);
+
+  scoped_cftyperef<CFStringRef> job_title(
+      base::SysWideToCFStringRef(document_name));
+  PMPrintSettingsSetJobName(print_settings, job_title.get());
+
   OSStatus status = PMSessionBeginCGDocumentNoDialog(print_session,
                                                      print_settings,
                                                      page_format);
