@@ -121,6 +121,9 @@ function loadScene(pack, fileName, parent) {
  */
 function init() {
   o3djs.webgl.makeClients(initStep2);
+  // The following call enables a debug WebGL context, which makes
+  // debugging much easier.
+  // o3djs.webgl.makeClients(initStep2, undefined, undefined, undefined, undefined, undefined, true);
 }
 
 /**

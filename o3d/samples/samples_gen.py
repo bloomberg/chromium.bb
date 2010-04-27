@@ -39,7 +39,7 @@ assets = [
  {'path': 'convert_assets/part3.zip', 'up': y_up},
  {'path': 'convert_assets/seven_shapes.zip', 'up': y_up},
  {'path': 'convert_assets/stencil_frame.zip', 'up': y_up},
- {'path': 'convert_assets/teapot.zip', 'up': y_up},
+ {'path': 'convert_assets/teapot.zip', 'up': y_up, 'webgl': True},
  {'path': 'convert_assets/yard.zip', 'up': y_up},
  {'path': 'home-configurators/convert_cbassets/Agra_Rug.kmz', 'up': z_up},
  {'path': 'home-configurators/convert_cbassets/Asimi_Rug.kmz', 'up': z_up},
@@ -65,7 +65,7 @@ assets = [
  {'path': 'home-configurators/convert_cbassets/Troy_Twin_Sleeper.kmz', 'up': z_up},
  {'path': 'io/convert_levels/all_actors.kmz', 'up': y_up},
  {'path': 'io/convert_levels/map1.kmz', 'up': y_up},
- {'path': 'simpleviewer/convert_assets/cube.zip', 'up': y_up},
+ {'path': 'simpleviewer/convert_assets/cube.zip', 'up': y_up, 'webgl': True},
 ]
 
 output_file.write("""# Copyright (c) 2009 The Chromium Authors. All rights reserved.
@@ -87,12 +87,15 @@ output_file.write("""# Copyright (c) 2009 The Chromium Authors. All rights reser
         '../converter/converter.gyp:o3dConverter',
       ],
       'actions': [\n""")
-for asset in assets:
+
+def write_action(asset, webgl_mode):
   filename = posixpath.splitext(posixpath.basename(asset['path']))[0]
   filename = filename.replace('.','_')
   filename = filename.replace('-','_')
   filename = filename.lower()
   name = "convert_" + filename
+  if webgl_mode:
+    name = name + "_webgl"
   output = asset['path'].replace('convert_', '')
   output = posixpath.splitext(output)[0] + ".o3dtgz"
   output_dir = posixpath.dirname(output)
@@ -116,10 +119,20 @@ for asset in assets:
   output_file.write("            '<(PRODUCT_DIR)/o3dConverter',\n")
   output_file.write("            '--no-condition',\n")
   output_file.write("            '--up-axis=%s',\n" % asset['up'])
+  if webgl_mode:
+    output_file.write("            '--no-binary',\n")
+    output_file.write("            '--no-archive',\n")
+    output_file.write("            '--convert-dds-to-png',\n")
+    output_file.write("            '--convert-cg-to-glsl',\n")
   output_file.write("            '../o3d_assets/samples/%s',\n" % asset['path'])
   output_file.write("            '<(_outputs)',\n")
   output_file.write("          ],\n")
   output_file.write("        },\n")
+
+for asset in assets:
+  write_action(asset, False);
+  if asset.has_key('webgl'):
+    write_action(asset, True);
 
 output_file.write("      ],\n")
 
