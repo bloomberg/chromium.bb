@@ -291,13 +291,13 @@
         ],
         #TODO(alokp): Remove os-conditional when translator_glsl starts
         #compiling on all platforms.
-        ['OS == "win"',
-          {
-            'dependencies': [
-              '../third_party/angleproject/src/build_angle.gyp:translator_glsl',
-            ],
-          },
-        ],
+        #['OS == "win"',
+        #  {
+        #    'dependencies': [
+        #      '../third_party/angleproject/src/build_angle.gyp:translator_glsl',
+        #    ],
+        #  },
+        #],
       ],
     },
     {
