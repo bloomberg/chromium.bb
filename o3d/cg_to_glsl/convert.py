@@ -33,6 +33,13 @@ if not os.path.exists(CGC):
   CGC = 'c:/Program Files (x86)/NVIDIA Corporation/Cg/bin/cgc.exe'
   if not os.path.exists(CGC):
     CGC = 'c:/Program Files (x86)/NVIDIA Corporation/Cg/bin/cgc.exe'
+    if not os.path.exists(CGC):
+      script_path = os.path.abspath(sys.path[0])
+      # Try again looking in the current working directory to match
+      # the layout of the prebuilt o3dConverter binaries.
+      CGC = os.path.join(script_path, 'cgc')
+      if not os.path.exists(CGC):
+        CGC = os.path.join(script_path, 'cgc.exe')
 
 # cgc complains about TANGENT1 and BINORMAL1 semantics, so we hack it by
 # replacing standard semantics with ATTR8-ATTR12 and then renaming them back to
