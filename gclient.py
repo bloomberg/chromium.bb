@@ -58,7 +58,6 @@ Hooks
 __author__ = "darinf@gmail.com (Darin Fisher)"
 __version__ = "0.3.4"
 
-import copy
 import errno
 import logging
 import optparse
@@ -699,17 +698,6 @@ class GClient(object):
       if matching_file_list:
         self._RunHookAction(hook_dict, matching_file_list)
 
-  def GetSCMCommandClosure(self, path, url, revision, command, args, file_list):
-    """Gets a closure that runs a SCM command on a particular dependency."""
-    def _Closure():
-      logging.debug("Running %s in %s to %s %s" % (command, path, url,
-                                                   revision))
-      options = copy.copy(self._options)
-      options.revision = revision
-      scm = gclient_scm.CreateSCM(url, self._root_dir, path)
-      scm.RunCommand(command, options, args, file_list)
-    return _Closure
-
   def RunOnDeps(self, command, args):
     """Runs a command on each dependency in a client and its dependencies.
 
@@ -750,125 +738,84 @@ class GClient(object):
 
     entries = {}
     entries_deps_content = {}
+    file_list = []
+    # Run on the base solutions first.
+    for solution in solutions:
+      name = solution["name"]
+      deps_file = solution.get("deps_file", self._options.deps_file)
+      if '/' in deps_file or '\\' in deps_file:
+        raise gclient_utils.Error('deps_file name must not be a path, just a '
+                                  'filename.')
+      if name in entries:
+        raise gclient_utils.Error("solution %s specified more than once" % name)
+      url = solution["url"]
+      entries[name] = url
+      if run_scm and url:
+        self._options.revision = revision_overrides.get(name)
+        scm = gclient_scm.CreateSCM(url, self._root_dir, name)
+        scm.RunCommand(command, self._options, args, file_list)
+        file_list = [os.path.join(name, f.strip()) for f in file_list]
+        self._options.revision = None
+      try:
+        deps_content = gclient_utils.FileRead(
+            os.path.join(self._root_dir, name, deps_file))
+      except IOError, e:
+        if e.errno != errno.ENOENT:
+          raise
+        deps_content = ""
+      entries_deps_content[name] = deps_content
 
-    # To avoid threading issues, all file lists get constructed separately then
-    # gathered in a flattened list at the end.
-    file_list_list = []
-    file_list_dict = {}
+    # Process the dependencies next (sort alphanumerically to ensure that
+    # containing directories get populated first and for readability)
+    deps = self._ParseAllDeps(entries, entries_deps_content)
+    deps_to_process = deps.keys()
+    deps_to_process.sort()
 
-    thread_pool = gclient_utils.ThreadPool(self._options.jobs)
-    thread_pool.Start()
-
-    try:
-      # Run on the base solutions first.
-      for solution in solutions:
-        name = solution["name"]
-        deps_file = solution.get("deps_file", self._options.deps_file)
-        if '/' in deps_file or '\\' in deps_file:
-          raise gclient_utils.Error('deps_file name must not be a path, just a '
-                                    'filename.')
-        if name in entries:
-          raise gclient_utils.Error(
-              "solution %s specified more than once" % name)
-        url = solution["url"]
-        entries[name] = url
-        if run_scm and url:
-          revision = revision_overrides.get(name)
-          file_list = []
-          file_list_dict[name] = file_list
-          thread_pool.AddJob(self.GetSCMCommandClosure(
-              name, url, revision, command, args, file_list))
-
-      thread_pool.WaitJobs()
-
-      for solution in solutions:
-        name = solution["name"]
-        deps_file = solution.get("deps_file", self._options.deps_file)
-        try:
-          deps_content = gclient_utils.FileRead(
-              os.path.join(self._root_dir, name, deps_file))
-        except IOError, e:
-          if e.errno != errno.ENOENT:
-            raise
-          deps_content = ""
-        entries_deps_content[name] = deps_content
-        try:
-          file_list_list.append([os.path.join(name, f.strip())
-                                 for f in file_list_dict[name]])
-        except KeyError:
-          # We may not have added the file list to the dict, see tests above.
-          # Instead of duplicating the tests, it's less fragile to just ignore
-          # the exception.
-          pass
-
-      # Process the dependencies next (sort alphanumerically to ensure that
-      # containing directories get populated first and for readability)
-      # TODO(piman): when using multiple threads, the ordering is not ensured.
-      # In many cases (e.g. updates to an existing checkout where DEPS don't
-      # move between directories), it'll still be correct but for completeness
-      # this should be fixed.
-      deps = self._ParseAllDeps(entries, entries_deps_content)
-      deps_to_process = deps.keys()
-      deps_to_process.sort()
-
-      # First pass for direct dependencies.
+    # First pass for direct dependencies.
+    if command == 'update' and not self._options.verbose:
+      pm = Progress('Syncing projects', len(deps_to_process))
+    for d in deps_to_process:
       if command == 'update' and not self._options.verbose:
-        pm = Progress('Syncing projects', len(deps_to_process))
-
-      for d in deps_to_process:
-        if command == 'update' and not self._options.verbose:
-          pm.update()
-        file_list = []
-        file_list_list.append(file_list)
-        if type(deps[d]) == str:
-          url = deps[d]
-          entries[d] = url
-          if run_scm:
-            revision = revision_overrides.get(d)
-            thread_pool.AddJob(self.GetSCMCommandClosure(d, url, revision,
-                                                         command, args,
-                                                         file_list))
-        elif isinstance(deps[d], self.FileImpl):
-          file = deps[d]
-          if run_scm:
-            revision = file.GetRevision()
-            thread_pool.AddJob(self.GetSCMCommandClosure(
-                d, url, revision, "updatesingle", args + [file.GetFilename()],
-                file_list))
-
-      thread_pool.WaitJobs()
+        pm.update()
+      if type(deps[d]) == str:
+        url = deps[d]
+        entries[d] = url
+        if run_scm:
+          self._options.revision = revision_overrides.get(d)
+          scm = gclient_scm.CreateSCM(url, self._root_dir, d)
+          scm.RunCommand(command, self._options, args, file_list)
+          self._options.revision = None
+      elif isinstance(deps[d], self.FileImpl):
+        file = deps[d]
+        self._options.revision = file.GetRevision()
+        if run_scm:
+          scm = gclient_scm.CreateSCM(file.GetPath(), self._root_dir, d)
+          scm.RunCommand("updatesingle", self._options,
+                         args + [file.GetFilename()], file_list)
           
-      if command == 'update' and not self._options.verbose:
-        pm.end()
+    if command == 'update' and not self._options.verbose:
+      pm.end()
 
-      # Second pass for inherited deps (via the From keyword)
-      for d in deps_to_process:
-        if isinstance(deps[d], self.FromImpl):
-          filename = os.path.join(self._root_dir,
-                                  deps[d].module_name,
-                                  self._options.deps_file)
-          content =  gclient_utils.FileRead(filename)
-          sub_deps = self._ParseSolutionDeps(deps[d].module_name, content, {},
-                                             False)
-          # Getting the URL from the sub_deps file can involve having to resolve
-          # a File() or having to resolve a relative URL.  To resolve relative
-          # URLs, we need to pass in the orignal sub deps URL.
-          sub_deps_base_url = deps[deps[d].module_name]
-          url = deps[d].GetUrl(d, sub_deps_base_url, self._root_dir, sub_deps)
-          entries[d] = url
-          if run_scm:
-            revision = revision_overrides.get(d)
-            file_list = []
-            file_list_list.append(file_list)
-            thread_pool.AddJob(self.GetSCMCommandClosure(d, url, revision,
-                                                         command, args,
-                                                         file_list))
-
-      thread_pool.WaitJobs()
-    finally:
-      thread_pool.Stop()
-
-    file_list = sum(file_list_list, [])
+    # Second pass for inherited deps (via the From keyword)
+    for d in deps_to_process:
+      if isinstance(deps[d], self.FromImpl):
+        filename = os.path.join(self._root_dir,
+                                deps[d].module_name,
+                                self._options.deps_file)
+        content =  gclient_utils.FileRead(filename)
+        sub_deps = self._ParseSolutionDeps(deps[d].module_name, content, {},
+                                           False)
+        # Getting the URL from the sub_deps file can involve having to resolve
+        # a File() or having to resolve a relative URL.  To resolve relative
+        # URLs, we need to pass in the orignal sub deps URL.
+        sub_deps_base_url = deps[deps[d].module_name]
+        url = deps[d].GetUrl(d, sub_deps_base_url, self._root_dir, sub_deps)
+        entries[d] = url
+        if run_scm:
+          self._options.revision = revision_overrides.get(d)
+          scm = gclient_scm.CreateSCM(url, self._root_dir, d)
+          scm.RunCommand(command, self._options, args, file_list)
+          self._options.revision = None
 
     # Convert all absolute paths to relative.
     for i in range(len(file_list)):
@@ -1337,9 +1284,6 @@ def Main(argv):
   option_parser.add_option("", "--gclientfile", default=None,
                            metavar="FILENAME",
                            help=("specify an alternate .gclient file"))
-  option_parser.add_option("-j", "--jobs", default=1, type="int",
-                           help=("specify how many SCM commands can run in "
-                                 "parallel"))
 
   if len(argv) < 2:
     # Users don't need to be told to use the 'help' command.
