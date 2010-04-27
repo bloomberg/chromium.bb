@@ -21,14 +21,16 @@
 #if defined(OS_CHROMEOS)
 // Disabled, see http://crbug.com/40043.
 #define MAYBE_Tab2OutOfTabStrip DISABLED_Tab2OutOfTabStrip
-#define MAYBE_Tab1Tab3Escape DISABLED_Tab1Tab3Escape
-
 #else
 #define MAYBE_Tab2OutOfTabStrip Tab2OutOfTabStrip
+#endif
 
+#if defined(TOOLKIT_VIEWS) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// Disabled on Toolkit views bot. See http://crbug.com/42614
+#define MAYBE_Tab1Tab3Escape DISABLED_Tab1Tab3Escape
+#else
 // Flaky, see http://crbug.com/21092.
 #define MAYBE_Tab1Tab3Escape FLAKY_Tab1Tab3Escape
-
 #endif
 
 
