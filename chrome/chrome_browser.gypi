@@ -805,6 +805,8 @@
         'browser/cocoa/theme_install_bubble_view.mm',
         'browser/cocoa/throbber_view.h',
         'browser/cocoa/throbber_view.mm',
+        'browser/cocoa/toolbar_button_cell.h',
+        'browser/cocoa/toolbar_button_cell.mm',
         'browser/cocoa/toolbar_controller.h',
         'browser/cocoa/toolbar_controller.mm',
         'browser/cocoa/toolbar_view.h',
