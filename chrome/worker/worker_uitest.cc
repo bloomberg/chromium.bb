@@ -229,9 +229,9 @@ TEST_F(WorkerTest, WorkerContextGc) {
   RunWorkerFastLayoutTest("worker-context-gc.html");
 }
 
-// All kinds of crashes on Linux http://crbug.com/22898	
-#if defined(OS_LINUX)	
-#define WorkerContextMultiPort DISABLED_WorkerContextMultiPort	
+// All kinds of crashes on Linux http://crbug.com/22898
+#if defined(OS_LINUX)
+#define WorkerContextMultiPort DISABLED_WorkerContextMultiPort
 #endif
 
 TEST_F(WorkerTest, WorkerContextMultiPort) {
@@ -555,7 +555,8 @@ TEST_F(WorkerTest, WorkerClose) {
   ASSERT_TRUE(WaitForProcessCountToBe(1, 0));
 }
 
-TEST_F(WorkerTest, QueuedSharedWorkerShutdown) {
+// http://crbug.com/42641
+TEST_F(WorkerTest, DISABLED_QueuedSharedWorkerShutdown) {
   // Tests to make sure that queued shared workers are started up when
   // shared workers shut down.
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
