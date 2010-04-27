@@ -767,31 +767,23 @@ void AutocompleteEditViewMac::OnCopy() {
   if (selection.length == 0)
     return;
 
-  const std::wstring& text = GetText();
-  const string16 text16 = WideToUTF16(text);
+  std::wstring text = base::SysNSStringToWide(
+      [[field_ stringValue] substringWithRange:selection]);
 
+  GURL url;
+  bool write_url = false;
+  model_->AdjustTextForCopy(selection.location, IsSelectAll(), &text, &url,
+                            &write_url);
+  string16 text16 = WideToUTF16(text);
   ScopedClipboardWriter scw(g_browser_process->clipboard());
-  // If the entire contents are being copied and it looks like an URL,
-  // copy as a hyperlink.
-  if (IsSelectAll()) {
-    GURL url;
-    if (model_->GetURLForText(text, &url)) {
-      if ((url.SchemeIs("http") || url.SchemeIs("https")) &&
-          !model_->user_input_in_progress())
-        scw.WriteText(UTF8ToUTF16(url.spec()));
-      else
-        scw.WriteText(text16);
-      scw.WriteBookmark(text16, url.spec());
-
-      // This line, cargo cult copied from the Windows and GTK
-      // versions (perhaps), breaks paste of an URL into Powerpoint
-      // 2008.  http://crbug.com/41842
-      // scw.WriteHyperlink(EscapeForHTML(WideToUTF8(text)), url.spec());
-      return;
-    }
+  scw.WriteText(text16);
+  if (write_url) {
+    scw.WriteBookmark(text16, url.spec());
+    // This line, cargo cult copied from the Windows and GTK
+    // versions (perhaps), breaks paste of an URL into Powerpoint
+    // 2008.  http://crbug.com/41842
+    // scw.WriteHyperlink(EscapeForHTML(WideToUTF8(text)), url.spec());
   }
-
-  scw.WriteText(text16.substr(selection.location, selection.length));
 }
 
 void AutocompleteEditViewMac::OnPaste() {
