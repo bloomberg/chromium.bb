@@ -3,12 +3,15 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
+#include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
+#include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/json_pref_store.h"
+#include "chrome/browser/extensions/test_extension_prefs.h"
 #include "chrome/browser/pref_service.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,14 +21,7 @@ using base::TimeDelta;
 // Base class for tests.
 class ExtensionPrefsTest : public testing::Test {
  public:
-  ExtensionPrefsTest() {
-    EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
-    FilePath preferences_file_ = temp_dir_.path().AppendASCII("Preferences");
-    pref_service_.reset(new PrefService(
-        new JsonPrefStore(preferences_file_)));
-    ExtensionPrefs::RegisterUserPrefs(pref_service_.get());
-    CreateExtensionPrefs();
-  }
+  ExtensionPrefsTest() {}
 
   // This function will get called once, and is the right place to do operations
   // on ExtensionPrefs that write data.
@@ -44,43 +40,14 @@ class ExtensionPrefsTest : public testing::Test {
     Verify();
 
     // Reset ExtensionPrefs, and re-verify.
-    CreateExtensionPrefs();
+    prefs_.RecreateExtensionPrefs();
     Verify();
   }
 
  protected:
-  // Creates an ExtensionPrefs object.
-  void CreateExtensionPrefs() {
-    prefs_.reset(new ExtensionPrefs(pref_service_.get(), temp_dir_.path()));
-  }
+  ExtensionPrefs* prefs() { return prefs_.prefs(); }
 
-  // Creates a new Extension with the given name in our temp dir, adds it to
-  // our ExtensionPrefs, and returns it.
-  Extension* AddExtension(std::string name) {
-    FilePath path = temp_dir_.path().AppendASCII(name);
-    Extension* extension = new Extension(path);
-    std::string errors;
-    DictionaryValue dictionary;
-    dictionary.SetString(extension_manifest_keys::kName, name);
-    dictionary.SetString(extension_manifest_keys::kVersion, "0.1");
-    EXPECT_TRUE(extension->InitFromValue(dictionary, false, &errors));
-    extension->set_location(Extension::INTERNAL);
-    EXPECT_TRUE(Extension::IdIsValid(extension->id()));
-    prefs_->OnExtensionInstalled(extension);
-    return extension;
-  }
-
-  // Creates an Extension and adds it to our ExtensionPrefs. Returns the
-  // extension id it was assigned.
-  std::string AddExtensionAndReturnId(std::string name) {
-    scoped_ptr<Extension> extension(AddExtension(name));
-    return extension->id();
-  }
-
-  ScopedTempDir temp_dir_;
-  FilePath preferences_file_;
-  scoped_ptr<PrefService> pref_service_;
-  scoped_ptr<ExtensionPrefs> prefs_;
+  TestExtensionPrefs prefs_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionPrefsTest);
@@ -94,17 +61,17 @@ class ExtensionPrefsLastPingDay : public ExtensionPrefsTest {
         blacklist_time_(Time::Now() - TimeDelta::FromHours(2)) {}
 
   virtual void Initialize() {
-    extension_id_ = AddExtensionAndReturnId("last_ping_day");
-    EXPECT_TRUE(prefs_->LastPingDay(extension_id_).is_null());
-    prefs_->SetLastPingDay(extension_id_, extension_time_);
-    prefs_->SetBlacklistLastPingDay(blacklist_time_);
+    extension_id_ = prefs_.AddExtensionAndReturnId("last_ping_day");
+    EXPECT_TRUE(prefs()->LastPingDay(extension_id_).is_null());
+    prefs()->SetLastPingDay(extension_id_, extension_time_);
+    prefs()->SetBlacklistLastPingDay(blacklist_time_);
   }
 
   virtual void Verify() {
-    Time result = prefs_->LastPingDay(extension_id_);
+    Time result = prefs()->LastPingDay(extension_id_);
     EXPECT_FALSE(result.is_null());
     EXPECT_TRUE(result == extension_time_);
-    result = prefs_->BlacklistLastPingDay();
+    result = prefs()->BlacklistLastPingDay();
     EXPECT_FALSE(result.is_null());
     EXPECT_TRUE(result == blacklist_time_);
   }
@@ -121,16 +88,16 @@ TEST_F(ExtensionPrefsLastPingDay, LastPingDay) {}
 class ExtensionPrefsToolbarOrder : public ExtensionPrefsTest {
  public:
   virtual void Initialize() {
-    list_.push_back(AddExtensionAndReturnId("1"));
-    list_.push_back(AddExtensionAndReturnId("2"));
-    list_.push_back(AddExtensionAndReturnId("3"));
-    std::vector<std::string> before_list = prefs_->GetToolbarOrder();
+    list_.push_back(prefs_.AddExtensionAndReturnId("1"));
+    list_.push_back(prefs_.AddExtensionAndReturnId("2"));
+    list_.push_back(prefs_.AddExtensionAndReturnId("3"));
+    std::vector<std::string> before_list = prefs()->GetToolbarOrder();
     EXPECT_TRUE(before_list.empty());
-    prefs_->SetToolbarOrder(list_);
+    prefs()->SetToolbarOrder(list_);
   }
 
   virtual void Verify() {
-    std::vector<std::string> result = prefs_->GetToolbarOrder();
+    std::vector<std::string> result = prefs()->GetToolbarOrder();
     ASSERT_EQ(list_.size(), result.size());
     for (size_t i = 0; i < list_.size(); i++) {
       EXPECT_EQ(list_[i], result[i]);
@@ -147,12 +114,12 @@ TEST_F(ExtensionPrefsToolbarOrder, ToolbarOrder) {}
 class ExtensionPrefsExtensionState : public ExtensionPrefsTest {
  public:
   virtual void Initialize() {
-    extension.reset(AddExtension("test"));
-    prefs_->SetExtensionState(extension.get(), Extension::DISABLED);
+    extension.reset(prefs_.AddExtension("test"));
+    prefs()->SetExtensionState(extension.get(), Extension::DISABLED);
   }
 
   virtual void Verify() {
-    EXPECT_EQ(Extension::DISABLED, prefs_->GetExtensionState(extension->id()));
+    EXPECT_EQ(Extension::DISABLED, prefs()->GetExtensionState(extension->id()));
   }
 
  private:
@@ -164,12 +131,12 @@ TEST_F(ExtensionPrefsExtensionState, ExtensionState) {}
 class ExtensionPrefsEscalatePermissions : public ExtensionPrefsTest {
  public:
   virtual void Initialize() {
-    extension.reset(AddExtension("test"));
-    prefs_->SetDidExtensionEscalatePermissions(extension.get(), true);
+    extension.reset(prefs_.AddExtension("test"));
+    prefs()->SetDidExtensionEscalatePermissions(extension.get(), true);
   }
 
   virtual void Verify() {
-    EXPECT_EQ(true, prefs_->DidExtensionEscalatePermissions(extension->id()));
+    EXPECT_EQ(true, prefs()->DidExtensionEscalatePermissions(extension->id()));
   }
 
  private:
@@ -182,13 +149,14 @@ TEST_F(ExtensionPrefsEscalatePermissions, EscalatePermissions) {}
 class ExtensionPrefsVersionString : public ExtensionPrefsTest {
  public:
   virtual void Initialize() {
-    extension.reset(AddExtension("test"));
-    EXPECT_EQ("0.1", prefs_->GetVersionString(extension->id()));
-    prefs_->OnExtensionUninstalled(extension->id(), Extension::INTERNAL, false);
+    extension.reset(prefs_.AddExtension("test"));
+    EXPECT_EQ("0.1", prefs()->GetVersionString(extension->id()));
+    prefs()->OnExtensionUninstalled(extension->id(),
+                                    Extension::INTERNAL, false);
   }
 
   virtual void Verify() {
-    EXPECT_EQ("", prefs_->GetVersionString(extension->id()));
+    EXPECT_EQ("", prefs()->GetVersionString(extension->id()));
   }
 
  private:
@@ -205,36 +173,36 @@ class ExtensionPrefsBlacklist : public ExtensionPrefsTest {
     // Install 5 extensions.
     for (int i = 0; i < 5; i++) {
       std::string name = "test" + IntToString(i);
-      extensions_.push_back(linked_ptr<Extension>(AddExtension(name)));
+      extensions_.push_back(linked_ptr<Extension>(prefs_.AddExtension(name)));
     }
-    EXPECT_EQ(NULL, prefs_->GetInstalledExtensionInfo(not_installed_id_));
+    EXPECT_EQ(NULL, prefs()->GetInstalledExtensionInfo(not_installed_id_));
 
     std::vector<linked_ptr<Extension> >::const_iterator iter;
     for (iter = extensions_.begin(); iter != extensions_.end(); ++iter) {
-      EXPECT_FALSE(prefs_->IsExtensionBlacklisted((*iter)->id()));
+      EXPECT_FALSE(prefs()->IsExtensionBlacklisted((*iter)->id()));
     }
     // Blacklist one installed and one not-installed extension id.
     std::set<std::string> blacklisted_ids;
     blacklisted_ids.insert(extensions_[0]->id());
     blacklisted_ids.insert(not_installed_id_);
-    prefs_->UpdateBlacklist(blacklisted_ids);
+    prefs()->UpdateBlacklist(blacklisted_ids);
   }
 
   virtual void Verify() {
     // Make sure the two id's we expect to be blacklisted are.
-    EXPECT_TRUE(prefs_->IsExtensionBlacklisted(extensions_[0]->id()));
-    EXPECT_TRUE(prefs_->IsExtensionBlacklisted(not_installed_id_));
+    EXPECT_TRUE(prefs()->IsExtensionBlacklisted(extensions_[0]->id()));
+    EXPECT_TRUE(prefs()->IsExtensionBlacklisted(not_installed_id_));
 
     // Make sure the other id's are not blacklisted.
     std::vector<linked_ptr<Extension> >::const_iterator iter;
     for (iter = extensions_.begin() + 1; iter != extensions_.end(); ++iter) {
-      EXPECT_FALSE(prefs_->IsExtensionBlacklisted((*iter)->id()));
+      EXPECT_FALSE(prefs()->IsExtensionBlacklisted((*iter)->id()));
     }
 
     // Make sure GetInstalledExtensionsInfo returns only the non-blacklisted
     // extensions data.
     scoped_ptr<ExtensionPrefs::ExtensionsInfo> info(
-        prefs_->GetInstalledExtensionsInfo());
+        prefs()->GetInstalledExtensionsInfo());
     EXPECT_EQ(4u, info->size());
     ExtensionPrefs::ExtensionsInfo::iterator info_iter;
     for (info_iter = info->begin(); info_iter != info->end(); ++info_iter) {
@@ -250,3 +218,95 @@ class ExtensionPrefsBlacklist : public ExtensionPrefsTest {
   std::string not_installed_id_;
 };
 TEST_F(ExtensionPrefsBlacklist, Blacklist) {}
+
+
+// Tests the idle install information functions.
+class ExtensionPrefsIdleInstallInfo : public ExtensionPrefsTest {
+ public:
+  // Sets idle install information for one test extension.
+  void SetIdleInfo(std::string id, int num) {
+    prefs()->SetIdleInstallInfo(id, basedir_.AppendASCII(IntToString(num)),
+                                "1." + IntToString(num),
+                                now_ + TimeDelta::FromSeconds(num));
+  }
+
+  // Verifies that we get back expected idle install information previously
+  // set by SetIdleInfo.
+  void VerifyIdleInfo(std::string id, int num) {
+    FilePath crx_path;
+    std::string version;
+    base::Time fetch_time;
+    ASSERT_TRUE(prefs()->GetIdleInstallInfo(id, &crx_path, &version,
+                                            &fetch_time));
+    ASSERT_EQ(crx_path.value(),
+              basedir_.AppendASCII(IntToString(num)).value());
+    ASSERT_EQ("1." + IntToString(num), version);
+    ASSERT_TRUE(fetch_time == now_ + TimeDelta::FromSeconds(num));
+  }
+
+  virtual void Initialize() {
+    PathService::Get(chrome::DIR_TEST_DATA, &basedir_);
+    now_ = Time::Now();
+    id1_ = prefs_.AddExtensionAndReturnId("1");
+    id2_ = prefs_.AddExtensionAndReturnId("2");
+    id3_ = prefs_.AddExtensionAndReturnId("3");
+    id4_ = prefs_.AddExtensionAndReturnId("4");
+
+    // Set info for two extensions, then remove it.
+    SetIdleInfo(id1_, 1);
+    SetIdleInfo(id2_, 2);
+    VerifyIdleInfo(id1_, 1);
+    VerifyIdleInfo(id2_, 2);
+    std::set<std::string> ids = prefs()->GetIdleInstallInfoIds();
+    EXPECT_EQ(2u, ids.size());
+    EXPECT_TRUE(ContainsKey(ids, id1_));
+    EXPECT_TRUE(ContainsKey(ids, id2_));
+    prefs()->RemoveIdleInstallInfo(id1_);
+    prefs()->RemoveIdleInstallInfo(id2_);
+    ids = prefs()->GetIdleInstallInfoIds();
+    EXPECT_TRUE(ids.empty());
+
+    // Try getting/removing info for an id that used to have info set.
+    EXPECT_FALSE(prefs()->GetIdleInstallInfo(id1_, NULL, NULL, NULL));
+    EXPECT_FALSE(prefs()->RemoveIdleInstallInfo(id1_));
+
+    // Try getting/removing info for an id that has not yet had any info set.
+    EXPECT_FALSE(prefs()->GetIdleInstallInfo(id3_, NULL, NULL, NULL));
+    EXPECT_FALSE(prefs()->RemoveIdleInstallInfo(id3_));
+
+    // Set info for 4 extensions, then remove for one of them.
+    SetIdleInfo(id1_, 1);
+    SetIdleInfo(id2_, 2);
+    SetIdleInfo(id3_, 3);
+    SetIdleInfo(id4_, 4);
+    VerifyIdleInfo(id1_, 1);
+    VerifyIdleInfo(id2_, 2);
+    VerifyIdleInfo(id3_, 3);
+    VerifyIdleInfo(id4_, 4);
+    prefs()->RemoveIdleInstallInfo(id3_);
+  }
+
+  virtual void Verify() {
+    // Make sure the info for the 3 extensions we expect is present.
+    std::set<std::string> ids = prefs()->GetIdleInstallInfoIds();
+    EXPECT_EQ(3u, ids.size());
+    EXPECT_TRUE(ContainsKey(ids, id1_));
+    EXPECT_TRUE(ContainsKey(ids, id2_));
+    EXPECT_TRUE(ContainsKey(ids, id4_));
+    VerifyIdleInfo(id1_, 1);
+    VerifyIdleInfo(id2_, 2);
+    VerifyIdleInfo(id4_, 4);
+
+    // Make sure there isn't info the for the one extension id we removed.
+    EXPECT_FALSE(prefs()->GetIdleInstallInfo(id3_, NULL, NULL, NULL));
+  }
+
+ protected:
+  Time now_;
+  FilePath basedir_;
+  std::string id1_;
+  std::string id2_;
+  std::string id3_;
+  std::string id4_;
+};
+TEST_F(ExtensionPrefsIdleInstallInfo, IdleInstallInfo) {}

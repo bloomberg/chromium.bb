@@ -70,6 +70,8 @@
         'browser/cocoa/browser_test_helper.h',
         'browser/dummy_pref_store.cc',
         'browser/dummy_pref_store.h',
+        'browser/extensions/test_extension_prefs.cc',
+        'browser/extensions/test_extension_prefs.h',
         'browser/geolocation/mock_location_provider.cc',
         'browser/geolocation/mock_location_provider.h',
         'browser/mock_browsing_data_appcache_helper.cc',

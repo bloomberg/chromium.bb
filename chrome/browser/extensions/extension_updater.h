@@ -220,9 +220,6 @@ class ExtensionUpdater
   void OnCRXFileWritten(const std::string& id, const FilePath& path,
                         const GURL& download_url);
 
-  // Callback for when ExtensionsService::Install is finished.
-  void OnExtensionInstallFinished(const FilePath& path, Extension* extension);
-
   // Verifies downloaded blacklist. Based on the blacklist, calls extension
   // service to unload blacklisted extensions and update pref.
   void ProcessBlacklist(const std::string& data);

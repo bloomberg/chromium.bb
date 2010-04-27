@@ -666,24 +666,6 @@ void ExtensionsService::UpdateExtensionBlacklist(
   }
 }
 
-void ExtensionsService::SetLastPingDay(const std::string& extension_id,
-                                       const base::Time& time) {
-  extension_prefs_->SetLastPingDay(extension_id, time);
-}
-
-base::Time ExtensionsService::LastPingDay(
-    const std::string& extension_id) const {
-  return extension_prefs_->LastPingDay(extension_id);
-}
-
-void ExtensionsService::SetBlacklistLastPingDay(const base::Time& time) {
-  extension_prefs_->SetBlacklistLastPingDay(time);
-}
-
-base::Time ExtensionsService::BlacklistLastPingDay() const {
-  return extension_prefs_->BlacklistLastPingDay();
-}
-
 bool ExtensionsService::IsIncognitoEnabled(const Extension* extension) {
   // If this is a component extension we always allow it to work in incognito
   // mode.

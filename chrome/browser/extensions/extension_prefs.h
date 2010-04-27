@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -114,6 +114,27 @@ class ExtensionPrefs {
   // Returns the ExtensionInfo from the prefs for the given extension. If the
   // extension is not present, NULL is returned.
   ExtensionInfo* GetInstalledExtensionInfo(const std::string& extension_id);
+
+  // We've downloaded an updated .crx file for the extension, but are waiting
+  // for idle time to install it.
+  void SetIdleInstallInfo(const std::string& extension_id,
+                          const FilePath& crx_path,
+                          const std::string& version,
+                          const base::Time& fetch_time);
+
+  // Removes any idle install information we have for the given |extension_id|.
+  // Returns true if there was info to remove; false otherwise.
+  bool RemoveIdleInstallInfo(const std::string& extension_id);
+
+  // If we have idle install information for |extension_id|, this puts it into
+  // the out parameters and returns true. Otherwise returns false.
+  bool GetIdleInstallInfo(const std::string& extension_id,
+                          FilePath* crx_path,
+                          std::string* version,
+                          base::Time* fetch_time);
+
+  // Returns the extension id's that have idle install information.
+  std::set<std::string> GetIdleInstallInfoIds();
 
   static void RegisterUserPrefs(PrefService* prefs);
 

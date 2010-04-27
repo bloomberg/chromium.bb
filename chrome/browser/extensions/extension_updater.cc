@@ -258,7 +258,8 @@ void ManifestFetchesBuilder::AddExtensionData(
       fetches_.find(update_url);
 
   // Find or create a ManifestFetchData to add this extension to.
-  int ping_days = CalculatePingDays(service_->LastPingDay(id));
+  int ping_days =
+      CalculatePingDays(service_->extension_prefs()->LastPingDay(id));
   while (existing_iter != fetches_.end()) {
     if (existing_iter->second->AddExtension(id, version.GetString(),
                                             ping_days)) {
@@ -300,20 +301,12 @@ class ExtensionUpdaterFileHandler
       return;
     }
 
-    // The ExtensionUpdater is now responsible for cleaning up the temp file
-    // from disk.
+    // The ExtensionUpdater now owns the temp file.
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(
             updater.get(), &ExtensionUpdater::OnCRXFileWritten, extension_id,
             path, download_url));
-  }
-
-  void DeleteFile(const FilePath& path) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-    if (!file_util::Delete(path, false)) {
-      LOG(WARNING) << "Failed to delete temp file " << path.value();
-    }
   }
 
  private:
@@ -554,9 +547,9 @@ void ExtensionUpdater::HandleManifestResults(
       bool did_ping = fetch_data.DidPing(*i);
       if (did_ping) {
         if (*i == kBlacklistAppID) {
-          service_->SetBlacklistLastPingDay(daystart);
+          service_->extension_prefs()->SetBlacklistLastPingDay(daystart);
         } else if (service_->GetExtensionById(*i, true) != NULL) {
-          service_->SetLastPingDay(*i, daystart);
+          service_->extension_prefs()->SetLastPingDay(*i, daystart);
         }
       }
     }
@@ -592,7 +585,7 @@ void ExtensionUpdater::OnCRXFetchComplete(const GURL& url,
                                           int response_code,
                                           const std::string& data) {
   if (status.status() == URLRequestStatus::SUCCESS &&
-             response_code == 200) {
+      response_code == 200) {
     if (current_extension_fetch_.id == kBlacklistAppID) {
       ProcessBlacklist(data);
     } else {
@@ -626,17 +619,11 @@ void ExtensionUpdater::OnCRXFetchComplete(const GURL& url,
 void ExtensionUpdater::OnCRXFileWritten(const std::string& id,
                                         const FilePath& path,
                                         const GURL& download_url) {
+  // The ExtensionsService is now responsible for cleaning up the temp file
+  // at |path|.
   service_->UpdateExtension(id, path, download_url);
 }
 
-void ExtensionUpdater::OnExtensionInstallFinished(const FilePath& path,
-                                                  Extension* extension) {
-  // Have the file_handler_ delete the temp file on the file I/O thread.
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          file_handler_.get(), &ExtensionUpdaterFileHandler::DeleteFile, path));
-}
 
 void ExtensionUpdater::ScheduleNextCheck(const TimeDelta& target_delay) {
   DCHECK(!timer_.IsRunning());
@@ -706,7 +693,8 @@ void ExtensionUpdater::CheckNow() {
     ManifestFetchData* blacklist_fetch =
         new ManifestFetchData(GURL(kBlacklistUpdateUrl));
     std::wstring version = prefs_->GetString(kExtensionBlacklistUpdateVersion);
-    int ping_days = CalculatePingDays(service_->BlacklistLastPingDay());
+    int ping_days =
+        CalculatePingDays(service_->extension_prefs()->BlacklistLastPingDay());
     blacklist_fetch->AddExtension(kBlacklistAppID, WideToASCII(version),
                                   ping_days);
     StartUpdateCheck(blacklist_fetch);

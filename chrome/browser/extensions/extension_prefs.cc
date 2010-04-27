@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,6 +53,13 @@ const wchar_t kLastPingDay[] = L"lastpingday";
 
 // Path for settings specific to blacklist update.
 const wchar_t kExtensionsBlacklistUpdate[] = L"extensions.blacklistupdate";
+
+// Path and sub-keys for the idle install info dictionary preference.
+const wchar_t kIdleInstallInfo[] = L"idle_install_info";
+const wchar_t kIdleInstallInfoCrxPath[] = L"crx_path";
+const wchar_t kIdleInstallInfoVersion[] = L"version";
+const wchar_t kIdleInstallInfoFetchTime[] = L"fetch_time";
+
 
 // A preference that, if true, will allow this extension to run in incognito
 // mode.
@@ -661,6 +668,103 @@ ExtensionInfo* ExtensionPrefs::GetInstalledExtensionInfo(
 
   return NULL;
 }
+
+void ExtensionPrefs::SetIdleInstallInfo(const std::string& extension_id,
+                                        const FilePath& crx_path,
+                                        const std::string& version,
+                                        const base::Time& fetch_time) {
+  DictionaryValue* extension_prefs = GetExtensionPref(extension_id);
+  if (!extension_prefs) {
+    NOTREACHED();
+    return;
+  }
+  extension_prefs->Remove(kIdleInstallInfo, NULL);
+  DictionaryValue* info = new DictionaryValue();
+  info->SetString(kIdleInstallInfoCrxPath, crx_path.value());
+  info->SetString(kIdleInstallInfoVersion, version);
+  info->SetString(kIdleInstallInfoFetchTime,
+                  Int64ToString(fetch_time.ToInternalValue()));
+  extension_prefs->Set(kIdleInstallInfo, info);
+  prefs_->ScheduleSavePersistentPrefs();
+}
+
+bool ExtensionPrefs::RemoveIdleInstallInfo(const std::string& extension_id) {
+  DictionaryValue* extension_prefs = GetExtensionPref(extension_id);
+  if (!extension_prefs)
+    return false;
+  bool result = extension_prefs->Remove(kIdleInstallInfo, NULL);
+  prefs_->ScheduleSavePersistentPrefs();
+  return result;
+}
+
+bool ExtensionPrefs::GetIdleInstallInfo(const std::string& extension_id,
+                                        FilePath* crx_path,
+                                        std::string* version,
+                                        base::Time* fetch_time) {
+  DictionaryValue* extension_prefs = GetExtensionPref(extension_id);
+  if (!extension_prefs)
+    return false;
+
+  // Do all the reads from the prefs together, and don't do any assignment
+  // to the out parameters unless all the reads succeed.
+  DictionaryValue* info = NULL;
+  if (!extension_prefs->GetDictionary(kIdleInstallInfo, &info))
+    return false;
+
+  FilePath::StringType path_string;
+  if (!info->GetString(kIdleInstallInfoCrxPath, &path_string))
+    return false;
+
+  std::string tmp_version;
+  if (!info->GetString(kIdleInstallInfoVersion, &tmp_version))
+    return false;
+
+  std::string fetch_time_string;
+  if (!info->GetString(kIdleInstallInfoFetchTime, &fetch_time_string))
+    return false;
+
+  int64 fetch_time_value;
+  if (!StringToInt64(fetch_time_string, &fetch_time_value))
+    return false;
+
+  if (crx_path)
+    *crx_path = FilePath(path_string);
+
+  if (version)
+    *version = tmp_version;
+
+  if (fetch_time)
+    *fetch_time = base::Time::FromInternalValue(fetch_time_value);
+
+  return true;
+}
+
+std::set<std::string> ExtensionPrefs::GetIdleInstallInfoIds() {
+  std::set<std::string> result;
+
+  const DictionaryValue* extensions = prefs_->GetDictionary(kExtensionsPref);
+  if (!extensions)
+    return result;
+
+  for (DictionaryValue::key_iterator iter = extensions->begin_keys();
+       iter != extensions->end_keys(); ++iter) {
+    std::string id = WideToASCII(*iter);
+    if (!Extension::IdIsValid(id)) {
+      NOTREACHED();
+      continue;
+    }
+
+    DictionaryValue* extension_prefs = GetExtensionPref(id);
+    if (!extension_prefs)
+      continue;
+
+    DictionaryValue* info = NULL;
+    if (extension_prefs->GetDictionary(kIdleInstallInfo, &info))
+      result.insert(id);
+  }
+  return result;
+}
+
 
 // static
 void ExtensionPrefs::RegisterUserPrefs(PrefService* prefs) {
