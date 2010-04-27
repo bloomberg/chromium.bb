@@ -88,44 +88,29 @@ uintptr_t PortablePluginInterface::GetStrIdentifierCallback(
   return reinterpret_cast<uintptr_t>(NPN_GetStringIdentifier(method_name));
 }
 
-// TODO(robertm): this is a quick hack to address immediate shortcomings
-static void CleanString(nacl::string* text) {
-  for (size_t i = 0; i < text->size(); ++i) {
-    if ((*text)[i] == '\'') {
-      (*text)[i] = '\"';
-    }
-  }
-}
-
-
 bool PortablePluginInterface::Alert(const nacl::string& text) {
-  NPObject* window;
-  NPP npp = GetPluginIdentifier();
-  NPN_GetValue(npp, NPNVWindowNPObject, &window);
-
-  // usually these messages are important enough to call attention to them
+  // Usually these messages are important enough to call attention to them.
   puts(text.c_str());
 
-  nacl::string command = text;
-  CleanString(&command);
-  command = "alert('" + command + "');";
-  uint32_t size = assert_cast<uint32_t>(command.size());
-  char* buffer = reinterpret_cast<char*>(NPN_MemAlloc(size));
-  memcpy(buffer, command.c_str(), command.size());
+  NPObject* window;
+  NPP npp = GetPluginIdentifier();
+  if (NPN_GetValue(npp, NPNVWindowNPObject, &window) != NPERR_NO_ERROR) {
+    return false;
+  }
 
-  // TODO(sehr): write a stand-alone function that converts
-  //             between nacl::string and NPString, and put it in utility.cc.
-  NPString script;
-  script.UTF8Length = size;
-  script.UTF8Characters = buffer;
+  NPVariant message; // doesn't hold its own string data, so don't release
+  STRINGN_TO_NPVARIANT(text.c_str(),
+                       static_cast<uint32_t>(text.size()),
+                       message);
+
   NPVariant result;
-  bool success = NPN_Evaluate(npp, window, &script, &result);
-  NPN_ReleaseVariantValue(&result);
-  NPN_MemFree(buffer);
-
-  return success;
+  VOID_TO_NPVARIANT(result);
+  bool ok = NPN_Invoke(npp, window, NPN_GetStringIdentifier("alert"),
+                       &message, 1, &result);
+  if (ok) NPN_ReleaseVariantValue(&result);
+  NPN_ReleaseObject(window);
+  return ok;
 }
-
 
 bool PortablePluginInterface::GetOrigin(nacl::string **origin) {
   NPP instance = GetPluginIdentifier();
@@ -178,6 +163,7 @@ bool PortablePluginInterface::GetOrigin(nacl::string **origin) {
 }
 
 namespace {
+
 bool RunHandler(
     nacl_srpc::PluginIdentifier plugin_identifier,
     char* handler_string) {
@@ -195,7 +181,13 @@ bool RunHandler(
   // will free the string.  The copy does not include the terminating NUL,
   // as the NPString UTF8Length member does not include the NUL.
   uint32_t handler_len = nacl::saturate_cast<uint32_t>(strlen(handler_string));
+  // TODO(adonovan): any reason not to use strdup?  Or even some
+  // higher-level function for populating an NPString?
   char* handler_copy = reinterpret_cast<char*>(NPN_MemAlloc(handler_len));
+  if (handler_copy == NULL) {
+    dprintf(("NPN_MemAlloc failed in RunHandler.\n"));
+    return false;
+  }
   memcpy(handler_copy, handler_string, handler_len);
   NPString str;
   str.UTF8Characters = reinterpret_cast<NPUTF8*>(handler_copy);
@@ -220,48 +212,42 @@ bool RunHandler(
   return true;
 }
 
-// TODO(sehr): replace with a map lookup.
-char* LookupArgvForString(int argc,
-                          char** argn,
-                          char** argv,
-                          const char* name) {
-  for (int i = 0; i < argc; ++i) {
-    if (!strcmp(argn[i], name)) {
-      return argv[i];
+}  // namespace
+
+char* PortablePluginInterface::LookupArgument(const char *key) {
+  char **keys = argn();
+  for (int ii = 0, len = argc(); ii < len; ++ii) {
+    if (!strcmp(keys[ii], key)) {
+      return argv()[ii];
     }
   }
   return NULL;
 }
 
-}  // namespace
-
 bool PortablePluginInterface::RunOnloadHandler() {
-  return RunHandler(GetPluginIdentifier(),
-                    LookupArgvForString(argc(), argn(), argv(), "onload"));
+  return RunHandler(GetPluginIdentifier(), LookupArgument("onload"));
 }
 
 bool PortablePluginInterface::RunOnfailHandler() {
-  return RunHandler(GetPluginIdentifier(),
-                    LookupArgvForString(argc(), argn(), argv(), "onfail"));
+  return RunHandler(GetPluginIdentifier(), LookupArgument("onfail"));
 }
 
-void* PortablePluginInterface::BrowserAlloc(int size) {
-  return NPN_MemAlloc(size);
+void* PortablePluginInterface::BrowserAlloc(size_t size) {
+  return NPN_MemAlloc(assert_cast<uint32_t>(size));
 }
-
 
 void PortablePluginInterface::BrowserRelease(void* ptr) {
   NPN_MemFree(ptr);
 }
 
 
-const char* PortablePluginInterface::IdentToString(uintptr_t ident) {
+nacl::string PortablePluginInterface::IdentToString(uintptr_t ident) {
   NPIdentifier npident = reinterpret_cast<NPIdentifier>(ident);
   if (NPN_IdentifierIsString(npident)) {
     return reinterpret_cast<char*>(NPN_UTF8FromIdentifier(npident));
   } else {
-    static char buf[10];
-    SNPRINTF(buf, sizeof(buf), "%d", NPN_IntFromIdentifier(npident));
+    char buf[10];
+    SNPRINTF(buf, sizeof buf, "%d", NPN_IntFromIdentifier(npident));
     return buf;
   }
 }
@@ -321,11 +307,6 @@ bool PortablePluginInterface::CheckExecutableVersion(const void* buffer,
 }
 
 char *PortablePluginInterface::MemAllocStrdup(const char *str) {
-  size_t lenz = strlen(str) + 1;
-  char *dup = static_cast<char *>(malloc(lenz));
-  if (NULL != dup) {
-    strncpy(dup, str, lenz);
-  }
-  // else abort();
-  return dup;
+  // TODO(adonovan): rename this function since it doesn't use MemAlloc.
+  return strdup(str);
 }

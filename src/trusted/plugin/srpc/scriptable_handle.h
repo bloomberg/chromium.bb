@@ -142,7 +142,7 @@ class ScriptableHandle: public ScriptableHandleBase {
       dprintf(("ScriptableHandle::Invoke(%p, %s, %d)\n",
                static_cast<void*>(obj),
                PortablePluginInterface::IdentToString(
-                   reinterpret_cast<uintptr_t>(name)),
+                   reinterpret_cast<uintptr_t>(name)).c_str(),
                arg_count));
 
     PortablePluginInterface* intf = unknown_handle->plugin_interface_;
@@ -187,7 +187,7 @@ class ScriptableHandle: public ScriptableHandleBase {
     dprintf(("ScriptableHandle::HasProperty(%p, %s)\n",
              static_cast<void*>(obj),
              PortablePluginInterface::IdentToString(
-                 reinterpret_cast<uintptr_t>(name))));
+                 reinterpret_cast<uintptr_t>(name)).c_str()));
 
     PortablePluginInterface* intf = unknown_handle->plugin_interface_;
     if (NULL == intf->nacl_instance()) {
@@ -211,7 +211,7 @@ class ScriptableHandle: public ScriptableHandleBase {
     dprintf(("ScriptableHandle::GetProperty(%p, %s)\n",
              static_cast<void*>(obj),
              PortablePluginInterface::IdentToString(
-                 reinterpret_cast<uintptr_t>(name))));
+                 reinterpret_cast<uintptr_t>(name)).c_str()));
 
     PortablePluginInterface* intf = unknown_handle->plugin_interface_;
     if (NULL == intf->nacl_instance()) {
@@ -235,7 +235,7 @@ class ScriptableHandle: public ScriptableHandleBase {
     dprintf(("ScriptableHandle::SetProperty(%p, %s, %p)\n",
              static_cast<void*>(obj),
              PortablePluginInterface::IdentToString(
-                 reinterpret_cast<uintptr_t>(name)),
+                 reinterpret_cast<uintptr_t>(name)).c_str(),
              static_cast<void*>(const_cast<NPVariant*>(variant))));
 
     PortablePluginInterface* intf = unknown_handle->plugin_interface_;
@@ -259,7 +259,7 @@ class ScriptableHandle: public ScriptableHandleBase {
     dprintf(("ScriptableHandle::RemoveProperty(%p, %s)\n",
              static_cast<void*>(obj),
              PortablePluginInterface::IdentToString(
-                 reinterpret_cast<uintptr_t>(name))));
+                 reinterpret_cast<uintptr_t>(name)).c_str()));
 
     PortablePluginInterface* intf = unknown_handle->plugin_interface_;
     if (NULL == intf->nacl_instance()) {
@@ -349,7 +349,7 @@ class ScriptableHandle: public ScriptableHandleBase {
     dprintf(("ScriptableHandle::HasMethod(%p, %s)\n",
              static_cast<void*>(obj),
              PortablePluginInterface::IdentToString(
-                 reinterpret_cast<uintptr_t>(name))));
+                 reinterpret_cast<uintptr_t>(name)).c_str()));
     if (NULL == unknown_handle->plugin_interface_->nacl_instance()) {
       return unknown_handle->handle_->HasMethod(
           reinterpret_cast<uintptr_t>(name),
@@ -367,10 +367,9 @@ class ScriptableHandle: public ScriptableHandleBase {
                      uint32_t arg_count,
                      NPVariant* result) {
     SrpcParams params;
-    const char* str_name =
-        PortablePluginInterface::IdentToString(
-            reinterpret_cast<uintptr_t>(name));
-    dprintf(("ScriptableHandle::GenericInvoke: calling %s\n", str_name));
+    dprintf(("ScriptableHandle::GenericInvoke: calling %s\n",
+             PortablePluginInterface::IdentToString(
+                 reinterpret_cast<uintptr_t>(name)).c_str()));
 
     if (NULL != result) {
       NULL_TO_NPVARIANT(*result);

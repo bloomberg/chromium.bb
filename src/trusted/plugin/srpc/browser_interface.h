@@ -47,12 +47,17 @@ class PortablePluginInterface {
   virtual char** argv() = 0;
   virtual int argc() = 0;
 
+  // Returns the argument value for the specified key, or NULL if not found.
+  // The callee retains ownership of the result.
+  virtual char* LookupArgument(const char* key);
+
   // Functions for communication with the browser.
   // NOTE(gregoryd): some of the functions below may require more information
   // about the browser than is available using PluginIdentifier. In this case
   // these functions can be made virtual and implemented in the
   // browser-specific class, such as SRPC_Plugin
   static uintptr_t GetStrIdentifierCallback(const char *method_name);
+  // TODO(adonovan): document significance of result.
   bool Alert(const nacl::string& text);
 
   bool GetOrigin(nacl::string **origin);
@@ -61,13 +66,18 @@ class PortablePluginInterface {
   bool RunOnloadHandler();
   // To indicate unsuccessful loading of a module, invoke the onfail handler.
   bool RunOnfailHandler();
-  static void* BrowserAlloc(int size);
+
+  // Returns a buffer of length |size|, allocated by the browser.
+  // Must be subsequently freed by BrowserRelease, not free().
+  // Precondition: size < 2^32.
+  static void* BrowserAlloc(size_t size);
+  // Releases a buffer previously allocated by BrowserAlloc().  Do not
+  // mix with malloc().
   static void BrowserRelease(void* ptr);
+  // TODO(adonovan): rename.  The implementation is just strdup.
   static char *MemAllocStrdup(const char *str);
   // Convert an identifier to a string
-  // TODO(gregoryd): this is not thread safe, should return c++ string
-  // c.f. http://code.google.com/p/nativeclient/issues/detail?id=376
-  static const char* IdentToString(uintptr_t ident);
+  static nacl::string IdentToString(uintptr_t ident);
   bool CheckExecutableVersion(const char *filename);
 
   bool CheckExecutableVersion(const void* buffer, int32_t size);

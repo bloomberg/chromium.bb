@@ -151,7 +151,7 @@ NaClSrpcArg* SrpcClient::GetSignatureObject() {
 bool SrpcClient::HasMethod(uintptr_t method_id) {
   dprintf(("SrpcClient::HasMethod(%p, %s)\n",
            static_cast<void *>(this),
-           PortablePluginInterface::IdentToString(method_id)));
+           PortablePluginInterface::IdentToString(method_id).c_str()));
   return NULL != methods_[method_id];
 }
 
@@ -173,7 +173,7 @@ bool SrpcClient::Invoke(uintptr_t method_id,
   // happening specifically with hard_shutdowns.
   dprintf(("SrpcClient::Invoke(%p, %s, %p)\n",
            static_cast<void *>(this),
-           PortablePluginInterface::IdentToString(method_id),
+           PortablePluginInterface::IdentToString(method_id).c_str(),
            static_cast<void *>(params)));
 
   // Ensure Invoke was called with an identifier that had a binding.
