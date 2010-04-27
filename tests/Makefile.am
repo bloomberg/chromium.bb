@@ -47,6 +47,8 @@ TESTS =						\
 	name_from_fd				\
 	$(NULL)
 
+SUBDIRS += vbltest $(NULL)
+
 if HAVE_INTEL
 SUBDIRS += \
 	modeprint				\
