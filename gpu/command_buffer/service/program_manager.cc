@@ -220,13 +220,15 @@ void ProgramManager::ProgramInfo::GetProgramiv(GLenum pname, GLint* params) {
       *params = attrib_infos_.size();
       break;
     case GL_ACTIVE_ATTRIBUTE_MAX_LENGTH:
-      *params = max_attrib_name_length_;
+      // Notice +1 to accomodate NULL terminator.
+      *params = max_attrib_name_length_ + 1;
       break;
     case GL_ACTIVE_UNIFORMS:
       *params = uniform_infos_.size();
       break;
     case GL_ACTIVE_UNIFORM_MAX_LENGTH:
-      *params = max_uniform_name_length_;
+      // Notice +1 to accomodate NULL terminator.
+      *params = max_uniform_name_length_ + 1;
       break;
     default:
       glGetProgramiv(service_id_, pname, params);

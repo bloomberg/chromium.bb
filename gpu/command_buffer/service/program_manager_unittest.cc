@@ -422,8 +422,9 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsGLUnderscoreUniform) {
   EXPECT_EQ(2, value);
   // Check that our max length adds room for the array spec and is not as long
   // as the "gl_" uniform we skipped.
+  // +4u is to account for "gl_" and NULL terminator.
   program_info->GetProgramiv(GL_ACTIVE_UNIFORM_MAX_LENGTH, &value);
-  EXPECT_EQ(strlen(kUniform3Name) + 3u, static_cast<size_t>(value));
+  EXPECT_EQ(strlen(kUniform3Name) + 4u, static_cast<size_t>(value));
 }
 
 }  // namespace gles2
