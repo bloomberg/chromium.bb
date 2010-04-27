@@ -95,7 +95,7 @@ if 'TRUSTED_ENV' in env:
 else:
   print ('WARNING: no trusted env specified so skipping toolchain test. '
          'Try, e.g. MODE=dbg-linux,nacl')
-  toolchain_test = []
+  toolchain_tests = []
 
 # Eventually we may want more SDK tests.
 env.AddNodeToTestSuite(['libs_present_test.nexe', toolchain_tests],
