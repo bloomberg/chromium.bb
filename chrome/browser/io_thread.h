@@ -61,6 +61,7 @@ class IOThread : public BrowserProcessSubThread {
 
  protected:
   virtual void Init();
+  virtual void CleanUp();
   virtual void CleanUpAfterMessageLoopDestruction();
 
  private:
@@ -78,12 +79,18 @@ class IOThread : public BrowserProcessSubThread {
   // These member variables are basically global, but their lifetimes are tied
   // to the IOThread.  IOThread owns them all, despite not using scoped_ptr.
   // This is because the destructor of IOThread runs on the wrong thread.  All
-  // member variables should be deleted in CleanUp().
+  // member variables should be deleted in CleanUp(), except ChromeNetLog
+  // which is deleted later in CleanUpAfterMessageLoopDestruction().
 
   // These member variables are initialized in Init() and do not change for the
   // lifetime of the IO thread.
 
   Globals* globals_;
+
+  // This variable is only meaningful during shutdown. It is used to defer
+  // deletion of the NetLog to CleanUpAfterMessageLoopDestruction() even
+  // though |globals_| is reset by CleanUp().
+  scoped_ptr<ChromeNetLog> deferred_net_log_to_delete_;
 
   // These member variables are initialized by a task posted to the IO thread,
   // which gets posted by calling certain member functions of IOThread.

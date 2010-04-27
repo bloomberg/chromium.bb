@@ -144,7 +144,7 @@ void IOThread::Init() {
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory());
 }
 
-void IOThread::CleanUpAfterMessageLoopDestruction() {
+void IOThread::CleanUp() {
   // Not initialized in Init().  May not be initialized.
   if (dns_master_) {
     DCHECK(prefetch_observer_);
@@ -170,6 +170,10 @@ void IOThread::CleanUpAfterMessageLoopDestruction() {
     globals_->host_resolver.get()->GetAsHostResolverImpl()->Shutdown();
   }
 
+  // We will delete the NetLog as part of CleanUpAfterMessageLoopDestruction()
+  // in case any of the message loop destruction observers try to access it.
+  deferred_net_log_to_delete_.reset(globals_->net_log.release());
+
   delete globals_;
   globals_ = NULL;
 
@@ -186,6 +190,15 @@ void IOThread::CleanUpAfterMessageLoopDestruction() {
   base::LeakTracker<URLFetcher>::CheckForLeaks();
   base::LeakTracker<URLRequest>::CheckForLeaks();
 
+  BrowserProcessSubThread::CleanUp();
+}
+
+void IOThread::CleanUpAfterMessageLoopDestruction() {
+  // TODO(eroman): get rid of this special case for 39723. If we could instead
+  // have a method that runs after the message loop destruction obsevers have
+  // run, but before the message loop itself is destroyed, we could safely
+  // combine the two cleanups.
+  deferred_net_log_to_delete_.reset();
   BrowserProcessSubThread::CleanUpAfterMessageLoopDestruction();
 }
 

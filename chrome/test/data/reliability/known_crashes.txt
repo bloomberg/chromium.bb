@@ -174,6 +174,3 @@ wtf::hashtable<webcore::atomicstring,std::pair<webcore::atomicstring,webcore::st
 # 39734
 SUBSTRING :
 v8::internal::setproperty___v8::internal::runtime::setobjectproperty___v8::internal::setproperty___v8::object::sethiddenvalue___webcore::v8domwindowshell::installhiddenobjectprototype
-
-# 41966. Guessing corruption, but it's shown up 4 out of the last 10 runs, so adding it so it doesn't cause us to ignore other errors.
-PREFIX : lockimpl::lock___messageloop::posttask_helper___messageloop::posttask___net::hostresolverimpl::job::dolookup___`anonymous namespace'::workitemcallback
