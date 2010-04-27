@@ -7,6 +7,7 @@
 
 #include <gtk/gtk.h>
 
+#include <algorithm>
 #include <string>
 
 #include "app/gtk_signal.h"
@@ -44,6 +45,9 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   struct CharRange {
     CharRange() : cp_min(0), cp_max(0) { }
     CharRange(int n, int x) : cp_min(n), cp_max(x) { }
+
+    // Returns the start of the selection.
+    int selection_min() const { return std::min(cp_min, cp_max); }
 
     // Work in integers to match the gint GTK APIs.
     int cp_min;  // For a selection: Represents the start.
@@ -253,6 +257,12 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // character that has a strong direction.
   PangoDirection GetContentDirection();
 
+  // Returns the selected text.
+  std::string GetSelectedText() const;
+
+  // If the selected text parses as a URL OwnPrimarySelection is invoked.
+  void UpdatePrimarySelectionIfValidURL();
+
   // The widget we expose, used for vertically centering the real text edit,
   // since the height will change based on the font / font size, etc.
   OwnedWidgetGtk alignment_;
@@ -290,11 +300,13 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   std::wstring text_before_change_;
   CharRange sel_before_change_;
 
-  // The most-recently-selected text from the entry.  This is updated on-the-fly
-  // as the user selects text.  It is used in cases where we need to make the
-  // PRIMARY selection persist even after the user has unhighlighted the text in
-  // the view (e.g. when they highlight some text and then click to unhighlight
-  // it, we pass this string to SavePrimarySelection()).
+  // The most-recently-selected text from the entry that was copied to the
+  // clipboard.  This is updated on-the-fly as the user selects text. This may
+  // differ from the actual selected text, such as when 'http://' is prefixed to
+  // the text.  It is used in cases where we need to make the PRIMARY selection
+  // persist even after the user has unhighlighted the text in the view
+  // (e.g. when they highlight some text and then click to unhighlight it, we
+  // pass this string to SavePrimarySelection()).
   std::string selected_text_;
 
   // When we own the X clipboard, this is the text for it.

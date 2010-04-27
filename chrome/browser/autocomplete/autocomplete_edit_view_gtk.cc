@@ -1042,15 +1042,7 @@ void AutocompleteEditViewGtk::HandleMarkSet(GtkTextBuffer* buffer,
   }
 
   // Get the currently-selected text, if there is any.
-  std::string new_selected_text;
-  GtkTextIter start, end;
-  if (gtk_text_buffer_get_selection_bounds(text_buffer_, &start, &end)) {
-    gchar* text = gtk_text_iter_get_text(&start, &end);
-    size_t text_len = strlen(text);
-    if (text_len)
-      new_selected_text = std::string(text, text_len);
-    g_free(text);
-  }
+  std::string new_selected_text = GetSelectedText();
 
 #if defined(OS_CHROMEOS)
   // If the user just selected some text with the mouse (or at least while the
@@ -1073,12 +1065,6 @@ void AutocompleteEditViewGtk::HandleMarkSet(GtkTextBuffer* buffer,
     GtkClipboard* clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
     if (gtk_clipboard_get_owner(clipboard) == G_OBJECT(text_buffer_))
       SavePrimarySelection(selected_text_);
-  } else if (IsSelectAll() && !model_->user_input_in_progress()) {
-    // Copy the whole URL to the clipboard (including the scheme, which is
-    // hidden in the case of http://).
-    GURL url;
-    if (model_->GetURLForText(GetText(), &url))
-      OwnPrimarySelection(url.spec());
   }
 
   selected_text_ = new_selected_text;
@@ -1089,14 +1075,7 @@ void AutocompleteEditViewGtk::HandleMarkSet(GtkTextBuffer* buffer,
 void AutocompleteEditViewGtk::HandleMarkSetAfter(GtkTextBuffer* buffer,
                                                  GtkTextIter* location,
                                                  GtkTextMark* mark) {
-  std::wstring text = GetText();
-  if (IsSelectAll() && !model_->user_input_in_progress() && !text.empty()) {
-    // Copy the whole URL to the clipboard (including the scheme, which is
-    // hidden in the case of http://).
-    GURL url;
-    if (model_->GetURLForText(GetText(), &url))
-      OwnPrimarySelection(url.spec());
-  }
+  UpdatePrimarySelectionIfValidURL();
 }
 
 // Just use the default behavior for DnD, except if the drop can be a PasteAndGo
@@ -1220,37 +1199,28 @@ void AutocompleteEditViewGtk::HandleCopyOrCutClipboard(GtkWidget* sender) {
   if (!clipboard)
     return;
 
+  CharRange selection = GetSelection();
   GURL url;
-  if (IsSelectAll() && model_->GetURLForText(GetText(), &url)) {
-    // If the whole control is selected and the selected text is a valid URL,
-    // we assume the user is trying to copy a URL and write this to the
-    // clipboard as a hyperlink.
-    ScopedClipboardWriter scw(g_browser_process->clipboard());
-    string16 text16(WideToUTF16(GetText()));
-    string16 url_spec16(UTF8ToUTF16(url.spec()));
-    if (!model_->user_input_in_progress() &&
-        (url.SchemeIs("http") || url.SchemeIs("https"))) {
-      // If the scheme is http or https and the user isn't editing,
-      // we should copy the true URL instead of the (unescaped) display
-      // string to avoid encoding and escaping issues when pasting this text
-      // elsewhere.
-      scw.WriteText(url_spec16);
-      OwnPrimarySelection(url.spec());
-    } else {
-      scw.WriteText(text16);
-      OwnPrimarySelection(UTF16ToUTF8(text16));
-    }
+  std::wstring text(UTF8ToWide(GetSelectedText()));
+  bool write_url;
+  model_->AdjustTextForCopy(selection.selection_min(), IsSelectAll(), &text,
+                            &url, &write_url);
 
+  OwnPrimarySelection(WideToUTF8(text));
+
+  if (write_url) {
+    ScopedClipboardWriter scw(g_browser_process->clipboard());
+    string16 text16(WideToUTF16(text));
+
+    scw.WriteText(text16);
+    scw.WriteBookmark(text16, url.spec());
     scw.WriteHyperlink(UTF16ToUTF8(EscapeForHTML(text16)), url.spec());
 
     // Stop propagating the signal.
     static guint signal_id =
         g_signal_lookup("copy-clipboard", GTK_TYPE_TEXT_VIEW);
     g_signal_stop_emission(text_view_, signal_id, 0);
-    return;
   }
-
-  OwnPrimarySelection(selected_text_);
 }
 
 void AutocompleteEditViewGtk::OwnPrimarySelection(const std::string& text) {
@@ -1553,4 +1523,35 @@ void AutocompleteEditViewGtk::ClipboardGetSelection(
     guint info) {
   gtk_selection_data_set_text(selection_data, primary_selection_text_.c_str(),
                               primary_selection_text_.size());
+}
+
+std::string AutocompleteEditViewGtk::GetSelectedText() const {
+  GtkTextIter start, end;
+  std::string result;
+  if (gtk_text_buffer_get_selection_bounds(text_buffer_, &start, &end)) {
+    gchar* text = gtk_text_iter_get_text(&start, &end);
+    size_t text_len = strlen(text);
+    if (text_len)
+      result = std::string(text, text_len);
+    g_free(text);
+  }
+  return result;
+}
+
+void AutocompleteEditViewGtk::UpdatePrimarySelectionIfValidURL() {
+  std::wstring text = UTF8ToWide(GetSelectedText());
+
+  if (text.empty())
+    return;
+
+  // Use AdjustTextForCopy to make sure we prefix the text with 'http://'.
+  CharRange selection = GetSelection();
+  GURL url;
+  bool write_url;
+  model_->AdjustTextForCopy(selection.selection_min(), IsSelectAll(), &text,
+                            &url, &write_url);
+  if (write_url) {
+    selected_text_ = WideToUTF8(text);
+    OwnPrimarySelection(selected_text_);
+  }
 }
