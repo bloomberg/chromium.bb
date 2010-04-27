@@ -43,6 +43,16 @@ extern const NSString* const kAutoupdateStatusNotification;
 extern const NSString* const kAutoupdateStatusStatus;
 extern const NSString* const kAutoupdateStatusVersion;
 
+namespace {
+  enum BrandFileType {
+    kBrandFileTypeNotDetermined = 0,
+    kBrandFileTypeNone,
+    kBrandFileTypeUser,
+    kBrandFileTypeSystem,
+  };
+
+} // namespace
+
 // KeystoneGlue is an adapter around the KSRegistration class, allowing it to
 // be used without linking directly against its containing KeystoneRegistration
 // framework.  This is used in an environment where most builds (such as
@@ -66,6 +76,7 @@ extern const NSString* const kAutoupdateStatusVersion;
   NSString* url_;
   NSString* version_;
   NSString* channel_;  // Logically: Dev, Beta, or Stable.
+  BrandFileType brandFileType_;
 
   // And the Keystone registration itself, with the active timer
   KSRegistration* registration_;  // strong

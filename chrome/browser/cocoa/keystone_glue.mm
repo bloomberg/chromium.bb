@@ -40,6 +40,8 @@ NSString* KSRegistrationPreserveTrustedTesterTokenKey = @"PreserveTTT";
 NSString* KSRegistrationTagKey = @"Tag";
 NSString* KSRegistrationTagPathKey = @"TagPath";
 NSString* KSRegistrationTagKeyKey = @"TagKey";
+NSString* KSRegistrationBrandPathKey = @"BrandPath";
+NSString* KSRegistrationBrandKeyKey = @"BrandKey";
 
 NSString *KSRegistrationDidCompleteNotification =
     @"KSRegistrationDidCompleteNotification";
@@ -58,6 +60,30 @@ NSString *KSUpdateCheckSuccessfullyInstalledKey = @"SuccessfullyInstalled";
 
 NSString *KSRegistrationRemoveExistingTag = @"";
 #define KSRegistrationPreserveExistingTag nil
+
+// Constants for the brand file (uses an external file so it can survive updates
+// to Chrome.
+
+#if defined(GOOGLE_CHROME_BUILD)
+#define kBrandFileName @"Google Chrome Brand.plist";
+#elif defined(CHROMIUM_BUILD)
+#define kBrandFileName @"Chromium Brand.plist";
+#else
+#error Unknown branding
+#endif
+
+// These directories are hardcoded in Keystone promotion preflight and the
+// Keystone install script, so NSSearchPathForDirectoriesInDomains isn't used
+// since the scripts couldn't use anything like that.
+NSString* kBrandUserFile = @"~/Library/Google/" kBrandFileName;
+NSString* kBrandSystemFile = @"/Library/Google/" kBrandFileName;
+
+NSString* UserBrandFilePath() {
+  return [kBrandUserFile stringByStandardizingPath];
+}
+NSString* SystemBrandFilePath() {
+  return [kBrandSystemFile stringByStandardizingPath];
+}
 
 }  // namespace
 
@@ -144,6 +170,9 @@ NSString *KSRegistrationRemoveExistingTag = @"";
 - (void)changePermissionsForPromotionWithTool:(NSString*)toolPath;
 - (void)changePermissionsForPromotionComplete;
 
+// Returns the brand file path to use for Keystone.
+- (NSString*)brandFilePath;
+
 @end  // @interface KeystoneGlue(Private)
 
 const NSString* const kAutoupdateStatusNotification =
@@ -154,6 +183,7 @@ const NSString* const kAutoupdateStatusVersion = @"version";
 namespace {
 
 const NSString* const kChannelKey = @"KSChannelID";
+const NSString* const kBrandKey = @"KSBrandID";
 
 }  // namespace
 
@@ -258,6 +288,88 @@ const NSString* const kChannelKey = @"KSChannelID";
   channel_ = [channel retain];
 }
 
+- (NSString*)brandFilePath {
+  DCHECK(version_ != nil) << "-loadParameters must be called first";
+
+  if (brandFileType_ == kBrandFileTypeNotDetermined) {
+
+    // Default to none.
+    brandFileType_ = kBrandFileTypeNone;
+
+    // Having a channel means Dev/Beta, so there is no brand code to go with
+    // those.
+    if ([channel_ length] == 0) {
+
+      NSString* userBrandFile = UserBrandFilePath();
+      NSString* systemBrandFile = SystemBrandFilePath();
+
+      NSFileManager* fm = [NSFileManager defaultManager];
+
+      // If there is a system brand file, use it.
+      if ([fm fileExistsAtPath:systemBrandFile]) {
+        // System
+
+        // Use the system file that is there.
+        brandFileType_ = kBrandFileTypeSystem;
+
+        // Clean up any old user level file.
+        if ([fm fileExistsAtPath:userBrandFile]) {
+          [fm removeItemAtPath:userBrandFile error:NULL];
+        }
+
+      } else {
+        // User
+
+        NSDictionary* infoDictionary = [self infoDictionary];
+        NSString* appBundleBrandID = [infoDictionary objectForKey:kBrandKey];
+
+        NSString* storedBrandID = nil;
+        if ([fm fileExistsAtPath:userBrandFile]) {
+          NSDictionary* storedBrandDict =
+              [NSDictionary dictionaryWithContentsOfFile:userBrandFile];
+          storedBrandID = [storedBrandDict objectForKey:kBrandKey];
+        }
+
+        if ((appBundleBrandID != nil) &&
+            (![storedBrandID isEqualTo:appBundleBrandID])) {
+          // App and store don't match, update store and use it.
+          NSDictionary* storedBrandDict =
+              [NSDictionary dictionaryWithObject:appBundleBrandID
+                                          forKey:kBrandKey];
+          if ([storedBrandDict writeToFile:userBrandFile atomically:YES]) {
+            brandFileType_ = kBrandFileTypeUser;
+          }
+        } else if (storedBrandID) {
+          // Had stored brand, use it.
+          brandFileType_ = kBrandFileTypeUser;
+        }
+      }
+    }
+
+  }
+
+  NSString* result = nil;
+  switch (brandFileType_) {
+    case kBrandFileTypeUser:
+      result = UserBrandFilePath();
+      break;
+
+    case kBrandFileTypeSystem:
+      result = SystemBrandFilePath();
+      break;
+
+    case kBrandFileTypeNotDetermined:
+      NOTIMPLEMENTED();
+      // Fall through
+    case kBrandFileTypeNone:
+      // Clear the value.
+      result = @"";
+      break;
+
+  }
+  return result;
+}
+
 - (BOOL)loadKeystoneRegistration {
   if (!productID_ || !appPath_ || !url_ || !version_)
     return NO;
@@ -292,6 +404,15 @@ const NSString* const kChannelKey = @"KSChannelID";
   NSNumber* preserveTTToken = [NSNumber numberWithBool:YES];
   NSString* tagPath = [self appInfoPlistPath];
 
+  NSString* brandKey = kBrandKey;
+  NSString* brandPath = [self brandFilePath];
+
+  if ([brandPath length] == 0) {
+    // Brand path and brand key must be cleared together or ksadmin seems
+    // to throw an error.
+    brandKey = @"";
+  }
+
   return [NSDictionary dictionaryWithObjectsAndKeys:
              version_, KSRegistrationVersionKey,
              xcType, KSRegistrationExistenceCheckerTypeKey,
@@ -301,6 +422,8 @@ const NSString* const kChannelKey = @"KSChannelID";
              channel_, KSRegistrationTagKey,
              tagPath, KSRegistrationTagPathKey,
              kChannelKey, KSRegistrationTagKeyKey,
+             brandPath, KSRegistrationBrandPathKey,
+             brandKey, KSRegistrationBrandKeyKey,
              nil];
 }
 
@@ -632,11 +755,15 @@ const NSString* const kChannelKey = @"KSChannelID";
 
   // TODO(mark): Remove when able!
   //
-  // keystone_promote_preflight is hopefully temporary.  It's here to ensure
-  // that the Keystone system ticket store is in a usable state for all users
-  // on the system.  Ideally, Keystone's installer or another part of Keystone
-  // would handle this.  The underlying problem is http://b/2285921, and it
-  // causes http://b/2289908, which this workaround addresses.
+  // keystone_promote_preflight will copy the current brand information out to
+  // the system level so all users can share the data as part of the ticket
+  // promotion.
+  //
+  // It will also ensure that the Keystone system ticket store is in a usable
+  // state for all users on the system.  Ideally, Keystone's installer or
+  // another part of Keystone would handle this.  The underlying problem is
+  // http://b/2285921, and it causes http://b/2289908, which this workaround
+  // addresses.
   //
   // This is run synchronously, which isn't optimal, but
   // -[KSRegistration promoteWithParameters:authorization:] is currently
@@ -650,7 +777,14 @@ const NSString* const kChannelKey = @"KSChannelID";
       [mac_util::MainAppBundle() pathForResource:@"keystone_promote_preflight"
                                           ofType:@"sh"];
   const char* preflightPathC = [preflightPath fileSystemRepresentation];
-  const char* arguments[] = {NULL};
+  const char* userBrandFile = NULL;
+  const char* systemBrandFile = NULL;
+  if (brandFileType_ == kBrandFileTypeUser) {
+    // Running with user level brand file, promote to the system level.
+    userBrandFile = [UserBrandFilePath() fileSystemRepresentation];
+    systemBrandFile = [SystemBrandFilePath() fileSystemRepresentation];
+  }
+  const char* arguments[] = {userBrandFile, systemBrandFile, NULL};
 
   int exit_status;
   status = authorization_util::ExecuteWithPrivilegesAndWait(
@@ -678,6 +812,17 @@ const NSString* const kChannelKey = @"KSChannelID";
   authorization_.swap(authorization);
 
   NSDictionary* parameters = [self keystoneParameters];
+
+  // If the brand file is user level, update parameters to point to the new
+  // system level file during promotion.
+  if (brandFileType_ == kBrandFileTypeUser) {
+    NSMutableDictionary* temp_parameters =
+        [[parameters mutableCopy] autorelease];
+    [temp_parameters setObject:SystemBrandFilePath()
+                        forKey:KSRegistrationBrandPathKey];
+    parameters = temp_parameters;
+  }
+
   if (![registration_ promoteWithParameters:parameters
                               authorization:authorization_]) {
     [self updateStatus:kAutoupdatePromoteFailed version:nil];

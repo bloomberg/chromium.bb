@@ -196,6 +196,17 @@ function ksadmin_supports_tagpath_tagkey() {
   # return value.
 }
 
+# Returns 0 (true) if ksadmin supports --tag-path, --tag-key, --brand-path,
+# and --brand-key.
+function ksadmin_supports_brandpath_brandkey() {
+  # --brand-path and --brand-key were introduced in Keystone 1.0.8.1620.
+  # --tag-path and --tag-key are already supported if the brand arguments are
+  # also supported.
+  is_ksadmin_version_ge 1.0.8.1620
+  # The return value of is_ksadmin_version_ge is used as this function's
+  # return value.
+}
+
 # The argument should be the disk image path.  Make sure it exists.
 if [ $# -lt 1 ] || [ ! -d "${1}" ]; then
   exit 2
@@ -322,6 +333,11 @@ if [ ${EUID} -ne 0 ] ; then
   set -e
 fi
 
+# Collect the current app brand, it will be use later.
+BRAND_ID_KEY=KSBrandID
+APP_BRAND=$(defaults read "${DEST}/Contents/Info" "${BRAND_ID_KEY}" 2>/dev/null ||
+            true)
+
 # Don't use rsync -a, because -a expands to -rlptgoD.  -g and -o copy owners
 # and groups, respectively, from the source, and that is undesirable in this
 # case.  -D copies devices and special files; copying devices only works
@@ -420,8 +436,54 @@ fi
 # beforehand.
 ksadmin_version >& /dev/null || true
 
+# The brand information is stored differently depending on whether this is
+# running for a system or user ticket.
+BRAND_PATH_PLIST=
+SET_BRAND_FILE_ACCESS=no
+if [ ${EUID} -ne 0 ] ; then
+  # Using a user level ticket.
+  BRAND_PATH_PLIST=~/"Library/Google/Google Chrome Brand"
+else
+  # Using a system level ticket.
+  BRAND_PATH_PLIST="/Library/Google/Google Chrome Brand"
+  SET_BRAND_FILE_ACCESS=yes
+fi
+# If the user manually updated their copy of Chrome, there might be new brand
+# information in the app bundle, and that needs to be copied out into the
+# file Keystone looks at.
+BRAND_PATH="${BRAND_PATH_PLIST}.plist"
+if [ -n "${APP_BRAND}" ] ; then
+  BRAND_PATH_DIR=$(dirname "${BRAND_PATH}")
+  if [ ! -e "${BRAND_PATH_DIR}" ] ; then
+    mkdir -p "${BRAND_PATH_DIR}"
+  fi
+  defaults write "${BRAND_PATH_PLIST}" "${BRAND_ID_KEY}" -string "${APP_BRAND}"
+  if [ "${SET_BRAND_FILE_ACCESS}" = "yes" ] ; then
+    chown "root:wheel" "${BRAND_PATH}" >& /dev/null
+    chmod "a+r,u+w,go-w" "${BRAND_PATH}" >& /dev/null
+  fi
+fi
+# Confirm that the brand file exists (it is optional)
+if [ ! -f "${BRAND_PATH}" ] ; then
+  BRAND_PATH=
+  # ksadmin reports an error if brand-path is cleared but brand-key still has a
+  # value, so if there is no path, clear the key also.
+  BRAND_ID_KEY=
+fi
+
 # Notify Keystone.
-if ksadmin_supports_tagpath_tagkey ; then
+if ksadmin_supports_brandpath_brandkey ; then
+  ksadmin --register \
+          -P "${PRODUCT_ID}" \
+          --version "${NEW_VERSION_KS}" \
+          --xcpath "${DEST}" \
+          --url "${URL}" \
+          --tag "${CHANNEL_ID}" \
+          --tag-path "${DEST}/Contents/Info.plist" \
+          --tag-key "${CHANNEL_ID_KEY}" \
+          --brand-path "${BRAND_PATH}" \
+          --brand-key "${BRAND_ID_KEY}" || exit 11
+elif ksadmin_supports_tagpath_tagkey ; then
   ksadmin --register \
           -P "${PRODUCT_ID}" \
           --version "${NEW_VERSION_KS}" \
