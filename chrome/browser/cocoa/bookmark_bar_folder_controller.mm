@@ -84,6 +84,7 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
 - (void)dealloc {
   [self removeScrollTracking];
   [self endScroll];
+  [hoverState_ draggingExited];
   // Note: we don't need to
   //   [NSObject cancelPreviousPerformRequestsWithTarget:self];
   // Because all of our performSelector: calls use withDelay: which

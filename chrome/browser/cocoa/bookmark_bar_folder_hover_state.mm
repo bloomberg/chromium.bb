@@ -38,12 +38,12 @@
         [self scheduleCloseBookmarkFolderOnHoverButton];
       } else if (hoverState_ == kHoverStateClosed) {
         // Open the new.
-        [self scheduleOpenBookmarkFolderOnHoverButton:[button retain]];
+        [self scheduleOpenBookmarkFolderOnHoverButton:button];
       }
     } else if (!hoverButton_) {
       // CASE C: we don't have a current hoverButton_ but we have dragged onto
       // a new folder so we open the new one.
-      [self scheduleOpenBookmarkFolderOnHoverButton:[button retain]];
+      [self scheduleOpenBookmarkFolderOnHoverButton:button];
     }
   } else if (!button) {
     if (hoverButton_) {
@@ -100,7 +100,7 @@
 // Schedule open of hover button.  Transition to kHoverStateOpening state.
 - (void)scheduleOpenBookmarkFolderOnHoverButton:(BookmarkButton*)button {
   DCHECK(button);
-  hoverButton_.reset(button);
+  hoverButton_.reset([button retain]);
   [self setHoverState:kHoverStateOpening];
   [self performSelector:@selector(openBookmarkFolderOnHoverButton:)
              withObject:hoverButton_
