@@ -45,7 +45,7 @@
 #include <epan/stats_tree.h>
 
 #include <epan/req_resp_hdrs.h>
-#include <plugins/spdy/packet-spdy.h>
+#include "packet-spdy.h"
 #include <epan/dissectors/packet-tcp.h>
 #include <epan/dissectors/packet-ssl.h>
 #include <epan/prefs.h>
@@ -475,6 +475,16 @@ spdy_discard_data_frames(spdy_stream_info_t *si)
     si->data_frames = NULL; */
 }
 
+// TODO(cbentzel): tvb_child_uncompress should be exported by wireshark.
+static tvbuff_t* spdy_tvb_child_uncompress(tvbuff_t *parent _U_, tvbuff_t *tvb,
+                                           int offset, int comprlen)
+{
+	tvbuff_t *new_tvb = tvb_uncompress(tvb, offset, comprlen);
+	if (new_tvb)
+		tvb_set_child_real_data_tvbuff (parent, new_tvb);
+	return new_tvb;
+}
+
 static int
 dissect_spdy_data_frame(tvbuff_t *tvb, int offset,
 			packet_info *pinfo,
@@ -610,9 +620,8 @@ dissect_spdy_data_frame(tvbuff_t *tvb, int offset,
 		    (g_ascii_strcasecmp(si->content_encoding, "gzip") == 0 ||
 		     g_ascii_strcasecmp(si->content_encoding, "deflate")
 		     == 0)) {
-
-		uncomp_tvb = tvb_child_uncompress(tvb, data_tvb, 0,
-			tvb_length(data_tvb));
+              uncomp_tvb = spdy_tvb_child_uncompress(tvb, data_tvb, 0,
+                                                     tvb_length(data_tvb));
 	    }
 	    /*
 	     * Add the encoded entity to the protocol tree
@@ -813,6 +822,42 @@ spdy_check_header_compression(tvbuff_t *tvb,
     return 0;
 }
 
+// TODO(cbentzel): Change wireshark to export p_remove_proto_data, rather
+// than duplicating code here.
+typedef struct _spdy_frame_proto_data {
+  int proto;
+  void *proto_data;
+} spdy_frame_proto_data;
+
+static gint spdy_p_compare(gconstpointer a, gconstpointer b)
+{
+  const spdy_frame_proto_data *ap = (const spdy_frame_proto_data *)a;
+  const spdy_frame_proto_data *bp = (const spdy_frame_proto_data *)b;
+
+  if (ap -> proto > bp -> proto)
+    return 1;
+  else if (ap -> proto == bp -> proto)
+    return 0;
+  else
+    return -1;
+
+}
+
+static void spdy_p_remove_proto_data(frame_data *fd, int proto)
+{
+  spdy_frame_proto_data temp;
+  GSList *item;
+
+  temp.proto = proto;
+  temp.proto_data = NULL;
+
+  item = g_slist_find_custom(fd->pfd, (gpointer *)&temp, spdy_p_compare);
+
+  if (item) {
+    fd->pfd = g_slist_remove(fd->pfd, item->data);
+  }
+}
+
 static spdy_frame_info_t *
 spdy_save_header_block(frame_data *fd,
 	guint32 stream_id,
@@ -823,7 +868,7 @@ spdy_save_header_block(frame_data *fd,
     GSList *filist = p_get_proto_data(fd, proto_spdy);
     spdy_frame_info_t *frame_info = se_alloc(sizeof(spdy_frame_info_t));
     if (filist != NULL)
-	p_remove_proto_data(fd, proto_spdy);
+      spdy_p_remove_proto_data(fd, proto_spdy);
     frame_info->stream_id = stream_id;
     frame_info->header_block = header;
     frame_info->header_block_len = length;
