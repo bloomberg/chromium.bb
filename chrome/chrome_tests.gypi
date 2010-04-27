@@ -1098,7 +1098,7 @@
           'sources!': [
             # Blocked on bookmark manager.
             'browser/bookmarks/bookmark_context_menu_controller_unittest.cc',
-            'browser/views/accessibility_event_router_views_unittest.cc',   
+            'browser/views/accessibility_event_router_views_unittest.cc',
             'browser/views/bookmark_context_menu_test.cc',
             'browser/gtk/go_button_gtk_unittest.cc',
             'browser/gtk/tabs/tab_renderer_gtk_unittest.cc',
@@ -1872,6 +1872,7 @@
       'type': 'executable',
       'msvs_guid': 'A1CAA831-C507-4B2E-87F3-AEC63C9907F9',
       'dependencies': [
+        'chrome',
         'chrome_resources',
         'chrome_strings',
         'test_support_common',
