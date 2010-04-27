@@ -17,7 +17,8 @@ AudioRendererAlgorithmBase::AudioRendererAlgorithmBase()
     : channels_(0),
       sample_rate_(0),
       sample_bytes_(0),
-      playback_rate_(0.0f) {
+      playback_rate_(0.0f),
+      queue_(0, kDefaultMinQueueSizeInBytes) {
 }
 
 AudioRendererAlgorithmBase::~AudioRendererAlgorithmBase() {}
@@ -52,13 +53,13 @@ void AudioRendererAlgorithmBase::FlushBuffers() {
 }
 
 base::TimeDelta AudioRendererAlgorithmBase::GetTime() {
-  return queue_.GetTime();
+  return queue_.current_time();
 }
 
 void AudioRendererAlgorithmBase::EnqueueBuffer(Buffer* buffer_in) {
   // If we're at end of stream, |buffer_in| contains no data.
   if (!buffer_in->IsEndOfStream())
-    queue_.Enqueue(buffer_in);
+    queue_.Append(buffer_in);
 
   // If we still don't have enough data, request more.
   if (!IsQueueFull())
@@ -75,26 +76,26 @@ void AudioRendererAlgorithmBase::set_playback_rate(float new_rate) {
 }
 
 bool AudioRendererAlgorithmBase::IsQueueEmpty() {
-  return queue_.IsEmpty();
+  return queue_.forward_bytes() == 0;
 }
 
 bool AudioRendererAlgorithmBase::IsQueueFull() {
-  return (queue_.SizeInBytes() >= kDefaultMinQueueSizeInBytes);
+  return (queue_.forward_bytes() >= kDefaultMinQueueSizeInBytes);
 }
 
 uint32 AudioRendererAlgorithmBase::QueueSize() {
-  return queue_.SizeInBytes();
+  return queue_.forward_bytes();
 }
 
 void AudioRendererAlgorithmBase::AdvanceInputPosition(uint32 bytes) {
-  queue_.Consume(bytes);
+  queue_.Seek(bytes);
 
   if (!IsQueueFull())
     request_read_callback_->Run();
 }
 
 uint32 AudioRendererAlgorithmBase::CopyFromInput(uint8* dest, uint32 bytes) {
-  return queue_.Copy(dest, bytes);
+  return queue_.Peek(dest, bytes);
 }
 
 int AudioRendererAlgorithmBase::channels() {

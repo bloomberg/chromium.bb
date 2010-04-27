@@ -28,7 +28,7 @@
 #include "base/callback.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "media/base/buffer_queue.h"
+#include "media/base/seekable_buffer.h"
 
 namespace media {
 
@@ -107,7 +107,7 @@ class AudioRendererAlgorithmBase {
   scoped_ptr<RequestReadCallback> request_read_callback_;
 
   // Queued audio data.
-  BufferQueue queue_;
+  SeekableBuffer queue_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererAlgorithmBase);
 };

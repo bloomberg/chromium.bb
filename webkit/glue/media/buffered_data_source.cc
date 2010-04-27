@@ -321,7 +321,7 @@ void BufferedResourceLoader::OnReceivedData(const char* data, int len) {
     return;
 
   // Writes more data to |buffer_|.
-  buffer_->Append(len, reinterpret_cast<const uint8*>(data));
+  buffer_->Append(reinterpret_cast<const uint8*>(data), len);
 
   // If there is an active read request, try to fulfill the request.
   if (HasPendingRead() && CanFulfillRead()) {
@@ -451,7 +451,7 @@ void BufferedResourceLoader::ReadInternal() {
   DCHECK(ret);
 
   // Then do the read.
-  int read = static_cast<int>(buffer_->Read(read_size_, read_buffer_));
+  int read = static_cast<int>(buffer_->Read(read_buffer_, read_size_));
   offset_ += first_offset_ + read;
 
   // And report with what we have read.
