@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@
 #define MAYBE_Tab2OutOfTabStrip Tab2OutOfTabStrip
 #endif
 
-#if defined(TOOLKIT_VIEWS) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
 // Disabled on Toolkit views bot. See http://crbug.com/42614
 #define MAYBE_Tab1Tab3Escape DISABLED_Tab1Tab3Escape
 #else
@@ -35,7 +35,7 @@
 
 
 class TabDraggingTest : public UITest {
-protected:
+ protected:
   TabDraggingTest() {
     show_window_ = true;
   }
