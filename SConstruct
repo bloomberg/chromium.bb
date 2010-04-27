@@ -1187,6 +1187,11 @@ elif linux_env['BUILD_ARCHITECTURE'] == 'arm':
 else:
   Banner('Strange platform: %s' % BUILD_NAME)
 
+# Ensure that the executable does not get a PT_GNU_STACK header that
+# causes the kernel to set the READ_IMPLIES_EXEC personality flag,
+# which disables NX page protection.  This is Linux-specific.
+linux_env.Prepend(LINKFLAGS=['-Wl,-z,noexecstack'])
+
 # TODO(robert): support for arm builds
 
 (linux_debug_env, linux_optimized_env) = GenerateOptimizationLevels(linux_env)
@@ -1269,6 +1274,7 @@ nacl_env.Append(
     'tests/barebones/nacl.scons',
     'tests/bundle_size/nacl.scons',
     'tests/contest_issues/nacl.scons',
+    'tests/data_not_executable/nacl.scons',
     'tests/dynamic_code_loading/nacl.scons',
     'tests/egyptian_cotton/nacl.scons',
     'tests/fib/nacl.scons',

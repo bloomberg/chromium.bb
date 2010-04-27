@@ -132,16 +132,27 @@ def SuccessMessage():
   return 'RESULT: %s PASSED' % GlobalSettings['name']
 
 
+# Mac OS X returns SIGBUS in most of the cases where Linux returns
+# SIGSEGV, except for actual x86 segmentation violations.
+status_map = {
+    'segfault': {
+        'linux2': -11, # SIGSEGV
+        'darwin': -10, # SIGBUS
+        'cygwin': -1073741819, # -0x3ffffffb or 0xc0000005
+        'win32':  -1073741819, # -0x3ffffffb or 0xc0000005
+        },
+    'sigsegv_or_equivalent': {
+        'linux2': -11, # SIGSEGV
+        'darwin': -11, # SIGSEGV
+        'cygwin': -1073741819, # -0x3ffffffb or 0xc0000005
+        'win32':  -1073741819, # -0x3ffffffb or 0xc0000005
+        },
+    }
+
+
 def MassageExitStatus(v):
-  status_map = {
-      'linux2': -11,
-      'darwin': -10,
-      'cygwin': -1073741819,  # 0x3ffffffb
-      'win32':  -1073741819,  # 0x3ffffffb
-      }
-  if v == 'segfault':
-    assert sys.platform in status_map
-    return status_map[sys.platform]
+  if v in status_map:
+    return status_map[v][sys.platform]
   else:
     return int(v)
 

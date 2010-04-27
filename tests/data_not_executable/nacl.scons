@@ -1,0 +1,32 @@
+# -*- python -*-
+# Copyright 2010 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+
+Import('env')
+
+# Using the default set of libraries fails to link in the ARM build.
+env.Replace(LIBS=['c', 'nacl'])
+
+env.ComponentProgram('execute_data.nexe', ['execute_data.c'])
+
+# We check the output to ensure that the process doesn't die for an
+# unexpected reason.
+node = env.CommandSelLdrTestNacl(
+    'execute_data.out',
+    command=[env.File('execute_data.nexe')],
+    exit_status='sigsegv_or_equivalent',
+    stdout_golden=env.File('execute_data.stdout'))
+
+# This test does not work under qemu-arm because qemu-arm does not
+# support the NX page protection bit.
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  test_suites = ['small_tests_arm_hw_only']
+else:
+  test_suites = ['small_tests']
+# 64-bit Ubuntu Hardy (Linux) on VMWare also seems to have problems
+# with NX page protection, but later versions of Ubuntu are OK on
+# VMWare, and 64-bit Hardy is OK on real hardware.
+if not env.Bit('disable_hardy64_vmware_failures'):
+  env.AddNodeToTestSuite(node, test_suites, 'run_execute_data_test')
