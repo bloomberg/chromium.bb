@@ -7367,9 +7367,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_KEYBOARD_LAYOUT_TEXT" desc="In the settings tab, the text of the keyboard layouti label.">
         Keyboard Layout:
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_HANGUL_IME_TEXT" desc="In the settings tab, the text of the Hangul IME label.">
-        Hangul IME:
-      </message>
       <message name="IDS_OPTIONS_SETTINGS_CONNECT" desc="In the settings tab, the text on the button to connect to a network.">
         Connect
       </message>
