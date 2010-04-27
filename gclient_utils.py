@@ -386,15 +386,17 @@ class ThreadPool:
       while not self._done:
         f = self._pool._queue.get()
         try:
-          f(self)
-        except Exception, e:
-          # Catch all exceptions, otherwise we can't join the thread. Print the
-          # backtrace now, but keep the exception so that we can raise it on the
-          # main thread.
-          type, value, tb = sys.exc_info()
-          traceback.print_exception(type, value, tb)
-          self.exceptions.append(e)
-        self._pool._JobDone()
+          try:
+            f(self)
+          except Exception, e:
+            # Catch all exceptions, otherwise we can't join the thread. Print
+            # the backtrace now, but keep the exception so that we can raise it
+            # on the main thread.
+            type, value, tb = sys.exc_info()
+            traceback.print_exception(type, value, tb)
+            self.exceptions.append(e)
+        finally:
+          self._pool._JobDone()
 
   def _AddJobToQueue(self, job):
     self._condition.acquire()
