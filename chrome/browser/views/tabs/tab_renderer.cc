@@ -323,6 +323,7 @@ void TabRenderer::UpdateData(TabContents* contents,
     else
       data_.favicon = contents->GetFavIcon();
     data_.phantom = phantom;
+    data_.app = contents->is_app();
 
     // Sets the accessible name for the tab.
     SetAccessibleName(UTF16ToWide(data_.title));
@@ -978,9 +979,9 @@ void TabRenderer::LoadTabImages() {
   tab_active.l_width = tab_active.image_l->width();
   tab_active.r_width = tab_active.image_r->width();
 
-  // This is high much taller *visually* the regular tab is compared to the
-  // nano tabs. The images are the same height, this is really just the
-  // difference in whitespace above the tab image.
+  // The regular tab is high much taller *visually* than the nano tabs.
+  // The images are the same height, this is really just the difference
+  // in whitespace above the tab image (regular vs nano).
   const int kMiniTabDiffHeight = 14;
 
   tab_active_nano.image_l = rb.GetBitmapNamed(IDR_TAB_ACTIVE_NANO_LEFT);

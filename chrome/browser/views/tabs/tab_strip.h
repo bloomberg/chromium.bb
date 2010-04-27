@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_VIEWS_TABS_TAB_STRIP_H_
 #define CHROME_BROWSER_VIEWS_TABS_TAB_STRIP_H_
 
+#include <vector>
+
 #include "app/animation_container.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
@@ -186,6 +188,10 @@ class TabStrip : public BaseTabStrip,
   // Horizontal gap between mini and non-mini-tabs.
   static const int mini_to_non_mini_gap_;
 
+  // Extra horizontal gap (on top of mini_to_non_mini_gap_) when one of the
+  // mini tabs is a nano tab.
+  static const int extra_gap_for_nano_;
+
  private:
   class RemoveTabDelegate;
 
@@ -280,6 +286,9 @@ class TabStrip : public BaseTabStrip,
   // Returns the number of mini-tabs.
   int GetMiniTabCount() const;
 
+  // Returns the number of nano-tabs.
+  int GetNanoTabCount() const;
+
   // -- Tab Resize Layout -----------------------------------------------------
 
   // Returns the exact (unrounded) current width of each tab.
@@ -290,10 +299,11 @@ class TabStrip : public BaseTabStrip,
   // desired strip width and number of tabs.  If
   // |width_of_tabs_for_mouse_close_| is nonnegative we use that value in
   // calculating the desired strip width; otherwise we use the current width.
-  // |mini_tab_count| gives the number of mini-tabs, and |tab_count| the
-  // number of mini and non-mini-tabs.
+  // |mini_tab_count| gives the number of mini-tabs, |nano_tab_count| the
+  // number of mini-tabs and |tab_count| the number of mini and non-mini-tabs.
   void GetDesiredTabWidths(int tab_count,
                            int mini_tab_count,
+                           int nano_tab_count,
                            double* unselected_width,
                            double* selected_width) const;
 

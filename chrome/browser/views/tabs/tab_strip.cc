@@ -238,6 +238,9 @@ class TabStrip::RemoveTabDelegate
 // static
 const int TabStrip::mini_to_non_mini_gap_ = 3;
 
+// static
+const int TabStrip::extra_gap_for_nano_ = 10;
+
 TabStrip::TabStrip(TabStripModel* model)
     : model_(model),
       resize_layout_factory_(this),
@@ -1087,9 +1090,11 @@ void TabStrip::GetCurrentTabWidths(double* unselected_width,
 
 void TabStrip::GetDesiredTabWidths(int tab_count,
                                    int mini_tab_count,
+                                   int nano_tab_count,
                                    double* unselected_width,
                                    double* selected_width) const {
   DCHECK(tab_count >= 0 && mini_tab_count >= 0 && mini_tab_count <= tab_count);
+  DCHECK(nano_tab_count >= 0 && nano_tab_count <= tab_count);
   const double min_unselected_width = Tab::GetMinimumUnselectedSize().width();
   const double min_selected_width = Tab::GetMinimumSelectedSize().width();
 
@@ -1128,6 +1133,9 @@ void TabStrip::GetDesiredTabWidths(int tab_count,
     }
     // Account for gap between the last mini-tab and first non-mini-tab.
     available_width -= mini_to_non_mini_gap_;
+    // And add some extra space if you have nano tabs in the mix.
+    if (nano_tab_count > 0)
+      available_width -= extra_gap_for_nano_;
   }
 
   // Calculate the desired tab widths by dividing the available space into equal
@@ -1187,7 +1195,8 @@ void TabStrip::ResizeLayoutTabs() {
   }
   Tab* first_tab  = GetTabAtTabDataIndex(mini_tab_count);
   double unselected, selected;
-  GetDesiredTabWidths(GetTabCount(), mini_tab_count, &unselected, &selected);
+  GetDesiredTabWidths(GetTabCount(), mini_tab_count, GetNanoTabCount(),
+                      &unselected, &selected);
   int w = Round(first_tab->IsSelected() ? selected : selected);
 
   // We only want to run the animation if we're not already at the desired
@@ -1396,17 +1405,20 @@ void TabStrip::GenerateIdealBounds() {
   int tab_count = GetTabCount();
   int non_closing_tab_count = 0;
   int mini_tab_count = 0;
+  int nano_tab_count = 0;
   for (int i = 0; i < tab_count; ++i) {
     if (!tab_data_[i].tab->closing()) {
       ++non_closing_tab_count;
       if (tab_data_[i].tab->mini())
         mini_tab_count++;
+      if (tab_data_[i].tab->app())
+        nano_tab_count++;
     }
   }
 
   double unselected, selected;
-  GetDesiredTabWidths(non_closing_tab_count, mini_tab_count, &unselected,
-                      &selected);
+  GetDesiredTabWidths(non_closing_tab_count, mini_tab_count, nano_tab_count,
+                      &unselected, &selected);
 
   current_unselected_width_ = unselected;
   current_selected_width_ = selected;
@@ -1426,6 +1438,8 @@ void TabStrip::GenerateIdealBounds() {
         if (last_was_mini) {
           // Give a bigger gap between mini and non-mini tabs.
           tab_x += mini_to_non_mini_gap_;
+          if (nano_tab_count > 0)
+            tab_x += extra_gap_for_nano_;
         }
         if (tab->IsSelected())
           tab_width = selected;
@@ -1678,6 +1692,17 @@ int TabStrip::GetMiniTabCount() const {
       return mini_count;
   }
   return mini_count;
+}
+
+int TabStrip::GetNanoTabCount() const {
+  int nano_count = 0;
+  for (size_t i = 0; i < tab_data_.size(); ++i) {
+    if (tab_data_[i].tab->app())
+      nano_count++;
+    else
+      return nano_count;
+  }
+  return nano_count;
 }
 
 int TabStrip::GetAvailableWidthForTabs(Tab* last_tab) const {

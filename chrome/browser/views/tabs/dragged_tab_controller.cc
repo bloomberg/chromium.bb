@@ -23,7 +23,6 @@
 #include "chrome/browser/views/tabs/native_view_photobooth.h"
 #include "chrome/browser/views/tabs/tab.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/canvas.h"
 #include "grit/theme_resources.h"
@@ -42,7 +41,7 @@
 #include <gdk/gdkkeysyms.h>
 #endif
 
-static const int kHorizontalMoveThreshold = 16; // pixels
+static const int kHorizontalMoveThreshold = 16;  // Pixels.
 
 namespace {
 
@@ -338,7 +337,7 @@ DraggedTabController::~DraggedTabController() {
   // bounds, it won't be able to clean up properly since its cleanup routine
   // uses GetIndexForDraggedContents, which will be invalid.
   view_.reset(NULL);
-  SetDraggedContents(NULL); // This removes our observer.
+  SetDraggedContents(NULL);  // This removes our observer.
 }
 
 void DraggedTabController::CaptureDragInfo(const gfx::Point& mouse_offset) {
@@ -766,11 +765,13 @@ void DraggedTabController::Attach(TabStrip* attached_tabstrip,
   // TabStrip.
   int tab_count = attached_tabstrip_->GetTabCount();
   int mini_tab_count = attached_tabstrip_->GetMiniTabCount();
+  int nano_tab_count = attached_tabstrip_->GetNanoTabCount();
   if (!tab)
     ++tab_count;
   double unselected_width, selected_width = 0;
   attached_tabstrip_->GetDesiredTabWidths(tab_count, mini_tab_count,
-                                          &unselected_width, &selected_width);
+                                          nano_tab_count, &unselected_width,
+                                          &selected_width);
   EnsureDraggedView();
   int dragged_tab_width =
       mini_ ? Tab::GetMiniWidth() : static_cast<int>(selected_width);
@@ -809,7 +810,7 @@ void DraggedTabController::Attach(TabStrip* attached_tabstrip,
 
     tab = GetTabMatchingDraggedContents(attached_tabstrip_);
   }
-  DCHECK(tab); // We should now have a tab.
+  DCHECK(tab);  // We should now have a tab.
   tab->SetVisible(false);
 
   // Move the corresponding window to the front.
