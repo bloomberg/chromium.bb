@@ -212,29 +212,38 @@ VideoDecoderImpl::TimeTuple VideoDecoderImpl::FindPtsAndDuration(
 
   // First search the VideoFrame for the pts. This is the most authoritative.
   // Make a special exclusion for the value pts == 0.  Though this is
-  // technically a valid value, it seems a number of ffmpeg codecs will
+  // technically a valid value, it seems a number of FFmpeg codecs will
   // mistakenly always set pts to 0.
+  //
+  // TODO(scherkus): FFmpegVideoDecodeEngine should be able to detect this
+  // situation and set the timestamp to kInvalidTimestamp.
   DCHECK(frame);
   base::TimeDelta timestamp = frame->GetTimestamp();
   if (timestamp != StreamSample::kInvalidTimestamp &&
       timestamp.ToInternalValue() != 0) {
-    pts.timestamp = ConvertTimestamp(time_base, timestamp.ToInternalValue());
-    pts.duration = ConvertTimestamp(time_base, 1 + frame->GetRepeatCount());
-    return pts;
-  }
-
-  if (!pts_heap.IsEmpty()) {
+    pts.timestamp = timestamp;
+  } else if (!pts_heap.IsEmpty()) {
     // If the frame did not have pts, try to get the pts from the |pts_heap|.
     pts.timestamp = pts_heap.Top();
-  } else {
-    DCHECK(last_pts.timestamp != StreamSample::kInvalidTimestamp);
-    DCHECK(last_pts.duration != StreamSample::kInvalidTimestamp);
-    // Unable to read the pts from anywhere. Time to guess.
+  } else if (last_pts.timestamp != StreamSample::kInvalidTimestamp &&
+             last_pts.duration != StreamSample::kInvalidTimestamp) {
+    // Guess assuming this frame was the same as the last frame.
     pts.timestamp = last_pts.timestamp + last_pts.duration;
+  } else {
+    // Now we really have no clue!!!  Mark an invalid timestamp and let the
+    // video renderer handle it (i.e., drop frame).
+    pts.timestamp = StreamSample::kInvalidTimestamp;
   }
 
-  // Fill in the duration while accounting for repeated frames.
-  pts.duration = ConvertTimestamp(time_base, 1);
+  // Fill in the duration, using the frame itself as the authoratative source.
+  base::TimeDelta duration = frame->GetDuration();
+  if (duration != StreamSample::kInvalidTimestamp &&
+      duration.ToInternalValue() != 0) {
+    pts.duration = duration;
+  } else {
+    // Otherwise assume a normal frame duration.
+    pts.duration = ConvertTimestamp(time_base, 1);
+  }
 
   return pts;
 }

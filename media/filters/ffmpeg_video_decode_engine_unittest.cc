@@ -22,6 +22,7 @@ namespace media {
 
 static const int kWidth = 320;
 static const int kHeight = 240;
+static const AVRational kTimeBase = { 1, 100 };
 
 class FFmpegVideoDecodeEngineTest : public testing::Test {
  protected:
@@ -29,14 +30,18 @@ class FFmpegVideoDecodeEngineTest : public testing::Test {
     // Setup FFmpeg structures.
     frame_buffer_.reset(new uint8[kWidth * kHeight]);
     memset(&yuv_frame_, 0, sizeof(yuv_frame_));
+
     // DecodeFrame will check these pointers as non-NULL value.
     yuv_frame_.data[0] = yuv_frame_.data[1] = yuv_frame_.data[2]
         = frame_buffer_.get();
     yuv_frame_.linesize[0] = kWidth;
     yuv_frame_.linesize[1] = yuv_frame_.linesize[2] = kWidth >> 1;
+
     memset(&codec_context_, 0, sizeof(codec_context_));
     codec_context_.width = kWidth;
     codec_context_.height = kHeight;
+    codec_context_.time_base = kTimeBase;
+
     memset(&codec_, 0, sizeof(codec_));
     memset(&stream_, 0, sizeof(stream_));
     stream_.codec = &codec_context_;
@@ -151,6 +156,13 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_OpenDecoderFails) {
 TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_Normal) {
   Initialize();
 
+  // We rely on FFmpeg for timestamp and duration reporting.  The one tricky
+  // bit is calculating the duration when |repeat_pict| > 0.
+  const base::TimeDelta kTimestamp = base::TimeDelta::FromMicroseconds(123);
+  const base::TimeDelta kDuration = base::TimeDelta::FromMicroseconds(15000);
+  yuv_frame_.repeat_pict = 1;
+  yuv_frame_.reordered_opaque = kTimestamp.InMicroseconds();
+
   // Expect a bunch of avcodec calls.
   EXPECT_CALL(mock_ffmpeg_, AVInitPacket(_));
   EXPECT_CALL(mock_ffmpeg_,
@@ -166,6 +178,10 @@ TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_Normal) {
   test_engine_->DecodeFrame(buffer_, &video_frame, &got_result,
                             done_cb.CreateTask());
   EXPECT_TRUE(got_result);
+  EXPECT_EQ(kTimestamp.InMicroseconds(),
+            video_frame->GetTimestamp().ToInternalValue());
+  EXPECT_EQ(kDuration.ToInternalValue(),
+            video_frame->GetDuration().ToInternalValue());
 }
 
 TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_0ByteFrame) {

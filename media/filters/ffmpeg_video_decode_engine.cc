@@ -107,6 +107,9 @@ void FFmpegVideoDecodeEngine::DecodeFrame(
   packet.data = const_cast<uint8*>(buffer->GetData());
   packet.size = buffer->GetDataSize();
 
+  // Let FFmpeg handle presentation timestamp reordering.
+  codec_context_->reordered_opaque = buffer->GetTimestamp().InMicroseconds();
+
   int frame_decoded = 0;
   int result = avcodec_decode_video2(codec_context_,
                                      av_frame_.get(),
@@ -142,11 +145,24 @@ void FFmpegVideoDecodeEngine::DecodeFrame(
     return;
   }
 
+  // Determine timestamp and calculate the duration based on the repeat picture
+  // count.  According to FFmpeg docs, the total duration can be calculated as
+  // follows:
+  //   duration = (1 / fps) + (repeat_pict) / (2 * fps)
+  //            = (2 + repeat_pict) / (2 * fps)
+  DCHECK_LE(av_frame_->repeat_pict, 2);  // Sanity check.
+  AVRational doubled_time_base = codec_context_->time_base;
+  doubled_time_base.den *= 2;
+  base::TimeDelta timestamp =
+      base::TimeDelta::FromMicroseconds(av_frame_->reordered_opaque);
+  base::TimeDelta duration =
+      ConvertTimestamp(doubled_time_base, 2 + av_frame_->repeat_pict);
+
   VideoFrame::CreateFrame(GetSurfaceFormat(),
                           codec_context_->width,
                           codec_context_->height,
-                          StreamSample::kInvalidTimestamp,
-                          StreamSample::kInvalidTimestamp,
+                          timestamp,
+                          duration,
                           video_frame);
   if (!video_frame->get()) {
     // TODO(jiesun): this is also an error case handled as normal.
@@ -162,9 +178,6 @@ void FFmpegVideoDecodeEngine::DecodeFrame(
   CopyPlane(VideoFrame::kYPlane, video_frame->get(), av_frame_.get());
   CopyPlane(VideoFrame::kUPlane, video_frame->get(), av_frame_.get());
   CopyPlane(VideoFrame::kVPlane, video_frame->get(), av_frame_.get());
-
-  DCHECK_LE(av_frame_->repeat_pict, 2);  // Sanity check.
-  (*video_frame)->SetRepeatCount(av_frame_->repeat_pict);
 }
 
 void FFmpegVideoDecodeEngine::Flush(Task* done_cb) {

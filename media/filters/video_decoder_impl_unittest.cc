@@ -258,20 +258,35 @@ TEST_F(VideoDecoderImplTest, FindPtsAndDuration) {
   // Start with an empty timestamp queue.
   PtsHeap pts_heap;
 
-  // Use 1/2 second for simple results.  Thus, calculated Durations should be
+  // Use 1/2 second for simple results.  Thus, calculated durations should be
   // 500000 microseconds.
   AVRational time_base = {1, 2};
 
-  // Setup the last known pts to be at 100 microseconds with a have 16
-  // duration.
   VideoDecoderImpl::TimeTuple last_pts;
+  last_pts.timestamp = StreamSample::kInvalidTimestamp;
+  last_pts.duration = StreamSample::kInvalidTimestamp;
+
+  // Simulate an uninitialized |video_frame| and |last_pts| where we cannot
+  // determine a timestamp at all.
+  video_frame_->SetTimestamp(StreamSample::kInvalidTimestamp);
+  video_frame_->SetDuration(StreamSample::kInvalidTimestamp);
+  VideoDecoderImpl::TimeTuple result_pts =
+      decoder_->FindPtsAndDuration(time_base, pts_heap,
+                                   last_pts, video_frame_.get());
+  EXPECT_EQ(StreamSample::kInvalidTimestamp.InMicroseconds(),
+            result_pts.timestamp.InMicroseconds());
+  EXPECT_EQ(500000, result_pts.duration.InMicroseconds());
+
+  // Setup the last known pts to be at 100 microseconds with 16 microsecond
+  // duration.
   last_pts.timestamp = base::TimeDelta::FromMicroseconds(100);
   last_pts.duration = base::TimeDelta::FromMicroseconds(16);
 
-  // Simulate an uninitialized yuv_frame.
-  video_frame_->SetTimestamp(
-      base::TimeDelta::FromMicroseconds(AV_NOPTS_VALUE));
-  VideoDecoderImpl::TimeTuple result_pts =
+  // Simulate an uninitialized |video_frame| where |last_pts| will be used to
+  // generate a timestamp and |time_base| will be used to generate a duration.
+  video_frame_->SetTimestamp(StreamSample::kInvalidTimestamp);
+  video_frame_->SetDuration(StreamSample::kInvalidTimestamp);
+  result_pts =
       decoder_->FindPtsAndDuration(time_base, pts_heap,
                                    last_pts, video_frame_.get());
   EXPECT_EQ(116, result_pts.timestamp.InMicroseconds());
@@ -280,6 +295,9 @@ TEST_F(VideoDecoderImplTest, FindPtsAndDuration) {
   // Test that having pts == 0 in the frame also behaves like the pts is not
   // provided.  This is because FFmpeg set the pts to zero when there is no
   // data for the frame, which means that value is useless to us.
+  //
+  // TODO(scherkus): FFmpegVideoDecodeEngine should be able to detect this
+  // situation and set the timestamp to kInvalidTimestamp.
   video_frame_->SetTimestamp(base::TimeDelta::FromMicroseconds(0));
   result_pts =
       decoder_->FindPtsAndDuration(time_base, pts_heap,
@@ -287,7 +305,7 @@ TEST_F(VideoDecoderImplTest, FindPtsAndDuration) {
   EXPECT_EQ(116, result_pts.timestamp.InMicroseconds());
   EXPECT_EQ(500000, result_pts.duration.InMicroseconds());
 
-  // Add a pts to the timequeue and make sure it overrides estimation.
+  // Add a pts to the |pts_heap| and make sure it overrides estimation.
   pts_heap.Push(base::TimeDelta::FromMicroseconds(123));
   result_pts = decoder_->FindPtsAndDuration(time_base,
                                             pts_heap,
@@ -296,15 +314,16 @@ TEST_F(VideoDecoderImplTest, FindPtsAndDuration) {
   EXPECT_EQ(123, result_pts.timestamp.InMicroseconds());
   EXPECT_EQ(500000, result_pts.duration.InMicroseconds());
 
-  // Add a pts into the frame and make sure it overrides the timequeue.
-  video_frame_->SetTimestamp(base::TimeDelta::FromMicroseconds(333));
-  video_frame_->SetRepeatCount(2);
+  // Set a pts and duration on |video_frame_| and make sure it overrides
+  // |pts_heap|.
+  video_frame_->SetTimestamp(base::TimeDelta::FromMicroseconds(456));
+  video_frame_->SetDuration(base::TimeDelta::FromMicroseconds(789));
   result_pts = decoder_->FindPtsAndDuration(time_base,
                                             pts_heap,
                                             last_pts,
                                             video_frame_.get());
-  EXPECT_EQ(166500000, result_pts.timestamp.InMicroseconds());
-  EXPECT_EQ(1500000, result_pts.duration.InMicroseconds());
+  EXPECT_EQ(456, result_pts.timestamp.InMicroseconds());
+  EXPECT_EQ(789, result_pts.duration.InMicroseconds());
 }
 
 TEST_F(VideoDecoderImplTest, DoDecode_TestStateTransition) {
