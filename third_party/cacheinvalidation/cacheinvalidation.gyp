@@ -98,6 +98,8 @@
         'files/src/google/cacheinvalidation/registration-update-manager.h',
         'files/src/google/cacheinvalidation/session-manager.cc',
         'files/src/google/cacheinvalidation/session-manager.h',
+        'files/src/google/cacheinvalidation/throttle.cc',
+        'files/src/google/cacheinvalidation/throttle.h',
       ],
       'include_dirs': [
         './overrides',
@@ -125,6 +127,7 @@
       'sources': [
         'files/src/google/cacheinvalidation/system-resources-for-test.h',
         'files/src/google/cacheinvalidation/invalidation-client-impl_test.cc',
+        'files/src/google/cacheinvalidation/throttle_test.cc',
       ],
       'dependencies': [
         '../../base/base.gyp:base',
