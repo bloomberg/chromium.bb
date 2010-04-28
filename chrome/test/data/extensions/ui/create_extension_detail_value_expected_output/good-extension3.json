@@ -10,5 +10,6 @@
   "enabledIncognito": false,
   "content_scripts": [],
   "views": [],
-  "hasPopupAction": false
+  "hasPopupAction": false,
+  "galleryUrl": ""
 }

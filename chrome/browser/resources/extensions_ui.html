@@ -804,7 +804,13 @@ document.addEventListener('DOMContentLoaded', requestExtensionsData);
           </td>
           <td valign="top">
             <div>
+              <a jsdisplay="galleryUrl.length > 0"
+                 jsvalues=".href:galleryUrl">
               <span class="extension-name"
+                    jscontent="name">EXTENSION NAME</span>
+              </a>
+              <span class="extension-name"
+                    jsdisplay="galleryUrl.length == 0"
                     jscontent="name">EXTENSION NAME</span>
               - <span i18n-content="extensionVersion">VERSION</span>
               <span jscontent="version">x.x.x.x</span>
