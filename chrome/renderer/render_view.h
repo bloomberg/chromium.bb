@@ -111,6 +111,7 @@ class WebURLRequest;
 struct WebFileChooserParams;
 struct WebFindOptions;
 struct WebPoint;
+struct WebWindowFeatures;
 }
 
 // We need to prevent a page from trying to create infinite popups. It is not
@@ -202,7 +203,12 @@ class RenderView : public RenderWidget,
   virtual void DnsPrefetch(const std::vector<std::string>& host_names);
 
   // WebKit::WebViewClient
+  // TODO(rafaelw): Remove this when
+  // WebViewClient::createView(WebFrame,WebWindowFeatures&) lands.
   virtual WebKit::WebView* createView(WebKit::WebFrame* creator);
+  virtual WebKit::WebView* createView(
+      WebKit::WebFrame* creator,
+      const WebKit::WebWindowFeatures& features);
   virtual WebKit::WebWidget* createPopupMenu(WebKit::WebPopupType popup_type);
   virtual WebKit::WebWidget* createPopupMenu(
       const WebKit::WebPopupMenuInfo& info);

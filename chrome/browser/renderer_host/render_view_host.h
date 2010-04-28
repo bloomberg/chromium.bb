@@ -15,6 +15,7 @@
 #include "chrome/common/page_zoom.h"
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/view_types.h"
+#include "chrome/common/window_container_type.h"
 #include "net/base/load_states.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
@@ -418,7 +419,8 @@ class RenderViewHost : public RenderWidgetHost {
   virtual gfx::Rect GetRootWindowResizerRect() const;
 
   // Creates a new RenderView with the given route id.
-  void CreateNewWindow(int route_id);
+  void CreateNewWindow(int route_id,
+                       WindowContainerType window_container_type);
 
   // Creates a new RenderWidget with the given route id.  |popup_type| indicates
   // if this widget is a popup and what kind of popup it is (select, autofill).

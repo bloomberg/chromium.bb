@@ -848,12 +848,14 @@ void RenderViewHost::Shutdown() {
   RenderWidgetHost::Shutdown();
 }
 
-void RenderViewHost::CreateNewWindow(int route_id) {
+void RenderViewHost::CreateNewWindow(
+    int route_id,
+    WindowContainerType window_container_type) {
   RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
   if (!view)
     return;
 
-  view->CreateNewWindow(route_id);
+  view->CreateNewWindow(route_id, window_container_type);
 }
 
 void RenderViewHost::CreateNewWidget(int route_id,

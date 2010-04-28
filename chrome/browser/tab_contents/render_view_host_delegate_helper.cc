@@ -26,7 +26,8 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(
     Profile* profile,
     SiteInstance* site,
     DOMUITypeID domui_type,
-    TabContents* old_tab_contents) {
+    TabContents* old_tab_contents,
+    WindowContainerType window_container_type) {
   // Create the new web contents. This will automatically create the new
   // TabContentsView. In the future, we may want to create the view separately.
   TabContents* new_contents =

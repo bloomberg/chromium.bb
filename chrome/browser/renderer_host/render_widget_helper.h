@@ -14,6 +14,7 @@
 #include "base/ref_counted.h"
 #include "base/lock.h"
 #include "base/waitable_event.h"
+#include "chrome/common/window_container_type.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 
 namespace IPC {
@@ -121,6 +122,7 @@ class RenderWidgetHelper
 
   void CreateNewWindow(int opener_id,
                        bool user_gesture,
+                       WindowContainerType window_container_type,
                        base::ProcessHandle render_process,
                        int* route_id);
   void CreateNewWidget(int opener_id,
@@ -161,7 +163,8 @@ class RenderWidgetHelper
 
   // Called on the UI thread to finish creating a window.
   void OnCreateWindowOnUI(int opener_id,
-                          int route_id);
+                          int route_id,
+                          WindowContainerType window_container_type);
 
   // Called on the IO thread after a window was created on the UI thread.
   void OnCreateWindowOnIO(int route_id);

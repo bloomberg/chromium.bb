@@ -262,6 +262,8 @@
         'common/webkit_param_traits.h',
         'common/webmessageportchannel_impl.cc',
         'common/webmessageportchannel_impl.h',
+        'common/window_container_type.cc',
+        'common/window_container_type.h',
         'common/worker_messages.h',
         'common/worker_messages_internal.h',
         'common/worker_thread_ticker.cc',

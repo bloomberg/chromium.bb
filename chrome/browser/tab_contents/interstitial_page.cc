@@ -86,7 +86,9 @@ class InterstitialPage::InterstitialPageRVHViewDelegate
   explicit InterstitialPageRVHViewDelegate(InterstitialPage* page);
 
   // RenderViewHostDelegate::View implementation:
-  virtual void CreateNewWindow(int route_id);
+  virtual void CreateNewWindow(
+      int route_id,
+      WindowContainerType window_container_type);
   virtual void CreateNewWidget(int route_id,
                                WebKit::WebPopupType popup_type);
   virtual void ShowCreatedWindow(int route_id,
@@ -557,7 +559,8 @@ InterstitialPage::InterstitialPageRVHViewDelegate::
 }
 
 void InterstitialPage::InterstitialPageRVHViewDelegate::CreateNewWindow(
-    int route_id) {
+    int route_id,
+    WindowContainerType window_container_type) {
   NOTREACHED() << "InterstitialPage does not support showing popups yet.";
 }
 

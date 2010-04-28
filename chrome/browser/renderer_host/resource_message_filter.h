@@ -27,6 +27,7 @@
 #include "chrome/common/nacl_types.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/window_container_type.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -132,6 +133,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   virtual ~ResourceMessageFilter();
 
   void OnMsgCreateWindow(int opener_id, bool user_gesture,
+                         WindowContainerType window_container_type,
                          int64 session_storage_namespace_id, int* route_id,
                          int64* cloned_session_storage_namespace_id);
   void OnMsgCreateWidget(int opener_id,

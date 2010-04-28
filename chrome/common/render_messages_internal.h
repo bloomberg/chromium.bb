@@ -24,6 +24,7 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/page_zoom.h"
 #include "chrome/common/translate_errors.h"
+#include "chrome/common/window_container_type.h"
 #include "gfx/rect.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message.h"
@@ -952,12 +953,14 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // Sent by the renderer when it is creating a new window.  The browser creates
   // a tab for it and responds with a ViewMsg_CreatingNew_ACK.  If route_id is
   // MSG_ROUTING_NONE, the view couldn't be created.
-  IPC_SYNC_MESSAGE_CONTROL3_2(ViewHostMsg_CreateWindow,
-                              int /* opener_id */,
-                              bool /* user_gesture */,
-                              int64 /* session_storage_namespace_id */,
-                              int /* route_id */,
-                              int64 /* cloned_session_storage_namespace_id */)
+  IPC_SYNC_MESSAGE_CONTROL4_2(
+      ViewHostMsg_CreateWindow,
+      int /* opener_id */,
+      bool /* user_gesture */,
+      WindowContainerType /* window_container_type */,
+      int64 /* session_storage_namespace_id */,
+      int /* route_id */,
+      int64 /* cloned_session_storage_namespace_id */)
 
   // Similar to ViewHostMsg_CreateWindow, except used for sub-widgets, like
   // <select> dropdowns.  This message is sent to the TabContents that

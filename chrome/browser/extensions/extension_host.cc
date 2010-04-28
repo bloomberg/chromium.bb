@@ -544,10 +544,13 @@ RenderViewHostDelegate::View* ExtensionHost::GetViewDelegate() {
   return this;
 }
 
-void ExtensionHost::CreateNewWindow(int route_id) {
+void ExtensionHost::CreateNewWindow(
+    int route_id,
+    WindowContainerType window_container_type) {
   delegate_view_helper_.CreateNewWindow(
       route_id, render_view_host()->process()->profile(),
-      site_instance(), DOMUIFactory::GetDOMUIType(url_), NULL);
+      site_instance(), DOMUIFactory::GetDOMUIType(url_), NULL,
+      window_container_type);
 }
 
 void ExtensionHost::CreateNewWidget(int route_id,

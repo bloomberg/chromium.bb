@@ -34,6 +34,7 @@
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/window_container_type.h"
 #include "chrome/renderer/about_handler.h"
 #include "chrome/renderer/audio_message_filter.h"
 #include "chrome/renderer/devtools_agent.h"
@@ -105,6 +106,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebWindowFeatures.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/default_plugin/default_plugin_shared.h"
 #include "webkit/glue/dom_operations.h"
@@ -203,6 +205,7 @@ using WebKit::WebView;
 using WebKit::WebWidget;
 using WebKit::WebWorker;
 using WebKit::WebWorkerClient;
+using WebKit::WebWindowFeatures;
 
 //-----------------------------------------------------------------------------
 
@@ -1538,7 +1541,15 @@ void RenderView::OnMissingPluginStatus(
 
 // WebKit::WebViewClient ------------------------------------------------------
 
+// TODO(rafaelw): remove when
+// WebViewClient::createView(WebFrame,WebWindowFeatures) lands.
 WebView* RenderView::createView(WebFrame* creator) {
+  return createView(creator, WebWindowFeatures());
+}
+
+WebView* RenderView::createView(
+    WebFrame* creator,
+    const WebWindowFeatures& features) {
   // Check to make sure we aren't overloading on popups.
   if (shared_popup_counter_->data > kMaximumNumberOfUnacknowledgedPopups)
     return NULL;
@@ -1553,10 +1564,13 @@ WebView* RenderView::createView(WebFrame* creator) {
   int64 cloned_session_storage_namespace_id;
 
   render_thread_->Send(
-      new ViewHostMsg_CreateWindow(routing_id_, user_gesture,
-                                   session_storage_namespace_id_,
-                                   &routing_id,
-                                   &cloned_session_storage_namespace_id));
+      new ViewHostMsg_CreateWindow(
+          routing_id_,
+          user_gesture,
+          WindowFeaturesToContainerType(features),
+          session_storage_namespace_id_,
+          &routing_id,
+          &cloned_session_storage_namespace_id));
   if (routing_id == MSG_ROUTING_NONE)
     return NULL;
 

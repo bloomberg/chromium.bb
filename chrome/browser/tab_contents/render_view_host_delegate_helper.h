@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
+#include "chrome/common/window_container_type.h"
 #include "gfx/rect.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 #include "webkit/glue/webpreferences.h"
@@ -31,11 +32,13 @@ class RenderViewHostDelegateViewHelper {
  public:
   RenderViewHostDelegateViewHelper() {}
 
-  virtual TabContents* CreateNewWindow(int route_id,
-                                       Profile* profile,
-                                       SiteInstance* site,
-                                       DOMUITypeID domui_type,
-                                       TabContents* old_tab_contents);
+  virtual TabContents* CreateNewWindow(
+      int route_id,
+      Profile* profile,
+      SiteInstance* site,
+      DOMUITypeID domui_type,
+      TabContents* old_tab_contents,
+      WindowContainerType window_container_type);
   virtual RenderWidgetHostView* CreateNewWidget(int route_id,
                                                 WebKit::WebPopupType popup_type,
                                                 RenderProcessHost* process);

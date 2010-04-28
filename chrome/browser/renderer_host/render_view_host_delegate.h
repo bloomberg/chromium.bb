@@ -13,6 +13,7 @@
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/view_types.h"
+#include "chrome/common/window_container_type.h"
 #include "net/base/load_states.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
@@ -88,12 +89,17 @@ class RenderViewHostDelegate {
     // The page is trying to open a new page (e.g. a popup window). The
     // window should be created associated with the given route, but it should
     // not be shown yet. That should happen in response to ShowCreatedWindow.
+    // |window_container_type| describes the type of RenderViewHost container
+    // that is requested -- in particular, the window.open call may have
+    // specified 'background' and 'persistent' in the feature string.
     //
     // Note: this is not called "CreateWindow" because that will clash with
     // the Windows function which is actually a #define.
     //
     // NOTE: this takes ownership of @modal_dialog_event
-    virtual void CreateNewWindow(int route_id) = 0;
+    virtual void CreateNewWindow(
+        int route_id,
+        WindowContainerType window_container_type) = 0;
 
     // The page is trying to open a new widget (e.g. a select popup). The
     // widget should be created associated with the given route, but it should

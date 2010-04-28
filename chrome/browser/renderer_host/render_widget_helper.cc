@@ -199,10 +199,12 @@ void RenderWidgetHelper::OnCrossSiteClosePageACK(
   resource_dispatcher_host_->OnClosePageACK(params);
 }
 
-void RenderWidgetHelper::CreateNewWindow(int opener_id,
-                                         bool user_gesture,
-                                         base::ProcessHandle render_process,
-                                         int* route_id) {
+void RenderWidgetHelper::CreateNewWindow(
+    int opener_id,
+    bool user_gesture,
+    WindowContainerType window_container_type,
+    base::ProcessHandle render_process,
+    int* route_id) {
   *route_id = GetNextRoutingID();
   // Block resource requests until the view is created, since the HWND might be
   // needed if a response ends up creating a plugin.
@@ -212,13 +214,17 @@ void RenderWidgetHelper::CreateNewWindow(int opener_id,
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(
-          this, &RenderWidgetHelper::OnCreateWindowOnUI, opener_id, *route_id));
+          this, &RenderWidgetHelper::OnCreateWindowOnUI, opener_id, *route_id,
+          window_container_type));
 }
 
-void RenderWidgetHelper::OnCreateWindowOnUI(int opener_id, int route_id) {
+void RenderWidgetHelper::OnCreateWindowOnUI(
+    int opener_id,
+    int route_id,
+    WindowContainerType window_container_type) {
   RenderViewHost* host = RenderViewHost::FromID(render_process_id_, opener_id);
   if (host)
-    host->CreateNewWindow(route_id);
+    host->CreateNewWindow(route_id, window_container_type);
 
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,

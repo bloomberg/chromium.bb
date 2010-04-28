@@ -86,10 +86,13 @@ void BalloonHost::ProcessDOMUIMessage(const std::string& message,
 
 // RenderViewHostDelegate::View methods implemented to allow links to
 // open pages in new tabs.
-void BalloonHost::CreateNewWindow(int route_id) {
+void BalloonHost::CreateNewWindow(
+    int route_id,
+    WindowContainerType window_container_type) {
   delegate_view_helper_.CreateNewWindow(
       route_id, balloon_->profile(), site_instance_.get(),
-      DOMUIFactory::GetDOMUIType(balloon_->notification().content_url()), NULL);
+      DOMUIFactory::GetDOMUIType(balloon_->notification().content_url()), NULL,
+      window_container_type);
 }
 
 void BalloonHost::ShowCreatedWindow(int route_id,

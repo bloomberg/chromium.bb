@@ -30,6 +30,7 @@
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/view_types.h"
 #include "chrome/common/webkit_param_traits.h"
+#include "chrome/common/window_container_type.h"
 #include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_utils.h"
@@ -2608,7 +2609,7 @@ struct ParamTraits<ExtensionExtent> {
     GURL origin;
     std::vector<std::string> paths;
     bool success =
-        ReadParam(m, iter, &origin) && 
+        ReadParam(m, iter, &origin) &&
         ReadParam(m, iter, &paths);
     if (!success)
       return false;
@@ -2634,6 +2635,27 @@ struct ParamTraits<ViewMsg_ExtensionExtentsUpdated_Params> {
   }
   static void Log(const param_type& p, std::wstring* l) {
     LogParam(p.extension_apps, l);
+  }
+};
+
+template <>
+struct ParamTraits<WindowContainerType> {
+  typedef WindowContainerType param_type;
+  static void Write(Message* m, const param_type& p) {
+    int val = static_cast<int>(p);
+    WriteParam(m, val);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    int val = 0;
+    if (!ReadParam(m, iter, &val) ||
+        val < WINDOW_CONTAINER_TYPE_NORMAL ||
+        val >= WINDOW_CONTAINER_TYPE_MAX_VALUE)
+      return false;
+    *p = static_cast<param_type>(val);
+    return true;
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    LogParam(p, l);
   }
 };
 

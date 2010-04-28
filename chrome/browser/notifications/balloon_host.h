@@ -78,7 +78,9 @@ class BalloonHost : public RenderViewHostDelegate,
 
   // RenderViewHostDelegate::View methods. Only the ones for opening new
   // windows are currently implemented.
-  virtual void CreateNewWindow(int route_id);
+  virtual void CreateNewWindow(
+      int route_id,
+      WindowContainerType window_container_type);
   virtual void CreateNewWidget(int route_id, WebKit::WebPopupType popup_type) {}
   virtual void ShowCreatedWindow(int route_id,
                                  WindowOpenDisposition disposition,
