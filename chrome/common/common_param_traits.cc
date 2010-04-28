@@ -147,6 +147,9 @@ bool ParamTraits<gfx::Rect>::Read(const Message* m, void** iter, gfx::Rect* r) {
       !m->ReadInt(iter, &w) ||
       !m->ReadInt(iter, &h))
     return false;
+  if (x < 0 || y < 0 || x >= (INT_MAX - w) || y >= (INT_MAX - h) ||
+      w < 0 || h < 0 || h >= ((INT_MAX / 16) / (w ? w : 1)))
+    return false;
   r->set_x(x);
   r->set_y(y);
   r->set_width(w);
@@ -169,6 +172,8 @@ bool ParamTraits<gfx::Size>::Read(const Message* m, void** iter, gfx::Size* r) {
   int w, h;
   if (!m->ReadInt(iter, &w) ||
       !m->ReadInt(iter, &h))
+    return false;
+  if (w < 0 || h < 0 || h >= ((INT_MAX / 16) / (w ? w : 1)))
     return false;
   r->set_width(w);
   r->set_height(h);
