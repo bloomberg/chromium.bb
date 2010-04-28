@@ -148,7 +148,7 @@ void PasswordManager::PasswordFormsVisible(
       // failure and abort this save, by clearing provisional_save_manager_.
       // Don't delete the login managers since the user may try again
       // and we want to be able to save in that case.
-      provisional_save_manager_.release();
+      ClearProvisionalSave();
       break;
     }
   }
