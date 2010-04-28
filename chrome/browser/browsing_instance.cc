@@ -22,6 +22,12 @@ bool BrowsingInstance::ShouldUseProcessPerSite(const GURL& url) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kProcessPerSite))
     return true;
+ 
+  if (url.SchemeIs(chrome::kExtensionScheme)) {
+    // Always consolidate extensions regardless of the command line, because
+    // they will break if split into multiple processes.
+    return true;
+  }
 
   if (!command_line.HasSwitch(switches::kProcessPerTab)) {
     // We are not in process-per-site or process-per-tab, so we must be in the
@@ -30,10 +36,9 @@ bool BrowsingInstance::ShouldUseProcessPerSite(const GURL& url) {
     // Note that --single-process may have been specified, but that affects the
     // process creation logic in RenderProcessHost, so we do not need to worry
     // about it here.
-    if (url.SchemeIs(chrome::kChromeUIScheme) ||
-        url.SchemeIs(chrome::kExtensionScheme))
+    if (url.SchemeIs(chrome::kChromeUIScheme))
       // Always consolidate instances of the new tab page (and instances of any
-      // other internal resource urls), as well as extensions.
+      // other internal resource urls.
       return true;
 
     // TODO(creis): List any other special cases that we want to limit to a

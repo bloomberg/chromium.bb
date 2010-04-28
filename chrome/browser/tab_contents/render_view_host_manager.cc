@@ -288,8 +288,16 @@ bool RenderViewHostManager::ShouldTransitionCrossSite() {
 bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
     const NavigationEntry* cur_entry,
     const NavigationEntry* new_entry) const {
-  if (!cur_entry || !new_entry)
+  DCHECK(new_entry);
+
+  if (!cur_entry) {
+    // Always choose a new process when navigating to extension URLs. The
+    // process grouping logic will combine all of a given extension's pages
+    // into the same process.
+    if (new_entry->url().SchemeIs(chrome::kExtensionScheme))
+      return true;
     return false;
+  }
 
   // We can't switch a RenderView between view source and non-view source mode
   // without screwing up the session history sometimes (when navigating between
@@ -569,13 +577,13 @@ RenderViewHost* RenderViewHostManager::UpdateRendererStateForNavigate(
   // Again, new_instance won't be deleted before the end of this method, so it
   // is safe to use a normal pointer here.
   SiteInstance* new_instance = curr_instance;
-  if (ShouldTransitionCrossSite())
+  bool force_swap = ShouldSwapProcessesForNavigation(
+          delegate_->GetLastCommittedNavigationEntryForRenderManager(),
+          &entry);
+  if (ShouldTransitionCrossSite() || force_swap)
     new_instance = GetSiteInstanceForEntry(entry, curr_instance);
 
-  if (new_instance != curr_instance ||
-      ShouldSwapProcessesForNavigation(
-          delegate_->GetLastCommittedNavigationEntryForRenderManager(),
-          &entry)) {
+  if (new_instance != curr_instance || force_swap) {
     // New SiteInstance.
     DCHECK(!cross_navigation_pending_);
 
