@@ -122,47 +122,49 @@ void FFmpegVideoDecodeEngine::DecodeFrame(
               << " , packet size: "
               << buffer->GetDataSize() << " bytes";
     *got_frame = false;
-  } else {
-    // If frame_decoded == 0, then no frame was produced.
-    *got_frame = frame_decoded != 0;
-
-     if (*got_frame) {
-       // TODO(fbarchard): Work around for FFmpeg http://crbug.com/27675
-       // The decoder is in a bad state and not decoding correctly.
-       // Checking for NULL avoids a crash in CopyPlane().
-       if (!av_frame_->data[VideoFrame::kYPlane] ||
-           !av_frame_->data[VideoFrame::kUPlane] ||
-           !av_frame_->data[VideoFrame::kVPlane]) {
-         // TODO(jiesun): this is also an error case handled as normal.
-         *got_frame = false;
-         return;
-       }
-
-       VideoFrame::CreateFrame(GetSurfaceFormat(),
-                               codec_context_->width,
-                               codec_context_->height,
-                               StreamSample::kInvalidTimestamp,
-                               StreamSample::kInvalidTimestamp,
-                               video_frame);
-       if (!video_frame->get()) {
-         // TODO(jiesun): this is also an error case handled as normal.
-         *got_frame = false;
-         return;
-       }
-
-       // Copy the frame data since FFmpeg reuses internal buffers for AVFrame
-       // output, meaning the data is only valid until the next
-       // avcodec_decode_video() call.
-       // TODO(scherkus): figure out pre-allocation/buffer cycling scheme.
-       // TODO(scherkus): is there a cleaner way to figure out the # of planes?
-       CopyPlane(VideoFrame::kYPlane, video_frame->get(), av_frame_.get());
-       CopyPlane(VideoFrame::kUPlane, video_frame->get(), av_frame_.get());
-       CopyPlane(VideoFrame::kVPlane, video_frame->get(), av_frame_.get());
-
-       DCHECK_LE(av_frame_->repeat_pict, 2);  // Sanity check.
-       (*video_frame)->SetRepeatCount(av_frame_->repeat_pict);
-     }
+    return;
   }
+
+  // If frame_decoded == 0, then no frame was produced.
+  *got_frame = frame_decoded != 0;
+  if (!*got_frame) {
+    return;
+  }
+
+  // TODO(fbarchard): Work around for FFmpeg http://crbug.com/27675
+  // The decoder is in a bad state and not decoding correctly.
+  // Checking for NULL avoids a crash in CopyPlane().
+  if (!av_frame_->data[VideoFrame::kYPlane] ||
+      !av_frame_->data[VideoFrame::kUPlane] ||
+      !av_frame_->data[VideoFrame::kVPlane]) {
+    // TODO(jiesun): this is also an error case handled as normal.
+    *got_frame = false;
+    return;
+  }
+
+  VideoFrame::CreateFrame(GetSurfaceFormat(),
+                          codec_context_->width,
+                          codec_context_->height,
+                          StreamSample::kInvalidTimestamp,
+                          StreamSample::kInvalidTimestamp,
+                          video_frame);
+  if (!video_frame->get()) {
+    // TODO(jiesun): this is also an error case handled as normal.
+    *got_frame = false;
+    return;
+  }
+
+  // Copy the frame data since FFmpeg reuses internal buffers for AVFrame
+  // output, meaning the data is only valid until the next
+  // avcodec_decode_video() call.
+  // TODO(scherkus): figure out pre-allocation/buffer cycling scheme.
+  // TODO(scherkus): is there a cleaner way to figure out the # of planes?
+  CopyPlane(VideoFrame::kYPlane, video_frame->get(), av_frame_.get());
+  CopyPlane(VideoFrame::kUPlane, video_frame->get(), av_frame_.get());
+  CopyPlane(VideoFrame::kVPlane, video_frame->get(), av_frame_.get());
+
+  DCHECK_LE(av_frame_->repeat_pict, 2);  // Sanity check.
+  (*video_frame)->SetRepeatCount(av_frame_->repeat_pict);
 }
 
 void FFmpegVideoDecodeEngine::Flush(Task* done_cb) {
