@@ -57,7 +57,8 @@ class InstallUtil {
 
   // Returns true if this is a Chrome Frame installation (as indicated by the
   // presence of --chrome-frame on the command line) or if this is running
-  // inside of the Chrome Frame dll.
+  // inside of the Chrome Frame dll. Also returns true if a master.preferences
+  // file containing chrome_frame: true is specified on the command line.
   static bool IsChromeFrameProcess();
 
   // Returns true if this is running setup process for Chrome SxS (as
@@ -67,9 +68,19 @@ class InstallUtil {
   static bool IsChromeSxSProcess();
 
   // Returns true if this setup process is running as an install managed by an
-  // MSI wrapper. This is indicated by the presence of --msi on the command line
-  // or the presence of "msi": true in the master preferences file.
-  static bool IsMSIProcess();
+  // MSI wrapper. There are three things that are checked:
+  // 1) the presence of --msi on the command line
+  // 2) the presence of "msi": true in the master preferences file
+  // 3) the presence of a DWORD value in the ClientState key called msi with
+  //    value 1
+  // NOTE: This method is NOT thread safe.
+  static bool IsMSIProcess(bool system_level);
+
+
+  // Sets the boolean MSI marker for this installation if set is true or clears
+  // it otherwise. The MSI marker is stored in the registry under the
+  // ClientState key.
+  static bool SetMSIMarker(bool system_level, bool set);
 
   // Adds all DLLs in install_path whose names are given by dll_names to a
   // work item list containing registration or unregistration actions.

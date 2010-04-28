@@ -8,6 +8,7 @@ namespace installer_util {
 namespace master_preferences {
   const wchar_t kAltFirstRunBubble[] = L"oem_bubble";
   const wchar_t kAltShortcutText[] = L"alternate_shortcut_text";
+  const wchar_t kChromeFrame[] = L"chrome_frame";
   const wchar_t kChromeShortcutIconIndex[] = L"chrome_shortcut_icon_index";
   const wchar_t kCreateAllShortcuts[] = L"create_all_shortcuts";
   const wchar_t kDistroImportBookmarksPref[] = L"import_bookmarks";

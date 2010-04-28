@@ -114,6 +114,10 @@ DictionaryValue* GetInstallPreferences(const CommandLine& cmd_line) {
   if (!prefs)
     prefs = new DictionaryValue();
 
+  if (cmd_line.HasSwitch(installer_util::switches::kChromeFrame))
+    installer_util::SetDistroBooleanPreference(
+        prefs, installer_util::master_preferences::kChromeFrame, true);
+
   if (cmd_line.HasSwitch(installer_util::switches::kCreateAllShortcuts))
     installer_util::SetDistroBooleanPreference(
         prefs, installer_util::master_preferences::kCreateAllShortcuts, true);

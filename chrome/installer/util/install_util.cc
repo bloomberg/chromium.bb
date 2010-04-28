@@ -136,14 +136,20 @@ bool InstallUtil::IsChromeFrameProcess() {
   DCHECK(command_line)
       << "IsChromeFrameProcess() called before ComamandLine::Init()";
 
-  // Also assume this to be a ChromeFrame process if we are running inside
-  // the Chrome Frame DLL.
   FilePath module_path;
   PathService::Get(base::FILE_MODULE, &module_path);
   std::wstring module_name(module_path.BaseName().value());
 
-  return command_line->HasSwitch(installer_util::switches::kChromeFrame) ||
-         module_name == installer_util::kChromeFrameDll;
+  scoped_ptr<DictionaryValue> prefs(installer_util::GetInstallPreferences(
+                                    *command_line));
+  DCHECK(prefs.get());
+  bool is_cf = false;
+  installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kChromeFrame, &is_cf);
+
+  // Also assume this to be a ChromeFrame process if we are running inside
+  // the Chrome Frame DLL.
+  return is_cf || module_name == installer_util::kChromeFrameDll;
 }
 
 bool InstallUtil::IsChromeSxSProcess() {
@@ -164,17 +170,71 @@ bool InstallUtil::IsChromeSxSProcess() {
                                           chrome_sxs_dir);
 }
 
-bool InstallUtil::IsMSIProcess() {
+bool InstallUtil::IsMSIProcess(bool system_level) {
+  // Initialize the static msi flags.
+  static bool is_msi_ = false;
+  static bool msi_checked_ = false;
+
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   CHECK(command_line);
 
-  scoped_ptr<DictionaryValue> prefs(installer_util::GetInstallPreferences(
-      *command_line));
-  bool value = false;
-  return (installer_util::GetDistroBooleanPreference(prefs.get(),
-              installer_util::master_preferences::kMsi, &value) &&
-          value);
+  if (!msi_checked_) {
+    msi_checked_ = true;
+
+    scoped_ptr<DictionaryValue> prefs(installer_util::GetInstallPreferences(
+                                      *command_line));
+    DCHECK(prefs.get());
+    bool is_msi = false;
+    installer_util::GetDistroBooleanPreference(prefs.get(),
+        installer_util::master_preferences::kMsi, &is_msi);
+
+    if (!is_msi) {
+      // We didn't find it in the preferences, try looking in the registry.
+      HKEY reg_root = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+      RegKey key;
+      DWORD msi_value;
+
+      BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+      DCHECK(dist);
+
+      bool success = false;
+      std::wstring reg_key(dist->GetStateKey());
+      if (key.Open(reg_root, reg_key.c_str(), KEY_READ | KEY_WRITE)) {
+        if (key.ReadValueDW(google_update::kRegMSIField, &msi_value)) {
+          is_msi = (msi_value == 1);
+        }
+      }
+    }
+
+    is_msi_ = is_msi;
+  }
+
+  return is_msi_;
 }
+
+bool InstallUtil::SetMSIMarker(bool system_level, bool set) {
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  DCHECK(dist);
+  std::wstring client_state_path(dist->GetStateKey());
+
+  bool success = false;
+  HKEY reg_root = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  RegKey client_state_key;
+  if (client_state_key.Open(reg_root, client_state_path.c_str(),
+                            KEY_READ | KEY_WRITE)) {
+    DWORD msi_value = set ? 1 : 0;
+    if (client_state_key.WriteValue(google_update::kRegMSIField, msi_value)) {
+      success = true;
+    } else {
+      LOG(ERROR) << "Could not write msi value to client state key.";
+    }
+  } else {
+    LOG(ERROR) << "Could not open client state key!";
+  }
+
+  return success;
+}
+
 
 bool InstallUtil::BuildDLLRegistrationList(const std::wstring& install_path,
                                            const wchar_t** const dll_names,

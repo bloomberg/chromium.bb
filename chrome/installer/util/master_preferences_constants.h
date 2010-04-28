@@ -19,6 +19,8 @@ namespace master_preferences {
 extern const wchar_t kAltShortcutText[];
 // Boolean. Use alternate smaller first run info bubble.
 extern const wchar_t kAltFirstRunBubble[];
+// Boolean. This is to be a Chrome Frame install.
+extern const wchar_t kChromeFrame[];
 // Integer. Icon index from chrome.exe to use for shortcuts.
 extern const wchar_t kChromeShortcutIconIndex[];
 // Boolean. Create Desktop and QuickLaunch shortcuts. Cmd line override present.

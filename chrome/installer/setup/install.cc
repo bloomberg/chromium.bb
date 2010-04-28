@@ -99,7 +99,7 @@ void AppendUninstallCommandLineFlags(std::wstring* uninstall_cmd_line,
     uninstall_cmd_line->append(installer_util::switches::kChromeSxS);
   }
 
-  if (InstallUtil::IsMSIProcess()) {
+  if (InstallUtil::IsMSIProcess(is_system)) {
     uninstall_cmd_line->append(L" --");
     uninstall_cmd_line->append(installer_util::switches::kMsi);
   }
@@ -126,25 +126,23 @@ void AddUninstallShortcutWorkItems(HKEY reg_root,
                                    const std::wstring& product_name,
                                    const std::wstring& new_version,
                                    WorkItemList* install_list) {
-  std::wstring uninstall_cmd(L"\"");
-  uninstall_cmd.append(installer::GetInstallerPathUnderChrome(install_path,
-                                                              new_version));
-  file_util::AppendToPath(&uninstall_cmd,
-                          file_util::GetFilenameFromPath(exe_path));
-  uninstall_cmd.append(L"\"");
-
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-
 
   // When we are installed via an MSI, we need to store our uninstall strings
   // in the Google Update client state key. We do this even for non-MSI
   // managed installs to avoid breaking the edge case whereby an MSI-managed
   // install is updated by a non-msi installer (which would confuse the MSI
   // machinery if these strings were not also updated).
+  // Do not quote the command line for the MSI invocation.
+  std::wstring uninstall_cmd(
+    installer::GetInstallerPathUnderChrome(install_path, new_version));
+  file_util::AppendToPath(&uninstall_cmd,
+    file_util::GetFilenameFromPath(exe_path));
   std::wstring uninstall_arguments;
   AppendUninstallCommandLineFlags(&uninstall_arguments,
                                   reg_root == HKEY_LOCAL_MACHINE);
+
   std::wstring update_state_key = dist->GetStateKey();
   install_list->AddCreateRegKeyWorkItem(reg_root, update_state_key);
   install_list->AddSetRegValueWorkItem(reg_root, update_state_key,
@@ -153,8 +151,13 @@ void AddUninstallShortcutWorkItems(HKEY reg_root,
       installer_util::kUninstallArgumentsField, uninstall_arguments, true);
 
   // MSI installations will manage their own uninstall shortcuts.
-  if (!InstallUtil::IsMSIProcess()) {
-    AppendUninstallCommandLineFlags(&uninstall_cmd,
+  if (!InstallUtil::IsMSIProcess(reg_root == HKEY_LOCAL_MACHINE)) {
+    // We need to quote the command line for the Add/Remove Programs dialog.
+    std::wstring quoted_uninstall_cmd(L"\"");
+    quoted_uninstall_cmd += uninstall_cmd;
+    quoted_uninstall_cmd += L"\"";
+
+    AppendUninstallCommandLineFlags(&quoted_uninstall_cmd,
                                     reg_root == HKEY_LOCAL_MACHINE);
     std::wstring uninstall_reg = dist->GetUninstallRegPath();
     install_list->AddCreateRegKeyWorkItem(reg_root, uninstall_reg);
@@ -163,7 +166,8 @@ void AddUninstallShortcutWorkItems(HKEY reg_root,
     install_list->AddSetRegValueWorkItem(reg_root,
                                          uninstall_reg,
                                          installer_util::kUninstallStringField,
-                                         uninstall_cmd, true);
+                                         quoted_uninstall_cmd,
+                                         true);
     install_list->AddSetRegValueWorkItem(reg_root,
                                          uninstall_reg,
                                          L"InstallLocation",
@@ -282,31 +286,37 @@ bool CreateOrUpdateChromeShortcuts(const std::wstring& exe_path,
                                                  product_desc, false);
   }
 
-  // Create/update uninstall link
-  FilePath uninstall_link(shortcut_path);  // Uninstall Chrome link
-  uninstall_link = uninstall_link.Append(
-      dist->GetUninstallLinkName() + L".lnk");
-  if ((install_status == installer_util::FIRST_INSTALL_SUCCESS) ||
-      (install_status == installer_util::INSTALL_REPAIRED) ||
-      (file_util::PathExists(uninstall_link))) {
-    if (!file_util::PathExists(shortcut_path))
-      file_util::CreateDirectoryW(shortcut_path);
-    std::wstring setup_exe(installer::GetInstallerPathUnderChrome(install_path,
-                                                                  new_version));
-    file_util::AppendToPath(&setup_exe,
-                            file_util::GetFilenameFromPath(exe_path));
+  // Create/update uninstall link if we are not an MSI install. MSI
+  // installations are, for the time being, managed only through the
+  // Add/Remove Programs dialog.
+  // TODO(robertshield): We could add a shortcut to msiexec /X {GUID} here.
+  if (!InstallUtil::IsMSIProcess(system_install)) {
+    FilePath uninstall_link(shortcut_path);  // Uninstall Chrome link
+    uninstall_link = uninstall_link.Append(
+        dist->GetUninstallLinkName() + L".lnk");
+    if ((install_status == installer_util::FIRST_INSTALL_SUCCESS) ||
+        (install_status == installer_util::INSTALL_REPAIRED) ||
+        (file_util::PathExists(uninstall_link))) {
+      if (!file_util::PathExists(shortcut_path))
+          file_util::CreateDirectoryW(shortcut_path);
+        std::wstring setup_exe(installer::GetInstallerPathUnderChrome(
+            install_path, new_version));
+        file_util::AppendToPath(&setup_exe,
+                                file_util::GetFilenameFromPath(exe_path));
 
-    std::wstring arguments;
-    AppendUninstallCommandLineFlags(&arguments, system_install);
-
-    LOG(INFO) << "Creating/updating uninstall link at "
-              << uninstall_link.value();
-    ret = ret && file_util::CreateShortcutLink(setup_exe.c_str(),
-                                               uninstall_link.value().c_str(),
-                                               NULL,
-                                               arguments.c_str(),
-                                               NULL, setup_exe.c_str(), 0,
-                                               NULL);
+        std::wstring arguments;
+        AppendUninstallCommandLineFlags(&arguments, system_install);
+        LOG(INFO) << "Creating/updating uninstall link at "
+                  << uninstall_link.value();
+        ret = ret && file_util::CreateShortcutLink(setup_exe.c_str(),
+            uninstall_link.value().c_str(),
+            NULL,
+            arguments.c_str(),
+            NULL,
+            setup_exe.c_str(),
+            0,
+            NULL);
+    }
   }
 
   // Update Desktop and Quick Launch shortcuts. If --create-new-shortcuts
@@ -334,6 +344,8 @@ bool CreateOrUpdateChromeShortcuts(const std::wstring& exe_path,
 // - Handle the case of in-use-update by updating "opv" key or deleting it if
 //   not required.
 // - Register any new dlls and unregister old dlls.
+// - If this is an MSI install, ensures that the MSI marker is set, and sets
+//   it if not.
 // If these operations are successful, the function returns true, otherwise
 // false.
 bool DoPostInstallTasks(HKEY reg_root,
@@ -344,6 +356,8 @@ bool DoPostInstallTasks(HKEY reg_root,
                         const installer::Version& new_version) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   std::wstring version_key = dist->GetVersionKey();
+
+  bool is_system_install = (reg_root == HKEY_LOCAL_MACHINE);
 
   if (file_util::PathExists(FilePath::FromWStringHack(new_chrome_exe))) {
     // Looks like this was in use update. So make sure we update the 'opv' key
@@ -366,7 +380,7 @@ bool DoPostInstallTasks(HKEY reg_root,
                             file_util::GetFilenameFromPath(exe_path));
     rename_cmd = L"\"" + rename_cmd +
                  L"\" --" + installer_util::switches::kRenameChromeExe;
-    if (reg_root == HKEY_LOCAL_MACHINE)
+    if (is_system_install)
       rename_cmd = rename_cmd + L" --" + installer_util::switches::kSystemLevel;
 
     if (InstallUtil::IsChromeFrameProcess()) {
@@ -439,6 +453,13 @@ bool DoPostInstallTasks(HKEY reg_root,
         return false;
       }
     }
+  }
+
+  // If we're told that we're an MSI install, make sure to set the marker
+  // in the client state key so that future updates do the right thing.
+  if (InstallUtil::IsMSIProcess(is_system_install)) {
+    if (!InstallUtil::SetMSIMarker(is_system_install, true))
+      return false;
   }
 
   return true;
