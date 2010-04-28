@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "chrome_frame/bho.h"
 #include "chrome_frame/bind_context_info.h"
+#include "chrome_frame/exception_barrier.h"
 #include "chrome_frame/chrome_active_document.h"
 #include "chrome_frame/urlmon_bind_status_callback.h"
 #include "chrome_frame/utils.h"
@@ -161,6 +162,8 @@ HRESULT MonikerPatch::BindToObject(IMoniker_BindToObject_Fn original,
   DLOG(INFO) << __FUNCTION__;
   DCHECK(to_left == NULL);
 
+  ExceptionBarrier barrier;
+
   HRESULT hr = S_OK;
   // Bind context is marked for switch when we sniff data in BSCBStorageBind
   // and determine that the renderer to be used is Chrome.
@@ -201,9 +204,14 @@ HRESULT MonikerPatch::BindToStorage(IMoniker_BindToStorage_Fn original,
     callback->AddRef();
     hr = callback->Initialize(me, bind_ctx);
     DCHECK(SUCCEEDED(hr));
-  }
 
-  hr = original(me, bind_ctx, to_left, iid, obj);
+    // Call the original back under an exception barrier only if we should
+    // wrap the callback.
+    ExceptionBarrier barrier;
+    hr = original(me, bind_ctx, to_left, iid, obj);
+  } else {
+    hr = original(me, bind_ctx, to_left, iid, obj);
+  }
 
   // If the binding terminates before the data could be played back
   // now is the chance. Sometimes OnStopBinding happens after this returns

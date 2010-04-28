@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/lock.h"
 #include "base/logging.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
 
@@ -28,5 +29,8 @@ bool InitializeVectoredCrashReportingWithPipeName(
     google_breakpad::CustomClientInfo* client_info);
 
 bool ShutdownVectoredCrashReporting();
+
+bool WriteMinidumpForException(EXCEPTION_POINTERS* p);
+
 
 #endif  // CHROME_FRAME_CRASH_REPORTING_CRASH_REPORT_H_

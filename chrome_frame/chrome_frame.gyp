@@ -647,6 +647,9 @@
         'com_type_info_holder.h',
         'delete_chrome_history.cc',
         'delete_chrome_history.h',
+        'exception_barrier.cc',
+        'exception_barrier.h',
+        'exception_barrier_lowlevel.asm',
         'find_dialog.cc',
         'find_dialog.h',
         'function_stub.h',
@@ -705,6 +708,31 @@
           ],
         },],
       ],
+      'rules': [
+        {
+          'rule_name': 'Assemble',
+          'extension': 'asm',
+          'inputs': [],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).obj',
+          ],
+          'action': [
+            'ml',
+            '/safeseh',
+            '/Fo', '<(INTERMEDIATE_DIR)\<(RULE_INPUT_ROOT).obj',
+            '/c', '<(RULE_INPUT_PATH)',
+          ],
+          'process_outputs_as_sources': 0,
+          'message': 'Assembling <(RULE_INPUT_PATH) to <(INTERMEDIATE_DIR)\<(RULE_INPUT_ROOT).obj.',
+        },
+      ],
+      'msvs_settings': {
+        'VCLinkerTool': {
+          'AdditionalOptions': [
+            '/safeseh',
+          ],
+        },
+      },
     },
     {
       'target_name': 'npchrome_frame',

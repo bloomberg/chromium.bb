@@ -11,6 +11,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome_frame/chrome_frame_reporting.h"
+#include "chrome_frame/exception_barrier.h"
 #include "chrome_frame/utils.h"
 
 // Well known SID for the system principal.
@@ -45,6 +46,11 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const wchar_t* dll_path) {
   return &custom_info;
 }
 
+
+void CALLBACK BreakpadHandler(EXCEPTION_POINTERS *ptrs) {
+  WriteMinidumpForException(ptrs);
+}
+
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 bool InitializeCrashReporting() {
@@ -54,6 +60,10 @@ bool InitializeCrashReporting() {
   // user allows it first.
   if (!always_take_dump && !GoogleUpdateSettings::GetCollectStatsConsent())
       return true;
+
+  // Set the handler for ExceptionBarrier for this module:
+  DCHECK(ExceptionBarrier::handler() == NULL);
+  ExceptionBarrier::set_handler(BreakpadHandler);
 
   // Get the alternate dump directory. We use the temp path.
   FilePath temp_directory;

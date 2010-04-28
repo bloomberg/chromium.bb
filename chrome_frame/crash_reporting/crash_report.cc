@@ -7,11 +7,13 @@
 #include "chrome_frame/crash_reporting/crash_report.h"
 
 #include "base/basictypes.h"
+#include "base/lock.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
 
 // TODO(joshia): factor out common code with chrome used for crash reporting
 const wchar_t kGoogleUpdatePipeName[] = L"\\\\.\\pipe\\GoogleCrashServices\\";
 static google_breakpad::ExceptionHandler * g_breakpad = NULL;
+static Lock g_breakpad_lock;
 
 // These minidump flag combinations have been tested safe agains the
 // DbgHelp.dll version that ships with Windows XP SP2.
@@ -47,9 +49,14 @@ static void veh_segment_end() {}
 class CrashHandlerTraits : public Win32VEHTraits,
                            public ModuleOfInterestWithExcludedRegion {
  public:
-  CrashHandlerTraits() : breakpad_(NULL) {}
-  void Init(google_breakpad::ExceptionHandler* breakpad) {
-    breakpad_ = breakpad;
+  CrashHandlerTraits() {}
+
+  // Note that breakpad_lock must be held when this is called.
+  void Init(google_breakpad::ExceptionHandler* breakpad, Lock* breakpad_lock) {
+    DCHECK(breakpad);
+    DCHECK(breakpad_lock);
+    breakpad_lock->AssertAcquired();
+
     Win32VEHTraits::InitializeIgnoredBlocks();
     ModuleOfInterestWithExcludedRegion::SetCurrentModule();
     // Pointers to static (non-extern) functions take the address of the
@@ -61,21 +68,21 @@ class CrashHandlerTraits : public Win32VEHTraits,
   }
 
   void Shutdown() {
-    breakpad_ = 0;
   }
 
   inline bool WriteDump(EXCEPTION_POINTERS* p) {
-    return breakpad_->WriteMinidumpForException(p);
+    return WriteMinidumpForException(p);
   }
-
- private:
-  google_breakpad::ExceptionHandler* breakpad_;
 };
 
 class CrashHandler {
  public:
   CrashHandler() : veh_id_(NULL), handler_(&crash_api_) {}
-  bool Init(google_breakpad::ExceptionHandler* breakpad);
+
+  // Note that breakpad_lock is used to protect accesses to breakpad and must
+  // be held when Init() is called.
+  bool Init(google_breakpad::ExceptionHandler* breakpad, Lock* breakpad_lock);
+
   void Shutdown();
  private:
   VectoredHandlerT<CrashHandlerTraits> handler_;
@@ -97,14 +104,19 @@ LONG WINAPI CrashHandler::VectoredHandlerEntryPoint(
 
 #pragma code_seg(pop)
 
-bool CrashHandler::Init(google_breakpad::ExceptionHandler* breakpad) {
+bool CrashHandler::Init(google_breakpad::ExceptionHandler* breakpad,
+                        Lock* breakpad_lock) {
+  DCHECK(breakpad);
+  DCHECK(breakpad_lock);
+  breakpad_lock->AssertAcquired();
+
   if (veh_id_)
     return true;
 
   void* id = ::AddVectoredExceptionHandler(FALSE, &VectoredHandlerEntryPoint);
   if (id != NULL) {
     veh_id_ = id;
-    crash_api_.Init(breakpad);
+    crash_api_.Init(breakpad, breakpad_lock);
     return true;
   }
 
@@ -131,6 +143,7 @@ bool InitializeVectoredCrashReportingWithPipeName(
     const wchar_t* pipe_name,
     const std::wstring& dump_path,
     google_breakpad::CustomClientInfo* client_info) {
+  AutoLock lock(g_breakpad_lock);
   if (g_breakpad)
     return true;
 
@@ -149,7 +162,7 @@ bool InitializeVectoredCrashReportingWithPipeName(
   if (!g_breakpad)
     return false;
 
-  if (!g_crash_handler.Init(g_breakpad)) {
+  if (!g_crash_handler.Init(g_breakpad, &g_breakpad_lock)) {
     delete g_breakpad;
     g_breakpad = NULL;
     return false;
@@ -176,7 +189,17 @@ bool InitializeVectoredCrashReporting(
 
 bool ShutdownVectoredCrashReporting() {
   g_crash_handler.Shutdown();
+  AutoLock lock(g_breakpad_lock);
   delete g_breakpad;
   g_breakpad = NULL;
   return true;
+}
+
+bool WriteMinidumpForException(EXCEPTION_POINTERS* p) {
+  AutoLock lock(g_breakpad_lock);
+  bool success = false;
+  if (g_breakpad) {
+    success = g_breakpad->WriteMinidumpForException(p);
+  }
+  return success;
 }
