@@ -18,7 +18,7 @@ import sys
 #
 # * changes 'uniform vecN var[N]' to 'uniform matN var';
 #
-# * renames gl_Vertex and gl_MultiTexCoordN to position and texcoordN
+# * renames gl_Vertex and gl_MultiTexCoordN to position and texCoordN
 #   respectively and adds attribute declarations;
 #
 # * prints the results to standard output, separating them with SplitMarker
@@ -164,10 +164,10 @@ def fix_glsl_body(body, input_mapping):
 
   for n in xrange(8):
     if 'gl_MultiTexCoord%d' % n in body:
-      # Change gl_MultiTexCoordN (0<=N<=7) to texcoordN and add attribute
+      # Change gl_MultiTexCoordN (0<=N<=7) to texCoordN and add attribute
       # declaration.
-      body = re.sub(r'\bgl_MultiTexCoord%d\b' % n, 'texcoord%d' % n, body)
-      attributes.append('attribute vec4 texcoord%d;' % n)
+      body = re.sub(r'\bgl_MultiTexCoord%d\b' % n, 'texCoord%d' % n, body)
+      attributes.append('attribute vec4 texCoord%d;' % n)
 
   # ATTRIBUTES_TO_SEMANTICS should have taken care of normals.
   assert 'gl_Normal' not in body
