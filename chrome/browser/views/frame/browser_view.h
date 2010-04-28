@@ -297,7 +297,6 @@ class BrowserView : public BrowserBubbleHost,
   virtual void ToggleExtensionShelf();
   virtual void ShowAboutChromeDialog();
   virtual void ShowTaskManager();
-  virtual void ShowBookmarkManager();
   virtual void ShowBookmarkBubble(const GURL& url, bool already_bookmarked);
   virtual void SetDownloadShelfVisible(bool visible);
   virtual bool IsDownloadShelfVisible() const;

@@ -838,10 +838,6 @@ void BrowserWindowGtk::ShowTaskManager() {
   TaskManagerGtk::Show();
 }
 
-void BrowserWindowGtk::ShowBookmarkManager() {
-  // TODO(viettrungluu): remove this function (crbug.com/38908)
-}
-
 void BrowserWindowGtk::ShowBookmarkBubble(const GURL& url,
                                           bool already_bookmarked) {
   toolbar_->GetLocationBarView()->ShowStarBubble(url, !already_bookmarked);

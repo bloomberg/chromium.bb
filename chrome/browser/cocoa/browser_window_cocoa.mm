@@ -264,11 +264,6 @@ void BrowserWindowCocoa::ShowTaskManager() {
   TaskManagerMac::Show();
 }
 
-void BrowserWindowCocoa::ShowBookmarkManager() {
-  // TODO(viettrungluu): Remove function when no callers remain. crbug.com/38908
-  NOTIMPLEMENTED();
-}
-
 void BrowserWindowCocoa::ShowBookmarkBubble(const GURL& url,
                                             bool already_bookmarked) {
   [controller_ showBookmarkBubbleForURL:url

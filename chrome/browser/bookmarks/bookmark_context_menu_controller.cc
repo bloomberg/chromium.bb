@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_folder_editor_controller.h"
-#include "chrome/browser/bookmarks/bookmark_manager.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser.h"
@@ -34,29 +33,6 @@ bool NodeHasURLs(const BookmarkNode* node) {
   }
   return false;
 }
-
-// SelectOnCreationHandler ----------------------------------------------------
-
-// Used when adding a new bookmark. If a new bookmark is created it is selected
-// in the bookmark manager.
-class SelectOnCreationHandler : public BookmarkEditor::Handler {
- public:
-  explicit SelectOnCreationHandler(Profile* profile) : profile_(profile) {
-  }
-
-  virtual void NodeCreated(const BookmarkNode* new_node) {
-// TODO(viettrungluu): I don't know if this is really needed, but it'll be
-// deleted soon.
-#if defined(OS_WIN)
-    BookmarkManager::SelectInTree(profile_, new_node);
-#endif
-  }
-
- private:
-  Profile* profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(SelectOnCreationHandler);
-};
 
 }  // namespace
 
@@ -111,15 +87,6 @@ void BookmarkContextMenuController::BuildMenu() {
   } else {
     AddItem(IDS_BOOKMARK_BAR_EDIT);
   }
-
-// TODO(viettrungluu): I don't know if this is really needed, but it'll be
-// deleted soon.
-#if defined(OS_WIN)
-  if (configuration_ == BOOKMARK_MANAGER_TABLE_OTHER ||
-      configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU_OTHER) {
-    AddItem(IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER);
-  }
-#endif
 
   AddSeparator();
   AddItem(IDS_CUT);
@@ -236,21 +203,14 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
           UserMetricsAction("BookmarkBar_ContextMenu_Add"),
           profile_);
 
-      BookmarkEditor::Configuration editor_config;
-      BookmarkEditor::Handler* handler = NULL;
-      if (configuration_ == BOOKMARK_BAR) {
-        editor_config = BookmarkEditor::SHOW_TREE;
-      } else {
-        editor_config = BookmarkEditor::NO_TREE;
-        // This is owned by the BookmarkEditorView.
-        handler = new SelectOnCreationHandler(profile_);
-      }
+      BookmarkEditor::Configuration editor_config =
+          (configuration_ == BOOKMARK_BAR) ? BookmarkEditor::SHOW_TREE :
+                                             BookmarkEditor::NO_TREE;
       // TODO: this should honor the index from GetParentForNewNodes.
       BookmarkEditor::Show(
           parent_window_, profile_,
           bookmark_utils::GetParentForNewNodes(parent_, selection_, NULL),
-          BookmarkEditor::EditDetails(), editor_config,
-          handler);
+          BookmarkEditor::EditDetails(), editor_config, NULL);
       break;
     }
 
@@ -272,23 +232,6 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
     case IDS_BOOMARK_BAR_ALWAYS_SHOW:
       bookmark_utils::ToggleWhenVisible(profile_);
       break;
-
-// TODO(viettrungluu): I don't know if this is really needed, but it'll be
-// deleted soon.
-#if defined(OS_WIN)
-    case IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER:
-      UserMetrics::RecordAction(
-          UserMetricsAction("BookmarkBar_ContextMenu_ShowInFolder"),
-          profile_);
-
-      if (selection_.size() != 1) {
-        NOTREACHED();
-        break;
-      }
-
-      BookmarkManager::SelectInTree(profile_, selection_[0]);
-      break;
-#endif
 
     case IDS_BOOKMARK_MANAGER:
       UserMetrics::RecordAction(UserMetricsAction("ShowBookmarkManager"),
@@ -361,15 +304,6 @@ bool BookmarkContextMenuController::IsCommandIdEnabled(int command_id) const {
 
     case IDS_BOOKMARK_BAR_REMOVE:
       return !selection_.empty() && !is_root_node;
-
-// TODO(viettrungluu): I don't know if this is really needed, but it'll be
-// deleted soon.
-#if defined(OS_WIN)
-    case IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER:
-      return (configuration_ == BOOKMARK_MANAGER_TABLE_OTHER ||
-              configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU_OTHER) &&
-             selection_.size() == 1;
-#endif
 
     case IDS_BOOKMARK_MANAGER_SORT:
       return parent_ && parent_ != model_->root_node();

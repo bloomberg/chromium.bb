@@ -86,7 +86,6 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual void ToggleExtensionShelf();
   virtual void ShowAboutChromeDialog();
   virtual void ShowTaskManager();
-  virtual void ShowBookmarkManager();
   virtual void ShowBookmarkBubble(const GURL& url, bool already_bookmarked);
   virtual bool IsDownloadShelfVisible() const;
   virtual DownloadShelf* GetDownloadShelf();

@@ -5,7 +5,6 @@
 #include "chrome/browser/bookmarks/bookmark_folder_editor_controller.h"
 
 #include "app/l10n_util.h"
-#include "chrome/browser/bookmarks/bookmark_manager.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
@@ -62,20 +61,10 @@ bool BookmarkFolderEditorController::IsValid(const std::wstring& text) {
 }
 
 void BookmarkFolderEditorController::InputAccepted(const std::wstring& text) {
-  if (IsNew()) {
-#if defined(OS_WIN)
-    // TODO(viettrungluu): Implement this the following for the tabbed bookmark
-    // manager?
-    ALLOW_UNUSED const BookmarkNode* node =
-        model_->AddGroup(node_, index_, text);
-    if ((details_ & SHOW_IN_MANAGER) != 0)
-      BookmarkManager::SelectInTree(profile_, node);
-#else
+  if (IsNew())
     model_->AddGroup(node_, index_, text);
-#endif
-  } else {
+  else
     model_->SetTitle(node_, text);
-  }
 }
 
 void BookmarkFolderEditorController::InputCanceled() {

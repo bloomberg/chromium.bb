@@ -951,10 +951,6 @@ void BrowserView::ShowTaskManager() {
   browser::ShowTaskManager();
 }
 
-void BrowserView::ShowBookmarkManager() {
-  browser::ShowBookmarkManagerView(browser_->profile());
-}
-
 void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
   toolbar_->location_bar()->ShowStarBubble(url, !already_bookmarked);
 }

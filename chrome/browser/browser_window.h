@@ -185,9 +185,6 @@ class BrowserWindow {
   // Shows the Task manager.
   virtual void ShowTaskManager() = 0;
 
-  // Shows the Bookmark Manager window.
-  virtual void ShowBookmarkManager() = 0;
-
   // Shows the Bookmark bubble. |url| is the URL being bookmarked,
   // |already_bookmarked| is true if the url is already bookmarked.
   virtual void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) = 0;

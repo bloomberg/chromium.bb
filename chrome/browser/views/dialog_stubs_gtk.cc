@@ -40,11 +40,6 @@ void ShowImporterView(views::Widget* parent, Profile* profile) {
   NOTIMPLEMENTED();
 }
 
-void ShowBookmarkManagerView(Profile* profile) {
-  // TODO(viettrungluu): remove this function (crbug.com/38908)
-  NOTIMPLEMENTED();
-}
-
 void ShowPasswordsExceptionsWindowView(Profile* profile) {
   ShowPasswordsExceptionsWindow(profile);
 }
