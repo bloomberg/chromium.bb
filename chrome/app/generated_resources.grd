@@ -6390,34 +6390,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Deny
       </message>
 
-      <!-- Bookmark table -->
-      <message name="IDS_BOOKMARK_TABLE_TITLE" desc="Title of the column in bookmark table showing the title of the bookmark.">
-        Title
-      </message>
-      <message name="IDS_BOOKMARK_TABLE_URL" desc="Title of the column in bookmark table showing the url of the bookmark.">
-        URL
-      </message>
-      <message name="IDS_BOOKMARK_TABLE_PATH" desc="Title of the column in bookmark table showing the path in the bookmark bar of the node.">
-        Folder
-      </message>
-      <message name="IDS_BOOKMARK_TABLE_OTHER_BOOKMARKS_PATH" desc="Path used for bookmarks in the other bookmarks folder">
-        Other bookmarks
-      </message>
-      <message name="IDS_BOOKMARK_TABLE_BOOKMARK_BAR_PATH" desc="Path used for bookmarks on the bookmark bar">
-        Bookmark bar
-      </message>
-      <message name="IDS_BOOKMARK_TABLE_PATH_SEPARATOR" desc="Separator between path elements in the bookmarks table">
-        /
-      </message>
-
-      <!-- Bookmark tree -->
-      <message name="IDS_BOOKMARK_TREE_RECENTLY_BOOKMARKED_NODE_TITLE" desc="Title of the bookmark node in the bookmark manager showing the 'recently bookmarked' bookmarks">
-        Recently Added
-      </message>
-      <message name="IDS_BOOKMARK_TREE_SEARCH_NODE_TITLE" desc="Title of node under which search results are shown.">
-        Search
-      </message>
-
       <!-- Bookmark manager -->
       <message name="IDS_BOOKMARK_MANAGER_TITLE" desc="Title of the bookmark manager window.">
         Bookmark Manager
@@ -6471,15 +6443,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Export Bookmarks...
         </message>
       </if>
-      <message name="IDS_BOOKMARK_MANAGER_NO_SEARCH_TEXT" desc="Text shown in the bookmark table if the user clicks on the search folder without typing in any text in the search text field.">
-        Enter a query in the text field above to search your bookmarks.
-      </message>
-      <message name="IDS_BOOKMARK_MANAGER_NO_RESULTS" desc="Text shown in the bookmark table when the search didn't find anything.">
-        No bookmarks match the query '<ph name="SEARCH_TEXT">$1</ph>'.
-      </message>
-      <message name="IDS_BOOKMARK_MANAGER_SEARCH_TITLE" desc="Text shown before the search text field.">
-        Search:
-      </message>
       <message name="IDS_BOOKMARK_MANAGER_NAME_INPUT_PLACE_HOLDER" desc="Text to show in the URL input field when editing or creating bookmarks.">
         Name
       </message>
@@ -6488,12 +6451,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_BOOKMARK_MANAGER_INVALID_URL" desc="Error message to display when the user tries to edit or create a bookmark with an invalud URL.">
         Invalid URL.
-      </message>
-      <message name="IDS_BOOKMARK_MANAGER_REMOVE" desc="Label for menu item that is used to remove a folder or bookmark.">
-        Delete...
-      </message>
-      <message name="IDS_BOOKMARK_MANAGER_REMOVE_CONFIRM" desc="Warning text asking the user if he wants to remove the bookmark or the bookmark folder.">
-        Are you sure you want to remove '<ph name="BOOKMARK_TITLE">$1</ph>'?
       </message>
 
       <message name="IDS_DEFAULT_FILENAME" desc="Default name for saved files when we have no idea what they could be.">
