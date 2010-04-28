@@ -5,9 +5,10 @@
 #ifndef VIEWS_WIDGET_TOOLTIP_MANAGER_GTK_H_
 #define VIEWS_WIDGET_TOOLTIP_MANAGER_GTK_H_
 
-#include "views/widget/tooltip_manager.h"
-
 #include <gtk/gtk.h>
+
+#include "views/widget/tooltip_manager.h"
+#include "views/widget/tooltip_window_gtk.h"
 
 namespace views {
 
@@ -39,6 +40,9 @@ class TooltipManagerGtk : public TooltipManager {
 
   // The view supplied to the last invocation of ShowKeyboardTooltip.
   View* keyboard_view_;
+
+  // Custimized tooltip window.
+  TooltipWindowGtk tooltip_window_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipManagerGtk);
 };

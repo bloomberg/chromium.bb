@@ -26,6 +26,12 @@ class GtkKeyBindingsHandler;
 class MenuGtk;
 struct NativeWebKeyboardEvent;
 
+#if defined(OS_CHROMEOS)
+namespace views {
+class TooltipWindowGtk;
+}
+#endif  // defined(OS_CHROMEOS)
+
 typedef struct _GtkClipboard GtkClipboard;
 typedef struct _GtkSelectionData GtkSelectionData;
 
@@ -179,6 +185,11 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
   // The size that we want the renderer to be.  We keep this in a separate
   // variable because resizing in GTK+ is async.
   gfx::Size requested_size_;
+
+#if defined(OS_CHROMEOS)
+  // Custimized tooltip window.
+  scoped_ptr<views::TooltipWindowGtk> tooltip_window_;
+#endif  // defined(OS_CHROMEOS)
 };
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_GTK_H_

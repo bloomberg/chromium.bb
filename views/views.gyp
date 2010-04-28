@@ -277,6 +277,8 @@
         'widget/tooltip_manager_win.h',
         'widget/tooltip_manager.cc',
         'widget/tooltip_manager.h',
+        'widget/tooltip_window_gtk.cc',
+        'widget/tooltip_window_gtk.h',
         'widget/widget.h',
         'widget/widget_gtk.cc',
         'widget/widget_gtk.h',

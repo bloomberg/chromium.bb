@@ -39,6 +39,10 @@
 #include "third_party/WebKit/WebKit/chromium/public/gtk/WebInputEventFactory.h"
 #include "webkit/glue/webcursor_gtk_data.h"
 
+#if defined(OS_CHROMEOS)
+#include "views/widget/tooltip_window_gtk.h"
+#endif  // defined(OS_CHROMEOS)
+
 static const int kMaxWindowWidth = 4000;
 static const int kMaxWindowHeight = 4000;
 
@@ -349,6 +353,11 @@ void RenderWidgetHostViewGtk::InitAsChild() {
   // |key_bindings_handler_| must be created after creating |view_| widget.
   key_bindings_handler_.reset(new GtkKeyBindingsHandler(view_.get()));
   plugin_container_manager_.set_host_widget(view_.get());
+
+#if defined(OS_CHROMEOS)
+  tooltip_window_.reset(new views::TooltipWindowGtk(view_.get()));
+#endif  // defined(OS_CHROMEOS)
+
   gtk_widget_show(view_.get());
 }
 
@@ -363,6 +372,11 @@ void RenderWidgetHostViewGtk::InitAsPopup(
   // |key_bindings_handler_| must be created after creating |view_| widget.
   key_bindings_handler_.reset(new GtkKeyBindingsHandler(view_.get()));
   plugin_container_manager_.set_host_widget(view_.get());
+
+#if defined(OS_CHROMEOS)
+  tooltip_window_.reset(new views::TooltipWindowGtk(view_.get()));
+#endif  // defined(OS_CHROMEOS)
+
   gtk_container_add(GTK_CONTAINER(popup), view_.get());
 
   // If we are not activatable, we don't want to grab keyboard input,
@@ -608,6 +622,9 @@ void RenderWidgetHostViewGtk::SetTooltipText(const std::wstring& tooltip_text) {
   } else {
     gtk_widget_set_tooltip_text(view_.get(),
                                 WideToUTF8(clamped_tooltip).c_str());
+#if defined(OS_CHROMEOS)
+    tooltip_window_->SetTooltipText(clamped_tooltip);
+#endif  // defined(OS_CHROMEOS)
   }
 }
 

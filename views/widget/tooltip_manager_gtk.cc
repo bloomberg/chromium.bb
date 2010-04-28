@@ -71,68 +71,10 @@ int TooltipManager::GetMaxWidth(int x, int y) {
   return monitor_bounds.width() == 0 ? 800 : (monitor_bounds.width() + 1) / 2;
 }
 
-// Callback from gtk_container_foreach. If |*label_p| is NULL and |widget| is
-// a GtkLabel, |*label_p| is set to |widget|. Used to find the first GtkLabel
-// in a container.
-static void LabelLocatorCallback(GtkWidget* widget,
-                                 gpointer label_p) {
-  GtkWidget** label = static_cast<GtkWidget**>(label_p);
-  if (!*label && GTK_IS_LABEL(widget))
-    *label = widget;
-}
-
-// By default GtkTooltip wraps at a longish string. We want more control over
-// that wrapping. The only way to do that is dig out the label and set
-// gtk_label_set_max_width_chars, which is what this code does. I also tried
-// setting a custom widget on the tooltip, but there is a bug in Gtk that
-// triggers continually hiding/showing the widget in that case.
-static void AdjustLabel(GtkTooltip* tooltip) {
-  static const char kAdjustedLabelPropertyValue[] = "_adjusted_label_";
-  static const char kTooltipLabel[] = "_tooltip_label_";
-  gpointer adjusted_value = g_object_get_data(G_OBJECT(tooltip),
-                                              kAdjustedLabelPropertyValue);
-  if (adjusted_value) {
-    gpointer label_ptr = g_object_get_data(G_OBJECT(tooltip), kTooltipLabel);
-    if (label_ptr) {
-      // Setting the text in a label doesn't force recalculating wrap position.
-      // We force recalculating wrap position by resetting the max width.
-      gtk_label_set_max_width_chars(reinterpret_cast<GtkLabel*>(label_ptr),
-                                    2999);
-      gtk_label_set_max_width_chars(reinterpret_cast<GtkLabel*>(label_ptr),
-                                    3000);
-    }
-    return;
-  }
-
-  adjusted_value = reinterpret_cast<gpointer>(1);
-  g_object_set_data(G_OBJECT(tooltip), kAdjustedLabelPropertyValue,
-                    adjusted_value);
-  GtkWidget* parent;
-  {
-    // Create a label so that we can get the parent. The Tooltip ends up taking
-    // ownership of the label and deleting it.
-    GtkWidget* label = gtk_label_new("");
-    gtk_tooltip_set_custom(tooltip, label);
-    parent = gtk_widget_get_parent(label);
-    gtk_tooltip_set_custom(tooltip, NULL);
-  }
-  if (parent) {
-    // We found the parent, find the first label, which is where the tooltip
-    // text ends up going.
-    GtkLabel* real_label = NULL;
-    gtk_container_foreach(GTK_CONTAINER(parent), LabelLocatorCallback,
-                          static_cast<gpointer>(&real_label));
-    if (real_label) {
-      gtk_label_set_max_width_chars(GTK_LABEL(real_label), 3000);
-      g_object_set_data(G_OBJECT(tooltip), kTooltipLabel,
-                        reinterpret_cast<gpointer>(real_label));
-    }
-  }
-}
-
 TooltipManagerGtk::TooltipManagerGtk(WidgetGtk* widget)
     : widget_(widget),
-      keyboard_view_(NULL) {
+      keyboard_view_(NULL),
+      tooltip_window_(widget->window_contents()) {
 }
 
 bool TooltipManagerGtk::ShowTooltip(int x, int y, bool for_keyboard,
@@ -163,8 +105,6 @@ bool TooltipManagerGtk::ShowTooltip(int x, int y, bool for_keyboard,
   if (!view->GetTooltipText(view_loc, &text))
     return false;
 
-  AdjustLabel(tooltip);
-
   // Sets the area of the tooltip. This way if different views in the same
   // widget have tooltips the tooltip doesn't get stuck at the same location.
   gfx::Rect vis_bounds = view->GetVisibleBounds();
@@ -179,8 +119,7 @@ bool TooltipManagerGtk::ShowTooltip(int x, int y, bool for_keyboard,
   View::ConvertPointToScreen(widget_->GetRootView(), &screen_loc);
   TrimTooltipToFit(&text, &max_width, &line_count, screen_loc.x(),
                    screen_loc.y());
-  gtk_tooltip_set_text(tooltip, WideToUTF8(text).c_str());
-
+  tooltip_window_.SetTooltipText(text);
 
   return true;
 }
