@@ -56,6 +56,15 @@ static string Demangle(const string &mangled) {
   return string(mangled);
 }
 
+DumpStabsHandler::~DumpStabsHandler() {
+  // Free any functions we've accumulated but not added to the module.
+  for (vector<Module::Function *>::iterator func_it = functions_.begin();
+       func_it != functions_.end(); func_it++)
+    delete *func_it;
+  // Free any function that we're currently within.
+  delete current_function_;
+}
+
 bool DumpStabsHandler::StartCompilationUnit(const char *name, uint64_t address,
                                             const char *build_directory) {
   assert(!in_compilation_unit_);

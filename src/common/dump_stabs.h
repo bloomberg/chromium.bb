@@ -68,6 +68,7 @@ class DumpStabsHandler: public google_breakpad::StabsHandler {
       current_function_(NULL),
       current_source_file_(NULL),
       current_source_file_name_(NULL) { }
+  ~DumpStabsHandler();
 
   // The standard StabsHandler virtual member functions.
   bool StartCompilationUnit(const char *name, uint64_t address,
