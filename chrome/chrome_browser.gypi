@@ -3161,6 +3161,53 @@
       # http://code.google.com/p/gyp/issues/detail?id=143.
       'copies': [
         {
+          'destination': '<(PRODUCT_DIR)/resources/shared/css',
+          'files': [
+            'browser/resources/shared/css/list.css',
+            'browser/resources/shared/css/menu.css',
+            'browser/resources/shared/css/tree.css',
+            'browser/resources/shared/css/tree.css.js',
+          ]
+        },
+        {
+          'destination': '<(PRODUCT_DIR)/resources/shared/js',
+          'files': [
+            'browser/resources/shared/js/cr_test.html',
+            'browser/resources/shared/js/cr.js',
+            'browser/resources/shared/js/i18ntemplate.js',
+            'browser/resources/shared/js/localstrings.js',
+            'browser/resources/shared/js/util.js',        
+          ]
+        },
+        {
+          'destination': '<(PRODUCT_DIR)/resources/shared/js/cr',
+          'files': [
+            'browser/resources/shared/js/cr/event.js',
+            'browser/resources/shared/js/cr/eventtarget_test.html',
+            'browser/resources/shared/js/cr/eventtarget.js',
+            'browser/resources/shared/js/cr/linkcontroller_test.html',
+            'browser/resources/shared/js/cr/linkcontroller.js',
+            'browser/resources/shared/js/cr/promise_test.html',
+            'browser/resources/shared/js/cr/promise.js',
+            'browser/resources/shared/js/cr/ui.js',
+          ]
+        },
+        {
+          'destination': '<(PRODUCT_DIR)/resources/shared/js/cr/ui',
+          'files': [
+            'browser/resources/shared/js/cr/ui/command.js',
+            'browser/resources/shared/js/cr/ui/contextmenuhandler.js',
+            'browser/resources/shared/js/cr/ui/list.js',
+            'browser/resources/shared/js/cr/ui/listitem.js',
+            'browser/resources/shared/js/cr/ui/listselectionmodel.js',
+            'browser/resources/shared/js/cr/ui/menu.js',
+            'browser/resources/shared/js/cr/ui/menubutton.js',
+            'browser/resources/shared/js/cr/ui/menuitem.js',
+            'browser/resources/shared/js/cr/ui/splitter.js',
+            'browser/resources/shared/js/cr/ui/tree.js',
+          ]
+        },
+        {
           'destination': '<(PRODUCT_DIR)/resources/bookmark_manager',
           'files': [
             'browser/resources/bookmark_manager/main.html',
@@ -3172,45 +3219,12 @@
           'files': [
             'browser/resources/bookmark_manager/css/bmm.css',
             'browser/resources/bookmark_manager/css/bmm.css.js',
-            'browser/resources/bookmark_manager/css/list.css',
-            'browser/resources/bookmark_manager/css/menu.css',
-            'browser/resources/bookmark_manager/css/tree.css',
-            'browser/resources/bookmark_manager/css/tree.css.js',
           ]
         },
         {
           'destination': '<(PRODUCT_DIR)/resources/bookmark_manager/js',
           'files': [
             'browser/resources/bookmark_manager/js/bmm.js',
-            'browser/resources/bookmark_manager/js/cr.js',
-            'browser/resources/bookmark_manager/js/i18ntemplate.js',
-            'browser/resources/bookmark_manager/js/localstrings.js',
-            'browser/resources/bookmark_manager/js/util.js',
-          ]
-        },
-        {
-          'destination': '<(PRODUCT_DIR)/resources/bookmark_manager/js/cr',
-          'files': [
-            'browser/resources/bookmark_manager/js/cr/event.js',
-            'browser/resources/bookmark_manager/js/cr/eventtarget.js',
-            'browser/resources/bookmark_manager/js/cr/linkcontroller.js',
-            'browser/resources/bookmark_manager/js/cr/promise.js',
-            'browser/resources/bookmark_manager/js/cr/ui.js',
-          ]
-        },
-        {
-          'destination': '<(PRODUCT_DIR)/resources/bookmark_manager/js/cr/ui',
-          'files': [
-            'browser/resources/bookmark_manager/js/cr/ui/command.js',
-            'browser/resources/bookmark_manager/js/cr/ui/contextmenuhandler.js',
-            'browser/resources/bookmark_manager/js/cr/ui/list.js',
-            'browser/resources/bookmark_manager/js/cr/ui/listitem.js',
-            'browser/resources/bookmark_manager/js/cr/ui/listselectionmodel.js',
-            'browser/resources/bookmark_manager/js/cr/ui/menu.js',
-            'browser/resources/bookmark_manager/js/cr/ui/menubutton.js',
-            'browser/resources/bookmark_manager/js/cr/ui/menuitem.js',
-            'browser/resources/bookmark_manager/js/cr/ui/splitter.js',
-            'browser/resources/bookmark_manager/js/cr/ui/tree.js',
           ]
         },
         {

@@ -74,6 +74,7 @@ const char kChromeUIExtensionsHost[] = "extensions";
 const char kChromeUIFavIconHost[] = "favicon";
 const char kChromeUIHistoryHost[] = "history";
 const char kChromeUIPluginsHost[] = "plugins";
+const char kChromeUIResourcesHost[] = "resources";
 const char kChromeUIFileBrowseHost[] = "filebrowse";
 const char kChromeUIMediaplayerHost[] = "mediaplayer";
 const char kChromeUIInspectorHost[] = "inspector";

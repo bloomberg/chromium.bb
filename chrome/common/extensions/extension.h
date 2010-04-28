@@ -260,6 +260,12 @@ class Extension {
   // through content scripts and the hosts accessible through XHR.
   const std::set<std::string> GetEffectiveHostPermissions() const;
 
+  // Whether or not the extension is allowed permission for a URL pattern from
+  // the manifest.  http, https, and chrome://favicon/ is allowed for all
+  // extensions, while component extensions are allowed access to
+  // chrome://resources.
+  bool CanAccessURL(const URLPattern pattern) const;
+
   // Whether the extension has access to the given URL.
   bool HasHostPermission(const GURL& url) const;
 

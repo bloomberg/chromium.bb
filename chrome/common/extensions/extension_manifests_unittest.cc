@@ -23,6 +23,12 @@ class ManifestTest : public testing::Test {
  protected:
   Extension* LoadExtension(const std::string& name,
                            std::string* error) {
+    return LoadExtensionWithLocation(name, Extension::INTERNAL, error);
+  }
+
+  Extension* LoadExtensionWithLocation(const std::string& name,
+                                       Extension::Location location,
+                                       std::string* error) {
     FilePath path;
     PathService::Get(chrome::DIR_TEST_DATA, &path);
     path = path.AppendASCII("extensions")
@@ -37,6 +43,7 @@ class ManifestTest : public testing::Test {
       return NULL;
 
     scoped_ptr<Extension> extension(new Extension(path.DirName()));
+    extension->set_location(location);
     if (enable_apps_)
       extension->set_apps_enabled(true);
 
@@ -189,6 +196,18 @@ TEST_F(ManifestTest, Override) {
 TEST_F(ManifestTest, ChromeURLPermissionInvalid) {
   LoadAndExpectError("permission_chrome_url_invalid.json",
       errors::kInvalidPermissionScheme);
+}
+
+TEST_F(ManifestTest, ChromeResourcesPermissionValidOnlyForComponents) {
+  LoadAndExpectError("permission_chrome_resources_url.json",
+      errors::kInvalidPermissionScheme);
+  std::string error;
+  scoped_ptr<Extension> extension;
+  extension.reset(LoadExtensionWithLocation(
+      "permission_chrome_resources_url.json",
+      Extension::COMPONENT,
+      &error));
+  EXPECT_EQ("", error);
 }
 
 TEST_F(ManifestTest, ChromeURLContentScriptInvalid) {

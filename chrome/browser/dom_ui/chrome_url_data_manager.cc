@@ -98,6 +98,13 @@ void RegisterURLRequestChromeJob() {
         chrome::kChromeUIDevToolsHost, inspector_dir);
   }
 
+  // Set up the chrome://resources/ source.
+  FilePath resources_dir;
+  if (PathService::Get(chrome::DIR_SHARED_RESOURCES, &resources_dir)) {
+    Singleton<ChromeURLDataManager>()->AddFileSource(
+        chrome::kChromeUIResourcesHost, resources_dir);
+  }
+
   URLRequest::RegisterProtocolFactory(chrome::kChromeUIScheme,
                                       &ChromeURLDataManager::Factory);
   URLRequest::RegisterProtocolFactory(chrome::kPrintScheme,
@@ -109,6 +116,12 @@ void UnregisterURLRequestChromeJob() {
   if (PathService::Get(chrome::DIR_INSPECTOR, &inspector_dir)) {
     Singleton<ChromeURLDataManager>()->RemoveFileSource(
         chrome::kChromeUIDevToolsHost);
+  }
+
+  FilePath resources_dir;
+  if (PathService::Get(chrome::DIR_SHARED_RESOURCES, &resources_dir)) {
+    Singleton<ChromeURLDataManager>()->RemoveFileSource(
+        chrome::kChromeUIResourcesHost);
   }
 }
 

@@ -10,7 +10,8 @@
     "bookmarks",
     "experimental",
     "tabs",
-    "chrome://favicon/"
+    "chrome://favicon/",
+    "chrome://resources/"
   ],
   "chrome_url_overrides": {
     "bookmarks": "main.html"

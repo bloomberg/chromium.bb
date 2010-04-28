@@ -22,6 +22,9 @@ enum {
   DIR_USER_DESKTOP,             // Directory that correspond to the desktop.
   DIR_RESOURCES,                // Directory containing separate file resources
                                 // used by Chrome at runtime.
+  DIR_SHARED_RESOURCES,         // Directory containing js and css files used
+                                // by DOMUI and component extensions.
+  DIR_BOOKMARK_MANAGER,         // Directory containing the bookmark manager.
   DIR_INSPECTOR,                // Directory where web inspector is located.
   DIR_NET_INTERNALS,            // Directory where net internals is located.
   DIR_APP_DICTIONARIES,         // Directory where the global dictionaries are.

@@ -1385,11 +1385,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
         return false;
       }
 
-      // We support http:// and https:// as well as chrome://favicon/.
-      if (!(pattern.scheme() == chrome::kHttpScheme ||
-            pattern.scheme() == chrome::kHttpsScheme ||
-            (pattern.scheme() == chrome::kChromeUIScheme &&
-             pattern.host() == chrome::kChromeUIFavIconHost))) {
+      if (!CanAccessURL(pattern)) {
         *error = ExtensionErrorUtils::FormatErrorMessage(
             errors::kInvalidPermissionScheme, IntToString(i));
         return false;
@@ -1583,6 +1579,24 @@ Extension::Icons Extension::GetIconPathAllowLargerSize(
   if (icon == EXTENSION_ICON_MEDIUM)
     return GetIconPathAllowLargerSize(resource, EXTENSION_ICON_LARGE);
   return EXTENSION_ICON_LARGE;
+}
+
+// We support http:// and https:// as well as chrome://favicon//.
+// chrome://resources/ is supported but only for component extensions.
+bool Extension::CanAccessURL(const URLPattern pattern) const{
+  if (pattern.scheme() == chrome::kHttpScheme ||
+      pattern.scheme() == chrome::kHttpsScheme) {
+    return true;
+  }
+  if (pattern.scheme() == chrome::kChromeUIScheme &&
+      pattern.host() == chrome::kChromeUIFavIconHost) {
+    return true;
+  }
+  if (location() == Extension::COMPONENT &&
+      pattern.scheme() == chrome::kChromeUIScheme) {
+    return true;
+  }
+  return false;
 }
 
 bool Extension::HasHostPermission(const GURL& url) const {
