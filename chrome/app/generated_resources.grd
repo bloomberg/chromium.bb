@@ -3341,8 +3341,8 @@ each locale. -->
       </message>
 
       <!-- v2 extension install dialog strings -->
-      <message name="IDS_EXTENSION_PROMPT2_WILL_HAVE_ACCESS_TO" desc="Second line in the content area of the extension installation prompt.">
-        This extension needs access to:
+      <message name="IDS_EXTENSION_PROMPT2_WILL_HAVE_ACCESS_TO" desc="Second line in the content area of the extension installation prompt. Note that the exact wording is important. This should mean that the extension _can_ access the listed privileges, but not necessarily that it will or needs to.">
+        This extension can access:
       </message>
       <message name="IDS_EXTENSION_PROMPT2_WARNING_FULL_ACCESS" desc="Permission string for full access to the computer and all websites.">
         All data on your computer and the websites you visit
