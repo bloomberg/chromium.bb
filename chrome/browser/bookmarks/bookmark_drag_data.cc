@@ -105,6 +105,22 @@ bool BookmarkDragData::ReadFromVector(
   return true;
 }
 
+bool BookmarkDragData::ReadFromTuple(const GURL& url, const string16& title) {
+  Clear();
+
+  if (!url.is_valid())
+    return false;
+
+  Element element;
+  element.title = title;
+  element.url = url;
+  element.is_url = true;
+
+  elements.push_back(element);
+
+  return true;
+}
+
 #if !defined(OS_MACOSX)
 void BookmarkDragData::WriteToClipboard(Profile* profile) const {
   ScopedClipboardWriter scw(g_browser_process->clipboard());
@@ -214,14 +230,11 @@ bool BookmarkDragData::Read(const OSExchangeData& data) {
   } else {
     // See if there is a URL on the clipboard.
     Element element;
+    GURL url;
     std::wstring title;
-    if (data.GetURLAndTitle(&element.url, &title) &&
-        element.url.is_valid()) {
-      element.title = WideToUTF16(title);
-      element.is_url = true;
-      elements.push_back(element);
-    }
-  }
+    if (data.GetURLAndTitle(&url, &title))
+      ReadFromTuple(url, WideToUTF16(title));
+ }
 
   return is_valid();
 }

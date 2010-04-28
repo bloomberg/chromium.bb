@@ -89,6 +89,9 @@ struct BookmarkDragData {
   // Reads bookmarks from the given vector.
   bool ReadFromVector(const std::vector<const BookmarkNode*>& nodes);
 
+  // Creates a single-bookmark DragData from url/title pair.
+  bool ReadFromTuple(const GURL& url, const string16& title);
+
   // Writes elements to the clipboard.
   void WriteToClipboard(Profile* profile) const;
 

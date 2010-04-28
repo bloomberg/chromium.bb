@@ -73,6 +73,7 @@ gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
   if (context_ != context) {
     context_ = context;
     drop_data_.reset(new WebDropData);
+    bookmark_drag_data_.Clear();
     is_drop_target_ = false;
 
     static int supported_targets[] = {
@@ -158,23 +159,32 @@ void WebDragDestGtk::OnDragDataReceived(
                                data->length);
       size_t split = netscape_url.find_first_of('\n');
       if (split != std::string::npos) {
-        drop_data_->url_title = UTF8ToUTF16(netscape_url.substr(0, split));
+        drop_data_->url = GURL(netscape_url.substr(0, split));
         if (split < netscape_url.size() - 1)
-          drop_data_->url = GURL(netscape_url.substr(split + 1));
+          drop_data_->url_title = UTF8ToUTF16(netscape_url.substr(split + 1));
       }
     } else if (data->target ==
                gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::CHROME_NAMED_URL)) {
       gtk_dnd_util::ExtractNamedURL(data,
                                     &drop_data_->url, &drop_data_->url_title);
-    } else if (data->target ==
-               gtk_dnd_util::GetAtomForTarget(
-                   gtk_dnd_util::CHROME_BOOKMARK_ITEM)) {
+    }
+  }
+
+  // For CHROME_BOOKMARK_ITEM, we have to handle the case where the drag source
+  // doesn't have any data available for us. In this case we try to synthesize a
+  // URL bookmark.
+  if (data->target ==
+      gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::CHROME_BOOKMARK_ITEM))  {
+    if (data->data) {
       bookmark_drag_data_.ReadFromVector(
           bookmark_utils::GetNodesFromSelection(
               NULL, data,
               gtk_dnd_util::CHROME_BOOKMARK_ITEM,
               tab_contents_->profile(), NULL, NULL));
       bookmark_drag_data_.SetOriginatingProfile(tab_contents_->profile());
+    } else {
+      bookmark_drag_data_.ReadFromTuple(drop_data_->url,
+                                        drop_data_->url_title);
     }
   }
 
