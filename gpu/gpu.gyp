@@ -233,6 +233,8 @@
         'command_buffer/client/fenced_allocator.h',
         'command_buffer/client/id_allocator.cc',
         'command_buffer/client/id_allocator.h',
+        'command_buffer/client/ring_buffer.cc',
+        'command_buffer/client/ring_buffer.h',
       ],
     },
     {
@@ -340,6 +342,7 @@
         'command_buffer/client/fenced_allocator_test.cc',
         'command_buffer/client/gles2_implementation_unittest.cc',
         'command_buffer/client/id_allocator_test.cc',
+        'command_buffer/client/ring_buffer_test.cc',
         'command_buffer/common/bitfield_helpers_test.cc',
         'command_buffer/common/gles2_cmd_format_test.cc',
         'command_buffer/common/gles2_cmd_format_test_autogen.h',

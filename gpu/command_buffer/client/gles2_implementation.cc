@@ -334,7 +334,11 @@ GLES2Implementation::GLES2Implementation(
       int32 transfer_buffer_id)
     : util_(0),  // TODO(gman): Get real number of compressed texture formats.
       helper_(helper),
-      transfer_buffer_(transfer_buffer_size, helper, transfer_buffer),
+      transfer_buffer_(
+          kStartingOffset,
+          transfer_buffer_size - kStartingOffset,
+          helper,
+          static_cast<char*>(transfer_buffer) + kStartingOffset),
       transfer_buffer_id_(transfer_buffer_id),
       pack_alignment_(4),
       unpack_alignment_(4),
@@ -344,8 +348,8 @@ GLES2Implementation::GLES2Implementation(
 #endif
       error_bits_(0) {
   // Allocate space for simple GL results.
-  result_buffer_ = transfer_buffer_.Alloc(kMaxSizeOfSimpleResult);
-  result_shm_offset_ = transfer_buffer_.GetOffset(result_buffer_);
+  result_buffer_ = transfer_buffer;
+  result_shm_offset_ = 0;
 
 #if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
   GLint max_vertex_attribs;
@@ -366,7 +370,6 @@ GLES2Implementation::GLES2Implementation(
 GLES2Implementation::~GLES2Implementation() {
   GLuint buffers[] = { kClientSideArrayId, kClientSideElementArrayId, };
   DeleteBuffers(arraysize(buffers), &buffers[0]);
-  transfer_buffer_.Free(result_buffer_);
 }
 
 void GLES2Implementation::MakeIds(
@@ -440,7 +443,7 @@ void GLES2Implementation::GetBucketContents(uint32 bucket_id,
           transfer_buffer_id_, transfer_buffer_.GetOffset(buffer));
       WaitForCmd();
       memcpy(&(*data)[offset], buffer, part_size);
-      transfer_buffer_.Free(buffer);
+      transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
       offset += part_size;
       size -= part_size;
     }
@@ -1140,7 +1143,7 @@ void GLES2Implementation::ReadPixels(
         dest += padded_row_size;
         src += padded_row_size;
       }
-      transfer_buffer_.Free(buffer);
+      transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
       yoffset += num_rows;
       height -= num_rows;
     }
@@ -1170,7 +1173,7 @@ void GLES2Implementation::ReadPixels(
           return;
         }
         memcpy(row_dest, buffer, part_size);
-        transfer_buffer_.Free(buffer);
+        transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
         row_dest += part_size;
         temp_xoffset += num_pixels;
         temp_width -= num_pixels;

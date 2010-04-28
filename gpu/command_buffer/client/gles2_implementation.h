@@ -12,7 +12,7 @@
 #include "../common/scoped_ptr.h"
 #include "../client/gles2_cmd_helper.h"
 #include "../client/id_allocator.h"
-#include "../client/fenced_allocator.h"
+#include "../client/ring_buffer.h"
 
 #define GLES2_SUPPORT_CLIENT_SIDE_BUFFERS 1
 
@@ -139,25 +139,26 @@ class GLES2Implementation {
     }
 
  private:
-  // Wraps FencedAllocatorWrapper to provide aligned allocations.
-  class AlignedFencedAllocator : public FencedAllocatorWrapper {
+  // Wraps RingBufferWrapper to provide aligned allocations.
+  class AlignedRingBuffer : public RingBufferWrapper {
    public:
-    AlignedFencedAllocator(unsigned int size,
-                           CommandBufferHelper *helper,
-                           void *base)
-        : FencedAllocatorWrapper(size, helper, base) {
+    AlignedRingBuffer(RingBuffer::Offset base_offset,
+                      unsigned int size,
+                      CommandBufferHelper *helper,
+                      void *base)
+        : RingBufferWrapper(base_offset, size, helper, base) {
     }
 
     static unsigned int RoundToAlignment(unsigned int size) {
       return (size + kAlignment - 1) & ~(kAlignment - 1);
     }
 
-    // Overrriden from FencedAllocatorWrapper
+    // Overrriden from RingBufferWrapper
     void *Alloc(unsigned int size) {
-      return FencedAllocatorWrapper::Alloc(RoundToAlignment(size));
+      return RingBufferWrapper::Alloc(RoundToAlignment(size));
     }
 
-    // Overrriden from FencedAllocatorWrapper
+    // Overrriden from RingBufferWrapper
     template <typename T> T *AllocTyped(unsigned int count) {
       return static_cast<T *>(Alloc(count * sizeof(T)));
     }
@@ -230,7 +231,7 @@ class GLES2Implementation {
   IdAllocator renderbuffer_id_allocator_;
   IdAllocator program_and_shader_id_allocator_;
   IdAllocator texture_id_allocator_;
-  AlignedFencedAllocator transfer_buffer_;
+  AlignedRingBuffer transfer_buffer_;
   int transfer_buffer_id_;
   void* result_buffer_;
   uint32 result_shm_offset_;
