@@ -130,7 +130,7 @@ void AppLauncherHandler::HandleLaunchApp(const Value* value) {
       extensions_service_->GetExtensionById(extension_id, false);
   DCHECK(extension);
 
-  Extension::LaunchContainer container;
+  Extension::LaunchContainer container = Extension::LAUNCH_TAB;
   if (launch_container == "tab")
     container = Extension::LAUNCH_TAB;
   else if (launch_container == "panel")
