@@ -572,7 +572,6 @@ def SendToRietveld(request_path, payload=None,
     return email, password
   rpc_server = upload.HttpRpcServer(server,
                                     GetUserCredentials,
-                                    host_override=server,
                                     save_cookies=True)
   try:
     return rpc_server.Send(request_path, payload, content_type, timeout)
