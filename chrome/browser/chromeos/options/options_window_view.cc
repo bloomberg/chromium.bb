@@ -143,6 +143,13 @@ void OptionsWindowView::ShowOptionsPage(OptionsPage page,
   // This will show invisible windows and bring visible windows to the front.
   window()->Show();
 
+  // Show all controls in tab after tab's size is allocated. We have
+  // to do this after size allocation otherwise WrapLabelAtAllocationHack
+  // in ContentPageGtk would break.
+  GtkWidget* notebook = static_cast<views::NativeTabbedPaneGtk*>(
+      tabs_->native_wrapper())->native_view();
+  gtk_widget_show_all(notebook);
+
   if (page == OPTIONS_PAGE_DEFAULT) {
     // Remember the last visited page from local state.
     page = static_cast<OptionsPage>(last_selected_page_.GetValue());
