@@ -103,6 +103,7 @@ o3d.Renderer.renderClients = function() {
       renderEvent.elapsedTime = 0.0;
     else
       renderEvent.elapsedTime = now - client.then_;
+    client.updateDisplayInfo_();
     if (client.render_callback) {
       client.render_callback(renderEvent);
     }
@@ -538,8 +539,7 @@ o3d.Client.prototype.initWithCanvas = function(canvas) {
   this.gl = gl;
 
   gl.client = this;
-  gl.displayInfo = {width: canvas.width,
-                    height: canvas.height};
+  this.updateDisplayInfo_();
 };
 
 
@@ -890,3 +890,11 @@ o3d.Client.prototype.clientId = 0;
 o3d.Client.prototype.canvas = null;
 
 
+/**
+ * Updates the display information attached to the GL.
+ * @private
+ */
+o3d.Client.prototype.updateDisplayInfo_ = function() {
+  this.gl.displayInfo = {width: this.width,
+                         height: this.height};
+};

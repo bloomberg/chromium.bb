@@ -143,10 +143,20 @@ o3djs.webgl.createClient = function(element, opt_features, opt_debug) {
   // we set the shader language to glsl.
   o3djs.effect.setLanguage('glsl');
 
+  // Make the canvas automatically resize to fill the containing
+  // element (div), and initialize its size correctly.
   var canvas;
   canvas = document.createElement('canvas');
-  canvas.setAttribute('width', element.getAttribute('width'));
-  canvas.setAttribute('height', element.getAttribute('height'));
+  canvas.style.width = "100%";
+  canvas.style.height = "100%";
+  var resizeHandler = function() {
+    var width = Math.max(1, canvas.clientWidth);
+    var height = Math.max(1, canvas.clientHeight);
+    canvas.width = width;
+    canvas.height = height;
+  };
+  window.addEventListener('resize', resizeHandler, false);
+  setTimeout(resizeHandler, 0);
 
   var client = new o3d.Client;
   client.initWithCanvas(canvas);
