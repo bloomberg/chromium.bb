@@ -43,7 +43,7 @@
   } while (0)
 
 #define ASSERT_OP_THUNK(lhs, op, rhs, slhs, srhs, thunk) do {             \
-    if (!(lhs op rhs)) {                                                  \
+    if (!((lhs) op (rhs))) {                                              \
       fprintf(stderr,                                                     \
               "Error at line %d, %s:\n"                                   \
               "Error: %s "#op" %s"                                        \
@@ -52,8 +52,8 @@
       fprintf(stderr,                                                     \
               "got 0x%08"NACL_PRIxPTR" (%"NACL_PRIdPTR"); "               \
               "comparison value 0x%08"NACL_PRIxPTR" (%"NACL_PRIdPTR")\n", \
-              (uintptr_t) lhs, (uintptr_t) lhs,                           \
-              (uintptr_t) rhs, (uintptr_t) rhs);                          \
+              (uintptr_t) (lhs), (uintptr_t) (lhs),                       \
+              (uintptr_t) (rhs), (uintptr_t) (rhs));                      \
       thunk;                                                              \
       printf("FAIL\n");                                                   \
       exit(1);                                                            \

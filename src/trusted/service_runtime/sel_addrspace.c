@@ -163,38 +163,86 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
    * TODO(bsy): remap dynamic text shm to be non-writable.
    */
 
+  if (0 != nap->rodata_start) {
+    uintptr_t rodata_end;
+    /*
+     * TODO(mseaborn): Could reduce the number of cases by ensuring
+     * that nap->data_start is always non-zero, even if
+     * nap->rodata_start == nap->data_start == nap->break_addr.
+     */
+    if (0 != nap->data_start) {
+      rodata_end = nap->data_start;
+    }
+    else {
+      rodata_end = nap->break_addr;
+    }
+
+    start_addr = NaClUserToSys(nap, nap->rodata_start);
+    region_size = NaClRoundPage(NaClRoundAllocPage(rodata_end)
+                                - NaClSysToUser(nap, start_addr));
+    NaClLog(3,
+            ("RO data region start 0x%08"NACL_PRIxPTR", size 0x%08"NACL_PRIxS","
+             " end 0x%08"NACL_PRIxPTR"\n"),
+            start_addr, region_size,
+            start_addr + region_size);
+    if (0 != (err = NaCl_mprotect((void *) start_addr,
+                                  region_size,
+                                  PROT_READ))) {
+      NaClLog(LOG_ERROR,
+              ("NaClMemoryProtection: "
+               "NaCl_mprotect(0x%08"NACL_PRIxPTR", "
+               "0x%08"NACL_PRIxS", 0x%x) failed, "
+               "error %d (data)\n"),
+              start_addr, region_size, PROT_READ,
+              err);
+      return LOAD_MPROTECT_FAIL;
+    }
+    if (!NaClVmmapAdd(&nap->mem_map,
+                      NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
+                      region_size >> NACL_PAGESHIFT,
+                      PROT_READ,
+                      (struct NaClMemObj *) NULL)) {
+      NaClLog(LOG_ERROR, ("NaClMemoryProtection: NaClVmmapAdd failed"
+                          " (data)\n"));
+      return LOAD_MPROTECT_FAIL;
+    }
+  }
+
   /*
    * data_end is max virtual addr seen, so start_addr <= data_end
    * must hold.
    */
 
-  region_size = NaClRoundPage(NaClRoundAllocPage(nap->data_end)
-                              - NaClSysToUser(nap, start_addr));
-  NaClLog(3,
-          ("RW data region start 0x%08"NACL_PRIxPTR", size 0x%08"NACL_PRIxS","
-           " end 0x%08"NACL_PRIxPTR"\n"),
-          start_addr, region_size,
-          start_addr + region_size);
-  if (0 != (err = NaCl_mprotect((void *) start_addr,
-                                region_size,
-                                PROT_READ | PROT_WRITE))) {
-    NaClLog(LOG_ERROR,
-            ("NaClMemoryProtection: "
-             "NaCl_mprotect(0x%08"NACL_PRIxPTR", "
-             "0x%08"NACL_PRIxS", 0x%x) failed, "
-             "error %d (data)\n"),
-            start_addr, region_size, PROT_READ | PROT_WRITE,
-            err);
-    return LOAD_MPROTECT_FAIL;
-  }
-  if (!NaClVmmapAdd(&nap->mem_map,
-                    NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
-                    region_size >> NACL_PAGESHIFT,
-                    PROT_READ | PROT_WRITE,
-                    (struct NaClMemObj *) NULL)) {
-    NaClLog(LOG_ERROR, ("NaClMemoryProtection: NaClVmmapAdd failed"
-                        " (data)\n"));
-    return LOAD_MPROTECT_FAIL;
+  if (0 != nap->data_start) {
+    start_addr = NaClUserToSys(nap, nap->data_start);
+    region_size = NaClRoundPage(NaClRoundAllocPage(nap->data_end)
+                                - NaClSysToUser(nap, start_addr));
+    NaClLog(3,
+            ("RW data region start 0x%08"NACL_PRIxPTR", size 0x%08"NACL_PRIxS","
+             " end 0x%08"NACL_PRIxPTR"\n"),
+            start_addr, region_size,
+            start_addr + region_size);
+    if (0 != (err = NaCl_mprotect((void *) start_addr,
+                                  region_size,
+                                  PROT_READ | PROT_WRITE))) {
+      NaClLog(LOG_ERROR,
+              ("NaClMemoryProtection: "
+               "NaCl_mprotect(0x%08"NACL_PRIxPTR", "
+               "0x%08"NACL_PRIxS", 0x%x) failed, "
+               "error %d (data)\n"),
+              start_addr, region_size, PROT_READ | PROT_WRITE,
+              err);
+      return LOAD_MPROTECT_FAIL;
+    }
+    if (!NaClVmmapAdd(&nap->mem_map,
+                      NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
+                      region_size >> NACL_PAGESHIFT,
+                      PROT_READ | PROT_WRITE,
+                      (struct NaClMemObj *) NULL)) {
+      NaClLog(LOG_ERROR, ("NaClMemoryProtection: NaClVmmapAdd failed"
+                          " (data)\n"));
+      return LOAD_MPROTECT_FAIL;
+    }
   }
 
   /* stack is read/write but not execute */

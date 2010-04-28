@@ -55,6 +55,19 @@ static void InitThread(struct NaClApp *nap, struct NaClAppThread *natp) {
   natp->effp = (struct NaClDescEffector *) effp;
 }
 
+void CheckLowerMappings(struct NaClVmmap *mem_map) {
+  ASSERT(mem_map->nvalid >= 4);
+  /* Zero page. */
+  ASSERT_EQ(mem_map->vmentry[0]->prot, NACL_ABI_PROT_NONE);
+  /* Trampolines and static code. */
+  ASSERT_EQ(mem_map->vmentry[1]->prot,
+            NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC);
+  /* Read-only data segment. */
+  ASSERT_EQ(mem_map->vmentry[2]->prot, NACL_ABI_PROT_READ);
+  /* Writable data segment. */
+  ASSERT_EQ(mem_map->vmentry[3]->prot,
+            NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE);
+}
 
 int main(int argc, char **argv) {
   char *nacl_file;
@@ -89,6 +102,20 @@ int main(int argc, char **argv) {
 
   InitThread(&state, natp);
 
+  /*
+   * Initial mappings:
+   * 0. --  Zero page
+   * 1. rx  Static code segment
+   * 2. r   Read-only data segment
+   * 3. rw  Writable data segment
+   * 4. rw  Stack
+   * There is no dynamic code area in this case.
+   */
+  /* Check the initial mappings. */
+  mem_map = &state.mem_map;
+  ASSERT_EQ(mem_map->nvalid, 5);
+  CheckLowerMappings(mem_map);
+
   /* Allocate range */
   addr = NaClSysMmap(natp, 0, 3 * NACL_MAP_PAGESIZE,
                      NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
@@ -96,6 +123,15 @@ int main(int argc, char **argv) {
                      -1, 0);
   printf("addr=0x%"NACL_PRIxPTR"\n", addr);
   initial_addr = addr;
+  /*
+   * The mappings have changed to become:
+   * 0. --  Zero page
+   * 1. rx  Static code segment
+   * 2. r   Read-only data segment
+   * 3. rw  Writable data segment
+   * 4. rw  mmap()'d anonymous, 3 pages (new)
+   * 5. rw  Stack
+   */
 
   /* Map to overwrite the start of the previously allocated range */
   addr = NaClSysMmap(natp, (void *) initial_addr, 2 * NACL_MAP_PAGESIZE,
@@ -105,6 +141,16 @@ int main(int argc, char **argv) {
                      -1, 0);
   printf("addr=0x%"NACL_PRIxPTR"\n", addr);
   ASSERT_EQ(addr, initial_addr);
+  /*
+   * The mappings have changed to become:
+   * 0. --  Zero page
+   * 1. rx  Static code segment
+   * 2. r   Read-only data segment
+   * 3. rw  Writable data segment
+   * 4. rw  mmap()'d anonymous, 2 pages (new)
+   * 5. rw  mmap()'d anonymous, 1 pages (previous)
+   * 6. rw  Stack
+   */
 
   /* Allocate new page */
   addr = NaClSysMmap(natp, 0, NACL_MAP_PAGESIZE,
@@ -120,27 +166,37 @@ int main(int argc, char **argv) {
    */
   ASSERT_EQ_MSG(addr, initial_addr - NACL_MAP_PAGESIZE,
                 "Allocation strategy changed!");
+  /*
+   * The mappings have changed to become:
+   * 0. --  Zero page
+   * 1. rx  Static code segment
+   * 2. r   Read-only data segment
+   * 3. rw  Writable data segment
+   * 4. rw  mmap()'d anonymous, 1 pages (new)
+   * 5. rw  mmap()'d anonymous, 2 pages
+   * 6. rw  mmap()'d anonymous, 1 pages
+   * 7. rw  Stack
+   */
 
-  mem_map = &state.mem_map;
   NaClVmmapMakeSorted(mem_map);
-  ASSERT_EQ(mem_map->nvalid, 7);
+  ASSERT_EQ(mem_map->nvalid, 8);
+  CheckLowerMappings(mem_map);
   NaClVmmapDebug(mem_map, "After allocations");
-  /* skip (0) null ptr hole, (1) trampoline and text, and (2) rodata  */
-  ASSERT_EQ(mem_map->vmentry[3]->page_num,
-            (initial_addr - NACL_MAP_PAGESIZE) >> NACL_PAGESHIFT);
-  ASSERT_EQ(mem_map->vmentry[3]->npages,
-            NACL_PAGES_PER_MAP);
-
+  /* Skip mappings 0, 1, 2 and 3. */
   ASSERT_EQ(mem_map->vmentry[4]->page_num,
-            initial_addr >> NACL_PAGESHIFT);
+            (initial_addr - NACL_MAP_PAGESIZE) >> NACL_PAGESHIFT);
   ASSERT_EQ(mem_map->vmentry[4]->npages,
-            2 * NACL_PAGES_PER_MAP);
+            NACL_PAGES_PER_MAP);
 
   ASSERT_EQ(mem_map->vmentry[5]->page_num,
-            (initial_addr +  2 * NACL_MAP_PAGESIZE) >> NACL_PAGESHIFT);
+            initial_addr >> NACL_PAGESHIFT);
   ASSERT_EQ(mem_map->vmentry[5]->npages,
+            2 * NACL_PAGES_PER_MAP);
+
+  ASSERT_EQ(mem_map->vmentry[6]->page_num,
+            (initial_addr +  2 * NACL_MAP_PAGESIZE) >> NACL_PAGESHIFT);
+  ASSERT_EQ(mem_map->vmentry[6]->npages,
             NACL_PAGES_PER_MAP);
-  /* skip zero page, trampolines and executable */
 
   /*
    * Undo effects of previous mmaps
@@ -148,7 +204,16 @@ int main(int argc, char **argv) {
   errcode = NaClSysMunmap(natp, (void *) (initial_addr - NACL_MAP_PAGESIZE),
                           NACL_MAP_PAGESIZE * 4);
   ASSERT_EQ(errcode, 0);
-  ASSERT_EQ(mem_map->nvalid, 4);
+  /*
+   * Mappings return to being:
+   * 0. --  Zero page
+   * 1. rx  Static code segment
+   * 2. r   Read-only data segment
+   * 3. rw  Writable data segment
+   * 4. rw  Stack
+   */
+  ASSERT_EQ(mem_map->nvalid, 5);
+  CheckLowerMappings(mem_map);
 
 
   /* Allocate range */
@@ -157,6 +222,15 @@ int main(int argc, char **argv) {
                      NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE, -1, 0);
   printf("addr=0x%"NACL_PRIxPTR"\n", addr);
   initial_addr = addr;
+  /*
+   * The mappings have changed to become:
+   * 0. --  Zero page
+   * 1. rx  Static code segment
+   * 2. r   Read-only data segment
+   * 3. rw  Writable data segment
+   * 4. rw  mmap()'d anonymous, 9 pages (new)
+   * 5. rw  Stack
+   */
 
   /* Map into middle of previously allocated range */
   addr = NaClSysMmap(natp, (void *) (initial_addr + 2 * NACL_MAP_PAGESIZE),
@@ -167,23 +241,35 @@ int main(int argc, char **argv) {
                      -1, 0);
   printf("addr=0x%"NACL_PRIxPTR"\n", addr);
   ASSERT_EQ(addr, initial_addr + NACL_MAP_PAGESIZE * 2);
+  /*
+   * The mappings have changed to become:
+   * 0. --  Zero page
+   * 1. rx  Static code segment
+   * 2. r   Read-only data segment
+   * 3. rw  Writable data segment
+   * 4. rw  mmap()'d anonymous, 2 pages (previous)
+   * 5. rw  mmap()'d anonymous, 3 pages (new)
+   * 6. rw  mmap()'d anonymous, 4 pages (previous)
+   * 7. rw  Stack
+   */
 
   NaClVmmapMakeSorted(mem_map);
-  ASSERT_EQ(mem_map->nvalid, 7);
-
-  ASSERT_EQ(mem_map->vmentry[3]->page_num,
-            initial_addr >> NACL_PAGESHIFT);
-  ASSERT_EQ(mem_map->vmentry[3]->npages,
-            2 * NACL_PAGES_PER_MAP);
+  ASSERT_EQ(mem_map->nvalid, 8);
+  CheckLowerMappings(mem_map);
 
   ASSERT_EQ(mem_map->vmentry[4]->page_num,
-            (initial_addr + 2 * NACL_MAP_PAGESIZE) >> NACL_PAGESHIFT);
+            initial_addr >> NACL_PAGESHIFT);
   ASSERT_EQ(mem_map->vmentry[4]->npages,
-            3 * NACL_PAGES_PER_MAP);
+            2 * NACL_PAGES_PER_MAP);
 
   ASSERT_EQ(mem_map->vmentry[5]->page_num,
-            (initial_addr + 5 * NACL_MAP_PAGESIZE) >> NACL_PAGESHIFT);
+            (initial_addr + 2 * NACL_MAP_PAGESIZE) >> NACL_PAGESHIFT);
   ASSERT_EQ(mem_map->vmentry[5]->npages,
+            3 * NACL_PAGES_PER_MAP);
+
+  ASSERT_EQ(mem_map->vmentry[6]->page_num,
+            (initial_addr + 5 * NACL_MAP_PAGESIZE) >> NACL_PAGESHIFT);
+  ASSERT_EQ(mem_map->vmentry[6]->npages,
             4 * NACL_PAGES_PER_MAP);
 
   /*
@@ -191,7 +277,16 @@ int main(int argc, char **argv) {
    */
   errcode = NaClSysMunmap(natp, (void *) initial_addr, 9 * NACL_MAP_PAGESIZE);
   ASSERT_EQ(errcode, 0);
-  ASSERT_EQ(mem_map->nvalid, 4);
+  ASSERT_EQ(mem_map->nvalid, 5);
+  CheckLowerMappings(mem_map);
+  /*
+   * Mappings return to being:
+   * 0. --  Zero page
+   * 1. rx  Static code segment
+   * 2. r   Read-only data segment
+   * 3. rw  Writable data segment
+   * 4. rw  Stack
+   */
 
   /*
    * Check use of hint.

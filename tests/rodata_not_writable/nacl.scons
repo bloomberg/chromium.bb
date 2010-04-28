@@ -1,0 +1,21 @@
+# -*- python -*-
+# Copyright 2010 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+
+Import('env')
+
+# Using the default set of libraries fails to link in the ARM build.
+env.Replace(LIBS=['c', 'nacl'])
+
+env.ComponentProgram('write_to_rodata.nexe', ['write_to_rodata.c'])
+
+# We check the output to ensure that the process doesn't die for an
+# unexpected reason.
+node = env.CommandSelLdrTestNacl(
+    'write_to_rodata.out',
+    command=[env.File('write_to_rodata.nexe')],
+    exit_status='segfault',
+    stdout_golden=env.File('write_to_rodata.stdout'))
+env.AddNodeToTestSuite(node, 'small_tests', 'run_write_to_rodata_test')

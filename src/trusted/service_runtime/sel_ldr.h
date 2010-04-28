@@ -118,6 +118,10 @@ struct NaClApp {
   uintptr_t                 dynamic_text_start;
   uintptr_t                 dynamic_text_end;
 
+  /*
+   * rodata_start and data_start may be 0 if these segments are not
+   * present in the executable.
+   */
   uintptr_t                 rodata_start;  /* initialized data, ro */
   uintptr_t                 data_start;    /* initialized data/bss, rw */
   /*
