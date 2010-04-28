@@ -36,12 +36,21 @@ extern "C" {
 
 struct timespec;
 
-/** Fast mutex type; for use with pthread_mutexattr_settype() */
-#define PTHREAD_MUTEX_FAST_NP 0
-/** Recursive mutex type; for use with pthread_mutexattr_settype() */
-#define PTHREAD_MUTEX_RECURSIVE_NP 1
-/** Error-checking mutex type; for use with pthread_mutexattr_settype() */
-#define PTHREAD_MUTEX_ERRORCHECK_NP 2
+/** Mutex type attributes */
+enum {
+  /** Fast mutex type; for use with pthread_mutexattr_settype() */
+  PTHREAD_MUTEX_FAST_NP,
+  /** Recursive mutex type; for use with pthread_mutexattr_settype() */
+  PTHREAD_MUTEX_RECURSIVE_NP,
+  /** Error-checking mutex type; for use with pthread_mutexattr_settype() */
+  PTHREAD_MUTEX_ERRORCHECK_NP,
+  PTHREAD_MUTEX_NORMAL = PTHREAD_MUTEX_FAST_NP,
+  PTHREAD_MUTEX_RECURSIVE = PTHREAD_MUTEX_RECURSIVE_NP,
+  PTHREAD_MUTEX_ERRORCHECK = PTHREAD_MUTEX_ERRORCHECK_NP,
+
+  PTHREAD_MUTEX_DEFAULT = PTHREAD_MUTEX_NORMAL
+};
+
 
 /*
  * The layout of pthread_mutex_t and the static initializers are redefined
