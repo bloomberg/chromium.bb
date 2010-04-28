@@ -31,7 +31,7 @@ TEST(BookmarkBarFolderHoverStateTest, HoverState) {
 
   // Test transition from closed to opening.
   ASSERT_EQ(kHoverStateClosed, [bbfhs hoverState]);
-  [bbfhs scheduleOpenBookmarkFolderOnHoverButton:[button retain]];
+  [bbfhs scheduleOpenBookmarkFolderOnHoverButton:button];
   ASSERT_EQ(kHoverStateOpening, [bbfhs hoverState]);
 
   // Test transition from opening to closed (aka cancel open).
@@ -41,7 +41,7 @@ TEST(BookmarkBarFolderHoverStateTest, HoverState) {
 
   // Test transition from closed to opening.
   ASSERT_EQ(kHoverStateClosed, [bbfhs hoverState]);
-  [bbfhs scheduleOpenBookmarkFolderOnHoverButton:[button retain]];
+  [bbfhs scheduleOpenBookmarkFolderOnHoverButton:button];
   ASSERT_EQ(kHoverStateOpening, [bbfhs hoverState]);
 
   // Test transition from opening to opened.
