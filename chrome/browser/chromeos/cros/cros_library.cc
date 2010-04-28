@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/cros/mount_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
+#include "chrome/browser/chromeos/cros/speech_synthesis_library.h"
 #include "chrome/browser/chromeos/cros/synaptics_library.h"
 
 namespace chromeos {
@@ -22,6 +23,7 @@ CrosLibrary::CrosLibrary() : library_loader_(NULL),
                              mount_lib_(NULL),
                              network_lib_(NULL),
                              power_lib_(NULL),
+                             speech_synthesis_lib_(NULL),
                              synaptics_lib_(NULL),
                              own_library_loader_(true),
                              own_cryptohome_loader_(true),
@@ -30,6 +32,7 @@ CrosLibrary::CrosLibrary() : library_loader_(NULL),
                              own_mount_loader_(true),
                              own_network_loader_(true),
                              own_power_loader_(true),
+                             own_speech_synthesis_library_(true),
                              own_synaptics_library_(true),
                              loaded_(false),
                              load_error_(false),
@@ -52,6 +55,8 @@ CrosLibrary::~CrosLibrary() {
     delete network_lib_;
   if (own_power_loader_ && power_lib_)
     delete power_lib_;
+  if (own_speech_synthesis_library_ && speech_synthesis_lib_)
+    delete speech_synthesis_lib_;
   if (own_synaptics_library_ && synaptics_lib_)
     delete synaptics_lib_;
   if (test_api_)
@@ -97,6 +102,12 @@ PowerLibrary* CrosLibrary::GetPowerLibrary() {
   if (!power_lib_)
     power_lib_ = new PowerLibraryImpl();
   return power_lib_;
+}
+
+SpeechSynthesisLibrary* CrosLibrary::GetSpeechSynthesisLibrary() {
+  if (!speech_synthesis_lib_)
+    speech_synthesis_lib_ = new SpeechSynthesisLibraryImpl();
+  return speech_synthesis_lib_;
 }
 
 SynapticsLibrary* CrosLibrary::GetSynapticsLibrary() {
@@ -179,6 +190,15 @@ void CrosLibrary::TestApi::SetPowerLibrary(PowerLibrary* library, bool own) {
   library_->power_lib_ = library;
 }
 
+void CrosLibrary::TestApi::SetSpeechSynthesisLibrary(
+    SpeechSynthesisLibrary* library, bool own) {
+  if (library_->own_speech_synthesis_library_ &&
+      library_->speech_synthesis_lib_)
+    delete library_->speech_synthesis_lib_;
+  library_->own_speech_synthesis_library_ = own;
+  library_->speech_synthesis_lib_ = library;
+}
+
 void CrosLibrary::TestApi::SetSynapticsLibrary(SynapticsLibrary* library,
                                                bool own) {
   if (library_->own_synaptics_library_ && library_->synaptics_lib_)
@@ -188,4 +208,3 @@ void CrosLibrary::TestApi::SetSynapticsLibrary(SynapticsLibrary* library,
 }
 
 }   // end namespace.
-

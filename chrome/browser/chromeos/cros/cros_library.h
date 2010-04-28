@@ -18,6 +18,7 @@ class LoginLibrary;
 class MountLibrary;
 class NetworkLibrary;
 class PowerLibrary;
+class SpeechSynthesisLibrary;
 class SynapticsLibrary;
 
 // This class handles access to sub-parts of ChromeOS library. it provides
@@ -47,6 +48,8 @@ class CrosLibrary {
     void SetNetworkLibrary(NetworkLibrary* library, bool own);
     // Setter for PowerLibrary.
     void SetPowerLibrary(PowerLibrary* library, bool own);
+    // Setter for SpeechSynthesisLibrary.
+    void SetSpeechSynthesisLibrary(SpeechSynthesisLibrary* library, bool own);
     // Setter for SynapticsLibrary.
     void SetSynapticsLibrary(SynapticsLibrary* library, bool own);
 
@@ -77,6 +80,9 @@ class CrosLibrary {
   // Getter for PowerLibrary
   PowerLibrary* GetPowerLibrary();
 
+  // This gets the singleton SpeechSynthesisLibrary.
+  SpeechSynthesisLibrary* GetSpeechSynthesisLibrary();
+
   // This gets the singleton SynapticsLibrary.
   SynapticsLibrary* GetSynapticsLibrary();
 
@@ -106,6 +112,7 @@ class CrosLibrary {
   MountLibrary* mount_lib_;
   NetworkLibrary* network_lib_;
   PowerLibrary* power_lib_;
+  SpeechSynthesisLibrary* speech_synthesis_lib_;
   SynapticsLibrary* synaptics_lib_;
 
   bool own_library_loader_;
@@ -115,6 +122,7 @@ class CrosLibrary {
   bool own_mount_loader_;
   bool own_network_loader_;
   bool own_power_loader_;
+  bool own_speech_synthesis_library_;
   bool own_synaptics_library_;
 
   // True if libcros was successfully loaded.
