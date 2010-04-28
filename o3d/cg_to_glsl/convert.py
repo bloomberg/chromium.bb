@@ -30,7 +30,7 @@ import sys
 
 def find_o3d_root():
   path = os.path.abspath(sys.path[0])
-  for i in range(0, 5):
+  for i in range(5):
     path = os.path.dirname(path)
     if (os.path.isdir(os.path.join(path, 'o3d')) and
         os.path.isdir(os.path.join(path, 'third_party'))):
@@ -38,17 +38,17 @@ def find_o3d_root():
   return ''
 
 def default_cgc():
-  paths = [ '/usr/bin/cgc',
-            'C:/Program Files/NVIDIA Corporation/Cg/bin/cgc.exe',
-            'C:/Program Files (x86)/NVIDIA Corporation/Cg/bin/cgc.exe' ]
+  paths = ['/usr/bin/cgc',
+           'C:/Program Files/NVIDIA Corporation/Cg/bin/cgc.exe',
+           'C:/Program Files (x86)/NVIDIA Corporation/Cg/bin/cgc.exe']
   for path in paths:
     if os.path.exists(path):
       return path
   script_path = os.path.abspath(sys.path[0])
   # Try again looking in the current working directory to match
   # the layout of the prebuilt o3dConverter binaries.
-  cur_dir_paths = [ os.path.join(script_path, 'cgc'),
-                    os.path.join(script_path, 'cgc.exe') ]
+  cur_dir_paths = [os.path.join(script_path, 'cgc'),
+                   os.path.join(script_path, 'cgc.exe')]
   for path in cur_dir_paths:
     if (os.path.exists(path)):
       return path
@@ -58,25 +58,28 @@ def default_cgc():
   # actually try running the cgc executable.
   o3d_root = find_o3d_root();
   cg_root = os.path.join(o3d_root, 'third_party', 'cg', 'files')
-  exes = [ os.path.join(cg_root, 'linux', 'bin', 'cgc'),
-           os.path.join(cg_root, 'linux', 'bin64', 'cgc'),
-           os.path.join(cg_root, 'mac', 'bin', 'cgc'),
-           os.path.join(cg_root, 'win', 'bin', 'cgc.exe') ]
-  for exe in exes:
+  exe_paths = ['linux/bin/cgc',
+               'linux/bin64/cgc',
+               'mac/bin/cgc',
+               'win/bin/cgc.exe']
+  for exe_path in exe_paths:
     try:
-      subprocess.call([exe, '-v'],
-                      stdout=open(os.devnull, 'w'),
-                      stderr=open(os.devnull, 'w'))
-      return exe
+      exe = os.path.join(cg_root, exe_path)
+      return_code = subprocess.call([exe, '-v'],
+                                    stdout=open(os.devnull, 'w'),
+                                    stderr=open(os.devnull, 'w'))
+      if return_code == 0 or return_code == 1:
+        return exe
     except:
       pass
 
   # We don't know where cgc lives.
   return ''
 
-def check_cgc(CGC):
-  if not os.path.exists(CGC):
-    print >>sys.stderr, CGC+' is not found, use --cgc option to specify its'
+def check_cgc(cgc_path):
+  if not os.path.exists(cgc_path):
+    print >>sys.stderr, (cgc_path + 
+                         ' is not found, use --cgc option to specify its')
     print >>sys.stderr, 'location.  You may need to install nvidia cg toolkit.'
     sys.exit(1)
 
@@ -212,19 +215,19 @@ def cg_rename_attributes(cg_shader):
   return cg_shader
 
 
-def cg_to_glsl(cg_shader, CGC):
+def cg_to_glsl(cg_shader, cgc_path):
   cg_shader = cg_rename_attributes(cg_shader)
 
   vertex_entry = re.search(r'#o3d\s+VertexShaderEntryPoint\s+(\w+)',
       cg_shader).group(1)
-  p = subprocess.Popen([CGC]+('-profile glslv -entry %s' %
+  p = subprocess.Popen([cgc_path]+('-profile glslv -entry %s' %
                               vertex_entry).split(' '),
       stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   glsl_vertex, err_v = p.communicate(cg_shader)
 
   fragment_entry = re.search(r'#o3d\s+PixelShaderEntryPoint\s+(\w+)',
       cg_shader).group(1)
-  p = subprocess.Popen([CGC]+('-profile glslf -entry %s' %
+  p = subprocess.Popen([cgc_path]+('-profile glslf -entry %s' %
                               fragment_entry).split(' '),
       stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   glsl_fragment, err_f = p.communicate(cg_shader)
@@ -242,9 +245,9 @@ def get_matrixloadorder(cg_shader):
   return re.search(r'(?m)^.*#o3d\s+MatrixLoadOrder\b.*$', cg_shader).group(0)
 
 
-def main(cg_shader, CGC):
+def main(cg_shader, cgc_path):
   matrixloadorder = get_matrixloadorder(cg_shader)
-  glsl_vertex, glsl_fragment, log = cg_to_glsl(cg_shader, CGC)
+  glsl_vertex, glsl_fragment, log = cg_to_glsl(cg_shader, cgc_path)
 
   print log
   print fix_glsl(glsl_vertex)
@@ -256,15 +259,15 @@ def main(cg_shader, CGC):
 
 
 if __name__ == '__main__':
-  CGC = default_cgc()
+  cgc_path = default_cgc()
   cmdline_parser = optparse.OptionParser()
   cmdline_parser.add_option('-i', dest='file', default=None,
       help='input shader; standard input if omitted')
-  cmdline_parser.add_option('--cgc', dest='CGC', default=CGC,
+  cmdline_parser.add_option('--cgc', dest='cgc_path', default=cgc_path,
       help='path to cgc [default: %default]')
   options, args = cmdline_parser.parse_args()
-  CGC = options.CGC
-  check_cgc(CGC)
+  cgc_path = options.cgc_path
+  check_cgc(cgc_path)
 
   try:
     if options.file is None:
@@ -278,4 +281,4 @@ if __name__ == '__main__':
   if not input:
     cmdline_parser.print_help()
   else:
-    main(input, CGC)
+    main(input, cgc_path)
