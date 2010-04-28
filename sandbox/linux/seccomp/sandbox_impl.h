@@ -598,7 +598,7 @@ class Sandbox {
 
   // The SEGV handler knows how to handle RDTSC instructions
   static void setupSignalHandlers();
-  static void (*segv())(int signo);
+  static void (*segv())(int signo, SysCalls::siginfo *context, void *unused);
 
   // If no specific handler has been registered for a system call, call this
   // function which asks the trusted thread to perform the call. This is used

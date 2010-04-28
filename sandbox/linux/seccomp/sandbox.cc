@@ -121,7 +121,8 @@ void Sandbox::setupSignalHandlers() {
 
   // Set up SEGV handler for dealing with RDTSC instructions, system calls
   // that have been rewritten to use INT0, and for sigpending() emulation.
-  sa.sa_handler_ = segv();
+  sa.sa_sigaction_ = segv();
+  sa.sa_flags      = SA_SIGINFO;
   sys.sigaction(SIGSEGV, &sa, NULL);
 
   // Unblock SIGSEGV and SIGCHLD
@@ -131,8 +132,8 @@ void Sandbox::setupSignalHandlers() {
   sys.sigprocmask(SIG_UNBLOCK, &mask, 0);
 }
 
-void (*Sandbox::segv())(int signo) {
-  void (*fnc)(int signo);
+void (*Sandbox::segv())(int signo, SysCalls::siginfo *context, void *unused) {
+  void (*fnc)(int signo, SysCalls::siginfo *context, void *unused);
   asm volatile(
       "call 999f\n"
 #if defined(__x86_64__)
@@ -198,7 +199,7 @@ void (*Sandbox::segv())(int signo) {
       // rewrite the system call instruction. Retrieve the CPU register
       // at the time of the segmentation fault and invoke syscallWrapper().
     "8:cmpw $0x00CD, (%%r15)\n"    // INT $0x0
-      "jnz  14f\n"
+      "jnz  16f\n"
 #ifndef NDEBUG
       "lea  200f(%%rip), %%rdi\n"
       "call playground$debugMessage\n"
@@ -239,10 +240,18 @@ void (*Sandbox::segv())(int signo) {
       "mov  %%r10, 0(%%rdx)\n"     // old_set
       "jmp  7b\n"
 
+      // Handle rt_sigreturn()
+   "12:cmp  $15, %%rax\n"          // NR_rt_sigreturn
+      "jnz  14f\n"
+      "mov  0xA8(%%rsp), %%rsp\n"  // %rsp at time of segmentation fault
+   "13:syscall\n"                  // rt_sigreturn() is unrestricted
+      "mov  $66, %%edi\n"          // rt_sigreturn() should never return
+      "mov  $231, %%eax\n"         // NR_exit_group
+      "jmp  13b\n"
 
       // Copy signal frame onto new stack. See clone.cc for details
-   "12:cmp  $56+0xF000, %%rax\n"   // NR_clone + 0xF000
-      "jnz  13f\n"
+   "14:cmp  $56+0xF000, %%rax\n"   // NR_clone + 0xF000
+      "jnz  15f\n"
       "mov  0xA8(%%rsp), %%rcx\n"  // %rsp at time of segmentation fault
       "sub  %%rsp, %%rcx\n"        // %rcx = size of stack frame
       "sub  $8, %%rcx\n"           // skip return address
@@ -256,7 +265,7 @@ void (*Sandbox::segv())(int signo) {
       "jmp  7b\n"
 
       // Forward system call to syscallWrapper()
-   "13:lea  7b(%%rip), %%rcx\n"
+   "15:lea  7b(%%rip), %%rcx\n"
       "push %%rcx\n"
       "push 0xB8(%%rsp)\n"         // %rip at time of segmentation fault
       "lea  playground$syscallWrapper(%%rip), %%rcx\n"
@@ -265,7 +274,7 @@ void (*Sandbox::segv())(int signo) {
       // This was a genuine segmentation fault. Trigger the kernel's default
       // signal disposition. The only way we can do this from seccomp mode
       // is by blocking the signal and retriggering it.
-   "14:mov  $2, %%edi\n"           // stderr
+   "16:mov  $2, %%edi\n"           // stderr
       "lea  300f(%%rip), %%rsi\n"  // "Segmentation fault\n"
       "mov  $301f-300f, %%edx\n"
       "mov  $1, %%eax\n"           // NR_write
@@ -277,13 +286,13 @@ void (*Sandbox::segv())(int signo) {
       // happened. If it is RDTSC, forward the request to the trusted
       // thread.
       "mov  $-3, %%ebx\n"          // request for RDTSC
-      "mov  0x40(%%esp), %%ebp\n"  // %eip at time of segmentation fault
+      "mov  0xDC(%%esp), %%ebp\n"  // %eip at time of segmentation fault
       "cmpw $0x310F, (%%ebp)\n"    // RDTSC
       "jz   0f\n"
-      "cmpw $0x010F, (%%ebp)\n"
-      "jnz  8f\n"
+      "cmpw $0x010F, (%%ebp)\n"    // RDTSCP
+      "jnz  9f\n"
       "cmpb $0xF9, 2(%%ebp)\n"
-      "jnz  8f\n"
+      "jnz  9f\n"
       "mov  $-4, %%ebx\n"          // request for RDTSCP
     "0:"
 #ifndef NDEBUG
@@ -292,7 +301,7 @@ void (*Sandbox::segv())(int signo) {
       "call playground$debugMessage\n"
       "sub  $4, %%esp\n"
 #else
-      "sub  $8, %%esp\n"
+      "sub  $8, %%esp\n"           // allocate buffer for receiving timestamp
 #endif
       "push %%ebx\n"
       "mov  %%fs:16, %%ebx\n"      // fd  = threadFdPub
@@ -301,126 +310,178 @@ void (*Sandbox::segv())(int signo) {
     "1:mov  %%edx, %%eax\n"        // NR_write
       "int  $0x80\n"
       "cmp  %%eax, %%edx\n"
-      "jz   5f\n"
+      "jz   7f\n"
       "cmp  $-4, %%eax\n"          // EINTR
       "jz   1b\n"
-    "2:add  $12, %%esp\n"
-      "movl $0, 0x34(%%esp)\n"     // %eax at time of segmentation fault
-      "movl $0, 0x2C(%%esp)\n"     // %edx at time of segmentation fault
+    "2:add  $12, %%esp\n"          // remove temporary buffer from stack
+      "xor  %%eax, %%eax\n"
+      "movl $0, 0xC8(%%esp)\n"     // %edx at time of segmentation fault
       "cmpw $0x310F, (%%ebp)\n"    // RDTSC
       "jz   3f\n"
-      "movl $0, 0x30(%%esp)\n"     // %ecx at time of segmentation fault
-    "3:addl $2, 0x40(%%esp)\n"     // %eip at time of segmentation fault
-      "mov  0x40(%%esp), %%ebp\n"  // %eip at time of segmentation fault
-      "cmpw $0x010F, (%%ebp)\n"    // RDTSC
-      "jnz  4f\n"
-      "addl $1, 0x40(%%esp)\n"     // %eip at time of segmentation fault
-    "4:ret\n"
-    "5:mov  $12, %%edx\n"          // len = 3*sizeof(int)
-    "6:mov  $3, %%eax\n"           // NR_read
+      "movl $0, 0xCC(%%esp)\n"     // %ecx at time of segmentation fault
+    "3:mov  %%eax, 0xD0(%%esp)\n"  // %eax at time of segmentation fault
+    "4:mov  0xDC(%%esp), %%ebp\n"  // %eip at time of segmentation fault
+      "addl $2, 0xDC(%%esp)\n"     // %eip at time of segmentation fault
+      "cmpw $0x010F, (%%ebp)\n"    // RDTSCP
+      "jnz  5f\n"
+      "addl $1, 0xDC(%%esp)\n"     // %eip at time of segmentation fault
+    "5:sub  $0x1C8, %%esp\n"       // a legacy signal stack is much larger
+      "mov  0x1CC(%%esp), %%eax\n" // push signal number
+      "push %%eax\n"
+      "lea  0x270(%%esp), %%esi\n" // copy siginfo register values
+      "lea  0x4(%%esp), %%edi\n"   //     into new location
+      "mov  $22, %%ecx\n"
+      "cld\n"
+      "rep movsl\n"
+      "mov  0x2C8(%%esp), %%ebx\n" // copy first half of signal mask
+      "mov  %%ebx, 0x54(%%esp)\n"
+      "lea  6f, %%esi\n"           // copy "magic" restorer function
+      "push %%esi\n"               // push restorer function
+      "lea  0x2D4(%%esp), %%edi\n" // patch up retcode magic numbers
+      "movb $2, %%cl\n"
+      "rep movsl\n"
+      "ret\n"                      // return to restorer function
+
+      // The restorer function is sometimes used by gdb as a magic marker to
+      // recognize signal stack frames. Don't change any of the next three
+      // instructions.
+    "6:pop  %%eax\n"               // remove dummy argument (signo)
+      "mov  $119, %%eax\n"         // NR_sigreturn
+      "int  $0x80\n"
+    "7:mov  $12, %%edx\n"          // len = 3*sizeof(int)
+    "8:mov  $3, %%eax\n"           // NR_read
       "int  $0x80\n"
       "cmp  $-4, %%eax\n"          // EINTR
-      "jz   6b\n"
+      "jz   8b\n"
       "cmp  %%eax, %%edx\n"
       "jnz  2b\n"
       "pop  %%eax\n"
       "pop  %%edx\n"
       "pop  %%ecx\n"
-      "mov  %%edx, 0x2C(%%esp)\n"  // %edx at time of segmentation fault
+      "mov  %%edx, 0xC8(%%esp)\n"  // %edx at time of segmentation fault
       "cmpw $0x310F, (%%ebp)\n"    // RDTSC
-      "jz   7f\n"
-      "mov  %%ecx, 0x30(%%esp)\n"  // %ecx at time of segmentation fault
-    "7:mov  %%eax, 0x34(%%esp)\n"  // %eax at time of segmentation fault
+      "jz   3b\n"
+      "mov  %%ecx, 0xCC(%%esp)\n"  // %ecx at time of segmentation fault
       "jmp  3b\n"
 
       // If the instruction is INT 0, then this was probably the result
       // of playground::Library being unable to find a way to safely
       // rewrite the system call instruction. Retrieve the CPU register
       // at the time of the segmentation fault and invoke syscallWrapper().
-    "8:cmpw $0x00CD, (%%ebp)\n"    // INT $0x0
-      "jnz  16f\n"
+    "9:cmpw $0x00CD, (%%ebp)\n"    // INT $0x0
+      "jnz  20f\n"
 #ifndef NDEBUG
       "lea  200f, %%eax\n"
       "push %%eax\n"
       "call playground$debugMessage\n"
       "add  $0x4, %%esp\n"
 #endif
-      "mov  0x34(%%esp), %%eax\n"  // %eax at time of segmentation fault
-      "mov  0x28(%%esp), %%ebx\n"  // %ebx at time of segmentation fault
-      "mov  0x30(%%esp), %%ecx\n"  // %ecx at time of segmentation fault
-      "mov  0x2C(%%esp), %%edx\n"  // %edx at time of segmentation fault
-      "mov  0x1C(%%esp), %%esi\n"  // %esi at time of segmentation fault
-      "mov  0x18(%%esp), %%edi\n"  // %edi at time of segmentation fault
-      "mov  0x20(%%esp), %%ebp\n"  // %ebp at time of segmentation fault
+      "mov  0xD0(%%esp), %%eax\n"  // %eax at time of segmentation fault
+      "mov  0xC4(%%esp), %%ebx\n"  // %ebx at time of segmentation fault
+      "mov  0xCC(%%esp), %%ecx\n"  // %ecx at time of segmentation fault
+      "mov  0xC8(%%esp), %%edx\n"  // %edx at time of segmentation fault
+      "mov  0xB8(%%esp), %%esi\n"  // %esi at time of segmentation fault
+      "mov  0xB4(%%esp), %%edi\n"  // %edi at time of segmentation fault
+      "mov  0xB2(%%esp), %%ebp\n"  // %ebp at time of segmentation fault
 
       // Handle sigprocmask() and rt_sigprocmask()
       "cmp  $175, %%eax\n"         // NR_rt_sigprocmask
-      "jnz  9f\n"
+      "jnz  10f\n"
       "mov  $-22, %%eax\n"         // -EINVAL
       "cmp  $8, %%esi\n"           // %esi = sigsetsize (8 bytes = 64 signals)
-      "jl   7b\n"
-      "jmp  10f\n"
-    "9:cmp  $126, %%eax\n"         // NR_sigprocmask
-      "jnz  14f\n"
+      "jl   3b\n"
+      "jmp  11f\n"
+   "10:cmp  $126, %%eax\n"         // NR_sigprocmask
+      "jnz  15f\n"
       "mov  $-22, %%eax\n"
-   "10:mov  0x58(%%esp), %%edi\n"  // signal mask at time of segmentation fault
-      "mov  0x5C(%%esp), %%ebp\n"
+   "11:mov  0xFC(%%esp), %%edi\n"  // signal mask at time of segmentation fault
+      "mov  0x100(%%esp), %%ebp\n"
       "test %%ecx, %%ecx\n"        // only set mask, if set is non-NULL
-      "jz   13f\n"
+      "jz   14f\n"
       "mov  0(%%ecx), %%esi\n"
       "mov  4(%%ecx), %%ecx\n"
       "cmp  $0, %%ebx\n"           // %ebx = how (SIG_BLOCK)
-      "jnz  11f\n"
-      "or   %%esi, 0x58(%%esp)\n"  // signal mask at time of segmentation fault
-      "or   %%ecx, 0x5C(%%esp)\n"
-      "jmp  13f\n"
-   "11:cmp  $1, %%ebx\n"           // %ebx = how (SIG_UNBLOCK)
       "jnz  12f\n"
+      "or   %%esi, 0xFC(%%esp)\n"  // signal mask at time of segmentation fault
+      "or   %%ecx, 0x100(%%esp)\n"
+      "jmp  14f\n"
+   "12:cmp  $1, %%ebx\n"           // %ebx = how (SIG_UNBLOCK)
+      "jnz  13f\n"
       "xor  $-1, %%esi\n"
       "xor  $-1, %%ecx\n"
-      "and  %%esi, 0x58(%%esp)\n"  // signal mask at time of segmentation fault
-      "and  %%ecx, 0x5C(%%esp)\n"
-      "jmp  13f\n"
-   "12:cmp  $2, %%ebx\n"           // %ebx = how (SIG_SETMASK)
-      "jnz  7b\n"
-      "mov  %%esi, 0x58(%%esp)\n"  // signal mask at time of segmentation fault
-      "mov  %%ecx, 0x5C(%%esp)\n"
-   "13:xor  %%eax, %%eax\n"
+      "and  %%esi, 0xFC(%%esp)\n"  // signal mask at time of segmentation fault
+      "and  %%ecx, 0x100(%%esp)\n"
+      "jmp  14f\n"
+   "13:cmp  $2, %%ebx\n"           // %ebx = how (SIG_SETMASK)
+      "jnz  3b\n"
+      "mov  %%esi, 0xFC(%%esp)\n"  // signal mask at time of segmentation fault
+      "mov  %%ecx, 0x100(%%esp)\n"
+   "14:xor  %%eax, %%eax\n"
       "test %%edx, %%edx\n"        // only return old mask, if set is non-NULL
-      "jz   7b\n"
+      "jz   3b\n"
       "mov  %%edi, 0(%%edx)\n"     // old_set
       "mov  %%ebp, 4(%%edx)\n"
-      "jmp  7b\n"
+      "jmp  3b\n"
 
-      // Copy signal frame onto new stack. See clone.cc for details
-   "14:cmp  $120+0xF000, %%eax\n"  // NR_clone + 0xF000
-      "jnz  15f\n"
-      "mov  0x24(%%esp), %%ecx\n"  // %esp at time of segmentation fault
-      "sub  %%esp, %%ecx\n"        // %ecx = size of stack frame
-      "sub  $8, %%ecx\n"           // skip return address and dummy
-      "mov  %%ecx, %%eax\n"        // return size of signal stack frame
+      // Handle sigreturn() and rt_sigreturn()
+      // See syscall.cc for a discussion on how we can emulate rt_sigreturn()
+      // by calling sigreturn() with a suitably adjusted stack.
+   "15:cmp  $119, %%eax\n"         // NR_sigreturn
+      "jnz  17f\n"
+      "mov  0xC0(%%esp), %%esp\n"  // %esp at time of segmentation fault
+   "16:int  $0x80\n"               // sigreturn() is unrestricted
+   "17:cmp  $173, %%eax\n"         // NR_rt_sigreturn
+      "jnz  18f\n"
+      "mov  0xC0(%%esp), %%esp\n"  // %esp at time of segmentation fault
+      "sub  $4, %%esp\n"           // add fake return address
+      "jmp  4b\n"
+
+      // Copy signal frame onto new stack. In the process, we have to convert
+      // it from an RT signal frame to a legacy signal frame.
+      // See clone.cc for details
+   "18:cmp  $120+0xF000, %%eax\n"  // NR_clone + 0xF000
+      "jnz  19f\n"
+      "mov  0xC0(%%esp), %%ecx\n"  // %esp at time of segmentation fault
+      "sub  %%esp, %%ecx\n"        // %ecx = size of RT stack frame
+      "mov  %%ecx, %%eax\n"
+      "add  $0x1C8, %%eax\n"       // adjust for size of legacy stack frame
+      "sub  $0x100, %%ecx\n"
       "mov  0(%%edx), %%edi\n"     // stack for newly clone()'d thread
       "sub  %%ecx, %%edi\n"        // copy onto new stack
-      "mov  %%edi, 0(%%edx)\n"     // allocate space on new stack
-      "lea  8(%%esp), %%esi\n"     // copy from current stack
+      "lea  0x100(%%esp), %%esi\n"
       "cld\n"
-      "rep  movsb\n"
-      "jmp  7b\n"
+      "rep movsb\n"                // copy parts of RT stack(sigmask, FP state)
+      "mov  0xF0(%%esp), %%ebx\n"  // adjust pointer to fpstate
+      "sub  %%esi, %%ebx\n"
+      "add  %%edi, %%ebx\n"
+      "sub  %%eax, %%edi\n"
+      "mov  %%edi, 0(%%edx)\n"     // allocate space on new stack
+      "lea  0xA4(%%esp), %%esi\n"  // copy sigcontext from current stack
+      "mov  $0x16, %%ecx\n"
+      "rep  movsl\n"
+      "mov  %%ebx, -0xC(%%edi)\n"  // set pointer to fpstate
+      "mov  0xFC(%%esp), %%ebx\n"  // copy first half of signal mask
+      "mov  %%ebx, -0x8(%%edi)\n"
+      "mov  %%eax, -0x2C(%%edi)\n" // return size of stack frame in %%eax
+      "addl $2, -0x20(%%edi)\n"    // adjust %eip
+      "mov  0(%%edx), %%esp\n"
+      "mov  $119, %%eax\n"         // NR_sigreturn
+      "int  $0x80\n"
 
       // Forward system call to syscallWrapper()
-   "15:call playground$syscallWrapper\n"
-      "jmp  7b\n"
+   "19:call playground$syscallWrapper\n"
+      "jmp  3b\n"
 
       // This was a genuine segmentation fault. Trigger the kernel's default
       // signal disposition. The only way we can do this from seccomp mode
       // is by blocking the signal and retriggering it.
-   "16:mov  $2, %%ebx\n"           // stderr
+   "20:mov  $2, %%ebx\n"           // stderr
       "lea  300f, %%ecx\n"         // "Segmentation fault\n"
       "mov  $301f-300f, %%edx\n"
       "mov  $4, %%eax\n"           // NR_write
       "int  $0x80\n"
-      "orb  $4, 0x59(%%esp)\n"     // signal mask at time of segmentation fault
-      "ret\n"
+      "orb  $4, 0xFD(%%esp)\n"     // signal mask at time of segmentation fault
+      "jmp  4b\n"
 #else
 #error Unsupported target platform
 #endif

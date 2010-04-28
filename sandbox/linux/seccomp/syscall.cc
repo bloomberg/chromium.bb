@@ -46,8 +46,17 @@ asm(
     ".globl playground$syscallWrapper\n"
     ".type playground$syscallWrapper, @function\n"
     #if defined(__x86_64__)
+    // Check for rt_sigreturn(). It needs to be handled specially.
+    "cmp  $15, %rax\n"             // NR_rt_sigreturn
+    "jnz  1f\n"
+    "add  $0x90, %rsp\n"           // pop return addresses and red zone
+  "0:syscall\n"                    // rt_sigreturn() is unrestricted
+    "mov  $66, %edi\n"             // rt_sigreturn() should never return
+    "mov  $231, %eax\n"            // NR_exit_group
+    "jmp  0b\n"
+
     // Save all registers
-    "push %rbp\n"
+  "1:push %rbp\n"
     "mov  %rsp, %rbp\n"
     "push %rbx\n"
     "push %rcx\n"
@@ -70,7 +79,7 @@ asm(
 
     // Check range of system call
     "cmp playground$maxSyscall(%rip), %eax\n"
-    "ja  1f\n"
+    "ja  3f\n"
 
     // Retrieve function call from system call table (c.f. syscall_table.c).
     // We have three different types of entries; zero for denied system calls,
@@ -86,9 +95,9 @@ asm(
     // Jump to function if non-null and not UNRESTRICTED_SYSCALL, otherwise
     // jump to fallback handler.
     "cmp $1, %r10\n"
-    "jbe 1f\n"
+    "jbe 3f\n"
     "call *%r10\n"
-  "0:"
+  "2:"
 
     // Restore CPU registers, except for %rax which was set by the system call.
     "pop %r15\n"
@@ -113,7 +122,7 @@ asm(
     // Return to caller
     "ret\n"
 
-  "1:"
+  "3:"
     // If we end up calling a specific handler, we don't need to know the
     // system call number. However, in the generic case, we do. Shift
     // registers so that the system call number becomes visible as the
@@ -129,10 +138,55 @@ asm(
     // Call default handler.
     "call playground$defaultSystemCallHandler\n"
     "pop  %r9\n"
-    "jmp 0b\n"
+    "jmp 2b\n"
     #elif defined(__i386__)
+    "cmp  $119, %eax\n"            // NR_sigreturn
+    "jnz  1f\n"
+    "add  $0x4, %esp\n"            // pop return address
+  "0:int  $0x80\n"                 // sigreturn() is unrestricted
+    "mov  $66, %ebx\n"             // sigreturn() should never return
+    "mov  %ebx, %eax\n"            // NR_exit
+    "jmp  0b\n"
+  "1:cmp  $173, %eax\n"            // NR_rt_sigreturn
+    "jnz  3f\n"
+
+    // Convert rt_sigframe into sigframe, allowing us to call sigreturn().
+    // This is possible since the first part of signal stack frames have
+    // stayed very stable since the earliest kernel versions. While never
+    // officially documented, lots of user space applications rely on this
+    // part of the ABI, and kernel developers have been careful to maintain
+    // backwards compatibility.
+    // In general, the rt_sigframe includes a lot of extra information that
+    // the signal handler can look at. Most notably, this means a complete
+    // siginfo record.
+    // Fortunately though, the kernel doesn't look at any of this extra data
+    // when returning from a signal handler. So, we can safely convert an
+    // rt_sigframe to a legacy sigframe, discarding the extra data in the
+    // process. Interestingly, the legacy signal frame is actually larger than
+    // the rt signal frame, as it includes a lot more padding.
+    "sub  $0x1C8, %esp\n"          // a legacy signal stack is much larger
+    "mov  0x1CC(%esp), %eax\n"     // push signal number
+    "push %eax\n"
+    "lea  0x270(%esp), %esi\n"     // copy siginfo register values
+    "lea  0x4(%esp), %edi\n"       //     into new location
+    "mov  $0x16, %ecx\n"
+    "cld\n"
+    "rep movsl\n"
+    "mov  0x2C8(%esp), %ebx\n"     // copy first half of signal mask
+    "mov  %ebx, 0x54(%esp)\n"
+    "lea  2f, %esi\n"
+    "push %esi\n"                  // push restorer function
+    "lea  0x2D4(%esp), %edi\n"     // patch up retcode magic numbers
+    "movb $2, %cl\n"
+    "rep movsl\n"
+    "ret\n"                        // return to restorer function
+  "2:pop  %eax\n"                  // remove dummy argument (signo)
+    "mov  $119, %eax\n"            // NR_sigaction
+    "int  $0x80\n"
+
+
     // Preserve all registers
-    "push %ebx\n"
+  "3:push %ebx\n"
     "push %ecx\n"
     "push %edx\n"
     "push %esi\n"
@@ -150,7 +204,7 @@ asm(
 
     // Check range of system call
     "cmp playground$maxSyscall, %eax\n"
-    "ja  5f\n"
+    "ja  9f\n"
 
     // We often have long sequences of calls to gettimeofday(). This is
     // needlessly expensive. Coalesce them into a single call.
@@ -164,9 +218,9 @@ asm(
     //               or maybe, if we have recently seen requests to compute
     //               the time. There might be a repeated pattern of those.
     "cmp  $78, %eax\n"             // __NR_gettimeofday
-    "jnz  2f\n"
+    "jnz  6f\n"
     "cmp  %eax, %fs:0x102C-0x58\n" // last system call
-    "jnz  0f\n"
+    "jnz  4f\n"
 
     // This system call and the last system call prior to this one both are
     // calls to gettimeofday(). Try to avoid making the new call and just
@@ -174,7 +228,7 @@ asm(
     // Just in case the caller is spinning on the result from gettimeofday(),
     // every so often, call the actual system call.
     "decl %fs:0x1030-0x58\n"       // countdown calls to gettimofday()
-    "jz   0f\n"
+    "jz   4f\n"
 
     // Atomically read the 64bit word representing last-known timestamp and
     // return it to the caller. On x86-32 this is a little more complicated and
@@ -186,11 +240,11 @@ asm(
     "mov  %edx, 4(%ebx)\n"
     "xor  %eax, %eax\n"
     "add  $28, %esp\n"
-    "jmp  4f\n"
+    "jmp  8f\n"
 
     // This is a call to gettimeofday(), but we don't have a valid cached
     // result, yet.
-  "0:mov  %eax, %fs:0x102C-0x58\n" // remember syscall number
+  "4:mov  %eax, %fs:0x102C-0x58\n" // remember syscall number
     "movl $500, %fs:0x1030-0x58\n" // make system call, each 500 invocations
     "call playground$defaultSystemCallHandler\n"
 
@@ -201,17 +255,17 @@ asm(
     "mov 0(%ebx), %ebx\n"
     "mov 100f, %eax\n"
     "mov 101f, %edx\n"
-  "1:lock; cmpxchg8b 100f\n"
-    "jnz 1b\n"
+  "5:lock; cmpxchg8b 100f\n"
+    "jnz 5b\n"
     "xor %eax, %eax\n"
-    "jmp 6f\n"
+    "jmp 10f\n"
 
     // Remember the number of the last system call made. We deliberately do
     // not remember calls to gettid(), as we have often seen long sequences
     // of calls to just gettimeofday() and gettid(). In that situation, we
     // would still like to coalesce the gettimeofday() calls.
-  "2:cmp $224, %eax\n"             // __NR_gettid
-    "jz  3f\n"
+  "6:cmp $224, %eax\n"             // __NR_gettid
+    "jz  7f\n"
     "mov  %eax, %fs:0x102C-0x58\n" // remember syscall number
 
     // Retrieve function call from system call table (c.f. syscall_table.c).
@@ -219,7 +273,7 @@ asm(
     // that should be handled by the defaultSystemCallHandler(); minus one
     // for unrestricted system calls that need to be forwarded to the trusted
     // thread; and function pointers to specific handler functions.
-  "3:shl  $3, %eax\n"
+  "7:shl  $3, %eax\n"
     "lea  playground$syscallTable, %ebx\n"
     "add  %ebx, %eax\n"
     "mov  0(%eax), %eax\n"
@@ -227,13 +281,13 @@ asm(
     // Jump to function if non-null and not UNRESTRICTED_SYSCALL, otherwise
     // jump to fallback handler.
     "cmp  $1, %eax\n"
-    "jbe  5f\n"
+    "jbe  9f\n"
     "add  $4, %esp\n"
     "call *%eax\n"
     "add  $24, %esp\n"
 
     // Restore CPU registers, except for %eax which was set by the system call.
-  "4:pop  %ebp\n"
+  "8:pop  %ebp\n"
     "pop  %edi\n"
     "pop  %esi\n"
     "pop  %edx\n"
@@ -244,9 +298,9 @@ asm(
     "ret\n"
 
     // Call default handler.
-  "5:call playground$defaultSystemCallHandler\n"
-  "6:add  $28, %esp\n"
-    "jmp 4b\n"
+  "9:call playground$defaultSystemCallHandler\n"
+ "10:add  $28, %esp\n"
+    "jmp 8b\n"
 
     ".pushsection \".bss\"\n"
     ".balign 8\n"
@@ -267,9 +321,9 @@ void* Sandbox::defaultSystemCallHandler(int syscallNum, void* arg0, void* arg1,
                                         void* arg5) {
   // TODO(markus): The following comment is currently not true, we do intercept these system calls. Try to fix that.
 
-  // We try to avoid intercepting read(), write(), and sigreturn(), as
-  // these system calls are not restricted in Seccomp mode. But depending on
-  // the exact instruction sequence in libc, we might not be able to reliably
+  // We try to avoid intercepting read(), and write(), as these system calls
+  // are not restricted in Seccomp mode. But depending on the exact
+  // instruction sequence in libc, we might not be able to reliably
   // filter out these system calls at the time when we instrument the code.
   SysCalls  sys;
   long      rc;
@@ -282,10 +336,6 @@ void* Sandbox::defaultSystemCallHandler(int syscallNum, void* arg0, void* arg1,
     case __NR_write:
       Debug::syscall(&tm, syscallNum, "Allowing unrestricted system call");
       rc             = sys.write((long)arg0, arg1, (size_t)arg2);
-      break;
-    case __NR_rt_sigreturn:
-      Debug::syscall(&tm, syscallNum, "Allowing unrestricted system call");
-      rc             = sys.rt_sigreturn((unsigned long)arg0);
       break;
     default:
       if (Debug::isEnabled()) {

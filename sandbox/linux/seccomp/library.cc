@@ -835,31 +835,29 @@ void Library::patchVDSO(char** extraSpace, int* extraLength){
     //
     // 58                POP %eax
     // B8 77 00 00 00    MOV $0x77, %eax
-    // E9 .. .. .. ..    JMP syscallWrapper
+    // E8 .. .. .. ..    CALL syscallWrapper
     char* dest = getScratchSpace(maps_, __kernel_sigreturn, 11, extraSpace,
                                  extraLength);
-    memcpy(dest, "\x58\xB8\x77\x00\x00\x00\xE9", 7);
-    *reinterpret_cast<char *>(dest + 7) =
-        reinterpret_cast<char *>(&syscallWrapper) -
-        reinterpret_cast<char *>(dest + 11);
+    memcpy(dest, "\x58\xB8\x77\x00\x00\x00\xE8", 7);
+    *reinterpret_cast<long *>(dest + 7) =
+        reinterpret_cast<char *>(&syscallWrapper) - dest - 11;;
     *__kernel_sigreturn = '\xE9';
-    *reinterpret_cast<char *>(__kernel_sigreturn + 1) =
-        dest - reinterpret_cast<char *>(__kernel_sigreturn + 5);
+    *reinterpret_cast<long *>(__kernel_sigreturn + 1) =
+        dest - reinterpret_cast<char *>(__kernel_sigreturn) - 5;
   }
   if (__kernel_rt_sigreturn) {
     // Replace the rt_sigreturn() system call with a jump to code that does:
     //
     // B8 AD 00 00 00    MOV $0xAD, %eax
-    // E9 .. .. .. ..    JMP syscallWrapper
+    // E8 .. .. .. ..    CALL syscallWrapper
     char* dest = getScratchSpace(maps_, __kernel_rt_sigreturn, 10, extraSpace,
                                  extraLength);
-    memcpy(dest, "\xB8\xAD\x00\x00\x00\xE9", 6);
-    *reinterpret_cast<char *>(dest + 6) =
-        reinterpret_cast<char *>(&syscallWrapper) -
-        reinterpret_cast<char *>(dest + 10);
+    memcpy(dest, "\xB8\xAD\x00\x00\x00\xE8", 6);
+    *reinterpret_cast<long *>(dest + 6) =
+        reinterpret_cast<char *>(&syscallWrapper) - dest - 10;
     *__kernel_rt_sigreturn = '\xE9';
-    *reinterpret_cast<char *>(__kernel_rt_sigreturn + 1) =
-        dest - reinterpret_cast<char *>(__kernel_rt_sigreturn + 5);
+    *reinterpret_cast<long *>(__kernel_rt_sigreturn + 1) =
+        dest - reinterpret_cast<char *>(__kernel_rt_sigreturn) - 5;
   }
   #endif
 }

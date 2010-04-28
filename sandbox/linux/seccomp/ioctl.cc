@@ -48,8 +48,11 @@ bool Sandbox::process_ioctl(int parentMapsFd, int sandboxFd, int threadFdPub,
                                 ioctl_req.d, ioctl_req.req, ioctl_req.arg);
       return true;
     default:
-      std::cerr << "Unsupported ioctl: 0x" << std::hex << ioctl_req.req <<
-          std::endl;
+      if (Debug::isEnabled()) {
+        char buf[80];
+        sprintf(buf, "Unsupported ioctl: 0x%04X\n", ioctl_req.req);
+        Debug::message(buf);
+      }
       SecureMem::abandonSystemCall(threadFd, rc);
       return false;
   }
