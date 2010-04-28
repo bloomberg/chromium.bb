@@ -10,7 +10,6 @@
 #include <string>
 
 #include "app/gtk_signal.h"
-#include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
@@ -35,8 +34,7 @@ class BookmarkEditorGtk : public BookmarkEditor,
                     Profile* profile,
                     const BookmarkNode* parent,
                     const EditDetails& details,
-                    BookmarkEditor::Configuration configuration,
-                    BookmarkEditor::Handler* handler);
+                    BookmarkEditor::Configuration configuration);
 
   virtual ~BookmarkEditorGtk();
 
@@ -137,8 +135,6 @@ class BookmarkEditorGtk : public BookmarkEditor,
 
   // Is the tree shown?
   bool show_tree_;
-
-  scoped_ptr<BookmarkEditor::Handler> handler_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkEditorGtk);
 };

@@ -41,12 +41,11 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
                           Profile* profile,
                           const BookmarkNode* parent,
                           const EditDetails& details,
-                          Configuration configuration,
-                          Handler* handler) {
+                          Configuration configuration) {
   DCHECK(profile);
   BookmarkEditorGtk* editor =
       new BookmarkEditorGtk(parent_hwnd, profile, parent, details,
-                            configuration, handler);
+                            configuration);
   editor->Show();
 }
 
@@ -55,15 +54,13 @@ BookmarkEditorGtk::BookmarkEditorGtk(
     Profile* profile,
     const BookmarkNode* parent,
     const EditDetails& details,
-    BookmarkEditor::Configuration configuration,
-    BookmarkEditor::Handler* handler)
+    BookmarkEditor::Configuration configuration)
     : profile_(profile),
       dialog_(NULL),
       parent_(parent),
       details_(details),
       running_menu_for_root_(false),
-      show_tree_(configuration == SHOW_TREE),
-      handler_(handler) {
+      show_tree_(configuration == SHOW_TREE) {
   DCHECK(profile);
   Init(window);
 }
@@ -316,7 +313,7 @@ void BookmarkEditorGtk::ApplyEdits(GtkTreeIter* selected_parent) {
 
   if (!show_tree_ || !selected_parent) {
     bookmark_utils::ApplyEditsWithNoGroupChange(
-        bb_model_, parent_, details_, new_title, new_url, handler_.get());
+        bb_model_, parent_, details_, new_title, new_url, NULL);
     return;
   }
 
@@ -332,7 +329,7 @@ void BookmarkEditorGtk::ApplyEdits(GtkTreeIter* selected_parent) {
   }
 
   bookmark_utils::ApplyEditsWithPossibleGroupChange(
-      bb_model_, new_parent, details_, new_title, new_url, handler_.get());
+      bb_model_, new_parent, details_, new_title, new_url, NULL);
 }
 
 void BookmarkEditorGtk::AddNewGroup(GtkTreeIter* parent, GtkTreeIter* child) {

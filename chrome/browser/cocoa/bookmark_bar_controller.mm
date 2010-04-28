@@ -1254,8 +1254,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
                        browser_->profile(),
                        node->GetParent(),
                        BookmarkEditor::EditDetails(node),
-                       BookmarkEditor::SHOW_TREE,
-                       nil);
+                       BookmarkEditor::SHOW_TREE);
 }
 
 - (IBAction)cutBookmark:(id)sender {
@@ -1366,8 +1365,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
                        browser_->profile(),
                        parent,
                        BookmarkEditor::EditDetails(),
-                       BookmarkEditor::SHOW_TREE,
-                       nil);
+                       BookmarkEditor::SHOW_TREE);
 }
 
 // Might be called from the context menu over the bar OR over a

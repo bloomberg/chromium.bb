@@ -2084,7 +2084,7 @@ void Browser::BookmarkAllTabs() {
 
   BookmarkEditor::Show(window()->GetNativeHandle(), profile_,
                        model->GetParentForNewNodes(),  details,
-                       BookmarkEditor::SHOW_TREE, NULL);
+                       BookmarkEditor::SHOW_TREE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

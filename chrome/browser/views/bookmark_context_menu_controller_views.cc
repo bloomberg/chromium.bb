@@ -157,7 +157,7 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
           editor_config = BookmarkEditor::NO_TREE;
         BookmarkEditor::Show(parent_window_, profile_, parent_,
                              BookmarkEditor::EditDetails(selection_[0]),
-                             editor_config, NULL);
+                             editor_config);
       } else {
         BookmarkFolderEditorController::Show(profile_, parent_window_,
             selection_[0], -1, BookmarkFolderEditorController::NONE);
@@ -189,7 +189,7 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
       BookmarkEditor::Show(
           parent_window_, profile_,
           bookmark_utils::GetParentForNewNodes(parent_, selection_, NULL),
-          BookmarkEditor::EditDetails(), editor_config, NULL);
+          BookmarkEditor::EditDetails(), editor_config);
       break;
     }
 

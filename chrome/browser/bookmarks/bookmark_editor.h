@@ -75,13 +75,11 @@ class BookmarkEditor {
   // |parent| gives the initial parent to select in the tree for the node.
   // |parent| is only used if |details.existing_node| is null.
   // BookmarkEditor takes ownership of |handler| and deletes it when done.
-  // |handler| may be null. See description of Handler for details.
   static void Show(gfx::NativeWindow parent_window,
                    Profile* profile,
                    const BookmarkNode* parent,
                    const EditDetails& details,
-                   Configuration configuration,
-                   Handler* handler);
+                   Configuration configuration);
 };
 
 #endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_EDITOR_H_

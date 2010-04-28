@@ -51,11 +51,10 @@ void BookmarkEditor::Show(HWND parent_hwnd,
                           Profile* profile,
                           const BookmarkNode* parent,
                           const EditDetails& details,
-                          Configuration configuration,
-                          Handler* handler) {
+                          Configuration configuration) {
   DCHECK(profile);
   BookmarkEditorView* editor =
-      new BookmarkEditorView(profile, parent, details, configuration, handler);
+      new BookmarkEditorView(profile, parent, details, configuration);
   editor->Show(parent_hwnd);
 }
 
@@ -63,8 +62,7 @@ BookmarkEditorView::BookmarkEditorView(
     Profile* profile,
     const BookmarkNode* parent,
     const EditDetails& details,
-    BookmarkEditor::Configuration configuration,
-    BookmarkEditor::Handler* handler)
+    BookmarkEditor::Configuration configuration)
     : profile_(profile),
       tree_view_(NULL),
       new_group_button_(NULL),
@@ -73,8 +71,7 @@ BookmarkEditorView::BookmarkEditorView(
       parent_(parent),
       details_(details),
       running_menu_for_root_(false),
-      show_tree_(configuration == SHOW_TREE),
-      handler_(handler) {
+      show_tree_(configuration == SHOW_TREE) {
   DCHECK(profile);
   Init();
 }
@@ -535,7 +532,7 @@ void BookmarkEditorView::ApplyEdits(EditorNode* parent) {
 
   if (!show_tree_) {
     bookmark_utils::ApplyEditsWithNoGroupChange(
-        bb_model_, parent_, details_, new_title, new_url, handler_.get());
+        bb_model_, parent_, details_, new_title, new_url, NULL);
     return;
   }
 
@@ -545,7 +542,7 @@ void BookmarkEditorView::ApplyEdits(EditorNode* parent) {
       bb_model_->root_node(), tree_model_->GetRoot(), parent, &new_parent);
 
   bookmark_utils::ApplyEditsWithPossibleGroupChange(
-      bb_model_, new_parent, details_, new_title, new_url, handler_.get());
+      bb_model_, new_parent, details_, new_title, new_url, NULL);
 }
 
 void BookmarkEditorView::ApplyNameChangesAndCreateNewGroups(

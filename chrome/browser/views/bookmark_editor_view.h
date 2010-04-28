@@ -72,8 +72,7 @@ class BookmarkEditorView : public BookmarkEditor,
   BookmarkEditorView(Profile* profile,
                      const BookmarkNode* parent,
                      const EditDetails& details,
-                     BookmarkEditor::Configuration configuration,
-                     BookmarkEditor::Handler* handler);
+                     BookmarkEditor::Configuration configuration);
 
   virtual ~BookmarkEditorView();
 
@@ -259,8 +258,6 @@ class BookmarkEditorView : public BookmarkEditor,
 
   // Is the tree shown?
   bool show_tree_;
-
-  scoped_ptr<BookmarkEditor::Handler> handler_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkEditorView);
 };

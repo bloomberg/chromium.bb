@@ -389,6 +389,6 @@ void BookmarkBubbleGtk::ShowEditor() {
   if (node) {
     BookmarkEditor::Show(toplevel, profile, NULL,
                          BookmarkEditor::EditDetails(node),
-                         BookmarkEditor::SHOW_TREE, NULL);
+                         BookmarkEditor::SHOW_TREE);
   }
 }

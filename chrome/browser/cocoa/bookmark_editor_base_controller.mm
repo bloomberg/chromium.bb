@@ -59,16 +59,16 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
                           Profile* profile,
                           const BookmarkNode* parent,
                           const EditDetails& details,
-                          Configuration configuration,
-                          Handler* handler) {
+                          Configuration configuration) {
   BookmarkEditorBaseController* controller = nil;
+  // TODO(viettrungluu): get rid of |handler:| below and elsewhere.
   if (details.type == EditDetails::NEW_FOLDER) {
     controller = [[BookmarkAllTabsController alloc]
                   initWithParentWindow:parent_hwnd
                                profile:profile
                                 parent:parent
                          configuration:configuration
-                               handler:handler];
+                               handler:NULL];
   } else {
     controller = [[BookmarkEditorController alloc]
                   initWithParentWindow:parent_hwnd
@@ -76,7 +76,7 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
                                 parent:parent
                                   node:details.existing_node
                          configuration:configuration
-                               handler:handler];
+                               handler:NULL];
   }
   [controller runAsModalSheet];
 }
