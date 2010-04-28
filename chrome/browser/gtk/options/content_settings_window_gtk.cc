@@ -75,6 +75,7 @@ ContentSettingsWindowGtk::ContentSettingsWindowGtk(GtkWindow* parent,
       GTK_STOCK_CLOSE,
       GTK_RESPONSE_CLOSE,
       NULL);
+  gtk_window_set_policy(GTK_WINDOW(dialog_), FALSE, FALSE, TRUE);
 
   accessible_widget_helper_.reset(new AccessibleWidgetHelper(
       dialog_, profile_));
