@@ -237,6 +237,11 @@ void MessagePortDispatcher::OnSendQueuedMessages(
 
 void MessagePortDispatcher::SendQueuedMessagesIfPossible(int message_port_id) {
   DCHECK(CheckMessagePortMap(true));
+  if (!message_ports_.count(message_port_id)) {
+    NOTREACHED();
+    return;
+  }
+
   MessagePort& port = message_ports_[message_port_id];
   if (port.queue_messages || !port.sender)
     return;
