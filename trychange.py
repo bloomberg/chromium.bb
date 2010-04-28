@@ -353,7 +353,16 @@ def _SendChangeSVN(options):
       gclient_utils.FileWrite(full_path, options.diff, 'wb')
 
       # Committing it will trigger a try job.
-      command = ['svn', 'import', '-q', temp_dir, options.svn_repo, '--file',
+      if sys.platform == "cygwin":
+        # Small chromium-specific issue here:
+        # git-try uses /usr/bin/python on cygwin but svn.bat will be used
+        # instead of /usr/bin/svn by default. That causes bad things(tm) since
+        # Windows' svn.exe has no clue about cygwin paths. Hence force to use
+        # the cygwin version in this particular context.
+        exe = "/usr/bin/svn"
+      else:
+        exe = "svn"
+      command = [exe, 'import', '-q', temp_dir, options.svn_repo, '--file',
                  temp_file.name]
       gclient_utils.CheckCall(command)
     except gclient_utils.CheckCallError, e:
