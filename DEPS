@@ -25,6 +25,9 @@ deps = {
   "src/testing/gtest":
     "http://googletest.googlecode.com/svn/trunk@408",
 
+  "src/third_party/angle":
+    "http://angleproject.googlecode.com/svn/trunk@195",
+
   "src/third_party/WebKit":
     "/trunk/deps/third_party/WebKit@33467",
 
