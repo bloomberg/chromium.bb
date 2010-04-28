@@ -12,10 +12,12 @@
 
 // TODO(joshia): factor out common code with chrome used for crash reporting
 const wchar_t kGoogleUpdatePipeName[] = L"\\\\.\\pipe\\GoogleCrashServices\\";
-static google_breakpad::ExceptionHandler * g_breakpad = NULL;
-static Lock g_breakpad_lock;
 
-// These minidump flag combinations have been tested safe agains the
+// This lock protects against concurrent access to g_breakpad.
+static Lock g_breakpad_lock;
+static google_breakpad::ExceptionHandler* g_breakpad = NULL;
+
+// These minidump flag combinations have been tested safe against the
 // DbgHelp.dll version that ships with Windows XP SP2.
 const MINIDUMP_TYPE kSmallDumpType = static_cast<MINIDUMP_TYPE>(
     MiniDumpWithProcessThreadData |  // Get PEB and TEB.

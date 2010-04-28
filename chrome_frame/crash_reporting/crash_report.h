@@ -9,7 +9,6 @@
 
 #include <string>
 
-#include "base/lock.h"
 #include "base/logging.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
 

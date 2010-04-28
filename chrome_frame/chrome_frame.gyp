@@ -142,6 +142,7 @@
         'test/chrome_frame_test_utils.h',
         'test/chrome_frame_test_utils.cc',
         'test/com_message_event_unittest.cc',
+        'test/exception_barrier_unittest.cc',
         'test/html_util_unittests.cc',
         'test/http_negotiate_unittest.cc',
         'test/simulate_input.h',

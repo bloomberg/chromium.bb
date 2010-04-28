@@ -16,10 +16,10 @@ ExceptionBarrier::ExceptionHandler ExceptionBarrier::s_handler_ = NULL;
 // This function must be extern "C" to match up with the SAFESEH
 // declaration in our corresponding ASM file
 extern "C" EXCEPTION_DISPOSITION __cdecl
-ExceptionBarrierHandler(struct _EXCEPTION_RECORD *exception_record,
-                        void * establisher_frame,
-                        struct _CONTEXT *context,
-                        void * reserved) {
+ExceptionBarrierHandler(struct _EXCEPTION_RECORD* exception_record,
+                        void* establisher_frame,
+                        struct _CONTEXT* context,
+                        void* reserved) {
   establisher_frame;  // unreferenced formal parameter
   reserved;
   if (!(exception_record->ExceptionFlags & EH_UNWINDING)) {
