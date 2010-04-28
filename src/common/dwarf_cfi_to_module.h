@@ -91,6 +91,26 @@ class DwarfCFIToModule: public CallFrameInfo::Handler {
     string file_, section_;
   };
 
+  // Register name tables. If TABLE is a vector returned by one of these
+  // functions, then TABLE[R] is the name of the register numbered R in
+  // DWARF call frame information.
+  class RegisterNames {
+   public:
+    // Intel's "x86" or IA-32.
+    static vector<string> I386();
+
+    // AMD x86_64, AMD64, Intel EM64T, or Intel 64
+    static vector<string> X86_64();
+
+    // ARM.
+    static vector<string> ARM();
+
+   private:
+    // Given STRINGS, an array of C strings with SIZE elements, return an
+    // equivalent vector<string>.
+    static vector<string> MakeVector(const char * const *strings, size_t size);
+  };
+
   // Create a handler for the dwarf2reader::CallFrameInfo parser that
   // records the stack unwinding information it receives in MODULE.
   //

@@ -42,6 +42,59 @@ namespace google_breakpad {
 
 using std::ostringstream;
 
+vector<string> DwarfCFIToModule::RegisterNames::MakeVector(
+    const char * const *strings,
+    size_t size) {
+  vector<string> names(strings, strings + size);
+  return names;
+}
+
+vector<string> DwarfCFIToModule::RegisterNames::I386() {
+  static const char *const names[] = {
+    "$eax", "$ecx", "$edx", "$ebx", "$esp", "$ebp", "$esi", "$edi",
+    "$eip", "$eflags", "$unused1",
+    "$st0", "$st1", "$st2", "$st3", "$st4", "$st5", "$st6", "$st7",
+    "$unused2", "$unused3",
+    "$xmm0", "$xmm1", "$xmm2", "$xmm3", "$xmm4", "$xmm5", "$xmm6", "$xmm7",
+    "$mm0", "$mm1", "$mm2", "$mm3", "$mm4", "$mm5", "$mm6", "$mm7",
+    "$fcw", "$fsw", "$mxcsr",
+    "$es", "$cs", "$ss", "$ds", "$fs", "$gs", "$unused4", "$unused5",
+    "$tr", "$ldtr"
+  };
+
+  return MakeVector(names, sizeof(names) / sizeof(names[0]));
+}
+
+vector<string> DwarfCFIToModule::RegisterNames::X86_64() {
+  static const char *const names[] = {
+    "$rax", "$rdx", "$rcx", "$rbx", "$rsi", "$rdi", "$rbp", "$rsp",
+    "$r8",  "$r9",  "$r10", "$r11", "$r12", "$r13", "$r14", "$r15",
+    "$rip",
+    "$xmm0","$xmm1","$xmm2", "$xmm3", "$xmm4", "$xmm5", "$xmm6", "$xmm7",
+    "$xmm8","$xmm9","$xmm10","$xmm11","$xmm12","$xmm13","$xmm14","$xmm15",
+    "$st0", "$st1", "$st2", "$st3", "$st4", "$st5", "$st6", "$st7",
+    "$mm0", "$mm1", "$mm2", "$mm3", "$mm4", "$mm5", "$mm6", "$mm7",
+    "$rflags",
+    "$es", "$cs", "$ss", "$ds", "$fs", "$gs", "$unused1", "$unused2",
+    "$fs.base", "$gs.base", "$unused3", "$unused4",
+    "$tr", "$ldtr",
+    "$mxcsr", "$fcw", "$fsw"
+  };
+
+  return MakeVector(names, sizeof(names) / sizeof(names[0]));
+}
+
+vector<string> DwarfCFIToModule::RegisterNames::ARM() {
+  static const char *const names[] = {
+    "r0",  "r1",  "r2",  "r3",  "r4",  "r5",  "r6",  "r7",
+    "r8",  "r9",  "r10", "r11", "r12", "sp",  "lr",  "pc",
+    "f0",  "f1",  "f2",  "f3",  "f4",  "f5",  "f6",  "f7",
+    "fps", "cpsr"
+  };
+
+  return MakeVector(names, sizeof(names) / sizeof(names[0]));
+}
+
 bool DwarfCFIToModule::Entry(size_t offset, uint64 address, uint64 length,
                              uint8 version, const string &augmentation,
                              unsigned return_address) {

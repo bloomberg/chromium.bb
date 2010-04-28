@@ -258,3 +258,31 @@ TEST_F(Rule, DefaultReturnAddressRuleLater) {
   EXPECT_THAT(entries[0]->rule_changes, ContainerEq(expected_changes));
 }
 
+TEST(RegisterNames, I386) {
+  vector<string> names = DwarfCFIToModule::RegisterNames::I386();
+
+  EXPECT_EQ("$eax", names[0]);
+  EXPECT_EQ("$ecx", names[1]);
+  EXPECT_EQ("$esp", names[4]);
+  EXPECT_EQ("$eip", names[8]);
+}
+
+TEST(RegisterNames, ARM) {
+  vector<string> names = DwarfCFIToModule::RegisterNames::ARM();
+
+  EXPECT_EQ("r0", names[0]);
+  EXPECT_EQ("r10", names[10]);
+  EXPECT_EQ("sp", names[13]);
+  EXPECT_EQ("lr", names[14]);
+  EXPECT_EQ("pc", names[15]);
+}
+
+TEST(RegisterNames, X86_64) {
+  vector<string> names = DwarfCFIToModule::RegisterNames::X86_64();
+
+  EXPECT_EQ("$rax", names[0]);
+  EXPECT_EQ("$rdx", names[1]);
+  EXPECT_EQ("$rbp", names[6]);
+  EXPECT_EQ("$rsp", names[7]);
+  EXPECT_EQ("$rip", names[16]);
+}
