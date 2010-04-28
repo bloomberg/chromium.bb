@@ -12,7 +12,7 @@
 set -o nounset
 set -o errexit
 
-readonly PNACL_TOOLCHAIN_ROOT=$(pwd)/toolchain/pnacl-untrusted
+readonly PNACL_TOOLCHAIN_ROOT=toolchain/pnacl-untrusted
 
 readonly PNACL_ARM_ROOT=${PNACL_TOOLCHAIN_ROOT}/arm
 readonly PNACL_X8632_ROOT=${PNACL_TOOLCHAIN_ROOT}/x8632
@@ -38,15 +38,18 @@ Usage() {
 #
 ######################################################################
 
+# Usage: VerifyObject <regexp> <filename>
+# Ensure that the ELF "file format" string for <filename> matches <regexp>.
 VerifyObject () {
-  echo -n "verify $2 [$1]: "
-  local n=$(objdump -a $2 2>&1 | grep -c "format")
-  local good=$(objdump -a $2 | grep -c "$1")
-  echo "${good}"
-  if [ "$n" != "${good}" ] ; then
-    echo
-    echo "ERROR: unexpected obj file format (${good}/$n)"
-    objdump -a $2
+  local pattern=$1 filename=$2
+  echo -n "verify $filename [$pattern]: "
+  local format=$(objdump -a "$filename" |
+                 sed -ne 's/^.* file format //p' |
+                 head -1)
+  if echo "$format" | grep -q -e "^$pattern$"; then
+    echo "PASS"
+  else
+    echo "FAIL (got '$format')"
     exit -1
   fi
 }
@@ -67,6 +70,10 @@ VerifyLLVM () {
 ######################################################################
 # Main
 ######################################################################
+if [ $(basename $(pwd)) != "native_client" ]; then
+  echo "You must run this script from the 'native_client' directory." >&2
+  exit -1
+fi
 if [ $# -eq 0 ] ; then
   echo
   echo "ERROR: you must specify a mode on the command line:"
@@ -142,22 +149,22 @@ fi
 #@   verify files in platform directories
 
 if [ ${MODE} = 'verify' ] ; then
-  Banner "Verify  ${PNACL_ARM_ROOT}"
+  Banner "Verify ${PNACL_ARM_ROOT}"
   for i in ${PNACL_ARM_ROOT}/*.[oa] ; do
-    VerifyObject elf32-littlearm $i
+    VerifyObject 'elf32-little\(arm\)\?' $i  # objdumps vary in their output.
   done
 
-  Banner "Verify  ${PNACL_X8632_ROOT}"
+  Banner "Verify ${PNACL_X8632_ROOT}"
   for i in ${PNACL_X8632_ROOT}/*.[oa] ; do
     VerifyObject elf32-i386  $i
   done
 
-  Banner "Verify  ${PNACL_X8664_ROOT}"
+  Banner "Verify ${PNACL_X8664_ROOT}"
   for i in ${PNACL_X8664_ROOT}/*.[oa] ; do
-    VerifyObject elf64-x86-64  $i
+    VerifyObject elf64-x86-64 $i
   done
 
-  Banner "Verify  ${PNACL_BITCODE_ROOT}"
+  Banner "Verify ${PNACL_BITCODE_ROOT}"
   for i in ${PNACL_BITCODE_ROOT}/*.[oa] ; do
     VerifyLLVM $i
   done
@@ -176,7 +183,7 @@ if [ ${MODE} = 'build-bitcode' ] ; then
   export TARGET_CODE=bc-arm
   Banner "Newlib"
   tools/llvm/untrusted-toolchain-creator.sh newlib-libonly \
-       ${PNACL_BITCODE_ROOT}
+       $(pwd)/${PNACL_BITCODE_ROOT}
 
   Banner "Extra SDK"
   ./scons MODE=nacl_extra_sdk platform=arm sdl=none naclsdk_validate=0 \
