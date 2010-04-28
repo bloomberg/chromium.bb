@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <assert.h>
+#include <dirent.h>
 #include <pthread.h>
 #include <pty.h>
 #include <sys/types.h>
@@ -14,6 +15,33 @@
 // This is basically a marker to grep for.
 #define TEST(name) void name()
 
+TEST(test_dup) {
+  StartSeccompSandbox();
+  // Test a simple syscall that is marked as UNRESTRICTED_SYSCALL.
+  int fd = dup(1);
+  assert(fd >= 0);
+  int rc = close(fd);
+  assert(rc == 0);
+}
+
+// This has an off-by-three error because it counts ".", "..", and the
+// FD for the /proc/self/fd directory.  This doesn't matter because it
+// is only used to check for differences in the number of open FDs.
+int count_fds() {
+  DIR *dir = opendir("/proc/self/fd");
+  assert(dir != NULL);
+  int count = 0;
+  while (1) {
+    struct dirent *d = readdir(dir);
+    if (d == NULL)
+      break;
+    count++;
+  }
+  int rc = closedir(dir);
+  assert(rc == 0);
+  return count;
+}
+
 void *thread_func(void *x) {
   int *ptr = (int *) x;
   *ptr = 123;
@@ -23,17 +51,97 @@ void *thread_func(void *x) {
 
 TEST(test_thread) {
   StartSeccompSandbox();
+  int fd_count1 = count_fds();
   pthread_t tid;
-  int x;
+  int x = 999;
   void *result;
   pthread_create(&tid, NULL, thread_func, &x);
   printf("Waiting for thread\n");
   pthread_join(tid, &result);
   assert(result == (void *) 456);
   assert(x == 123);
+  // Check that the process has not leaked FDs.
+  int fd_count2 = count_fds();
+  assert(fd_count2 == fd_count1);
 }
 
 int clone_func(void *x) {
+  int *ptr = (int *) x;
+  *ptr = 124;
+  printf("In thread\n");
+  // On x86-64, returning from this function calls the __NR_exit_group
+  // syscall instead of __NR_exit.
+  syscall(__NR_exit, 100);
+  // Not reached.
+  return 200;
+}
+
+#if defined(__i386__)
+int get_gs() {
+  int gs;
+  asm volatile("mov %%gs, %0" : "=r"(gs));
+  return gs;
+}
+#endif
+
+void *get_tls_base() {
+  void *base;
+#if defined(__x86_64__)
+  asm volatile("mov %%fs:0, %0" : "=r"(base));
+#elif defined(__i386__)
+  asm volatile("mov %%gs:0, %0" : "=r"(base));
+#else
+#error Unsupported target platform
+#endif
+  return base;
+}
+
+TEST(test_clone) {
+  StartSeccompSandbox();
+  int fd_count1 = count_fds();
+  int stack_size = 0x1000;
+  char *stack = (char *) malloc(stack_size);
+  assert(stack != NULL);
+  int flags = CLONE_VM | CLONE_FS | CLONE_FILES |
+    CLONE_SIGHAND | CLONE_THREAD | CLONE_SYSVSEM |
+    CLONE_SETTLS | CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID;
+  int tid = -1;
+  int x = 999;
+
+  // The sandbox requires us to pass CLONE_TLS.  Pass settings that
+  // are enough to copy the parent thread's TLS setup.  This allows us
+  // to invoke libc in the child thread.
+#if defined(__x86_64__)
+  void *tls = get_tls_base();
+#elif defined(__i386__)
+  struct user_desc tls_desc, *tls = &tls_desc;
+  tls_desc.entry_number = get_gs() >> 3;
+  tls_desc.base_addr = (long) get_tls_base();
+  tls_desc.limit = 0xfffff;
+  tls_desc.seg_32bit = 1;
+  tls_desc.contents = 0;
+  tls_desc.read_exec_only = 0;
+  tls_desc.limit_in_pages = 1;
+  tls_desc.seg_not_present = 0;
+  tls_desc.useable = 1;
+#else
+#error Unsupported target platform
+#endif
+
+  int rc = clone(clone_func, (void *) (stack + stack_size), flags, &x,
+                 &tid, tls, &tid);
+  assert(rc > 0);
+  while (tid == rc) {
+    syscall(__NR_futex, &tid, FUTEX_WAIT, rc, NULL);
+  }
+  assert(tid == 0);
+  assert(x == 124);
+  // Check that the process has not leaked FDs.
+  int fd_count2 = count_fds();
+  assert(fd_count2 == fd_count1);
+}
+
+int uncalled_clone_func(void *x) {
   printf("In thread func, which shouldn't happen\n");
   return 1;
 }
@@ -47,8 +155,8 @@ TEST(test_clone_disallowed_flags) {
      CLONE_CHILD_CLEARTID, which is disallowed by the sandbox. */
   int flags = CLONE_VM | CLONE_FS | CLONE_FILES |
     CLONE_SIGHAND | CLONE_THREAD | CLONE_SYSVSEM;
-  int rc = clone(clone_func, (void *) (stack + stack_size), flags, NULL,
-                 NULL, NULL, NULL);
+  int rc = clone(uncalled_clone_func, (void *) (stack + stack_size),
+                 flags, NULL, NULL, NULL, NULL);
   assert(rc == -1);
   assert(errno == EPERM);
 }
@@ -225,7 +333,7 @@ struct testcase all_tests[] = {
   { NULL, NULL },
 };
 
-void run_test_forked(struct testcase *test) {
+int run_test_forked(struct testcase *test) {
   printf("** %s\n", test->test_name);
   int pid = fork();
   if (pid == 0) {
@@ -236,7 +344,10 @@ void run_test_forked(struct testcase *test) {
   waitpid(pid, &status, 0);
   if (status != 0) {
     printf("Test failed with exit status %i\n", status);
-    exit(1);
+    return 1;
+  }
+  else {
+    return 0;
   }
 }
 
@@ -265,9 +376,17 @@ int main(int argc, char **argv) {
   else {
     // Run all tests.
     struct testcase *test;
+    int failures = 0;
     for (test = all_tests; test->test_name != NULL; test++) {
-      run_test_forked(test);
+      failures += run_test_forked(test);
+    }
+    if (failures == 0) {
+      printf("OK\n");
+      return 0;
+    }
+    else {
+      printf("%i FAILURE(S)\n", failures);
+      return 1;
     }
   }
-  return 0;
 }
