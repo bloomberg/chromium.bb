@@ -367,7 +367,6 @@ void SimpleAppCacheSystem::GetExtraResponseBits(
 
 void SimpleAppCacheSystem::WillDestroyCurrentMessageLoop() {
   DCHECK(is_io_thread());
-  DCHECK(backend_impl_->hosts().empty());
 
   delete backend_impl_;
   delete service_;
