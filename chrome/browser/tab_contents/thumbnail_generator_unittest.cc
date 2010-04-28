@@ -11,8 +11,8 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/testing_profile.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "skia/ext/platform_canvas.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 
 static const int kBitmapWidth = 100;
@@ -142,7 +142,7 @@ TEST_F(ThumbnailGeneratorTest, DiscardBackingStore) {
   SendPaint(TRANSPORT_BLACK);
   widget_.WasHidden();
   ASSERT_TRUE(BackingStoreManager::ExpireBackingStoreForTest(&widget_));
-  ASSERT_FALSE(widget_.GetBackingStore(false));
+  ASSERT_FALSE(widget_.GetBackingStore(false, false));
 
   // The thumbnail generator should have stashed a thumbnail of the page.
   SkBitmap result = generator_.GetThumbnailForRenderer(&widget_);
@@ -156,7 +156,7 @@ TEST_F(ThumbnailGeneratorTest, QuickShow) {
   SendPaint(TRANSPORT_BLACK);
   widget_.WasHidden();
   ASSERT_TRUE(BackingStoreManager::ExpireBackingStoreForTest(&widget_));
-  ASSERT_FALSE(widget_.GetBackingStore(false));
+  ASSERT_FALSE(widget_.GetBackingStore(false, false));
 
   // Now show the widget and paint white.
   widget_.WasRestored();

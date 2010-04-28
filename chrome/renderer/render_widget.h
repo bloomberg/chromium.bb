@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "app/surface/transport_dib.h"
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/shared_memory.h"
@@ -18,12 +19,12 @@
 #include "gfx/size.h"
 #include "ipc/ipc_channel.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCompositionCommand.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebWidgetClient.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/webcursor.h"
 
 class RenderThreadBase;
@@ -160,6 +161,8 @@ class RenderWidget : public IPC::Channel::Listener,
                            int cursor_position,
                            int target_start, int target_end,
                            const string16& ime_string);
+  void OnMsgPaintAtSize(const TransportDIB::Handle& dib_id,
+                        const gfx::Size& desired_size);
   void OnMsgRepaint(const gfx::Size& size_to_paint);
   void OnSetTextDirection(WebKit::WebTextDirection direction);
 

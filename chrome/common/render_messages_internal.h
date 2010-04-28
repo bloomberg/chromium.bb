@@ -141,6 +141,14 @@ IPC_BEGIN_MESSAGES(View)
   // JS garbage, not in purging irreplaceable objects.
   IPC_MESSAGE_CONTROL0(ViewMsg_PurgeMemory)
 
+  // Sent to render the view into the supplied transport DIB, scale it
+  // by the appropriate scale to make it fit the given size, and
+  // return it.  In response to this message, the host generates a
+  // ViewHostMsg_PaintAtSize_ACK message.
+  IPC_MESSAGE_ROUTED2(ViewMsg_PaintAtSize,
+                      TransportDIB::Handle /* dib_handle */,
+                      gfx::Size /* size */)
+
   // Tells the render view that a ViewHostMsg_UpdateRect message was processed.
   // This signals the render view that it can send another UpdateRect message.
   IPC_MESSAGE_ROUTED0(ViewMsg_UpdateRect_ACK)
@@ -1083,6 +1091,12 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       bool /* true if the failure is the result of
                               navigating to a POST again and we're going to
                               show the POST interstitial */ )
+
+  // Tells the render view that a ViewHostMsg_PaintAtSize message was
+  // processed, and the DIB is ready for use.
+  IPC_MESSAGE_ROUTED2(ViewHostMsg_PaintAtSize_ACK,
+                      TransportDIB::Handle /* dib_handle */,
+                      gfx::Size /* size */)
 
   // Sent to update part of the view.  In response to this message, the host
   // generates a ViewMsg_UpdateRect_ACK message.

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <vector>
 
 #include "app/menus/simple_menu_model.h"
 #include "app/theme_provider.h"
@@ -392,16 +393,29 @@ void BrowserView::Init() {
   otr_avatar_icon_->SetImage(GetOTRAvatarIcon());
   otr_avatar_icon_->SetID(VIEW_ID_OTR_AVATAR);
   AddChildView(otr_avatar_icon_);
+
+  // Make sure the window is set to the right type.
+  std::vector<int> params;
+  params.push_back(browser()->tab_count());
+  params.push_back(browser()->selected_index());
+  WmIpc::instance()->SetWindowType(
+      GTK_WIDGET(frame()->GetWindow()->GetNativeWindow()),
+      WmIpc::WINDOW_TYPE_CHROME_TOPLEVEL,
+      &params);
 }
 
 void BrowserView::Show() {
   bool was_visible = frame()->GetWindow()->IsVisible();
   ::BrowserView::Show();
   if (!was_visible) {
+    // Have to update the tab count and selected index to reflect reality.
+    std::vector<int> params;
+    params.push_back(browser()->tab_count());
+    params.push_back(browser()->selected_index());
     WmIpc::instance()->SetWindowType(
         GTK_WIDGET(frame()->GetWindow()->GetNativeWindow()),
         WmIpc::WINDOW_TYPE_CHROME_TOPLEVEL,
-        NULL);
+        &params);
   }
 }
 

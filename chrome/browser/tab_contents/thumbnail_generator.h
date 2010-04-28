@@ -5,22 +5,30 @@
 #ifndef CHROME_BROWSER_TAB_CONTENTS_THUMBNAIL_GENERATOR_H_
 #define CHROME_BROWSER_TAB_CONTENTS_THUMBNAIL_GENERATOR_H_
 
+#include <map>
+#include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
+#include "base/linked_ptr.h"
+#include "base/lock.h"
 #include "base/timer.h"
 #include "chrome/browser/renderer_host/render_widget_host_painting_observer.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
+class RenderViewHost;
 class RenderWidgetHost;
 class SkBitmap;
+class TabContents;
 
 // This class MUST be destroyed after the RenderWidgetHosts, since it installs
 // a painting observer that is not removed.
 class ThumbnailGenerator : public RenderWidgetHostPaintingObserver,
                            public NotificationObserver {
  public:
+  typedef Callback1<const SkBitmap&>::Type ThumbnailReadyCallback;
   // This class will do nothing until you call StartThumbnailing.
   ThumbnailGenerator();
   ~ThumbnailGenerator();
@@ -28,6 +36,17 @@ class ThumbnailGenerator : public RenderWidgetHostPaintingObserver,
   // Ensures that we're properly hooked in to generated thumbnails. This can
   // be called repeatedly and with wild abandon to no ill effect.
   void StartThumbnailing();
+
+  // This registers a callback that can receive the resulting SkBitmap
+  // from the renderer when it is done rendering it.  This differs
+  // from GetThumbnailForRenderer in that it is asynchronous, and
+  // because it will also fetch the bitmap even if the tab is hidden.
+  // In addition, if the renderer has to be invoked, the scaling of
+  // the thumbnail happens on the rendering thread.  Takes ownership
+  // of the callback object.
+  void AskForThumbnail(RenderWidgetHost* renderer,
+                       ThumbnailReadyCallback* callback,
+                       gfx::Size size);
 
   SkBitmap GetThumbnailForRenderer(RenderWidgetHost* renderer) const;
 
@@ -45,6 +64,11 @@ class ThumbnailGenerator : public RenderWidgetHostPaintingObserver,
                                              BackingStore* backing_store);
   virtual void WidgetDidUpdateBackingStore(RenderWidgetHost* widget);
 
+  virtual void WidgetDidReceivePaintAtSizeAck(
+      RenderWidgetHost* widget,
+      const TransportDIB::Handle& dib_handle,
+      const gfx::Size& size);
+
   // NotificationObserver interface.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
@@ -56,6 +80,10 @@ class ThumbnailGenerator : public RenderWidgetHostPaintingObserver,
 
   // Called when the given widget is destroyed.
   void WidgetDestroyed(RenderWidgetHost* widget);
+
+  // Called when the given tab contents are disconnected (either
+  // through being closed, or because the renderer is no longer there).
+  void TabContentsDisconnected(TabContents* contents);
 
   // Timer function called on a delay after a tab has been shown. It will
   // invalidate the thumbnail for hosts with expired thumbnails in shown_hosts_.
@@ -75,6 +103,12 @@ class ThumbnailGenerator : public RenderWidgetHostPaintingObserver,
 
   // See the setter above.
   bool no_timeout_;
+
+  // Map of callback objects by TransportDIB::Handle.
+  struct AsyncRequestInfo;
+  typedef std::map<TransportDIB::Handle,
+                   linked_ptr<AsyncRequestInfo> > ThumbnailCallbackMap;
+  ThumbnailCallbackMap callback_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailGenerator);
 };

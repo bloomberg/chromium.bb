@@ -41,20 +41,14 @@ class WmIpc {
     WINDOW_TYPE_UNKNOWN = 0,
 
     // A top-level Chrome window.
+    //   param[0]: The number of tabs currently in this Chrome window.
+    //   param[1]: The index of the currently selected tab in this
+    //             Chrome window.
     WINDOW_TYPE_CHROME_TOPLEVEL,
 
-    // A window showing scaled-down views of all of the tabs within a
-    // Chrome window.
-    WINDOW_TYPE_CHROME_TAB_SUMMARY,
-
-    // A tab that's been detached from a Chrome window and is currently
-    // being dragged.
-    //   param[0]: Cursor's initial X position at the start of the drag
-    //   param[1]: Cursor's initial Y position
-    //   param[2]: X component of cursor's offset from upper-left corner of
-    //             tab at start of drag
-    //   param[3]: Y component of cursor's offset
-    WINDOW_TYPE_CHROME_FLOATING_TAB,
+    // Vestiges of the old windows-across-the-bottom overview mode.
+    DEPRECATED_WINDOW_TYPE_CHROME_TAB_SUMMARY,
+    DEPRECATED_WINDOW_TYPE_CHROME_FLOATING_TAB,
 
     // The contents of a popup window.
     //   param[0]: X ID of associated titlebar, which must be mapped before
@@ -66,8 +60,8 @@ class WmIpc {
     // drawn above the panel when it's expanded.
     WINDOW_TYPE_CHROME_PANEL_TITLEBAR,
 
-    // A small window that when clicked creates a new browser window.
-    WINDOW_TYPE_CREATE_BROWSER_WINDOW,
+    // Vestiges of an earlier UI design.
+    DEPRECATED_WINDOW_TYPE_CREATE_BROWSER_WINDOW,
 
     // A Chrome info bubble (e.g. the bookmark bubble).  These are
     // transient RGBA windows; we skip the usual transient behavior of
@@ -76,8 +70,7 @@ class WmIpc {
 
     // A window showing a view of a tab within a Chrome window.
     //   param[0]: X ID of toplevel window that owns it.
-    //   param[1]: index of this tab in the tab order (range is 0 to
-    //             sum of all tabs in all browsers).
+    //   param[1]: index of this tab in the toplevel window that owns it.
     WINDOW_TYPE_CHROME_TAB_SNAPSHOT,
 
     // The following types are used for the windows that represent a user that
@@ -118,27 +111,10 @@ class WmIpc {
     enum Type {
       UNKNOWN = 0,
 
-      // Notify Chrome when a floating tab has entered or left a tab
-      // summary window.  Sent to the summary window.
-      //   param[0]: X ID of the floating tab window
-      //   param[1]: state (0 means left, 1 means entered or currently in)
-      //   param[2]: X coordinate relative to summary window
-      //   param[3]: Y coordinate
-      CHROME_NOTIFY_FLOATING_TAB_OVER_TAB_SUMMARY,
-
-      // Notify Chrome when a floating tab has entered or left a top-level
-      // window.  Sent to the window being entered/left.
-      //   param[0]: X ID of the floating tab window
-      //   param[1]: state (0 means left, 1 means entered)
-      CHROME_NOTIFY_FLOATING_TAB_OVER_TOPLEVEL,
-
-      // Instruct a top-level Chrome window to change the visibility of its
-      // tab summary window.
-      //   param[0]: desired visibility (0 means hide, 1 means show)
-      //   param[1]: X position (relative to the left edge of the root
-      //             window) of the center of the top-level window.  Only
-      //             relevant for "show" messages
-      CHROME_SET_TAB_SUMMARY_VISIBILITY,
+      // Vestiges of the old windows-across-the-bottom overview mode.
+      DEPRECATED_CHROME_NOTIFY_FLOATING_TAB_OVER_TAB_SUMMARY,
+      DEPRECATED_CHROME_NOTIFY_FLOATING_TAB_OVER_TOPLEVEL,
+      DEPRECATED_CHROME_SET_TAB_SUMMARY_VISIBILITY,
 
       // Tell the WM to collapse or expand a panel.
       //   param[0]: X ID of the panel window
@@ -148,16 +124,12 @@ class WmIpc {
       // Notify Chrome that the panel state has changed.  Sent to the panel
       // window.
       //   param[0]: new state (0 means collapsed, 1 means expanded)
+      // TODO: Deprecate this; Chrome can just watch for changes to the
+      // _CHROME_STATE property to get the same information.
       CHROME_NOTIFY_PANEL_STATE,
 
-      // Instruct the WM to move a floating tab.  The passed-in position is
-      // that of the cursor; the tab's composited window is displaced based
-      // on the cursor's offset from the upper-left corner of the tab at
-      // the start of the drag.
-      //   param[0]: X ID of the floating tab window
-      //   param[1]: X coordinate to which the tab should be moved
-      //   param[2]: Y coordinate
-      WM_MOVE_FLOATING_TAB,
+      // From the old windows-across-the-bottom overview mode.
+      DEPRECATED_WM_MOVE_FLOATING_TAB,
 
       // Notify the WM that a panel has been dragged.
       //   param[0]: X ID of the panel's content window
@@ -180,18 +152,21 @@ class WmIpc {
       //   param[0]: X ID of the panel's content window
       WM_NOTIFY_PANEL_DRAG_COMPLETE,
 
-      // Deprecated.  Send a _NET_ACTIVE_WINDOW client message to focus a window
-      // instead (e.g. using gtk_window_present()).
+      // Deprecated.  Send a _NET_ACTIVE_WINDOW client message to focus a
+      // window instead (e.g. using gtk_window_present()).
       DEPRECATED_WM_FOCUS_WINDOW,
 
       // Notify Chrome that the layout mode (for example, overview or
-      // focused) has changed.
-      //   param[0]: new mode (0 means focused, 1 means overview)
+      // active) has changed.  Since overview mode can be "cancelled"
+      // (user hits escape to revert), we have an extra parameter to
+      // indicate this.
+      //   param[0]: new mode (0 means active mode, 1 means overview mode)
+      //   param[1]: was mode cancelled? (0 = no, 1 = yes)
       CHROME_NOTIFY_LAYOUT_MODE,
 
-      // Instruct the WM to enter overview mode.
+      // Deprecated. Instruct the WM to enter overview mode.
       //   param[0]: X ID of the window to show the tab overview for.
-      WM_SWITCH_TO_OVERVIEW_MODE,
+      DEPRECATED_WM_SWITCH_TO_OVERVIEW_MODE,
 
       // Let the WM know which version of this file Chrome is using.  It's
       // difficult to make changes synchronously to Chrome and the WM (our
@@ -218,11 +193,11 @@ class WmIpc {
       //   param[0]: version of this protocol currently supported
       WM_NOTIFY_IPC_VERSION,
 
-      // Notify Chrome when a tab snapshot has been 'magnified' in the
-      // overview.  Sent to the top level window.
-      //   param[0]: X ID of the tab snapshot window
-      //   param[1]: state (0 means end magnify, 1 means begin magnify)
-      CHROME_NOTIFY_TAB_SNAPSHOT_MAGNIFY,
+      // Notify Chrome when a tab has been selected in the overview.
+      // Sent to the toplevel window associated with the magnified
+      // tab.
+      //   param[0]: tab index of newly selected tab.
+      CHROME_NOTIFY_TAB_SELECT,
 
       // Forces the window manager to hide the login windows.
       WM_HIDE_LOGIN,
@@ -295,9 +270,11 @@ class WmIpc {
                      WindowType type,
                      const std::vector<int>* params);
 
-  // Gets the type of the window. The caller is responsible for trapping
-  // errors from the X server.
-  WmIpc::WindowType GetWindowType(GtkWidget* widget);
+  // Gets the type of the window, and any associated parameters. The
+  // caller is responsible for trapping errors from the X server.  If
+  // the parameters are not interesting to the caller, NULL may be
+  // passed for |params|.
+  WmIpc::WindowType GetWindowType(GtkWidget* widget, std::vector<int>* params);
 
   // Sends a message to the WM.
   void SendMessage(const Message& msg);

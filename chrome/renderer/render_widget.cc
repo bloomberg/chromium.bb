@@ -149,6 +149,7 @@ IPC_DEFINE_MESSAGE_MAP(RenderWidget)
   IPC_MESSAGE_HANDLER(ViewMsg_SetFocus, OnSetFocus)
   IPC_MESSAGE_HANDLER(ViewMsg_ImeSetInputMode, OnImeSetInputMode)
   IPC_MESSAGE_HANDLER(ViewMsg_ImeSetComposition, OnImeSetComposition)
+  IPC_MESSAGE_HANDLER(ViewMsg_PaintAtSize, OnMsgPaintAtSize)
   IPC_MESSAGE_HANDLER(ViewMsg_Repaint, OnMsgRepaint)
   IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
   IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
@@ -250,8 +251,8 @@ void RenderWidget::OnWasRestored(bool needs_repainting) {
     return;
   needs_repainting_on_restore_ = false;
 
-  // Tag the next paint as a restore ack, which is picked up by DoDeferredUpdate
-  // when it sends out the next PaintRect message.
+  // Tag the next paint as a restore ack, which is picked up by
+  // DoDeferredUpdate when it sends out the next PaintRect message.
   set_next_paint_is_restore_ack();
 
   // Generate a full repaint.
@@ -268,7 +269,7 @@ void RenderWidget::OnUpdateRectAck() {
   update_reply_pending_ = false;
 
   // If we sent an UpdateRect message with a zero-sized bitmap, then we should
-  // have no current update buf.
+  // have no current paint buffer.
   if (current_paint_buf_) {
     RenderProcess::current()->ReleaseTransportDIB(current_paint_buf_);
     current_paint_buf_ = NULL;
@@ -720,6 +721,72 @@ void RenderWidget::OnImeSetComposition(WebCompositionCommand command,
   ime_control_busy_ = false;
 }
 
+// Forces a repaint even if we're hidden, so we can update backing
+// store even before a tab has been shown for the first time, and it
+// does it synchronously.
+void RenderWidget::OnMsgPaintAtSize(const TransportDIB::Handle& dib_handle,
+                                    const gfx::Size& desired_size) {
+  if (!webwidget_ || dib_handle == TransportDIB::DefaultHandleValue())
+    return;
+
+  if (webwidget_->size().isEmpty() ||
+      desired_size.IsEmpty()) {
+    // If one of these is empty, then we just return the dib we were
+    // given, to avoid leaking it.
+    Send(new ViewHostMsg_PaintAtSize_ACK(routing_id_,
+                                         dib_handle,
+                                         desired_size));
+    return;
+  }
+
+  // Map the given DIB ID into this process, and unmap it at the end
+  // of this function.
+  scoped_ptr<TransportDIB> paint_at_scale_buffer(TransportDIB::Map(dib_handle));
+
+  DCHECK(paint_at_scale_buffer.get());
+  if (!paint_at_scale_buffer.get())
+    return;
+
+  // Have to make sure we're laid out before rendering.
+  webwidget_->layout();
+
+  gfx::Size canvas_size = webwidget_->size();
+  float x_scale = static_cast<float>(desired_size.width()) /
+                  static_cast<float>(canvas_size.width());
+  float y_scale = static_cast<float>(desired_size.height()) /
+                  static_cast<float>(canvas_size.height());
+
+  gfx::Rect orig_bounds(gfx::Point(0,0), canvas_size);
+  canvas_size.set_width(static_cast<int>(canvas_size.width() * x_scale));
+  canvas_size.set_height(static_cast<int>(canvas_size.height() * y_scale));
+  gfx::Rect bounds(gfx::Point(0,0), canvas_size);
+
+  scoped_ptr<skia::PlatformCanvas> canvas(
+      paint_at_scale_buffer->GetPlatformCanvas(canvas_size.width(),
+                                               canvas_size.height()));
+  if (!canvas.get()) {
+    NOTREACHED();
+    return;
+  }
+
+  // Reset bounds to what we actually received, but they should be the
+  // same.
+  DCHECK_EQ(bounds.width(), canvas->getDevice()->width());
+  DCHECK_EQ(bounds.height(), canvas->getDevice()->height());
+  bounds.set_width(canvas->getDevice()->width());
+  bounds.set_height(canvas->getDevice()->height());
+
+  canvas->save();
+  // Add the scale factor to the canvas, so that we'll get what we expect.
+  canvas->scale(SkFloatToScalar(x_scale), SkFloatToScalar(y_scale));
+
+  // Paint the entire thing (using original bounds, not scaled bounds).
+  PaintRect(orig_bounds, orig_bounds.origin(), canvas.get());
+  canvas->restore();
+
+  Send(new ViewHostMsg_PaintAtSize_ACK(routing_id_, dib_handle, bounds.size()));
+}
+
 void RenderWidget::OnMsgRepaint(const gfx::Size& size_to_paint) {
   // During shutdown we can just ignore this message.
   if (!webwidget_)
@@ -878,4 +945,3 @@ void RenderWidget::CleanupWindowInPluginMoves(gfx::PluginWindowHandle window) {
     }
   }
 }
-

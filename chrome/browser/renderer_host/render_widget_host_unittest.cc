@@ -9,6 +9,7 @@
 #include "base/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/renderer_host/backing_store.h"
+#include "chrome/browser/renderer_host/render_widget_host_painting_observer.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/common/render_messages.h"
 #include "gfx/canvas.h"
@@ -18,6 +19,10 @@ using base::TimeDelta;
 
 using WebKit::WebInputEvent;
 using WebKit::WebMouseWheelEvent;
+
+namespace gfx {
+class Size;
+}
 
 // RenderWidgetHostProcess -----------------------------------------------------
 
@@ -190,6 +195,32 @@ class MockRenderWidgetHost : public RenderWidgetHost {
 
   bool unresponsive_timer_fired_;
 };
+
+// MockPaintingObserver --------------------------------------------------------
+
+class MockPaintingObserver : public RenderWidgetHostPaintingObserver {
+ public:
+  void WidgetWillDestroyBackingStore(RenderWidgetHost* widget,
+                                     BackingStore* backing_store) {}
+  void WidgetDidUpdateBackingStore(RenderWidgetHost* widget) {}
+  void WidgetDidReceivePaintAtSizeAck(RenderWidgetHost* host,
+                                      const TransportDIB::Handle& dib_handle,
+                                      const gfx::Size& size) {
+    host_ = reinterpret_cast<MockRenderWidgetHost*>(host);
+    dib_handle_ = dib_handle;
+    size_ = size;
+  }
+
+  MockRenderWidgetHost* host() const { return host_; }
+  TransportDIB::Handle dib_handle() const { return dib_handle_; }
+  gfx::Size size() const { return size_; }
+
+ private:
+  MockRenderWidgetHost* host_;
+  TransportDIB::Handle dib_handle_;
+  gfx::Size size_;
+};
+
 
 // RenderWidgetHostTest --------------------------------------------------------
 
@@ -504,6 +535,24 @@ TEST_F(RenderWidgetHostTest, HiddenPaint) {
   EXPECT_TRUE(needs_repaint.a);
 }
 
+TEST_F(RenderWidgetHostTest, PaintAtSize) {
+  host_->PaintAtSize(TransportDIB::GetFakeHandleForTest(), gfx::Size(20, 30));
+  EXPECT_TRUE(
+      process_->sink().GetUniqueMessageMatching(ViewMsg_PaintAtSize::ID));
+
+  MockPaintingObserver observer;
+  host_->set_painting_observer(&observer);
+
+  // Need to generate a fake handle value on all platforms.
+  TransportDIB::Handle handle = TransportDIB::GetFakeHandleForTest();
+  host_->OnMsgPaintAtSizeAck(handle, gfx::Size(20, 30));
+  EXPECT_TRUE(host_ == observer.host());
+  EXPECT_TRUE(handle == observer.dib_handle());
+  EXPECT_EQ(20, observer.size().width());
+  EXPECT_EQ(30, observer.size().height());
+  host_->set_painting_observer(NULL);
+}
+
 TEST_F(RenderWidgetHostTest, HandleKeyEventsWeSent) {
   // Simulate a keyboard event.
   SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
@@ -649,4 +698,3 @@ TEST_F(RenderWidgetHostTest, StopAndStartHangMonitorTimeout) {
   MessageLoop::current()->Run();
   EXPECT_TRUE(host_->unresponsive_timer_fired());
 }
-

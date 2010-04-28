@@ -229,6 +229,44 @@ bool GetIntProperty(XID window, const std::string& property_name, int* value) {
   return true;
 }
 
+bool GetIntArrayProperty(XID window,
+                         const std::string& property_name,
+                         std::vector<int>* value) {
+  Atom property_atom = gdk_x11_get_xatom_by_name_for_display(
+      gdk_display_get_default(), property_name.c_str());
+
+  Atom type = None;
+  int format = 0;  // size in bits of each item in 'property'
+  long unsigned int num_items = 0, remaining_bytes = 0;
+  unsigned char* properties = NULL;
+
+  int result = XGetWindowProperty(GetXDisplay(),
+                                  window,
+                                  property_atom,
+                                  0,      // offset into property data to read
+                                  (~0L),  // max length to get (all of them)
+                                  False,  // deleted
+                                  AnyPropertyType,
+                                  &type,
+                                  &format,
+                                  &num_items,
+                                  &remaining_bytes,
+                                  &properties);
+  if (result != Success)
+    return false;
+
+  if (format != 32) {
+    XFree(properties);
+    return false;
+  }
+
+  int* int_properties = reinterpret_cast<int*>(properties);
+  value->clear();
+  value->insert(value->begin(), int_properties, int_properties + num_items);
+  XFree(properties);
+  return true;
+}
+
 bool GetStringProperty(
     XID window, const std::string& property_name, std::string* value) {
   Atom property_atom = gdk_x11_get_xatom_by_name_for_display(

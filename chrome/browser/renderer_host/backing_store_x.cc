@@ -326,6 +326,7 @@ bool BackingStoreX::CopyFromBackingStore(const gfx::Rect& rect,
 
   // TODO(jhawkins): Need to convert the image data if the image bits per pixel
   // is not 32.
+  // Note that this also initializes the output bitmap as opaque.
   if (!output->initialize(width, height, true) ||
       image->bits_per_pixel != 32) {
     if (shared_memory_support_ != x11_util::SHARED_MEMORY_NONE)
@@ -335,15 +336,19 @@ bool BackingStoreX::CopyFromBackingStore(const gfx::Rect& rect,
     return false;
   }
 
-  // The X image might have a different row stride, so iterate through it and
-  // copy each row out, only up to the pixels we're actually using.
-  // This code assumes a visual mode where a pixel is represented using
-  // a byte for each component.
+  // The X image might have a different row stride, so iterate through
+  // it and copy each row out, only up to the pixels we're actually
+  // using.  This code assumes a visual mode where a pixel is
+  // represented using a 32-bit unsigned int, with a byte per component.
   SkBitmap bitmap = output->getTopPlatformDevice().accessBitmap(true);
   for (int y = 0; y < height; y++) {
+    const uint32* src_row = reinterpret_cast<uint32*>(
+        &image->data[image->bytes_per_line * y]);
     uint32* dest_row = bitmap.getAddr32(0, y);
-    const char* src_row = &image->data[image->bytes_per_line * y];
-    memcpy(dest_row, src_row, width * 4);
+    for (int x = 0; x < width; ++x, ++dest_row) {
+      // Force alpha to be 0xff, because otherwise it causes rendering problems.
+      *dest_row = src_row[x] | 0xff000000;
+    }
   }
 
   if (shared_memory_support_ != x11_util::SHARED_MEMORY_NONE)

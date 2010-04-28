@@ -5,12 +5,14 @@
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 
 #include <algorithm>
+#include <map>
 
 #include "base/histogram.h"
 #include "base/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/renderer_host/backing_store.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/property_bag.h"
 #include "gfx/rect.h"
@@ -105,17 +107,26 @@ SkBitmap GetThumbnailForBackingStore(BackingStore* backing_store) {
                                            &temp_canvas))
     return result;
   const SkBitmap& bmp = temp_canvas.getTopPlatformDevice().accessBitmap(false);
-  result = SkBitmapOperations::DownsampleByTwoUntilSize(bmp, kThumbnailWidth,
+
+#if defined(OS_CHROMEOS)
+  // On ChromeOS, the thumbnail is always half the dimensions of the
+  // original.
+  result = SkBitmapOperations::DownsampleByTwo(bmp);
+#else
+  result = SkBitmapOperations::DownsampleByTwoUntilSize(bmp,
+                                                        kThumbnailWidth,
                                                         kThumbnailHeight);
 
-  // This is a bit subtle. SkBitmaps are refcounted, but the magic ones in
-  // PlatformCanvas can't be ssigned to SkBitmap with proper
-  // refcounting.  If the bitmap doesn't change, then the downsampler will
-  // return the input bitmap, which will be the reference to the weird
-  // PlatformCanvas one insetad of a regular one. To get a regular refcounted
-  // bitmap, we need to copy it.
-  if (bmp.width() == result.width() && bmp.height() == result.height())
+  // This is a bit subtle. SkBitmaps are refcounted, but the magic
+  // ones in PlatformCanvas can't be assigned to SkBitmap with proper
+  // refcounting.  If the bitmap doesn't change, then the downsampler
+  // will return the input bitmap, which will be the reference to the
+  // weird PlatformCanvas one insetad of a regular one. To get a
+  // regular refcounted bitmap, we need to copy it.
+  if (bmp.width() == result.width() &&
+      bmp.height() == result.height())
     bmp.copyTo(&result, SkBitmap::kARGB_8888_Config);
+#endif
 
   HISTOGRAM_TIMES(kThumbnailHistogramName,
                   base::TimeTicks::Now() - begin_compute_thumbnail);
@@ -123,6 +134,12 @@ SkBitmap GetThumbnailForBackingStore(BackingStore* backing_store) {
 }
 
 }  // namespace
+
+struct ThumbnailGenerator::AsyncRequestInfo {
+  scoped_ptr<ThumbnailReadyCallback> callback;
+  scoped_ptr<TransportDIB> thumbnail_dib;
+  RenderWidgetHost* renderer;  // Not owned.
+};
 
 ThumbnailGenerator::ThumbnailGenerator()
     : no_timeout_(false) {
@@ -144,12 +161,46 @@ void ThumbnailGenerator::StartThumbnailing() {
     // aren't views like select popups.
     registrar_.Add(this, NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB,
                    NotificationService::AllSources());
-
     registrar_.Add(this, NotificationType::RENDER_WIDGET_VISIBILITY_CHANGED,
                    NotificationService::AllSources());
     registrar_.Add(this, NotificationType::RENDER_WIDGET_HOST_DESTROYED,
                    NotificationService::AllSources());
+    registrar_.Add(this, NotificationType::TAB_CONTENTS_DISCONNECTED,
+                   NotificationService::AllSources());
   }
+}
+
+void ThumbnailGenerator::AskForThumbnail(RenderWidgetHost* renderer,
+                                         ThumbnailReadyCallback* callback,
+                                         gfx::Size size) {
+  SkBitmap first_try = GetThumbnailForRenderer(renderer);
+  if (!first_try.isNull()) {
+    // We were able to find a non-null thumbnail for this renderer, so
+    // we'll go with it.
+    callback->Run(first_try);
+    delete callback;
+    return;
+  }
+
+  // We are going to render the thumbnail asynchronously now, so keep
+  // this callback for later lookup when the rendering is done.
+  static int sequence_num = 0;
+  TransportDIB* thumbnail_dib = TransportDIB::Create(
+      size.width() * size.height() * 4, sequence_num++);
+  linked_ptr<AsyncRequestInfo> request_info(new AsyncRequestInfo);
+  request_info->callback.reset(callback);
+  request_info->thumbnail_dib.reset(thumbnail_dib);
+  request_info->renderer = renderer;
+  ThumbnailCallbackMap::value_type new_value(thumbnail_dib->handle(),
+                                             request_info);
+  std::pair<ThumbnailCallbackMap::iterator, bool> result =
+      callback_map_.insert(new_value);
+  if (!result.second) {
+    NOTREACHED() << "Callback already registered?";
+    return;
+  }
+
+  renderer->PaintAtSize(thumbnail_dib->handle(), size);
 }
 
 SkBitmap ThumbnailGenerator::GetThumbnailForRenderer(
@@ -221,6 +272,42 @@ void ThumbnailGenerator::WidgetDidUpdateBackingStore(
   wt->thumbnail = SkBitmap();
 }
 
+void ThumbnailGenerator::WidgetDidReceivePaintAtSizeAck(
+    RenderWidgetHost* widget,
+    const TransportDIB::Handle& dib_handle,
+    const gfx::Size& size) {
+  // Lookup the callback, run it, and erase it.
+  ThumbnailCallbackMap::iterator item = callback_map_.find(dib_handle);
+  if (item != callback_map_.end()) {
+    TransportDIB* dib = item->second->thumbnail_dib.get();
+    DCHECK(dib);
+    if (!dib) {
+      return;
+    }
+
+    // Create an SkBitmap from the DIB.
+    SkBitmap non_owned_bitmap;
+    SkBitmap result;
+
+    // Fill out the non_owned_bitmap with the right config.  Note that
+    // this code assumes that the transport dib is a 32-bit ARGB
+    // image.
+    non_owned_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                               size.width(), size.height());
+    non_owned_bitmap.setPixels(dib->memory());
+
+    // Now alloc/copy the memory so we own it and can pass it around,
+    // and the memory won't go away when the DIB goes away.
+    // TODO: Figure out a way to avoid this copy?
+    non_owned_bitmap.copyTo(&result, SkBitmap::kARGB_8888_Config);
+
+    item->second->callback->Run(result);
+
+    // We're done with the callback, and with the DIB, so delete both.
+    callback_map_.erase(item);
+  }
+}
+
 void ThumbnailGenerator::Observe(NotificationType type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
@@ -241,6 +328,10 @@ void ThumbnailGenerator::Observe(NotificationType type,
 
     case NotificationType::RENDER_WIDGET_HOST_DESTROYED:
       WidgetDestroyed(Source<RenderWidgetHost>(source).ptr());
+      break;
+
+    case NotificationType::TAB_CONTENTS_DISCONNECTED:
+      TabContentsDisconnected(Source<TabContents>(source).ptr());
       break;
 
     default:
@@ -292,6 +383,20 @@ void ThumbnailGenerator::WidgetHidden(RenderWidgetHost* widget) {
 
 void ThumbnailGenerator::WidgetDestroyed(RenderWidgetHost* widget) {
   EraseHostFromShownList(widget);
+}
+
+void ThumbnailGenerator::TabContentsDisconnected(TabContents* contents) {
+  // Go through the existing callbacks, and find any that have the
+  // same renderer as this TabContents and remove them so they don't
+  // hang around.
+  ThumbnailCallbackMap::iterator iterator = callback_map_.begin();
+  RenderWidgetHost* renderer = contents->render_view_host();
+  while (iterator != callback_map_.end()) {
+    if (iterator->second->renderer == renderer) {
+      callback_map_.erase(iterator);
+    }
+    ++iterator;
+  }
 }
 
 void ThumbnailGenerator::ShownDelayHandler() {

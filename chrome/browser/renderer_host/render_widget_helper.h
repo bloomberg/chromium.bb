@@ -188,7 +188,7 @@ class RenderWidgetHelper
 #endif
 
   // A map of live paint messages.  Must hold pending_paints_lock_ to access.
-  // The PaintMsgProxy objects are not owned by this map.  (See PaintMsgProxy
+  // The UpdateMsgProxy objects are not owned by this map.  (See UpdateMsgProxy
   // for details about how the lifetime of instances are managed.)
   UpdateMsgProxyMap pending_paints_;
   Lock pending_paints_lock_;

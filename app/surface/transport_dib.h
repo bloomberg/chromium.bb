@@ -73,6 +73,13 @@ class TransportDIB {
   // Returns a default, invalid handle, that is meant to indicate a missing
   // Transport DIB.
   static Handle DefaultHandleValue() { return NULL; }
+
+  // Returns a value that is ONLY USEFUL FOR TESTS WHERE IT WON'T BE
+  // ACTUALLY USED AS A REAL HANDLE.
+  static Handle GetFakeHandleForTest() {
+    static int fake_handle = 10;
+    return reinterpret_cast<Handle>(fake_handle++);
+  }
 #elif defined(OS_MACOSX)
   typedef base::SharedMemoryHandle Handle;
   // On Mac, the inode number of the backing file is used as an id.
@@ -81,6 +88,13 @@ class TransportDIB {
   // Returns a default, invalid handle, that is meant to indicate a missing
   // Transport DIB.
   static Handle DefaultHandleValue() { return Handle(); }
+
+  // Returns a value that is ONLY USEFUL FOR TESTS WHERE IT WON'T BE
+  // ACTUALLY USED AS A REAL HANDLE.
+  static Handle GetFakeHandleForTest() {
+    static int fake_handle = 10;
+    return Handle(fake_handle++, false);
+  }
 #elif defined(USE_X11)
   typedef int Handle;  // These two ints are SysV IPC shared memory keys
   typedef int Id;
@@ -88,6 +102,13 @@ class TransportDIB {
   // Returns a default, invalid handle, that is meant to indicate a missing
   // Transport DIB.
   static Handle DefaultHandleValue() { return -1; }
+
+  // Returns a value that is ONLY USEFUL FOR TESTS WHERE IT WON'T BE
+  // ACTUALLY USED AS A REAL HANDLE.
+  static Handle GetFakeHandleForTest() {
+    static int fake_handle = 10;
+    return fake_handle++;
+  }
 #endif
 
   // Create a new TransportDIB, returning NULL on failure.

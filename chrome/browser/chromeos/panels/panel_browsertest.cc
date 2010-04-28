@@ -64,7 +64,7 @@ IN_PROC_BROWSER_TEST_F(PanelTest, PanelOpenSmall) {
   EXPECT_EQ(
       WmIpc::WINDOW_TYPE_CHROME_PANEL_CONTENT,
       WmIpc::instance()->GetWindowType(
-          GTK_WIDGET(new_browser->window()->GetNativeHandle())));
+          GTK_WIDGET(new_browser->window()->GetNativeHandle()), NULL));
 }
 
 // Large popups should open as new tab.

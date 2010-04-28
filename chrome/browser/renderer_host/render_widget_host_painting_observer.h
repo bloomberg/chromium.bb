@@ -5,8 +5,15 @@
 #ifndef CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_PAINTING_OBSERVER_H_
 #define CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_PAINTING_OBSERVER_H_
 
+#include "app/surface/transport_dib.h"
+
 class BackingStore;
 class RenderWidgetHost;
+class SkBitmap;
+
+namespace gfx {
+class Size;
+}
 
 // This class can be used to observe painting events for a RenderWidgetHost.
 // Its primary goal in Chrome is to allow thumbnails to be generated.
@@ -19,6 +26,13 @@ class RenderWidgetHostPaintingObserver {
 
   // Indicates that the RenderWidgetHost just updated the backing store.
   virtual void WidgetDidUpdateBackingStore(RenderWidgetHost* widget) = 0;
+
+  // This notifies the painting observer that a PaintAtSizeACK was
+  // received.
+  virtual void WidgetDidReceivePaintAtSizeAck(
+      RenderWidgetHost* widget,
+      const TransportDIB::Handle& dib_handle,
+      const gfx::Size& size) = 0;
 };
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_PAINTING_OBSERVER_H_

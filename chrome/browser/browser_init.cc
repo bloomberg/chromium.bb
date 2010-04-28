@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/net/dns_global.h"
+#include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -30,13 +31,12 @@
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/browser/tabs/pinned_tab_codec.h"
+#include "chrome/browser/status_icons/status_tray_manager.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
-#include "chrome/browser/net/url_fixer_upper.h"
-#include "chrome/browser/status_icons/status_tray_manager.h"
+#include "chrome/browser/tabs/pinned_tab_codec.h"
 #include "chrome/browser/user_data_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -68,7 +68,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/browser_notification_observers.h"
-#include "chrome/browser/dom_ui/mediaplayer_ui.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mount_library.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
@@ -76,6 +75,8 @@
 #include "chrome/browser/chromeos/low_battery_observer.h"
 #include "chrome/browser/chromeos/usb_mount_observer.h"
 #include "chrome/browser/chromeos/wm_message_listener.h"
+#include "chrome/browser/chromeos/wm_overview_controller.h"
+#include "chrome/browser/dom_ui/mediaplayer_ui.h"
 #endif
 
 namespace {
@@ -397,6 +398,9 @@ bool BrowserInit::LaunchBrowser(
   // Create the WmMessageListener so that it can listen for messages regardless
   // of what window has focus.
   chromeos::WmMessageListener::instance();
+
+  // Create the WmOverviewController so it can register with the listener.
+  chromeos::WmOverviewController::instance();
 
   // Install the GView request interceptor that will redirect requests
   // of compatible documents (PDF, etc) to the GView document viewer.

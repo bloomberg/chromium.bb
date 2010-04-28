@@ -78,16 +78,14 @@ class SkBitmapOperations {
   static SkBitmap DownsampleByTwoUntilSize(const SkBitmap& bitmap,
                                            int min_w, int min_h);
 
- private:
-  SkBitmapOperations();  // Class for scoping only.
-
   // Makes a bitmap half has large in each direction by averaging groups of
   // 4 pixels. This is one step in generating a mipmap.
   static SkBitmap DownsampleByTwo(const SkBitmap& bitmap);
+ private:
+  SkBitmapOperations();  // Class for scoping only.
 
   FRIEND_TEST(SkBitmapOperationsTest, DownsampleByTwo);
   FRIEND_TEST(SkBitmapOperationsTest, DownsampleByTwoSmall);
 };
 
 #endif  // APP_GFX_SKBITMAP_OPERATIONS_H_
-

@@ -1088,7 +1088,8 @@ bool WidgetGtk::ProcessMousePressed(GdkEventButton* event) {
 
   // An event may come from a contained widget which has its own gdk window.
   // Translate it to the widget's coordinates.
-  int x, y;
+  int x = 0;
+  int y = 0;
   GetContainedWidgetEventCoordinates(event, &x, &y);
   last_mouse_event_was_move_ = false;
   MouseEvent mouse_pressed(Event::ET_MOUSE_PRESSED, x, y,

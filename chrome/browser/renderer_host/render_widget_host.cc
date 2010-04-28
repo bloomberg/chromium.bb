@@ -127,6 +127,7 @@ void RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewGone, OnMsgRenderViewGone)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnMsgClose)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestMove, OnMsgRequestMove)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_PaintAtSize_ACK, OnMsgPaintAtSizeAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnMsgUpdateRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateVideo, OnMsgCreateVideo)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateVideo, OnMsgUpdateVideo)
@@ -278,6 +279,14 @@ void RenderWidgetHost::SetIsLoading(bool is_loading) {
   if (!view_)
     return;
   view_->SetIsLoading(is_loading);
+}
+
+void RenderWidgetHost::PaintAtSize(TransportDIB::Handle dib_handle,
+                                   const gfx::Size& size) {
+  // Ask the renderer to create a bitmap regardless of whether it's
+  // hidden, being resized, redrawn, etc., and to scale it by the
+  // scale factor given.
+  Send(new ViewMsg_PaintAtSize(routing_id_, dib_handle, size));
 }
 
 BackingStore* RenderWidgetHost::GetBackingStore(bool force_create) {
@@ -673,6 +682,13 @@ void RenderWidgetHost::OnMsgRequestMove(const gfx::Rect& pos) {
   if (view_) {
     view_->SetSize(pos.size());
     Send(new ViewMsg_Move_ACK(routing_id_));
+  }
+}
+
+void RenderWidgetHost::OnMsgPaintAtSizeAck(
+    const TransportDIB::Handle& dib_handle, const gfx::Size& size) {
+  if (painting_observer_) {
+    painting_observer_->WidgetDidReceivePaintAtSizeAck(this, dib_handle, size);
   }
 }
 

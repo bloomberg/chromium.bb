@@ -205,6 +205,16 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // Indicates if the page has finished loading.
   void SetIsLoading(bool is_loading);
 
+  // This tells the renderer to paint into a bitmap and return it,
+  // regardless of whether the tab is hidden or not.  It returns the
+  // bitmap scaled so it matches the requested size, so that the
+  // scaling happens on the rendering thread.  When the bitmap is
+  // ready, the renderer sends a PaintAtSizeACK to this host, and the
+  // painting observer is notified.  Note that this bypasses most of
+  // the update logic that is normally invoked, and doesn't put the
+  // results into the backing store.
+  void PaintAtSize(TransportDIB::Handle dib_handle, const gfx::Size& size);
+
   // Get access to the widget's backing store.  If a resize is in progress,
   // then the current size of the backing store may be less than the size of
   // the widget's view.  If you pass |force_create| as true, then the backing
@@ -413,6 +423,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   FRIEND_TEST(RenderWidgetHostTest, Resize);
   FRIEND_TEST(RenderWidgetHostTest, ResizeThenCrash);
   FRIEND_TEST(RenderWidgetHostTest, HiddenPaint);
+  FRIEND_TEST(RenderWidgetHostTest, PaintAtSize);
 
   // Tell this object to destroy itself.
   void Destroy();
@@ -421,7 +432,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // if it is.
   void CheckRendererIsUnresponsive();
 
-  // Called if we know the renderer is responsive. When we currently thing the
+  // Called if we know the renderer is responsive. When we currently think the
   // renderer is unresponsive, this will clear that state and call
   // NotifyRendererResponsive.
   void RendererIsResponsive();
@@ -431,6 +442,8 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   void OnMsgRenderViewGone();
   void OnMsgClose();
   void OnMsgRequestMove(const gfx::Rect& pos);
+  void OnMsgPaintAtSizeAck(const TransportDIB::Handle& dib_handle,
+                           const gfx::Size& size);
   void OnMsgUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
   void OnMsgCreateVideo(const gfx::Size& size);
   void OnMsgUpdateVideo(TransportDIB::Id bitmap, const gfx::Rect& bitmap_rect);
