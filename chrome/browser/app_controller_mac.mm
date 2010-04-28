@@ -240,6 +240,14 @@ void RecordLastRunAppBundlePath() {
 }
 
 - (BOOL)tryToTerminateApplication:(NSApplication*)app {
+  // Check for in-process downloads, and prompt the user if they really want
+  // to quit (and thus cancel downloads). Only check if we're not already
+  // shutting down, else the user might be prompted multiple times if the
+  // download isn't stopped before terminate is called again.
+  if (!browser_shutdown::IsTryingToQuit() &&
+      ![self shouldQuitWithInProgressDownloads])
+    return NO;
+
   // Set the state to "trying to quit", so that closing all browser windows will
   // lead to termination.
   browser_shutdown::SetTryingToQuit(true);
