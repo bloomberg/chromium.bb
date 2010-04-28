@@ -26,7 +26,7 @@ class FontsLanguagesWindowGtk {
   ~FontsLanguagesWindowGtk();
 
   // Shows the tab corresponding to the specified |page|.
-  void ShowTabPage(FontsLanguagesPage page);
+  void ShowTabPage(gfx::NativeWindow window, FontsLanguagesPage page);
 
  private:
   static void OnWindowDestroy(GtkWidget* widget,
@@ -110,7 +110,11 @@ FontsLanguagesWindowGtk::FontsLanguagesWindowGtk(Profile* profile)
 FontsLanguagesWindowGtk::~FontsLanguagesWindowGtk() {
 }
 
-void FontsLanguagesWindowGtk::ShowTabPage(FontsLanguagesPage page) {
+void FontsLanguagesWindowGtk::ShowTabPage(gfx::NativeWindow window,
+                                          FontsLanguagesPage page) {
+  // Center our dialog over whoever displayed us.
+  gtk_util::CenterOverWindow(GTK_WINDOW(dialog_), window);
+
   // Bring options window to front if it already existed and isn't already
   // in front.
   gtk_window_present(GTK_WINDOW(dialog_));
@@ -142,5 +146,5 @@ void ShowFontsLanguagesWindow(gfx::NativeWindow window,
   if (!instance_)
     instance_ = new FontsLanguagesWindowGtk(profile);
 
-  instance_->ShowTabPage(page);
+  instance_->ShowTabPage(window, page);
 }

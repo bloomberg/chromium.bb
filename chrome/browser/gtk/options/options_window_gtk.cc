@@ -171,6 +171,13 @@ OptionsWindowGtk::OptionsWindowGtk(Profile* profile)
                                b->window()->GetNativeHandle());
   }
 
+  // Now that we're centered over the browser, we add our dialog to its own
+  // window group. We don't do anything with the response and we don't want the
+  // options window's modal dialogs to be associated with the main browser
+  // window because gtk grabs work on a per window group basis.
+  gtk_window_group_add_window(gtk_window_group_new(), GTK_WINDOW(dialog_));
+  g_object_unref(gtk_window_get_group(GTK_WINDOW(dialog_)));
+
   g_signal_connect(notebook_, "switch-page", G_CALLBACK(OnSwitchPage), this);
 
   // We only have one button and don't do any special handling, so just hook it

@@ -146,11 +146,6 @@ ContentSettingsWindowGtk::~ContentSettingsWindowGtk() {
 
 void ContentSettingsWindowGtk::ShowContentSettingsTab(
     ContentSettingsType page) {
-  if (Browser* b = BrowserList::GetLastActive()) {
-    gtk_util::CenterOverWindow(GTK_WINDOW(dialog_),
-                               b->window()->GetNativeHandle());
-  }
-
   // Bring options window to front if it already existed and isn't already
   // in front
   gtk_window_present_with_time(GTK_WINDOW(dialog_),
