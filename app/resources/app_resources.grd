@@ -12,8 +12,8 @@
 
       <include name="IDR_DEFAULT_FAVICON" file="default_favicon.png" type="BINDATA" />
 
-      <if expr="os == 'win32'">
-        <!-- Window controls for Windows, in the style of Vista -->
+      <if expr="pp_ifdef('toolkit_views')">
+        <!-- Window controls for Windows and Chrome OS, in the style of Vista -->
         <include name="IDR_CLOSE" file="close.png" type="BINDATA" />
         <include name="IDR_CLOSE_H" file="close_h.png" type="BINDATA" />
         <include name="IDR_CLOSE_P" file="close_p.png" type="BINDATA" />
@@ -31,7 +31,7 @@
         <include name="IDR_MINIMIZE_P" file="minimize_p.png" type="BINDATA" />
       </if>
 
-      <if expr="os == 'linux2' or os == 'freebsd7' or os == 'openbsd4'">
+      <if expr="not pp_ifdef('toolkit_views') and (os == 'linux2' or os == 'freebsd7' or os == 'openbsd4')">
         <!-- Window controls for Linux/BSD, in the style of Metacity -->
         <include name="IDR_CLOSE" file="linux_close.png" type="BINDATA" />
         <include name="IDR_CLOSE_H" file="linux_close_h.png" type="BINDATA" />

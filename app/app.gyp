@@ -143,6 +143,11 @@
           'action': ['<@(grit_cmd)',
                      '-i', '<(input_path)', 'build',
                      '-o', '<(grit_out_dir)/app_resources'],
+          'conditions': [
+            ['toolkit_views==1', {
+              'action': ['-D', 'toolkit_views'],
+            }],
+          ],
           'message': 'Generating resources from <(input_path)',
         },
       ],
