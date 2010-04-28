@@ -395,23 +395,6 @@ class LineLengthChecker(object):
             '.valerr' not in props)
 
 
-class SconsGypMatchingChecker(object):
-  """Verify that gyp files are updated together with scons files.
-     We probably won't have any gyp files for the untrusted code."""
-  def __init__(self):
-    self._dummy = None   # shut up pylint
-
-  def FindProblems(self, props, unused_data):
-    filename = props['name']
-    problem = []
-    if not HasGypFileCorrespondingToSconsFile(filename, sys.argv):
-      problem.append('no matching gyp update found')
-    return problem
-
-  def FileFilter(self, props):
-    return ('is_untrusted' not in props and
-            '.scons' in props)
-
 # ======================================================================
 # 'props' (short for properties) are tags associated with checkable files.
 
@@ -509,7 +492,6 @@ CHECKS = [# fatal checks
           (0, 'tidy', TidyChecker()),
           (0, 'pychecker', PyChecker()),
           (0, 'cpplint', CppLintChecker()),
-          (0, 'scons_gyp_matching', SconsGypMatchingChecker()),
           ]
 
 
@@ -559,14 +541,6 @@ def CheckFile(filename, report):
         else:
           warnings[info] = items
     return errors, warnings
-
-
-def HasGypFileCorrespondingToSconsFile(sconsfile, list):
-  scons_root = os.path.dirname(sconsfile)
-  for name in list:
-    if name.startswith(scons_root) and name.endswith('.gyp'):
-      return True
-  return False
 
 
 def main(argv):
