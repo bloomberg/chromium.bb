@@ -1089,3 +1089,22 @@
    fun:_pthread_start
    fun:thread_start
 }
+{
+   bug_42704
+   Memcheck:Addr4
+   fun:_ZN2v88internal15MemoryAllocator9ChunkInfo*
+   ...
+   fun:_ZN2v88internal9RelocInfo6VerifyEv
+   fun:_ZN2v88internal4Code10CodeVerifyEv
+   fun:_ZN2v88internal10HeapObject16HeapObjectVerifyEv
+   fun:_ZN2v88internal6Object6VerifyEv
+   fun:_ZN2v88internal4Heap10CreateCodeERKNS0_8CodeDescEPNS0_13ZoneScopeInfoENS0_4Code5FlagsENS0_6HandleINS0_6ObjectEEE
+   fun:_ZN2v88internal7Factory7NewCodeERKNS0_8CodeDescEPNS0_13ZoneScopeInfoENS0_4Code5FlagsENS0_6HandleINS0_6ObjectEEE
+   fun:_ZN2v88internal13CodeGenerator16MakeCodeEpilogueEPNS0_14MacroAssemblerENS0_4Code5FlagsEPNS0_15CompilationInfoE
+   fun:_ZN2v88internal13CodeGenerator8MakeCodeEPNS0_15CompilationInfoE
+   fun:_ZN2v88internalL8MakeCodeENS0_6HandleINS0_7ContextEEEPNS0_15CompilationInfoE
+   fun:_ZN2v88internal8Compiler11CompileLazyEPNS0_15CompilationInfoE
+   fun:_ZN2v88internalL17CompileLazyHelperEPNS0_15CompilationInfoENS0_18ClearExceptionFlagE
+   fun:_ZN2v88internal17CompileLazyInLoopENS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEENS0_18ClearExceptionFlagE
+   fun:_ZN2v88internalL19Runtime_LazyCompileENS0_9ArgumentsE
+}
