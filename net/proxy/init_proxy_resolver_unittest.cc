@@ -171,9 +171,9 @@ TEST(InitProxyResolverTest, CustomPacSucceeds) {
   Rules::Rule rule = rules.AddSuccessRule("http://custom/proxy.pac");
 
   TestCompletionCallback callback;
-  CapturingBoundNetLog log(CapturingNetLog::kUnbounded);
-  InitProxyResolver init(&resolver, &fetcher);
-  EXPECT_EQ(OK, init.Init(config, &callback, log.bound()));
+  CapturingNetLog log(CapturingNetLog::kUnbounded);
+  InitProxyResolver init(&resolver, &fetcher, &log);
+  EXPECT_EQ(OK, init.Init(config, &callback));
   EXPECT_EQ(rule.bytes(), resolver.pac_bytes());
 
   // Check the NetLog was filled correctly.
@@ -204,9 +204,9 @@ TEST(InitProxyResolverTest, CustomPacFails1) {
   rules.AddFailDownloadRule("http://custom/proxy.pac");
 
   TestCompletionCallback callback;
-  CapturingBoundNetLog log(CapturingNetLog::kUnbounded);
-  InitProxyResolver init(&resolver, &fetcher);
-  EXPECT_EQ(kFailedDownloading, init.Init(config, &callback, log.bound()));
+  CapturingNetLog log(CapturingNetLog::kUnbounded);
+  InitProxyResolver init(&resolver, &fetcher, &log);
+  EXPECT_EQ(kFailedDownloading, init.Init(config, &callback));
   EXPECT_EQ("", resolver.pac_bytes());
 
   // Check the NetLog was filled correctly.
@@ -233,8 +233,8 @@ TEST(InitProxyResolverTest, CustomPacFails2) {
   rules.AddFailParsingRule("http://custom/proxy.pac");
 
   TestCompletionCallback callback;
-  InitProxyResolver init(&resolver, &fetcher);
-  EXPECT_EQ(kFailedParsing, init.Init(config, &callback, NULL));
+  InitProxyResolver init(&resolver, &fetcher, NULL);
+  EXPECT_EQ(kFailedParsing, init.Init(config, &callback));
   EXPECT_EQ("", resolver.pac_bytes());
 }
 
@@ -247,8 +247,8 @@ TEST(InitProxyResolverTest, HasNullProxyScriptFetcher) {
   config.set_pac_url(GURL("http://custom/proxy.pac"));
 
   TestCompletionCallback callback;
-  InitProxyResolver init(&resolver, NULL);
-  EXPECT_EQ(ERR_UNEXPECTED, init.Init(config, &callback, NULL));
+  InitProxyResolver init(&resolver, NULL, NULL);
+  EXPECT_EQ(ERR_UNEXPECTED, init.Init(config, &callback));
   EXPECT_EQ("", resolver.pac_bytes());
 }
 
@@ -264,8 +264,8 @@ TEST(InitProxyResolverTest, AutodetectSuccess) {
   Rules::Rule rule = rules.AddSuccessRule("http://wpad/wpad.dat");
 
   TestCompletionCallback callback;
-  InitProxyResolver init(&resolver, &fetcher);
-  EXPECT_EQ(OK, init.Init(config, &callback, NULL));
+  InitProxyResolver init(&resolver, &fetcher, NULL);
+  EXPECT_EQ(OK, init.Init(config, &callback));
   EXPECT_EQ(rule.bytes(), resolver.pac_bytes());
 }
 
@@ -283,8 +283,8 @@ TEST(InitProxyResolverTest, AutodetectFailCustomSuccess1) {
   Rules::Rule rule = rules.AddSuccessRule("http://custom/proxy.pac");
 
   TestCompletionCallback callback;
-  InitProxyResolver init(&resolver, &fetcher);
-  EXPECT_EQ(OK, init.Init(config, &callback, NULL));
+  InitProxyResolver init(&resolver, &fetcher, NULL);
+  EXPECT_EQ(OK, init.Init(config, &callback));
   EXPECT_EQ(rule.bytes(), resolver.pac_bytes());
 }
 
@@ -302,9 +302,9 @@ TEST(InitProxyResolverTest, AutodetectFailCustomSuccess2) {
   Rules::Rule rule = rules.AddSuccessRule("http://custom/proxy.pac");
 
   TestCompletionCallback callback;
-  CapturingBoundNetLog log(CapturingNetLog::kUnbounded);
-  InitProxyResolver init(&resolver, &fetcher);
-  EXPECT_EQ(OK, init.Init(config, &callback, log.bound()));
+  CapturingNetLog log(CapturingNetLog::kUnbounded);
+  InitProxyResolver init(&resolver, &fetcher, &log);
+  EXPECT_EQ(OK, init.Init(config, &callback));
   EXPECT_EQ(rule.bytes(), resolver.pac_bytes());
 
   // Check the NetLog was filled correctly.
@@ -351,8 +351,8 @@ TEST(InitProxyResolverTest, AutodetectFailCustomFails1) {
   rules.AddFailDownloadRule("http://custom/proxy.pac");
 
   TestCompletionCallback callback;
-  InitProxyResolver init(&resolver, &fetcher);
-  EXPECT_EQ(kFailedDownloading, init.Init(config, &callback, NULL));
+  InitProxyResolver init(&resolver, &fetcher, NULL);
+  EXPECT_EQ(kFailedDownloading, init.Init(config, &callback));
   EXPECT_EQ("", resolver.pac_bytes());
 }
 
@@ -370,8 +370,8 @@ TEST(InitProxyResolverTest, AutodetectFailCustomFails2) {
   rules.AddFailParsingRule("http://custom/proxy.pac");
 
   TestCompletionCallback callback;
-  InitProxyResolver init(&resolver, &fetcher);
-  EXPECT_EQ(kFailedParsing, init.Init(config, &callback, NULL));
+  InitProxyResolver init(&resolver, &fetcher, NULL);
+  EXPECT_EQ(kFailedParsing, init.Init(config, &callback));
   EXPECT_EQ("", resolver.pac_bytes());
 }
 
@@ -391,8 +391,8 @@ TEST(InitProxyResolverTest, AutodetectFailCustomSuccess2_NoFetch) {
   Rules::Rule rule = rules.AddSuccessRule("http://custom/proxy.pac");
 
   TestCompletionCallback callback;
-  InitProxyResolver init(&resolver, &fetcher);
-  EXPECT_EQ(OK, init.Init(config, &callback, NULL));
+  InitProxyResolver init(&resolver, &fetcher, NULL);
+  EXPECT_EQ(OK, init.Init(config, &callback));
   EXPECT_EQ(rule.url, resolver.pac_url());
 }
 

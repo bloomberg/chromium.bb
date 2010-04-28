@@ -222,7 +222,7 @@ bool TestServerLauncher::WaitToStart(const std::string& host_name, int port) {
   scoped_refptr<net::HostResolver> resolver(
       net::CreateSystemHostResolver(NULL));
   net::HostResolver::RequestInfo info(host_name, port);
-  int rv = resolver->Resolve(info, &addr, NULL, NULL, NULL);
+  int rv = resolver->Resolve(info, &addr, NULL, NULL, BoundNetLog());
   if (rv != net::OK)
     return false;
 

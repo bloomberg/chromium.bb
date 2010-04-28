@@ -63,7 +63,7 @@ class Client {
     request_info_.url = url_;
     request_info_.method = "GET";
     int state = transaction_->Start(
-        &request_info_, &connect_callback_, NULL);
+        &request_info_, &connect_callback_, net::BoundNetLog());
     DCHECK(state == net::ERR_IO_PENDING);
   };
 

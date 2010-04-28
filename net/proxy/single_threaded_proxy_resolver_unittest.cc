@@ -178,19 +178,19 @@ TEST(SingleThreadedProxyResolverTest, Basic) {
   TestCompletionCallback callback1;
   ProxyInfo results1;
   rv = resolver.GetProxyForURL(
-      GURL("http://request1"), &results1, &callback1, NULL, NULL);
+      GURL("http://request1"), &results1, &callback1, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   TestCompletionCallback callback2;
   ProxyInfo results2;
   rv = resolver.GetProxyForURL(
-      GURL("http://request2"), &results2, &callback2, NULL, NULL);
+      GURL("http://request2"), &results2, &callback2, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   TestCompletionCallback callback3;
   ProxyInfo results3;
   rv = resolver.GetProxyForURL(
-      GURL("http://request3"), &results3, &callback3, NULL, NULL);
+      GURL("http://request3"), &results3, &callback3, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Wait for the requests to finish (they must finish in the order they were
@@ -307,7 +307,7 @@ TEST(SingleThreadedProxyResolverTest, CancelRequest) {
   TestCompletionCallback callback0;
   ProxyInfo results0;
   rv = resolver.GetProxyForURL(
-      GURL("http://request0"), &results0, &callback0, &request0, NULL);
+      GURL("http://request0"), &results0, &callback0, &request0, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Wait until requests 0 reaches the worker thread.
@@ -318,20 +318,20 @@ TEST(SingleThreadedProxyResolverTest, CancelRequest) {
   TestCompletionCallback callback1;
   ProxyInfo results1;
   rv = resolver.GetProxyForURL(
-      GURL("http://request1"), &results1, &callback1, NULL, NULL);
+      GURL("http://request1"), &results1, &callback1, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   ProxyResolver::RequestHandle request2;
   TestCompletionCallback callback2;
   ProxyInfo results2;
   rv = resolver.GetProxyForURL(
-      GURL("http://request2"), &results2, &callback2, &request2, NULL);
+      GURL("http://request2"), &results2, &callback2, &request2, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   TestCompletionCallback callback3;
   ProxyInfo results3;
   rv = resolver.GetProxyForURL(
-      GURL("http://request3"), &results3, &callback3, NULL, NULL);
+      GURL("http://request3"), &results3, &callback3, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Cancel request0 (inprogress) and request2 (pending).
@@ -376,19 +376,19 @@ TEST(SingleThreadedProxyResolverTest, CancelRequestByDeleting) {
   TestCompletionCallback callback0;
   ProxyInfo results0;
   rv = resolver->GetProxyForURL(
-      GURL("http://request0"), &results0, &callback0, NULL, NULL);
+      GURL("http://request0"), &results0, &callback0, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   TestCompletionCallback callback1;
   ProxyInfo results1;
   rv = resolver->GetProxyForURL(
-      GURL("http://request1"), &results1, &callback1, NULL, NULL);
+      GURL("http://request1"), &results1, &callback1, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   TestCompletionCallback callback2;
   ProxyInfo results2;
   rv = resolver->GetProxyForURL(
-      GURL("http://request2"), &results2, &callback2, NULL, NULL);
+      GURL("http://request2"), &results2, &callback2, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Wait until request 0 reaches the worker thread.
@@ -430,7 +430,7 @@ TEST(SingleThreadedProxyResolverTest, CancelSetPacScript) {
   TestCompletionCallback callback0;
   ProxyInfo results0;
   rv = resolver.GetProxyForURL(
-      GURL("http://request0"), &results0, &callback0, &request0, NULL);
+      GURL("http://request0"), &results0, &callback0, &request0, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Wait until requests 0 reaches the worker thread.
@@ -449,7 +449,7 @@ TEST(SingleThreadedProxyResolverTest, CancelSetPacScript) {
   TestCompletionCallback callback1;
   ProxyInfo results1;
   rv = resolver.GetProxyForURL(
-      GURL("http://request1"), &results1, &callback1, NULL, NULL);
+      GURL("http://request1"), &results1, &callback1, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Unblock the worker thread so the requests can continue running.

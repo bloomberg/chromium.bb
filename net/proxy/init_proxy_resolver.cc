@@ -17,14 +17,17 @@
 namespace net {
 
 InitProxyResolver::InitProxyResolver(ProxyResolver* resolver,
-                                     ProxyScriptFetcher* proxy_script_fetcher)
+                                     ProxyScriptFetcher* proxy_script_fetcher,
+                                     NetLog* net_log)
     : resolver_(resolver),
       proxy_script_fetcher_(proxy_script_fetcher),
       ALLOW_THIS_IN_INITIALIZER_LIST(io_callback_(
           this, &InitProxyResolver::OnIOCompletion)),
       user_callback_(NULL),
       current_pac_url_index_(0u),
-      next_state_(STATE_NONE) {
+      next_state_(STATE_NONE),
+      net_log_(BoundNetLog::Make(
+          net_log, NetLog::SOURCE_INIT_PROXY_RESOLVER)) {
 }
 
 InitProxyResolver::~InitProxyResolver() {
@@ -33,14 +36,10 @@ InitProxyResolver::~InitProxyResolver() {
 }
 
 int InitProxyResolver::Init(const ProxyConfig& config,
-                            CompletionCallback* callback,
-                            const BoundNetLog& net_log) {
+                            CompletionCallback* callback) {
   DCHECK_EQ(STATE_NONE, next_state_);
   DCHECK(callback);
   DCHECK(config.MayRequirePACResolver());
-  DCHECK(!net_log_.net_log());
-
-  net_log_ = net_log;
 
   net_log_.BeginEvent(NetLog::TYPE_INIT_PROXY_RESOLVER, NULL);
 

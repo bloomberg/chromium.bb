@@ -14,7 +14,6 @@
 
 namespace net {
 
-class BoundNetLog;
 class ProxyConfig;
 class ProxyResolver;
 class ProxyScriptFetcher;
@@ -37,18 +36,18 @@ class ProxyScriptFetcher;
 //
 class InitProxyResolver {
  public:
-  // |resolver| and |proxy_script_fetcher| must remain valid for
+  // |resolver|, |proxy_script_fetcher| and |net_log| must remain valid for
   // the lifespan of InitProxyResolver.
   InitProxyResolver(ProxyResolver* resolver,
-                    ProxyScriptFetcher* proxy_script_fetcher);
+                    ProxyScriptFetcher* proxy_script_fetcher,
+                    NetLog* net_log);
 
   // Aborts any in-progress request.
   ~InitProxyResolver();
 
   // Apply the PAC settings of |config| to |resolver_|.
   int Init(const ProxyConfig& config,
-           CompletionCallback* callback,
-           const BoundNetLog& net_log);
+           CompletionCallback* callback);
 
  private:
   enum State {

@@ -195,7 +195,7 @@ class DelayedResolve : public base::RefCounted<DelayedResolve> {
                                 &address_list_,
                                 callback,
                                 NULL,
-                                NULL);
+                                net::BoundNetLog());
     if (rv != net::ERR_IO_PENDING) {
       OnResolveComplete(rv);
     }
