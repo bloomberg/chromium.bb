@@ -43,6 +43,9 @@ PRUNE_PATHS = set([
     # Two directories that are the same as those in base/third_party.
     "v8/src/third_party/dtoa",
     "v8/src/third_party/valgrind",
+
+    # Same module occurs in base/ and in net/, so skip one of them.
+    "net/third_party/nss",
 ])
 
 # Directories we don't scan through.
