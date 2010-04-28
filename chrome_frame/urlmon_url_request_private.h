@@ -36,7 +36,10 @@ class UrlmonUrlRequest
                       HWND notification_window, IStream* cache);
 
   // Used from "DownloadRequestInHost".
-  void StealMoniker(IMoniker** moniker, IBindCtx** bctx);
+  // Callback will be invoked either right away (if operation is finished) or
+  // from inside ::OnStopBinding() when it is safe to reuse the bind_context.
+  typedef Callback2<IMoniker*, IBindCtx*>::Type TerminateBindCallback;
+  void TerminateBind(TerminateBindCallback* callback);
 
   // Parent Window for UrlMon error dialogs
   void set_parent_window(HWND parent_window) {
@@ -108,6 +111,10 @@ class UrlmonUrlRequest
 
   bool pending() const {
     return pending_;
+  }
+
+  bool terminate_requested() const {
+    return terminate_bind_callback_.get() != NULL;
   }
 
   std::string response_headers() {
@@ -271,6 +278,7 @@ class UrlmonUrlRequest
   // Set to true if the ChromeFrame instance is running in privileged mode.
   bool privileged_mode_;
   bool pending_;
+  scoped_ptr<TerminateBindCallback> terminate_bind_callback_;
   std::string response_headers_;
   DISALLOW_COPY_AND_ASSIGN(UrlmonUrlRequest);
 };

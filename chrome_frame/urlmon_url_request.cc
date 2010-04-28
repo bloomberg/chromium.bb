@@ -138,13 +138,21 @@ HRESULT UrlmonUrlRequest::InitPending(const GURL& url, IMoniker* moniker,
   return S_OK;
 }
 
-void UrlmonUrlRequest::StealMoniker(IMoniker** moniker, IBindCtx** bctx) {
-  // Could be called in any thread. There should be no race
-  // since moniker_ is not released while we are in manager's request map.
+void UrlmonUrlRequest::TerminateBind(TerminateBindCallback* callback) {
+  DCHECK_EQ(thread_, PlatformThread::CurrentId());
   DLOG(INFO) << __FUNCTION__ << " id: " << id();
-  DLOG_IF(WARNING, moniker == NULL) << __FUNCTION__ << " no moniker";
-  *moniker = moniker_.Detach();
-  *bctx = bind_context_.Detach();
+
+  if (status_.get_state() == Status::DONE) {
+    // Binding is stopped. Note result could be an error.
+    callback->Run(moniker_, bind_context_);
+    delete callback;
+  } else {
+    // WORKING (ABORTING?). Save the callback.
+    // Now we will return INET_TERMINATE_BIND from ::OnDataAvailable() and in
+    // ::OnStopBinding will invoke the callback passing our moniker and
+    // bind context.
+    terminate_bind_callback_.reset(callback);
+  }
 }
 
 size_t UrlmonUrlRequest::SendDataToDelegate(size_t bytes_to_read) {
@@ -272,6 +280,10 @@ STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
   // Mark we a are done.
   status_.Done();
 
+  if (result == INET_E_TERMINATED_BIND && terminate_requested()) {
+    terminate_bind_callback_->Run(moniker_, bind_context_);
+  }
+
   // We always return INET_E_TERMINATED_BIND from OnDataAvailable
   if (result == INET_E_TERMINATED_BIND)
     result = S_OK;
@@ -395,6 +407,9 @@ STDMETHODIMP UrlmonUrlRequest::OnDataAvailable(DWORD flags, DWORD size,
                                                STGMEDIUM* storage) {
   DLOG(INFO) << StringPrintf("URL: %s Obj: %X - Bytes available: %d",
                              url().c_str(), this, size);
+
+  if (terminate_requested())
+    return INET_E_TERMINATED_BIND;
 
   if (!storage || (storage->tymed != TYMED_ISTREAM)) {
     NOTREACHED();
@@ -1025,24 +1040,26 @@ void UrlmonUrlRequestManager::DownloadRequestInHost(int request_id) {
   if (IsWindow(notification_window_)) {
     scoped_refptr<UrlmonUrlRequest> request(LookupRequest(request_id));
     if (request) {
-      ScopedComPtr<IMoniker> moniker;
-      ScopedComPtr<IBindCtx> bind_context;
-      request->StealMoniker(moniker.Receive(), bind_context.Receive());
-      DLOG_IF(ERROR, moniker == NULL) << __FUNCTION__ << " No moniker!";
-      if (moniker) {
-        // We use SendMessage and not PostMessage to make sure that if the
-        // notification window does not handle the message we won't leak
-        // the moniker.
-        ::SendMessage(notification_window_, WM_DOWNLOAD_IN_HOST,
-            reinterpret_cast<WPARAM>(bind_context.get()),
-            reinterpret_cast<LPARAM>(moniker.get()));
-      }
+      UrlmonUrlRequest::TerminateBindCallback* callback = NewCallback(this,
+          &UrlmonUrlRequestManager::BindTerminated);
+      request->TerminateBind(callback);
     }
   } else {
     NOTREACHED()
         << "Cannot handle download if we don't have anyone to hand it to.";
   }
 }
+
+void UrlmonUrlRequestManager::BindTerminated(IMoniker* moniker,
+                                             IBindCtx* bind_ctx) {
+  // We use SendMessage and not PostMessage to make sure that if the
+  // notification window does not handle the message we won't leak
+  // the moniker.
+  ::SendMessage(notification_window_, WM_DOWNLOAD_IN_HOST,
+        reinterpret_cast<WPARAM>(bind_ctx),
+        reinterpret_cast<LPARAM>(moniker));
+}
+
 
 void UrlmonUrlRequestManager::GetCookiesForUrl(const GURL& url, int cookie_id) {
   DWORD cookie_size = 0;

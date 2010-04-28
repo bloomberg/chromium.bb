@@ -101,6 +101,11 @@ class UrlmonUrlRequestManager
                                   const std::string& cookie_string,
                                   int cookie_id);
 
+  // This method is passed as a callback to UrlmonUrlRequest::TerminateBind.
+  // We simply forward moniker and bind_ctx to host ActiveX/ActiveDocument,
+  // so it may start NavigateWithBindContext.
+  void BindTerminated(IMoniker* moniker, IBindCtx* bind_ctx);
+
   // Map for (request_id <-> UrlmonUrlRequest)
   typedef std::map<int, scoped_refptr<UrlmonUrlRequest> > RequestMap;
   RequestMap request_map_;
