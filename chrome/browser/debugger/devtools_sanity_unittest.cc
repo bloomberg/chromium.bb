@@ -342,8 +342,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 }
 
 // Tests set breakpoint.
-// Flaky, see http://crbug.com/42718
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, FLAKY_TestSetBreakpoint) {
+// Started failing in WebKit roll 58304:58400  http://crbug.com/42718
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestSetBreakpoint) {
   RunTest("testSetBreakpoint", kDebuggerTestPage);
 }
 
@@ -365,8 +365,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenScriptIsRunning) {
 }
 
 // Tests eval on call frame.
-// Flaky, see http://crbug.com/42718
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, FLAKY_TestEvalOnCallFrame) {
+// Started failing in WebKit roll 58304:58400  http://crbug.com/42718
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestEvalOnCallFrame) {
   RunTest("testEvalOnCallFrame", kDebuggerTestPage);
 }
 
