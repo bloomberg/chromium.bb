@@ -1,11 +1,11 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef WEBTHEMEENGINE_IMPL_WIN_H_
 #define WEBTHEMEENGINE_IMPL_WIN_H_
 
-#include "third_party/WebKit/WebKit/chromium/public/win/WebThemeEngine.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebThemeEngine.h"
 
 namespace webkit_glue {
 

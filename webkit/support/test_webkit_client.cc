@@ -21,6 +21,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageEventDispatcher.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageNamespace.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebThemeEngine.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/database/vfs_backend.h"
@@ -41,7 +42,6 @@
 #include "v8/include/v8.h"
 
 #if defined(OS_WIN)
-#include "third_party/WebKit/WebKit/chromium/public/win/WebThemeEngine.h"
 #include "webkit/tools/test_shell/test_shell_webthemeengine.h"
 #endif
 #if defined(OS_MACOSX)
