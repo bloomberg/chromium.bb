@@ -335,42 +335,27 @@ def _SendChangeSVN(options):
   if options.dry_run:
     return
 
-  # Do an empty checkout.
+  # Create a temporary directory, put a uniquely named file in it with the diff
+  # content and svn import that.
   temp_dir = tempfile.mkdtemp()
   temp_file = tempfile.NamedTemporaryFile()
   try:
     try:
-      command = ['svn', 'checkout', '--depth', 'empty', '-q',
-                 options.svn_repo, temp_dir]
-      gclient_utils.CheckCall(command)
+      # Description
+      temp_file.write(description)
+      temp_file.flush()
 
-      # TODO(maruel): Use a subdirectory per user?
+      # Diff file
       current_time = str(datetime.datetime.now()).replace(':', '.')
       file_name = (EscapeDot(options.user) + '.' + EscapeDot(options.name) +
                    '.%s.diff' % current_time)
       full_path = os.path.join(temp_dir, file_name)
-      full_url = options.svn_repo + '/' + file_name
-      file_found = False
-      try:
-        gclient_utils.CheckCall(['svn', 'ls', full_url], print_error=False)
-        file_found = True
-      except gclient_utils.CheckCallError:
-        pass
-      if file_found:
-        # The file already exists in the repo. Note that commiting a file is a
-        # no-op if the file's content (the diff) is not modified. This is why
-        # the file name contains the date and time.
-        gclient_utils.CheckCall(['svn', 'update', full_path],
-                                print_error=False)
-        gclient_utils.FileWrite(full_path, options.diff, 'wb')
-      else:
-        # Add the file to the repo.
-        gclient_utils.FileWrite(full_path, options.diff, 'wb')
-        gclient_utils.CheckCall(["svn", "add", full_path], print_error=False)
-      temp_file.write(description)
-      temp_file.flush()
-      gclient_utils.CheckCall(["svn", "commit", full_path, '--file',
-                               temp_file.name], print_error=False)
+      gclient_utils.FileWrite(full_path, options.diff, 'wb')
+
+      # Committing it will trigger a try job.
+      command = ['svn', 'import', '-q', temp_dir, options.svn_repo, '--file',
+                 temp_file.name]
+      gclient_utils.CheckCall(command)
     except gclient_utils.CheckCallError, e:
       out = e.stdout
       if e.stderr:
