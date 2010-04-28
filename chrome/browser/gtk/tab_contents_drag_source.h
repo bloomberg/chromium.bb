@@ -90,10 +90,10 @@ class TabContentsDragSource : public MessageLoopForUI::Observer {
   // The URL to download from for a drag-out download.
   GURL download_url_;
 
-  // The widget that provides visual feedback for the drag. We use this instead
-  // of gtk_drag_set_icon_pixbuf() because some window managers will use shadows
-  // or other visual effects on top level windows.
+  // The widget that provides visual feedback for the drag.
   GtkWidget* drag_icon_;
+
+  GtkSignalRegistrar signals_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsDragSource);
 };

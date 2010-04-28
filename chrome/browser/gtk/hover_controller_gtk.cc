@@ -16,12 +16,12 @@ HoverControllerGtk::HoverControllerGtk(GtkWidget* button)
   g_object_ref(button_);
   gtk_chrome_button_set_hover_state(GTK_CHROME_BUTTON(button_), 0);
 
-  g_signal_connect(button_, "enter-notify-event",
+  signals_.Connect(button_, "enter-notify-event",
                    G_CALLBACK(OnEnterThunk), this);
-  g_signal_connect(button_, "leave-notify-event",
+  signals_.Connect(button_, "leave-notify-event",
                    G_CALLBACK(OnLeaveThunk), this);
-  g_signal_connect(button_, "destroy",
-                   G_CALLBACK(OnButtonDestroyThunk), this);
+  signals_.Connect(button_, "destroy",
+                   G_CALLBACK(OnDestroyThunk), this);
 
 #ifndef NDEBUG
   if (g_object_get_data(G_OBJECT(button_), kHoverControllerGtkKey))
@@ -54,10 +54,7 @@ HoverControllerGtk* HoverControllerGtk::GetHoverControllerGtk(
 
 void HoverControllerGtk::Destroy() {
   gtk_chrome_button_set_hover_state(GTK_CHROME_BUTTON(button_), -1.0);
-  g_signal_handlers_disconnect_by_func(
-      button_,
-      reinterpret_cast<gpointer>(OnButtonDestroyThunk),
-      this);
+
   g_object_set_data(G_OBJECT(button_), kHoverControllerGtkKey, NULL);
   g_object_unref(button_);
   button_ = NULL;
@@ -111,6 +108,6 @@ gboolean HoverControllerGtk::OnLeave(GtkWidget* widget,
   return FALSE;
 }
 
-void HoverControllerGtk::OnButtonDestroy(GtkWidget* widget) {
+void HoverControllerGtk::OnDestroy(GtkWidget* widget) {
   Destroy();
 }

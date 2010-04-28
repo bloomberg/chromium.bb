@@ -32,29 +32,25 @@ TabContentsDragSource::TabContentsDragSource(
     : tab_contents_view_(tab_contents_view),
       drag_pixbuf_(NULL),
       drag_failed_(false),
-      drag_widget_(NULL),
-      drag_icon_(NULL) {
-  drag_widget_ = gtk_invisible_new();
-  g_signal_connect(drag_widget_, "drag-failed",
+      drag_widget_(gtk_invisible_new()),
+      drag_icon_(gtk_window_new(GTK_WINDOW_POPUP)) {
+  g_object_ref(drag_widget_);
+  signals_.Connect(drag_widget_, "drag-failed",
                    G_CALLBACK(OnDragFailedThunk), this);
-  g_signal_connect(drag_widget_, "drag-begin", G_CALLBACK(OnDragBeginThunk),
+  signals_.Connect(drag_widget_, "drag-begin",
+                   G_CALLBACK(OnDragBeginThunk),
                    this);
-  g_signal_connect(drag_widget_, "drag-end", G_CALLBACK(OnDragEndThunk), this);
-  g_signal_connect(drag_widget_, "drag-data-get",
+  signals_.Connect(drag_widget_, "drag-end",
+                   G_CALLBACK(OnDragEndThunk), this);
+  signals_.Connect(drag_widget_, "drag-data-get",
                    G_CALLBACK(OnDragDataGetThunk), this);
-  g_object_ref_sink(drag_widget_);
+
+  g_object_ref(drag_icon_);
+  signals_.Connect(drag_icon_, "expose-event",
+                   G_CALLBACK(OnDragIconExposeThunk), this);
 }
 
 TabContentsDragSource::~TabContentsDragSource() {
-  g_signal_handlers_disconnect_by_func(drag_widget_,
-      reinterpret_cast<gpointer>(OnDragFailedThunk), this);
-  g_signal_handlers_disconnect_by_func(drag_widget_,
-      reinterpret_cast<gpointer>(OnDragBeginThunk), this);
-  g_signal_handlers_disconnect_by_func(drag_widget_,
-      reinterpret_cast<gpointer>(OnDragEndThunk), this);
-  g_signal_handlers_disconnect_by_func(drag_widget_,
-      reinterpret_cast<gpointer>(OnDragDataGetThunk), this);
-
   // Break the current drag, if any.
   if (drop_data_.get()) {
     gtk_grab_add(drag_widget_);
@@ -63,9 +59,8 @@ TabContentsDragSource::~TabContentsDragSource() {
     drop_data_.reset();
   }
 
-  gtk_widget_destroy(drag_widget_);
   g_object_unref(drag_widget_);
-  drag_widget_ = NULL;
+  g_object_unref(drag_icon_);
 }
 
 TabContents* TabContentsDragSource::tab_contents() const {
@@ -319,18 +314,14 @@ void TabContentsDragSource::OnDragBegin(GtkWidget* sender,
   }
 
   if (drag_pixbuf_) {
-    drag_icon_ = gtk_window_new(GTK_WINDOW_POPUP);
-    g_object_ref_sink(drag_icon_);
-    g_signal_connect(drag_icon_, "expose-event",
-                     G_CALLBACK(OnDragIconExposeThunk), this);
     gtk_widget_set_size_request(drag_icon_,
                                 gdk_pixbuf_get_width(drag_pixbuf_),
                                 gdk_pixbuf_get_height(drag_pixbuf_));
 
-    GdkScreen* screen = gtk_widget_get_screen(GTK_WIDGET(drag_icon_));
+    GdkScreen* screen = gtk_widget_get_screen(drag_icon_);
     GdkColormap* rgba = gdk_screen_get_rgba_colormap(screen);
     if (rgba)
-      gtk_widget_set_colormap(GTK_WIDGET(drag_icon_), rgba);
+      gtk_widget_set_colormap(drag_icon_, rgba);
 
     gtk_drag_set_icon_widget(drag_context, drag_icon_,
                              image_offset_.x(), image_offset_.y());
@@ -339,10 +330,6 @@ void TabContentsDragSource::OnDragBegin(GtkWidget* sender,
 
 void TabContentsDragSource::OnDragEnd(GtkWidget* sender,
                                       GdkDragContext* drag_context) {
-  if (drag_icon_) {
-    g_object_unref(drag_icon_);
-    drag_icon_ = NULL;
-  }
   if (drag_pixbuf_) {
     g_object_unref(drag_pixbuf_);
     drag_pixbuf_ = NULL;
