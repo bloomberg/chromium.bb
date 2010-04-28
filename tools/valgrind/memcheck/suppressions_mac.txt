@@ -1108,7 +1108,6 @@
    fun:_ZN2v88internal17CompileLazyInLoopENS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEENS0_18ClearExceptionFlagE
    fun:_ZN2v88internalL19Runtime_LazyCompileENS0_9ArgumentsE
 }
-Suppression:
 {
    bug_42704b
    Memcheck:Addr4
