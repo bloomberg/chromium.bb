@@ -26,15 +26,18 @@ class ShaderManagerTest : public testing::Test {
 TEST_F(ShaderManagerTest, Basic) {
   const GLuint kClient1Id = 1;
   const GLuint kService1Id = 11;
+  const GLenum kShader1Type = GL_VERTEX_SHADER;
   const std::string kClient1Source("hello world");
   const GLuint kClient2Id = 2;
   // Check we can create shader.
-  manager_.CreateShaderInfo(kClient1Id, kService1Id);
+  manager_.CreateShaderInfo(kClient1Id, kService1Id, kShader1Type);
   // Check shader got created.
   ShaderManager::ShaderInfo* info1 = manager_.GetShaderInfo(kClient1Id);
   ASSERT_TRUE(info1 != NULL);
   EXPECT_EQ(kService1Id, info1->service_id());
-  // Check we and set its source.
+  // Check if the shader has correct type.
+  EXPECT_EQ(kShader1Type, info1->shader_type());
+  // Check we can set its source.
   info1->Update(kClient1Source);
   EXPECT_STREQ(kClient1Source.c_str(), info1->source().c_str());
   // Check we get nothing for a non-existent shader.

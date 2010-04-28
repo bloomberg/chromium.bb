@@ -512,8 +512,10 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   }
 
   // Creates a ShaderInfo for the given shader.
-  void CreateShaderInfo(GLuint client_id, GLuint service_id) {
-    shader_manager()->CreateShaderInfo(client_id, service_id);
+  void CreateShaderInfo(GLuint client_id,
+                        GLuint service_id,
+                        GLenum shader_type) {
+    shader_manager()->CreateShaderInfo(client_id, service_id, shader_type);
   }
 
   // Gets the shader info for the given shader. Returns NULL if none exists.
@@ -1705,7 +1707,7 @@ bool GLES2DecoderImpl::CreateShaderHelper(GLenum type, GLuint client_id) {
   }
   GLuint service_id = glCreateShader(type);
   if (service_id != 0) {
-    CreateShaderInfo(client_id, service_id);
+    CreateShaderInfo(client_id, service_id, type);
   }
   return true;
 }
@@ -2506,7 +2508,8 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
 #if !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
 #if defined(GLES2_GPU_SERVICE_TRANSLATE_SHADER)
   int dbg_options = 0;
-  EShLanguage language = EShLangVertex;
+  EShLanguage language = info->shader_type() == GL_VERTEX_SHADER ?
+      EShLangVertex : EShLangFragment;
   TBuiltInResource resources;
   // TODO(alokp): Ask gman how to get appropriate values.
   resources.maxVertexAttribs = 8;

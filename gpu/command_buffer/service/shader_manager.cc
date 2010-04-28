@@ -8,10 +8,12 @@
 namespace gpu {
 namespace gles2 {
 
-void ShaderManager::CreateShaderInfo(GLuint client_id, GLuint service_id) {
+void ShaderManager::CreateShaderInfo(GLuint client_id,
+                                     GLuint service_id,
+                                     GLenum shader_type) {
   std::pair<ShaderInfoMap::iterator, bool> result =
       shader_infos_.insert(std::make_pair(
-          client_id, ShaderInfo::Ref(new ShaderInfo(service_id))));
+          client_id, ShaderInfo::Ref(new ShaderInfo(service_id, shader_type))));
   DCHECK(result.second);
 }
 

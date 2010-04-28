@@ -28,8 +28,9 @@ class ShaderManager {
    public:
     typedef scoped_refptr<ShaderInfo> Ref;
 
-    explicit ShaderInfo(GLuint service_id)
-        : service_id_(service_id) {
+    explicit ShaderInfo(GLuint service_id, GLenum shader_type)
+        : service_id_(service_id),
+          shader_type_(shader_type) {
     }
 
     void Update(const std::string& source) {
@@ -40,11 +41,15 @@ class ShaderManager {
       return service_id_;
     }
 
-    const std::string& source() {
+    GLenum shader_type() const {
+      return shader_type_;
+    }
+
+    const std::string& source() const {
       return source_;
     }
 
-    bool IsDeleted() {
+    bool IsDeleted() const {
       return service_id_ == 0;
     }
 
@@ -59,6 +64,8 @@ class ShaderManager {
 
     // The shader this ShaderInfo is tracking.
     GLuint service_id_;
+    // Type of shader - GL_VERTEX_SHADER or GL_FRAGMENT_SHADER.
+    GLenum shader_type_;
 
     // The shader source as passed to glShaderSource.
     std::string source_;
@@ -68,7 +75,9 @@ class ShaderManager {
   }
 
   // Creates a shader info for the given shader ID.
-  void CreateShaderInfo(GLuint client_id, GLuint service_id);
+  void CreateShaderInfo(GLuint client_id,
+                        GLuint service_id,
+                        GLenum shader_type);
 
   // Gets an existing shader info for the given shader ID. Returns NULL if none
   // exists.
