@@ -86,6 +86,16 @@ command-line flags to set these when you want to force their values.
 Specify proxy autoconfiguration.  Defined and empty autodetects; otherwise,
 it should be an autoconfig URL.  But see above note about Gnome/KDE.
 
+.TP
+.B SOCKS_SERVER
+SOCKS proxy server (defaults to SOCKS v4, also set
+.B SOCKS_VERSION=5
+to use SOCKS v5).
+
+.TP
+.B no_proxy
+Comma separated list of hosts or patterns to bypass proxying.
+
 .SH FILES
 .TP
 .I ~/.config/@@CONFDIR@@

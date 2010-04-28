@@ -458,9 +458,14 @@ std::string AboutLinuxProxyConfig() {
   data.append("<!DOCTYPE HTML>\n");
   data.append("<html><head><meta charset=\"utf-8\"><title>");
   data.append(l10n_util::GetStringUTF8(IDS_ABOUT_LINUX_PROXY_CONFIG_TITLE));
-  data.append("</title></head><body>\n");
-  data.append(l10n_util::GetStringFUTF8(IDS_ABOUT_LINUX_PROXY_CONFIG_BODY,
-              l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  data.append("</title>");
+  data.append("<style>body { max-width: 70ex; padding: 2ex 5ex; }</style>");
+  data.append("</head><body>\n");
+  FilePath binary = CommandLine::ForCurrentProcess()->GetProgram();
+  data.append(l10n_util::GetStringFUTF8(
+                  IDS_ABOUT_LINUX_PROXY_CONFIG_BODY,
+                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+                  ASCIIToUTF16(binary.BaseName().value())));
   data.append("</body></html>\n");
   return data;
 }
