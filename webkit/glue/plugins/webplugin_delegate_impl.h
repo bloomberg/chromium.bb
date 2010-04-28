@@ -180,10 +180,7 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
 #if defined(OS_MACOSX)
   // Allow setting a "fake" window handle to associate this plug-in with
   // an IOSurface in the browser. Used for accelerated drawing surfaces.
-  void set_windowed_handle(gfx::PluginWindowHandle handle) {
-    windowed_handle_ = handle;
-    UpdateAcceleratedSurface();
-  }
+  void set_windowed_handle(gfx::PluginWindowHandle handle);
 #endif
 
  private:

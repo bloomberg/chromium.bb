@@ -372,17 +372,15 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
       NPError err = instance()->NPP_GetValue(NPPVpluginCoreAnimationLayer,
                                              reinterpret_cast<void*>(&layer));
       if (!err) {
+        // Create the timer; it will be started when we get a window handle.
+        redraw_timer_.reset(new base::RepeatingTimer<WebPluginDelegateImpl>);
         layer_ = layer;
-        plugin_->BindFakePluginWindowHandle(false);
         surface_ = new AcceleratedSurface;
         surface_->Initialize(NULL, true);
         renderer_ = [[CARenderer rendererWithCGLContext:surface_->context()
                                                 options:NULL] retain];
         [renderer_ setLayer:layer_];
-        UpdateAcceleratedSurface();
-        redraw_timer_.reset(new base::RepeatingTimer<WebPluginDelegateImpl>);
-        // This will start the timer, but only if we are visible.
-        PluginVisibilityChanged();
+        plugin_->BindFakePluginWindowHandle(false);
       }
       break;
     }
@@ -979,7 +977,7 @@ void WebPluginDelegateImpl::PluginVisibilityChanged() {
 #endif
   if (instance()->drawing_model() == NPDrawingModelCoreAnimation) {
     bool plugin_visible = container_is_visible_ && !clip_rect_.IsEmpty();
-    if (plugin_visible && !redraw_timer_->IsRunning()) {
+    if (plugin_visible && !redraw_timer_->IsRunning() && windowed_handle()) {
       redraw_timer_->Start(
           base::TimeDelta::FromMilliseconds(kCoreAnimationRedrawPeriodMs),
           this, &WebPluginDelegateImpl::DrawLayerInSurface);
@@ -993,6 +991,10 @@ void WebPluginDelegateImpl::PluginVisibilityChanged() {
 #pragma mark Core Animation Support
 
 void WebPluginDelegateImpl::DrawLayerInSurface() {
+  // If we haven't plumbed up the surface yet, don't try to draw.
+  if (!windowed_handle())
+    return;
+
   surface_->MakeCurrent();
 
   surface_->Clear(window_rect_);
@@ -1027,6 +1029,14 @@ void WebPluginDelegateImpl::UpdateAcceleratedSurface() {
                                    window_rect_.height(),
                                    io_surface_id);
   }
+}
+
+void WebPluginDelegateImpl::set_windowed_handle(
+    gfx::PluginWindowHandle handle) {
+  windowed_handle_ = handle;
+  UpdateAcceleratedSurface();
+  // Kick off the drawing timer, if necessary.
+  PluginVisibilityChanged();
 }
 
 #pragma mark -
