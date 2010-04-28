@@ -278,6 +278,10 @@ class LocationBarViewGtk : public AutocompleteEditController,
                        GdkEventButton*);
   CHROMEGTK_CALLBACK_4(LocationBarViewGtk, void, OnIconDragData,
                        GdkDragContext*, GtkSelectionData*, guint, guint);
+  CHROMEGTK_CALLBACK_1(LocationBarViewGtk, void, OnIconDragBegin,
+                       GdkDragContext*);
+  CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, OnDragIconExpose,
+                       GdkEventExpose*);
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, void, OnEntryBoxSizeAllocate,
                        GtkAllocation*);
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, OnStarButtonPress,
@@ -333,6 +337,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   GtkWidget* site_type_alignment_;
   GtkWidget* site_type_event_box_;
   GtkWidget* location_icon_image_;
+  OwnedWidgetGtk drag_icon_;
   bool enable_location_drag_;
   // TODO(pkasting): Split this label off and move the rest of the items to the
   // left of the address bar.
