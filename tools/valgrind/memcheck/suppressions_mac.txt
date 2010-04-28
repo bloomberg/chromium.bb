@@ -1099,14 +1099,6 @@
    fun:_ZN2v88internal10HeapObject16HeapObjectVerifyEv
    fun:_ZN2v88internal6Object6VerifyEv
    fun:_ZN2v88internal4Heap10CreateCodeERKNS0_8CodeDescEPNS0_13ZoneScopeInfoENS0_4Code5FlagsENS0_6HandleINS0_6ObjectEEE
-   fun:_ZN2v88internal7Factory7NewCodeERKNS0_8CodeDescEPNS0_13ZoneScopeInfoENS0_4Code5FlagsENS0_6HandleINS0_6ObjectEEE
-   fun:_ZN2v88internal13CodeGenerator16MakeCodeEpilogueEPNS0_14MacroAssemblerENS0_4Code5FlagsEPNS0_15CompilationInfoE
-   fun:_ZN2v88internal13CodeGenerator8MakeCodeEPNS0_15CompilationInfoE
-   fun:_ZN2v88internalL8MakeCodeENS0_6HandleINS0_7ContextEEEPNS0_15CompilationInfoE
-   fun:_ZN2v88internal8Compiler11CompileLazyEPNS0_15CompilationInfoE
-   fun:_ZN2v88internalL17CompileLazyHelperEPNS0_15CompilationInfoENS0_18ClearExceptionFlagE
-   fun:_ZN2v88internal17CompileLazyInLoopENS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEENS0_18ClearExceptionFlagE
-   fun:_ZN2v88internalL19Runtime_LazyCompileENS0_9ArgumentsE
 }
 {
    bug_42704b
@@ -1120,4 +1112,15 @@
    fun:_ZN2v88internal3Top18TerminateExecutionEv
    fun:_ZN2v88internal9Execution25HandleStackGuardInterruptEv
    fun:_ZN2v88internalL18Runtime_StackGuardENS0_9ArgumentsE
+}
+{
+   bug_42704c
+   Memcheck:Addr4
+   fun:_ZN2v88internal4List*
+   fun:_ZN2v88internal4List*
+   ...
+   fun:_ZN7WebCore27WorkerContextExecutionProxy8evaluateERKNS_6StringES3_iPNS_27WorkerContextExecutionStateE
+   fun:_ZN7WebCore22WorkerScriptController8evaluateERKNS_16ScriptSourceCodeEPNS_11ScriptValueE
+   fun:_ZN7WebCore22WorkerScriptController8evaluateERKNS_16ScriptSourceCodeE
+   fun:_ZN7WebCore12WorkerThread12workerThreadEv
 }
