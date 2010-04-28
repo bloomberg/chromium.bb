@@ -11,13 +11,17 @@
       ['OS=="mac"', {'os_include': 'mac'}],
       ['OS=="win"', {'os_include': 'win32'}],
     ],
-    'use_system_libxslt%': 0,
+    # We used to have a separate flag for using the system
+    # libxslt, but it seems mixing Chrome libxml and system
+    # libxslt causes crashes that nobody has had time to diagnose.
+    # So just put them both behind the same flag for now.
+    'use_system_libxml%': 0,
   },
   'targets': [
     {
       'target_name': 'libxslt',
       'conditions': [
-        ['OS=="linux" and use_system_libxslt', {
+        ['OS=="linux" and use_system_libxml', {
           'type': 'settings',
           'direct_dependent_settings': {
             'cflags': [
@@ -32,7 +36,7 @@
               '<!@(pkg-config --libs-only-l libxslt)',
             ],
           },
-        }, { # else: OS != "linux" or ! use_system_libxslt
+        }, { # else: OS != "linux" or ! use_system_libxml
           'type': '<(library)',
           'msvs_guid': 'FC0E1FD0-5DD7-4041-A1C9-CD3C376E4EED',
           'sources': [
