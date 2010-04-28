@@ -388,43 +388,58 @@ void Browser::OpenURLOffTheRecord(Profile* profile, const GURL& url) {
 // TODO(erikkay): There are multiple reasons why this could fail.  Should
 // this function return an error reason as well so that callers can show
 // reasonable errors?
-bool Browser::OpenApplication(Profile* profile, const std::string& app_id) {
+TabContents* Browser::OpenApplication(Profile* profile,
+                                      const std::string& app_id) {
   ExtensionsService* extensions_service = profile->GetExtensionsService();
   if (!extensions_service->is_ready())
-    return false;
+    return NULL;
 
   // If the extension with |app_id| could't be found, most likely because it
   // was uninstalled.
-  Extension* extension_app =
-      extensions_service->GetExtensionById(app_id, false);
-  if (!extension_app)
-    return false;
+  Extension* extension = extensions_service->GetExtensionById(app_id, false);
+  if (!extension)
+    return NULL;
 
-  // TODO(erikkay): Support refocus.
-  Extension::LaunchContainer launch_container =
-      extension_app->launch_container();
-  switch (launch_container) {
+  return OpenApplication(profile, extension, extension->launch_container());
+}
+
+TabContents* Browser::OpenApplication(Profile* profile,
+                                      Extension* extension,
+                                      Extension::LaunchContainer container) {
+  TabContents* tab = NULL;
+  switch (container) {
     case Extension::LAUNCH_WINDOW:
     case Extension::LAUNCH_PANEL:
-      Browser::OpenApplicationWindow(profile, extension_app);
+      tab = Browser::OpenApplicationWindow(profile, extension, container,
+                                           GURL());
       break;
     case Extension::LAUNCH_TAB: {
-      return Browser::OpenApplicationTab(profile, extension_app);
+      tab = Browser::OpenApplicationTab(profile, extension);
       break;
     }
     default:
       NOTREACHED();
-      return false;
+      break;
   }
-  return true;
+  if (tab) {
+    Browser* browser = tab->delegate()->GetBrowser();
+    if (browser && extension && extension->launch_fullscreen())
+      browser->window()->SetFullscreen(true);
+  }
+  return tab;
 }
 
 // static
-void Browser::OpenApplicationWindow(Profile* profile, Extension* extension,
-                                    const GURL& url, bool as_panel) {
+TabContents* Browser::OpenApplicationWindow(
+    Profile* profile,
+    Extension* extension,
+    Extension::LaunchContainer container,
+    const GURL& url) {
+  // TODO(erikkay) this can't be correct for extensions
   std::wstring app_name = web_app::GenerateApplicationNameFromURL(url);
   RegisterAppPrefs(app_name);
 
+  bool as_panel = extension && (container == Extension::LAUNCH_PANEL);
   Browser* browser = Browser::CreateForApp(app_name, extension, profile,
                                            as_panel);
   browser->AddTabWithURL(extension ? extension->GetFullLaunchURL() : url,
@@ -435,6 +450,7 @@ void Browser::OpenApplicationWindow(Profile* profile, Extension* extension,
   tab_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
   tab_contents->render_view_host()->SyncRendererPrefs();
   browser->window()->Show();
+
   // TODO(jcampan): http://crbug.com/8123 we should not need to set the initial
   //                focus explicitly.
   tab_contents->view()->SetInitialFocus();
@@ -448,19 +464,22 @@ void Browser::OpenApplicationWindow(Profile* profile, Extension* extension,
     // pending web app action.
     browser->pending_web_app_action_ = UPDATE_SHORTCUT;
   }
+
+  return tab_contents;
 }
 
 // static
-void Browser::OpenApplicationWindow(Profile* profile, Extension* extension) {
-  OpenApplicationWindow(profile, extension, GURL(),
-      (extension->launch_container() == Extension::LAUNCH_PANEL));
+TabContents* Browser::OpenApplicationWindow(Profile* profile,
+                                            GURL& url) {
+  return OpenApplicationWindow(profile, NULL, Extension::LAUNCH_WINDOW, url);
 }
 
 // static
-bool Browser::OpenApplicationTab(Profile* profile, Extension* extension) {
+TabContents* Browser::OpenApplicationTab(Profile* profile,
+                                         Extension* extension) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser || browser->type() != Browser::TYPE_NORMAL)
-    return false;
+    return NULL;
 
   // TODO(erikkay): This doesn't seem like the right transition in all cases.
   PageTransition::Type transition = PageTransition::START_PAGE;
@@ -470,7 +489,7 @@ bool Browser::OpenApplicationTab(Profile* profile, Extension* extension) {
                                        transition, false, NULL);
   tab_contents->SetAppExtension(extension);
   browser->AddTab(tab_contents, transition);
-  return true;
+  return tab_contents;
 }
 
 // static

@@ -61,7 +61,8 @@ class ManifestTest : public testing::Test {
     EXPECT_FALSE(extension.get()) <<
         "Expected failure loading extension '" << name <<
         "', but didn't get one.";
-    EXPECT_TRUE(MatchPatternASCII(error, expected_error));
+    EXPECT_TRUE(MatchPatternASCII(error, expected_error)) << name <<
+        " expected '" << expected_error << "' but got '" << error << "'";
   }
 
   bool enable_apps_;
@@ -81,6 +82,7 @@ TEST_F(ManifestTest, ValidApp) {
   EXPECT_EQ("mail/", extension->web_extent().paths()[0]);
   EXPECT_EQ("foobar/", extension->web_extent().paths()[1]);
   EXPECT_EQ(Extension::LAUNCH_WINDOW, extension->launch_container());
+  EXPECT_EQ(false, extension->launch_fullscreen());
   EXPECT_EQ("mail/", extension->launch_web_url());
 }
 
@@ -130,12 +132,17 @@ TEST_F(ManifestTest, AppLaunchContainer) {
   extension.reset(LoadAndExpectSuccess("launch_default.json"));
   EXPECT_EQ(Extension::LAUNCH_TAB, extension->launch_container());
 
+  extension.reset(LoadAndExpectSuccess("launch_fullscreen.json"));
+  EXPECT_EQ(true, extension->launch_fullscreen());
+
   LoadAndExpectError("launch_container_invalid_type.json",
                      errors::kInvalidLaunchContainer);
   LoadAndExpectError("launch_container_invalid_value.json",
                      errors::kInvalidLaunchContainer);
   LoadAndExpectError("launch_container_without_launch_url.json",
                      errors::kLaunchContainerWithoutURL);
+  LoadAndExpectError("launch_fullscreen_invalid.json",
+                     errors::kInvalidLaunchFullscreen);
 }
 
 TEST_F(ManifestTest, AppLaunchURL) {

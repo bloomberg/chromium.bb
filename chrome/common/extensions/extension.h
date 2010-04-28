@@ -321,6 +321,7 @@ class Extension {
   const std::string& launch_local_path() const { return launch_local_path_; }
   const std::string& launch_web_url() const { return launch_web_url_; }
   LaunchContainer launch_container() const { return launch_container_; }
+  bool launch_fullscreen() const { return launch_fullscreen_; }
 
   // Gets the fully resolved absolute launch URL.
   GURL GetFullLaunchURL() const;
@@ -375,6 +376,8 @@ class Extension {
   bool LoadWebOrigin(const DictionaryValue* manifest, std::string* error);
   bool LoadWebPaths(const DictionaryValue* manifest, std::string* error);
   bool LoadLaunchContainer(const DictionaryValue* manifest, std::string* error);
+  bool LoadLaunchFullscreen(const DictionaryValue* manifest,
+                            std::string* error);
   bool LoadLaunchURL(const DictionaryValue* manifest, std::string* error);
 
   // Helper method to load an ExtensionAction from the page_action or
@@ -502,6 +505,9 @@ class Extension {
 
   // The type of container to launch into.
   LaunchContainer launch_container_;
+
+  // Launch full screen by default.
+  bool launch_fullscreen_;
 
   // Cached images for this extension. This maps from the relative_path of the
   // resource to the cached image.

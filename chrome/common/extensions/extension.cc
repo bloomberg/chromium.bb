@@ -696,11 +696,26 @@ bool Extension::LoadLaunchContainer(const DictionaryValue* manifest,
   return true;
 }
 
+bool Extension::LoadLaunchFullscreen(const DictionaryValue* manifest,
+                                    std::string* error) {
+  Value* temp = NULL;
+  if (!manifest->Get(keys::kLaunchFullscreen, &temp))
+    return true;
+
+  if (!temp->GetAsBoolean(&launch_fullscreen_)) {
+    *error = errors::kInvalidLaunchFullscreen;
+    return false;
+  }
+
+  return true;
+}
+
 Extension::Extension(const FilePath& path)
     : converted_from_user_script_(false),
       is_theme_(false),
       web_content_enabled_(false),
       launch_container_(LAUNCH_TAB),
+      launch_fullscreen_(false),
       background_page_ready_(false),
       being_upgraded_(false) {
   DCHECK(path.IsAbsolute());
@@ -1433,7 +1448,8 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
       !LoadWebOrigin(manifest_value_.get(), error) ||
       !LoadWebPaths(manifest_value_.get(), error) ||
       !LoadLaunchURL(manifest_value_.get(), error) ||
-      !LoadLaunchContainer(manifest_value_.get(), error)) {
+      !LoadLaunchContainer(manifest_value_.get(), error) ||
+      !LoadLaunchFullscreen(manifest_value_.get(), error)) {
     return false;
   }
 

@@ -125,16 +125,20 @@ void AppLauncherHandler::HandleLaunchApp(const Value* value) {
     return;
   }
 
+  // Override the default launch container.
   Extension* extension =
       extensions_service_->GetExtensionById(extension_id, false);
   DCHECK(extension);
 
+  Extension::LaunchContainer container;
   if (launch_container == "tab")
-    Browser::OpenApplicationTab(profile, extension);
+    container = Extension::LAUNCH_TAB;
   else if (launch_container == "panel")
-    Browser::OpenApplicationWindow(profile, extension, GURL(), true);
+    container = Extension::LAUNCH_PANEL;
   else if (launch_container == "window")
-    Browser::OpenApplicationWindow(profile, extension, GURL(), false);
+    container = Extension::LAUNCH_WINDOW;
   else
     NOTREACHED() << "Unexpected launch container: " << launch_container << ".";
+
+  Browser::OpenApplication(profile, extension, container);
 }

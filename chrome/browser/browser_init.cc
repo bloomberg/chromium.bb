@@ -583,7 +583,7 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationWindow(Profile* profile) {
   // TODO(rafaelw): Do something reasonable here. Pop up a warning panel?
   // Open an URL to the gallery page of the extension id?
   if (!app_id.empty())
-    return Browser::OpenApplication(profile, app_id);
+    return Browser::OpenApplication(profile, app_id) != NULL;
 
   if (url_string.empty())
     return false;
@@ -599,7 +599,7 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationWindow(Profile* profile) {
         ChildProcessSecurityPolicy::GetInstance();
     if (policy->IsWebSafeScheme(url.scheme()) ||
         url.SchemeIs(chrome::kFileScheme)) {
-      Browser::OpenApplicationWindow(profile, NULL, url, false);
+      Browser::OpenApplicationWindow(profile, url);
       return true;
     }
   }

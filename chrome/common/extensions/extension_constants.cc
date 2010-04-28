@@ -20,6 +20,7 @@ const wchar_t* kIcons = L"icons";
 const wchar_t* kJs = L"js";
 const wchar_t* kLaunch = L"launch";
 const wchar_t* kLaunchContainer = L"launch.container";
+const wchar_t* kLaunchFullscreen = L"launch.fullscreen";
 const wchar_t* kLaunchLocalPath = L"launch.local_path";
 const wchar_t* kLaunchWebURL = L"launch.web_url";
 const wchar_t* kMatches = L"matches";
@@ -112,6 +113,8 @@ const char* kInvalidJsList =
     "Required value 'content_scripts[*].js' is invalid.";
 const char* kInvalidLaunchContainer =
     "Invalid value for 'launch.container'.";
+const char* kInvalidLaunchFullscreen =
+    "Invalid value for 'launch.fullscreen'.";
 const char* kInvalidLaunchLocalPath =
     "Invalid value for 'launch.local_path'.";
 const char* kInvalidLaunchWebURL =

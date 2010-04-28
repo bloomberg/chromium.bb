@@ -20,6 +20,7 @@
 #include "chrome/browser/tab_contents/page_navigator.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/toolbar_model.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/page_zoom.h"
 #include "gfx/rect.h"
@@ -208,24 +209,36 @@ class Browser : public TabStripModelDelegate,
   static void OpenURLOffTheRecord(Profile* profile, const GURL& url);
 
   // Open an application specified by |app_id| in the appropriate launch
-  // container.  Returns false if the app_id is invalid or if ExtensionsService
+  // container.  Returns NULL if the app_id is invalid or if ExtensionsService
   // isn't ready/available.
-  static bool OpenApplication(Profile* profile, const std::string& app_id);
+  static TabContents* OpenApplication(Profile* profile,
+                                      const std::string& app_id);
+
+  // Open |extension| in |container|.  Returns the TabContents* that was created
+  // or NULL.
+  static TabContents* OpenApplication(Profile* profile,
+                                      Extension* extension,
+                                      Extension::LaunchContainer container);
 
   // Opens a new application window for the specified url. If |as_panel|
   // is true, the application will be opened as a Browser::Type::APP_PANEL in
   // app panel window, otherwise it will be opened as as either
   // Browser::Type::APP a.k.a. "thin frame" (if |extension| is NULL) or
   // Browser::Type::EXTENSION_APP (if |extension| is non-NULL).
-  static void OpenApplicationWindow(Profile* profile, Extension* extension,
-                                    const GURL& url, bool as_panel);
+  static TabContents* OpenApplicationWindow(
+      Profile* profile,
+      Extension* extension,
+      Extension::LaunchContainer container,
+      const GURL& url);
 
   // Open an application for |extension| in a new application window or panel.
-  static void OpenApplicationWindow(Profile* profile, Extension* extension);
+  static TabContents* OpenApplicationWindow(Profile* profile,
+                                            GURL& url);
 
   // Open an application for |extension| in a new application tab.  Returns
-  // false if there are no appropriate existing browser windows for |profile|.
-  static bool OpenApplicationTab(Profile* profile, Extension* extension);
+  // NULL if there are no appropriate existing browser windows for |profile|.
+  static TabContents* OpenApplicationTab(Profile* profile,
+                                         Extension* extension);
 
   // Opens a new window and opens the bookmark manager.
   static void OpenBookmarkManagerWindow(Profile* profile);
