@@ -40,6 +40,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // Overridden from views::NonClientFrameView:
   virtual gfx::Rect GetBoundsForClientView() const;
   virtual bool AlwaysUseNativeFrame() const;
+  virtual bool AlwaysUseCustomFrame() const;
   virtual gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const;
   virtual int NonClientHitTest(const gfx::Point& point);

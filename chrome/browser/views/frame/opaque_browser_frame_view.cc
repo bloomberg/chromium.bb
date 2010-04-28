@@ -261,6 +261,10 @@ bool OpaqueBrowserFrameView::AlwaysUseNativeFrame() const {
   return frame_->AlwaysUseNativeFrame();
 }
 
+bool OpaqueBrowserFrameView::AlwaysUseCustomFrame() const {
+  return true;
+}
+
 gfx::Rect OpaqueBrowserFrameView::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
   int top_height = NonClientTopBorderHeight();

@@ -111,6 +111,9 @@ bool BrowserFrameWin::AlwaysUseNativeFrame() const {
   if (browser_view_->IsBrowserTypePanel())
     return false;
 
+  if (browser_view_->browser()->type() == Browser::TYPE_EXTENSION_APP)
+    return false;
+
   // We don't theme popup or app windows, so regardless of whether or not a
   // theme is active for normal browser windows, we don't want to use the custom
   // frame for popups/apps.
