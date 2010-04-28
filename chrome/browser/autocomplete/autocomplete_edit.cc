@@ -184,6 +184,9 @@ void AutocompleteEditModel::AdjustTextForCopy(int sel_start,
     return;  // Can't be parsed as a url, no need to adjust text.
 
   if (!user_input_in_progress() && is_all_selected) {
+    // The user selected all the text and has not edited it. Use the url as the
+    // text so that if the scheme was stripped it's added back, and the url
+    // is unescaped (we escape parts of the url for display).
     *text = UTF8ToWide(url->spec());
     *write_url = true;
     return;
