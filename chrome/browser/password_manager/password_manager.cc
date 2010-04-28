@@ -116,7 +116,7 @@ void PasswordManager::DidStopLoading() {
   }
 }
 
-void PasswordManager::PasswordFormsSeen(
+void PasswordManager::PasswordFormsFound(
     const std::vector<PasswordForm>& forms) {
   if (!delegate_->GetProfileForPasswordManager())
     return;
@@ -128,22 +128,28 @@ void PasswordManager::PasswordFormsSeen(
 
   std::vector<PasswordForm>::const_iterator iter;
   for (iter = forms.begin(); iter != forms.end(); iter++) {
-    if (provisional_save_manager_.get() &&
-        provisional_save_manager_->DoesManage(*iter)) {
-      // The form trying to be saved has immediately re-appeared. Assume
-      // login failure and abort this save.  Fallback to pending login state
-      // since the user may try again.
-      pending_login_managers_.push_back(provisional_save_manager_.release());
+    bool ssl_valid = iter->origin.SchemeIsSecure() && !had_ssl_error;
+    PasswordFormManager* manager =
+        new PasswordFormManager(delegate_->GetProfileForPasswordManager(),
+                                this, *iter, ssl_valid);
+    pending_login_managers_.push_back(manager);
+    manager->FetchMatchingLoginsFromWebDatabase();
+  }
+}
+
+void PasswordManager::PasswordFormsVisible(
+    const std::vector<PasswordForm>& visible_forms) {
+  if (!provisional_save_manager_.get())
+    return;
+  std::vector<PasswordForm>::const_iterator iter;
+  for (iter = visible_forms.begin(); iter != visible_forms.end(); iter++) {
+    if (provisional_save_manager_->DoesManage(*iter)) {
+      // The form trying to be saved has immediately re-appeared. Assume login
+      // failure and abort this save, by clearing provisional_save_manager_.
       // Don't delete the login managers since the user may try again
       // and we want to be able to save in that case.
+      provisional_save_manager_.release();
       break;
-    } else {
-      bool ssl_valid = iter->origin.SchemeIsSecure() && !had_ssl_error;
-      PasswordFormManager* manager =
-          new PasswordFormManager(delegate_->GetProfileForPasswordManager(),
-                                  this, *iter, ssl_valid);
-      pending_login_managers_.push_back(manager);
-      manager->FetchMatchingLoginsFromWebDatabase();
     }
   }
 }

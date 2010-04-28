@@ -763,7 +763,9 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ShowModalHTMLDialog,
                                     OnMsgShowModalHTMLDialog)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FormsSeen, OnMsgFormsSeen)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PasswordFormsSeen, OnMsgPasswordFormsSeen)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_PasswordFormsFound, OnMsgPasswordFormsFound)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_PasswordFormsVisible,
+                        OnMsgPasswordFormsVisible)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FormSubmitted, OnMsgFormSubmitted)
     IPC_MESSAGE_HANDLER(ViewHostMsg_StartDragging, OnMsgStartDragging)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateDragCursor, OnUpdateDragCursor)
@@ -1357,9 +1359,14 @@ void RenderViewHost::OnMsgFormsSeen(const std::vector<FormData>& forms) {
     autofill_delegate->FormsSeen(forms);
 }
 
-void RenderViewHost::OnMsgPasswordFormsSeen(
+void RenderViewHost::OnMsgPasswordFormsFound(
     const std::vector<PasswordForm>& forms) {
-  delegate_->PasswordFormsSeen(forms);
+  delegate_->PasswordFormsFound(forms);
+}
+
+void RenderViewHost::OnMsgPasswordFormsVisible(
+    const std::vector<PasswordForm>& visible_forms) {
+  delegate_->PasswordFormsVisible(visible_forms);
 }
 
 void RenderViewHost::OnMsgFormSubmitted(const FormData& form) {

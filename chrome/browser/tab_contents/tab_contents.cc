@@ -2593,9 +2593,14 @@ void TabContents::ShowModalHTMLDialog(const GURL& url, int width, int height,
   }
 }
 
-void TabContents::PasswordFormsSeen(
+void TabContents::PasswordFormsFound(
     const std::vector<webkit_glue::PasswordForm>& forms) {
-  GetPasswordManager()->PasswordFormsSeen(forms);
+  GetPasswordManager()->PasswordFormsFound(forms);
+}
+
+void TabContents::PasswordFormsVisible(
+    const std::vector<webkit_glue::PasswordForm>& visible_forms) {
+  GetPasswordManager()->PasswordFormsVisible(visible_forms);
 }
 
 // Checks to see if we should generate a keyword based on the OSDD, and if

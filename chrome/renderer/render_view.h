@@ -871,7 +871,8 @@ class RenderView : public RenderWidget,
   void SendForms(WebKit::WebFrame* frame);
 
   // Scans the given frame for password forms and sends them up to the browser.
-  void SendPasswordForms(WebKit::WebFrame* frame);
+  // If |only_visible| is true, only forms visible in the layout are sent
+  void SendPasswordForms(WebKit::WebFrame* frame, bool only_visible);
 
   void Print(WebKit::WebFrame* frame, bool script_initiated);
 

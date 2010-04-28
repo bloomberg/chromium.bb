@@ -78,8 +78,8 @@ class AccountCreationTabContents : public TabContents,
       }
       if (!user_name.empty()) {
         // We don't have password here because all password fields were
-        // stripped. Overriding TabContents::PasswordFormsSeen also has no sense
-        // becuase password value is always empty for account create page.
+        // stripped. Overriding TabContents::PasswordFormsFound also makes no
+        // sense because password value is always empty for account create page.
         delegate_->OnUserCreated(user_name + "@" + domain, "");
       }
     }

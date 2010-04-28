@@ -550,8 +550,10 @@ class RenderViewHost : public RenderWidgetHost {
                                 IPC::Message* reply_msg);
   void OnMsgFormsSeen(
       const std::vector<webkit_glue::FormData>& forms);
-  void OnMsgPasswordFormsSeen(
+  void OnMsgPasswordFormsFound(
       const std::vector<webkit_glue::PasswordForm>& forms);
+  void OnMsgPasswordFormsVisible(
+      const std::vector<webkit_glue::PasswordForm>& visible_forms);
   void OnMsgFormSubmitted(const webkit_glue::FormData& forms);
   void OnMsgStartDragging(const WebDropData& drop_data,
                           WebKit::WebDragOperationsMask operations_allowed,

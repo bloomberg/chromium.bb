@@ -122,7 +122,8 @@ TEST_F(PasswordManagerTest, FormSubmitEmptyStore) {
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
-  manager()->PasswordFormsSeen(observed);  // The initial load.
+  manager()->PasswordFormsFound(observed);  // The initial load.
+  manager()->PasswordFormsVisible(observed);  // The initial layout.
 
   // And the form submit contract is to call ProvisionallySavePassword.
   manager()->ProvisionallySavePassword(form);
@@ -134,7 +135,7 @@ TEST_F(PasswordManagerTest, FormSubmitEmptyStore) {
   // Now the password manager waits for the navigation to complete.
   manager()->DidStopLoading();
 
-  EXPECT_FALSE(NULL == form_to_save.get());
+  ASSERT_FALSE(NULL == form_to_save.get());
   EXPECT_CALL(*store_, AddLogin(FormMatches(form)));
 
   // Simulate saving the form, as if the info bar was accepted.
@@ -156,7 +157,8 @@ TEST_F(PasswordManagerTest, FormSubmitNoGoodMatch) {
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
-  manager()->PasswordFormsSeen(observed);  // The initial load.
+  manager()->PasswordFormsFound(observed);  // The initial load.
+  manager()->PasswordFormsVisible(observed);  // The initial layout.
   manager()->ProvisionallySavePassword(form);
 
   // We still expect an add, since we didn't have a good match.
@@ -179,7 +181,8 @@ TEST_F(PasswordManagerTest, FormSeenThenLeftPage) {
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
-  manager()->PasswordFormsSeen(observed);  // The initial load.
+  manager()->PasswordFormsFound(observed);  // The initial load.
+  manager()->PasswordFormsVisible(observed);  // The initial layout.
 
   manager()->DidNavigate();
 
@@ -191,16 +194,68 @@ TEST_F(PasswordManagerTest, FormSubmitFailedLogin) {
   std::vector<PasswordForm*> result;  // Empty password store.
   EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
   EXPECT_CALL(*store_, GetLogins(_,_))
-    .WillOnce(DoAll(WithArg<1>(InvokeConsumer(0, result)), Return(0)));
+    .WillRepeatedly(DoAll(WithArg<1>(InvokeConsumer(0, result)), Return(0)));
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
-  manager()->PasswordFormsSeen(observed);  // The initial load.
+  manager()->PasswordFormsFound(observed);  // The initial load.
+  manager()->PasswordFormsVisible(observed);  // The initial layout.
 
   manager()->ProvisionallySavePassword(form);
 
-  manager()->PasswordFormsSeen(observed);  // Simulated re-appearance.
+  // The form reappears, and is visible in the layout:
+  manager()->PasswordFormsFound(observed);
+  manager()->PasswordFormsVisible(observed);
 
   // No expected calls to the PasswordStore...
+  manager()->DidStopLoading();
+}
+
+TEST_F(PasswordManagerTest, FormSubmitInvisibleLogin) {
+  // Tests fix of issue 28911: if the login form reappears on the subsequent
+  // page, but is invisible, it shouldn't count as a failed login.
+  std::vector<PasswordForm*> result;  // Empty password store.
+  EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
+  EXPECT_CALL(*store_, GetLogins(_,_))
+      .WillRepeatedly(DoAll(WithArg<1>(InvokeConsumer(0, result)), Return(0)));
+  std::vector<PasswordForm> observed;
+  PasswordForm form(MakeSimpleForm());
+  observed.push_back(form);
+  manager()->PasswordFormsFound(observed);  // The initial load.
+  manager()->PasswordFormsVisible(observed);  // The initial layout.
+
+  manager()->ProvisionallySavePassword(form);
+
+  // The form reappears, but is not visible in the layout:
+  manager()->PasswordFormsFound(observed);
+  // No call to PasswordFormsVisible.
+
+  // Expect info bar to appear:
+  scoped_ptr<PasswordFormManager> form_to_save;
+  EXPECT_CALL(delegate_, AddSavePasswordInfoBar(_))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_to_save)));
+
+  manager()->DidStopLoading();
+
+  ASSERT_FALSE(NULL == form_to_save.get());
+  EXPECT_CALL(*store_, AddLogin(FormMatches(form)));
+  // Simulate saving the form.
+  form_to_save->Save();
+}
+
+TEST_F(PasswordManagerTest, InitiallyInvisibleForm) {
+  // Make sure an invisible login form still gets autofilled.
+  std::vector<PasswordForm*> result;
+  PasswordForm* existing = new PasswordForm(MakeSimpleForm());
+  result.push_back(existing);
+  EXPECT_CALL(delegate_, FillPasswordForm(_));
+  EXPECT_CALL(*store_, GetLogins(_,_))
+      .WillRepeatedly(DoAll(WithArg<1>(InvokeConsumer(0, result)), Return(0)));
+  std::vector<PasswordForm> observed;
+  PasswordForm form(MakeSimpleForm());
+  observed.push_back(form);
+  manager()->PasswordFormsFound(observed);  // The initial load.
+  // PasswordFormsVisible is not called.
+
   manager()->DidStopLoading();
 }

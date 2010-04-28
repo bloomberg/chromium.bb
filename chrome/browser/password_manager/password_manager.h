@@ -71,7 +71,11 @@ class PasswordManager : public LoginModel {
   void DidStopLoading();
 
   // Notifies the password manager that password forms were parsed on the page.
-  void PasswordFormsSeen(const std::vector<webkit_glue::PasswordForm>& forms);
+  void PasswordFormsFound(const std::vector<webkit_glue::PasswordForm>& forms);
+
+  // Notifies the password manager which password forms are initially visible.
+  void PasswordFormsVisible(
+       const std::vector<webkit_glue::PasswordForm>& visible_forms);
 
   // When a form is submitted, we prepare to save the password but wait
   // until we decide the user has successfully logged in. This is step 1

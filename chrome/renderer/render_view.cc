@@ -2685,7 +2685,7 @@ void RenderView::didFinishDocumentLoad(WebFrame* frame) {
   // TODO(jhawkins): Make these use the FormManager.
   form_manager_.ExtractForms(frame);
   SendForms(frame);
-  SendPasswordForms(frame);
+  SendPasswordForms(frame, false);
 
   // Check whether we have new encoding name.
   UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
@@ -2729,6 +2729,9 @@ void RenderView::didFinishLoad(WebFrame* frame) {
   DCHECK(navigation_state);
   navigation_state->set_finish_load_time(Time::Now());
   navigation_state->user_script_idle_scheduler()->DidFinishLoad();
+
+  // Let the password manager know which password forms are actually visible.
+  SendPasswordForms(frame, true);
 }
 
 void RenderView::didNavigateWithinPage(
@@ -4718,7 +4721,7 @@ void RenderView::didChangeAccessibilityObjectState(
 #endif
 }
 
-void RenderView::SendPasswordForms(WebFrame* frame) {
+void RenderView::SendPasswordForms(WebFrame* frame, bool only_visible) {
   WebVector<WebFormElement> forms;
   frame->forms(forms);
 
@@ -4727,16 +4730,22 @@ void RenderView::SendPasswordForms(WebFrame* frame) {
     const WebFormElement& form = forms[i];
 
     // Respect autocomplete=off.
-    if (form.autoComplete()) {
-      scoped_ptr<PasswordForm> password_form(
-          PasswordFormDomManager::CreatePasswordForm(form));
-      if (password_form.get())
-        password_forms.push_back(*password_form);
-    }
+    if (!form.autoComplete())
+      continue;
+    if (only_visible && !form.hasNonEmptyBoundingBox())
+      continue;
+    scoped_ptr<PasswordForm> password_form(
+        PasswordFormDomManager::CreatePasswordForm(form));
+    if (password_form.get())
+      password_forms.push_back(*password_form);
   }
 
-  if (!password_forms.empty())
-    Send(new ViewHostMsg_PasswordFormsSeen(routing_id_, password_forms));
+  if (password_forms.empty())
+    return;
+  if (only_visible)
+    Send(new ViewHostMsg_PasswordFormsVisible(routing_id_, password_forms));
+  else
+    Send(new ViewHostMsg_PasswordFormsFound(routing_id_, password_forms));
 }
 
 void RenderView::Print(WebFrame* frame, bool script_initiated) {
