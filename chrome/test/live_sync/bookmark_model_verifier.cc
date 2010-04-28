@@ -29,7 +29,8 @@ void BookmarkModelVerifier::ExpectBookmarkInfoMatch(
 }
 
 BookmarkModelVerifier::BookmarkModelVerifier() {
-  verifier_profile_.reset(LiveSyncTest::MakeProfile(L"verifier"));
+  verifier_profile_.reset(LiveSyncTest::MakeProfile(
+      FILE_PATH_LITERAL("verifier")));
   verifier_ = verifier_profile_->GetBookmarkModel();
 }
 

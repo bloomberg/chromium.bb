@@ -36,7 +36,7 @@ class TwoClientLiveBookmarksSyncTest : public LiveSyncTest {
   }
   virtual ~TwoClientLiveBookmarksSyncTest() {}
   bool SetupSync() {
-    profile2_.reset(MakeProfile(L"client2"));
+    profile2_.reset(MakeProfile(FILE_PATH_LITERAL("client2")));
     client1_.reset(new ProfileSyncServiceTestHarness(
         browser()->profile(), username_, password_));
     client2_.reset(new ProfileSyncServiceTestHarness(
@@ -2361,7 +2361,7 @@ IN_PROC_BROWSER_TEST_F(LiveSyncTestBasicHierarchy50BMBothClients,
 // Test Scribe ID - 373508.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     MC_SimpleMergeOfDifferentBMModels) {
-  set_profile2(MakeProfile(L"client2"));
+  set_profile2(MakeProfile(FILE_PATH_LITERAL("client2")));
   BookmarkModel* model_one = browser()->profile()->GetBookmarkModel();
   BookmarkModel* model_two = profile2()->GetBookmarkModel();
   LiveSyncTest::BlockUntilLoaded(model_two);
@@ -2430,7 +2430,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 // Test Scribe ID - 386586.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     MC_MergeSimpleBMHierarchyUnderBMBar) {
-  set_profile2(MakeProfile(L"client2"));
+  set_profile2(MakeProfile(FILE_PATH_LITERAL("client2")));
   BookmarkModel* model_one = browser()->profile()->GetBookmarkModel();
   BookmarkModel* model_two = profile2()->GetBookmarkModel();
   LiveSyncTest::BlockUntilLoaded(model_two);
@@ -2487,7 +2487,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 // Test Scribe ID - 386589.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     MC_MergeSimpleBMHierarchyEqualSetsUnderBMBar) {
-  set_profile2(MakeProfile(L"client2"));
+  set_profile2(MakeProfile(FILE_PATH_LITERAL("client2")));
   BookmarkModel* model_one = browser()->profile()->GetBookmarkModel();
   BookmarkModel* model_two = profile2()->GetBookmarkModel();
   LiveSyncTest::BlockUntilLoaded(model_two);

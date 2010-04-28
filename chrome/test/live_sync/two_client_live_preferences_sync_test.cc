@@ -24,7 +24,7 @@ class TwoClientLivePreferencesSyncTest : public LiveSyncTest {
   void SetupSync() {
     client1_.reset(new ProfileSyncServiceTestHarness(
         browser()->profile(), username_, password_));
-    profile2_.reset(MakeProfile(L"client2"));
+    profile2_.reset(MakeProfile(FILE_PATH_LITERAL("client2")));
     client2_.reset(new ProfileSyncServiceTestHarness(
         profile2_.get(), username_, password_));
     EXPECT_TRUE(client1_->SetupSync());
@@ -58,7 +58,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, Sanity) {
   EXPECT_EQ(false, prefs1()->GetBoolean(prefs::kHomePageIsNewTabPage));
   EXPECT_EQ(false, prefs2()->GetBoolean(prefs::kHomePageIsNewTabPage));
 
-  PrefService* expected = LiveSyncTest::MakeProfile(L"verifier")->GetPrefs();
+  PrefService* expected = LiveSyncTest::MakeProfile(
+      FILE_PATH_LITERAL("verifier"))->GetPrefs();
   expected->SetBoolean(prefs::kHomePageIsNewTabPage, true);
 
   prefs1()->SetBoolean(prefs::kHomePageIsNewTabPage, true);

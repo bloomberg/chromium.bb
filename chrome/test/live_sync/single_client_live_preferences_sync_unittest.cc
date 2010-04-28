@@ -42,7 +42,8 @@ class SingleClientLivePreferencesSyncTest : public LiveSyncTest {
 IN_PROC_BROWSER_TEST_F(SingleClientLivePreferencesSyncTest, Sanity) {
   SetupSync();
 
-  PrefService* expected = LiveSyncTest::MakeProfile(L"verifier")->GetPrefs();
+  PrefService* expected = LiveSyncTest::MakeProfile(
+      FILE_PATH_LITERAL("verifier"))->GetPrefs();
   expected->SetBoolean(prefs::kHomePageIsNewTabPage, true);
 
   prefs()->SetBoolean(prefs::kHomePageIsNewTabPage, true);

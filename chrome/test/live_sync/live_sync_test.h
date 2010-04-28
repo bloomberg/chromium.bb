@@ -58,7 +58,7 @@ class LiveSyncTest : public InProcessBrowserTest {
   static const BookmarkNode* GetByUniqueURL(BookmarkModel* m, const GURL& url);
 
   // Helper to ProfileManager::CreateProfile that handles path creation.
-  static Profile* MakeProfile(const std::wstring& name);
+  static Profile* MakeProfile(const FilePath::CharType* name);
 
   // Utility to block (by running the current MessageLoop) until the model has
   // loaded.  Note this is required instead of using m->BlockTillLoaded, as that

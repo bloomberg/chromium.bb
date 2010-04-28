@@ -80,11 +80,11 @@ const BookmarkNode* LiveSyncTest::GetByUniqueURL(BookmarkModel* m,
 }
 
 // static
-Profile* LiveSyncTest::MakeProfile(const std::wstring& name) {
+Profile* LiveSyncTest::MakeProfile(const FilePath::CharType* name) {
   FilePath path;
   PathService::Get(chrome::DIR_USER_DATA, &path);
-  path.Append(FilePath::FromWStringHack(name));
-  return ProfileManager::CreateProfile(path);
+
+  return ProfileManager::CreateProfile(path.Append(name));
 }
 
 void LiveSyncTest::SetUpInProcessBrowserTestFixture() {
