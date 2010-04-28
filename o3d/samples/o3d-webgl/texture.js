@@ -281,9 +281,43 @@ o3d.Texture2D.prototype.setFromBitmap =
                      0,  // Level.
                      bitmap.canvas_,
                      bitmap.defer_flip_vertically_to_texture_);
+  this.setupRepeatModes_(bitmap.canvas_.width, bitmap.canvas_.height);
   if (bitmap.defer_mipmaps_to_texture_) {
     this.generateMips();
   }
+};
+
+
+/**
+ * Sets up the repeat modes for the given width and height.
+ * Assumes the texture is already bound to the TEXTURE_2D binding point.
+ * @private
+ */
+o3d.Texture2D.prototype.setupRepeatModes_ = function(width, height) {
+  // OpenGL ES 2.0 and consequently WebGL don't support anything but
+  // CLAMP_TO_EDGE for NPOT textures.
+  if (o3d.Texture2D.isPowerOfTwo_(width) &&
+      o3d.Texture2D.isPowerOfTwo_(height)) {
+    this.gl.texParameteri(this.gl.TEXTURE_2D,
+        this.gl.TEXTURE_WRAP_S, this.gl.REPEAT);
+    this.gl.texParameteri(this.gl.TEXTURE_2D,
+        this.gl.TEXTURE_WRAP_T, this.gl.REPEAT);
+  } else {
+    this.gl.texParameteri(this.gl.TEXTURE_2D,
+        this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+    this.gl.texParameteri(this.gl.TEXTURE_2D,
+        this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+  }
+};
+
+/**
+ * Indicates whether the given number is a power of two.
+ * @private
+ */
+o3d.Texture2D.isPowerOfTwo_ = function(value) {
+  if (value == undefined)
+    return false;
+  return (value & (value - 1)) == 0;
 };
 
 

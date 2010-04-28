@@ -80,7 +80,19 @@ o3djs.webgl.makeClients = function(callback,
     clientElements.push(objElem);
   }
 
-  callback(clientElements);
+  // Wait for the client elements to be fully initialized. This
+  // involves waiting for the page to fully layout and the initial
+  // resize event to be processed.
+  var clearId = window.setInterval(function() {
+    for (var cc = 0; cc < clientElements.length; ++cc) {
+      var element = clientElements[cc];
+      if (!element.sizeInitialized_) {
+        return;
+      }
+    }
+    window.clearInterval(clearId);
+    callback(clientElements);
+  });
 };
 
 
@@ -154,6 +166,7 @@ o3djs.webgl.createClient = function(element, opt_features, opt_debug) {
     var height = Math.max(1, canvas.clientHeight);
     canvas.width = width;
     canvas.height = height;
+    canvas.sizeInitialized_ = true;
   };
   window.addEventListener('resize', resizeHandler, false);
   setTimeout(resizeHandler, 0);
