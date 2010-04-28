@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "net/base/net_log.h"
+#include "net/base/capturing_net_log.h"
 
 namespace net {
 

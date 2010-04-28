@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/thread.h"
-#include "net/base/net_log.h"
+#include "net/base/capturing_net_log.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/proxy_info.h"
 
@@ -247,7 +247,7 @@ int SingleThreadedProxyResolver::GetProxyForURL(const GURL& url,
   } else {
     // Otherwise the job will get started eventually by ProcessPendingJobs().
     job->net_log()->BeginEvent(
-        NetLog::TYPE_WAITING_FOR_SINGLE_PROXY_RESOLVER_THREAD);
+        NetLog::TYPE_WAITING_FOR_SINGLE_PROXY_RESOLVER_THREAD, NULL);
   }
 
   // Completion will be notified through |callback|, unless the caller cancels
@@ -329,7 +329,7 @@ void SingleThreadedProxyResolver::ProcessPendingJobs() {
     return;
 
   job->net_log()->EndEvent(
-      NetLog::TYPE_WAITING_FOR_SINGLE_PROXY_RESOLVER_THREAD);
+      NetLog::TYPE_WAITING_FOR_SINGLE_PROXY_RESOLVER_THREAD, NULL);
 
   EnsureThreadStarted();
   job->Start();

@@ -159,38 +159,39 @@ int SpdyNetworkTransaction::DoLoop(int result) {
     switch (state) {
       case STATE_INIT_CONNECTION:
         DCHECK_EQ(OK, rv);
-        net_log_.BeginEvent(NetLog::TYPE_SPDY_TRANSACTION_INIT_CONNECTION);
+        net_log_.BeginEvent(NetLog::TYPE_SPDY_TRANSACTION_INIT_CONNECTION,
+                            NULL);
         rv = DoInitConnection();
         break;
       case STATE_INIT_CONNECTION_COMPLETE:
-        net_log_.EndEvent(NetLog::TYPE_SPDY_TRANSACTION_INIT_CONNECTION);
+        net_log_.EndEvent(NetLog::TYPE_SPDY_TRANSACTION_INIT_CONNECTION, NULL);
         rv = DoInitConnectionComplete(rv);
         break;
       case STATE_SEND_REQUEST:
         DCHECK_EQ(OK, rv);
-        net_log_.BeginEvent(NetLog::TYPE_SPDY_TRANSACTION_SEND_REQUEST);
+        net_log_.BeginEvent(NetLog::TYPE_SPDY_TRANSACTION_SEND_REQUEST, NULL);
         rv = DoSendRequest();
         break;
       case STATE_SEND_REQUEST_COMPLETE:
-        net_log_.EndEvent(NetLog::TYPE_SPDY_TRANSACTION_SEND_REQUEST);
+        net_log_.EndEvent(NetLog::TYPE_SPDY_TRANSACTION_SEND_REQUEST, NULL);
         rv = DoSendRequestComplete(rv);
         break;
       case STATE_READ_HEADERS:
         DCHECK_EQ(OK, rv);
-        net_log_.BeginEvent(NetLog::TYPE_SPDY_TRANSACTION_READ_HEADERS);
+        net_log_.BeginEvent(NetLog::TYPE_SPDY_TRANSACTION_READ_HEADERS, NULL);
         rv = DoReadHeaders();
         break;
       case STATE_READ_HEADERS_COMPLETE:
-        net_log_.EndEvent(NetLog::TYPE_SPDY_TRANSACTION_READ_HEADERS);
+        net_log_.EndEvent(NetLog::TYPE_SPDY_TRANSACTION_READ_HEADERS, NULL);
         rv = DoReadHeadersComplete(rv);
         break;
       case STATE_READ_BODY:
         DCHECK_EQ(OK, rv);
-        net_log_.BeginEvent(NetLog::TYPE_SPDY_TRANSACTION_READ_BODY);
+        net_log_.BeginEvent(NetLog::TYPE_SPDY_TRANSACTION_READ_BODY, NULL);
         rv = DoReadBody();
         break;
       case STATE_READ_BODY_COMPLETE:
-        net_log_.EndEvent(NetLog::TYPE_SPDY_TRANSACTION_READ_BODY);
+        net_log_.EndEvent(NetLog::TYPE_SPDY_TRANSACTION_READ_BODY, NULL);
         rv = DoReadBodyComplete(rv);
         break;
       case STATE_NONE:

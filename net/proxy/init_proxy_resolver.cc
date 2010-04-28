@@ -42,7 +42,7 @@ int InitProxyResolver::Init(const ProxyConfig& config,
 
   net_log_ = net_log;
 
-  net_log_.BeginEvent(NetLog::TYPE_INIT_PROXY_RESOLVER);
+  net_log_.BeginEvent(NetLog::TYPE_INIT_PROXY_RESOLVER, NULL);
 
   pac_urls_ = BuildPacUrlsFallbackList(config);
   DCHECK(!pac_urls_.empty());
@@ -126,11 +126,12 @@ int InitProxyResolver::DoFetchPacScript() {
 
   const GURL& pac_url = current_pac_url();
 
-  net_log_.BeginEventWithString(
-      NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT, "url", pac_url.spec());
+  net_log_.BeginEvent(
+      NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
+      new NetLogStringParameter("url", pac_url.spec()));
 
   if (!proxy_script_fetcher_) {
-    net_log_.AddEvent(NetLog::TYPE_INIT_PROXY_RESOLVER_HAS_NO_FETCHER);
+    net_log_.AddEvent(NetLog::TYPE_INIT_PROXY_RESOLVER_HAS_NO_FETCHER, NULL);
     return ERR_UNEXPECTED;
   }
 
@@ -141,11 +142,11 @@ int InitProxyResolver::DoFetchPacScriptComplete(int result) {
   DCHECK(resolver_->expects_pac_bytes());
 
   if (result == OK) {
-    net_log_.EndEvent(NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT);
+    net_log_.EndEvent(NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT, NULL);
   } else {
-    net_log_.EndEventWithInteger(
+    net_log_.EndEvent(
         NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
-        "net_error", result);
+        new NetLogIntegerParameter("net_error", result));
     return TryToFallbackPacUrl(result);
   }
 
@@ -154,7 +155,7 @@ int InitProxyResolver::DoFetchPacScriptComplete(int result) {
 }
 
 int InitProxyResolver::DoSetPacScript() {
-  net_log_.BeginEvent(NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT);
+  net_log_.BeginEvent(NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT, NULL);
 
   const GURL& pac_url = current_pac_url();
 
@@ -167,13 +168,13 @@ int InitProxyResolver::DoSetPacScript() {
 
 int InitProxyResolver::DoSetPacScriptComplete(int result) {
   if (result != OK) {
-    net_log_.EndEventWithInteger(
+    net_log_.EndEvent(
         NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT,
-        "net_error", result);
+        new NetLogIntegerParameter("net_error", result));
     return TryToFallbackPacUrl(result);
   }
 
-  net_log_.EndEvent(NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT);
+  net_log_.EndEvent(NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT, NULL);
   return result;
 }
 
@@ -189,7 +190,7 @@ int InitProxyResolver::TryToFallbackPacUrl(int error) {
   ++current_pac_url_index_;
 
   net_log_.AddEvent(
-      NetLog::TYPE_INIT_PROXY_RESOLVER_FALLING_BACK_TO_NEXT_PAC_URL);
+      NetLog::TYPE_INIT_PROXY_RESOLVER_FALLING_BACK_TO_NEXT_PAC_URL, NULL);
 
   next_state_ = GetStartState();
 
@@ -207,13 +208,13 @@ const GURL& InitProxyResolver::current_pac_url() const {
 }
 
 void InitProxyResolver::DidCompleteInit() {
-  net_log_.EndEvent(NetLog::TYPE_INIT_PROXY_RESOLVER);
+  net_log_.EndEvent(NetLog::TYPE_INIT_PROXY_RESOLVER, NULL);
 }
 
 void InitProxyResolver::Cancel() {
   DCHECK_NE(STATE_NONE, next_state_);
 
-  net_log_.AddEvent(NetLog::TYPE_CANCELLED);
+  net_log_.AddEvent(NetLog::TYPE_CANCELLED, NULL);
 
   switch (next_state_) {
     case STATE_FETCH_PAC_SCRIPT_COMPLETE:
