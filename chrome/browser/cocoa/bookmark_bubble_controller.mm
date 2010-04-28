@@ -193,6 +193,11 @@
 // handle when "choose another folder" was picked.
 - (IBAction)folderChanged:(id)sender {
   DCHECK([sender isEqual:folderPopUpButton_]);
+  // It is possible that due to model change our parent window has been closed
+  // but the popup is still showing and able to notify the controller of a
+  // folder change.  We ignore the sender in this case.
+  if (!parentWindow_)
+    return;
   NSMenuItem* selected = [folderPopUpButton_ selectedItem];
   ChooseAnotherFolder* chooseItem = [[self class] chooseAnotherFolderObject];
   if ([[selected representedObject] isEqual:chooseItem]) {
