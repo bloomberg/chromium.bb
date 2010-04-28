@@ -50,7 +50,7 @@ class Nigori {
   bool Decrypt(const std::string& value, std::string* decrypted);
 
   static const char kSaltSalt[];  // The salt used to derive the user salt.
-  static const size_t kSaltKeySizeInBits = 64;
+  static const size_t kSaltKeySizeInBits = 128;
   static const size_t kDerivedKeySizeInBits = 128;
   static const size_t kIvSize = 16;
   static const size_t kHashSize = 32;

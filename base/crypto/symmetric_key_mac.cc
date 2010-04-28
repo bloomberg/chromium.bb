@@ -23,8 +23,11 @@ CSSM_KEY_TYPE CheckKeyParams(base::SymmetricKey::Algorithm algorithm,
         << "Invalid key size " << key_size_in_bits << " bits";
     return CSSM_ALGID_AES;
   } else {
+    // FIPS 198 Section 3 requires a HMAC-SHA-1 derived keys to be at least
+    // (HMAC-SHA-1 output size / 2) to be compliant. Since the ouput size of
+    // HMAC-SHA-1 is 160 bits, we require at least 80 bits here.
     CHECK(algorithm == base::SymmetricKey::HMAC_SHA1);
-    CHECK(key_size_in_bits >= 64 && (key_size_in_bits % 8) == 0)
+    CHECK(key_size_in_bits >= 80 && (key_size_in_bits % 8) == 0)
         << "Invalid key size " << key_size_in_bits << " bits";
     return CSSM_ALGID_SHA1HMAC_LEGACY;
   }
