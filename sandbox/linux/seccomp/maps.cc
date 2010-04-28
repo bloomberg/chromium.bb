@@ -221,7 +221,10 @@ char* Maps::allocNearAddr(char* addr_target, size_t size, int prot) const {
                   static_cast<unsigned long>(addr) - kMaxDistance < gap_start) {
                 position = gap_start;
               } else {
-                position = addr - kMaxDistance;
+                position = (addr - kMaxDistance) & ~4095;
+                if (position < gap_start) {
+                  position = gap_start;
+                }
               }
             } else {
               // Otherwise, take the end of the region.
