@@ -43,61 +43,47 @@ class CookiesViewTest : public testing::Test {
                                gboolean expected_local_storage,
                                gboolean expected_appcache,
                                const CookiesView& cookies_view) {
+    GtkChromeCookieView* display = GTK_CHROME_COOKIE_VIEW(
+        cookies_view.cookie_display_);
+
     // Cookies
     EXPECT_EQ(expected_cookies,
-              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
-                                   cookie_name_entry_));
+              GTK_WIDGET_SENSITIVE(display->cookie_name_entry_));
     EXPECT_EQ(expected_cookies,
-              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
-                                   cookie_content_entry_));
+              GTK_WIDGET_SENSITIVE(display->cookie_content_entry_));
     EXPECT_EQ(expected_cookies,
-              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
-                                   cookie_domain_entry_));
+              GTK_WIDGET_SENSITIVE(display->cookie_domain_entry_));
     EXPECT_EQ(expected_cookies,
-              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
-                                   cookie_path_entry_));
+              GTK_WIDGET_SENSITIVE(display->cookie_path_entry_));
     EXPECT_EQ(expected_cookies,
-              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
-                                   cookie_send_for_entry_));
+              GTK_WIDGET_SENSITIVE(display->cookie_send_for_entry_));
     EXPECT_EQ(expected_cookies,
-              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
-                                   cookie_created_entry_));
+              GTK_WIDGET_SENSITIVE(display->cookie_created_entry_));
     EXPECT_EQ(expected_cookies,
-              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
-                                   cookie_expires_entry_));
+              GTK_WIDGET_SENSITIVE(display->cookie_expires_entry_));
     // Database
     EXPECT_EQ(expected_database,
-              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
-                                   database_description_entry_));
+              GTK_WIDGET_SENSITIVE(display->database_description_entry_));
     EXPECT_EQ(expected_database,
-              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
-                                   database_size_entry_));
+              GTK_WIDGET_SENSITIVE(display->database_size_entry_));
     EXPECT_EQ(expected_database,
-              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
-                                   database_last_modified_entry_));
+              GTK_WIDGET_SENSITIVE(display->database_last_modified_entry_));
     // Local Storage
     EXPECT_EQ(expected_local_storage,
-              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
-                                   local_storage_origin_entry_));
+              GTK_WIDGET_SENSITIVE(display->local_storage_origin_entry_));
     EXPECT_EQ(expected_local_storage,
-              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
-                                   local_storage_size_entry_));
-    EXPECT_EQ(expected_local_storage,
-              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
-                                   local_storage_last_modified_entry_));
+              GTK_WIDGET_SENSITIVE(display->local_storage_size_entry_));
+    EXPECT_EQ(expected_local_storage, GTK_WIDGET_SENSITIVE(
+        display->local_storage_last_modified_entry_));
     // AppCache
     EXPECT_EQ(expected_appcache,
-              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
-                                   appcache_manifest_entry_));
+              GTK_WIDGET_SENSITIVE(display->appcache_manifest_entry_));
     EXPECT_EQ(expected_appcache,
-              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
-                                   appcache_size_entry_));
+              GTK_WIDGET_SENSITIVE(display->appcache_size_entry_));
     EXPECT_EQ(expected_appcache,
-              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
-                                   appcache_created_entry_));
+              GTK_WIDGET_SENSITIVE(display->appcache_created_entry_));
     EXPECT_EQ(expected_appcache,
-              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
-                                   appcache_last_accessed_entry_));
+              GTK_WIDGET_SENSITIVE(display->appcache_last_accessed_entry_));
   }
 
   // Get the cookie names in the cookie list, as a comma seperated string.

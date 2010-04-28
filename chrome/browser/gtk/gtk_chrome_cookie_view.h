@@ -63,7 +63,14 @@ typedef struct {
   GtkWidget* cookie_path_entry_;
   GtkWidget* cookie_send_for_entry_;
   GtkWidget* cookie_created_entry_;
+
+  // Note: These two widgets are mutually exclusive based on what
+  // |editable_expiration| was when the cookie view was created. One of these
+  // variables will be NULL.
   GtkWidget* cookie_expires_entry_;
+  GtkWidget* cookie_expires_combobox_;
+
+  GtkListStore* cookie_expires_combobox_store_;
 
   // The database details widgets.
   GtkWidget* database_details_table_;
@@ -110,7 +117,7 @@ typedef struct {
 GType gtk_chrome_cookie_view_get_type();
 
 // Builds a new cookie view.
-GtkChromeCookieView* gtk_chrome_cookie_view_new();
+GtkWidget* gtk_chrome_cookie_view_new(gboolean editable_expiration);
 
 // Clears the cookie view.
 void gtk_chrome_cookie_view_clear(GtkChromeCookieView* widget);
@@ -166,5 +173,9 @@ void gtk_chrome_cookie_view_display_database_accessed(
 void gtk_chrome_cookie_view_display_appcache_created(
     GtkChromeCookieView* self,
     const GURL& manifest_url);
+
+// If |editable_expiration| was true at construction time, returns the value of
+// the combo box. Otherwise, returns false.
+bool gtk_chrome_cookie_view_session_expires(GtkChromeCookieView* self);
 
 #endif  // CHROME_BROWSER_GTK_GTK_CHROME_COOKIE_VIEW_H_

@@ -110,32 +110,33 @@ NativeDialog CookiePromptModalDialog::CreateNativeDialog() {
   g_signal_connect(expander, "notify::expanded",
                    G_CALLBACK(OnExpanderActivate), NULL);
 
-  GtkChromeCookieView* cookie_view = gtk_chrome_cookie_view_new();
-  gtk_chrome_cookie_view_clear(cookie_view);
+  cookie_view_ = gtk_chrome_cookie_view_new(TRUE);
+  gtk_chrome_cookie_view_clear(GTK_CHROME_COOKIE_VIEW(cookie_view_));
   if (type == CookiePromptModalDialog::DIALOG_TYPE_COOKIE) {
-    gtk_chrome_cookie_view_display_cookie_string(cookie_view,
-                                                 origin(), cookie_line());
+    gtk_chrome_cookie_view_display_cookie_string(
+        GTK_CHROME_COOKIE_VIEW(cookie_view_),
+        origin(), cookie_line());
   } else if (type == CookiePromptModalDialog::DIALOG_TYPE_LOCAL_STORAGE) {
     gtk_chrome_cookie_view_display_local_storage_item(
-        cookie_view,
+        GTK_CHROME_COOKIE_VIEW(cookie_view_),
         origin().host(),
         local_storage_key(),
         local_storage_value());
   } else if (type == CookiePromptModalDialog::DIALOG_TYPE_DATABASE) {
     gtk_chrome_cookie_view_display_database_accessed(
-        cookie_view,
+        GTK_CHROME_COOKIE_VIEW(cookie_view_),
         origin().host(),
         database_name(),
         display_name(),
         estimated_size());
   } else if (type == CookiePromptModalDialog::DIALOG_TYPE_APPCACHE) {
     gtk_chrome_cookie_view_display_appcache_created(
-        cookie_view,
+        GTK_CHROME_COOKIE_VIEW(cookie_view_),
         appcache_manifest_url());
   } else {
     NOTIMPLEMENTED();
   }
-  gtk_container_add(GTK_CONTAINER(expander), GTK_WIDGET(cookie_view));
+  gtk_container_add(GTK_CONTAINER(expander), cookie_view_);
 
   gtk_box_pack_end(GTK_BOX(content_area), GTK_WIDGET(expander),
                    FALSE, FALSE, 0);
@@ -155,8 +156,9 @@ void CookiePromptModalDialog::HandleDialogResponse(GtkDialog* dialog,
   if (response_id == GTK_RESPONSE_REJECT) {
     BlockSiteData(remember_radio);
   } else if (response_id == GTK_RESPONSE_ACCEPT) {
-    // TODO(erg): Needs to use |session_expire_| instead of true.
-    AllowSiteData(remember_radio, true);
+    bool expires = gtk_chrome_cookie_view_session_expires(
+        GTK_CHROME_COOKIE_VIEW(cookie_view_));
+    AllowSiteData(remember_radio, expires);
   } else {
     BlockSiteData(false);
   }

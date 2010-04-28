@@ -133,6 +133,9 @@ class CookiePromptModalDialog : public AppModalDialog {
 #if defined(OS_LINUX)
   // The "remember this choice" radio button in the dialog.
   GtkWidget* remember_radio_;
+
+  // The cookie view; we keep this to querry the result combobox.
+  GtkWidget* cookie_view_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(CookiePromptModalDialog);

@@ -79,7 +79,7 @@ CookiesView::CookiesView(
       destroy_dialog_in_destructor_(false) {
   Init(parent);
   gtk_widget_show_all(dialog_);
-  gtk_chrome_cookie_view_clear(cookie_display_);
+  gtk_chrome_cookie_view_clear(GTK_CHROME_COOKIE_VIEW(cookie_display_));
 }
 
 void CookiesView::TestDestroySyncrhonously() {
@@ -210,9 +210,9 @@ void CookiesView::Init(GtkWindow* parent) {
   g_signal_connect(selection_, "changed",
                    G_CALLBACK(OnTreeViewSelectionChangeThunk), this);
 
-  cookie_display_ = gtk_chrome_cookie_view_new();
+  cookie_display_ = gtk_chrome_cookie_view_new(FALSE);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
-                     GTK_WIDGET(cookie_display_), FALSE, FALSE, 0);
+                     cookie_display_, FALSE, FALSE, 0);
 
   // Populate the view.
   cookies_tree_adapter_->Init();
@@ -241,27 +241,30 @@ void CookiesView::EnableControls() {
         static_cast<CookieTreeNode*>(
             cookies_tree_adapter_->GetNode(&iter))->GetDetailedInfo();
     if (detailed_info.node_type == CookieTreeNode::DetailedInfo::TYPE_COOKIE) {
-      gtk_chrome_cookie_view_display_cookie(cookie_display_,
-                                            detailed_info.cookie->first,
-                                            detailed_info.cookie->second);
+      gtk_chrome_cookie_view_display_cookie(
+          GTK_CHROME_COOKIE_VIEW(cookie_display_),
+          detailed_info.cookie->first,
+          detailed_info.cookie->second);
     } else if (detailed_info.node_type ==
                CookieTreeNode::DetailedInfo::TYPE_DATABASE) {
-      gtk_chrome_cookie_view_display_database(cookie_display_,
-                                              *detailed_info.database_info);
+      gtk_chrome_cookie_view_display_database(
+          GTK_CHROME_COOKIE_VIEW(cookie_display_),
+          *detailed_info.database_info);
     } else if (detailed_info.node_type ==
                CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGE) {
       gtk_chrome_cookie_view_display_local_storage(
-          cookie_display_,
+          GTK_CHROME_COOKIE_VIEW(cookie_display_),
           *detailed_info.local_storage_info);
     } else if (detailed_info.node_type ==
                CookieTreeNode::DetailedInfo::TYPE_APPCACHE) {
-      gtk_chrome_cookie_view_display_app_cache(cookie_display_,
-                                               *detailed_info.appcache_info);
+      gtk_chrome_cookie_view_display_app_cache(
+          GTK_CHROME_COOKIE_VIEW(cookie_display_),
+          *detailed_info.appcache_info);
     } else {
-      gtk_chrome_cookie_view_clear(cookie_display_);
+      gtk_chrome_cookie_view_clear(GTK_CHROME_COOKIE_VIEW(cookie_display_));
     }
   } else {
-    gtk_chrome_cookie_view_clear(cookie_display_);
+    gtk_chrome_cookie_view_clear(GTK_CHROME_COOKIE_VIEW(cookie_display_));
   }
 }
 

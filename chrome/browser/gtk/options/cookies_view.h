@@ -103,7 +103,7 @@ class CookiesView : public gtk_tree::TreeAdapter::Delegate {
   GtkWidget* tree_;
   GtkTreeSelection* selection_;
 
-  GtkChromeCookieView* cookie_display_;
+  GtkWidget* cookie_display_;
 
   // The profile and related helpers.
   Profile* profile_;

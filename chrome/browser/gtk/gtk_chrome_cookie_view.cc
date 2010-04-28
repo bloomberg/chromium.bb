@@ -28,19 +28,48 @@ void InitBrowserDetailStyle(GtkWidget* entry, GtkStyle* label_style,
                          &dialog_style->bg[GTK_STATE_NORMAL]);
 }
 
-GtkWidget* InitDetailRow(int row, int label_id,
-                         GtkWidget* details_table, GtkWidget** entry) {
+GtkWidget* InitRowLabel(int row, int label_id, GtkWidget* details_table) {
   GtkWidget* name_label = gtk_label_new(
       l10n_util::GetStringUTF8(label_id).c_str());
   gtk_misc_set_alignment(GTK_MISC(name_label), 1, 0.5);
   gtk_table_attach(GTK_TABLE(details_table), name_label,
                    0, 1, row, row + 1, GTK_FILL, GTK_FILL, 0, 0);
 
-  *entry = gtk_entry_new();
+  return name_label;
+}
 
+GtkWidget* InitDetailRow(int row, int label_id,
+                         GtkWidget* details_table, GtkWidget** entry) {
+  GtkWidget* name_label = InitRowLabel(row, label_id, details_table);
+
+  *entry = gtk_entry_new();
   gtk_entry_set_editable(GTK_ENTRY(*entry), FALSE);
   gtk_entry_set_has_frame(GTK_ENTRY(*entry), FALSE);
   gtk_table_attach_defaults(GTK_TABLE(details_table), *entry,
+                            1, 2, row, row + 1);
+
+  return name_label;
+}
+
+GtkWidget* InitComboboxRow(int row, int label_id,
+                           GtkWidget* details_table,
+                           GtkWidget** combobox,
+                           GtkListStore** store) {
+  GtkWidget* name_label = InitRowLabel(row, label_id, details_table);
+
+  *store = gtk_list_store_new(1, G_TYPE_STRING);
+  *combobox = gtk_combo_box_new_with_model(GTK_TREE_MODEL(*store));
+  g_object_unref(*store);
+
+  GtkCellRenderer* cell = gtk_cell_renderer_text_new();
+  gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(*combobox), cell, TRUE);
+  gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(*combobox), cell,
+                                  "text", 0, NULL);
+
+  GtkWidget* hbox = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), *combobox, FALSE, FALSE, 0);
+
+  gtk_table_attach_defaults(GTK_TABLE(details_table), hbox,
                             1, 2, row, row + 1);
 
   return name_label;
@@ -60,8 +89,10 @@ void InitStyles(GtkChromeCookieView *self) {
                          dialog_style);
   InitBrowserDetailStyle(self->cookie_created_entry_, label_style,
                          dialog_style);
-  InitBrowserDetailStyle(self->cookie_expires_entry_, label_style,
-                         dialog_style);
+  if (self->cookie_expires_entry_) {
+    InitBrowserDetailStyle(self->cookie_expires_entry_, label_style,
+                           dialog_style);
+  }
 
   // Database details.
   InitBrowserDetailStyle(self->database_name_entry_, label_style, dialog_style);
@@ -119,7 +150,10 @@ void SetCookieDetailsSensitivity(GtkChromeCookieView *self,
   gtk_widget_set_sensitive(self->cookie_path_entry_, enabled);
   gtk_widget_set_sensitive(self->cookie_send_for_entry_, enabled);
   gtk_widget_set_sensitive(self->cookie_created_entry_, enabled);
-  gtk_widget_set_sensitive(self->cookie_expires_entry_, enabled);
+  if (self->cookie_expires_entry_)
+    gtk_widget_set_sensitive(self->cookie_expires_entry_, enabled);
+  else
+    gtk_widget_set_sensitive(self->cookie_expires_combobox_, enabled);
 }
 
 void SetDatabaseDetailsSensitivity(GtkChromeCookieView *self,
@@ -178,8 +212,20 @@ void ClearCookieDetails(GtkChromeCookieView *self) {
                      no_cookie.c_str());
   gtk_entry_set_text(GTK_ENTRY(self->cookie_created_entry_),
                      no_cookie.c_str());
-  gtk_entry_set_text(GTK_ENTRY(self->cookie_expires_entry_),
-                     no_cookie.c_str());
+  if (self->cookie_expires_entry_) {
+    gtk_entry_set_text(GTK_ENTRY(self->cookie_expires_entry_),
+                       no_cookie.c_str());
+  } else {
+    GtkListStore* store = self->cookie_expires_combobox_store_;
+    GtkTreeIter iter;
+    gtk_list_store_clear(store);
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, no_cookie.c_str(), -1);
+
+    gtk_combo_box_set_active(GTK_COMBO_BOX(self->cookie_expires_combobox_),
+                             0);
+  }
   gtk_entry_set_text(GTK_ENTRY(self->cookie_send_for_entry_),
                      no_cookie.c_str());
   SetCookieDetailsSensitivity(self, FALSE);
@@ -226,6 +272,9 @@ static void gtk_chrome_cookie_view_class_init(GtkChromeCookieViewClass *klass) {
 }
 
 static void gtk_chrome_cookie_view_init(GtkChromeCookieView *self) {
+}
+
+void BuildWidgets(GtkChromeCookieView *self, gboolean editable_expiration) {
   self->table_box_ = gtk_vbox_new(FALSE, 0);
   gtk_widget_set_no_show_all(self->table_box_, TRUE);
 
@@ -249,8 +298,15 @@ static void gtk_chrome_cookie_view_init(GtkChromeCookieView *self) {
                 self->cookie_details_table_, &self->cookie_send_for_entry_);
   InitDetailRow(row++, IDS_COOKIES_COOKIE_CREATED_LABEL,
                 self->cookie_details_table_, &self->cookie_created_entry_);
-  InitDetailRow(row++, IDS_COOKIES_COOKIE_EXPIRES_LABEL,
-                self->cookie_details_table_, &self->cookie_expires_entry_);
+  if (editable_expiration) {
+    InitComboboxRow(row++, IDS_COOKIES_COOKIE_EXPIRES_LABEL,
+                    self->cookie_details_table_,
+                    &self->cookie_expires_combobox_,
+                    &self->cookie_expires_combobox_store_);
+  } else {
+    InitDetailRow(row++, IDS_COOKIES_COOKIE_EXPIRES_LABEL,
+                  self->cookie_details_table_, &self->cookie_expires_entry_);
+  }
 
   // Database details.
   self->database_details_table_ = gtk_table_new(4, 2, FALSE);
@@ -361,11 +417,12 @@ static void gtk_chrome_cookie_view_init(GtkChromeCookieView *self) {
   gtk_container_add(GTK_CONTAINER(self), self->table_box_);
 }
 
-GtkChromeCookieView* gtk_chrome_cookie_view_new() {
+GtkWidget* gtk_chrome_cookie_view_new(gboolean editable_expiration) {
   GtkChromeCookieView* view = GTK_CHROME_COOKIE_VIEW(
       g_object_new(GTK_TYPE_CHROME_COOKIE_VIEW, NULL));
+  BuildWidgets(view, editable_expiration);
   g_signal_connect(view, "realize", G_CALLBACK(InitStyles), NULL);
-  return view;
+  return GTK_WIDGET(view);
 }
 
 void gtk_chrome_cookie_view_clear(GtkChromeCookieView* self) {
@@ -391,15 +448,34 @@ void gtk_chrome_cookie_view_display_cookie(
   gtk_entry_set_text(GTK_ENTRY(self->cookie_created_entry_),
                      WideToUTF8(base::TimeFormatFriendlyDateAndTime(
                          cookie.CreationDate())).c_str());
-  if (cookie.DoesExpire()) {
+
+  std::string expire_text = cookie.DoesExpire() ?
+      WideToUTF8(base::TimeFormatFriendlyDateAndTime(cookie.ExpiryDate())) :
+      l10n_util::GetStringUTF8(IDS_COOKIES_COOKIE_EXPIRES_SESSION);
+
+  if (self->cookie_expires_entry_) {
     gtk_entry_set_text(GTK_ENTRY(self->cookie_expires_entry_),
-                       WideToUTF8(base::TimeFormatFriendlyDateAndTime(
-                           cookie.ExpiryDate())).c_str());
+                       expire_text.c_str());
   } else {
-    gtk_entry_set_text(GTK_ENTRY(self->cookie_expires_entry_),
-                       l10n_util::GetStringUTF8(
-                           IDS_COOKIES_COOKIE_EXPIRES_SESSION).c_str());
+    GtkListStore* store = self->cookie_expires_combobox_store_;
+    GtkTreeIter iter;
+    gtk_list_store_clear(store);
+
+    if (cookie.DoesExpire()) {
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, expire_text.c_str(), -1);
+    }
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(
+        store, &iter, 0,
+        l10n_util::GetStringUTF8(IDS_COOKIES_COOKIE_EXPIRES_SESSION).c_str(),
+        -1);
+
+    gtk_combo_box_set_active(GTK_COMBO_BOX(self->cookie_expires_combobox_),
+                             0);
   }
+
   gtk_entry_set_text(
       GTK_ENTRY(self->cookie_send_for_entry_),
       l10n_util::GetStringUTF8(cookie.IsSecure() ?
@@ -533,4 +609,20 @@ void gtk_chrome_cookie_view_display_appcache_created(
   gtk_entry_set_text(GTK_ENTRY(self->appcache_created_manifest_entry_),
                      manifest_url.spec().c_str());
   SetAppCacheCreatedSensitivity(self, TRUE);
+}
+
+bool gtk_chrome_cookie_view_session_expires(GtkChromeCookieView* self) {
+  if (self->cookie_expires_entry_)
+    return false;
+
+  GtkListStore* store = self->cookie_expires_combobox_store_;
+  int store_size = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store), NULL);
+  if (store_size == 1)
+    return false;
+
+  DCHECK_EQ(2, store_size);
+
+  int selected = gtk_combo_box_get_active(GTK_COMBO_BOX(
+      self->cookie_expires_combobox_));
+  return selected == 1;
 }
