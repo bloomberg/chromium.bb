@@ -393,7 +393,10 @@ void ThumbnailGenerator::TabContentsDisconnected(TabContents* contents) {
   RenderWidgetHost* renderer = contents->render_view_host();
   while (iterator != callback_map_.end()) {
     if (iterator->second->renderer == renderer) {
-      callback_map_.erase(iterator);
+      ThumbnailCallbackMap::iterator nuked = iterator;
+      ++iterator;
+      callback_map_.erase(nuked);
+      continue;
     }
     ++iterator;
   }
