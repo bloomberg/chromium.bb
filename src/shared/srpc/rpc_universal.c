@@ -700,7 +700,9 @@ static void PrintHelp() {
   printf("  sysv\n");
   printf("    create a descriptor for an SysV shared memory (Linux only)\n");
   printf("  rpc method_name <in_args> * <out_args>\n");
-  printf("    -- invoke method_name\n");
+  printf("    Invoke method_name.\n");
+  printf("    Each in_arg is of form 'type(value)', e.g. i(42), s(\"foo\").\n");
+  printf("    Each out_arg is of form 'type', e.g. i, s.\n");
   printf("  service\n");
   printf("    print the methods found by service_discovery\n");
   printf("  quit\n");
@@ -840,7 +842,7 @@ void NaClSrpcCommandLoop(NaClSrpcService* service,
       char*        signature;
 
       if (n < 2) {
-        fprintf(stderr, "bad rpc command\n");
+        fprintf(stderr, "Insufficient arguments to 'rpc' command.\n");
         continue;
       }
 
@@ -850,47 +852,48 @@ void NaClSrpcCommandLoop(NaClSrpcService* service,
       }
 
       if (int_out_sep == n) {
-        fprintf(stderr, "no in out arg separator for rpc command\n");
+        fprintf(stderr,
+                "No input/output argument separator for 'rpc' command.\n");
         continue;
       }
 
       /* Build the input parameter values. */
       n_in = int_out_sep - 2;
-      dprintf(("parsing in args %d\n", n_in));
+      dprintf(("Parsing %d input args.\n", n_in));
       BuildArgVec(inv, in, n_in);
 
       if (ParseArgs(in, &tokens[2], n_in) < 0) {
-        fprintf(stderr, "bad input args for rpc\n");
+        fprintf(stderr, "Bad input args for RPC.\n");
         continue;
       }
 
       /* Build the output (rpc return) values. */
       n_out =  n - int_out_sep - 1;
-      dprintf(("parsing out args %d\n", n_out));
+      dprintf(("Parsing %d output args.\n", n_out));
       BuildArgVec(outv, out, n_out);
 
       if (ParseArgs(out, &tokens[int_out_sep + 1], n_out) < 0) {
-        fprintf(stderr, "bad output args for rpc\n");
+        fprintf(stderr, "Bad output args for RPC.\n");
         continue;
       }
 
       signature = BuildSignature(tokens[1].start, inv, outv);
       if (NULL == signature) {
-        fprintf(stderr, "signature build failed\n");
+        fprintf(stderr, "Failed to build RPC method signature (OOM?).\n");
         continue;
       }
       rpc_num = NaClSrpcServiceMethodIndex(service, signature);
       free(signature);
       if (kNaClSrpcInvalidMethodIndex == rpc_num) {
-        fprintf(stderr, "unknown rpc\n");
+        fprintf(stderr, "No RPC found of that name/signature.\n");
         continue;
       }
 
-      fprintf(stderr, "using rpc %s no %"NACL_PRIu32"\n",
+      fprintf(stderr, "Calling RPC %s (#%"NACL_PRIu32")...\n",
               tokens[1].start, rpc_num);
       errcode = (*interpreter)(service, channel, rpc_num, inv, outv);
       if (NACL_SRPC_RESULT_OK != errcode) {
-        fprintf(stderr, "rpc call failed %s\n", NaClSrpcErrorString(errcode));
+        fprintf(stderr, "RPC call failed: %s.\n", NaClSrpcErrorString(errcode));
         continue;
       }
 
@@ -902,8 +905,8 @@ void NaClSrpcCommandLoop(NaClSrpcService* service,
       FreeArrayArgs(in, n_in);
       FreeArrayArgs(out, n_out);
     } else {
-        fprintf(stderr, "unknown command\n");
-        continue;
+      fprintf(stderr, "Unknown command `%s'.\n", command);
+      continue;
     }
   }
 }
