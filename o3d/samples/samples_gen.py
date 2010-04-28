@@ -97,7 +97,12 @@ def write_action(asset, webgl_mode):
   if webgl_mode:
     name = name + "_webgl"
   output = asset['path'].replace('convert_', '')
-  output = posixpath.splitext(output)[0] + ".o3dtgz"
+  output_base = posixpath.splitext(output)[0]
+  output_tgz = output_base + ".o3dtgz"
+  output_json = output_base + "/scene.json"
+  output = output_tgz
+  if webgl_mode:
+    output = output_json
   output_dir = posixpath.dirname(output)
   output_file.write("        {\n")
   output_file.write("          'action_name': '%s',\n" % name)
@@ -125,7 +130,10 @@ def write_action(asset, webgl_mode):
     output_file.write("            '--convert-dds-to-png',\n")
     output_file.write("            '--convert-cg-to-glsl',\n")
   output_file.write("            '../o3d_assets/samples/%s',\n" % asset['path'])
-  output_file.write("            '<(_outputs)',\n")
+  if webgl_mode:
+    output_file.write("            '%s',\n" % output_tgz)
+  else:
+    output_file.write("            '<(_outputs)',\n")
   output_file.write("          ],\n")
   output_file.write("        },\n")
 
