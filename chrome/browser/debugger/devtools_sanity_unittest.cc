@@ -342,7 +342,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 }
 
 // Tests set breakpoint.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestSetBreakpoint) {
+// Flaky, see http://crbug.com/42718
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, FLAKY_TestSetBreakpoint) {
   RunTest("testSetBreakpoint", kDebuggerTestPage);
 }
 
@@ -364,7 +365,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenScriptIsRunning) {
 }
 
 // Tests eval on call frame.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEvalOnCallFrame) {
+// Flaky, see http://crbug.com/42718
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, FLAKY_TestEvalOnCallFrame) {
   RunTest("testEvalOnCallFrame", kDebuggerTestPage);
 }
 

@@ -556,7 +556,7 @@ TEST_F(WorkerTest, WorkerClose) {
 }
 
 // http://crbug.com/42641
-TEST_F(WorkerTest, DISABLED_QueuedSharedWorkerShutdown) {
+TEST_F(WorkerTest, FLAKY_QueuedSharedWorkerShutdown) {
   // Tests to make sure that queued shared workers are started up when
   // shared workers shut down.
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
