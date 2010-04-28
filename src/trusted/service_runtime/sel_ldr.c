@@ -1258,9 +1258,9 @@ static void __attribute__ ((noinline)) _ovly_debug_event (void) {
 
 #endif
 
-static void StopForDebuggerInit (const struct NaClApp *state) {
+static void StopForDebuggerInit (uintptr_t mem_start) {
   /* Put xlate_base in a place where gdb can find it.  */
-  nacl_global_xlate_base = state->mem_start;
+  nacl_global_xlate_base = mem_start;
 
 #ifdef __GNUC__
   _ovly_debug_event ();
@@ -1268,5 +1268,5 @@ static void StopForDebuggerInit (const struct NaClApp *state) {
 }
 
 void NaClGdbHook(struct NaClApp const *nap) {
-  StopForDebuggerInit(nap);
+  StopForDebuggerInit(nap->mem_start);
 }
