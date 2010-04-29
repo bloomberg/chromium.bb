@@ -131,7 +131,7 @@ def write_action(asset, webgl_mode):
     output_file.write("            '--convert-cg-to-glsl',\n")
   output_file.write("            '../o3d_assets/samples/%s',\n" % asset['path'])
   if webgl_mode:
-    output_file.write("            '%s',\n" % output_tgz)
+    output_file.write("            '../samples/%s',\n" % output_tgz)
   else:
     output_file.write("            '<(_outputs)',\n")
   output_file.write("          ],\n")
