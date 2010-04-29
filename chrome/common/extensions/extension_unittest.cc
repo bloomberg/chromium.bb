@@ -11,7 +11,6 @@
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_error_reporter.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/url_constants.h"
@@ -52,7 +51,6 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   Extension extension(path);
   int error_code = 0;
   std::string error;
-  ExtensionErrorReporter::Init(false);
 
   // Start with a valid extension manifest
   FilePath extensions_path;
@@ -212,7 +210,6 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   permissions = new ListValue;
   input_value->Set(keys::kPermissions, permissions);
   EXPECT_TRUE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_EQ(0u, ExtensionErrorReporter::GetInstance()->GetErrors()->size());
 
   input_value->Set(keys::kPermissions, Value::CreateIntegerValue(9));
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));

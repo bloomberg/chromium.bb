@@ -990,6 +990,8 @@
         'browser/extensions/extension_devtools_manager.h',
         'browser/extensions/extension_dom_ui.cc',
         'browser/extensions/extension_dom_ui.h',
+        'browser/extensions/extension_error_reporter.cc',
+        'browser/extensions/extension_error_reporter.h',
         'browser/extensions/extension_event_names.cc',
         'browser/extensions/extension_event_names.h',
         'browser/extensions/execute_code_in_tab_function.cc',
@@ -1711,6 +1713,12 @@
         'browser/password_manager/password_store_mac.cc',
         'browser/password_manager/password_store_win.h',
         'browser/password_manager/password_store_win.cc',
+        'browser/platform_util.h',
+        'browser/platform_util_linux.cc',
+        'browser/platform_util_chromeos.cc',
+        'browser/platform_util_common_linux.cc',
+        'browser/platform_util_mac.mm',
+        'browser/platform_util_win.cc',
         'browser/plugin_installer.cc',
         'browser/plugin_installer.h',
         'browser/plugin_process_host.cc',
@@ -2515,6 +2523,11 @@
           'sources/': [
             ['exclude', '^browser/chromeos'],
           ],
+        }],
+        ['chromeos==1', {
+          'sources!': [
+            'browser/platform_util_linux.cc',
+          ]
         }],
         ['OS=="linux"', {
           'dependencies': [

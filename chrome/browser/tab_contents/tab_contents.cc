@@ -44,6 +44,7 @@
 #include "chrome/browser/modal_html_dialog_delegate.h"
 #include "chrome/browser/omnibox_search_hint.h"
 #include "chrome/browser/password_manager/password_manager.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_installer.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -71,7 +72,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/platform_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_preferences.h"
@@ -3154,4 +3154,3 @@ Profile* TabContents::GetProfileForPasswordManager() {
 bool TabContents::DidLastPageLoadEncounterSSLErrors() {
   return controller().ssl_manager()->ProcessedSSLErrorFromRequest();
 }
-

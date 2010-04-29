@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/extension_error_reporter.h"
+#include "chrome/browser/extensions/extension_error_reporter.h"
 
 #include "build/build_config.h"
 
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/platform_util.h"
+#include "chrome/browser/platform_util.h"
 
 // No AddRef required when using ExtensionErrorReporter with RunnableMethod.
 // This is okay since the ExtensionErrorReporter is a singleton that lives until

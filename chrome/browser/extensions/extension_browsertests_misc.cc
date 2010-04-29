@@ -8,6 +8,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/extensions/autoupdate_interceptor.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
@@ -22,7 +23,6 @@
 #endif
 
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/extension_error_reporter.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"

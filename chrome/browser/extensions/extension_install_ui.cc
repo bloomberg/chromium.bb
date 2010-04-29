@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #if defined(TOOLKIT_VIEWS)  // TODO(port)
@@ -24,7 +25,6 @@
 #endif
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/platform_util.h"
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"

@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/renderer_host/site_instance.h"
-#include "chrome/common/extensions/extension_error_reporter.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

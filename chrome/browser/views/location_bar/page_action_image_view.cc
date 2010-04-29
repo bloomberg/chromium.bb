@@ -10,7 +10,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/location_bar/location_bar_view.h"
-#include "chrome/common/platform_util.h"
+#include "chrome/browser/platform_util.h"
 #include "views/controls/menu/menu_2.h"
 
 PageActionImageView::PageActionImageView(LocationBarView* owner,
@@ -217,5 +217,3 @@ void PageActionImageView::HidePopup() {
   if (popup_)
     popup_->Close();
 }
-
-

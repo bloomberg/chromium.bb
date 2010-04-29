@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_PLATFORM_UTIL_H_
-#define CHROME_COMMON_PLATFORM_UTIL_H_
+#ifndef CHROME_BROWSER_PLATFORM_UTIL_H_
+#define CHROME_BROWSER_PLATFORM_UTIL_H_
 
 #include "base/string16.h"
 #include "gfx/native_widget_types.h"
@@ -48,4 +48,4 @@ string16 GetVersionStringModifier();
 
 }
 
-#endif  // CHROME_COMMON_PLATFORM_UTIL_H_
+#endif  // CHROME_BROWSER_PLATFORM_UTIL_H_

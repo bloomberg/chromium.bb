@@ -7,7 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "base/logging.h"
-#include "chrome/common/platform_util.h"
+#include "chrome/browser/platform_util.h"
 
 FocusStoreGtk::FocusStoreGtk() : widget_(NULL) {
 }

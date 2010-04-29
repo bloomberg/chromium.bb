@@ -9,7 +9,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/common/platform_util.h"
+#include "chrome/browser/platform_util.h"
 #include "grit/generated_resources.h"
 #include "net/base/cert_database.h"
 #include "net/base/net_errors.h"
