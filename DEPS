@@ -8,7 +8,7 @@ vars = {
   "nacl_breakpad_gyp_rev": "1806",
   "gyp_rev": "805",
   "gtest_rev": "267",
-  "tools_rev": "1903",
+  "tools_rev": "2150",
   "python_rev": "22967",
   "wix_rev": "153",
 }
@@ -81,6 +81,9 @@ deps_os = {
        Var("wix_rev")),
     "third_party/mingw-w64/mingw/bin":
       (Var("native_client_trunk") + "/src/third_party/mingw-w64/mingw/bin@" +
+       Var("tools_rev")),
+    "third_party/NSIS":
+      (Var("native_client_trunk") + "/src/third_party/NSIS@" +
        Var("tools_rev")),
   },
 }
