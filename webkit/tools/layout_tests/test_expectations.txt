@@ -27,8 +27,5 @@ BUGWK38109 : editing/selection/caret-rtl-2.html = IMAGE
 // Looks like I was too quick to remove this in r45579.
 BUGAGL : fast/canvas/canvas-empty-image-pattern.html = IMAGE
 
-// WebKit roll 58304:58400
-BUGUKAI : traversal/node-iterator-prototype.html = FAIL
-BUGUKAI : fast/images/svg-background-partial-redraw.html = IMAGE IMAGE+TEXT
-BUGUKAI WIN MAC : fast/text/international/bold-bengali.html = MISSING
-BUGUKAI LINUX : fast/text/international/khmer-selection.html = FAIL
+// WebKit roll 58400:58407
+WONTFIX BUG21840 WIN DEBUG : http/tests/loading/basic-auth-resend-wrong-credentials.html = FAIL CRASH
