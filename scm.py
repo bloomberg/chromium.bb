@@ -218,21 +218,30 @@ class GIT(object):
       # Fall back on trying a git-svn upstream branch.
       if GIT.IsGitSvn(cwd):
         upstream_branch = GIT.GetSVNBranch(cwd)
-      # Fall back on origin/master if it exits.
-      elif GIT.Capture(['branch', '-r'], in_directory=cwd
-                      )[0].split().count('origin/master'):
-        remote = 'origin'
-        upstream_branch = 'refs/heads/master'
       else:
-        remote = None
-        upstream_branch = None
+        # Else, try to guess the origin remote.
+        remote_branches = GIT.Capture(
+            ['branch', '-r'], in_directory=cwd)[0].split()
+        if 'origin/master' in remote_branches:
+          # Fall back on origin/master if it exits.
+          remote = 'origin'
+          upstream_branch = 'refs/heads/master'
+        elif 'origin/trunk' in remote_branches:
+          # Fall back on origin/trunk if it exists. Generally a shared
+          # git-svn clone
+          remote = 'origin'
+          upstream_branch = 'refs/heads/trunk'
+        else:
+          # Give up.
+          remote = None
+          upstream_branch = None
     return remote, upstream_branch
 
   @staticmethod
   def GetUpstreamBranch(cwd):
     """Gets the current branch's upstream branch."""
     remote, upstream_branch = GIT.FetchUpstreamTuple(cwd)
-    if remote != '.':
+    if remote != '.' and upstream_branch:
       upstream_branch = upstream_branch.replace('heads', 'remotes/' + remote)
     return upstream_branch
 
