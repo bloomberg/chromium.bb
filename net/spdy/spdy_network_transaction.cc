@@ -225,9 +225,9 @@ int SpdyNetworkTransaction::DoInitConnection() {
   std::string connection_group = "spdy.";
   connection_group.append(host);
 
-  TCPSocketParams tcp_params(host, port, request_->priority, request_->referrer,
-                             false);
   HostPortPair host_port_pair(host, port);
+  TCPSocketParams tcp_params(host_port_pair, request_->priority,
+                             request_->referrer, false);
 
   spdy_ = session_->spdy_session_pool()->Get(host_port_pair, session_);
   DCHECK(spdy_);

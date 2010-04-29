@@ -12,6 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/host_resolver.h"
 #include "net/socket/client_socket_pool_base.h"
 #include "net/socket/client_socket_pool.h"
@@ -22,9 +23,24 @@ class ClientSocketFactory;
 
 class TCPSocketParams {
  public:
+  TCPSocketParams(const HostPortPair& host_port_pair, RequestPriority priority,
+                  const GURL& referrer, bool disable_resolver_cache)
+      :  destination_(host_port_pair.host, host_port_pair.port) {
+    Initialize(priority, referrer, disable_resolver_cache);
+  }
+
+  // TODO(willchan): Update all unittests so we don't need this.
   TCPSocketParams(const std::string& host, int port, RequestPriority priority,
                   const GURL& referrer, bool disable_resolver_cache)
       :  destination_(host, port) {
+    Initialize(priority, referrer, disable_resolver_cache);
+  }
+
+  HostResolver::RequestInfo destination() const { return destination_; }
+
+ private:
+  void Initialize(RequestPriority priority, const GURL& referrer,
+                  bool disable_resolver_cache) {
     // The referrer is used by the DNS prefetch system to correlate resolutions
     // with the page that triggered them. It doesn't impact the actual addresses
     // that we resolve to.
@@ -34,9 +50,6 @@ class TCPSocketParams {
       destination_.set_allow_cached_response(false);
   }
 
-  HostResolver::RequestInfo destination() const { return destination_; }
-
- private:
   HostResolver::RequestInfo destination_;
 };
 

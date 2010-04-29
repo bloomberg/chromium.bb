@@ -256,7 +256,8 @@ class MockClientSocketFactory : public ClientSocketFactory {
 class TCPClientSocketPoolTest : public ClientSocketPoolTest {
  protected:
   TCPClientSocketPoolTest()
-      : ignored_socket_params_("ignored", 80, MEDIUM, GURL(), false),
+      : ignored_socket_params_(
+            HostPortPair("ignored", 80), MEDIUM, GURL(), false),
         host_resolver_(new MockHostResolver),
         pool_(new TCPClientSocketPool(kMaxSockets,
                                       kMaxSocketsPerGroup,
@@ -281,7 +282,7 @@ class TCPClientSocketPoolTest : public ClientSocketPoolTest {
 TEST_F(TCPClientSocketPoolTest, Basic) {
   TestCompletionCallback callback;
   ClientSocketHandle handle;
-  TCPSocketParams dest("www.google.com", 80, LOW, GURL(), false);
+  TCPSocketParams dest(HostPortPair("www.google.com", 80), LOW, GURL(), false);
   int rv = handle.Init("a", dest, LOW, &callback, pool_, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle.is_initialized());
