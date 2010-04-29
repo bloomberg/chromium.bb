@@ -8,7 +8,7 @@ vars = {
   "nacl_breakpad_gyp_rev": "1806",
   "gyp_rev": "805",
   "gtest_rev": "267",
-  "tools_rev": "2150",
+  "tools_rev": "2162",
   "python_rev": "22967",
   "wix_rev": "153",
 }
