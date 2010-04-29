@@ -82,6 +82,7 @@ o3d.Bitmap.scratch_canvas_ = null;
 
 /**
  * Gets a canvas to use for scratch work.
+ * @return {Canvas} The canvas.
  * @private
  */
 o3d.Bitmap.getScratchCanvas_ = function() {

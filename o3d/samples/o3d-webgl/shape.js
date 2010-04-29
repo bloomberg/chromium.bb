@@ -115,27 +115,52 @@ o3d.Shape.prototype.writeToDrawLists =
 
     // For each element look at the DrawElements for that element.
     for (var j = 0; j < element.drawElements.length; ++j) {
+      this.gl.client.render_stats_['drawElementsProcessed']++;
       var drawElement = element.drawElements[j];
       var material = drawElement.material || drawElement.owner.material;
       var materialDrawList = material.drawList;
+      var rendered = false;
 
       // Iterate through the drawlists we might write to.
       for (var k = 0; k < drawListInfos.length; ++k) {
         var drawListInfo = drawListInfos[k];
         var list = drawListInfo.list;
-        var context = drawListInfo.context;
 
         // If any of those drawlists matches the material on the drawElement,
         // add the drawElement to the list.
         if (materialDrawList == list) {
+          var context = drawListInfo.context;
+          var view = context.view;
+          var projection = context.projection;
+
+          var worldViewProjection = [[], [], [], []];
+          var viewProjection = [[], [], [], []];
+          o3d.Transform.compose(projection, view, viewProjection);
+          o3d.Transform.compose(viewProjection, world, worldViewProjection);
+
+          if (element.cull && element.boundingBox) {
+            if (!element.boundingBox.inFrustum(worldViewProjection)) {
+              continue;
+            }
+          }
+
+          rendered = true;
           list.list_.push({
-            view: context.view,
-            projection: context.projection,
+            view: view,
+            projection: projection,
             world: world,
+            viewProjection: viewProjection,
+            worldViewProjection: worldViewProjection,
             transform: transform,
             drawElement: drawElement
           });
         }
+      }
+
+      if (rendered) {
+        this.gl.client.render_stats_['drawElementsRendered']++;
+      } else {
+        this.gl.client.render_stats_['drawElementsCulled']++;
       }
     }
   }

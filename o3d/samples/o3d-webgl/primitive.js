@@ -33,7 +33,7 @@
 /**
  * A Primitive is a type of Element that is made from a list of points,
  * lines or triangles that use a single material.
- * 
+ *
  * @param opt_streamBank o3d.StreamBank The StreamBank used by this
  *     Primitive.
  * @constructor
@@ -138,6 +138,8 @@ o3d.Primitive.prototype.render = function() {
     }
   }
 
+  this.gl.client.render_stats_['primitivesRendered'] += this.numberPrimitives;
+
   // TODO(petersont): Change the hard-coded 3 and triangles too.
   this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, indexBuffer.gl_buffer_);
   this.gl.drawElements(this.gl.TRIANGLES,
@@ -149,3 +151,39 @@ o3d.Primitive.prototype.render = function() {
     this.gl.disableVertexAttribArray(enabled_attribs[i]);
   }
 };
+
+
+/**
+ * Computes the bounding box in same coordinate system as the specified
+ * POSITION stream.
+ * @param {number} position_stream_index Index of POSITION stream.
+ * @return {!o3d.BoundingBox}  The boundingbox for this element in local space.
+ */
+o3d.Primitive.prototype.getBoundingBox =
+    function(position_stream_index) {
+  var streamBank = this.streamBank;
+  var indexBuffer = this.indexBuffer;
+  var stream =
+    this.streamBank.vertexStreams[o3d.Stream.POSITION][position_stream_index];
+
+  var points = [];
+  var field = stream.field;
+  var buffer = field.buffer;
+  var numPoints = buffer.array_.length / buffer.totalComponents;
+
+  var elements = field.getAt(0, numPoints);
+
+  for (var index = 0; index < numPoints; ++index) {
+    var p = [0, 0, 0];
+    for (var i = 0; i < field.numComponents; ++i) {
+      p[i] = elements[field.numComponents * index + i];
+    }
+    points.push(p);
+  }
+
+  o3d.BoundingBox.fitBoxToPoints_(points, this.boundingBox);
+  return this.boundingBox;
+};
+
+
+

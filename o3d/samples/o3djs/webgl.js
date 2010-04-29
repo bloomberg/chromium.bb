@@ -140,7 +140,7 @@ o3djs.webgl.addDebuggingWrapper = function(context) {
 /**
  * Creates a canvas under the given parent element and an o3d.Client
  * under that.
- * 
+ *
  * @ param {!Element} element The element under which to insert the client.
  * @ param {string} opt_features Features to turn on.
  * @ param {boolean} opt_debug Whether gl debugging features should be
@@ -161,17 +161,20 @@ o3djs.webgl.createClient = function(element, opt_features, opt_debug) {
   canvas = document.createElement('canvas');
   canvas.style.width = "100%";
   canvas.style.height = "100%";
+
+  var client = new o3d.Client;
+
   var resizeHandler = function() {
     var width = Math.max(1, canvas.clientWidth);
     var height = Math.max(1, canvas.clientHeight);
     canvas.width = width;
     canvas.height = height;
     canvas.sizeInitialized_ = true;
+    client.gl.displayInfo = {width: canvas.width, height: canvas.height};
   };
   window.addEventListener('resize', resizeHandler, false);
   setTimeout(resizeHandler, 0);
 
-  var client = new o3d.Client;
   client.initWithCanvas(canvas);
   canvas.client = client;
   canvas.o3d = o3d;

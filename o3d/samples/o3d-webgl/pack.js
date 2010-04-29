@@ -73,6 +73,7 @@ o3d.inherit('Pack', 'NamedObject');
  */
 o3d.Pack.prototype.destroy = function() {
   this.objects_ = [];
+  this.client.removePack(this);
 };
 
 

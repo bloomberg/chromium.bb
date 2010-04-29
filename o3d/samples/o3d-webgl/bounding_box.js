@@ -52,10 +52,52 @@ o3d.inherit('BoundingBox', 'ParamObject');
 
 
 /**
+ * Computes a list of 8 3-dimensional vectors for the corners of the box.
+ * @return {!Array.<Array<numbers>>} The list of corners.
+ */
+o3d.BoundingBox.prototype.corners_ = function() {
+  var result = [];
+  var m = [this.minExtent, this.maxExtent];
+  for (var i = 0; i < 2; ++i) {
+    for (var j = 0; j < 2; ++j) {
+      for (var k = 0; k < 2; ++k) {
+        result.push([m[i][0], m[j][1], m[k][2]]);
+      }
+    }
+  }
+
+  return result;
+};
+
+
+/**
+ * Computes the smallest bounding box containing all the points in the given
+ * list, and either modifies the optional box passed in to match, or returns
+ * that box as a new box.
+ * @param {!Array.<Array<numbers>>} points A non-empty list of points.
+ * @param {o3d.BoundingBox} opt_targetBox Optional box to modify instead of
+ *     returning a new box.
+ * @private
+ */
+o3d.BoundingBox.fitBoxToPoints_ = function(points, opt_targetBox) {
+  var target = opt_targetBox || new o3d.BoundingBox();
+  for (var index = 0; index < 3; ++index) {
+    target.maxExtent[index] = target.minExtent[index] = points[0][index];
+    for (var i = 1; i < points.length; ++i) {
+      var point = points[i];
+      target.minExtent[index] = Math.min(target.minExtent[index], point[index]);
+      target.maxExtent[index] = Math.max(target.maxExtent[index], point[index]);
+    }
+  }
+  return target;
+};
+
+
+/**
  * True if this boundingbox has been initialized.
  * @type {boolean}
  */
-o3d.BoundingBox.prototype.valid_ = false;
+o3d.BoundingBox.prototype.valid = false;
 
 
 /**
@@ -65,13 +107,11 @@ o3d.BoundingBox.prototype.valid_ = false;
 o3d.BoundingBox.prototype.minExtent = [0, 0, 0];
 
 
-
 /**
  * The max extent of the box.
  * @type {!o3d.math.Point3}
  */
 o3d.BoundingBox.prototype.maxExtent = [0, 0, 0];
-
 
 
 /**
@@ -82,7 +122,14 @@ o3d.BoundingBox.prototype.maxExtent = [0, 0, 0];
  */
 o3d.BoundingBox.prototype.mul =
     function(matrix) {
-  o3d.notImplemented();
+  var corners = this.corners_();
+  var new_corners = [];
+
+  for (var i = 0; i < corners.length; ++i) {
+    new_corners.push(o3d.Transform.transformPoint(matrix, corners[i]));
+  }
+
+  return o3d.BoundingBox.fitBoxToPoints_(new_corners);
 };
 
 
@@ -94,7 +141,13 @@ o3d.BoundingBox.prototype.mul =
  */
 o3d.BoundingBox.prototype.add =
     function(box) {
-  o3d.notImplemented();
+  return new o3d.BoundingBox(
+    [Math.min(box.minExtent[0], this.minExtent[0]),
+     Math.min(box.minExtent[1], this.minExtent[1]),
+     Math.min(box.minExtent[2], this.minExtent[2])],
+    [Math.max(box.maxExtent[0], this.maxExtent[0]),
+     Math.max(box.maxExtent[1], this.maxExtent[1]),
+     Math.max(box.maxExtent[2], this.maxExtent[2])]);
 };
 
 
@@ -112,19 +165,129 @@ o3d.BoundingBox.prototype.add =
  */
 o3d.BoundingBox.prototype.intersectRay =
     function(start, end) {
-  o3d.notImplemented();
+  var result = new RayIntersectionInfo;
+
+  if (this.valid) {
+    result.valid = true;
+    result.intersected = true;  // True until proven false.
+
+    var kNumberOfDimensions = 3;
+    var kRight = 0;
+    var kLeft = 1;
+    var kMiddle = 2;
+
+    var dir = [end[0] - start[0], end[1] - start[1], end[2] - start[2]];
+    var coord = [0, 0, 0];
+    var inside = true;
+
+    var quadrant = [];
+    var max_t = [];
+    var candidate_plane = [];
+
+    for (var i = 0; i < kNumberOfDimensions; ++i) {
+      quadrant.push(0.0);
+      max_t.push(0.0);
+      candidate_plane.push(0,0);
+    }
+
+    var which_plane;
+
+    // Find candidate planes; this loop can be avoided if rays cast all from
+    // the eye (assumes perpsective view).
+    for (var i = 0; i < kNumberOfDimensions; ++i) {
+      if (start[i] < min_extent_[i]) {
+        quadrant[i] = kLeft;
+        candidate_plane[i] = min_extent_[i];
+        inside = false;
+      } else if (start[i] >  max_extent_[i]) {
+        quadrant[i] = kRight;
+        candidate_plane[i] =  max_extent_[i];
+        inside = false;
+      } else  {
+        quadrant[i] = kMiddle;
+      }
+    }
+
+    // Ray origin inside bounding box.
+    if (inside) {
+       result.position = start;
+      result.inside = true;
+    } else {
+      // Calculate T distances to candidate planes.
+      for (var i = 0; i < kNumberOfDimensions; ++i) {
+        if (quadrant[i] != kMiddle && dir[i] != 0.0) {
+          max_t[i] = (candidate_plane[i] - start[i]) / dir[i];
+        } else {
+          max_t[i] = -1.0;
+        }
+      }
+
+      // Get largest of the max_t's for final choice of intersection.
+      which_plane = 0;
+      for (var i = 1; i < kNumberOfDimensions; ++i) {
+        if (max_t[which_plane] < max_t[i]) {
+          which_plane = i;
+        }
+      }
+
+      // Check final candidate actually inside box.
+      if (max_t[which_plane] < 0.0) {
+        result.intersected = false;
+      } else {
+        for (var i = 0; i < kNumberOfDimensions; ++i) {
+          if (which_plane != i) {
+            coord[i] = start[i] + max_t[which_plane] * dir[i];
+            if (coord[i] < min_extent_[i] || coord[i] > max_extent_[i]) {
+              result.intersected = false;
+              break;
+            }
+          } else {
+            coord[i] = candidate_plane[i];
+          }
+        }
+
+        // Ray hits box.
+        result.position = coord;
+      }
+    }
+  }
+
+  return result;
 };
 
 
 /**
- * Returns true if the bounding box is inside the frustum.
+ * Returns true if the bounding box is inside the frustum matrix.
+ * It checks all 8 corners of the bounding box against the 6 frustum planes
+ * and determines whether there's at least one plane for which all 6 points lie
+ * on the outside side of it.  In that case it reports that the bounding box
+ * is outside the frustum.  Note that this is a conservative check in that
+ * it in certain cases it will report that a box is in the frustum even if it
+ * really isn't.  However if it reports that the box is outside then it's
+ * guaranteed to be outside.
  * @param {!o3d.math.Matrix4} matrix Matrix to transform the box from its
  *     local space to view frustum space.
- * @return {boolean}  True if the box is in the frustum.
+ * @return {boolean} True if the box is in the frustum.
  */
 o3d.BoundingBox.prototype.inFrustum =
     function(matrix) {
-  o3d.notImplemented();
+  var corners = this.corners_();
+  var bb_test = 0x3f;
+  for (var i = 0; i < corners.length; ++i) {
+    var corner = corners[i];
+    var p = o3d.Transform.transformPoint(matrix, corner);
+    bb_test &= (((p[0] > 1.0) << 0) |
+                ((p[0] < -1.0) << 1) |
+                ((p[1] > 1.0) << 2) |
+                ((p[1] < -1.0) << 3) |
+                ((p[2] > 1.0) << 4) |
+                ((p[2] < 0.0) << 5));
+    if (bb_test == 0) {
+      return true;
+    }
+  }
+
+  return (bb_test == 0);
 };
 
 

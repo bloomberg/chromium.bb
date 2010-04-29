@@ -97,18 +97,8 @@ o3d.Renderer.clients_ = [];
 o3d.Renderer.renderClients = function() {
   for (var i = 0; i < o3d.Renderer.clients_.length; ++i) {
     var client = o3d.Renderer.clients_[i];
-    var renderEvent = new o3d.RenderEvent;
-    var now = (new Date()).getTime() * 0.001;
-    if(client.then_ == 0.0)
-      renderEvent.elapsedTime = 0.0;
-    else
-      renderEvent.elapsedTime = now - client.then_;
-    client.updateDisplayInfo_();
-    if (client.render_callback) {
-      client.render_callback(renderEvent);
-    }
-    client.then_ = now;
-    client.renderTree(client.renderGraphRoot);
+
+    client.render();
   }
 };
 
@@ -213,10 +203,12 @@ o3d.ClientInfo.prototype.non_power_of_two_textures = true;
  */
 o3d.Client = function() {
   o3d.NamedObject.call(this);
-  this.root = new o3d.Transform;
-  this.renderGraphRoot = new o3d.RenderNode;
-  this.root = new o3d.Transform;
+
+  var tempPack = this.createPack();
+  this.root = tempPack.createObject('Transform');
+  this.renderGraphRoot = tempPack.createObject('RenderNode');
   this.clientId = o3d.Client.nextId++;
+  this.packs_ = [tempPack];
 
   if (o3d.Renderer.clients_.length == 0)
     o3d.Renderer.installRenderInterval();
@@ -269,6 +261,13 @@ o3d.Client.prototype.root = null;
 
 
 /**
+ * A list of all packs for this client.
+ * @type {!Array.<!o3d.Pack>}
+ */
+o3d.Client.prototype.packs_ = [];
+
+
+/**
  * Function that gets called when the client encounters an error.
  */
 o3d.Client.prototype.error_callback = function(error_message) {
@@ -313,9 +312,23 @@ o3d.Client.prototype.cleanup = function () {
 o3d.Client.prototype.createPack =
     function() {
   var pack = new o3d.Pack;
+  pack.client = this;
   pack.gl = this.gl;
+  this.packs_.push(pack);
   return pack;
 };
+
+
+/**
+ * Creates a pack object.
+ *   A pack object.
+ * @param {!o3d.Pack} pack The pack to remove.
+ */
+o3d.Client.prototype.destroyPack =
+    function(pack) {
+  o3d.removeFromArray(this.packs_, pack);
+};
+
 
 
 /**
@@ -339,8 +352,14 @@ o3d.Client.prototype.getObjectById =
  */
 o3d.Client.prototype.getObjects =
     function(name, class_name) {
-  o3d.notImplemented();
-  return [];
+  var objects = [];
+
+  for (var i = 0; i < this.packs_.length; ++i) {
+    var pack = this.packs_[i];
+    objects = objects.concat(pack.getObjects(name, class_name));
+  }
+
+  return objects;
 };
 
 
@@ -351,8 +370,14 @@ o3d.Client.prototype.getObjects =
  */
 o3d.Client.prototype.getObjectsByClassName =
     function(class_name) {
-  o3d.notImplemented();
-  return [];
+  var objects = [];
+
+  for (var i = 0; i < this.packs_.length; ++i) {
+    var pack = this.packs_[i];
+    objects = objects.concat(pack.getObjectsByClassName(class_name));
+  }
+
+  return objects;
 };
 
 
@@ -387,9 +412,33 @@ o3d.Client.prototype.renderMode = o3d.Client.RENDERMODE_CONTINUOUS;
  * RENDERMODE_ON_DEMAND.
  */
 o3d.Client.prototype.render = function() {
-  this.renderTree();
+  // Synthesize a render event.
+  var render_event = new o3d.RenderEvent;
+
+  var now = (new Date()).getTime() * 0.001;
+  if(this.then_ == 0.0)
+    render_event.elapsedTime = 0.0;
+  else
+    render_event.elapsedTime = now - this.then_;
+
+  if (this.render_callback) {
+    for (var stat in this.render_stats_) {
+      render_event[stat] = this.render_stats_[stat];
+    }
+    this.render_callback(render_event);
+  }
+  this.then_ = now;
+  this.renderTree(this.renderGraphRoot);
 };
 
+
+/**
+ * An object for various statistics that are gather during the render tree
+ * tranversal.
+ *
+ * @type {Object}
+ */
+o3d.Client.prototype.render_stats = {}
 
 
 /**
@@ -407,6 +456,16 @@ o3d.Client.prototype.render = function() {
  */
 o3d.Client.prototype.renderTree =
     function(render_node) {
+
+  this.render_stats_ = {
+    drawElementsCulled: 0,
+    drawElementsProcessed: 0,
+    drawElementsRendered: 0,
+    primitivesRendered: 0,
+    transformsCulled: 0,
+    transformsProcessed: 0
+  };
+
   render_node.render();
 };
 
@@ -418,7 +477,6 @@ o3d.Client.prototype.renderTree =
  * @type {!Array.<!o3d.Client.DispalyMode>}
  */
 o3d.Client.prototype.getDisplayModes = [];
-
 
 
 /**
@@ -437,7 +495,7 @@ o3d.Client.prototype.getDisplayModes = [];
  */
 o3d.Client.prototype.setFullscreenClickRegion =
     function(x, y, width, height, mode_id) {
-
+  o3d.notImplemented();
 };
 
 
@@ -537,9 +595,12 @@ o3d.Client.prototype.initWithCanvas = function(canvas) {
   }
 
   this.gl = gl;
+  this.root.gl = gl;
+  this.renderGraphRoot.gl = gl;
 
   gl.client = this;
-  this.updateDisplayInfo_();
+  gl.displayInfo = {width: canvas.width,
+                    height: canvas.height};
 };
 
 
@@ -890,11 +951,3 @@ o3d.Client.prototype.clientId = 0;
 o3d.Client.prototype.canvas = null;
 
 
-/**
- * Updates the display information attached to the GL.
- * @private
- */
-o3d.Client.prototype.updateDisplayInfo_ = function() {
-  this.gl.displayInfo = {width: this.width,
-                         height: this.height};
-};

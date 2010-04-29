@@ -225,7 +225,15 @@ o3d.Transform.prototype.getTransformsByNameInTree =
  */
 o3d.Transform.prototype.getUpdatedWorldMatrix =
     function() {
-  o3d.notImplemented();
+  var parentWorldMatrix;
+  if (!this.parent) {
+    parentWorldMatrix =
+        [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]];
+  } else {
+    parentWorldMatrix = this.parent.getUpdatedWorldMatrix();
+  }
+  o3d.Transform.compose(parentWorldMatrix, this.localMatrix, this.worldMatrix);
+  return this.worldMatrix;
 };
 
 
@@ -591,6 +599,37 @@ o3d.Transform.prototype.rotateX =
 };
 
 
+
+/**
+ * Takes a 4-by-4 matrix and a vector with 3 entries,
+ * interprets the vector as a point, transforms that point by the matrix, and
+ * returns the result as a vector with 3 entries.
+ * @param {!o3djs.math.Matrix4} m The matrix.
+ * @param {!o3djs.math.Vector3} v The point.
+ * @return {!o3djs.math.Vector3} The transformed point.
+ */
+o3d.Transform.transformPoint = function(m, v) {
+  var v0 = v[0];
+  var v1 = v[1];
+  var v2 = v[2];
+
+  if (!m) {
+    debugger;
+  }
+
+  var m0 = m[0];
+  var m1 = m[1];
+  var m2 = m[2];
+  var m3 = m[3];
+
+  var d = v0 * m0[3] + v1 * m1[3] + v2 * m2[3] + m3[3];
+  return [(v0 * m0[0] + v1 * m1[0] + v2 * m2[0] + m3[0]) / d,
+          (v0 * m0[1] + v1 * m1[1] + v2 * m2[1] + m3[1]) / d,
+          (v0 * m0[2] + v1 * m1[2] + v2 * m2[2] + m3[2]) / d];
+};
+
+
+
 /**
  * Pre-composes the local matrix of this Transform with a rotation about the
  * y-axis.  For example, if the local matrix is a translation, the new local
@@ -926,7 +965,9 @@ o3d.Transform.flattenMatrix4 = function(m) {
  */
 o3d.Transform.prototype.traverse =
     function(drawListInfos, opt_parentWorldMatrix) {
-  if (!this.visible) {
+
+  this.gl.client.render_stats_['transformsProcessed']++;
+  if (drawListInfos.length == 0 || !this.visible) {
     return;
   }
   opt_parentWorldMatrix =
@@ -936,15 +977,42 @@ o3d.Transform.prototype.traverse =
   o3d.Transform.compose(
       opt_parentWorldMatrix, this.localMatrix, this.worldMatrix);
 
+  var remainingDrawListInfos = [];
+
+  if (this.cull) {
+    if (this.boundingBox) {
+      for (var i = 0; i < drawListInfos.length; ++i) {
+        var drawListInfo = drawListInfos[i];
+
+        var worldViewProjection = [[], [], [], []];
+        o3d.Transform.compose(drawListInfo.context.view,
+            this.worldMatrix, worldViewProjection);
+        o3d.Transform.compose(drawListInfo.context.projection,
+            worldViewProjection, worldViewProjection);
+
+        if (this.boundingBox.inFrustum(worldViewProjection)) {
+          remainingDrawListInfos.push(drawListInfo);
+        }
+      }
+    }
+  } else {
+    remainingDrawListInfos = drawListInfos;
+  }
+
+  if (remainingDrawListInfos.length == 0) {
+    this.gl.client.render_stats_['transformsCulled']++;
+    return;
+  }
+
   var children = this.children;
   var shapes = this.shapes;
 
   for (var i = 0; i < shapes.length; ++i) {
-    shapes[i].writeToDrawLists(drawListInfos, this.worldMatrix, this);
+    shapes[i].writeToDrawLists(remainingDrawListInfos, this.worldMatrix, this);
   }
 
   for (var i = 0; i < children.length; ++i) {
-    children[i].traverse(drawListInfos, this.worldMatrix);
+    children[i].traverse(remainingDrawListInfos, this.worldMatrix);
   }
 };
 

@@ -32,7 +32,7 @@
 
 /**
  * An Element manages DrawElements for classes inherited from Element.
- * 
+ *
  * @param {!o3d.Material} opt_material The Material used by this Element.
  * @param {!o3d.BoundingBox} opt_boundingBox The BoundingBox used by this
  *     Element for culling.
@@ -145,7 +145,7 @@ o3d.Element.prototype.__defineGetter__('owner',
  * Creates a DrawElement for this Element. Note that unlike
  * Shape.createDrawElements and Transform.createDrawElements this one will
  * create more than one element for the same material.
- * 
+ *
  * @param {!o3d.Pack} pack pack used to manage created DrawElement.
  * @param {!o3d.Material} material material to use for DrawElement. If you
  *     pass null it will use the material on this Element. This allows you
@@ -155,7 +155,7 @@ o3d.Element.prototype.__defineGetter__('owner',
  */
 o3d.Element.prototype.createDrawElement =
     function(pack, material) {
-  drawElement = new o3d.DrawElement();
+  drawElement = pack.createObject('DrawElement');
   drawElement.owner = this;
   drawElement.material = material || this.material;
   this.drawElements.push(drawElement);

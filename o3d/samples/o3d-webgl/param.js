@@ -589,7 +589,7 @@ o3d.inherit('ViewInverseTransposeParamMatrix4', 'CompositionParamMatrix4');
  */
 o3d.ViewProjectionParamMatrix4 = function() {
   o3d.CompositionParamMatrix4.call(this);
-  this.matrix_names_ = ['projection', 'view'];
+  this.matrix_names_ = ['viewProjection'];
 };
 o3d.inherit('ViewProjectionParamMatrix4', 'CompositionParamMatrix4');
 
@@ -599,7 +599,7 @@ o3d.inherit('ViewProjectionParamMatrix4', 'CompositionParamMatrix4');
  */
 o3d.ViewProjectionInverseParamMatrix4 = function() {
   o3d.CompositionParamMatrix4.call(this);
-  this.matrix_names_ = ['projection', 'view'];
+  this.matrix_names_ = ['viewProjection'];
   this.inverse_ = true;
 };
 o3d.inherit('ViewProjectionInverseParamMatrix4', 'CompositionParamMatrix4');
@@ -610,7 +610,7 @@ o3d.inherit('ViewProjectionInverseParamMatrix4', 'CompositionParamMatrix4');
  */
 o3d.ViewProjectionTransposeParamMatrix4 = function() {
   o3d.CompositionParamMatrix4.call(this);
-  this.matrix_names_ = ['projection', 'view'];
+  this.matrix_names_ = ['viewProjection'];
   this.transpose_ = true;
 };
 o3d.inherit('ViewProjectionTransposeParamMatrix4', 'CompositionParamMatrix4');
@@ -621,7 +621,7 @@ o3d.inherit('ViewProjectionTransposeParamMatrix4', 'CompositionParamMatrix4');
  */
 o3d.ViewProjectionInverseTransposeParamMatrix4 = function() {
   o3d.CompositionParamMatrix4.call(this);
-  this.matrix_names_ = ['projection', 'view'];
+  this.matrix_names_ = ['viewProjection'];
   this.inverse_ = true;
   this.transpose_ = true;
 };
@@ -725,7 +725,7 @@ o3d.inherit('WorldViewInverseTransposeParamMatrix4',
  */
 o3d.WorldViewProjectionParamMatrix4 = function() {
   o3d.CompositionParamMatrix4.call(this);
-  this.matrix_names_ = ['projection', 'view', 'world'];
+  this.matrix_names_ = ['worldViewProjection'];
 };
 o3d.inherit('WorldViewProjectionParamMatrix4',
     'CompositionParamMatrix4');
@@ -736,7 +736,7 @@ o3d.inherit('WorldViewProjectionParamMatrix4',
  */
 o3d.WorldViewProjectionInverseParamMatrix4 = function() {
   o3d.CompositionParamMatrix4.call(this);
-  this.matrix_names_ = ['projection', 'view', 'world'];
+  this.matrix_names_ = ['worldViewProjection'];
   this.inverse_ = true;
 };
 o3d.inherit('WorldViewProjectionInverseParamMatrix4',
@@ -748,7 +748,7 @@ o3d.inherit('WorldViewProjectionInverseParamMatrix4',
  */
 o3d.WorldViewProjectionTransposeParamMatrix4 = function() {
   o3d.CompositionParamMatrix4.call(this);
-  this.matrix_names_ = ['projection', 'view', 'world'];
+  this.matrix_names_ = ['worldViewProjection'];
   this.transpose_ = true;
 };
 o3d.inherit('WorldViewProjectionTransposeParamMatrix4',
@@ -760,7 +760,7 @@ o3d.inherit('WorldViewProjectionTransposeParamMatrix4',
  */
 o3d.WorldViewProjectionInverseTransposeParamMatrix4 = function() {
   o3d.CompositionParamMatrix4.call(this);
-  this.matrix_names_ = ['projection', 'view', 'world'];
+  this.matrix_names_ = ['worldViewProjection'];
   this.inverse_ = true;
   this.transpose_ = true;
 };
@@ -911,16 +911,19 @@ o3d.Param.SAS.setView = function(view) {
  * SAS parameters.
  */
 o3d.Param.SAS.setProjection = function(projection) {
-  // TODO(petersont): this wasn't being used. Need to adjust all of
-  // the handwritten GLSL shaders to incorporate the modification of
-  // gl_Position based on dx_clipping.
-  /*
-  var adjustedProjection =
-          [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 2, 0], [0, 0, -1, 1]];
-      o3d.Transform.compose(
-          adjustedProjection, projection, adjustedProjection);
-  */
   this['projection'] = projection;
 };
 
+/**
+ * Sets the viewProjection matrix.
+ */
+o3d.Param.SAS.setViewProjection = function(viewProjection) {
+  this['viewProjection'] = viewProjection;
+};
 
+/**
+ * Sets the worldViewProjection matrix.
+ */
+o3d.Param.SAS.setWorldViewProjection = function(worldViewProjection) {
+  this['worldViewProjection'] = worldViewProjection;
+};

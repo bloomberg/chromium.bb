@@ -51,6 +51,12 @@ o3d.inherit('RayIntersectionInfo', 'NamedObject');
 o3d.RayIntersectionInfo.prototype.valid = false;
 
 
+/**
+ * True if the origin of the ray is found to be inside the box.
+ * @type {boolean}
+ */
+o3d.RayIntersectionInfo.prototype.inside = false;
+
 
 /**
  * True if this ray intersection intersected something.

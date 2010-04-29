@@ -60,7 +60,7 @@ o3d.DrawList.SortMethod = goog.typedef;
  *    BY_PERFORMANCE
  *    BY_Z_ORDER
  *    BY_PRIORITY
- * 
+ *
  * Method to sort DrawList by.
  */
 o3d.DrawList.BY_PERFORMANCE = 0;
@@ -77,6 +77,8 @@ o3d.DrawList.prototype.render = function() {
     var drawElementInfo = this.list_[i];
     var world = drawElementInfo.world;
     var view = drawElementInfo.view;
+    var viewProjection = drawElementInfo.viewProjection;
+    var worldViewProjection = drawElementInfo.worldViewProjection;
     var projection = drawElementInfo.projection;
     var transform = drawElementInfo.transform;
     var drawElement = drawElementInfo.drawElement;
@@ -88,6 +90,8 @@ o3d.DrawList.prototype.render = function() {
     o3d.Param.SAS.setWorld(world);
     o3d.Param.SAS.setView(view);
     o3d.Param.SAS.setProjection(projection);
+    o3d.Param.SAS.setViewProjection(viewProjection);
+    o3d.Param.SAS.setWorldViewProjection(worldViewProjection);
 
     var paramObjects = [
       transform,

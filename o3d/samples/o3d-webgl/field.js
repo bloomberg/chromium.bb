@@ -72,21 +72,22 @@ o3d.Field.prototype.size = 0;
 
 /**
  * Sets the values of the data stored in the field.
- * 
+ *
  * The buffer for the field  must have already been created either through
  * buffer.set or through buffer.allocateElements.
- * 
+ *
  * The number of values passed in must be a multiple of the number of
  * components needed for the field.
- * 
+ *
  * @param {number} start_index index of first value to set.
- * @param {number} values Values to be stored in the buffer starting at index.
+ * @param {!Array.<number>} values Values to be stored in the buffer starting at
+ *     index.
  */
 o3d.Field.prototype.setAt =
     function(start_index, values) {
   this.buffer.lock();
   var l = values.length / this.numComponents;
-  for (var i = 0; i < l; i++) {
+  for (var i = 0; i < l; ++i) {
     for (var c = 0; c < this.numComponents; ++c) {
       this.buffer.array_[
           (start_index + i) * this.buffer.totalComponents + this.offset_ + c] =
@@ -100,14 +101,21 @@ o3d.Field.prototype.setAt =
 
 /**
  * Gets the values stored in the field.
- * 
+ *
  * @param {number} start_index index of the first value to get.
  * @param {number} num_elements number of elements to read from field.
- * @return {number}  The values of the field.
+ * @return {!Array.<number>}  The values of the field.
  */
 o3d.Field.prototype.getAt =
     function(start_index, num_elements) {
-  o3d.notImplemented();
+  var values = [];
+  for (var i = 0; i < num_elements; ++i) {
+    for (var c = 0; c < this.numComponents; ++c) {
+      values.push(this.buffer.array_[(start_index + i) *
+          this.buffer.totalComponents + this.offset_ + c]);
+    }
+  }
+  return values;
 };
 
 
