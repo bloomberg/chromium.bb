@@ -136,7 +136,7 @@ html[os=mac] .tree-row[selected] > .tree-label {
 .main {
   position: absolute;
   display: -webkit-box;
-  top: 114px;
+  top: 79px;
   left: 0;
   right: 0;
   bottom: 0;
@@ -185,9 +185,9 @@ html[os=mac] .splitter {
 .logo {
   -webkit-appearance: none;
   border: 0;
-  background: 50% 50% no-repeat url("../images/bookmarks_section.png");
-  width: 67px;
-  height: 67px;
+  background: 50% 50% no-repeat url("../images/bookmarks_section_32.png");
+  width: 32px;
+  height: 32px;
   cursor: pointer;
   margin: 10px;
   float: left;
@@ -205,7 +205,7 @@ html[dir=rtl] #list {
 
 .header form {
   float: left;
-  margin: 32px 2px;
+  margin: 14px 2px;
   margin-bottom: 0;
 }
 
@@ -272,4 +272,3 @@ html[dir=rtl] .summary button {
   padding-right: 0;
   padding-left: 11px;
 }
-

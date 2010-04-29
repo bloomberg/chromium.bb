@@ -63,8 +63,8 @@ if (cr.isMac)
   <button onclick="resetSearch()" class="logo" tabindex=3></button>
   <form onsubmit="setSearch(this.term.value); return false;"
       class="form">
-    <input type="text" id="term" tabindex=1 autofocus>
-    <input type="submit" i18n-values=".value:search_button" tabindex=1>
+    <input type="search" id="term" tabindex=1 autofocus
+        i18n-values="placeholder:search_button">
   </form>
 </div>
 
