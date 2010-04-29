@@ -19,8 +19,9 @@ class TryChangeTestsBase(SuperMoxTestBase):
     self.mox.StubOutWithMock(trychange.scm.GIT, 'Capture')
     self.mox.StubOutWithMock(trychange.scm.GIT, 'GenerateDiff')
     self.mox.StubOutWithMock(trychange.scm.GIT, 'GetCheckoutRoot')
-    self.mox.StubOutWithMock(trychange.scm.GIT, 'GetPatchName')
     self.mox.StubOutWithMock(trychange.scm.GIT, 'GetEmail')
+    self.mox.StubOutWithMock(trychange.scm.GIT, 'GetPatchName')
+    self.mox.StubOutWithMock(trychange.scm.GIT, 'GetUpstreamBranch')
     self.mox.StubOutWithMock(trychange.scm.SVN, 'DiffItem')
     self.mox.StubOutWithMock(trychange.scm.SVN, 'GenerateDiff')
     self.mox.StubOutWithMock(trychange.scm.SVN, 'GetCheckoutRoot')
@@ -88,10 +89,11 @@ class GITUnittest(TryChangeTestsBase):
 
   def testBasic(self):
     trychange.scm.GIT.GetCheckoutRoot(self.fake_root).AndReturn(self.fake_root)
+    trychange.scm.GIT.GetUpstreamBranch(self.fake_root).AndReturn('somewhere')
     trychange.scm.GIT.GenerateDiff(self.fake_root,
                                    full_move=True,
                                    files=['foo.txt', 'bar.txt'],
-                                   branch=None).AndReturn('A diff')
+                                   branch='somewhere').AndReturn('A diff')
     trychange.scm.GIT.GetPatchName(self.fake_root).AndReturn('bleh-1233')
     trychange.scm.GIT.GetEmail(self.fake_root).AndReturn('georges@example.com')
     self.mox.ReplayAll()

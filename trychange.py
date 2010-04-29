@@ -213,6 +213,12 @@ class GIT(SCM):
       self.options.name = scm.GIT.GetPatchName(self.checkout_root)
     if not self.options.email:
       self.options.email = scm.GIT.GetEmail(self.checkout_root)
+    if not self.diff_against:
+      self.diff_against = scm.GIT.GetUpstreamBranch(self.checkout_root)
+      if not self.diff_against:
+        print "Unable to determine default branch to diff against."
+        print "Verify this branch is set up to track another"
+        print "(via the --track argument to \"git checkout -b ...\""
     logging.info("GIT(%s)" % self.checkout_root)
 
   def ReadRootFile(self, filename):

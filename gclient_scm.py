@@ -237,11 +237,11 @@ class GitWrapper(SCMWrapper):
     # 4) current branch based on a remote, switches to a new remote
     #   - exit
 
-    # GetUpstream returns something like 'refs/remotes/origin/master' for a
-    # tracking branch
+    # GetUpstreamBranch returns something like 'refs/remotes/origin/master' for
+    # a tracking branch
     # or 'master' if not a tracking branch (it's based on a specific rev/hash)
     # or it returns None if it couldn't find an upstream
-    upstream_branch = scm.GIT.GetUpstream(self.checkout_path)
+    upstream_branch = scm.GIT.GetUpstreamBranch(self.checkout_path)
     if not upstream_branch or not upstream_branch.startswith('refs/remotes'):
       current_type = "hash"
       logging.debug("Current branch is based off a specific rev and is not "

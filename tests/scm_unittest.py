@@ -122,7 +122,8 @@ from :3
         'FetchUpstreamTuple',
         'GenerateDiff', 'GetBranch', 'GetBranchRef', 'GetCheckoutRoot',
         'GetDifferentFiles', 'GetEmail', 'GetPatchName', 'GetSVNBranch',
-        'GetUpstream', 'IsGitSvn', 'RunAndFilterOutput', 'ShortBranchName',
+        'GetUpstreamBranch', 'IsGitSvn', 'RunAndFilterOutput',
+        'ShortBranchName',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(scm.GIT, members)

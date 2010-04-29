@@ -202,6 +202,7 @@ class GIT(object):
   def FetchUpstreamTuple(cwd):
     """Returns a tuple containg remote and remote ref,
        e.g. 'origin', 'refs/heads/master'
+       Tries to be intelligent and understand git-svn.
     """
     remote = '.'
     branch = GIT.GetBranch(cwd)
@@ -217,10 +218,18 @@ class GIT(object):
       # Fall back on trying a git-svn upstream branch.
       if GIT.IsGitSvn(cwd):
         upstream_branch = GIT.GetSVNBranch(cwd)
+      # Fall back on origin/master if it exits.
+      elif GIT.Capture(['branch', '-r'], in_directory=cwd
+                      )[0].split().count('origin/master'):
+        remote = 'origin'
+        upstream_branch = 'refs/heads/master'
+      else:
+        remote = None
+        upstream_branch = None
     return remote, upstream_branch
 
   @staticmethod
-  def GetUpstream(cwd):
+  def GetUpstreamBranch(cwd):
     """Gets the current branch's upstream branch."""
     remote, upstream_branch = GIT.FetchUpstreamTuple(cwd)
     if remote != '.':
@@ -235,7 +244,7 @@ class GIT(object):
     full_move means that move or copy operations should completely recreate the
     files, usually in the prospect to apply the patch for a try job."""
     if not branch:
-      branch = GIT.GetUpstream(cwd)
+      branch = GIT.GetUpstreamBranch(cwd)
     command = ['diff', '-p', '--no-prefix', branch + "..." + branch_head]
     if not full_move:
       command.append('-C')
@@ -255,7 +264,7 @@ class GIT(object):
   def GetDifferentFiles(cwd, branch=None, branch_head='HEAD'):
     """Returns the list of modified files between two branches."""
     if not branch:
-      branch = GIT.GetUpstream(cwd)
+      branch = GIT.GetUpstreamBranch(cwd)
     command = ['diff', '--name-only', branch + "..." + branch_head]
     return GIT.Capture(command, cwd)[0].splitlines(False)
 
