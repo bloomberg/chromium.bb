@@ -67,10 +67,42 @@
       ],
     },
     {
+      # TODO(petersont): tie in the copying of these to the doc
+      # generation process, compile the sources, etc.
+      'target_name': 'install_o3d_webgl',
+      'type': 'none',
+      'copies': [
+        {
+          'destination': '<(PRODUCT_DIR)/samples',
+          'files': [
+            'o3d-webgl/',
+          ]
+        },
+      ],
+    },
+    {
+      # TODO(petersont): consider picking and choosing the files taken
+      # from this directory. Note that some of the samples are copied
+      # via the list above, and some are copied by virtue of being in
+      # the MANIFEST file in this directory (see samples_gen.py).
+      'target_name': 'install_o3d_webgl_samples',
+      'type': 'none',
+      'copies': [
+        {
+          'destination': '<(PRODUCT_DIR)/samples',
+          'files': [
+            'o3d-webgl-samples/',
+          ]
+        },
+      ],
+    },
+    {
       'target_name': 'samples',
       'type': 'none',
       'dependencies': [
         'install_samples',
+        'install_o3d_webgl',
+        'install_o3d_webgl_samples',
         '<!(python samples_gen.py):build_samples',
       ],
     },
