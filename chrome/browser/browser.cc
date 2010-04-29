@@ -102,7 +102,7 @@
 #include "chrome/browser/user_data_manager.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/app_launcher.h"
-#include "chrome/browser/views/location_bar/location_bar_view.h"
+#include "chrome/browser/views/location_bar_view.h"
 #endif  // OS_WIN
 
 #if defined(OS_MACOSX)

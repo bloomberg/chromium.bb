@@ -599,8 +599,8 @@ void ToolbarView::CreateCenterStack(Profile *profile) {
   reload_->SetID(VIEW_ID_RELOAD_BUTTON);
 
   location_bar_ = new LocationBarView(profile, browser_->command_updater(),
-      model_, this, (display_mode_ == DISPLAYMODE_LOCATION) ?
-          LocationBarView::POPUP : LocationBarView::NORMAL);
+                                      model_, this,
+                                      display_mode_ == DISPLAYMODE_LOCATION);
 
   // The Go button.
   go_ = new GoButton(location_bar_, browser_);

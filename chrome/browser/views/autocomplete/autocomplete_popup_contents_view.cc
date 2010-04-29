@@ -582,26 +582,9 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
   // Calculate desired bounds.
   gfx::Rect location_bar_bounds(location_bar_->bounds());
   gfx::Point location;
-  const views::Border* border = location_bar_->border();
-  int location_bar_height = location_bar_bounds.height();
-  if (border) {
-    // Adjust for the border so that the bubble and location bar borders are
-    // aligned.
-    gfx::Insets insets;
-    border->GetInsets(&insets);
-    location_bar_bounds.Inset(insets.left(), 0, insets.right(), 0);
-    location.Offset(insets.left(), 0);
-  } else {
-    // The normal location bar is drawn using a background graphic that includes
-    // the border.  The graphic is actually one pixel larger above and below the
-    // dark of the border, so that it can draw a faint highlight.
-    // So, in order to make the popup butt up against the dark border, it has to
-    // overlap the location bar by one pixel.
-    location_bar_height -= 1;
-  }
   views::View::ConvertPointToScreen(location_bar_, &location);
   location_bar_bounds.set_origin(location);
-  location_bar_bounds.set_height(location_bar_height);
+  location_bar_bounds.set_height(location_bar_bounds.height() - 1);
   gfx::Rect new_target_bounds(bubble_border_->GetBounds(location_bar_bounds,
       gfx::Size(location_bar_bounds.width(), total_child_height)));
 

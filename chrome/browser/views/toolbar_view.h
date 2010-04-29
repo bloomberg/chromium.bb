@@ -16,12 +16,11 @@
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/views/accessible_toolbar_view.h"
 #include "chrome/browser/views/go_button.h"
-#include "chrome/browser/views/location_bar/location_bar_view.h"
+#include "chrome/browser/views/location_bar_view.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu.h"
 #include "views/controls/menu/menu_wrapper.h"
 #include "views/controls/menu/view_menu_delegate.h"
-#include "views/focus/focus_manager.h"
 #include "views/view.h"
 
 class BrowserActionsContainer;
