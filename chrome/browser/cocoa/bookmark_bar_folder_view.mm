@@ -22,7 +22,6 @@
 }
 
 - (void)drawRect:(NSRect)rect {
-
   // TODO(jrg): copied from bookmark_bar_view but orientation changed.
   // Code dup sucks but I'm not sure I can take 16 lines and make it
   // generic for horiz vs vertical while keeping things simple.
@@ -105,10 +104,6 @@
   // Awkwardness since views open and close out from under us.
   if (inDrag_) {
     inDrag_ = NO;
-
-    // This line makes sure menus get closed when a drag isn't
-    // completed.
-    [[self controller] closeAllBookmarkFolders];
   }
 
   [self draggingExited:info];

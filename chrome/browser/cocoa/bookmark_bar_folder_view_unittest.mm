@@ -122,6 +122,21 @@
     disposition:(WindowOpenDisposition)disposition {
 }
 
+- (void)removeButton:(NSInteger)buttonIndex animate:(BOOL)animate {
+}
+
+- (id<BookmarkButtonControllerProtocol>)controllerForNode:
+    (const BookmarkNode*)node {
+  return nil;
+}
+
+- (void)moveButtonFromIndex:(NSInteger)fromIndex toIndex:(NSInteger)toIndex {
+}
+
+- (void)addButtonForNode:(const BookmarkNode*)node
+                 atIndex:(NSInteger)buttonIndex {
+}
+
 @end
 
 namespace {

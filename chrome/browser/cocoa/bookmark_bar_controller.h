@@ -44,12 +44,16 @@ const CGFloat kDefaultBookmarkWidth = 150.0;
 
 // TODO(jrg): http://crbug.com/36276 to get final sizes.
 // Used as a min/max width for buttons on menus (not on the bar).
-const CGFloat kBookmarkMenuButtonMinimumWidth = kDefaultBookmarkWidth;
+const CGFloat kBookmarkMenuButtonMinimumWidth = 100.0;
 const CGFloat kBookmarkMenuButtonMaximumWidth = 485.0;
 
 const CGFloat kBookmarkVerticalPadding = 2.0;
 const CGFloat kBookmarkHorizontalPadding = 1.0;
 // (end magic numbers from Cole)
+
+// Make subfolder menus overlap their parent menu a bit to give a better
+// perception of a menuing system.
+const CGFloat kBookmarkMenuOverlap = 1.0;
 
 // Delay before opening a subfolder (and closing the previous one)
 // when hovering over a folder button.
@@ -208,11 +212,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   // Since we create everything before doing layout we can't be sure
   // that all bookmark buttons we create will be visible.  Thus,
   // [buttons_ count] isn't a definitive check.
-  int bookmarkBarDisplayedButtons_;
-
-  // We only build the off-the-side menu on demand.
-  // We flag a need to rebuild with this variable.
-  BOOL needToRebuildOffTheSideMenu_;
+  int displayedButtonCount_;
 }
 
 @property(readonly, nonatomic) bookmarks::VisualState visualState;
@@ -263,9 +263,6 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
 // Provide a favIcon for a bookmark node.  May return nil.
 - (NSImage*)favIconForNode:(const BookmarkNode*)node;
-
-// Provide a contextual menu for a bookmark node.  May return nil.
-- (NSMenu*)contextMenuForNode:(const BookmarkNode*)node;
 
 // Actions for manipulating bookmarks.
 // Open a normal bookmark or folder from a button, ...
@@ -318,7 +315,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 - (NSCell*)cellForBookmarkNode:(const BookmarkNode*)node;
 - (void)clearBookmarkBar;
 - (BookmarkBarView*)buttonView;
-- (NSArray*)buttons;
+- (NSMutableArray*)buttons;
 - (NSRect)frameForBookmarkButtonFromCell:(NSCell*)cell xOffset:(int*)xOffset;
 - (void)checkForBookmarkButtonGrowth:(NSButton*)button;
 - (void)frameDidChange;
@@ -336,6 +333,8 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 - (BookmarkButton*)buttonForDroppingOnAtPoint:(NSPoint)point;
 - (BOOL)isEventAnExitEvent:(NSEvent*)event;
 - (id)folderTarget;
+- (int)displayedButtonCount;
+
 @end
 
 // The (internal) |NSPasteboard| type string for bookmark button drags, used for

@@ -53,7 +53,6 @@ static const CGFloat kDragImageOpacity = 0.7;
   if ([self delegate]) {
     // Ask our delegate to fill the pasteboard for us.
     NSPasteboard* pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
-
     [[self delegate] fillPasteboard:pboard forDragOfButton:self];
 
     // At the moment, moving bookmarks causes their buttons (like me!)

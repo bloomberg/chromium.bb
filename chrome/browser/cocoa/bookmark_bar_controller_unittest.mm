@@ -11,6 +11,7 @@
 #import "chrome/browser/cocoa/bookmark_bar_constants.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #import "chrome/browser/cocoa/bookmark_bar_folder_window.h"
+#import "chrome/browser/cocoa/bookmark_bar_unittest_helper.h"
 #import "chrome/browser/cocoa/bookmark_bar_view.h"
 #import "chrome/browser/cocoa/bookmark_button.h"
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/cocoa/test_event_utils.h"
 #import "chrome/browser/cocoa/view_resizer_pong.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/model_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -171,20 +173,60 @@ class FakeTheme : public ThemeProvider {
 
 namespace {
 
-static const int kContentAreaHeight = 500;
-static const int kInfoBarViewHeight = 30;
-
-class BookmarkBarControllerTest : public CocoaTest {
+class BookmarkBarControllerTestBase : public CocoaTest {
  public:
-  BookmarkBarControllerTest() {
+  BrowserTestHelper helper_;
+  scoped_nsobject<NSView> parent_view_;
+  scoped_nsobject<ViewResizerPong> resizeDelegate_;
+  scoped_nsobject<BookmarkBarController> bar_;
+
+  BookmarkBarControllerTestBase() {
     resizeDelegate_.reset([[ViewResizerPong alloc] init]);
     NSRect parent_frame = NSMakeRect(0, 0, 800, 50);
     parent_view_.reset([[NSView alloc] initWithFrame:parent_frame]);
     [parent_view_ setHidden:YES];
+    bar_.reset([[BookmarkBarController alloc]
+                initWithBrowser:helper_.browser()
+                   initialWidth:NSWidth(parent_frame)
+                       delegate:nil
+                 resizeDelegate:resizeDelegate_.get()]);
+    InstallAndToggleBar(bar_.get());
+  }
+
+  void InstallAndToggleBar(BookmarkBarController* bar) {
+    // Force loading of the nib.
+    [bar view];
+    // Awkwardness to look like we've been installed.
+    for (NSView* subView in [parent_view_ subviews])
+      [subView removeFromSuperview];
+    [parent_view_ addSubview:[bar view]];
+    NSRect frame = [[[bar view] superview] frame];
+    frame.origin.y = 100;
+    [[[bar view] superview] setFrame:frame];
+
+    // Make sure it's on in a window so viewDidMoveToWindow is called
+    NSView* contentView = [test_window() contentView];
+    if (![parent_view_ isDescendantOf:contentView])
+      [contentView addSubview:parent_view_];
+
+    // Make sure it's open so certain things aren't no-ops.
+    [bar updateAndShowNormalBar:YES
+                showDetachedBar:NO
+                  withAnimation:NO];
+  }
+};
+
+class BookmarkBarControllerTest : public BookmarkBarControllerTestBase {
+ public:
+  scoped_nsobject<BookmarkMenu> menu_;
+  scoped_nsobject<NSMenuItem> menu_item_;
+  scoped_nsobject<NSButtonCell> cell_;
+
+  BookmarkBarControllerTest() {
     bar_.reset(
       [[BookmarkBarControllerNoOpen alloc]
           initWithBrowser:helper_.browser()
-             initialWidth:NSWidth(parent_frame)
+             initialWidth:NSWidth([parent_view_ frame])
                  delegate:nil
            resizeDelegate:resizeDelegate_.get()]);
 
@@ -199,24 +241,6 @@ class BookmarkBarControllerTest : public CocoaTest {
     cell_.reset([[NSButtonCell alloc] init]);
     [menu_item_ setMenu:menu_.get()];
     [menu_ setDelegate:cell_.get()];
-  }
-
-  void InstallAndToggleBar(BookmarkBarController* bar) {
-    // Force loading of the nib.
-    [bar view];
-    // Awkwardness to look like we've been installed.
-    [parent_view_ addSubview:[bar view]];
-    NSRect frame = [[[bar view] superview] frame];
-    frame.origin.y = 100;
-    [[[bar view] superview] setFrame:frame];
-
-    // Make sure it's on in a window so viewDidMoveToWindow is called
-    [[test_window() contentView] addSubview:parent_view_];
-
-    // Make sure it's open so certain things aren't no-ops.
-    [bar updateAndShowNormalBar:YES
-                showDetachedBar:NO
-                  withAnimation:NO];
   }
 
   // Return a menu item that points to the given URL.
@@ -235,13 +259,9 @@ class BookmarkBarControllerTest : public CocoaTest {
     return menu_item_;
   }
 
-  BrowserTestHelper helper_;
-  scoped_nsobject<NSView> parent_view_;
-  scoped_nsobject<ViewResizerPong> resizeDelegate_;
-  scoped_nsobject<BookmarkBarControllerNoOpen> bar_;
-  scoped_nsobject<BookmarkMenu> menu_;
-  scoped_nsobject<NSMenuItem> menu_item_;
-  scoped_nsobject<NSButtonCell> cell_;
+  BookmarkBarControllerNoOpen* noOpenBar() {
+    return (BookmarkBarControllerNoOpen*)bar_.get();
+  }
 };
 
 TEST_F(BookmarkBarControllerTest, ShowWhenShowBookmarkBarTrue) {
@@ -422,8 +442,8 @@ TEST_F(BookmarkBarControllerTest, OffTheSideButtonHidden) {
     EXPECT_TRUE([bar_ offTheSideButtonIsHidden]);
   }
 
+  const BookmarkNode* parent = model->GetBookmarkBarNode();
   for (int i = 0; i < 20; i++) {
-    const BookmarkNode* parent = model->GetBookmarkBarNode();
     model->AddURL(parent, parent->GetChildCount(),
                   L"super duper wide title",
                   GURL("http://superfriends.hall-of-justice.edu"));
@@ -534,8 +554,8 @@ TEST_F(BookmarkBarControllerTest, OpenBookmark) {
   [cell setRepresentedObject:[NSValue valueWithPointer:node.get()]];
 
   [bar_ openBookmark:button];
-  EXPECT_EQ(bar_.get()->urls_[0], node->GetURL());
-  EXPECT_EQ(bar_.get()->dispositions_[0], CURRENT_TAB);
+  EXPECT_EQ(noOpenBar()->urls_[0], node->GetURL());
+  EXPECT_EQ(noOpenBar()->dispositions_[0], CURRENT_TAB);
 }
 
 // Confirm opening of bookmarks works from the menus (different
@@ -556,8 +576,8 @@ TEST_F(BookmarkBarControllerTest, OpenBookmarkFromMenus) {
     GURL gurl(urls[i]);
     [bar_ performSelector:selectors[i]
                withObject:ItemForBookmarkBarMenu(gurl)];
-    EXPECT_EQ(bar_.get()->urls_[0], gurl);
-    EXPECT_EQ(bar_.get()->dispositions_[0], dispositions[i]);
+    EXPECT_EQ(noOpenBar()->urls_[0], gurl);
+    EXPECT_EQ(noOpenBar()->dispositions_[0], dispositions[i]);
     [bar_ clear];
   }
 }
@@ -616,7 +636,6 @@ TEST_F(BookmarkBarControllerTest, TestAddRemoveAndClear) {
 TEST_F(BookmarkBarControllerTest, TestButtonLimits) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   EXPECT_EQ(0U, [[bar_ buttons] count]);
-
   // Add one; make sure we see it.
   const BookmarkNode* parent = model->GetBookmarkBarNode();
   model->AddURL(parent, parent->GetChildCount(),
@@ -625,7 +644,7 @@ TEST_F(BookmarkBarControllerTest, TestButtonLimits) {
 
   // Add 30 which we expect to be 'too many'.  Make sure we don't see
   // 30 buttons.
-  [bar_ clearBookmarkBar];
+  model->Remove(parent, 0);
   EXPECT_EQ(0U, [[bar_ buttons] count]);
   for (int i=0; i<30; i++) {
     model->AddURL(parent, parent->GetChildCount(),
@@ -767,7 +786,7 @@ TEST_F(BookmarkBarControllerTest, MiddleClick) {
   EXPECT_TRUE(first);
 
   [first otherMouseUp:test_event_utils::MakeMouseEvent(NSOtherMouseUp, 0)];
-  EXPECT_EQ(bar_.get()->urls_.size(), 1U);
+  EXPECT_EQ(noOpenBar()->urls_.size(), 1U);
 }
 
 TEST_F(BookmarkBarControllerTest, DisplaysHelpMessageOnEmpty) {
@@ -1239,12 +1258,12 @@ TEST_F(BookmarkBarControllerTest, NodeDeletedWhileMenuIsOpen) {
       GURL("http://www.google.com"));
 
   NSMenuItem* item = ItemForBookmarkBarMenu(initialNode);
-  EXPECT_EQ(0U, bar_.get()->urls_.size());
+  EXPECT_EQ(0U, noOpenBar()->urls_.size());
 
   // Basic check of the menu item and an IBOutlet it can call.
   EXPECT_EQ(initialNode, [bar_ nodeFromMenuItem:item]);
   [bar_ openBookmarkInNewWindow:item];
-  EXPECT_EQ(1U, bar_.get()->urls_.size());
+  EXPECT_EQ(1U, noOpenBar()->urls_.size());
   [bar_ clear];
 
   // Now delete the node and make sure things are happy (no crash,
@@ -1254,7 +1273,7 @@ TEST_F(BookmarkBarControllerTest, NodeDeletedWhileMenuIsOpen) {
   // Should not crash by referencing a deleted node.
   [bar_ openBookmarkInNewWindow:item];
   // Confirm the above did nothing in case it somehow didn't crash.
-  EXPECT_EQ(0U, bar_.get()->urls_.size());
+  EXPECT_EQ(0U, noOpenBar()->urls_.size());
 
   // Confirm some more non-crashes.
   [bar_ openBookmarkInNewForegroundTab:item];
@@ -1299,6 +1318,60 @@ TEST_F(BookmarkBarControllerTest, CloseFolderOnAnimate) {
   // should have been closed thus releasing the folderController.
   EXPECT_FALSE([bar_ folderController]);
 }
+
+TEST_F(BookmarkBarControllerTest, MoveRemoveAddButtons) {
+  BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
+  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const std::wstring model_string(L"1b 2f:[ 2f1b 2f2b ] 3b ");
+  model_test_utils::AddNodesFromModelString(model, root, model_string);
+
+  // Validate initial model.
+  std::wstring actualModelString = model_test_utils::ModelStringFromNode(root);
+  EXPECT_EQ(model_string, actualModelString);
+
+  // Remember how many buttons are showing.
+  int oldDisplayedButtons = [bar_ displayedButtonCount];
+  NSArray* buttons = [bar_ buttons];
+
+  // Move a button around a bit.
+  [bar_ moveButtonFromIndex:0 toIndex:2];
+  EXPECT_TRUE([[[buttons objectAtIndex:0] title] isEqualToString:@"2f"]);
+  EXPECT_TRUE([[[buttons objectAtIndex:1] title] isEqualToString:@"3b"]);
+  EXPECT_TRUE([[[buttons objectAtIndex:2] title] isEqualToString:@"1b"]);
+  EXPECT_EQ(oldDisplayedButtons, [bar_ displayedButtonCount]);
+  [bar_ moveButtonFromIndex:2 toIndex:0];
+  EXPECT_TRUE([[[buttons objectAtIndex:0] title] isEqualToString:@"1b"]);
+  EXPECT_TRUE([[[buttons objectAtIndex:1] title] isEqualToString:@"2f"]);
+  EXPECT_TRUE([[[buttons objectAtIndex:2] title] isEqualToString:@"3b"]);
+  EXPECT_EQ(oldDisplayedButtons, [bar_ displayedButtonCount]);
+
+  // Add a couple of buttons.
+  const BookmarkNode* parent = root->GetChild(1); // Purloin an existing node.
+  const BookmarkNode* node = parent->GetChild(0);
+  [bar_ addButtonForNode:node atIndex:0];
+  EXPECT_TRUE([[[buttons objectAtIndex:0] title] isEqualToString:@"2f1b"]);
+  EXPECT_TRUE([[[buttons objectAtIndex:1] title] isEqualToString:@"1b"]);
+  EXPECT_TRUE([[[buttons objectAtIndex:2] title] isEqualToString:@"2f"]);
+  EXPECT_TRUE([[[buttons objectAtIndex:3] title] isEqualToString:@"3b"]);
+  EXPECT_EQ(oldDisplayedButtons + 1, [bar_ displayedButtonCount]);
+  node = parent->GetChild(1);
+  [bar_ addButtonForNode:node atIndex:-1];
+  EXPECT_TRUE([[[buttons objectAtIndex:0] title] isEqualToString:@"2f1b"]);
+  EXPECT_TRUE([[[buttons objectAtIndex:1] title] isEqualToString:@"1b"]);
+  EXPECT_TRUE([[[buttons objectAtIndex:2] title] isEqualToString:@"2f"]);
+  EXPECT_TRUE([[[buttons objectAtIndex:3] title] isEqualToString:@"3b"]);
+  EXPECT_TRUE([[[buttons objectAtIndex:4] title] isEqualToString:@"2f2b"]);
+  EXPECT_EQ(oldDisplayedButtons + 2, [bar_ displayedButtonCount]);
+
+  // Remove a couple of buttons.
+  [bar_ removeButton:4 animate:NO];
+  [bar_ removeButton:1 animate:NO];
+  EXPECT_TRUE([[[buttons objectAtIndex:0] title] isEqualToString:@"2f1b"]);
+  EXPECT_TRUE([[[buttons objectAtIndex:1] title] isEqualToString:@"2f"]);
+  EXPECT_TRUE([[[buttons objectAtIndex:2] title] isEqualToString:@"3b"]);
+  EXPECT_EQ(oldDisplayedButtons, [bar_ displayedButtonCount]);
+}
+
 
 class BookmarkBarControllerOpenAllTest : public BookmarkBarControllerTest {
 public:
@@ -1394,14 +1467,14 @@ TEST_F(BookmarkBarControllerOpenAllTest, CommandClickOnFolder) {
   [[[fakeApp stub] andReturn:commandClick] currentEvent];
   id oldApp = NSApp;
   NSApp = fakeApp;
-  size_t originalDispositionCount = bar_.get()->dispositions_.size();
+  size_t originalDispositionCount = noOpenBar()->dispositions_.size();
 
   // Click!
   [first performClick:first];
 
-  size_t dispositionCount = bar_.get()->dispositions_.size();
+  size_t dispositionCount = noOpenBar()->dispositions_.size();
   EXPECT_EQ(originalDispositionCount+1, dispositionCount);
-  EXPECT_EQ(bar_.get()->dispositions_[dispositionCount-1], NEW_BACKGROUND_TAB);
+  EXPECT_EQ(noOpenBar()->dispositions_[dispositionCount-1], NEW_BACKGROUND_TAB);
 
   // Replace NSApp
   NSApp = oldApp;
@@ -1468,5 +1541,79 @@ TEST_F(BookmarkBarControllerNotificationTest, DeregistersForNotifications) {
 // properly to a hover open.
 
 // TODO(viettrungluu): figure out how to test animations.
+
+class BookmarkBarControllerDragDropTest : public BookmarkBarControllerTestBase {
+ public:
+  BookmarkBarControllerDragDropTest() {
+    InstallAndToggleBar(bar_.get());
+  }
+};
+
+TEST_F(BookmarkBarControllerDragDropTest, DragMoveBarBookmarkToOffTheSide) {
+  BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
+  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const std::wstring model_string(L"1bWithLongName 2fWithLongName:[ "
+      "2f1bWithLongName 2f2fWithLongName:[ 2f2f1bWithLongName "
+      "2f2f2bWithLongName 2f2f3bWithLongName 2f4b ] 2f3bWithLongName ] "
+      "3bWithLongName 4bWithLongName 5bWithLongName 6bWithLongName "
+      "7bWithLongName 8bWithLongName 9bWithLongName 10bWithLongName "
+      "11bWithLongName 12bWithLongName 13b ");
+  model_test_utils::AddNodesFromModelString(model, root, model_string);
+
+  // Validate initial model.
+  std::wstring actualModelString = model_test_utils::ModelStringFromNode(root);
+  EXPECT_EQ(model_string, actualModelString);
+
+  // Insure that the off-the-side is showing.
+  ASSERT_FALSE([bar_ offTheSideButtonIsHidden]);
+
+  // Remember how many buttons are showing and are available.
+  int oldDisplayedButtons = [bar_ displayedButtonCount];
+  int oldChildCount = root->GetChildCount();
+
+  // Pop up the off-the-side menu.
+  BookmarkButton* otsButton = (BookmarkButton*)[bar_ offTheSideButton];
+  ASSERT_TRUE(otsButton);
+  [[otsButton target] performSelector:@selector(openBookmarkFolderFromButton:)
+                           withObject:otsButton];
+  BookmarkBarFolderController* otsController = [bar_ folderController];
+  EXPECT_TRUE(otsController);
+  NSWindow* toWindow = [otsController window];
+  EXPECT_TRUE(toWindow);
+  BookmarkButton* draggedButton = [bar_ buttonWithTitleEqualTo:@"3bWithLongName"];
+  ASSERT_TRUE(draggedButton);
+  int oldOTSCount = (int)[[otsController buttons] count];
+  EXPECT_EQ(oldOTSCount, oldChildCount - oldDisplayedButtons);
+  BookmarkButton* targetButton = [[otsController buttons] objectAtIndex:0];
+  ASSERT_TRUE(targetButton);
+  [otsController dragButton:draggedButton
+                         to:[targetButton center]
+                       copy:YES];
+  // There should still be the same number of buttons in the bar
+  // and off-the-side should have one more.
+  int newDisplayedButtons = [bar_ displayedButtonCount];
+  int newChildCount = root->GetChildCount();
+  int newOTSCount = (int)[[otsController buttons] count];
+  EXPECT_EQ(oldDisplayedButtons, newDisplayedButtons);
+  EXPECT_EQ(oldChildCount + 1, newChildCount);
+  EXPECT_EQ(oldOTSCount + 1, newOTSCount);
+  EXPECT_EQ(newOTSCount, newChildCount - newDisplayedButtons);
+}
+
+TEST_F(BookmarkBarControllerDragDropTest, ControllerForNode) {
+  BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
+  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const std::wstring model_string(L"1b 2f:[ 2f1b 2f2b ] 3b ");
+  model_test_utils::AddNodesFromModelString(model, root, model_string);
+
+  // Validate initial model.
+  std::wstring actualModelString = model_test_utils::ModelStringFromNode(root);
+  EXPECT_EQ(model_string, actualModelString);
+
+  // Find the main bar controller.
+  const void* expectedController = bar_;
+  const void* actualController = [bar_ controllerForNode:root];
+  EXPECT_EQ(expectedController, actualController);
+}
 
 }  // namespace

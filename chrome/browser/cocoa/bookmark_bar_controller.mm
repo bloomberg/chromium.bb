@@ -138,6 +138,11 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 // Modifies self->buttons_.  Do not add more buttons than will fit on the view.
 - (void)addNodesToButtonList:(const BookmarkNode*)node;
 
+// Create an autoreleased button appropriate for insertion into the bookmark
+// bar. Update |xOffset| with the offset appropriate for the subsequent button.
+- (BookmarkButton*)buttonForNode:(const BookmarkNode*)node
+                         xOffset:(int*)xOffset;
+
 // Puts stuff into the final visual state without animating, stopping a running
 // animation if necessary.
 - (void)finalizeVisualState;
@@ -160,6 +165,14 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 // negative value; callers should check for this.
 - (int)indexForDragOfButton:(BookmarkButton*)sourceButton
                     toPoint:(NSPoint)point;
+
+// Add or remove buttons to/from the bar until it is filled but not overflowed.
+- (void)redistributeButtonsOnBarAsNeeded;
+
+// Determine the nature of the bookmark bar contents based on the number of
+// buttons showing. If too many then show the off-the-side list, if none
+// then show the no items label.
+- (void)reconfigureBookmarkBar;
 
 - (void)addNode:(const BookmarkNode*)child toMenu:(NSMenu*)menu;
 - (void)addFolderNode:(const BookmarkNode*)node toMenu:(NSMenu*)menu;
@@ -368,11 +381,11 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 // Configure the off-the-side button (e.g. specify the node range,
 // check if we should enable or disable it, etc).
 - (void)configureOffTheSideButtonContentsAndVisibility {
-  [[offTheSideButton_ cell] setStartingChildIndex:bookmarkBarDisplayedButtons_];
+  [[offTheSideButton_ cell] setStartingChildIndex:displayedButtonCount_];
   [[offTheSideButton_ cell]
     setBookmarkNode:bookmarkModel_->GetBookmarkBarNode()];
   int bookmarkChildren = bookmarkModel_->GetBookmarkBarNode()->GetChildCount();
-  if (bookmarkChildren > bookmarkBarDisplayedButtons_) {
+  if (bookmarkChildren > displayedButtonCount_) {
     [offTheSideButton_ setHidden:NO];
   } else {
     [offTheSideButton_ setHidden:YES];
@@ -387,18 +400,8 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 - (void)frameDidChange {
   if (!bookmarkModel_->IsLoaded())
     return;
-  CGFloat width = NSWidth([[self view] frame]);
-  if (width > savedFrameWidth_) {
-    savedFrameWidth_ = width;
-    [self clearBookmarkBar];
-    [self addNodesToButtonList:bookmarkModel_->GetBookmarkBarNode()];
-    [self updateTheme:[[[self view] window] themeProvider]];
-    [self addButtonsToView];
-  }
-  [self positionOffTheSideButton];
-  [self addButtonsToView];
-  [self configureOffTheSideButtonContentsAndVisibility];
-  [self centerNoItemsLabel];
+  [self updateTheme:[[[self view] window] themeProvider]];
+  [self reconfigureBookmarkBar];
 }
 
 // Close all bookmark folders.  "Folder" here is the fake menu for
@@ -449,6 +452,11 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   // Else open a new one if it makes sense to do so.
   if ([sender bookmarkNode]->is_folder())
     [folderTarget_ openBookmarkFolderFromButton:sender];
+#if 1
+  else
+    // We're over a non-folder bookmark so close any old folders.
+    [self closeAllBookmarkFolders];
+#endif
 }
 
 // BookmarkButtonDelegate protocol implementation.
@@ -528,6 +536,9 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   return folderTarget_.get();
 }
 
+- (int)displayedButtonCount {
+  return displayedButtonCount_;
+}
 
 // Keep the "no items" label centered in response to a frame size change.
 - (void)centerNoItemsLabel {
@@ -742,11 +753,11 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
     DCHECK(afterNode);
     int index = afterNode->GetParent()->IndexOfChild(afterNode);
     // Make sure we don't get confused by buttons which aren't visible.
-    return std::min(index, bookmarkBarDisplayedButtons_);
+    return std::min(index, displayedButtonCount_);
   }
 
   // If nothing is to my right I am at the end!
-  return bookmarkBarDisplayedButtons_;
+  return displayedButtonCount_;
 }
 
 - (BOOL)dragButton:(BookmarkButton*)sourceButton
@@ -776,11 +787,10 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 
   // Be sure we don't try and drop a folder into itself.
   if (sourceNode != destParent) {
-    if (copy) {
+    if (copy)
       bookmarkModel_->Copy(sourceNode, destParent, destIndex);
-    } else {
+    else
       bookmarkModel_->Move(sourceNode, destParent, destIndex);
-    }
   }
 
   [self closeAllBookmarkFolders];  // For a hover open, if needed.
@@ -862,6 +872,21 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)info {
   NSPoint point = [info draggingLocation];
   BookmarkButton* button = [self buttonForDroppingOnAtPoint:point];
+
+  // Don't allow drops that would result in cycles.
+  if (button) {
+    NSData* data = [[info draggingPasteboard]
+                    dataForType:kBookmarkButtonDragType];
+    if (data && [info draggingSource]) {
+      BookmarkButton* sourceButton = nil;
+      [data getBytes:&sourceButton length:sizeof(sourceButton)];
+      const BookmarkNode* sourceNode = [sourceButton bookmarkNode];
+      const BookmarkNode* destNode = [button bookmarkNode];
+      if (destNode->HasAncestor(sourceNode))
+        button = nil;
+    }
+  }
+
   if ([button isFolder]) {
     if (hoverButton_ == button) {
       return NSDragOperationMove;  // already open or timed to open
@@ -916,7 +941,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
                                toPoint:(NSPoint)point {
   CGFloat x = 0;
   int destIndex = [self indexForDragOfButton:sourceButton toPoint:point];
-  int numButtons = bookmarkBarDisplayedButtons_;
+  int numButtons = displayedButtonCount_;
 
   // If it's a drop strictly between existing buttons ...
   if (destIndex >= 0 && destIndex < numButtons) {
@@ -1121,7 +1146,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 - (IBAction)openOffTheSideFolderFromButton:(id)sender {
   DCHECK([sender isKindOfClass:[BookmarkButton class]]);
   DCHECK([[sender cell] isKindOfClass:[BookmarkButtonCell class]]);
-  [[sender cell] setStartingChildIndex:bookmarkBarDisplayedButtons_];
+  [[sender cell] setStartingChildIndex:displayedButtonCount_];
   [folderTarget_ openBookmarkFolderFromButton:sender];
 }
 
@@ -1407,8 +1432,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [buttons_ makeObjectsPerformSelector:@selector(removeFromSuperview)];
   [buttons_ removeAllObjects];
   [self clearMenuTagMap];
-  needToRebuildOffTheSideMenu_ = YES;
-  bookmarkBarDisplayedButtons_ = 0;
+  displayedButtonCount_ = 0;
 
   // Make sure there are no stale pointers in the pasteboard.  This
   // can be important if a bookmark is deleted (via bookmark sync)
@@ -1428,7 +1452,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // TODO(jrg): move much of the cell config into the BookmarkButtonCell class.
 - (NSCell*)cellForBookmarkNode:(const BookmarkNode*)node {
   NSImage* image = node ? [self favIconForNode:node] : nil;
-  NSMenu* menu = [self contextMenuForNode:node];
+  NSMenu* menu = node && node->is_folder() ? buttonFolderContextMenu_ :
+      buttonContextMenu_;
   BookmarkButtonCell* cell = [BookmarkButtonCell buttonCellForNode:node
                                                        contextMenu:menu
                                                           cellText:nil
@@ -1438,11 +1463,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   // until the cell is associated with a button, so we can't theme the cell yet.
 
   return cell;
-}
-
-- (NSMenu*)contextMenuForNode:(const BookmarkNode*)node {
-  return node && node->is_folder() ? buttonFolderContextMenu_ :
-      buttonContextMenu_;
 }
 
 // Return an appropriate width for the given bookmark button cell.
@@ -1461,12 +1481,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // for the next button.
 - (NSRect)frameForBookmarkButtonFromCell:(NSCell*)cell
                                  xOffset:(int*)xOffset {
+  DCHECK(xOffset);
   NSRect bounds = [buttonView_ bounds];
-  // TODO(erg,jrg): There used to be an if statement here, comparing the height
-  // to 0. This essentially broke sizing because we're dealing with floats and
-  // the height wasn't precisely zero. The previous author wrote that they were
-  // doing this because of an animator, but we are not doing animations for beta
-  // so we do not care.
   bounds.size.height = bookmarks::kBookmarkButtonHeight;
 
   NSRect frame = NSInsetRect(bounds,
@@ -1525,42 +1541,45 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   int xOffset = 0;
   for (int i = 0; i < node->GetChildCount(); i++) {
     const BookmarkNode* child = node->GetChild(i);
-
-    NSCell* cell = [self cellForBookmarkNode:child];
-    NSRect frame = [self frameForBookmarkButtonFromCell:cell xOffset:&xOffset];
-
-    // Break early if the button is off the end of the parent view.
-    if (NSMinX(frame) >= maxViewX)
+    BookmarkButton* button = [self buttonForNode:child xOffset:&xOffset];
+    if (NSMinX([button frame]) >= maxViewX)
       break;
-
-    scoped_nsobject<BookmarkButton>
-        button([[BookmarkButton alloc] initWithFrame:frame]);
-    DCHECK(button.get());
     [buttons_ addObject:button];
-
-    // [NSButton setCell:] warns to NOT use setCell: other than in the
-    // initializer of a control.  However, we are using a basic
-    // NSButton whose initializer does not take an NSCell as an
-    // object.  To honor the assumed semantics, we do nothing with
-    // NSButton between alloc/init and setCell:.
-    [button setCell:cell];
-    [button setDelegate:self];
-
-    if (child->is_folder()) {
-      [button setTarget:self];
-      [button setAction:@selector(openBookmarkFolderFromButton:)];
-    } else {
-      // Make the button do something
-      [button setTarget:self];
-      [button setAction:@selector(openBookmark:)];
-      // Add a tooltip.
-      NSString* title = base::SysWideToNSString(child->GetTitle());
-      std::string url_string = child->GetURL().possibly_invalid_spec();
-      NSString* tooltip = [NSString stringWithFormat:@"%@\n%s", title,
-                                    url_string.c_str()];
-      [button setToolTip:tooltip];
-    }
   }
+}
+
+- (BookmarkButton*)buttonForNode:(const BookmarkNode*)node
+                         xOffset:(int*)xOffset {
+  NSCell* cell = [self cellForBookmarkNode:node];
+  NSRect frame = [self frameForBookmarkButtonFromCell:cell xOffset:xOffset];
+
+  scoped_nsobject<BookmarkButton>
+      button([[BookmarkButton alloc] initWithFrame:frame]);
+  DCHECK(button.get());
+
+  // [NSButton setCell:] warns to NOT use setCell: other than in the
+  // initializer of a control.  However, we are using a basic
+  // NSButton whose initializer does not take an NSCell as an
+  // object.  To honor the assumed semantics, we do nothing with
+  // NSButton between alloc/init and setCell:.
+  [button setCell:cell];
+  [button setDelegate:self];
+
+  if (node->is_folder()) {
+    [button setTarget:self];
+    [button setAction:@selector(openBookmarkFolderFromButton:)];
+  } else {
+    // Make the button do something
+    [button setTarget:self];
+    [button setAction:@selector(openBookmark:)];
+    // Add a tooltip.
+    NSString* title = base::SysWideToNSString(node->GetTitle());
+    std::string url_string = node->GetURL().possibly_invalid_spec();
+    NSString* tooltip = [NSString stringWithFormat:@"%@\n%s", title,
+                         url_string.c_str()];
+    [button setToolTip:tooltip];
+  }
+  return [[button.get() retain] autorelease];
 }
 
 // Add non-bookmark buttons to the view.  This includes the chevron
@@ -1577,21 +1596,23 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
 // Add bookmark buttons to the view only if they are completely
 // visible and don't overlap the "other bookmarks".  Remove buttons
-// which are clipped.  Called when building the bookmark bar and when
-// the window resizes.
+// which are clipped.  Called when building the bookmark bar the first time.
 - (void)addButtonsToView {
-  NSView* superview = nil;
-  bookmarkBarDisplayedButtons_ = 0;
-  for (NSButton* button in buttons_.get()) {
-    superview = [button superview];
-    if (NSMaxX([button frame]) <= NSMinX([offTheSideButton_ frame])) {
-      if (!superview)
-        [buttonView_ addSubview:button];
-      bookmarkBarDisplayedButtons_++;
-    } else {
-      if (superview)
-        [button removeFromSuperview];
-    }
+  displayedButtonCount_ = 0;
+  NSMutableArray* buttons = [self buttons];
+  for (NSButton* button in buttons) {
+    if (NSMaxX([button frame]) > (NSMinX([offTheSideButton_ frame]) -
+                                   bookmarks::kBookmarkHorizontalPadding))
+      break;
+    [buttonView_ addSubview:button];
+    ++displayedButtonCount_;
+  }
+  NSUInteger removalCount =
+      [buttons count] - (NSUInteger)displayedButtonCount_;
+  if (removalCount > 0) {
+    NSRange removalRange =
+        NSMakeRange(displayedButtonCount_, removalCount);
+    [buttons removeObjectsInRange:removalRange];
   }
 }
 
@@ -1668,23 +1689,37 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   // http://crbug.com/38665
 }
 
-// TODO(jrg): for now this is brute force.
 - (void)nodeMoved:(BookmarkModel*)model
         oldParent:(const BookmarkNode*)oldParent oldIndex:(int)oldIndex
         newParent:(const BookmarkNode*)newParent newIndex:(int)newIndex {
-  [self loaded:model];
+  const BookmarkNode* movedNode = newParent->GetChild(newIndex);
+  id<BookmarkButtonControllerProtocol> oldController =
+      [self controllerForNode:oldParent];
+  id<BookmarkButtonControllerProtocol> newController =
+      [self controllerForNode:newParent];
+  if (newController == oldController) {
+    [oldController moveButtonFromIndex:oldIndex toIndex:newIndex];
+  } else {
+    [oldController removeButton:oldIndex animate:NO];
+    [newController addButtonForNode:movedNode atIndex:newIndex];
+  }
 }
 
-// TODO(jrg): for now this is brute force.
 - (void)nodeAdded:(BookmarkModel*)model
-           parent:(const BookmarkNode*)oldParent index:(int)index {
-  [self loaded:model];
+           parent:(const BookmarkNode*)newParent index:(int)newIndex {
+  const BookmarkNode* newNode = newParent->GetChild(newIndex);
+  id<BookmarkButtonControllerProtocol> newController =
+      [self controllerForNode:newParent];
+  [newController addButtonForNode:newNode atIndex:newIndex];
 }
 
-// TODO(jrg): for now this is brute force.
 - (void)nodeRemoved:(BookmarkModel*)model
              parent:(const BookmarkNode*)oldParent index:(int)index {
-  [self loaded:model];
+  // Locate the parent node. The parent may not be showing, in which case
+  // we do nothing.
+  id<BookmarkButtonControllerProtocol> parentController =
+      [self controllerForNode:oldParent];
+  [parentController removeButton:index animate:YES];
 }
 
 // TODO(jrg): for now this is brute force.
@@ -1722,7 +1757,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [self loaded:model];
 }
 
-- (NSArray*)buttons {
+- (NSMutableArray*)buttons {
   return buttons_.get();
 }
 
@@ -1914,6 +1949,207 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 - (void)fillPasteboard:(NSPasteboard*)pboard
        forDragOfButton:(BookmarkButton*)button {
   [[self folderTarget] fillPasteboard:pboard forDragOfButton:button];
+}
+
+- (id<BookmarkButtonControllerProtocol>)controllerForNode:
+    (const BookmarkNode*)node {
+  // See if it's in the bar, then if it is in the hierarchy of visible
+  // folder menus.
+  if (bookmarkModel_->GetBookmarkBarNode() == node)
+    return self;
+  return [folderController_ controllerForNode:node];
+}
+
+- (void)reconfigureBookmarkBar {
+  [self redistributeButtonsOnBarAsNeeded];
+  [self positionOffTheSideButton];
+  [self configureOffTheSideButtonContentsAndVisibility];
+  [self centerNoItemsLabel];
+}
+
+- (void)redistributeButtonsOnBarAsNeeded {
+  const BookmarkNode* node = bookmarkModel_->GetBookmarkBarNode();
+  NSInteger barCount = node->GetChildCount();
+
+  // Determine the current maximum extent of the visible buttons.
+  CGFloat maxViewX = NSMaxX([[self view] bounds]);
+  NSButton* otherBookmarksButton = otherBookmarksButton_.get();
+  // If necessary, pull in the width to account for the Other Bookmarks button.
+  if (otherBookmarksButton_)
+    maxViewX = [otherBookmarksButton frame].origin.x -
+        bookmarks::kBookmarkHorizontalPadding;
+  // If we're already overflowing, then we need to account for the chevron.
+  if (barCount > displayedButtonCount_)
+    maxViewX = [offTheSideButton_ frame].origin.x -
+        bookmarks::kBookmarkHorizontalPadding;
+
+  // As a result of pasting or dragging, the bar may now have more buttons
+  // than will fit so remove any which overflow.  They will be shown in
+  // the off-the-side folder.
+  while (displayedButtonCount_ > 0) {
+    BookmarkButton* button = [buttons_ lastObject];
+    if (NSMaxX([button frame]) < maxViewX)
+      break;
+    [buttons_ removeLastObject];
+    [button removeFromSuperview];
+    --displayedButtonCount_;
+  }
+
+  // As a result of cutting, deleting and dragging, the bar may now have room
+  // for more buttons.
+  int xOffset = displayedButtonCount_ > 0 ?
+      NSMaxX([[buttons_ lastObject] frame]) +
+          bookmarks::kBookmarkHorizontalPadding : 0;
+  for (int i = displayedButtonCount_; i < barCount; ++i) {
+    const BookmarkNode* child = node->GetChild(i);
+    BookmarkButton* button = [self buttonForNode:child xOffset:&xOffset];
+    // If we're testing against the last possible button then account
+    // for the chevron no longer needing to be shown.
+    if (i == barCount + 1)
+      maxViewX += NSWidth([offTheSideButton_ frame]) +
+          bookmarks::kBookmarkHorizontalPadding;
+    if (NSMaxX([button frame]) >= maxViewX)
+      break;
+    ++displayedButtonCount_;
+    [buttons_ addObject:button];
+    [buttonView_ addSubview:button];
+  }
+}
+
+#pragma mark BookmarkButtonControllerProtocol
+
+- (void)addButtonForNode:(const BookmarkNode*)node
+                 atIndex:(NSInteger)buttonIndex {
+  int newOffset = 0;
+  if (buttonIndex == -1)
+    buttonIndex = [buttons_ count];  // New button goes at the end.
+  if (buttonIndex <= (NSInteger)[buttons_ count]) {
+    if (buttonIndex) {
+      BookmarkButton* targetButton = [buttons_ objectAtIndex:buttonIndex - 1];
+      NSRect targetFrame = [targetButton frame];
+      newOffset = targetFrame.origin.x + NSWidth(targetFrame) +
+          bookmarks::kBookmarkHorizontalPadding;
+    }
+    BookmarkButton* newButton = [self buttonForNode:node xOffset:&newOffset];
+    CGFloat xOffset =
+        NSWidth([newButton frame]) + bookmarks::kBookmarkHorizontalPadding;
+    NSUInteger buttonCount = [buttons_ count];
+    for (NSUInteger i = buttonIndex; i < buttonCount; ++i) {
+      BookmarkButton* button = [buttons_ objectAtIndex:i];
+      NSPoint buttonOrigin = [button frame].origin;
+      buttonOrigin.x += xOffset;
+      [button setFrameOrigin:buttonOrigin];
+    }
+    ++displayedButtonCount_;
+    [buttons_ insertObject:newButton atIndex:buttonIndex];
+    [buttonView_ addSubview:newButton];
+
+    // See if any buttons need to be pushed off to or brought in from the side.
+    [self reconfigureBookmarkBar];
+  } else  {
+    // A button from somewhere else (not the bar) is being moved to the
+    // off-the-side so insure it gets redrawn if its showing.
+    [self reconfigureBookmarkBar];
+    [folderController_ reconfigureMenu];
+  }
+}
+
+// TODO(mrossetti): jrg wants this broken up into smaller functions.
+- (void)moveButtonFromIndex:(NSInteger)fromIndex toIndex:(NSInteger)toIndex {
+  if (fromIndex != toIndex) {
+    NSInteger buttonCount = (NSInteger)[buttons_ count];
+    if (toIndex == -1)
+      toIndex = buttonCount;
+    // See if we have a simple move within the bar, which will be the case if
+    // both button indexes are in the visible space.
+    if (fromIndex < buttonCount && toIndex < buttonCount) {
+      BookmarkButton* movedButton = [buttons_ objectAtIndex:fromIndex];
+      NSRect movedFrame = [movedButton frame];
+      NSPoint toOrigin = movedFrame.origin;
+      CGFloat xOffset =
+          NSWidth(movedFrame) + bookmarks::kBookmarkHorizontalPadding;
+      // Hide the button to reduce flickering while drawing the window.
+      [movedButton setHidden:YES];
+      [buttons_ removeObjectAtIndex:fromIndex];
+      if (fromIndex < toIndex) {
+        // Move the button from left to right within the bar.
+        BookmarkButton* targetButton = [buttons_ objectAtIndex:toIndex - 1];
+        NSRect toFrame = [targetButton frame];
+        toOrigin.x = toFrame.origin.x - NSWidth(movedFrame) + NSWidth(toFrame);
+        for (NSInteger i = fromIndex; i < toIndex; ++i) {
+          BookmarkButton* button = [buttons_ objectAtIndex:i];
+          NSRect frame = [button frame];
+          frame.origin.x -= xOffset;
+          [button setFrameOrigin:frame.origin];
+        }
+      } else {
+        // Move the button from right to left within the bar.
+        BookmarkButton* targetButton = [buttons_ objectAtIndex:toIndex];
+        toOrigin = [targetButton frame].origin;
+        for (NSInteger i = fromIndex - 1; i >= toIndex; --i) {
+          BookmarkButton* button = [buttons_ objectAtIndex:i];
+          NSRect buttonFrame = [button frame];
+          buttonFrame.origin.x += xOffset;
+          [button setFrameOrigin:buttonFrame.origin];
+        }
+      }
+      [buttons_ insertObject:movedButton atIndex:toIndex];
+      [movedButton setFrameOrigin:toOrigin];
+      [movedButton setHidden:NO];
+    } else if (fromIndex < buttonCount) {
+      // A button is being removed from the bar and added to off-the-side.
+      // By now the node has already been inserted into the model so the
+      // button to be added is represented by |toIndex|. Things get
+      // complicated because the off-the-side is showing and must be redrawn
+      // while possibly re-laying out the bookmark bar.
+      [self removeButton:fromIndex animate:NO];
+      [self reconfigureBookmarkBar];
+      [folderController_ reconfigureMenu];
+    } else if (toIndex < buttonCount) {
+      // A button is being added to the bar and removed from off-the-side.
+      // By now the node has already been inserted into the model so the
+      // button to be added is represented by |toIndex|.
+      const BookmarkNode* node = bookmarkModel_->GetBookmarkBarNode();
+      const BookmarkNode* movedNode = node->GetChild(toIndex);
+      DCHECK(movedNode);
+      [self addButtonForNode:movedNode atIndex:toIndex];
+      [self reconfigureBookmarkBar];
+    } else {
+      // A button is being moved within the off-the-side.
+      fromIndex -= buttonCount;
+      toIndex -= buttonCount;
+      [folderController_ moveButtonFromIndex:fromIndex toIndex:toIndex];
+    }
+  }
+}
+
+- (void)removeButton:(NSInteger)buttonIndex animate:(BOOL)animate {
+  if (buttonIndex < (NSInteger)[buttons_ count]) {
+    BookmarkButton* oldButton = [buttons_ objectAtIndex:buttonIndex];
+    NSRect poofFrame = [oldButton bounds];
+    NSPoint poofPoint = NSMakePoint(NSMidX(poofFrame), NSMidY(poofFrame));
+    poofPoint = [oldButton convertPoint:poofPoint toView:nil];
+    poofPoint = [[oldButton window] convertBaseToScreen:poofPoint];
+    NSRect oldFrame = [oldButton frame];
+    [oldButton removeFromSuperview];
+    if (animate)
+      NSShowAnimationEffect(NSAnimationEffectDisappearingItemDefault, poofPoint,
+                            NSZeroSize, nil, nil, nil);
+    CGFloat xOffset = NSWidth(oldFrame) + bookmarks::kBookmarkHorizontalPadding;
+    [buttons_ removeObjectAtIndex:buttonIndex];
+    NSUInteger buttonCount = [buttons_ count];
+    for (NSUInteger i = buttonIndex; i < buttonCount; ++i) {
+      BookmarkButton* button = [buttons_ objectAtIndex:i];
+      NSRect buttonFrame = [button frame];
+      buttonFrame.origin.x -= xOffset;
+      [button setFrame:buttonFrame];
+      // If this button is showing its menu then we need to move the menu, too.
+      if (button == [folderController_ parentButton])
+        [folderController_ offsetFolderMenuWindow:NSMakeSize(xOffset, 0.0)];
+    }
+    --displayedButtonCount_;
+    [self reconfigureBookmarkBar];
+  }
 }
 
 @end

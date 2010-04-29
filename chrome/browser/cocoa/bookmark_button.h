@@ -46,6 +46,7 @@ class ThemeProvider;
 // or NSWindowController.  The BookmarkButton doesn't use this
 // protocol directly; it is used when BookmarkButton controllers talk
 // to each other.
+//
 // Other than the top level owner (the bookmark bar), all bookmark
 // button controllers have a parent controller.
 @protocol BookmarkButtonControllerProtocol
@@ -115,6 +116,35 @@ class ThemeProvider;
 // Open all of the nodes for the given node with disposition.
 - (void)openAll:(const BookmarkNode*)node
     disposition:(WindowOpenDisposition)disposition;
+
+// There are several operations which may affect the contents of a bookmark
+// button controller after it has been created, primary of which are
+// cut/paste/delete and drag/drop. Such changes may involve coordinating
+// the bookmark button contents of two controllers (such as when a bookmark is
+// dragged from one folder to another).  The bookmark bar controller
+// coordinates in response to notifications propogated by the bookmark model
+// through BookmarkBarBridge calls. The following three functions are
+// implemented by the controllers and are dispatched by the bookmark bar
+// controller in response to notifications coming in from the BookmarkBarBridge.
+
+// Add a button for the given node to the bar or folder menu. This is safe
+// to call when a folder menu window is open as that window will be updated.
+// And index of -1 means to append to the end (bottom).
+- (void)addButtonForNode:(const BookmarkNode*)node
+                 atIndex:(NSInteger)buttonIndex;
+
+// Move a button from one place in the menu to another. This is safe
+// to call when a folder menu window is open as that window will be updated.
+- (void)moveButtonFromIndex:(NSInteger)fromIndex toIndex:(NSInteger)toIndex;
+
+// Remove the bookmark button at the given index. Show the poof animation
+// if |animate:| is YES.  It may be obvious, but this is safe
+// to call when a folder menu window is open as that window will be updated.
+- (void)removeButton:(NSInteger)buttonIndex animate:(BOOL)poof;
+
+// Determine the controller containing the button representing |node|, if any.
+- (id<BookmarkButtonControllerProtocol>)controllerForNode:
+      (const BookmarkNode*)node;
 
 @end  // @protocol BookmarkButtonControllerProtocol
 

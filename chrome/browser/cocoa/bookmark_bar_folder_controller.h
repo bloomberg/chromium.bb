@@ -110,6 +110,16 @@
 // Return the parent button that owns the bookmark folder we represent.
 - (BookmarkButton*)parentButton;
 
+// Offset our folder menu window. This is usually needed in response to a
+// parent folder menu window or the bookmark bar changing position due to
+// the dragging of a bookmark node from the parent into this folder menu.
+- (void)offsetFolderMenuWindow:(NSSize)offset;
+
+// Re-layout the window menu in case some buttons were added or removed,
+// specifically as a result of the bookmark bar changing configuration
+// and altering the contents of the off-the-side folder.
+- (void)reconfigureMenu;
+
 // Actions from a context menu over a button or folder.
 - (IBAction)cutBookmark:(id)sender;
 - (IBAction)copyBookmark:(id)sender;
