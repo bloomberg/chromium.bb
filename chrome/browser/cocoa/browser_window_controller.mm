@@ -1272,7 +1272,12 @@
 }
 
 - (NSInteger)numberOfTabs {
+  // count() includes pinned tabs (both live and phantom).
   return browser_->tabstrip_model()->count();
+}
+
+- (BOOL)hasLiveTabs {
+  return browser_->tabstrip_model()->HasNonPhantomTabs();
 }
 
 - (NSString*)selectedTabTitle {

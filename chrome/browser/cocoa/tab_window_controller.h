@@ -108,8 +108,14 @@
      fromController:(TabWindowController*)controller;
 
 // Number of tabs in the tab strip. Useful, for example, to know if we're
-// dragging the only tab in the window.
+// dragging the only tab in the window. This includes pinned tabs (both live
+// and not).
 - (NSInteger)numberOfTabs;
+
+// YES if there are tabs in the tab strip which have content, allowing for
+// the notion of tabs in the tab strip that are placeholders, or phantoms, but
+// currently have no content.
+- (BOOL)hasLiveTabs;
 
 // Return the view of the selected tab.
 - (NSView *)selectedTabView;

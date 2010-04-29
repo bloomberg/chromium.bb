@@ -412,7 +412,7 @@ const CGFloat kRapidCloseDist = 2.5;
     draggedController_ = [sourceController_ detachTabToNewWindow:self];
     dragWindow_ = [draggedController_ window];
     [dragWindow_ setAlphaValue:0.0];
-    if (![sourceController_ numberOfTabs]) {
+    if (![sourceController_ hasLiveTabs]) {
       sourceController_ = draggedController_;
       sourceWindow_ = dragWindow_;
     }

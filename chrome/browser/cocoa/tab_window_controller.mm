@@ -219,6 +219,12 @@
   return 0;
 }
 
+- (BOOL)hasLiveTabs {
+  // subclass must implement
+  NOTIMPLEMENTED();
+  return NO;
+}
+
 - (NSString*)selectedTabTitle {
   // subclass must implement
   NOTIMPLEMENTED();
