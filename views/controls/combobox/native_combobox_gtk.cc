@@ -113,7 +113,7 @@ void NativeComboboxGtk::CreateNativeControl() {
   gtk_cell_layout_set_attributes(
       GTK_CELL_LAYOUT(widget), cell, "text", 0, NULL);
   g_signal_connect(widget, "changed",
-                   G_CALLBACK(CallChanged), this);
+                   G_CALLBACK(CallChangedThunk), this);
 
   NativeControlCreated(widget);
 }
@@ -132,10 +132,8 @@ void NativeComboboxGtk::SelectionChanged() {
   combobox_->SelectionChanged();
 }
 
-// static
-void NativeComboboxGtk::CallChanged(GtkWidget* widget,
-                                    NativeComboboxGtk* combo) {
-  combo->SelectionChanged();
+void NativeComboboxGtk::CallChanged(GtkWidget* widget) {
+  SelectionChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

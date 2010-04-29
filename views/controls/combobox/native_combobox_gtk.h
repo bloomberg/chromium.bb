@@ -1,10 +1,11 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
+// Copyright (c) 2010 The Chromium Authors. All rights reserved. Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
 #ifndef VIEWS_CONTROLS_COMBOBOX_NATIVE_COMBOBOX_GTK_H_
 #define VIEWS_CONTROLS_COMBOBOX_NATIVE_COMBOBOX_GTK_H_
 
+#include "app/gtk_signal.h"
 #include "views/controls/combobox/native_combobox_wrapper.h"
 #include "views/controls/native_control_gtk.h"
 
@@ -35,7 +36,7 @@ class NativeComboboxGtk : public NativeControlGtk,
  private:
   void SelectionChanged();
 
-  static void CallChanged(GtkWidget* widget, NativeComboboxGtk* combo);
+  CHROMEGTK_CALLBACK_0(NativeComboboxGtk, void, CallChanged);
 
   // The combobox we are bound to.
   Combobox* combobox_;
