@@ -854,7 +854,6 @@ function createNewFormItem(initialName, isDirectory, id, blurcallback, keypressc
   input.id = 'newfoldername';
   input.onblur = blurcallback;
   input.onkeypress = keypresscallback;
-  input.focus();
 
   input.value = initialName;
   link.appendChild(input);
@@ -873,7 +872,19 @@ function createFolder(elementId) {
     currentPath += '/';
     currentPath += filename;
     var existingfolder = $(currentPath);
-    if (existingfolder || filename == '') {
+    var counter = 1;
+    while (existingfolder) {
+      var testfilepath = currentPath;
+      testfilepath = testfilepath + counter;
+      existingfolder = $(testfilepath);
+      if (!existingfolder) {
+        currentPath = testfilepath;
+        filename = filename + counter;
+        break;
+      }
+      counter++;
+    }
+    if (filename == '') {
       return false;
     }
     var parent = element.parentNode;
@@ -1081,6 +1092,8 @@ function dialogNewFolderClick() {
                                   partial(createFolderTyping, id));
   list.appendChild(element);
   element.scrollIntoView();
+  var inputelement = $('newfoldername');
+  inputelement.focus();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
