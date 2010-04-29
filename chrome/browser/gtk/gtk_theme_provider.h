@@ -192,6 +192,9 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // them of theme changes.
   std::vector<GtkWidget*> chrome_buttons_;
 
+  // Tracks all the signals we have connected to on various widgets.
+  GtkSignalRegistrar signals_;
+
   // Tints and colors calculated by LoadGtkValues() that are given to the
   // caller while |use_gtk_| is true.
   ColorMap colors_;

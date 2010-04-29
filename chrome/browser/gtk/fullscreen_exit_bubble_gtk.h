@@ -7,6 +7,7 @@
 
 #include <gtk/gtk.h>
 
+#include "app/gtk_signal.h"
 #include "base/timer.h"
 #include "chrome/browser/gtk/slide_animator_gtk.h"
 
@@ -30,12 +31,9 @@ class FullscreenExitBubbleGtk {
   // Hide the exit bubble.
   void Hide();
 
-  static void OnSetFloatingPosition(GtkFloatingContainer* floating_container,
-                                    GtkAllocation* allocation,
-                                    FullscreenExitBubbleGtk* bubble);
-
-  static void OnLinkClicked(GtkWidget* link,
-                            FullscreenExitBubbleGtk* bubble);
+  CHROMEGTK_CALLBACK_1(FullscreenExitBubbleGtk, void, OnSetFloatingPosition,
+                       GtkAllocation*);
+  CHROMEGTK_CALLBACK_0(FullscreenExitBubbleGtk, void, OnLinkClicked);
 
   // A pointer to the floating container that is our parent.
   GtkFloatingContainer* container_;
@@ -45,6 +43,8 @@ class FullscreenExitBubbleGtk {
 
   // The timer that does the initial hiding of the exit bubble.
   base::OneShotTimer<FullscreenExitBubbleGtk> initial_delay_;
+
+  GtkSignalRegistrar signals_;
 };
 
 #endif  // CHROME_BROWSER_GTK_FULLSCREEN_EXIT_BUBBLE_GTK_H_

@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 #include <math.h>
 
+#include "app/gtk_signal.h"
 #include "base/i18n/rtl.h"
 #include "chrome/browser/gtk/gtk_util.h"
 
@@ -36,6 +37,9 @@ struct RoundedWindowData {
 
   // Which sides of the window should have an internal border?
   int drawn_borders;
+
+  // Keeps track of attached signal handlers.
+  GtkSignalRegistrar signals;
 };
 
 // Callback from GTK to release allocated memory.
@@ -256,11 +260,12 @@ void ActAsRoundedWindow(
   DCHECK(!g_object_get_data(G_OBJECT(widget), kRoundedData));
 
   gtk_widget_set_app_paintable(widget, TRUE);
-  g_signal_connect(widget, "expose-event",
-                   G_CALLBACK(OnRoundedWindowExpose), NULL);
-  g_signal_connect(widget, "style-set", G_CALLBACK(OnStyleSet), NULL);
 
   RoundedWindowData* data = new RoundedWindowData;
+  data->signals.Connect(widget, "expose-event",
+                        G_CALLBACK(OnRoundedWindowExpose), NULL);
+  data->signals.Connect(widget, "style-set", G_CALLBACK(OnStyleSet), NULL);
+
   data->expected_width = -1;
   data->expected_height = -1;
 
@@ -275,13 +280,7 @@ void ActAsRoundedWindow(
 }
 
 void StopActingAsRoundedWindow(GtkWidget* widget) {
-  g_signal_handlers_disconnect_by_func(widget,
-      reinterpret_cast<gpointer>(OnRoundedWindowExpose), NULL);
-  g_signal_handlers_disconnect_by_func(widget,
-      reinterpret_cast<gpointer>(OnStyleSet), NULL);
-
-  delete static_cast<RoundedWindowData*>(
-      g_object_steal_data(G_OBJECT(widget), kRoundedData));
+  g_object_set_data(G_OBJECT(widget), kRoundedData, NULL);
 
   if (GTK_WIDGET_REALIZED(widget))
     gdk_window_shape_combine_mask(widget->window, NULL, 0, 0);

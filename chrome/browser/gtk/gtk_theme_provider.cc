@@ -145,7 +145,7 @@ GtkThemeProvider::GtkThemeProvider()
   // Only realized widgets receive style-set notifications, which we need to
   // broadcast new theme images and colors.
   gtk_widget_realize(fake_frame_);
-  g_signal_connect(fake_frame_, "style-set", G_CALLBACK(&OnStyleSet), this);
+  signals_.Connect(fake_frame_, "style-set", G_CALLBACK(&OnStyleSet), this);
 }
 
 GtkThemeProvider::~GtkThemeProvider() {
@@ -158,13 +158,6 @@ GtkThemeProvider::~GtkThemeProvider() {
   // We have to call this because FreePlatformCached() in ~BrowserThemeProvider
   // doesn't call the right virutal FreePlatformCaches.
   FreePlatformCaches();
-
-  // Disconnect from the destroy signal of any redisual widgets in
-  // |chrome_buttons_|.
-  for (std::vector<GtkWidget*>::iterator it = chrome_buttons_.begin();
-       it != chrome_buttons_.end(); ++it) {
-    gtk_signal_disconnect_by_data(GTK_OBJECT(*it), this);
-  }
 }
 
 void GtkThemeProvider::Init(Profile* profile) {
@@ -249,7 +242,7 @@ GtkWidget* GtkThemeProvider::BuildChromeButton() {
   gtk_chrome_button_set_use_gtk_rendering(GTK_CHROME_BUTTON(button), use_gtk_);
   chrome_buttons_.push_back(button);
 
-  g_signal_connect(button, "destroy", G_CALLBACK(OnDestroyChromeButtonThunk),
+  signals_.Connect(button, "destroy", G_CALLBACK(OnDestroyChromeButtonThunk),
                    this);
   return button;
 }
@@ -261,7 +254,7 @@ GtkWidget* GtkThemeProvider::CreateToolbarSeparator() {
       kSeparatorPadding, kSeparatorPadding, kSeparatorPadding, 0);
   gtk_container_add(GTK_CONTAINER(alignment), separator);
 
-  g_signal_connect(separator, "expose-event",
+  signals_.Connect(separator, "expose-event",
                    G_CALLBACK(OnSeparatorExposeThunk), this);
   return alignment;
 }

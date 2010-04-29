@@ -100,13 +100,13 @@ class BrowserActionButton : public NotificationObserver,
                          ImageLoadingTracker::DONT_CACHE);
     }
 
-    g_signal_connect(button_.get(), "button-press-event",
+    signals_.Connect(button_.get(), "button-press-event",
                      G_CALLBACK(OnButtonPress), this);
-    g_signal_connect(button_.get(), "clicked",
+    signals_.Connect(button_.get(), "clicked",
                      G_CALLBACK(OnClicked), this);
-    g_signal_connect_after(button_.get(), "expose-event",
-                           G_CALLBACK(OnExposeEvent), this);
-    g_signal_connect(button_.get(), "drag-begin",
+    signals_.ConnectAfter(button_.get(), "expose-event",
+                          G_CALLBACK(OnExposeEvent), this);
+    signals_.Connect(button_.get(), "drag-begin",
                      G_CALLBACK(&OnDragBegin), this);
 
     registrar_.Add(this, NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
@@ -318,6 +318,7 @@ class BrowserActionButton : public NotificationObserver,
   // Same as |default_icon_|, but stored as SkBitmap.
   SkBitmap default_skbitmap_;
 
+  GtkSignalRegistrar signals_;
   NotificationRegistrar registrar_;
 
   // The context menu view and model for this extension action.
@@ -352,19 +353,19 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
   GtkWidget* gripper = gtk_button_new();
   GTK_WIDGET_UNSET_FLAGS(gripper, GTK_CAN_FOCUS);
   gtk_widget_add_events(gripper, GDK_POINTER_MOTION_MASK);
-  g_signal_connect(gripper, "motion-notify-event",
+  signals_.Connect(gripper, "motion-notify-event",
                    G_CALLBACK(OnGripperMotionNotifyThunk), this);
-  g_signal_connect(gripper, "expose-event",
+  signals_.Connect(gripper, "expose-event",
                    G_CALLBACK(OnGripperExposeThunk), this);
-  g_signal_connect(gripper, "enter-notify-event",
+  signals_.Connect(gripper, "enter-notify-event",
                    G_CALLBACK(OnGripperEnterNotifyThunk), this);
-  g_signal_connect(gripper, "leave-notify-event",
+  signals_.Connect(gripper, "leave-notify-event",
                    G_CALLBACK(OnGripperLeaveNotifyThunk), this);
-  g_signal_connect(gripper, "button-release-event",
+  signals_.Connect(gripper, "button-release-event",
                    G_CALLBACK(OnGripperButtonReleaseThunk), this);
-  g_signal_connect(gripper, "button-press-event",
+  signals_.Connect(gripper, "button-press-event",
                    G_CALLBACK(OnGripperButtonPressThunk), this);
-  g_signal_connect(overflow_button_.widget(), "button-press-event",
+  signals_.Connect(overflow_button_.widget(), "button-press-event",
                    G_CALLBACK(OnOverflowButtonPressThunk), this);
 
   gtk_box_pack_start(GTK_BOX(hbox_.get()), gripper, FALSE, FALSE, 0);
@@ -384,19 +385,13 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
 
   // We want to connect to "set-focus" on the toplevel window; we have to wait
   // until we are added to a toplevel window to do so.
-  g_signal_connect(widget(), "hierarchy-changed",
+  signals_.Connect(widget(), "hierarchy-changed",
                    G_CALLBACK(OnHierarchyChangedThunk), this);
 
   ViewIDUtil::SetID(button_hbox_.get(), VIEW_ID_BROWSER_ACTION_TOOLBAR);
 }
 
 BrowserActionsToolbarGtk::~BrowserActionsToolbarGtk() {
-  GtkWidget* toplevel = gtk_widget_get_toplevel(widget());
-  if (toplevel) {
-    g_signal_handlers_disconnect_by_func(
-        toplevel, reinterpret_cast<gpointer>(OnSetFocusThunk), this);
-  }
-
   if (model_)
     model_->RemoveObserver(this);
   button_hbox_.Destroy();
@@ -423,7 +418,7 @@ void BrowserActionsToolbarGtk::SetupDrags() {
   gtk_drag_dest_set(button_hbox_.get(), GTK_DEST_DEFAULT_DROP, &drag_target, 1,
                     GDK_ACTION_MOVE);
 
-  g_signal_connect(button_hbox_.get(), "drag-motion",
+  signals_.Connect(button_hbox_.get(), "drag-motion",
                    G_CALLBACK(OnDragMotionThunk), this);
 }
 
@@ -463,16 +458,16 @@ void BrowserActionsToolbarGtk::CreateButtonForExtension(Extension* extension,
   gtk_drag_source_set(button->widget(), GDK_BUTTON1_MASK, &drag_target, 1,
                       GDK_ACTION_MOVE);
   // We ignore whether the drag was a "success" or "failure" in Gtk's opinion.
-  g_signal_connect(button->widget(), "drag-end",
+  signals_.Connect(button->widget(), "drag-end",
                    G_CALLBACK(&OnDragEndThunk), this);
-  g_signal_connect(button->widget(), "drag-failed",
+  signals_.Connect(button->widget(), "drag-failed",
                    G_CALLBACK(&OnDragFailedThunk), this);
 
   // Any time a browser action button is shown or hidden we have to update
   // the chevron state.
-  g_signal_connect(button->widget(), "show",
+  signals_.Connect(button->widget(), "show",
                    G_CALLBACK(&OnButtonShowOrHideThunk), this);
-  g_signal_connect(button->widget(), "hide",
+  signals_.Connect(button->widget(), "hide",
                    G_CALLBACK(&OnButtonShowOrHideThunk), this);
 
   gtk_widget_show(button->widget());
@@ -712,7 +707,7 @@ void BrowserActionsToolbarGtk::OnHierarchyChanged(
   if (!GTK_WIDGET_TOPLEVEL(toplevel))
     return;
 
-  g_signal_connect(toplevel, "set-focus", G_CALLBACK(OnSetFocusThunk), this);
+  signals_.Connect(toplevel, "set-focus", G_CALLBACK(OnSetFocusThunk), this);
 }
 
 void BrowserActionsToolbarGtk::OnSetFocus(GtkWidget* widget,
@@ -826,7 +821,7 @@ gboolean BrowserActionsToolbarGtk::OnOverflowButtonPress(
     // TODO(estade): set the menu item's tooltip.
   }
 
-  g_signal_connect(overflow_menu_->widget(), "button-press-event",
+  signals_.Connect(overflow_menu_->widget(), "button-press-event",
                    G_CALLBACK(OnOverflowMenuButtonPressThunk), this);
 
   gtk_chrome_button_set_paint_state(GTK_CHROME_BUTTON(overflow),

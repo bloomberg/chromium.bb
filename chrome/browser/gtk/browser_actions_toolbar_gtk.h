@@ -184,6 +184,8 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   // This is the width we were at when we started animating.
   int start_width_;
 
+  GtkSignalRegistrar signals_;
+
   ScopedRunnableMethodFactory<BrowserActionsToolbarGtk> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionsToolbarGtk);

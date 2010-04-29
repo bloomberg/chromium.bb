@@ -45,8 +45,8 @@ void OnLabelAllocate(GtkWidget* label, GtkAllocation* allocation) {
 
   // Disconnect ourselves.  Repeatedly resizing based on allocation causes
   // the dialog to become unshrinkable.
-  g_signal_handlers_disconnect_by_func(label, (void*)OnLabelAllocate,
-                                       NULL);
+  g_signal_handlers_disconnect_by_func(
+      label, reinterpret_cast<gpointer>(OnLabelAllocate), NULL);
 }
 
 // Set the label to use a request size equal to its initial allocation

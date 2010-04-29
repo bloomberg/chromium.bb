@@ -79,16 +79,19 @@ void MenuBarHelper::MenuStartedShowing(GtkWidget* button, GtkWidget* menu) {
   DCHECK(GTK_IS_MENU(menu));
   button_showing_menu_ = button;
   showing_menu_ = menu;
-  g_signal_connect(menu, "motion-notify-event",
-                   G_CALLBACK(OnMenuMotionNotifyThunk), this);
-  g_signal_connect(menu, "hide",
-                   G_CALLBACK(OnMenuHiddenThunk), this);
-  g_signal_connect(menu, "move-current",
-                   G_CALLBACK(OnMenuMoveCurrentThunk), this);
+
+  signal_handlers_.reset(new GtkSignalRegistrar());
+  signal_handlers_->Connect(menu, "motion-notify-event",
+                            G_CALLBACK(OnMenuMotionNotifyThunk), this);
+  signal_handlers_->Connect(menu, "hide",
+                            G_CALLBACK(OnMenuHiddenThunk), this);
+  signal_handlers_->Connect(menu, "move-current",
+                            G_CALLBACK(OnMenuMoveCurrentThunk), this);
   gtk_container_foreach(GTK_CONTAINER(menu), PopulateSubmenus, &submenus_);
+
   for (size_t i = 0; i < submenus_.size(); ++i) {
-    g_signal_connect(submenus_[i], "motion-notify-event",
-                     G_CALLBACK(OnMenuMotionNotifyThunk), this);
+    signal_handlers_->Connect(submenus_[i], "motion-notify-event",
+                              G_CALLBACK(OnMenuMotionNotifyThunk), this);
   }
 }
 
@@ -138,14 +141,8 @@ gboolean MenuBarHelper::OnMenuMotionNotify(GtkWidget* menu,
 
 void MenuBarHelper::OnMenuHidden(GtkWidget* menu) {
   DCHECK_EQ(showing_menu_, menu);
-  int matched = g_signal_handlers_disconnect_matched(showing_menu_,
-      G_SIGNAL_MATCH_DATA, 0, NULL, NULL, NULL, this);
-  DCHECK_EQ(3, matched);
 
-  for (size_t i = 0; i < submenus_.size(); ++i) {
-    g_signal_handlers_disconnect_by_func(submenus_[i],
-        reinterpret_cast<gpointer>(OnMenuMotionNotifyThunk), this);
-  }
+  signal_handlers_.reset();
   showing_menu_ = NULL;
   button_showing_menu_ = NULL;
   submenus_.clear();
