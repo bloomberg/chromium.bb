@@ -763,11 +763,14 @@ bool TabContents::NavigateToPendingEntry(
   if (!dest_render_view_host)
     return false;  // Unable to create the desired render view host.
 
-  // For security, we should never send non-DOM-UI URLs to a DOM UI renderer.
-  // Double check that here.
+  // For security, we should never send non-DOM-UI URLs (other than about:blank)
+  // to a DOM UI renderer.  Double check that here.
   int enabled_bindings = dest_render_view_host->enabled_bindings();
+  bool is_allowed_in_dom_ui_renderer =
+      DOMUIFactory::UseDOMUIForURL(entry.url()) ||
+      entry.url() == GURL(chrome::kAboutBlankURL);
   CHECK(!BindingsPolicy::is_dom_ui_enabled(enabled_bindings) ||
-        DOMUIFactory::UseDOMUIForURL(entry.url()));
+        is_allowed_in_dom_ui_renderer);
 
   // Tell DevTools agent that it is attached prior to the navigation.
   DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
