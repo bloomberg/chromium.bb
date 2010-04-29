@@ -2651,3 +2651,20 @@
    fun:_ZN2v88internal19HandleApiCallHelperILb1EEEPNS0_6ObjectENS0_47_GLOBAL__N_v8_src_builtins.cc_00000000_2CCEFB9216BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEE
    obj:*
 }
+{
+   bug_42866
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEj
+   fun:_ZN3WTF13FastAllocBasenwEj
+   fun:_ZN7WebCore12Notification6createERKNS_20NotificationContentsEPNS_22ScriptExecutionContextERiPNS_21NotificationPresenterE
+   fun:_ZN7WebCore18NotificationCenter18createNotificationERKNS_6StringES3_S3_Ri
+   fun:_ZN7WebCore20V8NotificationCenter26createNotificationCallbackERKN2v89ArgumentsE
+   fun:_ZN2v88internal19HandleApiCallHelperILb0EEEPNS0_6ObjectENS0_47_GLOBAL__N_v8_src_builtins.cc_00000000_2CCEFB9216BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEE
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:_ZN2v88internal6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPPPS4_Pb
+}
