@@ -497,6 +497,7 @@ class Browser : public TabStripModelDelegate,
   void ShowHistoryTab();
   void ShowDownloadsTab();
   void ShowExtensionsTab();
+  void ShowBrokenPageTab(TabContents* contents);
   void OpenClearBrowsingDataDialog();
   void OpenOptionsDialog();
   void OpenKeywordEditor();

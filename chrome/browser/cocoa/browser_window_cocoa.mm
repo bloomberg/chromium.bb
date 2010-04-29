@@ -282,11 +282,7 @@ DownloadShelf* BrowserWindowCocoa::GetDownloadShelf() {
 void BrowserWindowCocoa::ShowReportBugDialog() {
   TabContents* current_tab = browser_->GetSelectedTabContents();
   if (current_tab && current_tab->controller().GetActiveEntry()) {
-    BugReportWindowController* controller =
-        [[BugReportWindowController alloc]
-        initWithTabContents:current_tab
-                    profile:browser_->profile()];
-    [controller runModalDialog];
+    browser_->ShowBrokenPageTab(current_tab);
   }
 }
 
