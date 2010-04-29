@@ -81,7 +81,7 @@ output_file.write("""# Copyright (c) 2009 The Chromium Authors. All rights reser
   ],
   'targets': [
     {
-      'target_name': 'build_samples',
+      'target_name': 'convert_samples',
       'type': 'none',
       'dependencies': [
         '../converter/converter.gyp:o3dConverter',
@@ -108,7 +108,19 @@ def write_action(asset, webgl_mode):
   output_file.write("          'action_name': '%s',\n" % name)
   output_file.write("          'inputs': [\n")
   output_file.write("            '<(PRODUCT_DIR)/o3dConverter',\n")
-  output_file.write("            '../o3d_assets/samples/%s',\n" % asset['path'])
+  # TODO(kbr): there are a couple of problems with gyp's MSVC
+  # generator which require this workaround right now. First, if two
+  # actions have the same inputs then gyp will arbitrarily hang the
+  # custom build rule off the second input, and the collision will
+  # currently cause one or the other rule to be dropped. Second, if we
+  # just insert a fake second input, without removing the .zip, then
+  # for some reason the .zip ends up in an "_excluded_files" folder in
+  # the project and the non-WebGL version of the asset won't be built.
+  # Here we use a different input for the WebGL version of the assets.
+  if webgl_mode:
+    output_file.write("            '../o3d_assets/samples/%s.fake_webgl_input.txt',\n" % asset['path'])
+  else:
+    output_file.write("            '../o3d_assets/samples/%s',\n" % asset['path'])
   output_file.write("          ],\n")
   output_file.write("          'outputs': [\n")
   if sys.platform[:5] == 'linux':
@@ -138,11 +150,19 @@ def write_action(asset, webgl_mode):
   output_file.write("        },\n")
 
 for asset in assets:
-  write_action(asset, False);
+  write_action(asset, False)
   if asset.has_key('webgl'):
-    write_action(asset, True);
+    write_action(asset, True)
 
-output_file.write("      ],\n")
+output_file.write("""      ],
+    },
+    {
+      'target_name': 'copy_samples',
+      'type': 'none',
+      'dependencies': [
+        'convert_samples',
+      ],
+      'copies': [\n""")
 
 # Coalesce copies by directory so we don't have tons of copies rules
 # to parse.
@@ -174,7 +194,6 @@ for item in items:
   else:
     copies[item_dir] = [item]
 
-output_file.write("      'copies': [\n")
 for (dir, paths) in copies.items():
   output_file.write("        {\n")
   output_file.write("          'destination': " \
@@ -194,6 +213,13 @@ for (dir, paths) in copies.items():
 
 output_file.write("      ],\n")
 output_file.write("    },\n")
+output_file.write("""    {
+      'target_name': 'build_samples',
+      'type': 'none',
+      'dependencies': [
+        'copy_samples',
+      ],
+    },\n""")
 output_file.write("  ],\n")
 output_file.write("}\n")
 
