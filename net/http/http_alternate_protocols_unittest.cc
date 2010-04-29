@@ -42,7 +42,7 @@ TEST(HttpAlternateProtocols, SetBroken) {
   alternate_protocols.SetAlternateProtocolFor(
       test_host_port_pair,
       1234,
-      HttpAlternateProtocols::NPN_SPDY_1),
+      HttpAlternateProtocols::NPN_SPDY_1);
   alternate = alternate_protocols.GetAlternateProtocolFor(test_host_port_pair);
   EXPECT_EQ(HttpAlternateProtocols::BROKEN, alternate.protocol)
       << "Second attempt should be ignored.";
