@@ -53,7 +53,7 @@ o3d.Bitmap.Semantic = goog.typedef;
  * you can inspect their semantic to see what they were intended for. This is
  * mostly to distinguish between 6 bitmaps that are faces of a cubemap and 6
  * bitmaps that are slices of a 3d texture.
- * 
+ *
  *  FACE_POSITIVE_X, 1 face of a cubemap
  *  FACE_NEGATIVE_X, 1 face of a cubemap
  *  FACE_POSITIVE_Y, 1 face of a cubemap
@@ -103,17 +103,34 @@ o3d.Bitmap.prototype.canvas_ = null;
  * Flips a bitmap vertically in place.
  */
 o3d.Bitmap.prototype.flipVertically = function() {
+  var temp_canvas = document.createElement('CANVAS');
+  temp_canvas.width = this.width;
+  temp_canvas.height = this.height;
+  var context = temp_canvas.getContext('2d');
+  // Flip it.
+  context.translate(0, this.height);
+  context.scale(1, -1);
+  context.drawImage(this.canvas_,
+                    0, 0, this.width, this.height);
+  this.canvas_ = temp_canvas;
+};
+
+
+/**
+ * Flips a bitmap vertically in place lazily.
+ * @private
+ */
+o3d.Bitmap.prototype.flipVerticallyLazily_ = function() {
   this.defer_flip_vertically_to_texture_ = true;
 };
 
 
-
 /**
  * Generates mip maps from the source level to lower levels.
- * 
+ *
  * You can not currently generate mips for DXT textures although you can load
  * them from dds files.
- * 
+ *
  * @param {number} source_level The level to use as the source of the mips.
  * @param {number} num_levels The number of levels to generate below the
  *     source level.

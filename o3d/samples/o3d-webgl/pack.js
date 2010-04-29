@@ -410,7 +410,7 @@ o3d.Pack.prototype.createBitmapsFromRawData =
 
   bitmap.canvas_ = canvas;
   // Most images require a vertical flip.
-  bitmap.flipVertically();
+  bitmap.flipVerticallyLazily_();
 
   // TODO(petersont): I'm not sure how to get the format.
   bitmap.format = o3d.Texture.ARGB8;
