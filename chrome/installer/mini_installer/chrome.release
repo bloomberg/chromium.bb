@@ -43,8 +43,10 @@ Resources\bookmark_manager\css\*.*: %(VersionDir)s\Resources\bookmark_manager\cs
 Resources\bookmark_manager\images\*.*: %(VersionDir)s\Resources\bookmark_manager\images
 Resources\bookmark_manager\js\*.*: %(VersionDir)s\Resources\bookmark_manager\js
 Resources\bookmark_manager\js\bmm\*.*: %(VersionDir)s\Resources\bookmark_manager\js\bmm
-Resources\bookmark_manager\js\cr\*.*: %(VersionDir)s\Resources\bookmark_manager\js\cr
-Resources\bookmark_manager\js\cr\ui\*.*: %(VersionDir)s\Resources\bookmark_manager\js\cr\ui
+Resources\shared\css\*.*: %(VersionDir)s\Resources\shared\css
+Resources\shared\js\*.*: %(VersionDir)s\Resources\shared\js
+Resources\shared\js\cr\*.*: %(VersionDir)s\Resources\shared\js\cr
+Resources\shared\js\cr\ui\*.*: %(VersionDir)s\Resources\shared\js\cr\ui
 Resources\Inspector\*.*: %(VersionDir)s\Resources\Inspector
 Resources\Inspector\Images\*.*: %(VersionDir)s\Resources\Inspector\Images
 Resources\net_internals\*.*: %(VersionDir)s\Resources\net_internals
