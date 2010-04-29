@@ -840,7 +840,8 @@ AutomationProxy* ExternalTabUITest::CreateAutomationProxy(int exec_timeout) {
 }
 
 // Create with specifying a url
-TEST_F(ExternalTabUITest, CreateExternalTab1) {
+// Flaky, http://crbug.com/32293.
+TEST_F(ExternalTabUITest, FLAKY_CreateExternalTab1) {
   scoped_refptr<TabProxy> tab;
   TimedMessageLoopRunner loop(MessageLoop::current());
   ASSERT_THAT(mock_, testing::NotNull());
