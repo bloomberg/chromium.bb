@@ -937,7 +937,8 @@ void GLES2Implementation::GetActiveAttrib(
       std::vector<int8> str;
       GetBucketContents(kResultBucketId, &str);
       GLsizei max_size = std::min(static_cast<size_t>(bufsize) - 1,
-                                  str.size());
+                                  std::max(static_cast<size_t>(0),
+                                           str.size() - 1));
       if (length) {
         *length = max_size;
       }
@@ -976,7 +977,8 @@ void GLES2Implementation::GetActiveUniform(
       std::vector<int8> str;
       GetBucketContents(kResultBucketId, &str);
       GLsizei max_size = std::min(static_cast<size_t>(bufsize) - 1,
-                                  str.size());
+                                  std::max(static_cast<size_t>(0),
+                                           str.size() - 1));
       if (length) {
         *length = max_size;
       }
