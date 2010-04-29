@@ -13,7 +13,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/views/event_utils.h"
-#include "chrome/browser/views/location_bar_view.h"
+#include "chrome/browser/views/location_bar/location_bar_view.h"
 #include "grit/generated_resources.h"
 
 ////////////////////////////////////////////////////////////////////////////////

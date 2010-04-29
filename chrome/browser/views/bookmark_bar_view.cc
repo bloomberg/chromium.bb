@@ -32,7 +32,7 @@
 #include "chrome/browser/views/bookmark_context_menu.h"
 #include "chrome/browser/views/event_utils.h"
 #include "chrome/browser/views/frame/browser_view.h"
-#include "chrome/browser/views/location_bar_view.h"
+#include "chrome/browser/views/location_bar/location_bar_view.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/pref_names.h"

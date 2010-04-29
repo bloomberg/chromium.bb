@@ -13,7 +13,7 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/views/browser_actions_container.h"
 #include "chrome/browser/views/frame/browser_view.h"
-#include "chrome/browser/views/location_bar_view.h"
+#include "chrome/browser/views/location_bar/location_bar_view.h"
 #include "chrome/browser/views/toolbar_view.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/extensions/extension.h"
