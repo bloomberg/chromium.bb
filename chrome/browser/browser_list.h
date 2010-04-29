@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,15 +7,16 @@
 
 #include <vector>
 
+#include "base/observer_list.h"
 #include "chrome/browser/browser.h"
 
 // Stores a list of all Browser objects.
 class BrowserList {
  public:
-  typedef std::vector<Browser*> list_type;
-  typedef list_type::iterator iterator;
-  typedef list_type::const_iterator const_iterator;
-  typedef list_type::const_reverse_iterator const_reverse_iterator;
+  typedef std::vector<Browser*> BrowserVector;
+  typedef BrowserVector::iterator iterator;
+  typedef BrowserVector::const_iterator const_iterator;
+  typedef BrowserVector::const_reverse_iterator const_reverse_iterator;
 
   // It is not allowed to change the global window list (add or remove any
   // browser windows while handling observer callbacks.
@@ -107,17 +108,10 @@ class BrowserList {
   // Returns true if browser is in persistent mode and false otherwise.
   static bool IsInPersistentMode();
 
-  static const_iterator begin() {
-    return browsers_.begin();
-  }
+  static const_iterator begin() { return browsers_.begin(); }
+  static const_iterator end() { return browsers_.end(); }
 
-  static const_iterator end() {
-    return browsers_.end();
-  }
-
-  static size_t size() {
-    return browsers_.size();
-  }
+  static size_t size() { return browsers_.size(); }
 
   // Returns iterated access to list of open browsers ordered by when
   // they were last active. The underlying data structure is a vector
@@ -147,11 +141,11 @@ class BrowserList {
 
  private:
   // Helper method to remove a browser instance from a list of browsers
-  static void RemoveBrowserFrom(Browser* browser, list_type* browser_list);
+  static void RemoveBrowserFrom(Browser* browser, BrowserVector* browser_list);
 
-  static list_type browsers_;
-  static std::vector<Observer*> observers_;
-  static list_type last_active_browsers_;
+  static BrowserVector browsers_;
+  static BrowserVector last_active_browsers_;
+  static ObserverList<Observer> observers_;
 };
 
 class TabContents;

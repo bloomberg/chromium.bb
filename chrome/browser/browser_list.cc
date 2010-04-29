@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,7 +102,7 @@ bool BrowserMatchesProfileAndType(Browser* browser,
 // FindBrowserMatching() in that case.
 Browser* FindInLastActiveMatching(Profile* profile, Browser::Type type,
                                   bool match_incognito) {
-  for (BrowserList::list_type::const_reverse_iterator i =
+  for (BrowserList::BrowserVector::const_reverse_iterator i =
        BrowserList::begin_last_active(); i != BrowserList::end_last_active();
        ++i) {
     if (BrowserMatchesProfileAndType(*i, profile, type, match_incognito))
@@ -128,8 +128,8 @@ Browser* FindBrowserMatching(Profile* profile, Browser::Type type,
 
 }  // namespace
 
-BrowserList::list_type BrowserList::browsers_;
-std::vector<BrowserList::Observer*> BrowserList::observers_;
+BrowserList::BrowserVector BrowserList::browsers_;
+ObserverList<BrowserList::Observer> BrowserList::observers_;
 
 // static
 void BrowserList::AddBrowser(Browser* browser) {
@@ -149,8 +149,7 @@ void BrowserList::AddBrowser(Browser* browser) {
   // Send out notifications after add has occurred. Do some basic checking to
   // try to catch evil observers that change the list from under us.
   size_t original_count = observers_.size();
-  for (size_t i = 0; i < observers_.size(); ++i)
-    observers_[i]->OnBrowserAdded(browser);
+  FOR_EACH_OBSERVER(Observer, observers_, OnBrowserAdded(browser));
   DCHECK_EQ(original_count, observers_.size())
       << "observer list modified during notification";
 }
@@ -171,8 +170,7 @@ void BrowserList::RemoveBrowser(Browser* browser) {
   // Send out notifications before anything changes. Do some basic checking to
   // try to catch evil observers that change the list from under us.
   size_t original_count = observers_.size();
-  for (size_t i = 0; i < observers_.size(); ++i)
-    observers_[i]->OnBrowserRemoving(browser);
+  FOR_EACH_OBSERVER(Observer, observers_, OnBrowserRemoving(browser));
   DCHECK_EQ(original_count, observers_.size())
       << "observer list modified during notification";
 
@@ -192,20 +190,12 @@ void BrowserList::RemoveBrowser(Browser* browser) {
 
 // static
 void BrowserList::AddObserver(BrowserList::Observer* observer) {
-  DCHECK(std::find(observers_.begin(), observers_.end(), observer)
-         == observers_.end()) << "Adding an observer twice";
-  observers_.push_back(observer);
+  observers_.AddObserver(observer);
 }
 
 // static
 void BrowserList::RemoveObserver(BrowserList::Observer* observer) {
-  std::vector<Observer*>::iterator i =
-      std::find(observers_.begin(), observers_.end(), observer);
-  if (i == observers_.end()) {
-    NOTREACHED() << "Removing an observer that isn't registered.";
-    return;
-  }
-  observers_.erase(i);
+  observers_.RemoveObserver(observer);
 }
 
 // static
@@ -317,17 +307,14 @@ bool BrowserList::IsInPersistentMode() {
 }
 
 // static
-BrowserList::list_type BrowserList::last_active_browsers_;
+BrowserList::BrowserVector BrowserList::last_active_browsers_;
 
 // static
 void BrowserList::SetLastActive(Browser* browser) {
   RemoveBrowserFrom(browser, &last_active_browsers_);
   last_active_browsers_.push_back(browser);
 
-  for (std::vector<Observer*>::const_iterator i = observers_.begin();
-       i != observers_.end(); ++i) {
-    (*i)->OnBrowserSetLastActive(browser);
-  }
+  FOR_EACH_OBSERVER(Observer, observers_, OnBrowserSetLastActive(browser));
 }
 
 // static
@@ -401,7 +388,8 @@ bool BrowserList::IsOffTheRecordSessionActive() {
 }
 
 // static
-void BrowserList::RemoveBrowserFrom(Browser* browser, list_type* browser_list) {
+void BrowserList::RemoveBrowserFrom(Browser* browser,
+                                    BrowserVector* browser_list) {
   const iterator remove_browser =
       std::find(browser_list->begin(), browser_list->end(), browser);
   if (remove_browser != browser_list->end())
