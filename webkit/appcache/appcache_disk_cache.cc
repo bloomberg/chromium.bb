@@ -104,8 +104,10 @@ int AppCacheDiskCache::Init(net::CacheType cache_type,
   is_disabled_ = false;
   create_backend_callback_ = new CreateBackendCallback(
       this, &AppCacheDiskCache::OnCreateBackendComplete);
+
+  // TODO(michaeln): Pass a valid cache_thread here.
   int rv = disk_cache::CreateCacheBackend(
-      cache_type, cache_directory, cache_size, force,
+      cache_type, cache_directory, cache_size, force, NULL,
       &(create_backend_callback_->backend_ptr_), create_backend_callback_);
   if (rv == net::ERR_IO_PENDING)
     init_callback_ = callback;

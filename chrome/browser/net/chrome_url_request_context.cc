@@ -252,7 +252,7 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
                          context->proxy_service(),
                          context->ssl_config_service(),
                          context->http_auth_handler_factory(),
-                         disk_cache_path_, cache_size_);
+                         disk_cache_path_, NULL, cache_size_);
 
   if (command_line.HasSwitch(switches::kDisableByteRangeSupport))
     cache->set_enable_range_support(false);
@@ -451,7 +451,7 @@ ChromeURLRequestContext* FactoryForMedia::Create() {
     net::HttpNetworkLayer* main_network_layer =
         static_cast<net::HttpNetworkLayer*>(main_cache->network_layer());
     cache = new net::HttpCache(main_network_layer->GetSession(),
-                               disk_cache_path_, cache_size_);
+                               disk_cache_path_, NULL, cache_size_);
     // TODO(eroman): Since this is poaching the session from the main
     // context, it should hold a reference to that context preventing the
     // session from getting deleted.
@@ -464,7 +464,7 @@ ChromeURLRequestContext* FactoryForMedia::Create() {
         main_context->proxy_service(),
         main_context->ssl_config_service(),
         main_context->http_auth_handler_factory(),
-        disk_cache_path_, cache_size_);
+        disk_cache_path_, NULL, cache_size_);
   }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
