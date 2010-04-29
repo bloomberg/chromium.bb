@@ -102,14 +102,14 @@ class DirectoryBackingStore {
 
   // We don't need to load any synced and applied deleted entries, we can
   // in fact just purge them forever on startup.
-  void DropDeletedEntries();
+  bool DropDeletedEntries();
   // Drops a table if it exists, harmless if the table did not already exist.
-  void SafeDropTable(const char* table_name);
+  int SafeDropTable(const char* table_name);
 
   // Load helpers for entries and attributes.
-  void LoadEntries(MetahandlesIndex* entry_bucket);
-  void LoadExtendedAttributes(ExtendedAttributes* xattrs_bucket);
-  void LoadInfo(Directory::KernelLoadInfo* info);
+  bool LoadEntries(MetahandlesIndex* entry_bucket);
+  bool LoadExtendedAttributes(ExtendedAttributes* xattrs_bucket);
+  bool LoadInfo(Directory::KernelLoadInfo* info);
 
   // Save/update helpers for entries.  Return false if sqlite commit fails.
   bool SaveEntryToDB(const EntryKernel& entry);

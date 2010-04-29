@@ -11,6 +11,7 @@ enum DirOpenResult { OPENED,   // success.
                      FAILED_MAKE_REPOSITORY,  // Couldn't create subdir.
                      FAILED_OPEN_DATABASE,  // sqlite_open() failed.
                      FAILED_DISK_FULL,  // The disk is full.
+                     FAILED_DATABASE_CORRUPT,  // Something is wrong with the DB
 };
 }  // namespace syncable
 

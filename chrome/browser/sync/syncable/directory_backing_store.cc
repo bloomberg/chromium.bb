@@ -89,38 +89,38 @@ int BindFields(const EntryKernel& entry, SQLStatement* statement) {
 }
 
 // The caller owns the returned EntryKernel*.
-EntryKernel* UnpackEntry(SQLStatement* statement) {
-  EntryKernel* result = NULL;
+int UnpackEntry(SQLStatement* statement, EntryKernel** kernel) {
+  *kernel = NULL;
   int query_result = statement->step();
   if (SQLITE_ROW == query_result) {
-    result = new EntryKernel;
-    result->clear_dirty();
-    CHECK(statement->column_count() == static_cast<int>(FIELD_COUNT));
+    *kernel = new EntryKernel;
+    (*kernel)->clear_dirty();
+    DCHECK(statement->column_count() == static_cast<int>(FIELD_COUNT));
     int i = 0;
     for (i = BEGIN_FIELDS; i < INT64_FIELDS_END; ++i) {
-      result->put(static_cast<Int64Field>(i), statement->column_int64(i));
+      (*kernel)->put(static_cast<Int64Field>(i), statement->column_int64(i));
     }
     for ( ; i < ID_FIELDS_END; ++i) {
-      result->mutable_ref(static_cast<IdField>(i)).s_ =
+      (*kernel)->mutable_ref(static_cast<IdField>(i)).s_ =
           statement->column_string(i);
     }
     for ( ; i < BIT_FIELDS_END; ++i) {
-      result->put(static_cast<BitField>(i), (0 != statement->column_int(i)));
+      (*kernel)->put(static_cast<BitField>(i), (0 != statement->column_int(i)));
     }
     for ( ; i < STRING_FIELDS_END; ++i) {
-      result->put(static_cast<StringField>(i),
+      (*kernel)->put(static_cast<StringField>(i),
           statement->column_string(i));
     }
     for ( ; i < PROTO_FIELDS_END; ++i) {
-      result->mutable_ref(static_cast<ProtoField>(i)).ParseFromArray(
+      (*kernel)->mutable_ref(static_cast<ProtoField>(i)).ParseFromArray(
           statement->column_blob(i), statement->column_bytes(i));
     }
-    ZeroFields(result, i);
+    ZeroFields((*kernel), i);
   } else {
-    CHECK(SQLITE_DONE == query_result);
-    result = NULL;
+    DCHECK(SQLITE_DONE == query_result);
+    (*kernel) = NULL;
   }
-  return result;
+  return query_result;
 }
 
 namespace {
@@ -224,10 +224,12 @@ DirOpenResult DirectoryBackingStore::Load(MetahandlesIndex* entry_bucket,
   if (OPENED != result)
     return result;
 
-  DropDeletedEntries();
-  LoadEntries(entry_bucket);
-  LoadExtendedAttributes(xattrs_bucket);
-  LoadInfo(kernel_load_info);
+  if (!DropDeletedEntries() ||
+      !LoadEntries(entry_bucket) ||
+      !LoadExtendedAttributes(xattrs_bucket) ||
+      !LoadInfo(kernel_load_info)) {
+    return FAILED_DATABASE_CORRUPT;
+  }
 
   EndLoad();
   return OPENED;
@@ -430,7 +432,7 @@ bool DirectoryBackingStore::RefreshColumns() {
   return true;
 }
 
-void DirectoryBackingStore::LoadEntries(MetahandlesIndex* entry_bucket) {
+bool DirectoryBackingStore::LoadEntries(MetahandlesIndex* entry_bucket) {
   string select;
   select.reserve(kUpdateStatementBufferSize);
   select.append("SELECT ");
@@ -439,13 +441,16 @@ void DirectoryBackingStore::LoadEntries(MetahandlesIndex* entry_bucket) {
   SQLStatement statement;
   statement.prepare(load_dbhandle_, select.c_str());
   base::hash_set<int64> handles;
-  while (EntryKernel* kernel = UnpackEntry(&statement)) {
+  EntryKernel* kernel = NULL;
+  int query_result;
+  while (SQLITE_ROW == (query_result = UnpackEntry(&statement, &kernel))) {
     DCHECK(handles.insert(kernel->ref(META_HANDLE)).second);  // Only in debug.
     entry_bucket->insert(kernel);
   }
+  return SQLITE_DONE == query_result;
 }
 
-void DirectoryBackingStore::LoadExtendedAttributes(
+bool DirectoryBackingStore::LoadExtendedAttributes(
     ExtendedAttributes* xattrs_bucket) {
   SQLStatement statement;
   statement.prepare(
@@ -466,16 +471,18 @@ void DirectoryBackingStore::LoadExtendedAttributes(
     xattrs_bucket->insert(std::make_pair(key, val));
     step_result = statement.step();
   }
-  CHECK(SQLITE_DONE == step_result);
+
+  return SQLITE_DONE == step_result;
 }
 
-void DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
+bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
   {
     SQLStatement query;
     query.prepare(load_dbhandle_,
                   "SELECT store_birthday, next_id, cache_guid "
                   "FROM share_info");
-    CHECK(SQLITE_ROW == query.step());
+    if (SQLITE_ROW != query.step())
+      return false;
     info->kernel_info.store_birthday = query.column_string(0);
     info->kernel_info.next_id = query.column_int64(1);
     info->cache_guid = query.column_string(2);
@@ -499,9 +506,11 @@ void DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
     SQLStatement query;
     query.prepare(load_dbhandle_,
                   "SELECT MAX(metahandle) FROM metas");
-    CHECK(SQLITE_ROW == query.step());
+    if (SQLITE_ROW != query.step())
+      return false;
     info->max_metahandle = query.column_int64(0);
   }
+  return true;
 }
 
 bool DirectoryBackingStore::SaveEntryToDB(const EntryKernel& entry) {
@@ -572,7 +581,7 @@ bool DirectoryBackingStore::DeleteExtendedAttributeFromDB(
   return true;
 }
 
-void DirectoryBackingStore::DropDeletedEntries() {
+bool DirectoryBackingStore::DropDeletedEntries() {
   static const char delete_extended_attributes[] =
       "DELETE FROM extended_attributes WHERE metahandle IN "
       "(SELECT metahandle from death_row)";
@@ -584,40 +593,47 @@ void DirectoryBackingStore::DropDeletedEntries() {
   if (SQLITE_DONE != ExecQuery(
                          load_dbhandle_,
                          "CREATE TEMP TABLE death_row (metahandle BIGINT)")) {
-    return;
+    return false;
   }
   if (SQLITE_DONE != ExecQuery(load_dbhandle_,
                                "INSERT INTO death_row "
                                "SELECT metahandle from metas WHERE is_del > 0 "
                                " AND is_unsynced < 1"
                                " AND is_unapplied_update < 1")) {
-    return;
+    return false;
   }
   if (SQLITE_DONE != ExecQuery(load_dbhandle_, delete_extended_attributes)) {
-    return;
+    return false;
   }
   if (SQLITE_DONE != ExecQuery(load_dbhandle_, delete_metas)) {
-    return;
+    return false;
   }
   if (SQLITE_DONE != ExecQuery(load_dbhandle_, "DROP TABLE death_row")) {
-    return;
+    return false;
   }
   transaction.Commit();
+  return true;
 }
 
-void DirectoryBackingStore::SafeDropTable(const char* table_name) {
+int DirectoryBackingStore::SafeDropTable(const char* table_name) {
   string query = "DROP TABLE IF EXISTS ";
   query.append(table_name);
   SQLStatement statement;
-  if (SQLITE_OK == statement.prepare(load_dbhandle_, query.data(),
-                                     query.size())) {
-    CHECK(SQLITE_DONE == statement.step());
+  int result = statement.prepare(load_dbhandle_, query.data(),
+                                 query.size());
+  if (SQLITE_OK == result) {
+    result = statement.step();
+    if (SQLITE_DONE == result)
+      statement.finalize();
   }
-  statement.finalize();
+
+  return result;
 }
 
 int DirectoryBackingStore::CreateExtendedAttributeTable() {
-  SafeDropTable("extended_attributes");
+  int result = SafeDropTable("extended_attributes");
+  if (result != SQLITE_DONE)
+    return result;
   LOG(INFO) << "CreateExtendedAttributeTable";
   return ExecQuery(load_dbhandle_,
                    "CREATE TABLE extended_attributes("

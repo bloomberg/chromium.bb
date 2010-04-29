@@ -45,7 +45,8 @@ namespace syncable {
 // 2. r for the root item.
 // 3. s<server provided opaque id> for items that the server knows about.
 class Id {
-  friend syncable::EntryKernel* UnpackEntry(SQLStatement* statement);
+  friend int UnpackEntry(SQLStatement* statement,
+                         syncable::EntryKernel** kernel);
   friend struct syncable::IdRowTraits;
   friend int BindFields(const EntryKernel& entry, SQLStatement* statement);
   friend std::ostream& ::operator << (std::ostream& out,
