@@ -58,7 +58,7 @@ void WmOverviewSnapshot::UpdateIndex(Browser* browser, int index) {
   params.push_back(index);
   WmIpc::instance()->SetWindowType(
       GetNativeView(),
-      WmIpc::WINDOW_TYPE_CHROME_TAB_SNAPSHOT,
+      WM_IPC_WINDOW_CHROME_TAB_SNAPSHOT,
       &params);
   index_ = index;
 }
