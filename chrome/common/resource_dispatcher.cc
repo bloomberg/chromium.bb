@@ -484,17 +484,10 @@ bool ResourceDispatcher::RemovePendingRequest(int request_id) {
   if (it == pending_requests_.end())
     return false;
 
-  // Iterate through the deferred message queue and clean up the messages.
   PendingRequestInfo& request_info = it->second;
-  MessageQueue& q = request_info.deferred_message_queue;
-  while (!q.empty()) {
-    IPC::Message* m = q.front();
-    ReleaseResourcesInDataMessage(*m);
-    q.pop_front();
-    delete m;
-  }
-
+  ReleaseResourcesInMessageQueue(&request_info.deferred_message_queue);
   pending_requests_.erase(it);
+
   return true;
 }
 
@@ -502,14 +495,14 @@ void ResourceDispatcher::CancelPendingRequest(int routing_id,
                                               int request_id) {
   PendingRequestList::iterator it = pending_requests_.find(request_id);
   if (it == pending_requests_.end()) {
-    DLOG(ERROR) << "unknown request";
+    DLOG(WARNING) << "unknown request";
     return;
   }
+
   PendingRequestInfo& request_info = it->second;
-  // Avoid spamming the host with cancel messages.
-  if (request_info.is_cancelled)
-    return;
-  request_info.is_cancelled = true;
+  ReleaseResourcesInMessageQueue(&request_info.deferred_message_queue);
+  pending_requests_.erase(it);
+
   message_sender()->Send(
       new ViewHostMsg_CancelRequest(routing_id, request_id));
 }
@@ -598,6 +591,7 @@ bool ResourceDispatcher::IsResourceDispatcherMessage(
   return false;
 }
 
+// static
 void ResourceDispatcher::ReleaseResourcesInDataMessage(
     const IPC::Message& message) {
   void* iter = NULL;
@@ -616,5 +610,15 @@ void ResourceDispatcher::ReleaseResourcesInDataMessage(
                                                          &shm_handle)) {
       base::SharedMemory::CloseHandle(shm_handle);
     }
+  }
+}
+
+// static
+void ResourceDispatcher::ReleaseResourcesInMessageQueue(MessageQueue* queue) {
+  while (!queue->empty()) {
+    IPC::Message* message = queue->front();
+    ReleaseResourcesInDataMessage(*message);
+    queue->pop_front();
+    delete message;
   }
 }

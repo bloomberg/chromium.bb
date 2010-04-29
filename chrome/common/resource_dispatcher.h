@@ -72,7 +72,6 @@ class ResourceDispatcher {
           resource_type(resource_type),
           filter_policy(FilterPolicy::DONT_FILTER),
           is_deferred(false),
-          is_cancelled(false),
           url(request_url) {
     }
     ~PendingRequestInfo() { }
@@ -81,7 +80,6 @@ class ResourceDispatcher {
     FilterPolicy::Type filter_policy;
     MessageQueue deferred_message_queue;
     bool is_deferred;
-    bool is_cancelled;
     GURL url;
   };
   typedef base::hash_map<int, PendingRequestInfo> PendingRequestList;
@@ -122,7 +120,12 @@ class ResourceDispatcher {
   // handle in it that we should cleanup it up nicely. This method accepts any
   // message and determine whether the message is
   // ViewHostMsg_Resource_DataReceived and clean up the shared memory handle.
-  void ReleaseResourcesInDataMessage(const IPC::Message& message);
+  static void ReleaseResourcesInDataMessage(const IPC::Message& message);
+
+  // Iterate through a message queue and clean up the messages by calling
+  // ReleaseResourcesInDataMessage and removing them from the queue. Intended
+  // for use on deferred message queues that are no longer needed.
+  static void ReleaseResourcesInMessageQueue(MessageQueue* queue);
 
   IPC::Message::Sender* message_sender_;
 
