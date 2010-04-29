@@ -57,6 +57,10 @@ PRUNE_DIRS = ('.svn', '.git',             # VCS metadata
 # can't provide a README.chromium.  Please prefer a README.chromium
 # wherever possible.
 SPECIAL_CASES = {
+    'third_party/angle': {
+        "Name": "Almost Native Graphics Layer Engine",
+        "URL": "http://code.google.com/p/angleproject/",
+    },
     'third_party/ots': {
         "Name": "OTS (OpenType Sanitizer)",
         "URL": "http://code.google.com/p/ots/",
