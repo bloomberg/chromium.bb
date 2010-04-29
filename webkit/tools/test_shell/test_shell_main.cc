@@ -224,9 +224,10 @@ int main(int argc, char* argv[]) {
     if (url.is_valid()) {
       starting_url = url;
     } else {
-      // Treat as a file path
-      starting_url =
-          net::FilePathToFileURL(FilePath::FromWStringHack(loose_values[0]));
+      // Treat as a relative file path.
+      FilePath path = FilePath::FromWStringHack(loose_values[0]);
+      file_util::AbsolutePath(&path);
+      starting_url = net::FilePathToFileURL(path);
     }
   }
 
