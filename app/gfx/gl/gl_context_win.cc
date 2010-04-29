@@ -380,21 +380,6 @@ bool OSMesaViewGLContext::Initialize() {
     return false;
   }
 
-  if (!MakeCurrent()) {
-    Destroy();
-    return false;
-  }
-
-  if (!InitializeGLEW()) {
-    Destroy();
-    return false;
-  }
-
-  if (!InitializeCommon()) {
-    Destroy();
-    return false;
-  }
-
   UpdateSize();
 
   return true;

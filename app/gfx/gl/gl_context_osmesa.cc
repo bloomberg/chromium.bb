@@ -11,10 +11,7 @@
 
 namespace gfx {
 
-OSMesaGLContext::OSMesaGLContext()
-#if !defined(UNIT_TEST)
-    : context_(NULL)
-#endif
+OSMesaGLContext::OSMesaGLContext() : context_(NULL)
 {
 }
 
@@ -22,7 +19,6 @@ OSMesaGLContext::~OSMesaGLContext() {
 }
 
 bool OSMesaGLContext::Initialize(void* shared_handle) {
-#if !defined(UNIT_TEST)
   DCHECK(!context_);
 
   size_ = gfx::Size(1, 1);
@@ -30,38 +26,48 @@ bool OSMesaGLContext::Initialize(void* shared_handle) {
 
   context_ = OSMesaCreateContext(GL_RGBA,
                                  static_cast<OSMesaContext>(shared_handle));
-  return context_ != NULL;
-#else
+  if (!context_)
+    return false;
+
+  if (!MakeCurrent()) {
+    Destroy();
+    return false;
+  }
+
+  if (!InitializeGLEW()) {
+    Destroy();
+    return false;
+  }
+
+  if (!InitializeCommon()) {
+    Destroy();
+    return false;
+  }
+
   return true;
-#endif
 }
 
 void OSMesaGLContext::Destroy() {
-#if !defined(UNIT_TEST)
   if (context_) {
     OSMesaDestroyContext(static_cast<OSMesaContext>(context_));
     context_ = NULL;
   }
-#endif
+  buffer_.reset();
+  size_ = gfx::Size();
 }
 
 bool OSMesaGLContext::MakeCurrent() {
-#if !defined(UNIT_TEST)
   DCHECK(context_);
   return OSMesaMakeCurrent(static_cast<OSMesaContext>(context_),
                            buffer_.get(),
                            GL_UNSIGNED_BYTE,
                            size_.width(), size_.height()) == GL_TRUE;
-#endif
   return true;
 }
 
 bool OSMesaGLContext::IsCurrent() {
-#if !defined(UNIT_TEST)
   DCHECK(context_);
   return context_ == OSMesaGetCurrentContext();
-#endif
-  return true;
 }
 
 bool OSMesaGLContext::IsOffscreen() {

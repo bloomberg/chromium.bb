@@ -39,9 +39,6 @@ class OSMesaGLContext : public GLContext {
     return buffer_.get();
   }
 
- protected:
-  bool InitializeCommon();
-
  private:
 #if !defined(UNIT_TEST)
   gfx::Size size_;
