@@ -530,6 +530,11 @@ void EncoderWriteCallback(png_structp png, png_bytep data, png_size_t size) {
   memcpy(&(*state->out)[old_size], data, size);
 }
 
+void FakeFlushCallback(png_structp png) {
+  // We don't need to perform any flushing since we aren't doing real IO, but
+  // we're required to provide this function by libpng.
+}
+
 void ConvertBGRAtoRGB(const unsigned char* bgra, int pixel_width,
                       unsigned char* rgb, bool* is_opaque) {
   for (int x = 0; x < pixel_width; x++) {
@@ -562,7 +567,7 @@ bool DoLibpngWrite(png_struct* png_ptr, png_info* info_ptr,
     return false;
 
   // Set our callback for libpng to give us the data.
-  png_set_write_fn(png_ptr, state, EncoderWriteCallback, NULL);
+  png_set_write_fn(png_ptr, state, EncoderWriteCallback, FakeFlushCallback);
 
   png_set_IHDR(png_ptr, info_ptr, width, height, 8, png_output_color_type,
                PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
