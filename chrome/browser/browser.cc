@@ -460,7 +460,7 @@ TabContents* Browser::OpenApplicationWindow(
   Browser* browser = Browser::CreateForApp(app_name, extension, profile,
                                            as_panel);
   browser->AddTabWithURL(url, GURL(), PageTransition::START_PAGE, true, -1,
-                         false, NULL);
+                         false, std::string());
 
   TabContents* tab_contents = browser->GetSelectedTabContents();
   tab_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
