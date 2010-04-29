@@ -697,7 +697,7 @@ build: ALWAYS
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries_nocpp
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-gcc
 	case $$(BUILD/binutils-$(BINUTILS_VERSION)/config.guess) in \
-	*-linux*) $(MAKE) -f $(THISMAKEFILE) BUILD/stamp-gdb gdb_minimal_test;; \
+	*-linux*) $(MAKE) -f $(THISMAKEFILE) BUILD/stamp-gdb ;; \
 	esac
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries
 	$(MAKE) -f $(THISMAKEFILE) sdk_minimal_test
