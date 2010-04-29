@@ -56,11 +56,13 @@ class HistoryTest(pyauto.PyUITest):
     """Invalid URLs should not go in history."""
     assert not self.GetHistoryInfo().History(), 'Expecting clean history.'
     urls = [ self.GetFileURLForPath('some_non-existing_path'),
-             'http://a.nonexisting.domain.blah',
-             'ftp://this.should.not.exist/file',
+             self.GetFileURLForPath('another_non-existing_path'),
            ]
     for url in urls:
-       self.NavigateToURL(url)
+      if not url.startswith('file://'):
+        logging.warn('Using %s. Might depend on how dns failures are handled'
+                     'on the network' % url)
+      self.NavigateToURL(url)
     self.assertEqual(0, len(self.GetHistoryInfo().History()))
 
   def testNewTabNoHistory(self):
