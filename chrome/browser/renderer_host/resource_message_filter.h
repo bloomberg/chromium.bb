@@ -161,9 +161,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                           uint32 user_data);
 
 #if defined(OS_WIN)  // This hack is Windows-specific.
-  // Cache fonts for the renderer. See ResourceMessageFilter::OnLoadFont
-  // implementation for more details
-  void OnLoadFont(LOGFONT font);
+  // Cache fonts for the renderer. See ResourceMessageFilter::OnPreCacheFont
+  // implementation for more details.
+  void OnPreCacheFont(LOGFONT font);
 #endif
 
 #if !defined(OS_MACOSX)

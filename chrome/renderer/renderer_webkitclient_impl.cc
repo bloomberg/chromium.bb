@@ -230,7 +230,7 @@ WebString RendererWebKitClientImpl::MimeRegistry::preferredExtensionForMIMEType(
 bool RendererWebKitClientImpl::SandboxSupport::ensureFontLoaded(HFONT font) {
   LOGFONT logfont;
   GetObject(font, sizeof(LOGFONT), &logfont);
-  return RenderThread::current()->Send(new ViewHostMsg_LoadFont(logfont));
+  return RenderThread::current()->Send(new ViewHostMsg_PreCacheFont(logfont));
 }
 
 #elif defined(OS_LINUX)

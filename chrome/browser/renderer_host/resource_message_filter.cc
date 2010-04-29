@@ -436,7 +436,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_DeleteCookie, OnDeleteCookie)
       IPC_MESSAGE_HANDLER(ViewHostMsg_GetCookiesEnabled, OnGetCookiesEnabled)
 #if defined(OS_WIN)  // This hack is Windows-specific.
-      IPC_MESSAGE_HANDLER(ViewHostMsg_LoadFont, OnLoadFont)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_PreCacheFont, OnPreCacheFont)
 #endif
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetPlugins, OnGetPlugins)
       IPC_MESSAGE_HANDLER(ViewHostMsg_GetPluginPath, OnGetPluginPath)
@@ -713,10 +713,10 @@ void ResourceMessageFilter::OnGetCookiesEnabled(
 }
 
 #if defined(OS_WIN)  // This hack is Windows-specific.
-void ResourceMessageFilter::OnLoadFont(LOGFONT font) {
-  // If renderer is running in a sandbox, GetTextMetrics
+void ResourceMessageFilter::OnPreCacheFont(LOGFONT font) {
+  // If the renderer is running in a sandbox, GetTextMetrics()
   // can sometimes fail. If a font has not been loaded
-  // previously, GetTextMetrics will try to load the font
+  // previously, GetTextMetrics() will try to load the font
   // from the font file. However, the sandboxed renderer does
   // not have permissions to access any font files and
   // the call fails. So we make the browser pre-load the
