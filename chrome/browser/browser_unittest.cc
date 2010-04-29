@@ -37,8 +37,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NoTabsInPopups) {
   EXPECT_EQ(1, popup_browser->tab_count());
 
   // Now try opening another tab in the popup browser.
-  popup_browser->AddTabWithURL(GURL(chrome::kAboutBlankURL), GURL(),
-                               PageTransition::TYPED, true, -1, NULL);
+  popup_browser->AddTabWithURL(
+      GURL(chrome::kAboutBlankURL), GURL(), PageTransition::TYPED, -1,
+      Browser::ADD_SELECTED, NULL, std::string());
 
   // The popup should still only have one tab.
   EXPECT_EQ(1, popup_browser->tab_count());
@@ -53,8 +54,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NoTabsInPopups) {
   EXPECT_EQ(1, app_browser->tab_count());
 
   // Now try opening another tab in the app browser.
-  app_browser->AddTabWithURL(GURL(chrome::kAboutBlankURL), GURL(),
-                             PageTransition::TYPED, true, -1, NULL);
+  app_browser->AddTabWithURL(
+      GURL(chrome::kAboutBlankURL), GURL(), PageTransition::TYPED, -1,
+      Browser::ADD_SELECTED, NULL, std::string());
 
   // The popup should still only have one tab.
   EXPECT_EQ(1, app_browser->tab_count());
@@ -69,8 +71,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NoTabsInPopups) {
   EXPECT_EQ(1, app_popup_browser->tab_count());
 
   // Now try opening another tab in the app popup browser.
-  app_popup_browser->AddTabWithURL(GURL(chrome::kAboutBlankURL), GURL(),
-                                   PageTransition::TYPED, true, -1, NULL);
+  app_popup_browser->AddTabWithURL(
+      GURL(chrome::kAboutBlankURL), GURL(), PageTransition::TYPED, -1,
+      Browser::ADD_SELECTED, NULL, std::string());
 
   // The popup should still only have one tab.
   EXPECT_EQ(1, app_popup_browser->tab_count());

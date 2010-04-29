@@ -1572,8 +1572,9 @@ private:
     case NEW_FOREGROUND_TAB:
       UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLBetweenTabs"),
                                 browser_->profile());
-      browser_->AddTabWithURL(url, GURL(), PageTransition::TYPED, true, index,
-                              true, NULL);
+      browser_->AddTabWithURL(url, GURL(), PageTransition::TYPED, index,
+                              Browser::ADD_SELECTED | Browser::ADD_FORCE_INDEX,
+                              NULL, std::string());
       break;
     case CURRENT_TAB:
       UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLOnTab"),

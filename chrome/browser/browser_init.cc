@@ -725,7 +725,7 @@ Browser* BrowserInit::LaunchWithProfile::OpenTabsInBrowser(
     if (!process_startup && !URLRequest::IsHandledURL(tabs[i].url))
       continue;
 
-    int add_types = first_tab ? Browser::ADD_SELECTED : 0;
+    int add_types = first_tab ? Browser::ADD_SELECTED : Browser::ADD_NONE;
     if (tabs[i].is_pinned)
       add_types |= Browser::ADD_PINNED;
 

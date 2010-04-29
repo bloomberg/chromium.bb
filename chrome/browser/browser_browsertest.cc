@@ -204,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_JavascriptAlertActivatesTab) {
                                      FilePath(kTitle1File)));
   ui_test_utils::NavigateToURL(browser(), url);
   browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED,
-                           true, 0, false, NULL);
+                           0, Browser::ADD_SELECTED, NULL, std::string());
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(0, browser()->selected_index());
   TabContents* second_tab = browser()->GetTabContentsAt(1);
@@ -228,7 +228,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ThirtyFourTabs) {
   // There is one initial tab.
   for (int ix = 0; ix != 33; ++ix) {
     browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED,
-                             true, 0, false, NULL);
+                             0, Browser::ADD_SELECTED, NULL, std::string());
   }
   EXPECT_EQ(34, browser()->tab_count());
 

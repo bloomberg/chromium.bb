@@ -556,8 +556,8 @@ void ImporterHost::StartImportSettings(
       BrowsingInstance* instance = new BrowsingInstance(writer_->GetProfile());
       SiteInstance* site = instance->GetSiteInstanceForURL(url);
       Browser* browser = BrowserList::GetLastActive();
-      browser->AddTabWithURL(url, GURL(), PageTransition::TYPED, true, -1,
-                             false, site);
+      browser->AddTabWithURL(url, GURL(), PageTransition::TYPED,
+                             -1, Browser::ADD_SELECTED, site, std::string());
 
       MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
         this, &ImporterHost::OnLockViewEnd, false));

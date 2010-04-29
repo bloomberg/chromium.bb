@@ -379,8 +379,9 @@ void Browser::OpenURLOffTheRecord(Profile* profile, const GURL& url) {
   if (!browser)
     browser = Browser::Create(off_the_record_profile);
   // TODO(eroman): should we have referrer here?
-  browser->AddTabWithURL(url, GURL(), PageTransition::LINK, true, -1, false,
-                         NULL);
+  browser->AddTabWithURL(
+      url, GURL(), PageTransition::LINK, -1, Browser::ADD_SELECTED, NULL,
+      std::string());
   browser->window()->Show();
 }
 
@@ -443,8 +444,8 @@ TabContents* Browser::OpenApplicationWindow(
   Browser* browser = Browser::CreateForApp(app_name, extension, profile,
                                            as_panel);
   browser->AddTabWithURL(extension ? extension->GetFullLaunchURL() : url,
-                         GURL(), PageTransition::START_PAGE, true, -1,
-                         false, NULL);
+                         GURL(), PageTransition::START_PAGE,
+                         -1, Browser::ADD_SELECTED, NULL, std::string());
 
   TabContents* tab_contents = browser->GetSelectedTabContents();
   tab_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
@@ -727,19 +728,6 @@ void Browser::InProgressDownloadResponse(bool cancel_downloads) {
 ////////////////////////////////////////////////////////////////////////////////
 // Browser, Tab adding/showing functions:
 
-TabContents* Browser::AddTabWithURL(
-    const GURL& url, const GURL& referrer, PageTransition::Type transition,
-    bool foreground, int index, bool force_index,
-    SiteInstance* instance) {
-  int add_types = 0;
-  if (force_index)
-    add_types |= ADD_FORCE_INDEX;
-  if (foreground)
-    add_types |= ADD_SELECTED;
-  return AddTabWithURL(url, referrer, transition, index, add_types, instance,
-                       std::string());
-}
-
 TabContents* Browser::AddTabWithURL(const GURL& url,
                                     const GURL& referrer,
                                     PageTransition::Type transition,
@@ -905,8 +893,8 @@ void Browser::ShowSingletonTab(const GURL& url) {
   }
 
   // Otherwise, just create a new tab.
-  AddTabWithURL(url, GURL(), PageTransition::AUTO_BOOKMARK, true, -1,
-                false, NULL);
+  AddTabWithURL(url, GURL(), PageTransition::AUTO_BOOKMARK,
+                -1, Browser::ADD_SELECTED, NULL, std::string());
 }
 
 void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
@@ -1594,8 +1582,8 @@ void Browser::OpenAboutChromeDialog() {
 
 void Browser::OpenHelpTab() {
   GURL help_url = google_util::AppendGoogleLocaleParam(GURL(kHelpContentUrl));
-  AddTabWithURL(help_url, GURL(), PageTransition::AUTO_BOOKMARK, true, -1,
-                false, NULL);
+  AddTabWithURL(help_url, GURL(), PageTransition::AUTO_BOOKMARK,
+                -1, Browser::ADD_SELECTED, NULL, std::string());
 }
 
 void Browser::OpenThemeGalleryTabAndActivate() {
@@ -1930,8 +1918,10 @@ TabContents* Browser::AddBlankTabAt(int index, bool foreground) {
   // TabContents, but we want to include the time it takes to create the
   // TabContents object too.
   base::TimeTicks new_tab_start_time = base::TimeTicks::Now();
-  TabContents* tab_contents = AddTabWithURL(GURL(chrome::kChromeUINewTabURL),
-      GURL(), PageTransition::TYPED, foreground, index, false, NULL);
+  TabContents* tab_contents = AddTabWithURL(
+      GURL(chrome::kChromeUINewTabURL), GURL(), PageTransition::TYPED, index,
+      foreground ? Browser::ADD_SELECTED : Browser::ADD_NONE, NULL,
+      std::string());
   tab_contents->set_new_tab_start_time(new_tab_start_time);
   return tab_contents;
 }
@@ -3411,8 +3401,10 @@ void Browser::OpenURLAtIndex(TabContents* source,
     return;
   } else if (disposition == NEW_WINDOW) {
     Browser* browser = Browser::Create(profile_);
-    new_contents = browser->AddTabWithURL(url, referrer, transition, true,
-                                          index, force_index, instance);
+    int add_types = force_index ? Browser::ADD_FORCE_INDEX : Browser::ADD_NONE;
+    add_types |= Browser::ADD_SELECTED;
+    new_contents = browser->AddTabWithURL(url, referrer, transition, index,
+                                          add_types, instance, std::string());
     browser->window()->Show();
   } else if ((disposition == CURRENT_TAB) && current_tab) {
     tabstrip_model_.TabNavigating(current_tab, transition);
@@ -3444,8 +3436,12 @@ void Browser::OpenURLAtIndex(TabContents* source,
     OpenURLOffTheRecord(profile_, url);
     return;
   } else if (disposition != SUPPRESS_OPEN) {
-    new_contents = AddTabWithURL(url, referrer, transition,
-        disposition != NEW_BACKGROUND_TAB, index, force_index, instance);
+    int add_types = disposition != NEW_BACKGROUND_TAB ?
+        Browser::ADD_SELECTED : Browser::ADD_NONE;
+    if (force_index)
+      add_types |= Browser::ADD_FORCE_INDEX;
+    new_contents = AddTabWithURL(url, referrer, transition, index, add_types,
+                                 instance, std::string());
   }
 
   if (disposition != NEW_BACKGROUND_TAB && source_tab_was_frontmost &&

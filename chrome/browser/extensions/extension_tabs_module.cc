@@ -389,8 +389,8 @@ bool CreateWindowFunction::RunImpl() {
 
   Browser* new_window = new Browser(window_type, window_profile);
   new_window->CreateBrowserWindow();
-  new_window->AddTabWithURL(url, GURL(), PageTransition::LINK, true,
-                            -1, false, NULL);
+  new_window->AddTabWithURL(url, GURL(), PageTransition::LINK, -1,
+                            Browser::ADD_SELECTED, NULL, std::string());
 
   new_window->window()->SetBounds(bounds);
   new_window->window()->Show();
@@ -591,8 +591,10 @@ bool CreateTabFunction::RunImpl() {
     index = tab_strip->count();
   }
 
+  int add_types = selected ? Browser::ADD_SELECTED : Browser::ADD_NONE;
+  add_types |= Browser::ADD_FORCE_INDEX;
   TabContents* contents = browser->AddTabWithURL(url, GURL(),
-      PageTransition::LINK, selected, index, true, NULL);
+      PageTransition::LINK, index, add_types, NULL, std::string());
   index = tab_strip->GetIndexOfTabContents(contents);
   browser->window()->Show();
 

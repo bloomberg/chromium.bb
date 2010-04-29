@@ -644,8 +644,8 @@ void FilebrowseHandler::OpenNewWindow(const Value* value, bool popup) {
       browser = BrowserList::GetLastActive();
     }
     browser->AddTabWithURL(
-        GURL(path), GURL(), PageTransition::LINK,
-        true, -1, false, NULL);
+        GURL(path), GURL(), PageTransition::LINK, -1, Browser::ADD_SELECTED,
+        NULL, std::string());
     if (popup) {
       // TODO(dhg): Remove these from being hardcoded. Allow javascript
       // to specify.
@@ -975,8 +975,8 @@ Browser* FileBrowseUI::OpenPopup(Profile* profile,
     }
 
     browser->AddTabWithURL(
-        GURL(url), GURL(), PageTransition::LINK,
-        true, -1, false, NULL);
+        GURL(url), GURL(), PageTransition::LINK, -1, Browser::ADD_SELECTED,
+        NULL, std::string());
     browser->window()->SetBounds(gfx::Rect(kPopupLeft,
                                            kPopupTop,
                                            width,

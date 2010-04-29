@@ -489,10 +489,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestMixedContentsTwoTabs) {
   // Create a new tab.
   GURL url =
       https_server->TestServerPageW(L"files/ssl/page_with_http_script.html");
-  TabContents* tab2 = browser()->AddTabWithURL(url,
-                                               GURL(),
-                                               PageTransition::TYPED, true, 0,
-                                               false, NULL);
+  TabContents* tab2 = browser()->AddTabWithURL(
+      url, GURL(), PageTransition::TYPED, 0, Browser::ADD_SELECTED,
+      NULL, std::string());
   ui_test_utils::WaitForNavigation(&(tab2->controller()));
 
   // The new tab has mixed content.
@@ -626,10 +625,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCloseTabWithUnsafePopup) {
   // Let's add another tab to make sure the browser does not exit when we close
   // the first tab.
   GURL url = http_server->TestServerPageW(L"files/ssl/google.html");
-  TabContents* tab2 = browser()->AddTabWithURL(url,
-                                               GURL(),
-                                               PageTransition::TYPED,
-                                               true, 0, false, NULL);
+  TabContents* tab2 = browser()->AddTabWithURL(
+      url, GURL(), PageTransition::TYPED, 0, Browser::ADD_SELECTED, NULL,
+      std::string());
   ui_test_utils::WaitForNavigation(&(tab2->controller()));
 
   // Close the first tab.

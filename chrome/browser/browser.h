@@ -102,6 +102,10 @@ class Browser : public TabStripModelDelegate,
 
   // Constants passed to AddTabWithURL.
   enum AddTabTypes {
+    // Used to indicate nothing special should happen to the newly inserted
+    // tab.
+    ADD_NONE        = 0,
+
     // The tab should be selected.
     ADD_SELECTED    = 1 << 0,
 
@@ -315,19 +319,6 @@ class Browser : public TabStripModelDelegate,
   }
 
   // Tab adding/showing functions /////////////////////////////////////////////
-
-  // Add a new tab with the specified URL. If instance is not null, its process
-  // will be used to render the tab. |force_index| is passed through to
-  // TabStripModel::AddTabContents and its meaning is documented with its
-  // declaration.
-  // TODO(sky): nuke this and convert callers to new AddTablWithURL variant.
-  TabContents* AddTabWithURL(const GURL& url,
-                             const GURL& referrer,
-                             PageTransition::Type transition,
-                             bool foreground,
-                             int index,
-                             bool force_index,
-                             SiteInstance* instance);
 
   // Adds a new tab at the specified index. |add_types| is a bitmask of the
   // values defined by AddTabTypes; see AddTabTypes for details. If |instance|
