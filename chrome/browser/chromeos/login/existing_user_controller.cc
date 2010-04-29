@@ -97,7 +97,7 @@ void ExistingUserController::Delete() {
 
 void ExistingUserController::ProcessWmMessage(const WmIpc::Message& message,
                                               GdkWindow* window) {
-  if (message.type() != WM_IPC_MESSAGE_CHROME_CREATE_GUEST_WINDOW)
+  if (message.type() != WmIpc::Message::CHROME_CREATE_GUEST_WINDOW)
     return;
 
   // WizardController takes care of deleting itself when done.
@@ -133,9 +133,10 @@ void ExistingUserController::Login(UserController* source,
                         UTF16ToUTF8(password)));
 
   // Disable clicking on other windows.
-  WmIpc::Message message(WM_IPC_MESSAGE_WM_SET_LOGIN_STATE);
+  chromeos::WmIpc::Message message(
+      chromeos::WmIpc::Message::WM_SET_LOGIN_STATE);
   message.set_param(0, 0);
-  WmIpc::instance()->SendMessage(message);
+  chromeos::WmIpc::instance()->SendMessage(message);
 }
 
 void ExistingUserController::OnLoginFailure(const std::string& error) {
@@ -146,9 +147,10 @@ void ExistingUserController::OnLoginFailure(const std::string& error) {
   controllers_[index_of_view_logging_in_]->SetPasswordEnabled(true);
 
   // Reenable clicking on other windows.
-  WmIpc::Message message(WM_IPC_MESSAGE_WM_SET_LOGIN_STATE);
+  chromeos::WmIpc::Message message(
+      chromeos::WmIpc::Message::WM_SET_LOGIN_STATE);
   message.set_param(0, 1);
-  WmIpc::instance()->SendMessage(message);
+  chromeos::WmIpc::instance()->SendMessage(message);
 }
 
 void ExistingUserController::OnLoginSuccess(const std::string& username,
@@ -158,7 +160,7 @@ void ExistingUserController::OnLoginSuccess(const std::string& username,
 
   background_window_->Close();
 
-  LoginUtils::Get()->CompleteLogin(username, credentials);
+  chromeos::LoginUtils::Get()->CompleteLogin(username, credentials);
 
   // Delay deletion as we're on the stack.
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);

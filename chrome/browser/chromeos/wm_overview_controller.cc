@@ -204,10 +204,10 @@ void BrowserListener::UpdateSelectedIndex(int index) {
   // different from what we know before we set them, to avoid extra
   // notifications.
   std::vector<int> params;
-  WmIpcWindowType type = WmIpc::instance()->GetWindowType(
+  WmIpc::WindowType type = WmIpc::instance()->GetWindowType(
       GTK_WIDGET(browser_->window()->GetNativeHandle()),
       &params);
-  DCHECK(type == WM_IPC_WINDOW_CHROME_TOPLEVEL);
+  DCHECK(type == WmIpc::WINDOW_TYPE_CHROME_TOPLEVEL);
   if (params.size() > 1) {
     if (params[0] == browser_->tab_count() &&
         params[0] == index)
@@ -219,7 +219,7 @@ void BrowserListener::UpdateSelectedIndex(int index) {
   params.push_back(index);
   WmIpc::instance()->SetWindowType(
       GTK_WIDGET(browser_->window()->GetNativeHandle()),
-      WM_IPC_WINDOW_CHROME_TOPLEVEL,
+      WmIpc::WINDOW_TYPE_CHROME_TOPLEVEL,
       &params);
 }
 
@@ -378,7 +378,7 @@ BrowserView* GetBrowserViewForGdkWindow(GdkWindow* gdk_window) {
 void WmOverviewController::ProcessWmMessage(const WmIpc::Message& message,
                                             GdkWindow* window) {
   switch (message.type()) {
-    case WM_IPC_MESSAGE_CHROME_NOTIFY_LAYOUT_MODE: {
+    case WmIpc::Message::CHROME_NOTIFY_LAYOUT_MODE: {
       if (message.param(0) == 0 || BrowserList::size() == 0) {
         Hide(message.param(1) != 0);
       } else {
@@ -386,7 +386,7 @@ void WmOverviewController::ProcessWmMessage(const WmIpc::Message& message,
       }
       break;
     }
-    case WM_IPC_MESSAGE_CHROME_NOTIFY_TAB_SELECT: {
+    case WmIpc::Message::CHROME_NOTIFY_TAB_SELECT: {
       BrowserView* browser_window = GetBrowserViewForGdkWindow(window);
       // Find out which listener this goes to, and send it there.
       for (BrowserListenerVector::iterator i = listeners_.begin();

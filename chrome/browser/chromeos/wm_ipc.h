@@ -12,7 +12,6 @@
 
 #include "base/logging.h"
 #include "base/singleton.h"
-#include "third_party/cros/chromeos_wm_ipc_enums.h"
 
 typedef unsigned long Atom;
 typedef unsigned long XID;
@@ -38,18 +37,195 @@ class WmIpc {
     kNumAtoms,
   };
 
+  enum WindowType {
+    WINDOW_TYPE_UNKNOWN = 0,
+
+    // A top-level Chrome window.
+    //   param[0]: The number of tabs currently in this Chrome window.
+    //   param[1]: The index of the currently selected tab in this
+    //             Chrome window.
+    WINDOW_TYPE_CHROME_TOPLEVEL,
+
+    // Vestiges of the old windows-across-the-bottom overview mode.
+    DEPRECATED_WINDOW_TYPE_CHROME_TAB_SUMMARY,
+    DEPRECATED_WINDOW_TYPE_CHROME_FLOATING_TAB,
+
+    // The contents of a popup window.
+    //   param[0]: X ID of associated titlebar, which must be mapped before
+    //             its content
+    //   param[1]: Initial state for panel (0 is collapsed, 1 is expanded)
+    WINDOW_TYPE_CHROME_PANEL_CONTENT,
+
+    // A small window representing a collapsed panel in the panel bar and
+    // drawn above the panel when it's expanded.
+    WINDOW_TYPE_CHROME_PANEL_TITLEBAR,
+
+    // Vestiges of an earlier UI design.
+    DEPRECATED_WINDOW_TYPE_CREATE_BROWSER_WINDOW,
+
+    // A Chrome info bubble (e.g. the bookmark bubble).  These are
+    // transient RGBA windows; we skip the usual transient behavior of
+    // centering them over their owner and omit drawing a drop shadow.
+    WINDOW_TYPE_CHROME_INFO_BUBBLE,
+
+    // A window showing a view of a tab within a Chrome window.
+    //   param[0]: X ID of toplevel window that owns it.
+    //   param[1]: index of this tab in the toplevel window that owns it.
+    WINDOW_TYPE_CHROME_TAB_SNAPSHOT,
+
+    // The following types are used for the windows that represent a user that
+    // has already logged into the system.
+    //
+    // Visually the BORDER contains the IMAGE and CONTROLS windows, the LABEL
+    // and UNSELECTED_LABEL are placed beneath the BORDER. The LABEL window is
+    // onscreen when the user is selected, otherwise the UNSELECTED_LABEL is
+    // on screen. The GUEST window is used when the user clicks on the entry
+    // that represents the 'guest' user.
+    //
+    // The following parameters are set for these windows (except GUEST and
+    // BACKGROUND):
+    //   param[0]: the visual index of the user the window corresponds to.
+    //             For example, all windows with an index of 0 occur first,
+    //             followed by windows with an index of 1...
+    //
+    // The following additional params are set on the first BORDER window
+    // (BORDER window whose param[0] == 0).
+    //   param[1]: the total number of users.
+    //   param[2]: size of the unselected image.
+    //   param[3]: gap between image and controls.
+    WINDOW_TYPE_LOGIN_BORDER,
+    WINDOW_TYPE_LOGIN_IMAGE,
+    WINDOW_TYPE_LOGIN_CONTROLS,
+    WINDOW_TYPE_LOGIN_LABEL,
+    WINDOW_TYPE_LOGIN_UNSELECTED_LABEL,
+    WINDOW_TYPE_LOGIN_GUEST,
+    WINDOW_TYPE_LOGIN_BACKGROUND,
+
+    kNumWindowTypes,
+  };
+
   struct Message {
    public:
+    // NOTE: Don't remove values from this enum; it is shared between
+    // Chrome and the window manager.
+    enum Type {
+      UNKNOWN = 0,
+
+      // Vestiges of the old windows-across-the-bottom overview mode.
+      DEPRECATED_CHROME_NOTIFY_FLOATING_TAB_OVER_TAB_SUMMARY,
+      DEPRECATED_CHROME_NOTIFY_FLOATING_TAB_OVER_TOPLEVEL,
+      DEPRECATED_CHROME_SET_TAB_SUMMARY_VISIBILITY,
+
+      // Tell the WM to collapse or expand a panel.
+      //   param[0]: X ID of the panel window
+      //   param[1]: desired state (0 means collapsed, 1 means expanded)
+      WM_SET_PANEL_STATE,
+
+      // Notify Chrome that the panel state has changed.  Sent to the panel
+      // window.
+      //   param[0]: new state (0 means collapsed, 1 means expanded)
+      // TODO: Deprecate this; Chrome can just watch for changes to the
+      // _CHROME_STATE property to get the same information.
+      CHROME_NOTIFY_PANEL_STATE,
+
+      // From the old windows-across-the-bottom overview mode.
+      DEPRECATED_WM_MOVE_FLOATING_TAB,
+
+      // Notify the WM that a panel has been dragged.
+      //   param[0]: X ID of the panel's content window
+      //   param[1]: X coordinate to which the upper-right corner of the
+      //             panel's titlebar window was dragged
+      //   param[2]: Y coordinate to which the upper-right corner of the
+      //             panel's titlebar window was dragged
+      // Note: The point given is actually that of one pixel to the right
+      // of the upper-right corner of the titlebar window.  For example, a
+      // no-op move message for a 10-pixel wide titlebar whose upper-left
+      // point is at (0, 0) would contain the X and Y paremeters (10, 0):
+      // in other words, the position of the titlebar's upper-left point
+      // plus its width.  This is intended to make both the Chrome and WM
+      // side of things simpler and to avoid some easy-to-make off-by-one
+      // errors.
+      WM_NOTIFY_PANEL_DRAGGED,
+
+      // Notify the WM that the panel drag is complete (that is, the mouse
+      // button has been released).
+      //   param[0]: X ID of the panel's content window
+      WM_NOTIFY_PANEL_DRAG_COMPLETE,
+
+      // Deprecated.  Send a _NET_ACTIVE_WINDOW client message to focus a
+      // window instead (e.g. using gtk_window_present()).
+      DEPRECATED_WM_FOCUS_WINDOW,
+
+      // Notify Chrome that the layout mode (for example, overview or
+      // active) has changed.  Since overview mode can be "cancelled"
+      // (user hits escape to revert), we have an extra parameter to
+      // indicate this.
+      //   param[0]: new mode (0 means active mode, 1 means overview mode)
+      //   param[1]: was mode cancelled? (0 = no, 1 = yes)
+      CHROME_NOTIFY_LAYOUT_MODE,
+
+      // Deprecated. Instruct the WM to enter overview mode.
+      //   param[0]: X ID of the window to show the tab overview for.
+      DEPRECATED_WM_SWITCH_TO_OVERVIEW_MODE,
+
+      // Let the WM know which version of this file Chrome is using.  It's
+      // difficult to make changes synchronously to Chrome and the WM (our
+      // build scripts can use a locally-built Chromium, the latest one
+      // from the buildbot, or an older hardcoded version), so it's useful
+      // to be able to maintain compatibility in the WM with versions of
+      // Chrome that exhibit older behavior.
+      //
+      // Chrome should send a message to the WM at startup containing the
+      // latest version from the list below.  For backwards compatibility,
+      // the WM assumes version 0 if it doesn't receive a message.  Here
+      // are the changes that have been made in successive versions of the
+      // protocol:
+      //
+      // 1: WM_NOTIFY_PANEL_DRAGGED contains the position of the
+      //    upper-right, rather than upper-left, corner of of the titlebar
+      //    window
+      //
+      // TODO: The latest version should be hardcoded in this file once the
+      // file is being shared between Chrome and the WM so Chrome can just
+      // pull it from there.  Better yet, the message could be sent
+      // automatically in WmIpc's c'tor.
+      //
+      //   param[0]: version of this protocol currently supported
+      WM_NOTIFY_IPC_VERSION,
+
+      // Notify Chrome when a tab has been selected in the overview.
+      // Sent to the toplevel window associated with the magnified
+      // tab.
+      //   param[0]: tab index of newly selected tab.
+      CHROME_NOTIFY_TAB_SELECT,
+
+      // Forces the window manager to hide the login windows.
+      WM_HIDE_LOGIN,
+
+      // Sets whether login is enabled. If true the user can click on any of the
+      // login windows to select one, if false clicks on unselected windows are
+      // ignored. This is used when the user attempts a login to make sure the
+      // user doesn't select another user.
+      //
+      //   param[0]: true to enable, false to disable.
+      WM_SET_LOGIN_STATE,
+
+      // Notify chrome when the guest entry is selected and the guest window
+      // hasn't been created yet.
+      CHROME_CREATE_GUEST_WINDOW,
+
+      kNumTypes,
+    };
+
     Message() {
-      Init(WM_IPC_MESSAGE_UNKNOWN);
+      Init(UNKNOWN);
     }
-    // WmIpcMessageType is defined in chromeos_wm_ipc_enums.h.
-    explicit Message(WmIpcMessageType type) {
+    explicit Message(Type type) {
       Init(type);
     }
 
-    WmIpcMessageType type() const { return type_; }
-    void set_type(WmIpcMessageType type) { type_ = type; }
+    Type type() const { return type_; }
+    void set_type(Type type) { type_ = type; }
 
     inline int max_params() const {
       return arraysize(params_);
@@ -67,7 +243,7 @@ class WmIpc {
 
    private:
     // Common initialization code shared between constructors.
-    void Init(WmIpcMessageType type) {
+    void Init(Type type) {
       set_type(type);
       for (int i = 0; i < max_params(); ++i) {
         set_param(i, 0);
@@ -75,7 +251,7 @@ class WmIpc {
     }
 
     // Type of message that was sent.
-    WmIpcMessageType type_;
+    Type type_;
 
     // Type-specific data.  This is bounded by the number of 32-bit values
     // that we can pack into a ClientMessageEvent -- it holds five, but we
@@ -86,19 +262,19 @@ class WmIpc {
   // Returns the single instance of WmIpc.
   static WmIpc* instance();
 
-  // Get or set a property describing a window's type.
-  // WmIpcMessageType is defined in chromeos_wm_ipc_enums.h.  Type-specific
-  // parameters may also be supplied.  The caller is responsible for trapping
+  // Get or set a property describing a window's type. Type-specific
+  // parameters may also be supplied. The caller is responsible for trapping
   // errors from the X server.
+  // TODO: Trap these ourselves.
   bool SetWindowType(GtkWidget* widget,
-                     WmIpcWindowType type,
+                     WindowType type,
                      const std::vector<int>* params);
 
   // Gets the type of the window, and any associated parameters. The
   // caller is responsible for trapping errors from the X server.  If
   // the parameters are not interesting to the caller, NULL may be
   // passed for |params|.
-  WmIpcWindowType GetWindowType(GtkWidget* widget, std::vector<int>* params);
+  WmIpc::WindowType GetWindowType(GtkWidget* widget, std::vector<int>* params);
 
   // Sends a message to the WM.
   void SendMessage(const Message& msg);

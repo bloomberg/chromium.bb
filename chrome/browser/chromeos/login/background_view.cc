@@ -11,7 +11,6 @@
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
-#include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "views/screen.h"
 #include "views/widget/widget_gtk.h"
 
@@ -127,7 +126,7 @@ void BackgroundView::UpdateWindowType() {
   params.push_back(did_paint_ ? 1 : 0);
   WmIpc::instance()->SetWindowType(
       GTK_WIDGET(GetNativeWindow()),
-      WM_IPC_WINDOW_LOGIN_BACKGROUND,
+      chromeos::WmIpc::WINDOW_TYPE_LOGIN_BACKGROUND,
       &params);
 }
 

@@ -32,7 +32,6 @@
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "views/controls/button/button.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/menu/menu_2.h"
@@ -401,7 +400,7 @@ void BrowserView::Init() {
   params.push_back(browser()->selected_index());
   WmIpc::instance()->SetWindowType(
       GTK_WIDGET(frame()->GetWindow()->GetNativeWindow()),
-      WM_IPC_WINDOW_CHROME_TOPLEVEL,
+      WmIpc::WINDOW_TYPE_CHROME_TOPLEVEL,
       &params);
 }
 
@@ -415,7 +414,7 @@ void BrowserView::Show() {
     params.push_back(browser()->selected_index());
     WmIpc::instance()->SetWindowType(
         GTK_WIDGET(frame()->GetWindow()->GetNativeWindow()),
-        WM_IPC_WINDOW_CHROME_TOPLEVEL,
+        WmIpc::WINDOW_TYPE_CHROME_TOPLEVEL,
         &params);
   }
 }

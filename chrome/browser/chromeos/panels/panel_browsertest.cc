@@ -13,7 +13,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
-#include "third_party/cros/chromeos_wm_ipc_enums.h"
 
 namespace chromeos {
 
@@ -63,7 +62,7 @@ IN_PROC_BROWSER_TEST_F(PanelTest, PanelOpenSmall) {
   // This window type tells the cros window manager to treat the window
   // as a panel.
   EXPECT_EQ(
-      WM_IPC_WINDOW_CHROME_PANEL_CONTENT,
+      WmIpc::WINDOW_TYPE_CHROME_PANEL_CONTENT,
       WmIpc::instance()->GetWindowType(
           GTK_WIDGET(new_browser->window()->GetNativeHandle()), NULL));
 }

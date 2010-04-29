@@ -18,7 +18,6 @@
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
@@ -104,14 +103,14 @@ void PanelController::Init(const gfx::Rect window_bounds) {
 
   WmIpc::instance()->SetWindowType(
       title_,
-      WM_IPC_WINDOW_CHROME_PANEL_TITLEBAR,
+      WmIpc::WINDOW_TYPE_CHROME_PANEL_TITLEBAR,
       NULL);
   std::vector<int> type_params;
   type_params.push_back(title_xid_);
   type_params.push_back(expanded_ ? 1 : 0);
   WmIpc::instance()->SetWindowType(
       GTK_WIDGET(panel_),
-      WM_IPC_WINDOW_CHROME_PANEL_CONTENT,
+      WmIpc::WINDOW_TYPE_CHROME_PANEL_CONTENT,
       &type_params);
 
   client_event_handler_id_ = g_signal_connect(
@@ -145,8 +144,7 @@ bool PanelController::TitleMousePressed(const views::MouseEvent& event) {
   DCHECK(title_);
   // Get the last titlebar width that we saw in a ConfigureNotify event -- we
   // need to give drag positions in terms of the top-right corner of the
-  // titlebar window.  See WM_IPC_MESSAGE_WM_NOTIFY_PANEL_DRAGGED's declaration
-  // for details.
+  // titlebar window.  See WM_NOTIFY_PANEL_DRAGGED's declaration for details.
   gint title_width = 1;
   gtk_window_get_size(GTK_WINDOW(title_), &title_width, NULL);
 
@@ -176,7 +174,7 @@ void PanelController::TitleMouseReleased(
     SetState(expanded_ ?
              PanelController::MINIMIZED : PanelController::EXPANDED);
   } else {
-    WmIpc::Message msg(WM_IPC_MESSAGE_WM_NOTIFY_PANEL_DRAG_COMPLETE);
+    WmIpc::Message msg(WmIpc::Message::WM_NOTIFY_PANEL_DRAG_COMPLETE);
     msg.set_param(0, panel_xid_);
     WmIpc::instance()->SendMessage(msg);
     dragging_ = false;
@@ -184,7 +182,7 @@ void PanelController::TitleMouseReleased(
 }
 
 void PanelController::SetState(State state) {
-  WmIpc::Message msg(WM_IPC_MESSAGE_WM_SET_PANEL_STATE);
+  WmIpc::Message msg(WmIpc::Message::WM_SET_PANEL_STATE);
   msg.set_param(0, panel_xid_);
   msg.set_param(1, state == EXPANDED);
   WmIpc::instance()->SendMessage(msg);
@@ -210,7 +208,7 @@ bool PanelController::TitleMouseDragged(const views::MouseEvent& event) {
     }
   }
   if (dragging_) {
-    WmIpc::Message msg(WM_IPC_MESSAGE_WM_NOTIFY_PANEL_DRAGGED);
+    WmIpc::Message msg(WmIpc::Message::WM_NOTIFY_PANEL_DRAGGED);
     msg.set_param(0, panel_xid_);
     msg.set_param(1, last_motion_event.x_root - mouse_down_offset_x_);
     msg.set_param(2, last_motion_event.y_root - mouse_down_offset_y_);
@@ -241,7 +239,7 @@ void PanelController::OnFocusOut() {
 bool PanelController::PanelClientEvent(GdkEventClient* event) {
   WmIpc::Message msg;
   WmIpc::instance()->DecodeMessage(*event, &msg);
-  if (msg.type() == WM_IPC_MESSAGE_CHROME_NOTIFY_PANEL_STATE) {
+  if (msg.type() == WmIpc::Message::CHROME_NOTIFY_PANEL_STATE) {
     bool new_state = msg.param(0);
     if (expanded_ != new_state) {
       expanded_ = new_state;

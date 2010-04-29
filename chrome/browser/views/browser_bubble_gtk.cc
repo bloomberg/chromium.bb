@@ -10,7 +10,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/wm_ipc.h"
-#include "third_party/cros/chromeos_wm_ipc_enums.h"
 #endif
 
 namespace {
@@ -93,7 +92,7 @@ void BrowserBubble::InitPopup() {
 #if defined(OS_CHROMEOS)
   chromeos::WmIpc::instance()->SetWindowType(
       pop->GetNativeView(),
-      chromeos::WM_IPC_WINDOW_CHROME_INFO_BUBBLE,
+      chromeos::WmIpc::WINDOW_TYPE_CHROME_INFO_BUBBLE,
       NULL);
 #endif
   pop->SetContentsView(view_);
