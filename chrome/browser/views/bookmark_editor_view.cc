@@ -532,7 +532,7 @@ void BookmarkEditorView::ApplyEdits(EditorNode* parent) {
 
   if (!show_tree_) {
     bookmark_utils::ApplyEditsWithNoGroupChange(
-        bb_model_, parent_, details_, new_title, new_url, NULL);
+        bb_model_, parent_, details_, new_title, new_url);
     return;
   }
 
@@ -542,7 +542,7 @@ void BookmarkEditorView::ApplyEdits(EditorNode* parent) {
       bb_model_->root_node(), tree_model_->GetRoot(), parent, &new_parent);
 
   bookmark_utils::ApplyEditsWithPossibleGroupChange(
-      bb_model_, new_parent, details_, new_title, new_url, NULL);
+      bb_model_, new_parent, details_, new_title, new_url);
 }
 
 void BookmarkEditorView::ApplyNameChangesAndCreateNewGroups(

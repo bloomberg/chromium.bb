@@ -395,9 +395,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     const BookmarkNode* google_one = GetByUniqueURL(model_one, initial_url);
     const BookmarkNode* google_two = GetByUniqueURL(model_two, initial_url);
     bookmark_utils::ApplyEditsWithNoGroupChange(model_one, bbn_one,
-        BookmarkEditor::EditDetails(google_one), title, second_url, NULL);
+        BookmarkEditor::EditDetails(google_one), title, second_url);
     bookmark_utils::ApplyEditsWithNoGroupChange(model_two, bbn_two,
-        BookmarkEditor::EditDetails(google_two), title, third_url, NULL);
+        BookmarkEditor::EditDetails(google_two), title, third_url);
   }
 
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
