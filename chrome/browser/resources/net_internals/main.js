@@ -57,6 +57,10 @@ function onLoaded() {
                             "hostResolverCacheTTLSuccess",
                             "hostResolverCacheTTLFailure");
 
+  // Create a view which will display import/export options to control the
+  // captured data.
+  var dataView = new DataView("dataTabContent", "exportToJson", "exportToText");
+
   // Create a view which lets you tab between the different sub-views.
   var categoryTabSwitcher =
       new TabSwitcherView(new DivView('categoryTabHandles'));
@@ -69,6 +73,7 @@ function onLoaded() {
                              false);
   categoryTabSwitcher.addTab('httpCacheTab',
                              new DivView('httpCacheTabContent'), false);
+  categoryTabSwitcher.addTab('dataTab', dataView, false);
 
   // Build a map from the anchor name of each tab handle to its "tab ID".
   // We will consider navigations to the #hash as a switch tab request.
@@ -109,14 +114,15 @@ function onLoaded() {
 function BrowserBridge() {
   // List of observers for various bits of browser state.
   this.logObservers_ = [];
-  this.proxySettingsObservers_ = [];
-  this.badProxiesObservers_ = [];
-  this.hostResolverCacheObservers_ = [];
+  this.proxySettings_ = new PollableDataHelper('onProxySettingsChanged');
+  this.badProxies_ = new PollableDataHelper('onBadProxiesChanged');
+  this.hostResolverCache_ = new PollableDataHelper('onHostResolverCacheChanged');
 
-  // Map from observer method name (i.e. 'onProxySettingsChanged',
-  // 'onBadProxiesChanged') to the previously received data for that type. Used
-  // to tell if the data has actually changed since we last polled it.
-  this.prevPollData_ = {};
+  // Cache of the data received.
+  // TODO(eroman): the controls to clear data in the "Requests" tab should be
+  //               affecting this as well.
+  this.passivelyCapturedEvents_ = [];
+  this.activelyCapturedEvents_ = [];
 }
 
 /**
@@ -169,7 +175,11 @@ BrowserBridge.prototype.sendClearHostResolverCache = function() {
 // Messages received from the browser
 //------------------------------------------------------------------------------
 
-BrowserBridge.prototype.receivedLogEntry = function(logEntry) {
+BrowserBridge.prototype.receivedLogEntry = function(logEntry,
+                                                    wasCapturedPassively) {
+  if (!wasCapturedPassively) {
+    this.activelyCapturedEvents_.push(logEntry);
+  }
   for (var i = 0; i < this.logObservers_.length; ++i)
     this.logObservers_[i].onLogEntryAdded(logEntry);
 };
@@ -193,25 +203,23 @@ BrowserBridge.prototype.receivedTimeTickOffset = function(timeTickOffset) {
 };
 
 BrowserBridge.prototype.receivedProxySettings = function(proxySettings) {
-  this.dispatchToObserversFromPoll_(
-      this.proxySettingsObservers_, 'onProxySettingsChanged', proxySettings);
+  this.proxySettings_.update(proxySettings);
 };
 
 BrowserBridge.prototype.receivedBadProxies = function(badProxies) {
-  this.dispatchToObserversFromPoll_(
-      this.badProxiesObservers_, 'onBadProxiesChanged', badProxies);
+  this.badProxies_.update(badProxies);
 };
 
 BrowserBridge.prototype.receivedHostResolverCache =
 function(hostResolverCache) {
-  this.dispatchToObserversFromPoll_(
-      this.hostResolverCacheObservers_, 'onHostResolverCacheChanged',
-      hostResolverCache);
+  this.hostResolverCache_.update(hostResolverCache);
 };
 
 BrowserBridge.prototype.receivedPassiveLogEntries = function(entries) {
+  this.passivelyCapturedEvents_ =
+      this.passivelyCapturedEvents_.concat(entries);
   for (var i = 0; i < entries.length; ++i)
-    this.receivedLogEntry(entries[i]);
+    this.receivedLogEntry(entries[i], true);
 };
 
 //------------------------------------------------------------------------------
@@ -236,7 +244,7 @@ BrowserBridge.prototype.addLogObserver = function(observer) {
  * TODO(eroman): send a dictionary instead.
  */
 BrowserBridge.prototype.addProxySettingsObserver = function(observer) {
-  this.proxySettingsObservers_.push(observer);
+  this.proxySettings_.addObserver(observer);
 };
 
 /**
@@ -251,7 +259,7 @@ BrowserBridge.prototype.addProxySettingsObserver = function(observer) {
  *                            bad. Note the time is in time ticks.
  */
 BrowserBridge.prototype.addBadProxiesObsever = function(observer) {
-  this.badProxiesObservers_.push(observer);
+  this.badProxies_.addObserver(observer);
 };
 
 /**
@@ -261,7 +269,7 @@ BrowserBridge.prototype.addBadProxiesObsever = function(observer) {
  *   observer.onHostResolverCacheChanged(hostResolverCache)
  */
 BrowserBridge.prototype.addHostResolverCacheObserver = function(observer) {
-  this.hostResolverCacheObservers_.push(observer);
+  this.hostResolverCache_.addObserver(observer);
 };
 
 /**
@@ -280,6 +288,22 @@ BrowserBridge.prototype.convertTimeTicksToDate = function(timeTicks) {
   return d;
 };
 
+/**
+ * Returns a list of all the events that were captured while we were
+ * listening for events.
+ */
+BrowserBridge.prototype.getAllActivelyCapturedEvents = function() {
+  return this.activelyCapturedEvents_;
+};
+
+/**
+ * Returns a list of all the events that were captured passively by the
+ * browser prior to when the net-internals page was started.
+ */
+BrowserBridge.prototype.getAllPassivelyCapturedEvents = function() {
+  return this.passivelyCapturedEvents_;
+};
+
 BrowserBridge.prototype.doPolling_ = function() {
   // TODO(eroman): Optimize this by using a separate polling frequency for the
   // data consumed by the currently active view. Everything else can be on a low
@@ -290,21 +314,37 @@ BrowserBridge.prototype.doPolling_ = function() {
 };
 
 /**
+ * This is a helper class used by BrowserBridge, to keep track of:
+ *   - the list of observers interested in some piece of data.
+ *   - the last known value of that piece of data.
+ *   - the name of the callback method to invoke on observers.
+ * @constructor
+ */
+function PollableDataHelper(observerMethodName) {
+  this.observerMethodName_ = observerMethodName;
+  this.observers_ = [];
+}
+
+PollableDataHelper.prototype.addObserver = function(observer) {
+  this.observers_.push(observer);
+};
+
+/**
  * Helper function to handle calling all the observers, but ONLY if the data has
  * actually changed since last time. This is used for data we received from
  * browser on a poll loop.
  */
-BrowserBridge.prototype.dispatchToObserversFromPoll_ = function(
-    observerList, method, data) {
-  var prevData = this.prevPollData_[method];
+PollableDataHelper.prototype.update = function(data) {
+  var prevData = this.currentData_;
 
   // If the data hasn't changed since last time, no need to notify observers.
   if (prevData && JSON.stringify(prevData) == JSON.stringify(data))
     return;
 
-  this.prevPollData_[method] = data;
+  this.currentData_ = data;
 
   // Ok, notify the observers of the change.
-  for (var i = 0; i < observerList.length; ++i)
-    observerList[i][method](data);
+  for (var i = 0; i < this.observers_.length; ++i)
+    var observer = this.observers_[i];
+    observer[this.observerMethodName_](data);
 };

@@ -9,6 +9,7 @@ found in the LICENSE file.
     <script src="util.js"></script>
     <script src="view.js"></script>
     <script src="tabswitcherview.js"></script>
+    <script src="dataview.js"></script>
     <script src="main.js"></script>
     <script src="dnsview.js"></script>
     <script src="requestsview.js"></script>
@@ -30,6 +31,7 @@ found in the LICENSE file.
         <li><a href="#dns" id=dnsTab>DNS</a></li>
         <li><a href="#sockets" id=socketsTab>Sockets</a></li>
         <li><a href="#httpCache" id=httpCacheTab>HTTP Cache</a></li>
+        <li><a href="#data" id=dataTab>Data</a></li>
       </ul>
       <div style="clear: both;"></div>
     </div>
@@ -85,6 +87,14 @@ found in the LICENSE file.
     <!-- Sections TODO -->
     <div id=socketsTabContent>TODO: display socket information (outstanding connect jobs)</div>
     <div id=httpCacheTabContent>TODO: display http cache information (disk cache navigator)</div>
+    <!-- Import/Export data -->
+    <div id=dataTabContent>
+       <br/>
+         <button id=exportToText><b>Click here to generate bug report data</b><br/>(Copy paste the result and attach to bug)</button>
+       <br/>
+       <br/>
+       <button id=exportToJson>Export data to JSON</button>
+    </div>
 
     <!-- ================= Requests view =================== -->
 
