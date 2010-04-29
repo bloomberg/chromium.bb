@@ -370,6 +370,7 @@ BUILD/stamp-newlib: BUILD/stamp-newlib-$(NEWLIB_VERSION) Makefile
 		  CFLAGS="-O2" \
 	      ../newlib-$(NEWLIB_VERSION)/configure \
 			  --disable-libgloss \
+			  --enable-newlib-iconv \
 			  --enable-newlib-io-long-long \
 			  --enable-newlib-io-c99-formats \
 	        --prefix=$(SDKROOT) \
