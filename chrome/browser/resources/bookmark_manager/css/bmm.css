@@ -60,7 +60,7 @@ html[dir=rtl] list .label {
 }
 
 list > .folder > .label {
-  background-image: url("../images/folder_closed.png");
+  background-image: url("chrome://resources/images/folder_closed.png");
 }
 
 /* We need to ensure that even empty labels take up space */
@@ -118,19 +118,19 @@ list .url form {
 /* end editing */
 
 html[dir=rtl] list > .folder > .label {
-  background-image: url("../images/folder_closed_rtl.png");
+  background-image: url("chrome://resources/images/folder_closed_rtl.png");
 }
 
 html[os=mac] list > .folder > .label {
-  background-image: url("../images/bookmark_bar_folder_mac.png");
+  background-image: url("chrome://resources/images/bookmark_bar_folder_mac.png");
 }
 
 html[os=mac] .tree-label {
-  background-image: url("../images/bookmark_bar_folder_mac.png");
+  background-image: url("chrome://resources/images/bookmark_bar_folder_mac.png");
 }
 
 html[os=mac] .tree-row[selected] > .tree-label {
-  background-image: url("../images/bookmark_bar_folder_mac.png");
+  background-image: url("chrome://resources/images/bookmark_bar_folder_mac.png");
 }
 
 .main {

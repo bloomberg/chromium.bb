@@ -14,6 +14,7 @@
         'chrome_strings',
         'chrome_version_info',
         'component_extensions',
+        'domui_shared_resources',
         'net_internals_resources',
         'platform_locale_settings',
         'sync_proto',
@@ -3195,11 +3196,14 @@
       ],
     },
     {
-      'target_name': 'component_extensions',
+      'target_name': 'domui_shared_resources',
       'type': 'none',
-      'msvs_guid': '50B52703-525F-404C-BFE2-C46D3375D73E',
-      # TODO(aa): Once the msvs port supports it, change this to recursively
+      'msvs_guid': '7BB23C84-71AA-4320-9EE1-9EBCDB04C964',
+      # TODO(arv): Once the msvs port supports it, change this to recursively
       # copy the entire directory instead of listing the files.
+      # TODO(arv): We also need to allow filters so we do not copy the test
+      # files. Tony said that another option would be to run a python script
+      # here instead.
       # http://code.google.com/p/gyp/issues/detail?id=143.
       'copies': [
         {
@@ -3212,13 +3216,23 @@
           ]
         },
         {
+          'destination': '<(PRODUCT_DIR)/resources/shared/images',
+          'files': [
+            '../app/resources/folder_closed.png',
+            '../app/resources/folder_closed_rtl.png',
+            '../app/resources/folder_open.png',
+            '../app/resources/folder_open_rtl.png',
+            'app/theme/bookmark_bar_folder_mac.png',
+          ]
+        },
+        {
           'destination': '<(PRODUCT_DIR)/resources/shared/js',
           'files': [
             'browser/resources/shared/js/cr_test.html',
             'browser/resources/shared/js/cr.js',
             'browser/resources/shared/js/i18ntemplate.js',
             'browser/resources/shared/js/localstrings.js',
-            'browser/resources/shared/js/util.js',        
+            'browser/resources/shared/js/util.js',
           ]
         },
         {
@@ -3249,6 +3263,16 @@
             'browser/resources/shared/js/cr/ui/tree.js',
           ]
         },
+      ]
+    },
+    {
+      'target_name': 'component_extensions',
+      'type': 'none',
+      'msvs_guid': '50B52703-525F-404C-BFE2-C46D3375D73E',
+      # TODO(aa): Once the msvs port supports it, change this to recursively
+      # copy the entire directory instead of listing the files.
+      # http://code.google.com/p/gyp/issues/detail?id=143.
+      'copies': [
         {
           'destination': '<(PRODUCT_DIR)/resources/bookmark_manager',
           'files': [
@@ -3280,15 +3304,11 @@
         {
           'destination': '<(PRODUCT_DIR)/resources/bookmark_manager/images',
           'files': [
-            'browser/resources/bookmark_manager/images/bookmark_bar_folder_mac.png',
             'browser/resources/bookmark_manager/images/bookmark_manager_recent.png',
             'browser/resources/bookmark_manager/images/bookmark_manager_search.png',
             'browser/resources/bookmark_manager/images/bookmarks_favicon.png',
             'browser/resources/bookmark_manager/images/bookmarks_section.png',
-            'browser/resources/bookmark_manager/images/folder_closed.png',
-            'browser/resources/bookmark_manager/images/folder_closed_rtl.png',
-            'browser/resources/bookmark_manager/images/folder_open.png',
-            'browser/resources/bookmark_manager/images/folder_open_rtl.png',
+            'browser/resources/bookmark_manager/images/bookmarks_section_32.png',
           ]
         },
         {
