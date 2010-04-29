@@ -29,6 +29,17 @@ TEST(HistogramTest, StartupShutdownTest) {
   scoped_refptr<Histogram> linear_histogram1 = LinearHistogram::FactoryGet(
       "Test1LinearHistogram", 1, 1000, 10, Histogram::kNoFlags);
 
+  std::vector<int> custom_ranges;
+  custom_ranges.push_back(1);
+  custom_ranges.push_back(5);
+  custom_ranges.push_back(10);
+  custom_ranges.push_back(20);
+  custom_ranges.push_back(30);
+  scoped_refptr<Histogram> custom_histogram = CustomHistogram::FactoryGet(
+      "TestCustomHistogram", custom_ranges, Histogram::kNoFlags);
+  scoped_refptr<Histogram> custom_histogram1 = CustomHistogram::FactoryGet(
+      "Test1CustomHistogram", custom_ranges, Histogram::kNoFlags);
+
   // Use standard macros (but with fixed samples)
   HISTOGRAM_TIMES("Test2Histogram", TimeDelta::FromDays(1));
   HISTOGRAM_COUNTS("Test3Histogram", 30);
@@ -74,32 +85,51 @@ TEST(HistogramTest, RecordedStartupTest) {
 
   scoped_refptr<Histogram> linear_histogram = LinearHistogram::FactoryGet(
       "TestLinearHistogram", 1, 1000, 10, Histogram::kNoFlags);
+  histograms.clear();
+  StatisticsRecorder::GetHistograms(&histograms);  // Load up lists
+  EXPECT_EQ(3U, histograms.size());
+
   scoped_refptr<Histogram> linear_histogram1 = LinearHistogram::FactoryGet(
       "Test1LinearHistogram", 1, 1000, 10, Histogram::kNoFlags);
   histograms.clear();
   StatisticsRecorder::GetHistograms(&histograms);  // Load up lists
   EXPECT_EQ(4U, histograms.size());
 
+  std::vector<int> custom_ranges;
+  custom_ranges.push_back(1);
+  custom_ranges.push_back(5);
+  custom_ranges.push_back(10);
+  custom_ranges.push_back(20);
+  custom_ranges.push_back(30);
+  scoped_refptr<Histogram> custom_histogram = CustomHistogram::FactoryGet(
+      "TestCustomHistogram", custom_ranges, Histogram::kNoFlags);
+  scoped_refptr<Histogram> custom_histogram1 = CustomHistogram::FactoryGet(
+      "TestCustomHistogram", custom_ranges, Histogram::kNoFlags);
+
+  histograms.clear();
+  StatisticsRecorder::GetHistograms(&histograms);  // Load up lists
+  EXPECT_EQ(5U, histograms.size());
+
   // Use standard macros (but with fixed samples)
   HISTOGRAM_TIMES("Test2Histogram", TimeDelta::FromDays(1));
   HISTOGRAM_COUNTS("Test3Histogram", 30);
   histograms.clear();
   StatisticsRecorder::GetHistograms(&histograms);  // Load up lists
-  EXPECT_EQ(6U, histograms.size());
+  EXPECT_EQ(7U, histograms.size());
 
   HISTOGRAM_ENUMERATION("TestEnumerationHistogram", 20, 200);
   histograms.clear();
   StatisticsRecorder::GetHistograms(&histograms);  // Load up lists
-  EXPECT_EQ(7U, histograms.size());
+  EXPECT_EQ(8U, histograms.size());
 
   DHISTOGRAM_TIMES("Test4Histogram", TimeDelta::FromDays(1));
   DHISTOGRAM_COUNTS("Test5Histogram", 30);
   histograms.clear();
   StatisticsRecorder::GetHistograms(&histograms);  // Load up lists
 #ifndef NDEBUG
-  EXPECT_EQ(9U, histograms.size());
+  EXPECT_EQ(10U, histograms.size());
 #else
-  EXPECT_EQ(7U, histograms.size());
+  EXPECT_EQ(8U, histograms.size());
 #endif
 }
 
@@ -164,9 +194,64 @@ TEST(HistogramTest, RangeTest) {
   EXPECT_EQ(32, transitioning_histogram->ranges(14));
   EXPECT_EQ(INT_MAX, transitioning_histogram->ranges(15));
 
+  std::vector<int> custom_ranges;
+  custom_ranges.push_back(0);
+  custom_ranges.push_back(9);
+  custom_ranges.push_back(10);
+  custom_ranges.push_back(11);
+  custom_ranges.push_back(300);
+  scoped_refptr<Histogram> test_custom_histogram = CustomHistogram::FactoryGet(
+      "TestCustomRangeHistogram", custom_ranges, Histogram::kNoFlags);
+
+  EXPECT_EQ(custom_ranges[0], test_custom_histogram->ranges(0));
+  EXPECT_EQ(custom_ranges[1], test_custom_histogram->ranges(1));
+  EXPECT_EQ(custom_ranges[2], test_custom_histogram->ranges(2));
+  EXPECT_EQ(custom_ranges[3], test_custom_histogram->ranges(3));
+  EXPECT_EQ(custom_ranges[4], test_custom_histogram->ranges(4));
+
   recorder.GetHistograms(&histograms);
-  EXPECT_EQ(5U, histograms.size());
+  EXPECT_EQ(6U, histograms.size());
 }
+
+TEST(HistogramTest, CustomRangeTest) {
+  StatisticsRecorder recorder;
+  StatisticsRecorder::Histograms histograms;
+
+  // Check that missing leading zero is handled by an auto-insertion.
+  std::vector<int> custom_ranges;
+  // Don't include a zero.
+  custom_ranges.push_back(9);
+  custom_ranges.push_back(10);
+  custom_ranges.push_back(11);
+  scoped_refptr<Histogram> test_custom_histogram = CustomHistogram::FactoryGet(
+      "TestCustomRangeHistogram", custom_ranges, Histogram::kNoFlags);
+
+  EXPECT_EQ(0, test_custom_histogram->ranges(0));  // Auto added
+  EXPECT_EQ(custom_ranges[0], test_custom_histogram->ranges(1));
+  EXPECT_EQ(custom_ranges[1], test_custom_histogram->ranges(2));
+  EXPECT_EQ(custom_ranges[2], test_custom_histogram->ranges(3));
+
+  // Check that unsorted data with dups is handled gracefully.
+  const int kSmall = 7;
+  const int kMid = 8;
+  const int kBig = 9;
+  custom_ranges.clear();
+  custom_ranges.push_back(kBig);
+  custom_ranges.push_back(kMid);
+  custom_ranges.push_back(kSmall);
+  custom_ranges.push_back(kSmall);
+  custom_ranges.push_back(kMid);
+  custom_ranges.push_back(0);  // Push an explicit zero.
+  custom_ranges.push_back(kBig);
+
+  scoped_refptr<Histogram> unsorted_histogram = CustomHistogram::FactoryGet(
+      "TestCustomUnsortedDupedHistogram", custom_ranges, Histogram::kNoFlags);
+  EXPECT_EQ(0, unsorted_histogram->ranges(0));
+  EXPECT_EQ(kSmall, unsorted_histogram->ranges(1));
+  EXPECT_EQ(kMid, unsorted_histogram->ranges(2));
+  EXPECT_EQ(kBig, unsorted_histogram->ranges(3));
+}
+
 
 // Make sure histogram handles out-of-bounds data gracefully.
 TEST(HistogramTest, BoundsTest) {

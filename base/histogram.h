@@ -90,6 +90,12 @@
     counter->Add(sample); \
   } while (0)
 
+#define HISTOGRAM_CUSTOM_ENUMERATION(name, sample, custom_ranges) do { \
+    static scoped_refptr<Histogram> counter = CustomHistogram::FactoryGet( \
+        name, custom_ranges, Histogram::kNoFlags); \
+    counter->Add(sample); \
+  } while (0)
+
 
 //------------------------------------------------------------------------------
 // Define Debug vs non-debug flavors of macros.
@@ -107,6 +113,8 @@
     HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, bucket_count)
 #define DHISTOGRAM_ENUMERATION(name, sample, boundary_value) \
     HISTOGRAM_ENUMERATION(name, sample, boundary_value)
+#define DHISTOGRAM_CUSTOM_ENUMERATION(name, sample, custom_ranges) \
+    HISTOGRAM_CUSTOM_ENUMERATION(name, sample, custom_ranges)
 
 #else  // NDEBUG
 
@@ -120,6 +128,8 @@
 #define DHISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, bucket_count) \
     do {} while (0)
 #define DHISTOGRAM_ENUMERATION(name, sample, boundary_value) do {} while (0)
+#define DHISTOGRAM_CUSTOM_ENUMERATION(name, sample, custom_ranges) \
+    do {} while (0)
 
 #endif  // NDEBUG
 
@@ -186,13 +196,19 @@
     counter->Add(sample); \
   } while (0)
 
+#define UMA_HISTOGRAM_CUSTOM_ENUMERATION(name, sample, custom_ranges) do { \
+    static scoped_refptr<Histogram> counter = CustomHistogram::FactoryGet( \
+        name, custom_ranges, Histogram::kUmaTargetedHistogramFlag); \
+    counter->Add(sample); \
+  } while (0)
 
 //------------------------------------------------------------------------------
 
-class Pickle;
+class BooleanHistogram;
+class CustomHistogram;
 class Histogram;
 class LinearHistogram;
-class BooleanHistogram;
+class Pickle;
 
 namespace disk_cache {
   class StatsHistogram;
@@ -214,12 +230,14 @@ class Histogram : public base::RefCountedThreadSafe<Histogram> {
     HISTOGRAM,
     LINEAR_HISTOGRAM,
     BOOLEAN_HISTOGRAM,
+    CUSTOM_HISTOGRAM,
     NOT_VALID_IN_RENDERER
   };
 
   enum BucketLayout {
     EXPONENTIAL,
-    LINEAR
+    LINEAR,
+    CUSTOM
   };
 
   enum Flags {
@@ -482,8 +500,6 @@ class LinearHistogram : public Histogram {
   LinearHistogram(const std::string& name, base::TimeDelta minimum,
                   base::TimeDelta maximum, size_t bucket_count);
 
-  virtual ~LinearHistogram() {}
-
   // Initialize ranges_ mapping.
   virtual void InitializeBucketRange();
   virtual double GetBucketSize(Count current, size_t i) const;
@@ -524,6 +540,31 @@ class BooleanHistogram : public LinearHistogram {
   }
 
   DISALLOW_COPY_AND_ASSIGN(BooleanHistogram);
+};
+
+//------------------------------------------------------------------------------
+
+// CustomHistogram is a histogram for a set of custom integers.
+class CustomHistogram : public Histogram {
+ public:
+  virtual ClassType histogram_type() const { return CUSTOM_HISTOGRAM; }
+
+  static scoped_refptr<Histogram> FactoryGet(const std::string& name,
+      const std::vector<int>& custom_ranges, Flags flags);
+
+ protected:
+  CustomHistogram(const std::string& name,
+                  const std::vector<int>& custom_ranges);
+
+  // Initialize ranges_ mapping.
+  virtual void InitializeBucketRange();
+  virtual double GetBucketSize(Count current, size_t i) const;
+
+ private:
+  // Temporary pointer used during construction/initialization, and then NULLed.
+  const std::vector<int>* ranges_vector_;
+
+  DISALLOW_COPY_AND_ASSIGN(CustomHistogram);
 };
 
 //------------------------------------------------------------------------------
