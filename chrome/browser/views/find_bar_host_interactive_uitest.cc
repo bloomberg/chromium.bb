@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
   // This used to crash until bug 1303709 was fixed.
   ui_controls::SendKeyPressNotifyWhenDone(
       browser()->window()->GetNativeHandle(), base::VKEY_ESCAPE,
-      false, false, false, new MessageLoop::QuitTask());
+      false, false, false, false, new MessageLoop::QuitTask());
   ui_test_utils::RunMessageLoop();
 }
 

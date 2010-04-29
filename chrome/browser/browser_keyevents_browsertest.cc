@@ -135,7 +135,9 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
     gfx::NativeWindow window = NULL;
     ASSERT_NO_FATAL_FAILURE(GetNativeWindow(&window));
     EXPECT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
-        window, key, control, shift, alt, new MessageLoop::QuitTask()));
+                    window, key, control, shift, alt,
+                    false /* command, */,
+                    new MessageLoop::QuitTask()));
     ui_test_utils::RunMessageLoop();
   }
 

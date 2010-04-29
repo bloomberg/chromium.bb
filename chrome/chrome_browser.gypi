@@ -211,6 +211,7 @@
         'browser/automation/extension_port_container.cc',
         'browser/automation/extension_port_container.h',
         'browser/automation/ui_controls_linux.cc',
+        'browser/automation/ui_controls_mac.mm',
         'browser/automation/ui_controls_win.cc',
         'browser/automation/ui_controls.h',
         'browser/back_forward_menu_model.cc',

@@ -46,13 +46,18 @@ class Event {
                    ET_MOUSEWHEEL,
                    ET_DROP_TARGET_EVENT };
 
-  // Event flags currently supported
+  // Event flags currently supported.  Although this is a "views"
+  // file, this header is used on non-views platforms (e.g. OSX).  For
+  // example, these EventFlags are used by the automation provider for
+  // all platforms.
   enum EventFlags { EF_SHIFT_DOWN         = 1 << 0,
                     EF_CONTROL_DOWN       = 1 << 1,
                     EF_ALT_DOWN           = 1 << 2,
                     EF_LEFT_BUTTON_DOWN   = 1 << 3,
                     EF_MIDDLE_BUTTON_DOWN = 1 << 4,
-                    EF_RIGHT_BUTTON_DOWN  = 1 << 5 };
+                    EF_RIGHT_BUTTON_DOWN  = 1 << 5,
+                    EF_COMMAND_DOWN       = 1 << 6,  // Only useful on OSX
+  };
 
   // Return the event type
   EventType GetType() const {

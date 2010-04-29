@@ -80,6 +80,7 @@
 #include "net/proxy/proxy_service.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/url_request/url_request_context.h"
+#include "chrome/browser/automation/ui_controls.h"
 #include "views/event.h"
 
 #if defined(OS_WIN)
@@ -89,11 +90,6 @@
 #include "chrome/browser/external_tab_container.h"
 #include "chrome/browser/printing/print_job.h"
 #endif  // defined(OS_WIN)
-
-#if !defined(OS_MACOSX)
-// TODO(port): Port these to the mac.
-#include "chrome/browser/automation/ui_controls.h"
-#endif  // !defined(OS_MACOSX)
 
 using base::Time;
 
@@ -114,7 +110,6 @@ class AutomationInterstitialPage : public InterstitialPage {
   DISALLOW_COPY_AND_ASSIGN(AutomationInterstitialPage);
 };
 
-#if !defined(OS_MACOSX)
 class ClickTask : public Task {
  public:
   explicit ClickTask(int flags) : flags_(flags) {}
@@ -143,7 +138,6 @@ class ClickTask : public Task {
 
   DISALLOW_COPY_AND_ASSIGN(ClickTask);
 };
-#endif
 
 AutomationProvider::AutomationProvider(Profile* profile)
     : redirect_query_(0),
@@ -361,13 +355,13 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_GetWindowBounds, GetWindowBounds)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetWindowBounds, SetWindowBounds)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetWindowVisible, SetWindowVisible)
-#if !defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowClick, WindowSimulateClick)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowMouseMove, WindowSimulateMouseMove)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowKeyPress, WindowSimulateKeyPress)
+#if !defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WindowDrag,
                                     WindowSimulateDrag)
-#endif
+#endif  // !defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(AutomationMsg_TabCount, GetTabCount)
     IPC_MESSAGE_HANDLER(AutomationMsg_Type, GetType)
     IPC_MESSAGE_HANDLER(AutomationMsg_Tab, GetTab)
@@ -978,7 +972,6 @@ class InvokeTaskLaterTask : public Task {
   DISALLOW_COPY_AND_ASSIGN(InvokeTaskLaterTask);
 };
 
-#if !defined(OS_MACOSX)
 void AutomationProvider::WindowSimulateClick(const IPC::Message& message,
                                              int handle,
                                              const gfx::Point& click,
@@ -1011,9 +1004,10 @@ void AutomationProvider::WindowSimulateKeyPress(const IPC::Message& message,
                             ((flags & views::Event::EF_SHIFT_DOWN) ==
                               views::Event::EF_SHIFT_DOWN),
                             ((flags & views::Event::EF_ALT_DOWN) ==
-                              views::Event::EF_ALT_DOWN));
+                              views::Event::EF_ALT_DOWN),
+                            ((flags & views::Event::EF_COMMAND_DOWN) ==
+                              views::Event::EF_COMMAND_DOWN));
 }
-#endif  // !defined(OS_MACOSX)
 
 void AutomationProvider::IsWindowActive(int handle, bool* success,
                                         bool* is_active) {

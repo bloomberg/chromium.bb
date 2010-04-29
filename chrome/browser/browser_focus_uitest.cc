@@ -304,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocus) {
       ASSERT_TRUE(IsViewFocused(vid));
 
       ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_TAB, true,
-                                              false, false,
+                                              false, false, false,
                                               new MessageLoop::QuitTask());
       ui_test_utils::RunMessageLoop();
     }
@@ -317,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocus) {
       ASSERT_TRUE(IsViewFocused(vid));
 
       ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_TAB, true,
-                                              true, false,
+                                              true, false, false,
                                               new MessageLoop::QuitTask());
       ui_test_utils::RunMessageLoop();
     }
@@ -472,7 +472,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversal) {
       ASSERT_STREQ(kExpElementIDs[j], actual.c_str());
 
       ASSERT_TRUE(ui_controls::SendKeyPress(window, base::VKEY_TAB,
-                                            false, false, false));
+                                            false, false, false, false));
 
       if (j < arraysize(kExpElementIDs) - 1) {
         ui_test_utils::WaitForFocusChange(browser()->GetSelectedTabContents()->
@@ -499,7 +499,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversal) {
     for (size_t j = 0; j < 7; ++j) {
       SCOPED_TRACE(StringPrintf("inner loop: %" PRIuS, j));
       ASSERT_TRUE(ui_controls::SendKeyPress(window, base::VKEY_TAB,
-                                            false, true, false));
+                                            false, true, false, false));
 
       if (j < arraysize(kExpElementIDs) - 1) {
         ui_test_utils::WaitForFocusChange(browser()->GetSelectedTabContents()->
@@ -571,7 +571,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
       ASSERT_STREQ(kExpElementIDs[j], actual.c_str());
 
       ASSERT_TRUE(ui_controls::SendKeyPress(window, base::VKEY_TAB,
-                                            false, false, false));
+                                            false, false, false, false));
 
       if (j < arraysize(kExpElementIDs) - 1) {
         interstitial_page->WaitForFocusChange();
@@ -595,7 +595,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
     // Now let's press shift-tab to move the focus in reverse.
     for (size_t j = 0; j < 7; ++j) {
       ASSERT_TRUE(ui_controls::SendKeyPress(window, base::VKEY_TAB,
-                                            false, true, false));
+                                            false, true, false, false));
 
       if (j < arraysize(kExpElementIDs) - 1) {
         interstitial_page->WaitForFocusChange();
@@ -663,7 +663,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
 
   // Press Ctrl+F, which will make the Find box open and request focus.
   ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_F, true,
-                                          false, false,
+                                          false, false, false,
                                           new MessageLoop::QuitTask());
   ui_test_utils::RunMessageLoop();
 
@@ -683,7 +683,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
 
   // Now press Ctrl+F again and focus should move to the Find box.
   ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_F, true,
-                                          false, false,
+                                          false, false, false,
                                           new MessageLoop::QuitTask());
   ui_test_utils::RunMessageLoop();
   ASSERT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
@@ -694,7 +694,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
 
   // Now press Ctrl+F again and focus should move to the Find box.
   ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_F, true, false,
-                                          false, new MessageLoop::QuitTask());
+                                          false, false,
+                                          new MessageLoop::QuitTask());
   ui_test_utils::RunMessageLoop();
 
   // See remark above on why we wait.

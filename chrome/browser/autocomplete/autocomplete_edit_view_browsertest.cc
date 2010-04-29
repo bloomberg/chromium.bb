@@ -125,6 +125,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     gfx::NativeWindow window = NULL;
     ASSERT_NO_FATAL_FAILURE(GetNativeWindow(&window));
     ui_controls::SendKeyPressNotifyWhenDone(window, key, control, shift, alt,
+                                            false /* command */,
                                             new MessageLoop::QuitTask());
     ui_test_utils::RunMessageLoop();
   }

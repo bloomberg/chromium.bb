@@ -1191,20 +1191,39 @@ void BrowserView::ToggleCompactNavigationBar() {
 // to windows. The real fix to this bug is to disable the commands when they
 // won't do anything. We'll need something like an overall clipboard command
 // manager to do that.
+#if !defined(OS_MACOSX)
 void BrowserView::Cut() {
-  ui_controls::SendKeyPress(GetNativeHandle(), base::VKEY_X, true,
-                            false, false);
+  ui_controls::SendKeyPress(GetNativeHandle(), base::VKEY_X,
+                            true, false, false, false);
 }
 
 void BrowserView::Copy() {
-  ui_controls::SendKeyPress(GetNativeHandle(), base::VKEY_C, true,
-                            false, false);
+  ui_controls::SendKeyPress(GetNativeHandle(), base::VKEY_C,
+                            true, false, false, false);
 }
 
 void BrowserView::Paste() {
-  ui_controls::SendKeyPress(GetNativeHandle(), base::VKEY_V, true,
-                            false, false);
+  ui_controls::SendKeyPress(GetNativeHandle(), base::VKEY_V,
+                            true, false, false, false);
 }
+#else
+// Mac versions.  Not tested by antyhing yet;
+// don't assume written == works.
+void BrowserView::Cut() {
+  ui_controls::SendKeyPress(GetNativeHandle(), base::VKEY_X,
+                            false, false, false, true);
+}
+
+void BrowserView::Copy() {
+  ui_controls::SendKeyPress(GetNativeHandle(), base::VKEY_C,
+                            false, false, false, true);
+}
+
+void BrowserView::Paste() {
+  ui_controls::SendKeyPress(GetNativeHandle(), base::VKEY_V,
+                            false, false, false, true);
+}
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, BrowserWindowTesting implementation:

@@ -16,7 +16,8 @@ typedef enum {
   VKEY_RETURN = VK_RETURN,
   VKEY_SHIFT = VK_SHIFT,
   VKEY_CONTROL = VK_CONTROL,
-  VKEY_MENU = VK_MENU,
+  VKEY_MENU = VK_MENU,  // a.k.a. ALT
+  VKEY_COMMAND = 0,     // Not meaningful for Windows.  START, perhaps?
   VKEY_PAUSE = VK_PAUSE,
   VKEY_CAPITAL = VK_CAPITAL,
   VKEY_KANA = VK_KANA,

@@ -218,7 +218,8 @@ void AutomationProvider::WindowSimulateDrag(int handle,
                                ((flags & views::Event::EF_SHIFT_DOWN) ==
                                 views::Event::EF_SHIFT_DOWN),
                                ((flags & views::Event::EF_ALT_DOWN) ==
-                                views::Event::EF_ALT_DOWN));
+                                views::Event::EF_ALT_DOWN),
+                                false);
     }
     SendMessage(top_level_hwnd, up_message, wparam_flags,
                 MAKELPARAM(end.x, end.y));

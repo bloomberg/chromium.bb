@@ -47,12 +47,14 @@ bool SendKeyPress(gfx::NativeWindow window,
                   base::KeyboardCode key,
                   bool control,
                   bool shift,
-                  bool alt);
+                  bool alt,
+                  bool command);
 bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 base::KeyboardCode key,
                                 bool control,
                                 bool shift,
                                 bool alt,
+                                bool command,
                                 Task* task);
 
 // Simulate a mouse move. (x,y) are absolute screen coordinates.
@@ -86,6 +88,8 @@ void MoveMouseToCenterAndPress(
     views::View* view,
 #elif defined(TOOLKIT_GTK)
     GtkWidget* widget,
+#elif defined(OS_MACOSX)
+    NSWindow* window,
 #endif
     MouseButton button,
     int state,

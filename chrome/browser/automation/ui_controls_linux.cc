@@ -144,7 +144,9 @@ void FakeAMouseMotionEvent(gint x, gint y) {
 namespace ui_controls {
 
 bool SendKeyPress(gfx::NativeWindow window,
-                  base::KeyboardCode key, bool control, bool shift, bool alt) {
+                  base::KeyboardCode key,
+                  bool control, bool shift, bool alt, bool command) {
+  DCHECK(command == false);  // No command key on Linux
   GdkWindow* event_window = NULL;
   GtkWidget* grab_widget = gtk_grab_get_current();
   if (grab_widget) {
@@ -215,8 +217,10 @@ bool SendKeyPress(gfx::NativeWindow window,
 
 bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 base::KeyboardCode key,
-                                bool control, bool shift, bool alt,
+                                bool control, bool shift,
+                                bool alt, bool command,
                                 Task* task) {
+  DCHECK(command == false);  // No command key on Linux
   int release_count = 1;
   if (control)
     release_count++;
@@ -226,7 +230,7 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
     release_count++;
   // This object will delete itself after running |task|.
   new EventWaiter(task, GDK_KEY_RELEASE, release_count);
-  return SendKeyPress(window, key, control, shift, alt);
+  return SendKeyPress(window, key, control, shift, alt, command);
 }
 
 bool SendMouseMove(long x, long y) {

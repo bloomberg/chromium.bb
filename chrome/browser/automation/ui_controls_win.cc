@@ -325,14 +325,17 @@ bool SendMouseEventsImpl(MouseButton type, int state, Task* task) {
 // public functions -----------------------------------------------------------
 
 bool SendKeyPress(gfx::NativeWindow window, base::KeyboardCode key,
-                  bool control, bool shift, bool alt) {
+                  bool control, bool shift, bool alt, bool command) {
+  DCHECK(command == false);  // No command key on Windows
   return SendKeyPressImpl(key, control, shift, alt, NULL);
 }
 
 bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 base::KeyboardCode key,
                                 bool control, bool shift, bool alt,
+                                bool command,
                                 Task* task) {
+  DCHECK(command == false);  // No command key on Windows
   return SendKeyPressImpl(key, control, shift, alt, task);
 }
 
