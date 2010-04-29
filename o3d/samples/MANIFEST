@@ -208,4 +208,16 @@
   'trends/assets/night.jpg',
   'trends/trends.html',
   'yuv2rgb.html',
+  # WebGL compatible assets
+  'assets/teapot/scene.json',
+  'assets/teapot/images/image0.png',
+  'assets/teapot/images/image1_negx.png',
+  'assets/teapot/images/image1_negy.png',
+  'assets/teapot/images/image1_negz.png',
+  'assets/teapot/images/image1_posx.png',
+  'assets/teapot/images/image1_posy.png',
+  'assets/teapot/images/image1_posz.png',
+  'assets/teapot/shaders/shader0.fx',
+  'simpleviewer/assets/cube/scene.json',
+  'simpleviewer/assets/cube/textures/crate.jpg',
 ]

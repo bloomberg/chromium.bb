@@ -67,6 +67,20 @@
       ],
     },
     {
+      # TODO(petersont): tie in the copying of this to the doc
+      # generation process, compile the sources, etc.
+      'target_name': 'install_webgl_js',
+      'type': 'none',
+      'copies': [
+        {
+          'destination': '<(PRODUCT_DIR)/samples/o3djs',
+          'files': [
+            'o3djs/webgl.js',
+          ]
+        },
+      ],
+    },
+    {
       # TODO(petersont): tie in the copying of these to the doc
       # generation process, compile the sources, etc.
       'target_name': 'install_o3d_webgl',
@@ -101,6 +115,7 @@
       'type': 'none',
       'dependencies': [
         'install_samples',
+        'install_webgl_js',
         'install_o3d_webgl',
         'install_o3d_webgl_samples',
         '<!(python samples_gen.py):build_samples',
