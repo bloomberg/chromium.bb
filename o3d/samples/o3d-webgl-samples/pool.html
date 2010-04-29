@@ -1011,6 +1011,14 @@ function updateContext() {
 }
 
 
+function setOptionalParam(material, name, value) {
+  var param = material.getParam(name);
+  if (param) {
+    param.value = value;
+  }
+}
+
+
 function initMaterials() {
   g_materials = {
       'solid':{},
@@ -1045,9 +1053,9 @@ function initMaterials() {
     var target = [0, 0, 0];
     g_cameraInfo.getEyeAndTarget(eye, target);
 
-    material.getParam('factor').value = 2 / g_tableWidth;
-    material.getParam('lightWorldPosition').value = g_light;
-    material.getParam('eyeWorldPosition').value = eye;
+    setOptionalParam(material, 'factor', 2 / g_tableWidth);
+    setOptionalParam(material, 'lightWorldPosition', g_light);
+    setOptionalParam(material, 'eyeWorldPosition', eye);
   }
 
   g_solidMaterial = g_materials['solid'];
@@ -1070,7 +1078,7 @@ function updateMaterials() {
     var eye = [0, 0, 0];
     var target = [0, 0, 0];
     g_cameraInfo.getEyeAndTarget(eye, target);
-    g_materials[name].getParam('eyeWorldPosition').value = eye;
+    setOptionalParam(g_materials[name], 'eyeWorldPosition', eye);
   }
 }
 
