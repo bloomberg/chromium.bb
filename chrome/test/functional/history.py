@@ -159,7 +159,7 @@ class HistoryTest(pyauto.PyUITest):
   def testRedirectHistory(self):
     """HTTP meta-refresh redirects should have separate history entries."""
     assert not self.GetHistoryInfo().History(), 'Expecting clean history.'
-    test_dir = os.path.join(os.path.abspath(self.DataDir()), 'history')
+    test_dir = os.path.join(os.path.abspath(self.DataDir()), 'History')
     file_url = self.GetFileURLForPath(os.path.join(test_dir, 'redirector.html'))
     landing_url = self.GetFileURLForPath(os.path.join(test_dir, 'landing.html'))
     tab = self.GetBrowserWindow(0).GetTab(0)
