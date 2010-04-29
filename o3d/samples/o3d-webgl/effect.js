@@ -288,8 +288,8 @@ o3d.Effect.prototype.getUniforms_ =
 
 
 /**
- * Iterates through the active uniforms of the program and gets the
- * location of each one and stores them by name in the uniforms
+ * Iterates through the active attributes of the program and gets the
+ * location of each one and stores them by name in the attributes
  * object.
  * @private
  */
@@ -301,7 +301,7 @@ o3d.Effect.prototype.getAttributes_ =
   for (var i = 0; i < numAttributes; ++i) {
     var info = this.gl.getActiveAttrib(this.program_, i);
     this.attributes_[info.name] = {info:info,
-        location:this.gl.getUniformLocation(this.program_, info.name)};
+        location:this.gl.getAttribLocation(this.program_, info.name)};
   }
 };
 
@@ -348,7 +348,7 @@ o3d.Effect.prototype.createUniformParameters =
                   'worldProjectionInverseTranspose': true,
                   'worldViewProjectionInverseTranspose': true};
 
-  for (name in this.uniforms_) {
+  for (var name in this.uniforms_) {
     var info = this.uniforms_[name].info;
 
     if (sasNames[name])
@@ -464,14 +464,14 @@ o3d.Effect.prototype.getStreamInfo = function() {
  */
 o3d.Effect.prototype.searchForParams_ = function(object_list) {
   var filled_map = {};
-  for (name in this.uniforms_) {
+  for (var name in this.uniforms_) {
     filled_map[name] = false;
   }
   this.gl.useProgram(this.program_);
   o3d.Param.texture_index_ = 0;
   for (var i = 0; i < object_list.length; ++i) {
     var obj = object_list[i];
-    for (name in this.uniforms_) {
+    for (var name in this.uniforms_) {
       var uniformInfo = this.uniforms_[name];
       if (filled_map[name]) {
         continue;
@@ -488,9 +488,9 @@ o3d.Effect.prototype.searchForParams_ = function(object_list) {
                               this.gl.displayInfo.height);
   filled_map[o3d.Effect.HELPER_CONSTANT_NAME] = true;
 
-  for (name in this.uniforms_) {
+  for (var name in this.uniforms_) {
     if (!filled_map[name]) {
-      throw ('Uniform param not filled: '+name);
+      throw ('Uniform param not filled: "'+ name + '"');
     }
   }
 };
