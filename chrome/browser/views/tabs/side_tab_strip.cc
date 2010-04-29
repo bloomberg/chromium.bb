@@ -4,7 +4,13 @@
 
 #include "chrome/browser/views/tabs/side_tab_strip.h"
 
+#include "base/command_line.h"
+#include "chrome/browser/pref_service.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/view_ids.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
+#include "gfx/canvas.h"
 
 namespace {
 const int kVerticalTabSpacing = 2;
@@ -24,6 +30,18 @@ SideTabStrip::~SideTabStrip() {
 
 void SideTabStrip::SetModel(SideTabStripModel* model) {
   model_.reset(model);
+}
+
+// static
+bool SideTabStrip::Available() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableVerticalTabs);
+}
+
+// static
+bool SideTabStrip::Visible(Profile* profile) {
+  return Available() &&
+      profile->GetPrefs()->GetBoolean(prefs::kUseVerticalTabs);
 }
 
 void SideTabStrip::AddTabAt(int index) {
@@ -68,10 +86,6 @@ void SideTabStrip::SelectTab(SideTab* tab) {
 
 void SideTabStrip::CloseTab(SideTab* tab) {
   model_->CloseTab(GetIndexOfSideTab(tab));
-}
-
-void SideTabStrip::ShowContextMenu(SideTab* tab, const gfx::Point& p) {
-  model_->ShowContextMenu(GetIndexOfSideTab(tab), p);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

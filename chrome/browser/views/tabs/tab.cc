@@ -52,9 +52,7 @@ class Tab::TabContextMenuContents : public menus::SimpleMenuModel::Delegate {
 
   // Overridden from menus::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const {
-    return tab_ && tab_->delegate()->IsCommandCheckedForTab(
-        static_cast<TabStripModel::ContextMenuCommand>(command_id),
-        tab_);
+    return false;
   }
   virtual bool IsCommandIdEnabled(int command_id) const {
     return tab_ && tab_->delegate()->IsCommandEnabledForTab(

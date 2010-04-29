@@ -265,7 +265,8 @@ TabStrip::~TabStrip() {
   // delete the tabs.
   StopAnimating(false);
 
-  model_->RemoveObserver(this);
+  // TODO(beng): (1031854) Restore this line once XPFrame/VistaFrame are dead.
+  // model_->RemoveObserver(this);
 
   // TODO(beng): remove this if it doesn't work to fix the TabSelectedAt bug.
   drag_controller_.reset(NULL);
@@ -338,15 +339,6 @@ bool TabStrip::IsCompatibleWith(TabStrip* other) const {
 
 gfx::Rect TabStrip::GetNewTabButtonBounds() {
   return newtab_button_->bounds();
-}
-
-void TabStrip::InitFromModel() {
-  // Walk the model, calling our insertion observer method for each item within
-  // it.
-  for (int i = 0; i < model_->count(); ++i) {
-    TabInsertedAt(model_->GetTabContentsAt(i), i,
-                  i == model_->selected_index());
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -871,14 +863,6 @@ bool TabStrip::IsCommandEnabledForTab(
   int model_index = GetModelIndexOfTab(tab);
   if (model_->ContainsIndex(model_index))
     return model_->IsContextMenuCommandEnabled(model_index, command_id);
-  return false;
-}
-
-bool TabStrip::IsCommandCheckedForTab(
-    TabStripModel::ContextMenuCommand command_id, const Tab* tab) const {
-  int model_index = GetModelIndexOfTab(tab);
-  if (model_->ContainsIndex(model_index))
-    return model_->IsContextMenuCommandChecked(model_index, command_id);
   return false;
 }
 

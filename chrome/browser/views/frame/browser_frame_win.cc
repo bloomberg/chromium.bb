@@ -72,6 +72,9 @@ views::Window* BrowserFrameWin::GetWindow() {
   return this;
 }
 
+void BrowserFrameWin::TabStripCreated(BaseTabStrip* tabstrip) {
+}
+
 int BrowserFrameWin::GetMinimizeButtonOffset() const {
   TITLEBARINFOEX titlebar_info;
   titlebar_info.cbSize = sizeof(TITLEBARINFOEX);
@@ -128,12 +131,6 @@ views::View* BrowserFrameWin::GetFrameView() const {
 
 void BrowserFrameWin::PaintTabStripShadow(gfx::Canvas* canvas) {
   browser_frame_view_->PaintTabStripShadow(canvas);
-}
-
-void BrowserFrameWin::TabStripDisplayModeChanged() {
-  GetRootView()->Layout();
-  UpdateDWMFrame();
-  GetRootView()->Layout();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -306,7 +303,7 @@ void BrowserFrameWin::UpdateDWMFrame() {
     // In maximized mode, we only have a titlebar strip of glass, no side/bottom
     // borders.
     if (!browser_view_->IsFullscreen()) {
-      if (browser_view_->UseVerticalTabs()) {
+      if (browser_view_->UsingSideTabs()) {
         margins.cxLeftWidth +=
             GetBoundsForTabStrip(browser_view_->tabstrip()).right();
         margins.cyTopHeight += GetSystemMetrics(SM_CYSIZEFRAME);
@@ -322,7 +319,7 @@ void BrowserFrameWin::UpdateDWMFrame() {
   DwmExtendFrameIntoClientArea(GetNativeView(), &margins);
 
   DWORD window_style = GetWindowLong(GWL_STYLE);
-  if (browser_view_->UseVerticalTabs()) {
+  if (browser_view_->UsingSideTabs()) {
     if (window_style & WS_CAPTION)
       SetWindowLong(GWL_STYLE, window_style & ~WS_CAPTION);
   } else {

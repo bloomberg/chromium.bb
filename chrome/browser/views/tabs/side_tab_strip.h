@@ -21,6 +21,14 @@ class SideTabStrip : public BaseTabStrip,
   // Associate a model with this SideTabStrip. The SideTabStrip owns its model.
   void SetModel(SideTabStripModel* model);
 
+  // Whether or not the browser has been run with the "enable-vertical-tabs"
+  // command line flag that allows the SideTabStrip to be optionally shown.
+  static bool Available();
+
+  // Whether or not the vertical tabstrip is shown. Only valid if Available()
+  // returns true.
+  static bool Visible(Profile* profile);
+
   // Notifies the SideTabStrip that a tab was added in the model at |index|.
   void AddTabAt(int index);
 
@@ -40,7 +48,6 @@ class SideTabStrip : public BaseTabStrip,
   virtual bool IsSelected(SideTab* tab) const;
   virtual void SelectTab(SideTab* tab);
   virtual void CloseTab(SideTab* tab);
-  virtual void ShowContextMenu(SideTab* tab, const gfx::Point& p);
 
   // BaseTabStrip implementation:
   virtual int GetPreferredHeight();
