@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/nss_util.h"
+#include "base/nss_util_internal.h"
 
 #include <nss.h>
 #include <plarena.h>
@@ -42,6 +43,21 @@ std::string GetDefaultConfigDirectory() {
   return dir.value();
 }
 
+// On non-chromeos platforms, return the default config directory.
+// On chromeos, return a read-only directory with fake root CA certs for testing
+// (which will not exist on non-testing images).  These root CA certs are used
+// by the local Google Accounts server mock we use when testing our login code.
+// If this directory is not present, NSS_Init() will fail.  It is up to the
+// caller to failover to NSS_NoDB_Init() at that point.
+std::string GetInitialConfigDirectory() {
+#if defined(OS_CHROMEOS)
+  static const char kReadOnlyCertDB[] = "/etc/fake_root_ca/nssdb";
+  return std::string(kReadOnlyCertDB);
+#else
+  return GetDefaultConfigDirectory();
+#endif  // defined(OS_CHROMEOS)
+}
+
 // Load nss's built-in root certs.
 SECMODModule *InitDefaultRootCerts() {
   const char* kModulePath = "libnssckbi.so";
@@ -78,7 +94,10 @@ class NSPRInitSingleton {
 
 class NSSInitSingleton {
  public:
-  NSSInitSingleton() : root_(NULL) {
+  NSSInitSingleton()
+      : real_db_slot_(NULL),
+        root_(NULL),
+        chromeos_user_logged_in_(false) {
     base::EnsureNSPRInit();
 
     // We *must* have NSS >= 3.12.3.  See bug 26448.
@@ -111,13 +130,17 @@ class NSSInitSingleton {
                     "database: NSS error code " << PR_GetError();
     }
 #else
-    std::string database_dir = GetDefaultConfigDirectory();
+    std::string database_dir = GetInitialConfigDirectory();
     if (!database_dir.empty()) {
-      // Initialize with a persistant database (~/.pki/nssdb).
+      // Initialize with a persistent database (likely, ~/.pki/nssdb).
       // Use "sql:" which can be shared by multiple processes safely.
       std::string nss_config_dir =
           StringPrintf("sql:%s", database_dir.c_str());
+#if defined(OS_CHROMEOS)
+      status = NSS_Init(nss_config_dir.c_str());
+#else
       status = NSS_InitReadWrite(nss_config_dir.c_str());
+#endif
       if (status != SECSuccess) {
         LOG(ERROR) << "Error initializing NSS with a persistent "
                       "database (" << nss_config_dir
@@ -150,6 +173,11 @@ class NSSInitSingleton {
   }
 
   ~NSSInitSingleton() {
+    if (real_db_slot_) {
+      SECMOD_CloseUserDB(real_db_slot_);
+      PK11_FreeSlot(real_db_slot_);
+      real_db_slot_ = NULL;
+    }
     if (root_) {
       SECMOD_UnloadUserModule(root_);
       SECMOD_DestroyModule(root_);
@@ -165,8 +193,36 @@ class NSSInitSingleton {
     }
   }
 
+#if defined(OS_CHROMEOS)
+  void OpenPersistentNSSDB() {
+    if (!chromeos_user_logged_in_) {
+      chromeos_user_logged_in_ = true;
+
+      const std::string modspec =
+          StringPrintf("configDir='%s' tokenDescription='Real NSS database'",
+                       GetDefaultConfigDirectory().c_str());
+      real_db_slot_ = SECMOD_OpenUserDB(modspec.c_str());
+      if (real_db_slot_ == NULL) {
+        LOG(ERROR) << "Error opening persistent database (" << modspec
+                   << "): NSS error code " << PR_GetError();
+      } else {
+        if (PK11_NeedUserInit(real_db_slot_))
+          PK11_InitPin(real_db_slot_, NULL, NULL);
+      }
+    }
+  }
+#endif  // defined(OS_CHROMEOS)
+
+  PK11SlotInfo* GetDefaultKeySlot() {
+    if (real_db_slot_)
+      return real_db_slot_;
+    return PK11_GetInternalKeySlot();
+  }
+
  private:
+  PK11SlotInfo* real_db_slot_;  // Overrides internal key slot if non-NULL.
   SECMODModule *root_;
+  bool chromeos_user_logged_in_;
 };
 
 }  // namespace
@@ -180,6 +236,12 @@ void EnsureNSPRInit() {
 void EnsureNSSInit() {
   Singleton<NSSInitSingleton>::get();
 }
+
+#if defined(OS_CHROMEOS)
+void OpenPersistentNSSDB() {
+  Singleton<NSSInitSingleton>::get()->OpenPersistentNSSDB();
+}
+#endif
 
 // TODO(port): Implement this more simply.  We can convert by subtracting an
 // offset (the difference between NSPR's and base::Time's epochs).
@@ -198,6 +260,10 @@ Time PRTimeToBaseTime(PRTime prtime) {
   exploded.millisecond  = prxtime.tm_usec / 1000;
 
   return Time::FromUTCExploded(exploded);
+}
+
+PK11SlotInfo* GetDefaultNSSKeySlot() {
+  return Singleton<NSSInitSingleton>::get()->GetDefaultKeySlot();
 }
 
 }  // namespace base

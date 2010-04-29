@@ -24,6 +24,11 @@ void EnsureNSPRInit();
 // ever be initialized once.  NSS will be properly shut down on program exit.
 void EnsureNSSInit();
 
+#if defined(OS_CHROMEOS)
+// Open the r/w nssdb that's stored inside the user's encrypted home directory.
+void OpenPersistentNSSDB();
+#endif
+
 // Convert a NSS PRTime value into a base::Time object.
 // We use a int64 instead of PRTime here to avoid depending on NSPR headers.
 Time PRTimeToBaseTime(int64 prtime);

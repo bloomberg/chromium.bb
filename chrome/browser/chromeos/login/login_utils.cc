@@ -6,6 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/lock.h"
+#include "base/nss_util.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
@@ -22,6 +24,10 @@
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cookie_store.h"
 #include "net/url_request/url_request_context.h"
@@ -29,9 +35,15 @@
 
 namespace chromeos {
 
-class LoginUtilsImpl : public LoginUtils {
+class LoginUtilsImpl : public LoginUtils,
+                       public NotificationObserver {
  public:
-  LoginUtilsImpl() {}
+  LoginUtilsImpl() {
+    registrar_.Add(
+        this,
+        NotificationType::LOGIN_USER_CHANGED,
+        NotificationService::AllSources());
+  }
 
   // Invoked after the user has successfully logged in. This launches a browser
   // and does other bookkeeping after logging in.
@@ -42,16 +54,25 @@ class LoginUtilsImpl : public LoginUtils {
   // Authenticator and must delete it when done.
   virtual Authenticator* CreateAuthenticator(LoginStatusConsumer* consumer);
 
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
  private:
+  NotificationRegistrar registrar_;
+
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsImpl);
 };
 
 class LoginUtilsWrapper {
  public:
-  LoginUtilsWrapper() : ptr_(new LoginUtilsImpl) {
-  }
+  LoginUtilsWrapper() {}
 
   LoginUtils* get() {
+    AutoLock create(create_lock_);
+    if (!ptr_.get())
+      reset(new LoginUtilsImpl);
     return ptr_.get();
   }
 
@@ -60,6 +81,7 @@ class LoginUtilsWrapper {
   }
 
  private:
+  Lock create_lock_;
   scoped_ptr<LoginUtils> ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsWrapper);
@@ -103,6 +125,13 @@ Authenticator* LoginUtilsImpl::CreateAuthenticator(
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInChromeAuth))
     return new GoogleAuthenticator(consumer);
   return new PamGoogleAuthenticator(consumer);
+}
+
+void LoginUtilsImpl::Observe(NotificationType type,
+                             const NotificationSource& source,
+                             const NotificationDetails& details) {
+  if (type == NotificationType::LOGIN_USER_CHANGED)
+    base::OpenPersistentNSSDB();
 }
 
 LoginUtils* LoginUtils::Get() {
