@@ -146,12 +146,24 @@ bool ShouldWrapCallback(IMoniker* moniker, REFIID iid, IBindCtx* bind_context) {
     return false;
   }
 
+  // TODO(ananta)
+  // Use the IsSubFrameRequest function to determine if a request is a top
+  // level request. Something like this.
+  // ScopedComPtr<IUnknown> bscb_holder;
+  // bind_context->GetObjectParam(L"_BSCB_Holder_", bscb_holder.Receive());
+  // if (bscb_holder) {
+  //   ScopedComPtr<IHttpNegotiate> http_negotiate;
+  //   http_negotiate.QueryFrom(bscb_holder);
+  //   if (http_negotiate && !IsSubFrameRequest(http_negotiate))
+  //     return true;
+  //  }
+  // There are some cases where the IsSubFrameRequest function can return
+  // incorrect results.
   bool should_wrap = mgr->IsTopLevelUrl(url);
   if (!should_wrap) {
     DLOG(INFO) << __FUNCTION__ << " Url: " << url <<
         " Not wrapping: Not top level url.";
   }
-
   return should_wrap;
 }
 

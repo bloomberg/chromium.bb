@@ -136,6 +136,11 @@ END_MSG_MAP()
   // Installs a hook on the top-level window hosting the control.
   HRESULT InstallTopLevelHook(IOleClientSite* client_site);
 
+  // On a fresh install of ChromeFrame the BHO will not be loaded in existing
+  // IE tabs/windows. This function instantiates the BHO and registers it
+  // explicitly.
+  HRESULT RegisterBHOIfNeeded(IOleClientSite* client_site);
+
   // A hook attached to the top-level window containing the ActiveX control.
   HHOOK chrome_wndproc_hook_;
 };

@@ -454,6 +454,11 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
                               IsIEInPrivate(), true)) {
       return E_FAIL;
     }
+
+    // We need to bootstrap our BHO if IE is running while chrome frame is
+    // installed. For new tabs and windows the newly registered BHO's are
+    // loaded. The bootstrapping is only needed for the current tab.
+    RegisterBHOIfNeeded(client_site);
   }
 
   return hr;
@@ -599,4 +604,49 @@ HRESULT ChromeFrameActivex::InstallTopLevelHook(IOleClientSite* client_site) {
     TopLevelWindowMapping::instance()->AddMapping(top_window, m_hWnd);
 
   return chrome_wndproc_hook_ ? S_OK : E_FAIL;
+}
+
+HRESULT ChromeFrameActivex::RegisterBHOIfNeeded(
+    IOleClientSite* client_site) {
+  if (!client_site) {
+    NOTREACHED() << "Invalid client site";
+    return E_FAIL;
+  }
+
+  if (NavigationManager::GetThreadInstance() != NULL) {
+    DLOG(INFO) << "BHO already loaded";
+    return S_OK;
+  }
+
+  ScopedComPtr<IWebBrowser2> web_browser2;
+  HRESULT hr = DoQueryService(SID_SWebBrowserApp, client_site,
+                              web_browser2.Receive());
+  if (FAILED(hr) || web_browser2.get() == NULL) {
+    DLOG(WARNING) << "Failed to get IWebBrowser2 from client site. Error:"
+                  << StringPrintf(" 0x%08X", hr);
+    return hr;
+  }
+
+  wchar_t bho_class_id_as_string[MAX_PATH] = {0};
+  StringFromGUID2(CLSID_ChromeFrameBHO, bho_class_id_as_string,
+                  arraysize(bho_class_id_as_string));
+
+  ScopedComPtr<IObjectWithSite> bho;
+  hr = bho.CreateInstance(CLSID_ChromeFrameBHO, NULL, CLSCTX_INPROC_SERVER);
+  if (FAILED(hr)) {
+    NOTREACHED() << "Failed to register ChromeFrame BHO. Error:"
+                 << StringPrintf(" 0x%08X", hr);
+    return hr;
+  }
+
+  hr = bho->SetSite(web_browser2);
+  if (FAILED(hr)) {
+    NOTREACHED() << "ChromeFrame BHO SetSite failed. Error:"
+                 << StringPrintf(" 0x%08X", hr);
+    return hr;
+  }
+
+  web_browser2->PutProperty(ScopedBstr(bho_class_id_as_string),
+                            ScopedVariant(bho));
+  return S_OK;
 }
