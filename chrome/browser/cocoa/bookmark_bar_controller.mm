@@ -452,11 +452,11 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   // Else open a new one if it makes sense to do so.
   if ([sender bookmarkNode]->is_folder())
     [folderTarget_ openBookmarkFolderFromButton:sender];
-#if 1
-  else
+  else {
     // We're over a non-folder bookmark so close any old folders.
-    [self closeAllBookmarkFolders];
-#endif
+    [folderController_ close];
+    folderController_ = nil;
+  }
 }
 
 // BookmarkButtonDelegate protocol implementation.

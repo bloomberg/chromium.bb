@@ -74,10 +74,6 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
     parentButton_.reset([button retain]);
-#if 1
-    // We want the button to remain bordered as part of the menu path.
-    [[button cell] setShowsBorderOnlyWhileMouseInside:NO];
-#endif
     parentController_.reset([parentController retain]);
     barController_ = barController;  // WEAK
     buttons_.reset([[NSMutableArray alloc] init]);
@@ -91,11 +87,6 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
 }
 
 - (void)dealloc {
-#if 1
-  // The button is no longer part of the menu path.
-  [[parentButton_ cell] setShowsBorderOnlyWhileMouseInside:YES];
-  [parentButton_ setNeedsDisplay];
-#endif
   [self removeScrollTracking];
   [self endScroll];
   [hoverState_ draggingExited];
@@ -550,12 +541,10 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   // view that contains the button.  It appears that a mouseExited:
   // gets lost, so the button stays highlit forever.  We accomodate
   // here.
-#if 0
   if (buttonThatMouseIsIn_) {
     [[buttonThatMouseIsIn_ cell] setShowsBorderOnlyWhileMouseInside:NO];
     [[buttonThatMouseIsIn_ cell] setShowsBorderOnlyWhileMouseInside:YES];
   }
-#endif
 
   // We update the window size after shifting the scroll to avoid a race.
   CGFloat screenHeightMinusMargin = (NSHeight(screenFrame) -
