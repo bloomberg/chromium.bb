@@ -372,7 +372,9 @@ BUILD/stamp-newlib: BUILD/stamp-newlib-$(NEWLIB_VERSION) Makefile
 			  --disable-libgloss \
 			  --enable-newlib-iconv \
 			  --enable-newlib-io-long-long \
+			  --enable-newlib-io-long-double \
 			  --enable-newlib-io-c99-formats \
+			  --enable-newlib-mb \
 	        --prefix=$(SDKROOT) \
 	        --target=$(CROSSARCH) && \
 	  cd ../.. ; \
@@ -388,8 +390,11 @@ BUILD/stamp-newlib: BUILD/stamp-newlib-$(NEWLIB_VERSION) Makefile
 		  CFLAGS="-O2" \
 	      ../newlib-$(NEWLIB_VERSION)/configure \
 			  --disable-libgloss \
+			  --enable-newlib-iconv \
 			  --enable-newlib-io-long-long \
+			  --enable-newlib-io-long-double \
 			  --enable-newlib-io-c99-formats \
+			  --enable-newlib-mb \
 	        --prefix=$(SDKROOT) \
 	        --target=$(CROSSARCH) ; \
 	  cd ../.. ; \
