@@ -85,7 +85,7 @@ class UserController : public views::ButtonListener,
   views::WidgetGtk* CreateBorderWindow(int index,
                                        int total_user_count,
                                        int controls_height);
-  views::WidgetGtk* CreateLabelWindow(int index, WmIpc::WindowType type);
+  views::WidgetGtk* CreateLabelWindow(int index, WmIpcWindowType type);
 
   // Sets specified image with desired size on the image window.
   // Does not repaint the window so SchedulePaint is to be called explicitly

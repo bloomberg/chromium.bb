@@ -15,6 +15,7 @@
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "views/background.h"
 #include "views/controls/image_view.h"
@@ -110,9 +111,9 @@ void UserController::Init(int index, int total_user_count) {
   image_window_ = CreateImageWindow(index);
   border_window_ = CreateBorderWindow(index, total_user_count,
                                       controls_height);
-  label_window_ = CreateLabelWindow(index, WmIpc::WINDOW_TYPE_LOGIN_LABEL);
+  label_window_ = CreateLabelWindow(index, WM_IPC_WINDOW_LOGIN_LABEL);
   unselected_label_window_ =
-      CreateLabelWindow(index, WmIpc::WINDOW_TYPE_LOGIN_UNSELECTED_LABEL);
+      CreateLabelWindow(index, WM_IPC_WINDOW_LOGIN_UNSELECTED_LABEL);
 }
 
 void UserController::SetPasswordEnabled(bool enable) {
@@ -190,7 +191,7 @@ WidgetGtk* UserController::CreateControlsWindow(int index, int* height) {
   params.push_back(index);
   WmIpc::instance()->SetWindowType(
       window->GetNativeView(),
-      WmIpc::WINDOW_TYPE_LOGIN_CONTROLS,
+      WM_IPC_WINDOW_LOGIN_CONTROLS,
       &params);
   window->SetBounds(gfx::Rect(0, 0, kSize, pref.height()));
   window->Show();
@@ -215,7 +216,7 @@ WidgetGtk* UserController::CreateImageWindow(int index) {
   params.push_back(index);
   WmIpc::instance()->SetWindowType(
       window->GetNativeView(),
-      WmIpc::WINDOW_TYPE_LOGIN_IMAGE,
+      WM_IPC_WINDOW_LOGIN_IMAGE,
       &params);
   window->SetBounds(gfx::Rect(0, 0, kSize, kSize));
   window->Show();
@@ -236,7 +237,7 @@ WidgetGtk* UserController::CreateBorderWindow(int index,
   params.push_back(kPadding);
   WmIpc::instance()->SetWindowType(
       window->GetNativeView(),
-      WmIpc::WINDOW_TYPE_LOGIN_BORDER,
+      WM_IPC_WINDOW_LOGIN_BORDER,
       &params);
 
   window->SetBounds(gfx::Rect(0, 0, kSize + kBorderSize * 2,
@@ -247,12 +248,12 @@ WidgetGtk* UserController::CreateBorderWindow(int index,
 }
 
 WidgetGtk* UserController::CreateLabelWindow(int index,
-                                             WmIpc::WindowType type) {
+                                             WmIpcWindowType type) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  const gfx::Font& font = (type == WmIpc::WINDOW_TYPE_LOGIN_LABEL) ?
+  const gfx::Font& font = (type == WM_IPC_WINDOW_LOGIN_LABEL) ?
       rb.GetFont(ResourceBundle::LargeFont).DeriveFont(0, gfx::Font::BOLD) :
       rb.GetFont(ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
-  int width = (type == WmIpc::WINDOW_TYPE_LOGIN_LABEL) ?
+  int width = (type == WM_IPC_WINDOW_LOGIN_LABEL) ?
       kSize : kUnselectedSize;
   WidgetGtk* window = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
   window->MakeTransparent();

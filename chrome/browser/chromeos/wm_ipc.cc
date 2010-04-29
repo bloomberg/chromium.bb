@@ -74,7 +74,7 @@ WmIpc* WmIpc::instance() {
 }
 
 bool WmIpc::SetWindowType(GtkWidget* widget,
-                          WindowType type,
+                          WmIpcWindowType type,
                           const std::vector<int>* params) {
   std::vector<int> values;
   values.push_back(type);
@@ -84,8 +84,8 @@ bool WmIpc::SetWindowType(GtkWidget* widget,
                         type_to_atom_[ATOM_CHROME_WINDOW_TYPE], values);
 }
 
-WmIpc::WindowType WmIpc::GetWindowType(GtkWidget* widget,
-                                       std::vector<int>* params) {
+WmIpcWindowType WmIpc::GetWindowType(GtkWidget* widget,
+                                     std::vector<int>* params) {
   std::vector<int> properties;
   if (x11_util::GetIntArrayProperty(
           x11_util::GetX11WindowFromGtkWidget(widget),
@@ -96,9 +96,9 @@ WmIpc::WindowType WmIpc::GetWindowType(GtkWidget* widget,
       params->clear();
       params->insert(params->begin(), properties.begin() + 1, properties.end());
     }
-    return static_cast<WindowType>(type);
+    return static_cast<WmIpcWindowType>(type);
   } else {
-    return WINDOW_TYPE_UNKNOWN;
+    return WM_IPC_WINDOW_UNKNOWN;
   }
 }
 
@@ -123,8 +123,7 @@ void WmIpc::SendMessage(const Message& msg) {
              &e);
 }
 
-bool WmIpc::DecodeMessage(const GdkEventClient& event,
-                          Message* msg) {
+bool WmIpc::DecodeMessage(const GdkEventClient& event, Message* msg) {
   if (wm_message_atom_ != gdk_x11_atom_to_xatom(event.message_type))
     return false;
 
@@ -135,8 +134,8 @@ bool WmIpc::DecodeMessage(const GdkEventClient& event,
     return false;
   }
 
-  msg->set_type(static_cast<Message::Type>(event.data.l[0]));
-  if (msg->type() < 0 || msg->type() >= Message::kNumTypes) {
+  msg->set_type(static_cast<WmIpcMessageType>(event.data.l[0]));
+  if (msg->type() < 0) {
     DLOG(WARNING) << "Ignoring ClientEventMessage with invalid message "
                   << "type " << msg->type();
     return false;
@@ -251,7 +250,7 @@ void WmIpc::InitWmInfo() {
   wm_ = XGetSelectionOwner(x11_util::GetXDisplay(), type_to_atom_[ATOM_WM_S0]);
 
   // Let the window manager know which version of the IPC messages we support.
-  Message msg(Message::WM_NOTIFY_IPC_VERSION);
+  Message msg(chromeos::WM_IPC_MESSAGE_WM_NOTIFY_IPC_VERSION);
   // TODO: The version number is the latest listed in wm_ipc.h --
   // ideally, once this header is shared between Chrome and the Chrome OS window
   // manager, we'll just define the version statically in the header.

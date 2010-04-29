@@ -18,6 +18,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/wm_ipc.h"
+#include "third_party/cros/chromeos_wm_ipc_enums.h"
 #endif
 
 // Background color of the bubble.
@@ -209,7 +210,7 @@ void InfoBubble::Init(views::Window* parent,
 #if defined(OS_CHROMEOS)
   chromeos::WmIpc::instance()->SetWindowType(
       GetNativeView(),
-      chromeos::WmIpc::WINDOW_TYPE_CHROME_INFO_BUBBLE,
+      chromeos::WM_IPC_WINDOW_CHROME_INFO_BUBBLE,
       NULL);
 #endif
 #endif

@@ -28,6 +28,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/wm_ipc.h"
+#include "third_party/cros/chromeos_wm_ipc_enums.h"
 #endif
 
 using views::Widget;
@@ -110,7 +111,7 @@ ExtensionPopup::ExtensionPopup(ExtensionHost* host,
 #if defined(OS_CHROMEOS)
     chromeos::WmIpc::instance()->SetWindowType(
         border_widget_->GetNativeView(),
-        chromeos::WmIpc::WINDOW_TYPE_CHROME_INFO_BUBBLE,
+        chromeos::WM_IPC_WINDOW_CHROME_INFO_BUBBLE,
         NULL);
 #endif
     border_ = new BubbleBorder;

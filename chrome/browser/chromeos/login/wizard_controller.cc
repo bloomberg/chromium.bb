@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
+#include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "views/accelerator.h"
 #include "views/painter.h"
 #include "views/screen.h"
@@ -207,7 +208,7 @@ void WizardController::Init(const std::string& first_screen_name,
                                kWizardScreenHeight));
   chromeos::WmIpc::instance()->SetWindowType(
       window->GetNativeView(),
-      chromeos::WmIpc::WINDOW_TYPE_LOGIN_GUEST,
+      chromeos::WM_IPC_WINDOW_LOGIN_GUEST,
       NULL);
   window->SetContentsView(contents_);
 
