@@ -229,6 +229,12 @@ TEST_F(WorkerTest, WorkerContextGc) {
   RunWorkerFastLayoutTest("worker-context-gc.html");
 }
 
+// BUG 42783
+// Still fails intermittently on rel builds of Linux.
+#if defined(OS_LINUX)
+#define WorkerContextMultiPort DISABLED_WorkerContextMultiPort
+#endif
+
 TEST_F(WorkerTest, WorkerContextMultiPort) {
   RunWorkerFastLayoutTest("worker-context-multi-port.html");
 }
