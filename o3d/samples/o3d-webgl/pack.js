@@ -211,14 +211,7 @@ o3d.Pack.prototype.createTexture2D =
     this.gl.bindTexture(this.gl.TEXTURE_2D, texture.texture_);
     this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, width, height,
         0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, null);
-    texture.setupRepeatModes_(width, height);
   }
-
-  this.gl.bindTexture(this.gl.TEXTURE_2D, texture.texture_);
-  this.gl.texParameteri(this.gl.TEXTURE_2D,
-      this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
-  this.gl.texParameteri(this.gl.TEXTURE_2D,
-      this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
 
   return texture;
 };

@@ -160,3 +160,114 @@ o3d.ParamObject.setUpO3DParam_(o3d.Sampler, 'borderColor', 'ParamFloat4');
 o3d.ParamObject.setUpO3DParam_(o3d.Sampler, 'maxAnisotropy', 'ParamInteger');
 o3d.ParamObject.setUpO3DParam_(o3d.Sampler, 'texture', 'ParamTexture');
 
+
+/**
+ * Converts the addressing mode of the sampler from an o3d constant to a webgl
+ * constant.
+ * @param {!o3d.Sampler.AddressMode} o3d_mode, the O3D addressing mode.
+ * @return {number} The webgl mode.
+ */
+o3d.Sampler.prototype.convertAddressMode_ = function(o3d_mode) {
+  var gl_mode = this.gl.REPEAT;
+  switch (o3d_mode) {
+    case o3d.Sampler.WRAP:
+      gl_mode = this.gl.REPEAT;
+      break;
+    case o3d.Sampler.MIRROR:
+      gl_mode = this.gl.MIRRORED_REPEAT;
+      break;
+    case o3d.Sampler.CLAMP:
+      gl_mode = this.gl.CLAMP_TO_EDGE;
+      break;
+    case o3d.Sampler.BORDER:
+      gl_mode = this.gl.CLAMP_TO_BORDER;
+      break;
+    default:
+      this.gl.client.error_callback("Unknown Address mode");
+      break;
+  }
+  return gl_mode;
+}
+
+
+/**
+ * Converts the min filter mode of the sampler from an o3d constant to a webgl
+ * constant.
+ * @param {!o3d.Sampler.FilterType} o3d_filter, the O3D filter.
+ * @param {!o3d.Sampler.FilterType} mip_filter, the O3D mip filter.
+ * @return {number} The webgl filter.
+ */
+o3d.Sampler.prototype.convertMinFilter_ = function(o3d_filter, mip_filter) {
+  switch (o3d_filter) {
+    case o3d.Sampler.NONE:
+      return this.gl.NEAREST;
+    case o3d.Sampler.POINT:
+      if (mip_filter == o3d.Sampler.NONE) {
+        return this.gl.NEAREST;
+      } else if (mip_filter == o3d.Sampler.POINT) {
+        return this.gl.NEAREST_MIPMAP_NEAREST;
+      } else if (mip_filter == o3d.Sampler.LINEAR) {
+        return this.gl.NEAREST_MIPMAP_LINEAR;
+      } else if (mip_filter == o3d.Sampler.ANISOTROPIC) {
+        return this.gl.NEAREST_MIPMAP_LINEAR;
+      }
+    case o3d.Sampler.ANISOTROPIC:
+    case o3d.Sampler.LINEAR:
+      if (mip_filter == o3d.Sampler.NONE) {
+        return this.gl.LINEAR;
+      } else if (mip_filter == o3d.Sampler.POINT) {
+        return this.gl.LINEAR_MIPMAP_NEAREST;
+      } else if (mip_filter == o3d.Sampler.LINEAR) {
+        return this.gl.LINEAR_MIPMAP_LINEAR;
+      } else if (mip_filter == o3d.Sampler.ANISOTROPIC) {
+        return this.gl.LINEAR_MIPMAP_LINEAR;
+      }
+  }
+
+  this.gl.client.error_callback("Unknown filter.");
+  return this.gl.NONE;
+}
+
+
+/**
+ * Converts the mag filter mode of the sampler from an o3d constant to a webgl
+ * constant.
+ * @param {!o3d.Sampler.FilterType} o3d_filter, the O3D filter.
+ * @return {number} The webgl filter.
+ */
+o3d.Sampler.prototype.convertMagFilter_ = function(o3d_filter) {
+  switch (o3d_filter) {
+    case o3d.Sampler.NONE:
+    case o3d.Sampler.POINT:
+      return this.gl.NEAREST;
+    case o3d.Sampler.LINEAR:
+    case o3d.Sampler.ANISOTROPIC:
+      return this.gl.LINEAR;
+  }
+  this.gl.client.error_callback("Unknown filter.");
+  return this.gl.LINEAR;
+}
+
+
+/**
+ * Binds the texture for this sampler and sets texParameters according to the
+ * states of the sampler.
+ */
+o3d.Sampler.prototype.bindAndSetParameters_ = function() {
+  if (this.texture) {
+    var mip_filter = this.mipFilter;
+    if (this.texture.levels == 1) {
+      mip_filter = o3d.Sampler.NONE;
+    }
+
+    this.texture.bindAndSetParameters_(
+      this.convertAddressMode_(this.addressModeU),
+      this.convertAddressMode_(this.addressModeV),
+      this.convertMinFilter_(this.minFilter, mip_filter),
+      this.convertMagFilter_(this.magFilter));
+  } else {
+    this.gl.client.error_callback("Sampler used with no texture set.");
+    return;
+  }
+}
+
