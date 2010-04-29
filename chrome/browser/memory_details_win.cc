@@ -101,7 +101,7 @@ void MemoryDetails::CollectProcessData(
     }
     for (int index2 = 0; index2 < arraysize(g_process_template); index2++) {
       if (_wcsicmp(process_data_[index2].process_name.c_str(),
-          process_entry.szExeFile) != 0)
+                   process_entry.szExeFile) != 0)
         continue;
       if (index2 == IE_BROWSER && is_64bit_process)
         continue;  // Should use IE_64BIT_BROWSER

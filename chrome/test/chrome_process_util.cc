@@ -58,8 +58,8 @@ class ChildProcessFilter : public base::ProcessFilter {
   explicit ChildProcessFilter(std::vector<base::ProcessId> parent_pids)
       : parent_pids_(parent_pids.begin(), parent_pids.end()) {}
 
-  virtual bool Includes(base::ProcessId pid, base::ProcessId parent_pid) const {
-    return parent_pids_.find(parent_pid) != parent_pids_.end();
+  virtual bool Includes(const base::ProcessEntry& entry) const {
+    return parent_pids_.find(entry.parent_pid()) != parent_pids_.end();
   }
 
  private:
@@ -76,11 +76,7 @@ ChromeProcessList GetRunningChromeProcesses(base::ProcessId browser_pid) {
   ChildProcessFilter filter(browser_pid);
   base::NamedProcessIterator it(chrome::kBrowserProcessExecutableName, &filter);
   while (const base::ProcessEntry* process_entry = it.NextProcessEntry()) {
-#if defined(OS_WIN)
-    result.push_back(process_entry->th32ProcessID);
-#elif defined(OS_POSIX)
-    result.push_back(process_entry->pid);
-#endif
+    result.push_back(process_entry->pid());
   }
 
 #if defined(OS_LINUX)
@@ -92,7 +88,7 @@ ChromeProcessList GetRunningChromeProcesses(base::ProcessId browser_pid) {
     base::NamedProcessIterator it(chrome::kBrowserProcessExecutableName,
                                   &filter);
     while (const base::ProcessEntry* process_entry = it.NextProcessEntry())
-      result.push_back(process_entry->pid);
+      result.push_back(process_entry->pid());
   }
 #endif  // defined(OS_LINUX)
 
@@ -105,7 +101,7 @@ ChromeProcessList GetRunningChromeProcesses(base::ProcessId browser_pid) {
     base::NamedProcessIterator it(chrome::kHelperProcessExecutableName,
                                   &filter);
     while (const base::ProcessEntry* process_entry = it.NextProcessEntry())
-      result.push_back(process_entry->pid);
+      result.push_back(process_entry->pid());
   }
 #endif  // defined(OS_MACOSX)
 

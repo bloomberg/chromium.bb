@@ -106,8 +106,8 @@ void MemoryDetails::CollectProcessData(
                                           NULL);
 
     while (const base::ProcessEntry* entry = process_it.NextProcessEntry()) {
-      pids_by_browser[index].push_back(entry->pid);
-      all_pids.push_back(entry->pid);
+      pids_by_browser[index].push_back(entry->pid());
+      all_pids.push_back(entry->pid());
     }
   }
 
@@ -117,8 +117,8 @@ void MemoryDetails::CollectProcessData(
     base::NamedProcessIterator helper_it(chrome::kHelperProcessExecutableName,
                                          NULL);
     while (const base::ProcessEntry* entry = helper_it.NextProcessEntry()) {
-      helper_pids.push_back(entry->pid);
-      all_pids.push_back(entry->pid);
+      helper_pids.push_back(entry->pid());
+      all_pids.push_back(entry->pid());
     }
   }
 

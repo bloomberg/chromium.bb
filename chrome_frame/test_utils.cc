@@ -244,10 +244,10 @@ class ArgumentFilter : public base::ProcessFilter {
 
   // Returns true to indicate set-inclusion and false otherwise.  This method
   // should not have side-effects and should be idempotent.
-  virtual bool Includes(base::ProcessId pid, base::ProcessId parent_pid) const {
+  virtual bool Includes(const base::ProcessEntry& entry) const {
     bool found = false;
     std::wstring command_line;
-    if (GetCommandLineForProcess(pid, &command_line)) {
+    if (GetCommandLineForProcess(entry.pid(), &command_line)) {
       std::wstring::const_iterator it =
           std::search(command_line.begin(),
                       command_line.end(),
