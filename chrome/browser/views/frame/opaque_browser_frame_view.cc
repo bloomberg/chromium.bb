@@ -194,15 +194,24 @@ OpaqueBrowserFrameView::~OpaqueBrowserFrameView() {
 
 gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
     BaseTabStrip* tabstrip) const {
-  int tabstrip_x = browser_view_->ShouldShowOffTheRecordAvatar() ?
-      (otr_avatar_icon_->bounds().right() + kOTRSideSpacing) :
-      NonClientBorderThickness() + kTabStripIndent;
+  if (browser_view_->UseVerticalTabs()) {
+    // Position the tab strip slightly below the caption buttons.
+    // TODO(sky): adjust the 2.
+    int y = CaptionButtonY() + minimize_button_->GetPreferredSize().height() +
+        2;
+    gfx::Size ps = tabstrip->GetPreferredSize();
+    return gfx::Rect(0, y, ps.width(), browser_view_->height());
+  }
 
   int tabstrip_y = NonClientTopBorderHeight();
   if (!frame_->GetWindow()->IsMaximized() &&
       !frame_->GetWindow()->IsFullscreen()) {
     tabstrip_y += kNonClientRestoredExtraThickness;
   }
+
+  int tabstrip_x = browser_view_->ShouldShowOffTheRecordAvatar() ?
+      (otr_avatar_icon_->bounds().right() + kOTRSideSpacing) :
+      NonClientBorderThickness() + kTabStripIndent;
 
   int tabstrip_width = minimize_button_->x() - tabstrip_x -
       (frame_->GetWindow()->IsMaximized() ?
@@ -247,7 +256,7 @@ gfx::Size OpaqueBrowserFrameView::GetMinimumSize() {
 }
 
 void OpaqueBrowserFrameView::PaintTabStripShadow(gfx::Canvas* canvas) {
-  // TODO(beng): SIDE tabs.
+  // TODO(sky): SIDE tabs.
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -67,6 +67,7 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "chrome/browser/tab_menu_model.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/window_sizer.h"
 #include "chrome/common/chrome_constants.h"
@@ -195,6 +196,12 @@ Browser::Browser(Type type, Profile* profile)
 
   encoding_auto_detect_.Init(prefs::kWebKitUsesUniversalDetector,
                              profile_->GetPrefs(), NULL);
+  use_vertical_tabs_.Init(prefs::kUseVerticalTabs, profile_->GetPrefs(), this);
+  if (!TabMenuModel::AreVerticalTabsEnabled()) {
+    // If vertical tabs aren't enabled, explicitly turn them off. Otherwise we
+    // might show vertical tabs but not show an option to turn them off.
+    use_vertical_tabs_.SetValue(false);
+  }
 }
 
 Browser::~Browser() {
@@ -1667,7 +1674,7 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kWebAppCreateOnDesktop, true);
   prefs->RegisterBooleanPref(prefs::kWebAppCreateInAppsMenu, true);
   prefs->RegisterBooleanPref(prefs::kWebAppCreateInQuickLaunchBar, true);
-  prefs->RegisterBooleanPref(prefs::kUseVerticalTabs, true);
+  prefs->RegisterBooleanPref(prefs::kUseVerticalTabs, false);
   prefs->RegisterBooleanPref(prefs::kEnableTranslate, true);
 }
 
@@ -2094,6 +2101,15 @@ void Browser::BookmarkAllTabs() {
   BookmarkEditor::Show(window()->GetNativeHandle(), profile_,
                        model->GetParentForNewNodes(),  details,
                        BookmarkEditor::SHOW_TREE);
+}
+
+bool Browser::UseVerticalTabs() const {
+  return use_vertical_tabs_.GetValue();
+}
+
+void Browser::ToggleUseVerticalTabs() {
+  use_vertical_tabs_.SetValue(!UseVerticalTabs());
+  window()->ToggleTabStripMode();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2749,6 +2765,14 @@ void Browser::Observe(NotificationType type,
         break;
       int* message_id = Details<int>(details).ptr();
       window()->ShowProfileErrorDialog(*message_id);
+      break;
+    }
+
+    case NotificationType::PREF_CHANGED: {
+      if (*(Details<std::wstring>(details).ptr()) == prefs::kUseVerticalTabs)
+        window()->ToggleTabStripMode();
+      else
+        NOTREACHED();
       break;
     }
 

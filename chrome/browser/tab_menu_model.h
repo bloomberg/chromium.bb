@@ -18,6 +18,9 @@ class TabMenuModel : public menus::SimpleMenuModel {
   TabMenuModel(menus::SimpleMenuModel::Delegate* delegate, bool is_pinned);
   virtual ~TabMenuModel() {}
 
+  // Returns true if vertical tabs are enabled.
+  static bool AreVerticalTabsEnabled();
+
  private:
   void Build(bool is_pinned);
 

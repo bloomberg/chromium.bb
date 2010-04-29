@@ -102,9 +102,6 @@ views::Window* BrowserFrameGtk::GetWindow() {
   return this;
 }
 
-void BrowserFrameGtk::TabStripCreated(BaseTabStrip* tabstrip) {
-}
-
 int BrowserFrameGtk::GetMinimizeButtonOffset() const {
   NOTIMPLEMENTED();
   return 0;
@@ -137,6 +134,10 @@ views::View* BrowserFrameGtk::GetFrameView() const {
 }
 
 void BrowserFrameGtk::PaintTabStripShadow(gfx::Canvas* canvas) {
+}
+
+void BrowserFrameGtk::TabStripDisplayModeChanged() {
+  GetRootView()->Layout();
 }
 
 ThemeProvider* BrowserFrameGtk::GetThemeProvider() const {

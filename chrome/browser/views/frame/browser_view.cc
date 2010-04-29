@@ -530,8 +530,8 @@ bool BrowserView::IsTabStripVisible() const {
   return browser_->SupportsWindowFeature(Browser::FEATURE_TABSTRIP);
 }
 
-bool BrowserView::UsingSideTabs() const {
-  return SideTabStrip::Visible(browser_->profile());
+bool BrowserView::UseVerticalTabs() const {
+  return browser_->tabstrip_model()->delegate()->UseVerticalTabs();
 }
 
 bool BrowserView::IsOffTheRecord() const {
@@ -1206,6 +1206,11 @@ void BrowserView::Paste() {
                             false, false);
 }
 
+void BrowserView::ToggleTabStripMode() {
+  InitTabStrip(browser_->tabstrip_model());
+  frame_->TabStripDisplayModeChanged();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, BrowserWindowTesting implementation:
 
@@ -1609,13 +1614,34 @@ views::LayoutManager* BrowserView::CreateLayoutManager() const {
   return new BrowserViewLayout;
 }
 
-BaseTabStrip* BrowserView::CreateTabStrip(TabStripModel* model) {
-  if (UsingSideTabs()) {
-    SideTabStrip* tabstrip = new SideTabStrip;
-    tabstrip->SetModel(new BrowserTabStripController(model, tabstrip));
-    return tabstrip;
+void BrowserView::InitTabStrip(TabStripModel* model) {
+// Throw away the existing tabstrip if we're switching display modes.
+  if (tabstrip_) {
+    tabstrip_->GetParent()->RemoveChildView(tabstrip_);
+    delete tabstrip_;
   }
-  return new TabStrip(model);
+
+  TabStrip* tabstrip_as_tabstrip = NULL;
+  BrowserTabStripController* tabstrip_controller = NULL;
+
+  if (UseVerticalTabs()) {
+    SideTabStrip* tabstrip = new SideTabStrip;
+    tabstrip_controller = new BrowserTabStripController(model, tabstrip);
+    tabstrip->SetModel(tabstrip_controller);
+    tabstrip_ = tabstrip;
+  } else {
+    tabstrip_as_tabstrip = new TabStrip(model);
+    tabstrip_ = tabstrip_as_tabstrip;
+  }
+  tabstrip_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_TABSTRIP));
+  if (browser_->extension_app() && tabstrip_->AsTabStrip())
+    tabstrip_->AsTabStrip()->set_new_tab_button_enabled(false);
+  AddChildView(tabstrip_);
+
+  if (tabstrip_controller)
+    tabstrip_controller->InitFromModel();
+  else
+    tabstrip_as_tabstrip->InitFromModel();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1674,12 +1700,7 @@ void BrowserView::Init() {
     }
   }
 
-  tabstrip_ = CreateTabStrip(browser_->tabstrip_model());
-  tabstrip_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_TABSTRIP));
-  if (browser_->extension_app() && tabstrip_->AsTabStrip())
-    tabstrip_->AsTabStrip()->set_new_tab_button_enabled(false);
-  AddChildView(tabstrip_);
-  frame_->TabStripCreated(tabstrip_);
+  InitTabStrip(browser_->tabstrip_model());
 
   toolbar_ = new ToolbarView(browser_.get());
   AddChildView(toolbar_);
