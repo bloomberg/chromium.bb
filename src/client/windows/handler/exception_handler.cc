@@ -489,7 +489,7 @@ void ExceptionHandler::HandleInvalidParameter(const wchar_t* expression,
   CONTEXT exception_context = {};
   EXCEPTION_POINTERS exception_ptrs = { &exception_record, &exception_context };
   RtlCaptureContext(&exception_context);
-  exception_record.ExceptionCode = STATUS_INVALID_CRUNTIME_PARAMETER;
+  exception_record.ExceptionCode = STATUS_NONCONTINUABLE_EXCEPTION;
   
   // We store pointers to the the expression and function strings,
   // and the line as exception parameters to make them easy to 
