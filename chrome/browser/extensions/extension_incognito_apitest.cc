@@ -86,7 +86,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, IncognitoYesScript) {
 }
 
 // Tests that the APIs in an incognito-enabled extension work properly.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Incognito) {
+// Flaky, http://crbug.com/42844.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_Incognito) {
   host_resolver()->AddRule("*", "127.0.0.1");
   StartHTTPServer();
 
