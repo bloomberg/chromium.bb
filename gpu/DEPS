@@ -1,6 +1,6 @@
 include_rules = [
   "+webkit/glue/plugins",
-  "+third_party/angleproject",
+  "+third_party/angle",
   "+third_party/npapi",
   "+../command_buffer",
   "+../client",

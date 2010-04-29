@@ -35,7 +35,7 @@
 // as soon as translator is ready.
 //#define GLES2_GPU_SERVICE_TRANSLATE_SHADER
 #if defined(GLES2_GPU_SERVICE_TRANSLATE_SHADER)
-#include "third_party/angleproject/include/GLSLANG/ShaderLang.h"
+#include "third_party/angle/include/GLSLANG/ShaderLang.h"
 #endif  // GLES2_GPU_SERVICE_TRANSLATE_SHADER
 
 #if !defined(GL_DEPTH24_STENCIL8)
