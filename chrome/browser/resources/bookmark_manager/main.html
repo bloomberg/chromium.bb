@@ -901,18 +901,23 @@ var dnd = {
 
   init: function() {
     var boundClearData = cr.bind(this.clearDragData, this);
+    function deferredClearData() {
+      setTimeout(boundClearData);
+    }
 
     document.addEventListener('dragstart', cr.bind(this.handleDragStart, this));
     document.addEventListener('dragenter', cr.bind(this.handleDragEnter, this));
     document.addEventListener('dragover', cr.bind(this.handleDragOver, this));
     document.addEventListener('dragleave', cr.bind(this.handleDragLeave, this));
     document.addEventListener('drop', cr.bind(this.handleDrop, this));
-    document.addEventListener('dragend', boundClearData);
+    document.addEventListener('dragend', deferredClearData);
+    document.addEventListener('mouseup', deferredClearData);
 
     chrome.experimental.bookmarkManager.onDragEnter.addListener(cr.bind(
         this.handleChromeDragEnter, this));
-    chrome.experimental.bookmarkManager.onDragLeave.addListener(boundClearData);
-    chrome.experimental.bookmarkManager.onDrop.addListener(boundClearData);
+    chrome.experimental.bookmarkManager.onDragLeave.addListener(
+        deferredClearData);
+    chrome.experimental.bookmarkManager.onDrop.addListener(deferredClearData);
   }
 };
 
