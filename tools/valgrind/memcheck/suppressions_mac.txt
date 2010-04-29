@@ -1107,11 +1107,6 @@
    ...
    fun:_ZN2v88internalL6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPPPS4_Pb
    fun:_ZN2v88internal9Execution4CallENS0_6HandleINS0_10JSFunctionEEENS2_INS0_6ObjectEEEiPPPS5_Pb
-   fun:_ZN2v88internal14MessageHandler17MakeMessageObjectEPKcPNS0_15MessageLocationENS0_6VectorINS0_6HandleINS0_6ObjectEEEEENS7_INS0_6StringEEE
-   fun:_ZN2v88internal3Top7DoThrowEPNS0_6ObjectEPNS0_15MessageLocationEPKc
-   fun:_ZN2v88internal3Top18TerminateExecutionEv
-   fun:_ZN2v88internal9Execution25HandleStackGuardInterruptEv
-   fun:_ZN2v88internalL18Runtime_StackGuardENS0_9ArgumentsE
 }
 {
    bug_42704c
