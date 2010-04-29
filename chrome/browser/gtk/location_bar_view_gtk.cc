@@ -154,6 +154,7 @@ LocationBarViewGtk::LocationBarViewGtk(Browser* browser)
       site_type_alignment_(NULL),
       site_type_event_box_(NULL),
       location_icon_image_(NULL),
+      drag_icon_(NULL),
       enable_location_drag_(false),
       security_info_label_(NULL),
       tab_to_search_box_(NULL),
@@ -181,7 +182,8 @@ LocationBarViewGtk::~LocationBarViewGtk() {
   // All of our widgets should have be children of / owned by the alignment.
   star_.Destroy();
   hbox_.Destroy();
-  drag_icon_.Destroy();
+  if (drag_icon_)
+    g_object_unref(drag_icon_);
   content_setting_hbox_.Destroy();
   page_action_hbox_.Destroy();
 }
@@ -415,17 +417,18 @@ void LocationBarViewGtk::SetSiteTypeDragSource() {
   g_signal_connect(site_type_event_box_, "drag-begin",
                    G_CALLBACK(&OnIconDragBeginThunk), this);
 
-  drag_icon_.Own(gtk_window_new(GTK_WINDOW_POPUP));
-  g_signal_connect(drag_icon_.get(), "expose-event",
+  drag_icon_ = gtk_window_new(GTK_WINDOW_POPUP);
+  g_object_ref(drag_icon_);
+  g_signal_connect(drag_icon_, "expose-event",
                    G_CALLBACK(OnDragIconExposeThunk), this);
-  GdkScreen* screen = gtk_widget_get_screen(drag_icon_.get());
+  GdkScreen* screen = gtk_widget_get_screen(drag_icon_);
   GdkColormap* rgba = gdk_screen_get_rgba_colormap(screen);
   if (rgba)
-    gtk_widget_set_colormap(drag_icon_.get(), rgba);
+    gtk_widget_set_colormap(drag_icon_, rgba);
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   const gfx::Font& base_font = rb.GetFont(ResourceBundle::BaseFont);
-  gtk_widget_set_size_request(drag_icon_.get(), 200, base_font.height());
+  gtk_widget_set_size_request(drag_icon_, 200, base_font.height());
 }
 
 void LocationBarViewGtk::SetProfile(Profile* profile) {
@@ -987,7 +990,7 @@ void LocationBarViewGtk::OnIconDragData(GtkWidget* sender,
 void LocationBarViewGtk::OnIconDragBegin(GtkWidget* sender,
                                          GdkDragContext* context) {
   if (gtk_util::IsScreenComposited())
-    gtk_drag_set_icon_widget(context, drag_icon_.get(), 0, 0);
+    gtk_drag_set_icon_widget(context, drag_icon_, 0, 0);
 }
 
 gboolean LocationBarViewGtk::OnDragIconExpose(GtkWidget* sender,
