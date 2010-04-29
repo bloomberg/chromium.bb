@@ -2752,3 +2752,29 @@
    fun:_Z11BrowserMainRK18MainFunctionParams
    fun:ChromeMain
 }
+{
+   bug_42897
+   Memcheck:Leak
+   fun:malloc
+   fun:realloc
+   fun:_ZN6Pickle6ResizeEj
+   fun:_ZN6PickleC2Ei
+   fun:_ZN3IPC7MessageC2EijNS0_13PriorityValueE
+   fun:_ZN3IPC16MessageWithTupleI6Tuple1IiEEC2EijRKS1_IRKiE
+   fun:_ZN26AppCacheMsg_UnregisterHostC1ERKi
+   fun:_ZN20AppCacheBackendProxy14UnregisterHostEi
+   fun:_ZN8appcache27WebApplicationCacheHostImplD2Ev
+   fun:_ZN35RendererWebApplicationCacheHostImplD0Ev
+   fun:_ZN3WTF14deleteOwnedPtrIN6WebKit23WebApplicationCacheHostEEEvPT_
+   fun:_ZN3WTF6OwnPtrIN6WebKit23WebApplicationCacheHostEED1Ev
+   fun:_ZN7WebCore28ApplicationCacheHostInternalD0Ev
+   fun:_ZN3WTF14deleteOwnedPtrIN7WebCore28ApplicationCacheHostInternalEEEvPT_
+   fun:_ZN3WTF6OwnPtrIN7WebCore28ApplicationCacheHostInternalEED1Ev
+   fun:_ZN7WebCore20ApplicationCacheHostD1Ev
+   fun:_ZN3WTF14deleteOwnedPtrIN7WebCore20ApplicationCacheHostEEEvPT_
+   fun:_ZN3WTF6OwnPtrIN7WebCore20ApplicationCacheHostEED1Ev
+   fun:_ZN7WebCore14DocumentLoaderD2Ev
+   fun:_ZN6WebKit17WebDataSourceImplD0Ev
+   fun:_ZN3WTF10RefCountedIN7WebCore14DocumentLoaderEE5derefEv
+   fun:_ZN3WTF6RefPtrIN7WebCore14DocumentLoaderEED1Ev
+}
