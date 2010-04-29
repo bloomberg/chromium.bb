@@ -12,6 +12,7 @@
     trackingArea_ =
         [[NSTrackingArea alloc] initWithRect:frame
                                      options:NSTrackingMouseMoved |
+                                             NSTrackingMouseEnteredAndExited |
                                              NSTrackingActiveInActiveApp |
                                              NSTrackingInVisibleRect
                                        owner:self
@@ -37,6 +38,7 @@
 }
 
 - (void)mouseDown:(NSEvent *)theEvent {
+  dragging_ = YES;
   [self mouseEvent:theEvent];
 }
 
@@ -50,6 +52,22 @@
 
 - (void)mouseUp:(NSEvent *)theEvent {
   [self mouseEvent:theEvent];
+
+  dragging_ = NO;
+  if (pendingExitEvent_.get()) {
+    NSEvent* exitEvent =
+        [NSEvent enterExitEventWithType:NSMouseExited
+                               location:[theEvent locationInWindow]
+                          modifierFlags:[theEvent modifierFlags]
+                              timestamp:[theEvent timestamp]
+                           windowNumber:[theEvent windowNumber]
+                                context:[theEvent context]
+                            eventNumber:[pendingExitEvent_.get() eventNumber]
+                         trackingNumber:[pendingExitEvent_.get() trackingNumber]
+                               userData:[pendingExitEvent_.get() userData]];
+    [self mouseEvent:exitEvent];
+    pendingExitEvent_.reset();
+  }
 }
 
 - (void)rightMouseUp:(NSEvent *)theEvent {
@@ -77,10 +95,23 @@
 }
 
 - (void)mouseEntered:(NSEvent *)theEvent {
+  if (pendingExitEvent_.get()) {
+    pendingExitEvent_.reset();
+    return;
+  }
+
   [self mouseEvent:theEvent];
 }
 
 - (void)mouseExited:(NSEvent *)theEvent {
+  // The tracking area will send an exit event even during a drag, which isn't
+  // how the event flow for drags should work. This stores the exit event, and
+  // sends it when the drag completes instead.
+  if (dragging_) {
+    pendingExitEvent_.reset([theEvent retain]);
+    return;
+  }
+
   [self mouseEvent:theEvent];
 }
 
