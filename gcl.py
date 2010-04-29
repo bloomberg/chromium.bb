@@ -892,9 +892,10 @@ def Commit(change_info, args):
 
   commit_message = change_info.description.replace('\r\n', '\n')
   if change_info.issue:
-    commit_message += ('\nReview URL: http://%s/%d' %
-                       (GetCodeReviewSetting("CODE_REVIEW_SERVER"),
-                        change_info.issue))
+    server = GetCodeReviewSetting("CODE_REVIEW_SERVER")
+    if not server.startswith("http://") and not server.startswith("https://"):
+      server = "http://" + server
+    commit_message += ('\nReview URL: %s/%d' % (server, change_info.issue))
 
   handle, commit_filename = tempfile.mkstemp(text=True)
   os.write(handle, commit_message)
