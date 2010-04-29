@@ -81,6 +81,8 @@ PanelController::PanelController(Delegate* delegate,
        panel_(window),
        panel_xid_(x11_util::GetX11WindowFromGtkWidget(GTK_WIDGET(panel_))),
        title_window_(NULL),
+       title_(NULL),
+       title_content_(NULL),
        expanded_(true),
        mouse_down_(false),
        dragging_(false),
@@ -123,6 +125,7 @@ void PanelController::Init(const gfx::Rect window_bounds) {
 void PanelController::UpdateTitleBar() {
   if (!delegate_ || !title_window_)
     return;
+  DCHECK(title_content_);
   title_content_->title_label()->SetText(
       UTF16ToWideHack(delegate_->GetPanelTitle()));
   title_content_->title_icon()->SetImage(delegate_->GetPanelIcon());
@@ -138,7 +141,7 @@ bool PanelController::TitleMousePressed(const views::MouseEvent& event) {
     NOTREACHED();
     return false;
   }
-
+  DCHECK(title_);
   // Get the last titlebar width that we saw in a ConfigureNotify event -- we
   // need to give drag positions in terms of the top-right corner of the
   // titlebar window.  See WM_NOTIFY_PANEL_DRAGGED's declaration for details.
@@ -259,11 +262,15 @@ void PanelController::Close() {
   if (title_window_) {
     title_window_->Close();
     title_window_ = NULL;
+    title_ = NULL;
+    title_content_->OnClose();
+    title_content_ = NULL;
   }
 }
 
 void PanelController::ButtonPressed(
     views::Button* sender, const views::Event& event) {
+  DCHECK(title_content_);
   if (title_window_ && sender == title_content_->close_button()) {
     if (delegate_)
       delegate_->ClosePanel();
@@ -315,16 +322,19 @@ void PanelController::TitleContentView::Layout() {
 
 bool PanelController::TitleContentView::OnMousePressed(
     const views::MouseEvent& event) {
+  DCHECK(panel_controller_) << "OnMousePressed after Close";
   return panel_controller_->TitleMousePressed(event);
 }
 
 void PanelController::TitleContentView::OnMouseReleased(
     const views::MouseEvent& event, bool canceled) {
+  DCHECK(panel_controller_) << "MouseReleased after Close";
   return panel_controller_->TitleMouseReleased(event, canceled);
 }
 
 bool PanelController::TitleContentView::OnMouseDragged(
     const views::MouseEvent& event) {
+  DCHECK(panel_controller_) << "MouseDragged after Close";
   return panel_controller_->TitleMouseDragged(event);
 }
 
@@ -344,6 +354,10 @@ void PanelController::TitleContentView::OnFocusOut() {
   title_label_->SetFont(*inactive_font);
   Layout();
   SchedulePaint();
+}
+
+void PanelController::TitleContentView::OnClose() {
+  panel_controller_ = NULL;
 }
 
 }  // namespace chromeos

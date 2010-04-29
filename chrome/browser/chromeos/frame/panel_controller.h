@@ -76,6 +76,7 @@ class PanelController : public views::ButtonListener {
     virtual bool OnMouseDragged(const views::MouseEvent& event);
     void OnFocusIn();
     void OnFocusOut();
+    void OnClose();
 
     views::ImageView* title_icon() { return title_icon_; }
     views::Label* title_label() { return title_label_; }
