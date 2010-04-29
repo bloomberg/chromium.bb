@@ -807,21 +807,6 @@ class Browser : public TabStripModelDelegate,
 
   // Assorted utility functions ///////////////////////////////////////////////
 
-  // Checks whether |source| is about to navigate across extension extents, and
-  // if so, navigates in the correct window. For example if this is a normal
-  // browser and we're about to navigate into an extent, this method will
-  // navigate the app's window instead. If we're in an app window and
-  // navigating out of the app, this method will find and navigate a normal
-  // browser instead.
-  //
-  // Returns true if the navigation was handled, eg, it was opened in some other
-  // browser. Returns false if it was not handled.
-  bool HandleCrossAppNavigation(TabContents* source,
-                                const GURL& url,
-                                const GURL& referrer,
-                                WindowOpenDisposition disposition,
-                                PageTransition::Type transition);
-
   // The low-level function that other OpenURL...() functions call.  This
   // determines the appropriate SiteInstance to pass to AddTabWithURL(), focuses
   // the newly created tab as needed, and does other miscellaneous housekeeping.

@@ -434,17 +434,7 @@ TabContents* Browser::OpenApplicationWindow(
     Profile* profile,
     Extension* extension,
     Extension::LaunchContainer container,
-    const GURL& url_input) {
-  GURL url;
-  if (!url_input.is_empty()) {
-    if (extension)
-      DCHECK(extension->web_extent().ContainsURL(url_input));
-    url = url_input;
-  } else {
-    DCHECK(extension);
-    url = extension->GetFullLaunchURL();
-  }
-
+    const GURL& url) {
   // TODO(erikkay) this can't be correct for extensions
   std::wstring app_name = web_app::GenerateApplicationNameFromURL(url);
   RegisterAppPrefs(app_name);
@@ -452,7 +442,8 @@ TabContents* Browser::OpenApplicationWindow(
   bool as_panel = extension && (container == Extension::LAUNCH_PANEL);
   Browser* browser = Browser::CreateForApp(app_name, extension, profile,
                                            as_panel);
-  browser->AddTabWithURL(url, GURL(), PageTransition::START_PAGE, true, -1,
+  browser->AddTabWithURL(extension ? extension->GetFullLaunchURL() : url,
+                         GURL(), PageTransition::START_PAGE, true, -1,
                          false, NULL);
 
   TabContents* tab_contents = browser->GetSelectedTabContents();
@@ -3343,58 +3334,6 @@ Browser* Browser::GetOrCreateTabbedBrowser(Profile* profile) {
   return browser;
 }
 
-bool Browser::HandleCrossAppNavigation(TabContents* source,
-                                       const GURL& url,
-                                       const GURL& referrer,
-                                       WindowOpenDisposition disposition,
-                                       PageTransition::Type transition) {
-  // Can be null in unit tests.
-  ExtensionsService* service = profile_->GetExtensionsService();
-  if (!service)
-    return false;
-
-  // Get the destination URL's extension, if any.
-  Extension* extension = service->GetExtensionByURL(url);
-  if (!extension)
-    extension = service->GetExtensionByWebExtent(url);
-
-  if (extension) {
-    // If we're navigating to the same extension, do nothing.
-    if (extension == extension_app_)
-      return false;
-
-    // If there's already a window for the destination extension, open the URL
-    // there.
-    for (BrowserList::const_iterator iter = BrowserList::begin();
-         iter != BrowserList::end(); ++iter) {
-      if (extension == (*iter)->extension_app()) {
-        (*iter)->OpenURL(url, referrer, NEW_FOREGROUND_TAB, transition);
-        return true;
-      }
-    }
-
-    // If the extension wants to be opened in a window, but there is no
-    // existing window, create one, then open the URL there.
-    if (extension->launch_container() == Extension::LAUNCH_WINDOW) {
-      Browser::OpenApplicationWindow(profile_, extension, url,
-                                     false);  // Don't use a panel.
-      return true;
-    }
-  }
-
-  // If the current browser is for an extension, then the destination URL must
-  // not be for that extension (otherwise, we would have caught it above). So
-  // find a normal browser and open the URL there.
-  if (extension_app_) {
-    Browser* browser = GetOrCreateTabbedBrowser(profile_);
-    browser->OpenURL(url, referrer, NEW_FOREGROUND_TAB, transition);
-    browser->window()->Show();
-    return true;
-  }
-
-  return false;
-}
-
 void Browser::OpenURLAtIndex(TabContents* source,
                              const GURL& url,
                              const GURL& referrer,
@@ -3420,17 +3359,6 @@ void Browser::OpenURLAtIndex(TabContents* source,
       current_tab != NULL) {
     RenderViewHostDelegate::BrowserIntegration* delegate = current_tab;
     delegate->OnUserGesture();
-  }
-
-  if (HandleCrossAppNavigation(current_tab, url, referrer, disposition,
-                               transition)) {
-    // If the source tab was brand new, we can be left with an empty tab which
-    // looks ugly. Close it. It is still kinda ugly to have a tab flash visible
-    // for a second, then disappear. But I think it is better than having a
-    // dead tab just hang around.
-    if (source->controller().entry_count() == 0)
-      CloseTabContents(source);
-    return;
   }
 
   // If the URL is part of the same web site, then load it in the same
