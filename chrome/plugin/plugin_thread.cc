@@ -69,6 +69,12 @@ PluginThread::PluginThread()
     setenv("GDK_NATIVE_WINDOWS", "1", 1);
 
     gtk_init(&argc, &argv_pointer);
+
+    // GTK after 2.18 resets the environment variable.  But if we're using
+    // nspluginwrapper, that means it'll spawn its subprocess without the
+    // environment variable!  So set it again.
+    setenv("GDK_NATIVE_WINDOWS", "1", 1);
+
     for (size_t i = 0; i < args.size(); ++i) {
       free(argv[i]);
     }
