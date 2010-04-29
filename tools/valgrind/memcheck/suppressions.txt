@@ -2726,3 +2726,29 @@
    fun:-[NSWindow _close:]
    fun:-[NSApplication sendAction:to:from:]
 }
+{
+   bug_42896
+   Memcheck:Addr4
+   fun:_ZNK12TransportDIB6handleEv
+   fun:_ZN18ThumbnailGenerator15AskForThumbnailEP16RenderWidgetHostP14CallbackRunnerI6Tuple1IRK8SkBitmapEEN3gfx4SizeE
+   fun:_ZN8chromeos15BrowserListener13ConfigureCellEPNS_18WmOverviewSnapshotEP11TabContents
+   fun:_ZN8chromeos15BrowserListener33ConfigureNextUnconfiguredSnapshotEv
+   fun:_ZN8chromeos20WmOverviewController33ConfigureNextUnconfiguredSnapshotEv
+   fun:_Z16DispatchToMethodIN8chromeos20WmOverviewControllerEMS1_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN4base9BaseTimerIN8chromeos20WmOverviewControllerELb1EE9TimerTask3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop13DoDelayedWorkEPN4base4TimeE
+   fun:_ZN4base16MessagePumpForUI14HandleDispatchEv
+   fun:_ZN54_GLOBAL__N_base_message_pump_glib.cc_00000000_DA4FE74C18WorkSourceDispatchEP8_GSourcePFiPvES2_
+   fun:g_main_context_dispatch
+   fun:g_main_context_iterate
+   fun:g_main_context_iteration
+   fun:_ZN4base16MessagePumpForUI17RunWithDispatcherEPNS_11MessagePump8DelegateEPNS0_10DispatcherE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+   fun:_ZN16MessageLoopForUI3RunEPN4base16MessagePumpForUI10DispatcherE
+   fun:_ZN59_GLOBAL__N_chrome_browser_browser_main.cc_00000000_F6B6498C16RunUIMessageLoopEP14BrowserProcess
+   fun:_Z11BrowserMainRK18MainFunctionParams
+   fun:ChromeMain
+}
