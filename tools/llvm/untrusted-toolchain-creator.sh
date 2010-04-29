@@ -41,21 +41,24 @@ readonly DRIVER_INSTALL_DIR="${INSTALL_ROOT}/${CROSS_TARGET}"
 # uses the correct as and ld even if we move the install dir.
 readonly BINUTILS_INSTALL_DIR="${LLVMGCC_INSTALL_DIR}"
 
+readonly PATCH_DIR=$(pwd)/tools/patches
+
 # TODO(robertm): get the code from a repo rather than use tarball + patch
 readonly LLVMGCC_TARBALL=$(pwd)/../third_party/llvm/llvm-gcc-4.2-88663.tar.bz2
 # TODO(robertm): move these two into a proper patch when move to hg repo
-readonly LLVMGCC_SFI_PATCH=$(pwd)/tools/patches/libgcc-arm-lib1funcs.patch
-readonly LLVMGCC_SFI_PATCH2=$(pwd)/tools/patches/libgcc-arm-libunwind.patch
+readonly LLVMGCC_SFI_PATCH=${PATCH_DIR}/libgcc-arm-lib1funcs.patch
+readonly LLVMGCC_SFI_PATCH2=${PATCH_DIR}/libgcc-arm-libunwind.patch
 
 # TODO(robertm): get the code from a repo rather than use tarball + patch
 readonly LLVM_TARBALL=$(pwd)/../third_party/llvm/llvm-88663.tar.bz2
-readonly LLVM_SFI_PATCH=$(pwd)/tools/patches/llvm-r88663.patch
+readonly LLVM_SFI_PATCH=${PATCH_DIR}/llvm-r88663.patch
 
-readonly BINUTILS_GAS_PATCH=$(pwd)/tools/patches/binutils-2.20-gas.patch
+readonly BINUTILS_GAS_PATCH=${PATCH_DIR}/binutils-2.20-gas.patch
+readonly BINUTILS_GAS_VCVT_PATCH=${PATCH_DIR}/binutils-2.20-gas-vcvt.patch
 
 # TODO(robertm): get the code from a repo rather than use tarball + patch
 readonly NEWLIB_TARBALL=$(pwd)/../third_party/newlib/newlib-1.17.0.tar.gz
-readonly NEWLIB_PATCH=$(pwd)/tools/patches/newlib-1.17.0_arm.patch
+readonly NEWLIB_PATCH=${PATCH_DIR}/newlib-1.17.0_arm.patch
 
 
 readonly MAKE_OPTS="-j8 VERBOSE=1"
@@ -720,6 +723,7 @@ BuildAndInstallBinutils() {
   SubBanner "patching binutils"
   cd binutils-2.20
   patch -p1 < ${BINUTILS_GAS_PATCH}
+  patch -p1 < ${BINUTILS_GAS_VCVT_PATCH}
   cd ../../build
 
   # --enable-checking is to avoid a build failure:
