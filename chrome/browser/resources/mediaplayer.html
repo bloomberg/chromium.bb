@@ -23,6 +23,7 @@ body {
                                from(white),
                                to(transparent));
 }
+
 .progress {
   -webkit-appearance: sliderthumb-horizontal;
   position: absolute;
@@ -109,16 +110,15 @@ body {
 .soundbutton {
   position: absolute;
   right: 30px;
-  cursor: pointer;
   bottom: 0;
-  z-index: 9999;
-  width: 28px;
+  border-left: 1px solid #424242;
+  border-right: 1px solid black;
+}
+
+.soundicon {
   background: url('../../app/theme/mediaplayer_vol_high.png');
   background-repeat: no-repeat;
   background-position: 6px 8px;
-  height: 30px;
-  border-left: 1px solid #424242;
-  border-right: 1px solid black;
 }
 
 .volume {
@@ -139,16 +139,15 @@ body {
 .fullscreen {
   position: absolute;
   right: 60px;
-  cursor: pointer;
   bottom: 0;
-  z-index: 9999;
-  width: 28px;
-  background: url('../../app/theme/mediaplayer_full_screen.png');
-  background-repeat: no-repeat;
-  background-position: 8px 8px;
-  height: 30px;
   border-left: 1px solid #424242;
   border-right: 1px solid black;
+}
+
+.fullscreenicon {
+  background: url('../../app/theme/mediaplayer_full_screen.png');
+  background-repeat: no-repeat;
+  background-position: 6px 8px;
 }
 
 .volumeslider {
@@ -164,43 +163,41 @@ body {
   position: absolute;
   left: 30px;
   bottom: 0;
-  cursor: pointer;
-  z-index: 9999;
-  width: 28px;
+  border-left: 1px solid #424242;
+  border-right: 1px solid black;
+}
+
+.playicon {
   background: url('../../app/theme/mediaplayer_play.png');
   background-repeat: no-repeat;
   background-position: 9px 8px;
-  height: 30px;
-  border-left: 1px solid #424242;
-  border-right: 1px solid black;
 }
 
 .pausebutton {
   position: absolute;
   left: 30px;
   bottom: 0;
-  cursor: pointer;
-  z-index: 9999;
-  width: 28px;
-  height: 30px;
-  background: url('../../app/theme/mediaplayer_pause.png');
-  background-repeat: no-repeat;
-  background-position: 11px 8px;
   border-left: 1px solid #424242;
   border-right: 1px solid black;
+}
+
+.pauseicon {
+  background: url('../../app/theme/mediaplayer_pause.png');
+  background-repeat: no-repeat;
+  background-position: 9px 8px;
 }
 
 .prevbutton {
   position: absolute;
   left: 0;
-  cursor: pointer;
   bottom: 0;
-  width: 29px;
-  height: 30px;
+  border-right: 1px solid black;
+}
+
+.previcon {
   background: url('../../app/theme/mediaplayer_prev.png');
   background-repeat: no-repeat;
   background-position: 6px 8px;
-  border-right: 1px solid black;
 }
 
 .playbackvideoelement {
@@ -231,31 +228,50 @@ body {
 .nextbutton {
   position: absolute;
   left: 60px;
-  cursor: pointer;
   bottom: 0;
-  z-index: 9999;
-  width: 28px;
-  height: 30px;
+  border-left: 1px solid #424242;
+  border-right: 1px solid black;
+}
+
+.nexticon {
   background: url('../../app/theme/mediaplayer_next.png');
   background-repeat: no-repeat;
   background-position: 6px 8px;
-  border-left: 1px solid #424242;
-  border-right: 1px solid black;
 }
 
 .playlistbutton {
   position: absolute;
   right: 0;
-  cursor: pointer;
-  z-index: 9999;
   bottom: 0;
-  width: 28px;
-  height: 30px;
-  background: url('../../app/theme/mediaplayer_playlist.png');
-  background-repeat: no-repeat;
-  background-position: 6px 8px;
   border-left: 1px solid #424242;
   border-right: 1px solid black;
+}
+
+.playlisticon {
+  background: url('../../app/theme/mediaplayer_playlist.png');
+  background-repeat: no-repeat;
+  background-position: 6px 8px; 
+}
+
+.controlbutton {
+  z-index: 9999;
+  cursor: pointer;
+  width: 28px;
+  height: 30px;
+}
+
+.controlbutton:hover {
+  background: -webkit-gradient(linear,
+                               left top,
+                               left bottom,
+                               from(#6a7eac),
+                               to(#000000));
+}
+
+.icon {
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
 }
 
 </style>
@@ -318,6 +334,16 @@ function onMediaError(e) {
 };
 
 function onMediaComplete() {
+  currentItem ++;
+  if (currentItem >= currentPlaylist.length) {
+    currentItem -= 1;
+    var element = getMediaElement();
+    element.currentTime = 0;
+    element.pause();
+    onMediaPause();
+    onMediaProgress();
+    return;
+  }
   var mediaElement = getMediaElement();
   mediaElement.removeEventListener("progress", onLoadedProgress, true);
   mediaElement.removeEventListener("timeupdate", onMediaProgress, true);
@@ -325,12 +351,7 @@ function onMediaComplete() {
   // MediaElement.removeEventListener("ended", onMediaComplete, true);
   mediaElement.removeEventListener("play", onMediaPlay, true);
   mediaElement.removeEventListener("pause", onMediaPause, true);
-  currentItem ++;
 
-  if (currentItem >= currentPlaylist.length) {
-    currentItem = -1;
-    return;
-  }
   chrome.send('currentOffsetChanged', ['' + currentItem]);
   playMediaFile(currentPlaylist[currentItem].path);
 };
@@ -441,33 +462,48 @@ function setupPlaybackControls() {
 
   var playbutton = document.createElement('div');
   playbutton.id = 'playbutton';
-  playbutton.className = controlsclass + ' playbutton';
+  playbutton.className = controlsclass + ' controlbutton playbutton';
   playbutton.onclick = playPauseButtonClick;
+  var playicon = document.createElement('div');
+  playicon.className = 'icon playicon';
+  playbutton.appendChild(playicon);
   element.appendChild(playbutton);
 
 
   var pausebutton = document.createElement('div');
   pausebutton.id = 'pausebutton';
-  pausebutton.className = controlsclass + ' pausebutton';
+  pausebutton.className = controlsclass + ' controlbutton pausebutton';
   pausebutton.onclick = playPauseButtonClick;
+  var pauseicon = document.createElement('div');
+  pauseicon.className = 'icon pauseicon';
+  pausebutton.appendChild(pauseicon);
   element.appendChild(pausebutton);
 
   var nextbutton = document.createElement('div');
   nextbutton.id = 'nextbutton';
-  nextbutton.className = controlsclass + ' nextbutton';
+  nextbutton.className = controlsclass + ' controlbutton nextbutton';
   nextbutton.onclick = nextButtonClick;
+  var nexticon = document.createElement('div');
+  nexticon.className = 'icon nexticon';
+  nextbutton.appendChild(nexticon);
   element.appendChild(nextbutton);
 
   var prevbutton = document.createElement('div');
   prevbutton.id = 'prevbutton';
-  prevbutton.className = controlsclass + ' prevbutton';
+  prevbutton.className = controlsclass + ' controlbutton prevbutton';
   prevbutton.onclick = prevButtonClick;
+  var previcon = document.createElement('div');
+  previcon.className = 'icon previcon';
+  prevbutton.appendChild(previcon);
   element.appendChild(prevbutton);
 
   var playlistbutton = document.createElement('div');
   playlistbutton.id = 'playlistbutton';
-  playlistbutton.className = 'playlistbutton';
+  playlistbutton.className = ' controlbutton playlistbutton';
   playlistbutton.onclick = togglePlaylist;
+  var playlisticon = document.createElement('div');
+  playlisticon.className = 'icon playlisticon';
+  playlistbutton.appendChild(playlisticon);
   element.appendChild(playlistbutton);
 
   var slider = document.createElement('input');
@@ -493,19 +529,25 @@ function setupPlaybackControls() {
 
   var soundbutton = document.createElement('div');
   soundbutton.id = 'soundbutton';
-  soundbutton.className = controlsclass + ' soundbutton';
+  soundbutton.className = controlsclass + ' controlbutton soundbutton';
   soundbutton.onclick = toggleVolumeVisible;
+  var soundicon = document.createElement('div');
+  soundicon.className = 'icon soundicon';
+  soundbutton.appendChild(soundicon);
   element.appendChild(soundbutton);
 
   var fullscreen = document.createElement('div');
   fullscreen.id = 'fullscreen';
-  fullscreen.className = controlsclass + ' fullscreen';
+  fullscreen.className = controlsclass + ' controlbutton fullscreen';
   fullscreen.onclick = toggleFullscreen;
+  var fullscreenicon = document.createElement('div');
+  fullscreenicon.className = 'icon fullscreenicon';
+  fullscreen.appendChild(fullscreenicon);
   element.appendChild(fullscreen);
 
   var volume = document.createElement('div');
   volume.id = 'volume';
-  volume.className = controlsclass + ' volume';
+  volume.className = controlsclass + ' controlbutton volume';
   volume.style.display = 'none';
   var volumeslider = document.createElement('input');
   volumeslider.type = 'range';
