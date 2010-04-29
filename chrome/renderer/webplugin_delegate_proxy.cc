@@ -182,6 +182,18 @@ WebPluginDelegateProxy::WebPluginDelegateProxy(
 
 WebPluginDelegateProxy::~WebPluginDelegateProxy() {
 #if defined(OS_MACOSX)
+  // Ask the browser to release old TransportDIB objects for which no
+  // PluginHostMsg_UpdateGeometry_ACK was ever received from the plugin
+  // process.
+  for (OldTransportDIBMap::iterator iterator = old_transport_dibs_.begin();
+       iterator != old_transport_dibs_.end();
+       ++iterator) {
+    ReleaseTransportDIB(iterator->second.backing_store.get());
+    ReleaseTransportDIB(iterator->second.transport_store.get());
+    ReleaseTransportDIB(iterator->second.background_store.get());
+  }
+
+  // Ask the browser to release the "live" TransportDIB objects.
   ReleaseTransportDIB(backing_store_.get());
   ReleaseTransportDIB(transport_store_.get());
   ReleaseTransportDIB(background_store_.get());
