@@ -155,6 +155,15 @@ class ResourceClientProxy : public webkit_glue::WebPluginResourceClient {
   bool multibyte_response_expected_;
 };
 
+#if defined(OS_MACOSX)
+static void ReleaseTransportDIB(TransportDIB* dib) {
+  if (dib) {
+    IPC::Message* message = new ViewHostMsg_FreeTransportDIB(dib->id());
+    RenderThread::current()->Send(message);
+  }
+}
+#endif
+
 WebPluginDelegateProxy::WebPluginDelegateProxy(
     const std::string& mime_type,
     const base::WeakPtr<RenderView>& render_view)
@@ -172,6 +181,11 @@ WebPluginDelegateProxy::WebPluginDelegateProxy(
 }
 
 WebPluginDelegateProxy::~WebPluginDelegateProxy() {
+#if defined(OS_MACOSX)
+  ReleaseTransportDIB(backing_store_.get());
+  ReleaseTransportDIB(transport_store_.get());
+  ReleaseTransportDIB(background_store_.get());
+#endif
 }
 
 void WebPluginDelegateProxy::PluginDestroyed() {
@@ -581,7 +595,7 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
 #if defined (OS_WIN)
   if (UseSynchronousGeometryUpdates()) {
     msg = new PluginMsg_UpdateGeometrySync(instance_id_, param);
-  } else  // NO_LINT
+  } else  // NOLINT
 #endif
   {
     msg = new PluginMsg_UpdateGeometry(instance_id_, param);
@@ -590,15 +604,6 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
 
   Send(msg);
 }
-
-#if defined(OS_MACOSX)
-static void ReleaseTransportDIB(TransportDIB *dib) {
-  if (dib) {
-    IPC::Message* msg = new ViewHostMsg_FreeTransportDIB(dib->id());
-    RenderThread::current()->Send(msg);
-  }
-}
-#endif
 
 void WebPluginDelegateProxy::ResetWindowlessBitmaps() {
 #if defined(OS_MACOSX)
