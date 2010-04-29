@@ -39,7 +39,6 @@ found in the LICENSE file.
 <script src="chrome://resources/js/localstrings.js"></script>
 <script src="chrome://resources/js/i18ntemplate.js"></script>
 
-
 <script src="js/bmm/treeiterator.js"></script>
 <script src="js/bmm.js"></script>
 <script src="js/bmm/bookmarklist.js"></script>
@@ -60,7 +59,7 @@ if (cr.isMac)
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 
 <div class="header">
-  <button onclick="resetSearch()" class="logo" tabindex=3></button>
+  <button class="logo" tabindex=3></button>
   <form onsubmit="setSearch(this.term.value); return false;"
       class="form">
     <input type="search" id="term" tabindex=1 autofocus
@@ -270,28 +269,34 @@ $('term').oninput = function(e) {
  * @para {string} searchText The text to search for.
  */
 function setSearch(searchText) {
-  delete bmm.treeLookup[searchTreeItem.bookmarkId];
-  var id = searchTreeItem.bookmarkId = 'q=' + searchText;
-  bmm.treeLookup[searchTreeItem.bookmarkId] = searchTreeItem;
+  if (searchText) {
+    // Only update search item if we have a search term. We never want the
+    // search item to be for an empty search.
+    delete bmm.treeLookup[searchTreeItem.bookmarkId];
+    var id = searchTreeItem.bookmarkId = 'q=' + searchText;
+    bmm.treeLookup[searchTreeItem.bookmarkId] = searchTreeItem;
+  }
+
   $('term').value = searchText;
+
   if (searchText) {
     tree.add(searchTreeItem);
     tree.selectedItem = searchTreeItem;
   } else {
-    tree.remove(searchTreeItem);
+    // Go "home".
     tree.selectedItem = tree.items[0];
+    id = tree.selectedItem.bookmarkId;
   }
+
   navigateTo(id);
 }
 
-/**
- * Clears the search.
- */
-function resetSearch() {
-  $('term').value = '';
+// Handle the logo button UI.
+// When the user clicks the button we should navigate "home" and focus the list
+document.querySelector('button.logo').onclick = function(e) {
   setSearch('');
-  $('term').focus();
-}
+  $('list').focus();
+};
 
 /**
  * Called when the title of a bookmark changes.
