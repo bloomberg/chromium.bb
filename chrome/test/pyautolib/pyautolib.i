@@ -105,6 +105,12 @@ class TabProxy {
   %feature("docstring", "Navigates to a given GURL. "
            "Blocks until the navigation completes. ") NavigateToURL;
   AutomationMsg_NavigationResponseValues NavigateToURL(const GURL& url);
+  %feature("docstring", "Navigates to a given GURL. Blocks until the given "
+           "number of navigations complete.")
+      NavigateToURLBlockUntilNavigationsComplete;
+  AutomationMsg_NavigationResponseValues
+      NavigateToURLBlockUntilNavigationsComplete(
+          const GURL& url, int number_of_navigations);
   %feature("docstring", "Equivalent to hitting the Back button. "
            "Blocks until navigation completes.") GoBack;
   AutomationMsg_NavigationResponseValues GoBack();

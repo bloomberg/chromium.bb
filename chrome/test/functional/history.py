@@ -141,6 +141,35 @@ class HistoryTest(pyauto.PyUITest):
     for i in range(num_urls):
       self.assertEqual(urls[-1 - i], history[i]['url'])
 
+  def testDownloadNoHistory(self):
+    """Downloaded URLs should not show up in history."""
+    assert not self.GetHistoryInfo().History(), 'Expecting clean history.'
+    file_url = self.GetFileURLForPath(os.path.join(self.DataDir(), 'downloads',
+                                                   'a_zip_file.zip'))
+    downloaded_file = os.path.join(self.GetDownloadDirectory().value(),
+                                   'a_zip_file.zip')
+    os.path.exists(downloaded_file) and os.remove(downloaded_file)
+    self.DownloadAndWaitForStart(file_url)
+    self.WaitForAllDownloadsToComplete()
+    os.path.exists(downloaded_file) and os.remove(downloaded_file)
+    # We shouldn't have any history
+    history = self.GetHistoryInfo().History()
+    self.assertEqual(0, len(history))
+
+  def testRedirectHistory(self):
+    """HTTP meta-refresh redirects should have separate history entries."""
+    assert not self.GetHistoryInfo().History(), 'Expecting clean history.'
+    test_dir = os.path.join(os.path.abspath(self.DataDir()), 'history')
+    file_url = self.GetFileURLForPath(os.path.join(test_dir, 'redirector.html'))
+    landing_url = self.GetFileURLForPath(os.path.join(test_dir, 'landing.html'))
+    tab = self.GetBrowserWindow(0).GetTab(0)
+    tab.NavigateToURLBlockUntilNavigationsComplete(pyauto.GURL(file_url), 2)
+    self.assertEqual(landing_url, self.GetActiveTabURL().spec())
+    # We should have two history items
+    history = self.GetHistoryInfo().History()
+    self.assertEqual(2, len(history))
+    self.assertEqual(landing_url, history[0]['url'])
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()

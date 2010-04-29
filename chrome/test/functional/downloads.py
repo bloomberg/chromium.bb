@@ -29,22 +29,6 @@ class DownloadsTest(pyauto.PyUITest):
     """Make sure "wait for downloads" returns quickly if we have none."""
     self.WaitForAllDownloadsToComplete()
 
-  def _DownloadAndWaitForStart(self, file_url):
-    """Trigger download for the given url and wait for downloads to start.
-
-    It waits for download by looking at the download info from Chrome, so
-    anything which isn't registered by the history service won't be noticed.
-    This is not thread-safe, but it's fine to call this method to start
-    downloading multiple files in parallel. That is after starting a
-    download, it's fine to start another one even if the first one hasn't
-    completed.
-    """
-    num_downloads = len(self.GetDownloadsInfo().Downloads())
-    self.NavigateToURL(file_url)  # Trigger download.
-    # It might take a while for the download to kick in, hold on until then.
-    self.assertTrue(self.WaitUntil(
-        lambda: len(self.GetDownloadsInfo().Downloads()) == num_downloads + 1))
-
   def testZip(self):
     """Download a zip and verify that it downloaded correctly.
        Also verify that the download shelf showed up.
@@ -57,7 +41,7 @@ class DownloadsTest(pyauto.PyUITest):
                                   'a_zip_file.zip')
     os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
 
-    self._DownloadAndWaitForStart(file_url)
+    self.DownloadAndWaitForStart(file_url)
 
     # Wait for the download to finish.
     self.WaitForAllDownloadsToComplete()
@@ -95,7 +79,7 @@ class DownloadsTest(pyauto.PyUITest):
                                          'a_zip_file (%d).zip' % i)
         renamed_files.append(expected_filename)
       os.path.exists(expected_filename) and os.remove(expected_filename)
-      self._DownloadAndWaitForStart(file_url)
+      self.DownloadAndWaitForStart(file_url)
 
     self.WaitForAllDownloadsToComplete()
 
@@ -142,7 +126,7 @@ class DownloadsTest(pyauto.PyUITest):
         file_url = self.GetFileURLForPath(file_path)
         downloaded_file = os.path.join(download_dir, filename)
         os.path.exists(downloaded_file) and os.remove(downloaded_file)
-        self._DownloadAndWaitForStart(file_url)
+        self.DownloadAndWaitForStart(file_url)
       self.WaitForAllDownloadsToComplete()
 
       # Verify downloads.

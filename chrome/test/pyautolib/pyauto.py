@@ -283,6 +283,22 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     self._SendJSONRequest(0, json.dumps({'command':
                                          'WaitForAllDownloadsToComplete'}))
 
+  def DownloadAndWaitForStart(self, file_url):
+    """Trigger download for the given url and wait for downloads to start.
+
+    It waits for download by looking at the download info from Chrome, so
+    anything which isn't registered by the history service won't be noticed.
+    This is not thread-safe, but it's fine to call this method to start
+    downloading multiple files in parallel. That is after starting a
+    download, it's fine to start another one even if the first one hasn't
+    completed.
+    """
+    num_downloads = len(self.GetDownloadsInfo().Downloads())
+    self.NavigateToURL(file_url)  # Trigger download.
+    # It might take a while for the download to kick in, hold on until then.
+    self.assertTrue(self.WaitUntil(
+        lambda: len(self.GetDownloadsInfo().Downloads()) == num_downloads + 1))
+
   def GetHistoryInfo(self, search_text=''):
     """Return info about browsing history.
 
