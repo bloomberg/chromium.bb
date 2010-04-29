@@ -729,7 +729,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   GLenum GetGLError();
 
   // Sets our wrapper for the GLError.
-  void SetGLError(GLenum error);
+  void SetGLError(GLenum error, const char* msg);
 
   // Copies the real GL errors to the wrapper. This is so we can
   // make sure there are no native GL errors before calling some GL function
@@ -881,6 +881,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   scoped_ptr<Texture> offscreen_saved_color_texture_;
 
   scoped_ptr<Callback0::Type> swap_buffers_callback_;
+
+  // The last error message set.
+  std::string last_error_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
@@ -1673,7 +1676,7 @@ error::Error GLES2DecoderImpl::DoCommand(
         GLenum error;
         while ((error = glGetError()) != GL_NO_ERROR) {
           // TODO(gman): Change output to something useful for NaCl.
-          SetGLError(error);
+          SetGLError(error, NULL);
           printf("GL ERROR b4: %s\n", GetCommandName(command));
         }
       }
@@ -1720,7 +1723,7 @@ bool GLES2DecoderImpl::ValidateGLenumCompressedTextureInternalFormat(GLenum) {
 void GLES2DecoderImpl::DoActiveTexture(GLenum texture_unit) {
   GLuint texture_index = texture_unit - GL_TEXTURE0;
   if (texture_index > group_->max_texture_units()) {
-    SetGLError(GL_INVALID_ENUM);
+    SetGLError(GL_INVALID_ENUM, "glActiveTexture: texture_unit out of range.");
     return;
   }
   active_texture_unit_ = texture_index;
@@ -1743,7 +1746,8 @@ void GLES2DecoderImpl::DoBindBuffer(GLenum target, GLuint client_id) {
     // Check the buffer exists
     // Check that we are not trying to bind it to a different target.
     if ((info->target() != 0 && info->target() != target)) {
-      SetGLError(GL_INVALID_OPERATION);
+      SetGLError(GL_INVALID_OPERATION,
+                 "glBindBuffer: buffer bound to more than 1 target");
       return;
     }
     if (info->target() == 0) {
@@ -1824,7 +1828,8 @@ void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
   // Check the texture exists
   // Check that we are not trying to bind it to a different target.
   if (info->target() != 0 && info->target() != target) {
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_OPERATION,
+               "glBindTexture: texture bound to more than 1 target.");
     return;
   }
   if (info->target() == 0) {
@@ -1851,7 +1856,8 @@ void GLES2DecoderImpl::DoDisableVertexAttribArray(GLuint index) {
     vertex_attrib_infos_[index].set_enabled(false);
     glDisableVertexAttribArray(index);
   } else {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE,
+               "glDisableVertexAttribArray: index out of range");
   }
 }
 
@@ -1860,14 +1866,16 @@ void GLES2DecoderImpl::DoEnableVertexAttribArray(GLuint index) {
     vertex_attrib_infos_[index].set_enabled(true);
     glEnableVertexAttribArray(index);
   } else {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE,
+               "glEnableVertexAttribArray: index out of range");
   }
 }
 
 void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
   TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
   if (!info || !info->MarkMipmapsGenerated()) {
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_OPERATION,
+               "glGenerateMipmaps: Can not generate mips for npot textures");
     return;
   }
   glGenerateMipmapEXT(target);
@@ -1963,7 +1971,7 @@ void GLES2DecoderImpl::DoGetProgramiv(
     GLuint program_id, GLenum pname, GLint* params) {
   ProgramManager::ProgramInfo* info = GetProgramInfo(program_id);
   if (!info) {
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_VALUE, "glGetProgramiv: unknown program");
     return;
   }
   info->GetProgramiv(pname, params);
@@ -1973,7 +1981,7 @@ error::Error GLES2DecoderImpl::HandleBindAttribLocation(
     uint32 immediate_data_size, const gles2::BindAttribLocation& c) {
   ProgramManager::ProgramInfo* info = GetProgramInfo(c.program);
   if (!info) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glBindAttribLocation: unknown program");
     return error::kNoError;
   }
   GLuint index = static_cast<GLuint>(c.index);
@@ -1992,7 +2000,7 @@ error::Error GLES2DecoderImpl::HandleBindAttribLocationImmediate(
     uint32 immediate_data_size, const gles2::BindAttribLocationImmediate& c) {
   ProgramManager::ProgramInfo* info = GetProgramInfo(c.program);
   if (!info) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glBindAttribLocation: unknown program");
     return error::kNoError;
   }
   GLuint index = static_cast<GLuint>(c.index);
@@ -2011,7 +2019,7 @@ error::Error GLES2DecoderImpl::HandleBindAttribLocationBucket(
     uint32 immediate_data_size, const gles2::BindAttribLocationBucket& c) {
   ProgramManager::ProgramInfo* info = GetProgramInfo(c.program);
   if (!info) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glBindAttribLocation: unknown program");
     return error::kNoError;
   }
   GLuint index = static_cast<GLuint>(c.index);
@@ -2034,7 +2042,7 @@ error::Error GLES2DecoderImpl::HandleDeleteShader(
       glDeleteShader(info->service_id());
       RemoveShaderInfo(client_id);
     } else {
-      SetGLError(GL_INVALID_VALUE);
+      SetGLError(GL_INVALID_VALUE, "glDeleteShader: unknown shader");
     }
   }
   return error::kNoError;
@@ -2049,7 +2057,7 @@ error::Error GLES2DecoderImpl::HandleDeleteProgram(
       glDeleteProgram(info->service_id());
       RemoveProgramInfo(client_id);
     } else {
-      SetGLError(GL_INVALID_VALUE);
+      SetGLError(GL_INVALID_VALUE, "glDeleteProgram: unknown program");
     }
   }
   return error::kNoError;
@@ -2071,7 +2079,8 @@ void GLES2DecoderImpl::DoFramebufferRenderbuffer(
     GLenum target, GLenum attachment, GLenum renderbuffertarget,
     GLuint client_renderbuffer_id) {
   if (!bound_framebuffer_) {
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_OPERATION,
+               "glFramebufferRenderbuffer: no framebuffer bound");
     return;
   }
   GLuint service_id = 0;
@@ -2079,7 +2088,8 @@ void GLES2DecoderImpl::DoFramebufferRenderbuffer(
     RenderbufferManager::RenderbufferInfo* info =
         GetRenderbufferInfo(client_renderbuffer_id);
     if (!info) {
-      SetGLError(GL_INVALID_OPERATION);
+      SetGLError(GL_INVALID_OPERATION,
+                 "glFramebufferRenderbuffer: unknown renderbuffer");
       return;
     }
     service_id = info->service_id();
@@ -2099,14 +2109,16 @@ void GLES2DecoderImpl::DoFramebufferTexture2D(
     GLenum target, GLenum attachment, GLenum textarget,
     GLuint client_texture_id, GLint level) {
   if (!bound_framebuffer_) {
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_OPERATION,
+               "glFramebufferTexture2D: no framebuffer bound.");
     return;
   }
   GLuint service_id = 0;
   if (client_texture_id) {
     TextureManager::TextureInfo* info = GetTextureInfo(client_texture_id);
     if (!info) {
-      SetGLError(GL_INVALID_OPERATION);
+      SetGLError(GL_INVALID_OPERATION,
+                 "glFramebufferTexture2D: unknown texture");
       return;
     }
     service_id = info->service_id();
@@ -2117,7 +2129,8 @@ void GLES2DecoderImpl::DoFramebufferTexture2D(
 void GLES2DecoderImpl::DoGetFramebufferAttachmentParameteriv(
     GLenum target, GLenum attachment, GLenum pname, GLint* params) {
   if (!bound_framebuffer_) {
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_OPERATION,
+               "glFramebufferAttachmentParameteriv: no framebuffer bound");
     return;
   }
   glGetFramebufferAttachmentParameterivEXT(target, attachment, pname, params);
@@ -2126,7 +2139,8 @@ void GLES2DecoderImpl::DoGetFramebufferAttachmentParameteriv(
 void GLES2DecoderImpl::DoGetRenderbufferParameteriv(
     GLenum target, GLenum pname, GLint* params) {
   if (!bound_renderbuffer_) {
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_OPERATION,
+               "glGetRenderbufferParameteriv: no renderbuffer bound");
     return;
   }
   glGetRenderbufferParameterivEXT(target, pname, params);
@@ -2135,7 +2149,8 @@ void GLES2DecoderImpl::DoGetRenderbufferParameteriv(
 void GLES2DecoderImpl::DoRenderbufferStorage(
   GLenum target, GLenum internalformat, GLsizei width, GLsizei height) {
   if (!bound_renderbuffer_) {
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_OPERATION,
+               "glGetRenderbufferStorage: no renderbuffer bound");
     return;
   }
   glRenderbufferStorageEXT(target, internalformat, width, height);
@@ -2144,7 +2159,7 @@ void GLES2DecoderImpl::DoRenderbufferStorage(
 void GLES2DecoderImpl::DoLinkProgram(GLuint program) {
   ProgramManager::ProgramInfo* info = GetProgramInfo(program);
   if (!info) {
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_OPERATION, "glLinkProgram: unknown program");
     return;
   }
   CopyRealGLErrorsToWrapper();
@@ -2152,7 +2167,7 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program) {
   GLenum error = glGetError();
   if (error != GL_NO_ERROR) {
     info->Reset();
-    SetGLError(error);
+    SetGLError(error, NULL);
   } else {
     info->Update();
   }
@@ -2162,7 +2177,7 @@ void GLES2DecoderImpl::DoTexParameterf(
     GLenum target, GLenum pname, GLfloat param) {
   TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
   if (!info) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glTexParameterf: unknown texture");
   } else {
     info->SetParameter(pname, static_cast<GLint>(param));
     glTexParameterf(target, pname, param);
@@ -2173,7 +2188,7 @@ void GLES2DecoderImpl::DoTexParameteri(
     GLenum target, GLenum pname, GLint param) {
   TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
   if (!info) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glTexParameteri: unknown texture");
   } else {
     info->SetParameter(pname, param);
     glTexParameteri(target, pname, param);
@@ -2184,7 +2199,7 @@ void GLES2DecoderImpl::DoTexParameterfv(
     GLenum target, GLenum pname, const GLfloat* params) {
   TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
   if (!info) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glTexParameterfv: unknown texture");
   } else {
     info->SetParameter(pname, *reinterpret_cast<const GLint*>(params));
     glTexParameterfv(target, pname, params);
@@ -2195,7 +2210,7 @@ void GLES2DecoderImpl::DoTexParameteriv(
   GLenum target, GLenum pname, const GLint* params) {
   TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
   if (!info) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glTexParameteriv: unknown texture");
   } else {
     info->SetParameter(pname, *params);
     glTexParameteriv(target, pname, params);
@@ -2205,7 +2220,7 @@ void GLES2DecoderImpl::DoTexParameteriv(
 void GLES2DecoderImpl::DoUniform1i(GLint location, GLint v0) {
   if (!current_program_ || current_program_->IsDeleted()) {
     // The program does not exist.
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_OPERATION, "glUniform1i: no program in use");
     return;
   }
   current_program_->SetSamplers(location, 1, &v0);
@@ -2216,7 +2231,7 @@ void GLES2DecoderImpl::DoUniform1iv(
     GLint location, GLsizei count, const GLint *value) {
   if (!current_program_ || current_program_->IsDeleted()) {
     // The program does not exist.
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_OPERATION, "glUniform1iv: no program in use");
     return;
   }
   current_program_->SetSamplers(location, count, value);
@@ -2229,12 +2244,12 @@ void GLES2DecoderImpl::DoUseProgram(GLuint program) {
   if (program) {
     info = GetProgramInfo(program);
     if (!info) {
-      SetGLError(GL_INVALID_VALUE);
+      SetGLError(GL_INVALID_VALUE, "glUseProgram: unknown program");
       return;
     }
     if (!info->IsValid()) {
       // Program was not linked successfully. (ie, glLinkProgram)
-      SetGLError(GL_INVALID_OPERATION);
+      SetGLError(GL_INVALID_OPERATION, "glUseProgram: program not linked");
       return;
     }
     service_id = info->service_id();
@@ -2262,14 +2277,18 @@ GLenum GLES2DecoderImpl::GetGLError() {
   return error;
 }
 
-void GLES2DecoderImpl::SetGLError(GLenum error) {
+void GLES2DecoderImpl::SetGLError(GLenum error, const char* msg) {
+  if (msg) {
+    last_error_ = msg;
+    DLOG(ERROR) << last_error_;
+  }
   error_bits_ |= GLES2Util::GLErrorToErrorBit(error);
 }
 
 void GLES2DecoderImpl::CopyRealGLErrorsToWrapper() {
   GLenum error;
   while ((error = glGetError()) != GL_NO_ERROR) {
-    SetGLError(error);
+    SetGLError(error, NULL);
   }
 }
 
@@ -2386,7 +2405,8 @@ bool GLES2DecoderImpl::IsDrawValid(GLuint max_vertex_accessed) {
     }
     DCHECK_LT(static_cast<GLuint>(location), group_->max_vertex_attribs());
     if (!vertex_attrib_infos_[location].CanAccess(max_vertex_accessed)) {
-      SetGLError(GL_INVALID_OPERATION);
+      SetGLError(GL_INVALID_OPERATION,
+                 "glDrawXXX: attempt to access out of range vertices");
       return false;
     }
   }
@@ -2397,34 +2417,48 @@ error::Error GLES2DecoderImpl::HandleDrawElements(
     uint32 immediate_data_size, const gles2::DrawElements& c) {
   if (!bound_element_array_buffer_ ||
       bound_element_array_buffer_->IsDeleted()) {
-    SetGLError(GL_INVALID_OPERATION);
-  } else {
-    GLenum mode = c.mode;
-    GLsizei count = c.count;
-    GLenum type = c.type;
-    int32 offset = c.index_offset;
-    if (count < 0 || offset < 0) {
-      SetGLError(GL_INVALID_VALUE);
-    } else if (!ValidateGLenumDrawMode(mode) ||
-               !ValidateGLenumIndexType(type)) {
-      SetGLError(GL_INVALID_ENUM);
-    } else {
-      GLuint max_vertex_accessed;
-      if (!bound_element_array_buffer_->GetMaxValueForRange(
-          offset, count, type, &max_vertex_accessed)) {
-        SetGLError(GL_INVALID_OPERATION);
-      } else {
-        if (IsDrawValid(max_vertex_accessed)) {
-          bool has_non_renderable_textures;
-          SetBlackTextureForNonRenderableTextures(
-              &has_non_renderable_textures);
-          const GLvoid* indices = reinterpret_cast<const GLvoid*>(offset);
-          glDrawElements(mode, count, type, indices);
-          if (has_non_renderable_textures) {
-            RestoreStateForNonRenderableTextures();
-          }
-        }
-      }
+    SetGLError(GL_INVALID_OPERATION,
+               "glDrawElements: No element array buffer bound");
+    return error::kNoError;
+  }
+
+  GLenum mode = c.mode;
+  GLsizei count = c.count;
+  GLenum type = c.type;
+  int32 offset = c.index_offset;
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glDrawElements: count < 0");
+    return error::kNoError;
+  }
+  if (offset < 0) {
+    SetGLError(GL_INVALID_VALUE, "glDrawElements: offset < 0");
+    return error::kNoError;
+  }
+  if (!ValidateGLenumDrawMode(mode)) {
+    SetGLError(GL_INVALID_ENUM, "glDrawElements: mode GL_INVALID_ENUM");
+    return error::kNoError;
+  }
+  if (!ValidateGLenumIndexType(type)) {
+    SetGLError(GL_INVALID_ENUM, "glDrawElements: type GL_INVALID_ENUM");
+    return error::kNoError;
+  }
+
+  GLuint max_vertex_accessed;
+  if (!bound_element_array_buffer_->GetMaxValueForRange(
+      offset, count, type, &max_vertex_accessed)) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glDrawElements: range out of bounds for buffer");
+    return error::kNoError;
+  }
+
+  if (IsDrawValid(max_vertex_accessed)) {
+    bool has_non_renderable_textures;
+    SetBlackTextureForNonRenderableTextures(
+        &has_non_renderable_textures);
+    const GLvoid* indices = reinterpret_cast<const GLvoid*>(offset);
+    glDrawElements(mode, count, type, indices);
+    if (has_non_renderable_textures) {
+      RestoreStateForNonRenderableTextures();
     }
   }
   return error::kNoError;
@@ -2434,13 +2468,19 @@ GLuint GLES2DecoderImpl::DoGetMaxValueInBuffer(
     GLuint buffer_id, GLsizei count, GLenum type, GLuint offset) {
   GLuint max_vertex_accessed = 0;
   BufferManager::BufferInfo* info = GetBufferInfo(buffer_id);
-  if (!info || info->target() != GL_ELEMENT_ARRAY_BUFFER) {
+  if (!info) {
     // TODO(gman): Should this be a GL error or a command buffer error?
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_VALUE,
+               "GetMaxValueInBuffer: unknown buffer");
+  } else if (info->target() != GL_ELEMENT_ARRAY_BUFFER) {
+    // TODO(gman): Should this be a GL error or a command buffer error?
+    SetGLError(GL_INVALID_OPERATION,
+               "GetMaxValueInBuffer: buffer not element array buffer");
   } else {
     if (!info->GetMaxValueForRange(offset, count, type, &max_vertex_accessed)) {
       // TODO(gman): Should this be a GL error or a command buffer error?
-      SetGLError(GL_INVALID_OPERATION);
+      SetGLError(GL_INVALID_OPERATION,
+                 "GetMaxValueInBuffer: range out of bounds for buffer");
     }
   }
   return max_vertex_accessed;
@@ -2454,7 +2494,7 @@ error::Error GLES2DecoderImpl::ShaderSourceHelper(
     GLuint client_id, const char* data, uint32 data_size) {
   ShaderManager::ShaderInfo* info = GetShaderInfo(client_id);
   if (!info) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glShaderSource: unknown shader");
     return error::kNoError;
   }
   // Note: We don't actually call glShaderSource here. We wait until
@@ -2499,7 +2539,7 @@ error::Error GLES2DecoderImpl::HandleShaderSourceBucket(
 void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
   ShaderManager::ShaderInfo* info = GetShaderInfo(client_id);
   if (!info) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glCompileShader: unknown shader");
     return;
   }
   // Translate GL ES 2.0 shader to Desktop GL shader and pass that to
@@ -2547,7 +2587,7 @@ void GLES2DecoderImpl::DoGetShaderiv(
     GLuint shader, GLenum pname, GLint* params) {
   ShaderManager::ShaderInfo* info = GetShaderInfo(shader);
   if (!info) {
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_VALUE, "glGetShaderiv: unknown shader");
     return;
   }
   if (pname == GL_SHADER_SOURCE_LENGTH) {
@@ -2561,12 +2601,13 @@ error::Error GLES2DecoderImpl::HandleGetShaderSource(
     uint32 immediate_data_size, const gles2::GetShaderSource& c) {
   GLuint shader = c.shader;
   ShaderManager::ShaderInfo* info = GetShaderInfo(shader);
-  if (!info) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
   uint32 bucket_id = static_cast<uint32>(c.bucket_id);
   Bucket* bucket = CreateBucket(bucket_id);
+  if (!info) {
+    bucket->SetSize(0);
+    SetGLError(GL_INVALID_VALUE, "glGetShaderSource: unknown shader");
+    return error::kNoError;
+  }
   bucket->SetFromString(info->source());
   return error::kNoError;
 }
@@ -2576,7 +2617,7 @@ error::Error GLES2DecoderImpl::HandleGetProgramInfoLog(
   GLuint program = c.program;
   ProgramManager::ProgramInfo* info = GetProgramInfo(program);
   if (!info) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glGetProgramInfoLog: unknown program");
     return error::kNoError;
   }
   uint32 bucket_id = static_cast<uint32>(c.bucket_id);
@@ -2595,7 +2636,7 @@ error::Error GLES2DecoderImpl::HandleGetShaderInfoLog(
   GLuint shader = c.shader;
   ShaderManager::ShaderInfo* info = GetShaderInfo(shader);
   if (!info) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glGetShaderInfoLog: unknown shader");
     return error::kNoError;
   }
   uint32 bucket_id = static_cast<uint32>(c.bucket_id);
@@ -2637,12 +2678,12 @@ void GLES2DecoderImpl::DoAttachShader(
     GLuint program_client_id, GLint shader_client_id) {
   ProgramManager::ProgramInfo* program_info = GetProgramInfo(program_client_id);
   if (!program_info) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glAttachShader: unknown program");
     return;
   }
   ShaderManager::ShaderInfo* shader_info = GetShaderInfo(shader_client_id);
   if (!shader_info) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glAttachShader: unknown shader");
     return;
   }
   glAttachShader(program_info->service_id(), shader_info->service_id());
@@ -2652,12 +2693,12 @@ void GLES2DecoderImpl::DoDetachShader(
     GLuint program_client_id, GLint shader_client_id) {
   ProgramManager::ProgramInfo* program_info = GetProgramInfo(program_client_id);
   if (!program_info) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glDetachShader: unknown program");
     return;
   }
   ShaderManager::ShaderInfo* shader_info = GetShaderInfo(shader_client_id);
   if (!shader_info) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glDetachShader: unknown shader");
     return;
   }
   glDetachShader(program_info->service_id(), shader_info->service_id());
@@ -2666,7 +2707,7 @@ void GLES2DecoderImpl::DoDetachShader(
 void GLES2DecoderImpl::DoValidateProgram(GLuint program_client_id) {
   ProgramManager::ProgramInfo* info = GetProgramInfo(program_client_id);
   if (!info) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glValidateProgram: unknown program");
     return;
   }
   glValidateProgram(info->service_id());
@@ -2674,42 +2715,63 @@ void GLES2DecoderImpl::DoValidateProgram(GLuint program_client_id) {
 
 error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
     uint32 immediate_data_size, const gles2::VertexAttribPointer& c) {
-  if (bound_array_buffer_ && !bound_array_buffer_->IsDeleted()) {
-    GLuint indx = c.indx;
-    GLint size = c.size;
-    GLenum type = c.type;
-    GLboolean normalized = c.normalized;
-    GLsizei stride = c.stride;
-    GLsizei offset = c.offset;
-    const void* ptr = reinterpret_cast<const void*>(offset);
-    if (!ValidateGLenumVertexAttribType(type) ||
-        !ValidateGLintVertexAttribSize(size)) {
-      SetGLError(GL_INVALID_ENUM);
-      return error::kNoError;
-    }
-    if (indx >= group_->max_vertex_attribs() ||
-        stride < 0 ||
-        offset < 0) {
-      SetGLError(GL_INVALID_VALUE);
-      return error::kNoError;
-    }
-    GLsizei component_size =
-        GLES2Util::GetGLTypeSizeForTexturesAndBuffers(type);
-    GLsizei real_stride = stride != 0 ? stride : component_size * size;
-    if (offset % component_size > 0) {
-      SetGLError(GL_INVALID_VALUE);
-      return error::kNoError;
-    }
-    vertex_attrib_infos_[indx].SetInfo(
-        bound_array_buffer_,
-        size,
-        type,
-        real_stride,
-        offset);
-    glVertexAttribPointer(indx, size, type, normalized, stride, ptr);
-  } else {
-    SetGLError(GL_INVALID_VALUE);
+  if (!bound_array_buffer_ || bound_array_buffer_->IsDeleted()) {
+    SetGLError(GL_INVALID_VALUE,
+               "glVertexAttribPointer: no array buffer bound");
+    return error::kNoError;
   }
+
+  GLuint indx = c.indx;
+  GLint size = c.size;
+  GLenum type = c.type;
+  GLboolean normalized = c.normalized;
+  GLsizei stride = c.stride;
+  GLsizei offset = c.offset;
+  const void* ptr = reinterpret_cast<const void*>(offset);
+  if (!ValidateGLenumVertexAttribType(type)) {
+    SetGLError(GL_INVALID_ENUM,
+               "glVertexAttribPointer: type GL_INVALID_ENUM");
+    return error::kNoError;
+  }
+  if (!ValidateGLintVertexAttribSize(size)) {
+    SetGLError(GL_INVALID_ENUM,
+               "glVertexAttribPointer: size GL_INVALID_VALUE");
+    return error::kNoError;
+  }
+  if (indx >= group_->max_vertex_attribs()) {
+    SetGLError(GL_INVALID_VALUE, "glVertexAttribPointer: index out of range");
+    return error::kNoError;
+  }
+  if (stride < 0) {
+    SetGLError(GL_INVALID_VALUE,
+               "glVertexAttribPointer: stride < 0");
+    return error::kNoError;
+  }
+  if (stride > 255) {
+    SetGLError(GL_INVALID_VALUE,
+               "glVertexAttribPointer: stride > 255");
+    return error::kNoError;
+  }
+  if (offset < 0) {
+    SetGLError(GL_INVALID_VALUE,
+               "glVertexAttribPointer: offset < 0");
+    return error::kNoError;
+  }
+  GLsizei component_size =
+    GLES2Util::GetGLTypeSizeForTexturesAndBuffers(type);
+  GLsizei real_stride = stride != 0 ? stride : component_size * size;
+  if (offset % component_size > 0) {
+    SetGLError(GL_INVALID_VALUE,
+               "glVertexAttribPointer: stride not valid for type");
+    return error::kNoError;
+  }
+  vertex_attrib_infos_[indx].SetInfo(
+      bound_array_buffer_,
+      size,
+      type,
+      real_stride,
+      offset);
+  glVertexAttribPointer(indx, size, type, normalized, stride, ptr);
   return error::kNoError;
 }
 
@@ -2722,7 +2784,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
   GLenum format = c.format;
   GLenum type = c.type;
   if (width < 0 || height < 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glReadPixels: dimensions < 0");
     return error::kNoError;
   }
   typedef gles2::ReadPixels::Result Result;
@@ -2739,9 +2801,12 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
     return error::kOutOfBounds;
   }
 
-  if (!ValidateGLenumReadPixelFormat(format) ||
-      !ValidateGLenumPixelType(type)) {
-    SetGLError(GL_INVALID_ENUM);
+  if (!ValidateGLenumReadPixelFormat(format)) {
+    SetGLError(GL_INVALID_ENUM, "glReadPixels: format GL_INVALID_ENUM");
+    return error::kNoError;
+  }
+  if (!ValidateGLenumPixelType(type)) {
+    SetGLError(GL_INVALID_ENUM, "glReadPixels: type GL_INVALID_ENUM");
     return error::kNoError;
   }
   if (width == 0 || height == 0) {
@@ -2756,7 +2821,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
   GLint max_x;
   GLint max_y;
   if (!SafeAdd(x, width, &max_x) || !SafeAdd(y, height, &max_y)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glReadPixels: dimensions out of range");
     return error::kNoError;
   }
 
@@ -2766,18 +2831,18 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
     uint32 temp_size;
     if (!GLES2Util::ComputeImageDataSize(
         width, 1, format, type, pack_alignment_, &temp_size)) {
-      SetGLError(GL_INVALID_VALUE);
+      SetGLError(GL_INVALID_VALUE, "glReadPixels: dimensions out of range");
       return error::kNoError;
     }
     GLsizei unpadded_row_size = temp_size;
     if (!GLES2Util::ComputeImageDataSize(
         width, 2, format, type, pack_alignment_, &temp_size)) {
-      SetGLError(GL_INVALID_VALUE);
+      SetGLError(GL_INVALID_VALUE, "glReadPixels: dimensions out of range");
       return error::kNoError;
     }
     GLsizei padded_row_size = temp_size - unpadded_row_size;
     if (padded_row_size < 0 || unpadded_row_size < 0) {
-      SetGLError(GL_INVALID_VALUE);
+      SetGLError(GL_INVALID_VALUE, "glReadPixels: dimensions out of range");
       return error::kNoError;
     }
 
@@ -2785,7 +2850,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
     uint32 dest_row_offset;
     if (!GLES2Util::ComputeImageDataSize(
       dest_x_offset, 1, format, type, pack_alignment_, &dest_row_offset)) {
-      SetGLError(GL_INVALID_VALUE);
+      SetGLError(GL_INVALID_VALUE, "glReadPixels: dimensions out of range");
       return error::kNoError;
     }
 
@@ -2814,7 +2879,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
   if (error == GL_NO_ERROR) {
     *result = true;
   } else {
-    SetGLError(error);
+    SetGLError(error, NULL);
   }
   return error::kNoError;
 }
@@ -2824,11 +2889,11 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(
   GLenum pname = c.pname;
   GLenum param = c.param;
   if (!ValidateGLenumPixelStore(pname)) {
-    SetGLError(GL_INVALID_ENUM);
+    SetGLError(GL_INVALID_ENUM, "glPixelStorei: pname GL_INVALID_ENUM");
     return error::kNoError;
   }
   if (!ValidateGLintPixelStoreAlignment(param)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glPixelSTore: param GL_INVALID_VALUE");
     return error::kNoError;
   }
   glPixelStorei(pname, param);
@@ -2852,11 +2917,11 @@ error::Error GLES2DecoderImpl::GetAttribLocationHelper(
     const std::string& name_str) {
   ProgramManager::ProgramInfo* info = GetProgramInfo(client_id);
   if (!info) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glGetAttribLocation: unknown program");
     return error::kNoError;
   }
   if (!info->IsValid()) {
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_OPERATION, "glGetAttribLocation: program not linked");
     return error::kNoError;
   }
   GLint* location = GetSharedMemoryAs<GLint*>(
@@ -2916,11 +2981,12 @@ error::Error GLES2DecoderImpl::GetUniformLocationHelper(
     const std::string& name_str) {
   ProgramManager::ProgramInfo* info = GetProgramInfo(client_id);
   if (!info) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glGetUniformLocation: unknown program");
     return error::kNoError;
   }
   if (!info->IsValid()) {
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_OPERATION,
+               "glGetUniformLocation: program not linked");
     return error::kNoError;
   }
   GLint* location = GetSharedMemoryAs<GLint*>(
@@ -2979,7 +3045,7 @@ error::Error GLES2DecoderImpl::HandleGetString(
     uint32 immediate_data_size, const gles2::GetString& c) {
   GLenum name = static_cast<GLenum>(c.name);
   if (!ValidateGLenumStringType(name)) {
-    SetGLError(GL_INVALID_ENUM);
+    SetGLError(GL_INVALID_ENUM, "glGetString: name GL_INVALID_ENUM");
     return error::kNoError;
   }
   const char* gl_str = reinterpret_cast<const char*>(glGetString(name));
@@ -3005,18 +3071,21 @@ error::Error GLES2DecoderImpl::HandleGetString(
 
 void GLES2DecoderImpl::DoBufferData(
   GLenum target, GLsizeiptr size, const GLvoid * data, GLenum usage) {
-  if (!ValidateGLenumBufferTarget(target) ||
-      !ValidateGLenumBufferUsage(usage)) {
-    SetGLError(GL_INVALID_ENUM);
+  if (!ValidateGLenumBufferTarget(target)) {
+    SetGLError(GL_INVALID_ENUM, "glBufferData: target GL_INVALID_ENUM");
+    return;
+  }
+  if (!ValidateGLenumBufferUsage(usage)) {
+    SetGLError(GL_INVALID_ENUM, "glBufferData: usage GL_INVALID_ENUM");
     return;
   }
   if (size < 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glBufferData: size < 0");
     return;
   }
   BufferManager::BufferInfo* info = GetBufferInfoForTarget(target);
   if (!info) {
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_VALUE, "glBufferData: unknown buffer");
     return;
   }
   // Clear the buffer to 0 if no initial data was passed in.
@@ -3030,7 +3099,7 @@ void GLES2DecoderImpl::DoBufferData(
   glBufferData(target, size, data, usage);
   GLenum error = glGetError();
   if (error != GL_NO_ERROR) {
-    SetGLError(error);
+    SetGLError(error, NULL);
   } else {
     info->SetSize(size);
     info->SetRange(0, size, data);
@@ -3073,11 +3142,11 @@ void GLES2DecoderImpl::DoBufferSubData(
   GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid * data) {
   BufferManager::BufferInfo* info = GetBufferInfoForTarget(target);
   if (!info) {
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_VALUE, "glBufferSubData: unknown buffer");
     return;
   }
   if (!info->SetRange(offset, size, data)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glBufferSubData: out of range");
   } else {
     glBufferSubData(target, offset, size, data);
   }
@@ -3093,19 +3162,26 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage2D(
   GLsizei image_size,
   const void* data) {
   // TODO(gman): Validate image_size is correct for width, height and format.
-  if (!ValidateGLenumTextureTarget(target) ||
-      !ValidateGLenumCompressedTextureInternalFormat(internal_format)) {
-    SetGLError(GL_INVALID_ENUM);
+  if (!ValidateGLenumTextureTarget(target)) {
+    SetGLError(GL_INVALID_ENUM,
+               "glCompressedTexImage2D: target GL_INVALID_ENUM");
+    return error::kNoError;
+  }
+  if (!ValidateGLenumCompressedTextureInternalFormat(internal_format)) {
+    SetGLError(GL_INVALID_ENUM,
+               "glCompressedTexImage2D: internal_format GL_INVALID_ENUM");
     return error::kNoError;
   }
   if (!texture_manager()->ValidForTarget(target, level, width, height, 1) ||
       border != 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE,
+               "glCompressedTexImage2D: dimensions out of range");
     return error::kNoError;
   }
   TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
   if (!info) {
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_VALUE,
+               "glCompressedTexImage2D: unknown texture target");
     return error::kNoError;
   }
   scoped_array<int8> zero;
@@ -3173,21 +3249,32 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
   GLenum type,
   const void* pixels,
   uint32 pixels_size) {
-  if (!ValidateGLenumTextureTarget(target) ||
-      !ValidateGLenumTextureFormat(internal_format) ||
-      !ValidateGLenumTextureFormat(format) ||
-      !ValidateGLenumPixelType(type)) {
-    SetGLError(GL_INVALID_ENUM);
+  if (!ValidateGLenumTextureTarget(target)) {
+    SetGLError(GL_INVALID_ENUM, "glTexImage2D: target GL_INVALID_ENUM");
+    return error::kNoError;
+  }
+  if (!ValidateGLenumTextureFormat(internal_format)) {
+    SetGLError(GL_INVALID_ENUM,
+               "glTexImage2D: internal_format GL_INVALID_ENUM");
+    return error::kNoError;
+  }
+  if (!ValidateGLenumTextureFormat(format)) {
+    SetGLError(GL_INVALID_ENUM, "glTexImage2D: format GL_INVALID_ENUM");
+    return error::kNoError;
+  }
+  if (!ValidateGLenumPixelType(type)) {
+    SetGLError(GL_INVALID_ENUM, "glTexImage2D: type GL_INVALID_ENUM");
     return error::kNoError;
   }
   if (!texture_manager()->ValidForTarget(target, level, width, height, 1) ||
       border != 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glTexImage2D: dimensions out of range");
     return error::kNoError;
   }
   TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
   if (!info) {
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_OPERATION,
+               "glTexImage2D: unknown texture for target");
     return error::kNoError;
   }
   scoped_array<int8> zero;
@@ -3275,11 +3362,13 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribPointerv(
     return error::kInvalidArguments;
   }
   if (!ValidateGLenumVertexPointer(pname)) {
-    SetGLError(GL_INVALID_ENUM);
+    SetGLError(GL_INVALID_ENUM,
+               "glGetVertexAttribPointerv: pname GL_INVALID_ENUM");
     return error::kNoError;
   }
   if (index >= group_->max_vertex_attribs()) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE,
+               "glGetVertexAttribPointerv: index out of range.");
     return error::kNoError;
   }
   result->SetNumResults(1);
@@ -3305,24 +3394,24 @@ bool GLES2DecoderImpl::GetUniformSetup(
   result->SetNumResults(0);
   ProgramManager::ProgramInfo* info = GetProgramInfo(program);
   if (!info) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glGetUniform: unknown program");
     return false;
   }
   if (!info->IsValid()) {
     // Program was not linked successfully. (ie, glLinkProgram)
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_OPERATION, "glGetUniform: program not linked");
     return false;
   }
   *service_id = info->service_id();
   GLenum type;
   if (!info->GetUniformTypeByLocation(location, &type)) {
     // No such location.
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_OPERATION, "glGetUniform: unknown location");
     return false;
   }
   GLsizei size = GLES2Util::GetGLDataTypeSizeForUniforms(type);
   if (size == 0) {
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_OPERATION, "glGetUniform: unknown type");
     return false;
   }
   result = GetSharedMemoryAs<SizedResult<GLint>*>(
@@ -3385,29 +3474,35 @@ error::Error GLES2DecoderImpl::HandleGetShaderPrecisionFormat(
   if (result->success != 0) {
     return error::kInvalidArguments;
   }
-  if (!ValidateGLenumShaderType(shader_type) ||
-      !ValidateGLenumShaderPrecision(precision_type)) {
-    SetGLError(GL_INVALID_ENUM);
-  } else {
-    result->success = 1;  // true
-    switch (precision_type) {
-      case GL_LOW_INT:
-      case GL_MEDIUM_INT:
-      case GL_HIGH_INT:
-        result->min_range = -31;
-        result->max_range = 31;
-        result->precision = 0;
-      case GL_LOW_FLOAT:
-      case GL_MEDIUM_FLOAT:
-      case GL_HIGH_FLOAT:
-        result->min_range = -62;
-        result->max_range = 62;
-        result->precision = -16;
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
+  if (!ValidateGLenumShaderType(shader_type)) {
+    SetGLError(GL_INVALID_ENUM,
+               "glGetShaderPrecisionFormat: shader_type GL_INVALID_ENUM");
+    return error::kNoError;
+  }
+  if (!ValidateGLenumShaderPrecision(precision_type)) {
+    SetGLError(GL_INVALID_ENUM,
+               "glGetShaderPrecisionFormat: precision_type GL_INVALID_ENUM");
+    return error::kNoError;
+  }
+
+  result->success = 1;  // true
+  switch (precision_type) {
+    case GL_LOW_INT:
+    case GL_MEDIUM_INT:
+    case GL_HIGH_INT:
+      result->min_range = -31;
+      result->max_range = 31;
+      result->precision = 0;
+    case GL_LOW_FLOAT:
+    case GL_MEDIUM_FLOAT:
+    case GL_HIGH_FLOAT:
+      result->min_range = -62;
+      result->max_range = 62;
+      result->precision = -16;
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
   return error::kNoError;
 }
@@ -3417,7 +3512,7 @@ error::Error GLES2DecoderImpl::HandleGetAttachedShaders(
   uint32 result_size = c.result_size;
   ProgramManager::ProgramInfo* info = GetProgramInfo(c.program);
   if (!info) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glGetAttachedShaders: unknown program");
     return error::kNoError;
   }
   typedef gles2::GetAttachedShaders::Result Result;
@@ -3462,18 +3557,18 @@ error::Error GLES2DecoderImpl::HandleGetActiveUniform(
   }
   ProgramManager::ProgramInfo* info = GetProgramInfo(program);
   if (!info) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glGetActiveUniform: unknown program");
     return error::kNoError;
   }
   if (!info->IsValid()) {
     // Program was not linked successfully. (ie, glLinkProgram)
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_OPERATION, "glGetActiveUniform: program not linked");
     return error::kNoError;
   }
   const ProgramManager::ProgramInfo::UniformInfo* uniform_info =
       info->GetUniformInfo(index);
   if (!uniform_info) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glGetActiveUniform: index out of range");
     return error::kNoError;
   }
   result->success = 1;  // true.
@@ -3501,18 +3596,18 @@ error::Error GLES2DecoderImpl::HandleGetActiveAttrib(
   }
   ProgramManager::ProgramInfo* info = GetProgramInfo(program);
   if (!info) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glGetActiveAttrib: unknown program");
     return error::kNoError;
   }
   if (!info->IsValid()) {
     // Program was not linked successfully. (ie, glLinkProgram)
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_OPERATION, "glGetActiveAttrib: program not linked");
     return error::kNoError;
   }
   const ProgramManager::ProgramInfo::VertexAttribInfo* attrib_info =
       info->GetAttribInfo(index);
   if (!attrib_info) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glGetActiveAttrib: index out of range");
     return error::kNoError;
   }
   result->success = 1;  // true.
@@ -3526,17 +3621,17 @@ error::Error GLES2DecoderImpl::HandleGetActiveAttrib(
 error::Error GLES2DecoderImpl::HandleShaderBinary(
     uint32 immediate_data_size, const gles2::ShaderBinary& c) {
 #if 1  // No binary shader support.
-  SetGLError(GL_INVALID_OPERATION);
+  SetGLError(GL_INVALID_OPERATION, "glShaderBinary: not supported");
   return error::kNoError;
 #else
   GLsizei n = static_cast<GLsizei>(c.n);
   if (n < 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glShaderBinary: n < 0");
     return error::kNoError;
   }
   GLsizei length = static_cast<GLsizei>(c.length);
   if (length < 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glShaderBinary: length < 0");
     return error::kNoError;
   }
   uint32 data_size;
@@ -3555,7 +3650,7 @@ error::Error GLES2DecoderImpl::HandleShaderBinary(
   for (GLsizei ii = 0; ii < n; ++ii) {
     ShaderManager::ShaderInfo* info = GetShaderInfo(shaders[ii]);
     if (!info) {
-      SetGLError(GL_INVALID_VALUE);
+      SetGLError(GL_INVALID_VALUE, "glShaderBinary: unknown shader");
       return error::kNoError;
     }
     service_ids[ii] = info->service_id();

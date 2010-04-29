@@ -21,7 +21,8 @@ void BindAttribLocation(GLuint program, GLuint index, const char* name);
 
 void BindFramebuffer(GLenum target, GLuint framebuffer) {
   if (IsFramebufferReservedId(framebuffer)) {
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(
+        GL_INVALID_OPERATION, "BindFramebuffer: framebuffer reserved id");
     return;
   }
   if (framebuffer != 0) {
@@ -32,7 +33,8 @@ void BindFramebuffer(GLenum target, GLuint framebuffer) {
 
 void BindRenderbuffer(GLenum target, GLuint renderbuffer) {
   if (IsRenderbufferReservedId(renderbuffer)) {
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(
+        GL_INVALID_OPERATION, "BindRenderbuffer: renderbuffer reserved id");
     return;
   }
   if (renderbuffer != 0) {
@@ -43,7 +45,7 @@ void BindRenderbuffer(GLenum target, GLuint renderbuffer) {
 
 void BindTexture(GLenum target, GLuint texture) {
   if (IsTextureReservedId(texture)) {
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_OPERATION, "BindTexture: texture reserved id");
     return;
   }
   if (texture != 0) {
@@ -126,11 +128,11 @@ void CopyTexImage2D(
     GLenum target, GLint level, GLenum internalformat, GLint x, GLint y,
     GLsizei width, GLsizei height, GLint border) {
   if (width < 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glCopyTexImage2D: width < 0");
     return;
   }
   if (height < 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glCopyTexImage2D: height < 0");
     return;
   }
   helper_->CopyTexImage2D(
@@ -141,11 +143,11 @@ void CopyTexSubImage2D(
     GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y,
     GLsizei width, GLsizei height) {
   if (width < 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glCopyTexSubImage2D: width < 0");
     return;
   }
   if (height < 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glCopyTexSubImage2D: height < 0");
     return;
   }
   helper_->CopyTexSubImage2D(
@@ -527,11 +529,11 @@ void ReleaseShaderCompiler() {
 void RenderbufferStorage(
     GLenum target, GLenum internalformat, GLsizei width, GLsizei height) {
   if (width < 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glRenderbufferStorage: width < 0");
     return;
   }
   if (height < 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glRenderbufferStorage: height < 0");
     return;
   }
   helper_->RenderbufferStorage(target, internalformat, width, height);
@@ -543,11 +545,11 @@ void SampleCoverage(GLclampf value, GLboolean invert) {
 
 void Scissor(GLint x, GLint y, GLsizei width, GLsizei height) {
   if (width < 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glScissor: width < 0");
     return;
   }
   if (height < 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glScissor: height < 0");
     return;
   }
   helper_->Scissor(x, y, width, height);
@@ -734,11 +736,11 @@ void VertexAttribPointer(
 
 void Viewport(GLint x, GLint y, GLsizei width, GLsizei height) {
   if (width < 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glViewport: width < 0");
     return;
   }
   if (height < 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glViewport: height < 0");
     return;
   }
   helper_->Viewport(x, y, width, height);

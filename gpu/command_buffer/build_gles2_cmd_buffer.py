@@ -1816,7 +1816,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
       for arg in func.GetOriginalArgs():
-        arg.WriteClientSideValidationCode(file)
+        arg.WriteClientSideValidationCode(file, func)
       file.Write("  helper_->%s(%s);\n" %
                  (func.name, func.MakeOriginalArgString("")))
       file.Write("}\n")
@@ -2201,9 +2201,9 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
       for arg in func.GetOriginalArgs():
-        arg.WriteClientSideValidationCode(file)
+        arg.WriteClientSideValidationCode(file, func)
       code = """  if (Is%(type)sReservedId(%(id)s)) {
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_OPERATION, "%(name)s: %(id)s reserved id");
     return;
   }
   if (%(id)s != 0) {
@@ -2731,7 +2731,7 @@ class GETnHandler(TypeHandler):
     code = """  typedef %(func_name)s::Result Result;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
   if (num_values == 0) {
-    SetGLError(GL_INVALID_ENUM);
+    SetGLError(GL_INVALID_ENUM, "gl%(func_name)s: invalid enum");
     return error::kNoError;
   }
   Result* result = GetSharedMemoryAs<Result*>(
@@ -2755,7 +2755,7 @@ class GETnHandler(TypeHandler):
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
   } else {
-    SetGLError(error);
+    SetGLError(error, NULL);
   }
   return error::kNoError;
 }
@@ -3589,11 +3589,11 @@ class Argument(object):
     file.Write("  %s %s = static_cast<%s>(c.%s);\n" %
                (self.type, self.name, self.type, self.name))
 
-  def WriteValidationCode(self, file):
+  def WriteValidationCode(self, file, func):
     """Writes the validation code for an argument."""
     pass
 
-  def WriteClientSideValidationCode(self, file):
+  def WriteClientSideValidationCode(self, file, func):
     """Writes the validation code for an argument."""
     pass
 
@@ -3635,17 +3635,19 @@ class SizeArgument(Argument):
     """overridden from Argument."""
     return ("-1", "kNoError", "GL_INVALID_VALUE")
 
-  def WriteValidationCode(self, file):
+  def WriteValidationCode(self, file, func):
     """overridden from Argument."""
     file.Write("  if (%s < 0) {\n" % self.name)
-    file.Write("    SetGLError(GL_INVALID_VALUE);\n")
+    file.Write("    SetGLError(GL_INVALID_VALUE, \"gl%s: %s < 0\");\n" %
+               (func.original_name, self.name))
     file.Write("    return error::kNoError;\n")
     file.Write("  }\n")
 
-  def WriteClientSideValidationCode(self, file):
+  def WriteClientSideValidationCode(self, file, func):
     """overridden from Argument."""
     file.Write("  if (%s < 0) {\n" % self.name)
-    file.Write("    SetGLError(GL_INVALID_VALUE);\n")
+    file.Write("    SetGLError(GL_INVALID_VALUE, \"gl%s: %s < 0\");\n" %
+               (func.original_name, self.name))
     file.Write("    return;\n")
     file.Write("  }\n")
 
@@ -3660,9 +3662,10 @@ class EnumBaseArgument(Argument):
     name = type[len(gl_type):]
     self.enum_info = _ENUM_LISTS[name]
 
-  def WriteValidationCode(self, file):
+  def WriteValidationCode(self, file, func):
     file.Write("  if (!Validate%s(%s)) {\n" % (self.local_type, self.name))
-    file.Write("    SetGLError(%s);\n" % self.gl_error)
+    file.Write("    SetGLError(%s, \"gl%s: %s %s\");\n" %
+               (self.gl_error, func.original_name, self.name, self.gl_error))
     file.Write("    return error::kNoError;\n")
     file.Write("  }\n")
 
@@ -3745,7 +3748,7 @@ class ImmediatePointerArgument(Argument):
       (self.type, self.name, self.type))
     file.Write("      c, data_size, immediate_data_size);\n")
 
-  def WriteValidationCode(self, file):
+  def WriteValidationCode(self, file, func):
     """Overridden from Argument."""
     file.Write("  if (%s == NULL) {\n" % self.name)
     file.Write("    return error::kOutOfBounds;\n")
@@ -3809,7 +3812,7 @@ class PointerArgument(Argument):
         "      %s_shm_id, %s_shm_offset, %s_size);\n" %
         (self.name, self.name, self.name))
 
-  def WriteValidationCode(self, file):
+  def WriteValidationCode(self, file, func):
     """Overridden from Argument."""
     file.Write("  if (%s == NULL) {\n" % self.name)
     file.Write("    return error::kOutOfBounds;\n")
@@ -4074,7 +4077,7 @@ class Function(object):
   def WriteHandlerValidation(self, file):
     """Writes validation code for the function."""
     for arg in self.GetOriginalArgs():
-      arg.WriteValidationCode(file)
+      arg.WriteValidationCode(file, self)
     self.WriteValidationCode(file)
 
   def WriteHandlerImplementation(self, file):

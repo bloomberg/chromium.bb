@@ -1922,7 +1922,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetMaxValueInBuffer) {
            GL_UNSIGNED_SHORT,
            kValidIndexRangeStart * 2, kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
   cmd.Init(client_element_buffer_id_, kOutOfRangeIndexRangeEnd,
            GL_UNSIGNED_SHORT,
            kValidIndexRangeStart * 2, kSharedMemoryId, kSharedMemoryOffset);

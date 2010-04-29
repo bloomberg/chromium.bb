@@ -418,7 +418,10 @@ GLenum GLES2Implementation::GetGLError() {
   return error;
 }
 
-void GLES2Implementation::SetGLError(GLenum error) {
+void GLES2Implementation::SetGLError(GLenum error, const char* msg) {
+  if (msg) {
+    last_error_ = msg;
+  }
   error_bits_ |= GLES2Util::GLErrorToErrorBit(error);
 }
 
@@ -510,7 +513,7 @@ void GLES2Implementation::SetBucketAsString(
 void GLES2Implementation::DrawElements(
     GLenum mode, GLsizei count, GLenum type, const void* indices) {
   if (count < 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glDrawElements: count less than 0.");
     return;
   }
   if (count == 0) {
@@ -632,8 +635,12 @@ GLint GLES2Implementation::GetUniformLocation(
 void GLES2Implementation::ShaderBinary(
     GLsizei n, const GLuint* shaders, GLenum binaryformat, const void* binary,
     GLsizei length) {
-  if (n < 0 || length < 0) {
-    SetGLError(GL_INVALID_VALUE);
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE, "glShaderBinary n < 0.");
+    return;
+  }
+  if (length < 0) {
+    SetGLError(GL_INVALID_VALUE, "glShaderBinary length < 0.");
     return;
   }
   GLsizei shader_id_size = n * sizeof(*shaders);
@@ -687,8 +694,12 @@ void GLES2Implementation::VertexAttribPointer(
 
 void GLES2Implementation::ShaderSource(
     GLuint shader, GLsizei count, const char** source, const GLint* length) {
-  if (count < 0 || shader == 0) {
-    SetGLError(GL_INVALID_VALUE);
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glShaderSource count < 0");
+    return;
+  }
+  if (shader == 0) {
+    SetGLError(GL_INVALID_VALUE, "glShaderSource shader == 0");
     return;
   }
 
@@ -697,7 +708,7 @@ void GLES2Implementation::ShaderSource(
   for (GLsizei ii = 0; ii < count; ++ii) {
     // I shouldn't have to check for this. The spec doesn't allow this
     if (!source[ii]) {
-      SetGLError(GL_INVALID_VALUE);
+      SetGLError(GL_INVALID_VALUE, "glShaderSource: null passed for string.");
       return;
     }
     total_size += (length && length[ii] >= 0) ? length[ii] : strlen(source[ii]);
@@ -749,7 +760,7 @@ void GLES2Implementation::BufferSubData(
   }
 
   if (size < 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glBufferSubData: size < 0");
     return;
   }
 
@@ -773,7 +784,7 @@ void GLES2Implementation::CompressedTexImage2D(
     GLenum target, GLint level, GLenum internalformat, GLsizei width,
     GLsizei height, GLint border, GLsizei image_size, const void* data) {
   if (width < 0 || height < 0 || level < 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glCompressedTexImage2D dimension < 0");
     return;
   }
   if (height == 0 || width == 0) {
@@ -796,7 +807,7 @@ void GLES2Implementation::CompressedTexSubImage2D(
     GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
     GLsizei height, GLenum format, GLsizei image_size, const void* data) {
   if (width < 0 || height < 0 || level < 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glCompressedTexSubImage2D dimension < 0");
     return;
   }
   // TODO(gman): Switch to use buckets always or at least if no room in shared
@@ -817,13 +828,13 @@ void GLES2Implementation::TexImage2D(
     GLsizei height, GLint border, GLenum format, GLenum type,
     const void* pixels) {
   if (level < 0 || height < 0 || width < 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glTexImage2D dimension < 0");
     return;
   }
   uint32 size;
   if (!GLES2Util::ComputeImageDataSize(
       width, height, format, type, unpack_alignment_, &size)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glTexImage2D: image size too large");
     return;
   }
   helper_->TexImage2D(
@@ -837,7 +848,7 @@ void GLES2Implementation::TexSubImage2D(
     GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
     GLsizei height, GLenum format, GLenum type, const void* pixels) {
   if (level < 0 || height < 0 || width < 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glTexSubImage2D dimension < 0");
     return;
   }
   if (height == 0 || width == 0) {
@@ -848,18 +859,18 @@ void GLES2Implementation::TexSubImage2D(
   uint32 temp_size;
   if (!GLES2Util::ComputeImageDataSize(
       width, 1, format, type, unpack_alignment_, &temp_size)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glTexSubImage2D: size to large");
     return;
   }
   GLsizeiptr unpadded_row_size = temp_size;
   if (!GLES2Util::ComputeImageDataSize(
       width, 2, format, type, unpack_alignment_, &temp_size)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glTexSubImage2D: size to large");
     return;
   }
   GLsizeiptr padded_row_size = temp_size - unpadded_row_size;
   if (padded_row_size < 0 || unpadded_row_size < 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glTexSubImage2D: size to large");
     return;
   }
 
@@ -914,7 +925,7 @@ void GLES2Implementation::GetActiveAttrib(
     GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size,
     GLenum* type, char* name) {
   if (bufsize < 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glGetActiveAttrib: bufsize < 0");
     return;
   }
   // Clear the bucket so if we the command fails nothing will be in it.
@@ -954,7 +965,7 @@ void GLES2Implementation::GetActiveUniform(
     GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size,
     GLenum* type, char* name) {
   if (bufsize < 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glGetActiveUniform: bufsize < 0");
     return;
   }
   // Clear the bucket so if we the command fails nothing will be in it.
@@ -993,7 +1004,7 @@ void GLES2Implementation::GetActiveUniform(
 void GLES2Implementation::GetAttachedShaders(
     GLuint program, GLsizei maxcount, GLsizei* count, GLuint* shaders) {
   if (maxcount < 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glGetAttachedShaders: maxcount < 0");
     return;
   }
   typedef gles2::GetAttachedShaders::Result Result;
@@ -1081,7 +1092,7 @@ void GLES2Implementation::ReadPixels(
     GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format,
     GLenum type, void* pixels) {
   if (width < 0 || height < 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glReadPixels: dimensions < 0");
     return;
   }
   if (width == 0 || height == 0) {
@@ -1101,18 +1112,18 @@ void GLES2Implementation::ReadPixels(
   uint32 temp_size;
   if (!GLES2Util::ComputeImageDataSize(
       width, 1, format, type, pack_alignment_, &temp_size)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glReadPixels: size too large.");
     return;
   }
   GLsizeiptr unpadded_row_size = temp_size;
   if (!GLES2Util::ComputeImageDataSize(
       width, 2, format, type, pack_alignment_, &temp_size)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glReadPixels: size too large.");
     return;
   }
   GLsizeiptr padded_row_size = temp_size - unpadded_row_size;
   if (padded_row_size < 0 || unpadded_row_size < 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glReadPixels: size too large.");
     return;
   }
   // Check if we have enough space to transfer at least an entire row.
@@ -1205,7 +1216,7 @@ bool GLES2Implementation::IsBufferReservedId(GLuint) {  // NOLINT
 
 void GLES2Implementation::BindBuffer(GLenum target, GLuint buffer) {
   if (IsBufferReservedId(buffer)) {
-    SetGLError(GL_INVALID_OPERATION);
+    SetGLError(GL_INVALID_OPERATION, "glBindBuffer: reserved buffer id");
     return;
   }
   if (buffer != 0) {
@@ -1253,7 +1264,7 @@ void GLES2Implementation::EnableVertexAttribArray(GLuint index) {
 
 void GLES2Implementation::DrawArrays(GLenum mode, GLint first, GLsizei count) {
   if (count < 0) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_VALUE, "glDrawArrays: count < 0");
     return;
   }
   bool have_client_side =
@@ -1299,7 +1310,7 @@ bool GLES2Implementation::GetVertexAttribHelper(
     case GL_CURRENT_VERTEX_ATTRIB:
       return false;  // pass through to service side.
     default:
-      SetGLError(GL_INVALID_ENUM);
+      SetGLError(GL_INVALID_ENUM, "glGetVertexAttrib: invalid enum");
       break;
   }
   return true;

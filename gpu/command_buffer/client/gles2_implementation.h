@@ -75,7 +75,7 @@ class GLES2Implementation {
   #else
     void BindBuffer(GLenum target, GLuint buffer) {
       if (IsReservedId(buffer)) {
-        SetGLError(GL_INVALID_OPERATION);
+        SetGLError(GL_INVALID_OPERATION, "glBindBuffer: reserved buffer id");
         return;
       }
       if (buffer != 0) {
@@ -95,7 +95,7 @@ class GLES2Implementation {
 
     void DrawArrays(GLenum mode, GLint first, GLsizei count) {
       if (count < 0) {
-        SetGLError(GL_INVALID_VALUE);
+        SetGLError(GL_INVALID_VALUE, "glDrawArrays: count < 0");
         return;
       }
       helper_->DrawArrays(mode, first, count);
@@ -184,7 +184,12 @@ class GLES2Implementation {
   GLenum GetGLError();
 
   // Sets our wrapper for the GLError.
-  void SetGLError(GLenum error);
+  void SetGLError(GLenum error, const char* msg);
+
+  // Returns the last error and clears it. Useful for debugging.
+  const std::string& GetLastError() {
+    return last_error_;
+  }
 
   // Waits for all commands to execute.
   void WaitForCmd();
@@ -235,6 +240,7 @@ class GLES2Implementation {
   int transfer_buffer_id_;
   void* result_buffer_;
   uint32 result_shm_offset_;
+  std::string last_error_;
 
   // pack alignment as last set by glPixelStorei
   GLint pack_alignment_;
