@@ -40,17 +40,10 @@ namespace nacl {
 
 namespace {
 
-// The pathname prefix for memory objects created by CreateMemoryObject().
-#if NACL_OSX
-// On Mac OS X, shm_open() gives us file descriptors that the OS won't
-// mmap() with PROT_EXEC, which is no good for the dynamic code
-// region, so use /tmp instead.
-const char kShmPrefix[] = "/tmp/google-nacl-shm-";
-# define SHM_OPEN open
-#else
-const char kShmPrefix[] = "/google-nacl-shm-";
-# define SHM_OPEN shm_open
-#endif
+// The pathname or SHM-namespace prefixes for memory objects created
+// by CreateMemoryObject().
+const char kShmTempPrefix[] = "/tmp/google-nacl-shm-";
+const char kShmOpenPrefix[] = "/google-nacl-shm-";
 
 }  // namespace
 
@@ -80,17 +73,23 @@ int GetLastErrorString(char* buffer, size_t length) {
 
 static AtomicWord memory_object_count = 0;
 
-Handle CreateMemoryObject(size_t length) {
+static int TryShmOrTempOpen(size_t length, bool use_temp) {
   if (0 == length) {
     return -1;
   }
 
   char name[PATH_MAX];
   for (;;) {
-    snprintf(name, sizeof name, "%s-%u.%u", kShmPrefix,
+    const char *prefix = use_temp ? kShmTempPrefix : kShmOpenPrefix;
+    snprintf(name, sizeof name, "%s-%u.%u", prefix,
              getpid(),
              static_cast<uint32_t>(AtomicIncrement(&memory_object_count, 1)));
-    int m = SHM_OPEN(name, O_RDWR | O_CREAT | O_EXCL, 0);
+    int m;
+    if (use_temp) {
+      m = open(name, O_RDWR | O_CREAT | O_EXCL, 0);
+    } else {
+      m = shm_open(name, O_RDWR | O_CREAT | O_EXCL, 0);
+    }
     if (0 <= m) {
       (void) shm_unlink(name);
       if (ftruncate(m, length) == -1) {
@@ -100,17 +99,53 @@ Handle CreateMemoryObject(size_t length) {
       return m;
     }
     if (errno != EEXIST) {
-#if NACL_LINUX && (defined(CHROMIUM_BUILD) || defined(GOOGLE_CHROME_BUILD))
-      // As a temporary measure, we try shm_open() as well as calling
-      // the unsandboxed browser process.  This code runs in the
-      // context of both the renderer and (Chromium's compiled-in)
-      // sel_ldr.  Currently sel_ldr is not sandboxed and doesn't have
-      // the appropriate socket FD set up for talking to the browser.
-      return renderer_sandbox_support::MakeSharedMemorySegmentViaIPC(length);
-#endif
       return -1;
     }
+    // Retry only if we got EEXIST.
   }
+}
+
+Handle CreateMemoryObject(size_t length) {
+  if (0 == length) {
+    return -1;
+  }
+  int fd;
+
+  // On Mac OS X, shm_open() gives us file descriptors that the OS
+  // won't mmap() with PROT_EXEC, which is no good for the dynamic
+  // code region.  Try open()ing a file in /tmp first, but fall back
+  // to using shm_open() if /tmp is not available, which will be the
+  // case inside the Chromium sandbox.  This means that dynamic
+  // loading will only work with --no-sandbox.
+  //
+  // TODO(mseaborn): We will probably need to do IPC to acquire SHM FDs
+  // inside the Chromium Mac sandbox, as on Linux.
+
+#if NACL_OSX
+  // Try /tmp first.  It would be OK to enable this for Linux, but
+  // there's no need because shm_open() (which uses /dev/shm rather
+  // than /tmp) is fine on Linux.
+  fd = TryShmOrTempOpen(length, true);
+  if (fd >= 0)
+    return fd;
+#endif
+  
+  // Try shm_open().
+  fd = TryShmOrTempOpen(length, false);
+  if (fd >= 0)
+    return fd;
+
+#if NACL_LINUX && (defined(CHROMIUM_BUILD) || defined(GOOGLE_CHROME_BUILD))
+  // As a temporary measure, we try shm_open() as well as calling
+  // the unsandboxed browser process.  This code runs in the
+  // context of both the renderer and (Chromium's compiled-in)
+  // sel_ldr.  Currently sel_ldr is not sandboxed and doesn't have
+  // the appropriate socket FD set up for talking to the browser.
+  // TODO(mseaborn): Move this to be the first method tried.
+  return renderer_sandbox_support::MakeSharedMemorySegmentViaIPC(length);
+#endif
+
+  return -1;
 }
 
 void* Map(void* start, size_t length, int prot, int flags,
