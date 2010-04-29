@@ -33,6 +33,9 @@
 		33880C800F9E097100817F82 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 33880C7E0F9E097100817F82 /* InfoPlist.strings */; };
 		4084699D0F5D9CF900FDCA37 /* crash_report_sender.icns in Resources */ = {isa = PBXBuildFile; fileRef = 4084699C0F5D9CF900FDCA37 /* crash_report_sender.icns */; };
 		8DC2EF570486A6940098B216 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
+		D2A5DD301188633800081F03 /* breakpad_nlist_64.cc in Sources */ = {isa = PBXBuildFile; fileRef = F92C53690ECCE3FD009BE4BA /* breakpad_nlist_64.cc */; };
+		D2A5DD401188640400081F03 /* breakpad_nlist_64.cc in Sources */ = {isa = PBXBuildFile; fileRef = F92C53690ECCE3FD009BE4BA /* breakpad_nlist_64.cc */; };
+		D2A5DD411188642E00081F03 /* breakpad_nlist_64.cc in Sources */ = {isa = PBXBuildFile; fileRef = F92C53690ECCE3FD009BE4BA /* breakpad_nlist_64.cc */; };
 		F91AF5D00FD60393009D8BE2 /* BreakpadFramework_Test.mm in Sources */ = {isa = PBXBuildFile; fileRef = F91AF5CF0FD60393009D8BE2 /* BreakpadFramework_Test.mm */; };
 		F91AF6210FD60784009D8BE2 /* Breakpad.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8DC2EF5B0486A6940098B216 /* Breakpad.framework */; };
 		F9286B3A0F7EB25800A4DCC8 /* InspectorMain.mm in Sources */ = {isa = PBXBuildFile; fileRef = F9286B390F7EB25800A4DCC8 /* InspectorMain.mm */; };
@@ -199,49 +202,49 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = F95BB87C101F949F00AA053B /* crash_report.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 8DD76FA10486AA7600D96B5E /* crash_report */;
+			remoteGlobalIDString = 8DD76FA10486AA7600D96B5E;
 			remoteInfo = crash_report;
 		};
 		F95BB891101F94AC00AA053B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = F95BB889101F94AC00AA053B /* dump_syms.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 8DD76FA10486AA7600D96B5E /* dump_syms */;
+			remoteGlobalIDString = 8DD76FA10486AA7600D96B5E;
 			remoteInfo = dump_syms;
 		};
 		F95BB89E101F94C000AA053B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = F95BB894101F94C000AA053B /* symupload.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 8DD76FA10486AA7600D96B5E /* symupload */;
+			remoteGlobalIDString = 8DD76FA10486AA7600D96B5E;
 			remoteInfo = symupload;
 		};
 		F95BB8A0101F94C000AA053B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = F95BB894101F94C000AA053B /* symupload.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 9BD835FB0B0544950055103E /* minidump_upload */;
+			remoteGlobalIDString = 9BD835FB0B0544950055103E;
 			remoteInfo = minidump_upload;
 		};
 		F95BB8B2101F94D300AA053B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = F95BB889101F94AC00AA053B /* dump_syms.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 8DD76F960486AA7600D96B5E /* dump_syms */;
+			remoteGlobalIDString = 8DD76F960486AA7600D96B5E;
 			remoteInfo = dump_syms;
 		};
 		F95BB8B4101F94D300AA053B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = F95BB894101F94C000AA053B /* symupload.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 8DD76F960486AA7600D96B5E /* symupload */;
+			remoteGlobalIDString = 8DD76F960486AA7600D96B5E;
 			remoteInfo = symupload;
 		};
 		F95BB8B6101F94D300AA053B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = F95BB87C101F949F00AA053B /* crash_report.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 8DD76F960486AA7600D96B5E /* crash_report */;
+			remoteGlobalIDString = 8DD76F960486AA7600D96B5E;
 			remoteInfo = crash_report;
 		};
 		F9C44E190EF0790F003AEBAA /* PBXContainerItemProxy */ = {
@@ -1045,6 +1048,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D2A5DD301188633800081F03 /* breakpad_nlist_64.cc in Sources */,
 				F92C563F0ECD10CA009BE4BA /* convert_UTF.c in Sources */,
 				F92C56400ECD10CA009BE4BA /* dynamic_images.cc in Sources */,
 				F92C56410ECD10CA009BE4BA /* file_id.cc in Sources */,
@@ -1074,6 +1078,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D2A5DD401188640400081F03 /* breakpad_nlist_64.cc in Sources */,
 				F93803CD0F8083B7004D428B /* dynamic_images.cc in Sources */,
 				F93803CE0F8083B7004D428B /* exception_handler.cc in Sources */,
 				F93803CF0F8083B7004D428B /* minidump_generator.cc in Sources */,
@@ -1104,6 +1109,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D2A5DD411188642E00081F03 /* breakpad_nlist_64.cc in Sources */,
 				F93DE3350F82C66B00608B94 /* dynamic_images.cc in Sources */,
 				F93DE3360F82C66B00608B94 /* exception_handler.cc in Sources */,
 				F93DE3370F82C66B00608B94 /* minidump_generator.cc in Sources */,
@@ -1314,7 +1320,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				ONLY_ACTIVE_ARCH_PRE_XCODE_3_1 = "$(NATIVE_ARCH)";
+				ONLY_ACTIVE_ARCH_PRE_XCODE_3_1 = "$(NATIVE_ARCH_ACTUAL)";
 				PREBINDING = NO;
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 			};
