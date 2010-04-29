@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,7 +33,6 @@ class BookmarkModel;
   Profile* profile_;  // weak
   const BookmarkNode* parentNode_;  // weak; owned by the model
   BookmarkEditor::Configuration configuration_;
-  scoped_ptr<BookmarkEditor::Handler> handler_;  // we take ownership
   NSString* initialName_;
   NSString* displayName_;  // Bound to a text field in the dialog.
   BOOL okEnabled_;  // Bound to the OK button.
@@ -58,8 +57,7 @@ class BookmarkModel;
                    nibName:(NSString*)nibName
                    profile:(Profile*)profile
                     parent:(const BookmarkNode*)parent
-             configuration:(BookmarkEditor::Configuration)configuration
-                   handler:(BookmarkEditor::Handler*)handler;
+             configuration:(BookmarkEditor::Configuration)configuration;
 
 // Run the bookmark editor as a modal sheet.  Does not block.
 - (void)runAsModalSheet;
@@ -97,9 +95,6 @@ class BookmarkModel;
 // Select/highlight the given node within the browser tree view.  If the
 // node is nil then select the bookmark bar node.  Exposed for unit test.
 - (void)selectNodeInBrowser:(const BookmarkNode*)node;
-
-// Notify the handler, if any, of a node creation.
-- (void)notifyHandlerCreatedNode:(const BookmarkNode*)node;
 
 // Notifications called when the BookmarkModel changes out from under me.
 - (void)nodeRemoved:(const BookmarkNode*)node
@@ -172,4 +167,4 @@ class BookmarkModel;
 
 @end
 
-#endif  /* CHROME_BROWSER_COCOA_BOOKMARK_EDITOR_BASE_CONTROLLER_H_ */
+#endif  // CHROME_BROWSER_COCOA_BOOKMARK_EDITOR_BASE_CONTROLLER_H_

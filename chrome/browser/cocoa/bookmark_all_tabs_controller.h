@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,8 +26,7 @@ typedef std::vector<ActiveTabNameURLPair> ActiveTabsNameURLPairVector;
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                    profile:(Profile*)profile
                     parent:(const BookmarkNode*)parent
-             configuration:(BookmarkEditor::Configuration)configuration
-                   handler:(BookmarkEditor::Handler*)handler;
+             configuration:(BookmarkEditor::Configuration)configuration;
 
 @end
 
@@ -42,4 +41,4 @@ typedef std::vector<ActiveTabNameURLPair> ActiveTabsNameURLPairVector;
 
 @end
 
-#endif  /* CHROME_BROWSER_COCOA_BOOKMARK_ALL_TABS_CONTROLLER_H_ */
+#endif  // CHROME_BROWSER_COCOA_BOOKMARK_ALL_TABS_CONTROLLER_H_

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,8 +34,7 @@ class BookmarkEditorControllerTest : public CocoaTest {
                                 profile:browser_helper_.profile()
                                  parent:default_parent_
                                    node:default_node
-                          configuration:BookmarkEditor::NO_TREE
-                                handler:nil];
+                          configuration:BookmarkEditor::NO_TREE];
     [controller_ runAsModalSheet];
   }
 
@@ -141,8 +140,7 @@ class BookmarkEditorControllerNoNodeTest : public CocoaTest {
                                 profile:browser_helper_.profile()
                                  parent:parent
                                    node:NULL
-                          configuration:BookmarkEditor::NO_TREE
-                                handler:nil];
+                          configuration:BookmarkEditor::NO_TREE];
 
     [controller_ runAsModalSheet];
   }
@@ -180,8 +178,7 @@ class BookmarkEditorControllerYesNodeTest : public CocoaTest {
                                 profile:browser_helper_.profile()
                                  parent:parent
                                    node:node
-                          configuration:BookmarkEditor::NO_TREE
-                                handler:nil];
+                          configuration:BookmarkEditor::NO_TREE];
 
     [controller_ runAsModalSheet];
   }
@@ -264,8 +261,7 @@ class BookmarkEditorControllerTreeTest : public CocoaTest {
                             profile:browser_helper_.profile()
                              parent:group_bb_
                                node:bookmark_bb_3_
-                      configuration:BookmarkEditor::SHOW_TREE
-                            handler:nil];
+                      configuration:BookmarkEditor::SHOW_TREE];
   }
 
   virtual void SetUp() {
@@ -406,8 +402,7 @@ class BookmarkEditorControllerTreeNoNodeTest :
                             profile:browser_helper_.profile()
                              parent:group_bb_
                                node:nil
-                      configuration:BookmarkEditor::SHOW_TREE
-                            handler:nil];
+                      configuration:BookmarkEditor::SHOW_TREE];
   }
 
 };

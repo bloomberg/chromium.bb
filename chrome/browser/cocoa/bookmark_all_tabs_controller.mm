@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,15 +16,13 @@
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                    profile:(Profile*)profile
                     parent:(const BookmarkNode*)parent
-             configuration:(BookmarkEditor::Configuration)configuration
-                   handler:(BookmarkEditor::Handler*)handler {
+             configuration:(BookmarkEditor::Configuration)configuration {
   NSString* nibName = @"BookmarkAllTabs";
   if ((self = [super initWithParentWindow:parentWindow
                                   nibName:nibName
                                   profile:profile
                                    parent:parent
-                            configuration:configuration
-                                  handler:handler])) {
+                            configuration:configuration])) {
   }
   return self;
 }
@@ -66,7 +64,6 @@
   BookmarkModel* model = [self bookmarkModel];
   const BookmarkNode* newFolder = model->AddGroup(newParentNode, newIndex,
                                                   newFolderString);
-  [self notifyHandlerCreatedNode:newFolder];
   // Get a list of all open tabs, create nodes for them, and add
   // to the new folder node.
   [self UpdateActiveTabPairs];
@@ -74,9 +71,7 @@
   for (ActiveTabsNameURLPairVector::const_iterator it =
            activeTabPairsVector_.begin();
        it != activeTabPairsVector_.end(); ++it, ++i) {
-    const BookmarkNode* node = model->AddURL(newFolder, i,
-                                             it->first, it->second);
-    [self notifyHandlerCreatedNode:node];
+    model->AddURL(newFolder, i, it->first, it->second);
   }
   return [NSNumber numberWithBool:YES];
 }

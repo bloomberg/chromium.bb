@@ -1427,8 +1427,7 @@
                       profile:browser_->profile()
                        parent:node->GetParent()
                          node:node
-                configuration:BookmarkEditor::SHOW_TREE
-                      handler:NULL]
+                configuration:BookmarkEditor::SHOW_TREE]
         runAsModalSheet];
     }
   }

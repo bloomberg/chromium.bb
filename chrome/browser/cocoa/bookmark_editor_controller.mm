@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,14 +26,12 @@
                    profile:(Profile*)profile
                     parent:(const BookmarkNode*)parent
                       node:(const BookmarkNode*)node
-             configuration:(BookmarkEditor::Configuration)configuration
-                   handler:(BookmarkEditor::Handler*)handler {
+             configuration:(BookmarkEditor::Configuration)configuration {
   if ((self = [super initWithParentWindow:parentWindow
                                   nibName:@"BookmarkEditor"
                                   profile:profile
                                    parent:parent
-                            configuration:configuration
-                                  handler:handler])) {
+                            configuration:configuration])) {
     // "Add Page..." has no "node" so this may be NULL.
     node_ = node;
   }
@@ -129,10 +127,7 @@
       newIndex = oldIndex;
   }
   // Add bookmark as new node at the end of the newly selected folder.
-  const BookmarkNode* node = model->AddURL(newParentNode, newIndex,
-                                           newTitle, newURL);
-  // Honor handler semantics: callback on node creation.
-  [self notifyHandlerCreatedNode:node];
+  model->AddURL(newParentNode, newIndex, newTitle, newURL);
   return [NSNumber numberWithBool:YES];
 }
 

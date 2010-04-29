@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,8 +24,7 @@
                    profile:(Profile*)profile
                     parent:(const BookmarkNode*)parent
                       node:(const BookmarkNode*)node
-             configuration:(BookmarkEditor::Configuration)configuration
-                   handler:(BookmarkEditor::Handler*)handler;
+             configuration:(BookmarkEditor::Configuration)configuration;
 
 @end
 
@@ -33,4 +32,4 @@
 - (NSColor *)urlFieldColor;
 @end
 
-#endif  /* CHROME_BROWSER_COCOA_BOOKMARK_EDITOR_CONTROLLER_H_ */
+#endif  // CHROME_BROWSER_COCOA_BOOKMARK_EDITOR_CONTROLLER_H_
