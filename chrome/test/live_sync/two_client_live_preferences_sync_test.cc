@@ -55,14 +55,15 @@ class TwoClientLivePreferencesSyncTest : public LiveSyncTest {
 IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, Sanity) {
   SetupSync();
 
-  EXPECT_EQ(false, prefs1()->GetBoolean(prefs::kHomePageIsNewTabPage));
-  EXPECT_EQ(false, prefs2()->GetBoolean(prefs::kHomePageIsNewTabPage));
+  EXPECT_EQ(prefs1()->GetBoolean(prefs::kHomePageIsNewTabPage),
+            prefs2()->GetBoolean(prefs::kHomePageIsNewTabPage));
 
   PrefService* expected = LiveSyncTest::MakeProfile(
       FILE_PATH_LITERAL("verifier"))->GetPrefs();
-  expected->SetBoolean(prefs::kHomePageIsNewTabPage, true);
+  bool value = !expected->GetBoolean(prefs::kHomePageIsNewTabPage);
+  expected->SetBoolean(prefs::kHomePageIsNewTabPage, value);
 
-  prefs1()->SetBoolean(prefs::kHomePageIsNewTabPage, true);
+  prefs1()->SetBoolean(prefs::kHomePageIsNewTabPage, value);
   EXPECT_TRUE(client2()->AwaitMutualSyncCycleCompletion(client1()));
 
   EXPECT_EQ(expected->GetBoolean(prefs::kHomePageIsNewTabPage),
