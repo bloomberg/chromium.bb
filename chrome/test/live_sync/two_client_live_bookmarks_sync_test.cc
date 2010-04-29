@@ -50,11 +50,6 @@ class TwoClientLiveBookmarksSyncTest : public LiveSyncTest {
     }
   }
 
-  // Overwrites ShouldDeleteProfile, so profile doesn't get deleted.
-  virtual bool ShouldDeleteProfile() {
-    return false;
-  }
-
   // Overload this method in inherited class and return false to avoid
   // race condition (two clients trying to sync/commit at the same time).
   // Race condition may lead to duplicate bookmarks if there is existing
@@ -94,7 +89,8 @@ class TwoClientLiveBookmarksSyncTest : public LiveSyncTest {
         FILE_PATH_LITERAL("live_sync_data"));
     FilePath source_file = sync_data_source.Append(
         bookmarks_file_name);
-    ASSERT_TRUE(file_util::PathExists(source_file));
+    ASSERT_TRUE(file_util::PathExists(source_file))
+        << "Could not locate test data file: " << source_file.value();
     // Now copy pre-generated bookmark file to default profile.
     ASSERT_TRUE(file_util::CopyFile(source_file,
         dest_user_data_dir_default.Append(FILE_PATH_LITERAL("bookmarks"))));
@@ -151,9 +147,10 @@ class LiveSyncTestPrePopulatedHistory1K
   LiveSyncTestPrePopulatedHistory1K() {}
   virtual ~LiveSyncTestPrePopulatedHistory1K() {}
 
-  // This is used to pre-populate history data (1K URL Visit)to Client1
-  // and Verifier Client.
-  void PrePopulateHistory1K() {
+  // This is used to pre-populate history data (1K URL Visit) to Client1
+  // and Verifier Client. Invoked by InProcBrowserTest::SetUp before
+  // the browser is started.
+  virtual void SetUpUserDataDirectory() {
     // Let's copy history files to default profile.
     FilePath dest_user_data_dir;
     PathService::Get(chrome::DIR_USER_DATA, &dest_user_data_dir);
@@ -182,11 +179,6 @@ class LiveSyncTestPrePopulatedHistory1K
     }
   }
 
-  virtual void SetUp() {
-    PrePopulateHistory1K();
-    LiveSyncTest::SetUp();
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(LiveSyncTestPrePopulatedHistory1K);
 };
@@ -197,10 +189,10 @@ class LiveSyncTestBasicHierarchy50BM
   LiveSyncTestBasicHierarchy50BM() {}
   virtual ~LiveSyncTestBasicHierarchy50BM() {}
 
-  virtual void SetUp() {
+  // Invoked by InProcBrowserTest::SetUp before the browser is started.
+  virtual void SetUpUserDataDirectory() {
     FilePath file_name(FILE_PATH_LITERAL("bookmarks_50BM5F3L"));
     PrePopulateBookmarksHierarchy(file_name);
-    LiveSyncTest::SetUp();
   }
 
  private:
@@ -233,10 +225,11 @@ class LiveSyncTestComplexHierarchy800BM
  public:
   LiveSyncTestComplexHierarchy800BM() {}
   virtual ~LiveSyncTestComplexHierarchy800BM() {}
-  virtual void SetUp() {
+
+  // Invoked by InProcBrowserTest::SetUp before the browser is started.
+  virtual void SetUpUserDataDirectory() {
     FilePath file_name(FILE_PATH_LITERAL("bookmarks_800BM32F8L"));
-    TwoClientLiveBookmarksSyncTest::PrePopulateBookmarksHierarchy(file_name);
-    LiveSyncTest::SetUp();
+    PrePopulateBookmarksHierarchy(file_name);
   }
 
  private:
@@ -248,10 +241,11 @@ class LiveSyncTestHugeHierarchy5500BM
  public:
   LiveSyncTestHugeHierarchy5500BM() {}
   virtual ~LiveSyncTestHugeHierarchy5500BM() {}
-  virtual void SetUp() {
+
+  // Invoked by InProcBrowserTest::SetUp before the browser is started.
+  virtual void SetUpUserDataDirectory() {
     FilePath file_name(FILE_PATH_LITERAL("bookmarks_5500BM125F25L"));
-    TwoClientLiveBookmarksSyncTest::PrePopulateBookmarksHierarchy(file_name);
-    LiveSyncTest::SetUp();
+    PrePopulateBookmarksHierarchy(file_name);
   }
   virtual bool ShouldSetupSyncWithRace() {
     return false;
@@ -267,11 +261,11 @@ class LiveSyncTestDefaultIEFavorites
   LiveSyncTestDefaultIEFavorites() {}
   virtual ~LiveSyncTestDefaultIEFavorites() {}
 
-  virtual void SetUp() {
+  // Invoked by InProcBrowserTest::SetUp before the browser is started.
+  virtual void SetUpUserDataDirectory() {
     const FilePath file_name(
         FILE_PATH_LITERAL("bookmarks_default_IE_favorites"));
     TwoClientLiveBookmarksSyncTest::PrePopulateBookmarksHierarchy(file_name);
-    LiveSyncTest::SetUp();
   }
 
  private:

@@ -93,12 +93,14 @@ void InProcessBrowserTest::SetUp() {
       "The user data directory name passed into this test was too "
       "short to delete safely.  Please check the user-data-dir "
       "argument and try again.";
-  if (ShouldDeleteProfile())
-    ASSERT_TRUE(file_util::DieFileDie(user_data_dir, true));
+  ASSERT_TRUE(file_util::DieFileDie(user_data_dir, true));
 
   // The unit test suite creates a testingbrowser, but we want the real thing.
   // Delete the current one. We'll install the testing one in TearDown.
   delete g_browser_process;
+  g_browser_process = NULL;
+
+  SetUpUserDataDirectory();
 
   // Don't delete the resources when BrowserMain returns. Many ui classes
   // cache SkBitmaps in a static field so that if we delete the resource
@@ -140,7 +142,7 @@ void InProcessBrowserTest::SetUp() {
                                       ASCIIToWide(kBrowserTestType));
 
   // Single-process mode is not set in BrowserMain so it needs to be processed
-  // explicitlty.
+  // explicitly.
   original_single_process_ = RenderProcessHost::run_renderer_in_process();
   if (command_line->HasSwitch(switches::kSingleProcess))
     RenderProcessHost::set_run_renderer_in_process(true);
@@ -279,7 +281,9 @@ void InProcessBrowserTest::RunTestOnMainThreadLoopDeprecated() {
       NewRunnableMethod(this, &InProcessBrowserTest::TimedOut),
       initial_timeout_);
 
-  RunTestOnMainThread();
+  // If an ASSERT_ failed during SetUp, skip the InProcessBrowserTest test body.
+  if (!HasFatalFailure())
+    RunTestOnMainThread();
   CleanUpOnMainThread();
 
   // Close all browser windows.  This might not happen immediately, since some
