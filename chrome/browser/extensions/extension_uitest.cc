@@ -444,7 +444,8 @@ void ExtensionTestBrowserEvents::HandleMessageFromChrome(
   }
 }
 
-TEST_F(ExtensionTestBrowserEvents, RunTest) {
+// Flaky, http://crbug.com/37554.
+TEST_F(ExtensionTestBrowserEvents, FLAKY_RunTest) {
   // This test loads an HTML file that tries to add listeners to a bunch of
   // chrome.* events and upon adding a listener it posts the name of the event
   // to the automation layer, which we'll count to make sure the events work.
