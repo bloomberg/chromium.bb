@@ -34,7 +34,7 @@
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/views/autocomplete/autocomplete_popup_contents_view.h"
-#include "chrome/browser/views/location_bar_view.h"
+#include "chrome/browser/views/location_bar/location_bar_view.h"
 #include "gfx/skia_utils_gtk.h"
 #else
 #include "chrome/browser/autocomplete/autocomplete_popup_view_gtk.h"
