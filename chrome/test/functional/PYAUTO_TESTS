@@ -23,6 +23,7 @@
     'history',
     'test_basic.SimpleTest.testCanOpenGoogle',
     'downloads',
+    'prefs',
     'special_tabs',
   ],
 

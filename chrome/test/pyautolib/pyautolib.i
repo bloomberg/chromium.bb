@@ -93,20 +93,6 @@ class BrowserProxy {
   %feature("docstring", "Get proxy to the tab at the given zero-based index")
       GetTab;
   scoped_refptr<TabProxy> GetTab(int tab_index) const;
-
-  // Prefs
-  %feature("docstring", "Sets the int value of the specified preference. "
-           "Refer chrome/common/pref_names.h for the list of prefs.")
-      SetIntPreference;
-  bool SetIntPreference(const std::wstring& name, int value);
-  %feature("docstring", "Sets the string value of the specified preference. "
-           "Refer chrome/common/pref_names.h for the list of prefs.")
-      SetStringPreference;
-  bool SetStringPreference(const std::wstring& name, const std::wstring& value);
-  %feature("docstring", "Sets the boolean value of the specified preference. "
-           "Refer chrome/common/pref_names.h for the list of prefs.")
-      SetBooleanPreference;
-  bool SetBooleanPreference(const std::wstring& name, bool value);
 };
 
 // TabProxy

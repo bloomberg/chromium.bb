@@ -1597,8 +1597,8 @@ void AutomationProvider::RemoveBookmark(int handle,
   *success = false;
 }
 
-// Sample json input: { 'command': 'GetHistoryInfo',
-//                      'search_text': 'some text' }
+// Sample json input: { "command": "GetHistoryInfo",
+//                      "search_text": "some text" }
 // Refer chrome/test/pyautolib/history_info.py for sample json output.
 void AutomationProvider::GetHistoryInfo(
     DictionaryValue* args,
@@ -1622,7 +1622,7 @@ void AutomationProvider::GetHistoryInfo(
                   &AutomationProviderHistoryObserver::HistoryQueryComplete));
 }
 
-// Sample json input: { 'command': 'GetDownloadsInfo' }
+// Sample json input: { "command": "GetDownloadsInfo" }
 // Refer chrome/test/pyautolib/download_info.py for sample json output.
 void AutomationProvider::GetDownloadsInfo(
     DictionaryValue* args,
@@ -1634,7 +1634,7 @@ void AutomationProvider::GetDownloadsInfo(
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
 
   if (!profile_->HasCreatedDownloadManager()) {
-    json_return = "{'error': 'no download manager'}";
+    json_return = "{\"error\": \"no download manager\"}";
     reply_return = false;
   } else {
     // Use DownloadManager's GetDownloads() method and not GetCurrentDownloads()
@@ -1699,7 +1699,7 @@ void AutomationProvider::WaitForDownloadsToComplete(
 
   // Look for a quick return.
   if (!profile_->HasCreatedDownloadManager()) {
-    json_return = "{'error': 'no download manager'}";
+    json_return = "{\"error\": \"no download manager\"}";
     reply_return = false;
   } else {
     profile_->GetDownloadManager()->GetCurrentDownloads(&observer,
@@ -1725,6 +1725,59 @@ void AutomationProvider::WaitForDownloadsToComplete(
        i++) {
     (*i)->AddObserver(item_observer);
   }
+}
+
+// Sample json input: { "command": "GetPrefsInfo" }
+// Refer chrome/test/pyautolib/prefs_info.py for sample json output.
+void AutomationProvider::GetPrefsInfo(DictionaryValue* args,
+                                      IPC::Message* reply_message) {
+  std::string json_return;
+  bool reply_return = true;
+
+  const PrefService::PreferenceSet& prefs =
+      profile_->GetPrefs()->preference_set();
+  DictionaryValue* items = new DictionaryValue;
+  for (PrefService::PreferenceSet::const_iterator it = prefs.begin();
+       it != prefs.end(); ++it) {
+    items->Set((*it)->name(), (*it)->GetValue()->DeepCopy());
+  }
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  return_value->Set(L"prefs", items);  // return_value owns items.
+
+  base::JSONWriter::Write(return_value.get(), false, &json_return);
+  AutomationMsg_SendJSONRequest::WriteReplyParams(
+      reply_message, json_return, reply_return);
+  Send(reply_message);
+}
+
+// Sample json input: { "command": "SetPrefs", "path": path, "value": value }
+void AutomationProvider::SetPrefs(DictionaryValue* args,
+                                  IPC::Message* reply_message) {
+  bool reply_return = true;
+  std::string json_return = "{}";
+  std::wstring path;
+  Value* val;
+  if (args->GetString(L"path", &path) && args->Get(L"value", &val)) {
+    PrefService* pref_service = profile_->GetPrefs();
+    const PrefService::Preference* pref =
+        pref_service->FindPreference(path.c_str());
+    if (!pref) {  // Not a registered pref.
+      json_return = "{\"error\": \"pref not registered.\"}";
+      reply_return = false;
+    } else if (pref->IsManaged()) {  // Do not attempt to change a managed pref.
+      json_return = "{\"error\": \"pref is managed. cannot be changed.\"}";
+      reply_return = false;
+    } else {  // Set the pref.
+      pref_service->Set(path.c_str(), *val);
+    }
+  } else {
+    json_return = "{\"error\": \"no pref path or value given.\"}";
+    reply_return = false;
+  }
+
+  AutomationMsg_SendJSONRequest::WriteReplyParams(
+      reply_message, json_return, reply_return);
+  Send(reply_message);
 }
 
 void AutomationProvider::SendJSONRequest(
@@ -1765,27 +1818,30 @@ void AutomationProvider::SendJSONRequest(
     }
   }
 
+  // Map json commands to their handlers.
+  std::map<std::string, JsonHandler> handler_map;
+  handler_map["GetDownloadsInfo"] = &AutomationProvider::GetDownloadsInfo;
+  handler_map["GetHistoryInfo"] = &AutomationProvider::GetHistoryInfo;
+  handler_map["GetPrefsInfo"] = &AutomationProvider::GetPrefsInfo;
+  handler_map["SetPrefs"] = &AutomationProvider::SetPrefs;
+  handler_map["WaitForAllDownloadsToComplete"] =
+      &AutomationProvider::WaitForDownloadsToComplete;
+
   if (error_string.empty()) {
-    // TODO(jrg): table of calls; async gets passed reply_message,
-    // sync methods gets passed an output json dict which we package
-    // up and send.  Right now we only have one.
-    // TODO(nirnimesh): Replace if else cases with map.
-    if (command == "GetDownloadsInfo") {
-      this->GetDownloadsInfo(dict_value, reply_message);
-      return;
-    } else if (command == "GetHistoryInfo") {
-      this->GetHistoryInfo(dict_value, reply_message);
-      return;
-    } else if (command == "WaitForAllDownloadsToComplete") {
-      this->WaitForDownloadsToComplete(dict_value, reply_message);
+    if (handler_map.find(std::string(command)) != handler_map.end()) {
+      (this->*handler_map[command])(dict_value, reply_message);
       return;
     } else {
-      error_string = "unknown command";
+      error_string = "Unknown command. Options: ";
+      for (std::map<std::string, JsonHandler>::const_iterator it =
+           handler_map.begin(); it != handler_map.end(); ++it) {
+        error_string += it->first + ", ";
+      }
     }
   }
 
   // If we hit an error, return info.
-  // Return a dict of {'error', 'descriptive_string_for_error'}.
+  // Return a dict of {"error", "descriptive_string_for_error"}.
   // Else return an empty dict.
   std::string json_string;
   bool success = true;

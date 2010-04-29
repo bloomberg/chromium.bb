@@ -349,10 +349,22 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   // Uses the JSON interface for input/output.
   void GetHistoryInfo(DictionaryValue* args, IPC::Message* reply_message);
 
+  // Get info about preferences.
+  // Uses the JSON interface for input/output.
+  void GetPrefsInfo(DictionaryValue* args, IPC::Message* reply_message);
+
+  // Set prefs.
+  // Uses the JSON interface for input/output.
+  void SetPrefs(DictionaryValue* args, IPC::Message* reply_message);
+
   // Generic pattern for pyautolib
   void SendJSONRequest(int handle,
                        std::string json_request,
                        IPC::Message* reply_message);
+
+  // Method ptr for json handlers.
+  typedef void (AutomationProvider::*JsonHandler)(DictionaryValue*,
+                                                  IPC::Message*);
 
   // Responds to InspectElement request
   void HandleInspectElementRequest(int handle,
