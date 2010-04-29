@@ -265,7 +265,8 @@ void PanelController::Close() {
 void PanelController::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (title_window_ && sender == title_content_->close_button()) {
-    delegate_->ClosePanel();
+    if (delegate_)
+      delegate_->ClosePanel();
     Close();
   }
 }

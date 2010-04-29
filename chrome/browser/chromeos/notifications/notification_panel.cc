@@ -478,7 +478,8 @@ void NotificationPanel::Hide() {
     container_host_ = NULL;
 
     UnregisterNotification();
-    panel_controller_.release()->Close();
+    panel_controller_->Close();
+    MessageLoop::current()->DeleteSoon(FROM_HERE, panel_controller_.release());
     // We need to remove & detach the scroll view from hierarchy to
     // avoid GTK deleting child.
     // TODO(oshima): handle this details in WidgetGtk.
@@ -725,8 +726,12 @@ void NotificationPanel::UpdateContainerBounds() {
   balloon_container_->UpdateBounds();
   views::NativeViewHost* native =
       static_cast<views::NativeViewHost*>(scroll_view_->GetContents());
-  native->SetBounds(balloon_container_->bounds());
-  scroll_view_->Layout();
+  // Update from WebKit may arrive after the panel is closed/hidden
+  // and viewport widget is detached.
+  if (native) {
+    native->SetBounds(balloon_container_->bounds());
+    scroll_view_->Layout();
+  }
 }
 
 void NotificationPanel::UpdateControl() {

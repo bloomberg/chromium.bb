@@ -378,6 +378,35 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestCleanupOnExit) {
   // end without closing.
 }
 
+IN_PROC_BROWSER_TEST_F(NotificationTest, TestCloseOpen) {
+  BalloonCollectionImpl* collection = GetBalloonCollectionImpl();
+  NotificationPanel* panel = GetNotificationPanel();
+  NotificationPanelTester* tester = panel->GetTester();
+  Profile* profile = browser()->profile();
+
+  collection->Add(NewMockNotification("1"), profile);
+  collection->Add(NewMockNotification("2"), profile);
+  ui_test_utils::RunAllPendingInMessageLoop();
+  WaitForPanelState(tester, PanelController::EXPANDED);
+  PanelController* controller = tester->GetPanelController();
+  // close now
+  panel->ClosePanel();
+  controller->Close();
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_EQ(NotificationPanel::CLOSED, tester->state());
+  // open again
+  collection->Add(NewMockNotification("3"), profile);
+  WaitForPanelState(tester, PanelController::EXPANDED);
+  EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
+
+  // close again
+  controller = tester->GetPanelController();
+  panel->ClosePanel();
+  controller->Close();
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_EQ(NotificationPanel::CLOSED, tester->state());
+}
+
 IN_PROC_BROWSER_TEST_F(NotificationTest, TestScrollBalloonToVisible) {
   BalloonCollectionImpl* collection = GetBalloonCollectionImpl();
   NotificationPanel* panel = GetNotificationPanel();
