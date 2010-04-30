@@ -36,7 +36,8 @@ void NativeButtonWin::UpdateLabel() {
   // Show or hide the shield icon of Windows onto this button every time when we
   // update the button text so Windows can lay out the shield icon and the
   // button text correctly.
-  if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA) {
+  if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA &&
+      win_util::UserAccountControlIsEnabled()) {
     Button_SetElevationRequiredState(native_view(),
                                      native_button_->need_elevation());
   }
