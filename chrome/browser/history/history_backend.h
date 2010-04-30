@@ -240,7 +240,14 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   virtual bool GetAllTypedURLs(std::vector<history::URLRow>* urls);
 
-  virtual bool UpdateURL(const URLID id, const history::URLRow& url);
+  virtual bool GetVisitsForURL(URLID id, VisitVector* visits);
+
+  virtual bool UpdateURL(URLID id, const history::URLRow& url);
+
+  virtual bool AddVisits(const GURL& url,
+                         const std::vector<base::Time>& visits);
+
+  virtual bool RemoveVisits(const VisitVector& visits);
 
   virtual bool GetURL(const GURL& url, history::URLRow* url_row);
 

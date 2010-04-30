@@ -855,9 +855,62 @@ bool HistoryBackend::GetAllTypedURLs(std::vector<history::URLRow>* urls) {
   return false;
 }
 
-bool HistoryBackend::UpdateURL(const URLID id, const history::URLRow& url) {
+bool HistoryBackend::GetVisitsForURL(URLID id, VisitVector* visits) {
+  if (db_.get())
+    return db_->GetVisitsForURL(id, visits);
+  return false;
+}
+
+bool HistoryBackend::UpdateURL(URLID id, const history::URLRow& url) {
   if (db_.get())
     return db_->UpdateURLRow(id, url);
+  return false;
+}
+
+bool HistoryBackend::AddVisits(const GURL& url,
+                               const std::vector<base::Time>& visits) {
+  if (db_.get()) {
+    for (std::vector<base::Time>::const_iterator visit = visits.begin();
+         visit != visits.end(); ++visit) {
+      if (!AddPageVisit(url, *visit, 0, 0).first) {
+        return false;
+      }
+    }
+    ScheduleCommit();
+    return true;
+  }
+  return false;
+}
+
+bool HistoryBackend::RemoveVisits(const VisitVector& visits) {
+  if (db_.get()) {
+    std::map<URLID, int> url_visits_removed;
+    for (VisitVector::const_iterator visit = visits.begin();
+         visit != visits.end(); ++visit) {
+      db_->DeleteVisit(*visit);
+      std::map<URLID, int>::iterator visit_count =
+          url_visits_removed.find(visit->url_id);
+      if (visit_count == url_visits_removed.end()) {
+        url_visits_removed[visit->url_id] = 1;
+      } else {
+        ++visit_count->second;
+      }
+    }
+    for (std::map<URLID, int>::iterator count = url_visits_removed.begin();
+         count != url_visits_removed.end(); ++count) {
+      history::URLRow url_row;
+      if (!db_->GetURLRow(count->first, &url_row)) {
+        return false;
+      }
+      DCHECK(count->second <= url_row.visit_count());
+      url_row.set_visit_count(url_row.visit_count() - count->second);
+      if (!db_->UpdateURLRow(url_row.id(), url_row)) {
+        return false;
+      }
+    }
+    ScheduleCommit();
+    return true;
+  }
   return false;
 }
 

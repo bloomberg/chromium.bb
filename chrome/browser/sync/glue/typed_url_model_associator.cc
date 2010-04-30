@@ -42,8 +42,21 @@ bool TypedUrlModelAssociator::AssociateModels() {
     return false;
   }
 
+  // Get all the visits.
+  std::map<history::URLID, history::VisitVector> visit_vectors;
+  for (std::vector<history::URLRow>::iterator ix = typed_urls.begin();
+       ix != typed_urls.end(); ++ix) {
+    if (!history_backend_->GetVisitsForURL(ix->id(),
+                                           &(visit_vectors[ix->id()]))) {
+      LOG(ERROR) << "Could not get the url's visits.";
+      return false;
+    }
+    DCHECK(!visit_vectors[ix->id()].empty());
+  }
+
   TypedUrlTitleVector titles;
   TypedUrlVector new_urls;
+  TypedUrlVisitVector new_visits;
   TypedUrlUpdateVector updated_urls;
 
   {
@@ -61,6 +74,13 @@ bool TypedUrlModelAssociator::AssociateModels() {
          ix != typed_urls.end(); ++ix) {
       std::string tag = ix->url().spec();
 
+      history::VisitVector& visits = visit_vectors[ix->id()];
+      DCHECK(visits.size() == static_cast<size_t>(ix->visit_count()));
+      if (visits.size() != static_cast<size_t>(ix->visit_count())) {
+        LOG(ERROR) << "Visit count does not match.";
+        return false;
+      }
+
       sync_api::ReadNode node(&trans);
       if (node.InitByClientTagLookup(syncable::TYPED_URLS, tag)) {
         const sync_pb::TypedUrlSpecifics& typed_url(
@@ -69,14 +89,16 @@ bool TypedUrlModelAssociator::AssociateModels() {
 
         history::URLRow new_url(ix->url());
 
-        int difference = MergeUrls(typed_url, *ix, &new_url);
+        std::vector<base::Time> added_visits;
+        int difference = MergeUrls(typed_url, *ix, &visits, &new_url,
+                                   &added_visits);
         if (difference & DIFF_NODE_CHANGED) {
           sync_api::WriteNode write_node(&trans);
           if (!write_node.InitByClientTagLookup(syncable::TYPED_URLS, tag)) {
             LOG(ERROR) << "Failed to edit typed_url sync node.";
             return false;
           }
-          WriteToSyncNode(new_url, &write_node);
+          WriteToSyncNode(new_url, visits, &write_node);
         }
         if (difference & DIFF_TITLE_CHANGED) {
           titles.push_back(std::pair<GURL, std::wstring>(new_url.url(),
@@ -85,6 +107,11 @@ bool TypedUrlModelAssociator::AssociateModels() {
         if (difference & DIFF_ROW_CHANGED) {
           updated_urls.push_back(
               std::pair<history::URLID, history::URLRow>(ix->id(), new_url));
+        }
+        if (difference & DIFF_VISITS_ADDED) {
+          new_visits.push_back(
+              std::pair<GURL, std::vector<base::Time> >(ix->url(),
+                                                        added_visits));
         }
 
         Associate(&tag, node.GetId());
@@ -97,7 +124,7 @@ bool TypedUrlModelAssociator::AssociateModels() {
         }
 
         node.SetTitle(UTF8ToWide(tag));
-        WriteToSyncNode(*ix, &node);
+        WriteToSyncNode(*ix, visits, &node);
 
         Associate(&tag, node.GetId());
       }
@@ -116,14 +143,30 @@ bool TypedUrlModelAssociator::AssociateModels() {
         sync_child_node.GetTypedUrlSpecifics());
 
       if (current_urls.find(typed_url.url()) == current_urls.end()) {
+        new_visits.push_back(
+            std::pair<GURL, std::vector<base::Time> >(
+                GURL(typed_url.url()),
+                std::vector<base::Time>()));
+        std::vector<base::Time>& visits = new_visits.back().second;
         history::URLRow new_url(GURL(typed_url.url()));
 
         new_url.set_title(UTF8ToWide(typed_url.title()));
-        new_url.set_visit_count(typed_url.visit_count());
+
+        // When we add a new url, the last visit is always added, thus we set
+        // the initial visit count to one.  This value will be automatically
+        // incremented as visits are added.
+        new_url.set_visit_count(1);
         new_url.set_typed_count(typed_url.typed_count());
-        new_url.set_last_visit(
-            base::Time::FromInternalValue(typed_url.last_visit()));
         new_url.set_hidden(typed_url.hidden());
+
+        // The latest visit gets added automatically, so skip it.
+        for (int c = 0; c < typed_url.visit_size() - 1; ++c) {
+          DCHECK(typed_url.visit(c) < typed_url.visit(c + 1));
+          visits.push_back(base::Time::FromInternalValue(typed_url.visit(c)));
+        }
+
+        new_url.set_last_visit(base::Time::FromInternalValue(
+            typed_url.visit(typed_url.visit_size() - 1)));
 
         Associate(&typed_url.url(), sync_child_node.GetId());
         new_urls.push_back(new_url);
@@ -138,9 +181,8 @@ bool TypedUrlModelAssociator::AssociateModels() {
   // this is the only thread that writes to the database.  We also don't have
   // to worry about the sync model getting out of sync, because changes are
   // propogated to the ChangeProcessor on this thread.
-  WriteToHistoryBackend(&titles, &new_urls, &updated_urls);
-
-  return true;
+  return WriteToHistoryBackend(&titles, &new_urls, &updated_urls,
+                               &new_visits, NULL);
 }
 
 bool TypedUrlModelAssociator::DeleteAllNodes(
@@ -235,10 +277,12 @@ bool TypedUrlModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
   return true;
 }
 
-void TypedUrlModelAssociator::WriteToHistoryBackend(
+bool TypedUrlModelAssociator::WriteToHistoryBackend(
     const TypedUrlTitleVector* titles,
     const TypedUrlVector* new_urls,
-    const TypedUrlUpdateVector* updated_urls) {
+    const TypedUrlUpdateVector* updated_urls,
+    const TypedUrlVisitVector* new_visits,
+    const history::VisitVector* deleted_visits) {
   if (titles) {
     for (TypedUrlTitleVector::const_iterator title = titles->begin();
          title != titles->end(); ++title) {
@@ -251,24 +295,49 @@ void TypedUrlModelAssociator::WriteToHistoryBackend(
   if (updated_urls) {
     for (TypedUrlUpdateVector::const_iterator url = updated_urls->begin();
          url != updated_urls->end(); ++url) {
-      history_backend_->UpdateURL(url->first, url->second);
+      if (!history_backend_->UpdateURL(url->first, url->second)) {
+        LOG(ERROR) << "Could not update page: " << url->second.url().spec();
+        return false;
+      }
     }
   }
+  if (new_visits) {
+    for (TypedUrlVisitVector::const_iterator visits = new_visits->begin();
+         visits != new_visits->end(); ++visits) {
+      if (!history_backend_->AddVisits(visits->first, visits->second)) {
+        LOG(ERROR) << "Could not add visits.";
+        return false;
+      }
+    }
+  }
+  if (deleted_visits) {
+    if (!history_backend_->RemoveVisits(*deleted_visits)) {
+      LOG(ERROR) << "Could not remove visits.";
+      return false;
+    }
+  }
+  return true;
 }
 
 // static
 int TypedUrlModelAssociator::MergeUrls(
     const sync_pb::TypedUrlSpecifics& typed_url,
     const history::URLRow& url,
-    history::URLRow* new_url) {
+    history::VisitVector* visits,
+    history::URLRow* new_url,
+    std::vector<base::Time>* new_visits) {
   DCHECK(new_url);
   DCHECK(!typed_url.url().compare(url.url().spec()));
   DCHECK(!typed_url.url().compare(new_url->url().spec()));
+  DCHECK(visits->size());
+
+  new_url->set_visit_count(visits->size());
 
   // Convert these values only once.
   std::wstring typed_title(UTF8ToWide(typed_url.title()));
   base::Time typed_visit =
-      base::Time::FromInternalValue(typed_url.last_visit());
+      base::Time::FromInternalValue(
+          typed_url.visit(typed_url.visit_size() - 1));
 
   // This is a bitfield represting what we'll need to update with the output
   // value.
@@ -276,12 +345,10 @@ int TypedUrlModelAssociator::MergeUrls(
 
   // Check if the non-incremented values changed.
   if ((typed_title.compare(url.title()) != 0) ||
-      (typed_visit != url.last_visit()) ||
       (typed_url.hidden() != url.hidden())) {
     // Use the values from the most recent visit.
     if (typed_visit >= url.last_visit()) {
       new_url->set_title(typed_title);
-      new_url->set_last_visit(typed_visit);
       new_url->set_hidden(typed_url.hidden());
       different |= DIFF_ROW_CHANGED;
 
@@ -291,26 +358,13 @@ int TypedUrlModelAssociator::MergeUrls(
       }
     } else {
       new_url->set_title(url.title());
-      new_url->set_last_visit(url.last_visit());
       new_url->set_hidden(url.hidden());
       different |= DIFF_NODE_CHANGED;
     }
   } else {
     // No difference.
     new_url->set_title(url.title());
-    new_url->set_last_visit(url.last_visit());
     new_url->set_hidden(url.hidden());
-  }
-
-  // For visit count, we just select the maximum value.
-  if (typed_url.visit_count() > url.visit_count()) {
-    new_url->set_visit_count(typed_url.visit_count());
-    different |= DIFF_ROW_CHANGED;
-  } else if (typed_url.visit_count() < url.visit_count()) {
-    new_url->set_visit_count(url.visit_count());
-    different |= DIFF_NODE_CHANGED;
-  } else {
-    new_url->set_visit_count(typed_url.visit_count());
   }
 
   // For typed count, we just select the maximum value.
@@ -318,28 +372,115 @@ int TypedUrlModelAssociator::MergeUrls(
     new_url->set_typed_count(typed_url.typed_count());
     different |= DIFF_ROW_CHANGED;
   } else if (typed_url.typed_count() < url.typed_count()) {
-    new_url->set_typed_count(url.visit_count());
+    new_url->set_typed_count(url.typed_count());
     different |= DIFF_NODE_CHANGED;
   } else {
     // No difference.
     new_url->set_typed_count(typed_url.typed_count());
   }
 
+  size_t left_visit_count = typed_url.visit_size();
+  size_t right_visit_count = visits->size();
+  size_t left = 0;
+  size_t right = 0;
+  while (left < left_visit_count && right < right_visit_count) {
+    base::Time left_time = base::Time::FromInternalValue(typed_url.visit(left));
+    if (left_time < (*visits)[right].visit_time) {
+      different |= DIFF_VISITS_ADDED;
+      new_visits->push_back(left_time);
+      // This visit is added to visits below.
+      ++left;
+    } else if (left_time > (*visits)[right].visit_time) {
+      different |= DIFF_NODE_CHANGED;
+      ++right;
+    } else {
+      ++left;
+      ++right;
+    }
+  }
+
+  for ( ; left < left_visit_count; ++left) {
+    different |= DIFF_VISITS_ADDED;
+    base::Time left_time = base::Time::FromInternalValue(typed_url.visit(left));
+    new_visits->push_back(left_time);
+    // This visit is added to visits below.
+  }
+  if (different & DIFF_VISITS_ADDED) {
+    history::VisitVector::iterator visit_ix = visits->begin();
+    for (std::vector<base::Time>::iterator new_visit = new_visits->begin();
+         new_visit != new_visits->end(); ++new_visit) {
+      while (visit_ix != visits->end() && *new_visit > visit_ix->visit_time) {
+        ++visit_ix;
+      }
+      visit_ix = visits->insert(visit_ix,
+                                history::VisitRow(url.id(), *new_visit,
+                                                  0, 0, 0));
+      ++visit_ix;
+    }
+  }
+
+  new_url->set_last_visit(visits->back().visit_time);
+
+  DCHECK(static_cast<size_t>(new_url->visit_count()) ==
+         (visits->size() - new_visits->size()));
+
   return different;
 }
 
 // static
-void TypedUrlModelAssociator::WriteToSyncNode(const history::URLRow& url,
-                                              sync_api::WriteNode* node) {
+void TypedUrlModelAssociator::WriteToSyncNode(
+         const history::URLRow& url,
+         const history::VisitVector& visits,
+         sync_api::WriteNode* node) {
+  DCHECK(!url.last_visit().is_null());
+  DCHECK(!visits.empty());
+  DCHECK(url.last_visit() == visits.back().visit_time);
+
   sync_pb::TypedUrlSpecifics typed_url;
   typed_url.set_url(url.url().spec());
   typed_url.set_title(WideToUTF8(url.title()));
-  typed_url.set_visit_count(url.visit_count());
   typed_url.set_typed_count(url.typed_count());
-  typed_url.set_last_visit(url.last_visit().ToInternalValue());
   typed_url.set_hidden(url.hidden());
 
+  for (history::VisitVector::const_iterator visit = visits.begin();
+       visit != visits.end(); ++visit) {
+    typed_url.add_visit(visit->visit_time.ToInternalValue());
+  }
+
   node->SetTypedUrlSpecifics(typed_url);
+}
+
+// static
+void TypedUrlModelAssociator::DiffVisits(
+    const history::VisitVector& old_visits,
+    const sync_pb::TypedUrlSpecifics& new_url,
+    std::vector<base::Time>* new_visits,
+    history::VisitVector* removed_visits) {
+  size_t left_visit_count = old_visits.size();
+  size_t right_visit_count = new_url.visit_size();
+  size_t left = 0;
+  size_t right = 0;
+  while (left < left_visit_count && right < right_visit_count) {
+    base::Time right_time = base::Time::FromInternalValue(new_url.visit(right));
+    if (old_visits[left].visit_time < right_time) {
+      removed_visits->push_back(old_visits[left]);
+      ++left;
+    } else if (old_visits[left].visit_time > right_time) {
+      new_visits->push_back(right_time);
+      ++right;
+    } else {
+      ++left;
+      ++right;
+    }
+  }
+
+  for ( ; left < left_visit_count; ++left) {
+    removed_visits->push_back(old_visits[left]);
+  }
+
+  for ( ; right < right_visit_count; ++right) {
+    new_visits->push_back(base::Time::FromInternalValue(new_url.visit(right)));
+  }
 }
 
 }  // namespace browser_sync

@@ -24,6 +24,7 @@ namespace history {
 class HistoryBackend;
 struct URLsDeletedDetails;
 struct URLsModifiedDetails;
+struct URLVisitedDetails;
 class URLRow;
 };
 
@@ -60,16 +61,12 @@ class TypedUrlChangeProcessor : public ChangeProcessor,
   virtual void StopImpl();
 
  private:
-  bool WriteTypedUrl(sync_api::WriteNode* node,
-                     const string16& name,
-                     const string16& value,
-                     std::vector<base::Time>& timestamps);
-
   void StartObserving();
   void StopObserving();
 
   void HandleURLsModified(history::URLsModifiedDetails* details);
   void HandleURLsDeleted(history::URLsDeletedDetails* details);
+  void HandleURLsVisited(history::URLVisitedDetails* details);
 
   // The two models should be associated according to this ModelAssociator.
   TypedUrlModelAssociator* model_associator_;

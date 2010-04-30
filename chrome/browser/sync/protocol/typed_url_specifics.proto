@@ -16,10 +16,9 @@ import "sync.proto";
 message TypedUrlSpecifics {
   optional string url = 1;
   optional string title = 2;
-  optional int32 visit_count = 3;
-  optional int32 typed_count = 4;
-  optional int64 last_visit = 5;
-  optional bool hidden = 6;
+  optional int32 typed_count = 3;
+  optional bool hidden = 4;
+  repeated int64 visit = 5;
 }
 
 extend EntitySpecifics {
