@@ -23,11 +23,19 @@
 // http://developer.apple.com/mac/library/samplecode/BetterAuthorizationSample/listing1.html
 // (Look for "What's This About Zombies?")
 
+#include <CoreFoundation/CoreFoundation.h>
 #include <Security/Authorization.h>
 #include <stdio.h>
 #include <sys/types.h>
 
 namespace authorization_util {
+
+// Obtains an AuthorizationRef that can be used to run commands as root.  If
+// necessary, prompts the user for authentication.  If the user is prompted,
+// |prompt| will be used as the prompt string and an icon appropriate for the
+// application will be displayed in a prompt dialog.  Note that the system
+// appends its own text to the prompt string.  Returns NULL on failure.
+AuthorizationRef AuthorizationCreateToRunAsRoot(CFStringRef prompt);
 
 // Calls straight through to AuthorizationExecuteWithPrivileges.  If that
 // call succeeds, |pid| will be set to the pid of the executed tool.  If the

@@ -4,15 +4,80 @@
 
 #include "chrome/browser/cocoa/authorization_util.h"
 
+#import <Foundation/Foundation.h>
 #include <sys/wait.h>
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/eintr_wrapper.h"
 #include "base/logging.h"
+#import "base/mac_util.h"
 #include "base/string_util.h"
+#include "chrome/browser/cocoa/scoped_authorizationref.h"
 
 namespace authorization_util {
+
+AuthorizationRef AuthorizationCreateToRunAsRoot(CFStringRef prompt) {
+  // Create an empty AuthorizationRef.
+  scoped_AuthorizationRef authorization;
+  OSStatus status = AuthorizationCreate(NULL,
+                                        kAuthorizationEmptyEnvironment,
+                                        kAuthorizationFlagDefaults,
+                                        &authorization);
+  if (status != errAuthorizationSuccess) {
+    LOG(ERROR) << "AuthorizationCreate: " << status;
+    return NULL;
+  }
+
+  // Specify the "system.privilege.admin" right, which allows
+  // AuthorizationExecuteWithPrivileges to run commands as root.
+  AuthorizationItem right_items[] = {
+    {kAuthorizationRightExecute, 0, NULL, 0}
+  };
+  AuthorizationRights rights = {arraysize(right_items), right_items};
+
+  // product_logo_32.png is used instead of app.icns because Authorization
+  // Services can't deal with .icns files.
+  NSString* icon_path =
+      [mac_util::MainAppBundle() pathForResource:@"product_logo_32"
+                                          ofType:@"png"];
+  const char* icon_path_c = [icon_path fileSystemRepresentation];
+  size_t icon_path_length = icon_path_c ? strlen(icon_path_c) : 0;
+
+  // The OS will append " Type an administrator's name and password to allow
+  // <CFBundleDisplayName> to make changes."
+  NSString* prompt_ns = reinterpret_cast<const NSString*>(prompt);
+  const char* prompt_c = [prompt_ns UTF8String];
+  size_t prompt_length = prompt_c ? strlen(prompt_c) : 0;
+
+  AuthorizationItem environment_items[] = {
+    {kAuthorizationEnvironmentIcon, icon_path_length, (void*)icon_path_c, 0},
+    {kAuthorizationEnvironmentPrompt, prompt_length, (void*)prompt_c, 0}
+  };
+
+  AuthorizationEnvironment environment = {arraysize(environment_items),
+                                          environment_items};
+
+  AuthorizationFlags flags = kAuthorizationFlagDefaults |
+                             kAuthorizationFlagInteractionAllowed |
+                             kAuthorizationFlagExtendRights |
+                             kAuthorizationFlagPreAuthorize;
+
+  status = AuthorizationCopyRights(authorization,
+                                   &rights,
+                                   &environment,
+                                   flags,
+                                   NULL);
+  if (status != errAuthorizationSuccess) {
+    if (status != errAuthorizationCanceled) {
+      LOG(ERROR) << "AuthorizationCopyRights: " << status;
+    }
+    return NULL;
+  }
+
+  return authorization.release();
+}
 
 OSStatus ExecuteWithPrivilegesAndGetPID(AuthorizationRef authorization,
                                         const char* tool_path,

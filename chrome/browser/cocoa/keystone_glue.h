@@ -89,6 +89,10 @@ namespace {
   // carried across threads.
   scoped_AuthorizationRef authorization_;
 
+  // YES if a synchronous promotion operation is in progress (promotion during
+  // installation).
+  BOOL synchronousPromotion_;
+
   // YES if an update was ever successfully installed by -installUpdate.
   BOOL updateSuccessfullyInstalled_;
 }
@@ -146,9 +150,21 @@ namespace {
 - (BOOL)needsPromotion;
 - (BOOL)wantsPromotion;
 
-// Requests authorization and promotes the Keystone ticket into the system
-// store.  System Keystone will be installed if necessary.
+// Promotes the Keystone ticket into the system store.  System Keystone will
+// be installed if necessary.  If synchronous is NO, the promotion may occur
+// in the background.  synchronous should be YES for promotion during
+// installation. The KeystoneGlue object assumes ownership of
+// authorization_arg.
+- (void)promoteTicketWithAuthorization:(AuthorizationRef)authorization_arg
+                           synchronous:(BOOL)synchronous;
+
+// Requests authorization and calls -promoteTicketWithAuthorization: in
+// asynchronous mode.
 - (void)promoteTicket;
+
+// Sets a new value for appPath.  Used during installation to point a ticket
+// at the installed copy.
+- (void)setAppPath:(NSString*)appPath;
 
 @end  // @interface KeystoneGlue
 

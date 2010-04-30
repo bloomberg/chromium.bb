@@ -180,6 +180,15 @@
               # only be necessary to list framework-Info.plist once, not the
               # three times it is listed here.
               'mac_bundle_resources': [
+                # This image is used to badge the lock icon in the
+                # authentication dialogs, such as those used for installation
+                # from disk image and Keystone promotion (if so enabled).  It
+                # needs to exist as a file on disk and not just something in a
+                # resource bundle because that's the interface that
+                # Authorization Services uses.  Also, Authorization Services
+                # can't deal with .icns files.
+                'app/theme/<(theme_dir_name)/product_logo_32.png',
+
                 'app/framework-Info.plist',
                 'app/nibs/About.xib',
                 'app/nibs/AboutIPC.xib',
@@ -264,6 +273,7 @@
                 'app/theme/otr_icon.pdf',
                 'app/theme/reload_Template.pdf',
                 'app/theme/stop_Template.pdf',
+                'browser/cocoa/install.sh',
               ],
               'mac_bundle_resources!': [
                 'app/framework-Info.plist',
@@ -455,14 +465,6 @@
                     ],
                   },
                   'mac_bundle_resources': [
-                    # This image is used to badge the lock icon in the
-                    # promotion authentication dialog.  It needs to exist as
-                    # a file on disk and not just something in a resource
-                    # bundle because that's the interface that Authorization
-                    # Services uses.  Also, Authorization Services can't deal
-                    # with .icns files.
-                    'app/theme/<(theme_dir_name)/product_logo_32.png',
-
                     'browser/cocoa/keystone_promote_preflight.sh',
                     'browser/cocoa/keystone_promote_postflight.sh',
                   ],

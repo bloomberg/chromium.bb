@@ -13,6 +13,11 @@
 # user's ID, but the effective user ID set to 0 (root).  bash -p is used on
 # the first line to prevent bash from setting the effective user ID to the
 # real user ID (dropping root privileges).
+#
+# WARNING: This script is NOT currently run when the Keystone ticket is
+# promoted during application installation directly from the disk image,
+# because the installation process itself handles the same permission fix-ups
+# that this script normally would.
 
 set -e
 

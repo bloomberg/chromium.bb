@@ -17,8 +17,11 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#import "base/mac_util.h"
 #include "base/scoped_nsautorelease_pool.h"
-#include "base/sys_info.h"
+#include "chrome/browser/cocoa/authorization_util.h"
+#include "chrome/browser/cocoa/scoped_authorizationref.h"
+#import "chrome/browser/cocoa/keystone_glue.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
@@ -220,87 +223,85 @@ bool ShouldInstallDialog() {
   return result == NSAlertFirstButtonReturn;
 }
 
-// Copies source_path to target_path and performs any additional on-disk
-// bookkeeping needed to be able to launch target_path properly.
-bool InstallFromDiskImage(NSString* source_path, NSString* target_path) {
+// Potentially shows an authorization dialog to request authentication to
+// copy.  If application_directory appears to be unwritable, attempts to
+// obtain authorization, which may result in the display of the dialog.
+// Returns NULL if authorization is not performed because it does not appear
+// to be necessary because the user has permission to write to
+// application_directory.  Returns NULL if authorization fails.
+AuthorizationRef MaybeShowAuthorizationDialog(NSString* application_directory) {
   NSFileManager* file_manager = [NSFileManager defaultManager];
-
-  // For the purposes of this copy, the file manager's delegate shouldn't be
-  // consulted at all.  Clear the delegate and restore it after the copy is
-  // done.
-  id file_manager_delegate = [file_manager delegate];
-  [file_manager setDelegate:nil];
-
-  NSError* copy_error;
-  bool copy_result = [file_manager copyItemAtPath:source_path
-                                           toPath:target_path
-                                            error:&copy_error];
-
-  [file_manager setDelegate:file_manager_delegate];
-
-  if (!copy_result) {
-    LOG(ERROR) << "-[NSFileManager copyItemAtPath:toPath:error:]: "
-               << [[copy_error description] UTF8String];
-    return false;
+  if ([file_manager isWritableFileAtPath:application_directory]) {
+    return NULL;
   }
 
-  // Since the application performed the copy, and the application has the
-  // quarantine bit (LSFileQuarantineEnabled) set, the installed copy will
-  // be quarantined.  That's bad, because it will cause the quarantine dialog
-  // to be displayed, possibly after a long delay, when the application is
-  // relaunched.  Use xattr to drop the quarantine attribute.
-  //
-  // There are three reasons not to use MDItemRemoveAttribute directly:
-  // 1. MDItemRemoveAttribute is a private API.
-  // 2. The operation needs to be recursive, and writing a bunch of code to
-  //    handle the recursion just to call a private API is annoying.
-  // 3. All of this stuff will likely move into a shell script anyway, and
-  //    the shell script will have no choice but to use xattr.
+  NSString* prompt = l10n_util::GetNSStringFWithFixup(
+      IDS_INSTALL_FROM_DMG_AUTHENTICATION_PROMPT,
+      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+  return authorization_util::AuthorizationCreateToRunAsRoot(
+      reinterpret_cast<CFStringRef>(prompt));
+}
 
-  int32 os_major, os_minor, os_patch;
-  base::SysInfo::OperatingSystemVersionNumbers(&os_major, &os_minor, &os_patch);
+// Invokes the installer program at installer_path to copy source_path to
+// target_path and perform any additional on-disk bookkeeping needed to be
+// able to launch target_path properly.  If authorization_arg is non-NULL,
+// function will assume ownership of it, will invoke the installer with that
+// authorization reference, and will attempt Keystone ticket promotion.
+bool InstallFromDiskImage(AuthorizationRef authorization_arg,
+                          NSString* installer_path,
+                          NSString* source_path,
+                          NSString* target_path) {
+  scoped_AuthorizationRef authorization(authorization_arg);
+  authorization_arg = NULL;
+  int exit_status;
+  if (authorization) {
+    const char* installer_path_c = [installer_path fileSystemRepresentation];
+    const char* source_path_c = [source_path fileSystemRepresentation];
+    const char* target_path_c = [target_path fileSystemRepresentation];
+    const char* arguments[] = {source_path_c, target_path_c, NULL};
 
-  const NSString* xattr_path = @"/usr/bin/xattr";
-  const NSString* quarantine_attribute = @"com.apple.quarantine";
-  NSString* launch_path;
-  NSArray* arguments;
-
-  if (os_major > 10 || (os_major == 10 && os_minor >= 6)) {
-    // On 10.6, xattr supports -r for recursive operation.
-    launch_path = xattr_path;
-    arguments = [NSArray arrayWithObjects:@"-r",
-                                          @"-d",
-                                          quarantine_attribute,
-                                          target_path,
-                                          nil];
+    OSStatus status = authorization_util::ExecuteWithPrivilegesAndWait(
+        authorization,
+        installer_path_c,
+        kAuthorizationFlagDefaults,
+        arguments,
+        NULL,  // pipe
+        &exit_status);
+    if (status != errAuthorizationSuccess) {
+      LOG(ERROR) << "AuthorizationExecuteWithPrivileges install: " << status;
+      return false;
+    }
   } else {
-    // On earlier systems, xattr doesn't support -r, so run xattr via find.
-    launch_path = @"/usr/bin/find";
-    arguments = [NSArray arrayWithObjects:target_path,
-                                          @"-exec",
-                                          xattr_path,
-                                          @"-d",
-                                          quarantine_attribute,
-                                          @"{}",
-                                          @"+",
-                                          nil];
+    NSArray* arguments = [NSArray arrayWithObjects:source_path,
+                                                   target_path,
+                                                   nil];
+
+    NSTask* task;
+    @try {
+      task = [NSTask launchedTaskWithLaunchPath:installer_path
+                                      arguments:arguments];
+    } @catch(NSException* exception) {
+      LOG(ERROR) << "+[NSTask launchedTaskWithLaunchPath:arguments:]: "
+                 << [[exception description] UTF8String];
+      return false;
+    }
+
+    [task waitUntilExit];
+    exit_status = [task terminationStatus];
   }
 
-  NSTask* task;
-  @try {
-    task = [NSTask launchedTaskWithLaunchPath:launch_path
-                                    arguments:arguments];
-  } @catch(NSException* exception) {
-    LOG(ERROR) << "+[NSTask launchedTaskWithLaunchPath:arguments:]: "
-               << [[exception description] UTF8String];
+  if (exit_status != 0) {
+    LOG(ERROR) << "install.sh: exit status " << exit_status;
     return false;
   }
 
-  [task waitUntilExit];
-  int status = [task terminationStatus];
-  if (status != 0) {
-    LOG(ERROR) << "/usr/bin/xattr: status " << status;
-    return false;
+  if (authorization) {
+    // As long as an AuthorizationRef is available, promote the Keystone
+    // ticket.  Inform KeystoneGlue of the new path to use.
+    KeystoneGlue* keystone_glue = [KeystoneGlue defaultKeystoneGlue];
+    [keystone_glue setAppPath:target_path];
+    [keystone_glue promoteTicketWithAuthorization:authorization.release()
+                                      synchronous:YES];
   }
 
   return true;
@@ -318,9 +319,6 @@ bool LaunchInstalledApp(NSString* app_path) {
     LOG(ERROR) << "FSPathMakeRef: " << err;
     return false;
   }
-
-  // Use an empty dictionary for the environment.
-  NSDictionary* environment = [NSDictionary dictionary];
 
   const std::vector<std::string>& argv =
       CommandLine::ForCurrentProcess()->argv();
@@ -341,7 +339,6 @@ bool LaunchInstalledApp(NSString* app_path) {
   struct LSApplicationParameters parameters = {0};
   parameters.flags = kLSLaunchDefaults;
   parameters.application = &app_fsref;
-  parameters.environment = reinterpret_cast<CFDictionaryRef>(environment);
   parameters.argv = reinterpret_cast<CFArrayRef>(arguments);
 
   err = LSOpenApplication(&parameters, NULL);
@@ -401,13 +398,6 @@ bool MaybeInstallFromDiskImage() {
     return false;
   }
 
-  // TODO(mark): When this happens, prompt for authentication.
-  if (![file_manager isWritableFileAtPath:application_directory]) {
-    LOG(INFO) << "Non-writable application directory at "
-              << [application_directory UTF8String];
-    return false;
-  }
-
   NSString* source_path = [[NSBundle mainBundle] bundlePath];
   NSString* application_name = [source_path lastPathComponent];
   NSString* target_path =
@@ -418,11 +408,27 @@ bool MaybeInstallFromDiskImage() {
     return false;
   }
 
+  NSString* installer_path =
+      [mac_util::MainAppBundle() pathForResource:@"install" ofType:@"sh"];
+  if (!installer_path) {
+    LOG(INFO) << "Could not locate install.sh";
+    return false;
+  }
+
   if (!ShouldInstallDialog()) {
     return false;
   }
 
-  if (!InstallFromDiskImage(source_path, target_path) ||
+  scoped_AuthorizationRef authorization(
+      MaybeShowAuthorizationDialog(application_directory));
+  // authorization will be NULL if it's deemed unnecessary or if
+  // authentication fails.  In either case, try to install without privilege
+  // escalation.
+
+  if (!InstallFromDiskImage(authorization.release(),
+                            installer_path,
+                            source_path,
+                            target_path) ||
       !LaunchInstalledApp(target_path)) {
     ShowErrorDialog();
     return false;

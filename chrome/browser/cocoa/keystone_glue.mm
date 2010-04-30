@@ -692,64 +692,37 @@ const NSString* const kBrandKey = @"KSBrandID";
     return;
   }
 
-  // Create an empty AuthorizationRef.
-  scoped_AuthorizationRef authorization;
-  OSStatus status = AuthorizationCreate(NULL,
-                                        kAuthorizationEmptyEnvironment,
-                                        kAuthorizationFlagDefaults,
-                                        &authorization);
-  if (status != errAuthorizationSuccess) {
-    LOG(ERROR) << "AuthorizationCreate: " << status;
-    return;
-  }
-
-  // Specify the "system.privilege.admin" right, which allows
-  // AuthorizationExecuteWithPrivileges to run commands as root.
-  AuthorizationItem rightItems[] = {
-    {kAuthorizationRightExecute, 0, NULL, 0}
-  };
-  AuthorizationRights rights = {arraysize(rightItems), rightItems};
-
-  // product_logo_32.png is used instead of app.icns because Authorization
-  // Services requires an image that NSImage can read.
-  NSString* iconPath =
-      [mac_util::MainAppBundle() pathForResource:@"product_logo_32"
-                                          ofType:@"png"];
-  const char* iconPathC = [iconPath fileSystemRepresentation];
-  size_t iconPathLength = iconPathC ? strlen(iconPathC) : 0;
-
-  // The OS will append " Type an administrator's name and password to allow
-  // <CFBundleDisplayName> to make changes."
   NSString* prompt = l10n_util::GetNSStringFWithFixup(
       IDS_PROMOTE_AUTHENTICATION_PROMPT,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-  const char* promptC = [prompt UTF8String];
-  size_t promptLength = promptC ? strlen(promptC) : 0;
-
-  AuthorizationItem environmentItems[] = {
-    {kAuthorizationEnvironmentIcon, iconPathLength, (void*)iconPathC, 0},
-    {kAuthorizationEnvironmentPrompt, promptLength, (void*)promptC, 0}
-  };
-
-  AuthorizationEnvironment environment = {arraysize(environmentItems),
-                                          environmentItems};
-
-  AuthorizationFlags flags = kAuthorizationFlagDefaults |
-                             kAuthorizationFlagInteractionAllowed |
-                             kAuthorizationFlagExtendRights |
-                             kAuthorizationFlagPreAuthorize;
-
-  status = AuthorizationCopyRights(authorization,
-                                   &rights,
-                                   &environment,
-                                   flags,
-                                   NULL);
-  if (status != errAuthorizationSuccess) {
-    if (status != errAuthorizationCanceled) {
-      LOG(ERROR) << "AuthorizationCopyRights: " << status;
-    }
+  scoped_AuthorizationRef authorization(
+      authorization_util::AuthorizationCreateToRunAsRoot(
+          reinterpret_cast<CFStringRef>(prompt)));
+  if (!authorization.get()) {
     return;
   }
+
+  [self promoteTicketWithAuthorization:authorization.release() synchronous:NO];
+}
+
+- (void)promoteTicketWithAuthorization:(AuthorizationRef)authorization_arg
+                           synchronous:(BOOL)synchronous {
+  scoped_AuthorizationRef authorization(authorization_arg);
+  authorization_arg = NULL;
+
+  if ([self asyncOperationPending]) {
+    // Starting a synchronous operation while an asynchronous one is pending
+    // could be trouble.
+    return;
+  }
+  if (!synchronous && ![self wantsPromotion]) {
+    // If operating synchronously, the call came from the installer, which
+    // means that a system ticket is required.  Otherwise, only allow
+    // promotion if it's wanted.
+    return;
+  }
+
+  synchronousPromotion_ = synchronous;
 
   [self updateStatus:kAutoupdatePromoting version:nil];
 
@@ -773,6 +746,8 @@ const NSString* const kBrandKey = @"KSBrandID";
   // operation itself is asynchronous too.  http://b/2290009.  Hopefully,
   // the Keystone promotion code will just be changed to do what preflight
   // now does, and then the preflight script can be removed instead.
+  // However, preflight operation (and promotion) should only be asynchronous
+  // if the synchronous parameter is NO.
   NSString* preflightPath =
       [mac_util::MainAppBundle() pathForResource:@"keystone_promote_preflight"
                                           ofType:@"sh"];
@@ -787,7 +762,7 @@ const NSString* const kBrandKey = @"KSBrandID";
   const char* arguments[] = {userBrandFile, systemBrandFile, NULL};
 
   int exit_status;
-  status = authorization_util::ExecuteWithPrivilegesAndWait(
+  OSStatus status = authorization_util::ExecuteWithPrivilegesAndWait(
       authorization,
       preflightPathC,
       kAuthorizationFlagDefaults,
@@ -837,7 +812,15 @@ const NSString* const kBrandKey = @"KSBrandID";
 - (void)promotionComplete:(NSNotification*)notification {
   NSDictionary* userInfo = [notification userInfo];
   if ([[userInfo objectForKey:KSRegistrationStatusKey] boolValue]) {
-    [self changePermissionsForPromotionAsync];
+    if (synchronousPromotion_) {
+      // Short-circuit: if performing a synchronous promotion, the promotion
+      // came from the installer, which already set the permissions properly.
+      // Rather than run a duplicate permission-changing operation, jump
+      // straight to "done."
+      [self changePermissionsForPromotionComplete];
+    } else {
+      [self changePermissionsForPromotionAsync];
+    }
   } else {
     authorization_.reset();
     [self updateStatus:kAutoupdatePromoteFailed version:nil];
@@ -894,6 +877,13 @@ const NSString* const kBrandKey = @"KSBrandID";
   authorization_.reset();
 
   [self updateStatus:kAutoupdatePromoted version:nil];
+}
+
+- (void)setAppPath:(NSString*)appPath {
+  if (appPath != appPath_) {
+    [appPath_ release];
+    appPath_ = [appPath copy];
+  }
 }
 
 @end  // @implementation KeystoneGlue
