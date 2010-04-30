@@ -111,7 +111,7 @@ void EditSearchEngineDialog::Init(GtkWindow* parent_window, Profile* profile) {
   title_entry_ = gtk_entry_new();
   gtk_entry_set_activates_default(GTK_ENTRY(title_entry_), TRUE);
   g_signal_connect(title_entry_, "changed",
-                   G_CALLBACK(OnEntryChanged), this);
+                   G_CALLBACK(OnEntryChangedThunk), this);
   accessible_widget_helper_->SetWidgetName(
       title_entry_,
       IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_LABEL);
@@ -119,7 +119,7 @@ void EditSearchEngineDialog::Init(GtkWindow* parent_window, Profile* profile) {
   keyword_entry_ = gtk_entry_new();
   gtk_entry_set_activates_default(GTK_ENTRY(keyword_entry_), TRUE);
   g_signal_connect(keyword_entry_, "changed",
-                   G_CALLBACK(OnEntryChanged), this);
+                   G_CALLBACK(OnEntryChangedThunk), this);
   g_signal_connect(keyword_entry_, "insert-text",
                    G_CALLBACK(LowercaseInsertTextHandler), NULL);
   accessible_widget_helper_->SetWidgetName(
@@ -129,7 +129,7 @@ void EditSearchEngineDialog::Init(GtkWindow* parent_window, Profile* profile) {
   url_entry_ = gtk_entry_new();
   gtk_entry_set_activates_default(GTK_ENTRY(url_entry_), TRUE);
   g_signal_connect(url_entry_, "changed",
-                   G_CALLBACK(OnEntryChanged), this);
+                   G_CALLBACK(OnEntryChangedThunk), this);
   accessible_widget_helper_->SetWidgetName(
       url_entry_,
       IDS_SEARCH_ENGINES_EDITOR_URL_LABEL);
@@ -198,8 +198,8 @@ void EditSearchEngineDialog::Init(GtkWindow* parent_window, Profile* profile) {
 
   gtk_widget_show_all(dialog_);
 
-  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), this);
-  g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroy), this);
+  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
+  g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroyThunk), this);
 }
 
 std::wstring EditSearchEngineDialog::GetTitleInput() const {
@@ -244,27 +244,21 @@ void EditSearchEngineDialog::UpdateImage(GtkWidget* image,
   }
 }
 
-// static
-void EditSearchEngineDialog::OnEntryChanged(
-    GtkEditable* editable, EditSearchEngineDialog* window) {
-  window->EnableControls();
+void EditSearchEngineDialog::OnEntryChanged(GtkEditable* editable) {
+  EnableControls();
 }
 
-// static
-void EditSearchEngineDialog::OnResponse(GtkDialog* dialog, int response_id,
-                                        EditSearchEngineDialog* window) {
+void EditSearchEngineDialog::OnResponse(GtkDialog* dialog, int response_id) {
   if (response_id == GTK_RESPONSE_OK) {
-    window->controller_->AcceptAddOrEdit(window->GetTitleInput(),
-                                         window->GetKeywordInput(),
-                                         window->GetURLInput());
+    controller_->AcceptAddOrEdit(GetTitleInput(),
+                                 GetKeywordInput(),
+                                 GetURLInput());
   } else {
-    window->controller_->CleanUpCancelledAdd();
+    controller_->CleanUpCancelledAdd();
   }
-  gtk_widget_destroy(window->dialog_);
+  gtk_widget_destroy(dialog_);
 }
 
-// static
-void EditSearchEngineDialog::OnWindowDestroy(
-    GtkWidget* widget, EditSearchEngineDialog* window) {
-  MessageLoop::current()->DeleteSoon(FROM_HERE, window);
+void EditSearchEngineDialog::OnWindowDestroy(GtkWidget* widget) {
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }

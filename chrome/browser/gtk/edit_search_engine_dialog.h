@@ -8,6 +8,7 @@
 #include <gtk/gtk.h>
 #include <string>
 
+#include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 
@@ -42,16 +43,14 @@ class EditSearchEngineDialog {
   void UpdateImage(GtkWidget* image, bool is_valid, int invalid_message_id);
 
   // Callback for entry changes.
-  static void OnEntryChanged(GtkEditable* editable,
-                             EditSearchEngineDialog* window);
+  CHROMEG_CALLBACK_0(EditSearchEngineDialog, void, OnEntryChanged,
+                     GtkEditable*);
 
   // Callback for dialog buttons.
-  static void OnResponse(GtkDialog* dialog, int response_id,
-                         EditSearchEngineDialog* window);
+  CHROMEG_CALLBACK_1(EditSearchEngineDialog, void, OnResponse, GtkDialog*, int);
 
   // Callback for window destruction.
-  static void OnWindowDestroy(GtkWidget* widget,
-                              EditSearchEngineDialog* window);
+  CHROMEGTK_CALLBACK_0(EditSearchEngineDialog, void, OnWindowDestroy);
 
   // The dialog window.
   GtkWidget* dialog_;
