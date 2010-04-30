@@ -31,7 +31,7 @@ TEST_F(MultipartResponseUITest, SingleVisit) {
   ASSERT_TRUE(browser_proxy.get());
   scoped_refptr<TabProxy> tab_proxy(browser_proxy->GetActiveTab());
   ASSERT_TRUE(tab_proxy.get());
-  NavigateToURL(server->TestServerPageW(L"multipart"));
+  NavigateToURL(server->TestServerPage("multipart"));
   std::wstring title;
   EXPECT_TRUE(tab_proxy->GetTabTitle(&title));
   EXPECT_EQ(L"page 9", title);
