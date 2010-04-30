@@ -20,6 +20,7 @@ class GeolocationObserverBridge;
   IBOutlet NSTableView* tableView_;
   IBOutlet NSButton* removeButton_;
   IBOutlet NSButton* removeAllButton_;
+  IBOutlet NSButton* doneButton_;
 
   GeolocationContentSettingsMap* settingsMap_;  // weak
   scoped_ptr<GeolocationContentSettingsTableModel> model_;
@@ -28,7 +29,13 @@ class GeolocationObserverBridge;
 
 // Shows or makes frontmost the geolocation exceptions window.
 // Changes made by the user in the window are persisted in |settingsMap|.
-+ (id)showWindowWithSettingsMap:(GeolocationContentSettingsMap*)settingsMap;
++ (id)controllerWithSettingsMap:(GeolocationContentSettingsMap*)settingsMap;
+
+// Sets the minimum width of the sheet and resizes it if necessary.
+- (void)setMinWidth:(CGFloat)minWidth;
+
+- (void)attachSheetTo:(NSWindow*)window;
+- (IBAction)closeSheet:(id)sender;
 
 - (IBAction)removeException:(id)sender;
 - (IBAction)removeAllExceptions:(id)sender;

@@ -135,6 +135,7 @@ class PrefObserverBridge : public NotificationObserver {
 
   [g_instance selectTab:settingsType];
   [g_instance showWindow:nil];
+  [g_instance closeExceptionsSheet];
   return g_instance;
 }
 
@@ -156,6 +157,13 @@ class PrefObserverBridge : public NotificationObserver {
                           profile->GetPrefs(), NULL);
   }
   return self;
+}
+
+- (void)closeExceptionsSheet {
+  NSWindow* attachedSheet = [[self window] attachedSheet];
+  if (attachedSheet) {
+    [NSApp endSheet:attachedSheet];
+  }
 }
 
 - (void)awakeFromNib {
@@ -304,13 +312,15 @@ class PrefObserverBridge : public NotificationObserver {
 - (IBAction)showGeolocationExceptions:(id)sender {
   GeolocationContentSettingsMap* settingsMap =
       profile_->GetGeolocationContentSettingsMap();
-  [GeolocationExceptionsWindowController showWindowWithSettingsMap:settingsMap];
+  [[GeolocationExceptionsWindowController controllerWithSettingsMap:settingsMap]
+      attachSheetTo:[self window]];
 }
 
 - (void)showExceptionsForType:(ContentSettingsType)settingsType {
   HostContentSettingsMap* settingsMap = profile_->GetHostContentSettingsMap();
-  [ContentExceptionsWindowController showForType:settingsType
-                                     settingsMap:settingsMap];
+  [[ContentExceptionsWindowController controllerForType:settingsType
+                                            settingsMap:settingsMap]
+      attachSheetTo:[self window]];
 }
 
 - (void)setImagesEnabledIndex:(NSInteger)value {

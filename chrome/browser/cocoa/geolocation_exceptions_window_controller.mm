@@ -57,12 +57,11 @@ GeolocationExceptionsWindowController* g_exceptionWindow = nil;
 
 @implementation GeolocationExceptionsWindowController
 
-+ (id)showWindowWithSettingsMap:(GeolocationContentSettingsMap*)settingsMap {
++ (id)controllerWithSettingsMap:(GeolocationContentSettingsMap*)settingsMap {
   if (!g_exceptionWindow) {
     g_exceptionWindow = [[GeolocationExceptionsWindowController alloc]
         initWithSettingsMap:settingsMap];
   }
-  [g_exceptionWindow showWindow:nil];
   return g_exceptionWindow;
 }
 
@@ -89,20 +88,22 @@ GeolocationExceptionsWindowController* g_exceptionWindow = nil;
   DCHECK_EQ(self, [tableView_ dataSource]);
   DCHECK_EQ(self, [tableView_ delegate]);
 
-  // Make sure the button fits its label, but keep it the same height as the
-  // other two buttons.
-  [GTMUILocalizerAndLayoutTweaker sizeToFitView:removeAllButton_];
-  NSSize size = [removeAllButton_ frame].size;
-  size.height = NSHeight([removeButton_ frame]);
-  [removeAllButton_ setFrameSize:size];
+  CGFloat minWidth = [[removeButton_ superview] bounds].size.width +
+                     [[doneButton_ superview] bounds].size.width;
+  [[self window] setMinSize:NSMakeSize(minWidth,
+                                       [[self window] minSize].height)];
 
   [self adjustEditingButtons];
+}
 
-  // Give the button bar on the bottom of the window the "iTunes/iChat" look.
-  [[self window] setAutorecalculatesContentBorderThickness:NO
-                                                   forEdge:NSMinYEdge];
-  [[self window] setContentBorderThickness:kButtonBarHeight
-                                   forEdge:NSMinYEdge];
+- (void)setMinWidth:(CGFloat)minWidth {
+  NSWindow* window = [self window];
+  [window setMinSize:NSMakeSize(minWidth, [window minSize].height)];
+  if ([window frame].size.width < minWidth) {
+    NSRect frame = [window frame];
+    frame.size.width = minWidth;
+    [window setFrame:frame display:NO];
+  }
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
@@ -115,7 +116,7 @@ GeolocationExceptionsWindowController* g_exceptionWindow = nil;
 
 // Let esc close the window.
 - (void)cancel:(id)sender {
-  [self close];
+  [self closeSheet:self];
 }
 
 - (void)keyDown:(NSEvent*)event {
@@ -131,6 +132,25 @@ GeolocationExceptionsWindowController* g_exceptionWindow = nil;
     }
   }
   [super keyDown:event];
+}
+
+- (void)attachSheetTo:(NSWindow*)window {
+  [NSApp beginSheet:[self window]
+     modalForWindow:window
+      modalDelegate:self
+     didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+        contextInfo:nil];
+}
+
+- (void)sheetDidEnd:(NSWindow*)sheet
+         returnCode:(NSInteger)returnCode
+        contextInfo:(void*)context {
+  [sheet close];
+  [sheet orderOut:self];
+}
+
+- (IBAction)closeSheet:(id)sender {
+  [NSApp endSheet:[self window]];
 }
 
 - (IBAction)removeException:(id)sender {
