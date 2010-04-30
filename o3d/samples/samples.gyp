@@ -80,9 +80,6 @@
         },
       ],
     },
-    # TODO(kbr): change these back to using the directory copying
-    # syntax ("o3d-webgl/"), and roll forward gyp in DEPS, once the
-    # bug in the MSVS gyp generator causing it to crash is fixed.
     {
       # TODO(petersont): tie in the copying of these to the doc
       # generation process, compile the sources, etc.
@@ -90,48 +87,9 @@
       'type': 'none',
       'copies': [
         {
-          'destination': '<(PRODUCT_DIR)/samples/o3d-webgl',
+          'destination': '<(PRODUCT_DIR)/samples',
           'files': [
-            'o3d-webgl/archive_request.js',
-            'o3d-webgl/base.js',
-            'o3d-webgl/bitmap.js',
-            'o3d-webgl/bounding_box.js',
-            'o3d-webgl/buffer.js',
-            'o3d-webgl/clear_buffer.js',
-            'o3d-webgl/client.js',
-            'o3d-webgl/draw_context.js',
-            'o3d-webgl/draw_element.js',
-            'o3d-webgl/draw_list.js',
-            'o3d-webgl/draw_pass.js',
-            'o3d-webgl/effect.js',
-            'o3d-webgl/element.js',
-            'o3d-webgl/event.js',
-            'o3d-webgl/field.js',
-            'o3d-webgl/file_request.js',
-            'o3d-webgl/material.js',
-            'o3d-webgl/named_object.js',
-            'o3d-webgl/named_object_base.js',
-            'o3d-webgl/object_base.js',
-            'o3d-webgl/pack.js',
-            'o3d-webgl/param.js',
-            'o3d-webgl/param_object.js',
-            'o3d-webgl/primitive.js',
-            'o3d-webgl/raw_data.js',
-            'o3d-webgl/ray_intersection_info.js',
-            'o3d-webgl/render_node.js',
-            'o3d-webgl/render_surface.js',
-            'o3d-webgl/render_surface_set.js',
-            'o3d-webgl/sampler.js',
-            'o3d-webgl/shape.js',
-            'o3d-webgl/state.js',
-            'o3d-webgl/state_set.js',
-            'o3d-webgl/stream.js',
-            'o3d-webgl/stream_bank.js',
-            'o3d-webgl/texture.js',
-            'o3d-webgl/transform.js',
-            'o3d-webgl/tree_traversal.js',
-            'o3d-webgl/types.js',
-            'o3d-webgl/viewport.js',
+            'o3d-webgl/',
           ]
         },
       ],
@@ -145,22 +103,9 @@
       'type': 'none',
       'copies': [
         {
-          'destination': '<(PRODUCT_DIR)/samples/o3d-webgl-samples',
+          'destination': '<(PRODUCT_DIR)/samples',
           'files': [
-            'o3d-webgl-samples/culling.html',
-            'o3d-webgl-samples/hellocube-colors.html',
-            'o3d-webgl-samples/hellocube-textures.html',
-            'o3d-webgl-samples/hellocube.html',
-            'o3d-webgl-samples/helloworld.html',
-            'o3d-webgl-samples/pool.html',
-            'o3d-webgl-samples/primitives.html',
-            'o3d-webgl-samples/shadow-map.html',
-          ]
-        },
-        {
-          'destination': '<(PRODUCT_DIR)/samples/o3d-webgl-samples/simpleviewer',
-          'files': [
-            'o3d-webgl-samples/simpleviewer/simpleviewer.html',
+            'o3d-webgl-samples/',
           ]
         },
       ],
