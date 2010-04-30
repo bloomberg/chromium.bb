@@ -1024,6 +1024,19 @@
         }],
       ],
     },
+    {
+      # TODO(akalin): Consider moving this into its own file.
+      'target_name': 'sync_net',
+      'type': '<(library)',
+      'sources': [
+        'browser/sync/net/network_change_observer_proxy.cc',
+        'browser/sync/net/network_change_observer_proxy.h',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../net/net.gyp:net_base',
+      ],
+    },
   ],
   'conditions': [
     ['OS=="mac"',

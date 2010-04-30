@@ -1774,6 +1774,38 @@
       ],
     },
     {
+      # TODO(akalin): Add this to all.gyp.
+      # TODO(akalin): Consider moving this into its own file.
+      'target_name': 'sync_net_unit_tests',
+      'type': 'executable',
+      'sources': [
+        # TODO(akalin): Write our own test suite and runner.
+        '../base/test/run_all_unittests.cc',
+        '../base/test/test_suite.h',
+        'browser/sync/net/network_change_observer_proxy_unittest.cc',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        'sync_net',
+        '../testing/gmock.gyp:gmock',
+        '../testing/gtest.gyp:gtest',
+      ],
+      # TODO(akalin): Remove this once we have our own test suite and
+      # runner.
+      'conditions': [
+        ['OS == "linux" or OS == "freebsd" or OS == "openbsd" or OS == "solaris"', {
+          'dependencies': [
+            # Needed to handle the #include chain:
+            #   base/test/test_suite.h
+            #   gtk/gtk.h
+            '../build/linux/system.gyp:gtk',
+          ],
+        }],
+      ],
+    },
+    {
       'target_name': 'sync_integration_tests',
       'type': 'executable',
       'dependencies': [
