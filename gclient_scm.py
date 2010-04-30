@@ -9,6 +9,7 @@ import os
 import posixpath
 import re
 import subprocess
+import time
 
 import scm
 import gclient_utils
@@ -252,21 +253,22 @@ class GitWrapper(SCMWrapper):
       raise gclient_utils.Error('Invalid Upstream')
 
     # Update the remotes first so we have all the refs.
-    for _ in range(3):
+    for _ in range(10):
       try:
         remote_output, remote_err = scm.GIT.Capture(
             ['remote'] + verbose + ['update'],
             self.checkout_path,
             print_error=False)
         break
-      except gclient_utils.CheckCallError, e:
+      except gclient_utils.CheckCallError:
         # Hackish but at that point, git is known to work so just checking for
         # 502 in stderr should be fine.
         if '502' in e.stderr:
           print str(e)
-          print "Retrying..."
+          print "Sleeping 15 seconds and retrying..."
+          time.sleep(15)
           continue
-        raise e
+        raise
 
     if verbose:
       print remote_output.strip()

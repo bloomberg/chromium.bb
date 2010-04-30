@@ -11,6 +11,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import xml.dom.minidom
 
 import gclient_utils
@@ -399,7 +400,7 @@ class SVN(object):
         }[args[0]]
     compiled_pattern = re.compile(pattern)
     # Place an upper limit.
-    for _ in range(1, 10):
+    for _ in range(10):
       previous_list_len = len(file_list)
       failure = []
 
@@ -423,6 +424,8 @@ class SVN(object):
           if args[0] == 'checkout':
             # An aborted checkout is now an update.
             args = ['update'] + args[1:]
+          print "Sleeping 15 seconds and retrying...."
+          time.sleep(15)
           continue
         # No progress was made or an unknown error we aren't sure, bail out.
         raise
