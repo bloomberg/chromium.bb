@@ -518,6 +518,22 @@ void TabContents::SetAppExtensionById(const std::string& app_extension_id) {
   }
 }
 
+SkBitmap* TabContents::GetAppExtensionIcon() {
+  // We don't show the big icons in tabs for TYPE_EXTENSION_APP windows because
+  // for those windows, we already have a big icon in the top-left outside any
+  // tab. Having big tab icons too looks kinda redonk.
+  if (delegate_ &&
+      delegate_->GetBrowser() &&
+      delegate_->GetBrowser()->type() == Browser::TYPE_EXTENSION_APP) {
+    return NULL;
+  }
+
+  if (app_extension_icon_.empty())
+    return NULL;
+
+  return &app_extension_icon_;
+}
+
 const GURL& TabContents::GetURL() const {
   // We may not have a navigation entry yet
   NavigationEntry* entry = controller_.GetActiveEntry();
@@ -2957,15 +2973,6 @@ void TabContents::Observe(NotificationType type,
 
 void TabContents::UpdateAppExtensionIcon(Extension* extension) {
   app_extension_icon_.reset();
-
-  // We don't show the big icons in tabs for TYPE_EXTENSION_APP windows because
-  // for those windows, we already have a big icon in the top-left outside any
-  // tab. Having big tab icons too looks kinda redonk.
-  if (!delegate_ ||
-      !delegate_->GetBrowser() ||
-      delegate_->GetBrowser()->type() == Browser::TYPE_EXTENSION_APP) {
-    return;
-  }
 
   if (extension) {
     app_extension_image_loader_.reset(new ImageLoadingTracker(this));

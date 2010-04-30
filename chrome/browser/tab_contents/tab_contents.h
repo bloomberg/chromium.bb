@@ -213,7 +213,7 @@ class TabContents : public PageNavigator,
   //
   // NOTE: the returned icon is larger than 16x16 (it's size is
   // Extension::EXTENSION_ICON_SMALLISH).
-  const SkBitmap& app_extension_icon() const { return app_extension_icon_; }
+  SkBitmap* GetAppExtensionIcon();
 
   // Tab navigation state ------------------------------------------------------
 
