@@ -14,7 +14,6 @@
 #include "base/win_util.h"
 #include "chrome/browser/browser_init.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
@@ -144,7 +143,8 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
   if (visible_window) {
     std::wstring text = l10n_util::GetString(IDS_BROWSER_HUNGBROWSER_MESSAGE);
     std::wstring caption = l10n_util::GetString(IDS_PRODUCT_NAME);
-    if (!platform_util::SimpleYesNoBox(NULL, caption, text)) {
+    if (IDYES != win_util::MessageBox(NULL, text, caption,
+                                      MB_YESNO | MB_ICONSTOP | MB_TOPMOST)) {
       // The user denied. Quit silently.
       return PROCESS_NOTIFIED;
     }

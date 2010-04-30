@@ -23,7 +23,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/history/query_parser.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/page_navigator.h"
@@ -165,11 +164,37 @@ bool ShouldOpenAll(gfx::NativeWindow parent,
   if (descendant_count < bookmark_utils::num_urls_before_prompting)
     return true;
 
-  string16 message = l10n_util::GetStringFUTF16(
+  // Bug 40011: we should refactor this into a cross-platform "prompt before
+  // continuing" function.
+#if defined(OS_WIN)
+  std::wstring message =
+      l10n_util::GetStringF(IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL,
+                            IntToWString(descendant_count));
+  return MessageBox(parent, message.c_str(),
+                    l10n_util::GetString(IDS_PRODUCT_NAME).c_str(),
+                    MB_YESNO | MB_ICONWARNING | MB_TOPMOST) == IDYES;
+#elif defined(TOOLKIT_GTK)
+  std::string message = l10n_util::GetStringFUTF8(
       IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL,
       IntToString16(descendant_count));
-  string16 title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
-  return platform_util::SimpleYesNoBox(parent, title, message);
+  GtkWidget* dialog = gtk_message_dialog_new(parent,
+      static_cast<GtkDialogFlags>(
+          GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
+      GTK_MESSAGE_QUESTION,
+      GTK_BUTTONS_YES_NO,
+      "%s", message.c_str());
+  gtk_util::ApplyMessageDialogQuirks(dialog);
+  gtk_window_set_title(GTK_WINDOW(dialog),
+                       l10n_util::GetStringUTF8(IDS_PRODUCT_NAME).c_str());
+  gint result = gtk_dialog_run(GTK_DIALOG(dialog));
+  gtk_widget_destroy(dialog);
+  return (result == GTK_RESPONSE_YES);
+#else
+  // TODO(port): Display a dialog prompt.
+  // http://crbug.com/34481
+  NOTIMPLEMENTED();
+  return true;
+#endif
 }
 
 // Comparison function that compares based on date modified of the two nodes.

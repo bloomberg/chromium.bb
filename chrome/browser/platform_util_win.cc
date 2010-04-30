@@ -154,13 +154,6 @@ void SimpleErrorBox(gfx::NativeWindow parent,
   win_util::MessageBox(parent, message, title, MB_OK | MB_SETFOREGROUND);
 }
 
-bool SimpleYesNoBox(gfx::NativeWindow parent,
-                    const string16& title,
-                    const string16& message) {
-  return win_util::MessageBox(parent, message.c_str(), title.c_str(),
-      MB_YESNO | MB_ICONWARNING | MB_SETFOREGROUND) == IDYES;
-}
-
 string16 GetVersionStringModifier() {
 #if defined(GOOGLE_CHROME_BUILD)
   FilePath module;
