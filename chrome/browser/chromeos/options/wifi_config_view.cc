@@ -35,7 +35,8 @@ WifiConfigView::WifiConfigView(NetworkConfigView* parent, WifiNetwork wifi)
       certificate_browse_button_(NULL),
       certificate_path_(),
       passphrase_textfield_(NULL),
-      passphrase_visible_button_(NULL) {
+      passphrase_visible_button_(NULL),
+      autoconnect_checkbox_(NULL) {
   Init();
 }
 
@@ -48,7 +49,8 @@ WifiConfigView::WifiConfigView(NetworkConfigView* parent)
       certificate_browse_button_(NULL),
       certificate_path_(),
       passphrase_textfield_(NULL),
-      passphrase_visible_button_(NULL) {
+      passphrase_visible_button_(NULL),
+      autoconnect_checkbox_(NULL) {
   Init();
 }
 
@@ -100,7 +102,7 @@ void WifiConfigView::FileSelected(const FilePath& path,
   UpdateCanLogin();  // TODO(njw) Check if the passphrase decrypts the key.
 }
 
-bool WifiConfigView::Accept() {
+bool WifiConfigView::Login() {
   string16 identity_string, certificate_path_string;
 
   if (identity_textfield_ != NULL) {
@@ -110,11 +112,39 @@ bool WifiConfigView::Accept() {
   if (other_network_) {
     CrosLibrary::Get()->GetNetworkLibrary()->ConnectToWifiNetwork(
         ssid_textfield_->text(), passphrase_textfield_->text(),
-        identity_string, certificate_path_string);
+        identity_string, certificate_path_string,
+        autoconnect_checkbox_->checked());
   } else {
+    Save();
     CrosLibrary::Get()->GetNetworkLibrary()->ConnectToWifiNetwork(
         wifi_, passphrase_textfield_->text(),
         identity_string, certificate_path_string);
+  }
+  return true;
+}
+
+bool WifiConfigView::Save() {
+  // Save password and auto-connect here.
+  if (!other_network_) {
+    bool changed = false;
+
+    bool auto_connect = autoconnect_checkbox_->checked();
+    if (auto_connect != wifi_.auto_connect) {
+      wifi_.auto_connect = auto_connect;
+      changed = true;
+    }
+
+    if (passphrase_textfield_) {
+      const std::string& passphrase =
+          UTF16ToUTF8(passphrase_textfield_->text());
+      if (passphrase != wifi_.passphrase) {
+        wifi_.passphrase = passphrase;
+        changed = true;
+      }
+    }
+
+    if (changed)
+      CrosLibrary::Get()->GetNetworkLibrary()->SaveWifiNetwork(wifi_);
   }
   return true;
 }
@@ -215,6 +245,16 @@ void WifiConfigView::Init() {
     layout->AddView(passphrase_visible_button_);
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   }
+
+  // Autoconnect checkbox
+  autoconnect_checkbox_ = new views::Checkbox(
+      l10n_util::GetString(IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT));
+  // For other network, default to autoconnect.
+  bool autoconnect = other_network_ || wifi_.auto_connect;
+  autoconnect_checkbox_->SetChecked(autoconnect);
+  layout->StartRow(0, column_view_set_id);
+  layout->AddView(autoconnect_checkbox_, 3, 1);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 }
 
 }  // namespace chromeos

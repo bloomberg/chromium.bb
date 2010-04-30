@@ -198,10 +198,14 @@ class NetworkLibrary {
   virtual void ConnectToWifiNetwork(const string16& ssid,
                                     const string16& password,
                                     const string16& identity,
-                                    const string16& certpath) = 0;
+                                    const string16& certpath,
+                                    bool auto_connect) = 0;
 
   // Connect to the specified cellular network.
   virtual void ConnectToCellularNetwork(CellularNetwork network) = 0;
+
+  // Set whether or not to auto-connect to this network.
+  virtual void SaveWifiNetwork(const WifiNetwork& network) = 0;
 
   // Forget the passed in wifi network.
   virtual void ForgetWifiNetwork(const WifiNetwork& network) = 0;
@@ -313,16 +317,20 @@ class NetworkLibraryImpl : public NetworkLibrary,
   virtual void ConnectToWifiNetwork(const string16& ssid,
                                     const string16& password,
                                     const string16& identity,
-                                    const string16& certpath);
+                                    const string16& certpath,
+                                    bool auto_connect);
+
+  // Connect to the specified cellular network.
+  virtual void ConnectToCellularNetwork(CellularNetwork network);
+
+  // Set whether or not to auto-connect to this network.
+  virtual void SaveWifiNetwork(const WifiNetwork& network);
 
   // Forget the passed in wifi network.
   virtual void ForgetWifiNetwork(const WifiNetwork& network);
 
   // Forget the passed in cellular network.
   virtual void ForgetCellularNetwork(const CellularNetwork& network);
-
-  // Connect to the specified cellular network.
-  virtual void ConnectToCellularNetwork(CellularNetwork network);
 
   virtual bool ethernet_available() const {
       return available_devices_ & (1 << TYPE_ETHERNET); }

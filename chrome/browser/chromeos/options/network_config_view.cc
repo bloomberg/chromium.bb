@@ -72,8 +72,12 @@ bool NetworkConfigView::Cancel() {
 }
 
 bool NetworkConfigView::Accept() {
-  if (flags_ & FLAG_WIFI)
-    return wificonfig_view_->Accept();
+  if (flags_ & FLAG_WIFI) {
+    if (flags_ & FLAG_LOGIN_ONLY)
+      return wificonfig_view_->Login();
+    else
+      return wificonfig_view_->Save();
+  }
   return true;
 }
 

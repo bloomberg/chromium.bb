@@ -11,7 +11,9 @@
 #include "base/string16.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/shell_dialogs.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 #include "views/controls/button/button.h"
+#include "views/controls/button/checkbox.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/textfield/textfield.h"
@@ -45,7 +47,11 @@ class WifiConfigView : public views::View,
   // SelectFileDialog::Listener implementation.
   virtual void FileSelected(const FilePath& path, int index, void* params);
 
-  virtual bool Accept();
+  // Login to network.
+  virtual bool Login();
+
+  // Save network information.
+  virtual bool Save();
 
   // Get the typed in ssid.
   const string16& GetSSID() const;
@@ -59,6 +65,10 @@ class WifiConfigView : public views::View,
   void FocusFirstField();
 
  private:
+  FRIEND_TEST(WifiConfigViewTest, NoChangeSaveTest);
+  FRIEND_TEST(WifiConfigViewTest, ChangeAutoConnectSaveTest);
+  FRIEND_TEST(WifiConfigViewTest, ChangePasswordSaveTest);
+
   // Initializes UI.
   void Init();
 
@@ -81,6 +91,7 @@ class WifiConfigView : public views::View,
   FilePath certificate_path_;
   views::Textfield* passphrase_textfield_;
   views::ImageButton* passphrase_visible_button_;
+  views::Checkbox* autoconnect_checkbox_;
 
   DISALLOW_COPY_AND_ASSIGN(WifiConfigView);
 };

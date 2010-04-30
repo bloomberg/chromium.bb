@@ -101,13 +101,16 @@ void NetworkLibraryImpl::ConnectToWifiNetwork(WifiNetwork network,
 void NetworkLibraryImpl::ConnectToWifiNetwork(const string16& ssid,
                                               const string16& password,
                                               const string16& identity,
-                                              const string16& certpath) {
+                                              const string16& certpath,
+                                              bool auto_connect) {
   if (CrosLibrary::Get()->EnsureLoaded()) {
     // First create a service from hidden network.
     ServiceInfo* service = GetWifiService(UTF16ToUTF8(ssid).c_str(),
                                           SECURITY_UNKNOWN);
-    // Now connect to that service.
     if (service) {
+      // Set auto-connect.
+      SetAutoConnect(service->service_path, auto_connect);
+      // Now connect to that service.
       ConnectToNetworkWithCertInfo(service->service_path,
                        password.empty() ? NULL : UTF16ToUTF8(password).c_str(),
                        identity.empty() ? NULL : UTF16ToUTF8(identity).c_str(),
@@ -125,6 +128,13 @@ void NetworkLibraryImpl::ConnectToWifiNetwork(const string16& ssid,
 void NetworkLibraryImpl::ConnectToCellularNetwork(CellularNetwork network) {
   if (CrosLibrary::Get()->EnsureLoaded()) {
     ConnectToNetwork(network.service_path.c_str(), NULL);
+  }
+}
+
+void NetworkLibraryImpl::SaveWifiNetwork(const WifiNetwork& network) {
+  if (CrosLibrary::Get()->EnsureLoaded()) {
+    SetAutoConnect(network.service_path.c_str(), network.auto_connect);
+    // TODO(chocobo): Save password.
   }
 }
 
@@ -210,6 +220,7 @@ void NetworkLibraryImpl::ParseSystem(SystemInfo* system,
     WifiNetworkVector* remembered_wifi_networks,
     CellularNetworkVector* remembered_cellular_networks) {
   DLOG(INFO) << "ParseSystem:";
+  bool ethernet_found = false;
   for (int i = 0; i < system->service_size; i++) {
     const ServiceInfo& service = system->services[i];
     DLOG(INFO) << "  (" << service.type <<
@@ -251,6 +262,7 @@ void NetworkLibraryImpl::ParseSystem(SystemInfo* system,
       }
     }
     if (service.type == TYPE_ETHERNET) {
+      ethernet_found = true;
       ethernet->connecting = connecting;
       ethernet->connected = connected;
       ethernet->device_path = service.device_path ? service.device_path :
@@ -267,6 +279,12 @@ void NetworkLibraryImpl::ParseSystem(SystemInfo* system,
                                                    connected,
                                                    ip_address));
     }
+  }
+  if (!ethernet_found) {
+    ethernet->connecting = false;
+    ethernet->connected = false;
+    ethernet->device_path = std::string();
+    ethernet->ip_address = std::string();
   }
   DLOG(INFO) << "Remembered networks:";
   for (int i = 0; i < system->remembered_service_size; i++) {

@@ -44,9 +44,11 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_METHOD0(RequestWifiScan, void(void));
   MOCK_METHOD4(ConnectToWifiNetwork, void(WifiNetwork, const string16&,
                                           const string16&, const string16&));
-  MOCK_METHOD4(ConnectToWifiNetwork, void(const string16&, const string16&,
-                                          const string16&, const string16&));
+  MOCK_METHOD5(ConnectToWifiNetwork, void(const string16&, const string16&,
+                                          const string16&, const string16&,
+                                          bool));
   MOCK_METHOD1(ConnectToCellularNetwork, void(CellularNetwork));
+  MOCK_METHOD1(SaveWifiNetwork, void(const WifiNetwork&));
   MOCK_METHOD1(ForgetWifiNetwork, void(const WifiNetwork&));
   MOCK_METHOD1(ForgetCellularNetwork, void(const CellularNetwork&));
 
