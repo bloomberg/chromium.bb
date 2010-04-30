@@ -889,6 +889,9 @@ void RenderThread::EnsureWebKitInitialized() {
       command_line.HasSwitch(switches::kEnableExperimentalWebGL));
 
   WebRuntimeFeatures::enablePushState(true);
+
+  WebRuntimeFeatures::enableTouch(
+      command_line.HasSwitch(switches::kEnableTouch));
 }
 
 void RenderThread::IdleHandler() {

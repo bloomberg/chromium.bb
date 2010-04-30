@@ -319,6 +319,9 @@ const char kEnableSyncThemes[]              = "enable-sync-themes";
 // Enable syncing browser typed urls.
 const char kEnableSyncTypedUrls[]           = "enable-sync-typed-urls";
 
+// Whether or not the touch events API is exposed.
+const char kEnableTouch[]                   = "enable-touch";
+
 // Whether the multiple profiles feature based on the user-data-dir flag is
 // enabled or not.
 const char kEnableUserDataDirProfiles[]     = "enable-udd-profiles";
