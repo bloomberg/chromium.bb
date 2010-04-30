@@ -452,6 +452,11 @@ int main(int  ac,
       fprintf(stderr, "Error while loading \"%s\": %s\n",
               nacl_file,
               NaClErrorString(errcode));
+      fprintf(stderr,
+              ("Using the wrong type of nexe (nacl-x86-32"
+               " on an x86-64 or vice versa)\n"
+               " or a corrupt nexe file may be responsible for this error.\n"));
+      return 1;
     }
   }
 

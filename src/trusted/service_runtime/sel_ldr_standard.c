@@ -62,9 +62,8 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
   /* temporay object will be deleted at end of function */
   image = NaClElfImageNew(gp, &subret);
   if (NULL == image) {
-    NaClLog(LOG_FATAL,
-            "Could not create NaClElfImage object: %s\n",
-            NaClErrorString(subret));
+    ret = subret;
+    goto done;
   }
 
 #if 0 == NACL_DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX
