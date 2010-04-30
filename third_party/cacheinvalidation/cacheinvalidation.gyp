@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# TODO(akalin): Make it so that warnings are errors on Windows.
+# TODO(akalin): Clean up warnings on Windows.
+
 {
   'variables': {
     # The root directory for the proto files.
@@ -39,7 +42,9 @@
           'action': [
             '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
             '--proto_path=<(proto_dir_root)',
-            '<(RULE_INPUT_PATH)',
+            # This path needs to be prefixed by proto_path, so we can't
+            # use RULE_INPUT_PATH (which is an absolute path).
+            '<(proto_dir_root)/<(proto_dir_relpath)/<(RULE_INPUT_NAME)',
             '--cpp_out=<(protoc_out_dir)',
           ],
           'message': 'Generating C++ code from <(RULE_INPUT_PATH)',
@@ -107,6 +112,7 @@
       ],
       'dependencies': [
         '../../base/base.gyp:base',
+        'cacheinvalidation_proto',
         'cacheinvalidation_proto_cc',
       ],
       'direct_dependent_settings': {
@@ -116,11 +122,11 @@
         ],
       },
       'export_dependent_settings': [
+        'cacheinvalidation_proto',
         'cacheinvalidation_proto_cc',
       ],
     },
     # Unittests for the cache invalidation library.
-    # TODO(akalin): Add these to build/all.gyp.
     {
       'target_name': 'cacheinvalidation_unittests',
       'type': 'executable',
