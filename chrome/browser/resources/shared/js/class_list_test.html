@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title></title>
+<script src="http://closure-library.googlecode.com/svn/trunk/closure/goog/base.js"></script>
+<script src="class_list.js"></script>
+<script>
+
+goog.require('goog.testing.jsunit');
+
+</script>
+</head>
+<body>
+
+<script>
+
+var el = document.body;
+
+function testLength() {
+  el.className = 'a b';
+  assertEquals(2, el.classList.length);
+  el.setAttribute('class', 'a b c');
+  assertEquals(3, el.classList.length);
+}
+
+function testItem() {
+  el.className = 'a b';
+  assertEquals('a', el.classList.item(0));
+  assertEquals('b', el.classList.item(1));
+  el.setAttribute('class', 'a b c');
+  assertEquals('a', el.classList.item(0));
+  assertEquals('b', el.classList.item(1));
+  assertEquals('c', el.classList.item(2));
+}
+
+function testContains() {
+  el.className = 'a b';
+  assertTrue(el.classList.contains('a'));
+  assertTrue(el.classList.contains('b'));
+  assertFalse(el.classList.contains('c'));
+
+  assertEquals('b', el.classList.item(1));
+  el.setAttribute('class', 'a b c');
+  assertTrue(el.classList.contains('a'));
+  assertTrue(el.classList.contains('b'));
+  assertTrue(el.classList.contains('c'));
+}
+
+function testToken() {
+  assertThrows(function() {
+    el.classList.add('');
+  });
+  assertThrows(function() {
+    el.classList.add(' ');
+  });
+  assertThrows(function() {
+    el.classList.add('\t');
+  });
+  assertThrows(function() {
+    el.classList.add('\n');
+  });
+}
+
+function testAdd() {
+  el.className = 'a b';
+  el.classList.add('a');
+  assertEquals('a b', el.className);
+  el.classList.add('c');
+  assertEquals('a b c', el.className);
+}
+
+function testRemove() {
+  el.className = 'a b';
+  el.classList.remove('b');
+  assertEquals('a', el.className);
+  el.classList.remove('a');
+  assertEquals('', el.className);
+}
+
+function testToggle() {
+  el.className = 'a b';
+  assertFalse(el.classList.toggle('a'));
+  assertEquals('b', el.className);
+  assertTrue(el.classList.toggle('a'));
+  assertEquals('b a', el.className);
+}
+
+</script>
+
+</body>
+</html>

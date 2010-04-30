@@ -1,0 +1,259 @@
+/* Most Visited */
+
+#most-visited {
+  position: relative;
+  padding: 0;
+  height: 366px;
+  margin-top: -10px;
+  -webkit-user-select: none;
+}
+
+.thumbnail-container {
+  position: absolute;
+  color: hsl(213, 90%, 24%);
+  text-decoration: none;
+  -webkit-transition: left .15s, right .15s, top .15s;
+  text-decoration: none;
+}
+
+.thumbnail-container:focus {
+  outline: none;
+}
+
+.thumbnail,
+.thumbnail-container > .title {
+  width: 207px; /* natural size is 196 */
+  height: 129px; /* 136 */
+  -webkit-transition: width .15s, height .15s;
+}
+
+.thumbnail-container > .title {
+  line-height: 16px;
+  height: 16px;
+  margin: 0;
+  margin-top: 4px;
+  font-size: 100%;
+  font-weight: normal;
+  padding: 0 3px;
+  opacity: 1;
+  -webkit-transition: opacity .15s, width .15s;
+  color: black;
+}
+
+.thumbnail-wrapper {
+  display: block;
+  background-size: 212px 132px;
+  background: no-repeat 4px 4px;
+  background-color: white;
+  border-radius: 5px;
+  -webkit-transition: background-size .15s;
+  position: relative;
+}
+
+.filler * {
+  visibility: hidden;
+}
+
+.filler {
+  pointer-events: none;
+}
+
+.filler .thumbnail-wrapper {
+  visibility: visible;
+  border: 3px solid hsl(213, 60%, 92%);
+}
+
+.filler .thumbnail {
+  visibility: inherit;
+  border: 1px solid white;
+  padding: 0;
+  background-color: hsl(213, 60%, 92%);
+}
+
+.edit-bar {
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: stretch;
+  padding: 3px;
+  padding-bottom: 0;
+  height: 17px; /* 23 - 2 * 3 */
+  cursor: move;
+  font-size: 100%;
+  line-height: 17px;
+  background: hsl(213, 54%, 95%);
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  position: relative;
+  margin-top: 21px;
+  margin-bottom: -21px;
+  -webkit-transition: margin .15s, background .15s;
+}
+
+.edit-bar > * {
+  display: block;
+  position: relative;
+}
+
+.thumbnail-container:focus .edit-bar,
+.thumbnail-container:hover .edit-bar {
+  margin-top: 0;
+  margin-bottom: 0;
+  -webkit-transition-delay: .5s, 0s;
+
+  /* We need background-color as well to get the fade out animation correct */
+  background-color: hsl(213, 66%, 57%);
+  background-image: -webkit-gradient(linear, left top, left bottom,
+                                     from(hsl(213, 87%, 67%)),
+                                     to(hsl(213, 66%, 57%)));
+}
+
+.edit-bar > .spacer {
+  -webkit-box-flex: 1;
+}
+
+.edit-bar > .pin,
+.edit-bar > .remove {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  background-image: no-repeat 50% 50%;
+}
+
+.edit-bar > .pin {
+  background-image: url(chrome://theme/newtab_pin_off);
+}
+
+.edit-bar > .pin:hover {
+  background-image: url(chrome://theme/newtab_pin_off_h);
+}
+
+.edit-bar > .pin:active {
+  background-image: url(chrome://theme/newtab_pin_off_p);
+}
+
+.pinned .edit-bar > .pin {
+  background-image: url(chrome://theme/newtab_pin_on);
+}
+
+.pinned .edit-bar > .pin:hover {
+  background-image: url(chrome://theme/newtab_pin_on_h);
+}
+
+.pinned .edit-bar > .pin:active {
+  background-image: url(chrome://theme/newtab_pin_on_p);
+}
+
+.edit-bar > .remove {
+  background-image: url(chrome://theme/newtab_close);
+}
+
+.edit-bar > .remove:hover {
+  background-image: url(chrome://theme/newtab_close_h);
+}
+
+.edit-bar > .remove:active {
+  background-image: url(chrome://theme/newtab_close_p);
+}
+
+.thumbnail-container > .title > div {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: no-repeat 0 50%;
+  background-size: 16px;
+  padding-left: 20px; /* we cannot use padding start here because even if we set
+                         the direction we always want the icon on the same side
+                      */
+  padding-right: 0;
+}
+
+html[dir=rtl] .thumbnail-container > .title > div {
+  background-position-x: 100%;
+  padding-left: 0;
+  padding-right: 20px;
+  text-align: right;
+}
+
+.thumbnail {
+  border: 3px solid hsl(213, 63%, 93%);
+  padding: 1px;
+  border-radius: 5px;
+  display: block;
+  -webkit-box-shadow: 0px 2px 2px hsla(0, 0%, 0%, 0);
+  -webkit-transition: width .15s, height .15s, border-color .15s,
+      border-radius .15s, -webkit-box-shadow .15s;
+}
+
+.edit-mode-border {
+  border-radius: 4px;
+
+  /* when dragged over we move this */
+  position: relative;
+  -webkit-transition: top .15s, left .15s;
+}
+
+.thumbnail-container:focus .thumbnail,
+.thumbnail-container:hover .thumbnail {
+  border-color: hsl(213, 66%, 57%);
+  -webkit-box-shadow: 0px 2px 2px hsla(0, 0%, 0%, 0);
+  -webkit-border-top-left-radius: 0;
+  -webkit-border-top-right-radius: 0;
+
+  background-image: -webkit-gradient(linear, left top, left bottom,
+    from(hsla(0, 0%, 0%, 0)),
+    color-stop(0.85, hsla(0, 0%, 47%, 0)),
+    to(hsla(0, 0%, 47%, 0.2))
+    );
+
+  /* delay border radius transition as much as the edit bar slide delay */
+  -webkit-transition-delay: 0, 0, 0, .5s, 0;
+}
+
+.thumbnail-container:focus > .edit-mode-border,
+.thumbnail-container:hover > .edit-mode-border {
+  background-color: hsl(213, 66%, 57%);
+  -webkit-box-shadow: 0px 2px 2px hsla(0, 0%, 0%, .5);
+}
+
+.dragging,
+.dragging * {
+  -webkit-transition: none !important;
+}
+
+.dragging > .title {
+  opacity: 0;
+}
+
+@-webkit-keyframes 'fade-in' {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  -webkit-animation: 'fade-in' .15s;
+}
+
+@media (max-width: 920px) {
+  #most-visited {
+    height: 294px;
+  }
+
+  .thumbnail,
+  .thumbnail-container > .title {
+    width: 150px;
+    height: 93px;
+  }
+
+  .thumbnail-container > .title {
+    height: auto;
+  }
+
+  .thumbnail-wrapper {
+    background-size: 150px 93px;
+  }
+}

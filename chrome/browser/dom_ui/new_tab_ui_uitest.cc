@@ -147,7 +147,7 @@ TEST_F(NewTabUITest, HomePageLink) {
     L"window.domAutomationController.send("
     L"(function() {"
     L"  var el = document.querySelector('#notification');"
-    L"  return hasClass(el, 'show');"
+    L"  return el.classList.contains('show');"
     L"})()"
     L")",
     &has_class));

@@ -86,30 +86,60 @@ def InlineFile(input_filename, output_filename):
     if len(distribution) > 1 and distribution[0] == '_':
       distribution = distribution[1:].lower()
 
-  def SrcReplace(src_match):
+  def SrcReplace(src_match, filepath=input_filepath):
     """Helper function to provide SrcInlineAsDataURL with the base file path"""
-    return SrcInlineAsDataURL(src_match, input_filepath, distribution)
+    return SrcInlineAsDataURL(src_match, filepath, distribution)
 
-  def InlineFileContents(src_match, pattern):
-    """Helper function to inline external script and css files"""
+  def GetFilepath(src_match):
     filename = src_match.group('filename')
 
     if filename.find(':') != -1:
       # filename is probably a URL, which we don't want to bother inlining
-      return src_match.group(0)
+      return None
 
     filename = filename.replace('%DISTRIBUTION%', distribution)
-    filepath = os.path.join(input_filepath, filename)
+    return os.path.join(input_filepath, filename)
 
+  def InlineFileContents(src_match, pattern):
+    """Helper function to inline external script and css files"""
+    filepath = GetFilepath(src_match)
+    if filepath is None:
+      return src_match.group(0)
     return pattern % ReadFile(filepath)
 
   def InlineScript(src_match):
     """Helper function to inline external script files"""
     return InlineFileContents(src_match, '<script>%s</script>')
 
-  def InlineCss(src_match):
-    """Helper function to inline external css files"""
-    return InlineFileContents(src_match, '<style>%s</style>')
+  def InlineCssText(text, css_filepath):
+    """Helper function that inlines external resources in CSS text"""
+    filepath = os.path.dirname(css_filepath)
+    return InlineCssBackgroundImages(text, filepath)
+
+  def InlineCssFile(src_match):
+    """Helper function to inline external css files.
+
+    Args:
+      src_match: A regular expression match with a named group named "filename".
+
+    Returns:
+      The text that should replace the reference to the CSS file.
+    """
+    filepath = GetFilepath(src_match)
+    if filepath is None:
+      return src_match.group(0)
+
+    # When resolving CSS files we need to pass in the path so that relative URLs
+    # can be resolved.
+    return '<style>%s</style>' % InlineCssText(ReadFile(filepath), filepath)
+
+  def InlineCssBackgroundImages(text, filepath=input_filepath):
+    """Helper function that inlines external images in CSS backgrounds."""
+    return re.sub('background(?:-image)?:[ ]*url\((?:\'|\")' +
+                  '(?P<filename>[^"\'\)\(]*)(?:\'|\")',
+                  lambda m: SrcReplace(m, filepath),
+                  text)
+
 
   # We need to inline css and js before we inline images so that image
   # references gets inlined in the css and js
@@ -117,19 +147,18 @@ def InlineFile(input_filename, output_filename):
                      InlineScript,
                      ReadFile(input_filename))
 
-  flat_text = re.sub('<link rel="stylesheet".+?href="(?P<filename>[^"\']*)".*?>',
-                     InlineCss,
-                     flat_text)
+  flat_text = re.sub(
+      '<link rel="stylesheet".+?href="(?P<filename>[^"\']*)".*?>',
+      InlineCssFile,
+      flat_text)
 
   # TODO(glen): Make this regex not match src="" text that is not inside a tag
   flat_text = re.sub('src="(?P<filename>[^"\']*)"',
                      SrcReplace,
                      flat_text)
 
-  # TODO(glen): Make this regex not match url('') that is not inside a style
-  flat_text = re.sub('background(?:-image)?:[ ]*url\(\'(?P<filename>[^"\']*)\'',
-                     SrcReplace,
-                     flat_text)
+  # TODO(arv): Only do this inside <style> tags.
+  flat_text = InlineCssBackgroundImages(flat_text)
 
   flat_text = re.sub('<link rel="icon".+?href="(?P<filename>[^"\']*)"',
                      SrcReplace,

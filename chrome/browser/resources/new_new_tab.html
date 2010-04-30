@@ -47,7 +47,6 @@ chrome.send('getRecentlyClosedTabs');
 chrome.send('getTips');
 chrome.send('getApps');
 
-registerCallback('onShownSections');
 registerCallback('mostVisitedPages');
 registerCallback('recentlyClosedTabs');
 registerCallback('syncMessageChanged');
@@ -58,6 +57,7 @@ registerCallback('getAppsCallback');
 </script>
 <!-- template data placeholder -->
 <link rel="stylesheet" href="new_new_tab.css">
+<link rel="stylesheet" href="ntp/most_visited.css">
 <script>
 
 /**
@@ -76,14 +76,10 @@ var Section = {
 
 var shownSections = templateData['shown_sections'];
 
-function $(id) {
-  return document.getElementById(id);
-}
-
 // Until themes can clear the cache, force-reload the theme stylesheet.
 document.write('<link id="themecss" rel="stylesheet" ' +
                'href="chrome://theme/css/newtab.css?' +
-               (new Date()).getTime() + '">');
+               Date.now() + '">');
 
 function useSmallGrid() {
   return window.innerWidth <= 920;
@@ -93,83 +89,11 @@ function isRtl() {
   return templateData['textdirection'] == 'rtl';
 }
 
-// Keep track of the last small state so we can ensure that we are using the
-// right mode. This is a workaround for http://crbug.com/25329
-var wasSmallGrid;
-
-function getMostVisitedLayoutRects() {
-  var small = useSmallGrid();
-  wasSmallGrid = small;
-
-  var cols = 4;
-  var rows = 2;
-  var marginWidth = 10;
-  var marginHeight = 7;
-  var borderWidth = 4;
-  var thumbWidth = small ? 150 : 207;
-  var thumbHeight = small ? 93 : 129;
-  var w = thumbWidth + 2 * borderWidth + 2 * marginWidth;
-  var h = thumbHeight + 40 + 2 * marginHeight;
-  var sumWidth = cols * w  - 2 * marginWidth;
-
-  var rtl = isRtl();
-  var rects = [];
-
-  if (shownSections & Section.THUMB) {
-    for (var i = 0; i < rows * cols; i++) {
-      var row = Math.floor(i / cols);
-      var col = i % cols;
-      var left = rtl ? sumWidth - col * w - thumbWidth - 2 * borderWidth :
-          col * w;
-
-      var top = row * h;
-
-      rects[i] = {left: left, top: top};
-    }
-  }
-  return rects;
-}
-
-function applyMostVisitedRects() {
-  if (shownSections & Section.THUMB) {
-    var rects = getMostVisitedLayoutRects();
-    var children = $('most-visited').children;
-    for (var i = 0; i < 8; i++) {
-      var t = children[i];
-      t.style.left = rects[i].left + 'px';
-      t.style.top = rects[i].top + 'px';
-      t.style.right = '';
-      var innerStyle = t.firstElementChild.style;
-      innerStyle.left = innerStyle.top = '';
-    }
-  }
-}
-
-// TODO(arv): Remove these when classList is available in HTML5.
-// https://bugs.webkit.org/show_bug.cgi?id=20709
-function hasClass(el, name) {
-  return el.nodeType == 1 && el.className.split(/\s+/).indexOf(name) != -1;
-}
-
-function addClass(el, name) {
-  var names = el.className.split(/\s+/);
-  if (names.indexOf(name) == -1) {
-    el.className += ' ' + name;
-  }
-}
-
-function removeClass(el, name) {
-  var names = el.className.split(/\s+/);
-  el.className = names.filter(function(n) {
-    return name != n;
-  }).join(' ');
-}
-
+// This will get overridden in new_new_tab.js
 function updateSimpleSection(id, section) {
-  if (shownSections & section)
-    removeClass($(id), 'hidden');
-  else
-    addClass($(id), 'hidden');
+  // All sections start off shown.
+  if (!(shownSections & section))
+    document.getElementById(id).className += ' hidden';
 }
 
 </script>
@@ -201,52 +125,37 @@ function updateSimpleSection(id, section) {
     <span class="link"><span class="link-color"></span></span>
   </div>
 
-  <div class="section disabled" id="apps-section"></div>
+  <div class="sections">
+    <div class="section disabled" id="apps-section"></div>
 
-  <div id="most-visited-section" class="section" section="THUMB">
-    <h2 i18n-content="mostvisited"></h2>
-
-    <div id="most-visited">
-      <a class="thumbnail-container filler" tabindex="1" id="t0">
-        <div class="edit-mode-border">
-          <div class="edit-bar">
-            <div class="pin"></div>
-            <div class="spacer"></div>
-            <div class="remove"></div>
-          </div>
-          <span class="thumbnail-wrapper">
-            <span class="thumbnail"></span>
-          </span>
-        </div>
-        <div class="title">
-          <div></div>
-        </div>
-      </a>
+    <div id="most-visited-section" class="section" section="THUMB">
+      <h2 i18n-content="mostvisited"></h2>
+      <div id="most-visited"></div>
     </div>
-  </div>
 
-  <div id="recently-closed" class="section" section="RECENT">
-    <h2 i18n-content="recentlyclosed"></h2>
-    <span>
-      <span class="nav">
-        <a href="chrome://history/" class="item"
-            i18n-content="viewfullhistory"></a>
+    <div id="recently-closed" class="section" section="RECENT">
+      <h2 i18n-content="recentlyclosed"></h2>
+      <span>
+        <span class="nav">
+          <a href="chrome://history/" class="item"
+              i18n-content="viewfullhistory"></a>
+        </span>
       </span>
-    </span>
-  </div>
+    </div>
 
-  <div id="debug" class="section disabled" section="DEBUG">
-    <h2>Debug</h2>
-    <div id="apps-launch-control">
-      Open apps in:<label
-      ><input type="radio" name="launch-container-type" value=""
-          checked="true">Default</label
-      ><label><input type="radio" name="launch-container-type" value="tab"
-          >Tab</label
-      ><label><input type="radio" name="launch-container-type" value="window"
-          >Window</label
-      ><label><input type="radio" name="launch-container-type" value="panel"
-          >Panel</label>
+    <div id="debug" class="section disabled" section="DEBUG">
+      <h2>Debug</h2>
+      <div id="apps-launch-control">
+        Open apps in:<label
+        ><input type="radio" name="launch-container-type" value=""
+            checked="true">Default</label
+        ><label><input type="radio" name="launch-container-type" value="tab"
+            >Tab</label
+        ><label><input type="radio" name="launch-container-type" value="window"
+            >Window</label
+        ><label><input type="radio" name="launch-container-type" value="panel"
+            >Panel</label>
+      </div>
     </div>
   </div>
 
@@ -255,12 +164,6 @@ function updateSimpleSection(id, section) {
       updateSimpleSection('recently-closed', Section.RECENT);
       updateSimpleSection('most-visited-section', Section.THUMB);
       updateSimpleSection('debug', Section.DEBUG);
-      var el = $('most-visited');
-      for (var i = 1; i < 8; i++) {
-        el.appendChild(el.firstElementChild.cloneNode(true)).id = 't' + i;
-      }
-
-      applyMostVisitedRects();
     })();
   </script>
 
@@ -294,9 +197,12 @@ function updateSimpleSection(id, section) {
 <div class="window-menu" id="window-tooltip"></div>
 
 </body>
+
 <script src="shared/js/i18n_template.js"></script>
 <script src="shared/js/local_strings.js"></script>
+<script src="shared/js/class_list.js"></script>
 <script src="shared/js/parse_html_subset.js"></script>
-<script src="new_new_tab.js"></script>
+<script src="ntp/util.js"></script>
 <script src="ntp/most_visited.js"></script>
+<script src="new_new_tab.js"></script>
 </html>

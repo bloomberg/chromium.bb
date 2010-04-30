@@ -2,56 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Helpers
-
-function findAncestorByClass(el, className) {
-  return findAncestor(el, function(el) {
-    return hasClass(el, className);
-  });
-}
-
-/**
- * Return the first ancestor for which the {@code predicate} returns true.
- * @param {Node} node The node to check.
- * @param {function(Node) : boolean} predicate The function that tests the
- *     nodes.
- * @return {Node} The found ancestor or null if not found.
- */
-function findAncestor(node, predicate) {
-  var last = false;
-  while (node != null && !(last = predicate(node))) {
-    node = node.parentNode;
-  }
-  return last ? node : null;
-}
-
-// WebKit does not have Node.prototype.swapNode
-// https://bugs.webkit.org/show_bug.cgi?id=26525
-function swapDomNodes(a, b) {
-  var afterA = a.nextSibling;
-  if (afterA == b) {
-    swapDomNodes(b, a);
-    return;
-  }
-  var aParent = a.parentNode;
-  b.parentNode.replaceChild(a, b);
-  aParent.insertBefore(b, afterA);
-}
-
-function bind(fn, selfObj, var_args) {
-  var boundArgs = Array.prototype.slice.call(arguments, 2);
-  return function() {
-    var args = Array.prototype.slice.call(arguments);
-    args.unshift.apply(args, boundArgs);
-    return fn.apply(selfObj, args);
-  }
-}
-
-const IS_MAC = /$Mac/.test(navigator.platform);
-
 var loading = true;
 
+function updateSimpleSection(id, section) {
+  if (shownSections & section)
+    $(id).classList.remove('hidden');
+  else
+    $(id).classList.add('hidden');
+}
+
 function getAppsCallback(data) {
+  logEvent('recieved apps');
   var appsSection = $('apps-section');
   var debugSection = $('debug');
   appsSection.innerHTML = '';
@@ -63,11 +24,11 @@ function getAppsCallback(data) {
   // TODO(aa): Figure out what to do with the debug mode when we turn apps on
   // for everyone.
   if (data.length) {
-    removeClass(appsSection, 'disabled');
-    removeClass(debugSection, 'disabled');
+    appsSection.classList.remove('disabled');
+    debugSection.classList.remove('disabled');
   } else {
-    addClass(appsSection, 'disabled');
-    addClass(debugSection, 'disabled');
+    appsSection.classList.add('disabled');
+    debugSection.classList.add('disabled');
   }
 }
 
@@ -196,53 +157,8 @@ function createRecentItem(data) {
   return wrapperEl;
 }
 
-function onShownSections(mask) {
-  logEvent('received shown sections');
-  if (mask != shownSections) {
-    var oldShownSections = shownSections;
-    shownSections = mask;
-
-    // Only invalidate most visited if needed.
-    if ((mask & Section.THUMB) != (oldShownSections & Section.THUMB)) {
-      mostVisited.invalidate();
-    }
-
-    mostVisited.updateDisplayMode();
-    renderRecentlyClosed();
-  }
-}
-
 function saveShownSections() {
   chrome.send('setShownSections', [String(shownSections)]);
-}
-
-function url(s) {
-  // http://www.w3.org/TR/css3-values/#uris
-  // Parentheses, commas, whitespace characters, single quotes (') and double
-  // quotes (") appearing in a URI must be escaped with a backslash
-  var s2 = s.replace(/(\(|\)|\,|\s|\'|\"|\\)/g, '\\$1');
-  // WebKit has a bug when it comes to URLs that end with \
-  // https://bugs.webkit.org/show_bug.cgi?id=28885
-  if (/\\\\$/.test(s2)) {
-    // Add a space to work around the WebKit bug.
-    s2 += ' ';
-  }
-  return 'url("' + s2 + '")';
-}
-
-/**
- * Calls chrome.send with a callback and restores the original afterwards.
- */
-function chromeSend(name, params, callbackName, callback) {
-  var old = global[callbackName];
-  global[callbackName] = function() {
-    // restore
-    global[callbackName] = old;
-
-    var args = Array.prototype.slice.call(arguments);
-    return callback.apply(global, args);
-  };
-  chrome.send(name, params);
 }
 
 var LayoutMode = {
@@ -259,13 +175,28 @@ function handleWindowResize() {
   }
 
   var oldLayoutMode = layoutMode;
-  layoutMode = useSmallGrid() ? LayoutMode.SMALL : LayoutMode.NORMAL
+  var b = useSmallGrid();
+  layoutMode = b ? LayoutMode.SMALL : LayoutMode.NORMAL
 
   if (layoutMode != oldLayoutMode){
-    mostVisited.invalidate();
+    mostVisited.useSmallGrid = b;
     mostVisited.layout();
     renderRecentlyClosed();
   }
+}
+
+window.addEventListener('resize', handleWindowResize);
+
+var sectionToElementMap;
+function getSectionElement(section) {
+  if (!sectionToElementMap) {
+    sectionToElementMap = {};
+    for (var key in Section) {
+      sectionToElementMap[Section[key]] =
+          document.querySelector('.section[section=' + key + ']');
+    }
+  }
+  return sectionToElementMap[section];
 }
 
 function showSection(section) {
@@ -274,20 +205,15 @@ function showSection(section) {
 
     switch (section) {
       case Section.THUMB:
-        mostVisited.invalidate();
-        mostVisited.updateDisplayMode();
+        mostVisited.visible = true;
         mostVisited.layout();
         break;
       case Section.RECENT:
         renderRecentlyClosed();
         break;
-      case Section.TIPS:
-        removeClass($('tip-line'), 'hidden');
-        break;
-      case Section.DEBUG:
-        removeClass($('debug'), 'hidden');
-        break;
     }
+
+    getSectionElement(section).classList.remove('hidden');
   }
 }
 
@@ -297,20 +223,15 @@ function hideSection(section) {
 
     switch (section) {
       case Section.THUMB:
-        mostVisited.invalidate();
-        mostVisited.updateDisplayMode();
+        mostVisited.visible = false;
         mostVisited.layout();
         break;
       case Section.RECENT:
         renderRecentlyClosed();
         break;
-      case Section.TIPS:
-        addClass($('tip-line'), 'hidden');
-        break;
-      case Section.DEBUG:
-        addClass($('debug'), 'hidden');
-        break;
     }
+
+    getSectionElement(section).classList.add('hidden');
   }
 }
 
@@ -318,7 +239,6 @@ function hideSection(section) {
 
 function layoutRecentlyClosed() {
   var recentShown = shownSections & Section.RECENT;
-  updateSimpleSection('recently-closed', Section.RECENT);
 
   if (recentShown) {
     var recentElement = $('recently-closed');
@@ -441,23 +361,6 @@ function formatTabsText(numTabs) {
   return localStrings.getStringF('closedwindowmultiple', numTabs);
 }
 
-/**
- * We need both most visited and the shown sections to be considered loaded.
- * @return {boolean}
- */
-function onDataLoaded() {
-  if (gotMostVisited) {
-    mostVisited.layout();
-    loading = false;
-    // Remove class name in a timeout so that changes done in this JS thread are
-    // not animated.
-    window.setTimeout(function() {
-      ensureSmallGridCorrect();
-      removeClass(document.body, 'loading');
-    }, 1);
-  }
-}
-
 // Theme related
 
 function themeChanged() {
@@ -535,8 +438,8 @@ function showNotification(text, actionText, opt_f, opt_delay) {
 
   function show() {
     window.clearTimeout(notificationTimeout);
-    addClass(notificationElement, 'show');
-    addClass(document.body, 'notification-shown');
+    notificationElement.classList.add('show');
+    document.body.classList.add('notification-shown');
   }
 
   function delayedHide() {
@@ -549,7 +452,7 @@ function showNotification(text, actionText, opt_f, opt_delay) {
   }
 
   // Remove any possible first-run trails.
-  removeClass(notification, 'first-run');
+  notification.classList.remove('first-run');
 
   var actionLink = notificationElement.querySelector('.link-color');
   notificationElement.firstElementChild.textContent = text;
@@ -573,8 +476,8 @@ function showNotification(text, actionText, opt_f, opt_delay) {
  */
 function hideNotification() {
   var notificationElement = $('notification');
-  removeClass(notificationElement, 'show');
-  removeClass(document.body, 'notification-shown');
+  notificationElement.classList.remove('show');
+  document.body.classList.remove('notification-shown');
   var actionLink = notificationElement.querySelector('.link-color');
   // Prevent tabbing to the hidden link.
   actionLink.tabIndex = -1;
@@ -590,7 +493,7 @@ function showFirstRunNotification() {
                    localStrings.getString('closefirstrunnotification'),
                    null, 30000);
   var notificationElement = $('notification');
-  addClass(notification, 'first-run');
+  notification.classList.add('first-run');
 }
 
 /**
@@ -616,7 +519,7 @@ OptionMenu.prototype = {
     updateOptionMenu();
     this.positionMenu_();
     this.menu.style.display = 'block';
-    addClass(this.button, 'open');
+    this.button.classList.add('open');
     this.button.focus();
 
     // Listen to document and window events so that we hide the menu when the
@@ -631,7 +534,7 @@ OptionMenu.prototype = {
 
   hide: function() {
     this.menu.style.display = 'none';
-    removeClass(this.button, 'open');
+    this.button.classList.remove('open');
     this.setSelectedIndex(-1);
 
     document.removeEventListener('focus', this.boundMaybeHide_, true);
@@ -967,7 +870,6 @@ var windowTooltip = new WindowTooltip($('window-tooltip'));
 
 window.addEventListener('load', bind(logEvent, global, 'Tab.NewTabOnload',
                                      true));
-window.addEventListener('load', onDataLoaded);
 
 window.addEventListener('resize', handleWindowResize);
 document.addEventListener('DOMContentLoaded',
@@ -1021,7 +923,7 @@ window.addEventListener('keydown', function(e) {
 document.addEventListener('mouseover', function(e) {
   // We don't want to do this while we are dragging because it makes things very
   // janky
-  if (dnd.dragItem) {
+  if (mostVisited.isDragging()) {
     return;
   }
 
@@ -1063,7 +965,7 @@ updateAttribution();
 
 // Closes the promo line when close button is clicked.
 $('promo-close').onclick = function (e) {
-  addClass($('promo-line'), 'hidden');
+  $('promo-line').classList.add('hidden');
   chrome.send('stopPromoLineMessage');
   e.preventDefault();
 };
@@ -1075,4 +977,29 @@ function setUpPromoMessage() {
   syncButton.className = 'sync-button link';
   syncButton.onclick = syncSectionLinkClicked;
   fixLinkUnderlines($('promo-message'));
+}
+
+var mostVisited = new MostVisited($('most-visited'),
+                                  useSmallGrid(),
+                                  shownSections & Section.THUMB);
+
+function mostVisitedPages(data, firstRun) {
+  logEvent('received most visited pages');
+
+  mostVisited.data = data;
+  mostVisited.layout();
+
+  loading = false;
+
+  // Remove class name in a timeout so that changes done in this JS thread are
+  // not animated.
+  window.setTimeout(function() {
+    mostVisited.ensureSmallGridCorrect();
+    document.body.classList.remove('loading');
+  }, 1);
+
+  // Only show the first run notification if first run.
+  if (firstRun) {
+    showFirstRunNotification();
+  }
 }
