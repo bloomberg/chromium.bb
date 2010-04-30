@@ -57,6 +57,11 @@ void UrlmonUrlRequest::Stop() {
   DCHECK((status_.get_state() != Status::DONE) == (binding_ != NULL));
   Status::State state = status_.get_state();
   delegate_ = NULL;
+
+  // If DownloadInHost is already requested, we will quit soon anyway.
+  if (terminate_requested())
+    return;
+
   switch (state) {
     case Status::WORKING:
       status_.Cancel();
