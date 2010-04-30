@@ -75,9 +75,18 @@ const CGFloat kRapidCloseDist = 2.5;
   [super dealloc];
 }
 
-// Use the TabController to provide the menu rather than obtaining it from the
-// nib file.
+// Called to obtain the context menu for when the user hits the right mouse
+// button (or control-clicks). (Note that -rightMouseDown: is *not* called for
+// control-click.)
 - (NSMenu*)menu {
+  if ([self isClosing])
+    return nil;
+
+  // Sheets, being window-modal, should block contextual menus. For some reason
+  // they do not. Disallow them ourselves.
+  if ([[self window] attachedSheet])
+    return nil;
+
   return [controller_ menu];
 }
 
@@ -766,14 +775,6 @@ const CGFloat kRapidCloseDist = 2.5;
     NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
   }
   [context restoreGraphicsState];
-}
-
-// Called when the user hits the right mouse button (or control-clicks) to
-// show a context menu.
-- (void)rightMouseDown:(NSEvent*)theEvent {
-  if ([self isClosing])
-    return;
-  [NSMenu popUpContextMenu:[self menu] withEvent:theEvent forView:self];
 }
 
 - (void)viewDidMoveToWindow {
