@@ -204,6 +204,13 @@ class NetworkLibrary {
   // Connect to the specified cellular network.
   virtual void ConnectToCellularNetwork(CellularNetwork network) = 0;
 
+  // Disconnect from the specified wifi network.
+  virtual void DisconnectFromWifiNetwork(const WifiNetwork& network) = 0;
+
+  // Disconnect from the specified cellular network.
+  virtual void DisconnectFromCellularNetwork(
+      const CellularNetwork& network) = 0;
+
   // Set whether or not to auto-connect to this network.
   virtual void SaveWifiNetwork(const WifiNetwork& network) = 0;
 
@@ -322,6 +329,12 @@ class NetworkLibraryImpl : public NetworkLibrary,
 
   // Connect to the specified cellular network.
   virtual void ConnectToCellularNetwork(CellularNetwork network);
+
+  // Disconnect from the specified wifi network.
+  virtual void DisconnectFromWifiNetwork(const WifiNetwork& network);
+
+  // Disconnect from the specified cellular network.
+  virtual void DisconnectFromCellularNetwork(const CellularNetwork& network);
 
   // Set whether or not to auto-connect to this network.
   virtual void SaveWifiNetwork(const WifiNetwork& network);

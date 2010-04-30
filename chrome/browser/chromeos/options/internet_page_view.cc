@@ -345,8 +345,8 @@ void WirelessSection::ButtonClicked(int button, int connection_type, int id) {
         CrosLibrary::Get()->GetNetworkLibrary()->ConnectToCellularNetwork(
             celluar_networks_[id]);
       } else if (button == DISCONNECT_BUTTON) {
-        // TODO(chocobo): Disconnect from cellular network
-        NOTIMPLEMENTED();
+        CrosLibrary::Get()->GetNetworkLibrary()->DisconnectFromCellularNetwork(
+            celluar_networks_[id]);
       } else {
         CreateModalPopup(new NetworkConfigView(celluar_networks_[id]));
       }
@@ -365,8 +365,8 @@ void WirelessSection::ButtonClicked(int button, int connection_type, int id) {
               wifi_networks_[id], string16(), string16(), string16());
         }
       } else if (button == DISCONNECT_BUTTON) {
-        // TODO(chocobo): Disconnect from wifi network
-        NOTIMPLEMENTED();
+        CrosLibrary::Get()->GetNetworkLibrary()->DisconnectFromWifiNetwork(
+            wifi_networks_[id]);
       } else {
         CreateModalPopup(new NetworkConfigView(wifi_networks_[id], false));
       }

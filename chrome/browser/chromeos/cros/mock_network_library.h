@@ -48,6 +48,8 @@ class MockNetworkLibrary : public NetworkLibrary {
                                           const string16&, const string16&,
                                           bool));
   MOCK_METHOD1(ConnectToCellularNetwork, void(CellularNetwork));
+  MOCK_METHOD1(DisconnectFromWifiNetwork, void(const WifiNetwork&));
+  MOCK_METHOD1(DisconnectFromCellularNetwork, void(const CellularNetwork&));
   MOCK_METHOD1(SaveWifiNetwork, void(const WifiNetwork&));
   MOCK_METHOD1(ForgetWifiNetwork, void(const WifiNetwork&));
   MOCK_METHOD1(ForgetCellularNetwork, void(const CellularNetwork&));

@@ -131,10 +131,23 @@ void NetworkLibraryImpl::ConnectToCellularNetwork(CellularNetwork network) {
   }
 }
 
+void NetworkLibraryImpl::DisconnectFromWifiNetwork(const WifiNetwork& network) {
+  if (CrosLibrary::Get()->EnsureLoaded()) {
+    DisconnectFromNetwork(network.service_path.c_str());
+  }
+}
+
+void NetworkLibraryImpl::DisconnectFromCellularNetwork(
+    const CellularNetwork& network) {
+  if (CrosLibrary::Get()->EnsureLoaded()) {
+    DisconnectFromNetwork(network.service_path.c_str());
+  }
+}
+
 void NetworkLibraryImpl::SaveWifiNetwork(const WifiNetwork& network) {
   if (CrosLibrary::Get()->EnsureLoaded()) {
+    SetPassphrase(network.service_path.c_str(), network.passphrase.c_str());
     SetAutoConnect(network.service_path.c_str(), network.auto_connect);
-    // TODO(chocobo): Save password.
   }
 }
 
