@@ -391,42 +391,15 @@ BrowserWindowGtk::~BrowserWindowGtk() {
 gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
                                                GdkEventExpose* event,
                                                BrowserWindowGtk* window) {
-  GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(
-      window->browser()->profile());
-
   // Draw the default background.
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
   gdk_cairo_rectangle(cr, &event->area);
   cairo_clip(cr);
 
-  bool off_the_record = window->browser()->profile()->IsOffTheRecord();
-  int image_name;
-  if (window->IsActive()) {
-    image_name = off_the_record ? IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
+  if (window->UsingCustomPopupFrame()) {
+    DrawPopupFrame(cr, widget, event, window);
   } else {
-    image_name = off_the_record ?
-                 IDR_THEME_FRAME_INCOGNITO_INACTIVE : IDR_THEME_FRAME_INACTIVE;
-  }
-  CairoCachedSurface* surface = theme_provider->GetSurfaceNamed(
-      image_name, widget);
-  if (event->area.y < surface->Height()) {
-    surface->SetSource(cr,
-        0,
-        window->UseCustomFrame() ? 0 : -kCustomFrameBackgroundVerticalOffset);
-    // The frame background isn't tiled vertically.
-    cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
-    cairo_rectangle(cr, event->area.x, event->area.y,
-                        event->area.width, surface->Height() - event->area.y);
-    cairo_fill(cr);
-  }
-
-  if (theme_provider->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
-      !off_the_record) {
-    CairoCachedSurface* theme_overlay = theme_provider->GetSurfaceNamed(
-        window->IsActive() ? IDR_THEME_FRAME_OVERLAY
-                           : IDR_THEME_FRAME_OVERLAY_INACTIVE, widget);
-    theme_overlay->SetSource(cr, 0, 0);
-    cairo_paint(cr);
+    DrawCustomFrame(cr, widget, event, window);
   }
 
   DrawContentShadow(cr, window);
@@ -567,6 +540,78 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr,
       width - 2,
       kContentShadowThickness);
   cairo_fill(cr);
+}
+
+// static
+void BrowserWindowGtk::DrawPopupFrame(cairo_t* cr,
+                                      GtkWidget* widget,
+                                      GdkEventExpose* event,
+                                      BrowserWindowGtk* window) {
+  GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(
+      window->browser()->profile());
+
+  // In popups, we use the tab images for the background, as that's legible
+  // for text to be written on.
+  int image_name;
+  if (window->IsActive()) {
+    image_name = IDR_THEME_TOOLBAR;
+  } else {
+    bool off_the_record = window->browser()->profile()->IsOffTheRecord();
+    image_name = off_the_record ? IDR_THEME_TAB_BACKGROUND_INCOGNITO :
+                 IDR_THEME_TAB_BACKGROUND;
+  }
+
+  CairoCachedSurface* surface = theme_provider->GetSurfaceNamed(
+      image_name, widget);
+  if (event->area.y < surface->Height()) {
+    surface->SetSource(cr,
+        0,
+        window->UseCustomFrame() ? 0 : -kCustomFrameBackgroundVerticalOffset);
+    cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REFLECT);
+    cairo_rectangle(cr, event->area.x, event->area.y,
+                    event->area.width, event->area.height);
+    cairo_fill(cr);
+  }
+}
+
+// static
+void BrowserWindowGtk::DrawCustomFrame(cairo_t* cr,
+                                       GtkWidget* widget,
+                                       GdkEventExpose* event,
+                                       BrowserWindowGtk* window) {
+  GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(
+      window->browser()->profile());
+
+  bool off_the_record = window->browser()->profile()->IsOffTheRecord();
+  int image_name;
+  if (window->IsActive()) {
+    image_name = off_the_record ? IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
+  } else {
+    image_name = off_the_record ? IDR_THEME_FRAME_INCOGNITO_INACTIVE :
+                 IDR_THEME_FRAME_INACTIVE;
+  }
+
+  CairoCachedSurface* surface = theme_provider->GetSurfaceNamed(
+      image_name, widget);
+  if (event->area.y < surface->Height()) {
+    surface->SetSource(cr,
+        0,
+        window->UseCustomFrame() ? 0 : -kCustomFrameBackgroundVerticalOffset);
+    // The frame background isn't tiled vertically.
+    cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+    cairo_rectangle(cr, event->area.x, event->area.y,
+                    event->area.width, surface->Height() - event->area.y);
+    cairo_fill(cr);
+  }
+
+  if (theme_provider->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
+      !off_the_record) {
+    CairoCachedSurface* theme_overlay = theme_provider->GetSurfaceNamed(
+        window->IsActive() ? IDR_THEME_FRAME_OVERLAY
+        : IDR_THEME_FRAME_OVERLAY_INACTIVE, widget);
+    theme_overlay->SetSource(cr, 0, 0);
+    cairo_paint(cr);
+  }
 }
 
 void BrowserWindowGtk::Show() {
@@ -1556,14 +1601,16 @@ void BrowserWindowGtk::SetBackgroundColor() {
   Profile* profile = browser()->profile();
   GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(profile);
   int frame_color_id;
-  if (IsActive()) {
+  if (UsingCustomPopupFrame()) {
+    frame_color_id = BrowserThemeProvider::COLOR_TOOLBAR;
+  } else if (IsActive()) {
     frame_color_id = browser()->profile()->IsOffTheRecord()
-        ? BrowserThemeProvider::COLOR_FRAME_INCOGNITO
-        : BrowserThemeProvider::COLOR_FRAME;
+       ? BrowserThemeProvider::COLOR_FRAME_INCOGNITO
+       : BrowserThemeProvider::COLOR_FRAME;
   } else {
     frame_color_id = browser()->profile()->IsOffTheRecord()
-        ? BrowserThemeProvider::COLOR_FRAME_INCOGNITO_INACTIVE
-        : BrowserThemeProvider::COLOR_FRAME_INACTIVE;
+       ? BrowserThemeProvider::COLOR_FRAME_INCOGNITO_INACTIVE
+       : BrowserThemeProvider::COLOR_FRAME_INACTIVE;
   }
 
   SkColor frame_color = theme_provider->GetColor(frame_color_id);
@@ -1969,6 +2016,13 @@ bool BrowserWindowGtk::IsToolbarSupported() const {
 
 bool BrowserWindowGtk::IsBookmarkBarSupported() const {
   return browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR);
+}
+
+bool BrowserWindowGtk::UsingCustomPopupFrame() const {
+  GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(
+      browser()->profile());
+  return !theme_provider->UseGtkTheme() &&
+      browser()->type() & Browser::TYPE_POPUP;
 }
 
 bool BrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {

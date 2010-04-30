@@ -262,6 +262,16 @@ class BrowserWindowGtk : public BrowserWindow,
   // border during an expose.
   static void DrawContentShadow(cairo_t* cr, BrowserWindowGtk* window);
 
+  // Draws the tab image as the frame so we can write legible text.
+  static void DrawPopupFrame(cairo_t* cr,
+                             GtkWidget* widget, GdkEventExpose* event,
+                             BrowserWindowGtk* window);
+
+  // Draws the normal custom frame using theme_frame.
+  static void DrawCustomFrame(cairo_t* cr,
+                              GtkWidget* widget, GdkEventExpose* event,
+                              BrowserWindowGtk* window);
+
   // Callback for accelerator activation. |user_data| stores the command id
   // of the matched accelerator.
   static gboolean OnGtkAccelerator(GtkAccelGroup* accel_group,
@@ -313,6 +323,10 @@ class BrowserWindowGtk : public BrowserWindow,
   bool IsTabStripSupported() const;
   bool IsToolbarSupported() const;
   bool IsBookmarkBarSupported() const;
+
+  // Whether we should draw the tab background instead of the theme_frame
+  // background because this window is a popup.
+  bool UsingCustomPopupFrame() const;
 
   // Checks to see if the mouse pointer at |x|, |y| is over the border of the
   // custom frame (a spot that should trigger a window resize). Returns true if

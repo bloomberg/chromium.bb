@@ -421,8 +421,8 @@ void BrowserTitlebar::UpdateTitlebarAlignment() {
 }
 
 void BrowserTitlebar::UpdateTextColor() {
-  if (app_mode_title_) {
-    if (theme_provider_ && theme_provider_->UseGtkTheme()) {
+  if (app_mode_title_ && theme_provider_) {
+    if (theme_provider_->UseGtkTheme()) {
       // We don't really have any good options here.
       //
       // Colors from window manager themes aren't exposed in GTK; the window
@@ -448,9 +448,10 @@ void BrowserTitlebar::UpdateTextColor() {
           &frame_color, &gfx::kGdkWhite, &gfx::kGdkBlack);
       gtk_util::SetLabelColor(app_mode_title_, &text_color);
     } else {
-      // TODO(tc): Seems like this color should be themable, but it's hardcoded
-      // to white on Windows.  http://crbug.com/18093
-      gtk_util::SetLabelColor(app_mode_title_, &gfx::kGdkWhite);
+      GdkColor text_color = theme_provider_->GetGdkColor(window_has_focus_ ?
+          BrowserThemeProvider::COLOR_TAB_TEXT :
+          BrowserThemeProvider::COLOR_BACKGROUND_TAB_TEXT);
+      gtk_util::SetLabelColor(app_mode_title_, &text_color);
     }
   }
 }
