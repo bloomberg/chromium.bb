@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/platform_thread.h"
-#include "chrome/browser/sync/engine/net/gaia_authenticator.h"
 #include "chrome/browser/sync/notifier/base/async_dns_lookup.h"
 #include "chrome/browser/sync/notifier/base/task_pump.h"
 #include "chrome/browser/sync/notifier/communicator/connection_options.h"
@@ -16,7 +15,6 @@
 #include "chrome/browser/sync/notifier/listener/listen_task.h"
 #include "chrome/browser/sync/notifier/listener/send_update_task.h"
 #include "chrome/browser/sync/notifier/listener/subscribe_task.h"
-#include "chrome/browser/sync/protocol/service_constants.h"
 #include "talk/base/thread.h"
 #include "talk/xmpp/xmppclient.h"
 #include "talk/xmpp/xmppclientsettings.h"
@@ -25,9 +23,7 @@ using std::string;
 
 namespace browser_sync {
 
-MediatorThreadImpl::MediatorThreadImpl(
-    NotificationMethod notification_method)
-    : MediatorThread(notification_method) {}
+MediatorThreadImpl::MediatorThreadImpl() {}
 
 MediatorThreadImpl::~MediatorThreadImpl() {
 }
@@ -37,12 +33,9 @@ void MediatorThreadImpl::Start() {
 }
 
 void MediatorThreadImpl::Run() {
-  PlatformThread::SetName("SyncEngine_MediatorThread");
+  PlatformThread::SetName("Notifier_MediatorThread");
   // For win32, this sets up the win32socketserver. Note that it needs to
   // dispatch windows messages since that is what the win32 socket server uses.
-
-  LOG(INFO) << "Running mediator thread with notification method "
-            << NotificationMethodToString(notification_method_);
 
   MessageLoop message_loop;
 
@@ -87,8 +80,9 @@ void MediatorThreadImpl::SubscribeForUpdates(
        new SubscriptionData(subscribed_services_list));
 }
 
-void MediatorThreadImpl::SendNotification() {
-  Post(this, CMD_SEND_NOTIFICATION);
+void MediatorThreadImpl::SendNotification(
+    const OutgoingNotificationData& data) {
+  Post(this, CMD_SEND_NOTIFICATION, new OutgoingNotificationMessageData(data));
 }
 
 void MediatorThreadImpl::ProcessMessages(int milliseconds) {
@@ -109,9 +103,13 @@ void MediatorThreadImpl::OnMessage(talk_base::Message* msg) {
     case CMD_LISTEN_FOR_UPDATES:
       DoListenForUpdates();
       break;
-    case CMD_SEND_NOTIFICATION:
-      DoSendNotification();
+    case CMD_SEND_NOTIFICATION: {
+      DCHECK(msg->pdata);
+      scoped_ptr<OutgoingNotificationMessageData> data(
+          reinterpret_cast<OutgoingNotificationMessageData*>(msg->pdata));
+      DoSendNotification(*data);
       break;
+    }
     case CMD_SUBSCRIBE_FOR_UPDATES: {
       DCHECK(msg->pdata);
       scoped_ptr<SubscriptionData> subscription_data(
@@ -131,9 +129,6 @@ void MediatorThreadImpl::OnMessage(talk_base::Message* msg) {
 void MediatorThreadImpl::DoLogin(LoginData* login_data) {
   LOG(INFO) << "P2P: Thread logging into talk network.";
   buzz::XmppClientSettings& user_settings = login_data->user_settings;
-
-  // Set our service id.
-  user_settings.set_token_service(SYNC_SERVICE_NAME);
 
   // Start a new pump for the login.
   login_.reset();
@@ -213,8 +208,7 @@ void MediatorThreadImpl::DoSubscribeForUpdates(
     return;
   }
   SubscribeTask* subscription =
-      new SubscribeTask(client, notification_method_,
-                        subscription_data.subscribed_services_list);
+      new SubscribeTask(client, subscription_data.subscribed_services_list);
   subscription->SignalStatusUpdate.connect(
       this,
       &MediatorThreadImpl::OnSubscriptionStateChange);
@@ -227,20 +221,21 @@ void MediatorThreadImpl::DoListenForUpdates() {
   if (!client) {
     return;
   }
-  ListenTask* listener = new ListenTask(client, notification_method_);
+  ListenTask* listener = new ListenTask(client);
   listener->SignalUpdateAvailable.connect(
       this,
       &MediatorThreadImpl::OnUpdateListenerMessage);
   listener->Start();
 }
 
-void MediatorThreadImpl::DoSendNotification() {
+void MediatorThreadImpl::DoSendNotification(
+    const OutgoingNotificationMessageData& data) {
   buzz::XmppClient* client = xmpp_client();
   // If there isn't an active xmpp client, return.
   if (!client) {
     return;
   }
-  SendUpdateTask* task = new SendUpdateTask(client, notification_method_);
+  SendUpdateTask* task = new SendUpdateTask(client, data.notification_data);
   task->SignalStatusUpdate.connect(
       this,
       &MediatorThreadImpl::OnUpdateNotificationSent);
@@ -248,7 +243,7 @@ void MediatorThreadImpl::DoSendNotification() {
 }
 
 void MediatorThreadImpl::OnUpdateListenerMessage(
-    const NotificationData& notification_data) {
+    const IncomingNotificationData& notification_data) {
   SignalNotificationReceived(notification_data);
 }
 

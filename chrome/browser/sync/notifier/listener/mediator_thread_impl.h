@@ -77,13 +77,25 @@ struct SubscriptionData : public talk_base::MessageData {
   std::vector<std::string> subscribed_services_list;
 };
 
+// Used to pass outgoing notification information from the mediator to the
+// thread. Use new to allocate it on the heap, the thread will delete it
+// for you.
+struct OutgoingNotificationMessageData : public talk_base::MessageData {
+  explicit OutgoingNotificationMessageData(
+      const OutgoingNotificationData& data) : notification_data(data) {
+  }
+  virtual ~OutgoingNotificationMessageData() {}
+
+  OutgoingNotificationData notification_data;
+};
+
 class MediatorThreadImpl
     : public MediatorThread,
       public sigslot::has_slots<>,
       public talk_base::MessageHandler,
       public talk_base::Thread {
  public:
-  explicit MediatorThreadImpl(NotificationMethod notification_method);
+  explicit MediatorThreadImpl();
   virtual ~MediatorThreadImpl();
 
   // Start the thread.
@@ -98,7 +110,7 @@ class MediatorThreadImpl
   void ListenForUpdates();
   void SubscribeForUpdates(
       const std::vector<std::string>& subscribed_services_list);
-  void SendNotification();
+  void SendNotification(const OutgoingNotificationData& data);
   void LogStanzas();
 
  private:
@@ -109,12 +121,14 @@ class MediatorThreadImpl
   void DoDisconnect();
   void DoSubscribeForUpdates(const SubscriptionData& subscription_data);
   void DoListenForUpdates();
-  void DoSendNotification();
+  void DoSendNotification(
+      const OutgoingNotificationMessageData& data);
   void DoStanzaLogging();
   void PumpAuxiliaryLoops();
 
   // These handle messages indicating an event happened in the outside world.
-  void OnUpdateListenerMessage(const NotificationData& notification_data);
+  void OnUpdateListenerMessage(
+      const IncomingNotificationData& notification_data);
   void OnUpdateNotificationSent(bool success);
   void OnLoginFailureMessage(const notifier::LoginFailure& failure);
   void OnClientStateChangeMessage(notifier::Login::ConnectionState state);

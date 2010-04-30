@@ -19,10 +19,9 @@
 namespace browser_sync {
 
 SubscribeTask::SubscribeTask(
-    Task* parent, NotificationMethod notification_method,
+    Task* parent,
     const std::vector<std::string>& subscribed_services_list)
     : XmppTask(parent, buzz::XmppEngine::HL_SINGLE),
-      notification_method_(notification_method),
       subscribed_services_list_(subscribed_services_list) {
 }
 
@@ -39,8 +38,7 @@ bool SubscribeTask::HandleStanza(const buzz::XmlElement* stanza) {
 int SubscribeTask::ProcessStart() {
   LOG(INFO) << "P2P: Subscription task started.";
   scoped_ptr<buzz::XmlElement> iq_stanza(
-      MakeSubscriptionMessage(notification_method_,
-                              subscribed_services_list_,
+      MakeSubscriptionMessage(subscribed_services_list_,
                               GetClient()->jid().BareJid(), task_id()));
   LOG(INFO) << "P2P: Subscription stanza: "
             << XmlElementToString(*iq_stanza.get());
@@ -74,61 +72,6 @@ int SubscribeTask::ProcessResponse() {
 }
 
 buzz::XmlElement* SubscribeTask::MakeSubscriptionMessage(
-    NotificationMethod notification_method,
-    const std::vector<std::string>& subscribed_services_list,
-    const buzz::Jid& to_jid_bare, const std::string& task_id) {
-  switch (notification_method) {
-    case NOTIFICATION_LEGACY:
-      return MakeLegacySubscriptionMessage(to_jid_bare, task_id);
-    case NOTIFICATION_TRANSITIONAL:
-    case NOTIFICATION_NEW:
-      return MakeNonLegacySubscriptionMessage(subscribed_services_list,
-                                              to_jid_bare,
-                                              task_id);
-  }
-  NOTREACHED();
-  return NULL;
-}
-
-// TODO(akalin): Remove this once we get all clients on at least
-// NOTIFICATION_TRANSITIONAL.
-
-buzz::XmlElement* SubscribeTask::MakeLegacySubscriptionMessage(
-    const buzz::Jid& to_jid_bare, const std::string& task_id) {
-  DCHECK(to_jid_bare.IsBare());
-  static const buzz::QName kQnNotifierGetAll(
-      true, kNotifierNamespace, "getAll");
-  static const buzz::QName kQnNotifierClientActive(true,
-                                                   buzz::STR_EMPTY,
-                                                   "ClientActive");
-  static const buzz::QName kQnBool(true, buzz::STR_EMPTY, "bool");
-  static const std::string kTrueString("true");
-
-  // Create the subscription stanza using the notifications protocol.
-  // <iq type='get' from='{fullJid}' to='{bareJid}' id='{#}'>
-  //   <gn:getAll xmlns:gn='google:notifier' xmlns=''>
-  //     <ClientActive bool='true'/>
-  //   </gn:getAll>
-  // </iq>
-  buzz::XmlElement* get_all_request =
-      MakeIq(buzz::STR_GET, to_jid_bare, task_id);
-
-  buzz::XmlElement* notifier_get =
-      new buzz::XmlElement(kQnNotifierGetAll, true);
-  get_all_request->AddElement(notifier_get);
-
-  buzz::XmlElement* client_active =
-      new buzz::XmlElement(kQnNotifierClientActive, true);
-  client_active->AddAttr(kQnBool, kTrueString);
-  notifier_get->AddElement(client_active);
-
-  return get_all_request;
-}
-
-// TODO(akalin): Remove the is_transitional switch once we get all
-// clients on at least NOTIFICATION_NEW.
-
-buzz::XmlElement* SubscribeTask::MakeNonLegacySubscriptionMessage(
     const std::vector<std::string>& subscribed_services_list,
     const buzz::Jid& to_jid_bare, const std::string& task_id) {
   DCHECK(to_jid_bare.IsBare());
@@ -139,7 +82,7 @@ buzz::XmlElement* SubscribeTask::MakeNonLegacySubscriptionMessage(
   // <iq type='get' from='{fullJid}' to='{bareJid}' id='{#}'>
   //   <gn:getAll xmlns:gn="google:notifier" xmlns="">
   //     <ClientActive bool="true" />
-  //     <!-- present only if is_transitional is set -->
+  //     <!-- present only if subscribed_services_list is not empty -->
   //     <SubscribedServiceUrl data="google:notifier">
   //     <SubscribedServiceUrl data="http://www.google.com/chrome/sync">
   //     <FilterNonSubscribed bool="true" />
@@ -157,8 +100,9 @@ buzz::XmlElement* SubscribeTask::MakeNonLegacySubscriptionMessage(
     get_all->AddElement(
         MakeStringXmlElement("SubscribedServiceUrl", iter->c_str()));
   }
-  get_all->AddElement(MakeBoolXmlElement("FilterNonSubscribed", true));
-
+  if (!subscribed_services_list.empty()) {
+    get_all->AddElement(MakeBoolXmlElement("FilterNonSubscribed", true));
+  }
   return iq;
 }
 

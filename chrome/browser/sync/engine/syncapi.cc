@@ -37,6 +37,7 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/sync/sync_constants.h"
 #include "chrome/browser/sync/engine/all_status.h"
 #include "chrome/browser/sync/engine/auth_watcher.h"
 #include "chrome/browser/sync/engine/change_reorder_buffer.h"
@@ -83,6 +84,7 @@ using browser_sync::SyncerThread;
 using browser_sync::UserSettings;
 using browser_sync::TalkMediator;
 using browser_sync::TalkMediatorImpl;
+using browser_sync::TalkMediatorEvent;
 using browser_sync::sessions::SyncSessionContext;
 using std::list;
 using std::hex;
@@ -994,7 +996,8 @@ class SyncManager::SyncInternal {
         address_watch_thread_("SyncEngine_AddressWatcher"),
         registrar_(NULL),
         notification_pending_(false),
-        initialized_(false) {
+        initialized_(false),
+        notification_method_(browser_sync::kDefaultNotificationMethod) {
   }
 
   ~SyncInternal() { }
@@ -1055,6 +1058,10 @@ class SyncManager::SyncInternal {
   // We have a direct hookup to the authwatcher to be notified for auth failures
   // on startup, to serve our UI needs.
   void HandleAuthWatcherEvent(const AuthWatcherEvent& event);
+
+  // We listen to TalkMediator events so that we can send an
+  // XMPP notification when subscriptions are on.
+  void HandleTalkMediatorEvent(const TalkMediatorEvent& event);
 
   // Accessors for the private members.
   DirectoryManager* dir_manager() { return share_.dir_manager.get(); }
@@ -1147,6 +1154,8 @@ class SyncManager::SyncInternal {
   // already initialized, this is a no-op.
   void MarkAndNotifyInitializationComplete();
 
+  bool SendXMPPNotification();
+
   // Determine if the parents or predecessors differ between the old and new
   // versions of an entry stored in |a| and |b|.  Note that a node's index may
   // change without its NEXT_ID changing if the node at NEXT_ID also moved (but
@@ -1221,6 +1230,9 @@ class SyncManager::SyncInternal {
   // Notification (xmpp) handler.
   scoped_ptr<TalkMediator> talk_mediator_;
 
+  // XMPP notifications event handler
+  scoped_ptr<EventListenerHookup> talk_mediator_hookup_;
+
   // A multi-purpose status watch object that aggregates stats from various
   // sync components.
   AllStatus allstatus_;
@@ -1275,6 +1287,8 @@ class SyncManager::SyncInternal {
   // as it can get read/set by both the SyncerThread and the AuthWatcherThread.
   bool initialized_;
   mutable Lock initialized_mutex_;
+
+  browser_sync::NotificationMethod notification_method_;
 };
 const int SyncManager::SyncInternal::kDefaultNudgeDelayMilliseconds = 200;
 const int SyncManager::SyncInternal::kPreferencesNudgeDelayMilliseconds = 2000;
@@ -1356,6 +1370,7 @@ bool SyncManager::SyncInternal::Init(
     const char* user_agent,
     const std::string& lsid,
     browser_sync::NotificationMethod notification_method) {
+  notification_method_ = notification_method;
   // Set up UserSettings, creating the db if necessary. We need this to
   // instantiate a URLFactory to give to the Syncer.
   FilePath settings_db_file =
@@ -1409,14 +1424,21 @@ bool SyncManager::SyncInternal::Init(
   const char* service_id = gaia_service_id ?
       gaia_service_id : SYNC_SERVICE_NAME;
 
-  talk_mediator_.reset(new TalkMediatorImpl(notification_method,
-                                            invalidate_xmpp_auth_token));
-  if (notification_method == browser_sync::NOTIFICATION_TRANSITIONAL) {
-    talk_mediator_->AddSubscribedServiceUrl(
-        browser_sync::kSyncLegacyServiceUrl);
+  talk_mediator_.reset(new TalkMediatorImpl(invalidate_xmpp_auth_token));
+  if (notification_method != browser_sync::NOTIFICATION_LEGACY) {
+    if (notification_method == browser_sync::NOTIFICATION_TRANSITIONAL) {
+      talk_mediator_->AddSubscribedServiceUrl(
+          browser_sync::kSyncLegacyServiceUrl);
+    }
+    talk_mediator_->AddSubscribedServiceUrl(browser_sync::kSyncServiceUrl);
   }
-  talk_mediator_->AddSubscribedServiceUrl(browser_sync::kSyncServiceUrl);
   allstatus()->WatchTalkMediator(talk_mediator());
+
+  // Listen to TalkMediator events ourselves
+  talk_mediator_hookup_.reset(
+      NewEventListenerHookup(talk_mediator_->channel(),
+                             this,
+                             &SyncInternal::HandleTalkMediatorEvent));
 
   BridgedGaiaAuthenticator* gaia_auth = new BridgedGaiaAuthenticator(
       gaia_source, service_id, gaia_url, auth_post_factory);
@@ -1489,6 +1511,29 @@ void SyncManager::SyncInternal::MarkAndNotifyInitializationComplete() {
   // Notify that initialization is complete.
   if (observer_)
     observer_->OnInitializationComplete();
+}
+
+bool SyncManager::SyncInternal::SendXMPPNotification() {
+  OutgoingNotificationData notification_data;
+  if (notification_method_ == browser_sync::NOTIFICATION_LEGACY) {
+    notification_data.service_id = browser_sync::kSyncLegacyServiceId;
+    notification_data.service_url = browser_sync::kSyncLegacyServiceUrl;
+    notification_data.send_content = false;
+  } else {
+    notification_data.service_id = browser_sync::kSyncServiceId;
+    notification_data.service_url = browser_sync::kSyncServiceUrl;
+    notification_data.send_content = true;
+    notification_data.priority = browser_sync::kSyncPriority;
+    notification_data.write_to_cache_only = true;
+    if (notification_method_ == browser_sync::NOTIFICATION_NEW) {
+      notification_data.service_specific_data =
+          browser_sync::kSyncServiceSpecificData;
+      notification_data.require_subscription = true;
+    } else {
+      notification_data.require_subscription = false;
+    }
+  }
+  return talk_mediator()->SendNotification(notification_data);
 }
 
 void SyncManager::SyncInternal::Authenticate(const std::string& username,
@@ -1842,7 +1887,7 @@ void SyncManager::SyncInternal::HandleSyncerEvent(const SyncerEvent& event) {
     // TODO(brg): Move this to TalkMediatorImpl as a SyncerThread event hook.
     if (notification_pending_ && talk_mediator()) {
         LOG(INFO) << "Sending XMPP notification...";
-        bool success = talk_mediator()->SendNotification();
+        bool success = SendXMPPNotification();
         if (success) {
           notification_pending_ = false;
           LOG(INFO) << "Sent XMPP notification";
@@ -1945,6 +1990,18 @@ void SyncManager::SyncInternal::HandleAuthWatcherEvent(
   // Fire notification that the status changed due to an authentication error.
   if (observer_)
     observer_->OnAuthError(AuthError(auth_problem_));
+}
+
+void SyncManager::SyncInternal::HandleTalkMediatorEvent(
+    const TalkMediatorEvent& event) {
+  // Send a notification as soon as subscriptions are on.
+  // This is to fix Bug 38563.
+  // See http://code.google.com/p/chromium/issues/detail?id=38563.
+  // This was originally fixed in http://codereview.chromium.org/1545024
+  // but it got moved here when the refactoring of TalkMediator happened.
+  if (event.what_happened == TalkMediatorEvent::SUBSCRIPTIONS_ON) {
+    SendXMPPNotification();
+  }
 }
 
 SyncManager::Status::Summary SyncManager::GetStatusSummary() const {

@@ -8,7 +8,7 @@
 // Example usage:
 //
 //   TalkMediator mediator();
-//   mediator.SetAuthToken("email", "token");
+//   mediator.SetAuthToken("email", "token", "service_id");
 //   mediator.Login();
 //   ...
 //   mediator.Logout();
@@ -19,6 +19,7 @@
 #include <string>
 
 #include "chrome/browser/sync/notifier/listener/notification_defines.h"
+#include "chrome/common/deprecated/event_sys.h"
 
 namespace browser_sync {
 
@@ -42,7 +43,7 @@ struct TalkMediatorEvent {
 
   WhatHappened what_happened;
   // Data in the case of a NOTIFICATION_RECEIVED event
-  NotificationData notification_data;
+  IncomingNotificationData notification_data;
 };
 
 typedef EventChannel<TalkMediatorEvent, Lock> TalkMediatorChannel;
@@ -54,13 +55,14 @@ class TalkMediator {
 
   // The following methods are for authorizaiton of the xmpp client.
   virtual bool SetAuthToken(const std::string& email,
-                            const std::string& token) = 0;
+                            const std::string& token,
+                            const std::string& token_service) = 0;
   virtual bool Login() = 0;
   virtual bool Logout() = 0;
 
   // Method for the owner of this object to notify peers that an update has
   // occurred.
-  virtual bool SendNotification() = 0;
+  virtual bool SendNotification(const OutgoingNotificationData& data) = 0;
 
   // Channel by which talk mediator events are signaled.
   virtual TalkMediatorChannel* channel() const = 0;

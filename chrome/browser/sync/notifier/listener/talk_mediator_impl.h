@@ -14,8 +14,6 @@
 
 #include "base/lock.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/sync/engine/auth_watcher.h"
-#include "chrome/browser/sync/notification_method.h"
 #include "chrome/browser/sync/notifier/listener/mediator_thread.h"
 #include "chrome/browser/sync/notifier/listener/talk_mediator.h"
 #include "talk/base/sigslot.h"
@@ -30,18 +28,18 @@ class TalkMediatorImpl
     : public TalkMediator,
       public sigslot::has_slots<> {
  public:
-  TalkMediatorImpl(NotificationMethod notification_method,
-                   bool invalidate_xmpp_auth_token);
+  explicit TalkMediatorImpl(bool invalidate_xmpp_auth_token);
   explicit TalkMediatorImpl(MediatorThread* thread);
   virtual ~TalkMediatorImpl();
 
   // Overriden from TalkMediator.
   virtual bool SetAuthToken(const std::string& email,
-                            const std::string& token);
+                            const std::string& token,
+                            const std::string& token_service);
   virtual bool Login();
   virtual bool Logout();
 
-  virtual bool SendNotification();
+  virtual bool SendNotification(const OutgoingNotificationData& data);
 
   TalkMediatorChannel* channel() const;
 
@@ -71,7 +69,7 @@ class TalkMediatorImpl
   // Callbacks for the mediator thread.
   void MediatorThreadMessageHandler(MediatorThread::MediatorMessage message);
   void MediatorThreadNotificationHandler(
-      const NotificationData& notification_data);
+      const IncomingNotificationData& notification_data);
 
   // Responses to messages from the MediatorThread.
   void OnNotificationSent();

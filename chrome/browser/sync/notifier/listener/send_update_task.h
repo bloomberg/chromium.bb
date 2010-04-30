@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include "chrome/browser/sync/notification_method.h"
+#include "chrome/browser/sync/notifier/listener/notification_defines.h"
 #include "talk/xmllite/xmlelement.h"
 #include "talk/xmpp/xmpptask.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
@@ -18,7 +18,7 @@ namespace browser_sync {
 
 class SendUpdateTask : public buzz::XmppTask {
  public:
-  SendUpdateTask(Task* parent, NotificationMethod notification_method);
+  SendUpdateTask(Task* parent, const OutgoingNotificationData& data);
   virtual ~SendUpdateTask();
 
   // Overridden from buzz::XmppTask.
@@ -32,21 +32,12 @@ class SendUpdateTask : public buzz::XmppTask {
  private:
   // Allocates and constructs an buzz::XmlElement containing the update stanza.
   static buzz::XmlElement* MakeUpdateMessage(
-      NotificationMethod notification_method,
+      const OutgoingNotificationData& notification_data,
       const buzz::Jid& to_jid_bare, const std::string& task_id);
 
-  static buzz::XmlElement* MakeLegacyUpdateMessage(
-      const buzz::Jid& to_jid_bare, const std::string& task_id);
-
-  static buzz::XmlElement* MakeNonLegacyUpdateMessage(
-      bool is_transitional,
-      const buzz::Jid& to_jid_bare, const std::string& task_id);
-
-  NotificationMethod notification_method_;
+  OutgoingNotificationData notification_data_;
 
   FRIEND_TEST(SendUpdateTaskTest, MakeUpdateMessage);
-  FRIEND_TEST(SendUpdateTaskTest, MakeLegacyUpdateMessage);
-  FRIEND_TEST(SendUpdateTaskTest, MakeNonLegacyUpdateMessage);
 
   DISALLOW_COPY_AND_ASSIGN(SendUpdateTask);
 };

@@ -6,8 +6,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
-#include "chrome/browser/net/url_request_context_getter.h"
-#include "chrome/browser/profile.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/base/ssl_config_service.h"

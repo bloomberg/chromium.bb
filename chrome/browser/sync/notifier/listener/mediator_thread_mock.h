@@ -20,7 +20,7 @@ namespace browser_sync {
 
 class MockMediatorThread : public MediatorThread {
  public:
-  MockMediatorThread() : MediatorThread(kDefaultNotificationMethod) {
+  MockMediatorThread() : MediatorThread() {
     Reset();
   }
   ~MockMediatorThread() {}
@@ -56,7 +56,7 @@ class MockMediatorThread : public MediatorThread {
     listen_calls++;
   }
 
-  virtual void SendNotification() {
+  virtual void SendNotification(const OutgoingNotificationData &) {
     send_calls++;
   }
 
@@ -64,7 +64,7 @@ class MockMediatorThread : public MediatorThread {
   void ChangeState(MediatorThread::MediatorMessage message) {
     SignalStateChange(message);
   }
-  void Notify(const NotificationData& data) {
+  void Notify(const IncomingNotificationData& data) {
     SignalNotificationReceived(data);
   }
 

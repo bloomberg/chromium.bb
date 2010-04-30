@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/sync/notification_method.h"
 #include "talk/xmllite/xmlelement.h"
 #include "talk/xmpp/xmpptask.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
@@ -22,7 +21,7 @@ namespace browser_sync {
 // in this class and any other class that uses notification_method.
 class SubscribeTask : public buzz::XmppTask {
  public:
-  SubscribeTask(Task* parent, NotificationMethod notification_method,
+  SubscribeTask(Task* parent,
                 const std::vector<std::string>& subscribed_services_list);
   virtual ~SubscribeTask();
 
@@ -37,22 +36,11 @@ class SubscribeTask : public buzz::XmppTask {
  private:
   // Assembles an Xmpp stanza which can be sent to subscribe to notifications.
   static buzz::XmlElement* MakeSubscriptionMessage(
-      NotificationMethod notification_method,
       const std::vector<std::string>& subscribed_services_list,
       const buzz::Jid& to_jid_bare, const std::string& task_id);
 
-  static buzz::XmlElement* MakeLegacySubscriptionMessage(
-      const buzz::Jid& to_jid_bare, const std::string& task_id);
-
-  static buzz::XmlElement* MakeNonLegacySubscriptionMessage(
-      const std::vector<std::string>& subscribed_services_list,
-      const buzz::Jid& to_jid_bare, const std::string& task_id);
-
-  NotificationMethod notification_method_;
   std::vector<std::string> subscribed_services_list_;
 
-  FRIEND_TEST(SubscribeTaskTest, MakeLegacySubscriptionMessage);
-  FRIEND_TEST(SubscribeTaskTest, MakeNonLegacySubscriptionMessage);
   FRIEND_TEST(SubscribeTaskTest, MakeSubscriptionMessage);
 
   DISALLOW_COPY_AND_ASSIGN(SubscribeTask);

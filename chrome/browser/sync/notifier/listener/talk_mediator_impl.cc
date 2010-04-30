@@ -39,9 +39,8 @@ class SslInitializationSingleton {
   DISALLOW_COPY_AND_ASSIGN(SslInitializationSingleton);
 };
 
-TalkMediatorImpl::TalkMediatorImpl(NotificationMethod notification_method,
-                                   bool invalidate_xmpp_auth_token)
-    : mediator_thread_(new MediatorThreadImpl(notification_method)),
+TalkMediatorImpl::TalkMediatorImpl(bool invalidate_xmpp_auth_token)
+    : mediator_thread_(new MediatorThreadImpl()),
       invalidate_xmpp_auth_token_(invalidate_xmpp_auth_token) {
   // Ensure the SSL library is initialized.
   SslInitializationSingleton::GetInstance()->RegisterClient();
@@ -118,10 +117,10 @@ bool TalkMediatorImpl::Logout() {
   return false;
 }
 
-bool TalkMediatorImpl::SendNotification() {
+bool TalkMediatorImpl::SendNotification(const OutgoingNotificationData& data) {
   AutoLock lock(mutex_);
   if (state_.logged_in && state_.subscribed) {
-    mediator_thread_->SendNotification();
+    mediator_thread_->SendNotification(data);
     return true;
   }
   return false;
@@ -132,7 +131,8 @@ TalkMediatorChannel* TalkMediatorImpl::channel() const {
 }
 
 bool TalkMediatorImpl::SetAuthToken(const std::string& email,
-                                    const std::string& token) {
+                                    const std::string& token,
+                                    const std::string& token_service) {
   AutoLock lock(mutex_);
 
   // Verify that we can create a JID from the email provided.
@@ -148,6 +148,7 @@ bool TalkMediatorImpl::SetAuthToken(const std::string& email,
   xmpp_settings_.set_use_tls(true);
   xmpp_settings_.set_auth_cookie(invalidate_xmpp_auth_token_ ?
                                  token + "bogus" : token);
+  xmpp_settings_.set_token_service(token_service);
 
   state_.initialized = 1;
   return true;
@@ -189,7 +190,7 @@ void TalkMediatorImpl::MediatorThreadMessageHandler(
 }
 
 void TalkMediatorImpl::MediatorThreadNotificationHandler(
-    const NotificationData& notification_data) {
+    const IncomingNotificationData& notification_data) {
   LOG(INFO) << "P2P: Updates are available on the server.";
   AutoLock lock(mutex_);
   TalkMediatorEvent event = { TalkMediatorEvent::NOTIFICATION_RECEIVED };
@@ -224,15 +225,17 @@ void TalkMediatorImpl::OnLogout() {
 
 void TalkMediatorImpl::OnSubscriptionSuccess() {
   LOG(INFO) << "P2P: Update subscription active.";
-  AutoLock lock(mutex_);
-  state_.subscribed = 1;
+  {
+    AutoLock lock(mutex_);
+    state_.subscribed = 1;
+  }
+  // The above scope exists so that we can release the lock before
+  // notifying listeners. In theory we should do this for all methods.
+  // Notifying listeners with a lock held can cause the lock to be
+  // recursively taken if the listener decides to call back into us
+  // in the event handler.
   TalkMediatorEvent event = { TalkMediatorEvent::SUBSCRIPTIONS_ON };
   channel_->NotifyListeners(event);
-  // Send an initial nudge when we connect.  This is to deal with the
-  // case that there are unsynced changes when Chromium starts up.  This would
-  // caused changes to be submitted before p2p is enabled, and therefore
-  // the notification won't get sent out.
-  mediator_thread_->SendNotification();
 }
 
 void TalkMediatorImpl::OnSubscriptionFailure() {

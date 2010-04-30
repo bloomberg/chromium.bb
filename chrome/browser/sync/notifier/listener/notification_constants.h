@@ -8,12 +8,6 @@
 namespace browser_sync {
 
 extern const char kNotifierNamespace[];
-extern const char kSyncLegacyServiceUrl[];
-extern const char kSyncServiceUrl[];
-extern const char kSyncLegacyServiceId[];
-extern const char kSyncServiceId[];
-extern const int kSyncPriority;
-extern const char kSyncServiceSpecificData[];
 
 }  // namespace browser_sync
 

@@ -98,8 +98,7 @@ class AuthWatcherTest : public testing::Test {
     FilePath user_settings_path = temp_dir_.path().Append(kUserSettingsDB);
     user_settings_->Init(user_settings_path);
     gaia_auth_ = new GaiaAuthMockForAuthWatcher();
-    talk_mediator_.reset(new TalkMediatorImpl(
-        browser_sync::kDefaultNotificationMethod, false));
+    talk_mediator_.reset(new TalkMediatorImpl(false));
     auth_watcher_ = new AuthWatcher(metadb_.manager(), connection_.get(),
         allstatus_.get(), kTestUserAgent, kTestServiceId, kTestGaiaURL,
         user_settings_.get(), gaia_auth_, talk_mediator_.get());

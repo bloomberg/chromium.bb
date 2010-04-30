@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/platform_thread.h"
 #include "chrome/browser/sync/notification_method.h"
+#include "chrome/browser/sync/sync_constants.h"
 #include "chrome/browser/sync/notifier/base/task_pump.h"
 #include "chrome/browser/sync/notifier/communicator/xmpp_socket_adapter.h"
 #include "chrome/browser/sync/notifier/listener/listen_task.h"
@@ -87,20 +88,21 @@ class XmppNotificationClient : public sigslot::has_slots<> {
         browser_sync::NotificationMethod notification_method =
             browser_sync::NOTIFICATION_TRANSITIONAL;
         std::vector<std::string> subscribed_services_list;
-        if (notification_method == browser_sync::NOTIFICATION_TRANSITIONAL) {
-          subscribed_services_list.push_back(
-              browser_sync::kSyncLegacyServiceUrl);
+        if (notification_method != browser_sync::NOTIFICATION_LEGACY) {
+          if (notification_method == browser_sync::NOTIFICATION_TRANSITIONAL) {
+            subscribed_services_list.push_back(
+                browser_sync::kSyncLegacyServiceUrl);
+          }
+          subscribed_services_list.push_back(browser_sync::kSyncServiceUrl);
         }
-        subscribed_services_list.push_back(browser_sync::kSyncServiceUrl);
         // Owned by task_pump_.
         browser_sync::SubscribeTask* subscribe_task =
-            new browser_sync::SubscribeTask(
-                xmpp_client_, notification_method, subscribed_services_list);
+            new browser_sync::SubscribeTask(xmpp_client_,
+                                            subscribed_services_list);
         subscribe_task->Start();
         // Owned by task_pump_.
         browser_sync::ListenTask* listen_task =
-            new browser_sync::ListenTask(
-                xmpp_client_, notification_method);
+            new browser_sync::ListenTask(xmpp_client_);
         listen_task->Start();
         break;
       }

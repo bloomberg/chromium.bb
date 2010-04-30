@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
-#include "chrome/browser/sync/notification_method.h"
 #include "chrome/browser/sync/notifier/listener/xml_element_util.h"
 #include "talk/xmpp/jid.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,62 +31,43 @@ class SendUpdateTaskTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(SendUpdateTaskTest);
 };
 
-TEST_F(SendUpdateTaskTest, MakeLegacyUpdateMessage) {
-  scoped_ptr<buzz::XmlElement> message(
-      SendUpdateTask::MakeLegacyUpdateMessage(to_jid_bare_, task_id_));
-  const std::string expected_xml_string =
+TEST_F(SendUpdateTaskTest, MakeUpdateMessage) {
+  OutgoingNotificationData data;
+  data.service_id = "test_service_id";
+  data.service_url = "test_service_url";
+  data.send_content = false;
+  data.priority = 200;
+  data.write_to_cache_only = true;
+  data.require_subscription = false;
+
+  scoped_ptr<buzz::XmlElement> message_without_content(
+      SendUpdateTask::MakeUpdateMessage(data, to_jid_bare_, task_id_));
+
+  std::string expected_xml_string =
       StringPrintf(
           "<cli:iq type=\"get\" to=\"%s\" id=\"%s\" "
                   "xmlns:cli=\"jabber:client\">"
             "<set xmlns=\"google:notifier\">"
               "<Id xmlns=\"\">"
-                "<ServiceUrl xmlns=\"\" data=\"google:notifier\"/>"
-                "<ServiceId xmlns=\"\" data=\"notification\"/>"
+                "<ServiceUrl xmlns=\"\" data=\"test_service_url\"/>"
+                "<ServiceId xmlns=\"\" data=\"test_service_id\"/>"
               "</Id>"
             "</set>"
           "</cli:iq>",
           to_jid_bare_.Str().c_str(), task_id_.c_str());
-  EXPECT_EQ(expected_xml_string, XmlElementToString(*message));
-}
+  EXPECT_EQ(expected_xml_string, XmlElementToString(*message_without_content));
 
-TEST_F(SendUpdateTaskTest, MakeNonLegacyUpdateMessage) {
-  scoped_ptr<buzz::XmlElement> new_message(
-      SendUpdateTask::MakeNonLegacyUpdateMessage(false, to_jid_bare_,
-                                                 task_id_));
-  const std::string expected_new_xml_string =
+  data.send_content = true;
+
+  expected_xml_string =
       StringPrintf(
           "<cli:iq type=\"get\" to=\"%s\" id=\"%s\" "
                   "xmlns:cli=\"jabber:client\">"
             "<set xmlns=\"google:notifier\">"
               "<Id xmlns=\"\">"
                 "<ServiceUrl xmlns=\"\" "
-                            "data=\"http://www.google.com/chrome/sync\"/>"
-                "<ServiceId xmlns=\"\" data=\"sync-ping\"/>"
-              "</Id>"
-              "<Content xmlns=\"\">"
-                "<Priority xmlns=\"\" int=\"200\"/>"
-                "<RequireSubscription xmlns=\"\" bool=\"true\"/>"
-                "<ServiceSpecificData xmlns=\"\" "
-                                     "data=\"sync-ping-p2p\"/>"
-                "<WriteToCacheOnly xmlns=\"\" bool=\"true\"/>"
-              "</Content>"
-            "</set>"
-          "</cli:iq>",
-          to_jid_bare_.Str().c_str(), task_id_.c_str());
-  EXPECT_EQ(expected_new_xml_string, XmlElementToString(*new_message));
-
-  scoped_ptr<buzz::XmlElement> transitional_message(
-      SendUpdateTask::MakeNonLegacyUpdateMessage(true, to_jid_bare_,
-                                                 task_id_));
-  const std::string expected_transitional_xml_string =
-      StringPrintf(
-          "<cli:iq type=\"get\" to=\"%s\" id=\"%s\" "
-                  "xmlns:cli=\"jabber:client\">"
-            "<set xmlns=\"google:notifier\">"
-              "<Id xmlns=\"\">"
-                "<ServiceUrl xmlns=\"\" "
-                            "data=\"http://www.google.com/chrome/sync\"/>"
-                "<ServiceId xmlns=\"\" data=\"sync-ping\"/>"
+                            "data=\"test_service_url\"/>"
+                "<ServiceId xmlns=\"\" data=\"test_service_id\"/>"
               "</Id>"
               "<Content xmlns=\"\">"
                 "<Priority xmlns=\"\" int=\"200\"/>"
@@ -97,36 +77,40 @@ TEST_F(SendUpdateTaskTest, MakeNonLegacyUpdateMessage) {
             "</set>"
           "</cli:iq>",
           to_jid_bare_.Str().c_str(), task_id_.c_str());
-  EXPECT_EQ(expected_transitional_xml_string,
-            XmlElementToString(*transitional_message));
-}
 
-TEST_F(SendUpdateTaskTest, MakeUpdateMessage) {
-  scoped_ptr<buzz::XmlElement> expected_legacy_message(
-      SendUpdateTask::MakeLegacyUpdateMessage(to_jid_bare_, task_id_));
-  scoped_ptr<buzz::XmlElement> legacy_message(
-      SendUpdateTask::MakeUpdateMessage(NOTIFICATION_LEGACY,
-                                        to_jid_bare_, task_id_));
-  EXPECT_EQ(XmlElementToString(*expected_legacy_message),
-            XmlElementToString(*legacy_message));
+  scoped_ptr<buzz::XmlElement> message_with_content(
+      SendUpdateTask::MakeUpdateMessage(data, to_jid_bare_, task_id_));
 
-  scoped_ptr<buzz::XmlElement> expected_transitional_message(
-      SendUpdateTask::MakeNonLegacyUpdateMessage(true,
-                                                 to_jid_bare_, task_id_));
-  scoped_ptr<buzz::XmlElement> transitional_message(
-      SendUpdateTask::MakeUpdateMessage(NOTIFICATION_TRANSITIONAL,
-                                        to_jid_bare_, task_id_));
-  EXPECT_EQ(XmlElementToString(*expected_transitional_message),
-            XmlElementToString(*transitional_message));
+  EXPECT_EQ(expected_xml_string, XmlElementToString(*message_with_content));
 
-  scoped_ptr<buzz::XmlElement> expected_new_message(
-      SendUpdateTask::MakeNonLegacyUpdateMessage(false,
-                                                 to_jid_bare_, task_id_));
-  scoped_ptr<buzz::XmlElement> new_message(
-      SendUpdateTask::MakeUpdateMessage(NOTIFICATION_NEW,
-                                        to_jid_bare_, task_id_));
-  EXPECT_EQ(XmlElementToString(*expected_new_message),
-            XmlElementToString(*new_message));
+  data.service_specific_data = "test_service_specific_data";
+  data.require_subscription = true;
+
+  expected_xml_string =
+      StringPrintf(
+          "<cli:iq type=\"get\" to=\"%s\" id=\"%s\" "
+                  "xmlns:cli=\"jabber:client\">"
+            "<set xmlns=\"google:notifier\">"
+              "<Id xmlns=\"\">"
+                "<ServiceUrl xmlns=\"\" "
+                            "data=\"test_service_url\"/>"
+                "<ServiceId xmlns=\"\" data=\"test_service_id\"/>"
+              "</Id>"
+              "<Content xmlns=\"\">"
+                "<Priority xmlns=\"\" int=\"200\"/>"
+                "<RequireSubscription xmlns=\"\" bool=\"true\"/>"
+                "<ServiceSpecificData xmlns=\"\" "
+                                     "data=\"test_service_specific_data\"/>"
+                "<WriteToCacheOnly xmlns=\"\" bool=\"true\"/>"
+              "</Content>"
+            "</set>"
+          "</cli:iq>",
+          to_jid_bare_.Str().c_str(), task_id_.c_str());
+
+  scoped_ptr<buzz::XmlElement> message_with_data(
+      SendUpdateTask::MakeUpdateMessage(data, to_jid_bare_, task_id_));
+
+  EXPECT_EQ(expected_xml_string, XmlElementToString(*message_with_data));
 }
 
 }  // namespace browser_sync

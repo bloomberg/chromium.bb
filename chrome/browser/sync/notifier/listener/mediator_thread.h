@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "chrome/browser/sync/notification_method.h"
 #include "chrome/browser/sync/notifier/listener/notification_defines.h"
 #include "talk/base/sigslot.h"
 #include "talk/xmpp/xmppclientsettings.h"
@@ -37,18 +36,15 @@ class MediatorThread {
   virtual void SubscribeForUpdates(
       const std::vector<std::string>& subscribed_services_list) = 0;
   virtual void ListenForUpdates() = 0;
-  virtual void SendNotification() = 0;
+  virtual void SendNotification(const OutgoingNotificationData& data) = 0;
 
   // Connect to this for messages about talk events (except notifications).
   sigslot::signal1<MediatorMessage> SignalStateChange;
   // Connect to this for notifications
-  sigslot::signal1<const NotificationData&> SignalNotificationReceived;
+  sigslot::signal1<const IncomingNotificationData&> SignalNotificationReceived;
 
  protected:
-  explicit MediatorThread(NotificationMethod notification_method)
-      : notification_method_(notification_method) {}
-
-  const NotificationMethod notification_method_;
+  MediatorThread() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediatorThread);

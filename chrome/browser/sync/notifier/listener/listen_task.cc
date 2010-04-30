@@ -5,7 +5,6 @@
 #include "chrome/browser/sync/notifier/listener/listen_task.h"
 
 #include "base/logging.h"
-#include "chrome/browser/sync/notification_method.h"
 #include "chrome/browser/sync/notifier/listener/notification_constants.h"
 #include "chrome/browser/sync/notifier/listener/xml_element_util.h"
 #include "talk/base/task.h"
@@ -17,9 +16,8 @@
 
 namespace browser_sync {
 
-ListenTask::ListenTask(Task* parent, NotificationMethod notification_method)
-    : buzz::XmppTask(parent, buzz::XmppEngine::HL_TYPE),
-      notification_method_(notification_method) {
+ListenTask::ListenTask(Task* parent)
+    : buzz::XmppTask(parent, buzz::XmppEngine::HL_TYPE) {
 }
 
 ListenTask::~ListenTask() {
@@ -75,7 +73,7 @@ int ListenTask::ProcessResponse() {
         get_all_element->FirstNamed(
             buzz::QName(true, buzz::STR_EMPTY, "Result"));
     while (result_element) {
-      NotificationData notification_data;
+      IncomingNotificationData notification_data;
       const buzz::XmlElement* id_element =
           result_element->FirstNamed(buzz::QName(true, buzz::STR_EMPTY, "Id"));
       if (id_element) {
@@ -111,7 +109,7 @@ int ListenTask::ProcessResponse() {
     LOG(WARNING) <<
         "No getAll element or Result element found in response stanza";
     // Signal an empty update to preserve old behavior
-    SignalUpdateAvailable(NotificationData());
+    SignalUpdateAvailable(IncomingNotificationData());
   }
   return STATE_RESPONSE;
 }
@@ -119,7 +117,7 @@ int ListenTask::ProcessResponse() {
 bool ListenTask::HandleStanza(const buzz::XmlElement* stanza) {
   LOG(INFO) << "P2P: Stanza received: " << XmlElementToString(*stanza);
   // TODO(akalin): Do more verification on stanza depending on
-  // notification_method_.
+  // the sync notification method
   if (IsValidNotification(stanza)) {
     QueueStanza(stanza);
     return true;

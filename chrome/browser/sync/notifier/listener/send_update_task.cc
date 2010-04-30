@@ -17,9 +17,9 @@
 namespace browser_sync {
 
 SendUpdateTask::SendUpdateTask(Task* parent,
-                               NotificationMethod notification_method)
+                               const OutgoingNotificationData& data)
     : XmppTask(parent, buzz::XmppEngine::HL_SINGLE),  // Watch for one reply.
-      notification_method_(notification_method) {
+      notification_data_(data) {
 }
 
 SendUpdateTask::~SendUpdateTask() {
@@ -35,7 +35,7 @@ bool SendUpdateTask::HandleStanza(const buzz::XmlElement* stanza) {
 int SendUpdateTask::ProcessStart() {
   LOG(INFO) << "P2P: Notification task started.";
   scoped_ptr<buzz::XmlElement> stanza(
-      MakeUpdateMessage(notification_method_,
+      MakeUpdateMessage(notification_data_,
                         GetClient()->jid().BareJid(), task_id()));
   LOG(INFO) << "P2P: Notification stanza: "
             << XmlElementToString(*stanza.get());
@@ -73,108 +73,58 @@ int SendUpdateTask::ProcessResponse() {
 }
 
 buzz::XmlElement* SendUpdateTask::MakeUpdateMessage(
-    NotificationMethod notification_method,
-    const buzz::Jid& to_jid_bare, const std::string& task_id) {
-  switch (notification_method) {
-    case NOTIFICATION_LEGACY:
-      return MakeLegacyUpdateMessage(to_jid_bare, task_id);
-    case NOTIFICATION_TRANSITIONAL:
-      return MakeNonLegacyUpdateMessage(true, to_jid_bare, task_id);
-    case NOTIFICATION_NEW:
-      return MakeNonLegacyUpdateMessage(false, to_jid_bare, task_id);
-  }
-  NOTREACHED();
-  return NULL;
-}
-
-// TODO(akalin): Remove this once we get all clients on at least
-// NOTIFICATION_TRANSITIONAL.
-
-buzz::XmlElement* SendUpdateTask::MakeLegacyUpdateMessage(
-    const buzz::Jid& to_jid_bare, const std::string& task_id) {
-  DCHECK(to_jid_bare.IsBare());
-  static const buzz::QName kQnNotifierSet(true, kNotifierNamespace, "set");
-  static const buzz::QName kQnId(true, buzz::STR_EMPTY, "Id");
-  static const buzz::QName kQnServiceUrl(true, buzz::STR_EMPTY, "ServiceUrl");
-  static const buzz::QName kQnData(true, buzz::STR_EMPTY, "data");
-  static const buzz::QName kQnServiceId(true, buzz::STR_EMPTY, "ServiceId");
-
-  // Create our update stanza.  In the future this may include the revision id,
-  // but at the moment simply does a p2p ping.  The message is constructed as:
-  // <iq type='get' from='{fullJid}' to='{bareJid}' id='{#}'>
-  //  <set xmlns="google:notifier">
-  //    <Id xmlns="">
-  //      <ServiceUrl xmlns="" data="google:notifier"/>
-  //      <ServiceId xmlns="" data="notification"/>
-  //    </Id>
-  //  </set>
-  // </iq>
-  buzz::XmlElement* stanza = MakeIq(buzz::STR_GET, to_jid_bare, task_id);
-  buzz::XmlElement* notifier_set = new buzz::XmlElement(kQnNotifierSet, true);
-  stanza->AddElement(notifier_set);
-
-  buzz::XmlElement* id = new buzz::XmlElement(kQnId, true);
-  notifier_set->AddElement(id);
-
-  buzz::XmlElement* service_url = new buzz::XmlElement(kQnServiceUrl, true);
-  service_url->AddAttr(kQnData, kSyncLegacyServiceUrl);
-  id->AddElement(service_url);
-
-  buzz::XmlElement* service_id = new buzz::XmlElement(kQnServiceId, true);
-  service_id->AddAttr(kQnData, kSyncLegacyServiceId);
-  id->AddElement(service_id);
-  return stanza;
-}
-
-// TODO(akalin): Remove the is_transitional switch once we get all
-// clients on at least NOTIFICATION_NEW.
-
-buzz::XmlElement* SendUpdateTask::MakeNonLegacyUpdateMessage(
-    bool is_transitional,
+    const OutgoingNotificationData& notification_data,
     const buzz::Jid& to_jid_bare, const std::string& task_id) {
   DCHECK(to_jid_bare.IsBare());
   static const buzz::QName kQnNotifierSet(true, kNotifierNamespace, "set");
   static const buzz::QName kQnId(true, buzz::STR_EMPTY, "Id");
   static const buzz::QName kQnContent(true, buzz::STR_EMPTY, "Content");
 
-  // Create our update stanza.  In the future this may include the revision id,
-  // but at the moment simply does a p2p ping.  The message is constructed as:
+  // Create our update stanza. The message is constructed as:
   // <iq type='get' from='{fullJid}' to='{bareJid}' id='{#}'>
   //   <gn:set xmlns:gn="google:notifier" xmlns="">
   //     <Id>
-  //       <ServiceUrl data="http://www.google.com/chrome/sync" />
-  //       <ServiceId data="sync-ping" />
+  //       <ServiceUrl data="{Service_Url}" />
+  //       <ServiceId data="{Service_Id}" />
   //     </Id>
+  // If content needs to be sent, then the below element is added
   //     <Content>
-  //       <Priority int="200" />
-  //       <!-- If is_transitional is not set, the bool value is "true". -->
-  //       <RequireSubscription bool="false" />
+  //       <Priority int="{Priority}" />
+  //       <RequireSubscription bool="{true/false}" />
   //       <!-- If is_transitional is set, this is omitted. -->
-  //       <ServiceSpecificData data="sync-ping-p2p" />
-  //       <WriteToCacheOnly bool="true" />
+  //       <ServiceSpecificData data="{ServiceData}" />
+  //       <WriteToCacheOnly bool="{true/false}" />
   //     </Content>
   //   </set>
   // </iq>
   buzz::XmlElement* iq = MakeIq(buzz::STR_GET, to_jid_bare, task_id);
   buzz::XmlElement* set = new buzz::XmlElement(kQnNotifierSet, true);
   buzz::XmlElement* id = new buzz::XmlElement(kQnId, true);
-  buzz::XmlElement* content = new buzz::XmlElement(kQnContent, true);
   iq->AddElement(set);
   set->AddElement(id);
-  set->AddElement(content);
 
-  id->AddElement(MakeStringXmlElement("ServiceUrl", kSyncServiceUrl));
-  id->AddElement(MakeStringXmlElement("ServiceId", kSyncServiceId));
+  id->AddElement(MakeStringXmlElement("ServiceUrl",
+                                      notification_data.service_url.c_str()));
+  id->AddElement(MakeStringXmlElement("ServiceId",
+                                      notification_data.service_id.c_str()));
 
-  content->AddElement(MakeIntXmlElement("Priority", kSyncPriority));
-  content->AddElement(
-      MakeBoolXmlElement("RequireSubscription", !is_transitional));
-  if (!is_transitional) {
+  if (notification_data.send_content) {
+    buzz::XmlElement* content = new buzz::XmlElement(kQnContent, true);
+    set->AddElement(content);
+    content->AddElement(MakeIntXmlElement("Priority",
+                                          notification_data.priority));
     content->AddElement(
-        MakeStringXmlElement("ServiceSpecificData", kSyncServiceSpecificData));
+        MakeBoolXmlElement("RequireSubscription",
+                           notification_data.require_subscription));
+  if (!notification_data.service_specific_data.empty()) {
+    content->AddElement(
+        MakeStringXmlElement("ServiceSpecificData",
+                             notification_data.service_specific_data.c_str()));
   }
-  content->AddElement(MakeBoolXmlElement("WriteToCacheOnly", true));
-
+    content->AddElement(
+        MakeBoolXmlElement("WriteToCacheOnly",
+                           notification_data.write_to_cache_only));
+  }
   return iq;
 }
 

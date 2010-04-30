@@ -2052,6 +2052,8 @@
         'browser/sync/profile_sync_factory.h',
         'browser/sync/profile_sync_factory_impl.cc',
         'browser/sync/profile_sync_factory_impl.h',
+        'browser/sync/sync_constants.cc',
+        'browser/sync/sync_constants.h',
         'browser/sync/sync_setup_flow.cc',
         'browser/sync/sync_setup_flow.h',
         'browser/sync/sync_setup_wizard.cc',
