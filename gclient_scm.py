@@ -403,9 +403,16 @@ class GitWrapper(SCMWrapper):
       print("\n_____ %s is missing, synching instead" % self.relpath)
       # Don't reuse the args.
       return self.update(options, [], file_list)
-    merge_base = self._Run(['merge-base', 'HEAD', 'origin'])
-    files = self._Run(['diff', merge_base, '--name-only']).split()
-    self._Run(['reset', '--hard', merge_base], redirect_stdout=False)
+
+    default_rev = "refs/heads/master"
+    url, deps_revision = gclient_utils.SplitUrlRevision(self.url)
+    if not deps_revision:
+      deps_revision = default_rev
+    if deps_revision.startswith('refs/heads/'):
+      deps_revision = deps_revision.replace('refs/heads/', 'origin/')
+
+    files = self._Run(['diff', deps_revision, '--name-only']).split()
+    self._Run(['reset', '--hard', deps_revision], redirect_stdout=False)
     file_list.extend([os.path.join(self.checkout_path, f) for f in files])
 
   def revinfo(self, options, args, file_list):

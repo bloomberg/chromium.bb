@@ -527,9 +527,11 @@ from :3
       return
     options = self.Options()
     file_path = gclient_scm.os.path.join(self.base_path, 'a')
-    gclient_scm.os.remove(file_path)
     scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
                                 relpath=self.relpath)
+    file_list = []
+    scm.update(options, None, file_list)
+    gclient_scm.os.remove(file_path)
     file_list = []
     scm.revert(options, self.args, file_list)
     self.assertEquals(file_list, [file_path])
@@ -544,20 +546,24 @@ from :3
     scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
                                 relpath=self.relpath)
     file_list = []
+    scm.update(options, None, file_list)
+    file_list = []
     scm.revert(options, self.args, file_list)
     self.assertEquals(file_list, [])
     self.assertEquals(scm.revinfo(options, self.args, None),
-                      '069c602044c5388d2d15c3f875b057c852003458')
+                      'a7142dc9f0009350b96a11f372b6ea658592aa95')
 
 
   def testRevertModified(self):
     if not self.enabled:
       return
     options = self.Options()
-    file_path = gclient_scm.os.path.join(self.base_path, 'a')
-    open(file_path, 'a').writelines('touched\n')
     scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
                                 relpath=self.relpath)
+    file_list = []
+    scm.update(options, None, file_list)
+    file_path = gclient_scm.os.path.join(self.base_path, 'a')
+    open(file_path, 'a').writelines('touched\n')
     file_list = []
     scm.revert(options, self.args, file_list)
     self.assertEquals(file_list, [file_path])
@@ -565,20 +571,22 @@ from :3
     scm.diff(options, self.args, file_list)
     self.assertEquals(file_list, [])
     self.assertEquals(scm.revinfo(options, self.args, None),
-                      '069c602044c5388d2d15c3f875b057c852003458')
+                      'a7142dc9f0009350b96a11f372b6ea658592aa95')
 
   def testRevertNew(self):
     if not self.enabled:
       return
     options = self.Options()
+    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
+                                relpath=self.relpath)
+    file_list = []
+    scm.update(options, None, file_list)
     file_path = gclient_scm.os.path.join(self.base_path, 'c')
     f = open(file_path, 'w')
     f.writelines('new\n')
     f.close()
     Popen(['git', 'add', 'c'], stdout=PIPE,
           stderr=STDOUT, cwd=self.base_path).communicate()
-    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
-                                relpath=self.relpath)
     file_list = []
     scm.revert(options, self.args, file_list)
     self.assertEquals(file_list, [file_path])
@@ -586,7 +594,7 @@ from :3
     scm.diff(options, self.args, file_list)
     self.assertEquals(file_list, [])
     self.assertEquals(scm.revinfo(options, self.args, None),
-                      '069c602044c5388d2d15c3f875b057c852003458')
+                      'a7142dc9f0009350b96a11f372b6ea658592aa95')
 
   def testStatusNew(self):
     if not self.enabled:

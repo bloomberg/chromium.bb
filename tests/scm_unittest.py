@@ -28,7 +28,7 @@ class RootTestCase(BaseSCMTestCase):
     members = [
         'GetCasedPath', 'GIT', 'SVN', 'ValidateEmail',
         'gclient_utils', 'glob', 'os', 're', 'shutil', 'subprocess', 'sys',
-        'tempfile', 'xml',
+        'tempfile', 'time', 'xml',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(scm, members)
