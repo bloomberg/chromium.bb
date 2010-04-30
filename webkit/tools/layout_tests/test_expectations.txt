@@ -24,9 +24,6 @@ BUGEVAN : svg/clip-path/clip-path-child-clipped.svg = PASS FAIL
 // Probably just a rebaseline.
 BUGWK38109 : editing/selection/caret-rtl-2.html = IMAGE
 
-// Looks like I was too quick to remove this in r45579.
-BUGAGL : fast/canvas/canvas-empty-image-pattern.html = IMAGE
-
 // WebKit roll 58400:58407
 WONTFIX BUG21840 WIN DEBUG : http/tests/loading/basic-auth-resend-wrong-credentials.html = FAIL CRASH
 
