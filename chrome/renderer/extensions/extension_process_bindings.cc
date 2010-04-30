@@ -297,7 +297,7 @@ class ExtensionImpl : public ExtensionBase {
 
     if (0 == popup_matcher.views()->Length())
       return v8::Undefined();
-    DCHECK(popup_matcher.views()->Has(0));
+    DCHECK(1 == popup_matcher.views()->Length());
 
     // Return the first view found.
     return popup_matcher.views()->Get(v8::Integer::New(0));
