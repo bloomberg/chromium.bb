@@ -5,6 +5,7 @@
 #import "chrome/browser/cocoa/bookmark_bar_folder_window.h"
 
 #import "base/logging.h"
+#include "base/nsimage_cache_mac.h"
 #import "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/bookmark_bar_folder_controller.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
@@ -37,6 +38,46 @@ const CGFloat kViewCornerRadius = 4.0;
 }
 
 @implementation BookmarkBarFolderWindowContentView
+
+- (void)awakeFromNib {
+  arrowUpImage_.reset([nsimage_cache::ImageNamed(@"menu_overflow_up.pdf")
+                                    retain]);
+  arrowDownImage_.reset([nsimage_cache::ImageNamed(@"menu_overflow_down.pdf")
+                                      retain]);
+}
+
+// Draw the arrows at the top and bottom of the folder window as a
+// visual indication that scrolling is possible.  We always draw the
+// scrolling arrows; when not relevant (e.g. when not scrollable), the
+// scroll view overlaps me and the arrows aren't visible.
+- (void)drawScrollArrows:(NSRect)rect {
+  NSRect visibleRect = [self bounds];
+
+  // On top
+  [arrowUpImage_ setFlipped:[self isFlipped]];
+  NSRect imageRect = NSZeroRect;
+  imageRect.size = [arrowUpImage_ size];
+  NSRect drawRect = NSOffsetRect(
+      imageRect,
+      (NSWidth(visibleRect) - NSWidth(imageRect)) / 2,
+      NSHeight(visibleRect) - NSHeight(imageRect));
+  [arrowUpImage_ drawInRect:drawRect
+                   fromRect:imageRect
+                  operation:NSCompositeSourceOver
+                   fraction:1.0];
+
+  // On bottom
+  [arrowDownImage_ setFlipped:[self isFlipped]];
+  imageRect = NSZeroRect;
+  imageRect.size = [arrowDownImage_ size];
+  drawRect = NSOffsetRect(imageRect,
+                          (NSWidth(visibleRect) - NSWidth(imageRect)) / 2,
+                          0);
+  [arrowDownImage_ drawInRect:drawRect
+                     fromRect:imageRect
+                    operation:NSCompositeSourceOver
+                     fraction:1.0];
+}
 
 - (void)drawRect:(NSRect)rect {
   NSRect bounds = [self bounds];
@@ -71,6 +112,8 @@ const CGFloat kViewCornerRadius = 4.0;
                         glowColor, 0.75,
                         nil]);
   [gradient drawInBezierPath:bezier angle:0.0];
+
+  [self drawScrollArrows:rect];
 }
 
 @end
@@ -88,6 +131,5 @@ const CGFloat kViewCornerRadius = 4.0;
            respondsToSelector:@selector(scrollWheel:)]);
   [[[self window] windowController] scrollWheel:theEvent];
 }
-
 
 @end

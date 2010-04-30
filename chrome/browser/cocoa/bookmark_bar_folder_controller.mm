@@ -4,6 +4,7 @@
 
 #import "chrome/browser/cocoa/bookmark_bar_folder_controller.h"
 #include "base/mac_util.h"
+#include "base/nsimage_cache_mac.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -40,7 +41,6 @@ const CGFloat kBookmarkBarFolderScrollWheelAmount =
 // by at least this much.
 const CGFloat kScrollViewContentWidthMargin = 2;
 
-
 // When constraining a scrolling bookmark bar folder window to the
 // screen, shrink the "constrain" by this much vertically.  Currently
 // this is 0.0 to avoid a problem with tracking areas leaving the
@@ -62,6 +62,9 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
 // Return the new width (so that the window can be adjusted, if necessary).
 - (CGFloat)adjustButtonWidths;
 
+// Show or hide the scroll arrows at the top/bottom of the window.
+- (void)showOrHideScrollArrows;
+
 @end
 
 @implementation BookmarkBarFolderController
@@ -78,6 +81,9 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
     barController_ = barController;  // WEAK
     buttons_.reset([[NSMutableArray alloc] init]);
     folderTarget_.reset([[BookmarkFolderTarget alloc] initWithController:self]);
+    NSImage* image = nsimage_cache::ImageNamed(@"menu_overflow_up.pdf");
+    DCHECK(image);
+    verticalScrollArrowHeight_ = [image size].height;
     [self configureWindow];
     hoverState_.reset([[BookmarkBarFolderHoverState alloc] init]);
     if (scrollable_)
@@ -334,6 +340,11 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
                                            NSHeight(windowFrame)))];
   }
 
+  // If scrollable, show the arrows.
+  if (scrollable_) {
+    [self showOrHideScrollArrows];
+  }
+
   // Finally pop me up.
   [self configureWindowLevel];
 }
@@ -362,6 +373,81 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
     [button setFrame:buttonFrame];
   }
   return width;
+}
+
+- (BOOL)canScrollUp {
+  // If removal of an arrow would make things "finished", state as
+  // such.
+  CGFloat scrollY = [scrollView_ documentVisibleRect].origin.y;
+  if (scrollUpArrowShown_)
+    scrollY -= verticalScrollArrowHeight_;
+
+  if (scrollY <= 0)
+    return NO;
+  return YES;
+}
+
+- (BOOL)canScrollDown {
+  CGFloat arrowAdjustment = 0.0;
+
+  // We do NOT adjust based on the scrollDOWN arrow.  This keeps
+  // things from "jumping"; if removal of the down arrow (at the top
+  // of the window) would cause a scroll to end, we'll end.
+  if (scrollUpArrowShown_)
+    arrowAdjustment += verticalScrollArrowHeight_;
+
+  NSPoint scrollPosition = [scrollView_ documentVisibleRect].origin;
+  NSRect documentRect = [[scrollView_ documentView] frame];
+
+  // If we are exactly the right height, return no.  We need this
+  // extra conditional in the case where we've just scrolled/grown
+  // into position.
+  if (NSHeight([[self window] frame]) == NSHeight(documentRect))
+    return NO;
+
+  if ((scrollPosition.y + NSHeight([[self window] frame])) >=
+      (NSHeight(documentRect) + arrowAdjustment)) {
+    return NO;
+  }
+  return YES;
+}
+
+- (void)showOrHideScrollArrows {
+  NSRect frame = [scrollView_ frame];
+  CGFloat scrollDelta = 0.0;
+  BOOL canScrollDown = [self canScrollDown];
+  BOOL canScrollUp = [self canScrollUp];
+
+  if (canScrollUp != scrollUpArrowShown_) {
+    if (scrollUpArrowShown_) {
+      frame.origin.y -= verticalScrollArrowHeight_;
+      frame.size.height += verticalScrollArrowHeight_;
+      scrollDelta = verticalScrollArrowHeight_;
+    } else {
+      frame.origin.y += verticalScrollArrowHeight_;
+      frame.size.height -= verticalScrollArrowHeight_;
+      scrollDelta = -verticalScrollArrowHeight_;
+    }
+  }
+  if (canScrollDown != scrollDownArrowShown_) {
+    if (scrollDownArrowShown_) {
+      frame.size.height += verticalScrollArrowHeight_;
+    } else {
+      frame.size.height -= verticalScrollArrowHeight_;
+    }
+  }
+  scrollUpArrowShown_ = canScrollUp;
+  scrollDownArrowShown_ = canScrollDown;
+  [scrollView_ setFrame:frame];
+
+  // Adjust scroll based on new frame.  For example, if we make room
+  // for an arrow at the bottom, adjust the scroll so the topmost item
+  // is still fully visible.
+  if (scrollDelta) {
+    NSPoint scrollPosition = [scrollView_ documentVisibleRect].origin;
+    scrollPosition.y -= scrollDelta;
+    [[scrollView_ documentView] scrollPoint:scrollPosition];
+  }
 }
 
 #pragma mark BookmarkButtonControllerProtocol
@@ -559,6 +645,10 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
       windowFrame.size.height += growAmount;
       windowFrame.size.height = std::min(NSHeight(windowFrame),
                                          screenHeightMinusMargin);
+      // Watch out for a finish that isn't the full height of the screen.
+      // We get here if using the scroll wheel to scroll by small amounts.
+      windowFrame.size.height = std::min(NSHeight(windowFrame),
+                                         NSHeight([mainView_ frame]));
       // Don't allow scrolling to make the window smaller, ever.  This
       // conditional is important when processing scrollWheel events.
       if (windowFrame.size.height > [[self window] frame].size.height) {
@@ -575,12 +665,16 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
        (windowFrame.size.height == screenHeightMinusMargin))) {
     [self endScroll];
 
-    // If the entire view is now visible the window is no longer scrollable.
-    if (NSHeight([mainView_ visibleRect]) == NSHeight([mainView_ bounds])) {
+    // If we can't scroll either up or down we are completely done.
+    // For example, perhaps we've scrolled a little and grown the
+    // window on-screen until there is now room for everything.
+    if (![self canScrollUp] && ![self canScrollDown]) {
       scrollable_ = NO;
       [self removeScrollTracking];
     }
   }
+
+  [self showOrHideScrollArrows];
 }
 
 // Perform a scroll of the window on the screen.

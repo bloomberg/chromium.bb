@@ -81,6 +81,10 @@
 
 @end
 
+namespace {
+const int kLotsOfNodesCount = 150;
+};
+
 class BookmarkBarFolderControllerTest : public CocoaTest {
  public:
   BrowserTestHelper helper_;
@@ -130,12 +134,14 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
   }
 
   // Add LOTS of nodes to our model if needed (e.g. scrolling).
-  void AddLotsOfNodes() {
+  // Returns the number of nodes added.
+  int AddLotsOfNodes() {
     BookmarkModel* model = helper_.profile()->GetBookmarkModel();
-    for (int i = 0; i < 150; i++) {
+    for (int i = 0; i < kLotsOfNodesCount; i++) {
       model->AddURL(folderA_, folderA_->GetChildCount(), L"repeated title",
                     GURL("http://www.google.com/repeated/url"));
     }
+    return kLotsOfNodesCount;
   }
 
 
@@ -151,7 +157,6 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
     [c window];  // Force nib load.
     return c;
   }
-
 };
 
 TEST_F(BookmarkBarFolderControllerTest, InitCreateAndDelete) {
@@ -328,7 +333,7 @@ TEST_F(BookmarkBarFolderControllerTest, ChildFolderWidth) {
 TEST_F(BookmarkBarFolderControllerTest, SimpleScroll) {
   scoped_nsobject<BookmarkBarFolderController> bbfc;
 
-  AddLotsOfNodes();
+  int nodecount = AddLotsOfNodes();
   bbfc.reset(SimpleBookmarkBarFolderController());
   EXPECT_TRUE(bbfc.get());
   [bbfc showWindow:bbfc.get()];
@@ -336,6 +341,10 @@ TEST_F(BookmarkBarFolderControllerTest, SimpleScroll) {
   // Make sure the window fits on the screen.
   EXPECT_LT(NSHeight([[bbfc window] frame]),
             NSHeight([[NSScreen mainScreen] frame]));
+
+  // Verify the logic used by the scroll arrow code.
+  EXPECT_TRUE([bbfc canScrollUp]);
+  EXPECT_FALSE([bbfc canScrollDown]);
 
   // Scroll it up.  Make sure the window has gotten bigger each time.
   // Also, for each scroll, make sure our hit test finds a new button
@@ -345,24 +354,35 @@ TEST_F(BookmarkBarFolderControllerTest, SimpleScroll) {
     CGFloat height = NSHeight([[bbfc window] frame]);
     [bbfc performOneScroll:60];
     EXPECT_GT(NSHeight([[bbfc window] frame]), height);
-    NSView* hit = [[[bbfc window] contentView] hitTest:NSMakePoint(10, 10)];
+    NSView* hit = [[[bbfc window] contentView] hitTest:NSMakePoint(22, 22)];
     EXPECT_NE(hit, savedHit);
     savedHit = hit;
   }
 
   // Keep scrolling up; make sure we never get bigger than the screen.
   // Also confirm we never scroll the window off the screen.
+  bool bothAtOnce = false;
   NSRect screenFrame = [[NSScreen mainScreen] frame];
-  for (int i=0; i<100; i++) {
+  for (int i = 0; i < nodecount; i++) {
     [bbfc performOneScroll:60];
     EXPECT_TRUE(NSContainsRect(screenFrame,
                                [[bbfc window] frame]));
+    // Make sure, sometime during our scroll, we have the ability to
+    // scroll in either direction.
+    if ([bbfc canScrollUp] &&
+        [bbfc canScrollDown])
+      bothAtOnce = true;
   }
+  EXPECT_TRUE(bothAtOnce);
+
+  // Once we've scrolled to the end, our only option should be to scroll back.
+  EXPECT_FALSE([bbfc canScrollUp]);
+  EXPECT_TRUE([bbfc canScrollDown]);
 
   // Now scroll down and make sure the window size does not change.
   // Also confirm we never scroll the window off the screen the other
   // way.
-  for (int i=0; i<200; i++) {
+  for (int i=0; i<nodecount+50; i++) {
     CGFloat height = NSHeight([[bbfc window] frame]);
     [bbfc performOneScroll:-60];
     EXPECT_EQ(height, NSHeight([[bbfc window] frame]));

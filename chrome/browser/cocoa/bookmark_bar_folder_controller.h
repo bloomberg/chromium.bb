@@ -64,6 +64,9 @@
   // always visible.
   BOOL scrollable_;
 
+  BOOL scrollUpArrowShown_;
+  BOOL scrollDownArrowShown_;
+
   // The main view of this window (where the buttons go).
   IBOutlet BookmarkBarFolderView* mainView_;
 
@@ -100,6 +103,10 @@
 
   // Amount to scroll by on each timer fire.  Can be + or -.
   CGFloat verticalScrollDelta_;
+
+  // We need to know the size of the vertical scrolling arrows so we
+  // can obscure/unobscure them.
+  CGFloat verticalScrollArrowHeight_;
 }
 
 // Designated initializer.
@@ -150,5 +157,10 @@
 - (id)folderTarget;
 - (void)configureWindowLevel;
 - (void)performOneScroll:(CGFloat)delta;
+
+// Return YES if we can scroll up or down.
+- (BOOL)canScrollUp;
+- (BOOL)canScrollDown;
+
 @end
 
