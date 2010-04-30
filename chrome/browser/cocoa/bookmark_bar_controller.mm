@@ -504,13 +504,16 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   switch ([event type]) {
     case NSLeftMouseDown:
     case NSRightMouseDown:
-      // If a click in my window and NOT in the bookmark bar,
-      // then is a click outside. Clicks directly on the bookmarks bar are
-      // counted as "outside" as well, because they should close bookmark folder
-      // menus as well.
+      // If the click is in my window but NOT in the bookmark bar, consider
+      // it a click 'outside'. Clicks directly on an active button (i.e. one
+      // that is a folder and for which its folder menu is showing) are 'in'.
+      // All other clicks on the bookmarks bar are counted as 'outside'
+      // because they should close any open bookmark folder menu.
       if (eventWindow == myWindow) {
         NSView* hitView =
             [[eventWindow contentView] hitTest:[event locationInWindow]];
+        if (hitView == [folderController_ parentButton])
+          return NO;
         if (![hitView isDescendantOf:[self view]] || hitView == buttonView_)
           return YES;
       }
@@ -1301,22 +1304,20 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 }
 
 // Paste the copied node immediately after the node for which the context
-// menu has been presented.
+// menu has been presented if the node is a non-folder bookmark, otherwise
+// past at the end of the folder node.
 - (IBAction)pasteBookmark:(id)sender {
   const BookmarkNode* node = [self nodeFromMenuItem:sender];
   if (node) {
-    const BookmarkNode* parent = node->GetParent();
-    // Pasting into the bar but not onto any element in the bar causes the
-    // pasted node to be placed at the right end of the bar.
     int index = -1;
-    if (node == bookmarkModel_->GetBookmarkBarNode()) {
-      parent = node;
-    } else {
+    if (node != bookmarkModel_->GetBookmarkBarNode() && !node->is_folder()) {
+      const BookmarkNode* parent = node->GetParent();
       index = parent->IndexOfChild(node) + 1;
       if (index > parent->GetChildCount())
         index = -1;
+      node = parent;
     }
-    bookmark_utils::PasteFromClipboard(bookmarkModel_, parent, index);
+    bookmark_utils::PasteFromClipboard(bookmarkModel_, node, index);
   }
 }
 
