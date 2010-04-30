@@ -3242,10 +3242,11 @@
         {
           'destination': '<(PRODUCT_DIR)/resources/shared/js',
           'files': [
-            'browser/resources/shared/js/cr_test.html',
+            'browser/resources/shared/js/class_list.js',
             'browser/resources/shared/js/cr.js',
-            'browser/resources/shared/js/i18ntemplate.js',
-            'browser/resources/shared/js/localstrings.js',
+            'browser/resources/shared/js/i18n_template.js',
+            'browser/resources/shared/js/local_strings.js',
+            'browser/resources/shared/js/parse_html_subset.js',
             'browser/resources/shared/js/util.js',
           ]
         },
@@ -3253,11 +3254,8 @@
           'destination': '<(PRODUCT_DIR)/resources/shared/js/cr',
           'files': [
             'browser/resources/shared/js/cr/event.js',
-            'browser/resources/shared/js/cr/eventtarget_test.html',
-            'browser/resources/shared/js/cr/eventtarget.js',
-            'browser/resources/shared/js/cr/linkcontroller_test.html',
-            'browser/resources/shared/js/cr/linkcontroller.js',
-            'browser/resources/shared/js/cr/promise_test.html',
+            'browser/resources/shared/js/cr/event_target.js',
+            'browser/resources/shared/js/cr/link_controller.js',
             'browser/resources/shared/js/cr/promise.js',
             'browser/resources/shared/js/cr/ui.js',
           ]
@@ -3266,13 +3264,13 @@
           'destination': '<(PRODUCT_DIR)/resources/shared/js/cr/ui',
           'files': [
             'browser/resources/shared/js/cr/ui/command.js',
-            'browser/resources/shared/js/cr/ui/contextmenuhandler.js',
+            'browser/resources/shared/js/cr/ui/context_menu_handler.js',
             'browser/resources/shared/js/cr/ui/list.js',
-            'browser/resources/shared/js/cr/ui/listitem.js',
-            'browser/resources/shared/js/cr/ui/listselectionmodel.js',
+            'browser/resources/shared/js/cr/ui/list_item.js',
+            'browser/resources/shared/js/cr/ui/list_selection_model.js',
             'browser/resources/shared/js/cr/ui/menu.js',
-            'browser/resources/shared/js/cr/ui/menubutton.js',
-            'browser/resources/shared/js/cr/ui/menuitem.js',
+            'browser/resources/shared/js/cr/ui/menu_button.js',
+            'browser/resources/shared/js/cr/ui/menu_item.js',
             'browser/resources/shared/js/cr/ui/splitter.js',
             'browser/resources/shared/js/cr/ui/tree.js',
           ]
@@ -3310,9 +3308,9 @@
         {
           'destination': '<(PRODUCT_DIR)/resources/bookmark_manager/js/bmm',
           'files': [
-            'browser/resources/bookmark_manager/js/bmm/bookmarklist.js',
-            'browser/resources/bookmark_manager/js/bmm/bookmarktree.js',
-            'browser/resources/bookmark_manager/js/bmm/treeiterator.js',
+            'browser/resources/bookmark_manager/js/bmm/bookmark_list.js',
+            'browser/resources/bookmark_manager/js/bmm/bookmark_tree.js',
+            'browser/resources/bookmark_manager/js/bmm/tree_iterator.js',
           ]
         },
         {
