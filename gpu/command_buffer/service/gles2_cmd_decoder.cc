@@ -3662,12 +3662,6 @@ error::Error GLES2DecoderImpl::HandleShaderBinary(
 
 error::Error GLES2DecoderImpl::HandleSwapBuffers(
     uint32 immediate_data_size, const gles2::SwapBuffers& c) {
-  // Check a client created frame buffer is not bound. TODO(apatrick):
-  // this error is overkill. It will require that the client recreate the
-  // context to continue.
-  if (bound_framebuffer_)
-    return error::kLostContext;
-
   // If offscreen then don't actually SwapBuffers to the display. Just copy
   // the rendered frame to another frame buffer.
   if (offscreen_target_frame_buffer_.get()) {
