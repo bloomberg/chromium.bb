@@ -2793,15 +2793,53 @@
    obj:*
    fun:_ZN2v88internal6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPPPS4_Pb
 }
-
 {
-   bug_23416
+   bug_42941
+   Memcheck:Addr4
+   fun:_ZN22TestShellDevToolsAgent11GetWebAgentEv
+   fun:_ZN22TestShellDevToolsAgent22evaluateInWebInspectorElRKSs
+   fun:_ZN20LayoutTestController22evaluateInWebInspectorERKSt6vectorI10CppVariantSaIS1_EEPS1_
+   fun:_Z16DispatchToMethodI20LayoutTestControllerMS0_FvRKSt6vectorI10CppVariantSaIS2_EEPS2_ES6_S7_EvPT_T0_RK6Tuple2IT1_T2_E
+   fun:_ZN12CallbackImplI20LayoutTestControllerMS0_FvRKSt6vectorI10CppVariantSaIS2_EEPS2_E6Tuple2IS6_S7_EE13RunWithParamsERKSB_
+   fun:_ZN14CallbackRunnerI6Tuple2IRKSt6vectorI10CppVariantSaIS2_EEPS2_EE3RunIS4_S7_EEvRKT_RKT0_
+   fun:_ZN13CppBoundClass6InvokeEPvPK10_NPVariantjPS1_
+   fun:_ZN11CppNPObject6invokeEP8NPObjectPvPK10_NPVariantjPS3_
+   fun:_Z18npObjectInvokeImplRKN2v89ArgumentsE18InvokeFunctionType
+   fun:_Z21npObjectMethodHandlerRKN2v89ArgumentsE
+   fun:_ZN2v88internal19HandleApiCallHelperILb0EEEPNS0_6ObjectENS0_47_GLOBAL__N_v8_src_builtins.cc_00000000_2CCEFB9216BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEE
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:_ZN2v88internal6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPPPS4_Pb
+   fun:_ZN7WebCore14ChromiumBridge13memoryUsageMBEv
+}
+{
+   bug_42942
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN11webkit_glue16WebURLLoaderImplC1Ev
-   fun:_ZN11webkit_glue16WebKitClientImpl15createURLLoaderEv
-   fun:_ZN11webkit_glue15ResourceFetcher5StartEPN6WebKit8WebFrameE
-   fun:_ZN11webkit_glue15ResourceFetcherC2ERK4GURLPN6WebKit8WebFrameEP14CallbackRunnerI6Tuple2IRKNS4_14WebURLResponseERKSsEE
-   fun:_ZN11webkit_glue26ResourceFetcherWithTimeoutC1ERK4GURLPN6WebKit8WebFrameEiP14CallbackRunnerI6Tuple2IRKNS4_14WebURLResponseERKSsEE
-   fun:_ZN11webkit_glue27AltErrorPageResourceFetcherC1ERK4GURLPN6WebKit8WebFrameERKNS4_11WebURLErrorEP14CallbackRunnerI6Tuple3IS6_S9_RKSsEE
+   fun:_ZN3sql10Connection18GetUniqueStatementEPKc
+   fun:_ZN3sql10Connection18GetCachedStatementERKNS_11StatementIDEPKc
+   fun:_ZN3sql9MetaTable19PrepareGetStatementEPNS_9StatementEPKc
+   fun:_ZN3sql9MetaTable8GetValueEPKcPi
+   fun:_ZN3sql9MetaTable26GetCompatibleVersionNumberEv
+   fun:_ZN27SQLitePersistentCookieStore21EnsureDatabaseVersionEPN3sql10ConnectionE
+   fun:_ZN27SQLitePersistentCookieStore4LoadEPSt6vectorISt4pairISsPN3net13CookieMonster15CanonicalCookieEESaIS6_EE
+   fun:_ZN3net13CookieMonster9InitStoreEv
+   fun:_ZN3net13CookieMonster15InitIfNecessaryEv
+   fun:_ZN3net13CookieMonster27FindCookiesForHostAndDomainERK4GURLRKNS_13CookieOptionsEPSt6vectorIPNS0_15CanonicalCookieESaIS9_EE
+   fun:_ZN3net13CookieMonster21GetCookiesWithOptionsERK4GURLRKNS_13CookieOptionsE
+   fun:_ZN17URLRequestHttpJob24OnCanGetCookiesCompletedEi
+   fun:_ZN17URLRequestHttpJob23AddCookieHeaderAndStartEv
+   fun:_ZN17URLRequestHttpJob5StartEv
+   fun:_ZN10URLRequest8StartJobEP13URLRequestJob
+   fun:_ZN10URLRequest5StartEv
+   fun:_ZN10URLFetcher4Core15StartURLRequestEv
+   fun:_Z16DispatchToMethodIN10URLFetcher4CoreEMS1_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN14RunnableMethodIN10URLFetcher4CoreEMS1_FvvE6Tuple0E3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
 }
