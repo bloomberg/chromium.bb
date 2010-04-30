@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_APP_MODE_CONSTANTS_MAC_H_
-#define CHROME_COMMON_APP_MODE_CONSTANTS_MAC_H_
+#ifndef CHROME_COMMON_APP_MODE_COMMON_MAC_H_
+#define CHROME_COMMON_APP_MODE_COMMON_MAC_H_
 
 #include <CoreFoundation/CoreFoundation.h>
 
-// This file contains constants which must be known both by the browser
-// application and by the app mode loader (a.k.a. shim).
+// This file contains constants, interfaces, etc. which are common to the
+// browser application and the app mode loader (a.k.a. shim).
 
 namespace app_mode {
 
@@ -22,4 +22,4 @@ extern const CFStringRef kLastRunAppBundlePathPrefsKey;
 
 }  // namespace app_mode
 
-#endif  // CHROME_COMMON_APP_MODE_CONSTANTS_MAC_H_
+#endif  // CHROME_COMMON_APP_MODE_COMMON_MAC_H_
