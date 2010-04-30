@@ -29,3 +29,14 @@ BUGAGL : fast/canvas/canvas-empty-image-pattern.html = IMAGE
 
 // WebKit roll 58400:58407
 WONTFIX BUG21840 WIN DEBUG : http/tests/loading/basic-auth-resend-wrong-credentials.html = FAIL CRASH
+
+// WebKit roll 58407:58541
+// webkit r58547
+BUGWK38349 SKIP : fast/css/font-face-woff.html = IMAGE+TEXT
+BUGWK38360 WIN LINUX SKIP : fast/images/svg-background-partial-redraw.html = TEXT
+BUGWK38360 WIN LINUX SKIP : svg/carto.net/tabgroup.svg = TEXT
+BUGWK38360 SKIP : traversal/node-iterator-prototype.html = TEXT
+// webkit r58553
+BUG10468 WIN LINUX : fast/replaced/border-radius-clip.html = IMAGE+TEXT
+BUG10468 MAC SKIP : fast/replaced/border-radius-clip.html = MISSING
+BUGYAAR MAC : svg/custom/dominant-baseline-hanging.svg = MISSING
