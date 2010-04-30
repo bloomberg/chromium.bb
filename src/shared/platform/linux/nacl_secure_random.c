@@ -24,22 +24,37 @@
 
 static struct NaClSecureRngVtbl const kNaClSecureRngVtbl;
 
-#if USE_CRYPTO
-
 /* use -1 to ensure a fast failure if module initializer is not called */
-static int  seed_d = -1;
+static int  urandom_d = -1;
+
+#define SANDBOXED_INITIALIZATION (!defined(NACL_STANDALONE))
+
+#if SANDBOXED_INITIALIZATION
+
+# include "base/rand_util_c.h"
 
 void NaClSecureRngModuleInit(void) {
-  seed_d = open(NACL_SECURE_RANDOM_SYSTEM_RANDOM_SOURCE, O_RDONLY, 0);
-  if (-1 == seed_d) {
+  urandom_d = dup(GetUrandomFD());
+}
+
+#else
+
+void NaClSecureRngModuleInit(void) {
+  urandom_d = open(NACL_SECURE_RANDOM_SYSTEM_RANDOM_SOURCE, O_RDONLY, 0);
+  if (-1 == urandom_d) {
     NaClLog(LOG_FATAL, "Cannot open system random source %s\n",
             NACL_SECURE_RANDOM_SYSTEM_RANDOM_SOURCE);
   }
 }
 
+#endif  /* !SANDBOXED_INITIALIZATION */
+
 void NaClSecureRngModuleFini(void) {
-  (void) close(seed_d);
+  (void) close(urandom_d);
+  urandom_d = -1;
 }
+
+#if USE_CRYPTO
 
 static int NaClSecureRngCtorCommon(struct NaClSecureRng *self,
                                    unsigned char        *key) {
@@ -63,7 +78,7 @@ int NaClSecureRngCtor(struct NaClSecureRng *self) {
    * (and whether it matters for our usage).
    */
 
-  if (sizeof key != read(seed_d, key, sizeof key)) {
+  if (sizeof key != read(urandom_d, key, sizeof key)) {
     return 0;
   }
   return NaClSecureRngCtorCommon(self, key);
@@ -118,39 +133,6 @@ static uint8_t NaClSecureRngGenByte(struct NaClSecureRngIf *vself) {
 
 #else
 
-# include <sys/types.h>
-# include <sys/stat.h>
-# include <fcntl.h>
-
-static int             rng_d = -1;  /* open descriptor for /dev/urandom */
-
-# if defined(CHROMIUM_BUILD) || defined(GOOGLE_CHROME_BUILD)
-
-# include "base/rand_util_c.h"
-
-void NaClSecureRngModuleInit(void) {
-  rng_d = GetUrandomFD();
-}
-
-void NaClSecureRngModuleFini(void) {
-}
-
-# else
-
-void NaClSecureRngModuleInit(void) {
-  rng_d = open(NACL_SECURE_RANDOM_SYSTEM_RANDOM_SOURCE, O_RDONLY, 0);
-  if (-1 == rng_d) {
-    NaClLog(LOG_FATAL, "Cannot open system random source %s\n",
-            NACL_SECURE_RANDOM_SYSTEM_RANDOM_SOURCE);
-  }
-}
-
-void NaClSecureRngModuleFini(void) {
-  (void) close(rng_d);
-}
-
-# endif /* CHROMIUM_BUILD || GOOGLE_CHROME_BUILD */
-
 int NaClSecureRngCtor(struct NaClSecureRng *self) {
   self->base.vtbl = &kNaClSecureRngVtbl;
   self->nvalid = 0;
@@ -160,6 +142,9 @@ int NaClSecureRngCtor(struct NaClSecureRng *self) {
 int NaClSecureRngTestingCtor(struct NaClSecureRng *self,
                              uint8_t              *seed_material,
                              size_t               seed_bytes) {
+  UNREFERENCED_PARAMETER(self);
+  UNREFERENCED_PARAMETER(seed_material);
+  UNREFERENCED_PARAMETER(seed_bytes);
   return 0;
 }
 
@@ -169,7 +154,7 @@ static void NaClSecureRngDtor(struct NaClSecureRngIf *vself) {
 }
 
 static void NaClSecureRngFilbuf(struct NaClSecureRng *self) {
-  self->nvalid = read(rng_d, self->buf, sizeof self->buf);
+  self->nvalid = read(urandom_d, self->buf, sizeof self->buf);
   if (self->nvalid <= 0) {
     NaClLog(LOG_FATAL, "NaClSecureRngFilbuf failed, read returned %d\n",
             self->nvalid);
