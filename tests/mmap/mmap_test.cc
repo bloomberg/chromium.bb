@@ -92,7 +92,7 @@ bool test2() {
    */
   printf("munmap returned %d\n", rv);
 
-  if (0 != rv) {
+  if (-1 == rv && EINVAL == errno) {
     printf("munmap good (failed as expected)\n");
     return true;
   }
@@ -110,11 +110,37 @@ bool test3() {
   res = mmap(static_cast<void*>(0), (size_t) (1 << 16),
              PROT_READ, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, 0, 0);
   printf("res = %p\n", res);
-  if (MAP_FAILED == res) {
+  if (MAP_FAILED == res && EINVAL == errno) {
     printf("mmap okay\n");
     return true;
   } else {
-    printf("mmap should not have succeeded\n");
+    printf("mmap should not have succeeded, or failed with wrong error\n");
+    return false;
+  }
+}
+
+/*
+ *   Verify that mmap/MAP_FIXED with a non-page-aligned address will fail.
+ */
+
+bool test4() {
+  printf("test4\n");
+  /* First reserve some address space in which to perform the experiment. */
+  char *alloc = (char *) mmap(NULL, 1 << 16, PROT_NONE,
+			      MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+  if (MAP_FAILED == alloc) {
+    printf("mmap failed\n");
+    return false;
+  }
+
+  void *res = mmap((void *) (alloc + 0x100), 1 << 16, PROT_READ,
+		   MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
+  if (MAP_FAILED == res && EINVAL == errno) {
+    printf("mmap gave an error as expected\n");
+    return true;
+  }
+  else {
+    printf("mmap should not have succeeded, or failed with wrong error\n");
     return false;
   }
 }
@@ -133,6 +159,7 @@ bool testSuite() {
   ret &= test1();
   ret &= test2();
   ret &= test3();
+  ret &= test4();
   return ret;
 }
 

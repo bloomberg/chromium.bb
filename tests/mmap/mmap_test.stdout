@@ -7,4 +7,6 @@ munmap good (failed as expected)
 test3
 res = 0xffffffff
 mmap okay
+test4
+mmap gave an error as expected
 All tests PASSED
