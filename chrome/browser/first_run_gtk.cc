@@ -20,6 +20,8 @@
 #include "chrome/installer/util/util_constants.h"
 #include "googleurl/src/gurl.h"
 
+CommandLine* Upgrade::new_command_line_ = NULL;
+
 bool OpenFirstRunDialog(Profile* profile, bool homepage_defined,
                         int import_items,
                         int dont_import_items,
@@ -139,3 +141,47 @@ bool FirstRun::ImportBookmarks(const std::wstring& import_bookmarks_path) {
   // for the process to return.
   return base::LaunchApp(import_cmd, true, false, NULL);
 }
+
+#if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
+double Upgrade::saved_last_modified_time_of_exe_ = 0;
+
+// static
+bool Upgrade::IsUpdatePendingRestart() {
+  return saved_last_modified_time_of_exe_ !=
+      Upgrade::GetLastModifiedTimeOfExe();
+}
+
+// static
+void Upgrade::SaveLastModifiedTimeOfExe() {
+  saved_last_modified_time_of_exe_ = Upgrade::GetLastModifiedTimeOfExe();
+}
+
+// static
+void Upgrade::RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
+  if (new_command_line_) {
+    if (!base::LaunchApp(*new_command_line_, false, false, NULL)) {
+      DLOG(ERROR) << "Launching a new instance of the browser failed.";
+    } else {
+      DLOG(WARNING) << "Launched a new instance of the browser.";
+    }
+    delete new_command_line_;
+    new_command_line_ = NULL;
+  }
+}
+
+// static
+double Upgrade::GetLastModifiedTimeOfExe() {
+  FilePath exe_file_path;
+  if (!PathService::Get(base::FILE_EXE, &exe_file_path)) {
+    LOG(WARNING) << "Failed to get FilePath object for FILE_EXE.";
+    return saved_last_modified_time_of_exe_;
+  }
+  file_util::FileInfo exe_file_info;
+  if (!file_util::GetFileInfo(exe_file_path, &exe_file_info)) {
+    LOG(WARNING) << "Failed to get FileInfo object for FILE_EXE - "
+                 << exe_file_path.value();
+    return saved_last_modified_time_of_exe_;
+  }
+  return exe_file_info.last_modified.ToDoubleT();
+}
+#endif  // (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
