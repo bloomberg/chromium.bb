@@ -3366,21 +3366,26 @@ bool Browser::HandleCrossAppNavigation(TabContents* source,
   if (!service)
     return false;
 
+  // Get the source extension, if any.
+  Extension* source_extension = source->app_extension();
+  if (!source_extension)
+    source_extension = extension_app_;
+
   // Get the destination URL's extension, if any.
-  Extension* extension = service->GetExtensionByURL(url);
-  if (!extension)
-    extension = service->GetExtensionByWebExtent(url);
+  Extension* destination_extension = service->GetExtensionByURL(url);
+  if (!destination_extension)
+    destination_extension = service->GetExtensionByWebExtent(url);
 
-  if (extension) {
-    // If we're navigating to the same extension, do nothing.
-    if (extension == extension_app_)
-      return false;
+  // If they are the same, nothing to do.
+  if (source_extension == destination_extension)
+    return false;
 
-    // If there's already a window for the destination extension, open the URL
-    // there.
+  if (destination_extension) {
+    // Search for an existing app window for this app.
     for (BrowserList::const_iterator iter = BrowserList::begin();
          iter != BrowserList::end(); ++iter) {
-      if (extension == (*iter)->extension_app()) {
+      // Found an app window, open the URL there.
+      if ((*iter)->extension_app() == destination_extension) {
         (*iter)->OpenURL(url, referrer, NEW_FOREGROUND_TAB, transition);
         return true;
       }
@@ -3388,16 +3393,16 @@ bool Browser::HandleCrossAppNavigation(TabContents* source,
 
     // If the extension wants to be opened in a window, but there is no
     // existing window, create one, then open the URL there.
-    if (extension->launch_container() == Extension::LAUNCH_WINDOW) {
-      Browser::OpenApplicationWindow(profile_, extension,
+    if (destination_extension->launch_container() ==
+        Extension::LAUNCH_WINDOW) {
+      Browser::OpenApplicationWindow(profile_, destination_extension,
                                      Extension::LAUNCH_WINDOW, url);
       return true;
     }
   }
 
-  // If the current browser is for an extension, then the destination URL must
-  // not be for that extension (otherwise, we would have caught it above). So
-  // find a normal browser and open the URL there.
+  // Otherwise, if this is an app window, we don't want to open the URL here,
+  // so find a normal browser to open it in.
   if (extension_app_) {
     Browser* browser = GetOrCreateTabbedBrowser(profile_);
     browser->OpenURL(url, referrer, NEW_FOREGROUND_TAB, transition);
