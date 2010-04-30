@@ -23,7 +23,7 @@
 //     static Foo* New() {
 //       return [[Foo alloc] initWithName:@"selecty"];
 //     }
-//   }
+//   };
 //   ...
 //   Foo* widgetSingleton = SingletonObjC<Foo, FooSingletonTraits>::get();
 

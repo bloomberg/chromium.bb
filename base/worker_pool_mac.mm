@@ -11,6 +11,15 @@
 #import "base/singleton_objc.h"
 #include "base/task.h"
 
+// When C++ exceptions are disabled, the C++ library defines |try| and
+// |catch| so as to allow exception-expecting C++ code to build properly when
+// language support for exceptions is not present.  These macros interfere
+// with the use of |@try| and |@catch| in Objective-C files such as this one.
+// Undefine these macros here, after everything has been #included, since
+// there will be no C++ uses and only Objective-C uses from this point on.
+#undef try
+#undef catch
+
 namespace {
 
 Lock lock_;
@@ -75,7 +84,15 @@ size_t outstanding_ = 0;           // Operations posted but not completed.
 
   base::ScopedNSAutoreleasePool autoreleasePool;
 
-  task_->Run();
+  @try {
+    task_->Run();
+  } @catch(NSException* exception) {
+    LOG(ERROR) << "-[TaskOperation main] caught an NSException: "
+               << [[exception description] UTF8String];
+  } @catch(id exception) {
+    LOG(ERROR) << "-[TaskOperation main] caught an unknown exception";
+  }
+
   task_.reset(NULL);
 
   {
@@ -110,6 +127,15 @@ bool WorkerPool::PostTask(const tracked_objects::Location& from_here,
 
   NSOperationQueue* operation_queue = [WorkerPoolObjC sharedOperationQueue];
   [operation_queue addOperation:[TaskOperation taskOperationWithTask:task]];
+
+  if ([operation_queue isSuspended]) {
+    LOG(WARNING) << "WorkerPool::PostTask freeing stuck NSOperationQueue";
+
+    // Nothing should ever be suspending this queue, but in case it winds up
+    // happening, free things up.  This is a purely speculative shot in the
+    // dark for http://crbug.com/20471.
+    [operation_queue setSuspended:NO];
+  }
 
   // Periodically calculate the set of operations which have not made
   // progress and report how many there are.  This should provide a
