@@ -9,12 +9,9 @@
 #include "base/time.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/password_manager/password_store_change.h"
-#include "chrome/browser/password_manager/password_store_linux.h"
+#include "chrome/browser/password_manager/password_store_default.h"
 #include "chrome/browser/password_manager/password_form_data.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -28,9 +25,6 @@ using webkit_glue::PasswordForm;
 
 namespace {
 
-typedef std::vector<PasswordForm*> VectorOfForms;
-typedef std::set<PasswordForm*> SetOfForms;
-
 class MockPasswordStoreConsumer : public PasswordStoreConsumer {
  public:
   MOCK_METHOD2(OnPasswordStoreRequestDone,
@@ -43,9 +37,24 @@ class MockWebDataServiceConsumer : public WebDataServiceConsumer {
                                                  const WDTypedResult*));
 };
 
-class PasswordStoreLinuxTest : public testing::Test {
+class SignalingTask : public Task {
+ public:
+  explicit SignalingTask(WaitableEvent* event) : event_(event) {
+  }
+  virtual void Run() {
+    event_->Signal();
+  }
+ private:
+  WaitableEvent* event_;
+};
+
+}  // anonymous namespace
+
+typedef std::vector<PasswordForm*> VectorOfForms;
+
+class PasswordStoreDefaultTest : public testing::Test {
  protected:
-  PasswordStoreLinuxTest()
+  PasswordStoreDefaultTest()
       : ui_thread_(ChromeThread::UI, &message_loop_),
         db_thread_(ChromeThread::DB) {
   }
@@ -81,19 +90,6 @@ class PasswordStoreLinuxTest : public testing::Test {
   ScopedTempDir temp_dir_;
 };
 
-class SignalingTask : public Task {
- public:
-  explicit SignalingTask(WaitableEvent* event) : event_(event) {
-  }
-  virtual void Run() {
-    event_->Signal();
-  }
- private:
-  WaitableEvent* event_;
-};
-
-}  // anonymous namespace
-
 ACTION(STLDeleteElements0) {
   STLDeleteContainerPointers(arg0.begin(), arg0.end());
 }
@@ -103,51 +99,12 @@ ACTION(QuitUIMessageLoop) {
   MessageLoop::current()->Quit();
 }
 
-// This matcher is used to check that the |arg| contains exactly the same
-// PasswordForms as |forms|, regardless of order.
-// TODO(albertb): Convince GMock to pretty-print PasswordForms instead of just
-// printing pointers when expectations fail.
-MATCHER_P(ContainsAllPasswordForms, forms, "") {
-  if (forms.size() != arg.size())
-    return false;
-  SetOfForms expectations(forms.begin(), forms.end());
-  for (unsigned int i = 0; i < arg.size(); ++i) {
-    PasswordForm* actual = arg[i];
-    bool found_match = false;
-    for (SetOfForms::iterator it = expectations.begin();
-         it != expectations.end(); ++it) {
-      PasswordForm* expected = *it;
-      if (expected->scheme == actual->scheme &&
-          expected->signon_realm == actual->signon_realm &&
-          expected->origin == actual->origin &&
-          expected->action == actual->action &&
-          expected->submit_element == actual->submit_element &&
-          expected->username_element == actual->username_element &&
-          expected->password_element == actual->password_element &&
-          expected->username_value == actual->username_value &&
-          expected->password_value == actual->password_value &&
-          expected->blacklisted_by_user == actual->blacklisted_by_user &&
-          expected->preferred == actual->preferred &&
-          expected->ssl_valid == actual->ssl_valid &&
-          expected->date_created == actual->date_created) {
-        found_match = true;
-        expectations.erase(it);
-        break;
-      }
-    }
-    if (!found_match) {
-      return false;
-    }
-  }
-  return true;  // Both forms and arg are empty.
-}
-
 MATCHER(EmptyWDResult,"") {
   return static_cast<const WDResult<std::vector<PasswordForm*> >*>(
       arg)->GetValue().empty();
 }
 
-TEST_F(PasswordStoreLinuxTest, Migration) {
+TEST_F(PasswordStoreDefaultTest, Migration) {
   PasswordFormData autofillable_data[] = {
     { PasswordForm::SCHEME_HTML,
       "http://foo.example.com",
@@ -232,8 +189,8 @@ TEST_F(PasswordStoreLinuxTest, Migration) {
   done.Wait();
 
   // Initializing the PasswordStore should trigger a migration.
-  scoped_refptr<PasswordStoreLinux> store(
-      new PasswordStoreLinux(login_db_.release(), profile_.get(), wds_.get()));
+  scoped_refptr<PasswordStoreDefault> store(
+      new PasswordStoreDefault(login_db_.release(), profile_.get(), wds_.get()));
   store->Init();
 
   // Check that the migration preference has not been initialized;
@@ -309,7 +266,7 @@ TEST_F(PasswordStoreLinuxTest, Migration) {
   STLDeleteElements(&expected_blacklisted);
 }
 
-TEST_F(PasswordStoreLinuxTest, MigrationAlreadyDone) {
+TEST_F(PasswordStoreDefaultTest, MigrationAlreadyDone) {
   PasswordFormData wds_data[] = {
     { PasswordForm::SCHEME_HTML,
       "http://bar.example.com",
@@ -346,8 +303,9 @@ TEST_F(PasswordStoreLinuxTest, MigrationAlreadyDone) {
                                             true);
 
   // Initializing the PasswordStore shouldn't trigger a migration.
-  scoped_refptr<PasswordStoreLinux> store(
-      new PasswordStoreLinux(login_db_.release(), profile_.get(), wds_.get()));
+  scoped_refptr<PasswordStoreDefault> store(
+      new PasswordStoreDefault(login_db_.release(), profile_.get(),
+                               wds_.get()));
   store->Init();
 
   MockPasswordStoreConsumer consumer;

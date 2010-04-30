@@ -20,33 +20,43 @@
 class PasswordStoreWin : public PasswordStoreDefault {
  public:
   // FilePath specifies path to WebDatabase.
-  explicit PasswordStoreWin(WebDataService* web_data_service);
+  PasswordStoreWin(LoginDatabase* login_database,
+                   Profile* profile,
+                   WebDataService* web_data_service);
 
   // Overridden so that we can save the form for later use.
   virtual int GetLogins(const webkit_glue::PasswordForm& form,
                         PasswordStoreConsumer* consumer);
-  virtual void CancelLoginsQuery(int handle);
 
  private:
-  virtual ~PasswordStoreWin() {}
+  virtual ~PasswordStoreWin();
 
   // See PasswordStoreDefault.
   void OnWebDataServiceRequestDone(WebDataService::Handle h,
                                    const WDTypedResult* result);
 
-  // Removes the form for |handle| from pending_request_forms_ (if any).
-  void DeleteFormForRequest(int handle);
+  virtual void NotifyConsumer(
+      GetLoginsRequest* request,
+      const std::vector<webkit_glue::PasswordForm*> forms);
 
-  // Cleans up internal state related to |request|, and sends its results to
-  // the request's consumer.
-  void CompleteRequest(GetLoginsRequest* request,
-                       const std::vector<webkit_glue::PasswordForm*>& forms);
+  // Takes ownership of |request| and tracks it under |handle|.
+  void TrackRequest(WebDataService::Handle handle, GetLoginsRequest* request);
+
+  // Finds the GetLoginsRequest associated with the in-flight WebDataService
+  // request identified by |handle|, removes it from the tracking list, and
+  // returns it. Ownership of the GetLoginsRequest passes to the caller.
+  // Returns NULL if the request has been cancelled.
+  GetLoginsRequest* TakeRequestWithHandle(WebDataService::Handle handle);
 
   // Gets logins from IE7 if no others are found. Also copies them into
   // Chrome's WebDatabase so we don't need to look next time.
   webkit_glue::PasswordForm* GetIE7Result(
       const WDTypedResult* result,
       const webkit_glue::PasswordForm& form);
+
+  // Holds requests associated with in-flight GetLogin queries.
+  typedef std::map<int, GetLoginsRequest*> PendingRequestMap;
+  PendingRequestMap pending_requests_;
 
   // Holds forms associated with in-flight GetLogin queries.
   typedef std::map<int, webkit_glue::PasswordForm> PendingRequestFormMap;

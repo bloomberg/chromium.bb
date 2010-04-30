@@ -44,7 +44,6 @@
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/password_manager/password_store_default.h"
-#include "chrome/browser/password_manager/password_store_linux.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/profile_manager.h"
@@ -1196,9 +1195,6 @@ void ProfileImpl::CreatePasswordStore() {
   DCHECK(!created_password_store_ && password_store_.get() == NULL);
   created_password_store_ = true;
   scoped_refptr<PasswordStore> ps;
-#if defined(OS_WIN)
-  ps = new PasswordStoreWin(GetWebDataService(Profile::IMPLICIT_ACCESS));
-#elif defined(OS_MACOSX)
   FilePath login_db_file_path = GetPath();
   login_db_file_path = login_db_file_path.Append(chrome::kLoginDataFileName);
   LoginDatabase* login_db = new LoginDatabase();
@@ -1207,31 +1203,26 @@ void ProfileImpl::CreatePasswordStore() {
     delete login_db;
     return;
   }
+#if defined(OS_WIN)
+  ps = new PasswordStoreWin(login_db, this,
+                            GetWebDataService(Profile::IMPLICIT_ACCESS));
+#elif defined(OS_MACOSX)
   ps = new PasswordStoreMac(new MacKeychain(), login_db);
 #elif defined(OS_POSIX)
   // TODO(evanm): implement "native" password management.
   // This bug describes the issues.
   // http://code.google.com/p/chromium/issues/detail?id=12351
-  FilePath login_db_file_path = GetPath();
-  login_db_file_path = login_db_file_path.Append(chrome::kLoginDataFileName);
-  LoginDatabase* login_db = new LoginDatabase();
-  if (!login_db->Init(login_db_file_path)) {
-    LOG(ERROR) << "Could not initialize login database.";
-    delete login_db;
-    return;
-  }
-  ps = new PasswordStoreLinux(login_db, this,
-                              GetWebDataService(Profile::IMPLICIT_ACCESS));
+  ps = new PasswordStoreDefault(login_db, this,
+                                GetWebDataService(Profile::IMPLICIT_ACCESS));
 #else
   NOTIMPLEMENTED();
 #endif
+  if (!ps)
+    delete login_db;
+
   if (!ps || !ps->Init()) {
-    // Try falling back to the default password manager
-    NOTREACHED() << "Could not initialise native password manager - "
-                    "falling back to default";
-    ps = new PasswordStoreDefault(GetWebDataService(Profile::IMPLICIT_ACCESS));
-    if (!ps->Init())
-      return;
+    NOTREACHED() << "Could not initialise password manager";
+    return;
   }
   password_store_.swap(ps);
 }

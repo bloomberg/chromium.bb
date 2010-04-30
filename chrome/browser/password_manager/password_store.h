@@ -35,21 +35,18 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   // Reimplement this to add custom initialization. Always call this too.
   virtual bool Init();
 
-  // TODO(stuartmorgan): These are only virtual to support the shim version of
-  // password_store_default; once that is fixed, they can become non-virtual.
-
   // Adds the given PasswordForm to the secure password store asynchronously.
   virtual void AddLogin(const webkit_glue::PasswordForm& form);
 
   // Updates the matching PasswordForm in the secure password store (async).
-  virtual void UpdateLogin(const webkit_glue::PasswordForm& form);
+  void UpdateLogin(const webkit_glue::PasswordForm& form);
 
   // Removes the matching PasswordForm from the secure password store (async).
-  virtual void RemoveLogin(const webkit_glue::PasswordForm& form);
+  void RemoveLogin(const webkit_glue::PasswordForm& form);
 
   // Removes all logins created in the given date range.
-  virtual void RemoveLoginsCreatedBetween(const base::Time& delete_begin,
-                                          const base::Time& delete_end);
+  void RemoveLoginsCreatedBetween(const base::Time& delete_begin,
+                                  const base::Time& delete_end);
 
   // Searches for a matching PasswordForm and returns a handle so the async
   // request can be tracked. Implement the PasswordStoreConsumer interface to
@@ -61,15 +58,15 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   // are thus auto-fillable--and returns a handle so the async request can be
   // tracked. Implement the PasswordStoreConsumer interface to be notified
   // on completion.
-  virtual int GetAutofillableLogins(PasswordStoreConsumer* consumer);
+  int GetAutofillableLogins(PasswordStoreConsumer* consumer);
 
   // Gets the complete list of PasswordForms that are blacklist entries, and
   // returns a handle so the async request can be tracked. Implement the
   // PasswordStoreConsumer interface to be notified on completion.
-  virtual int GetBlacklistLogins(PasswordStoreConsumer* consumer);
+  int GetBlacklistLogins(PasswordStoreConsumer* consumer);
 
   // Cancels a previous Get*Logins query (async)
-  virtual void CancelLoginsQuery(int handle);
+  void CancelLoginsQuery(int handle);
 
  protected:
   friend class base::RefCountedThreadSafe<PasswordStore>;
@@ -117,8 +114,9 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request) = 0;
 
   // Notifies the consumer that a Get*Logins() request is complete.
-  void NotifyConsumer(GetLoginsRequest* request,
-                      const std::vector<webkit_glue::PasswordForm*> forms);
+  virtual void NotifyConsumer(
+      GetLoginsRequest* request,
+      const std::vector<webkit_glue::PasswordForm*> forms);
 
  private:
   // Called by NotifyConsumer, but runs in the consumer's thread.  Will not

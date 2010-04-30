@@ -859,8 +859,9 @@
         'browser/password_manager/password_form_manager_unittest.cc',
         'browser/password_manager/password_manager_unittest.cc',
         'browser/password_manager/password_form_data.cc',
-        'browser/password_manager/password_store_linux_unittest.cc',
+        'browser/password_manager/password_store_default_unittest.cc',
         'browser/password_manager/password_store_mac_unittest.cc',
+        'browser/password_manager/password_store_win_unittest.cc',
         'browser/pref_member_unittest.cc',
         'browser/pref_service_unittest.cc',
         'browser/printing/print_job_unittest.cc',
@@ -1101,6 +1102,7 @@
             # Blocked on bookmark manager.
             'browser/bookmarks/bookmark_context_menu_controller_unittest.cc',
             'browser/views/accessibility_event_router_views_unittest.cc',
+            'browser/password_manager/password_store_default_unittest.cc',
             'browser/views/bookmark_context_menu_test.cc',
             'browser/gtk/go_button_gtk_unittest.cc',
             'browser/gtk/tabs/tab_renderer_gtk_unittest.cc',
