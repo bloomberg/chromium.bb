@@ -389,24 +389,23 @@ BrowserWindowGtk::~BrowserWindowGtk() {
 }
 
 gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
-                                               GdkEventExpose* event,
-                                               BrowserWindowGtk* window) {
+                                               GdkEventExpose* event) {
   // Draw the default background.
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
   gdk_cairo_rectangle(cr, &event->area);
   cairo_clip(cr);
 
-  if (window->UsingCustomPopupFrame()) {
-    DrawPopupFrame(cr, widget, event, window);
+  if (UsingCustomPopupFrame()) {
+    DrawPopupFrame(cr, widget, event);
   } else {
-    DrawCustomFrame(cr, widget, event, window);
+    DrawCustomFrame(cr, widget, event);
   }
 
-  DrawContentShadow(cr, window);
+  DrawContentShadow(cr);
 
   cairo_destroy(cr);
 
-  if (window->UseCustomFrame() && !window->IsMaximized()) {
+  if (UseCustomFrame() && !IsMaximized()) {
     static NineBox custom_frame_border(
         IDR_WINDOW_TOP_LEFT_CORNER,
         IDR_WINDOW_TOP_CENTER,
@@ -424,20 +423,18 @@ gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
   return FALSE;  // Allow subwidgets to paint.
 }
 
-// static
-void BrowserWindowGtk::DrawContentShadow(cairo_t* cr,
-                                         BrowserWindowGtk* window) {
+void BrowserWindowGtk::DrawContentShadow(cairo_t* cr) {
   // Draw the shadow above the toolbar. Tabs on the tabstrip will draw over us.
   GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(
-      window->browser()->profile());
+      browser()->profile());
   int left_x, top_y;
-  gtk_widget_translate_coordinates(window->toolbar_->widget(),
-      GTK_WIDGET(window->window_), 0, 0, &left_x,
+  gtk_widget_translate_coordinates(toolbar_->widget(),
+      GTK_WIDGET(window_), 0, 0, &left_x,
       &top_y);
-  int width = window->window_vbox_->allocation.width;
+  int width = window_vbox_->allocation.width;
 
   CairoCachedSurface* top_center = theme_provider->GetSurfaceNamed(
-      IDR_CONTENT_TOP_CENTER, GTK_WIDGET(window->window_));
+      IDR_CONTENT_TOP_CENTER, GTK_WIDGET(window_));
   top_center->SetSource(cr, left_x, top_y - kContentShadowThickness);
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
   cairo_rectangle(cr, left_x, top_y - kContentShadowThickness, width,
@@ -445,7 +442,7 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr,
   cairo_fill(cr);
 
   // Only draw the rest of the shadow if the user has the custom frame enabled.
-  if (!window->UseCustomFrame())
+  if (!UseCustomFrame())
     return;
 
   // The top left corner has a width of 3 pixels. On Windows, the last column
@@ -454,13 +451,13 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr,
   // line).
   int right_x = left_x + width;
   CairoCachedSurface* top_left = theme_provider->GetSurfaceNamed(
-      IDR_CONTENT_TOP_LEFT_CORNER, GTK_WIDGET(window->window_));
+      IDR_CONTENT_TOP_LEFT_CORNER, GTK_WIDGET(window_));
   top_left->SetSource(
       cr, left_x - kContentShadowThickness, top_y - kContentShadowThickness);
   // The toolbar is shorter in location bar only mode so clip the image to the
   // height of the toolbar + the amount of shadow above the toolbar.
   int top_corner_height =
-      window->toolbar_->widget()->allocation.height + kContentShadowThickness;
+      toolbar_->widget()->allocation.height + kContentShadowThickness;
   cairo_rectangle(cr,
       left_x - kContentShadowThickness,
       top_y - kContentShadowThickness,
@@ -470,7 +467,7 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr,
 
   // Likewise, we crop off the left column of pixels for the top right corner.
   CairoCachedSurface* top_right = theme_provider->GetSurfaceNamed(
-      IDR_CONTENT_TOP_RIGHT_CORNER, GTK_WIDGET(window->window_));
+      IDR_CONTENT_TOP_RIGHT_CORNER, GTK_WIDGET(window_));
   top_right->SetSource(cr, right_x - 1, top_y - kContentShadowThickness);
   cairo_rectangle(cr,
       right_x,
@@ -481,9 +478,9 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr,
 
   // Fill in the sides.  As above, we only draw 2 of the 3 columns on Linux.
   int bottom_y;
-  gtk_widget_translate_coordinates(window->window_vbox_,
-      GTK_WIDGET(window->window_),
-      0, window->window_vbox_->allocation.height,
+  gtk_widget_translate_coordinates(window_vbox_,
+      GTK_WIDGET(window_),
+      0, window_vbox_->allocation.height,
       NULL, &bottom_y);
   // |side_y| is where to start drawing the side shadows.  The top corners draw
   // the sides down to the bottom of the toolbar.
@@ -494,7 +491,7 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr,
   int side_height = bottom_y - side_y - 1;
   if (side_height > 0) {
     CairoCachedSurface* left = theme_provider->GetSurfaceNamed(
-        IDR_CONTENT_LEFT_SIDE, GTK_WIDGET(window->window_));
+        IDR_CONTENT_LEFT_SIDE, GTK_WIDGET(window_));
     left->SetSource(cr, left_x - kContentShadowThickness, side_y);
     cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
     cairo_rectangle(cr,
@@ -505,7 +502,7 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr,
     cairo_fill(cr);
 
     CairoCachedSurface* right = theme_provider->GetSurfaceNamed(
-        IDR_CONTENT_RIGHT_SIDE, GTK_WIDGET(window->window_));
+        IDR_CONTENT_RIGHT_SIDE, GTK_WIDGET(window_));
     right->SetSource(cr, right_x - 1, side_y);
     cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
     cairo_rectangle(cr,
@@ -519,19 +516,19 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr,
   // Draw the bottom corners.  The bottom corners also draw the bottom row of
   // pixels of the side shadows.
   CairoCachedSurface* bottom_left = theme_provider->GetSurfaceNamed(
-      IDR_CONTENT_BOTTOM_LEFT_CORNER, GTK_WIDGET(window->window_));
+      IDR_CONTENT_BOTTOM_LEFT_CORNER, GTK_WIDGET(window_));
   bottom_left->SetSource(cr, left_x - kContentShadowThickness, bottom_y - 1);
   cairo_paint(cr);
 
   CairoCachedSurface* bottom_right = theme_provider->GetSurfaceNamed(
-      IDR_CONTENT_BOTTOM_RIGHT_CORNER, GTK_WIDGET(window->window_));
+      IDR_CONTENT_BOTTOM_RIGHT_CORNER, GTK_WIDGET(window_));
   bottom_right->SetSource(cr, right_x - 1, bottom_y - 1);
   cairo_paint(cr);
 
   // Finally, draw the bottom row. Since we don't overlap the contents, we clip
   // the top row of pixels.
   CairoCachedSurface* bottom = theme_provider->GetSurfaceNamed(
-      IDR_CONTENT_BOTTOM_CENTER, GTK_WIDGET(window->window_));
+      IDR_CONTENT_BOTTOM_CENTER, GTK_WIDGET(window_));
   bottom->SetSource(cr, left_x + 1, bottom_y - 1);
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
   cairo_rectangle(cr,
@@ -542,21 +539,19 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr,
   cairo_fill(cr);
 }
 
-// static
 void BrowserWindowGtk::DrawPopupFrame(cairo_t* cr,
                                       GtkWidget* widget,
-                                      GdkEventExpose* event,
-                                      BrowserWindowGtk* window) {
+                                      GdkEventExpose* event) {
   GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(
-      window->browser()->profile());
+      browser()->profile());
 
   // In popups, we use the tab images for the background, as that's legible
   // for text to be written on.
   int image_name;
-  if (window->IsActive()) {
+  if (IsActive()) {
     image_name = IDR_THEME_TOOLBAR;
   } else {
-    bool off_the_record = window->browser()->profile()->IsOffTheRecord();
+    bool off_the_record = browser()->profile()->IsOffTheRecord();
     image_name = off_the_record ? IDR_THEME_TAB_BACKGROUND_INCOGNITO :
                  IDR_THEME_TAB_BACKGROUND;
   }
@@ -566,7 +561,7 @@ void BrowserWindowGtk::DrawPopupFrame(cairo_t* cr,
   if (event->area.y < surface->Height()) {
     surface->SetSource(cr,
         0,
-        window->UseCustomFrame() ? 0 : -kCustomFrameBackgroundVerticalOffset);
+        UseCustomFrame() ? 0 : -kCustomFrameBackgroundVerticalOffset);
     cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REFLECT);
     cairo_rectangle(cr, event->area.x, event->area.y,
                     event->area.width, event->area.height);
@@ -574,17 +569,15 @@ void BrowserWindowGtk::DrawPopupFrame(cairo_t* cr,
   }
 }
 
-// static
 void BrowserWindowGtk::DrawCustomFrame(cairo_t* cr,
                                        GtkWidget* widget,
-                                       GdkEventExpose* event,
-                                       BrowserWindowGtk* window) {
+                                       GdkEventExpose* event) {
   GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(
-      window->browser()->profile());
+      browser()->profile());
 
-  bool off_the_record = window->browser()->profile()->IsOffTheRecord();
+  bool off_the_record = browser()->profile()->IsOffTheRecord();
   int image_name;
-  if (window->IsActive()) {
+  if (IsActive()) {
     image_name = off_the_record ? IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
   } else {
     image_name = off_the_record ? IDR_THEME_FRAME_INCOGNITO_INACTIVE :
@@ -596,7 +589,7 @@ void BrowserWindowGtk::DrawCustomFrame(cairo_t* cr,
   if (event->area.y < surface->Height()) {
     surface->SetSource(cr,
         0,
-        window->UseCustomFrame() ? 0 : -kCustomFrameBackgroundVerticalOffset);
+        UseCustomFrame() ? 0 : -kCustomFrameBackgroundVerticalOffset);
     // The frame background isn't tiled vertically.
     cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
     cairo_rectangle(cr, event->area.x, event->area.y,
@@ -607,7 +600,7 @@ void BrowserWindowGtk::DrawCustomFrame(cairo_t* cr,
   if (theme_provider->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
       !off_the_record) {
     CairoCachedSurface* theme_overlay = theme_provider->GetSurfaceNamed(
-        window->IsActive() ? IDR_THEME_FRAME_OVERLAY
+        IsActive() ? IDR_THEME_FRAME_OVERLAY
         : IDR_THEME_FRAME_OVERLAY_INACTIVE, widget);
     theme_overlay->SetSource(cr, 0, 0);
     cairo_paint(cr);
@@ -1470,19 +1463,19 @@ void BrowserWindowGtk::ConnectHandlersToSignals() {
   g_signal_connect(window_, "window-state-event",
                    G_CALLBACK(MainWindowStateChanged), this);
   g_signal_connect(window_, "map",
-                   G_CALLBACK(MainWindowMapped), this);
+                   G_CALLBACK(MainWindowMapped), NULL);
   g_signal_connect(window_, "unmap",
-                     G_CALLBACK(MainWindowUnMapped), this);
+                   G_CALLBACK(MainWindowUnMapped), NULL);
   g_signal_connect(window_, "key-press-event",
-                   G_CALLBACK(OnKeyPress), this);
+                   G_CALLBACK(OnKeyPressThunk), this);
   g_signal_connect(window_, "motion-notify-event",
-                   G_CALLBACK(OnMouseMoveEvent), this);
+                   G_CALLBACK(OnMouseMoveEventThunk), this);
   g_signal_connect(window_, "button-press-event",
-                   G_CALLBACK(OnButtonPressEvent), this);
+                   G_CALLBACK(OnButtonPressEventThunk), this);
   g_signal_connect(window_, "focus-in-event",
-                   G_CALLBACK(OnFocusIn), this);
+                   G_CALLBACK(OnFocusInThunk), this);
   g_signal_connect(window_, "focus-out-event",
-                   G_CALLBACK(OnFocusOut), this);
+                   G_CALLBACK(OnFocusOutThunk), this);
 }
 
 void BrowserWindowGtk::InitWidgets() {
@@ -1501,7 +1494,7 @@ void BrowserWindowGtk::InitWidgets() {
   gtk_widget_set_double_buffered(window_container_, FALSE);
   gtk_widget_set_redraw_on_allocate(window_container_, TRUE);
   g_signal_connect(window_container_, "expose-event",
-                   G_CALLBACK(&OnCustomFrameExpose), this);
+                   G_CALLBACK(&OnCustomFrameExposeThunk), this);
   gtk_container_add(GTK_CONTAINER(window_container_), window_vbox_);
 
   tabstrip_.reset(new TabStripGtk(browser_->tabstrip_model(), this));
@@ -1740,15 +1733,13 @@ gboolean BrowserWindowGtk::OnGtkAccelerator(GtkAccelGroup* accel_group,
   return browser_window->ExecuteBrowserCommand(command_id);
 }
 
-// static
 // Let the focused widget have first crack at the key event so we don't
 // override their accelerators.
-gboolean BrowserWindowGtk::OnKeyPress(
-    GtkWidget* widget, GdkEventKey* event, BrowserWindowGtk* window) {
+gboolean BrowserWindowGtk::OnKeyPress(GtkWidget* widget, GdkEventKey* event) {
   // If a widget besides the native view is focused, we have to try to handle
   // the custom accelerators before letting it handle them.
   TabContents* current_tab_contents =
-      window->browser()->tabstrip_model()->GetSelectedTabContents();
+      browser()->tabstrip_model()->GetSelectedTabContents();
   // The current tab might not have a render view if it crashed.
   if (!current_tab_contents || !current_tab_contents->GetContentNativeView() ||
       !gtk_widget_is_focus(current_tab_contents->GetContentNativeView())) {
@@ -1756,7 +1747,7 @@ gboolean BrowserWindowGtk::OnKeyPress(
     if (command_id == -1)
       command_id = GetPreHandleCommandId(event);
 
-    if (command_id != -1 && window->ExecuteBrowserCommand(command_id))
+    if (command_id != -1 && ExecuteBrowserCommand(command_id))
       return TRUE;
 
     // Propagate the key event to child widget first, so we don't override their
@@ -1775,61 +1766,59 @@ gboolean BrowserWindowGtk::OnKeyPress(
   return TRUE;
 }
 
-// static
 gboolean BrowserWindowGtk::OnMouseMoveEvent(GtkWidget* widget,
-    GdkEventMotion* event, BrowserWindowGtk* window) {
+                                            GdkEventMotion* event) {
   // This method is used to update the mouse cursor when over the edge of the
   // custom frame.  If the custom frame is off or we're over some other widget,
   // do nothing.
-  if (!window->UseCustomFrame() || event->window != widget->window) {
+  if (!UseCustomFrame() || event->window != widget->window) {
     // Reset the cursor.
-    if (window->frame_cursor_) {
-      gdk_cursor_unref(window->frame_cursor_);
-      window->frame_cursor_ = NULL;
-      gdk_window_set_cursor(GTK_WIDGET(window->window_)->window, NULL);
+    if (frame_cursor_) {
+      gdk_cursor_unref(frame_cursor_);
+      frame_cursor_ = NULL;
+      gdk_window_set_cursor(GTK_WIDGET(window_)->window, NULL);
     }
     return FALSE;
   }
 
   // Update the cursor if we're on the custom frame border.
   GdkWindowEdge edge;
-  bool has_hit_edge = window->GetWindowEdge(static_cast<int>(event->x),
-      static_cast<int>(event->y), &edge);
+  bool has_hit_edge = GetWindowEdge(static_cast<int>(event->x),
+                                    static_cast<int>(event->y), &edge);
   GdkCursorType new_cursor = GDK_LAST_CURSOR;
   if (has_hit_edge)
     new_cursor = GdkWindowEdgeToGdkCursorType(edge);
 
   GdkCursorType last_cursor = GDK_LAST_CURSOR;
-  if (window->frame_cursor_)
-    last_cursor = window->frame_cursor_->type;
+  if (frame_cursor_)
+    last_cursor = frame_cursor_->type;
 
   if (last_cursor != new_cursor) {
-    if (window->frame_cursor_) {
-      gdk_cursor_unref(window->frame_cursor_);
-      window->frame_cursor_ = NULL;
+    if (frame_cursor_) {
+      gdk_cursor_unref(frame_cursor_);
+      frame_cursor_ = NULL;
     }
     if (has_hit_edge) {
-      window->frame_cursor_ = gtk_util::GetCursor(new_cursor);
-      gdk_window_set_cursor(GTK_WIDGET(window->window_)->window,
-                            window->frame_cursor_);
+      frame_cursor_ = gtk_util::GetCursor(new_cursor);
+      gdk_window_set_cursor(GTK_WIDGET(window_)->window,
+                            frame_cursor_);
     } else {
-      gdk_window_set_cursor(GTK_WIDGET(window->window_)->window, NULL);
+      gdk_window_set_cursor(GTK_WIDGET(window_)->window, NULL);
     }
   }
   return FALSE;
 }
 
-// static
 gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
-    GdkEventButton* event, BrowserWindowGtk* window) {
+                                              GdkEventButton* event) {
   // Handle back/forward.
   // TODO(jhawkins): Investigate the possibility of the button numbers being
   // different for other mice.
   if (event->button == 8) {
-    window->browser_->GoBack(CURRENT_TAB);
+    browser_->GoBack(CURRENT_TAB);
     return TRUE;
   } else if (event->button == 9) {
-    window->browser_->GoForward(CURRENT_TAB);
+    browser_->GoForward(CURRENT_TAB);
     return TRUE;
   }
 
@@ -1838,37 +1827,37 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
 
   // Make the button press coordinate relative to the browser window.
   int win_x, win_y;
-  gdk_window_get_origin(GTK_WIDGET(window->window_)->window, &win_x, &win_y);
+  gdk_window_get_origin(GTK_WIDGET(window_)->window, &win_x, &win_y);
 
   GdkWindowEdge edge;
   gfx::Point point(static_cast<int>(event->x_root - win_x),
                    static_cast<int>(event->y_root - win_y));
-  bool has_hit_edge = window->GetWindowEdge(point.x(), point.y(), &edge);
+  bool has_hit_edge = GetWindowEdge(point.x(), point.y(), &edge);
 
   // Ignore clicks that are in/below the browser toolbar.
-  GtkWidget* toolbar = window->toolbar_->widget();
+  GtkWidget* toolbar = toolbar_->widget();
   if (!GTK_WIDGET_VISIBLE(toolbar)) {
     // If the toolbar is not showing, use the location of web contents as the
     // boundary of where to ignore clicks.
-    toolbar = window->render_area_vbox_;
+    toolbar = render_area_vbox_;
   }
   gint toolbar_y;
   gtk_widget_get_pointer(toolbar, NULL, &toolbar_y);
-  bool has_hit_titlebar = !window->IsFullscreen() && (toolbar_y < 0)
-      && !has_hit_edge;
+  bool has_hit_titlebar = !IsFullscreen() && (toolbar_y < 0)
+                          && !has_hit_edge;
   if (event->button == 1) {
     if (GDK_BUTTON_PRESS == event->type) {
-      guint32 last_click_time = window->last_click_time_;
-      gfx::Point last_click_position = window->last_click_position_;
-      window->last_click_time_ = event->time;
-      window->last_click_position_ = gfx::Point(static_cast<int>(event->x),
-                                                 static_cast<int>(event->y));
+      guint32 last_click_time = last_click_time_;
+      gfx::Point last_click_position = last_click_position_;
+      last_click_time_ = event->time;
+      last_click_position_ = gfx::Point(static_cast<int>(event->x),
+                                        static_cast<int>(event->y));
 
       // Raise the window after a click on either the titlebar or the border to
       // match the behavior of most window managers, unless that behavior has
       // been suppressed.
-      if ((has_hit_titlebar || has_hit_edge) && !window->suppress_window_raise_)
-        gdk_window_raise(GTK_WIDGET(window->window_)->window);
+      if ((has_hit_titlebar || has_hit_edge) && !suppress_window_raise_)
+        gdk_window_raise(GTK_WIDGET(window_)->window);
 
       if (has_hit_titlebar) {
         // We want to start a move when the user single clicks, but not start a
@@ -1883,9 +1872,9 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
         gint double_click_time = 250;
         gint double_click_distance = 5;
         g_object_get(G_OBJECT(settings),
-            "gtk-double-click-time", &double_click_time,
-            "gtk-double-click-distance", &double_click_distance,
-            NULL);
+                     "gtk-double-click-time", &double_click_time,
+                     "gtk-double-click-distance", &double_click_distance,
+                     NULL);
 
         guint32 click_time = event->time - last_click_time;
         int click_move_x = static_cast<int>(event->x - last_click_position.x());
@@ -1898,10 +1887,10 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
           // We do this to avoid triggering fullscreen mode in metacity
           // (without the --no-force-fullscreen flag) and in compiz (with
           // Legacy Fullscreen Mode enabled).
-          GdkScreen* screen = gtk_window_get_screen(window->window_);
-          if (window->bounds_.width() != gdk_screen_get_width(screen) ||
-              window->bounds_.height() != gdk_screen_get_height(screen)) {
-            gtk_window_begin_move_drag(window->window_, event->button,
+          GdkScreen* screen = gtk_window_get_screen(window_);
+          if (bounds_.width() != gdk_screen_get_width(screen) ||
+              bounds_.height() != gdk_screen_get_height(screen)) {
+            gtk_window_begin_move_drag(window_, event->button,
                                        static_cast<gint>(event->x_root),
                                        static_cast<gint>(event->y_root),
                                        event->time);
@@ -1909,7 +1898,7 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
           return TRUE;
         }
       } else if (has_hit_edge) {
-        gtk_window_begin_resize_drag(window->window_, edge, event->button,
+        gtk_window_begin_resize_drag(window_, edge, event->button,
                                      static_cast<gint>(event->x_root),
                                      static_cast<gint>(event->y_root),
                                      event->time);
@@ -1918,22 +1907,22 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
     } else if (GDK_2BUTTON_PRESS == event->type) {
       if (has_hit_titlebar) {
         // Maximize/restore on double click.
-        if (window->IsMaximized()) {
-          window->UnMaximize();
+        if (IsMaximized()) {
+          UnMaximize();
         } else {
-          gtk_window_maximize(window->window_);
+          gtk_window_maximize(window_);
         }
         return TRUE;
       }
     }
   } else if (event->button == 2) {
     if (has_hit_titlebar || has_hit_edge) {
-      gdk_window_lower(GTK_WIDGET(window->window_)->window);
+      gdk_window_lower(GTK_WIDGET(window_)->window);
     }
     return TRUE;
   } else if (event->button == 3) {
     if (has_hit_titlebar) {
-      window->titlebar_->ShowContextMenu();
+      titlebar_->ShowContextMenu();
       return TRUE;
     }
   }
@@ -1942,8 +1931,7 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
 }
 
 // static
-void BrowserWindowGtk::MainWindowMapped(GtkWidget* widget,
-                                        BrowserWindowGtk* window) {
+void BrowserWindowGtk::MainWindowMapped(GtkWidget* widget) {
   // Map the X Window ID of the window to our window.
   XID xid = x11_util::GetX11WindowFromGtkWidget(widget);
   BrowserWindowGtk::xid_map_.insert(
@@ -1951,25 +1939,20 @@ void BrowserWindowGtk::MainWindowMapped(GtkWidget* widget,
 }
 
 // static
-void BrowserWindowGtk::MainWindowUnMapped(GtkWidget* widget,
-                                          BrowserWindowGtk* window) {
+void BrowserWindowGtk::MainWindowUnMapped(GtkWidget* widget) {
   // Unmap the X Window ID.
   XID xid = x11_util::GetX11WindowFromGtkWidget(widget);
   BrowserWindowGtk::xid_map_.erase(xid);
 }
 
-// static
 gboolean BrowserWindowGtk::OnFocusIn(GtkWidget* widget,
-                                     GdkEventFocus* event,
-                                     BrowserWindowGtk* window) {
-  BrowserList::SetLastActive(window->browser_.get());
+                                     GdkEventFocus* event) {
+  BrowserList::SetLastActive(browser_.get());
   return FALSE;
 }
 
-// static
 gboolean BrowserWindowGtk::OnFocusOut(GtkWidget* widget,
-                                      GdkEventFocus* event,
-                                      BrowserWindowGtk* window) {
+                                      GdkEventFocus* event) {
   return FALSE;
 }
 

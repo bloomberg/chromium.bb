@@ -10,6 +10,7 @@
 #include <map>
 
 #include "app/active_window_watcher_x.h"
+#include "app/gtk_signal.h"
 #include "app/x11_util.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
@@ -256,21 +257,18 @@ class BrowserWindowGtk : public BrowserWindow,
 
   // Callback for when the custom frame alignment needs to be redrawn.
   // The content area includes the toolbar and web page but not the tab strip.
-  static gboolean OnCustomFrameExpose(GtkWidget* widget, GdkEventExpose* event,
-                                      BrowserWindowGtk* window);
+  CHROMEGTK_CALLBACK_1(BrowserWindowGtk, gboolean, OnCustomFrameExpose,
+                       GdkEventExpose*);
+
   // A helper method that draws the shadow above the toolbar and in the frame
   // border during an expose.
-  static void DrawContentShadow(cairo_t* cr, BrowserWindowGtk* window);
+  void DrawContentShadow(cairo_t* cr);
 
   // Draws the tab image as the frame so we can write legible text.
-  static void DrawPopupFrame(cairo_t* cr,
-                             GtkWidget* widget, GdkEventExpose* event,
-                             BrowserWindowGtk* window);
+  void DrawPopupFrame(cairo_t* cr, GtkWidget* widget, GdkEventExpose* event);
 
   // Draws the normal custom frame using theme_frame.
-  static void DrawCustomFrame(cairo_t* cr,
-                              GtkWidget* widget, GdkEventExpose* event,
-                              BrowserWindowGtk* window);
+  void DrawCustomFrame(cairo_t* cr, GtkWidget* widget, GdkEventExpose* event);
 
   // Callback for accelerator activation. |user_data| stores the command id
   // of the matched accelerator.
@@ -281,29 +279,23 @@ class BrowserWindowGtk : public BrowserWindow,
                                    void* user_data);
 
   // Key press event callback.
-  static gboolean OnKeyPress(GtkWidget* widget,
-                             GdkEventKey* event,
-                             BrowserWindowGtk* window);
+  CHROMEGTK_CALLBACK_1(BrowserWindowGtk, gboolean, OnKeyPress, GdkEventKey*);
 
   // Mouse move and mouse button press callbacks.
-  static gboolean OnMouseMoveEvent(GtkWidget* widget,
-                                   GdkEventMotion* event,
-                                   BrowserWindowGtk* window);
-  static gboolean OnButtonPressEvent(GtkWidget* widget,
-                                     GdkEventButton* event,
-                                     BrowserWindowGtk* window);
+  CHROMEGTK_CALLBACK_1(BrowserWindowGtk, gboolean, OnMouseMoveEvent,
+                       GdkEventMotion*);
+  CHROMEGTK_CALLBACK_1(BrowserWindowGtk, gboolean, OnButtonPressEvent,
+                       GdkEventButton*);
 
   // Maps and Unmaps the xid of |widget| to |window|.
-  static void MainWindowMapped(GtkWidget* widget, BrowserWindowGtk* window);
-  static void MainWindowUnMapped(GtkWidget* widget, BrowserWindowGtk* window);
+  static void MainWindowMapped(GtkWidget* widget);
+  static void MainWindowUnMapped(GtkWidget* widget);
 
   // Tracks focus state of browser.
-  static gboolean OnFocusIn(GtkWidget* widget,
-                            GdkEventFocus* event,
-                            BrowserWindowGtk* window);
-  static gboolean OnFocusOut(GtkWidget* widget,
-                             GdkEventFocus* event,
-                             BrowserWindowGtk* window);
+  CHROMEGTK_CALLBACK_1(BrowserWindowGtk, gboolean, OnFocusIn,
+                       GdkEventFocus*);
+  CHROMEGTK_CALLBACK_1(BrowserWindowGtk, gboolean, OnFocusOut,
+                       GdkEventFocus*);
 
   // A small shim for browser_->ExecuteCommand.
   // Returns true if the command was executed.
