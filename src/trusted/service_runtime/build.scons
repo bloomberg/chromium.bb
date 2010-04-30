@@ -381,6 +381,12 @@ if env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']:
       'run_service_runtime_tests')
 
 
+if env['TARGET_ARCHITECTURE'] == 'x86':
+  arch_testdata_dir = 'testdata/x86_' + env['BUILD_SUBARCH']
+else:
+  arch_testdata_dir = 'testdata/' + env['TARGET_ARCHITECTURE']
+
+
 # Doesn't work on windows under coverage.
 # TODO(bradnelson): fix this to work on windows under coverage.
 if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
@@ -400,15 +406,14 @@ if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
   sdl_env.Requires(mmap_test_exe, crt)
   sdl_env.Requires(mmap_test_exe, sdl_dll)
 
-  if env['TARGET_ARCHITECTURE'] == 'x86' and env['BUILD_SUBARCH'] == '32':
-    # TODO(robertm): This test emits lots of messages to stderr
-    node = sdl_env.CommandTest (
-        "mmap_test.out",
-        # NOTE: the "[0]" subscript make this work on windows
-        # TODO: maybe move this magic into CommandTest()
-        command=[mmap_test_exe[0],
-                 env.File('testdata/x86_32/hello_world.nexe')])
-    sdl_env.AddNodeToTestSuite(node, ['medium_tests'])
+  # TODO(robertm): This test emits lots of messages to stderr
+  node = sdl_env.CommandTest (
+      "mmap_test.out",
+      # NOTE: the "[0]" subscript make this work on windows
+      # TODO: maybe move this magic into CommandTest()
+      command=[mmap_test_exe[0],
+               env.File(arch_testdata_dir + '/hello_world.nexe')])
+  sdl_env.AddNodeToTestSuite(node, ['medium_tests'])
 
   # also seems to have issues with windows coverage
   # NOTE: uses sdl and validator
@@ -636,20 +641,17 @@ def AddIntegrationTest(test, location):
   if not test or not location:
     return;
 
-  subarch = env['BUILD_SUBARCH']
   node = env.CommandSelLdrTestNacl(
       test + '_canned.out',
-      command = [env.File('testdata/x86_' + subarch + '/' + test + '.nexe')],
+      command = [env.File(arch_testdata_dir + '/' + test + '.nexe')],
       stdin = location + '.stdin',
       stdout_golden = location + '.stdout')
   env.AddNodeToTestSuite(node, ['medium_tests'])
 
 if env['TARGET_ARCHITECTURE'] == 'x86':
-  SUBARCH = env['BUILD_SUBARCH']
-
   node = env.CommandSelLdrTestNacl(
       'nacl_log.out',
-      command = [env.File('testdata/x86_' + SUBARCH + '/hello_world.nexe')],
+      command = [env.File(arch_testdata_dir + '/hello_world.nexe')],
       log_golden = env.File('testdata/hello_world.log'),
       log_filter = '"^(Hello, World!)$|^\[[0-9,:.]*\] (e_ident\+1 = ELF)$"')
   env.AddNodeToTestSuite(node, ['medium_tests'])
@@ -687,10 +689,9 @@ def AddDeathTest(test, skip):
     print 'SKIPPING test ', test
     return;
 
-  subarch = env['BUILD_SUBARCH']
   node = env.CommandSelLdrTestNacl(
       test  + '.out',
-      command = [env.File('testdata/x86_' + subarch + '/' + test + '.nexe')],
+      command = [env.File(arch_testdata_dir + '/' + test + '.nexe')],
       stderr_golden = env.File('testdata/' + test + '.stderr'),
       stderr_filter = ERROR_WHILE_LOADING,
       exit_status = '1')
@@ -703,7 +704,7 @@ if env['TARGET_ARCHITECTURE'] == 'x86':
   # built in tests/nullptr/
   node = env.CommandSelLdrTestNacl(
       'nullptr.out',
-      command=[env.File('testdata/x86_' + SUBARCH + '/nullptr.nexe')],
+      command=[env.File(arch_testdata_dir + '/nullptr.nexe')],
       exit_status='segfault')
   env.AddNodeToTestSuite(node, ['medium_tests'])
 

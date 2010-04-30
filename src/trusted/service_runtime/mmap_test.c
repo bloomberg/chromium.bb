@@ -75,8 +75,8 @@ int main(int argc, char **argv) {
   struct NaClApp state;
   struct NaClAppThread nat, *natp = &nat;
   int errcode;
-  uintptr_t initial_addr;
-  uintptr_t addr;
+  uint32_t initial_addr;
+  uint32_t addr;
   struct NaClVmmap *mem_map;
   char *nacl_verbosity = getenv("NACLVERBOSITY");
 
@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
                      NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
                      NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE,
                      -1, 0);
-  printf("addr=0x%"NACL_PRIxPTR"\n", addr);
+  printf("addr=0x%"NACL_PRIx32"\n", addr);
   initial_addr = addr;
   /*
    * The mappings have changed to become:
@@ -134,12 +134,13 @@ int main(int argc, char **argv) {
    */
 
   /* Map to overwrite the start of the previously allocated range */
-  addr = NaClSysMmap(natp, (void *) initial_addr, 2 * NACL_MAP_PAGESIZE,
+  addr = NaClSysMmap(natp, (void *) (uintptr_t) initial_addr,
+                     2 * NACL_MAP_PAGESIZE,
                      NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
                      NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE
                      | NACL_ABI_MAP_FIXED,
                      -1, 0);
-  printf("addr=0x%"NACL_PRIxPTR"\n", addr);
+  printf("addr=0x%"NACL_PRIx32"\n", addr);
   ASSERT_EQ(addr, initial_addr);
   /*
    * The mappings have changed to become:
@@ -157,7 +158,7 @@ int main(int argc, char **argv) {
                      NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
                      NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE,
                      -1, 0);
-  printf("addr=0x%"NACL_PRIxPTR"\n", addr);
+  printf("addr=0x%"NACL_PRIx32"\n", addr);
   /*
    * Our allocation strategy is to scan down from stack.  This is an
    * implementation detail and not part of the guaranteed semantics,
@@ -201,7 +202,9 @@ int main(int argc, char **argv) {
   /*
    * Undo effects of previous mmaps
    */
-  errcode = NaClSysMunmap(natp, (void *) (initial_addr - NACL_MAP_PAGESIZE),
+  errcode = NaClSysMunmap(natp,
+                          (void *) (uintptr_t) (initial_addr
+                                                - NACL_MAP_PAGESIZE),
                           NACL_MAP_PAGESIZE * 4);
   ASSERT_EQ(errcode, 0);
   /*
@@ -220,7 +223,7 @@ int main(int argc, char **argv) {
   addr = NaClSysMmap(natp, 0, 9 * NACL_MAP_PAGESIZE,
                      NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
                      NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE, -1, 0);
-  printf("addr=0x%"NACL_PRIxPTR"\n", addr);
+  printf("addr=0x%"NACL_PRIx32"\n", addr);
   initial_addr = addr;
   /*
    * The mappings have changed to become:
@@ -233,13 +236,15 @@ int main(int argc, char **argv) {
    */
 
   /* Map into middle of previously allocated range */
-  addr = NaClSysMmap(natp, (void *) (initial_addr + 2 * NACL_MAP_PAGESIZE),
+  addr = NaClSysMmap(natp,
+                     (void *) (uintptr_t) (initial_addr
+                                           + 2 * NACL_MAP_PAGESIZE),
                      3 * NACL_MAP_PAGESIZE,
                      NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
                      NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE
                      | NACL_ABI_MAP_FIXED,
                      -1, 0);
-  printf("addr=0x%"NACL_PRIxPTR"\n", addr);
+  printf("addr=0x%"NACL_PRIx32"\n", addr);
   ASSERT_EQ(addr, initial_addr + NACL_MAP_PAGESIZE * 2);
   /*
    * The mappings have changed to become:
@@ -275,7 +280,8 @@ int main(int argc, char **argv) {
   /*
    * Undo effects of previous mmaps
    */
-  errcode = NaClSysMunmap(natp, (void *) initial_addr, 9 * NACL_MAP_PAGESIZE);
+  errcode = NaClSysMunmap(natp, (void *) (uintptr_t) initial_addr,
+                          9 * NACL_MAP_PAGESIZE);
   ASSERT_EQ(errcode, 0);
   ASSERT_EQ(mem_map->nvalid, 5);
   CheckLowerMappings(mem_map);
@@ -291,15 +297,15 @@ int main(int argc, char **argv) {
   /*
    * Check use of hint.
    */
-  addr = NaClSysMmap(natp, (void *) initial_addr,
+  addr = NaClSysMmap(natp, (void *) (uintptr_t) initial_addr,
                      NACL_MAP_PAGESIZE,
                      NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
                      NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE,
                      -1, 0);
   ASSERT_LE(addr, 0xffff0000u);
-  printf("addr=0x%"NACL_PRIxPTR"\n", addr);
+  printf("addr=0x%"NACL_PRIx32"\n", addr);
   ASSERT_LE_MSG(initial_addr, addr, "returned address not at or above hint");
-  errcode = NaClSysMunmap(natp, (void *) addr, NACL_MAP_PAGESIZE);
+  errcode = NaClSysMunmap(natp, (void *) (uintptr_t) addr, NACL_MAP_PAGESIZE);
   ASSERT_EQ(errcode, 0);
 
   /* Check handling of zero-sized mappings. */
@@ -308,7 +314,7 @@ int main(int argc, char **argv) {
                      NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE, -1, 0);
   ASSERT_EQ((int) addr, -NACL_ABI_EINVAL);
 
-  errcode = NaClSysMunmap(natp, (void *) initial_addr, 0);
+  errcode = NaClSysMunmap(natp, (void *) (uintptr_t) initial_addr, 0);
   ASSERT_EQ(errcode, -NACL_ABI_EINVAL);
 
   printf("PASS\n");
