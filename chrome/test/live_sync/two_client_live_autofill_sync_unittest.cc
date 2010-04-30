@@ -9,6 +9,7 @@
 #include "base/ref_counted.h"
 #include "base/string16.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/pref_service.h"
@@ -201,7 +202,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, Client1HasData) {
   keys.insert(AutofillKey("name1", "value1"));
   keys.insert(AutofillKey("name1", "value2"));
   keys.insert(AutofillKey("name2", "value3"));
-  keys.insert(AutofillKey("Sigur R\u00F3s", "\u00C1g\u00E6tis byrjun"));
+  keys.insert(AutofillKey(WideToUTF16(L"Sigur R\u00F3s"),
+                          WideToUTF16(L"\u00C1g\u00E6tis byrjun")));
   AddToWds(wds1_, keys);
 
   SetupSync();
