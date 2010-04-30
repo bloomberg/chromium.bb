@@ -459,10 +459,10 @@ TabContents* Browser::OpenApplicationWindow(
   bool as_panel = extension && (container == Extension::LAUNCH_PANEL);
   Browser* browser = Browser::CreateForApp(app_name, extension, profile,
                                            as_panel);
-  browser->AddTabWithURL(url, GURL(), PageTransition::START_PAGE, true, -1,
-                         false, std::string());
+  TabContents* tab_contents = browser->AddTabWithURL(
+      url, GURL(), PageTransition::START_PAGE, -1, Browser::ADD_SELECTED, NULL,
+      std::string());
 
-  TabContents* tab_contents = browser->GetSelectedTabContents();
   tab_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
   tab_contents->render_view_host()->SyncRendererPrefs();
   browser->window()->Show();
