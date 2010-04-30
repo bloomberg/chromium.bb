@@ -26,7 +26,7 @@ import common
 import memcheck_analyze
 import tsan_analyze
 
-import google.logging_utils
+import logging_utils
 
 class ValgrindTool(object):
 
@@ -564,9 +564,9 @@ def RunTool(argv, module):
 
 if __name__ == "__main__":
   if sys.argv.count("-v") > 0 or sys.argv.count("--verbose") > 0:
-    google.logging_utils.config_root(logging.DEBUG)
+    logging_utils.config_root(logging.DEBUG)
   else:
-    google.logging_utils.config_root()
+    logging_utils.config_root()
   # TODO(timurrrr): valgrind tools may use -v/--verbose as well
 
   ret = RunTool(sys.argv)

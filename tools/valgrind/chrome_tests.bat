@@ -3,5 +3,5 @@
 :: Use of this source code is governed by a BSD-style license that can be
 :: found in the LICENSE file.
 
-set PYTHONPATH=%~dp0../python
+set PYTHONPATH=%~dp0../python/google
 python %~dp0/chrome_tests.py %*
