@@ -78,6 +78,7 @@
       'defines': [
         'GOOGLE_PROTOBUF_NO_RTTI',
       ],
+      
       'direct_dependent_settings': {
         'include_dirs': [
           '<(config_h_dir)',
@@ -218,6 +219,86 @@
         'src/src',
       ],
     },
+    {
+      # Generate the python module needed by all protoc-generated Python code.
+      'target_name': 'py_proto',
+      'type': 'none',
+      'copies': [
+        {
+          'destination': '<(PRODUCT_DIR)/pyproto/google/',
+          'files': [
+            # google/ module gets an empty __init__.py.
+            '__init__.py',
+          ],
+        },
+        {
+          'destination': '<(PRODUCT_DIR)/pyproto/google/protobuf',
+          'files': [
+            'src/python/google/protobuf/__init__.py',
+            'src/python/google/protobuf/descriptor.py',
+            'src/python/google/protobuf/message.py',
+            'src/python/google/protobuf/reflection.py',
+            'src/python/google/protobuf/service.py',
+            'src/python/google/protobuf/service_reflection.py',
+            'src/python/google/protobuf/text_format.py',
+            
+            # TODO(ncarter): protoc's python generator treats descriptor.proto
+            # specially, but it's not possible to trigger the special treatment
+            # unless you run protoc from ./src/src (the treatment is based
+            # on the path to the .proto file matching a constant exactly).
+            # I'm not sure how to convince gyp to execute a rule from a
+            # different directory.  Until this is resolved, use a copy of
+            # descriptor_pb2.py that I manually generated.
+            'descriptor_pb2.py',
+          ],
+        },
+        {
+          'destination': '<(PRODUCT_DIR)/pyproto/google/protobuf/internal',
+          'files': [
+            'src/python/google/protobuf/internal/__init__.py',
+            'src/python/google/protobuf/internal/containers.py',
+            'src/python/google/protobuf/internal/decoder.py',
+            'src/python/google/protobuf/internal/encoder.py',
+            'src/python/google/protobuf/internal/generator_test.py',
+            'src/python/google/protobuf/internal/message_listener.py',
+            'src/python/google/protobuf/internal/type_checkers.py',
+            'src/python/google/protobuf/internal/wire_format.py',
+          ],
+        },
+      ],
+  #   # We can't generate a proper descriptor_pb2.py -- see earlier comment.
+  #   'rules': [
+  #     {
+  #       'rule_name': 'genproto',
+  #       'extension': 'proto',
+  #       'inputs': [
+  #         '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
+  #       ],
+  #       'variables': {
+  #         # The protoc compiler requires a proto_path argument with the
+  #           # directory containing the .proto file.
+  #           'rule_input_relpath': 'src/src/google/protobuf',
+  #         },
+  #         'outputs': [
+  #           '<(PRODUCT_DIR)/pyproto/google/protobuf/<(RULE_INPUT_ROOT)_pb2.py',
+  #         ],
+  #         'action': [
+  #           '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
+  #           '-I./src/src',
+  #           '-I./src',
+  #           '--python_out=<(PRODUCT_DIR)/pyproto/google/protobuf',
+  #           'google/protobuf/descriptor.proto',
+  #         ],
+  #         'message': 'Generating Python code from <(RULE_INPUT_PATH)',
+  #       },
+  #     ],
+  #     'dependencies': [
+  #       'protoc#host',
+  #     ],
+  #     'sources': [
+  #       'src/src/google/protobuf/descriptor.proto',
+  #     ],
+     },
   ],
 }
 
