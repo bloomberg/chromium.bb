@@ -78,6 +78,12 @@ class AutocompleteTextFieldObserver {
   // clearly relevent to expose here.  But consider pulling more of
   // the AutocompleteEditViewMac calls up to here.
   virtual bool OnDoCommandBySelector(SEL cmd) = 0;
+
+  // Called whenever the autocomplete text field gets focused.
+  virtual void OnSetFocus(bool control_down) = 0;
+
+  // Called whenever the autocomplete text field is losing focus.
+  virtual void OnKillFocus() = 0;
 };
 
 @interface AutocompleteTextField : StyledTextField<NSTextViewDelegate,

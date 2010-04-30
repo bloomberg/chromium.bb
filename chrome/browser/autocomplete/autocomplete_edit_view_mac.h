@@ -92,6 +92,8 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   virtual void OnDidChange();
   virtual void OnDidEndEditing();
   virtual bool OnDoCommandBySelector(SEL cmd);
+  virtual void OnSetFocus(bool control_down);
+  virtual void OnKillFocus();
 
   // Helper for LocationBarViewMac.  Optionally selects all in |field_|.
   void FocusLocation(bool select_all);

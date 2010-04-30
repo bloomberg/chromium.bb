@@ -632,11 +632,6 @@ void AutocompleteEditViewMac::OnDidBeginEditing() {
   // We should only arrive here when the field is focussed.
   DCHECK([field_ currentEditor]);
 
-  NSEvent* theEvent = [NSApp currentEvent];
-  const bool controlDown = ([theEvent modifierFlags]&NSControlKeyMask) != 0;
-  model_->OnSetFocus(controlDown);
-  controller_->OnSetFocus();
-
   // Capture the current state.
   OnBeforePossibleChange();
 }
@@ -651,10 +646,6 @@ void AutocompleteEditViewMac::OnDidChange() {
 
 void AutocompleteEditViewMac::OnDidEndEditing() {
   ClosePopup();
-
-  // Tell the model to reset itself.
-  model_->OnKillFocus();
-  controller_->OnKillFocus();
 }
 
 bool AutocompleteEditViewMac::OnDoCommandBySelector(SEL cmd) {
@@ -756,6 +747,17 @@ bool AutocompleteEditViewMac::OnDoCommandBySelector(SEL cmd) {
   // in -controlTextDidChange:.
   OnBeforePossibleChange();
   return false;
+}
+
+void AutocompleteEditViewMac::OnSetFocus(bool control_down) {
+  model_->OnSetFocus(control_down);
+  controller_->OnSetFocus();
+}
+
+void AutocompleteEditViewMac::OnKillFocus() {
+  // Tell the model to reset itself.
+  model_->OnKillFocus();
+  controller_->OnKillFocus();
 }
 
 void AutocompleteEditViewMac::OnDidResignKey() {

@@ -343,7 +343,8 @@ void LocationBarViewMac::OnInputInProgress(bool in_progress) {
 }
 
 void LocationBarViewMac::OnSetFocus() {
-  // Do nothing.
+  // Update the keyword and search hint states.
+  OnChanged();
 }
 
 void LocationBarViewMac::OnKillFocus() {

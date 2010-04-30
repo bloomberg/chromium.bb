@@ -300,11 +300,11 @@ TEST_F(AutocompleteTextFieldObserverTest, FlagsChanged) {
 // field catches -flagsChanged: because it's on the responder chain,
 // the field editor doesn't implement it.
 TEST_F(AutocompleteTextFieldObserverTest, FieldEditorFlagsChanged) {
+  InSequence dummy;  // Call mock in exactly the order specified.
+  EXPECT_CALL(field_observer_, OnSetFocus(false));
   [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
   NSResponder* firstResponder = [[field_ window] firstResponder];
   EXPECT_EQ(firstResponder, [field_ currentEditor]);
-
-  InSequence dummy;  // Call mock in exactly the order specified.
 
   // Test without Control key down, but some other modifier down.
   EXPECT_CALL(field_observer_, OnControlKeyChanged(false));
@@ -422,6 +422,7 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorKeywordHint) {
 // Test that resetting the field editor bounds does not cause untoward
 // messages to the field's observer.
 TEST_F(AutocompleteTextFieldObserverTest, ResetFieldEditorContinuesEditing) {
+  EXPECT_CALL(field_observer_, OnSetFocus(false));
   // Becoming first responder doesn't begin editing.
   [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
   NSTextView* editor = static_cast<NSTextView*>([field_ currentEditor]);
@@ -826,6 +827,7 @@ TEST_F(AutocompleteTextFieldTest, EditorGetsCorrectUndoManager) {
 }
 
 TEST_F(AutocompleteTextFieldObserverTest, SendsEditingMessages) {
+  EXPECT_CALL(field_observer_, OnSetFocus(false));
   // Becoming first responder doesn't begin editing.
   [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
   NSTextView* editor = static_cast<NSTextView*>([field_ currentEditor]);
@@ -850,6 +852,7 @@ TEST_F(AutocompleteTextFieldObserverTest, SendsEditingMessages) {
   [editor doCommandBySelector:cmd];
 
   // Finished with the changes.
+  EXPECT_CALL(field_observer_, OnKillFocus());
   EXPECT_CALL(field_observer_, OnDidEndEditing());
   [test_window() clearPretendKeyWindowAndFirstResponder];
 }

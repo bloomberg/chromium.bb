@@ -320,6 +320,17 @@
   if (doAccept) {
     [[BrowserWindowController browserWindowControllerForView:self]
         lockBarVisibilityForOwner:self withAnimation:YES delay:NO];
+
+    // Tells the observer that we get the focus.
+    // But we can't call observer_->OnKillFocus() in resignFirstResponder:,
+    // because the first responder will be immediately set to the field editor
+    // when calling [super becomeFirstResponder], thus we won't receive
+    // resignFirstResponder: anymore when losing focus.
+    if (observer_) {
+      NSEvent* theEvent = [NSApp currentEvent];
+      const bool controlDown = ([theEvent modifierFlags]&NSControlKeyMask) != 0;
+      observer_->OnSetFocus(controlDown);
+    }
   }
   return doAccept;
 }

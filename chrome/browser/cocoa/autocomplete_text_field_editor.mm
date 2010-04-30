@@ -202,6 +202,9 @@ class Extension;
     // Give the text field ownership of the visibility lock.
     [[BrowserWindowController browserWindowControllerForView:field]
         releaseBarVisibilityForOwner:field withAnimation:YES delay:YES];
+
+    if ([field observer])
+      [field observer]->OnKillFocus();
   }
   return doResign;
 }
