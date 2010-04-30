@@ -41,6 +41,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebWindowFeatures.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/plugins/webplugin_impl.h"
@@ -106,6 +107,7 @@ using WebKit::WebURLError;
 using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
 using WebKit::WebWidget;
+using WebKit::WebWindowFeatures;
 using WebKit::WebWorker;
 using WebKit::WebWorkerClient;
 using WebKit::WebView;
@@ -309,7 +311,15 @@ void TestWebViewDelegate::SetAuthorAndUserStylesEnabled(bool is_enabled) {
 
 // WebViewClient -------------------------------------------------------------
 
+// TODO(rafaelw): remove when
+// WebViewClient::createView(WebFrame,WebWindowFeatures) lands.
 WebView* TestWebViewDelegate::createView(WebFrame* creator) {
+  return createView(creator, WebWindowFeatures());
+}
+
+WebView* TestWebViewDelegate::createView(
+    WebFrame* creator,
+    const WebWindowFeatures& window_features) {
   return shell_->CreateWebView();
 }
 
