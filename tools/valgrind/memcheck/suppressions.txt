@@ -2778,3 +2778,30 @@
    fun:_ZN3WTF10RefCountedIN7WebCore14DocumentLoaderEE5derefEv
    fun:_ZN3WTF6RefPtrIN7WebCore14DocumentLoaderEED1Ev
 }
+
+{
+   bug_42925
+   Memcheck:Leak
+   fun:_Znaj
+   fun:_ZN2v88internal8NewArrayIiEEPT_i
+   fun:_ZN2v88internal29Runtime_GetLocalPropertyNamesENS0_9ArgumentsE
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:_ZN2v88internal6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPPPS4_Pb
+}
+
+{
+   bug_23416
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11webkit_glue16WebURLLoaderImplC1Ev
+   fun:_ZN11webkit_glue16WebKitClientImpl15createURLLoaderEv
+   fun:_ZN11webkit_glue15ResourceFetcher5StartEPN6WebKit8WebFrameE
+   fun:_ZN11webkit_glue15ResourceFetcherC2ERK4GURLPN6WebKit8WebFrameEP14CallbackRunnerI6Tuple2IRKNS4_14WebURLResponseERKSsEE
+   fun:_ZN11webkit_glue26ResourceFetcherWithTimeoutC1ERK4GURLPN6WebKit8WebFrameEiP14CallbackRunnerI6Tuple2IRKNS4_14WebURLResponseERKSsEE
+   fun:_ZN11webkit_glue27AltErrorPageResourceFetcherC1ERK4GURLPN6WebKit8WebFrameERKNS4_11WebURLErrorEP14CallbackRunnerI6Tuple3IS6_S9_RKSsEE
+}
