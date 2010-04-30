@@ -2739,18 +2739,7 @@
    fun:_ZN11MessageLoop7RunTaskEP4Task
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop13DoDelayedWorkEPN4base4TimeE
-   fun:_ZN4base16MessagePumpForUI14HandleDispatchEv
-   fun:_ZN54_GLOBAL__N_base_message_pump_glib.cc_00000000_DA4FE74C18WorkSourceDispatchEP8_GSourcePFiPvES2_
-   fun:g_main_context_dispatch
-   fun:g_main_context_iterate
-   fun:g_main_context_iteration
-   fun:_ZN4base16MessagePumpForUI17RunWithDispatcherEPNS_11MessagePump8DelegateEPNS0_10DispatcherE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
-   fun:_ZN16MessageLoopForUI3RunEPN4base16MessagePumpForUI10DispatcherE
-   fun:_ZN59_GLOBAL__N_chrome_browser_browser_main.cc_00000000_F6B6498C16RunUIMessageLoopEP14BrowserProcess
-   fun:_Z11BrowserMainRK18MainFunctionParams
-   fun:ChromeMain
+   ...
 }
 {
    bug_42897
@@ -2778,7 +2767,6 @@
    fun:_ZN3WTF10RefCountedIN7WebCore14DocumentLoaderEE5derefEv
    fun:_ZN3WTF6RefPtrIN7WebCore14DocumentLoaderEED1Ev
 }
-
 {
    bug_42925
    Memcheck:Leak
@@ -2792,6 +2780,17 @@
    obj:*
    obj:*
    fun:_ZN2v88internal6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPPPS4_Pb
+}
+{
+   bug_23416
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11webkit_glue16WebURLLoaderImplC1Ev
+   fun:_ZN11webkit_glue16WebKitClientImpl15createURLLoaderEv
+   fun:_ZN11webkit_glue15ResourceFetcher5StartEPN6WebKit8WebFrameE
+   fun:_ZN11webkit_glue15ResourceFetcherC2ERK4GURLPN6WebKit8WebFrameEP14CallbackRunnerI6Tuple2IRKNS4_14WebURLResponseERKSsEE
+   fun:_ZN11webkit_glue26ResourceFetcherWithTimeoutC1ERK4GURLPN6WebKit8WebFrameEiP14CallbackRunnerI6Tuple2IRKNS4_14WebURLResponseERKSsEE
+   fun:_ZN11webkit_glue27AltErrorPageResourceFetcherC1ERK4GURLPN6WebKit8WebFrameERKNS4_11WebURLErrorEP14CallbackRunnerI6Tuple3IS6_S9_RKSsEE
 }
 {
    bug_42941
