@@ -54,6 +54,7 @@
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "googleurl/src/gurl.h"
+#include "googleurl/src/url_canon.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domain.h"
 
@@ -377,6 +378,10 @@ Time CookieMonster::ParseCookieTime(const std::string& time_string) {
   return Time();
 }
 
+bool CookieMonster::DomainIsHostOnly(const std::string& domain_string) {
+  return (domain_string.empty() || domain_string[0] != '.');
+}
+
 // Returns the effective TLD+1 for a given host. This only makes sense for http
 // and https schemes. For other schemes, the host will be returned unchanged
 // (minus any leading .).
@@ -385,27 +390,28 @@ static std::string GetEffectiveDomain(const std::string& scheme,
   if (scheme == "http" || scheme == "https")
     return RegistryControlledDomainService::GetDomainAndRegistry(host);
 
-  if (!host.empty() && host[0] == '.')
+  if (!CookieMonster::DomainIsHostOnly(host))
     return host.substr(1);
   return host;
 }
 
-// Determine the cookie domain key to use for setting the specified cookie.
+// Determine the cookie domain key to use for setting a cookie with the
+// specified domain attribute string.
 // On success returns true, and sets cookie_domain_key to either a
 //   -host cookie key (ex: "google.com")
 //   -domain cookie key (ex: ".google.com")
-static bool GetCookieDomainKey(const GURL& url,
-                               const CookieMonster::ParsedCookie& pc,
-                               std::string* cookie_domain_key) {
+static bool GetCookieDomainKeyWithString(const GURL& url,
+                                         const std::string& domain_string,
+                                         std::string* cookie_domain_key) {
   const std::string url_host(url.host());
 
-  // If no domain was specified in the cookie, default to a host cookie.
+  // If no domain was specified in the domain string, default to a host cookie.
   // We match IE/Firefox in allowing a domain=IPADDR if it matches the url
   // ip address hostname exactly.  It should be treated as a host cookie.
-  if (!pc.HasDomain() || pc.Domain().empty() ||
-      (url.HostIsIPAddress() && url_host == pc.Domain())) {
+  if (domain_string.empty() ||
+      (url.HostIsIPAddress() && url_host == domain_string)) {
     *cookie_domain_key = url_host;
-    DCHECK((*cookie_domain_key)[0] != '.');
+    DCHECK(CookieMonster::DomainIsHostOnly(*cookie_domain_key));
     return true;
   }
 
@@ -417,7 +423,7 @@ static bool GetCookieDomainKey(const GURL& url,
   // also treats domain=.....my.domain.com like domain=.my.domain.com, but
   // neither IE nor Safari do this, and we don't either.
   url_canon::CanonHostInfo ignored;
-  std::string cookie_domain(net::CanonicalizeHost(pc.Domain(), &ignored));
+  std::string cookie_domain(net::CanonicalizeHost(domain_string, &ignored));
   if (cookie_domain.empty())
     return false;
   if (cookie_domain[0] != '.')
@@ -447,8 +453,18 @@ static bool GetCookieDomainKey(const GURL& url,
   return true;
 }
 
-static std::string CanonPath(const GURL& url,
-                             const CookieMonster::ParsedCookie& pc) {
+// Determine the cookie domain key to use for setting the specified cookie.
+static bool GetCookieDomainKey(const GURL& url,
+                               const CookieMonster::ParsedCookie& pc,
+                               std::string* cookie_domain_key) {
+  std::string domain_string;
+  if (pc.HasDomain())
+    domain_string = pc.Domain();
+  return GetCookieDomainKeyWithString(url, domain_string, cookie_domain_key);
+}
+
+static std::string CanonPathWithString(const GURL& url,
+                                       const std::string& path_string) {
   // The RFC says the path should be a prefix of the current URL path.
   // However, Mozilla allows you to set any path for compatibility with
   // broken websites.  We unfortunately will mimic this behavior.  We try
@@ -456,8 +472,8 @@ static std::string CanonPath(const GURL& url,
   // default the path to something reasonable.
 
   // The path was supplied in the cookie, we'll take it.
-  if (pc.HasPath() && !pc.Path().empty() && pc.Path()[0] == '/')
-    return pc.Path();
+  if (!path_string.empty() && path_string[0] == '/')
+    return path_string;
 
   // The path was not supplied in the cookie or invalid, we will default
   // to the current URL path.
@@ -475,6 +491,14 @@ static std::string CanonPath(const GURL& url,
 
   // Return up to the rightmost '/'.
   return url_path.substr(0, idx);
+}
+
+static std::string CanonPath(const GURL& url,
+                             const CookieMonster::ParsedCookie& pc) {
+  std::string path_string;
+  if (pc.HasPath())
+    path_string = pc.Path();
+  return CanonPathWithString(url, path_string);
 }
 
 static Time CanonExpiration(const CookieMonster::ParsedCookie& pc,
@@ -577,20 +601,59 @@ bool CookieMonster::SetCookieWithCreationTimeAndOptions(
     COOKIE_DLOG(WARNING) << "Failed to allocate CanonicalCookie";
     return false;
   }
+  return SetCanonicalCookie(&cc, cookie_domain, creation_time, options);
+}
 
-  if (DeleteAnyEquivalentCookie(cookie_domain,
-                                *cc,
+bool CookieMonster::SetCookieWithDetails(
+    const GURL& url, const std::string& name, const std::string& value,
+    const std::string& domain, const std::string& path,
+    const base::Time& expiration_time, bool secure, bool http_only) {
+  if (!HasCookieableScheme(url))
+    return false;
+
+  // Expect a valid domain attribute with no illegal characters.
+  std::string parsed_domain = ParsedCookie::ParseValueString(domain);
+  if (parsed_domain != domain)
+    return false;
+  std::string cookie_domain;
+  if (!GetCookieDomainKeyWithString(url, parsed_domain, &cookie_domain))
+    return false;
+
+  AutoLock autolock(lock_);
+  InitIfNecessary();
+
+  Time creation_time = CurrentTime();
+  last_time_seen_ = creation_time;
+
+  scoped_ptr<CanonicalCookie> cc;
+  cc.reset(CanonicalCookie::Create(
+      url, name, value, path, creation_time, expiration_time,
+      secure, http_only));
+
+  if (!cc.get())
+    return false;
+
+  CookieOptions options;
+  options.set_include_httponly();
+  return SetCanonicalCookie(&cc, cookie_domain, creation_time, options);
+}
+
+bool CookieMonster::SetCanonicalCookie(scoped_ptr<CanonicalCookie>* cc,
+                                       const std::string& cookie_domain,
+                                       const Time& creation_time,
+                                       const CookieOptions& options) {
+  if (DeleteAnyEquivalentCookie(cookie_domain, **cc,
                                 options.exclude_httponly())) {
     COOKIE_DLOG(INFO) << "SetCookie() not clobbering httponly cookie";
     return false;
   }
 
-  COOKIE_DLOG(INFO) << "SetCookie() cc: " << cc->DebugString();
+  COOKIE_DLOG(INFO) << "SetCookie() cc: " << (*cc)->DebugString();
 
   // Realize that we might be setting an expired cookie, and the only point
   // was to delete the cookie which we've already done.
-  if (!cc->IsExpired(creation_time))
-    InternalInsertCookie(cookie_domain, cc.release(), true);
+  if (!(*cc)->IsExpired(creation_time))
+    InternalInsertCookie(cookie_domain, cc->release(), true);
 
   // We assume that hopefully setting a cookie will be less common than
   // querying a cookie.  Since setting a cookie can put us over our limits,
@@ -1102,62 +1165,147 @@ static inline bool SeekBackPast(std::string::const_iterator* it,
   return *it == end;
 }
 
+const char CookieMonster::ParsedCookie::kTerminator[] = "\n\r\0";
+const int CookieMonster::ParsedCookie::kTerminatorLen =
+    sizeof(kTerminator) - 1;
+const char CookieMonster::ParsedCookie::kWhitespace[] = " \t";
+const char CookieMonster::ParsedCookie::kValueSeparator[] = ";";
+const char CookieMonster::ParsedCookie::kTokenSeparator[] = ";=";
+
+std::string::const_iterator CookieMonster::ParsedCookie::FindFirstTerminator(
+    const std::string& s) {
+  std::string::const_iterator end = s.end();
+  size_t term_pos =
+      s.find_first_of(std::string(kTerminator, kTerminatorLen));
+  if (term_pos != std::string::npos) {
+    // We found a character we should treat as an end of string.
+    end = s.begin() + term_pos;
+  }
+  return end;
+}
+
+bool CookieMonster::ParsedCookie::ParseToken(
+    std::string::const_iterator* it,
+    const std::string::const_iterator& end,
+    std::string::const_iterator* token_start,
+    std::string::const_iterator* token_end) {
+  DCHECK(it && token_start && token_end);
+  std::string::const_iterator token_real_end;
+
+  // Seek past any whitespace before the "token" (the name).
+  // token_start should point at the first character in the token
+  if (SeekPast(it, end, kWhitespace))
+    return false;  // No token, whitespace or empty.
+  *token_start = *it;
+
+  // Seek over the token, to the token separator.
+  // token_real_end should point at the token separator, i.e. '='.
+  // If it == end after the seek, we probably have a token-value.
+  SeekTo(it, end, kTokenSeparator);
+  token_real_end = *it;
+
+  // Ignore any whitespace between the token and the token separator.
+  // token_end should point after the last interesting token character,
+  // pointing at either whitespace, or at '=' (and equal to token_real_end).
+  if (*it != *token_start) {  // We could have an empty token name.
+    --(*it);  // Go back before the token separator.
+    // Skip over any whitespace to the first non-whitespace character.
+    SeekBackPast(it, *token_start, kWhitespace);
+    // Point after it.
+    ++(*it);
+  }
+  *token_end = *it;
+
+  // Seek us back to the end of the token.
+  *it = token_real_end;
+  return true;
+}
+
+void CookieMonster::ParsedCookie::ParseValue(
+    std::string::const_iterator* it,
+    const std::string::const_iterator& end,
+    std::string::const_iterator* value_start,
+    std::string::const_iterator* value_end) {
+  DCHECK(it && value_start && value_end);
+
+  // Seek past any whitespace that might in-between the token and value.
+  SeekPast(it, end, kWhitespace);
+  // value_start should point at the first character of the value.
+  *value_start = *it;
+
+  // It is unclear exactly how quoted string values should be handled.
+  // Major browsers do different things, for example, Firefox supports
+  // semicolons embedded in a quoted value, while IE does not.  Looking at
+  // the specs, RFC 2109 and 2965 allow for a quoted-string as the value.
+  // However, these specs were apparently written after browsers had
+  // implemented cookies, and they seem very distant from the reality of
+  // what is actually implemented and used on the web.  The original spec
+  // from Netscape is possibly what is closest to the cookies used today.
+  // This spec didn't have explicit support for double quoted strings, and
+  // states that ; is not allowed as part of a value.  We had originally
+  // implement the Firefox behavior (A="B;C"; -> A="B;C";).  However, since
+  // there is no standard that makes sense, we decided to follow the behavior
+  // of IE and Safari, which is closer to the original Netscape proposal.
+  // This means that A="B;C" -> A="B;.  This also makes the code much simpler
+  // and reduces the possibility for invalid cookies, where other browsers
+  // like Opera currently reject those invalid cookies (ex A="B" "C";).
+
+  // Just look for ';' to terminate ('=' allowed).
+  // We can hit the end, maybe they didn't terminate.
+  SeekTo(it, end, kValueSeparator);
+
+  // Will be pointed at the ; seperator or the end.
+  *value_end = *it;
+
+  // Ignore any unwanted whitespace after the value.
+  if (*value_end != *value_start) {  // Could have an empty value
+    --(*value_end);
+    SeekBackPast(value_end, *value_start, kWhitespace);
+    ++(*value_end);
+  }
+}
+
+std::string CookieMonster::ParsedCookie::ParseTokenString(
+    const std::string& token) {
+  std::string::const_iterator it = token.begin();
+  std::string::const_iterator end = FindFirstTerminator(token);
+
+  std::string::const_iterator token_start, token_end;
+  if (ParseToken(&it, end, &token_start, &token_end))
+    return std::string(token_start, token_end);
+  return std::string();
+}
+
+std::string CookieMonster::ParsedCookie::ParseValueString(
+    const std::string& value) {
+  std::string::const_iterator it = value.begin();
+  std::string::const_iterator end = FindFirstTerminator(value);
+
+  std::string::const_iterator value_start, value_end;
+  ParseValue(&it, end, &value_start, &value_end);
+  return std::string(value_start, value_end);
+}
+
 // Parse all token/value pairs and populate pairs_.
 void CookieMonster::ParsedCookie::ParseTokenValuePairs(
     const std::string& cookie_line) {
-  static const char kTerminator[]      = "\n\r\0";
-  static const int  kTerminatorLen     = sizeof(kTerminator) - 1;
-  static const char kWhitespace[]      = " \t";
-  static const char kValueSeparator[]  = ";";
-  static const char kTokenSeparator[]  = ";=";
-
   pairs_.clear();
 
   // Ok, here we go.  We should be expecting to be starting somewhere
   // before the cookie line, not including any header name...
   std::string::const_iterator start = cookie_line.begin();
-  std::string::const_iterator end = cookie_line.end();
   std::string::const_iterator it = start;
 
   // TODO Make sure we're stripping \r\n in the network code.  Then we
   // can log any unexpected terminators.
-  size_t term_pos =
-      cookie_line.find_first_of(std::string(kTerminator, kTerminatorLen));
-  if (term_pos != std::string::npos) {
-    // We found a character we should treat as an end of string.
-    end = start + term_pos;
-  }
+  std::string::const_iterator end = FindFirstTerminator(cookie_line);
 
   for (int pair_num = 0; pair_num < kMaxPairs && it != end; ++pair_num) {
     TokenValuePair pair;
-    std::string::const_iterator token_start, token_real_end, token_end;
 
-    // Seek past any whitespace before the "token" (the name).
-    // token_start should point at the first character in the token
-    if (SeekPast(&it, end, kWhitespace))
-      break;  // No token, whitespace or empty.
-    token_start = it;
-
-    // Seek over the token, to the token separator.
-    // token_real_end should point at the token separator, i.e. '='.
-    // If it == end after the seek, we probably have a token-value.
-    SeekTo(&it, end, kTokenSeparator);
-    token_real_end = it;
-
-    // Ignore any whitespace between the token and the token separator.
-    // token_end should point after the last interesting token character,
-    // pointing at either whitespace, or at '=' (and equal to token_real_end).
-    if (it != token_start) {  // We could have an empty token name.
-      --it;  // Go back before the token separator.
-      // Skip over any whitespace to the first non-whitespace character.
-      SeekBackPast(&it, token_start, kWhitespace);
-      // Point after it.
-      ++it;
-    }
-    token_end = it;
-
-    // Seek us back to the end of the token.
-    it = token_real_end;
+    std::string::const_iterator token_start, token_end;
+    if (!ParseToken(&it, end, &token_start, &token_end))
+      break;
 
     if (it == end || *it != '=') {
       // We have a token-value, we didn't have any token name.
@@ -1184,45 +1332,10 @@ void CookieMonster::ParsedCookie::ParseTokenValuePairs(
 
     // OK, now try to parse a value.
     std::string::const_iterator value_start, value_end;
-
-    // Seek past any whitespace that might in-between the token and value.
-    SeekPast(&it, end, kWhitespace);
-    // value_start should point at the first character of the value.
-    value_start = it;
-
-    // It is unclear exactly how quoted string values should be handled.
-    // Major browsers do different things, for example, Firefox supports
-    // semicolons embedded in a quoted value, while IE does not.  Looking at
-    // the specs, RFC 2109 and 2965 allow for a quoted-string as the value.
-    // However, these specs were apparently written after browsers had
-    // implemented cookies, and they seem very distant from the reality of
-    // what is actually implemented and used on the web.  The original spec
-    // from Netscape is possibly what is closest to the cookies used today.
-    // This spec didn't have explicit support for double quoted strings, and
-    // states that ; is not allowed as part of a value.  We had originally
-    // implement the Firefox behavior (A="B;C"; -> A="B;C";).  However, since
-    // there is no standard that makes sense, we decided to follow the behavior
-    // of IE and Safari, which is closer to the original Netscape proposal.
-    // This means that A="B;C" -> A="B;.  This also makes the code much simpler
-    // and reduces the possibility for invalid cookies, where other browsers
-    // like Opera currently reject those invalid cookies (ex A="B" "C";).
-
-    // Just look for ';' to terminate ('=' allowed).
-    // We can hit the end, maybe they didn't terminate.
-    SeekTo(&it, end, kValueSeparator);
-
-    // Will be pointed at the ; seperator or the end.
-    value_end = it;
-
-    // Ignore any unwanted whitespace after the value.
-    if (value_end != value_start) {  // Could have an empty value
-      --value_end;
-      SeekBackPast(&value_end, value_start, kWhitespace);
-      ++value_end;
-    }
-
+    ParseValue(&it, end, &value_start, &value_end);
     // OK, we're finished with a Token/Value.
     pair.second = std::string(value_start, value_end);
+
     // From RFC2109: "Attributes (names) (attr) are case-insensitive."
     if (pair_num != 0)
       StringToLowerASCII(&pair.first);
@@ -1245,19 +1358,21 @@ void CookieMonster::ParsedCookie::SetupAttributes() {
 
   // We skip over the first token/value, the user supplied one.
   for (size_t i = 1; i < pairs_.size(); ++i) {
-    if (pairs_[i].first == kPathTokenName)
+    if (pairs_[i].first == kPathTokenName) {
       path_index_ = i;
-    else if (pairs_[i].first == kDomainTokenName)
+    } else if (pairs_[i].first == kDomainTokenName) {
       domain_index_ = i;
-    else if (pairs_[i].first == kExpiresTokenName)
+    } else if (pairs_[i].first == kExpiresTokenName) {
       expires_index_ = i;
-    else if (pairs_[i].first == kMaxAgeTokenName)
+    } else if (pairs_[i].first == kMaxAgeTokenName) {
       maxage_index_ = i;
-    else if (pairs_[i].first == kSecureTokenName)
+    } else if (pairs_[i].first == kSecureTokenName) {
       secure_index_ = i;
-    else if (pairs_[i].first == kHttpOnlyTokenName)
+    } else if (pairs_[i].first == kHttpOnlyTokenName) {
       httponly_index_ = i;
-    else { /* some attribute we don't know or don't care about. */ }
+    } else {
+      /* some attribute we don't know or don't care about. */
+    }
   }
 }
 
@@ -1288,6 +1403,40 @@ CookieMonster::CanonicalCookie::CanonicalCookie(const GURL& url,
       httponly_(pc.IsHttpOnly()) {
   if (has_expires_)
     expiry_date_ = CanonExpiration(pc, creation_date_, CookieOptions());
+}
+
+CookieMonster::CanonicalCookie* CookieMonster::CanonicalCookie::Create(
+      const GURL& url, const std::string& name, const std::string& value,
+      const std::string& path, const base::Time& creation_time,
+      const base::Time& expiration_time, bool secure, bool http_only) {
+  // Expect valid attribute tokens and values, as defined by the ParsedCookie
+  // logic, otherwise don't create the cookie.
+  std::string parsed_name = ParsedCookie::ParseTokenString(name);
+  if (parsed_name != name)
+    return NULL;
+  std::string parsed_value = ParsedCookie::ParseValueString(value);
+  if (parsed_value != value)
+    return NULL;
+  std::string parsed_path = ParsedCookie::ParseValueString(path);
+  if (parsed_path != path)
+    return NULL;
+
+  std::string cookie_path = CanonPathWithString(url, parsed_path);
+  // Expect that the path was either not specified (empty), or is valid.
+  if (!parsed_path.empty() && cookie_path != parsed_path)
+    return NULL;
+  // Canonicalize path again to make sure it escapes characters as needed.
+  url_parse::Component path_component(0, cookie_path.length());
+  url_canon::RawCanonOutputT<char> canon_path;
+  url_parse::Component canon_path_component;
+  url_canon::CanonicalizePath(cookie_path.data(), path_component,
+                              &canon_path, &canon_path_component);
+  cookie_path = std::string(canon_path.data() + canon_path_component.begin,
+                            canon_path_component.len);
+
+  return new CanonicalCookie(parsed_name, parsed_value, cookie_path,
+                             secure, http_only, creation_time, creation_time,
+                             !expiration_time.is_null(), expiration_time);
 }
 
 bool CookieMonster::CanonicalCookie::IsOnPath(

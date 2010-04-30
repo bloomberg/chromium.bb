@@ -15,6 +15,7 @@
 #include "base/basictypes.h"
 #include "base/lock.h"
 #include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "net/base/cookie_store.h"
 
@@ -76,6 +77,10 @@ class CookieMonster : public CookieStore {
   // Parse the string with the cookie time (very forgivingly).
   static base::Time ParseCookieTime(const std::string& time_string);
 
+  // Returns true if a domain string represents a host-only cookie,
+  // i.e. it doesn't begin with a leading '.' character.
+  static bool DomainIsHostOnly(const std::string& domain_string);
+
   // CookieStore implementation.
   virtual bool SetCookieWithOptions(const GURL& url,
                                     const std::string& cookie_line,
@@ -85,6 +90,19 @@ class CookieMonster : public CookieStore {
   virtual void DeleteCookie(const GURL& url, const std::string& cookie_name);
   virtual CookieMonster* GetCookieMonster() { return this; }
 
+  // Sets a cookie given explicit user-provided cookie attributes. The cookie
+  // name, value, domain, etc. are each provided as separate strings. This
+  // function expects each attribute to be well-formed. It will check for
+  // disallowed characters (e.g. the ';' character is disallowed within the
+  // cookie value attribute) and will return false without setting the cookie
+  // if such characters are found.
+  bool SetCookieWithDetails(const GURL& url,
+                            const std::string& name,
+                            const std::string& value,
+                            const std::string& domain,
+                            const std::string& path,
+                            const base::Time& expiration_time,
+                            bool secure, bool http_only);
 
   // Exposed for unit testing.
   bool SetCookieWithCreationTimeAndOptions(const GURL& url,
@@ -201,6 +219,13 @@ class CookieMonster : public CookieStore {
                             CanonicalCookie* cc,
                             bool sync_to_store);
 
+  // Helper function that sets a canonical cookie, deleting equivalents and
+  // performing garbage collection.
+  bool SetCanonicalCookie(scoped_ptr<CanonicalCookie>* cc,
+                          const std::string& cookie_domain,
+                          const base::Time& creation_time,
+                          const CookieOptions& options);
+
   void InternalUpdateCookieAccessTime(CanonicalCookie* cc);
 
   void InternalDeleteCookie(CookieMap::iterator it, bool sync_to_store);
@@ -287,6 +312,13 @@ class CookieMonster::CanonicalCookie {
   CanonicalCookie(const GURL& url, const ParsedCookie& pc);
 
   // Supports the default copy constructor.
+
+  // Creates a canonical cookie from unparsed attribute values. May return
+  // NULL if an attribute value is invalid.
+  static CanonicalCookie* Create(
+      const GURL& url, const std::string& name, const std::string& value,
+      const std::string& path, const base::Time& creation_time,
+      const base::Time& expiration_time, bool secure, bool http_only);
 
   const std::string& Name() const { return name_; }
   const std::string& Value() const { return value_; }
@@ -377,14 +409,48 @@ class CookieMonster::ParsedCookie {
   bool IsSecure() const { return secure_index_ != 0; }
   bool IsHttpOnly() const { return httponly_index_ != 0; }
 
-  // Return the number of attributes, for example, returning 2 for:
+  // Returns the number of attributes, for example, returning 2 for:
   //   "BLAH=hah; path=/; domain=.google.com"
   size_t NumberOfAttributes() const { return pairs_.size() - 1; }
 
   // For debugging only!
   std::string DebugString() const;
 
+  // Returns an iterator pointing to the first terminator character found in
+  // the given string.
+  static std::string::const_iterator FindFirstTerminator(const std::string& s);
+
+  // Given iterators pointing to the beginning and end of a string segment,
+  // returns as output arguments token_start and token_end to the start and end
+  // positions of a cookie attribute token name parsed from the segment, and
+  // updates the segment iterator to point to the next segment to be parsed.
+  // If no token is found, the function returns false.
+  static bool ParseToken(std::string::const_iterator* it,
+                         const std::string::const_iterator& end,
+                         std::string::const_iterator* token_start,
+                         std::string::const_iterator* token_end);
+
+  // Given iterators pointing to the beginning and end of a string segment,
+  // returns as output arguments value_start and value_end to the start and end
+  // positions of a cookie attribute value parsed from the segment, and updates
+  // the segment iterator to point to the next segment to be parsed.
+  static void ParseValue(std::string::const_iterator* it,
+                         const std::string::const_iterator& end,
+                         std::string::const_iterator* value_start,
+                         std::string::const_iterator* value_end);
+
+  // Same as the above functions, except the input is assumed to contain the
+  // desired token/value and nothing else.
+  static std::string ParseTokenString(const std::string& token);
+  static std::string ParseValueString(const std::string& value);
+
  private:
+  static const char kTerminator[];
+  static const int  kTerminatorLen;
+  static const char kWhitespace[];
+  static const char kValueSeparator[];
+  static const char kTokenSeparator[];
+
   void ParseTokenValuePairs(const std::string& cookie_line);
   void SetupAttributes();
 

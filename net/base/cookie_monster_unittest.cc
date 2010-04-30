@@ -379,6 +379,33 @@ TEST(ParsedCookieTest, EmbeddedTerminator) {
   EXPECT_EQ("BB", pc3.Value());
 }
 
+TEST(ParsedCookieTest, ParseTokensAndValues) {
+  EXPECT_EQ("hello",
+            net::CookieMonster::ParsedCookie::ParseTokenString(
+                "hello\nworld"));
+  EXPECT_EQ("fs!!@",
+            net::CookieMonster::ParsedCookie::ParseTokenString(
+                "fs!!@;helloworld"));
+  EXPECT_EQ("hello world\tgood",
+            net::CookieMonster::ParsedCookie::ParseTokenString(
+                "hello world\tgood\rbye"));
+  EXPECT_EQ("A",
+            net::CookieMonster::ParsedCookie::ParseTokenString(
+                "A=B=C;D=E"));
+  EXPECT_EQ("hello",
+            net::CookieMonster::ParsedCookie::ParseValueString(
+                "hello\nworld"));
+  EXPECT_EQ("fs!!@",
+            net::CookieMonster::ParsedCookie::ParseValueString(
+                "fs!!@;helloworld"));
+  EXPECT_EQ("hello world\tgood",
+            net::CookieMonster::ParsedCookie::ParseValueString(
+                "hello world\tgood\rbye"));
+  EXPECT_EQ("A=B=C",
+            net::CookieMonster::ParsedCookie::ParseValueString(
+                "A=B=C;D=E"));
+}
+
 static const char kUrlGoogle[] = "http://www.google.izzle";
 static const char kUrlGoogleSecure[] = "https://www.google.izzle";
 static const char kUrlFtp[] = "ftp://ftp.google.izzle/";
@@ -725,6 +752,11 @@ struct CookieDateParsingCase {
   const time_t epoch;
 };
 
+struct DomainIsHostOnlyCase {
+  const char* str;
+  const bool is_host_only;
+};
+
 }  // namespace
 
 TEST(CookieMonsterTest, TestCookieDateParsing) {
@@ -808,6 +840,19 @@ TEST(CookieMonsterTest, TestCookieDateParsing) {
     }
     EXPECT_TRUE(!parsed_time.is_null()) << tests[i].str;
     EXPECT_EQ(tests[i].epoch, parsed_time.ToTimeT()) << tests[i].str;
+  }
+}
+
+TEST(CookieMonsterTest, TestDomainIsHostOnly) {
+  const DomainIsHostOnlyCase tests[] = {
+    { "",               true },
+    { "www.google.com", true },
+    { ".google.com",    false }
+  };
+
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    EXPECT_EQ(tests[i].is_host_only,
+              net::CookieMonster::DomainIsHostOnly(tests[i].str));
   }
 }
 
@@ -1157,7 +1202,6 @@ TEST(CookieMonsterTest, SetCookieableSchemes) {
 }
 
 TEST(CookieMonsterTest, GetAllCookiesForURL) {
-
   GURL url_google(kUrlGoogle);
   GURL url_google_secure(kUrlGoogleSecure);
 
@@ -1214,7 +1258,7 @@ TEST(CookieMonsterTest, GetAllCookiesForURL) {
   ASSERT_TRUE(++it == cookies.end());
 
   // Reading after a short wait should not update the access date.
-  EXPECT_TRUE (last_access_date == GetFirstCookieAccessDate(cm));
+  EXPECT_TRUE(last_access_date == GetFirstCookieAccessDate(cm));
 }
 
 TEST(CookieMonsterTest, GetAllCookiesForURLPathMatching) {
@@ -1261,7 +1305,6 @@ TEST(CookieMonsterTest, GetAllCookiesForURLPathMatching) {
   EXPECT_EQ("/", it->second.Path());
 
   ASSERT_TRUE(++it == cookies.end());
-
 }
 
 TEST(CookieMonsterTest, DeleteCookieByName) {
@@ -1511,4 +1554,80 @@ TEST(CookieMonsterTest, Delegate) {
   EXPECT_EQ("a", delegate->changes()[1].first.second.Name());
   EXPECT_EQ("val2", delegate->changes()[1].first.second.Value());
   delegate->reset();
+}
+
+TEST(CookieMonsterTest, SetCookieWithDetails) {
+  GURL url_google(kUrlGoogle);
+  GURL url_google_foo("http://www.google.izzle/foo");
+  GURL url_google_bar("http://www.google.izzle/bar");
+  GURL url_google_secure(kUrlGoogleSecure);
+
+  scoped_refptr<net::CookieMonster> cm(new net::CookieMonster(NULL, NULL));
+
+  EXPECT_TRUE(cm->SetCookieWithDetails(
+      url_google_foo, "A", "B", std::string(), "/foo", base::Time(),
+      false, false));
+  EXPECT_TRUE(cm->SetCookieWithDetails(
+      url_google_bar, "C", "D", "google.izzle", "/bar", base::Time(),
+      false, true));
+  EXPECT_TRUE(cm->SetCookieWithDetails(
+      url_google, "E", "F", std::string(), std::string(), base::Time(),
+      true, false));
+
+  // Test that malformed attributes fail to set the cookie.
+  EXPECT_FALSE(cm->SetCookieWithDetails(
+      url_google_foo, " A", "B", std::string(), "/foo", base::Time(),
+      false, false));
+  EXPECT_FALSE(cm->SetCookieWithDetails(
+      url_google_foo, "A;", "B", std::string(), "/foo", base::Time(),
+      false, false));
+  EXPECT_FALSE(cm->SetCookieWithDetails(
+      url_google_foo, "A=", "B", std::string(), "/foo", base::Time(),
+      false, false));
+  EXPECT_FALSE(cm->SetCookieWithDetails(
+      url_google_foo, "A", "B", "google.ozzzzzzle", "foo", base::Time(),
+      false, false));
+  EXPECT_FALSE(cm->SetCookieWithDetails(
+      url_google_foo, "A=", "B", std::string(), "foo", base::Time(),
+      false, false));
+
+  net::CookieMonster::CookieList cookies =
+      cm->GetAllCookiesForURL(url_google_foo);
+  net::CookieMonster::CookieList::iterator it = cookies.begin();
+
+  ASSERT_TRUE(it != cookies.end());
+  EXPECT_EQ("A", it->second.Name());
+  EXPECT_EQ("B", it->second.Value());
+  EXPECT_EQ("www.google.izzle", it->first);
+  EXPECT_EQ("/foo", it->second.Path());
+  EXPECT_FALSE(it->second.DoesExpire());
+  EXPECT_FALSE(it->second.IsSecure());
+  EXPECT_FALSE(it->second.IsHttpOnly());
+
+  ASSERT_TRUE(++it == cookies.end());
+
+  cookies = cm->GetAllCookiesForURL(url_google_bar);
+  it = cookies.begin();
+
+  ASSERT_TRUE(it != cookies.end());
+  EXPECT_EQ("C", it->second.Name());
+  EXPECT_EQ("D", it->second.Value());
+  EXPECT_EQ(".google.izzle", it->first);
+  EXPECT_EQ("/bar", it->second.Path());
+  EXPECT_FALSE(it->second.IsSecure());
+  EXPECT_TRUE(it->second.IsHttpOnly());
+
+  ASSERT_TRUE(++it == cookies.end());
+
+  cookies = cm->GetAllCookiesForURL(url_google_secure);
+  it = cookies.begin();
+
+  ASSERT_TRUE(it != cookies.end());
+  EXPECT_EQ("E", it->second.Name());
+  EXPECT_EQ("F", it->second.Value());
+  EXPECT_EQ("/", it->second.Path());
+  EXPECT_TRUE(it->second.IsSecure());
+  EXPECT_FALSE(it->second.IsHttpOnly());
+
+  ASSERT_TRUE(++it == cookies.end());
 }
