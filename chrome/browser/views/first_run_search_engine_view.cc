@@ -125,15 +125,20 @@ SearchEngineChoice::SearchEngineChoice(views::ButtonListener* listener,
     // No logo -- we must show a text label.
     views::Label* logo_label = new views::Label(search_engine_->short_name());
     logo_label->SetColor(SK_ColorDKGRAY);
-    logo_label->SetFont(logo_label->font().DeriveFont(2, gfx::Font::NORMAL));
+    logo_label->SetFont(logo_label->font().DeriveFont(3, gfx::Font::BOLD));
     logo_label->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
     logo_label->SetTooltipText(search_engine_->short_name());
+    logo_label->SetMultiLine(true);
+    logo_label->SizeToFit(kSmallLogoWidth);
     choice_view_ = logo_label;
   }
 }
 
 int SearchEngineChoice::GetChoiceViewWidth() {
-  return choice_view_->GetPreferredSize().width();
+  if (is_image_label_)
+    return choice_view_->GetPreferredSize().width();
+  else
+    return kSmallLogoWidth;
 }
 
 int SearchEngineChoice::GetChoiceViewHeight() {
@@ -235,14 +240,14 @@ void FirstRunSearchEngineView::OnTemplateURLModelChanged() {
     SearchEngineChoice* choice = new SearchEngineChoice(this,
         *search_engine_iter, default_choice != NULL);
     search_engine_choices_.push_back(choice);
-    AddChildView(choice->GetView());
-    AddChildView(choice);
+    AddChildView(choice->GetView());  // The logo or text view.
+    AddChildView(choice);  // The button associated with the choice.
   }
   // Push the default choice to the fourth position.
   if (default_choice) {
     search_engine_choices_.push_back(default_choice);
-    AddChildView(default_choice);
-    AddChildView(default_choice->GetView());
+    AddChildView(default_choice->GetView());  // The logo or text view.
+    AddChildView(default_choice);  // The button associated with the choice.
   }
 
   // Now that we know how many logos to show, lay out and become visible.
@@ -341,7 +346,8 @@ void FirstRunSearchEngineView::Layout() {
   const int kUpperLogoMargin = 40;
   const int kLowerLogoMargin = 65;
   // Percentage of vertical space around logos to use for upper padding.
-  const double kUpperPaddingPercent = 0.1;
+  const double kUpperPaddingPercentLarge = 0.1;
+  const double kUpperPaddingPercentSmall = 0.3;
 
   int num_choices = search_engine_choices_.size();
 
@@ -375,10 +381,12 @@ void FirstRunSearchEngineView::Layout() {
     int logo_section_height = logo_height + kVertSpacing + button_height;
     int lower_section_start = label_height + kPanelVertMargin -
                               lower_section_height;
+    double upper_padding_percent = (num_choices > 3) ?
+        kUpperPaddingPercentSmall : kUpperPaddingPercentLarge;
     int upper_logo_margin =
         static_cast<int>((lower_section_start - separator_1_->y() -
                           separator_1_->height() - logo_section_height) *
-                         kUpperPaddingPercent);
+                        upper_padding_percent);
 
     next_v_space = separator_1_->y() + separator_1_->height() +
                    upper_logo_margin;
