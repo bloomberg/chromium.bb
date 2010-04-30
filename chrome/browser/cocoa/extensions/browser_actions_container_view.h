@@ -43,6 +43,11 @@ extern const NSString* kBrowserActionGrippyDragFinishedNotification;
   // Whether the container is currently being resized by the user.
   BOOL userIsResizing_;
 
+  // Whether the user can resize this at all.  Resizing is disabled in incognito
+  // mode since any changes done in incognito mode are not saved anyway, and
+  // also to avoid a crash (http://crbug.com/42848).
+  BOOL resizable_;
+
   // Whether the user is allowed to drag the grippy to the left. NO if all
   // extensions are shown or the location bar has hit its minimum width (handled
   // within toolbar_controller.mm).
@@ -72,6 +77,7 @@ extern const NSString* kBrowserActionGrippyDragFinishedNotification;
 @property(nonatomic) BOOL canDragLeft;
 @property(nonatomic) BOOL canDragRight;
 @property(nonatomic) BOOL grippyPinned;
+@property(nonatomic,getter=isResizable) BOOL resizable;
 @property(nonatomic) CGFloat maxWidth;
 @property(readonly, nonatomic) BOOL userIsResizing;
 @property(nonatomic) BOOL rightBorderShown;

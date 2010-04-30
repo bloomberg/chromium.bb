@@ -273,6 +273,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
     [self createButtons];
     [self showChevronIfNecessaryInFrame:[containerView_ frame] animate:NO];
     [self updateGrippyCursors];
+    [container setResizable:!profile_->IsOffTheRecord()];
   }
 
   return self;

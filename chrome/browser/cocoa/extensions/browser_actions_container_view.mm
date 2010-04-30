@@ -56,9 +56,21 @@ const CGFloat kUpperPadding = 9.0;
     grippyRect_ = NSMakeRect(0.0, 0.0, kGrippyWidth, NSHeight([self bounds]));
     canDragLeft_ = YES;
     canDragRight_ = YES;
+    resizable_ = YES;
     [self setHidden:YES];
   }
   return self;
+}
+
+- (void)setResizable:(BOOL)resizable {
+  if (resizable == resizable_)
+    return;
+  resizable_ = resizable;
+  [self setNeedsDisplay:YES];
+}
+
+- (BOOL)isResizable {
+  return resizable_;
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
@@ -95,7 +107,8 @@ const CGFloat kUpperPadding = 9.0;
 - (void)mouseDown:(NSEvent*)theEvent {
   initialDragPoint_ = [self convertPoint:[theEvent locationInWindow]
                                 fromView:nil];
-  if (!NSMouseInRect(initialDragPoint_, grippyRect_, [self isFlipped]))
+  if (!resizable_ ||
+      !NSMouseInRect(initialDragPoint_, grippyRect_, [self isFlipped]))
     return;
 
   lastXPos_ = [self frame].origin.x;
@@ -189,7 +202,7 @@ const CGFloat kUpperPadding = 9.0;
 // current drag state.
 - (NSCursor*)appropriateCursorForGrippy {
   NSCursor* retVal;
-  if (!canDragLeft_ && !canDragRight_) {
+  if (!resizable_ || (!canDragLeft_ && !canDragRight_)) {
     retVal = [NSCursor arrowCursor];
   } else if (!canDragLeft_) {
     retVal = [NSCursor resizeRightCursor];
@@ -202,6 +215,9 @@ const CGFloat kUpperPadding = 9.0;
 }
 
 - (void)drawGrippy {
+  if (!resizable_)
+    return;
+
   NSRect grippyRect = NSMakeRect(0.0, kLowerPadding + kGrippyLowerPadding, 1.0,
       [self bounds].size.height - kUpperPadding - kGrippyUpperPadding);
   [[NSColor colorWithCalibratedWhite:0.7 alpha:0.5] set];
