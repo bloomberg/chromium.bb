@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
 // See http://crbug.com/42943.
 #define MAYBE_Storage FLAKY_Storage
 #else

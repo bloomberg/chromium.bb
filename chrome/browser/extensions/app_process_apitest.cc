@@ -45,12 +45,14 @@ static void NavigateTabHelper(TabContents* contents, const GURL& url) {
   bool result = false;
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
       contents->render_view_host(), L"",
-      L"window.location = '" + UTF8ToWide(url.spec()) + L"';"
-      L"window.domAutomationController.send(true);",
+      L"window.addEventListener('unload', function() {"
+      L"    window.domAutomationController.send(true);"
+      L"}, false);"
+      L"window.location = '" + UTF8ToWide(url.spec()) + L"';",
       &result);
   ASSERT_TRUE(result);
 
-  if (contents->controller().GetLastCommittedEntry() ||
+  if (!contents->controller().GetLastCommittedEntry() ||
       contents->controller().GetLastCommittedEntry()->url() != url)
     ui_test_utils::WaitForNavigation(&contents->controller());
   EXPECT_EQ(url, contents->controller().GetLastCommittedEntry()->url());

@@ -13,6 +13,8 @@ chrome.test.runTests([function tab() {
       chrome.test.assertTrue(results.rows.length == 1);
       chrome.test.assertTrue(results.rows.item(0).body == "hotdog");
       chrome.test.succeed();
+    }, function(tx, error) {
+      chrome.test.fail(error.message);
     });
   }, function(error) {
     chrome.test.fail(error.message);
