@@ -85,14 +85,19 @@ if ((BASH_VERSINFO[0]<4)) ; then
 fi
 
 if ((NSIS)) && ((CygWin)) && ! [ -d NSIS ] ; then
-  7z -oNSIS x ../../../third_party/NSIS/nsis-2.45.1-Unicode-setup.exe
+  7z -oNSIS x ../../../third_party/NSIS/nsis-2.46-Unicode-setup.exe
   mkdir -p NSIS/Contrib/Graphics/{Checks,Header,Icons,Wizard}
   for dirname in Checks Header Icons Wizard ; do
     mv NSIS/\$_OUTDIR/$dirname/* NSIS/Contrib/Graphics/$dirname
   done
   rmdir NSIS/\$_OUTDIR/{Checks,Header,Icons,Wizard,}
-  rm NSIS/\$PLUGINSDIR/*
+  mkdir "NSIS/Docs/Modern UI/images"
+  ln "NSIS/Docs/Modern UI 2/images"/* "NSIS/Docs/Modern UI/images"
+  mv NSIS/\$PLUGINSDIR/modern-header.bmp NSIS/Contrib/Graphics/Header/nsis.bmp
+  mv NSIS/\$PLUGINSDIR/modern-wizard.bmp NSIS/Contrib/Graphics/Wizard/nsis.bmp
+  mv NSIS/\$PLUGINSDIR/*.dll NSIS/Plugins
   rmdir NSIS/\$PLUGINSDIR
+  chmod a+x NSIS/{,Bin,Contrib/UIs}/*.exe
   mkdir -p "MkLink/nsis"
   cp -aiv "NSIS/Examples/Plugin/nsis/*" "Mklink/nsis"
   cp -aiv "MkLink/Release Unicode/MkLink.dll" "NSIS/Plugins"
