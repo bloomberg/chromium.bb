@@ -2855,3 +2855,23 @@
    fun:NPN_GetValue
    ...
 }
+{
+   bug_42965
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN72_GLOBAL__N_chrome_browser_autofill_autofill_profile.cc_00000000_4328B8E516InitPersonalInfoEPSt3mapIN12AutoFillType14FieldTypeGroupEP9FormGroupSt4lessIS2_ESaISt4pairIKS2_S4_EEE
+   fun:_ZN15AutoFillProfileC1Ev
+   fun:_ZNK15AutoFillProfile5CloneEv
+   fun:_ZN12browser_sync23AutofillChangeProcessor29ObserveAutofillProfileChangedEP21AutofillProfileChangePN8sync_api16WriteTransactionERKNS3_8ReadNodeE
+   fun:_ZN12browser_sync23AutofillChangeProcessor7ObserveE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN19NotificationService6NotifyE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN14ThreadNotifier10NotifyTaskE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_Z16DispatchToMethodI14ThreadNotifierMS0_Fv16NotificationTypeRK18NotificationSourceRK19NotificationDetailsES1_S2_S5_EvPT_T0_RK6Tuple3IT1_T2_T3_E
+   fun:_ZN14RunnableMethodI14ThreadNotifierMS0_Fv16NotificationTypeRK18NotificationSourceRK19NotificationDetailsE6Tuple3IS1_S2_S5_EE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
