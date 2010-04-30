@@ -15,8 +15,13 @@
 #include "native_client/src/trusted/service_runtime/nacl_assert.h"
 
 
-int main() {
+int main(int  ac,
+         char **av) {
   char buf[100];
+
+  UNREFERENCED_PARAMETER(ac);
+  UNREFERENCED_PARAMETER(av);
+
   sprintf(buf, "%"NACL_PRIxS, (size_t) -1);
   printf("got:%s\n", buf);
   if (sizeof(size_t) == 4) {
