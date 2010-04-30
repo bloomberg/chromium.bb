@@ -381,6 +381,14 @@ if env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']:
       'run_service_runtime_tests')
 
 
+format_string_test_exe = sdl_env.ComponentProgram('format_string_test',
+                                                  ['format_string_test.c'])
+node = sdl_env.CommandTest(
+    'format_string_test.out',
+    command=[format_string_test_exe])
+sdl_env.AddNodeToTestSuite(node, ['small_tests'], 'run_format_string_test')
+
+
 if env['TARGET_ARCHITECTURE'] == 'x86':
   arch_testdata_dir = 'testdata/x86_' + env['BUILD_SUBARCH']
 else:

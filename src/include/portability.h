@@ -210,7 +210,7 @@ struct timezone {
  * long
  */
 #if NACL_WINDOWS
-# if defined(__x86_64__)
+# if defined(_WIN64)
 #  define  NACL___PRIS_PREFIX "I64"
 # else
 #  define  NACL___PRIS_PREFIX
@@ -296,7 +296,7 @@ struct timezone {
 # endif
 #else
 /* NACL_WINDOWS */
-# if defined(__x86_64__)
+# if defined(_WIN64)
 #  define NACL___PRIPTR_PREFIX "I64"
 # else
 #  define NACL___PRIPTR_PREFIX "l"
