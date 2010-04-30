@@ -17,7 +17,7 @@
         'domui_shared_resources',
         'net_internals_resources',
         'platform_locale_settings',
-        'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
+        'sync_proto',
         'syncapi',
         'theme_resources',
         '../app/app.gyp:app_resources',

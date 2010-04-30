@@ -519,7 +519,7 @@ void ProfileSyncService::ChangePreferredDataTypes(
 
 void ProfileSyncService::GetPreferredDataTypes(
     syncable::ModelTypeSet* preferred_types) const {
-  preferred_types->clear();
+ preferred_types->clear();
 
   // Filter out any datatypes which aren't registered, or for which
   // the preference can't be read.
