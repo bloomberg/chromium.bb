@@ -16,9 +16,14 @@
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/profile.h"
+#include "gfx/canvas_paint.h"
+#include "gfx/font.h"
 #include "gfx/gtk_util.h"
 
 namespace {
+
+// Spacing between the favicon and the text.
+const int kBarButtonPadding = 4;
 
 // Used in gtk_selection_data_set(). (I assume from this parameter that gtk has
 // to some really exotic hardware...)
@@ -47,14 +52,114 @@ void* AsVoid(const BookmarkNode* node) {
   return const_cast<BookmarkNode*>(node);
 }
 
+// Creates the widget hierarchy for a bookmark button.
+void PackButton(GdkPixbuf* pixbuf, const std::wstring& title, bool ellipsize,
+                GtkThemeProvider* provider, GtkWidget* button) {
+  GtkWidget* former_child = gtk_bin_get_child(GTK_BIN(button));
+  if (former_child)
+    gtk_container_remove(GTK_CONTAINER(button), former_child);
+
+  // We pack the button manually (rather than using gtk_button_set_*) so that
+  // we can have finer control over its label.
+  GtkWidget* image = gtk_image_new_from_pixbuf(pixbuf);
+
+  GtkWidget* box = gtk_hbox_new(FALSE, kBarButtonPadding);
+  gtk_box_pack_start(GTK_BOX(box), image, FALSE, FALSE, 0);
+
+  std::string label_string = WideToUTF8(title);
+  if (!label_string.empty()) {
+    GtkWidget* label = gtk_label_new(label_string.c_str());
+    // Until we switch to vector graphics, force the font size.
+    gtk_util::ForceFontSizePixels(label, 13.4);  // 13.4px == 10pt @ 96dpi
+
+    // Ellipsize long bookmark names.
+    if (ellipsize) {
+      gtk_label_set_max_width_chars(GTK_LABEL(label), kMaxCharsOnAButton);
+      gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+    }
+
+    gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
+    bookmark_utils::SetButtonTextColors(label, provider);
+  }
+
+  GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+  // If we are not showing the label, don't set any padding, so that the icon
+  // will just be centered.
+  if (label_string.c_str()) {
+    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment),
+        kButtonPaddingTop, kButtonPaddingBottom,
+        kButtonPaddingLeft, kButtonPaddingRight);
+  }
+  gtk_container_add(GTK_CONTAINER(alignment), box);
+  gtk_container_add(GTK_CONTAINER(button), alignment);
+
+  gtk_widget_show_all(alignment);
+}
+
+const int kDragRepresentationWidth = 140;
+
+struct DragRepresentationData {
+ public:
+  GdkPixbuf* favicon;
+  std::wstring text;
+  SkColor text_color;
+
+  DragRepresentationData(GdkPixbuf* favicon,
+                         const std::wstring& text,
+                         SkColor text_color)
+      : favicon(favicon),
+        text(text),
+        text_color(text_color) {
+    g_object_ref(favicon);
+  }
+
+  ~DragRepresentationData() {
+    g_object_unref(favicon);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DragRepresentationData);
+};
+
+gboolean OnDragIconExpose(GtkWidget* sender,
+                          GdkEventExpose* event,
+                          DragRepresentationData* data) {
+  // Clear the background.
+  cairo_t* cr = gdk_cairo_create(event->window);
+  gdk_cairo_rectangle(cr, &event->area);
+  cairo_clip(cr);
+  cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
+  cairo_paint(cr);
+
+  cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+  gdk_cairo_set_source_pixbuf(cr, data->favicon, 0, 0);
+  cairo_paint(cr);
+  cairo_destroy(cr);
+
+  // Paint the title text.
+  gfx::CanvasPaint canvas(event, false);
+  int text_x = gdk_pixbuf_get_width(data->favicon) + kBarButtonPadding;
+  int text_width = sender->allocation.width - text_x;
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  const gfx::Font& base_font = rb.GetFont(ResourceBundle::BaseFont);
+  canvas.DrawStringInt(data->text,
+                       base_font, data->text_color,
+                       text_x, 0, text_width, sender->allocation.height);
+
+  return TRUE;
+}
+
+void OnDragIconDestroy(GtkWidget* drag_icon,
+                       DragRepresentationData* data) {
+  g_object_unref(drag_icon);
+  delete data;
+}
+
 }  // namespace
 
 namespace bookmark_utils {
 
 const char kBookmarkNode[] = "bookmark-node";
-
-// Spacing between the buttons on the bar.
-const int kBarButtonPadding = 4;
 
 GdkPixbuf* GetPixbufForNode(const BookmarkNode* node, BookmarkModel* model,
                             bool native) {
@@ -75,83 +180,69 @@ GdkPixbuf* GetPixbufForNode(const BookmarkNode* node, BookmarkModel* model,
   return pixbuf;
 }
 
-GtkWidget* GetDragRepresentation(const BookmarkNode* node,
-                                 BookmarkModel* model,
+GtkWidget* GetDragRepresentation(GdkPixbuf* pixbuf,
+                                 const std::wstring& title,
                                  GtkThemeProvider* provider) {
-  // Build a windowed representation for our button.
   GtkWidget* window = gtk_window_new(GTK_WINDOW_POPUP);
-  if (!provider->UseGtkTheme()) {
-    // TODO(erg): Theme wise, which color should I be picking here?
-    // COLOR_BUTTON_BACKGROUND doesn't match the default theme!
-    gtk_widget_modify_bg(window, GTK_STATE_NORMAL, &kBackgroundColor);
+
+  if (gtk_util::IsScreenComposited() &&
+      gtk_util::AddWindowAlphaChannel(window)) {
+    DragRepresentationData* data = new DragRepresentationData(
+        pixbuf, title,
+        provider->GetColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT));
+    g_signal_connect(window, "expose-event", G_CALLBACK(OnDragIconExpose),
+                     data);
+    g_object_ref(window);
+    g_signal_connect(window, "destroy", G_CALLBACK(OnDragIconDestroy), data);
+
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    const gfx::Font& base_font = rb.GetFont(ResourceBundle::BaseFont);
+    gtk_widget_set_size_request(window, kDragRepresentationWidth,
+                                base_font.height());
+  } else {
+    if (!provider->UseGtkTheme()) {
+      // TODO(erg): Theme wise, which color should I be picking here?
+      // COLOR_BUTTON_BACKGROUND doesn't match the default theme!
+      gtk_widget_modify_bg(window, GTK_STATE_NORMAL, &kBackgroundColor);
+    }
+    gtk_widget_realize(window);
+
+    GtkWidget* frame = gtk_frame_new(NULL);
+    gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_OUT);
+    gtk_container_add(GTK_CONTAINER(window), frame);
+
+    GtkWidget* floating_button = provider->BuildChromeButton();
+    PackButton(pixbuf, title, true, provider, floating_button);
+    gtk_container_add(GTK_CONTAINER(frame), floating_button);
+    gtk_widget_show_all(frame);
   }
-  gtk_widget_realize(window);
-
-  GtkWidget* frame = gtk_frame_new(NULL);
-  gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_OUT);
-  gtk_container_add(GTK_CONTAINER(window), frame);
-  gtk_widget_show(frame);
-
-  GtkWidget* floating_button = provider->BuildChromeButton();
-  bookmark_utils::ConfigureButtonForNode(node, model, floating_button,
-                                         provider);
-  gtk_container_add(GTK_CONTAINER(frame), floating_button);
-  gtk_widget_show(floating_button);
 
   return window;
 }
 
+GtkWidget* GetDragRepresentationForNode(const BookmarkNode* node,
+                                        BookmarkModel* model,
+                                        GtkThemeProvider* provider) {
+  GdkPixbuf* pixbuf = GetPixbufForNode(node, model, provider->UseGtkTheme());
+  GtkWidget* widget = GetDragRepresentation(pixbuf, node->GetTitle(), provider);
+  g_object_unref(pixbuf);
+  return widget;
+}
+
 void ConfigureButtonForNode(const BookmarkNode* node, BookmarkModel* model,
                             GtkWidget* button, GtkThemeProvider* provider) {
-  GtkWidget* former_child = gtk_bin_get_child(GTK_BIN(button));
-  if (former_child)
-    gtk_container_remove(GTK_CONTAINER(button), former_child);
+  GdkPixbuf* pixbuf = bookmark_utils::GetPixbufForNode(node, model,
+                                                       provider->UseGtkTheme());
+  PackButton(pixbuf, node->GetTitle(), node != model->other_node(),
+             provider, button);
+  g_object_unref(pixbuf);
 
   std::string tooltip = BuildTooltipFor(node);
   if (!tooltip.empty())
     gtk_widget_set_tooltip_markup(button, tooltip.c_str());
 
-  // We pack the button manually (rather than using gtk_button_set_*) so that
-  // we can have finer control over its label.
-  GdkPixbuf* pixbuf = bookmark_utils::GetPixbufForNode(node, model,
-                                                       provider->UseGtkTheme());
-  GtkWidget* image = gtk_image_new_from_pixbuf(pixbuf);
-  g_object_unref(pixbuf);
-
-  GtkWidget* box = gtk_hbox_new(FALSE, kBarButtonPadding);
-  gtk_box_pack_start(GTK_BOX(box), image, FALSE, FALSE, 0);
-
-  std::string label_string = WideToUTF8(node->GetTitle());
-  if (!label_string.empty()) {
-    GtkWidget* label = gtk_label_new(label_string.c_str());
-    // Until we switch to vector graphics, force the font size.
-    gtk_util::ForceFontSizePixels(label, 13.4);  // 13.4px == 10pt @ 96dpi
-
-    // Ellipsize long bookmark names.
-    if (node != model->other_node()) {
-      gtk_label_set_max_width_chars(GTK_LABEL(label), kMaxCharsOnAButton);
-      gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-    }
-
-    gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
-    SetButtonTextColors(label, provider);
-  }
-
-  GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-  // If we are not showing the label, don't set any padding, so that the icon
-  // will just be centered.
-  if (label_string.c_str()) {
-    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment),
-        kButtonPaddingTop, kButtonPaddingBottom,
-        kButtonPaddingLeft, kButtonPaddingRight);
-  }
-  gtk_container_add(GTK_CONTAINER(alignment), box);
-  gtk_container_add(GTK_CONTAINER(button), alignment);
-
   g_object_set_data(G_OBJECT(button), bookmark_utils::kBookmarkNode,
                     AsVoid(node));
-
-  gtk_widget_show_all(alignment);
 }
 
 std::string BuildTooltipFor(const BookmarkNode* node) {

@@ -280,8 +280,8 @@ class LocationBarViewGtk : public AutocompleteEditController,
                        GdkDragContext*, GtkSelectionData*, guint, guint);
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, void, OnIconDragBegin,
                        GdkDragContext*);
-  CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, OnDragIconExpose,
-                       GdkEventExpose*);
+  CHROMEGTK_CALLBACK_1(LocationBarViewGtk, void, OnIconDragEnd,
+                       GdkDragContext*);
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, void, OnEntryBoxSizeAllocate,
                        GtkAllocation*);
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, OnStarButtonPress,

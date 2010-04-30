@@ -899,4 +899,13 @@ bool URLFromPrimarySelection(Profile* profile, GURL* url) {
   return true;
 }
 
+bool AddWindowAlphaChannel(GtkWidget* window) {
+  GdkScreen* screen = gtk_widget_get_screen(window);
+  GdkColormap* rgba = gdk_screen_get_rgba_colormap(screen);
+  if (rgba)
+    gtk_widget_set_colormap(window, rgba);
+
+  return rgba;
+}
+
 }  // namespace gtk_util

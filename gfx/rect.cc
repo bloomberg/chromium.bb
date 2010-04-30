@@ -35,15 +35,16 @@ namespace gfx {
 Rect::Rect() {
 }
 
-Rect::Rect(int width, int height) {
-  set_width(width);
-  set_height(height);
+Rect::Rect(int width, int height)
+    : size_(width, height) {
 }
 
 Rect::Rect(int x, int y, int width, int height)
-    : origin_(x, y) {
-  set_width(width);
-  set_height(height);
+    : origin_(x, y), size_(width, height) {
+}
+
+Rect::Rect(const gfx::Size& size)
+    : size_(size) {
 }
 
 Rect::Rect(const gfx::Point& origin, const gfx::Size& size)

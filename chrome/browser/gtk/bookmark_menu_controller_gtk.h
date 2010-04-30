@@ -115,6 +115,9 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   // - The menu items have context menus.
   GtkWidget* menu_;
 
+  // The visual representation that follows the cursor during drags.
+  GtkWidget* drag_icon_;
+
   // Whether we should ignore the next button release event (because we were
   // dragging).
   bool ignore_button_release_;

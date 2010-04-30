@@ -18,9 +18,6 @@ namespace bookmark_utils {
 
 extern const char kBookmarkNode[];
 
-// Padding between the image and the label of a bookmark bar button.
-extern const int kBarButtonPadding;
-
 // Get the image that is used to represent the node. This function adds a ref
 // to the returned pixbuf, so it requires a matching call to g_object_unref().
 GdkPixbuf* GetPixbufForNode(const BookmarkNode* node, BookmarkModel* model,
@@ -28,9 +25,12 @@ GdkPixbuf* GetPixbufForNode(const BookmarkNode* node, BookmarkModel* model,
 
 // Returns a GtkWindow with a visual hierarchy for passing to
 // gtk_drag_set_icon_widget().
-GtkWidget* GetDragRepresentation(const BookmarkNode* node,
-                                 BookmarkModel* model,
+GtkWidget* GetDragRepresentation(GdkPixbuf* pixbuf,
+                                 const std::wstring& title,
                                  GtkThemeProvider* provider);
+GtkWidget* GetDragRepresentationForNode(const BookmarkNode* node,
+                                        BookmarkModel* model,
+                                        GtkThemeProvider* provider);
 
 // Helper function that sets visual properties of GtkButton |button| to the
 // contents of |node|.

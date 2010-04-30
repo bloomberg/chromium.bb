@@ -277,6 +277,9 @@ guint32 XTimeNow();
 // otherwise returns false.
 bool URLFromPrimarySelection(Profile* profile, GURL* url);
 
+// Set the colormap of the given window to rgba to allow transparency.
+bool AddWindowAlphaChannel(GtkWidget* window);
+
 }  // namespace gtk_util
 
 #endif  // CHROME_BROWSER_GTK_GTK_UTIL_H_

@@ -132,6 +132,7 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
       instructions_(NULL),
       sync_service_(NULL),
       dragged_node_(NULL),
+      drag_icon_(NULL),
       toolbar_drop_item_(NULL),
       theme_provider_(GtkThemeProvider::GetFrom(profile)),
       show_instructions_(true),
@@ -960,6 +961,8 @@ void BookmarkBarGtk::PopupMenuForNode(GtkWidget* sender,
 
 gboolean BookmarkBarGtk::OnButtonPressed(GtkWidget* sender,
                                          GdkEventButton* event) {
+  last_pressed_coordinates_ = gfx::Point(event->x, event->y);
+
   if (event->button == 3 && GTK_WIDGET_VISIBLE(bookmark_hbox_)) {
     const BookmarkNode* node = GetNodeForToolButton(sender);
     DCHECK(node);
@@ -1006,11 +1009,20 @@ void BookmarkBarGtk::OnButtonDragBegin(GtkWidget* button,
   dragged_node_ = node;
   DCHECK(dragged_node_);
 
-  GtkWidget* window = bookmark_utils::GetDragRepresentation(
+  drag_icon_ = bookmark_utils::GetDragRepresentationForNode(
       node, model_, theme_provider_);
-  gint x, y;
-  gtk_widget_get_pointer(button, &x, &y);
-  gtk_drag_set_icon_widget(drag_context, window, x, y);
+
+  // We have to jump through some hoops to get the drag icon to line up because
+  // it is a different size than the button.
+  GtkRequisition req;
+  gtk_widget_size_request(drag_icon_, &req);
+  gfx::Rect button_rect = gtk_util::WidgetBounds(button);
+  gfx::Point drag_icon_relative =
+      gfx::Rect(req.width, req.height).CenterPoint().Add(
+          (last_pressed_coordinates_.Subtract(button_rect.CenterPoint())));
+  gtk_drag_set_icon_widget(drag_context, drag_icon_,
+                           drag_icon_relative.x(),
+                           drag_icon_relative.y());
 
   // Hide our node, but reserve space for it on the toolbar.
   int index = gtk_toolbar_get_item_index(GTK_TOOLBAR(bookmark_toolbar_.get()),
@@ -1032,10 +1044,16 @@ void BookmarkBarGtk::OnButtonDragEnd(GtkWidget* button,
   if (toolbar_drop_item_) {
     g_object_unref(toolbar_drop_item_);
     toolbar_drop_item_ = NULL;
+    gtk_toolbar_set_drop_highlight_item(GTK_TOOLBAR(bookmark_toolbar_.get()),
+                                        NULL, 0);
   }
 
   DCHECK(dragged_node_);
   dragged_node_ = NULL;
+
+  DCHECK(drag_icon_);
+  gtk_widget_destroy(drag_icon_);
+  drag_icon_ = NULL;
 
   g_object_unref(button->parent);
 }

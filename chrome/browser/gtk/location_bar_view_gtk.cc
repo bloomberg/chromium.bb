@@ -28,6 +28,7 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/gtk/bookmark_bubble_gtk.h"
+#include "chrome/browser/gtk/bookmark_utils_gtk.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/content_setting_bubble_gtk.h"
 #include "chrome/browser/gtk/extension_popup_gtk.h"
@@ -91,9 +92,6 @@ const GdkColor kHintTextColor = GDK_COLOR_RGB(0x75, 0x75, 0x75);
 
 // Size of the rounding of the "Search site for:" box.
 const int kCornerSize = 3;
-
-// Space between the favicon and the title when dragging the location icon.
-const int kFavIconTitleSpacing = 4;
 
 // Returns the short name for a keyword.
 std::wstring GetKeywordName(Profile* profile,
@@ -182,8 +180,6 @@ LocationBarViewGtk::~LocationBarViewGtk() {
   // All of our widgets should have be children of / owned by the alignment.
   star_.Destroy();
   hbox_.Destroy();
-  if (drag_icon_)
-    g_object_unref(drag_icon_);
   content_setting_hbox_.Destroy();
   page_action_hbox_.Destroy();
 }
@@ -416,19 +412,8 @@ void LocationBarViewGtk::SetSiteTypeDragSource() {
                    G_CALLBACK(&OnIconDragDataThunk), this);
   g_signal_connect(site_type_event_box_, "drag-begin",
                    G_CALLBACK(&OnIconDragBeginThunk), this);
-
-  drag_icon_ = gtk_window_new(GTK_WINDOW_POPUP);
-  g_object_ref(drag_icon_);
-  g_signal_connect(drag_icon_, "expose-event",
-                   G_CALLBACK(OnDragIconExposeThunk), this);
-  GdkScreen* screen = gtk_widget_get_screen(drag_icon_);
-  GdkColormap* rgba = gdk_screen_get_rgba_colormap(screen);
-  if (rgba)
-    gtk_widget_set_colormap(drag_icon_, rgba);
-
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  const gfx::Font& base_font = rb.GetFont(ResourceBundle::BaseFont);
-  gtk_widget_set_size_request(drag_icon_, 200, base_font.height());
+  g_signal_connect(site_type_event_box_, "drag-end",
+                   G_CALLBACK(&OnIconDragEndThunk), this);
 }
 
 void LocationBarViewGtk::SetProfile(Profile* profile) {
@@ -989,35 +974,20 @@ void LocationBarViewGtk::OnIconDragData(GtkWidget* sender,
 
 void LocationBarViewGtk::OnIconDragBegin(GtkWidget* sender,
                                          GdkDragContext* context) {
-  if (gtk_util::IsScreenComposited())
-    gtk_drag_set_icon_widget(context, drag_icon_, 0, 0);
+  SkBitmap favicon = GetFavIcon();
+  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&favicon);
+  if (!pixbuf)
+    return;
+  drag_icon_ = bookmark_utils::GetDragRepresentation(pixbuf, GetTitle(),
+                                                     theme_provider_);
+  g_object_unref(pixbuf);
+  gtk_drag_set_icon_widget(context, drag_icon_, 0, 0);
 }
 
-gboolean LocationBarViewGtk::OnDragIconExpose(GtkWidget* sender,
-                                              GdkEventExpose* event) {
-  // Clear the background.
-  cairo_t* cr = gdk_cairo_create(event->window);
-  gdk_cairo_rectangle(cr, &event->area);
-  cairo_clip(cr);
-  cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
-  cairo_paint(cr);
-  cairo_destroy(cr);
-
-  // Paint the favicon.
-  gfx::CanvasPaint canvas(event, false);
-  SkBitmap icon = GetFavIcon();
-  canvas.DrawBitmapInt(icon, 0, 0);
-
-  // Paint the title text.
-  int text_x = icon.width() + kFavIconTitleSpacing;
-  int text_width = sender->allocation.width - text_x;
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  const gfx::Font& base_font = rb.GetFont(ResourceBundle::BaseFont);
-  canvas.DrawStringInt(GetTitle(),
-                       base_font, SK_ColorBLACK,
-                       text_x, 0, text_width, sender->allocation.height);
-
-  return TRUE;
+void LocationBarViewGtk::OnIconDragEnd(GtkWidget* sender,
+                                       GdkDragContext* context) {
+  gtk_widget_destroy(drag_icon_);
+  drag_icon_ = NULL;
 }
 
 void LocationBarViewGtk::OnEntryBoxSizeAllocate(GtkWidget* sender,

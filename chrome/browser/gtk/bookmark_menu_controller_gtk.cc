@@ -76,6 +76,7 @@ BookmarkMenuController::BookmarkMenuController(Browser* browser,
       parent_window_(window),
       model_(profile->GetBookmarkModel()),
       node_(node),
+      drag_icon_(NULL),
       ignore_button_release_(false),
       triggering_widget_(NULL) {
   menu_ = gtk_menu_new();
@@ -321,11 +322,11 @@ void BookmarkMenuController::OnMenuItemDragBegin(GtkWidget* menu_item,
   ignore_button_release_ = true;
 
   const BookmarkNode* node = bookmark_utils::BookmarkNodeForWidget(menu_item);
-  GtkWidget* window = bookmark_utils::GetDragRepresentation(
+  drag_icon_ = bookmark_utils::GetDragRepresentationForNode(
       node, model_, GtkThemeProvider::GetFrom(profile_));
   gint x, y;
   gtk_widget_get_pointer(menu_item, &x, &y);
-  gtk_drag_set_icon_widget(drag_context, window, x, y);
+  gtk_drag_set_icon_widget(drag_context, drag_icon_, x, y);
 
   // Hide our node.
   gtk_widget_hide(menu_item);
@@ -335,6 +336,9 @@ void BookmarkMenuController::OnMenuItemDragEnd(GtkWidget* menu_item,
                                                GdkDragContext* drag_context) {
   gtk_widget_show(menu_item);
   g_object_unref(menu_item->parent);
+
+  gtk_widget_destroy(drag_icon_);
+  drag_icon_ = NULL;
 }
 
 void BookmarkMenuController::OnMenuItemDragGet(

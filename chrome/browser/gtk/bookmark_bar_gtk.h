@@ -22,6 +22,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
+#include "gfx/point.h"
 #include "gfx/size.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
@@ -319,6 +320,9 @@ class BookmarkBarGtk : public AnimationDelegate,
   // dragging.
   const BookmarkNode* dragged_node_;
 
+  // The visual representation that follows the cursor during drags.
+  GtkWidget* drag_icon_;
+
   // We create a GtkToolbarItem from |dragged_node_| ;or display.
   GtkToolItem* toolbar_drop_item_;
 
@@ -357,6 +361,10 @@ class BookmarkBarGtk : public AnimationDelegate,
   // The size of the tab contents last time we forced a paint. We keep track
   // of this so we don't force too many paints.
   gfx::Size last_tab_contents_size_;
+
+  // The last coordinates recorded by OnButtonPress; used to line up the
+  // drag icon during bookmark drags.
+  gfx::Point last_pressed_coordinates_;
 
   // The currently throbbing widget. This is NULL if no widget is throbbing.
   // We track it because we only want to allow one widget to throb at a time.

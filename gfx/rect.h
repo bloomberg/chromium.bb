@@ -37,6 +37,7 @@ class Rect {
 #elif defined(USE_X11)
   explicit Rect(const GdkRectangle& r);
 #endif
+  Rect(const gfx::Size& size);
   Rect(const gfx::Point& origin, const gfx::Size& size);
 
   ~Rect() {}
