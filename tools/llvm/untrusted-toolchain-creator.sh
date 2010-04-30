@@ -55,6 +55,7 @@ readonly LLVM_SFI_PATCH=${PATCH_DIR}/llvm-r88663.patch
 
 readonly BINUTILS_GAS_PATCH=${PATCH_DIR}/binutils-2.20-gas.patch
 readonly BINUTILS_GAS_VCVT_PATCH=${PATCH_DIR}/binutils-2.20-gas-vcvt.patch
+readonly BINUTILS_GAS_VMRS_PATCH=${PATCH_DIR}/binutils-2.20-gas-vmrs.patch
 
 # TODO(robertm): get the code from a repo rather than use tarball + patch
 readonly NEWLIB_TARBALL=$(pwd)/../third_party/newlib/newlib-1.17.0.tar.gz
@@ -724,6 +725,7 @@ BuildAndInstallBinutils() {
   cd binutils-2.20
   patch -p1 < ${BINUTILS_GAS_PATCH}
   patch -p1 < ${BINUTILS_GAS_VCVT_PATCH}
+  patch -p1 < ${BINUTILS_GAS_VMRS_PATCH}
   cd ../../build
 
   # --enable-checking is to avoid a build failure:

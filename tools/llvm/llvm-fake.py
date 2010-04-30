@@ -59,10 +59,6 @@ LIBDIR_ARM_1 = BASE + '/arm-none-linux-gnueabi/llvm-gcc-4.2/lib/gcc/arm-none-lin
 #       native code libraries linked in at the very end
 REACHABLE_FUNCTION_SYMBOLS = LIBDIR_ARM_2 + '/reachable_function_symbols.o'
 
-# Note: this works around an assembler bug that has been fixed only recently
-# TODO(espindola): check if we can drop this now.
-HACK_ASM = ['sed', '-e', 's/vmrs.*apsr_nzcv, fpscr/fmrx r15, fpscr/g']
-
 PNACL_ARM_ROOT =  BASE + '/../pnacl-untrusted/arm'
 
 PNACL_X8632_ROOT = BASE + '/../pnacl-untrusted/x8632'
@@ -285,8 +281,6 @@ def SfiCompile(argv, out_pos, mode):
   llc += LLC_SHARED_FLAGS_ARM
   llc += ['-f', filename + '.opt.bc', '-o', filename + '.s']
   Run(llc)
-
-  Run(HACK_ASM + ['-i.orig', filename + '.s'])
 
   # we use llvm-gcc since it knows the correct mfpu and march to use
   Run([LLVM_GCC] + [filename + '.s', '-c', '-o', filename])
@@ -668,8 +662,6 @@ def Incarnation_bcldarm(argv):
 
   Run([LLC_SFI_ARM] + LLC_SHARED_FLAGS_ARM + LLC_SFI_SANDBOXING_FLAGS +
       ['-f', bitcode_combined, '-o', asm_combined])
-
-  Run(HACK_ASM + ['-i.orig', asm_combined])
 
   Run([AS_ARM] + AS_FLAGS_ARM + [asm_combined, '-o', obj_combined])
 
