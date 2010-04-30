@@ -180,7 +180,13 @@ void OptionsWindowView::WindowClosing() {
 }
 
 bool OptionsWindowView::Cancel() {
-  return GetCurrentOptionsPageView()->CanClose();
+  OptionsPageView* selected_option_page = GetCurrentOptionsPageView();
+  if (selected_option_page) {
+    return selected_option_page->CanClose();
+  } else {
+    // Gtk option pages does not support CanClose.
+    return true;
+  }
 }
 
 views::View* OptionsWindowView::GetContentsView() {
@@ -287,7 +293,12 @@ void OptionsWindowView::Init() {
 }
 
 OptionsPageView* OptionsWindowView::GetCurrentOptionsPageView() const {
-  return static_cast<OptionsPageView*>(tabs_->GetSelectedTab());
+  int selected_option_page = tabs_->GetSelectedTabIndex();
+  if (selected_option_page < OPTIONS_PAGE_GENERAL) {
+    return static_cast<OptionsPageView*>(tabs_->GetSelectedTab());
+  } else {
+    return NULL;
+  }
 }
 
 gfx::NativeWindow GetOptionsViewParent() {
