@@ -7,7 +7,9 @@
 
 #include <vector>
 #include "base/string16.h"
+#include "base/string_util.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 
 class AutofillKey {
  public:
@@ -15,11 +17,13 @@ class AutofillKey {
   AutofillKey(const string16& name, const string16& value)
       : name_(name),
         value_(value) {}
+  AutofillKey(const char* name, const char* value)
+      : name_(UTF8ToUTF16(name)),
+        value_(UTF8ToUTF16(value)) {}
   AutofillKey(const AutofillKey& key)
       : name_(key.name()),
         value_(key.value()) {}
   virtual ~AutofillKey() {}
-
   const string16& name() const { return name_; }
   const string16& value() const { return value_; }
 

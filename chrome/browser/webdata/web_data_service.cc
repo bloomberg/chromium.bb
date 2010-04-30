@@ -16,6 +16,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -794,7 +795,7 @@ void WebDataService::AddFormElementsImpl(
     // done on the DB thread, and not the UI thread.
     NotificationService::current()->Notify(
         NotificationType::AUTOFILL_ENTRIES_CHANGED,
-        NotificationService::AllSources(),
+        Source<WebDataService>(this),
         Details<AutofillChangeList>(&changes));
   }
 
@@ -830,7 +831,7 @@ void WebDataService::RemoveFormElementsAddedBetweenImpl(
         // will be done on the DB thread, and not the UI thread.
         NotificationService::current()->Notify(
             NotificationType::AUTOFILL_ENTRIES_CHANGED,
-            NotificationService::AllSources(),
+            Source<WebDataService>(this),
             Details<AutofillChangeList>(&changes));
       }
       ScheduleCommit();
@@ -857,7 +858,7 @@ void WebDataService::RemoveFormValueForElementNameImpl(
       // Post the notifications including the list of affected keys.
       NotificationService::current()->Notify(
           NotificationType::AUTOFILL_ENTRIES_CHANGED,
-          NotificationService::AllSources(),
+          Source<WebDataService>(this),
           Details<AutofillChangeList>(&changes));
     }
   }

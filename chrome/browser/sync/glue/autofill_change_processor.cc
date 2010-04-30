@@ -45,11 +45,15 @@ void AutofillChangeProcessor::Observe(NotificationType type,
                                       const NotificationSource& source,
                                       const NotificationDetails& details) {
   LOG(INFO) << "Observed autofill change.";
+  // Ensure this notification came from our web database.
+  WebDataService* wds = Source<WebDataService>(source).ptr();
+  if (!wds || wds->GetDatabase() != web_database_)
+    return;
+
   DCHECK(running());
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
-  if (!observing_) {
+  if (!observing_)
     return;
-  }
 
   sync_api::WriteTransaction trans(share_handle());
   sync_api::ReadNode autofill_root(&trans);

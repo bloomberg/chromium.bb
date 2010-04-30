@@ -20,12 +20,12 @@
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/browser/webdata/web_data_service_test_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/notification_details.h"
-#include "chrome/common/notification_observer_mock.h"
-#include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/test/thread_observer_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
@@ -48,64 +48,9 @@ ACTION_P(SignalEvent, event) {
   event->Signal();
 }
 
-class AutofillWebDataServiceConsumer: public WebDataServiceConsumer {
- public:
-  AutofillWebDataServiceConsumer() : handle_(0) {}
-  virtual ~AutofillWebDataServiceConsumer() {}
-
-  virtual void OnWebDataServiceRequestDone(WebDataService::Handle handle,
-                                           const WDTypedResult* result) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-    DCHECK(result->GetType() == AUTOFILL_VALUE_RESULT);
-    handle_ = handle;
-    const WDResult<std::vector<string16> >* autofill_result =
-        static_cast<const WDResult<std::vector<string16> >*>(result);
-    // Copy the values.
-    values_ = autofill_result->GetValue();
-
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-    MessageLoop::current()->Quit();
-  }
-
-  WebDataService::Handle handle() { return handle_; }
-  const std::vector<string16>& values() { return values_; }
-
- private:
-  WebDataService::Handle handle_;
-  std::vector<string16> values_;
-  DISALLOW_COPY_AND_ASSIGN(AutofillWebDataServiceConsumer);
-};
-
-// This class will add and remove a mock notification observer from
-// the DB thread.
-class DBThreadObserverHelper :
-    public base::RefCountedThreadSafe<DBThreadObserverHelper,
-                                      ChromeThread::DeleteOnDBThread> {
- public:
-  DBThreadObserverHelper() : done_event_(true, false) {}
-
-  void Init() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-    ChromeThread::PostTask(
-        ChromeThread::DB,
-        FROM_HERE,
-        NewRunnableMethod(this, &DBThreadObserverHelper::AddObserverTask));
-    done_event_.Wait();
-  }
-
-  virtual ~DBThreadObserverHelper() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
-    registrar_.RemoveAll();
-  }
-
-  NotificationObserverMock* observer() {
-    return &observer_;
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<DBThreadObserverHelper>;
-
-  void AddObserverTask() {
+class AutofillDBThreadObserverHelper : public DBThreadObserverHelper {
+ protected:
+  virtual void RegisterObservers() {
     registrar_.Add(&observer_,
                    NotificationType::AUTOFILL_ENTRIES_CHANGED,
                    NotificationService::AllSources());
@@ -115,12 +60,7 @@ class DBThreadObserverHelper :
     registrar_.Add(&observer_,
                    NotificationType::AUTOFILL_CREDIT_CARD_CHANGED,
                    NotificationService::AllSources());
-    done_event_.Signal();
   }
-
-  WaitableEvent done_event_;
-  NotificationRegistrar registrar_;
-  NotificationObserverMock observer_;
 };
 
 class WebDataServiceTest : public testing::Test {
@@ -175,7 +115,7 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
     name2_ = ASCIIToUTF16("name2");
     value1_ = ASCIIToUTF16("value1");
     value2_ = ASCIIToUTF16("value2");
-    observer_helper_ = new DBThreadObserverHelper();
+    observer_helper_ = new AutofillDBThreadObserverHelper();
     observer_helper_->Init();
   }
 
@@ -201,7 +141,7 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
   string16 value2_;
   int unique_id1_, unique_id2_;
   const TimeDelta test_timeout_;
-  scoped_refptr<DBThreadObserverHelper> observer_helper_;
+  scoped_refptr<AutofillDBThreadObserverHelper> observer_helper_;
   WaitableEvent done_event_;
 };
 
@@ -216,7 +156,7 @@ TEST_F(WebDataServiceAutofillTest, FormFillAdd) {
   EXPECT_CALL(
       *observer_helper_->observer(),
       Observe(NotificationType(NotificationType::AUTOFILL_ENTRIES_CHANGED),
-              NotificationService::AllSources(),
+              Source<WebDataService>(wds_.get()),
               Property(&Details<const AutofillChangeList>::ptr,
                        Pointee(ElementsAreArray(expected_changes))))).
       WillOnce(SignalEvent(&done_event_));
@@ -262,7 +202,7 @@ TEST_F(WebDataServiceAutofillTest, FormFillRemoveOne) {
   EXPECT_CALL(
       *observer_helper_->observer(),
       Observe(NotificationType(NotificationType::AUTOFILL_ENTRIES_CHANGED),
-              NotificationService::AllSources(),
+              Source<WebDataService>(wds_.get()),
               Property(&Details<const AutofillChangeList>::ptr,
                        Pointee(ElementsAreArray(expected_changes))))).
       WillOnce(SignalEvent(&done_event_));
@@ -295,7 +235,7 @@ TEST_F(WebDataServiceAutofillTest,FormFillRemoveMany) {
   EXPECT_CALL(
       *observer_helper_->observer(),
       Observe(NotificationType(NotificationType::AUTOFILL_ENTRIES_CHANGED),
-              NotificationService::AllSources(),
+              Source<WebDataService>(wds_.get()),
               Property(&Details<const AutofillChangeList>::ptr,
                        Pointee(ElementsAreArray(expected_changes))))).
       WillOnce(SignalEvent(&done_event_));
@@ -442,4 +382,3 @@ TEST_F(WebDataServiceAutofillTest, CreditUpdate) {
   wds_->UpdateCreditCard(card1_delta);
   done_event_.TimedWait(test_timeout_);
 }
-

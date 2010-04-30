@@ -29,6 +29,7 @@
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_database.h"
+#include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
 #include "chrome/test/profile_mock.h"
@@ -94,15 +95,17 @@ class WebDatabaseMock : public WebDatabase {
 
 class WebDataServiceFake : public WebDataService {
  public:
+  WebDataServiceFake(WebDatabase* web_database) : web_database_(web_database) {}
   virtual bool IsDatabaseLoaded() {
     return true;
   }
 
-  // Note that we inject the WebDatabase through the
-  // ProfileSyncFactory mock.
   virtual WebDatabase* GetDatabase() {
-    return NULL;
+    return web_database_;
   }
+
+ private:
+  WebDatabase* web_database_;
 };
 
 class PersonalDataManagerMock: public PersonalDataManager {
@@ -131,7 +134,7 @@ class ProfileSyncServiceAutofillTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    web_data_service_ = new WebDataServiceFake();
+    web_data_service_ = new WebDataServiceFake(&web_database_);
     personal_data_manager_.Init(&profile_);
     db_thread_.Start();
 
@@ -660,6 +663,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddEntry) {
   changes.push_back(AutofillChange(AutofillChange::ADD, added_entry.key()));
   scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&db_thread_);
   notifier->Notify(NotificationType::AUTOFILL_ENTRIES_CHANGED,
+                   Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillChangeList>(&changes));
 
   std::vector<AutofillEntry> new_sync_entries;
@@ -686,6 +690,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddProfile) {
       added_profile.Label(), &added_profile, string16());
   scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&db_thread_);
   notifier->Notify(NotificationType::AUTOFILL_PROFILE_CHANGED,
+                   Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillProfileChange>(&change));
 
   std::vector<AutofillEntry> new_sync_entries;
@@ -732,6 +737,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddProfileConflict) {
 
   scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&db_thread_);
   notifier->Notify(NotificationType::AUTOFILL_PROFILE_CHANGED,
+                   Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillProfileChange>(&change));
 
   std::vector<AutofillEntry> new_sync_entries;
@@ -767,6 +773,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateEntry) {
                                    updated_entry.key()));
   scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&db_thread_);
   notifier->Notify(NotificationType::AUTOFILL_ENTRIES_CHANGED,
+                   Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillChangeList>(&changes));
 
   std::vector<AutofillEntry> new_sync_entries;
@@ -802,6 +809,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateProfile) {
                                ASCIIToUTF16("Billing"));
   scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&db_thread_);
   notifier->Notify(NotificationType::AUTOFILL_PROFILE_CHANGED,
+                   Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillProfileChange>(&change));
 
   std::vector<AutofillEntry> new_sync_entries;
@@ -836,6 +844,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateProfileRelabel) {
                                ASCIIToUTF16("Billing"));
   scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&db_thread_);
   notifier->Notify(NotificationType::AUTOFILL_PROFILE_CHANGED,
+                   Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillProfileChange>(&change));
 
   std::vector<AutofillEntry> new_sync_entries;
@@ -881,6 +890,7 @@ TEST_F(ProfileSyncServiceAutofillTest,
                                ASCIIToUTF16("Billing"));
   scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&db_thread_);
   notifier->Notify(NotificationType::AUTOFILL_PROFILE_CHANGED,
+                   Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillProfileChange>(&change));
 
   std::vector<AutofillEntry> new_sync_entries;
@@ -910,6 +920,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveEntry) {
                                    original_entry.key()));
   scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&db_thread_);
   notifier->Notify(NotificationType::AUTOFILL_ENTRIES_CHANGED,
+                   Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillChangeList>(&changes));
 
   std::vector<AutofillEntry> new_sync_entries;
@@ -948,6 +959,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveProfile) {
                                sync_profile.Label(), NULL, string16());
   scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&db_thread_);
   notifier->Notify(NotificationType::AUTOFILL_PROFILE_CHANGED,
+                   Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillProfileChange>(&change));
 
   std::vector<AutofillEntry> new_sync_entries;
@@ -972,6 +984,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeError) {
                                    evil_entry.key()));
   scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&db_thread_);
   notifier->Notify(NotificationType::AUTOFILL_ENTRIES_CHANGED,
+                   Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillChangeList>(&changes));
 
   // Wait for the PPS to shut everything down and signal us.
@@ -981,5 +994,6 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeError) {
 
   // Ensure future autofill notifications don't crash.
   notifier->Notify(NotificationType::AUTOFILL_ENTRIES_CHANGED,
+                   Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillChangeList>(&changes));
 }

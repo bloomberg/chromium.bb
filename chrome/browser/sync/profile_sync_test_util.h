@@ -28,6 +28,7 @@
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/test/sync/test_http_bridge_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -196,20 +197,30 @@ class ThreadNotifier :  // NOLINT
         notify_thread_(notify_thread) {}
 
   void Notify(NotificationType type, const NotificationDetails& details) {
+    Notify(type, NotificationService::AllSources(), details);
+  }
+
+  void Notify(NotificationType type,
+              const NotificationSource& source,
+              const NotificationDetails& details) {
     DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
     notify_thread_->message_loop()->PostTask(
         FROM_HERE,
-        NewRunnableMethod(this, &ThreadNotifier::NotifyTask, type, details));
+        NewRunnableMethod(this,
+                          &ThreadNotifier::NotifyTask,
+                          type,
+                          source,
+                          details));
     done_event_.Wait();
   }
 
  private:
   friend class base::RefCountedThreadSafe<ThreadNotifier>;
 
-  void NotifyTask(NotificationType type, const NotificationDetails& details) {
-    NotificationService::current()->Notify(type,
-                                           NotificationService::AllSources(),
-                                           details);
+  void NotifyTask(NotificationType type,
+                  const NotificationSource& source,
+                  const NotificationDetails& details) {
+    NotificationService::current()->Notify(type, source, details);
     done_event_.Signal();
   }
 

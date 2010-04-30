@@ -59,7 +59,7 @@ GoButtonGtk::GoButtonGtk(LocationBarViewGtk* location_bar, Browser* browser)
     theme_provider_->InitThemesFor(this);
     registrar_.Add(this,
                    NotificationType::BROWSER_THEME_CHANGED,
-                   NotificationService::AllSources());
+                   Source<GtkThemeProvider>(theme_provider_));
   }
 }
 

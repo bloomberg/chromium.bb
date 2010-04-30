@@ -1,0 +1,43 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_WEBDATA_WEB_DATA_SERVICE_TEST_UTIL_H__
+#define CHROME_BROWSER_WEBDATA_WEB_DATA_SERVICE_TEST_UTIL_H__
+
+#include <vector>
+
+#include "base/basictypes.h"
+#include "base/message_loop.h"
+#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/webdata/web_data_service.h"
+
+class AutofillWebDataServiceConsumer: public WebDataServiceConsumer {
+ public:
+  AutofillWebDataServiceConsumer() : handle_(0) {}
+  virtual ~AutofillWebDataServiceConsumer() {}
+
+  virtual void OnWebDataServiceRequestDone(WebDataService::Handle handle,
+                                           const WDTypedResult* result) {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(result->GetType() == AUTOFILL_VALUE_RESULT);
+    handle_ = handle;
+    const WDResult<std::vector<string16> >* autofill_result =
+        static_cast<const WDResult<std::vector<string16> >*>(result);
+    // Copy the values.
+    values_ = autofill_result->GetValue();
+
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    MessageLoop::current()->Quit();
+  }
+
+  WebDataService::Handle handle() { return handle_; }
+  const std::vector<string16>& values() { return values_; }
+
+ private:
+  WebDataService::Handle handle_;
+  std::vector<string16> values_;
+  DISALLOW_COPY_AND_ASSIGN(AutofillWebDataServiceConsumer);
+};
+
+#endif  // CHROME_BROWSER_WEBDATA_WEB_DATA_SERVICE_TEST_UTIL_H__

@@ -137,7 +137,6 @@ bool ProfileSyncServiceTestHarness::RunStateChangeMachine() {
 
       EXPECT_LE(last_timestamp_, snap->max_local_timestamp);
       last_timestamp_ = snap->max_local_timestamp;
-
       SignalStateCompleteWithNextState(WAITING_FOR_NOTHING);
       break;
     }
