@@ -84,7 +84,102 @@ var g_camera = {
 
 var g_dragging = false;
 
+
+/**
+* Returns the absolute position of an element for certain browsers.
+* @param {HTML Element} element The element to get a position for.
+* @return {Object} An object containing x and y as the absolute position
+*     of the given element.
+*/
+var getAbsolutePosition = function(element) {
+ var r = { x: element.offsetLeft, y: element.offsetTop };
+ if (element.offsetParent) {
+   var tmp = getAbsolutePosition(element.offsetParent);
+   r.x += tmp.x;
+   r.y += tmp.y;
+ }
+ return r;
+};
+
+/**
+ * Retrieve the coordinates of the given event relative to the center
+ * of the widget.
+ *
+ * @param {eventInfo} eventInfo As returned from
+ *     CLIENT3DJS.util.getEventInfo.
+ * @param {HTML Element} opt_reference A DOM element whose position we want
+ *     to transform the mouse coordinates to. If it is not passed in the
+ *     element in the eventInfo will be used.
+ * @return {Object} An object containing keys 'x' and 'y'.
+ */
+var getRelativeCoordinates = function(eventInfo, opt_reference) {
+ var x, y;
+ event = eventInfo.event;
+ var element = eventInfo.element;
+ var reference = opt_reference || eventInfo.element;
+ if (!window.opera && typeof event.offsetX != 'undefined') {
+   // Use offset coordinates and find common offsetParent
+   var pos = { x: event.offsetX, y: event.offsetY };
+   // Send the coordinates upwards through the offsetParent chain.
+   var e = element;
+   while (e) {
+     e.mouseX = pos.x;
+     e.mouseY = pos.y;
+     pos.x += e.offsetLeft;
+     pos.y += e.offsetTop;
+     e = e.offsetParent;
+   }
+   // Look for the coordinates starting from the reference element.
+   var e = reference;
+   var offset = { x: 0, y: 0 }
+   while (e) {
+     if (typeof e.mouseX != 'undefined') {
+       x = e.mouseX - offset.x;
+       y = e.mouseY - offset.y;
+       break;
+     }
+     offset.x += e.offsetLeft;
+     offset.y += e.offsetTop;
+     e = e.offsetParent;
+   }
+   // Reset stored coordinates
+   e = element;
+   while (e) {
+     e.mouseX = undefined;
+     e.mouseY = undefined;
+     e = e.offsetParent;
+   }
+ } else {
+   // Use absolute coordinates
+   var pos = getAbsolutePosition(reference);
+   x = event.pageX - pos.x;
+   y = event.pageY - pos.y;
+ }
+ // Subtract distance to middle
+ return { x: x, y: y };
+};
+
+/**
+ * Returns an object with event, element, name and wheel in a semi cross
+ * browser way. Note: this can only be called from since an event because
+ * depending on the browser it expects that window.event is valid.
+ * @param {Event} event A mouse-related DOM event.
+ * @return {EventInfo} Info about the event.
+ */
+var getEventInfo = function(event) {
+  event = event ? event : window.event;
+  var elem = event.target ? event.target : event.srcElement;
+  var name = elem.id ? elem.id : ('->' + elem.toString());
+  var wheel = event.detail ? event.detail : -event.wheelDelta;
+  return { event: event,
+           element: elem,
+           name: name,
+           wheel: wheel };
+};
+
+
 function startDragging(e) {
+  e = getRelativeCoordinates(getEventInfo(e));
   g_lastRot = g_thisRot;
 
   g_aball.click([e.x, e.y]);
@@ -93,6 +188,7 @@ function startDragging(e) {
 }
 
 function drag(e) {
+  e = getRelativeCoordinates(getEventInfo(e));
   if (g_dragging) {
     var rotationQuat = g_aball.drag([e.x, e.y]);
     var rot_mat = g_quaternions.quaternionToRotation(rotationQuat);
@@ -105,6 +201,7 @@ function drag(e) {
 }
 
 function stopDragging(e) {
+  e = getRelativeCoordinates(getEventInfo(e));
   g_dragging = false;
 }
 
@@ -265,10 +362,10 @@ function onRender() {
  * Creates the client area.
  */
 function init() {
-  // o3djs.webgl.makeClients(initStep2);
+  o3djs.webgl.makeClients(initStep2);
   // The following call enables a debug WebGL context, which makes
   // debugging much easier.
-  o3djs.webgl.makeClients(initStep2, undefined, undefined, undefined, undefined, undefined, true);
+  // o3djs.webgl.makeClients(initStep2, undefined, undefined, undefined, undefined, undefined, true);
 }
 
 /**

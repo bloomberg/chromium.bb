@@ -543,13 +543,13 @@ o3d.Client.prototype.fullscreen = false;
  */
 o3d.Client.prototype.__defineGetter__('width',
     function() {
-      return this.gl.canvas.width;
+      return this.gl.hack_canvas.width;
     }
 );
 
 o3d.Client.prototype.__defineSetter__('width',
     function(x) {
-      this.gl.canvas.width = x;
+      this.gl.hack_canvas.width = x;
     }
 );
 
@@ -560,13 +560,13 @@ o3d.Client.prototype.__defineSetter__('width',
  */
 o3d.Client.prototype.__defineGetter__('height',
     function() {
-      return this.gl.canvas.height;
+      return this.gl.hack_canvas.height;
     }
 );
 
 o3d.Client.prototype.__defineSetter__('height',
     function(x) {
-      this.gl.canvas.height = x;
+      this.gl.hack_canvas.height = x;
     }
 );
 
@@ -594,6 +594,9 @@ o3d.Client.prototype.initWithCanvas = function(canvas) {
       return null;
   }
 
+  // TODO(petersont): hack workaround for WebGLRenderingContext.canvas
+  // not being implemented in Firefox. Remove.
+  gl.hack_canvas = canvas;
   this.gl = gl;
   this.root.gl = gl;
   this.renderGraphRoot.gl = gl;
@@ -710,7 +713,7 @@ o3d.Client.prototype.clearLostResourcesCallback =
  */
 o3d.Client.prototype.setEventCallback =
     function(type, handler) {
-  var listener = this.gl.canvas;
+  var listener = this.gl.hack_canvas;
   // TODO(petersont): Figure out a way for a canvas to listen to a key event
   // directly.
   if (type.substr(0, 3) == 'key') {

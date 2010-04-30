@@ -367,7 +367,10 @@ o3d.Texture2D.prototype.drawImage =
       0, 0, source_img.canvas_.width, source_img.canvas_.height);
 
   this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture_);
-  this.gl.texSubImage2D(this.gl.TEXTURE_2D, 0, 0, 0, canvas);
+  // TODO(petersont): replace this with a call to texSubImage2D once
+  // Firefox supports it.
+  this.gl.texImage2D(this.gl.TEXTURE_2D, 0, canvas);
+  // this.gl.texSubImage2D(this.gl.TEXTURE_2D, 0, 0, 0, canvas);
 };
 
 

@@ -39,7 +39,7 @@
  * 1)  If both a color and depth surface is bound, then they must be of
  *     matching dimensions.
  * 2)  At least one of render_surface and render_depth_surface must non-null.
- * 
+ *
  * @param {o3d.RenderSurface} opt_renderSurface The render surface to set.
  * @param {o3d.RenderDepthStencilSurface} opt_renderDepthStencilSurface The
  *     depth stencil render surface to set.
@@ -86,15 +86,15 @@ o3d.RenderSurfaceSet.prototype.clearFramebufferObjects_ =
       this.gl.FRAMEBUFFER,
       this.gl.COLOR_ATTACHMENT0,
       this.gl.RENDERBUFFER,
-      0);
+      null);
 
   this.gl.framebufferRenderbuffer(
       this.gl.FRAMEBUFFER,
       this.gl.DEPTH_ATTACHMENT,
       this.gl.RENDERBUFFER,
-      0);
+      null);
 
-  this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, 0);
+  this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
 };
 
 
