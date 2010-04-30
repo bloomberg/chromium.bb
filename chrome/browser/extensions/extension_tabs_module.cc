@@ -263,7 +263,8 @@ bool GetCurrentWindowFunction::RunImpl() {
 }
 
 bool GetLastFocusedWindowFunction::RunImpl() {
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile());
+  Browser* browser = BrowserList::FindBrowserWithType(
+      profile(), Browser::TYPE_ANY, include_incognito());
   if (!browser) {
     error_ = keys::kNoLastFocusedWindowError;
     return false;
