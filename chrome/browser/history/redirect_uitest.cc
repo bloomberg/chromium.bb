@@ -28,9 +28,9 @@ TEST_F(RedirectTest, Server) {
     HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
 
-  GURL final_url = server->TestServerPageW(std::wstring());
-  GURL first_url = server->TestServerPageW(
-      std::wstring(L"server-redirect?") + UTF8ToWide(final_url.spec()));
+  GURL final_url = server->TestServerPage(std::string());
+  GURL first_url = server->TestServerPage(
+      "server-redirect?" + final_url.spec());
 
   NavigateToURL(first_url);
 
@@ -50,9 +50,9 @@ TEST_F(RedirectTest, Client) {
     HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
 
-  GURL final_url = server->TestServerPageW(std::wstring());
-  GURL first_url = server->TestServerPageW(
-      std::wstring(L"client-redirect?") + UTF8ToWide(final_url.spec()));
+  GURL final_url = server->TestServerPage(std::string());
+  GURL first_url = server->TestServerPage(
+      "client-redirect?" + final_url.spec());
 
   // The client redirect appears as two page visits in the browser.
   NavigateToURLBlockUntilNavigationsComplete(first_url, 2);
@@ -84,7 +84,7 @@ TEST_F(RedirectTest, ClientEmptyReferer) {
     HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
 
-  GURL final_url = server->TestServerPageW(std::wstring());
+  GURL final_url = server->TestServerPage(std::string());
   FilePath test_file(test_data_directory_);
   test_file = test_file.AppendASCII("file_client_redirect.html");
   GURL first_url = net::FilePathToFileURL(test_file);
@@ -145,13 +145,13 @@ TEST_F(RedirectTest, DISABLED_ClientServerServer) {
       HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
 
-  GURL final_url = server->TestServerPageW(std::wstring());
-  GURL next_to_last = server->TestServerPageW(
-      std::wstring(L"server-redirect?") + UTF8ToWide(final_url.spec()));
-  GURL second_url = server->TestServerPageW(
-      std::wstring(L"server-redirect?") + UTF8ToWide(next_to_last.spec()));
-  GURL first_url = server->TestServerPageW(
-      std::wstring(L"client-redirect?") + UTF8ToWide(second_url.spec()));
+  GURL final_url = server->TestServerPage(std::string());
+  GURL next_to_last = server->TestServerPage(
+      "server-redirect?" + final_url.spec());
+  GURL second_url = server->TestServerPage(
+      "server-redirect?" + next_to_last.spec());
+  GURL first_url = server->TestServerPage(
+      "client-redirect?" + second_url.spec());
   std::vector<GURL> redirects;
 
   // We need the sleep for the client redirects, because it appears as two
@@ -181,10 +181,9 @@ TEST_F(RedirectTest, ServerReference) {
 
   const std::string ref("reference");
 
-  GURL final_url = server->TestServerPageW(std::wstring());
-  GURL initial_url = server->TestServerPageW(
-      std::wstring(L"server-redirect?") + UTF8ToWide(final_url.spec()) +
-      L"#" + UTF8ToWide(ref));
+  GURL final_url = server->TestServerPage(std::string());
+  GURL initial_url = server->TestServerPage(
+      "server-redirect?" + final_url.spec() + "#" + ref);
 
   NavigateToURL(initial_url);
 
@@ -203,8 +202,8 @@ TEST_F(RedirectTest, NoHttpToFile) {
   test_file = test_file.AppendASCII("http_to_file.html");
   GURL file_url = net::FilePathToFileURL(test_file);
 
-  GURL initial_url = server->TestServerPageW(
-    std::wstring(L"client-redirect?") + UTF8ToWide(file_url.spec()));
+  GURL initial_url = server->TestServerPage(
+    "client-redirect?" + file_url.spec());
 
   NavigateToURL(initial_url);
   // UITest will check for crashes. We make sure the title doesn't match the
@@ -256,10 +255,10 @@ TEST_F(RedirectTest,
     HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
 
-  GURL final_url = server->TestServerPageW(std::wstring(L"files/title2.html"));
-  GURL slow = server->TestServerPageW(std::wstring(L"slow?60"));
-  GURL first_url = server->TestServerPageW(
-      std::wstring(L"client-redirect?") + UTF8ToWide(slow.spec()));
+  GURL final_url = server->TestServerPage("files/title2.html");
+  GURL slow = server->TestServerPage("slow?60");
+  GURL first_url = server->TestServerPage(
+      "client-redirect?" + slow.spec());
   std::vector<GURL> redirects;
 
   NavigateToURL(first_url);

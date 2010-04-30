@@ -29,25 +29,25 @@
 #include "net/base/net_util.h"
 
 const std::string kSubscribePage = "/subscribe.html";
-const std::wstring kFeedPage = L"files/feeds/feed.html";
-const std::wstring kFeedPageMultiRel = L"files/feeds/feed_multi_rel.html";
-const std::wstring kNoFeedPage = L"files/feeds/no_feed.html";
-const std::wstring kValidFeed0 = L"files/feeds/feed_script.xml";
-const std::wstring kValidFeed1 = L"files/feeds/feed1.xml";
-const std::wstring kValidFeed2 = L"files/feeds/feed2.xml";
-const std::wstring kValidFeed3 = L"files/feeds/feed3.xml";
-const std::wstring kValidFeed4 = L"files/feeds/feed4.xml";
-const std::wstring kValidFeed5 = L"files/feeds/feed5.xml";
-const std::wstring kValidFeedNoLinks = L"files/feeds/feed_nolinks.xml";
-const std::wstring kInvalidFeed1 = L"files/feeds/feed_invalid1.xml";
-const std::wstring kInvalidFeed2 = L"files/feeds/feed_invalid2.xml";
-const std::wstring kLocalization =
-    L"files/extensions/browsertest/title_localized_pa/simple.html";
-const std::wstring kHashPageA =
-    L"files/extensions/api_test/page_action/hash_change/test_page_A.html";
-const std::wstring kHashPageAHash = kHashPageA + L"#asdf";
-const std::wstring kHashPageB =
-    L"files/extensions/api_test/page_action/hash_change/test_page_B.html";
+const std::string kFeedPage = "files/feeds/feed.html";
+const std::string kFeedPageMultiRel = "files/feeds/feed_multi_rel.html";
+const std::string kNoFeedPage = "files/feeds/no_feed.html";
+const std::string kValidFeed0 = "files/feeds/feed_script.xml";
+const std::string kValidFeed1 = "files/feeds/feed1.xml";
+const std::string kValidFeed2 = "files/feeds/feed2.xml";
+const std::string kValidFeed3 = "files/feeds/feed3.xml";
+const std::string kValidFeed4 = "files/feeds/feed4.xml";
+const std::string kValidFeed5 = "files/feeds/feed5.xml";
+const std::string kValidFeedNoLinks = "files/feeds/feed_nolinks.xml";
+const std::string kInvalidFeed1 = "files/feeds/feed_invalid1.xml";
+const std::string kInvalidFeed2 = "files/feeds/feed_invalid2.xml";
+const std::string kLocalization =
+    "files/extensions/browsertest/title_localized_pa/simple.html";
+const std::string kHashPageA =
+    "files/extensions/api_test/page_action/hash_change/test_page_A.html";
+const std::string kHashPageAHash = kHashPageA + "#asdf";
+const std::string kHashPageB =
+    "files/extensions/api_test/page_action/hash_change/test_page_B.html";
 
 // Looks for an ExtensionHost whose URL has the given path component (including
 // leading slash).  Also verifies that the expected number of hosts are loaded.
@@ -219,13 +219,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(0));
 
   // Navigate to the feed page.
-  GURL feed_url = server->TestServerPageW(kFeedPage);
+  GURL feed_url = server->TestServerPage(kFeedPage);
   ui_test_utils::NavigateToURL(browser(), feed_url);
   // We should now have one page action ready to go in the LocationBar.
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
 
   // Navigate to a page with no feed.
-  GURL no_feed = server->TestServerPageW(kNoFeedPage);
+  GURL no_feed = server->TestServerPage(kNoFeedPage);
   ui_test_utils::NavigateToURL(browser(), no_feed);
   // Make sure the page action goes away.
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(0));
@@ -241,17 +241,17 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionInPageNavigation) {
   ASSERT_TRUE(LoadExtension(extension_path));
 
   // Page action should become visible when we navigate here.
-  GURL feed_url = server->TestServerPageW(kHashPageA);
+  GURL feed_url = server->TestServerPage(kHashPageA);
   ui_test_utils::NavigateToURL(browser(), feed_url);
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
 
   // In-page navigation, page action should remain.
-  feed_url = server->TestServerPageW(kHashPageAHash);
+  feed_url = server->TestServerPage(kHashPageAHash);
   ui_test_utils::NavigateToURL(browser(), feed_url);
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
 
   // Not an in-page navigation, page action should go away.
-  feed_url = server->TestServerPageW(kHashPageB);
+  feed_url = server->TestServerPage(kHashPageB);
   ui_test_utils::NavigateToURL(browser(), feed_url);
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(0));
 }
@@ -264,7 +264,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UnloadPageAction) {
   ASSERT_TRUE(LoadExtension(extension_path));
 
   // Navigation prompts the location bar to load page actions.
-  GURL feed_url = server->TestServerPageW(kFeedPage);
+  GURL feed_url = server->TestServerPage(kFeedPage);
   ui_test_utils::NavigateToURL(browser(), feed_url);
   ASSERT_TRUE(WaitForPageActionCountChangeTo(1));
 
@@ -285,7 +285,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSMultiRelLink) {
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(0));
 
   // Navigate to the feed page.
-  GURL feed_url = server->TestServerPageW(kFeedPageMultiRel);
+  GURL feed_url = server->TestServerPage(kFeedPageMultiRel);
   ui_test_utils::NavigateToURL(browser(), feed_url);
   // We should now have one page action ready to go in the LocationBar.
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
@@ -325,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
   ASSERT_TRUE(LoadExtension(extension_path));
 
   // Any navigation prompts the location bar to load the page action.
-  GURL url = server->TestServerPageW(kLocalization);
+  GURL url = server->TestServerPage(kLocalization);
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
 
@@ -341,9 +341,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
                extension->page_action()->GetTitle(tab_id).c_str());
 }
 
-GURL GetFeedUrl(HTTPTestServer* server, const std::wstring& feed_page,
+GURL GetFeedUrl(HTTPTestServer* server, const std::string& feed_page,
                 bool direct_url, std::string extension_id) {
-  GURL feed_url = server->TestServerPageW(feed_page);
+  GURL feed_url = server->TestServerPage(feed_page);
   if (direct_url) {
     // We navigate directly to the subscribe page for feeds where the feed
     // sniffing won't work, in other words, as is the case for malformed feeds.
@@ -405,7 +405,7 @@ bool ValidatePageElement(TabContents* tab,
 // |sniff_xml_type| is generally set to true if the feed is sniffable and false
 // for invalid feeds.
 void NavigateToFeedAndValidate(HTTPTestServer* server,
-                               const std::wstring& url,
+                               const std::string& url,
                                Browser* browser,
                                bool sniff_xml_type,
                                const std::string& expected_feed_title,
@@ -558,7 +558,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed3) {
       test_data_dir_.AppendASCII("subscribe_page_action")));
 
   // Try a feed that doesn't exist.
-  NavigateToFeedAndValidate(server, L"foo.xml", browser(), false,
+  NavigateToFeedAndValidate(server, "foo.xml", browser(), false,
                             "Feed for Unknown feed name",
                             "element 'anchor_0' not found",
                             "element 'desc_0' not found",

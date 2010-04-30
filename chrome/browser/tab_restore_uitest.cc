@@ -456,8 +456,8 @@ TEST_F(TabRestoreUITest, RestoreWithExistingSiteInstance) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
-  GURL http_url1(server->TestServerPageW(L"files/title1.html"));
-  GURL http_url2(server->TestServerPageW(L"files/title2.html"));
+  GURL http_url1(server->TestServerPage("files/title1.html"));
+  GURL http_url2(server->TestServerPage("files/title2.html"));
 
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser_proxy.get());
@@ -503,8 +503,8 @@ TEST_F(TabRestoreUITest, RestoreCrossSiteWithExistingSiteInstance) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
-  GURL http_url1(server->TestServerPageW(L"files/title1.html"));
-  GURL http_url2(server->TestServerPageW(L"files/title2.html"));
+  GURL http_url1(server->TestServerPage("files/title1.html"));
+  GURL http_url2(server->TestServerPage("files/title2.html"));
 
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser_proxy.get());

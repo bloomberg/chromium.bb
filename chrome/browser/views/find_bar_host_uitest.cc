@@ -15,7 +15,7 @@ class FindInPageControllerTest : public UITest {
   }
 };
 
-const std::wstring kSimplePage = L"404_is_enough_for_us.html";
+const std::string kSimplePage = "404_is_enough_for_us.html";
 
 // The find window should not change its location just because we open and close
 // a new tab.
@@ -24,7 +24,7 @@ TEST_F(FindInPageControllerTest, FindMovesOnTabClose_Issue1343052) {
       HTTPTestServer::CreateServer(L"chrome/test/data", NULL);
   ASSERT_TRUE(NULL != server.get());
 
-  GURL url = server->TestServerPageW(kSimplePage);
+  GURL url = server->TestServerPage(kSimplePage);
   scoped_refptr<TabProxy> tabA(GetActiveTab());
   ASSERT_TRUE(tabA.get());
   ASSERT_TRUE(tabA->NavigateToURL(url));

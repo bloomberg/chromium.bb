@@ -145,7 +145,7 @@ TEST_F(SessionRestoreUITest, RestoresCrossSiteForwardAndBackwardNavs) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
-  GURL cross_site_url(server->TestServerPageW(L"files/title2.html"));
+  GURL cross_site_url(server->TestServerPage("files/title2.html"));
 
   // Visit URLs on different sites.
   NavigateToURL(url1_);

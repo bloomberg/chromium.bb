@@ -23,7 +23,7 @@ namespace {
 // The delay waited after sending an OS simulated event.
 static const int kActionDelayMs = 500;
 static const wchar_t kDocRoot[] = L"chrome/test/data";
-static const wchar_t kSimplePage[] = L"404_is_enough_for_us.html";
+static const char kSimplePage[] = "404_is_enough_for_us.html";
 
 class FindInPageTest : public InProcessBrowserTest {
  public:
@@ -86,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
   ASSERT_TRUE(NULL != server.get());
 
   // First we navigate to our test page (tab A).
-  GURL url = server->TestServerPageW(kSimplePage);
+  GURL url = server->TestServerPage(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   browser()->Find();
@@ -123,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
       HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
 
-  GURL url = server->TestServerPageW(L"title1.html");
+  GURL url = server->TestServerPage("title1.html");
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Focus the location bar, open and close the find-in-page, focus should

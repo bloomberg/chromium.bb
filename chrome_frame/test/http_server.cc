@@ -1,7 +1,10 @@
 // Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "chrome_frame/test/http_server.h"
+
+#include "base/string_util.h"
 
 const wchar_t kDocRoot[] = L"chrome_frame\\test\\data";
 
@@ -62,8 +65,9 @@ bool ChromeFrameHTTPServer::WaitToFinish(int milliseconds) {
   return server_->WaitToFinish(milliseconds);
 }
 
+// TODO(phajdan.jr): Change wchar_t* to std::string& and fix callers.
 GURL ChromeFrameHTTPServer::Resolve(const wchar_t* relative_url) {
-  return server_->TestServerPageW(relative_url);
+  return server_->TestServerPage(WideToUTF8(relative_url));
 }
 
 std::wstring ChromeFrameHTTPServer::GetDataDir() {

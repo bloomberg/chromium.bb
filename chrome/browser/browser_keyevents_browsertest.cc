@@ -27,7 +27,7 @@
 
 namespace {
 
-const wchar_t kTestingPage[] = L"files/keyevents_test.html";
+const char kTestingPage[] = "files/keyevents_test.html";
 const wchar_t kSuppressEventJS[] =
     L"window.domAutomationController.send(setDefaultAction('%ls', %ls));";
 const wchar_t kGetResultJS[] =
@@ -351,7 +351,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, NormalKeyEvents) {
 
   HTTPTestServer* server = StartHTTPServer();
 
-  GURL url = server->TestServerPageW(kTestingPage);
+  GURL url = server->TestServerPage(kTestingPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_TAB_CONTAINER));
@@ -425,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CtrlKeyEvents) {
 
   HTTPTestServer* server = StartHTTPServer();
 
-  GURL url = server->TestServerPageW(kTestingPage);
+  GURL url = server->TestServerPage(kTestingPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_TAB_CONTAINER));
@@ -493,7 +493,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
 
   HTTPTestServer* server = StartHTTPServer();
 
-  GURL url = server->TestServerPageW(kTestingPage);
+  GURL url = server->TestServerPage(kTestingPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   ui_test_utils::RunAllPendingInMessageLoop();
@@ -548,7 +548,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, ReservedAccelerators) {
   HTTPTestServer* server = StartHTTPServer();
 
-  GURL url = server->TestServerPageW(kTestingPage);
+  GURL url = server->TestServerPage(kTestingPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_TAB_CONTAINER));

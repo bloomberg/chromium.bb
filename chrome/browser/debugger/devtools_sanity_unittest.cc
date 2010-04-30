@@ -52,31 +52,31 @@ class BrowserClosedObserver : public NotificationObserver {
 // action we take.
 const int kActionDelayMs = 500;
 
-const wchar_t kConsoleTestPage[] = L"files/devtools/console_test_page.html";
-const wchar_t kDebuggerTestPage[] = L"files/devtools/debugger_test_page.html";
-const wchar_t kEvalTestPage[] = L"files/devtools/eval_test_page.html";
-const wchar_t kJsPage[] = L"files/devtools/js_page.html";
-const wchar_t kPauseOnExceptionTestPage[] =
-    L"files/devtools/pause_on_exception.html";
-const wchar_t kPauseWhenLoadingDevTools[] =
-    L"files/devtools/pause_when_loading_devtools.html";
-const wchar_t kPauseWhenScriptIsRunning[] =
-    L"files/devtools/pause_when_script_is_running.html";
-const wchar_t kResourceContentLengthTestPage[] = L"files/devtools/image.html";
-const wchar_t kResourceTestPage[] = L"files/devtools/resource_test_page.html";
-const wchar_t kSimplePage[] = L"files/devtools/simple_page.html";
-const wchar_t kSyntaxErrorTestPage[] =
-    L"files/devtools/script_syntax_error.html";
-const wchar_t kDebuggerStepTestPage[] =
-    L"files/devtools/debugger_step.html";
-const wchar_t kDebuggerClosurePage[] =
-    L"files/devtools/debugger_closure.html";
-const wchar_t kDebuggerIntrinsicPropertiesPage[] =
-    L"files/devtools/debugger_intrinsic_properties.html";
-const wchar_t kCompletionOnPause[] =
-    L"files/devtools/completion_on_pause.html";
-const wchar_t kPageWithContentScript[] =
-    L"files/devtools/page_with_content_script.html";
+const char kConsoleTestPage[] = "files/devtools/console_test_page.html";
+const char kDebuggerTestPage[] = "files/devtools/debugger_test_page.html";
+const char kEvalTestPage[] = "files/devtools/eval_test_page.html";
+const char kJsPage[] = "files/devtools/js_page.html";
+const char kPauseOnExceptionTestPage[] =
+    "files/devtools/pause_on_exception.html";
+const char kPauseWhenLoadingDevTools[] =
+    "files/devtools/pause_when_loading_devtools.html";
+const char kPauseWhenScriptIsRunning[] =
+    "files/devtools/pause_when_script_is_running.html";
+const char kResourceContentLengthTestPage[] = "files/devtools/image.html";
+const char kResourceTestPage[] = "files/devtools/resource_test_page.html";
+const char kSimplePage[] = "files/devtools/simple_page.html";
+const char kSyntaxErrorTestPage[] =
+    "files/devtools/script_syntax_error.html";
+const char kDebuggerStepTestPage[] =
+    "files/devtools/debugger_step.html";
+const char kDebuggerClosurePage[] =
+    "files/devtools/debugger_closure.html";
+const char kDebuggerIntrinsicPropertiesPage[] =
+    "files/devtools/debugger_intrinsic_properties.html";
+const char kCompletionOnPause[] =
+    "files/devtools/completion_on_pause.html";
+const char kPageWithContentScript[] =
+    "files/devtools/page_with_content_script.html";
 
 
 class DevToolsSanityTest : public InProcessBrowserTest {
@@ -87,7 +87,7 @@ class DevToolsSanityTest : public InProcessBrowserTest {
   }
 
  protected:
-  void RunTest(const std::string& test_name, const std::wstring& test_page) {
+  void RunTest(const std::string& test_name, const std::string& test_page) {
     OpenDevToolsWindow(test_page);
     std::string result;
 
@@ -117,9 +117,9 @@ class DevToolsSanityTest : public InProcessBrowserTest {
     CloseDevToolsWindow();
   }
 
-  void OpenDevToolsWindow(const std::wstring& test_page) {
+  void OpenDevToolsWindow(const std::string& test_page) {
     HTTPTestServer* server = StartHTTPServer();
-    GURL url = server->TestServerPageW(test_page);
+    GURL url = server->TestServerPage(test_page);
     ui_test_utils::NavigateToURL(browser(), url);
 
     inspected_rvh_ = GetInspectedTab()->render_view_host();

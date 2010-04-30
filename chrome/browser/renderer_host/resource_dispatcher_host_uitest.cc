@@ -88,8 +88,8 @@ TEST_F(ResourceDispatcherTest, SyncXMLHttpRequest) {
   scoped_refptr<TabProxy> tab(browser_proxy->GetActiveTab());
   ASSERT_TRUE(tab.get());
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-            tab->NavigateToURL(server->TestServerPageW(
-                L"files/sync_xmlhttprequest.html")));
+            tab->NavigateToURL(server->TestServerPage(
+                "files/sync_xmlhttprequest.html")));
 
   // Let's check the XMLHttpRequest ran successfully.
   bool success = false;
@@ -110,8 +110,8 @@ TEST_F(ResourceDispatcherTest, SyncXMLHttpRequest_Disallowed) {
   scoped_refptr<TabProxy> tab(browser_proxy->GetActiveTab());
   ASSERT_TRUE(tab.get());
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-            tab->NavigateToURL(server->TestServerPageW(
-                L"files/sync_xmlhttprequest_disallowed.html")));
+            tab->NavigateToURL(server->TestServerPage(
+                "files/sync_xmlhttprequest_disallowed.html")));
 
   // Let's check the XMLHttpRequest ran successfully.
   bool success = false;
@@ -136,8 +136,8 @@ TEST_F(ResourceDispatcherTest, SyncXMLHttpRequest_DuringUnload) {
   ASSERT_TRUE(tab.get());
 
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-            tab->NavigateToURL(server->TestServerPageW(
-                L"files/sync_xmlhttprequest_during_unload.html")));
+            tab->NavigateToURL(server->TestServerPage(
+                "files/sync_xmlhttprequest_during_unload.html")));
 
   // Confirm that the page has loaded (since it changes its title during load).
   std::wstring tab_title;
@@ -147,7 +147,7 @@ TEST_F(ResourceDispatcherTest, SyncXMLHttpRequest_DuringUnload) {
   // Navigate to a new page, to dispatch unload event and trigger xhr.
   // (the bug would make this step hang the renderer).
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-            tab->NavigateToURL(server->TestServerPageW(L"files/title2.html")));
+            tab->NavigateToURL(server->TestServerPage("files/title2.html")));
 
   // Check that the new page got loaded, and that no download was triggered.
   EXPECT_TRUE(tab->GetTabTitle(&tab_title));
@@ -172,7 +172,7 @@ TEST_F(ResourceDispatcherTest, CrossSiteOnunloadCookie) {
   scoped_refptr<TabProxy> tab(browser_proxy->GetActiveTab());
   ASSERT_TRUE(tab.get());
 
-  GURL url(server->TestServerPageW(L"files/onunload_cookie.html"));
+  GURL url(server->TestServerPage("files/onunload_cookie.html"));
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(url));
 
   // Confirm that the page has loaded (since it changes its title during load).
@@ -267,7 +267,7 @@ TEST_F(ResourceDispatcherTest, CrossSiteNavigationErrorPage) {
   scoped_refptr<TabProxy> tab(browser_proxy->GetActiveTab());
   ASSERT_TRUE(tab.get());
 
-  GURL url(server->TestServerPageW(L"files/onunload_cookie.html"));
+  GURL url(server->TestServerPage("files/onunload_cookie.html"));
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(url));
 
   // Confirm that the page has loaded (since it changes its title during load).
@@ -296,7 +296,7 @@ TEST_F(ResourceDispatcherTest, CrossSiteNavigationErrorPage) {
   // TabContents was in the NORMAL state, it would ignore the attempt to run
   // the onunload handler, and the navigation would fail.
   // (Test by redirecting to javascript:window.location='someURL'.)
-  GURL test_url(server->TestServerPageW(L"files/title2.html"));
+  GURL test_url(server->TestServerPage("files/title2.html"));
   std::string redirect_url = "javascript:window.location='" +
       test_url.possibly_invalid_spec() + "'";
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,

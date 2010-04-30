@@ -14,8 +14,7 @@ const wchar_t kDocRoot[] = L"chrome/test/data";
 
 class ViewSourceTest : public UITest {
  protected:
-  ViewSourceTest() : UITest() {
-    test_html_ = L"files/viewsource/test.html";
+  ViewSourceTest() : test_html_("files/viewsource/test.html") {
   }
 
   bool IsPageMenuCommandEnabled(int command) {
@@ -30,7 +29,7 @@ class ViewSourceTest : public UITest {
   }
 
  protected:
-  std::wstring test_html_;
+  std::string test_html_;
 };
 
 // This test renders a page in view-source and then checks to see if a cookie
@@ -44,7 +43,7 @@ TEST_F(ViewSourceTest, DoesBrowserRenderInViewSource) {
   std::string cookie_data = "foo";
 
   // First we navigate to our view-source test page
-  GURL url = server->TestServerPageW(test_html_);
+  GURL url = server->TestServerPage(test_html_);
   url = GURL("view-source:" + url.spec());
   scoped_refptr<TabProxy> tab(GetActiveTab());
   ASSERT_TRUE(tab.get());
@@ -67,7 +66,7 @@ TEST_F(ViewSourceTest, DoesBrowserConsumeViewSourcePrefix) {
   ASSERT_TRUE(NULL != server.get());
 
   // First we navigate to google.html
-  GURL url = server->TestServerPageW(test_html_);
+  GURL url = server->TestServerPage(test_html_);
   NavigateToURL(url);
 
   // Then we navigate to the SAME url but with the view-source: prefix
@@ -86,7 +85,7 @@ TEST_F(ViewSourceTest, ViewSourceInPageMenuEnabledOnANormalPage) {
   ASSERT_TRUE(NULL != server.get());
 
   // First we navigate to google.html
-  GURL url = server->TestServerPageW(test_html_);
+  GURL url = server->TestServerPage(test_html_);
   NavigateToURL(url);
 
   EXPECT_TRUE(IsPageMenuCommandEnabled(IDC_VIEW_SOURCE));
@@ -100,7 +99,7 @@ TEST_F(ViewSourceTest, ViewSourceInPageMenuDisabledWhileViewingSource) {
   ASSERT_TRUE(NULL != server.get());
 
   // First we navigate to google.html
-  GURL url = server->TestServerPageW(test_html_);
+  GURL url = server->TestServerPage(test_html_);
   GURL url_viewsource = GURL("view-source:" + url.spec());
   NavigateToURL(url_viewsource);
 

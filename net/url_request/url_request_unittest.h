@@ -174,9 +174,6 @@ class TestURLRequestContext : public URLRequestContext {
   }
 };
 
-// TODO(phajdan.jr): Migrate callers to the new name and remove the typedef.
-typedef TestURLRequestContext URLRequestTestContext;
-
 //-----------------------------------------------------------------------------
 
 class TestURLRequest : public URLRequest {
@@ -429,12 +426,6 @@ class BaseTestServer : public base::RefCounted<BaseTestServer> {
 
     return GURL(scheme_ + "://" + user + ":" + password +
                 "@" + host_name_ + ":" + port_str_ + "/" + path);
-  }
-
-  // Deprecated in favor of TestServerPage.
-  // TODO(phajdan.jr): Remove TestServerPageW.
-  GURL TestServerPageW(const std::wstring& path) {
-    return TestServerPage(WideToUTF8(path));
   }
 
   virtual bool MakeGETRequest(const std::string& page_name) = 0;

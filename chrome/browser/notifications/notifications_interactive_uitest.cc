@@ -29,8 +29,8 @@ TEST_F(NotificationsPermissionTest, TestUserGestureInfobar) {
   scoped_refptr<TabProxy> tab(browser->GetActiveTab());
   ASSERT_TRUE(tab.get());
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-            tab->NavigateToURL(server->TestServerPageW(
-                L"files/notifications/notifications_request_function.html")));
+            tab->NavigateToURL(server->TestServerPage(
+                "files/notifications/notifications_request_function.html")));
   WaitUntilTabCount(1);
 
   // Request permission by calling request() while eval'ing an inline script;
@@ -59,8 +59,8 @@ TEST_F(NotificationsPermissionTest, TestNoUserGestureInfobar) {
   // Load a page which just does a request; no user gesture should result
   // in no infobar.
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-            tab->NavigateToURL(server->TestServerPageW(
-                L"files/notifications/notifications_request_inline.html")));
+            tab->NavigateToURL(server->TestServerPage(
+                "files/notifications/notifications_request_inline.html")));
   WaitUntilTabCount(1);
 
   int info_bar_count;

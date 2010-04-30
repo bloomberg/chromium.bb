@@ -123,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTP) {
   ASSERT_TRUE(server.get() != NULL);
 
   ui_test_utils::NavigateToURL(browser(),
-      server->TestServerPageW(L"files/ssl/google.html"));
+      server->TestServerPage("files/ssl/google.html"));
 
   CheckUnauthenticatedState(browser()->GetSelectedTabContents());
 }
@@ -138,8 +138,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPWithBrokenHTTPSResource) {
   scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
   ASSERT_TRUE(bad_https_server.get() != NULL);
 
-  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPageW(
-      L"files/ssl/page_with_unsafe_contents.html"));
+  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPage(
+      "files/ssl/page_with_unsafe_contents.html"));
 
   CheckUnauthenticatedState(browser()->GetSelectedTabContents());
 }
@@ -150,7 +150,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestOKHTTPS) {
   ASSERT_TRUE(https_server.get() != NULL);
 
   ui_test_utils::NavigateToURL(browser(),
-      https_server->TestServerPageW(L"files/ssl/google.html"));
+      https_server->TestServerPage("files/ssl/google.html"));
 
   CheckAuthenticatedState(browser()->GetSelectedTabContents(),
                           false, false);  // No mixed/unsafe content.
@@ -162,7 +162,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndProceed) {
   ASSERT_TRUE(bad_https_server.get() != NULL);
 
   ui_test_utils::NavigateToURL(browser(),
-      bad_https_server->TestServerPageW(L"files/ssl/google.html"));
+      bad_https_server->TestServerPage("files/ssl/google.html"));
 
   TabContents* tab = browser()->GetSelectedTabContents();
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
@@ -186,15 +186,15 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestHTTPSExpiredCertAndDontProceed) {
   ASSERT_TRUE(bad_https_server.get() != NULL);
 
   // First navigate to an OK page.
-  ui_test_utils::NavigateToURL(browser(), good_https_server->TestServerPageW(
-      L"files/ssl/google.html"));
+  ui_test_utils::NavigateToURL(browser(), good_https_server->TestServerPage(
+      "files/ssl/google.html"));
 
   TabContents* tab = browser()->GetSelectedTabContents();
   NavigationEntry* entry = tab->controller().GetActiveEntry();
   ASSERT_TRUE(entry);
 
   GURL cross_site_url =
-      bad_https_server->TestServerPageW(L"files/ssl/google.html");
+      bad_https_server->TestServerPage("files/ssl/google.html");
   // Change the host name from 127.0.0.1 to localhost so it triggers a
   // cross-site navigation so we can test http://crbug.com/5800 is gone.
   ASSERT_EQ("127.0.0.1", cross_site_url.host());
@@ -220,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestHTTPSExpiredCertAndDontProceed) {
 
   // Try to navigate to a new page. (to make sure bug 5800 is fixed).
   ui_test_utils::NavigateToURL(browser(),
-      http_server->TestServerPageW(L"files/ssl/google.html"));
+      http_server->TestServerPage("files/ssl/google.html"));
   CheckUnauthenticatedState(tab);
 }
 
@@ -232,15 +232,15 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndGoBackViaButton) {
   ASSERT_TRUE(bad_https_server.get() != NULL);
 
   // First navigate to an HTTP page.
-  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPageW(
-      L"files/ssl/google.html"));
+  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPage(
+      "files/ssl/google.html"));
   TabContents* tab = browser()->GetSelectedTabContents();
   NavigationEntry* entry = tab->controller().GetActiveEntry();
   ASSERT_TRUE(entry);
 
   // Now go to a bad HTTPS page that shows an interstitial.
   ui_test_utils::NavigateToURL(browser(),
-      bad_https_server->TestServerPageW(L"files/ssl/google.html"));
+      bad_https_server->TestServerPage("files/ssl/google.html"));
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
                                  true);  // Interstitial showing
 
@@ -261,15 +261,15 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestHTTPSExpiredCertAndGoBackViaMenu) {
   ASSERT_TRUE(bad_https_server.get() != NULL);
 
   // First navigate to an HTTP page.
-  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPageW(
-      L"files/ssl/google.html"));
+  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPage(
+      "files/ssl/google.html"));
   TabContents* tab = browser()->GetSelectedTabContents();
   NavigationEntry* entry = tab->controller().GetActiveEntry();
   ASSERT_TRUE(entry);
 
   // Now go to a bad HTTPS page that shows an interstitial.
   ui_test_utils::NavigateToURL(browser(),
-      bad_https_server->TestServerPageW(L"files/ssl/google.html"));
+      bad_https_server->TestServerPage("files/ssl/google.html"));
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
                                  true);  // Interstitial showing
 
@@ -290,13 +290,13 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestHTTPSExpiredCertAndGoForward) {
   ASSERT_TRUE(bad_https_server.get() != NULL);
 
   // First navigate to two HTTP pages.
-  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPageW(
-      L"files/ssl/google.html"));
+  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPage(
+      "files/ssl/google.html"));
   TabContents* tab = browser()->GetSelectedTabContents();
   NavigationEntry* entry1 = tab->controller().GetActiveEntry();
   ASSERT_TRUE(entry1);
-  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPageW(
-      L"files/ssl/blank_page.html"));
+  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPage(
+      "files/ssl/blank_page.html"));
   NavigationEntry* entry2 = tab->controller().GetActiveEntry();
   ASSERT_TRUE(entry2);
 
@@ -309,7 +309,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestHTTPSExpiredCertAndGoForward) {
 
   // Now go to a bad HTTPS page that shows an interstitial.
   ui_test_utils::NavigateToURL(browser(),
-      bad_https_server->TestServerPageW(L"files/ssl/google.html"));
+      bad_https_server->TestServerPage("files/ssl/google.html"));
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
                                  true);  // Interstitial showing
 
@@ -337,8 +337,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorWithNoNavEntry) {
 
   // Load a page with a link that opens a new window (therefore with no history
   // and no navigation entries).
-  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPageW(
-      L"files/ssl/page_with_blank_target.html"));
+  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPage(
+      "files/ssl/page_with_blank_target.html"));
 
   bool success = false;
 
@@ -381,8 +381,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestMixedContents) {
 
   // Load a page with mixed-content, the default behavior is to show the mixed
   // content.
-  ui_test_utils::NavigateToURL(browser(), https_server->TestServerPageW(
-      L"files/ssl/page_with_mixed_contents.html"));
+  ui_test_utils::NavigateToURL(browser(), https_server->TestServerPage(
+      "files/ssl/page_with_mixed_contents.html"));
 
   CheckAuthenticatedState(browser()->GetSelectedTabContents(),
                           true /* mixed-content */, false);
@@ -397,8 +397,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestMixedContentsRandomizeHash) {
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
   ASSERT_TRUE(http_server.get() != NULL);
 
-  ui_test_utils::NavigateToURL(browser(), https_server->TestServerPageW(
-      L"files/ssl/page_with_http_script.html"));
+  ui_test_utils::NavigateToURL(browser(), https_server->TestServerPage(
+      "files/ssl/page_with_http_script.html"));
 
   CheckAuthenticatedState(browser()->GetSelectedTabContents(),
                           true /* mixed-content */, false);
@@ -414,8 +414,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestUnsafeContents) {
   scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
   ASSERT_TRUE(bad_https_server.get() != NULL);
 
-  ui_test_utils::NavigateToURL(browser(), good_https_server->TestServerPageW(
-      L"files/ssl/page_with_unsafe_contents.html"));
+  ui_test_utils::NavigateToURL(browser(), good_https_server->TestServerPage(
+      "files/ssl/page_with_unsafe_contents.html"));
 
   TabContents* tab = browser()->GetSelectedTabContents();
   // When the bad content is filtered, the state is expected to be
@@ -452,8 +452,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestMixedContentsLoadedFromJS) {
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
   ASSERT_TRUE(http_server.get() != NULL);
 
-  ui_test_utils::NavigateToURL(browser(), https_server->TestServerPageW(
-      L"files/ssl/page_with_dynamic_mixed_contents.html"));
+  ui_test_utils::NavigateToURL(browser(), https_server->TestServerPage(
+      "files/ssl/page_with_dynamic_mixed_contents.html"));
 
   TabContents* tab = browser()->GetSelectedTabContents();
   CheckAuthenticatedState(tab, false, false);
@@ -479,7 +479,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestMixedContentsTwoTabs) {
   ASSERT_TRUE(http_server.get() != NULL);
 
   ui_test_utils::NavigateToURL(browser(),
-      https_server->TestServerPageW(L"files/ssl/blank_page.html"));
+      https_server->TestServerPage("files/ssl/blank_page.html"));
 
   TabContents* tab1 = browser()->GetSelectedTabContents();
 
@@ -488,7 +488,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestMixedContentsTwoTabs) {
 
   // Create a new tab.
   GURL url =
-      https_server->TestServerPageW(L"files/ssl/page_with_http_script.html");
+      https_server->TestServerPage("files/ssl/page_with_http_script.html");
   TabContents* tab2 = browser()->AddTabWithURL(
       url, GURL(), PageTransition::TYPED, 0, Browser::ADD_SELECTED,
       NULL, std::string());
@@ -511,15 +511,15 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestCachedMixedContents) {
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
   ASSERT_TRUE(http_server.get() != NULL);
 
-  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPageW(
-      L"files/ssl/page_with_mixed_contents.html"));
+  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPage(
+      "files/ssl/page_with_mixed_contents.html"));
   TabContents* tab = browser()->GetSelectedTabContents();
   CheckUnauthenticatedState(tab);
 
   // Load again but over SSL.  It should have mixed-contents (even though the
   // image comes from the WebCore memory cache).
-  ui_test_utils::NavigateToURL(browser(), https_server->TestServerPageW(
-      L"files/ssl/page_with_mixed_contents.html"));
+  ui_test_utils::NavigateToURL(browser(), https_server->TestServerPage(
+      "files/ssl/page_with_mixed_contents.html"));
   CheckAuthenticatedState(tab, true /* mixed-content */, false);
 }
 
@@ -534,7 +534,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestCNInvalidStickiness) {
   // First we hit the server with hostname, this generates an invalid policy
   // error.
   ui_test_utils::NavigateToURL(browser(),
-      https_server->TestServerPageW(L"files/ssl/google.html"));
+      https_server->TestServerPage("files/ssl/google.html"));
 
   // We get an interstitial page as a result.
   TabContents* tab = browser()->GetSelectedTabContents();
@@ -549,7 +549,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestCNInvalidStickiness) {
   // Now we try again with the right host name this time.
 
   // Let's change the host-name in the url.
-  GURL url = https_server->TestServerPageW(L"files/ssl/google.html");
+  GURL url = https_server->TestServerPage("files/ssl/google.html");
   std::string::size_type hostname_index = url.spec().find(kLocalHost);
   ASSERT_TRUE(hostname_index != std::string::npos);  // Test sanity check.
   std::string new_url;
@@ -564,7 +564,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestCNInvalidStickiness) {
 
   // Now try again the broken one to make sure it is still broken.
   ui_test_utils::NavigateToURL(browser(),
-      https_server->TestServerPageW(L"files/ssl/google.html"));
+      https_server->TestServerPage("files/ssl/google.html"));
 
   // Since we OKed the interstitial last time, we get right to the page.
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
@@ -577,7 +577,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRefNavigation) {
   ASSERT_TRUE(bad_https_server.get() != NULL);
 
   ui_test_utils::NavigateToURL(browser(),
-      bad_https_server->TestServerPageW(L"files/ssl/page_with_refs.html"));
+      bad_https_server->TestServerPage("files/ssl/page_with_refs.html"));
 
   TabContents* tab = browser()->GetSelectedTabContents();
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
@@ -591,7 +591,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRefNavigation) {
   // Now navigate to a ref in the page, the security state should not have
   // changed.
   ui_test_utils::NavigateToURL(browser(),
-      bad_https_server->TestServerPageW(L"files/ssl/page_with_refs.html#jp"));
+      bad_https_server->TestServerPage("files/ssl/page_with_refs.html#jp"));
 
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
                                  false);  // No interstitial showing.
@@ -607,8 +607,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCloseTabWithUnsafePopup) {
   scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
   ASSERT_TRUE(bad_https_server.get() != NULL);
 
-  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPageW(
-      L"files/ssl/page_with_unsafe_popup.html"));
+  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPage(
+      "files/ssl/page_with_unsafe_popup.html"));
 
   TabContents* tab1 = browser()->GetSelectedTabContents();
   // It is probably overkill to add a notification for a popup-opening, let's
@@ -624,7 +624,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCloseTabWithUnsafePopup) {
 
   // Let's add another tab to make sure the browser does not exit when we close
   // the first tab.
-  GURL url = http_server->TestServerPageW(L"files/ssl/google.html");
+  GURL url = http_server->TestServerPage("files/ssl/google.html");
   TabContents* tab2 = browser()->AddTabWithURL(
       url, GURL(), PageTransition::TYPED, 0, Browser::ADD_SELECTED, NULL,
       std::string());
@@ -642,8 +642,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestRedirectBadToGoodHTTPS) {
   scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
   ASSERT_TRUE(bad_https_server.get() != NULL);
 
-  GURL url1 = bad_https_server->TestServerPageW(L"server-redirect?");
-  GURL url2 = good_https_server->TestServerPageW(L"files/ssl/google.html");
+  GURL url1 = bad_https_server->TestServerPage("server-redirect?");
+  GURL url2 = good_https_server->TestServerPage("files/ssl/google.html");
 
   ui_test_utils::NavigateToURL(browser(),  GURL(url1.spec() + url2.spec()));
 
@@ -666,8 +666,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestRedirectGoodToBadHTTPS) {
   scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
   ASSERT_TRUE(bad_https_server.get() != NULL);
 
-  GURL url1 = good_https_server->TestServerPageW(L"server-redirect?");
-  GURL url2 = bad_https_server->TestServerPageW(L"files/ssl/google.html");
+  GURL url1 = good_https_server->TestServerPage("server-redirect?");
+  GURL url2 = bad_https_server->TestServerPage("files/ssl/google.html");
   ui_test_utils::NavigateToURL(browser(),  GURL(url1.spec() + url2.spec()));
 
   TabContents* tab = browser()->GetSelectedTabContents();
@@ -690,9 +690,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectHTTPToGoodHTTPS) {
   TabContents* tab = browser()->GetSelectedTabContents();
 
   // HTTP redirects to good HTTPS.
-  GURL http_url = http_server->TestServerPageW(L"server-redirect?");
+  GURL http_url = http_server->TestServerPage("server-redirect?");
   GURL good_https_url =
-      good_https_server->TestServerPageW(L"files/ssl/google.html");
+      good_https_server->TestServerPage("files/ssl/google.html");
 
   ui_test_utils::NavigateToURL(browser(),
                                GURL(http_url.spec() + good_https_url.spec()));
@@ -708,9 +708,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestRedirectHTTPToBadHTTPS) {
 
   TabContents* tab = browser()->GetSelectedTabContents();
 
-  GURL http_url = http_server->TestServerPageW(L"server-redirect?");
+  GURL http_url = http_server->TestServerPage("server-redirect?");
   GURL bad_https_url =
-      bad_https_server->TestServerPageW(L"files/ssl/google.html");
+      bad_https_server->TestServerPage("files/ssl/google.html");
   ui_test_utils::NavigateToURL(browser(),
                                GURL(http_url.spec() + bad_https_url.spec()));
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
@@ -731,8 +731,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestRedirectHTTPSToHTTP) {
   scoped_refptr<HTTPSTestServer> https_server = GoodCertServer();
   ASSERT_TRUE(https_server.get() != NULL);
 
-  GURL https_url = https_server->TestServerPageW(L"server-redirect?");
-  GURL http_url = http_server->TestServerPageW(L"files/ssl/google.html");
+  GURL https_url = https_server->TestServerPage("server-redirect?");
+  GURL http_url = http_server->TestServerPage("files/ssl/google.html");
 
   ui_test_utils::NavigateToURL(browser(),
                                GURL(https_url.spec() + http_url.spec()));
@@ -770,7 +770,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestGoodFrameNavigation) {
   TabContents* tab = browser()->GetSelectedTabContents();
   ui_test_utils::NavigateToURL(
       browser(),
-      good_https_server->TestServerPageW(L"files/ssl/top_frame.html"));
+      good_https_server->TestServerPage("files/ssl/top_frame.html"));
 
   CheckAuthenticatedState(tab, false, false);
 
@@ -845,7 +845,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestBadFrameNavigation) {
   TabContents* tab = browser()->GetSelectedTabContents();
   ui_test_utils::NavigateToURL(
       browser(),
-      bad_https_server->TestServerPageW(L"files/ssl/top_frame.html"));
+      bad_https_server->TestServerPage("files/ssl/top_frame.html"));
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
                                  true);  // Interstitial showing
 
@@ -879,7 +879,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestUnauthenticatedFrameNavigation) {
   TabContents* tab = browser()->GetSelectedTabContents();
   ui_test_utils::NavigateToURL(
       browser(),
-      http_server->TestServerPageW(L"files/ssl/top_frame.html"));
+      http_server->TestServerPage("files/ssl/top_frame.html"));
   CheckUnauthenticatedState(tab);
 
   // Now navigate inside the frame to a secure HTTPS frame.

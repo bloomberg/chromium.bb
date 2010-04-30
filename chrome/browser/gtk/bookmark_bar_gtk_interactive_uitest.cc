@@ -13,7 +13,7 @@
 namespace {
 
 const wchar_t kDocRoot[] = L"chrome/test/data";
-const wchar_t kSimplePage[] = L"404_is_enough_for_us.html";
+const char kSimplePage[] = "404_is_enough_for_us.html";
 
 void OnClicked(GtkWidget* widget, bool* clicked_bit) {
   *clicked_bit = true;
@@ -36,7 +36,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBarGtkBrowserTest, FindBarTest) {
   browser()->Find();
 
   // Create new tab with an arbitrary URL.
-  GURL url = server->TestServerPageW(kSimplePage);
+  GURL url = server->TestServerPage(kSimplePage);
   browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, -1,
                            Browser::ADD_SELECTED, NULL, std::string());
 

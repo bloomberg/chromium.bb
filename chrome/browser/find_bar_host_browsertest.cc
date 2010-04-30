@@ -26,20 +26,20 @@
 #include "chrome/browser/cocoa/find_bar_bridge.h"
 #endif
 
-const std::wstring kSimplePage = L"404_is_enough_for_us.html";
-const std::wstring kFramePage = L"files/find_in_page/frames.html";
-const std::wstring kFrameData = L"files/find_in_page/framedata_general.html";
-const std::wstring kUserSelectPage = L"files/find_in_page/user-select.html";
-const std::wstring kCrashPage = L"files/find_in_page/crash_1341577.html";
-const std::wstring kTooFewMatchesPage = L"files/find_in_page/bug_1155639.html";
-const std::wstring kEndState = L"files/find_in_page/end_state.html";
-const std::wstring kPrematureEnd = L"files/find_in_page/premature_end.html";
-const std::wstring kMoveIfOver = L"files/find_in_page/move_if_obscuring.html";
-const std::wstring kBitstackCrash = L"files/find_in_page/crash_14491.html";
-const std::wstring kSelectChangesOrdinal =
-    L"files/find_in_page/select_changes_ordinal.html";
-const std::wstring kSimple = L"files/find_in_page/simple.html";
-const std::wstring kLinkPage = L"files/find_in_page/link.html";
+const std::string kSimplePage = "404_is_enough_for_us.html";
+const std::string kFramePage = "files/find_in_page/frames.html";
+const std::string kFrameData = "files/find_in_page/framedata_general.html";
+const std::string kUserSelectPage = "files/find_in_page/user-select.html";
+const std::string kCrashPage = "files/find_in_page/crash_1341577.html";
+const std::string kTooFewMatchesPage = "files/find_in_page/bug_1155639.html";
+const std::string kEndState = "files/find_in_page/end_state.html";
+const std::string kPrematureEnd = "files/find_in_page/premature_end.html";
+const std::string kMoveIfOver = "files/find_in_page/move_if_obscuring.html";
+const std::string kBitstackCrash = "files/find_in_page/crash_14491.html";
+const std::string kSelectChangesOrdinal =
+    "files/find_in_page/select_changes_ordinal.html";
+const std::string kSimple = "files/find_in_page/simple.html";
+const std::string kLinkPage = "files/find_in_page/link.html";
 
 const bool kBack = false;
 const bool kFwd = true;
@@ -117,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageFrames) {
   ASSERT_TRUE(server);
 
   // First we navigate to our frames page.
-  GURL url = server->TestServerPageW(kFramePage);
+  GURL url = server->TestServerPage(kFramePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Try incremental search (mimicking user typing in).
@@ -210,7 +210,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageEndState) {
   ASSERT_TRUE(server);
 
   // First we navigate to our special focus tracking page.
-  GURL url = server->TestServerPageW(kEndState);
+  GURL url = server->TestServerPage(kEndState);
   ui_test_utils::NavigateToURL(browser(), url);
 
   TabContents* tab_contents = browser()->GetSelectedTabContents();
@@ -258,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageOrdinal) {
   ASSERT_TRUE(server);
 
   // First we navigate to our page.
-  GURL url = server->TestServerPageW(kFrameData);
+  GURL url = server->TestServerPage(kFrameData);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Search for 'o', which should make the first item active and return
@@ -298,7 +298,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   ASSERT_TRUE(server);
 
   // First we navigate to our test content.
-  GURL url = server->TestServerPageW(kSelectChangesOrdinal);
+  GURL url = server->TestServerPage(kSelectChangesOrdinal);
   ui_test_utils::NavigateToURL(browser(), url);
 
   TabContents* tab_contents = browser()->GetSelectedTabContents();
@@ -338,7 +338,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageMultiFramesOrdinal) {
   ASSERT_TRUE(server);
 
   // First we navigate to our page.
-  GURL url = server->TestServerPageW(kFramePage);
+  GURL url = server->TestServerPage(kFramePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Search for 'a', which should make the first item active and return
@@ -390,7 +390,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPage_Issue5132) {
   ASSERT_TRUE(server);
 
   // First we navigate to our page.
-  GURL url = server->TestServerPageW(kFramePage);
+  GURL url = server->TestServerPage(kFramePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Search for 'goa' three times (6 matches on page).
@@ -421,7 +421,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindUnSelectableText) {
   ASSERT_TRUE(server);
 
   // First we navigate to our page.
-  GURL url = server->TestServerPageW(kUserSelectPage);
+  GURL url = server->TestServerPage(kUserSelectPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   int ordinal = 0;
@@ -440,7 +440,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindCrash_Issue1341577) {
   ASSERT_TRUE(server);
 
   // First we navigate to our page.
-  GURL url = server->TestServerPageW(kCrashPage);
+  GURL url = server->TestServerPage(kCrashPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // This would crash the tab. These must be the first two find requests issued
@@ -473,7 +473,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindCrash_Issue14491) {
   ASSERT_TRUE(server);
 
   // First we navigate to our page.
-  GURL url = server->TestServerPageW(kBitstackCrash);
+  GURL url = server->TestServerPage(kBitstackCrash);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // This used to crash the tab.
@@ -496,7 +496,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindRestarts_Issue1155639) {
   ASSERT_TRUE(server);
 
   // First we navigate to our page.
-  GURL url = server->TestServerPageW(kTooFewMatchesPage);
+  GURL url = server->TestServerPage(kTooFewMatchesPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // This string appears 5 times at the bottom of a long page. If Find restarts
@@ -516,7 +516,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   ASSERT_TRUE(server);
 
   // First we navigate to our special focus tracking page.
-  GURL url = server->TestServerPageW(kPrematureEnd);
+  GURL url = server->TestServerPage(kPrematureEnd);
   ui_test_utils::NavigateToURL(browser(), url);
 
   TabContents* tab_contents = browser()->GetSelectedTabContents();
@@ -534,8 +534,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindDisappearOnNavigate) {
   ASSERT_TRUE(server);
 
   // First we navigate to our special focus tracking page.
-  GURL url = server->TestServerPageW(kSimplePage);
-  GURL url2 = server->TestServerPageW(kFramePage);
+  GURL url = server->TestServerPage(kSimplePage);
+  GURL url2 = server->TestServerPage(kFramePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   browser()->ShowFindBar();
@@ -569,7 +569,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   ASSERT_TRUE(server);
 
   // First we navigate to our special focus tracking page.
-  GURL url = server->TestServerPageW(kSimplePage);
+  GURL url = server->TestServerPage(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   browser()->ShowFindBar();
@@ -619,7 +619,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_FindMovesWhenObscuring) {
   HTTPTestServer* server = StartHTTPServer();
   ASSERT_TRUE(server);
 
-  GURL url = server->TestServerPageW(kMoveIfOver);
+  GURL url = server->TestServerPage(kMoveIfOver);
   ui_test_utils::NavigateToURL(browser(), url);
 
   browser()->ShowFindBar();
@@ -673,7 +673,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   ASSERT_TRUE(server);
 
   // First we navigate to any page.
-  GURL url = server->TestServerPageW(kSimplePage);
+  GURL url = server->TestServerPage(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Search for 'no_match'. No matches should be found.
@@ -720,7 +720,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   ASSERT_TRUE(server);
 
   // First we navigate to any page.
-  GURL url = server->TestServerPageW(kSimplePage);
+  GURL url = server->TestServerPage(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
 #if defined(OS_WIN)
@@ -773,7 +773,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, StayActive) {
   ASSERT_TRUE(server);
 
   // First we navigate to any page.
-  GURL url = server->TestServerPageW(kSimplePage);
+  GURL url = server->TestServerPage(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   browser()->ShowFindBar();
@@ -798,7 +798,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, RestartSearchFromF3) {
   ASSERT_TRUE(server);
 
   // First we navigate to a simple page.
-  GURL url = server->TestServerPageW(kSimple);
+  GURL url = server->TestServerPage(kSimple);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Search for 'page'. Should have 1 match.
@@ -833,7 +833,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
   ASSERT_TRUE(server);
 
   // First we navigate to any page.
-  GURL url = server->TestServerPageW(kSimplePage);
+  GURL url = server->TestServerPage(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Find "Default".
@@ -872,7 +872,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateSameTab) {
   ASSERT_TRUE(server);
 
   // First we navigate to any page.
-  GURL url = server->TestServerPageW(kSimple);
+  GURL url = server->TestServerPage(kSimple);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Search for the word "page".
@@ -910,7 +910,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateInNewTab) {
   ASSERT_TRUE(server);
 
   // First we navigate to any page.
-  GURL url = server->TestServerPageW(kSimple);
+  GURL url = server->TestServerPage(kSimple);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Search for the word "page".
@@ -946,7 +946,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
   ASSERT_TRUE(server);
 
   // First we navigate to any page.
-  GURL url = server->TestServerPageW(kSimple);
+  GURL url = server->TestServerPage(kSimple);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Search for the word "page".
@@ -1019,7 +1019,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_NoIncognitoPrepopulate) {
   ASSERT_TRUE(server);
 
   // First we navigate to the "simple" test page.
-  GURL url = server->TestServerPageW(kSimple);
+  GURL url = server->TestServerPage(kSimple);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Search for the word "page" in the normal browser tab.
@@ -1077,7 +1077,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, ActivateLinkNavigatesPage) {
   ASSERT_TRUE(server);
 
   // First we navigate to our test content.
-  GURL url = server->TestServerPageW(kLinkPage);
+  GURL url = server->TestServerPage(kLinkPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   TabContents* tab = browser()->GetSelectedTabContents();

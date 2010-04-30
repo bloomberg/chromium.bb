@@ -304,19 +304,19 @@ TEST_F(PrintingLayoutTextTest, DISABLED_Complex) {
 }
 
 struct TestPool {
-  const wchar_t* source;
+  const char* source;
   const wchar_t* result;
 };
 
 const TestPool kTestPool[] = {
   // ImagesB&W
-  L"files/printing/test2.html", L"test2",
+  "files/printing/test2.html", L"test2",
   // ImagesTransparent
-  L"files/printing/test3.html", L"test3",
+  "files/printing/test3.html", L"test3",
   // ImageColor
-  L"files/printing/test4.html", L"test4",
+  "files/printing/test4.html", L"test4",
   // TODO(maruel):  http://b/1171450 Transparent overlays are drawn opaque
-  // L"files/printing/test5.html", L"test5",
+  // "files/printing/test5.html", L"test5",
 };
 
 // TODO(maruel:)  http://code.google.com/p/chromium/issues/detail?id=7721
@@ -334,7 +334,7 @@ TEST_F(PrintingLayoutTestHidden, DISABLED_ManyTimes) {
     if (i)
       CleanupDumpDirectory();
     const TestPool& test = kTestPool[i % arraysize(kTestPool)];
-    NavigateToURL(server->TestServerPageW(test.source));
+    NavigateToURL(server->TestServerPage(test.source));
     base::DelegateSimpleThread close_printdlg_thread1(&dismisser,
                                                       "close_printdlg_thread");
     EXPECT_EQ(NULL, FindDialogWindow(dismisser.owner_process()));

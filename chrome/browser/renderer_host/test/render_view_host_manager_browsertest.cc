@@ -38,8 +38,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
       HTTPSTestServer::CreateGoodServer(kDocRoot);
 
   // Load a page with links that open in a new window.
-  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPageW(
-      L"files/click-noreferrer-links.html"));
+  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPage(
+      "files/click-noreferrer-links.html"));
 
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
@@ -81,8 +81,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
       HTTPSTestServer::CreateGoodServer(kDocRoot);
 
   // Load a page with links that open in a new window.
-  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPageW(
-      L"files/click-noreferrer-links.html"));
+  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPage(
+      "files/click-noreferrer-links.html"));
 
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
@@ -124,8 +124,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
       HTTPSTestServer::CreateGoodServer(kDocRoot);
 
   // Load a page with links that open in a new window.
-  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPageW(
-      L"files/click-noreferrer-links.html"));
+  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPage(
+      "files/click-noreferrer-links.html"));
 
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(

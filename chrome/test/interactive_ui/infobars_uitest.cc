@@ -26,7 +26,7 @@ TEST_F(InfoBarsUITest, TestInfoBarsCloseOnNewTheme) {
   scoped_refptr<TabProxy> tab_1(browser->GetActiveTab());
   ASSERT_TRUE(tab_1.get());
   EXPECT_TRUE(tab_1->NavigateToURL(
-      server->TestServerPageW(L"files/simple.html")));
+      server->TestServerPage("files/simple.html")));
   scoped_refptr<ExtensionProxy> theme = automation()->InstallExtension(
       test_data_directory_.AppendASCII("extensions").AppendASCII("theme.crx"),
       true);
@@ -34,7 +34,7 @@ TEST_F(InfoBarsUITest, TestInfoBarsCloseOnNewTheme) {
   EXPECT_TRUE(tab_1->WaitForInfoBarCount(1, action_max_timeout_ms()));
 
   EXPECT_TRUE(browser->AppendTab(
-      server->TestServerPageW(L"files/simple.html")));
+      server->TestServerPage("files/simple.html")));
   WaitUntilTabCount(2);
   scoped_refptr<TabProxy> tab_2(browser->GetActiveTab());
   ASSERT_TRUE(tab_2.get());
