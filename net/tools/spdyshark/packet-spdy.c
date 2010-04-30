@@ -124,6 +124,7 @@ static int hf_spdy_header_name_text = -1;
 static int hf_spdy_header_value = -1;
 static int hf_spdy_header_value_text = -1;
 static int hf_spdy_streamid = -1;
+static int hf_spdy_associated_streamid = -1;
 static int hf_spdy_priority = -1;
 static int hf_spdy_num_headers = -1;
 static int hf_spdy_num_headers_string = -1;
@@ -779,7 +780,7 @@ spdy_decompress_header_block(tvbuff_t *tvb, z_streamp decomp,
 	} else {
 	    retcode = inflateSetDictionary(decomp,
 					   spdy_dictionary,
-					   sizeof(spdy_dictionary) - 1);
+					   sizeof(spdy_dictionary));
 	    if (retcode == Z_OK)
 		retcode = inflate(decomp, Z_SYNC_FLUSH);
 	}
@@ -932,6 +933,7 @@ dissect_spdy_message(tvbuff_t *tvb, int offset, packet_info *pinfo,
     guint8		flags;
     guint32		frame_length;
     guint32		stream_id;
+    guint32             associated_stream_id;
     gint		priority;
     guint16		num_headers;
     guint32		fin_status;
@@ -1025,9 +1027,16 @@ dissect_spdy_message(tvbuff_t *tvb, int offset, packet_info *pinfo,
 	    }
 	    stream_id = tvb_get_bits32(tvb, (offset << 3) + 1, 31, FALSE);
 	    offset += 4;
-	    priority = tvb_get_bits8(tvb, offset << 3, 2);
-	    offset += 2;
-	    if (tree) {
+            if (frame_type == SPDY_SYN_STREAM) {
+                associated_stream_id = tvb_get_bits32(tvb, (offset << 3) + 1, 31, FALSE);
+                offset += 4;
+                priority = tvb_get_bits8(tvb, offset << 3, 2);
+                offset += 2;
+            } else {
+                // The next two bytes have no meaning in SYN_REPLY
+                offset += 2;
+            }
+            if (tree) {
 		proto_tree_add_boolean(sub_tree, hf_spdy_control_bit, tvb, orig_offset, 1, control_bit);
 		proto_tree_add_uint(sub_tree, hf_spdy_version, tvb, orig_offset, 2, version);
 		proto_tree_add_uint(sub_tree, hf_spdy_type, tvb, orig_offset+2, 2, frame_type);
@@ -1037,7 +1046,10 @@ dissect_spdy_message(tvbuff_t *tvb, int offset, packet_info *pinfo,
 		proto_tree_add_boolean(flags_tree, hf_spdy_flags_fin, tvb, orig_offset+4, 1, flags);
 		proto_tree_add_uint(sub_tree, hf_spdy_length, tvb, orig_offset+5, 3, frame_length);
 		proto_tree_add_uint(sub_tree, hf_spdy_streamid, tvb, orig_offset+8, 4, stream_id);
-		proto_tree_add_uint(sub_tree, hf_spdy_priority, tvb, orig_offset+12, 1, priority);
+                if (frame_type == SPDY_SYN_STREAM) {
+                     proto_tree_add_uint(sub_tree, hf_spdy_associated_streamid, tvb, orig_offset+12, 4, associated_stream_id);
+                     proto_tree_add_uint(sub_tree, hf_spdy_priority, tvb, orig_offset+16, 1, priority);
+                }
 		proto_item_append_text(spdy_proto, ": %s%s stream=%d length=%d",
 				       frame_type_name,
 				       flags & SPDY_FIN ? " [FIN]" : "",
@@ -1086,11 +1098,14 @@ dissect_spdy_message(tvbuff_t *tvb, int offset, packet_info *pinfo,
 		guint8 *uncomp_ptr =
 			spdy_decompress_header_block(tvb, decomp,
 						     conv_data->dictionary_id,
-						     offset, frame_length-6, &uncomp_length);
+						     offset,
+                                                     frame_length + 8 - (offset - orig_offset),
+                                                     &uncomp_length);
 		if (uncomp_ptr == NULL) {         /* decompression failed */
                     if (spdy_debug)
                         printf("Frame #%d: Inflation failed\n", pinfo->fd->num);
 		    proto_item_append_text(spdy_proto, " [Error: Header decompression failed]");
+		    // Should we just bail here?
                 } else {
                     if (spdy_debug)
                         printf("Saving %u bytes of uncomp hdr\n", uncomp_length);
@@ -1113,18 +1128,22 @@ dissect_spdy_message(tvbuff_t *tvb, int offset, packet_info *pinfo,
                 hdr_offset = 0;
             }
 	}
-        offset += frame_length-6;
+        offset = orig_offset + 8 + frame_length;
 	num_headers = tvb_get_ntohs(header_tvb, hdr_offset);
 	hdr_offset += 2;
 	if (header_tvb == NULL ||
                 (headers_compressed && !spdy_decompress_headers)) {
 	    num_headers = 0;
 	    ti = proto_tree_add_string(sub_tree, hf_spdy_num_headers_string,
-				  tvb, orig_offset+14, 2,
+				  tvb, 
+				  frame_type == SPDY_SYN_STREAM ? orig_offset+18 : orig_offset + 14, 
+				  2,
 				  "Unknown (header block is compressed)");
 	} else
 	    ti = proto_tree_add_uint(sub_tree, hf_spdy_num_headers,
-				tvb, orig_offset+14, 2, num_headers);
+				tvb, 
+				frame_type == SPDY_SYN_STREAM ? orig_offset+18 : orig_offset +14, 
+				2, num_headers);
     }
     spdy_type = SPDY_INVALID;		/* type not known yet */
     if (spdy_debug)
@@ -1241,7 +1260,7 @@ dissect_spdy(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree)
      */
     guint8 first_byte = tvb_get_guint8(tvb, 0);
     if (first_byte != 0x80 && first_byte != 0x0)
-	return 0;
+	  return 0;
 
     conv_data = get_spdy_conversation_data(pinfo);
 
@@ -1340,6 +1359,10 @@ proto_register_spdy(void)
 		"", HFILL }},
 	{ &hf_spdy_streamid,
 	    { "Stream ID",	"spdy.streamid",
+		FT_UINT32, BASE_DEC, NULL, 0x0,
+		"", HFILL }},
+        { &hf_spdy_associated_streamid,
+	    { "Associated Stream ID",	"spdy.associated.streamid",
 		FT_UINT32, BASE_DEC, NULL, 0x0,
 		"", HFILL }},
 	{ &hf_spdy_priority,
