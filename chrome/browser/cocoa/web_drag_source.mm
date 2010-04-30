@@ -142,6 +142,12 @@ void PromiseWriterTask::Run() {
 }
 
 - (void)lazyWriteToPasteboard:(NSPasteboard*)pboard forType:(NSString*)type {
+  // NSHTMLPboardType requires the character set to be declared. Otherwise, it
+  // assumes US-ASCII. Awesome.
+  static const string16 kHtmlHeader =
+      ASCIIToUTF16("<meta http-equiv=\"Content-Type\" "
+                   "content=\"text/html;charset=UTF-8\">");
+
   // Be extra paranoid; avoid crashing.
   if (!dropData_.get()) {
     NOTREACHED() << "No drag-and-drop data available for lazy write.";
@@ -151,7 +157,8 @@ void PromiseWriterTask::Run() {
   // HTML.
   if ([type isEqualToString:NSHTMLPboardType]) {
     DCHECK(!dropData_->text_html.empty());
-    [pboard setString:SysUTF16ToNSString(dropData_->text_html)
+    // See comment on |kHtmlHeader| above.
+    [pboard setString:SysUTF16ToNSString(kHtmlHeader + dropData_->text_html)
               forType:NSHTMLPboardType];
 
   // URL.
