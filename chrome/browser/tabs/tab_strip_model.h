@@ -223,6 +223,12 @@ class TabStripModelDelegate {
 
   // Creates a bookmark folder containing a bookmark for all open tabs.
   virtual void BookmarkAllTabs() = 0;
+
+  // Returns true if the vertical tabstrip presentation should be used.
+  virtual bool UseVerticalTabs() const = 0;
+
+  // Toggles the use of the vertical tabstrip.
+  virtual void ToggleUseVerticalTabs() = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -547,11 +553,16 @@ class TabStripModel : public NotificationObserver {
     CommandRestoreTab,
     CommandTogglePinned,
     CommandBookmarkAllTabs,
+    CommandUseVerticalTabs,
     CommandLast
   };
 
   // Returns true if the specified command is enabled.
   bool IsContextMenuCommandEnabled(int context_index,
+                                   ContextMenuCommand command_id) const;
+
+  // Returns true if the specified command is checked.
+  bool IsContextMenuCommandChecked(int context_index,
                                    ContextMenuCommand command_id) const;
 
   // Performs the action associated with the specified command for the given

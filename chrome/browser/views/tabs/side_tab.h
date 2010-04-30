@@ -26,9 +26,13 @@ class SideTabModel {
 
   // Closes the tab.
   virtual void CloseTab(SideTab* tab) = 0;
+
+  // Shows a context menu for the tab at the specified point in screen coords.
+  virtual void ShowContextMenu(SideTab* tab, const gfx::Point& p) = 0;
 };
 
 class SideTab : public views::View,
+                public views::ContextMenuController,
                 public views::ButtonListener,
                 public AnimationDelegate {
  public:
@@ -47,6 +51,11 @@ class SideTab : public views::View,
 
   // views::ButtonListener implementation:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+
+  // views::ContextMenuController implementation:
+  virtual void ShowContextMenu(views::View* source,
+                               const gfx::Point& p,
+                               bool is_mouse_gesture);
 
   // views::View Overrides:
   virtual void Layout();

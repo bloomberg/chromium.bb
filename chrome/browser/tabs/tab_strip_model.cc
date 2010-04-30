@@ -574,11 +574,25 @@ bool TabStripModel::IsContextMenuCommandEnabled(
       return delegate_->CanRestoreTab();
     case CommandTogglePinned:
       return true;
-    case CommandBookmarkAllTabs: {
+    case CommandBookmarkAllTabs:
       return delegate_->CanBookmarkAllTabs();
-    }
+    case CommandUseVerticalTabs:
+      return true;
     default:
       NOTREACHED();
+  }
+  return false;
+}
+
+bool TabStripModel::IsContextMenuCommandChecked(
+    int context_index,
+    ContextMenuCommand command_id) const {
+  switch (command_id) {
+    case CommandUseVerticalTabs:
+      return delegate()->UseVerticalTabs();
+    default:
+      NOTREACHED();
+      break;
   }
   return false;
 }
@@ -653,6 +667,15 @@ void TabStripModel::ExecuteContextMenuCommand(
           profile_);
 
       delegate_->BookmarkAllTabs();
+      break;
+    }
+
+    case CommandUseVerticalTabs: {
+      UserMetrics::RecordAction(
+          UserMetricsAction("TabContextMenu_UseVerticalTabs"),
+          profile_);
+
+      delegate()->ToggleUseVerticalTabs();
       break;
     }
     default:

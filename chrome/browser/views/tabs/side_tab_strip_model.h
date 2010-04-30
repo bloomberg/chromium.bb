@@ -7,12 +7,17 @@
 
 #include "base/string16.h"
 
+namespace gfx {
+class Point;
+}
 class SkBitmap;
 
 // A model interface implemented by an object that can provide information
 // about SideTabs in a SideTabStrip.
 class SideTabStripModel {
  public:
+  virtual ~SideTabStripModel() {}
+
   // Returns metadata about the tab at the specified index.
   virtual SkBitmap GetIcon(int index) const = 0;
   virtual string16 GetTitle(int index) const = 0;
@@ -35,6 +40,10 @@ class SideTabStripModel {
 
   // Closes the tab at the specified index in the model.
   virtual void CloseTab(int index) = 0;
+
+  // Shows a context menu for the tab at the specified index at the specified
+  // point in screen coords.
+  virtual void ShowContextMenu(int index, const gfx::Point& p) = 0;
 };
 
 #endif  // CHROME_BROWSER_VIEWS_TABS_SIDE_TAB_STRIP_MODEL_H_

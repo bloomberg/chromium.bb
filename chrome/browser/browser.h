@@ -623,6 +623,8 @@ class Browser : public TabStripModelDelegate,
   virtual bool CanCloseContentsAt(int index);
   virtual bool CanBookmarkAllTabs() const;
   virtual void BookmarkAllTabs();
+  virtual bool UseVerticalTabs() const;
+  virtual void ToggleUseVerticalTabs();
 
   // Overridden from TabStripModelObserver:
   virtual void TabInsertedAt(TabContents* contents,
@@ -983,6 +985,9 @@ class Browser : public TabStripModelDelegate,
 
   // The extension app associated with this window, if any.
   Extension* extension_app_;
+
+  // Tracks the display mode of the tabstrip.
+  mutable BooleanPrefMember use_vertical_tabs_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };
