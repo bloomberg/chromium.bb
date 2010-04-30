@@ -2859,7 +2859,7 @@
    bug_42965
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN72_GLOBAL__N_chrome_browser_autofill_autofill_profile.cc_00000000_4328B8E516InitPersonalInfoEPSt3mapIN12AutoFillType14FieldTypeGroupEP9FormGroupSt4lessIS2_ESaISt4pairIKS2_S4_EEE
+   ...
    fun:_ZN15AutoFillProfileC1Ev
    fun:_ZNK15AutoFillProfile5CloneEv
    fun:_ZN12browser_sync23AutofillChangeProcessor29ObserveAutofillProfileChangedEP21AutofillProfileChangePN8sync_api16WriteTransactionERKNS3_8ReadNodeE
