@@ -816,13 +816,11 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 #pragma mark Testing Methods
 
 - (NSButton*)buttonWithIndex:(NSUInteger)index {
-  NSUInteger i = 0;
-  for (ExtensionList::iterator iter = toolbarModel_->begin();
-       iter != toolbarModel_->end(); ++iter) {
-    if (i == index)
-      return [buttons_ objectForKey:base::SysUTF8ToNSString((*iter)->id())];
-
-    ++i;
+  if (profile_->IsOffTheRecord())
+    index = toolbarModel_->IncognitoIndexToOriginal(index);
+  if (index < toolbarModel_->size()) {
+    Extension* extension = toolbarModel_->GetExtensionByIndex(index);
+    return [buttons_ objectForKey:base::SysUTF8ToNSString(extension->id())];
   }
   return nil;
 }

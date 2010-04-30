@@ -306,12 +306,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, MAYBE_IncognitoBasic) {
   // incognito.
 }
 
-// TODO(mpcomplete): enable this when Mac gets dragging support.
-#if defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_IncognitoDragging) {
-#else
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoDragging) {
-#endif
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
 
   // The tooltips for each respective browser action.
