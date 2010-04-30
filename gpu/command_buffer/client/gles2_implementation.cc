@@ -644,8 +644,9 @@ void GLES2Implementation::ShaderBinary(
     return;
   }
   GLsizei shader_id_size = n * sizeof(*shaders);
-  void* shader_ids = transfer_buffer_.Alloc(shader_id_size);
-  void* shader_data = transfer_buffer_.Alloc(length);
+  int8* buffer = transfer_buffer_.AllocTyped<int8>(shader_id_size + length);
+  void* shader_ids = buffer;
+  void* shader_data = buffer + shader_id_size;
   memcpy(shader_ids, shaders, shader_id_size);
   memcpy(shader_data, binary, length);
   helper_->ShaderBinary(
@@ -654,9 +655,7 @@ void GLES2Implementation::ShaderBinary(
       binaryformat,
       transfer_buffer_id_, transfer_buffer_.GetOffset(shader_data),
       length);
-  int32 token = helper_->InsertToken();
-  transfer_buffer_.FreePendingToken(shader_ids, token);
-  transfer_buffer_.FreePendingToken(shader_data, token);
+  transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
 }
 
 void GLES2Implementation::PixelStorei(GLenum pname, GLint param) {
@@ -1145,18 +1144,20 @@ void GLES2Implementation::ReadPixels(
           transfer_buffer_id_, transfer_buffer_.GetOffset(buffer),
           result_shm_id(), result_shm_offset());
       WaitForCmd();
+      if (*result != 0) {
+        // We have to copy 1 row at a time to avoid writing pad bytes.
+        const int8* src = static_cast<const int8*>(buffer);
+        for (GLint yy = 0; yy < num_rows; ++yy) {
+          memcpy(dest, src, unpadded_row_size);
+          dest += padded_row_size;
+          src += padded_row_size;
+        }
+      }
+      transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
       // If it was not marked as successful exit.
       if (*result == 0) {
         return;
       }
-      // We have to copy 1 row at a time to avoid writing pad bytes.
-      const int8* src = static_cast<const int8*>(buffer);
-      for (GLint yy = 0; yy < num_rows; ++yy) {
-        memcpy(dest, src, unpadded_row_size);
-        dest += padded_row_size;
-        src += padded_row_size;
-      }
-      transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
       yoffset += num_rows;
       height -= num_rows;
     }
@@ -1181,12 +1182,14 @@ void GLES2Implementation::ReadPixels(
             transfer_buffer_id_, transfer_buffer_.GetOffset(buffer),
             result_shm_id(), result_shm_offset());
         WaitForCmd();
+        if (*result != 0) {
+          memcpy(row_dest, buffer, part_size);
+        }
+        transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
         // If it was not marked as successful exit.
         if (*result == 0) {
           return;
         }
-        memcpy(row_dest, buffer, part_size);
-        transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
         row_dest += part_size;
         temp_xoffset += num_pixels;
         temp_width -= num_pixels;

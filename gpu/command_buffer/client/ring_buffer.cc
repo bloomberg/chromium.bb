@@ -40,11 +40,13 @@ void RingBuffer::FreeOldestBlock() {
     in_use_offset_ = 0;
     free_offset_ = 0;
   }
-  blocks_.pop_back();
+  blocks_.pop_front();
 }
 
 RingBuffer::Offset RingBuffer::Alloc(unsigned int size) {
   DCHECK_LE(size, size_) << "attempt to allocate more than maximum memory";
+  DCHECK(blocks_.empty() || blocks_.back().valid)
+      << "Attempt to alloc another block before freeing the previous.";
   // Similarly to malloc, an allocation of 0 allocates at least 1 byte, to
   // return different pointers every time.
   if (size == 0) size = 1;
@@ -82,6 +84,8 @@ void RingBuffer::FreePendingToken(RingBuffer::Offset offset,
 }
 
 unsigned int RingBuffer::GetLargestFreeSizeNoWaiting() {
+  // TODO(gman): Should check what the current token is and free up to that
+  //    point.
   if (free_offset_ == in_use_offset_) {
     if (blocks_.empty()) {
       // The entire buffer is free.

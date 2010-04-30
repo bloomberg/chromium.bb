@@ -161,6 +161,22 @@ TEST_F(RingBufferTest, TestGetLargestFreeSizeNoWaiting) {
   allocator_->FreePendingToken(offset, helper_.get()->InsertToken());
 }
 
+TEST_F(RingBufferTest, TestFreeBug) {
+  // The first and second allocations must not match.
+  const unsigned int kAlloc1 = 10;
+  const unsigned int kAlloc2 = 20;
+  RingBuffer::Offset offset = allocator_->Alloc(kAlloc1);
+  EXPECT_EQ(kBufferSize - kAlloc1, allocator_->GetLargestFreeSizeNoWaiting());
+  allocator_->FreePendingToken(offset, helper_.get()->InsertToken());
+  offset = allocator_->Alloc(kAlloc2);
+  EXPECT_EQ(kBufferSize - kAlloc1 - kAlloc2,
+            allocator_->GetLargestFreeSizeNoWaiting());
+  allocator_->FreePendingToken(offset, helper_.get()->InsertToken());
+  offset = allocator_->Alloc(kBufferSize);
+  EXPECT_EQ(0u, allocator_->GetLargestFreeSizeNoWaiting());
+  allocator_->FreePendingToken(offset, helper_.get()->InsertToken());
+}
+
 // Test fixture for RingBufferWrapper test - Creates a
 // RingBufferWrapper, using a CommandBufferHelper with a mock
 // AsyncAPIInterface for its interface (calling it directly, not through the
