@@ -26,6 +26,21 @@ bool ScopedTempDir::CreateUniqueTempDir() {
   return true;
 }
 
+bool ScopedTempDir::CreateUniqueTempDirUnderPath(const FilePath& base_path) {
+  // If |path| does not exist, create it.
+  if (!file_util::CreateDirectory(base_path))
+    return false;
+
+  // Create a new, uniquly named directory under |base_path|.
+  if (!file_util::CreateTemporaryDirInDir(
+          base_path,
+          FILE_PATH_LITERAL("scoped_dir_"),
+          &path_)) {
+    return false;
+  }
+  return true;
+}
+
 bool ScopedTempDir::Set(const FilePath& path) {
   DCHECK(path_.empty());
   if (!file_util::DirectoryExists(path) &&

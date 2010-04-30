@@ -175,4 +175,17 @@ namespace extension_urls {
   extern const char* kMiniGalleryDownloadPrefix;
 }  // namespace extension_urls
 
+namespace extension_filenames {
+  // The name of a temporary directory to install an extension into for
+  // validation before finalizing install.
+  extern const char* kTempExtensionName;
+
+  // The file to write our decoded images to, relative to the extension_path.
+  extern const char* kDecodedImagesFilename;
+
+  // The file to write our decoded message catalogs to, relative to the
+  // extension_path.
+  extern const char* kDecodedMessageCatalogsFilename;
+}
+
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_CONSTANTS_H_

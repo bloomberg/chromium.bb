@@ -87,15 +87,20 @@ class SandboxedExtensionUnpackerTest : public testing::Test {
 
     unpacker_.reset(new ExtensionUnpacker(crx_path));
 
-    // It will delete itself.
+
+    // Build a temp area where the extension will be unpacked.
+    ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &temp_dir_));
+    temp_dir_ = temp_dir_.AppendASCII("sandboxed_extension_unpacker_test_Temp");
+    file_util::CreateDirectory(temp_dir_);
+
     sandboxed_unpacker_ =
-        new SandboxedExtensionUnpacker(crx_path, NULL, client_);
+      new SandboxedExtensionUnpacker(crx_path, temp_dir_, NULL, client_);
     PrepareUnpackerEnv();
   }
 
   void PrepareUnpackerEnv() {
     sandboxed_unpacker_->extension_root_ =
-      install_dir_.AppendASCII("TEMP_INSTALL");
+      install_dir_.AppendASCII(extension_filenames::kTempExtensionName);
 
     sandboxed_unpacker_->temp_dir_.Set(install_dir_);
     sandboxed_unpacker_->public_key_ =
@@ -108,11 +113,36 @@ class SandboxedExtensionUnpackerTest : public testing::Test {
   }
 
   FilePath GetInstallPath() {
-    return install_dir_.AppendASCII("TEMP_INSTALL");
+    return install_dir_.AppendASCII(extension_filenames::kTempExtensionName);
+  }
+
+  bool TempFilesRemoved() {
+    // Check that temporary files were cleaned up.
+    file_util::FileEnumerator::FILE_TYPE files_and_dirs =
+      static_cast<file_util::FileEnumerator::FILE_TYPE>(
+        file_util::FileEnumerator::DIRECTORIES |
+        file_util::FileEnumerator::FILES);
+
+    file_util::FileEnumerator temp_iterator(
+      temp_dir_,
+      true,  // recursive
+      files_and_dirs
+    );
+    int items_not_removed = 0;
+    FilePath item_in_temp;
+    item_in_temp = temp_iterator.Next();
+    while (!item_in_temp.value().empty()) {
+      items_not_removed++;
+      EXPECT_STREQ(FILE_PATH_LITERAL(""), item_in_temp.value().c_str())
+        << "File was not removed on success.";
+      item_in_temp = temp_iterator.Next();
+    }
+    return (items_not_removed == 0);
   }
 
  protected:
   FilePath install_dir_;
+  FilePath temp_dir_;
   MockSandboxedExtensionUnpackerClient* client_;
   scoped_ptr<ExtensionUnpacker> unpacker_;
   scoped_refptr<SandboxedExtensionUnpacker> sandboxed_unpacker_;
@@ -135,6 +165,8 @@ TEST_F(SandboxedExtensionUnpackerTest, NoCatalogsSuccess) {
 
   // Check that there still is no _locales folder.
   EXPECT_FALSE(file_util::PathExists(install_path));
+
+  ASSERT_TRUE(TempFilesRemoved());
 }
 
 TEST_F(SandboxedExtensionUnpackerTest, WithCatalogsSuccess) {
@@ -164,4 +196,6 @@ TEST_F(SandboxedExtensionUnpackerTest, WithCatalogsSuccess) {
   EXPECT_TRUE(file_util::GetFileInfo(messages_file, &new_info));
 
   EXPECT_TRUE(new_info.last_modified > old_info.last_modified);
+
+  ASSERT_TRUE(TempFilesRemoved());
 }

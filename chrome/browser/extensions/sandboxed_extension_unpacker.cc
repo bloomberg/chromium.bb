@@ -28,10 +28,13 @@
 const char SandboxedExtensionUnpacker::kExtensionHeaderMagic[] = "Cr24";
 
 SandboxedExtensionUnpacker::SandboxedExtensionUnpacker(
-    const FilePath& crx_path, ResourceDispatcherHost* rdh,
+    const FilePath& crx_path,
+    const FilePath& temp_path,
+    ResourceDispatcherHost* rdh,
     SandboxedExtensionUnpackerClient* client)
-      : crx_path_(crx_path), thread_identifier_(ChromeThread::ID_COUNT),
-        rdh_(rdh), client_(client), got_response_(false) {
+    : crx_path_(crx_path), temp_path_(temp_path),
+      thread_identifier_(ChromeThread::ID_COUNT),
+      rdh_(rdh), client_(client), got_response_(false) {
 }
 
 void SandboxedExtensionUnpacker::Start() {
@@ -40,13 +43,14 @@ void SandboxedExtensionUnpacker::Start() {
   CHECK(ChromeThread::GetCurrentThreadIdentifier(&thread_identifier_));
 
   // Create a temporary directory to work in.
-  if (!temp_dir_.CreateUniqueTempDir()) {
+  if (!temp_dir_.CreateUniqueTempDirUnderPath(temp_path_)) {
     ReportFailure("Could not create temporary directory.");
     return;
   }
 
   // Initialize the path that will eventually contain the unpacked extension.
-  extension_root_ = temp_dir_.path().AppendASCII("TEMP_INSTALL");
+  extension_root_ = temp_dir_.path().AppendASCII(
+      extension_filenames::kTempExtensionName);
 
   // Extract the public key and validate the package.
   if (!ValidateSignature())

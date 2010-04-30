@@ -186,6 +186,12 @@ bool PathProvider(int key, FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("Dictionaries"));
       create_dir = true;
       break;
+    case chrome::DIR_USER_DATA_TEMP:
+      if (!PathService::Get(chrome::DIR_USER_DATA, &cur))
+        return false;
+      cur = cur.Append(FILE_PATH_LITERAL("Temp"));
+      create_dir = true;
+      break;
     case chrome::FILE_LOCAL_STATE:
       if (!PathService::Get(chrome::DIR_USER_DATA, &cur))
         return false;

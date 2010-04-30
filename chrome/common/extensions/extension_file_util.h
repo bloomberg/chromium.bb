@@ -25,7 +25,7 @@ extern const char kInstallDirectoryName[];
 extern const char kCurrentVersionFileName[];
 
 // Move source_dir to dest_dir (it will actually be named dest_dir, not inside
-// dest_dir). If the parent path doesn't exixt, create it. If something else is
+// dest_dir). If the parent path doesn't exist, create it. If something else is
 // already there, remove it.
 bool MoveDirSafely(const FilePath& source_dir, const FilePath& dest_dir);
 

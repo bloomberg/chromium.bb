@@ -93,6 +93,7 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
   // |client| with the result. If |rdh| is provided, unpacking is done in a
   // sandboxed subprocess. Otherwise, it is done in-process.
   SandboxedExtensionUnpacker(const FilePath& crx_path,
+                             const FilePath& temp_path,
                              ResourceDispatcherHost* rdh,
                              SandboxedExtensionUnpackerClient* cilent);
 
@@ -144,6 +145,9 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
 
   // The path to the CRX to unpack.
   FilePath crx_path_;
+
+  // A path to a temp dir to unpack in.
+  FilePath temp_path_;
 
   // Our client's thread. This is the thread we respond on.
   ChromeThread::ID thread_identifier_;

@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/file_util.h"
+#include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
@@ -70,9 +72,13 @@ CrxInstaller::~CrxInstaller() {
 void CrxInstaller::InstallCrx(const FilePath& source_file) {
   source_file_ = source_file;
 
+  FilePath user_data_temp_dir;
+  CHECK(PathService::Get(chrome::DIR_USER_DATA_TEMP, &user_data_temp_dir));
+
   scoped_refptr<SandboxedExtensionUnpacker> unpacker(
       new SandboxedExtensionUnpacker(
           source_file,
+          user_data_temp_dir,
           g_browser_process->resource_dispatcher_host(),
           this));
 

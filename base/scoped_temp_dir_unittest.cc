@@ -55,3 +55,21 @@ TEST(ScopedTempDir, TempDir) {
   }
   EXPECT_FALSE(file_util::DirectoryExists(test_path));
 }
+
+TEST(ScopedTempDir, UniqueTempDirUnderPath) {
+  // Create a path which will contain a unique temp path.
+  FilePath base_path;
+  file_util::CreateNewTempDirectory(FILE_PATH_LITERAL("base_dir"),
+                                    &base_path);
+
+  FilePath test_path;
+  {
+    ScopedTempDir dir;
+    EXPECT_TRUE(dir.CreateUniqueTempDirUnderPath(base_path));
+    test_path = dir.path();
+    EXPECT_TRUE(file_util::DirectoryExists(test_path));
+    EXPECT_TRUE(base_path.IsParent(test_path));
+    EXPECT_TRUE(test_path.value().find(base_path.value()) != std::string::npos);
+  }
+  EXPECT_FALSE(file_util::DirectoryExists(test_path));
+}

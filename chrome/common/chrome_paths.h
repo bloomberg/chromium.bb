@@ -32,6 +32,10 @@ enum {
   DIR_DEFAULT_DOWNLOADS_SAFE,   // Directory for a user's
                                 // "My Documents/Downloads".
   DIR_DEFAULT_DOWNLOADS,        // Directory for a user's downloads.
+  DIR_USER_DATA_TEMP,           // A temp directory within DIR_USER_DATA.  Use
+                                // this when a temporary file or directory will
+                                // be moved into the profile, to avoid issues
+                                // moving across volumes.  See crbug.com/13044 .
   FILE_RESOURCE_MODULE,         // Full path and filename of the module that
                                 // contains embedded resources (version,
                                 // strings, images, etc.).

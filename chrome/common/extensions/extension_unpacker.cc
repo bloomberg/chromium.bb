@@ -26,18 +26,9 @@
 
 namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;
+namespace filenames = extension_filenames;
 
 namespace {
-// The name of a temporary directory to install an extension into for
-// validation before finalizing install.
-const char kTempExtensionName[] = "TEMP_INSTALL";
-
-// The file to write our decoded images to, relative to the extension_path.
-const char kDecodedImagesFilename[] = "DECODED_IMAGES";
-
-// The file to write our decoded message catalogs to, relative to the
-// extension_path.
-const char kDecodedMessageCatalogsFilename[] = "DECODED_MESSAGE_CATALOGS";
 
 // Errors
 const char* kCouldNotCreateDirectoryError =
@@ -148,7 +139,7 @@ bool ExtensionUnpacker::Run() {
 
   // <profile>/Extensions/INSTALL_TEMP/<version>
   temp_install_dir_ =
-      extension_path_.DirName().AppendASCII(kTempExtensionName);
+    extension_path_.DirName().AppendASCII(filenames::kTempExtensionName);
   if (!file_util::CreateDirectory(temp_install_dir_)) {
 #if defined(OS_WIN)
     std::string dir_string = WideToUTF8(temp_install_dir_.value());
@@ -209,7 +200,8 @@ bool ExtensionUnpacker::DumpImagesToFile() {
   IPC::Message pickle;  // We use a Message so we can use WriteParam.
   IPC::WriteParam(&pickle, decoded_images_);
 
-  FilePath path = extension_path_.DirName().AppendASCII(kDecodedImagesFilename);
+  FilePath path = extension_path_.DirName().AppendASCII(
+      filenames::kDecodedImagesFilename);
   if (!file_util::WriteFile(path, static_cast<const char*>(pickle.data()),
                             pickle.size())) {
     SetError("Could not write image data to disk.");
@@ -224,7 +216,7 @@ bool ExtensionUnpacker::DumpMessageCatalogsToFile() {
   IPC::WriteParam(&pickle, *parsed_catalogs_.get());
 
   FilePath path = extension_path_.DirName().AppendASCII(
-      kDecodedMessageCatalogsFilename);
+      filenames::kDecodedMessageCatalogsFilename);
   if (!file_util::WriteFile(path, static_cast<const char*>(pickle.data()),
                             pickle.size())) {
     SetError("Could not write message catalogs to disk.");
@@ -237,7 +229,7 @@ bool ExtensionUnpacker::DumpMessageCatalogsToFile() {
 // static
 bool ExtensionUnpacker::ReadImagesFromFile(const FilePath& extension_path,
                                            DecodedImages* images) {
-  FilePath path = extension_path.AppendASCII(kDecodedImagesFilename);
+  FilePath path = extension_path.AppendASCII(filenames::kDecodedImagesFilename);
   std::string file_str;
   if (!file_util::ReadFileToString(path, &file_str))
     return false;
@@ -250,7 +242,8 @@ bool ExtensionUnpacker::ReadImagesFromFile(const FilePath& extension_path,
 // static
 bool ExtensionUnpacker::ReadMessageCatalogsFromFile(
     const FilePath& extension_path, DictionaryValue* catalogs) {
-  FilePath path = extension_path.AppendASCII(kDecodedMessageCatalogsFilename);
+  FilePath path = extension_path.AppendASCII(
+      filenames::kDecodedMessageCatalogsFilename);
   std::string file_str;
   if (!file_util::ReadFileToString(path, &file_str))
     return false;

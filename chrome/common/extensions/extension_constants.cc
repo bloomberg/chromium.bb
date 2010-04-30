@@ -253,3 +253,14 @@ const char* kGalleryDownloadPrefix =
 const char* kMiniGalleryBrowsePrefix = "https://tools.google.com/chrome/";
 const char* kMiniGalleryDownloadPrefix = "https://dl-ssl.google.com/chrome/";
 }
+
+namespace extension_filenames {
+const char* kTempExtensionName = "CRX_INSTALL";
+
+// The file to write our decoded images to, relative to the extension_path.
+const char* kDecodedImagesFilename = "DECODED_IMAGES";
+
+// The file to write our decoded message catalogs to, relative to the
+// extension_path.
+const char* kDecodedMessageCatalogsFilename = "DECODED_MESSAGE_CATALOGS";
+}
