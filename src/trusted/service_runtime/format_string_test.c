@@ -7,6 +7,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#if defined(HAVE_SDL)
+# include <SDL.h>
+#endif
+
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/service_runtime/nacl_assert.h"
 
