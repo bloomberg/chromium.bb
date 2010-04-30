@@ -71,6 +71,7 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
     PLUGIN_QUIRK_PATCH_REGENUMKEYEXW = 2048, // Windows
     PLUGIN_QUIRK_ALWAYS_NOTIFY_SUCCESS = 4096, // Windows
     PLUGIN_QUIRK_ALLOW_FASTER_QUICKDRAW_PATH = 8192, // Mac
+    PLUGIN_QUIRK_HANDLE_MOUSE_CAPTURE = 16384, // Windows
   };
 
   static WebPluginDelegateImpl* Create(const FilePath& filename,
@@ -353,6 +354,13 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
       HKEY key, DWORD index, LPWSTR name, LPDWORD name_size, LPDWORD reserved,
       LPWSTR class_name, LPDWORD class_size, PFILETIME last_write_time);
 
+  // The mouse hook proc which handles mouse capture in windowed plugins.
+  static LRESULT CALLBACK MouseHookProc(int code, WPARAM wParam,
+                                        LPARAM lParam);
+
+  // Calls SetCapture/ReleaseCapture based on the message type.
+  static void HandleCaptureForMessage(HWND window, UINT message);
+
 #elif defined(OS_MACOSX)
   // Sets window_rect_ to |rect|
   void SetPluginRect(const gfx::Rect& rect);
@@ -456,6 +464,10 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   // Runnable Method Factory used to invoke the OnUserGestureEnd method
   // asynchronously.
   ScopedRunnableMethodFactory<WebPluginDelegateImpl> user_gesture_msg_factory_;
+
+  // Handle to the mouse hook installed for certain windowed plugins like
+  // flash.
+  HHOOK mouse_hook_;
 #endif
 
   // Holds the depth of the HandleEvent callstack.

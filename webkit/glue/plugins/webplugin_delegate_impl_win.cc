@@ -227,6 +227,17 @@ LRESULT CALLBACK WebPluginDelegateImpl::HandleEventMessageFilterHook(
   return CallNextHookEx(NULL, code, wParam, lParam);
 }
 
+LRESULT CALLBACK WebPluginDelegateImpl::MouseHookProc(
+    int code, WPARAM wParam, LPARAM lParam) {
+  if (code == HC_ACTION) {
+    MOUSEHOOKSTRUCT* hook_struct = reinterpret_cast<MOUSEHOOKSTRUCT*>(lParam);
+    if (hook_struct)
+      HandleCaptureForMessage(hook_struct->hwnd, wParam);
+  }
+
+  return CallNextHookEx(NULL, code, wParam, lParam);
+}
+
 WebPluginDelegateImpl::WebPluginDelegateImpl(
     gfx::PluginWindowHandle containing_view,
     NPAPI::PluginInstance *instance)
@@ -248,7 +259,8 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       user_gesture_message_posted_(false),
 #pragma warning(suppress: 4355)  // can use this
       user_gesture_msg_factory_(this),
-      handle_event_depth_(0) {
+      handle_event_depth_(0),
+      mouse_hook_(NULL) {
   memset(&window_, 0, sizeof(window_));
 
   const WebPluginInfo& plugin_info = instance_->plugin_lib()->plugin_info();
@@ -262,6 +274,7 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
     quirks_ |= PLUGIN_QUIRK_THROTTLE_WM_USER_PLUS_ONE;
     quirks_ |= PLUGIN_QUIRK_PATCH_SETCURSOR;
     quirks_ |= PLUGIN_QUIRK_ALWAYS_NOTIFY_SUCCESS;
+    quirks_ |= PLUGIN_QUIRK_HANDLE_MOUSE_CAPTURE;
   } else if (filename == kAcrobatReaderPlugin) {
     // Check for the version number above or equal 9.
     std::vector<std::wstring> version;
@@ -373,6 +386,20 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
         WebPluginDelegateImpl::RegEnumKeyExWPatch);
   }
 
+  // The windowed flash plugin has a bug which occurs when the plugin enters
+  // fullscreen mode. It basically captures the mouse on WM_LBUTTONDOWN and
+  // does not release capture correctly causing it to stop receiving subsequent
+  // mouse events. This problem is also seen in Safari where there is code to
+  // handle this in the wndproc. However the plugin subclasses the window again
+  // in WM_LBUTTONDOWN before entering full screen. As a result Safari does not
+  // receive the WM_LBUTTONUP message. To workaround this issue we use a per
+  // thread mouse hook. This bug does not occur in Firefox and opera. Firefox
+  // has code similar to Safari. It could well be a bug in the flash plugin,
+  // which only occurs in webkit based browsers.
+  if (quirks_ & PLUGIN_QUIRK_HANDLE_MOUSE_CAPTURE) {
+    mouse_hook_ = SetWindowsHookEx(WH_MOUSE, MouseHookProc, NULL,
+                                   GetCurrentThreadId());
+  }
   return true;
 }
 
@@ -392,6 +419,11 @@ void WebPluginDelegateImpl::PlatformDestroyInstance() {
 
   if (g_iat_patch_reg_enum_key_ex_w.Pointer()->is_patched())
     g_iat_patch_reg_enum_key_ex_w.Pointer()->Unpatch();
+
+  if (mouse_hook_) {
+    UnhookWindowsHookEx(mouse_hook_);
+    mouse_hook_ = NULL;
+  }
 }
 
 void WebPluginDelegateImpl::Paint(skia::PlatformCanvas* canvas,
@@ -897,6 +929,8 @@ LRESULT CALLBACK WebPluginDelegateImpl::NativeWndProc(
           kWindowedPluginPopupTimerMs);
     }
 
+    HandleCaptureForMessage(hwnd, message);
+
     // Maintain a local/global stack for the g_current_plugin_instance variable
     // as this may be a nested invocation.
     WebPluginDelegateImpl* last_plugin_instance = g_current_plugin_instance;
@@ -1320,4 +1354,24 @@ LONG WINAPI WebPluginDelegateImpl::RegEnumKeyExWPatch(
   }
 
   return rv;
+}
+
+void WebPluginDelegateImpl::HandleCaptureForMessage(HWND window,
+                                                    UINT message) {
+  switch (message) {
+    case WM_LBUTTONDOWN:
+    case WM_MBUTTONDOWN:
+    case WM_RBUTTONDOWN:
+      ::SetCapture(window);
+      break;
+
+    case WM_LBUTTONUP:
+    case WM_MBUTTONUP:
+    case WM_RBUTTONUP:
+      ::ReleaseCapture();
+      break;
+
+    default:
+      break;
+  }
 }
