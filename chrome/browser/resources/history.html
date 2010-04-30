@@ -38,7 +38,6 @@ var pageState;
 var deleteQueue = [];
 var deleteInFlight = false;
 var selectionAnchor = -1;
-var selectionEnd = -1;
 var id2checkbox = [];
 
 
@@ -355,7 +354,6 @@ HistoryModel.prototype.clearModel_ = function() {
   this.pages_ = []; // Date-sorted list of pages.
   this.last_id_ = 0;
   selectionAnchor = -1;
-  selectionEnd = -1;
   id2checkbox = [];
 
   // The page that the view wants to see - we only fetch slightly past this
@@ -991,47 +989,21 @@ function removeItems() {
 }
 
 /**
- * Toggle state of checkbox and handle CTRL and Shift modifiers
+ * Toggle state of checkbox and handle Shift modifier.
  */
 function checkboxClicked(event) {
-  if ((selectionAnchor == -1) || !event.shiftKey) {
-    selectionAnchor = this.name;
-    selectionEnd = this.name;
-  }
-  if (event.shiftKey) {
-    if (((selectionAnchor >= selectionEnd) && (selectionAnchor >= this.name)) ||
-        ((selectionAnchor <= selectionEnd) && (selectionAnchor <= this.name))) {
-      // If the click was on the same side of the anchor as the last click,
-      // extend the current selection.
-      var begin = selectionEnd < this.name ? selectionEnd : this.name;
-      var end = selectionEnd < this.name ? this.name : selectionEnd;
-      var checked = true;
-      if (((selectionAnchor <= this.name) && (this.name <= selectionEnd)) ||
-          ((selectionEnd <= this.name) && (this.name <= selectionAnchor))) {
-        checked = false;
-      }
-      for (var i = begin; i <= end; i++) {
-        if (!id2checkbox[i].disabled) {
-          id2checkbox[i].checked = checked;
-        }
-      }
-      this.checked = true;
-      selectionEnd = this.name;
-    } else {
-      // Otherwise, the last clicked checkbox becomes the new anchor, and
-      // everything between the last anchor and the newly clicked checkbox is
-      // enabled.
-      var begin = selectionAnchor < this.name ? selectionAnchor : this.name;
-      var end = selectionAnchor < this.name ? this.name : selectionAnchor;
-      for (var i = begin; i <= end; i++) {
-        if (!id2checkbox[i].disabled) {
-          id2checkbox[i].checked = true;
-        }
-      }
-      selectionAnchor = selectionEnd;
-      selectionEnd = this.name;
+  if (event.shiftKey && (selectionAnchor != -1)) {
+    var checked = this.checked;
+    // Set all checkboxes from the anchor up to the clicked checkbox to the
+    // state of the clicked one.
+    var begin = Math.min(this.name, selectionAnchor);
+    var end = Math.max(this.name, selectionAnchor);
+    for (var i = begin; i <= end; i++) {
+      id2checkbox[i].checked = checked;
     }
   }
+  selectionAnchor = this.name;
+  this.focus();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
