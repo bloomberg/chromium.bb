@@ -703,6 +703,130 @@ o3d.Client.prototype.clearLostResourcesCallback =
 
 
 /**
+ * Returns the event object for processing.
+ * @param {Event} event A mouse-related DOM event.
+ * @private
+ */
+o3d.Client.getEvent_ = function(event) {
+  return event ? event : window.event;
+};
+
+
+/**
+ * Returns an object with event, element, name and wheel in a semi cross
+ * browser way. Note: this can only be called from since an event because
+ * depending on the browser it expects that window.event is valid.
+ * @param {!Event} event A mouse-related DOM event.
+ * @return {!EventInfo} Info about the event.
+ * @private
+ */
+o3d.Client.getEventInfo_ = function(event) {
+  var elem = event.target ? event.target : event.srcElement;
+  var name = elem.id ? elem.id : ('->' + elem.toString());
+  var wheel = event.detail ? event.detail : -event.wheelDelta;
+  return { event: event,
+           element: elem,
+           name: name,
+           wheel: wheel };
+};
+
+
+/**
+ * Returns the absolute position of an element for certain browsers.
+ * @param {!HTMLElement} element The element to get a position for.
+ * @return {!Object} An object containing x and y as the absolute position
+ *     of the given element.
+ * @private
+ */
+o3d.Client.getAbsolutePosition_ = function(element) {
+  var r = { x: element.offsetLeft, y: element.offsetTop };
+  if (element.offsetParent) {
+    var tmp = o3d.Client.getAbsolutePosition_(element.offsetParent);
+    r.x += tmp.x;
+    r.y += tmp.y;
+  }
+  return r;
+};
+
+/**
+ * Retrieve the coordinates of the given event relative to the center
+ * of the widget.
+ *
+ * @param {!Object} eventInfo As returned from
+ *     o3d.Client.getEventInfo.
+ * @param {HTMLElement} opt_reference A DOM element whose position we want
+ *     to transform the mouse coordinates to. If it is not passed in the
+ *     element in the eventInfo will be used.
+ * @return {!Object} An object containing keys 'x' and 'y'.
+ * @private
+ */
+o3d.Client.getRelativeCoordinates_ = function(eventInfo, opt_reference) {
+  var x, y;
+  var event = eventInfo.event;
+  var element = eventInfo.element;
+  var reference = opt_reference || eventInfo.element;
+  if (!window.opera && typeof event.offsetX != 'undefined') {
+    // Use offset coordinates and find common offsetParent
+    var pos = { x: event.offsetX, y: event.offsetY };
+    // Send the coordinates upwards through the offsetParent chain.
+    var e = element;
+    while (e) {
+      e.mouseX_ = pos.x;
+      e.mouseY_ = pos.y;
+      pos.x += e.offsetLeft;
+      pos.y += e.offsetTop;
+      e = e.offsetParent;
+    }
+    // Look for the coordinates starting from the reference element.
+    var e = reference;
+    var offset = { x: 0, y: 0 }
+    while (e) {
+      if (typeof e.mouseX_ != 'undefined') {
+        x = e.mouseX_ - offset.x;
+        y = e.mouseY_ - offset.y;
+        break;
+      }
+      offset.x += e.offsetLeft;
+      offset.y += e.offsetTop;
+      e = e.offsetParent;
+    }
+    // Reset stored coordinates
+    e = element;
+    while (e) {
+      e.mouseX_ = undefined;
+      e.mouseY_ = undefined;
+      e = e.offsetParent;
+    }
+  } else {
+    // Use absolute coordinates
+    var pos = o3d.Client.getAbsolutePosition_(reference);
+    x = event.pageX - pos.x;
+    y = event.pageY - pos.y;
+  }
+  return { x: x, y: y };
+};
+
+
+/**
+ * Wraps a user's event callback with one that properly computes
+ * relative coordinates for the event.
+ * @param {!o3d.EventCallback} handler Function to call on event.
+ * @return {!o3d.EventCallback} Wrapped handler function.
+ * @private
+ */
+o3d.Client.wrapEventCallback_ = function(handler) {
+  return function(event) {
+    event = o3d.Client.getEvent_(event);
+    var info = o3d.Client.getEventInfo_(event);
+    var relativeCoords = o3d.Client.getRelativeCoordinates_(info);
+    event.x = relativeCoords.x;
+    event.y = relativeCoords.y;
+    handler(event);
+  };
+};
+
+
+/**
  * Sets a callback for a given event type.
  * types.
  * There can be only one callback for a given event type at a time; setting a
@@ -716,8 +840,11 @@ o3d.Client.prototype.setEventCallback =
   var listener = this.gl.hack_canvas;
   // TODO(petersont): Figure out a way for a canvas to listen to a key event
   // directly.
-  if (type.substr(0, 3) == 'key') {
+  var forKeyEvent = type.substr(0, 3) == 'key';
+  if (forKeyEvent) {
     listener = document;
+  } else {
+    handler = o3d.Client.wrapEventCallback_(handler);
   }
   listener.addEventListener(type, handler, true);
 };
@@ -729,7 +856,8 @@ o3d.Client.prototype.setEventCallback =
  */
 o3d.Client.prototype.clearEventCallback =
     function(type) {
-  if (type.substr(0, 3) == 'key') {
+  var forKeyEvent = type.substr(0, 3) == 'key';
+  if (forKeyEvent) {
     listener = document;
   }
   listener.removeEventListener(type);
