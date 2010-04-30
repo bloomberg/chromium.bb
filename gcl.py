@@ -664,6 +664,9 @@ Advanced commands:
    gcl changes
       Lists all the the changelists and the files in them.
 
+   gcl rename <old-name> <new-name>
+      Renames an existing change.
+
    gcl nothave [optional directory]
       Lists files unknown to Subversion.
 
@@ -1174,6 +1177,19 @@ def main(argv=None):
     DeleteEmptyChangeLists()
     return 0
 
+  if command == "rename":
+    if len(argv) != 4:
+      ErrorExit("Usage: gcl rename <old-name> <new-name>.")
+    src, dst = argv[2:4]
+    src_file = GetChangelistInfoFile(src)
+    if not os.path.isfile(src_file):
+      ErrorExit("Change '%s' does not exist." % src)
+    dst_file = GetChangelistInfoFile(dst)
+    if os.path.isfile(dst_file):
+      ErrorExit("Change '%s' already exists; pick a new name." % dst)
+    os.rename(src_file, dst_file)
+    print "Change '%s' renamed '%s'." % (src, dst)
+    return 0
   if command == "change":
     if len(argv) == 2:
       # Generate a random changelist name.
