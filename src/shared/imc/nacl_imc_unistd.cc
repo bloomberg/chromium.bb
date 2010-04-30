@@ -32,7 +32,7 @@
 
 #include "native_client/src/shared/imc/nacl_imc.h"
 
-#if NACL_LINUX && (defined(CHROMIUM_BUILD) || defined(GOOGLE_CHROME_BUILD))
+#if NACL_LINUX && !defined(NACL_STANDALONE)
 #include "chrome/renderer/renderer_sandbox_support_linux.h"
 #endif
 
