@@ -12,6 +12,7 @@
 #include "chrome/browser/password_manager/password_store_default.h"
 #include "chrome/browser/password_manager/password_form_data.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -20,6 +21,9 @@
 using base::WaitableEvent;
 using testing::_;
 using testing::DoAll;
+using testing::ElementsAreArray;
+using testing::Pointee;
+using testing::Property;
 using testing::WithArg;
 using webkit_glue::PasswordForm;
 
@@ -46,6 +50,55 @@ class SignalingTask : public Task {
   }
  private:
   WaitableEvent* event_;
+};
+
+class MockNotificationObserver : public NotificationObserver {
+ public:
+  MOCK_METHOD3(Observe, void(NotificationType,
+                             const NotificationSource&,
+                             const NotificationDetails&));
+};
+
+// This class will add and remove a mock notification observer from
+// the DB thread.
+class DBThreadObserverHelper :
+    public base::RefCountedThreadSafe<DBThreadObserverHelper,
+                                      ChromeThread::DeleteOnDBThread> {
+ public:
+  DBThreadObserverHelper() : done_event_(true, false) {}
+
+  void Init() {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    ChromeThread::PostTask(
+        ChromeThread::DB,
+        FROM_HERE,
+        NewRunnableMethod(this, &DBThreadObserverHelper::AddObserverTask));
+    done_event_.Wait();
+  }
+
+  virtual ~DBThreadObserverHelper() {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+    registrar_.RemoveAll();
+  }
+
+  MockNotificationObserver& observer() {
+    return observer_;
+  }
+
+ protected:
+  friend class base::RefCountedThreadSafe<DBThreadObserverHelper>;
+
+  void AddObserverTask() {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+    registrar_.Add(&observer_,
+                   NotificationType::LOGINS_CHANGED,
+                   NotificationService::AllSources());
+    done_event_.Signal();
+  }
+
+  WaitableEvent done_event_;
+  NotificationRegistrar registrar_;
+  MockNotificationObserver observer_;
 };
 
 }  // anonymous namespace
@@ -99,7 +152,7 @@ ACTION(QuitUIMessageLoop) {
   MessageLoop::current()->Quit();
 }
 
-MATCHER(EmptyWDResult,"") {
+MATCHER(EmptyWDResult, "") {
   return static_cast<const WDResult<std::vector<PasswordForm*> >*>(
       arg)->GetValue().empty();
 }
@@ -324,4 +377,91 @@ TEST_F(PasswordStoreDefaultTest, MigrationAlreadyDone) {
   MessageLoop::current()->Run();
 
   STLDeleteElements(&unexpected_autofillable);
+}
+
+TEST_F(PasswordStoreDefaultTest, Notifications) {
+  // Prentend that the migration has already taken place.
+  profile_->GetPrefs()->RegisterBooleanPref(prefs::kLoginDatabaseMigrated,
+                                            true);
+
+  // Initializing the PasswordStore shouldn't trigger a migration.
+  scoped_refptr<PasswordStoreDefault> store(
+      new PasswordStoreDefault(login_db_.release(), profile_.get(),
+                               wds_.get()));
+  store->Init();
+
+  PasswordFormData form_data =
+  { PasswordForm::SCHEME_HTML,
+    "http://bar.example.com",
+    "http://bar.example.com/origin",
+    "http://bar.example.com/action",
+    L"submit_element",
+    L"username_element",
+    L"password_element",
+    L"username_value",
+    L"password_value",
+    true, false, 1 };
+  scoped_ptr<PasswordForm> form(CreatePasswordFormFromData(form_data));
+
+  scoped_refptr<DBThreadObserverHelper> helper = new DBThreadObserverHelper;
+  helper->Init();
+
+  const PasswordStoreChange expected_add_changes[] = {
+    PasswordStoreChange(PasswordStoreChange::ADD, *form),
+  };
+
+  EXPECT_CALL(helper->observer(),
+              Observe(NotificationType(NotificationType::LOGINS_CHANGED),
+                      NotificationService::AllSources(),
+                      Property(&Details<const PasswordStoreChangeList>::ptr,
+                               Pointee(ElementsAreArray(
+                                   expected_add_changes)))));
+
+  // Adding a login should trigger a notification.
+  store->AddLogin(*form);
+
+  // The PasswordStore schedules tasks to run on the DB thread so we schedule
+  // yet another task to notify us that it's safe to carry on with the test.
+  WaitableEvent done(false, false);
+  ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, new SignalingTask(&done));
+  done.Wait();
+
+  // Change the password.
+  form->password_value = WideToUTF16(L"a different password");
+
+  const PasswordStoreChange expected_update_changes[] = {
+    PasswordStoreChange(PasswordStoreChange::UPDATE, *form),
+  };
+
+  EXPECT_CALL(helper->observer(),
+              Observe(NotificationType(NotificationType::LOGINS_CHANGED),
+                      NotificationService::AllSources(),
+                      Property(&Details<const PasswordStoreChangeList>::ptr,
+                               Pointee(ElementsAreArray(
+                                   expected_update_changes)))));
+
+  // Updating the login with the new password should trigger a notification.
+  store->UpdateLogin(*form);
+
+  // Wait for PasswordStore to send the notification.
+  ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, new SignalingTask(&done));
+  done.Wait();
+
+  const PasswordStoreChange expected_delete_changes[] = {
+    PasswordStoreChange(PasswordStoreChange::REMOVE, *form),
+  };
+
+  EXPECT_CALL(helper->observer(),
+              Observe(NotificationType(NotificationType::LOGINS_CHANGED),
+                      NotificationService::AllSources(),
+                      Property(&Details<const PasswordStoreChangeList>::ptr,
+                               Pointee(ElementsAreArray(
+                                   expected_delete_changes)))));
+
+  // Deleting the login should trigger a notification.
+  store->RemoveLogin(*form);
+
+  // Wait for PasswordStore to send the notification.
+  ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, new SignalingTask(&done));
+  done.Wait();
 }
