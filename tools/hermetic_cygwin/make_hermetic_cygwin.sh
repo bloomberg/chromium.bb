@@ -203,6 +203,27 @@ END
   generate_init_function 2
   generate_onselchange_function
 ) > make_hermetic_cygwin.nsi
+# Replace symlinks with hardlinks for python and gawk
+if ! patch <<END
+--- make_hermetic_cygwin.nsi
++++ make_hermetic_cygwin.nsi
+@@ -2069,4 +2069,4 @@
++  MkLink::Hard "\$INSTDIR\\bin\\awk.exe" "\$INSTDIR\\bin\\gawk.exe"
+   MkLink::Hard "\$INSTDIR\\bin\\gawk-3.1.7.exe" "\$INSTDIR\\bin\\gawk.exe"
+   MkLink::Hard "\$INSTDIR\\bin\\pgawk-3.1.7.exe" "\$INSTDIR\\bin\\pgawk.exe"
+   MkLink::Hard "\$INSTDIR\\usr\\share\\man\\man1\\gawk.1" "\$INSTDIR\\usr\\share\\man\\man1\\pgawk.1"
+-  MkLink::SoftF "\$INSTDIR\\bin\\awk.exe" "gawk.exe"
+@@ -24887,3 +24887,3 @@
+-  MkLink::SoftF "\$INSTDIR\\bin\\python.exe" "python2.5.exe"
+-  MkLink::SoftF "\$INSTDIR\\bin\\python-config" "python2.5-config"
+-  MkLink::SoftF "\$INSTDIR\\lib\\libpython2.5.dll.a" "python2.5\\config\\libpython2.5.dll.a"
++  MkLink::Hard "\$INSTDIR\\bin\\python.exe" "\$INSTDIR\\bin\\python2.5.exe"
++  MkLink::Hard "\$INSTDIR\\bin\\python-config" "\$INSTDIR\\bin\\python2.5-config"
++  MkLink::Hard "\$INSTDIR\\lib\\python2.5.dll.a" "\$INSTDIR\\lib\\python2.5\\config\\libpython2.5.dll.a"
+END
+  then
+    exit 1
+fi
 if ((NSIS)) ; then
   if [ -e NSIS/makensis.exe ] ; then
     NSIS/makensis.exe /V2 make_hermetic_cygwin.nsi
