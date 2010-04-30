@@ -91,11 +91,13 @@ void AutoFillManager::FormSubmitted(const FormData& form) {
   DeterminePossibleFieldTypes(upload_form_structure_.get());
   HandleSubmit();
 
-  PrefService* prefs = tab_contents_->profile()->GetPrefs();
-  bool infobar_shown = prefs->GetBoolean(prefs::kAutoFillInfoBarShown);
-  if (!infobar_shown) {
-    // Ask the user for permission to save form information.
-    infobar_.reset(new AutoFillInfoBarDelegate(tab_contents_, this));
+  if (upload_form_structure_->HasAutoFillableValues()) {
+    PrefService* prefs = tab_contents_->profile()->GetPrefs();
+    bool infobar_shown = prefs->GetBoolean(prefs::kAutoFillInfoBarShown);
+    if (!infobar_shown) {
+      // Ask the user for permission to save form information.
+      infobar_.reset(new AutoFillInfoBarDelegate(tab_contents_, this));
+    }
   }
 }
 

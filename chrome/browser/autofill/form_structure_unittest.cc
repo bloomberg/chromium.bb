@@ -108,6 +108,44 @@ TEST(FormStructureTest, ConvertToFormData) {
   EXPECT_EQ(form, converted);
 }
 
+TEST(FormStructureTest, HasAutoFillableValues) {
+  scoped_ptr<FormStructure> form_structure;
+  FormData form;
+  form.method = ASCIIToUTF16("post");
+
+  // Non text/select fields are not used when saving auto fill data.
+  form.fields.push_back(webkit_glue::FormField(string16(),
+                                               ASCIIToUTF16("Submit1"),
+                                               string16(),
+                                               ASCIIToUTF16("submit")));
+  form.fields.push_back(webkit_glue::FormField(string16(),
+                                               ASCIIToUTF16("Submit2"),
+                                               ASCIIToUTF16("dummy value"),
+                                               ASCIIToUTF16("submit")));
+  form_structure.reset(new FormStructure(form));
+  EXPECT_FALSE(form_structure->HasAutoFillableValues());
+
+  // Empty text/select fields are also not used when saving auto fill data.
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("First Name"),
+                                               ASCIIToUTF16("firstname"),
+                                               string16(),
+                                               ASCIIToUTF16("text")));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("state"),
+                                               ASCIIToUTF16("state"),
+                                               string16(),
+                                               ASCIIToUTF16("select-one")));
+  form_structure.reset(new FormStructure(form));
+  EXPECT_FALSE(form_structure->HasAutoFillableValues());
+
+  // Non-empty fields can be saved in auto fill profile.
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Last Name"),
+                                               ASCIIToUTF16("lastname"),
+                                               ASCIIToUTF16("John"),
+                                               ASCIIToUTF16("text")));
+  form_structure.reset(new FormStructure(form));
+  EXPECT_TRUE(form_structure->HasAutoFillableValues());
+}
+
 TEST(FormStructureTest, IsAutoFillable) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;

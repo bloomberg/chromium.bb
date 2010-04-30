@@ -60,6 +60,10 @@ class FormStructure {
   // like google/yahoo/msn search, etc.
   bool IsAutoFillable() const;
 
+  // Returns true if at least one of the form fields relevant for AutoFill
+  // is not empty.
+  bool HasAutoFillableValues() const;
+
   // Sets the possible types for the field at |index|.
   void set_possible_types(int index, const FieldTypeSet& types);
 
@@ -88,6 +92,9 @@ class FormStructure {
     QUERY,
     UPLOAD,
   };
+
+  // Returns true if we can autofill the given field type.
+  bool IsAutoFillableField(const string16& field_type) const;
 
   // Associates the field with the heuristic type for each of the field views.
   void GetHeuristicFieldInfo(FieldTypeMap* field_types_map);

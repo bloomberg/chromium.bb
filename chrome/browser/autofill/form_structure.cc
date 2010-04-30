@@ -69,8 +69,7 @@ FormStructure::FormStructure(const FormData& form)
     // store all fields in order to match the fields stored in the FormManager.
     // We don't append other field types to the form signature though in order
     // to match the form signature of the AutoFill servers.
-    if (LowerCaseEqualsASCII(field->form_control_type(), kControlTypeText) ||
-        LowerCaseEqualsASCII(field->form_control_type(), kControlTypeSelect)) {
+    if (IsAutoFillableField(field->form_control_type())) {
       // Add all supported form fields (including with empty names) to
       // signature.  This is a requirement for AutoFill servers.
       form_signature_field_names_.append("&");
@@ -94,6 +93,12 @@ FormStructure::FormStructure(const FormData& form)
     // to GET.
     method_ = GET;
   }
+}
+
+bool FormStructure::IsAutoFillableField(const string16& field_type) const {
+  // We currently only handle text and select fields.
+  return LowerCaseEqualsASCII(field_type, kControlTypeText) ||
+         LowerCaseEqualsASCII(field_type, kControlTypeSelect);
 }
 
 bool FormStructure::EncodeUploadRequest(bool auto_fill_used,
@@ -215,6 +220,19 @@ bool FormStructure::IsAutoFillable() const {
     return false;
 
   return true;
+}
+
+bool FormStructure::HasAutoFillableValues() const {
+  for (std::vector<AutoFillField*>::const_iterator iter = begin();
+       iter != end(); ++iter) {
+    AutoFillField* field = *iter;
+    if (field &&
+        !field->IsEmpty() &&
+        IsAutoFillableField(field->form_control_type())) {
+      return true;
+    }
+  }
+  return false;
 }
 
 void FormStructure::set_possible_types(int index, const FieldTypeSet& types) {
