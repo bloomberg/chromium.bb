@@ -382,6 +382,22 @@ TEST_F(HistoryTest, ClearBrowsingData_Downloads) {
   db_->RemoveDownloadsBetween(Time(), Time());
   db_->QueryDownloads(&downloads);
   EXPECT_EQ(0U, downloads.size());
+
+  // Check removal of downloads stuck in IN_PROGRESS state.
+  EXPECT_NE(0, AddDownload(DownloadItem::COMPLETE,    month_ago));
+  EXPECT_NE(0, AddDownload(DownloadItem::IN_PROGRESS, month_ago));
+  db_->QueryDownloads(&downloads);
+  EXPECT_EQ(2U, downloads.size());
+  db_->RemoveDownloadsBetween(Time(), Time());
+  db_->QueryDownloads(&downloads);
+  // IN_PROGRESS download should remain. It it indicated as "Canceled"
+  EXPECT_EQ(1U, downloads.size());
+  db_->CleanUpInProgressEntries();
+  db_->QueryDownloads(&downloads);
+  EXPECT_EQ(1U, downloads.size());
+  db_->RemoveDownloadsBetween(Time(), Time());
+  db_->QueryDownloads(&downloads);
+  EXPECT_EQ(0U, downloads.size());
 }
 
 TEST_F(HistoryTest, AddPage) {

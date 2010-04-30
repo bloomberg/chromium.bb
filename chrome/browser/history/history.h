@@ -406,6 +406,10 @@ class HistoryService : public CancelableRequestProvider,
   Handle QueryDownloads(CancelableRequestConsumerBase* consumer,
                         DownloadQueryCallback* callback);
 
+  // Begins a request to clean up entries that has been corrupted (because of
+  // the crash, for example).
+  void CleanUpInProgressEntries();
+
   // Called to update the history service about the current state of a download.
   // This is a 'fire and forget' query, so just pass the relevant state info to
   // the database with no need for a callback.

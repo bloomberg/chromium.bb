@@ -537,6 +537,10 @@ bool DownloadManager::Init(Profile* profile) {
   // information about new downloads while in that mode.
   QueryHistoryForDownloads();
 
+  // Cleans up entries only when called for the first time. Subsequent calls are
+  // a no op.
+  CleanUpInProgressHistoryEntries();
+
   ResourceDispatcherHost* rdh = g_browser_process->resource_dispatcher_host();
   if (!rdh) {
     NOTREACHED();
@@ -585,6 +589,18 @@ void DownloadManager::QueryHistoryForDownloads() {
     hs->QueryDownloads(
         &cancelable_consumer_,
         NewCallback(this, &DownloadManager::OnQueryDownloadEntriesComplete));
+  }
+}
+
+void DownloadManager::CleanUpInProgressHistoryEntries() {
+  static bool already_cleaned_up = false;
+
+  if (!already_cleaned_up) {
+    HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+    if (hs) {
+      hs->CleanUpInProgressEntries();
+      already_cleaned_up = true;
+    }
   }
 }
 
@@ -1221,6 +1237,11 @@ int DownloadManager::RemoveDownloads(const base::Time remove_begin) {
 }
 
 int DownloadManager::RemoveAllDownloads() {
+  if (this != profile_->GetOriginalProfile()->GetDownloadManager()) {
+    // This is an incognito downloader. Clear All should clear main download
+    // manager as well.
+    profile_->GetOriginalProfile()->GetDownloadManager()->RemoveAllDownloads();
+  }
   // The null times make the date range unbounded.
   return RemoveDownloadsBetween(base::Time(), base::Time());
 }

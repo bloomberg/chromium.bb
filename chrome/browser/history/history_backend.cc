@@ -1040,6 +1040,15 @@ void HistoryBackend::QueryDownloads(
   request->ForwardResult(DownloadQueryRequest::TupleType(&request->value));
 }
 
+// Clean up entries that has been corrupted (because of the crash, for example).
+void HistoryBackend::CleanUpInProgressEntries() {
+  if (db_.get()) {
+    // If some "in progress" entries were not updated when Chrome exited, they
+    // need to be cleaned up.
+    db_->CleanUpInProgressEntries();
+  }
+}
+
 // Update a particular download entry.
 void HistoryBackend::UpdateDownload(int64 received_bytes,
                                     int32 state,

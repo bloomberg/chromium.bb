@@ -395,6 +395,11 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   // Schedule a query of the history service to retrieve all downloads.
   void QueryHistoryForDownloads();
 
+  // Cleans up IN_PROGRESS history entries as these entries are corrupt because
+  // of the sudden exit. Changes them to CANCELED. Executed only when called
+  // first time, subsequent calls a no op.
+  void CleanUpInProgressHistoryEntries();
+
   // Notifications sent from the download thread to the UI thread
   void StartDownload(DownloadCreateInfo* info);
   void UpdateDownload(int32 download_id, int64 size);

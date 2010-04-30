@@ -31,6 +31,12 @@ class DownloadDatabase {
   // Update the path of one download. Returns true if successful.
   bool UpdateDownloadPath(const std::wstring& path, DownloadID db_handle);
 
+  // Fixes state of the download entries. Sometimes entries with IN_PROGRESS
+  // state are not updated during browser shutdown (particularly when crashing).
+  // On the next start such entries are considered canceled. This functions
+  // fixes such entries.
+  bool CleanUpInProgressEntries();
+
   // Create a new database entry for one download and return its primary db id.
   int64 CreateDownload(const DownloadCreateInfo& info);
 

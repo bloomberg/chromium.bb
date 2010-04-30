@@ -135,6 +135,16 @@ bool DownloadDatabase::UpdateDownloadPath(const std::wstring& path,
   return statement.Run();
 }
 
+bool DownloadDatabase::CleanUpInProgressEntries() {
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+      "UPDATE downloads SET state=? WHERE state=?"));
+  if (!statement)
+    return false;
+  statement.BindInt(0, DownloadItem::CANCELLED);
+  statement.BindInt(1, DownloadItem::IN_PROGRESS);
+  return statement.Run();
+}
+
 int64 DownloadDatabase::CreateDownload(const DownloadCreateInfo& info) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO downloads "
