@@ -137,13 +137,12 @@ class FirstRun {
   DISALLOW_IMPLICIT_CONSTRUCTORS(FirstRun);
 };
 
-#if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
+#if defined(OS_WIN)
 // This class contains the actions that need to be performed when an upgrade
 // is required. This involves mainly swapping the chrome exe and relaunching
 // the new browser.
 class Upgrade {
  public:
-#if defined(OS_WIN)
   // Possible results of ShowTryChromeDialog().
   enum TryResult {
     TD_TRY_CHROME,          // Launch chrome right now.
@@ -169,48 +168,22 @@ class Upgrade {
   // is no new_chrome.exe or the swap fails the return is false;
   static bool SwapNewChromeExeIfPresent();
 
-  // Combines the two methods, RelaunchChromeBrowser and
-  // SwapNewChromeExeIfPresent, to perform the rename and relaunch of
+  // Combines the two methods above to perform the rename and relaunch of
   // the browser. Note that relaunch does NOT exit the existing browser process.
   // If this is called before message loop is executed, simply exit the main
   // function. If browser is already running, you will need to exit it.
   static bool DoUpgradeTasks(const CommandLine& command_line);
+
+  // Checks if chrome_new.exe is present in the current instance's install.
+  static bool IsUpdatePendingRestart();
 
   // Shows a modal dialog asking the user to give chrome another try. See
   // above for the possible outcomes of the function. This is an experimental,
   // non-localized dialog.
   // |version| can be 0, 1 or 2 and selects what strings to present.
   static TryResult ShowTryChromeDialog(size_t version);
-#endif  // OS_WIN
-
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  static void SaveLastModifiedTimeOfExe();
-#endif
-
-  static void SetNewCommandLine(CommandLine* new_command_line) {
-    // Takes ownership of the pointer.
-    new_command_line_ = new_command_line;
-  }
-
-  // Launches a new instance of the browser if the current instance in
-  // persistent mode an upgrade is detected.
-  static void RelaunchChromeBrowserWithNewCommandLineIfNeeded();
-
-  // Windows:
-  //  Checks if chrome_new.exe is present in the current instance's install.
-  // Linux:
-  //  Checks if the last modified time of chrome is newer than that of the
-  //  current running instance.
-  static bool IsUpdatePendingRestart();
-
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
- private:
-  static double GetLastModifiedTimeOfExe();
-  static double saved_last_modified_time_of_exe_;
-#endif
-  static CommandLine* new_command_line_;
 };
-#endif  // (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
+#endif
 
 // A subclass of BrowserProcessImpl that does not have a GoogleURLTracker or
 // IntranetRedirectDetector so we don't do any URL fetches (as we have no IO

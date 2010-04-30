@@ -4,8 +4,6 @@
 
 #include "chrome/browser/browser_process_impl.h"
 
-#include <map>
-
 #include "app/clipboard/clipboard.h"
 #include "app/l10n_util.h"
 #include "base/command_line.h"
@@ -63,12 +61,6 @@
 #if defined(IPC_MESSAGE_LOG_ENABLED)
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
-#endif
-
-#if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
-// How often to check if the persistent instance of Chrome needs to restart
-// to install an update.
-static const int kUpdateCheckIntervalHours = 6;
 #endif
 
 BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
@@ -456,14 +448,14 @@ void BrowserProcessImpl::CheckForInspectorFiles() {
        NewRunnableMethod(this, &BrowserProcessImpl::DoInspectorFilesCheck));
 }
 
-#if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
+#if defined(OS_WIN)
 void BrowserProcessImpl::StartAutoupdateTimer() {
   autoupdate_timer_.Start(
-      TimeDelta::FromHours(kUpdateCheckIntervalHours),
+      TimeDelta::FromHours(google_update::kUpdateCheckInvervalHours),
       this,
       &BrowserProcessImpl::OnAutoupdateTimer);
 }
-#endif
+#endif  //  OS_WIN
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
 
@@ -516,8 +508,8 @@ void BrowserProcessImpl::DoInspectorFilesCheck() {
   have_inspector_files_ = result;
 }
 
-// Mac is currently not supported.
-#if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
+#if defined(OS_WIN)  // Linux doesn't do rename on restart, and Mac is currently
+                     // not supported.
 
 bool BrowserProcessImpl::CanAutorestartForUpdate() const {
   // Check if browser is in the background and if it needs to be restarted to
@@ -539,13 +531,13 @@ const char* const kSwitchesToRemoveOnAutorestart[] = {
 
 void BrowserProcessImpl::RestartPersistentInstance() {
   CommandLine* old_cl = CommandLine::ForCurrentProcess();
-  scoped_ptr<CommandLine> new_cl(new CommandLine(old_cl->GetProgram()));
+  CommandLine new_cl(old_cl->GetProgram());
 
   std::map<std::string, CommandLine::StringType> switches =
       old_cl->GetSwitches();
 
   // Remove the keys that we shouldn't pass through during restart.
-  for (size_t i = 0; i < arraysize(kSwitchesToRemoveOnAutorestart); i++) {
+  for (int i = 0; i < arraysize(kSwitchesToRemoveOnAutorestart); i++) {
     switches.erase(kSwitchesToRemoveOnAutorestart[i]);
   }
 
@@ -555,29 +547,28 @@ void BrowserProcessImpl::RestartPersistentInstance() {
       switches.begin(); i != switches.end(); ++i) {
       CommandLine::StringType switch_value = i->second;
       if (switch_value.length() > 0) {
-        new_cl->AppendSwitchWithValue(i->first, i->second);
+        new_cl.AppendSwitchWithValue(i->first, i->second);
       } else {
-        new_cl->AppendSwitch(i->first);
+        new_cl.AppendSwitch(i->first);
       }
   }
 
   // TODO(atwilson): Uncomment the following two lines to add the "persistence"
   // switch when the corresponding CL is committed.
-  // if (!new_cl->HasSwitch(switches::kLongLivedExtensions))
-  //  new_cl->AppendSwitch(switches::kLongLivedExtensions);
+  // if (!new_cl.HasSwitch(switches::kLongLivedExtensions))
+  //  new_cl.AppendSwitch(switches::kLongLivedExtensions);
 
-  DLOG(WARNING) << "Shutting down current instance of the browser.";
-  BrowserList::CloseAllBrowsersAndExit();
-
-  // Transfer ownership to Upgrade.
-  Upgrade::SetNewCommandLine(new_cl.release());
+  if (Upgrade::RelaunchChromeBrowser(new_cl)) {
+    BrowserList::CloseAllBrowsersAndExit();
+  } else {
+    DLOG(ERROR) << "Could not restart browser for autoupdate.";
+  }
 }
 
 void BrowserProcessImpl::OnAutoupdateTimer() {
   if (CanAutorestartForUpdate()) {
-    DLOG(WARNING) << "Detected update.  Restarting browser.";
     RestartPersistentInstance();
   }
 }
 
-#endif  // (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
+#endif

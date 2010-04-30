@@ -149,9 +149,9 @@ class TestingBrowserProcess : public BrowserProcess {
 
   virtual void CheckForInspectorFiles() {}
 
-#if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
+#if defined(OS_WIN)
   virtual void StartAutoupdateTimer() {}
-#endif
+#endif  // OS_WIN
 
   virtual bool have_inspector_files() const { return true; }
 #if defined(IPC_MESSAGE_LOG_ENABLED)

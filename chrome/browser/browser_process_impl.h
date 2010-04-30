@@ -195,9 +195,9 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
 
   virtual void CheckForInspectorFiles();
 
-#if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
+#if defined(OS_WIN)
   void StartAutoupdateTimer();
-#endif
+#endif  // OS_WIN
 
   virtual bool have_inspector_files() const {
     return have_inspector_files_;
@@ -314,7 +314,7 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   // Our best estimate about the existence of the inspector directory.
   bool have_inspector_files_;
 
-#if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
+#if defined(OS_WIN)
   base::RepeatingTimer<BrowserProcessImpl> autoupdate_timer_;
 
   // Gets called by autoupdate timer to see if browser needs restart and can be
@@ -322,7 +322,7 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   void OnAutoupdateTimer();
   bool CanAutorestartForUpdate() const;
   void RestartPersistentInstance();
-#endif  // defined(OS_WIN) || defined(OS_LINUX)
+#endif  // OS_WIN
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessImpl);
 };

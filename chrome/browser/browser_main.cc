@@ -618,19 +618,6 @@ OSStatus KeychainCallback(SecKeychainEvent keychain_event,
 
 }  // namespace
 
-#if defined(OS_WIN)
-#define DLLEXPORT __declspec(dllexport)
-
-// We use extern C for the prototype DLLEXPORT to avoid C++ name mangling.
-extern "C" {
-DLLEXPORT void __cdecl RelaunchChromeBrowserWithNewCommandLineIfNeeded();
-}
-
-DLLEXPORT void __cdecl RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
-  Upgrade::RelaunchChromeBrowserWithNewCommandLineIfNeeded();
-}
-#endif
-
 // Main routine for running as the Browser process.
 int BrowserMain(const MainFunctionParams& parameters) {
   const CommandLine& parsed_command_line = parameters.command_line_;
@@ -1190,20 +1177,12 @@ int BrowserMain(const MainFunctionParams& parameters) {
     // the main message loop.
     if (browser_init.Start(parsed_command_line, std::wstring(), profile,
                            &result_code)) {
-#if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
+#if defined(OS_WIN)
       // Initialize autoupdate timer. Timer callback costs basically nothing
       // when browser is not in persistent mode, so it's OK to let it ride on
       // the main thread. This needs to be done here because we don't want
       // to start the timer when Chrome is run inside a test harness.
       g_browser_process->StartAutoupdateTimer();
-#endif
-
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-      // On Linux, the running exe will be updated if an upgrade becomes
-      // available while the browser is running.  We need to save the last
-      // modified time of the exe, so we can compare to determine if there is
-      // an upgrade while the browser is kept alive by a persistent extension.
-      Upgrade::SaveLastModifiedTimeOfExe();
 #endif
 
       // Record now as the last succesful chrome start.
