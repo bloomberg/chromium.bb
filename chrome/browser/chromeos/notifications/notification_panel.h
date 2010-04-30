@@ -236,6 +236,9 @@ class NotificationPanelTester {
   // True if the view is in visible in the ScrollView.
   bool IsVisible(const BalloonViewImpl* view) const;
 
+  // True if the view is currently active.
+  bool IsActive(const BalloonViewImpl* view) const;
+
  private:
   NotificationPanel* panel_;
   DISALLOW_COPY_AND_ASSIGN(NotificationPanelTester);

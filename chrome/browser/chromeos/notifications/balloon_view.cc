@@ -300,7 +300,9 @@ bool BalloonViewImpl::IsFor(const Notification& notification) const {
 }
 
 void BalloonViewImpl::Activated() {
-  DCHECK(control_view_host_.get());
+  if (!control_view_host_.get())
+    return;
+
   // Get the size of Control View.
   gfx::Size size =
       control_view_host_->GetRootView()->GetChildViewAt(0)->GetPreferredSize();

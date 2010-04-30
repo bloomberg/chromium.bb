@@ -463,4 +463,36 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestScrollBalloonToVisible) {
   }
 }
 
+IN_PROC_BROWSER_TEST_F(NotificationTest, TestActivateDeactivate) {
+  BalloonCollectionImpl* collection = GetBalloonCollectionImpl();
+  NotificationPanel* panel = GetNotificationPanel();
+  NotificationPanelTester* tester = panel->GetTester();
+  Profile* profile = browser()->profile();
+
+  collection->Add(NewMockNotification("1"), profile);
+  collection->AddSystemNotification(
+      NewMockNotification("2"), profile, true, false);
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
+  BalloonViewImpl* view1 =
+      tester->GetBalloonView(collection, NewMockNotification("1"));
+  BalloonViewImpl* view2 =
+      tester->GetBalloonView(collection, NewMockNotification("2"));
+  // Wait until all renderers get size.
+  WaitForResize(view1);
+  WaitForResize(view2);
+
+  panel->OnMouseMotion(gfx::Point(10, 50));
+  EXPECT_TRUE(tester->IsActive(view1));
+  EXPECT_FALSE(tester->IsActive(view2));
+
+  panel->OnMouseMotion(gfx::Point(10, 10));
+  EXPECT_FALSE(tester->IsActive(view1));
+  EXPECT_TRUE(tester->IsActive(view2));
+
+  panel->OnMouseMotion(gfx::Point(500, 500));
+  EXPECT_FALSE(tester->IsActive(view1));
+  EXPECT_FALSE(tester->IsActive(view2));
+}
+
 }  // namespace chromeos

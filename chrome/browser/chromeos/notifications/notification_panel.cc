@@ -844,4 +844,9 @@ bool NotificationPanelTester::IsVisible(const BalloonViewImpl* view) const {
   return rect.Contains(gfx::Rect(origin, view->bounds().size()));
 }
 
+
+bool NotificationPanelTester::IsActive(const BalloonViewImpl* view) const {
+  return panel_->active_ == view;
+}
+
 }  // namespace chromeos
