@@ -4,6 +4,9 @@
 
 #include "base/at_exit.h"
 #include "base/process_util.h"
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "chrome/browser/first_run.h"
+#endif
 
 // The entry point for all invocations of Chromium, browser and renderer. On
 // windows, this does nothing but load chrome.dll and invoke its entry point in
@@ -44,5 +47,13 @@ int main(int argc, const char** argv) {
   // keep it.
   // base::AtExitManager exit_manager;
 
-  return ChromeMain(argc, argv);
+  int return_code = ChromeMain(argc, argv);
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // Launch a new instance if we're shutting down because we detected an
+  // upgrade in the persistent mode.
+  Upgrade::RelaunchChromeBrowserWithNewCommandLineIfNeeded();
+#endif
+
+  return return_code;
 }

@@ -30,6 +30,10 @@ class MainDllLoader {
   // upon termination.
   int Launch(HINSTANCE instance, sandbox::SandboxInterfaceInfo* sbox_info);
 
+  // Launches a new instance of the browser if the current instance in
+  // persistent mode an upgrade is detected.
+  void RelaunchChromeBrowserWithNewCommandLineIfNeeded();
+
   // Derived classes must return the relative registry path that holds the
   // most current version of chrome.dll.
   virtual std::wstring GetRegistryPath() = 0;

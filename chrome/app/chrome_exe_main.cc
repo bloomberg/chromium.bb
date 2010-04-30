@@ -44,6 +44,7 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
   // Load and launch the chrome dll. *Everything* happens inside.
   MainDllLoader* loader = MakeMainDllLoader();
   int rc = loader->Launch(instance, &sandbox_info);
+  loader->RelaunchChromeBrowserWithNewCommandLineIfNeeded();
   delete loader;
 
   return rc;

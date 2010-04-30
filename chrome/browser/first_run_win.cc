@@ -205,6 +205,8 @@ class FirsRunDelayedTasks : public NotificationObserver {
 
 }  // namespace
 
+CommandLine* Upgrade::new_command_line_ = NULL;
+
 bool FirstRun::CreateChromeDesktopShortcut() {
   std::wstring chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe))
@@ -408,6 +410,18 @@ bool Upgrade::RelaunchChromeBrowser(const CommandLine& command_line) {
   ::SetEnvironmentVariable(google_update::kEnvProductVersionKey, NULL);
   return base::LaunchApp(command_line.command_line_string(),
                          false, false, NULL);
+}
+
+void Upgrade::RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
+  if (new_command_line_) {
+    if (RelaunchChromeBrowser(*new_command_line_)) {
+      DLOG(ERROR) << "Launching a new instance of the browser failed.";
+    } else {
+      DLOG(WARNING) << "Launched a new instance of the browser.";
+    }
+    delete new_command_line_;
+    new_command_line_ = NULL;
+  }
 }
 
 bool Upgrade::SwapNewChromeExeIfPresent() {
@@ -1020,4 +1034,3 @@ Upgrade::TryResult Upgrade::ShowTryChromeDialog(size_t version) {
   TryChromeDialog td;
   return td.ShowModal();
 }
-

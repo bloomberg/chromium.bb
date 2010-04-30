@@ -18,6 +18,8 @@ namespace {
 // The entry point signature of chrome.dll.
 typedef int (*DLL_MAIN)(HINSTANCE, sandbox::SandboxInterfaceInfo*, wchar_t*);
 
+typedef void (*RelaunchChromeBrowserWithNewCommandLineIfNeededFunc)();
+
 // Not generic, we only handle strings up to 128 chars.
 bool ReadRegistryStr(HKEY key, const wchar_t* name, std::wstring* value) {
   BYTE out[128 * sizeof(wchar_t)];
@@ -194,6 +196,19 @@ int MainDllLoader::Launch(HINSTANCE instance,
 
   int rc = entry_point(instance, sbox_info, ::GetCommandLineW());
   return OnBeforeExit(rc);
+}
+
+void MainDllLoader::RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
+  RelaunchChromeBrowserWithNewCommandLineIfNeededFunc relaunch_function =
+      reinterpret_cast<RelaunchChromeBrowserWithNewCommandLineIfNeededFunc>(
+          ::GetProcAddress(dll_,
+                           "RelaunchChromeBrowserWithNewCommandLineIfNeeded"));
+  if (!relaunch_function) {
+    LOG(ERROR) << "Could not find exported function "
+               << "RelaunchChromeBrowserWithNewCommandLineIfNeeded";
+  } else {
+    relaunch_function();
+  }
 }
 
 //=============================================================================
