@@ -35,9 +35,6 @@ class Profile;
 +(id)showContentSettingsForType:(ContentSettingsType)settingsType
                         profile:(Profile*)profile;
 
-// Closes an exceptions sheet, if one is attached.
-- (void)closeExceptionsSheet;
-
 - (IBAction)showCookies:(id)sender;
 - (IBAction)openFlashPlayerSettings:(id)sender;
 - (IBAction)openPluginsPage:(id)sender;

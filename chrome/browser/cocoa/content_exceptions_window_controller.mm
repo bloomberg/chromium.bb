@@ -140,13 +140,14 @@ static ContentExceptionsWindowController*
 
 @implementation ContentExceptionsWindowController
 
-+ (id)controllerForType:(ContentSettingsType)settingsType
-            settingsMap:(HostContentSettingsMap*)settingsMap {
++ (id)showForType:(ContentSettingsType)settingsType
+      settingsMap:(HostContentSettingsMap*)settingsMap {
   if (!g_exceptionWindows[settingsType]) {
     g_exceptionWindows[settingsType] =
         [[ContentExceptionsWindowController alloc] initWithType:settingsType
                                                     settingsMap:settingsMap];
   }
+  [g_exceptionWindows[settingsType] showWindow:nil];
   return g_exceptionWindows[settingsType];
 }
 
@@ -178,9 +179,12 @@ static ContentExceptionsWindowController*
 
   [[self window] setTitle:GetWindowTitle(settingsType_)];
 
-  CGFloat minWidth = [[addButton_ superview] bounds].size.width +
-                     [[doneButton_ superview] bounds].size.width;
-  [self setMinWidth:minWidth];
+  // Make sure the button fits its label, but keep it the same height as the
+  // other two buttons.
+  [GTMUILocalizerAndLayoutTweaker sizeToFitView:removeAllButton_];
+  NSSize size = [removeAllButton_ frame].size;
+  size.height = NSHeight([addButton_ frame]);
+  [removeAllButton_ setFrameSize:size];
 
   [self adjustEditingButtons];
 
@@ -199,16 +203,12 @@ static ContentExceptionsWindowController*
   NSCell* patternCell =
       [[tableView_ tableColumnWithIdentifier:@"pattern"] dataCell];
   [patternCell setFormatter:[[[PatternFormatter alloc] init] autorelease]];
-}
 
-- (void)setMinWidth:(CGFloat)minWidth {
-  NSWindow* window = [self window];
-  [window setMinSize:NSMakeSize(minWidth, [window minSize].height)];
-  if ([window frame].size.width < minWidth) {
-    NSRect frame = [window frame];
-    frame.size.width = minWidth;
-    [window setFrame:frame display:NO];
-  }
+  // Give the button bar on the bottom of the window the "iTunes/iChat" look.
+  [[self window] setAutorecalculatesContentBorderThickness:NO
+                                                   forEdge:NSMinYEdge];
+  [[self window] setContentBorderThickness:kButtonBarHeight
+                                   forEdge:NSMinYEdge];
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
@@ -235,7 +235,7 @@ static ContentExceptionsWindowController*
       [self removeException:self];
     }
   } else {
-    [self closeSheet:self];
+    [self close];
   }
 }
 
@@ -262,21 +262,6 @@ static ContentExceptionsWindowController*
     }
   }
   [super keyDown:event];
-}
-
-- (void)attachSheetTo:(NSWindow*)window {
-  [NSApp beginSheet:[self window]
-     modalForWindow:window
-      modalDelegate:self
-     didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-        contextInfo:nil];
-}
-
-- (void)sheetDidEnd:(NSWindow*)sheet
-         returnCode:(NSInteger)returnCode
-        contextInfo:(void*)context {
-  [sheet close];
-  [sheet orderOut:self];
 }
 
 - (IBAction)addException:(id)sender {
@@ -323,10 +308,6 @@ static ContentExceptionsWindowController*
   model_->RemoveAll();
   updatesEnabled_ = YES;
   [self modelDidChange];
-}
-
-- (IBAction)closeSheet:(id)sender {
-  [NSApp endSheet:[self window]];
 }
 
 // Table View Data Source -----------------------------------------------------

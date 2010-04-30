@@ -24,7 +24,6 @@ class UpdatingContentSettingsObserver;
   IBOutlet NSButton* addButton_;
   IBOutlet NSButton* removeButton_;
   IBOutlet NSButton* removeAllButton_;
-  IBOutlet NSButton* doneButton_;
 
   ContentSettingsType settingsType_;
   HostContentSettingsMap* settingsMap_;  // weak
@@ -46,22 +45,14 @@ class UpdatingContentSettingsObserver;
   scoped_ptr<HostContentSettingsMap::PatternSettingPair> newException_;
 }
 
-// Returns the content exceptions window controller for |settingsType|.
+// Shows or makes frontmost the content exceptions window for |settingsType|.
 // Changes made by the user in the window are persisted in |settingsMap|.
-+ (id)controllerForType:(ContentSettingsType)settingsType
-            settingsMap:(HostContentSettingsMap*)settingsMap;
-
-// Shows the exceptions dialog as a modal sheet attached to |window|.
-- (void)attachSheetTo:(NSWindow*)window;
-
-// Sets the minimum width of the sheet and resizes it if necessary.
-- (void)setMinWidth:(CGFloat)minWidth;
++ (id)showForType:(ContentSettingsType)settingsType
+      settingsMap:(HostContentSettingsMap*)settingsMap;
 
 - (IBAction)addException:(id)sender;
 - (IBAction)removeException:(id)sender;
 - (IBAction)removeAllExceptions:(id)sender;
-// Closes the sheet and ends the modal loop.
-- (IBAction)closeSheet:(id)sender;
 
 @end
 
