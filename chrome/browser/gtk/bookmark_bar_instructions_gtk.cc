@@ -36,7 +36,8 @@ void InitLabelSizeRequestAndEllipsizeMode(GtkWidget* label) {
 BookmarkBarInstructionsGtk::BookmarkBarInstructionsGtk(Delegate* delegate,
                                                        Profile* profile)
     : delegate_(delegate),
-      profile_(profile) {
+      profile_(profile),
+      theme_provider_(GtkThemeProvider::GetFrom(profile_)) {
   instructions_hbox_ = gtk_chrome_shrinkable_hbox_new(FALSE, FALSE, 0);
   gtk_widget_set_size_request(instructions_hbox_, 0, -1);
 
@@ -68,6 +69,7 @@ BookmarkBarInstructionsGtk::BookmarkBarInstructionsGtk(Delegate* delegate,
 
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
+  theme_provider_->InitThemesFor(this);
 }
 
 void BookmarkBarInstructionsGtk::Observe(NotificationType type,
@@ -82,29 +84,31 @@ void BookmarkBarInstructionsGtk::OnButtonClick(GtkWidget* button) {
 }
 
 void BookmarkBarInstructionsGtk::UpdateColors() {
-  const GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(profile_);
-  if (!theme_provider)
-    return;
-
   gtk_chrome_link_button_set_use_gtk_theme(
       GTK_CHROME_LINK_BUTTON(instructions_link_),
-      theme_provider->UseGtkTheme());
+      theme_provider_->UseGtkTheme());
 
-  // When using a non-standard, non-gtk theme, we make the link color match
-  // the bookmark text color. Otherwise, standard link blue can look very
-  // bad for some dark themes.
-  if (theme_provider->GetColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT) ==
-      BrowserThemeProvider::GetDefaultColor(
-          BrowserThemeProvider::COLOR_BOOKMARK_TEXT)) {
+  GdkColor bookmark_color = theme_provider_->GetGdkColor(
+      BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
+  if (theme_provider_->UseGtkTheme()) {
     gtk_util::SetLabelColor(instructions_label_, NULL);
     gtk_chrome_link_button_set_normal_color(
         GTK_CHROME_LINK_BUTTON(instructions_link_), NULL);
   } else {
-    GdkColor bookmark_color = theme_provider->GetGdkColor(
-        BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
     gtk_util::SetLabelColor(instructions_label_, &bookmark_color);
-    gtk_chrome_link_button_set_normal_color(
-        GTK_CHROME_LINK_BUTTON(instructions_link_), &bookmark_color);
+
+    // When using a non-standard, non-gtk theme, we make the link color match
+    // the bookmark text color. Otherwise, standard link blue can look very
+    // bad for some dark themes.
+    if (theme_provider_->GetColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT) ==
+        BrowserThemeProvider::GetDefaultColor(
+            BrowserThemeProvider::COLOR_BOOKMARK_TEXT)) {
+      gtk_chrome_link_button_set_normal_color(
+          GTK_CHROME_LINK_BUTTON(instructions_link_), NULL);
+    } else {
+      gtk_chrome_link_button_set_normal_color(
+          GTK_CHROME_LINK_BUTTON(instructions_link_), &bookmark_color);
+    }
   }
 }
 

@@ -11,6 +11,7 @@
 #include "chrome/common/notification_registrar.h"
 
 typedef struct _GtkWidget GtkWidget;
+class GtkThemeProvider;
 class Profile;
 
 class BookmarkBarInstructionsGtk : public NotificationObserver {
@@ -42,9 +43,10 @@ class BookmarkBarInstructionsGtk : public NotificationObserver {
 
   Profile* profile_;
 
+  GtkThemeProvider* theme_provider_;
+
   // HBox that holds the the label and link of bookmark bar import promotion.
   GtkWidget* instructions_hbox_;
-
   GtkWidget* instructions_label_;
   GtkWidget* instructions_link_;
 
