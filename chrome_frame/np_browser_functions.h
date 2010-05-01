@@ -6,8 +6,8 @@
 #define CHROME_FRAME_NP_BROWSER_FUNCTIONS_H_
 
 #include "base/logging.h"
-#include "third_party/WebKit/WebCore/bridge/npapi.h"
-#include "third_party/WebKit/WebCore/plugins/npfunctions.h"
+#include "third_party/npapi/bindings/npapi.h"
+#include "third_party/npapi/bindings/nphostapi.h"
 
 namespace npapi {
 

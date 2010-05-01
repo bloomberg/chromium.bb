@@ -18,7 +18,7 @@
 #include "chrome_frame/ns_associate_iid_win.h"
 #include "chrome_frame/ns_isupports_impl.h"
 #include "chrome_frame/scoped_ns_ptr_win.h"
-#include "third_party/WebKit/WebCore/bridge/npapi.h"
+#include "third_party/npapi/bindings/npapi.h"
 #include "third_party/xulrunner-sdk/win/include/xpcom/nsIObserver.h"
 #include "third_party/xulrunner-sdk/win/include/pref/nsIPrefBranch2.h"
 #include "third_party/xulrunner-sdk/win/include/pref/nsIPrefService.h"

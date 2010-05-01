@@ -64,9 +64,9 @@ NPN_PopPopupsEnabledStateProcPtr g_poppopupsenabledstate = NULL;
 NPN_EnumerateProcPtr g_enumerate = NULL;
 NPN_PluginThreadAsyncCallProcPtr g_pluginthreadasynccall = NULL;
 NPN_ConstructProcPtr g_construct = NULL;
-NPN_GetValueForURLProcPtr g_getvalueforurl = NULL;
-NPN_SetValueForURLProcPtr g_setvalueforurl = NULL;
-NPN_GetAuthenticationInfoProcPtr g_getauthenticationinfo = NULL;
+NPN_GetValueForURLPtr g_getvalueforurl = NULL;
+NPN_SetValueForURLPtr g_setvalueforurl = NULL;
+NPN_GetAuthenticationInfoPtr g_getauthenticationinfo = NULL;
 
 // Must be called prior to calling any of the browser functions below.
 void InitializeBrowserFunctions(NPNetscapeFuncs* functions) {
