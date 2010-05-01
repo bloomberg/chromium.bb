@@ -263,8 +263,8 @@ def _ParseSendChangeOptions(options):
     values['revision'] = options.revision
   if options.clobber:
     values['clobber'] = 'true'
-  if options.tests:
-    values['tests'] = ','.join(options.tests)
+  if options.testfilter:
+    values['testfilter'] = ','.join(options.testfilter)
   if options.root:
     values['root'] = options.root
   if options.patchlevel:
@@ -496,10 +496,14 @@ def TryChange(argv,
                    help="Override which project to use. Projects are defined "
                         "server-side to define what default bot set to use")
 
-  # Override the list of tests to run, use multiple times to list many tests
-  # (or comma separated)
-  group.add_option("-t", "--tests", action="append",
-                   help=optparse.SUPPRESS_HELP)
+  group.add_option("-t", "--testfilter", action="append",
+                   help="Add a gtest_filter to a test. Use multiple times to "
+                        "specify filters for different tests. (i.e. "
+                        "--testfilter base_unittests:ThreadTest.* "
+                        "--testfilter ui_tests) If you specify any testfilters "
+                        "the test results will not be reported in rietveld and "
+                        "only tests with filters will run.")
+
   parser.add_option_group(group)
 
   group = optparse.OptionGroup(parser, "Patch to run")
@@ -682,6 +686,11 @@ def TryChange(argv,
                    'the TRYBOT_RESULTS_EMAIL_ADDRESS environment variable.')
     else:
       print('Results will be emailed to: ' + options.email)
+
+    # Prevent rietveld updates if we aren't running all the tests.
+    if options.testfilter is not None:
+      options.issue = None
+      options.patchset = None
 
     # Send the patch.
     if options.send_patch:
