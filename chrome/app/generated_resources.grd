@@ -7400,6 +7400,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The title for the Hangul input settings dialog">
         Hangul Input Settings
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_KEYBOARD_2_SET"
+               desc="The keyboard layout name for Korean input. (Dubeol-sik)">
+        2 Set
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_KEYBOARD_3_SET_FINAL"
+               desc="The keyboard layout name for Korean input. (Sebeol-sik Final)">
+        3 Set (Final)
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_KEYBOARD_3_SET_390"
+               desc="The keyboard layout name for Korean input. (Sebeol-sik 390)">
+        3 Set (390)
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_KEYBOARD_3_SET_NO_SHIFT"
+               desc="The keyboard layout name for Korean input. (Sebeol-sik No-shift)">
+        3 Set (No shift)
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTINGS_TITLE"
                desc="The title for the Pinyin input settings dialog">
         Pinyin Input Settings

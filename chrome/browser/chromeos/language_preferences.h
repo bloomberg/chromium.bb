@@ -30,17 +30,18 @@ const char kHangulSectionName[] = "engine/Hangul";
 const char kHangulKeyboardConfigName[] = "HangulKeyboard";
 
 const struct HangulKeyboardNameIDPair {
-  const wchar_t* keyboard_name;
+  int message_id;
   const wchar_t* keyboard_id;
 } kHangulKeyboardNameIDPairs[] = {
-  // We have to sync the IDs with those in ibus-hangul/files/setup/main.py.
-  { L"Dubeolsik", L"2" },
-  { L"Sebeolsik Final", L"3f" },
-  { L"Sebeolsik 390", L"39" },
-  { L"Sebeolsik No-shift", L"3s" },
-  { L"Sebeolsik 2 set", L"32" },
-  // TODO(yusukes): Use generated_resources.grd IDs for |keyboard_name|. Ask
-  // jshin first.
+  // We have to sync the |keyboard_id|s with those in
+  // ibus-hangul/files/setup/main.py.
+  { IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_KEYBOARD_2_SET, L"2" },
+  { IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_KEYBOARD_3_SET_FINAL,
+    L"3f" },
+  { IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_KEYBOARD_3_SET_390, L"39" },
+  { IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_KEYBOARD_3_SET_NO_SHIFT,
+    L"3s" },
+  // We don't support "Sebeolsik 2 set" keyboard.
 };
 
 // For Simplified Chinese input method (ibus-pinyin)

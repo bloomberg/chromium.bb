@@ -30,7 +30,7 @@ class HangulKeyboardComboboxModel : public ComboboxModel {
   HangulKeyboardComboboxModel() {
     for (size_t i = 0; i < arraysize(kHangulKeyboardNameIDPairs); ++i) {
       layouts_.push_back(std::make_pair(
-          kHangulKeyboardNameIDPairs[i].keyboard_name,
+          l10n_util::GetString(kHangulKeyboardNameIDPairs[i].message_id),
           kHangulKeyboardNameIDPairs[i].keyboard_id));
     }
   }
