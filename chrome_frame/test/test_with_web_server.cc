@@ -4,6 +4,7 @@
 #include "chrome_frame/test/test_with_web_server.h"
 
 #include "base/file_version_info.h"
+#include "base/win_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/helper.h"
@@ -724,6 +725,29 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_XHRTest) {
 
   chrome_frame_test::CloseAllIEWindows();
   ASSERT_TRUE(CheckResultFile(L"FullTab_XMLHttpRequestTest", "OK"));
+}
+
+const wchar_t kInstallFlowTestUrl[] =
+    L"files/install_flow_test.html";
+
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_InstallFlowTest) {
+  if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA) {
+    chrome_frame_test::TimedMsgLoop loop;
+    ScopedChromeFrameRegistrar::UnregisterAtPath(
+        ScopedChromeFrameRegistrar::GetChromeFrameBuildPath().value());
+
+    ASSERT_TRUE(LaunchBrowser(IE, kInstallFlowTestUrl));
+
+    loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+
+    ScopedChromeFrameRegistrar::RegisterAtPath(
+        ScopedChromeFrameRegistrar::GetChromeFrameBuildPath().value());
+
+    loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+
+    chrome_frame_test::CloseAllIEWindows();
+    ASSERT_TRUE(CheckResultFile(L"FullTab_InstallFlowTest", "OK"));
+  }
 }
 
 const wchar_t kMultipleCFInstancesTestUrl[] =

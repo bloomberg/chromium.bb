@@ -13,6 +13,7 @@
 #include "base/file_path.h"
 
 extern const wchar_t kChromeFrameDllName[];
+extern const wchar_t kChromeLauncherExeName[];
 
 // Helper class used to register different chrome frame DLLs while running
 // tests. The default constructor registers the DLL found in the build path.
@@ -29,12 +30,14 @@ class ScopedChromeFrameRegistrar {
   virtual ~ScopedChromeFrameRegistrar();
 
   void RegisterChromeFrameAtPath(const std::wstring& path);
+  void UnegisterChromeFrameAtPath(const std::wstring& path);
   void RegisterReferenceChromeFrameBuild();
 
   std::wstring GetChromeFrameDllPath() const;
 
   static FilePath GetChromeFrameBuildPath();
   static void RegisterAtPath(const std::wstring& path);
+  static void UnregisterAtPath(const std::wstring& path);
   static void RegisterDefaults();
   static std::wstring GetReferenceChromeFrameDllPath();
 

@@ -20,6 +20,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 const wchar_t kChromeFrameDllName[] = L"npchrome_frame.dll";
+const wchar_t kChromeLauncherExeName[] = L"chrome_launcher.exe";
 const wchar_t kReferenceChromeFrameDllName[] = L"npchrome_tab.dll";
 
 // Statics
@@ -52,25 +53,50 @@ void ScopedChromeFrameRegistrar::RegisterAtPath(
     const std::wstring& path) {
 
   ASSERT_FALSE(path.empty());
-  HMODULE chrome_frame_dll_handle = LoadLibrary(path.c_str());
-  ASSERT_TRUE(chrome_frame_dll_handle != NULL);
+  HMODULE dll_handle = LoadLibrary(path.c_str());
+  ASSERT_TRUE(dll_handle != NULL);
 
   typedef HRESULT (STDAPICALLTYPE* DllRegisterServerFn)();
   DllRegisterServerFn register_server =
       reinterpret_cast<DllRegisterServerFn>(GetProcAddress(
-          chrome_frame_dll_handle, "DllRegisterServer"));
+          dll_handle, "DllRegisterServer"));
 
   ASSERT_TRUE(register_server != NULL);
   EXPECT_HRESULT_SUCCEEDED((*register_server)());
 
   DllRegisterServerFn register_npapi_server =
       reinterpret_cast<DllRegisterServerFn>(GetProcAddress(
-          chrome_frame_dll_handle, "RegisterNPAPIPlugin"));
+          dll_handle, "RegisterNPAPIPlugin"));
 
   if (register_npapi_server != NULL)
     EXPECT_HRESULT_SUCCEEDED((*register_npapi_server)());
 
-  ASSERT_TRUE(FreeLibrary(chrome_frame_dll_handle));
+  ASSERT_TRUE(FreeLibrary(dll_handle));
+}
+
+void ScopedChromeFrameRegistrar::UnregisterAtPath(
+    const std::wstring& path) {
+
+  ASSERT_FALSE(path.empty());
+  HMODULE dll_handle = LoadLibrary(path.c_str());
+  ASSERT_TRUE(dll_handle != NULL);
+
+  typedef HRESULT (STDAPICALLTYPE* DllUnregisterServerFn)();
+  DllUnregisterServerFn unregister_server =
+      reinterpret_cast<DllUnregisterServerFn>(GetProcAddress(
+          dll_handle, "DllUnregisterServer"));
+
+  ASSERT_TRUE(unregister_server != NULL);
+  EXPECT_HRESULT_SUCCEEDED((*unregister_server)());
+
+  DllUnregisterServerFn unregister_npapi_server =
+      reinterpret_cast<DllUnregisterServerFn>(GetProcAddress(
+          dll_handle, "UnregisterNPAPIPlugin"));
+
+  if (unregister_npapi_server != NULL)
+    EXPECT_HRESULT_SUCCEEDED((*unregister_npapi_server)());
+
+  ASSERT_TRUE(FreeLibrary(dll_handle));
 }
 
 std::wstring ScopedChromeFrameRegistrar::GetReferenceChromeFrameDllPath() {
