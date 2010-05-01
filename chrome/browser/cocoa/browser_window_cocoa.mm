@@ -87,21 +87,13 @@ void BrowserWindowCocoa::Close() {
     // Make sure we hide the window immediately. Even though performClose:
     // calls orderOut: eventually, it leaves the window on-screen long enough
     // that we start to see tabs shutting down. http://crbug.com/23959
-    // Do the close on the main event loop to meet the expectations of
-    // |BrowserList| -- otherwise, windows may be added or removed while the
-    // list is being iterated through. In particular, any immediate teardown can
-    // trigger Javascript to open a new window that gets added to the
-    // |BrowserList| while the list is still being iterated through. (See also
-    // the GTK implementation in browser_list_gtk.cc.) http://crbug.com/42102
     // TODO(viettrungluu): This is kind of bad, since |-performClose:| calls
     // |-windowShouldClose:| (on its delegate, which is probably the
     // controller) which may return |NO| causing the window to not be closed,
     // thereby leaving a hidden window. In fact, our window-closing procedure
     // involves a (indirect) recursion on |-performClose:|, which is also bad.
     [window() orderOut:controller_];
-    [window() performSelector:@selector(performClose:)
-                   withObject:controller_
-                   afterDelay:0];
+    [window() performClose:controller_];
   }
 }
 
