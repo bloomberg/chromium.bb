@@ -35,9 +35,13 @@ class ShownSectionsHandler : public DOMMessageHandler {
   // Callback for "setShownSections" message.
   void HandleSetShownSections(const Value* value);
 
-  static void RegisterUserPrefs(PrefService* prefs);
+  // Sets the prefs for first run of the App Launcher.
+  static void SetFirstAppLauncherRunPref(PrefService* pref_service);
 
-  static void MigrateUserPrefs(PrefService* prefs, int old_pref_version,
+  static void RegisterUserPrefs(PrefService* pref_service);
+
+  static void MigrateUserPrefs(PrefService* pref_service,
+                               int old_pref_version,
                                int new_pref_version);
 
  private:

@@ -19,6 +19,7 @@
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
+#include "chrome/browser/dom_ui/shown_sections_handler.h"
 #include "chrome/browser/google_util.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -336,6 +337,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   localized_strings.SetString(L"anim", anim);
 
   // Pass the shown_sections pref early so that we can prevent flicker.
+  ShownSectionsHandler::SetFirstAppLauncherRunPref(profile_->GetPrefs());
   const int shown_sections = profile_->GetPrefs()->GetInteger(
       prefs::kNTPShownSections);
   localized_strings.SetInteger(L"shown_sections", shown_sections);

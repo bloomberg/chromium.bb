@@ -5,11 +5,13 @@
 #include "chrome/browser/dom_ui/shown_sections_handler.h"
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 
 namespace {
@@ -44,10 +46,11 @@ void ShownSectionsHandler::RegisterMessages() {
 }
 
 void ShownSectionsHandler::HandleGetShownSections(const Value* value) {
-  const int mode = dom_ui_->GetProfile()->GetPrefs()->
-      GetInteger(prefs::kNTPShownSections);
-  FundamentalValue mode_value(mode);
-  dom_ui_->CallJavascriptFunction(L"onShownSections", mode_value);
+  PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
+  SetFirstAppLauncherRunPref(pref_service);
+  int sections = pref_service->GetInteger(prefs::kNTPShownSections);
+  FundamentalValue sections_value(sections);
+  dom_ui_->CallJavascriptFunction(L"onShownSections", sections_value);
 }
 
 void ShownSectionsHandler::HandleSetShownSections(const Value* value) {
@@ -79,17 +82,38 @@ void ShownSectionsHandler::HandleSetShownSections(const Value* value) {
 }
 
 // static
-void ShownSectionsHandler::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterIntegerPref(prefs::kNTPShownSections,
-      THUMB | RECENT | TIPS | SYNC);
+void ShownSectionsHandler::SetFirstAppLauncherRunPref(
+    PrefService* pref_service) {
+  // If we have turned on Apps we want to hide most visited and recent to give
+  // more focus to the Apps section. We do not do this in MigrateUserPrefs
+  // because the pref version should not depend on command line switches.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExtensionApps) &&
+      !pref_service->GetBoolean(prefs::kNTPAppLauncherFirstRun)) {
+    int sections = pref_service->GetInteger(prefs::kNTPShownSections);
+    sections &= ~THUMB;
+    sections &= ~RECENT;
+    pref_service->SetInteger(prefs::kNTPShownSections, sections);
+    pref_service->SetBoolean(prefs::kNTPAppLauncherFirstRun, true);
+  }
 }
 
 // static
-void ShownSectionsHandler::MigrateUserPrefs(PrefService* prefs,
+void ShownSectionsHandler::RegisterUserPrefs(PrefService* pref_service) {
+  pref_service->RegisterIntegerPref(prefs::kNTPShownSections,
+                                    THUMB | RECENT | TIPS | SYNC);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExtensionApps)) {
+    pref_service->RegisterBooleanPref(prefs::kNTPAppLauncherFirstRun, false);
+  }
+}
+
+// static
+void ShownSectionsHandler::MigrateUserPrefs(PrefService* pref_service,
                                             int old_pref_version,
                                             int new_pref_version) {
   bool changed = false;
-  int shown_sections = prefs->GetInteger(prefs::kNTPShownSections);
+  int shown_sections = pref_service->GetInteger(prefs::kNTPShownSections);
 
   if (old_pref_version < 1) {
     // TIPS was used in early builds of the NNTP but since it was removed before
@@ -100,13 +124,11 @@ void ShownSectionsHandler::MigrateUserPrefs(PrefService* prefs,
 
   if (old_pref_version < 2) {
     // LIST is no longer used. Change to THUMB.
-    if (shown_sections | LIST) {
-      shown_sections &= ~LIST;
-      shown_sections |= THUMB;
-      changed = true;
-    }
+    shown_sections &= ~LIST;
+    shown_sections |= THUMB;
+    changed = true;
   }
 
   if (changed)
-    prefs->SetInteger(prefs::kNTPShownSections, shown_sections);
+    pref_service->SetInteger(prefs::kNTPShownSections, shown_sections);
 }
