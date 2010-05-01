@@ -192,9 +192,9 @@ Section "" sec_PostInstall
   SetOutPath \$INSTDIR
   nsExec::ExecToLog '"bin\\bash" -c ./postinstall.sh'
   Delete \$INSTDIR\\postinstall.sh
-  FileOpen \$R0 \$INSTDIR\\CygWin.bat w
+  FileOpen \$R0 \$INSTDIR\\Cygwin.bat w
   StrCpy \$R1 \$INSTDIR 1
-  FileWrite \$R0 "@echo off\$\r\$\n\$\r\$\n\$R1:$\r\$\nchdir \$INSTDIR\$\r\$\nbash --login -i$\r\$\n"
+  FileWrite \$R0 "@echo off\$\r\$\n\$\r\$\n\$R1:$\r\$\nchdir \$INSTDIR\\bin\$\r\$\nbash --login -i$\r\$\n"
   FileClose \$R0
   Pop \$R1
   Pop \$R0
@@ -204,7 +204,7 @@ END
   generate_onselchange_function
 ) > make_hermetic_cygwin.nsi
 # Replace symlinks with hardlinks for python and gawk
-if ! patch <<END
+if ! patch --no-backup-if-mismatch <<END
 --- make_hermetic_cygwin.nsi
 +++ make_hermetic_cygwin.nsi
 @@ -2069,4 +2069,4 @@

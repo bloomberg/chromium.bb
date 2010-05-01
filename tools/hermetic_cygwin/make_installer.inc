@@ -39,6 +39,8 @@ declare -a allinstalledpackages
 declare -A filetype
 # Sanitized names cache
 declare -A sanitized_name
+# Default installation type - filled in download_addon_packages if there are options
+declare definsttype=1
 
 parse_setup_ini() {
   if ((verbose)) ; then echo "Parsing setup.ini..." >&2 ; fi
@@ -462,7 +464,7 @@ generate_unpack_tarball_text() {
       echo "  CreateDirectory \"\$INSTDIR\\${prefix[$1]}lib\\security\""
     fi
     if [[ "$1" == "cygwin" ]] ; then
-      echo "  File \"/oname=Cygwin.ico\" \"setup\\Cygwin.ico\""
+      echo "  File \"/oname=${prefix[cygwin]}Cygwin.ico\" \"setup\\Cygwin.ico\""
     fi
     echo "$pkgcontent" | grep "^-" |
     while read -r attrs uidgid size date time filename ; do
@@ -898,8 +900,8 @@ END
       echo "$pkgname"
     done | sort |
     while read -r pkgname ; do
-      if ((verbose)) ; then echo "Read state: \"$pkgname\"..." >&2 ; fi
       if [[ "${allinstpackages[$pkgname]}" = "present" ]] ; then
+        if ((verbose)) ; then echo "Read state: \"$pkgname\"..." >&2 ; fi
         local PKV_name="PKV_${sanitized_name[$pkgname]}"
         local sc_name="${secname}_${sanitized_name[$pkgname]}"
         echo "  SectionGetFlags \${sec_$sc_name} \$R0"
