@@ -125,8 +125,6 @@ class ExtensionHost : public RenderViewHostDelegate,
                            const ViewHostMsg_FrameNavigate_Params& params);
   virtual void DidStopLoading();
   virtual void DocumentAvailableInMainFrame(RenderViewHost* render_view_host);
-  virtual void DocumentOnLoadCompletedInMainFrame(
-      RenderViewHost* render_view_host);
 
   virtual WebPreferences GetWebkitPrefs();
   virtual void ProcessDOMUIMessage(const std::string& message,

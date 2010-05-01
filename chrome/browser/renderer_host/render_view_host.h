@@ -497,7 +497,6 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgDidStartLoading();
   void OnMsgDidStopLoading();
   void OnMsgDocumentAvailableInMainFrame();
-  void OnMsgDocumentOnLoadCompletedInMainFrame();
   void OnMsgDidLoadResourceFromMemoryCache(const GURL& url,
                                            const std::string& frame_origin,
                                            const std::string& main_frame_origin,

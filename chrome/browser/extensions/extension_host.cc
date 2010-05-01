@@ -440,9 +440,7 @@ void ExtensionHost::DocumentAvailableInMainFrame(RenderViewHost* rvh) {
         break;  // No style sheet for other types, at the moment.
     }
   }
-}
 
-void ExtensionHost::DocumentOnLoadCompletedInMainFrame(RenderViewHost* rvh) {
   if (ViewType::EXTENSION_POPUP == GetRenderViewType()) {
     NotificationService::current()->Notify(
         NotificationType::EXTENSION_POPUP_VIEW_READY,
