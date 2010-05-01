@@ -382,7 +382,11 @@ if env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']:
 
 
 format_string_test_exe = sdl_env.ComponentProgram('format_string_test',
-                                                  ['format_string_test.c'])
+                                                  ['format_string_test.c'],
+                                                  EXTRA_LIBS=['sel'])
+sdl_env.Requires(format_string_test_exe, crt)
+sdl_env.Requires(format_string_test_exe, sdl_dll)
+
 node = sdl_env.CommandTest(
     'format_string_test.out',
     command=[format_string_test_exe])
