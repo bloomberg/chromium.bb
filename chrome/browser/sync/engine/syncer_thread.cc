@@ -16,6 +16,7 @@
 #include <queue>
 
 #include "base/dynamic_annotations.h"
+#include "chrome/browser/sync/sync_constants.h"
 #include "chrome/browser/sync/engine/auth_watcher.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
@@ -633,11 +634,15 @@ void SyncerThread::HandleTalkMediatorEvent(const TalkMediatorEvent& event) {
       p2p_subscribed_ = false;
       break;
     case TalkMediatorEvent::NOTIFICATION_RECEIVED:
-      // TODO(sanjeevr): Check if the service url is a sync URL.
-      // An empty service URL is treated as a legacy sync notification.
-      LOG(INFO) << "P2P: Updates on server, pushing syncer";
-      if (NULL != vault_.syncer_) {
-        NudgeSyncImpl(0, kNotification);
+      // Check if the service url is a sync URL. An empty service URL
+      // is treated as a legacy sync notification
+      if (event.notification_data.service_url.empty() ||
+          (event.notification_data.service_url == kSyncLegacyServiceUrl) ||
+          (event.notification_data.service_url == kSyncServiceUrl)) {
+        LOG(INFO) << "P2P: Updates on server, pushing syncer";
+        if (NULL != vault_.syncer_) {
+          NudgeSyncImpl(0, kNotification);
+        }
       }
       break;
     default:
