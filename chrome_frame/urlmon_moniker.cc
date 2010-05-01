@@ -174,7 +174,7 @@ HRESULT MonikerPatch::BindToObject(IMoniker_BindToObject_Fn original,
   DLOG(INFO) << __FUNCTION__;
   DCHECK(to_left == NULL);
 
-  ExceptionBarrier barrier;
+  ExceptionBarrierReportOnlyModule barrier;
 
   HRESULT hr = S_OK;
   // Bind context is marked for switch when we sniff data in BSCBStorageBind
@@ -217,11 +217,14 @@ HRESULT MonikerPatch::BindToStorage(IMoniker_BindToStorage_Fn original,
     hr = callback->Initialize(me, bind_ctx);
     DCHECK(SUCCEEDED(hr));
 
-    // Call the original back under an exception barrier only if we should
-    // wrap the callback.
+    // Report all crashes in the exception handler if we wrap the callback.
+    // Note that this avoids having the VEH report a crash if an SEH earlier in
+    // the chain handles the exception.
     ExceptionBarrier barrier;
     hr = original(me, bind_ctx, to_left, iid, obj);
   } else {
+    // If we don't wrap, only report a crash if the crash is in our own module.
+    ExceptionBarrierReportOnlyModule barrier;
     hr = original(me, bind_ctx, to_left, iid, obj);
   }
 

@@ -75,7 +75,7 @@ void AccessViolationCrash() {
 
 // A simple crash over the exception barrier
 void CrashOverExceptionBarrier() {
-  ExceptionBarrier barrier;
+  ExceptionBarrierCustomHandler barrier;
 
   TestSEHChainSane();
 
@@ -85,15 +85,15 @@ void CrashOverExceptionBarrier() {
 }
 
 #pragma warning(push)
- // Inline asm assigning to 'FS:0' : handler not registered as safe handler
- // This warning is in error (the compiler can't know that we register the
- // handler as a safe SEH handler in an .asm file)
- #pragma warning(disable:4733)
-// Hand-generate an SEH frame implicating the ExceptionBarrierHandler,
+// Inline asm assigning to 'FS:0' : handler not registered as safe handler
+// This warning is in error (the compiler can't know that we register the
+// handler as a safe SEH handler in an .asm file)
+#pragma warning(disable:4733)
+// Hand-generate an SEH frame implicating the ExceptionBarrierCallCustomHandler,
 // then crash to invoke it.
 __declspec(naked) void CrashOnManualSEHBarrierHandler() {
   __asm {
-    push  ExceptionBarrierHandler
+    push  ExceptionBarrierCallCustomHandler
     push  FS:0
     mov   FS:0, esp
     call  AccessViolationCrash
@@ -102,43 +102,40 @@ __declspec(naked) void CrashOnManualSEHBarrierHandler() {
 }
 #pragma warning(pop)
 
+
 class ExceptionBarrierTest: public testing::Test {
-public:
-  ExceptionBarrierTest() : old_handler_(NULL) {
+ public:
+  ExceptionBarrierTest() {
   }
 
   // Install an exception handler for the ExceptionBarrier, and
   // set the handled flag to false. This allows us to see whether
   // the ExceptionBarrier gets to handle the exception
   virtual void SetUp() {
-    old_handler_ = ExceptionBarrier::handler();
-    ExceptionBarrier::set_handler(ExceptionHandler);
+    ExceptionBarrierConfig::set_enabled(true);
+    ExceptionBarrierCustomHandler::set_custom_handler(&ExceptionHandler);
     s_handled_ = false;
 
     TestSEHChainSane();
   }
 
   virtual void TearDown() {
-    ExceptionBarrier::set_handler(old_handler_);
-
     TestSEHChainSane();
+    ExceptionBarrierCustomHandler::set_custom_handler(NULL);
+    ExceptionBarrierConfig::set_enabled(false);
   }
 
   // The exception notification callback, sets the handled flag.
   static void CALLBACK ExceptionHandler(EXCEPTION_POINTERS* ptrs) {
     TestSEHChainSane();
-
     s_handled_ = true;
   }
-
-  // Old handler to restore on TearDown
-  ExceptionBarrier::ExceptionHandler old_handler_;
 
   // Flag is set by handler
   static bool s_handled_;
 };
 
-bool ExceptionBarrierTest::s_handled_;
+bool ExceptionBarrierTest::s_handled_ = false;
 
 bool TestExceptionExceptionBarrierHandler() {
   TestSEHChainSane();
@@ -271,7 +268,7 @@ bool TestRegularChaining(EXCEPTION_REGISTRATION* top) {
 }
 
 void RecurseAndCrashOverBarrier(int depth, bool crash) {
-  ExceptionBarrier barrier;
+  ExceptionBarrierCustomHandler barrier;
 
   if (0 == depth) {
     if (crash)

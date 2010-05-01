@@ -4,6 +4,8 @@
 
 #ifndef CHROME_FRAME_CRASH_REPORTING_VECTORED_HANDLER_IMPL_H_
 #define CHROME_FRAME_CRASH_REPORTING_VECTORED_HANDLER_IMPL_H_
+
+#include "base/logging.h"
 #include "chrome_frame/crash_reporting/vectored_handler.h"
 #include "chrome_frame/crash_reporting/nt_loader.h"
 
@@ -260,6 +262,46 @@ Win32VEHTraits::IgnoreExceptions[kIgnoreEntries] = {
   { "kernel32.dll", "IsBadWritePtr", 0, 100, NULL },
   { "kernel32.dll", "IsBadStringPtrA", 0, 100, NULL },
   { "kernel32.dll", "IsBadStringPtrW", 0, 100, NULL },
+};
+
+// Use Win32 API; checks for single (current) module. Will call a specified
+// CrashHandlerTraits::DumpHandler when taking a dump.
+class CrashHandlerTraits : public Win32VEHTraits,
+                           public ModuleOfInterestWithExcludedRegion {
+ public:
+
+  typedef bool (*DumpHandler)(EXCEPTION_POINTERS* p);
+
+  CrashHandlerTraits() : dump_handler_(NULL) {}
+
+  // Note that breakpad_lock must be held when this is called.
+  void Init(const void* veh_segment_start, const void* veh_segment_end,
+            DumpHandler dump_handler) {
+    DCHECK(dump_handler);
+    dump_handler_ = dump_handler;
+    Win32VEHTraits::InitializeIgnoredBlocks();
+    ModuleOfInterestWithExcludedRegion::SetCurrentModule();
+    // Pointers to static (non-extern) functions take the address of the
+    // function's first byte, as opposed to an entry in the compiler generated
+    // JMP table. In release builds /OPT:REF wipes away the JMP table, but debug
+    // builds are not so lucky.
+    ModuleOfInterestWithExcludedRegion::SetExcludedRegion(veh_segment_start,
+                                                          veh_segment_end);
+  }
+
+  void Shutdown() {
+  }
+
+  inline bool WriteDump(EXCEPTION_POINTERS* p) {
+    if (dump_handler_) {
+      return dump_handler_(p);
+    } else {
+      return false;
+    }
+  }
+
+ private:
+  DumpHandler dump_handler_;
 };
 
 #endif  // CHROME_FRAME_CRASH_REPORTING_VECTORED_HANDLER_IMPL_H_

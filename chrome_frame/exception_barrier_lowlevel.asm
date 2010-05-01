@@ -10,9 +10,17 @@
 IF @version LT 800
 _ExceptionBarrierHandler PROTO
 .SAFESEH _ExceptionBarrierHandler
+_ExceptionBarrierReportOnlyModuleHandler PROTO
+.SAFESEH _ExceptionBarrierReportOnlyModuleHandler
+_ExceptionBarrierCallCustomHandler PROTO
+.SAFESEH _ExceptionBarrierCallCustomHandler
 ELSE
 ExceptionBarrierHandler PROTO
 .SAFESEH ExceptionBarrierHandler
+ExceptionBarrierReportOnlyModuleHandler PROTO
+.SAFESEH ExceptionBarrierReportOnlyModuleHandler
+ExceptionBarrierCallCustomHandler PROTO
+.SAFESEH ExceptionBarrierCallCustomHandler
 ENDIF
 
 .586

@@ -47,36 +47,6 @@ static void veh_segment_end() {}
 #pragma code_seg(push, ".text$vm")
 #include "chrome_frame/crash_reporting/vectored_handler-impl.h"
 
-// Use Win32 API; use breakpad for dumps; checks for single (current) module.
-class CrashHandlerTraits : public Win32VEHTraits,
-                           public ModuleOfInterestWithExcludedRegion {
- public:
-  CrashHandlerTraits() {}
-
-  // Note that breakpad_lock must be held when this is called.
-  void Init(google_breakpad::ExceptionHandler* breakpad, Lock* breakpad_lock) {
-    DCHECK(breakpad);
-    DCHECK(breakpad_lock);
-    breakpad_lock->AssertAcquired();
-
-    Win32VEHTraits::InitializeIgnoredBlocks();
-    ModuleOfInterestWithExcludedRegion::SetCurrentModule();
-    // Pointers to static (non-extern) functions take the address of the
-    // function's first byte, as opposed to an entry in the compiler generated
-    // JMP table. In release builds /OPT:REF wipes away the JMP table, but debug
-    // builds are not so lucky.
-    ModuleOfInterestWithExcludedRegion::SetExcludedRegion(&veh_segment_start,
-                                                          &veh_segment_end);
-  }
-
-  void Shutdown() {
-  }
-
-  inline bool WriteDump(EXCEPTION_POINTERS* p) {
-    return WriteMinidumpForException(p);
-  }
-};
-
 class CrashHandler {
  public:
   CrashHandler() : veh_id_(NULL), handler_(&crash_api_) {}
@@ -115,14 +85,17 @@ bool CrashHandler::Init(google_breakpad::ExceptionHandler* breakpad,
   if (veh_id_)
     return true;
 
+  crash_api_.Init(&veh_segment_start, &veh_segment_end,
+                  &WriteMinidumpForException);
+
   void* id = ::AddVectoredExceptionHandler(FALSE, &VectoredHandlerEntryPoint);
   if (id != NULL) {
     veh_id_ = id;
-    crash_api_.Init(breakpad, breakpad_lock);
     return true;
+  } else {
+    crash_api_.Shutdown();
+    return false;
   }
-
-  return false;
 }
 
 void CrashHandler::Shutdown() {

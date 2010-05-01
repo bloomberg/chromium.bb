@@ -46,11 +46,6 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const wchar_t* dll_path) {
   return &custom_info;
 }
 
-
-void CALLBACK BreakpadHandler(EXCEPTION_POINTERS *ptrs) {
-  WriteMinidumpForException(ptrs);
-}
-
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 bool InitializeCrashReporting() {
@@ -61,9 +56,9 @@ bool InitializeCrashReporting() {
   if (!always_take_dump && !GoogleUpdateSettings::GetCollectStatsConsent())
       return true;
 
-  // Set the handler for ExceptionBarrier for this module:
-  DCHECK(ExceptionBarrier::handler() == NULL);
-  ExceptionBarrier::set_handler(BreakpadHandler);
+  // If we got here, we want to report crashes, so make sure all
+  // ExceptionBarrierBase instances do so.
+  ExceptionBarrierConfig::set_enabled(true);
 
   // Get the alternate dump directory. We use the temp path.
   FilePath temp_directory;
@@ -97,5 +92,6 @@ bool InitializeCrashReporting() {
 }
 
 bool ShutdownCrashReporting() {
+  ExceptionBarrierConfig::set_enabled(false);
   return ShutdownVectoredCrashReporting();
 }
