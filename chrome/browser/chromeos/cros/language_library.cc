@@ -244,12 +244,44 @@ bool LanguageLibraryImpl::GetImeConfig(
 
 bool LanguageLibraryImpl::SetImeConfig(
     const char* section, const char* config_name, const ImeConfigValue& value) {
-  bool success = false;
+  const ConfigKeyType key = std::make_pair(section, config_name);
+  pending_config_requests_.erase(key);
+  pending_config_requests_.insert(std::make_pair(key, value));
+  FlushImeConfig();
+  return pending_config_requests_.empty();
+}
+
+void LanguageLibraryImpl::FlushImeConfig() {
   if (EnsureLoadedAndStarted()) {
-    success = chromeos::SetImeConfig(
-        input_method_status_connection_, section, config_name, value);
+    LOG(INFO) << "Sending " << pending_config_requests_.size()
+              << " set config command(s)";
+    InputMethodConfigRequests::iterator iter = pending_config_requests_.begin();
+    while (iter != pending_config_requests_.end()) {
+      const std::string& section = iter->first.first;
+      const std::string& config_name = iter->first.second;
+      const ImeConfigValue& value = iter->second;
+      if (chromeos::SetImeConfig(input_method_status_connection_,
+                                 section.c_str(), config_name.c_str(), value)) {
+        // Successfully sent. Remove the command and proceed to the next one.
+        pending_config_requests_.erase(iter++);
+      } else {
+        LOG(ERROR) << "chromeos::SetImeConfig failed. Will retry later: "
+                   << section << "/" << config_name;
+        ++iter;  // Do not remove the command.
+      }
+    }
+    if (pending_config_requests_.empty()) {
+      timer_.Stop();  // no-op if it's not running.
+    }
+  } else {
+    LOG(INFO) << "No connection to IBus. # of pending set config commands: "
+              << pending_config_requests_.size();
+    if (!timer_.IsRunning()) {
+      static const int64 kTimerIntervalInSec = 1;
+      timer_.Start(base::TimeDelta::FromSeconds(kTimerIntervalInSec), this,
+                   &LanguageLibraryImpl::FlushImeConfig);
+    }
   }
-  return success;
 }
 
 // static

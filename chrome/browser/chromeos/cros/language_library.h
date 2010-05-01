@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CROS_LANGUAGE_LIBRARY_H_
 #define CHROME_BROWSER_CHROMEOS_CROS_LANGUAGE_LIBRARY_H_
 
+#include <map>
 #include <string>
+#include <utility>
 
 #include "base/observer_list.h"
 #include "base/time.h"
+#include "base/timer.h"
 #include "third_party/cros/chromeos_language.h"
 
 namespace chromeos {
@@ -65,7 +68,9 @@ class LanguageLibrary {
       ImeConfigValue* out_value) = 0;
 
   // Updates a configuration of ibus-daemon or IBus engines with |value|.
-  // Returns true if the configuration is successfully updated.
+  // Returns true if the configuration (and all pending configurations, if any)
+  // are processed. If ibus-daemon is not running, this function just queues
+  // the request and returns false.
   // You can specify |section| and |config_name| arguments in the same way
   // as GetImeConfig() above.
   virtual bool SetImeConfig(const char* section,
@@ -185,6 +190,10 @@ class LanguageLibraryImpl : public LanguageLibrary {
   // Called by the handler to notify focus changes.
   void FocusChanged(bool is_focused);
 
+  // Tries to send all pending SetImeConfig requests to the input method config
+  // daemon.
+  void FlushImeConfig();
+
   // A reference to the language api, to allow callbacks when the input method
   // status changes.
   InputMethodStatusConnection* input_method_status_connection_;
@@ -200,10 +209,22 @@ class LanguageLibraryImpl : public LanguageLibrary {
   // true if a text input area in Chrome is focused.
   bool is_focused_;
 
+  typedef std::pair<std::string, std::string> ConfigKeyType;
+  typedef std::map<ConfigKeyType, ImeConfigValue> InputMethodConfigRequests;
+  // SetImeConfig requests that are not yet completed.
+  // Use a map to queue config requests, so we only send the last request for
+  // the same config key (i.e. we'll discard ealier requests for the same
+  // config key). As we discard old requests for the same config key, the order
+  // of requests doesn't matter, so it's safe to use a map.
+  InputMethodConfigRequests pending_config_requests_;
+
+  // A timer for retrying to send |pendning_config_commands_| to the input
+  // method config daemon.
+  base::OneShotTimer<LanguageLibraryImpl> timer_;
+
   DISALLOW_COPY_AND_ASSIGN(LanguageLibraryImpl);
 };
 
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROS_LANGUAGE_LIBRARY_H_
-
