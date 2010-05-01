@@ -77,6 +77,10 @@ interface IChromeFrame : IDispatch {
   [id(14), hidden]
   // This method is available only when the control is in privileged mode.
   HRESULT getEnabledExtensions();
+
+  [id(15)]
+  // This method bootstraps the BHO if it is not already loaded.
+  HRESULT RegisterBHOIfNeeded();
 };
 
 [

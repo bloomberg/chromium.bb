@@ -34,6 +34,7 @@ class ATL_NO_VTABLE ChromeFrameActivex
       public IObjectSafetyImpl<ChromeFrameActivex,
                                  INTERFACESAFE_FOR_UNTRUSTED_CALLER |
                                  INTERFACESAFE_FOR_UNTRUSTED_DATA>,
+      public IObjectWithSiteImpl<ChromeFrameActivex>,
       public IPersistPropertyBag {
  public:
   typedef ChromeFrameActivexBase<ChromeFrameActivex, CLSID_ChromeFrame> Base;
@@ -43,6 +44,7 @@ class ATL_NO_VTABLE ChromeFrameActivex
 DECLARE_REGISTRY_RESOURCEID(IDR_CHROMEFRAME)
 
 BEGIN_COM_MAP(ChromeFrameActivex)
+  COM_INTERFACE_ENTRY(IObjectWithSite)
   COM_INTERFACE_ENTRY(IObjectSafety)
   COM_INTERFACE_ENTRY(IPersistPropertyBag)
   COM_INTERFACE_ENTRY(IConnectionPointContainer)
@@ -82,6 +84,15 @@ END_MSG_MAP()
 
   // Overridden to perform security checks.
   STDMETHOD(put_src)(BSTR src);
+
+  // IObjectWithSite
+  STDMETHOD(SetSite)(IUnknown* site);
+
+  // IChromeFrame
+  // On a fresh install of ChromeFrame the BHO will not be loaded in existing
+  // IE tabs/windows. This function instantiates the BHO and registers it
+  // explicitly.
+  STDMETHOD(RegisterBHOIfNeeded)();
 
  protected:
   // ChromeFrameDelegate overrides
@@ -136,13 +147,10 @@ END_MSG_MAP()
   // Installs a hook on the top-level window hosting the control.
   HRESULT InstallTopLevelHook(IOleClientSite* client_site);
 
-  // On a fresh install of ChromeFrame the BHO will not be loaded in existing
-  // IE tabs/windows. This function instantiates the BHO and registers it
-  // explicitly.
-  HRESULT RegisterBHOIfNeeded(IOleClientSite* client_site);
-
   // A hook attached to the top-level window containing the ActiveX control.
   HHOOK chrome_wndproc_hook_;
+
+  ScopedComPtr<IUnknown> site_;
 };
 
 #endif  // CHROME_FRAME_CHROME_FRAME_ACTIVEX_H_

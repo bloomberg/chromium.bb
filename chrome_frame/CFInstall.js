@@ -49,6 +49,7 @@
       try {
         var obj = new ActiveXObject('ChromeTab.ChromeFrame');
         if (obj) {
+          obj.RegisterBHOIfNeeded();
           return true;
         }
       } catch(e) {

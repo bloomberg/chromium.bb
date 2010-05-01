@@ -808,6 +808,10 @@ END_MSG_MAP()
     return S_OK;
   }
 
+  STDMETHOD(RegisterBHOIfNeeded)() {
+    return E_NOTIMPL;
+  }
+
   // Returns the vector of event handlers for a given event (e.g. "load").
   // If the event type isn't recognized, the function fills in a descriptive
   // error (IErrorInfo) and returns E_INVALIDARG.
