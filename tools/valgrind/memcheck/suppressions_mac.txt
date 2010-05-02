@@ -555,9 +555,10 @@
    fun:_Znw*
    ...
    fun:_ZN3net13CookieMonster20InternalInsertCookieERKSsPNS0_15CanonicalCookieEb
-   fun:_ZN3net13CookieMonster36SetCookieWithCreationTimeWithOptionsERK4GURLRKSsRKN4base4TimeERKNS_13CookieOptionsE
+   fun:_ZN3net13CookieMonster18SetCanonicalCookieEP10scoped_ptrINS0_15CanonicalCookieEERKSsRKN4base4TimeERKNS_13CookieOptionsE
+   fun:_ZN3net13CookieMonster35SetCookieWithCreationTimeAndOptionsERK4GURLRKSsRKN4base4TimeERKNS_13CookieOptionsE
    fun:_ZN3net13CookieMonster20SetCookieWithOptionsERK4GURLRKSsRKNS_13CookieOptionsE
-   fun:_ZN3net13CookieMonster9SetCookieERK4GURLRKSs
+   fun:_ZN3net11CookieStore9SetCookieERK4GURLRKSs
 }
 {
    bug_31586b
@@ -565,16 +566,6 @@
    fun:_Znw*
    fun:_ZN14TestingProfile20CreateRequestContextEv
    fun:_ZN12_GLOBAL__N_127CookiesWindowControllerTest5SetUpEv
-}
-{
-   bug_31586c
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN3net13CookieMonster20InternalInsertCookieERKSsPNS0_15CanonicalCookieEb
-   fun:_ZN3net13CookieMonster35SetCookieWithCreationTimeAndOptionsERK4GURLRKSsRKN4base4TimeERKNS_13CookieOptionsE
-   fun:_ZN3net13CookieMonster20SetCookieWithOptionsERK4GURLRKSsRKNS_13CookieOptionsE
-   fun:_ZN3net11CookieStore9SetCookieERK4GURLRKSs
 }
 {
    bug_31634a
