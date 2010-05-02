@@ -373,8 +373,6 @@ STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
     //     TRUE   |FALSE   => Wait for Read.
     //     TRUE   |TRUE    => Something went wrong!!
 
-    DCHECK(!(pending_read_size_ > 0 && pending_data_));
-
     if (pending_data_) {
       ReleaseBindings();
       return S_OK;
@@ -637,7 +635,7 @@ STDMETHODIMP UrlmonUrlRequest::GetWindow(const GUID& guid_reason,
 #endif
   // We should return a non-NULL HWND as parent. Otherwise no dialog is shown.
   // TODO(iyengar): This hits when running the URL request tests.
-  DLOG_IF(ERROR, !::IsWindow(parent_window_))
+  DLOG_IF(WARNING, !::IsWindow(parent_window_))
       << "UrlmonUrlRequest::GetWindow - no window!";
   *parent_window = parent_window_;
   return S_OK;

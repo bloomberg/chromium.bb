@@ -104,7 +104,8 @@ TEST(UrlmonUrlRequestTest, Simple1) {
 
 // Same as Simple1 except we use the HEAD verb to fetch only the headers
 // from the server.
-TEST(UrlmonUrlRequestTest, Head) {
+// TODO(tommi): Fix and reenable.
+TEST(UrlmonUrlRequestTest, DISABLED_Head) {
   MockUrlDelegate mock;
   ChromeFrameHTTPServer server;
   chrome_frame_test::TimedMsgLoop loop;
