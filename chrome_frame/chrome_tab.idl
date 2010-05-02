@@ -80,7 +80,7 @@ interface IChromeFrame : IDispatch {
 
   [id(15)]
   // This method bootstraps the BHO if it is not already loaded.
-  HRESULT RegisterBHOIfNeeded();
+  HRESULT registerBhoIfNeeded();
 };
 
 [

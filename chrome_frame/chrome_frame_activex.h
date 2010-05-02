@@ -85,14 +85,11 @@ END_MSG_MAP()
   // Overridden to perform security checks.
   STDMETHOD(put_src)(BSTR src);
 
-  // IObjectWithSite
-  STDMETHOD(SetSite)(IUnknown* site);
-
   // IChromeFrame
   // On a fresh install of ChromeFrame the BHO will not be loaded in existing
   // IE tabs/windows. This function instantiates the BHO and registers it
   // explicitly.
-  STDMETHOD(RegisterBHOIfNeeded)();
+  STDMETHOD(registerBhoIfNeeded)();
 
  protected:
   // ChromeFrameDelegate overrides
@@ -149,8 +146,6 @@ END_MSG_MAP()
 
   // A hook attached to the top-level window containing the ActiveX control.
   HHOOK chrome_wndproc_hook_;
-
-  ScopedComPtr<IUnknown> site_;
 };
 
 #endif  // CHROME_FRAME_CHROME_FRAME_ACTIVEX_H_

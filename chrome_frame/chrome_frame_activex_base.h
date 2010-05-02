@@ -808,7 +808,7 @@ END_MSG_MAP()
     return S_OK;
   }
 
-  STDMETHOD(RegisterBHOIfNeeded)() {
+  STDMETHOD(registerBhoIfNeeded)() {
     return E_NOTIMPL;
   }
 

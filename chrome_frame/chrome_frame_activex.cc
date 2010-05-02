@@ -377,14 +377,6 @@ STDMETHODIMP ChromeFrameActivex::put_src(BSTR src) {
   return Base::put_src(src);
 }
 
-STDMETHODIMP ChromeFrameActivex::SetSite(IUnknown* site) {
-  // We need to bootstrap our BHO if IE is running while chrome frame is
-  // installed. For new tabs and windows the newly registered BHO's are
-  // loaded. The bootstrapping is only needed for the current tab.
-  site_ = site;
-  return IObjectWithSiteImpl<ChromeFrameActivex>::SetSite(site);
-}
-
 HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
     IOleClientSite* client_site) {
   HRESULT hr = Base::IOleObject_SetClientSite(client_site);
@@ -609,8 +601,8 @@ HRESULT ChromeFrameActivex::InstallTopLevelHook(IOleClientSite* client_site) {
   return chrome_wndproc_hook_ ? S_OK : E_FAIL;
 }
 
-HRESULT ChromeFrameActivex::RegisterBHOIfNeeded() {
-  if (!site_) {
+HRESULT ChromeFrameActivex::registerBhoIfNeeded() {
+  if (!m_spUnkSite) {
     NOTREACHED() << "Invalid client site";
     return E_FAIL;
   }
@@ -621,7 +613,7 @@ HRESULT ChromeFrameActivex::RegisterBHOIfNeeded() {
   }
 
   ScopedComPtr<IWebBrowser2> web_browser2;
-  HRESULT hr = DoQueryService(SID_SWebBrowserApp, site_,
+  HRESULT hr = DoQueryService(SID_SWebBrowserApp, m_spUnkSite,
                               web_browser2.Receive());
   if (FAILED(hr) || web_browser2.get() == NULL) {
     DLOG(WARNING) << "Failed to get IWebBrowser2 from client site. Error:"
