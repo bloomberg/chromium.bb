@@ -62,6 +62,7 @@ ContentExceptionsWindowGtk::ContentExceptionsWindowGtk(
       "text", COL_PATTERN,
       NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(treeview_), pattern_column);
+  gtk_tree_view_column_set_sort_column_id(pattern_column, COL_PATTERN);
 
   GtkTreeViewColumn* action_column = gtk_tree_view_column_new_with_attributes(
       l10n_util::GetStringUTF8(IDS_EXCEPTIONS_ACTION_HEADER).c_str(),
@@ -69,6 +70,7 @@ ContentExceptionsWindowGtk::ContentExceptionsWindowGtk(
       "text", COL_ACTION,
       NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(treeview_), action_column);
+  gtk_tree_view_column_set_sort_column_id(action_column, COL_ACTION);
 
   treeview_selection_ = gtk_tree_view_get_selection(
       GTK_TREE_VIEW(treeview_));
