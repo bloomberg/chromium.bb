@@ -318,14 +318,13 @@ void TabRenderer::UpdateData(TabContents* contents,
     data_.title = contents->GetTitle();
     data_.off_the_record = contents->profile()->IsOffTheRecord();
     data_.crashed = contents->is_crashed();
+    data_.app = contents->is_app();
     SkBitmap* app_icon = contents->GetAppExtensionIcon();
-    if (app_icon)
+    if (app_icon && data_.app)
       data_.favicon = *app_icon;
     else
       data_.favicon = contents->GetFavIcon();
-
     data_.phantom = phantom;
-    data_.app = contents->is_app();
 
     // Sets the accessible name for the tab.
     SetAccessibleName(UTF16ToWide(data_.title));

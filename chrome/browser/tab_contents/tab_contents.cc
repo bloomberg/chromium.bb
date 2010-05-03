@@ -4,6 +4,11 @@
 
 #include "chrome/browser/tab_contents/tab_contents.h"
 
+#if defined(OS_CHROMEOS)
+// For GdkScreen
+#include <gdk/gdk.h>
+#endif  // defined(OS_CHROMEOS)
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/text_elider.h"
@@ -87,11 +92,6 @@
 #include "net/base/registry_controlled_domain.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/webpreferences.h"
-
-#if defined(OS_CHROMEOS)
-// For GdkScreen
-#include <gdk/gdk.h>
-#endif  // defined(OS_CHROMEOS)
 
 // Cross-Site Navigations
 //
@@ -522,11 +522,9 @@ SkBitmap* TabContents::GetAppExtensionIcon() {
   // We don't show the big icons in tabs for TYPE_EXTENSION_APP windows because
   // for those windows, we already have a big icon in the top-left outside any
   // tab. Having big tab icons too looks kinda redonk.
-  if (delegate_ &&
-      delegate_->GetBrowser() &&
-      delegate_->GetBrowser()->type() == Browser::TYPE_EXTENSION_APP) {
+  Browser* browser = delegate_ ? delegate_->GetBrowser() : NULL;
+  if (browser && browser->type() == Browser::TYPE_EXTENSION_APP)
     return NULL;
-  }
 
   if (app_extension_icon_.empty())
     return NULL;
