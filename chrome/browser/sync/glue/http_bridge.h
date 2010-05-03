@@ -64,6 +64,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     }
 
    private:
+    // The destructor MUST be called on the IO thread.
     ~RequestContext();
 
     std::string user_agent_;
@@ -83,6 +84,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
 
     // URLRequestContextGetter implementation.
     virtual URLRequestContext* GetURLRequestContext();
+    virtual scoped_refptr<MessageLoopProxy> GetIOMessageLoopProxy();
 
    private:
     ~RequestContextGetter() {}
@@ -206,3 +208,4 @@ class HttpBridgeFactory
 }  //  namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_GLUE_HTTP_BRIDGE_H_
+

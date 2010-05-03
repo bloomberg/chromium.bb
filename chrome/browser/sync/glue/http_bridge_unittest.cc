@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop_proxy.h"
 #include "base/thread.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/test_url_fetcher_factory.h"
@@ -24,6 +25,10 @@ class TestURLRequestContextGetter : public URLRequestContextGetter {
       context_ = new TestURLRequestContext;
     return context_;
   }
+  virtual scoped_refptr<MessageLoopProxy> GetIOMessageLoopProxy() {
+    return ChromeThread::GetMessageLoopProxyForThread(ChromeThread::IO);
+  }
+
  private:
   ~TestURLRequestContextGetter() {}
 
@@ -61,6 +66,20 @@ class HttpBridgeTest : public testing::Test {
     return bridge;
   }
 
+  static void TestSameHttpNetworkSession(MessageLoop* main_message_loop,
+                                         HttpBridgeTest* test) {
+    scoped_refptr<HttpBridge> http_bridge(test->BuildBridge());
+    EXPECT_TRUE(test->GetTestRequestContextGetter());
+    net::HttpNetworkSession* test_session =
+        test->GetTestRequestContextGetter()->GetURLRequestContext()->
+        http_transaction_factory()->GetSession();
+    EXPECT_EQ(test_session,
+              http_bridge->GetRequestContextGetter()->
+                  GetURLRequestContext()->
+                  http_transaction_factory()->GetSession());
+    main_message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+  }
+
   MessageLoop* io_thread_loop() { return io_thread_.message_loop(); }
 
   // Note this is lazy created, so don't call this before your bridge.
@@ -75,7 +94,7 @@ class HttpBridgeTest : public testing::Test {
 
   // Separate thread for IO used by the HttpBridge.
   ChromeThread io_thread_;
-
+  MessageLoop loop_;
 };
 
 class DummyURLFetcher : public TestURLFetcher {
@@ -121,15 +140,13 @@ class ShuntedHttpBridge : public HttpBridge {
 };
 
 TEST_F(HttpBridgeTest, TestUsesSameHttpNetworkSession) {
-  scoped_refptr<HttpBridge> http_bridge(this->BuildBridge());
-  EXPECT_TRUE(GetTestRequestContextGetter());
-  net::HttpNetworkSession* test_session =
-      GetTestRequestContextGetter()->GetURLRequestContext()->
-      http_transaction_factory()->GetSession();
-  EXPECT_EQ(test_session,
-            http_bridge->GetRequestContextGetter()->
-                GetURLRequestContext()->
-                http_transaction_factory()->GetSession());
+  // Run this test on the IO thread because we can only call
+  // URLRequestContextGetter::GetURLRequestContext on the IO thread.
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableFunction(&HttpBridgeTest::TestSameHttpNetworkSession,
+                          MessageLoop::current(), this));
+  MessageLoop::current()->Run();
 }
 
 // Test the HttpBridge without actually making any network requests.

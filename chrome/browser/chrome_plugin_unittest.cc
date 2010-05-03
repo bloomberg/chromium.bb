@@ -4,6 +4,7 @@
 // Tests exercising the Chrome Plugin API.
 
 #include "base/file_util.h"
+#include "base/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/browser/chrome_plugin_host.h"
@@ -31,6 +32,10 @@ class TestURLRequestContextGetter : public URLRequestContextGetter {
       context_ = new TestURLRequestContext();
     return context_;
   }
+  virtual scoped_refptr<MessageLoopProxy> GetIOMessageLoopProxy() {
+    return ChromeThread::GetMessageLoopProxyForThread(ChromeThread::IO);
+  }
+
  private:
   ~TestURLRequestContextGetter() {}
   scoped_refptr<URLRequestContext> context_;
@@ -299,4 +304,3 @@ TEST_F(ChromePluginTest, DoesNotInterceptOwnRequest) {
 }
 
 }  // namespace
-

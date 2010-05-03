@@ -2,9 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop_proxy.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "net/url_request/url_request_context.h"
 
 net::CookieStore* URLRequestContextGetter::GetCookieStore() {
   return GetURLRequestContext()->cookie_store();
 }
+
+void URLRequestContextGetter::OnDestruct() {
+  scoped_refptr<MessageLoopProxy> io_message_loop_proxy =
+      GetIOMessageLoopProxy();
+  DCHECK(io_message_loop_proxy);
+  if (io_message_loop_proxy) {
+    if (io_message_loop_proxy->BelongsToCurrentThread()) {
+      delete this;
+    } else {
+      io_message_loop_proxy->DeleteSoon(FROM_HERE, this);
+    }
+  }
+  // If no IO message loop proxy was available, we will just leak memory.
+  // This is also true if the IO thread is gone.
+}
+

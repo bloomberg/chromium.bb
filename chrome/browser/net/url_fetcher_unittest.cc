@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop_proxy.h"
 #include "base/thread.h"
-#include "base/time.h"
-#include "base/timer.h"
+#include "base/waitable_event.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/url_fetcher.h"
 #include "chrome/browser/net/url_fetcher_protect.h"
@@ -31,6 +31,10 @@ class TestURLRequestContextGetter : public URLRequestContextGetter {
       context_ = new TestURLRequestContext();
     return context_;
   }
+  virtual scoped_refptr<MessageLoopProxy> GetIOMessageLoopProxy() {
+    return ChromeThread::GetMessageLoopProxyForThread(ChromeThread::IO);
+  }
+
  private:
   ~TestURLRequestContextGetter() {}
 
@@ -159,9 +163,6 @@ class URLFetcherCancelTest : public URLFetcherTest {
                                   const std::string& data);
 
   void CancelRequest();
-
- private:
-  base::OneShotTimer<URLFetcherCancelTest> timer_;
 };
 
 // Version of TestURLRequestContext that posts a Quit task to the IO
@@ -175,15 +176,26 @@ class CancelTestURLRequestContext : public TestURLRequestContext {
 
 class CancelTestURLRequestContextGetter : public URLRequestContextGetter {
  public:
+  CancelTestURLRequestContextGetter() : context_created_(false, false) {
+  }
   virtual URLRequestContext* GetURLRequestContext() {
-    if (!context_)
+    if (!context_) {
       context_ = new CancelTestURLRequestContext();
+      context_created_.Signal();
+    }
     return context_;
+  }
+  virtual scoped_refptr<MessageLoopProxy> GetIOMessageLoopProxy() {
+    return ChromeThread::GetMessageLoopProxyForThread(ChromeThread::IO);
+  }
+  void WaitForContextCreation() {
+    context_created_.Wait();
   }
 
  private:
   ~CancelTestURLRequestContextGetter() {}
 
+  base::WaitableEvent context_created_;
   scoped_refptr<URLRequestContext> context_;
 };
 
@@ -374,16 +386,14 @@ void URLFetcherBadHTTPSTest::OnURLFetchComplete(
 
 void URLFetcherCancelTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcher(url, URLFetcher::GET, this);
-  // We need to force the creation of the URLRequestContext, since we
-  // rely on it being destroyed as a signal to end the test.
-  URLRequestContextGetter* context_getter =
-      new CancelTestURLRequestContextGetter();
-  context_getter->GetURLRequestContext();
+  CancelTestURLRequestContextGetter* context_getter =
+      new CancelTestURLRequestContextGetter;
   fetcher_->set_request_context(context_getter);
   fetcher_->Start();
-  // Make sure we give the IO thread a chance to run.
-  timer_.Start(TimeDelta::FromMilliseconds(300), this,
-               &URLFetcherCancelTest::CancelRequest);
+  // We need to wait for the creation of the URLRequestContext, since we
+  // rely on it being destroyed as a signal to end the test.
+  context_getter->WaitForContextCreation();
+  CancelRequest();
 }
 
 void URLFetcherCancelTest::OnURLFetchComplete(const URLFetcher* source,
@@ -401,7 +411,6 @@ void URLFetcherCancelTest::OnURLFetchComplete(const URLFetcher* source,
 
 void URLFetcherCancelTest::CancelRequest() {
   delete fetcher_;
-  timer_.Stop();
   // The URLFetcher's test context will post a Quit task once it is
   // deleted. So if this test simply hangs, it means cancellation
   // did not work.

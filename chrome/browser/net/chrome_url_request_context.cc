@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
@@ -548,6 +549,11 @@ net::CookieStore* ChromeURLRequestContextGetter::GetCookieStore() {
   completion.Wait();
   DCHECK(result);
   return result;
+}
+
+scoped_refptr<MessageLoopProxy>
+ChromeURLRequestContextGetter::GetIOMessageLoopProxy() {
+  return ChromeThread::GetMessageLoopProxyForThread(ChromeThread::IO);
 }
 
 // static

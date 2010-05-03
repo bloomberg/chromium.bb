@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "base/command_line.h"
+#include "base/message_loop_proxy.h"
 #include "base/string_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -99,13 +100,16 @@ class TestURLRequestContext : public URLRequestContext {
 // The one here can be run on the main test thread. Note that this can lead to
 // a leak if your test does not have a ChromeThread::IO in it because
 // URLRequestContextGetter is defined as a ReferenceCounted object with a
-// DeleteOnIOThread trait.
+// special trait that deletes it on the IO thread.
 class TestURLRequestContextGetter : public URLRequestContextGetter {
  public:
   virtual URLRequestContext* GetURLRequestContext() {
     if (!context_)
       context_ = new TestURLRequestContext();
     return context_.get();
+  }
+  virtual scoped_refptr<MessageLoopProxy> GetIOMessageLoopProxy() {
+    return ChromeThread::GetMessageLoopProxyForThread(ChromeThread::IO);
   }
 
  private:
@@ -128,6 +132,9 @@ class TestExtensionURLRequestContextGetter : public URLRequestContextGetter {
     if (!context_)
       context_ = new TestExtensionURLRequestContext();
     return context_.get();
+  }
+  virtual scoped_refptr<MessageLoopProxy> GetIOMessageLoopProxy() {
+    return ChromeThread::GetMessageLoopProxyForThread(ChromeThread::IO);
   }
 
  private:

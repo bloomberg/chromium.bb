@@ -51,6 +51,9 @@ class ChromeThreadMessageLoopProxy : public MessageLoopProxy {
     return ChromeThread::PostNonNestableDelayedTask(id_, from_here, task,
                                                     delay_ms);
   }
+  virtual bool BelongsToCurrentThread() {
+    return ChromeThread::CurrentlyOn(id_);
+  }
 
  private:
   ChromeThread::ID id_;

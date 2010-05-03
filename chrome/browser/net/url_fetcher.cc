@@ -5,10 +5,9 @@
 #include "chrome/browser/net/url_fetcher.h"
 
 #include "base/compiler_specific.h"
+#include "base/message_loop_proxy.h"
 #include "base/string_util.h"
 #include "base/thread.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/url_fetcher_protect.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "googleurl/src/gurl.h"
@@ -70,6 +69,9 @@ class URLFetcher::Core
   RequestType request_type_;         // What type of request is this?
   URLFetcher::Delegate* delegate_;   // Object to notify on completion
   MessageLoop* delegate_loop_;       // Message loop of the creating thread
+  scoped_refptr<MessageLoopProxy> io_message_loop_proxy_;
+                                     // The message loop proxy for the thread
+                                     // on which the request IO happens.
   URLRequest* request_;              // The actual request this wraps
   int load_flags_;                   // Flags for the load operation
   int response_code_;                // HTTP status code for the request
@@ -147,8 +149,10 @@ URLFetcher::Core::Core(URLFetcher* fetcher,
 void URLFetcher::Core::Start() {
   DCHECK(delegate_loop_);
   CHECK(request_context_getter_) << "We need an URLRequestContext!";
-  ChromeThread::PostDelayedTask(
-      ChromeThread::IO, FROM_HERE,
+  io_message_loop_proxy_ = request_context_getter_->GetIOMessageLoopProxy();
+  CHECK(io_message_loop_proxy_.get()) << "We need an IO message loop proxy";
+  io_message_loop_proxy_->PostDelayedTask(
+      FROM_HERE,
       NewRunnableMethod(this, &Core::StartURLRequest),
           protect_entry_->UpdateBackoff(URLFetcherProtectEntry::SEND));
 }
@@ -157,14 +161,15 @@ void URLFetcher::Core::Stop() {
   DCHECK_EQ(MessageLoop::current(), delegate_loop_);
   delegate_ = NULL;
   fetcher_ = NULL;
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &Core::CancelURLRequest));
+  if (io_message_loop_proxy_.get()) {
+    io_message_loop_proxy_->PostTask(
+        FROM_HERE, NewRunnableMethod(this, &Core::CancelURLRequest));
+  }
 }
 
 void URLFetcher::Core::OnResponseStarted(URLRequest* request) {
   DCHECK(request == request_);
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   if (request_->status().is_success()) {
     response_code_ = request_->GetResponseCode();
     response_headers_ = request_->response_headers();
@@ -182,7 +187,7 @@ void URLFetcher::Core::OnResponseStarted(URLRequest* request) {
 
 void URLFetcher::Core::OnReadCompleted(URLRequest* request, int bytes_read) {
   DCHECK(request == request_);
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
   url_ = request->url();
 
@@ -205,7 +210,7 @@ void URLFetcher::Core::OnReadCompleted(URLRequest* request, int bytes_read) {
 }
 
 void URLFetcher::Core::StartURLRequest() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
   if (was_cancelled_) {
     // Since StartURLRequest() is posted as a *delayed* task, it may
@@ -256,7 +261,8 @@ void URLFetcher::Core::StartURLRequest() {
 }
 
 void URLFetcher::Core::CancelURLRequest() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+
   if (request_) {
     request_->Cancel();
     delete request_;
@@ -288,8 +294,8 @@ void URLFetcher::Core::OnCompletedURLRequest(const URLRequestStatus& status) {
     if (delegate_) {
       if (fetcher_->automatically_retry_on_5xx_ &&
           num_retries_ <= protect_entry_->max_retries()) {
-        ChromeThread::PostDelayedTask(
-            ChromeThread::IO, FROM_HERE,
+        io_message_loop_proxy_->PostDelayedTask(
+            FROM_HERE,
             NewRunnableMethod(this, &Core::StartURLRequest), back_off_time);
       } else {
         delegate_->OnURLFetchComplete(fetcher_, url_, status, response_code_,

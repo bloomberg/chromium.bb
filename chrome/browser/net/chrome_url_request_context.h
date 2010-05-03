@@ -254,12 +254,13 @@ class ChromeURLRequestContextGetter : public URLRequestContextGetter,
                                 ChromeURLRequestContextFactory* factory);
 
   // Note that GetURLRequestContext() can only be called from the IO
-  // thread (it will assert otherwise). GetCookieStore() however can
-  // be called from any thread.
+  // thread (it will assert otherwise). GetCookieStore() and
+  // GetIOMessageLoopProxy however can be called from any thread.
   //
   // URLRequestContextGetter implementation.
   virtual URLRequestContext* GetURLRequestContext();
   virtual net::CookieStore* GetCookieStore();
+  virtual scoped_refptr<MessageLoopProxy> GetIOMessageLoopProxy();
 
   // Convenience overload of GetURLRequestContext() that returns a
   // ChromeURLRequestContext* rather than a URLRequestContext*.

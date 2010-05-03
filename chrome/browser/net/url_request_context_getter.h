@@ -6,30 +6,46 @@
 #define CHROME_BROWSER_NET_URL_REQUEST_CONTEXT_GETTER_H_
 
 #include "base/ref_counted.h"
-#include "chrome/browser/chrome_thread.h"
+#include "base/task.h"
 
 namespace net {
 class CookieStore;
 }
 
+class MessageLoopProxy;
 class URLRequestContext;
+struct URLRequestContextGetterTraits;
 
 // Interface for retrieving an URLRequestContext.
 class URLRequestContextGetter
     : public base::RefCountedThreadSafe<URLRequestContextGetter,
-                                        ChromeThread::DeleteOnIOThread> {
+                                        URLRequestContextGetterTraits> {
  public:
   virtual URLRequestContext* GetURLRequestContext() = 0;
 
   // Defaults to GetURLRequestContext()->cookie_store(), but
   // implementations can override it.
   virtual net::CookieStore* GetCookieStore();
+  // Returns a MessageLoopProxy corresponding to the thread on which the
+  // request IO happens (the thread on which the returned URLRequestContext
+  // may be used).
+  virtual scoped_refptr<MessageLoopProxy> GetIOMessageLoopProxy() = 0;
 
  protected:
-  friend class ChromeThread;
   friend class DeleteTask<URLRequestContextGetter>;
+  friend struct URLRequestContextGetterTraits;
 
   virtual ~URLRequestContextGetter() {}
+ private:
+  // OnDestruct is meant to ensure deletion on the thread on which the request
+  // IO happens.
+  void OnDestruct();
+};
+
+struct URLRequestContextGetterTraits {
+  static void Destruct(URLRequestContextGetter* context_getter) {
+    context_getter->OnDestruct();
+  }
 };
 
 #endif  // CHROME_BROWSER_NET_URL_REQUEST_CONTEXT_GETTER_H_
