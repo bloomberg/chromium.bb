@@ -578,12 +578,13 @@ void PersonalDataManagerObserver::ShowAutoFillDialog(
   RemoveViewFromView(underTheHoodContentView_, enableLoggingCheckbox_);
 #endif  // !defined(GOOGLE_CHROME_BUILD)
 
-  // There are three problem children within the groups:
+  // There are four problem children within the groups:
   //   Basics - Default Browser
+  //   Personal Stuff - Sync
   //   Personal Stuff - Themes
   //   Personal Stuff - Browser Data
-  // These three have buttons that with some localizations are wider then the
-  // view.  So the three get manually laid out before doing the general work so
+  // These four have buttons that with some localizations are wider then the
+  // view.  So the four get manually laid out before doing the general work so
   // the views/window can be made wide enough to fit them.  The layout in the
   // general pass is a noop for these buttons (since they are already sized).
 
@@ -598,6 +599,10 @@ void PersonalDataManagerObserver::ShowAutoFillDialog(
       [GTMUILocalizerAndLayoutTweaker sizeToFitView:defaultBrowserButton];
   DCHECK_EQ(defaultBrowserChange.height, 0.0)
       << "Button should have been right height in nib";
+
+  // Size the sync row.
+  CGFloat syncRowChange = SizeToFitButtonPair(syncButton_,
+                                              syncCustomizeButton_);
 
   // Size the themes row.
   const NSUInteger kThemeGroupCount = 3;
@@ -620,7 +625,8 @@ void PersonalDataManagerObserver::ShowAutoFillDialog(
      NSWidth([underTheHoodContentView_ frame]));
 
   // Find the most any row changed in size.
-  CGFloat maxWidthChange = std::max(defaultBrowserChange.width, themeRowChange);
+  CGFloat maxWidthChange = std::max(defaultBrowserChange.width, syncRowChange);
+  maxWidthChange = std::max(maxWidthChange, themeRowChange);
   maxWidthChange = std::max(maxWidthChange, privacyRowChange);
 
   // If any grew wider, make the views wider. If they all shrank, they fit the
