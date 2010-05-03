@@ -327,8 +327,7 @@ TEST_F(SessionRestoreUITest, NormalAndPopup) {
 // Creates a browser, goes incognito, closes browser, launches and make sure
 // we don't restore.
 //
-// Flaky, http://crbug.com/39490.
-TEST_F(SessionRestoreUITest, FLAKY_DontRestoreWhileIncognito) {
+TEST_F(SessionRestoreUITest, DontRestoreWhileIncognito) {
   NavigateToURL(url1_);
 
   // Make sure we have one window.
@@ -435,8 +434,7 @@ TEST_F(SessionRestoreUITest,
 // process-per-site and process-per-site-instance, because we treat the new tab
 // as a special case in process-per-site-instance so that it only ever uses one
 // process.)
-// This is flaky on Vista dbg.  http://crbug.com/40181
-TEST_F(SessionRestoreUITest, FLAKY_ShareProcessesOnRestore) {
+TEST_F(SessionRestoreUITest, ShareProcessesOnRestore) {
   if (in_process_renderer()) {
     // No point in running this test in single process mode.
     return;

@@ -336,8 +336,7 @@ TEST_F(TabRestoreUITest, DISABLED_DontLoadRestoredTab) {
 
 // Open a window with multiple tabs, close a tab, then close the window.
 // Restore both and make sure the tab goes back into the window.
-// This test is flaky. See http://crbug.com/14132
-TEST_F(TabRestoreUITest, FLAKY_RestoreWindowAndTab) {
+TEST_F(TabRestoreUITest, RestoreWindowAndTab) {
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser_proxy.get());
   CheckActiveWindow(browser_proxy.get());
