@@ -55,9 +55,11 @@ class ContentExceptionsWindowControllerTest : public CocoaTest {
   }
 
   ContentExceptionsWindowController* GetController(ContentSettingsType type) {
-    return [ContentExceptionsWindowController showForType:type
-                                              settingsMap:settingsMap_.get()];
-
+    id controller = [ContentExceptionsWindowController
+        controllerForType:type
+        settingsMap:settingsMap_.get()];
+    [controller showWindow:nil];
+    return controller;
   }
 
   void ClickAdd(ContentExceptionsWindowController* controller) {
@@ -93,8 +95,9 @@ class ContentExceptionsWindowControllerTest : public CocoaTest {
 TEST_F(ContentExceptionsWindowControllerTest, Construction) {
   ContentExceptionsWindowController* controller =
       [ContentExceptionsWindowController
-          showForType:CONTENT_SETTINGS_TYPE_PLUGINS
-          settingsMap:settingsMap_.get()];
+          controllerForType:CONTENT_SETTINGS_TYPE_PLUGINS
+                settingsMap:settingsMap_.get()];
+  [controller showWindow:nil];
   [controller close];  // Should autorelease.
 }
 
@@ -124,6 +127,7 @@ TEST_F(ContentExceptionsWindowControllerTest, AddRemove) {
 TEST_F(ContentExceptionsWindowControllerTest, AddRemoveAll) {
   ContentExceptionsWindowController* controller =
       GetController(CONTENT_SETTINGS_TYPE_PLUGINS);
+
   ClickAdd(controller);
   ClickRemoveAll(controller);
 

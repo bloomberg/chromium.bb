@@ -24,8 +24,10 @@ class GeolocationExceptionsWindowControllerTest : public CocoaTest {
   }
 
   GeolocationExceptionsWindowController* GetController() {
-    return [GeolocationExceptionsWindowController
-        showWindowWithSettingsMap:settingsMap_.get()];
+    id controller = [GeolocationExceptionsWindowController
+        controllerWithSettingsMap:settingsMap_.get()];
+    [controller showWindow:nil];
+    return controller;
   }
 
   void ClickRemoveAll(GeolocationExceptionsWindowController* controller) {
@@ -40,7 +42,8 @@ class GeolocationExceptionsWindowControllerTest : public CocoaTest {
 TEST_F(GeolocationExceptionsWindowControllerTest, Construction) {
   GeolocationExceptionsWindowController* controller =
       [GeolocationExceptionsWindowController
-          showWindowWithSettingsMap:settingsMap_.get()];
+          controllerWithSettingsMap:settingsMap_.get()];
+  [controller showWindow:nil];
   [controller close];  // Should autorelease.
 }
 
