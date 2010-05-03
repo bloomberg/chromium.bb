@@ -152,10 +152,6 @@ void BrowserWindowCocoa::UpdateDevTools() {
       browser_->tabstrip_model()->GetSelectedTabContents()];
 }
 
-void BrowserWindowCocoa::FocusDevTools() {
-  NOTIMPLEMENTED();
-}
-
 void BrowserWindowCocoa::UpdateLoadingAnimations(bool should_animate) {
   // Do nothing on Mac.
 }

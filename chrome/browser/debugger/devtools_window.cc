@@ -153,7 +153,7 @@ void DevToolsWindow::Activate() {
   } else {
     BrowserWindow* inspected_window = GetInspectedBrowserWindow();
     if (inspected_window)
-      inspected_window->FocusDevTools();
+      tab_contents_->view()->Focus();
   }
 }
 
