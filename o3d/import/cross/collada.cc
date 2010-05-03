@@ -534,7 +534,15 @@ bool ConvertCgToGlsl(const FilePath& converter, String* effect_string) {
 #endif
 
   cmd_line.AppendLooseValue(L"-i");
-  cmd_line.AppendLooseValue(o3d::FilePathToWide(temporary_file_name));
+  std::wstring temporary_file_string =
+      o3d::FilePathToWide(temporary_file_name);
+#if defined(OS_WIN)
+  // Quote to be safe. Note that this breaks on POSIX platforms.
+  std::wstring quote(L"\"");
+  temporary_file_string =
+      quote + temporary_file_string + quote;
+#endif
+  cmd_line.AppendLooseValue(temporary_file_string);
   bool rc = ::base::GetAppOutput(cmd_line, effect_string);
 
   file_util::Delete(temporary_file_name, false);
