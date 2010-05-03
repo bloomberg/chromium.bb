@@ -4187,13 +4187,13 @@ void RenderView::AltErrorPageFinished(WebFrame* frame,
 
 void RenderView::OnMoveOrResizeStarted() {
   if (webview())
-    webview()->hideSuggestionsPopup();
+    webview()->hidePopups();
 }
 
 void RenderView::OnResize(const gfx::Size& new_size,
                           const gfx::Rect& resizer_rect) {
   if (webview()) {
-    webview()->hideSuggestionsPopup();
+    webview()->hidePopups();
 
     if (send_preferred_size_changes_) {
       // If resizing to a size larger than |disable_scrollbars_size_limit_| in
