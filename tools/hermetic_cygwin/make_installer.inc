@@ -45,7 +45,7 @@ declare definsttype=1
 parse_setup_ini() {
   if ((verbose)) ; then echo "Parsing setup.ini..." >&2 ; fi
   local package line acceptmode=0 sdescmode=0 ldescmode=0
-  while read -r line ; do
+  while IFS= read -r line ; do
     if [[ "${line:0:1}" = "@" ]] ; then
       package="${line:2}"
       acceptmode=1
@@ -125,6 +125,7 @@ fix_setup_inf_info() {
   install["readline"]="release/readline/readline-6.1.2-0.tar.bz2 288160 f16eeccbb99b41d9128d56ddc5d4ad3c"
   source["readline"]="release/readline/readline-6.1.2-0-src.tar.bz2 2283352 509b85aa6f723fac3b453f7c84ca3361"
   requires["coreutils"]="${requires[coreutils]} dash grep patch sed"
+  requires["cygwin"]="base-files ${requires[cygwin]} editrights ipc-utils run"
   requires["dash"]="${requires[dash]} cygwin"
   requires["libcloog-devel"]="${requires[libcloog-devel]} ppl-devel"
   requires["zlib-devel"]="${requires[libcloog-devel]} zlib"
@@ -133,7 +134,6 @@ fix_setup_inf_info() {
 download_package_dependences() {
   # $1 = name of the package; function is recursive
   # $2 - Section No
-  local pkgname
   local instname="${install[$1]/.tar.bz2*/.tar.bz2}"
   local srcname="${source[$1]/.tar.bz2*/.tar.bz2}"
   if [[ "$instname" != "" ]] ; then
@@ -158,15 +158,42 @@ download_package_dependences() {
         # Tar should have complained for us
         exit $?
       fi
-      if [[ "$pkgname" = "WindowMaker" ]] ; then
+      if [[ "$1" = "base-files" ]] ; then
+        if ! patch -p0 --no-backup-if-mismatch <<END
+--- packages.unpacked/`basename "$instname"`/etc/postinstall/base-files-mketc.sh
++++ packages.unpacked/`basename "$instname"`/etc/postinstall/base-files-mketc.sh
+@@ -14,9 +14,14 @@
+ 
+ if [ ! -d "\$WINETC" ]
+ then
+-  echo "Directory \$WINETC does not exist; exiting" >&2
+-  echo "If directory name is garbage you need to update your cygwin package" >&2
+-  exit 0
++  # Vista64 is crazy: symlink is usable, but "-f" to the original is false!
++  if ln -s "\$WINHOME\\\\sysnative\\\\drivers\\\\etc\\\\lmhosts.sam" /etc/lmhosts.sam && [ -f /etc/lmhosts.sam ] && rm /etc/lmhosts.sam ; then
++    WINETC="\$WINHOME\\\\sysnative\\\\drivers\\\\etc"
++  else
++    echo "Directory \$WINETC does not exist; exiting" >&2
++    echo "If directory name is garbage you need to update your cygwin package" >&2
++    exit 0
++  fi
+ fi
+ 
+ for mketc in \$FILES
+END
+        then
+          # Patch should have complained for us
+          exit $?
+        fi
+      elif [[ "$1" = "WindowMaker" ]] ; then
         mv packages.unpacked/"`basename \"$instname\"`"/usr/share/WindowMaker/Icons/{,tmp}defaultAppIcon.tiff
         rm packages.unpacked/"`basename \"$instname\"`"/usr/share/WindowMaker/Icons/DefaultAppIcon.tiff 2> /dev/null
         mv packages.unpacked/"`basename \"$instname\"`"/usr/share/WindowMaker/Icons/{tmp,}defaultAppIcon.tiff
-      elif [[ "$pkgname" = "lilypond-doc" ]] ; then
+      elif [[ "$1" = "lilypond-doc" ]] ; then
         mv packages.unpacked/"`basename \"$instname\"`"/usr/share/doc/lilypond/html/Documentation/user/lilypond-learning/{,tmp}Lilypond_002dbook-templates.de.html
         rm packages.unpacked/"`basename \"$instname\"`"/usr/share/doc/lilypond/html/Documentation/user/lilypond-learning/lilypond_002dbook-templates.de.html
         mv packages.unpacked/"`basename \"$instname\"`"/usr/share/doc/lilypond/html/Documentation/user/lilypond-learning/{tmp,}Lilypond_002dbook-templates.de.html
-      elif [[ "$pkgname" = "ruby" ]] ; then
+      elif [[ "$1" = "ruby" ]] ; then
         mv packages.unpacked/"`basename \"$instname\"`"/usr/share/ri/1.8/system/Exception2MessageMapper/{,tmp}Fail-i.yaml
         rm packages.unpacked/"`basename \"$instname\"`"/usr/share/ri/1.8/system/Exception2MessageMapper/fail-i.yaml
         mv packages.unpacked/"`basename \"$instname\"`"/usr/share/ri/1.8/system/Exception2MessageMapper/{tmp,}Fail-i.yaml
@@ -174,6 +201,20 @@ download_package_dependences() {
         rm packages.unpacked/"`basename \"$instname\"`"/usr/share/ri/1.8/system/REXML/Parsers/XPathParser/predicate-i.yaml
         mv packages.unpacked/"`basename \"$instname\"`"/usr/share/ri/1.8/system/REXML/Parsers/XPathParser/{tmp,}tmpPredicate-i.yaml
       fi
+      for file in packages.unpacked/"`basename \"$instname\"`"/etc/{postinstall,preremove}/*.sh ; do
+        if [ -e "$file" ] ; then
+          mv "$file" "$file".tmp
+          while IFS= read -r line ; do
+            if [[ "$line" != "while read f; do" ]] ; then
+              printf "%s\n" "$line"
+            else
+              echo "while read f; do if [ \"x\$f\" = \"x\" ] ; then break ; fi"
+            fi
+          done < "$file".tmp > "$file"
+          touch -r "$file".tmp "$file"
+          rm "$file".tmp
+        fi
+      done
     fi
     if [ ! -e setup/"$1".lst.gz ] ; then
       if ! rm -f setup/"$1".lst ; then
@@ -206,6 +247,7 @@ download_package_dependences() {
       fi
     fi
   fi
+  local pkgname
   reqpackages["$1"]="present"
   sectionin["$1"]="${sectionin[$1]} $2"
   for pkgname in ${requires["$1"]} ; do
@@ -780,8 +822,8 @@ END
     for insttype in "${!packages[@]}" ; do
       echo "\$\\n  /`echo \"$insttype\" | tr 'a-z' 'A-Z'` - ${description[$insttype]}"
     done | sort |
-    while read -r line ; do
-      echo -n "$line"
+    while IFS= read -r line ; do
+      printf "%s" "$line"
     done
     echo -n "\$\\n  /MINIMAL - Install only packages from \$\\\"Base\$\\\" category"
   fi

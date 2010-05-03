@@ -90,12 +90,15 @@ BOOL MakeSymLink(TCHAR *linkFileName, TCHAR *existingFileName, BOOL dirLink) {
   if (!f1 || !f2)
     return FALSE;
   lstrcpy(f1, linkFileName);
-  p = q = f1;
+  for (p = f1; p[0]; p++)
+    if (p[0] == _T('/'))
+      p[0] = _T('\\');
+  q = f1;
   while (q[0]) {
+    p = q;
     do {
       q++;
     } while (q[0] && q[0] != '\\');
-    p = q;
   }
   if (p[0] = '\\') {
     TCHAR c = p[1];
@@ -109,6 +112,10 @@ BOOL MakeSymLink(TCHAR *linkFileName, TCHAR *existingFileName, BOOL dirLink) {
   }
   /* If it's NFS then we can create real symbolic link. */
   if (!lstrcmpi(f2, _T("NFS"))) {
+    lstrcpy(f2, existingFileName);
+    for (p = f2; p[0]; p++)
+      if (p[0] == _T('\\'))
+        p[0] = _T('/');
     if (!hNrDll)
       hNrDll = LoadLibrary(_T("NTDLL.DLL"));
     if (hNrDll) {
@@ -131,14 +138,14 @@ BOOL MakeSymLink(TCHAR *linkFileName, TCHAR *existingFileName, BOOL dirLink) {
         WCHAR *fn = HeapAlloc(GetProcessHeap(),
                               0,
                               sizeof(TCHAR)*kLargeBuf);
-        UNICODE_STRING n = { lstrlen(linkFileName), kLargeBuf, fn };
+        UNICODE_STRING n = { lstrlen(f1), kLargeBuf, fn };
         ea_info->nameLength = 20;
         lstrcpy(ea_info->name, "NfsSymlinkTargetName");
 #ifdef UNICODE
-        lstrcpy(fn, linkFileName);
+        lstrcpy(fn, f1);
         lstrcpy((LPWSTR)ea_info->value, existingFileName);
 #else
-        MultiByteToWideChar(CP_ACP, 0, linkFileName, -1, fn, kLargeBuf);
+        MultiByteToWideChar(CP_ACP, 0, f1, -1, fn, kLargeBuf);
         MultiByteToWideChar(CP_ACP, 0, existingFileName, -1,
                             (LPWSTR)ea_info->value,
                             sizeof(ea_info->value)/sizeof(WCHAR));
@@ -167,18 +174,15 @@ BOOL MakeSymLink(TCHAR *linkFileName, TCHAR *existingFileName, BOOL dirLink) {
     }
   }
   lstrcpy(f2, existingFileName);
+  for (p = f2; p[0]; p++)
+    if (p[0] == _T('/'))
+      p[0] = _T('\\');
   if (!hKernel32)
     hKernel32 = LoadLibrary(_T("KERNEL32.DLL"));
   if (hKernel32) {
     if (!fCreateSymbolicLink)
       fCreateSymbolicLink = GetProcAddress(hKernel32, CreateSymbolicLink);
     if (fCreateSymbolicLink) {
-      for (p = f1; p[0]; p++)
-        if (p[0] == _T('/'))
-          p[0] = _T('\\');
-      for (p = f2; p[0]; p++)
-        if (p[0] == _T('/'))
-          p[0] = _T('\\');
       if (fCreateSymbolicLink(f1, f2,
                               dirLink ? SYMBOLIC_LINK_FLAG_DIRECTORY : 0)) {
         HeapFree(GetProcessHeap(), 0, f2);
@@ -189,8 +193,8 @@ BOOL MakeSymLink(TCHAR *linkFileName, TCHAR *existingFileName, BOOL dirLink) {
   }
   if (dirLink) {
     /* Ignore errors - file may already exist */
-    CreateDirectory(linkFileName, NULL);
-    f = CreateFile(linkFileName, GENERIC_READ | GENERIC_WRITE,
+    CreateDirectory(f1, NULL);
+    f = CreateFile(f1, GENERIC_READ | GENERIC_WRITE,
                    FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
                    FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS,
                    NULL );
@@ -213,28 +217,23 @@ BOOL MakeSymLink(TCHAR *linkFileName, TCHAR *existingFileName, BOOL dirLink) {
       rp_info->target[1] = L'?';
       rp_info->target[2] = L'?';
       rp_info->target[3] = L'\\';
-      if ((((existingFileName[0] == _T('\\')) ||
-            (existingFileName[0] == _T('/'))) &
-           ((existingFileName[1] == _T('\\')) ||
-            (existingFileName[1] == _T('/')))) ||
-          ((existingFileName[1] == _T(':')) &
-           ((existingFileName[2] == _T('\\')) ||
-            (existingFileName[2] == _T('/'))))) {
+      if (((f2[0] == _T('\\')) && (f2[1] == _T('\\'))) ||
+          ((f2[1] == _T(':')) && (f2[2] == _T('\\')))) {
 #ifdef UNICODE
-        lstrcpy(rp_info->target+4, existingFileName);
+        lstrcpy(rp_info->target+4, f2);
 #else
-        MultiByteToWideChar(CP_ACP, 0, existingFileName, -1,
+        MultiByteToWideChar(CP_ACP, 0, f2, -1,
                             rp_info->target+4, kLargeBuf);
 #endif
       } else {
 #ifdef UNICODE
-        GetFullPathNameW(linkFileName, 1024, rp_info->target+4, &startlink);
-        lstrcpy(startlink, existingFileName);
+        GetFullPathNameW(f1, 1024, rp_info->target+4, &startlink);
+        lstrcpy(startlink, f2);
 #else
-        MultiByteToWideChar(CP_ACP, 0, linkFileName, -1,
+        MultiByteToWideChar(CP_ACP, 0, f1, -1,
                             (LPWSTR)f1, kLargeBuf/sizeof(WCHAR));
         GetFullPathNameW(f1, 1024, rp_info->target+4, &startlink);
-        MultiByteToWideChar(CP_ACP, 0, existingFileName, -1,
+        MultiByteToWideChar(CP_ACP, 0, f2, -1,
                             startlink, kLargeBuf+4-(startlink-rp_info->target));
 #endif
       }
@@ -242,8 +241,6 @@ BOOL MakeSymLink(TCHAR *linkFileName, TCHAR *existingFileName, BOOL dirLink) {
       for (startlink = endlink = rp_info->target+4;
                                            endlink[0]; startlink++, endlink++) {
         startlink[0] = endlink[0];
-        if (startlink[0] == L'/')
-          startlink[0] = L'\\';
         if ((startlink[0] == L'\\') &&
             (startlink[-1] == L'.') &&
             (startlink[-2] == L'.')) {
@@ -275,14 +272,14 @@ BOOL MakeSymLink(TCHAR *linkFileName, TCHAR *existingFileName, BOOL dirLink) {
         return TRUE;
       }
       CloseHandle(f);
-      RemoveDirectory(linkFileName);
+      RemoveDirectory(f1);
       HeapFree(GetProcessHeap(), 0, rp_info);
     }
   }
   for (p = f2; p[0]; p++)
     if (p[0] == _T('\\'))
       p[0] = _T('/');
-  f = CreateFile(linkFileName, GENERIC_READ | GENERIC_WRITE,
+  f = CreateFile(f1, GENERIC_READ | GENERIC_WRITE,
                  FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
                  CREATE_ALWAYS, FILE_ATTRIBUTE_SYSTEM, NULL);
   if (f != INVALID_HANDLE_VALUE) {

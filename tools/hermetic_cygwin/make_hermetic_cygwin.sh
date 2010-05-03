@@ -99,7 +99,7 @@ if ((NSIS)) && ((CygWin)) && ! [ -d NSIS ] ; then
   rmdir NSIS/\$PLUGINSDIR
   chmod a+x NSIS/{,Bin,Contrib/UIs}/*.exe
   mkdir -p "MkLink/nsis"
-  cp -aiv "NSIS/Examples/Plugin/nsis/*" "Mklink/nsis"
+  cp -aiv "NSIS/Examples/Plugin/nsis/"* "Mklink/nsis"
   cp -aiv "MkLink/Release Unicode/MkLink.dll" "NSIS/Plugins"
 fi
 
@@ -112,6 +112,11 @@ CYGWIN_VERSION=1.7.5-1.0
 mkdir -p packages{,.src,.unpacked} setup
 
 parse_setup_ini
+download_package_dependences bash 0
+reqpackages=()
+sectionin=()
+allinstpackages=()
+allinstalledpackages=()
 fix_setup_inf_info
 rm setup/*.lst.gz
 download_package "Base" "`seq -s ' ' \"$((${#packages[@]}+3))\"`"
@@ -192,6 +197,10 @@ Section "" sec_PostInstall
   SetOutPath \$INSTDIR
   nsExec::ExecToLog '"bin\\bash" -c ./postinstall.sh'
   Delete \$INSTDIR\\postinstall.sh
+  Delete \$INSTDIR\\bin\\bash.exe
+  Rename \$INSTDIR\\bin\\bash4.exe \$INSTDIR\\bin\\bash.exe
+  Delete \$INSTDIR\\bin\\sh.exe
+  Rename \$INSTDIR\\bin\\sh4.exe \$INSTDIR\\bin\\sh.exe
   FileOpen \$R0 \$INSTDIR\\Cygwin.bat w
   StrCpy \$R1 \$INSTDIR 1
   FileWrite \$R0 "@echo off\$\r\$\n\$\r\$\n\$R1:$\r\$\nchdir \$INSTDIR\\bin\$\r\$\nbash --login -i$\r\$\n"
@@ -213,6 +222,14 @@ if ! patch --no-backup-if-mismatch <<END
    MkLink::Hard "\$INSTDIR\\bin\\pgawk-3.1.7.exe" "\$INSTDIR\\bin\\pgawk.exe"
    MkLink::Hard "\$INSTDIR\\usr\\share\\man\\man1\\gawk.1" "\$INSTDIR\\usr\\share\\man\\man1\\pgawk.1"
 -  MkLink::SoftF "\$INSTDIR\\bin\\awk.exe" "gawk.exe"
+@@ -5296,3 +5296,5 @@
+-  File "/oname=bin\\bash.exe" "packages.unpacked\\bash-4.1.5-0.tar.bz2\\usr\\bin\\bash.exe"
++  File "/oname=bin\\bash.exe" "packages.unpacked\\bash-3.2.49-23.tar.bz2\\usr\\bin\\bash.exe"
++  File "/oname=bin\\bash4.exe" "packages.unpacked\\bash-4.1.5-0.tar.bz2\\usr\\bin\\bash.exe"
+   File "/oname=bin\\bashbug" "packages.unpacked\\bash-4.1.5-0.tar.bz2\\usr\\bin\\bashbug"
+-  File "/oname=bin\\sh.exe" "packages.unpacked\\bash-4.1.5-0.tar.bz2\\usr\\bin\\sh.exe"
++  File "/oname=bin\\sh.exe" "packages.unpacked\\bash-3.2.49-23.tar.bz2\\usr\\bin\\sh.exe"
++  File "/oname=bin\\sh4.exe" "packages.unpacked\\bash-4.1.5-0.tar.bz2\\usr\\bin\\sh.exe"
 @@ -24887,3 +24887,3 @@
 -  MkLink::SoftF "\$INSTDIR\\bin\\python.exe" "python2.5.exe"
 -  MkLink::SoftF "\$INSTDIR\\bin\\python-config" "python2.5-config"
