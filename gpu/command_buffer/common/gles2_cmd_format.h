@@ -39,6 +39,26 @@ namespace gles2 {
 
 #pragma pack(push, 1)
 
+namespace id_namespaces {
+
+// These are used when contexts share resources.
+enum IdNamespaces {
+  kBuffers,
+  kFramebuffers,
+  kProgramsAndShaders,
+  kRenderbuffers,
+  kTextures,
+};
+
+// These numbers must not change
+COMPILE_ASSERT(kBuffers == 0, kBuffers_is_not_0);
+COMPILE_ASSERT(kFramebuffers == 1, kFramebuffers_is_not_1);
+COMPILE_ASSERT(kProgramsAndShaders == 2, kProgramsAndShaders_is_not_2);
+COMPILE_ASSERT(kRenderbuffers == 3, kRenderbuffers_is_not_3);
+COMPILE_ASSERT(kTextures == 4, kTextures_is_not_4);
+
+}  // namespace id_namespaces
+
 // Used for some glGetXXX commands that return a result through a pointer. We
 // need to know if the command succeeded or not and the size of the result. If
 // the command failed its result size will 0.

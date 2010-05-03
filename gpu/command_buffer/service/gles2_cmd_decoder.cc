@@ -13,13 +13,13 @@
 
 #include "app/gfx/gl/gl_context.h"
 #include "base/callback.h"
-#include "base/linked_ptr.h"
 #include "base/scoped_ptr.h"
 #include "base/weak_ptr.h"
 #include "build/build_config.h"
 #define GLES2_GPU_SERVICE 1
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/common/id_allocator.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
@@ -637,6 +637,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Wrapper for glCompileShader.
   void DoCompileShader(GLuint shader);
 
+  // Helper for DeleteSharedIds commands.
+  void DoDeleteSharedIds(GLuint namespace_id, GLsizei n, const GLuint* ids);
+
   // Wrapper for glDetachShader
   void DoDetachShader(GLuint client_program_id, GLint client_shader_id);
 
@@ -661,6 +664,10 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   // Wrapper for glGenerateMipmap
   void DoGenerateMipmap(GLenum target);
+
+  // Helper for GenSharedIds commands.
+  void DoGenSharedIds(
+      GLuint namespace_id, GLuint id_offset, GLsizei n, GLuint* ids);
 
   // Wrapper for DoGetBooleanv.
   void DoGetBooleanv(GLenum pname, GLboolean* params);
@@ -700,6 +707,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   // Wrapper for glLinkProgram
   void DoLinkProgram(GLuint program);
+
+  // Helper for RegisterSharedIds.
+  void DoRegisterSharedIds(GLuint namespace_id, GLsizei n, const GLuint* ids);
 
   // Wrapper for glRenderbufferStorage.
   void DoRenderbufferStorage(
@@ -1740,6 +1750,9 @@ void GLES2DecoderImpl::DoBindBuffer(GLenum target, GLuint client_id) {
       glGenBuffersARB(1, &service_id);
       CreateBufferInfo(client_id, service_id);
       info = GetBufferInfo(client_id);
+      IdAllocator* id_allocator =
+          group_->GetIdAllocator(id_namespaces::kBuffers);
+      id_allocator->MarkAsUsed(client_id);
     }
   }
   if (info) {
@@ -1779,6 +1792,9 @@ void GLES2DecoderImpl::DoBindFramebuffer(GLenum target, GLuint client_id) {
       glGenFramebuffersEXT(1, &service_id);
       CreateFramebufferInfo(client_id, service_id);
       info = GetFramebufferInfo(client_id);
+      IdAllocator* id_allocator =
+          group_->GetIdAllocator(id_namespaces::kFramebuffers);
+      id_allocator->MarkAsUsed(client_id);
     } else {
       service_id = info->service_id();
     }
@@ -1802,6 +1818,10 @@ void GLES2DecoderImpl::DoBindRenderbuffer(GLenum target, GLuint client_id) {
       // It's a new id so make a renderbuffer info for it.
       glGenRenderbuffersEXT(1, &service_id);
       CreateRenderbufferInfo(client_id, service_id);
+      info = GetRenderbufferInfo(client_id);
+      IdAllocator* id_allocator =
+          group_->GetIdAllocator(id_namespaces::kRenderbuffers);
+      id_allocator->MarkAsUsed(client_id);
     } else {
       service_id = info->service_id();
     }
@@ -1820,6 +1840,9 @@ void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
       glGenTextures(1, &service_id);
       CreateTextureInfo(client_id, service_id);
       info = GetTextureInfo(client_id);
+      IdAllocator* id_allocator =
+          group_->GetIdAllocator(id_namespaces::kTextures);
+      id_allocator->MarkAsUsed(client_id);
     }
   } else {
     info = texture_manager()->GetDefaultTextureInfo(target);
@@ -2060,6 +2083,109 @@ error::Error GLES2DecoderImpl::HandleDeleteProgram(
       SetGLError(GL_INVALID_VALUE, "glDeleteProgram: unknown program");
     }
   }
+  return error::kNoError;
+}
+
+void GLES2DecoderImpl::DoDeleteSharedIds(
+    GLuint namespace_id, GLsizei n, const GLuint* ids) {
+  IdAllocator* id_allocator = group_->GetIdAllocator(namespace_id);
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    id_allocator->FreeID(ids[ii]);
+  }
+}
+
+error::Error GLES2DecoderImpl::HandleDeleteSharedIds(
+    uint32 immediate_data_size, const gles2::DeleteSharedIds& c) {
+  GLuint namespace_id = static_cast<GLuint>(c.namespace_id);
+  GLsizei n = static_cast<GLsizei>(c.n);
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
+  const GLuint* ids = GetSharedMemoryAs<const GLuint*>(
+      c.ids_shm_id, c.ids_shm_offset, data_size);
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE, "DeleteSharedIds: n < 0");
+    return error::kNoError;
+  }
+  if (ids == NULL) {
+    return error::kOutOfBounds;
+  }
+  DoDeleteSharedIds(namespace_id, n, ids);
+  return error::kNoError;
+}
+
+void GLES2DecoderImpl::DoGenSharedIds(
+    GLuint namespace_id, GLuint id_offset, GLsizei n, GLuint* ids) {
+  IdAllocator* id_allocator = group_->GetIdAllocator(namespace_id);
+  if (id_offset == 0) {
+    for (GLsizei ii = 0; ii < n; ++ii) {
+      ids[ii] = id_allocator->AllocateID();
+    }
+  } else {
+    for (GLsizei ii = 0; ii < n; ++ii) {
+      ids[ii] = id_allocator->AllocateIDAtOrAbove(id_offset);
+      id_offset = ids[ii] + 1;
+    }
+  }
+}
+
+error::Error GLES2DecoderImpl::HandleGenSharedIds(
+    uint32 immediate_data_size, const gles2::GenSharedIds& c) {
+  GLuint namespace_id = static_cast<GLuint>(c.namespace_id);
+  GLuint id_offset = static_cast<GLuint>(c.id_offset);
+  GLsizei n = static_cast<GLsizei>(c.n);
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
+  GLuint* ids = GetSharedMemoryAs<GLuint*>(
+      c.ids_shm_id, c.ids_shm_offset, data_size);
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE, "GenSharedIds: n < 0");
+    return error::kNoError;
+  }
+  if (ids == NULL) {
+    return error::kOutOfBounds;
+  }
+  DoGenSharedIds(namespace_id, id_offset, n, ids);
+  return error::kNoError;
+}
+
+void GLES2DecoderImpl::DoRegisterSharedIds(
+    GLuint namespace_id, GLsizei n, const GLuint* ids) {
+  IdAllocator* id_allocator = group_->GetIdAllocator(namespace_id);
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    if (!id_allocator->MarkAsUsed(ids[ii])) {
+      for (GLsizei jj = 0; jj < ii; ++jj) {
+        id_allocator->FreeID(ids[jj]);
+      }
+      SetGLError(
+          GL_INVALID_VALUE,
+          "RegisterSharedIds: attempt to register id that already exists");
+      return;
+    }
+  }
+}
+
+error::Error GLES2DecoderImpl::HandleRegisterSharedIds(
+    uint32 immediate_data_size, const gles2::RegisterSharedIds& c) {
+  GLuint namespace_id = static_cast<GLuint>(c.namespace_id);
+  GLsizei n = static_cast<GLsizei>(c.n);
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
+  GLuint* ids = GetSharedMemoryAs<GLuint*>(
+      c.ids_shm_id, c.ids_shm_offset, data_size);
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE, "RegisterSharedIds: n < 0");
+    return error::kNoError;
+  }
+  if (ids == NULL) {
+    return error::kOutOfBounds;
+  }
+  DoRegisterSharedIds(namespace_id, n, ids);
   return error::kNoError;
 }
 

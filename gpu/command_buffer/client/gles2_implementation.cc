@@ -6,6 +6,7 @@
 
 #include "../client/gles2_implementation.h"
 #include "../common/gles2_cmd_utils.h"
+#include "../common/id_allocator.h"
 
 namespace gpu {
 namespace gles2 {
@@ -20,6 +21,71 @@ static GLuint ToGLuint(const void* ptr) {
 static GLsizei RoundUpToMultipleOf4(GLsizei size) {
   return (size + 3) & ~3;
 }
+
+// An id handler for non-shared ids.
+class NonSharedIdHandler : public IdHandlerInterface {
+ public:
+  NonSharedIdHandler() { }
+  virtual ~NonSharedIdHandler() { }
+
+  // Overridden from IdHandlerInterface.
+  virtual void MakeIds(GLuint id_offset, GLsizei n, GLuint* ids) {
+    if (id_offset == 0) {
+      for (GLsizei ii = 0; ii < n; ++ii) {
+        ids[ii] = id_allocator_.AllocateID();
+      }
+    } else {
+      for (GLsizei ii = 0; ii < n; ++ii) {
+        ids[ii] = id_allocator_.AllocateIDAtOrAbove(id_offset);
+        id_offset = ids[ii] + 1;
+      }
+    }
+  }
+
+  // Overridden from IdHandlerInterface.
+  virtual void FreeIds(GLsizei n, const GLuint* ids) {
+    for (GLsizei ii = 0; ii < n; ++ii) {
+      id_allocator_.FreeID(ids[ii]);
+    }
+  }
+
+  // Overridden from IdHandlerInterface.
+  virtual bool MarkAsUsedForBind(GLuint id) {
+    return id == 0 ? true : id_allocator_.MarkAsUsed(id);
+  }
+ private:
+  IdAllocator id_allocator_;
+};
+
+// An id handler for shared ids.
+class SharedIdHandler : public IdHandlerInterface {
+ public:
+  SharedIdHandler(
+    GLES2Implementation* gles2,
+    id_namespaces::IdNamespaces id_namespace)
+      : gles2_(gles2),
+        id_namespace_(id_namespace) {
+  }
+
+  virtual ~SharedIdHandler() { }
+
+  virtual void MakeIds(GLuint id_offset, GLsizei n, GLuint* ids) {
+    gles2_->GenSharedIds(id_namespace_, id_offset, n, ids);
+  }
+
+  virtual void FreeIds(GLsizei n, const GLuint* ids) {
+    gles2_->DeleteSharedIds(id_namespace_, n, ids);
+  }
+
+  virtual bool MarkAsUsedForBind(GLuint) {  // NOLINT
+    // This has no meaning for shared resources.
+    return true;
+  }
+
+ private:
+  GLES2Implementation* gles2_;
+  id_namespaces::IdNamespaces id_namespace_;
+};
 
 // This class tracks VertexAttribPointers and helps emulate client side buffers.
 //
@@ -331,7 +397,8 @@ GLES2Implementation::GLES2Implementation(
       GLES2CmdHelper* helper,
       size_t transfer_buffer_size,
       void* transfer_buffer,
-      int32 transfer_buffer_id)
+      int32 transfer_buffer_id,
+      bool share_resources)
     : util_(0),  // TODO(gman): Get real number of compressed texture formats.
       helper_(helper),
       transfer_buffer_(
@@ -345,45 +412,49 @@ GLES2Implementation::GLES2Implementation(
 #if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
       bound_array_buffer_id_(0),
       bound_element_array_buffer_id_(0),
+      client_side_array_id_(0),
+      client_side_element_array_id_(0),
 #endif
       error_bits_(0) {
   // Allocate space for simple GL results.
   result_buffer_ = transfer_buffer;
   result_shm_offset_ = 0;
 
+  if (share_resources) {
+    buffer_id_handler_.reset(
+        new SharedIdHandler(this, id_namespaces::kBuffers));
+    framebuffer_id_handler_.reset(
+        new SharedIdHandler(this, id_namespaces::kFramebuffers));
+    renderbuffer_id_handler_.reset(
+        new SharedIdHandler(this, id_namespaces::kRenderbuffers));
+    program_and_shader_id_handler_.reset(
+        new SharedIdHandler(this, id_namespaces::kProgramsAndShaders));
+    texture_id_handler_.reset(
+        new SharedIdHandler(this, id_namespaces::kTextures));
+  } else {
+    buffer_id_handler_.reset(new NonSharedIdHandler());
+    framebuffer_id_handler_.reset(new NonSharedIdHandler());
+    renderbuffer_id_handler_.reset(new NonSharedIdHandler());
+    program_and_shader_id_handler_.reset(new NonSharedIdHandler());
+    texture_id_handler_.reset(new NonSharedIdHandler());
+  }
+
 #if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
   GLint max_vertex_attribs;
   GetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attribs);
-  buffer_id_allocator_.MarkAsUsed(kClientSideArrayId);
-  buffer_id_allocator_.MarkAsUsed(kClientSideElementArrayId);
 
-  reserved_ids_[0] = kClientSideArrayId;
-  reserved_ids_[1] = kClientSideElementArrayId;
+  buffer_id_handler_->MakeIds(
+      kClientSideArrayId, arraysize(reserved_ids_), &reserved_ids_[0]);
 
   client_side_buffer_helper_.reset(new ClientSideBufferHelper(
       max_vertex_attribs,
-      kClientSideArrayId,
-      kClientSideElementArrayId));
+      reserved_ids_[0],
+      reserved_ids_[1]));
 #endif
 }
 
 GLES2Implementation::~GLES2Implementation() {
-  GLuint buffers[] = { kClientSideArrayId, kClientSideElementArrayId, };
-  DeleteBuffers(arraysize(buffers), &buffers[0]);
-}
-
-void GLES2Implementation::MakeIds(
-    IdAllocator* id_allocator, GLsizei n, GLuint* ids) {
-  for (GLsizei ii = 0; ii < n; ++ii) {
-    ids[ii] = id_allocator->AllocateID();
-  }
-}
-
-void GLES2Implementation::FreeIds(
-    IdAllocator* id_allocator, GLsizei n, const GLuint* ids) {
-  for (GLsizei ii = 0; ii < n; ++ii) {
-    id_allocator->FreeID(ids[ii]);
-  }
+  DeleteBuffers(arraysize(reserved_ids_), &reserved_ids_[0]);
 }
 
 void GLES2Implementation::WaitForCmd() {
@@ -578,6 +649,39 @@ void GLES2Implementation::Finish() {
 void GLES2Implementation::SwapBuffers() {
   helper_->SwapBuffers();
   Flush();
+}
+
+void GLES2Implementation::GenSharedIds(
+  GLuint namespace_id, GLuint id_offset, GLsizei n, GLuint* ids) {
+  GLint* id_buffer = transfer_buffer_.AllocTyped<GLint>(n);
+  helper_->GenSharedIds(namespace_id, id_offset, n,
+                        transfer_buffer_id_,
+                        transfer_buffer_.GetOffset(id_buffer));
+  WaitForCmd();
+  memcpy(ids, id_buffer, sizeof(*ids) * n);
+  transfer_buffer_.FreePendingToken(id_buffer, helper_->InsertToken());
+}
+
+void GLES2Implementation::DeleteSharedIds(
+    GLuint namespace_id, GLsizei n, const GLuint* ids) {
+  GLint* id_buffer = transfer_buffer_.AllocTyped<GLint>(n);
+  memcpy(id_buffer, ids, sizeof(*ids) * n);
+  helper_->DeleteSharedIds(namespace_id, n,
+                           transfer_buffer_id_,
+                           transfer_buffer_.GetOffset(id_buffer));
+  WaitForCmd();
+  transfer_buffer_.FreePendingToken(id_buffer, helper_->InsertToken());
+}
+
+void GLES2Implementation::RegisterSharedIds(
+    GLuint namespace_id, GLsizei n, const GLuint* ids) {
+  GLint* id_buffer = transfer_buffer_.AllocTyped<GLint>(n);
+  memcpy(id_buffer, ids, sizeof(*ids) * n);
+  helper_->RegisterSharedIds(namespace_id, n,
+                             transfer_buffer_id_,
+                             transfer_buffer_.GetOffset(id_buffer));
+  WaitForCmd();
+  transfer_buffer_.FreePendingToken(id_buffer, helper_->InsertToken());
 }
 
 void GLES2Implementation::BindAttribLocation(
@@ -1155,7 +1259,7 @@ void GLES2Implementation::ReadPixels(
       }
       transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
       // If it was not marked as successful exit.
-      if (*result == 0) {
+      if (*result != 0) {
         return;
       }
       yoffset += num_rows;
@@ -1222,9 +1326,7 @@ void GLES2Implementation::BindBuffer(GLenum target, GLuint buffer) {
     SetGLError(GL_INVALID_OPERATION, "glBindBuffer: reserved buffer id");
     return;
   }
-  if (buffer != 0) {
-    buffer_id_allocator_.MarkAsUsed(buffer);
-  }
+  buffer_id_handler_->MarkAsUsedForBind(buffer);
   switch (target) {
     case GL_ARRAY_BUFFER:
       bound_array_buffer_id_ = buffer;
@@ -1239,7 +1341,7 @@ void GLES2Implementation::BindBuffer(GLenum target, GLuint buffer) {
 }
 
 void GLES2Implementation::DeleteBuffers(GLsizei n, const GLuint* buffers) {
-  FreeIds(&buffer_id_allocator_, n, buffers);
+  buffer_id_handler_->FreeIds(n, buffers);
   for (GLsizei ii = 0; ii < n; ++ii) {
     if (buffers[ii] == bound_array_buffer_id_) {
       bound_array_buffer_id_ = 0;

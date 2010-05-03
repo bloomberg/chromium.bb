@@ -4,7 +4,7 @@
 
 // This file has the unit tests for the IdAllocator class.
 
-#include "gpu/command_buffer/client/id_allocator.h"
+#include "gpu/command_buffer/common/id_allocator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {
@@ -66,7 +66,7 @@ TEST_F(IdAllocatorTest, TestAdvanced) {
   EXPECT_EQ(id1, id2);
 }
 
-// Check that we can choose our own ids and they won't be reused.
+// Checks that we can choose our own ids and they won't be reused.
 TEST_F(IdAllocatorTest, MarkAsUsed) {
   IdAllocator* allocator = id_allocator();
   ResourceId id = allocator->AllocateID();
@@ -81,6 +81,18 @@ TEST_F(IdAllocatorTest, MarkAsUsed) {
   // Checks our algorithm. If the algorithm changes this check should be
   // changed.
   EXPECT_EQ(id3, id2 + 2);
+}
+
+// Checks AllocateIdAtOrAbove.
+TEST_F(IdAllocatorTest, AllocateIdAtOrAbove) {
+  const ResourceId kOffset = 123456;
+  IdAllocator* allocator = id_allocator();
+  ResourceId id1 = allocator->AllocateIDAtOrAbove(kOffset);
+  EXPECT_EQ(kOffset, id1);
+  ResourceId id2 = allocator->AllocateIDAtOrAbove(kOffset);
+  EXPECT_GT(id2, kOffset);
+  ResourceId id3 = allocator->AllocateIDAtOrAbove(kOffset);
+  EXPECT_GT(id3, kOffset);
 }
 
 }  // namespace gpu

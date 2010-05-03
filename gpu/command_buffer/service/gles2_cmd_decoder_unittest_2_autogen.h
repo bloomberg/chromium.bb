@@ -8,8 +8,6 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 
-// TODO(gman): GetUniformLocation
-
 // TODO(gman): GetUniformLocationImmediate
 
 // TODO(gman): GetUniformLocationBucket
@@ -1622,5 +1620,11 @@ TEST_F(GLES2DecoderTest2, ViewportInvalidArgs3_0) {
 }
 // TODO(gman): SwapBuffers
 // TODO(gman): GetMaxValueInBuffer
+// TODO(gman): GenSharedIds
+
+// TODO(gman): DeleteSharedIds
+
+// TODO(gman): RegisterSharedIds
+
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 

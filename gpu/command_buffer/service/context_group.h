@@ -5,11 +5,15 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_CONTEXT_GROUP_H_
 #define GPU_COMMAND_BUFFER_SERVICE_CONTEXT_GROUP_H_
 
-#include <vector>
+#include <map>
 #include "base/basictypes.h"
+#include "base/linked_ptr.h"
 #include "base/scoped_ptr.h"
 
 namespace gpu {
+
+class IdAllocator;
+
 namespace gles2 {
 
 class GLES2Decoder;
@@ -62,6 +66,8 @@ class ContextGroup {
     return shader_manager_.get();
   }
 
+  IdAllocator* GetIdAllocator(unsigned namepsace_id);
+
  private:
   // Whether or not this context is initialized.
   bool initialized_;
@@ -81,6 +87,9 @@ class ContextGroup {
   scoped_ptr<ProgramManager> program_manager_;
 
   scoped_ptr<ShaderManager> shader_manager_;
+
+  typedef std::map<uint32, linked_ptr<IdAllocator> > IdAllocatorMap;
+  IdAllocatorMap id_namespaces_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextGroup);
 };

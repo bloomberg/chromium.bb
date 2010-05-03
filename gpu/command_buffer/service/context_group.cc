@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/context_group.h"
+#include "gpu/command_buffer/common/id_allocator.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/program_manager.h"
@@ -53,6 +54,16 @@ bool ContextGroup::Initialize() {
                                             max_cube_map_texture_size));
   initialized_ = true;
   return true;
+}
+
+IdAllocator* ContextGroup::GetIdAllocator(unsigned namespace_id) {
+  IdAllocatorMap::iterator it = id_namespaces_.find(namespace_id);
+  if (it != id_namespaces_.end()) {
+    return it->second.get();
+  }
+  IdAllocator* id_allocator = new IdAllocator();
+  id_namespaces_[namespace_id] = linked_ptr<IdAllocator>(id_allocator);
+  return id_allocator;
 }
 
 }  // namespace gles2

@@ -152,7 +152,6 @@ class GLES2ImplementationTest : public testing::Test {
     command_buffer_.reset(new MockGLES2CommandBuffer());
     command_buffer_->Initialize(kNumCommandEntries);
 
-
     EXPECT_EQ(kTransferBufferId,
               command_buffer_->CreateTransferBuffer(kTransferBufferSize));
     transfer_buffer_ = command_buffer_->GetTransferBuffer(kTransferBufferId);
@@ -171,7 +170,8 @@ class GLES2ImplementationTest : public testing::Test {
         helper_.get(),
         kTransferBufferSize,
         transfer_buffer_.ptr,
-        kTransferBufferId));
+        kTransferBufferId,
+        false));
 
     EXPECT_CALL(*command_buffer_, OnFlush(_)).Times(1).RetiresOnSaturation();
     helper_->CommandBufferHelper::Flush();

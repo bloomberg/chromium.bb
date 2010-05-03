@@ -11,7 +11,6 @@
 #include "../common/gles2_cmd_utils.h"
 #include "../common/scoped_ptr.h"
 #include "../client/gles2_cmd_helper.h"
-#include "../client/id_allocator.h"
 #include "../client/ring_buffer.h"
 
 #define GLES2_SUPPORT_CLIENT_SIDE_BUFFERS 1
@@ -20,6 +19,22 @@ namespace gpu {
 namespace gles2 {
 
 class ClientSideBufferHelper;
+
+// Base class for IdHandlers
+class IdHandlerInterface {
+ public:
+  IdHandlerInterface() { }
+  virtual ~IdHandlerInterface() { }
+
+  // Makes some ids at or above id_offset.
+  virtual void MakeIds(GLuint id_offset, GLsizei n, GLuint* ids) = 0;
+
+  // Frees some ids.
+  virtual void FreeIds(GLsizei n, const GLuint* ids) = 0;
+
+  // Marks an id as used for glBind functions. id = 0 does nothing.
+  virtual bool MarkAsUsedForBind(GLuint id) = 0;
+};
 
 // This class emulates GLES2 over command buffers. It can be used by a client
 // program so that the program does not need deal with shared memory and command
@@ -49,7 +64,8 @@ class GLES2Implementation {
       GLES2CmdHelper* helper,
       size_t transfer_buffer_size,
       void* transfer_buffer,
-      int32 transfer_buffer_id);
+      int32 transfer_buffer_id,
+      bool share_resources);
 
   ~GLES2Implementation();
 
@@ -126,17 +142,15 @@ class GLES2Implementation {
     }
   #endif
 
-    void MakeIds(IdAllocator* id_allocator, GLsizei n, GLuint* ids);
+   GLuint MakeTextureId() {
+     GLuint id;
+     texture_id_handler_->MakeIds(0, 1, &id);
+     return id;
+   }
 
-    void FreeIds(IdAllocator* id_allocator, GLsizei n, const GLuint* ids);
-
-    GLuint MakeTextureId() {
-      return texture_id_allocator_.AllocateID();
-    }
-
-    void FreeTextureId(GLuint id) {
-      texture_id_allocator_.FreeID(id);
-    }
+   void FreeTextureId(GLuint id) {
+     texture_id_handler_->FreeIds(1, &id);
+   }
 
  private:
   // Wraps RingBufferWrapper to provide aligned allocations.
@@ -231,11 +245,11 @@ class GLES2Implementation {
 
   GLES2Util util_;
   GLES2CmdHelper* helper_;
-  IdAllocator buffer_id_allocator_;
-  IdAllocator framebuffer_id_allocator_;
-  IdAllocator renderbuffer_id_allocator_;
-  IdAllocator program_and_shader_id_allocator_;
-  IdAllocator texture_id_allocator_;
+  scoped_ptr<IdHandlerInterface> buffer_id_handler_;
+  scoped_ptr<IdHandlerInterface> framebuffer_id_handler_;
+  scoped_ptr<IdHandlerInterface> renderbuffer_id_handler_;
+  scoped_ptr<IdHandlerInterface> program_and_shader_id_handler_;
+  scoped_ptr<IdHandlerInterface> texture_id_handler_;
   AlignedRingBuffer transfer_buffer_;
   int transfer_buffer_id_;
   void* result_buffer_;
@@ -254,6 +268,10 @@ class GLES2Implementation {
 
   // The currently bound element array buffer.
   GLuint bound_element_array_buffer_id_;
+
+  // GL names for the buffers used to emulate client side buffers.
+  GLuint client_side_array_id_;
+  GLuint client_side_element_array_id_;
 
   // Info for each vertex attribute saved so we can simulate client side
   // buffers.

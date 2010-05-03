@@ -550,8 +550,15 @@ TEST_F(GLES2DecoderTest1, DeleteFramebuffersImmediateInvalidArgs) {
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
-// TODO(gman): DeleteProgram
 
+TEST_F(GLES2DecoderTest1, DeleteProgramValidArgs) {
+  EXPECT_CALL(*gl_, DeleteProgram(kServiceProgramId));
+  SpecializedSetup<DeleteProgram, 0>();
+  DeleteProgram cmd;
+  cmd.Init(client_program_id_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
 
 TEST_F(GLES2DecoderTest1, DeleteRenderbuffersValidArgs) {
   EXPECT_CALL(
@@ -601,8 +608,15 @@ TEST_F(GLES2DecoderTest1, DeleteRenderbuffersImmediateInvalidArgs) {
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
-// TODO(gman): DeleteShader
 
+TEST_F(GLES2DecoderTest1, DeleteShaderValidArgs) {
+  EXPECT_CALL(*gl_, DeleteShader(kServiceShaderId));
+  SpecializedSetup<DeleteShader, 0>();
+  DeleteShader cmd;
+  cmd.Init(client_shader_id_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
 
 TEST_F(GLES2DecoderTest1, DeleteTexturesValidArgs) {
   EXPECT_CALL(
@@ -1804,6 +1818,8 @@ TEST_F(GLES2DecoderTest1, GetTexParameterivInvalidArgs2_1) {
 // TODO(gman): GetUniformfv
 
 // TODO(gman): GetUniformiv
+
+// TODO(gman): GetUniformLocation
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_1_AUTOGEN_H_
 

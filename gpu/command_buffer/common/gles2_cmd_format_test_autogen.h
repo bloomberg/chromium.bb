@@ -3270,5 +3270,64 @@ TEST(GLES2FormatTest, GetMaxValueInBuffer) {
   EXPECT_EQ(static_cast<uint32>(16), cmd.result_shm_offset);
 }
 
+TEST(GLES2FormatTest, GenSharedIds) {
+  GenSharedIds cmd = { { 0 } };
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLuint>(11),
+      static_cast<GLuint>(12),
+      static_cast<GLsizei>(13),
+      static_cast<uint32>(14),
+      static_cast<uint32>(15));
+  EXPECT_EQ(static_cast<uint32>(GenSharedIds::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<char*>(next_cmd),
+            reinterpret_cast<char*>(&cmd) + sizeof(cmd));
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.namespace_id);
+  EXPECT_EQ(static_cast<GLuint>(12), cmd.id_offset);
+  EXPECT_EQ(static_cast<GLsizei>(13), cmd.n);
+  EXPECT_EQ(static_cast<uint32>(14), cmd.ids_shm_id);
+  EXPECT_EQ(static_cast<uint32>(15), cmd.ids_shm_offset);
+}
+
+TEST(GLES2FormatTest, DeleteSharedIds) {
+  DeleteSharedIds cmd = { { 0 } };
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLuint>(11),
+      static_cast<GLsizei>(12),
+      static_cast<uint32>(13),
+      static_cast<uint32>(14));
+  EXPECT_EQ(static_cast<uint32>(DeleteSharedIds::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<char*>(next_cmd),
+            reinterpret_cast<char*>(&cmd) + sizeof(cmd));
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.namespace_id);
+  EXPECT_EQ(static_cast<GLsizei>(12), cmd.n);
+  EXPECT_EQ(static_cast<uint32>(13), cmd.ids_shm_id);
+  EXPECT_EQ(static_cast<uint32>(14), cmd.ids_shm_offset);
+}
+
+TEST(GLES2FormatTest, RegisterSharedIds) {
+  RegisterSharedIds cmd = { { 0 } };
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLuint>(11),
+      static_cast<GLsizei>(12),
+      static_cast<uint32>(13),
+      static_cast<uint32>(14));
+  EXPECT_EQ(static_cast<uint32>(RegisterSharedIds::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<char*>(next_cmd),
+            reinterpret_cast<char*>(&cmd) + sizeof(cmd));
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.namespace_id);
+  EXPECT_EQ(static_cast<GLsizei>(12), cmd.n);
+  EXPECT_EQ(static_cast<uint32>(13), cmd.ids_shm_id);
+  EXPECT_EQ(static_cast<uint32>(14), cmd.ids_shm_offset);
+}
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_TEST_AUTOGEN_H_
 

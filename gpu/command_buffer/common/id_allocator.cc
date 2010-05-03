@@ -4,7 +4,7 @@
 
 // This file contains the implementation of IdAllocator.
 
-#include "../client/id_allocator.h"
+#include "../common/id_allocator.h"
 #include "../common/logging.h"
 
 namespace gpu {
@@ -12,7 +12,7 @@ namespace gpu {
 IdAllocator::IdAllocator() {
 }
 
-unsigned int IdAllocator::FindFirstFree() const {
+ResourceId IdAllocator::FindFirstFree() const {
   ResourceId id = 1;
   for (ResourceIdSet::const_iterator it = used_ids_.begin();
        it != used_ids_.end(); ++it) {
@@ -22,6 +22,14 @@ unsigned int IdAllocator::FindFirstFree() const {
     ++id;
   }
   return id;
+}
+
+ResourceId IdAllocator::AllocateIDAtOrAbove(ResourceId desired_id) {
+  DCHECK_LT(static_cast<ResourceId>(used_ids_.size()),
+            static_cast<ResourceId>(-1));
+  for (; InUse(desired_id); ++desired_id);
+  MarkAsUsed(desired_id);
+  return desired_id;
 }
 
 }  // namespace gpu

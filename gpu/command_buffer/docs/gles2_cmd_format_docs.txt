@@ -2179,4 +2179,39 @@ struct GetMaxValueInBuffer {
   uint32 result_shm_offset;  //!< uint32
 };
 
+//! Command that generates shared ids for contexts that share resources.
+struct GenSharedIds {
+  static const CommandId kCmdId = 439;
+
+  CommandHeader header;
+  uint32 namespace_id;  //!< GLuint
+  uint32 id_offset;  //!< GLuint
+  int32 n;  //!< GLsizei
+  uint32 ids_shm_id;  //!< uint32
+  uint32 ids_shm_offset;  //!< uint32
+};
+
+//! Command that deletes shared ids.
+struct DeleteSharedIds {
+  static const CommandId kCmdId = 440;
+
+  CommandHeader header;
+  uint32 namespace_id;  //!< GLuint
+  int32 n;  //!< GLsizei
+  uint32 ids_shm_id;  //!< uint32
+  uint32 ids_shm_offset;  //!< uint32
+};
+
+//! Command that registers shared ids. It is an error to attempt
+//! to register an id that is already registered.
+struct RegisterSharedIds {
+  static const CommandId kCmdId = 441;
+
+  CommandHeader header;
+  uint32 namespace_id;  //!< GLuint
+  int32 n;  //!< GLsizei
+  uint32 ids_shm_id;  //!< uint32
+  uint32 ids_shm_offset;  //!< uint32
+};
+
 

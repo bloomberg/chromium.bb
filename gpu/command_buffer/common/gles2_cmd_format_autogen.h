@@ -8280,6 +8280,164 @@ COMPILE_ASSERT(offsetof(GetMaxValueInBuffer, result_shm_id) == 20,
 COMPILE_ASSERT(offsetof(GetMaxValueInBuffer, result_shm_offset) == 24,
                OffsetOf_GetMaxValueInBuffer_result_shm_offset_not_24);
 
+struct GenSharedIds {
+  typedef GenSharedIds ValueType;
+  static const CommandId kCmdId = kGenSharedIds;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(
+      GLuint _namespace_id, GLuint _id_offset, GLsizei _n, uint32 _ids_shm_id,
+      uint32 _ids_shm_offset) {
+    SetHeader();
+    namespace_id = _namespace_id;
+    id_offset = _id_offset;
+    n = _n;
+    ids_shm_id = _ids_shm_id;
+    ids_shm_offset = _ids_shm_offset;
+  }
+
+  void* Set(
+      void* cmd, GLuint _namespace_id, GLuint _id_offset, GLsizei _n,
+      uint32 _ids_shm_id, uint32 _ids_shm_offset) {
+    static_cast<ValueType*>(
+        cmd)->Init(
+            _namespace_id, _id_offset, _n, _ids_shm_id, _ids_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 namespace_id;
+  uint32 id_offset;
+  int32 n;
+  uint32 ids_shm_id;
+  uint32 ids_shm_offset;
+};
+
+COMPILE_ASSERT(sizeof(GenSharedIds) == 24,
+               Sizeof_GenSharedIds_is_not_24);
+COMPILE_ASSERT(offsetof(GenSharedIds, header) == 0,
+               OffsetOf_GenSharedIds_header_not_0);
+COMPILE_ASSERT(offsetof(GenSharedIds, namespace_id) == 4,
+               OffsetOf_GenSharedIds_namespace_id_not_4);
+COMPILE_ASSERT(offsetof(GenSharedIds, id_offset) == 8,
+               OffsetOf_GenSharedIds_id_offset_not_8);
+COMPILE_ASSERT(offsetof(GenSharedIds, n) == 12,
+               OffsetOf_GenSharedIds_n_not_12);
+COMPILE_ASSERT(offsetof(GenSharedIds, ids_shm_id) == 16,
+               OffsetOf_GenSharedIds_ids_shm_id_not_16);
+COMPILE_ASSERT(offsetof(GenSharedIds, ids_shm_offset) == 20,
+               OffsetOf_GenSharedIds_ids_shm_offset_not_20);
+
+struct DeleteSharedIds {
+  typedef DeleteSharedIds ValueType;
+  static const CommandId kCmdId = kDeleteSharedIds;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(
+      GLuint _namespace_id, GLsizei _n, uint32 _ids_shm_id,
+      uint32 _ids_shm_offset) {
+    SetHeader();
+    namespace_id = _namespace_id;
+    n = _n;
+    ids_shm_id = _ids_shm_id;
+    ids_shm_offset = _ids_shm_offset;
+  }
+
+  void* Set(
+      void* cmd, GLuint _namespace_id, GLsizei _n, uint32 _ids_shm_id,
+      uint32 _ids_shm_offset) {
+    static_cast<ValueType*>(
+        cmd)->Init(_namespace_id, _n, _ids_shm_id, _ids_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 namespace_id;
+  int32 n;
+  uint32 ids_shm_id;
+  uint32 ids_shm_offset;
+};
+
+COMPILE_ASSERT(sizeof(DeleteSharedIds) == 20,
+               Sizeof_DeleteSharedIds_is_not_20);
+COMPILE_ASSERT(offsetof(DeleteSharedIds, header) == 0,
+               OffsetOf_DeleteSharedIds_header_not_0);
+COMPILE_ASSERT(offsetof(DeleteSharedIds, namespace_id) == 4,
+               OffsetOf_DeleteSharedIds_namespace_id_not_4);
+COMPILE_ASSERT(offsetof(DeleteSharedIds, n) == 8,
+               OffsetOf_DeleteSharedIds_n_not_8);
+COMPILE_ASSERT(offsetof(DeleteSharedIds, ids_shm_id) == 12,
+               OffsetOf_DeleteSharedIds_ids_shm_id_not_12);
+COMPILE_ASSERT(offsetof(DeleteSharedIds, ids_shm_offset) == 16,
+               OffsetOf_DeleteSharedIds_ids_shm_offset_not_16);
+
+struct RegisterSharedIds {
+  typedef RegisterSharedIds ValueType;
+  static const CommandId kCmdId = kRegisterSharedIds;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(
+      GLuint _namespace_id, GLsizei _n, uint32 _ids_shm_id,
+      uint32 _ids_shm_offset) {
+    SetHeader();
+    namespace_id = _namespace_id;
+    n = _n;
+    ids_shm_id = _ids_shm_id;
+    ids_shm_offset = _ids_shm_offset;
+  }
+
+  void* Set(
+      void* cmd, GLuint _namespace_id, GLsizei _n, uint32 _ids_shm_id,
+      uint32 _ids_shm_offset) {
+    static_cast<ValueType*>(
+        cmd)->Init(_namespace_id, _n, _ids_shm_id, _ids_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 namespace_id;
+  int32 n;
+  uint32 ids_shm_id;
+  uint32 ids_shm_offset;
+};
+
+COMPILE_ASSERT(sizeof(RegisterSharedIds) == 20,
+               Sizeof_RegisterSharedIds_is_not_20);
+COMPILE_ASSERT(offsetof(RegisterSharedIds, header) == 0,
+               OffsetOf_RegisterSharedIds_header_not_0);
+COMPILE_ASSERT(offsetof(RegisterSharedIds, namespace_id) == 4,
+               OffsetOf_RegisterSharedIds_namespace_id_not_4);
+COMPILE_ASSERT(offsetof(RegisterSharedIds, n) == 8,
+               OffsetOf_RegisterSharedIds_n_not_8);
+COMPILE_ASSERT(offsetof(RegisterSharedIds, ids_shm_id) == 12,
+               OffsetOf_RegisterSharedIds_ids_shm_id_not_12);
+COMPILE_ASSERT(offsetof(RegisterSharedIds, ids_shm_offset) == 16,
+               OffsetOf_RegisterSharedIds_ids_shm_offset_not_16);
+
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 

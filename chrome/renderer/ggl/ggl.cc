@@ -174,7 +174,8 @@ bool Context::Initialize(gfx::NativeViewId view, const gfx::Size& size) {
       gles2_helper_,
       transfer_buffer.size,
       transfer_buffer.ptr,
-      transfer_buffer_id_);
+      transfer_buffer_id_,
+      false);
 
   return true;
 }

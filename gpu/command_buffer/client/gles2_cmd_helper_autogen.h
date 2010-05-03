@@ -1127,5 +1127,26 @@
     c.Init(buffer_id, count, type, offset, result_shm_id, result_shm_offset);
   }
 
+  void GenSharedIds(
+      GLuint namespace_id, GLuint id_offset, GLsizei n, uint32 ids_shm_id,
+      uint32 ids_shm_offset) {
+    gles2::GenSharedIds& c = GetCmdSpace<gles2::GenSharedIds>();
+    c.Init(namespace_id, id_offset, n, ids_shm_id, ids_shm_offset);
+  }
+
+  void DeleteSharedIds(
+      GLuint namespace_id, GLsizei n, uint32 ids_shm_id,
+      uint32 ids_shm_offset) {
+    gles2::DeleteSharedIds& c = GetCmdSpace<gles2::DeleteSharedIds>();
+    c.Init(namespace_id, n, ids_shm_id, ids_shm_offset);
+  }
+
+  void RegisterSharedIds(
+      GLuint namespace_id, GLsizei n, uint32 ids_shm_id,
+      uint32 ids_shm_offset) {
+    gles2::RegisterSharedIds& c = GetCmdSpace<gles2::RegisterSharedIds>();
+    c.Init(namespace_id, n, ids_shm_id, ids_shm_offset);
+  }
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_
 

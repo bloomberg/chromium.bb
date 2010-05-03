@@ -508,6 +508,17 @@ GLuint GLES2GetMaxValueInBuffer(
   return gles2::GetGLContext()->GetMaxValueInBuffer(
       buffer_id, count, type, offset);
 }
+void GLES2GenSharedIds(
+    GLuint namespace_id, GLuint id_offset, GLsizei n, GLuint* ids) {
+  gles2::GetGLContext()->GenSharedIds(namespace_id, id_offset, n, ids);
+}
+void GLES2DeleteSharedIds(GLuint namespace_id, GLsizei n, const GLuint* ids) {
+  gles2::GetGLContext()->DeleteSharedIds(namespace_id, n, ids);
+}
+void GLES2RegisterSharedIds(
+    GLuint namespace_id, GLsizei n, const GLuint* ids) {
+  gles2::GetGLContext()->RegisterSharedIds(namespace_id, n, ids);
+}
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_C_LIB_AUTOGEN_H_
 

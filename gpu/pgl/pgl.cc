@@ -84,7 +84,8 @@ PGLBoolean PGLContextImpl::Initialize(int32 transfer_buffer_size) {
           gles2_helper_,
           transfer_buffer.size,
           transfer_buffer.ptr,
-          transfer_buffer_id_);
+          transfer_buffer_id_,
+          false);
       return PGL_TRUE;
     }
   }

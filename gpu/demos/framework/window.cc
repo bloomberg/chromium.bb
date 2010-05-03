@@ -84,7 +84,8 @@ bool Window::CreateRenderContext(gfx::PluginWindowHandle hwnd) {
   ::gles2::SetGLContext(new GLES2Implementation(helper,
                                                 transfer_buffer.size,
                                                 transfer_buffer.ptr,
-                                                transfer_buffer_id));
+                                                transfer_buffer_id,
+                                                false));
   return command_buffer.release() != NULL;
 }
 

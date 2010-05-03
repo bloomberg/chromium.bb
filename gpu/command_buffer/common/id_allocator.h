@@ -30,6 +30,10 @@ class IdAllocator {
     return id;
   }
 
+  // Allocates an Id starting at or above desired_id.
+  // Note: may wrap if it starts near limit.
+  ResourceId AllocateIDAtOrAbove(ResourceId desired_id);
+
   // Marks an id as used. Returns false if id was already used.
   bool MarkAsUsed(ResourceId id) {
     std::pair<ResourceIdSet::iterator, bool> result = used_ids_.insert(id);
@@ -43,11 +47,11 @@ class IdAllocator {
 
   // Checks whether or not a resource ID is in use.
   bool InUse(ResourceId id) const {
-    return used_ids_.find(id) != used_ids_.end();
+    return id == kInvalidResource || used_ids_.find(id) != used_ids_.end();
   }
 
  private:
-  // TODO(gman): This would work much better with ranges.
+  // TODO(gman): This would work much better with ranges or a hash table.
   typedef std::set<ResourceId> ResourceIdSet;
 
   ResourceId FindFirstFree() const;

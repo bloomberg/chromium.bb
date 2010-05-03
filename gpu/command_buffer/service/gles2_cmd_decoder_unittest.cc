@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/common/id_allocator.h"
 #include "gpu/command_buffer/service/gl_mock.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_base.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
@@ -1951,6 +1952,123 @@ TEST_F(GLES2DecoderWithShaderTest, GetMaxValueInBuffer) {
            GL_UNSIGNED_SHORT,
            kValidIndexRangeStart * 2,
            kSharedMemoryId, kInvalidSharedMemoryOffset);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+}
+
+TEST_F(GLES2DecoderTest, SharedIds) {
+  GenSharedIds gen_cmd;
+  RegisterSharedIds reg_cmd;
+  DeleteSharedIds del_cmd;
+
+  const GLuint kNamespaceId = id_namespaces::kTextures;
+  const GLuint kExpectedId1 = 1;
+  const GLuint kExpectedId2 = 2;
+  const GLuint kExpectedId3 = 4;
+  const GLuint kRegisterId = 3;
+  GLuint* ids = GetSharedMemoryAs<GLuint*>();
+  gen_cmd.Init(kNamespaceId, 0, 2, kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(gen_cmd));
+  IdAllocator* id_allocator = GetIdAllocator(kNamespaceId);
+  ASSERT_TRUE(id_allocator != NULL);
+  // This check is implementation dependant but it's kind of hard to check
+  // otherwise.
+  EXPECT_EQ(kExpectedId1, ids[0]);
+  EXPECT_EQ(kExpectedId2, ids[1]);
+  EXPECT_TRUE(id_allocator->InUse(kExpectedId1));
+  EXPECT_TRUE(id_allocator->InUse(kExpectedId2));
+  EXPECT_FALSE(id_allocator->InUse(kRegisterId));
+  EXPECT_FALSE(id_allocator->InUse(kExpectedId3));
+
+  ClearSharedMemory();
+  ids[0] = kRegisterId;
+  reg_cmd.Init(kNamespaceId, 1, kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(reg_cmd));
+  EXPECT_TRUE(id_allocator->InUse(kExpectedId1));
+  EXPECT_TRUE(id_allocator->InUse(kExpectedId2));
+  EXPECT_TRUE(id_allocator->InUse(kRegisterId));
+  EXPECT_FALSE(id_allocator->InUse(kExpectedId3));
+
+  ClearSharedMemory();
+  gen_cmd.Init(kNamespaceId, 0, 1, kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(gen_cmd));
+  EXPECT_EQ(kExpectedId3, ids[0]);
+  EXPECT_TRUE(id_allocator->InUse(kExpectedId1));
+  EXPECT_TRUE(id_allocator->InUse(kExpectedId2));
+  EXPECT_TRUE(id_allocator->InUse(kRegisterId));
+  EXPECT_TRUE(id_allocator->InUse(kExpectedId3));
+
+  ClearSharedMemory();
+  ids[0] = kExpectedId1;
+  ids[1] = kRegisterId;
+  del_cmd.Init(kNamespaceId, 2, kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(del_cmd));
+  EXPECT_FALSE(id_allocator->InUse(kExpectedId1));
+  EXPECT_TRUE(id_allocator->InUse(kExpectedId2));
+  EXPECT_FALSE(id_allocator->InUse(kRegisterId));
+  EXPECT_TRUE(id_allocator->InUse(kExpectedId3));
+
+  ClearSharedMemory();
+  ids[0] = kExpectedId3;
+  ids[1] = kExpectedId2;
+  del_cmd.Init(kNamespaceId, 2, kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(del_cmd));
+  EXPECT_FALSE(id_allocator->InUse(kExpectedId1));
+  EXPECT_FALSE(id_allocator->InUse(kExpectedId2));
+  EXPECT_FALSE(id_allocator->InUse(kRegisterId));
+  EXPECT_FALSE(id_allocator->InUse(kExpectedId3));
+
+  // Check passing in an id_offset.
+  ClearSharedMemory();
+  const GLuint kOffset = 0xABCDEF;
+  gen_cmd.Init(kNamespaceId, kOffset, 2, kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(gen_cmd));
+  EXPECT_EQ(kOffset, ids[0]);
+  EXPECT_EQ(kOffset + 1, ids[1]);
+}
+
+TEST_F(GLES2DecoderTest, GenSharedIdsBadArgs) {
+  const GLuint kNamespaceId = id_namespaces::kTextures;
+  GenSharedIds cmd;
+  cmd.Init(kNamespaceId, 0, -1, kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+  cmd.Init(kNamespaceId, 0, 1, kInvalidSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+  cmd.Init(kNamespaceId, 0, 1, kSharedMemoryId, kInvalidSharedMemoryOffset);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+}
+
+TEST_F(GLES2DecoderTest, RegisterSharedIdsBadArgs) {
+  const GLuint kNamespaceId = id_namespaces::kTextures;
+  RegisterSharedIds cmd;
+  cmd.Init(kNamespaceId, -1, kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+  cmd.Init(kNamespaceId, 1, kInvalidSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+  cmd.Init(kNamespaceId, 1, kSharedMemoryId, kInvalidSharedMemoryOffset);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+}
+
+TEST_F(GLES2DecoderTest, RegisterSharedIdsDuplicateIds) {
+  const GLuint kNamespaceId = id_namespaces::kTextures;
+  const GLuint kRegisterId = 3;
+  RegisterSharedIds cmd;
+  GLuint* ids = GetSharedMemoryAs<GLuint*>();
+  ids[0] = kRegisterId;
+  cmd.Init(kNamespaceId, 1, kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  cmd.Init(kNamespaceId, 1, kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest, DeleteSharedIdsBadArgs) {
+  const GLuint kNamespaceId = id_namespaces::kTextures;
+  DeleteSharedIds cmd;
+  cmd.Init(kNamespaceId, -1, kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+  cmd.Init(kNamespaceId, 1, kInvalidSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+  cmd.Init(kNamespaceId, 1, kSharedMemoryId, kInvalidSharedMemoryOffset);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 

@@ -178,6 +178,9 @@ GL_APICALL void         GL_APIENTRY glViewport (GLint x, GLint y, GLsizei width,
 // Non-GL commands.
 GL_APICALL void         GL_APIENTRY glSwapBuffers (void);
 GL_APICALL GLuint       GL_APIENTRY glGetMaxValueInBuffer (GLidBuffer buffer_id, GLsizei count, GLenumIndexType type, GLuint offset);
+GL_APICALL void         GL_APIENTRY glGenSharedIds (GLuint namespace_id, GLuint id_offset, GLsizei n, GLuint* ids);
+GL_APICALL void         GL_APIENTRY glDeleteSharedIds (GLuint namespace_id, GLsizei n, const GLuint* ids);
+GL_APICALL void         GL_APIENTRY glRegisterSharedIds (GLuint namespace_id, GLsizei n, const GLuint* ids);
 """
 
 # This is the list of all commmands that will be generated and their Id.
@@ -369,6 +372,9 @@ _CMD_ID_TABLE = {
   'ShaderBinary':                                              436,
   'ReleaseShaderCompiler':                                     437,
   'GetMaxValueInBuffer':                                       438,
+  'GenSharedIds':                                              439,
+  'DeleteSharedIds':                                           440,
+  'RegisterSharedIds':                                         441,
 }
 
 # This is a list of enum names and their valid values. It is used to map
@@ -1006,12 +1012,19 @@ _FUNCTION_INFO = {
     'type': 'DELn',
     'gl_test_func': 'glDeleteFramebuffersEXT',
   },
-  'DeleteProgram': {'type': 'Custom', 'decoder_func': 'DoDeleteProgram'},
+  'DeleteProgram': {'type': 'Delete', 'decoder_func': 'DoDeleteProgram'},
   'DeleteRenderbuffers': {
     'type': 'DELn',
     'gl_test_func': 'glDeleteRenderbuffersEXT',
   },
-  'DeleteShader': {'type': 'Custom', 'decoder_func': 'DoDeleteShader'},
+  'DeleteShader': {'type': 'Delete', 'decoder_func': 'DoDeleteShader'},
+  'DeleteSharedIds': {
+    'type': 'Custom',
+    'decoder_func': 'DoDeleteSharedIds',
+    'impl_func': False,
+    'expectation': False,
+    'immediate': False,
+  },
   'DeleteTextures': {'type': 'DELn'},
   'DepthRangef': {'decoder_func': 'glDepthRange'},
   'DetachShader': {'decoder_func': 'DoDetachShader'},
@@ -1054,6 +1067,13 @@ _FUNCTION_INFO = {
   'GenFramebuffers': {'type': 'GENn', 'gl_test_func': 'glGenFramebuffersEXT'},
   'GenRenderbuffers': {'type': 'GENn', 'gl_test_func': 'glGenRenderbuffersEXT'},
   'GenTextures': {'type': 'GENn', 'gl_test_func': 'glGenTextures'},
+  'GenSharedIds': {
+    'type': 'Custom',
+    'decoder_func': 'DoGenSharedIds',
+    'impl_func': False,
+    'expectation': False,
+    'immediate': False,
+  },
   'GetActiveAttrib': {
     'type': 'Custom',
     'immediate': False,
@@ -1262,6 +1282,13 @@ _FUNCTION_INFO = {
         'GLenum type, uint32 pixels_shm_id, uint32 pixels_shm_offset, '
         'uint32 result_shm_id, uint32 result_shm_offset',
     'result': ['uint32'],
+  },
+  'RegisterSharedIds': {
+    'type': 'Custom',
+    'decoder_func': 'DoRegisterSharedIds',
+    'impl_func': False,
+    'expectation': False,
+    'immediate': False,
   },
   'ReleaseShaderCompiler': {
     'decoder_func': 'DoReleaseShaderCompiler',
@@ -2206,9 +2233,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     SetGLError(GL_INVALID_OPERATION, "%(name)s: %(id)s reserved id");
     return;
   }
-  if (%(id)s != 0) {
-    %(lc_type)s_id_allocator_.MarkAsUsed(%(id)s);
-  }
+  %(lc_type)s_id_handler_->MarkAsUsedForBind(%(id)s);
   helper_->%(name)s(%(arg_string)s);
 }
 
@@ -2260,7 +2285,7 @@ class GENnHandler(TypeHandler):
   def WriteGLES2ImplementationHeader(self, func, file):
     """Overrriden from TypeHandler."""
     code = """%(return_type)s %(name)s(%(typed_args)s) {
-  MakeIds(&%(resource_type)s_id_allocator_, %(args)s);
+  %(resource_type)s_id_handler_->MakeIds(0, %(args)s);
   helper_->%(name)sImmediate(%(args)s);
 }
 
@@ -2493,10 +2518,33 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
     file.Write("  GLuint client_id;\n")
-    file.Write("  MakeIds(&program_and_shader_id_allocator_, 1, &client_id);\n")
+    file.Write("  program_and_shader_id_handler_->MakeIds(0, 1, &client_id);\n")
     file.Write("  helper_->%s(%s);\n" %
                (func.name, func.MakeCmdArgString("")))
     file.Write("  return client_id;\n")
+    file.Write("}\n")
+    file.Write("\n")
+
+
+class DeleteHandler(TypeHandler):
+  """Handler for glDelete___ single resource type functions."""
+
+  def __init__(self):
+    TypeHandler.__init__(self)
+
+  def WriteServiceImplementation(self, func, file):
+    """Overrriden from TypeHandler."""
+    pass
+
+  def WriteGLES2ImplementationHeader(self, func, file):
+    """Overrriden from TypeHandler."""
+    file.Write("%s %s(%s) {\n" %
+               (func.return_type, func.original_name,
+                func.MakeTypedOriginalArgString("")))
+    file.Write("  program_and_shader_id_handler_->FreeIds(1, &%s);\n" %
+               func.GetOriginalArgs()[-1].name)
+    file.Write("  helper_->%s(%s);\n" %
+               (func.name, func.MakeCmdArgString("")))
     file.Write("}\n")
     file.Write("\n")
 
@@ -2602,7 +2650,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs) {
       file.Write("%s %s(%s) {\n" %
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
-      file.Write("  FreeIds(&%s_id_allocator_, %s);\n" %
+      file.Write("  %s_id_handler_->FreeIds(%s);\n" %
          (func.name[6:-1].lower(), func.MakeOriginalArgString("")))
       file.Write("  helper_->%sImmediate(%s);\n" %
                  (func.name, func.MakeOriginalArgString("")))
@@ -4349,6 +4397,7 @@ class GLGenerator(object):
       'Create': CreateHandler(),
       'Custom': CustomHandler(),
       'Data': DataHandler(),
+      'Delete': DeleteHandler(),
       'DELn': DELnHandler(),
       'GENn': GENnHandler(),
       'GETn': GETnHandler(),

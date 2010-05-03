@@ -128,7 +128,7 @@ class RingBufferWrapper {
   // Returns:
   //   the pointer to the allocated memory block, or NULL if out of
   //   memory.
-  void *Alloc(unsigned int size) {
+  void* Alloc(unsigned int size) {
     RingBuffer::Offset offset = allocator_.Alloc(size);
     return GetPointer(offset);
   }
@@ -144,8 +144,8 @@ class RingBufferWrapper {
   // Returns:
   //   the pointer to the allocated memory block, or NULL if out of
   //   memory.
-  template <typename T> T *AllocTyped(unsigned int count) {
-    return static_cast<T *>(Alloc(count * sizeof(T)));
+  template <typename T> T* AllocTyped(unsigned int count) {
+    return static_cast<T*>(Alloc(count * sizeof(T)));
   }
 
   // Frees a block of memory, pending the passage of a token. That memory won't
@@ -154,18 +154,18 @@ class RingBufferWrapper {
   // Parameters:
   //   pointer: the pointer to the memory block to free.
   //   token: the token value to wait for before re-using the memory.
-  void FreePendingToken(void *pointer, unsigned int token) {
+  void FreePendingToken(void* pointer, unsigned int token) {
     DCHECK(pointer);
     allocator_.FreePendingToken(GetOffset(pointer), token);
   }
 
   // Gets a pointer to a memory block given the base memory and the offset.
-  void *GetPointer(RingBuffer::Offset offset) {
+  void* GetPointer(RingBuffer::Offset offset) {
     return static_cast<int8*>(base_) + offset;
   }
 
   // Gets the offset to a memory block given the base memory and the address.
-  RingBuffer::Offset GetOffset(void *pointer) {
+  RingBuffer::Offset GetOffset(void* pointer) {
     return static_cast<int8*>(pointer) - static_cast<int8*>(base_);
   }
 
@@ -182,7 +182,7 @@ class RingBufferWrapper {
 
  private:
   RingBuffer allocator_;
-  void *base_;
+  void* base_;
   RingBuffer::Offset base_offset_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(RingBufferWrapper);
 };
