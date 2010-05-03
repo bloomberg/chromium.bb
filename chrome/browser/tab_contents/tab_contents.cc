@@ -849,6 +849,9 @@ TabContents* TabContents::Clone() {
                                     SiteInstance::CreateSiteInstance(profile()),
                                     MSG_ROUTING_NONE, this);
   tc->controller().CopyStateFrom(controller_);
+  tc->app_extension_ = app_extension_;
+  tc->app_extension_for_current_page_ = app_extension_for_current_page_;
+  tc->app_extension_icon_ = app_extension_icon_;
   return tc;
 }
 
