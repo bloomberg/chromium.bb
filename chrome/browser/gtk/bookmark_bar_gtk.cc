@@ -71,8 +71,9 @@ const int kBookmarkBarMinimumHeight = 4;
 // Left-padding for the instructional text.
 const int kInstructionsPadding = 6;
 
-// Padding to left and right of the "Other Bookmarks" button.
-const int kOtherBookmarksPadding = 2;
+// Padding around the "Other Bookmarks" button.
+const int kOtherBookmarksPaddingHorizontal = 2;
+const int kOtherBookmarksPaddingVertical = 1;
 
 // Middle color of the separator gradient.
 const double kSeparatorColor[] =
@@ -104,8 +105,8 @@ void SetToolBarStyle() {
       "  ythickness = 0\n"
       "  GtkWidget::focus-padding = 0\n"
       "  GtkContainer::border-width = 0\n"
-      "  GtkToolBar::internal-padding = 0\n"
-      "  GtkToolBar::shadow-type = GTK_SHADOW_NONE\n"
+      "  GtkToolbar::internal-padding = 1\n"
+      "  GtkToolbar::shadow-type = GTK_SHADOW_NONE\n"
       "}\n"
       "widget \"*chrome-bookmark-toolbar\" style \"chrome-bookmark-toolbar\"");
 }
@@ -266,8 +267,15 @@ void BookmarkBarGtk::Init(Profile* profile) {
   // we can have finer control over its label.
   other_bookmarks_button_ = theme_provider_->BuildChromeButton();
   ConnectFolderButtonEvents(other_bookmarks_button_);
-  gtk_box_pack_start(GTK_BOX(bookmark_hbox_), other_bookmarks_button_,
-                     FALSE, FALSE, kOtherBookmarksPadding);
+  GtkWidget* other_padding = gtk_alignment_new(0, 0, 1, 1);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(other_padding),
+                            kOtherBookmarksPaddingVertical,
+                            kOtherBookmarksPaddingVertical,
+                            kOtherBookmarksPaddingHorizontal,
+                            kOtherBookmarksPaddingHorizontal);
+  gtk_container_add(GTK_CONTAINER(other_padding), other_bookmarks_button_);
+  gtk_box_pack_start(GTK_BOX(bookmark_hbox_), other_padding,
+                     FALSE, FALSE, 0);
 
   sync_error_button_ = theme_provider_->BuildChromeButton();
   gtk_button_set_image(
