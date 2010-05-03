@@ -47,7 +47,6 @@ without changes to the corresponding grd file. paaaae -->
       <include name="IDR_GMAIL_APP_MANIFEST" file="resources\gmail_app\manifest.json" type="BINDATA" />
       <include name="IDR_CALENDAR_APP_MANIFEST" file="resources\calendar_app\manifest.json" type="BINDATA" />
       <include name="IDR_DOCS_APP_MANIFEST" file="resources\docs_app\manifest.json" type="BINDATA" />
-      <include name="IDR_CHAT_MANAGER_MANIFEST" file="resources\chat_manager\manifest.json" type="BINDATA" />
       <include name="IDR_DOWNLOADS_HTML" file="resources\downloads.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_LOCAL_STRINGS_JS" file="resources\shared\js\local_strings.js" type="BINDATA" />
       <include name="IDR_DOM_UI_CSS" file="resources\dom_ui.css" flattenhtml="true" type="BINDATA" />
