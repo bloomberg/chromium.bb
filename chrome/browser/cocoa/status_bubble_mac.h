@@ -38,6 +38,7 @@ class StatusBubbleMac : public StatusBubble {
   virtual void Hide();
   virtual void MouseMoved(const gfx::Point& location, bool left_content);
   virtual void UpdateDownloadShelfVisibility(bool visible);
+  virtual void SetBubbleWidth(int width);
 
   // Mac-specific method: Update the size and position of the status bubble to
   // match the parent window. Safe to call even when the status bubble does not

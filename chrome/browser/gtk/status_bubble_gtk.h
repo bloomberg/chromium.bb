@@ -45,6 +45,8 @@ class StatusBubbleGtk : public StatusBubble,
   // the download shelf, when it is visible.
   virtual void UpdateDownloadShelfVisibility(bool visible);
 
+  virtual void SetBubbleWidth(int width);
+
   // Overridden from NotificationObserver:
   void Observe(NotificationType type,
                const NotificationSource& source,

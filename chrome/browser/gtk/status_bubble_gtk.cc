@@ -210,6 +210,10 @@ void StatusBubbleGtk::UpdateDownloadShelfVisibility(bool visible) {
   download_shelf_is_visible_ = visible;
 }
 
+void StatusBubbleGtk::SetBubbleWidth(int width) {
+  NOTIMPLEMENTED();
+}
+
 void StatusBubbleGtk::Observe(NotificationType type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {

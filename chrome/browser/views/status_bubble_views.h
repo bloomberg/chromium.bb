@@ -7,7 +7,9 @@
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "base/task.h"
 #include "chrome/browser/status_bubble.h"
+#include "googleurl/src/gurl.h"
 #include "gfx/rect.h"
 
 class GURL;
@@ -29,6 +31,9 @@ class StatusBubbleViews : public StatusBubble {
   // The combined vertical padding above and below the text.
   static const int kTotalVerticalPadding = 7;
 
+  // On hover, expand status bubble to fit long URL after this delay.
+  static const int kExpandHoverDelay = 1600;
+
   explicit StatusBubbleViews(views::Widget* frame);
   ~StatusBubbleViews();
 
@@ -43,6 +48,9 @@ class StatusBubbleViews : public StatusBubble {
   // Set the bounds of the bubble relative to the browser window.
   void SetBounds(int x, int y, int w, int h);
 
+  // Set bubble to new width.
+  void SetBubbleWidth(int width);
+
   // Overridden from StatusBubble:
   virtual void SetStatus(const std::wstring& status);
   virtual void SetURL(const GURL& url, const std::wstring& languages);
@@ -52,6 +60,7 @@ class StatusBubbleViews : public StatusBubble {
 
  private:
   class StatusView;
+  class StatusViewExpander;
 
   // Initializes the popup and view.
   void Init();
@@ -63,11 +72,30 @@ class StatusBubbleViews : public StatusBubble {
   // Returns true if the frame_ is visible and not minimized.
   bool IsFrameVisible();
 
+  // Expand bubble size to accommodate a long URL.
+  void ExpandBubble();
+
+  // Cancel all waiting expansion animations in the timer.
+  void CancelExpandTimer();
+
+  // Get the standard width for a status bubble in the current frame size.
+  int GetStandardStatusBubbleWidth();
+
+  // Get the maximum possible width for a status bubble in the current frame
+  // size.
+  int GetMaxStatusBubbleWidth();
+
   // The status text we want to display when there are no URLs to display.
   std::wstring status_text_;
 
   // The url we want to display when there is no status text to display.
   std::wstring url_text_;
+
+  // The original, non-elided URL.
+  GURL url_;
+
+  // Used to elide the original URL again when we expand it.
+  std::wstring languages_;
 
   // Position relative to the parent window.
   gfx::Point position_;
@@ -84,8 +112,18 @@ class StatusBubbleViews : public StatusBubble {
   views::Widget* frame_;
   StatusView* view_;
 
+  // Manages the expansion of a status bubble to fit a long URL.
+  scoped_ptr<StatusViewExpander> expand_view_;
+
   // If the download shelf is visible, do not obscure it.
   bool download_shelf_is_visible_;
+
+  // If the bubble has already been expanded, and encounters a new URL,
+  // change size immediately, with no hover.
+  bool is_expanded_;
+
+  // Times expansion of status bubble when URL is too long for standard width.
+  ScopedRunnableMethodFactory<StatusBubbleViews> expand_timer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusBubbleViews);
 };
