@@ -114,6 +114,8 @@ FormGroup* AutoFillProfile::Clone() const {
 
   FormGroupMap::const_iterator iter;
   for (iter = personal_info_.begin(); iter != personal_info_.end(); ++iter) {
+    if (profile->personal_info_.count(iter->first))
+      delete profile->personal_info_[iter->first];
     profile->personal_info_[iter->first] = iter->second->Clone();
   }
 
