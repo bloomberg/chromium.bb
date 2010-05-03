@@ -15,7 +15,7 @@ HICON GetAppIcon() {
   int icon_id = IDR_MAINFRAME;
 #if defined(GOOGLE_CHROME_BUILD)
   if (BrowserDistribution::GetDistribution()->ShouldUseAlternateIcon())
-    icon_id = IDI_SXS;
+    icon_id = IDR_SXS;
 #endif
   return LoadIcon(GetModuleHandle(chrome::kBrowserResourcesDll),
                   MAKEINTRESOURCE(icon_id));

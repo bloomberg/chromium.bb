@@ -59,14 +59,15 @@ END
 // Icon
 //
 
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
+// The application icon should: have the lowest ID, be placed first, and its
+// resource name should be alphabetically less than the name of any other icon
+// resource (http://msdn.microsoft.com/en-us/library/ms997538.aspx).
 #if defined(GOOGLE_CHROME_BUILD)
 IDR_MAINFRAME           ICON                    "theme\google_chrome\chrome.ico"
 IDR_MAINFRAME_2         ICON                    "theme\google_chrome\chrome2.ico"
 IDR_MAINFRAME_3         ICON                    "theme\google_chrome\chrome3.ico"
 IDR_MAINFRAME_4         ICON                    "theme\google_chrome\chrome4.ico"
-IDI_SXS                 ICON                    "theme\google_chrome\chrome_sxs.ico"
+IDR_SXS                 ICON                    "theme\google_chrome\chrome_sxs.ico"
 #else
 IDR_MAINFRAME           ICON                    "theme\chromium\chromium.ico"
 #endif
