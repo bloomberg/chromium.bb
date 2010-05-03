@@ -63,6 +63,7 @@ aca.pro, 0
 academy.museum, 0
 accident-investigation.aero, 0
 accident-prevention.aero, 0
+act.au, 0
 act.edu.au, 0
 act.gov.au, 0
 ad, 0
@@ -688,7 +689,6 @@ com.tj, 0
 com.tn, 0
 com.to, 0
 com.tt, 0
-com.tv, 0
 com.tw, 0
 com.ua, 0
 com.uz, 0
@@ -1265,6 +1265,7 @@ gov.mu, 0
 gov.mv, 0
 gov.mw, 0
 gov.my, 0
+gov.nc.tr, 0
 gov.ng, 0
 gov.nr, 0
 gov.ph, 0
@@ -1290,7 +1291,6 @@ gov.tl, 0
 gov.tn, 0
 gov.to, 0
 gov.tt, 0
-gov.tv, 0
 gov.tw, 0
 gov.ua, 0
 gov.vc, 0
@@ -2224,7 +2224,6 @@ net.tj, 0
 net.tn, 0
 net.to, 0
 net.tt, 0
-net.tv, 0
 net.tw, 0
 net.ua, 0
 net.vc, 0
@@ -2310,8 +2309,9 @@ nrw.museum, 0
 ns.ca, 0
 nsk.ru, 0
 nsn.us, 0
+nsw.au, 0
 nsw.edu.au, 0
-nsw.gov.au, 0
+nt.au, 0
 nt.ca, 0
 nt.edu.au, 0
 nt.gov.au, 0
@@ -2486,7 +2486,6 @@ org.tj, 0
 org.tn, 0
 org.to, 0
 org.tt, 0
-org.tv, 0
 org.tw, 0
 org.ua, 0
 org.vc, 0
@@ -2736,6 +2735,7 @@ qa, 2
 qc.ca, 0
 qc.com, 0
 qh.cn, 0
+qld.au, 0
 qld.edu.au, 0
 qld.gov.au, 0
 qsl.br, 0
@@ -2841,6 +2841,7 @@ rzeszow.pl, 0
 s.bg, 0
 s.se, 0
 sa, 0
+sa.au, 0
 sa.com, 0
 sa.cr, 0
 sa.edu.au, 0
@@ -3126,6 +3127,7 @@ tank.museum, 0
 taranto.it, 0
 targi.pl, 0
 tarnobrzeg.pl, 0
+tas.au, 0
 tas.edu.au, 0
 tas.gov.au, 0
 tatarstan.ru, 0
@@ -3369,6 +3371,7 @@ vi.it, 0
 vi.us, 0
 vibo-valentia.it, 0
 vibovalentia.it, 0
+vic.au, 0
 vic.edu.au, 0
 vic.gov.au, 0
 vicenza.it, 0
@@ -3407,6 +3410,7 @@ vv.it, 0
 vyatka.ru, 0
 w.bg, 0
 w.se, 0
+wa.au, 0
 wa.edu.au, 0
 wa.gov.au, 0
 wa.us, 0
@@ -3553,6 +3557,8 @@ xn--lten-gra.no, 0
 xn--lury-ira.no, 0
 xn--mely-ira.no, 0
 xn--merker-kua.no, 0
+xn--mgba3a4f16a.ir, 0
+xn--mgba3a4fra.ir, 0
 xn--mjndalen-64a.no, 0
 xn--mk0axi.hk, 0
 xn--mlatvuopmi-s4a.no, 0
