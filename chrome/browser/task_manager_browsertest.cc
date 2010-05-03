@@ -186,13 +186,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillExtensionAndReload) {
 }
 
 // Regression test for http://crbug.com/18693.
-#if defined(OS_WIN)
 // Crashy, http://crbug.com/42315.
-#define MAYBE_ReloadExtension DISABLED_ReloadExtension
-#else
-#define MAYBE_ReloadExtension ReloadExtension
-#endif
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_ReloadExtension) {
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DISABLED_ReloadExtension) {
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
   browser()->window()->ShowTaskManager();
