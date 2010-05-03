@@ -59,6 +59,15 @@ class PrefsTest(pyauto.PyUITest):
     self.ActivateTab(1)
     self.assertEqual(url2, self.GetActiveTabURL().spec())
 
+  def testSessionRestoreShowBookmarkBar(self):
+    """Verify restore for bookmark bar visibility."""
+    assert not self.GetPrefsInfo().Prefs(pyauto.kShowBookmarkBar)
+    self.SetPrefs(pyauto.kShowBookmarkBar, True)
+    self.assertEqual(True, self.GetPrefsInfo().Prefs(pyauto.kShowBookmarkBar))
+    self.RestartBrowser(clear_profile=False)
+    self.assertEqual(True, self.GetPrefsInfo().Prefs(pyauto.kShowBookmarkBar))
+    self.assertTrue(self.GetBookmarkBarVisibility())
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()

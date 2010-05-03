@@ -376,6 +376,96 @@ class BookmarksTest(pyauto.PyUITest):
     nodes = bookmarks.FindByTitle('Group %d' % (num_folders - 1))
     self.assertEqual([], nodes[0]['children'])
 
+  def testURLTypes(self):
+    """Test bookmarks with different types of URLS."""
+    bookmarks = self.GetBookmarkModel()
+    bar_id = bookmarks.BookmarkBar()['id']
+    orig_nodes_count = bookmarks.NodeCount()
+    url_data = self._GetTestURLs("url_types")
+    for index, (url, name) in enumerate(url_data.iteritems()):
+      self.AddBookmarkURL(bar_id, index, name, url)
+    # check that we added them correctly
+    bookmarks = self.GetBookmarkModel()
+    self.assertEqual(orig_nodes_count + len(url_data), bookmarks.NodeCount())
+    for node, (url, name) in zip(bookmarks.BookmarkBar()['children'],
+                                 url_data.iteritems()):
+      self.assertEqual(node['type'], 'url')
+      self.assertEqual(node['name'], name)
+      self.assertEqual(node['url'], url)
+
+  def _VerifyBookmarkURL(self, node, name, url):
+    """Verify that node is a bookmark URL of the given name and url."""
+    self.assertTrue(node)
+    self.assertEqual(node['type'], 'url')
+    self.assertEqual(node['name'], name)
+    self.assertEqual(node['url'], url)
+
+  def testDuplicateBookmarks(self):
+    """Verify bookmark duplicates."""
+    url_data = self._GetTestURLs("urls_and_titles")
+    list_of_urls = url_data.keys()
+    list_of_titles = url_data.values()
+    bookmarks = self.GetBookmarkModel()
+    nodes = bookmarks.NodeCount()
+    bar_id = bookmarks.BookmarkBar()['id']
+    # Create some duplicate bookmarks
+    self.AddBookmarkURL(bar_id, 0, list_of_titles[0], list_of_urls[0])
+    self.AddBookmarkURL(bar_id, 1, list_of_titles[0], list_of_urls[0])
+    self.AddBookmarkURL(bar_id, 2, list_of_titles[0], list_of_urls[1])
+    self.AddBookmarkURL(bar_id, 3, list_of_titles[1], list_of_urls[0])
+    # Create a folder with any existing bookmark title
+    self.AddBookmarkGroup(bar_id, 4, list_of_titles[0])
+    bookmarks = self.GetBookmarkModel()
+    self.assertEqual(nodes + 5, bookmarks.NodeCount())
+    # Verify 1st bookmark is created
+    bar_child = bookmarks.BookmarkBar()['children'][0]
+    self._VerifyBookmarkURL(bar_child, list_of_titles[0], list_of_urls[0])
+   # Verify this is a duplicate bookmark of 1st bookmark
+    bar_child = bookmarks.BookmarkBar()['children'][1]
+    self._VerifyBookmarkURL(bar_child, list_of_titles[0], list_of_urls[0])
+   # Verify the bookmark with same title and different URL of 1st bookmark
+    bar_child = bookmarks.BookmarkBar()['children'][2]
+    self._VerifyBookmarkURL(bar_child, list_of_titles[0], list_of_urls[1])
+   # Verify the bookmark with different title and same URL of 1st bookmark
+    bar_child = bookmarks.BookmarkBar()['children'][3]
+    self._VerifyBookmarkURL(bar_child, list_of_titles[1], list_of_urls[0])
+   # Verify Bookmark group got created with same title of 1st bookmark
+    bar_child = bookmarks.BookmarkBar()['children'][4]
+    self.assertEqual(bar_child['type'], 'folder')
+    self.assertEqual(bar_child['name'], list_of_titles[0])
+
+  def testBookmarksPersistence(self):
+    """Verify that bookmarks and groups persist browser restart."""
+    # Populate bookmarks and groups
+    bookmarks = self.GetBookmarkModel()
+    bar_id = bookmarks.BookmarkBar()['id']
+    other_id = bookmarks.Other()['id']
+    self.AddBookmarkURL(bar_id, 0, "Google", "http://www.news.google.com/")
+    self.AddBookmarkURL(other_id, 0, "Yahoo", "http://www.yahoo.com/")
+    self.AddBookmarkGroup(bar_id, 0, "MS")
+    bookmarks = self.GetBookmarkModel()
+    bar_folder_id = bookmarks.BookmarkBar()['children'][0]['id']
+    self.AddBookmarkURL(bar_folder_id, 0, "BING", "http://www.bing.com/")
+    self.AddBookmarkGroup(other_id, 0, "Oracle")
+    bookmarks = self.GetBookmarkModel()
+    other_folder_id = bookmarks.Other()['id']
+    self.AddBookmarkURL(other_folder_id, 0, "DB", "http://www.oracle.com/")
+
+    nodes_before = self.GetBookmarkModel().NodeCount()
+    self.RestartBrowser(clear_profile=False)
+    # Verify that all bookmarks persist
+    bookmarks = self.GetBookmarkModel()
+    node = bookmarks.FindByTitle('Google')
+    self.assertEqual(nodes_before, bookmarks.NodeCount())
+    self._VerifyBookmarkURL(node[0], 'Google', 'http://www.news.google.com/')
+    self._VerifyBookmarkURL(bookmarks.FindByTitle('Yahoo')[0],
+                            'Yahoo', 'http://www.yahoo.com/')
+    bmb_child = bookmarks.BookmarkBar()['children'][0]
+    self.assertEqual(bmb_child['type'], 'folder')
+    self.assertEqual(bmb_child['name'],'MS')
+    self._VerifyBookmarkURL(bmb_child['children'][0],
+                            'BING', 'http://www.bing.com/')
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
