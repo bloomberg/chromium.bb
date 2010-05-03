@@ -182,6 +182,12 @@ class RendererGLES2 : public Renderer {
   // Programs the helper constants into the hardware.
   void UpdateDxClippingUniform(GLint location);
 
+#if defined(GLES2_BACKEND_DESKTOP_GL)
+  inline GLXContext glx_context() const { return context_; }
+#elif defined(GLES2_BACKEND_NATIVE_GLES2)
+  inline EGLContext egl_context() const { return egl_context_; }
+#endif
+
  protected:
   // Keep the constructor protected so only factory methods can create
   // renderers.

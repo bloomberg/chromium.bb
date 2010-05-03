@@ -105,6 +105,11 @@ TEST_F(RendererTest, InitAndDestroyRenderer) {
   // check that the renderer no longer has a Cg Context.
   EXPECT_FALSE(gl_renderer->cg_context() != NULL);
 #elif defined(RENDERER_GLES2)
+#if defined(GLES2_BACKEND_DESKTOP_GL)
+  EXPECT_FALSE(gles2_renderer->glx_context() != NULL);
+#elif defined(GLES2_BACKEND_NATIVE_GLES2)
+  EXPECT_FALSE(gles2_renderer->egl_context() != NULL);
+#endif
 #endif
 }
 
