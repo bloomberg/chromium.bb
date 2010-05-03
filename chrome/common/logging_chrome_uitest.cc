@@ -172,6 +172,9 @@ class RendererCrashTest : public UITest {
 #if defined(OS_WIN)
 // http://crbug.com/32048
 #define Crash FLAKY_Crash
+#elif defined(OS_CHROMEOS)
+// http://crbug.com/43115
+#define Crash DISABLED_Crash
 #endif
 // Launch the app in renderer crash test mode, then close the app.
 TEST_F(RendererCrashTest, Crash) {
