@@ -1665,7 +1665,7 @@ def SanityCheckAndMapExtraction(all_envs, selected_envs):
       """
       assert 0
 
-  if VerboseConfigInfo(env):
+  if VerboseConfigInfo(pre_base_env):
     Banner("The following environments have been configured")
     for family in family_map:
       env = family_map[family]
@@ -1703,7 +1703,7 @@ if os.path.exists(pre_base_env.subst('$MAIN_DIR/supplement/supplement.scons')):
       exports=['environment_list', 'linux_env'])
 
 # print sytem info (optionally)
-if VerboseConfigInfo():
+if VerboseConfigInfo(pre_base_env):
   Banner('SCONS ARGS:' + str(sys.argv))
   os.system(pre_base_env.subst('${PYTHON} tools/sysinfo.py'))
 
