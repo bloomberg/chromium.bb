@@ -30,6 +30,21 @@ void CountVisibleChildren(GtkWidget* child, gpointer userdata) {
     ++(*reinterpret_cast<int*>(userdata));
 }
 
+void SumChildrenWidthRequisition(GtkWidget* child, gpointer userdata) {
+  if (GTK_WIDGET_VISIBLE(child)) {
+    GtkRequisition req;
+    gtk_widget_get_child_requisition(child, &req);
+    (*reinterpret_cast<int*>(userdata)) += std::max(req.width, 0);
+  }
+}
+
+void ShowInvisibleChildren(GtkWidget* child, gpointer userdata) {
+  if (!GTK_WIDGET_VISIBLE(child)) {
+    gtk_widget_show(child);
+    ++(*reinterpret_cast<int*>(userdata));
+  }
+}
+
 void ChildSizeAllocate(GtkWidget* child, gpointer userdata) {
   if (!GTK_WIDGET_VISIBLE(child))
     return;
@@ -118,6 +133,7 @@ static void gtk_chrome_shrinkable_hbox_class_init(
 
 static void gtk_chrome_shrinkable_hbox_init(GtkChromeShrinkableHBox* box) {
   box->hide_child_directly = FALSE;
+  box->children_width_requisition = 0;
 }
 
 static void gtk_chrome_shrinkable_hbox_set_property(GObject* object,
@@ -155,13 +171,23 @@ static void gtk_chrome_shrinkable_hbox_get_property(GObject* object,
 
 static void gtk_chrome_shrinkable_hbox_size_allocate(
     GtkWidget* widget, GtkAllocation* allocation) {
-  // If we are allocated to more width, then we need to show all invisible
-  // children before calling parent class's size_allocate method, because the
-  // new width may be enough to show those hidden children.
-  if (widget->allocation.width < allocation->width) {
-    gtk_container_foreach(GTK_CONTAINER(widget),
-                          reinterpret_cast<GtkCallback>(gtk_widget_show),
-                          NULL);
+  GtkChromeShrinkableHBox* box = GTK_CHROME_SHRINKABLE_HBOX(widget);
+  gint children_width_requisition = 0;
+  gtk_container_foreach(GTK_CONTAINER(widget), SumChildrenWidthRequisition,
+                        &children_width_requisition);
+
+  // If we are allocated to more width or some children are removed or shrunk,
+  // then we need to show all invisible children before calling parent class's
+  // size_allocate method, because the new width may be enough to show those
+  // hidden children.
+  if (widget->allocation.width < allocation->width ||
+      box->children_width_requisition > children_width_requisition) {
+    gint count = 0;
+    gtk_container_foreach(GTK_CONTAINER(widget), ShowInvisibleChildren, &count);
+
+    // If there were any invisible children, showing them will trigger another
+    // allocate, so we can just return here.
+    if (count > 0) return;
   }
 
   // Let the parent class do size allocation first. After that all children will
@@ -174,6 +200,7 @@ static void gtk_chrome_shrinkable_hbox_size_allocate(
       gtk_chrome_shrinkable_hbox_get_visible_child_count(
           GTK_CHROME_SHRINKABLE_HBOX(widget));
 
+  box->children_width_requisition = 0;
   if (visible_children_count == 0)
     return;
 
@@ -190,6 +217,11 @@ static void gtk_chrome_shrinkable_hbox_size_allocate(
 
   // Shrink or hide children if necessary.
   gtk_container_foreach(GTK_CONTAINER(widget), ChildSizeAllocate, &data);
+
+  // Record current width requisition of visible children, so we can know if
+  // it's necessary to show invisible children next time.
+  gtk_container_foreach(GTK_CONTAINER(widget), SumChildrenWidthRequisition,
+                        &box->children_width_requisition);
 }
 
 GtkWidget* gtk_chrome_shrinkable_hbox_new(gboolean hide_child_directly,

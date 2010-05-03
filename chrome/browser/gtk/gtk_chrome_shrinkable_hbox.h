@@ -45,6 +45,9 @@ struct _GtkChromeShrinkableHBox {
   GtkHBox hbox;
 
   gboolean hide_child_directly;
+
+  // Private
+  int children_width_requisition;
 };
 
 struct _GtkChromeShrinkableHBoxClass {

@@ -149,6 +149,10 @@ class GtkChromeShrinkableHBoxTest : public testing::Test {
                    << " width = " << width);
 
       allocation.width = width;
+      // Expanding the width may cause some invisible children to be shown,
+      // which will cause queue resize, so it's necessary to do another size
+      // allocation to emulate the queue resize.
+      gtk_widget_size_allocate(box_, &allocation);
       gtk_widget_size_allocate(box_, &allocation);
       ASSERT_NO_FATAL_FAILURE(Validate(pack_start));
     }
@@ -170,6 +174,7 @@ class GtkChromeShrinkableHBoxTest : public testing::Test {
                    << " width = " << width);
 
       allocation.width = width;
+      gtk_widget_size_allocate(box_, &allocation);
       gtk_widget_size_allocate(box_, &allocation);
       ASSERT_NO_FATAL_FAILURE(Validate(pack_start));
     }
