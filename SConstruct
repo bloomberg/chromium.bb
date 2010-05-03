@@ -40,9 +40,10 @@ def PrintFinalReport():
 atexit.register(PrintFinalReport)
 
 
-def VerboseConfigInfo():
+def VerboseConfigInfo(env):
   "Should we print verbose config information useful for bug reports"
   if '--help' in sys.argv: return False
+  if env.Bit('prebuilt') or ARGUMENTS.get('built_elsewhere'): return False
   return ARGUMENTS.get('sysinfo', True)
 
 # ----------------------------------------------------------
@@ -1664,8 +1665,7 @@ def SanityCheckAndMapExtraction(all_envs, selected_envs):
       """
       assert 0
 
-  if VerboseConfigInfo() and not (
-      env.Bit('prebuilt') or ARGUMENTS.get('built_elsewhere')):
+  if VerboseConfigInfo(env):
     Banner("The following environments have been configured")
     for family in family_map:
       env = family_map[family]
@@ -1718,14 +1718,3 @@ BuildEnvironments(environment_list)
 # Change default to build everything, but not run tests.
 Default(['all_programs', 'all_bundles', 'all_test_programs', 'all_libraries'])
 
-# ----------------------------------------------------------
-# Generate a solution, defer to the end.
-solution_env = base_env.Clone(tools = ['visual_studio_solution'])
-solution = solution_env.Solution(
-    'nacl', environment_list,
-    exclude_pattern = '.*third_party.*',
-    extra_build_targets = {
-        'Firefox': 'c:/Program Files/Mozilla FireFox/firefox.exe',
-    },
-)
-solution_env.Alias('solution', solution)
