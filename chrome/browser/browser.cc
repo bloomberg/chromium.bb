@@ -4,6 +4,11 @@
 
 #include "chrome/browser/browser.h"
 
+#if defined(OS_WIN)
+#include <shellapi.h>
+#include <windows.h>
+#endif  // OS_WIN
+
 #include <algorithm>
 #include <string>
 
@@ -89,11 +94,7 @@
 #include "webkit/glue/window_open_disposition.h"
 
 #if defined(OS_WIN)
-#include <windows.h>
-#include <shellapi.h>
-
 #include "app/win_util.h"
-#include "chrome/browser/browser_url_handler.h"
 #include "chrome/browser/cert_store.h"
 #include "chrome/browser/child_process_host.h"
 #include "chrome/browser/download/save_package.h"
@@ -2047,7 +2048,7 @@ void Browser::DuplicateContentsAt(int index) {
   DCHECK(contents);
   bool pinned = false;
 
-  if (type_ == TYPE_NORMAL) {
+  if (SupportsWindowFeature(FEATURE_TABSTRIP)) {
     // If this is a tabbed browser, just create a duplicate tab inside the same
     // window next to the tab being duplicated.
     new_contents = contents->Clone();
