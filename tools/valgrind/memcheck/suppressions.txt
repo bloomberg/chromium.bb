@@ -1011,11 +1011,10 @@
    bug_18664
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN18ResourceDispatcher12CreateBridgeERKSsRK4GURLS4_S4_S1_S1_S1_iiN12ResourceType4TypeEjii
-   fun:_ZN11webkit_glue20ResourceLoaderBridge6CreateERKSsRK4GURLS5_S5_S2_S2_S2_iiN12ResourceType4TypeEii
+   fun:_ZN18ResourceDispatcher12CreateBridgeERKN11webkit_glue20ResourceLoaderBridge11RequestInfoEii
+   fun:_ZN11ChildThread12CreateBridgeERKN11webkit_glue20ResourceLoaderBridge11RequestInfoEii
    ...
    fun:_ZN7WebCore14ResourceHandle5startEPNS_5FrameE
-   fun:_ZN7WebCore14ResourceHandle6createERKNS_15ResourceRequestEPNS_20ResourceHandleClientEPNS_5FrameEbbb
 }
 {
    bug_19191
