@@ -16,7 +16,8 @@ static const struct {
   const char* language_region;
 } g_supported_spellchecker_languages[] = {
   // Several languages are not to be included in the spellchecker list:
-  //   th-TH, hu-HU, bg-BG, uk-UA
+  // th-TH, uk-UA
+  {"bg", "bg-BG"},
   {"ca", "ca-ES"},
   {"cs", "cs-CZ"},
   {"da", "da-DK"},
@@ -96,6 +97,7 @@ FilePath GetVersionedFileName(const std::string& input_language,
     {"hu-HU", "-2-0"},
     {"ro-RO", "-2-0"},
     {"ru-RU", "-2-0"},
+    {"bg-BG", "-2-0"},
   };
 
   // Generate the bdict file name using default version string or special
