@@ -1664,7 +1664,8 @@ def SanityCheckAndMapExtraction(all_envs, selected_envs):
       """
       assert 0
 
-  if VerboseConfigInfo() and not env.Bit('prebuilt'):
+  if VerboseConfigInfo() and not (
+      env.Bit('prebuilt') or ARGUMENTS.get('built_elsewhere')):
     Banner("The following environments have been configured")
     for family in family_map:
       env = family_map[family]
