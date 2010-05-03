@@ -625,10 +625,23 @@ void RecordLastRunAppBundlePath() {
         case IDC_NEW_TAB:
           enable = [self keyWindowIsMissingOrBlocked];
           break;
-        case IDC_SYNC_BOOKMARKS:
+        case IDC_SYNC_BOOKMARKS: {
+          Profile* defaultProfile = [self defaultProfile];
+          // The profile may be NULL during shutdown -- see
+          // http://code.google.com/p/chromium/issues/detail?id=43048 .
+          //
+          // TODO(akalin,viettrungluu): Figure out whether this method
+          // can be prevented from being called if defaultProfile is
+          // NULL.
+          if (!defaultProfile) {
+            LOG(WARNING)
+                << "NULL defaultProfile detected -- not doing anything";
+            break;
+          }
           enable = ProfileSyncService::IsSyncEnabled();
-          sync_ui_util::UpdateSyncItem(item, enable, [self defaultProfile]);
+          sync_ui_util::UpdateSyncItem(item, enable, defaultProfile);
           break;
+        }
         default:
           enable = menuState_->IsCommandEnabled(tag) ? YES : NO;
       }
@@ -753,6 +766,15 @@ void RecordLastRunAppBundlePath() {
       break;
     }
     case IDC_SYNC_BOOKMARKS:
+      // The profile may be NULL during shutdown -- see
+      // http://code.google.com/p/chromium/issues/detail?id=43048 .
+      //
+      // TODO(akalin,viettrungluu): Figure out whether this method can
+      // be prevented from being called if defaultProfile is NULL.
+      if (!defaultProfile) {
+        LOG(WARNING) << "NULL defaultProfile detected -- not doing anything";
+        break;
+      }
       // TODO(akalin): Add a constant to denote starting sync from the
       // main menu and use that instead of START_FROM_WRENCH.
       sync_ui_util::OpenSyncMyBookmarksDialog(
