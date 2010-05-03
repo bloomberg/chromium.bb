@@ -129,6 +129,21 @@ class SimpleWebServerTest {
     return c->request();
   }
 
+  bool FindRequest(const std::string& path,
+                   const test_server::Request** request) {
+    test_server::ConnectionList::const_iterator index;
+    for (index = server_.connections().begin();
+         index != server_.connections().end(); index++) {
+      const test_server::Connection* connection = *index;
+      if (!lstrcmpiA(connection->request().path().c_str(), path.c_str())) {
+        if (request)
+          *request = &connection->request();
+        return true;
+      }
+    }
+    return false;
+  }
+
   // Counts the number of times a page was requested.
   // Optionally checks if the request method for each is equal to
   // |expected_method|.  If expected_method is NULL no such check is made.
@@ -140,7 +155,8 @@ class SimpleWebServerTest {
     for (it = connections.begin(); it != connections.end(); ++it) {
       const test_server::Connection* c = (*it);
       const test_server::Request& r = c->request();
-      if (ASCIIToWide(r.path().substr(1)).compare(page) == 0) {
+      if (!r.path().empty() &&
+          ASCIIToWide(r.path().substr(1)).compare(page) == 0) {
         if (expected_method) {
           EXPECT_EQ(expected_method, r.method());
         }

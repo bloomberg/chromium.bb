@@ -836,11 +836,12 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestPostReissue) {
 
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
 
-  // Check if the last request to /quit gave us the OK signal.
-  const test_server::Request& r = server.last_request();
-  EXPECT_EQ("OK", r.arguments());
+  const test_server::Request* request = NULL;
+  server.FindRequest("/quit?OK", &request);
+  ASSERT_TRUE(request != NULL);
+  EXPECT_EQ("OK", request->arguments());
 
-  if (r.arguments().compare("OK") == 0) {
+  if (request->arguments().compare("OK") == 0) {
     // Check how many requests we got for the cf page.  Also expect it to be
     // a POST.
     int requests = server.GetRequestCountForPage(kPages[1], "POST");
@@ -866,17 +867,19 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestMultipleGet) {
   };
 
   SimpleWebServerTest server(46664);
+
   server.PopulateStaticFileList(kPages, arraysize(kPages), GetCFTestFilePath());
 
   ASSERT_TRUE(LaunchBrowser(IE, server.FormatHttpPath(kPages[0]).c_str()));
 
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
 
-  // Check if the last request to /quit gave us the OK signal.
-  const test_server::Request& r = server.last_request();
-  EXPECT_EQ("OK", r.arguments());
+  const test_server::Request* request = NULL;
+  server.FindRequest("/quit?OK", &request);
+  ASSERT_TRUE(request != NULL);
+  EXPECT_EQ("OK", request->arguments());
 
-  if (r.arguments().compare("OK") == 0) {
+  if (request->arguments().compare("OK") == 0) {
     // Check how many requests we got for the cf page and check that it was
     // a GET.
     int requests = server.GetRequestCountForPage(kPages[1], "GET");
