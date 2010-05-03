@@ -37,3 +37,5 @@ BUGWK38360 SKIP : traversal/node-iterator-prototype.html = TEXT
 BUG10468 WIN LINUX : fast/replaced/border-radius-clip.html = IMAGE+TEXT
 BUG10468 MAC SKIP : fast/replaced/border-radius-clip.html = MISSING
 BUGYAAR MAC : svg/custom/dominant-baseline-hanging.svg = MISSING
+// webkit roll 58541:58626
+BUG43084 MAC DEBUG : media/video-empty-source.html = IMAGE
