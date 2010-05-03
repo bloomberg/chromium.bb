@@ -630,16 +630,35 @@ class BrowserAppRefocusTest : public ExtensionBrowserTest {
 
 #if defined(OS_MACOSX)
 // Crashes on mac, http://crbug.com/42865
-#define OpenTab DISABLED_OpenTab
-#define OpenPanel DISABLED_OpenPanel
-#define OpenWindow DISABLED_OpenWindow
-#define WindowBeforeTab DISABLED_WindowBeforeTab
-#define PanelBeforeTab DISABLED_PanelBeforeTab
-#define TabInFocusedWindow DISABLED_TabInFocusedWindow
+#define MAYBE_OpenTab DISABLED_OpenTab
+#define MAYBE_OpenPanel DISABLED_OpenPanel
+#define MAYBE_OpenWindow DISABLED_OpenWindow
+#define MAYBE_WindowBeforeTab DISABLED_WindowBeforeTab
+#define MAYBE_PanelBeforeTab DISABLED_PanelBeforeTab
+#define MAYBE_TabInFocusedWindow DISABLED_TabInFocusedWindow
+
+#elif defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+// ChromeOS doesn't open extension based app windows correctly yet:
+// http://crbug.com/43061
+#define MAYBE_OpenTab DISABLED_OpenTab
+#define MAYBE_OpenPanel DISABLED_OpenPanel
+#define MAYBE_OpenWindow DISABLED_OpenWindow
+#define MAYBE_WindowBeforeTab DISABLED_WindowBeforeTab
+#define MAYBE_PanelBeforeTab DISABLED_PanelBeforeTab
+#define MAYBE_TabInFocusedWindow DISABLED_TabInFocusedWindow
+
+#else
+#define MAYBE_OpenTab OpenTab
+#define MAYBE_OpenPanel OpenPanel
+#define MAYBE_OpenWindow OpenWindow
+#define MAYBE_WindowBeforeTab WindowBeforeTab
+#define MAYBE_PanelBeforeTab PanelBeforeTab
+#define MAYBE_TabInFocusedWindow TabInFocusedWindow
+
 #endif
 
 // Test that launching an app refocuses a tab already hosting the app.
-IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, OpenTab) {
+IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenTab) {
   SetUpAppExtension();
 
   ui_test_utils::NavigateToURL(browser(), url_);
@@ -667,7 +686,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, OpenTab) {
 }
 
 // Test that launching an app refocuses a panel running the app.
-IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, OpenPanel) {
+IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenPanel) {
   SetUpAppExtension();
 
   ui_test_utils::NavigateToURL(browser(), url_);
@@ -696,7 +715,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, OpenPanel) {
 }
 
 // Test that launching an app refocuses a window running the app.
-IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, OpenWindow) {
+IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenWindow) {
   SetUpAppExtension();
 
   ui_test_utils::NavigateToURL(browser(), url_);
@@ -725,7 +744,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, OpenWindow) {
 
 // Test that if an app is opened while running in a window and a tab,
 // the window is focused.
-IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, WindowBeforeTab) {
+IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_WindowBeforeTab) {
   SetUpAppExtension();
 
   ui_test_utils::NavigateToURL(browser(), url_);
@@ -755,7 +774,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, WindowBeforeTab) {
 
 // Test that if an app is opened while running in a panel and a tab,
 // the panel is focused.
-IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, PanelBeforeTab) {
+IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_PanelBeforeTab) {
   SetUpAppExtension();
 
   ui_test_utils::NavigateToURL(browser(), url_);
@@ -785,7 +804,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, PanelBeforeTab) {
 
 // Test that if multiple tabs host an app, and that app is opened,
 // the tab in the current window gets focus.
-IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, TabInFocusedWindow) {
+IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_TabInFocusedWindow) {
   SetUpAppExtension();
 
   ui_test_utils::NavigateToURL(browser(), url_);
