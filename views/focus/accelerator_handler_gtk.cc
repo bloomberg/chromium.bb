@@ -18,7 +18,10 @@ AcceleratorHandler::AcceleratorHandler() : last_key_pressed_(0) {
 }
 
 bool AcceleratorHandler::Dispatch(GdkEvent* event) {
-  if (event->type != GDK_KEY_PRESS && event->type != GDK_KEY_RELEASE) {
+  // Let Gtk process the event if there is a grabbed widget or it's not
+  // a keyboard event.
+  if (gtk_grab_get_current() ||
+      (event->type != GDK_KEY_PRESS && event->type != GDK_KEY_RELEASE)) {
     gtk_main_do_event(event);
     return true;
   }
