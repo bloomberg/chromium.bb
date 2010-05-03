@@ -765,7 +765,8 @@ TabContents* Browser::AddTabWithURL(const GURL& url,
                                     SiteInstance* instance,
                                     const std::string& app_extension_id) {
   TabContents* contents = NULL;
-  if (SupportsWindowFeature(FEATURE_TABSTRIP) || tabstrip_model()->empty()) {
+  if (SupportsWindowFeature(FEATURE_TABSTRIP) || tabstrip_model()->empty() ||
+      BrowserList::FindBrowserWithType(profile_, TYPE_NORMAL, false) == this) {
     GURL url_to_load = url;
     if (url_to_load.is_empty())
       url_to_load = GetHomePage();
