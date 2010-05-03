@@ -2109,8 +2109,8 @@ void Browser::CreateHistoricalTab(TabContents* contents) {
     return;
   }
 
-  // We only create historical tab entries for normal tabbed browser windows.
-  if (type() == TYPE_NORMAL) {
+  // We only create historical tab entries for tabbed browser windows.
+  if (SupportsWindowFeature(FEATURE_TABSTRIP)) {
     profile()->GetTabRestoreService()->CreateHistoricalTab(
         &contents->controller());
   }
