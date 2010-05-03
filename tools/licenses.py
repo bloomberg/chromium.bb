@@ -57,19 +57,19 @@ PRUNE_DIRS = ('.svn', '.git',             # VCS metadata
 # can't provide a README.chromium.  Please prefer a README.chromium
 # wherever possible.
 SPECIAL_CASES = {
-    'third_party/angle': {
+    os.path.join('third_party', 'angle'): {
         "Name": "Almost Native Graphics Layer Engine",
         "URL": "http://code.google.com/p/angleproject/",
     },
-    'third_party/ots': {
+    os.path.join('third_party', 'ots'): {
         "Name": "OTS (OpenType Sanitizer)",
         "URL": "http://code.google.com/p/ots/",
     },
-    'third_party/pywebsocket': {
+    os.path.join('third_party', 'pywebsocket'): {
         "Name": "pywebsocket",
         "URL": "http://code.google.com/p/pywebsocket/",
     },
-    'third_party/WebKit': {
+    os.path.join('third_party', 'WebKit'): {
         "Name": "WebKit",
         "URL": "http://webkit.org/",
         # Absolute path here is resolved as relative to the source root.
