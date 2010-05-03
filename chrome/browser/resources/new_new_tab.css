@@ -16,6 +16,10 @@ body {
   min-height: 100%;
 }
 
+html[hash=app-launcher] #container {
+  min-height: 0;
+}
+
 #promo-spacer {
   height: 50px;
 }

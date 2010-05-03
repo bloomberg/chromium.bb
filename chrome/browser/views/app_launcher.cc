@@ -57,7 +57,7 @@ static GURL GetMenuURL() {
       CommandLine::ForCurrentProcess()->GetSwitchValue(kURLSwitch);
   if (!url_string.empty())
     return GURL(WideToUTF8(url_string));
-  return GURL(chrome::kChromeUINewTabURL);
+  return GURL(chrome::kChromeUIAppLauncherURL);
 }
 
 }  // namespace

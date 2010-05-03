@@ -96,6 +96,9 @@ function updateSimpleSection(id, section) {
     document.getElementById(id).className += ' hidden';
 }
 
+// Reflect the hash as an attribute so we can use CSS attribute selectors on it.
+document.documentElement.setAttribute('hash', location.hash.slice(1));
+
 </script>
 </head>
 <body class="loading"
@@ -199,6 +202,9 @@ function updateSimpleSection(id, section) {
 </body>
 
 <script src="shared/js/i18n_template.js"></script>
+<script>
+i18nTemplate.process(document, templateData);
+</script>
 <script src="shared/js/local_strings.js"></script>
 <script src="shared/js/class_list.js"></script>
 <script src="shared/js/parse_html_subset.js"></script>

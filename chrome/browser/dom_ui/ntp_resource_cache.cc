@@ -378,7 +378,6 @@ void NTPResourceCache::CreateNewTabHTML() {
     NOTREACHED();
     full_html.assign(new_tab_html.data(), new_tab_html.size());
   }
-  jstemplate_builder::AppendI18nTemplateProcessHtml(&full_html);
 
   new_tab_html_ = new RefCountedBytes;
   new_tab_html_->data.resize(full_html.size());
