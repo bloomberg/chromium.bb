@@ -1,17 +1,18 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/tabs/tab_strip_model_order_controller.h"
 
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/common/pref_names.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // TabStripModelOrderController, public:
 
 TabStripModelOrderController::TabStripModelOrderController(
-    TabStripModel* tabstrip) : tabstrip_(tabstrip) {
+    TabStripModel* tabstrip)
+    : tabstrip_(tabstrip),
+      insertion_policy_(TabStripModel::INSERT_AFTER) {
   tabstrip_->AddObserver(this);
 }
 
@@ -27,29 +28,39 @@ int TabStripModelOrderController::DetermineInsertionIndex(
   if (!tab_count)
     return 0;
 
-  int first_non_app_tab = tabstrip_->IndexOfFirstNonMiniTab();
+  // NOTE: TabStripModel enforces that all non-mini-tabs occur after mini-tabs,
+  // so we don't have to check here too.
   if (transition == PageTransition::LINK && tabstrip_->selected_index() != -1) {
+    int delta = (insertion_policy_ == TabStripModel::INSERT_AFTER) ? 1 : 0;
     if (foreground) {
       // If the page was opened in the foreground by a link click in another
       // tab, insert it adjacent to the tab that opened that link.
-      // TODO(beng): (http://b/1085481) may want to open right of all locked
-      //             tabs?
-      return std::max(first_non_app_tab,
-                      tabstrip_->selected_index() + 1);
+      return tabstrip_->selected_index() + delta;
     }
     NavigationController* opener =
         &tabstrip_->GetSelectedTabContents()->controller();
     // Get the index of the next item opened by this tab, and insert after
     // it...
-    int index = tabstrip_->GetIndexOfLastTabContentsOpenedBy(
-        opener, tabstrip_->selected_index());
+    int index;
+    if (insertion_policy_ == TabStripModel::INSERT_AFTER) {
+      index = tabstrip_->GetIndexOfLastTabContentsOpenedBy(
+          opener, tabstrip_->selected_index());
+    } else {
+      index = tabstrip_->GetIndexOfFirstTabContentsOpenedBy(
+          opener, tabstrip_->selected_index());
+    }
     if (index != TabStripModel::kNoTab)
-      return index + 1;
+      return index + delta;
     // Otherwise insert adjacent to opener...
-    return std::max(first_non_app_tab, tabstrip_->selected_index() + 1);
+    return tabstrip_->selected_index() + delta;
   }
   // In other cases, such as Ctrl+T, open at the end of the strip.
-  return tab_count;
+  return DetermineInsertionIndexForAppending();
+}
+
+int TabStripModelOrderController::DetermineInsertionIndexForAppending() {
+  return (insertion_policy_ == TabStripModel::INSERT_AFTER) ?
+      tabstrip_->count() : 0;
 }
 
 int TabStripModelOrderController::DetermineNewSelectedIndex(

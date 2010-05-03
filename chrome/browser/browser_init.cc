@@ -726,11 +726,13 @@ Browser* BrowserInit::LaunchWithProfile::OpenTabsInBrowser(
       continue;
 
     int add_types = first_tab ? Browser::ADD_SELECTED : Browser::ADD_NONE;
+    add_types |= Browser::ADD_FORCE_INDEX;
     if (tabs[i].is_pinned)
       add_types |= Browser::ADD_PINNED;
+    int index = browser->GetIndexForInsertionDuringRestore(i);
 
     TabContents* tab = browser->AddTabWithURL(
-        tabs[i].url, GURL(), PageTransition::START_PAGE, -1, add_types, NULL,
+        tabs[i].url, GURL(), PageTransition::START_PAGE, index, add_types, NULL,
         tabs[i].app_id);
 
     if (profile_ && first_tab && process_startup) {

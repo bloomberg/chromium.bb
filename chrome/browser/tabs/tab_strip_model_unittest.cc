@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -603,6 +603,52 @@ TEST_F(TabStripModelTest, TestLTRInsertionOptions) {
   EXPECT_EQ(contents1, tabstrip.GetTabContentsAt(1));
   EXPECT_EQ(contents2, tabstrip.GetTabContentsAt(2));
   EXPECT_EQ(contents3, tabstrip.GetTabContentsAt(3));
+
+  tabstrip.CloseAllTabs();
+  EXPECT_TRUE(tabstrip.empty());
+}
+
+// Tests inserting tabs with InsertAfter set to false.
+TEST_F(TabStripModelTest, InsertBefore) {
+  TabStripDummyDelegate delegate(NULL);
+  TabStripModel tabstrip(&delegate, profile());
+  tabstrip.SetInsertionPolicy(TabStripModel::INSERT_BEFORE);
+  EXPECT_TRUE(tabstrip.empty());
+
+  TabContents* contents1 = CreateTabContents();
+  TabContents* contents2 = CreateTabContents();
+  TabContents* contents3 = CreateTabContents();
+
+  InsertTabContentses(&tabstrip, contents1, contents2, contents3);
+
+  // The order should be reversed.
+  EXPECT_EQ(contents3, tabstrip.GetTabContentsAt(0));
+  EXPECT_EQ(contents2, tabstrip.GetTabContentsAt(1));
+  EXPECT_EQ(contents1, tabstrip.GetTabContentsAt(2));
+
+  tabstrip.CloseAllTabs();
+  EXPECT_TRUE(tabstrip.empty());
+}
+
+// Tests opening background tabs with InsertAfter set to false.
+TEST_F(TabStripModelTest, InsertBeforeOpeners) {
+  TabStripDummyDelegate delegate(NULL);
+  TabStripModel tabstrip(&delegate, profile());
+  tabstrip.SetInsertionPolicy(TabStripModel::INSERT_BEFORE);
+  EXPECT_TRUE(tabstrip.empty());
+  TabContents* opener_contents = CreateTabContents();
+  tabstrip.AppendTabContents(opener_contents, true);
+
+  TabContents* contents1 = CreateTabContents();
+  TabContents* contents2 = CreateTabContents();
+  TabContents* contents3 = CreateTabContents();
+
+  InsertTabContentses(&tabstrip, contents1, contents2, contents3);
+
+  // The order should be reversed.
+  EXPECT_EQ(contents3, tabstrip.GetTabContentsAt(0));
+  EXPECT_EQ(contents2, tabstrip.GetTabContentsAt(1));
+  EXPECT_EQ(contents1, tabstrip.GetTabContentsAt(2));
 
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,6 +85,14 @@ bool TabStripModel::HasNonPhantomTabs() const {
   return false;
 }
 
+void TabStripModel::SetInsertionPolicy(InsertionPolicy policy) {
+  order_controller_->set_insertion_policy(policy);
+}
+
+TabStripModel::InsertionPolicy TabStripModel::insertion_policy() const {
+  return order_controller_->insertion_policy();
+}
+
 bool TabStripModel::HasObserver(TabStripModelObserver* observer) {
   return observers_.HasObserver(observer);
 }
@@ -96,7 +104,8 @@ bool TabStripModel::ContainsIndex(int index) const {
 void TabStripModel::AppendTabContents(TabContents* contents, bool foreground) {
   // Tabs opened in the foreground using this method inherit the group of the
   // previously selected tab.
-  InsertTabContentsAt(count(), contents, foreground, foreground);
+  int index = order_controller_->DetermineInsertionIndexForAppending();
+  InsertTabContentsAt(index, contents, foreground, foreground);
 }
 
 void TabStripModel::InsertTabContentsAt(int index,
@@ -299,6 +308,19 @@ int TabStripModel::GetIndexOfNextTabContentsOpenedBy(
   return kNoTab;
 }
 
+int TabStripModel::GetIndexOfFirstTabContentsOpenedBy(
+    const NavigationController* opener,
+    int start_index) const {
+  DCHECK(opener);
+  DCHECK(ContainsIndex(start_index));
+
+  for (int i = 0; i < start_index; ++i) {
+    if (contents_data_[i]->opener == opener && !IsPhantomTab(i))
+      return i;
+  }
+  return kNoTab;
+}
+
 int TabStripModel::GetIndexOfLastTabContentsOpenedBy(
     const NavigationController* opener, int start_index) const {
   DCHECK(opener);
@@ -467,7 +489,7 @@ void TabStripModel::AddTabContents(TabContents* contents,
     // For all other types, respect what was passed to us, normalizing -1s and
     // values that are too large.
     if (index < 0 || index > count())
-      index = count();
+      index = order_controller_->DetermineInsertionIndexForAppending();
   }
 
   if (transition == PageTransition::TYPED && index == count()) {

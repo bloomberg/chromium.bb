@@ -208,6 +208,7 @@ Browser::Browser(Type type, Profile* profile)
     // might show vertical tabs but not show an option to turn them off.
     use_vertical_tabs_.SetValue(false);
   }
+  UpdateTabStripModelInsertionPolicy();
 }
 
 Browser::~Browser() {
@@ -750,6 +751,11 @@ void Browser::InProgressDownloadResponse(bool cancel_downloads) {
 ////////////////////////////////////////////////////////////////////////////////
 // Browser, Tab adding/showing functions:
 
+int Browser::GetIndexForInsertionDuringRestore(int relative_index) {
+  return (tabstrip_model_.insertion_policy() == TabStripModel::INSERT_AFTER) ?
+      tab_count() : relative_index;
+}
+
 TabContents* Browser::AddTabWithURL(const GURL& url,
                                     const GURL& referrer,
                                     PageTransition::Type transition,
@@ -980,6 +986,16 @@ NavigationController& Browser::GetOrCloneNavigationControllerForDisposition(
     // Default disposition is CURRENT_TAB.
     return current_tab->controller();
   }
+}
+
+void Browser::UpdateTabStripModelInsertionPolicy() {
+  tabstrip_model_.SetInsertionPolicy(UseVerticalTabs() ?
+      TabStripModel::INSERT_BEFORE : TabStripModel::INSERT_AFTER);
+}
+
+void Browser::UseVerticalTabsChanged() {
+  UpdateTabStripModelInsertionPolicy();
+  window()->ToggleTabStripMode();
 }
 
 void Browser::GoBack(WindowOpenDisposition disposition) {
@@ -2141,7 +2157,7 @@ bool Browser::UseVerticalTabs() const {
 
 void Browser::ToggleUseVerticalTabs() {
   use_vertical_tabs_.SetValue(!UseVerticalTabs());
-  window()->ToggleTabStripMode();
+  UseVerticalTabsChanged();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2802,7 +2818,7 @@ void Browser::Observe(NotificationType type,
 
     case NotificationType::PREF_CHANGED: {
       if (*(Details<std::wstring>(details).ptr()) == prefs::kUseVerticalTabs)
-        window()->ToggleTabStripMode();
+        UseVerticalTabsChanged();
       else
         NOTREACHED();
       break;

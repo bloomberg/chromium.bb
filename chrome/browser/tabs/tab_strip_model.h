@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -278,6 +278,17 @@ class TabStripModelDelegate {
 ////////////////////////////////////////////////////////////////////////////////
 class TabStripModel : public NotificationObserver {
  public:
+  // Policy for how new tabs are inserted.
+  enum InsertionPolicy {
+    // Newly created tabs are created after the selection. This is the default.
+    INSERT_AFTER,
+
+    // Newly created tabs are inserted before the selection.
+    INSERT_BEFORE,
+  };
+
+  static const int kNoTab = -1;
+
   // Construct a TabStripModel with a delegate to help it do certain things
   // (See TabStripModelDelegate documentation). |delegate| cannot be NULL.
   TabStripModel(TabStripModelDelegate* delegate, Profile* profile);
@@ -316,13 +327,15 @@ class TabStripModel : public NotificationObserver {
     return order_controller_;
   }
 
+  // Sets the insertion policy. Default is INSERT_AFTER.
+  void SetInsertionPolicy(InsertionPolicy policy);
+  InsertionPolicy insertion_policy() const;
+
   // Returns true if |observer| is in the list of observers. This is intended
   // for debugging.
   bool HasObserver(TabStripModelObserver* observer);
 
   // Basic API /////////////////////////////////////////////////////////////////
-
-  static const int kNoTab = -1;
 
   // Determines if the specified index is contained within the TabStripModel.
   bool ContainsIndex(int index) const;
@@ -435,6 +448,12 @@ class TabStripModel : public NotificationObserver {
   int GetIndexOfNextTabContentsOpenedBy(const NavigationController* opener,
                                         int start_index,
                                         bool use_group) const;
+
+  // Returns the index of the first TabContents in the model opened by the
+  // specified opener.
+  // NOTE: this skips phantom tabs.
+  int GetIndexOfFirstTabContentsOpenedBy(const NavigationController* opener,
+                                         int start_index) const;
 
   // Returns the index of the last TabContents in the model opened by the
   // specified opener, starting at |start_index|.

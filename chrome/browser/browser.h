@@ -320,6 +320,12 @@ class Browser : public TabStripModelDelegate,
 
   // Tab adding/showing functions /////////////////////////////////////////////
 
+  // Returns the index to insert a tab at during session restore and startup.
+  // |relative_index| gives the index of the url into the number of tabs that
+  // are going to be opened. For example, if three urls are passed in on the
+  // command line this is invoked three times with the values 0, 1 and 2.
+  int GetIndexForInsertionDuringRestore(int relative_index);
+
   // Adds a new tab at the specified index. |add_types| is a bitmask of the
   // values defined by AddTabTypes; see AddTabTypes for details. If |instance|
   // is not null, its process will be used to render the tab. If
@@ -864,6 +870,14 @@ class Browser : public TabStripModelDelegate,
   // current tab or clone the current tab and return its |NavigationController|.
   NavigationController& GetOrCloneNavigationControllerForDisposition(
        WindowOpenDisposition disp);
+
+  // Sets the insertion policy of the tabstrip based on whether vertical tabs
+  // are enabled.
+  void UpdateTabStripModelInsertionPolicy();
+
+  // Invoked when the use vertical tabs preference changes. Resets the insertion
+  // policy of the tab strip model and notifies the window.
+  void UseVerticalTabsChanged();
 
   // Data members /////////////////////////////////////////////////////////////
 
