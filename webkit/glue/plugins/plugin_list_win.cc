@@ -283,6 +283,21 @@ void PluginList::LoadPluginsFromRegistry(
   }
 }
 
+// Returns true if the given plugins share at least one mime type.  This is used
+// to differentiate newer versions of a plugin vs two plugins which happen to
+// have the same filename.
+bool HaveSharedMimeType(const WebPluginInfo& plugin1,
+                        const WebPluginInfo& plugin2) {
+  for (size_t i = 0; i < plugin1.mime_types.size(); ++i) {
+    for (size_t j = 0; j < plugin2.mime_types.size(); ++j) {
+      if (plugin1.mime_types[i].mime_type == plugin2.mime_types[j].mime_type)
+        return true;
+    }
+  }
+
+  return false;
+}
+
 // Compares Windows style version strings (i.e. 1,2,3,4).  Returns true if b's
 // version is newer than a's, or false if it's equal or older.
 bool IsNewerVersion(const std::wstring& a, const std::wstring& b) {
@@ -317,7 +332,7 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
         StringToLowerASCII((*plugins)[i].path.BaseName().ToWStringHack());
     std::wstring plugin2 =
         StringToLowerASCII(info.path.BaseName().ToWStringHack());
-    if (plugin1 == plugin2 ||
+    if ((plugin1 == plugin2 && HaveSharedMimeType((*plugins)[i], info)) ||
         (plugin1 == kJavaDeploy1 && plugin2 == kJavaDeploy2) ||
         (plugin1 == kJavaDeploy2 && plugin2 == kJavaDeploy1)) {
       if (!IsNewerVersion((*plugins)[i].version, info.version))
