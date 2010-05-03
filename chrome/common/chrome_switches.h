@@ -255,7 +255,7 @@ extern const char kNoProcessSingletonDialog[];
 #endif
 
 #if defined(OS_MACOSX)
-extern const char kEnableFlashCoreAnimation[];
+extern const char kDisableFlashCoreAnimation[];
 extern const char kEnableSandboxLogging[];
 #else
 extern const char kKioskMode[];
