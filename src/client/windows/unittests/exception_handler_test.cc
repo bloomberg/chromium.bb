@@ -27,14 +27,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "breakpad_googletest_includes.h"
-#include "client/windows/crash_generation/crash_generation_server.h"
-#include "client/windows/handler/exception_handler.h"
 #include <windows.h>
 #include <dbghelp.h>
 #include <strsafe.h>
 #include <objbase.h>
 #include <shellapi.h>
+
+#include "../../../breakpad_googletest_includes.h"
+#include "../crash_generation/crash_generation_server.h"
+#include "../handler/exception_handler.h"
 
 namespace {
 const wchar_t kPipeName[] = L"\\\\.\\pipe\\BreakpadCrashTest\\TestCaseServer";
@@ -45,7 +46,7 @@ const char kFailureIndicator[] = "failure";
 BOOL DoesPathExist(const TCHAR *path_name);
 
 class ExceptionHandlerDeathTest : public ::testing::Test {
-protected:
+ protected:
   // Member variable for each test that they can use
   // for temporary storage.
   TCHAR temp_path_[MAX_PATH];
@@ -61,12 +62,14 @@ void ExceptionHandlerDeathTest::SetUp() {
   TCHAR temp_path[MAX_PATH] = { '\0' };
   TCHAR test_name_wide[MAX_PATH] = { '\0' };
   // We want the temporary directory to be what the OS returns
-  // to us, + the test case name.  
+  // to us, + the test case name.
   GetTempPath(MAX_PATH, temp_path);
   // THe test case name is exposed to use as a c-style string,
   // But we might be working in UNICODE here on Windows.
-  int dwRet = MultiByteToWideChar(CP_ACP, 0, test_info->name(), 
-    (int)strlen(test_info->name()), test_name_wide, MAX_PATH);
+  int dwRet = MultiByteToWideChar(CP_ACP, 0, test_info->name(),
+                                  strlen(test_info->name()),
+                                  test_name_wide,
+                                  MAX_PATH);
   if (!dwRet) {
     assert(false);
   }
@@ -82,7 +85,7 @@ BOOL DoesPathExist(const TCHAR *path_name) {
   return TRUE;
 }
 
-bool MinidumpWrittenCallback(const wchar_t* dump_path, 
+bool MinidumpWrittenCallback(const wchar_t* dump_path,
                              const wchar_t* minidump_id,
                              void* context,
                              EXCEPTION_POINTERS* exinfo,
@@ -106,11 +109,11 @@ TEST_F(ExceptionHandlerDeathTest, InProcTest) {
   // the semantics of the exception handler being inherited/not
   // inherited across CreateProcess().
   ASSERT_TRUE(DoesPathExist(temp_path_));
-  google_breakpad::ExceptionHandler *exc = 
+  google_breakpad::ExceptionHandler *exc =
     new google_breakpad::ExceptionHandler(
-    temp_path_, NULL, &MinidumpWrittenCallback, NULL, 
+    temp_path_, NULL, &MinidumpWrittenCallback, NULL,
     google_breakpad::ExceptionHandler::HANDLER_ALL);
-  int *i = NULL;  
+  int *i = NULL;
   ASSERT_DEATH((*i)++, kSuccessIndicator);
   delete exc;
 }
@@ -119,19 +122,18 @@ static bool gDumpCallbackCalled = false;
 
 void clientDumpCallback(void *dump_context,
                         const google_breakpad::ClientInfo *client_info,
-                        const std::wstring *dump_path){
-
+                        const std::wstring *dump_path) {
   gDumpCallbackCalled = true;
 }
 
 void ExceptionHandlerDeathTest::DoCrash() {
-  google_breakpad::ExceptionHandler *exc = 
+  google_breakpad::ExceptionHandler *exc =
     new google_breakpad::ExceptionHandler(
     temp_path_, NULL, NULL, NULL,
     google_breakpad::ExceptionHandler::HANDLER_ALL, MiniDumpNormal, kPipeName,
     NULL);
   // Although this is executing in the child process of the death test,
-  // if it's not true we'll still get an error rather than the crash 
+  // if it's not true we'll still get an error rather than the crash
   // being expected.
   ASSERT_TRUE(exc->IsOutOfProcess());
   int *i = NULL;
@@ -141,7 +143,7 @@ void ExceptionHandlerDeathTest::DoCrash() {
 TEST_F(ExceptionHandlerDeathTest, OutOfProcTest) {
   // We can take advantage of a detail of google test here to save some
   // complexity in testing: when you do a death test, it actually forks.
-  // So we can make the main test harness the crash generation server, 
+  // So we can make the main test harness the crash generation server,
   // and call ASSERT_DEATH on a NULL dereference, it to expecting test
   // the out of process scenario, since it's happening in a different
   // process!  This is different from the above because, above, we pass
@@ -152,7 +154,7 @@ TEST_F(ExceptionHandlerDeathTest, OutOfProcTest) {
   google_breakpad::CrashGenerationServer server(
     kPipeName, NULL, NULL, NULL, &clientDumpCallback, NULL, NULL, NULL, true,
     &dump_path);
-  
+
   // This HAS to be EXPECT_, because when this test case is executed in the
   // child process, the server registration will fail due to the named pipe
   // being the same.
