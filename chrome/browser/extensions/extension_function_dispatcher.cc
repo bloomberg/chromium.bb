@@ -262,12 +262,6 @@ void ExtensionFunctionDispatcher::ResetFunctions() {
   FactoryRegistry::instance()->ResetFunctions();
 }
 
-std::set<ExtensionFunctionDispatcher*>*
-    ExtensionFunctionDispatcher::all_instances() {
-  static std::set<ExtensionFunctionDispatcher*> instances;
-  return &instances;
-}
-
 ExtensionFunctionDispatcher* ExtensionFunctionDispatcher::Create(
     RenderViewHost* render_view_host,
     Delegate* delegate,
@@ -297,8 +291,6 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
   // TODO(erikkay) should we do something for these errors in Release?
   DCHECK(url.SchemeIs(chrome::kExtensionScheme));
   DCHECK(extension);
-
-  all_instances()->insert(this);
 
   // Notify the ExtensionProcessManager that the view was created.
   ExtensionProcessManager* epm = profile()->GetExtensionProcessManager();
@@ -337,7 +329,6 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
 }
 
 ExtensionFunctionDispatcher::~ExtensionFunctionDispatcher() {
-  all_instances()->erase(this);
   peer_->dispatcher_ = NULL;
 
   NotificationService::current()->Notify(

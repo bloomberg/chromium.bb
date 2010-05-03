@@ -23,6 +23,7 @@ class Extension;
 class ExtensionsService;
 class FilePath;
 class PrefService;
+class RenderProcessHost;
 class UserScript;
 class Value;
 
@@ -185,7 +186,8 @@ class ExtensionsDOMHandler
 
   // Helper that lists the current active html pages for an extension.
   std::vector<ExtensionPage> GetActivePagesForExtension(
-      const std::string& extension_id);
+      RenderProcessHost* process,
+      Extension* extension);
 
   // Returns the best icon to display in the UI for an extension, or an empty
   // ExtensionResource if no good icon exists.
@@ -232,6 +234,13 @@ class ExtensionsDOMHandler
   // to prevent reloading the page when we were the cause of the
   // notification.
   bool ignore_notifications_;
+
+  // The page may be refreshed in response to a RENDER_VIEW_HOST_DELETED,
+  // but the iteration over RenderViewHosts will include the host because the
+  // notification is sent when it is in the process of being deleted (and before
+  // it is removed from the process). Keep a pointer to it so we can exclude
+  // it from the active views.
+  RenderViewHost* deleting_rvh_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsDOMHandler);
 };

@@ -90,9 +90,6 @@ class ExtensionFunctionDispatcher {
                                              Delegate* delegate,
                                              const GURL& url);
 
-  // Retrieves a vector of all EFD instances.
-  static std::set<ExtensionFunctionDispatcher*>* all_instances();
-
   ~ExtensionFunctionDispatcher();
 
   Delegate* delegate() { return delegate_; }

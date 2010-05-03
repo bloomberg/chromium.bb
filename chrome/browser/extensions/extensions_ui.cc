@@ -264,7 +264,9 @@ void ExtensionsDOMHandler::IconLoader::ReportResultOnUIThread(
 ///////////////////////////////////////////////////////////////////////////////
 
 ExtensionsDOMHandler::ExtensionsDOMHandler(ExtensionsService* extension_service)
-    : extensions_service_(extension_service), ignore_notifications_(false) {
+    : extensions_service_(extension_service),
+      ignore_notifications_(false),
+      deleting_rvh_(NULL) {
 }
 
 void ExtensionsDOMHandler::RegisterMessages() {
@@ -306,13 +308,19 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const Value* value) {
   std::vector<ExtensionResource>* extension_icons =
       new std::vector<ExtensionResource>();
 
+  ExtensionProcessManager* process_manager =
+      extensions_service_->profile()->GetExtensionProcessManager();
   const ExtensionList* extensions = extensions_service_->extensions();
   for (ExtensionList::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
     if (ShouldShowExtension(*extension)) {
+      RenderProcessHost* process =
+          process_manager->GetExtensionProcess((*extension)->url());
       extensions_list->Append(CreateExtensionDetailValue(
           extensions_service_.get(),
-          *extension, GetActivePagesForExtension((*extension)->id()), true));
+          *extension,
+          GetActivePagesForExtension(process, *extension),
+          true));  // enabled
       extension_icons->push_back(PickExtensionIcon(*extension));
     }
   }
@@ -320,9 +328,13 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const Value* value) {
   for (ExtensionList::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
     if (ShouldShowExtension(*extension)) {
+      RenderProcessHost* process =
+          process_manager->GetExtensionProcess((*extension)->url());
       extensions_list->Append(CreateExtensionDetailValue(
           extensions_service_.get(),
-          *extension, GetActivePagesForExtension((*extension)->id()), false));
+          *extension,
+          GetActivePagesForExtension(process, *extension),
+          false));  // enabled
       extension_icons->push_back(PickExtensionIcon(*extension));
     }
   }
@@ -360,6 +372,12 @@ void ExtensionsDOMHandler::OnIconsLoaded(DictionaryValue* json) {
   registrar_.Add(this,
       NotificationType::EXTENSION_FUNCTION_DISPATCHER_DESTROYED,
       NotificationService::AllSources());
+  registrar_.Add(this,
+      NotificationType::NAV_ENTRY_COMMITTED,
+      NotificationService::AllSources()); 
+  registrar_.Add(this,
+      NotificationType::RENDER_VIEW_HOST_DELETED,
+      NotificationService::AllSources()); 
 }
 
 ExtensionResource ExtensionsDOMHandler::PickExtensionIcon(
@@ -662,14 +680,20 @@ void ExtensionsDOMHandler::Observe(NotificationType type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
   switch (type.value) {
-    // We listen to both EXTENSION_LOADED and EXTENSION_PROCESS_CREATED because
+    // We listen for notifications that will result in the page being
+    // repopulated with data twice for the same event in certain cases.
+    // For instance, EXTENSION_LOADED & EXTENSION_PROCESS_CREATED because
     // we don't know about the views for an extension at EXTENSION_LOADED, but
     // if we only listen to EXTENSION_PROCESS_CREATED, we'll miss extensions
-    // that don't have a process at startup.
+    // that don't have a process at startup. Similarly, NAV_ENTRY_COMMITTED &
+    // EXTENSION_FUNCTION_DISPATCHER_CREATED because we want to handle both
+    // the case of live app pages (which don't have an EFD) and
+    // chrome-extension:// urls which are served in a TabContents.
     //
-    // Doing it this way gets everything, but it means that we will actually
-    // render the page twice. This doesn't seem to result in any noticeable
-    // flicker, though.
+    // Doing it this way gets everything but causes the page to be rendered
+    // more than we need. It doesn't seem to result in any noticeable flicker.
+    case NotificationType::RENDER_VIEW_HOST_DELETED:  
+      deleting_rvh_ = Details<RenderViewHost>(details).ptr();
     case NotificationType::EXTENSION_LOADED:
     case NotificationType::EXTENSION_PROCESS_CREATED:
     case NotificationType::EXTENSION_UNLOADED:
@@ -677,10 +701,12 @@ void ExtensionsDOMHandler::Observe(NotificationType type,
     case NotificationType::EXTENSION_UPDATE_DISABLED:
     case NotificationType::EXTENSION_FUNCTION_DISPATCHER_CREATED:
     case NotificationType::EXTENSION_FUNCTION_DISPATCHER_DESTROYED:
+    case NotificationType::NAV_ENTRY_COMMITTED:
       if (!ignore_notifications_ && dom_ui_->tab_contents())
         HandleRequestExtensionsData(NULL);
+      deleting_rvh_ = NULL;    
       break;
-
+    
     default:
       NOTREACHED();
   }
@@ -777,8 +803,13 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
   for (std::vector<ExtensionPage>::const_iterator iter = pages.begin();
        iter != pages.end(); ++iter) {
     DictionaryValue* view_value = new DictionaryValue;
-    view_value->SetString(L"path",
-        iter->url.path().substr(1, std::string::npos));  // No leading slash.
+    if (iter->url.scheme() == chrome::kExtensionScheme) {
+      // No leading slash.
+      view_value->SetString(L"path", iter->url.path().substr(1));
+    } else {
+      // For live pages, use the full URL.
+      view_value->SetString(L"path", iter->url.spec());
+    }
     view_value->SetInteger(L"renderViewId", iter->render_view_id);
     view_value->SetInteger(L"renderProcessId", iter->render_process_id);
     views->Append(view_value);
@@ -792,28 +823,33 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
 }
 
 std::vector<ExtensionPage> ExtensionsDOMHandler::GetActivePagesForExtension(
-    const std::string& extension_id) {
+    RenderProcessHost* process,
+    Extension* extension) {
   std::vector<ExtensionPage> result;
-  std::set<ExtensionFunctionDispatcher*>* all_instances =
-      ExtensionFunctionDispatcher::all_instances();
+  if (!process)
+    return result;
 
-  for (std::set<ExtensionFunctionDispatcher*>::iterator iter =
-       all_instances->begin(); iter != all_instances->end(); ++iter) {
-    RenderViewHost* view = (*iter)->render_view_host();
-    if ((*iter)->extension_id() == extension_id && view) {
-      // We avoid adding views which are contained in popups to this list
-      // because clicking the link would cause the popup to loose focus and
-      // close. Instead, we display text that tells the developer to
-      // right-click on popups to inspect them.
-      if (ViewType::EXTENSION_POPUP ==
-          (*iter)->render_view_host()->delegate()->GetRenderViewType()) {
+  RenderProcessHost::listeners_iterator iter = process->ListenersIterator();
+  for (; !iter.IsAtEnd(); iter.Advance()) {
+    const RenderWidgetHost* widget =
+        static_cast<const RenderWidgetHost*>(iter.GetCurrentValue());
+    DCHECK(widget);
+    if (!widget || !widget->IsRenderView())
+      continue;
+    const RenderViewHost* host = static_cast<const RenderViewHost*>(widget);
+    if (host == deleting_rvh_ ||
+        ViewType::EXTENSION_POPUP == host->delegate()->GetRenderViewType())
+      continue;
+    
+    GURL url = host->delegate()->GetURL();
+    if (url.SchemeIs(chrome::kExtensionScheme)) {
+      if (url.host() != extension->id())
         continue;
-      }
-
-      result.push_back(ExtensionPage((*iter)->url(),
-                                     view->process()->id(),
-                                     view->routing_id()));
+    } else if (!extension->web_extent().ContainsURL(url)) {
+      continue;
     }
+
+    result.push_back(ExtensionPage(url, process->id(), host->routing_id()));
   }
 
   return result;
