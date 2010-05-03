@@ -1001,6 +1001,10 @@ void OpaqueBrowserFrameView::LayoutTitleBar() {
 
 void OpaqueBrowserFrameView::LayoutOTRAvatar() {
   int top_height = NonClientTopBorderHeight();
+  if (!frame_->GetWindow()->IsMaximized() &&
+      !frame_->GetWindow()->IsFullscreen()) {
+    top_height += kNonClientRestoredExtraThickness;
+  }
   int tabstrip_height, otr_height;
   bool visible = browser_view_->ShouldShowOffTheRecordAvatar();
   gfx::Size preferred_size = otr_avatar_icon_->GetPreferredSize();
