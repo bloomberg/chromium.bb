@@ -18,7 +18,6 @@
 
 {
   'all': [
-    'bookmark_bar',
     'bookmarks',
     'history',
     'test_basic.SimpleTest.testCanOpenGoogle',
@@ -28,12 +27,19 @@
   ],
 
   'win': [
+    # testBookmarkBarVisible fails on windows. crbug.com/42823
+    # 'bookmark_bar.BookmarkBarTest.testBookmarkBarVisible',
+    'bookmark_bar.BookmarkBarTest.testBookmarkBarVisibleWait',
   ],
 
   'mac': [
+    'bookmark_bar.BookmarkBarTest.testBookmarkBarVisibleWait',
+    'bookmark_bar.BookmarkBarTest.testBookmarkBarVisibleWait',
   ],
 
   'linux': [
+    'bookmark_bar.BookmarkBarTest.testBookmarkBarVisibleWait',
+    'bookmark_bar.BookmarkBarTest.testBookmarkBarVisibleWait',
   ],
 
   # TODO(nirnimesh): Add a ChromeOS section

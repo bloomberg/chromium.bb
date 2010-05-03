@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import hashlib
+import filecmp
 import logging
 import os
 import shutil
@@ -19,11 +19,11 @@ import pyauto
 class DownloadsTest(pyauto.PyUITest):
   """TestCase for Downloads."""
 
-  def _ComputeMD5sum(self, filename):
-    """Determine md5 checksum for the contents of |filename|."""
-    md5 = hashlib.md5()
-    md5.update(open(filename, 'rb').read())
-    return md5.hexdigest()
+  def _EqualFileContents(self, file1, file2):
+    """Determine if 2 given files have the same contents."""
+    if not (os.path.exists(file1) and os.path.exists(file2)):
+      return False
+    return filecmp.cmp(file1, file2)
 
   def testNoDownloadWaitingNeeded(self):
     """Make sure "wait for downloads" returns quickly if we have none."""
@@ -34,9 +34,8 @@ class DownloadsTest(pyauto.PyUITest):
        Also verify that the download shelf showed up.
     """
     test_dir = os.path.join(os.path.abspath(self.DataDir()), 'downloads')
-    checksum_file = os.path.join(test_dir, 'a_zip_file.md5sum')
-    file_url = 'file://%s' % os.path.join(test_dir, 'a_zip_file.zip')
-    golden_md5sum = urllib.urlopen(checksum_file).read()
+    file_path = os.path.join(test_dir, 'a_zip_file.zip')
+    file_url = self.GetFileURLForPath(file_path)
     downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
                                   'a_zip_file.zip')
     os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
@@ -51,8 +50,7 @@ class DownloadsTest(pyauto.PyUITest):
 
     # Verify that the file was correctly downloaded
     self.assertTrue(os.path.exists(downloaded_pkg))
-    # print 'Download size is %d' % os.path.getsize(downloaded_pkg)
-    self.assertEqual(golden_md5sum, self._ComputeMD5sum(downloaded_pkg))
+    self.assertTrue(self._EqualFileContents(file_path, downloaded_pkg))
 
   def testBigZip(self):
     # TODO: download something "pretty big".  The above test will
@@ -113,16 +111,24 @@ class DownloadsTest(pyauto.PyUITest):
 
     def _CreateFile(name):
       """Create and fill the given file with some junk."""
-      fp = open(name, 'w')
-      print >>fp, 'This is a junk file named %s. ' % name * 100
+      fp = open(name, 'w')  # name could be unicode
+      print >>fp, 'This is a junk file named %s. ' % repr(name) * 100
       fp.close()
 
     # Temp dir for hosting crazy filenames.
     temp_dir = tempfile.mkdtemp(prefix='download')
+    # Windows has a dual nature dealing with unicode filenames.
+    # While the files are internally saved as unicode, there's a non-unicode
+    # aware API that returns a locale-dependent coding on the true unicode
+    # filenames.  This messes up things.
+    # Filesystem-interfacing functions like os.listdir() need to
+    # be given unicode strings to "do the right thing" on win.
+    # Ref: http://boodebr.org/main/python/all-about-python-and-unicode
     try:
-      for filename in crazy_filenames:
-        file_path = os.path.join(temp_dir, filename)
-        _CreateFile(file_path)
+      for filename in crazy_filenames:  # filename is unicode.
+        utf8_filename = filename.encode('utf-8')
+        file_path = os.path.join(temp_dir, utf8_filename)
+        _CreateFile(os.path.join(temp_dir, filename))  # unicode file.
         file_url = self.GetFileURLForPath(file_path)
         downloaded_file = os.path.join(download_dir, filename)
         os.path.exists(downloaded_file) and os.remove(downloaded_file)
@@ -136,12 +142,12 @@ class DownloadsTest(pyauto.PyUITest):
       for filename in crazy_filenames:
         downloaded_file = os.path.join(download_dir, filename)
         self.assertTrue(os.path.exists(downloaded_file))
-        self.assertEqual(   # Verify checksum.
-            self._ComputeMD5sum(downloaded_file),
-            self._ComputeMD5sum(os.path.join(temp_dir, filename)))
+        self.assertTrue(   # Verify file contents.
+            self._EqualFileContents(downloaded_file,
+                                    os.path.join(temp_dir, filename)))
         os.path.exists(downloaded_file) and os.remove(downloaded_file)
     finally:
-      shutil.rmtree(temp_dir)
+      shutil.rmtree(unicode(temp_dir))  # unicode so that win treats nicely.
 
 
 if __name__ == '__main__':

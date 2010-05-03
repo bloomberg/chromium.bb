@@ -166,8 +166,16 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
 
     Also quotes the url using urllib.quote().
     """
-    abs_path = urllib.quote(os.path.abspath(path).replace('\\', '/'))
-    return 'file://' + abs_path
+    abs_path = os.path.abspath(path)
+    if sys.platform == 'win32':
+      # Don't quote the ':' in drive letter ( say, C: ) on win.
+      # Also, replace '\' with '/' as expected in a file:/// url.
+      drive, rest = os.path.splitdrive(abs_path)
+      quoted_path = drive.upper() + urllib.quote((rest.replace('\\', '/')))
+      return 'file:///' + quoted_path
+    else:
+      quoted_path = urllib.quote(abs_path)
+      return 'file://' + quoted_path
 
   def WaitUntil(self, function, timeout=-1, retry_sleep=0.25, args=[]):
     """Poll on a condition until timeout.
