@@ -1259,7 +1259,7 @@ void GLES2Implementation::ReadPixels(
       }
       transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
       // If it was not marked as successful exit.
-      if (*result != 0) {
+      if (*result == 0) {
         return;
       }
       yoffset += num_rows;
