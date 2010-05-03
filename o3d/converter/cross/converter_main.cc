@@ -40,6 +40,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/string_util.h"
 #include "converter/cross/converter.h"
 #include "utils/cross/file_path_utils.h"
@@ -69,7 +70,11 @@ int CrossMain(int argc, char**argv) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 
   FilePath in_filename, out_filename;
-  const FilePath converter_tool = FilePath(argv[0]).DirName().Append(
+  // Use the absolute path to the converter tool for the case that we
+  // are in the current working directory and "." is not on the PATH.
+  FilePath converter_dir = FilePath(argv[0]).DirName();
+  file_util::AbsolutePath(&converter_dir);
+  const FilePath converter_tool = converter_dir.Append(
       o3d::UTF8ToFilePath("convert.py"));
 
 
