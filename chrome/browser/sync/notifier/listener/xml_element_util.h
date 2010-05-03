@@ -11,7 +11,7 @@ namespace buzz {
 class XmlElement;
 }
 
-namespace browser_sync {
+namespace notifier {
 
 std::string XmlElementToString(const buzz::XmlElement& xml_element);
 
@@ -24,6 +24,6 @@ buzz::XmlElement* MakeIntXmlElement(const char* name, int value);
 
 buzz::XmlElement* MakeStringXmlElement(const char* name, const char* value);
 
-}  // namespace browser_sync
+}  // namespace notifier
 
 #endif  // CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_XML_ELEMENT_UTIL_H_

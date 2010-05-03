@@ -257,7 +257,7 @@ void AllStatus::HandleServerConnectionEvent(
   }
 }
 
-void AllStatus::WatchTalkMediator(const TalkMediator* mediator) {
+void AllStatus::WatchTalkMediator(const notifier::TalkMediator* mediator) {
   status_.notifications_enabled = false;
   talk_mediator_hookup_.reset(
       NewEventListenerHookup(mediator->channel(), this,
@@ -265,24 +265,24 @@ void AllStatus::WatchTalkMediator(const TalkMediator* mediator) {
 }
 
 void AllStatus::HandleTalkMediatorEvent(
-    const TalkMediatorEvent& event) {
+    const notifier::TalkMediatorEvent& event) {
   ScopedStatusLockWithNotify lock(this);
   switch (event.what_happened) {
-    case TalkMediatorEvent::SUBSCRIPTIONS_ON:
+    case notifier::TalkMediatorEvent::SUBSCRIPTIONS_ON:
       status_.notifications_enabled = true;
       break;
-    case TalkMediatorEvent::LOGOUT_SUCCEEDED:
-    case TalkMediatorEvent::SUBSCRIPTIONS_OFF:
-    case TalkMediatorEvent::TALKMEDIATOR_DESTROYED:
+    case notifier::TalkMediatorEvent::LOGOUT_SUCCEEDED:
+    case notifier::TalkMediatorEvent::SUBSCRIPTIONS_OFF:
+    case notifier::TalkMediatorEvent::TALKMEDIATOR_DESTROYED:
       status_.notifications_enabled = false;
       break;
-    case TalkMediatorEvent::NOTIFICATION_RECEIVED:
+    case notifier::TalkMediatorEvent::NOTIFICATION_RECEIVED:
       status_.notifications_received++;
       break;
-    case TalkMediatorEvent::NOTIFICATION_SENT:
+    case notifier::TalkMediatorEvent::NOTIFICATION_SENT:
       status_.notifications_sent++;
       break;
-    case TalkMediatorEvent::LOGIN_SUCCEEDED:
+    case notifier::TalkMediatorEvent::LOGIN_SUCCEEDED:
     default:
       lock.set_notify_plan(DONT_NOTIFY);
       break;

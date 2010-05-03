@@ -14,7 +14,7 @@
 #include "talk/xmpp/xmpptask.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
-namespace browser_sync {
+namespace notifier {
 
 class SendUpdateTask : public buzz::XmppTask {
  public:
@@ -42,6 +42,6 @@ class SendUpdateTask : public buzz::XmppTask {
   DISALLOW_COPY_AND_ASSIGN(SendUpdateTask);
 };
 
-}  // namespace browser_sync
+}  // namespace notifier
 
 #endif  // CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_SEND_UPDATE_TASK_H_

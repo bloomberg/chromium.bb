@@ -14,7 +14,7 @@
 #include "talk/xmpp/xmppconstants.h"
 #include "talk/xmpp/xmppengine.h"
 
-namespace browser_sync {
+namespace notifier {
 
 ListenTask::ListenTask(Task* parent)
     : buzz::XmppTask(parent, buzz::XmppEngine::HL_TYPE) {
@@ -141,4 +141,4 @@ bool ListenTask::IsValidNotification(const buzz::XmlElement* stanza) {
        (stanza->Attr(buzz::QN_FROM) == GetClient()->jid().BareJid().Str()));
 }
 
-}  // namespace browser_sync
+}  // namespace notifier

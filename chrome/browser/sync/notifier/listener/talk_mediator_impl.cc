@@ -13,7 +13,7 @@
 #include "talk/xmpp/xmppclientsettings.h"
 #include "talk/xmpp/xmppengine.h"
 
-namespace browser_sync {
+namespace notifier {
 
 // Before any authorization event from TalkMediatorImpl, we need to initialize
 // the SSL library.
@@ -254,4 +254,4 @@ void TalkMediatorImpl::OnNotificationSent() {
   channel_->NotifyListeners(event);
 }
 
-}  // namespace browser_sync
+}  // namespace notifier

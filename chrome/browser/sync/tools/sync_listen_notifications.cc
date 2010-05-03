@@ -96,13 +96,13 @@ class XmppNotificationClient : public sigslot::has_slots<> {
           subscribed_services_list.push_back(browser_sync::kSyncServiceUrl);
         }
         // Owned by task_pump_.
-        browser_sync::SubscribeTask* subscribe_task =
-            new browser_sync::SubscribeTask(xmpp_client_,
+        notifier::SubscribeTask* subscribe_task =
+            new notifier::SubscribeTask(xmpp_client_,
                                             subscribed_services_list);
         subscribe_task->Start();
         // Owned by task_pump_.
-        browser_sync::ListenTask* listen_task =
-            new browser_sync::ListenTask(xmpp_client_);
+        notifier::ListenTask* listen_task =
+            new notifier::ListenTask(xmpp_client_);
         listen_task->Start();
         break;
       }

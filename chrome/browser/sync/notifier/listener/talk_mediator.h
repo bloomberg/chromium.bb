@@ -21,7 +21,7 @@
 #include "chrome/browser/sync/notifier/listener/notification_defines.h"
 #include "chrome/common/deprecated/event_sys.h"
 
-namespace browser_sync {
+namespace notifier {
 
 struct TalkMediatorEvent {
   enum WhatHappened {
@@ -71,6 +71,6 @@ class TalkMediator {
   virtual void AddSubscribedServiceUrl(const std::string& service_url) = 0;
 };
 
-}  // namespace browser_sync
+}  // namespace notifier
 
 #endif  // CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_TALK_MEDIATOR_H_

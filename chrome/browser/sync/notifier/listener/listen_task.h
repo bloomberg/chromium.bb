@@ -20,7 +20,7 @@ class XmlElement;
 class Jid;
 }
 
-namespace browser_sync {
+namespace notifier {
 
 class ListenTask : public buzz::XmppTask {
  public:
@@ -44,6 +44,6 @@ class ListenTask : public buzz::XmppTask {
   DISALLOW_COPY_AND_ASSIGN(ListenTask);
 };
 
-}  // namespace browser_sync
+}  // namespace notifier
 
 #endif  // CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_LISTEN_TASK_H_

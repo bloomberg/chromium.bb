@@ -16,7 +16,7 @@
 #include "talk/xmpp/xmpptask.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
-namespace browser_sync {
+namespace notifier {
 // TODO(akalin): Remove NOTIFICATION_LEGACY and remove/refactor relevant code
 // in this class and any other class that uses notification_method.
 class SubscribeTask : public buzz::XmppTask {
@@ -46,6 +46,6 @@ class SubscribeTask : public buzz::XmppTask {
   DISALLOW_COPY_AND_ASSIGN(SubscribeTask);
 };
 
-}  // namespace browser_sync
+}  // namespace notifier
 
 #endif  // CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_SUBSCRIBE_TASK_H_

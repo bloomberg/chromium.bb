@@ -16,7 +16,7 @@
 #include "talk/base/sigslot.h"
 #include "talk/xmpp/xmppclientsettings.h"
 
-namespace browser_sync {
+namespace notifier {
 
 class MediatorThread {
  public:
@@ -50,6 +50,6 @@ class MediatorThread {
   DISALLOW_COPY_AND_ASSIGN(MediatorThread);
 };
 
-}  // namespace browser_sync
+}  // namespace notifier
 
 #endif  // CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_MEDIATOR_THREAD_H_

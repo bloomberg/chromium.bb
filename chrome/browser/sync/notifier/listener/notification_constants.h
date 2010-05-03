@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_NOTIFICATION_CONSTANTS_H_
 #define CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_NOTIFICATION_CONSTANTS_H_
 
-namespace browser_sync {
+namespace notifier {
 
 extern const char kNotifierNamespace[];
 
-}  // namespace browser_sync
+}  // namespace notifier
 
 #endif  // CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_NOTIFICATION_CONSTANTS_H_

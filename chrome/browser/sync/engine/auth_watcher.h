@@ -21,6 +21,10 @@
 #include "chrome/common/deprecated/event_sys.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
+namespace notifier {
+class TalkMediator;
+}
+
 namespace syncable {
 struct DirectoryManagerEvent;
 class DirectoryManager;
@@ -31,7 +35,6 @@ namespace browser_sync {
 class AllStatus;
 class AuthWatcher;
 class ServerConnectionManager;
-class TalkMediator;
 class URLFactory;
 class UserSettings;
 struct ServerConnectionEvent;
@@ -92,7 +95,7 @@ class AuthWatcher : public base::RefCountedThreadSafe<AuthWatcher> {
               const std::string& gaia_url,
               UserSettings* user_settings,
               GaiaAuthenticator* gaia_auth,
-              TalkMediator* talk_mediator);
+              notifier::TalkMediator* talk_mediator);
   ~AuthWatcher();
 
   typedef EventChannel<AuthWatcherEvent, Lock> Channel;
@@ -209,7 +212,8 @@ class AuthWatcher : public base::RefCountedThreadSafe<AuthWatcher> {
   AllStatus* const allstatus_;
   Status status_;
   UserSettings* const user_settings_;
-  TalkMediator* talk_mediator_;  // Interface to the notifications engine.
+  // Interface to the notifications engine.
+  notifier::TalkMediator* talk_mediator_;
   scoped_ptr<Channel> channel_;
 
   base::Thread auth_backend_thread_;

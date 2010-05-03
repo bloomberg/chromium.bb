@@ -602,7 +602,7 @@ void SyncerThread::NudgeSyncImpl(int milliseconds_from_now,
   vault_field_changed_.Broadcast();
 }
 
-void SyncerThread::WatchTalkMediator(TalkMediator* mediator) {
+void SyncerThread::WatchTalkMediator(notifier::TalkMediator* mediator) {
   talk_mediator_hookup_.reset(
       NewEventListenerHookup(
           mediator->channel(),
@@ -610,18 +610,19 @@ void SyncerThread::WatchTalkMediator(TalkMediator* mediator) {
           &SyncerThread::HandleTalkMediatorEvent));
 }
 
-void SyncerThread::HandleTalkMediatorEvent(const TalkMediatorEvent& event) {
+void SyncerThread::HandleTalkMediatorEvent(
+    const notifier::TalkMediatorEvent& event) {
   AutoLock lock(lock_);
   switch (event.what_happened) {
-    case TalkMediatorEvent::LOGIN_SUCCEEDED:
+    case notifier::TalkMediatorEvent::LOGIN_SUCCEEDED:
       LOG(INFO) << "P2P: Login succeeded.";
       p2p_authenticated_ = true;
       break;
-    case TalkMediatorEvent::LOGOUT_SUCCEEDED:
+    case notifier::TalkMediatorEvent::LOGOUT_SUCCEEDED:
       LOG(INFO) << "P2P: Login succeeded.";
       p2p_authenticated_ = false;
       break;
-    case TalkMediatorEvent::SUBSCRIPTIONS_ON:
+    case notifier::TalkMediatorEvent::SUBSCRIPTIONS_ON:
       LOG(INFO) << "P2P: Subscriptions successfully enabled.";
       p2p_subscribed_ = true;
       if (NULL != vault_.syncer_) {
@@ -629,11 +630,11 @@ void SyncerThread::HandleTalkMediatorEvent(const TalkMediatorEvent& event) {
         NudgeSyncImpl(0, kLocal);
       }
       break;
-    case TalkMediatorEvent::SUBSCRIPTIONS_OFF:
+    case notifier::TalkMediatorEvent::SUBSCRIPTIONS_OFF:
       LOG(INFO) << "P2P: Subscriptions are not enabled.";
       p2p_subscribed_ = false;
       break;
-    case TalkMediatorEvent::NOTIFICATION_RECEIVED:
+    case notifier::TalkMediatorEvent::NOTIFICATION_RECEIVED:
       // Check if the service url is a sync URL. An empty service URL
       // is treated as a legacy sync notification
       if (event.notification_data.service_url.empty() ||

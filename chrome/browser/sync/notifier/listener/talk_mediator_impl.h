@@ -22,7 +22,7 @@
 
 class EventListenerHookup;
 
-namespace browser_sync {
+namespace notifier {
 
 class TalkMediatorImpl
     : public TalkMediator,
@@ -110,6 +110,6 @@ class TalkMediatorImpl
   DISALLOW_COPY_AND_ASSIGN(TalkMediatorImpl);
 };
 
-}  // namespace browser_sync
+}  // namespace notifier
 
 #endif  // CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_TALK_MEDIATOR_IMPL_H_

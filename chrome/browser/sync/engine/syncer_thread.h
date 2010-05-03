@@ -30,6 +30,10 @@
 
 class EventListenerHookup;
 
+namespace notifier {
+class TalkMediator;
+}
+
 namespace syncable {
 class DirectoryManager;
 struct DirectoryManagerEvent;
@@ -40,7 +44,6 @@ namespace browser_sync {
 class ModelSafeWorker;
 class ServerConnectionManager;
 class Syncer;
-class TalkMediator;
 class URLFactory;
 struct ServerConnectionEvent;
 struct SyncerEvent;
@@ -132,7 +135,7 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   virtual void NudgeSyncer(int milliseconds_from_now, NudgeSource source);
 
   // Registers this thread to watch talk mediator events.
-  virtual void WatchTalkMediator(TalkMediator* talk_mediator);
+  virtual void WatchTalkMediator(notifier::TalkMediator* talk_mediator);
 
   virtual SyncerEventChannel* relay_channel();
 
@@ -235,7 +238,7 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
 
   void HandleServerConnectionEvent(const ServerConnectionEvent& event);
 
-  void HandleTalkMediatorEvent(const TalkMediatorEvent& event);
+  void HandleTalkMediatorEvent(const notifier::TalkMediatorEvent& event);
 
   void SyncMain(Syncer* syncer);
 

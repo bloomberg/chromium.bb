@@ -46,7 +46,7 @@ AuthWatcher::AuthWatcher(DirectoryManager* dirman,
                          const string& gaia_url,
                          UserSettings* user_settings,
                          GaiaAuthenticator* gaia_auth,
-                         TalkMediator* talk_mediator)
+                         notifier::TalkMediator* talk_mediator)
     : gaia_(gaia_auth),
       dirman_(dirman),
       scm_(scm),

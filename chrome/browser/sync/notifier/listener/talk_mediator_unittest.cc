@@ -11,12 +11,12 @@
 #include "talk/xmpp/xmppengine.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace notifier {
 
 class TalkMediatorImplTest : public testing::Test {
  public:
   void HandleTalkMediatorEvent(
-      const browser_sync::TalkMediatorEvent& event) {
+      const notifier::TalkMediatorEvent& event) {
     last_message_ = event.what_happened;
   }
 
@@ -182,4 +182,4 @@ TEST_F(TalkMediatorImplTest, MediatorThreadCallbacks) {
   ASSERT_TRUE(last_message_ == TalkMediatorEvent::TALKMEDIATOR_DESTROYED);
 }
 
-}  // namespace browser_sync
+}  // namespace notifier

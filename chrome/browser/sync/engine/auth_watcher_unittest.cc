@@ -98,7 +98,7 @@ class AuthWatcherTest : public testing::Test {
     FilePath user_settings_path = temp_dir_.path().Append(kUserSettingsDB);
     user_settings_->Init(user_settings_path);
     gaia_auth_ = new GaiaAuthMockForAuthWatcher();
-    talk_mediator_.reset(new TalkMediatorImpl(false));
+    talk_mediator_.reset(new notifier::TalkMediatorImpl(false));
     auth_watcher_ = new AuthWatcher(metadb_.manager(), connection_.get(),
         allstatus_.get(), kTestUserAgent, kTestServiceId, kTestGaiaURL,
         user_settings_.get(), gaia_auth_, talk_mediator_.get());
@@ -148,7 +148,7 @@ class AuthWatcherTest : public testing::Test {
   scoped_ptr<AllStatus> allstatus_;
   scoped_ptr<UserSettings> user_settings_;
   GaiaAuthMockForAuthWatcher* gaia_auth_;  // Owned by auth_watcher_.
-  scoped_ptr<TalkMediator> talk_mediator_;
+  scoped_ptr<notifier::TalkMediator> talk_mediator_;
   scoped_refptr<AuthWatcher> auth_watcher_;
 
   // This is used to block the AuthWatcherThread when it raises events until we

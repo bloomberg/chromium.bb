@@ -14,7 +14,7 @@
 #include "talk/xmpp/xmppclient.h"
 #include "talk/xmpp/xmppconstants.h"
 
-namespace browser_sync {
+namespace notifier {
 
 SendUpdateTask::SendUpdateTask(Task* parent,
                                const OutgoingNotificationData& data)
@@ -128,4 +128,4 @@ buzz::XmlElement* SendUpdateTask::MakeUpdateMessage(
   return iq;
 }
 
-}  // namespace browser_sync
+}  // namespace notifier

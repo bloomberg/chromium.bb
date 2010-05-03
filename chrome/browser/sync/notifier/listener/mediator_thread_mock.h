@@ -16,7 +16,7 @@
 #include "chrome/browser/sync/notification_method.h"
 #include "talk/xmpp/xmppclientsettings.h"
 
-namespace browser_sync {
+namespace notifier {
 
 class MockMediatorThread : public MediatorThread {
  public:
@@ -77,6 +77,6 @@ class MockMediatorThread : public MediatorThread {
   int send_calls;
 };
 
-}  // namespace browser_sync
+}  // namespace notifier
 
 #endif  // CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_MEDIATOR_THREAD_MOCK_H_

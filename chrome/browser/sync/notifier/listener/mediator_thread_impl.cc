@@ -21,7 +21,7 @@
 
 using std::string;
 
-namespace browser_sync {
+namespace notifier {
 
 MediatorThreadImpl::MediatorThreadImpl() {}
 
@@ -295,4 +295,4 @@ buzz::XmppClient* MediatorThreadImpl::xmpp_client() {
   return login_->xmpp_client();
 }
 
-}  // namespace browser_sync
+}  // namespace notifier

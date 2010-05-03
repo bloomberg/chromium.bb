@@ -16,7 +16,7 @@
 #include "talk/xmpp/xmppconstants.h"
 #include "talk/xmpp/xmppengine.h"
 
-namespace browser_sync {
+namespace notifier {
 
 SubscribeTask::SubscribeTask(
     Task* parent,
@@ -106,4 +106,4 @@ buzz::XmlElement* SubscribeTask::MakeSubscriptionMessage(
   return iq;
 }
 
-}  // namespace browser_sync
+}  // namespace notifier

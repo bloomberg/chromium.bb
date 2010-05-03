@@ -44,7 +44,7 @@ namespace talk_base {
 class SocketServer;
 }  // namespace talk_base
 
-namespace browser_sync {
+namespace notifier {
 
 enum MEDIATOR_CMD {
   CMD_LOGIN,
@@ -147,6 +147,6 @@ class MediatorThreadImpl
   DISALLOW_COPY_AND_ASSIGN(MediatorThreadImpl);
 };
 
-}  // namespace browser_sync
+}  // namespace notifier
 
 #endif  // CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_MEDIATOR_THREAD_IMPL_H_

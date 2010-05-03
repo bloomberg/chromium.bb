@@ -13,7 +13,7 @@
 #include "talk/xmllite/xmlelement.h"
 #include "talk/xmllite/xmlprinter.h"
 
-namespace browser_sync {
+namespace notifier {
 
 std::string XmlElementToString(const buzz::XmlElement& xml_element) {
   std::ostringstream xml_stream;
@@ -48,4 +48,4 @@ buzz::XmlElement* MakeStringXmlElement(const char* name, const char* value) {
   return data_xml_element;
 }
 
-}  // namespace browser_sync
+}  // namespace notifier

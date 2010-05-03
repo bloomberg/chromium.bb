@@ -18,7 +18,7 @@ namespace buzz {
 class XmlElement;
 }
 
-namespace browser_sync {
+namespace notifier {
 namespace {
 
 class XmlElementUtilTest : public testing::Test {};
@@ -56,4 +56,4 @@ TEST_F(XmlElementUtilTest, MakeStringXmlElement) {
 }
 
 }  // namespace
-}  // namespace browser_sync
+}  // namespace notifier

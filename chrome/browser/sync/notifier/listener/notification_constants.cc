@@ -4,8 +4,8 @@
 
 #include "chrome/browser/sync/notifier/listener/notification_constants.h"
 
-namespace browser_sync {
+namespace notifier {
 
 const char kNotifierNamespace[] = "google:notifier";
 
-}  // namespace browser_sync
+}  // namespace notifier

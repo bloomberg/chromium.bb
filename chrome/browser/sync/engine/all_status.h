@@ -15,6 +15,11 @@
 #include "base/scoped_ptr.h"
 #include "chrome/common/deprecated/event_sys.h"
 
+namespace notifier {
+class TalkMediator;
+struct TalkMediatorEvent;
+}
+
 namespace browser_sync {
 
 class AuthWatcher;
@@ -23,13 +28,11 @@ class ScopedStatusLockWithNotify;
 class ServerConnectionManager;
 class Syncer;
 class SyncerThread;
-class TalkMediator;
 struct AllStatusEvent;
 struct AuthWatcherEvent;
 struct GaiaAuthEvent;
 struct ServerConnectionEvent;
 struct SyncerEvent;
-struct TalkMediatorEvent;
 
 class AllStatus {
   friend class ScopedStatusLockWithNotify;
@@ -113,9 +116,9 @@ class AllStatus {
   void HandleSyncerEvent(const SyncerEvent& event);
 
   void WatchTalkMediator(
-      const browser_sync::TalkMediator* talk_mediator);
+      const notifier::TalkMediator* talk_mediator);
   void HandleTalkMediatorEvent(
-      const browser_sync::TalkMediatorEvent& event);
+      const notifier::TalkMediatorEvent& event);
 
   // Returns a string description of the SyncStatus (currently just the ascii
   // version of the enum). Will LOG(FATAL) if the status us out of range.

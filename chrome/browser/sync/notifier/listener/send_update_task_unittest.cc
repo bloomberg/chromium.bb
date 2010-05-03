@@ -15,7 +15,7 @@ namespace buzz {
 class XmlElement;
 }
 
-namespace browser_sync {
+namespace notifier {
 
 class SendUpdateTaskTest : public testing::Test {
  public:
@@ -113,4 +113,4 @@ TEST_F(SendUpdateTaskTest, MakeUpdateMessage) {
   EXPECT_EQ(expected_xml_string, XmlElementToString(*message_with_data));
 }
 
-}  // namespace browser_sync
+}  // namespace notifier
