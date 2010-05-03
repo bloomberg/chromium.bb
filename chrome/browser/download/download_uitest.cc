@@ -369,7 +369,8 @@ TEST_F(DownloadTest, DontCloseNewTab1) {
   WaitUntilTabCount(2);
 }
 
-TEST_F(DownloadTest, CloseNewTab1) {
+// Flaky, see http://crbug.com/43066
+TEST_F(DownloadTest, FLAKY_CloseNewTab1) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   int window_count = 0;
