@@ -46,12 +46,12 @@ void RecordSSLBlockingPageStats(SSLBlockingPageEvent event) {
 // No error happening loading a sub-resource triggers an interstitial so far.
 SSLBlockingPage::SSLBlockingPage(SSLCertErrorHandler* handler,
                                  Delegate* delegate,
-                                 bool overridable)
+                                 ErrorLevel error_level)
     : InterstitialPage(handler->GetTabContents(), true, handler->request_url()),
       handler_(handler),
       delegate_(delegate),
       delegate_has_been_notified_(false),
-      overridable_(overridable) {
+      error_level_(error_level) {
   RecordSSLBlockingPageStats(SHOW);
 }
 
@@ -75,7 +75,7 @@ std::string SSLBlockingPage::GetHTMLContents() {
   SetExtraInfo(&strings, error_info.extra_information());
 
   int resource_id;
-  if (overridable_) {
+  if (error_level_ == ERROR_OVERRIDABLE) {
     resource_id = IDR_SSL_ROAD_BLOCK_HTML;
     strings.SetString(L"title",
                       l10n_util::GetString(IDS_SSL_BLOCKING_PAGE_TITLE));
@@ -84,6 +84,7 @@ std::string SSLBlockingPage::GetHTMLContents() {
     strings.SetString(L"exit",
                       l10n_util::GetString(IDS_SSL_BLOCKING_PAGE_EXIT));
   } else {
+    DCHECK_EQ(error_level_, ERROR_FATAL);
     resource_id = IDR_SSL_ERROR_HTML;
     strings.SetString(L"title", l10n_util::GetString(IDS_SSL_ERROR_PAGE_TITLE));
     strings.SetString(L"back", l10n_util::GetString(IDS_SSL_ERROR_PAGE_BACK));

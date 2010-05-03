@@ -60,7 +60,7 @@ void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
     case net::ERR_CERT_DATE_INVALID:
     case net::ERR_CERT_AUTHORITY_INVALID:
     case net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM:
-      OnCertErrorInternal(handler, true);
+      OnCertErrorInternal(handler, SSLBlockingPage::ERROR_OVERRIDABLE);
       break;
     case net::ERR_CERT_NO_REVOCATION_MECHANISM:
       // Ignore this error.
@@ -74,7 +74,7 @@ void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
     case net::ERR_CERT_CONTAINS_ERRORS:
     case net::ERR_CERT_REVOKED:
     case net::ERR_CERT_INVALID:
-      OnCertErrorInternal(handler, false);
+      OnCertErrorInternal(handler, SSLBlockingPage::ERROR_FATAL);
       break;
     default:
       NOTREACHED();
@@ -185,7 +185,7 @@ void SSLPolicy::OnAllowCertificate(SSLCertErrorHandler* handler) {
 // Certificate Error Routines
 
 void SSLPolicy::OnCertErrorInternal(SSLCertErrorHandler* handler,
-                                    bool overridable) {
+                                    SSLBlockingPage::ErrorLevel error_level) {
   if (handler->resource_type() != ResourceType::MAIN_FRAME) {
     // A sub-resource has a certificate error.  The user doesn't really
     // have a context for making the right decision, so block the
@@ -195,7 +195,7 @@ void SSLPolicy::OnCertErrorInternal(SSLCertErrorHandler* handler,
     return;
   }
   SSLBlockingPage* blocking_page = new SSLBlockingPage(handler, this,
-                                                       overridable);
+                                                       error_level);
   blocking_page->Show();
 }
 

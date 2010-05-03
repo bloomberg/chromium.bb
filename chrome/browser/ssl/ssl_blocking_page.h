@@ -33,8 +33,15 @@ class SSLBlockingPage : public InterstitialPage {
     virtual void OnAllowCertificate(SSLCertErrorHandler* handler) = 0;
   };
 
+  // The severity of the certificate error.
+  enum ErrorLevel {
+    ERROR_OVERRIDABLE,  // The interstitial page has a "Proceed anyway" button.
+    ERROR_FATAL,        // The interstitial page doesn't allow the user to
+                        // proceed to the site.
+  };
+
   SSLBlockingPage(SSLCertErrorHandler* handler, Delegate* delegate,
-                  bool overridable);
+                  ErrorLevel error_level);
   virtual ~SSLBlockingPage();
 
   // A method that sets strings in the specified dictionary from the passed
@@ -53,8 +60,8 @@ class SSLBlockingPage : public InterstitialPage {
   virtual void DontProceed();
 
  private:
-   void NotifyDenyCertificate();
-   void NotifyAllowCertificate();
+  void NotifyDenyCertificate();
+  void NotifyAllowCertificate();
 
   // The error we represent.  We will either call CancelRequest() or
   // ContinueRequest() on this object.
@@ -67,9 +74,8 @@ class SSLBlockingPage : public InterstitialPage {
   // A flag to indicate if we've notified |delegate_| of the user's decision.
   bool delegate_has_been_notified_;
 
-  // Can the user override the certificate error?
-  bool overridable_;
-
+  // Is the certificate error overridable or fatal?
+  ErrorLevel error_level_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLBlockingPage);
 };
