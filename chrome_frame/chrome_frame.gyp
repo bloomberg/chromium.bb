@@ -399,6 +399,11 @@
       ],
       'conditions': [
         ['OS=="win"', {
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'DelayLoadDLLs': ['prntvpt.dll'],
+            },
+          },
           'dependencies': [
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../chrome/chrome.gyp:automation',
