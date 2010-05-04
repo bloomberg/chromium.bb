@@ -3401,7 +3401,7 @@ Browser* Browser::GetOrCreateTabbedBrowser(Profile* profile) {
 bool Browser::HandleCrossAppNavigation(TabContents* source,
                                        const GURL& url,
                                        const GURL& referrer,
-                                       WindowOpenDisposition disposition,
+                                       WindowOpenDisposition* disposition,
                                        PageTransition::Type transition) {
   // Can be null in unit tests.
   ExtensionsService* service = profile_->GetExtensionsService();
@@ -3443,14 +3443,21 @@ bool Browser::HandleCrossAppNavigation(TabContents* source,
     }
   }
 
-  // Otherwise, if this is an app window, we don't want to open the URL here,
-  // so find a normal browser to open it in.
+  // Otherwise, we are opening a normal web page.
+  //
+  // If our source tab is in an app window, we don't want to open the tab
+  // there. Find a normal browser to open it in.
   if (extension_app_) {
     Browser* browser = GetOrCreateTabbedBrowser(profile_);
     browser->OpenURL(url, referrer, NEW_FOREGROUND_TAB, transition);
     browser->window()->Show();
     return true;
   }
+
+  // If our source tab is an app tab, don't allow normal web content to
+  // overwrite it.
+  if (source->app_extension() && *disposition == CURRENT_TAB)
+    *disposition = NEW_FOREGROUND_TAB;
 
   return false;
 }
@@ -3482,7 +3489,7 @@ void Browser::OpenURLAtIndex(TabContents* source,
     delegate->OnUserGesture();
   }
 
-  if (HandleCrossAppNavigation(current_tab, url, referrer, disposition,
+  if (HandleCrossAppNavigation(current_tab, url, referrer, &disposition,
                                transition)) {
     // If the source tab was brand new, we can be left with an empty tab which
     // looks ugly. Close it. It is still kinda ugly to have a tab flash visible

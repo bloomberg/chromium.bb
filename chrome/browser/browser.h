@@ -815,11 +815,14 @@ class Browser : public TabStripModelDelegate,
   // browser instead.
   //
   // Returns true if the navigation was handled, eg, it was opened in some other
-  // browser. Returns false if it was not handled.
+  // browser.
+  //
+  // Returns false if it was not handled. In this case, the method may also
+  // modify |disposition| to a more suitable value.
   bool HandleCrossAppNavigation(TabContents* source,
                                 const GURL& url,
                                 const GURL& referrer,
-                                WindowOpenDisposition disposition,
+                                WindowOpenDisposition *disposition,
                                 PageTransition::Type transition);
 
   // The low-level function that other OpenURL...() functions call.  This
