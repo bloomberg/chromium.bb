@@ -1,10 +1,6 @@
 # These tests fail due to SSL/Certificates/Network issues
 # TODO(timurrrr): need to investigate.
 HTTPSRequestTest.*
-URLRequestTestHTTP.*
-URLRequestTestFTP.*
-URLRequestTest.*Cookie*
-URLRequestTest.QuitTest
 ProxyScriptFetcherTest.*
 X509CertificateTest.*
 
@@ -18,3 +14,4 @@ SpdyNetwork*Get*
 # Please see http://dev.chromium.org/developers/testing#TOC-SSL-tests
 # if you think you want to un-comment one of the following lines
 #SSLClientSocketTest.*
+#URLRequestTest*
