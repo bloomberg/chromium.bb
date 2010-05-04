@@ -1009,7 +1009,7 @@ int NaClSysCommonAddrRangeContainsExecutablePages_mu(struct NaClApp *nap,
    */
   UNREFERENCED_PARAMETER(length);
   usraddr = NaClTruncAllocPage(usraddr);
-  return usraddr < nap->static_text_end;
+  return usraddr < nap->dynamic_text_end;
 }
 
 

@@ -85,8 +85,6 @@ NaClErrorCode NaClAllocAddrSpace(struct NaClApp *nap) {
 
 /*
  * Apply memory protection to memory regions.
- *
- * TODO(bsy): dynamic text should be remapped as non-writable.
  */
 NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
   uintptr_t start_addr;
@@ -140,28 +138,58 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                     NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
                     region_size >> NACL_PAGESHIFT,
                     PROT_READ | PROT_EXEC,
-                    NaClMemObjMake(nap->text_shm,
-                                   region_size,
-                                   0))) {
+                    NULL)) {
     NaClLog(LOG_ERROR, ("NaClMemoryProtection: NaClVmmapAdd failed"
                         " (trampoline)\n"));
     return LOAD_MPROTECT_FAIL;
   }
 
-  start_addr = NaClRoundPage(start_addr + region_size);
-  if (nap->use_shm_for_dynamic_text) {
-    /* dynamic text is present */
-    if (start_addr != NaClUserToSys(nap, nap->dynamic_text_start)) {
-      NaClLog(LOG_FATAL,
-              ("NaClMemoryProtection: dynamic text start is"
-               " %08"NACL_PRIxPTR", but text ended at %08"NACL_PRIxPTR"\n"),
-              nap->dynamic_text_start,
-              start_addr);
+  start_addr = NaClUserToSys(nap, nap->dynamic_text_start);
+  region_size = nap->dynamic_text_end - nap->dynamic_text_start;
+  NaClLog(3,
+          ("shm txt region start 0x%08"NACL_PRIxPTR", size 0x%08"NACL_PRIxS","
+           " end 0x%08"NACL_PRIxPTR"\n"),
+          start_addr, region_size,
+          start_addr + region_size);
+  if (0 != region_size) {
+    /*
+     * Even though memory was mapped as read+execute in nacl_text.c,
+     * 64-bit Windows Vista requires an explicit separate
+     * VirtualProtect() call to mark the memory region as executable.
+     * This is not required in Linux, Mac OS X or 32-bit Windows
+     * Vista.
+     */
+    err = NaCl_mprotect((void *) start_addr,
+                        region_size,
+                        PROT_READ | PROT_EXEC);
+    if (0 != err) {
+      NaClLog(LOG_ERROR,
+              ("NaClMemoryProtection: "
+               "NaCl_mprotect(0x%08"NACL_PRIxPTR", "
+               "0x%08"NACL_PRIxS", 0x%x) failed, "
+               "error %d (trampoline)\n"),
+              start_addr, region_size, PROT_READ | PROT_EXEC,
+              err);
+      return LOAD_MPROTECT_FAIL;
+    }
+    /*
+     * We record the mapping for consistency with other fixed
+     * mappings, but the record is not actually used.  Overmapping is
+     * prevented by a separate range check, which is done by
+     * NaClSysCommonAddrRangeContainsExecutablePages_mu().
+     */
+    if (!NaClVmmapAdd(&nap->mem_map,
+                      NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
+                      region_size >> NACL_PAGESHIFT,
+                      PROT_READ | PROT_EXEC,
+                      NaClMemObjMake(nap->text_shm,
+                                     region_size,
+                                     0))) {
+      NaClLog(LOG_ERROR, ("NaClMemoryProtection: NaClVmmapAdd failed"
+                          " (data)\n"));
+      return LOAD_MPROTECT_FAIL;
     }
   }
-  /*
-   * TODO(bsy): remap dynamic text shm to be non-writable.
-   */
 
   if (0 != nap->rodata_start) {
     uintptr_t rodata_end;

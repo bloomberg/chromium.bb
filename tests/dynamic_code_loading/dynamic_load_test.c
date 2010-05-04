@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 
 #include <sys/nacl_syscalls.h>
 
@@ -239,6 +240,21 @@ void test_allowed_overwrite() {
   assert(rc == 0);
 }
 
+/* Allowing mmap() to overwrite the dynamic code area would be unsafe. */
+void test_fail_on_mmap_to_dyncode_area() {
+  void *addr = allocate_code_space(1);
+  size_t page_size = 0x10000;
+  void *result;
+
+  assert((uintptr_t) addr % page_size == 0);
+  result = mmap(addr, page_size, PROT_READ | PROT_WRITE,
+                MAP_FIXED | MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+  assert(result == MAP_FAILED);
+  assert(errno == EINVAL);
+
+  /* TODO(mseaborn): Test munmap() and mprotect() as well. */
+}
+
 void test_branches_outside_chunk() {
   char *load_area = allocate_code_space(1);
   int size = 32;
@@ -259,8 +275,6 @@ void test_branches_outside_chunk() {
 
 
 int main() {
-  /* TODO(mseaborn): Re-enable the functionality and the tests. */
-#if 0
   test_loading_code();
   test_loading_code_non_page_aligned();
   test_loading_large_chunk();
@@ -271,13 +285,13 @@ int main() {
   test_fail_on_load_to_data_area();
   test_fail_on_overwrite();
   test_allowed_overwrite();
+  test_fail_on_mmap_to_dyncode_area();
 
   /* TODO(mseaborn): Enable this once the validators behave consistently. */
   /* test_branches_outside_chunk(); */
 
   /* Test again to make sure we didn't run out of space. */
   test_loading_code();
-#endif
 
   return 0;
 }

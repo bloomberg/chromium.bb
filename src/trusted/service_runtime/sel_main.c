@@ -121,7 +121,6 @@ static void PrintUsage() {
           "               [-h d:D] [-r d:D] [-w d:D] [-i d:D]\n"
           "               [-f nacl_file]\n"
           "               [-P SRPC port number]\n"
-          "               [-sS]\n"
           "\n"
           "               [-D desc]\n"
           "               [-X d] [-dmMv] -- [nacl_file] [args]\n"
@@ -136,8 +135,6 @@ static void PrintUsage() {
           " -i associates an IMC handle D with app desc d\n"
           " -f file to load; if omitted, 1st arg after \"--\" is loaded\n"
           " -P set SRPC port number for SRPC calls\n"
-          " -s enable shm for dynamic code [default]\n"
-          " -S disable shm for dyanmic code\n"
           " -v increases verbosity\n"
           " -X create a bound socket and export the address via an\n"
           "    IMC message to a corresponding NaCl app descriptor\n"
@@ -203,7 +200,6 @@ int main(int  ac,
   int                           log_desc;
   int                           debug_mode = 0;
   int                           skip_qualification = 0;
-  int                           enable_shm = 0;  /* default */
 
   struct NaClEnvCleanser        filtered_env;
 
@@ -325,12 +321,6 @@ int main(int  ac,
         /* Conduit to convey the descriptor ID to the application code. */
         NaClSrpcFileDescriptor = strtol(optarg, (char **) 0, 0);
         break;
-      case 's':
-        enable_shm = 1;
-        break;
-      case 'S':
-        enable_shm = 0;
-        break;
       case 'v':
         ++verbosity;
         NaClLogIncrVerbosity();
@@ -421,7 +411,6 @@ int main(int  ac,
   }
 
   state.restrict_to_main_thread = main_thread_only;
-  state.use_shm_for_dynamic_text = enable_shm;
 
   nap = &state;
   errcode = LOAD_OK;

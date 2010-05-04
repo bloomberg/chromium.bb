@@ -116,20 +116,6 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
 
   uintptr_t                   shm_upper_bound;
 
-  if (!nap->use_shm_for_dynamic_text) {
-    NaClLog(4,
-            "NaClMakeDynamicTextShared:"
-            "  rodata / data segments not allocation aligned\n");
-    NaClLog(4,
-            " not using shm for text\n");
-    return LOAD_OK;
-  }
-
-  /*
-   * Allocate a shm region the size of which is nap->rodata_start -
-   * end-of-text.  This implies that the "core" text will not be
-   * backed by shm.
-   */
   shm_vaddr_base = NaClEndOfStaticText(nap);
   NaClLog(4,
           "NaClMakeDynamicTextShared: shm_vaddr_base = %08"NACL_PRIxPTR"\n",
@@ -138,6 +124,23 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
   NaClLog(4,
           "NaClMakeDynamicTextShared: shm_vaddr_base = %08"NACL_PRIxPTR"\n",
           shm_vaddr_base);
+
+  if (!nap->use_shm_for_dynamic_text) {
+    NaClLog(4,
+            "NaClMakeDynamicTextShared:"
+            "  rodata / data segments not allocation aligned\n");
+    NaClLog(4,
+            " not using shm for text\n");
+    nap->dynamic_text_start = shm_vaddr_base;
+    nap->dynamic_text_end = shm_vaddr_base;
+    return LOAD_OK;
+  }
+
+  /*
+   * Allocate a shm region the size of which is nap->rodata_start -
+   * end-of-text.  This implies that the "core" text will not be
+   * backed by shm.
+   */
   shm_upper_bound = nap->rodata_start;
   if (0 == shm_upper_bound) {
     shm_upper_bound = nap->data_start;

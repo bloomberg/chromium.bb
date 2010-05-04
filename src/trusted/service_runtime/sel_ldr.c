@@ -31,6 +31,12 @@
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
+static int ShouldEnableDynamicLoading() {
+  /* Later we will make dynamic loading enabled by default. */
+  const char *var = getenv("NACLDYNCODE");
+  return NULL != var && '\0' != *var;
+}
+
 int NaClAppCtor(struct NaClApp  *nap) {
 
   nap->addr_bits = NACL_MAX_ADDR_BITS;
@@ -59,7 +65,7 @@ int NaClAppCtor(struct NaClApp  *nap) {
     goto cleanup_desc_tbl;
   }
 
-  nap->use_shm_for_dynamic_text = 0;
+  nap->use_shm_for_dynamic_text = ShouldEnableDynamicLoading();
   nap->text_shm = NULL;
   if (!NaClMutexCtor(&nap->dynamic_load_mutex)) {
     goto cleanup_mem_map;

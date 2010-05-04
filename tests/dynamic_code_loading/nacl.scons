@@ -23,9 +23,28 @@ dyncode_env = env.Clone()
 dyncode_env.Append(LINKFLAGS=link_flag)
 dyncode_env.ComponentProgram('dynamic_load_test.nexe',
                              ['dynamic_load_test.c', templates_file])
+dyncode_env.ComponentProgram('write_to_dyncode.nexe',
+                             ['write_to_dyncode.c'])
+dyncode_env.ComponentProgram('dyncode_disabled_test.nexe',
+                             ['dyncode_disabled_test.c'])
 
-node = env.CommandSelLdrTestNacl('dynamic_load_test.out',
-                                 command=[env.File('dynamic_load_test.nexe')])
-env.AddNodeToTestSuite(node,
+enabled_env = env.Clone()
+enabled_env['ENV'] = enabled_env['ENV'].copy()
+enabled_env['ENV']['NACLDYNCODE'] = '1'
+
+tests = [
+  enabled_env.CommandSelLdrTestNacl(
+      'dynamic_load_test.out',
+      command=[env.File('dynamic_load_test.nexe')]),
+  enabled_env.CommandSelLdrTestNacl(
+      'write_to_dyncode.out',
+      command=[env.File('write_to_dyncode.nexe')],
+      exit_status='segfault',
+      stdout_golden=env.File('write_to_dyncode.stdout')),
+  env.CommandSelLdrTestNacl(
+      'dyncode_disabled_test.out',
+      command=[env.File('dyncode_disabled_test.nexe')]),
+  ]
+env.AddNodeToTestSuite(tests,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_dynamic_load_test')
