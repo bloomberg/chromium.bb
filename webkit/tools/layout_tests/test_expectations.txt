@@ -5,37 +5,4 @@
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
 
-// We are occasionally hitting a JS stack overflow exception on Linux in
-// release mode.  This test already fails on Mac and in debug
-// mode on Windows with a JS stack overflow exception.
-//
-//   http://code.google.com/p/v8/issues/detail?id=277
-BUG10457 RELEASE LINUX : fast/js/large-expressions.html = FAIL PASS
 
-BUG39855 SLOW DEBUG : editing/selection/extend-selection.html = PASS
-
-// Failing a few times, flak dashboard seems to agree.
-BUG41973 MAC : svg/text/text-text-05-t.svg = IMAGE
-
-// Rolling Skia forward in Chrome tree to get new baselines to check
-// in upstream.
-BUGEVAN : svg/clip-path/clip-path-child-clipped.svg = PASS FAIL
-
-// Probably just a rebaseline.
-BUGWK38109 : editing/selection/caret-rtl-2.html = IMAGE
-
-// WebKit roll 58400:58407
-WONTFIX BUG21840 WIN DEBUG : http/tests/loading/basic-auth-resend-wrong-credentials.html = FAIL CRASH
-
-// WebKit roll 58407:58541
-// webkit r58547
-BUGWK38349 : fast/css/font-face-woff.html = MISSING
-BUGWK38360 WIN LINUX SKIP : fast/images/svg-background-partial-redraw.html = TEXT
-BUGWK38360 WIN LINUX SKIP : svg/carto.net/tabgroup.svg = TEXT
-BUGWK38360 SKIP : traversal/node-iterator-prototype.html = TEXT
-// webkit r58553
-BUG10468 WIN LINUX : fast/replaced/border-radius-clip.html = IMAGE+TEXT
-BUG10468 MAC SKIP : fast/replaced/border-radius-clip.html = MISSING
-BUGYAAR MAC : svg/custom/dominant-baseline-hanging.svg = MISSING
-// webkit roll 58541:58626
-BUG43084 MAC DEBUG : media/video-empty-source.html = IMAGE
