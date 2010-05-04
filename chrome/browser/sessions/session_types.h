@@ -37,12 +37,12 @@ class TabNavigation {
   }
 
   TabNavigation(int index,
-                const GURL& url,
+                const GURL& virtual_url,
                 const GURL& referrer,
                 const string16& title,
                 const std::string& state,
                 PageTransition::Type transition)
-      : url_(url),
+      : virtual_url_(virtual_url),
         referrer_(referrer),
         title_(title),
         state_(state),
@@ -52,14 +52,14 @@ class TabNavigation {
 
   // Converts this TabNavigation into a NavigationEntry with a page id of
   // |page_id|. The caller owns the returned NavigationEntry.
-  NavigationEntry* ToNavigationEntry(int page_id) const;
+  NavigationEntry* ToNavigationEntry(int page_id, Profile* profile) const;
 
   // Resets this TabNavigation from |entry|.
   void SetFromNavigationEntry(const NavigationEntry& entry);
 
-  // URL of the page.
-  void set_url(const GURL& url) { url_ = url; }
-  const GURL& url() const { return url_; }
+  // Virtual URL of the page. See NavigationEntry::virtual_url() for details.
+  void set_virtual_url(const GURL& url) { virtual_url_ = url; }
+  const GURL& virtual_url() const { return virtual_url_; }
 
   // The referrer.
   const GURL& referrer() const { return referrer_; }
@@ -92,7 +92,7 @@ class TabNavigation {
  private:
   friend class BaseSessionService;
 
-  GURL url_;
+  GURL virtual_url_;
   GURL referrer_;
   string16 title_;
   std::string state_;

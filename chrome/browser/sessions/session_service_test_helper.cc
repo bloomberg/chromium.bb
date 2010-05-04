@@ -69,7 +69,7 @@ void SessionServiceTestHelper::AssertTabEquals(
 void SessionServiceTestHelper::AssertNavigationEquals(
     const TabNavigation& expected,
     const TabNavigation& actual) {
-  EXPECT_TRUE(expected.url() == actual.url());
+  EXPECT_TRUE(expected.virtual_url() == actual.virtual_url());
   EXPECT_EQ(expected.referrer(), actual.referrer());
   EXPECT_EQ(expected.title(), actual.title());
   EXPECT_EQ(expected.state(), actual.state());

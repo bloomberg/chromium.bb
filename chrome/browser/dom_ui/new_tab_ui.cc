@@ -302,11 +302,11 @@ bool RecentlyClosedTabsHandler::TabToValue(
 
   const TabNavigation& current_navigation =
       tab.navigations.at(tab.current_navigation_index);
-  if (current_navigation.url() == GURL(chrome::kChromeUINewTabURL))
+  if (current_navigation.virtual_url() == GURL(chrome::kChromeUINewTabURL))
     return false;
 
   NewTabUI::SetURLTitleAndDirection(dictionary, current_navigation.title(),
-                                    current_navigation.url());
+                                    current_navigation.virtual_url());
   dictionary->SetString(L"type", L"tab");
   dictionary->SetReal(L"timestamp", tab.timestamp.ToDoubleT());
   return true;

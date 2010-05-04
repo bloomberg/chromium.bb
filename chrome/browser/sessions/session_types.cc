@@ -5,30 +5,32 @@
 #include "chrome/browser/sessions/session_types.h"
 
 #include "base/string_util.h"
+#include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 
 // TabNavigation --------------------------------------------------------------
 
 // static
-NavigationEntry* TabNavigation::ToNavigationEntry(int page_id) const {
-  NavigationEntry* entry = new NavigationEntry(
-      NULL,  // The site instance for restored tabs is sent on navigation
-             // (TabContents::GetSiteInstanceForEntry).
-      page_id,
-      url_,
+NavigationEntry* TabNavigation::ToNavigationEntry(int page_id,
+                                                  Profile *profile) const {
+  NavigationEntry* entry = NavigationController::CreateNavigationEntry(
+      virtual_url_,
       referrer_,
-      title_,
       // Use a transition type of reload so that we don't incorrectly
       // increase the typed count.
-      PageTransition::RELOAD);
-  entry->set_virtual_url(url_);
+      PageTransition::RELOAD,
+      profile);
+
+  entry->set_page_id(page_id);
+  entry->set_title(title_);
   entry->set_content_state(state_);
   entry->set_has_post_data(type_mask_ & TabNavigation::HAS_POST_DATA);
+
   return entry;
 }
 
 void TabNavigation::SetFromNavigationEntry(const NavigationEntry& entry) {
-  url_ = entry.virtual_url();
+  virtual_url_ = entry.virtual_url();
   referrer_ = entry.referrer();
   title_ = entry.title();
   state_ = entry.content_state();

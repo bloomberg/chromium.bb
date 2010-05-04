@@ -534,7 +534,7 @@ void TabRestoreService::ScheduleCommandsForTab(const Tab& tab,
       // this, but it simplifies the code and makes it less error prone as we
       // add new data to NavigationEntry.
       scoped_ptr<NavigationEntry> entry(
-          navigations[i].ToNavigationEntry(wrote_count));
+          navigations[i].ToNavigationEntry(wrote_count, profile()));
       ScheduleCommand(
           CreateUpdateTabNavigationCommand(kCommandUpdateTabNavigation, tab.id,
                                            wrote_count++, *entry));
@@ -947,4 +947,3 @@ void TabRestoreService::LoadStateChanged() {
 Time TabRestoreService::TimeNow() const {
   return time_factory_ ? time_factory_->TimeNow() : Time::Now();
 }
-

@@ -344,12 +344,12 @@ bool HistoryMenuBridge::AddNavigationForTab(
 
   const TabNavigation& current_navigation =
       entry.navigations.at(entry.current_navigation_index);
-  if (current_navigation.url() == GURL(chrome::kChromeUINewTabURL))
+  if (current_navigation.virtual_url() == GURL(chrome::kChromeUINewTabURL))
     return false;
 
   HistoryItem* item = new HistoryItem();
   item->title = current_navigation.title();
-  item->url = current_navigation.url();
+  item->url = current_navigation.virtual_url();
   closed_results_.push_back(item);  // ScopedVector takes ownership.
 
   // Tab navigations don't come with icons, so we always have to request them.

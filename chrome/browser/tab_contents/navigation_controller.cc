@@ -121,20 +121,6 @@ size_t NavigationController::max_entry_count_ =
 // static
 bool NavigationController::check_for_repost_ = true;
 
-// Creates a new NavigationEntry for each TabNavigation in navigations, adding
-// the NavigationEntry to entries. This is used during session restore.
-static void CreateNavigationEntriesFromTabNavigations(
-    const std::vector<TabNavigation>& navigations,
-    std::vector<linked_ptr<NavigationEntry> >* entries) {
-  // Create a NavigationEntry for each of the navigations.
-  int page_id = 0;
-  for (std::vector<TabNavigation>::const_iterator i =
-           navigations.begin(); i != navigations.end(); ++i, ++page_id) {
-    entries->push_back(
-        linked_ptr<NavigationEntry>(i->ToNavigationEntry(page_id)));
-  }
-}
-
 NavigationController::NavigationController(TabContents* contents,
                                            Profile* profile)
     : profile_(profile),
@@ -242,6 +228,39 @@ void NavigationController::ContinuePendingReload() {
 
 bool NavigationController::IsInitialNavigation() {
   return last_document_loaded_.is_null();
+}
+
+// static
+NavigationEntry* NavigationController::CreateNavigationEntry(
+    const GURL& url, const GURL& referrer, PageTransition::Type transition,
+    Profile* profile) {
+  // Allow the browser URL handler to rewrite the URL. This will, for example,
+  // remove "view-source:" from the beginning of the URL to get the URL that
+  // will actually be loaded. This real URL won't be shown to the user, just
+  // used internally.
+  GURL loaded_url(url);
+  bool reverse_on_redirect = false;
+  BrowserURLHandler::RewriteURLIfNecessary(
+      &loaded_url, profile, &reverse_on_redirect);
+
+  NavigationEntry* entry = new NavigationEntry(
+      NULL,  // The site instance for tabs is sent on navigation
+             // (TabContents::GetSiteInstance).
+      -1,
+      loaded_url,
+      referrer,
+      string16(),
+      transition);
+  entry->set_virtual_url(url);
+  entry->set_user_typed_url(url);
+  entry->set_update_virtual_url_with_url(reverse_on_redirect);
+  if (url.SchemeIsFile()) {
+    std::wstring languages = profile->GetPrefs()->GetString(
+        prefs::kAcceptLanguages);
+    entry->set_title(WideToUTF16Hack(
+        file_util::GetFilenameFromPath(net::FormatUrl(url, languages))));
+  }
+  return entry;
 }
 
 NavigationEntry* NavigationController::GetEntryWithPageID(
@@ -442,31 +461,6 @@ void NavigationController::RemoveEntryAtIndex(int index,
   }
 }
 
-NavigationEntry* NavigationController::CreateNavigationEntry(
-    const GURL& url, const GURL& referrer, PageTransition::Type transition) {
-  // Allow the browser URL handler to rewrite the URL. This will, for example,
-  // remove "view-source:" from the beginning of the URL to get the URL that
-  // will actually be loaded. This real URL won't be shown to the user, just
-  // used internally.
-  GURL loaded_url(url);
-  bool reverse_on_redirect = false;
-  BrowserURLHandler::RewriteURLIfNecessary(
-      &loaded_url, profile_, &reverse_on_redirect);
-
-  NavigationEntry* entry = new NavigationEntry(NULL, -1, loaded_url, referrer,
-                                               string16(), transition);
-  entry->set_virtual_url(url);
-  entry->set_user_typed_url(url);
-  entry->set_update_virtual_url_with_url(reverse_on_redirect);
-  if (url.SchemeIsFile()) {
-    std::wstring languages = profile()->GetPrefs()->GetString(
-        prefs::kAcceptLanguages);
-    entry->set_title(WideToUTF16Hack(
-        file_util::GetFilenameFromPath(net::FormatUrl(url, languages))));
-  }
-  return entry;
-}
-
 void NavigationController::UpdateVirtualURLToURL(
     NavigationEntry* entry, const GURL& new_url) {
   GURL new_virtual_url(new_url);
@@ -492,7 +486,8 @@ void NavigationController::LoadURL(const GURL& url, const GURL& referrer,
   // The user initiated a load, we don't need to reload anymore.
   needs_reload_ = false;
 
-  NavigationEntry* entry = CreateNavigationEntry(url, referrer, transition);
+  NavigationEntry* entry = CreateNavigationEntry(url, referrer, transition,
+                                                 profile_);
 
   LoadEntry(entry);
 }
@@ -699,6 +694,18 @@ bool NavigationController::IsRedirect(
 bool NavigationController::IsLikelyAutoNavigation(base::TimeTicks now) {
   return !user_gesture_observed_ &&
          (now - last_document_loaded_) < kMaxAutoNavigationTimeDelta;
+}
+
+void NavigationController::CreateNavigationEntriesFromTabNavigations(
+    const std::vector<TabNavigation>& navigations,
+    std::vector<linked_ptr<NavigationEntry> >* entries) {
+  // Create a NavigationEntry for each of the navigations.
+  int page_id = 0;
+  for (std::vector<TabNavigation>::const_iterator i =
+           navigations.begin(); i != navigations.end(); ++i, ++page_id) {
+    linked_ptr<NavigationEntry> entry(i->ToNavigationEntry(page_id, profile_));
+    entries->push_back(entry);
+  }
 }
 
 void NavigationController::RendererDidNavigateToNewPage(

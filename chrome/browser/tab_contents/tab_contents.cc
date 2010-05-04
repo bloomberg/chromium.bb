@@ -1350,7 +1350,7 @@ TabContents* TabContents::CloneAndMakePhantom() {
 
   NavigationEntry* entry = controller().GetActiveEntry();
   if (app_extension_)
-    tab_nav.set_url(app_extension_->GetFullLaunchURL());
+    tab_nav.set_virtual_url(app_extension_->GetFullLaunchURL());
   else if (entry)
     tab_nav.SetFromNavigationEntry(*entry);
 

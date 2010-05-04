@@ -410,6 +410,14 @@ class NavigationController {
   // Returns true if we are navigating to the URL the tab is opened with.
   bool IsInitialNavigation();
 
+  // Creates navigation entry and translates the virtual url to a real one.
+  // Used when restoring a tab from a TabNavigation object and when navigating
+  // to a new URL using LoadURL.
+  static NavigationEntry* CreateNavigationEntry(const GURL& url,
+                                                const GURL& referrer,
+                                                PageTransition::Type transition,
+                                                Profile* profile);
+
  private:
   class RestoreHelper;
   friend class RestoreHelper;
@@ -467,9 +475,6 @@ class NavigationController {
   // was restored from a previous session.
   void set_max_restored_page_id(int max_id) { max_restored_page_id_ = max_id; }
 
-  NavigationEntry* CreateNavigationEntry(const GURL& url, const GURL& referrer,
-                                         PageTransition::Type transition);
-
   // Updates the virtual URL of an entry to match a new URL, for cases where
   // the real renderer URL is derived from the virtual URL, like view-source:
   void UpdateVirtualURLToURL(NavigationEntry* entry, const GURL& new_url);
@@ -495,6 +500,12 @@ class NavigationController {
   // Returns true if the navigation is likley to be automatic rather than
   // user-initiated.
   bool IsLikelyAutoNavigation(base::TimeTicks now);
+
+  // Creates a new NavigationEntry for each TabNavigation in navigations, adding
+  // the NavigationEntry to entries. This is used during session restore.
+  void CreateNavigationEntriesFromTabNavigations(
+      const std::vector<TabNavigation>& navigations,
+      std::vector<linked_ptr<NavigationEntry> >* entries);
 
   // ---------------------------------------------------------------------------
 

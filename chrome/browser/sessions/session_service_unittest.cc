@@ -53,7 +53,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest {
                         int index,
                         bool select) {
     NavigationEntry entry;
-    entry.set_url(navigation.url());
+    entry.set_url(navigation.virtual_url());
     entry.set_referrer(navigation.referrer());
     entry.set_title(navigation.title());
     entry.set_content_state(navigation.state());
@@ -520,9 +520,12 @@ TEST_F(SessionServiceTest, PruneFromFront) {
   SessionTab* tab = windows[0]->tabs[0];
   ASSERT_EQ(1, tab->current_navigation_index);
   EXPECT_EQ(3U, tab->navigations.size());
-  EXPECT_TRUE(GURL(base_url + IntToString(2)) == tab->navigations[0].url());
-  EXPECT_TRUE(GURL(base_url + IntToString(3)) == tab->navigations[1].url());
-  EXPECT_TRUE(GURL(base_url + IntToString(4)) == tab->navigations[2].url());
+  EXPECT_TRUE(GURL(base_url + IntToString(2)) ==
+              tab->navigations[0].virtual_url());
+  EXPECT_TRUE(GURL(base_url + IntToString(3)) ==
+              tab->navigations[1].virtual_url());
+  EXPECT_TRUE(GURL(base_url + IntToString(4)) ==
+              tab->navigations[2].virtual_url());
 }
 
 // Prunes from front so that we have no entries.
@@ -592,14 +595,14 @@ class GetCurrentSessionCallbackHandler {
     EXPECT_EQ(2U, (*windows)[0]->tabs.size());
     EXPECT_EQ(2U, (*windows)[0]->tabs[0]->navigations.size());
     EXPECT_EQ(GURL("http://bar/1"),
-              (*windows)[0]->tabs[0]->navigations[0].url());
+              (*windows)[0]->tabs[0]->navigations[0].virtual_url());
     EXPECT_EQ(GURL("http://bar/2"),
-              (*windows)[0]->tabs[0]->navigations[1].url());
+              (*windows)[0]->tabs[0]->navigations[1].virtual_url());
     EXPECT_EQ(2U, (*windows)[0]->tabs[1]->navigations.size());
     EXPECT_EQ(GURL("http://foo/1"),
-              (*windows)[0]->tabs[1]->navigations[0].url());
+              (*windows)[0]->tabs[1]->navigations[0].virtual_url());
     EXPECT_EQ(GURL("http://foo/2"),
-              (*windows)[0]->tabs[1]->navigations[1].url());
+              (*windows)[0]->tabs[1]->navigations[1].virtual_url());
   }
 };
 

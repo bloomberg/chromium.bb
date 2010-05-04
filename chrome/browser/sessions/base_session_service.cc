@@ -229,7 +229,7 @@ bool BaseSessionService::RestoreUpdateTabNavigationCommand(
       navigation->referrer_ = GURL(referrer_spec);
   }
 
-  navigation->url_ = GURL(url_spec);
+  navigation->virtual_url_ = GURL(url_spec);
   return true;
 }
 
@@ -251,7 +251,7 @@ bool BaseSessionService::ShouldTrackEntry(const NavigationEntry& entry) {
 }
 
 bool BaseSessionService::ShouldTrackEntry(const TabNavigation& navigation) {
-  return navigation.url().is_valid();
+  return navigation.virtual_url().is_valid();
 }
 
 BaseSessionService::Handle BaseSessionService::ScheduleGetLastSessionCommands(
