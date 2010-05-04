@@ -62,8 +62,6 @@
         popq %r11
         nacljmp %r11d,%r15
 #else
-        popl %ecx
-        popl %ebx
         leave
         popl %ecx
         nacljmp %ecx
