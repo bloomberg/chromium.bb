@@ -90,6 +90,8 @@ bool IsDefaultHomepage(const GURL& homepage, const FilePath& app_path);
 // in |prefs|. Keys are strings, and values can be strings, booleans or
 // integers.  Returns true if it succeeded, false otherwise (in which case
 // |prefs| is not filled).
+// Note: for strings, only valid UTF-8 string values are supported.  If a
+// key/pair is not valid UTF-8, it is ignored and will not appear in |prefs|.
 bool ParsePrefFile(const FilePath& pref_file, DictionaryValue* prefs);
 
 #endif  // CHROME_BROWSER_IMPORTER_FIREFOX_IMPORTER_UTILS_H_

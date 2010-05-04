@@ -426,7 +426,13 @@ bool ParsePrefFile(const FilePath& pref_file, DictionaryValue* prefs) {
     // Value could be a string.
     if (value.size() >= 2U &&
         value[0] == '"' && value[value.size() - 1] == '"') {
-      prefs->SetString(ASCIIToWide(key), value.substr(1, value.size() - 2));
+      value = value.substr(1, value.size() - 2);
+      // ValueString only accept valid UTF-8.  Simply ignore that entry if it is
+      // not UTF-8.
+      if (IsStringUTF8(value))
+        prefs->SetString(ASCIIToWide(key), value);
+      else
+        LOG(INFO) << "Non UTF8 value for key " << key << ", ignored.";
       continue;
     }
 
