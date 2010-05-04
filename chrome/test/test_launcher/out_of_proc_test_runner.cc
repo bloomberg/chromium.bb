@@ -19,12 +19,13 @@ const char kGTestListTestsFlag[] = "gtest_list_tests";
 const char kGTestHelpFlag[]   = "gtest_help";
 const char kSingleProcessFlag[]   = "single-process";
 const char kSingleProcessAltFlag[]   = "single_process";
+const char kTestTerminateTimeoutFlag[] = "test-terminate-timeout";
 // The following is kept for historical reasons (so people that are used to
 // using it don't get surprised).
 const char kChildProcessFlag[]   = "child";
 const char kHelpFlag[]   = "help";
 
-const int64 kTestTimeoutMs = 30000;
+const int64 kDefaultTestTimeoutMs = 30000;
 
 class OutOfProcTestRunner : public tests::TestRunner {
  public:
@@ -58,10 +59,19 @@ class OutOfProcTestRunner : public tests::TestRunner {
     if (!base::LaunchApp(new_cmd_line, false, false, &process_handle))
       return false;
 
+    int test_terminate_timeout_ms = kDefaultTestTimeoutMs;
+    if (cmd_line->HasSwitch(kTestTerminateTimeoutFlag)) {
+      std::wstring timeout_str(
+          cmd_line->GetSwitchValue(kTestTerminateTimeoutFlag));
+      int timeout = StringToInt(WideToUTF16Hack(timeout_str));
+      test_terminate_timeout_ms = std::max(test_terminate_timeout_ms, timeout);
+    }
+
     int exit_code = 0;
     if (!base::WaitForExitCodeWithTimeout(process_handle, &exit_code,
-                                          kTestTimeoutMs)) {
-      LOG(ERROR) << "Test timeout exceeded!";
+                                          test_terminate_timeout_ms)) {
+      LOG(ERROR) << "Test timeout (" << test_terminate_timeout_ms
+                 << " ms) exceeded!";
 
       exit_code = -1;  // Set a non-zero exit code to signal a failure.
 
@@ -93,6 +103,8 @@ void PrintUsage() {
       " its own process.\nAny gtest flags can be specified.\n"
       "  --single_process\n    Runs the tests and the launcher in the same "
       "process. Useful for debugging a\n    specific test in a debugger\n  "
+      "--test-terminate-timeout\n    Specifies a timeout (in milliseconds) "
+      "after which a running test will be\n    forcefully terminated\n  "
       "--help\n    Shows this message.\n  --gtest_help\n    Shows the gtest "
       "help message\n");
 }
