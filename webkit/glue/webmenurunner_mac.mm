@@ -6,6 +6,23 @@
 
 #include "base/sys_string_conversions.h"
 
+namespace {
+
+const CGFloat kPopupXOffset = -10.0f;
+BOOL gNewNSMenuAPI;
+
+}  // namespace
+
+#if !defined(MAC_OS_X_VERSION_10_6) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
+@interface NSMenu (SnowLeopardSDKDeclarations)
+- (BOOL)popUpMenuPositioningItem:(NSMenuItem *)item
+                      atLocation:(NSPoint)location
+                          inView:(NSView *)view;
+- (void)setFont:(NSFont *)font;
+@end
+#endif
+
 @interface WebMenuRunner (PrivateAPI)
 
 // Worker function used during initialization.
@@ -22,8 +39,18 @@
 
 - (id)initWithItems:(const std::vector<WebMenuItem>&)items
            fontSize:(CGFloat)fontSize {
+  static BOOL newNSMenuAPIInitialized = NO;
+  if (!newNSMenuAPIInitialized) {
+    newNSMenuAPIInitialized = YES;
+    gNewNSMenuAPI = [NSMenu instancesRespondToSelector:
+        @selector(popUpMenuPositioningItem:atLocation:inView:)] &&
+        [NSMenu instancesRespondToSelector:@selector(setFont:)];
+  }
+
   if ((self = [super init])) {
     menu_.reset([[NSMenu alloc] initWithTitle:@""]);
+    if (gNewNSMenuAPI)
+      [menu_ setFont:[NSFont menuFontOfSize:fontSize]];
     [menu_ setAutoenablesItems:NO];
     index_ = -1;
     fontSize_ = fontSize;
@@ -45,6 +72,8 @@
                                    keyEquivalent:@""];
   [menuItem setEnabled:(item.enabled && item.type != WebMenuItem::GROUP)];
   [menuItem setTarget:self];
+  if (gNewNSMenuAPI)
+    [menuItem setTag:[menu_ numberOfItems] - 1];
 }
 
 // Reflects the result of the user's interaction with the popup menu. If NO, the
@@ -57,26 +86,38 @@
 
 - (void)menuItemSelected:(id)sender {
   menuItemWasChosen_ = YES;
+  if (gNewNSMenuAPI)
+    index_ = [sender tag];
 }
 
 - (void)runMenuInView:(NSView*)view
            withBounds:(NSRect)bounds
          initialIndex:(int)index {
-  // Set up the button cell, converting to NSView coordinates. The menu is
-  // positioned such that the currently selected menu item appears over the
-  // popup button, which is the expected Mac popup menu behavior.
-  NSPopUpButtonCell* button = [[NSPopUpButtonCell alloc] initTextCell:@""
-                                                            pullsDown:NO];
-  [button autorelease];
-  [button setMenu:menu_];
-  [button selectItemAtIndex:index];
-  [button setFont:[NSFont menuFontOfSize:fontSize_]];
+  if (gNewNSMenuAPI) {
+    NSMenuItem* selectedItem = [menu_ itemAtIndex:index];
+    [selectedItem setState:NSOnState];
+    NSPoint anchor = NSMakePoint(NSMinX(bounds) + kPopupXOffset,
+                                 NSMaxY(bounds));
+    [menu_ popUpMenuPositioningItem:selectedItem
+                         atLocation:anchor
+                             inView:view];
+  } else {
+    // Set up the button cell, converting to NSView coordinates. The menu is
+    // positioned such that the currently selected menu item appears over the
+    // popup button, which is the expected Mac popup menu behavior.
+    NSPopUpButtonCell* button = [[NSPopUpButtonCell alloc] initTextCell:@""
+                                                              pullsDown:NO];
+    [button autorelease];
+    [button setMenu:menu_];
+    [button selectItemAtIndex:index];
+    [button setFont:[NSFont menuFontOfSize:fontSize_]];
 
-  // Display the menu, and set a flag if a menu item was chosen.
-  [button performClickWithFrame:bounds inView:view];
+    // Display the menu, and set a flag if a menu item was chosen.
+    [button performClickWithFrame:bounds inView:view];
 
-  if ([self menuItemWasChosen])
-    index_ = [button indexOfSelectedItem];
+    if ([self menuItemWasChosen])
+      index_ = [button indexOfSelectedItem];
+  }
 }
 
 - (int)indexOfSelectedItem {
