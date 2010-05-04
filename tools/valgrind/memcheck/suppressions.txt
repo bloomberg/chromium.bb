@@ -702,6 +702,14 @@
    fun:ChromeMain
    fun:main
 }
+{
+   # The InvalidRead error in rc4_wordconv is intentional.
+   # https://bugzilla.mozilla.org/show_bug.cgi?id=341127
+   bug_43113
+   Memcheck:Addr4
+   fun:rc4_wordconv
+   fun:RC4_Encrypt
+}
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
@@ -2814,30 +2822,4 @@
    fun:_ZNK6WebKit12WebFrameImpl12windowObjectEv
    fun:_ZN11webkit_glue13WebPluginImpl23GetWindowScriptNPObjectEv
    fun:NPN_GetValue
-}
-{
-   bug_43113
-   Memcheck:Addr4
-   fun:rc4_wordconv
-   fun:RC4_Encrypt
-   fun:NSC_EncryptUpdate
-   fun:PK11_CipherOp
-   fun:ssl3_CompressMACEncryptRecord
-   fun:ssl3_SendRecord
-   fun:ssl3_SendApplicationData
-   fun:ssl_SecureSend
-   fun:ssl_SecureWrite
-   fun:ssl_Write
-   fun:PR_Write
-   fun:_ZN3net18SSLClientSocketNSS14DoPayloadWriteEv
-   fun:_ZN3net18SSLClientSocketNSS11DoWriteLoopEi
-   fun:_ZN3net18SSLClientSocketNSS5WriteEPNS_8IOBufferEiP14CallbackRunnerI6Tuple1IiEE
-   fun:_ZN3net16HttpStreamParser13DoSendHeadersEi
-   fun:_ZN3net16HttpStreamParser6DoLoopEi
-   fun:_ZN3net16HttpStreamParser11SendRequestEPKNS_15HttpRequestInfoERKSsPNS_16UploadDataStreamEPNS_16HttpResponseInfoEP14CallbackRunnerI6Tuple1IiEE
-   fun:_ZN3net15HttpBasicStream11SendRequestEPKNS_15HttpRequestInfoERKSsPNS_16UploadDataStreamEPNS_16HttpResponseInfoEP14CallbackRunnerI6Tuple1IiEE
-   fun:_ZN3net22HttpNetworkTransaction13DoSendRequestEv
-   fun:_ZN3net22HttpNetworkTransaction6DoLoopEi
-   fun:_ZN3net22HttpNetworkTransaction12OnIOCompleteEi
-   fun:_Z16DispatchToMethodIN3net22HttpNetworkTransactionEMS1_FviEiEvPT_T0_RK6Tuple1IT1_E
 }
