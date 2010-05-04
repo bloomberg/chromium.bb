@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 #include <atlbase.h>
 #include <atlcom.h>
-
 #include "app/win_util.h"
-#include "chrome_frame/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
@@ -106,21 +104,18 @@ TEST(UrlmonUrlRequestTest, Simple1) {
 
 // Same as Simple1 except we use the HEAD verb to fetch only the headers
 // from the server.
-TEST(UrlmonUrlRequestTest, Head) {
+// TODO(tommi): Fix and reenable.
+TEST(UrlmonUrlRequestTest, DISABLED_Head) {
   MockUrlDelegate mock;
+  ChromeFrameHTTPServer server;
   chrome_frame_test::TimedMsgLoop loop;
-  // Use SimpleWebServer instead of the python server to support HEAD
-  // requests.
-  test_server::SimpleWebServer server(13337);
-  test_server::SimpleResponse head_response("/head", "");
-  server.AddResponse(&head_response);
-
   win_util::ScopedCOMInitializer init_com;
   CComObjectStackEx<UrlmonUrlRequest> request;
 
+  server.SetUp();
   request.AddRef();
   request.Initialize(&mock, 1,  // request_id
-      "http://localhost:13337/head",
+      server.Resolve(L"files/chrome_frame_window_open.html").spec(),
       "head",
       "",      // referrer
       "",      // extra request
@@ -134,6 +129,7 @@ TEST(UrlmonUrlRequestTest, Head) {
     .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(CreateFunctor(
         &request, &UrlmonUrlRequest::Read, 512))));
 
+
   // For HEAD requests we don't expect content reads.
   EXPECT_CALL(mock, OnReadComplete(1, testing::_)).Times(0);
 
@@ -144,6 +140,7 @@ TEST(UrlmonUrlRequestTest, Head) {
   request.Start();
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
   request.Release();
+  server.TearDown();
 }
 
 TEST(UrlmonUrlRequestTest, UnreachableUrl) {

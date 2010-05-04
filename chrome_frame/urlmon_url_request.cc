@@ -478,9 +478,7 @@ STDMETHODIMP UrlmonUrlRequest::OnDataAvailable(DWORD flags, DWORD size,
     return E_UNEXPECTED;
   }
 
-  // Some requests such as HEAD have zero data.
-  if (size > 0)
-    pending_data_ = read_stream;
+  pending_data_ = read_stream;
 
   if (pending_read_size_) {
     size_t bytes_copied = SendDataToDelegate(pending_read_size_);
