@@ -650,7 +650,7 @@ void WebPluginDelegateProxy::ResetWindowlessBitmaps() {
 
   backing_store_canvas_.reset();
   transport_store_canvas_.reset();
-  background_store_canvas_.release();
+  background_store_canvas_.reset();
   backing_store_painted_ = gfx::Rect();
 }
 
