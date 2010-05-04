@@ -196,19 +196,7 @@ class WebPluginDelegateProxy
   // plug-in.
   bool BindFakePluginWindowHandle(bool opaque);
 
-  // The Mac TransportDIB implementation uses base::SharedMemory, which
-  // cannot be disposed of if an in-flight UpdateGeometry message refers to
-  // the shared memory file descriptor.  The old_transport_dibs_ map holds
-  // old TransportDIBs waiting to die.  It's keyed by the |ack_key| values
-  // used in UpdateGeometry messages.  When an UpdateGeometry_ACK message
-  // arrives, the associated RelatedTransportDIBs can be released.
-  struct RelatedTransportDIBs {
-    linked_ptr<TransportDIB> backing_store;
-    linked_ptr<TransportDIB> transport_store;
-    linked_ptr<TransportDIB> background_store;
-  };
-
-  typedef base::hash_map<int, RelatedTransportDIBs> OldTransportDIBMap;
+  typedef base::hash_map<int, linked_ptr<TransportDIB> > OldTransportDIBMap;
 
   OldTransportDIBMap old_transport_dibs_;
 #endif  // OS_MACOSX

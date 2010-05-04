@@ -188,15 +188,13 @@ WebPluginDelegateProxy::~WebPluginDelegateProxy() {
   for (OldTransportDIBMap::iterator iterator = old_transport_dibs_.begin();
        iterator != old_transport_dibs_.end();
        ++iterator) {
-    ReleaseTransportDIB(iterator->second.backing_store.get());
-    ReleaseTransportDIB(iterator->second.transport_store.get());
-    ReleaseTransportDIB(iterator->second.background_store.get());
+    ReleaseTransportDIB(iterator->second.get());
   }
 
   // Ask the browser to release the "live" TransportDIB objects.
   ReleaseTransportDIB(backing_store_.get());
   ReleaseTransportDIB(transport_store_.get());
-  ReleaseTransportDIB(background_store_.get());
+  DCHECK(!background_store_.get());
 #endif
 }
 
@@ -556,14 +554,14 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
       // preserves transparency information (and does the compositing itself)
       // so plugins don't need access to the page background.
       needs_background_store = false;
-      if (backing_store_.get()) {
+      if (transport_store_.get()) {
         // ResetWindowlessBitmaps inserts the old TransportDIBs into
-        // old_transport_dibs_ using the backing store's file descriptor as
+        // old_transport_dibs_ using the transport store's file descriptor as
         // the key.  The constraints on the keys are that -1 is reserved
         // to mean "no ACK required," and in-flight keys must be unique.
         // File descriptors will never be -1, and because they won't be closed
         // until receipt of the ACK, they're unique.
-        param.ack_key = backing_store_->handle().fd;
+        param.ack_key = transport_store_->handle().fd;
       }
 #endif
 
@@ -619,34 +617,32 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
 
 void WebPluginDelegateProxy::ResetWindowlessBitmaps() {
 #if defined(OS_MACOSX)
-  if (backing_store_.get()) {
-    int ack_key = backing_store_->handle().fd;
+  ReleaseTransportDIB(backing_store_.get());
+  DCHECK(!background_store_.get());
+  // The Mac TransportDIB implementation uses base::SharedMemory, which
+  // cannot be disposed of if an in-flight UpdateGeometry message refers to
+  // the shared memory file descriptor.  The old_transport_dibs_ map holds
+  // old TransportDIBs waiting to die, keyed by the |ack_key| values used in
+  // UpdateGeometry messages.  When an UpdateGeometry_ACK message arrives,
+  // the associated TransportDIB can be released.
+  if (transport_store_.get()) {
+    int ack_key = transport_store_->handle().fd;
 
     DCHECK_NE(ack_key, -1);
 
     // DCHECK_EQ does not work with base::hash_map.
     DCHECK(old_transport_dibs_.find(ack_key) == old_transport_dibs_.end());
 
-    // Stash the old TransportDIBs in the map.  They'll be released when an
+    // Stash the old TransportDIB in the map.  It'll be released when an
     // ACK message comes in.
-    RelatedTransportDIBs old_dibs;
-    old_dibs.backing_store =
-        linked_ptr<TransportDIB>(backing_store_.release());
-    old_dibs.transport_store =
+    old_transport_dibs_[ack_key] =
         linked_ptr<TransportDIB>(transport_store_.release());
-    old_dibs.background_store =
-        linked_ptr<TransportDIB>(background_store_.release());
-
-    old_transport_dibs_[ack_key] = old_dibs;
-  } else {
-    DCHECK(!transport_store_.get());
-    DCHECK(!background_store_.get());
   }
 #else
-  backing_store_.reset();
   transport_store_.reset();
   background_store_.reset();
 #endif
+  backing_store_.reset();
 
   backing_store_canvas_.reset();
   transport_store_canvas_.reset();
@@ -1457,13 +1453,11 @@ void WebPluginDelegateProxy::OnUpdateGeometry_ACK(int ack_key) {
   // DCHECK_NE does not work with base::hash_map.
   DCHECK(iterator != old_transport_dibs_.end());
 
-  // Now that the ACK has been received, the TransportDIBs that were used
-  // prior to the UpdateGeometry message now being acknowledged are known to
-  // be no longer needed.  Release them, and take the stale entry out of the
-  // map.
-  ReleaseTransportDIB(iterator->second.backing_store.get());
-  ReleaseTransportDIB(iterator->second.transport_store.get());
-  ReleaseTransportDIB(iterator->second.background_store.get());
+  // Now that the ACK has been received, the TransportDIB that was used
+  // prior to the UpdateGeometry message now being acknowledged is known to
+  // be no longer needed.  Release it, and take the stale entry out of the
+  // map.;
+  ReleaseTransportDIB(iterator->second.get());
 
   old_transport_dibs_.erase(iterator);
 }
