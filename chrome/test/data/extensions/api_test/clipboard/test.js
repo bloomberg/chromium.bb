@@ -61,10 +61,8 @@ chrome.test.runTests([
     );
     setupWindow();
   },
-  // TODO(aarya]): Fix this.
-  /*
   function domPaste() {
     document.body.addEventListener('paste', chrome.test.callbackPass());
     document.execCommand('paste');
-  }*/
+  }
 ]);
