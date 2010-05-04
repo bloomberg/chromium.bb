@@ -1753,6 +1753,7 @@ struct ParamTraits<WebPreferences> {
     WriteParam(m, p.allow_scripts_to_close_windows);
     WriteParam(m, p.uses_page_cache);
     WriteParam(m, p.remote_fonts_enabled);
+    WriteParam(m, p.javascript_can_access_clipboard);
     WriteParam(m, p.xss_auditor_enabled);
     WriteParam(m, p.local_storage_enabled);
     WriteParam(m, p.databases_enabled);
@@ -1795,6 +1796,7 @@ struct ParamTraits<WebPreferences> {
         ReadParam(m, iter, &p->allow_scripts_to_close_windows) &&
         ReadParam(m, iter, &p->uses_page_cache) &&
         ReadParam(m, iter, &p->remote_fonts_enabled) &&
+        ReadParam(m, iter, &p->javascript_can_access_clipboard) &&
         ReadParam(m, iter, &p->xss_auditor_enabled) &&
         ReadParam(m, iter, &p->local_storage_enabled) &&
         ReadParam(m, iter, &p->databases_enabled) &&

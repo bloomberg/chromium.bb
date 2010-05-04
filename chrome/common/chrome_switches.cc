@@ -448,6 +448,9 @@ const char kInternalPDF[]                  = "internal-pdf";
 // Runs a trusted Pepper plugin inside the renderer process.
 const char kInternalPepper[]                = "internal-pepper";
 
+// Specifies whether javascript can access clipboard.
+const char kJavaScriptCanAccessClipboard[]  = "javascript-can-access-clipboard";
+
 // Specifies the flags passed to JS engine
 const char kJavaScriptFlags[]               = "js-flags";
 

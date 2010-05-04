@@ -213,6 +213,7 @@ class LayoutTestController : public CppBoundClass {
   void setCallCloseOnWebViews(const CppArgumentList& args, CppVariant* result);
   void setPrivateBrowsingEnabled(const CppArgumentList& args, CppVariant* result);
 
+  void setJavaScriptCanAccessClipboard(const CppArgumentList& args, CppVariant* result);
   void setXSSAuditorEnabled(const CppArgumentList& args, CppVariant* result);
   void evaluateScriptInIsolatedWorld(const CppArgumentList& args, CppVariant* result);
   void overridePreference(const CppArgumentList& args, CppVariant* result);

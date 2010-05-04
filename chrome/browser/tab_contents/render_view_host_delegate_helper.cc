@@ -177,6 +177,8 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
         command_line.HasSwitch(switches::kEnableFastback);
     web_prefs.remote_fonts_enabled =
         !command_line.HasSwitch(switches::kDisableRemoteFonts);
+    web_prefs.javascript_can_access_clipboard =
+        command_line.HasSwitch(switches::kJavaScriptCanAccessClipboard);
     web_prefs.xss_auditor_enabled =
         command_line.HasSwitch(switches::kEnableXSSAuditor);
     web_prefs.application_cache_enabled =

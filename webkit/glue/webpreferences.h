@@ -46,6 +46,7 @@ struct WebPreferences {
   bool allow_scripts_to_close_windows;
   bool uses_page_cache;
   bool remote_fonts_enabled;
+  bool javascript_can_access_clipboard;
   bool xss_auditor_enabled;
   bool local_storage_enabled;
   bool databases_enabled;
@@ -90,6 +91,7 @@ struct WebPreferences {
         allow_scripts_to_close_windows(false),
         uses_page_cache(false),
         remote_fonts_enabled(true),
+        javascript_can_access_clipboard(false),
         xss_auditor_enabled(false),
         local_storage_enabled(false),
         databases_enabled(false),

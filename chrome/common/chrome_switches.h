@@ -134,6 +134,7 @@ extern const char kIncognito[];
 extern const char kInternalNaCl[];
 extern const char kInternalPDF[];
 extern const char kInternalPepper[];
+extern const char kJavaScriptCanAccessClipboard[];
 extern const char kJavaScriptFlags[];
 extern const char kLoadExtension[];
 extern const char kLoadPlugin[];

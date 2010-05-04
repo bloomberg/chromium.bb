@@ -485,6 +485,7 @@ void TestShell::ResetWebPreferences() {
         web_prefs_->text_areas_are_resizable = false;
         web_prefs_->java_enabled = false;
         web_prefs_->allow_scripts_to_close_windows = false;
+        web_prefs_->javascript_can_access_clipboard = true;
         web_prefs_->xss_auditor_enabled = false;
         // It's off by default for Chrome, but we don't want to
         // lose the coverage of dynamic font tests in webkit test.
