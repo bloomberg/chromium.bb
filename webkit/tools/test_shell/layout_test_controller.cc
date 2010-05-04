@@ -128,7 +128,10 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("setWillSendRequestClearHeader", &LayoutTestController::setWillSendRequestClearHeader);
   BindMethod("setWillSendRequestReturnsNullOnRedirect", &LayoutTestController::setWillSendRequestReturnsNullOnRedirect);
   BindMethod("setWillSendRequestReturnsNull", &LayoutTestController::setWillSendRequestReturnsNull);
-  BindMethod("whiteListAccessFromOrigin", &LayoutTestController::whiteListAccessFromOrigin);
+  BindMethod("addOriginAccessWhitelistEntry",
+      &LayoutTestController::addOriginAccessWhitelistEntry);
+  BindMethod("removeOriginAccessWhitelistEntry",
+      &LayoutTestController::removeOriginAccessWhitelistEntry);
   BindMethod("clearAllDatabases", &LayoutTestController::clearAllDatabases);
   BindMethod("setDatabaseQuota", &LayoutTestController::setDatabaseQuota);
   BindMethod("setPOSIXLocale", &LayoutTestController::setPOSIXLocale);
@@ -1104,7 +1107,7 @@ void LayoutTestController::fallbackMethod(
   result->SetNull();
 }
 
-void LayoutTestController::whiteListAccessFromOrigin(
+void LayoutTestController::addOriginAccessWhitelistEntry(
     const CppArgumentList& args, CppVariant* result) {
   result->SetNull();
 
@@ -1116,7 +1119,26 @@ void LayoutTestController::whiteListAccessFromOrigin(
   if (!url.isValid())
     return;
 
-  WebSecurityPolicy::whiteListAccessFromOrigin(url,
+  WebSecurityPolicy::addOriginAccessWhitelistEntry(url,
+      WebString::fromUTF8(args[1].ToString()),
+      WebString::fromUTF8(args[2].ToString()),
+       args[3].ToBoolean());
+}
+
+void LayoutTestController::removeOriginAccessWhitelistEntry(
+    const CppArgumentList& args, CppVariant* result)
+{
+  result->SetNull();
+
+  if (args.size() != 4 || !args[0].isString() || !args[1].isString() ||
+      !args[2].isString() || !args[3].isBool())
+    return;
+
+  WebKit::WebURL url(GURL(args[0].ToString()));
+  if (!url.isValid())
+    return;
+
+  WebSecurityPolicy::removeOriginAccessWhitelistEntry(url,
       WebString::fromUTF8(args[1].ToString()),
       WebString::fromUTF8(args[2].ToString()),
        args[3].ToBoolean());

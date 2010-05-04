@@ -227,8 +227,11 @@ class LayoutTestController : public CppBoundClass {
   // that case (as the Mac does).
   void fallbackMethod(const CppArgumentList& args, CppVariant* result);
 
-  // Allows layout tests to call SecurityOrigin::whiteListAccessFromOrigin().
-  void whiteListAccessFromOrigin(const CppArgumentList& args, CppVariant* result);
+  // Allows layout tests to manage origins' whitelisting.
+  void addOriginAccessWhitelistEntry(
+      const CppArgumentList& args, CppVariant* result);
+  void removeOriginAccessWhitelistEntry(
+      const CppArgumentList& args, CppVariant* result);
 
   // Clears all databases.
   void clearAllDatabases(const CppArgumentList& args, CppVariant* result);
