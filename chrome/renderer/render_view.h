@@ -327,8 +327,6 @@ class RenderView : public RenderWidget,
       WebKit::WebFrame* frame, const WebKit::WebURLRequest& request);
   virtual void unableToImplementPolicyWithError(
       WebKit::WebFrame* frame, const WebKit::WebURLError& error);
-  virtual void willSendSubmitEvent(WebKit::WebFrame* frame,
-      const WebKit::WebFormElement& form);
   virtual void willSubmitForm(WebKit::WebFrame* frame,
       const WebKit::WebFormElement& form);
   virtual void willPerformClientRedirect(
