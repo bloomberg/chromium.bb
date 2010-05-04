@@ -350,7 +350,8 @@ TEST_F(DownloadTest, FLAKY_IncognitoDownload) {
   CheckDownload(file);
 }
 
-TEST_F(DownloadTest, DontCloseNewTab1) {
+// All of the following tests are flaky, see http://crbug.com/43066
+TEST_F(DownloadTest, FLAKY_DontCloseNewTab1) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   int window_count = 0;
@@ -369,7 +370,6 @@ TEST_F(DownloadTest, DontCloseNewTab1) {
   WaitUntilTabCount(2);
 }
 
-// Flaky, see http://crbug.com/43066
 TEST_F(DownloadTest, FLAKY_CloseNewTab1) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
@@ -392,7 +392,8 @@ TEST_F(DownloadTest, FLAKY_CloseNewTab1) {
   CheckDownload(file);
 }
 
-TEST_F(DownloadTest, DontCloseNewTab2) {
+// Flaky, see http://crbug.com/43066
+TEST_F(DownloadTest, FLAKY_DontCloseNewTab2) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   int window_count = 0;
@@ -415,7 +416,8 @@ TEST_F(DownloadTest, DontCloseNewTab2) {
   CheckDownload(file);
 }
 
-TEST_F(DownloadTest, DontCloseNewTab3) {
+// Flaky, see http://crbug.com/43066
+TEST_F(DownloadTest, FLAKY_DontCloseNewTab3) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   int window_count = 0;
@@ -441,7 +443,8 @@ TEST_F(DownloadTest, DontCloseNewTab3) {
   CheckDownload(file);
 }
 
-TEST_F(DownloadTest, CloseNewTab2) {
+// Flaky, see http://crbug.com/43066
+TEST_F(DownloadTest, FLAKY_CloseNewTab2) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   int window_count = 0;
@@ -464,7 +467,8 @@ TEST_F(DownloadTest, CloseNewTab2) {
   CheckDownload(file);
 }
 
-TEST_F(DownloadTest, CloseNewTab3) {
+// Flaky, see http://crbug.com/43066
+TEST_F(DownloadTest, FLAKY_CloseNewTab3) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   int window_count = 0;
