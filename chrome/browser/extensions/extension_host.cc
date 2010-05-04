@@ -523,6 +523,9 @@ WebPreferences ExtensionHost::GetWebkitPrefs() {
       extension_host_type_ == ViewType::EXTENSION_INFOBAR)
     webkit_prefs.allow_scripts_to_close_windows = true;
 
+  // TODO(dcheng): incorporate this setting into kClipboardPermission check.
+  webkit_prefs.javascript_can_access_clipboard = true;
+
   // TODO(dcheng): check kClipboardPermission instead once it's implemented.
   if (extension_->HasApiPermission(Extension::kExperimentalPermission))
     webkit_prefs.dom_paste_enabled = true;
