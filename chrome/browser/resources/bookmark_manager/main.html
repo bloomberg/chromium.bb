@@ -188,16 +188,25 @@ tree.addEventListener('change', function() {
 /**
  * Navigates to a bookmark ID.
  * @param {string} id The ID to navigate to.
+ * @param {boolean=} opt_updateHashNow Whether to immediately update the
+ *     location.hash. If false then it is updated in a timeout.
  */
-function navigateTo(id) {
-  console.info('navigateTo', window.location.hash, id);
+function navigateTo(id, opt_updateHashNow) {
+  console.info('navigateTo', 'from', window.location.hash, 'to', id);
   // Update the location hash using a timer to prevent reentrancy. This is how
   // often we add history entries and the time here is a bit arbitrary but was
   // picked as the smallest time a human perceives as instant.
-  clearTimeout(navigateTo.timer_);
-  navigateTo.timer_ = setTimeout(function() {
+
+  function f() {
     window.location.hash = tree.selectedItem.bookmarkId;
-  }, 300);
+  }
+
+  clearTimeout(navigateTo.timer_);
+  if (opt_updateHashNow)
+    f();
+  else
+    navigateTo.timer_ = setTimeout(f, 250);
+
   updateParentId(id);
 }
 
@@ -288,7 +297,8 @@ function setSearch(searchText) {
     id = tree.selectedItem.bookmarkId;
   }
 
-  navigateTo(id);
+  // Navigate now and update hash immediately.
+  navigateTo(id, true);
 }
 
 // Handle the logo button UI.
