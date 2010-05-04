@@ -16,8 +16,6 @@
 #include "app/os_exchange_data_provider_gtk.h"
 #include "base/auto_reset.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop.h"
-#include "base/ref_counted.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/path.h"
 #include "views/widget/default_theme_provider.h"
@@ -26,104 +24,6 @@
 #include "views/widget/root_view.h"
 #include "views/widget/tooltip_manager_gtk.h"
 #include "views/window/window_gtk.h"
-
-namespace {
-
-// g_object data keys to associate a WidgetGtk object to a GtkWidget.
-const char* kWidgetKey = "__VIEWS_WIDGET__";
-// A g_object data key to associate a CompositePainter object to a GtkWidget.
-const char* kCompositePainterKey = "__VIEWS_COMPOSITE_PAINTER__";
-// A g_object data key to associate the flag whether or not the widget
-// is composited to a GtkWidget. gtk_widget_is_composited simply tells
-// if x11 supports composition and cannot be used to tell if given widget
-// is composited.
-const char* kCompositeEnabledKey = "__VIEWS_COMPOSITE_ENABLED__";
-
-// CompositePainter draws a composited child widgets image into its
-// drawing area. This object is ref counted so that it can disconnect
-// expose event handler when all transparent widgets are deleted.
-class CompositePainter : public base::RefCounted<CompositePainter> {
- public:
-  explicit CompositePainter(GtkWidget* parent)
-      : parent_object_(G_OBJECT(parent)) {
-    handler_id_ = g_signal_connect_after(
-        parent_object_, "expose_event", G_CALLBACK(OnCompositePaint), NULL);
-  }
-
-  static void AddCompositePainter(GtkWidget* widget) {
-    CompositePainter* painter = static_cast<CompositePainter*>(
-        g_object_get_data(G_OBJECT(widget), kCompositePainterKey));
-    if (painter) {
-      painter->AddRef();
-    } else {
-      g_object_set_data(G_OBJECT(widget), kCompositePainterKey,
-                        new CompositePainter(widget));
-    }
-  }
-
-  static void RemoveCompositePainter(GtkWidget* widget) {
-    CompositePainter* painter = reinterpret_cast<CompositePainter*>(
-        g_object_get_data(G_OBJECT(widget), kCompositePainterKey));
-    DCHECK(painter);
-    painter->Release();
-  }
-
-  // Enable the composition.
-  static void SetComposited(GtkWidget* widget) {
-    DCHECK(GTK_WIDGET_REALIZED(widget));
-    gdk_window_set_composited(widget->window, true);
-    g_object_set_data(G_OBJECT(widget), kCompositeEnabledKey,
-                      const_cast<char*>(""));
-  }
-
-  // Returns true if the |widget| is composited.
-  static bool IsComposited(GtkWidget* widget) {
-    return g_object_get_data(G_OBJECT(widget), kCompositeEnabledKey) != NULL;
-  }
-
- private:
-  friend class base::RefCounted<CompositePainter>;
-  virtual ~CompositePainter() {
-    g_signal_handler_disconnect(parent_object_, handler_id_);
-    g_object_set_data(parent_object_, kCompositePainterKey, NULL);
-  }
-
-  // Composes a image from one child.
-  static void CompositeChildWidget(GtkWidget* child, gpointer data) {
-    GdkEventExpose* event = static_cast<GdkEventExpose*>(data);
-    GtkWidget* parent = gtk_widget_get_parent(child);
-    DCHECK(parent);
-    if (IsComposited(child)) {
-      cairo_t* cr = gdk_cairo_create(parent->window);
-      gdk_cairo_set_source_pixmap(cr, child->window,
-                                  child->allocation.x,
-                                  child->allocation.y);
-      GdkRegion* region = gdk_region_rectangle(&child->allocation);
-      gdk_region_intersect(region, event->region);
-      gdk_cairo_region(cr, region);
-      cairo_clip(cr);
-      cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-      cairo_paint(cr);
-      cairo_destroy(cr);
-    }
-  }
-
-  // Expose-event handler that compose & draws children's image into
-  // the |parent|'s drawing area.
-  static gboolean OnCompositePaint(GtkWidget* parent, GdkEventExpose* event) {
-    gtk_container_foreach(GTK_CONTAINER(parent),
-                          CompositeChildWidget,
-                          event);
-    return false;
-  }
-
-  GObject* parent_object_;
-  gulong handler_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(CompositePainter);
-};
-
-}  // namespace
 
 namespace views {
 
@@ -161,6 +61,9 @@ class WidgetGtk::DropObserver : public MessageLoopForUI::Observer {
 
   DISALLOW_COPY_AND_ASSIGN(DropObserver);
 };
+
+static const char* kWidgetKey = "__VIEWS_WIDGET__";
+static const wchar_t* kWidgetWideKey = L"__VIEWS_WIDGET__";
 
 // Returns the position of a widget on screen.
 static void GetWidgetPositionOnScreen(GtkWidget* widget, int* x, int *y) {
@@ -285,8 +188,9 @@ GtkWindow* WidgetGtk::GetTransientParent() const {
 }
 
 bool WidgetGtk::MakeTransparent() {
-  // Transparency can only be enabled only if we haven't realized the widget.
-  DCHECK(!widget_);
+  // Transparency can only be enabled for windows/popups and only if we haven't
+  // realized the widget.
+  DCHECK(!widget_ && type_ != TYPE_CHILD);
 
   if (!gdk_screen_is_composited(gdk_screen_get_default())) {
     // Transparency is only supported for compositing window managers.
@@ -493,7 +397,6 @@ void WidgetGtk::Init(GtkWidget* parent,
 
   g_signal_connect_after(G_OBJECT(window_contents_), "size_allocate",
                          G_CALLBACK(&OnSizeAllocateThunk), this);
-  gtk_widget_set_app_paintable(window_contents_, true);
   g_signal_connect(window_contents_, "expose_event",
                    G_CALLBACK(&OnPaintThunk), this);
   g_signal_connect(window_contents_, "enter_notify_event",
@@ -537,6 +440,10 @@ void WidgetGtk::Init(GtkWidget* parent,
                    G_CALLBACK(&OnKeyPressThunk), this);
   g_signal_connect(widget_, "key_release_event",
                    G_CALLBACK(&OnKeyReleaseThunk), this);
+  if (transparent_) {
+    g_signal_connect(widget_, "expose_event",
+                     G_CALLBACK(&OnWindowPaintThunk), this);
+  }
 
   // Drag and drop.
   gtk_drag_dest_set(window_contents_, static_cast<GtkDestDefaults>(0),
@@ -673,13 +580,6 @@ void WidgetGtk::Close() {
 
 void WidgetGtk::CloseNow() {
   if (widget_) {
-    if (transparent_ && type_ == TYPE_CHILD) {
-      GtkWidget* parent = gtk_widget_get_parent(widget_);
-      if (parent) {
-        DCHECK(parent != null_parent_);
-        CompositePainter::RemoveCompositePainter(parent);
-      }
-    }
     gtk_widget_destroy(widget_);
     widget_ = NULL;
   }
@@ -890,10 +790,6 @@ void WidgetGtk::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {
 }
 
 gboolean WidgetGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
-  if (transparent_) {
-    // Clear the background before drawing any view and native components.
-    DrawTransparentBackground(widget, event);
-  }
   root_view_->OnPaint(event);
   return false;  // False indicates other widgets should get the event as well.
 }
@@ -1158,10 +1054,22 @@ RootView* WidgetGtk::CreateRootView() {
 }
 
 gboolean WidgetGtk::OnWindowPaint(GtkWidget* widget, GdkEventExpose* event) {
-  // Clear the background to be totally transparent. We don't need to
-  // paint the root view here as that is done by OnPaint.
+  // NOTE: for reasons I don't understand this code is never hit. It should
+  // be hit when transparent_, but we never get the expose-event for the
+  // window in this case, even though a stand alone test case triggers it. I'm
+  // leaving it in just in case.
+
+  // Fill the background totally transparent. We don't need to paint the root
+  // view here as that is done by OnPaint.
   DCHECK(transparent_);
-  DrawTransparentBackground(widget, event);
+  int width, height;
+  gtk_window_get_size(GTK_WINDOW(widget), &width, &height);
+  cairo_t* cr = gdk_cairo_create(widget->window);
+  cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+  cairo_set_source_rgba(cr, 0, 0, 0, 0);
+  cairo_rectangle(cr, 0, 0, width, height);
+  cairo_fill(cr);
+  cairo_destroy(cr);
   return false;
 }
 
@@ -1285,19 +1193,7 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
       gtk_container_add(GTK_CONTAINER(popup), null_parent_);
       gtk_widget_realize(null_parent_);
     }
-    if (transparent_) {
-      // transparency has to be configured before widget is realized.
-      DCHECK(parent) << "Transparent widget must have parent when initialized";
-      ConfigureWidgetForTransparentBackground(parent);
-    }
     gtk_container_add(GTK_CONTAINER(parent ? parent : null_parent_), widget_);
-    gtk_widget_realize(widget_);
-    if (transparent_) {
-      // The widget has to be realized to set composited flag.
-      // I tried "realize" signal to set this flag, but it did not work
-      // when the top level is popup.
-      CompositePainter::SetComposited(widget_);
-    }
   } else {
     widget_ = gtk_window_new(
         (type_ == TYPE_WINDOW || type_ == TYPE_DECORATED_WINDOW) ?
@@ -1332,23 +1228,27 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
                       static_cast<Widget*>(this));
 
     if (transparent_)
-      ConfigureWidgetForTransparentBackground(NULL);
+      ConfigureWidgetForTransparentBackground();
 
     if (ignore_events_)
       ConfigureWidgetForIgnoreEvents();
 
     SetAlwaysOnTop(always_on_top_);
-    // The widget needs to be realized before handlers like size-allocate can
-    // function properly.
-    gtk_widget_realize(widget_);
   }
+
+  // The widget needs to be realized before handlers like size-allocate can
+  // function properly.
+  gtk_widget_realize(widget_);
+
+  // Associate this object with the widget.
+  SetNativeWindowProperty(kWidgetWideKey, this);
 }
 
-void WidgetGtk::ConfigureWidgetForTransparentBackground(GtkWidget* parent) {
-  DCHECK(widget_ && window_contents_);
+void WidgetGtk::ConfigureWidgetForTransparentBackground() {
+  DCHECK(widget_ && window_contents_ && widget_ != window_contents_);
 
   GdkColormap* rgba_colormap =
-      gdk_screen_get_rgba_colormap(gtk_widget_get_screen(widget_));
+      gdk_screen_get_rgba_colormap(gdk_screen_get_default());
   if (!rgba_colormap) {
     transparent_ = false;
     return;
@@ -1357,21 +1257,19 @@ void WidgetGtk::ConfigureWidgetForTransparentBackground(GtkWidget* parent) {
   // on both the window and fixed. In addition we need to make sure no
   // decorations are drawn. The last bit is to make sure the widget doesn't
   // attempt to draw a pixmap in it's background.
-  if (type_ != TYPE_CHILD) {
-    DCHECK(parent == NULL);
-    gtk_widget_set_colormap(widget_, rgba_colormap);
-    gtk_widget_set_app_paintable(widget_, true);
-    g_signal_connect(widget_, "expose_event",
-                     G_CALLBACK(&OnWindowPaintThunk), this);
-    gtk_widget_realize(widget_);
-    gdk_window_set_decorations(widget_->window,
-                               static_cast<GdkWMDecoration>(0));
-  } else {
-    DCHECK(parent);
-    CompositePainter::AddCompositePainter(parent);
-  }
-  DCHECK(!GTK_WIDGET_REALIZED(window_contents_));
+  gtk_widget_set_colormap(widget_, rgba_colormap);
+  gtk_widget_set_app_paintable(widget_, true);
+  gtk_widget_realize(widget_);
+  gdk_window_set_decorations(widget_->window,
+                             static_cast<GdkWMDecoration>(0));
+  // Widget must be realized before setting pixmap.
+  gdk_window_set_back_pixmap(widget_->window, NULL, FALSE);
+
   gtk_widget_set_colormap(window_contents_, rgba_colormap);
+  gtk_widget_set_app_paintable(window_contents_, true);
+  gtk_widget_realize(window_contents_);
+  // Widget must be realized before setting pixmap.
+  gdk_window_set_back_pixmap(window_contents_->window, NULL, FALSE);
 }
 
 void WidgetGtk::ConfigureWidgetForIgnoreEvents() {
@@ -1403,14 +1301,6 @@ void WidgetGtk::HandleGrabBroke() {
   }
 }
 
-void WidgetGtk::DrawTransparentBackground(GtkWidget* widget,
-                                          GdkEventExpose* event) {
-  cairo_t* cr = gdk_cairo_create(widget->window);
-  cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
-  gdk_cairo_region(cr, event->region);
-  cairo_fill(cr);
-  cairo_destroy(cr);
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, public:

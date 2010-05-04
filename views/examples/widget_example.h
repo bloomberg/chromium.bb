@@ -43,17 +43,7 @@ class BoxLayout : public views::LayoutManager {
   }
 
   virtual gfx::Size GetPreferredSize(views::View* host) {
-    int count = host->GetChildViewCount();
-    gfx::Rect bounds;
-    int y = 0;
-    for (int i = 0; i < count; i++) {
-      views::View* child = host->GetChildViewAt(i);
-      gfx::Size size = child->GetPreferredSize();
-      gfx::Rect child_bounds(0, y, size.width(), size.height());
-      bounds = bounds.Union(child_bounds);
-      y += size.height();
-    }
-    return bounds.size();
+    return host->GetPreferredSize();
   }
 
  private:
@@ -133,29 +123,19 @@ class WidgetExample : public ExampleBase, public views::ButtonListener {
 
   void InitWidget(Widget* widget,
                   const Widget::TransparencyParam transparency) {
-    // Add view/native buttons to close the popup widget.
+    // Add a button to close the popup widget.
     views::TextButton* close_button = new views::TextButton(this, L"Close");
     close_button->set_tag(CLOSE_WIDGET);
-    // TODO(oshima): support transparent native view.
-    views::NativeButton* native_button
-        = new views::NativeButton(this, L"Native Close");
-    native_button->set_tag(CLOSE_WIDGET);
-
-    views::View* button_container = new views::View();
-    button_container->SetLayoutManager(new BoxLayout);
-    button_container->AddChildView(close_button);
-    button_container->AddChildView(native_button);
-
     views::View* widget_container = new views::View();
     widget_container->SetLayoutManager(new CenterLayout);
-    widget_container->AddChildView(button_container);
-
-    widget->SetContentsView(widget_container);
-
-    if (transparency != Widget::Transparent) {
+    if (transparency == Widget::Transparent)
+      close_button->set_background(
+          views::Background::CreateStandardPanelBackground());
+    else
       widget_container->set_background(
           views::Background::CreateStandardPanelBackground());
-    }
+    widget_container->AddChildView(close_button);
+    widget->GetRootView()->SetContentsView(widget_container);
 
     // Show the widget.
     widget->Show();
@@ -171,7 +151,7 @@ class WidgetExample : public ExampleBase, public views::ButtonListener {
     // Compute where to place the child widget.
     // We'll place it at the center of the root widget.
     views::WidgetGtk* parent_widget =
-        static_cast<views::WidgetGtk*>(parent->GetWidget());
+        static_cast<views::WidgetGtk*>(parent->GetWidget()->GetRootWidget());
     gfx::Rect bounds;
     parent_widget->GetBounds(&bounds, false);
     // Child widget is 200x200 square.
