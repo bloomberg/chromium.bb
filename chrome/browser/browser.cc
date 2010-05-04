@@ -2649,7 +2649,8 @@ void Browser::ShowRepostFormWarningDialog(TabContents *tab_contents) {
 }
 
 void Browser::ShowContentSettingsWindow(ContentSettingsType content_type) {
-  window()->ShowContentSettingsWindow(content_type, profile_);
+  window()->ShowContentSettingsWindow(content_type,
+                                      profile_->GetOriginalProfile());
 }
 
 bool Browser::ShouldAddNavigationsToHistory() const {

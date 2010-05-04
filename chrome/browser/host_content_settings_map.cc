@@ -188,11 +188,9 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
   // Read exceptions.
   ReadExceptions(false);
 
-  if (!is_off_the_record_) {
-    prefs->AddPrefObserver(prefs::kDefaultContentSettings, this);
-    prefs->AddPrefObserver(prefs::kContentSettingsPatterns, this);
-    prefs->AddPrefObserver(prefs::kBlockThirdPartyCookies, this);
-  }
+  prefs->AddPrefObserver(prefs::kDefaultContentSettings, this);
+  prefs->AddPrefObserver(prefs::kContentSettingsPatterns, this);
+  prefs->AddPrefObserver(prefs::kBlockThirdPartyCookies, this);
   notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
                               Source<Profile>(profile_));
 }
@@ -607,12 +605,10 @@ void HostContentSettingsMap::UnregisterObservers() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   if (!profile_)
     return;
-  if (!is_off_the_record_) {
-    PrefService* prefs = profile_->GetPrefs();
-    prefs->RemovePrefObserver(prefs::kDefaultContentSettings, this);
-    prefs->RemovePrefObserver(prefs::kContentSettingsPatterns, this);
-    prefs->RemovePrefObserver(prefs::kBlockThirdPartyCookies, this);
-  }
+  PrefService* prefs = profile_->GetPrefs();
+  prefs->RemovePrefObserver(prefs::kDefaultContentSettings, this);
+  prefs->RemovePrefObserver(prefs::kContentSettingsPatterns, this);
+  prefs->RemovePrefObserver(prefs::kBlockThirdPartyCookies, this);
   notification_registrar_.Remove(this, NotificationType::PROFILE_DESTROYED,
                                  Source<Profile>(profile_));
   profile_ = NULL;
