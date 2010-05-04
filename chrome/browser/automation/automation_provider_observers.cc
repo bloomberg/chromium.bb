@@ -16,16 +16,13 @@
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/login_prompt.h"
 #include "chrome/browser/metrics/metric_event_duration_details.h"
+#include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/test/automation/automation_constants.h"
-
-#if defined(OS_WIN)
-#include "chrome/browser/printing/print_job.h"
-#endif  // defined(OS_WIN)
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
@@ -811,8 +808,6 @@ void DomOperationNotificationObserver::Observe(
   }
 }
 
-#if defined(OS_WIN)
-// TODO(port): Enable when printing is ported.
 DocumentPrintedNotificationObserver::DocumentPrintedNotificationObserver(
     AutomationProvider* automation, IPC::Message* reply_message)
     : automation_(automation),
@@ -863,7 +858,6 @@ void DocumentPrintedNotificationObserver::Observe(
     }
   }
 }
-#endif  // defined(OS_WIN)
 
 MetricEventDurationObserver::MetricEventDurationObserver() {
   registrar_.Add(this, NotificationType::METRIC_EVENT_DURATION,

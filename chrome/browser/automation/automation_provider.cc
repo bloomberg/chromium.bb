@@ -37,11 +37,13 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/browsing_data_remover.h"
+#include "chrome/browser/character_encoding.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_shelf.h"
+#include "chrome/browser/download/save_package.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
@@ -61,6 +63,7 @@
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/pref_service.h"
+#include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -84,11 +87,7 @@
 #include "views/event.h"
 
 #if defined(OS_WIN)
-// TODO(port): Port these headers.
-#include "chrome/browser/character_encoding.h"
-#include "chrome/browser/download/save_package.h"
 #include "chrome/browser/external_tab_container.h"
-#include "chrome/browser/printing/print_job.h"
 #endif  // defined(OS_WIN)
 
 using base::Time;
@@ -2216,7 +2215,6 @@ void AutomationProvider::IsPageMenuCommandEnabled(int browser_handle,
 
 void AutomationProvider::PrintNow(int tab_handle,
                                   IPC::Message* reply_message) {
-#if defined(OS_WIN)
   NavigationController* tab = NULL;
   TabContents* tab_contents = GetTabContentsForHandle(tab_handle, &tab);
   if (tab_contents) {
@@ -2228,10 +2226,6 @@ void AutomationProvider::PrintNow(int tab_handle,
   }
   AutomationMsg_PrintNow::WriteReplyParams(reply_message, false);
   Send(reply_message);
-#else
-  // TODO(port): Remove once DocumentPrintedNotificationObserver is implemented.
-  NOTIMPLEMENTED();
-#endif  // defined(OS_WIN)
 }
 
 void AutomationProvider::SavePage(int tab_handle,
@@ -2570,7 +2564,6 @@ void AutomationProvider::OverrideEncoding(int tab_handle,
                                           const std::string& encoding_name,
                                           bool* success) {
   *success = false;
-#if defined(OS_WIN)
   if (tab_tracker_->ContainsHandle(tab_handle)) {
     NavigationController* nav = tab_tracker_->GetResource(tab_handle);
     if (!nav)
@@ -2600,10 +2593,6 @@ void AutomationProvider::OverrideEncoding(int tab_handle,
       contents->SetOverrideEncoding(selected_encoding);
     }
   }
-#else
-  // TODO(port): Enable when encoding-related parts of Browser are ported.
-  NOTIMPLEMENTED();
-#endif
 }
 
 void AutomationProvider::SavePackageShouldPromptUser(bool should_prompt) {

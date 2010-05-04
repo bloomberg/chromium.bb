@@ -428,8 +428,6 @@ class DomOperationNotificationObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(DomOperationNotificationObserver);
 };
 
-#if defined(OS_WIN)
-// TODO(port): Enable when printing is ported.
 class DocumentPrintedNotificationObserver : public NotificationObserver {
  public:
   DocumentPrintedNotificationObserver(AutomationProvider* automation,
@@ -447,7 +445,6 @@ class DocumentPrintedNotificationObserver : public NotificationObserver {
 
   DISALLOW_COPY_AND_ASSIGN(DocumentPrintedNotificationObserver);
 };
-#endif  // defined(OS_WIN)
 
 // Collects METRIC_EVENT_DURATION notifications and keep track of the times.
 class MetricEventDurationObserver : public NotificationObserver {
