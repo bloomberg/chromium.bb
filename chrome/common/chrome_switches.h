@@ -247,7 +247,7 @@ extern const char kChromeosFrame[];
 #endif
 
 #if defined(OS_WIN)
-extern const char kUseNSSForSSL[];
+extern const char kUseSChannel[];
 #endif
 
 #if defined(OS_POSIX)

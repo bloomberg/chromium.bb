@@ -855,9 +855,8 @@ const char kChromeosFrame[]                 = "chromeos-frame";
 #endif
 
 #if defined(OS_WIN)
-// Use NSS instead of the system SSL library for SSL.
-// This is a temporary testing flag.
-const char kUseNSSForSSL[]                  = "use-nss-for-ssl";
+// Use SChannel (the system SSL library on Windows) instead of NSS for SSL.
+const char kUseSChannel[]                   = "use-schannel";
 #endif
 
 #if defined(OS_POSIX)
