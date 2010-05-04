@@ -660,7 +660,18 @@ void WebPluginDelegateImpl::WindowlessUpdateGeometry(
   bool clip_rect_changed = (clip_rect_ != old_clip_rect);
   bool window_size_changed = (window_rect.size() != window_rect_.size());
 
-  if (window_rect == window_rect_ && !clip_rect_changed)
+  bool force_set_window = false;
+#ifndef NP_NO_QUICKDRAW
+  // In a QuickDraw plugin, a geometry update might have caused a port change;
+  // if so, we need to call SetWindow even if nothing else changed.
+  if (qd_manager_.get() && (qd_port_.port != qd_manager_->port())) {
+    LOG(ERROR) << "Saving the day";
+    qd_port_.port = qd_manager_->port();
+    force_set_window = true;
+  }
+#endif
+
+  if (window_rect == window_rect_ && !clip_rect_changed && !force_set_window)
     return;
 
   if (old_clip_rect.IsEmpty() != clip_rect_.IsEmpty()) {
@@ -679,7 +690,7 @@ void WebPluginDelegateImpl::WindowlessUpdateGeometry(
   }
 #endif
 
-  if (window_size_changed || clip_rect_changed)
+  if (window_size_changed || clip_rect_changed || force_set_window)
     WindowlessSetWindow();
 }
 

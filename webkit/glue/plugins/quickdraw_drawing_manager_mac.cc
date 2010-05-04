@@ -41,11 +41,13 @@ void QuickDrawDrawingManager::SetFastPathEnabled(bool enabled) {
 void QuickDrawDrawingManager::SetTargetContext(CGContextRef context,
                                                const gfx::Size& plugin_size) {
   target_context_ = context;
-  plugin_size_ = plugin_size;
-  // Pitch the old GWorlds, since they are the wrong size now.
-  DestroyGWorlds();
-  if (fast_path_enabled_)
-    UpdateGWorlds();
+  if (plugin_size != plugin_size_) {
+    plugin_size_ = plugin_size;
+    // Pitch the old GWorlds, since they are the wrong size now.
+    DestroyGWorlds();
+    if (fast_path_enabled_)
+      UpdateGWorlds();
+  }
 }
 
 void QuickDrawDrawingManager::SetPluginWindow(WindowRef window) {
@@ -103,6 +105,8 @@ void QuickDrawDrawingManager::UpdateGWorlds() {
   // directly into the shared memory.
   NewGWorld(&plugin_world_, k32ARGBPixelFormat, &window_bounds,
             NULL, NULL, kNativeEndianPixMap);
+  if (fast_path_enabled_)
+    current_port_ = plugin_world_;
 }
 
 void QuickDrawDrawingManager::ScrapeWindow(WindowRef window,
