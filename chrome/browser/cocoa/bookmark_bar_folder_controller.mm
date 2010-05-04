@@ -67,6 +67,34 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
 
 @end
 
+@interface BookmarkButton (BookmarkBarFolderMenuHighlighting)
+
+// Make the button's border frame always appear when |forceOn| is YES,
+// otherwise only border the button when the mouse is inside the button.
+- (void)forceButtonBorderToStayOnAlways:(BOOL)forceOn;
+
+// On 10.6 event dispatch for an NSButtonCell's
+// showsBorderOnlyWhileMouseInside seems broken if scrolling the
+// view that contains the button.  It appears that a mouseExited:
+// gets lost, so the button stays highlit forever.  We accomodate
+// here.
+- (void)toggleButtonBorderingWhileMouseInside;
+@end
+
+@implementation BookmarkButton (BookmarkBarFolderMenuHighlighting)
+
+- (void)forceButtonBorderToStayOnAlways:(BOOL)forceOn {
+  [self setShowsBorderOnlyWhileMouseInside:!forceOn];
+}
+
+- (void)toggleButtonBorderingWhileMouseInside {
+  BOOL toggle = [self showsBorderOnlyWhileMouseInside];
+  [self setShowsBorderOnlyWhileMouseInside:!toggle];
+  [self setShowsBorderOnlyWhileMouseInside:toggle];
+}
+
+@end
+
 @implementation BookmarkBarFolderController
 
 - (id)initWithParentButton:(BookmarkButton*)button
@@ -77,6 +105,10 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
     parentButton_.reset([button retain]);
+
+    // We want the button to remain bordered as part of the menu path.
+    [button forceButtonBorderToStayOnAlways:YES];
+
     parentController_.reset([parentController retain]);
     barController_ = barController;  // WEAK
     buttons_.reset([[NSMutableArray alloc] init]);
@@ -93,6 +125,10 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
 }
 
 - (void)dealloc {
+  // The button is no longer part of the menu path.
+  [parentButton_ forceButtonBorderToStayOnAlways:NO];
+  [parentButton_ setNeedsDisplay];
+
   [self removeScrollTracking];
   [self endScroll];
   [hoverState_ draggingExited];
@@ -622,15 +658,8 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   scrollPosition.y -= delta;
   [[scrollView_ documentView] scrollPoint:scrollPosition];
 
-  // On 10.6 event dispatch for an NSButtonCell's
-  // showsBorderOnlyWhileMouseInside seems broken if scrolling the
-  // view that contains the button.  It appears that a mouseExited:
-  // gets lost, so the button stays highlit forever.  We accomodate
-  // here.
-  if (buttonThatMouseIsIn_) {
-    [[buttonThatMouseIsIn_ cell] setShowsBorderOnlyWhileMouseInside:NO];
-    [[buttonThatMouseIsIn_ cell] setShowsBorderOnlyWhileMouseInside:YES];
-  }
+  if (buttonThatMouseIsIn_)
+    [buttonThatMouseIsIn_ toggleButtonBorderingWhileMouseInside];
 
   // We update the window size after shifting the scroll to avoid a race.
   CGFloat screenHeightMinusMargin = (NSHeight(screenFrame) -
