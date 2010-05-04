@@ -44,6 +44,7 @@ Resources\bookmark_manager\images\*.*: %(VersionDir)s\Resources\bookmark_manager
 Resources\bookmark_manager\js\*.*: %(VersionDir)s\Resources\bookmark_manager\js
 Resources\bookmark_manager\js\bmm\*.*: %(VersionDir)s\Resources\bookmark_manager\js\bmm
 Resources\shared\css\*.*: %(VersionDir)s\Resources\shared\css
+Resources\shared\images\*.*: %(VersionDir)s\Resources\shared\images
 Resources\shared\js\*.*: %(VersionDir)s\Resources\shared\js
 Resources\shared\js\cr\*.*: %(VersionDir)s\Resources\shared\js\cr
 Resources\shared\js\cr\ui\*.*: %(VersionDir)s\Resources\shared\js\cr\ui
