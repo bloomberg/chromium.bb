@@ -14,7 +14,10 @@
 # * you cannot specify multiple source files in one invocation
 # * ...
 #
-
+# IMPORTANT NOTE: If you make local mods to this file, you must run:
+#   %  tools/llvm/untrusted-toolchain-creator.sh driver-symlink
+# in order for them to take effect in the scons build.  This command
+# updates the copy in the toolchain/ tree.
 
 import os
 import struct
@@ -38,6 +41,7 @@ OUT.append(open('/tmp/fake.log', 'a'))
 # Misc
 ######################################################################
 
+# e.g. $NACL/toolchain/linux_arm-untrusted
 BASE = os.path.dirname(os.path.dirname(sys.argv[0]))
 
 LD_SCRIPT_ARM = BASE + '/arm-none-linux-gnueabi/ld_script_arm_untrusted'
@@ -198,9 +202,6 @@ LLVM_GXX = BASE + '/arm-none-linux-gnueabi/llvm-gcc-4.2/bin/llvm-g++'
 LLC_ARM = BASE + '/arm-none-linux-gnueabi/llvm/bin/llc'
 
 LLC_SFI_ARM = BASE + '/arm-none-linux-gnueabi/llvm/bin/llc-sfi'
-
-# Path to llc executable for x86-32.
-LLC_SFI_X86 = os.getenv('LLC_SFI_X86', None)
 
 LLVM_LINK = BASE + '/arm-none-linux-gnueabi/llvm/bin/llvm-link'
 
@@ -570,7 +571,7 @@ DROP_ARGS = set([])
 
 NATIVE_ARGS = set(['-nostdlib'])
 
-def GenerateCombinedBitcodeFile(argv, arch):
+def GenerateCombinedBitcodeFile(argv):
   """Run llvm-ld to produce a single bitcode file
   Returns:
   name of resulting bitcode file without .bc extension.
@@ -654,7 +655,7 @@ def Incarnation_bcldarm(argv):
      TODO(robertm): llvm-ld does NOT complain when passed a native .o file.
                     It will discard it silently.
   """
-  output, args_native_ld = GenerateCombinedBitcodeFile(argv, 'arm')
+  output, args_native_ld = GenerateCombinedBitcodeFile(argv)
 
   bitcode_combined = output + ".bc"
   asm_combined = output + ".bc.s"
@@ -691,15 +692,18 @@ def Incarnation_bcldx8632(argv):
      TODO(robertm): llvm-ld does NOT complain when passed a native .o file.
                     It will discard it silently.
   """
-  output, args_native_ld = GenerateCombinedBitcodeFile(argv, 'x86-32')
+  output, args_native_ld = GenerateCombinedBitcodeFile(argv)
 
   bitcode_combined = output + ".bc"
   asm_combined = output + ".bc.s"
   obj_combined = output + ".bc.o"
 
-  # TODO(adonovan): use external env var until we complete llc SFI for x86.
-  if not LLC_SFI_X86:
-    LogFatal('You must set LLC_SFI_X86 to your llc executable for x86-32.')
+  # TODO(adonovan): use symlink until we complete llc SFI for x86.
+  # File or symlink to SFI llc executable for x86-32.
+  LLC_SFI_X86 = os.path.join(BASE, 'llc-x86-32-sfi')
+  if not os.path.isfile(LLC_SFI_X86):
+    LogFatal('You must create a symlink "%s" to your llc executable for '
+             'x86-32.' % LLC_SFI_X86)
 
   Run([LLC_SFI_X86] +
       LLC_SHARED_FLAGS_X8632 +
