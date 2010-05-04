@@ -424,10 +424,8 @@ void RenderWidget::PaintDebugBorder(const gfx::Rect& rect,
 void RenderWidget::CallDoDeferredUpdate() {
   DoDeferredUpdate();
 
-  if (pending_input_event_ack_.get()) {
-    Send(pending_input_event_ack_.get());
-    pending_input_event_ack_.release();
-  }
+  if (pending_input_event_ack_.get())
+    Send(pending_input_event_ack_.release());
 }
 
 void RenderWidget::DoDeferredUpdate() {

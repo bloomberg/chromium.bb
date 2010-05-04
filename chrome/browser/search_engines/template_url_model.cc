@@ -732,6 +732,7 @@ void TemplateURLModel::MergeEnginesFromPrepopulateData() {
 
   std::set<int> updated_ids;
   for (size_t i = 0; i < loaded_urls.size(); ++i) {
+    // We take ownership of |t_url|.
     scoped_ptr<TemplateURL> t_url(loaded_urls[i]);
     int t_url_id = t_url->prepopulate_id();
     if (!t_url_id || updated_ids.count(t_url_id)) {
@@ -745,22 +746,21 @@ void TemplateURLModel::MergeEnginesFromPrepopulateData() {
       const TemplateURL* existing_url = existing_url_iter->second;
       if (!existing_url->safe_for_autoreplace()) {
         // User edited the entry, preserve the keyword and description.
-        loaded_urls[i]->set_safe_for_autoreplace(false);
-        loaded_urls[i]->set_keyword(existing_url->keyword());
-        loaded_urls[i]->set_autogenerate_keyword(
+        t_url->set_safe_for_autoreplace(false);
+        t_url->set_keyword(existing_url->keyword());
+        t_url->set_autogenerate_keyword(
             existing_url->autogenerate_keyword());
-        loaded_urls[i]->set_short_name(existing_url->short_name());
+        t_url->set_short_name(existing_url->short_name());
       }
-      Replace(existing_url, loaded_urls[i]);
+      Replace(existing_url, t_url.release());
       id_to_turl.erase(existing_url_iter);
     } else {
-      Add(loaded_urls[i]);
+      Add(t_url.release());
     }
     if (i == default_search_index && !default_search_provider_)
       SetDefaultSearchProvider(loaded_urls[i]);
 
     updated_ids.insert(t_url_id);
-    t_url.release();
   }
 
   // Remove any prepopulated engines which are no longer in the master list, as

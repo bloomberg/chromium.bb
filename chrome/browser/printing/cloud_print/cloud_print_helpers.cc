@@ -84,23 +84,20 @@ bool CloudPrintHelpers::ParseResponseJSON(
     const std::string& response_data, bool* succeeded,
     DictionaryValue** response_dict) {
   scoped_ptr<Value> message_value(base::JSONReader::Read(response_data, false));
-  DCHECK(message_value.get());
   if (!message_value.get()) {
+    NOTREACHED();
     return false;
   }
   if (!message_value->IsType(Value::TYPE_DICTIONARY)) {
     NOTREACHED();
     return false;
   }
-  DictionaryValue* response_dict_local =
-      static_cast<DictionaryValue*>(message_value.get());
-  if (succeeded) {
+  scoped_ptr<DictionaryValue> response_dict_local(
+      static_cast<DictionaryValue*>(message_value.release()));
+  if (succeeded)
     response_dict_local->GetBoolean(kSuccessValue, succeeded);
-  }
-  if (response_dict) {
-    *response_dict = response_dict_local;
-    message_value.release();
-  }
+  if (response_dict)
+    *response_dict = response_dict_local.release();
   return true;
 }
 

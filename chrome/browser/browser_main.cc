@@ -1241,7 +1241,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   // browser_shutdown takes care of deleting browser_process, so we need to
   // release it.
-  browser_process.release();
+  ignore_result(browser_process.release());
   browser_shutdown::Shutdown();
 
   return result_code;

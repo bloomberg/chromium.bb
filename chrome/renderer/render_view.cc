@@ -3479,8 +3479,7 @@ void RenderView::OnFindReplyAck() {
   // Check if there is any queued up request waiting to be sent.
   if (queued_find_reply_message_.get()) {
     // Send the search result over to the browser process.
-    Send(queued_find_reply_message_.get());
-    queued_find_reply_message_.release();
+    Send(queued_find_reply_message_.release());
   }
 }
 

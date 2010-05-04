@@ -42,7 +42,7 @@ class RenderWidgetHostProcess : public MockRenderProcessHost {
   ~RenderWidgetHostProcess() {
     // We don't want to actually delete the channel, since it's not a real
     // pointer.
-    channel_.release();
+    ignore_result(channel_.release());
     delete current_update_buf_;
   }
 

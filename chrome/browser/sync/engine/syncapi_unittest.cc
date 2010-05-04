@@ -26,7 +26,8 @@ class SyncApiTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    share_.dir_manager.release();
+    // |share_.dir_manager| does not actually own its value.
+    ignore_result(share_.dir_manager.release());
     setter_upper_.TearDown();
   }
 

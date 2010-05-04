@@ -181,24 +181,25 @@ bool DirectoryBackingStore::OpenAndConfigureHandleHelper(
     sqlite3** handle) const {
   if (SQLITE_OK == OpenSqliteDb(backing_filepath_, handle)) {
     sqlite_utils::scoped_sqlite_db_ptr scoped_handle(*handle);
-    sqlite3_busy_timeout(*handle, std::numeric_limits<int>::max());
+    sqlite3_busy_timeout(scoped_handle.get(), std::numeric_limits<int>::max());
     {
       SQLStatement statement;
-      statement.prepare(*handle, "PRAGMA fullfsync = 1");
+      statement.prepare(scoped_handle.get(), "PRAGMA fullfsync = 1");
       if (SQLITE_DONE != statement.step()) {
-        LOG(ERROR) << sqlite3_errmsg(*handle);
+        LOG(ERROR) << sqlite3_errmsg(scoped_handle.get());
         return false;
       }
     }
     {
       SQLStatement statement;
-      statement.prepare(*handle, "PRAGMA synchronous = 2");
+      statement.prepare(scoped_handle.get(), "PRAGMA synchronous = 2");
       if (SQLITE_DONE != statement.step()) {
-        LOG(ERROR) << sqlite3_errmsg(*handle);
+        LOG(ERROR) << sqlite3_errmsg(scoped_handle.get());
         return false;
       }
     }
-    sqlite3_busy_timeout(*handle, kDirectoryBackingStoreBusyTimeoutMs);
+    sqlite3_busy_timeout(scoped_handle.release(),
+                         kDirectoryBackingStoreBusyTimeoutMs);
 #if defined(OS_WIN)
     // Do not index this file. Scanning can occur every time we close the file,
     // which causes long delays in SQLite's file locking.
@@ -208,7 +209,6 @@ bool DirectoryBackingStore::OpenAndConfigureHandleHelper(
                         attrs | FILE_ATTRIBUTE_NOT_CONTENT_INDEXED);
 #endif
 
-    scoped_handle.release();
     return true;
   }
   return false;

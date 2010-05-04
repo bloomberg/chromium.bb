@@ -580,8 +580,6 @@ void BookmarkModel::DoneLoading(
     return;
   }
 
-  bookmark_bar_node_ = details->bb_node();
-  other_node_ = details->other_folder_node();
   next_node_id_ = details->max_id();
   if (details->computed_checksum() != details->stored_checksum())
     SetFileChanged();
@@ -594,8 +592,9 @@ void BookmarkModel::DoneLoading(
     if (store_.get())
       store_->ScheduleSave();
   }
-  index_.reset(details->index());
-  details->release();
+  bookmark_bar_node_ = details->release_bb_node();
+  other_node_ = details->release_other_folder_node();
+  index_.reset(details->release_index());
 
   // WARNING: order is important here, various places assume bookmark bar then
   // other node.

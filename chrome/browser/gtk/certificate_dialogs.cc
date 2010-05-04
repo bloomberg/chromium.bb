@@ -126,7 +126,7 @@ std::string GetCMSString(std::vector<CERTCertificate*> cert_chain, size_t start,
   NSSCMSContentInfo *cinfo = NSS_CMSMessage_GetContentInfo(message.get());
   if (NSS_CMSContentInfo_SetContent_SignedData(
       message.get(), cinfo, signed_data.get()) == SECSuccess) {
-    signed_data.release();
+    ignore_result(signed_data.release());
   } else {
     LOG(ERROR) << "NSS_CMSMessage_GetContentInfo failed";
     return "";
