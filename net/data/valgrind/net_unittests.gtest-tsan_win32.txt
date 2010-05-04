@@ -1,17 +1,18 @@
 # These tests fail due to SSL/Certificates/Network issues
 # TODO(timurrrr): need to investigate.
-HTTPSRequestTest.*
 ProxyScriptFetcherTest.*
-X509CertificateTest.*
 
 # These tests fail due to unknown reasons
 # TODO(timurrrr): investigate
 CookieMonsterTest.TestLastAccess
 SpdyNetwork*Error*
 SpdyNetwork*Get*
+X509CertificateTest.UnoSoftCertParsing
 
 #########################################
 # Please see http://dev.chromium.org/developers/testing#TOC-SSL-tests
 # if you think you want to un-comment one of the following lines
 #SSLClientSocketTest.*
 #URLRequestTest*
+#HTTPSRequestTest.*
+#X509CertificateTest.*
