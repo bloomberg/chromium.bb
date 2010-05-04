@@ -129,7 +129,7 @@ ContentSettingsWindowGtk::ContentSettingsWindowGtk(GtkWindow* parent,
   // Need to show the notebook before connecting switch-page signal, otherwise
   // we'll immediately get a signal switching to page 0 and overwrite our
   // last_selected_page_ value.
-  gtk_widget_show_all(dialog_);
+  gtk_util::ShowDialogWithLocalizedSize(dialog_, -1, -1, true);
 
   g_signal_connect(notebook_, "switch-page",
                    G_CALLBACK(OnSwitchPageThunk), this);
@@ -148,8 +148,7 @@ void ContentSettingsWindowGtk::ShowContentSettingsTab(
     ContentSettingsType page) {
   // Bring options window to front if it already existed and isn't already
   // in front
-  gtk_window_present_with_time(GTK_WINDOW(dialog_),
-                               gtk_get_current_event_time());
+  gtk_util::PresentWindow(dialog_,  gtk_get_current_event_time());
 
   if (page == CONTENT_SETTINGS_TYPE_DEFAULT) {
     // Remember the last visited page from local state.

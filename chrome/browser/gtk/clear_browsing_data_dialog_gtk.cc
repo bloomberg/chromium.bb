@@ -51,11 +51,6 @@ ClearBrowsingDataDialogGtk::ClearBrowsingDataDialogGtk(GtkWindow* parent,
   accessible_widget_helper_.reset(new AccessibleWidgetHelper(dialog_, profile));
   accessible_widget_helper_->SendOpenWindowNotification(dialog_name);
 
-  gtk_widget_realize(dialog_);
-  gtk_util::SetWindowSizeFromResources(GTK_WINDOW(dialog_),
-                                       IDS_CLEARDATA_DIALOG_WIDTH_CHARS,
-                                       -1,  // height
-                                       false);  // resizable
   gtk_util::AddButtonToDialog(dialog_,
       l10n_util::GetStringUTF8(IDS_CLEAR_BROWSING_DATA_COMMIT).c_str(),
       GTK_STOCK_APPLY, GTK_RESPONSE_ACCEPT);
@@ -182,7 +177,10 @@ ClearBrowsingDataDialogGtk::ClearBrowsingDataDialogGtk(GtkWindow* parent,
 
   UpdateDialogButtons();
 
-  gtk_widget_show_all(dialog_);
+  gtk_util::ShowDialogWithLocalizedSize(dialog_,
+                                        IDS_CLEARDATA_DIALOG_WIDTH_CHARS,
+                                        -1,
+                                        false);
 }
 
 ClearBrowsingDataDialogGtk::~ClearBrowsingDataDialogGtk() {

@@ -383,12 +383,6 @@ AutoFillDialog::AutoFillDialog(Profile* profile,
       GTK_RESPONSE_OK,
       NULL);
 
-  gtk_widget_realize(dialog_);
-  gtk_util::SetWindowSizeFromResources(GTK_WINDOW(dialog_),
-                                       IDS_AUTOFILL_DIALOG_WIDTH_CHARS,
-                                       IDS_AUTOFILL_DIALOG_HEIGHT_LINES,
-                                       true);
-
   // Allow browser windows to go in front of the AutoFill dialog in Metacity.
   gtk_window_set_type_hint(GTK_WINDOW(dialog_), GDK_WINDOW_TYPE_HINT_NORMAL);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
@@ -451,12 +445,14 @@ AutoFillDialog::AutoFillDialog(Profile* profile,
   gtk_button_box_set_child_secondary(
       GTK_BUTTON_BOX(GTK_DIALOG(dialog_)->action_area), link, TRUE);
 
-  gtk_widget_show_all(dialog_);
+  gtk_util::ShowDialogWithLocalizedSize(dialog_,
+                                        IDS_AUTOFILL_DIALOG_WIDTH_CHARS,
+                                        IDS_AUTOFILL_DIALOG_HEIGHT_LINES,
+                                        true);
 }
 
 void AutoFillDialog::Show() {
-  gtk_window_present_with_time(GTK_WINDOW(dialog_),
-                               gtk_get_current_event_time());
+  gtk_util::PresentWindow(dialog_, gtk_get_current_event_time());
 }
 
 // static

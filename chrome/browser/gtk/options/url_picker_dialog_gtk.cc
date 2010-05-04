@@ -166,7 +166,10 @@ UrlPickerDialogGtk::UrlPickerDialogGtk(UrlPickerCallback* callback,
       &width, NULL);
   gtk_tree_view_column_set_fixed_width(column, width);
 
-  gtk_widget_show_all(dialog_);
+  gtk_util::ShowDialogWithLocalizedSize(dialog_,
+      IDS_URLPICKER_DIALOG_WIDTH_CHARS,
+      IDS_URLPICKER_DIALOG_HEIGHT_LINES,
+      false);
 
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroyThunk), this);

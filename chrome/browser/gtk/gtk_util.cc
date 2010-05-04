@@ -28,6 +28,12 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/native_dialog_window.h"
+#include "chrome/browser/chromeos/options/options_window_view.h"
+#include "views/window/window.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace {
 
 const char kBoldLabelMarkup[] = "<span weight='bold'>%s</span>";
@@ -907,5 +913,64 @@ bool AddWindowAlphaChannel(GtkWidget* window) {
 
   return rgba;
 }
+
+#if defined(OS_CHROMEOS)
+
+void ShowDialog(GtkWidget* dialog) {
+  chromeos::ShowNativeDialog(chromeos::GetOptionsViewParent(),
+      dialog, gfx::Size(), false);
+}
+
+void ShowDialogWithLocalizedSize(GtkWidget* dialog,
+                                 int width_id,
+                                 int height_id,
+                                 bool resizeable) {
+  int width = (width_id == -1) ? 0 :
+      views::Window::GetLocalizedContentsWidth(width_id);
+  int height = (height_id == -1) ? 0 :
+      views::Window::GetLocalizedContentsHeight(height_id);
+
+  chromeos::ShowNativeDialog(chromeos::GetOptionsViewParent(),
+      dialog,
+      gfx::Size(width, height),
+      resizeable);
+}
+
+void PresentWindow(GtkWidget* window, int timestamp) {
+  GtkWindow* host_window = chromeos::GetNativeDialogWindow(window);
+  if (!host_window)
+      host_window = GTK_WINDOW(window);
+  if (timestamp)
+    gtk_window_present_with_time(host_window, timestamp);
+  else
+    gtk_window_present(host_window);
+}
+
+#else
+
+void ShowDialog(GtkWidget* dialog) {
+  gtk_widget_show_all(dialog);
+}
+
+void ShowDialogWithLocalizedSize(GtkWidget* dialog,
+                                 int width_id,
+                                 int height_id,
+                                 bool resizeable) {
+  gtk_widget_realize(dialog);
+  SetWindowSizeFromResources(GTK_WINDOW(dialog),
+                             width_id,
+                             height_id,
+                             resizeable);
+  gtk_widget_show_all(dialog);
+}
+
+void PresentWindow(GtkWidget* window, int timestamp) {
+  if (timestamp)
+    gtk_window_present_with_time(GTK_WINDOW(window), timestamp);
+  else
+    gtk_window_present(GTK_WINDOW(window));
+}
+
+#endif
 
 }  // namespace gtk_util

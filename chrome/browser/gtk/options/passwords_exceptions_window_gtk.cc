@@ -102,19 +102,16 @@ PasswordsExceptionsWindowGtk::PasswordsExceptionsWindowGtk(Profile* profile)
 
   gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), notebook_);
 
-  gtk_widget_realize(dialog_);
-  gtk_util::SetWindowSizeFromResources(GTK_WINDOW(dialog_),
-                                       IDS_PASSWORDS_DIALOG_WIDTH_CHARS,
-                                       IDS_PASSWORDS_DIALOG_HEIGHT_LINES,
-                                       true);
-
   // We only have one button and don't do any special handling, so just hook it
   // directly to gtk_widget_destroy.
   g_signal_connect(dialog_, "response", G_CALLBACK(gtk_widget_destroy), NULL);
 
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroy), this);
 
-  gtk_widget_show_all(dialog_);
+  gtk_util::ShowDialogWithLocalizedSize(dialog_,
+      IDS_PASSWORDS_DIALOG_WIDTH_CHARS,
+      IDS_PASSWORDS_DIALOG_HEIGHT_LINES,
+      true);
 }
 
 PasswordsExceptionsWindowGtk::~PasswordsExceptionsWindowGtk() {
@@ -123,7 +120,7 @@ PasswordsExceptionsWindowGtk::~PasswordsExceptionsWindowGtk() {
 void PasswordsExceptionsWindowGtk::Show() {
   // Bring options window to front if it already existed and isn't already
   // in front
-  gtk_window_present(GTK_WINDOW(dialog_));
+  gtk_util::PresentWindow(dialog_, 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

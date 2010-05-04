@@ -46,10 +46,13 @@ void KeywordEditorView::Show(Profile* profile) {
 
   // If there's already an existing editor window, activate it.
   if (instance_) {
-    gtk_window_present(GTK_WINDOW(instance_->dialog_));
+    gtk_util::PresentWindow(instance_->dialog_, 0);
   } else {
     instance_ = new KeywordEditorView(profile);
-    gtk_widget_show_all(instance_->dialog_);
+    gtk_util::ShowDialogWithLocalizedSize(instance_->dialog_,
+        IDS_SEARCHENGINES_DIALOG_WIDTH_CHARS,
+        IDS_SEARCHENGINES_DIALOG_HEIGHT_LINES,
+        true);
   }
 }
 
@@ -197,13 +200,6 @@ void KeywordEditorView::Init() {
   table_model_->Reload();
 
   EnableControls();
-
-  // Set the size of the dialog.
-  gtk_widget_realize(dialog_);
-  gtk_util::SetWindowSizeFromResources(GTK_WINDOW(dialog_),
-                                       IDS_SEARCHENGINES_DIALOG_WIDTH_CHARS,
-                                       IDS_SEARCHENGINES_DIALOG_HEIGHT_LINES,
-                                       true);
 
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), this);
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroy), this);

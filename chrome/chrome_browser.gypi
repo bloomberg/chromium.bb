@@ -429,6 +429,8 @@
         'browser/chromeos/login/wizard_screen.h',
         'browser/chromeos/low_battery_observer.cc',
         'browser/chromeos/low_battery_observer.h',
+        'browser/chromeos/native_dialog_window.cc',
+        'browser/chromeos/native_dialog_window.h',
         'browser/chromeos/network_list.cc',
         'browser/chromeos/network_list.h',
         'browser/chromeos/options/internet_page_view.cc',

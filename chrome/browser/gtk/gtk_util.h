@@ -280,6 +280,20 @@ bool URLFromPrimarySelection(Profile* profile, GURL* url);
 // Set the colormap of the given window to rgba to allow transparency.
 bool AddWindowAlphaChannel(GtkWidget* window);
 
+// Wrappers to show a GtkDialog. On Linux, it merely calls gtk_widget_show_all.
+// On ChromeOs, it calls ShowNativeDialog which hosts the its vbox
+// in a view based Window.
+void ShowDialog(GtkWidget* dialog);
+void ShowDialogWithLocalizedSize(GtkWidget* dialog,
+                                 int width_id,
+                                 int height_id,
+                                 bool resizeable);
+
+// Wrapper to present a window. On Linux, it just calls gtk_window_present or
+// gtk_window_present_with_time for non-zero timestamp. For ChromeOS, it first
+// finds the host window of the dialog contents and then present it.
+void PresentWindow(GtkWidget* window, int timestamp);
+
 }  // namespace gtk_util
 
 #endif  // CHROME_BROWSER_GTK_GTK_UTIL_H_

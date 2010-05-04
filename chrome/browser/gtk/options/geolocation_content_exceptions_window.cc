@@ -11,6 +11,7 @@
 #include "chrome/browser/gtk/gtk_util.h"
 #include "gfx/gtk_util.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 
 namespace {
 
@@ -24,8 +25,11 @@ void GeolocationContentExceptionsWindow::ShowExceptionsWindow(
     GtkWindow* parent, GeolocationContentSettingsMap* map) {
   DCHECK(map);
 
-  if (!instance)
+  if (!instance) {
     instance = new GeolocationContentExceptionsWindow(parent, map);
+  } else {
+    gtk_util::PresentWindow(instance->dialog_, 0);
+  }
 }
 
 GeolocationContentExceptionsWindow::GeolocationContentExceptionsWindow(
@@ -111,7 +115,10 @@ GeolocationContentExceptionsWindow::GeolocationContentExceptionsWindow(
 
   UpdateButtonState();
 
-  gtk_widget_show_all(dialog_);
+  gtk_util::ShowDialogWithLocalizedSize(dialog_,
+      IDS_GEOLOCATION_EXCEPTION_DIALOG_WIDTH_CHARS,
+      IDS_GEOLOCATION_EXCEPTION_DIALOG_HEIGHT_LINES,
+      true);
 
   g_signal_connect(dialog_, "response", G_CALLBACK(gtk_widget_destroy), NULL);
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroyThunk), this);

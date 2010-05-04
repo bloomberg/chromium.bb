@@ -97,7 +97,7 @@ FontsLanguagesWindowGtk::FontsLanguagesWindowGtk(Profile* profile)
               IDS_FONT_LANGUAGE_SETTING_LANGUAGES_TAB_TITLE).c_str()));
 
   // Show the notebook.
-  gtk_widget_show_all(dialog_);
+  gtk_util::ShowDialogWithLocalizedSize(dialog_, -1, -1, false);
 
   // We only have one button and don't do any special handling, so just hook it
   // directly to gtk_widget_destroy.
@@ -117,7 +117,7 @@ void FontsLanguagesWindowGtk::ShowTabPage(gfx::NativeWindow window,
 
   // Bring options window to front if it already existed and isn't already
   // in front.
-  gtk_window_present(GTK_WINDOW(dialog_));
+  gtk_util::PresentWindow(dialog_, 0);
 
   // If the page is out of bounds, reset to the first tab.
   if (page < 0 || page >= gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook_)))

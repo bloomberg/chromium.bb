@@ -35,6 +35,8 @@ void ContentExceptionsWindowGtk::ShowExceptionsWindow(
   if (!instances[type]) {
     // Create the options window.
     instances[type] = new ContentExceptionsWindowGtk(parent, map, type);
+  } else {
+    gtk_util::PresentWindow(instances[type]->dialog_, 0);
   }
 }
 
@@ -142,7 +144,10 @@ ContentExceptionsWindowGtk::ContentExceptionsWindowGtk(
 
   UpdateButtonState();
 
-  gtk_widget_show_all(dialog_);
+  gtk_util::ShowDialogWithLocalizedSize(dialog_,
+      IDS_CONTENT_EXCEPTION_DIALOG_WIDTH_CHARS,
+      -1,
+      true);
 
   g_signal_connect(dialog_, "response", G_CALLBACK(gtk_widget_destroy), NULL);
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroyThunk), this);

@@ -72,7 +72,7 @@ ContentExceptionEditor::ContentExceptionEditor(
   // Prime the state of the buttons.
   OnEntryChanged(entry_);
 
-  gtk_widget_show_all(dialog_);
+  gtk_util::ShowDialog(dialog_);
 
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroyThunk), this);

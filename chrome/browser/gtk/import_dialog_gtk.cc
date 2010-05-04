@@ -62,11 +62,6 @@ ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile,
       dialog_, profile));
   accessible_widget_helper_->SendOpenWindowNotification(dialog_name);
 
-  gtk_widget_realize(dialog_);
-  gtk_util::SetWindowSizeFromResources(GTK_WINDOW(dialog_),
-                                       IDS_IMPORT_DIALOG_WIDTH_CHARS,
-                                       -1,  // height
-                                       false);  // resizable
   importer_host_->set_parent_window(GTK_WINDOW(dialog_));
 
   // Add import button separately as we might need to disable it, if
@@ -157,7 +152,10 @@ ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile,
 
   UpdateDialogButtons();
 
-  gtk_widget_show_all(dialog_);
+  gtk_util::ShowDialogWithLocalizedSize(dialog_,
+                                        IDS_IMPORT_DIALOG_WIDTH_CHARS,
+                                        -1,  // height
+                                        false);  // resizable
 }
 
 ImportDialogGtk::~ImportDialogGtk() {

@@ -15,6 +15,7 @@
 #include "chrome/browser/gtk/gtk_util.h"
 #include "gfx/gtk_util.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 
 namespace {
 
@@ -55,7 +56,7 @@ void CookiesView::Show(
 
   // If there's already an existing editor window, activate it.
   if (instance_) {
-    gtk_window_present(GTK_WINDOW(instance_->dialog_));
+    gtk_util::PresentWindow(instance_->dialog_, 0);
   } else {
     instance_ = new CookiesView(parent,
                                 profile,
@@ -78,7 +79,12 @@ CookiesView::CookiesView(
       filter_update_factory_(this),
       destroy_dialog_in_destructor_(false) {
   Init(parent);
-  gtk_widget_show_all(dialog_);
+
+  gtk_util::ShowDialogWithLocalizedSize(dialog_,
+      IDS_COOKIES_DIALOG_WIDTH_CHARS,
+      -1,
+      true);
+
   gtk_chrome_cookie_view_clear(GTK_CHROME_COOKIE_VIEW(cookie_display_));
 }
 
