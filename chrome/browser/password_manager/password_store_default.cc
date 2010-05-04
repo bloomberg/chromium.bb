@@ -114,9 +114,14 @@ typedef std::vector<const PasswordForm*> PasswordForms;
 
 void PasswordStoreDefault::OnWebDataServiceRequestDone(
     WebDataService::Handle handle,
-    const WDTypedResult *result) {
+    const WDTypedResult* result) {
   DCHECK(handles_.end() != handles_.find(handle));
   DCHECK(result);
+
+  if (PASSWORD_RESULT != result->GetType()) {
+    NOTREACHED();
+    return;
+  }
 
   handles_.erase(handle);
   if (!result)

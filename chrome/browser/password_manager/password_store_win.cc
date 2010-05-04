@@ -55,16 +55,17 @@ void PasswordStoreWin::NotifyConsumer(GetLoginsRequest* request,
 }
 
 void PasswordStoreWin::OnWebDataServiceRequestDone(
-    WebDataService::Handle handle, const WDTypedResult *result) {
-  scoped_ptr<GetLoginsRequest> request(TakeRequestWithHandle(handle));
-  // If the request was cancelled, we are done.
-  if (!request.get())
-    return;
-
+    WebDataService::Handle handle, const WDTypedResult* result) {
   if (!result)
     return;  // The WDS returns NULL if it is shutting down.
 
   if (PASSWORD_IE7_RESULT == result->GetType()) {
+    scoped_ptr<GetLoginsRequest> request(TakeRequestWithHandle(handle));
+
+    // If the request was cancelled, we are done.
+    if (!request.get())
+      return;
+
     // This is a response from WebDataService::GetIE7Login.
     PendingRequestFormMap::iterator it(pending_request_forms_.find(
         request->handle));
@@ -78,7 +79,7 @@ void PasswordStoreWin::OnWebDataServiceRequestDone(
     pending_request_forms_.erase(it);
     PasswordStore::NotifyConsumer(request.release(), forms);
   } else {
-    NOTREACHED();
+    PasswordStoreDefault::OnWebDataServiceRequestDone(handle, result);
   }
 }
 

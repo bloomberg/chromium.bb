@@ -43,13 +43,13 @@ class PasswordStoreDefault : public PasswordStore,
 
   scoped_refptr<WebDataService> web_data_service_;
 
- private:
-  // Migrates logins from the WDS to the LoginDatabase.
-  void MigrateIfNecessary();
-
   // Implements the WebDataService consumer interface.
   void OnWebDataServiceRequestDone(WebDataService::Handle handle,
                                    const WDTypedResult *result);
+
+ private:
+  // Migrates logins from the WDS to the LoginDatabase.
+  void MigrateIfNecessary();
 
   scoped_ptr<LoginDatabase> login_db_;
   Profile* profile_;
