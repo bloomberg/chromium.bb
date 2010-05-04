@@ -3521,6 +3521,10 @@ bool Browser::HandleCrossAppNavigation(TabContents* source,
   if (!service)
     return false;
 
+  // Can be null, e.g., when executed in a browser with no tabs.
+  if (!source)
+    return false;
+
   // Get the source extension, if any.
   Extension* source_extension = source->app_extension();
   if (!source_extension)
