@@ -181,20 +181,16 @@ class GypBuilder(object):
 
     def GetSolutionPath(self):
       """Gets the solution path."""
-      return '%s_main.scons' % GypBuilder.base_name
+      return '%s.Makefile' % GypBuilder.base_name
 
     def CleanTargets(self, targets, options):
       """Cleans the targets."""
-      solution = self.GetSolutionPath()
-      self.Execute(['hammer',
-                    '-f', solution,
-                    '--clean'])
+      print "clean not implemented for this platform."
 
     def Dobuild(self, targets, options):
       """Builds the specifed targets."""
       solution = self.GetSolutionPath()
-      self.Execute(['hammer',
-                    '-f', solution])
+      self.Execute(['make', '-f', solution])
 
   # Use "o3d" for chrome only build?
   base_name = "o3d_all"
