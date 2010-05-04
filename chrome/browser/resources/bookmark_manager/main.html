@@ -286,7 +286,10 @@ function setSearch(searchText) {
     bmm.treeLookup[searchTreeItem.bookmarkId] = searchTreeItem;
   }
 
-  $('term').value = searchText;
+  var input = $('term');
+  // Do not update the input if the user is actively using the text input.
+  if (document.activeElement != input)
+    input.value = searchText;
 
   if (searchText) {
     tree.add(searchTreeItem);
