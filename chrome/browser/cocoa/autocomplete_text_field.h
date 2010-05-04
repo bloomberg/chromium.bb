@@ -39,8 +39,12 @@ class AutocompleteTextFieldObserver {
   // Called when the user pastes into the field.
   virtual void OnPaste() = 0;
 
-  // Called when the user copies the text.
-  virtual void OnCopy() = 0;
+  // Return |true| if there is a selection to copy.
+  virtual bool CanCopy() = 0;
+
+  // Clears the |pboard| and adds the field's current selection.
+  // Called when the user does a copy or drag.
+  virtual void CopyToPasteboard(NSPasteboard* pboard) = 0;
 
   // Returns true if the current clipboard text supports paste and go
   // (or paste and search).

@@ -81,7 +81,8 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
 
   // Implement the AutocompleteTextFieldObserver interface.
   virtual void OnControlKeyChanged(bool pressed);
-  virtual void OnCopy();
+  virtual bool CanCopy();
+  virtual void CopyToPasteboard(NSPasteboard* pboard);
   virtual void OnPaste();
   virtual bool CanPasteAndGo();
   virtual int GetPasteActionStringId();

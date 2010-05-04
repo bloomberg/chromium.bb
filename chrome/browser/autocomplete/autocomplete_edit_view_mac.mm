@@ -23,6 +23,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/escape.h"
+#import "third_party/mozilla/NSPasteboard+Utils.h"
 
 // Focus-handling between |field_| and |model_| is a bit subtle.
 // Other platforms detect change of focus, which is inconvenient
@@ -770,11 +771,15 @@ void AutocompleteEditViewMac::OnDidResignKey() {
   ClosePopup();
 }
 
-void AutocompleteEditViewMac::OnCopy() {
+bool AutocompleteEditViewMac::CanCopy() {
   const NSRange selection = GetSelectedRange();
-  if (selection.length == 0)
-    return;
+  return selection.length > 0;
+}
 
+void AutocompleteEditViewMac::CopyToPasteboard(NSPasteboard* pb) {
+  DCHECK(CanCopy());
+
+  const NSRange selection = GetSelectedRange();
   std::wstring text = base::SysNSStringToWide(
       [[field_ stringValue] substringWithRange:selection]);
 
@@ -782,15 +787,14 @@ void AutocompleteEditViewMac::OnCopy() {
   bool write_url = false;
   model_->AdjustTextForCopy(selection.location, IsSelectAll(), &text, &url,
                             &write_url);
-  string16 text16 = WideToUTF16(text);
-  ScopedClipboardWriter scw(g_browser_process->clipboard());
-  scw.WriteText(text16);
+
+  NSString* nstext = base::SysWideToNSString(text);
+  [pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:nil];
+  [pb setString:nstext forType:NSStringPboardType];
+
   if (write_url) {
-    scw.WriteBookmark(text16, url.spec());
-    // This line, cargo cult copied from the Windows and GTK
-    // versions (perhaps), breaks paste of an URL into Powerpoint
-    // 2008.  http://crbug.com/41842
-    // scw.WriteHyperlink(EscapeForHTML(WideToUTF8(text)), url.spec());
+    [pb declareURLPasteboardWithAdditionalTypes:[NSArray array] owner:nil];
+    [pb setDataForURL:base::SysUTF8ToNSString(url.spec()) title:nstext];
   }
 }
 

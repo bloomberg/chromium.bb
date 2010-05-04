@@ -40,22 +40,23 @@ class Extension;
 - (BOOL)dragSelectionWithEvent:(NSEvent *)event
                         offset:(NSSize)mouseOffset
                      slideBack:(BOOL)slideBack {
-  const NSRange allRange = NSMakeRange(0, [[self textStorage] length]);
-  if (NSEqualRanges(allRange, [self selectedRange])) {
-    NSPasteboard* pboard = [[self delegate] locationDragPasteboard];
-    if (pboard) {
-      NSPoint p;
-      NSImage* image = [self dragImageForSelectionWithEvent:event origin:&p];
+  AutocompleteTextFieldObserver* observer = [self observer];
+  DCHECK(observer);
+  if (observer && observer->CanCopy()) {
+    NSPasteboard* pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
+    observer->CopyToPasteboard(pboard);
 
-      [self dragImage:image
-                   at:p
-               offset:mouseOffset
-                event:event
-           pasteboard:pboard
-               source:self
-            slideBack:slideBack];
-      return YES;
-    }
+    NSPoint p;
+    NSImage* image = [self dragImageForSelectionWithEvent:event origin:&p];
+
+    [self dragImage:image
+                 at:p
+             offset:mouseOffset
+              event:event
+         pasteboard:pboard
+             source:self
+          slideBack:slideBack];
+    return YES;
   }
   return [super dragSelectionWithEvent:event
                                 offset:mouseOffset
@@ -65,8 +66,8 @@ class Extension;
 - (void)copy:(id)sender {
   AutocompleteTextFieldObserver* observer = [self observer];
   DCHECK(observer);
-  if (observer)
-    observer->OnCopy();
+  if (observer && observer->CanCopy())
+    observer->CopyToPasteboard([NSPasteboard generalPasteboard]);
 }
 
 - (void)cut:(id)sender {

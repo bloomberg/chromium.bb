@@ -12,12 +12,14 @@
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/cocoa/test_event_utils.h"
 #include "grit/generated_resources.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
 using ::testing::Return;
 using ::testing::StrictMock;
+using ::testing::A;
 
 namespace {
 
@@ -192,7 +194,10 @@ TEST_F(AutocompleteTextFieldEditorObserverTest, Paste) {
 
 // Test that -copy: is correctly delegated to the observer.
 TEST_F(AutocompleteTextFieldEditorObserverTest, Copy) {
-  EXPECT_CALL(field_observer_, OnCopy());
+  EXPECT_CALL(field_observer_, CanCopy())
+      .WillOnce(Return(true));
+  EXPECT_CALL(field_observer_, CopyToPasteboard(A<NSPasteboard*>()))
+      .Times(1);
   [editor_ copy:nil];
 }
 
@@ -207,7 +212,10 @@ TEST_F(AutocompleteTextFieldEditorObserverTest, Cut) {
   [editor_ selectAll:nil];
 
   // Calls cut.
-  EXPECT_CALL(field_observer_, OnCopy());
+  EXPECT_CALL(field_observer_, CanCopy())
+      .WillOnce(Return(true));
+  EXPECT_CALL(field_observer_, CopyToPasteboard(A<NSPasteboard*>()))
+      .Times(1);
   [editor_ cut:nil];
 
   // Check if the field is cleared.
