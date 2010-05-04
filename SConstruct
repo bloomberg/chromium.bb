@@ -74,6 +74,10 @@ ACCEPTABLE_ARGUMENTS = {
     'chrome_browser_path': None,
     # make sel_ldr less strict
     'dangerous_debug_disable_inner_sandbox': None,
+    # force emulator use by tests
+    'force_emulator': None,
+    # force sel_ldr use by tests
+    'force_sel_ldr': None,
     # TODO(dpolukhin): remove this code when x86-64 has full sel_ldr.
     'loader': None,
     # Install libraries to multilib location, i.e. to lib32 or lib64.
@@ -464,13 +468,21 @@ AlwaysBuild(n)
 # ----------------------------------------------------------
 # HELPERS FOR TEST INVOLVING TRUSTED AND UNTRUSTED ENV
 # ----------------------------------------------------------
-def CommandValidatorTestNacl(env, name, image,
-                             validator_flags=None,
-                             validator=None,
-                             size='medium',
-                             **extra):
+def GetEmulator(env):
+  emulator = ARGUMENTS.get('force_emulator')
+  if emulator is None:
+    emulator = env.get('EMULATOR', '')
+  return emulator
+
+
+# TODO(robertm): the validators for x86/arm should be named better
+def GetValidator(env, validator):
+  # NOTE: that the variable TRUSTED_ENV is set by ExportSpecialFamilyVars()
+  if 'TRUSTED_ENV' not in env:
+    return None
+
   # TODO(robertm): fix this soon
-  if env['BUILD_SUBARCH'] == '64': return []
+  if env['BUILD_SUBARCH'] == '64': return None
 
   if validator is None:
     if env['BUILD_ARCHITECTURE'] == 'arm':
@@ -478,17 +490,38 @@ def CommandValidatorTestNacl(env, name, image,
     else:
       validator = 'ncval'
 
+  t_env = env['TRUSTED_ENV']
+  return t_env.File('${STAGING_DIR}/${PROGPREFIX}%s${PROGSUFFIX}' %
+                    validator)
+
+
+def GetSelLdr(env, loader='sel_ldr'):
+  sel_ldr = ARGUMENTS.get('force_sel_ldr')
+  if sel_ldr:
+    return sel_ldr
+
   # NOTE: that the variable TRUSTED_ENV is set by ExportSpecialFamilyVars()
   if 'TRUSTED_ENV' not in env:
-    print 'WARNING: no trusted env specified skipping test %s' % name
+    return None
+
+  trusted_env = env['TRUSTED_ENV']
+  sel_ldr = trusted_env.File('${STAGING_DIR}/${PROGPREFIX}%s${PROGSUFFIX}' %
+                             loader)
+  return sel_ldr
+
+
+def CommandValidatorTestNacl(env, name, image,
+                             validator_flags=None,
+                             validator=None,
+                             size='medium',
+                             **extra):
+  validator = GetValidator(env, validator)
+  if validator is None:
+    print 'WARNING: no validator found. Skipping test %s' % name
     return []
 
   if validator_flags is None:
     validator_flags = []
-
-  t_env = env['TRUSTED_ENV']
-  validator = t_env.File('${STAGING_DIR}/${PROGPREFIX}%s${PROGSUFFIX}' %
-                         validator)
 
   command = [validator] + validator_flags + [image]
   return CommandTest(env, name, command, size, **extra)
@@ -565,14 +598,11 @@ def DemoSelLdrNacl(env,
                    sel_ldr_flags=['-d'],
                    args=[]):
 
-  # NOTE: that the variable TRUSTED_ENV is set by ExportSpecialFamilyVars()
-  if 'TRUSTED_ENV' not in env:
-    print ('WARNING: no trusted env specified skipping demo %s\n' % target)
+  sel_ldr = GetSelLdr(env);
+  if not sel_ldr:
+    print 'WARNING: no sel_lde found. Skipping test %s' % name
     return []
 
-  trusted_env = env['TRUSTED_ENV']
-  sel_ldr = trusted_env.File('${STAGING_DIR}/'
-                             + '${PROGPREFIX}sel_ldr${PROGSUFFIX}')
   deps = [sel_ldr, nexe]
   command = (['${SOURCES[0].abspath}'] + sel_ldr_flags +
              ['-f', '${SOURCES[1].abspath}', '--'] + args)
@@ -601,14 +631,12 @@ def CommandGdbTestNacl(env, name, command,
                        **extra):
   """Runs a test under NaCl GDB."""
 
-  # NOTE: that the variable TRUSTED_ENV is set by ExportSpecialFamilyVars()
-  if 'TRUSTED_ENV' not in env:
-    print 'WARNING: no trusted env specified skipping test %s' % name
+
+  sel_ldr = GetSelLdr(env, loader);
+  if not sel_ldr:
+    print 'WARNING: no sel_ldr found. Skipping test %s' % name
     return []
 
-  trusted_env = env['TRUSTED_ENV']
-  sel_ldr = trusted_env.File('${STAGING_DIR}/${PROGPREFIX}%s${PROGSUFFIX}' %
-                             loader)
   gdb = nacl_extra_sdk_env['GDB']
   command = ([gdb, '-q', '-batch', '-x', input, '--loader', sel_ldr] +
              gdb_flags + command)
@@ -625,21 +653,17 @@ def CommandSelLdrTestNacl(env, name, command,
                           size='medium',
                           **extra):
 
-  # NOTE: that the variable TRUSTED_ENV is set by ExportSpecialFamilyVars()
-  if 'TRUSTED_ENV' not in env:
-    print 'WARNING: no trusted env specified skipping test %s' % name
+  sel_ldr = GetSelLdr(env, loader);
+  if not sel_ldr:
+    print 'WARNING: no sel_ldr found. Skipping test %s' % name
     return []
 
   if sel_ldr_flags is None:
     sel_ldr_flags = []
 
-  trusted_env = env['TRUSTED_ENV']
-  sel_ldr = trusted_env.File('${STAGING_DIR}/${PROGPREFIX}%s${PROGSUFFIX}' %
-                             loader)
-
-  if env['BUILD_ARCHITECTURE'] == 'arm':
-    # TODO(cbiffle): this assumes that platform=arm implies emulation, because
-    # it's not clear to me how to check for emulation.
+  if GetEmulator(env):
+    # in emulation we skip platform qualification tests
+    # NOTE: this only affects arm with user mode emulation
     sel_ldr_flags += ['-Q']
 
   command = [sel_ldr] + sel_ldr_flags  + ['-f'] + command
@@ -711,9 +735,10 @@ def CommandTest(env, name, command, size='small',
       deps.append(c)
       command[n] = '${SOURCES[%d].abspath}' % (len(deps) - 1)
 
-  if env.get('EMULATOR', ''):
+  emulator = GetEmulator(env)
+  if emulator:
     if direct_emulation:
-      command = ['${EMULATOR}'] + command
+      command = [emulator] + command
     else:
       orig = extra.get('osenv', '')
       if orig: orig = orig + ','
@@ -1717,4 +1742,3 @@ BuildEnvironments(environment_list)
 
 # Change default to build everything, but not run tests.
 Default(['all_programs', 'all_bundles', 'all_test_programs', 'all_libraries'])
-
