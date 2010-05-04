@@ -48,10 +48,6 @@ class FormStructure {
   static bool EncodeQueryRequest(const ScopedVector<FormStructure>& forms,
                                  std::string* encoded_xml);
 
-  // Runs several heuristics against the form fields to determine their possible
-  // types.
-  void GetHeuristicAutoFillTypes();
-
   // The unique signature for this form, composed of the target url domain,
   // the form name, and the form field names in a 64-bit hash.
   std::string FormSignature() const;
@@ -93,8 +89,9 @@ class FormStructure {
     UPLOAD,
   };
 
-  // Returns true if we can autofill the given field type.
-  bool IsAutoFillableField(const string16& field_type) const;
+  // Runs several heuristics against the form fields to determine their possible
+  // types.
+  void GetHeuristicAutoFillTypes();
 
   // Associates the field with the heuristic type for each of the field views.
   void GetHeuristicFieldInfo(FieldTypeMap* field_types_map);

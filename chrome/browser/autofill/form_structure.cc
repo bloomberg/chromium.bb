@@ -69,12 +69,12 @@ FormStructure::FormStructure(const FormData& form)
     // store all fields in order to match the fields stored in the FormManager.
     // We don't append other field types to the form signature though in order
     // to match the form signature of the AutoFill servers.
-    if (IsAutoFillableField(field->form_control_type())) {
+    if (LowerCaseEqualsASCII(field->form_control_type(), kControlTypeText) ||
+        LowerCaseEqualsASCII(field->form_control_type(), kControlTypeSelect)) {
       // Add all supported form fields (including with empty names) to
       // signature.  This is a requirement for AutoFill servers.
       form_signature_field_names_.append("&");
       form_signature_field_names_.append(UTF16ToUTF8(field->name()));
-      ++autofill_count_;
     }
 
     // Generate a unique name for this field by appending a counter to the name.
@@ -84,6 +84,7 @@ FormStructure::FormStructure(const FormData& form)
 
   // Terminate the vector with a NULL item.
   fields_.push_back(NULL);
+  GetHeuristicAutoFillTypes();
 
   std::string method = UTF16ToUTF8(form.method);
   if (StringToLowerASCII(method) == kFormMethodPost) {
@@ -93,12 +94,6 @@ FormStructure::FormStructure(const FormData& form)
     // to GET.
     method_ = GET;
   }
-}
-
-bool FormStructure::IsAutoFillableField(const string16& field_type) const {
-  // We currently only handle text and select fields.
-  return LowerCaseEqualsASCII(field_type, kControlTypeText) ||
-         LowerCaseEqualsASCII(field_type, kControlTypeSelect);
 }
 
 bool FormStructure::EncodeUploadRequest(bool auto_fill_used,
@@ -165,36 +160,6 @@ bool FormStructure::EncodeQueryRequest(const ScopedVector<FormStructure>& forms,
   return true;
 }
 
-void FormStructure::GetHeuristicAutoFillTypes() {
-  has_credit_card_field_ = false;
-  has_autofillable_field_ = false;
-
-  FieldTypeMap field_type_map;
-  GetHeuristicFieldInfo(&field_type_map);
-
-  for (size_t index = 0; index < field_count(); index++) {
-    AutoFillField* field = fields_[index];
-    // TODO(dhollowa): Defensive check for crash happening in the field.
-    // See http://crbug.com/42211
-    CHECK(field);
-    FieldTypeMap::iterator iter = field_type_map.find(field->unique_name());
-
-    AutoFillFieldType heuristic_auto_fill_type;
-    if (iter == field_type_map.end())
-      heuristic_auto_fill_type = UNKNOWN_TYPE;
-    else
-      heuristic_auto_fill_type = iter->second;
-
-    field->set_heuristic_type(heuristic_auto_fill_type);
-
-    AutoFillType autofill_type(field->type());
-    if (autofill_type.group() == AutoFillType::CREDIT_CARD)
-      has_credit_card_field_ = true;
-    if (autofill_type.field_type() != UNKNOWN_TYPE)
-      has_autofillable_field_ = true;
-  }
-}
-
 std::string FormStructure::FormSignature() const {
   std::string form_string = target_url_.scheme() +
                             "://" +
@@ -226,11 +191,8 @@ bool FormStructure::HasAutoFillableValues() const {
   for (std::vector<AutoFillField*>::const_iterator iter = begin();
        iter != end(); ++iter) {
     AutoFillField* field = *iter;
-    if (field &&
-        !field->IsEmpty() &&
-        IsAutoFillableField(field->form_control_type())) {
+    if (field && !field->IsEmpty() && field->IsFieldFillable())
       return true;
-    }
   }
   return false;
 }
@@ -289,6 +251,38 @@ bool FormStructure::operator==(const FormData& form) const {
 
 bool FormStructure::operator!=(const FormData& form) const {
   return !operator==(form);
+}
+
+void FormStructure::GetHeuristicAutoFillTypes() {
+  has_credit_card_field_ = false;
+  has_autofillable_field_ = false;
+
+  FieldTypeMap field_type_map;
+  GetHeuristicFieldInfo(&field_type_map);
+
+  for (size_t index = 0; index < field_count(); index++) {
+    AutoFillField* field = fields_[index];
+    // TODO(dhollowa): Defensive check for crash happening in the field.
+    // See http://crbug.com/42211
+    CHECK(field);
+    FieldTypeMap::iterator iter = field_type_map.find(field->unique_name());
+
+    AutoFillFieldType heuristic_auto_fill_type;
+    if (iter == field_type_map.end()) {
+      heuristic_auto_fill_type = UNKNOWN_TYPE;
+    } else {
+      heuristic_auto_fill_type = iter->second;
+      ++autofill_count_;
+    }
+
+    field->set_heuristic_type(heuristic_auto_fill_type);
+
+    AutoFillType autofill_type(field->type());
+    if (autofill_type.group() == AutoFillType::CREDIT_CARD)
+      has_credit_card_field_ = true;
+    if (autofill_type.field_type() != UNKNOWN_TYPE)
+      has_autofillable_field_ = true;
+  }
 }
 
 void FormStructure::GetHeuristicFieldInfo(FieldTypeMap* field_type_map) {

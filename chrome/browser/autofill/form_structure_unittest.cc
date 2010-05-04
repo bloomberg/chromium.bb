@@ -79,8 +79,8 @@ TEST(FormStructureTest, AutoFillCount) {
                                                ASCIIToUTF16("submit")));
   FormStructure form_structure(form);
 
-  // Only text and select fields are counted.
-  EXPECT_EQ(2U, form_structure.autofill_count());
+  // Only text and select fields that are heuristically matched are counted.
+  EXPECT_EQ(1U, form_structure.autofill_count());
 }
 
 TEST(FormStructureTest, ConvertToFormData) {
@@ -126,8 +126,8 @@ TEST(FormStructureTest, HasAutoFillableValues) {
   EXPECT_FALSE(form_structure->HasAutoFillableValues());
 
   // Empty text/select fields are also not used when saving auto fill data.
-  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("First Name"),
-                                               ASCIIToUTF16("firstname"),
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Email"),
+                                               ASCIIToUTF16("email"),
                                                string16(),
                                                ASCIIToUTF16("text")));
   form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("state"),
@@ -138,9 +138,36 @@ TEST(FormStructureTest, HasAutoFillableValues) {
   EXPECT_FALSE(form_structure->HasAutoFillableValues());
 
   // Non-empty fields can be saved in auto fill profile.
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("First Name"),
+                                               ASCIIToUTF16("firstname"),
+                                               ASCIIToUTF16("John"),
+                                               ASCIIToUTF16("text")));
   form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Last Name"),
                                                ASCIIToUTF16("lastname"),
-                                               ASCIIToUTF16("John"),
+                                               ASCIIToUTF16("Dear"),
+                                               ASCIIToUTF16("text")));
+  form_structure.reset(new FormStructure(form));
+  EXPECT_TRUE(form_structure->HasAutoFillableValues());
+
+  // The fields must be recognized heuristically by AutoFill in addition to
+  // being text or select and non-empty.
+  form.fields.clear();
+  form.fields.push_back(webkit_glue::FormField(string16(),
+                                               ASCIIToUTF16("Field1"),
+                                               string16(),
+                                               ASCIIToUTF16("text")));
+  form.fields.push_back(webkit_glue::FormField(string16(),
+                                               ASCIIToUTF16("Field2"),
+                                               ASCIIToUTF16("dummy value"),
+                                               ASCIIToUTF16("text")));
+  form_structure.reset(new FormStructure(form));
+  EXPECT_FALSE(form_structure->HasAutoFillableValues());
+
+  // Add a field that we match heuristically, verify that this form has
+  // auto-fillable values.
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Full Name"),
+                                               ASCIIToUTF16("fullname"),
+                                               ASCIIToUTF16("John Dear"),
                                                ASCIIToUTF16("text")));
   form_structure.reset(new FormStructure(form));
   EXPECT_TRUE(form_structure->HasAutoFillableValues());
@@ -167,13 +194,21 @@ TEST(FormStructureTest, IsAutoFillable) {
   form_structure.reset(new FormStructure(form));
   EXPECT_FALSE(form_structure->IsAutoFillable());
 
-  // We now have three text fields.
+  // We now have three text fields, but only two auto-fillable fields.
   form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("First Name"),
                                                ASCIIToUTF16("firstname"),
                                                string16(),
                                                ASCIIToUTF16("text")));
   form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Last Name"),
                                                ASCIIToUTF16("lastname"),
+                                               string16(),
+                                               ASCIIToUTF16("text")));
+  form_structure.reset(new FormStructure(form));
+  EXPECT_FALSE(form_structure->IsAutoFillable());
+
+  // We now have three auto-fillable fields.
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Email"),
+                                               ASCIIToUTF16("email"),
                                                string16(),
                                                ASCIIToUTF16("text")));
   form_structure.reset(new FormStructure(form));
@@ -241,28 +276,9 @@ TEST(FormStructureTest, HeuristicsContactInfo) {
   EXPECT_TRUE(form_structure->IsAutoFillable());
 
   // Expect the correct number of fields.
-  ASSERT_EQ(9UL, form_structure->field_count());
-
-  // Check that heuristics are initialized as UNKNOWN_TYPE.
-  std::vector<AutoFillField*>::const_iterator iter;
-  size_t i;
-  for (iter = form_structure->begin(), i = 0;
-       iter != form_structure->end();
-       ++iter, ++i) {
-    // Expect last element to be NULL.
-    if (i == form_structure->field_count()) {
-      ASSERT_EQ(static_cast<AutoFillField*>(NULL), *iter);
-    } else {
-      ASSERT_NE(static_cast<AutoFillField*>(NULL), *iter);
-      EXPECT_EQ(UNKNOWN_TYPE, (*iter)->heuristic_type());
-    }
-  }
-
-  // Compute heuristic types.
-  form_structure->GetHeuristicAutoFillTypes();
   ASSERT_EQ(9U, form_structure->field_count());
+  ASSERT_EQ(8U, form_structure->autofill_count());
 
-  // Check that heuristics are no longer UNKNOWN_TYPE.
   // First name.
   EXPECT_EQ(NAME_FIRST, form_structure->field(0)->heuristic_type());
   // Last name.
@@ -341,27 +357,9 @@ TEST(FormStructureTest, HeuristicsSample8) {
                              ASCIIToUTF16("submit")));
   form_structure.reset(new FormStructure(form));
   EXPECT_TRUE(form_structure->IsAutoFillable());
-
-  // Check that heuristics are initialized as UNKNOWN_TYPE.
-  std::vector<AutoFillField*>::const_iterator iter;
-  size_t i;
-  for (iter = form_structure->begin(), i = 0;
-       iter != form_structure->end();
-       ++iter, ++i) {
-    // Expect last element to be NULL.
-    if (i == form_structure->field_count()) {
-      ASSERT_EQ(static_cast<AutoFillField*>(NULL), *iter);
-    } else {
-      ASSERT_NE(static_cast<AutoFillField*>(NULL), *iter);
-      EXPECT_EQ(UNKNOWN_TYPE, (*iter)->heuristic_type());
-    }
-  }
-
-  // Compute heuristic types.
-  form_structure->GetHeuristicAutoFillTypes();
   ASSERT_EQ(10U, form_structure->field_count());
+  ASSERT_EQ(9U, form_structure->autofill_count());
 
-  // Check that heuristics are no longer UNKNOWN_TYPE.
   // First name.
   EXPECT_EQ(NAME_FIRST, form_structure->field(0)->heuristic_type());
   // Last name.
@@ -429,27 +427,9 @@ TEST(FormStructureTest, HeuristicsSample6) {
                              ASCIIToUTF16("submit")));
   form_structure.reset(new FormStructure(form));
   EXPECT_TRUE(form_structure->IsAutoFillable());
-
-  // Check that heuristics are initialized as UNKNOWN_TYPE.
-  std::vector<AutoFillField*>::const_iterator iter;
-  size_t i;
-  for (iter = form_structure->begin(), i = 0;
-       iter != form_structure->end();
-       ++iter, ++i) {
-    // Expect last element to be NULL.
-    if (i == form_structure->field_count()) {
-      ASSERT_EQ(static_cast<AutoFillField*>(NULL), *iter);
-    } else {
-      ASSERT_NE(static_cast<AutoFillField*>(NULL), *iter);
-      EXPECT_EQ(UNKNOWN_TYPE, (*iter)->heuristic_type());
-    }
-  }
-
-  // Compute heuristic types.
-  form_structure->GetHeuristicAutoFillTypes();
   ASSERT_EQ(7U, form_structure->field_count());
+  ASSERT_EQ(5U, form_structure->autofill_count());
 
-  // Check that heuristics are no longer UNKNOWN_TYPE.
   // Email.
   EXPECT_EQ(EMAIL_ADDRESS, form_structure->field(0)->heuristic_type());
   // Full name.
@@ -512,30 +492,9 @@ TEST(FormStructureTest, HeuristicsLabelsOnly) {
                                                ASCIIToUTF16("submit")));
   form_structure.reset(new FormStructure(form));
   EXPECT_TRUE(form_structure->IsAutoFillable());
-
-  // Expect the correct number of fields.
-  ASSERT_EQ(9UL, form_structure->field_count());
-
-  // Check that heuristics are initialized as UNKNOWN_TYPE.
-  std::vector<AutoFillField*>::const_iterator iter;
-  size_t i;
-  for (iter = form_structure->begin(), i = 0;
-       iter != form_structure->end();
-       ++iter, ++i) {
-    // Expect last element to be NULL.
-    if (i == form_structure->field_count()) {
-      ASSERT_EQ(static_cast<AutoFillField*>(NULL), *iter);
-    } else {
-      ASSERT_NE(static_cast<AutoFillField*>(NULL), *iter);
-      EXPECT_EQ(UNKNOWN_TYPE, (*iter)->heuristic_type());
-    }
-  }
-
-  // Compute heuristic types.
-  form_structure->GetHeuristicAutoFillTypes();
   ASSERT_EQ(9U, form_structure->field_count());
+  ASSERT_EQ(8U, form_structure->autofill_count());
 
-  // Check that heuristics are no longer UNKNOWN_TYPE.
   // First name.
   EXPECT_EQ(NAME_FIRST, form_structure->field(0)->heuristic_type());
   // Last name.
@@ -588,28 +547,8 @@ TEST(FormStructureTest, HeuristicsCreditCardInfo) {
                                                ASCIIToUTF16("submit")));
   form_structure.reset(new FormStructure(form));
   EXPECT_TRUE(form_structure->IsAutoFillable());
-
-  // Expect the correct number of fields.
-  ASSERT_EQ(6UL, form_structure->field_count());
-
-  // Check that heuristics are initialized as UNKNOWN_TYPE.
-  std::vector<AutoFillField*>::const_iterator iter;
-  size_t i;
-  for (iter = form_structure->begin(), i = 0;
-       iter != form_structure->end();
-       ++iter, ++i) {
-    // Expect last element to be NULL.
-    if (i == form_structure->field_count()) {
-      ASSERT_EQ(static_cast<AutoFillField*>(NULL), *iter);
-    } else {
-      ASSERT_NE(static_cast<AutoFillField*>(NULL), *iter);
-      EXPECT_EQ(UNKNOWN_TYPE, (*iter)->heuristic_type());
-    }
-  }
-
-  // Compute heuristic types.
-  form_structure->GetHeuristicAutoFillTypes();
   ASSERT_EQ(6U, form_structure->field_count());
+  ASSERT_EQ(5U, form_structure->autofill_count());
 
   // Credit card name.
   EXPECT_EQ(CREDIT_CARD_NAME, form_structure->field(0)->heuristic_type());
@@ -664,28 +603,8 @@ TEST(FormStructureTest, HeuristicsCreditCardInfoWithUnknownCardField) {
                                                ASCIIToUTF16("submit")));
   form_structure.reset(new FormStructure(form));
   EXPECT_TRUE(form_structure->IsAutoFillable());
-
-  // Expect the correct number of fields.
-  ASSERT_EQ(7UL, form_structure->field_count());
-
-  // Check that heuristics are initialized as UNKNOWN_TYPE.
-  std::vector<AutoFillField*>::const_iterator iter;
-  size_t i;
-  for (iter = form_structure->begin(), i = 0;
-       iter != form_structure->end();
-       ++iter, ++i) {
-    // Expect last element to be NULL.
-    if (i == form_structure->field_count()) {
-      ASSERT_EQ(static_cast<AutoFillField*>(NULL), *iter);
-    } else {
-      ASSERT_NE(static_cast<AutoFillField*>(NULL), *iter);
-      EXPECT_EQ(UNKNOWN_TYPE, (*iter)->heuristic_type());
-    }
-  }
-
-  // Compute heuristic types.
-  form_structure->GetHeuristicAutoFillTypes();
-  ASSERT_EQ(7UL, form_structure->field_count());
+  ASSERT_EQ(7U, form_structure->field_count());
+  ASSERT_EQ(5U, form_structure->autofill_count());
 
   // Credit card name.
   EXPECT_EQ(CREDIT_CARD_NAME, form_structure->field(0)->heuristic_type());
@@ -725,35 +644,24 @@ TEST(FormStructureTest, ThreeAddressLines) {
                              ASCIIToUTF16("Address"),
                              string16(),
                              ASCIIToUTF16("text")));
+  form.fields.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("City"),
+                             ASCIIToUTF16("city"),
+                             string16(),
+                             ASCIIToUTF16("text")));
   form_structure.reset(new FormStructure(form));
   EXPECT_TRUE(form_structure->IsAutoFillable());
+  ASSERT_EQ(4U, form_structure->field_count());
+  ASSERT_EQ(3U, form_structure->autofill_count());
 
-  // Check that heuristics are initialized as UNKNOWN_TYPE.
-  std::vector<AutoFillField*>::const_iterator iter;
-  size_t i;
-  for (iter = form_structure->begin(), i = 0;
-       iter != form_structure->end();
-       ++iter, ++i) {
-    // Expect last element to be NULL.
-    if (i == form_structure->field_count()) {
-      ASSERT_EQ(static_cast<AutoFillField*>(NULL), *iter);
-    } else {
-      ASSERT_NE(static_cast<AutoFillField*>(NULL), *iter);
-      EXPECT_EQ(UNKNOWN_TYPE, (*iter)->heuristic_type());
-    }
-  }
-
-  // Compute heuristic types.
-  form_structure->GetHeuristicAutoFillTypes();
-  ASSERT_EQ(3U, form_structure->field_count());
-
-  // Check that heuristics are no longer UNKNOWN_TYPE.
   // Address Line 1.
   EXPECT_EQ(ADDRESS_HOME_LINE1, form_structure->field(0)->heuristic_type());
   // Address Line 2.
   EXPECT_EQ(ADDRESS_HOME_LINE2, form_structure->field(1)->heuristic_type());
   // Address Line 3.
   EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(2)->heuristic_type());
+  // City.
+  EXPECT_EQ(ADDRESS_HOME_CITY, form_structure->field(3)->heuristic_type());
 }
 
 }  // namespace

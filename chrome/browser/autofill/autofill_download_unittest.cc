@@ -106,6 +106,14 @@ TEST(AutoFillDownloadTest, QueryAndUploadTest) {
                                                ASCIIToUTF16("username"),
                                                string16(),
                                                ASCIIToUTF16("text")));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("First Name"),
+                                               ASCIIToUTF16("firstname"),
+                                               string16(),
+                                               ASCIIToUTF16("text")));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Last Name"),
+                                               ASCIIToUTF16("lastname"),
+                                               string16(),
+                                               ASCIIToUTF16("text")));
   form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("email"),
                                                ASCIIToUTF16("email"),
                                                string16(),
@@ -162,6 +170,8 @@ TEST(AutoFillDownloadTest, QueryAndUploadTest) {
   const char *responses[] = {
     "<autofillqueryresponse>"
       "<field autofilltype=\"0\" />"
+      "<field autofilltype=\"3\" />"
+      "<field autofilltype=\"5\" />"
       "<field autofilltype=\"9\" />"
       "<field autofilltype=\"0\" />"
       "<field autofilltype=\"30\" />"

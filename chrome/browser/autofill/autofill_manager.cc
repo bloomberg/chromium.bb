@@ -393,10 +393,6 @@ bool AutoFillManager::IsAutoFillEnabled() const {
 
 void AutoFillManager::DeterminePossibleFieldTypes(
     FormStructure* form_structure) {
-  // TODO(jhawkins): Update field text.
-
-  form_structure->GetHeuristicAutoFillTypes();
-
   for (size_t i = 0; i < form_structure->field_count(); i++) {
     const AutoFillField* field = form_structure->field(i);
     FieldTypeSet field_types;
