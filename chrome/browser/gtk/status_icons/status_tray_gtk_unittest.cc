@@ -43,7 +43,7 @@ TEST(StatusTrayGtkTest, ClickOnIcon) {
   icon->AddObserver(&observer);
   EXPECT_CALL(observer, OnClicked());
   // Mimic a click.
-  icon->OnClick(NULL, icon);
+  icon->OnClick(NULL);
   icon->RemoveObserver(&observer);
 }
 
