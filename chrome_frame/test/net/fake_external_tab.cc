@@ -305,7 +305,9 @@ void CFUrlRequestUnittestRunner::Initialize() {
   InitializeLogging();
   base::Time::UseHighResolutionTimer(true);
 
-#if !defined(PURIFY) && defined(OS_WIN)
+  SuppressErrorDialogs();
+  DebugUtil::SuppressDialogs();
+#if !defined(PURIFY)
   logging::SetLogAssertHandler(UnitTestAssertHandler);
 #endif  // !defined(PURIFY)
 

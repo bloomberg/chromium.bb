@@ -219,6 +219,9 @@ bool DebugUtil::BeingDebugged() {
 
 // static
 void DebugUtil::BreakDebugger() {
+  if (suppress_dialogs_)
+    _exit(1);
+
   __debugbreak();
 }
 

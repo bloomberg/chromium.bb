@@ -81,6 +81,16 @@ class DebugUtil {
   // disables Apple Crash Reporter entirely.
   static void DisableOSCrashDumps();
 #endif  // defined(OS_MACOSX)
+
+  // This should be used only in test code.
+  static void SuppressDialogs() {
+    suppress_dialogs_ = true;
+  }
+
+ private:
+  // If true, avoid displaying any dialogs that could cause problems
+  // in non-interactive environments.
+  static bool suppress_dialogs_;
 };
 
 #endif  // BASE_DEBUG_UTIL_H_

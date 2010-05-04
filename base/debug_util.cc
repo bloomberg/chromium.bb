@@ -6,6 +6,8 @@
 
 #include "base/platform_thread.h"
 
+bool DebugUtil::suppress_dialogs_ = false;
+
 bool DebugUtil::WaitForDebugger(int wait_seconds, bool silent) {
   for (int i = 0; i < wait_seconds * 10; ++i) {
     if (BeingDebugged()) {
