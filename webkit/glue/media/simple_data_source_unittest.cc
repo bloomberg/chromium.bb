@@ -151,11 +151,11 @@ class SimpleDataSourceTest : public testing::Test {
   }
 
   void ReleaseBridge() {
-    bridge_.release();
+    ignore_result(bridge_.release());
   }
 
   void ReleaseBridgeFactory() {
-    bridge_factory_.release();
+    ignore_result(bridge_factory_.release());
   }
 
   MOCK_METHOD1(ReadCallback, void(size_t size));

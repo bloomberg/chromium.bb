@@ -135,7 +135,7 @@ class BufferedResourceLoaderTest : public testing::Test {
   }
 
   void ReleaseBridge() {
-    bridge_.release();
+    ignore_result(bridge_.release());
   }
 
   // Helper method to write to |loader_| from |data_|.
@@ -428,10 +428,10 @@ class MockBufferedDataSource : public BufferedDataSource {
 class BufferedDataSourceTest : public testing::Test {
  public:
   BufferedDataSourceTest() {
-    message_loop_.reset(MessageLoop::current());
+    message_loop_ = MessageLoop::current();
     bridge_factory_.reset(
         new StrictMock<MockMediaResourceLoaderBridgeFactory>());
-    factory_ = MockBufferedDataSource::CreateFactory(message_loop_.get(),
+    factory_ = MockBufferedDataSource::CreateFactory(message_loop_,
                                                      bridge_factory_.get());
 
     // Prepare test data.
@@ -448,9 +448,6 @@ class BufferedDataSourceTest : public testing::Test {
           .WillOnce(Invoke(this,
                            &BufferedDataSourceTest::ReleaseBridgeFactory));
     }
-
-    // We don't own the message loop so release it.
-    message_loop_.release();
   }
 
   void InitializeDataSource(const char* url, int error,
@@ -542,7 +539,7 @@ class BufferedDataSourceTest : public testing::Test {
   }
 
   void ReleaseBridgeFactory() {
-    bridge_factory_.release();
+    ignore_result(bridge_factory_.release());
   }
 
   void InvokeStartCallback(
@@ -683,7 +680,7 @@ class BufferedDataSourceTest : public testing::Test {
         .WillOnce(DoAll(Assign(&error_, size),
                         Invoke(this,
                                &BufferedDataSourceTest::InvokeReadCallback),
-                        InvokeWithoutArgs(message_loop_.get(),
+                        InvokeWithoutArgs(message_loop_,
                                           &MessageLoop::Quit)));
 
     EXPECT_CALL(*this, ReadCallback(size));
@@ -712,7 +709,7 @@ class BufferedDataSourceTest : public testing::Test {
 
   StrictMock<media::MockFilterHost> host_;
   GURL gurl_;
-  scoped_ptr<MessageLoop> message_loop_;
+  MessageLoop* message_loop_;
 
   int error_;
   uint8 buffer_[1024];
