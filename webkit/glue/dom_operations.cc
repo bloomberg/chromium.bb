@@ -183,6 +183,11 @@ static bool FillFormImpl(FormElements* fe, const FormData& data) {
        it != fe->input_elements.end(); ++it) {
     if (!it->second.value().isEmpty())  // Don't overwrite pre-filled values.
       continue;
+    if (it->second.inputType() == WebInputElement::Password) {
+       if (!it->second.isEnabledFormControl() ||
+           it->second.hasAttribute("readonly"))
+        continue;  // Don't fill uneditable password fields.
+    }
     it->second.setValue(data_map[it->first]);
     it->second.setAutofilled(true);
     it->second.dispatchFormControlChangeEvent();

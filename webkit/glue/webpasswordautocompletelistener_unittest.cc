@@ -26,10 +26,15 @@ class TestWebInputElementDelegate : public WebInputElementDelegate {
                                   did_set_value_(false),
                                   did_set_selection_(false),
                                   selection_start_(0),
-                                  selection_end_(0) {
+                                  selection_end_(0),
+                                  is_editable_(true) {
   }
 
   // Override those methods we implicitly invoke in the tests.
+  virtual bool IsEditable() {
+    return is_editable_;
+  }
+
   virtual void SetValue(const string16& value) {
     value_ = value;
     did_set_value_ = true;
@@ -50,6 +55,10 @@ class TestWebInputElementDelegate : public WebInputElementDelegate {
     did_call_on_finish_ = false;
     did_set_value_ = false;
     did_set_selection_ = false;
+  }
+
+  void set_is_editable(bool editable) {
+    is_editable_ = editable;
   }
 
   string16 value() const {
@@ -83,6 +92,7 @@ class TestWebInputElementDelegate : public WebInputElementDelegate {
   string16 value_;
   size_t selection_start_;
   size_t selection_end_;
+  bool is_editable_;
 };
 
 namespace {
@@ -126,6 +136,14 @@ TEST_F(PasswordManagerAutocompleteTests, OnBlur) {
 
   // Clear the password field.
   password_delegate->SetValue(string16());
+
+  // Make the password field read-only.
+  password_delegate->set_is_editable(false);
+  // Simulate a blur event on the username field, but r/o password won't fill.
+  listener->didBlurInputElement(username1_);
+  EXPECT_EQ(string16(), password_delegate->value());
+  password_delegate->set_is_editable(true);
+
   // Simulate a blur event on the username field and expect a password autofill.
   listener->didBlurInputElement(username1_);
   EXPECT_EQ(password1_, password_delegate->value());
