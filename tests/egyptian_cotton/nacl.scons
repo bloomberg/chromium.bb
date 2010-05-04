@@ -106,7 +106,7 @@ tests = [ ('egyptian_cotton_test', high_thread_count_args),
 
 # TODO(bsy): figure out why this fails on atom64 with 1GB RAM.
 # Disable thread_stack_alloc_test on one specific atom64 box.
-if os.environ['COMPUTERNAME'] == 'NACL-ATOM1':
+if os.environ.get('COMPUTERNAME') == 'NACL-ATOM1':
   tests = [t for t in tests if t[0] != 'thread_stack_alloc_test']
 
 def ThreadTestNode(name, args):
