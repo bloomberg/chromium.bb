@@ -117,12 +117,6 @@ class InProcessBrowserTest : public testing::Test {
   void EnableSingleProcess() { single_process_ = true; }
 
  private:
-#if defined(OS_MACOSX)
-  // Old variant of RunTestOnMainThreadLoop that assumes a nested message loop.
-  // TODO(sky): nuke this once we straighten out properly exiting on the mac.
-  void RunTestOnMainThreadLoopDeprecated();
-#endif
-
   // This is invoked from main after browser_init/browser_main have completed.
   // This prepares for the test by creating a new browser, runs the test
   // (RunTestOnMainThread), quits the browsers and returns.

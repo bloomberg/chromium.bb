@@ -11,6 +11,8 @@
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/debug_util.h"
+#include "base/mac_util.h"
+#include "base/scoped_nsobject.h"
 #include "chrome/app/breakpad_mac.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/browser_main_win.h"
@@ -44,8 +46,13 @@ void WillInitializeMainMessageLoop(const MainFunctionParams& parameters) {
     ResourceBundle::InitSharedInstance(std::wstring());
   }
 
-  // Now load the nib.
-  [NSBundle loadNibNamed:@"MainMenu" owner:NSApp];
+  // Now load the nib (from the right bundle).
+  scoped_nsobject<NSNib>
+      nib([[NSNib alloc] initWithNibNamed:@"MainMenu"
+                                   bundle:mac_util::MainAppBundle()]);
+  [nib instantiateNibWithOwner:NSApp topLevelObjects:nil];
+  // Make sure the app controller has been created.
+  DCHECK([NSApp delegate]);
 
   // This is a no-op if the KeystoneRegistration framework is not present.
   // The framework is only distributed with branded Google Chrome builds.
