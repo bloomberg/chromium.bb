@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/i18n/rtl.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
@@ -666,6 +667,8 @@ gboolean BrowserActionsToolbarGtk::OnDragMotion(GtkWidget* widget,
   if (!drag_button_)
     return FALSE;
 
+  if (base::i18n::IsRTL())
+    x = widget->allocation.width - x;
   drop_index_ = x < kButtonSize ? 0 : x / (kButtonSize + kButtonPadding);
 
   // We will go ahead and reorder the child in order to provide visual feedback
@@ -727,8 +730,12 @@ gboolean BrowserActionsToolbarGtk::OnGripperMotionNotify(
   if (!(event->state & GDK_BUTTON1_MASK))
     return FALSE;
 
-  gint new_width = button_hbox_->allocation.width -
-                   (event->x - widget->allocation.width);
+  // Calculate how much the user dragged the gripper and subtract that off the
+  // button container's width.
+  int distance_dragged = base::i18n::IsRTL() ?
+      -event->x :
+      event->x - widget->allocation.width;
+  gint new_width = button_hbox_->allocation.width - distance_dragged;
   SetButtonHBoxWidth(new_width);
 
   return FALSE;
