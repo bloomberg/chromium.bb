@@ -49,7 +49,8 @@ THISMAKEFILE := $(lastword $(MAKEFILE_LIST))
 SHELL=/bin/bash
 
 CROSSARCH=nacl64
-SDKLOC?=/usr/local
+TOOLCHAINLOC?=/usr/local
+SDKLOC?=$(TOOLCHAINLOC)
 SDKNAME=nacl-sdk
 SDKROOT=$(SDKLOC)/$(SDKNAME)
 DESTDIR?=
@@ -87,14 +88,14 @@ ifeq ($(PLATFORM), Cygwin)
         for i in '*.exe' ; do \
           PATH=".;\\\`cygpath -w /usr/bin\\\`" /usr/bin/cygcheck $$i ; \
         done \` | \
-      grep '\(/usr/\|\)bin/.*dll' | tr -d \`printf '\r'\` | sort -u` \
+      grep '\(/usr/\|\)bin/.*dll' | tr -d "\`printf '\r'\`" | sort -u` \
       $(DESTDIR)$(SDKROOT)/libexec ; \
       cp -f `cygpath \` \
         cd $(DESTDIR)$(SDKROOT)/libexec/gcc/$(CROSSARCH)/$(GCC_VERSION) ; \
         for i in '*.exe' ; do \
           PATH=".;\\\`cygpath -w /usr/bin\\\`" /usr/bin/cygcheck $$i ; \
         done \` | \
-      grep '\(/usr/\|\)bin/.*dll' | tr -d \`printf '\r'\` | sort -u` \
+      grep '\(/usr/\|\)bin/.*dll' | tr -d "\`printf '\r'\`" | sort -u` \
       $(DESTDIR)$(SDKROOT)/libexec/gcc/$(CROSSARCH)/$(GCC_VERSION) || true
   else
     CYGWIN_DLL_COPY= \
