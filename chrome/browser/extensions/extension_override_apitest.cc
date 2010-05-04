@@ -3,8 +3,11 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"
 
 class ExtensionOverrideTest : public ExtensionApiTest {
@@ -42,11 +45,32 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, OverrideNewtab) {
     // Navigate to the new tab page.  The overridden new tab page
     // will call chrome.test.notifyPass() .
     ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab/"));
+    TabContents* tab = browser()->GetSelectedTabContents();
+    ASSERT_TRUE(tab->controller().GetActiveEntry());
+    EXPECT_TRUE(tab->controller().GetActiveEntry()->url().
+                SchemeIs(chrome::kExtensionScheme));
+
     ASSERT_TRUE(catcher.GetNextResult());
   }
 
   // TODO(erikkay) Load a second extension with the same override.
   // Verify behavior, then unload the first and verify behavior, etc.
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, OverrideNewtabIncognito) {
+  ASSERT_TRUE(RunExtensionTest("override/newtab")) << message_;
+
+  // Navigate an incognito tab to the new tab page.  We should get the actual
+  // new tab page because we can't load chrome-extension URLs in incognito.
+  ui_test_utils::OpenURLOffTheRecord(browser()->profile(),
+                                     GURL("chrome://newtab/"));
+  Browser* otr_browser = BrowserList::FindBrowserWithType(
+      browser()->profile()->GetOffTheRecordProfile(), Browser::TYPE_NORMAL,
+      false);
+  TabContents* tab = otr_browser->GetSelectedTabContents();
+  ASSERT_TRUE(tab->controller().GetActiveEntry());
+  EXPECT_FALSE(tab->controller().GetActiveEntry()->url().
+               SchemeIs(chrome::kExtensionScheme));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, OverrideHistory) {

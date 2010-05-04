@@ -163,10 +163,8 @@ bool ExtensionDOMUI::HandleChromeURLOverride(GURL* url, Profile* profile) {
   if (!url->SchemeIs(chrome::kChromeUIScheme))
     return false;
 
-  // Even when the extensions service is enabled by default, it's still
-  // disabled in incognito mode.
-  ExtensionsService* service = profile->GetExtensionsService();
-  if (!service)
+  // We can't handle chrome-extension URLs in incognito mode.
+  if (profile->IsOffTheRecord())
     return false;
 
   const DictionaryValue* overrides =
@@ -176,6 +174,7 @@ bool ExtensionDOMUI::HandleChromeURLOverride(GURL* url, Profile* profile) {
   if (!overrides || !overrides->GetList(UTF8ToWide(page), &url_list))
     return false;
 
+  ExtensionsService* service = profile->GetExtensionsService();
   if (!service->is_ready()) {
     // TODO(erikkay) So far, it looks like extensions load before the new tab
     // page.  I don't know if we have anything that enforces this, so add this
