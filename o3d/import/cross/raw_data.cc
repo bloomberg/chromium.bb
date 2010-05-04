@@ -306,7 +306,9 @@ void RawData::Flush() {
       FILE *tempfile = file_util::OpenFile(temp_filepath_, "wb");
 
       if (tempfile) {
-        fwrite(data_.get(), 1, GetLength(), tempfile);
+        if (GetLength() != fwrite(data_.get(), 1, GetLength(), tempfile)) {
+          DLOG(ERROR) << "error writing cached data file";
+        }
         file_util::CloseFile(tempfile);
 
         // Now that the data is cached, free it

@@ -56,7 +56,9 @@ void FileTextWriter::WriteChar(char c) {
 
 void FileTextWriter::WriteString(const std::string& s) {
   DCHECK(file_);
-  fwrite(s.c_str(), 1, s.length(), file_);
+  if (s.length() != fwrite(s.c_str(), 1, s.length(), file_)) {
+    return;
+  }
 }
 
 void FileTextWriter::Close() {
