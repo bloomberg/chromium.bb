@@ -60,8 +60,10 @@ ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService() {
                              profile_,
                              browser_defaults::kBootstrapSyncAuthentication);
 
-  // Autofill sync is enabled by default.  Register unless explicitly disabled.
-  if (!command_line_->HasSwitch(switches::kDisableSyncAutofill)) {
+  // Autofill sync is disabled by default.
+  // TODO(nick): Autofill is force-disabled due to bad user experience; re-
+  // enabled once fixed.
+  if (command_line_->HasSwitch(switches::kEnableSyncAutofill)) {
     pss->RegisterDataTypeController(
         new AutofillDataTypeController(this, profile_, pss));
   }
