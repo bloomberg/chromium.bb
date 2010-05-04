@@ -18,8 +18,8 @@
 #include "views/examples/radio_button_example.h"
 #include "views/examples/scroll_view_example.h"
 #include "views/examples/single_split_view_example.h"
-#if defined(OS_LINUX)
 // Slider is not yet ported to Windows.
+#if defined(OS_LINUX)
 #include "views/examples/slider_example.h"
 #endif
 #include "views/examples/tabbed_pane_example.h"
@@ -30,9 +30,6 @@
 #include "views/examples/table2_example.h"
 #include "views/examples/textfield_example.h"
 #include "views/examples/widget_example.h"
-#if defined(OS_LINUX)
-#include "views/examples/widget_anim_example.h"
-#endif
 #include "views/focus/accelerator_handler.h"
 #include "views/grid_layout.h"
 #include "views/window/window.h"
@@ -135,10 +132,6 @@ void ExamplesMain::Run() {
   examples::WidgetExample widget_example(this);
   tabbed_pane->AddTab(widget_example.GetExampleTitle(),
                       widget_example.GetExampleView());
-
-  examples::WidgetAnimExample widget_anim_example(this);
-  tabbed_pane->AddTab(widget_anim_example.GetExampleTitle(),
-                      widget_anim_example.GetExampleView());
 
 #if defined(OS_LINUX)
   examples::SliderExample slider_example(this);
