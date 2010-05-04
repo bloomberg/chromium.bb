@@ -227,10 +227,9 @@ void TestShell::InitializeTestShell(bool layout_test_mode,
       "/usr/share/fonts/truetype/msttcorefonts/Verdana_Bold.ttf",
       "/usr/share/fonts/truetype/msttcorefonts/Verdana_Bold_Italic.ttf",
       "/usr/share/fonts/truetype/msttcorefonts/Verdana_Italic.ttf",
-      // The DejaVuSans font is used by the LayoutTests/css2.1 tests
+      // The DejaVuSans font is used by the css2.1 tests.
       "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf",
       "/usr/share/fonts/truetype/ttf-indic-fonts-core/lohit_ta.ttf",
-      "/usr/share/fonts/truetype/ttf-indic-fonts-core/lohit_pa.ttf",
       "/usr/share/fonts/truetype/ttf-indic-fonts-core/MuktiNarrow.ttf",
     };
     for (size_t i = 0; i < arraysize(fonts); ++i) {
@@ -248,14 +247,18 @@ void TestShell::InitializeTestShell(bool layout_test_mode,
     // few layout tests.
     static const char* const optional_fonts[] = {
       "/usr/share/fonts/truetype/ttf-lucida/LucidaSansRegular.ttf",
+
+      // This font changed paths across Ubuntu releases.
+      "/usr/share/fonts/truetype/ttf-indic-fonts-core/lohit_pa.ttf",
+      "/usr/share/fonts/truetype/ttf-punjabi-fonts/lohit_pa.ttf",
     };
     for (size_t i = 0; i < arraysize(optional_fonts); ++i) {
       const char* font = optional_fonts[i];
       if (access(font, R_OK) < 0) {
         LOG(WARNING) << "You are missing " << font << ". "
                      << "Without this, some layout tests will fail. "
-                     << "To get LucidaSansRegular, install sun-java6-fonts.  "
-                     << "FYI, this will also install a somewhat hefty JRE :)";
+                     << "See http://code.google.com/p/chromium/wiki/"
+                     << "LinuxBuildInstructionsPrerequisites for more.";
       } else {
         if (!FcConfigAppFontAddFile(fontcfg, (FcChar8 *) font))
           LOG(FATAL) << "Failed to load font " << font;
