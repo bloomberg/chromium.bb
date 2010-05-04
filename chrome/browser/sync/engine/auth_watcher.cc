@@ -10,11 +10,11 @@
 #include "chrome/browser/sync/engine/authenticator.h"
 #include "chrome/browser/sync/engine/net/gaia_authenticator.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
-#include "chrome/browser/sync/notifier/listener/talk_mediator.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/user_settings.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
+#include "chrome/common/net/notifier/listener/talk_mediator.h"
 
 // How authentication happens:
 //

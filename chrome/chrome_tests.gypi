@@ -1665,6 +1665,63 @@
       ], # conditions
     },
     {
+      'target_name': 'notifier_unit_tests',
+      'type': 'executable',
+      'sources': [
+        'common/net/notifier/base/mac/network_status_detector_task_mac_unittest.cc',
+        'common/net/notifier/listener/talk_mediator_unittest.cc',
+        'common/net/notifier/listener/send_update_task_unittest.cc',
+        'common/net/notifier/listener/subscribe_task_unittest.cc',
+        'common/net/notifier/listener/xml_element_util_unittest.cc',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        'common',
+        'debugger',
+        '../testing/gmock.gyp:gmock',
+        '../testing/gtest.gyp:gtest',
+        '../third_party/libjingle/libjingle.gyp:libjingle',
+        'test_support_unit',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'dependencies': [
+            '<(allocator_target)',
+          ],
+          'link_settings': {
+            'libraries': [
+              '-lcrypt32.lib',
+              '-lws2_32.lib',
+              '-lsecur32.lib',
+            ],
+          },
+          'configurations': {
+            'Debug_Base': {
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                },
+              },
+            },
+          },
+        }],
+        ['OS=="linux"', {
+          'dependencies': [
+            '../build/linux/system.gyp:gtk',
+            '../build/linux/system.gyp:nss',
+            'packed_resources'
+          ],
+        }],
+        ['OS=="linux" and chromeos==1', {
+          'include_dirs': [
+            '<(grit_out_dir)',
+          ],
+        }],
+      ],
+    },
+    {
       'target_name': 'sync_unit_tests',
       'type': 'executable',
       'sources': [
@@ -1683,11 +1740,6 @@
         'browser/sync/engine/syncproto_unittest.cc',
         'browser/sync/engine/verify_updates_command_unittest.cc',
         'browser/sync/glue/change_processor_mock.h',
-        'browser/sync/notifier/base/mac/network_status_detector_task_mac_unittest.cc',
-        'browser/sync/notifier/listener/talk_mediator_unittest.cc',
-        'browser/sync/notifier/listener/send_update_task_unittest.cc',
-        'browser/sync/notifier/listener/subscribe_task_unittest.cc',
-        'browser/sync/notifier/listener/xml_element_util_unittest.cc',
         'browser/sync/profile_sync_factory_mock.cc',
         'browser/sync/profile_sync_factory_mock.h',
         'browser/sync/sessions/ordered_commit_set_unittest.cc',

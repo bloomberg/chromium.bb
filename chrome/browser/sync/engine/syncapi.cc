@@ -47,9 +47,6 @@
 #include "chrome/browser/sync/engine/net/syncapi_server_connection_manager.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_thread.h"
-#include "chrome/browser/sync/notifier/listener/notification_constants.h"
-#include "chrome/browser/sync/notifier/listener/talk_mediator.h"
-#include "chrome/browser/sync/notifier/listener/talk_mediator_impl.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
@@ -64,8 +61,11 @@
 #include "chrome/browser/sync/util/crypto_helpers.h"
 #include "chrome/browser/sync/util/path_helpers.h"
 #include "chrome/browser/sync/util/user_settings.h"
-#include "chrome/common/deprecated/event_sys.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/deprecated/event_sys.h"
+#include "chrome/common/net/notifier/listener/notification_constants.h"
+#include "chrome/common/net/notifier/listener/talk_mediator.h"
+#include "chrome/common/net/notifier/listener/talk_mediator_impl.h"
 
 #if defined(OS_WIN)
 #pragma comment(lib, "iphlpapi.lib")
@@ -975,6 +975,10 @@ class BridgedGaiaAuthenticator : public browser_sync::GaiaAuthenticator {
                           http->GetResponseContentLength());
     post_factory_->Destroy(http);
     return true;
+  }
+
+  virtual int GetBackoffDelaySeconds(int current_backoff_delay) {
+    return AllStatus::GetRecommendedDelaySeconds(current_backoff_delay);
   }
  private:
   const std::string gaia_source_;

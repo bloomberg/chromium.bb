@@ -21,11 +21,11 @@
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/syncer.h"
-#include "chrome/browser/sync/notifier/listener/notification_constants.h"
-#include "chrome/browser/sync/notifier/listener/talk_mediator.h"
-#include "chrome/browser/sync/notifier/listener/talk_mediator_impl.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/notifier/listener/notification_constants.h"
+#include "chrome/common/net/notifier/listener/talk_mediator.h"
+#include "chrome/common/net/notifier/listener/talk_mediator_impl.h"
 
 using std::priority_queue;
 using std::min;

@@ -14,11 +14,11 @@
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_thread.h"
-#include "chrome/browser/sync/notifier/listener/talk_mediator.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
+#include "chrome/common/net/notifier/listener/talk_mediator.h"
 
 namespace browser_sync {
 
