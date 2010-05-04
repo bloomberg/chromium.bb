@@ -49,7 +49,6 @@ namespace {
 
 const int kTitleY = 100;
 const int kPanelSpacing = 36;
-const int kVersionPad = 4;
 const int kTextfieldWidth = 286;
 const int kRowPad = 10;
 const int kLabelPad = 2;
@@ -57,9 +56,8 @@ const int kLanguageMenuOffsetTop = 25;
 const int kLanguageMenuOffsetRight = 25;
 const int kLanguagesMenuWidth = 200;
 const int kLanguagesMenuHeight = 30;
-const SkColor kErrorColor = 0xFF8F384F;
 const SkColor kLabelColor = 0xFF808080;
-const SkColor kVersionColor = 0xFFA0A0A0;
+const SkColor kErrorColor = 0xFF8F384F;
 const char *kDefaultDomain = "@gmail.com";
 
 // Set to true to run on linux and test login.
@@ -72,7 +70,6 @@ namespace chromeos {
 LoginManagerView::LoginManagerView(ScreenObserver* observer)
     : username_field_(NULL),
       password_field_(NULL),
-      os_version_label_(NULL),
       title_label_(NULL),
       error_label_(NULL),
       sign_in_button_(NULL),
@@ -125,12 +122,6 @@ void LoginManagerView::Init() {
   create_account_link_->SetController(this);
   AddChildView(create_account_link_);
 
-  os_version_label_ = new views::Label();
-  os_version_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  os_version_label_->SetColor(kVersionColor);
-  os_version_label_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
-  AddChildView(os_version_label_);
-
   error_label_ = new views::Label();
   error_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   error_label_->SetColor(kErrorColor);
@@ -156,12 +147,7 @@ void LoginManagerView::Init() {
   // Controller to handle events from textfields
   username_field_->SetController(this);
   password_field_->SetController(this);
-  if (CrosLibrary::Get()->EnsureLoaded()) {
-    loader_.GetVersion(
-        &consumer_, NewCallback(this, &LoginManagerView::OnOSVersion));
-  } else if (!kStubOutLogin) {
-    error_label_->SetText(
-        ASCIIToWide(CrosLibrary::Get()->load_error_string()));
+  if (!CrosLibrary::Get()->EnsureLoaded()) {
     username_field_->SetReadOnly(true);
     password_field_->SetReadOnly(true);
     sign_in_button_->SetEnabled(false);
@@ -262,7 +248,7 @@ void LoginManagerView::Layout() {
   // Center the text fields, and align the rest of the views with them.
   int x = (width() - kTextfieldWidth) / 2;
   int y = kTitleY;
-  int max_width = width() - (x + kVersionPad);
+  int max_width = width() - (2 * x);
 
   y += (setViewBounds(title_label_, x, y, max_width, false) + kRowPad);
   y += (setViewBounds(username_field_, x, y, kTextfieldWidth, true) + kRowPad);
@@ -278,13 +264,6 @@ void LoginManagerView::Layout() {
       error_label_,
       padding,
       y,
-      width() - 2 * padding,
-      true);
-
-  setViewBounds(
-      os_version_label_,
-      padding,
-      height() - (os_version_label_->GetPreferredSize().height() + padding),
       width() - 2 * padding,
       true);
 
@@ -425,12 +404,6 @@ bool LoginManagerView::HandleKeystroke(views::Textfield* s,
   }
   // Return false so that processing does not end
   return false;
-}
-
-void LoginManagerView::OnOSVersion(
-    VersionLoader::Handle handle,
-    std::string version) {
-  os_version_label_->SetText(ASCIIToWide(version));
 }
 
 }  // namespace chromeos

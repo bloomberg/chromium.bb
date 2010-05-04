@@ -327,6 +327,8 @@
         'browser/chromeos/notifications/system_notification.cc',
         'browser/chromeos/notifications/system_notification_factory.h',
         'browser/chromeos/notifications/system_notification_factory.cc',
+        'browser/chromeos/boot_times_loader.cc',
+        'browser/chromeos/boot_times_loader.h',
         'browser/chromeos/browser_notification_observers.cc',
         'browser/chromeos/compact_location_bar_host.cc',
         'browser/chromeos/compact_location_bar_host.h',

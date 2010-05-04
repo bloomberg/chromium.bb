@@ -7570,6 +7570,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_STATUSBAR_IME_CONFIGURE" desc="Configure the text input method.">
         Configure IME...
       </message>
+      <message name="IDS_VERSION_FIELD_PREFIX" desc="Display the OS version to the user.">
+        OS version
+      </message>
     </if>
     <if expr="pp_ifdef('chromeos') and lang == 'ja'">
       <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_HIRAGANA" desc="In the language menu button, this shows a character set in use is set to Hiragana.">

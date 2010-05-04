@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/language_switch_model.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
-#include "chrome/browser/chromeos/version_loader.h"
 #include "views/accelerator.h"
 #include "views/controls/button/button.h"
 #include "views/controls/button/menu_button.h"
@@ -107,10 +106,6 @@ class LoginManagerView : public views::View,
   bool Authenticate(const std::string& username,
                     const std::string& password);
 
-  // Callback from chromeos::VersionLoader giving the version.
-  void OnOSVersion(VersionLoader::Handle handle,
-                   std::string version);
-
   // Shows error message with the specified message id.
   // -1 stands for no error.
   void ShowError(int error_id);
@@ -119,7 +114,6 @@ class LoginManagerView : public views::View,
 
   views::Textfield* username_field_;
   views::Textfield* password_field_;
-  views::Label* os_version_label_;
   views::Label* title_label_;
   views::Label* error_label_;
   views::NativeButton* sign_in_button_;
@@ -128,12 +122,6 @@ class LoginManagerView : public views::View,
 
   views::Accelerator accel_focus_user_;
   views::Accelerator accel_focus_pass_;
-
-  // Handles asynchronously loading the version.
-  VersionLoader loader_;
-
-  // Used to request the version.
-  CancelableRequestConsumer consumer_;
 
   // Notifications receiver.
   ScreenObserver* observer_;

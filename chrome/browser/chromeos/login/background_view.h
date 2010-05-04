@@ -5,11 +5,15 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_BACKGROUND_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_BACKGROUND_VIEW_H_
 
+#include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/version_loader.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "views/view.h"
 
 namespace views {
 class Widget;
+class Label;
 }
 
 class Profile;
@@ -48,12 +52,32 @@ class BackgroundView : public views::View, public StatusAreaHost {
  private:
   // Creates and adds the status_area.
   void InitStatusArea();
+  // Creates and adds the labels for version and boot time.
+  void InitInfoLabels();
 
   // Invokes SetWindowType for the window. This is invoked during startup and
   // after we've painted.
   void UpdateWindowType();
 
+  // Callback from chromeos::VersionLoader giving the version.
+  void OnVersion(VersionLoader::Handle handle, std::string version);
+  // Callback from chromeos::InfoLoader giving the boot times.
+  void OnBootTimes(
+      BootTimesLoader::Handle handle, BootTimesLoader::BootTimes boot_times);
+
   StatusAreaView* status_area_;
+  views::Label* os_version_label_;
+  views::Label* boot_times_label_;
+
+  // Handles asynchronously loading the version.
+  VersionLoader version_loader_;
+  // Used to request the version.
+  CancelableRequestConsumer version_consumer_;
+
+  // Handles asynchronously loading the boot times.
+  BootTimesLoader boot_times_loader_;
+  // Used to request the boot times.
+  CancelableRequestConsumer boot_times_consumer_;
 
   // Has Paint been invoked once? The value of this is passed to the window
   // manager.

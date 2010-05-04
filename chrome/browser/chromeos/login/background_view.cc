@@ -4,7 +4,10 @@
 
 #include "chrome/browser/chromeos/login/background_view.h"
 
+#include "app/l10n_util.h"
+#include "app/resource_bundle.h"
 #include "app/x11_util.h"
+#include "base/string_util.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 #include "chrome/browser/chromeos/status/language_menu_button.h"
@@ -12,6 +15,9 @@
 #include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
+#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
+#include "views/controls/label.h"
 #include "views/screen.h"
 #include "views/widget/widget_gtk.h"
 
@@ -24,11 +30,15 @@ using views::WidgetGtk;
 
 namespace chromeos {
 
-BackgroundView::BackgroundView() : status_area_(NULL), did_paint_(false) {
+BackgroundView::BackgroundView() : status_area_(NULL),
+                                   os_version_label_(NULL),
+                                   boot_times_label_(NULL),
+                                   did_paint_(false) {
   views::Painter* painter = chromeos::CreateWizardPainter(
       &chromeos::BorderDefinition::kWizardBorder);
   set_background(views::Background::CreateBackgroundPainter(true, painter));
   InitStatusArea();
+  InitInfoLabels();
 }
 
 static void ResetXCursor() {
@@ -71,15 +81,32 @@ void BackgroundView::Paint(gfx::Canvas* canvas) {
 }
 
 void BackgroundView::Layout() {
-  int right_top_padding =
+  int corner_padding =
       chromeos::BorderDefinition::kWizardBorder.padding +
       chromeos::BorderDefinition::kWizardBorder.corner_radius / 2;
+  int kInfoLeftPadding = 60;
+  int kInfoBottomPadding = 40;
+  int kInfoBetweenLinesPadding = 4;
   gfx::Size status_area_size = status_area_->GetPreferredSize();
   status_area_->SetBounds(
-      width() - status_area_size.width() - right_top_padding,
-      right_top_padding,
+      width() - status_area_size.width() - corner_padding,
+      corner_padding,
       status_area_size.width(),
       status_area_size.height());
+  gfx::Size version_size = os_version_label_->GetPreferredSize();
+  os_version_label_->SetBounds(
+      kInfoLeftPadding,
+      height() -
+          ((2 * version_size.height()) +
+          kInfoBottomPadding +
+          kInfoBetweenLinesPadding),
+      width() - 2 * kInfoLeftPadding,
+      version_size.height());
+  boot_times_label_->SetBounds(
+      kInfoLeftPadding,
+      height() - (version_size.height() + kInfoBottomPadding),
+      width() - 2 * corner_padding,
+      version_size.height());
 }
 
 void BackgroundView::ChildPreferredSizeChanged(View* child) {
@@ -122,6 +149,32 @@ void BackgroundView::InitStatusArea() {
   AddChildView(status_area_);
 }
 
+void BackgroundView::InitInfoLabels() {
+  const SkColor kVersionColor = 0xFFFFFFFF;
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+
+  os_version_label_ = new views::Label();
+  os_version_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  os_version_label_->SetColor(kVersionColor);
+  os_version_label_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
+  AddChildView(os_version_label_);
+  boot_times_label_ = new views::Label();
+  boot_times_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  boot_times_label_->SetColor(kVersionColor);
+  boot_times_label_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
+  AddChildView(boot_times_label_);
+
+  if (CrosLibrary::Get()->EnsureLoaded()) {
+    version_loader_.GetVersion(
+        &version_consumer_, NewCallback(this, &BackgroundView::OnVersion));
+    boot_times_loader_.GetBootTimes(
+        &boot_times_consumer_, NewCallback(this, &BackgroundView::OnBootTimes));
+  } else {
+    os_version_label_->SetText(
+        ASCIIToWide(CrosLibrary::Get()->load_error_string()));
+  }
+}
+
 void BackgroundView::UpdateWindowType() {
   std::vector<int> params;
   params.push_back(did_paint_ ? 1 : 0);
@@ -129,6 +182,31 @@ void BackgroundView::UpdateWindowType() {
       GTK_WIDGET(GetNativeWindow()),
       WM_IPC_WINDOW_LOGIN_BACKGROUND,
       &params);
+}
+
+void BackgroundView::OnVersion(
+    VersionLoader::Handle handle, std::string version) {
+  std::string version_text = l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
+  version_text += ' ';
+  version_text += l10n_util::GetStringUTF8(IDS_VERSION_FIELD_PREFIX);
+  version_text += ' ';
+  version_text += version;
+  os_version_label_->SetText(ASCIIToWide(version_text));
+}
+
+void BackgroundView::OnBootTimes(
+    BootTimesLoader::Handle handle, BootTimesLoader::BootTimes boot_times) {
+  // TODO(davemoore) if we decide to keep these times visible we will need
+  // to localize the strings.
+  std::string boot_times_text =
+      StringPrintf(
+          "Boot took %.2f seconds "
+          "(firmware %.2fs, kernel %.2fs, user %.2fs)",
+          boot_times.firmware + boot_times.login_prompt_ready,
+          boot_times.firmware,
+          boot_times.pre_startup,
+          boot_times.login_prompt_ready - boot_times.pre_startup);
+  boot_times_label_->SetText(ASCIIToWide(boot_times_text));
 }
 
 }  // namespace chromeos

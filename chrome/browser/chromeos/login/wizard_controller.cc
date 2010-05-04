@@ -423,6 +423,7 @@ namespace browser {
 // Declared in browser_dialogs.h so that others don't need to depend on our .h.
 void ShowLoginWizard(const std::string& first_screen_name,
                      const gfx::Size& size) {
+  LOG(INFO) << "showing login" << first_screen_name;
   gfx::Rect screen_bounds(CalculateScreenBounds(size));
 
   if (first_screen_name.empty() &&
