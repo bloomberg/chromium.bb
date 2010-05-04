@@ -7,28 +7,18 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/observer_list.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/task.h"
 #include "base/thread.h"
-#include "base/waitable_event.h"
+#include "chrome/browser/sync/net/mock_network_change_observer.h"
+#include "chrome/browser/sync/net/thread_blocker.h"
 #include "net/base/mock_network_change_notifier.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
-class ThreadBlocker;
-}  // namespace browser_sync
-
-// We manage the lifetime of these classes ourselves.
-
-template <>
-struct RunnableMethodTraits<browser_sync::ThreadBlocker> {
-  void RetainCallee(browser_sync::ThreadBlocker*) {}
-  void ReleaseCallee(browser_sync::ThreadBlocker*) {}
-};
-
+// We manage the lifetime of net::MockNetworkChangeNotifier ourselves.
 template <>
 struct RunnableMethodTraits<net::MockNetworkChangeNotifier> {
   void RetainCallee(net::MockNetworkChangeNotifier*) {}
@@ -36,50 +26,6 @@ struct RunnableMethodTraits<net::MockNetworkChangeNotifier> {
 };
 
 namespace browser_sync {
-
-// This class lets you block and unblock a thread at will.
-class ThreadBlocker {
- public:
-  // The given thread must already be started and it must outlive this
-  // instance.
-  explicit ThreadBlocker(base::Thread* target_thread)
-      : target_message_loop_(target_thread->message_loop()),
-        is_blocked_(false, false), is_finished_blocking_(false, false),
-        is_unblocked_(false, false) {
-    DCHECK(target_message_loop_);
-  }
-
-  // When this function returns, the target thread will be blocked
-  // until Unblock() is called.  Each call to Block() must be matched
-  // by a call to Unblock().
-  void Block() {
-    DCHECK_NE(MessageLoop::current(), target_message_loop_);
-    target_message_loop_->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(this, &ThreadBlocker::BlockOnTargetThread));
-    while (!is_blocked_.Wait()) {}
-  }
-
-  // When this function returns, the target thread is unblocked.
-  void Unblock() {
-    DCHECK_NE(MessageLoop::current(), target_message_loop_);
-    is_finished_blocking_.Signal();
-    while (!is_unblocked_.Wait()) {}
-  }
-
- private:
-  void BlockOnTargetThread() {
-    DCHECK_EQ(MessageLoop::current(), target_message_loop_);
-    is_blocked_.Signal();
-    while (!is_finished_blocking_.Wait()) {}
-    is_unblocked_.Signal();
-  }
-
-  MessageLoop* const target_message_loop_;
-  base::WaitableEvent is_blocked_, is_finished_blocking_, is_unblocked_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThreadBlocker);
-};
 
 namespace {
 
@@ -113,32 +59,12 @@ class DeleteCheckingNetworkChangeObserverProxy
   DISALLOW_COPY_AND_ASSIGN(DeleteCheckingNetworkChangeObserverProxy);
 };
 
-// Mock observer used in the unit tests.
-class MockNetworkChangeObserver
-    : public net::NetworkChangeNotifier::Observer {
- public:
-  MockNetworkChangeObserver() {}
-
-  virtual ~MockNetworkChangeObserver() {}
-
-  MOCK_METHOD0(OnIPAddressChanged, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockNetworkChangeObserver);
-};
-
-// Utility function used by PumpTarget() below.
-void SetTrue(bool* b) {
-  *b = true;
-}
-
 class NetworkChangeObserverProxyTest : public testing::Test {
  protected:
   NetworkChangeObserverProxyTest()
       : source_thread_("Source Thread"),
         source_message_loop_(NULL),
-        proxy_deleting_message_loop_(NULL),
-        proxy_(NULL) {}
+        proxy_deleting_message_loop_(NULL) {}
 
   virtual ~NetworkChangeObserverProxyTest() {
     CHECK(!source_thread_blocker_.get());
@@ -157,7 +83,7 @@ class NetworkChangeObserverProxyTest : public testing::Test {
         &target_message_loop_, &proxy_deleting_message_loop_);
   }
 
-  // On TearDown, proxy_ must be released and both source and target
+  // On TearDown, |proxy_| must be released and both source and target
   // must be pumped.
   virtual void TearDown() {
     EXPECT_TRUE(proxy_ == NULL);
@@ -177,12 +103,7 @@ class NetworkChangeObserverProxyTest : public testing::Test {
   // Pump any events posted on the target thread (which is just the
   // main test thread).
   void PumpTarget() {
-    bool done = false;
-    target_message_loop_.PostTask(FROM_HERE,
-                                  NewRunnableFunction(&SetTrue, &done));
-    while (!done) {
-      target_message_loop_.RunAllPending();
-    }
+    target_message_loop_.RunAllPending();
   }
 
   // Trigger an "IP address changed" event on the source network
@@ -195,10 +116,10 @@ class NetworkChangeObserverProxyTest : public testing::Test {
             &net::MockNetworkChangeNotifier::NotifyIPAddressChange));
   }
 
-  // This lives on source_thread_ but is created/destroyed in the main
-  // thread.  As long as we make sure to not modify it from the main
-  // thread while source_thread_ is running, we shouldn't need any
-  // special synchronization.
+  // This lives on |source_thread_| but is created/destroyed in the
+  // main thread.  As long as we make sure to not modify it from the
+  // main thread while |source_thread_| is running, we shouldn't need
+  // any special synchronization.
   net::MockNetworkChangeNotifier source_network_change_notifier_;
   base::Thread source_thread_;
   MessageLoop* source_message_loop_;

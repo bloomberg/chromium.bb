@@ -45,6 +45,7 @@
 
 namespace browser_sync {
 
+// TODO(akalin): Remove use of private inheritance.
 class NetworkChangeObserverProxy
     : public base::RefCountedThreadSafe<NetworkChangeObserverProxy>,
       private net::NetworkChangeNotifier::Observer {

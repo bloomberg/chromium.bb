@@ -979,6 +979,8 @@
       'target_name': 'sync_net',
       'type': '<(library)',
       'sources': [
+        'browser/sync/net/network_change_notifier_proxy.cc',
+        'browser/sync/net/network_change_notifier_proxy.h',
         'browser/sync/net/network_change_observer_proxy.cc',
         'browser/sync/net/network_change_observer_proxy.h',
       ],
