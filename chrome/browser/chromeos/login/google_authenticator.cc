@@ -51,6 +51,8 @@ const char GoogleAuthenticator::kFormat[] =
     "PersistentCookie=%s&"
     "accountType=%s&"
     "source=%s&";
+// static
+const char GoogleAuthenticator::kSecondFactor[] = "Info=InvalidSecondFactor";
 
 // static
 const char GoogleAuthenticator::kSystemSalt[] = "/home/.shadow/salt";
@@ -122,11 +124,21 @@ void GoogleAuthenticator::OnURLFetchComplete(const URLFetcher* source,
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(this, &GoogleAuthenticator::CheckOffline, status));
   } else {
-    // The fetch succeeded, but ClientLogin said no.
-    LoadLocalaccount(kLocalaccountFile);
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &GoogleAuthenticator::CheckLocalaccount, data));
+    if (IsSecondFactorSuccess(data)) {
+      ChromeThread::PostTask(
+          ChromeThread::UI, FROM_HERE,
+          NewRunnableMethod(this,
+                            &GoogleAuthenticator::OnLoginSuccess,
+                            std::string()));
+    } else {
+      // The fetch succeeded, but ClientLogin said no.
+      LoadLocalaccount(kLocalaccountFile);
+      ChromeThread::PostTask(
+          ChromeThread::UI, FROM_HERE,
+          NewRunnableMethod(this,
+                            &GoogleAuthenticator::CheckLocalaccount,
+                            data));
+    }
   }
 }
 
@@ -252,6 +264,13 @@ std::string GoogleAuthenticator::SaltAsAscii() {
   } else {
     return std::string();
   }
+}
+
+// static
+bool GoogleAuthenticator::IsSecondFactorSuccess(
+    const std::string& alleged_error) {
+  return alleged_error.find(GoogleAuthenticator::kSecondFactor) !=
+      std::string::npos;
 }
 
 // static

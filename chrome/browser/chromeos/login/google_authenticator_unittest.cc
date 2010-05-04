@@ -134,6 +134,18 @@ TEST_F(GoogleAuthenticatorTest, SaltToAsciiTest) {
   EXPECT_EQ("0a010000000000a0", auth->SaltAsAscii());
 }
 
+TEST_F(GoogleAuthenticatorTest, CheckTwoFactorResponse) {
+  std::string response =
+      StringPrintf("Error=BadAuthentication\n%s\n",
+                   GoogleAuthenticator::kSecondFactor);
+  EXPECT_TRUE(GoogleAuthenticator::IsSecondFactorSuccess(response));
+}
+
+TEST_F(GoogleAuthenticatorTest, CheckNormalErrorCode) {
+  std::string response = "Error=BadAuthentication\n";
+  EXPECT_FALSE(GoogleAuthenticator::IsSecondFactorSuccess(response));
+}
+
 TEST_F(GoogleAuthenticatorTest, EmailAddressNoOp) {
   const char lower_case[] = "user@what.com";
   EXPECT_EQ(lower_case, GoogleAuthenticator::Canonicalize(lower_case));
@@ -332,6 +344,35 @@ TEST_F(GoogleAuthenticatorTest, OnlineLoginTest) {
                           kHttpSuccess,
                           cookies_,
                           std::string());
+  message_loop.RunAllPending();
+}
+
+TEST_F(GoogleAuthenticatorTest, TwoFactorLoginTest) {
+  MessageLoopForUI message_loop;
+  ChromeThread ui_thread(ChromeThread::UI, &message_loop);
+
+  GURL source(AuthResponseHandler::kTokenAuthUrl);
+  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
+
+  std::string response =
+      StringPrintf("Error=BadAuthentication\n%s\n",
+                   GoogleAuthenticator::kSecondFactor);
+
+  MockConsumer consumer;
+  EXPECT_CALL(consumer, OnLoginSuccess(username_, data_))
+      .Times(1);
+  EXPECT_CALL(*mock_library_, Mount(username_, hash_ascii_))
+      .WillOnce(Return(true));
+
+  scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
+  auth->set_password_hash(hash_ascii_);
+  auth->set_username(username_);
+  auth->OnURLFetchComplete(NULL,
+                          source,
+                          status,
+                          403,
+                          cookies_,
+                          response);
   message_loop.RunAllPending();
 }
 

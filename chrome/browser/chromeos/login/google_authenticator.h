@@ -100,6 +100,11 @@ class GoogleAuthenticator : public Authenticator,
   // Returns the ascii encoding of the system salt.
   std::string SaltAsAscii();
 
+  // To support internal two-factor authentication, check to see if
+  // |alleged_error| is actually indicating the successful completion
+  // of the first half of a two-factor login.
+  static bool IsSecondFactorSuccess(const std::string& alleged_error);
+
   // Converts the binary data |binary| into an ascii hex string and stores
   // it in |hex_string|.  Not guaranteed to be NULL-terminated.
   // Returns false if |hex_string| is too small, true otherwise.
@@ -122,6 +127,10 @@ class GoogleAuthenticator : public Authenticator,
   // The format of said POST body.
   static const char kFormat[];
 
+  // Magic string indicating that, while a second factor is still
+  // needed to complete authentication, the user provided the right password.
+  static const char kSecondFactor[];
+
   // Chromium OS system salt stored here.
   static const char kSystemSalt[];
   // String that appears at the start of OpenSSL cipher text with embedded salt.
@@ -140,6 +149,8 @@ class GoogleAuthenticator : public Authenticator,
 
   friend class GoogleAuthenticatorTest;
   FRIEND_TEST(GoogleAuthenticatorTest, SaltToAsciiTest);
+  FRIEND_TEST(GoogleAuthenticatorTest, CheckTwoFactorResponse);
+  FRIEND_TEST(GoogleAuthenticatorTest, CheckNormalErrorCode);
   FRIEND_TEST(GoogleAuthenticatorTest, EmailAddressNoOp);
   FRIEND_TEST(GoogleAuthenticatorTest, EmailAddressIgnoreCaps);
   FRIEND_TEST(GoogleAuthenticatorTest, EmailAddressIgnoreDomainCaps);
@@ -156,6 +167,7 @@ class GoogleAuthenticator : public Authenticator,
   FRIEND_TEST(GoogleAuthenticatorTest, ReadNoLocalaccountTest);
   FRIEND_TEST(GoogleAuthenticatorTest, LoginNetFailureTest);
   FRIEND_TEST(GoogleAuthenticatorTest, LoginDeniedTest);
+  FRIEND_TEST(GoogleAuthenticatorTest, TwoFactorLoginTest);
 
   DISALLOW_COPY_AND_ASSIGN(GoogleAuthenticator);
 };
