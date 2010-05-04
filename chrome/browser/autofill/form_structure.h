@@ -102,8 +102,7 @@ class FormStructure {
                          buzz::XmlElement* encompassing_xml_element) const;
 
   // The name of the form.
-  // TODO(jhawkins): string16
-  std::string form_name_;
+  string16 form_name_;
 
   // The source URL.
   GURL source_url_;

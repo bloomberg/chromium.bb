@@ -57,7 +57,7 @@ static std::string Hash64Bit(const std::string& str) {
 }  // namespace
 
 FormStructure::FormStructure(const FormData& form)
-    : form_name_(UTF16ToUTF8(form.name)),
+    : form_name_(form.name),
       source_url_(form.origin),
       target_url_(form.action),
       autofill_count_(0) {
@@ -165,7 +165,7 @@ std::string FormStructure::FormSignature() const {
                             "://" +
                             target_url_.host() +
                             "&" +
-                            form_name_ +
+                            UTF16ToUTF8(form_name_) +
                             form_signature_field_names_;
 
   return Hash64Bit(form_string);
@@ -216,7 +216,7 @@ size_t FormStructure::field_count() const {
 
 FormData FormStructure::ConvertToFormData() const {
   FormData form;
-  form.name = UTF8ToUTF16(form_name_);
+  form.name = form_name_;
   form.origin = source_url_;
   form.action = target_url_;
 
@@ -237,7 +237,7 @@ FormData FormStructure::ConvertToFormData() const {
 
 bool FormStructure::operator==(const FormData& form) const {
   // TODO(jhawkins): Is this enough to differentiate a form?
-  if (UTF8ToUTF16(form_name_) == form.name &&
+  if (form_name_ == form.name &&
       source_url_ == form.origin &&
       target_url_ == form.action) {
     return true;
