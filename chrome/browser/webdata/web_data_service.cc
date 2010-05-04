@@ -522,7 +522,7 @@ void WebDataService::InitializeDatabaseIfNecessary() {
 void WebDataService::NotifyDatabaseLoadedOnUIThread() {
   // Notify that the database has been initialized.
   NotificationService::current()->Notify(NotificationType::WEB_DATABASE_LOADED,
-                                         NotificationService::AllSources(),
+                                         Source<WebDataService>(this),
                                          NotificationService::NoDetails());
 }
 
@@ -878,7 +878,7 @@ void WebDataService::AddAutoFillProfileImpl(
                                  profile.Label(), &profile, string16());
     NotificationService::current()->Notify(
         NotificationType::AUTOFILL_PROFILE_CHANGED,
-        NotificationService::AllSources(),
+        Source<WebDataService>(this),
         Details<AutofillProfileChange>(&change));
   }
   request->RequestComplete();
@@ -906,7 +906,7 @@ void WebDataService::UpdateAutoFillProfileImpl(
                                    old_profile->Label());
       NotificationService::current()->Notify(
           NotificationType::AUTOFILL_PROFILE_CHANGED,
-          NotificationService::AllSources(),
+          Source<WebDataService>(this),
           Details<AutofillProfileChange>(&change));
     }
   }
@@ -933,7 +933,7 @@ void WebDataService::RemoveAutoFillProfileImpl(
                                    NULL, string16());
       NotificationService::current()->Notify(
           NotificationType::AUTOFILL_PROFILE_CHANGED,
-          NotificationService::AllSources(),
+          Source<WebDataService>(this),
           Details<AutofillProfileChange>(&change));
     }
   }
@@ -965,7 +965,7 @@ void WebDataService::AddCreditCardImpl(
         creditcard.Label(), &creditcard);
     NotificationService::current()->Notify(
         NotificationType::AUTOFILL_CREDIT_CARD_CHANGED,
-        NotificationService::AllSources(),
+        Source<WebDataService>(this),
         Details<AutofillCreditCardChange>(&change));
   }
   request->RequestComplete();
@@ -984,7 +984,7 @@ void WebDataService::UpdateCreditCardImpl(
         creditcard.Label(), &creditcard);
     NotificationService::current()->Notify(
         NotificationType::AUTOFILL_CREDIT_CARD_CHANGED,
-        NotificationService::AllSources(),
+        Source<WebDataService>(this),
         Details<AutofillCreditCardChange>(&change));
   }
   request->RequestComplete();
@@ -1010,7 +1010,7 @@ void WebDataService::RemoveCreditCardImpl(
                                       dead_card->Label(), NULL);
       NotificationService::current()->Notify(
           NotificationType::AUTOFILL_CREDIT_CARD_CHANGED,
-          NotificationService::AllSources(),
+          Source<WebDataService>(this),
           Details<AutofillCreditCardChange>(&change));
     }
   }

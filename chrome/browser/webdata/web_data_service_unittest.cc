@@ -253,7 +253,7 @@ TEST_F(WebDataServiceAutofillTest, ProfileAdd) {
   EXPECT_CALL(
       *observer_helper_->observer(),
       Observe(NotificationType(NotificationType::AUTOFILL_PROFILE_CHANGED),
-              NotificationService::AllSources(),
+              Source<WebDataService>(wds_.get()),
               Property(&Details<const AutofillProfileChange>::ptr,
                        Pointee(expected_change)))).
       WillOnce(SignalEvent(&done_event_));
@@ -275,7 +275,7 @@ TEST_F(WebDataServiceAutofillTest, ProfileRemove) {
   EXPECT_CALL(
       *observer_helper_->observer(),
       Observe(NotificationType(NotificationType::AUTOFILL_PROFILE_CHANGED),
-              NotificationService::AllSources(),
+              Source<WebDataService>(wds_.get()),
               Property(&Details<const AutofillProfileChange>::ptr,
                        Pointee(expected_change)))).
       WillOnce(SignalEvent(&done_event_));
@@ -306,7 +306,7 @@ TEST_F(WebDataServiceAutofillTest, ProfileUpdate) {
   EXPECT_CALL(
       *observer_helper_->observer(),
       Observe(NotificationType(NotificationType::AUTOFILL_PROFILE_CHANGED),
-              NotificationService::AllSources(),
+              Source<WebDataService>(wds_.get()),
               Property(&Details<const AutofillProfileChange>::ptr,
                        Pointee(expected_change)))).
       WillOnce(SignalEvent(&done_event_));
@@ -323,7 +323,7 @@ TEST_F(WebDataServiceAutofillTest, CreditAdd) {
   EXPECT_CALL(
       *observer_helper_->observer(),
       Observe(NotificationType(NotificationType::AUTOFILL_CREDIT_CARD_CHANGED),
-              NotificationService::AllSources(),
+              Source<WebDataService>(wds_.get()),
               Property(&Details<const AutofillCreditCardChange>::ptr,
                        Pointee(expected_change)))).
       WillOnce(SignalEvent(&done_event_));
@@ -345,7 +345,7 @@ TEST_F(WebDataServiceAutofillTest, CreditRemove) {
   EXPECT_CALL(
       *observer_helper_->observer(),
       Observe(NotificationType(NotificationType::AUTOFILL_CREDIT_CARD_CHANGED),
-              NotificationService::AllSources(),
+              Source<WebDataService>(wds_.get()),
               Property(&Details<const AutofillCreditCardChange>::ptr,
                        Pointee(expected_change)))).
       WillOnce(SignalEvent(&done_event_));
@@ -374,7 +374,7 @@ TEST_F(WebDataServiceAutofillTest, CreditUpdate) {
   EXPECT_CALL(
       *observer_helper_->observer(),
       Observe(NotificationType(NotificationType::AUTOFILL_CREDIT_CARD_CHANGED),
-              NotificationService::AllSources(),
+              Source<WebDataService>(wds_.get()),
               Property(&Details<const AutofillCreditCardChange>::ptr,
                        Pointee(expected_change)))).
       WillOnce(SignalEvent(&done_event_));
