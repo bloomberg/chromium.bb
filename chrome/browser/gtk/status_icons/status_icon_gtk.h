@@ -7,6 +7,7 @@
 
 #include <gtk/gtk.h>
 
+#include "app/gtk_signal.h"
 #include "chrome/browser/status_icons/status_icon.h"
 
 class SkBitmap;
@@ -22,7 +23,7 @@ class StatusIconGtk : public StatusIcon {
   virtual void SetToolTip(const string16& tool_tip);
 
   // Exposed for testing.
-  static void OnClick(GtkWidget* widget, StatusIconGtk* status_icon);
+  CHROMEGTK_CALLBACK_0(StatusIconGtk, void, OnClick);
 
  private:
   // The currently-displayed icon for the window.

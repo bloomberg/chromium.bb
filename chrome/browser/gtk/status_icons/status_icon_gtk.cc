@@ -15,7 +15,7 @@ StatusIconGtk::StatusIconGtk() {
   gtk_status_icon_set_visible(icon_, TRUE);
 
   g_signal_connect(icon_, "activate",
-                   G_CALLBACK(OnClick), this);
+                   G_CALLBACK(OnClickThunk), this);
 }
 
 StatusIconGtk::~StatusIconGtk() {
@@ -40,6 +40,6 @@ void StatusIconGtk::SetToolTip(const string16& tool_tip) {
   gtk_status_icon_set_tooltip(icon_, UTF16ToUTF8(tool_tip).c_str());
 }
 
-void StatusIconGtk::OnClick(GtkWidget* widget, StatusIconGtk* status_icon) {
-  status_icon->DispatchClickEvent();
+void StatusIconGtk::OnClick(GtkWidget* widget) {
+  DispatchClickEvent();
 }
