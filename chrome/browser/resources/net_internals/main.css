@@ -181,12 +181,12 @@ body {
 
 #detailsLogBox,
 #detailsTimelineBox,
-#proxyTabContent {
+#proxyTabContent,
+#dataTabContent,
+#dnsTabContent,
+#testTabContent {
   overflow: auto;
-}
-
-#proxyTabContent {
-  padding-left: 20px;
+  padding: 10px;
 }
 
 #proxyTabContent td,

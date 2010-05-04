@@ -10,6 +10,7 @@ found in the LICENSE file.
     <script src="view.js"></script>
     <script src="tabswitcherview.js"></script>
     <script src="dataview.js"></script>
+    <script src="testview.js"></script>
     <script src="main.js"></script>
     <script src="dnsview.js"></script>
     <script src="requestsview.js"></script>
@@ -32,6 +33,7 @@ found in the LICENSE file.
         <li><a href="#sockets" id=socketsTab>Sockets</a></li>
         <li><a href="#httpCache" id=httpCacheTab>HTTP Cache</a></li>
         <li><a href="#data" id=dataTab>Data</a></li>
+        <li><a href="#tests" id=testTab>Tests</a></li>
       </ul>
       <div style="clear: both;"></div>
     </div>
@@ -89,11 +91,18 @@ found in the LICENSE file.
     <div id=httpCacheTabContent>TODO: display http cache information (disk cache navigator)</div>
     <!-- Import/Export data -->
     <div id=dataTabContent>
-       <br/>
-         <button id=exportToText><b>Click here to generate bug report data</b><br/>(Copy paste the result and attach to bug)</button>
+       <button id=exportToText><b>Click here to generate bug report data</b><br/>(Copy paste the result and attach to bug)</button>
        <br/>
        <br/>
        <button id=exportToJson>Export data to JSON</button>
+    </div>
+    <!-- Connection tests -->
+    <div id=testTabContent>
+      <p>Input a URL which failed to load, and then click the button to run some
+         tests for why it failed.</p>
+      URL: <input type=text id=testUrlInput />
+      <input type=button id=testStart value="Start tests" />
+      <div id=testSummary></div>
     </div>
 
     <!-- ================= Requests view =================== -->

@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
+#include "net/proxy/proxy_config.h"
 
 namespace {
 
@@ -82,7 +83,7 @@ void FirefoxProxySettings::Reset() {
 }
 
 // static
- bool FirefoxProxySettings::GetSettings(FirefoxProxySettings* settings) {
+bool FirefoxProxySettings::GetSettings(FirefoxProxySettings* settings) {
   DCHECK(settings);
   settings->Reset();
 
@@ -91,6 +92,73 @@ void FirefoxProxySettings::Reset() {
     return false;
   FilePath pref_file = profile_path.AppendASCII(kPrefFileName);
   return GetSettingsFromFile(pref_file, settings);
+}
+
+bool FirefoxProxySettings::ToProxyConfig(net::ProxyConfig* config) {
+  switch (config_type()) {
+    case NO_PROXY:
+      *config = net::ProxyConfig::CreateDirect();
+      return true;
+    case AUTO_DETECT:
+      *config = net::ProxyConfig::CreateAutoDetect();
+      return true;
+    case AUTO_FROM_URL:
+      *config = net::ProxyConfig::CreateFromCustomPacURL(
+          GURL(autoconfig_url()));
+      return true;
+    case SYSTEM:
+      // Can't convert this directly to a ProxyConfig.
+      return false;
+    case MANUAL:
+      // Handled outside of the switch (since it is a lot of code.)
+      break;
+    default:
+      NOTREACHED();
+      return false;
+  }
+
+  // The rest of this funciton is for handling the MANUAL case.
+  DCHECK_EQ(MANUAL, config_type());
+
+  *config = net::ProxyConfig();
+  config->proxy_rules().type =
+      net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME;
+
+  if (!http_proxy().empty()) {
+    config->proxy_rules().proxy_for_http = net::ProxyServer(
+        net::ProxyServer::SCHEME_HTTP,
+        http_proxy(),
+        http_proxy_port());
+  }
+
+  if (!ftp_proxy().empty()) {
+    config->proxy_rules().proxy_for_ftp = net::ProxyServer(
+        net::ProxyServer::SCHEME_HTTP,
+        ftp_proxy(),
+        ftp_proxy_port());
+  }
+
+  if (!ssl_proxy().empty()) {
+    config->proxy_rules().proxy_for_https = net::ProxyServer(
+        net::ProxyServer::SCHEME_HTTP,
+        ssl_proxy(),
+        ssl_proxy_port());
+  }
+
+  if (!socks_host().empty()) {
+    net::ProxyServer::Scheme proxy_scheme = V5 == socks_version() ?
+        net::ProxyServer::SCHEME_SOCKS5 : net::ProxyServer::SCHEME_SOCKS4;
+
+    config->proxy_rules().socks_proxy = net::ProxyServer(
+        proxy_scheme,
+        socks_host(),
+        socks_port());
+  }
+
+  config->proxy_rules().bypass_rules.ParseFromStringUsingSuffixMatching(
+      JoinString(proxy_bypass_list_, ';'));
+
+  return true;
 }
 
 // static

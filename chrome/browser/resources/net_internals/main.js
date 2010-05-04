@@ -61,6 +61,11 @@ function onLoaded() {
   // captured data.
   var dataView = new DataView("dataTabContent", "exportToJson", "exportToText");
 
+  // Create a view which will display the results and controls for connection
+  // tests.
+  var testView = new TestView("testTabContent", "testUrlInput", "testStart",
+                              "testSummary");
+
   // Create a view which lets you tab between the different sub-views.
   var categoryTabSwitcher =
       new TabSwitcherView(new DivView('categoryTabHandles'));
@@ -74,6 +79,7 @@ function onLoaded() {
   categoryTabSwitcher.addTab('httpCacheTab',
                              new DivView('httpCacheTabContent'), false);
   categoryTabSwitcher.addTab('dataTab', dataView, false);
+  categoryTabSwitcher.addTab('testTab', testView, false);
 
   // Build a map from the anchor name of each tab handle to its "tab ID".
   // We will consider navigations to the #hash as a switch tab request.
@@ -114,9 +120,11 @@ function onLoaded() {
 function BrowserBridge() {
   // List of observers for various bits of browser state.
   this.logObservers_ = [];
+  this.connectionTestsObservers_ = [];
   this.proxySettings_ = new PollableDataHelper('onProxySettingsChanged');
   this.badProxies_ = new PollableDataHelper('onBadProxiesChanged');
-  this.hostResolverCache_ = new PollableDataHelper('onHostResolverCacheChanged');
+  this.hostResolverCache_ =
+      new PollableDataHelper('onHostResolverCacheChanged');
 
   // Cache of the data received.
   // TODO(eroman): the controls to clear data in the "Requests" tab should be
@@ -171,6 +179,10 @@ BrowserBridge.prototype.sendClearHostResolverCache = function() {
   chrome.send('clearHostResolverCache');
 };
 
+BrowserBridge.prototype.sendStartConnectionTests = function(url) {
+  chrome.send('startConnectionTests', [url]);
+};
+
 //------------------------------------------------------------------------------
 // Messages received from the browser
 //------------------------------------------------------------------------------
@@ -222,6 +234,33 @@ BrowserBridge.prototype.receivedPassiveLogEntries = function(entries) {
     this.receivedLogEntry(entries[i], true);
 };
 
+
+BrowserBridge.prototype.receivedStartConnectionTestSuite = function() {
+  for (var i = 0; i < this.connectionTestsObservers_.length; ++i)
+    this.connectionTestsObservers_[i].onStartedConnectionTestSuite();
+};
+
+BrowserBridge.prototype.receivedStartConnectionTestExperiment = function(
+    experiment) {
+  for (var i = 0; i < this.connectionTestsObservers_.length; ++i) {
+    this.connectionTestsObservers_[i].onStartedConnectionTestExperiment(
+        experiment);
+  }
+};
+
+BrowserBridge.prototype.receivedCompletedConnectionTestExperiment =
+function(info) {
+  for (var i = 0; i < this.connectionTestsObservers_.length; ++i) {
+    this.connectionTestsObservers_[i].onCompletedConnectionTestExperiment(
+        info.experiment, info.result);
+  }
+};
+
+BrowserBridge.prototype.receivedCompletedConnectionTestSuite = function() {
+  for (var i = 0; i < this.connectionTestsObservers_.length; ++i)
+    this.connectionTestsObservers_[i].onCompletedConnectionTestSuite();
+};
+
 //------------------------------------------------------------------------------
 
 /**
@@ -270,6 +309,19 @@ BrowserBridge.prototype.addBadProxiesObsever = function(observer) {
  */
 BrowserBridge.prototype.addHostResolverCacheObserver = function(observer) {
   this.hostResolverCache_.addObserver(observer);
+};
+
+/**
+ * Adds a listener for the progress of the connection tests.
+ * The observer will be called back with:
+ *
+ *   observer.onStartedConnectionTestSuite();
+ *   observer.onStartedConnectionTestExperiment(experiment);
+ *   observer.onCompletedConnectionTestExperiment(experiment, result);
+ *   observer.onCompletedConnectionTestSuite();
+ */
+BrowserBridge.prototype.addConnectionTestsObserver = function(observer) {
+  this.connectionTestsObservers_.push(observer);
 };
 
 /**

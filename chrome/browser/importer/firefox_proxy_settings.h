@@ -12,6 +12,10 @@
 
 class FilePath;
 
+namespace net {
+class ProxyConfig;
+}
+
 class FirefoxProxySettings {
  public:
   enum ProxyConfig {
@@ -61,6 +65,14 @@ class FirefoxProxySettings {
   std::vector<std::string> proxy_bypass_list() const {
     return proxy_bypass_list_;
   }
+
+  const std::string autoconfig_url() const {
+    return autoconfig_url_;
+  }
+
+  // Converts a FirefoxProxySettings object to a net::ProxyConfig.
+  // On success returns true and fills |config| with the result.
+  bool ToProxyConfig(net::ProxyConfig* config);
 
  protected:
   // Gets the settings from the passed prefs.js file and returns true if

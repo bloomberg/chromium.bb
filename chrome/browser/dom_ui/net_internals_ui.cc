@@ -22,6 +22,7 @@
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_net_log.h"
+#include "chrome/browser/net/connection_tester.h"
 #include "chrome/browser/net/passive_log_collector.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/profile.h"
@@ -83,6 +84,21 @@ Value* EntryToDictionaryValue(net::NetLog::EventType type,
   return entry_dict;
 }
 
+Value* ExperimentToValue(const ConnectionTester::Experiment& experiment) {
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetString(L"url", experiment.url.spec());
+
+  dict->SetStringFromUTF16(
+      L"proxy_settings_experiment",
+      ConnectionTester::ProxySettingsExperimentDescription(
+          experiment.proxy_settings_experiment));
+  dict->SetStringFromUTF16(
+      L"host_resolver_experiment",
+      ConnectionTester::HostResolverExperimentDescription(
+          experiment.host_resolver_experiment));
+  return dict;
+}
+
 class NetInternalsHTMLSource : public ChromeURLDataManager::DataSource {
  public:
   NetInternalsHTMLSource();
@@ -122,7 +138,7 @@ class NetInternalsMessageHandler
   // Executes the javascript function |function_name| in the renderer, passing
   // it the argument |value|.
   void CallJavascriptFunction(const std::wstring& function_name,
-                              const Value& value);
+                              const Value* value);
 
  private:
   class IOThreadImpl;
@@ -140,7 +156,8 @@ class NetInternalsMessageHandler::IOThreadImpl
     : public base::RefCountedThreadSafe<
           NetInternalsMessageHandler::IOThreadImpl,
           ChromeThread::DeleteOnUIThread>,
-      public ChromeNetLog::Observer {
+      public ChromeNetLog::Observer,
+      public ConnectionTester::Delegate {
  public:
   // Type for methods that can be used as MessageHandler callbacks.
   typedef void (IOThreadImpl::*MessageHandler)(const Value*);
@@ -182,6 +199,7 @@ class NetInternalsMessageHandler::IOThreadImpl
   void OnGetHostResolverCache(const Value* value);
   void OnClearHostResolverCache(const Value* value);
   void OnGetPassiveLogEntries(const Value* value);
+  void OnStartConnectionTests(const Value* value);
 
   // ChromeNetLog::Observer implementation:
   virtual void OnAddEntry(net::NetLog::EventType type,
@@ -189,6 +207,15 @@ class NetInternalsMessageHandler::IOThreadImpl
                           const net::NetLog::Source& source,
                           net::NetLog::EventPhase phase,
                           net::NetLog::EventParameters* extra_parameters);
+
+  // ConnectionTester::Delegate implementation:
+  virtual void OnStartConnectionTestSuite();
+  virtual void OnStartConnectionTestExperiment(
+      const ConnectionTester::Experiment& experiment);
+  virtual void OnCompletedConnectionTestExperiment(
+      const ConnectionTester::Experiment& experiment,
+      int result);
+  virtual void OnCompletedConnectionTestSuite();
 
  private:
   class CallbackHelper;
@@ -209,6 +236,9 @@ class NetInternalsMessageHandler::IOThreadImpl
   IOThread* io_thread_;
 
   scoped_refptr<URLRequestContextGetter> context_getter_;
+
+  // Helper that runs the suite of connection tests.
+  scoped_ptr<ConnectionTester> connection_tester_;
 
   // True if we have attached an observer to the NetLog already.
   bool is_observing_log_;
@@ -347,13 +377,20 @@ void NetInternalsMessageHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback(
       "getPassiveLogEntries",
       proxy_->CreateCallback(&IOThreadImpl::OnGetPassiveLogEntries));
+  dom_ui_->RegisterMessageCallback(
+      "startConnectionTests",
+      proxy_->CreateCallback(&IOThreadImpl::OnStartConnectionTests));
 }
 
 void NetInternalsMessageHandler::CallJavascriptFunction(
     const std::wstring& function_name,
-    const Value& value) {
+    const Value* value) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  dom_ui_->CallJavascriptFunction(function_name, value);
+  if (value) {
+    dom_ui_->CallJavascriptFunction(function_name, *value);
+  } else {
+    dom_ui_->CallJavascriptFunction(function_name);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -389,6 +426,9 @@ void NetInternalsMessageHandler::IOThreadImpl::Detach() {
   // Unregister with network stack to observe events.
   if (is_observing_log_)
     io_thread_->globals()->net_log->RemoveObserver(this);
+
+  // Cancel any in-progress connection tests.
+  connection_tester_.reset();
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
@@ -630,6 +670,21 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetPassiveLogEntries(
   CallJavascriptFunction(L"g_browser.receivedPassiveLogEntries", list);
 }
 
+void NetInternalsMessageHandler::IOThreadImpl::OnStartConnectionTests(
+    const Value* value) {
+  // |value| should be: [<URL to test>].
+  string16 url_str;
+  if (value && value->GetType() == Value::TYPE_LIST) {
+    const ListValue* list = static_cast<const ListValue*>(value);
+    list->GetStringAsUTF16(0, &url_str);
+  }
+
+  GURL url(url_str);
+
+  connection_tester_.reset(new ConnectionTester(this));
+  connection_tester_->RunAllTests(url);
+}
+
 void NetInternalsMessageHandler::IOThreadImpl::OnAddEntry(
     net::NetLog::EventType type,
     const base::TimeTicks& time,
@@ -641,6 +696,38 @@ void NetInternalsMessageHandler::IOThreadImpl::OnAddEntry(
   CallJavascriptFunction(
       L"g_browser.receivedLogEntry",
       EntryToDictionaryValue(type, time, source, phase, extra_parameters));
+}
+
+void NetInternalsMessageHandler::IOThreadImpl::OnStartConnectionTestSuite() {
+  CallJavascriptFunction(L"g_browser.receivedStartConnectionTestSuite", NULL);
+}
+
+void NetInternalsMessageHandler::IOThreadImpl::OnStartConnectionTestExperiment(
+    const ConnectionTester::Experiment& experiment) {
+  CallJavascriptFunction(
+      L"g_browser.receivedStartConnectionTestExperiment",
+      ExperimentToValue(experiment));
+}
+
+void
+NetInternalsMessageHandler::IOThreadImpl::OnCompletedConnectionTestExperiment(
+    const ConnectionTester::Experiment& experiment,
+    int result) {
+  DictionaryValue* dict = new DictionaryValue();
+
+  dict->Set(L"experiment", ExperimentToValue(experiment));
+  dict->SetInteger(L"result", result);
+
+  CallJavascriptFunction(
+      L"g_browser.receivedCompletedConnectionTestExperiment",
+      dict);
+}
+
+void
+NetInternalsMessageHandler::IOThreadImpl::OnCompletedConnectionTestSuite() {
+  CallJavascriptFunction(
+      L"g_browser.receivedCompletedConnectionTestSuite",
+      NULL);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::DispatchToMessageHandler(
@@ -657,7 +744,7 @@ void NetInternalsMessageHandler::IOThreadImpl::CallJavascriptFunction(
     if (handler_) {
       // We check |handler_| in case it was deleted on the UI thread earlier
       // while we were running on the IO thread.
-      handler_->CallJavascriptFunction(function_name, *arg);
+      handler_->CallJavascriptFunction(function_name, arg);
     }
     delete arg;
     return;
