@@ -116,12 +116,13 @@
 #include "webkit/glue/image_decoder.h"
 #include "webkit/glue/media/buffered_data_source.h"
 #include "webkit/glue/media/simple_data_source.h"
+#include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/plugins/webplugin_delegate.h"
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"
 #include "webkit/glue/plugins/webplugin_impl.h"
-#include "webkit/glue/media/video_renderer_impl.h"
+#include "webkit/glue/site_isolation_metrics.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webmediaplayer_impl.h"
@@ -145,6 +146,7 @@ using webkit_glue::FormField;
 using webkit_glue::ImageResourceFetcher;
 using webkit_glue::PasswordForm;
 using webkit_glue::PasswordFormDomManager;
+using webkit_glue::SiteIsolationMetrics;
 using WebKit::WebAccessibilityCache;
 using WebKit::WebAccessibilityObject;
 using WebKit::WebApplicationCacheHost;
@@ -2787,74 +2789,6 @@ void RenderView::assignIdentifierToRequest(
   // Ignore
 }
 
-// Used in logMimeTypeForCrossOriginRequest(), remove when that function
-// is removed
-typedef base::hash_map<unsigned, WebURLRequest::TargetType> TargetTypeMap;
-static TargetTypeMap target_type_map_;
-typedef base::hash_map<std::string, int> MimeTypeMap;
-static MimeTypeMap mime_type_map_;
-
-// Copied from net/base/mime_util.cc, supported_non_image_types[]
-static const char* const cross_origin_mime_types_to_log[] = {
-  "text/cache-manifest",
-  "text/html",
-  "text/xml",
-  "text/xsl",
-  "text/plain",
-  "text/vnd.chromium.ftp-dir",
-  "text/",
-  "text/css",
-  "image/svg+xml",
-  "application/xml",
-  "application/xhtml+xml",
-  "application/rss+xml",
-  "application/atom+xml",
-  "application/json",
-  "application/x-x509-user-cert",
-  "multipart/x-mixed-replace"
-};
-
-static void initMimeTypeMapIfNeeded() {
-  if (!mime_type_map_.size()) {
-    for (size_t i = 0; i < arraysize(cross_origin_mime_types_to_log); ++i)
-      mime_type_map_[cross_origin_mime_types_to_log[i]] = i;
-  }
-}
-
-static void logMimeTypeForCrossOriginRequest(
-    WebFrame* frame, unsigned identifier, const WebURLResponse& response) {
-  initMimeTypeMapIfNeeded();
-
-  // Metrics to check the feasability of blocking cross-site requests
-  // a renderer shouldn't be making (in case we try to move cross-site frames
-  // into their own process someday). We're erring on the side of counting more
-  // mime-types then we strictly need (we'd only consider blocking cross-site
-  // requests with types similar to HTML, XML, or JSON).
-  // TODO(japhet): Make these more granular.  We're ignoring all miscellaneous
-  // subresource requests, not just the XHRs that might be allowed.
-  // Also, we should make these metrics be based on something more accurate
-  // than the mime type header, such as parsing or content sniffing.
-  TargetTypeMap::iterator iter  = target_type_map_.find(identifier);
-  if (iter != target_type_map_.end()) {
-    WebURLRequest::TargetType target_type = iter->second;
-    target_type_map_.erase(iter);
-    if (target_type != WebURLRequest::TargetIsMainFrame
-        && target_type != WebURLRequest::TargetIsSubFrame
-        && target_type != WebURLRequest::TargetIsSubResource
-        && target_type != WebURLRequest::TargetIsObject
-        && !frame->securityOrigin().canAccess(
-            WebSecurityOrigin::create(response.url()))) {
-      std::string mime_type = response.mimeType().utf8();
-      MimeTypeMap::iterator mime_type_iter = mime_type_map_.find(mime_type);
-      if (mime_type_iter != mime_type_map_.end()) {
-        UMA_HISTOGRAM_ENUMERATION(
-            "SiteIsolation.CrossSiteNonFrameResponse_MIME_Type",
-            mime_type_iter->second, arraysize(cross_origin_mime_types_to_log));
-      }
-    }
-  }
-}
-
 void RenderView::willSendRequest(
     WebFrame* frame, unsigned identifier, WebURLRequest& request,
     const WebURLResponse& redirect_response) {
@@ -2873,13 +2807,17 @@ void RenderView::willSendRequest(
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoReferrers))
     request.clearHTTPHeaderField("Referer");
 
-  target_type_map_[identifier] = request.targetType();
+  // Temporary metrics, see site_isolation_metrics.h
+  SiteIsolationMetrics::AddRequest(identifier, request.targetType());
 }
 
 void RenderView::didReceiveResponse(
     WebFrame* frame, unsigned identifier, const WebURLResponse& response) {
 
-  logMimeTypeForCrossOriginRequest(frame, identifier, response);
+  // Temporary metrics, see site_isolation_metrics.h
+  SiteIsolationMetrics::LogMimeTypeForCrossOriginRequest(frame,
+                                                         identifier,
+                                                         response);
 
   // Only do this for responses that correspond to a provisional data source
   // of the top-most frame.  If we have a provisional data source, then we
