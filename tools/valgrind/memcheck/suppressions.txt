@@ -2743,20 +2743,6 @@
    fun:_ZN3WTF6RefPtrIN7WebCore14DocumentLoaderEED1Ev
 }
 {
-   bug_42925
-   Memcheck:Leak
-   fun:_Znaj
-   fun:_ZN2v88internal8NewArrayIiEEPT_i
-   fun:_ZN2v88internal29Runtime_GetLocalPropertyNamesENS0_9ArgumentsE
-   obj:*
-   obj:*
-   obj:*
-   obj:*
-   obj:*
-   obj:*
-   fun:_ZN2v88internal6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPPPS4_Pb
-}
-{
    bug_23416
    Memcheck:Leak
    fun:_Znw*
