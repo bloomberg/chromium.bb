@@ -19,6 +19,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/file_stream.h"
@@ -372,7 +373,7 @@ BookmarkFaviconFetcher::BookmarkFaviconFetcher(
   favicons_map_.reset(new URLFaviconMap());
   registrar_.Add(this,
                  NotificationType::PROFILE_DESTROYED,
-                 NotificationService::AllSources());
+                 Source<Profile>(profile_));
 }
 
 BookmarkFaviconFetcher::~BookmarkFaviconFetcher() {
@@ -483,4 +484,3 @@ void WriteBookmarks(Profile* profile,
 }
 
 }  // namespace bookmark_html_writer
-

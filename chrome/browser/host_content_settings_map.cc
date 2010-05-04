@@ -11,6 +11,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/scoped_pref_update.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -193,7 +194,7 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
     prefs->AddPrefObserver(prefs::kBlockThirdPartyCookies, this);
   }
   notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
-                              NotificationService::AllSources());
+                              Source<Profile>(profile_));
 }
 
 // static
@@ -613,6 +614,6 @@ void HostContentSettingsMap::UnregisterObservers() {
     prefs->RemovePrefObserver(prefs::kBlockThirdPartyCookies, this);
   }
   notification_registrar_.Remove(this, NotificationType::PROFILE_DESTROYED,
-                                 NotificationService::AllSources());
+                                 Source<Profile>(profile_));
   profile_ = NULL;
 }

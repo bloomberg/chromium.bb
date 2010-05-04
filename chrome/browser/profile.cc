@@ -244,7 +244,11 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual ~OffTheRecordProfileImpl() {
-    CleanupRequestContext(request_context_);
+   NotificationService::current()->Notify(
+      NotificationType::PROFILE_DESTROYED,
+      Source<Profile>(this),
+      NotificationService::NoDetails());
+   CleanupRequestContext(request_context_);
   }
 
   virtual ProfileId GetRuntimeId() {
