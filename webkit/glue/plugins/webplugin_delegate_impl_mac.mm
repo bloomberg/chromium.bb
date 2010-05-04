@@ -665,7 +665,6 @@ void WebPluginDelegateImpl::WindowlessUpdateGeometry(
   // In a QuickDraw plugin, a geometry update might have caused a port change;
   // if so, we need to call SetWindow even if nothing else changed.
   if (qd_manager_.get() && (qd_port_.port != qd_manager_->port())) {
-    LOG(ERROR) << "Saving the day";
     qd_port_.port = qd_manager_->port();
     force_set_window = true;
   }
