@@ -471,7 +471,13 @@ void AutocompleteEditViewMac::EmphasizeURLComponents() {
   if (editor) {
     NSTextStorage* storage = [editor textStorage];
     [storage beginEditing];
+
+    // Clear the existing attributes from the text storage, then
+    // overlay the appropriate Omnibox attributes.
+    [storage setAttributes:[NSDictionary dictionary]
+                     range:NSMakeRange(0, [storage length])];
     ApplyTextAttributes(GetText(), storage);
+
     [storage endEditing];
   } else {
     SetText(GetText());
