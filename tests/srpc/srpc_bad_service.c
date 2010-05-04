@@ -8,10 +8,10 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <sys/nacl_imc_api.h>
 #include <sys/nacl_syscalls.h>
 #include <sys/time.h>
+#include <unistd.h>
 
 #define BOUND_SOCKET  3
 
@@ -122,45 +122,6 @@ static void *acceptor(void *arg) {
   return NULL;
 }
 
-/* Returns 1 if successful, 0 otherwise. */
-/*
- * TODO(sehr,bsy): rewrite to use nanosleep syscall and/or sleep library
- * function when those are available.
- */
-int my_sleep(uint32_t sleep_seconds) {
-  pthread_mutex_t mu;
-  pthread_cond_t cv;
-  struct timeval tv;
-  struct timespec ts;
-
-  /* Set up the mutex and condition variable. */
-  pthread_mutex_init(&mu, NULL);
-  pthread_cond_init(&cv, NULL);
-
-  /* Get the current time */
-  if (0 != gettimeofday(&tv, NULL)) {
-    /* return failure */
-    return 0;
-  }
-  /* Set the timeout for the current time plus the requested interval. */
-  ts.tv_sec = tv.tv_sec + sleep_seconds;
-  ts.tv_nsec = tv.tv_usec * 1000;
-  /* Do a timed condition variable loop. */
-  pthread_mutex_lock(&mu);
-  while (1) {
-    int rval = pthread_cond_timedwait_abs(&cv, &mu, &ts);
-    if (ETIMEDOUT == rval) {
-      break;
-    }
-  }
-  pthread_mutex_unlock(&mu);
-  /* Destroy the mutex and condition variable. */
-  pthread_cond_destroy(&cv);
-  pthread_mutex_destroy(&mu);
-  /* return success */
-  return 1;
-}
-
 int main() {
   pthread_t acceptor_tid;
   int       is_embedded;
@@ -173,10 +134,7 @@ int main() {
   }
   /* Wait forever so that acceptor and clients can run. */
   while (1) {
-    static const uint32_t kSleepSeconds = 1;
-    if (!my_sleep(kSleepSeconds)) {
-      return 1;
-    }
+    sleep(1);
   }
   return 0;
 }

@@ -10,44 +10,18 @@
  * Tests the Nrd Xfer protocol implementation.
  */
 
+#include <errno.h>
+#include <fcntl.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/time.h>
-#include <fcntl.h>
-#include <errno.h>
-
 #include <sys/nacl_imc_api.h>
 #include <sys/nacl_syscalls.h>
-
-#include <pthread.h>
-
-void thread_sleep(unsigned int num_seconds) {
-  pthread_mutex_t mu;
-  pthread_cond_t  cv;
-  struct timeval  tv;
-  struct timespec ts;
-
-  if (0 == num_seconds) {
-    return;
-  }
-  pthread_mutex_init(&mu, NULL);
-  pthread_cond_init(&cv, NULL);
-
-  gettimeofday(&tv, NULL);
-  ts.tv_sec = tv.tv_sec + num_seconds;
-  ts.tv_nsec = 0;
-
-  pthread_mutex_lock(&mu);
-  pthread_cond_timedwait(&cv, &mu, &ts);  /* just for the timeout */
-  pthread_mutex_unlock(&mu);
-
-  pthread_cond_destroy(&cv);
-  pthread_mutex_destroy(&mu);
-}
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 /*
  * sends a string w/ at most one descriptor.
@@ -251,7 +225,7 @@ int main(int ac, char **av) {
 
       if (0 != sleep_seconds) {
         printf("sleeping for %d seconds...\n", sleep_seconds);
-        thread_sleep(sleep_seconds);
+        sleep(sleep_seconds);
       }
     } while (--loop_iter > 0);
 
