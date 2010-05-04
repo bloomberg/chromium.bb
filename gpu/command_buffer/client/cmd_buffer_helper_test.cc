@@ -65,7 +65,6 @@ class CommandBufferHelperTest : public testing::Test {
   virtual void TearDown() {
     // If the GPUProcessor posts any tasks, this forces them to run.
     MessageLoop::current()->RunAllPending();
-    helper_.release();
   }
 
   // Adds a command to the buffer through the helper, while adding it as an

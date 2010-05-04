@@ -68,10 +68,6 @@ class BaseRingBufferTest : public testing::Test {
     return command_buffer_->GetState().token;
   }
 
-  virtual void TearDown() {
-    helper_.release();
-  }
-
   base::ScopedNSAutoreleasePool autorelease_pool_;
   base::AtExitManager at_exit_manager_;
   MessageLoop message_loop_;
@@ -102,8 +98,6 @@ class RingBufferTest : public BaseRingBufferTest {
     // If the GPUProcessor posts any tasks, this forces them to run.
     MessageLoop::current()->RunAllPending();
 
-    allocator_.release();
-
     BaseRingBufferTest::TearDown();
   }
 
@@ -119,7 +113,7 @@ TEST_F(RingBufferTest, TestBasic) {
   EXPECT_GE(kBufferSize, offset - kBaseOffset + kSize);
   EXPECT_EQ(kBufferSize, allocator_->GetLargestFreeOrPendingSize());
   EXPECT_EQ(kBufferSize - kSize, allocator_->GetLargestFreeSizeNoWaiting());
-  int32 token = helper_.get()->InsertToken();
+  int32 token = helper_->InsertToken();
   allocator_->FreePendingToken(offset, token);
 }
 
@@ -134,7 +128,7 @@ TEST_F(RingBufferTest, TestFreePendingToken) {
   for (unsigned int ii = 0; ii < kAllocCount; ++ii) {
     RingBuffer::Offset offset = allocator_->Alloc(kSize);
     EXPECT_GE(kBufferSize, offset - kBaseOffset + kSize);
-    tokens[ii] = helper_.get()->InsertToken();
+    tokens[ii] = helper_->InsertToken();
     allocator_->FreePendingToken(offset, tokens[ii]);
   }
 
@@ -149,7 +143,7 @@ TEST_F(RingBufferTest, TestFreePendingToken) {
   // Check that the token has indeed passed.
   EXPECT_LE(tokens[0], GetToken());
 
-  allocator_->FreePendingToken(offset1, helper_.get()->InsertToken());
+  allocator_->FreePendingToken(offset1, helper_->InsertToken());
 }
 
 // Tests GetLargestFreeSizeNoWaiting
@@ -158,7 +152,7 @@ TEST_F(RingBufferTest, TestGetLargestFreeSizeNoWaiting) {
 
   RingBuffer::Offset offset = allocator_->Alloc(kBufferSize);
   EXPECT_EQ(0u, allocator_->GetLargestFreeSizeNoWaiting());
-  allocator_->FreePendingToken(offset, helper_.get()->InsertToken());
+  allocator_->FreePendingToken(offset, helper_->InsertToken());
 }
 
 TEST_F(RingBufferTest, TestFreeBug) {
@@ -200,9 +194,6 @@ class RingBufferWrapperTest : public BaseRingBufferTest {
     // If the GPUProcessor posts any tasks, this forces them to run.
     MessageLoop::current()->RunAllPending();
 
-    allocator_.release();
-    buffer_.release();
-
     BaseRingBufferTest::TearDown();
   }
 
@@ -219,13 +210,13 @@ TEST_F(RingBufferWrapperTest, TestBasic) {
   EXPECT_LE(buffer_start_, static_cast<int8*>(pointer));
   EXPECT_GE(kBufferSize, static_cast<int8*>(pointer) - buffer_start_ + kSize);
 
-  allocator_->FreePendingToken(pointer, helper_.get()->InsertToken());
+  allocator_->FreePendingToken(pointer, helper_->InsertToken());
 
   int8* pointer_int8 = allocator_->AllocTyped<int8>(kSize);
   ASSERT_TRUE(pointer_int8);
   EXPECT_LE(buffer_start_, pointer_int8);
   EXPECT_GE(buffer_start_ + kBufferSize, pointer_int8 + kSize);
-  allocator_->FreePendingToken(pointer_int8, helper_.get()->InsertToken());
+  allocator_->FreePendingToken(pointer_int8, helper_->InsertToken());
 
   unsigned int* pointer_uint = allocator_->AllocTyped<unsigned int>(kSize);
   ASSERT_TRUE(pointer_uint);
@@ -237,7 +228,7 @@ TEST_F(RingBufferWrapperTest, TestBasic) {
   // directly, except from the remaining size.
   EXPECT_EQ(kBufferSize - kSize - kSize - kSize * sizeof(*pointer_uint),
             allocator_->GetLargestFreeSizeNoWaiting());
-  allocator_->FreePendingToken(pointer_uint, helper_.get()->InsertToken());
+  allocator_->FreePendingToken(pointer_uint, helper_->InsertToken());
 }
 
 // Checks the free-pending-token mechanism.
@@ -251,8 +242,8 @@ TEST_F(RingBufferWrapperTest, TestFreePendingToken) {
   for (unsigned int ii = 0; ii < kAllocCount; ++ii) {
     void* pointer = allocator_->Alloc(kSize);
     EXPECT_TRUE(pointer != NULL);
-    tokens[ii] = helper_.get()->InsertToken();
-    allocator_->FreePendingToken(pointer, helper_.get()->InsertToken());
+    tokens[ii] = helper_->InsertToken();
+    allocator_->FreePendingToken(pointer, helper_->InsertToken());
   }
 
   EXPECT_EQ(kBufferSize - (kSize * kAllocCount),
@@ -266,7 +257,7 @@ TEST_F(RingBufferWrapperTest, TestFreePendingToken) {
   // Check that the token has indeed passed.
   EXPECT_LE(tokens[0], GetToken());
 
-  allocator_->FreePendingToken(pointer1, helper_.get()->InsertToken());
+  allocator_->FreePendingToken(pointer1, helper_->InsertToken());
 }
 
 }  // namespace gpu

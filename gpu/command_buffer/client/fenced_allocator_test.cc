@@ -67,10 +67,6 @@ class BaseFencedAllocatorTest : public testing::Test {
     return command_buffer_->GetState().token;
   }
 
-  virtual void TearDown() {
-    helper_.release();
-  }
-
   base::ScopedNSAutoreleasePool autorelease_pool_;
   base::AtExitManager at_exit_manager_;
   MessageLoop message_loop_;
@@ -101,7 +97,6 @@ class FencedAllocatorTest : public BaseFencedAllocatorTest {
     MessageLoop::current()->RunAllPending();
 
     EXPECT_TRUE(allocator_->CheckConsistency());
-    allocator_.release();
 
     BaseFencedAllocatorTest::TearDown();
   }
@@ -338,8 +333,6 @@ class FencedAllocatorWrapperTest : public BaseFencedAllocatorTest {
     MessageLoop::current()->RunAllPending();
 
     EXPECT_TRUE(allocator_->CheckConsistency());
-    allocator_.release();
-    buffer_.release();
 
     BaseFencedAllocatorTest::TearDown();
   }

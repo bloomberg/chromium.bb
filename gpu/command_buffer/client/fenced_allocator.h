@@ -139,8 +139,8 @@ class FencedAllocator {
 class FencedAllocatorWrapper {
  public:
   FencedAllocatorWrapper(unsigned int size,
-                         CommandBufferHelper *helper,
-                         void *base)
+                         CommandBufferHelper* helper,
+                         void* base)
       : allocator_(size, helper),
         base_(base) { }
 
@@ -229,7 +229,7 @@ class FencedAllocatorWrapper {
 
  private:
   FencedAllocator allocator_;
-  void *base_;
+  void* base_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(FencedAllocatorWrapper);
 };
 
