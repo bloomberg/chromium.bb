@@ -37,15 +37,6 @@ NSString* kBookmarkButtonDragType = @"ChromiumBookmarkButtonDragType";
 //  a click-to-open.  Thus the path to get here is a little twisted.
 - (IBAction)openBookmarkFolderFromButton:(id)sender {
   DCHECK(sender);
-  BOOL same = false;
-
-  if ([controller_ folderController]) {
-    // closeAllBookmarkFolders sets folderController_ to nil
-    // so we need the SAME check to happen first.
-    same = ([[controller_ folderController] parentButton] == sender);
-    [controller_ closeAllBookmarkFolders];
-  }
-
   // Watch out for a modifier click.  For example, command-click
   // should open all.
   //
@@ -56,14 +47,17 @@ NSString* kBookmarkButtonDragType = @"ChromiumBookmarkButtonDragType";
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
   if (disposition == NEW_BACKGROUND_TAB) {
+    [controller_ closeAllBookmarkFolders];
     [controller_ openAll:[sender bookmarkNode] disposition:disposition];
     return;
   }
 
   // If click on same folder, close it and be done.
   // Else we clicked on a different folder so more work to do.
-  if (same)
+  if ([[controller_ folderController] parentButton] == sender) {
+    [controller_ closeBookmarkFolder:controller_];
     return;
+  }
 
   [controller_ addNewFolderControllerWithParentButton:sender];
 }

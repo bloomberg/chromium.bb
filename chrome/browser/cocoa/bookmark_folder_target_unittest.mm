@@ -46,7 +46,7 @@ TEST_F(BookmarkFolderTargetTest, StartWithNothing) {
   [controller verify];
 }
 
-TEST_F(BookmarkFolderTargetTest, ReopenSame) {
+TEST_F(BookmarkFolderTargetTest, ReopenSameFolder) {
   // Need a fake "button" which has a bookmark node.
   id sender = [OCMockObject mockForClass:[BookmarkButton class]];
   [[[sender stub] andReturnValue:OCMOCK_VALUE(bmbNode_)] bookmarkNode];
@@ -58,11 +58,12 @@ TEST_F(BookmarkFolderTargetTest, ReopenSame) {
   [[[controller stub] andReturn:controller] folderController];
   [[[controller stub] andReturn:sender] parentButton];
 
-  // Make sure we close all and do NOT create a new one.
-  [[controller expect] closeAllBookmarkFolders];
+  // The folder is open, so a click should close just that folder (and
+  // any subfolders).
+  [[controller expect] closeBookmarkFolder:controller];
 
   scoped_nsobject<BookmarkFolderTarget> target(
-    [[BookmarkFolderTarget alloc] initWithController:controller]);
+      [[BookmarkFolderTarget alloc] initWithController:controller]);
 
   [target openBookmarkFolderFromButton:sender];
   [controller verify];
@@ -80,8 +81,8 @@ TEST_F(BookmarkFolderTargetTest, ReopenNotSame) {
   [[[controller stub] andReturn:controller] folderController];
   [[[controller stub] andReturn:nil] parentButton];
 
-  // Make sure we close all AND create a new one.
-  [[controller expect] closeAllBookmarkFolders];
+  // Insure the controller gets a chance to decide which folders to
+  // close and open.
   [[controller expect] addNewFolderControllerWithParentButton:sender];
 
   scoped_nsobject<BookmarkFolderTarget> target(

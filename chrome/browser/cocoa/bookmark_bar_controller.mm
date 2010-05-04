@@ -1218,7 +1218,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
 // Add a new folder controller as triggered by the given folder button.
 - (void)addNewFolderControllerWithParentButton:(BookmarkButton*)parentButton {
-  DCHECK(!folderController_);
   if (folderController_)
     [self closeAllBookmarkFolders];
 
