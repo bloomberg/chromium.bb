@@ -17,7 +17,6 @@ typedef enum {
   VKEY_SHIFT = VK_SHIFT,
   VKEY_CONTROL = VK_CONTROL,
   VKEY_MENU = VK_MENU,  // a.k.a. ALT
-  VKEY_COMMAND = 0,     // Not meaningful for Windows.  START, perhaps?
   VKEY_PAUSE = VK_PAUSE,
   VKEY_CAPITAL = VK_CAPITAL,
   VKEY_KANA = VK_KANA,
@@ -84,6 +83,7 @@ typedef enum {
   VKEY_Y = 'Y',
   VKEY_Z = 'Z',
   VKEY_LWIN = VK_LWIN,
+  VKEY_COMMAND = VKEY_LWIN,  // Provide the Mac name for convenience.
   VKEY_RWIN = VK_RWIN,
   VKEY_APPS = VK_APPS,
   VKEY_SLEEP = VK_SLEEP,

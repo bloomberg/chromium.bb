@@ -107,6 +107,7 @@ typedef enum {
   VKEY_Y = 0x59,
   VKEY_Z = 0x5A,
   VKEY_LWIN = 0x5B,
+  VKEY_COMMAND = VKEY_LWIN,  // Provide the Mac name for convenience.
   VKEY_RWIN = 0x5C,
   VKEY_APPS = 0x5D,
   VKEY_SLEEP = 0x5F,
