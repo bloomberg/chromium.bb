@@ -39,6 +39,7 @@
 #import <AppKit/AppKit.h>		// for NSStringDrawing.h
 
 #import "NSString+Utils.h"
+#include "googleurl/src/gurl.h"
 
 
 @implementation NSString (ChimeraStringUtils)
@@ -89,12 +90,12 @@
 
 - (BOOL)isValidURI
 {
-  // This will only return a non-nil object for valid, well-formed URI strings
-  NSURL* testURL = [NSURL URLWithString:self];
+  // isValid() will only be true for valid, well-formed URI strings
+  GURL testURL([self UTF8String]);
 
   // |javascript:| and |data:| URIs might not have passed the test,
   // but spaces will work OK, so evaluate them separately.
-  if ((testURL) || [self isLooselyValidatedURI]) {
+  if ((testURL.is_valid()) || [self isLooselyValidatedURI]) {
     return YES;
   }
   return NO;

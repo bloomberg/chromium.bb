@@ -14,3 +14,5 @@ Description:
 Local modifications:
   NSURL+Utils.m was modified to use non-deprecated Cocoa APIs to allow
   compilation on future versions of Mac OS X.
+  NSString+Utils.m was renamed to NSString+Utils.mm and modified to use GURL
+  for validation in -[NSString isValidURI].
