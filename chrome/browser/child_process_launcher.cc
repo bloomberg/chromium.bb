@@ -260,7 +260,6 @@ class ChildProcessLauncher::Context
   }
 
   void Terminate() {
-    DCHECK(ChromeThread::CurrentlyOn(client_thread_id_));
     if (!process_.handle())
       return;
 
