@@ -19,6 +19,7 @@
 #include "base/string_util.h"
 #include "base/unix_domain_socket_posix.h"
 
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/render_sandbox_host_linux.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -193,6 +194,7 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
 pid_t ZygoteHost::ForkRenderer(
     const std::vector<std::string>& argv,
     const base::GlobalDescriptors::Mapping& mapping) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::PROCESS_LAUNCHER));
   DCHECK(init_);
   Pickle pickle;
 
@@ -241,6 +243,7 @@ pid_t ZygoteHost::ForkRenderer(
 }
 
 void ZygoteHost::EnsureProcessTerminated(pid_t process) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::PROCESS_LAUNCHER));
   DCHECK(init_);
   Pickle pickle;
 
@@ -253,6 +256,7 @@ void ZygoteHost::EnsureProcessTerminated(pid_t process) {
 
 bool ZygoteHost::DidProcessCrash(base::ProcessHandle handle,
                                  bool* child_exited) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::PROCESS_LAUNCHER));
   DCHECK(init_);
   Pickle pickle;
   pickle.WriteInt(kCmdDidProcessCrash);

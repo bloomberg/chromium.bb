@@ -179,23 +179,36 @@ void ChildProcessHost::Notify(NotificationType type) {
       ChromeThread::UI, FROM_HERE, new ChildNotificationTask(type, this));
 }
 
-bool ChildProcessHost::DidChildCrash() {
-  return child_process_->DidProcessCrash();
+void ChildProcessHost::DetermineDidChildCrash() {
+  child_process_->DetermineDidProcessCrash();
 }
 
 void ChildProcessHost::OnChildDied() {
+  // Either of these paths will lead to deleting this object in
+  // OnDidProcessCrashDetermined, so they should be the last calls in this
+  // method.
   if (handle() != base::kNullProcessHandle) {
-    bool did_crash = DidChildCrash();
-    if (did_crash) {
-      OnProcessCrashed();
-      // Report that this child process crashed.
-      Notify(NotificationType::CHILD_PROCESS_CRASHED);
-      UMA_HISTOGRAM_COUNTS("ChildProcess.Crashes", this->type());
-    }
+    // Determine whether the process crashed or not. This method will invoke
+    // OnDidProcessCrashDetermined with the result. This may occur
+    // asynchronously.
+    DetermineDidChildCrash();
+  } else {
+    // We do not have a process, so it couldn't have crashed.
+    OnDidProcessCrashDetermined(false);
+  }
+}
+
+void ChildProcessHost::OnDidProcessCrashDetermined(bool did_crash) {
+  if (did_crash) {
+    OnProcessCrashed();
+    // Report that this child process crashed.
+    Notify(NotificationType::CHILD_PROCESS_CRASHED);
+    UMA_HISTOGRAM_COUNTS("ChildProcess.Crashes", this->type());
+  }
+  if (handle() != base::kNullProcessHandle) {
     // Notify in the main loop of the disconnection.
     Notify(NotificationType::CHILD_PROCESS_HOST_DISCONNECTED);
   }
-
   delete this;
 }
 
@@ -276,6 +289,11 @@ void ChildProcessHost::ListenerHook::OnProcessLaunched() {
 
   host_->set_handle(host_->child_process_->GetHandle());
   host_->OnProcessLaunched();
+}
+
+void ChildProcessHost::ListenerHook::OnDidProcessCrashDetermined(
+    bool did_crash) {
+  host_->OnDidProcessCrashDetermined(did_crash);
 }
 
 

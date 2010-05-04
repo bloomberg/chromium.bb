@@ -26,15 +26,19 @@ class ZygoteHost {
  public:
   void Init(const std::string& sandbox_cmd);
 
-  // Tries to start a renderer process.  Returns its pid on success, otherwise
-  // base::kNullProcessHandle;
+  // Tries to start a renderer process. Returns its pid on success, otherwise
+  // base::kNullProcessHandle. Must be called on the PROCESS_LAUNCHER
+  // thread.
   pid_t ForkRenderer(const std::vector<std::string>& command_line,
                      const base::GlobalDescriptors::Mapping& mapping);
+
+  // Must be called on the PROCESS_LAUNCHER thread.
   void EnsureProcessTerminated(pid_t process);
 
   // Get the termination status (exit code) of the process and return true if
   // the status indicates the process crashed. |child_exited| is set to true
   // iff the child process has terminated. (|child_exited| may be NULL.)
+  // Must be called on the PROCESS_LAUNCHER thread.
   bool DidProcessCrash(base::ProcessHandle handle, bool* child_exited);
 
   // These are the command codes used on the wire between the browser and the
@@ -52,7 +56,10 @@ class ZygoteHost {
   ZygoteHost();
   ~ZygoteHost();
 
-  int control_fd_;  // the socket to the zygote
+  // The socket to the zygote, which should only be accessed on the
+  // PROCESS_LAUNCHER thread.
+  int control_fd_;
+
   pid_t pid_;
   bool init_;
   bool using_suid_sandbox_;

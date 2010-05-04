@@ -113,6 +113,7 @@ class ChildProcessHost : public ResourceDispatcherHost::Receiver,
 
   // ChildProcessLauncher::Client implementation.
   virtual void OnProcessLaunched() {}
+  virtual void OnDidProcessCrashDetermined(bool did_crash);
 
   // Derived classes can override this to know if the process crashed.
   virtual void OnProcessCrashed() {}
@@ -120,7 +121,10 @@ class ChildProcessHost : public ResourceDispatcherHost::Receiver,
   bool opening_channel() { return opening_channel_; }
   const std::string& channel_id() { return channel_id_; }
 
-  virtual bool DidChildCrash();
+  // Determines whether the exited process crashed or exited normally.
+  // OnDidProcessCrashDetermined method will be called with the answer,
+  // possibly asynchronously.
+  virtual void DetermineDidChildCrash();
 
   // Called when the child process goes away.
   virtual void OnChildDied();
@@ -140,6 +144,7 @@ class ChildProcessHost : public ResourceDispatcherHost::Receiver,
     virtual void OnChannelConnected(int32 peer_pid);
     virtual void OnChannelError();
     virtual void OnProcessLaunched();
+    virtual void OnDidProcessCrashDetermined(bool did_crash);
    private:
     ChildProcessHost* host_;
   };

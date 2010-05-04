@@ -182,14 +182,14 @@ class ChildProcessLauncher::Context
         client_thread_id_, FROM_HERE,
         NewRunnableMethod(
             this,
-            &ChildProcessLauncher::Context::Notify,
+            &ChildProcessLauncher::Context::NotifyProcessLaunched,
 #if defined(OS_LINUX)
             use_zygote,
 #endif
             handle));
   }
 
-  void Notify(
+  void NotifyProcessLaunched(
 #if defined(OS_LINUX)
       bool zygote,
 #endif
@@ -206,7 +206,61 @@ class ChildProcessLauncher::Context
     }
   }
 
+  void DetermineDidProcessCrash() {
+    DCHECK(ChromeThread::CurrentlyOn(client_thread_id_));
+    base::ProcessHandle handle = process_.handle();
+#if defined(OS_LINUX)
+    if (zygote_) {
+      ChromeThread::PostTask(
+          ChromeThread::PROCESS_LAUNCHER, FROM_HERE,
+          NewRunnableMethod(this,
+                            &Context::DetermineDidProcessCrashInternal,
+                            handle));
+    } else
+#endif
+    {
+      DetermineDidProcessCrashInternal(handle);
+    }
+  }
+
+  void DetermineDidProcessCrashInternal(base::ProcessHandle handle) {
+    bool did_crash, child_exited;
+#if defined(OS_LINUX)
+    if (zygote_) {
+      did_crash = Singleton<ZygoteHost>()->DidProcessCrash(handle,
+                                                           &child_exited);
+      ChromeThread::PostTask(
+          client_thread_id_, FROM_HERE,
+          NewRunnableMethod(this,
+                            &Context::OnDidProcessCrashDetermined,
+                            child_exited, did_crash));
+    } else
+#endif
+    {
+      did_crash = base::DidProcessCrash(&child_exited, handle);
+      OnDidProcessCrashDetermined(child_exited, did_crash);
+    }
+  }
+
+  void OnDidProcessCrashDetermined(bool child_exited, bool did_crash) {
+    DCHECK(ChromeThread::CurrentlyOn(client_thread_id_));
+
+    // POSIX: If the process crashed, then the kernel closed the socket for it
+    // and so the child has already died by the time we get here. Since
+    // DidProcessCrash called waitpid with WNOHANG, it'll reap the process.
+    // However, if DidProcessCrash didn't reap the child, we'll need to in
+    // Terminate via ProcessWatcher. So we can't close the handle here.
+    if (child_exited)
+      process_.Close();
+
+    if (client_)
+      client_->OnDidProcessCrashDetermined(did_crash);
+    // The client may have deleted us in the callback. Do not add anything
+    // after this point.
+  }
+
   void Terminate() {
+    DCHECK(ChromeThread::CurrentlyOn(client_thread_id_));
     if (!process_.handle())
       return;
 
@@ -295,27 +349,8 @@ base::ProcessHandle ChildProcessLauncher::GetHandle() {
   return context_->process_.handle();
 }
 
-bool ChildProcessLauncher::DidProcessCrash() {
-  bool did_crash, child_exited;
-  base::ProcessHandle handle = context_->process_.handle();
-#if defined(OS_LINUX)
-  if (context_->zygote_) {
-    did_crash = Singleton<ZygoteHost>()->DidProcessCrash(handle, &child_exited);
-  } else
-#endif
-  {
-    did_crash = base::DidProcessCrash(&child_exited, handle);
-  }
-
-  // POSIX: If the process crashed, then the kernel closed the socket for it
-  // and so the child has already died by the time we get here. Since
-  // DidProcessCrash called waitpid with WNOHANG, it'll reap the process.
-  // However, if DidProcessCrash didn't reap the child, we'll need to in
-  // Terminate via ProcessWatcher. So we can't close the handle here.
-  if (child_exited)
-    context_->process_.Close();
-
-  return did_crash;
+void ChildProcessLauncher::DetermineDidProcessCrash() {
+  context_->DetermineDidProcessCrash();
 }
 
 void ChildProcessLauncher::SetProcessBackgrounded(bool background) {

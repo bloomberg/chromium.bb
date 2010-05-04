@@ -21,6 +21,11 @@ class ChildProcessLauncher {
     // Will be called on the thread that the ChildProcessLauncher was
     // constructed on.
     virtual void OnProcessLaunched() = 0;
+
+    // Called as a response to DetermineDidProcessCrash on the thread that
+    // the ChildProcessLauncher was constructed on. This may be called
+    // during DetermineDidProcessCrash or asynchronously.
+    virtual void OnDidProcessCrashDetermined(bool did_crash) = 0;
   };
 
   // Launches the process asynchronously, calling the client when the result is
@@ -46,8 +51,10 @@ class ChildProcessLauncher {
   // Getter for the process handle.  Only call after the process has started.
   base::ProcessHandle GetHandle();
 
-  // Call this when the process exits to know if a process crashed or not.
-  bool DidProcessCrash();
+  // Determines whether the exited process crashed or exited normally.
+  // The Client's OnDidProcessCrashDetermined method will be called with the
+  // answer.
+  void DetermineDidProcessCrash();
 
   // Changes whether the process runs in the background or not.  Only call
   // this after the process has started.

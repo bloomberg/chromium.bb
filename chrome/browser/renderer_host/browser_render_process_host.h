@@ -100,6 +100,7 @@ class BrowserRenderProcessHost : public RenderProcessHost,
 
   // ChildProcessLauncher::Client implementation.
   virtual void OnProcessLaunched();
+  virtual void OnDidProcessCrashDetermined(bool did_crash);
 
  private:
   friend class VisitRelayingRenderProcessHost;

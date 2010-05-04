@@ -860,23 +860,12 @@ void BrowserRenderProcessHost::OnChannelError() {
   if (!channel_.get())
     return;
 
-  // NULL in single process mode or if fast termination happened.
-  bool did_crash =
-      child_process_.get() ? child_process_->DidProcessCrash() : false;
-
-  if (did_crash) {
-    UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildCrashes",
-                             extension_process_ ? 2 : 1);
-  }
-
-  RendererClosedDetails details(did_crash, extension_process_);
   NotificationService::current()->Notify(
       NotificationType::RENDERER_PROCESS_CLOSED,
       Source<RenderProcessHost>(this),
-      Details<RendererClosedDetails>(&details));
+      NotificationService::NoDetails());
 
   WebCacheManager::GetInstance()->Remove(id());
-  child_process_.reset();
   channel_.reset();
 
   IDMap<IPC::Channel::Listener>::iterator iter(&listeners_);
@@ -887,6 +876,32 @@ void BrowserRenderProcessHost::OnChannelError() {
   }
 
   ClearTransportDIBCache();
+
+  if (child_process_.get()) {
+    // Determine whether the process crashed or not. This method will invoke
+    // OnDidProcessCrashDetermined with the result. This may occur
+    // asynchronously.
+    child_process_->DetermineDidProcessCrash();
+  } else {
+    // This occurs in single process mode or if fast termination happened.
+    // Manually trigger OnDidProcessCrashDetermined, because we know this is
+    // not a crash.
+    OnDidProcessCrashDetermined(false);
+  }
+}
+
+void BrowserRenderProcessHost::OnDidProcessCrashDetermined(bool did_crash) {
+  child_process_.reset();
+
+  if (did_crash) {
+    UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildCrashes",
+                             extension_process_ ? 2 : 1);
+
+    NotificationService::current()->Notify(
+        NotificationType::RENDERER_PROCESS_CRASHED,
+        Source<RenderProcessHost>(this),
+        Details<bool>(&extension_process_));
+  }
 
   // this object is not deleted at this point and may be reused later.
   // TODO(darin): clean this up
