@@ -75,6 +75,7 @@ class WidgetGtk
   // invoked before Init. This does a couple of checks and returns true if
   // the window can be made transparent. The actual work of making the window
   // transparent is done by ConfigureWidgetForTransparentBackground.
+  // This works for both child and window types.
   bool MakeTransparent();
   bool is_transparent() const { return transparent_; }
 
@@ -314,7 +315,7 @@ class WidgetGtk
   // Invoked from create widget to enable the various bits needed for a
   // transparent background. This is only invoked if MakeTransparent has been
   // invoked.
-  void ConfigureWidgetForTransparentBackground();
+  void ConfigureWidgetForTransparentBackground(GtkWidget* parent);
 
   // Invoked from create widget to enable the various bits needed for a
   // window which doesn't receive events. This is only invoked if
@@ -323,6 +324,10 @@ class WidgetGtk
 
   // TODO(sky): documentation
   void HandleGrabBroke();
+
+  // A utility function to draw a transparent background onto the |widget|.
+  static void DrawTransparentBackground(GtkWidget* widget,
+                                        GdkEventExpose* event);
 
   const Type type_;
 
