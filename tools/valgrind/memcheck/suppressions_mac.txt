@@ -234,10 +234,8 @@
    fun:-[NSCustomObject nibInstantiate]
    fun:-[NSIBObjectData instantiateObject:]
    fun:-[NSIBObjectData nibInstantiateWithOwner:topLevelObjects:]
-   fun:loadNib
-   fun:+[NSBundle(NSNibLoading) _loadNibFile:nameTable:withZone:ownerBundle:]
-   fun:+[NSBundle(NSNibLoading) loadNibFile:externalNameTable:withZone:]
-   fun:+[NSBundle(NSNibLoading) loadNibNamed:owner:]
+   fun:-[NSNib instantiateNibWithExternalNameTable:]
+   fun:-[NSNib instantiateNibWithOwner:topLevelObjects:]
    fun:_Z29WillInitializeMainMessageLoopRK18MainFunctionParams
 }
 {
