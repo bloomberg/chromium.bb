@@ -600,7 +600,7 @@ def DemoSelLdrNacl(env,
 
   sel_ldr = GetSelLdr(env);
   if not sel_ldr:
-    print 'WARNING: no sel_lde found. Skipping test %s' % name
+    print 'WARNING: no sel_ldr found. Skipping test %s' % target
     return []
 
   deps = [sel_ldr, nexe]
