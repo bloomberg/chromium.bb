@@ -97,9 +97,12 @@ else:
          'Try, e.g. MODE=dbg-linux,nacl')
   toolchain_tests = []
 
-# Eventually we may want more SDK tests.
-env.AddNodeToTestSuite(['libs_present_test.nexe', toolchain_tests],
-                       ['small_tests'], 'sdk_minimal_test')
+# If we aren't running on a tester (built_elsewhere),
+# try to use the toolchain.
+if not ARGUMENTS.get('built_elsewhere'):
+  # Eventually we may want more SDK tests.
+  env.AddNodeToTestSuite(['libs_present_test.nexe', toolchain_tests],
+                         ['small_tests'], 'sdk_minimal_test')
 
-env.AddNodeToTestSuite(['hello_world_gdb.nexe', gdb_test],
-                       [], 'gdb_minimal_test')
+  env.AddNodeToTestSuite(['hello_world_gdb.nexe', gdb_test],
+                         [], 'gdb_minimal_test')
