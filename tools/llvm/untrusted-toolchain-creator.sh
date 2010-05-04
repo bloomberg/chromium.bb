@@ -735,6 +735,7 @@ BuildAndInstallBinutils() {
   RunWithLog "Configuring binutils"  ${TMP}/binutils.configure.log \
     env -i \
     PATH="/usr/bin:/bin" \
+    CC=${CC32} \
     ../src/binutils-2.20/configure --prefix=${BINUTILS_INSTALL_DIR} \
                                    --target=${CROSS_TARGET} \
                                    --enable-checking \
