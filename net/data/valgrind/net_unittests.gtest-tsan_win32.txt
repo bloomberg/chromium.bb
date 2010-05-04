@@ -1,7 +1,6 @@
 # These tests fail due to SSL/Certificates/Network issues
 # TODO(timurrrr): need to investigate.
 HTTPSRequestTest.*
-SSLClientSocketTest.*
 URLRequestTestHTTP.*
 URLRequestTestFTP.*
 URLRequestTest.*Cookie*
@@ -14,3 +13,8 @@ X509CertificateTest.*
 CookieMonsterTest.TestLastAccess
 SpdyNetwork*Error*
 SpdyNetwork*Get*
+
+#########################################
+# Please see http://dev.chromium.org/developers/testing#TOC-SSL-tests
+# if you think you want to un-comment one of the following lines
+#SSLClientSocketTest.*
