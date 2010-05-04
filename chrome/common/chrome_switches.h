@@ -230,6 +230,7 @@ extern const char kZygoteProcess[];
 
 #if defined(OS_CHROMEOS)
 extern const char kCookiePipe[];
+extern const char kEnableChatManager[];
 extern const char kEnableGView[];
 extern const char kEnableLoginImages[];
 extern const char kLoginManager[];

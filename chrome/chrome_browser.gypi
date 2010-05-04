@@ -3355,7 +3355,28 @@
             'browser/resources/docs_app/24.png',
           ]
         },
-      ]
+      ],
+      'conditions': [
+        ['OS=="linux" and chromeos==1',{
+          'copies': [
+            {
+              'destination': '<(PRODUCT_DIR)/resources/chat_manager',
+              'files': [
+                'browser/resources/chat_manager/background.html',
+                'browser/resources/chat_manager/manifest.json',
+              ]
+            },
+            {
+              'destination': '<(PRODUCT_DIR)/resources/chat_manager/js',
+              'files': [
+                'browser/resources/chat_manager/js/chatbridgeeventtypes.js',
+                'browser/resources/chat_manager/js/chatbridgehook.js',
+                'browser/resources/chat_manager/js/gmailbridgehook.js',
+              ]
+            },
+          ]
+        }]
+      ],
     },
     {
       'target_name': 'net_internals_resources',

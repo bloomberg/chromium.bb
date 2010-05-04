@@ -813,6 +813,9 @@ const char kZygoteProcess[]                 = "zygote";
 // single-sign-on cookies.
 const char kCookiePipe[]                    = "cookie-pipe";
 
+// Enables the chat manager component extension.
+const char kEnableChatManager[]             = "enable-chat-manager";
+
 // Enable the redirection of viewable document requests to the Google
 // Document Viewer.
 const char kEnableGView[]                   = "enable-gview";
