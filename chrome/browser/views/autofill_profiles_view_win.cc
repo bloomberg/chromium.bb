@@ -1435,14 +1435,9 @@ void AutoFillProfilesView::AutoFillScrollView::Layout() {
 }
 
 // Declared in "chrome/browser/autofill/autofill_dialog.h"
-// TODO(georgey): Need to update implementation to match new interface for
-// |imported_profile| and |imported_credit_card| parameters.
-// See http://crbug.com/41010
-void ShowAutoFillDialog(gfx::NativeView parent,
+void ShowAutoFillDialog(gfx::NativeWindow parent,
                         AutoFillDialogObserver* observer,
-                        Profile* profile,
-                        AutoFillProfile* imported_profile,
-                        CreditCard* imported_credit_card) {
+                        Profile* profile) {
   DCHECK(profile);
 
   // It's possible we haven't shown the InfoBar yet, but if the user is in the

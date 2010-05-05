@@ -10,7 +10,6 @@
 #import "chrome/browser/autofill/autofill_address_view_controller_mac.h"
 #import "chrome/browser/autofill/autofill_credit_card_model_mac.h"
 #import "chrome/browser/autofill/autofill_credit_card_view_controller_mac.h"
-#import "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/browser_process.h"
 #import "chrome/browser/cocoa/disclosure_view_controller.h"
 #import "chrome/browser/cocoa/section_separator_view.h"
@@ -19,80 +18,6 @@
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
-
-// Private interface.
-@interface AutoFillDialogController (PrivateAPI)
-// Asyncronous handler for when PersonalDataManager data loads.  The
-// personal data manager notifies the dialog with this method when the
-// data loading is complete and ready to be used.
-- (void)onPersonalDataLoaded:(const std::vector<AutoFillProfile*>&)profiles
-                 creditCards:(const std::vector<CreditCard*>&)creditCards;
-@end
-
-namespace AutoFillDialogControllerInternal {
-
-// PersonalDataManagerObserver facilitates asynchronous loading of
-// PersonalDataManager data before showing the AutoFill settings data to the
-// user.  It acts as a C++-based delegate for the |AutoFillDialogController|.
-class PersonalDataManagerObserver : public PersonalDataManager::Observer {
- public:
-  explicit PersonalDataManagerObserver(
-      AutoFillDialogController* controller,
-      PersonalDataManager* personal_data_manager,
-      Profile* profile)
-      : controller_(controller),
-        personal_data_manager_(personal_data_manager),
-        profile_(profile) {
-  }
-
-  virtual ~PersonalDataManagerObserver();
-
-  // Notifies the observer that the PersonalDataManager has finished loading.
-  virtual void OnPersonalDataLoaded();
-
- private:
-  // Utility method to remove |this| from |personal_data_manager_| as an
-  // observer.
-  void RemoveObserver();
-
-  // The dialog controller to be notified when the data loading completes.
-  // Weak reference.
-  AutoFillDialogController* controller_;
-
-  // The object in which we are registered as an observer.  We hold on to
-  // it to facilitate un-registering ourself in the destructor and in the
-  // |OnPersonalDataLoaded| method.  This may be NULL.
-  // Weak reference.
-  PersonalDataManager* personal_data_manager_;
-
-  // Profile of caller.  Held as weak reference.  May not be NULL.
-  Profile* profile_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PersonalDataManagerObserver);
-};
-
-// During destruction ensure that we are removed from the
-// |personal_data_manager_| as an observer.
-PersonalDataManagerObserver::~PersonalDataManagerObserver() {
-  RemoveObserver();
-}
-
-void PersonalDataManagerObserver::RemoveObserver() {
-  if (personal_data_manager_) {
-    personal_data_manager_->RemoveObserver(this);
-  }
-}
-
-// The data is ready so display our data.  Notify the dialog controller that
-// the data is ready.  Once done we clear the observer.
-void PersonalDataManagerObserver::OnPersonalDataLoaded() {
-  RemoveObserver();
-  [controller_ onPersonalDataLoaded:personal_data_manager_->web_profiles()
-                        creditCards:personal_data_manager_->credit_cards()];
-}
-
-}  // namespace AutoFillDialogControllerInternal
 
 @interface AutoFillDialogController (PrivateMethods)
 - (void)runModalDialog;
@@ -104,14 +29,14 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
 @synthesize auxiliaryEnabled = auxiliaryEnabled_;
 
 + (void)showAutoFillDialogWithObserver:(AutoFillDialogObserver*)observer
-               profile:(Profile*)profile
-       importedProfile:(AutoFillProfile*) importedProfile
-    importedCreditCard:(CreditCard*) importedCreditCard {
+                autoFillProfiles:(const std::vector<AutoFillProfile*>&)profiles
+                     creditCards:(const std::vector<CreditCard*>&)creditCards
+                         profile:(Profile*)profile {
   AutoFillDialogController* controller =
       [AutoFillDialogController controllerWithObserver:observer
-                                         profile:profile
-                                 importedProfile:importedProfile
-                              importedCreditCard:importedCreditCard];
+          autoFillProfiles:profiles
+               creditCards:creditCards
+                   profile:profile];
 
   // Only run modal dialog if it is not already being shown.
   if (![controller isWindowLoaded]) {
@@ -121,23 +46,7 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
 
 - (void)awakeFromNib {
   [addressSectionBox_ setShowTopLine:FALSE];
-
-  PersonalDataManager* personal_data_manager =
-      profile_->GetPersonalDataManager();
-  DCHECK(personal_data_manager);
-
-  if (personal_data_manager->IsDataLoaded()) {
-    // |personalDataManager| data is loaded, we can proceed with the contents.
-    [self onPersonalDataLoaded:personal_data_manager->web_profiles()
-                   creditCards:personal_data_manager->credit_cards()];
-  } else {
-    // |personalDataManager| data is NOT loaded, so we load it here, installing
-    // our observer.
-    personalDataManagerObserver_.reset(
-        new AutoFillDialogControllerInternal::PersonalDataManagerObserver(
-            self, personal_data_manager, profile_));
-    personal_data_manager->SetObserver(personalDataManagerObserver_.get());
-  }
+  [self installChildViews];
 }
 
 // NSWindow Delegate callback.  When the window closes the controller can
@@ -456,17 +365,17 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
 @implementation AutoFillDialogController (ExposedForUnitTests)
 
 + (AutoFillDialogController*)controllerWithObserver:
-        (AutoFillDialogObserver*)observer
-               profile:(Profile*)profile
-       importedProfile:(AutoFillProfile*)importedProfile
-    importedCreditCard:(CreditCard*)importedCreditCard {
+      (AutoFillDialogObserver*)observer
+      autoFillProfiles:(const std::vector<AutoFillProfile*>&)profiles
+      creditCards:(const std::vector<CreditCard*>&)creditCards
+      profile:(Profile*)profile {
 
   // Deallocation is done upon window close.  See |windowWillClose:|.
   AutoFillDialogController* controller =
       [[self alloc] initWithObserver:observer
-                             profile:profile
-                     importedProfile:importedProfile
-                  importedCreditCard:importedCreditCard];
+                    autoFillProfiles:profiles
+                         creditCards:creditCards
+                             profile:profile];
   return controller;
 }
 
@@ -475,9 +384,9 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
 // |profiles| are non-retained immutable list of autofill profiles.
 // |creditCards| are non-retained immutable list of credit card info.
 - (id)initWithObserver:(AutoFillDialogObserver*)observer
-               profile:(Profile*)profile
-       importedProfile:(AutoFillProfile*)importedProfile
-    importedCreditCard:(CreditCard*)importedCreditCard {
+      autoFillProfiles:(const std::vector<AutoFillProfile*>&)profiles
+           creditCards:(const std::vector<CreditCard*>&)creditCards
+               profile:(Profile*)profile {
   CHECK(profile);
   // Use initWithWindowNibPath: instead of initWithWindowNibName: so we
   // can override it in a unit test.
@@ -486,9 +395,18 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
                        ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     observer_ = observer;
+
+    // Make local copy of |profiles|.
+    std::vector<AutoFillProfile*>::const_iterator i;
+    for (i = profiles.begin(); i != profiles.end(); ++i)
+      profiles_.push_back(**i);
+
+    // Make local copy of |creditCards|.
+    std::vector<CreditCard*>::const_iterator j;
+    for (j = creditCards.begin(); j != creditCards.end(); ++j)
+      creditCards_.push_back(**j);
+
     profile_ = profile;
-    importedProfile_ = importedProfile;
-    importedCreditCard_ = importedCreditCard;
 
     // Use property here to trigger KVO binding.
     [self setAuxiliaryEnabled:profile_->GetPrefs()->GetBoolean(
@@ -600,32 +518,6 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
   [self didChangeValueForKey:@"defaultAddressLabel"];
   [self willChangeValueForKey:@"defaultCreditCardLabel"];
   [self didChangeValueForKey:@"defaultCreditCardLabel"];
-}
-
-- (void)onPersonalDataLoaded:(const std::vector<AutoFillProfile*>&)profiles
-                 creditCards:(const std::vector<CreditCard*>&)creditCards {
-  if (importedProfile_) {
-      profiles_.push_back(*importedProfile_);
-  }
-
-  if (importedCreditCard_) {
-      creditCards_.push_back(*importedCreditCard_);
-  }
-
-  // If we're not using imported data then use the data fetch from the web db.
-  if (!importedProfile_ && !importedCreditCard_) {
-    // Make local copy of |profiles|.
-    for (std::vector<AutoFillProfile*>::const_iterator iter = profiles.begin();
-         iter != profiles.end(); ++iter)
-      profiles_.push_back(**iter);
-
-    // Make local copy of |creditCards|.
-    for (std::vector<CreditCard*>::const_iterator iter = creditCards.begin();
-         iter != creditCards.end(); ++iter)
-      creditCards_.push_back(**iter);
-  }
-
-  [self installChildViews];
 }
 
 @end

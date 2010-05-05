@@ -48,6 +48,9 @@ AutoFillManager::AutoFillManager(TabContents* tab_contents)
 }
 
 AutoFillManager::~AutoFillManager() {
+  // This is NULL in the MockAutoFillManager.
+  if (personal_data_)
+    personal_data_->RemoveObserver(this);
   download_manager_.SetObserver(NULL);
 }
 
@@ -261,6 +264,24 @@ bool AutoFillManager::FillAutoFillFormData(int query_id,
   return true;
 }
 
+void AutoFillManager::OnPersonalDataLoaded() {
+  // We might have been alerted that the PersonalDataManager has loaded, so
+  // remove ourselves as observer.
+  personal_data_->RemoveObserver(this);
+
+#if !defined(OS_WIN)
+#if defined(OS_MACOSX)
+  ShowAutoFillDialog(personal_data_,
+                     personal_data_->web_profiles(),
+                     personal_data_->credit_cards(),
+                     tab_contents_->profile()->GetOriginalProfile());
+#else  // defined(OS_MACOSX)
+  ShowAutoFillDialog(NULL, personal_data_,
+                     tab_contents_->profile()->GetOriginalProfile());
+#endif  // defined(OS_MACOSX)
+#endif  // !defined(OS_WIN)
+}
+
 void AutoFillManager::OnInfoBarClosed() {
   PrefService* prefs = tab_contents_->profile()->GetPrefs();
   prefs->SetBoolean(prefs::kAutoFillEnabled, true);
@@ -274,18 +295,20 @@ void AutoFillManager::OnInfoBarAccepted() {
   prefs->SetBoolean(prefs::kAutoFillEnabled, true);
 
   // This is the first time the user is interacting with AutoFill, so set the
-  // uploaded form structure as the initial profile and credit card in the
-  // AutoFillDialog.
-  AutoFillProfile* profile = NULL;
-  CreditCard* credit_card = NULL;
-  // TODO(dhollowa) Now that we aren't immediately saving the imported form
-  // data, we should store the profile and CC in the AFM instead of the PDM.
-  personal_data_->GetImportedFormData(&profile, &credit_card);
-  ShowAutoFillDialog(tab_contents_->GetContentNativeView(),
-                     personal_data_,
-                     tab_contents_->profile()->GetOriginalProfile(),
-                     profile,
-                     credit_card);
+  // uploaded form structure as the initial profile in the AutoFillDialog.
+  personal_data_->SaveImportedFormData();
+
+#if defined(OS_WIN)
+  ShowAutoFillDialog(tab_contents_->GetContentNativeView(), personal_data_,
+                     tab_contents_->profile()->GetOriginalProfile());
+#else
+  // If the personal data manager has not loaded the data yet, set ourselves as
+  // its observer so that we can listen for the OnPersonalDataLoaded signal.
+  if (!personal_data_->IsDataLoaded())
+    personal_data_->SetObserver(this);
+  else
+    OnPersonalDataLoaded();
+#endif
 }
 
 void AutoFillManager::OnInfoBarCancelled() {

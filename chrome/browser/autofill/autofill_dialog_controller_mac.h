@@ -8,14 +8,9 @@
 #import <Cocoa/Cocoa.h>
 #include <vector>
 #include "base/scoped_nsobject.h"
-#include "base/scoped_ptr.h"
 #include "chrome/browser/autofill/autofill_dialog.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
-
-namespace AutoFillDialogControllerInternal {
-class PersonalDataManagerObserver;
-}  // AutoFillDialogControllerInternal
 
 @class AutoFillAddressViewController;
 @class AutoFillCreditCardViewController;
@@ -47,17 +42,11 @@ class Profile;
   scoped_nsobject<NSString> defaultCreditCardLabel_;
 
   AutoFillDialogObserver* observer_;  // Weak, not retained.
-  Profile* profile_;  // Weak, not retained.
-  AutoFillProfile* importedProfile_;  // Weak, not retained.
-  CreditCard* importedCreditCard_;  // Weak, not retained.
   std::vector<AutoFillProfile> profiles_;
   std::vector<CreditCard> creditCards_;
+  Profile* profile_;  // Weak, not retained.
   BOOL auxiliaryEnabled_;
   scoped_nsobject<WindowSizeAutosaver> sizeSaver_;
-
-  // Manages PersonalDataManager loading.
-  scoped_ptr<AutoFillDialogControllerInternal::PersonalDataManagerObserver>
-      personalDataManagerObserver_;
 }
 
 // Property representing state of Address Book "me" card usage.  Checkbox is
@@ -75,15 +64,13 @@ class Profile;
 // call to |save|.  If |observer| is non-NULL then its |OnAutoFillDialogApply|
 // method is invoked during |save| with the new address and credit card
 // information.
+// |profiles| and |creditCards| must have non-NULL entries (zero or more).
+// These provide the initial data that is presented to the user.
 // |profile| must be non-NULL.
-// AutoFill profile and credit card data is initialized from the
-// |PersonalDataManager| that is associated with the input |profile|.
-// If |importedProfile| or |importedCreditCard| parameters are supplied then
-// the |PersonalDataManager| data is ignored.  Both may be NULL.
 + (void)showAutoFillDialogWithObserver:(AutoFillDialogObserver*)observer
-                     profile:(Profile*)profile
-             importedProfile:(AutoFillProfile*)importedProfile
-          importedCreditCard:(CreditCard*)importedCreditCard;
+                autoFillProfiles:(const std::vector<AutoFillProfile*>&)profiles
+                     creditCards:(const std::vector<CreditCard*>&)creditCards
+                     profile:(Profile*)profile;
 
 // IBActions for the dialog buttons.
 - (IBAction)save:(id)sender;
@@ -118,14 +105,14 @@ class Profile;
 // Note: controller is autoreleased when |-closeDialog| is called.
 + (AutoFillDialogController*)controllerWithObserver:
       (AutoFillDialogObserver*)observer
-               profile:(Profile*)profile
-       importedProfile:(AutoFillProfile*)importedProfile
-    importedCreditCard:(CreditCard*)importedCreditCard;
+      autoFillProfiles:(const std::vector<AutoFillProfile*>&)profiles
+      creditCards:(const std::vector<CreditCard*>&)creditCards
+      profile:(Profile*)profile;
 
 - (id)initWithObserver:(AutoFillDialogObserver*)observer
-               profile:(Profile*)profile
-       importedProfile:(AutoFillProfile*)importedProfile
-    importedCreditCard:(CreditCard*)importedCreditCard;
+      autoFillProfiles:(const std::vector<AutoFillProfile*>&)profiles
+      creditCards:(const std::vector<CreditCard*>&)creditCards
+      profile:(Profile*)profile;
 - (NSMutableArray*)addressFormViewControllers;
 - (NSMutableArray*)creditCardFormViewControllers;
 - (void)closeDialog;

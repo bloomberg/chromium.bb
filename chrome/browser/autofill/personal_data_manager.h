@@ -50,10 +50,10 @@ class PersonalDataManager : public WebDataServiceConsumer,
                                      std::vector<CreditCard>* credit_cards);
 
   // Sets the listener to be notified of PersonalDataManager events.
-  virtual void SetObserver(PersonalDataManager::Observer* observer);
+  void SetObserver(PersonalDataManager::Observer* observer);
 
   // Removes |observer| as the observer of this PersonalDataManager.
-  virtual void RemoveObserver(PersonalDataManager::Observer* observer);
+  void RemoveObserver(PersonalDataManager::Observer* observer);
 
   // If AutoFill is able to determine the field types of a significant number
   // of field types that contain information in the FormStructures and the user
@@ -66,14 +66,6 @@ class PersonalDataManager : public WebDataServiceConsumer,
   // Saves |imported_profile_| and |imported_credit_card_| to the WebDB if they
   // exist.
   void SaveImportedFormData();
-
-  // Gets |imported_profile_| and |imported_credit_card_| and returns their
-  // values in |profile| and |credit_card| parameters respectively.  One or
-  // both may return NULL.  The objects returned are owned by the
-  // PersonalDataManager, so should be considered weak references by caller.
-  // TODO(dhollowa) Now that we aren't immediately saving the imported form
-  // data, we should store the profile and CC in the AFM instead of the PDM.
-  void GetImportedFormData(AutoFillProfile** profile, CreditCard** credit_card);
 
   // Sets |web_profiles_| to the contents of |profiles| and updates the web
   // database by adding, updating and removing profiles.  Sets the unique ID of
@@ -110,10 +102,8 @@ class PersonalDataManager : public WebDataServiceConsumer,
   // card information, respectively.  |profiles()| returns both web and
   // auxiliary profiles.  |web_profiles()| returns only web profiles.
   const std::vector<AutoFillProfile*>& profiles();
-  virtual const std::vector<AutoFillProfile*>& web_profiles();
-  virtual const std::vector<CreditCard*>& credit_cards() {
-    return credit_cards_.get();
-  }
+  const std::vector<AutoFillProfile*>& web_profiles();
+  const std::vector<CreditCard*>& credit_cards() { return credit_cards_.get(); }
 
   // Returns the index of the default profile within the vector returned by
   // |web_profiles()|, or -1 if there are no profiles.

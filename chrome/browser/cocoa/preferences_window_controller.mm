@@ -375,6 +375,100 @@ class PrefObserverBridge : public NotificationObserver,
   PreferencesWindowController* controller_;  // weak, owns us
 };
 
+// PersonalDataManagerObserver facilitates asynchronous loading of
+// PersonalDataManager data before showing the auto fill settings dialog to the
+// user.  It acts as a C++-based delegate for the |PreferencesWindowController|.
+class PersonalDataManagerObserver : public PersonalDataManager::Observer {
+ public:
+  explicit PersonalDataManagerObserver(
+      PersonalDataManager* personal_data_manager,
+      Profile* profile)
+      : personal_data_manager_(personal_data_manager),
+        profile_(profile) {
+  }
+
+  virtual ~PersonalDataManagerObserver();
+
+  // Notifies the observer that the PersonalDataManager has finished loading.
+  virtual void OnPersonalDataLoaded();
+
+  // Static method to dispatch to |ShowAutoFillDialog| method in autofill
+  // module.  This is public to facilitate direct external call when the
+  // data manager has already loaded its data.
+  static void ShowAutoFillDialog(PersonalDataManager* personal_data_manager,
+                                 Profile* profile);
+
+ private:
+  // Utility method to remove |this| from |personal_data_manager_| as an
+  // observer.
+  void RemoveObserver();
+
+  // The object in which we are registered as an observer.  We hold on to
+  // it to facilitate un-registering ourself in the destructor and in the
+  // |OnPersonalDataLoaded| method.  This may be NULL.
+  // Weak reference.
+  PersonalDataManager* personal_data_manager_;
+
+  // Profile of caller.  Held as weak reference.  May not be NULL.
+  Profile* profile_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PersonalDataManagerObserver);
+};
+
+// During destruction ensure that we are removed from the
+// |personal_data_manager_| as an observer.
+PersonalDataManagerObserver::~PersonalDataManagerObserver() {
+  RemoveObserver();
+}
+
+void PersonalDataManagerObserver::RemoveObserver() {
+  if (personal_data_manager_) {
+    personal_data_manager_->RemoveObserver(this);
+  }
+}
+
+// The data is ready so display our dialog.  Recursively call
+// |showAutoFillSettings:| to try again now knowing that the
+// |PersonalDataManager| is ready.  Once done we clear the observer
+// (deleting |this| in the process).
+void PersonalDataManagerObserver::OnPersonalDataLoaded() {
+  RemoveObserver();
+  PersonalDataManagerObserver::ShowAutoFillDialog(personal_data_manager_,
+                                                  profile_);
+}
+
+// Dispatches request to show the autofill dialog.  If there are no profiles
+// in the |personal_data_manager| the we create a new one here.  Similary with
+// credit card info.
+void PersonalDataManagerObserver::ShowAutoFillDialog(
+    PersonalDataManager* personal_data_manager, Profile* profile) {
+  DCHECK(profile);
+  if (!personal_data_manager)
+    return;
+
+  std::vector<AutoFillProfile*> profiles =
+      personal_data_manager->web_profiles();
+  AutoFillProfile autofill_profile(ASCIIToUTF16(""), 0);
+  if (profiles.size() == 0) {
+    string16 new_profile_name =
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_NEW_ADDRESS);
+    autofill_profile.set_label(new_profile_name);
+    profiles.push_back(&autofill_profile);
+  }
+
+  std::vector<CreditCard*> credit_cards = personal_data_manager->credit_cards();
+  CreditCard credit_card(ASCIIToUTF16(""), 0);
+  if (credit_cards.size() == 0) {
+    string16 new_credit_card_name =
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_NEW_CREDITCARD);
+    credit_card.set_label(new_credit_card_name);
+    credit_cards.push_back(&credit_card);
+  }
+
+  ::ShowAutoFillDialog(personal_data_manager, profiles, credit_cards, profile);
+}
+
 }  // namespace PreferencesWindowControllerInternal
 
 @implementation PreferencesWindowController
@@ -657,6 +751,7 @@ class PrefObserverBridge : public NotificationObserver,
   [customPagesSource_ removeObserver:self forKeyPath:@"customHomePages"];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [self unregisterPrefObservers];
+  personalDataManagerObserver_.reset();
   [super dealloc];
 }
 
@@ -1157,7 +1252,19 @@ const int kDisabledIndex = 1;
     return;
   }
 
-  ShowAutoFillDialog(NULL, personalDataManager, profile_, NULL, NULL);
+  if (personalDataManager->IsDataLoaded()) {
+    // |personalDataManager| data is loaded, we can proceed with the dialog.
+    PreferencesWindowControllerInternal::
+        PersonalDataManagerObserver::ShowAutoFillDialog(personalDataManager,
+                                                        profile_);
+  } else {
+    // |personalDataManager| data is NOT loaded, so we load it here, installing
+    // our observer.
+    personalDataManagerObserver_.reset(
+        new PreferencesWindowControllerInternal::PersonalDataManagerObserver(
+          personalDataManager, profile_));
+    personalDataManager->SetObserver(personalDataManagerObserver_.get());
+  }
 }
 
 // Called to import data from other browsers (Safari, Firefox, etc).
