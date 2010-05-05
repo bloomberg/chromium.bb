@@ -51,6 +51,7 @@ using ::testing::Eq;
 using ::testing::InSequence;
 using ::testing::Return;
 using ::testing::StrEq;
+using ::testing::Test;
 using ::testing::_;
 using google_breakpad::StabsHandler;
 using google_breakpad::StabsReader;
@@ -223,32 +224,38 @@ class MockStabsReaderHandler: public StabsHandler {
   MOCK_METHOD1(MockWarning, void(const char *));
 };
 
-// Create a StabsReader to parse the mock stabs data in STABS_ASSEMBLER and
-// STRINGS_ASSEMBLER, and pass the parsed information to HANDLER. Use the
-// endianness and value size of STABS_ASSEMBLER to parse the data. If all
-// goes well, return the result of calling the reader's Process member
-// function. Otherwise, return false.
-static bool ApplyHandlerToMockStabsData(StabsAssembler *stabs_assembler,
-                                        StringAssembler *strings_assembler,
-                                        StabsHandler *handler) {
-  string stab, stabstr;
-  if (!stabs_assembler->GetContents(&stab) ||
-      !strings_assembler->GetContents(&stabstr))
-    return false;
+struct StabsFixture {
+  StabsFixture() : stabs(&strings) { }
 
-  // Run the parser on the test input, passing whatever we find to HANDLER.
-  StabsReader reader(
-      reinterpret_cast<const uint8_t *>(stab.data()),    stab.size(),
-      reinterpret_cast<const uint8_t *>(stabstr.data()), stabstr.size(),
-      stabs_assembler->endianness() == kBigEndian,
-      stabs_assembler->value_size(),
-      handler);
-  return reader.Process();
-}
+  // Create a StabsReader to parse the mock stabs data in stabs and
+  // strings, and pass the parsed information to mock_handler. Use the
+  // endianness and value size of stabs to parse the data. If all goes
+  // well, return the result of calling the reader's Process member
+  // function. Otherwise, return false.
+  bool ApplyHandlerToMockStabsData() {
+    string stabs_contents, stabstr_contents;
+    if (!stabs.GetContents(&stabs_contents) ||
+        !strings.GetContents(&stabstr_contents))
+      return false;
 
-TEST(StabsReader, MockStabsInput) {
+    // Run the parser on the test input, passing whatever we find to HANDLER.
+    StabsReader reader(
+        reinterpret_cast<const uint8_t *>(stabs_contents.data()),
+        stabs_contents.size(),
+        reinterpret_cast<const uint8_t *>(stabstr_contents.data()),
+        stabstr_contents.size(),
+        stabs.endianness() == kBigEndian, stabs.value_size(), &mock_handler);
+    return reader.Process();
+  }
+
   StringAssembler strings;
-  StabsAssembler stabs(&strings);
+  StabsAssembler stabs;
+  MockStabsReaderHandler mock_handler;
+};
+
+class Stabs: public StabsFixture, public Test { };
+
+TEST_F(Stabs, MockStabsInput) {
   stabs.set_endianness(kLittleEndian);
   stabs.set_value_size(4);
   stabs
@@ -274,8 +281,6 @@ TEST(StabsReader, MockStabsInput) {
       .Stab(N_LSYM,     58, 37837, 0xe6b14d37U, "")
       .Stab(N_SO,      152,  7810, 0x11759f10U, "file3.c")
       .Stab(N_SO,      218, 12447, 0x11cfe4b5U, "");
-
-  MockStabsReaderHandler mock_handler;
 
   {
     InSequence s;
@@ -313,17 +318,13 @@ TEST(StabsReader, MockStabsInput) {
         .WillOnce(Return(true));
   }
 
-  ASSERT_TRUE(ApplyHandlerToMockStabsData(&stabs, &strings, &mock_handler));
+  ASSERT_TRUE(ApplyHandlerToMockStabsData());
 }
 
-TEST(StabsReader, AbruptCU) {
-  StringAssembler strings;
-  StabsAssembler stabs(&strings);
+TEST_F(Stabs, AbruptCU) {
   stabs.set_endianness(kBigEndian);
   stabs.set_value_size(4);
   stabs.Stab(N_SO, 177, 23446, 0xbf10d5e4, "file2-1.c");
-
-  MockStabsReaderHandler mock_handler;
 
   {
     InSequence s;
@@ -335,13 +336,10 @@ TEST(StabsReader, AbruptCU) {
         .WillOnce(Return(true));
   }
 
-  ASSERT_TRUE(ApplyHandlerToMockStabsData(&stabs, &strings, &mock_handler));
+  ASSERT_TRUE(ApplyHandlerToMockStabsData());
 }
 
-TEST(StabsReader, AbruptFunction) {
-  MockStabsReaderHandler mock_handler;
-  StringAssembler strings;
-  StabsAssembler stabs(&strings);
+TEST_F(Stabs, AbruptFunction) {
   stabs.set_endianness(kLittleEndian);
   stabs.set_value_size(8);
   stabs
@@ -362,36 +360,28 @@ TEST(StabsReader, AbruptFunction) {
         .WillOnce(Return(true));
   }
 
-  ASSERT_TRUE(ApplyHandlerToMockStabsData(&stabs, &strings, &mock_handler));
+  ASSERT_TRUE(ApplyHandlerToMockStabsData());
 }
 
-TEST(StabsReader, NoCU) {
-  StringAssembler strings;
-  StabsAssembler stabs(&strings);
+TEST_F(Stabs, NoCU) {
   stabs.set_endianness(kBigEndian);
   stabs.set_value_size(8);
   stabs.Stab(N_SO, 161, 25673, 0x8f676e7bU, "build-directory/");
-
-  MockStabsReaderHandler mock_handler;
 
   EXPECT_CALL(mock_handler, StartCompilationUnit(_, _, _))
       .Times(0);
   EXPECT_CALL(mock_handler, StartFunction(_, _))
       .Times(0);
 
-  ASSERT_TRUE(ApplyHandlerToMockStabsData(&stabs, &strings, &mock_handler));
+  ASSERT_TRUE(ApplyHandlerToMockStabsData());
 }
 
-TEST(StabsReader, NoCUEnd) {
-  StringAssembler strings;
-  StabsAssembler stabs(&strings);
+TEST_F(Stabs, NoCUEnd) {
   stabs.set_endianness(kBigEndian);
   stabs.set_value_size(8);
   stabs
       .Stab(N_SO,      116,   58280,   0x2f7493c9U, "file5-1.c")
       .Stab(N_SO,      224,   23057,   0xf9f1d50fU, "file5-2.c");
-
-  MockStabsReaderHandler mock_handler;
 
   {
     InSequence s;
@@ -408,12 +398,10 @@ TEST(StabsReader, NoCUEnd) {
         .WillOnce(Return(true));
   }
 
-  ASSERT_TRUE(ApplyHandlerToMockStabsData(&stabs, &strings, &mock_handler));
+  ASSERT_TRUE(ApplyHandlerToMockStabsData());
 }
 
-TEST(StabsReader, MultipleCUs) {
-  StringAssembler strings;
-  StabsAssembler stabs(&strings);
+TEST_F(Stabs, MultipleCUs) {
   stabs.set_endianness(kBigEndian);
   stabs.set_value_size(4);
   stabs
@@ -427,8 +415,6 @@ TEST(StabsReader, MultipleCUs) {
       .Stab(N_FUN,  59,  3305, 0xa8e120b0U, "selenium")
       .Stab(N_SO,  178, 56949, 0xbffff983U, "")
       .EndCU();
-
-  MockStabsReaderHandler mock_handler;
 
   {
     InSequence s;
@@ -452,7 +438,7 @@ TEST(StabsReader, MultipleCUs) {
         .WillOnce(Return(true));
   }
 
-  ASSERT_TRUE(ApplyHandlerToMockStabsData(&stabs, &strings, &mock_handler));
+  ASSERT_TRUE(ApplyHandlerToMockStabsData());
 }
 
 TEST_F(Stabs, FunctionEnd) {
