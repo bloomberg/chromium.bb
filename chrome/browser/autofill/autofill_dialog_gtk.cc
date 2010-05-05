@@ -1066,9 +1066,14 @@ void AutoFillDialog::AddCreditCard(const CreditCard& credit_card,
 ///////////////////////////////////////////////////////////////////////////////
 // Factory/finder method:
 
-void ShowAutoFillDialog(gfx::NativeWindow parent,
+// TODO(jhawkins): Need to update implementation to match new interface for
+// |imported_profile| and |imported_credit_card| parameters.
+// See http://crbug.com/41010
+void ShowAutoFillDialog(gfx::NativeView parent,
                         AutoFillDialogObserver* observer,
-                        Profile* profile) {
+                        Profile* profile,
+                        AutoFillProfile* imported_profile,
+                        CreditCard* imported_credit_card) {
   // It's possible we haven't shown the InfoBar yet, but if the user is in the
   // AutoFill dialog, she doesn't need to be asked to enable or disable
   // AutoFill.

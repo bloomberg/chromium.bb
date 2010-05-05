@@ -234,6 +234,22 @@ void PersonalDataManager::SaveImportedFormData() {
   }
 }
 
+void PersonalDataManager::GetImportedFormData(AutoFillProfile** profile,
+                                              CreditCard** credit_card) {
+  DCHECK(profile);
+  DCHECK(credit_card);
+
+  if (imported_profile_.get()) {
+    imported_profile_->set_label(ASCIIToUTF16(kUnlabeled));
+  }
+  *profile = imported_profile_.get();
+
+  if (imported_credit_card_.get()) {
+    imported_credit_card_->set_label(ASCIIToUTF16(kUnlabeled));
+  }
+  *credit_card = imported_credit_card_.get();
+}
+
 void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {
   if (profile_->IsOffTheRecord())
     return;

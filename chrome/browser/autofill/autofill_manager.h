@@ -33,7 +33,6 @@ extern const char* kAutoFillLearnMoreUrl;
 // Manages saving and restoring the user's personal information entered into web
 // forms.
 class AutoFillManager : public RenderViewHostDelegate::AutoFill,
-                        public PersonalDataManager::Observer,
                         public AutoFillDownloadManager::Observer {
  public:
   explicit AutoFillManager(TabContents* tab_contents);
@@ -55,9 +54,6 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
                                     const webkit_glue::FormData& form,
                                     const string16& value,
                                     const string16& label);
-
-  // PersonalDataManager::Observer implementation:
-  virtual void OnPersonalDataLoaded();
 
   // Called by the AutoFillInfoBarDelegate when the user closes the infobar.
   virtual void OnInfoBarClosed();

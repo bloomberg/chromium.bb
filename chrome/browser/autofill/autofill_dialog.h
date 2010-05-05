@@ -33,19 +33,21 @@ class AutoFillDialogObserver {
 // The dialog fills out the profile fields using this data. |observer| will be
 // notified by OnAutoFillDialogAccept when the user has applied changes.
 //
+// The |parent| parameter (currently only used on Windows) specifies the parent
+// view in the view hierarchy.  May be NULL on Mac and gtk.
+//
+// Optional parameters |imported_profile| and |imported_credit_card| may be
+// supplied.  If they are supplied (non-NULL) they will be used instead of
+// the profile and credit card data retrieved from the PersonalDataManager
+// associated with the |profile|.
+//
 // The PersonalDataManager owns the contents of these vectors.  The lifetime of
 // the contents is until the PersonalDataManager replaces them with new data
 // whenever the web database is updated.
-#if defined(OS_MACOSX)
-// TODO(dhollowa): update .mm files and remove this.
-void ShowAutoFillDialog(AutoFillDialogObserver* observer,
-                        const std::vector<AutoFillProfile*>& profiles,
-                        const std::vector<CreditCard*>& credit_cards,
-                        Profile* profile);
-#else
-void ShowAutoFillDialog(gfx::NativeWindow parent,
+void ShowAutoFillDialog(gfx::NativeView parent,
                         AutoFillDialogObserver* observer,
-                        Profile* profile);
-#endif
+                        Profile* profile,
+                        AutoFillProfile* imported_profile,
+                        CreditCard* imported_credit_card);
 
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_DIALOG_H_
