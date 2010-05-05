@@ -29,11 +29,10 @@ FormField::FormField(WebFormControlElement element) {
 
   form_control_type_ = element.formControlType();
   if (form_control_type_ == ASCIIToUTF16("text")) {
-    const WebInputElement& input_element =
-        element.toConstElement<WebInputElement>();
+    const WebInputElement& input_element = element.toConst<WebInputElement>();
     value_ = input_element.value();
   } else if (form_control_type_ == ASCIIToUTF16("select-one")) {
-    WebSelectElement select_element = element.toElement<WebSelectElement>();
+    WebSelectElement select_element = element.to<WebSelectElement>();
     value_ = select_element.value();
   }
 

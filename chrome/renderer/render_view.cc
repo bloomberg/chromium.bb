@@ -2000,7 +2000,7 @@ void RenderView::queryAutofillSuggestions(const WebNode& node,
   autofill_query_node_ = node;
 
   const WebFormControlElement& element =
-      node.toConstElement<WebFormControlElement>();
+      node.toConst<WebFormControlElement>();
 
   webkit_glue::FormField field;
   FormManager::WebFormControlElementToFormField(element, true, &field);
@@ -2028,7 +2028,7 @@ void RenderView::didAcceptAutoFillSuggestion(
   autofill_query_id_ = query_counter++;
 
   webkit_glue::FormData form;
-  const WebInputElement element = node.toConstElement<WebInputElement>();
+  const WebInputElement element = node.toConst<WebInputElement>();
   if (!form_manager_.FindFormWithFormControlElement(
           element, FormManager::REQUIRE_NONE, &form))
     return;
@@ -3307,8 +3307,8 @@ GURL RenderView::GetAlternateErrorPageURL(const GURL& failed_url,
 }
 
 webkit_glue::WebPluginDelegate* RenderView::GetDelegateForPluginDocument() {
-  WebPlugin* plugin = webview()->mainFrame()->document().
-      toElement<WebPluginDocument>().plugin();
+  WebPlugin* plugin =
+      webview()->mainFrame()->document().to<WebPluginDocument>().plugin();
   return static_cast<webkit_glue::WebPluginImpl*>(plugin)->delegate();
 }
 

@@ -332,10 +332,6 @@ void WebKitClientImpl::stopSharedTimer() {
   shared_timer_.Stop();
 }
 
-void WebKitClientImpl::callOnMainThread(void (*func)()) {
-  main_loop_->PostTask(FROM_HERE, NewRunnableFunction(func));
-}
-
 void WebKitClientImpl::callOnMainThread(void (*func)(void*), void* context) {
   main_loop_->PostTask(FROM_HERE, NewRunnableFunction(func, context));
 }

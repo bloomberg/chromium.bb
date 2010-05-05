@@ -89,13 +89,13 @@ void FormManager::WebFormControlElementToFormField(
   string16 value;
   if (element.formControlType() == WebString::fromUTF8("text")) {
     const WebInputElement& input_element =
-        element.toConstElement<WebInputElement>();
+        element.toConst<WebInputElement>();
     value = input_element.value();
   } else if (element.formControlType() == WebString::fromUTF8("select-one")) {
     // TODO(jhawkins): This is ugly.  WebSelectElement::value() is a non-const
     // method.  Look into fixing this on the WebKit side.
     WebFormControlElement& e = const_cast<WebFormControlElement&>(element);
-    WebSelectElement select_element = e.toElement<WebSelectElement>();
+    WebSelectElement select_element = e.to<WebSelectElement>();
     value = select_element.value();
   }
   field->set_value(value);
@@ -105,9 +105,9 @@ void FormManager::WebFormControlElementToFormField(
 string16 FormManager::LabelForElement(const WebFormControlElement& element) {
   WebNodeList labels = element.document().getElementsByTagName("label");
   for (unsigned i = 0; i < labels.length(); ++i) {
-    WebElement e = labels.item(i).toElement<WebElement>();
+    WebElement e = labels.item(i).to<WebElement>();
     if (e.hasTagName("label")) {
-      WebLabelElement label = e.toElement<WebLabelElement>();
+      WebLabelElement label = e.to<WebLabelElement>();
       if (label.correspondingControl() == element)
         return GetChildText(label);
     }
@@ -124,7 +124,7 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
                                            FormData* form) {
   DCHECK(form);
 
-  const WebFrame* frame = element.frame();
+  const WebFrame* frame = element.document().frame();
   if (!frame)
     return false;
 
@@ -134,7 +134,7 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
   form->name = element.name();
   form->method = element.method();
   form->origin = frame->url();
-  form->action = frame->completeURL(element.action());
+  form->action = frame->document().completeURL(element.action());
 
   // If the completed URL is not valid, just use the action we get from
   // WebKit.
@@ -161,7 +161,7 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
     if (requirements & REQUIRE_AUTOCOMPLETE &&
         control_element.formControlType() == WebString::fromUTF8("text")) {
       const WebInputElement& input_element =
-          control_element.toConstElement<WebInputElement>();
+          control_element.toConst<WebInputElement>();
       if (!input_element.autoComplete())
         continue;
     }
@@ -191,9 +191,9 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
   // label.firstChild().nodeValue() of the label element.
   WebNodeList labels = element.getElementsByTagName("label");
   for (unsigned i = 0; i < labels.length(); ++i) {
-    WebLabelElement label = labels.item(i).toElement<WebLabelElement>();
+    WebLabelElement label = labels.item(i).to<WebLabelElement>();
     WebFormControlElement field_element =
-        label.correspondingControl().toElement<WebFormControlElement>();
+        label.correspondingControl().to<WebFormControlElement>();
     if (field_element.isNull() || !field_element.isFormControlElement())
       continue;
 
@@ -311,7 +311,7 @@ bool FormManager::FindForm(const WebFormElement& element,
                            FormData* form) {
   DCHECK(form);
 
-  const WebFrame* frame = element.frame();
+  const WebFrame* frame = element.document().frame();
   if (!frame)
     return false;
 
@@ -338,7 +338,7 @@ bool FormManager::FindFormWithFormControlElement(
     FormData* form) {
   DCHECK(form);
 
-  const WebFrame* frame = element.frame();
+  const WebFrame* frame = element.document().frame();
   if (!frame)
     return false;
 
@@ -381,7 +381,8 @@ bool FormManager::FillForm(const FormData& form) {
       // Also note that WebString() == WebString(string16()) does not seem to
       // evaluate to |true| for some reason TBD, so forcing to string16.
       string16 element_name((*form_iter)->form_element.name());
-      GURL action(frame->completeURL((*form_iter)->form_element.action()));
+      GURL action(
+          frame->document().completeURL((*form_iter)->form_element.action()));
       if (element_name == form.name && action == form.action) {
         form_element = *form_iter;
         break;
@@ -436,7 +437,7 @@ bool FormManager::FillForm(const FormData& form) {
     if (!form.fields[j].value().empty() &&
         element->formControlType() != WebString::fromUTF8("submit")) {
       if (element->formControlType() == WebString::fromUTF8("text")) {
-        WebInputElement input_element = element->toElement<WebInputElement>();
+        WebInputElement input_element = element->to<WebInputElement>();
         // If the maxlength attribute contains a negative value, maxLength()
         // returns the default maxlength value.
         input_element.setValue(
@@ -445,7 +446,7 @@ bool FormManager::FillForm(const FormData& form) {
       } else if (element->formControlType() ==
                  WebString::fromUTF8("select-one")) {
         WebSelectElement select_element =
-            element->toElement<WebSelectElement>();
+            element->to<WebSelectElement>();
         select_element.setValue(form.fields[j].value());
       }
     }
@@ -481,7 +482,8 @@ bool FormManager::FormElementToFormData(const WebFrame* frame,
   form->name = form_element->form_element.name();
   form->method = form_element->form_element.method();
   form->origin = frame->url();
-  form->action = frame->completeURL(form_element->form_element.action());
+  form->action =
+      frame->document().completeURL(form_element->form_element.action());
 
   // If the completed URL is not valid, just use the action we get from
   // WebKit.
@@ -497,7 +499,7 @@ bool FormManager::FormElementToFormData(const WebFrame* frame,
     if (requirements & REQUIRE_AUTOCOMPLETE &&
         control_element.formControlType() == WebString::fromUTF8("text")) {
       const WebInputElement& input_element =
-          control_element.toConstElement<WebInputElement>();
+          control_element.toConst<WebInputElement>();
       if (!input_element.autoComplete())
         continue;
     }
@@ -537,7 +539,7 @@ string16 FormManager::InferLabelForElement(
     // Note the lack of whitespace between <p> and <input> elements.
     if (inferred_label.empty()) {
       if (previous.isElementNode()) {
-        WebElement element = previous.toElement<WebElement>();
+        WebElement element = previous.to<WebElement>();
         if (element.hasTagName("p")) {
           inferred_label = GetChildText(element);
           TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
@@ -551,7 +553,7 @@ string16 FormManager::InferLabelForElement(
     if (inferred_label.empty()) {
       previous = previous.previousSibling();
       if (!previous.isNull() && previous.isElementNode()) {
-        WebElement element = previous.toElement<WebElement>();
+        WebElement element = previous.to<WebElement>();
         if (element.hasTagName("p")) {
           inferred_label = GetChildText(element);
           TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
@@ -565,7 +567,7 @@ string16 FormManager::InferLabelForElement(
   if (inferred_label.empty()) {
     WebNode parent = element.parentNode();
     if (!parent.isNull() && parent.isElementNode()) {
-      WebElement element = parent.toElement<WebElement>();
+      WebElement element = parent.to<WebElement>();
       if (element.hasTagName("td")) {
         previous = parent.previousSibling();
 
@@ -574,7 +576,7 @@ string16 FormManager::InferLabelForElement(
           previous = previous.previousSibling();
 
         if (!previous.isNull() && previous.isElementNode()) {
-          element = previous.toElement<WebElement>();
+          element = previous.to<WebElement>();
           if (element.hasTagName("td")) {
             inferred_label = GetChildText(element);
             TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);

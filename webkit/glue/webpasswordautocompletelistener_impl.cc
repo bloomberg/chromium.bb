@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/string_util.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 
@@ -51,7 +52,7 @@ void WebInputElementDelegate::OnFinishedAutocompleting() {
 void WebInputElementDelegate::RefreshAutofillPopup(
     const std::vector<string16>& suggestions,
     int default_suggestion_index) {
-  WebView* webview = element_.frame()->view();
+  WebView* webview = element_.document().frame()->view();
   if (webview)
     webview->applyAutocompleteSuggestions(element_, suggestions,
                                           default_suggestion_index);

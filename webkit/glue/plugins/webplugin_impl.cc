@@ -484,7 +484,7 @@ GURL WebPluginImpl::CompleteURL(const char* url) {
     return GURL();
   }
   // TODO(darin): Is conversion from UTF8 correct here?
-  return webframe_->completeURL(WebString::fromUTF8(url));
+  return webframe_->document().completeURL(WebString::fromUTF8(url));
 }
 
 void WebPluginImpl::CancelResource(unsigned long id) {

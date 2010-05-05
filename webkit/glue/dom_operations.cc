@@ -138,7 +138,7 @@ void GetAllSavableResourceLinksForFrame(WebFrame* current_frame,
     // We only save HTML resources.
     if (!node.isElementNode())
       continue;
-    WebElement element = node.toElement<WebElement>();
+    WebElement element = node.to<WebElement>();
     GetSavableResourceLinkForElement(element,
                                      current_doc,
                                      unique_check,
@@ -221,7 +221,7 @@ static bool FindFormInputElements(WebFormElement* fe,
     // matching elements it can get at them through the FormElement*.
     // Note: This assignment adds a reference to the InputElement.
     result->input_elements[data.fields[j].name()] =
-        temp_elements[0].toElement<WebInputElement>();
+        temp_elements[0].to<WebInputElement>();
   }
   return true;
 }
@@ -256,7 +256,7 @@ static void FindFormElements(WebView* view,
     for (size_t i = 0; i < forms.size(); ++i) {
       WebFormElement fe = forms[i];
       // Action URL must match.
-      GURL full_action(f->completeURL(fe.action()));
+      GURL full_action(f->document().completeURL(fe.action()));
       if (data.action != full_action.ReplaceComponents(rep))
         continue;
 
@@ -298,7 +298,7 @@ void FillPasswordForm(WebView* view,
     WebInputElement password_element =
         form_elements->input_elements[data.basic_data.fields[1].name()];
 
-    username_element.frame()->registerPasswordListener(
+    username_element.document().frame()->registerPasswordListener(
         username_element,
         new WebPasswordAutocompleteListenerImpl(
             new WebInputElementDelegate(username_element),
@@ -313,7 +313,7 @@ WebString GetSubResourceLinkFromElement(const WebElement& element) {
       element.hasTagName("script")) {
     attribute_name = "src";
   } else if (element.hasTagName("input")) {
-    const WebInputElement input = element.toConstElement<WebInputElement>();
+    const WebInputElement input = element.toConst<WebInputElement>();
     if (input.inputType() == WebInputElement::Image) {
       attribute_name = "src";
     }
@@ -494,7 +494,7 @@ void GetApplicationInfo(WebView* view, WebApplicationInfo* app_info) {
     WebNode child = children.item(i);
     if (!child.isElementNode())
       continue;
-    WebElement elem = child.toElement<WebElement>();
+    WebElement elem = child.to<WebElement>();
 
     if (elem.hasTagName("link")) {
       std::string rel = elem.getAttribute("rel").utf8();
@@ -577,7 +577,7 @@ bool ElementDoesAutoCompleteForElementWithId(WebView* view,
   if (element.isNull() || !element.hasTagName("input"))
     return false;
 
-  WebInputElement input_element = element.toElement<WebInputElement>();
+  WebInputElement input_element = element.to<WebInputElement>();
   return input_element.autoComplete();
 }
 
