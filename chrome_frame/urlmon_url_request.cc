@@ -1100,33 +1100,9 @@ void UrlmonUrlRequestManager::GetCookiesForUrl(const GURL& url, int cookie_id) {
 
 void UrlmonUrlRequestManager::SetCookiesForUrl(const GURL& url,
                                                const std::string& cookie) {
-  std::string name;
-  std::string data;
-
-  size_t name_end = cookie.find('=');
-  if (std::string::npos != name_end) {
-    net::CookieMonster::ParsedCookie parsed_cookie = cookie;
-    name = parsed_cookie.Name();
-    // Verify if the cookie is being deleted. The cookie format is as below
-    // value[; expires=date][; domain=domain][; path=path][; secure]
-    // If the first semicolon appears immediately after the name= string,
-    // it means that the cookie is being deleted, in which case we should
-    // pass the data as is to the InternetSetCookie function.
-    if (!parsed_cookie.Value().empty()) {
-      name.clear();
-      data = cookie;
-    } else {
-      data = cookie.substr(name_end + 1);
-    }
-  } else {
-    data = cookie;
-  }
-
-  int32 flags = INTERNET_COOKIE_EVALUATE_P3P;
-
   InternetCookieState cookie_state = static_cast<InternetCookieState>(
-      InternetSetCookieExA(url.spec().c_str(), name.c_str(), data.c_str(),
-                           flags, NULL));
+      InternetSetCookieExA(url.spec().c_str(), NULL, cookie.c_str(),
+                           INTERNET_COOKIE_EVALUATE_P3P, NULL));
 
   int32 cookie_action = MapCookieStateToCookieAction(cookie_state);
   AddPrivacyDataForUrl(url.spec(), "", cookie_action);

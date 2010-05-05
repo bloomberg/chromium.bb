@@ -887,3 +887,16 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestMultipleGet) {
   }
 }
 
+const wchar_t kSetCookieTest[] =
+    L"files/fulltab_set_cookie_test.html";
+
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_SetCookieTest) {
+  chrome_frame_test::TimedMsgLoop loop;
+  ASSERT_TRUE(LaunchBrowser(IE, kSetCookieTest));
+
+  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+
+  chrome_frame_test::CloseAllIEWindows();
+  ASSERT_TRUE(CheckResultFile(L"FullTab_SetCookieTest", "OK"));
+}
+

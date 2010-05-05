@@ -1,0 +1,67 @@
+<html>
+  <head>
+    <meta http-equiv="x-ua-compatible" content="chrome=1" />
+    <title>FullTab mode set cookie test</title>
+  </head>
+
+  <script type="text/javascript"
+  src="chrome_frame_tester_helpers.js"></script>
+
+  <script type="text/javascript">
+    function onLoad() {
+      if (!isRunningInChrome()) {
+        onFailure("FullTab_SetCookieTest", 1, "Not running in Chrome");
+        return;
+      }
+
+      // The path of the cookie in this test is set to "/." so it should be
+      // available for all files on the domain but should be set only once.
+      // First validate that the document cookie contains the substring
+      // "CF_FullTabDummyCookie=1".
+      // 1. Then create a cookie CF_FullTabSetCookie1=1 and verify it it got
+      //    set correctly..
+      // 2. Now create a second cookie CF_FullTabSetCookie2=1 and not validate
+      //    whether both cookies can be found.
+      var original_cookies = document.cookie;
+      var cookie_found = /CF_FullTabDummyCookie=1/.test(document.cookie);
+      if (cookie_found) {
+        createCookie("CF_FullTabSetCookie1", 1, 1);
+        cookie_found = /CF_FullTabSetCookie1=1/.test(document.cookie);
+        if (!cookie_found) {
+          onFailure("FullTab_SetCookieTest", 1, "Failed to set first cookie");
+        } else {
+          createCookie("CF_FullTabSetCookie2", 1, 1);
+          cookie_found = /CF_FullTabSetCookie2=1/.test(document.cookie);
+          if (!cookie_found) {
+            onFailure("FullTab_SetCookieTest", 1,
+                      "Failed to find second cookie");
+          } else {
+            cookie_found = /CF_FullTabSetCookie1=1/.test(document.cookie);
+            if (!cookie_found) {
+              onFailure("FullTab_SetCookieTest", 1,
+                        "Failed to find first cookie");
+            }
+          } 
+        }
+      } else {
+        onFailure("FullTab_SetCookieTest", 1, "Expected cookies not set");
+      }
+
+      eraseCookie("CF_FullTabDummyCookie");
+      eraseCookie("CF_FullTabSetCookie1");
+      eraseCookie("CF_FullTabSetCookie2");
+      
+      if (!readCookie("CF_FullTabDummyCookie") &&
+          !readCookie("CF_FullTabSetCookie1") &&
+          !readCookie("CF_FullTabSetCookie2")) {
+        onSuccess("FullTab_SetCookieTest", 1);
+      } else {
+        onFailure("FullTab_SetCookieTest", 1, "Failed to delete cookies");
+      }
+    }
+  </script>
+
+  <body onload="onLoad();">
+    This tests whether cookies get set correctly in full tab mode
+  </body>
+</html>
