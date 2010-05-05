@@ -11,6 +11,7 @@
 #include <string>
 
 #include "app/gtk_signal.h"
+#include "app/menus/simple_menu_model.h"
 #include "app/slide_animation.h"
 #include "base/linked_ptr.h"
 #include "base/task.h"
@@ -31,7 +32,8 @@ typedef struct _GtkWidget GtkWidget;
 
 class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
                                  public AnimationDelegate,
-                                 public MenuGtk::Delegate {
+                                 public MenuGtk::Delegate,
+                                 public menus::SimpleMenuModel::Delegate {
  public:
   explicit BrowserActionsToolbarGtk(Browser* browser);
   virtual ~BrowserActionsToolbarGtk();
@@ -99,10 +101,18 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   virtual void AnimationProgressed(const Animation* animation);
   virtual void AnimationEnded(const Animation* animation);
 
-  // MenuGtk::Delegate implementation.
+  // SimpleMenuModel::Delegate implementation.
   // In our case, |command_id| is be the index into the model's extension list.
-  virtual bool IsCommandEnabled(int command_id) const { return true; }
-  virtual void ExecuteCommandById(int command_id);
+  virtual bool IsCommandIdChecked(int command_id) const { return false; }
+  virtual bool IsCommandIdEnabled(int command_id) const { return true; }
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      menus::Accelerator* accelerator) {
+    return false;
+  }
+  virtual void ExecuteCommand(int command_id);
+
+  // MenuGtk::Delegate implementation.
   virtual void StoppedShowing();
   virtual bool AlwaysShowImages() const { return true; }
 
@@ -160,6 +170,7 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
 
   OverflowButton overflow_button_;
   scoped_ptr<MenuGtk> overflow_menu_;
+  scoped_ptr<menus::SimpleMenuModel> overflow_menu_model_;
 
   // The vertical separator between the overflow button and the page/app menus.
   GtkWidget* separator_;

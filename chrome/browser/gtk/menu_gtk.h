@@ -60,9 +60,6 @@ class MenuGtk {
   // Builds a MenuGtk that uses |delegate| to perform actions and |menu_data|
   // to create the menu.
   MenuGtk(MenuGtk::Delegate* delegate, const MenuCreateMaterial* menu_data);
-  // Builds a MenuGtk that uses |delegate| to perform actions and build the
-  // menu.
-  explicit MenuGtk(MenuGtk::Delegate* delegate);
   // Creates a MenuGtk that uses |delegate| to perform actions.  Builds the
   // menu using |model_|.
   MenuGtk(MenuGtk::Delegate* delegate, menus::MenuModel* model);

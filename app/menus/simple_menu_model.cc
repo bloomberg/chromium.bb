@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "app/menus/simple_menu_model.h"
 
@@ -18,7 +18,7 @@ SimpleMenuModel::~SimpleMenuModel() {
 }
 
 void SimpleMenuModel::AddItem(int command_id, const string16& label) {
-  Item item = { command_id, label, TYPE_COMMAND, -1, NULL };
+  Item item = { command_id, label, SkBitmap(), TYPE_COMMAND, -1, NULL };
   items_.push_back(item);
 }
 
@@ -27,12 +27,12 @@ void SimpleMenuModel::AddItemWithStringId(int command_id, int string_id) {
 }
 
 void SimpleMenuModel::AddSeparator() {
-  Item item = { -1, string16(), TYPE_SEPARATOR, -1, NULL };
+  Item item = { -1, string16(), SkBitmap(), TYPE_SEPARATOR, -1, NULL };
   items_.push_back(item);
 }
 
 void SimpleMenuModel::AddCheckItem(int command_id, const string16& label) {
-  Item item = { command_id, label, TYPE_CHECK, -1, NULL };
+  Item item = { command_id, label, SkBitmap(), TYPE_CHECK, -1, NULL };
   items_.push_back(item);
 }
 
@@ -42,7 +42,7 @@ void SimpleMenuModel::AddCheckItemWithStringId(int command_id, int string_id) {
 
 void SimpleMenuModel::AddRadioItem(int command_id, const string16& label,
                                    int group_id) {
-  Item item = { command_id, label, TYPE_RADIO, group_id, NULL };
+  Item item = { command_id, label, SkBitmap(), TYPE_RADIO, group_id, NULL };
   items_.push_back(item);
 }
 
@@ -52,7 +52,7 @@ void SimpleMenuModel::AddRadioItemWithStringId(int command_id, int string_id,
 }
 
 void SimpleMenuModel::AddSubMenu(const string16& label, MenuModel* model) {
-  Item item = { -1, label, TYPE_SUBMENU, -1, model };
+  Item item = { -1, label, SkBitmap(), TYPE_SUBMENU, -1, model };
   items_.push_back(item);
 }
 
@@ -62,7 +62,7 @@ void SimpleMenuModel::AddSubMenuWithStringId(int string_id, MenuModel* model) {
 
 void SimpleMenuModel::InsertItemAt(
     int index, int command_id, const string16& label) {
-  Item item = { command_id, label, TYPE_COMMAND, -1, NULL };
+  Item item = { command_id, label, SkBitmap(), TYPE_COMMAND, -1, NULL };
   items_.insert(items_.begin() + FlipIndex(index), item);
 }
 
@@ -72,13 +72,13 @@ void SimpleMenuModel::InsertItemWithStringIdAt(
 }
 
 void SimpleMenuModel::InsertSeparatorAt(int index) {
-  Item item = { -1, string16(), TYPE_SEPARATOR, -1, NULL };
+  Item item = { -1, string16(), SkBitmap(), TYPE_SEPARATOR, -1, NULL };
   items_.insert(items_.begin() + FlipIndex(index), item);
 }
 
 void SimpleMenuModel::InsertCheckItemAt(
     int index, int command_id, const string16& label) {
-  Item item = { command_id, label, TYPE_CHECK, -1, NULL };
+  Item item = { command_id, label, SkBitmap(), TYPE_CHECK, -1, NULL };
   items_.insert(items_.begin() + FlipIndex(index), item);
 }
 
@@ -90,7 +90,7 @@ void SimpleMenuModel::InsertCheckItemWithStringIdAt(
 
 void SimpleMenuModel::InsertRadioItemAt(
     int index, int command_id, const string16& label, int group_id) {
-  Item item = { command_id, label, TYPE_RADIO, group_id, NULL };
+  Item item = { command_id, label, SkBitmap(), TYPE_RADIO, group_id, NULL };
   items_.insert(items_.begin() + FlipIndex(index), item);
 }
 
@@ -102,13 +102,17 @@ void SimpleMenuModel::InsertRadioItemWithStringIdAt(
 
 void SimpleMenuModel::InsertSubMenuAt(
     int index, const string16& label, MenuModel* model) {
-  Item item = { -1, label, TYPE_SUBMENU, -1, model };
+  Item item = { -1, label, SkBitmap(), TYPE_SUBMENU, -1, model };
   items_.insert(items_.begin() + FlipIndex(index), item);
 }
 
 void SimpleMenuModel::InsertSubMenuWithStringIdAt(
     int index, int string_id, MenuModel* model) {
   InsertSubMenuAt(index, l10n_util::GetStringUTF16(string_id), model);
+}
+
+void SimpleMenuModel::SetIcon(int index, const SkBitmap& icon) {
+  items_[index].icon = icon;
 }
 
 int SimpleMenuModel::GetIndexOfCommandId(int command_id) {
@@ -125,6 +129,12 @@ int SimpleMenuModel::GetIndexOfCommandId(int command_id) {
 // SimpleMenuModel, MenuModel implementation:
 
 bool SimpleMenuModel::HasIcons() const {
+  for (std::vector<Item>::const_iterator iter = items_.begin();
+       iter != items_.end(); ++iter) {
+    if (!iter->icon.isNull())
+      return true;
+  }
+
   return false;
 }
 
@@ -175,7 +185,11 @@ int SimpleMenuModel::GetGroupIdAt(int index) const {
 }
 
 bool SimpleMenuModel::GetIconAt(int index, SkBitmap* icon) const {
-  return false;
+  if (items_[index].icon.isNull())
+    return false;
+
+  *icon = items_[index].icon;
+  return true;
 }
 
 bool SimpleMenuModel::IsEnabledAt(int index) const {

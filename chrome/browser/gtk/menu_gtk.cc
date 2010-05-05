@@ -117,16 +117,6 @@ MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
   BuildMenuIn(menu_, menu_data);
 }
 
-MenuGtk::MenuGtk(MenuGtk::Delegate* delegate)
-    : delegate_(delegate),
-      model_(NULL),
-      dummy_accel_group_(gtk_accel_group_new()),
-      menu_(gtk_menu_new()),
-      factory_(this) {
-  g_object_ref_sink(menu_);
-  ConnectSignalHandlers();
-}
-
 MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
                  menus::MenuModel* model)
     : delegate_(delegate),
@@ -134,11 +124,10 @@ MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
       dummy_accel_group_(gtk_accel_group_new()),
       menu_(gtk_menu_new()),
       factory_(this) {
-  g_object_ref_sink(menu_);
   DCHECK(model);
+  g_object_ref_sink(menu_);
   ConnectSignalHandlers();
-  if (model)
-    BuildMenuFromModel();
+  BuildMenuFromModel();
 }
 
 MenuGtk::~MenuGtk() {

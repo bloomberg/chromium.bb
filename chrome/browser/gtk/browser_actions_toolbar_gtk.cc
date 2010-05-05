@@ -43,13 +43,11 @@ const int kButtonSize = 29;
 // use their maximum allowed size.
 const int kButtonPadding = 3;
 
-// The padding to the left, top, and bottom of the browser actions toolbar
+// The padding to the left, top and bottom of the browser actions toolbar
 // separator.
 const int kSeparatorPadding = 2;
 
 const char* kDragTarget = "application/x-chrome-browseraction";
-
-const char* kMenuItemKey = "__CHROME_OVERFLOW_MENU_ITEM_KEY__";
 
 GtkTargetEntry GetDragTargetEntry() {
   static std::string drag_target_string(kDragTarget);
@@ -68,6 +66,8 @@ gint WidthForIconCount(gint icon_count) {
 }
 
 }  // namespace
+
+using menus::SimpleMenuModel;
 
 class BrowserActionButton : public NotificationObserver,
                             public ImageLoadingTracker::Observer,
@@ -589,7 +589,7 @@ void BrowserActionsToolbarGtk::AnimationEnded(const Animation* animation) {
   UpdateChevronVisibility();
 }
 
-void BrowserActionsToolbarGtk::ExecuteCommandById(int command_id) {
+void BrowserActionsToolbarGtk::ExecuteCommand(int command_id) {
   Extension* extension = model_->GetExtensionByIndex(command_id);
   ExtensionAction* browser_action = extension->browser_action();
 
@@ -805,7 +805,7 @@ gboolean BrowserActionsToolbarGtk::OnGripperButtonPress(
 
 gboolean BrowserActionsToolbarGtk::OnOverflowButtonPress(
     GtkWidget* overflow, GdkEventButton* event) {
-  overflow_menu_.reset(new MenuGtk(this));
+  overflow_menu_model_.reset(new SimpleMenuModel(this));
 
   int visible_icon_count =
       gtk_chrome_shrinkable_hbox_get_visible_child_count(
@@ -818,16 +818,14 @@ gboolean BrowserActionsToolbarGtk::OnOverflowButtonPress(
     Extension* extension = model_->GetExtensionByIndex(model_index);
     BrowserActionButton* button = extension_button_map_[extension->id()].get();
 
-    GtkWidget* menu_item = overflow_menu_->AppendMenuItemWithIcon(
-        model_index,
-        extension->name(),
-        button->GetIcon());
-
-    g_object_set_data(G_OBJECT(menu_item), kMenuItemKey, button);
+    overflow_menu_model_->AddItem(model_index, UTF8ToUTF16(extension->name()));
+    overflow_menu_model_->SetIcon(overflow_menu_model_->GetItemCount() - 1,
+                                  button->GetIcon());
 
     // TODO(estade): set the menu item's tooltip.
   }
 
+  overflow_menu_.reset(new MenuGtk(this, overflow_menu_model_.get()));
   signals_.Connect(overflow_menu_->widget(), "button-press-event",
                    G_CALLBACK(OnOverflowMenuButtonPressThunk), this);
 
@@ -847,10 +845,26 @@ gboolean BrowserActionsToolbarGtk::OnOverflowMenuButtonPress(
   if (!menu_item)
     return FALSE;
 
-  void* data = g_object_get_data(G_OBJECT(menu_item), kMenuItemKey);
-  DCHECK(data);
-  BrowserActionButton* button = static_cast<BrowserActionButton*>(data);
-  button->GetContextMenu()->PopupAsContext(event->time);
+  int item_index = g_list_index(GTK_MENU_SHELL(overflow)->children, menu_item);
+  if (item_index == -1) {
+    NOTREACHED();
+    return FALSE;
+  }
+
+  item_index += gtk_chrome_shrinkable_hbox_get_visible_child_count(
+      GTK_CHROME_SHRINKABLE_HBOX(button_hbox_.get()));
+  if (profile_->IsOffTheRecord())
+    item_index = model_->IncognitoIndexToOriginal(item_index);
+
+  Extension* extension = model_->GetExtensionByIndex(item_index);
+  ExtensionButtonMap::iterator it = extension_button_map_.find(
+      extension->id());
+  if (it == extension_button_map_.end()) {
+    NOTREACHED();
+    return FALSE;
+  }
+
+  it->second.get()->GetContextMenu()->PopupAsContext(event->time);
   return TRUE;
 }
 

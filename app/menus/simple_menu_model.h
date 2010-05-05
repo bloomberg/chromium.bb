@@ -9,6 +9,7 @@
 
 #include "base/string16.h"
 #include "app/menus/menu_model.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace menus {
 
@@ -75,6 +76,9 @@ class SimpleMenuModel : public MenuModel {
   void InsertSubMenuAt(int index, const string16& label, MenuModel* model);
   void InsertSubMenuWithStringIdAt(int index, int string_id, MenuModel* model);
 
+  // Sets the icon for the item at |index|.
+  void SetIcon(int index, const SkBitmap& icon);
+
   // Clears all items. Note that it does not free MenuModel of submenu.
   void Clear() {
     items_.clear();
@@ -115,6 +119,7 @@ class SimpleMenuModel : public MenuModel {
   struct Item {
     int command_id;
     string16 label;
+    SkBitmap icon;
     ItemType type;
     int group_id;
     MenuModel* submenu;
