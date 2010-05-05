@@ -2975,25 +2975,20 @@ void RenderView::CheckPreferredSize() {
   // We don't always want to send the change messages over IPC, only if we've
   // be put in that mode by getting a |ViewMsg_EnablePreferredSizeChangedMode|
   // message.
-  if (send_preferred_size_changes_) {
-    if (!webview())
-      return;
+  if (!send_preferred_size_changes_ || !webview())
+    return;
 
-    // WebCore likes to tell us things have changed even when they haven't, so
-    // cache the width and height and only send the IPC message when we're sure
-    // they're different.
-    int width = webview()->mainFrame()->contentsPreferredWidth();
-    int height = webview()->mainFrame()->documentElementScrollHeight();
+  // WebCore likes to tell us things have changed even when they haven't, so
+  // cache the width and height and only send the IPC message when we're sure
+  // they're different.
+  gfx::Size size(webview()->mainFrame()->contentsPreferredWidth(),
+                 webview()->mainFrame()->documentElementScrollHeight());
+  if (size == preferred_size_)
+    return;
 
-    if (width != preferred_size_.width() ||
-        height != preferred_size_.height()) {
-      preferred_size_.set_width(width);
-      preferred_size_.set_height(height);
-
-      Send(new ViewHostMsg_DidContentsPreferredSizeChange(routing_id_,
-                                                          preferred_size_));
-    }
-  }
+  preferred_size_ = size;
+  Send(new ViewHostMsg_DidContentsPreferredSizeChange(routing_id_,
+                                                      preferred_size_));
 }
 
 void RenderView::didChangeScrollOffset(WebFrame* frame) {
@@ -3021,7 +3016,7 @@ void RenderView::reportFindInPageMatchCount(int request_id, int count,
         request_id,
         count,
         gfx::Rect(),
-        -1,  // // Don't update active match ordinal.
+        -1,  // Don't update active match ordinal.
         final_update));
   }
 }
@@ -3825,6 +3820,7 @@ void RenderView::OnEnableViewSourceMode() {
 }
 
 void RenderView::OnEnablePreferredSizeChangedMode() {
+  DCHECK(!send_preferred_size_changes_);
   send_preferred_size_changes_ = true;
 
   if (ViewType::ShouldAutoResize(view_type_))

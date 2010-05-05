@@ -16,6 +16,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/dom_view.h"
@@ -31,20 +32,13 @@
 
 namespace {
 
-// Padding & margins for the navigation entry.
-const int kNavigationEntryPadding = 2;
-const int kNavigationEntryXMargin = 3;
-const int kNavigationEntryYMargin = 1;
-
 // Padding between the navigation bar and the render view contents.
 const int kNavigationBarBottomPadding = 3;
 
 // NavigationBar constants.
-const int kNavigationBarHeight = 23;
 const int kNavigationBarBorderThickness = 1;
 
-// The delta applied to the default font size for the Omnibox.
-const int kAutocompleteEditFontDelta = 3;
+const SkColor kBorderColor = SkColorSetRGB(205, 201, 201);
 
 // Command line switch for specifying url of the page.
 // TODO: nuke when we convert to the real app page. Also nuke code in
@@ -60,6 +54,14 @@ static GURL GetMenuURL() {
   return GURL(chrome::kChromeUIAppLauncherURL);
 }
 
+// Returns the location bar view of |browser|.
+static views::View* GetBrowserLocationBar(Browser* browser) {
+  BrowserView* browser_view = static_cast<BrowserView*>(browser->window());
+  views::RootView* root_view = views::Widget::GetWidgetFromNativeWindow(
+      browser_view->GetNativeHandle())->GetRootView();
+  return root_view->GetViewByID(VIEW_ID_LOCATION_BAR);
+}
+
 }  // namespace
 
 // InfoBubbleContentsView
@@ -73,6 +75,10 @@ class InfoBubbleContentsView : public views::View,
  public:
   explicit InfoBubbleContentsView(AppLauncher* app_launcher);
   ~InfoBubbleContentsView();
+
+  // Computes and sets the preferred size for the InfoBubbleContentsView based
+  // on the preferred size of the DOMUI contents specified.
+  void ComputePreferredSize(const gfx::Size& dom_view_preferred_size);
 
   // Sets the initial focus.
   // Should be called when the bubble that contains us is shown.
@@ -102,8 +108,14 @@ class InfoBubbleContentsView : public views::View,
   // The view containing the renderer view.
   DOMView* dom_view_;
 
+  // The preferred size for this view (at which it fits its contents).
+  gfx::Size preferred_size_;
+
   // CommandUpdater the location bar sends commands to.
   CommandUpdater command_updater_;
+
+  // The width of the browser's location bar.
+  int browser_location_bar_width_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBubbleContentsView);
 };
@@ -116,9 +128,25 @@ InfoBubbleContentsView::InfoBubbleContentsView(AppLauncher* app_launcher)
   // Allow the location bar to open URLs.
   command_updater_.UpdateCommandEnabled(IDC_OPEN_CURRENT_URL, true);
   DCHECK(app_launcher);
+
+  browser_location_bar_width_ =
+      GetBrowserLocationBar(app_launcher->browser())->width();
 }
 
 InfoBubbleContentsView::~InfoBubbleContentsView() {
+}
+
+void InfoBubbleContentsView::ComputePreferredSize(
+    const gfx::Size& dom_view_preferred_size) {
+  preferred_size_ = dom_view_preferred_size;
+
+  // Add the padding and location bar height.
+  preferred_size_.Enlarge(
+      0, location_bar_->height() + kNavigationBarBottomPadding);
+
+  // Make sure the width is at least the browser location bar width.
+  if (preferred_size_.width() < browser_location_bar_width_)
+    preferred_size_.set_width(browser_location_bar_width_);
 }
 
 void InfoBubbleContentsView::BubbleShown() {
@@ -138,7 +166,8 @@ void InfoBubbleContentsView::ViewHierarchyChanged(
   // We make the AppLauncher the TabContents delegate so we get notifications
   // from the page to open links.
   dom_view_->tab_contents()->set_delegate(app_launcher_);
-
+  dom_view_->tab_contents()->render_view_host()->
+      EnablePreferredSizeChangedMode();
   GURL url = GetMenuURL();
   std::string ref = url.ref();
   if (!app_launcher_->hash_params().empty()) {
@@ -160,9 +189,15 @@ void InfoBubbleContentsView::ViewHierarchyChanged(
                                        LocationBarView::APP_LAUNCHER);
 
   location_bar_->set_border(
-      views::Border::CreateSolidBorder(1, SkColorSetRGB(205, 201, 201)));
+      views::Border::CreateSolidBorder(kNavigationBarBorderThickness,
+                                       kBorderColor));
   AddChildView(location_bar_);
   location_bar_->Init();
+  // Size the location to its preferred size so ComputePreferredSize() computes
+  // the right size.
+  location_bar_->SizeToPreferredSize();
+  ComputePreferredSize(gfx::Size(browser_location_bar_width_, 0));
+  Layout();
 }
 
 TabContents* InfoBubbleContentsView::GetTabContents() {
@@ -170,8 +205,7 @@ TabContents* InfoBubbleContentsView::GetTabContents() {
 }
 
 gfx::Size InfoBubbleContentsView::GetPreferredSize() {
-  gfx::Rect bounds = app_launcher_->browser()->window()->GetRestoredBounds();
-  return gfx::Size(bounds.width() * 6 / 7, bounds.height() * 9 / 10);
+  return preferred_size_;
 }
 
 void InfoBubbleContentsView::Layout() {
@@ -179,14 +213,12 @@ void InfoBubbleContentsView::Layout() {
     return;
 
   gfx::Rect bounds = GetLocalBounds(false);
-
   location_bar_->SetBounds(bounds.x(), bounds.y(), bounds.width(),
                            location_bar_->GetPreferredSize().height());
   int render_y = location_bar_->bounds().bottom() + kNavigationBarBottomPadding;
-  gfx::Size dom_view_size =
-      gfx::Size(width(), std::max(0, bounds.height() - render_y + bounds.y()));
-  dom_view_->SetBounds(bounds.x(), render_y,
-                       dom_view_size.width(), dom_view_size.height());
+  dom_view_->SetBounds(0, render_y,
+                       width(),
+                       std::max(0, bounds.height() - render_y + bounds.y()));
 }
 
 void InfoBubbleContentsView::ExecuteCommand(int id) {
@@ -240,9 +272,7 @@ AppLauncher* AppLauncher::ShowForNewTab(Browser* browser,
 
   // Figure out where the location bar is, so we can pin the bubble to
   // make our url bar appear exactly over it.
-  views::RootView* root_view = views::Widget::GetWidgetFromNativeWindow(
-      browser_view->GetNativeHandle())->GetRootView();
-  views::View* location_bar = root_view->GetViewByID(VIEW_ID_LOCATION_BAR);
+  views::View* location_bar = GetBrowserLocationBar(browser);
   gfx::Point location_bar_origin = location_bar->bounds().origin();
   views::RootView::ConvertPointToScreen(location_bar->GetParent(),
                                         &location_bar_origin);
@@ -279,6 +309,15 @@ void AppLauncher::AddNewContents(TabContents* source,
       new_contents, disposition, initial_pos, user_gesture);
   Hide();
 #endif
+}
+
+void AppLauncher::UpdatePreferredSize(const gfx::Size& pref_size) {
+  if (pref_size.width() == 0 || pref_size.height() == 0)
+    return;
+
+  gfx::Size size(pref_size);
+  info_bubble_content_->ComputePreferredSize(size);
+  info_bubble_->SizeToContents();
 }
 
 void AppLauncher::InfoBubbleClosing(InfoBubble* info_bubble,

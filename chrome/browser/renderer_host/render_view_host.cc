@@ -1813,6 +1813,10 @@ void RenderViewHost::SendContentSettings(const GURL& url,
   Send(new ViewMsg_SetContentSettingsForCurrentURL(url, settings));
 }
 
+void RenderViewHost::EnablePreferredSizeChangedMode() {
+  Send(new ViewMsg_EnablePreferredSizeChangedMode(routing_id()));
+}
+
 void RenderViewHost::OnExtensionPostMessage(
     int port_id, const std::string& message) {
   if (process()->profile()->GetExtensionMessageService()) {

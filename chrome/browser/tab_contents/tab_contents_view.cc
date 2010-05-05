@@ -12,8 +12,7 @@
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 
 TabContentsView::TabContentsView(TabContents* tab_contents)
-    : tab_contents_(tab_contents),
-      preferred_width_(0) {
+    : tab_contents_(tab_contents) {
 }
 
 void TabContentsView::RenderWidgetHostDestroyed(RenderWidgetHost* host) {
@@ -24,10 +23,6 @@ void TabContentsView::RenderWidgetHostDestroyed(RenderWidgetHost* host) {
 
 void TabContentsView::RenderViewCreated(RenderViewHost* host) {
   // Default implementation does nothing. Platforms may override.
-}
-
-void TabContentsView::UpdatePreferredSize(const gfx::Size& pref_size) {
-  preferred_width_ = pref_size.width();
 }
 
 void TabContentsView::CreateNewWindow(
@@ -70,6 +65,11 @@ bool TabContentsView::PreHandleKeyboardEvent(
   return tab_contents_->delegate() &&
     tab_contents_->delegate()->PreHandleKeyboardEvent(
         event, is_keyboard_shortcut);
+}
+
+void TabContentsView::UpdatePreferredSize(const gfx::Size& pref_size) {
+  if (tab_contents_->delegate())
+    tab_contents_->delegate()->UpdatePreferredSize(pref_size);
 }
 
 void TabContentsView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {

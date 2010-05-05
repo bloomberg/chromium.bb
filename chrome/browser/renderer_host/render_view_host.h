@@ -460,6 +460,10 @@ class RenderViewHost : public RenderWidgetHost {
   void SendContentSettings(const GURL& url,
                            const ContentSettings& settings);
 
+  // Tells the renderer to notify us when the page contents preferred size
+  // changed.
+  void EnablePreferredSizeChangedMode();
+
  protected:
   // RenderWidgetHost protected overrides.
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,

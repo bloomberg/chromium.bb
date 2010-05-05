@@ -67,6 +67,7 @@ class TabContentsViewMac : public TabContentsView,
   virtual void SetInitialFocus();
   virtual void StoreFocus();
   virtual void RestoreFocus();
+  virtual void UpdatePreferredSize(const gfx::Size& pref_size);
   virtual RenderWidgetHostView* CreateNewWidgetInternal(
       int route_id,
       WebKit::WebPopupType popup_type);
@@ -94,6 +95,8 @@ class TabContentsViewMac : public TabContentsView,
   // A helper method for closing the tab in the
   // CloseTabAfterEventTracking() implementation.
   void CloseTab();
+
+  int preferred_width() const { return preferred_width_; }
 
  private:
   // The Cocoa NSView that lives in the view hierarchy.

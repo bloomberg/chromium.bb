@@ -23,7 +23,9 @@
 // InfoBubble insets the contents for you, so the contents typically shouldn't
 // have any additional margins.
 
+#if defined(OS_WIN)
 class BorderWidget;
+#endif
 class BubbleBorder;
 class InfoBubble;
 
@@ -41,16 +43,18 @@ class BorderContents : public views::View {
  public:
   BorderContents() : bubble_border_(NULL) { }
 
-  // Given the size of the contents and the rect to point at, initializes the
-  // bubble and returns the bounds of both the border
-  // and the contents inside the bubble.
+  // Must be called before this object can be used.
+  void Init();
+
+  // Given the size of the contents and the rect to point at, returns the bounds
+  // of both the border and the contents inside the bubble.
   // |prefer_arrow_on_right| specifies the preferred location for the arrow
   // anchor. If the bubble does not fit on the monitor, the arrow location may
   // changed so it can.
   //
   // TODO(pkasting): Maybe this should use mirroring transformations instead,
   // which would hopefully simplify this code.
-  virtual void InitAndGetBounds(
+  virtual void SizeAndGetBounds(
       const gfx::Rect& position_relative_to,  // In screen coordinates
       const gfx::Size& contents_size,
       bool prefer_arrow_on_right,
@@ -86,17 +90,23 @@ class BorderWidget : public views::WidgetWin {
   BorderWidget();
   virtual ~BorderWidget() { }
 
-  // Given the owning (parent) window, the size of the contained contents
-  // (without margins), and the rect (in screen coordinates) to point to,
-  // initializes the window and returns the bounds (in screen coordinates) the
+  // Initializes the BrowserWidget making |owner| its owning window.
+  void Init(HWND owner);
+
+  // Given the size of the contained contents (without margins), and the rect
+  // (in screen coordinates) to point to, sets the border window positions and
+  // sizes the border window and returns the bounds (in screen coordinates) the
   // contents should use. |is_rtl| is supplied to
   // BorderContents::InitAndGetBounds(), see its declaration for details.
-  virtual gfx::Rect InitAndGetBounds(HWND owner,
-                                     const gfx::Rect& position_relative_to,
+  virtual gfx::Rect SizeAndGetBounds(const gfx::Rect& position_relative_to,
                                      const gfx::Size& contents_size,
                                      bool is_rtl);
 
  protected:
+  // Instanciates and returns the BorderContents this BorderWidget should use.
+  // Subclasses can return their own BorderContents implementation.
+  virtual BorderContents* CreateBorderContents();
+
   BorderContents* border_contents_;
 
  private:
@@ -155,6 +165,10 @@ class InfoBubble
                           views::View* contents,
                           InfoBubbleDelegate* delegate);
 
+  // Resizes and potentially moves the InfoBubble to best accomodate the
+  // contents preferred size.
+  void SizeToContents();
+
   // Overridden from WidgetWin:
   virtual void Close();
 
@@ -171,6 +185,12 @@ class InfoBubble
                     InfoBubbleDelegate* delegate);
 
 #if defined(OS_WIN)
+  // Instanciates and returns the BorderWidget this InfoBubble should use.
+  // Subclasses can return their own BorderWidget specialization.
+  virtual BorderWidget* CreateBorderWidget();
+#endif
+
+#if defined(OS_WIN)
   // Overridden from WidgetWin:
   virtual void OnActivate(UINT action, BOOL minimized, HWND window);
 #elif defined(OS_LINUX)
@@ -181,6 +201,9 @@ class InfoBubble
 #if defined(OS_WIN)
   // The window used to render the padding, border and arrow.
   scoped_ptr<BorderWidget> border_;
+#elif defined(OS_LINUX)
+  // The view displaying the border.
+  BorderContents* border_contents_;
 #endif
 
  private:
@@ -199,6 +222,11 @@ class InfoBubble
 
   // Have we been closed?
   bool closed_;
+
+  gfx::Rect position_relative_to_;
+
+  views::View* contents_;
+
 
   DISALLOW_COPY_AND_ASSIGN(InfoBubble);
 };

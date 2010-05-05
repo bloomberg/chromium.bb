@@ -706,8 +706,7 @@ void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
       extension_host_type_ == ViewType::EXTENSION_MOLE ||
       extension_host_type_ == ViewType::EXTENSION_POPUP ||
       extension_host_type_ == ViewType::EXTENSION_INFOBAR) {
-    render_view_host->Send(new ViewMsg_EnablePreferredSizeChangedMode(
-        render_view_host->routing_id()));
+    render_view_host->EnablePreferredSizeChangedMode();
   }
 }
 

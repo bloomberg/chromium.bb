@@ -49,7 +49,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util_mac.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "chrome/browser/tab_contents/tab_contents_view_mac.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -566,8 +566,10 @@
   if (contents) {
     // If the intrinsic width is bigger, then make it the zoomed width.
     const int kScrollbarWidth = 16;  // TODO(viettrungluu): ugh.
+    TabContentsViewMac* tab_contents_view =
+        static_cast<TabContentsViewMac*>(contents->view());
     CGFloat intrinsicWidth = static_cast<CGFloat>(
-        contents->view()->preferred_width() + kScrollbarWidth);
+        tab_contents_view->preferred_width() + kScrollbarWidth);
     zoomedWidth = std::max(zoomedWidth,
                            std::min(intrinsicWidth, frame.size.width));
   }

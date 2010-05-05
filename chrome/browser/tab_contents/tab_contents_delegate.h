@@ -286,6 +286,10 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   // Returns whether infobars are enabled. Overrideable by child classes.
   virtual bool infobars_enabled() { return true; }
 
+  // Notification that the preferred size of the contents has changed.
+  // Only called if RenderViewHost::EnablePreferredSizeChangedMode() was called.
+  virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}
+
  protected:
   ~TabContentsDelegate() {}
 };

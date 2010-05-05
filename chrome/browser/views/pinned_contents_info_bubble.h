@@ -16,7 +16,7 @@ class PinnedContentsBorderContents : public BorderContents {
       : bubble_anchor_(bubble_anchor) {}
 
   // BorderContents overrides:
-  virtual void InitAndGetBounds(
+  virtual void SizeAndGetBounds(
       const gfx::Rect& position_relative_to,  // In screen coordinates
       const gfx::Size& contents_size,
       bool prefer_arrow_on_right,
@@ -39,10 +39,7 @@ class PinnedContentsBorderWidget : public BorderWidget {
   virtual ~PinnedContentsBorderWidget() {}
 
   // BorderWidget overrides:
-  virtual gfx::Rect InitAndGetBounds(HWND owner,
-                                     const gfx::Rect& position_relative_to,
-                                     const gfx::Size& contents_size,
-                                     bool is_rtl);
+  virtual BorderContents* CreateBorderContents();
 
  private:
   // The location of the pinned contents (in screen coordinates).
@@ -75,10 +72,9 @@ class PinnedContentsInfoBubble : public InfoBubble {
   virtual ~PinnedContentsInfoBubble() {}
 
   // InfoBubble overrides:
-  virtual void Init(views::Window* parent,
-                    const gfx::Rect& position_relative_to,
-                    views::View* contents,
-                    InfoBubbleDelegate* delegate);
+#if defined(OS_WIN)
+  virtual BorderWidget* CreateBorderWidget();
+#endif
 
   // The location of the pinned contents (in screen coordinates).
   const gfx::Point bubble_anchor_;
