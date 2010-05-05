@@ -74,6 +74,8 @@ ACCEPTABLE_ARGUMENTS = {
     'chrome_browser_path': None,
     # make sel_ldr less strict
     'dangerous_debug_disable_inner_sandbox': None,
+    # disable warning mechanism in src/untrusted/nosys/warning.h
+    'disable_nosys_linker_warnings': None,
     # force emulator use by tests
     'force_emulator': None,
     # force sel_ldr use by tests
@@ -145,6 +147,7 @@ if int(ARGUMENTS.get('USE_ENVIRON', '0')):
 # nodosfilewarning. It does not do anything when CYGWIN is not involved
 # so let's do it in all cases.
 pre_base_env['ENV']['CYGWIN'] = os.environ.get('CYGWIN', 'nodosfilewarning')
+
 
 # ----------------------------------------------------------
 # Method to make sure -pedantic, etc, are not stripped from the
@@ -1430,6 +1433,8 @@ nacl_extra_sdk_env = pre_base_env.Clone(
       ['NACL_BUILD_SUBARCH', '${BUILD_SUBARCH}' ],
       ['NACL_BLOCK_SHIFT', '5' ],
       ],
+    # NOTE: simplify pathnames in archive
+    ARFLAGS = 'rcf'
 )
 
 # TODO(robertm): consider moving some of these flags to the naclsdk tool
@@ -1439,6 +1444,17 @@ nacl_extra_sdk_env.Append(CCFLAGS=['-Wall',
                                    '-Werror',
                                    '${EXTRA_CCFLAGS}',
                                ])
+
+# Optionally disable certain link warning which cause ASMs to
+# be injected into the object files
+# This undoes the effect of src/untrusted/nosys/warning.h
+if ARGUMENTS.get('disable_nosys_linker_warnings'):
+  nacl_extra_sdk_env.Append(
+      CPPDEFINES=['NATIVE_CLIENT_SRC_UNTRUSTED_NOSYS_WARNING_H_=1',
+                  'stub_warning(n)=struct xyzzy',
+                  'link_warning(n,m)=struct xyzzy',
+                  ])
+
 # TODO(robertm): remove this work-around for an llvm debug info bug
 # http://code.google.com/p/nativeclient/issues/detail?id=235
 if nacl_extra_sdk_env['TARGET_ARCHITECTURE'] == 'arm':
