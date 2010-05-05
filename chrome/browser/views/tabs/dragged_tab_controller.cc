@@ -1166,8 +1166,13 @@ void DraggedTabController::EnsureDraggedView() {
   if (!view_.get()) {
     gfx::Rect tab_bounds;
     dragged_contents_->GetContainerBounds(&tab_bounds);
-    view_.reset(new DraggedTabView(dragged_contents_, mouse_offset_,
-                                   tab_bounds.size(), mini_));
+    TabRenderer* renderer = new TabRenderer();
+    renderer->UpdateData(dragged_contents_, false, false);
+    renderer->set_mini(mini_);
+    // DraggedTabView takes ownership of renderer.
+    view_.reset(new DraggedTabView(renderer, mouse_offset_,
+                                   tab_bounds.size(),
+                                   TabRenderer::GetMinimumSelectedSize()));
   }
 }
 

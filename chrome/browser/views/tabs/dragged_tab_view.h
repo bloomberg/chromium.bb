@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,11 +7,9 @@
 
 #include "app/slide_animation.h"
 #include "base/callback.h"
-#include "base/task.h"
 #include "build/build_config.h"
 #include "gfx/point.h"
 #include "gfx/size.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "views/view.h"
 
 namespace views {
@@ -26,16 +24,17 @@ class Point;
 }
 class NativeViewPhotobooth;
 class Tab;
-class TabContents;
 class TabRenderer;
 
 class DraggedTabView : public views::View,
                        public AnimationDelegate {
  public:
-  DraggedTabView(TabContents* datasource,
+  // Creates a new DraggedTabView using |renderer| as the View. DraggedTabView
+  // takes ownership of |renderer|.
+  DraggedTabView(views::View* renderer,
                  const gfx::Point& mouse_tab_offset,
                  const gfx::Size& contents_size,
-                 bool mini);
+                 const gfx::Size& min_size);
   virtual ~DraggedTabView();
 
   // Moves the DraggedTabView to the appropriate location given the mouse
@@ -101,7 +100,7 @@ class DraggedTabView : public views::View,
 #endif
 
   // The renderer that paints the Tab shape.
-  scoped_ptr<TabRenderer> renderer_;
+  scoped_ptr<views::View> renderer_;
 
   // True if the view is currently attached to a TabStrip. Controls rendering
   // and sizing modes.
@@ -124,7 +123,7 @@ class DraggedTabView : public views::View,
   // we are dragging.
   NativeViewPhotobooth* photobooth_;
 
-  // The dimensions of the TabContents being dragged.
+  // Size of the TabContents being dragged.
   gfx::Size contents_size_;
 
   // The animation used to slide the attached view to its final location.

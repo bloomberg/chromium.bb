@@ -4,47 +4,41 @@
 
 #include "chrome/browser/views/tabs/dragged_tab_view.h"
 
-#include "base/callback.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/views/tabs/native_view_photobooth.h"
-#include "chrome/browser/views/tabs/tab_renderer.h"
 #include "gfx/canvas.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "views/widget/widget.h"
+
 #if defined(OS_WIN)
 #include "views/widget/widget_win.h"
 #elif defined(OS_LINUX)
 #include "views/widget/widget_gtk.h"
 #endif
 
-const int kTransparentAlpha = 200;
-const int kOpaqueAlpha = 255;
-const int kDragFrameBorderSize = 2;
-const int kTwiceDragFrameBorderSize = 2 * kDragFrameBorderSize;
-const float kScalingFactor = 0.5;
-const int kAnimateToBoundsDurationMs = 150;
+static const int kTransparentAlpha = 200;
+static const int kOpaqueAlpha = 255;
+static const int kDragFrameBorderSize = 2;
+static const int kTwiceDragFrameBorderSize = 2 * kDragFrameBorderSize;
+static const float kScalingFactor = 0.5;
+static const int kAnimateToBoundsDurationMs = 150;
 static const SkColor kDraggedTabBorderColor = SkColorSetRGB(103, 129, 162);
 
 ////////////////////////////////////////////////////////////////////////////////
 // DraggedTabView, public:
 
-DraggedTabView::DraggedTabView(TabContents* datasource,
+DraggedTabView::DraggedTabView(views::View* renderer,
                                const gfx::Point& mouse_tab_offset,
                                const gfx::Size& contents_size,
-                               bool mini)
-    : renderer_(new TabRenderer),
+                               const gfx::Size& min_size)
+    : renderer_(renderer),
       attached_(false),
       show_contents_on_drag_(true),
       mouse_tab_offset_(mouse_tab_offset),
-      attached_tab_size_(TabRenderer::GetMinimumSelectedSize()),
+      attached_tab_size_(min_size),
       photobooth_(NULL),
       contents_size_(contents_size),
       close_animation_(this) {
   set_parent_owned(false);
-
-  renderer_->UpdateData(datasource, false, false);
-  renderer_->set_mini(mini);
 
 #if defined(OS_WIN)
   container_.reset(new views::WidgetWin);
