@@ -79,16 +79,17 @@ STDMETHODIMP CacheStream::Read(void* pv, ULONG cb, ULONG* read) {
 
 /////////////////////////////////////////////////////////////////////
 
-bool SniffData::InitializeCache(const std::wstring& url) {
+HRESULT SniffData::InitializeCache(const std::wstring& url) {
   url_ = url;
   renderer_type_ = UNDETERMINED;
 
-  HRESULT hr = CreateStreamOnHGlobal(NULL, TRUE, cache_.Receive());
-  if (FAILED(hr)) {
-    NOTREACHED();
-    return false;
-  }
-  return true;
+  const int kInitialSize = 4 * 1024; // 4K
+  HGLOBAL mem = GlobalAlloc(0, kInitialSize);
+  DCHECK(mem) << "GlobalAlloc failed: " << GetLastError();
+
+  HRESULT hr = CreateStreamOnHGlobal(mem, TRUE, cache_.Receive());
+  DLOG_IF(ERROR, FAILED(hr)) << "CreateStreamOnHGlobal failed: " << hr;
+  return hr;
 }
 
 HRESULT SniffData::ReadIntoCache(IStream* stream, bool force_determination) {
@@ -185,7 +186,13 @@ HRESULT BSCBStorageBind::Initialize(IMoniker* moniker, IBindCtx* bind_ctx) {
   DLOG(INFO) << __FUNCTION__ << me() << StringPrintf(" tid=%i",
       PlatformThread::CurrentId());
 
-  HRESULT hr = AttachToBind(bind_ctx);
+  std::wstring url = GetActualUrlFromMoniker(moniker, bind_ctx,
+                                             std::wstring());
+  HRESULT hr = data_sniffer_.InitializeCache(url);
+  if (FAILED(hr))
+    return hr;
+
+  hr = AttachToBind(bind_ctx);
   if (FAILED(hr)) {
     NOTREACHED() << __FUNCTION__ << me() << "AttachToBind error: " << hr;
     return hr;
@@ -196,9 +203,6 @@ HRESULT BSCBStorageBind::Initialize(IMoniker* moniker, IBindCtx* bind_ctx) {
     return E_FAIL;
   }
 
-  std::wstring url = GetActualUrlFromMoniker(moniker, bind_ctx,
-                                             std::wstring());
-  data_sniffer_.InitializeCache(url);
   return hr;
 }
 

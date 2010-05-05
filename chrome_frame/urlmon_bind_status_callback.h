@@ -52,7 +52,7 @@ class SniffData {
     OTHER
   };
 
-  bool InitializeCache(const std::wstring& url);
+  HRESULT InitializeCache(const std::wstring& url);
   HRESULT ReadIntoCache(IStream* stream, bool force_determination);
   HRESULT DrainCache(IBindStatusCallback* bscb, DWORD bscf,
                      CLIPFORMAT clip_format);

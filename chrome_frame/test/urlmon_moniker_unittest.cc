@@ -139,8 +139,8 @@ TEST_F(MonikerPatchTest, SniffDataMetaTag) {
 
   // Initialize 2 sniffers 1 with meta tag and 1 without.
   SniffData sniffer1, sniffer2;
-  EXPECT_TRUE(sniffer1.InitializeCache(std::wstring()));
-  EXPECT_TRUE(sniffer2.InitializeCache(std::wstring()));
+  EXPECT_HRESULT_SUCCEEDED(sniffer1.InitializeCache(std::wstring()));
+  EXPECT_HRESULT_SUCCEEDED(sniffer2.InitializeCache(std::wstring()));
   EXPECT_HRESULT_SUCCEEDED(sniffer1.ReadIntoCache(stream_with_meta, true));
   EXPECT_HRESULT_SUCCEEDED(sniffer2.ReadIntoCache(stream_no_meta, true));
 
@@ -158,7 +158,7 @@ TEST_F(MonikerPatchTest, SniffDataPlayback1) {
   ScopedComPtr<IStream> stream_with_meta;
   SniffData sniffer;
 
-  EXPECT_TRUE(sniffer.InitializeCache(std::wstring()));
+  EXPECT_HRESULT_SUCCEEDED(sniffer.InitializeCache(std::wstring()));
   ASSERT_TRUE(ReadFileAsString(kSmallHtmlMetaTag, &small_html_meta_tag));
   ASSERT_TRUE(StringToStream(small_html_meta_tag, stream_with_meta.Receive()));
   EXPECT_HRESULT_SUCCEEDED(sniffer.ReadIntoCache(stream_with_meta, true));
@@ -201,7 +201,7 @@ TEST_F(MonikerPatchTest, SniffDataPlayback2) {
   ScopedComPtr<IStream> stream_with_meta;
   SniffData sniffer;
 
-  EXPECT_TRUE(sniffer.InitializeCache(std::wstring()));
+  EXPECT_HRESULT_SUCCEEDED(sniffer.InitializeCache(std::wstring()));
   ASSERT_TRUE(ReadFileAsString(kSmallHtmlMetaTag, &small_html_meta_tag));
   ASSERT_TRUE(StringToStream(small_html_meta_tag, stream_with_meta.Receive()));
   EXPECT_HRESULT_SUCCEEDED(sniffer.ReadIntoCache(stream_with_meta, true));
