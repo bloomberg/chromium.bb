@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,13 @@ Canvas::~Canvas() {
 void Canvas::SizeStringInt(const std::wstring& text,
                            const gfx::Font& font,
                            int *width, int *height, int flags) {
-  *width = font.GetStringWidth(text);
+  NSFont* native_font = font.nativeFont();
+  NSString* ns_string = base::SysWideToNSString(text);
+  NSDictionary* attributes =
+      [NSDictionary dictionaryWithObject:native_font
+                                  forKey:NSFontAttributeName];
+  NSSize string_size = [ns_string sizeWithAttributes:attributes];
+  *width = string_size.width;
   *height = font.height();
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -177,8 +177,7 @@ void Font::PaintSetup(SkPaint* paint) const {
 
 int Font::GetStringWidth(const std::wstring& text) const {
   int width = 0, height = 0;
-
-  Canvas::SizeStringInt(text, *this, &width, &height, 0);
+  Canvas::SizeStringInt(text, *this, &width, &height, gfx::Canvas::NO_ELLIPSIS);
   return width;
 }
 

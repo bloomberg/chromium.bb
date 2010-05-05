@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
+#include "gfx/canvas.h"
 
 namespace gfx {
 
@@ -169,18 +170,8 @@ Font Font::DeriveFont(int size_delta, int style) const {
 }
 
 int Font::GetStringWidth(const std::wstring& text) const {
-  int width = 0;
-  HDC dc = GetDC(NULL);
-  HFONT previous_font = static_cast<HFONT>(SelectObject(dc, hfont()));
-  SIZE size;
-  if (GetTextExtentPoint32(dc, text.c_str(), static_cast<int>(text.size()),
-                           &size)) {
-    width = size.cx;
-  } else {
-    width = 0;
-  }
-  SelectObject(dc, previous_font);
-  ReleaseDC(NULL, dc);
+  int width = 0, height = 0;
+  Canvas::SizeStringInt(text, *this, &width, &height, gfx::Canvas::NO_ELLIPSIS);
   return width;
 }
 
