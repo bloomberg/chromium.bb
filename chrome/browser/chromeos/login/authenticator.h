@@ -58,11 +58,19 @@ class StubAuthenticator : public Authenticator {
                             const std::string& username,
                             const std::string& password) {
     username_ = username;
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &StubAuthenticator::OnLoginSuccess,
-                          std::string()));
+    if (password == "fail") {
+      ChromeThread::PostTask(
+          ChromeThread::UI, FROM_HERE,
+          NewRunnableMethod(this,
+                            &StubAuthenticator::OnLoginFailure,
+                            std::string()));
+    } else {
+      ChromeThread::PostTask(
+          ChromeThread::UI, FROM_HERE,
+          NewRunnableMethod(this,
+                            &StubAuthenticator::OnLoginSuccess,
+                            std::string()));
+    }
     return true;
   }
 
@@ -70,7 +78,9 @@ class StubAuthenticator : public Authenticator {
     consumer_->OnLoginSuccess(username_, credentials);
   }
 
-  void OnLoginFailure(const std::string& data) {}
+  void OnLoginFailure(const std::string& data) {
+    consumer_->OnLoginFailure(data);
+  }
 
  private:
   std::string username_;

@@ -61,6 +61,11 @@ class UserManager : public UserImageLoader::Delegate {
   // The persistent list will be updated accordingly.
   void UserLoggedIn(const std::string& email);
 
+  // Returns the logged-in user.
+  const User& logged_in_user() {
+    return logged_in_user_;
+  }
+
   // Downloads user image and stores it to use on subsequent login.
   // Call it after user's cookies have been set.
   void DownloadUserImage(const std::string& username);
@@ -86,6 +91,9 @@ class UserManager : public UserImageLoader::Delegate {
   // Cache for user images. Stores image for each username.
   typedef base::hash_map<std::string, SkBitmap> UserImages;
   mutable UserImages user_images_;
+
+  // The logged-in user.
+  User logged_in_user_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManager);
 };

@@ -104,6 +104,8 @@ void UserManager::UserLoggedIn(const std::string& email) {
   ListValue* prefs_users = prefs->GetMutableList(kLoggedInUsers);
   prefs_users->Clear();
 
+  logged_in_user_.set_email(email);
+
   // Make sure this user is first.
   prefs_users->Append(Value::CreateStringValue(email));
   for (std::vector<User>::iterator it = users.begin();
@@ -113,6 +115,8 @@ void UserManager::UserLoggedIn(const std::string& email) {
     // Skip the most recent user.
     if (email != user_email) {
       prefs_users->Append(Value::CreateStringValue(user_email));
+    } else {
+      logged_in_user_ = *it;
     }
   }
   prefs->ScheduleSavePersistentPrefs();
@@ -121,7 +125,7 @@ void UserManager::UserLoggedIn(const std::string& email) {
   NotificationService::current()->Notify(
       NotificationType::LOGIN_USER_CHANGED,
       Source<UserManager>(this),
-      Details<const User>(&user));
+      Details<const User>(&logged_in_user_));
 }
 
 void UserManager::DownloadUserImage(const std::string& username) {

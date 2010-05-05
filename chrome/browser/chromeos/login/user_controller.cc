@@ -99,10 +99,6 @@ UserController::~UserController() {
   border_window_->Close();
   label_window_->Close();
   unselected_label_window_->Close();
-  registrar_.Remove(
-      this,
-      NotificationType::LOGIN_USER_IMAGE_CHANGED,
-      NotificationService::AllSources());
 }
 
 void UserController::Init(int index, int total_user_count) {
