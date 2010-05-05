@@ -1242,7 +1242,7 @@ void Browser::NewTab() {
 #if defined(OS_WIN)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAppLauncherForNewTab)) {
-    AppLauncher::ShowForNewTab(this);
+    AppLauncher::ShowForNewTab(this, std::string());
     return;
   }
 #endif

@@ -16,7 +16,7 @@ body {
   min-height: 100%;
 }
 
-html[hash=app-launcher] #container {
+html[mode=app-launcher] #container {
   min-height: 0;
 }
 

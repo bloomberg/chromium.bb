@@ -44,20 +44,30 @@ class AppLauncher : public InfoBubbleDelegate,
   // Shows an application launcher bubble pointing to the |bounds| (which should
   // be in screen coordinates). |bubble_anchor| specifies at which coordinates
   // the bubble contents should appear (in screen coordinates). The bubble will
-  // be moved accordingly.
+  // be moved accordingly. Any |hash_params| are appended to the hash of the URL
+  // that is opened in the launcher.
+  //
   // The caller DOES NOT OWN the AppLauncher returned.  It is deleted
   // automatically when the AppLauncher is closed.
   static AppLauncher* Show(Browser* browser,
                            const gfx::Rect& bounds,
-                           const gfx::Point& bubble_anchor);
+                           const gfx::Point& bubble_anchor,
+                           const std::string& hash_params);
 
   // Shows an application launcher bubble pointing to the new tab button.
-  // The caller DOES NOT OWN the AppLauncher returned.  It is deleted
+  // Any |hash_params| are appened to the hash of the URL that is opened in the
+  // launcher.
+  //
+  // The caller DOES NOT OWN the AppLauncher returned. It is deleted
   // automatically when the AppLauncher is closed.
-  static AppLauncher* ShowForNewTab(Browser* browser);
+  static AppLauncher* ShowForNewTab(Browser* browser,
+                                    const std::string& hash_params);
 
   // Returns the browser this AppLauncher is associated with.
   Browser* browser() const { return browser_; }
+
+  // Returns any hash params for the page to open.
+  const std::string& hash_params() const { return hash_params_; }
 
   // Hides the app launcher.
   void Hide();
@@ -106,6 +116,10 @@ class AppLauncher : public InfoBubbleDelegate,
 
   // The view with the navigation bar and render view, shown in the info-bubble.
   InfoBubbleContentsView* info_bubble_content_;
+
+  // An optional string containing querystring-encoded name/value pairs to be
+  // sent into the launcher's HTML page via its hash.
+  std::string hash_params_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLauncher);
 };

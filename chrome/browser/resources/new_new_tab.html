@@ -96,8 +96,27 @@ function updateSimpleSection(id, section) {
     document.getElementById(id).className += ' hidden';
 }
 
-// Reflect the hash as an attribute so we can use CSS attribute selectors on it.
-document.documentElement.setAttribute('hash', location.hash.slice(1));
+// Parse any name value pairs passed through the URL hash.
+var hashParams = (function() {
+  var result = {};
+  if (location.hash.length) {
+    location.hash.substr(1).split('&').forEach(function(pair) {
+      pair = pair.split('=');
+      if (pair.length != 2) {
+        throw new Error('Unexpected hash value: ' + location.hash);
+      }
+
+      result[pair[0]] = pair[1];
+    });
+  }
+  return result;
+})();
+
+// Reflect the mode param as an attribute so we can use CSS attribute selectors
+// on it.
+if ('mode' in hashParams) {
+  document.documentElement.setAttribute('mode', hashParams['mode']);
+}
 
 </script>
 </head>

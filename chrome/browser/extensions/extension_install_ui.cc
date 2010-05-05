@@ -8,6 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/rand_util.h"
 #include "base/string_util.h"
@@ -18,11 +19,13 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#if defined(TOOLKIT_VIEWS)  // TODO(port)
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/views/app_launcher.h"
 #include "chrome/browser/views/extensions/extension_installed_bubble.h"
 #elif defined(TOOLKIT_GTK)
 #include "chrome/browser/gtk/extension_installed_bubble_gtk.h"
 #endif
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
@@ -186,13 +189,32 @@ void ExtensionInstallUI::OnInstallSuccess(Extension* extension) {
     return;
   }
 
-  if (extension->GetFullLaunchURL().is_valid())
-    Browser::OpenApplicationTab(profile_, extension);
-
   // GetLastActiveWithProfile will fail on the build bots. This needs to be
   // implemented differently if any test is created which depends on
   // ExtensionInstalledBubble showing.
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+
+  if (extension->GetFullLaunchURL().is_valid()) {
+    std::string hash_params = "app-id=";
+    hash_params += extension->id();
+
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kAppLauncherForNewTab)) {
+#if defined(TOOLKIT_VIEWS)
+      AppLauncher::ShowForNewTab(browser, hash_params);
+#else
+      NOTREACHED();
+#endif
+    } else {
+      std::string url(chrome::kChromeUINewTabURL);
+      url += "/#";
+      url += hash_params;
+      browser->AddTabWithURL(GURL(url), GURL(), PageTransition::TYPED, -1,
+                             Browser::ADD_SELECTED, NULL, std::string());
+    }
+
+    return;
+  }
 
 #if defined(TOOLKIT_VIEWS)
   if (!browser)

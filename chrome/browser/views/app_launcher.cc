@@ -138,7 +138,19 @@ void InfoBubbleContentsView::ViewHierarchyChanged(
   // We make the AppLauncher the TabContents delegate so we get notifications
   // from the page to open links.
   dom_view_->tab_contents()->set_delegate(app_launcher_);
-  dom_view_->LoadURL(GetMenuURL());
+
+  GURL url = GetMenuURL();
+  std::string ref = url.ref();
+  if (!app_launcher_->hash_params().empty()) {
+    if (!ref.empty())
+      ref += "&";
+    ref += app_launcher_->hash_params();
+
+    url_canon::Replacements<char> replacements;
+    replacements.SetRef(ref.c_str(), url_parse::Component(0, ref.size()));
+    url = url.ReplaceComponents(replacements);
+  }
+  dom_view_->LoadURL(url);
 
   Browser* browser = app_launcher_->browser();
   location_bar_ =  new LocationBarView(browser->profile(),
@@ -201,9 +213,11 @@ AppLauncher::~AppLauncher() {
 // static
 AppLauncher* AppLauncher::Show(Browser* browser,
                                const gfx::Rect& bounds,
-                               const gfx::Point& bubble_anchor) {
+                               const gfx::Point& bubble_anchor,
+                               const std::string& hash_params) {
   AppLauncher* app_launcher = new AppLauncher(browser);
   BrowserView* browser_view = static_cast<BrowserView*>(browser->window());
+  app_launcher->hash_params_ = hash_params;
   app_launcher->info_bubble_ =
       PinnedContentsInfoBubble::Show(browser_view->frame()->GetWindow(),
           bounds, bubble_anchor, app_launcher->info_bubble_content_,
@@ -213,7 +227,8 @@ AppLauncher* AppLauncher::Show(Browser* browser,
 }
 
 // static
-AppLauncher* AppLauncher::ShowForNewTab(Browser* browser) {
+AppLauncher* AppLauncher::ShowForNewTab(Browser* browser,
+                                        const std::string& hash_params) {
   BrowserView* browser_view = static_cast<BrowserView*>(browser->window());
   TabStrip* tabstrip = browser_view->tabstrip()->AsTabStrip();
   if (!tabstrip)
@@ -232,7 +247,7 @@ AppLauncher* AppLauncher::ShowForNewTab(Browser* browser) {
   views::RootView::ConvertPointToScreen(location_bar->GetParent(),
                                         &location_bar_origin);
 
-  return Show(browser, bounds, location_bar_origin);
+  return Show(browser, bounds, location_bar_origin, hash_params);
 }
 
 void AppLauncher::Hide() {
