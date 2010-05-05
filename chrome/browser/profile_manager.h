@@ -93,6 +93,15 @@ class ProfileManager : public NonThreadSafe,
   // otherwise it will create and manage it.
   Profile* GetProfile(const FilePath& profile_dir);
 
+  // Returns a profile for a specific profile directory within the user data
+  // dir with the option of controlling whether extensions are initialized
+  // or not.  This will return an existing profile it had already been created,
+  // otherwise it will create and manage it.
+  // Note that if the profile has already been created, extensions may have
+  // been initialized.  If this matters to you, you should call GetProfileByPath
+  // first to see if the profile already exists.
+  Profile* GetProfile(const FilePath& profile_dir, bool init_extensions);
+
   // These allow iteration through the current list of profiles.
   typedef std::vector<Profile*> ProfileVector;
   typedef ProfileVector::iterator iterator;
@@ -147,8 +156,6 @@ class ProfileManager : public NonThreadSafe,
   // The Profile should not already be managed by this ProfileManager.
   // Returns true if the profile was added, false otherwise.
   bool AddProfile(Profile* profile, bool init_extensions);
-
-  Profile* GetProfile(const FilePath& profile_dir, bool init_extensions);
 
   // We keep a simple vector of profiles rather than something fancier
   // because we expect there to be a small number of profiles active.
