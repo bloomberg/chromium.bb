@@ -336,6 +336,18 @@ const NSString* const kBrandKey = @"KSBrandID";
           NSDictionary* storedBrandDict =
               [NSDictionary dictionaryWithObject:appBundleBrandID
                                           forKey:kBrandKey];
+          // If Keystone hasn't been installed yet, the location the brand file
+          // is written to won't exist, so manually create the directory.
+          NSString *userBrandFileDirectory =
+              [userBrandFile stringByDeletingLastPathComponent];
+          if (![fm fileExistsAtPath:userBrandFileDirectory]) {
+            if (![fm createDirectoryAtPath:userBrandFileDirectory
+               withIntermediateDirectories:YES
+                                attributes:nil
+                                     error:NULL]) {
+              LOG(ERROR) << "Failed to create the directory for the brand file";
+            }
+          }
           if ([storedBrandDict writeToFile:userBrandFile atomically:YES]) {
             brandFileType_ = kBrandFileTypeUser;
           }
