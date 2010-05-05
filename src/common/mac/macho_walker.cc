@@ -43,6 +43,7 @@ extern "C" {  // necessary for Leopard
   #include <unistd.h>
 }
 
+#include "common/mac/byteswap.h"
 #include "common/mac/macho_walker.h"
 #include "common/mac/macho_utilities.h"
 
@@ -136,7 +137,7 @@ bool MachoWalker::FindHeader(int cpu_type, off_t &offset) {
       return false;
 
     if (magic == MH_CIGAM || magic == MH_CIGAM_64)
-      header_cpu_type = NXSwapInt(header_cpu_type);
+      header_cpu_type = ByteSwap(header_cpu_type);
 
     if (valid_cpu_type != header_cpu_type)
       return false;

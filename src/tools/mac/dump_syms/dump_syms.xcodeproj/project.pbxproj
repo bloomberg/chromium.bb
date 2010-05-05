@@ -45,6 +45,7 @@
 		9BE650440B52F6D800611104 /* macho_id.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = macho_id.h; path = ../../../common/mac/macho_id.h; sourceTree = SOURCE_ROOT; };
 		9BE650450B52F6D800611104 /* macho_walker.cc */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = macho_walker.cc; path = ../../../common/mac/macho_walker.cc; sourceTree = SOURCE_ROOT; };
 		9BE650460B52F6D800611104 /* macho_walker.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = macho_walker.h; path = ../../../common/mac/macho_walker.h; sourceTree = SOURCE_ROOT; };
+		B8E8CA0C1156C854009E61B2 /* byteswap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = byteswap.h; path = ../../../common/mac/byteswap.h; sourceTree = SOURCE_ROOT; };
 		F95B422B0E0E22D100DBDE83 /* bytereader-inl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "bytereader-inl.h"; path = "../../../common/dwarf/bytereader-inl.h"; sourceTree = SOURCE_ROOT; };
 		F95B422C0E0E22D100DBDE83 /* bytereader.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = bytereader.cc; path = ../../../common/dwarf/bytereader.cc; sourceTree = SOURCE_ROOT; };
 		F95B422D0E0E22D100DBDE83 /* bytereader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bytereader.h; path = ../../../common/dwarf/bytereader.h; sourceTree = SOURCE_ROOT; };
@@ -72,6 +73,7 @@
 			isa = PBXGroup;
 			children = (
 				F9F5344B0E7C8FFC0012363F /* DWARF */,
+				B8E8CA0C1156C854009E61B2 /* byteswap.h */,
 				557800890BE1F3AB00EC23E0 /* macho_utilities.cc */,
 				5578008A0BE1F3AB00EC23E0 /* macho_utilities.h */,
 				9BE650410B52F6D800611104 /* file_id.cc */,
