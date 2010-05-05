@@ -358,7 +358,7 @@ bool AutoFillManager::IsAutoFillEnabled() const {
   PrefService* prefs = tab_contents_->profile()->GetPrefs();
 
   // Migrate obsolete AutoFill pref.
-  if (prefs->HasPrefPath(prefs::kFormAutofillEnabled)) {
+  if (prefs->FindPreference(prefs::kFormAutofillEnabled)) {
     bool enabled = prefs->GetBoolean(prefs::kFormAutofillEnabled);
     prefs->ClearPref(prefs::kFormAutofillEnabled);
     prefs->SetBoolean(prefs::kAutoFillEnabled, enabled);
