@@ -333,6 +333,25 @@ clean::
 
 
 
+### Unit tests for google_breakpad::ByteBuffer and google_breakpad::ByteCursor.
+check: check-byte_cursor_unittest
+check-byte_cursor_unittest: byte_cursor_unittest
+byte_cursor_unittest:				\
+	gmock-all.o				\
+	gtest-all.o				\
+	gtest_main.o				\
+	$(empty)
+CPP_EXECUTABLES += byte_cursor_unittest
+VPATH += $(SRC)/common
+byte_cursor_unittest.o: byte_cursor_unittest.cc
+byte_cursor_unittest.o: override CPPFLAGS += $(GTEST_CPPFLAGS) \
+					     $(GMOCK_CPPFLAGS)
+COVERAGE_SOURCES += byte_cursor_unittest.cc
+clean::
+	rm -f byte_cursor_unittest
+
+
+
 ### Generic compilation rules.
 
 # Link C++ executables using the C++ compiler; see CPP_EXECUTABLES above.
