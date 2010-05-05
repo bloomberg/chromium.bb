@@ -70,6 +70,9 @@ class MenuController : public MessageLoopForUI::Dispatcher {
   // Whether or not Run blocks.
   bool IsBlockingRun() const { return blocking_run_; }
 
+  // Whether or not drag operation is in progress.
+  bool drag_in_progress() const { return drag_in_progress_; }
+
   // Sets the selection to menu_item, a value of NULL unselects everything.
   // If open_submenu is true and menu_item has a submenu, the submenu is shown.
   // If update_immediately is true, submenus are opened immediately, otherwise
@@ -388,6 +391,9 @@ class MenuController : public MessageLoopForUI::Dispatcher {
 
   // Indicates a possible drag operation.
   bool possible_drag_;
+
+  // True when drag operation is in progress.
+  bool drag_in_progress_;
 
   // Location the mouse was pressed at. Used to detect d&d.
   gfx::Point press_pt_;

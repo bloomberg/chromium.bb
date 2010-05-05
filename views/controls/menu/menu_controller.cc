@@ -153,6 +153,7 @@ MenuItemView* MenuController::Run(gfx::NativeWindow parent,
                                   int* result_mouse_event_flags) {
   exit_type_ = EXIT_NONE;
   possible_drag_ = false;
+  drag_in_progress_ = false;
 
   bool nested_menu = showing_;
   if (showing_) {
@@ -400,8 +401,11 @@ void MenuController::OnMouseDragged(SubmenuView* source,
                                            &data);
       StopScrolling();
       int drag_ops = item->GetDelegate()->GetDragOperations(item);
+      drag_in_progress_ = true;
       item->GetRootView()->StartDragForViewFromMouseEvent(
           NULL, data, drag_ops);
+      drag_in_progress_ = false;
+
       if (GetActiveInstance() == this) {
         if (showing_) {
           // We're still showing, close all menus.
@@ -809,6 +813,7 @@ MenuController::MenuController(bool blocking)
       drop_target_(NULL),
       owner_(NULL),
       possible_drag_(false),
+      drag_in_progress_(false),
       valid_drop_coordinates_(false),
       showing_submenu_(false),
       menu_button_(NULL) {
