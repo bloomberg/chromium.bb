@@ -14,6 +14,7 @@
 #include "views/view.h"
 
 class AnimationContainer;
+class MultiAnimation;
 class SlideAnimation;
 class TabContents;
 class ThrobAnimation;
@@ -181,6 +182,7 @@ class TabRenderer : public views::View,
   // Paint various portions of the Tab
   void PaintTitle(SkColor title_color, gfx::Canvas* canvas);
   void PaintTabBackground(gfx::Canvas* canvas);
+  void PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas);
   void PaintInactiveTabBackground(gfx::Canvas* canvas);
   void PaintActiveTabBackground(gfx::Canvas* canvas);
   void PaintLoadingAnimation(gfx::Canvas* canvas);
@@ -224,7 +226,7 @@ class TabRenderer : public views::View,
   scoped_ptr<ThrobAnimation> pulse_animation_;
 
   // Animation used when the title of an inactive mini tab changes.
-  scoped_ptr<ThrobAnimation> mini_title_animation_;
+  scoped_ptr<MultiAnimation> mini_title_animation_;
 
   // Model data. We store this here so that we don't need to ask the underlying
   // model, which is tricky since instances of this object can outlive the

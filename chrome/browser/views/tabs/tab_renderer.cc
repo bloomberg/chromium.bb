@@ -8,6 +8,7 @@
 
 #include "app/animation_container.h"
 #include "app/l10n_util.h"
+#include "app/multi_animation.h"
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
 #include "app/throb_animation.h"
@@ -25,6 +26,7 @@
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "views/widget/widget.h"
 #include "views/window/non_client_view.h"
 #include "views/window/window.h"
@@ -93,15 +95,21 @@ TabRenderer::TabImage TabRenderer::tab_inactive = {0};
 TabRenderer::TabImage TabRenderer::tab_inactive_nano = {0};
 TabRenderer::TabImage TabRenderer::tab_alpha_nano = {0};
 
-// Max opacity for the mini-tab title change animation.
-const double kMiniTitleChangeThrobOpacity = 0.75;
+// Durations for the various parts of the mini tab title animation.
+static const int kMiniTitleChangeAnimationDuration1MS = 1000;
+static const int kMiniTitleChangeAnimationDuration2MS = 500;
+static const int kMiniTitleChangeAnimationDuration3MS = 800;
 
-// Duration for when the title of an inactive mini-tab changes.
-const int kMiniTitleChangeThrobDuration = 1000;
+// Offset from the right edge for the start of the mini title change animation.
+static const int kMiniTitleChangeInitialXOffset = 6;
 
-// When the title of a mini-tab in the background changes the size of the icon
-// animates. This is the max size we let the icon go to.
-static const int kMiniTitleChangeMaxFaviconSize = 22;
+// Radius of the radial gradient used for mini title change animation.
+static const int kMiniTitleChangeGradientRadius = 20;
+
+// Colors of the gradient used during the mini title change animation.
+static const SkColor kMiniTitleChangeGradientColor1 = SK_ColorWHITE;
+static const SkColor kMiniTitleChangeGradientColor2 =
+    SkColorSetARGB(0, 255, 255, 255);
 
 namespace {
 
@@ -399,18 +407,17 @@ void TabRenderer::StopPulse() {
 
 void TabRenderer::StartMiniTabTitleAnimation() {
   if (!mini_title_animation_.get()) {
-    mini_title_animation_.reset(new ThrobAnimation(this));
-    mini_title_animation_->SetThrobDuration(kMiniTitleChangeThrobDuration);
-  }
-
-  if (!mini_title_animation_->is_animating()) {
-    mini_title_animation_->StartThrobbing(2);
-  } else if (mini_title_animation_->cycles_remaining() <= 2) {
-    // The title changed while we're already animating. Add at most one more
-    // cycle. This is done in an attempt to smooth out pages that continuously
-    // change the title.
-    mini_title_animation_->set_cycles_remaining(
-        mini_title_animation_->cycles_remaining() + 2);
+    MultiAnimation::Parts parts;
+    parts.push_back(MultiAnimation::Part(kMiniTitleChangeAnimationDuration1MS,
+                                         Tween::EASE_OUT));
+    parts.push_back(MultiAnimation::Part(kMiniTitleChangeAnimationDuration2MS,
+                                         Tween::ZERO));
+    parts.push_back(MultiAnimation::Part(kMiniTitleChangeAnimationDuration3MS,
+                                         Tween::EASE_IN));
+    mini_title_animation_.reset(new MultiAnimation(parts));
+    mini_title_animation_->SetContainer(container_.get());
+    mini_title_animation_->set_delegate(this);
+    mini_title_animation_->Start();
   }
 }
 
@@ -444,17 +451,7 @@ void TabRenderer::PaintIcon(gfx::Canvas* canvas) {
         // to using that class to render the favicon).
         int x = favicon_bounds_.x();
         int y = favicon_bounds_.y() + fav_icon_hiding_offset_;
-        // TODO(sky): this isn't right for app tabs, but we're redoing this
-        // effect separately.
         int size = data_.favicon.width();
-        if (mini() && mini_title_animation_.get() &&
-            mini_title_animation_->is_animating()) {
-          int throb_size = mini_title_animation_->CurrentValueBetween(
-              size, kMiniTitleChangeMaxFaviconSize);
-          x -= (throb_size - size) / 2;
-          y -= (throb_size - size) / 2;
-          size = throb_size;
-        }
         canvas->DrawBitmapInt(data_.favicon, 0, 0,
                               data_.favicon.width(),
                               data_.favicon.height(),
@@ -700,7 +697,10 @@ void TabRenderer::PaintTabBackground(gfx::Canvas* canvas) {
   if (IsSelected()) {
     PaintActiveTabBackground(canvas);
   } else {
-    PaintInactiveTabBackground(canvas);
+    if (mini_title_animation_.get() && mini_title_animation_->is_animating())
+      PaintInactiveTabBackgroundWithTitleChange(canvas);
+    else
+      PaintInactiveTabBackground(canvas);
 
     double throb_value = GetThrobValue();
     if (throb_value > 0) {
@@ -712,6 +712,62 @@ void TabRenderer::PaintTabBackground(gfx::Canvas* canvas) {
       PaintActiveTabBackground(canvas);
       canvas->restore();
     }
+  }
+}
+
+void TabRenderer::PaintInactiveTabBackgroundWithTitleChange(
+    gfx::Canvas* canvas) {
+  // Render the inactive tab background. We'll use this for clipping.
+  gfx::Canvas background_canvas(width(), height(), false);
+  PaintInactiveTabBackground(&background_canvas);
+
+  SkBitmap background_image = background_canvas.ExtractBitmap();
+
+  // Draw a radial gradient to hover_canvas.
+  gfx::Canvas hover_canvas(width(), height(), false);
+  int radius = kMiniTitleChangeGradientRadius;
+  int x0 = width() + radius - kMiniTitleChangeInitialXOffset;
+  int x1 = radius;
+  int x2 = -radius;
+  int x;
+  if (mini_title_animation_->current_part_index() == 0) {
+    x = mini_title_animation_->CurrentValueBetween(x0, x1);
+  } else if (mini_title_animation_->current_part_index() == 1) {
+    x = x1;
+  } else {
+    x = mini_title_animation_->CurrentValueBetween(x1, x2);
+  }
+  SkPaint paint;
+  SkPoint loc = { SkIntToScalar(x), SkIntToScalar(0) };
+  SkColor colors[2];
+  colors[0] = kMiniTitleChangeGradientColor1;
+  colors[1] = kMiniTitleChangeGradientColor2;
+  SkShader* shader = SkGradientShader::CreateRadial(
+      loc,
+      SkIntToScalar(radius),
+      colors,
+      NULL,
+      2,
+      SkShader::kClamp_TileMode);
+  paint.setShader(shader);
+  shader->unref();
+  hover_canvas.FillRectInt(x - radius, -radius, radius * 2, radius * 2, paint);
+
+  // Draw the radial gradient clipped to the background into hover_image.
+  SkBitmap hover_image = SkBitmapOperations::CreateMaskedBitmap(
+      hover_canvas.ExtractBitmap(), background_image);
+
+  // Draw the tab background to the canvas.
+  canvas->DrawBitmapInt(background_image, 0, 0);
+
+  // And then the gradient on top of that.
+  if (mini_title_animation_->current_part_index() == 2) {
+    canvas->saveLayerAlpha(NULL,
+                           mini_title_animation_->CurrentValueBetween(255, 0));
+    canvas->DrawBitmapInt(hover_image, 0, 0);
+    canvas->restore();
+  } else {
+    canvas->DrawBitmapInt(hover_image, 0, 0);
   }
 }
 

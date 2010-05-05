@@ -155,6 +155,8 @@
         'menus/simple_menu_model.cc',
         'menus/simple_menu_model.h',
         'message_box_flags.h',
+        'multi_animation.cc',
+        'multi_animation.h',
         'os_exchange_data_provider_gtk.cc',
         'os_exchange_data_provider_gtk.h',
         'os_exchange_data_provider_win.cc',
