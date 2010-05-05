@@ -174,52 +174,48 @@ BUILD/gcc-$(GCC_VERSION): | BUILD
 	@echo "Unpacking gcc-$(GCC_VERSION)"
 	cd BUILD && tar xf $(SRCDIR)/gcc/gcc-core-$(GCC_VERSION).tar.bz2
 	cd BUILD && tar xf $(SRCDIR)/gcc/gcc-g++-$(GCC_VERSION).tar.bz2
-	if [ "x$(GCC_VERSION)" != "x4.2.2" ] ; then \
-	  cd BUILD && tar xf $(SRCDIR)/gcc/gcc-fortran-$(GCC_VERSION).tar.bz2 ; \
-		      tar xf $(SRCDIR)/gcc/gcc-testsuite-$(GCC_VERSION).tar.bz2 ; \
-	fi
-	if [ "x$(GCC_VERSION)" = "x4.4.3" ]; then \
-	  GNU_MP_MAJOR=0 ; \
-	  if [ -f /usr/include/gmp.h ] ; then \
-	    GNU_MP_MAJOR="`grep '#[ 	]*define[ 	]*__GNU_MP_VERSION ' /usr/include/gmp.h | sed -e s'@[ 	]*#define[ 	]*__GNU_MP_VERSION[ 	]*@@'`" ; \
-	    GNU_MP_MINOR="`grep '#[ 	]*define[ 	]*__GNU_MP_VERSION_MINOR ' /usr/include/gmp.h | sed -e s'@[ 	]*#[ 	]*define[ 	]*__GNU_MP_VERSION_MINOR[ 	]*@@'`" ; \
-	    GNU_MP_PATCHLEVEL="`grep '#[ 	]*define[ 	]*__GNU_MP_VERSION_PATCHLEVEL ' /usr/include/gmp.h | sed -e s'@[ 	]*[ 	]*#define[ 	]*__GNU_MP_VERSION_PATCHLEVEL[ 	]*@@'`" ; \
-	  fi ; \
-	  if [ "$$GNU_MP_MAJOR" -lt 4 ] || \
-	     ( [ "$$GNU_MP_MAJOR" -eq 4 ] && \
-	       [ "$$GNU_MP_MINOR" -lt 3 ] ) || \
-	     ( [ "$$GNU_MP_MAJOR" -eq 4 ] && \
-	       [ "$$GNU_MP_MINOR" -eq 3 ] && \
-	       [ "$$GNU_MP_PATCHLEVEL" -lt 1 ] ) ; then \
-	    cd BUILD && \
-	      tar xf $(SRCDIR)/gmp/gmp-$(GMP_VERSION).tar.bz2 && \
-	      mv gmp-$(GMP_VERSION) gcc-$(GCC_VERSION)/gmp && \
-	      cp gcc-$(GCC_VERSION)/gmp/configure \
-	          gcc-$(GCC_VERSION)/gmp/configure.old && \
-	      cat gcc-$(GCC_VERSION)/gmp/configure.old | \
-	          sed -e 's/M4=m4-not-needed/: # no m4/g' \
-	          >gcc-$(GCC_VERSION)/gmp/configure && \
-	    cd .. ; \
-	  fi ; \
-	  MPFR_VERSION_MAJOR=0 ; \
-	  if [ -f /usr/include/mpfr.h ] ; then \
-	    MPFR_VERSION_MAJOR="`grep '#[ 	]*define[ 	]*MPFR_VERSION_MAJOR ' /usr/include/mpfr.h | sed -e s'@[ 	]*#[ 	]*define[ 	]*MPFR_VERSION_MAJOR[ 	]*@@'`" ; \
-	    MPFR_VERSION_MINOR="`grep '#[ 	]*define[ 	]*MPFR_VERSION_MINOR ' /usr/include/mpfr.h | sed -e s'@[ 	]*#[ 	]*define[ 	]*MPFR_VERSION_MINOR[ 	]*@@'`" ; \
-	    MPFR_VERSION_PATCHLEVEL="`grep '#[ 	]*define[ 	]*MPFR_VERSION_PATCHLEVEL ' /usr/include/mpfr.h | sed -e s'@[ 	]*#[ 	]*define[ 	]*MPFR_VERSION_PATCHLEVEL[ 	]*@@'`" ; \
-	  fi ; \
-	  if [ ! -e /usr/include/mpfr.h ] || \
-	     [ "$$MPFR_VERSION_MAJOR" -lt 2 ] || \
-	     ( [ "$$MPFR_VERSION_MAJOR" -eq 2 ] && \
-	       [ "$$MPFR_VERSION_MINOR" -lt 4 ] ) || \
-	     ( [ "$$MPFR_VERSION_MAJOR" -eq 2 ] && \
-	       [ "$$MPFR_VERSION_MINOR" -eq 4 ] && \
-	       [ "$$MPFR_VERSION_PATCHLEVEL" -lt 1 ] ) ; then \
-	    cd BUILD && \
-	      tar xf $(SRCDIR)/mpfr/mpfr-$(MPFR_VERSION).tar.bz2 && \
-	      mv mpfr-$(MPFR_VERSION) gcc-$(GCC_VERSION)/mpfr && \
-	    cd .. ; \
-	  fi ; \
-	fi
+	cd BUILD && tar xf $(SRCDIR)/gcc/gcc-fortran-$(GCC_VERSION).tar.bz2
+	cd BUILD && tar xf $(SRCDIR)/gcc/gcc-testsuite-$(GCC_VERSION).tar.bz2
+	GNU_MP_MAJOR=0 ; \
+	if [ -f /usr/include/gmp.h ] ; then \
+	  GNU_MP_MAJOR="`grep '#[ 	]*define[ 	]*__GNU_MP_VERSION ' /usr/include/gmp.h | sed -e s'@[ 	]*#define[ 	]*__GNU_MP_VERSION[ 	]*@@'`" ; \
+	  GNU_MP_MINOR="`grep '#[ 	]*define[ 	]*__GNU_MP_VERSION_MINOR ' /usr/include/gmp.h | sed -e s'@[ 	]*#[ 	]*define[ 	]*__GNU_MP_VERSION_MINOR[ 	]*@@'`" ; \
+	  GNU_MP_PATCHLEVEL="`grep '#[ 	]*define[ 	]*__GNU_MP_VERSION_PATCHLEVEL ' /usr/include/gmp.h | sed -e s'@[ 	]*[ 	]*#define[ 	]*__GNU_MP_VERSION_PATCHLEVEL[ 	]*@@'`" ; \
+	fi ; \
+	if [ "$$GNU_MP_MAJOR" -lt 4 ] || \
+	   ( [ "$$GNU_MP_MAJOR" -eq 4 ] && \
+	     [ "$$GNU_MP_MINOR" -lt 3 ] ) || \
+	   ( [ "$$GNU_MP_MAJOR" -eq 4 ] && \
+	     [ "$$GNU_MP_MINOR" -eq 3 ] && \
+	     [ "$$GNU_MP_PATCHLEVEL" -lt 1 ] ) ; then \
+	  cd BUILD && \
+	    tar xf $(SRCDIR)/gmp/gmp-$(GMP_VERSION).tar.bz2 && \
+	    mv gmp-$(GMP_VERSION) gcc-$(GCC_VERSION)/gmp && \
+	    cp gcc-$(GCC_VERSION)/gmp/configure \
+	        gcc-$(GCC_VERSION)/gmp/configure.old && \
+	    cat gcc-$(GCC_VERSION)/gmp/configure.old | \
+	        sed -e 's/M4=m4-not-needed/: # no m4/g' \
+	        >gcc-$(GCC_VERSION)/gmp/configure && \
+	  cd .. ; \
+	fi ; \
+	MPFR_VERSION_MAJOR=0 ; \
+	if [ -f /usr/include/mpfr.h ] ; then \
+	  MPFR_VERSION_MAJOR="`grep '#[ 	]*define[ 	]*MPFR_VERSION_MAJOR ' /usr/include/mpfr.h | sed -e s'@[ 	]*#[ 	]*define[ 	]*MPFR_VERSION_MAJOR[ 	]*@@'`" ; \
+	  MPFR_VERSION_MINOR="`grep '#[ 	]*define[ 	]*MPFR_VERSION_MINOR ' /usr/include/mpfr.h | sed -e s'@[ 	]*#[ 	]*define[ 	]*MPFR_VERSION_MINOR[ 	]*@@'`" ; \
+	  MPFR_VERSION_PATCHLEVEL="`grep '#[ 	]*define[ 	]*MPFR_VERSION_PATCHLEVEL ' /usr/include/mpfr.h | sed -e s'@[ 	]*#[ 	]*define[ 	]*MPFR_VERSION_PATCHLEVEL[ 	]*@@'`" ; \
+	fi ; \
+	if [ ! -e /usr/include/mpfr.h ] || \
+	   [ "$$MPFR_VERSION_MAJOR" -lt 2 ] || \
+	   ( [ "$$MPFR_VERSION_MAJOR" -eq 2 ] && \
+	     [ "$$MPFR_VERSION_MINOR" -lt 4 ] ) || \
+	   ( [ "$$MPFR_VERSION_MAJOR" -eq 2 ] && \
+	     [ "$$MPFR_VERSION_MINOR" -eq 4 ] && \
+	     [ "$$MPFR_VERSION_PATCHLEVEL" -lt 1 ] ) ; then \
+	  cd BUILD && \
+	    tar xf $(SRCDIR)/mpfr/mpfr-$(MPFR_VERSION).tar.bz2 && \
+	    mv mpfr-$(MPFR_VERSION) gcc-$(GCC_VERSION)/mpfr && \
+	  cd .. ; \
+	fi ;
 	set -e; cd BUILD && \
 	  for i in ../patches/???-gcc-$(GCC_VERSION).patch ; do \
 	    patch -p0 < "$$i" ; \
@@ -310,32 +306,16 @@ BUILD/stamp-pregcc: BUILD/stamp-gcc-$(GCC_VERSION) Makefile
 	      --disable-libstdcxx-pch \
 	      --disable-shared \
 	      --target=$(CROSSARCH)
-	if [ "x$(GCC_VERSION)" = "x4.4.3" ]; then \
 	PATH=$(BUILDPATH) \
 	  $(MAKE) -C BUILD/build-pregcc-$(CROSSARCH) \
 		  CFLAGS_FOR_TARGET="-O2" \
 		  CXXFLAGS_FOR_TARGET="-O2" \
-	    all-gcc all-target-libgcc ; \
-	else \
+	    all-gcc all-target-libgcc ;
 	PATH=$(BUILDPATH) \
-	  $(MAKE) -C BUILD/build-pregcc-$(CROSSARCH) \
-		  CFLAGS_FOR_TARGET="-O2" \
-		  CXXFLAGS_FOR_TARGET="-O2" \
-	    all-gcc ; \
-	fi
-	if [ "x$(GCC_VERSION)" = "x4.4.3" ]; then \
-	  PATH=$(BUILDPATH) \
 	  $(MAKE) -C BUILD/build-pregcc-$(CROSSARCH) \
 		  CFLAGS_FOR_TARGET="-O2" \
 		  CXXFLAGS_FOR_TARGET="-O2" \
 	    DESTDIR=$(DESTDIR) install-gcc install-target-libgcc ; \
-	else \
-	  PATH=$(BUILDPATH) \
-	  $(MAKE) -C BUILD/build-pregcc-$(CROSSARCH) \
-		  CFLAGS_FOR_TARGET="-O2" \
-		  CXXFLAGS_FOR_TARGET="-O2" \
-	    DESTDIR=$(DESTDIR) install-gcc ; \
-	fi
 	cp $(DESTDIR)$(SDKROOT)/lib/gcc/$(CROSSARCH)/$(GCC_VERSION)/libgcc.a \
 		$(DESTDIR)$(SDKROOT)/lib/gcc/$(CROSSARCH)/$(GCC_VERSION)/libgcc_eh.a
 	touch $@
@@ -353,16 +333,14 @@ pregcc: BUILD/stamp-pregcc
 BUILD/stamp-newlib: BUILD/stamp-newlib-$(NEWLIB_VERSION) Makefile
 	rm -rf BUILD/build-newlib-$(CROSSARCH)
 	mkdir BUILD/build-newlib-$(CROSSARCH)
-	if [ "x$(GCC_VERSION)" = "x4.4.3" ] ; then \
-	  (cd $(DESTDIR)$(SDKROOT)/$(CROSSARCH) ; \
+	(cd $(DESTDIR)$(SDKROOT)/$(CROSSARCH) ; \
 	    ln -sfn lib/32 lib32 ; \
 	    ln -sfn lib lib64 ; \
 	    cd $(DESTDIR)$(SDKROOT); \
 	    rm -rf nacl; mkdir nacl; cd nacl; \
 	    mkdir bin; \
 	    ln -s ../nacl64/lib/32 lib; \
-	    ln -s ../nacl64/include; ) \
-	fi
+	    ln -s ../nacl64/include; )
 	../src/trusted/service_runtime/export_header.py ../src/trusted/service_runtime/include \
 		BUILD/newlib-$(NEWLIB_VERSION)/newlib/libc/sys/nacl
 	if [ "x$(CROSSARCH)" = "xnacl64" ] ; then \
@@ -428,7 +406,6 @@ ifeq ($(CYGWIN17), 1)
 	cp -af $(DESTDIR)$(SDKROOT)/$(CROSSARCH) \
 	    BUILD/build-gcc-$(CROSSARCH)/$(CROSSARCH)
 endif
-	if [ "x$(GCC_VERSION)" != "x4.2.2" ] ; then \
 	cd BUILD/build-gcc-$(CROSSARCH) && \
 	  PATH=$(BUILDPATH) CC="gcc" \
 		CFLAGS="-m32 -Dinhibit_libc -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)" \
@@ -447,28 +424,7 @@ endif
 				--disable-libgomp \
 	      --disable-libstdcxx-pch \
 	      --enable-languages="c,c++" \
-	      --target=$(CROSSARCH) ; \
-	else \
-	cd BUILD/build-gcc-$(CROSSARCH) && \
-	  PATH=$(BUILDPATH) CC="gcc" \
-		CFLAGS="-Dinhibit_libc -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)" \
-		CFLAGS_FOR_TARGET="-O2 -g" \
-		CXXFLAGS_FOR_TARGET="-O2 -g" \
-	  LDFLAGS="-s" \
-	    ../gcc-$(GCC_VERSION)/configure \
-	      --prefix=$(SDKROOT) \
-				--with-newlib \
-	      --enable-threads=nacl \
-	      --enable-tls \
-	      --disable-libmudflap \
-	      --disable-decimal-float \
-	      --disable-libssp \
-	      --disable-shared \
-				--disable-libgomp \
-	      --disable-libstdcxx-pch \
-	      --enable-languages="c,c++" \
-	      --target=$(CROSSARCH) ; \
-	fi
+	      --target=$(CROSSARCH) ;
 	PATH=$(BUILDPATH) \
 	  $(MAKE) -C BUILD/build-gcc-$(CROSSARCH) \
 		  CFLAGS_FOR_TARGET="-O2 -g" \
@@ -481,41 +437,37 @@ endif
 	    DESTDIR=$(DESTDIR) install
 	$(MAKE) -f $(THISMAKEFILE) redirector
 ifeq ($(PLATFORM), Cygwin)
-	if [ "x$(GCC_VERSION)" = "x4.4.3" ] ; then \
-	  for exe in "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/"* ; do \
-	    echo "The next command can hang on FAT partiton; use NTFS!" ; \
-	    ln -fn redirector.exe \
-	      "$(DESTDIR)$(SDKROOT)/nacl/bin/`basename $$exe`"; \
-	  done; \
-	  for exe in "$(DESTDIR)$(SDKROOT)/bin/$(CROSSARCH)-"*.exe ; do \
-	    N="`basename $$exe`"; \
-	    echo "The next command can hang on FAT partiton; use NTFS!" ; \
-	    ln -fn redirector.exe \
-	      "$(DESTDIR)$(SDKROOT)/bin/nacl-$${N/$(CROSSARCH)-}"; \
-	    ln -fn "$(DESTDIR)$(SDKROOT)/libexec/$$N" \
-	      "$(DESTDIR)$(SDKROOT)/libexec/nacl-$${N/$(CROSSARCH)-}"; \
-	  done; \
-	  for exe in "$(DESTDIR)$(SDKROOT)/bin/$(CROSSARCH)-"* ; do \
-	    N="`basename $$exe`"; \
-	    echo "The next command can hang on FAT partiton; use NTFS!" ; \
-	    ln -n "$$exe" "$(DESTDIR)$(SDKROOT)/bin/nacl-$${N/$(CROSSARCH)-}"| \
-	      true; \
-	  done; \
-	fi
+	for exe in "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/"* ; do \
+	  echo "The next command can hang on FAT partiton; use NTFS!" ; \
+	  ln -fn redirector.exe \
+	    "$(DESTDIR)$(SDKROOT)/nacl/bin/`basename $$exe`"; \
+	done; \
+	for exe in "$(DESTDIR)$(SDKROOT)/bin/$(CROSSARCH)-"*.exe ; do \
+	  N="`basename $$exe`"; \
+	  echo "The next command can hang on FAT partiton; use NTFS!" ; \
+	  ln -fn redirector.exe \
+	    "$(DESTDIR)$(SDKROOT)/bin/nacl-$${N/$(CROSSARCH)-}"; \
+	  ln -fn "$(DESTDIR)$(SDKROOT)/libexec/$$N" \
+	    "$(DESTDIR)$(SDKROOT)/libexec/nacl-$${N/$(CROSSARCH)-}"; \
+	done; \
+	for exe in "$(DESTDIR)$(SDKROOT)/bin/$(CROSSARCH)-"* ; do \
+	  N="`basename $$exe`"; \
+	  echo "The next command can hang on FAT partiton; use NTFS!" ; \
+	  ln -n "$$exe" "$(DESTDIR)$(SDKROOT)/bin/nacl-$${N/$(CROSSARCH)-}"| \
+	    true; \
+	done;
 else
-	if [ "x$(GCC_VERSION)" = "x4.4.3" ] ; then \
-	  for exe in "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/"* ; do \
-	    ./create_redirector.sh \
-	      -s "$(DESTDIR)$(SDKROOT)/bin/nacl-`basename $$exe`"; \
-	    ./create_redirector.sh -t \
-	      -s "$(DESTDIR)$(SDKROOT)/nacl/bin/`basename $$exe`"; \
-	  done; \
-	  for exe in "$(DESTDIR)$(SDKROOT)/bin/$(CROSSARCH)-"* ; do \
-	    N="`basename $$exe`"; \
-	    ln -n "$$exe" "$(DESTDIR)$(SDKROOT)/bin/nacl-$${N/$(CROSSARCH)-}"| \
-	      true; \
-	  done; \
-	fi
+	for exe in "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/"* ; do \
+	  ./create_redirector.sh \
+	    -s "$(DESTDIR)$(SDKROOT)/bin/nacl-`basename $$exe`"; \
+	  ./create_redirector.sh -t \
+	    -s "$(DESTDIR)$(SDKROOT)/nacl/bin/`basename $$exe`"; \
+	done; \
+	for exe in "$(DESTDIR)$(SDKROOT)/bin/$(CROSSARCH)-"* ; do \
+	  N="`basename $$exe`"; \
+	  ln -n "$$exe" "$(DESTDIR)$(SDKROOT)/bin/nacl-$${N/$(CROSSARCH)-}"| \
+	    true; \
+	done;
 endif
 	touch $@
 
@@ -565,48 +517,27 @@ nc_threads: ALWAYS
 	  targetplatform=x86-$(BITSPLATFORM)
 
 nacl_libraries_nocpp: ALWAYS
-	if [ "x$(GCC_VERSION)" = "x4.4.3" ] ; then \
-	  cd .. && \
+	cd .. && \
 	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
 	    --mode=nacl_extra_sdk extra_sdk_update_header \
-	    nocpp=yes multilib=true --verbose ) && \
+	    nocpp=yes --verbose ) && \
 	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
 	    --mode=nacl_extra_sdk extra_sdk_update \
-	    nocpp=yes multilib=true targetplatform=x86-32 --verbose ) && \
+	    nocpp=yes targetplatform=x86-32 --verbose ) && \
 	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
 	    --mode=nacl_extra_sdk extra_sdk_update \
-	    nocpp=yes multilib=true targetplatform=x86-64 --verbose ) ; \
-	else \
-	  cd .. && \
-	   ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
-	   targetplatform=x86-$(BITSPLATFORM) \
-	   --mode=nacl_extra_sdk extra_sdk_update_header nocpp=yes --verbose ; \
-	   ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
-	   --mode=nacl_extra_sdk extra_sdk_update nocpp=yes --verbose \
-	   targetplatform=x86-$(BITSPLATFORM) ; \
-	fi
+	    nocpp=yes targetplatform=x86-64 --verbose ) ;
 
 nacl_libraries: ALWAYS
-	if [ "x$(GCC_VERSION)" = "x4.4.3" ] ; then \
-	  cd .. && \
+	cd .. && \
 	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
-	    --mode=nacl_extra_sdk extra_sdk_update_header multilib=true \
-	    --verbose ) && \
+	    --mode=nacl_extra_sdk extra_sdk_update_header --verbose ) && \
 	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
-	    --mode=nacl_extra_sdk extra_sdk_update multilib=true \
+	    --mode=nacl_extra_sdk extra_sdk_update \
 	    targetplatform=x86-32 --verbose ) && \
 	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
-	    --mode=nacl_extra_sdk extra_sdk_update multilib=true \
-	    targetplatform=x86-64 --verbose ) ; \
-	else \
-	  cd .. && \
-	   (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
-	     targetplatform=x86-$(BITSPLATFORM) \
-	     --mode=nacl_extra_sdk extra_sdk_update_header --verbose) && \
-	   (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
-	     targetplatform=x86-$(BITSPLATFORM) \
-	     --mode=nacl_extra_sdk extra_sdk_update --verbose) ; \
-	fi
+	    --mode=nacl_extra_sdk extra_sdk_update \
+	    targetplatform=x86-64 --verbose ) ;
 	chmod a-x "$(DESTDIR)$(SDKROOT)/"{nacl,"$(CROSSARCH)"}/lib/*.a
 	rm -f "$(DESTDIR)$(SDKROOT)/"{nacl,"$(CROSSARCH)"}/lib/*.la
 	printf -- "--- $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/nacl/npapi_extensions.h\n\
@@ -631,17 +562,9 @@ nacl_libraries: ALWAYS
 	patch -p0
 
 sdk_minimal_test: ALWAYS
-	if [ "x$(GCC_VERSION)" = "x4.4.3" ] ; then \
-	  cd .. && \
+	cd .. && \
 	   ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
-	     --mode=nacl sdk_minimal_test platform=x86-32 multilib=true \
-	     --verbose; \
-	else \
-	  cd .. && \
-	   ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
-	    --mode=nacl sdk_minimal_test \
-	    targetplatform=x86-$(BITSPLATFORM) --verbose; \
-	fi
+	     --mode=nacl sdk_minimal_test platform=x86-32 --verbose;
 
 gdb_minimal_test: BUILD/stamp-gdb
 	cd .. && \
