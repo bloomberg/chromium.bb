@@ -7,7 +7,6 @@
 
 #include <vector>
 #include "base/string16.h"
-#include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 

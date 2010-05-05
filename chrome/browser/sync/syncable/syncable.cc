@@ -49,6 +49,7 @@
 #include "chrome/browser/sync/util/crypto_helpers.h"
 #include "chrome/browser/sync/util/fast_dump.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
+#include "net/base/escape.h"
 
 namespace {
 enum InvariantCheckLevel {
@@ -1544,7 +1545,8 @@ std::ostream& operator<<(std::ostream& stream, const syncable::Entry& entry) {
   }
   for ( ; i < PROTO_FIELDS_END; ++i) {
     s << g_metas_columns[i].name << colon
-      << kernel->ref(static_cast<ProtoField>(i)).SerializeAsString()
+      << EscapePath(
+          kernel->ref(static_cast<ProtoField>(i)).SerializeAsString())
       << separator;
   }
   s << "TempFlags: ";

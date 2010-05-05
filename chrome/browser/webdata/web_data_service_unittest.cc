@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -169,7 +170,7 @@ TEST_F(WebDataServiceAutofillTest, FormFillAdd) {
   // The event will be signaled when the mock observer is notified.
   done_event_.TimedWait(test_timeout_);
 
-  AutofillWebDataServiceConsumer consumer;
+  AutofillWebDataServiceConsumer<std::vector<string16> > consumer;
   WebDataService::Handle handle;
   static const int limit = 10;
   handle = wds_->GetFormValuesForElementName(
@@ -179,8 +180,8 @@ TEST_F(WebDataServiceAutofillTest, FormFillAdd) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(handle, consumer.handle());
-  ASSERT_EQ(1U, consumer.values().size());
-  EXPECT_EQ(value1_, consumer.values()[0]);
+  ASSERT_EQ(1U, consumer.result().size());
+  EXPECT_EQ(value1_, consumer.result()[0]);
 }
 
 TEST_F(WebDataServiceAutofillTest, FormFillRemoveOne) {
@@ -212,7 +213,7 @@ TEST_F(WebDataServiceAutofillTest, FormFillRemoveOne) {
   done_event_.TimedWait(test_timeout_);
 }
 
-TEST_F(WebDataServiceAutofillTest,FormFillRemoveMany) {
+TEST_F(WebDataServiceAutofillTest, FormFillRemoveMany) {
   TimeDelta one_day(TimeDelta::FromDays(1));
   Time t = Time::Now();
 

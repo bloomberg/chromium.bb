@@ -12,6 +12,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/webdata/web_data_service.h"
 
+template <class T>
 class AutofillWebDataServiceConsumer: public WebDataServiceConsumer {
  public:
   AutofillWebDataServiceConsumer() : handle_(0) {}
@@ -20,23 +21,20 @@ class AutofillWebDataServiceConsumer: public WebDataServiceConsumer {
   virtual void OnWebDataServiceRequestDone(WebDataService::Handle handle,
                                            const WDTypedResult* result) {
     DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-    DCHECK(result->GetType() == AUTOFILL_VALUE_RESULT);
     handle_ = handle;
-    const WDResult<std::vector<string16> >* autofill_result =
-        static_cast<const WDResult<std::vector<string16> >*>(result);
-    // Copy the values.
-    values_ = autofill_result->GetValue();
+    const WDResult<T>* wrapped_result =
+        static_cast<const WDResult<T>*>(result);
+    result_ = wrapped_result->GetValue();
 
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
     MessageLoop::current()->Quit();
   }
 
   WebDataService::Handle handle() { return handle_; }
-  const std::vector<string16>& values() { return values_; }
+  T& result() { return result_; }
 
  private:
   WebDataService::Handle handle_;
-  std::vector<string16> values_;
+  T result_;
   DISALLOW_COPY_AND_ASSIGN(AutofillWebDataServiceConsumer);
 };
 

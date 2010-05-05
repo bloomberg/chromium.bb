@@ -1902,6 +1902,8 @@
       'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
       'sources': [
         'app/chrome_dll_resource.h',
+        'browser/autofill/autofill_common_unittest.cc',
+        'browser/autofill/autofill_common_unittest.h',
         'test/in_process_browser_test.cc',
         'test/in_process_browser_test.h',
         'test/test_launcher/out_of_proc_test_runner.cc',
