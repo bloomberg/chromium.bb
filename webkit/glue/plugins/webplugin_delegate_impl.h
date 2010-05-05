@@ -97,7 +97,7 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
                               const gfx::Rect& clip_rect);
   virtual void Paint(WebKit::WebCanvas* canvas, const gfx::Rect& rect);
   virtual void Print(gfx::NativeDrawingContext context);
-  virtual void SetFocus();
+  virtual void SetFocus(bool focused);
   virtual bool HandleInputEvent(const WebKit::WebInputEvent& event,
                                 WebKit::WebCursorInfo* cursor_info);
   virtual NPObject* GetPluginScriptableObject();
@@ -141,19 +141,11 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
                                 gfx::NativeDrawingContext context);
   // Returns the delegate currently processing events.
   static WebPluginDelegateImpl* GetActiveDelegate();
-  // Returns a vector of currently active delegates in this process.
-  static std::set<WebPluginDelegateImpl*> GetActiveDelegates();
-  // Informs the delegate that it has gained or lost focus.
-  void FocusChanged(bool has_focus);
-  // Set a notifier function that gets called when the delegate is accepting
-  // the focus.  If no notifier function has been set, the delegate will just
-  // call FocusChanged(true).  This is used in a multiprocess environment to
-  // propagate focus notifications to all running plugin processes.
-  void SetFocusNotifier(void (*notifier)(WebPluginDelegateImpl*)) {
-    focus_notifier_ = notifier;
-  }
   // Informs the plugin that the window it is in has gained or lost focus.
   void SetWindowHasFocus(bool has_focus);
+  // Informs the plugin that the view it is in has gained or lost first
+  // responder status.
+  void SetContentAreaHasFocus(bool has_focus);
   // Returns whether or not the window the plugin is in has focus.
   bool GetWindowHasFocus() const { return containing_window_has_focus_; }
   // Informs the plugin that its tab or window has been hidden or shown.
@@ -369,6 +361,10 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   // Updates everything that depends on the plugin's absolute screen location.
   void PluginScreenLocationChanged();
 
+  // Informs the plugin that it has gained or lost keyboard focus (i.e., window
+  // first responder status).
+  void SetPluginHasFocus(bool has_focus);
+
   // Returns the apparent zoom ratio for the given event, as inferred from our
   // current knowledge about about where on screen the plugin is.
   // This is a temporary workaround for <http://crbug.com/9996>; once that is
@@ -424,9 +420,12 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   gfx::Point content_area_origin_;
 
   // True if the plugin thinks it has keyboard focus
-  bool have_focus_;
-  // A function to call when we want to accept keyboard focus
-  void (*focus_notifier_)(WebPluginDelegateImpl* notifier);
+  bool plugin_has_focus_;
+  // True if the plugin element has focus within the page, regardless of whether
+  // its containing view is currently the first responder for the window.
+  bool has_webkit_focus_;
+  // True if the containing view is the window's first responder.
+  bool containing_view_has_focus_;
 
   bool containing_window_has_focus_;
   bool initial_window_focus_;

@@ -1375,7 +1375,10 @@ void WebPluginDelegatePepper::InstallMissingPlugin() {
   NOTIMPLEMENTED();
 }
 
-void WebPluginDelegatePepper::SetFocus() {
+void WebPluginDelegatePepper::SetFocus(bool focused) {
+  if (!focused)
+    return;
+
   NPPepperEvent npevent;
 
   npevent.type = NPEventType_Focus;

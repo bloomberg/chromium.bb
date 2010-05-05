@@ -46,22 +46,6 @@ class FinishDestructionTask : public Task {
   WebPlugin* webplugin_;
 };
 
-#if defined(OS_MACOSX)
-namespace {
-
-void FocusNotifier(WebPluginDelegateImpl *instance) {
-  uint32 process_id = getpid();
-  uint32 instance_id = reinterpret_cast<uint32>(instance);
-  PluginThread* plugin_thread = PluginThread::current();
-  if (plugin_thread) {
-    plugin_thread->Send(
-        new PluginProcessHostMsg_PluginReceivedFocus(process_id, instance_id));
-  }
-}
-
-}
-#endif
-
 WebPluginDelegateStub::WebPluginDelegateStub(
     const std::string& mime_type, int instance_id, PluginChannel* channel) :
     mime_type_(mime_type),
@@ -123,6 +107,7 @@ void WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
                         OnSendJavaScriptStream)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(PluginMsg_SetWindowFocus, OnSetWindowFocus)
+    IPC_MESSAGE_HANDLER(PluginMsg_SetContentAreaFocus, OnSetContentAreaFocus)
     IPC_MESSAGE_HANDLER(PluginMsg_ContainerHidden, OnContainerHidden)
     IPC_MESSAGE_HANDLER(PluginMsg_ContainerShown, OnContainerShown)
     IPC_MESSAGE_HANDLER(PluginMsg_WindowFrameChanged, OnWindowFrameChanged)
@@ -197,7 +182,6 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
                                     webplugin_,
                                     params.load_manually);
 #if defined(OS_MACOSX)
-    delegate_->SetFocusNotifier(FocusNotifier);
     delegate_->WindowFrameChanged(params.containing_window_frame,
                                   params.containing_content_frame);
     delegate_->SetWindowHasFocus(params.containing_window_has_focus);
@@ -258,8 +242,8 @@ void WebPluginDelegateStub::OnDidFinishLoadWithReason(
   delegate_->DidFinishLoadWithReason(url, reason, notify_id);
 }
 
-void WebPluginDelegateStub::OnSetFocus() {
-  delegate_->SetFocus();
+void WebPluginDelegateStub::OnSetFocus(bool focused) {
+  delegate_->SetFocus(focused);
 }
 
 void WebPluginDelegateStub::OnHandleInputEvent(
@@ -350,6 +334,10 @@ void WebPluginDelegateStub::OnSendJavaScriptStream(const GURL& url,
 #if defined(OS_MACOSX)
 void WebPluginDelegateStub::OnSetWindowFocus(bool has_focus) {
   delegate_->SetWindowHasFocus(has_focus);
+}
+
+void WebPluginDelegateStub::OnSetContentAreaFocus(bool has_focus) {
+  delegate_->SetContentAreaHasFocus(has_focus);
 }
 
 void WebPluginDelegateStub::OnContainerHidden() {

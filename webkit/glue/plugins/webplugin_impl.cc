@@ -298,8 +298,8 @@ void WebPluginImpl::updateGeometry(
 }
 
 void WebPluginImpl::updateFocus(bool focused) {
-  if (focused && accepts_input_events_)
-    delegate_->SetFocus();
+  if (accepts_input_events_)
+    delegate_->SetFocus(focused);
 }
 
 void WebPluginImpl::updateVisibility(bool visible) {

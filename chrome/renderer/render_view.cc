@@ -4801,13 +4801,15 @@ void RenderView::OnWasRestored(bool needs_repainting) {
 void RenderView::OnSetFocus(bool enable) {
   RenderWidget::OnSetFocus(enable);
 
-  // RenderWidget's call to setFocus can cause the underlying webview's
-  // activation state to change just like a call to setIsActive.
-  if (enable && webview() && webview()->isActive()) {
+  if (webview() && webview()->isActive()) {
     std::set<WebPluginDelegateProxy*>::iterator plugin_it;
     for (plugin_it = plugin_delegates_.begin();
          plugin_it != plugin_delegates_.end(); ++plugin_it) {
-      (*plugin_it)->SetWindowFocus(true);
+      // RenderWidget's call to setFocus can cause the underlying webview's
+      // activation state to change just like a call to setIsActive.
+      if (enable)
+        (*plugin_it)->SetWindowFocus(true);
+      (*plugin_it)->SetContentAreaFocus(enable);
     }
   }
 }

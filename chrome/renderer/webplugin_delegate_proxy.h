@@ -66,16 +66,20 @@ class WebPluginDelegateProxy
   virtual NPObject* GetPluginScriptableObject();
   virtual void DidFinishLoadWithReason(const GURL& url, NPReason reason,
                                        int notify_id);
-  virtual void SetFocus();
+  virtual void SetFocus(bool focused);
   virtual bool HandleInputEvent(const WebKit::WebInputEvent& event,
                                 WebKit::WebCursorInfo* cursor);
   virtual int GetProcessId();
 
 #if defined(OS_MACOSX)
+  // Informs the plugin that its enclosing window has gained or lost focus.
   virtual void SetWindowFocus(bool window_has_focus);
-  // Inform the plugin that its container (window/tab) has changed visibility.
+  // Informs the plugin that its containing content view has gained or lost
+  // first responder status.
+  virtual void SetContentAreaFocus(bool has_focus);
+  // Informs the plugin that its container (window/tab) has changed visibility.
   virtual void SetContainerVisibility(bool is_visible);
-  // Inform the plugin that its enclosing window's frame has changed.
+  // Informs the plugin that its enclosing window's frame has changed.
   virtual void WindowFrameChanged(gfx::Rect window_frame, gfx::Rect view_frame);
 #endif
 

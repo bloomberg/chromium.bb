@@ -135,10 +135,6 @@ void PluginThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginProcessMsg_PluginMessage, OnPluginMessage)
     IPC_MESSAGE_HANDLER(PluginProcessMsg_NotifyRenderersOfPendingShutdown,
                         OnNotifyRenderersOfPendingShutdown)
-#if defined(OS_MACOSX)
-  IPC_MESSAGE_HANDLER(PluginProcessMsg_PluginFocusNotify,
-                      OnPluginFocusNotify)
-#endif
   IPC_END_MESSAGE_MAP()
 }
 
@@ -176,21 +172,6 @@ void PluginThread::OnPluginMessage(const std::vector<unsigned char> &data) {
 void PluginThread::OnNotifyRenderersOfPendingShutdown() {
   PluginChannel::NotifyRenderersOfPendingShutdown();
 }
-
-#if defined(OS_MACOSX)
-void PluginThread::OnPluginFocusNotify(uint32 instance_id) {
-  WebPluginDelegateImpl* focused_instance =
-      reinterpret_cast<WebPluginDelegateImpl*>(instance_id);
-  std::set<WebPluginDelegateImpl*> active_delegates =
-      WebPluginDelegateImpl::GetActiveDelegates();
-  for (std::set<WebPluginDelegateImpl*>::iterator iter =
-           active_delegates.begin();
-       iter != active_delegates.end(); iter++) {
-    WebPluginDelegateImpl* instance = *iter;
-    instance->FocusChanged(instance == focused_instance);
-  }
-}
-#endif
 
 namespace webkit_glue {
 

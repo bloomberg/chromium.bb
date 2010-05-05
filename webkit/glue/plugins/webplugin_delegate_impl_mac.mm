@@ -53,9 +53,6 @@ const int kCoreAnimationRedrawPeriodMs = 20;  // 50fps
 
 namespace {
 
-base::LazyInstance<std::set<WebPluginDelegateImpl*> > g_active_delegates(
-    base::LINKER_INITIALIZED);
-
 WebPluginDelegateImpl* g_active_delegate;
 
 // Helper to simplify correct usage of g_active_delegate.  Instantiating will
@@ -262,8 +259,9 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       layer_(nil),
       surface_(NULL),
       renderer_(nil),
-      have_focus_(false),
-      focus_notifier_(NULL),
+      plugin_has_focus_(false),
+      has_webkit_focus_(false),
+      containing_view_has_focus_(false),
       containing_window_has_focus_(false),
       initial_window_focus_(false),
       container_is_visible_(false),
@@ -278,15 +276,9 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
   memset(&qd_port_, 0, sizeof(qd_port_));
 #endif
   instance->set_windowless(true);
-
-  std::set<WebPluginDelegateImpl*>* delegates = g_active_delegates.Pointer();
-  delegates->insert(this);
 }
 
 WebPluginDelegateImpl::~WebPluginDelegateImpl() {
-  std::set<WebPluginDelegateImpl*>* delegates = g_active_delegates.Pointer();
-  delegates->erase(this);
-
   DestroyInstance();
 
 #ifndef NP_NO_CARBON
@@ -476,11 +468,13 @@ void WebPluginDelegateImpl::Print(CGContextRef context) {
   NOTIMPLEMENTED();
 }
 
-void WebPluginDelegateImpl::SetFocus() {
-  if (focus_notifier_)
-    focus_notifier_(this);
-  else
-    FocusChanged(true);
+void WebPluginDelegateImpl::SetFocus(bool focused) {
+  // This is called when internal WebKit focus (the focused element on the page)
+  // changes, but plugins need to know about actual first responder status, so
+  // we have an extra layer of focus tracking.
+  has_webkit_focus_ = focused;
+  if (containing_view_has_focus_)
+    SetPluginHasFocus(focused);
 }
 
 bool WebPluginDelegateImpl::PlatformHandleInputEvent(
@@ -558,17 +552,6 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
     }
   }
 #endif
-
-  // if we do not currently have focus and this is a mouseDown, trigger a
-  // notification that we are taking the keyboard focus.  We can't just key
-  // off of incoming calls to SetFocus, since WebKit may already think we
-  // have it if we were the most recently focused element on our parent tab.
-  if (event.type == WebInputEvent::MouseDown && !have_focus_) {
-    SetFocus();
-    // Make sure that the plugin is still there after handling the focus event.
-    if (!instance())
-      return false;
-  }
 
   ScopedActiveDelegate active_delegate(this);
 
@@ -812,45 +795,6 @@ WebPluginDelegateImpl* WebPluginDelegateImpl::GetActiveDelegate() {
   return g_active_delegate;
 }
 
-std::set<WebPluginDelegateImpl*> WebPluginDelegateImpl::GetActiveDelegates() {
-  std::set<WebPluginDelegateImpl*>* delegates = g_active_delegates.Pointer();
-  return *delegates;
-}
-
-void WebPluginDelegateImpl::FocusChanged(bool has_focus) {
-  if (!have_called_set_window_)
-    return;
-
-  if (has_focus == have_focus_)
-    return;
-  have_focus_ = has_focus;
-
-  ScopedActiveDelegate active_delegate(this);
-
-  switch (instance()->event_model()) {
-#ifndef NP_NO_CARBON
-    case NPEventModelCarbon: {
-      NPEvent focus_event = { 0 };
-      if (have_focus_)
-        focus_event.what = NPEventType_GetFocusEvent;
-      else
-        focus_event.what = NPEventType_LoseFocusEvent;
-      focus_event.when = TickCount();
-      instance()->NPP_HandleEvent(&focus_event);
-      break;
-    }
-#endif
-    case NPEventModelCocoa: {
-      NPCocoaEvent focus_event;
-      memset(&focus_event, 0, sizeof(focus_event));
-      focus_event.type = NPCocoaEventFocusChanged;
-      focus_event.data.focus.hasFocus = have_focus_;
-      instance()->NPP_HandleEvent(&focus_event);
-      break;
-    }
-  }
-}
-
 void WebPluginDelegateImpl::SetWindowHasFocus(bool has_focus) {
   // If we get a window focus event before calling SetWindow, just remember the
   // states (WindowlessSetWindow will then send it on the first call).
@@ -895,6 +839,45 @@ void WebPluginDelegateImpl::SetWindowHasFocus(bool has_focus) {
   }
 }
 
+void WebPluginDelegateImpl::SetPluginHasFocus(bool has_focus) {
+  if (!have_called_set_window_)
+    return;
+
+  if (has_focus == plugin_has_focus_)
+    return;
+  plugin_has_focus_ = has_focus;
+
+  ScopedActiveDelegate active_delegate(this);
+
+  switch (instance()->event_model()) {
+#ifndef NP_NO_CARBON
+    case NPEventModelCarbon: {
+      NPEvent focus_event = { 0 };
+      if (plugin_has_focus_)
+        focus_event.what = NPEventType_GetFocusEvent;
+      else
+        focus_event.what = NPEventType_LoseFocusEvent;
+      focus_event.when = TickCount();
+      instance()->NPP_HandleEvent(&focus_event);
+      break;
+    }
+#endif
+    case NPEventModelCocoa: {
+      NPCocoaEvent focus_event;
+      memset(&focus_event, 0, sizeof(focus_event));
+      focus_event.type = NPCocoaEventFocusChanged;
+      focus_event.data.focus.hasFocus = plugin_has_focus_;
+      instance()->NPP_HandleEvent(&focus_event);
+      break;
+    }
+  }
+}
+
+void WebPluginDelegateImpl::SetContentAreaHasFocus(bool has_focus) {
+  containing_view_has_focus_ = has_focus;
+  SetPluginHasFocus(containing_view_has_focus_ && has_webkit_focus_);
+}
+
 void WebPluginDelegateImpl::SetContainerVisibility(bool is_visible) {
   if (is_visible == container_is_visible_)
     return;
@@ -909,13 +892,6 @@ void WebPluginDelegateImpl::SetContainerVisibility(bool is_visible) {
     clip_rect_.set_width(0);
     clip_rect_.set_height(0);
   }
-
-  // TODO(stuartmorgan): We may need to remember whether we had focus, and
-  // restore it ourselves when we become visible again. Revisit once SetFocus
-  // is actually being called in all the cases it should be, at which point
-  // we'll know whether or not that's handled for us by WebKit.
-  if (!is_visible)
-    FocusChanged(false);
 
   // If the plugin is changing visibility, let the plugin know. If it's scrolled
   // off screen (i.e., cached_clip_rect_ is empty), then container visibility

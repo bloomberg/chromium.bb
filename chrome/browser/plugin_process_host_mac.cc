@@ -100,19 +100,6 @@ void PluginProcessHost::OnAppActivation() {
   }
 }
 
-void PluginProcessHost::OnPluginReceivedFocus(int process_id, int instance_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  // A plugin has received keyboard focus, so tell all other plugin processes
-  // that they no longer have it (simulating the OS-level focus notifications
-  // that Gtk and Windows provide).
-  for (ChildProcessHost::Iterator iter(ChildProcessInfo::PLUGIN_PROCESS);
-       !iter.Done(); ++iter) {
-    PluginProcessHost* plugin = static_cast<PluginProcessHost*>(*iter);
-    int instance = (plugin->handle() == process_id) ? instance_id : 0;
-    plugin->Send(new PluginProcessMsg_PluginFocusNotify(instance));
-  }
-}
-
 void PluginProcessHost::OnPluginSetCursorVisibility(bool visible) {
   if (plugin_cursor_visible_ != visible) {
     plugin_cursor_visible_ = visible;

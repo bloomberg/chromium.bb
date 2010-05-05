@@ -480,8 +480,10 @@ void WebPluginDelegateImpl::WindowlessSetWindow() {
   }
 }
 
-void WebPluginDelegateImpl::SetFocus() {
+void WebPluginDelegateImpl::SetFocus(bool focused) {
   DCHECK(instance()->windowless());
+  if (!focused)
+    return;
 
   NPEvent np_event = {0};
   XFocusChangeEvent &event = np_event.xfocus;

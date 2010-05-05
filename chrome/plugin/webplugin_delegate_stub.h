@@ -65,7 +65,7 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
   void OnDidFinishLoading(int id);
   void OnDidFail(int id);
   void OnDidFinishLoadWithReason(const GURL& url, int reason, int notify_id);
-  void OnSetFocus();
+  void OnSetFocus(bool focused);
   void OnHandleInputEvent(const WebKit::WebInputEvent* event,
                           bool* handled, WebCursor* cursor);
   void OnPaint(const gfx::Rect& damaged_rect);
@@ -80,6 +80,7 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
 
 #if defined(OS_MACOSX)
   void OnSetWindowFocus(bool has_focus);
+  void OnSetContentAreaFocus(bool has_focus);
   void OnContainerHidden();
   void OnContainerShown(gfx::Rect window_frame, gfx::Rect view_frame,
                         bool has_focus);

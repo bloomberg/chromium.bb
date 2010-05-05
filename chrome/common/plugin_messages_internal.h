@@ -51,14 +51,6 @@ IPC_BEGIN_MESSAGES(PluginProcess)
                        bool /* on or off */)
 #endif
 
-#if defined(OS_MACOSX)
-  // Notifies a plugin process that keyboard focus has changed.  If another
-  // plugin instance has received focus, the instance IDs is passed as a
-  // parameter; if focus has been taken away from a plugin, 0 is passed.
-  IPC_MESSAGE_CONTROL1(PluginProcessMsg_PluginFocusNotify,
-                       uint32 /* instance ID */)
-#endif
-
 IPC_END_MESSAGES(PluginProcess)
 
 
@@ -159,11 +151,6 @@ IPC_BEGIN_MESSAGES(PluginProcessHost)
                        uint32 /* window ID */,
                        gfx::Rect /* window rect */)
 
-  // Notifies the browser that a plugin instance has received keyboard focus.
-  IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_PluginReceivedFocus,
-                       uint32 /* process ID */,
-                       uint32 /* instance ID */)
-
   // Notifies the browser that a plugin instance has requested a cursor
   // visibility change.
   IPC_MESSAGE_CONTROL1(PluginProcessHostMsg_PluginSetCursorVisibility,
@@ -226,7 +213,8 @@ IPC_BEGIN_MESSAGES(Plugin)
   IPC_SYNC_MESSAGE_ROUTED1_0(PluginMsg_UpdateGeometrySync,
                              PluginMsg_UpdateGeometry_Param)
 
-  IPC_SYNC_MESSAGE_ROUTED0_0(PluginMsg_SetFocus)
+  IPC_SYNC_MESSAGE_ROUTED1_0(PluginMsg_SetFocus,
+                             bool /* focused */)
 
   IPC_SYNC_MESSAGE_ROUTED1_2(PluginMsg_HandleInputEvent,
                              IPC::WebInputEventPointer /* event */,
@@ -235,6 +223,9 @@ IPC_BEGIN_MESSAGES(Plugin)
 
 #if defined(OS_MACOSX)
   IPC_MESSAGE_ROUTED1(PluginMsg_SetWindowFocus,
+                      bool /* has_focus */)
+
+  IPC_MESSAGE_ROUTED1(PluginMsg_SetContentAreaFocus,
                       bool /* has_focus */)
 
   IPC_MESSAGE_ROUTED0(PluginMsg_ContainerHidden)

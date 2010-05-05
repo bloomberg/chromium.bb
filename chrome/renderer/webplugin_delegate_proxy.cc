@@ -939,8 +939,8 @@ void WebPluginDelegateProxy::DidFinishLoadWithReason(
       instance_id_, url, reason, notify_id));
 }
 
-void WebPluginDelegateProxy::SetFocus() {
-  Send(new PluginMsg_SetFocus(instance_id_));
+void WebPluginDelegateProxy::SetFocus(bool focused) {
+  Send(new PluginMsg_SetFocus(instance_id_, focused));
 }
 
 bool WebPluginDelegateProxy::HandleInputEvent(
@@ -968,7 +968,16 @@ int WebPluginDelegateProxy::GetProcessId() {
 void WebPluginDelegateProxy::SetWindowFocus(bool window_has_focus) {
   IPC::Message* msg = new PluginMsg_SetWindowFocus(instance_id_,
                                                    window_has_focus);
-  // Make sure visibility events are delivered in the right order relative to
+  // Make sure focus events are delivered in the right order relative to
+  // sync messages they might interact with (Paint, HandleEvent, etc.).
+  msg->set_unblock(true);
+  Send(msg);
+}
+
+void WebPluginDelegateProxy::SetContentAreaFocus(bool has_focus) {
+  IPC::Message* msg = new PluginMsg_SetContentAreaFocus(instance_id_,
+                                                        has_focus);
+  // Make sure focus events are delivered in the right order relative to
   // sync messages they might interact with (Paint, HandleEvent, etc.).
   msg->set_unblock(true);
   Send(msg);
