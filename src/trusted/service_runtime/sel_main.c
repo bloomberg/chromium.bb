@@ -167,6 +167,10 @@ static void PrintUsage() {
  * if we used the 3 arg version here we'd pick up some garbage off the
  * stack for envp.  Instead, we make envp be a local variable, and
  * initialize it from the eviron global variable.
+ *
+ * NB: do NOT return from main until our dependency on SDL is removed.
+ * This is because the OSX version of SDL ignores main's return value
+ * and always exits with an exit status of 0, breaking tests.
  */
 int main(int  ac,
          char **av) {
@@ -241,7 +245,7 @@ int main(int  ac,
 
   if (!GioFileRefCtor(&gout, stdout)) {
     fprintf(stderr, "Could not create general standard output channel\n");
-    return 1;
+    exit(1);
   }
 
   while ((opt = getopt(ac, av, "a:dD:f:h:i:Il:mMP:Qr:vw:X:")) != -1) {
@@ -251,7 +255,7 @@ int main(int  ac,
         entry = malloc(sizeof *entry);
         if (NULL == entry) {
           fprintf(stderr, "No memory for redirection queue\n");
-          return 1;
+          exit(1);
         }
         entry->next = NULL;
         entry->nacl_desc = strtol(optarg, &rest, 0);
@@ -275,7 +279,7 @@ int main(int  ac,
         entry = malloc(sizeof *entry);
         if (NULL == entry) {
           fprintf(stderr, "No memory for redirection queue\n");
-          return 1;
+          exit(1);
         }
         entry->next = NULL;
         entry->nacl_desc = strtol(optarg, &rest, 0);
@@ -290,7 +294,7 @@ int main(int  ac,
         entry = malloc(sizeof *entry);
         if (NULL == entry) {
           fprintf(stderr, "No memory for redirection queue\n");
-          return 1;
+          exit(1);
         }
         entry->next = NULL;
         entry->nacl_desc = strtol(optarg, &rest, 0);
@@ -336,7 +340,7 @@ int main(int  ac,
       default:
        fprintf(stderr, "ERROR: unknown option: [%c]\n\n", opt);
        PrintUsage();
-       return -1;
+       exit(-1);
     }
   }
 
@@ -360,7 +364,7 @@ int main(int  ac,
     fprintf(stderr,
             "ERROR: dangerous debug version of sel_ldr can only "
             "be invoked with -d option");
-    return -1;
+    exit(-)1;
   }
 #endif
   /*
@@ -393,7 +397,7 @@ int main(int  ac,
   }
   if (!nacl_file) {
     fprintf(stderr, "No nacl file specified\n");
-    return 1;
+    exit(1);
   }
 
   /* to be passed to NaClMain, eventually... */
@@ -402,7 +406,7 @@ int main(int  ac,
   if (0 == GioMemoryFileSnapshotCtor(&gf, nacl_file)) {
     perror("sel_main");
     fprintf(stderr, "Cannot open \"%s\".\n", nacl_file);
-    return 1;
+    exit(1);
   }
 
   if (!NaClAppCtor(&state)) {
@@ -441,7 +445,11 @@ int main(int  ac,
       fprintf(stderr, "Error while loading \"%s\": %s\n",
               nacl_file,
               NaClErrorString(errcode));
-      /* BUG(bsy): this should not fall through */
+      fprintf(stderr,
+              ("Using the wrong type of nexe (nacl-x86-32"
+               " on an x86-64 or vice versa),\n"
+               "Or a corrupt nexe file may be responsible for this error.\n"));
+      exit(1);
     }
   }
 
@@ -563,15 +571,15 @@ int main(int  ac,
     if ((ERANGE == errno && (LONG_MAX == fd_long || LONG_MIN == fd_long)) ||
         (0 != errno && 0 == fd_long)) {
       perror("strtol");
-      return 1;
+      exit(1);
     }
     if (endptr == sandbox_fd_string) {
       fprintf(stderr, "Could not initialize sandbox fd: No digits found\n");
-      return 1;
+      exit(1);
     }
     if (*endptr) {
       fprintf(stderr, "Could not initialize sandbox fd: Extra digits\n");
-      return 1;
+      exit(1);
     }
     fd = fd_long;
 
@@ -580,7 +588,7 @@ int main(int  ac,
      */
     if (write(fd, &kChrootMe, 1) != 1) {
       fprintf(stderr, "Cound not signal sandbox to chroot()\n");
-      return 1;
+      exit(1);
     }
 
     /*
@@ -588,12 +596,12 @@ int main(int  ac,
      */
     if (read(fd, &reply, 1) != 1) {
       fprintf(stderr, "Could not get response to chroot() from sandbox\n");
-      return 1;
+      exit(1);
     }
     if (kChrootSuccess != reply) {
       fprintf(stderr, "%s\n", &reply);
       fprintf(stderr, "Reply not correct\n");
-      return 1;
+      exit(1);
     }
   }
 
