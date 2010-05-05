@@ -19,6 +19,9 @@ readonly PNACL_X8632_ROOT=${PNACL_TOOLCHAIN_ROOT}/x8632
 readonly PNACL_X8664_ROOT=${PNACL_TOOLCHAIN_ROOT}/x8664
 readonly PNACL_BITCODE_ROOT=${PNACL_TOOLCHAIN_ROOT}/bitcode
 
+readonly LLVM_DIS=$(readlink -f toolchain/linux_arm-untrusted/arm-none-linux-gnueabi/llvm/bin/llvm-dis)
+
+readonly LLVM_AR=$(readlink -f toolchain/linux_arm-untrusted/arm-none-linux-gnueabi/llvm/bin/llvm-ar)
 ######################################################################
 # Helpers
 ######################################################################
@@ -50,22 +53,44 @@ VerifyObject() {
   fi
 }
 
-# Usage: VerifyLLVM <filename>
-# Ensure that the specified file's format is unrecognized by objdump,
-# i.e. probably in LLVM format.
-VerifyLLVM() {
-  echo -n "verify $1: "
-  local n=$(objdump -a $1 2>&1 | grep -c "format")
-  local good=$(objdump -a $1 2>&1 | grep -c "not recognized")
-  echo "${good}"
-  if [ "$n" != "${good}" ] ; then
+
+# Usage: VerifyLlvmArchive <filename>
+VerifyLlvmArchive() {
+  echo "verify $1"
+  saved=$(pwd)
+  local archive=$1
+  local tmp=/tmp/ar-verify
+  rm -rf ${tmp}
+  mkdir -p ${tmp}
+  cp ${archive} ${tmp}
+  cd ${tmp}
+  ${LLVM_AR} x $(basename ${archive})
+  for i in *.o ; do
+    ${LLVM_DIS} $i -o $i.ll
+  done
+
+  if  grep asm *.ll ; then
     echo
-    echo "ERROR: unexpected obj file format"
-    objdump -a $1
+    echo "ERROR"
+    echo
+    exit -1
+  fi
+
+  cd ${saved}
+}
+
+# Usage: VerifyLlvmObj <filename>
+VerifyLlvmObj() {
+  echo "verify $1"
+  t=$(${LLVM_DIS} $1 -o -)
+
+  if  grep asm <<<$t ; then
+    echo
+    echo "ERROR"
+    echo
     exit -1
   fi
 }
-
 ######################################################################
 # Actions
 ######################################################################
@@ -131,6 +156,24 @@ organize-native-code() {
 }
 
 #@
+#@ verify-llvm-archive <archive>
+#@
+#@   Verifies that a given archive is bitcode and free of ASMSs
+verify-llvm-archive() {
+  Banner "verify $1"
+  VerifyLlvmArchive "$@"
+}
+
+#@
+#@ verify-llvm-object <archive>
+#@
+#@   Verifies that a given .o file is bitcode and free of ASMSs
+verify-llvm-object() {
+  Banner "verify $1"
+  VerifyLlvmObj "$@"
+}
+
+#@
 #@ verify
 #@
 #@   Verifies that toolchain/pnacl-untrusted ELF files are of the correct
@@ -152,43 +195,18 @@ verify() {
   done
 
   Banner "Verify ${PNACL_BITCODE_ROOT}"
-  for i in ${PNACL_BITCODE_ROOT}/*.[oa] ; do
-    VerifyLLVM $i
+  for i in ${PNACL_BITCODE_ROOT}/*.a ; do
+    VerifyLlvmArchive $i
   done
-}
-
-#@
-#@ build-bitcode
-#@
-#@   Builds bitcode libraries (e.g. newlib and extra SDK).
-build-bitcode() {
-  rm -rf ${PNACL_BITCODE_ROOT}
-  mkdir -p ${PNACL_BITCODE_ROOT}
-
-  export TARGET_CODE=bc-arm
-  Banner "Newlib"
-  tools/llvm/untrusted-toolchain-creator.sh newlib-libonly \
-       $(pwd)/${PNACL_BITCODE_ROOT}
-
-  Banner "Extra SDK"
-  ./scons MODE=nacl_extra_sdk platform=arm sdl=none naclsdk_validate=0 \
-      extra_sdk_clean \
-      extra_sdk_update_header \
-      install_libpthread \
-      extra_sdk_update
-
-  # NOTE: as collateral damage we also generate these as native code
-  rm ${PNACL_BITCODE_ROOT}/crt*.o
-  rm ${PNACL_BITCODE_ROOT}/intrinsics.o
-  rm ${PNACL_BITCODE_ROOT}/libcrt_platform.a
-
-  # TODO: cpp suppport is still broken so we fake the library
+  for i in ${PNACL_BITCODE_ROOT}/*.o ; do
+    VerifyLlvmObj $i
+  done
 }
 
 #@
 #@ build-bitcode-cpp
 #@
-#@   Build bitcode libraries for C++.  Currently broken.
+#@   Build bitcode libraries for C++.
 build-bitcode-cpp() {
   Banner "C++"
   tools/llvm/untrusted-toolchain-creator.sh libstdcpp-libonly \
@@ -199,6 +217,53 @@ build-bitcode-cpp() {
 }
 
 #@
+#@ build-bitcode-newlib
+#@
+#@   Build bitcode libraries for newlib
+build-bitcode-newlib() {
+  export TARGET_CODE=bc-arm
+  Banner "Newlib"
+  tools/llvm/untrusted-toolchain-creator.sh newlib-libonly \
+       $(pwd)/${PNACL_BITCODE_ROOT}
+}
+
+#@
+#@ build-bitcode-extra-sdk
+#@
+#@   Build bitcode libraries for extra sdk
+build-bitcode-extra-sdk() {
+  export TARGET_CODE=bc-arm
+
+  Banner "Extra SDK"
+  ./scons MODE=nacl_extra_sdk \
+      platform=arm \
+      sdl=none \
+      naclsdk_validate=0 \
+      disable_nosys_linker_warnings=1 \
+      extra_sdk_clean \
+      extra_sdk_update_header \
+      install_libpthread \
+      extra_sdk_update
+
+  # NOTE: as collateral damage we also generate these as native code
+  rm ${PNACL_BITCODE_ROOT}/crt*.o
+  rm ${PNACL_BITCODE_ROOT}/intrinsics.o
+  rm ${PNACL_BITCODE_ROOT}/libcrt_platform.a
+}
+
+#@
+#@ build-bitcode
+#@
+#@   Builds bitcode libraries
+build-bitcode() {
+  rm -rf ${PNACL_BITCODE_ROOT}
+  mkdir -p ${PNACL_BITCODE_ROOT}
+
+  build-bitcode-newlib
+  build-bitcode-extra-sdk
+  build-bitcode-cpp
+}
+
 
 ######################################################################
 # Main

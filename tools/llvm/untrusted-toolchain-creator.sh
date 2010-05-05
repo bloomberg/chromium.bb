@@ -48,6 +48,7 @@ readonly LLVMGCC_TARBALL=$(pwd)/../third_party/llvm/llvm-gcc-4.2-88663.tar.bz2
 # TODO(robertm): move these two into a proper patch when move to hg repo
 readonly LLVMGCC_SFI_PATCH=${PATCH_DIR}/libgcc-arm-lib1funcs.patch
 readonly LLVMGCC_SFI_PATCH2=${PATCH_DIR}/libgcc-arm-libunwind.patch
+readonly LLVMGCC_SFI_PATCH3=${PATCH_DIR}/libstdcpp-eh_arm.patch
 
 # TODO(robertm): get the code from a repo rather than use tarball + patch
 readonly LLVM_TARBALL=$(pwd)/../third_party/llvm/llvm-88663.tar.bz2
@@ -455,6 +456,9 @@ BuildLibstdcpp() {
   rm -rf ${cpp_build_dir}
   mkdir -p  ${cpp_build_dir}
   cd ${cpp_build_dir}
+
+  Run "Patching" \
+    patch ${src_dir}/libstdc++-v3/libsupc++/eh_arm.cc  ${LLVMGCC_SFI_PATCH3}
 
   RunWithLog "Configure libstdc++" ${TMP}/llvm-gcc.configure_libstdcpp.log \
       env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
@@ -1013,6 +1017,7 @@ fi
 #@
 #@   build and install libstc++
 if [ ${MODE} = 'libstdcpp-libonly' ] ; then
+  dest=$(readlink -f $1)
   tmp=${TMP}/libstdcpp
   rm -rf ${tmp}
   mkdir -p ${tmp}
@@ -1021,7 +1026,7 @@ if [ ${MODE} = 'libstdcpp-libonly' ] ; then
   # we do not bother with the patches as they do not apply to this lib
   mkdir ${tmp}/build
   BuildLibstdcpp ${tmp}/build
-  cp ${tmp}/build/${CROSS_TARGET}/libstdc++-v3/src/.libs/libstdc++.a $1
+  cp ${tmp}/build/${CROSS_TARGET}/libstdc++-v3/src/.libs/libstdc++.a ${dest}
   exit 0
 fi
 
