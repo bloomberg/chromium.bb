@@ -1128,6 +1128,7 @@ mac_env = unix_like_env.Clone(
 
 mac_env.Append(
     CCFLAGS = ['-mmacosx-version-min=10.4', '-m32', '-fPIC'],
+    LINKFLAGS = ['-mmacosx-version-min=10.4', '-m32', '-fPIC'],
     # TODO(bradnelson): remove UNIX_LIKE_CFLAGS when scons bug is fixed
     CPPDEFINES = [['NACL_WINDOWS', '0'],
                   ['NACL_OSX', '1'],
