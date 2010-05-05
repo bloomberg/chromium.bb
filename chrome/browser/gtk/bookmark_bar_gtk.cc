@@ -392,7 +392,7 @@ int BookmarkBarGtk::GetHeight() {
 }
 
 bool BookmarkBarGtk::IsAnimating() {
-  return slide_animation_->IsAnimating();
+  return slide_animation_->is_animating();
 }
 
 bool BookmarkBarGtk::OnNewTabPage() {

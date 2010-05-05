@@ -136,7 +136,7 @@ InfoBar::InfoBar(InfoBarDelegate* delegate)
   AddChildView(close_button_);
 
   animation_.reset(new SlideAnimation(this));
-  animation_->SetTweenType(SlideAnimation::NONE);
+  animation_->SetTweenType(Tween::LINEAR);
 }
 
 InfoBar::~InfoBar() {

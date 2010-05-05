@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/animation.h"
+#include "app/linear_animation.h"
 #include "app/test_animation_delegate.h"
 #if defined(OS_WIN)
 #include "base/win_util.h"
@@ -14,13 +14,15 @@ class AnimationTest: public testing::Test {
   MessageLoopForUI message_loop_;
 };
 
+namespace {
+
 ///////////////////////////////////////////////////////////////////////////////
 // RunAnimation
 
-class RunAnimation : public Animation {
+class RunAnimation : public LinearAnimation {
  public:
   RunAnimation(int frame_rate, AnimationDelegate* delegate)
-      : Animation(frame_rate, delegate) {
+      : LinearAnimation(frame_rate, delegate) {
   }
 
   virtual void AnimateToState(double state) {
@@ -32,10 +34,10 @@ class RunAnimation : public Animation {
 ///////////////////////////////////////////////////////////////////////////////
 // CancelAnimation
 
-class CancelAnimation : public Animation {
+class CancelAnimation : public LinearAnimation {
  public:
   CancelAnimation(int duration, int frame_rate, AnimationDelegate* delegate)
-      : Animation(duration, frame_rate, delegate) {
+      : LinearAnimation(duration, frame_rate, delegate) {
   }
 
   virtual void AnimateToState(double state) {
@@ -43,6 +45,35 @@ class CancelAnimation : public Animation {
       Stop();
   }
 };
+
+///////////////////////////////////////////////////////////////////////////////
+// EndAnimation
+
+class EndAnimation : public LinearAnimation {
+ public:
+  EndAnimation(int duration, int frame_rate, AnimationDelegate* delegate)
+      : LinearAnimation(duration, frame_rate, delegate) {
+  }
+
+  virtual void AnimateToState(double state) {
+    if (state >= 0.5)
+      End();
+  }
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// DeletingAnimationDelegate
+
+// AnimationDelegate implementation that deletes the animation in ended.
+class DeletingAnimationDelegate : public AnimationDelegate {
+ public:
+  virtual void AnimationEnded(const Animation* animation) {
+    delete animation;
+    MessageLoop::current()->Quit();
+  }
+};
+
+}  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // LinearCase
@@ -66,6 +97,27 @@ TEST_F(AnimationTest, CancelCase) {
 
   EXPECT_TRUE(ad.finished());
   EXPECT_TRUE(ad.canceled());
+}
+
+// Lets an animation run, invoking End part way through and make sure we get the
+// right delegate methods invoked.
+TEST_F(AnimationTest, EndCase) {
+  TestAnimationDelegate ad;
+  EndAnimation a2(2000, 150, &ad);
+  a2.Start();
+  MessageLoop::current()->Run();
+
+  EXPECT_TRUE(ad.finished());
+  EXPECT_FALSE(ad.canceled());
+}
+
+// Runs an animation with a delegate that deletes the animation in end.
+TEST_F(AnimationTest, DeleteFromEnd) {
+  DeletingAnimationDelegate delegate;
+  RunAnimation* animation = new RunAnimation(150, &delegate);
+  animation->Start();
+  MessageLoop::current()->Run();
+  // delegate should have deleted animation.
 }
 
 TEST_F(AnimationTest, ShouldRenderRichAnimation) {

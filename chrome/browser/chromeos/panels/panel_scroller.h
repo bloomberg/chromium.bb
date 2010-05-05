@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
@@ -38,9 +38,7 @@ class PanelScroller : public views::View, public AnimationDelegate {
   struct Panel;
 
   // AnimationDelegate overrides.
-  virtual void AnimationEnded(const Animation* animation);
   virtual void AnimationProgressed(const Animation* animation);
-  virtual void AnimationCanceled(const Animation* animation);
 
   // Scrolls to the panel at the given index. It will be moved to the top.
   void ScrollToPanel(int index);

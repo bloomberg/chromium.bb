@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,9 +13,9 @@ static const int kDefaultFramerateHz = 50;
 static const int kDefaultDurationMs = 120;
 
 SlideAnimation::SlideAnimation(AnimationDelegate* target)
-    : Animation(kDefaultFramerateHz, target),
+    : LinearAnimation(kDefaultFramerateHz, target),
       target_(target),
-      tween_type_(EASE_OUT),
+      tween_type_(Tween::EASE_OUT),
       showing_(false),
       value_start_(0),
       value_end_(0),
@@ -84,36 +84,13 @@ void SlideAnimation::AnimateToState(double state) {
   if (state > 1.0)
     state = 1.0;
 
-  // Make our animation ease-out.
-  switch (tween_type_) {
-    case EASE_IN:
-      state = pow(state, 2);
-      break;
-    case EASE_IN_OUT:
-      if (state < 0.5)
-        state = pow(state * 2, 2) / 2.0;
-      else
-        state = 1.0 - (pow((state - 1.0) * 2, 2) / 2.0);
-      break;
-    case FAST_IN_OUT:
-      state = (pow(state - 0.5, 3) + 0.125) / 0.25;
-      break;
-    case NONE:
-      // state remains linear.
-      break;
-    case EASE_OUT_SNAP:
-      state = 0.95 * (1.0 - pow(1.0 - state, 2));
-      break;
-    case EASE_OUT:
-    default:
-      state = 1.0 - pow(1.0 - state, 2);
-      break;
-  }
+  state = Tween::CalculateValue(tween_type_, state);
 
   value_current_ = value_start_ + (value_end_ - value_start_) * state;
 
   // Implement snapping.
-  if (tween_type_ == EASE_OUT_SNAP && fabs(value_current_ - value_end_) <= 0.06)
+  if (tween_type_ == Tween::EASE_OUT_SNAP &&
+      fabs(value_current_ - value_end_) <= 0.06)
     value_current_ = value_end_;
 
   // Correct for any overshoot (while state may be capped at 1.0, let's not

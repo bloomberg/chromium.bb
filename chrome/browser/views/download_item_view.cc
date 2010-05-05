@@ -359,7 +359,7 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
       StopDownloadProgress();
       complete_animation_.reset(new SlideAnimation(this));
       complete_animation_->SetSlideDuration(kCompleteAnimationDurationMs);
-      complete_animation_->SetTweenType(SlideAnimation::NONE);
+      complete_animation_->SetTweenType(Tween::LINEAR);
       complete_animation_->Show();
       if (status_text.empty())
         show_status_text_ = false;
@@ -655,7 +655,7 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
                                              download_util::SMALL);
       } else if (download_->state() == DownloadItem::COMPLETE &&
                  complete_animation_.get() &&
-                 complete_animation_->IsAnimating()) {
+                 complete_animation_->is_animating()) {
         download_util::PaintDownloadComplete(canvas, this, 0, 0,
             complete_animation_->GetCurrentValue(),
             download_util::SMALL);
@@ -783,7 +783,7 @@ bool DownloadItemView::OnMousePressed(const views::MouseEvent& event) {
     return true;
 
   // Stop any completion animation.
-  if (complete_animation_.get() && complete_animation_->IsAnimating())
+  if (complete_animation_.get() && complete_animation_->is_animating())
     complete_animation_->End();
 
   if (event.IsOnlyLeftMouseButton()) {

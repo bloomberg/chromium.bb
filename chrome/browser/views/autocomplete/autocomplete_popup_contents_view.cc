@@ -522,7 +522,7 @@ AutocompletePopupContentsView::~AutocompletePopupContentsView() {
 }
 
 gfx::Rect AutocompletePopupContentsView::GetPopupBounds() const {
-  if (!size_animation_.IsAnimating())
+  if (!size_animation_.is_animating())
     return target_bounds_;
 
   gfx::Rect current_frame_bounds = start_bounds_;

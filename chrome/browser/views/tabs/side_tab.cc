@@ -165,7 +165,7 @@ void SideTab::Paint(gfx::Canvas* canvas) {
     SkPaint paint;
 
     SkAlpha opacity = kBackgroundTabAlpha;
-    if (hover_animation_->IsAnimating())
+    if (hover_animation_->is_animating())
       opacity = static_cast<SkAlpha>(hover_animation_->GetCurrentValue() * 255);
 
     paint.setColor(SkColorSetARGB(kBackgroundTabAlpha, 255, 255, 255));
@@ -181,12 +181,12 @@ gfx::Size SideTab::GetPreferredSize() {
 }
 
 void SideTab::OnMouseEntered(const views::MouseEvent& event) {
-  hover_animation_->SetTweenType(SlideAnimation::EASE_OUT);
+  hover_animation_->SetTweenType(Tween::EASE_OUT);
   hover_animation_->Show();
 }
 
 void SideTab::OnMouseExited(const views::MouseEvent& event) {
-  hover_animation_->SetTweenType(SlideAnimation::EASE_IN);
+  hover_animation_->SetTweenType(Tween::EASE_IN);
   hover_animation_->Hide();
 }
 

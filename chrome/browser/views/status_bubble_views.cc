@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "app/animation.h"
+#include "app/linear_animation.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/text_elider.h"
@@ -68,12 +68,12 @@ static const int kMaxExpansionStepDurationMS = 150;
 // StatusView manages the display of the bubble, applying text changes and
 // fading in or out the bubble as required.
 class StatusBubbleViews::StatusView : public views::Label,
-                                      public Animation,
+                                      public LinearAnimation,
                                       public AnimationDelegate {
  public:
   StatusView(StatusBubble* status_bubble, views::Widget* popup,
              ThemeProvider* theme_provider)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(Animation(kFramerate, this)),
+      : ALLOW_THIS_IN_INITIALIZER_LIST(LinearAnimation(kFramerate, this)),
         stage_(BUBBLE_HIDDEN),
         style_(STYLE_STANDARD),
         ALLOW_THIS_IN_INITIALIZER_LIST(timer_factory_(this)),
@@ -310,7 +310,7 @@ void StatusBubbleViews::StatusView::StartShowing() {
 // Animation functions.
 double StatusBubbleViews::StatusView::GetCurrentOpacity() {
   return opacity_start_ + (opacity_end_ - opacity_start_) *
-         Animation::GetCurrentValue();
+         LinearAnimation::GetCurrentValue();
 }
 
 void StatusBubbleViews::StatusView::SetOpacity(double opacity) {
@@ -465,12 +465,12 @@ void StatusBubbleViews::StatusView::Paint(gfx::Canvas* canvas) {
 // Manages the expansion and contraction of the status bubble as it accommodates
 // URLs too long to fit in the standard bubble. Changes are passed through the
 // StatusView to paint.
-class StatusBubbleViews::StatusViewExpander : public Animation,
+class StatusBubbleViews::StatusViewExpander : public LinearAnimation,
                                               public AnimationDelegate {
  public:
   StatusViewExpander(StatusBubble* status_bubble,
                      StatusView* status_view)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(Animation(kFramerate, this)),
+      : ALLOW_THIS_IN_INITIALIZER_LIST(LinearAnimation(kFramerate, this)),
         status_bubble_(status_bubble),
         status_view_(status_view),
         expansion_start_(0),
@@ -530,7 +530,7 @@ void StatusBubbleViews::StatusViewExpander::StartExpansion(
 
 int StatusBubbleViews::StatusViewExpander::GetCurrentBubbleWidth() {
   return static_cast<int>(expansion_start_ +
-      (expansion_end_ - expansion_start_) * Animation::GetCurrentValue());
+      (expansion_end_ - expansion_start_) * LinearAnimation::GetCurrentValue());
 }
 
 void StatusBubbleViews::StatusViewExpander::SetBubbleWidth(int width) {

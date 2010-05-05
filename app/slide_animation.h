@@ -1,11 +1,12 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef APP_SLIDE_ANIMATION_H_
 #define APP_SLIDE_ANIMATION_H_
 
-#include "app/animation.h"
+#include "app/linear_animation.h"
+#include "app/tween.h"
 
 // Slide Animation
 //
@@ -34,24 +35,15 @@
 //     }
 //   }
 //   void Layout() {
-//     if (animation_->IsAnimating()) {
+//     if (animation_->is_animating()) {
 //       hover_image_.SetOpacity(animation_->GetCurrentValue());
 //     }
 //   }
 //  private:
 //   scoped_ptr<SlideAnimation> animation_;
 // }
-class SlideAnimation : public Animation {
+class SlideAnimation : public LinearAnimation {
  public:
-  enum TweenType {
-    NONE,          // Linear.
-    EASE_OUT,      // Fast in, slow out (default).
-    EASE_IN,       // Slow in, fast out.
-    EASE_IN_OUT,   // Slow in and out, fast in the middle.
-    FAST_IN_OUT,   // Fast in and out, slow in the middle.
-    EASE_OUT_SNAP, // Fast in, slow out, snap to final value.
-  };
-
   explicit SlideAnimation(AnimationDelegate* target);
   virtual ~SlideAnimation();
 
@@ -70,7 +62,7 @@ class SlideAnimation : public Animation {
   // the slide is considered.
   virtual void SetSlideDuration(int duration) { slide_duration_ = duration; }
   int GetSlideDuration() const { return slide_duration_; }
-  void SetTweenType(TweenType tween_type) { tween_type_ = tween_type; }
+  void SetTweenType(Tween::Type tween_type) { tween_type_ = tween_type; }
 
   double GetCurrentValue() const { return value_current_; }
   bool IsShowing() const { return showing_; }
@@ -82,7 +74,7 @@ class SlideAnimation : public Animation {
 
   AnimationDelegate* target_;
 
-  TweenType tween_type_;
+  Tween::Type tween_type_;
 
   // Used to determine which way the animation is going.
   bool showing_;

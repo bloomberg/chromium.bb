@@ -93,7 +93,7 @@ void ImageButton::Paint(gfx::Canvas* canvas) {
 SkBitmap ImageButton::GetImageToPaint() {
   SkBitmap img;
 
-  if (!images_[BS_HOT].isNull() && hover_animation_->IsAnimating()) {
+  if (!images_[BS_HOT].isNull() && hover_animation_->is_animating()) {
     img = SkBitmapOperations::CreateBlendedBitmap(images_[BS_NORMAL],
         images_[BS_HOT], hover_animation_->GetCurrentValue());
   } else {

@@ -261,7 +261,7 @@ TranslateInfoBar::TranslateInfoBar(TranslateInfoBarDelegate* delegate)
 
   // Initialize slide animation for transitioning to and from error state.
   error_animation_.reset(new SlideAnimation(this));
-  error_animation_->SetTweenType(SlideAnimation::NONE);
+  error_animation_->SetTweenType(Tween::LINEAR);
   error_animation_->SetSlideDuration(500);
 
   // Initialize icon.
@@ -564,7 +564,7 @@ void TranslateInfoBar::Layout() {
 
 void TranslateInfoBar::PaintBackground(gfx::Canvas* canvas) {
   // If we're not animating, simply paint background for current state.
-  if (!error_animation_->IsAnimating()) {
+  if (!error_animation_->is_animating()) {
     GetBackground(state_)->Paint(canvas, this);
     return;
   }

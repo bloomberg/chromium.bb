@@ -130,7 +130,7 @@ class TabStripGtk::TabAnimation : public AnimationDelegate {
 
   void Start() {
     animation_.SetSlideDuration(GetDuration());
-    animation_.SetTweenType(SlideAnimation::EASE_OUT);
+    animation_.SetTweenType(Tween::EASE_OUT);
     if (!animation_.IsShowing()) {
       animation_.Reset();
       animation_.Show();

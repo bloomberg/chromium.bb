@@ -855,6 +855,6 @@ gboolean BrowserActionsToolbarGtk::OnOverflowMenuButtonPress(
 }
 
 void BrowserActionsToolbarGtk::OnButtonShowOrHide(GtkWidget* sender) {
-  if (!resize_animation_.IsAnimating())
+  if (!resize_animation_.is_animating())
     UpdateChevronVisibility();
 }

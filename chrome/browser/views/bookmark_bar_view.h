@@ -157,7 +157,7 @@ class BookmarkBarView : public DetachableToolbarView,
   int GetToolbarOverlap(bool return_max);
 
   // Whether or not we are animating.
-  bool IsAnimating() { return size_animation_->IsAnimating(); }
+  bool is_animating() { return size_animation_->is_animating(); }
 
   // SlideAnimationDelegate implementation.
   void AnimationProgressed(const Animation* animation);

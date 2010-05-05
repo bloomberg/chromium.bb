@@ -1,32 +1,26 @@
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-// Inspired by NSAnimation
 
 #ifndef APP_ANIMATION_H_
 #define APP_ANIMATION_H_
 
+#include "app/animation_container.h"
 #include "base/ref_counted.h"
 #include "base/time.h"
-
-class Animation;
-class AnimationContainer;
 
 namespace gfx {
 class Rect;
 }
 
+class Animation;
+
 // AnimationDelegate
 //
 //  Implement this interface when you want to receive notifications about the
 //  state of an animation.
-//
 class AnimationDelegate {
  public:
-  // Called when an animation has started.
-  virtual void AnimationStarted(const Animation* animation) {
-  }
-
   // Called when an animation has completed.
   virtual void AnimationEnded(const Animation* animation) {
   }
@@ -43,41 +37,26 @@ class AnimationDelegate {
   virtual ~AnimationDelegate() {}
 };
 
-// Animation
+// Base class used in implementing animations. You only need use this class if
+// you're implementing a new animation type, otherwise you'll likely want one of
+// LinearAnimation, SlideAnimation, ThrobAnimation or MultiAnimation.
 //
-//  This class provides a basic implementation of an object that uses a timer
-//  to increment its state over the specified time and frame-rate. To
-//  actually do something useful with this you need to subclass it and override
-//  AnimateToState and optionally GetCurrentValue to update your state.
-//
-//  The Animation notifies a delegate when events of interest occur.
-//
-//  The practice is to instantiate a subclass and call Init and any other
-//  initialization specific to the subclass, and then call |Start|. The
-//  animation uses the current thread's message loop.
-//
-class Animation {
+// To subclass override Step, which is invoked as the animation progresses and
+// GetCurrentValue() to return the value appropriate to the animation.
+class Animation : public AnimationContainer::Element {
  public:
-  // Initializes everything except the duration.
-  //
-  // Caller must make sure to call SetDuration() if they use this
-  // constructor; it is preferable to use the full one, but sometimes
-  // duration can change between calls to Start() and we need to
-  // expose this interface.
-  Animation(int frame_rate, AnimationDelegate* delegate);
-
-  // Initializes all fields.
-  Animation(int duration, int frame_rate, AnimationDelegate* delegate);
+  explicit Animation(base::TimeDelta timer_interval);
   virtual ~Animation();
 
-  // Called when the animation progresses. Subclasses override this to
-  // efficiently update their state.
-  virtual void AnimateToState(double state) = 0;
+  // Starts the animation. Does nothing if the animation is already running.
+  void Start();
+
+  // Stops the animation. Does nothing if the animation is not running.
+  void Stop();
 
   // Gets the value for the current state, according to the animation
-  // curve in use. This class provides only for a linear relationship,
-  // however subclasses can override this to provide others.
-  virtual double GetCurrentValue() const;
+  // curve in use.
+  virtual double GetCurrentValue() const = 0;
 
   // Convenience for returning a value between |start| and |target| based on
   // the current value. This is (target - start) * GetCurrentValue() + start.
@@ -86,27 +65,6 @@ class Animation {
   gfx::Rect CurrentValueBetween(const gfx::Rect& start_bounds,
                                 const gfx::Rect& target_bounds) const;
 
-  // Start the animation.
-  void Start();
-
-  // Stop the animation.
-  void Stop();
-
-  // Skip to the end of the current animation.
-  void End();
-
-  // Return whether this animation is animating.
-  bool IsAnimating() const;
-
-  // Changes the length of the animation. This resets the current
-  // state of the animation to the beginning.
-  void SetDuration(int duration);
-
-  // Returns true if rich animations should be rendered.
-  // Looks at session type (e.g. remote desktop) and accessibility settings
-  // to give guidance for heavy animations such as "start download" arrow.
-  static bool ShouldRenderRichAnimation();
-
   // Sets the delegate.
   void set_delegate(AnimationDelegate* delegate) { delegate_ = delegate; }
 
@@ -114,38 +72,52 @@ class Animation {
   // creating a new AnimationContainer.
   void SetContainer(AnimationContainer* container);
 
+  bool is_animating() const { return is_animating_; }
+
   base::TimeDelta timer_interval() const { return timer_interval_; }
 
- protected:
-  // Invoked by the AnimationContainer when the animation is running to advance
-  // the animation. Use |time_now| rather than Time::Now to avoid multiple
-  // animations running at the same time diverging.
-  virtual void Step(base::TimeTicks time_now);
+  // Returns true if rich animations should be rendered.
+  // Looks at session type (e.g. remote desktop) and accessibility settings
+  // to give guidance for heavy animations such as "start download" arrow.
+  static bool ShouldRenderRichAnimation();
 
-  // Calculates the timer interval from the constructor list.
-  base::TimeDelta CalculateInterval(int frame_rate);
+ protected:
+  // Invoked from Start to allow subclasses to prepare for the animation.
+  virtual void AnimationStarted() {}
+
+  // Invoked from Stop after we're removed from the container but before the
+  // delegate has been invoked.
+  virtual void AnimationStopped() {}
+
+  // Invoked from stop to determine if cancel should be invoked. If this returns
+  // true the delegate is notified the animation was canceled, otherwise the
+  // delegate is notified the animation stopped.
+  virtual bool ShouldSendCanceledFromStop() { return false; }
+
+  AnimationContainer* container() { return container_.get(); }
+  base::TimeTicks start_time() const { return start_time_; }
+  AnimationDelegate* delegate() { return delegate_; }
+
+  // AnimationContainer::Element overrides
+  virtual void SetStartTime(base::TimeTicks start_time);
+  virtual void Step(base::TimeTicks time_now) = 0;
+  virtual base::TimeDelta GetTimerInterval() const { return timer_interval_; }
 
  private:
-  friend class AnimationContainer;
+  // Interval for the animation.
+  const base::TimeDelta timer_interval_;
 
-  // Invoked from AnimationContainer when started.
-  void set_start_time(base::TimeTicks start_time) { start_time_ = start_time; }
+  // If true we're running.
+  bool is_animating_;
 
-  // Whether or not we are currently animating.
-  bool animating_;
-
-  int frame_rate_;
-  base::TimeDelta timer_interval_;
-  base::TimeDelta duration_;
-
-  // Current state, on a scale from 0.0 to 1.0.
-  double state_;
-
-  base::TimeTicks start_time_;
-
+  // Our delegate; may be null.
   AnimationDelegate* delegate_;
 
+  // Container we're in. If non-null we're animating.
   scoped_refptr<AnimationContainer> container_;
+
+  // Time we started at.
+  base::TimeTicks start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(Animation);
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,7 @@ NetworkMenuButton::NetworkMenuButton(StatusAreaHost* host)
       ALLOW_THIS_IN_INITIALIZER_LIST(network_menu_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)) {
   animation_connecting_.SetThrobDuration(kThrobDuration);
-  animation_connecting_.SetTweenType(SlideAnimation::NONE);
+  animation_connecting_.SetTweenType(Tween::LINEAR);
   NetworkChanged(CrosLibrary::Get()->GetNetworkLibrary());
   CrosLibrary::Get()->GetNetworkLibrary()->AddObserver(this);
 }
@@ -185,7 +185,7 @@ void NetworkMenuButton::DrawPressed(gfx::Canvas* canvas) {
   // If ethernet connected and not current connecting, then show ethernet
   // pressed icon. Otherwise, show the bars pressed icon.
   if (CrosLibrary::Get()->GetNetworkLibrary()->ethernet_connected() &&
-      !animation_connecting_.IsAnimating())
+      !animation_connecting_.is_animating())
     canvas->DrawBitmapInt(IconForDisplay(
         *ResourceBundle::GetSharedInstance().
             GetBitmapNamed(IDR_STATUSBAR_NETWORK_WIRED_PRESSED), SkBitmap()),
@@ -230,19 +230,19 @@ void NetworkMenuButton::DrawIcon(gfx::Canvas* canvas) {
     // figure out if we are to also draw the extra image.
     int downloading_index = -1;
     int uploading_index = -1;
-    if (!animation_connecting_.IsAnimating()) {
+    if (!animation_connecting_.is_animating()) {
       // For network animation, we only show animation in one direction.
       // So when we are hiding, we just use 1 minus the value.
       // We have kNumWifiImages + 1 number of states. For the first state, where
       // we are not adding any images, we set the index to -1.
-      if (animation_downloading_.IsAnimating()) {
+      if (animation_downloading_.is_animating()) {
         double value_downloading = animation_downloading_.IsShowing() ?
             animation_downloading_.GetCurrentValue() :
             1.0 - animation_downloading_.GetCurrentValue();
         downloading_index = static_cast<int>(value_downloading *
               nextafter(static_cast<float>(kNumWifiImages + 1), 0)) - 1;
       }
-      if (animation_uploading_.IsAnimating()) {
+      if (animation_uploading_.is_animating()) {
         double value_uploading = animation_uploading_.IsShowing() ?
             animation_uploading_.GetCurrentValue() :
             1.0 - animation_uploading_.GetCurrentValue();
@@ -299,7 +299,7 @@ void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
   if (CrosLibrary::Get()->EnsureLoaded()) {
     if (cros->wifi_connecting() || cros->cellular_connecting()) {
       // Start the connecting animation if not running.
-      if (!animation_connecting_.IsAnimating()) {
+      if (!animation_connecting_.is_animating()) {
         animation_connecting_.Reset();
         animation_connecting_.StartThrobbing(std::numeric_limits<int>::max());
         SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS1));

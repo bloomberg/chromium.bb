@@ -952,7 +952,7 @@ void BrowserActionsContainer::BrowserActionAdded(Extension* extension,
     // in the header for why we do this.
     suppress_chevron_ = !chevron_->IsVisible();
 
-    Animate(SlideAnimation::NONE, target_size);
+    Animate(Tween::LINEAR, target_size);
   }
 }
 
@@ -990,7 +990,7 @@ void BrowserActionsContainer::BrowserActionRemoved(Extension* extension) {
       int target_size =
           ClampToNearestIconCount(IconCountToWidth(visible_actions), true);
 
-      Animate(SlideAnimation::EASE_OUT, target_size);
+      Animate(Tween::EASE_OUT, target_size);
       return;
     }
   }
@@ -1048,8 +1048,7 @@ int BrowserActionsContainer::ContainerMinSize() const {
   return resize_gripper_->width() + chevron_->width() + kChevronRightMargin;
 }
 
-void BrowserActionsContainer::Animate(
-    SlideAnimation::TweenType tween_type, int target_size) {
+void BrowserActionsContainer::Animate(Tween::Type tween_type, int target_size) {
   if (!disable_animations_during_testing_) {
     // Animate! We have to set the animation_target_size_ after calling Reset(),
     // because that could end up calling AnimationEnded which clears the value.
@@ -1093,7 +1092,7 @@ void BrowserActionsContainer::OnResize(int resize_amount, bool done_resizing) {
     container_size_.set_width(new_width);
     animation_target_size_ = ClampToNearestIconCount(new_width, true);
     resize_animation_->Reset();
-    resize_animation_->SetTweenType(SlideAnimation::EASE_OUT);
+    resize_animation_->SetTweenType(Tween::EASE_OUT);
     resize_animation_->Show();
   }
 }

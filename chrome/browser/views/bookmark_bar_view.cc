@@ -1104,7 +1104,7 @@ void BookmarkBarView::WriteDragData(View* sender,
 }
 
 int BookmarkBarView::GetDragOperations(View* sender, const gfx::Point& p) {
-  if (size_animation_->IsAnimating() ||
+  if (size_animation_->is_animating() ||
       (size_animation_->GetCurrentValue() == 0 && !OnNewTabPage())) {
     // Don't let the user drag while animating open or we're closed (and not on
     // the new tab page, on the new tab page size_animation_ is always 0). This

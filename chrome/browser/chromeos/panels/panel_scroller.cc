@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
@@ -26,7 +26,7 @@ PanelScroller::PanelScroller()
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)),
       animated_scroll_begin_(0),
       animated_scroll_end_(0) {
-  animation_.SetTweenType(SlideAnimation::EASE_IN_OUT);
+  animation_.SetTweenType(Tween::EASE_IN_OUT);
   animation_.SetSlideDuration(300);
 
   Panel* panel = new Panel;
@@ -237,9 +237,6 @@ void PanelScroller::ScrollToPanel(int index) {
   animation_.Show();
 }
 
-void PanelScroller::AnimationEnded(const Animation* animation) {
-}
-
 void PanelScroller::AnimationProgressed(const Animation* animation) {
   scroll_pos_ = static_cast<int>(
       static_cast<double>(animated_scroll_end_ - animated_scroll_begin_) *
@@ -247,7 +244,4 @@ void PanelScroller::AnimationProgressed(const Animation* animation) {
 
   Layout();
   SchedulePaint();
-}
-
-void PanelScroller::AnimationCanceled(const Animation* animation) {
 }

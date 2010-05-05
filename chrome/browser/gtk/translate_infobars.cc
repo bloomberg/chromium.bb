@@ -149,7 +149,7 @@ TranslateInfoBar::TranslateInfoBar(TranslateInfoBarDelegate* delegate)
       swapped_language_placeholders_(false) {
   // Initialize slide animation for transitioning to and from error state.
   error_animation_.reset(new SlideAnimation(this));
-  error_animation_->SetTweenType(SlideAnimation::NONE);
+  error_animation_->SetTweenType(Tween::LINEAR);
   error_animation_->SetSlideDuration(500);
 
   BuildWidgets();

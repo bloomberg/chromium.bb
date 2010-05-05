@@ -1529,7 +1529,7 @@ void TabStrip::NewTabAnimation2Done() {
 
   SlideAnimation* animation = new SlideAnimation(NULL);
   animation->SetSlideDuration(kNewTab3DurationMs);
-  animation->SetTweenType(SlideAnimation::EASE_IN_OUT);
+  animation->SetTweenType(Tween::EASE_IN_OUT);
 
   // BoundsAnimator takes ownership of animation.
   bounds_animator_.SetAnimationForView(tab_data_.back().tab, animation);

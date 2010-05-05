@@ -361,7 +361,7 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
 
       complete_animation_.reset(new SlideAnimation(this));
       complete_animation_->SetSlideDuration(kCompleteAnimationDurationMs);
-      complete_animation_->SetTweenType(SlideAnimation::NONE);
+      complete_animation_->SetTweenType(Tween::LINEAR);
       complete_animation_->Show();
       break;
     case DownloadItem::IN_PROGRESS:
@@ -792,7 +792,7 @@ gboolean DownloadItemGtk::OnProgressAreaExpose(GtkWidget* widget,
   // Create a transparent canvas.
   gfx::CanvasPaint canvas(event, false);
   if (complete_animation_.get()) {
-    if (complete_animation_->IsAnimating()) {
+    if (complete_animation_->is_animating()) {
       download_util::PaintDownloadComplete(&canvas,
           widget->allocation.x, widget->allocation.y,
           complete_animation_->GetCurrentValue(),
@@ -822,7 +822,7 @@ gboolean DownloadItemGtk::OnProgressAreaExpose(GtkWidget* widget,
 gboolean DownloadItemGtk::OnMenuButtonPressEvent(GtkWidget* button,
                                                  GdkEvent* event) {
   // Stop any completion animation.
-  if (complete_animation_.get() && complete_animation_->IsAnimating())
+  if (complete_animation_.get() && complete_animation_->is_animating())
     complete_animation_->End();
 
   if (event->type == GDK_BUTTON_PRESS) {

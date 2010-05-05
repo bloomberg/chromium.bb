@@ -125,7 +125,7 @@ void DraggedTabGtk::AnimateToBounds(const gfx::Rect& bounds,
   animation_end_bounds_ = bounds;
 
   close_animation_.SetSlideDuration(kAnimateToBoundsDurationMs);
-  close_animation_.SetTweenType(SlideAnimation::EASE_OUT);
+  close_animation_.SetTweenType(Tween::EASE_OUT);
   if (!close_animation_.IsShowing()) {
     close_animation_.Reset();
     close_animation_.Show();

@@ -11,8 +11,6 @@
 #include "base/time.h"
 #include "base/timer.h"
 
-class Animation;
-
 // AnimationContainer is used by Animation to manage the underlying timer.
 // Internally each Animation creates a single AnimationContainer. You can
 // group a set of Animations into the same AnimationContainer by way of
@@ -36,7 +34,37 @@ class AnimationContainer : public base::RefCounted<AnimationContainer> {
     virtual void AnimationContainerEmpty(AnimationContainer* container) = 0;
   };
 
+  // Interface for the elements the AnimationContainer contains. This is
+  // implemented by Animation.
+  class Element {
+   public:
+    // Sets the start of the animation. This is invoked from
+    // AnimationContainer::Start.
+    virtual void SetStartTime(base::TimeTicks start_time) = 0;
+
+    // Invoked when the animation is to progress.
+    virtual void Step(base::TimeTicks time_now) = 0;
+
+    // Returns the time interval of the animation. If an Element needs to change
+    // this it should first invoke Stop, then Start.
+    virtual base::TimeDelta GetTimerInterval() const = 0;
+
+   protected:
+    virtual ~Element() {}
+  };
+
   AnimationContainer();
+
+  // Invoked by Animation when it needs to start. Starts the timer if necessary.
+  // NOTE: This is invoked by Animation for you, you shouldn't invoke this
+  // directly.
+  void Start(Element* animation);
+
+  // Invoked by Animation when it needs to stop. If there are no more animations
+  // running the timer stops.
+  // NOTE: This is invoked by Animation for you, you shouldn't invoke this
+  // directly.
+  void Stop(Element* animation);
 
   void set_observer(Observer* observer) { observer_ = observer; }
 
@@ -44,22 +72,14 @@ class AnimationContainer : public base::RefCounted<AnimationContainer> {
   base::TimeTicks last_tick_time() const { return last_tick_time_; }
 
   // Are there any timers running?
-  bool is_running() const { return !animations_.empty(); }
+  bool is_running() const { return !elements_.empty(); }
 
  private:
-  friend class Animation;
   friend class base::RefCounted<AnimationContainer>;
 
-  typedef std::set<Animation*> Animations;
+  typedef std::set<Element*> Elements;
 
   ~AnimationContainer();
-
-  // Invoked by Animation when it needs to start. Starts the timer if necessary.
-  void Start(Animation* animation);
-
-  // Invoked by Animation when it needs to stop. If there are no more animations
-  // running the timer stops.
-  void Stop(Animation* animation);
 
   // Timer callback method.
   void Run();
@@ -76,8 +96,8 @@ class AnimationContainer : public base::RefCounted<AnimationContainer> {
   // . The time the last animation ran at (::Run was invoked).
   base::TimeTicks last_tick_time_;
 
-  // Set of animations being managed.
-  Animations animations_;
+  // Set of elements (animations) being managed.
+  Elements elements_;
 
   // Minimum interval the timers run at.
   base::TimeDelta min_timer_interval_;

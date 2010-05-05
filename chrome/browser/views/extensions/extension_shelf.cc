@@ -434,7 +434,7 @@ void ExtensionShelf::Toolstrip::LayoutWindow() {
   }
 
   gfx::Size window_size = GetPreferredSize();
-  if (mole_animation_->IsAnimating()) {
+  if (mole_animation_->is_animating()) {
     // We only want to animate the body of the mole window.  When we're
     // expanding, this is everything except for the handle.  When we're
     // collapsing, this is everything except for the handle and the toolstrip.
@@ -455,7 +455,7 @@ void ExtensionShelf::Toolstrip::LayoutWindow() {
   // Now figure out where to place the window on the screen.  Since it's a top-
   // level widget, we need to do some coordinate conversion to get this right.
   gfx::Point origin(-kToolstripPadding, 0);
-  if (expanded_ || mole_animation_->IsAnimating()) {
+  if (expanded_ || mole_animation_->is_animating()) {
     origin.set_y(GetShelfView()->height() - window_size.height());
     views::View::ConvertPointToView(GetShelfView(), shelf_->GetRootView(),
                                     &origin);
@@ -665,7 +665,7 @@ void ExtensionShelf::Toolstrip::ShowShelfHandle() {
 
 void ExtensionShelf::Toolstrip::HideShelfHandle(int delay_ms) {
   StopHandleTimer();
-  if (!handle_visible() || dragging_ || mole_animation_->IsAnimating())
+  if (!handle_visible() || dragging_ || mole_animation_->is_animating())
     return;
   if (delay_ms) {
     MessageLoop::current()->PostDelayedTask(FROM_HERE,

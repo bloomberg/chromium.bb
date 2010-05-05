@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/animation.h"
 #include "app/animation_container.h"
+#include "app/linear_animation.h"
 #include "app/test_animation_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,10 +23,10 @@ class MockObserver : public AnimationContainer::Observer {
   DISALLOW_COPY_AND_ASSIGN(MockObserver);
 };
 
-class TestAnimation : public Animation {
+class TestAnimation : public LinearAnimation {
  public:
   TestAnimation(AnimationDelegate* delegate)
-      : Animation(20, 20, delegate) {
+      : LinearAnimation(20, 20, delegate) {
   }
 
   virtual void AnimateToState(double state) {

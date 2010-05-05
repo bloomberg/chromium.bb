@@ -890,10 +890,7 @@ bool BrowserView::IsBookmarkBarVisible() const {
 }
 
 bool BrowserView::IsBookmarkBarAnimating() const {
-  if (bookmark_bar_view_.get() &&
-      bookmark_bar_view_->IsAnimating())
-    return true;
-  return false;
+  return bookmark_bar_view_.get() && bookmark_bar_view_->is_animating();
 }
 
 bool BrowserView::IsToolbarVisible() const {

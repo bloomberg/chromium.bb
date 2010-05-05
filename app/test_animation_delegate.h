@@ -15,9 +15,6 @@ class TestAnimationDelegate : public AnimationDelegate {
   TestAnimationDelegate() : canceled_(false), finished_(false) {
   }
 
-  virtual void AnimationStarted(const Animation* animation) {
-  }
-
   virtual void AnimationEnded(const Animation* animation) {
     finished_ = true;
     MessageLoop::current()->Quit();

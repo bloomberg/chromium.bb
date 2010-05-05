@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@ void ThrobAnimation::StartThrobbing(int cycles_til_stop) {
   cycles_remaining_ = cycles_til_stop;
   throbbing_ = true;
   SlideAnimation::SetSlideDuration(throb_duration_);
-  if (IsAnimating())
+  if (is_animating())
     return;  // We're already running, we'll cycle when current loop finishes.
 
   if (IsShowing())
@@ -44,9 +44,9 @@ void ThrobAnimation::Hide() {
 }
 
 void ThrobAnimation::Step(base::TimeTicks time_now) {
-  Animation::Step(time_now);
+  LinearAnimation::Step(time_now);
 
-  if (!IsAnimating() && throbbing_) {
+  if (!is_animating() && throbbing_) {
     // Were throbbing a finished a cycle. Start the next cycle unless we're at
     // the end of the cycles, in which case we stop.
     cycles_remaining_--;

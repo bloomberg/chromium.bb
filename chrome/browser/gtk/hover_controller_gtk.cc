@@ -67,7 +67,7 @@ void HoverControllerGtk::AnimationProgressed(const Animation* animation) {
     return;
 
   // Ignore the hover animation if we are throbbing.
-  if (animation == &hover_animation_ && throb_animation_.IsAnimating())
+  if (animation == &hover_animation_ && throb_animation_.is_animating())
     return;
 
   gtk_chrome_button_set_hover_state(GTK_CHROME_BUTTON(button_),

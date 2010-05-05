@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,7 +71,7 @@ DraggedTabView::DraggedTabView(TabContents* datasource,
 }
 
 DraggedTabView::~DraggedTabView() {
-  if (close_animation_.IsAnimating())
+  if (close_animation_.is_animating())
     close_animation_.Stop();
   GetParent()->RemoveChildView(this);
   container_->CloseNow();
@@ -154,7 +154,7 @@ void DraggedTabView::AnimateToBounds(const gfx::Rect& bounds,
   animation_end_bounds_ = bounds;
 
   close_animation_.SetSlideDuration(kAnimateToBoundsDurationMs);
-  close_animation_.SetTweenType(SlideAnimation::EASE_OUT);
+  close_animation_.SetTweenType(Tween::EASE_OUT);
   if (!close_animation_.IsShowing()) {
     close_animation_.Reset();
     close_animation_.Show();

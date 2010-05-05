@@ -126,7 +126,7 @@ SlideAnimation* BoundsAnimator::CreateAnimation() {
   SlideAnimation* animation = new SlideAnimation(this);
   animation->SetContainer(container_.get());
   animation->SetSlideDuration(kAnimationDuration);
-  animation->SetTweenType(SlideAnimation::EASE_OUT);
+  animation->SetTweenType(Tween::EASE_OUT);
   return animation;
 }
 

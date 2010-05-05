@@ -200,11 +200,11 @@ void TabRendererGtk::LoadingAnimation::Observe(
 // FaviconCrashAnimation
 //
 //  A custom animation subclass to manage the favicon crash animation.
-class TabRendererGtk::FavIconCrashAnimation : public Animation,
+class TabRendererGtk::FavIconCrashAnimation : public LinearAnimation,
                                               public AnimationDelegate {
  public:
   explicit FavIconCrashAnimation(TabRendererGtk* target)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(Animation(1000, 25, this)),
+      : ALLOW_THIS_IN_INITIALIZER_LIST(LinearAnimation(1000, 25, this)),
         target_(target) {
   }
   virtual ~FavIconCrashAnimation() {}
@@ -501,7 +501,7 @@ void TabRendererGtk::StartMiniTabTitleAnimation() {
     mini_title_animation_->SetThrobDuration(kMiniTitleChangeThrobDuration);
   }
 
-  if (!mini_title_animation_->IsAnimating()) {
+  if (!mini_title_animation_->is_animating()) {
     mini_title_animation_->StartThrobbing(2);
   } else if (mini_title_animation_->cycles_remaining() <= 2) {
     // The title changed while we're already animating. Add at most one more
@@ -575,7 +575,7 @@ void TabRendererGtk::StopCrashAnimation() {
 }
 
 bool TabRendererGtk::IsPerformingCrashAnimation() const {
-  return crash_animation_.get() && crash_animation_->IsAnimating();
+  return crash_animation_.get() && crash_animation_->is_animating();
 }
 
 void TabRendererGtk::SetFavIconHidingOffset(int offset) {
@@ -986,7 +986,7 @@ CustomDrawButton* TabRendererGtk::MakeCloseButton() {
 }
 
 double TabRendererGtk::GetThrobValue() {
-  if (mini_title_animation_.get() && mini_title_animation_->IsAnimating()) {
+  if (mini_title_animation_.get() && mini_title_animation_->is_animating()) {
     return mini_title_animation_->GetCurrentValue() *
         kMiniTitleChangeThrobOpacity;
   }
@@ -1045,7 +1045,7 @@ void TabRendererGtk::OnSizeAllocate(GtkWidget* widget,
 gboolean TabRendererGtk::OnEnterNotifyEvent(GtkWidget* widget,
                                             GdkEventCrossing* event,
                                             TabRendererGtk* tab) {
-  tab->hover_animation_->SetTweenType(SlideAnimation::EASE_OUT);
+  tab->hover_animation_->SetTweenType(Tween::EASE_OUT);
   tab->hover_animation_->Show();
   return FALSE;
 }
@@ -1054,7 +1054,7 @@ gboolean TabRendererGtk::OnEnterNotifyEvent(GtkWidget* widget,
 gboolean TabRendererGtk::OnLeaveNotifyEvent(GtkWidget* widget,
                                             GdkEventCrossing* event,
                                             TabRendererGtk* tab) {
-  tab->hover_animation_->SetTweenType(SlideAnimation::EASE_IN);
+  tab->hover_animation_->SetTweenType(Tween::EASE_IN);
   tab->hover_animation_->Hide();
   return FALSE;
 }

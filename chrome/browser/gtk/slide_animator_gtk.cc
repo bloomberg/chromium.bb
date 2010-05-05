@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,7 +60,7 @@ SlideAnimatorGtk::SlideAnimatorGtk(GtkWidget* child,
   animation_.reset(new SlideAnimation(this));
   // Default tween type is EASE_OUT.
   if (linear)
-    animation_->SetTweenType(SlideAnimation::NONE);
+    animation_->SetTweenType(Tween::LINEAR);
   if (duration != 0)
     animation_->SetSlideDuration(duration);
 }
@@ -111,7 +111,7 @@ bool SlideAnimatorGtk::IsClosing() {
 }
 
 bool SlideAnimatorGtk::IsAnimating() {
-  return animation_->IsAnimating();
+  return animation_->is_animating();
 }
 
 void SlideAnimatorGtk::AnimationProgressed(const Animation* animation) {

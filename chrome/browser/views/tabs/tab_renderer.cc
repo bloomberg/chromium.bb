@@ -222,11 +222,11 @@ class TabCloseButton : public views::ImageButton {
 // FaviconCrashAnimation
 //
 //  A custom animation subclass to manage the favicon crash animation.
-class TabRenderer::FavIconCrashAnimation : public Animation,
+class TabRenderer::FavIconCrashAnimation : public LinearAnimation,
                                            public AnimationDelegate {
  public:
   explicit FavIconCrashAnimation(TabRenderer* target)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(Animation(1000, 25, this)),
+      : ALLOW_THIS_IN_INITIALIZER_LIST(LinearAnimation(1000, 25, this)),
         target_(target) {
   }
   virtual ~FavIconCrashAnimation() {}
@@ -394,8 +394,7 @@ void TabRenderer::StartPulse() {
 }
 
 void TabRenderer::StopPulse() {
-  if (pulse_animation_->IsAnimating())
-    pulse_animation_->Stop();
+  pulse_animation_->Stop();
 }
 
 void TabRenderer::StartMiniTabTitleAnimation() {
@@ -404,7 +403,7 @@ void TabRenderer::StartMiniTabTitleAnimation() {
     mini_title_animation_->SetThrobDuration(kMiniTitleChangeThrobDuration);
   }
 
-  if (!mini_title_animation_->IsAnimating()) {
+  if (!mini_title_animation_->is_animating()) {
     mini_title_animation_->StartThrobbing(2);
   } else if (mini_title_animation_->cycles_remaining() <= 2) {
     // The title changed while we're already animating. Add at most one more
@@ -449,7 +448,7 @@ void TabRenderer::PaintIcon(gfx::Canvas* canvas) {
         // effect separately.
         int size = data_.favicon.width();
         if (mini() && mini_title_animation_.get() &&
-            mini_title_animation_->IsAnimating()) {
+            mini_title_animation_->is_animating()) {
           int throb_size = mini_title_animation_->CurrentValueBetween(
               size, kMiniTitleChangeMaxFaviconSize);
           x -= (throb_size - size) / 2;
@@ -507,12 +506,12 @@ std::wstring TabRenderer::GetTitle() const {
 }
 
 void TabRenderer::OnMouseEntered(const views::MouseEvent& e) {
-  hover_animation_->SetTweenType(SlideAnimation::EASE_OUT);
+  hover_animation_->SetTweenType(Tween::EASE_OUT);
   hover_animation_->Show();
 }
 
 void TabRenderer::OnMouseExited(const views::MouseEvent& e) {
-  hover_animation_->SetTweenType(SlideAnimation::EASE_IN);
+  hover_animation_->SetTweenType(Tween::EASE_IN);
   hover_animation_->Hide();
 }
 
@@ -930,7 +929,7 @@ double TabRenderer::GetThrobValue() {
   if (data_.alpha != 1)
     return data_.alpha;
 
-  if (pulse_animation_->IsAnimating())
+  if (pulse_animation_->is_animating())
     return pulse_animation_->GetCurrentValue() * kHoverOpacity;
 
   return hover_animation_.get() ?
@@ -954,7 +953,7 @@ void TabRenderer::StopCrashAnimation() {
 }
 
 bool TabRenderer::IsPerformingCrashAnimation() const {
-  return crash_animation_ && crash_animation_->IsAnimating();
+  return crash_animation_ && crash_animation_->is_animating();
 }
 
 void TabRenderer::SetFavIconHidingOffset(int offset) {

@@ -20,7 +20,7 @@ CustomButton::~CustomButton() {
 
 void CustomButton::SetState(ButtonState state) {
   if (state != state_) {
-    if (animate_on_state_change_ || !hover_animation_->IsAnimating()) {
+    if (animate_on_state_change_ || !hover_animation_->is_animating()) {
       animate_on_state_change_ = true;
       if (state_ == BS_NORMAL && state == BS_HOT) {
         // Button is hovered from a normal state, start hover animation.

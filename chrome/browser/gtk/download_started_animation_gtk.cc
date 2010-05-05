@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 #include <gtk/gtk.h>
 
-#include "app/animation.h"
+#include "app/linear_animation.h"
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -28,7 +28,7 @@ const int kFrameRateHz = 60;
 // the frame.
 const double kMoveFraction = 1.0 / 3.0;
 
-class DownloadStartedAnimationGtk : public Animation,
+class DownloadStartedAnimationGtk : public LinearAnimation,
                                     public NotificationObserver {
  public:
   explicit DownloadStartedAnimationGtk(TabContents* tab_contents);
@@ -78,7 +78,7 @@ class DownloadStartedAnimationGtk : public Animation,
 
 DownloadStartedAnimationGtk::DownloadStartedAnimationGtk(
     TabContents* tab_contents)
-    : Animation(kMoveTimeMs, kFrameRateHz, NULL),
+    : LinearAnimation(kMoveTimeMs, kFrameRateHz, NULL),
       tab_contents_(tab_contents) {
   static GdkPixbuf* kDownloadImage = NULL;
   if (!kDownloadImage) {
