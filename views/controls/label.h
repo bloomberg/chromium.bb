@@ -192,6 +192,8 @@ class Label : public View {
   // calculations done for drawing text.
   FRIEND_TEST(LabelTest, DrawSingleLineString);
   FRIEND_TEST(LabelTest, DrawMultiLineString);
+  FRIEND_TEST(LabelTest, DrawSingleLineStringInRTL);
+  FRIEND_TEST(LabelTest, DrawMultiLineStringInRTL);
 
   static gfx::Font GetDefaultFont();
 

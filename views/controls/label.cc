@@ -88,14 +88,6 @@ void Label::Paint(gfx::Canvas* canvas) {
 
   if (HasFocus() || paint_as_focused_) {
     text_bounds.Inset(-kFocusBorderPadding, -kFocusBorderPadding);
-    // If the label is a single line of text, then the computed text bound
-    // corresponds directly to the text being drawn and no mirroring is needed
-    // for the RTL case. For multiline text, the text bound is an estimation
-    // and is recomputed in gfx::Canvas::SizeStringInt(). For multiline text
-    // in RTL, we need to take mirroring into account when computing the focus
-    // rectangle.
-    if (flags & gfx::Canvas::MULTI_LINE)
-      text_bounds.set_x(MirroredLeftPointForRect(text_bounds));
     canvas->DrawFocusRect(text_bounds.x(), text_bounds.y(),
                           text_bounds.width(), text_bounds.height());
   }
