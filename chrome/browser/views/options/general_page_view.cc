@@ -8,6 +8,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
+#include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
@@ -192,9 +193,9 @@ std::wstring CustomHomePagesTableModel::GetText(int row, int column_id) {
   DCHECK(row >= 0 && row < RowCount());
   std::wstring languages =
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
-  // No need to force URL to have LTR directionality because the custom home
-  // pages control is created using LTR directionality.
-  return net::FormatUrl(entries_[row].url, languages);
+  std::wstring url(net::FormatUrl(entries_[row].url, languages));
+  base::i18n::GetDisplayStringInLTRDirectionality(&url);
+  return url;
 }
 
 SkBitmap CustomHomePagesTableModel::GetIcon(int row) {
@@ -719,8 +720,6 @@ void GeneralPageView::InitStartupGroup() {
   startup_custom_pages_table_ = new views::TableView(
       startup_custom_pages_table_model_.get(), columns,
       views::ICON_AND_TEXT, false, false, true);
-  // URLs are inherently left-to-right, so do not mirror the table.
-  startup_custom_pages_table_->EnableUIMirroringForRTLLanguages(false);
   startup_custom_pages_table_->SetObserver(this);
 
   using views::GridLayout;
