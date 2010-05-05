@@ -42,21 +42,21 @@ def _CommonChecks(input_api, output_api):
   text_files = lambda x: input_api.FilterSourceFile(x, black_list=black_list,
                                                     white_list=white_list)
   results.extend(input_api.canned_checks.CheckLongLines(
-      input_api, output_api, sources))
+      input_api, output_api, source_file_filter=sources))
   results.extend(input_api.canned_checks.CheckChangeHasNoTabs(
-      input_api, output_api, sources))
+      input_api, output_api, source_file_filter=sources))
   results.extend(input_api.canned_checks.CheckChangeHasNoStrayWhitespace(
-      input_api, output_api, sources))
+      input_api, output_api, source_file_filter=sources))
   results.extend(input_api.canned_checks.CheckChangeHasBugField(
       input_api, output_api))
   results.extend(input_api.canned_checks.CheckChangeHasTestField(
       input_api, output_api))
   results.extend(input_api.canned_checks.CheckChangeSvnEolStyle(
-      input_api, output_api, text_files))
+      input_api, output_api, source_file_filter=text_files))
   results.extend(input_api.canned_checks.CheckSvnForCommonMimeTypes(
       input_api, output_api))
   results.extend(input_api.canned_checks.CheckLicense(
-      input_api, output_api, _LICENSE_HEADER, sources))
+      input_api, output_api, _LICENSE_HEADER, source_file_filter=sources))
   return results
 
 
