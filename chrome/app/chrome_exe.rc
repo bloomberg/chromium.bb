@@ -62,6 +62,9 @@ END
 // The application icon should: have the lowest ID, be placed first, and its
 // resource name should be alphabetically less than the name of any other icon
 // resource (http://msdn.microsoft.com/en-us/library/ms997538.aspx).
+// Note: chrome/installer/util/shell_util.cc depends on the order and number of
+// icons.  To avoid breaking existing shortcuts, add new icons at the end
+// (following the ordering described above).
 #if defined(GOOGLE_CHROME_BUILD)
 IDR_MAINFRAME           ICON                    "theme\google_chrome\chrome.ico"
 IDR_MAINFRAME_2         ICON                    "theme\google_chrome\chrome2.ico"
