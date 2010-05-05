@@ -44,21 +44,22 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/task.h"
+#include "chrome/browser/sync/net/network_change_notifier_thread.h"
+#include "net/base/network_change_notifier.h"
 
 namespace browser_sync {
 
 NetworkChangeObserverProxy::NetworkChangeObserverProxy(
-    MessageLoop* source_message_loop,
-    net::NetworkChangeNotifier* source_network_change_notifier,
+    const NetworkChangeNotifierThread* source_thread,
     MessageLoop* target_message_loop)
-    : source_message_loop_(source_message_loop),
-      source_network_change_notifier_(source_network_change_notifier),
+    : source_thread_(source_thread),
       target_message_loop_(target_message_loop),
       target_observer_(NULL) {
-  DCHECK(source_message_loop_);
-  DCHECK(source_network_change_notifier_);
+  DCHECK(source_thread_);
+  MessageLoop* source_message_loop = source_thread_->GetMessageLoop();
+  DCHECK(source_message_loop);
   DCHECK(target_message_loop_);
-  DCHECK_NE(source_message_loop_, target_message_loop_);
+  DCHECK_NE(source_message_loop, target_message_loop_);
   DCHECK_EQ(MessageLoop::current(), target_message_loop_);
 }
 
@@ -66,7 +67,7 @@ NetworkChangeObserverProxy::~NetworkChangeObserverProxy() {
   MessageLoop* current_message_loop = MessageLoop::current();
   // We can be deleted on either the source or target thread, so the
   // best we can do is check that we're on either.
-  DCHECK((current_message_loop == source_message_loop_) ||
+  DCHECK((current_message_loop == source_thread_->GetMessageLoop()) ||
          (current_message_loop == target_message_loop_));
   // Even though only the target thread uses target_observer_, it
   // should still be unset even if we're on the source thread; posting
@@ -75,15 +76,21 @@ NetworkChangeObserverProxy::~NetworkChangeObserverProxy() {
 }
 
 void NetworkChangeObserverProxy::Observe() {
-  DCHECK_EQ(MessageLoop::current(), source_message_loop_);
-  source_network_change_notifier_->AddObserver(this);
+  DCHECK_EQ(MessageLoop::current(), source_thread_->GetMessageLoop());
+  net::NetworkChangeNotifier* source_network_change_notifier =
+      source_thread_->GetNetworkChangeNotifier();
+  DCHECK(source_network_change_notifier);
+  source_network_change_notifier->AddObserver(this);
 }
 
 // The Task from which this was called may hold the last reference to
 // us (this is how we can get deleted on the source thread).
 void NetworkChangeObserverProxy::Unobserve() {
-  DCHECK_EQ(MessageLoop::current(), source_message_loop_);
-  source_network_change_notifier_->RemoveObserver(this);
+  DCHECK_EQ(MessageLoop::current(), source_thread_->GetMessageLoop());
+  net::NetworkChangeNotifier* source_network_change_notifier =
+      source_thread_->GetNetworkChangeNotifier();
+  DCHECK(source_network_change_notifier);
+  source_network_change_notifier->RemoveObserver(this);
 }
 
 void NetworkChangeObserverProxy::Attach(
@@ -92,7 +99,7 @@ void NetworkChangeObserverProxy::Attach(
   DCHECK(!target_observer_);
   target_observer_ = target_observer;
   DCHECK(target_observer_);
-  source_message_loop_->PostTask(
+  source_thread_->GetMessageLoop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(this, &NetworkChangeObserverProxy::Observe));
 }
@@ -101,7 +108,7 @@ void NetworkChangeObserverProxy::Detach() {
   DCHECK_EQ(MessageLoop::current(), target_message_loop_);
   DCHECK(target_observer_);
   target_observer_ = NULL;
-  source_message_loop_->PostTask(
+  source_thread_->GetMessageLoop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(this, &NetworkChangeObserverProxy::Unobserve));
 }
@@ -111,7 +118,7 @@ void NetworkChangeObserverProxy::Detach() {
 // But we know that it has been posted, so it at least holds a
 // reference to us.
 void NetworkChangeObserverProxy::OnIPAddressChanged() {
-  DCHECK_EQ(MessageLoop::current(), source_message_loop_);
+  DCHECK_EQ(MessageLoop::current(), source_thread_->GetMessageLoop());
   target_message_loop_->PostTask(
       FROM_HERE,
       NewRunnableMethod(

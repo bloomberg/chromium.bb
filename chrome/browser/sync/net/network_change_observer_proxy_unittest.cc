@@ -6,24 +6,10 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
 #include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
-#include "base/task.h"
-#include "base/thread.h"
+#include "chrome/browser/sync/net/fake_network_change_notifier_thread.h"
 #include "chrome/browser/sync/net/mock_network_change_observer.h"
-#include "chrome/browser/sync/net/thread_blocker.h"
-#include "net/base/mock_network_change_notifier.h"
-#include "net/base/network_change_notifier.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-// We manage the lifetime of net::MockNetworkChangeNotifier ourselves.
-template <>
-struct RunnableMethodTraits<net::MockNetworkChangeNotifier> {
-  void RetainCallee(net::MockNetworkChangeNotifier*) {}
-  void ReleaseCallee(net::MockNetworkChangeNotifier*) {}
-};
 
 namespace browser_sync {
 
@@ -37,13 +23,10 @@ class DeleteCheckingNetworkChangeObserverProxy
   // *deleting_message_loop_ must be NULL.  It is set to a non-NULL
   // *value when this object is deleted.
   DeleteCheckingNetworkChangeObserverProxy(
-      MessageLoop* source_message_loop,
-      net::NetworkChangeNotifier* source_network_change_notifier,
+      NetworkChangeNotifierThread* source_thread,
       MessageLoop* target_message_loop,
       MessageLoop** deleting_message_loop)
-      : NetworkChangeObserverProxy(source_message_loop,
-                                   source_network_change_notifier,
-                                   target_message_loop),
+      : NetworkChangeObserverProxy(source_thread, target_message_loop),
         deleting_message_loop_(deleting_message_loop) {
     CHECK(deleting_message_loop_);
     EXPECT_TRUE(*deleting_message_loop_ == NULL);
@@ -61,26 +44,16 @@ class DeleteCheckingNetworkChangeObserverProxy
 
 class NetworkChangeObserverProxyTest : public testing::Test {
  protected:
-  NetworkChangeObserverProxyTest()
-      : source_thread_("Source Thread"),
-        source_message_loop_(NULL),
-        proxy_deleting_message_loop_(NULL) {}
+  NetworkChangeObserverProxyTest() : proxy_deleting_message_loop_(NULL) {}
 
-  virtual ~NetworkChangeObserverProxyTest() {
-    CHECK(!source_thread_blocker_.get());
-    CHECK(!source_message_loop_);
-  }
+  virtual ~NetworkChangeObserverProxyTest() {}
 
   virtual void SetUp() {
-    CHECK(source_thread_.Start());
-    source_message_loop_ = source_thread_.message_loop();
-    source_thread_blocker_.reset(new ThreadBlocker(&source_thread_));
-    source_thread_blocker_->Block();
-
+    source_thread_.Start();
     proxy_deleting_message_loop_ = NULL;
     proxy_ = new DeleteCheckingNetworkChangeObserverProxy(
-        source_message_loop_, &source_network_change_notifier_,
-        &target_message_loop_, &proxy_deleting_message_loop_);
+        &source_thread_, &target_message_loop_,
+        &proxy_deleting_message_loop_);
   }
 
   // On TearDown, |proxy_| must be released and both source and target
@@ -88,16 +61,12 @@ class NetworkChangeObserverProxyTest : public testing::Test {
   virtual void TearDown() {
     EXPECT_TRUE(proxy_ == NULL);
     EXPECT_TRUE(proxy_deleting_message_loop_ != NULL);
-    source_thread_blocker_->Unblock();
-    source_thread_blocker_.reset();
-    source_message_loop_ = NULL;
     source_thread_.Stop();
   }
 
   // Pump any events posted on the source thread.
   void PumpSource() {
-    source_thread_blocker_->Unblock();
-    source_thread_blocker_->Block();
+    source_thread_.Pump();
   }
 
   // Pump any events posted on the target thread (which is just the
@@ -108,22 +77,11 @@ class NetworkChangeObserverProxyTest : public testing::Test {
 
   // Trigger an "IP address changed" event on the source network
   // change notifier on the source thread.
-  void OnIPAddressChanged() {
-    source_message_loop_->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(
-            &source_network_change_notifier_,
-            &net::MockNetworkChangeNotifier::NotifyIPAddressChange));
+  void NotifyIPAddressChange() {
+    source_thread_.NotifyIPAddressChange();
   }
 
-  // This lives on |source_thread_| but is created/destroyed in the
-  // main thread.  As long as we make sure to not modify it from the
-  // main thread while |source_thread_| is running, we shouldn't need
-  // any special synchronization.
-  net::MockNetworkChangeNotifier source_network_change_notifier_;
-  base::Thread source_thread_;
-  MessageLoop* source_message_loop_;
-  scoped_ptr<ThreadBlocker> source_thread_blocker_;
+  FakeNetworkChangeNotifierThread source_thread_;
 
   MessageLoop target_message_loop_;
   MockNetworkChangeObserver target_observer_;
@@ -153,7 +111,7 @@ TEST_F(NetworkChangeObserverProxyTest, AttachDetach) {
   proxy_ = NULL;
   PumpSource();
 
-  EXPECT_EQ(proxy_deleting_message_loop_, source_message_loop_);
+  EXPECT_EQ(proxy_deleting_message_loop_, source_thread_.GetMessageLoop());
 }
 
 TEST_F(NetworkChangeObserverProxyTest, AttachDetachReleaseAfterPump) {
@@ -171,14 +129,14 @@ TEST_F(NetworkChangeObserverProxyTest, Basic) {
   EXPECT_CALL(target_observer_, OnIPAddressChanged()).Times(1);
 
   proxy_->Attach(&target_observer_);
-  OnIPAddressChanged();
+  NotifyIPAddressChange();
   PumpSource();
   PumpTarget();
   proxy_->Detach();
   proxy_ = NULL;
   PumpSource();
 
-  EXPECT_EQ(proxy_deleting_message_loop_, source_message_loop_);
+  EXPECT_EQ(proxy_deleting_message_loop_, source_thread_.GetMessageLoop());
 }
 
 TEST_F(NetworkChangeObserverProxyTest, Multiple) {
@@ -187,7 +145,7 @@ TEST_F(NetworkChangeObserverProxyTest, Multiple) {
 
   proxy_->Attach(&target_observer_);
   for (int i = 0; i < kTimes; ++i) {
-    OnIPAddressChanged();
+    NotifyIPAddressChange();
   }
   PumpSource();
   PumpTarget();
@@ -195,7 +153,7 @@ TEST_F(NetworkChangeObserverProxyTest, Multiple) {
   proxy_ = NULL;
   PumpSource();
 
-  EXPECT_EQ(proxy_deleting_message_loop_, source_message_loop_);
+  EXPECT_EQ(proxy_deleting_message_loop_, source_thread_.GetMessageLoop());
 }
 
 TEST_F(NetworkChangeObserverProxyTest, MultipleAttachDetach) {
@@ -204,7 +162,7 @@ TEST_F(NetworkChangeObserverProxyTest, MultipleAttachDetach) {
 
   for (int i = 0; i < kTimes; ++i) {
     proxy_->Attach(&target_observer_);
-    OnIPAddressChanged();
+    NotifyIPAddressChange();
     PumpSource();
     PumpTarget();
     proxy_->Detach();
@@ -212,14 +170,14 @@ TEST_F(NetworkChangeObserverProxyTest, MultipleAttachDetach) {
   proxy_ = NULL;
   PumpSource();
 
-  EXPECT_EQ(proxy_deleting_message_loop_, source_message_loop_);
+  EXPECT_EQ(proxy_deleting_message_loop_, source_thread_.GetMessageLoop());
 }
 
 TEST_F(NetworkChangeObserverProxyTest, IgnoresEventPostedAfterDetach) {
   EXPECT_CALL(target_observer_, OnIPAddressChanged()).Times(0);
 
   proxy_->Attach(&target_observer_);
-  OnIPAddressChanged();
+  NotifyIPAddressChange();
   proxy_->Detach();
   proxy_ = NULL;
   PumpSource();
@@ -232,14 +190,14 @@ TEST_F(NetworkChangeObserverProxyTest, IgnoresEventPostedBeforeDetach) {
   EXPECT_CALL(target_observer_, OnIPAddressChanged()).Times(0);
 
   proxy_->Attach(&target_observer_);
-  OnIPAddressChanged();
+  NotifyIPAddressChange();
   PumpSource();
   proxy_->Detach();
   proxy_ = NULL;
   PumpTarget();
   PumpSource();
 
-  EXPECT_EQ(proxy_deleting_message_loop_, source_message_loop_);
+  EXPECT_EQ(proxy_deleting_message_loop_, source_thread_.GetMessageLoop());
 }
 
 TEST_F(NetworkChangeObserverProxyTest, IgnoresEventAfterDetach) {
@@ -248,23 +206,23 @@ TEST_F(NetworkChangeObserverProxyTest, IgnoresEventAfterDetach) {
   proxy_->Attach(&target_observer_);
   proxy_->Detach();
   proxy_ = NULL;
-  OnIPAddressChanged();
+  NotifyIPAddressChange();
   PumpSource();
 
-  EXPECT_EQ(proxy_deleting_message_loop_, source_message_loop_);
+  EXPECT_EQ(proxy_deleting_message_loop_, source_thread_.GetMessageLoop());
 }
 
 TEST_F(NetworkChangeObserverProxyTest, IgnoresEventBeforeAttach) {
   EXPECT_CALL(target_observer_, OnIPAddressChanged()).Times(0);
 
-  OnIPAddressChanged();
+  NotifyIPAddressChange();
   PumpSource();
   proxy_->Attach(&target_observer_);
   proxy_->Detach();
   proxy_ = NULL;
   PumpSource();
 
-  EXPECT_EQ(proxy_deleting_message_loop_, source_message_loop_);
+  EXPECT_EQ(proxy_deleting_message_loop_, source_thread_.GetMessageLoop());
 }
 
 }  // namespace

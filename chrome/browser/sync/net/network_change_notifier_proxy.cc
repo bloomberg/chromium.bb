@@ -11,11 +11,9 @@
 namespace browser_sync {
 
 NetworkChangeNotifierProxy::NetworkChangeNotifierProxy(
-    MessageLoop* source_message_loop,
-    net::NetworkChangeNotifier* source_network_change_notifier)
+    NetworkChangeNotifierThread* source_thread)
     : observer_proxy_(new NetworkChangeObserverProxy(
-        source_message_loop, source_network_change_notifier,
-        MessageLoop::current())),
+        source_thread, MessageLoop::current())),
       observer_repeater_(&observers_) {
   // TODO(akalin): We get this from NonThreadSafe, which
   // net::NetworkChangeNotifier inherits from.  Interface classes

@@ -1841,6 +1841,9 @@
         # TODO(akalin): Write our own test suite and runner.
         '../base/test/run_all_unittests.cc',
         '../base/test/test_suite.h',
+        'browser/sync/net/fake_network_change_notifier_thread_unittest.cc',
+        'browser/sync/net/fake_network_change_notifier_thread.cc',
+        'browser/sync/net/fake_network_change_notifier_thread.h',
         'browser/sync/net/mock_network_change_observer.h',
         'browser/sync/net/network_change_notifier_proxy_unittest.cc',
         'browser/sync/net/network_change_observer_proxy_unittest.cc',

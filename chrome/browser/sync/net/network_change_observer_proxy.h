@@ -14,12 +14,12 @@
 //
 // In the target thread, create the observer proxy:
 //
+//   NetworkChangeNotifierThread* source_thread = ...;
 //   NetworkChangeObserverProxy* proxy =
-//       new NetworkChangeObserverProxy(source_thread->message_loop(),
-//                                      source_network_change_notifier,
+//       new NetworkChangeObserverProxy(source_thread,
 //                                      MessageLoop::current());
 //
-// Both source_thread and source_network_change_notifier must be
+// Both source_thread and its owned NetworkChangeNotifier must be
 // guaranteed to outlive the target (current) thread.
 //
 // Then, attach the target observer:
@@ -45,6 +45,8 @@
 
 namespace browser_sync {
 
+class NetworkChangeNotifierThread;
+
 // TODO(akalin): Remove use of private inheritance.
 class NetworkChangeObserverProxy
     : public base::RefCountedThreadSafe<NetworkChangeObserverProxy>,
@@ -55,8 +57,7 @@ class NetworkChangeObserverProxy
 
   // Does not take ownership of any arguments.
   NetworkChangeObserverProxy(
-      MessageLoop* source_message_loop,
-      net::NetworkChangeNotifier* source_network_change_notifier,
+      const NetworkChangeNotifierThread* source_thread,
       MessageLoop* target_message_loop);
 
   // After this method is called, |target_observer| will start
@@ -100,8 +101,7 @@ class NetworkChangeObserverProxy
   // |target_observer_|.
   void TargetObserverOnIPAddressChanged();
 
-  MessageLoop* const source_message_loop_;
-  net::NetworkChangeNotifier* const source_network_change_notifier_;
+  const NetworkChangeNotifierThread* source_thread_;
   MessageLoop* const target_message_loop_;
   // |target_observer_| is used only by the target thread.
   net::NetworkChangeNotifier::Observer* target_observer_;

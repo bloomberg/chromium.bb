@@ -18,16 +18,15 @@ class MessageLoop;
 
 namespace browser_sync {
 
+class NetworkChangeNotifierThread;
 class NetworkChangeObserverProxy;
 
 class NetworkChangeNotifierProxy : public net::NetworkChangeNotifier {
  public:
-  // Both source_thread and source_network_change_notifier must be
-  // guaranteed to outlive the current thread.  Does not take
-  // ownership of any arguments.
+  // |source_thread| must be guaranteed to outlive the current thread.
+  // Does not take ownership of any arguments.
   NetworkChangeNotifierProxy(
-      MessageLoop* source_message_loop,
-      net::NetworkChangeNotifier* source_network_change_notifier);
+      NetworkChangeNotifierThread* source_thread);
 
   virtual ~NetworkChangeNotifierProxy();
 
