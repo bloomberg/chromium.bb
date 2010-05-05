@@ -49,7 +49,7 @@
 
 typedef struct _NPSetWindowCallbackStruct
 {
-  int32        type;
+  int32_t      type;
 #ifdef MOZ_X11
   Display*     display;
   Visual*      visual;

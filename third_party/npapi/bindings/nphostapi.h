@@ -21,8 +21,8 @@ extern "C" {
 //
 typedef NPError      (*NPP_NewProcPtr)(NPMIMEType pluginType,
                          NPP instance,
-                         uint16 mode,
-                         int16 argc,
+                         uint16_t mode,
+                         int16_t argc,
                          char* argn[],
                          char* argv[],
                          NPSavedData* saved);
@@ -34,23 +34,23 @@ typedef NPError      (*NPP_NewStreamProcPtr)(NPP instance,
                          NPMIMEType type,
                          NPStream* stream,
                          NPBool seekable,
-                         uint16* stype);
+                         uint16_t* stype);
 typedef NPError      (*NPP_DestroyStreamProcPtr)(NPP instance,
                          NPStream* stream,
                          NPReason reason);
-typedef int32        (*NPP_WriteReadyProcPtr)(NPP instance,
+typedef int32_t      (*NPP_WriteReadyProcPtr)(NPP instance,
                          NPStream* stream);
-typedef int32        (*NPP_WriteProcPtr)(NPP instance,
+typedef int32_t      (*NPP_WriteProcPtr)(NPP instance,
                          NPStream* stream,
-                         int32 offset,
-                         int32 len,
+                         int32_t offset,
+                         int32_t len,
                          void* buffer);
 typedef void         (*NPP_StreamAsFileProcPtr)(NPP instance,
                          NPStream* stream,
                          const char* fname);
 typedef void         (*NPP_PrintProcPtr)(NPP instance,
                          NPPrint* platformPrint);
-typedef int16        (*NPP_HandleEventProcPtr)(NPP instance,
+typedef int16_t      (*NPP_HandleEventProcPtr)(NPP instance,
                          void* event);
 typedef void         (*NPP_URLNotifyProcPtr)(NPP instance,
                          const char* url,
@@ -73,7 +73,7 @@ typedef NPError      (*NPN_GetURLProcPtr)(NPP instance,
 typedef NPError      (*NPN_PostURLProcPtr)(NPP instance,
                          const char* URL,
                          const char* window,
-                         uint32 len,
+                         uint32_t len,
                          const char* buf,
                          NPBool file);
 typedef NPError      (*NPN_RequestReadProcPtr)(NPStream* stream,
@@ -82,9 +82,9 @@ typedef NPError      (*NPN_NewStreamProcPtr)(NPP instance,
                          NPMIMEType type,
                          const char* window,
                          NPStream** stream);
-typedef int32        (*NPN_WriteProcPtr)(NPP instance,
+typedef int32_t      (*NPN_WriteProcPtr)(NPP instance,
                          NPStream* stream,
-                         int32 len,
+                         int32_t len,
                          void* buffer);
 typedef NPError      (*NPN_DestroyStreamProcPtr)(NPP instance,
                          NPStream* stream,
@@ -92,9 +92,9 @@ typedef NPError      (*NPN_DestroyStreamProcPtr)(NPP instance,
 typedef void         (*NPN_StatusProcPtr)(NPP instance,
                          const char* message);
 typedef const char*  (*NPN_UserAgentProcPtr)(NPP instance);
-typedef void*        (*NPN_MemAllocProcPtr)(uint32 size);
+typedef void*        (*NPN_MemAllocProcPtr)(uint32_t size);
 typedef void         (*NPN_MemFreeProcPtr)(void* ptr);
-typedef uint32       (*NPN_MemFlushProcPtr)(uint32 size);
+typedef uint32_t     (*NPN_MemFlushProcPtr)(uint32_t size);
 typedef void         (*NPN_ReloadPluginsProcPtr)(NPBool reloadPages);
 
 typedef void*        (*NPN_GetJavaEnvProcPtr)(void);
@@ -107,7 +107,7 @@ typedef NPError      (*NPN_GetURLNotifyProcPtr)(NPP instance,
 typedef NPError      (*NPN_PostURLNotifyProcPtr)(NPP instance,
                          const char* URL,
                          const char* window,
-                         uint32 len,
+                         uint32_t len,
                          const char* buf,
                          NPBool file,
                          void* notifyData);
@@ -208,11 +208,11 @@ typedef NPError      (*NPN_GetAuthenticationInfoPtr)(NPP npp,
                          char **password,
                          uint32_t *plen);
 typedef uint32       (*NPN_ScheduleTimerPtr)(NPP npp,
-                         uint32 interval,
+                         uint32_t interval,
                          NPBool repeat,
-                         void (*timerFunc)(NPP npp, uint32 timerID));
+                         void (*timerFunc)(NPP npp, uint32_t timerID));
 typedef void         (*NPN_UnscheduleTimerPtr)(NPP npp,
-                         uint32 timerID);
+                         uint32_t timerID);
 typedef NPError      (*NPN_PopUpContextMenuPtr)(NPP npp,
                          NPMenu* menu);
 typedef NPBool       (*NPN_ConvertPointPtr)(NPP npp,
@@ -249,8 +249,8 @@ typedef struct _NPPluginFuncs {
 // NPAPI Function table NPN functions (functions provided by host to plugin)
 //
 typedef struct _NPNetscapeFuncs {
-    uint16 size;
-    uint16 version;
+    uint16_t size;
+    uint16_t version;
     NPN_GetURLProcPtr geturl;
     NPN_PostURLProcPtr posturl;
     NPN_RequestReadProcPtr requestread;

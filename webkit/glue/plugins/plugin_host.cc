@@ -278,7 +278,7 @@ bool PluginHost::SetPostData(const char* buf,
 extern "C" {
 
 // Allocates memory from the host's memory space.
-void* NPN_MemAlloc(uint32 size) {
+void* NPN_MemAlloc(uint32_t size) {
   scoped_refptr<NPAPI::PluginHost> host = NPAPI::PluginHost::Singleton();
   if (host != NULL) {
     // Note: We must use the same allocator/deallocator
@@ -300,7 +300,7 @@ void NPN_MemFree(void* ptr) {
 }
 
 // Requests that the host free a specified amount of memory.
-uint32 NPN_MemFlush(uint32 size) {
+uint32_t NPN_MemFlush(uint32_t size) {
   // This is not relevant on Windows; MAC specific
   return size;
 }
@@ -392,7 +392,7 @@ NPError NPN_GetURL(NPP id, const char* url, const char* target) {
 static NPError PostURLNotify(NPP id,
                              const char* url,
                              const char* target,
-                             uint32 len,
+                             uint32_t len,
                              const char* buf,
                              NPBool file,
                              bool notify,
@@ -478,7 +478,7 @@ static NPError PostURLNotify(NPP id,
 NPError NPN_PostURLNotify(NPP id,
                           const char* url,
                           const char* target,
-                          uint32 len,
+                          uint32_t len,
                           const char* buf,
                           NPBool file,
                           void* notify_data) {
@@ -488,7 +488,7 @@ NPError NPN_PostURLNotify(NPP id,
 NPError NPN_PostURL(NPP id,
                     const char* url,
                     const char* target,
-                    uint32 len,
+                    uint32_t len,
                     const char* buf,
                     NPBool file) {
   // POSTs data to an URL, either from a temp file or a buffer.
@@ -529,7 +529,7 @@ NPError NPN_NewStream(NPP id,
   return NPERR_GENERIC_ERROR;
 }
 
-int32 NPN_Write(NPP id, NPStream* stream, int32 len, void* buffer) {
+int32_t NPN_Write(NPP id, NPStream* stream, int32_t len, void* buffer) {
   // Writes data to an existing Plugin-created stream.
 
   // TODO: implement me
@@ -920,7 +920,7 @@ NPError NPN_GetValueForURL(NPP id,
                            NPNURLVariable variable,
                            const char* url,
                            char** value,
-                           uint32* len) {
+                           uint32_t* len) {
   if (!id)
     return NPERR_INVALID_PARAM;
 
@@ -970,7 +970,7 @@ NPError NPN_SetValueForURL(NPP id,
                            NPNURLVariable variable,
                            const char* url,
                            const char* value,
-                           uint32 len) {
+                           uint32_t len) {
   if (!id)
     return NPERR_INVALID_PARAM;
 
@@ -1010,9 +1010,9 @@ NPError NPN_GetAuthenticationInfo(NPP id,
                                   const char* scheme,
                                   const char* realm,
                                   char** username,
-                                  uint32* ulen,
+                                  uint32_t* ulen,
                                   char** password,
-                                  uint32* plen) {
+                                  uint32_t* plen) {
   if (!id || !protocol || !host || !scheme || !realm || !username ||
       !ulen || !password || !plen)
     return NPERR_INVALID_PARAM;
@@ -1021,10 +1021,10 @@ NPError NPN_GetAuthenticationInfo(NPP id,
   return NPERR_GENERIC_ERROR;
 }
 
-uint32 NPN_ScheduleTimer(NPP id,
-                         uint32 interval,
-                         NPBool repeat,
-                         void (*func)(NPP id, uint32 timer_id)) {
+uint32_t NPN_ScheduleTimer(NPP id,
+                           uint32_t interval,
+                           NPBool repeat,
+                           void (*func)(NPP id, uint32_t timer_id)) {
   scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
   if (!plugin)
     return 0;
@@ -1032,7 +1032,7 @@ uint32 NPN_ScheduleTimer(NPP id,
   return plugin->ScheduleTimer(interval, repeat, func);
 }
 
-void NPN_UnscheduleTimer(NPP id, uint32 timer_id) {
+void NPN_UnscheduleTimer(NPP id, uint32_t timer_id) {
   scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
   if (plugin)
     plugin->UnscheduleTimer(timer_id);
