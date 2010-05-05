@@ -77,18 +77,18 @@ COVERAGE_SOURCES =
 all:: dump_syms
 dump_syms:					\
 	bytereader.o				\
-	dwarf_cfi_to_module.o			\
-	dwarf_cu_to_module.o			\
-	dwarf_line_to_module.o			\
-	dump_stabs.o				\
 	dump_symbols.o				\
 	dump_syms.o				\
 	dwarf2diehandler.o			\
 	dwarf2reader.o				\
+	dwarf_cfi_to_module.o			\
+	dwarf_cu_to_module.o			\
+	dwarf_line_to_module.o			\
 	file_id.o				\
 	language.o				\
 	module.o				\
 	stabs_reader.o				\
+	stabs_to_module.o			\
 	$(empty)
 CPP_EXECUTABLES += dump_syms
 clean::
@@ -103,13 +103,13 @@ dwarf_cu_to_module.o: dwarf_cu_to_module.cc
 COVERAGE_SOURCES += dwarf_cu_to_module.cc
 dwarf_line_to_module.o: dwarf_line_to_module.cc
 COVERAGE_SOURCES += dwarf_line_to_module.cc
-dump_stabs.o: dump_stabs.cc
-COVERAGE_SOURCES += dump_stabs.cc
 language.o: language.cc
 module.o: module.cc
 COVERAGE_SOURCES += module.cc
 stabs_reader.o: stabs_reader.cc
 COVERAGE_SOURCES += stabs_reader.cc
+stabs_to_module.o: stabs_to_module.cc
+COVERAGE_SOURCES += stabs_to_module.cc
 
 VPATH += $(SRC)/common/linux
 dump_symbols.o: dump_symbols.cc
@@ -167,10 +167,10 @@ clean::
 check: check-file_id_unittest
 check-file_id_unittest: file_id_unittest
 file_id_unittest:				\
+	file_id.o				\
 	gmock-all.o				\
 	gtest-all.o				\
 	gtest_main.o				\
-	file_id.o				\
 	$(empty)
 CPP_EXECUTABLES += file_id_unittest
 file_id_unittest.o: file_id_unittest.cc
@@ -198,30 +198,31 @@ clean::
 
 
 ### Unit tests for google_breakpad::DumpStabsHandler.
-check: check-dump_stabs_unittest
-check-dump_stabs_unittest: dump_stabs_unittest
-dump_stabs_unittest:					\
+check: check-stabs_to_module_unittest
+check-stabs_to_module_unittest: stabs_to_module_unittest
+stabs_to_module_unittest:				\
 	gtest-all.o					\
 	gtest_main.o					\
-	dump_stabs.o					\
-	dump_stabs_unittest.o				\
 	module.o					\
+	stabs_to_module.o				\
+	stabs_to_module_unittest.o			\
 	$(empty)
-CPP_EXECUTABLES += dump_stabs_unittest
-dump_stabs_unittest.o: dump_stabs_unittest.cc
-dump_stabs_unittest.o: override CPPFLAGS += $(GTEST_CPPFLAGS) $(GMOCK_CPPFLAGS)
+CPP_EXECUTABLES += stabs_to_module_unittest
+stabs_to_module_unittest.o: stabs_to_module_unittest.cc
+stabs_to_module_unittest.o: override CPPFLAGS += $(GTEST_CPPFLAGS) \
+						 $(GMOCK_CPPFLAGS)
 clean::
-	rm -f dump_stabs_unittest
+	rm -f stabs_to_module_unittest
 
 
 ### Unit tests for dwarf2reader::DwarfDIEDispatcher.
 check: check-dwarf2diehandler_unittest
 check-dwarf2diehandler_unittest: dwarf2diehandler_unittest
 dwarf2diehandler_unittest:			\
+	dwarf2diehandler.o			\
 	gmock-all.o				\
 	gtest-all.o				\
 	gtest_main.o				\
-	dwarf2diehandler.o			\
 	$(empty)
 CPP_EXECUTABLES += dwarf2diehandler_unittest
 dwarf2diehandler_unittest.o: dwarf2diehandler_unittest.cc
@@ -236,10 +237,10 @@ clean::
 check: check-dwarf_line_to_module_unittest
 check-dwarf_line_to_module_unittest: dwarf_line_to_module_unittest
 dwarf_line_to_module_unittest:			\
+	dwarf_line_to_module.o			\
 	gtest-all.o				\
 	gtest_main.o				\
 	module.o				\
-	dwarf_line_to_module.o			\
 	$(empty)
 CPP_EXECUTABLES += dwarf_line_to_module_unittest
 dwarf_line_to_module_unittest.o: dwarf_line_to_module_unittest.cc

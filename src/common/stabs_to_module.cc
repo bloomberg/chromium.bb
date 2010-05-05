@@ -29,15 +29,15 @@
 
 // Original author: Jim Blandy <jimb@mozilla.com> <jimb@red-bean.com>
 
-// dump_stabs.cc --- implement the DumpStabsHandler class.
+// dump_stabs.cc --- implement the StabsToModule class.
 
-#include <cstdarg>
+#include <assert.h>
 #include <cxxabi.h>
+#include <stdarg.h>
 
 #include <algorithm>
-#include <cassert>
 
-#include "common/dump_stabs.h"
+#include "common/stabs_to_module.h"
 
 namespace google_breakpad {
 
@@ -56,7 +56,7 @@ static string Demangle(const string &mangled) {
   return string(mangled);
 }
 
-DumpStabsHandler::~DumpStabsHandler() {
+StabsToModule::~StabsToModule() {
   // Free any functions we've accumulated but not added to the module.
   for (vector<Module::Function *>::iterator func_it = functions_.begin();
        func_it != functions_.end(); func_it++)
@@ -65,8 +65,8 @@ DumpStabsHandler::~DumpStabsHandler() {
   delete current_function_;
 }
 
-bool DumpStabsHandler::StartCompilationUnit(const char *name, uint64_t address,
-                                            const char *build_directory) {
+bool StabsToModule::StartCompilationUnit(const char *name, uint64_t address,
+                                         const char *build_directory) {
   assert(!in_compilation_unit_);
   in_compilation_unit_ = true;
   current_source_file_name_ = name;
@@ -76,7 +76,7 @@ bool DumpStabsHandler::StartCompilationUnit(const char *name, uint64_t address,
   return true;
 }
 
-bool DumpStabsHandler::EndCompilationUnit(uint64_t address) {
+bool StabsToModule::EndCompilationUnit(uint64_t address) {
   assert(in_compilation_unit_);
   in_compilation_unit_ = false;
   comp_unit_base_address_ = 0;
@@ -87,20 +87,20 @@ bool DumpStabsHandler::EndCompilationUnit(uint64_t address) {
   return true;
 }
 
-bool DumpStabsHandler::StartFunction(const string &name,
-                                     uint64_t address) {
+bool StabsToModule::StartFunction(const string &name,
+                                  uint64_t address) {
   assert(!current_function_);
   Module::Function *f = new Module::Function;
   f->name = Demangle(name);
   f->address = address;
-  f->size = 0;           // We compute this in DumpStabsHandler::Finalize().
+  f->size = 0;           // We compute this in StabsToModule::Finalize().
   f->parameter_size = 0; // We don't provide this information.
   current_function_ = f;
   boundaries_.push_back(static_cast<Module::Address>(address));
   return true;
 }
 
-bool DumpStabsHandler::EndFunction(uint64_t address) {
+bool StabsToModule::EndFunction(uint64_t address) {
   assert(current_function_);
   // Functions in this compilation unit should have address bigger
   // than the compilation unit's starting address.  There may be a lot
@@ -120,7 +120,7 @@ bool DumpStabsHandler::EndFunction(uint64_t address) {
   return true;
 }
 
-bool DumpStabsHandler::Line(uint64_t address, const char *name, int number) {
+bool StabsToModule::Line(uint64_t address, const char *name, int number) {
   assert(current_function_);
   assert(current_source_file_);
   if (name != current_source_file_name_) {
@@ -129,21 +129,21 @@ bool DumpStabsHandler::Line(uint64_t address, const char *name, int number) {
   }
   Module::Line line;
   line.address = address;
-  line.size = 0;  // We compute this in DumpStabsHandler::Finalize().
+  line.size = 0;  // We compute this in StabsToModule::Finalize().
   line.file = current_source_file_;
   line.number = number;
   current_function_->lines.push_back(line);
   return true;
 }
 
-void DumpStabsHandler::Warning(const char *format, ...) {
+void StabsToModule::Warning(const char *format, ...) {
   va_list args;
   va_start(args, format);
   vfprintf(stderr, format, args);
   va_end(args);
 }
 
-void DumpStabsHandler::Finalize() {
+void StabsToModule::Finalize() {
   // Sort our boundary list, so we can search it quickly.
   sort(boundaries_.begin(), boundaries_.end());
   // Sort all functions by address, just for neatness.

@@ -31,7 +31,7 @@
 
 // Original author: Jim Blandy <jimb@mozilla.com> <jimb@red-bean.com>
 
-// dump_stabs.h: Define the DumpStabsHandler class, which receives
+// dump_stabs.h: Define the StabsToModule class, which receives
 // STABS debugging information from a parser and adds it to a Breakpad
 // symbol file.
 
@@ -51,24 +51,24 @@ namespace google_breakpad {
 using std::string;
 using std::vector;
 
-// A DumpStabsHandler is a handler that receives parsed STABS
+// A StabsToModule is a handler that receives parsed STABS
 // debugging information from a StabsReader, and uses that to populate
 // a Module. (All classes are in the google_breakpad namespace.) A
 // Module represents the contents of a Breakpad symbol file, and knows
-// how to write itself out as such. A DumpStabsHandler thus acts as
+// how to write itself out as such. A StabsToModule thus acts as
 // the bridge between STABS and Breakpad data.
-class DumpStabsHandler: public google_breakpad::StabsHandler {
+class StabsToModule: public google_breakpad::StabsHandler {
  public:
   // Receive parsed debugging information from a StabsReader, and
   // store it all in MODULE.
-  DumpStabsHandler(Module *module) :
+  StabsToModule(Module *module) :
       module_(module),
       in_compilation_unit_(false),
       comp_unit_base_address_(0),
       current_function_(NULL),
       current_source_file_(NULL),
       current_source_file_name_(NULL) { }
-  ~DumpStabsHandler();
+  ~StabsToModule();
 
   // The standard StabsHandler virtual member functions.
   bool StartCompilationUnit(const char *name, uint64_t address,

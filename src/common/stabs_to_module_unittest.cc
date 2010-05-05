@@ -29,20 +29,20 @@
 
 // Original author: Jim Blandy <jimb@mozilla.com> <jimb@red-bean.com>
 
-// dump_stabs_unittest.cc: Unit tests for DumpStabsHandler.
+// dump_stabs_unittest.cc: Unit tests for StabsToModule.
 
 #include <vector>
 
 #include "breakpad_googletest_includes.h"
-#include "common/dump_stabs.h"
+#include "common/stabs_to_module.h"
 
-using google_breakpad::DumpStabsHandler;
 using google_breakpad::Module;
+using google_breakpad::StabsToModule;
 using std::vector;
 
-TEST(DumpStabsHandler, SimpleCU) {
+TEST(StabsToModule, SimpleCU) {
   Module m("name", "os", "arch", "id");
-  DumpStabsHandler h(&m);
+  StabsToModule h(&m);
 
   // Feed in a simple compilation unit that defines a function with
   // one line.
@@ -76,7 +76,7 @@ TEST(DumpStabsHandler, SimpleCU) {
 
 TEST(InferSizes, LineSize) {
   Module m("name", "os", "arch", "id");
-  DumpStabsHandler h(&m);
+  StabsToModule h(&m);
 
   // Feed in a simple compilation unit that defines a function with
   // one line.
@@ -124,7 +124,7 @@ TEST(InferSizes, LineSize) {
 
 TEST(FunctionNames, Mangled) {
   Module m("name", "os", "arch", "id");
-  DumpStabsHandler h(&m);
+  StabsToModule h(&m);
 
   // Compilation unit with one function, mangled name.
   EXPECT_TRUE(h.StartCompilationUnit("compilation-unit", 0xf2cfda63cef7f46cLL,
@@ -163,7 +163,7 @@ TEST(FunctionNames, Mangled) {
 // SO addresses are zero.
 TEST(Omitted, Function) {
   Module m("name", "os", "arch", "id");
-  DumpStabsHandler h(&m);
+  StabsToModule h(&m);
 
   // The StartCompilationUnit and EndCompilationUnit calls may both have an
   // address of zero if the compilation unit has had sections removed.

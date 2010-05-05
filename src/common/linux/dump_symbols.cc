@@ -48,23 +48,23 @@
 
 #include "common/dwarf/bytereader-inl.h"
 #include "common/dwarf/dwarf2diehandler.h"
-#include "common/dump_stabs.h"
-#include "common/linux/dump_symbols.h"
 #include "common/dwarf_cfi_to_module.h"
 #include "common/dwarf_cu_to_module.h"
 #include "common/dwarf_line_to_module.h"
+#include "common/linux/dump_symbols.h"
 #include "common/linux/file_id.h"
 #include "common/module.h"
 #include "common/stabs_reader.h"
+#include "common/stabs_to_module.h"
 
 // This namespace contains helper functions.
 namespace {
 
-using google_breakpad::DumpStabsHandler;
 using google_breakpad::DwarfCFIToModule;
 using google_breakpad::DwarfCUToModule;
 using google_breakpad::DwarfLineToModule;
 using google_breakpad::Module;
+using google_breakpad::StabsToModule;
 
 // Fix offset into virtual address by adding the mapped base into offsets.
 // Make life easier when want to find something by offset.
@@ -139,7 +139,7 @@ static bool LoadStabs(const ElfW(Ehdr) *elf_header,
     return false;
   }
   // A callback object to handle data from the STABS reader.
-  DumpStabsHandler handler(module);
+  StabsToModule handler(module);
   // Find the addresses of the STABS data, and create a STABS reader object.
   // On Linux, STABS entries always have 32-bit values, regardless of the
   // address size of the architecture whose code they're describing.
