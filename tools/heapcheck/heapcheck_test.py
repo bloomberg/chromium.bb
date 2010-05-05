@@ -13,7 +13,7 @@ import os
 import re
 
 import common
-import google.path_utils
+import path_utils
 import suppressions
 
 
@@ -40,7 +40,7 @@ class HeapcheckWrapper(object):
   def Execute(self):
     """Executes the app to be tested."""
     logging.info('starting execution...')
-    proc = ['sh', google.path_utils.ScriptDir() + '/heapcheck_std.sh']
+    proc = ['sh', path_utils.ScriptDir() + '/heapcheck_std.sh']
     proc += self._args
     self.PutEnvAndLog('G_SLICE', 'always-malloc')
     self.PutEnvAndLog('NSS_DISABLE_ARENA_FREE_LIST', '1')
@@ -48,7 +48,7 @@ class HeapcheckWrapper(object):
     self.PutEnvAndLog('HEAPCHECK', self._mode)
     self.PutEnvAndLog('HEAP_CHECK_MAX_LEAKS', '-1')
     self.PutEnvAndLog('PPROF_PATH',
-        google.path_utils.ScriptDir() +
+        path_utils.ScriptDir() +
         '/../../third_party/tcmalloc/chromium/src/pprof')
     self.PutEnvAndLog('LD_PRELOAD', '/usr/lib/debug/libstdc++.so')
 

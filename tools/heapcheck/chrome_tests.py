@@ -17,8 +17,8 @@ import os
 import stat
 import sys
 
-import google.logging_utils
-import google.path_utils
+import logging_utils
+import path_utils
 
 import common
 import heapcheck_test
@@ -101,7 +101,7 @@ class ChromeTests(object):
     self._args = args
     self._test = test
 
-    script_dir = google.path_utils.ScriptDir()
+    script_dir = path_utils.ScriptDir()
 
     # Compute the top of the tree (the "source dir") from the script dir (where
     # this script lives).  We assume that the script dir is in tools/heapcheck/
@@ -131,7 +131,7 @@ class ChromeTests(object):
     # We need multiple data dirs, the current script directory and a module
     # specific one. The global suppression file lives in our directory, and the
     # module specific suppression file lives with the module.
-    self._data_dirs = [google.path_utils.ScriptDir()]
+    self._data_dirs = [path_utils.ScriptDir()]
 
     if module == "chrome":
       # Unfortunately, not all modules have the same directory structure.
@@ -303,7 +303,7 @@ class ChromeTests(object):
     # Store each chunk in its own directory so that we can find the data later
     chunk_dir = os.path.join("layout", "chunk_%05d" % chunk_num)
     test_shell = os.path.join(self._options.build_dir, "test_shell")
-    out_dir = os.path.join(google.path_utils.ScriptDir(), "latest")
+    out_dir = os.path.join(path_utils.ScriptDir(), "latest")
     out_dir = os.path.join(out_dir, chunk_dir)
     if os.path.exists(out_dir):
       old_files = glob.glob(os.path.join(out_dir, "*.txt"))
@@ -415,9 +415,9 @@ def _main(_):
   options, args = parser.parse_args()
 
   if options.verbose:
-    google.logging_utils.config_root(logging.DEBUG)
+    logging_utils.config_root(logging.DEBUG)
   else:
-    google.logging_utils.config_root()
+    logging_utils.config_root()
 
   if not options.test or not len(options.test):
     parser.error("--test not specified")

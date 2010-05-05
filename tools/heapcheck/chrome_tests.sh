@@ -5,4 +5,4 @@
 # found in the LICENSE file.
 
 THISDIR=$(dirname "${0}")
-PYTHONPATH="${THISDIR}/../valgrind:${THISDIR}/../python" exec "${THISDIR}/chrome_tests.py" "${@}"
+PYTHONPATH="${THISDIR}/../valgrind:${THISDIR}/../python/google" exec "${THISDIR}/chrome_tests.py" "${@}"
