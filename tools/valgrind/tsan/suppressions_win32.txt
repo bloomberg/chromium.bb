@@ -8,6 +8,13 @@
   fun:*base*Thread*~*
 }
 
+{
+  Benign race durung InitializeClock
+  ThreadSanitizer:Race
+  ...
+  fun:*InitializeClock*
+}
+
 ############################
 # Reports on the guts of Windows
 {
