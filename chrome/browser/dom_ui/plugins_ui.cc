@@ -11,6 +11,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
+#include "base/path_service.h"
 #include "base/singleton.h"
 #include "base/values.h"
 #include "chrome/browser/browser.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -258,9 +260,16 @@ DictionaryValue* PluginsDOMHandler::CreatePluginSummaryValue(
   return plugin_data;
 }
 
+// TODO(viettrungluu): move this (and the registration of the prefs into the
+// plugins service.
 void PluginsDOMHandler::UpdatePreferences() {
-  ListValue* plugins_list = dom_ui_->GetProfile()->GetPrefs()->GetMutableList(
-      prefs::kPluginsPluginsList);
+  PrefService* prefs = dom_ui_->GetProfile()->GetPrefs();
+
+  FilePath internal_dir;
+  if (PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &internal_dir))
+    prefs->SetFilePath(prefs::kPluginsLastInternalDirectory, internal_dir);
+
+  ListValue* plugins_list = prefs->GetMutableList(prefs::kPluginsPluginsList);
   plugins_list->Clear();
 
   std::vector<WebPluginInfo> plugins;
@@ -303,5 +312,10 @@ RefCountedMemory* PluginsUI::GetFaviconResourceBytes() {
 
 // static
 void PluginsUI::RegisterUserPrefs(PrefService* prefs) {
+  FilePath internal_dir;
+  PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &internal_dir);
+  prefs->RegisterFilePathPref(prefs::kPluginsLastInternalDirectory,
+                              internal_dir);
+
   prefs->RegisterListPref(prefs::kPluginsPluginsList);
 }

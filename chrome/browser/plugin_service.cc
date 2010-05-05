@@ -56,6 +56,13 @@ bool PluginService::enable_chrome_plugins_ = true;
 void PluginService::InitGlobalInstance(Profile* profile) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
+  bool update_internal_dir = false;
+  FilePath last_internal_dir =
+      profile->GetPrefs()->GetFilePath(prefs::kPluginsLastInternalDirectory);
+  FilePath cur_internal_dir;
+  if (PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &cur_internal_dir))
+    update_internal_dir = (cur_internal_dir != last_internal_dir);
+
   // Disable plugins listed as disabled in prefs.
   if (const ListValue* saved_plugins_list =
           profile->GetPrefs()->GetList(prefs::kPluginsPluginsList)) {
@@ -71,8 +78,18 @@ void PluginService::InitGlobalInstance(Profile* profile) {
       FilePath::StringType path;
       bool enabled = true;
       plugin->GetBoolean(L"enabled", &enabled);
-      if (!enabled && plugin->GetString(L"path", &path))
-        NPAPI::PluginList::Singleton()->DisablePlugin(FilePath(path));
+      if (!enabled && plugin->GetString(L"path", &path)) {
+        FilePath plugin_path(path);
+        NPAPI::PluginList::Singleton()->DisablePlugin(plugin_path);
+
+        // If the internal plugin directory has changed and if the plugin looks
+        // internal, also disable it in the current internal plugins directory.
+        if (update_internal_dir &&
+            plugin_path.DirName() == last_internal_dir) {
+          NPAPI::PluginList::Singleton()->DisablePlugin(
+              cur_internal_dir.Append(plugin_path.BaseName()));
+        }
+      }
     }
   }
 

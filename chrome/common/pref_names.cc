@@ -326,6 +326,11 @@ const wchar_t kExtensionsUIDeveloperMode[] = L"extensions.ui.developer_mode";
 // actions toolbar.
 const wchar_t kExtensionToolbarSize[] = L"extensions.toolbarsize";
 
+// Pref containing the directory for internal plugins as written to the plugins
+// list (below).
+const wchar_t kPluginsLastInternalDirectory[] =
+    L"plugins.last_internal_directory";
+
 // List pref containing information (dictionaries) on plugins.
 const wchar_t kPluginsPluginsList[] = L"plugins.plugins_list";
 

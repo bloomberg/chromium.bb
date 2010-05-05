@@ -36,6 +36,7 @@ enum {
                                 // this when a temporary file or directory will
                                 // be moved into the profile, to avoid issues
                                 // moving across volumes.  See crbug.com/13044 .
+  DIR_INTERNAL_PLUGINS,         // Directory where internal plugins reside.
   FILE_RESOURCE_MODULE,         // Full path and filename of the module that
                                 // contains embedded resources (version,
                                 // strings, images, etc.).

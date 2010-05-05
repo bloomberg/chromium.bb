@@ -130,6 +130,7 @@ extern const wchar_t kCurrentThemeTints[];
 extern const wchar_t kCurrentThemeDisplayProperties[];
 extern const wchar_t kExtensionsUIDeveloperMode[];
 extern const wchar_t kExtensionToolbarSize[];
+extern const wchar_t kPluginsLastInternalDirectory[];
 extern const wchar_t kPluginsPluginsList[];
 extern const wchar_t kCheckDefaultBrowser[];
 #if defined(OS_MACOSX)

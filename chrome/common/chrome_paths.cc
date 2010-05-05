@@ -192,6 +192,10 @@ bool PathProvider(int key, FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("Temp"));
       create_dir = true;
       break;
+    case chrome::DIR_INTERNAL_PLUGINS:
+      if (!GetInternalPluginsDirectory(&cur))
+        return false;
+      break;
     case chrome::FILE_LOCAL_STATE:
       if (!PathService::Get(chrome::DIR_USER_DATA, &cur))
         return false;
