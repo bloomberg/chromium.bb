@@ -72,7 +72,7 @@ HRESULT ChromeActiveDocument::FinalConstruct() {
   // ownership of the cached document's automation client. This is an
   // optimization to get Chrome active documents to load faster.
   ChromeActiveDocument* cached_document = g_active_doc_cache.Get();
-  if (cached_document) {
+  if (cached_document && cached_document->IsValid()) {
     DCHECK(automation_client_.get() == NULL);
     automation_client_.swap(cached_document->automation_client_);
     DLOG(INFO) << "Reusing automation client instance from "
