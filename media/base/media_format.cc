@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,6 +44,15 @@ const char kUncompressedAudio[]             = "audio/x-uncompressed";
 //   kHeight          Integer         Display height of the surface
 const char kUncompressedVideo[]             = "video/x-uncompressed";
 
+// Represents decoded video data in EGLImage, typically from OpenMAX video
+// decoder.
+// Other information, such as surface format (i.e., YV12), stride and planes are
+// included with the buffer itself and is not part of the MediaFormat.
+// Expected keys:
+//   kWidth           Integer         Display width of the surface
+//   kHeight          Integer         Display height of the surface
+const char kUncompressedVideoEglImage[]     = "video/x-uncompressed-eglimage";
+
 // Major types of media types begin with the prefix "audio/" or "video/".
 const char kMajorTypeVideo[]                = "video/";
 const char kMajorTypeAudio[]                = "audio/";
@@ -80,19 +89,23 @@ void MediaFormat::Clear() {
 }
 
 void MediaFormat::SetAsBoolean(const std::string& key, bool in_value) {
+  ReleaseValue(key);
   value_map_[key] = Value::CreateBooleanValue(in_value);
 }
 
 void MediaFormat::SetAsInteger(const std::string& key, int in_value) {
+  ReleaseValue(key);
   value_map_[key] = Value::CreateIntegerValue(in_value);
 }
 
 void MediaFormat::SetAsReal(const std::string& key, double in_value) {
+  ReleaseValue(key);
   value_map_[key] = Value::CreateRealValue(in_value);
 }
 
 void MediaFormat::SetAsString(const std::string& key,
                               const std::string& in_value) {
+  ReleaseValue(key);
   value_map_[key] = Value::CreateStringValue(in_value);
 }
 
@@ -120,6 +133,13 @@ bool MediaFormat::GetAsString(const std::string& key,
 Value* MediaFormat::GetValue(const std::string& key) const {
   ValueMap::const_iterator value_iter = value_map_.find(key);
   return (value_iter == value_map_.end()) ? NULL : value_iter->second;
+}
+
+void MediaFormat::ReleaseValue(const std::string& key) {
+  ValueMap::iterator vm = value_map_.find(key);
+  if (vm != value_map_.end()) {
+    delete vm->second;
+  }
 }
 
 }  // namespace media

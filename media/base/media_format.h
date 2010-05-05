@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@ extern const char kAACAudio[];
 extern const char kH264AnnexB[];
 extern const char kUncompressedAudio[];
 extern const char kUncompressedVideo[];
+extern const char kUncompressedVideoEglImage[];
 extern const char kMajorTypeAudio[];
 extern const char kMajorTypeVideo[];
 }  // namespace mime_type
@@ -78,6 +79,9 @@ class MediaFormat {
  private:
   // Helper to return a value.
   Value* GetValue(const std::string& key) const;
+
+  // Helper to release Value of the key
+  void ReleaseValue(const std::string& key);
 
   typedef std::map<std::string, Value*> ValueMap;
   ValueMap value_map_;

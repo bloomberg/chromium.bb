@@ -44,6 +44,7 @@ class X11VideoRenderer : public media::VideoRendererBase {
 
   int width_;
   int height_;
+  bool uses_egl_image_;
 
   Display* display_;
   Window window_;

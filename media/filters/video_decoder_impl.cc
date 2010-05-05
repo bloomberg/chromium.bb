@@ -51,8 +51,10 @@ void VideoDecoderImpl::DoInitialize(DemuxerStream* demuxer_stream,
     return;
   }
 
-  media_format_.SetAsString(MediaFormat::kMimeType,
-                            mime_type::kUncompressedVideo);
+  // Only set kMimeType when derived class has not done so.
+  if (!media_format_.Contains(MediaFormat::kMimeType))
+    media_format_.SetAsString(MediaFormat::kMimeType,
+                              mime_type::kUncompressedVideo);
   media_format_.SetAsInteger(MediaFormat::kWidth, width_);
   media_format_.SetAsInteger(MediaFormat::kHeight, height_);
 

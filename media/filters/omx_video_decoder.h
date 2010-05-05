@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,12 @@ class OmxVideoDecoder : public VideoDecoderImpl {
   virtual void set_message_loop(MessageLoop* message_loop);
   virtual void Stop();
 
+ protected:
+  void DoInitialize(DemuxerStream* demuxer_stream, bool* success,
+                    Task* done_cb);
+
  private:
+  bool supports_egl_image_;
   OmxVideoDecodeEngine* omx_engine_;
 
   DISALLOW_COPY_AND_ASSIGN(OmxVideoDecoder);

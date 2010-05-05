@@ -31,6 +31,11 @@ class VideoDecoderImpl : public DecoderBase<VideoDecoder, VideoFrame> {
   // class doesn't probably need to be abstract.
   virtual ~VideoDecoderImpl() = 0;
 
+  virtual void DoInitialize(DemuxerStream* demuxer_stream, bool* success,
+                            Task* done_cb);
+  virtual void DoSeek(base::TimeDelta time, Task* done_cb);
+  virtual void DoDecode(Buffer* buffer, Task* done_cb);
+
  private:
   friend class FilterFactoryImpl1<VideoDecoderImpl, VideoDecodeEngine*>;
   friend class DecoderPrivateMock;
@@ -55,11 +60,6 @@ class VideoDecoderImpl : public DecoderBase<VideoDecoder, VideoFrame> {
   };
 
   // Implement DecoderBase template methods.
-  virtual void DoInitialize(DemuxerStream* demuxer_stream, bool* success,
-                            Task* done_cb);
-  virtual void DoSeek(base::TimeDelta time, Task* done_cb);
-  virtual void DoDecode(Buffer* buffer, Task* done_cb);
-
   virtual void EnqueueVideoFrame(const scoped_refptr<VideoFrame>& video_frame);
 
   // Create an empty video frame and queue it.

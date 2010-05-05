@@ -30,7 +30,8 @@ bool GlVideoRenderer::IsMediaFormatSupported(
     const media::MediaFormat& media_format) {
   int width = 0;
   int height = 0;
-  return ParseMediaFormat(media_format, &width, &height);
+  bool uses_egl_image = false;
+  return ParseMediaFormat(media_format, &width, &height, &uses_egl_image);
 }
 
 void GlVideoRenderer::OnStop() {
@@ -149,7 +150,8 @@ static const char kFragmentShader[] =
 static const unsigned int kErrorSize = 4096;
 
 bool GlVideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
-  if (!ParseMediaFormat(decoder->media_format(), &width_, &height_))
+  if (!ParseMediaFormat(decoder->media_format(), &width_, &height_,
+                        &uses_egl_image_))
     return false;
 
   LOG(INFO) << "Initializing GL Renderer...";

@@ -39,9 +39,24 @@ bool OmxVideoDecoder::IsMediaFormatSupported(const MediaFormat& format) {
 OmxVideoDecoder::OmxVideoDecoder(OmxVideoDecodeEngine* engine)
     : VideoDecoderImpl(engine),
       omx_engine_(engine) {
+#if defined(ENABLE_EGLIMAGE)
+  supports_egl_image_ = true;
+#else
+  supports_egl_image_ = false;
+#endif
 }
 
 OmxVideoDecoder::~OmxVideoDecoder() {
+}
+
+void OmxVideoDecoder::DoInitialize(DemuxerStream* demuxer_stream,
+                                   bool* success,
+                                   Task* done_cb) {
+  if (supports_egl_image_)
+    media_format_.SetAsString(MediaFormat::kMimeType,
+                              mime_type::kUncompressedVideoEglImage);
+
+  VideoDecoderImpl::DoInitialize(demuxer_stream, success, done_cb);
 }
 
 void OmxVideoDecoder::set_message_loop(MessageLoop* message_loop) {
