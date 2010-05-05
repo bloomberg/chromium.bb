@@ -127,8 +127,7 @@ std::wstring TaskManagerModel::GetResourceNetworkUsage(int index) const {
   std::wstring net_byte =
       FormatSpeed(net_usage, GetByteDisplayUnits(net_usage), true);
   // Force number string to have LTR directionality.
-  if (base::i18n::IsRTL())
-    base::i18n::WrapStringWithLTRFormatting(&net_byte);
+  base::i18n::GetDisplayStringInLTRDirectionality(&net_byte);
   return net_byte;
 }
 

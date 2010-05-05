@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -179,8 +179,7 @@ TEST(TextEliderTest, TestFilenameEliding) {
   for (size_t i = 0; i < arraysize(testcases); ++i) {
     FilePath filepath(testcases[i].input);
     std::wstring expected = testcases[i].output;
-    if (base::i18n::IsRTL())
-      base::i18n::WrapStringWithLTRFormatting(&expected);
+    base::i18n::GetDisplayStringInLTRDirectionality(&expected);
     EXPECT_EQ(expected, ElideFilename(filepath,
         font,
         font.GetStringWidth(testcases[i].output)));

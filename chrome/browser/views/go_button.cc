@@ -105,8 +105,7 @@ bool GoButton::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
   // Note that we mark the URL's text as LTR (instead of examining the
   // characters and guessing the text directionality) since URLs are always
   // treated as left-to-right text, even when they contain RTL characters.
-  if (base::i18n::IsRTL())
-    base::i18n::WrapStringWithLTRFormatting(&current_text);
+  base::i18n::GetDisplayStringInLTRDirectionality(&current_text);
 
   AutocompleteEditModel* edit_model = location_bar_->location_entry()->model();
   if (edit_model->CurrentTextIsURL()) {

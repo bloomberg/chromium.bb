@@ -318,8 +318,7 @@ void Label::CalculateDrawStringParams(std::wstring* paint_text,
     // characters. We use the locale settings because an URL is always treated
     // as an LTR string, even if its containing view does not use an RTL UI
     // layout.
-    if (base::i18n::IsRTL())
-      base::i18n::WrapStringWithLTRFormatting(paint_text);
+    base::i18n::GetDisplayStringInLTRDirectionality(paint_text);
   } else {
     *paint_text = text_;
   }

@@ -160,8 +160,7 @@ static std::wstring CreateToolTipForURLAndTitle(const gfx::Point& screen_loc,
     // the Unicode BiDi algorithm puts certain characters on the left by
     // default.
     std::wstring elided_url(gfx::ElideUrl(url, tt_font, max_width, languages));
-    if (base::i18n::IsRTL())
-      base::i18n::WrapStringWithLTRFormatting(&elided_url);
+    base::i18n::GetDisplayStringInLTRDirectionality(&elided_url);
     result.append(elided_url);
   }
   return result;

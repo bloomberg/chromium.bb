@@ -667,8 +667,7 @@ void StatusBubbleViews::SetURL(const GURL& url, const std::wstring& languages) {
   // An URL is always treated as a left-to-right string. On right-to-left UIs
   // we need to explicitly mark the URL as LTR to make sure it is displayed
   // correctly.
-  if (base::i18n::IsRTL() && !url_text_.empty())
-    base::i18n::WrapStringWithLTRFormatting(&url_text_);
+  base::i18n::GetDisplayStringInLTRDirectionality(&url_text_);
 
   if (IsFrameVisible()) {
     view_->SetTextAndAnimate(url_text_);

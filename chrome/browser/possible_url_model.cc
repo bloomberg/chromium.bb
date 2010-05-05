@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -121,13 +121,10 @@ std::wstring PossibleURLModel::GetText(int row, int col_id) {
 
   // TODO(brettw): this should probably pass the GURL up so the URL elider
   // can be used at a higher level when we know the width.
-  const string16& url = results_[row].display_url.display_url();
-  if (!base::i18n::IsRTL())
-    return UTF16ToWideHack(url);
   // Force URL to be LTR.
-  std::wstring localized_url = UTF16ToWideHack(url);
-  base::i18n::WrapStringWithLTRFormatting(&localized_url);
-  return localized_url;
+  std::wstring url(UTF16ToWideHack(results_[row].display_url.display_url()));
+  base::i18n::GetDisplayStringInLTRDirectionality(&url);
+  return url;
 }
 
 SkBitmap PossibleURLModel::GetIcon(int row) {

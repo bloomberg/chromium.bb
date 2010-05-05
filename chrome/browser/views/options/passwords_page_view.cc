@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,13 +70,9 @@ std::wstring PasswordsTableModel::GetText(int row,
                                           int col_id) {
   switch (col_id) {
     case IDS_PASSWORDS_PAGE_VIEW_SITE_COLUMN: {  // Site.
-      const std::wstring& url = saved_signons_[row]->display_url.display_url();
       // Force URL to have LTR directionality.
-      if (base::i18n::IsRTL()) {
-        std::wstring localized_url = url;
-        base::i18n::WrapStringWithLTRFormatting(&localized_url);
-        return localized_url;
-      }
+      std::wstring url(saved_signons_[row]->display_url.display_url());
+      base::i18n::GetDisplayStringInLTRDirectionality(&url);
       return url;
     }
     case IDS_PASSWORDS_PAGE_VIEW_USERNAME_COLUMN: {  // Username.

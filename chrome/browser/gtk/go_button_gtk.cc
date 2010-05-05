@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -176,8 +176,7 @@ gboolean GoButtonGtk::OnQueryTooltip(GtkTooltip* tooltip) {
   std::string text;
   if (visible_mode_ == MODE_GO) {
     std::wstring current_text_wstr(location_bar_->location_entry()->GetText());
-    if (base::i18n::IsRTL())
-      base::i18n::WrapStringWithLTRFormatting(&current_text_wstr);
+    base::i18n::GetDisplayStringInLTRDirectionality(&current_text_wstr);
     string16 current_text = WideToUTF16Hack(
         l10n_util::TruncateString(current_text_wstr, kMaxTooltipTextLength));
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -367,8 +367,7 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
   file_value->SetString(L"file_path", download->full_path().ToWStringHack());
   // Keep file names as LTR.
   std::wstring file_name = download->GetFileName().ToWStringHack();
-  if (base::i18n::IsRTL())
-    base::i18n::WrapStringWithLTRFormatting(&file_name);
+  base::i18n::GetDisplayStringInLTRDirectionality(&file_name);
   file_value->SetString(L"file_name", file_name);
   file_value->SetString(L"url", download->url().spec());
   file_value->SetBoolean(L"otr", download->is_otr());

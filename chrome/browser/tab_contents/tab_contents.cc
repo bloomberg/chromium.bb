@@ -3043,8 +3043,7 @@ std::wstring TabContents::GetMessageBoxTitle(const GURL& frame_url,
   std::wstring base_address = gfx::ElideUrl(clean_url, gfx::Font(), 0,
       profile()->GetPrefs()->GetString(prefs::kAcceptLanguages));
   // Force URL to have LTR directionality.
-  if (base::i18n::IsRTL())
-    base::i18n::WrapStringWithLTRFormatting(&base_address);
+  base::i18n::GetDisplayStringInLTRDirectionality(&base_address);
 
   return l10n_util::GetStringF(
       is_alert ? IDS_JAVASCRIPT_ALERT_TITLE : IDS_JAVASCRIPT_MESSAGEBOX_TITLE,

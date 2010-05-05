@@ -1292,10 +1292,9 @@ void RenderViewHost::OnMsgSetTooltipText(
   // but we use the current approach to match Fx & IE's behavior.
   std::wstring wrapped_tooltip_text = tooltip_text;
   if (!tooltip_text.empty()) {
-    if (text_direction_hint == WebKit::WebTextDirectionLeftToRight &&
-        base::i18n::IsRTL()) {
+    if (text_direction_hint == WebKit::WebTextDirectionLeftToRight) {
       // Force the tooltip to have LTR directionality.
-      base::i18n::WrapStringWithLTRFormatting(&wrapped_tooltip_text);
+      base::i18n::GetDisplayStringInLTRDirectionality(&wrapped_tooltip_text);
     } else if (text_direction_hint == WebKit::WebTextDirectionRightToLeft &&
                !base::i18n::IsRTL()) {
       // Force the tooltip to have RTL directionality.

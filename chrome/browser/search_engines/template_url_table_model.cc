@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -189,15 +189,10 @@ std::wstring TemplateURLTableModel::GetText(int row, int col_id) {
     }
 
     case IDS_SEARCH_ENGINES_EDITOR_KEYWORD_COLUMN: {
-      const std::wstring& keyword = url.keyword();
       // Keyword should be domain name. Force it to have LTR directionality.
-      if (base::i18n::IsRTL()) {
-        std::wstring localized_keyword = keyword;
-        base::i18n::WrapStringWithLTRFormatting(&localized_keyword);
-        return localized_keyword;
-      }
+      std::wstring keyword(url.keyword());
+      base::i18n::GetDisplayStringInLTRDirectionality(&keyword);
       return keyword;
-      break;
     }
 
     default:

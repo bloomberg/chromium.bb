@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,8 +39,7 @@ std::wstring DownloadItemModel::GetStatusText() {
   // we mark the total string as an LTR string if the UI layout is
   // right-to-left so that the string "456 MB" is treated as an LTR run.
   std::wstring simple_total = FormatBytes(total, amount_units, true);
-  if (base::i18n::IsRTL())
-    base::i18n::WrapStringWithLTRFormatting(&simple_total);
+  base::i18n::GetDisplayStringInLTRDirectionality(&simple_total);
 
   TimeDelta remaining;
   std::wstring simple_time;
