@@ -22,8 +22,7 @@ class ErrorPageTest : public UITest {
   }
 };
 
-// Flaky, http://crbug.com/19361.
-TEST_F(ErrorPageTest, FLAKY_DNSError_Basic) {
+TEST_F(ErrorPageTest, DNSError_Basic) {
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
 
   // The first navigation should fail, and the second one should be the error
@@ -33,8 +32,7 @@ TEST_F(ErrorPageTest, FLAKY_DNSError_Basic) {
   EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
 }
 
-// Flaky, http://crbug.com/19361.
-TEST_F(ErrorPageTest, FLAKY_DNSError_GoBack1) {
+TEST_F(ErrorPageTest, DNSError_GoBack1) {
   // Test that a DNS error occuring in the main frame does not result in an
   // additional session history entry.
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
@@ -51,8 +49,7 @@ TEST_F(ErrorPageTest, FLAKY_DNSError_GoBack1) {
   EXPECT_TRUE(WaitForTitleMatching(L"Title Of Awesomeness"));
 }
 
-// Flaky, http://crbug.com/19361.
-TEST_F(ErrorPageTest, FLAKY_DNSError_GoBack2) {
+TEST_F(ErrorPageTest, DNSError_GoBack2) {
   // Test that a DNS error occuring in the main frame does not result in an
   // additional session history entry.
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
@@ -75,8 +72,7 @@ TEST_F(ErrorPageTest, FLAKY_DNSError_GoBack2) {
   EXPECT_TRUE(WaitForTitleMatching(L"Title Of Awesomeness"));
 }
 
-// Flaky, http://crbug.com/19361.
-TEST_F(ErrorPageTest, FLAKY_DNSError_GoBack2AndForward) {
+TEST_F(ErrorPageTest, DNSError_GoBack2AndForward) {
   // Test that a DNS error occuring in the main frame does not result in an
   // additional session history entry.
 
@@ -103,8 +99,7 @@ TEST_F(ErrorPageTest, FLAKY_DNSError_GoBack2AndForward) {
   EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
 }
 
-// Flaky, http://crbug.com/19361.
-TEST_F(ErrorPageTest, FLAKY_DNSError_GoBack2Forward2) {
+TEST_F(ErrorPageTest, DNSError_GoBack2Forward2) {
   // Test that a DNS error occuring in the main frame does not result in an
   // additional session history entry.
 
@@ -133,15 +128,13 @@ TEST_F(ErrorPageTest, FLAKY_DNSError_GoBack2Forward2) {
   EXPECT_TRUE(WaitForTitleMatching(L"Title Of Awesomeness"));
 }
 
-// Flaky, http://crbug.com/19361.
-TEST_F(ErrorPageTest, FLAKY_IFrameDNSError_Basic) {
+TEST_F(ErrorPageTest, IFrameDNSError_Basic) {
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
                     FilePath(FILE_PATH_LITERAL("iframe_dns_error.html"))));
   EXPECT_TRUE(WaitForTitleMatching(L"Blah"));
 }
 
-// Flaky, http://crbug.com/19361.
-TEST_F(ErrorPageTest, FLAKY_IFrameDNSError_GoBack) {
+TEST_F(ErrorPageTest, IFrameDNSError_GoBack) {
   // Test that a DNS error occuring in an iframe does not result in an
   // additional session history entry.
 
@@ -155,8 +148,7 @@ TEST_F(ErrorPageTest, FLAKY_IFrameDNSError_GoBack) {
   EXPECT_TRUE(WaitForTitleMatching(L"Title Of Awesomeness"));
 }
 
-// Flaky, http://crbug.com/19361.
-TEST_F(ErrorPageTest, FLAKY_IFrameDNSError_GoBackAndForward) {
+TEST_F(ErrorPageTest, IFrameDNSError_GoBackAndForward) {
   // Test that a DNS error occuring in an iframe does not result in an
   // additional session history entry.
 
@@ -171,8 +163,7 @@ TEST_F(ErrorPageTest, FLAKY_IFrameDNSError_GoBackAndForward) {
   EXPECT_TRUE(WaitForTitleMatching(L"Blah"));
 }
 
-// Flaky, http://crbug.com/19361.
-TEST_F(ErrorPageTest, FLAKY_IFrame404) {
+TEST_F(ErrorPageTest, IFrame404) {
   // iframes that have 404 pages should not trigger an alternate error page.
   // In this test, the iframe sets the title of the parent page to "SUCCESS"
   // when the iframe loads.  If the iframe fails to load (because an alternate
@@ -186,8 +177,7 @@ TEST_F(ErrorPageTest, FLAKY_IFrame404) {
   EXPECT_TRUE(WaitForTitleMatching(L"SUCCESS"));
 }
 
-// Flaky, http://crbug.com/19361.
-TEST_F(ErrorPageTest, FLAKY_Page404) {
+TEST_F(ErrorPageTest, Page404) {
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
                     FilePath(FILE_PATH_LITERAL("title2.html"))));
   // The first navigation should fail, and the second one should be the error
@@ -199,8 +189,7 @@ TEST_F(ErrorPageTest, FLAKY_Page404) {
   EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
 }
 
-// Flaky, http://crbug.com/19361.
-TEST_F(ErrorPageTest, FLAKY_Page404_GoBack) {
+TEST_F(ErrorPageTest, Page404_GoBack) {
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
                     FilePath(FILE_PATH_LITERAL("title2.html"))));
   // The first navigation should fail, and the second one should be the error
