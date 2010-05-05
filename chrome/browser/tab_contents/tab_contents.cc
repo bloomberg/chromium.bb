@@ -1429,10 +1429,19 @@ void TabContents::SetIsLoading(bool is_loading,
 
 void TabContents::AddPopup(TabContents* new_contents,
                            const gfx::Rect& initial_pos) {
-  GURL url(GetURL());
-  if (url.is_valid() &&
+  // A page can't spawn popups (or do anything else, either) until its load
+  // commits, so when we reach here, the popup was spawned by the
+  // NavigationController's last committed entry, not the active entry.  For
+  // example, if a page opens a popup in an onunload() handler, then the active
+  // entry is the page to be loaded as we navigate away from the unloading
+  // page.  For this reason, we can't use GetURL() to get the opener URL,
+  // because it returns the active entry.
+  NavigationEntry* entry = controller_.GetLastCommittedEntry();
+  GURL creator = entry ? entry->virtual_url() : GURL::EmptyGURL();
+
+  if (creator.is_valid() &&
       profile()->GetHostContentSettingsMap()->GetContentSetting(
-          url, CONTENT_SETTINGS_TYPE_POPUPS) == CONTENT_SETTING_ALLOW) {
+          creator, CONTENT_SETTINGS_TYPE_POPUPS) == CONTENT_SETTING_ALLOW) {
     AddNewContents(new_contents, NEW_POPUP, initial_pos, true);
   } else {
     if (!blocked_popups_)
