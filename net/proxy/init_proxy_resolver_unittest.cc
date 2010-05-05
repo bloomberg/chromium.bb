@@ -68,7 +68,7 @@ class Rules {
       if (it->url == url)
         return *it;
     }
-    CHECK(false) << "Rule not found for " << url;
+    LOG(FATAL) << "Rule not found for " << url;
     return rules_[0];
   }
 
@@ -78,7 +78,7 @@ class Rules {
       if (it->bytes() == bytes)
         return *it;
     }
-    CHECK(false) << "Rule not found for " << bytes;
+    LOG(FATAL) << "Rule not found for " << bytes;
     return rules_[0];
   }
 

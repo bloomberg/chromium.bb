@@ -513,9 +513,9 @@ void ExtensionMessageService::Observe(NotificationType type,
         MessageChannelMap::iterator current = it++;
         int debug_info = current->second->receiver.debug_info;
         if (current->second->opener.sender == sender) {
-          CHECK(false) << "Shouldn't happen:" << debug_info;
+          LOG(FATAL) << "Shouldn't happen:" << debug_info;
         } else if (current->second->receiver.sender == sender) {
-          CHECK(false) << "Shouldn't happen either: " << debug_info;
+          LOG(FATAL) << "Shouldn't happen either: " << debug_info;
         }
       }
       OnSenderClosed(sender);

@@ -8,5 +8,5 @@
 // error reporting.  This requires us to export our own error handler.
 extern "C"
 void bz_internal_error(int errcode) {
-  CHECK(false) << "bzip2 internal error: " << errcode;
+  LOG(FATAL) << "bzip2 internal error: " << errcode;
 }

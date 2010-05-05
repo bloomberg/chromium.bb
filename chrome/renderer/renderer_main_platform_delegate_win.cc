@@ -48,7 +48,7 @@ void EnableThemeSupportForRenderer(bool no_sandbox) {
     if (!current || !::SetProcessWindowStation(current)) {
       // We failed to switch back to the secure window station. This might
       // confuse the renderer enough that we should kill it now.
-      CHECK(false) << "Failed to restore alternate window station";
+      LOG(FATAL) << "Failed to restore alternate window station";
     }
 
     if (!::CloseWindowStation(winsta0)) {

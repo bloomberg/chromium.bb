@@ -624,9 +624,9 @@ void PutARGBImage(Display* display, void* visual, int depth, XID pixmap,
               width, height);
     free(orig_bitmap16);
   } else {
-    CHECK(false) << "Sorry, we don't support your visual depth without "
-                    "Xrender support (depth:" << depth
-                 << " bpp:" << pixmap_bpp << ")";
+    LOG(FATAL) << "Sorry, we don't support your visual depth without "
+                  "Xrender support (depth:" << depth
+               << " bpp:" << pixmap_bpp << ")";
   }
 }
 
