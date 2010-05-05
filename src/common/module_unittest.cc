@@ -140,8 +140,6 @@ TEST(Write, RelativeLoadAddress) {
   FILE *f = checked_tmpfile();
   Module m(MODULE_NAME, MODULE_OS, MODULE_ARCH, MODULE_ID);
 
-  m.SetLoadAddress(0x2ab698b0b6407073LL);
-
   // Some source files.  We will expect to see them in lexicographic order.
   Module::File *file1 = m.FindFile("filename-b.cc");
   Module::File *file2 = m.FindFile("filename-a.cc");
@@ -173,6 +171,10 @@ TEST(Write, RelativeLoadAddress) {
     "do you like your blueeyed boy";
   entry->rule_changes[0x30f9e5c83323973eULL]["Mister"] = "Death";
   m.AddStackFrameEntry(entry);
+
+  // Set the load address.  Doing this after adding all the data to
+  // the module must work fine.
+  m.SetLoadAddress(0x2ab698b0b6407073LL);
 
   m.Write(f);
   checked_fflush(f);

@@ -153,8 +153,14 @@ class Module {
   // for functions and lines will be written to the Breakpad symbol
   // file as offsets from this address.  Construction initializes this
   // module's load address to zero: addresses written to the symbol
-  // file will be the same as they appear in the File and Line
-  // structures.
+  // file will be the same as they appear in the Function, Line, and
+  // StackFrameEntry structures.
+  //
+  // Note that this member function has no effect on addresses stored
+  // in the data added to this module; the Write member function
+  // simply subtracts off the load address from addresses before it
+  // prints them. Only the last load address given before calling
+  // Write is used.
   void SetLoadAddress(Address load_address);
 
   // Add FUNCTION to the module.
@@ -223,7 +229,7 @@ class Module {
   // established by SetLoadAddress.
   bool Write(FILE *stream);
 
-private:
+ private:
 
   // Report an error that has occurred writing the symbol file, using
   // errno to find the appropriate cause.  Return false.
