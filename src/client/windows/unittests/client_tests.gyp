@@ -37,6 +37,7 @@
       'type': 'executable',
       'sources': [
         'exception_handler_test.cc',
+        'minidump_test.cc',
       ],
       'dependencies': [
         'gtest.gyp:gtest',

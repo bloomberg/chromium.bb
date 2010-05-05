@@ -39,6 +39,7 @@
       'type': '<(library)',
       'include_dirs': [
         '<(DEPTH)/testing/include',
+        '<(DEPTH)/testing/gtest',
         '<(DEPTH)/testing/gtest/include',
       ],
       'sources': [
