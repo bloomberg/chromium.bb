@@ -30,7 +30,8 @@ void WebSharedWorkerProxy::startWorkerContext(
     const WebKit::WebURL& script_url,
     const WebKit::WebString& name,
     const WebKit::WebString& user_agent,
-    const WebKit::WebString& source_code) {
+    const WebKit::WebString& source_code,
+    long long script_resource_appcache_id) {
   DCHECK(!isStarted());
   CreateWorkerContext(script_url, true, name, user_agent, source_code,
                       pending_route_id_);
