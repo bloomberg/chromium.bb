@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/gtk/slide_animator_gtk.h"
@@ -63,7 +64,7 @@ class DownloadShelfGtk : public DownloadShelf,
   // size is changed.
   void MaybeShowMoreDownloadItems();
 
-  static void OnButtonClick(GtkWidget* button, DownloadShelfGtk* toolbar);
+  CHROMEGTK_CALLBACK_0(DownloadShelfGtk, void, OnButtonClick);
 
   // The browser that owns this download shelf.
   Browser* browser_;

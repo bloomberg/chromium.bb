@@ -10,6 +10,7 @@
 #include <string>
 
 #include "app/animation.h"
+#include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/download/download_manager.h"
@@ -95,32 +96,27 @@ class DownloadItemGtk : public DownloadItem::Observer,
   static void InitNineBoxes();
 
   // Draws everything in GTK rendering mode.
-  static gboolean OnHboxExpose(GtkWidget* widget, GdkEventExpose* e,
-                               DownloadItemGtk* download_item);
+  CHROMEGTK_CALLBACK_1(DownloadItemGtk, gboolean, OnHboxExpose,
+                       GdkEventExpose*);
 
   // Used for the download item's body and menu button in chrome theme mode.
-  static gboolean OnExpose(GtkWidget* widget, GdkEventExpose* e,
-                           DownloadItemGtk* download_item);
+  CHROMEGTK_CALLBACK_1(DownloadItemGtk, gboolean, OnExpose, GdkEventExpose*);
 
   // Called when |body_| is clicked.
-  static void OnClick(GtkWidget* widget, DownloadItemGtk* item);
+  CHROMEGTK_CALLBACK_0(DownloadItemGtk, void, OnClick);
 
   // Used for the download icon.
-  static gboolean OnProgressAreaExpose(GtkWidget* widget,
-                                       GdkEventExpose* e,
-                                       DownloadItemGtk* download_item);
+  CHROMEGTK_CALLBACK_1(DownloadItemGtk, gboolean, OnProgressAreaExpose,
+                       GdkEventExpose*);
 
-  static gboolean OnMenuButtonPressEvent(GtkWidget* button,
-                                         GdkEvent* event,
-                                         DownloadItemGtk* item);
+  CHROMEGTK_CALLBACK_1(DownloadItemGtk, gboolean, OnMenuButtonPressEvent,
+                       GdkEvent*);
 
   // Dangerous download related. -----------------------------------------------
-  static gboolean OnDangerousPromptExpose(GtkWidget* widget,
-                                         GdkEventExpose* event,
-                                         DownloadItemGtk* item);
-
-  static void OnDangerousAccept(GtkWidget* button, DownloadItemGtk* item);
-  static void OnDangerousDecline(GtkWidget* button, DownloadItemGtk* item);
+  CHROMEGTK_CALLBACK_1(DownloadItemGtk, gboolean, OnDangerousPromptExpose,
+                       GdkEventExpose*);
+  CHROMEGTK_CALLBACK_0(DownloadItemGtk, void, OnDangerousAccept);
+  CHROMEGTK_CALLBACK_0(DownloadItemGtk, void, OnDangerousDecline);
 
   // Nineboxes for the body area.
   static NineBox* body_nine_box_normal_;

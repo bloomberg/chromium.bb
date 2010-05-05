@@ -100,7 +100,7 @@ void ContentSettingBubbleGtk::BuildBubble() {
 
         popup_icons_[event_box] = i -popup_items.begin();
         g_signal_connect(event_box, "button_press_event",
-                         G_CALLBACK(OnPopupIconButtonPress), this);
+                         G_CALLBACK(OnPopupIconButtonPressThunk), this);
         gtk_table_attach(GTK_TABLE(table), event_box, 0, 1, row, row + 1,
                          GTK_FILL, GTK_FILL, gtk_util::kControlSpacing / 2,
                          gtk_util::kControlSpacing / 2);
@@ -108,7 +108,7 @@ void ContentSettingBubbleGtk::BuildBubble() {
 
       GtkWidget* button = gtk_chrome_link_button_new(i->title.c_str());
       popup_links_[button] = i -popup_items.begin();
-      g_signal_connect(button, "clicked", G_CALLBACK(OnPopupLinkClicked),
+      g_signal_connect(button, "clicked", G_CALLBACK(OnPopupLinkClickedThunk),
                        this);
       gtk_table_attach(GTK_TABLE(table), button, 1, 2, row, row + 1,
                        GTK_FILL, GTK_FILL, gtk_util::kControlSpacing / 2,
@@ -143,7 +143,7 @@ void ContentSettingBubbleGtk::BuildBubble() {
     for (std::vector<GtkWidget*>::const_iterator i = radio_group_gtk_.begin();
          i != radio_group_gtk_.end(); ++i) {
       // We can attach signal handlers now that all defaults are set.
-      g_signal_connect(*i, "toggled", G_CALLBACK(OnRadioToggled), this);
+      g_signal_connect(*i, "toggled", G_CALLBACK(OnRadioToggledThunk), this);
     }
     if (!radio_group_gtk_.empty()) {
       gtk_box_pack_start(GTK_BOX(bubble_content), gtk_hseparator_new(), FALSE,
@@ -176,7 +176,7 @@ void ContentSettingBubbleGtk::BuildBubble() {
     GtkWidget* clear_link_box = gtk_hbox_new(FALSE, 0);
     GtkWidget* clear_link = gtk_chrome_link_button_new(
         content.clear_link.c_str());
-    g_signal_connect(clear_link, "clicked", G_CALLBACK(OnClearLinkClicked),
+    g_signal_connect(clear_link, "clicked", G_CALLBACK(OnClearLinkClickedThunk),
                      this);
     gtk_box_pack_start(GTK_BOX(clear_link_box), clear_link, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(bubble_content), clear_link_box,
@@ -189,13 +189,14 @@ void ContentSettingBubbleGtk::BuildBubble() {
 
   GtkWidget* manage_link =
       gtk_chrome_link_button_new(content.manage_link.c_str());
-  g_signal_connect(manage_link, "clicked", G_CALLBACK(OnManageLinkClicked),
+  g_signal_connect(manage_link, "clicked", G_CALLBACK(OnManageLinkClickedThunk),
                    this);
   gtk_box_pack_start(GTK_BOX(bottom_box), manage_link, FALSE, FALSE, 0);
 
   GtkWidget* button = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_DONE).c_str());
-  g_signal_connect(button, "clicked", G_CALLBACK(OnCloseButtonClicked), this);
+  g_signal_connect(button, "clicked", G_CALLBACK(OnCloseButtonClickedThunk),
+                   this);
   gtk_box_pack_end(GTK_BOX(bottom_box), button, FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(bubble_content), bottom_box, FALSE, FALSE, 0);
@@ -217,65 +218,49 @@ void ContentSettingBubbleGtk::BuildBubble() {
       this);
 }
 
-// static
 void ContentSettingBubbleGtk::OnPopupIconButtonPress(
     GtkWidget* icon_event_box,
-    GdkEventButton* event,
-    ContentSettingBubbleGtk* bubble) {
-  PopupMap::iterator i(bubble->popup_icons_.find(icon_event_box));
-  DCHECK(i != bubble->popup_icons_.end());
-  bubble->content_setting_bubble_model_->OnPopupClicked(i->second);
+    GdkEventButton* event) {
+  PopupMap::iterator i(popup_icons_.find(icon_event_box));
+  DCHECK(i != popup_icons_.end());
+  content_setting_bubble_model_->OnPopupClicked(i->second);
   // The views interface implicitly closes because of the launching of a new
   // window; we need to do that explicitly.
-  bubble->Close();
+  Close();
 }
 
-// static
-void ContentSettingBubbleGtk::OnPopupLinkClicked(
-    GtkWidget* button,
-    ContentSettingBubbleGtk* bubble) {
-  PopupMap::iterator i(bubble->popup_links_.find(button));
-  DCHECK(i != bubble->popup_links_.end());
-  bubble->content_setting_bubble_model_->OnPopupClicked(i->second);
+void ContentSettingBubbleGtk::OnPopupLinkClicked(GtkWidget* button) {
+  PopupMap::iterator i(popup_links_.find(button));
+  DCHECK(i != popup_links_.end());
+  content_setting_bubble_model_->OnPopupClicked(i->second);
   // The views interface implicitly closes because of the launching of a new
   // window; we need to do that explicitly.
-  bubble->Close();
+  Close();
 }
 
-// static
-void ContentSettingBubbleGtk::OnRadioToggled(
-    GtkWidget* widget,
-    ContentSettingBubbleGtk* bubble) {
+void ContentSettingBubbleGtk::OnRadioToggled(GtkWidget* widget) {
   for (ContentSettingBubbleGtk::RadioGroupGtk::const_iterator i =
-       bubble->radio_group_gtk_.begin();
-       i != bubble->radio_group_gtk_.end(); ++i) {
+       radio_group_gtk_.begin();
+       i != radio_group_gtk_.end(); ++i) {
     if (widget == *i) {
-      bubble->content_setting_bubble_model_->OnRadioClicked(
-          i - bubble->radio_group_gtk_.begin());
+      content_setting_bubble_model_->OnRadioClicked(
+          i - radio_group_gtk_.begin());
       return;
     }
   }
   NOTREACHED() << "unknown radio toggled";
 }
 
-// static
-void ContentSettingBubbleGtk::OnCloseButtonClicked(
-    GtkButton *button,
-    ContentSettingBubbleGtk* bubble) {
-  bubble->Close();
+void ContentSettingBubbleGtk::OnCloseButtonClicked(GtkWidget *button) {
+  Close();
 }
 
-// static
-void ContentSettingBubbleGtk::OnManageLinkClicked(
-    GtkButton* button,
-    ContentSettingBubbleGtk* bubble) {
-  bubble->content_setting_bubble_model_->OnManageLinkClicked();
-  bubble->Close();
+void ContentSettingBubbleGtk::OnManageLinkClicked(GtkWidget* button) {
+  content_setting_bubble_model_->OnManageLinkClicked();
+  Close();
 }
 
-void ContentSettingBubbleGtk::OnClearLinkClicked(
-    GtkButton* button,
-    ContentSettingBubbleGtk* bubble) {
-  bubble->content_setting_bubble_model_->OnClearLinkClicked();
-  bubble->Close();
+void ContentSettingBubbleGtk::OnClearLinkClicked(GtkWidget* button) {
+  content_setting_bubble_model_->OnClearLinkClicked();
+  Close();
 }

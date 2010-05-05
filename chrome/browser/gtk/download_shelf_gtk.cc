@@ -97,14 +97,14 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
   close_button_.reset(CustomDrawButton::CloseButton(theme_provider_));
   gtk_util::CenterWidgetInHBox(outer_hbox, close_button_->widget(), true, 0);
   g_signal_connect(close_button_->widget(), "clicked",
-                   G_CALLBACK(OnButtonClick), this);
+                   G_CALLBACK(OnButtonClickThunk), this);
 
   // Create the "Show all downloads..." link and connect to the click event.
   std::string link_text =
       l10n_util::GetStringUTF8(IDS_SHOW_ALL_DOWNLOADS);
   link_button_ = gtk_chrome_link_button_new(link_text.c_str());
   g_signal_connect(link_button_, "clicked",
-                   G_CALLBACK(OnButtonClick), this);
+                   G_CALLBACK(OnButtonClickThunk), this);
   gtk_util::SetButtonTriggersNavigation(link_button_);
   // Until we switch to vector graphics, force the font size.
   // 13.4px == 10pt @ 96dpi
@@ -253,13 +253,11 @@ void DownloadShelfGtk::MaybeShowMoreDownloadItems() {
   gtk_widget_show_all(items_hbox_.get());
 }
 
-// static
-void DownloadShelfGtk::OnButtonClick(GtkWidget* button,
-                                     DownloadShelfGtk* shelf) {
-  if (button == shelf->close_button_->widget()) {
-    shelf->Close();
+void DownloadShelfGtk::OnButtonClick(GtkWidget* button) {
+  if (button == close_button_->widget()) {
+    Close();
   } else {
     // The link button was clicked.
-    shelf->browser_->ShowDownloadsTab();
+    browser_->ShowDownloadsTab();
   }
 }
