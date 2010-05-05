@@ -455,6 +455,49 @@ TEST(StabsReader, MultipleCUs) {
   ASSERT_TRUE(ApplyHandlerToMockStabsData(&stabs, &strings, &mock_handler));
 }
 
+TEST_F(Stabs, FunctionEnd) {
+  stabs.set_endianness(kLittleEndian);
+  stabs.set_value_size(8);
+  stabs
+      .Stab(N_SO,    102, 62362, 0x52a830d644cd6942ULL, "compilation unit")
+      // This function is terminated by the start of the next function.
+      .Stab(N_FUN,   216, 38405, 0xbb5ab70ecdd23bfeULL, "function 1")
+      // This function is terminated by an explicit end-of-function stab,
+      // whose value is a size in bytes.
+      .Stab(N_FUN,   240, 10973, 0xc954de9b8fb3e5e2ULL, "function 2")
+      .Stab(N_FUN,    14, 36749, 0xc1ab,     "")
+      // This function is terminated by the end of the compilation unit.
+      .Stab(N_FUN,   143, 64514, 0xdff98c9a35386e1fULL, "function 3")
+      .Stab(N_SO,    164, 60142, 0xfdacb856e78bbf57ULL, "");
+
+  {
+    InSequence s;
+    EXPECT_CALL(mock_handler,
+                StartCompilationUnit(StrEq("compilation unit"),
+                                     0x52a830d644cd6942ULL, NULL))
+        .WillOnce(Return(true));
+    EXPECT_CALL(mock_handler,
+                StartFunction(Eq("function 1"), 0xbb5ab70ecdd23bfeULL))
+        .WillOnce(Return(true));
+    EXPECT_CALL(mock_handler, EndFunction(0xc954de9b8fb3e5e2ULL))
+        .WillOnce(Return(true));
+    EXPECT_CALL(mock_handler,
+                StartFunction(Eq("function 2"), 0xc954de9b8fb3e5e2ULL))
+        .WillOnce(Return(true));
+    EXPECT_CALL(mock_handler, EndFunction(0xc954de9b8fb3e5e2ULL + 0xc1ab))
+        .WillOnce(Return(true));
+    EXPECT_CALL(mock_handler,
+                StartFunction(Eq("function 3"), 0xdff98c9a35386e1fULL))
+        .WillOnce(Return(true));
+    EXPECT_CALL(mock_handler, EndFunction(0xfdacb856e78bbf57ULL))
+        .WillOnce(Return(true));
+    EXPECT_CALL(mock_handler, EndCompilationUnit(0xfdacb856e78bbf57ULL))
+        .WillOnce(Return(true));
+  }
+
+  ASSERT_TRUE(ApplyHandlerToMockStabsData());
+}
+
 // name duplication
 
 } // anonymous namespace

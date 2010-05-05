@@ -107,9 +107,13 @@ bool StabsToModule::EndFunction(uint64_t address) {
   // of duplicated entries for functions in the STABS data; only one
   // entry can meet this requirement.
   //
-  // (I don't really understand the above comment; just bringing it
-  // along from the previous code, and leaving the behaivor unchanged.
-  // If you know the whole story, please patch this comment.  --jimb)
+  // (I don't really understand the above comment; just bringing it along
+  // from the previous code, and leaving the behavior unchanged. GCC marks
+  // the end of each function with an N_FUN entry with no name, whose value
+  // is the size of the function; perhaps this test was concerned with
+  // skipping those. Now StabsReader interprets them properly. If you know
+  // the whole story, please patch this comment. --jimb)
+  //
   if (current_function_->address >= comp_unit_base_address_)
     functions_.push_back(current_function_);
   else

@@ -218,13 +218,31 @@ bool StabsReader::ProcessFunction() {
       ++iterator_;
   }
 
-  // If there is a subsequent N_SO or N_FUN entry, its address is our
-  // end address.
+  // We've reached the end of the function. See if we can figure out its
+  // ending address.
   uint64_t ending_address = 0;
   if (!iterator_->at_end) {
     assert(iterator_->type == N_SO || iterator_->type == N_FUN);
-    ending_address = iterator_->value;
-    // Note: we do not advance iterator_ here, since we haven't consumed it.
+    if (iterator_->type == N_FUN) {
+      const char *name = SymbolString();
+      if (name[0] == '\0') {
+        // An N_FUN entry with no name is a terminator for this function;
+        // its value is the function's size.
+        ending_address = function_address + iterator_->value;
+        ++iterator_;
+      } else {
+        // An N_FUN entry with a name is the next function, and we can take
+        // its value as our ending address. Don't advance the iterator, as
+        // we'll use this symbol to start the next function as well.
+        ending_address = iterator_->value;
+      }
+    } else {
+      // An N_SO entry could be an end-of-compilation-unit marker, or the
+      // start of the next compilation unit, but in either case, its value
+      // is our ending address. We don't advance the iterator;
+      // ProcessCompilationUnit will decide what to do with this symbol.
+      ending_address = iterator_->value;
+    }
   }
 
   if (! handler_->EndFunction(ending_address))
