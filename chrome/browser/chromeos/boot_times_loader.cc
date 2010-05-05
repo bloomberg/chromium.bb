@@ -100,11 +100,20 @@ void BootTimesLoader::Backend::GetBootTimes(
   const char* kClockSpeedCommand = "dmesg | grep -e 'Detected.*processor'";
   const char* kClockSpeedPrefix = "Detected ";
   const char* kPreStartup = "uptime-pre-startup";
+  const char* kChromeExec = "uptime-chrome-exec";
+  const char* kChromeMain = "uptime-chrome-main";
   const char* kXStarted = "uptime-x-started";
   const char* kLoginPromptReady = "uptime-login-prompt-ready";
 
   if (request->canceled())
     return;
+
+  // Wait until login_prompt_ready is output.
+  FilePath log_dir(kLogPath);
+  FilePath log_file = log_dir.Append(kLoginPromptReady);
+  while (!file_util::PathExists(log_file)) {
+    usleep(500000);
+  }
 
   BootTimes boot_times;
   std::string tsc_value = ExecuteInShell(kInitialTSCCommand, kInitialTSCPrefix);
@@ -122,6 +131,8 @@ void BootTimesLoader::Backend::GetBootTimes(
   }
   GetUptime(kPreStartup, &boot_times.pre_startup);
   GetUptime(kXStarted, &boot_times.x_started);
+  GetUptime(kChromeExec, &boot_times.chrome_exec);
+  GetUptime(kChromeMain, &boot_times.chrome_main);
   GetUptime(kLoginPromptReady, &boot_times.login_prompt_ready);
 
   request->ForwardResult(

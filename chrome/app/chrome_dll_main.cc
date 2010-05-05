@@ -397,7 +397,11 @@ DLLEXPORT int __cdecl ChromeMain(HINSTANCE instance,
 #elif defined(OS_POSIX)
 int ChromeMain(int argc, char** argv) {
 #endif
-
+#if defined(OS_CHROMEOS)
+  // Output our start times.
+  system("set -o noclobber ; cat /proc/uptime > /tmp/uptime-chrome-main");
+  system("set -o noclobber ; cat /sys/block/sda/stat > /tmp/disk-chrome-main");
+#endif
 #if defined(OS_MACOSX)
   // TODO(mark): Some of these things ought to be handled in chrome_exe_main.mm.
   // Under the current architecture, nothing in chrome_exe_main can rely

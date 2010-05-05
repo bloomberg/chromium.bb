@@ -32,11 +32,15 @@ class BootTimesLoader : public CancelableRequestProvider {
     double firmware;           // Time from power button to kernel being loaded.
     double pre_startup;        // Time from kernel to system code being called.
     double x_started;          // Time X server is ready to be connected to.
+    double chrome_exec;        // Time session manager executed Chrome.
+    double chrome_main;        // Time chrome's main() was called.
     double login_prompt_ready; // Time login (or OOB) panel is displayed.
 
     BootTimes() : firmware(0),
                   pre_startup(0),
                   x_started(0),
+                  chrome_exec(0),
+                  chrome_main(0),
                   login_prompt_ready(0) {}
   } BootTimes;
 
