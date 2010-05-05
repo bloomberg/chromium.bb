@@ -3560,6 +3560,7 @@ bool Browser::HandleCrossAppNavigation(TabContents* source,
       // Found an app window, open the URL there.
       if ((*iter)->extension_app() == destination_extension) {
         (*iter)->OpenURL(url, referrer, NEW_FOREGROUND_TAB, transition);
+        (*iter)->window()->Show();
         return true;
       }
     }
