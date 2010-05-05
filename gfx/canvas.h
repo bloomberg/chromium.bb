@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -208,8 +208,8 @@ class Canvas : public skia::PlatformCanvas {
   // Attempts to fit the text with the provided width and height. Increases
   // height and then width as needed to make the text fit. This method
   // supports multiple lines.
-  static void SizeStringInt(const std::wstring& test, const gfx::Font& font,
-                            int *width, int* height, int flags);
+  static void SizeStringInt(const std::wstring& text, const gfx::Font& font,
+                            int* width, int* height, int flags);
 
   // Returns the default text alignment to be used when drawing text on a
   // gfx::Canvas based on the directionality of the system locale language. This

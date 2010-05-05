@@ -1966,11 +1966,8 @@ LONG AutocompleteEditViewWin::ClipXCoordToVisibleText(
   // Calculation of the clipped coordinate is more complicated if the paragraph
   // layout is RTL layout, or if there is RTL characters inside the LTR layout
   // paragraph.
-  bool ltr_text_in_ltr_layout = true;
-  if ((pf2.wEffects & PFE_RTLPARA) ||
-      base::i18n::StringContainsStrongRTLChars(GetText())) {
-    ltr_text_in_ltr_layout = false;
-  }
+  const bool ltr_text_in_ltr_layout = !(pf2.wEffects & PFE_RTLPARA) &&
+      !base::i18n::StringContainsStrongRTLChars(GetText());
   const int length = GetTextLength();
   RECT r;
   GetRect(&r);

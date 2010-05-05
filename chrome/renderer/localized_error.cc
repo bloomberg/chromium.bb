@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,9 +107,9 @@ WebErrorNetErrorMap net_error_options[] = {
 
 bool LocaleIsRTL() {
 #if defined(TOOLKIT_GTK)
-  // base::i18n::GetTextDirection uses the GTK text direction, which doesn't work
-  // within the renderer sandbox.
-  return base::i18n::GetICUTextDirection() == base::i18n::RIGHT_TO_LEFT;
+  // base::i18n::IsRTL() uses the GTK text direction, which doesn't work within
+  // the renderer sandbox.
+  return base::i18n::ICUIsRTL();
 #else
   return base::i18n::IsRTL();
 #endif

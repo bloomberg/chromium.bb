@@ -138,7 +138,7 @@ Canvas::~Canvas() {
 // static
 void Canvas::SizeStringInt(const std::wstring& text,
                            const gfx::Font& font,
-                           int *width, int *height, int flags) {
+                           int* width, int* height, int flags) {
   // Clamp the max amount of text we'll measure to 2K.  When the string is
   // actually drawn, it will be clipped to whatever size box is provided, and
   // the time to do that doesn't depend on the length being clipped off.
