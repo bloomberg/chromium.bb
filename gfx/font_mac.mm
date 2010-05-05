@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
+#include "gfx/canvas.h"
 
 namespace gfx {
 
