@@ -3,6 +3,3 @@ KeygenHandlerTest.*SmokeTest
 
 # Fails Valgrind with varying stack traces. http://crbug.com/43179
 SpdySessionTest.GetPushStream
-
-# Fails under Valgrind, see http://crbug.com/43291
-ConnectionTesterTest.DeleteWhileInProgress

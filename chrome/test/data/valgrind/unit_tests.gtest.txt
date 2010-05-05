@@ -6,3 +6,5 @@ VisitedLinkRelayTest.Basics
 RenderViewTest.ImeComposition
 # Hangs sometimes; see http://crbug.com/24416
 DnsMasterTest.MassiveConcurrentLookupTest
+# Fails under Valgrind, see http://crbug.com/43291
+ConnectionTesterTest.DeleteWhileInProgress
