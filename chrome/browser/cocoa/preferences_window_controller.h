@@ -10,7 +10,6 @@
 #include "chrome/browser/pref_member.h"
 
 namespace PreferencesWindowControllerInternal {
-class PersonalDataManagerObserver;
 class PrefObserverBridge;
 }
 
@@ -85,9 +84,6 @@ class ProfileSyncService;
   // User Data panel
   BooleanPrefMember askSavePasswords_;
   BooleanPrefMember formAutofill_;
-  // Manages PersonalDataManager loading.
-  scoped_ptr<PreferencesWindowControllerInternal::PersonalDataManagerObserver>
-      personalDataManagerObserver_;
   IBOutlet NSButton* autoFillSettingsButton_;
   IBOutlet NSButton* syncButton_;
   IBOutlet NSButton* syncCustomizeButton_;
