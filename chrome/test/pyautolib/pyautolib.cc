@@ -156,6 +156,12 @@ bool PyUITestBase::OpenNewBrowserWindow(bool show) {
   return automation()->OpenNewBrowserWindow(Browser::TYPE_NORMAL, show);
 }
 
+int PyUITestBase::GetBrowserWindowCount() {
+  int num_windows = 0;
+  EXPECT_TRUE(automation()->GetBrowserWindowCount(&num_windows));
+  return num_windows;
+}
+
 bool PyUITestBase::InstallExtension(const FilePath& crx_file, bool with_ui) {
   scoped_refptr<ExtensionProxy> proxy =
       automation()->InstallExtension(crx_file, with_ui);

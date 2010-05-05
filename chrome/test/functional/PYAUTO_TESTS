@@ -19,11 +19,12 @@
 {
   'all': [
     'bookmarks',
-    'history',
-    'test_basic.SimpleTest.testCanOpenGoogle',
     'downloads',
+    'history',
+    'navigation',
     'prefs',
     'special_tabs',
+    'test_basic.SimpleTest.testCanOpenGoogle',
   ],
 
   'win': [

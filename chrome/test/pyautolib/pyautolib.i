@@ -276,6 +276,10 @@ class PyUITestBase {
   %feature("docstring", "Open a new browser window.") OpenNewBrowserWindow;
   bool OpenNewBrowserWindow(bool show);
 
+  %feature("docstring", "Fetch the number of browser windows. Includes popups.")
+      GetBrowserWindowCount;
+  int GetBrowserWindowCount();
+
   %feature("docstring", "Get the index of the active tab in the given or "
            "first window. Indexes are zero-based.") GetActiveTabIndex;
   int GetActiveTabIndex(int window_index=0);

@@ -98,6 +98,9 @@ class PyUITestBase : public UITestBase {
   // Open a new browser window. Returns false on failure.
   bool OpenNewBrowserWindow(bool show);
 
+  // Fetch the number of browser windows. Includes popups.
+  int GetBrowserWindowCount();
+
   // Installs the extension crx. Returns true only if extension was installed
   // and loaded successfully. Overinstalls will fail.
   bool InstallExtension(const FilePath& crx_file, bool with_ui);
