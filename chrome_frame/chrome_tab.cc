@@ -338,11 +338,7 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) {
   if (redir_ptr) {
     return redir_ptr(rclsid, riid, ppv);
   } else {
-    if (g_patch_helper.InitializeAndPatchProtocolsIfNeeded()) {
-      // We should only get here once.
-      UrlMkSetSessionOption(URLMON_OPTION_USERAGENT_REFRESH, NULL, 0, 0);
-    }
-
+    g_patch_helper.InitializeAndPatchProtocolsIfNeeded();
     return _AtlModule.DllGetClassObject(rclsid, riid, ppv);
   }
 }
