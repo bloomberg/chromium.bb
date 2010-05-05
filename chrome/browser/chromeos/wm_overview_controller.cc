@@ -200,29 +200,18 @@ void BrowserListener::RecreateSnapshots() {
 }
 
 void BrowserListener::UpdateSelectedIndex(int index) {
-  // Get the window params and check to make sure that they are
-  // different from what we know before we set them, to avoid extra
-  // notifications.
-  std::vector<int> params;
-  WmIpc::instance()->GetWindowType(
-      GTK_WIDGET(browser_->window()->GetNativeHandle()),
-      &params);
-  // TODO(derat|oshima): This was causing try bot failures as they do not have
-  // chromeoswm. http://crosbug.com/3064
-  // DCHECK(type == WM_IPC_WINDOW_CHROME_TOPLEVEL);
-  if (params.size() > 1) {
-    if (params[0] == browser_->tab_count() &&
-        params[0] == index)
-      return;
+  WmIpcWindowType type = WmIpc::instance()->GetWindowType(
+      GTK_WIDGET(browser_->window()->GetNativeHandle()), NULL);
+  // Make sure we only operate on toplevel windows.
+  if (type == WM_IPC_WINDOW_CHROME_TOPLEVEL) {
+    std::vector<int> params;
+    params.push_back(browser_->tab_count());
+    params.push_back(index);
+    WmIpc::instance()->SetWindowType(
+        GTK_WIDGET(browser_->window()->GetNativeHandle()),
+        WM_IPC_WINDOW_CHROME_TOPLEVEL,
+        &params);
   }
-
-  params.clear();
-  params.push_back(browser_->tab_count());
-  params.push_back(index);
-  WmIpc::instance()->SetWindowType(
-      GTK_WIDGET(browser_->window()->GetNativeHandle()),
-      WM_IPC_WINDOW_CHROME_TOPLEVEL,
-      &params);
 }
 
 bool BrowserListener::ConfigureNextUnconfiguredSnapshot() {
@@ -342,12 +331,6 @@ void WmOverviewController::Observe(NotificationType type,
                                    const NotificationDetails& details) {
   // Now that the browser window is ready, we create the snapshots.
   if (type == NotificationType::BROWSER_WINDOW_READY) {
-    const Browser* browser = Source<const Browser>(source).ptr();
-    BrowserListenerVector::value_type new_listener(
-        new BrowserListener(const_cast<Browser*>(browser), this));
-    listeners_.push_back(new_listener);
-    new_listener->RecreateSnapshots();
-
     // This makes sure that the new listener is in the right order (to
     // match the order in the browser list).
     AddAllBrowsers();
@@ -486,6 +469,15 @@ void WmOverviewController::AddAllBrowsers() {
   // can avoid lots of spurious destroy/create messages.
   BrowserList::const_iterator iterator = BrowserList::begin();
   while (iterator != BrowserList::end()) {
+    // Don't add a browser to the list if that type of browser doesn't
+    // have snapshots in overview mode.
+    if ((*iterator)->type() != Browser::TYPE_NORMAL &&
+        (*iterator)->type() != Browser::TYPE_APP &&
+        (*iterator)->type() != Browser::TYPE_EXTENSION_APP) {
+      ++iterator;
+      continue;
+    }
+
     BrowserListenerVector::value_type item(
         BrowserListenerVector::value_type(NULL));
     for (BrowserListenerVector::iterator old_iter = old_listeners.begin();
