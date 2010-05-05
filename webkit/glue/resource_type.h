@@ -20,8 +20,8 @@ class ResourceType {
     OBJECT,          // an object (or embed) tag for a plugin,
                      // or a resource that a plugin requested.
     MEDIA,           // a media resource.
-    SHARED_WORKER,   // the main resource of a shared worker.
     WORKER,          // the main resource of a dedicated worker.
+    SHARED_WORKER,   // the main resource of a shared worker.
     LAST_TYPE        // Place holder so we don't need to change ValidType
                      // everytime.
   };

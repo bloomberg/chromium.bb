@@ -125,14 +125,12 @@ ResourceType::Type FromTargetType(WebURLRequest::TargetType type) {
       return ResourceType::OBJECT;
     case WebURLRequest::TargetIsMedia:
       return ResourceType::MEDIA;
-    // TODO(michaeln): uncomment the following cases and the NOTREACHED() call
-    // when the webkit API has been committed and these constants are defined.
-    // case WebURLRequest::TargetIsWorker:
-    //   return ResourceType::WORKER;
-    // case WebURLRequest::TargetIsSharedWorker:
-    //  return ResourceType::SHARED_WORKER;
+    case WebURLRequest::TargetIsWorker:
+      return ResourceType::WORKER;
+    case WebURLRequest::TargetIsSharedWorker:
+      return ResourceType::SHARED_WORKER;
     default:
-      // NOTREACHED();
+      NOTREACHED();
       return ResourceType::SUB_RESOURCE;
   }
 }
