@@ -204,10 +204,12 @@ void BrowserListener::UpdateSelectedIndex(int index) {
   // different from what we know before we set them, to avoid extra
   // notifications.
   std::vector<int> params;
-  WmIpcWindowType type = WmIpc::instance()->GetWindowType(
+  WmIpc::instance()->GetWindowType(
       GTK_WIDGET(browser_->window()->GetNativeHandle()),
       &params);
-  DCHECK(type == WM_IPC_WINDOW_CHROME_TOPLEVEL);
+  // TODO(derat|oshima): This was causing try bot failures as they do not have
+  // chromeoswm. http://crosbug.com/3064
+  // DCHECK(type == WM_IPC_WINDOW_CHROME_TOPLEVEL);
   if (params.size() > 1) {
     if (params[0] == browser_->tab_count() &&
         params[0] == index)
