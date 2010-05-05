@@ -36,8 +36,7 @@ class NaClProcessHost : public ChildProcessHost {
   void OnProcessLaunchedByBroker(base::ProcessHandle handle);
 
  protected:
-  // Override ChildProcessHost methods.
-  virtual void DetermineDidChildCrash();
+  virtual bool DidChildCrash();
   virtual void OnChildDied();
 
  private:

@@ -481,7 +481,7 @@ void MetricsService::SetRecording(bool enabled) {
                    NotificationService::AllSources());
     registrar_.Add(this, NotificationType::LOAD_STOP,
                    NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::RENDERER_PROCESS_CRASHED,
+    registrar_.Add(this, NotificationType::RENDERER_PROCESS_CLOSED,
                    NotificationService::AllSources());
     registrar_.Add(this, NotificationType::RENDERER_PROCESS_HANG,
                    NotificationService::AllSources());
@@ -557,13 +557,17 @@ void MetricsService::Observe(NotificationType type,
       LogLoadStarted();
       break;
 
-    case NotificationType::RENDERER_PROCESS_CRASHED:
+    case NotificationType::RENDERER_PROCESS_CLOSED:
       {
-        // The details are whether it is an extension process.
-        if (*Details<bool>(details).ptr())
-          LogExtensionRendererCrash();
-        else
-          LogRendererCrash();
+        RenderProcessHost::RendererClosedDetails* process_details =
+            Details<RenderProcessHost::RendererClosedDetails>(details).ptr();
+        if (process_details->did_crash) {
+          if (process_details->was_extension_renderer) {
+            LogExtensionRendererCrash();
+          } else {
+            LogRendererCrash();
+          }
+        }
       }
       break;
 

@@ -117,19 +117,10 @@ void NaClProcessHost::OnProcessLaunchedByBroker(base::ProcessHandle handle) {
   OnProcessLaunched();
 }
 
-void NaClProcessHost::DetermineDidChildCrash() {
-  // Either of these paths will lead to deleting this object in
-  // OnDidProcessCrashDetermined in ChildProcessHost, so they should be the
-  // last calls in this method.
-  if (running_on_wow64_) {
-    bool did_crash = base::DidProcessCrash(NULL, handle());
-    OnDidProcessCrashDetermined(did_crash);
-  } else {
-    // Determine whether the process crashed or not. This method will invoke
-    // OnDidProcessCrashDetermined with the result. This may occur
-    // asynchronously.
-    ChildProcessHost::DetermineDidChildCrash();
-  }
+bool NaClProcessHost::DidChildCrash() {
+  if (running_on_wow64_)
+    return base::DidProcessCrash(NULL, handle());
+  return ChildProcessHost::DidChildCrash();
 }
 
 void NaClProcessHost::OnChildDied() {
