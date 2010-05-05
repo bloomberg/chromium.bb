@@ -123,17 +123,31 @@ static const ElfW(Shdr) *FindSectionByName(const char *name,
   return NULL;
 }
 
-static bool LoadStabs(const ElfW(Shdr) *stab_section,
+static bool LoadStabs(const ElfW(Ehdr) *elf_header,
+                      const ElfW(Shdr) *stab_section,
                       const ElfW(Shdr) *stabstr_section,
                       Module *module) {
+  // Figure out what endianness this file is.
+  bool big_endian;
+  if (elf_header->e_ident[EI_DATA] == ELFDATA2LSB)
+    big_endian = false;
+  else if (elf_header->e_ident[EI_DATA] == ELFDATA2MSB)
+    big_endian = true;
+  else {
+    fprintf(stderr, "bad data encoding in ELF header: %d\n",
+            elf_header->e_ident[EI_DATA]);
+    return false;
+  }
   // A callback object to handle data from the STABS reader.
   DumpStabsHandler handler(module);
   // Find the addresses of the STABS data, and create a STABS reader object.
+  // On Linux, STABS entries always have 32-bit values, regardless of the
+  // address size of the architecture whose code they're describing.
   uint8_t *stabs = reinterpret_cast<uint8_t *>(stab_section->sh_offset);
   uint8_t *stabstr = reinterpret_cast<uint8_t *>(stabstr_section->sh_offset);
   google_breakpad::StabsReader reader(stabs, stab_section->sh_size,
                                       stabstr, stabstr_section->sh_size,
-                                      &handler);
+                                      big_endian, 4, &handler);
   // Read the STABS data, and do post-processing.
   if (!reader.Process())
     return false;
@@ -330,7 +344,7 @@ static bool LoadSymbols(const std::string &obj_file, ElfW(Ehdr) *elf_header,
     const ElfW(Shdr) *stabstr_section = stab_section->sh_link + sections;
     if (stabstr_section) {
       found_debug_info_section = true;
-      if (!LoadStabs(stab_section, stabstr_section, module))
+      if (!LoadStabs(elf_header, stab_section, stabstr_section, module))
         fprintf(stderr, "%s: \".stab\" section found, but failed to load STABS"
                 " debugging information\n", obj_file.c_str());
     }

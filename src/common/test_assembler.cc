@@ -203,6 +203,7 @@ void Label::Binding::Get(Binding **base, u_int64_t *addend) {
 template<typename Inserter>
 static inline void InsertEndian(TestAssembler::Endianness endianness,
                                 size_t size, u_int64_t number, Inserter dest) {
+  assert(size > 0);
   if (endianness == kLittleEndian) {
     for (size_t i = 0; i < size; i++) {
       *dest++ = (char) (number & 0xff);

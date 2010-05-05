@@ -31,48 +31,64 @@
 // This file implements the google_breakpad::StabsReader class.
 // See stabs_reader.h.
 
-#include <a.out.h>
-#include <stab.h>
-#include <cstring>
-#include <cassert>
-
 #include "common/stabs_reader.h"
+
+#include <assert.h>
+#include <stab.h>
+#include <string.h>
 
 namespace google_breakpad {
 
-StabsReader::StabsReader(const uint8_t *stab,    size_t stab_size,
-                         const uint8_t *stabstr, size_t stabstr_size,
-                         StabsHandler *handler) :
-    stabstr_(stabstr),
-    stabstr_size_(stabstr_size),
-    handler_(handler),
-    string_offset_(0),
-    next_cu_string_offset_(0),
-    symbol_(NULL),
-    current_source_file_(NULL) { 
-  symbols_ = reinterpret_cast<const struct nlist *>(stab);
-  symbols_end_ = symbols_ + (stab_size / sizeof (*symbols_));
+StabsReader::EntryIterator::EntryIterator(const ByteBuffer *buffer,
+                                          bool big_endian, size_t value_size)
+    : value_size_(value_size), cursor_(buffer, big_endian) {
+  // Actually, we could handle weird sizes just fine, but they're
+  // probably mistakes --- expressed in bits, say.
+  assert(value_size == 4 || value_size == 8);
+  entry_.index = 0;
+  Fetch();
 }
 
+void StabsReader::EntryIterator::Fetch() {
+  cursor_
+      .Read(4, false, &entry_.name_offset)
+      .Read(1, false, &entry_.type)
+      .Read(1, false, &entry_.other)
+      .Read(2, false, &entry_.descriptor)
+      .Read(value_size_, false, &entry_.value);
+  entry_.at_end = !cursor_;
+}
+
+StabsReader::StabsReader(const uint8_t *stab,    size_t stab_size,
+                         const uint8_t *stabstr, size_t stabstr_size,
+                         bool big_endian, size_t value_size,
+                         StabsHandler *handler)
+    : entries_(stab, stab_size),
+      strings_(stabstr, stabstr_size),
+      iterator_(&entries_, big_endian, value_size),
+      handler_(handler),
+      string_offset_(0),
+      next_cu_string_offset_(0),
+      current_source_file_(NULL) { }
+
 const char *StabsReader::SymbolString() {
-  ptrdiff_t offset = string_offset_ + symbol_->n_un.n_strx;
-  if (offset < 0 || (size_t) offset >= stabstr_size_) {
+  ptrdiff_t offset = string_offset_ + iterator_->name_offset;
+  if (offset < 0 || (size_t) offset >= strings_.Size()) {
     handler_->Warning("symbol %d: name offset outside the string section\n",
-                      symbol_ - symbols_);
+                      iterator_->index);
     // Return our null string, to keep our promise about all names being
     // taken from the string section.
     offset = 0;
   }
-  return reinterpret_cast<const char *>(stabstr_ + offset);
+  return reinterpret_cast<const char *>(strings_.start + offset);
 }
 
 bool StabsReader::Process() {
-  symbol_ = symbols_;
-  while (symbol_ < symbols_end_) {
-    if (symbol_->n_type == N_SO) {
+  while (!iterator_->at_end) {
+    if (iterator_->type == N_SO) {
       if (! ProcessCompilationUnit())
         return false;
-    } else if (symbol_->n_type == N_UNDF) {
+    } else if (iterator_->type == N_UNDF) {
       // At the head of each compilation unit's entries there is an
       // N_UNDF stab giving the number of symbols in the compilation
       // unit, and the number of bytes that compilation unit's strings
@@ -85,16 +101,16 @@ bool StabsReader::Process() {
       // beginning. However, other linkers, like Gold, do not perform
       // this optimization.
       string_offset_ = next_cu_string_offset_;
-      next_cu_string_offset_ = SymbolValue();
-      symbol_++;
+      next_cu_string_offset_ = iterator_->value;
+      ++iterator_;
     } else
-      symbol_++;
+      ++iterator_;
   }
   return true;
 }
 
 bool StabsReader::ProcessCompilationUnit() {
-  assert(symbol_ < symbols_end_ && symbol_->n_type == N_SO);
+  assert(!iterator_->at_end && iterator_->type == N_SO);
 
   // There may be an N_SO entry whose name ends with a slash,
   // indicating the directory in which the compilation occurred.
@@ -104,32 +120,32 @@ bool StabsReader::ProcessCompilationUnit() {
     const char *name = SymbolString();
     if (name[0] && name[strlen(name) - 1] == '/') {
       build_directory = name;
-      symbol_++;
+      ++iterator_;
     }
   }
       
   // We expect to see an N_SO entry with a filename next, indicating
   // the start of the compilation unit.
   {
-    if (symbol_ >= symbols_end_ || symbol_->n_type != N_SO)
+    if (iterator_->at_end || iterator_->type != N_SO)
       return true;
     const char *name = SymbolString();
     if (name[0] == '\0') {
       // This seems to be a stray end-of-compilation-unit marker;
       // consume it, but don't report the end, since we didn't see a
       // beginning.
-      symbol_++;
+      ++iterator_;
       return true;
     }
     current_source_file_ = name;
   }
 
   if (! handler_->StartCompilationUnit(current_source_file_,
-                                       SymbolValue(),
+                                       iterator_->value,
                                        build_directory))
     return false;
 
-  symbol_++;
+  ++iterator_;
 
   // The STABS documentation says that some compilers may emit
   // additional N_SO entries with names immediately following the
@@ -137,24 +153,24 @@ bool StabsReader::ProcessCompilationUnit() {
   // Breakpad STABS reader doesn't ignore them, so we won't either.
 
   // Process the body of the compilation unit, up to the next N_SO.
-  while (symbol_ < symbols_end_ && symbol_->n_type != N_SO) {
-    if (symbol_->n_type == N_FUN) {
+  while (!iterator_->at_end && iterator_->type != N_SO) {
+    if (iterator_->type == N_FUN) {
       if (! ProcessFunction())
         return false;
     } else
       // Ignore anything else.
-      symbol_++;
+      ++iterator_;
   }
 
   // An N_SO with an empty name indicates the end of the compilation
   // unit.  Default to zero.
   uint64_t ending_address = 0;
-  if (symbol_ < symbols_end_) {
-    assert(symbol_->n_type == N_SO);
+  if (!iterator_->at_end) {
+    assert(iterator_->type == N_SO);
     const char *name = SymbolString();
     if (name[0] == '\0') {
-      ending_address = SymbolValue();
-      symbol_++;
+      ending_address = iterator_->value;
+      ++iterator_;
     }
   }
 
@@ -165,9 +181,9 @@ bool StabsReader::ProcessCompilationUnit() {
 }          
 
 bool StabsReader::ProcessFunction() {
-  assert(symbol_ < symbols_end_ && symbol_->n_type == N_FUN);
+  assert(!iterator_->at_end && iterator_->type == N_FUN);
 
-  uint64_t function_address = SymbolValue();
+  uint64_t function_address = iterator_->value;
   // The STABS string for an N_FUN entry is the name of the function,
   // followed by a colon, followed by type information for the
   // function.  We want to pass the name alone to StartFunction.
@@ -178,37 +194,37 @@ bool StabsReader::ProcessFunction() {
   std::string name(stab_string, name_end - stab_string);
   if (! handler_->StartFunction(name, function_address))
     return false;
-  symbol_++;
+  ++iterator_;
 
-  while (symbol_ < symbols_end_) {
-    if (symbol_->n_type == N_SO || symbol_->n_type == N_FUN)
+  while (!iterator_->at_end) {
+    if (iterator_->type == N_SO || iterator_->type == N_FUN)
       break;
-    else if (symbol_->n_type == N_SLINE) {
+    else if (iterator_->type == N_SLINE) {
       // The value of an N_SLINE entry is the offset of the line from
       // the function's start address.
-      uint64_t line_address = function_address + SymbolValue();
+      uint64_t line_address = function_address + iterator_->value;
       // The n_desc of a N_SLINE entry is the line number.  It's a
       // signed 16-bit field; line numbers from 32768 to 65535 are
       // stored as n-65536.
-      uint16_t line_number = symbol_->n_desc;
+      uint16_t line_number = iterator_->descriptor;
       if (! handler_->Line(line_address, current_source_file_, line_number))
         return false;
-      symbol_++;
-    } else if (symbol_->n_type == N_SOL) {
+      ++iterator_;
+    } else if (iterator_->type == N_SOL) {
       current_source_file_ = SymbolString();
-      symbol_++;
+      ++iterator_;
     } else
       // Ignore anything else.
-      symbol_++;
+      ++iterator_;
   }
 
   // If there is a subsequent N_SO or N_FUN entry, its address is our
   // end address.
   uint64_t ending_address = 0;
-  if (symbol_ < symbols_end_) {
-    assert(symbol_->n_type == N_SO || symbol_->n_type == N_FUN);
-    ending_address = SymbolValue();
-    // Note: we do not increment symbol_ here, since we haven't consumed it.
+  if (!iterator_->at_end) {
+    assert(iterator_->type == N_SO || iterator_->type == N_FUN);
+    ending_address = iterator_->value;
+    // Note: we do not advance iterator_ here, since we haven't consumed it.
   }
 
   if (! handler_->EndFunction(ending_address))

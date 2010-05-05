@@ -38,19 +38,24 @@
 //
 // The comments here assume you understand the format.
 //
-// This parser assumes that the system's <a.out.h> and <stab.h>
-// headers accurately describe the layout of the STABS data; this code
-// will not parse STABS data for a system with a different address
-// size or endianness.
+// This parser can handle big-endian and little-endian data, and the symbol
+// values may be either 32 or 64 bits long. It handles both STABS in
+// sections (as used on Linux) and STABS appearing directly in an
+// a.out-like symbol table (as used in Darwin OS X Mach-O files).
 
-#ifndef COMMON_LINUX_STABS_READER_H__
-#define COMMON_LINUX_STABS_READER_H__
+#ifndef COMMON_STABS_READER_H__
+#define COMMON_STABS_READER_H__
 
+#include <stddef.h>
 #include <stdint.h>
-#include <cstddef>
+
+#ifdef HAVE_A_OUT_H
 #include <a.out.h>
+#endif
 
 #include <string>
+
+#include "common/byte_cursor.h"
 
 namespace google_breakpad {
 
@@ -58,16 +63,22 @@ class StabsHandler;
 
 class StabsReader {
  public:
-  // Create a reader for the STABS debug information whose .stab
-  // section is the STAB_SIZE bytes at STAB, and whose .stabstr
-  // section is the STABSTR_SIZE bytes at STABSTR.  The reader will
-  // call the member functions of HANDLER to report the information it
-  // finds, when the reader's 'Process' member function is called.
+  // Create a reader for the STABS debug information whose .stab section is
+  // being traversed by ITERATOR, and whose .stabstr section is referred to
+  // by STRINGS. The reader will call the member functions of HANDLER to
+  // report the information it finds, when the reader's 'Process' member
+  // function is called.
+  //
+  // BIG_ENDIAN should be true if the entries in the .stab section are in
+  // big-endian form, or false if they are in little-endian form.
+  // VALUE_SIZE should be either 4 or 8, indicating the size of the 'value'
+  // field in each entry in bytes.
   // 
   // Note that, in ELF, the .stabstr section should be found using the
   // 'sh_link' field of the .stab section header, not by name.
   StabsReader(const uint8_t *stab,    size_t stab_size,
               const uint8_t *stabstr, size_t stabstr_size,
+              bool big_endian, size_t value_size,
               StabsHandler *handler);
 
   // Process the STABS data, calling the handler's member functions to
@@ -75,16 +86,81 @@ class StabsReader {
   // continue to process until we reach the end of the section.  If we
   // processed the entire section and all handlers returned true,
   // return true.  If any handler returned false, return false.
+  // 
+  // This is only meant to be called once per StabsReader instance;
+  // resuming a prior processing pass that stopped abruptly isn't supported.
   bool Process();
 
  private:
+
+  // An class for walking arrays of STABS entries. This isolates the main
+  // STABS reader from the exact format (size; endianness) of the entries
+  // themselves.
+  class EntryIterator {
+   public:
+    // The contents of a STABS entry, adjusted for the host's endianness,
+    // word size, 'struct nlist' layout, and so on.
+    struct Entry {
+      // True if this iterator has reached the end of the entry array. When
+      // this is set, the other members of this structure are not valid.
+      bool at_end;
+
+      // The number of this entry within the list.
+      size_t index;
+
+      // The current entry's name offset. This is the offset within the
+      // current compilation unit's strings, as establish by the N_UNDF entries.
+      size_t name_offset;
+
+      // The current entry's type, 'other' field, descriptor, and value.
+      unsigned char type;
+      unsigned char other;
+      short descriptor;
+      uint64_t value;
+    };
+
+    // Create a EntryIterator walking the entries in BUFFER. Treat the
+    // entries as big-endian if BIG_ENDIAN is true, as little-endian
+    // otherwise. Assume each entry has a 'value' field whose size is
+    // VALUE_SIZE.
+    //
+    // This would not be terribly clean to extend to other format variations,
+    // but it's enough to handle Linux and Mac, and we'd like STABS to die
+    // anyway.
+    //
+    // For the record: on Linux, STABS entry values are always 32 bits,
+    // regardless of the architecture address size (don't ask me why); on
+    // Mac, they are 32 or 64 bits long. Oddly, the section header's entry
+    // size for a Linux ELF .stab section varies according to the ELF class
+    // from 12 to 20 even as the actual entries remain unchanged.
+    EntryIterator(const ByteBuffer *buffer, bool big_endian, size_t value_size);
+
+    // Move to the next entry. This function's behavior is undefined if
+    // at_end() is true when it is called.
+    EntryIterator &operator++() { Fetch(); entry_.index++; return *this; }
+
+    // Dereferencing this iterator produces a reference to an Entry structure
+    // that holds the current entry's values. The entry is owned by this
+    // EntryIterator, and will be invalidated at the next call to operator++.
+    const Entry &operator*() const { return entry_; }
+    const Entry *operator->() const { return &entry_; }
+
+   private:
+    // Read the STABS entry at cursor_, and set entry_ appropriately.
+    void Fetch();
+
+    // The size of entries' value field, in bytes.
+    size_t value_size_;
+
+    // A byte cursor traversing buffer_.
+    ByteCursor cursor_;
+
+    // Values for the entry this iterator refers to.
+    Entry entry_;
+  };
+
   // Return the name of the current symbol.
   const char *SymbolString();
-
-  // Return the value of the current symbol.
-  const uint64_t SymbolValue() {
-    return symbol_->n_value;
-  }
 
   // Process a compilation unit starting at symbol_.  Return true
   // to continue processing, or false to abort.
@@ -94,10 +170,14 @@ class StabsReader {
   // Return true to continue processing, or false to abort.
   bool ProcessFunction();
 
-  // The debugging information we're reading.
-  const struct nlist *symbols_, *symbols_end_;
-  const uint8_t *stabstr_;
-  size_t stabstr_size_;
+  // The STABS entries we're parsing.
+  ByteBuffer entries_;
+
+  // The string section to which the entries refer.
+  ByteBuffer strings_;
+
+  // The iterator walking the STABS entries.
+  EntryIterator iterator_;
 
   StabsHandler *handler_;
 
@@ -107,9 +187,6 @@ class StabsReader {
   // The value string_offset_ should have for the next compilation unit,
   // as established by N_UNDF entries.
   size_t next_cu_string_offset_;
-
-  // The current symbol we're processing.
-  const struct nlist *symbol_;
 
   // The current source file name.
   const char *current_source_file_;
@@ -203,4 +280,4 @@ class StabsHandler {
 
 } // namespace google_breakpad
 
-#endif  // COMMON_LINUX_STABS_READER_H__
+#endif  // COMMON_STABS_READER_H__
