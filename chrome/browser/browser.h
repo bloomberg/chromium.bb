@@ -77,6 +77,7 @@ class Browser : public TabStripModelDelegate,
 
   // Possible elements of the Browser window.
   enum WindowFeature {
+    FEATURE_NONE = 0,
     FEATURE_TITLEBAR = 1,
     FEATURE_TABSTRIP = 2,
     FEATURE_TOOLBAR = 4,
@@ -455,8 +456,16 @@ class Browser : public TabStripModelDelegate,
   void ViewSource();
   void ShowFindBar();
 
-  // Returns true if the Browser supports the specified feature.
-  virtual bool SupportsWindowFeature(WindowFeature feature) const;
+  // Returns true if the Browser supports the specified feature. The value of
+  // this varies during the lifetime of the browser. For example, if the window
+  // is fullscreen this may return a different value. If you only care about
+  // whether or not it's possible for the browser to support a particular
+  // feature use |CanSupportWindowFeature|.
+  bool SupportsWindowFeature(WindowFeature feature) const;
+
+  // Returns true if the Browser can support the specified feature. See comment
+  // in |SupportsWindowFeature| for details on this.
+  bool CanSupportWindowFeature(WindowFeature feature) const;
 
 // TODO(port): port these, and re-merge the two function declaration lists.
   // Page-related commands.
@@ -881,6 +890,13 @@ class Browser : public TabStripModelDelegate,
   // Invoked when the use vertical tabs preference changes. Resets the insertion
   // policy of the tab strip model and notifies the window.
   void UseVerticalTabsChanged();
+
+  // Implementation of SupportsWindowFeature and CanSupportWindowFeature. If
+  // |check_fullscreen| is true, the set of features reflect the actual state of
+  // the browser, otherwise the set of features reflect the possible state of
+  // the browser.
+  bool SupportsWindowFeatureImpl(WindowFeature feature,
+                                 bool check_fullscreen) const;
 
   // Data members /////////////////////////////////////////////////////////////
 

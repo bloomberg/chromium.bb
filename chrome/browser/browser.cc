@@ -877,8 +877,7 @@ TabContents* Browser::AddTabWithURL(const GURL& url,
                                     SiteInstance* instance,
                                     const std::string& app_extension_id) {
   TabContents* contents = NULL;
-  if (SupportsWindowFeature(FEATURE_TABSTRIP) || tabstrip_model()->empty() ||
-      BrowserList::FindBrowserWithType(profile_, TYPE_NORMAL, false) == this) {
+  if (CanSupportWindowFeature(FEATURE_TABSTRIP) || tabstrip_model()->empty()) {
     GURL url_to_load = url;
     if (url_to_load.is_empty())
       url_to_load = GetHomePage();
@@ -904,7 +903,10 @@ TabContents* Browser::AddTabWithURL(const GURL& url,
   } else {
     // We're in an app window or a popup window. Find an existing browser to
     // open this URL in, creating one if none exists.
-    Browser* b = GetOrCreateTabbedBrowser(profile_);
+    Browser* b = BrowserList::FindBrowserWithFeature(profile_,
+                                                     FEATURE_TABSTRIP);
+    if (!b)
+      b = Browser::Create(profile_);
     contents = b->AddTabWithURL(url, referrer, transition, index, add_types,
                                 instance, app_extension_id);
     b->window()->Show();
@@ -1110,6 +1112,47 @@ void Browser::UpdateTabStripModelInsertionPolicy() {
 void Browser::UseVerticalTabsChanged() {
   UpdateTabStripModelInsertionPolicy();
   window()->ToggleTabStripMode();
+}
+
+bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
+                                        bool check_fullscreen) const {
+  // On Mac, fullscreen mode has most normal things (in a slide-down panel). On
+  // other platforms, we hide some controls when in fullscreen mode.
+  bool hide_ui_for_fullscreen = false;
+#if !defined(OS_MACOSX)
+  hide_ui_for_fullscreen = check_fullscreen && window_ &&
+      window_->IsFullscreen();
+#endif
+
+  unsigned int features = FEATURE_INFOBAR;
+
+#if !defined(OS_CHROMEOS)
+  // Chrome OS opens a FileBrowse pop up instead of using download shelf.
+  // So FEATURE_DOWNLOADSHELF is only added for non-chromeos platforms.
+  features |= FEATURE_DOWNLOADSHELF;
+#endif  // !defined(OS_CHROMEOS)
+
+  if (type() == TYPE_NORMAL) {
+    features |= FEATURE_BOOKMARKBAR;
+    features |= FEATURE_EXTENSIONSHELF;
+  }
+
+  if (!hide_ui_for_fullscreen) {
+    if (type() != TYPE_NORMAL && type() != TYPE_EXTENSION_APP)
+      features |= FEATURE_TITLEBAR;
+
+    if (type() == TYPE_NORMAL || type() == TYPE_EXTENSION_APP)
+      features |= FEATURE_TABSTRIP;
+
+    // Note: the toolbar is collapsed for TYPE_EXTENSION_APP but it is still
+    // there.
+    if (type() == TYPE_NORMAL || type() == TYPE_EXTENSION_APP)
+      features |= FEATURE_TOOLBAR;
+
+    if (type() != TYPE_EXTENSION_APP && (type() & Browser::TYPE_APP) == 0)
+      features |= FEATURE_LOCATIONBAR;
+  }
+  return !!(features & feature);
 }
 
 void Browser::GoBack(WindowOpenDisposition disposition) {
@@ -1410,41 +1453,11 @@ void Browser::ShowFindBar() {
 }
 
 bool Browser::SupportsWindowFeature(WindowFeature feature) const {
-  unsigned int features = FEATURE_INFOBAR;
+  return SupportsWindowFeatureImpl(feature, true);
+}
 
-#if !defined(OS_CHROMEOS)
-  // Chrome OS opens a FileBrowse pop up instead of using download shelf.
-  // So FEATURE_DOWNLOADSHELF is only added for non-chromeos platforms.
-  features |= FEATURE_DOWNLOADSHELF;
-#endif  // !defined(OS_CHROMEOS)
-
-  if (type() == TYPE_NORMAL) {
-    features |= FEATURE_BOOKMARKBAR;
-    features |= FEATURE_EXTENSIONSHELF;
-  }
-
-  // On Mac, fullscreen mode has most normal things (in a slide-down panel). On
-  // other platforms, we hide some controls when in fullscreen mode.
-  bool hide_ui_for_fullscreen = false;
-#if !defined(OS_MACOSX)
-  hide_ui_for_fullscreen = window_ && window_->IsFullscreen();
-#endif
-  if (!hide_ui_for_fullscreen) {
-    if (type() != TYPE_NORMAL && type() != TYPE_EXTENSION_APP)
-      features |= FEATURE_TITLEBAR;
-
-    if (type() == TYPE_NORMAL || type() == TYPE_EXTENSION_APP)
-      features |= FEATURE_TABSTRIP;
-
-    // Note: the toolbar is collapsed for TYPE_EXTENSION_APP but it is still
-    // there.
-    if (type() == TYPE_NORMAL || type() == TYPE_EXTENSION_APP)
-      features |= FEATURE_TOOLBAR;
-
-    if (type() != TYPE_EXTENSION_APP && (type() & Browser::TYPE_APP) == 0)
-      features |= FEATURE_LOCATIONBAR;
-  }
-  return !!(features & feature);
+bool Browser::CanSupportWindowFeature(WindowFeature feature) const {
+  return SupportsWindowFeatureImpl(feature, false);
 }
 
 void Browser::EmailPageLocation() {
@@ -2098,7 +2111,7 @@ TabContents* Browser::AddBlankTabAt(int index, bool foreground) {
 Browser* Browser::CreateNewStripWithContents(TabContents* detached_contents,
                                              const gfx::Rect& window_bounds,
                                              const DockInfo& dock_info) {
-  DCHECK(SupportsWindowFeature(FEATURE_TABSTRIP));
+  DCHECK(CanSupportWindowFeature(FEATURE_TABSTRIP));
 
   gfx::Rect new_window_bounds = window_bounds;
   bool maximize = false;
@@ -2161,7 +2174,7 @@ void Browser::DuplicateContentsAt(int index) {
   DCHECK(contents);
   bool pinned = false;
 
-  if (SupportsWindowFeature(FEATURE_TABSTRIP)) {
+  if (CanSupportWindowFeature(FEATURE_TABSTRIP)) {
     // If this is a tabbed browser, just create a duplicate tab inside the same
     // window next to the tab being duplicated.
     new_contents = contents->Clone();
@@ -2222,7 +2235,7 @@ void Browser::CreateHistoricalTab(TabContents* contents) {
   }
 
   // We only create historical tab entries for tabbed browser windows.
-  if (SupportsWindowFeature(FEATURE_TABSTRIP)) {
+  if (CanSupportWindowFeature(FEATURE_TABSTRIP)) {
     profile()->GetTabRestoreService()->CreateHistoricalTab(
         &contents->controller());
   }
@@ -2449,8 +2462,9 @@ void Browser::AddNewContents(TabContents* source,
 
   // If this is a window with no tabstrip, we can only have one tab so we need
   // to process this in tabbed browser window.
-  if (!SupportsWindowFeature(FEATURE_TABSTRIP) && tabstrip_model_.count() > 0 &&
-      disposition != NEW_WINDOW && disposition != NEW_POPUP) {
+  if (!CanSupportWindowFeature(FEATURE_TABSTRIP) &&
+      tabstrip_model_.count() > 0 && disposition != NEW_WINDOW &&
+      disposition != NEW_POPUP) {
     Browser* b = GetOrCreateTabbedBrowser(profile_);
     DCHECK(b);
     PageTransition::Type transition = PageTransition::LINK;
@@ -3636,7 +3650,7 @@ void Browser::OpenURLAtIndex(TabContents* source,
 
   // If this browser doeesn't support tabs, we can only have one tab so a new
   // tab always goes into a tabbed browser window.
-  if (!SupportsWindowFeature(FEATURE_TABSTRIP) &&
+  if (!CanSupportWindowFeature(FEATURE_TABSTRIP) &&
       disposition != CURRENT_TAB && disposition != NEW_WINDOW) {
     // If the disposition is OFF_THE_RECORD we don't want to create a new
     // browser that will itself create another OTR browser. This will result in
