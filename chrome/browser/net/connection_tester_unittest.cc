@@ -116,12 +116,12 @@ TEST_F(ConnectionTesterTest, DeleteWhileInProgress) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateForkingServer(L"net/data/url_request_unittest/");
 
-  ConnectionTester tester(&test_delegate_);
+  scoped_ptr<ConnectionTester> tester(new ConnectionTester(&test_delegate_));
 
   // Start the test suite on URL "echoall".
   // TODO(eroman): Is this URL right?
   GURL url = server->TestServerPage("echoall");
-  tester.RunAllTests(url);
+  tester->RunAllTests(url);
 
   MessageLoop::current()->RunAllPending();
 
@@ -130,8 +130,19 @@ TEST_F(ConnectionTesterTest, DeleteWhileInProgress) {
   EXPECT_EQ(0, test_delegate_.completed_connection_test_experiment_count());
   EXPECT_EQ(0, test_delegate_.completed_connection_test_suite_count());
 
-  // Note here that we don't wait for the tests to complete
-  // (so |tester| will be deleted upon leaving this scope.
+  // Delete the ConnectionTester while it is in progress.
+  tester.reset();
+
+  // Drain the tasks on the message loop.
+  //
+  // Note that we cannot simply stop the message loop, since that will delete
+  // any pending tasks instead of running them. This causes a problem with
+  // net::ClientSocketPoolBaseHelper, since the "Group" holds a pointer
+  // |backup_task| that it will try to deref during the destructor, but
+  // depending on the order that pending tasks were deleted in, it might
+  // already be invalid! See http://crbug.com/43291.
+  MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  MessageLoop::current()->Run();
 }
 
 }  // namespace
