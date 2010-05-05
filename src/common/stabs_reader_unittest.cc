@@ -31,17 +31,18 @@
 
 // stabs_reader_unittest.cc: Unit tests for google_breakpad::StabsReader.
 
-#include <cassert>
-#include <cerrno>
-#include <cstdarg>
-#include <cstdlib>
-#include <cstring>
+#include <assert.h>
+#include <errno.h>
+#include <stab.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <map>
 #include <sstream>
-#include <stab.h>
 
 #include "breakpad_googletest_includes.h"
 #include "common/stabs_reader.h"
@@ -225,7 +226,7 @@ class MockStabsReaderHandler: public StabsHandler {
 };
 
 struct StabsFixture {
-  StabsFixture() : stabs(&strings) { }
+  StabsFixture() : stabs(&strings), unitized(true) { }
 
   // Create a StabsReader to parse the mock stabs data in stabs and
   // strings, and pass the parsed information to mock_handler. Use the
@@ -244,12 +245,14 @@ struct StabsFixture {
         stabs_contents.size(),
         reinterpret_cast<const uint8_t *>(stabstr_contents.data()),
         stabstr_contents.size(),
-        stabs.endianness() == kBigEndian, stabs.value_size(), &mock_handler);
+        stabs.endianness() == kBigEndian, stabs.value_size(), unitized,
+        &mock_handler);
     return reader.Process();
   }
 
   StringAssembler strings;
   StabsAssembler stabs;
+  bool unitized;
   MockStabsReaderHandler mock_handler;
 };
 
@@ -401,7 +404,10 @@ TEST_F(Stabs, NoCUEnd) {
   ASSERT_TRUE(ApplyHandlerToMockStabsData());
 }
 
-TEST_F(Stabs, MultipleCUs) {
+// On systems that store STABS in sections, string offsets are relative to
+// the beginning of that compilation unit's strings, marked with N_UNDF
+// symbols; see the comments for StabsReader::StabsReader.
+TEST_F(Stabs, Unitized) {
   stabs.set_endianness(kBigEndian);
   stabs.set_value_size(4);
   stabs
@@ -435,6 +441,32 @@ TEST_F(Stabs, MultipleCUs) {
     EXPECT_CALL(mock_handler, EndFunction(0xbffff983U))
         .WillOnce(Return(true));
     EXPECT_CALL(mock_handler, EndCompilationUnit(0xbffff983U))
+        .WillOnce(Return(true));
+  }
+
+  ASSERT_TRUE(ApplyHandlerToMockStabsData());
+}
+
+// On systems that store STABS entries in the real symbol table, the N_UNDF
+// entries have no special meaning, and shouldn't mess up the string
+// indices.
+TEST_F(Stabs, NonUnitized) {
+  stabs.set_endianness(kLittleEndian);
+  stabs.set_value_size(4);
+  unitized = false;
+  stabs
+      .Stab(N_UNDF,    21, 11551, 0x9bad2b2e, "")
+      .Stab(N_UNDF,    21, 11551, 0x9bad2b2e, "")
+      .Stab(N_SO,      71, 45139, 0x11a97352, "Tanzania")
+      .Stab(N_SO,     221, 41976, 0x21a97352, "");
+
+  {
+    InSequence s;
+    EXPECT_CALL(mock_handler,
+                StartCompilationUnit(StrEq("Tanzania"),
+                                     0x11a97352, NULL))
+        .WillOnce(Return(true));
+    EXPECT_CALL(mock_handler, EndCompilationUnit(0x21a97352))
         .WillOnce(Return(true));
   }
 
@@ -478,6 +510,45 @@ TEST_F(Stabs, FunctionEnd) {
     EXPECT_CALL(mock_handler, EndFunction(0xfdacb856e78bbf57ULL))
         .WillOnce(Return(true));
     EXPECT_CALL(mock_handler, EndCompilationUnit(0xfdacb856e78bbf57ULL))
+        .WillOnce(Return(true));
+  }
+
+  ASSERT_TRUE(ApplyHandlerToMockStabsData());
+}
+
+// On Mac OS X, SLINE records can appear before the FUN stab to which they
+// belong, and their values are absolute addresses, not offsets.
+TEST_F(Stabs, LeadingLine) {
+  stabs.set_endianness(kBigEndian);
+  stabs.set_value_size(4);
+  stabs
+      .Stab(N_SO,    179, 27357, 0x8adabc15, "build directory/")
+      .Stab(N_SO,     52, 53058, 0x4c7e3bf4, "compilation unit")
+      .Stab(N_SOL,   165, 12086, 0x6a797ca3, "source file name")
+      .Stab(N_SLINE, 229, 20015, 0x4cb3d7e0, "")
+      .Stab(N_SLINE,  89, 43802, 0x4cba8b88, "")
+      .Stab(N_FUN,   251, 51639, 0xce1b98fa, "rutabaga")
+      .Stab(N_FUN,   218, 16113, 0x5798,     "")
+      .Stab(N_SO,     52, 53058, 0xd4af4415, "");
+
+  {
+    InSequence s;
+    EXPECT_CALL(mock_handler,
+                StartCompilationUnit(StrEq("compilation unit"),
+                                     0x4c7e3bf4, StrEq("build directory/")))
+        .WillOnce(Return(true));
+    EXPECT_CALL(mock_handler,
+                StartFunction(Eq("rutabaga"), 0xce1b98fa))
+        .WillOnce(Return(true));
+    EXPECT_CALL(mock_handler,
+                Line(0x4cb3d7e0, StrEq("source file name"), 20015))
+        .WillOnce(Return(true));
+    EXPECT_CALL(mock_handler,
+                Line(0x4cba8b88, StrEq("source file name"), 43802))
+        .WillOnce(Return(true));
+    EXPECT_CALL(mock_handler, EndFunction(0xce1b98fa + 0x5798))
+        .WillOnce(Return(true));
+    EXPECT_CALL(mock_handler, EndCompilationUnit(0xd4af4415))
         .WillOnce(Return(true));
   }
 

@@ -52,8 +52,12 @@
 #ifdef HAVE_A_OUT_H
 #include <a.out.h>
 #endif
+#ifdef HAVE_MACH_O_NLIST_H
+#include <mach-o/nlist.h>
+#endif
 
 #include <string>
+#include <vector>
 
 #include "common/byte_cursor.h"
 
@@ -71,14 +75,22 @@ class StabsReader {
   //
   // BIG_ENDIAN should be true if the entries in the .stab section are in
   // big-endian form, or false if they are in little-endian form.
+  //
   // VALUE_SIZE should be either 4 or 8, indicating the size of the 'value'
   // field in each entry in bytes.
+  //
+  // UNITIZED should be true if the STABS data is stored in units with
+  // N_UNDF headers. This is usually the case for STABS stored in sections,
+  // like .stab/.stabstr, and usually not the case for STABS stored in the
+  // actual symbol table; UNITIZED should be true when parsing Linux stabs,
+  // false when parsing Mac OS X STABS. For details, see:
+  // http://sourceware.org/gdb/current/onlinedocs/stabs/Stab-Section-Basics.html
   // 
   // Note that, in ELF, the .stabstr section should be found using the
   // 'sh_link' field of the .stab section header, not by name.
   StabsReader(const uint8_t *stab,    size_t stab_size,
               const uint8_t *stabstr, size_t stabstr_size,
-              bool big_endian, size_t value_size,
+              bool big_endian, size_t value_size, bool unitized,
               StabsHandler *handler);
 
   // Process the STABS data, calling the handler's member functions to
@@ -159,6 +171,13 @@ class StabsReader {
     Entry entry_;
   };
 
+  // A source line, saved to be reported later.
+  struct Line {
+    uint64_t address;
+    const char *filename;
+    int number;
+  };
+
   // Return the name of the current symbol.
   const char *SymbolString();
 
@@ -179,6 +198,10 @@ class StabsReader {
   // The iterator walking the STABS entries.
   EntryIterator iterator_;
 
+  // True if the data is "unitized"; see the explanation in the comment for
+  // StabsReader::StabsReader.
+  bool unitized_;
+
   StabsHandler *handler_;
 
   // The offset of the current compilation unit's strings within stabstr_.
@@ -190,6 +213,11 @@ class StabsReader {
 
   // The current source file name.
   const char *current_source_file_;
+
+  // Mac OS X STABS place SLINE records before functions; we accumulate a
+  // vector of these until we see the FUN record, and then report them
+  // after the StartFunction call.
+  std::vector<Line> queued_lines_;
 };
 
 // Consumer-provided callback structure for the STABS reader.  Clients

@@ -37,6 +37,8 @@
 #include <stab.h>
 #include <string.h>
 
+using std::vector;
+
 namespace google_breakpad {
 
 StabsReader::EntryIterator::EntryIterator(const ByteBuffer *buffer,
@@ -61,11 +63,12 @@ void StabsReader::EntryIterator::Fetch() {
 
 StabsReader::StabsReader(const uint8_t *stab,    size_t stab_size,
                          const uint8_t *stabstr, size_t stabstr_size,
-                         bool big_endian, size_t value_size,
+                         bool big_endian, size_t value_size, bool unitized,
                          StabsHandler *handler)
     : entries_(stab, stab_size),
       strings_(stabstr, stabstr_size),
       iterator_(&entries_, big_endian, value_size),
+      unitized_(unitized),
       handler_(handler),
       string_offset_(0),
       next_cu_string_offset_(0),
@@ -88,13 +91,14 @@ bool StabsReader::Process() {
     if (iterator_->type == N_SO) {
       if (! ProcessCompilationUnit())
         return false;
-    } else if (iterator_->type == N_UNDF) {
-      // At the head of each compilation unit's entries there is an
-      // N_UNDF stab giving the number of symbols in the compilation
-      // unit, and the number of bytes that compilation unit's strings
-      // take up in the .stabstr section. Each CU's strings are
-      // separate; the n_strx values are offsets within the current
-      // CU's portion of the .stabstr section.
+    } else if (iterator_->type == N_UNDF && unitized_) {
+      // In unitized STABS (including Linux STABS, and pretty much anything
+      // else that puts STABS data in sections), at the head of each
+      // compilation unit's entries there is an N_UNDF stab giving the
+      // number of symbols in the compilation unit, and the number of bytes
+      // that compilation unit's strings take up in the .stabstr section.
+      // Each CU's strings are separate; the n_strx values are offsets
+      // within the current CU's portion of the .stabstr section.
       //
       // As an optimization, the GNU linker combines all the
       // compilation units into one, with a single N_UNDF at the
@@ -157,9 +161,26 @@ bool StabsReader::ProcessCompilationUnit() {
     if (iterator_->type == N_FUN) {
       if (! ProcessFunction())
         return false;
-    } else
+    } else if (iterator_->type == N_SLINE) {
+      // Mac OS X STABS place SLINE records before functions.
+      Line line;
+      // The value of an N_SLINE entry that appears outside a function is
+      // the absolute address of the line.
+      line.address = iterator_->value;
+      line.filename = current_source_file_;
+      // The n_desc of a N_SLINE entry is the line number.  It's a
+      // signed 16-bit field; line numbers from 32768 to 65535 are
+      // stored as n-65536.
+      line.number = (uint16_t) iterator_->descriptor;
+      queued_lines_.push_back(line);
+      ++iterator_;
+    } else if (iterator_->type == N_SOL) {
+      current_source_file_ = SymbolString();
+      ++iterator_;
+    } else {
       // Ignore anything else.
       ++iterator_;
+    }
   }
 
   // An N_SO with an empty name indicates the end of the compilation
@@ -176,6 +197,8 @@ bool StabsReader::ProcessCompilationUnit() {
 
   if (! handler_->EndCompilationUnit(ending_address))
     return false;
+
+  queued_lines_.clear();
 
   return true;
 }          
@@ -196,6 +219,14 @@ bool StabsReader::ProcessFunction() {
     return false;
   ++iterator_;
 
+  // If there were any SLINE records given before the function, report them now.
+  for (vector<Line>::const_iterator it = queued_lines_.begin();
+       it != queued_lines_.end(); it++) {
+    if (!handler_->Line(it->address, it->filename, it->number))
+      return false;
+  }
+  queued_lines_.clear();
+  
   while (!iterator_->at_end) {
     if (iterator_->type == N_SO || iterator_->type == N_FUN)
       break;

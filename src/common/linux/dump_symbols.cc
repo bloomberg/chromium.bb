@@ -142,12 +142,13 @@ static bool LoadStabs(const ElfW(Ehdr) *elf_header,
   StabsToModule handler(module);
   // Find the addresses of the STABS data, and create a STABS reader object.
   // On Linux, STABS entries always have 32-bit values, regardless of the
-  // address size of the architecture whose code they're describing.
+  // address size of the architecture whose code they're describing, and
+  // the strings are always "unitized".
   uint8_t *stabs = reinterpret_cast<uint8_t *>(stab_section->sh_offset);
   uint8_t *stabstr = reinterpret_cast<uint8_t *>(stabstr_section->sh_offset);
   google_breakpad::StabsReader reader(stabs, stab_section->sh_size,
                                       stabstr, stabstr_section->sh_size,
-                                      big_endian, 4, &handler);
+                                      big_endian, 4, true, &handler);
   // Read the STABS data, and do post-processing.
   if (!reader.Process())
     return false;
