@@ -788,6 +788,24 @@ TEST_F(Append, String) {
   ASSERT_STREQ(contents.c_str(), "howdy there");
 }
 
+TEST_F(Append, CString) {
+  section.AppendCString("howdy");
+  section.AppendCString("");
+  section.AppendCString("there");
+  ASSERT_TRUE(section.GetContents(&contents));
+  ASSERT_EQ(string("howdy\0\0there\0", 13), contents);
+}
+
+TEST_F(Append, CStringSize) {
+  section.AppendCString("howdy", 3);
+  section.AppendCString("there", 5);
+  section.AppendCString("fred", 6);
+  section.AppendCString("natalie", 0);
+  section.AppendCString("", 10);
+  ASSERT_TRUE(section.GetContents(&contents));
+  ASSERT_EQ(string("howtherefred\0\0\0\0\0\0\0\0\0\0\0\0", 24), contents);
+}
+
 TEST_F(Append, RepeatedBytes) {
   section.Append((size_t) 10, '*');
   ASSERT_TRUE(section.GetContents(&contents));

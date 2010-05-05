@@ -324,6 +324,15 @@ class Section {
     return *this;
   }
 
+  // Append at most SIZE bytes from DATA; if DATA is less than SIZE bytes
+  // long, pad with '\0' characters.
+  Section &AppendCString(const string &data, size_t size) {
+    contents_.append(data, 0, size);
+    if (data.size() < size)
+      Append(size - data.size(), 0);
+    return *this;
+  }
+
   // Append VALUE or LABEL to this section, with the given bit width and
   // endianness. Return a reference to this section.
   //
