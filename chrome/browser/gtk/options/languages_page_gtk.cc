@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "app/gtk_signal.h"
 #include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
@@ -42,11 +43,10 @@ class AddLanguageDialog {
   AddLanguageDialog(Profile* profile, LanguagesPageGtk* delegate);
  private:
   // Callback for dialog buttons.
-  static void OnResponse(GtkDialog* dialog, int response_id,
-                         AddLanguageDialog* window);
+  CHROMEGTK_CALLBACK_1(AddLanguageDialog, void, OnResponse, int);
 
   // Callback for window destruction.
-  static void OnWindowDestroy(GtkWidget* widget, AddLanguageDialog* window);
+  CHROMEGTK_CALLBACK_0(AddLanguageDialog, void, OnWindowDestroy);
 
   // The dialog window.
   GtkWidget* dialog_;
@@ -90,28 +90,23 @@ AddLanguageDialog::AddLanguageDialog(Profile* profile,
   gtk_combo_box_set_active(GTK_COMBO_BOX(combobox_), 0);
   gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), combobox_);
 
-  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), this);
-  g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroy), this);
+  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
+  g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroyThunk), this);
 
   gtk_widget_show_all(dialog_);
 }
 
-// static
-void AddLanguageDialog::OnResponse(GtkDialog* dialog,
-                                   int response_id,
-                                   AddLanguageDialog* window) {
+void AddLanguageDialog::OnResponse(GtkWidget* dialog, int response_id) {
   if (response_id == GTK_RESPONSE_OK) {
-    int selected = gtk_combo_box_get_active(GTK_COMBO_BOX(window->combobox_));
-    window->language_delegate_->OnAddLanguage(
-        window->accept_language_combobox_model_->GetLocaleFromIndex(selected));
+    int selected = gtk_combo_box_get_active(GTK_COMBO_BOX(combobox_));
+    language_delegate_->OnAddLanguage(
+        accept_language_combobox_model_->GetLocaleFromIndex(selected));
   }
-  gtk_widget_destroy(window->dialog_);
+  gtk_widget_destroy(dialog_);
 }
 
-// static
-void AddLanguageDialog::OnWindowDestroy(GtkWidget* widget,
-                                        AddLanguageDialog* window) {
-  MessageLoop::current()->DeleteSoon(FROM_HERE, window);
+void AddLanguageDialog::OnWindowDestroy(GtkWidget* widget) {
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 }  // namespace
