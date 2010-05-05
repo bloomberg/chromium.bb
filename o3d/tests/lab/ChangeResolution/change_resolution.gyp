@@ -4,13 +4,21 @@
 
 {
   'targets': [
-    {
-      'target_name': 'ChangeResolution',
-      'type': 'executable',
-      'defines': ['_WIN32_WINNT=0x0501'],  # for ChangeDisplaySettings
-      'sources': [
-        'change_resolution.cpp',
-      ],
-    },
+  ],
+  'conditions': [
+    ['OS == "win"',
+      {
+        'targets': [
+          {
+            'target_name': 'ChangeResolution',
+            'type': 'executable',
+            'defines': ['_WIN32_WINNT=0x0501'],  # for ChangeDisplaySettings
+            'sources': [
+              'change_resolution.cpp',
+            ],
+          },
+        ],
+      },
+    ],
   ],
 }
