@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, Google Inc.
+ * Copyright 2010, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,21 +30,35 @@
  */
 
 
-#ifndef O3D_CORE_CROSS_GLES2_UTILS_GLES2_INL_H_
-#define O3D_CORE_CROSS_GLES2_UTILS_GLES2_INL_H_
+#ifndef O3D_CORE_CROSS_GLCOMMON_UTILS_GLCOMMON_INL_H_
+#define O3D_CORE_CROSS_GLCOMMON_UTILS_GLCOMMON_INL_H_
 
-#include "core/cross/glcommon/utils_glcommon-inl.h"
+#include "core/cross/types.h"
 
 namespace o3d {
 
-// convert a byte offset into a Vertex Buffer Object into a GLvoid* for
-// use with glVertexPointer(), glNormalPointer(), glVertexAttribPointer(),
-// etc. after having used a glBindBuffer().
-inline GLvoid* BufferOffset(unsigned i) {
-  return static_cast<int8 *>(NULL)+(i);
+// Define this to debug GL errors. This has a significant performance hit.
+// #define GL_ERROR_DEBUGGING
+
+#ifdef GL_ERROR_DEBUGGING
+#define CHECK_GL_ERROR() do {                                         \
+  GLenum gl_error = glGetError();                                     \
+  LOG_IF(ERROR, gl_error != GL_NO_ERROR) << "GL Error: " << gl_error; \
+} while(0)
+#define LOG_FLUSHED_GL_ERROR(gl_error) \
+  LOG(ERROR) << "Flushing unreaped GL error: " << gl_error;
+#else  // GL_ERROR_DEBUGGING
+#define CHECK_GL_ERROR() void(0)
+#define LOG_FLUSHED_GL_ERROR(gl_error) void(0)
+#endif  // GL_ERROR_DEBUGGING
+
+inline static void FlushGlErrors() {
+  GLenum gl_error;
+  while ((gl_error = glGetError()) != GL_NO_ERROR) {
+    LOG_FLUSHED_GL_ERROR(gl_error);
+  }
 }
 
 }  // namespace o3d
 
-#endif  // O3D_CORE_CROSS_GLES2_UTILS_GLES2_INL_H_
-
+#endif  // O3D_CORE_CROSS_GLCOMMON_UTILS_GLCOMMON_INL_H_

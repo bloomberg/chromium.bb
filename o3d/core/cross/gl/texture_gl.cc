@@ -180,6 +180,7 @@ static bool UpdateGLImageFromBitmap(GLenum target,
   GLenum gl_data_type = 0;
   GLenum gl_format = GLFormatFromO3DFormat(bitmap.format(), &gl_internal_format,
                                            &gl_data_type);
+  FlushGlErrors();
   if (gl_format) {
     glTexSubImage2D(target, level, 0, 0, mip_width, mip_height,
                     gl_format, gl_data_type, mip_data);
@@ -218,6 +219,7 @@ static bool CreateGLImages(GLenum target,
   memset(temp_data.get(), 0, size);
 
   for (int i = 0; i < levels; ++i) {
+    FlushGlErrors();
     if (gl_format) {
       glTexImage2D(target, i, internal_format, mip_width, mip_height,
                    0, gl_format, type, temp_data.get());

@@ -257,12 +257,10 @@ bool EffectGL::LoadFromFXString(const String& effect) {
     DLOG(WARNING) << "Effect post-rewrite compile warnings: " << listing;
   }
 
-  CHECK_GL_ERROR();
-
   // If the program rewrite introduced some syntax or semantic errors, we won't
   // know it until we load the program (through a GL error).
   // So flush all GL errors first...
-  do {} while (glGetError() != GL_NO_ERROR);
+  FlushGlErrors();
 
   // ... Then load the program ...
   cgGLLoadProgram(cg_vertex_);

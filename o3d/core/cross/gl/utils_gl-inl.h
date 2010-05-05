@@ -33,12 +33,9 @@
 #ifndef O3D_CORE_CROSS_GL_UTILS_GL_INL_H_
 #define O3D_CORE_CROSS_GL_UTILS_GL_INL_H_
 
-#include "core/cross/types.h"
+#include "core/cross/glcommon/utils_glcommon-inl.h"
 
 namespace o3d {
-
-// Define this to debug GL errors. This has a significant performance hit.
-// #define GL_ERROR_DEBUGGING
 
 // convert a byte offset into a Vertex Buffer Object into a GLvoid* for
 // use with glVertexPointer(), glNormalPointer(), glVertexAttribPointer(),
@@ -66,15 +63,6 @@ namespace o3d {
                 << cgGetLastListing(cg_context);      \
   }                                                   \
 }
-
-#ifdef GL_ERROR_DEBUGGING
-#define CHECK_GL_ERROR() do {                                         \
-  GLenum gl_error = glGetError();                                     \
-  LOG_IF(ERROR, gl_error != GL_NO_ERROR) << "GL Error :" << gl_error; \
-} while(0)
-#else  // GL_ERROR_DEBUGGING
-#define CHECK_GL_ERROR() void(0)
-#endif  // GL_ERROR_DEBUGGING
 
 }  // namespace o3d
 
