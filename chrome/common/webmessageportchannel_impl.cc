@@ -151,6 +151,11 @@ void WebMessagePortChannelImpl::Entangle(
 }
 
 void WebMessagePortChannelImpl::QueueMessages() {
+  if (MessageLoop::current() != ChildThread::current()->message_loop()) {
+    ChildThread::current()->message_loop()->PostTask(FROM_HERE,
+        NewRunnableMethod(this, &WebMessagePortChannelImpl::QueueMessages));
+    return;
+  }
   // This message port is being sent elsewhere (perhaps to another process).
   // The new endpoint needs to receive the queued messages, including ones that
   // could still be in-flight.  So we tell the browser to queue messages, and it
