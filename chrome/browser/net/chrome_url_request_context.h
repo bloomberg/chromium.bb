@@ -260,7 +260,7 @@ class ChromeURLRequestContextGetter : public URLRequestContextGetter,
   // URLRequestContextGetter implementation.
   virtual URLRequestContext* GetURLRequestContext();
   virtual net::CookieStore* GetCookieStore();
-  virtual scoped_refptr<MessageLoopProxy> GetIOMessageLoopProxy();
+  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy();
 
   // Convenience overload of GetURLRequestContext() that returns a
   // ChromeURLRequestContext* rather than a URLRequestContext*.

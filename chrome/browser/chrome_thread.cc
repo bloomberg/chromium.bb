@@ -22,7 +22,7 @@ static const char* chrome_thread_names[ChromeThread::ID_COUNT] = {
 
 // An implementation of MessageLoopProxy to be used in conjunction
 // with ChromeThread.
-class ChromeThreadMessageLoopProxy : public MessageLoopProxy {
+class ChromeThreadMessageLoopProxy : public base::MessageLoopProxy {
  public:
   explicit ChromeThreadMessageLoopProxy(ChromeThread::ID identifier)
       : id_(identifier) {
@@ -164,9 +164,10 @@ bool ChromeThread::GetCurrentThreadIdentifier(ID* identifier) {
 }
 
 // static
-scoped_refptr<MessageLoopProxy> ChromeThread::GetMessageLoopProxyForThread(
+scoped_refptr<base::MessageLoopProxy>
+ChromeThread::GetMessageLoopProxyForThread(
     ID identifier) {
-  scoped_refptr<MessageLoopProxy> proxy =
+  scoped_refptr<base::MessageLoopProxy> proxy =
       new ChromeThreadMessageLoopProxy(identifier);
   return proxy;
 }

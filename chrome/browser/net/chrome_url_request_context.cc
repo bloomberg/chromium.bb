@@ -551,7 +551,7 @@ net::CookieStore* ChromeURLRequestContextGetter::GetCookieStore() {
   return result;
 }
 
-scoped_refptr<MessageLoopProxy>
+scoped_refptr<base::MessageLoopProxy>
 ChromeURLRequestContextGetter::GetIOMessageLoopProxy() {
   return ChromeThread::GetMessageLoopProxyForThread(ChromeThread::IO);
 }

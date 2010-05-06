@@ -8,11 +8,14 @@
 #include "base/ref_counted.h"
 #include "base/task.h"
 
+namespace base {
+class MessageLoopProxy;
+}
+
 namespace net {
 class CookieStore;
 }
 
-class MessageLoopProxy;
 class URLRequestContext;
 struct URLRequestContextGetterTraits;
 
@@ -29,7 +32,7 @@ class URLRequestContextGetter
   // Returns a MessageLoopProxy corresponding to the thread on which the
   // request IO happens (the thread on which the returned URLRequestContext
   // may be used).
-  virtual scoped_refptr<MessageLoopProxy> GetIOMessageLoopProxy() = 0;
+  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() = 0;
 
  protected:
   friend class DeleteTask<URLRequestContextGetter>;

@@ -43,7 +43,7 @@ URLRequestContext* HttpBridge::RequestContextGetter::GetURLRequestContext() {
   return context_;
 }
 
-scoped_refptr<MessageLoopProxy>
+scoped_refptr<base::MessageLoopProxy>
 HttpBridge::RequestContextGetter::GetIOMessageLoopProxy() {
   return ChromeThread::GetMessageLoopProxyForThread(ChromeThread::IO);
 }

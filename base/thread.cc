@@ -144,6 +144,7 @@ void Thread::ThreadMain() {
     ANNOTATE_THREAD_NAME(name_.c_str());  // Tell the name to race detector.
     message_loop.set_thread_name(name_);
     message_loop_ = &message_loop;
+    message_loop_proxy_ = MessageLoopProxy::CreateForCurrentThread();
 
     // Let the thread do extra initialization.
     // Let's do this before signaling we are started.
@@ -163,6 +164,7 @@ void Thread::ThreadMain() {
 
     // We can't receive messages anymore.
     message_loop_ = NULL;
+    message_loop_proxy_ = NULL;
   }
   CleanUpAfterMessageLoopDestruction();
   thread_id_ = 0;

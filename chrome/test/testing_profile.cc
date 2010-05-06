@@ -108,7 +108,7 @@ class TestURLRequestContextGetter : public URLRequestContextGetter {
       context_ = new TestURLRequestContext();
     return context_.get();
   }
-  virtual scoped_refptr<MessageLoopProxy> GetIOMessageLoopProxy() {
+  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() {
     return ChromeThread::GetMessageLoopProxyForThread(ChromeThread::IO);
   }
 
@@ -133,7 +133,7 @@ class TestExtensionURLRequestContextGetter : public URLRequestContextGetter {
       context_ = new TestExtensionURLRequestContext();
     return context_.get();
   }
-  virtual scoped_refptr<MessageLoopProxy> GetIOMessageLoopProxy() {
+  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() {
     return ChromeThread::GetMessageLoopProxyForThread(ChromeThread::IO);
   }
 

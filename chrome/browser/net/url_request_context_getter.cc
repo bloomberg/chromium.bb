@@ -11,7 +11,7 @@ net::CookieStore* URLRequestContextGetter::GetCookieStore() {
 }
 
 void URLRequestContextGetter::OnDestruct() {
-  scoped_refptr<MessageLoopProxy> io_message_loop_proxy =
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy =
       GetIOMessageLoopProxy();
   DCHECK(io_message_loop_proxy);
   if (io_message_loop_proxy) {

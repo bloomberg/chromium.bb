@@ -112,7 +112,7 @@ TEST_F(ChromeThreadTest, NotReleasedIfTargetThreadNonExistent) {
 }
 
 TEST_F(ChromeThreadTest, PostTaskViaMessageLoopProxy) {
-  scoped_refptr<MessageLoopProxy> message_loop_proxy =
+  scoped_refptr<base::MessageLoopProxy> message_loop_proxy =
       ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE);
   message_loop_proxy->PostTask(FROM_HERE,
                                NewRunnableFunction(&BasicFunction,
@@ -121,7 +121,7 @@ TEST_F(ChromeThreadTest, PostTaskViaMessageLoopProxy) {
 }
 
 TEST_F(ChromeThreadTest, ReleaseViaMessageLoopProxy) {
-  scoped_refptr<MessageLoopProxy> message_loop_proxy =
+  scoped_refptr<base::MessageLoopProxy> message_loop_proxy =
       ChromeThread::GetMessageLoopProxyForThread(ChromeThread::UI);
   message_loop_proxy->ReleaseSoon(FROM_HERE, this);
   MessageLoop::current()->Run();
@@ -129,7 +129,7 @@ TEST_F(ChromeThreadTest, ReleaseViaMessageLoopProxy) {
 
 TEST_F(ChromeThreadTest, TaskToNonExistentThreadIsDeletedViaMessageLoopProxy) {
   bool deleted = false;
-  scoped_refptr<MessageLoopProxy> message_loop_proxy =
+  scoped_refptr<base::MessageLoopProxy> message_loop_proxy =
       ChromeThread::GetMessageLoopProxyForThread(ChromeThread::WEBKIT);
   message_loop_proxy->PostTask(FROM_HERE, new DummyTask(&deleted));
   EXPECT_TRUE(deleted);
@@ -141,7 +141,7 @@ TEST_F(ChromeThreadTest, PostTaskViaMessageLoopProxyAfterThreadExits) {
   io_thread->Stop();
 
   bool deleted = false;
-  scoped_refptr<MessageLoopProxy> message_loop_proxy =
+  scoped_refptr<base::MessageLoopProxy> message_loop_proxy =
       ChromeThread::GetMessageLoopProxyForThread(ChromeThread::IO);
   bool ret = message_loop_proxy->PostTask(FROM_HERE, new DummyTask(&deleted));
   EXPECT_FALSE(ret);
@@ -154,7 +154,7 @@ TEST_F(ChromeThreadTest, PostTaskViaMessageLoopProxyAfterThreadIsDeleted) {
     io_thread->Start();
   }
   bool deleted = false;
-  scoped_refptr<MessageLoopProxy> message_loop_proxy =
+  scoped_refptr<base::MessageLoopProxy> message_loop_proxy =
       ChromeThread::GetMessageLoopProxyForThread(ChromeThread::IO);
   bool ret = message_loop_proxy->PostTask(FROM_HERE, new DummyTask(&deleted));
   EXPECT_FALSE(ret);

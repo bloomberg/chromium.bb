@@ -69,7 +69,7 @@ class URLFetcher::Core
   RequestType request_type_;         // What type of request is this?
   URLFetcher::Delegate* delegate_;   // Object to notify on completion
   MessageLoop* delegate_loop_;       // Message loop of the creating thread
-  scoped_refptr<MessageLoopProxy> io_message_loop_proxy_;
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
                                      // The message loop proxy for the thread
                                      // on which the request IO happens.
   URLRequest* request_;              // The actual request this wraps

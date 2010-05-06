@@ -9,7 +9,9 @@
 #include "base/task.h"
 #include "base/thread.h"
 
+namespace base {
 class MessageLoopProxy;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // ChromeThread
@@ -130,7 +132,7 @@ class ChromeThread : public base::Thread {
 
   // Callers can hold on to a refcounted MessageLoopProxy beyond the lifetime
   // of the thread.
-  static scoped_refptr<MessageLoopProxy> GetMessageLoopProxyForThread(
+  static scoped_refptr<base::MessageLoopProxy> GetMessageLoopProxyForThread(
       ID identifier);
 
   // Use these templates in conjuction with RefCountedThreadSafe when you want
