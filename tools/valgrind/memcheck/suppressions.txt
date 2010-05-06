@@ -2823,3 +2823,15 @@
    fun:_ZN11webkit_glue13WebPluginImpl23GetWindowScriptNPObjectEv
    fun:NPN_GetValue
 }
+{
+   bug_43451
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
+   obj:/usr/lib/libstdc++.so.6.0.9
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN17RenderProcessImplC1Ev
+   fun:_Z12RendererMainRK18MainFunctionParams
+   fun:ChromeMain
+   fun:main
+}
