@@ -38,6 +38,10 @@
 #ifndef _NPAPI_H_
 #define _NPAPI_H_
 
+#ifdef __OS2__
+#pragma pack(1)
+#endif
+
 #include "nptypes.h"
 
 /* BEGIN GOOGLE MODIFICATIONS */
@@ -50,6 +54,12 @@
 
 /* END GOOGLE MODIFICATIONS */
 
+#if defined (__OS2__) || defined (OS2)
+#ifndef XP_OS2
+#define XP_OS2 1
+#endif
+#endif
+
 #ifdef INCLUDE_JAVA
 #include "jri.h"                /* Java Runtime Interface */
 #else
@@ -58,10 +68,11 @@
 #endif
 
 #ifdef _WIN32
-#    ifndef XP_WIN
-#        define XP_WIN 1
-#    endif /* XP_WIN */
-#endif /* _WIN32 */
+#include <windows.h>
+#ifndef XP_WIN
+#define XP_WIN 1
+#endif
+#endif
 
 /* BEGIN GOOGLE MODIFICATIONS */
 /* On Linux and Mac, be sure to set Mozilla-specific macros. */
@@ -70,21 +81,6 @@
 #define MOZ_X11 1
 #endif
 /* END GOOGLE MODIFICATIONS */
-
-#ifdef __MWERKS__
-#    define _declspec __declspec
-#    ifdef macintosh
-#        ifndef XP_MAC
-#            define XP_MAC 1
-#        endif /* XP_MAC */
-#    endif /* macintosh */
-#    ifdef __INTEL__
-#        undef NULL
-#        ifndef XP_WIN
-#            define XP_WIN 1
-#        endif /* __INTEL__ */
-#    endif /* XP_PC */
-#endif /* __MWERKS__ */
 
 #ifdef __SYMBIAN32__
 #   ifndef XP_SYMBIAN
@@ -95,11 +91,6 @@
 
 #if defined(__APPLE_CC__) && !defined(__MACOS_CLASSIC__) && !defined(XP_UNIX)
 #   define XP_MACOSX
-#endif
-
-#ifdef XP_MAC
-#include <Quickdraw.h>
-#include <Events.h>
 #endif
 
 #if defined(XP_MACOSX) && defined(__LP64__)
@@ -115,22 +106,18 @@
 #endif
 #endif
 
-#if defined(XP_UNIX) 
-#	include <stdio.h>
+#if defined(XP_UNIX)
+#include <stdio.h>
 /* BEGIN GOOGLE MODIFICATIONS */
 #if 0
 /* END GOOGLE MODIFICATIONS */
-#	if defined(MOZ_X11)
-#		include <X11/Xlib.h>
-#		include <X11/Xutil.h>
-#	endif
+#if defined(MOZ_X11)
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#endif
 /* BEGIN GOOGLE MODIFICATIONS */
 #endif
 /* END GOOGLE MODIFICATIONS */
-#endif
-
-#ifdef XP_WIN
-#include <windows.h>
 #endif
 
 /*----------------------------------------------------------------------*/
@@ -165,7 +152,7 @@ typedef char*         NPMIMEType;
 /*----------------------------------------------------------------------*/
 
 #if !defined(__LP64__)
-#if defined(XP_MAC) || defined(XP_MACOSX)
+#if defined(XP_MACOSX)
 #pragma options align=mac68k
 #endif
 #endif /* __LP64__ */
@@ -222,6 +209,17 @@ typedef struct _NPRect
   uint16_t right;
 } NPRect;
 
+typedef struct _NPSize
+{
+  int32_t width;
+  int32_t height;
+} NPSize;
+
+/* Return values for NPP_HandleEvent */
+#define kNPEventNotHandled 0
+#define kNPEventHandled 1
+/* Exact meaning must be spec'd in event model. */
+#define kNPEventStartIME 2
 
 #ifdef XP_UNIX
 /*
@@ -274,21 +272,21 @@ typedef enum {
 #endif
 
 /*
- *   The following masks are applied on certain platforms to NPNV and 
- *   NPPV selectors that pass around pointers to COM interfaces. Newer 
- *   compilers on some platforms may generate vtables that are not 
- *   compatible with older compilers. To prevent older plugins from 
- *   not understanding a new browser's ABI, these masks change the 
+ *   The following masks are applied on certain platforms to NPNV and
+ *   NPPV selectors that pass around pointers to COM interfaces. Newer
+ *   compilers on some platforms may generate vtables that are not
+ *   compatible with older compilers. To prevent older plugins from
+ *   not understanding a new browser's ABI, these masks change the
  *   values of those selectors on those platforms. To remain backwards
- *   compatible with different versions of the browser, plugins can 
+ *   compatible with different versions of the browser, plugins can
  *   use these masks to dynamically determine and use the correct C++
- *   ABI that the browser is expecting. This does not apply to Windows 
+ *   ABI that the browser is expecting. This does not apply to Windows
  *   as Microsoft's COM ABI will likely not change.
  */
 
 #define NP_ABI_GCC3_MASK  0x10000000
 /*
- *   gcc 3.x generated vtables on UNIX and OSX are incompatible with 
+ *   gcc 3.x generated vtables on UNIX and OSX are incompatible with
  *   previous compilers.
  */
 #if (defined(XP_UNIX) && defined(__GNUC__) && (__GNUC__ >= 3))
@@ -297,15 +295,8 @@ typedef enum {
 #define _NP_ABI_MIXIN_FOR_GCC3 0
 #endif
 
+#ifdef XP_MACOSX
 #define NP_ABI_MACHO_MASK 0x01000000
-/*
- *   On OSX, the Mach-O executable format is significantly
- *   different than CFM. In addition to having a different
- *   C++ ABI, it also has has different C calling convention.
- *   You must use glue code when calling between CFM and
- *   Mach-O C functions. 
- */
-#if (defined(TARGET_RT_MAC_MACHO))
 #define _NP_ABI_MIXIN_FOR_MACHO NP_ABI_MACHO_MASK
 #else
 #define _NP_ABI_MIXIN_FOR_MACHO 0
@@ -340,13 +331,16 @@ typedef enum {
    * in NPAPI minor version 15.
    */
   NPPVformValue = 16,
-  
+
   NPPVpluginUrlRequestsDisplayedBool = 17,
-  
+
   /* Checks if the plugin is interested in receiving the http body of
    * all http requests (including failed ones, http status != 200).
    */
   NPPVpluginWantsAllNetworkStreams = 18,
+
+  /* Browsers can retrieve a native ATK accessibility plug ID via this variable. */
+  NPPVpluginNativeAccessibleAtkPlugId = 19,
 
   /* Checks to see if the plug-in would like the browser to load the "src" attribute. */
   NPPVpluginCancelSrcStream = 20
@@ -358,6 +352,10 @@ typedef enum {
   , NPPVpluginEventModel = 1001
   /* In the NPDrawingModelCoreAnimation drawing model, the browser asks the plug-in for a Core Animation layer. */
   , NPPVpluginCoreAnimationLayer = 1003
+#endif
+
+#if (MOZ_PLATFORM_MAEMO == 5)
+  , NPPVpluginWindowlessLocalBool = 2002
 #endif
 } NPPVariable;
 
@@ -402,6 +400,9 @@ typedef enum {
 #endif
   , NPNVsupportsCocoaBool = 3001 /* TRUE if the browser supports the Cocoa event model */
 #endif
+#if (MOZ_PLATFORM_MAEMO == 5)
+  , NPNVSupportsWindowlessLocal = 2002
+#endif
 } NPNVariable;
 
 typedef enum {
@@ -429,6 +430,8 @@ typedef enum {
 typedef struct _NPWindow
 {
   void* window;  /* Platform specific window handle */
+                 /* OS/2: x - Position of bottom left corner */
+                 /* OS/2: y - relative to visible netscape window */
   int32_t  x;      /* Position of top left corner relative */
   int32_t  y;      /* to a netscape page. */
   uint32_t width;  /* Maximum window size */
@@ -440,6 +443,21 @@ typedef struct _NPWindow
   NPWindowType type; /* Is this a window or a drawable? */
 } NPWindow;
 
+typedef struct _NPImageExpose
+{
+  char*    data;       /* image pointer */
+  int32_t  stride;     /* Stride of data image pointer */
+  int32_t  depth;      /* Depth of image pointer */
+  int32_t  x;          /* Expose x */
+  int32_t  y;          /* Expose y */
+  uint32_t width;      /* Expose width */
+  uint32_t height;     /* Expose height */
+  NPSize   dataSize;   /* Data buffer size */
+  float    translateX; /* translate X matrix value */
+  float    translateY; /* translate Y matrix value */
+  float    scaleX;     /* scale X matrix value */
+  float    scaleY;     /* scale Y matrix value */
+} NPImageExpose;
 
 typedef struct _NPFullPrint
 {
@@ -465,7 +483,7 @@ typedef struct _NPPrint
   } print;
 } NPPrint;
 
-#if defined(XP_MAC) || defined(XP_MACOSX)
+#if defined(XP_MACOSX)
 
 #ifndef NP_NO_CARBON
 typedef EventRecord NPEvent;
@@ -477,6 +495,13 @@ typedef struct _NPEvent
   uintptr_t wParam;
   uintptr_t lParam;
 } NPEvent;
+#elif defined(XP_OS2)
+typedef struct _NPEvent
+{
+  uint32_t event;
+  uint32_t wParam;
+  uint32_t lParam;
+} NPEvent;
 #elif defined (XP_UNIX) && defined(MOZ_X11)
 /* BEGIN GOOGLE MODIFICATIONS */
 typedef union _XEvent XEvent;
@@ -484,11 +509,9 @@ typedef union _XEvent XEvent;
 typedef XEvent NPEvent;
 #else
 typedef void*  NPEvent;
-#endif /* XP_MACOSX */
+#endif
 
-#if defined(XP_MAC)
-typedef RgnHandle NPRegion;
-#elif defined(XP_MACOSX)
+#if defined(XP_MACOSX)
 typedef void* NPRegion;
 #ifndef NP_NO_QUICKDRAW
 typedef RgnHandle NPQDRegion;
@@ -503,11 +526,11 @@ typedef struct _XRegion *Region;
 typedef Region NPRegion;
 #else
 typedef void *NPRegion;
-#endif /* XP_MAC */
+#endif
 
 typedef struct _NPNSString NPNSString;
 typedef struct _NPNSWindow NPNSWindow;
-typedef struct _NPNSMenu NPNSMenu;
+typedef struct _NPNSMenu   NPNSMenu;
 
 #ifdef XP_MACOSX
 typedef NPNSMenu NPMenu;
@@ -534,7 +557,7 @@ typedef struct NP_Port
 } NP_Port;
 #endif /* NP_NO_QUICKDRAW */
 
-/* 
+/*
  * NP_CGContext is the type of the NPWindow's 'window' when the plugin specifies NPDrawingModelCoreGraphics
  * as its drawing model.
  */
@@ -549,7 +572,7 @@ typedef struct NP_CGContext
 #endif
 } NP_CGContext;
 
-/* 
+/*
  * NP_GLContext is the type of the NPWindow's 'window' when the plugin specifies NPDrawingModelOpenGL as its
  * drawing model.
  */
@@ -587,20 +610,20 @@ typedef struct _NPCocoaEvent {
   union {
     struct {
       uint32_t modifierFlags;
-      double  pluginX;
-      double  pluginY;            
-      int32_t buttonNumber;
-      int32_t clickCount;
-      double  deltaX;
-      double  deltaY;
-      double  deltaZ;
+      double   pluginX;
+      double   pluginY;
+      int32_t  buttonNumber;
+      int32_t  clickCount;
+      double   deltaX;
+      double   deltaY;
+      double   deltaZ;
     } mouse;
     struct {
-      uint32_t   modifierFlags;
+      uint32_t    modifierFlags;
       NPNSString *characters;
       NPNSString *charactersIgnoringModifiers;
-      NPBool     isARepeat;
-      uint16_t   keyCode;
+      NPBool      isARepeat;
+      uint16_t    keyCode;
     } key;
     struct {
       CGContextRef context;
@@ -618,10 +641,6 @@ typedef struct _NPCocoaEvent {
   } data;
 } NPCocoaEvent;
 
-#endif /* XP_MACOSX */
-
-#if defined(XP_MAC) || defined(XP_MACOSX)
-
 #ifndef NP_NO_CARBON
 /* Non-standard event types that can be passed to HandleEvent */
 enum NPEventType {
@@ -633,15 +652,7 @@ enum NPEventType {
   NPEventType_ScrollingBeginsEvent = 1000,
   NPEventType_ScrollingEndsEvent
 };
-
-/* BEGIN GOOGLE MODIFICATIONS */
-#ifdef OBSOLETE
-#define getFocusEvent     (osEvt + 16)
-#define loseFocusEvent    (osEvt + 17)
-#define adjustCursorEvent (osEvt + 18)
-#endif
 #endif /* NP_NO_CARBON */
-/* END GOOGLE MODIFICATIONS */
 
 #endif /* XP_MACOSX */
 
@@ -662,7 +673,7 @@ enum NPEventType {
 #define NP_MAXREADY (((unsigned)(~0)<<1)>>1)
 
 #if !defined(__LP64__)
-#if defined(XP_MAC) || defined(XP_MACOSX)
+#if defined(XP_MACOSX)
 #pragma options align=reset
 #endif
 #endif /* __LP64__ */
@@ -711,7 +722,6 @@ enum NPEventType {
 #define NPVERS_HAS_STREAMOUTPUT             8
 #define NPVERS_HAS_NOTIFICATION             9
 #define NPVERS_HAS_LIVECONNECT              9
-#define NPVERS_WIN16_HAS_LIVECONNECT        9
 #define NPVERS_68K_HAS_LIVECONNECT          11
 #define NPVERS_HAS_WINDOWLESS               11
 #define NPVERS_HAS_XPCONNECT_SCRIPTING      13
@@ -725,7 +735,6 @@ enum NPEventType {
 #define NPVERS_HAS_URL_AND_AUTH_INFO        21
 #define NPVERS_HAS_PRIVATE_MODE             22
 #define NPVERS_MACOSX_HAS_EVENT_MODELS      23
-#define NPVERS_HAS_CANCEL_SRC_STREAM        24
 
 /*----------------------------------------------------------------------*/
 /*                        Function Prototypes                           */
@@ -836,6 +845,10 @@ NPBool                NPN_ConvertPoint(NPP instance, double sourceX, double sour
 
 #ifdef __cplusplus
 }  /* end extern "C" */
+#endif
+
+#ifdef __OS2__
+#pragma pack()
 #endif
 
 #endif /* _NPAPI_H_ */
