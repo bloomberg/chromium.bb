@@ -661,6 +661,9 @@ Advanced commands:
       Diffs all files in the current directory and subdirectories that aren't in
       a changelist.
 
+   gcl description
+      Prints the description of the specified change to stdout.
+
    gcl changes
       Lists all the the changelists and the files in them.
 
@@ -1219,6 +1222,8 @@ def main(argv=None):
 
   if command == "change":
     Change(change_info, argv[3:])
+  if command == "description":
+    print change_info.description
   elif command == "lint":
     Lint(change_info, argv[3:])
   elif command == "upload":
