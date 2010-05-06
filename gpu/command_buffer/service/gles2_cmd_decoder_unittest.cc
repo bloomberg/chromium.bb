@@ -1317,6 +1317,7 @@ void GLES2DecoderTest::CheckReadPixelsOutOfRange(
   GLint read_end_y = std::max(0, std::min(kHeight, in_read_y + in_read_height));
   GLint read_width = read_end_x - read_x;
   GLint read_height = read_end_y - read_y;
+  EXPECT_CALL(*gl_, Finish()).Times(1).RetiresOnSaturation();
   if (read_width > 0 && read_height > 0) {
     for (GLint yy = read_y; yy < read_end_y; ++yy) {
       EXPECT_CALL(
@@ -1399,6 +1400,7 @@ TEST_F(GLES2DecoderTest, ReadPixels) {
      .WillOnce(Return(GL_NO_ERROR))
      .WillOnce(Return(GL_NO_ERROR))
      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, Finish()).Times(1).RetiresOnSaturation();
   EXPECT_CALL(
       *gl_, ReadPixels(0, 0, kWidth, kHeight, GL_RGB, GL_UNSIGNED_BYTE, _))
       .WillOnce(Invoke(&emu, &ReadPixelsEmulator::ReadPixels));

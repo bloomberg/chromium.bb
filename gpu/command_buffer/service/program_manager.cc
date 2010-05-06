@@ -51,7 +51,8 @@ void ProgramManager::ProgramInfo::Update() {
     }
   }
 
-  GLint num_uniforms;
+  GLint num_uniforms = 0;
+  max_len = 0;
   glGetProgramiv(service_id_, GL_ACTIVE_UNIFORMS, &num_uniforms);
   glGetProgramiv(service_id_, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_len);
   name_buffer.reset(new char[max_len]);
@@ -255,6 +256,18 @@ void ProgramManager::RemoveProgramInfo(GLuint client_id) {
     it->second->MarkAsDeleted();
     program_infos_.erase(it);
   }
+}
+
+bool ProgramManager::GetClientId(GLuint service_id, GLuint* client_id) const {
+  // This doesn't need to be fast. It's only used during slow queries.
+  for (ProgramInfoMap::const_iterator it = program_infos_.begin();
+       it != program_infos_.end(); ++it) {
+    if (it->second->service_id() == service_id) {
+      *client_id = it->first;
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace gles2

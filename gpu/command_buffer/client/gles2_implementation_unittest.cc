@@ -626,6 +626,8 @@ TEST_F(GLES2ImplementationTest, GetVertexAttrib) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+#endif  // defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
+
 TEST_F(GLES2ImplementationTest, ReservedIds) {
   // Only the get error command should be issued.
   struct Cmds {
@@ -650,8 +652,42 @@ TEST_F(GLES2ImplementationTest, ReservedIds) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
-#endif  // defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
+TEST_F(GLES2ImplementationTest, ReadPixels2Reads) {
+  struct Cmds {
+    ReadPixels read1;
+    cmd::SetToken set_token1;
+    ReadPixels read2;
+    cmd::SetToken set_token2;
+  };
+  const GLint kBytesPerPixel = 4;
+  const GLint kWidth =
+      (kTransferBufferSize - GLES2Implementation::kStartingOffset) /
+      kBytesPerPixel;
+  const GLint kHeight = 2;
+  const GLenum kFormat = GL_RGBA;
+  const GLenum kType = GL_UNSIGNED_BYTE;
 
+  int32 token = 1;
+  uint32 offset = GLES2Implementation::kStartingOffset;
+  Cmds expected;
+  expected.read1.Init(0, 0, kWidth, kHeight / 2, kFormat, kType,
+                      kTransferBufferId, offset,
+                      kTransferBufferId, 0);
+  expected.set_token1.Init(token++);
+  expected.read2.Init(0, kHeight / 2, kWidth, kHeight / 2, kFormat, kType,
+                      kTransferBufferId, offset,
+                      kTransferBufferId, 0);
+  expected.set_token2.Init(token++);
+  scoped_array<int8> buffer(new int8[kWidth * kHeight * kBytesPerPixel]);
+
+  EXPECT_CALL(*command_buffer_, OnFlush(_))
+      .WillOnce(SetMemory(uint32(1)))
+      .WillOnce(SetMemory(uint32(1)))
+      .RetiresOnSaturation();
+
+  gl_->ReadPixels(0, 0, kWidth, kHeight, kFormat, kType, buffer.get());
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
 
 }  // namespace gles2
 }  // namespace gpu

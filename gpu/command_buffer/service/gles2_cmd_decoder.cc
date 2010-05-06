@@ -506,6 +506,25 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
     return (info && !info->IsDeleted()) ? info : NULL;
   }
 
+  // Gets the program info for the given program. If it's not a program
+  // generates a GL error. Returns NULL if not program.
+  ProgramManager::ProgramInfo* GetProgramInfoNotShader(
+      GLuint client_id, const char* function_name) {
+    ProgramManager::ProgramInfo* info = GetProgramInfo(client_id);
+    if (!info) {
+      if (GetShaderInfo(client_id)) {
+        SetGLError(GL_INVALID_OPERATION,
+                   (std::string(function_name) +
+                    ": shader passed for program").c_str());
+      } else {
+        SetGLError(GL_INVALID_VALUE,
+                   (std::string(function_name) + ": unknown program").c_str());
+      }
+    }
+    return info;
+  }
+
+
   // Deletes the program info for the given program.
   void RemoveProgramInfo(GLuint client_id) {
     program_manager()->RemoveProgramInfo(client_id);
@@ -523,6 +542,25 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
     ShaderManager::ShaderInfo* info =
         shader_manager()->GetShaderInfo(client_id);
     return (info && !info->IsDeleted()) ? info : NULL;
+  }
+
+  // Gets the shader info for the given shader. If it's not a shader generates a
+  // GL error. Returns NULL if not shader.
+  ShaderManager::ShaderInfo* GetShaderInfoNotProgram(
+      GLuint client_id, const char* function_name) {
+    ShaderManager::ShaderInfo* info = GetShaderInfo(client_id);
+    if (!info) {
+      if (GetProgramInfo(client_id)) {
+        SetGLError(
+            GL_INVALID_OPERATION,
+            (std::string(function_name) +
+             ": program passed for shader").c_str());
+      } else {
+        SetGLError(GL_INVALID_VALUE,
+                   (std::string(function_name) + ": unknown shader").c_str());
+      }
+    }
+    return info;
   }
 
   // Deletes the shader info for the given shader.
@@ -1949,6 +1987,87 @@ bool GLES2DecoderImpl::GetHelper(
       *num_written = 1;
       *params = GL_TRUE;
       return true;
+    case GL_ARRAY_BUFFER_BINDING:
+      *num_written = 1;
+      if (bound_array_buffer_) {
+        GLuint client_id = 0;
+        buffer_manager()->GetClientId(bound_array_buffer_->service_id(),
+                                      &client_id);
+        *params = client_id;
+      } else {
+        *params = 0;
+      }
+      return true;
+    case GL_ELEMENT_ARRAY_BUFFER_BINDING:
+      *num_written = 1;
+      if (bound_element_array_buffer_) {
+        GLuint client_id = 0;
+        buffer_manager()->GetClientId(bound_element_array_buffer_->service_id(),
+                                      &client_id);
+        *params = client_id;
+      } else {
+        *params = 0;
+      }
+      return true;
+    case GL_FRAMEBUFFER_BINDING:
+      *num_written = 1;
+      if (bound_framebuffer_) {
+        GLuint client_id = 0;
+        framebuffer_manager()->GetClientId(
+            bound_framebuffer_->service_id(), &client_id);
+        *params = client_id;
+      } else {
+        *params = 0;
+      }
+      return true;
+    case GL_RENDERBUFFER_BINDING:
+      *num_written = 1;
+      if (bound_renderbuffer_) {
+        GLuint client_id = 0;
+        renderbuffer_manager()->GetClientId(
+            bound_renderbuffer_->service_id(), &client_id);
+        *params = client_id;
+      } else {
+        *params = 0;
+      }
+      return true;
+    case GL_CURRENT_PROGRAM:
+      *num_written = 1;
+      if (current_program_) {
+        GLuint client_id = 0;
+        program_manager()->GetClientId(
+            current_program_->service_id(), &client_id);
+        *params = client_id;
+      } else {
+        *params = 0;
+      }
+      return true;
+    case GL_TEXTURE_BINDING_2D: {
+        *num_written = 1;
+        TextureUnit& unit = texture_units_[active_texture_unit_];
+        if (unit.bound_texture_2d) {
+          GLuint client_id = 0;
+          texture_manager()->GetClientId(
+              unit.bound_texture_2d->service_id(), &client_id);
+          *params = client_id;
+        } else {
+          *params = 0;
+        }
+        return true;
+      }
+    case GL_TEXTURE_BINDING_CUBE_MAP: {
+        *num_written = 1;
+        TextureUnit& unit = texture_units_[active_texture_unit_];
+        if (unit.bound_texture_cube_map) {
+          GLuint client_id = 0;
+          texture_manager()->GetClientId(
+              unit.bound_texture_cube_map->service_id(), &client_id);
+          *params = client_id;
+        } else {
+          *params = 0;
+        }
+        return true;
+      }
     default:
       return false;
   }
@@ -1992,9 +2111,9 @@ void GLES2DecoderImpl::DoGetIntegerv(GLenum pname, GLint* params) {
 
 void GLES2DecoderImpl::DoGetProgramiv(
     GLuint program_id, GLenum pname, GLint* params) {
-  ProgramManager::ProgramInfo* info = GetProgramInfo(program_id);
+  ProgramManager::ProgramInfo* info = GetProgramInfoNotShader(
+      program_id, "glGetProgramiv");
   if (!info) {
-    SetGLError(GL_INVALID_VALUE, "glGetProgramiv: unknown program");
     return;
   }
   info->GetProgramiv(pname, params);
@@ -2002,9 +2121,10 @@ void GLES2DecoderImpl::DoGetProgramiv(
 
 error::Error GLES2DecoderImpl::HandleBindAttribLocation(
     uint32 immediate_data_size, const gles2::BindAttribLocation& c) {
-  ProgramManager::ProgramInfo* info = GetProgramInfo(c.program);
+  GLuint program = static_cast<GLuint>(c.program);
+  ProgramManager::ProgramInfo* info = GetProgramInfoNotShader(
+      program, "glBindAttribLocation");
   if (!info) {
-    SetGLError(GL_INVALID_VALUE, "glBindAttribLocation: unknown program");
     return error::kNoError;
   }
   GLuint index = static_cast<GLuint>(c.index);
@@ -2021,9 +2141,10 @@ error::Error GLES2DecoderImpl::HandleBindAttribLocation(
 
 error::Error GLES2DecoderImpl::HandleBindAttribLocationImmediate(
     uint32 immediate_data_size, const gles2::BindAttribLocationImmediate& c) {
-  ProgramManager::ProgramInfo* info = GetProgramInfo(c.program);
+  GLuint program = static_cast<GLuint>(c.program);
+  ProgramManager::ProgramInfo* info = GetProgramInfoNotShader(
+      program, "glBindAttribLocation");
   if (!info) {
-    SetGLError(GL_INVALID_VALUE, "glBindAttribLocation: unknown program");
     return error::kNoError;
   }
   GLuint index = static_cast<GLuint>(c.index);
@@ -2040,9 +2161,10 @@ error::Error GLES2DecoderImpl::HandleBindAttribLocationImmediate(
 
 error::Error GLES2DecoderImpl::HandleBindAttribLocationBucket(
     uint32 immediate_data_size, const gles2::BindAttribLocationBucket& c) {
-  ProgramManager::ProgramInfo* info = GetProgramInfo(c.program);
+  GLuint program = static_cast<GLuint>(c.program);
+  ProgramManager::ProgramInfo* info = GetProgramInfoNotShader(
+      program, "glBindAttribLocation");
   if (!info) {
-    SetGLError(GL_INVALID_VALUE, "glBindAttribLocation: unknown program");
     return error::kNoError;
   }
   GLuint index = static_cast<GLuint>(c.index);
@@ -2283,19 +2405,18 @@ void GLES2DecoderImpl::DoRenderbufferStorage(
 }
 
 void GLES2DecoderImpl::DoLinkProgram(GLuint program) {
-  ProgramManager::ProgramInfo* info = GetProgramInfo(program);
+  ProgramManager::ProgramInfo* info = GetProgramInfoNotShader(
+      program, "glLinkProgram");
   if (!info) {
-    SetGLError(GL_INVALID_OPERATION, "glLinkProgram: unknown program");
     return;
   }
-  CopyRealGLErrorsToWrapper();
   glLinkProgram(info->service_id());
-  GLenum error = glGetError();
-  if (error != GL_NO_ERROR) {
-    info->Reset();
-    SetGLError(error, NULL);
-  } else {
+  GLint success = 0;
+  glGetProgramiv(info->service_id(), GL_LINK_STATUS, &success);
+  if (success) {
     info->Update();
+  } else {
+    info->Reset();
   }
 };
 
@@ -2368,9 +2489,8 @@ void GLES2DecoderImpl::DoUseProgram(GLuint program) {
   GLuint service_id = 0;
   ProgramManager::ProgramInfo* info = NULL;
   if (program) {
-    info = GetProgramInfo(program);
+    info = GetProgramInfoNotShader(program, "glUseProgram");
     if (!info) {
-      SetGLError(GL_INVALID_VALUE, "glUseProgram: unknown program");
       return;
     }
     if (!info->IsValid()) {
@@ -2618,9 +2738,9 @@ GLuint GLES2DecoderImpl::DoGetMaxValueInBuffer(
 // memory.)
 error::Error GLES2DecoderImpl::ShaderSourceHelper(
     GLuint client_id, const char* data, uint32 data_size) {
-  ShaderManager::ShaderInfo* info = GetShaderInfo(client_id);
+  ShaderManager::ShaderInfo* info = GetShaderInfoNotProgram(
+      client_id, "glShaderSource");
   if (!info) {
-    SetGLError(GL_INVALID_VALUE, "glShaderSource: unknown shader");
     return error::kNoError;
   }
   // Note: We don't actually call glShaderSource here. We wait until
@@ -2663,9 +2783,9 @@ error::Error GLES2DecoderImpl::HandleShaderSourceBucket(
 }
 
 void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
-  ShaderManager::ShaderInfo* info = GetShaderInfo(client_id);
+  ShaderManager::ShaderInfo* info = GetShaderInfoNotProgram(
+      client_id, "glCompileShader");
   if (!info) {
-    SetGLError(GL_INVALID_VALUE, "glCompileShader: unknown shader");
     return;
   }
   // Translate GL ES 2.0 shader to Desktop GL shader and pass that to
@@ -2711,9 +2831,9 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
 
 void GLES2DecoderImpl::DoGetShaderiv(
     GLuint shader, GLenum pname, GLint* params) {
-  ShaderManager::ShaderInfo* info = GetShaderInfo(shader);
+  ShaderManager::ShaderInfo* info = GetShaderInfoNotProgram(
+      shader, "glGetShaderiv");
   if (!info) {
-    SetGLError(GL_INVALID_VALUE, "glGetShaderiv: unknown shader");
     return;
   }
   if (pname == GL_SHADER_SOURCE_LENGTH) {
@@ -2726,12 +2846,12 @@ void GLES2DecoderImpl::DoGetShaderiv(
 error::Error GLES2DecoderImpl::HandleGetShaderSource(
     uint32 immediate_data_size, const gles2::GetShaderSource& c) {
   GLuint shader = c.shader;
-  ShaderManager::ShaderInfo* info = GetShaderInfo(shader);
   uint32 bucket_id = static_cast<uint32>(c.bucket_id);
   Bucket* bucket = CreateBucket(bucket_id);
+  ShaderManager::ShaderInfo* info = GetShaderInfoNotProgram(
+      shader, "glGetShaderSource");
   if (!info) {
     bucket->SetSize(0);
-    SetGLError(GL_INVALID_VALUE, "glGetShaderSource: unknown shader");
     return error::kNoError;
   }
   bucket->SetFromString(info->source());
@@ -2741,15 +2861,15 @@ error::Error GLES2DecoderImpl::HandleGetShaderSource(
 error::Error GLES2DecoderImpl::HandleGetProgramInfoLog(
     uint32 immediate_data_size, const gles2::GetProgramInfoLog& c) {
   GLuint program = c.program;
-  ProgramManager::ProgramInfo* info = GetProgramInfo(program);
+  uint32 bucket_id = static_cast<uint32>(c.bucket_id);
+  Bucket* bucket = CreateBucket(bucket_id);
+  ProgramManager::ProgramInfo* info = GetProgramInfoNotShader(
+      program, "glGetProgramInfoLog");
   if (!info) {
-    SetGLError(GL_INVALID_VALUE, "glGetProgramInfoLog: unknown program");
     return error::kNoError;
   }
-  uint32 bucket_id = static_cast<uint32>(c.bucket_id);
   GLint len = 0;
   glGetProgramiv(info->service_id(), GL_INFO_LOG_LENGTH, &len);
-  Bucket* bucket = CreateBucket(bucket_id);
   bucket->SetSize(len + 1);
   glGetProgramInfoLog(
       info->service_id(),
@@ -2760,15 +2880,16 @@ error::Error GLES2DecoderImpl::HandleGetProgramInfoLog(
 error::Error GLES2DecoderImpl::HandleGetShaderInfoLog(
     uint32 immediate_data_size, const gles2::GetShaderInfoLog& c) {
   GLuint shader = c.shader;
-  ShaderManager::ShaderInfo* info = GetShaderInfo(shader);
+  uint32 bucket_id = static_cast<uint32>(c.bucket_id);
+  Bucket* bucket = CreateBucket(bucket_id);
+  ShaderManager::ShaderInfo* info = GetShaderInfoNotProgram(
+      shader, "glGetShaderInfoLog");
   if (!info) {
-    SetGLError(GL_INVALID_VALUE, "glGetShaderInfoLog: unknown shader");
+    bucket->SetSize(0);
     return error::kNoError;
   }
-  uint32 bucket_id = static_cast<uint32>(c.bucket_id);
   GLint len = 0;
   glGetShaderiv(info->service_id(), GL_INFO_LOG_LENGTH, &len);
-  Bucket* bucket = CreateBucket(bucket_id);
   bucket->SetSize(len + 1);
   glGetShaderInfoLog(
       info->service_id(),
@@ -2802,14 +2923,14 @@ bool GLES2DecoderImpl::DoIsTexture(GLuint client_id) {
 
 void GLES2DecoderImpl::DoAttachShader(
     GLuint program_client_id, GLint shader_client_id) {
-  ProgramManager::ProgramInfo* program_info = GetProgramInfo(program_client_id);
+  ProgramManager::ProgramInfo* program_info = GetProgramInfoNotShader(
+      program_client_id, "glAttachShader");
   if (!program_info) {
-    SetGLError(GL_INVALID_VALUE, "glAttachShader: unknown program");
     return;
   }
-  ShaderManager::ShaderInfo* shader_info = GetShaderInfo(shader_client_id);
+  ShaderManager::ShaderInfo* shader_info = GetShaderInfoNotProgram(
+      shader_client_id, "glAttachShader");
   if (!shader_info) {
-    SetGLError(GL_INVALID_VALUE, "glAttachShader: unknown shader");
     return;
   }
   glAttachShader(program_info->service_id(), shader_info->service_id());
@@ -2817,23 +2938,23 @@ void GLES2DecoderImpl::DoAttachShader(
 
 void GLES2DecoderImpl::DoDetachShader(
     GLuint program_client_id, GLint shader_client_id) {
-  ProgramManager::ProgramInfo* program_info = GetProgramInfo(program_client_id);
+  ProgramManager::ProgramInfo* program_info = GetProgramInfoNotShader(
+      program_client_id, "glDetachShader");
   if (!program_info) {
-    SetGLError(GL_INVALID_VALUE, "glDetachShader: unknown program");
     return;
   }
-  ShaderManager::ShaderInfo* shader_info = GetShaderInfo(shader_client_id);
+  ShaderManager::ShaderInfo* shader_info = GetShaderInfoNotProgram(
+      shader_client_id, "glDetachShader");
   if (!shader_info) {
-    SetGLError(GL_INVALID_VALUE, "glDetachShader: unknown shader");
     return;
   }
   glDetachShader(program_info->service_id(), shader_info->service_id());
 }
 
 void GLES2DecoderImpl::DoValidateProgram(GLuint program_client_id) {
-  ProgramManager::ProgramInfo* info = GetProgramInfo(program_client_id);
+  ProgramManager::ProgramInfo* info = GetProgramInfoNotShader(
+      program_client_id, "glValidateProgram");
   if (!info) {
-    SetGLError(GL_INVALID_VALUE, "glValidateProgram: unknown program");
     return;
   }
   glValidateProgram(info->service_id());
@@ -2951,6 +3072,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
     return error::kNoError;
   }
 
+  glFinish();
   if (x < 0 || y < 0 || max_x > max_size.width() || max_y > max_size.height()) {
     // The user requested an out of range area. Get the results 1 line
     // at a time.
@@ -3041,9 +3163,9 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(
 error::Error GLES2DecoderImpl::GetAttribLocationHelper(
     GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
     const std::string& name_str) {
-  ProgramManager::ProgramInfo* info = GetProgramInfo(client_id);
+  ProgramManager::ProgramInfo* info = GetProgramInfoNotShader(
+      client_id, "glGetAttribLocation");
   if (!info) {
-    SetGLError(GL_INVALID_VALUE, "glGetAttribLocation: unknown program");
     return error::kNoError;
   }
   if (!info->IsValid()) {
@@ -3105,9 +3227,9 @@ error::Error GLES2DecoderImpl::HandleGetAttribLocationBucket(
 error::Error GLES2DecoderImpl::GetUniformLocationHelper(
     GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
     const std::string& name_str) {
-  ProgramManager::ProgramInfo* info = GetProgramInfo(client_id);
+  ProgramManager::ProgramInfo* info = GetProgramInfoNotShader(
+      client_id, "glUniformLocation");
   if (!info) {
-    SetGLError(GL_INVALID_VALUE, "glGetUniformLocation: unknown program");
     return error::kNoError;
   }
   if (!info->IsValid()) {
@@ -3518,9 +3640,9 @@ bool GLES2DecoderImpl::GetUniformSetup(
   *result_pointer = result;
   // Set the result size to 0 so the client does not have to check for success.
   result->SetNumResults(0);
-  ProgramManager::ProgramInfo* info = GetProgramInfo(program);
+  ProgramManager::ProgramInfo* info = GetProgramInfoNotShader(
+      program, "glGetUniform");
   if (!info) {
-    SetGLError(GL_INVALID_VALUE, "glGetUniform: unknown program");
     return false;
   }
   if (!info->IsValid()) {
@@ -3636,9 +3758,10 @@ error::Error GLES2DecoderImpl::HandleGetShaderPrecisionFormat(
 error::Error GLES2DecoderImpl::HandleGetAttachedShaders(
     uint32 immediate_data_size, const gles2::GetAttachedShaders& c) {
   uint32 result_size = c.result_size;
-  ProgramManager::ProgramInfo* info = GetProgramInfo(c.program);
+  GLuint program = static_cast<GLuint>(c.program);
+  ProgramManager::ProgramInfo* info = GetProgramInfoNotShader(
+      program, "glGetAttachedShaders");
   if (!info) {
-    SetGLError(GL_INVALID_VALUE, "glGetAttachedShaders: unknown program");
     return error::kNoError;
   }
   typedef gles2::GetAttachedShaders::Result Result;
@@ -3681,14 +3804,9 @@ error::Error GLES2DecoderImpl::HandleGetActiveUniform(
   if (result->success != 0) {
     return error::kInvalidArguments;
   }
-  ProgramManager::ProgramInfo* info = GetProgramInfo(program);
+  ProgramManager::ProgramInfo* info = GetProgramInfoNotShader(
+      program, "glGetActiveUniform");
   if (!info) {
-    SetGLError(GL_INVALID_VALUE, "glGetActiveUniform: unknown program");
-    return error::kNoError;
-  }
-  if (!info->IsValid()) {
-    // Program was not linked successfully. (ie, glLinkProgram)
-    SetGLError(GL_INVALID_OPERATION, "glGetActiveUniform: program not linked");
     return error::kNoError;
   }
   const ProgramManager::ProgramInfo::UniformInfo* uniform_info =
@@ -3720,14 +3838,9 @@ error::Error GLES2DecoderImpl::HandleGetActiveAttrib(
   if (result->success != 0) {
     return error::kInvalidArguments;
   }
-  ProgramManager::ProgramInfo* info = GetProgramInfo(program);
+  ProgramManager::ProgramInfo* info = GetProgramInfoNotShader(
+      program, "glGetActiveAttrib");
   if (!info) {
-    SetGLError(GL_INVALID_VALUE, "glGetActiveAttrib: unknown program");
-    return error::kNoError;
-  }
-  if (!info->IsValid()) {
-    // Program was not linked successfully. (ie, glLinkProgram)
-    SetGLError(GL_INVALID_OPERATION, "glGetActiveAttrib: program not linked");
     return error::kNoError;
   }
   const ProgramManager::ProgramInfo::VertexAttribInfo* attrib_info =

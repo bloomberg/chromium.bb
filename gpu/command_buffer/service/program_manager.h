@@ -168,6 +168,9 @@ class ProgramManager {
   // Deletes the program info for the given program.
   void RemoveProgramInfo(GLuint client_id);
 
+  // Gets a client id for a given service id.
+  bool GetClientId(GLuint service_id, GLuint* client_id) const;
+
   // Returns true if prefix is invalid for gl.
   static bool IsInvalidPrefix(const char* name, size_t length);
 

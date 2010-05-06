@@ -296,14 +296,11 @@ void GLES2DecoderWithShaderTestBase::SetupShader(
 
   {
     InSequence s;
-    EXPECT_CALL(*gl_, GetError())
-        .WillOnce(Return(GL_NO_ERROR))
-        .RetiresOnSaturation();
     EXPECT_CALL(*gl_, LinkProgram(service_id))
         .Times(1)
         .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, GetError())
-        .WillOnce(Return(GL_NO_ERROR))
+    EXPECT_CALL(*gl_, GetProgramiv(service_id, GL_LINK_STATUS, _))
+        .WillOnce(SetArgumentPointee<2>(1))
         .RetiresOnSaturation();
     EXPECT_CALL(*gl_,
         GetProgramiv(service_id, GL_ACTIVE_ATTRIBUTES, _))

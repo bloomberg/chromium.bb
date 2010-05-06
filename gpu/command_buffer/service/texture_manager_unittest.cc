@@ -47,6 +47,9 @@ TEST_F(TextureManagerTest, Basic) {
   TextureManager::TextureInfo* info1 = manager_.GetTextureInfo(kClient1Id);
   ASSERT_TRUE(info1 != NULL);
   EXPECT_EQ(kService1Id, info1->service_id());
+  GLuint client_id = 0;
+  EXPECT_TRUE(manager_.GetClientId(info1->service_id(), &client_id));
+  EXPECT_EQ(kClient1Id, client_id);
   // Check we get nothing for a non-existent texture.
   EXPECT_TRUE(manager_.GetTextureInfo(kClient2Id) == NULL);
   // Check trying to a remove non-existent textures does not crash.

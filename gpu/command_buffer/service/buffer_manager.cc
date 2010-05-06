@@ -124,6 +124,18 @@ bool BufferManager::BufferInfo::GetMaxValueForRange(
   return true;
 }
 
+bool BufferManager::GetClientId(GLuint service_id, GLuint* client_id) const {
+  // This doesn't need to be fast. It's only used during slow queries.
+  for (BufferInfoMap::const_iterator it = buffer_infos_.begin();
+       it != buffer_infos_.end(); ++it) {
+    if (it->second->service_id() == service_id) {
+      *client_id = it->first;
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace gles2
 }  // namespace gpu
 

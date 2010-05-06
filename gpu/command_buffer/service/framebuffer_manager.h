@@ -73,6 +73,9 @@ class FramebufferManager {
   // Removes a framebuffer info for the given framebuffer.
   void RemoveFramebufferInfo(GLuint client_id);
 
+  // Gets a client id for a given service id.
+  bool GetClientId(GLuint service_id, GLuint* client_id) const;
+
  private:
   // Info for each framebuffer in the system.
   // TODO(gman): Choose a faster container.

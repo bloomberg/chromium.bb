@@ -33,6 +33,9 @@ TEST_F(RenderbufferManagerTest, Basic) {
   RenderbufferManager::RenderbufferInfo* info1 =
       manager_.GetRenderbufferInfo(kClient1Id);
   ASSERT_TRUE(info1 != NULL);
+  GLuint client_id = 0;
+  EXPECT_TRUE(manager_.GetClientId(info1->service_id(), &client_id));
+  EXPECT_EQ(kClient1Id, client_id);
   EXPECT_FALSE(info1->cleared());
   info1->set_cleared();
   EXPECT_TRUE(info1->cleared());

@@ -34,11 +34,9 @@ class GLES2DecoderTest2 : public GLES2DecoderTestBase {
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<LinkProgram, 0>() {
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
   InSequence dummy;
+  EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
+      .WillOnce(SetArgumentPointee<2>(1));
   EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_ACTIVE_ATTRIBUTES, _))
       .WillOnce(SetArgumentPointee<2>(0));
   EXPECT_CALL(

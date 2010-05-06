@@ -73,6 +73,9 @@ class RenderbufferManager {
   // Removes a renderbuffer info for the given renderbuffer.
   void RemoveRenderbufferInfo(GLuint client_id);
 
+  // Gets a client id for a given service id.
+  bool GetClientId(GLuint service_id, GLuint* client_id) const;
+
  private:
   // Info for each renderbuffer in the system.
   // TODO(gman): Choose a faster container.

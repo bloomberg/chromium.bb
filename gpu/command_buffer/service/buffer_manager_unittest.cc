@@ -37,6 +37,9 @@ TEST_F(BufferManagerTest, Basic) {
   EXPECT_EQ(0, info1->size());
   EXPECT_FALSE(info1->IsDeleted());
   EXPECT_EQ(kServiceBuffer1Id, info1->service_id());
+  GLuint client_id = 0;
+  EXPECT_TRUE(manager_.GetClientId(info1->service_id(), &client_id));
+  EXPECT_EQ(kClientBuffer1Id, client_id);
   info1->set_target(GL_ELEMENT_ARRAY_BUFFER);
   EXPECT_EQ(static_cast<GLenum>(GL_ELEMENT_ARRAY_BUFFER), info1->target());
   // Check we and set its size.

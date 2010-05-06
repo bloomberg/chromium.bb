@@ -47,6 +47,9 @@ TEST_F(ProgramManagerTest, Basic) {
   ProgramManager::ProgramInfo* info1 = manager_.GetProgramInfo(kClient1Id);
   ASSERT_TRUE(info1 != NULL);
   EXPECT_EQ(kService1Id, info1->service_id());
+  GLuint client_id = 0;
+  EXPECT_TRUE(manager_.GetClientId(info1->service_id(), &client_id));
+  EXPECT_EQ(kClient1Id, client_id);
   // Check we get nothing for a non-existent program.
   EXPECT_TRUE(manager_.GetProgramInfo(kClient2Id) == NULL);
   // Check trying to a remove non-existent programs does not crash.

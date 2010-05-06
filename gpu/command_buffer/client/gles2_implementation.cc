@@ -809,12 +809,10 @@ void GLES2Implementation::ShaderSource(
   // Compute the total size.
   uint32 total_size = 1;
   for (GLsizei ii = 0; ii < count; ++ii) {
-    // I shouldn't have to check for this. The spec doesn't allow this
-    if (!source[ii]) {
-      SetGLError(GL_INVALID_VALUE, "glShaderSource: null passed for string.");
-      return;
+    if (source[ii]) {
+      total_size +=
+          (length && length[ii] >= 0) ? length[ii] : strlen(source[ii]);
     }
-    total_size += (length && length[ii] >= 0) ? length[ii] : strlen(source[ii]);
   }
 
   // Concatenate all the strings in to a bucket on the service.
@@ -823,19 +821,20 @@ void GLES2Implementation::ShaderSource(
   uint32 offset = 0;
   for (GLsizei ii = 0; ii <= count; ++ii) {
     const char* src = ii < count ? source[ii] : "";
-
-    uint32 size = ii < count ? (length ? length[ii] : strlen(src)) : 1;
-    while (size) {
-      uint32 part_size = std::min(size, max_size);
-      void* buffer = transfer_buffer_.Alloc(part_size);
-      memcpy(buffer, src, part_size);
-      helper_->SetBucketData(kResultBucketId, offset, part_size,
-                             transfer_buffer_id_,
-                             transfer_buffer_.GetOffset(buffer));
-      transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
-      offset += part_size;
-      src += part_size;
-      size -= part_size;
+    if (src) {
+      uint32 size = ii < count ? (length ? length[ii] : strlen(src)) : 1;
+      while (size) {
+        uint32 part_size = std::min(size, max_size);
+        void* buffer = transfer_buffer_.Alloc(part_size);
+        memcpy(buffer, src, part_size);
+        helper_->SetBucketData(kResultBucketId, offset, part_size,
+                               transfer_buffer_id_,
+                               transfer_buffer_.GetOffset(buffer));
+        transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
+        offset += part_size;
+        src += part_size;
+        size -= part_size;
+      }
     }
   }
 

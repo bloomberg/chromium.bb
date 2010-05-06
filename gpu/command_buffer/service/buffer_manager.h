@@ -142,6 +142,9 @@ class BufferManager {
   // Removes a buffer info for the given buffer.
   void RemoveBufferInfo(GLuint client_id);
 
+  // Gets a client id for a given service id.
+  bool GetClientId(GLuint service_id, GLuint* client_id) const;
+
  private:
   // Info for each buffer in the system.
   // TODO(gman): Choose a faster container.

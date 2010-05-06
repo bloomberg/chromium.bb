@@ -34,6 +34,19 @@ void RenderbufferManager::RemoveRenderbufferInfo(GLuint client_id) {
   }
 }
 
+bool RenderbufferManager::GetClientId(
+    GLuint service_id, GLuint* client_id) const {
+  // This doesn't need to be fast. It's only used during slow queries.
+  for (RenderbufferInfoMap::const_iterator it = renderbuffer_infos_.begin();
+       it != renderbuffer_infos_.end(); ++it) {
+    if (it->second->service_id() == service_id) {
+      *client_id = it->first;
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace gles2
 }  // namespace gpu
 

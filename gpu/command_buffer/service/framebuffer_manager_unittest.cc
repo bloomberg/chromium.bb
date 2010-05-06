@@ -35,6 +35,9 @@ TEST_F(FramebufferManagerTest, Basic) {
   ASSERT_TRUE(info1 != NULL);
   EXPECT_FALSE(info1->IsDeleted());
   EXPECT_EQ(kService1Id, info1->service_id());
+  GLuint client_id = 0;
+  EXPECT_TRUE(manager_.GetClientId(info1->service_id(), &client_id));
+  EXPECT_EQ(kClient1Id, client_id);
   // Check we get nothing for a non-existent framebuffer.
   EXPECT_TRUE(manager_.GetFramebufferInfo(kClient2Id) == NULL);
   // Check trying to a remove non-existent framebuffers does not crash.
