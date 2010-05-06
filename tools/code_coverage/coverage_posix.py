@@ -45,6 +45,9 @@ Linux:
   RunPythonCommandInBuildDir() command to avoid the need for this
   step.
 
+--timeout=SECS: if a subprocess doesn't have output within SECS,
+  assume it's a hang.  Kill it and give up.
+
 Strings after all options are considered tests to run.  Test names
 have all text before a ':' stripped to help with gyp compatibility.
 For example, ../base/base.gyp:base_unittests is interpreted as a test
@@ -55,11 +58,111 @@ import glob
 import logging
 import optparse
 import os
+import Queue
 import shutil
+import signal
 import subprocess
 import sys
+import threading
 import time
 import traceback
+
+
+"""Global list of child PIDs to kill when we die."""
+gChildPIDs = []
+
+def TerminateSignalHandler(sig, stack):
+  """When killed, try and kill our child processes."""
+  signal.signal(sig, signal.SIG_DFL)
+  for pid in gChildPIDs:
+    if 'kill' in os.__all__:  # POSIX
+      os.kill(pid, sig)
+    else:
+      subprocess.call(['taskkill.exe', '/PID', pid])
+  sys.exit(0)
+
+
+class RunTooLongException(Exception):
+  """Thrown when a command runs too long without output."""
+  pass
+
+
+class RunProgramThread(threading.Thread):
+  """A thread to run a subprocess.
+
+  We want to print the output of our subprocess in real time, but also
+  want a timeout if there has been no output for a certain amount of
+  time.  Normal techniques (e.g. loop in select()) aren't cross
+  platform enough.
+  """
+  # Constants in our queue
+  LINE = 0
+  DIED = 1
+
+  def __init__(self, cmd):
+    super(RunProgramThread, self).__init__()
+    self._cmd = cmd
+    self._process = None
+    self._queue = Queue.Queue()
+    self._retcode = None
+
+  def run(self):
+    self._process = subprocess.Popen(self._cmd,
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.STDOUT)
+    gChildPIDs.append(self._process.pid)
+    try:
+      while True:
+        line = self._process.stdout.readline()
+        if not line:  # EOF
+          break
+        print line,
+        self._queue.put(RunProgramThread.LINE, True)
+    except IOError:
+      pass
+    # If we get here the process is dead.
+    gChildPIDs.remove(self._process.pid)
+    self._queue.put(RunProgramThread.DIED)
+
+  def stop(self):
+    self.kill()
+
+  def kill(self):
+    """Kill our running process if needed.  Wait for kill to complete.
+
+    Should be called in the PARENT thread; we do not self-kill.
+    Returns the return code of the process.
+    Safe to call even if the process is dead."""
+    if not self._process:
+      return self._retcode
+    if 'kill' in os.__all__:  # POSIX
+      os.kill(self._process.pid, signal.SIGTERM)
+    else:
+      subprocess.call(['taskkill.exe', '/PID', self._process.pid])
+    self._retcode = self._process.wait()
+    return self._retcode
+
+  def retcode(self):
+    """Return the return value of the subprocess.
+
+    Kill it if needed."""
+    return self.kill()
+
+  def RunUntilCompletion(self, timeout):
+    """Run thread until completion or timeout (in seconds).
+
+    Start the thread.  Let it run until completion, or until we've
+    spent TIMEOUT without seeing output.  On timeout throw
+    RunTooLongException."""
+    self.start()
+    while True:
+      try:
+        x = self._queue.get(True, timeout)
+        if x == RunProgramThread.DIED:
+          return self.retcode()
+      except Queue.Empty, e:  # timed out
+        self.kill()
+        raise RunTooLongException()
 
 
 class Coverage(object):
@@ -189,9 +292,22 @@ class Coverage(object):
 
   def Run(self, cmdlist, ignore_error=False, ignore_retcode=None,
           explanation=None):
-    """Run the command list; exit fatally on error."""
+    """Run the command list; exit fatally on error.
+
+    Args:
+      cmdlist: a list of commands (e.g. to pass to subprocess.call)
+      ignore_error: if True log an error; if False then exit.
+      ignore_retcode: if retcode is non-zero, exit unless we ignore.
+
+    Returns: process return code.
+    Throws: RunTooLongException if the process does not produce output
+    within TIMEOUT seconds; timeout is specified as a command line
+    option to the Coverage class and is set on init.
+    """
     logging.info('Running ' + str(cmdlist))
-    retcode = subprocess.call(cmdlist)
+    t = RunProgramThread(cmdlist)
+    retcode = t.RunUntilCompletion(self.options.timeout)
+
     if retcode:
       if ignore_error or retcode == ignore_retcode:
         logging.warning('COVERAGE: %s unhappy but errors ignored  %s' %
@@ -200,7 +316,7 @@ class Coverage(object):
         logging.fatal('COVERAGE:  %s failed; return code: %d' %
                       (str(cmdlist), retcode))
         sys.exit(retcode)
-
+    return retcode
 
   def IsPosix(self):
     """Return True if we are POSIX."""
@@ -417,10 +533,8 @@ class Coverage(object):
       if self.options.strict:
         sys.exit(retcode)
 
-def main():
-  # Print out the args to help someone do it by hand if needed
-  print >>sys.stderr, sys.argv
-
+def CoverageOptionParser():
+  """Return an optparse.OptionParser() suitable for Coverage object creation."""
   parser = optparse.OptionParser()
   parser.add_option('-d',
                     '--directory',
@@ -462,6 +576,23 @@ def main():
                     dest='xvfb',
                     default=True,
                     help='Use Xvfb for tests?  Default True.')
+  parser.add_option('-T',
+                    '--timeout',
+                    dest='timeout',
+                    default=9.9 * 60.0,
+                    help='Timeout before bailing if a subprocess has no output.'
+                    '  Default is a hair under 10min  (Buildbot is 10min.)')
+  return parser
+
+
+def main():
+  # Print out the args to help someone do it by hand if needed
+  print >>sys.stderr, sys.argv
+
+  # Try and clean up nice if we're killed by buildbot
+  signal.signal(signal.SIGTERM, TerminateSignalHandler)
+
+  parser = CoverageOptionParser()
   (options, args) = parser.parse_args()
   if not options.directory:
     parser.error('Directory not specified')
