@@ -15,6 +15,7 @@
 #include "net/base/cookie_monster.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request_context.h"
 
@@ -23,7 +24,7 @@ using base::TimeDelta;
 
 // The list of filtered headers that are removed from requests sent via
 // StartAsync(). These must be lower case.
-static const char* kFilteredHeaderStrings[] = {
+static const char* const kFilteredHeaderStrings[] = {
   "accept",
   "cache-control",
   "connection",
@@ -387,20 +388,26 @@ void URLRequestAutomationJob::StartAsync() {
   message_filter_->RegisterRequest(this);
 
   // Strip unwanted headers.
-  std::string new_request_headers(
-      net::HttpUtil::StripHeaders(request_->extra_request_headers(),
-                                  kFilteredHeaderStrings,
-                                  arraysize(kFilteredHeaderStrings)));
+  net::HttpRequestHeaders new_request_headers;
+  new_request_headers.MergeFrom(request_->extra_request_headers());
+  for (size_t i = 0; i < arraysize(kFilteredHeaderStrings); ++i)
+    new_request_headers.RemoveHeader(kFilteredHeaderStrings[i]);
 
   if (request_->context()) {
     // Only add default Accept-Language and Accept-Charset if the request
     // didn't have them specified.
-    net::HttpUtil::AppendHeaderIfMissing(
-        "Accept-Language", request_->context()->accept_language(),
-        &new_request_headers);
-    net::HttpUtil::AppendHeaderIfMissing(
-        "Accept-Charset", request_->context()->accept_charset(),
-        &new_request_headers);
+    if (!new_request_headers.HasHeader(
+        net::HttpRequestHeaders::kAcceptLanguage) &&
+        !request_->context()->accept_language().empty()) {
+      new_request_headers.SetHeader(net::HttpRequestHeaders::kAcceptLanguage,
+                                    request_->context()->accept_language());
+    }
+    if (!new_request_headers.HasHeader(
+        net::HttpRequestHeaders::kAcceptCharset) &&
+        !request_->context()->accept_charset().empty()) {
+      new_request_headers.SetHeader(net::HttpRequestHeaders::kAcceptCharset,
+                                    request_->context()->accept_charset());
+    }
   }
 
   // Ensure that we do not send username and password fields in the referrer.
@@ -419,7 +426,7 @@ void URLRequestAutomationJob::StartAsync() {
     request_->url().spec(),
     request_->method(),
     referrer.spec(),
-    new_request_headers,
+    new_request_headers.ToString(),
     request_->get_upload()
   };
 

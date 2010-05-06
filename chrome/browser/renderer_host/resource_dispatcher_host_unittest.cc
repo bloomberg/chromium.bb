@@ -648,11 +648,11 @@ TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsDontLeak) {
 // Test the private helper method "CalculateApproximateMemoryCost()".
 TEST_F(ResourceDispatcherHostTest, CalculateApproximateMemoryCost) {
   URLRequest req(GURL("http://www.google.com"), NULL);
-  EXPECT_EQ(4425, ResourceDispatcherHost::CalculateApproximateMemoryCost(&req));
+  EXPECT_EQ(4427, ResourceDispatcherHost::CalculateApproximateMemoryCost(&req));
 
   // Add 9 bytes of referrer.
   req.set_referrer("123456789");
-  EXPECT_EQ(4434, ResourceDispatcherHost::CalculateApproximateMemoryCost(&req));
+  EXPECT_EQ(4436, ResourceDispatcherHost::CalculateApproximateMemoryCost(&req));
 
   // Add 33 bytes of upload content.
   std::string upload_content;
@@ -661,11 +661,11 @@ TEST_F(ResourceDispatcherHostTest, CalculateApproximateMemoryCost) {
   req.AppendBytesToUpload(upload_content.data(), upload_content.size());
 
   // Since the upload throttling is disabled, this has no effect on the cost.
-  EXPECT_EQ(4434, ResourceDispatcherHost::CalculateApproximateMemoryCost(&req));
+  EXPECT_EQ(4436, ResourceDispatcherHost::CalculateApproximateMemoryCost(&req));
 
   // Add a file upload -- should have no effect.
   req.AppendFileToUpload(FilePath(FILE_PATH_LITERAL("does-not-exist.png")));
-  EXPECT_EQ(4434, ResourceDispatcherHost::CalculateApproximateMemoryCost(&req));
+  EXPECT_EQ(4436, ResourceDispatcherHost::CalculateApproximateMemoryCost(&req));
 }
 
 // Test the private helper method "IncrementOutstandingRequestsMemoryCost()".

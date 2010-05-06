@@ -1120,7 +1120,7 @@ int ResourceDispatcherHost::CalculateApproximateMemoryCost(
   // The following fields should be a minor size contribution (experimentally
   // on the order of 100). However since they are variable length, it could
   // in theory be a sizeable contribution.
-  int strings_cost = request->extra_request_headers().size() +
+  int strings_cost = request->extra_request_headers().ToString().size() +
                      request->original_url().spec().size() +
                      request->referrer().size() +
                      request->method().size();

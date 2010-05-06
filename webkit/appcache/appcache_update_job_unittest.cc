@@ -241,24 +241,18 @@ class HttpHeadersRequestTestJob : public URLRequestTestJob {
                                                const std::string& scheme) {
     if (!already_checked_) {
       already_checked_ = true;  // only check once for a test
-      const std::string& extra_headers = request->extra_request_headers();
-      const std::string if_modified_since = "If-Modified-Since: ";
-      size_t pos = extra_headers.find(if_modified_since);
-      if (pos != std::string::npos) {
-        saw_if_modified_since_ = (0 == extra_headers.compare(
-            pos + if_modified_since.length(),
-            expect_if_modified_since_.length(),
-            expect_if_modified_since_));
-      }
+      const net::HttpRequestHeaders& extra_headers =
+          request->extra_request_headers();
+      std::string header_value;
+      saw_if_modified_since_ =
+          extra_headers.GetHeader(
+              net::HttpRequestHeaders::kIfModifiedSince, &header_value) &&
+          header_value == expect_if_modified_since_;
 
-      const std::string if_none_match = "If-None-Match: ";
-      pos = extra_headers.find(if_none_match);
-      if (pos != std::string::npos) {
-        saw_if_none_match_ = (0 == extra_headers.compare(
-            pos + if_none_match.length(),
-            expect_if_none_match_.length(),
-            expect_if_none_match_));
-      }
+      saw_if_none_match_ =
+          extra_headers.GetHeader(
+              net::HttpRequestHeaders::kIfNoneMatch, &header_value) &&
+          header_value == expect_if_none_match_;
     }
     return NULL;
   }
