@@ -428,6 +428,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 
 // NSNotificationCenter callback.
 - (void)parentWindowDidResignKey:(NSNotification*)notification {
+  showFolderMenus_ = NO;
   [self closeAllBookmarkFolders];
 }
 
@@ -437,22 +438,25 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 // real menus).  We detect and act here.
 - (void)mouseEnteredButton:(id)sender event:(NSEvent*)event {
   DCHECK([sender isKindOfClass:[BookmarkButton class]]);
-  // If nothing is open, do nothing.  Different from
-  // BookmarkBarFolderController since we default to NOT being enabled.
-  if (!folderController_)
+
+  // If folder menus are not being shown, do nothing.  This is different from
+  // BookmarkBarFolderController's implementation because the bar should NOT
+  // automatically open folder menus when the mouse passes over a folder
+  // button while the BookmarkBarFolderController DOES automically open
+  // a subfolder menu.
+  if (!showFolderMenus_)
     return;
 
   // From here down: same logic as BookmarkBarFolderController.
   // TODO(jrg): find a way to share these 4 non-comment lines?
   // http://crbug.com/35966
-
   // If already opened, then we exited but re-entered the button, so do nothing.
   if ([folderController_ parentButton] == sender)
     return;
   // Else open a new one if it makes sense to do so.
-  if ([sender bookmarkNode]->is_folder())
+  if ([sender bookmarkNode]->is_folder()) {
     [folderTarget_ openBookmarkFolderFromButton:sender];
-  else {
+  } else {
     // We're over a non-folder bookmark so close any old folders.
     [folderController_ close];
     folderController_ = nil;
@@ -489,6 +493,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 // NOT an override of a standard Cocoa call made to NSViewControllers.
 - (void)hookForEvent:(NSEvent*)theEvent {
   if ([self isEventAnExitEvent:theEvent]) {
+    showFolderMenus_ = NO;
     [self watchForExitEvent:NO];
     [self closeAllBookmarkFolders];
   }
@@ -1140,6 +1145,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
 // Redirect to our logic shared with BookmarkBarFolderController.
 - (IBAction)openBookmarkFolderFromButton:(id)sender {
+  // Toggle presentation of bar folder menus.
+  showFolderMenus_ = !showFolderMenus_;
   [folderTarget_ openBookmarkFolderFromButton:sender];
 }
 

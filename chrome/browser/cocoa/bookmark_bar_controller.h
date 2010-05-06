@@ -213,6 +213,13 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   // that all bookmark buttons we create will be visible.  Thus,
   // [buttons_ count] isn't a definitive check.
   int displayedButtonCount_;
+
+  // A state flag which tracks when the bar's folder menus should be shown.
+  // An initial click in any of the folder buttons turns this on and
+  // one of the following will turn it off: another click in the button,
+  // the window losing focus, a click somewhere other than in the bar
+  // or a folder menu.
+  BOOL showFolderMenus_;
 }
 
 @property(readonly, nonatomic) bookmarks::VisualState visualState;

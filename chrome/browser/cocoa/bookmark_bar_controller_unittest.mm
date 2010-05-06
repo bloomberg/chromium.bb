@@ -26,18 +26,6 @@
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
-// Add a redirect to make testing easier.
-@interface BookmarkBarController(MakeTestingEasier)
-- (IBAction)openBookmarkFolderFromButton:(id)sender;
-@end
-
-@implementation BookmarkBarController(MakeTestingEasier)
-- (IBAction)openBookmarkFolderFromButton:(id)sender {
-  [[self folderTarget] openBookmarkFolderFromButton:sender];
-}
-@end
-
-
 // Just like a BookmarkBarController but openURL: is stubbed out.
 @interface BookmarkBarControllerNoOpen : BookmarkBarController {
  @public
@@ -1092,27 +1080,6 @@ TEST_F(BookmarkBarControllerTest, TestFolders) {
   folder = model->AddGroup(parent, parent->GetChildCount(), L"empty");
 
   EXPECT_EQ([[bar_ buttons] count], 2U);
-  BookmarkButton* button = [[bar_ buttons] objectAtIndex:0];  // full one
-
-  EXPECT_FALSE([bar_ folderController]);
-  [bar_ openBookmarkFolderFromButton:button];
-  BookmarkBarFolderController* bbfc = [bar_ folderController];
-  EXPECT_TRUE(bbfc);
-
-  // Make sure a 2nd open on the same button closes things.
-  [bar_ openBookmarkFolderFromButton:button];
-  EXPECT_FALSE([bar_ folderController]);
-
-  // Next open is a different button.
-  [bar_ openBookmarkFolderFromButton:[[bar_ buttons] objectAtIndex:1]];
-  EXPECT_TRUE([bar_ folderController]);
-  EXPECT_NE(bbfc, [bar_ folderController]);
-
-  // Finally confirm a close removes the folder controller.
-  [bar_ closeBookmarkFolder:nil];
-  EXPECT_FALSE([bar_ folderController]);
-
-  // Next part of the test: similar actions but with mouseEntered/mouseExited.
 
   // First confirm mouseEntered does nothing if "menus" aren't active.
   NSEvent* event = test_event_utils::MakeMouseEvent(NSOtherMouseUp, 0);
@@ -1121,7 +1088,7 @@ TEST_F(BookmarkBarControllerTest, TestFolders) {
 
   // Make one active.  Entering it is now a no-op.
   [bar_ openBookmarkFolderFromButton:[[bar_ buttons] objectAtIndex:0]];
-  bbfc = [bar_ folderController];
+  BookmarkBarFolderController* bbfc = [bar_ folderController];
   EXPECT_TRUE(bbfc);
   [bar_ mouseEnteredButton:[[bar_ buttons] objectAtIndex:0] event:event];
   EXPECT_EQ(bbfc, [bar_ folderController]);
@@ -1136,6 +1103,61 @@ TEST_F(BookmarkBarControllerTest, TestFolders) {
 
   // Clean up.
   [bar_ closeBookmarkFolder:nil];
+}
+
+// Verify that the folder menu presentation properly tracks mouse movements
+// over the bar. Until there is a click no folder menus should show. After a
+// click on a folder folder menus should show until another click on a folder
+// button, and a click outside the bar and its folder menus.
+TEST_F(BookmarkBarControllerTest, TestFolderButtons) {
+  BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
+  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const std::wstring model_string(L"1b 2f:[ 2f1b 2f2b ] 3b 4f:[ 4f1b 4f2b ] ");
+  model_test_utils::AddNodesFromModelString(model, root, model_string);
+
+  // Validate initial model and that we do not have a folder controller.
+  std::wstring actualModelString = model_test_utils::ModelStringFromNode(root);
+  EXPECT_EQ(model_string, actualModelString);
+  EXPECT_FALSE([bar_ folderController]);
+
+  // Click on a folder button.
+  BookmarkButton* button = [bar_ buttonWithTitleEqualTo:@"4f"];
+  [bar_ openBookmarkFolderFromButton:button];
+  BookmarkBarFolderController* bbfc = [bar_ folderController];
+  EXPECT_TRUE(bbfc);
+
+  // Make sure a 2nd click on the same button closes things.
+  [bar_ openBookmarkFolderFromButton:button];
+  EXPECT_FALSE([bar_ folderController]);
+
+  // Next open is a different button.
+  button = [bar_ buttonWithTitleEqualTo:@"2f"];
+  [bar_ openBookmarkFolderFromButton:button];
+  EXPECT_TRUE([bar_ folderController]);
+
+  // Mouse over a non-folder button and confirm controller has gone away.
+  button = [bar_ buttonWithTitleEqualTo:@"1b"];
+  NSEvent* event = test_event_utils::MouseEventAtPoint([button center],
+                                                       NSMouseMoved, 0);
+  [bar_ mouseEnteredButton:button event:event];
+  EXPECT_FALSE([bar_ folderController]);
+
+  // Mouse over the original folder and confirm a new controller.
+  button = [bar_ buttonWithTitleEqualTo:@"2f"];
+  [bar_ mouseEnteredButton:button event:event];
+  BookmarkBarFolderController* oldBBFC = [bar_ folderController];
+  EXPECT_TRUE(oldBBFC);
+
+  // 'Jump' over to a different folder and confirm a new controller.
+  button = [bar_ buttonWithTitleEqualTo:@"4f"];
+  [bar_ mouseEnteredButton:button event:event];
+  BookmarkBarFolderController* newBBFC = [bar_ folderController];
+  EXPECT_TRUE(newBBFC);
+  EXPECT_NE(oldBBFC, newBBFC);
+
+  // Another click should close the folder menus.
+  [bar_ openBookmarkFolderFromButton:button];
+  EXPECT_FALSE([bar_ folderController]);
 }
 
 // Make sure the "off the side" folder looks like a bookmark folder
