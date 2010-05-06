@@ -106,7 +106,7 @@ static void GioCopy(struct Gio  *dst,
     if (ask > nbytes) {
       ask = nbytes;
     }
-    NaClLog(3,
+    NaClLog(5,
             "GioCopy: copying 0x%"NACL_PRIxS" bytes, 0x%"NACL_PRIxS" remains\n",
             ask,
             nbytes);

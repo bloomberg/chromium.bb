@@ -16,6 +16,7 @@
 #include "native_client/src/trusted/service_runtime/include/sys/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
+#include "native_client/src/trusted/service_runtime/sel_util.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_effector_trusted_mem.h"
@@ -30,8 +31,8 @@
  * We could have used a weaker precondition where the alignment is to
  * NACL_MAP_PAGESIZE.
  */
-int NaClGioShmSetWindow(struct NaClGioShm  *self,
-                        size_t             new_win_offset) {
+static int NaClGioShmSetWindow(struct NaClGioShm  *self,
+                               size_t             new_win_offset) {
   int       rv;
   uintptr_t map_result;
 
@@ -58,6 +59,14 @@ int NaClGioShmSetWindow(struct NaClGioShm  *self,
     }
   }
   self->cur_window = NULL;
+
+  if (NaClRoundAllocPage(new_win_offset + NACL_MAP_PAGESIZE)
+      > NaClRoundAllocPage(self->shm_sz)) {
+    NaClLog(LOG_FATAL,
+            ("NaClGioShmSetWindow: setting window beyond end of shm object"
+             " offset 0x%"NACL_PRIxS", size 0x%"NACL_PRIxS"\n"),
+            new_win_offset, self->shm_sz);
+  }
 
   /*
    * Map will pad space beyond the end of the memory mapping object with
@@ -93,10 +102,6 @@ static ssize_t NaClGioShmReadOrWrite(struct Gio *vself,
   size_t            window_end;
   size_t            window_remain;
   size_t            sofar;
-
-  UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(buf);
-  UNREFERENCED_PARAMETER(count);
 
   NaClLog(4,
           ("NaClGioShmReadOrWrite: 0x%"NACL_PRIxPTR","
@@ -327,7 +332,8 @@ static int NaClGioShmCtorIntern(struct NaClGioShm  *self,
   if (0 != (vfret = (*shmp->vtbl->Fstat)(shmp,
                                          &self->eff.base,
                                          &stbuf))) {
-    NaClLog(1, "NaClGioShmCtor: Fstat virtual function returned %d\n", vfret);
+    NaClLog(1, "NaClGioShmCtorIntern: Fstat virtual function returned %d\n",
+            vfret);
     goto cleanup;
   }
   /*
@@ -364,23 +370,25 @@ static int NaClGioShmCtorIntern(struct NaClGioShm  *self,
    */
   if (stbuf.nacl_abi_st_size < 0) {
     NaClLog(LOG_ERROR,
-            "NaClGioShmCtor: actual shm size negative %"NACL_PRIdNACL_OFF"\n",
+            ("NaClGioShmCtorIntern: actual shm size negative"
+             " %"NACL_PRIdNACL_OFF"\n"),
             stbuf.nacl_abi_st_size);
     goto cleanup;
   }
   if (stbuf.nacl_abi_st_size <= (nacl_abi_off_t) SIZE_T_MAX
       && (size_t) stbuf.nacl_abi_st_size < shm_size) {
     NaClLog(LOG_ERROR,
-            ("NaClGioShmCtor: claimed shm file size greater than actual shm"
-             " segment size, %"NACL_PRIuS" vs %"NACL_PRIuNACL_OFF"\n"),
+            ("NaClGioShmCtorIntern: claimed shm file size greater than"
+             " actual shm segment size, %"NACL_PRIuS" vs"
+             " %"NACL_PRIuNACL_OFF"\n"),
             shm_size,
             stbuf.nacl_abi_st_size);
     goto cleanup;
   }
   if (OFF_T_MAX < SIZE_T_MAX && (size_t) OFF_T_MAX < shm_size) {
     NaClLog(LOG_ERROR,
-            ("NaClGioShmCtor: claimed shm file size greater than off_t max"
-             " value, %"NACL_PRId64"\n"),
+            ("NaClGioShmCtorIntern: claimed shm file size greater than"
+             " off_t max value, %"NACL_PRId64"\n"),
             (int64_t) OFF_T_MAX);
     goto cleanup;
   }
@@ -393,7 +401,13 @@ static int NaClGioShmCtorIntern(struct NaClGioShm  *self,
 
   self->base.vtbl = &kNaClGioShmVtbl;
 
-  NaClGioShmSetWindow(self, 0);
+  if (!NaClGioShmSetWindow(self, 0)) {
+    NaClLog(LOG_ERROR,
+            ("NaClGioShmCtorIntern: initial seek to beginning failed\n"));
+    self->base.vtbl = NULL;
+    goto cleanup;
+  }
+
   rval = 1;
  cleanup:
   if (!rval) {
