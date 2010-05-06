@@ -427,7 +427,7 @@ void ExtensionsService::LoadComponentExtensions() {
     JSONStringValueSerializer serializer(it->manifest);
     scoped_ptr<Value> manifest(serializer.Deserialize(NULL, NULL));
     if (!manifest.get()) {
-      NOTREACHED() << "Failed to retrieve manifest for extension";
+      DLOG(ERROR) << "Failed to retrieve manifest for extension";
       continue;
     }
 
