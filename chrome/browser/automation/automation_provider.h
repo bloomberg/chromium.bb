@@ -353,6 +353,18 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   // Uses the JSON interface for input/output.
   void GetPrefsInfo(DictionaryValue* args, IPC::Message* reply_message);
 
+  // Get info about plugins.
+  // Uses the JSON interface for input/output.
+  void GetPluginsInfo(DictionaryValue* args, IPC::Message* reply_message);
+
+  // Enable a plugin.
+  // Uses the JSON interface for input/output.
+  void EnablePlugin(DictionaryValue* args, IPC::Message* reply_message);
+
+  // Disable a plugin.
+  // Uses the JSON interface for input/output.
+  void DisablePlugin(DictionaryValue* args, IPC::Message* reply_message);
+
   // Set prefs.
   // Uses the JSON interface for input/output.
   void SetPrefs(DictionaryValue* args, IPC::Message* reply_message);

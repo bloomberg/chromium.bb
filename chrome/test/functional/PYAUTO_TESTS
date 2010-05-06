@@ -22,6 +22,7 @@
     'downloads',
     'history',
     'navigation',
+    'plugins',
     'prefs',
     'special_tabs',
     'test_basic.SimpleTest.testCanOpenGoogle',

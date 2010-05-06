@@ -74,6 +74,7 @@ except ImportError:
 import bookmark_model
 import download_info
 import history_info
+import plugins_info
 import prefs_info
 from pyauto_errors import JSONInterfaceError
 import simplejson as json  # found in third_party
@@ -328,6 +329,49 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return history_info.HistoryInfo(
         self._SendJSONRequest(0, json.dumps(cmd_dict)))
+
+  def GetPluginsInfo(self):
+    """Return info about plugins.
+
+    This is the info available from about:plugins
+
+    Returns:
+      an instance of plugins_info.PluginsInfo
+    """
+    return plugins_info.PluginsInfo(
+        self._SendJSONRequest(0, json.dumps({'command': 'GetPluginsInfo'})))
+
+  def EnablePlugin(self, path):
+    """Enable the plugin at the given path.
+
+    Use GetPluginsInfo() to fetch path info about a plugin.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'EnablePlugin',
+      'path': path,
+    }
+    ret_dict = json.loads(self._SendJSONRequest(0, json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
+
+  def DisablePlugin(self, path):
+    """Disable the plugin at the given path.
+
+    Use GetPluginsInfo() to fetch path info about a plugin.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'DisablePlugin',
+      'path': path,
+    }
+    ret_dict = json.loads(self._SendJSONRequest(0, json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
 
 
 class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):

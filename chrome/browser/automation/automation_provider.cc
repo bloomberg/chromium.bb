@@ -85,6 +85,7 @@
 #include "net/url_request/url_request_context.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "views/event.h"
+#include "webkit/glue/plugins/plugin_list.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/external_tab_container.h"
@@ -1773,6 +1774,102 @@ void AutomationProvider::SetPrefs(DictionaryValue* args,
   Send(reply_message);
 }
 
+// Sample json input: { "command": "GetPluginsInfo" }
+// Refer chrome/test/pyautolib/plugins_info.py for sample json output.
+void AutomationProvider::GetPluginsInfo(DictionaryValue* args,
+                                        IPC::Message* reply_message) {
+  std::string json_return;
+  bool reply_return = true;
+
+  std::vector<WebPluginInfo> plugins;
+  NPAPI::PluginList::Singleton()->GetPlugins(false, &plugins);
+  ListValue* items = new ListValue;
+  for (std::vector<WebPluginInfo>::const_iterator it = plugins.begin();
+       it != plugins.end();
+       ++it) {
+    DictionaryValue* item = new DictionaryValue;
+    item->SetString(L"name", it->name);
+    item->SetString(L"path", it->path.value());
+    item->SetString(L"version", it->version);
+    item->SetString(L"desc", it->desc);
+    item->SetBoolean(L"enabled", it->enabled);
+    // Add info about mime types.
+    ListValue* mime_types = new ListValue();
+    for (std::vector<WebPluginMimeType>::const_iterator type_it =
+             it->mime_types.begin();
+         type_it != it->mime_types.end();
+         ++type_it) {
+      DictionaryValue* mime_type = new DictionaryValue();
+      mime_type->SetString(L"mimeType", type_it->mime_type);
+      mime_type->SetString(L"description", type_it->description);
+
+      ListValue* file_extensions = new ListValue();
+      for (std::vector<std::string>::const_iterator ext_it =
+               type_it->file_extensions.begin();
+           ext_it != type_it->file_extensions.end();
+           ++ext_it) {
+        file_extensions->Append(new StringValue(*ext_it));
+      }
+      mime_type->Set(L"fileExtensions", file_extensions);
+
+      mime_types->Append(mime_type);
+    }
+    item->Set(L"mimeTypes", mime_types);
+    items->Append(item);
+  }
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  return_value->Set(L"plugins", items);  // return_value owns items.
+
+  base::JSONWriter::Write(return_value.get(), false, &json_return);
+  AutomationMsg_SendJSONRequest::WriteReplyParams(
+      reply_message, json_return, reply_return);
+  Send(reply_message);
+}
+
+// Sample json input:
+//    { "command": "EnablePlugin",
+//      "path": "/Library/Internet Plug-Ins/Flash Player.plugin" }
+void AutomationProvider::EnablePlugin(DictionaryValue* args,
+                                      IPC::Message* reply_message) {
+  std::string json_return = "{}";
+  bool reply_return = true;
+  FilePath::StringType path;
+  if (!args->GetString(L"path", &path)) {
+    json_return = "{\"error\": \"path not specified.\"}";
+    reply_return = false;
+  } else if (!NPAPI::PluginList::Singleton()->EnablePlugin(FilePath(path))) {
+    json_return = StringPrintf("{\"error\": \"Could not enable plugin"
+                               " for path %s.\"}", path.c_str());
+    reply_return = false;
+  }
+
+  AutomationMsg_SendJSONRequest::WriteReplyParams(
+      reply_message, json_return, reply_return);
+  Send(reply_message);
+}
+
+// Sample json input:
+//    { "command": "DisablePlugin",
+//      "path": "/Library/Internet Plug-Ins/Flash Player.plugin" }
+void AutomationProvider::DisablePlugin(DictionaryValue* args,
+                                      IPC::Message* reply_message) {
+  std::string json_return = "{}";
+  bool reply_return = true;
+  FilePath::StringType path;
+  if (!args->GetString(L"path", &path)) {
+    json_return = "{\"error\": \"path not specified.\"}";
+    reply_return = false;
+  } else if (!NPAPI::PluginList::Singleton()->DisablePlugin(FilePath(path))) {
+    json_return = StringPrintf("{\"error\": \"Could not enable plugin"
+                               " for path %s.\"}", path.c_str());
+    reply_return = false;
+  }
+
+  AutomationMsg_SendJSONRequest::WriteReplyParams(
+      reply_message, json_return, reply_return);
+  Send(reply_message);
+}
+
 void AutomationProvider::SendJSONRequest(
     int handle,
     std::string json_request,
@@ -1813,10 +1910,16 @@ void AutomationProvider::SendJSONRequest(
 
   // Map json commands to their handlers.
   std::map<std::string, JsonHandler> handler_map;
-  handler_map["GetDownloadsInfo"] = &AutomationProvider::GetDownloadsInfo;
+  handler_map["DisablePlugin"] = &AutomationProvider::DisablePlugin;
+  handler_map["EnablePlugin"] = &AutomationProvider::EnablePlugin;
+  handler_map["GetPluginsInfo"] = &AutomationProvider::GetPluginsInfo;
+
   handler_map["GetHistoryInfo"] = &AutomationProvider::GetHistoryInfo;
+
   handler_map["GetPrefsInfo"] = &AutomationProvider::GetPrefsInfo;
   handler_map["SetPrefs"] = &AutomationProvider::SetPrefs;
+
+  handler_map["GetDownloadsInfo"] = &AutomationProvider::GetDownloadsInfo;
   handler_map["WaitForAllDownloadsToComplete"] =
       &AutomationProvider::WaitForDownloadsToComplete;
 
