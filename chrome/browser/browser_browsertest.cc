@@ -310,7 +310,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RenderIdleTime) {
 // TODO(pinkerton): Disable app-mode in the model until we implement it
 // on the Mac. http://crbug.com/13148
 #if !defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcut) {
+// Disabled, flakily exceeds test timeout. See http://crbug.com/43434.
+IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_CommandCreateAppShortcut) {
   static const wchar_t kDocRoot[] = L"chrome/test/data";
   static const FilePath::CharType* kEmptyFile = FILE_PATH_LITERAL("empty.html");
 
