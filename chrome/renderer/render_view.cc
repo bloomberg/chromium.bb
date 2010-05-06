@@ -2372,6 +2372,18 @@ void RenderView::unableToImplementPolicyWithError(
   NOTREACHED();  // Since we said we can handle all requests.
 }
 
+void RenderView::willSendSubmitEvent(WebKit::WebFrame* frame,
+    const WebKit::WebFormElement& form) {
+  // Some login forms have onSubmit handlers that put a hash of the password
+  // into a hidden field and then clear the password. (Issue 28910.)
+  // This method gets called before any of those handlers run, so save away
+  // a copy of the password in case it gets lost.
+  NavigationState* navigation_state =
+      NavigationState::FromDataSource(frame->dataSource());
+  navigation_state->set_password_form_data(
+      PasswordFormDomManager::CreatePasswordForm(form));
+}
+
 void RenderView::willSubmitForm(WebFrame* frame, const WebFormElement& form) {
   NavigationState* navigation_state =
       NavigationState::FromDataSource(frame->provisionalDataSource());
@@ -2384,8 +2396,23 @@ void RenderView::willSubmitForm(WebFrame* frame, const WebFormElement& form) {
   navigation_state->set_searchable_form_url(web_searchable_form_data.url());
   navigation_state->set_searchable_form_encoding(
       web_searchable_form_data.encoding().utf8());
-  navigation_state->set_password_form_data(
-      PasswordFormDomManager::CreatePasswordForm(form));
+  PasswordForm* password_form_data =
+      PasswordFormDomManager::CreatePasswordForm(form);
+  navigation_state->set_password_form_data(password_form_data);
+
+  // If the password has been cleared, recover it from the form contents already
+  // stored by willSendSubmitEvent into the dataSource's NavigationState (as
+  // opposed to the provisionalDataSource's, which is what we're storing into
+  // now.)
+  if (password_form_data && password_form_data->password_value.empty()) {
+    NavigationState* old_navigation_state =
+        NavigationState::FromDataSource(frame->dataSource());
+    if (old_navigation_state) {
+      PasswordForm* old_form_data = old_navigation_state->password_form_data();
+      if (old_form_data && old_form_data->action == password_form_data->action)
+        password_form_data->password_value = old_form_data->password_value;
+    }
+  }
 
   FormData form_data;
   if (FormManager::WebFormElementToFormData(
