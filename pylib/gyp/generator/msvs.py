@@ -987,7 +987,7 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
         cmd = 'cd "%s" && xcopy /e /f /y "%s" "%s\\%s\\"' % (
             _FixPath(base_dir), outer_dir, _FixPath(dst), outer_dir)
         _AddCustomBuildTool(p, spec,
-                            inputs=[src, os.path.basename(build_file)],
+                            inputs=[src],
                             outputs=['dummy_copies', dst],
                             description='Copying %s to %s' % (src, dst),
                             cmd=cmd)
