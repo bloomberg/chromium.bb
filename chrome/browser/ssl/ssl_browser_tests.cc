@@ -868,7 +868,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestBadFrameNavigation) {
 // From an HTTP top frame, navigate to good and bad HTTPS (security state should
 // stay unauthenticated).
 // Marked as flaky, see bug 40932.
-IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestUnauthenticatedFrameNavigation) {
+// Disabled, flakily exceeds test timeout, http://crbug.com/43437.
+IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestUnauthenticatedFrameNavigation) {
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
   ASSERT_TRUE(http_server.get() != NULL);
   scoped_refptr<HTTPSTestServer> good_https_server = GoodCertServer();
