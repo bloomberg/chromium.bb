@@ -19,20 +19,27 @@ class GURL;
 // worker process to start.
 class WebWorkerBase : public IPC::Channel::Listener {
  public:
-  WebWorkerBase(ChildThread* child_thread,
-                unsigned long long document_id,
-                int route_id,
-                int render_view_route_id);
-
   virtual ~WebWorkerBase();
 
-  // Creates and initializes a new worker context.
-  void CreateWorkerContext(const GURL& script_url,
-                           bool is_shared,
-                           const string16& name,
-                           const string16& user_agent,
-                           const string16& source_code,
-                           int pending_route_id);
+  // Creates and initializes a new dedicated worker context.
+  void CreateDedicatedWorkerContext(const GURL& script_url,
+                                    const string16& user_agent,
+                                    const string16& source_code) {
+    CreateWorkerContext(script_url, false, string16(), user_agent,
+                        source_code, MSG_ROUTING_NONE, 0);
+  }
+
+  // Creates and initializes a new shared worker context.
+  void CreateSharedWorkerContext(const GURL& script_url,
+                                 const string16& name,
+                                 const string16& user_agent,
+                                 const string16& source_code,
+                                 int pending_route_id,
+                                 int64 script_resource_appcache_id) {
+    CreateWorkerContext(script_url, true, name, user_agent,
+                        source_code, pending_route_id,
+                        script_resource_appcache_id);
+  }
 
   // Returns true if the worker is running (can send messages to it).
   bool IsStarted();
@@ -51,6 +58,12 @@ class WebWorkerBase : public IPC::Channel::Listener {
   void SendQueuedMessages();
 
  protected:
+  WebWorkerBase(ChildThread* child_thread,
+                unsigned long long document_id,
+                int route_id,
+                int render_view_route_id,
+                int parent_appcache_host_id);
+
   // Routing id associated with this worker - used to receive messages from the
   // worker, and also to route messages to the worker (WorkerService contains
   // a map that maps between these renderer-side route IDs and worker-side
@@ -63,9 +76,20 @@ class WebWorkerBase : public IPC::Channel::Listener {
   ChildThread* child_thread_;
 
  private:
+  void CreateWorkerContext(const GURL& script_url,
+                           bool is_shared,
+                           const string16& name,
+                           const string16& user_agent,
+                           const string16& source_code,
+                           int pending_route_id,
+                           int64 script_resource_appcache_id);
+
   // ID of our parent document (used to shutdown workers when the parent
   // document is detached).
   unsigned long long document_id_;
+
+  // ID of our parent's appcache host, only valid for dedicated workers.
+  int parent_appcache_host_id_;
 
   // Stores messages that were sent before the StartWorkerContext message.
   std::vector<IPC::Message*> queued_messages_;

@@ -17,7 +17,8 @@ WebSharedWorkerProxy::WebSharedWorkerProxy(ChildThread* child_thread,
     : WebWorkerBase(child_thread,
                     document_id,
                     exists ? route_id : MSG_ROUTING_NONE,
-                    render_view_route_id),
+                    render_view_route_id,
+                    0),
       pending_route_id_(route_id),
       connect_listener_(NULL) {
 }
@@ -33,8 +34,8 @@ void WebSharedWorkerProxy::startWorkerContext(
     const WebKit::WebString& source_code,
     long long script_resource_appcache_id) {
   DCHECK(!isStarted());
-  CreateWorkerContext(script_url, true, name, user_agent, source_code,
-                      pending_route_id_);
+  CreateSharedWorkerContext(script_url, name, user_agent, source_code,
+                            pending_route_id_, script_resource_appcache_id);
 }
 
 void WebSharedWorkerProxy::terminateWorkerContext() {

@@ -578,6 +578,13 @@ struct ViewHostMsg_CreateWorker_Params {
   // The route ID to associate with the worker. If MSG_ROUTING_NONE is passed,
   // a new unique ID is created and assigned to the worker.
   int route_id;
+
+  // The ID of the parent's appcache host, only valid for dedicated workers.
+  int parent_appcache_host_id;
+
+  // The ID of the appcache the main shared worker script resource was loaded
+  // from, only valid for shared workers.
+  int64 script_resource_appcache_id;
 };
 
 // Creates a new view via a control message since the view doesn't yet exist.

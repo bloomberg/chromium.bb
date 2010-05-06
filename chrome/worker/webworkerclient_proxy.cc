@@ -102,7 +102,8 @@ void WebWorkerClientProxy::workerContextDestroyed() {
 
 WebKit::WebWorker* WebWorkerClientProxy::createWorker(
     WebKit::WebWorkerClient* client) {
-  return new WebWorkerProxy(client, WorkerThread::current(), 0);
+  return new WebWorkerProxy(client, WorkerThread::current(), 0, 0);
+  // TODO(michaeln): Fill in the appcache_host_id parameter value.
 }
 
 bool WebWorkerClientProxy::Send(IPC::Message* message) {
