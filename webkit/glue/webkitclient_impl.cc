@@ -12,8 +12,6 @@
 
 #include <vector>
 
-#include "base/file_path.h"
-#include "base/file_util.h"
 #include "base/lock.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
@@ -25,7 +23,6 @@
 #include "base/trace_event.h"
 #include "grit/webkit_resources.h"
 #include "grit/webkit_strings.h"
-#include "net/base/net_util.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCookie.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrameClient.h"
@@ -423,70 +420,6 @@ size_t WebKitClientImpl::memoryUsageMB() {
 #endif
   mem_usage_cache_singleton->SetMemoryValue(current_mem_usage);
   return current_mem_usage;
-}
-
-bool WebKitClientImpl::fileExists(const WebKit::WebString& path) {
-  FilePath::StringType file_path = webkit_glue::WebStringToFilePathString(path);
-  return file_util::PathExists(FilePath(file_path));
-}
-
-bool WebKitClientImpl::deleteFile(const WebKit::WebString& path) {
-  NOTREACHED();
-  return false;
-}
-
-bool WebKitClientImpl::deleteEmptyDirectory(const WebKit::WebString& path) {
-  NOTREACHED();
-  return false;
-}
-
-bool WebKitClientImpl::getFileSize(const WebKit::WebString& path,
-                                   long long& result) {
-  NOTREACHED();
-  return false;
-}
-
-bool WebKitClientImpl::getFileModificationTime(const WebKit::WebString& path,
-                                               double& result) {
-  NOTREACHED();
-  return false;
-}
-
-WebKit::WebString WebKitClientImpl::directoryName(
-    const WebKit::WebString& path) {
-  NOTREACHED();
-  return WebKit::WebString();
-}
-
-WebKit::WebString WebKitClientImpl::pathByAppendingComponent(
-    const WebKit::WebString& webkit_path,
-    const WebKit::WebString& webkit_component) {
-  FilePath path(webkit_glue::WebStringToFilePathString(webkit_path));
-  FilePath component(webkit_glue::WebStringToFilePathString(webkit_component));
-  FilePath combined_path = path.Append(component);
-  return webkit_glue::FilePathStringToWebString(combined_path.value());
-}
-
-bool WebKitClientImpl::makeAllDirectories(const WebKit::WebString& path) {
-  DCHECK(!sandboxEnabled());
-  FilePath::StringType file_path = webkit_glue::WebStringToFilePathString(path);
-  return file_util::CreateDirectory(FilePath(file_path));
-}
-
-WebKit::WebString WebKitClientImpl::getAbsolutePath(
-    const WebKit::WebString& path) {
-  FilePath file_path(webkit_glue::WebStringToFilePathString(path));
-  file_util::AbsolutePath(&file_path);
-  return webkit_glue::FilePathStringToWebString(file_path.value());
-}
-
-bool WebKitClientImpl::isDirectory(const WebKit::WebString& path) {
-  FilePath file_path(webkit_glue::WebStringToFilePathString(path));
-  return file_util::DirectoryExists(file_path);
-}
-
-WebKit::WebURL WebKitClientImpl::filePathToURL(const WebKit::WebString& path) {
-  return net::FilePathToFileURL(webkit_glue::WebStringToFilePath(path));
 }
 
 void WebKitClientImpl::SuspendSharedTimer() {

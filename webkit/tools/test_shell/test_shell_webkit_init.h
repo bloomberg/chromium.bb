@@ -7,10 +7,12 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/platform_file.h"
 #include "base/scoped_temp_dir.h"
 #include "base/stats_counters.h"
 #include "base/string_util.h"
 #include "media/base/media.h"
+#include "net/base/file_stream.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDatabase.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebGraphicsContext3D.h"
@@ -28,6 +30,7 @@
 #include "webkit/extensions/v8/gears_extension.h"
 #include "webkit/extensions/v8/interval_extension.h"
 #include "webkit/glue/webclipboard_impl.h"
+#include "webkit/glue/webfilesystem_impl.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webkitclient_impl.h"
 #include "webkit/tools/test_shell/mock_webclipboard_impl.h"
@@ -88,6 +91,8 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
 
     WebKit::WebDatabase::setObserver(&database_system_);
 
+    file_system_.set_sandbox_enabled(false);
+
 #if defined(OS_WIN)
     // Ensure we pick up the default theme engine.
     SetThemeEngine(NULL);
@@ -110,6 +115,10 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
     } else {
       return &real_clipboard_;
     }
+  }
+
+  virtual WebKit::WebFileSystem* fileSystem() {
+    return &file_system_;
   }
 
   virtual WebKit::WebSandboxSupport* sandboxSupport() {
@@ -146,21 +155,6 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
   virtual long long databaseGetFileSize(
       const WebKit::WebString& vfs_file_name) {
     return SimpleDatabaseSystem::GetInstance()->GetFileSize(vfs_file_name);
-  }
-
-  virtual bool getFileSize(const WebKit::WebString& path, long long& result) {
-    return file_util::GetFileSize(
-        webkit_glue::WebStringToFilePath(path),
-        reinterpret_cast<int64*>(&result));
-  }
-
-  virtual bool getFileModificationTime(const WebKit::WebString& path,
-                                       double& result) {
-    file_util::FileInfo info;
-    if (!file_util::GetFileInfo(webkit_glue::WebStringToFilePath(path), &info))
-      return false;
-    result = info.last_modified.ToDoubleT();
-    return true;
   }
 
   virtual unsigned long long visitedLinkHash(const char* canonicalURL,
@@ -238,6 +232,7 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
   TestShellWebMimeRegistryImpl mime_registry_;
   MockWebClipboardImpl mock_clipboard_;
   webkit_glue::WebClipboardImpl real_clipboard_;
+  webkit_glue::WebFileSystemImpl file_system_;
   ScopedTempDir appcache_dir_;
   SimpleAppCacheSystem appcache_system_;
   SimpleDatabaseSystem database_system_;

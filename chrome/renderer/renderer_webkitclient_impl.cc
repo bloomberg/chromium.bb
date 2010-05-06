@@ -25,6 +25,7 @@
 #include "chrome/renderer/visitedlink_slave.h"
 #include "chrome/renderer/webgraphicscontext3d_command_buffer_impl.h"
 #include "googleurl/src/gurl.h"
+#include "ipc/ipc_sync_message_filter.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageEventDispatcher.h"
@@ -60,6 +61,10 @@ WebKit::WebMimeRegistry* RendererWebKitClientImpl::mimeRegistry() {
   return &mime_registry_;
 }
 
+WebKit::WebFileSystem* RendererWebKitClientImpl::fileSystem() {
+  return &file_system_;
+}
+
 WebKit::WebSandboxSupport* RendererWebKitClientImpl::sandboxSupport() {
 #if defined(OS_WIN) || defined(OS_LINUX)
   return &sandbox_support_;
@@ -84,31 +89,15 @@ bool RendererWebKitClientImpl::sandboxEnabled() {
   return !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
 }
 
-bool RendererWebKitClientImpl::getFileSize(const WebString& path,
-                                           long long& result) {
-  if (RenderThread::current()->Send(
-          new ViewHostMsg_GetFileSize(webkit_glue::WebStringToFilePath(path),
-                                      reinterpret_cast<int64*>(&result)))) {
-    return result >= 0;
-  }
+bool RendererWebKitClientImpl::SendSyncMessageFromAnyThread(
+    IPC::SyncMessage* msg) {
+  RenderThread* render_thread = RenderThread::current();
+  if (render_thread)
+    return render_thread->Send(msg);
 
-  result = -1;
-  return false;
-}
-
-bool RendererWebKitClientImpl::getFileModificationTime(
-    const WebKit::WebString& path,
-    double& result) {
-  base::Time time;
-  if (RenderThread::current()->Send(
-          new ViewHostMsg_GetFileModificationTime(
-              webkit_glue::WebStringToFilePath(path), &time))) {
-    result = time.ToDoubleT();
-    return true;
-  }
-
-  result = 0;
-  return false;
+  scoped_refptr<IPC::SyncMessageFilter> sync_msg_filter =
+      ChildThread::current()->sync_message_filter();
+  return sync_msg_filter->Send(msg);
 }
 
 unsigned long long RendererWebKitClientImpl::visitedLinkHash(
@@ -221,6 +210,45 @@ WebString RendererWebKitClientImpl::MimeRegistry::preferredExtensionForMIMEType(
       new ViewHostMsg_GetPreferredExtensionForMimeType(UTF16ToASCII(mime_type),
           &file_extension));
   return webkit_glue::FilePathStringToWebString(file_extension);
+}
+
+//------------------------------------------------------------------------------
+
+bool RendererWebKitClientImpl::FileSystem::getFileSize(const WebString& path,
+                                                       long long& result) {
+  if (SendSyncMessageFromAnyThread(new ViewHostMsg_GetFileSize(
+          webkit_glue::WebStringToFilePath(path),
+          reinterpret_cast<int64*>(&result)))) {
+    return result >= 0;
+  }
+
+  result = -1;
+  return false;
+}
+
+bool RendererWebKitClientImpl::FileSystem::getFileModificationTime(
+    const WebString& path,
+    double& result) {
+  base::Time time;
+  if (SendSyncMessageFromAnyThread(new ViewHostMsg_GetFileModificationTime(
+          webkit_glue::WebStringToFilePath(path), &time))) {
+    result = time.ToDoubleT();
+    return !time.is_null();
+  }
+
+  result = 0;
+  return false;
+}
+
+base::PlatformFile RendererWebKitClientImpl::FileSystem::openFile(
+    const WebString& path,
+    int mode) {
+  base::PlatformFile handle;
+  if (!SendSyncMessageFromAnyThread(new ViewHostMsg_OpenFile(
+          webkit_glue::WebStringToFilePath(path), mode, &handle))) {
+    handle = base::kInvalidPlatformFileValue;
+  }
+  return handle;
 }
 
 //------------------------------------------------------------------------------

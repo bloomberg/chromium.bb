@@ -321,6 +321,10 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnGetFileInfoOnFileThread(const FilePath& path,
                                  IPC::Message* reply_msg,
                                  FileInfoWriteFunc write_func);
+  void OnOpenFile(const FilePath& path, int mode,IPC::Message* reply_msg);
+  void OnOpenFileOnFileThread(const FilePath& path,
+                              int mode,
+                              IPC::Message* reply_msg);
   void OnKeygen(uint32 key_size_index, const std::string& challenge_string,
                 const GURL& url, std::string* signed_public_key);
   void OnGetExtensionMessageBundle(const std::string& extension_id,

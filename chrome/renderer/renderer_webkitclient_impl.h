@@ -9,6 +9,7 @@
 #include "chrome/renderer/websharedworkerrepository_impl.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webclipboard_impl.h"
+#include "webkit/glue/webfilesystem_impl.h"
 #include "webkit/glue/webkitclient_impl.h"
 
 #if defined(OS_WIN)
@@ -31,12 +32,10 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   // WebKitClient methods:
   virtual WebKit::WebClipboard* clipboard();
   virtual WebKit::WebMimeRegistry* mimeRegistry();
+  virtual WebKit::WebFileSystem* fileSystem();
   virtual WebKit::WebSandboxSupport* sandboxSupport();
   virtual WebKit::WebCookieJar* cookieJar();
   virtual bool sandboxEnabled();
-  virtual bool getFileSize(const WebKit::WebString& path, long long& result);
-  virtual bool getFileModificationTime(const WebKit::WebString& path,
-                                       double& result);
   virtual unsigned long long visitedLinkHash(
       const char* canonicalURL, size_t length);
   virtual bool isLinkVisited(unsigned long long linkHash);
@@ -76,6 +75,15 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
         const WebKit::WebString&);
   };
 
+  class FileSystem : public webkit_glue::WebFileSystemImpl {
+   public:
+    virtual bool getFileSize(const WebKit::WebString& path, long long& result);
+    virtual bool getFileModificationTime(const WebKit::WebString& path,
+                                         double& result);
+    virtual base::PlatformFile openFile(const WebKit::WebString& path,
+                                        int mode);
+  };
+
 #if defined(OS_WIN)
   class SandboxSupport : public WebKit::WebSandboxSupport {
    public:
@@ -99,7 +107,12 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   };
 #endif
 
+  // Helper function to send synchronous message from any thread.
+  static bool SendSyncMessageFromAnyThread(IPC::SyncMessage* msg);
+
   webkit_glue::WebClipboardImpl clipboard_;
+
+  FileSystem file_system_;
 
   MimeRegistry mime_registry_;
 #if defined(OS_WIN) || defined(OS_LINUX)

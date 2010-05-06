@@ -58,6 +58,7 @@
 #include "chrome/common/worker_messages.h"
 #include "gfx/native_widget_types.h"
 #include "net/base/cookie_monster.h"
+#include "net/base/file_stream.h"
 #include "net/base/keygen_handler.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
@@ -537,6 +538,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetFileSize, OnGetFileSize)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetFileModificationTime,
                                       OnGetFileModificationTime)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_OpenFile, OnOpenFile)
       IPC_MESSAGE_HANDLER(ViewHostMsg_Keygen, OnKeygen)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetExtensionMessageBundle,
                                       OnGetExtensionMessageBundle)
@@ -1379,6 +1381,60 @@ void ResourceMessageFilter::OnGetFileInfoOnFileThread(
   file_util::GetFileInfo(path, &file_info);
 
   (*write_func)(reply_msg, file_info);
+
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &ResourceMessageFilter::Send, reply_msg));
+}
+
+void ResourceMessageFilter::OnOpenFile(const FilePath& path,
+                                       int mode,
+                                       IPC::Message* reply_msg) {
+  // Open the file only when the child process has been granted permission to
+  // upload the file.
+  // TODO(jianli): Do we need separate permission to control opening the file?
+  if (!ChildProcessSecurityPolicy::GetInstance()->CanUploadFile(id(), path)) {
+    ViewHostMsg_OpenFile::WriteReplyParams(
+        reply_msg, base::kInvalidPlatformFileValue);
+    Send(reply_msg);
+    return;
+  }
+
+  // Opening the file could take a long time if it lives on a network share,
+  // so run it on the FILE thread.
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          this, &ResourceMessageFilter::OnOpenFileOnFileThread,
+          path, mode, reply_msg));
+}
+
+void ResourceMessageFilter::OnOpenFileOnFileThread(const FilePath& path,
+                                                   int mode,
+                                                   IPC::Message* reply_msg) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+
+  base::PlatformFile file_handle = base::CreatePlatformFile(
+      path,
+      (mode == 0) ? (base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ)
+                  : (base::PLATFORM_FILE_CREATE_ALWAYS |
+                        base::PLATFORM_FILE_WRITE),
+      NULL);
+
+  base::PlatformFile target_file_handle;
+#if defined(OS_WIN)
+  // Duplicate the file handle so that the renderer process can access the file.
+  if (!DuplicateHandle(GetCurrentProcess(), file_handle,
+                       handle(), &target_file_handle, 0, false,
+                       DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
+    // file_handle is closed whether or not DuplicateHandle succeeds.
+    target_file_handle = INVALID_HANDLE_VALUE;
+  }
+#else
+  target_file_handle = file_handle;
+#endif
+
+  ViewHostMsg_OpenFile::WriteReplyParams(reply_msg, target_file_handle);
 
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,

@@ -23,20 +23,6 @@ class WebKitClientImpl : public WebKit::WebKitClient {
 
   // WebKitClient methods (partial implementation):
   virtual WebKit::WebThemeEngine* themeEngine();
-  virtual bool fileExists(const WebKit::WebString& path);
-  virtual bool deleteFile(const WebKit::WebString& path);
-  virtual bool deleteEmptyDirectory(const WebKit::WebString& path);
-  virtual bool getFileSize(const WebKit::WebString& path, long long& result);
-  virtual bool getFileModificationTime(
-      const WebKit::WebString& path,
-      double& result);
-  virtual WebKit::WebString directoryName(const WebKit::WebString& path);
-  virtual WebKit::WebString pathByAppendingComponent(
-      const WebKit::WebString& path, const WebKit::WebString& component);
-  virtual bool makeAllDirectories(const WebKit::WebString& path);
-  virtual WebKit::WebString getAbsolutePath(const WebKit::WebString& path);
-  virtual bool isDirectory(const WebKit::WebString& path);
-  virtual WebKit::WebURL filePathToURL(const WebKit::WebString& path);
   virtual base::PlatformFile databaseOpenFile(
       const WebKit::WebString& vfs_file_name,
       int desired_flags,

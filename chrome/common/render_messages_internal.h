@@ -14,6 +14,7 @@
 
 #include "base/file_path.h"
 #include "base/nullable_string16.h"
+#include "base/platform_file.h"
 #include "base/sync_socket.h"
 #include "base/time.h"
 #include "base/values.h"
@@ -2128,6 +2129,12 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetFileModificationTime,
                               FilePath /* path */,
                               base::Time /* result */)
+
+  // Open the file.
+  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_OpenFile,
+                              FilePath /* path */,
+                              int /* mode */,
+                              base::PlatformFile /* result */)
 
   // Sent by the renderer process to acknowledge receipt of a
   // ViewMsg_CSSInsertRequest message and css has been inserted into the frame.

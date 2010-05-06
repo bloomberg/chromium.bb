@@ -254,6 +254,8 @@
         'webdropdata.cc',
         'webdropdata_win.cc',
         'webdropdata.h',
+        'webfilesystem_impl.cc',
+        'webfilesystem_impl.h',
         'webkit_glue.cc',
         'webkit_glue.h',
         'webkitclient_impl.cc',

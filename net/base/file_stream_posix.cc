@@ -293,13 +293,15 @@ void FileStream::AsyncContext::RunAsynchronousCallback() {
 
 FileStream::FileStream()
     : file_(base::kInvalidPlatformFileValue),
-      open_flags_(0) {
+      open_flags_(0),
+      auto_closed_(true) {
   DCHECK(!IsOpen());
 }
 
 FileStream::FileStream(base::PlatformFile file, int flags)
     : file_(file),
-      open_flags_(flags) {
+      open_flags_(flags),
+      auto_closed_(false) {
   // If the file handle is opened with base::PLATFORM_FILE_ASYNC, we need to
   // make sure we will perform asynchronous File IO to it.
   if (flags & base::PLATFORM_FILE_ASYNC) {
