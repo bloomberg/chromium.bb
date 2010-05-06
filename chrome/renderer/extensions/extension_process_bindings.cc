@@ -625,7 +625,7 @@ void ExtensionProcessBindings::SetHostPermissions(
     const GURL& extension_url,
     const std::vector<URLPattern>& permissions) {
   for (size_t i = 0; i < permissions.size(); ++i) {
-    WebSecurityPolicy::whiteListAccessFromOrigin(
+    WebSecurityPolicy::addOriginAccessWhitelistEntry(
         extension_url,
         WebKit::WebString::fromUTF8(permissions[i].scheme()),
         WebKit::WebString::fromUTF8(permissions[i].host()),

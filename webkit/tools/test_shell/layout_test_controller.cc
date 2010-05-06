@@ -488,7 +488,7 @@ void LayoutTestController::Reset() {
   webHistoryItemCount_.Set(0);
 
   SimpleResourceLoaderBridge::SetAcceptAllCookies(false);
-  WebSecurityPolicy::resetOriginAccessWhiteLists();
+  WebSecurityPolicy::resetOriginAccessWhitelists();
 
   // Reset the default quota for each origin to 5MB
   SimpleDatabaseSystem::GetInstance()->SetDatabaseQuota(5 * 1024 * 1024);
