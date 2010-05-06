@@ -806,10 +806,7 @@ class NotificationType {
     EXTENSION_BACKGROUND_PAGE_READY,
 
     // Sent when a pop-up extension view is ready, so that notification may
-    // be sent to pending callbacks.  Note that this notification is sent
-    // after all onload callbacks have been invoked in the main frame.
-    // The details is the ExtensionHost* hosted within the popup, and the source
-    // is a Profile*.
+    // be sent to pending callbacks.
     EXTENSION_POPUP_VIEW_READY,
 
     // Sent when a browser action's state has changed. The source is the
