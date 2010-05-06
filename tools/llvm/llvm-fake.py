@@ -533,6 +533,9 @@ def MassageFinalLinkCommandArm(args):
     out.append('-lc')
     out.append('-L' + LIBDIR_ARM_1)
     out.append('-lgcc')
+    out.append('-lc') # libgcc uses libc
+    out.append('-lnosys') # libc uses libnosys
+
   return out
 
 
@@ -726,9 +729,6 @@ def Incarnation_sfild(argv):
   assert pos
   output = argv[pos]
   extra = []
-  # force raise() to be live (needed by libgcc's div routine)
-  if '-nostdlib' not in argv:
-    extra = [REACHABLE_FUNCTION_SYMBOLS]
   Run([LD_ARM] +  MassageFinalLinkCommandArm(extra + argv[1:]))
 
   PatchAbiVersionIntoElfHeader(output, 16)
