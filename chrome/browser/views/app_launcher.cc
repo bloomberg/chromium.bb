@@ -16,7 +16,6 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/dom_view.h"
@@ -166,8 +165,6 @@ void InfoBubbleContentsView::ViewHierarchyChanged(
   // We make the AppLauncher the TabContents delegate so we get notifications
   // from the page to open links.
   dom_view_->tab_contents()->set_delegate(app_launcher_);
-  dom_view_->tab_contents()->render_view_host()->
-      EnablePreferredSizeChangedMode();
   GURL url = GetMenuURL();
   std::string ref = url.ref();
   if (!app_launcher_->hash_params().empty()) {

@@ -97,6 +97,7 @@ class AppLauncher : public InfoBubbleDelegate,
   virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) {}
   virtual void URLStarredChanged(TabContents* source, bool starred) {}
   virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
+  virtual bool ShouldEnablePreferredSizeNotifications() { return true; }
   virtual void UpdatePreferredSize(const gfx::Size& pref_size);
 
  private:

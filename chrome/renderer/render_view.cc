@@ -3815,12 +3815,12 @@ void RenderView::OnEnableViewSourceMode() {
 }
 
 void RenderView::OnEnablePreferredSizeChangedMode() {
-  DCHECK(!send_preferred_size_changes_);
-  send_preferred_size_changes_ = true;
+  if (send_preferred_size_changes_)
+    return;
 
-  if (ViewType::ShouldAutoResize(view_type_))
-    preferred_size_change_timer_.Start(TimeDelta::FromMilliseconds(10), this,
-                                       &RenderView::CheckPreferredSize);
+  send_preferred_size_changes_ = true;
+  preferred_size_change_timer_.Start(TimeDelta::FromMilliseconds(10), this,
+                                     &RenderView::CheckPreferredSize);
 }
 
 void RenderView::OnDisableScrollbarsForSmallWindows(
