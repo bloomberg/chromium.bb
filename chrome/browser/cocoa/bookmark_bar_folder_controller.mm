@@ -537,9 +537,6 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   frame.size.height += bookmarks::kBookmarkBarHeight;
   frame.size.width = windowWidth;
   [window setFrame:frame display:YES];
-#if 1
-  [self showOrHideScrollArrows];
-#endif
 }
 
 - (void)moveButtonFromIndex:(NSInteger)fromIndex toIndex:(NSInteger)toIndex {
