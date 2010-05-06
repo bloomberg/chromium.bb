@@ -5,7 +5,6 @@
 #include "base/message_loop_proxy.h"
 #include "base/thread.h"
 #include "base/waitable_event.h"
-#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/url_fetcher.h"
 #include "chrome/browser/net/url_fetcher_protect.h"
 #include "chrome/browser/net/url_request_context_getter.h"
@@ -26,14 +25,21 @@ const wchar_t kDocRoot[] = L"chrome/test/data";
 
 class TestURLRequestContextGetter : public URLRequestContextGetter {
  public:
+  explicit TestURLRequestContextGetter(
+      base::MessageLoopProxy* io_message_loop_proxy)
+          : io_message_loop_proxy_(io_message_loop_proxy) {
+  }
   virtual URLRequestContext* GetURLRequestContext() {
     if (!context_)
       context_ = new TestURLRequestContext();
     return context_;
   }
   virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() {
-    return ChromeThread::GetMessageLoopProxyForThread(ChromeThread::IO);
+    return io_message_loop_proxy_;
   }
+
+ protected:
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
 
  private:
   ~TestURLRequestContextGetter() {}
@@ -43,9 +49,7 @@ class TestURLRequestContextGetter : public URLRequestContextGetter {
 
 class URLFetcherTest : public testing::Test, public URLFetcher::Delegate {
  public:
-  URLFetcherTest()
-      : io_thread_(ChromeThread::IO, &io_loop_),
-        fetcher_(NULL) { }
+  URLFetcherTest() : fetcher_(NULL) { }
 
   // Creates a URLFetcher, using the program's main thread to do IO.
   virtual void CreateFetcher(const GURL& url);
@@ -58,9 +62,15 @@ class URLFetcherTest : public testing::Test, public URLFetcher::Delegate {
                                   const ResponseCookies& cookies,
                                   const std::string& data);
 
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy() {
+    return io_message_loop_proxy_;
+  }
+
  protected:
   virtual void SetUp() {
     testing::Test::SetUp();
+
+    io_message_loop_proxy_ = base::MessageLoopProxy::CreateForCurrentThread();
 
     // Ensure that any plugin operations done by other tests are cleaned up.
     ChromePluginLib::UnloadAllPlugins();
@@ -71,7 +81,7 @@ class URLFetcherTest : public testing::Test, public URLFetcher::Delegate {
   // dispatches its requests to.  When we wish to simulate being used from
   // a UI thread, we dispatch a worker thread to do so.
   MessageLoopForIO io_loop_;
-  ChromeThread io_thread_;
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
 
   URLFetcher* fetcher_;
 };
@@ -169,14 +179,18 @@ class URLFetcherCancelTest : public URLFetcherTest {
 // thread once it is deleted.
 class CancelTestURLRequestContext : public TestURLRequestContext {
   virtual ~CancelTestURLRequestContext() {
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE, new MessageLoop::QuitTask());
+    // The d'tor should execute in the IO thread. Post the quit task to the
+    // current thread.
+    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
   }
 };
 
 class CancelTestURLRequestContextGetter : public URLRequestContextGetter {
  public:
-  CancelTestURLRequestContextGetter() : context_created_(false, false) {
+  explicit CancelTestURLRequestContextGetter(
+      base::MessageLoopProxy* io_message_loop_proxy)
+      : io_message_loop_proxy_(io_message_loop_proxy),
+        context_created_(false, false) {
   }
   virtual URLRequestContext* GetURLRequestContext() {
     if (!context_) {
@@ -186,7 +200,7 @@ class CancelTestURLRequestContextGetter : public URLRequestContextGetter {
     return context_;
   }
   virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() {
-    return ChromeThread::GetMessageLoopProxyForThread(ChromeThread::IO);
+    return io_message_loop_proxy_;
   }
   void WaitForContextCreation() {
     context_created_.Wait();
@@ -195,6 +209,7 @@ class CancelTestURLRequestContextGetter : public URLRequestContextGetter {
  private:
   ~CancelTestURLRequestContextGetter() {}
 
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
   base::WaitableEvent context_created_;
   scoped_refptr<URLRequestContext> context_;
 };
@@ -219,7 +234,8 @@ class FetcherWrapperTask : public Task {
 
 void URLFetcherTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcher(url, URLFetcher::GET, this);
-  fetcher_->set_request_context(new TestURLRequestContextGetter());
+  fetcher_->set_request_context(new TestURLRequestContextGetter(
+      io_message_loop_proxy()));
   fetcher_->Start();
 }
 
@@ -237,15 +253,15 @@ void URLFetcherTest::OnURLFetchComplete(const URLFetcher* source,
                     // because the destructor won't necessarily run on the
                     // same thread that CreateFetcher() did.
 
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE, new MessageLoop::QuitTask());
+  io_message_loop_proxy()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
   // If the current message loop is not the IO loop, it will be shut down when
   // the main loop returns and this thread subsequently goes out of scope.
 }
 
 void URLFetcherPostTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcher(url, URLFetcher::POST, this);
-  fetcher_->set_request_context(new TestURLRequestContextGetter());
+  fetcher_->set_request_context(new TestURLRequestContextGetter(
+      io_message_loop_proxy()));
   fetcher_->set_upload_data("application/x-www-form-urlencoded",
                             "bobsyeruncle");
   fetcher_->Start();
@@ -279,7 +295,8 @@ void URLFetcherHeadersTest::OnURLFetchComplete(
 
 void URLFetcherProtectTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcher(url, URLFetcher::GET, this);
-  fetcher_->set_request_context(new TestURLRequestContextGetter());
+  fetcher_->set_request_context(new TestURLRequestContextGetter(
+      io_message_loop_proxy()));
   start_time_ = Time::Now();
   fetcher_->Start();
 }
@@ -298,8 +315,7 @@ void URLFetcherProtectTest::OnURLFetchComplete(const URLFetcher* source,
     EXPECT_TRUE(status.is_success());
     EXPECT_FALSE(data.empty());
     delete fetcher_;
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE, new MessageLoop::QuitTask());
+    io_message_loop_proxy()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
   } else {
     // Now running Overload test.
     static int count = 0;
@@ -318,7 +334,8 @@ void URLFetcherProtectTest::OnURLFetchComplete(const URLFetcher* source,
 
 void URLFetcherProtectTestPassedThrough::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcher(url, URLFetcher::GET, this);
-  fetcher_->set_request_context(new TestURLRequestContextGetter());
+  fetcher_->set_request_context(new TestURLRequestContextGetter(
+      io_message_loop_proxy()));
   fetcher_->set_automatcally_retry_on_5xx(false);
   start_time_ = Time::Now();
   fetcher_->Start();
@@ -342,8 +359,7 @@ void URLFetcherProtectTestPassedThrough::OnURLFetchComplete(
     EXPECT_GT(fetcher_->backoff_delay().InMicroseconds(), 0);
     EXPECT_FALSE(data.empty());
     delete fetcher_;
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE, new MessageLoop::QuitTask());
+    io_message_loop_proxy()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
   } else {
     // We should not get here!
     FAIL();
@@ -380,14 +396,13 @@ void URLFetcherBadHTTPSTest::OnURLFetchComplete(
 
   // The rest is the same as URLFetcherTest::OnURLFetchComplete.
   delete fetcher_;
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE, new MessageLoop::QuitTask());
+  io_message_loop_proxy()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
 }
 
 void URLFetcherCancelTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcher(url, URLFetcher::GET, this);
   CancelTestURLRequestContextGetter* context_getter =
-      new CancelTestURLRequestContextGetter;
+      new CancelTestURLRequestContextGetter(io_message_loop_proxy());
   fetcher_->set_request_context(context_getter);
   fetcher_->Start();
   // We need to wait for the creation of the URLRequestContext, since we
@@ -405,8 +420,7 @@ void URLFetcherCancelTest::OnURLFetchComplete(const URLFetcher* source,
   // We should have cancelled the request before completion.
   ADD_FAILURE();
   delete fetcher_;
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE, new MessageLoop::QuitTask());
+  io_message_loop_proxy()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
 }
 
 void URLFetcherCancelTest::CancelRequest() {
