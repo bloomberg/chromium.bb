@@ -240,7 +240,8 @@ void WindowWin::Show() {
 void WindowWin::Activate() {
   if (IsMinimized())
     ::ShowWindow(GetNativeView(), SW_RESTORE);
-  ::SetWindowPos(GetNativeView(), HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+  ::SetWindowPos(GetNativeView(), HWND_TOP, 0, 0, 0, 0,
+                 SWP_NOSIZE | SWP_NOMOVE);
   SetForegroundWindow(GetNativeView());
 }
 
@@ -509,7 +510,8 @@ WindowWin::WindowWin(WindowDelegate* window_delegate)
   is_window_ = true;
   InitClass();
   DCHECK(window_delegate_);
-  window_delegate_->window_.reset(this);
+  DCHECK(!window_delegate_->window_);
+  window_delegate_->window_ = this;
   // Initialize these values to 0 so that subclasses can override the default
   // behavior before calling Init.
   set_window_style(0);

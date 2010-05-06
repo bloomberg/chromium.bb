@@ -142,7 +142,7 @@ bool FirstRunController::DoFirstRun(Profile* profile,
         GetSourceProfileInfoAt([dialog.get() browserImportSelectedIndex]);
     int16 items = source_profile.services_supported;
     // TODO(port): Do the actual import in a new process like Windows.
-    gc.release();
+    ignore_result(gc.release());
     StartImportingWithUI(nil, items, importer_host_.get(),
                          source_profile, profile, this, true);
   }

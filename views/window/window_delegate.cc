@@ -10,11 +10,10 @@
 
 namespace views {
 
-WindowDelegate::WindowDelegate() {
+WindowDelegate::WindowDelegate() : window_(NULL) {
 }
 
 WindowDelegate::~WindowDelegate() {
-  ReleaseWindow();
 }
 
 SkBitmap WindowDelegate::GetWindowAppIcon() {
@@ -57,10 +56,6 @@ bool WindowDelegate::GetSavedMaximizedState(bool* maximized) const {
 
 ClientView* WindowDelegate::CreateClientView(Window* window) {
   return new ClientView(window, GetContentsView());
-}
-
-void WindowDelegate::ReleaseWindow() {
-  window_.release();
 }
 
 }  // namespace views

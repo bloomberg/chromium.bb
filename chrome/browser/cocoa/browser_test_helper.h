@@ -40,7 +40,7 @@ class BrowserTestHelper {
   virtual ~BrowserTestHelper() {
     // Delete the testing profile on the UI thread. But first release the
     // browser, since it may trigger accesses to the profile upon destruction.
-    browser_.reset(NULL);
+    browser_.reset();
     message_loop_.DeleteSoon(FROM_HERE, profile_.release());
     message_loop_.RunAllPending();
   }
@@ -55,13 +55,15 @@ class BrowserTestHelper {
     return browser_->window();
   }
 
-  // Closes the window for this browser.
+  // Closes the window for this browser. This must only be called after
+  // CreateBrowserWindow().
   void CloseBrowserWindow() {
     // Check to make sure a window was actually created.
     DCHECK(browser_->window());
     browser_->CloseAllTabs();
     browser_->CloseWindow();
-    browser_.release();
+    // |browser_| will be deleted by its BrowserWindowController.
+    ignore_result(browser_.release());
   }
 
  private:

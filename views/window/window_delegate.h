@@ -122,24 +122,13 @@ class WindowDelegate {
   // of the window.
   virtual ClientView* CreateClientView(Window* window);
 
-  // An accessor to the Window this delegate is bound to.
-  Window* window() const { return window_.get(); }
-
- protected:
-  // Releases the Window* we maintain. This should be done by a delegate in its
-  // WindowClosing handler if it intends to be re-cycled to be used on a
-  // different Window.
-  void ReleaseWindow();
+  Window* window() const { return window_; }
 
  private:
   friend class WindowGtk;
   friend class WindowWin;
-  // This is a little unusual. We use a scoped_ptr here because it's
-  // initialized to NULL automatically. We do this because we want to allow
-  // people using this helper to not have to call a ctor on this object.
-  // Instead we just release the owning ref this pointer has when we are
-  // destroyed.
-  scoped_ptr<Window> window_;
+  // The Window this delegate is bound to. Weak reference.
+  Window* window_;
 };
 
 }  // namespace views

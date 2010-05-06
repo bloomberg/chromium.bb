@@ -377,7 +377,8 @@ WindowGtk::WindowGtk(WindowDelegate* window_delegate)
       window_state_(GDK_WINDOW_STATE_WITHDRAWN),
       window_closed_(false) {
   is_window_ = true;
-  window_delegate_->window_.reset(this);
+  DCHECK(!window_delegate_->window_);
+  window_delegate_->window_ = this;
 }
 
 void WindowGtk::Init(GtkWindow* parent, const gfx::Rect& bounds) {

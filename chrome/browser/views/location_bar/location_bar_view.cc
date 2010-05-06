@@ -571,8 +571,8 @@ void LocationBarView::OnAutocompleteAccept(
       return;
     }
 
-    scoped_ptr<AlternateNavURLFetcher> fetcher(
-        new AlternateNavURLFetcher(alternate_nav_url));
+    AlternateNavURLFetcher* fetcher =
+        new AlternateNavURLFetcher(alternate_nav_url);
     // The AlternateNavURLFetcher will listen for the pending navigation
     // notification that will be issued as a result of the "open URL." It
     // will automatically install itself into that navigation controller.
@@ -580,10 +580,10 @@ void LocationBarView::OnAutocompleteAccept(
     if (fetcher->state() == AlternateNavURLFetcher::NOT_STARTED) {
       // I'm not sure this should be reachable, but I'm not also sure enough
       // that it shouldn't to stick in a NOTREACHED().  In any case, this is
-      // harmless; we can simply let the fetcher get deleted here and it will
-      // clean itself up properly.
+      // harmless.
+      delete fetcher;
     } else {
-      fetcher.release();  // The navigation controller will delete the fetcher.
+      // The navigation controller will delete the fetcher.
     }
   }
 }

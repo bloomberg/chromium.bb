@@ -215,7 +215,6 @@ class TaskManagerView : public views::View,
   virtual std::wstring GetWindowName() const;
   virtual int GetDialogButtons() const;
   virtual void WindowClosing();
-  virtual void DeleteDelegate();
   virtual views::View* GetContentsView();
 
   // views::TableViewObserver implementation.
@@ -558,10 +557,6 @@ void TaskManagerView::WindowClosing() {
   // Now that the window is closed, we can allow a new one to be opened.
   instance_ = NULL;
   task_manager_->OnWindowClosed();
-}
-
-void TaskManagerView::DeleteDelegate() {
-  ReleaseWindow();
 }
 
 views::View* TaskManagerView::GetContentsView() {

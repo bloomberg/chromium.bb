@@ -325,7 +325,7 @@
 
   // Under certain testing configurations we may not actually own the browser.
   if (ownsBrowser_ == NO)
-    browser_.release();
+    ignore_result(browser_.release());
 
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 
