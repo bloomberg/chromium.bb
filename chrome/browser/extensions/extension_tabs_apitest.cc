@@ -9,14 +9,8 @@
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 
-// TODO(skerner): This test times out on chrome os: http://crbug.com/39843
-#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
-#define MAYBE_Tabs DISABLED_Tabs
-#else
-#define MAYBE_Tabs Tabs
-#endif
-
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Tabs) {
+// Disabled due to timeouts, see http://crbug.com/39843, http://crbug.com/43440.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Tabs) {
   StartHTTPServer();
 
   // The test creates a tab and checks that the URL of the new tab
