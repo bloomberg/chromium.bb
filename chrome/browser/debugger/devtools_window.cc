@@ -60,9 +60,8 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
       open_console_on_load_(false) {
   // Create TabContents with devtools.
   tab_contents_ = new TabContents(profile, NULL, MSG_ROUTING_NONE, NULL);
-  GURL url(std::string(chrome::kChromeUIDevToolsURL) + "devtools.html");
   tab_contents_->render_view_host()->AllowBindings(BindingsPolicy::DOM_UI);
-  tab_contents_->controller().LoadURL(url, GURL(), PageTransition::START_PAGE);
+  tab_contents_->controller().LoadURL(GetDevToolsUrl(), GURL(), PageTransition::START_PAGE);
 
   // Wipe out page icon so that the default application icon is used.
   NavigationEntry* entry = tab_contents_->controller().GetActiveEntry();
@@ -241,9 +240,7 @@ void DevToolsWindow::Observe(NotificationType type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
   if (type == NotificationType::LOAD_STOP) {
-    SetAttachedWindow();
     is_loaded_ = true;
-    UpdateTheme();
     if (open_console_on_load_) {
       DoOpenConsole();
       open_console_on_load_ = false;
@@ -281,6 +278,24 @@ std::string SkColorToRGBAString(SkColor color) {
   return StringPrintf("rgba(%d,%d,%d,%s)", SkColorGetR(color),
       SkColorGetG(color), SkColorGetB(color),
       DoubleToString(SkColorGetA(color) / 255.0).c_str());
+}
+
+GURL DevToolsWindow::GetDevToolsUrl() {
+  BrowserThemeProvider* tp = profile_->GetThemeProvider();
+  CHECK(tp);
+
+  SkColor color_toolbar =
+      tp->GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
+  SkColor color_tab_text =
+      tp->GetColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
+
+  std::string url_string = StringPrintf(
+      "%sdevtools.html?docked=%s&toolbar_color=%s&text_color=%s",
+      chrome::kChromeUIDevToolsURL,
+      docked_ ? "true" : "false",
+      SkColorToRGBAString(color_toolbar).c_str(),
+      SkColorToRGBAString(color_tab_text).c_str());
+  return GURL(url_string);
 }
 
 void DevToolsWindow::UpdateTheme() {

@@ -61,6 +61,7 @@ class DevToolsWindow
 
   void ScheduleOpenConsole();
   void DoOpenConsole();
+  GURL GetDevToolsUrl();
   void UpdateTheme();
 
   // Overridden from TabContentsDelegate.
