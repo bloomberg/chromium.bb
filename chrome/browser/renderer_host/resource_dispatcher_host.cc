@@ -168,6 +168,17 @@ void PopulateResourceResponse(URLRequest* request,
       &response->response_head.appcache_manifest_url);
 }
 
+// Returns a list of all the possible error codes from the network module.
+// Note that the error codes are all positive (since histograms expect positive
+// sample values).
+std::vector<int> GetAllNetErrorCodes() {
+  std::vector<int> all_error_codes;
+#define NET_ERROR(label, value) all_error_codes.push_back(-(value));
+#include "net/base/net_error_list.h"
+#undef NET_ERROR
+  return all_error_codes;
+}
+
 }  // namespace
 
 ResourceDispatcherHost::ResourceDispatcherHost()
@@ -1342,6 +1353,15 @@ bool ResourceDispatcherHost::CompleteRead(URLRequest* request,
 void ResourceDispatcherHost::OnResponseCompleted(URLRequest* request) {
   RESOURCE_LOG("OnResponseCompleted: " << request->url().spec());
   ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
+
+  // If the load for a main frame has failed, track it in a histogram,
+  // since it will probably cause the user to see an error page.
+  if (!request->status().is_success() &&
+      info->resource_type() == ResourceType::MAIN_FRAME) {
+    UMA_HISTOGRAM_CUSTOM_ENUMERATION("Net.ErrorCodesForMainFrame",
+                                     -request->status().os_error(),
+                                     GetAllNetErrorCodes());
+  }
 
   std::string security_info;
   const net::SSLInfo& ssl_info = request->ssl_info();
