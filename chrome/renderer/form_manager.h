@@ -96,6 +96,9 @@ class FormManager {
   // Resets the stored set of forms.
   void Reset();
 
+  // Resets the forms for the specified |frame|.
+  void ResetFrame(const WebKit::WebFrame* frame);
+
  private:
   // Stores the WebFormElement and the form control elements for a form.
   struct FormElement {
@@ -115,9 +118,6 @@ class FormManager {
                                     const FormElement* form_element,
                                     RequirementsMask requirements,
                                     webkit_glue::FormData* form);
-
-  // Resets the forms for the specified |frame|.
-  void ResetFrame(const WebKit::WebFrame* frame);
 
   // Infers corresponding label for |element| from surrounding context in the
   // DOM.  Contents of preceeding <p> tag or preceeding text element found in

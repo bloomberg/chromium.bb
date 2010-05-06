@@ -2205,6 +2205,8 @@ void RenderView::willClose(WebFrame* frame) {
   WebDataSource* ds = frame->dataSource();
   NavigationState* navigation_state = NavigationState::FromDataSource(ds);
   navigation_state->user_script_idle_scheduler()->Cancel();
+
+  form_manager_.ResetFrame(frame);
 }
 
 bool RenderView::allowPlugins(WebFrame* frame, bool enabled_per_settings) {

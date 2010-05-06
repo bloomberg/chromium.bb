@@ -470,6 +470,14 @@ void FormManager::Reset() {
   form_elements_map_.clear();
 }
 
+void FormManager::ResetFrame(const WebFrame* frame) {
+  WebFrameFormElementMap::iterator iter = form_elements_map_.find(frame);
+  if (iter != form_elements_map_.end()) {
+    STLDeleteElements(&iter->second);
+    form_elements_map_.erase(iter);
+  }
+}
+
 // static
 bool FormManager::FormElementToFormData(const WebFrame* frame,
                                         const FormElement* form_element,
@@ -513,14 +521,6 @@ bool FormManager::FormElementToFormData(const WebFrame* frame,
   }
 
   return true;
-}
-
-void FormManager::ResetFrame(const WebFrame* frame) {
-  WebFrameFormElementMap::iterator iter = form_elements_map_.find(frame);
-  if (iter != form_elements_map_.end()) {
-    STLDeleteElements(&iter->second);
-    form_elements_map_.erase(iter);
-  }
 }
 
 // static
