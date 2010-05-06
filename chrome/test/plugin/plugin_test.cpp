@@ -72,7 +72,7 @@ class PluginTest : public UITest {
 
     UITest::SetUp();
   }
-#endif
+#endif  // defined(OS_WIN)
 
   void TestPlugin(const std::string& test_case,
                   int timeout,
@@ -106,11 +106,39 @@ class PluginTest : public UITest {
     GURL url = GetTestUrl("done", mock_http);
     scoped_refptr<TabProxy> tab(GetActiveTab());
 
-    ASSERT_TRUE(WaitUntilCookieValue(tab, url, kTestCompleteCookie,
-                                     wait_time, kTestCompleteSuccess));
+    const std::string result =
+        WaitUntilCookieNonEmpty(tab, url, kTestCompleteCookie, wait_time);
+    ASSERT_EQ(kTestCompleteSuccess, result);
   }
 };
 
+TEST_F(PluginTest, Flash) {
+  // Note: This does not work with the npwrapper on 64-bit Linux. Install the
+  // native 64-bit Flash to run the test.
+  // TODO(thestig) Update this list if we decide to only test against internal
+  // Flash plugin in the future?
+  std::string kFlashQuery =
+#if defined(OS_WIN)
+      "npswf32.dll"
+#elif defined(OS_MACOSX)
+      "Flash Player.plugin"
+#elif defined(OS_POSIX)
+      "libflashplayer.so"
+#endif
+      ;
+  TestPlugin("flash.html?" + kFlashQuery, action_max_timeout_ms(), false);
+}
+
+#if defined(OS_WIN)
+// Windows only test
+TEST_F(PluginTest, FlashSecurity) {
+  TestPlugin("flash.html", action_max_timeout_ms(), false);
+}
+#endif  // defined(OS_WIN)
+
+#if defined(OS_WIN)
+// TODO(port) Port the following tests to platforms that have the required
+// plugins.
 TEST_F(PluginTest, Quicktime) {
   TestPlugin("quicktime.html", action_max_timeout_ms(), false);
 }
@@ -128,16 +156,8 @@ TEST_F(PluginTest, Real) {
   TestPlugin("real.html", action_max_timeout_ms(), false);
 }
 
-TEST_F(PluginTest, Flash) {
-  TestPlugin("flash.html", action_max_timeout_ms(), false);
-}
-
 TEST_F(PluginTest, FlashOctetStream) {
   TestPlugin("flash-octet-stream.html", action_max_timeout_ms(), false);
-}
-
-TEST_F(PluginTest, FlashSecurity) {
-  TestPlugin("flash.html", action_max_timeout_ms(), false);
 }
 
 // http://crbug.com/16114
@@ -155,3 +175,4 @@ TEST_F(PluginTest, DISABLED_Java) {
 TEST_F(PluginTest, FLAKY_Silverlight) {
   TestPlugin("silverlight.html", action_max_timeout_ms(), false);
 }
+#endif  // defined(OS_WIN)
