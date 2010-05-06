@@ -510,7 +510,7 @@ AutocompletePopupContentsView::AutocompletePopupContentsView(
       ALLOW_THIS_IN_INITIALIZER_LIST(size_animation_(this)) {
   // The following little dance is required because set_border() requires a
   // pointer to a non-const object.
-  BubbleBorder* bubble_border = new BubbleBorder(BubbleBorder::NONE);
+  BubbleBorder* bubble_border = new BubbleBorder;
   bubble_border_ = bubble_border;
   set_border(bubble_border);
 }

@@ -11,31 +11,25 @@
 
 class SkBitmap;
 
-// Renders a border, with optional arrow, and a custom dropshadow.
-// This can be used to produce floating "bubble" objects with rounded corners.
+// Renders a border, with optional arrow (off by default), and a custom
+// dropshadow.  This can be used to produce floating "bubble" objects.
+//
+// If the arrow is on, the bubble has four round corner.  If not, it has round
+// corners on the bottom and square corners on the top, and lacks a top border.
 class BubbleBorder : public views::Border {
  public:
   // Possible locations for the (optional) arrow.
-  // 0 bit specifies left or right.
-  // 1 bit specifies top or bottom.
-  // 2 bit specifies horizontal or vertical.
   enum ArrowLocation {
-    TOP_LEFT     = 0,
-    TOP_RIGHT    = 1,
-    BOTTOM_LEFT  = 2,
-    BOTTOM_RIGHT = 3,
-    LEFT_TOP     = 4,
-    RIGHT_TOP    = 5,
-    LEFT_BOTTOM  = 6,
-    RIGHT_BOTTOM = 7,
-    NONE  = 8,  // No arrow and top border. Aligned under the supplied rect.
-    FLOAT = 9   // No arrow but has top edge. Centered over the supplied rect.
+    NONE,
+    TOP_LEFT,
+    TOP_RIGHT,
+    BOTTOM_LEFT,
+    BOTTOM_RIGHT
   };
 
-  explicit BubbleBorder(ArrowLocation arrow_location)
-      : override_arrow_offset_(0),
-        arrow_location_(arrow_location),
-        background_color_(SK_ColorWHITE) {
+  BubbleBorder() : override_arrow_x_offset_(0),
+                   arrow_location_(NONE),
+                   background_color_(SK_ColorWHITE) {
     InitClass();
   }
 
@@ -53,28 +47,10 @@ class BubbleBorder : public views::Border {
     arrow_location_ = arrow_location;
   }
 
-  static ArrowLocation rtl_mirror(ArrowLocation loc) {
-    return loc >= NONE ? loc : static_cast<ArrowLocation>(loc ^ 1);
-  }
-
-  static ArrowLocation horizontal_mirror(ArrowLocation loc) {
-    return loc >= NONE ? loc : static_cast<ArrowLocation>(loc ^ 2);
-  }
-
-  static bool has_arrow(ArrowLocation loc) {
-    return loc >= NONE ? false : true;
-  }
-
-  static bool is_arrow_on_left(ArrowLocation loc) {
-    return loc >= NONE ? false : !(loc & 1);
-  }
-
-  static bool is_arrow_on_top(ArrowLocation loc) {
-    return loc >= NONE ? false : !(loc & 2);
-  }
-
-  static bool is_arrow_on_horizontal(ArrowLocation loc) {
-    return loc >= NONE ? false : !(loc & 4);
+  // Sets a fixed x offset for the arrow. The arrow will still point to the
+  // same location but the bubble will shift horizontally to make that happen.
+  void set_arrow_offset(int offset) {
+    override_arrow_x_offset_ = offset;
   }
 
   // Sets the background color for the arrow body.  This is irrelevant if you do
@@ -88,14 +64,11 @@ class BubbleBorder : public views::Border {
   // given the rect to point to and the size of the contained contents.  This
   // depends on the arrow location, so if you change that, you should call this
   // again to find out the new coordinates.
+  //
+  // For borders without an arrow, gives the bounds with the content centered
+  // underneath the supplied rect.
   gfx::Rect GetBounds(const gfx::Rect& position_relative_to,
                       const gfx::Size& contents_size) const;
-
-  // Sets a fixed offset for the arrow from the beginning of corresponding edge.
-  // The arrow will still point to the same location but the bubble will shift
-  // location to make that happen. Returns actuall arrow offset, in case of
-  // overflow it differ from desired.
-  int SetArrowOffset(int offset, const gfx::Size& contents_size);
 
   // Overridden from views::Border:
   virtual void GetInsets(gfx::Insets* insets) const;
@@ -106,25 +79,19 @@ class BubbleBorder : public views::Border {
 
   virtual ~BubbleBorder() { }
 
+  // Returns true if there is an arrow and it is positioned on the bottom edge.
+  bool arrow_is_bottom() const {
+    return (arrow_location_ == BOTTOM_LEFT) ||
+           (arrow_location_ == BOTTOM_RIGHT);
+  }
+
+  // Returns true if there is an arrow and it is positioned on the left side.
+  bool arrow_is_left() const {
+    return (arrow_location_ == TOP_LEFT) || (arrow_location_ == BOTTOM_LEFT);
+  }
+
   // Overridden from views::Border:
   virtual void Paint(const views::View& view, gfx::Canvas* canvas) const;
-
-  void DrawEdgeWithArrow(gfx::Canvas* canvas,
-                         bool is_horizontal,
-                         SkBitmap* edge,
-                         SkBitmap* arrow,
-                         int start_x,
-                         int start_y,
-                         int before_arrow,
-                         int after_arrow,
-                         int offset) const;
-
-  void DrawArrowInterior(gfx::Canvas* canvas,
-                         bool is_horizontal,
-                         int tip_x,
-                         int tip_y,
-                         int shift_x,
-                         int shift_y) const;
 
   // Border graphics.
   static SkBitmap* left_;
@@ -135,16 +102,13 @@ class BubbleBorder : public views::Border {
   static SkBitmap* bottom_right_;
   static SkBitmap* bottom_;
   static SkBitmap* bottom_left_;
-  static SkBitmap* left_arrow_;
   static SkBitmap* top_arrow_;
-  static SkBitmap* right_arrow_;
   static SkBitmap* bottom_arrow_;
 
-  // Minimal offset of the arrow from the closet edge of bounding rect.
-  static int arrow_offset_;
+  static int arrow_x_offset_;
 
-  // If specified, overrides the pre-calculated |arrow_offset_| of the arrow.
-  int override_arrow_offset_;
+  // If specified, overrides the pre-calculated |arrow_x_offset_| of the arrow.
+  int override_arrow_x_offset_;
 
   ArrowLocation arrow_location_;
   SkColor background_color_;

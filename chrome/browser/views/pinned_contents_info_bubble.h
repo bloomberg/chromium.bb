@@ -18,8 +18,8 @@ class PinnedContentsBorderContents : public BorderContents {
   // BorderContents overrides:
   virtual void SizeAndGetBounds(
       const gfx::Rect& position_relative_to,  // In screen coordinates
-      BubbleBorder::ArrowLocation arrow_location,
       const gfx::Size& contents_size,
+      bool prefer_arrow_on_right,
       gfx::Rect* contents_bounds,             // Returned in window coordinates
       gfx::Rect* window_bounds);              // Returned in screen coordinates
 
@@ -60,13 +60,11 @@ class PinnedContentsInfoBubble : public InfoBubble {
   // order to anchor its contents. Once the InfoBubble has been anchored its
   // arrow may be pointing to a slightly different |y| location than specified
   // in |position_relative_to|.
-  static PinnedContentsInfoBubble* Show(
-      views::Widget* parent,
-      const gfx::Rect& position_relative_to,
-      BubbleBorder::ArrowLocation arrow_location,
-      const gfx::Point& bubble_anchor_,
-      views::View* contents,
-      InfoBubbleDelegate* delegate);
+  static PinnedContentsInfoBubble* Show(views::Window* parent,
+                                        const gfx::Rect& position_relative_to,
+                                        const gfx::Point& bubble_anchor_,
+                                        views::View* contents,
+                                        InfoBubbleDelegate* delegate);
 
  private:
   explicit PinnedContentsInfoBubble(const gfx::Point& bubble_anchor)

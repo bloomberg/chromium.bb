@@ -471,9 +471,8 @@ void FirstRunMinimalBubbleView::FocusWillChange(View* focused_before,
 
 // static
 FirstRunBubble* FirstRunBubble::Show(Profile* profile,
-                                     views::Widget* parent,
+                                     views::Window* parent,
                                      const gfx::Rect& position_relative_to,
-                                     BubbleBorder::ArrowLocation arrow_location,
                                      FirstRun::BubbleType bubble_type) {
   FirstRunBubble* window = new FirstRunBubble();
   FirstRunBubbleViewBase* view = NULL;
@@ -492,7 +491,7 @@ FirstRunBubble* FirstRunBubble::Show(Profile* profile,
       NOTREACHED();
   }
   window->set_view(view);
-  window->Init(parent, position_relative_to, arrow_location, view, window);
+  window->Init(parent, position_relative_to, view, window);
   window->GetFocusManager()->AddFocusChangeListener(view);
   view->BubbleShown();
   return window;

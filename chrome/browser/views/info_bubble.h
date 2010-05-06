@@ -8,7 +8,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "views/accelerator.h"
 #include "views/view.h"
-#include "chrome/browser/views/bubble_border.h"
 #if defined(OS_WIN)
 #include "views/widget/widget_win.h"
 #elif defined(OS_LINUX)
@@ -27,10 +26,11 @@
 #if defined(OS_WIN)
 class BorderWidget;
 #endif
+class BubbleBorder;
 class InfoBubble;
 
 namespace views {
-class Widget;
+class Window;
 }
 
 namespace gfx {
@@ -48,13 +48,16 @@ class BorderContents : public views::View {
 
   // Given the size of the contents and the rect to point at, returns the bounds
   // of both the border and the contents inside the bubble.
-  // |arrow_location| specifies the preferred location for the arrow
+  // |prefer_arrow_on_right| specifies the preferred location for the arrow
   // anchor. If the bubble does not fit on the monitor, the arrow location may
-  // changed so it can. In case of RTL arrow is mirrored.
+  // changed so it can.
+  //
+  // TODO(pkasting): Maybe this should use mirroring transformations instead,
+  // which would hopefully simplify this code.
   virtual void SizeAndGetBounds(
       const gfx::Rect& position_relative_to,  // In screen coordinates
-      BubbleBorder::ArrowLocation arrow_location,
       const gfx::Size& contents_size,
+      bool prefer_arrow_on_right,
       gfx::Rect* contents_bounds,             // Returned in window coordinates
       gfx::Rect* window_bounds);              // Returned in screen coordinates
 
@@ -93,12 +96,11 @@ class BorderWidget : public views::WidgetWin {
   // Given the size of the contained contents (without margins), and the rect
   // (in screen coordinates) to point to, sets the border window positions and
   // sizes the border window and returns the bounds (in screen coordinates) the
-  // contents should use. |arrow_location| is prefered arrow location,
-  // the function tries to preserve the location and direction, in case of RTL
-  // arrow location is mirrored.
+  // contents should use. |is_rtl| is supplied to
+  // BorderContents::InitAndGetBounds(), see its declaration for details.
   virtual gfx::Rect SizeAndGetBounds(const gfx::Rect& position_relative_to,
-                                     BubbleBorder::ArrowLocation arrow_location,
-                                     const gfx::Size& contents_size);
+                                     const gfx::Size& contents_size,
+                                     bool is_rtl);
 
  protected:
   // Instanciates and returns the BorderContents this BorderWidget should use.
@@ -127,6 +129,12 @@ class InfoBubbleDelegate {
 
   // Whether the InfoBubble should be closed when the Esc key is pressed.
   virtual bool CloseOnEscape() = 0;
+
+  // Whether the default placement of the anchor is on the origin side of the
+  // text direction. For example: if true (the default) in LTR text direction,
+  // the ArrowLocation will be TOP_LEFT, if false it will be TOP_RIGHT.
+  // RTL is the reverse.
+  virtual bool PreferOriginSideAnchor() { return true; }
 };
 
 // TODO(sky): this code is ifdef-tastic. It might be cleaner to refactor the
@@ -145,14 +153,15 @@ class InfoBubble
   // screen coordinates at which the InfoBubble will point.  Show() takes
   // ownership of |contents| and deletes the created InfoBubble when another
   // window is activated.  You can explicitly close the bubble by invoking
-  // Close(). |arrow_location| specifies prefered bubble alignment.
-  // You may provide an optional |delegate| to:
+  // Close().  You may provide an optional |delegate| to:
   //     - Be notified when the InfoBubble is closed.
   //     - Prevent the InfoBubble from being closed when the Escape key is
   //       pressed (the default behavior).
-  static InfoBubble* Show(views::Widget* parent,
+  //     - Have the InfoBubble prefer to anchor its arrow to the non-origin
+  //       side of text direction. (see comment above
+  //       InfoBubbleDelegate::PreferOriginSideAnchor); .
+  static InfoBubble* Show(views::Window* parent,
                           const gfx::Rect& position_relative_to,
-                          BubbleBorder::ArrowLocation arrow_location,
                           views::View* contents,
                           InfoBubbleDelegate* delegate);
 
@@ -170,9 +179,8 @@ class InfoBubble
   virtual ~InfoBubble() {}
 
   // Creates the InfoBubble.
-  virtual void Init(views::Widget* parent,
+  virtual void Init(views::Window* parent,
                     const gfx::Rect& position_relative_to,
-                    BubbleBorder::ArrowLocation arrow_location,
                     views::View* contents,
                     InfoBubbleDelegate* delegate);
 
@@ -209,11 +217,13 @@ class InfoBubble
   // The delegate, if any.
   InfoBubbleDelegate* delegate_;
 
+  // The window that this InfoBubble is parented to.
+  views::Window* parent_;
+
   // Have we been closed?
   bool closed_;
 
   gfx::Rect position_relative_to_;
-  BubbleBorder::ArrowLocation arrow_location_;
 
   views::View* contents_;
 

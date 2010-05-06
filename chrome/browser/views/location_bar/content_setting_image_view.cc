@@ -72,8 +72,7 @@ void ContentSettingImageView::OnMouseReleased(const views::MouseEvent& event,
           profile_, tab_contents);
   DCHECK(!info_bubble_);
   info_bubble_ =
-      InfoBubble::Show(GetWidget(), screen_bounds, BubbleBorder::TOP_LEFT,
-                       bubble_contents, this);
+      InfoBubble::Show(GetWindow(), screen_bounds, bubble_contents, this);
   bubble_contents->set_info_bubble(info_bubble_);
 }
 

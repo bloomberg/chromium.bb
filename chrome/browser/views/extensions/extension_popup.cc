@@ -114,7 +114,9 @@ ExtensionPopup::ExtensionPopup(ExtensionHost* host,
         chromeos::WM_IPC_WINDOW_CHROME_INFO_BUBBLE,
         NULL);
 #endif
-    border_ = new BubbleBorder(arrow_location);
+    border_ = new BubbleBorder;
+    border_->set_arrow_location(arrow_location);
+
     border_view_ = new views::View;
     border_view_->set_background(new BubbleBackground(border_));
 
