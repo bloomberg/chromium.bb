@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -116,6 +116,14 @@ NSString* GetNSStringF(int message_id,
                        const string16& d) {
   return base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(message_id,
                                                              a, b, c, d));
+}
+
+NSString* GetNSStringF(int message_id,
+                       const string16& a,
+                       const string16& b,
+                       std::vector<size_t>* offsets) {
+  return base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(message_id,
+                                                             a, b, offsets));
 }
 
 NSString* GetNSStringWithFixup(int message_id) {

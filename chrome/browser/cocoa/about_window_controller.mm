@@ -760,15 +760,14 @@ static BOOL recentShownUserActionFailedStatus = NO;
 
   // The url within terms should point here:
   NSString* kTOS = [NSString stringWithUTF8String:chrome::kAboutTermsURL];
-  // Following Window. There is one marker in the string for where the terms
+  // Following Windows. There is one marker in the string for where the terms
   // link goes, but the text of the link comes from a second string resources.
   std::vector<size_t> url_offsets;
-  std::wstring w_about_terms = l10n_util::GetStringF(IDS_ABOUT_TERMS_OF_SERVICE,
-                                                     std::wstring(),
-                                                     std::wstring(),
-                                                     &url_offsets);
+  NSString* about_terms = l10n_util::GetNSStringF(IDS_ABOUT_TERMS_OF_SERVICE,
+                                                  string16(),
+                                                  string16(),
+                                                  &url_offsets);
   DCHECK_EQ(url_offsets.size(), 1U);
-  NSString* about_terms = base::SysWideToNSString(w_about_terms);
   NSString* terms_link_text =
       l10n_util::GetNSStringWithFixup(IDS_TERMS_OF_SERVICE);
 
