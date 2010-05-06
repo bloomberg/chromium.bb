@@ -27,8 +27,7 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerViewsDelegate,
       Profile* profile,
       PageNavigator* page_navigator,
       const BookmarkNode* parent,
-      const std::vector<const BookmarkNode*>& selection,
-      BookmarkContextMenuControllerViews::ConfigurationType configuration);
+      const std::vector<const BookmarkNode*>& selection);
   virtual ~BookmarkContextMenu();
 
   // Shows the context menu at the specified point.

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,13 +19,10 @@ BookmarkContextMenu::BookmarkContextMenu(
     Profile* profile,
     PageNavigator* page_navigator,
     const BookmarkNode* parent,
-    const std::vector<const BookmarkNode*>& selection,
-    BookmarkContextMenuControllerViews::ConfigurationType configuration)
+    const std::vector<const BookmarkNode*>& selection)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
-          controller_(new BookmarkContextMenuControllerViews(parent_window, this,
-                                                        profile, page_navigator,
-                                                        parent, selection,
-                                                        configuration))),
+          controller_(new BookmarkContextMenuControllerViews(parent_window,
+              this, profile, page_navigator, parent, selection))),
       parent_window_(parent_window),
       ALLOW_THIS_IN_INITIALIZER_LIST(menu_(new views::MenuItemView(this))),
       observer_(NULL) {

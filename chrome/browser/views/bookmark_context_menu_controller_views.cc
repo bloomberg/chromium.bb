@@ -42,15 +42,13 @@ BookmarkContextMenuControllerViews::BookmarkContextMenuControllerViews(
     Profile* profile,
     PageNavigator* navigator,
     const BookmarkNode* parent,
-    const std::vector<const BookmarkNode*>& selection,
-    ConfigurationType configuration)
+    const std::vector<const BookmarkNode*>& selection)
     : parent_window_(parent_window),
       delegate_(delegate),
       profile_(profile),
       navigator_(navigator),
       parent_(parent),
       selection_(selection),
-      configuration_(configuration),
       model_(profile->GetBookmarkModel()) {
   DCHECK(profile_);
   DCHECK(model_->IsLoaded());
@@ -63,22 +61,20 @@ BookmarkContextMenuControllerViews::~BookmarkContextMenuControllerViews() {
 }
 
 void BookmarkContextMenuControllerViews::BuildMenu() {
-  if (configuration_ != BOOKMARK_MANAGER_ORGANIZE_MENU) {
-    if (selection_.size() == 1 && selection_[0]->is_url()) {
-      delegate_->AddItemWithStringId(IDS_BOOMARK_BAR_OPEN_ALL,
-                                     IDS_BOOMARK_BAR_OPEN_IN_NEW_TAB);
-      delegate_->AddItemWithStringId(IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW,
-                                     IDS_BOOMARK_BAR_OPEN_IN_NEW_WINDOW);
-      delegate_->AddItemWithStringId(IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO,
-                                     IDS_BOOMARK_BAR_OPEN_INCOGNITO);
-    } else {
-      delegate_->AddItem(IDS_BOOMARK_BAR_OPEN_ALL);
-      delegate_->AddItem(IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW);
-      delegate_->AddItem(IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO);
-    }
-    delegate_->AddSeparator();
+  if (selection_.size() == 1 && selection_[0]->is_url()) {
+    delegate_->AddItemWithStringId(IDS_BOOMARK_BAR_OPEN_ALL,
+                                   IDS_BOOMARK_BAR_OPEN_IN_NEW_TAB);
+    delegate_->AddItemWithStringId(IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW,
+                                   IDS_BOOMARK_BAR_OPEN_IN_NEW_WINDOW);
+    delegate_->AddItemWithStringId(IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO,
+                                   IDS_BOOMARK_BAR_OPEN_INCOGNITO);
+  } else {
+    delegate_->AddItem(IDS_BOOMARK_BAR_OPEN_ALL);
+    delegate_->AddItem(IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW);
+    delegate_->AddItem(IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO);
   }
 
+  delegate_->AddSeparator();
   if (selection_.size() == 1 && selection_[0]->is_folder()) {
     delegate_->AddItem(IDS_BOOKMARK_BAR_RENAME_FOLDER);
   } else {
@@ -93,21 +89,13 @@ void BookmarkContextMenuControllerViews::BuildMenu() {
   delegate_->AddSeparator();
   delegate_->AddItem(IDS_BOOKMARK_BAR_REMOVE);
 
-  if (configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU) {
-    delegate_->AddSeparator();
-    delegate_->AddItem(IDS_BOOKMARK_MANAGER_SORT);
-  }
-
   delegate_->AddSeparator();
-
   delegate_->AddItem(IDS_BOOMARK_BAR_ADD_NEW_BOOKMARK);
   delegate_->AddItem(IDS_BOOMARK_BAR_NEW_FOLDER);
 
-  if (configuration_ == BOOKMARK_BAR) {
-    delegate_->AddSeparator();
-    delegate_->AddItem(IDS_BOOKMARK_MANAGER);
-    delegate_->AddCheckboxItem(IDS_BOOMARK_BAR_ALWAYS_SHOW);
-  }
+  delegate_->AddSeparator();
+  delegate_->AddItem(IDS_BOOKMARK_MANAGER);
+  delegate_->AddCheckboxItem(IDS_BOOMARK_BAR_ALWAYS_SHOW);
 }
 
 void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
@@ -150,14 +138,9 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
       }
 
       if (selection_[0]->is_url()) {
-        BookmarkEditor::Configuration editor_config;
-        if (configuration_ == BOOKMARK_BAR)
-          editor_config = BookmarkEditor::SHOW_TREE;
-        else
-          editor_config = BookmarkEditor::NO_TREE;
         BookmarkEditor::Show(parent_window_, profile_, parent_,
                              BookmarkEditor::EditDetails(selection_[0]),
-                             editor_config);
+                             BookmarkEditor::SHOW_TREE);
       } else {
         BookmarkFolderEditorController::Show(profile_, parent_window_,
             selection_[0], -1, BookmarkFolderEditorController::NONE);
@@ -182,14 +165,11 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
       UserMetrics::RecordAction(
           UserMetricsAction("BookmarkBar_ContextMenu_Add"), profile_);
 
-      BookmarkEditor::Configuration editor_config =
-          (configuration_ == BOOKMARK_BAR) ? BookmarkEditor::SHOW_TREE :
-                                             BookmarkEditor::NO_TREE;
       // TODO: this should honor the index from GetParentForNewNodes.
       BookmarkEditor::Show(
           parent_window_, profile_,
           bookmark_utils::GetParentForNewNodes(parent_, selection_, NULL),
-          BookmarkEditor::EditDetails(), editor_config);
+          BookmarkEditor::EditDetails(), BookmarkEditor::SHOW_TREE);
       break;
     }
 
@@ -200,11 +180,8 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
       int index;
       const BookmarkNode* parent =
           bookmark_utils::GetParentForNewNodes(parent_, selection_, &index);
-      uint32 details = BookmarkFolderEditorController::IS_NEW;
-      if (configuration_ != BOOKMARK_BAR)
-        details |= BookmarkFolderEditorController::SHOW_IN_MANAGER;
       BookmarkFolderEditorController::Show(profile_, parent_window_, parent,
-                                           index, details);
+          index, BookmarkFolderEditorController::IS_NEW);
       break;
     }
 
@@ -222,12 +199,6 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
         else
           NOTREACHED();
       }
-      break;
-
-    case IDS_BOOKMARK_MANAGER_SORT:
-      UserMetrics::RecordAction(UserMetricsAction("BookmarkManager_Sort"),
-                                profile_);
-      model->SortChildren(parent_);
       break;
 
     case IDS_CUT:
@@ -283,9 +254,6 @@ bool BookmarkContextMenuControllerViews::IsCommandEnabled(int id) const {
     case IDS_BOOKMARK_BAR_REMOVE:
       return !selection_.empty() && !is_root_node;
 
-    case IDS_BOOKMARK_MANAGER_SORT:
-      return parent_ && parent_ != model_->root_node();
-
     case IDS_BOOMARK_BAR_NEW_FOLDER:
     case IDS_BOOMARK_BAR_ADD_NEW_BOOKMARK:
       return bookmark_utils::GetParentForNewNodes(
@@ -297,9 +265,9 @@ bool BookmarkContextMenuControllerViews::IsCommandEnabled(int id) const {
 
     case IDS_PASTE:
       // Paste to selection from the Bookmark Bar, to parent_ everywhere else
-      return (configuration_ == BOOKMARK_BAR && !selection_.empty() &&
+      return (!selection_.empty() &&
               bookmark_utils::CanPasteFromClipboard(selection_[0])) ||
-              bookmark_utils::CanPasteFromClipboard(parent_);
+             bookmark_utils::CanPasteFromClipboard(parent_);
   }
   return true;
 }

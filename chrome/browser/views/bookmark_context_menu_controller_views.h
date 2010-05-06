@@ -42,35 +42,19 @@ class BookmarkContextMenuControllerViewsDelegate {
 // menu shown for any bookmark item.
 class BookmarkContextMenuControllerViews : public BaseBookmarkModelObserver {
  public:
-  // Used to configure what the context menu shows.
-  enum ConfigurationType {
-    BOOKMARK_BAR,
-    BOOKMARK_MANAGER_TABLE,
-    // Used when the source is the table in the bookmark manager and the table
-    // is showing recently bookmarked or searched.
-    BOOKMARK_MANAGER_TABLE_OTHER,
-    BOOKMARK_MANAGER_TREE,
-    BOOKMARK_MANAGER_ORGANIZE_MENU,
-    // Used when the source is the bookmark manager and the table is showing
-    // recently bookmarked or searched.
-    BOOKMARK_MANAGER_ORGANIZE_MENU_OTHER
-  };
-
   // Creates the bookmark context menu.
   // |profile| is used for opening urls as well as enabling 'open incognito'.
   // |browser| is used to determine the PageNavigator and may be null.
   // |navigator| is used if |browser| is null, and is provided for testing.
   // |parent| is the parent for newly created nodes if |selection| is empty.
   // |selection| is the nodes the context menu operates on and may be empty.
-  // |configuration| determines which items to show.
   BookmarkContextMenuControllerViews(
       gfx::NativeWindow parent_window,
       BookmarkContextMenuControllerViewsDelegate* delegate,
       Profile* profile,
       PageNavigator* navigator,
       const BookmarkNode* parent,
-      const std::vector<const BookmarkNode*>& selection,
-      ConfigurationType configuration);
+      const std::vector<const BookmarkNode*>& selection);
   virtual ~BookmarkContextMenuControllerViews();
 
   void BuildMenu();
@@ -100,7 +84,6 @@ class BookmarkContextMenuControllerViews : public BaseBookmarkModelObserver {
   PageNavigator* navigator_;
   const BookmarkNode* parent_;
   std::vector<const BookmarkNode*> selection_;
-  ConfigurationType configuration_;
   BookmarkModel* model_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkContextMenuControllerViews);

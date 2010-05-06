@@ -960,8 +960,7 @@ void BookmarkBarGtk::PopupMenuForNode(GtkWidget* sender,
   GtkWindow* window = GTK_WINDOW(gtk_widget_get_toplevel(sender));
   current_context_menu_controller_.reset(
       new BookmarkContextMenuController(
-          window, this, profile_, page_navigator_, parent, nodes,
-          BookmarkContextMenuController::BOOKMARK_BAR));
+          window, this, profile_, page_navigator_, parent, nodes));
   current_context_menu_.reset(
       new MenuGtk(NULL, current_context_menu_controller_->menu_model()));
   current_context_menu_->PopupAsContext(event->time);

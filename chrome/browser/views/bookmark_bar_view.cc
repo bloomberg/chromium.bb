@@ -1243,8 +1243,7 @@ void BookmarkBarView::ShowContextMenu(View* source,
   PageNavigator* navigator =
       browser() ? browser()->GetSelectedTabContents() : NULL;
   BookmarkContextMenu controller(GetWindow()->GetNativeWindow(), GetProfile(),
-      navigator, parent, nodes,
-      BookmarkContextMenuControllerViews::BOOKMARK_BAR);
+                                 navigator, parent, nodes);
   controller.RunMenuAt(p);
 }
 

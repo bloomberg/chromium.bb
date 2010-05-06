@@ -205,8 +205,7 @@ bool BookmarkMenuController::ShowContextMenu(MenuItemView* source,
           profile_,
           page_navigator_,
           nodes[0]->GetParent(),
-          nodes,
-          BookmarkContextMenuControllerViews::BOOKMARK_BAR));
+          nodes));
   context_menu_->set_observer(this);
   context_menu_->RunMenuAt(p);
   context_menu_.reset(NULL);
