@@ -282,7 +282,7 @@ class SessionRestoreImpl : public NotificationObserver {
 
   void OnGotSession(SessionService::Handle handle,
                     std::vector<SessionWindow*>* windows) {
-    if (HasAppExtensions(*windows) && profile_->GetExtensionsService() &&
+    if (HasExtensionApps(*windows) && profile_->GetExtensionsService() &&
         !profile_->GetExtensionsService()->is_ready()) {
       // At least one tab is an app tab and the extension service hasn't
       // finished loading. Wait to continue processing until the extensions
@@ -305,10 +305,10 @@ class SessionRestoreImpl : public NotificationObserver {
   }
 
   // Returns true if any tab in |windows| has an application extension id.
-  bool HasAppExtensions(const std::vector<SessionWindow*>& windows) {
+  bool HasExtensionApps(const std::vector<SessionWindow*>& windows) {
     for (std::vector<SessionWindow*>::const_iterator i = windows.begin();
          i != windows.end(); ++i) {
-      if (HasAppExtensions((*i)->tabs))
+      if (HasExtensionApps((*i)->tabs))
         return true;
     }
 
@@ -316,10 +316,10 @@ class SessionRestoreImpl : public NotificationObserver {
   }
 
   // Returns true if any tab in |tabs| has an application extension id.
-  bool HasAppExtensions(const std::vector<SessionTab*>& tabs) {
+  bool HasExtensionApps(const std::vector<SessionTab*>& tabs) {
     for (std::vector<SessionTab*>::const_iterator i = tabs.begin();
          i != tabs.end(); ++i) {
-      if (!(*i)->app_extension_id.empty())
+      if (!(*i)->extension_app_id.empty())
         return true;
     }
 
@@ -401,7 +401,7 @@ class SessionRestoreImpl : public NotificationObserver {
       tab_loader_->AddTab(&browser->AddRestoredTab(tab.navigations,
                                    static_cast<int>(i - window.tabs.begin()),
                                    selected_index,
-                                   tab.app_extension_id,
+                                   tab.extension_app_id,
                                    false,
                                    tab.pinned,
                                    true)->controller());

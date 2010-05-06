@@ -276,8 +276,8 @@ TabContents::TabContents(Profile* profile,
       current_find_request_id_(find_request_id_counter_++),
       last_search_case_sensitive_(false),
       last_search_result_(),
-      app_extension_(NULL),
-      app_extension_for_current_page_(NULL),
+      extension_app_(NULL),
+      extension_app_for_current_page_(NULL),
       capturing_contents_(false),
       is_being_destroyed_(false),
       notify_disconnection_(false),
@@ -498,11 +498,11 @@ RenderProcessHost* TabContents::GetRenderProcessHost() const {
   return render_manager_.current_host()->process();
 }
 
-void TabContents::SetAppExtension(Extension* extension) {
+void TabContents::SetExtensionApp(Extension* extension) {
   DCHECK(!extension || extension->GetFullLaunchURL().is_valid());
-  app_extension_ = extension;
+  extension_app_ = extension;
 
-  UpdateAppExtensionIcon(app_extension_);
+  UpdateExtensionAppIcon(extension_app_);
 
   NotificationService::current()->Notify(
       NotificationType::TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
@@ -510,20 +510,20 @@ void TabContents::SetAppExtension(Extension* extension) {
       NotificationService::NoDetails());
 }
 
-void TabContents::SetAppExtensionById(const std::string& app_extension_id) {
-  if (app_extension_id.empty())
+void TabContents::SetExtensionAppById(const std::string& extension_app_id) {
+  if (extension_app_id.empty())
     return;
 
   ExtensionsService* extension_service = profile()->GetExtensionsService();
   if (extension_service && extension_service->is_ready()) {
     Extension* extension =
-        extension_service->GetExtensionById(app_extension_id, false);
+        extension_service->GetExtensionById(extension_app_id, false);
     if (extension)
-      SetAppExtension(extension);
+      SetExtensionApp(extension);
   }
 }
 
-SkBitmap* TabContents::GetAppExtensionIcon() {
+SkBitmap* TabContents::GetExtensionAppIcon() {
   // We don't show the big icons in tabs for TYPE_EXTENSION_APP windows because
   // for those windows, we already have a big icon in the top-left outside any
   // tab. Having big tab icons too looks kinda redonk.
@@ -531,10 +531,10 @@ SkBitmap* TabContents::GetAppExtensionIcon() {
   if (browser && browser->type() == Browser::TYPE_EXTENSION_APP)
     return NULL;
 
-  if (app_extension_icon_.empty())
+  if (extension_app_icon_.empty())
     return NULL;
 
-  return &app_extension_icon_;
+  return &extension_app_icon_;
 }
 
 const GURL& TabContents::GetURL() const {
@@ -832,7 +832,7 @@ bool TabContents::NavigateToPendingEntry(
 
   // The url likely changed, see if there is an extension whose extent contains
   // the current page.
-  UpdateAppExtensionForCurrentPage();
+  UpdateExtensionAppForCurrentPage();
 
   return true;
 }
@@ -854,9 +854,9 @@ TabContents* TabContents::Clone() {
                                     SiteInstance::CreateSiteInstance(profile()),
                                     MSG_ROUTING_NONE, this);
   tc->controller().CopyStateFrom(controller_);
-  tc->app_extension_ = app_extension_;
-  tc->app_extension_for_current_page_ = app_extension_for_current_page_;
-  tc->app_extension_icon_ = app_extension_icon_;
+  tc->extension_app_ = extension_app_;
+  tc->extension_app_for_current_page_ = extension_app_for_current_page_;
+  tc->extension_app_icon_ = extension_app_icon_;
   return tc;
 }
 
@@ -1354,8 +1354,8 @@ TabContents* TabContents::CloneAndMakePhantom() {
   TabNavigation tab_nav;
 
   NavigationEntry* entry = controller().GetActiveEntry();
-  if (app_extension_)
-    tab_nav.set_virtual_url(app_extension_->GetFullLaunchURL());
+  if (extension_app_)
+    tab_nav.set_virtual_url(extension_app_->GetFullLaunchURL());
   else if (entry)
     tab_nav.SetFromNavigationEntry(*entry);
 
@@ -1364,10 +1364,10 @@ TabContents* TabContents::CloneAndMakePhantom() {
 
   TabContents* new_contents =
       new TabContents(profile(), NULL, MSG_ROUTING_NONE, NULL);
-  new_contents->SetAppExtension(app_extension_);
+  new_contents->SetExtensionApp(extension_app_);
   new_contents->controller().RestoreFromState(navigations, 0, false);
 
-  if (!app_extension_ && entry)
+  if (!extension_app_ && entry)
     new_contents->controller().GetActiveEntry()->favicon() = entry->favicon();
 
   return new_contents;
@@ -1614,7 +1614,7 @@ void TabContents::DidNavigateMainFramePostCommit(
 
   // The url likely changed, see if there is an extension whose extent contains
   // the current page.
-  UpdateAppExtensionForCurrentPage();
+  UpdateExtensionAppForCurrentPage();
 }
 
 void TabContents::DidNavigateAnyFramePostCommit(
@@ -2967,10 +2967,10 @@ void TabContents::Observe(NotificationType type,
     }
 
     case NotificationType::EXTENSION_LOADED: {
-      if (!app_extension_ && !app_extension_for_current_page_ &&
+      if (!extension_app_ && !extension_app_for_current_page_ &&
           Source<Profile>(source).ptr() == profile()) {
-        UpdateAppExtensionForCurrentPage();
-        if (app_extension_for_current_page_)
+        UpdateExtensionAppForCurrentPage();
+        if (extension_app_for_current_page_)
           NotifyNavigationStateChanged(INVALIDATE_TAB);
       }
       break;
@@ -2978,10 +2978,10 @@ void TabContents::Observe(NotificationType type,
 
     case NotificationType::EXTENSION_UNLOADED:
     case NotificationType::EXTENSION_UNLOADED_DISABLED: {
-      if (app_extension_for_current_page_ ==
+      if (extension_app_for_current_page_ ==
           Details<Extension>(details).ptr()) {
-        app_extension_for_current_page_ = NULL;
-        UpdateAppExtensionForCurrentPage();
+        extension_app_for_current_page_ = NULL;
+        UpdateExtensionAppForCurrentPage();
         NotifyNavigationStateChanged(INVALIDATE_TAB);
       }
       break;
@@ -2992,19 +2992,19 @@ void TabContents::Observe(NotificationType type,
   }
 }
 
-void TabContents::UpdateAppExtensionIcon(Extension* extension) {
-  app_extension_icon_.reset();
+void TabContents::UpdateExtensionAppIcon(Extension* extension) {
+  extension_app_icon_.reset();
 
   if (extension) {
-    app_extension_image_loader_.reset(new ImageLoadingTracker(this));
-    app_extension_image_loader_->LoadImage(
+    extension_app_image_loader_.reset(new ImageLoadingTracker(this));
+    extension_app_image_loader_->LoadImage(
         extension,
         extension->GetIconPath(Extension::EXTENSION_ICON_SMALLISH),
         gfx::Size(Extension::EXTENSION_ICON_SMALLISH,
                   Extension::EXTENSION_ICON_SMALLISH),
         ImageLoadingTracker::CACHE);
   } else {
-    app_extension_image_loader_.reset(NULL);
+    extension_app_image_loader_.reset(NULL);
   }
 }
 
@@ -3018,26 +3018,26 @@ Extension* TabContents::GetExtensionContaining(const GURL& url) {
       extension : extensions_service->GetExtensionByWebExtent(url);
 }
 
-void TabContents::UpdateAppExtensionForCurrentPage() {
-  if (app_extension_) {
+void TabContents::UpdateExtensionAppForCurrentPage() {
+  if (extension_app_) {
     // Tab has an explicit app extension; nothing to do.
     return;
   }
 
   // Check the current extension before iterating through all extensions.
-  if (app_extension_for_current_page_ &&
-      app_extension_for_current_page_->web_extent().ContainsURL(GetURL())) {
+  if (extension_app_for_current_page_ &&
+      extension_app_for_current_page_->web_extent().ContainsURL(GetURL())) {
     return;
   }
 
-  app_extension_for_current_page_ = GetExtensionContaining(GetURL());
-  UpdateAppExtensionIcon(app_extension_for_current_page_);
+  extension_app_for_current_page_ = GetExtensionContaining(GetURL());
+  UpdateExtensionAppIcon(extension_app_for_current_page_);
 }
 
 void TabContents::OnImageLoaded(SkBitmap* image, ExtensionResource resource,
                                 int index) {
   if (image) {
-    app_extension_icon_ = *image;
+    extension_app_icon_ = *image;
     NotifyNavigationStateChanged(INVALIDATE_TAB);
   }
 }

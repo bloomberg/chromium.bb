@@ -514,7 +514,7 @@ TEST_F(SessionServiceTest, PruneFromFront) {
   ASSERT_EQ(1U, windows[0]->tabs.size());
 
   // There shouldn't be an app id.
-  EXPECT_TRUE(windows[0]->tabs[0]->app_extension_id.empty());
+  EXPECT_TRUE(windows[0]->tabs[0]->extension_app_id.empty());
 
   // We should be left with three navigations, the 2nd selected.
   SessionTab* tab = windows[0]->tabs[0];
@@ -574,13 +574,13 @@ TEST_F(SessionServiceTest, PersistApplicationExtensionID) {
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   UpdateNavigation(window_id, tab_id, nav1, 0, true);
-  helper_.SetTabAppExtensionID(window_id, tab_id, app_id);
+  helper_.SetTabExtensionAppID(window_id, tab_id, app_id);
 
   ScopedVector<SessionWindow> windows;
   ReadWindows(&(windows.get()));
 
   helper_.AssertSingleWindowWithSingleTab(windows.get(), 1);
-  EXPECT_TRUE(app_id == windows[0]->tabs[0]->app_extension_id);
+  EXPECT_TRUE(app_id == windows[0]->tabs[0]->extension_app_id);
 }
 
 // Explicitly set the pinned state to true and make sure we get back true.

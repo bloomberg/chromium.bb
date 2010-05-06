@@ -196,15 +196,15 @@ class TabContents : public PageNavigator,
   // NOTE: this should only be manipulated before the tab is added to a browser.
   // TODO(sky): resolve if this is the right way to identify an app tab. If it
   // is, than this should be passed in the constructor.
-  void SetAppExtension(Extension* extension);
+  void SetExtensionApp(Extension* extension);
 
   // Convenience for setting the app extension by id. This does nothing if
-  // |app_extension_id| is empty, or an extension can't be found given the
+  // |extension_app_id| is empty, or an extension can't be found given the
   // specified id.
-  void SetAppExtensionById(const std::string& app_extension_id);
+  void SetExtensionAppById(const std::string& extension_app_id);
 
-  Extension* app_extension() const { return app_extension_; }
-  bool is_app() const { return app_extension_ != NULL; }
+  Extension* extension_app() const { return extension_app_; }
+  bool is_app() const { return extension_app_ != NULL; }
 
   // If an app extension has been explicitly set for this TabContents its icon
   // is returned. If an app extension has not been set but there is an
@@ -213,7 +213,7 @@ class TabContents : public PageNavigator,
   //
   // NOTE: the returned icon is larger than 16x16 (it's size is
   // Extension::EXTENSION_ICON_SMALLISH).
-  SkBitmap* GetAppExtensionIcon();
+  SkBitmap* GetExtensionAppIcon();
 
   // Tab navigation state ------------------------------------------------------
 
@@ -1021,10 +1021,10 @@ class TabContents : public PageNavigator,
 
   // Resets app_icon_ and if |extension| is non-null creates a new
   // ImageLoadingTracker to load the extension's image.
-  void UpdateAppExtensionIcon(Extension* extension);
+  void UpdateExtensionAppIcon(Extension* extension);
 
   // Called on every navigation to update app_icon_cache_entry_ as necessary.
-  void UpdateAppExtensionForCurrentPage();
+  void UpdateExtensionAppForCurrentPage();
 
   // ImageLoadingTracker::Observer.
   virtual void OnImageLoaded(SkBitmap* image, ExtensionResource resource,
@@ -1188,17 +1188,17 @@ class TabContents : public PageNavigator,
 
   // If non-null this tab is an app tab and this is the extension the tab was
   // created for.
-  Extension* app_extension_;
+  Extension* extension_app_;
 
-  // If app_extension_ is NULL and there is an extension whose extent contains
+  // If extension_app_ is NULL and there is an extension whose extent contains
   // the current url, this is the extension.
-  Extension* app_extension_for_current_page_;
+  Extension* extension_app_for_current_page_;
 
-  // Icon for app_extension_ (if non-null) or extension_for_current_page_.
-  SkBitmap app_extension_icon_;
+  // Icon for extension_app_ (if non-null) or extension_for_current_page_.
+  SkBitmap extension_app_icon_;
 
-  // Used for loading app_extension_icon_.
-  scoped_ptr<ImageLoadingTracker> app_extension_image_loader_;
+  // Used for loading extension_app_icon_.
+  scoped_ptr<ImageLoadingTracker> extension_app_image_loader_;
 
   // Data for misc internal state ----------------------------------------------
 

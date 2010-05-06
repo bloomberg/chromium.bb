@@ -49,7 +49,7 @@ const size_t TabRestoreService::kMaxEntries = 10;
 // . When the user closes a tab a command of type
 //   kCommandSelectedNavigationInTab is written identifying the tab and
 //   the selected index, then a kCommandPinnedState command if the tab was
-//   pinned and kCommandSetAppExtensionID if the tab has an app id. This is
+//   pinned and kCommandSetExtensionAppID if the tab has an app id. This is
 //   followed by any number of kCommandUpdateTabNavigation commands (1 per
 //   navigation entry).
 // . When the user closes a window a kCommandSelectedNavigationInTab command
@@ -62,7 +62,7 @@ static const SessionCommand::id_type kCommandRestoredEntry = 2;
 static const SessionCommand::id_type kCommandWindow = 3;
 static const SessionCommand::id_type kCommandSelectedNavigationInTab = 4;
 static const SessionCommand::id_type kCommandPinnedState = 5;
-static const SessionCommand::id_type kCommandSetAppExtensionID = 6;
+static const SessionCommand::id_type kCommandSetExtensionAppID = 6;
 
 // Number of entries (not commands) before we clobber the file and write
 // everything.
@@ -274,7 +274,7 @@ void TabRestoreService::RestoreEntryById(Browser* browser,
       browser->ReplaceRestoredTab(tab->navigations,
                                   tab->current_navigation_index,
                                   tab->from_last_session,
-                                  tab->app_extension_id);
+                                  tab->extension_app_id);
     } else {
       // Use the tab's former browser and index, if available.
       Browser* tab_browser = NULL;
@@ -297,7 +297,7 @@ void TabRestoreService::RestoreEntryById(Browser* browser,
         tab_index = tab_browser->tab_count();
       tab_browser->AddRestoredTab(tab->navigations, tab_index,
                                   tab->current_navigation_index,
-                                  tab->app_extension_id, true, tab->pinned,
+                                  tab->extension_app_id, true, tab->pinned,
                                   tab->from_last_session);
     }
   } else if (entry->type == WINDOW) {
@@ -309,7 +309,7 @@ void TabRestoreService::RestoreEntryById(Browser* browser,
       TabContents* restored_tab =
           browser->AddRestoredTab(tab.navigations, browser->tab_count(),
                                   tab.current_navigation_index,
-                                  tab.app_extension_id,
+                                  tab.extension_app_id,
                                   (static_cast<int>(tab_i) ==
                                    window->selected_tab_index),
                                   tab.pinned, tab.from_last_session);
@@ -414,9 +414,9 @@ void TabRestoreService::PopulateTab(Tab* tab,
   if (tab->current_navigation_index == -1 && entry_count > 0)
     tab->current_navigation_index = 0;
 
-  Extension* extension = controller->tab_contents()->app_extension();
+  Extension* extension = controller->tab_contents()->extension_app();
   if (extension)
-    tab->app_extension_id = extension->id();
+    tab->extension_app_id = extension->id();
 
   // Browser may be NULL during unit tests.
   if (browser) {
@@ -520,10 +520,10 @@ void TabRestoreService::ScheduleCommandsForTab(const Tab& tab,
     ScheduleCommand(command);
   }
 
-  if (!tab.app_extension_id.empty()) {
+  if (!tab.extension_app_id.empty()) {
     ScheduleCommand(
-        CreateSetTabAppExtensionIDCommand(kCommandSetAppExtensionID, tab.id,
-                                          tab.app_extension_id));
+        CreateSetTabExtensionAppIDCommand(kCommandSetExtensionAppID, tab.id,
+                                          tab.extension_app_id));
   }
 
   // Then write the navigations.
@@ -757,18 +757,18 @@ void TabRestoreService::CreateEntriesFromCommands(
         break;
       }
 
-      case kCommandSetAppExtensionID: {
+      case kCommandSetExtensionAppID: {
         if (!current_tab) {
           // Should be in a tab when we get this.
           return;
         }
         SessionID::id_type tab_id;
-        std::string app_extension_id;
-        if (!RestoreSetTabAppExtensionIDCommand(command, &tab_id,
-                                                &app_extension_id)) {
+        std::string extension_app_id;
+        if (!RestoreSetTabExtensionAppIDCommand(command, &tab_id,
+                                                &extension_app_id)) {
           return;
         }
-        current_tab->app_extension_id.swap(app_extension_id);
+        current_tab->extension_app_id.swap(extension_app_id);
         break;
       }
 
@@ -884,7 +884,7 @@ bool TabRestoreService::ConvertSessionWindowToWindow(
       tab.navigations.swap(session_window->tabs[i]->navigations);
       tab.current_navigation_index =
           session_window->tabs[i]->current_navigation_index;
-      tab.app_extension_id = session_window->tabs[i]->app_extension_id;
+      tab.extension_app_id = session_window->tabs[i]->extension_app_id;
       tab.timestamp = Time();
     }
   }

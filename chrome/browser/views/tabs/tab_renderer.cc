@@ -327,7 +327,7 @@ void TabRenderer::UpdateData(TabContents* contents,
     data_.off_the_record = contents->profile()->IsOffTheRecord();
     data_.crashed = contents->is_crashed();
     data_.app = contents->is_app();
-    SkBitmap* app_icon = contents->GetAppExtensionIcon();
+    SkBitmap* app_icon = contents->GetExtensionAppIcon();
     if (app_icon && data_.app)
       data_.favicon = *app_icon;
     else

@@ -120,7 +120,7 @@ class BaseSessionService : public CancelableRequestProvider,
       const NavigationEntry& entry);
 
   // Creates a SessionCommand that represents marking a tab as an application.
-  SessionCommand* CreateSetTabAppExtensionIDCommand(
+  SessionCommand* CreateSetTabExtensionAppIDCommand(
       SessionID::id_type command_id,
       SessionID::id_type tab_id,
       const std::string& extension_id);
@@ -133,12 +133,12 @@ class BaseSessionService : public CancelableRequestProvider,
                                          SessionID::id_type* tab_id);
 
   // Extracts a SessionCommand as previously created by
-  // CreateSetTabAppExtensionIDCommand into the tab id and application
+  // CreateSetTabExtensionAppIDCommand into the tab id and application
   // extension id.
-  bool RestoreSetTabAppExtensionIDCommand(
+  bool RestoreSetTabExtensionAppIDCommand(
       const SessionCommand& command,
       SessionID::id_type* tab_id,
-      std::string* app_extension_id);
+      std::string* extension_app_id);
 
   // Returns true if the NavigationEntry should be written to disk.
   bool ShouldTrackEntry(const NavigationEntry& entry);

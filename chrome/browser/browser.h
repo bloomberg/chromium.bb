@@ -330,14 +330,14 @@ class Browser : public TabStripModelDelegate,
   // Adds a new tab at the specified index. |add_types| is a bitmask of the
   // values defined by AddTabTypes; see AddTabTypes for details. If |instance|
   // is not null, its process will be used to render the tab. If
-  // |app_extension_id| is non-empty the new tab is an app tab.
+  // |extension_app_id| is non-empty the new tab is an app tab.
   TabContents* AddTabWithURL(const GURL& url,
                              const GURL& referrer,
                              PageTransition::Type transition,
                              int index,
                              int add_types,
                              SiteInstance* instance,
-                             const std::string& app_extension_id);
+                             const std::string& extension_app_id);
 
   // Add a new tab, given a TabContents. A TabContents appropriate to
   // display the last committed entry is created and returned.
@@ -346,15 +346,15 @@ class Browser : public TabStripModelDelegate,
   // Add a tab with its session history restored from the SessionRestore
   // system. If select is true, the tab is selected. |tab_index| gives the index
   // to insert the tab at. |selected_navigation| is the index of the
-  // TabNavigation in |navigations| to select. If |app_extension_id| is
-  // non-empty the tab is an app tab and |app_extension_id| is the id of the
+  // TabNavigation in |navigations| to select. If |extension_app_id| is
+  // non-empty the tab is an app tab and |extension_app_id| is the id of the
   // extension. If |pin| is true and |tab_index|/ is the last pinned tab, then
   // the newly created tab is pinned. If |from_last_session| is true,
   // |navigations| are from the previous session.
   TabContents* AddRestoredTab(const std::vector<TabNavigation>& navigations,
                               int tab_index,
                               int selected_navigation,
-                              const std::string& app_extension_id,
+                              const std::string& extension_app_id,
                               bool select,
                               bool pin,
                               bool from_last_session);
@@ -392,7 +392,7 @@ class Browser : public TabStripModelDelegate,
       const std::vector<TabNavigation>& navigations,
       int selected_navigation,
       bool from_last_session,
-      const std::string& app_extension_id);
+      const std::string& extension_app_id);
 
   // Returns true if a tab can be restored.
   virtual bool CanRestoreTab();

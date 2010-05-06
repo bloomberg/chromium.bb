@@ -102,7 +102,7 @@ class TabRestoreService : public BaseSessionService {
     bool pinned;
 
     // If non-empty gives the id of the extension for the tab.
-    std::string app_extension_id;
+    std::string extension_app_id;
   };
 
   // Represents a previously open window.

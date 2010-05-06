@@ -29,11 +29,11 @@ void SessionServiceTestHelper::PrepareTabInWindow(const SessionID& window_id,
     service()->SetSelectedTabInWindow(window_id, visual_index);
 }
 
-void SessionServiceTestHelper::SetTabAppExtensionID(
+void SessionServiceTestHelper::SetTabExtensionAppID(
     const SessionID& window_id,
     const SessionID& tab_id,
-    const std::string& app_extension_id) {
-  service()->SetTabAppExtensionID(window_id, tab_id, app_extension_id);
+    const std::string& extension_app_id) {
+  service()->SetTabExtensionAppID(window_id, tab_id, extension_app_id);
 }
 
 // Be sure and null out service to force closing the file.

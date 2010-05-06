@@ -186,7 +186,7 @@ bool FindOpenAppInstanceInBrowser(Browser* browser,
     if (!tab_contents)
       continue;
 
-    if (tab_contents->app_extension() != extension_app)
+    if (tab_contents->extension_app() != extension_app)
       continue;
 
     *out_tab_idx = tab_idx;
@@ -624,7 +624,7 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
   TabContents* tab_contents =
       browser->CreateTabContentsForURL(url, GURL(), profile,
                                        transition, false, NULL);
-  tab_contents->SetAppExtension(extension);
+  tab_contents->SetExtensionApp(extension);
   browser->AddTab(tab_contents, transition);
   return tab_contents;
 }
@@ -875,7 +875,7 @@ TabContents* Browser::AddTabWithURL(const GURL& url,
                                     int index,
                                     int add_types,
                                     SiteInstance* instance,
-                                    const std::string& app_extension_id) {
+                                    const std::string& extension_app_id) {
   TabContents* contents = NULL;
   if (CanSupportWindowFeature(FEATURE_TABSTRIP) || tabstrip_model()->empty()) {
     GURL url_to_load = url;
@@ -883,7 +883,7 @@ TabContents* Browser::AddTabWithURL(const GURL& url,
       url_to_load = GetHomePage();
     contents = CreateTabContentsForURL(url_to_load, referrer, profile_,
                                        transition, false, instance);
-    contents->SetAppExtensionById(app_extension_id);
+    contents->SetExtensionAppById(extension_app_id);
     // TODO(sky): TabStripModel::AddTabContents should take add_types directly.
     tabstrip_model_.AddTabContents(contents, index,
                                    (add_types & ADD_FORCE_INDEX) != 0,
@@ -908,7 +908,7 @@ TabContents* Browser::AddTabWithURL(const GURL& url,
     if (!b)
       b = Browser::Create(profile_);
     contents = b->AddTabWithURL(url, referrer, transition, index, add_types,
-                                instance, app_extension_id);
+                                instance, extension_app_id);
     b->window()->Show();
   }
   return contents;
@@ -948,13 +948,13 @@ TabContents* Browser::AddRestoredTab(
     const std::vector<TabNavigation>& navigations,
     int tab_index,
     int selected_navigation,
-    const std::string& app_extension_id,
+    const std::string& extension_app_id,
     bool select,
     bool pin,
     bool from_last_session) {
   TabContents* new_tab = new TabContents(profile(), NULL,
       MSG_ROUTING_NONE, tabstrip_model_.GetSelectedTabContents());
-  new_tab->SetAppExtensionById(app_extension_id);
+  new_tab->SetExtensionAppById(extension_app_id);
   new_tab->controller().RestoreFromState(navigations, selected_navigation,
                                          from_last_session);
 
@@ -987,10 +987,10 @@ void Browser::ReplaceRestoredTab(
     const std::vector<TabNavigation>& navigations,
     int selected_navigation,
     bool from_last_session,
-    const std::string& app_extension_id) {
+    const std::string& extension_app_id) {
   TabContents* replacement = new TabContents(profile(), NULL,
       MSG_ROUTING_NONE, tabstrip_model_.GetSelectedTabContents());
-  replacement->SetAppExtensionById(app_extension_id);
+  replacement->SetExtensionAppById(extension_app_id);
   replacement->controller().RestoreFromState(navigations, selected_navigation,
                                              from_last_session);
 
@@ -3540,7 +3540,7 @@ bool Browser::HandleCrossAppNavigation(TabContents* source,
     return false;
 
   // Get the source extension, if any.
-  Extension* source_extension = source->app_extension();
+  Extension* source_extension = source->extension_app();
   if (!source_extension)
     source_extension = extension_app_;
 
@@ -3588,7 +3588,7 @@ bool Browser::HandleCrossAppNavigation(TabContents* source,
 
   // If our source tab is an app tab, don't allow normal web content to
   // overwrite it.
-  if (source->app_extension() && *disposition == CURRENT_TAB)
+  if (source->extension_app() && *disposition == CURRENT_TAB)
     *disposition = NEW_FOREGROUND_TAB;
 
   return false;

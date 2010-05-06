@@ -56,7 +56,7 @@ static const SessionCommand::id_type kCommandSetWindowBounds2 = 10;
 static const SessionCommand::id_type
     kCommandTabNavigationPathPrunedFromFront = 11;
 static const SessionCommand::id_type kCommandSetPinnedState = 12;
-static const SessionCommand::id_type kCommandSetAppExtensionID = 13;
+static const SessionCommand::id_type kCommandSetExtensionAppID = 13;
 
 // Every kWritesPerReset commands triggers recreating the file.
 static const int kWritesPerReset = 250;
@@ -492,11 +492,11 @@ void SessionService::Observe(NotificationType type,
       NavigationController* controller =
           Source<NavigationController>(source).ptr();
       SetTabWindow(controller->window_id(), controller->session_id());
-      if (controller->tab_contents()->app_extension()) {
-        SetTabAppExtensionID(
+      if (controller->tab_contents()->extension_app()) {
+        SetTabExtensionAppID(
             controller->window_id(),
             controller->session_id(),
-            controller->tab_contents()->app_extension()->id());
+            controller->tab_contents()->extension_app()->id());
       }
       break;
     }
@@ -549,10 +549,10 @@ void SessionService::Observe(NotificationType type,
     case NotificationType::TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED: {
       TabContents* tab_contents = Source<TabContents>(source).ptr();
       DCHECK(tab_contents);
-      if (tab_contents->app_extension()) {
-        SetTabAppExtensionID(tab_contents->controller().window_id(),
+      if (tab_contents->extension_app()) {
+        SetTabExtensionAppID(tab_contents->controller().window_id(),
                              tab_contents->controller().session_id(),
-                             tab_contents->app_extension()->id());
+                             tab_contents->extension_app()->id());
       }
       break;
     }
@@ -562,17 +562,17 @@ void SessionService::Observe(NotificationType type,
   }
 }
 
-void SessionService::SetTabAppExtensionID(
+void SessionService::SetTabExtensionAppID(
     const SessionID& window_id,
     const SessionID& tab_id,
-    const std::string& app_extension_id) {
+    const std::string& extension_app_id) {
   if (!ShouldTrackChangesToWindow(window_id))
     return;
 
-  ScheduleCommand(CreateSetTabAppExtensionIDCommand(
-                      kCommandSetAppExtensionID,
+  ScheduleCommand(CreateSetTabExtensionAppIDCommand(
+                      kCommandSetExtensionAppID,
                       tab_id.id(),
-                      app_extension_id));
+                      extension_app_id));
 }
 
 SessionCommand* SessionService::CreateSetSelectedTabInWindow(
@@ -991,15 +991,15 @@ bool SessionService::CreateTabsAndWindows(
         break;
       }
 
-      case kCommandSetAppExtensionID: {
+      case kCommandSetExtensionAppID: {
         SessionID::id_type tab_id;
-        std::string app_extension_id;
-        if (!RestoreSetTabAppExtensionIDCommand(
-                *command, &tab_id, &app_extension_id)) {
+        std::string extension_app_id;
+        if (!RestoreSetTabExtensionAppIDCommand(
+                *command, &tab_id, &extension_app_id)) {
           return true;
         }
 
-        GetTab(tab_id, tabs)->app_extension_id.swap(app_extension_id);
+        GetTab(tab_id, tabs)->extension_app_id.swap(extension_app_id);
         break;
       }
 
@@ -1034,12 +1034,12 @@ void SessionService::BuildCommandsForTab(
     commands->push_back(
         CreatePinnedStateCommand(controller->session_id(), true));
   }
-  if (controller->tab_contents()->app_extension()) {
+  if (controller->tab_contents()->extension_app()) {
     commands->push_back(
-        CreateSetTabAppExtensionIDCommand(
-            kCommandSetAppExtensionID,
+        CreateSetTabExtensionAppIDCommand(
+            kCommandSetExtensionAppID,
             controller->session_id().id(),
-            controller->tab_contents()->app_extension()->id()));
+            controller->tab_contents()->extension_app()->id()));
   }
   for (int i = min_index; i < max_index; ++i) {
     const NavigationEntry* entry = (i == pending_index) ?

@@ -765,7 +765,7 @@ void TabStripModel::Observe(NotificationType type,
       // Iterate backwards as we may remove items while iterating.
       for (int i = count() - 1; i >= 0; i--) {
         TabContents* contents = GetTabContentsAt(i);
-        if (contents->app_extension() == extension) {
+        if (contents->extension_app() == extension) {
           // The extension an app tab was created from has been nuked. Delete
           // the TabContents. Deleting a TabContents results in a notification
           // of type TAB_CONTENTS_DESTROYED; we do the necessary cleanup in
@@ -937,11 +937,11 @@ bool TabStripModel::ShouldMakePhantomOnClose(int index) {
     if (!extension_service)
       return false;
 
-    Extension* app_extension = GetTabContentsAt(index)->app_extension();
-    DCHECK(app_extension);
+    Extension* extension_app = GetTabContentsAt(index)->extension_app();
+    DCHECK(extension_app);
 
     // Only allow the tab to be made phantom if the extension still exists.
-    return extension_service->GetExtensionById(app_extension->id(),
+    return extension_service->GetExtensionById(extension_app->id(),
                                                false) != NULL;
   }
   return false;

@@ -127,7 +127,7 @@ TEST_F(TabRestoreServiceTest, Basic) {
   ASSERT_EQ(TabRestoreService::TAB, entry->type);
   TabRestoreService::Tab* tab = static_cast<TabRestoreService::Tab*>(entry);
   EXPECT_FALSE(tab->pinned);
-  EXPECT_TRUE(tab->app_extension_id.empty());
+  EXPECT_TRUE(tab->extension_app_id.empty());
   ASSERT_EQ(3U, tab->navigations.size());
   EXPECT_TRUE(url1_ == tab->navigations[0].virtual_url());
   EXPECT_TRUE(url2_ == tab->navigations[1].virtual_url());
@@ -208,8 +208,8 @@ TEST_F(TabRestoreServiceTest, RestorePinnedAndApp) {
   ASSERT_EQ(TabRestoreService::TAB, entry->type);
   TabRestoreService::Tab* tab = static_cast<TabRestoreService::Tab*>(entry);
   tab->pinned = true;
-  const std::string app_extension_id("test");
-  tab->app_extension_id = app_extension_id;
+  const std::string extension_app_id("test");
+  tab->extension_app_id = extension_app_id;
 
   // Recreate the service and have it load the tabs.
   RecreateService();
@@ -227,7 +227,7 @@ TEST_F(TabRestoreServiceTest, RestorePinnedAndApp) {
   EXPECT_TRUE(url2_ == tab->navigations[1].virtual_url());
   EXPECT_TRUE(url3_ == tab->navigations[2].virtual_url());
   EXPECT_EQ(2, tab->current_navigation_index);
-  EXPECT_TRUE(app_extension_id == tab->app_extension_id);
+  EXPECT_TRUE(extension_app_id == tab->extension_app_id);
 }
 
 // Make sure we persist entries to disk that have post data.

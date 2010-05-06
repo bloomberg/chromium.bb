@@ -35,9 +35,9 @@ class SessionServiceTestHelper {
                           int visual_index,
                           bool select);
 
-  void SetTabAppExtensionID(const SessionID& window_id,
+  void SetTabExtensionAppID(const SessionID& window_id,
                             const SessionID& tab_id,
-                            const std::string& app_extension_id);
+                            const std::string& extension_app_id);
 
   // Reads the contents of the last session.
   void ReadWindows(std::vector<SessionWindow*>* windows);
