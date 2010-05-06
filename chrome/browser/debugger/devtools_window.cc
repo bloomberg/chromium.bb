@@ -240,7 +240,9 @@ void DevToolsWindow::Observe(NotificationType type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
   if (type == NotificationType::LOAD_STOP) {
+    SetAttachedWindow();
     is_loaded_ = true;
+    UpdateTheme();
     if (open_console_on_load_) {
       DoOpenConsole();
       open_console_on_load_ = false;
