@@ -157,8 +157,12 @@ def WriteRCFile(translated_strings, out_filename):
   )
   lines = [kHeaderText]
   for translation_struct in translated_strings:
+    # Escape special characters for the rc file.
+    translation = (translation_struct.translation.replace('"', '""')
+                                                 .replace('\t', '\\t')
+                                                 .replace('\n', '\\n'))
     lines.append(u'  %s "%s"\n' % (translation_struct.resource_id_str,
-                                   translation_struct.translation))
+                                   translation))
   lines.append(kFooterText)
   outfile = open(out_filename + '.rc', 'wb')
   outfile.write(''.join(lines).encode('utf-16'))
