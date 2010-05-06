@@ -44,7 +44,7 @@ IN_PROC_BROWSER_TEST_F(WifiConfigViewTest, ChangeAutoConnectSaveTest) {
 IN_PROC_BROWSER_TEST_F(WifiConfigViewTest, ChangePasswordSaveTest) {
   EXPECT_CALL(*mock_network_library_, SaveWifiNetwork(_)).Times(1);
   WifiNetwork wifi = WifiNetwork();
-  wifi.encrypted = true;
+  wifi.set_encryption(SECURITY_WEP);
   WifiConfigView* view = new WifiConfigView(NULL, wifi);
   view->passphrase_textfield_->SetText(ASCIIToUTF16("test"));
   view->Save();

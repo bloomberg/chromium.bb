@@ -147,7 +147,7 @@ void NetworkScreen::ConnectToNetwork(NetworkList::NetworkType type,
       networks_.GetNetworkById(type, id);
   if (network && !IsSameNetwork(network, networks_.ConnectedNetwork())) {
     if (NetworkList::NETWORK_WIFI == network->network_type) {
-      if (network->wifi_network.encrypted) {
+      if (network->wifi_network.encrypted()) {
         OpenPasswordDialog(network->wifi_network);
         return;
       } else {

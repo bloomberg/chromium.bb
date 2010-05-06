@@ -118,7 +118,7 @@ void NetworkMenuButton::ActivatedAt(int index) {
 
     // If clicked on a network that we are already connected to or we are
     // currently trying to connect to, then open config dialog.
-    if (wifi.ssid == cros->wifi_ssid()) {
+    if (wifi.name() == cros->wifi_name()) {
       if (cros->wifi_connected()) {
         NetworkConfigView* view = new NetworkConfigView(wifi, false);
         views::Window* window = views::Window::CreateChromeWindow(
@@ -129,7 +129,7 @@ void NetworkMenuButton::ActivatedAt(int index) {
     } else {
       // If wifi network is not encrypted, then directly connect.
       // Otherwise, we open password dialog window.
-      if (!wifi.encrypted) {
+      if (!wifi.encrypted()) {
         cros->ConnectToWifiNetwork(wifi, string16(), string16(), string16());
       } else {
         NetworkConfigView* view = new NetworkConfigView(wifi, true);
@@ -145,7 +145,7 @@ void NetworkMenuButton::ActivatedAt(int index) {
 
     // If clicked on a network that we are already connected to or we are
     // currently trying to connect to, then open config dialog.
-    if (cellular.name == cros->cellular_name()) {
+    if (cellular.name() == cros->cellular_name()) {
       if (cros->cellular_connected()) {
         NetworkConfigView* view = new NetworkConfigView(cellular);
         views::Window* window = views::Window::CreateChromeWindow(
@@ -423,11 +423,11 @@ void NetworkMenuButton::InitMenuItems() {
   const WifiNetworkVector& wifi_networks = cros->wifi_networks();
   // Wifi networks ssids.
   for (size_t i = 0; i < wifi_networks.size(); ++i) {
-    label = ASCIIToUTF16(wifi_networks[i].ssid);
-    SkBitmap icon = IconForNetworkStrength(wifi_networks[i].strength, true);
-    SkBitmap badge = wifi_networks[i].encrypted ?
+    label = ASCIIToUTF16(wifi_networks[i].name());
+    SkBitmap icon = IconForNetworkStrength(wifi_networks[i].strength(), true);
+    SkBitmap badge = wifi_networks[i].encrypted() ?
         *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE) : SkBitmap();
-    flag = (wifi_networks[i].ssid == cros->wifi_ssid()) ?
+    flag = (wifi_networks[i].name() == cros->wifi_name()) ?
         FLAG_WIFI | FLAG_ASSOCIATED : FLAG_WIFI;
     menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
         IconForDisplay(icon, badge), wifi_networks[i], CellularNetwork(),
@@ -438,12 +438,12 @@ void NetworkMenuButton::InitMenuItems() {
   const CellularNetworkVector& cell_networks = cros->cellular_networks();
   // Cellular networks ssids.
   for (size_t i = 0; i < cell_networks.size(); ++i) {
-    label = ASCIIToUTF16(cell_networks[i].name);
-    SkBitmap icon = IconForNetworkStrength(cell_networks[i].strength, true);
+    label = ASCIIToUTF16(cell_networks[i].name());
+    SkBitmap icon = IconForNetworkStrength(cell_networks[i].strength(), true);
     // TODO(chocobo): Check cellular network 3g/edge.
     SkBitmap badge = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_3G);
 //    SkBitmap badge = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_EDGE);
-    flag = (cell_networks[i].name == cros->cellular_name()) ?
+    flag = (cell_networks[i].name() == cros->cellular_name()) ?
         FLAG_CELLULAR | FLAG_ASSOCIATED : FLAG_CELLULAR;
     menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
         IconForDisplay(icon, badge), WifiNetwork(), cell_networks[i], flag));

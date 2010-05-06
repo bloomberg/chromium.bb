@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,9 +85,9 @@ std::wstring NetworkConfigView::GetWindowTitle() const {
   if (flags_ & FLAG_OTHER_NETWORK)
     return l10n_util::GetString(IDS_OPTIONS_SETTINGS_OTHER_NETWORKS);
   if (flags_ & FLAG_WIFI)
-    return ASCIIToWide(wifi_.ssid);
+    return ASCIIToWide(wifi_.name());
   if (flags_ & FLAG_CELLULAR)
-    return ASCIIToWide(cellular_.name);
+    return ASCIIToWide(cellular_.name());
   return l10n_util::GetString(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
 }
 
@@ -135,11 +135,11 @@ void NetworkConfigView::Init() {
 
   if (flags_ & FLAG_SHOW_IPCONFIG) {
     if (flags_ & FLAG_WIFI)
-      ipconfig_view_ = new IPConfigView(wifi_.device_path);
+      ipconfig_view_ = new IPConfigView(wifi_.device_path());
     else if (flags_ & FLAG_CELLULAR)
-      ipconfig_view_ = new IPConfigView(cellular_.device_path);
+      ipconfig_view_ = new IPConfigView(cellular_.device_path());
     else
-      ipconfig_view_ = new IPConfigView(ethernet_.device_path);
+      ipconfig_view_ = new IPConfigView(ethernet_.device_path());
     tabs_->AddTab(
         l10n_util::GetString(IDS_OPTIONS_SETTINGS_SECTION_TITLE_IP_CONFIG),
         ipconfig_view_);

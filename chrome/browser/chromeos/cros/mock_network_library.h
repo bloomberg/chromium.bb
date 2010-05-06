@@ -21,7 +21,7 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_CONST_METHOD0(ethernet_network, const EthernetNetwork&(void));
   MOCK_CONST_METHOD0(ethernet_connecting, bool(void));
   MOCK_CONST_METHOD0(ethernet_connected, bool(void));
-  MOCK_CONST_METHOD0(wifi_ssid, const std::string&(void));
+  MOCK_CONST_METHOD0(wifi_name, const std::string&(void));
   MOCK_CONST_METHOD0(wifi_connecting, bool(void));
   MOCK_CONST_METHOD0(wifi_connected, bool(void));
   MOCK_CONST_METHOD0(wifi_strength, int(void));
@@ -48,11 +48,9 @@ class MockNetworkLibrary : public NetworkLibrary {
                                           const string16&, const string16&,
                                           bool));
   MOCK_METHOD1(ConnectToCellularNetwork, void(CellularNetwork));
-  MOCK_METHOD1(DisconnectFromWifiNetwork, void(const WifiNetwork&));
-  MOCK_METHOD1(DisconnectFromCellularNetwork, void(const CellularNetwork&));
+  MOCK_METHOD1(DisconnectFromWirelessNetwork, void(const WirelessNetwork&));
   MOCK_METHOD1(SaveWifiNetwork, void(const WifiNetwork&));
-  MOCK_METHOD1(ForgetWifiNetwork, void(const WifiNetwork&));
-  MOCK_METHOD1(ForgetCellularNetwork, void(const CellularNetwork&));
+  MOCK_METHOD1(ForgetWirelessNetwork, void(const WirelessNetwork&));
 
   MOCK_CONST_METHOD0(ethernet_available, bool(void));
   MOCK_CONST_METHOD0(wifi_available, bool(void));

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,71 @@ struct RunnableMethodTraits<chromeos::NetworkLibraryImpl> {
 };
 
 namespace chromeos {
+
+////////////////////////////////////////////////////////////////////////////////
+// Network
+
+void Network::Clear() {
+  connecting_ = false;
+  connected_ = false;
+  service_path_.clear();
+  device_path_.clear();
+  ip_address_.clear();
+}
+
+void Network::ConfigureFromService(const ServiceInfo& service) {
+  connecting_ = service.state == STATE_ASSOCIATION ||
+                service.state == STATE_CONFIGURATION ||
+                service.state == STATE_CARRIER;
+  connected_ = service.state == STATE_READY;
+  service_path_ = service.service_path;
+  device_path_ = service.device_path ? service.device_path : std::string();
+  ip_address_.clear();
+  // If connected, get ip config.
+  if (connected_ && service.device_path) {
+    IPConfigStatus* ipconfig_status = ListIPConfigs(service.device_path);
+    if (ipconfig_status) {
+      for (int i = 0; i < ipconfig_status->size; i++) {
+        IPConfig ipconfig = ipconfig_status->ips[i];
+        if (strlen(ipconfig.address) > 0)
+          ip_address_ = ipconfig.address;
+      }
+      FreeIPConfigStatus(ipconfig_status);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WirelessNetwork
+
+void WirelessNetwork::Clear() {
+  Network::Clear();
+  name_.clear();
+  strength_ = 0;
+  auto_connect_ = false;
+}
+
+void WirelessNetwork::ConfigureFromService(const ServiceInfo& service) {
+  Network::ConfigureFromService(service);
+  name_ = service.name;
+  strength_ = service.strength;
+  auto_connect_ = service.auto_connect;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WifiNetwork
+
+void WifiNetwork::Clear() {
+  WirelessNetwork::Clear();
+  encryption_ = SECURITY_NONE;
+  passphrase_.clear();
+}
+
+void WifiNetwork::ConfigureFromService(const ServiceInfo& service) {
+  WirelessNetwork::ConfigureFromService(service);
+  encryption_ = service.security;
+  passphrase_ = service.passphrase;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkLibrary
@@ -91,7 +156,7 @@ void NetworkLibraryImpl::ConnectToWifiNetwork(WifiNetwork network,
                                               const string16& identity,
                                               const string16& certpath) {
   if (CrosLibrary::Get()->EnsureLoaded()) {
-    ConnectToNetworkWithCertInfo(network.service_path.c_str(),
+    ConnectToNetworkWithCertInfo(network.service_path().c_str(),
                      password.empty() ? NULL : UTF16ToUTF8(password).c_str(),
                      identity.empty() ? NULL : UTF16ToUTF8(identity).c_str(),
                      certpath.empty() ? NULL : UTF16ToUTF8(certpath).c_str());
@@ -127,39 +192,27 @@ void NetworkLibraryImpl::ConnectToWifiNetwork(const string16& ssid,
 
 void NetworkLibraryImpl::ConnectToCellularNetwork(CellularNetwork network) {
   if (CrosLibrary::Get()->EnsureLoaded()) {
-    ConnectToNetwork(network.service_path.c_str(), NULL);
+    ConnectToNetwork(network.service_path().c_str(), NULL);
   }
 }
 
-void NetworkLibraryImpl::DisconnectFromWifiNetwork(const WifiNetwork& network) {
+void NetworkLibraryImpl::DisconnectFromWirelessNetwork(
+    const WirelessNetwork& network) {
   if (CrosLibrary::Get()->EnsureLoaded()) {
-    DisconnectFromNetwork(network.service_path.c_str());
-  }
-}
-
-void NetworkLibraryImpl::DisconnectFromCellularNetwork(
-    const CellularNetwork& network) {
-  if (CrosLibrary::Get()->EnsureLoaded()) {
-    DisconnectFromNetwork(network.service_path.c_str());
+    DisconnectFromNetwork(network.service_path().c_str());
   }
 }
 
 void NetworkLibraryImpl::SaveWifiNetwork(const WifiNetwork& network) {
   if (CrosLibrary::Get()->EnsureLoaded()) {
-    SetPassphrase(network.service_path.c_str(), network.passphrase.c_str());
-    SetAutoConnect(network.service_path.c_str(), network.auto_connect);
+    SetPassphrase(network.service_path().c_str(), network.passphrase().c_str());
+    SetAutoConnect(network.service_path().c_str(), network.auto_connect());
   }
 }
 
-void NetworkLibraryImpl::ForgetWifiNetwork(const WifiNetwork& network) {
+void NetworkLibraryImpl::ForgetWirelessNetwork(const WirelessNetwork& network) {
   if (CrosLibrary::Get()->EnsureLoaded()) {
-    DeleteRememberedService(network.service_path.c_str());
-  }
-}
-
-void NetworkLibraryImpl::ForgetCellularNetwork(const CellularNetwork& network) {
-  if (CrosLibrary::Get()->EnsureLoaded()) {
-    DeleteRememberedService(network.service_path.c_str());
+    DeleteRememberedService(network.service_path().c_str());
   }
 }
 
@@ -233,7 +286,7 @@ void NetworkLibraryImpl::ParseSystem(SystemInfo* system,
     WifiNetworkVector* remembered_wifi_networks,
     CellularNetworkVector* remembered_cellular_networks) {
   DLOG(INFO) << "ParseSystem:";
-  bool ethernet_found = false;
+  ethernet->Clear();
   for (int i = 0; i < system->service_size; i++) {
     const ServiceInfo& service = system->services[i];
     DLOG(INFO) << "  (" << service.type <<
@@ -247,57 +300,12 @@ void NetworkLibraryImpl::ParseSystem(SystemInfo* system,
                   " fav=" << service.favorite <<
                   " auto=" << service.auto_connect <<
                   " error=" << service.error;
-    bool connecting = service.state == STATE_ASSOCIATION ||
-                      service.state == STATE_CONFIGURATION ||
-                      service.state == STATE_CARRIER;
-    bool connected = service.state == STATE_READY;
-    // if connected, get ip config
-    std::string ip_address;
-    if (connected && service.device_path) {
-      IPConfigStatus* ipconfig_status = ListIPConfigs(service.device_path);
-      if (ipconfig_status) {
-        for (int i = 0; i < ipconfig_status->size; i++) {
-          IPConfig ipconfig = ipconfig_status->ips[i];
-          if (strlen(ipconfig.address) > 0)
-            ip_address = ipconfig.address;
-          DLOG(INFO) << "          ipconfig: " <<
-                        " type=" << ipconfig.type <<
-                        " address=" << ipconfig.address <<
-                        " mtu=" << ipconfig.mtu <<
-                        " netmask=" << ipconfig.netmask <<
-                        " broadcast=" << ipconfig.broadcast <<
-                        " peer_address=" << ipconfig.peer_address <<
-                        " gateway=" << ipconfig.gateway <<
-                        " domainname=" << ipconfig.domainname <<
-                        " name_servers=" << ipconfig.name_servers;
-        }
-        FreeIPConfigStatus(ipconfig_status);
-      }
-    }
-    if (service.type == TYPE_ETHERNET) {
-      ethernet_found = true;
-      ethernet->connecting = connecting;
-      ethernet->connected = connected;
-      ethernet->device_path = service.device_path ? service.device_path :
-                                                    std::string();
-      ethernet->ip_address = ip_address;
-    } else if (service.type == TYPE_WIFI) {
-      wifi_networks->push_back(WifiNetwork(service,
-                                           connecting,
-                                           connected,
-                                           ip_address));
-    } else if (service.type == TYPE_CELLULAR) {
-      cellular_networks->push_back(CellularNetwork(service,
-                                                   connecting,
-                                                   connected,
-                                                   ip_address));
-    }
-  }
-  if (!ethernet_found) {
-    ethernet->connecting = false;
-    ethernet->connected = false;
-    ethernet->device_path = std::string();
-    ethernet->ip_address = std::string();
+    if (service.type == TYPE_ETHERNET)
+      ethernet->ConfigureFromService(service);
+    else if (service.type == TYPE_WIFI)
+      wifi_networks->push_back(WifiNetwork(service));
+    else if (service.type == TYPE_CELLULAR)
+      cellular_networks->push_back(CellularNetwork(service));
   }
   DLOG(INFO) << "Remembered networks:";
   for (int i = 0; i < system->remembered_service_size; i++) {
@@ -311,17 +319,10 @@ void NetworkLibraryImpl::ParseSystem(SystemInfo* system,
                     " sec=" << service.security <<
                     " pass=" << service.passphrase <<
                     " auto=" << service.auto_connect;
-      if (service.type == TYPE_WIFI) {
-        remembered_wifi_networks->push_back(WifiNetwork(service,
-                                                        false,
-                                                        false,
-                                                        std::string()));
-      } else if (service.type == TYPE_CELLULAR) {
-        remembered_cellular_networks->push_back(CellularNetwork(service,
-                                                                false,
-                                                                false,
-                                                                std::string()));
-      }
+      if (service.type == TYPE_WIFI)
+        remembered_wifi_networks->push_back(WifiNetwork(service));
+      else if (service.type == TYPE_CELLULAR)
+        remembered_cellular_networks->push_back(CellularNetwork(service));
     }
   }
 }
@@ -380,14 +381,14 @@ void NetworkLibraryImpl::UpdateNetworkStatus(SystemInfo* system) {
 
   wifi_ = WifiNetwork();
   for (size_t i = 0; i < wifi_networks_.size(); i++) {
-    if (wifi_networks_[i].connecting || wifi_networks_[i].connected) {
+    if (wifi_networks_[i].connecting_or_connected()) {
       wifi_ = wifi_networks_[i];
       break;  // There is only one connected or connecting wifi network.
     }
   }
   cellular_ = CellularNetwork();
   for (size_t i = 0; i < cellular_networks_.size(); i++) {
-    if (cellular_networks_[i].connecting || cellular_networks_[i].connected) {
+    if (cellular_networks_[i].connecting_or_connected()) {
       cellular_ = cellular_networks_[i];
       break;  // There is only one connected or connecting cellular network.
     }
@@ -454,12 +455,12 @@ bool NetworkLibraryImpl::Connecting() const {
 const std::string& NetworkLibraryImpl::IPAddress() const {
   // Returns highest priority IP address.
   if (ethernet_connected())
-    return ethernet_.ip_address;
+    return ethernet_.ip_address();
   if (wifi_connected())
-    return wifi_.ip_address;
+    return wifi_.ip_address();
   if (cellular_connected())
-    return cellular_.ip_address;
-  return ethernet_.ip_address;
+    return cellular_.ip_address();
+  return ethernet_.ip_address();
 }
 
 }  // namespace chromeos

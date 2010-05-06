@@ -38,12 +38,12 @@ int NetworkList::GetNetworkIndexById(NetworkType type,
           return i;
 
         case NETWORK_WIFI:
-          if (network_id == networks_[i].wifi_network.ssid)
+          if (network_id == networks_[i].wifi_network.name())
             return i;
           break;
 
         case NETWORK_CELLULAR:
-          if (network_id == networks_[i].cellular_network.name)
+          if (network_id == networks_[i].cellular_network.name())
             return i;
           break;
 
@@ -101,10 +101,10 @@ void NetworkList::NetworkChanged(chromeos::NetworkLibrary* network_lib) {
   for (WifiNetworkVector::const_iterator it = wifi.begin();
        it != wifi.end(); ++it, ++index) {
     networks_.push_back(NetworkItem(NETWORK_WIFI,
-                                    ASCIIToUTF16(it->ssid),
+                                    ASCIIToUTF16(it->name()),
                                     *it,
                                     CellularNetwork()));
-    if (network_lib->wifi_ssid() == it->ssid) {
+    if (network_lib->wifi_name() == it->name()) {
       SetNetworksIndices(index,
                          network_lib->wifi_connected(),
                          network_lib->wifi_connecting());
@@ -115,10 +115,10 @@ void NetworkList::NetworkChanged(chromeos::NetworkLibrary* network_lib) {
   for (CellularNetworkVector::const_iterator it = cellular.begin();
        it != cellular.end(); ++it, ++index) {
     networks_.push_back(NetworkItem(NETWORK_CELLULAR,
-                                    ASCIIToUTF16(it->name),
+                                    ASCIIToUTF16(it->name()),
                                     WifiNetwork(),
                                     *it));
-    if (network_lib->cellular_name() == it->name) {
+    if (network_lib->cellular_name() == it->name()) {
       SetNetworksIndices(index,
                          network_lib->cellular_connected(),
                          network_lib->cellular_connecting());

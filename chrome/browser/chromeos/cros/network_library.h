@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,89 +18,113 @@
 
 namespace chromeos {
 
-struct EthernetNetwork {
-  EthernetNetwork()
-      : connecting(false),
-        connected(false) {}
+class Network {
+ public:
+  const std::string& service_path() const { return service_path_; }
+  const std::string& device_path() const { return device_path_; }
+  const std::string& ip_address() const { return ip_address_; }
+  bool connecting() const { return connecting_; }
+  bool connected() const { return connected_; }
+  bool connecting_or_connected() const { return connecting_ || connected_; }
 
-  std::string device_path;
-  std::string ip_address;
-  bool connecting;
-  bool connected;
+  void set_connecting(bool connecting) { connecting_ = connecting; }
+  void set_connected(bool connected) { connected_ = connected; }
+
+  // Clear the fields.
+  virtual void Clear();
+
+  // Configure the Network from a ServiceInfo object.
+  virtual void ConfigureFromService(const ServiceInfo& service);
+
+ protected:
+  Network()
+      : connecting_(false),
+        connected_(false) {}
+  virtual ~Network() {}
+
+ private:
+  std::string service_path_;
+  std::string device_path_;
+  std::string ip_address_;
+  bool connecting_;
+  bool connected_;
 };
 
-struct WifiNetwork {
+class EthernetNetwork : public Network {
+ public:
+  EthernetNetwork() : Network() {}
+};
+
+class WirelessNetwork : public Network {
+ public:
+  // WirelessNetwork are sorted by name.
+  bool operator< (const WirelessNetwork& other) const {
+    return name_ < other.name();
+  }
+
+  const std::string& name() const { return name_; }
+  int strength() const { return strength_; }
+  bool auto_connect() const { return auto_connect_; }
+
+  void set_name(const std::string& name) { name_ = name; }
+  void set_auto_connect(bool auto_connect) { auto_connect_ = auto_connect; }
+
+  // Network overrides.
+  virtual void Clear();
+  virtual void ConfigureFromService(const ServiceInfo& service);
+
+ protected:
+  WirelessNetwork()
+      : Network(),
+        strength_(0),
+        auto_connect_(false) {}
+
+ private:
+  std::string name_;
+  int strength_;
+  bool auto_connect_;
+};
+
+class CellularNetwork : public WirelessNetwork {
+ public:
+  CellularNetwork() : WirelessNetwork() {}
+  explicit CellularNetwork(const ServiceInfo& service)
+      : WirelessNetwork() {
+    ConfigureFromService(service);
+  }
+};
+
+class WifiNetwork : public WirelessNetwork {
+ public:
   WifiNetwork()
-      : encrypted(false),
-        encryption(SECURITY_UNKNOWN),
-        strength(0),
-        connecting(false),
-        connected(false),
-        auto_connect(false) {}
-  WifiNetwork(ServiceInfo service, bool connecting, bool connected,
-              const std::string& ip_address)
-      : service_path(service.service_path),
-        device_path(service.device_path),
-        ssid(service.name),
-        encrypted(service.security != SECURITY_NONE),
-        encryption(service.security),
-        passphrase(service.passphrase),
-        strength(service.strength),
-        connecting(connecting),
-        connected(connected),
-        auto_connect(service.auto_connect),
-        ip_address(ip_address) {}
-
-  // WifiNetworks are sorted by ssids.
-  bool operator< (const WifiNetwork& other) const {
-    return ssid < other.ssid;
+      : WirelessNetwork(),
+        encryption_(SECURITY_NONE) {}
+  explicit WifiNetwork(const ServiceInfo& service)
+      : WirelessNetwork() {
+    ConfigureFromService(service);
   }
 
-  std::string service_path;
-  std::string device_path;
-  std::string ssid;
-  bool encrypted;
-  ConnectionSecurity encryption;
-  std::string passphrase;
-  int strength;
-  bool connecting;
-  bool connected;
-  bool auto_connect;
-  std::string ip_address;
+  bool encrypted() const { return encryption_ != SECURITY_NONE; }
+  ConnectionSecurity encryption() const { return encryption_; }
+  const std::string& passphrase() const { return passphrase_; }
+
+  void set_encryption(ConnectionSecurity encryption) {
+    encryption_ = encryption;
+  }
+  void set_passphrase(const std::string& passphrase) {
+    passphrase_ = passphrase;
+  }
+
+  // WirelessNetwork overrides.
+  virtual void Clear();
+  virtual void ConfigureFromService(const ServiceInfo& service);
+
+ private:
+  ConnectionSecurity encryption_;
+  std::string passphrase_;
 };
+
 typedef std::vector<WifiNetwork> WifiNetworkVector;
-
-struct CellularNetwork {
-  CellularNetwork()
-      : strength(strength),
-        connecting(false),
-        connected(false),
-        auto_connect(false) {}
-  CellularNetwork(ServiceInfo service, bool connecting, bool connected,
-                  const std::string& ip_address)
-      : service_path(service.service_path),
-        device_path(service.device_path),
-        name(service.name),
-        strength(service.strength),
-        connecting(connecting),
-        connected(connected),
-        auto_connect(service.auto_connect),
-        ip_address(ip_address) {}
-
-  // CellularNetworks are sorted by name.
-  bool operator< (const CellularNetwork& other) const {
-    return name < other.name;
-  }
-
-  std::string service_path;
-  std::string device_path;
-  std::string name;
-  int strength;
-  bool connecting;
-  bool connected;
-  bool auto_connect;
-  std::string ip_address;
-};
 typedef std::vector<CellularNetwork> CellularNetworkVector;
 
 struct NetworkIPConfig {
@@ -154,7 +178,7 @@ class NetworkLibrary {
   virtual bool ethernet_connecting() const = 0;
   virtual bool ethernet_connected() const = 0;
 
-  virtual const std::string& wifi_ssid() const = 0;
+  virtual const std::string& wifi_name() const = 0;
   virtual bool wifi_connecting() const = 0;
   virtual bool wifi_connected() const = 0;
   virtual int wifi_strength() const = 0;
@@ -204,21 +228,15 @@ class NetworkLibrary {
   // Connect to the specified cellular network.
   virtual void ConnectToCellularNetwork(CellularNetwork network) = 0;
 
-  // Disconnect from the specified wifi network.
-  virtual void DisconnectFromWifiNetwork(const WifiNetwork& network) = 0;
-
-  // Disconnect from the specified cellular network.
-  virtual void DisconnectFromCellularNetwork(
-      const CellularNetwork& network) = 0;
+  // Disconnect from the specified wireless (either cellular or wifi) network.
+  virtual void DisconnectFromWirelessNetwork(
+      const WirelessNetwork& network) = 0;
 
   // Set whether or not to auto-connect to this network.
   virtual void SaveWifiNetwork(const WifiNetwork& network) = 0;
 
-  // Forget the passed in wifi network.
-  virtual void ForgetWifiNetwork(const WifiNetwork& network) = 0;
-
-  // Forget the passed in cellular network.
-  virtual void ForgetCellularNetwork(const CellularNetwork& network) = 0;
+  // Forget the passed in wireless (either cellular or wifi) network.
+  virtual void ForgetWirelessNetwork(const WirelessNetwork& network) = 0;
 
   virtual bool ethernet_available() const = 0;
   virtual bool wifi_available() const = 0;
@@ -269,18 +287,18 @@ class NetworkLibraryImpl : public NetworkLibrary,
   virtual void RemoveObserver(Observer* observer);
 
   virtual const EthernetNetwork& ethernet_network() const { return ethernet_; }
-  virtual bool ethernet_connecting() const { return ethernet_.connecting; }
-  virtual bool ethernet_connected() const { return ethernet_.connected; }
+  virtual bool ethernet_connecting() const { return ethernet_.connecting(); }
+  virtual bool ethernet_connected() const { return ethernet_.connected(); }
 
-  virtual const std::string& wifi_ssid() const { return wifi_.ssid; }
-  virtual bool wifi_connecting() const { return wifi_.connecting; }
-  virtual bool wifi_connected() const { return wifi_.connected; }
-  virtual int wifi_strength() const { return wifi_.strength; }
+  virtual const std::string& wifi_name() const { return wifi_.name(); }
+  virtual bool wifi_connecting() const { return wifi_.connecting(); }
+  virtual bool wifi_connected() const { return wifi_.connected(); }
+  virtual int wifi_strength() const { return wifi_.strength(); }
 
-  virtual const std::string& cellular_name() const { return cellular_.name; }
-  virtual bool cellular_connecting() const { return cellular_.connecting; }
-  virtual bool cellular_connected() const { return cellular_.connected; }
-  virtual int cellular_strength() const { return cellular_.strength; }
+  virtual const std::string& cellular_name() const { return cellular_.name(); }
+  virtual bool cellular_connecting() const { return cellular_.connecting(); }
+  virtual bool cellular_connected() const { return cellular_.connected(); }
+  virtual int cellular_strength() const { return cellular_.strength(); }
 
   // Return true if any network is currently connected.
   virtual bool Connected() const;
@@ -330,34 +348,34 @@ class NetworkLibraryImpl : public NetworkLibrary,
   // Connect to the specified cellular network.
   virtual void ConnectToCellularNetwork(CellularNetwork network);
 
-  // Disconnect from the specified wifi network.
-  virtual void DisconnectFromWifiNetwork(const WifiNetwork& network);
-
-  // Disconnect from the specified cellular network.
-  virtual void DisconnectFromCellularNetwork(const CellularNetwork& network);
+  // Disconnect from the specified wireless (either cellular or wifi) network.
+  virtual void DisconnectFromWirelessNetwork(const WirelessNetwork& network);
 
   // Set whether or not to auto-connect to this network.
   virtual void SaveWifiNetwork(const WifiNetwork& network);
 
-  // Forget the passed in wifi network.
-  virtual void ForgetWifiNetwork(const WifiNetwork& network);
-
-  // Forget the passed in cellular network.
-  virtual void ForgetCellularNetwork(const CellularNetwork& network);
+  // Forget the passed in wireless (either cellular or wifi) network.
+  virtual void ForgetWirelessNetwork(const WirelessNetwork& network);
 
   virtual bool ethernet_available() const {
-      return available_devices_ & (1 << TYPE_ETHERNET); }
+      return available_devices_ & (1 << TYPE_ETHERNET);
+  }
   virtual bool wifi_available() const {
-      return available_devices_ & (1 << TYPE_WIFI); }
+      return available_devices_ & (1 << TYPE_WIFI);
+  }
   virtual bool cellular_available() const {
-      return available_devices_ & (1 << TYPE_CELLULAR); }
+      return available_devices_ & (1 << TYPE_CELLULAR);
+  }
 
   virtual bool ethernet_enabled() const {
-      return enabled_devices_ & (1 << TYPE_ETHERNET); }
+      return enabled_devices_ & (1 << TYPE_ETHERNET);
+  }
   virtual bool wifi_enabled() const {
-      return enabled_devices_ & (1 << TYPE_WIFI); }
+      return enabled_devices_ & (1 << TYPE_WIFI);
+  }
   virtual bool cellular_enabled() const {
-      return enabled_devices_ & (1 << TYPE_CELLULAR); }
+      return enabled_devices_ & (1 << TYPE_CELLULAR);
+  }
 
   virtual bool offline_mode() const { return offline_mode_; }
 
