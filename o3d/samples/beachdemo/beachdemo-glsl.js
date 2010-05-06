@@ -1959,9 +1959,16 @@ function loadShaders() {
     'watershader',
     'waterstyle2',
   ];
+
+  o3djs.effect.setLanguage('glsl');
+  o3djs.particles.setLanguage('glsl');
+  o3djs.canvas.setLanguage('glsl');
+  o3djs.fps.setLanguage('glsl');
+
   for (ii = 0; ii < names.length; ++ii) {
     n = names[ii];
-    g_shaders[n] = o3djs.io.loadTextFileSynchronous('shaders_cg/' + n + '.cg');
+    g_shaders[n] =
+      o3djs.io.loadTextFileSynchronous('shaders_glsl/' + n + '.glsl');
   }
 }
 
