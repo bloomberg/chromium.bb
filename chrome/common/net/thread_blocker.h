@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_NET_THREAD_BLOCKER_H_
-#define CHROME_BROWSER_SYNC_NET_THREAD_BLOCKER_H_
+#ifndef CHROME_COMMON_NET_THREAD_BLOCKER_H_
+#define CHROME_COMMON_NET_THREAD_BLOCKER_H_
 
 // This class (mainly used for testing) lets you block and unblock a
 // thread at will.
@@ -20,7 +20,7 @@ namespace base {
 class Thread;
 }  // namespace base
 
-namespace browser_sync {
+namespace chrome_common_net {
 
 class ThreadBlocker {
  public:
@@ -46,6 +46,6 @@ class ThreadBlocker {
   DISALLOW_COPY_AND_ASSIGN(ThreadBlocker);
 };
 
-}  // namespace browser_sync
+}  // namespace chrome_common_net
 
-#endif  // CHROME_BROWSER_SYNC_NET_THREAD_BLOCKER_H_
+#endif  // CHROME_COMMON_NET_THREAD_BLOCKER_H_

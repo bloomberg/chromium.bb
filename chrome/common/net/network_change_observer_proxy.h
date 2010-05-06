@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_NET_NETWORK_CHANGE_OBSERVER_PROXY_H_
-#define CHROME_BROWSER_SYNC_NET_NETWORK_CHANGE_OBSERVER_PROXY_H_
+#ifndef CHROME_COMMON_NET_NETWORK_CHANGE_OBSERVER_PROXY_H_
+#define CHROME_COMMON_NET_NETWORK_CHANGE_OBSERVER_PROXY_H_
 
 // NetworkChangeObserverProxy is a class that listens to a
 // NetworkChangeNotifier on one thread (the source thread, which is
@@ -43,7 +43,7 @@
 #include "base/ref_counted.h"
 #include "net/base/network_change_notifier.h"
 
-namespace browser_sync {
+namespace chrome_common_net {
 
 class NetworkChangeNotifierThread;
 
@@ -109,6 +109,6 @@ class NetworkChangeObserverProxy
   DISALLOW_COPY_AND_ASSIGN(NetworkChangeObserverProxy);
 };
 
-}  // namespace browser_sync
+}  // namespace chrome_common_net
 
-#endif  // CHROME_BROWSER_SYNC_NET_NETWORK_CHANGE_OBSERVER_PROXY_H_
+#endif  // CHROME_COMMON_NET_NETWORK_CHANGE_OBSERVER_PROXY_H_

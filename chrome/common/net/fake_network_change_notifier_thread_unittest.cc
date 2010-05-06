@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/net/fake_network_change_notifier_thread.h"
+#include "chrome/common/net/fake_network_change_notifier_thread.h"
 
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -11,18 +11,18 @@
 #include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace chrome_common_net {
 class FlagToggler;
-}  // namespace browser_sync
+}  // namespace chrome_common_net
 
-// We manage the lifetime of browser_sync::FlagToggler ourselves.
+// We manage the lifetime of chrome_common_net::FlagToggler ourselves.
 template <>
-struct RunnableMethodTraits<browser_sync::FlagToggler> {
-  void RetainCallee(browser_sync::FlagToggler*) {}
-  void ReleaseCallee(browser_sync::FlagToggler*) {}
+struct RunnableMethodTraits<chrome_common_net::FlagToggler> {
+  void RetainCallee(chrome_common_net::FlagToggler*) {}
+  void ReleaseCallee(chrome_common_net::FlagToggler*) {}
 };
 
-namespace browser_sync {
+namespace chrome_common_net {
 
 // Utility class that toggles a flag every time it receives an IP
 // address change notification.
@@ -118,4 +118,4 @@ TEST_F(FakeNetworkChangeNotifierTest, Multiple) {
 
 }  // namespace
 
-}  // namespace browser_sync
+}  // namespace chrome_common_net

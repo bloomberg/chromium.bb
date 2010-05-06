@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_NET_NETWORK_CHANGE_NOTIFIER_THREAD_H_
-#define CHROME_BROWSER_SYNC_NET_NETWORK_CHANGE_NOTIFIER_THREAD_H_
+#ifndef CHROME_COMMON_NET_NETWORK_CHANGE_NOTIFIER_THREAD_H_
+#define CHROME_COMMON_NET_NETWORK_CHANGE_NOTIFIER_THREAD_H_
 
 // A simple interface that represents a thread which owns a
 // NetworkChangeNotifier.
@@ -14,7 +14,7 @@ namespace net {
 class NetworkChangeNotifier;
 }  // namespace net
 
-namespace browser_sync {
+namespace chrome_common_net {
 
 // An instance of this interface must live no longer than the thread
 // it represents and its message loop and network change notifier.
@@ -32,6 +32,6 @@ class NetworkChangeNotifierThread {
   virtual net::NetworkChangeNotifier* GetNetworkChangeNotifier() const = 0;
 };
 
-}  // namespace browser_sync
+}  // namespace chrome_common_net
 
-#endif  // CHROME_BROWSER_SYNC_NET_NETWORK_CHANGE_NOTIFIER_THREAD_H_
+#endif  // CHROME_COMMON_NET_NETWORK_CHANGE_NOTIFIER_THREAD_H_

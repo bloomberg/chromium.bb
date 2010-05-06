@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/net/network_change_observer_proxy.h"
+#include "chrome/common/net/network_change_observer_proxy.h"
 
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/sync/net/fake_network_change_notifier_thread.h"
-#include "chrome/browser/sync/net/mock_network_change_observer.h"
+#include "chrome/common/net/fake_network_change_notifier_thread.h"
+#include "chrome/common/net/mock_network_change_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace chrome_common_net {
 
 namespace {
 
@@ -227,4 +227,4 @@ TEST_F(NetworkChangeObserverProxyTest, IgnoresEventBeforeAttach) {
 
 }  // namespace
 
-}  // namespace browser_sync
+}  // namespace chrome_common_net

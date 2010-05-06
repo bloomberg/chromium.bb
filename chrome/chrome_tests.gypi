@@ -980,7 +980,6 @@
         'common/extensions/user_script_unittest.cc',
         'common/json_value_serializer_unittest.cc',
         'common/mru_cache_unittest.cc',
-        'common/net/url_util_unittest.cc',
         'common/notification_service_unittest.cc',
         'common/process_watcher_unittest.cc',
         'common/property_bag_unittest.cc',
@@ -1163,7 +1162,6 @@
           ],
           'sources!': [
             'browser/gtk/tabs/tab_renderer_gtk_unittest.cc',
-            'common/net/url_util_unittest.cc',
           ],
           'link_settings': {
             'libraries': [
@@ -1202,7 +1200,6 @@
             'browser/views/find_bar_host_unittest.cc',
             'browser/views/generic_info_view_unittest.cc',
             'browser/views/keyword_editor_view_unittest.cc',
-            'common/net/url_util_unittest.cc',
           ],
         }],
         ['OS=="linux" or OS=="freebsd"', {
@@ -1669,6 +1666,51 @@
       ], # conditions
     },
     {
+      # TODO(akalin): Add this to all.gyp.
+      'target_name': 'common_net_unit_tests',
+      'type': 'executable',
+      'sources': [
+        # TODO(akalin): Write our own test suite and runner.
+        '../base/test/run_all_unittests.cc',
+        '../base/test/test_suite.h',
+        'common/net/fake_network_change_notifier_thread_unittest.cc',
+        'common/net/fake_network_change_notifier_thread.cc',
+        'common/net/fake_network_change_notifier_thread.h',
+        'common/net/mock_network_change_observer.h',
+        'common/net/network_change_notifier_proxy_unittest.cc',
+        'common/net/network_change_observer_proxy_unittest.cc',
+        'common/net/thread_blocker_unittest.cc',
+        'common/net/thread_blocker.cc',
+        'common/net/thread_blocker.h',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        'common_net',
+        '../build/temp_gyp/googleurl.gyp:googleurl',
+        '../testing/gmock.gyp:gmock',
+        '../testing/gtest.gyp:gtest',
+      ],
+      # TODO(akalin): Remove this once we have our own test suite and
+      # runner.
+      'conditions': [
+        ['OS == "win"', {
+          'sources!': [
+            'common/net/url_util_unittest.cc',
+          ],
+        }],
+        ['OS == "linux" or OS == "freebsd" or OS == "openbsd" or OS == "solaris"', {
+          'dependencies': [
+            # Needed to handle the #include chain:
+            #   base/test/test_suite.h
+            #   gtk/gtk.h
+            '../build/linux/system.gyp:gtk',
+          ],
+        }],
+      ],
+    },
+    {
       'target_name': 'notifier_unit_tests',
       'type': 'executable',
       'sources': [
@@ -1832,46 +1874,6 @@
         ['OS=="linux" and chromeos==1', {
           'include_dirs': [
             '<(grit_out_dir)',
-          ],
-        }],
-      ],
-    },
-    {
-      # TODO(akalin): Add this to all.gyp.
-      # TODO(akalin): Consider moving this into its own file.
-      'target_name': 'sync_net_unit_tests',
-      'type': 'executable',
-      'sources': [
-        # TODO(akalin): Write our own test suite and runner.
-        '../base/test/run_all_unittests.cc',
-        '../base/test/test_suite.h',
-        'browser/sync/net/fake_network_change_notifier_thread_unittest.cc',
-        'browser/sync/net/fake_network_change_notifier_thread.cc',
-        'browser/sync/net/fake_network_change_notifier_thread.h',
-        'browser/sync/net/mock_network_change_observer.h',
-        'browser/sync/net/network_change_notifier_proxy_unittest.cc',
-        'browser/sync/net/network_change_observer_proxy_unittest.cc',
-        'browser/sync/net/thread_blocker_unittest.cc',
-        'browser/sync/net/thread_blocker.cc',
-        'browser/sync/net/thread_blocker.h',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'dependencies': [
-        'sync_net',
-        '../testing/gmock.gyp:gmock',
-        '../testing/gtest.gyp:gtest',
-      ],
-      # TODO(akalin): Remove this once we have our own test suite and
-      # runner.
-      'conditions': [
-        ['OS == "linux" or OS == "freebsd" or OS == "openbsd" or OS == "solaris"', {
-          'dependencies': [
-            # Needed to handle the #include chain:
-            #   base/test/test_suite.h
-            #   gtk/gtk.h
-            '../build/linux/system.gyp:gtk',
           ],
         }],
       ],

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/net/network_change_notifier_proxy.h"
+#include "chrome/common/net/network_change_notifier_proxy.h"
 
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "chrome/browser/sync/net/network_change_observer_proxy.h"
+#include "chrome/common/net/network_change_observer_proxy.h"
 
-namespace browser_sync {
+namespace chrome_common_net {
 
 NetworkChangeNotifierProxy::NetworkChangeNotifierProxy(
     NetworkChangeNotifierThread* source_thread)
@@ -56,4 +56,4 @@ void NetworkChangeNotifierProxy::ObserverRepeater::OnIPAddressChanged() {
                     *observers_, OnIPAddressChanged());
 }
 
-}  // namespace browser_sync
+}  // namespace chrome_common_net

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_NET_FAKE_NETWORK_CHANGE_NOTIFIER_THREAD_H_
-#define CHROME_BROWSER_SYNC_NET_FAKE_NETWORK_CHANGE_NOTIFIER_THREAD_H_
+#ifndef CHROME_COMMON_NET_FAKE_NETWORK_CHANGE_NOTIFIER_THREAD_H_
+#define CHROME_COMMON_NET_FAKE_NETWORK_CHANGE_NOTIFIER_THREAD_H_
 
 // A fake implementation of NetworkChangeNotifierThread used for
 // unit-testing.
@@ -11,13 +11,13 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
-#include "chrome/browser/sync/net/network_change_notifier_thread.h"
+#include "chrome/common/net/network_change_notifier_thread.h"
 
 namespace net {
 class MockNetworkChangeNotifier;
 }  // namespace net
 
-namespace browser_sync {
+namespace chrome_common_net {
 
 class ThreadBlocker;
 
@@ -59,6 +59,6 @@ class FakeNetworkChangeNotifierThread : public NetworkChangeNotifierThread {
   DISALLOW_COPY_AND_ASSIGN(FakeNetworkChangeNotifierThread);
 };
 
-}  // namespace browser_sync
+}  // namespace chrome_common_net
 
-#endif  // CHROME_BROWSER_SYNC_NET_FAKE_NETWORK_CHANGE_NOTIFIER_THREAD_H_
+#endif  // CHROME_COMMON_NET_FAKE_NETWORK_CHANGE_NOTIFIER_THREAD_H_

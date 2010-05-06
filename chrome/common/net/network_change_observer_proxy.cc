@@ -37,17 +37,17 @@
 //   RunnableMethods so that the ref-counting guarantees that the
 //   proxy is still valid when the task runs.
 
-#include "chrome/browser/sync/net/network_change_observer_proxy.h"
+#include "chrome/common/net/network_change_observer_proxy.h"
 
 #include <cstddef>
 
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/task.h"
-#include "chrome/browser/sync/net/network_change_notifier_thread.h"
+#include "chrome/common/net/network_change_notifier_thread.h"
 #include "net/base/network_change_notifier.h"
 
-namespace browser_sync {
+namespace chrome_common_net {
 
 NetworkChangeObserverProxy::NetworkChangeObserverProxy(
     const NetworkChangeNotifierThread* source_thread,
@@ -135,4 +135,4 @@ void NetworkChangeObserverProxy::TargetObserverOnIPAddressChanged() {
   }
 }
 
-}  // namespace browser_sync
+}  // namespace chrome_common_net

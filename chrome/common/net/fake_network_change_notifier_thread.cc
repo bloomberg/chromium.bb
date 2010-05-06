@@ -2,22 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/net/fake_network_change_notifier_thread.h"
+#include "chrome/common/net/fake_network_change_notifier_thread.h"
 
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "chrome/browser/sync/net/thread_blocker.h"
+#include "chrome/common/net/thread_blocker.h"
 #include "net/base/mock_network_change_notifier.h"
 
 // We manage the lifetime of
-// browser_sync::FakeNetworkChangeNotifierThread ourselves.
+// chrome_common_net::FakeNetworkChangeNotifierThread ourselves.
 template <>
-struct RunnableMethodTraits<browser_sync::FakeNetworkChangeNotifierThread> {
-  void RetainCallee(browser_sync::FakeNetworkChangeNotifierThread*) {}
-  void ReleaseCallee(browser_sync::FakeNetworkChangeNotifierThread*) {}
+struct RunnableMethodTraits<chrome_common_net::
+    FakeNetworkChangeNotifierThread> {
+  void RetainCallee(chrome_common_net::FakeNetworkChangeNotifierThread*) {}
+  void ReleaseCallee(chrome_common_net::FakeNetworkChangeNotifierThread*) {}
 };
 
-namespace browser_sync {
+namespace chrome_common_net {
 
 FakeNetworkChangeNotifierThread::FakeNetworkChangeNotifierThread()
     : thread_("FakeNetworkChangeNotifierThread") {}
@@ -77,4 +78,4 @@ FakeNetworkChangeNotifierThread::GetNetworkChangeNotifier() const {
   return network_change_notifier_.get();
 }
 
-}  // namespace browser_sync
+}  // namespace chrome_common_net

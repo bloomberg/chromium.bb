@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/net/thread_blocker.h"
+#include "chrome/common/net/thread_blocker.h"
 
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -13,12 +13,12 @@
 // Since a ThreadBlocker is outlived by its target thread, we don't
 // have to ref-count it.
 template <>
-struct RunnableMethodTraits<browser_sync::ThreadBlocker> {
-  void RetainCallee(browser_sync::ThreadBlocker*) {}
-  void ReleaseCallee(browser_sync::ThreadBlocker*) {}
+struct RunnableMethodTraits<chrome_common_net::ThreadBlocker> {
+  void RetainCallee(chrome_common_net::ThreadBlocker*) {}
+  void ReleaseCallee(chrome_common_net::ThreadBlocker*) {}
 };
 
-namespace browser_sync {
+namespace chrome_common_net {
 
 ThreadBlocker::ThreadBlocker(base::Thread* target_thread)
     : target_message_loop_(target_thread->message_loop()),
@@ -48,4 +48,4 @@ void ThreadBlocker::BlockOnTargetThread() {
   is_unblocked_.Signal();
 }
 
-}  // namespace browser_sync
+}  // namespace chrome_common_net

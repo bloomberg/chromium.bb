@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_NET_NETWORK_CHANGE_NOTIFIER_PROXY_H_
-#define CHROME_BROWSER_SYNC_NET_NETWORK_CHANGE_NOTIFIER_PROXY_H_
+#ifndef CHROME_COMMON_NET_NETWORK_CHANGE_NOTIFIER_PROXY_H_
+#define CHROME_COMMON_NET_NETWORK_CHANGE_NOTIFIER_PROXY_H_
 
 // NetworkChangeNotifierProxy is a class that lets observers listen to
 // a NetworkChangeNotifier that lives on another thread.
@@ -16,7 +16,7 @@
 
 class MessageLoop;
 
-namespace browser_sync {
+namespace chrome_common_net {
 
 class NetworkChangeNotifierThread;
 class NetworkChangeObserverProxy;
@@ -66,6 +66,6 @@ class NetworkChangeNotifierProxy : public net::NetworkChangeNotifier {
   DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifierProxy);
 };
 
-}  // namespace browser_sync
+}  // namespace chrome_common_net
 
-#endif  // CHROME_BROWSER_SYNC_NET_NETWORK_CHANGE_NOTIFIER_PROXY_H_
+#endif  // CHROME_COMMON_NET_NETWORK_CHANGE_NOTIFIER_PROXY_H_

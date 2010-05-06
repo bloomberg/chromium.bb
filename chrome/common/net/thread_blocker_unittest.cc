@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/net/thread_blocker.h"
+#include "chrome/common/net/thread_blocker.h"
 
 #include "base/basictypes.h"
 #include "base/lock.h"
@@ -13,18 +13,18 @@
 #include "base/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace chrome_common_net {
 class Flag;
-};  // namespace browser_sync
+};  // namespace chrome_common_net
 
-// We manage the lifetime of browser_sync::Flag ourselves.
+// We manage the lifetime of chrome_common_net::Flag ourselves.
 template <>
-struct RunnableMethodTraits<browser_sync::Flag> {
-  void RetainCallee(browser_sync::Flag*) {}
-  void ReleaseCallee(browser_sync::Flag*) {}
+struct RunnableMethodTraits<chrome_common_net::Flag> {
+  void RetainCallee(chrome_common_net::Flag*) {}
+  void ReleaseCallee(chrome_common_net::Flag*) {}
 };
 
-namespace browser_sync {
+namespace chrome_common_net {
 
 // Utility class that is basically just a thread-safe boolean.
 class Flag {
@@ -110,4 +110,4 @@ TEST_F(ThreadBlockerTest, SetUnset) {
 
 }  // namespace
 
-}  // namespace browser_sync
+}  // namespace chrome_common_net

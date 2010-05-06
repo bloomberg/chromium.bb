@@ -10,6 +10,7 @@
       'msvs_guid': '5BF908A7-68FB-4A4B-99E3-8C749F1FE4EA',
       'dependencies': [
         'common',
+        'common_net',
         'chrome_resources',
         'chrome_strings',
         'chrome_version_info',
