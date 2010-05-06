@@ -245,7 +245,7 @@ void AutoFillDownloadManager::OnURLFetchComplete(const URLFetcher* source,
         " request has succeeded";
     if (it->second.request_type == AutoFillDownloadManager::REQUEST_QUERY) {
       if (observer_)
-        observer_->OnLoadedAutoFillHeuristics(it->second.form_signatures, data);
+        observer_->OnLoadedAutoFillHeuristics(data);
     } else {
       double new_positive_upload_rate = 0;
       double new_negative_upload_rate = 0;

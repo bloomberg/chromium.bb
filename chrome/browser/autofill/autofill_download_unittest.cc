@@ -17,7 +17,7 @@ using webkit_glue::FormData;
 using WebKit::WebInputElement;
 
 // This tests AutoFillDownloadManager. AutoFillDownloadTestHelper implements
-// AutoFillDownloadManager::Observer and creates instance of
+// AutoFillDownloadManager::Observer and creates an instance of
 // AutoFillDownloadManager. Then it records responses to different initiated
 // requests, which are verified later. To mock network requests
 // TestURLFetcherFactory is used, which creates URLFetchers that do not
@@ -38,14 +38,8 @@ class AutoFillDownloadTestHelper : public AutoFillDownloadManager::Observer {
 
   // AutoFillDownloadManager::Observer overridables:
   virtual void OnLoadedAutoFillHeuristics(
-      const std::vector<std::string>& form_signatures,
       const std::string& heuristic_xml) {
     ResponseData response;
-    for (size_t i = 0; i < form_signatures.size(); ++i) {
-      if (i)
-        response.signature += ",";
-      response.signature += form_signatures[i];
-    }
     response.response = heuristic_xml;
     response.type_of_response = QUERY_SUCCESSFULL;
     responses_.push_back(response);
@@ -53,7 +47,6 @@ class AutoFillDownloadTestHelper : public AutoFillDownloadManager::Observer {
 
   virtual void OnUploadedAutoFillHeuristics(const std::string& form_signature) {
     ResponseData response;
-    response.signature = form_signature;
     response.type_of_response = UPLOAD_SUCCESSFULL;
     responses_.push_back(response);
   }
@@ -208,10 +201,9 @@ TEST(AutoFillDownloadTest, QueryAndUploadTest) {
   EXPECT_EQ(AutoFillDownloadTestHelper::UPLOAD_SUCCESSFULL,
             helper.responses_.front().type_of_response);
   EXPECT_EQ(0, helper.responses_.front().error);
-  EXPECT_EQ(form_structures[0]->FormSignature(),
-            helper.responses_.front().signature);
+  EXPECT_EQ(std::string(), helper.responses_.front().signature);
   // Expected response on non-query request is an empty string.
-  EXPECT_EQ(std::string(""), helper.responses_.front().response);
+  EXPECT_EQ(std::string(), helper.responses_.front().response);
   helper.responses_.pop_front();
 
   EXPECT_EQ(AutoFillDownloadTestHelper::REQUEST_UPLOAD_FAILED,
@@ -220,16 +212,13 @@ TEST(AutoFillDownloadTest, QueryAndUploadTest) {
   EXPECT_EQ(form_structures[1]->FormSignature(),
             helper.responses_.front().signature);
   // Expected response on non-query request is an empty string.
-  EXPECT_EQ(std::string(""), helper.responses_.front().response);
+  EXPECT_EQ(std::string(), helper.responses_.front().response);
   helper.responses_.pop_front();
 
   EXPECT_EQ(helper.responses_.front().type_of_response,
             AutoFillDownloadTestHelper::QUERY_SUCCESSFULL);
   EXPECT_EQ(0, helper.responses_.front().error);
-  std::string signature(form_structures[0]->FormSignature());
-  signature.append(",");
-  signature.append(form_structures[1]->FormSignature());
-  EXPECT_EQ(signature, helper.responses_.front().signature);
+  EXPECT_EQ(std::string(), helper.responses_.front().signature);
   EXPECT_EQ(responses[0], helper.responses_.front().response);
   helper.responses_.pop_front();
 
@@ -260,7 +249,7 @@ TEST(AutoFillDownloadTest, QueryAndUploadTest) {
             helper.responses_.front().type_of_response);
   EXPECT_EQ(500, helper.responses_.front().error);
   // Expected response on non-query request is an empty string.
-  EXPECT_EQ(std::string(""), helper.responses_.front().response);
+  EXPECT_EQ(std::string(), helper.responses_.front().response);
   helper.responses_.pop_front();
 
   // Query requests should be ignored for the next 10 seconds.

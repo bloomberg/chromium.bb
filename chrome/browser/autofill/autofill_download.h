@@ -31,11 +31,9 @@ class AutoFillDownloadManager : public URLFetcher::Delegate {
   // Notifications are *not* guaranteed to be called.
   class Observer {
    public:
-    // Called when heuristic successfully received from server.
-    // |form_signatures| - the signatures of the requesting forms.
+    // Called when field types are successfully received from the server.
     // |heuristic_xml| - server response.
     virtual void OnLoadedAutoFillHeuristics(
-        const std::vector<std::string>& form_signatures,
         const std::string& heuristic_xml) = 0;
     // Called when heuristic either successfully considered for upload and
     // not send or uploaded.
@@ -45,7 +43,7 @@ class AutoFillDownloadManager : public URLFetcher::Delegate {
     // Called when there was an error during the request.
     // |form_signature| - the signature of the requesting form.
     // |request_type| - type of request that failed.
-    // |http_error| - http error code.
+    // |http_error| - HTTP error code.
     virtual void OnHeuristicsRequestError(const std::string& form_signature,
                                           AutoFillRequestType request_type,
                                           int http_error) = 0;

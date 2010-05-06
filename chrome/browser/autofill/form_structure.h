@@ -48,6 +48,12 @@ class FormStructure {
   static bool EncodeQueryRequest(const ScopedVector<FormStructure>& forms,
                                  std::string* encoded_xml);
 
+  // Parses the field types from the server query response. |forms| must be the
+  // same as the one passed to EncodeQueryRequest when constructing the query.
+  static void ParseQueryResponse(const std::string& response_xml,
+                                 const std::vector<FormStructure*>& forms,
+                                 UploadRequired* upload_required);
+
   // The unique signature for this form, composed of the target url domain,
   // the form name, and the form field names in a 64-bit hash.
   std::string FormSignature() const;
@@ -59,6 +65,12 @@ class FormStructure {
   // Returns true if at least one of the form fields relevant for AutoFill
   // is not empty.
   bool HasAutoFillableValues() const;
+
+  // Resets |autofill_count_| and counts the number of auto-fillable fields.
+  // This is used when we receive server data for form fields.  At that time,
+  // we may have more known fields than just the number of fields we matched
+  // heuristically.
+  void UpdateAutoFillCount();
 
   // Sets the possible types for the field at |index|.
   void set_possible_types(int index, const FieldTypeSet& types);

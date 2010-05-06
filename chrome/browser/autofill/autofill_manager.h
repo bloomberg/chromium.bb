@@ -68,9 +68,7 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   virtual void Reset();
 
   // AutoFillDownloadManager::Observer implementation:
-  virtual void OnLoadedAutoFillHeuristics(
-      const std::vector<std::string>& form_signatures,
-      const std::string& heuristic_xml);
+  virtual void OnLoadedAutoFillHeuristics(const std::string& heuristic_xml);
   virtual void OnUploadedAutoFillHeuristics(const std::string& form_signature);
   virtual void OnHeuristicsRequestError(
       const std::string& form_signature,

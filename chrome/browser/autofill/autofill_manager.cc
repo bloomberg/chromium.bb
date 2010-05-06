@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "chrome/browser/autofill/autofill_dialog.h"
 #include "chrome/browser/autofill/autofill_infobar_delegate.h"
-#include "chrome/browser/autofill/autofill_xml_parser.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -299,49 +298,12 @@ void AutoFillManager::Reset() {
 }
 
 void AutoFillManager::OnLoadedAutoFillHeuristics(
-    const std::vector<std::string>& form_signatures,
     const std::string& heuristic_xml) {
-  // Create a vector of AutoFillFieldTypes,
-  // to assign the parsed field types to.
-  std::vector<AutoFillFieldType> field_types;
-  UploadRequired upload_required = USE_UPLOAD_RATES;
-
-  // Create a parser.
-  AutoFillQueryXmlParser parse_handler(&field_types, &upload_required);
-  buzz::XmlParser parser(&parse_handler);
-  parser.Parse(heuristic_xml.c_str(), heuristic_xml.length(), true);
-  if (!parse_handler.succeeded()) {
-    return;
-  }
-
-  // For multiple forms requested, returned field types are in one array.
-  // |field_shift| indicates start of the fields for current form.
-  size_t field_shift = 0;
-  // form_signatures should mirror form_structures_ unless new request is
-  // initiated. So if there is a discrepancy we just ignore data and return.
-  ScopedVector<FormStructure>::iterator it_forms;
-  std::vector<std::string>::const_iterator it_signatures;
-  for (it_forms = form_structures_.begin(),
-       it_signatures = form_signatures.begin();
-       it_forms != form_structures_.end() &&
-       it_signatures != form_signatures.end() &&
-       (*it_forms)->FormSignature() == *it_signatures;
-       ++it_forms, ++it_signatures) {
-    // In some cases *successful* response does not return all the fields.
-    // Quit the update of the types then.
-    if (field_types.size() - field_shift < (*it_forms)->field_count()) {
-      break;
-    }
-    for (size_t i = 0; i < (*it_forms)->field_count(); ++i) {
-      if (field_types[i + field_shift] != NO_SERVER_DATA &&
-          field_types[i + field_shift] != UNKNOWN_TYPE) {
-        FieldTypeSet types = (*it_forms)->field(i)->possible_types();
-        types.insert(field_types[i + field_shift]);
-        (*it_forms)->set_possible_types(i, types);
-      }
-    }
-    field_shift += (*it_forms)->field_count();
-  }
+  // TODO(jhawkins): Store |upload_required| in the AutoFillManager.
+  UploadRequired upload_required;
+  FormStructure::ParseQueryResponse(heuristic_xml,
+                                    form_structures_.get(),
+                                    &upload_required);
 }
 
 void AutoFillManager::OnUploadedAutoFillHeuristics(

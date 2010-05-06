@@ -9,6 +9,7 @@
 #include "base/sha1.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autofill/autofill_xml_parser.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_field.h"
 #include "third_party/libjingle/files/talk/xmllite/xmlelement.h"
@@ -131,6 +132,7 @@ bool FormStructure::EncodeUploadRequest(bool auto_fill_used,
   return true;
 }
 
+// static
 bool FormStructure::EncodeQueryRequest(const ScopedVector<FormStructure>& forms,
                                        std::string* encoded_xml) {
   buzz::XmlElement autofil_request_xml(buzz::QName("autofillquery"));
@@ -158,6 +160,52 @@ bool FormStructure::EncodeQueryRequest(const ScopedVector<FormStructure>& forms,
   *encoded_xml += autofil_request_xml.Str().c_str();
 
   return true;
+}
+
+// static
+void FormStructure::ParseQueryResponse(const std::string& response_xml,
+                                       const std::vector<FormStructure*>& forms,
+                                       UploadRequired* upload_required) {
+  // Parse the field types from the server response to the query.
+  std::vector<AutoFillFieldType> field_types;
+  AutoFillQueryXmlParser parse_handler(&field_types, upload_required);
+  buzz::XmlParser parser(&parse_handler);
+  parser.Parse(response_xml.c_str(), response_xml.length(), true);
+  if (!parse_handler.succeeded())
+    return;
+
+  // Copy the field types into the actual form.
+  std::vector<AutoFillFieldType>::iterator current_type = field_types.begin();
+  for (std::vector<FormStructure*>::const_iterator iter = forms.begin();
+       iter != forms.end(); ++iter) {
+    FormStructure* form = *iter;
+    form->has_credit_card_field_ = false;
+    form->has_autofillable_field_ = false;
+
+    for (std::vector<AutoFillField*>::iterator field = form->fields_.begin();
+         field != form->fields_.end(); ++field) {
+      // The field list is terminated by a NULL AutoFillField.
+      if (!*field)
+        break;
+
+      // In some cases *successful* response does not return all the fields.
+      // Quit the update of the types then.
+      if (current_type == field_types.end())
+        break;
+
+      (*field)->set_server_type(*current_type);
+      AutoFillType autofill_type((*field)->type());
+      if (autofill_type.group() == AutoFillType::CREDIT_CARD)
+        form->has_credit_card_field_ = true;
+      if (autofill_type.field_type() != UNKNOWN_TYPE)
+        form->has_autofillable_field_ = true;
+      ++current_type;
+    }
+
+    form->UpdateAutoFillCount();
+  }
+
+  return;
 }
 
 std::string FormStructure::FormSignature() const {
@@ -188,6 +236,9 @@ bool FormStructure::IsAutoFillable() const {
 }
 
 bool FormStructure::HasAutoFillableValues() const {
+  if (autofill_count_ == 0)
+    return false;
+
   for (std::vector<AutoFillField*>::const_iterator iter = begin();
        iter != end(); ++iter) {
     AutoFillField* field = *iter;
@@ -195,6 +246,16 @@ bool FormStructure::HasAutoFillableValues() const {
       return true;
   }
   return false;
+}
+
+void FormStructure::UpdateAutoFillCount() {
+  autofill_count_ = 0;
+  for (std::vector<AutoFillField*>::const_iterator iter = begin();
+       iter != end(); ++iter) {
+    AutoFillField* field = *iter;
+    if (field && field->IsFieldFillable())
+      ++autofill_count_;
+  }
 }
 
 void FormStructure::set_possible_types(int index, const FieldTypeSet& types) {
