@@ -292,7 +292,14 @@ void InstallDialogContent2::Layout() {
 void ExtensionInstallUI::ShowExtensionInstallUIPrompt2Impl(
     Profile* profile, Delegate* delegate, Extension* extension, SkBitmap* icon,
     const std::vector<string16>& permissions) {
+#if defined(OS_CHROMEOS)
+  // Use a normal browser window as parent on ChromeOS.
+  Browser* browser = BrowserList::FindBrowserWithType(profile,
+                                                      Browser::TYPE_NORMAL,
+                                                      true);
+#else
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
+#endif
   if (!browser) {
     delegate->InstallUIAbort();
     return;
