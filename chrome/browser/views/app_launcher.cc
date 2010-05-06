@@ -251,9 +251,9 @@ AppLauncher* AppLauncher::Show(Browser* browser,
   BrowserView* browser_view = static_cast<BrowserView*>(browser->window());
   app_launcher->hash_params_ = hash_params;
   app_launcher->info_bubble_ =
-      PinnedContentsInfoBubble::Show(browser_view->frame()->GetWindow(),
-          bounds, bubble_anchor, app_launcher->info_bubble_content_,
-          app_launcher);
+      PinnedContentsInfoBubble::Show(browser_view->GetWidget(),
+          bounds, BubbleBorder::TOP_LEFT, bubble_anchor,
+          app_launcher->info_bubble_content_, app_launcher);
   app_launcher->info_bubble_content_->BubbleShown();
   return app_launcher;
 }
