@@ -44,7 +44,10 @@ const CGFloat kLeftRightMargin = 5.0;
 const CGFloat kTextXOffset = 29.0;
 
 // Animation duration when animating the popup window smaller.
-const CGFloat kShrinkAnimationDuration = 0.1;
+const NSTimeInterval kShrinkAnimationDuration = 0.1;
+
+// A very short animation duration used to cancel running animations.
+const NSTimeInterval kCancelAnimationDuration = 0.00001;
 
 // Maximum fraction of the popup width that can be used to display match
 // contents.
@@ -296,6 +299,29 @@ void AutocompletePopupViewMac::CreatePopupIfNeeded() {
   }
 }
 
+void AutocompletePopupViewMac::SetPopupFrame(const NSRect frame) {
+  // Do nothing if the popup is already animating to the given |frame|.
+  if  (NSEqualRects(frame, targetPopupFrame_))
+    return;
+
+  NSRect currentPopupFrame = [popup_ frame];
+  targetPopupFrame_ = frame;
+
+  // Animate the frame change if the only change is that the height got smaller.
+  // Otherwise, resize immediately.
+  bool animate = (NSHeight(frame) < NSHeight(currentPopupFrame) &&
+                  NSWidth(frame) == NSWidth(currentPopupFrame));
+  NSTimeInterval duration =
+      (animate ? kShrinkAnimationDuration: kCancelAnimationDuration);
+
+  [NSAnimationContext beginGrouping];
+  // Don't use the GTM additon for the "Steve" slowdown because this can happen
+  // async from user actions and the effects could be a surprise.
+  [[NSAnimationContext currentContext] setDuration:duration];
+  [[popup_ animator] setFrame:frame display:YES];
+  [NSAnimationContext endGrouping];
+}
+
 void AutocompletePopupViewMac::UpdatePopupAppearance() {
   DCHECK([NSThread isMainThread]);
   const AutocompleteResult& result = model_->result();
@@ -354,6 +380,9 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
   [matrix setCellSize:NSMakeSize(r.size.width,
                                  cellSize.height + kCellHeightAdjust)];
 
+  // Save the old matrix frame in order to later restore it.
+  NSRect savedMatrixFrame = [matrix frame];
+
   // Make the matrix big enough to hold all the cells.
   [matrix sizeToCells];
 
@@ -361,24 +390,14 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
   r.size.height = [matrix frame].size.height;
   r.origin.y -= r.size.height + kPopupFieldGap;
 
+  // Resize the matrix back to its original size, since we aren't resizing the
+  // window immediately.
+  [matrix setFrame:savedMatrixFrame];
+
   // Update the selection.
   PaintUpdatesNow();
 
-  // Animate the frame change if the only change is that the height got smaller.
-  // Otherwise, resize immediately.
-  NSRect oldFrame = [popup_ frame];
-  if (r.size.height < oldFrame.size.height &&
-      r.origin.x == oldFrame.origin.x &&
-      r.size.width == oldFrame.size.width) {
-    [NSAnimationContext beginGrouping];
-    // Don't use the GTM additon for the "Steve" slowdown because this can
-    // happen async from user actions and the effects could be a surprise.
-   [[NSAnimationContext currentContext] setDuration:kShrinkAnimationDuration];
-    [[popup_ animator] setFrame:r display:YES];
-    [NSAnimationContext endGrouping];
-  } else {
-    [popup_ setFrame:r display:YES];
-  }
+  SetPopupFrame(r);
 
   if (!IsOpen()) {
     [[field_ window] addChildWindow:popup_ ordered:NSWindowAbove];
@@ -483,6 +502,8 @@ void AutocompletePopupViewMac::OpenURLForRow(int row, bool force_background) {
 @end
 
 @implementation AutocompleteMatrix
+
+
 
 // Remove all tracking areas and initialize the one we want.  Removing
 // all might be overkill, but it's unclear why there would be others

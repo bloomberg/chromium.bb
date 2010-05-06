@@ -106,12 +106,18 @@ class AutocompletePopupViewMac : public AutocompletePopupView {
   // Create the popup_ instance if needed.
   void CreatePopupIfNeeded();
 
+  // Sets the popup frame, animating to the new frame if the popup is shrinking,
+  // setting the frame immediately otherwise.  Does nothing if the popup is
+  // already animating to the given frame.
+  void SetPopupFrame(const NSRect frame);
+
   scoped_ptr<AutocompletePopupModel> model_;
   AutocompleteEditViewMac* edit_view_;
   NSTextField* field_;  // owned by tab controller
 
   // Child window containing a matrix which implements the popup.
   scoped_nsobject<NSWindow> popup_;
+  NSRect targetPopupFrame_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompletePopupViewMac);
 };
