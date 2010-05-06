@@ -9,8 +9,6 @@
     'dx_redist_path': '../../../o3d-internal/third_party/dx_nov_2007_redist',
     'dx_redist_exists': '<!(python ../../build/file_exists.py ../../../o3d-internal/third_party/dx_nov_2007_redist/d3dx9_36.dll)',
     'guidgen': '..\\..\\nbguidgen\\win\\nbguidgen.exe',
-    'nppversion': '<!(python ../../plugin/version_info.py --commaversion)',
-    'dotnppversion': '<!(python ../../plugin/version_info.py --version)',
 
     # Unique guid for o3d namespace
     'o3d_namespace_guid': 'B445DBAE-F5F9-435A-9A9B-088261CDF00A',
@@ -36,6 +34,7 @@
   },
   'includes': [
     '../../build/common.gypi',
+    '../../plugin/version.gypi',
   ],
   'targets': [
     {
@@ -95,10 +94,13 @@
         'candle_exe': '../../../<(wixdir)/candle.exe',
         'light_exe': '../../../<(wixdir)/light.exe',
         'custom_actions_path': '<(PRODUCT_DIR)/cactions.dll',
-        'd3dx_guid': '<!(<(guidgen) <(o3d_namespace_guid) d3dx-<(nppversion))',
+        'd3dx_guid': '<!(<(guidgen) <(o3d_namespace_guid) '
+            'd3dx-<!(python ../../plugin/version_info.py '
+                '--set_version=<(plugin_version) --commaversion))',
         'dbl_path': '../../installer/win/driver_blacklist.txt',
         'dx_redist_guid': '<!(<(guidgen) <(o3d_namespace_guid) '
-                          'dx_redist-<(nppversion))',
+            'dx_redist-<!(python ../../plugin/version_info.py '
+                '--set_version=<(plugin_version) --commaversion))',
         'get_extras_path': '<(PRODUCT_DIR)/getextras.exe',
         'ieplugin_path': '<(PRODUCT_DIR)/o3d_host.dll',
         'include_software_renderer':
@@ -106,26 +108,38 @@
             '../../../<(swiftshaderdir)/swiftshader_d3d9.dll)',
         'npplugin_path': '<(PRODUCT_DIR)/npo3dautoplugin.dll',
         'o3d_driver_blacklist_guid': '<!(<(guidgen) <(o3d_namespace_guid) '
-                                     'o3d_driver_blacklist-<(nppversion))',
+            'o3d_driver_blacklist-<!(python ../../plugin/version_info.py '
+                '--set_version=<(plugin_version) --commaversion))',
         'o3d_get_extras_guid':
             '<!(<(guidgen) <(o3d_namespace_guid) extras_installer-)',
         'o3d_iep_component_guid': '<!(<(guidgen) <(o3d_namespace_guid) '
-                                  'o3d_ieplugin_component-<(nppversion))',
+            'o3d_ieplugin_component-<!(python ../../plugin/version_info.py '
+                '--set_version=<(plugin_version) --commaversion))',
         'o3d_npp_component_guid': '<!(<(guidgen) <(o3d_namespace_guid) '
-                                  'o3d_npplugin_component-<(nppversion))',
+            'o3d_npplugin_component-<!(python ../../plugin/version_info.py '
+                '--set_version=<(plugin_version) --commaversion))',
         'o3d_npp_google_update_reg_component_guid':
             '<!(<(guidgen) <(o3d_namespace_guid) '
-            'o3d_user_google_update_reg_component-<(nppversion))',
-        'o3d_npp_package_guid': '<!(<(guidgen) <(o3d_namespace_guid) o3d_package-<(nppversion))',
-        'o3d_npp_product_guid': '<!(<(guidgen) <(o3d_namespace_guid) o3d_product-<(nppversion))',
+            'o3d_user_google_update_reg_component-'
+            '<!(python ../../plugin/version_info.py '
+                '--set_version=<(plugin_version) --commaversion))',
+        'o3d_npp_package_guid': '<!(<(guidgen) <(o3d_namespace_guid) '
+            'o3d_package-<!(python ../../plugin/version_info.py '
+                '--set_version=<(plugin_version) --commaversion))',
+        'o3d_npp_product_guid': '<!(<(guidgen) <(o3d_namespace_guid) '
+            'o3d_product-<!(python ../../plugin/version_info.py '
+                '--set_version=<(plugin_version) --commaversion))',
         'o3d_npp_reg_key':
             '<(google_update_reg_path)<(o3d_npp_google_update_guid)',
         'o3d_npp_state_reg_key':
             '<(google_update_state_reg_path)<(o3d_npp_google_update_guid)',
         'o3d_reporter_guid':
-            '<!(<(guidgen) <(o3d_namespace_guid) o3d_reporter-<(nppversion))',
+            '<!(<(guidgen) <(o3d_namespace_guid) '
+            'o3d_reporter-<!(python ../../plugin/version_info.py '
+                '--set_version=<(plugin_version) --commaversion))',
         'o3d_software_renderer_guid': '<!(<(guidgen) <(o3d_namespace_guid) '
-                                      'o3d_software_renderer-<(nppversion))',
+            'o3d_software_renderer-<!(python ../../plugin/version_info.py '
+                '--set_version=<(plugin_version) --commaversion))',
         'rep_path': '<(PRODUCT_DIR)/reporter.exe',
         'software_renderer_path':
             '../../../<(swiftshaderdir)/swiftshader_d3d9.dll',
@@ -185,7 +199,7 @@
             '-dNppPackageGuid=<(o3d_npp_package_guid)',
             '-dNppProductGuid=<(o3d_npp_product_guid)',
             '-dNppUpgradeCode=<(o3d_npp_upgrade_code)',
-            '-dNppVersion=<(dotnppversion)',
+            '-dNppVersion=<(plugin_version)',
             '-dRepGuid=<(o3d_reporter_guid)',
             '-dRepPath=<(rep_path)',
             '-dSoftwareRendererGuid=<(o3d_software_renderer_guid)',
@@ -232,7 +246,8 @@
               'candle_exe': '../../../<(wixdir)/candle.exe',
               'light_exe': '../../../<(wixdir)/light.exe',
               'o3d_extras_d3dx_component_guid': '<!(<(guidgen) <(o3d_namespace_guid) '
-              'o3d_extras_d3dx_component-<(nppversion))',
+              'o3d_extras_d3dx_component-<!(python ../../plugin/version_info.py '
+                  '--set_version=<(plugin_version) --commaversion))',
               'o3d_extras_package_guid': '<!(<(guidgen) <(o3d_namespace_guid) '
               'o3d_extras_package-<(extrasversion))',
               'o3d_extras_product_guid': '<!(<(guidgen) <(o3d_namespace_guid) '

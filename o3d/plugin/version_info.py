@@ -28,20 +28,17 @@ sys.path.append(gflags_dir)
 import gflags
 
 FLAGS = gflags.FLAGS
-gflags.DEFINE_boolean('kill_switch', False,
-                      'Generate version numbers for kill switch binary.')
-
 gflags.DEFINE_boolean('description', False,
                       'Print out the plugin description and exit.')
-
-gflags.DEFINE_boolean('version', False,
-                      'Print out the plugin version and exit.')
 
 gflags.DEFINE_boolean('commaversion', False,
                       'Print out the plugin version with commas and exit.')
 
 gflags.DEFINE_string('set_name', '',
                      'Sets the plugin name to use.')
+
+gflags.DEFINE_string('set_version', '',
+                     'Sets the plugin version to use.')
 
 gflags.DEFINE_string('set_npapi_filename', '',
                      'Sets the plugin NPAPI filename to use.')
@@ -61,14 +58,9 @@ gflags.DEFINE_string('set_activex_hostcontrol_name', '',
 gflags.DEFINE_string('set_activex_typelib_name', '',
                      'Sets the ActiveX TypeLib\'s name to use.')
 
-def GetDotVersion(version):
-  return '%d.%d.%d.%d' % version
-
-def GetCommaVersion(version):
-  return '%d,%d,%d,%d' % version
-
 def DoReplace(in_filename, out_filename, replacements):
-  '''Replace the version number in the given filename with the replacements.'''
+  '''Replace the version placeholders in the given filename with the
+     replacements.'''
   if not os.path.exists(in_filename):
     raise Exception(r'''Input template file %s doesn't exist.''' % in_filename)
   input_file = open(in_filename, 'r')
@@ -92,27 +84,13 @@ def main(argv):
   # Strip off argv[0]
   files = files[1:]
 
-  # Get version string from o3d_version.py
-  o3d_version_vars = {}
-  if FLAGS.kill_switch:
-    execfile(os.path.join(script_dir, '..', 'installer', 'win',
-                          'o3d_kill_version.py'), o3d_version_vars)
-  else:
-    execfile(os.path.join(script_dir, '..', 'installer', 'win',
-                          'o3d_version.py'), o3d_version_vars)
-
-  plugin_version = o3d_version_vars['plugin_version']
-  sdk_version = o3d_version_vars['sdk_version']
-
   # This name is used by Javascript to find the plugin therefore it must
   # not change. If you change this you must change the name in
   # samples/o3djs/util.js but be aware, changing the name
   # will break all apps that use o3d on the web.
   O3D_PLUGIN_NAME = FLAGS.set_name
-  O3D_PLUGIN_VERSION = GetDotVersion(plugin_version)
-  O3D_PLUGIN_VERSION_COMMAS = GetCommaVersion(plugin_version)
-  O3D_SDK_VERSION = GetDotVersion(sdk_version)
-  O3D_SDK_VERSION_COMMAS = GetCommaVersion(sdk_version)
+  O3D_PLUGIN_VERSION = FLAGS.set_version
+  O3D_PLUGIN_VERSION_COMMAS = O3D_PLUGIN_VERSION.replace('.', ',')
   O3D_PLUGIN_DESCRIPTION = '%s version:%s' % (O3D_PLUGIN_NAME,
                                               O3D_PLUGIN_VERSION)
   O3D_PLUGIN_NPAPI_FILENAME = FLAGS.set_npapi_filename
@@ -124,10 +102,6 @@ def main(argv):
 
   if FLAGS.description:
     print '%s' % O3D_PLUGIN_DESCRIPTION
-    sys.exit(0)
-
-  if FLAGS.version:
-    print '%s' % O3D_PLUGIN_VERSION
     sys.exit(0)
 
   if FLAGS.commaversion:

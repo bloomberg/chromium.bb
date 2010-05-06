@@ -62,6 +62,7 @@
   'includes': [
     '../build/common.gypi',
     'branding.gypi',
+    'version.gypi',
   ],
   'target_defaults': {
     'include_dirs': [
@@ -70,11 +71,11 @@
       '../../<(gtestdir)',
     ],
     'defines': [
-      'O3D_PLUGIN_DESCRIPTION="<!(python version_info.py --set_name="<(plugin_name)" --set_npapi_mimetype="<(plugin_npapi_mimetype)" --description)"',
+      'O3D_PLUGIN_DESCRIPTION="<!(python version_info.py --set_name="<(plugin_name)" --set_version="<(plugin_version)" --set_npapi_mimetype="<(plugin_npapi_mimetype)" --description)"',
       'O3D_PLUGIN_NPAPI_FILENAME="<(plugin_npapi_filename)"',
       'O3D_PLUGIN_NPAPI_MIMETYPE="<(plugin_npapi_mimetype)"',
       'O3D_PLUGIN_NAME="<(plugin_name)"',
-      'O3D_PLUGIN_VERSION="<!(python version_info.py --version)"',
+      'O3D_PLUGIN_VERSION="<(plugin_version)"',
       'O3D_PLUGIN_INSTALLDIR_CSIDL=<(plugin_installdir_csidl)',
       'O3D_PLUGIN_VENDOR_DIRECTORY="<(plugin_vendor_directory)"',
       'O3D_PLUGIN_PRODUCT_DIRECTORY="<(plugin_product_directory)"',
@@ -208,6 +209,7 @@
                 'action': ['python',
                   'version_info.py',
                   '--set_name=<(plugin_name)',
+                  '--set_version=<(plugin_version)',
                   '--set_npapi_mimetype=<(plugin_npapi_mimetype)',
                   'mac/o3d_plugin.r',
                   '${BUILT_PRODUCTS_DIR}/O3D.r',
@@ -533,6 +535,7 @@
                       'action': ['python',
                         'version_info.py',
                         '--set_name=<(plugin_name)',
+                        '--set_version=<(plugin_version)',
                         '--set_npapi_filename=<(plugin_npapi_filename)',
                         '--set_npapi_mimetype=<(plugin_npapi_mimetype)',
                         'win/o3dPlugin.rc_template',
@@ -550,6 +553,7 @@
                       'action': ['python',
                         'version_info.py',
                         '--set_name=<(plugin_name)',
+                        '--set_version=<(plugin_version)',
                         '--set_npapi_filename=<(plugin_npapi_filename)',
                         '--set_npapi_mimetype=<(plugin_npapi_mimetype)',
                         'mac/Info.plist',
@@ -605,6 +609,7 @@
                 ],
                 'action': ['python',
                   'version_info.py',
+                  '--set_version=<(plugin_version)',
                   '--set_activex_hostcontrol_clsid=' +
                       '<(plugin_activex_hostcontrol_clsid)',
                   '--set_activex_typelib_clsid=<(plugin_activex_typelib_clsid)',
@@ -632,6 +637,7 @@
                 ],
                 'action': ['python',
                   'version_info.py',
+                  '--set_version=<(plugin_version)',
                   '--set_activex_hostcontrol_clsid=' +
                       '<(plugin_activex_hostcontrol_clsid)',
                   '--set_activex_typelib_clsid=<(plugin_activex_typelib_clsid)',

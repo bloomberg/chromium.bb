@@ -8,6 +8,10 @@
     # Whether to enable the English-only, Win/Mac-only fullscreen message.
     'plugin_enable_fullscreen_msg%': '1',
   },
+  'includes': [
+    '../build/common.gypi',
+    '../plugin/version.gypi',
+  ],
   'target_defaults': {
     'include_dirs': [
       # The internal dir is first so that headers in internal can replace those
@@ -19,7 +23,7 @@
       '../../<(nacldir)',
     ],
     'defines': [
-      'O3D_PLUGIN_VERSION="<!(python ../plugin/version_info.py --version)"',
+      'O3D_PLUGIN_VERSION="<(plugin_version)"',
     ],
     'conditions': [
       ['<(plugin_enable_fullscreen_msg) != 0',
@@ -76,9 +80,6 @@
       }],
     ],
   },
-  'includes': [
-    '../build/common.gypi',
-  ],
   'targets': [
     {
       'target_name': 'o3dCore',

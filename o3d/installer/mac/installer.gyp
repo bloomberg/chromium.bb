@@ -5,18 +5,10 @@
 {
   'variables': {
     'chromium_code': 1,
-    'nppversion': '<!(python ../../plugin/version_info.py --commaversion)',
-    'dotnppversion': '<!(python ../../plugin/version_info.py --version)',
-
-    # We don't actually want the extras version to update by itself;
-    # it should change only when we actually add something to the
-    # installer or change the d3dx9 version.  This version is
-    # therefore independent of the o3d plugin and sdk versions.
-    'extrasversion': '0,1,1,0',
-    'dotextrasversion': '0.1.1.0',
   },
   'includes': [
     '../../build/common.gypi',
+    '../../plugin/version.gypi',
   ],
   'targets': [
     {
@@ -35,7 +27,7 @@
             'installer_script_path': './make_installer.sh',
           },
           'postbuild_name': 'Make Installer',
-          'action': ['<(installer_script_path)', '<(dotnppversion)',],
+          'action': ['<(installer_script_path)', '<(plugin_version)',],
         },
       ],
     },
@@ -51,7 +43,7 @@
             'disk_image_script_path': './make_disk_image.sh',
           },
           'postbuild_name': 'Make Disk Image',
-          'action': ['<(disk_image_script_path)', '<(dotnppversion)',],
+          'action': ['<(disk_image_script_path)', '<(plugin_version)',],
         },
       ],
     },
