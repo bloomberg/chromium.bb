@@ -241,6 +241,8 @@ class AutoFillDialog {
  public:
   AutoFillDialog(Profile* profile,
                  AutoFillDialogObserver* observer,
+                 AutoFillProfile* imported_profile,
+                 CreditCard* imported_credit_card,
                  const std::vector<AutoFillProfile*>& profiles,
                  const std::vector<CreditCard*>& credit_cards);
   ~AutoFillDialog() {}
@@ -352,6 +354,8 @@ static AutoFillDialog* dialog = NULL;
 
 AutoFillDialog::AutoFillDialog(Profile* profile,
                                AutoFillDialogObserver* observer,
+                               AutoFillProfile* imported_profile,
+                               CreditCard* imported_credit_card,
                                const std::vector<AutoFillProfile*>& profiles,
                                const std::vector<CreditCard*>& credit_cards)
     : profile_(profile),
@@ -359,15 +363,23 @@ AutoFillDialog::AutoFillDialog(Profile* profile,
   DCHECK(profile);
   DCHECK(observer);
 
-  // Copy the profiles.
-  for (std::vector<AutoFillProfile*>::const_iterator iter = profiles.begin();
+  if (imported_profile) {
+    profiles_.push_back(*imported_profile);
+  } else {
+    // Copy the profiles.
+    for (std::vector<AutoFillProfile*>::const_iterator iter = profiles.begin();
        iter != profiles.end(); ++iter)
     profiles_.push_back(**iter);
+  }
 
-  // Copy the credit cards.
-  for (std::vector<CreditCard*>::const_iterator iter = credit_cards.begin();
+  if (imported_credit_card) {
+    credit_cards_.push_back(*imported_credit_card);
+  } else {
+    // Copy the credit cards.
+    for (std::vector<CreditCard*>::const_iterator iter = credit_cards.begin();
        iter != credit_cards.end(); ++iter)
     credit_cards_.push_back(**iter);
+  }
 
   dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(IDS_AUTOFILL_DIALOG_TITLE).c_str(),
@@ -1066,9 +1078,6 @@ void AutoFillDialog::AddCreditCard(const CreditCard& credit_card,
 ///////////////////////////////////////////////////////////////////////////////
 // Factory/finder method:
 
-// TODO(jhawkins): Need to update implementation to match new interface for
-// |imported_profile| and |imported_credit_card| parameters.
-// See http://crbug.com/41010
 void ShowAutoFillDialog(gfx::NativeView parent,
                         AutoFillDialogObserver* observer,
                         Profile* profile,
@@ -1083,6 +1092,8 @@ void ShowAutoFillDialog(gfx::NativeView parent,
     dialog = new AutoFillDialog(
         profile,
         observer,
+        imported_profile,
+        imported_credit_card,
         profile->GetPersonalDataManager()->profiles(),
         profile->GetPersonalDataManager()->credit_cards());
   }
