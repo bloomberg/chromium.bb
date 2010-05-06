@@ -14,6 +14,7 @@
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/common/chrome_switches.h"
 
 namespace chromeos {
 
@@ -35,6 +36,13 @@ BootTimesLoader::Handle BootTimesLoader::GetBootTimes(
   if (!g_browser_process->file_thread()) {
     // This should only happen if Chrome is shutting down, so we don't do
     // anything.
+    return 0;
+  }
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kTestType)) {
+    // TODO(davemoore) This avoids boottimes for tests. This needs to be
+    // replaced with a mock of BootTimesLoader.
     return 0;
   }
 
