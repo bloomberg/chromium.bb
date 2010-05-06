@@ -323,6 +323,10 @@ void AppLauncher::UpdatePreferredSize(const gfx::Size& pref_size) {
 void AppLauncher::InfoBubbleClosing(InfoBubble* info_bubble,
                                     bool closed_by_escape) {
   // Delay deleting to be safe (we, and our tabcontents may be on the stack).
+  // Remove ourself as a delegate as on GTK the Widget destruction is
+  // asynchronous and will happen after the AppLauncher has been deleted (and it
+  // might notify us after we have been deleted).
+  info_bubble_content_->GetTabContents()->set_delegate(NULL);
   MessageLoop::current()->PostTask(FROM_HERE,
                                    new DeleteTask<AppLauncher>(this));
 }
