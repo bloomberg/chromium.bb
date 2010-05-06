@@ -120,7 +120,7 @@ void SetDialogShape(GtkWidget* widget) {
       IDR_FIND_DLG_LEFT_BACKGROUND,
       IDR_FIND_DLG_MIDDLE_BACKGROUND,
       IDR_FIND_DLG_RIGHT_BACKGROUND,
-      NULL, NULL, NULL, NULL, NULL, NULL);
+      0, 0, 0, 0, 0, 0);
     dialog_shape->ChangeWhiteToTransparent();
   }
 
@@ -136,7 +136,7 @@ const NineBox* GetDialogBorder() {
       IDR_FIND_DIALOG_LEFT,
       IDR_FIND_DIALOG_MIDDLE,
       IDR_FIND_DIALOG_RIGHT,
-      NULL, NULL, NULL, NULL, NULL, NULL);
+      0, 0, 0, 0, 0, 0);
   }
 
   return dialog_border;

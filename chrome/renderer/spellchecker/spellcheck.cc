@@ -113,7 +113,7 @@ string16 SpellCheck::GetAutoCorrectionWord(const string16& word, int tag) {
   const char16* word_char = word.c_str();
   for (int i = 0; i <= SpellCheckCommon::kMaxAutoCorrectWordSize; i++) {
     if (i >= word_length)
-      misspelled_word[i] = NULL;
+      misspelled_word[i] = 0;
     else
       misspelled_word[i] = word_char[i];
   }

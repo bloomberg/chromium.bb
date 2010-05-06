@@ -312,7 +312,7 @@ bool WebPluginDelegateProxy::Initialize(const GURL& url,
   channel_host_ = channel_host;
   instance_id_ = instance_id;
 
-  channel_host_->AddRoute(instance_id_, this, false);
+  channel_host_->AddRoute(instance_id_, this, NULL);
 
   // Now tell the PluginInstance in the plugin process to initialize.
   PluginMsg_Init_Params params;

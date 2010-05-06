@@ -96,7 +96,7 @@ RenderWidgetHost::~RenderWidgetHost() {
 gfx::NativeViewId RenderWidgetHost::GetNativeViewId() {
   if (view_)
     return gfx::IdFromNativeView(view_->GetNativeView());
-  return NULL;
+  return 0;
 }
 
 void RenderWidgetHost::Init() {

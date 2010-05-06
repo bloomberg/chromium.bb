@@ -177,7 +177,7 @@ bool TabRendererGtk::LoadingAnimation::ValidateLoadingAnimation(
   }
 
   if (animation_state_ != ANIMATION_NONE) {
-    animation_frame_ = ++animation_frame_ %
+    animation_frame_ = (animation_frame_ + 1) %
                        ((animation_state_ == ANIMATION_WAITING) ?
                          data_->waiting_animation_frame_count :
                          data_->loading_animation_frame_count);
@@ -246,7 +246,7 @@ TabRendererGtk::TabRendererGtk(ThemeProvider* theme_provider)
       loading_animation_(theme_provider),
       background_offset_x_(0),
       background_offset_y_(kInactiveTabBackgroundOffsetY),
-      close_button_color_(NULL) {
+      close_button_color_(0) {
   InitResources();
 
   tab_.Own(gtk_fixed_new());

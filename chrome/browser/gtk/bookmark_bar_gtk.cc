@@ -679,7 +679,7 @@ void BookmarkBarGtk::UpdateFloatingState() {
     if (floating_ && widget()->parent) {
       // Only connect once.
       if (g_signal_handler_find(widget()->parent, G_SIGNAL_MATCH_FUNC,
-          0, NULL, NULL, reinterpret_cast<gpointer>(OnParentSizeAllocateThunk),
+          0, 0, NULL, reinterpret_cast<gpointer>(OnParentSizeAllocateThunk),
           NULL) == 0) {
         g_signal_connect(widget()->parent, "size-allocate",
                          G_CALLBACK(OnParentSizeAllocateThunk), this);

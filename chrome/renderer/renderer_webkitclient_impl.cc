@@ -145,7 +145,7 @@ void RendererWebKitClientImpl::suddenTerminationChanged(bool enabled) {
     // We should not get more enables than disables, but we want it to be a
     // non-fatal error if it does happen.
     DCHECK_GT(sudden_termination_disables_, 0);
-    sudden_termination_disables_ = std::max(--sudden_termination_disables_, 0);
+    sudden_termination_disables_ = std::max(sudden_termination_disables_ - 1, 0);
     if (sudden_termination_disables_ != 0)
       return;
   } else {

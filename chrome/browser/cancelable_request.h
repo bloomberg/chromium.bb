@@ -192,7 +192,7 @@ class CancelableRequestConsumerBase {
 };
 
 // Template for clients to use. It allows them to associate random "client
-// data" with a specific request. The default value for this type is NULL.
+// data" with a specific request. The default value for this type is 0.
 // The type T should be small and easily copyable (like a pointer
 // or an integer).
 template<class T>
@@ -280,7 +280,7 @@ class CancelableRequestConsumerTSimple : public CancelableRequestConsumerBase {
   typedef std::map<PendingRequest, T> PendingRequestList;
 
   virtual T get_initial_t() const {
-    return NULL;
+    return 0;
   }
 
   virtual void OnRequestAdded(CancelableRequestProvider* provider,

@@ -254,7 +254,7 @@ void GearsCreateShortcut(
       new CreateShortcutCommand(name_utf8, orig_name_utf8, url.spec(),
                                 description_utf8,
                                 app_info.icons, fallback_icon, callback);
-  CPHandleCommand(GEARSPLUGINCOMMAND_CREATE_SHORTCUT, command, NULL);
+  CPHandleCommand(GEARSPLUGINCOMMAND_CREATE_SHORTCUT, command, 0);
 }
 
 // This class holds and manages the data passed to the
@@ -308,5 +308,5 @@ struct RunnableMethodTraits<QueryShortcutsCommand> {
 void GearsQueryShortcuts(GearsQueryShortcutsCallback* callback) {
   CPHandleCommand(GEARSPLUGINCOMMAND_GET_SHORTCUT_LIST,
       new QueryShortcutsCommand(callback),
-      NULL);
+      0);
 }

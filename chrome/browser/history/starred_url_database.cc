@@ -542,10 +542,10 @@ bool StarredURLDatabase::MigrateBookmarksToFileImpl(const FilePath& path) {
   // Create the bookmark bar and other folder nodes.
   history::StarredEntry entry;
   entry.type = history::StarredEntry::BOOKMARK_BAR;
-  BookmarkNode bookmark_bar_node(NULL, GURL());
+  BookmarkNode bookmark_bar_node(0, GURL());
   bookmark_bar_node.Reset(entry);
   entry.type = history::StarredEntry::OTHER;
-  BookmarkNode other_node(NULL, GURL());
+  BookmarkNode other_node(0, GURL());
   other_node.Reset(entry);
 
   std::map<history::UIStarID, history::StarID> group_id_to_id_map;
@@ -594,7 +594,7 @@ bool StarredURLDatabase::MigrateBookmarksToFileImpl(const FilePath& path) {
       // encountering the details.
 
       // The created nodes are owned by the root node.
-      node = new BookmarkNode(NULL, i->url);
+      node = new BookmarkNode(0, i->url);
       id_to_node_map[i->id] = node;
     }
     node->Reset(*i);
@@ -605,7 +605,7 @@ bool StarredURLDatabase::MigrateBookmarksToFileImpl(const FilePath& path) {
     BookmarkNode* parent = id_to_node_map[parent_id];
     if (!parent) {
       // Haven't encountered the parent yet, create it now.
-      parent = new BookmarkNode(NULL, GURL());
+      parent = new BookmarkNode(0, GURL());
       id_to_node_map[parent_id] = parent;
     }
 

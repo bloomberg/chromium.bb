@@ -127,7 +127,7 @@ static void gtk_expanded_container_class_init(
       g_signal_new("child-size-request",
                    G_OBJECT_CLASS_TYPE(object_class),
                    static_cast<GSignalFlags>(G_SIGNAL_RUN_FIRST),
-                   NULL,
+                   0,
                    NULL, NULL,
                    Marshal_VOID__OBJECT_BOXED,
                    G_TYPE_NONE, 2,

@@ -17,7 +17,7 @@
 RepostFormWarningGtk::RepostFormWarningGtk(GtkWindow* parent,
                                            TabContents* tab_contents)
     : controller_(new RepostFormWarningController(tab_contents)) {
-  dialog_ = gtk_vbox_new(NULL, gtk_util::kContentAreaBorder);
+  dialog_ = gtk_vbox_new(FALSE, gtk_util::kContentAreaBorder);
   gtk_box_set_spacing(GTK_BOX(dialog_), gtk_util::kContentAreaSpacing);
   GtkWidget* label = gtk_label_new(
       l10n_util::GetStringUTF8(IDS_HTTP_POST_WARNING).c_str());

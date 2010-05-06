@@ -62,7 +62,7 @@ class LoginHandlerGtk : public LoginHandler,
                                            std::wstring explanation) {
     DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
-    root_.Own(gtk_vbox_new(NULL, gtk_util::kContentAreaBorder));
+    root_.Own(gtk_vbox_new(FALSE, gtk_util::kContentAreaBorder));
     GtkWidget* label = gtk_label_new(WideToUTF8(explanation).c_str());
     gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
     gtk_box_pack_start(GTK_BOX(root_.get()), label, FALSE, FALSE, 0);

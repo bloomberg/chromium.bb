@@ -19,7 +19,7 @@ CommandBufferStub::CommandBufferStub(PluginChannel* channel,
       plugin_host_route_id_(plugin_host_route_id),
       window_(window) {
   route_id_ = channel->GenerateRouteID();
-  channel->AddRoute(route_id_, this, false);
+  channel->AddRoute(route_id_, this, NULL);
 }
 
 CommandBufferStub::~CommandBufferStub() {

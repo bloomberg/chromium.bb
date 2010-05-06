@@ -58,7 +58,7 @@ class PbufferGLContext : public GLContext {
  public:
   explicit PbufferGLContext()
       : context_(NULL),
-        pbuffer_(NULL) {
+        pbuffer_(0) {
   }
 
   // Initializes the GL context.
@@ -338,7 +338,7 @@ void PbufferGLContext::Destroy() {
 
   if (pbuffer_) {
     glXDestroyPbuffer(display, pbuffer_);
-    pbuffer_ = NULL;
+    pbuffer_ = 0;
   }
 }
 

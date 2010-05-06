@@ -267,7 +267,7 @@ Context* CreateOffscreenContext(GpuChannelHost* channel,
                                 const gfx::Size& size) {
 #if defined(ENABLE_GPU)
   scoped_ptr<Context> context(new Context(channel, parent));
-  if (!context->Initialize(NULL, size))
+  if (!context->Initialize(0, size))
     return NULL;
 
   return context.release();

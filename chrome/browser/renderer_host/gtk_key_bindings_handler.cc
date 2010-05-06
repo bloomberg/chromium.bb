@@ -13,8 +13,7 @@
 #include "chrome/common/native_web_keyboard_event.h"
 
 GtkKeyBindingsHandler::GtkKeyBindingsHandler(GtkWidget* parent_widget)
-    : handler_(CreateNewHandler()),
-      edit_commands_(NULL) {
+    : handler_(CreateNewHandler()) {
   DCHECK(GTK_IS_FIXED(parent_widget));
   // We need add the |handler_| object into gtk widget hierarchy, so that
   // gtk_bindings_activate_event() can find correct display and keymaps from
