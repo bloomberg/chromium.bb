@@ -1222,7 +1222,7 @@ def main(argv=None):
 
   if command == "change":
     Change(change_info, argv[3:])
-  if command == "description":
+  elif command == "description":
     print change_info.description
   elif command == "lint":
     Lint(change_info, argv[3:])
