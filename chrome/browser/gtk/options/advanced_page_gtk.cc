@@ -68,7 +68,7 @@ void AdvancedPageGtk::OnResetToDefaultsClicked(GtkWidget* button) {
   g_signal_connect(dialog_, "response",
                    G_CALLBACK(OnResetToDefaultsResponseThunk), this);
 
-  gtk_widget_show_all(dialog_);
+  gtk_util::ShowDialog(dialog_);
 }
 
 void AdvancedPageGtk::OnResetToDefaultsResponse(GtkWidget* dialog,
