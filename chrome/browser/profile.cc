@@ -739,7 +739,7 @@ void ProfileImpl::InitExtensions() {
   // Bookmark manager.
   component_extensions["bookmark_manager"] = IDR_BOOKMARKS_MANIFEST;
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
   // Chat manager.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableChatManager)) {
