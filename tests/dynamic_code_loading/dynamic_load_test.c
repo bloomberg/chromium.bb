@@ -245,6 +245,7 @@ void test_fail_on_mmap_to_dyncode_area() {
   void *addr = allocate_code_space(1);
   size_t page_size = 0x10000;
   void *result;
+  int rc;
 
   assert((uintptr_t) addr % page_size == 0);
   result = mmap(addr, page_size, PROT_READ | PROT_WRITE,
@@ -252,7 +253,11 @@ void test_fail_on_mmap_to_dyncode_area() {
   assert(result == MAP_FAILED);
   assert(errno == EINVAL);
 
-  /* TODO(mseaborn): Test munmap() and mprotect() as well. */
+  rc = munmap(addr, page_size);
+  assert(rc == -1);
+  assert(errno == EINVAL);
+
+  /* TODO(mseaborn): Test mprotect() once NaCl provides it. */
 }
 
 void test_branches_outside_chunk() {
