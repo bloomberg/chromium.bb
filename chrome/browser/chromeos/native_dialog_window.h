@@ -13,11 +13,22 @@ class Size;
 
 namespace chromeos {
 
-// Shows a native dialog in views::Window.
+// Flags for ShowNativeDialog.
+enum NativeDialogFlags {
+  DIALOG_FLAG_DEFAULT    = 0x00,  // Default non-resizeable, non-modal dialog.
+  DIALOG_FLAG_RESIZEABLE = 0x01,  // For resizeable dialog.
+  DIALOG_FLAG_MODAL      = 0x02,  // For modal dialog.
+};
+
+// Shows a |native_dialog| hosted in a views::Window. |flags| are combinations
+// of the NativeDialogFlags. |size| is a default size. Zero width/height of
+// |size| means let gtk choose a proper size for that dimension. |min_size| is
+// the minimum size of the final host Window.
 void ShowNativeDialog(gfx::NativeWindow parent,
                       gfx::NativeView native_dialog,
+                      int flags,
                       const gfx::Size& size,
-                      bool resizeable);
+                      const gfx::Size& min_size);
 
 // Gets the container window of the given |native_dialog|.
 gfx::NativeWindow GetNativeDialogWindow(gfx::NativeView native_dialog);

@@ -918,7 +918,7 @@ bool AddWindowAlphaChannel(GtkWidget* window) {
 
 void ShowDialog(GtkWidget* dialog) {
   chromeos::ShowNativeDialog(chromeos::GetOptionsViewParent(),
-      dialog, gfx::Size(), false);
+      dialog, chromeos::DIALOG_FLAG_DEFAULT, gfx::Size(), gfx::Size());
 }
 
 void ShowDialogWithLocalizedSize(GtkWidget* dialog,
@@ -932,8 +932,22 @@ void ShowDialogWithLocalizedSize(GtkWidget* dialog,
 
   chromeos::ShowNativeDialog(chromeos::GetOptionsViewParent(),
       dialog,
+      resizeable ? chromeos::DIALOG_FLAG_RESIZEABLE :
+                   chromeos::DIALOG_FLAG_DEFAULT,
       gfx::Size(width, height),
-      resizeable);
+      gfx::Size());
+}
+
+void ShowModalDialogWithMinLocalizedWidth(GtkWidget* dialog,
+                                          int width_id) {
+  int width = (width_id == -1) ? 0 :
+      views::Window::GetLocalizedContentsWidth(width_id);
+
+  chromeos::ShowNativeDialog(chromeos::GetOptionsViewParent(),
+      dialog,
+      chromeos::DIALOG_FLAG_MODAL,
+      gfx::Size(),
+      gfx::Size(width, 0));
 }
 
 void PresentWindow(GtkWidget* window, int timestamp) {
@@ -962,6 +976,19 @@ void ShowDialogWithLocalizedSize(GtkWidget* dialog,
                              height_id,
                              resizeable);
   gtk_widget_show_all(dialog);
+}
+
+void ShowModalDialogWithMinLocalizedWidth(GtkWidget* dialog,
+                                          int width_id) {
+  gtk_widget_show_all(dialog);
+
+  // Suggest a minimum size.
+  gint width;
+  GtkRequisition req;
+  gtk_widget_size_request(dialog, &req);
+  gtk_util::GetWidgetSizeFromResources(dialog, width_id, 0, &width, NULL);
+  if (width > req.width)
+    gtk_widget_set_size_request(dialog, width, -1);
 }
 
 void PresentWindow(GtkWidget* window, int timestamp) {

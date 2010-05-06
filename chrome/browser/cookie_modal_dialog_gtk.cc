@@ -32,16 +32,8 @@ void OnExpanderActivate(GtkExpander* expander) {
 
 void CookiePromptModalDialog::CreateAndShowDialog() {
   dialog_ = CreateNativeDialog();
-  gtk_widget_show_all(GTK_WIDGET(dialog_));
-
-  // Suggest a minimum size.
-  gint width;
-  GtkRequisition req;
-  gtk_widget_size_request(dialog_, &req);
-  gtk_util::GetWidgetSizeFromResources(dialog_, IDS_ALERT_DIALOG_WIDTH_CHARS, 0,
-                                       &width, NULL);
-  if (width > req.width)
-    gtk_widget_set_size_request(dialog_, width, -1);
+  gtk_util::ShowModalDialogWithMinLocalizedWidth(GTK_WIDGET(dialog_),
+      IDS_ALERT_DIALOG_WIDTH_CHARS);
 }
 
 void CookiePromptModalDialog::AcceptWindow() {

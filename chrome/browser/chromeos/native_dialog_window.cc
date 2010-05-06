@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/window/dialog_delegate.h"
+#include "views/window/non_client_view.h"
 #include "views/window/window.h"
 
 namespace {
@@ -24,18 +25,22 @@ namespace chromeos {
 class NativeDialogHost : public views::View,
                          public views::DialogDelegate {
  public:
-  explicit NativeDialogHost(gfx::NativeView native_dialog,
-                            const gfx::Size& size,
-                            bool resizeable);
+  NativeDialogHost(gfx::NativeView native_dialog,
+                   int flags,
+                   const gfx::Size& size,
+                   const gfx::Size& min_size);
   ~NativeDialogHost();
 
   // views::DialogDelegate implementation:
-  virtual bool CanResize() const { return resizeable_; }
+  virtual bool CanResize() const { return flags_ & DIALOG_FLAG_RESIZEABLE; }
   virtual int GetDialogButtons() const { return 0; }
   virtual std::wstring GetWindowTitle() const { return title_; }
   virtual views::View* GetContentsView() { return this; }
+  virtual bool IsModal() const { return flags_ & DIALOG_FLAG_MODAL; }
+  virtual void WindowClosing();
 
  protected:
+  CHROMEGTK_CALLBACK_0(NativeDialogHost, void, OnCheckResize);
   CHROMEGTK_CALLBACK_0(NativeDialogHost, void, OnDialogDestroy);
 
   // views::View implementation:
@@ -55,8 +60,9 @@ class NativeDialogHost : public views::View,
   views::NativeViewHost* contents_view_;
 
   std::wstring title_;
+  int flags_;
   gfx::Size size_;
-  bool resizeable_;
+  gfx::Size min_size_;
 
   int destroy_signal_id_;
 
@@ -67,27 +73,45 @@ class NativeDialogHost : public views::View,
 // NativeDialogHost, public:
 
 NativeDialogHost::NativeDialogHost(gfx::NativeView native_dialog,
+                                   int flags,
                                    const gfx::Size& size,
-                                   bool resizeable)
+                                   const gfx::Size& min_size)
     : dialog_(native_dialog),
       contents_view_(NULL),
+      flags_(flags),
       size_(size),
-      resizeable_(resizeable),
+      min_size_(min_size),
       destroy_signal_id_(0) {
   const char* title = gtk_window_get_title(GTK_WINDOW(dialog_));
   if (title)
     UTF8ToWide(title, strlen(title), &title_);
 
   destroy_signal_id_ = g_signal_connect(dialog_, "destroy",
-      G_CALLBACK(OnDialogDestroyThunk), this);
+      G_CALLBACK(&OnDialogDestroyThunk), this);
 }
 
 NativeDialogHost::~NativeDialogHost() {
-  if (dialog_) {
-    // Disconnect the "destroy" signal because we are about to destroy
-    // the dialog ourselves and no longer interested in it.
-    g_signal_handler_disconnect(G_OBJECT(dialog_), destroy_signal_id_);
-    gtk_dialog_response(GTK_DIALOG(dialog_), GTK_RESPONSE_CLOSE);
+}
+
+void NativeDialogHost::OnCheckResize(GtkWidget* widget) {
+  gfx::NativeView contents = contents_view_->native_view();
+
+  // Check whether preferred height has changed. We keep the current width
+  // unchanged and pass "-1" as height to let gtk calculate a proper height.
+  gtk_widget_set_size_request(contents, width(), -1);
+  GtkRequisition requsition = { 0 };
+  gtk_widget_size_request(contents, &requsition);
+
+  if (size_.height() != requsition.height) {
+    size_.set_width(requsition.width);
+    size_.set_height(requsition.height);
+    SizeToPreferredSize();
+
+    gfx::Size window_size = window()->GetNonClientView()->GetPreferredSize();
+    gfx::Rect window_bounds = window()->GetBounds();
+    window_bounds.set_width(window_size.width());
+    window_bounds.set_height(window_size.height());
+    window()->SetBounds(window_bounds, NULL);
   }
 }
 
@@ -98,7 +122,18 @@ void NativeDialogHost::OnDialogDestroy(GtkWidget* widget) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// NativeDialogHost, views::View overrides:
+// NativeDialogHost, views::DialogDelegate implementation:
+void NativeDialogHost::WindowClosing() {
+  if (dialog_) {
+    // Disconnect the "destroy" signal because we are about to destroy
+    // the dialog ourselves and no longer interested in it.
+    g_signal_handler_disconnect(G_OBJECT(dialog_), destroy_signal_id_);
+    gtk_dialog_response(GTK_DIALOG(dialog_), GTK_RESPONSE_CLOSE);
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// NativeDialogHost, views::View implementation:
 
 gfx::Size NativeDialogHost::GetPreferredSize() {
   return size_;
@@ -144,6 +179,9 @@ void NativeDialogHost::Init() {
   AddChildView(contents_view_);
   contents_view_->Attach(contents);
 
+  g_signal_connect(window()->GetNativeWindow(), "check-resize",
+      G_CALLBACK(&OnCheckResizeThunk), this);
+
   // Use gtk's default size if size is not speicified.
   if (size_.IsEmpty()) {
     // Use given width or height if given.
@@ -158,14 +196,21 @@ void NativeDialogHost::Init() {
     size_.set_width(requsition.width);
     size_.set_height(requsition.height);
   }
+
+  // Apply the minimum size.
+  if (size_.width() < min_size_.width())
+    size_.set_width(min_size_.width());
+  if (size_.height() < min_size_.height())
+    size_.set_height(min_size_.height());
 }
 
 void ShowNativeDialog(gfx::NativeWindow parent,
                       gfx::NativeView native_dialog,
-                      const gfx::Size& dialog_size,
-                      bool resizeable) {
+                      int flags,
+                      const gfx::Size& size,
+                      const gfx::Size& min_size) {
   NativeDialogHost* native_dialog_host =
-      new NativeDialogHost(native_dialog, dialog_size, resizeable);
+      new NativeDialogHost(native_dialog, flags, size, min_size);
   views::Window::CreateChromeWindow(parent, gfx::Rect(), native_dialog_host);
   native_dialog_host->window()->Show();
 }
