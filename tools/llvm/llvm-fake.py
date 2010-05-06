@@ -530,11 +530,12 @@ def MassageFinalLinkCommandArm(args):
     out.append(LIBDIR_ARM_2 + '/crtn.o')
     out.append('-L' + LIBDIR_ARM_3)
     out.append('-lstdc++')
-    out.append('-lc')
     out.append('-L' + LIBDIR_ARM_1)
+    out.append('-lgcc') # the "-lgcc -lc -lgcc" is the same sequence used by
+                        # gcc. libgcc use libc and libc uses libgcc
+    out.append('-lc')
     out.append('-lgcc')
-    out.append('-lc') # libgcc uses libc
-    out.append('-lnosys') # libc uses libnosys
+    out.append('-lnosys')
 
   return out
 
