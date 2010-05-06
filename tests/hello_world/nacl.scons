@@ -88,3 +88,11 @@ node = env.CommandSelLdrTestNacl(
     stdout_golden=env.File('float.stdout'),
     )
 env.AddNodeToTestSuite(node, ['small_tests', 'sel_ldr_tests'], 'run_float_test')
+
+#NOTE: this test currently fails for all platforms
+env.ComponentProgram('abi.nexe', 'abi.c')
+node = env.CommandSelLdrTestNacl(
+    'abi_test.out',
+    command=[env.File('abi.nexe')],
+    )
+env.AddNodeToTestSuite(node, [], 'run_abi_test')
