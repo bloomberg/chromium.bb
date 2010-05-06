@@ -633,6 +633,19 @@ build: ALWAYS
 	$(MAKE) -f $(THISMAKEFILE) redirector
 
 ##################################################################
+# Run DejaGnu tests.
+##################################################################
+check: ALWAYS
+	(cd .. && \
+	  ./$(SCONS) naclsdk_mode=custom:$(DESTDIR)$(SDKROOT) \
+	    --mode=dbg-linux,nacl platform=x86-$(BITSPLATFORM) \
+	    sdl=none --verbose run_hello_world_test) && \
+	tests/run_dejagnu_tests.sh \
+	  TOOLCHAIN="$(SDKROOT)" \
+	  WORKDIR="BUILD/build-gcc-$(CROSSARCH)" \
+	  SELLDR="../scons-out/dbg-linux-x86-$(BITSPLATFORM)/staging/sel_ldr"
+
+##################################################################
 # Build an updated set of patches from the current build versions.
 ##################################################################
 
