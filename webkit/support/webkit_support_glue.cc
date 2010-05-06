@@ -55,6 +55,12 @@ base::StringPiece GetDataResource(int resource_id) {
   return "";
 }
 
+void CloseCurrentConnections() {
+}
+
+void SetCacheMode(bool enabled) {
+}
+
 std::string GetProductVersion() {
   return std::string("DumpRenderTree/0.0.0.0");
 }
