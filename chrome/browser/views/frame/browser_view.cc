@@ -1094,8 +1094,19 @@ void BrowserView::ShowPageInfo(Profile* profile,
                                const GURL& url,
                                const NavigationEntry::SSLStatus& ssl,
                                bool show_history) {
-  browser::ShowPageInfo(GetWindow()->GetNativeWindow(), profile, url, ssl,
-                        show_history);
+  gfx::NativeWindow parent = GetWindow()->GetNativeWindow();
+
+#if defined(OS_CHROMEOS)
+  // Use normal browser window as parent window for ChromeOS.
+  if (!IsBrowserTypeNormal()) {
+    Browser* browser = BrowserList::FindBrowserWithType(profile,
+        Browser::TYPE_NORMAL, true);
+    if (browser && browser->window())
+      parent = browser->window()->GetNativeHandle();
+  }
+#endif  // defined(OS_CHROMEOS)
+
+  browser::ShowPageInfo(parent, profile, url, ssl, show_history);
 }
 
 void BrowserView::ShowPageMenu() {
