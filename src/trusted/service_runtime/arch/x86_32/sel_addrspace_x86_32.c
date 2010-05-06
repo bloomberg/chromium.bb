@@ -11,11 +11,36 @@
 
 
 NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
+  int result;
+
   CHECK(NULL != mem);
-  if (NaCl_page_alloc(mem, addrsp_size) != 0) {
-    NaClLog(2, "NaClAlloccaterSpace: NaCl_page_alloc failed\n");
+
+#ifdef NACL_SANDBOX_FIXED_AT_ZERO
+  /*
+   * When creating a zero-based sandbox, we do not allocate the first 64K of
+   * pages beneath the trampolines, because -- on Linux at least -- we cannot.
+   * Instead, we allocate starting at the trampolines, and then coerce the
+   * out parameter.
+   */
+  addrsp_size -= NACL_TRAMPOLINE_START;
+  *mem = (void *) NACL_TRAMPOLINE_START;
+  result = NaCl_page_alloc_at_addr(mem, addrsp_size);
+  *mem = 0;
+#else
+  result = NaCl_page_alloc(mem, addrsp_size);
+#endif
+
+  if (0 != result) {
+    NaClLog(2,
+        "NaClAllocateSpace: NaCl_page_alloc 0x%08"NACL_PRIxPTR
+        " failed\n",
+        (uintptr_t) *mem);
     return LOAD_NO_MEMORY;
   }
+  NaClLog(4, "NaClAllocateSpace: %"NACL_PRIxPTR", %"NACL_PRIxS"\n",
+          (uintptr_t) *mem,
+          addrsp_size);
+
   return LOAD_OK;
 }
 

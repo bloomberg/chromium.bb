@@ -167,7 +167,9 @@ void NaClFillMemoryRegionWithHalt(void *start, size_t size) {
 }
 
 void NaClFillTrampolineRegion(struct NaClApp *nap) {
-  NaClFillMemoryRegionWithHalt((void *) nap->mem_start, NACL_TRAMPOLINE_END);
+  NaClFillMemoryRegionWithHalt(
+      (void *) (nap->mem_start + NACL_TRAMPOLINE_START),
+      NACL_TRAMPOLINE_SIZE);
 }
 
 
