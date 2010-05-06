@@ -74,7 +74,6 @@
 #include "skia/ext/image_operations.h"
 #include "third_party/cld/encodings/compact_lang_det/win/cld_unicodetext.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityCache.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgent.h"
@@ -636,9 +635,6 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
         ViewMsg_GetSerializedHtmlDataForCurrentPageWithLocalLinks,
         OnGetSerializedHtmlDataForCurrentPageWithLocalLinks)
     IPC_MESSAGE_HANDLER(ViewMsg_GetApplicationInfo, OnGetApplicationInfo)
-    IPC_MESSAGE_HANDLER(ViewMsg_GetAccessibilityInfo, OnGetAccessibilityInfo)
-    IPC_MESSAGE_HANDLER(ViewMsg_ClearAccessibilityInfo,
-                        OnClearAccessibilityInfo)
     IPC_MESSAGE_HANDLER(ViewMsg_ShouldClose, OnMsgShouldClose)
     IPC_MESSAGE_HANDLER(ViewMsg_ClosePage, OnClosePage)
     IPC_MESSAGE_HANDLER(ViewMsg_ThemeChanged, OnThemeChanged)
@@ -684,6 +680,7 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
                         OnCustomContextMenuAction)
     IPC_MESSAGE_HANDLER(ViewMsg_TranslatePage, OnTranslatePage)
     IPC_MESSAGE_HANDLER(ViewMsg_RevertTranslation, OnRevertTranslation)
+    IPC_MESSAGE_HANDLER(ViewMsg_GetAccessibilityTree, OnGetAccessibilityTree)
 
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(RenderWidget::OnMessageReceived(message))
@@ -1334,14 +1331,10 @@ void RenderView::UpdateURL(WebFrame* frame) {
   // we don't want the transition type to persist.  Just clear it.
   navigation_state->set_transition_type(PageTransition::LINK);
 
-#if defined(OS_WIN)
   if (accessibility_.get()) {
-    // Remove accessibility info cache.
+    accessibility_->clear();
     accessibility_.reset();
   }
-#else
-  // TODO(port): accessibility not yet implemented. See http://crbug.com/8288.
-#endif
 }
 
 // Tell the embedding application that the title of the active page has changed
@@ -3880,46 +3873,16 @@ void RenderView::OnUpdateBrowserWindowId(int window_id) {
   browser_window_id_ = window_id;
 }
 
-void RenderView::OnGetAccessibilityInfo(
-    const webkit_glue::WebAccessibility::InParams& in_params,
-    webkit_glue::WebAccessibility::OutParams* out_params) {
-#if defined(OS_WIN)
-  if (!accessibility_.get()) {
-    // TODO(dglazkov): Once implemented for all ports, remove lazy
-    // instantiation of accessibility_.
-    accessibility_.reset(WebAccessibilityCache::create());
-    accessibility_->initialize(webview());
-  }
-
-  out_params->return_code =
-      webkit_glue::WebAccessibility::GetAccObjInfo(accessibility_.get(),
-                                                  in_params,
-                                                  out_params);
-
-#else  // defined(OS_WIN)
-  // TODO(port): accessibility not yet implemented
-  NOTIMPLEMENTED();
-#endif
-}
-
-void RenderView::OnClearAccessibilityInfo(int acc_obj_id, bool clear_all) {
-#if defined(OS_WIN)
-  if (!accessibility_.get()) {
-    // If accessibility is not activated, ignore clearing message.
-    return;
-  }
-
-  if (clear_all) {
+void RenderView::OnGetAccessibilityTree() {
+  if (accessibility_.get()) {
     accessibility_->clear();
-    return;
   }
+  accessibility_.reset(WebAccessibilityCache::create());
+  accessibility_->initialize(webview());
 
-  accessibility_->remove(acc_obj_id);
-
-#else  // defined(OS_WIN)
-  // TODO(port): accessibility not yet implemented
-  NOTIMPLEMENTED();
-#endif
+  WebAccessibilityObject src_tree = webview()->accessibilityObject();
+  webkit_glue::WebAccessibility dst_tree(src_tree, accessibility_.get());
+  Send(new ViewHostMsg_AccessibilityTree(routing_id_, dst_tree));
 }
 
 void RenderView::OnGetAllSavableResourceLinksForCurrentPage(

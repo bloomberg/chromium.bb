@@ -13,6 +13,7 @@
 #include "base/process_util.h"
 #include "base/thread.h"
 #include "base/win_util.h"
+#include "chrome/browser/browser_accessibility.h"
 #include "chrome/browser/browser_accessibility_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_trial.h"
@@ -26,6 +27,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/native_web_keyboard_event.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
 #include "gfx/canvas.h"
@@ -285,6 +287,9 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
   renderer_accessible_ =
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableRendererAccessibility);
+  registrar_.Add(this,
+                 NotificationType::RENDERER_PROCESS_TERMINATED,
+                 NotificationService::AllSources());
 }
 
 RenderWidgetHostViewWin::~RenderWidgetHostViewWin() {
@@ -1462,40 +1467,63 @@ LRESULT RenderWidgetHostViewWin::OnMouseActivate(UINT, WPARAM, LPARAM,
   return MA_ACTIVATE;
 }
 
+void RenderWidgetHostViewWin::UpdateAccessibilityTree(
+    const webkit_glue::WebAccessibility& tree) {
+  browser_accessibility_manager_.reset(
+      new BrowserAccessibilityManager(m_hWnd, tree));
+}
+
+void RenderWidgetHostViewWin::OnAccessibilityFocusChange(int acc_obj_id) {
+  if (browser_accessibility_manager_.get()) {
+    browser_accessibility_manager_->OnAccessibilityFocusChange(acc_obj_id);
+  }
+}
+
+void RenderWidgetHostViewWin::OnAccessibilityObjectStateChange(int acc_obj_id) {
+  if (browser_accessibility_manager_.get()) {
+    browser_accessibility_manager_->OnAccessibilityObjectStateChange(
+        acc_obj_id);
+  }
+}
+
+void RenderWidgetHostViewWin::Observe(NotificationType type,
+                                      const NotificationSource& source,
+                                      const NotificationDetails& details) {
+  DCHECK(type == NotificationType::RENDERER_PROCESS_TERMINATED);
+
+  // Get the RenderProcessHost that posted this notification, and exit
+  // if it's not the one associated with this host view.
+  RenderProcessHost* render_process_host =
+      Source<RenderProcessHost>(source).ptr();
+  DCHECK(render_process_host);
+  if (render_process_host != render_widget_host_->process())
+    return;
+
+  // If it was our RenderProcessHost that posted the notification,
+  // clear the BrowserAccessibilityManager, because the renderer is
+  // dead and any accessibility information we have is now stale.
+  browser_accessibility_manager_.reset(NULL);
+}
+
 LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
                                              LPARAM lparam, BOOL& handled) {
-  LRESULT reference_result = static_cast<LRESULT>(0L);
-  // TODO(jcampan): http://b/issue?id=1432077 Disabling accessibility in the
+  // TODO(dmazzoni): http://crbug.com/25564 Disabling accessibility in the
   // renderer is a temporary work-around until that bug is fixed.
-  if (!renderer_accessible_)
-    return reference_result;
-
-  // Accessibility readers will send an OBJID_CLIENT message.
-  if (OBJID_CLIENT == lparam) {
-    // If our MSAA DOM root is already created, reuse that pointer. Otherwise,
-    // create a new one.
-    if (!browser_accessibility_root_) {
-      // Create a new instance of IAccessible. Root id is 1000, to avoid
-      // conflicts with the ids used by MSAA.
-      BrowserAccessibilityManager::GetInstance()->CreateAccessibilityInstance(
-          IID_IAccessible, 1000,
-          render_widget_host_->routing_id(),
-          render_widget_host_->process()->id(),
-          m_hWnd,
-          reinterpret_cast<void **>(browser_accessibility_root_.Receive()));
-
-      if (!browser_accessibility_root_) {
-        // No valid root found, return with failure.
-        return static_cast<LRESULT>(0L);
-      }
-    }
-
-    // Create a reference to BrowserAccessibility which MSAA will marshall to
-    // the client.
-    reference_result = LresultFromObject(IID_IAccessible, wparam,
-        static_cast<IAccessible*>(browser_accessibility_root_));
+  if (!renderer_accessible_) {
+    handled = false;
+    return static_cast<LRESULT>(0L);
   }
-  return reference_result;
+
+  if (lparam == OBJID_CLIENT && browser_accessibility_manager_.get()) {
+    BrowserAccessibility* root = browser_accessibility_manager_->GetRoot();
+    if (root) {
+      return LresultFromObject(IID_IAccessible, wparam,
+                               static_cast<IAccessible*>(root->NewReference()));
+    }
+  }
+
+  handled = false;
+  return static_cast<LRESULT>(0L);
 }
 
 void RenderWidgetHostViewWin::OnFinalMessage(HWND window) {

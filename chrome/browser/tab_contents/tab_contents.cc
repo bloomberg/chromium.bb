@@ -290,7 +290,8 @@ TabContents::TabContents(Profile* profile,
       is_showing_before_unload_dialog_(false),
       renderer_preferences_(),
       opener_dom_ui_type_(DOMUIFactory::kNoDOMUI),
-      language_state_(&controller_) {
+      language_state_(&controller_),
+      requested_accessibility_tree_(false) {
   ClearBlockedContentSettings();
   renderer_preferences_util::UpdateFromSystemSettings(
       &renderer_preferences_, profile);
@@ -348,6 +349,10 @@ TabContents::TabContents(Profile* profile,
   // Set-up the showing of the omnibox search infobar if applicable.
   if (OmniboxSearchHint::IsEnabled(profile))
     omnibox_search_hint_.reset(new OmniboxSearchHint(this));
+
+  renderer_accessible_ =
+    CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableRendererAccessibility);
 }
 
 TabContents::~TabContents() {
@@ -2123,6 +2128,10 @@ void TabContents::DidFailProvisionalLoadWithError(
 
 void TabContents::DocumentLoadedInFrame() {
   controller_.DocumentLoadedInFrame();
+  if (renderer_accessible_ && !requested_accessibility_tree_) {
+    render_view_host()->RequestAccessibilityTree();
+    requested_accessibility_tree_ = true;
+  }
 }
 
 void TabContents::OnContentBlocked(ContentSettingsType type) {
@@ -2291,6 +2300,8 @@ void TabContents::RenderViewDeleted(RenderViewHost* rvh) {
 void TabContents::DidNavigate(RenderViewHost* rvh,
                               const ViewHostMsg_FrameNavigate_Params& params) {
   int extra_invalidate_flags = 0;
+
+  requested_accessibility_tree_ = false;
 
   if (PageTransition::IsMainFrame(params.transition)) {
     bool was_bookmark_bar_visible = ShouldShowBookmarkBar();

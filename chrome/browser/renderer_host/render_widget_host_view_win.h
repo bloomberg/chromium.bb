@@ -13,8 +13,10 @@
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
+#include "chrome/browser/browser_accessibility_manager.h"
 #include "chrome/browser/ime_input.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
+#include "chrome/common/notification_registrar.h"
 #include "webkit/glue/webcursor.h"
 
 namespace gfx {
@@ -55,7 +57,8 @@ class RenderWidgetHostViewWin
     : public CWindowImpl<RenderWidgetHostViewWin,
                          CWindow,
                          RenderWidgetHostHWNDTraits>,
-      public RenderWidgetHostView {
+      public RenderWidgetHostView,
+      public NotificationObserver {
  public:
   // The view will associate itself with the given widget.
   explicit RenderWidgetHostViewWin(RenderWidgetHost* widget);
@@ -141,6 +144,15 @@ class RenderWidgetHostViewWin
   virtual void SetBackground(const SkBitmap& background);
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;
   virtual void SetVisuallyDeemphasized(bool deemphasized);
+  virtual void UpdateAccessibilityTree(
+      const webkit_glue::WebAccessibility& tree);
+  virtual void OnAccessibilityFocusChange(int acc_obj_id);
+  virtual void OnAccessibilityObjectStateChange(int acc_obj_id);
+
+  // Implementation of NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
  protected:
   // Windows Message Handlers
@@ -296,7 +308,7 @@ class RenderWidgetHostViewWin
 
   // Instance of accessibility information for the root of the MSAA
   // tree representation of the WebKit render tree.
-  ScopedComPtr<IAccessible> browser_accessibility_root_;
+  scoped_ptr<BrowserAccessibilityManager> browser_accessibility_manager_;
 
   // The time at which this view started displaying white pixels as a result of
   // not having anything to paint (empty backing store from renderer). This
@@ -314,6 +326,9 @@ class RenderWidgetHostViewWin
   // True if we are showing a constrained window. We will grey out the view
   // whenever we paint.
   bool visually_deemphasized_;
+
+  // Registrar so we can listen to RENDERER_PROCESS_TERMINATED events.
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewWin);
 };
