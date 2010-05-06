@@ -1496,8 +1496,10 @@ void RenderWidgetHostViewWin::Observe(NotificationType type,
   RenderProcessHost* render_process_host =
       Source<RenderProcessHost>(source).ptr();
   DCHECK(render_process_host);
-  if (render_process_host != render_widget_host_->process())
+  if (render_widget_host_ == NULL ||
+      render_process_host != render_widget_host_->process()) {
     return;
+  }
 
   // If it was our RenderProcessHost that posted the notification,
   // clear the BrowserAccessibilityManager, because the renderer is
