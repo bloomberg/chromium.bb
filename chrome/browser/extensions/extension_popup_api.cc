@@ -144,14 +144,12 @@ class ExtensionPopupHost : public ExtensionPopup::Observer,
       // don't dismiss the pop-up. Note that an ExtensionPopup must have an
       // ExtensionHost, but an ExtensionHost may or may not have an
       // ExtensionView view. We check to make sure.
-      if (popup_) {
-        ExtensionView* view = popup_->host()->view();
-        if (view) {
-          views::Widget* popup_root_widget = view->GetWidget();
-          if (popup_root_widget &&
-              popup_root_widget->ContainsNativeView(focused_now))
-            return;
-        }
+      ExtensionView* view = popup_->host()->view();
+      if (view) {
+        views::Widget* popup_root_widget = view->GetWidget();
+        if (popup_root_widget &&
+            popup_root_widget->ContainsNativeView(focused_now))
+          return;
       }
 
       // If the widget or RenderWidgetHostView hosting the extension that
