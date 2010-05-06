@@ -181,7 +181,8 @@ html[dir=rtl] .thumbnail-container > .title > div {
   display: block;
   -webkit-box-shadow: 0px 2px 2px hsla(0, 0%, 0%, 0);
   -webkit-transition: width .15s, height .15s, border-color .15s,
-      border-radius .15s, -webkit-box-shadow .15s;
+      border-top-left-radius .15s, border-top-right-radius .15s,
+      -webkit-box-shadow .15s;
 }
 
 .edit-mode-border {
@@ -206,7 +207,7 @@ html[dir=rtl] .thumbnail-container > .title > div {
     );
 
   /* delay border radius transition as much as the edit bar slide delay */
-  -webkit-transition-delay: 0, 0, 0, .5s, 0;
+  -webkit-transition-delay: 0, 0, 0, .5s, .5s, 0;
 }
 
 .thumbnail-container:focus > .edit-mode-border,
