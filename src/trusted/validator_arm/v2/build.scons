@@ -82,7 +82,9 @@ if env.Bit('linux'):
   #env.AddNodeToTestSuite(address_set_test, ['small_tests'], 'address_set_test')
 
   validator_tests = {
+    'test_external_jumps': 1,
     'test_forbidden_instructions': 1,
+    'test_internal_jumps': 1,
     'test_sp_updates': 1,
     'test_stores': 1,
     'test_vector_stores': 1,
@@ -97,4 +99,5 @@ if env.Bit('linux'):
         stderr_filter = "'^ncval'",
         stderr_golden = env.File('testdata/' + test + '.err'))
 
-    env.AddNodeToTestSuite(node, ['small_tests'], "run_arm_" + test)
+    env.AddNodeToTestSuite(node, ['small_tests', 'validator_tests'],
+                           "run_arm_" + test)

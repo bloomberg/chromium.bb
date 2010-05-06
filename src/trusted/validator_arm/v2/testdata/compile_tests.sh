@@ -4,13 +4,27 @@
 # be found in the LICENSE file.
 # Copyright 2009 Google Inc.
 
-# NOTE: You must have some arm crosscompiler available to run this
-#       here we (ab)use the trusted CC compiler provided by
-#       "source tools/llvm/setup_arm_trusted_toolchain.sh"
+set -eu
+
+# Get the path to the ARM cross-compiler.
+# We use the trusted compiler because llvm-fake.py (used in the
+# untrusted compiler) doesn't support -nodefaultlibs.
+dir=$(pwd)
+cd ../../../../..
+source tools/llvm/setup_arm_trusted_toolchain.sh
+topdir=$(pwd)
+cd $dir
+
+ldscript=$topdir/toolchain/linux_arm-untrusted/arm-none-linux-gnueabi/ld_script_arm_untrusted
 
 readonly ARM_CROSS_COMPILER="${ARM_CC}"
-for t in *.S ; do
-  echo "compiling $t -> ${t%.*}.nexe"
-  ${ARM_CROSS_COMPILER} -static -nodefaultlibs -nostdlib \
-      -march=armv7-a -mcpu=cortex-a8 -mfpu=neon -o ${t%.*}.nexe $t
+for test_file in *.S ; do
+  object_file=${test_file%.*}.o
+  nexe_file=${test_file%.*}.nexe
+
+  echo "compiling $test_file -> $nexe_file"
+  ${ARM_CROSS_COMPILER} \
+      -march=armv7-a -mcpu=cortex-a8 -mfpu=neon -c $test_file -o $object_file
+  ${ARM_LD} -static -nodefaultlibs -nostdlib -T $ldscript \
+      $object_file -o $nexe_file
 done
