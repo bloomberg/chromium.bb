@@ -11,11 +11,10 @@
 #include "base/basictypes.h"
 #include "base/port.h"
 #include "base/string_split.h"
-#include "chrome/browser/sync/engine/all_status.h"
 #include "chrome/browser/sync/engine/net/http_return.h"
-#include "chrome/browser/sync/engine/net/url_translator.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/escape.h"
 
 using std::pair;
 using std::string;
@@ -146,7 +145,7 @@ bool GaiaAuthenticator::AuthenticateImpl(const AuthParams& params,
     ++early_auth_attempt_count_;
     // Allow 3 attempts, but then limit.
     if (early_auth_attempt_count_ > 3) {
-      delay_ = AllStatus::GetRecommendedDelaySeconds(delay_);
+      delay_ = GetBackoffDelaySeconds(delay_);
       next_allowed_auth_attempt_time_ = now + delay_;
       return false;
     }
@@ -161,13 +160,13 @@ bool GaiaAuthenticator::PerformGaiaRequest(const AuthParams& params,
   GURL gaia_auth_url(gaia_url_);
 
   string post_body;
-  post_body += "Email=" + CgiEscapeString(params.email);
-  post_body += "&Passwd=" + CgiEscapeString(params.password);
-  post_body += "&source=" + CgiEscapeString(user_agent_);
+  post_body += "Email=" + EscapeUrlEncodedData(params.email);
+  post_body += "&Passwd=" + EscapeUrlEncodedData(params.password);
+  post_body += "&source=" + EscapeUrlEncodedData(user_agent_);
   post_body += "&service=" + service_id_;
   if (!params.captcha_token.empty() && !params.captcha_value.empty()) {
-    post_body += "&logintoken=" + CgiEscapeString(params.captcha_token);
-    post_body += "&logincaptcha=" + CgiEscapeString(params.captcha_value);
+    post_body += "&logintoken=" + EscapeUrlEncodedData(params.captcha_token);
+    post_body += "&logincaptcha=" + EscapeUrlEncodedData(params.captcha_value);
   }
   post_body += "&PersistentCookie=true";
   // We set it to GOOGLE (and not HOSTED or HOSTED_OR_GOOGLE) because we only
@@ -215,7 +214,7 @@ bool GaiaAuthenticator::LookupEmail(AuthResults* results) {
 
   string post_body;
   post_body += "LSID=";
-  post_body += CgiEscapeString(results->lsid);
+  post_body += EscapeUrlEncodedData(results->lsid);
 
   unsigned long server_response_code;
   string message_text;
@@ -262,7 +261,7 @@ bool GaiaAuthenticator::IssueAuthToken(AuthResults* results,
 
   string post_body;
   post_body += "LSID=";
-  post_body += CgiEscapeString(results->lsid);
+  post_body += EscapeUrlEncodedData(results->lsid);
   post_body += "&service=" + service_id;
   if (long_lived) {
     post_body += "&Session=true";

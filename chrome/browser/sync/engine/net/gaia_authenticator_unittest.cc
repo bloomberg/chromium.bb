@@ -7,7 +7,6 @@
 #include <string>
 
 #include "chrome/browser/sync/engine/net/http_return.h"
-#include "chrome/browser/sync/util/sync_types.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,6 +27,12 @@ class GaiaAuthMockForGaiaAuthenticator : public GaiaAuthenticator {
     *response_code = RC_REQUEST_OK;
     response_body->assign("body\n");
     return true;
+  }
+
+  int GetBackoffDelaySeconds(
+      int current_backoff_delay) {
+    // Dummy delay value.
+    return 5;
   }
 };
 

@@ -41,6 +41,11 @@ class GaiaAuthMockForAuthWatcher : public browser_sync::GaiaAuthenticator {
       use_bad_auth_token_(false) {}
   virtual ~GaiaAuthMockForAuthWatcher() {}
 
+  virtual int GetBackoffDelaySeconds(
+      int current_backoff_delay) {
+    return AllStatus::GetRecommendedDelaySeconds(current_backoff_delay);
+  }
+
   void SendBadAuthTokenForNextRequest() { use_bad_auth_token_ = true; }
 
   std::string renewed_token() {

@@ -26,7 +26,6 @@
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
-#include "chrome/browser/sync/engine/net/http_return.h"
 #include "chrome/browser/sync/util/signin.h"
 #include "chrome/common/deprecated/event_sys.h"
 #include "googleurl/src/gurl.h"
@@ -206,6 +205,16 @@ class GaiaAuthenticator {
   // Caller should fill in results->LSID before calling. Result in
   // results->primary_email.
   virtual bool LookupEmail(AuthResults* results);
+
+  // Subclasses must override to provide a backoff delay. It is virtual instead
+  // of pure virtual for testing purposes.
+  // TODO(sanjeevr): This should be made pure virtual. But this class is
+  // currently directly being used in sync/engine/authenticator.cc, which is
+  // wrong.
+  virtual int GetBackoffDelaySeconds(int current_backoff_delay) {
+    NOTREACHED();
+    return current_backoff_delay;
+  }
 
  public:
   // Retrieve email.
