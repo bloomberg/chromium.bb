@@ -57,6 +57,13 @@ var apps = {
     a.id = app['id'];
     a.onclick = apps.handleClick_;
     a.style.backgroundImage = url(app['icon']);
+    if (hashParams['app-id'] == app['id']) {
+      a.setAttribute('new', 'new');
+      // Delay changing the attribute a bit to let the page settle down a bit.
+      setTimeout(function() {
+        a.setAttribute('new', 'installed');
+      }, 500);
+    }
     return a;
   }
 };

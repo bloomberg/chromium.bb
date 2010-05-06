@@ -16,8 +16,8 @@ body {
   min-height: 100%;
 }
 
-html[mode=app-launcher] #container {
-  min-height: 0;
+html[mode=app-launcher] {
+  height: auto;
 }
 
 #promo-spacer {
@@ -477,28 +477,6 @@ html[dir=rtl] #option-menu > [command=hide]:before {
   margin-left: 1em;
 }
 
-#apps-section a {
-  -webkit-box-sizing: border-box;
-  -webkit-transition: background-color .15s;
-  background: rgba(255, 255, 255, 0) /* transparent white */
-              no-repeat center 5px;
-  background-size: 98px 98px;
-  border-radius: 10px;
-  color: black;
-  display: inline-block;
-  font-weight: bold;
-  margin: 5px;
-  margin-right:5px;
-  overflow: hidden;
-  padding: 5px;
-  padding-top: 108px; /* 98 + 5 + 5 */
-  text-align: center;
-  text-decoration: none;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  width: 105px; /* 920 / 8 - margin * 2 */
-}
-
 #debug > h2 {
   color: red;
 }
@@ -588,4 +566,52 @@ html[dir=rtl] #option-menu > [command=hide]:before {
   #notification > span > .blacklist-title {
     max-width: 15ex;
   }
+}
+
+/* Apps */
+
+@-webkit-keyframes bounce {
+  0% {
+    -webkit-transform: scale(0, 0);
+  }
+
+  60% {
+    -webkit-transform: scale(1.2, 1.2);
+  }
+
+  100% {
+    -webkit-transform: scale(1, 1);
+  }
+}
+
+#apps-section a,
+#apps-section a[new=installed] {
+  -webkit-box-sizing: border-box;
+  -webkit-transition: background-color .15s;
+  background: rgba(255, 255, 255, 0) /* transparent white */
+              no-repeat center 5px;
+  background-size: 98px 98px;
+  border-radius: 10px;
+  color: black;
+  display: inline-block;
+  font-weight: bold;
+  margin: 5px;
+  margin-right:5px;
+  overflow: hidden;
+  padding: 5px;
+  padding-top: 108px; /* 98 + 5 + 5 */
+  text-align: center;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 105px; /* 920 / 8 - margin * 2 */
+}
+
+#apps-section a[new=new] {
+  opacity: 0;
+}
+
+#apps-section a[new=installed] {
+  -webkit-animation: bounce .5s ease-in-out;
+  -webkit-transition: opacity .5s;
 }
