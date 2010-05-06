@@ -26,9 +26,9 @@ class RootTestCase(BaseSCMTestCase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-        'GetCasedPath', 'GIT', 'SVN', 'ValidateEmail',
-        'gclient_utils', 'glob', 'os', 're', 'shutil', 'subprocess', 'sys',
-        'tempfile', 'time', 'xml',
+        'GetCasedPath', 'GenFakeDiff', 'GIT', 'SVN', 'ValidateEmail',
+        'cStringIO', 'gclient_utils', 'glob', 'os', 're', 'shutil',
+        'subprocess', 'sys', 'tempfile', 'time', 'xml',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(scm, members)
@@ -149,9 +149,10 @@ class SVNTestCase(BaseSCMTestCase):
     members = [
         'COMMAND', 'AssertVersion', 'Capture', 'CaptureBaseRevision',
         'CaptureHeadRevision', 'CaptureInfo', 'CaptureStatus',
-        'current_version', 'DiffItem', 'GenerateDiff', 'GetCheckoutRoot',
-        'GetEmail', 'GetFileProperty', 'IsMoved', 'ReadSimpleAuth', 'Run',
-        'RunAndFilterOutput', 'RunAndGetFileList',
+        'current_version', 'DiffItem', 'GenerateDiff',
+        'GetCheckoutRoot', 'GetEmail', 'GetFileProperty', 'IsMoved',
+        'IsMovedInfo', 'ReadSimpleAuth', 'Run', 'RunAndFilterOutput',
+        'RunAndGetFileList',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(scm.SVN, members)

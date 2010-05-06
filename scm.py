@@ -4,6 +4,7 @@
 
 """SCM-specific utility classes."""
 
+import cStringIO
 import glob
 import os
 import re
@@ -39,6 +40,27 @@ def GetCasedPath(path):
       paths[i] = glob.glob(subpath + '*')[0][prev+1:len(subpath)]
     path = '\\'.join(paths)
   return path
+
+
+def GenFakeDiff(filename):
+  """Generates a fake diff from a file."""
+  file_content = gclient_utils.FileRead(filename, 'rb').splitlines(True)
+  nb_lines = len(file_content)
+  # We need to use / since patch on unix will fail otherwise.
+  data = cStringIO.StringIO()
+  data.write("Index: %s\n" % filename)
+  data.write('=' * 67 + '\n')
+  # Note: Should we use /dev/null instead?
+  data.write("--- %s\n" % filename)
+  data.write("+++ %s\n" % filename)
+  data.write("@@ -0,0 +1,%d @@\n" % nb_lines)
+  # Prepend '+' to every lines.
+  for line in file_content:
+    data.write('+')
+    data.write(line)
+  result = data.getvalue()
+  data.close()
+  return result
 
 
 class GIT(object):
@@ -609,7 +631,11 @@ class SVN(object):
   @staticmethod
   def IsMoved(filename):
     """Determine if a file has been added through svn mv"""
-    info = SVN.CaptureInfo(filename)
+    return SVN.IsMovedInfo(SVN.CaptureInfo(filename))
+
+  @staticmethod
+  def IsMovedInfo(info):
+    """Determine if a file has been added through svn mv"""
     return (info.get('Copied From URL') and
             info.get('Copied From Rev') and
             info.get('Schedule') == 'add')
@@ -638,14 +664,11 @@ class SVN(object):
   def DiffItem(filename, full_move=False, revision=None):
     """Diffs a single file.
 
+    Should be simple, eh? No it isn't.
     Be sure to be in the appropriate directory before calling to have the
     expected relative path.
     full_move means that move or copy operations should completely recreate the
     files, usually in the prospect to apply the patch for a try job."""
-    # Use svn info output instead of os.path.isdir because the latter fails
-    # when the file is deleted.
-    if SVN.CaptureInfo(filename).get("Node Kind") == "directory":
-      return None
     # If the user specified a custom diff command in their svn config file,
     # then it'll be used when we do svn diff, which we don't want to happen
     # since we want the unified diff.  Using --diff-cmd=diff doesn't always
@@ -654,34 +677,61 @@ class SVN(object):
     # config directory, which gets around these problems.
     bogus_dir = tempfile.mkdtemp()
     try:
-      # Grabs the diff data.
-      command = ["diff", "--config-dir", bogus_dir, filename]
-      if revision:
-        command.extend(['--revision', revision])
-      if SVN.IsMoved(filename):
-        if full_move:
-          file_content = gclient_utils.FileRead(filename, 'rb')
-          # Prepend '+' to every lines.
-          file_content = ['+' + i for i in file_content.splitlines(True)]
-          nb_lines = len(file_content)
-          # We need to use / since patch on unix will fail otherwise.
-          data = "Index: %s\n" % filename
-          data += '=' * 67 + '\n'
-          # Note: Should we use /dev/null instead?
-          data += "--- %s\n" % filename
-          data += "+++ %s\n" % filename
-          data += "@@ -0,0 +1,%d @@\n" % nb_lines
-          data += ''.join(file_content)
+      # Use "svn info" output instead of os.path.isdir because the latter fails
+      # when the file is deleted.
+      return SVN._DiffItemInternal(SVN.CaptureInfo(filename),
+                                   full_move=full_move, revision=revision)
+    finally:
+      shutil.rmtree(bogus_dir)
+
+  @staticmethod
+  def _DiffItemInternal(filename, info, bogus_dir, full_move=False,
+                        revision=None):
+    """Grabs the diff data."""
+    command = ["diff", "--config-dir", bogus_dir, filename]
+    if revision:
+      command.extend(['--revision', revision])
+    data = None
+    if SVN.IsMovedInfo(info):
+      if full_move:
+        if info.get("Node Kind") == "directory":
+          # Things become tricky here. It's a directory copy/move. We need to
+          # diff all the files inside it.
+          # This will put a lot of pressure on the heap. This is why StringIO
+          # is used and converted back into a string at the end. The reason to
+          # return a string instead of a StringIO is that StringIO.write()
+          # doesn't accept a StringIO object. *sigh*.
+          for (dirpath, dirnames, filenames) in os.walk(filename):
+            # Cleanup all files starting with a '.'.
+            for d in dirnames:
+              if d.startswith('.'):
+                dirnames.remove(d)
+            for f in filenames:
+              if f.startswith('.'):
+                filenames.remove(f)
+            for f in filenames:
+              if data is None:
+                data = cStringIO.StringIO()
+              data.write(GenFakeDiff(os.path.join(dirpath, f)))
+          if data:
+            tmp = data.getvalue()
+            data.close()
+            data = tmp
         else:
+          data = GenFakeDiff(filename)
+      else:
+        if info.get("Node Kind") != "directory":
           # svn diff on a mv/cp'd file outputs nothing if there was no change.
           data = SVN.Capture(command, None)
           if not data:
             # We put in an empty Index entry so upload.py knows about them.
             data = "Index: %s\n" % filename
-      else:
+        # Otherwise silently ignore directories.
+    else:
+      if info.get("Node Kind") != "directory":
+        # Normal simple case.
         data = SVN.Capture(command, None)
-    finally:
-      shutil.rmtree(bogus_dir)
+      # Otherwise silently ignore directories.
     return data
 
   @staticmethod
@@ -701,17 +751,47 @@ class SVN(object):
       if os.path.normcase(path).startswith(root):
         return path[len(root):]
       return path
+    # If the user specified a custom diff command in their svn config file,
+    # then it'll be used when we do svn diff, which we don't want to happen
+    # since we want the unified diff.  Using --diff-cmd=diff doesn't always
+    # work, since they can have another diff executable in their path that
+    # gives different line endings.  So we use a bogus temp directory as the
+    # config directory, which gets around these problems.
+    bogus_dir = tempfile.mkdtemp()
     try:
       os.chdir(root)
-      diff = "".join(filter(None,
-                            [SVN.DiffItem(RelativePath(f, root),
-                                          full_move=full_move,
-                                          revision=revision)
-                             for f in filenames]))
+      # Cleanup filenames
+      filenames = [RelativePath(f, root) for f in filenames]
+      # Get information about the modified items (files and directories)
+      data = dict([(f, SVN.CaptureInfo(f)) for f in filenames])
+      if full_move:
+        # Eliminate modified files inside moved/copied directory.
+        for (filename, info) in data.iteritems():
+          if SVN.IsMovedInfo(info) and info.get("Node Kind") == "directory":
+            # Remove files inside the directory.
+            filenames = [f for f in filenames
+                         if not f.startswith(filename + os.path.sep)]
+        for filename in data.keys():
+          if not filename in filenames:
+            # Remove filtered out items.
+            del data[filename]
+      # Now ready to do the actual diff.
+      diffs = []
+      for filename in sorted(data.iterkeys()):
+        diffs.append(SVN._DiffItemInternal(filename, data[filename], bogus_dir,
+                                           full_move=full_move,
+                                           revision=revision))
+      # Use StringIO since it can be messy when diffing a directory move with
+      # full_move=True.
+      buf = cStringIO.StringIO()
+      for d in filter(None, diffs):
+        buf.write(d)
+      result = buf.getvalue()
+      buf.close()
+      return result
     finally:
       os.chdir(previous_cwd)
-    return diff
-
+      shutil.rmtree(bogus_dir)
 
   @staticmethod
   def GetEmail(repo_root):
