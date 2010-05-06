@@ -333,8 +333,7 @@ void LanguageMenuButton::ActivatedAt(int index) {
     return;
   }
 
-  // Separators are not clickable.
-  NOTREACHED();
+  LOG(ERROR) << "Unexpected index: " << index;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -429,9 +428,14 @@ void LanguageMenuButton::RebuildModel() {
 bool LanguageMenuButton::IndexIsInInputMethodList(int index) const {
   DCHECK_GE(index, 0);
   DCHECK(model_.get());
+  if (index >= model_->GetItemCount()) {
+    return false;
+  }
 
   return ((model_->GetTypeAt(index) == menus::MenuModel::TYPE_RADIO) &&
-          (model_->GetCommandIdAt(index) == COMMAND_ID_INPUT_METHODS));
+          (model_->GetCommandIdAt(index) == COMMAND_ID_INPUT_METHODS) &&
+          input_method_descriptors_.get() &&
+          (index < static_cast<int>(input_method_descriptors_->size())));
 }
 
 bool LanguageMenuButton::GetPropertyIndex(
@@ -439,11 +443,19 @@ bool LanguageMenuButton::GetPropertyIndex(
   DCHECK_GE(index, 0);
   DCHECK(property_index);
   DCHECK(model_.get());
+  if (index >= model_->GetItemCount()) {
+    return false;
+  }
 
   if ((model_->GetTypeAt(index) == menus::MenuModel::TYPE_RADIO) &&
       (model_->GetCommandIdAt(index) == COMMAND_ID_IME_PROPERTIES)) {
-    *property_index = model_->GetGroupIdAt(index);
-    return true;
+    const int tmp_property_index = model_->GetGroupIdAt(index);
+    const ImePropertyList& property_list
+        = CrosLibrary::Get()->GetLanguageLibrary()->current_ime_properties();
+    if (tmp_property_index < static_cast<int>(property_list.size())) {
+      *property_index = tmp_property_index;
+      return true;
+    }
   }
   return false;
 }
@@ -451,6 +463,9 @@ bool LanguageMenuButton::GetPropertyIndex(
 bool LanguageMenuButton::IndexPointsToConfigureImeMenuItem(int index) const {
   DCHECK_GE(index, 0);
   DCHECK(model_.get());
+  if (index >= model_->GetItemCount()) {
+    return false;
+  }
 
   return ((model_->GetTypeAt(index) == menus::MenuModel::TYPE_RADIO) &&
           (model_->GetCommandIdAt(index) == COMMAND_ID_CONFIGURE_IME));
