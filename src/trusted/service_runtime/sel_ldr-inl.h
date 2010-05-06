@@ -134,7 +134,7 @@ static INLINE uint32_t NaClSysToUser32(struct NaClApp  *nap,
   return (uint32_t)(sysaddr - nap->mem_start);
 }
 
-#if NACL_ARCH(NACL_BUID_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
 /*
  * For x86-64 sandboxing, %rsp and %rbp are system addresses already.
  */

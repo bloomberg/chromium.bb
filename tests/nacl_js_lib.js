@@ -94,6 +94,13 @@ NaclLib.prototype.checkModuleReadiness = function() {
   // <embed> tags and then gather the list of all of those scriptable objects
   // each time this method is invoked.
   var module_list = document.getElementsByName(this.embed_name_);
+  if (module_list.length == 0) {
+    this.cleanUp();
+    this.setStatusError("No elements found with attribute name='"
+                        + this.embed_name_
+                        + "'.  (Did you forget the name tag and just use id?)");
+    return;
+  }
   var num_ready = this.numModulesReady(module_list);
 
   if (module_list.length == num_ready) {

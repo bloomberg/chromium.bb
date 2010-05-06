@@ -18,25 +18,21 @@
 
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability_string.h"
-
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
-
-#include "native_client/src/trusted/plugin/srpc/browser_interface.h"
-#include "native_client/src/trusted/plugin/srpc/srpc.h"
-#include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
-#include "native_client/src/trusted/plugin/srpc/closure.h"
-
-#include "native_client/src/trusted/plugin/srpc/video.h"
 #include "native_client/src/trusted/plugin/origin.h"
-
+#include "native_client/src/trusted/plugin/srpc/browser_interface.h"
+#include "native_client/src/trusted/plugin/srpc/closure.h"
 #include "native_client/src/trusted/plugin/srpc/connected_socket.h"
+#include "native_client/src/trusted/plugin/srpc/nexe_arch.h"
+#include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
 #include "native_client/src/trusted/plugin/srpc/service_runtime_interface.h"
 #include "native_client/src/trusted/plugin/srpc/shared_memory.h"
-
+#include "native_client/src/trusted/plugin/srpc/srpc.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
+#include "native_client/src/trusted/plugin/srpc/video.h"
 
 namespace nacl_srpc {
 
@@ -65,6 +61,10 @@ void Plugin::LoadMethods() {
       "src", PROPERTY_GET, "", "s");
   AddMethodToMap(SetSrcProperty,
       "src", PROPERTY_SET, "s", "");
+  AddMethodToMap(GetNexesProperty,
+      "nexes", PROPERTY_GET, "", "s");
+  AddMethodToMap(SetNexesProperty,
+      "nexes", PROPERTY_SET, "s", "");
   AddMethodToMap(GetVideoUpdateModeProperty,
       "videoUpdateMode", PROPERTY_GET, "", "i");
   AddMethodToMap(SetVideoUpdateModeProperty,
@@ -224,10 +224,10 @@ bool Plugin::SetHeightProperty(void *obj, SrpcParams *params) {
 bool Plugin::GetModuleReadyProperty(void *obj, SrpcParams *params) {
   Plugin *plugin = reinterpret_cast<Plugin*>(obj);
   if (plugin->socket_) {
-      params->outs[0]->u.ival = 1;
-    } else {
-      params->outs[0]->u.ival = 0;
-    }
+    params->outs[0]->u.ival = 1;
+  } else {
+    params->outs[0]->u.ival = 0;
+  }
   return true;
 }
 
@@ -239,28 +239,67 @@ bool Plugin::SetModuleReadyProperty(void *obj, SrpcParams *params) {
 
 bool Plugin::GetSrcProperty(void *obj, SrpcParams *params) {
   Plugin *plugin = reinterpret_cast<Plugin*>(obj);
-  params->outs[0]->u.sval =
-    PortablePluginInterface::MemAllocStrdup(plugin->local_url_);
-  return true;
+  if (plugin->logical_url() != NULL) {
+    params->outs[0]->u.sval = strdup(plugin->logical_url());
+    dprintf(("GetSrcProperty 'src' = %s\n", plugin->logical_url()));
+    return true;
+  } else {
+    // (NULL is not an acceptable SRPC result.)
+    dprintf(("GetSrcProperty 'src' failed\n"));
+    return false;
+  }
+}
+
+bool Plugin::GetNexesProperty(void *obj, SrpcParams *params) {
+  UNREFERENCED_PARAMETER(obj);
+  UNREFERENCED_PARAMETER(params);
+  // Note, "get" must be present in the method map for "set" to work.
+  dprintf(("GetNexesProperty not yet implemented.\n"));
+  return false;
+}
+
+// Update "nexes", a write-only property that computes a value to
+// assign to the "src" property based on the supported sandbox.
+bool Plugin::SetNexesProperty(void *obj, SrpcParams *params) {
+  return reinterpret_cast<Plugin*>(obj)->
+      SetNexesPropertyImpl(params->ins[0]->u.sval);
+}
+
+bool Plugin::SetNexesPropertyImpl(const char* nexes_attr) {
+  dprintf(("Plugin::SetNexesPropertyImpl: %s\n", nexes_attr));
+  nacl::string result;
+  if (!GetNexeURL(nexes_attr, &result)) {
+    // TODO(adonovan): Ideally we would print to the browser's
+    // JavaScript console: alert popups are annoying, and no-one can
+    // be expected to read stderr.
+    dprintf(("%s\n", result.c_str()));
+    GetPortablePluginInterface()->Alert(result);
+    return false;
+  } else {
+    return SetSrcPropertyImpl(result);
+  }
 }
 
 bool Plugin::SetSrcProperty(void *obj, SrpcParams *params) {
-  Plugin *plugin = reinterpret_cast<Plugin*>(obj);
-  if (NULL != plugin->service_runtime_interface_) {
+  dprintf(("SetSrcProperty\n"));
+  return reinterpret_cast<Plugin*>(obj)->
+      SetSrcPropertyImpl(params->ins[0]->u.sval);
+}
+
+bool Plugin::SetSrcPropertyImpl(const nacl::string &url) {
+  if (NULL != service_runtime_interface_) {
     dprintf(("Plugin::SetProperty: unloading previous\n"));
     // Plugin owns socket_address_ and socket_, so when we change to a new
     // socket we need to give up ownership of the old one.
-    plugin->socket_address_->Unref();
-    plugin->socket_address_ = NULL;
-    plugin->socket_->Unref();
-    plugin->socket_ = NULL;
-    plugin->service_runtime_interface_ = NULL;
+    socket_address_->Unref();
+    socket_address_ = NULL;
+    socket_->Unref();
+    socket_ = NULL;
+    service_runtime_interface_ = NULL;
   }
   // Load the new module if the origin of the page is valid.
-  const char* url = params->ins[0]->u.sval;
-  dprintf(("Plugin::SetProperty src = '%s'\n", url));
-  LoadNaClAppNotify* callback = new(std::nothrow) LoadNaClAppNotify(plugin,
-                                                                    url);
+  dprintf(("Plugin::SetProperty src = '%s'\n", url.c_str()));
+  LoadNaClAppNotify* callback = new(std::nothrow) LoadNaClAppNotify(this, url);
   if ((NULL == callback) || (!callback->StartDownload())) {
     dprintf(("Failed to load URL to local file.\n"));
     // callback is always deleted in URLNotify
@@ -293,7 +332,6 @@ bool Plugin::SetWidthProperty(void *obj, SrpcParams *params) {
   return true;
 }
 
-
 bool Plugin::Init(struct PortableHandleInitializer* init_info) {
   dprintf(("Plugin::Init()\n"));
 
@@ -320,12 +358,25 @@ bool Plugin::Init(struct PortableHandleInitializer* init_info) {
   return true;
 }
 
+void Plugin::PostInit() {
+  // If the <embed src='...'> attr was defined, the browser would have
+  // implicitly called GET on it, which calls Load() and set_logical_url().
+  // In the absence of this attr, we use the "nexes" attribute if present.
+  if (logical_url() == NULL) {
+    const char *nexes_attr =
+        GetPortablePluginInterface()->LookupArgument("nexes");
+    if (nexes_attr != NULL) {
+      SetNexesPropertyImpl(nexes_attr);
+    }
+  }
+}
 
 Plugin::Plugin()
   : socket_address_(NULL),
     socket_(NULL),
     service_runtime_interface_(NULL),
     local_url_(NULL),
+    logical_url_(NULL),
     height_(0),
     video_update_mode_(nacl::kVideoUpdatePluginPaint),
     width_(0),
@@ -378,19 +429,28 @@ Plugin::~Plugin() {
   service_runtime_interface_ = NULL;
   dprintf(("Plugin::~Plugin(%p)\n", static_cast<void *>(this)));
   free(local_url_);
+  free(logical_url_);
 }
 
-void Plugin::set_local_url(const char* name) {
-  dprintf(("Plugin::set_local_url(%s)\n", name));
-  local_url_ = PortablePluginInterface::MemAllocStrdup(name);
+void Plugin::set_local_url(const char *url) {
+  dprintf(("Plugin::set_local_url(%s)\n", url));
+  if (local_url_ != NULL) free(local_url_);
+  local_url_ = strdup(url);
+}
+
+void Plugin::set_logical_url(const char *url) {
+  dprintf(("Plugin::set_logical_url(%s)\n", url));
+  if (logical_url_ != NULL) free(logical_url_);
+  logical_url_ = strdup(url);
 }
 
 // Create a new service node from a downloaded service.
-bool Plugin::Load(nacl::string remote_url, const char* local_url) {
-  return Load(remote_url, local_url, static_cast<nacl::StreamShmBuffer*>(NULL));
+bool Plugin::Load(nacl::string logical_url, const char* local_url) {
+  return Load(logical_url, local_url,
+              static_cast<nacl::StreamShmBuffer*>(NULL));
 }
 
-bool Plugin::Load(nacl::string remote_url,
+bool Plugin::Load(nacl::string logical_url,
                   const char* local_url,
                   nacl::StreamShmBuffer *shmbufp) {
   PortablePluginInterface* plugin_interface = GetPortablePluginInterface();
@@ -402,16 +462,19 @@ bool Plugin::Load(nacl::string remote_url,
   }
 
   // Save the origin and local_url.
-  set_nacl_module_origin(nacl::UrlToOrigin(remote_url));
+  set_nacl_module_origin(nacl::UrlToOrigin(logical_url));
+  set_logical_url(logical_url.c_str());
   set_local_url(local_url);
   // If the page origin where the EMBED/OBJECT tag occurs is not in
   // the whitelist, refuse to load.  If the NaCl module's origin is
   // not in the whitelist, also refuse to load.
+  // TODO(adonovan): JavaScript permits cross-origin loading, and so
+  // does Chrome ; why don't we?
   if (!origin_valid_ || !nacl::OriginIsInWhitelist(nacl_module_origin())) {
-    const char *message = "Load failed: NaCl module did not"
-                          " come from a whitelisted source."
-                          "See nacl_plugin/origin.cc for the list.";
-    plugin_interface->Alert(message);
+    nacl::string message = nacl::string("Load failed: NaCl module ") +
+        logical_url + " does not come ""from a whitelisted source. "
+        "See native_client/src/trusted/plugin/origin.cc for the list.";
+    plugin_interface->Alert(message.c_str());
     return false;
   }
   // Catch any bad accesses, etc., while loading.
@@ -423,23 +486,22 @@ bool Plugin::Load(nacl::string remote_url,
 
   dprintf(("Load: NaCl module from '%s'\n", local_url_));
 
-  // check ABI version compatibility
+  // Check ELF magic and ABI version compatibility.
   bool success = false;
   if (NULL == shmbufp) {
-    success = plugin_interface->CheckExecutableVersion(local_url_);
+    success = plugin_interface->CheckElfExecutable(local_url_);
   } else {
-    // read out first chunk for CheckExecutableVersion; this suffices
-    // for ELF headers etc.
+    // Read out first chunk for CheckElfExecutable; this suffices for
+    // ELF headers etc.
     char elf_hdr_buf[kAbiHeaderBuffer];
     ssize_t result;
     result = shmbufp->read(0, sizeof elf_hdr_buf, elf_hdr_buf);
-    if (sizeof elf_hdr_buf == result) {
-      success = plugin_interface->CheckExecutableVersion(elf_hdr_buf,
-                                                         sizeof elf_hdr_buf);
+    if (sizeof elf_hdr_buf == result) {  // (const char*)(elf_hdr_buf)
+      success = plugin_interface->CheckElfExecutable(elf_hdr_buf,
+                                                     sizeof elf_hdr_buf);
     }
   }
   if (!success) {
-    dprintf(("Load: FAILED due to possible ABI version mismatch\n"));
     return false;
   }
   // Load a file via a forked sel_ldr process.
@@ -498,8 +560,6 @@ Plugin* Plugin::GetPlugin() {
   return this;
 }
 
-
 PLUGIN_JMPBUF Plugin::loader_env;
-
 
 }  // namespace nacl_srpc

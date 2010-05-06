@@ -39,16 +39,22 @@ class ScriptableHandle;
 // NPAPI versions of the plugin instantiate subclasses of this class.
 class Plugin : public PortableHandle {
  public:
-  const char* local_url() { return local_url_; }
+  // Returns the URL of the locally-cached copy of the downloaded NaCl
+  // module, if any.  May be NULL, e.g. in Chrome.
+  const char* local_url() const { return local_url_; }
+  void set_local_url(const char *url);
 
-  void set_local_url(const char*);
+  // Returns the logical URL of NaCl module as defined by the "src" or
+  // "nexes" attribute (and thus seen by the user).
+  const char* logical_url() const { return logical_url_; }
+  void set_logical_url(const char *url);
 
   // Load from the local URL saved in local_url.
-  // Saves local_url in local_url_ and origin in nacl_module_origin_.
-  bool Load(nacl::string remote_url, const char* local_url);
+  // Updates local_url(), nacl_module_origin() and logical_url().
+  bool Load(nacl::string logical_url, const char* local_url);
   // Load nexe binary from the provided buffer.
-  // Saves local_url in local_url_ and origin in nacl_module_origin_.
-  bool Load(nacl::string remote_url,
+  // Updates local_url(), nacl_module_origin() and logical_url().
+  bool Load(nacl::string logical_url,
             const char* local_url,
             nacl::StreamShmBuffer *buffer);
 
@@ -72,6 +78,9 @@ class Plugin : public PortableHandle {
   virtual ~Plugin();
 
   bool Init(struct PortableHandleInitializer* init_info);
+
+  // Called after Init() once the arg[nv] dictionary is available.
+  void PostInit();
 
   nacl::DescWrapperFactory* wrapper_factory() { return wrapper_factory_; }
   void LoadMethods();
@@ -103,11 +112,16 @@ class Plugin : public PortableHandle {
   static bool GetModuleReadyProperty(void* obj, SrpcParams* params);
   static bool SetModuleReadyProperty(void* obj, SrpcParams* params);
 
+  static bool GetNexesProperty(void* obj, SrpcParams* params);
+  static bool SetNexesProperty(void* obj, SrpcParams* params);
+  bool SetNexesPropertyImpl(const char* nexes_attrs);
+
   static bool GetPrintProperty(void* obj, SrpcParams* params);
   static bool SetPrintProperty(void* obj, SrpcParams* params);
 
   static bool GetSrcProperty(void* obj, SrpcParams* params);
   static bool SetSrcProperty(void* obj, SrpcParams* params);
+  bool SetSrcPropertyImpl(const nacl::string &url);
 
   static bool GetVideoUpdateModeProperty(void* obj, SrpcParams* params);
   static bool SetVideoUpdateModeProperty(void* obj, SrpcParams* params);
@@ -123,7 +137,8 @@ class Plugin : public PortableHandle {
   ScriptableHandle<SocketAddress>* socket_address_;
   ScriptableHandle<ConnectedSocket>* socket_;
   ServiceRuntimeInterface* service_runtime_interface_;
-  char* local_url_;
+  char* local_url_;  // (from malloc)
+  char* logical_url_;  // (from malloc)
   int32_t height_;
   int32_t video_update_mode_;
   int32_t width_;

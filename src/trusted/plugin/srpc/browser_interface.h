@@ -57,7 +57,8 @@ class PortablePluginInterface {
   // these functions can be made virtual and implemented in the
   // browser-specific class, such as SRPC_Plugin
   static uintptr_t GetStrIdentifierCallback(const char *method_name);
-  // TODO(adonovan): document significance of result.
+  // Pops up an alert box.
+  // Returns false if that failed for any reason.  (Is that useful?)
   bool Alert(const nacl::string& text);
 
   bool GetOrigin(nacl::string **origin);
@@ -80,14 +81,18 @@ class PortablePluginInterface {
   static nacl::string IdentToString(uintptr_t ident);
   bool CheckExecutableVersion(const char *filename);
 
-  bool CheckExecutableVersion(const void* buffer, int32_t size);
+  // Returns true iff |filename| appears to be a valid ELF file;
+  // calls Alert() with an informative message otherwise.
+  bool CheckElfExecutable(const char *filename);
+
+  // Returns true iff the first |size| bytes of |buffer| appear to be
+  // a valid ELF file; calls Alert() with an informative message
+  // otherwise.
+  bool CheckElfExecutable(const char* buffer, size_t size);
 
   void InitializeIdentifiers();
   virtual ~PortablePluginInterface() {}
- private:
-  bool CheckExecutableVersionCommon(const uint8_t *version);
 
- public:
   static uintptr_t kConnectIdent;
   static uintptr_t kHeightIdent;
   static uintptr_t kInvokeIdent;

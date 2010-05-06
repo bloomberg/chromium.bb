@@ -146,7 +146,7 @@ bool ServiceRuntimeInterface::InitCommunication(nacl::DescWrapper* shm) {
   dprintf(("invoking set_origin\n"));
   if (!runtime_channel_->SetOrigin(plugin_->nacl_module_origin())) {
     dprintf(("ServiceRuntimeInterface::Start: "
-            "set_orign RPC failed.\n"));
+            "set_origin RPC failed.\n"));
     plugin_interface_->Alert("Could not set origin");
     // BUG: leaking raw_channel and runtime_channel_.
     return false;

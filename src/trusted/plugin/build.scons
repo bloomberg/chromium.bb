@@ -31,9 +31,11 @@
 
 Import('env')
 
+# Firefox/64 is happy to run 32-bit plugins, so only build x86-32 and ARM.
 if env['TARGET_SUBARCH'] != '32':
   Return()
 
+# TODO(adonovan): why is this relevant??
 if env['BUILD_SUBARCH'] == '64':
   Return()
 
@@ -59,6 +61,7 @@ env.Append(
         'google_nacl_npruntime',
         'google_nacl_imc_c',
         'platform',
+        'platform_qual_lib',
         'gio',
         'expiration',
         'sel',
@@ -139,6 +142,7 @@ nacl_npplugin_inputs = [
     'srpc/browser_interface.cc',
     'srpc/portable_handle.cc',
     'srpc/desc_based_handle.cc',
+    'srpc/nexe_arch.cc',
     'srpc/utility.cc',
     'srpc/video.cc',
     'srpc/closure.cc',
@@ -189,6 +193,7 @@ else:
 test_env = env.Clone()
 test_env.FilterOut(LINKFLAGS=['-bundle'])
 
+# Rather than link nacl_npplugin_code statically, this unittest uses dlopen.
 if test_env['TARGET_ARCHITECTURE'] == 'x86' and test_env.Bit('linux'):
   unittest = test_env.ComponentProgram('plugin_unittest',
                                        'plugin_unittest.cc',

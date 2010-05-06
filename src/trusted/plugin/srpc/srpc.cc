@@ -42,11 +42,12 @@ std::set<const nacl_srpc::ScriptableHandleBase*>*
 namespace nacl {
 
 static int32_t stringToInt32(char* src) {
+  // TODO(adonovan): Why make a copy??
   char buf[32];
-
   strncpy(buf, src, sizeof buf);
   buf[sizeof buf - 1] = '\0';
-  return strtol(buf, static_cast<char**>(NULL), 10);
+  return strtol(buf,  // NOLINT(runtime/deprecated_fn)
+                static_cast<char**>(NULL), 10);
 }
 
 StreamShmBuffer::StreamShmBuffer() {
@@ -124,6 +125,7 @@ SRPC_Plugin::SRPC_Plugin(NPP npp, int argc, char* argn[], char* argv[])
 #endif
   // SRPC_Plugin initially gets exclusive ownership of plugin_.
   nacl_srpc::PortableHandleInitializer init_info(this);
+  // Note to greppers: this is effectively new Plugin(); Plugin::Init().
   plugin_ = nacl_srpc::ScriptableHandle<nacl_srpc::Plugin>::New(&init_info);
   if (NULL == plugin_) {
     dprintf(("SRPC_Plugin::SRPC_Plugin:"
@@ -172,6 +174,10 @@ SRPC_Plugin::SRPC_Plugin(NPP npp, int argc, char* argn[], char* argv[])
       }
     }
   }
+
+  // Give the Plugin a chance to inspect its arg[nv] arrays, which
+  // aren't set until after Init() has already returned.
+  static_cast<nacl_srpc::Plugin*>(plugin_->get_handle())->PostInit();
 
   video_ = new(std::nothrow) VideoMap(this);
   if (NULL == video_) {
@@ -449,7 +455,10 @@ void SRPC_Plugin::URLNotify(const char* url,
       = static_cast<nacl_srpc::Closure*>(notifyData);
 
   if (NPRES_DONE == reason) {
-    dprintf(("URLNotify: '%s', rsn NPRES_DONE (%d)\n", url, reason));
+    // Note, we cannot access the HTTP status code so we might have
+    // been returned a 404 error page.  This is reported in the ELF
+    // validity checks.
+    dprintf(("URLNotify: '%s', reason=NPRES_DONE (%d)\n", url, reason));
     StreamShmBuffer* stream_buffer = closure->buffer();
     if (NULL != stream_buffer) {
       // NPStream is not valid here since DestroyStream was called earlier
@@ -458,8 +467,15 @@ void SRPC_Plugin::URLNotify(const char* url,
       closure->set_buffer(NULL);
     }
   } else {
-    dprintf(("Unable to open: '%s' rsn %d\n", url, reason));
+    dprintf(("Unable to open: '%s' reason=%d\n", url, reason));
     if (NULL != closure) {
+      // BUG(adonovan): there's a bug here (issue #430).  The two arms
+      // of if(reason==...)  above make inconsistent assumptions about
+      // the nullity of "closure": the true branch assumes non-NULL,
+      // the false branch assumes possibly- NULL.  But "reason" is
+      // independent of "closure", so at best we don't call onfail();
+      // at worst we invoke closure->Run() on a null pointer.
+
       // TODO(sehr): this loses the browser's reason for failure.
       closure->Run(static_cast<NPStream*>(NULL),
                    static_cast<const char*>(NULL));

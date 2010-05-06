@@ -1361,6 +1361,7 @@ if int(ARGUMENTS.get('build_av_apps', '1')):
       'tests/life/nacl.scons',
       'tests/mandel_nav/nacl.scons',
       'tests/many/nacl.scons',
+      'tests/multiarch/nacl.scons',
       'tests/tone/nacl.scons',
       'tests/voronoi/nacl.scons',
       ])

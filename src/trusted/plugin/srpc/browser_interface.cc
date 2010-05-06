@@ -98,7 +98,7 @@ bool PortablePluginInterface::Alert(const nacl::string& text) {
     return false;
   }
 
-  NPVariant message; // doesn't hold its own string data, so don't release
+  NPVariant message;  // doesn't hold its own string data, so don't release
   STRINGN_TO_NPVARIANT(text.c_str(),
                        static_cast<uint32_t>(text.size()),
                        message);
@@ -108,7 +108,7 @@ bool PortablePluginInterface::Alert(const nacl::string& text) {
   bool ok = NPN_Invoke(npp, window, NPN_GetStringIdentifier("alert"),
                        &message, 1, &result);
   if (ok) NPN_ReleaseVariantValue(&result);
-  NPN_ReleaseObject(window);
+  // TODO(adonovan): NPN_ReleaseObject(window) needed?
   return ok;
 }
 
@@ -124,14 +124,13 @@ bool PortablePluginInterface::GetOrigin(nacl::string **origin) {
 
   // TODO(gregoryd): consider making this block a function returning origin.
   do {
-    NPObject *win_obj;
+    NPObject *win_obj;  // TODO(adonovan): NPN_ReleaseObject(win_obj) needed?
     if (NPERR_NO_ERROR
       != NPN_GetValue(instance, NPNVWindowNPObject, &win_obj)) {
         dprintf(("GetOrigin: No window object\n"));
         // no window; no URL as NaCl descriptors will be allowed
         break;
     }
-
     if (!NPN_GetProperty(instance,
                          win_obj,
                          reinterpret_cast<NPIdentifier>(kLocationIdent),
@@ -252,58 +251,42 @@ nacl::string PortablePluginInterface::IdentToString(uintptr_t ident) {
   }
 }
 
-bool PortablePluginInterface::CheckExecutableVersionCommon(
-    const uint8_t *version) {
-  if ((NULL != version) && (EF_NACL_ABIVERSION == *version)) {
-    return true;
-  }
-
-  if (NULL == version) {
-    Alert("Load failed: Unknown error");
-  } else {
-    nacl::stringstream ss;
-    ss << "Load failed: ABI version mismatch: expected " <<
-      EF_NACL_ABIVERSION << ", got " << *version;
-    Alert(ss.str());
-  }
-  return false;
-}
-
 // TODO(gregoryd): consider refactoring and moving the code to service_runtime
-bool PortablePluginInterface::CheckExecutableVersion(const char *filename) {
-  FILE *f;
-  uint8_t nacl_abi_version = kInvalidAbiVersion;
-  bool success = false;
-  f = fopen(filename, "rb");
-  if (NULL != f) {
-    if (0 == fseek(f, EI_ABIVERSION, SEEK_SET)) {
-      if (1 == fread(&nacl_abi_version, 1, 1, f)) {
-        success = true;
-      }
-    }
-    fclose(f);
-  }
-
-  if (success) {
-    return CheckExecutableVersionCommon(&nacl_abi_version);
-  } else {
-    Alert("Load failed: Generic file error");
+bool PortablePluginInterface::CheckElfExecutable(const char *filename) {
+  char buf[EI_ABIVERSION + 1];  // (field offset from file beginning)
+  FILE* fp = fopen(filename, "rb");
+  if (fp == NULL) {
+    Alert("Load failed: cannot open local file for reading.");
     return false;
   }
+  if (fread(buf, sizeof buf, 1, fp) != 1) {
+    Alert("Load failed: file too short to be an ELF executable.");
+    return false;
+  }
+  fclose(fp);
+  return CheckElfExecutable(buf, sizeof buf);
 }
 
-bool PortablePluginInterface::CheckExecutableVersion(const void* buffer,
-                                                     int32_t size) {
-  // NOTE: EI_ABIVERSION is an offset from the buffer beginning
-  // TODO(gregory): try to get rid of the cast by changing the function
-  //                signature to size_t and propagagte change upwards
-  if ((EI_ABIVERSION + sizeof(char)) > static_cast<uint32_t>(size)) {
+bool PortablePluginInterface::CheckElfExecutable(const char* buffer,
+                                                 size_t size) {
+  if (size < EI_ABIVERSION + 1) {
+    Alert("Load failed: file too short to be an ELF executable.");
     return false;
   }
-
-  const uint8_t *nacl_abi_version =
-    reinterpret_cast<const uint8_t*>(buffer) + EI_ABIVERSION;
-  return CheckExecutableVersionCommon(nacl_abi_version);
+  const char EI_MAG0123[4] = { 0x7f, 'E', 'L', 'F' };
+  if (strncmp(buffer, EI_MAG0123, sizeof EI_MAG0123) != 0) {
+    // This can happen if we read a 404 error page, for example.
+    Alert("Load failed: bad magic number; not an ELF executable.");
+    return false;
+  }
+  if (buffer[EI_ABIVERSION] != EF_NACL_ABIVERSION) {
+    nacl::stringstream ss;
+    ss << "Load failed: ABI version mismatch: expected " << EF_NACL_ABIVERSION
+       << ", got " << (unsigned) buffer[EI_ABIVERSION] << ".";
+    Alert(ss.str());
+    return false;
+  }
+  return true;
 }
 
 char *PortablePluginInterface::MemAllocStrdup(const char *str) {

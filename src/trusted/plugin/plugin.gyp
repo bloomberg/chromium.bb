@@ -98,6 +98,7 @@
             '<(DEPTH)/native_client/src/shared/npruntime/npruntime.gyp:google_nacl_npruntime',
             '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
             '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util',
+            '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
             '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:expiration',
             '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:gio_shm',
           ],
@@ -132,6 +133,8 @@
             '<(DEPTH)/native_client/src/shared/npruntime/npruntime.gyp:google_nacl_npruntime64',
             '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer64',
             '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util64',
+
+            '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib64',
             '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:expiration64',
             '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:gio_shm64',
           ],
