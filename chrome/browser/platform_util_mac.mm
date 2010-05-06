@@ -71,8 +71,13 @@ string16 GetVersionStringModifier() {
 #if defined(GOOGLE_CHROME_BUILD)
   NSBundle* bundle = mac_util::MainAppBundle();
   NSString* channel = [bundle objectForInfoDictionaryKey:@"KSChannelID"];
+
   // Only ever return "", "unknown", "beta" or "dev" in a branded build.
-  if ([channel isEqual:@"stable"]) {
+  if (![bundle objectForInfoDictionaryKey:@"KSProductID"]) {
+    // This build is not Keystone-enabled, it can't have a channel.
+    channel = @"unknown";
+  } else if (!channel || [channel isEqual:@"stable"]) {
+    // For the stable channel, KSChannelID is not set.
     channel = @"";
   } else if ([channel isEqual:@"beta"] || [channel isEqual:@"dev"]) {
     // do nothing.
