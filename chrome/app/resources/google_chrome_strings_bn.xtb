@@ -3,12 +3,14 @@
 <translationbundle lang="bn">
 <translation id="8000275528373650868">Google Chrome-এর জন্য SP2 বা উচ্চতর সহ Windows Vista বা Windows XP প্রয়োজন৷</translation>
 <translation id="6676384891291319759">ইন্টারনেটটি অ্যাক্সেস করুন</translation>
-<translation id="4517682492677349713">আপনি কি চান Google Chrome আপনার এই তথ্য সংরক্ষণ করুক?</translation>
+<translation id="2383457833405848421">Chrome  ফ্রেম সম্বন্ধে  ..</translation>
+<translation id="386202838227397562">দয়া করে সকল Google Chrome উইন্ডো বন্ধ করুন ও আবার চেষ্টা করুন৷</translation>
 <translation id="2770231113462710648">ডিফল্ট ব্রাউজার এতে পরিবর্তন করুন:</translation>
 <translation id="698670068493841342">Google Chrome ইতিমধ্যেই এই ব্যবহারকারীর জন্য ইনস্টল হওয়া রয়েছে৷ সফ্টওয়্যারটি যদি কাজ না করে তবে দয়া করে Google Chrome আনইনস্টল করুন এবং এটি পুনরায় ডাউনলোড করুন৷</translation>
 <translation id="7400722733683201933">Google Chrome সম্বন্ধে</translation>
 <translation id="7781002470561365167">Google Chrome এর একটি নতুন ভার্সন উপলব্ধ।</translation>
 <translation id="7101265395643981223">Google Chrome শুরু করুন</translation>
+<translation id="647902066410369402">আপনার পছন্দসমূহ ফাইল দূষিত অথবা অবৈধ৷\n\nGoogle Chrome আপনার সেটিংস পুনরুদ্ধার করতে পারেনি৷</translation>
 <translation id="2370289711218562573">Google Chrome এখন প্রিয়/বুকমার্কগুলি আমদানি করছে৷</translation>
 <translation id="8970027151245482499">Google Chrome ইনস্টল করা নেই বা এটি ইনস্টলেশন ডিরেক্টরি সন্ধান করতে ব্যর্থ হয়েছে৷ দয়া করে পুনরায় Google Chrome ডাউনলোড করুন৷</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
@@ -24,6 +26,8 @@
 <translation id="8227755444512189073"><ph name="SCHEME"/> লিঙ্কগুলি নিয়ন্ত্রণ করার জন্য Google Chrome-এর একটি বহিরাগত অ্যাপ্লিকেশন প্রবর্তন করা দরকার৷ অনুরোধ করা লিঙ্কটি হল <ph name="PROTOLINK"/>৷</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="8815061062167142136">দাঁড়ান! Google Chrome ক্র্যাশ হয়েছে৷ এখন পুর্নসূচনা করবেন?</translation>
+<translation id="1697213158865901863">Google Chrome ফ্রেম</translation>
+<translation id="4200560168962230927">Chrome ফ্রেম আপডেট হয়েছে৷ দয়া করে আপনার ব্রাউজারটি পুনঃসূচনা করুন৷ Chrome সংস্করণ: <ph name="TODO_0001"/>, Chrome ফ্রেম সংস্করণ: <ph name="TODO_0002"/></translation>
 <translation id="126024305903398738">Google Chrome Profile Importer</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
 <translation id="7241541963706135274">Google Chrome এই কার্যগুলি করবে:</translation>
@@ -33,11 +37,14 @@
 <translation id="8810218179782551669">Google Chrome ভাষা:</translation>
 <translation id="7001386529596391893">এই অবস্থানগুলিতে Google Chrome শর্টকাট তৈরি করুন:</translation>
 <translation id="7461436095086637522">Chrome Profile Importer</translation>
+<translation id="4357846314885556934">Google Chrome ভুল আচরণ করছে</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="1195935957447623558">Google Chrome সঠিকভাবে শাট ডাউন হয় নি৷ আপানার খোলা পৃষ্ঠাগুলি পুনঃখুলতে, পুনরুদ্ধার ক্লিক করুন৷</translation>
 <translation id="2499193704281978000">প্রতিক্রিয়াবিহীন Google Chrome৷ এখন পুর্নসূচনা করবেন?</translation>
+<translation id="2580411288591421699">বর্তমানে Google Chrome এর যে সংস্করণটি চলছে সেটি ইনস্টল করতে পারে না৷ দয়া করে Google Chrome বন্ধ করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="7747138024166251722">ইনস্টলারটি অস্থায়ী ডাইরেক্টরি তৈরি করতে পারে নি৷ দয়া করে মুক্ত ডিস্ক স্থান এবং সফ্টওয়্যারটি ইনস্টল করার অনুমতি যাচাই করে নিন৷</translation>
 <translation id="6009537148180854585">আপনি &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;-এ পৌঁছানোর প্রচেষ্টা করেছেন, কিন্তু সার্ভারটি একটি এমন শংসাপত্র উপস্থিত করেছে যাতে ত্রুটি আছে৷ Google Chrome কোনো ত্রুটিযুক্ত শংসাপত্র ব্যবহার করে না এবং আপনি যে সাইটে সংযোগ করার চেষ্টা করেন তার পরিচয় যাচাই করে না৷ আপনার কানেকশনটি নিরাপদ নয় এবং আপনার এগোনো উচিত নয়৷</translation>
+<translation id="8738921060445980047">অজানা সংস্করণ৷</translation>
 <translation id="2485422356828889247">আনইনস্টল</translation>
 <translation id="8899050679030089927">এই পরিবর্তন প্রভাবী হওয়ার জন্য, দয়া করে সকল Google Chrome উইন্ডো বন্ধ করুন এবং এটিকে পুনর্সূচনা করুন৷</translation>
 <translation id="3324235665723428530">আপনার প্রোফাইলটি Google Chrome-এর একটি নবীনতর সংস্করণের হওয়ার কারণে এটি ব্যবহার করা যাবে না৷\n\nকিছু বৈশিষ্ট্য উপলব্ধ নাও হতে পারে৷ দয়া করে কোনো ভিন্ন প্রোফাইল ডাইরেক্টরি নির্দিষ্ট করুন অথবা Chrome-এর একটি নবীনতর সংস্করণ ব্যবহার করুন৷</translation>
@@ -54,7 +61,12 @@
 <translation id="7100330187273168372">Google Chrome, তার ডেটা ডিরেক্টরিতে পড়তে বা লিখতে পারে না:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="6757767188268205357">আমাকে বাগ করবেন না</translation>
 <translation id="2290095356545025170">আপনি কি Google Chrome আনইনস্টল করার ব্যাপারে নিষ্চিত ?</translation>
+<translation id="6099374801190929276">ফর্ম পূরণকে সহজতর করার জন্য Google Chrome এই তথ্য জমা করবে৷</translation>
+<translation id="6087062680442281307">Google Chrome হ'ল একটি ওয়েব ব্রাউজার যা ওয়েব পৃষ্ঠাগুলি এবং অ্যাপ্লিকেশনগুলিকে বিদ্যুত গতিতে চালনা করে৷ এটি স্রুত, সুস্থির এবং সহজেই ব্যবহারযোগ্য৷ Google Chrome এ অন্তর্গঠিত ম্যালওয়ার এবং ফিশিং সুরক্ষার সাথে আরও নিরাপদে ওয়েব ব্রাউজ করুন৷</translation>
+<translation id="2115751172320447278">কপিরাইট © 2006-2010 Google Inc৷ সর্বস্বত্ব সংরক্ষিত৷</translation>
 <translation id="5941830788786076944">Google Chrome-কে ডিফল্ট ব্রাউজার করুন</translation>
+<translation id="5813295956179798212">Google Chrome Exp</translation>
+<translation id="5947389362804196214">আপনার পছন্দগুলি পড়া যাবে না৷\n\nকিছু বৈশিষ্ট্য অনুপলব্ধ থাকতে পারে ও পছন্দগুলিতে করা পরিবর্তন সংরক্ষিত হবে না৷</translation>
 <translation id="4127951844153999091">এই ক্ষেত্রে শংসাপত্রে তালিকাবব্ধ ঠিকানা, আপনার ব্রাউজার যে ওয়েবসাইটে যাওয়ার চেষ্টা করছে তার ঠিকানার সাথে মেলে না৷ এর একটি সম্ভাব্য কারণ হতে পারে আপনার যোগাযোগ একটি আক্রমণকারী, যে একটি অন্য ওয়েবসাইটের শংসাপত্র উপস্থিত করছে তার দ্বারা ব্যহত হচ্ছে, যা কোনো অমিলের কারণ হবে৷ অন্য সম্ভাব্য কারণ হতে পারে সার্ভারটি একাধিক ওয়েবসাইটের জন্য একই শংসাপত্র ফেরত পাঠানোতে সেট আছে, যার মধ্যে আপনি যেটি পরিদর্শন করতে চাইছেন সেই সাইটিও আছে, যদিও শংসাপত্রটি এই সকল ওয়েবসাইটের জন্য কার্যকর নয়৷ Google Chrome নিশ্চিতভাবে বলতে পারে আপনি &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;-এ পৌঁছেছেন, কিন্তু এটি যাচাই করতে পারে না যে সেটি &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;-এর মত একই, যাতে আপনি পৌঁছাতে চান৷ আপনি যদি এগিয়ে যান তাহলে, Chrome আর কোনও নামের অমিল চেক করবে না৷ সধারণভাব, এর বেশি না এগোনোই ভালো৷</translation>
 <translation id="2712549016134575851">অন্য একটি ইনস্টল থাকা প্রয়োগের সাথে বিরোধ সনাক্ত করা হয়েছে৷</translation>
 <translation id="7018032895891496381">Google Chrome আপনার ডিফল্ট সার্চ ইঞ্জিন ব্যবহার করে, যা বর্তমানে <ph name="PAGE_TITLE"/>-এ সেট আছে৷ আপনি কি নিজের ডিফল্ট সার্চ ইঞ্জিন রাখতে চান?</translation>
@@ -80,6 +92,7 @@
 <translation id="1001534784610492198">ইনস্টলার সংরক্ষণাগারটি দূষিত বা অকার্যকর৷ দয়া করে পুনরায় Google Chrome ডাউনলোড করুন৷</translation>
 <translation id="6626317981028933585">দুঃখজনকভাবে, এই ব্রাউজারটি চলাকালীন আপনার Mozilla Firefox সেটিংস উপলভ্য হয় না৷ ওই সকল সেটিংস Google Chrome-এ আমদানি করার জন্য, আপনার কাজ সংরক্ষণ করুন এবং সকল Firefox উইন্ডো বন্ধ করুন৷ তারপরে অবিরত ক্লিক করুন৷</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="3419750618886995598">Chrome  ফ্রেম  আপডেট৷</translation>
 <translation id="6049075767726609708">একজ প্রশাসক এই সিস্টেমে Google Chrome ইনস্টল করেছে এবং এটি সমস্ত ব্যবহারকারীর কাছেই উপলব্ধ৷  সিস্টেম স্তরীয় Google Chrome আপনার ব্যবহারকারী-স্তরীয় ইনস্টলেশনকে এখনই প্রতিস্থাপিত করবে৷</translation>
 <translation id="7123348595797445166">এটা চেষ্টা করুন (ইনস্টল করা আছে)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>

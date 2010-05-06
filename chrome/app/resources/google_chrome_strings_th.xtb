@@ -3,12 +3,14 @@
 <translationbundle lang="th">
 <translation id="8000275528373650868">Google Chrome ต้องใช้ Windows Vista หรือ Windows XP พร้อม SP2 หรือที่สูงกว่า</translation>
 <translation id="6676384891291319759">เข้าถึงอินเทอร์เน็ต</translation>
-<translation id="4517682492677349713">คุณต้องการให้ Google Chrome บันทึกข้อมูลนี้หรือไม่</translation>
+<translation id="2383457833405848421">เกี่ยวกับ Chrome Frame...</translation>
+<translation id="386202838227397562">โปรดปิดหน้าต่าง Google Chrome ทั้งหมดและลองใหม่อีกครั้ง</translation>
 <translation id="2770231113462710648">เปลี่ยนเบราว์เซอร์ที่เป็นค่าเริ่มต้นเป็น:</translation>
 <translation id="698670068493841342">ติดตั้ง Google Chrome สำหรับผู้ใช้นี้แล้ว หากซอฟต์แวร์ไม่ทำงาน โปรดถอนการติดตั้ง Google Chrome และดาวน์โหลดอีกครั้ง</translation>
 <translation id="7400722733683201933">เกี่ยวกับ Google Chrome</translation>
 <translation id="7781002470561365167">Google Chrome เวอร์ชันใหม่มีให้ได้ลองใช้กันแล้ว</translation>
 <translation id="7101265395643981223">เปิด Google Chrome</translation>
+<translation id="647902066410369402">ไฟล์ค่ากำหนดของคุณขัดข้องหรือไม่ถูกต้อง\n\nGoogle Chrome ไม่สามารถกู้คืนการตั้งค่าของคุณได้</translation>
 <translation id="2370289711218562573">Google Chrome กำลังนำเข้ารายการโปรด/บุ๊คมาร์ค</translation>
 <translation id="8970027151245482499">ไม่มีการติดตั้ง Google Chrome หรือไม่สามารถหาไดเรกทอรีการติดตั้งได้ โปรดดาวน์โหลด Google Chrome อีกครั้ง</translation>
 <translation id="2040709530900803995">โปรแกรมแสดงภาพของ Google Chrome</translation>
@@ -24,6 +26,8 @@
 <translation id="8227755444512189073">Google Chrome จำเป็นต้องเรียกแอปพลิเคชันภายนอกเพื่อเปิดลิงก์ <ph name="SCHEME"/> ลิงก์ที่ขอคือ <ph name="PROTOLINK"/></translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> ของ Google Chrome</translation>
 <translation id="8815061062167142136">โอ้! Google Chrome ขัดข้อง ปิดแล้วเปิดอีกครั้ง</translation>
+<translation id="1697213158865901863">Google Chrome Frame</translation>
+<translation id="4200560168962230927">Chrome Frame ได้รับการอัปเดตแล้ว โปรดรีสตาร์ทเบราว์เซอร์ของคุณ รุ่นของ Chrome: <ph name="TODO_0001"/> รุ่นของ Chrome Frame: <ph name="TODO_0002"/></translation>
 <translation id="126024305903398738">ตัวนำเข้าโปรไฟล์ของ Google Chrome</translation>
 <translation id="2653935705142821164">โปรแกรมแสดงภาพของ Chrome</translation>
 <translation id="7241541963706135274">Google Chrome จะดำเนินการต่อไปนี้:</translation>
@@ -33,11 +37,14 @@
 <translation id="8810218179782551669">ภาษาของ Google Chrome:</translation>
 <translation id="7001386529596391893">สร้างทางลัด Google Chrome ในที่ต่อไปนี้:</translation>
 <translation id="7461436095086637522">ตัวนำเข้าโปรไฟล์ของ Chrome</translation>
+<translation id="4357846314885556934">Google Chrome กำลังทำงานผิดปกติ</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="1195935957447623558">Google Chrome ไม่ได้ปิดอย่างถูกต้อง หากต้องการเปิดหน้าที่คุณเปิดไว้แล้วอีกครั้ง ให้คลิกที่ คืนสภาพ</translation>
 <translation id="2499193704281978000">Google Chrome ไม่ตอบสนอง ปิดแล้วเปิดอีกครั้ง</translation>
+<translation id="2580411288591421699">ไม่สามารถติดตั้ง Google Chrome รุ่นเดียวกับที่กำลังเรียกใช้อยู่ได้ โปรดปิด Google Chrome แล้วลองใหม่อีกครั้ง</translation>
 <translation id="7747138024166251722">โปรแกรมติดตั้งสร้างไดเรกทอรีชั่วคราวไม่ได้ โปรดตรวจสอบพื้นที่ดิสก์ว่างและการอนุญาตให้ติดตั้งซอฟต์แวร์</translation>
 <translation id="6009537148180854585">คุณพยายามเข้าถึง &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; แต่ใบรับรองที่เซิร์ฟเวอร์แสดงมีข้อผิดพลาด Google Chrome ไม่สามารถใช้ใบรับรองที่มีข้อผิดพลาดหรือไม่สามารถยืนยันข้อมูลประจำตัวของเว็บไซต์ที่คุณพยายามจะเชื่อมต่อได้ การเชื่อมต่อของคุณไม่ปลอดภัยและคุณไม่ควรดำเนินการต่อ</translation>
+<translation id="8738921060445980047">รุ่นที่ไม่รู้จัก</translation>
 <translation id="2485422356828889247">ถอนการติดตั้ง</translation>
 <translation id="8899050679030089927">โปรดปิดหน้าต่าง Google Chrome ทั้งหมดและเริ่มการทำงานของ Chrome ใหม่เพื่อให้การเปลี่ยนแปลงนี้มีผล</translation>
 <translation id="3324235665723428530">ไม่สามารถใช้โปรไฟล์ของคุณได้เนื่องจากโปรไฟล์ดังกล่าวมาจาก Google Chrome รุ่นที่ใหม่กว่า\n\nบางคุณสมบัติอาจไม่สามารถใช้งานได้ โปรดระบุไดเรกทอรีของโปรไฟล์อื่น หรือใช้ Chrome รุ่นใหม่กว่านี้</translation>
@@ -54,7 +61,12 @@
 <translation id="7100330187273168372">Google Chrome ไม่สามารถอ่านและเขียนข้อมูลในไดเรกทอรีข้อมูล:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="6757767188268205357">อย่ากวนใจฉัน</translation>
 <translation id="2290095356545025170">คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการติดตั้ง Google Chrome</translation>
+<translation id="6099374801190929276">Google Chrome จะจัดเก็บข้อมูลนี้เพื่อให้การกรอกข้อมูลในแบบฟอร์มง่ายขึ้น</translation>
+<translation id="6087062680442281307">Google Chrome คือเว็บเบราว์เซอร์ที่แสดงหน้าเว็บและแอปพลิเคชันต่างๆ ได้รวดเร็วในพริบตา โดยทำงานได้เร็ว มีเสถียรภาพ และใช้งานง่าย ช่วยให้คุณเรียกดูเว็บได้อย่างปลอดภัยมากขึ้นด้วยการป้องกันมัลแวร์และฟิชชิงซึ่งมีอยู่ใน Google Chrome</translation>
+<translation id="2115751172320447278">ลิขสิทธิ์ © 2006-2010 Google Inc. สงวนลิขสิทธิ์</translation>
 <translation id="5941830788786076944">ทำให้ Google Chrome เป็นเบราว์เซอร์เริ่มต้น</translation>
+<translation id="5813295956179798212">Google Chrome Exp</translation>
+<translation id="5947389362804196214">ค่ากำหนดของคุณไม่สามารถอ่านได้\n\nคุณลักษณะบางอย่างอาจใช้ไม่ได้และการเปลี่ยนแปลงค่ากำหนดจะไม่ได้รับการบันทึก</translation>
 <translation id="4127951844153999091">ในกรณีนี้ รายการที่อยู่ในใบรับรองไม่ตรงกับที่อยู่ของเว็บไซต์ที่เบราว์เซอร์ของคุณพยายามเข้าไป เหตุผลที่เป็นไปได้ประการหนึ่งคือ ผู้โจมตีที่แสดงแสดงใบรับรองของเว็บไซต์อื่นขัดขวางการสื่อสารของคุณ ซึ่งทำให้เกิดความไม่ตรงกันของใบรับรอง อีกเหตุผลหนึ่งที่เป็นไปได้คือ เซิร์ฟเวอร์ถูกตั้งค่าให้หลายเว็บไซต์ส่งคืนใบรับรองเดียวกัน ซึ่งรวมไปถึงเว็บไซต์ที่คุณพยายามจะเข้าชมด้วย ถึงแม้ว่าใบรับรองนั้นจะไม่ถูกต้องสำหรับเว็บไซต์ทั้งหมดก็ตาม Google Chrome สามารถยืนยันได้ว่าคุณกำลังติดต่อกับ &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; แต่ไม่สามารถตรวจสอบได้ว่าเว็บไซต์นั้นเป็นเว็บไซต์เดียวกันกับ &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ที่คุณต้องการติดต่อจริงหรือไม่ หากคุณดำเนินการต่อ Chrome จะไม่ตรวจสอบชื่อที่ไม่ตรงกันอีกต่อไป โดยทั่วไป คุณไม่ควรดำเนินการผ่านจุดนี้ไป</translation>
 <translation id="2712549016134575851">ตรวจพบข้อขัดแย้งกับแอปพลิเคชันอื่นที่ได้ติดตั้งไว้</translation>
 <translation id="7018032895891496381">Google Chrome ใช้เครื่องมือค้นหาเริ่มต้นของคุณซึ่งปัจจุบันถูกตั้งให้เป็น <ph name="PAGE_TITLE"/> คุณต้องการเก็บเครื่องมือค้นหาเริ่มต้นไว้ตามเดิมหรือไม่</translation>
@@ -80,6 +92,7 @@
 <translation id="1001534784610492198">การเก็บข้อมูลของโปรแกรมติดตั้งเสียหายหรือไม่ถูกต้อง โปรดดาวน์โหลด Google Chrome อีกครั้ง</translation>
 <translation id="6626317981028933585">ขออภัย เราไม่สามารถเรียกข้อมูลการตั้งค่าของ Mozilla Firefox ได้ขณะที่เบราว์เซอร์ยังทำงานอยู่ หากต้องการนำเข้าข้อมูลการตั้งค่ามาที่ Google Chrome โปรดบันทึกงานที่คุณทำอยู่แล้วปิดหน้าต่าง Firefox ทั้งหมด จากนั้นคลิกดำเนินการต่อ</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="3419750618886995598">การอัปเดต Chrome Frame</translation>
 <translation id="6049075767726609708">ผู้ดูแลระบบติดตั้ง Google Chrome ในระบบนี้แล้ว และผู้ใช้ทุกคนสามารถใช้งานได้ ขณะนี้ Google Chrome ระดับระบบจะแทนที่การติดตั้งระดับผู้ใช้ของคุณ</translation>
 <translation id="7123348595797445166">ลองใช้ (ติดตั้งแล้ว)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>

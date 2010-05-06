@@ -3,12 +3,14 @@
 <translationbundle lang="am">
 <translation id="8000275528373650868">Google Chrome Windows Vista ወይም Windows XP SP2 ወይም ከዛበላይ ይፈልጋል።</translation>
 <translation id="6676384891291319759">በይነመረብን ተዳረስ</translation>
-<translation id="4517682492677349713">ይህን መረጃ Google Chrome እንዲያስቀምጥልዎት ይፈልጋሉ?</translation>
+<translation id="2383457833405848421">ስለ Chrome ፍሬም…</translation>
+<translation id="386202838227397562">እባክዎ ሁሉንም የChrome መስኮቶች ይዝጉና እንደገና ይሞክሩ።</translation>
 <translation id="2770231113462710648">ነባሪ አሳሽን ወደዚህ ቀይር፦</translation>
 <translation id="698670068493841342">Google Chrome ቀድሞውኑ ለዚህ ተጠቃሚ ተጭኗል። ሶፍትዌሩ የማይሰራ ከሆነ ፣ እባክዎ Google Chromeን ያራግፉና እንደገና ያውርዱ።</translation>
 <translation id="7400722733683201933">ስለ Google Chrome</translation>
 <translation id="7781002470561365167">የGoogle Chrome አዲስ ስሪት አለ።</translation>
 <translation id="7101265395643981223">Google Chromeን ጀምር</translation>
+<translation id="647902066410369402">አማራጮችዎ ፋይል ተበላሽቷል ወይም የተሳሳተ ነው። \n\nGoogle Chrome ቅንጅቶችዎን መመለስ አልቻለም።</translation>
 <translation id="2370289711218562573">Google Chrome አሁን ተወዳጆችን/ዕልባቶችን ከውጪ በማምጣት ላይ ነው።</translation>
 <translation id="8970027151245482499">Google Chrome አልተጫነም ወይም የመጫኛ ማውጫውን ማግኘት አልቻለም። እባክዎ Google Chromeን እንደገና ያውርዱ።</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
@@ -24,6 +26,7 @@
 <translation id="8227755444512189073">Google Chrome <ph name="SCHEME"/> አገናኞችን ለማስተናገድ ውጫዊ መተግበሪያን መጀመር ይፈልጋል። የተጠየቀው አገናኝ <ph name="PROTOLINK"/> ነው።</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="8815061062167142136">ኡው..! Google Chrome ተሰናክሏል። አሁን እንደገና ማስጀመር ይፈልጋሉ?</translation>
+<translation id="1697213158865901863">Google Chrome ፍሬም</translation>
 <translation id="126024305903398738">Google Chrome መገለጫ አስመጪ</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
 <translation id="7241541963706135274">Google Chrome እነዚህን ተግባራት ይሰራል፦</translation>
@@ -33,11 +36,14 @@
 <translation id="8810218179782551669">የGoogle Chrome ቋንቋ፦</translation>
 <translation id="7001386529596391893">በነዚህ አካባቢዎች ውስጥ የGoogle Chrome አቋራጮችን ፍጠር፦</translation>
 <translation id="7461436095086637522">Google Chrome መገለጫ አስመጪ</translation>
+<translation id="4357846314885556934">Google Chrome የተለየ ባህሪ እያሳየ ነው።</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="1195935957447623558">Google Chrome በትክክል አልተዘጋም። ከፍተዋቸው የነበሩትን ገፆች ዳግም ለመክፈት እነበረበት መልስ የሚለውን ይጫኑ።</translation>
 <translation id="2499193704281978000">Google Chrome ምላሽ አይሰጥም። አሁኑኑ እንደገና ያስጀምሩት?</translation>
+<translation id="2580411288591421699">አሁን እየሰራ ካለው Google Chrome ጋር አንድ አይነት የሆነ ስሪት መጫን አይቻልም። እባክዎ Google Chrome ይዝጉና እንደገና ይሞክሩ።</translation>
 <translation id="7747138024166251722">ጫኝው ጊዜያዊ ማውጫ መፍጠር አልቻለም። እባክዎ ነፃ የዲስክ ቦታ እና ሶፍትዌር የመጫን ፍቃድ እንዳለ ይፈትሹ።</translation>
 <translation id="6009537148180854585">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;ን ለመድረስ ሞክረዋል፣ ነገር ግን አገልጋዩ ያቀረበው ሰርቲፊኬት ስህተቶች ይዟል። Google Chrome ስህተቶችን የያዘ ሰርቲፊኬት አይጠቀምም በዚህም ለመገናኘት የሞከሩትን ጣቢያ ማንነት ሊያረጋጥ አይችልም። ግንኙነትዎ ደህንነቱ የተጠበቀ ስላልሆነ መቀጠል  የለብዎትም።</translation>
+<translation id="8738921060445980047">የማይታወቅ ስሪት።</translation>
 <translation id="2485422356828889247">አራግፍ</translation>
 <translation id="8899050679030089927">ለውጡ ውጤታማ እንዲሆን እባክዎ ሁሉንም የGoogle Chrome መስኮቶች ይዝጉና እንደገና ያስነሱ።</translation>
 <translation id="3324235665723428530">መገለጫዎ የአዲሱ Google Chrome ስሪት አካል ስለሆነ መጠቀም አይቻልም። \n\nአንዳንድ ባሕሪያት ላይኖሩ ይችላሉ። እባክዎ ሌላ የመገለጫ ማውጫ ይወስኑ ወይም የአዲሱን የChrome ስሪት ይጠቀሙ።</translation>
@@ -54,7 +60,12 @@
 <translation id="7100330187273168372">Google Chrome በውሂብ ማውጫው መጻፍም ሆነ ማንበብ አልቻለም፦\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="6757767188268205357">አታርመኝ</translation>
 <translation id="2290095356545025170">እርግጠኛ ነዎት Google Chromeን ማራገፍ ይፈልጋሉ?</translation>
+<translation id="6099374801190929276">ቅፆችን መሙላት ቀላል ይሆን ዘንደ Google Chrome ይህን መረጃ ያስቀምጣል።</translation>
+<translation id="6087062680442281307">Google Chrome ድረ-ገፆችን እና መተግበሪያዎችን በሚገርም ፍጥነት ማሄድ የሚችል የድር አሳሽ ነው። ፈጣን፣ የማይቆራረጥ እና ለመጠቀም ቀላል ነው። Google Chrome አብሮ የያዘው የአስጋሪና የማልዌር መከላከያ ስላለው እጅግ ደህንነቱ በተጠበቀ ሁኔታ ድርን ያስሱ።</translation>
+<translation id="2115751172320447278">የቅጂ መብት © 2006-2010 Google Inc.  መብቶች ሁሉ የተጠበቁ ናቸው።</translation>
 <translation id="5941830788786076944">Google Chromeን መነሻ ማሰሻ አድርግ</translation>
+<translation id="5813295956179798212">Google Chrome Exp</translation>
+<translation id="5947389362804196214">አማራጮችዎ ሊነበቡ አልቸሉም። \n\n አንዳንድ ባህሪያት ስለሌሉ በአማራጮች ላይ የተደረጉ ለውጦች አይቀመጡም።</translation>
 <translation id="4127951844153999091">በዚህ ሁኔታ፣ በሰርቲፊኬቱ የተዘረዘረው አድራሻ አሳሽዎ ሊሄድ ከሞከረው የድር ጣቢያ አደራሻ ጋር አይዛመድም።  ለዚህ አንድኛው ምክንያት ሊሆን የሚችለው ለተለያዩ ድር ጣቢያዎች ሰርቲፊኬት እያቀረበ ባለ አንድ አጥቂ ግንኙነትዎ በመቋረጥ ላይ ከሆነ ነው፣ ይህም አለመጣጣምን ያስከትላል። ሌላኛው ሊሆን የሚችለው ምክንያት ደግሞ አገልጋዩ ለብዙ ድር ጣቢያዎች ተመሳሳይ ሰርቲፊኬት እንዲያወጣ ተቀናብሮ ሲሆን ነው፤ ሊጎበኙት ያሰቡትንም ጭምር፣ ምንም እንኳ ሰርቲፊኬቱ ለነዚያ ሁሉ ድር ጣቢያዎች ልክ ባይሆንም። Google Chrome በርግጠኝነት &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ጋር ደርሰዋል ሊልዎት ይችላል፣ ነገር ግን ሊደርሱ ካሰቡት ከ&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ጋር  ተመሳሳይ ጣቢያ  ነው ብሎ ሊያረጋግጥልዎት አይችልም። የሚቀጥሉ ከሆነ፣ Chrome ተጨማሪ የስም አለመጣጣሞችን  አይፈትሽም። በአጠቃላይ፣ ይህን ነጥብ አንዳለፈ ባይቀጥሉ ይመረጣል።</translation>
 <translation id="2712549016134575851">ከሌላ የተጫነ መተግበሪያ ጋር አለመግባባት ተፈጥሯል።</translation>
 <translation id="7018032895891496381">Google Chrome በአሁኑ ጊዜ በ<ph name="PAGE_TITLE"/> ያለውን ነባሪ የፍለጋ ፕሮግራምዎን ይጠቀማል። ነባሪ የፍለጋ ፕሮግራምዎን ማቆየት ይፈልጋሉ?</translation>
@@ -80,6 +91,7 @@
 <translation id="1001534784610492198">የጫኝው መዝገብ ተሰናክሏል ወይም ትክክል አይደለም። እባክዎ Google Chromeን እንደገና ያውርዱ።</translation>
 <translation id="6626317981028933585">በሚያሳዝን ሁኔታ፣ የMozilla Firefox ቅንጅቶችዎ የሉም አሳሹ እየሄደ ባለበት ጊዜ። እነዚህን ቅንጅቶች ወደ Google Chrome ለማስመጣት፣ ስራዎን ያስቀምጡና ሁሉንም የFirefox መስኮቶች ይዝጉ። ከዚያም ቀጥልን የጫኑ።</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="3419750618886995598">የChrome ፍሬም ዘምኗል።</translation>
 <translation id="6049075767726609708">አስተዳዳሪው Google Chromeን በዚህ ስርዓት ላይ ጭኗል፣ ለሁሉም ተጠቃሚዎችም ክፈት ሆኗል። የስርዓተ-ደረጃው Google Chrome የተጠቃሚ ደረጃ ጭነቱን አሁን ይተካዋል።</translation>
 <translation id="7123348595797445166">ይሞክሩት (ቀድሞውንም ተጭኗል)።</translation>
 <translation id="3870154837782082782">Google Inc.</translation>

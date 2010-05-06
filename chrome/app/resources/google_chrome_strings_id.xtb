@@ -3,12 +3,14 @@
 <translationbundle lang="id">
 <translation id="8000275528373650868">Google Chrome memerlukan Windows Vista atau Windows XP dengan SP2 atau yang lebih baru.</translation>
 <translation id="6676384891291319759">Akses Internet</translation>
-<translation id="4517682492677349713">Ingin Google Chrome menyimpan informasi ini?</translation>
+<translation id="2383457833405848421">Tentang Chrome Frame...</translation>
+<translation id="386202838227397562">Tutup semua jendela Google Chrome, lalu coba lagi.</translation>
 <translation id="2770231113462710648">Ubah peramban bawaan ke:</translation>
 <translation id="698670068493841342">Google Chrome telah diinstal untuk pengguna ini. Jika perangkat lunak tidak berfungsi, hapus penginstalan Google Chrome, lalu unduh kembali.</translation>
 <translation id="7400722733683201933">Tentang Google Chrome</translation>
 <translation id="7781002470561365167">Tersedia Google Chrome versi baru.</translation>
 <translation id="7101265395643981223">Aktifkan Google Chrome</translation>
+<translation id="647902066410369402">Berkas preferensi Anda rusak atau tidak valid.\n\nGoogle Chrome tidak dapat memulihkan setelan Anda.</translation>
 <translation id="2370289711218562573">Kini Google Chrome mengimpor Favorites/Bookmark.</translation>
 <translation id="8970027151245482499">Google Chrome tidak terinstal atau gagal menemukan direktori penginstalan. Unduh kembali Google Chrome.</translation>
 <translation id="2040709530900803995">Pengaju Google Chrome</translation>
@@ -24,6 +26,8 @@
 <translation id="8227755444512189073">Google Chrome harus menjalankan aplikasi eksternal untuk menangani link <ph name="SCHEME"/>. Link yang diminta adalah <ph name="PROTOLINK"/>.</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="8815061062167142136">Aduh! Google Chrome mengalami gangguan. Aktifkan ulang sekarang?</translation>
+<translation id="1697213158865901863">Google Chrome Frame</translation>
+<translation id="4200560168962230927">Chrome Frame telah dimutakhirkan. Mulai ulang peramban Anda. Versi Chrome: <ph name="TODO_0001"/>, versi Chrome Frame: <ph name="TODO_0002"/></translation>
 <translation id="126024305903398738">Pengimpor Profil Google Chrome</translation>
 <translation id="2653935705142821164">Pengurai Chrome</translation>
 <translation id="7241541963706135274">Berikut adalah tugas yang dilakukan Google Chrome:</translation>
@@ -33,11 +37,14 @@
 <translation id="8810218179782551669">Bahasa Google Chrome:</translation>
 <translation id="7001386529596391893">Buat cara pintas Google Chrome di lokasi ini:</translation>
 <translation id="7461436095086637522">Pengimpor Profil Chrome</translation>
+<translation id="4357846314885556934">Google Chrome Lagi Ngambek</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="1195935957447623558">Google Chrome tidak dinonaktifkan dengan benar. Untuk membuka kembali halaman yang pernah dibuka, klik Kembalikan.</translation>
 <translation id="2499193704281978000">Google Chrome tidak merespons. Aktifkan ulang sekarang?</translation>
+<translation id="2580411288591421699">Tak dapat memasang Google Chrome dengan versi yang sama dengan yang sedang aktif. Tutup dulu, baru coba lagi.</translation>
 <translation id="7747138024166251722">Instalatur tidak dapat membuat direktori sementara. Periksa kapasitas kosong pada disk dan izin untuk menginstal perangkat lunak.</translation>
 <translation id="6009537148180854585">Anda berupaya membuka &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun sertifikat yang diberikan oleh server berisi kesalahan. Google Chrome dapat menggunakan sertifikat yang berisi kesalahan dan tidak dapat memvalidasi identitas situs yang akan dibuka. Sambungan tidak aman dan Anda tidak boleh melanjutkan.</translation>
+<translation id="8738921060445980047">Versi tidak diketahui.</translation>
 <translation id="2485422356828889247">Copot instalasi</translation>
 <translation id="8899050679030089927">Tutup semua jendela Google Chrome dan mulai ulang Google Chrome agar perubahan diterapkan.</translation>
 <translation id="3324235665723428530">Profil Anda tidak dapat digunakan karena berasal dari versi Google Chrome yang lebih baru.\n\nBeberapa fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda atau gunakan versi Chrome terbaru.</translation>
@@ -54,7 +61,12 @@
 <translation id="7100330187273168372">Google Chrome tidak dapat membaca dan menulis ke direktori data:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="6757767188268205357">Jangan ganggu saya</translation>
 <translation id="2290095356545025170">Apakah Anda yakin ingin mencopot penginstalan Google Chrome?</translation>
+<translation id="6099374801190929276">Google Chrome akan menyimpan informasi ini untuk mempermudah pengisian formulir.</translation>
+<translation id="6087062680442281307">Google Chrome adalah peramban web yang menjalankan laman dan aplikasi web dengan kecepatan kilat. Cepat, stabil, dan mudah digunakan. Ramban web secara lebih aman dengan perlindungan terhadap perangkat lunak jahat dan phishing yang disertakan dalam Google Chrome.</translation>
+<translation id="2115751172320447278">Hak Cipta © 2006-2010 Google Inc. Semua Hak Dilindungi Undang-Undang.</translation>
 <translation id="5941830788786076944">Jadikan Google Chrome sebagai browser default</translation>
+<translation id="5813295956179798212">Google Chrome Exp</translation>
+<translation id="5947389362804196214">Preferensi Anda tidak dapat dibaca.\n\nSebagian fitur mungkin tidak tersedia dan pengubahan pada preferensi tidak akan disimpan.</translation>
 <translation id="4127951844153999091">Jika demikian, alamat yang tercantum dalam sertifikat tidak cocok dengan alamat situs Web yang akan diakses browser Anda. Salah satu kemungkinan alasannya adalah komunikasi terhenti oleh pengganggu yang memberikan sertifikat untuk situs Web lain, sehingga dapat mengakibatkan ketidakcocokan. Kemungkinan alasan lainnya adalah bahwa server dikonfigurasi untuk menampilkan sertifikat yang sama bagi beberapa situs Web, termasuk yang akan dikunjungi, meskipun sertifikat tersebut tidak valid untuk semua situs Web. Google Chrome dapat memastikan bahwa Anda akan membuka &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, namun tidak dapat memverifikasi bahwa situs tersebut sama seperti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; yang ingin Anda buka. Jika Anda melanjutkan, Chrome tidak akan memeriksa ketidakcocokan nama lebih lanjut. Secara umum, sebaiknya jangan lanjutkan.</translation>
 <translation id="2712549016134575851">Terdeteksi konflik dengan aplikasi terinstal lain.</translation>
 <translation id="7018032895891496381">Google Chrome menggunakan mesin telusur bawaan, yang saat ini disetel ke <ph name="PAGE_TITLE"/>. Anda ingin mempertahankan mesin telusur bawaan?</translation>
@@ -80,6 +92,7 @@
 <translation id="1001534784610492198">Arsip instalatur rusak atau tidak valid. Unduh kembali Google Chrome.</translation>
 <translation id="6626317981028933585">Sayangnya, pengaturan Mozilla Firefox tidak tersedia sewaktu browser berjalan. Untuk mengimpor pengaturan ke Google Chrome, simpan pekerjaan dan tutup semua jendela Firefox. Kemudian klik Lanjutkan.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="3419750618886995598">Pemutakhiran Chrome Frame.</translation>
 <translation id="6049075767726609708">Administrator telah menginstal Google Chrome di sistem ini dan tersedia bagi seluruh pengguna. Sekarang tingkat sistem Google Chrome akan mengganti penginstalan tingkat pengguna Anda.</translation>
 <translation id="7123348595797445166">Coba ya (sudah dipasang)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>

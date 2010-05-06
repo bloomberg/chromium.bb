@@ -3,12 +3,14 @@
 <translationbundle lang="it">
 <translation id="8000275528373650868">Google Chrome richiede Windows Vista o Windows XP con SP2 o versioni successive.</translation>
 <translation id="6676384891291319759">Accesso a Internet</translation>
-<translation id="4517682492677349713">Desideri che Google Chrome salvi queste informazioni?</translation>
+<translation id="2383457833405848421">Informazioni su Google Chrome Frame...</translation>
+<translation id="386202838227397562">Chiudi tutte le finestre di Google Chrome e riprova.</translation>
 <translation id="2770231113462710648">Cambia browser predefinito con:</translation>
 <translation id="698670068493841342">Google Chrome è già installato per questo utente. Se il software non funziona, disinstalla Google Chrome e scaricalo nuovamente.</translation>
 <translation id="7400722733683201933">Informazioni su Google Chrome</translation>
 <translation id="7781002470561365167">È disponibile una nuova versione di Google Chrome.</translation>
 <translation id="7101265395643981223">Avvia Google Chrome</translation>
+<translation id="647902066410369402">Il tuo file di preferenze è corrotto o non valido.\n\nGoogle Chrome non è in grado di recuperare le tue impostazioni.</translation>
 <translation id="2370289711218562573">Google Chrome sta importando i Preferiti/Segnalibri.</translation>
 <translation id="8970027151245482499">Google Chrome non è stato installato oppure non è stata rilevata la directory di installazione. Scarica nuovamente Google Chrome.</translation>
 <translation id="2040709530900803995">Programma di rendering di Google Chrome</translation>
@@ -24,6 +26,8 @@
 <translation id="8227755444512189073">Google Chrome deve avviare un'applicazione esterna per gestire i link <ph name="SCHEME"/>. Il link richiesto è <ph name="PROTOLINK"/>.</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> Google Chrome</translation>
 <translation id="8815061062167142136">Accidenti! Google Chrome è andato in crash. Vuoi riavviare?</translation>
+<translation id="1697213158865901863">Google Chrome Frame</translation>
+<translation id="4200560168962230927">Google Chrome Frame è stato aggiornato. Riavvia il browser. Versione Google Chrome: <ph name="TODO_0001"/>, Versione Google Chrome Frame: <ph name="TODO_0002"/></translation>
 <translation id="126024305903398738">Utilità di importazione profili di Google Chrome</translation>
 <translation id="2653935705142821164">Programma di rendering di Chrome</translation>
 <translation id="7241541963706135274">Google Chrome eseguirà le seguenti azioni:</translation>
@@ -33,11 +37,14 @@
 <translation id="8810218179782551669">Lingua di Google Chrome:</translation>
 <translation id="7001386529596391893">Crea scorciatoie di Google Chrome nei seguenti percorsi:</translation>
 <translation id="7461436095086637522">Utilità di importazione profili di Chrome</translation>
+<translation id="4357846314885556934">Google Chrome funziona in modo anomalo</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="1195935957447623558">La sessione di Google Chrome è stata terminata in modo non corretto. Per riaprire le pagine che stavi visualizzando, fai clic su Ripristina.</translation>
 <translation id="2499193704281978000">Google Chrome non risponde. Riavviare?</translation>
+<translation id="2580411288591421699">Impossibile installare la stessa versione di Google Chrome attualmente in esecuzione. Chiudi Google Chrome e riprova.</translation>
 <translation id="7747138024166251722">Il programma di installazione non ha creato una directory temporanea. Verifica di disporre di spazio libero sul disco e dell'autorizzazione per l'installazione del software.</translation>
 <translation id="6009537148180854585">Hai tentato di accedere a strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ma il certificato presentato dal server contiene degli errori. Google Chrome non può utilizzare un certificato in cui sono presenti errori e non è in grado di convalidare l'identità del sito a cui hai tentato di accedere. La connessione non è protetta, ti consigliamo di non procedere.</translation>
+<translation id="8738921060445980047">Versione sconosciuta.</translation>
 <translation id="2485422356828889247">Disinstalla</translation>
 <translation id="8899050679030089927">Chiudi tutte le finestre di Google Chrome e riavvialo per rendere effettiva la modifica.</translation>
 <translation id="3324235665723428530">Non è possibile utilizzare il tuo profilo, poiché è associato a una versione di Google Chrome più recente.\n\Alcune funzioni potrebbero non essere disponibili. Specifica una directory di profilo diversa o utilizza una versione di Chrome più recente.</translation>
@@ -54,7 +61,12 @@
 <translation id="7100330187273168372">Chrome non è in grado di leggere e scrivere nella directory dei dati:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="6757767188268205357">Non mi interessa</translation>
 <translation id="2290095356545025170">Sei sicuro di voler disinstallare Google Chrome?</translation>
+<translation id="6099374801190929276">Le informazioni verranno memorizzate da Google Chrome per rendere più semplice la compilazione dei moduli.</translation>
+<translation id="6087062680442281307">Google Chrome è un browser web che apre pagine e applicazioni web con grande velocità. È veloce, stabile e facile da utilizzare. Esplora il Web in modo più sicuro grazie alla protezione contro malware e phishing incorporata in Google Chrome.</translation>
+<translation id="2115751172320447278">Copyright © 2006-2010 Google Inc. Tutti i diritti riservati.</translation>
 <translation id="5941830788786076944">Imposta Google Chrome come browser predefinito</translation>
+<translation id="5813295956179798212">Google Chrome Exp</translation>
+<translation id="5947389362804196214">Non è possibile leggere le tue preferenze.\n\nAlcune funzioni potrebbero non essere disponibili e le modifiche alle preferenze non verranno salvate.</translation>
 <translation id="4127951844153999091">In questo caso l'indirizzo indicato nel certificato non corrisponde all'indirizzo del sito web al quale il tuo browser ha tentato di accedere. Questa mancata corrispondenza può essere dovuta al tentativo da parte di un hacker di presentare un certificato relativo a un altro sito web. È anche possibile che il server sia impostato in modo da restituire lo stesso certificato per più siti web, incluso quello che stai cercando di visitare, malgrado tale certificato non sia valido per tutti i siti. Siamo in grado di garantire che stai comunicando con &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, ma non è possibile verificare che questo sito corrisponda a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;. Se decidi di procedere, Google Chrome non verificherà eventuali altre mancate corrispondenze. In generale, tuttavia, ti consigliamo di non procedere oltre questo punto.</translation>
 <translation id="2712549016134575851">È stato rilevato un conflitto con un'altra applicazione installata.</translation>
 <translation id="7018032895891496381">Google Chrome utilizza il tuo motore di ricerca predefinito, correntemente impostato su <ph name="PAGE_TITLE"/>. Mantenere il motore di ricerca predefinito?</translation>
@@ -80,6 +92,7 @@
 <translation id="1001534784610492198">Il file del programma di installazione è danneggiato oppure non è valido. Scarica nuovamente Google Chrome.</translation>
 <translation id="6626317981028933585">Le impostazioni di Mozilla Firefox non sono disponibili finché il browser è in esecuzione. Per importare queste impostazioni in Google Chrome, salva i tuoi file e chiudi tutte le finestre di Firefox, quindi fai clic su Continua.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="3419750618886995598">Aggiornamento di Google Chrome Frame.</translation>
 <translation id="6049075767726609708">Un amministratore ha installato su questo sistema Google Chrome per tutti gli utenti. L'installazione di Google Chrome a livello di sistema sostituirà l'installazione a livello di utente.</translation>
 <translation id="7123348595797445166">Provala (già installato)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
