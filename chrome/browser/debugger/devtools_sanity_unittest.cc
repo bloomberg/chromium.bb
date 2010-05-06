@@ -378,8 +378,14 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestStepOut) {
   RunTest("testStepOut", kDebuggerStepTestPage);
 }
 
+#if defined(OS_CHROMEOS)
+#define MAYBE_TestStepIn FLAKY_TestStepIn
+#else
+#define MAYBE_TestStepIn TestStepIn
+#endif
+
 // Tests step in functionality in the debugger.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestStepIn) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestStepIn) {
   RunTest("testStepIn", kDebuggerStepTestPage);
 }
 
