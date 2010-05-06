@@ -63,7 +63,8 @@ TabContentsView* TabContentsView::Create(TabContents* tab_contents) {
 }
 
 TabContentsViewMac::TabContentsViewMac(TabContents* tab_contents)
-    : TabContentsView(tab_contents) {
+    : TabContentsView(tab_contents),
+      preferred_width_(0) {
   registrar_.Add(this, NotificationType::TAB_CONTENTS_CONNECTED,
                  Source<TabContents>(tab_contents));
 }
