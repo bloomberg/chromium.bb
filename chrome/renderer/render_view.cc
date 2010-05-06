@@ -379,7 +379,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       has_unload_listener_(false),
       decrement_shared_popup_at_destruction_(false),
       autofill_query_id_(0),
-      popup_notification_visible_(false),
+      script_can_close_(true),
       spelling_panel_visible_(false),
       send_content_state_immediately_(false),
       send_preferred_size_changes_(false),
@@ -653,8 +653,8 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
                         OnAutocompleteSuggestionsReturned)
     IPC_MESSAGE_HANDLER(ViewMsg_AutoFillFormDataFilled,
                         OnAutoFillFormDataFilled)
-    IPC_MESSAGE_HANDLER(ViewMsg_PopupNotificationVisibilityChanged,
-                        OnPopupNotificationVisibilityChanged)
+    IPC_MESSAGE_HANDLER(ViewMsg_AllowScriptToClose,
+                        OnAllowScriptToClose)
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
     IPC_MESSAGE_HANDLER(ViewMsg_ExtensionResponse, OnExtensionResponse)
     IPC_MESSAGE_HANDLER(ViewMsg_ExtensionMessageInvoke,
@@ -1503,8 +1503,8 @@ void RenderView::OnAutoFillFormDataFilled(int query_id,
   form_manager_.FillForm(form);
 }
 
-void RenderView::OnPopupNotificationVisibilityChanged(bool visible) {
-  popup_notification_visible_ = visible;
+void RenderView::OnAllowScriptToClose(bool script_can_close) {
+  script_can_close_ = script_can_close;
 }
 
 uint32 RenderView::GetCPBrowsingContext() {
@@ -1558,7 +1558,7 @@ WebView* RenderView::createView(
 
   // This window can't be closed from a window.close() call until we receive a
   // message from the Browser process explicitly allowing it.
-  popup_notification_visible_ = true;
+  script_can_close_ = false;
 
   int32 routing_id = MSG_ROUTING_NONE;
   bool user_gesture = creator->isProcessingUserGesture();
@@ -2073,7 +2073,7 @@ void RenderView::show(WebNavigationPolicy policy) {
 }
 
 void RenderView::closeWidgetSoon() {
-  if (!popup_notification_visible_)
+  if (script_can_close_)
     RenderWidget::closeWidgetSoon();
 }
 

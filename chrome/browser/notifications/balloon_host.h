@@ -13,6 +13,7 @@
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/renderer_preferences.h"
 #include "webkit/glue/webpreferences.h"
 
@@ -63,7 +64,9 @@ class BalloonHost : public RenderViewHostDelegate,
   virtual void RenderViewGone(RenderViewHost* render_view_host);
   virtual void UpdateTitle(RenderViewHost* render_view_host,
                            int32 page_id, const std::wstring& title) {}
-  virtual int GetBrowserWindowID() const { return -1; }
+  virtual int GetBrowserWindowID() const {
+    return extension_misc::kUnknownWindowId;
+  }
   virtual ViewType::Type GetRenderViewType() const {
     return ViewType::NOTIFICATION;
   }

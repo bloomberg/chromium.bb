@@ -15,6 +15,7 @@
 #include "base/string_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -139,8 +140,9 @@ class ExtensionViewAccumulator : public RenderViewVisitor {
     // match that of the arguments to the accumulator.
     // See bug:  http://crbug.com/29646
     if (!(view_type_ == ViewType::EXTENSION_POPUP &&
-          render_view->browser_window_id() == -1)) {
-      if (browser_window_id_ != -1 &&
+          render_view->browser_window_id() ==
+               extension_misc::kUnknownWindowId)) {
+      if (browser_window_id_ != extension_misc::kUnknownWindowId &&
           render_view->browser_window_id() != browser_window_id_) {
         return true;
       }
@@ -318,8 +320,8 @@ class ExtensionImpl : public ExtensionBase {
     if (!args[0]->IsInt32() || !args[1]->IsString())
       return v8::Undefined();
 
-    // |browser_window_id| == -1 means getting views attached to any browser
-    // window.
+    // |browser_window_id| == extension_misc::kUnknownWindowId means getting
+    // views attached to any browser window.
     int browser_window_id = args[0]->Int32Value();
 
     std::string view_type_string = *v8::String::Utf8Value(args[1]->ToString());

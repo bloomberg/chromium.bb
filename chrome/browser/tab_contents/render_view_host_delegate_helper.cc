@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/character_encoding.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -15,26 +16,63 @@
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/site_instance.h"
+#include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 
+bool RenderViewHostDelegateViewHelper::ShouldOpenBackgroundContents(
+    WindowContainerType window_container_type,
+    GURL opener_url,
+    RenderProcessHost* opener_process,
+    Profile* profile) {
+  ExtensionsService* extensions_service = profile->GetExtensionsService();
+  if (window_container_type != WINDOW_CONTAINER_TYPE_BACKGROUND ||
+      !opener_url.is_valid() ||
+      !extensions_service ||
+      !extensions_service->is_ready())
+    return false;
+
+  Extension* extension = extensions_service->GetExtensionByURL(opener_url);
+  if (!extension)
+    extension = extensions_service->GetExtensionByWebExtent(opener_url);
+  if (!extension ||
+      !extension->HasApiPermission(Extension::kBackgroundPermission))
+    return false;
+
+  ExtensionProcessManager* process_manager =
+      profile->GetExtensionProcessManager();
+  if (!opener_process || !process_manager ||
+      opener_process != process_manager->GetExtensionProcess(opener_url))
+    return false;
+
+  return true;
+}
 TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(
     int route_id,
     Profile* profile,
     SiteInstance* site,
     DOMUITypeID domui_type,
-    TabContents* old_tab_contents,
+    RenderViewHostDelegate* opener,
     WindowContainerType window_container_type) {
+  if (ShouldOpenBackgroundContents(window_container_type,
+                                   opener->GetURL(),
+                                   site->GetProcess(),
+                                   profile)) {
+    BackgroundContents* contents = new BackgroundContents(site, route_id);
+    pending_contents_[route_id] = contents->render_view_host();
+    return NULL;
+  }
+
   // Create the new web contents. This will automatically create the new
   // TabContentsView. In the future, we may want to create the view separately.
   TabContents* new_contents =
       new TabContents(profile,
                       site,
                       route_id,
-                      old_tab_contents);
+                      opener->GetAsTabContents());
   new_contents->set_opener_dom_ui_type(domui_type);
   TabContentsView* new_view = new_contents->view();
 
@@ -43,7 +81,7 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(
   new_view->CreateViewForWidget(new_contents->render_view_host());
 
   // Save the created window associated with the route so we can show it later.
-  pending_contents_[route_id] = new_contents;
+  pending_contents_[route_id] = new_contents->render_view_host();
   return new_contents;
 }
 
@@ -67,19 +105,17 @@ TabContents* RenderViewHostDelegateViewHelper::GetCreatedWindow(int route_id) {
     return NULL;
   }
 
-  TabContents* new_tab_contents = iter->second;
+  RenderViewHost* new_rvh = iter->second;
   pending_contents_.erase(route_id);
 
-  if (!new_tab_contents->render_view_host()->view() ||
-      !new_tab_contents->GetRenderProcessHost()->HasConnection()) {
-    // The view has gone away or the renderer crashed. Nothing to do.
+  // The renderer crashed or it is a TabContents and has no view.
+  if (!new_rvh->process()->HasConnection() ||
+      (new_rvh->delegate()->GetAsTabContents() && !new_rvh->view()))
     return NULL;
-  }
 
   // TODO(brettw) this seems bogus to reach into here and initialize the host.
-  new_tab_contents->render_view_host()->Init();
-
-  return new_tab_contents;
+  new_rvh->Init();
+  return new_rvh->delegate()->GetAsTabContents();
 }
 
 RenderWidgetHostView* RenderViewHostDelegateViewHelper::GetCreatedWidget(

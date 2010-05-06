@@ -21,6 +21,7 @@
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/in_process_webkit/dom_storage_context.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
@@ -38,6 +39,7 @@
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/view_types.h"
@@ -298,11 +300,8 @@ void ExtensionHost::RenderViewGone(RenderViewHost* render_view_host) {
 void ExtensionHost::DidNavigate(RenderViewHost* render_view_host,
     const ViewHostMsg_FrameNavigate_Params& params) {
   // We only care when the outer frame changes.
-  switch (params.transition) {
-    case PageTransition::AUTO_SUBFRAME:
-    case PageTransition::MANUAL_SUBFRAME:
-      return;
-  }
+  if (!PageTransition::IsMainFrame(params.transition))
+    return;
 
   if (!params.url.SchemeIs(chrome::kExtensionScheme)) {
     extension_function_dispatcher_.reset(NULL);
@@ -516,9 +515,14 @@ RendererPreferences ExtensionHost::GetRendererPrefs(Profile* profile) const {
 
 WebPreferences ExtensionHost::GetWebkitPrefs() {
   Profile* profile = render_view_host()->process()->profile();
-  const bool kIsDomUI = true;
   WebPreferences webkit_prefs =
-      RenderViewHostDelegateHelper::GetWebkitPrefs(profile, kIsDomUI);
+      RenderViewHostDelegateHelper::GetWebkitPrefs(profile,
+                                                   false);  // is_dom_ui
+  // Extensions are trusted so we override any user preferences for disabling
+  // javascript or images.
+  webkit_prefs.loads_images_automatically = true;
+  webkit_prefs.javascript_enabled = true;
+
   if (extension_host_type_ == ViewType::EXTENSION_POPUP ||
       extension_host_type_ == ViewType::EXTENSION_INFOBAR)
     webkit_prefs.allow_scripts_to_close_windows = true;
@@ -551,8 +555,11 @@ void ExtensionHost::CreateNewWindow(
     int route_id,
     WindowContainerType window_container_type) {
   delegate_view_helper_.CreateNewWindow(
-      route_id, render_view_host()->process()->profile(),
-      site_instance(), DOMUIFactory::GetDOMUIType(url_), NULL,
+      route_id,
+      render_view_host()->process()->profile(),
+      site_instance(),
+      DOMUIFactory::GetDOMUIType(url_),
+      this,
       window_container_type);
 }
 
@@ -580,10 +587,7 @@ void ExtensionHost::ShowCreatedWindow(int route_id,
   if (!browser)
     return;
 
-  // TODO(aa): It seems like this means popup windows don't work via
-  // window.open() from ExtensionHost?
-  browser->AddTabContents(contents, disposition, initial_pos,
-                          user_gesture);
+  browser->AddTabContents(contents, disposition, initial_pos, user_gesture);
 }
 
 void ExtensionHost::ShowCreatedWidget(int route_id,
@@ -713,7 +717,7 @@ void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
 int ExtensionHost::GetBrowserWindowID() const {
   // Hosts not attached to any browser window have an id of -1.  This includes
   // those mentioned below, and background pages.
-  int window_id = -1;
+  int window_id = extension_misc::kUnknownWindowId;
   if (extension_host_type_ == ViewType::EXTENSION_TOOLSTRIP ||
       extension_host_type_ == ViewType::EXTENSION_MOLE ||
       extension_host_type_ == ViewType::EXTENSION_POPUP ||

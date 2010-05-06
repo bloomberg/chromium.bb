@@ -1263,8 +1263,8 @@ void RenderViewHost::DisassociateFromPopupCount() {
   Send(new ViewMsg_DisassociateFromPopupCount(routing_id()));
 }
 
-void RenderViewHost::PopupNotificationVisibilityChanged(bool visible) {
-  Send(new ViewMsg_PopupNotificationVisibilityChanged(routing_id(), visible));
+void RenderViewHost::AllowScriptToClose(bool script_can_close) {
+  Send(new ViewMsg_AllowScriptToClose(routing_id(), script_can_close));
 }
 
 void RenderViewHost::OnMsgGoToEntryAtOffset(int offset) {

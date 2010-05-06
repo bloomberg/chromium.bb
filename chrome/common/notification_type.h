@@ -467,6 +467,16 @@ class NotificationType {
     // view host for the page, there are no details.
     FOCUS_CHANGED_IN_PAGE,
 
+    // BackgroundContents ------------------------------------------------------
+
+    // The background contents navigated to a new location. The source is the
+    // BackgroundContents, and the details are contained RenderViewHost.
+    BACKGROUND_CONTENTS_NAVIGATED,
+
+    // The background contents is being deleted. The source is the
+    // BackgroundContents, and the details are the contained RendeViewHost.
+    BACKGROUND_CONTENTS_DELETED,
+
     // Child Processes ---------------------------------------------------------
 
     // This notification is sent when a child process host has connected to a

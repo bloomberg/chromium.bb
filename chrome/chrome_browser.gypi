@@ -2072,6 +2072,8 @@
         'browser/sync/sync_ui_util.h',
         'browser/sync/sync_ui_util_mac.mm',
         'browser/sync/sync_ui_util_mac.h',
+        'browser/tab_contents/background_contents.cc',
+        'browser/tab_contents/background_contents.h',
         'browser/tab_contents/constrained_window.h',
         'browser/tab_contents/infobar_delegate.cc',
         'browser/tab_contents/infobar_delegate.h',

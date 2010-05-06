@@ -188,4 +188,8 @@ namespace extension_filenames {
   extern const char* kDecodedMessageCatalogsFilename;
 }
 
+namespace extension_misc {
+  const int kUnknownWindowId = -1;
+}  // extension_misc
+
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_CONSTANTS_H_

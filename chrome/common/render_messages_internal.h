@@ -654,11 +654,11 @@ IPC_BEGIN_MESSAGES(View)
                       int /* id of the request message */,
                       webkit_glue::FormData /* form data */)
 
-  // Sent by the Browser process to alert a window about whether a blocked
-  // popup notification is visible. The renderer assumes every new window is a
+  // Sent by the Browser process to alert a window about whether a it should
+  // allow a scripted window.close(). The renderer assumes every new window is a
   // blocked popup until notified otherwise.
-  IPC_MESSAGE_ROUTED1(ViewMsg_PopupNotificationVisibilityChanged,
-                      bool /* Whether it is visible */)
+  IPC_MESSAGE_ROUTED1(ViewMsg_AllowScriptToClose,
+                      bool /* script_can_close */)
 
   // Sent by AudioRendererHost to renderer to request an audio packet.
   IPC_MESSAGE_ROUTED3(ViewMsg_RequestAudioPacket,

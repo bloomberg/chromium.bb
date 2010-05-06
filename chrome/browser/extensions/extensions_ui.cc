@@ -374,10 +374,16 @@ void ExtensionsDOMHandler::OnIconsLoaded(DictionaryValue* json) {
       NotificationService::AllSources());
   registrar_.Add(this,
       NotificationType::NAV_ENTRY_COMMITTED,
-      NotificationService::AllSources()); 
+      NotificationService::AllSources());
   registrar_.Add(this,
       NotificationType::RENDER_VIEW_HOST_DELETED,
-      NotificationService::AllSources()); 
+      NotificationService::AllSources());
+  registrar_.Add(this,
+      NotificationType::BACKGROUND_CONTENTS_NAVIGATED,
+      NotificationService::AllSources());
+  registrar_.Add(this,
+      NotificationType::BACKGROUND_CONTENTS_DELETED,
+      NotificationService::AllSources());
 }
 
 ExtensionResource ExtensionsDOMHandler::PickExtensionIcon(
@@ -692,7 +698,8 @@ void ExtensionsDOMHandler::Observe(NotificationType type,
     //
     // Doing it this way gets everything but causes the page to be rendered
     // more than we need. It doesn't seem to result in any noticeable flicker.
-    case NotificationType::RENDER_VIEW_HOST_DELETED:  
+    case NotificationType::RENDER_VIEW_HOST_DELETED:
+    case NotificationType::BACKGROUND_CONTENTS_DELETED:
       deleting_rvh_ = Details<RenderViewHost>(details).ptr();
     case NotificationType::EXTENSION_LOADED:
     case NotificationType::EXTENSION_PROCESS_CREATED:
@@ -702,11 +709,12 @@ void ExtensionsDOMHandler::Observe(NotificationType type,
     case NotificationType::EXTENSION_FUNCTION_DISPATCHER_CREATED:
     case NotificationType::EXTENSION_FUNCTION_DISPATCHER_DESTROYED:
     case NotificationType::NAV_ENTRY_COMMITTED:
+    case NotificationType::BACKGROUND_CONTENTS_NAVIGATED:
       if (!ignore_notifications_ && dom_ui_->tab_contents())
         HandleRequestExtensionsData(NULL);
-      deleting_rvh_ = NULL;    
+      deleting_rvh_ = NULL;
       break;
-    
+
     default:
       NOTREACHED();
   }
@@ -840,7 +848,7 @@ std::vector<ExtensionPage> ExtensionsDOMHandler::GetActivePagesForExtension(
     if (host == deleting_rvh_ ||
         ViewType::EXTENSION_POPUP == host->delegate()->GetRenderViewType())
       continue;
-    
+
     GURL url = host->delegate()->GetURL();
     if (url.SchemeIs(chrome::kExtensionScheme)) {
       if (url.host() != extension->id())

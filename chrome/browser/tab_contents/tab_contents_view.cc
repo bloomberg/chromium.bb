@@ -7,6 +7,7 @@
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
+#include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
@@ -28,12 +29,12 @@ void TabContentsView::RenderViewCreated(RenderViewHost* host) {
 void TabContentsView::CreateNewWindow(
     int route_id,
     WindowContainerType window_container_type) {
-    TabContents* new_contents = delegate_view_helper_.CreateNewWindow(
+  TabContents* new_contents = delegate_view_helper_.CreateNewWindow(
       route_id, tab_contents_->profile(), tab_contents_->GetSiteInstance(),
       DOMUIFactory::GetDOMUIType(tab_contents_->GetURL()), tab_contents_,
       window_container_type);
 
-  if (tab_contents_->delegate())
+  if (new_contents && tab_contents_->delegate())
     tab_contents_->delegate()->TabContentsCreated(new_contents);
 }
 

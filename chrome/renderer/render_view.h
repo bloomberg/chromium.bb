@@ -771,8 +771,8 @@ class RenderView : public RenderWidget,
   void OnAutoFillFormDataFilled(int query_id,
                                 const webkit_glue::FormData& form);
 
-  // Message that the popup notification has been shown or hidden.
-  void OnPopupNotificationVisibilityChanged(bool visible);
+  // Message that script may use window.close().
+  void OnAllowScriptToClose(bool script_can_close);
 
   // Handles messages posted from automation.
   void OnMessageFromExternalHost(const std::string& message,
@@ -1086,7 +1086,7 @@ class RenderView : public RenderWidget,
   // is being displayed. We instead assume that when we create a window off
   // this RenderView, that it is going to be blocked until we get a message
   // from the Browser process telling us otherwise.
-  bool popup_notification_visible_;
+  bool script_can_close_;
 
   // True if the browser is showing the spelling panel for us.
   bool spelling_panel_visible_;

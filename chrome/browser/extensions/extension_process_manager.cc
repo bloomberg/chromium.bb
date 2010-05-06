@@ -289,15 +289,13 @@ void ExtensionProcessManager::Observe(NotificationType type,
       // Close background hosts when the last browser is closed so that they
       // have time to shutdown various objects on different threads. Our
       // destructor is called too late in the shutdown sequence.
-      bool app_closing_non_mac = *Details<bool>(details).ptr();
-      if (app_closing_non_mac)
+      bool app_closing = *Details<bool>(details).ptr();
+      if (app_closing)
         CloseBackgroundHosts();
       break;
     }
 #elif defined(OS_MACOSX)
     case NotificationType::APP_TERMINATING: {
-      // Don't follow the behavior of having the last browser window closed
-      // being an indication that the app should close.
       CloseBackgroundHosts();
       break;
     }

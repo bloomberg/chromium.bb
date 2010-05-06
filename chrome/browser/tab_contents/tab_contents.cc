@@ -946,7 +946,7 @@ void TabContents::PopupNotificationVisibilityChanged(bool visible) {
   if (is_being_destroyed_)
     return;
   if (!dont_notify_render_view_)
-    render_view_host()->PopupNotificationVisibilityChanged(visible);
+    render_view_host()->AllowScriptToClose(!visible);
   if (delegate_)
     delegate_->OnContentSettingsChange(this);
 }

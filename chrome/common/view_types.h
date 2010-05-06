@@ -12,6 +12,7 @@ class ViewType {
  public:
   enum Type {
     INVALID,
+    BACKGROUND_CONTENTS,
     TAB_CONTENTS,
     EXTENSION_TOOLSTRIP,
     EXTENSION_MOLE,

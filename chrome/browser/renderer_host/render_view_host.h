@@ -376,9 +376,9 @@ class RenderViewHost : public RenderWidgetHost {
   // as a popup.
   void DisassociateFromPopupCount();
 
-  // Notifies the Renderer that we've either displayed or hidden the popup
-  // notification.
-  void PopupNotificationVisibilityChanged(bool visible);
+  // Tells the renderer whether it should allow window.close. This is initially
+  // set to false when creating a renderer-initiated window via window.open.
+  void AllowScriptToClose(bool visible);
 
   // Called by the AutoFillManager when the list of suggestions is ready.
   void AutoFillSuggestionsReturned(

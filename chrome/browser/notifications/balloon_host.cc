@@ -88,8 +88,11 @@ void BalloonHost::CreateNewWindow(
     int route_id,
     WindowContainerType window_container_type) {
   delegate_view_helper_.CreateNewWindow(
-      route_id, balloon_->profile(), site_instance_.get(),
-      DOMUIFactory::GetDOMUIType(balloon_->notification().content_url()), NULL,
+      route_id,
+      balloon_->profile(),
+      site_instance_.get(),
+      DOMUIFactory::GetDOMUIType(balloon_->notification().content_url()),
+      this,
       window_container_type);
 }
 
@@ -102,10 +105,13 @@ void BalloonHost::ShowCreatedWindow(int route_id,
     return;
 
   TabContents* contents = delegate_view_helper_.GetCreatedWindow(route_id);
-  if (contents) {
-    Browser* browser = BrowserList::GetLastActive();
-    browser->AddTabContents(contents, disposition, initial_pos, user_gesture);
-  }
+  if (!contents)
+    return;
+  Browser* browser = BrowserList::GetLastActiveWithProfile(balloon_->profile());
+  if (!browser)
+    return;
+
+  browser->AddTabContents(contents, disposition, initial_pos, user_gesture);
 }
 
 void BalloonHost::UpdatePreferredSize(const gfx::Size& new_size) {
