@@ -1115,6 +1115,11 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       gfx::Rect /* bitmap_rect */)
   IPC_MESSAGE_ROUTED0(ViewHostMsg_DestroyVideo)
 
+  // Sent by the renderer when GPU compositing is enabled or disabled to notify
+  // the browser whether or not is should do paiting.
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_GpuRenderingActivated,
+                      bool /* true if the GPU process renders to window */)
+
   // Acknowledges receipt of a ViewMsg_HandleInputEvent message.
   // Payload is a WebInputEvent::Type which is the type of the event, followed
   // by an optional WebInputEvent which is provided only if the event was not

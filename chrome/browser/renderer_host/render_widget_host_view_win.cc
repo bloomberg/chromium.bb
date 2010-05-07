@@ -871,6 +871,16 @@ void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
     return;
   }
 
+  // Don't do any painting if the GPU process is rendering directly
+  // into the View.
+  RenderWidgetHost* render_widget_host = GetRenderWidgetHost();
+  if (render_widget_host->is_gpu_rendering_active()) {
+    // We initialize paint_dc here so that BeginPaint()/EndPaint()
+    // get called to validate the region.
+    CPaintDC paint_dc(m_hWnd);
+    return;
+  }
+
   about_to_validate_and_paint_ = true;
   BackingStoreWin* backing_store = static_cast<BackingStoreWin*>(
       render_widget_host_->GetBackingStore(true));

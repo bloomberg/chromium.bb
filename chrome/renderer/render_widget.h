@@ -325,6 +325,9 @@ class RenderWidget : public IPC::Channel::Listener,
   // Indicates if the next sequence of Char events should be suppressed or not.
   bool suppress_next_char_events_;
 
+  // Set to true if painting to the window is handled by the GPU process.
+  bool is_gpu_rendering_active_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };
 

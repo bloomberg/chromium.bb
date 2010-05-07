@@ -64,6 +64,7 @@ RenderWidgetHost::RenderWidgetHost(RenderProcessHost* process,
       routing_id_(routing_id),
       is_loading_(false),
       is_hidden_(false),
+      is_gpu_rendering_active_(false),
       repaint_ack_pending_(false),
       resize_ack_pending_(false),
       mouse_move_pending_(false),
@@ -138,6 +139,8 @@ void RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnMsgFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnMsgSetCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ImeUpdateStatus, OnMsgImeUpdateStatus)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GpuRenderingActivated,
+                        OnMsgGpuRenderingActivated)
 #if defined(OS_LINUX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreatePluginContainer,
                         OnMsgCreatePluginContainer)
@@ -879,6 +882,10 @@ void RenderWidgetHost::OnMsgImeUpdateStatus(int control,
   if (view_) {
     view_->IMEUpdateStatus(control, caret_rect);
   }
+}
+
+void RenderWidgetHost::OnMsgGpuRenderingActivated(bool activated) {
+  is_gpu_rendering_active_ = activated;
 }
 
 #if defined(OS_LINUX)

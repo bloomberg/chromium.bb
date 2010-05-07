@@ -70,7 +70,8 @@ RenderWidget::RenderWidget(RenderThreadBase* render_thread,
       ime_control_busy_(false),
       popup_type_(popup_type),
       pending_window_rect_count_(0),
-      suppress_next_char_events_(false) {
+      suppress_next_char_events_(false),
+      is_gpu_rendering_active_(false) {
   RenderProcess::current()->AddRefProcess();
   DCHECK(render_thread_);
 }
@@ -438,6 +439,21 @@ void RenderWidget::DoDeferredUpdate() {
     paint_aggregator_.ClearPendingUpdate();
     needs_repainting_on_restore_ = true;
     return;
+  }
+
+  // If we are using accelerated compositing then all the drawing
+  // to the associated window happens directly from the gpu process and the
+  // browser process shouldn't do any drawing.
+  // TODO(vangelis): Currently the accelerated compositing path relies on
+  // invalidating parts of the page so that we get a request to redraw.
+  // This needs to change to a model where the compositor updates the
+  // contents of the page independently and the browser process gets no
+  // longer involved.
+  if (webwidget_->isAcceleratedCompositingActive() !=
+      is_gpu_rendering_active_) {
+    is_gpu_rendering_active_ = webwidget_->isAcceleratedCompositingActive();
+    Send(new ViewHostMsg_GpuRenderingActivated(
+        routing_id_, is_gpu_rendering_active_));
   }
 
   // Layout may generate more invalidation.

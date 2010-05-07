@@ -199,6 +199,9 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   void Blur();
   void LostCapture();
 
+  // Tells us whether the page is rendered directly via the GPU process.
+  bool is_gpu_rendering_active() { return is_gpu_rendering_active_; }
+
   // Notifies the RenderWidgetHost that the View was destroyed.
   void ViewDestroyed();
 
@@ -458,6 +461,8 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // having to bring in render_messages.h in a header file.
   void OnMsgImeUpdateStatus(int control, const gfx::Rect& caret_rect);
 
+  void OnMsgGpuRenderingActivated(bool activated);
+
 #if defined(OS_LINUX)
   void OnMsgCreatePluginContainer(gfx::PluginWindowHandle id);
   void OnMsgDestroyPluginContainer(gfx::PluginWindowHandle id);
@@ -534,6 +539,9 @@ class RenderWidgetHost : public IPC::Channel::Listener,
 
   // Indicates whether a page is hidden or not.
   bool is_hidden_;
+
+  // True when a page is rendered directly via the GPU process.
+  bool is_gpu_rendering_active_;
 
   // Set if we are waiting for a repaint ack for the view.
   bool repaint_ack_pending_;
