@@ -9,10 +9,12 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
 
 namespace {
@@ -140,5 +142,18 @@ void AppLauncherHandler::HandleLaunchApp(const Value* value) {
   else
     NOTREACHED() << "Unexpected launch container: " << launch_container << ".";
 
+  // To give a more "launchy" experience when using the NTP launcher, we close
+  // it automatically.
+  Browser* browser = BrowserList::GetLastActive();
+  TabContents* old_contents = NULL;
+  if (browser)
+    old_contents = browser->GetSelectedTabContents();
+
   Browser::OpenApplication(profile, extension, container);
+
+  if (old_contents &&
+      old_contents->GetURL().GetOrigin() ==
+          GURL(chrome::kChromeUINewTabURL).GetOrigin()) {
+    browser->CloseTabContents(old_contents);
+  }
 }
