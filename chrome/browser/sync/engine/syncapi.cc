@@ -48,6 +48,7 @@
 #include "chrome/browser/sync/engine/syncer_thread.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
+#include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/protocol/theme_specifics.pb.h"
@@ -483,6 +484,15 @@ const sync_pb::BookmarkSpecifics& BaseNode::GetBookmarkSpecifics() const {
   return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::bookmark);
 }
 
+bool BaseNode::GetPasswordSpecifics(sync_pb::PasswordSpecificsData* data)
+    const {
+  DCHECK(GetModelType() == syncable::PASSWORD);
+  DCHECK(data);
+  const sync_pb::PasswordSpecifics& specifics =
+      GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::password);
+  return data->ParseFromString(specifics.blob());
+}
+
 const sync_pb::PreferenceSpecifics& BaseNode::GetPreferenceSpecifics() const {
   DCHECK(GetModelType() == syncable::PREFERENCES);
   return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::preference);
@@ -557,6 +567,16 @@ void WriteNode::PutBookmarkSpecificsAndMarkForSyncing(
   PutSpecificsAndMarkForSyncing(entity_specifics);
 }
 
+void WriteNode::SetPasswordSpecifics(
+    const sync_pb::PasswordSpecificsData& data) {
+  DCHECK(GetModelType() == syncable::PASSWORD);
+  std::string serialized_data;
+  data.SerializeToString(&serialized_data);
+  sync_pb::PasswordSpecifics new_value;
+  new_value.set_blob(serialized_data);
+  PutPasswordSpecificsAndMarkForSyncing(new_value);
+}
+
 void WriteNode::SetPreferenceSpecifics(
     const sync_pb::PreferenceSpecifics& new_value) {
   DCHECK(GetModelType() == syncable::PREFERENCES);
@@ -567,6 +587,13 @@ void WriteNode::SetThemeSpecifics(
     const sync_pb::ThemeSpecifics& new_value) {
   DCHECK(GetModelType() == syncable::THEMES);
   PutThemeSpecificsAndMarkForSyncing(new_value);
+}
+
+void WriteNode::PutPasswordSpecificsAndMarkForSyncing(
+    const sync_pb::PasswordSpecifics& new_value) {
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.MutableExtension(sync_pb::password)->CopyFrom(new_value);
+  PutSpecificsAndMarkForSyncing(entity_specifics);
 }
 
 void WriteNode::PutPreferenceSpecificsAndMarkForSyncing(

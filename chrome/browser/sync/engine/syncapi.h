@@ -76,6 +76,8 @@ class AutofillSpecifics;
 class BookmarkSpecifics;
 class EntitySpecifics;
 class PreferenceSpecifics;
+class PasswordSpecifics;
+class PasswordSpecificsData;
 class ThemeSpecifics;
 class TypedUrlSpecifics;
 }
@@ -171,6 +173,10 @@ class BaseNode {
   // Getter specific to the AUTOFILL datatype.  Returns protobuf
   // data.  Can only be called if GetModelType() == AUTOFILL.
   const sync_pb::AutofillSpecifics& GetAutofillSpecifics() const;
+
+  // Getter specific to the PASSWORD datatype.  Returns protobuf
+  // data.  Can only be called if GetModelType() == PASSWORD.
+  bool GetPasswordSpecifics(sync_pb::PasswordSpecificsData*) const;
 
   // Getter specific to the PREFERENCE datatype.  Returns protobuf
   // data.  Can only be called if GetModelType() == PREFERENCE.
@@ -287,6 +293,10 @@ class WriteNode : public BaseNode {
   // Should only be called if GetModelType() == AUTOFILL.
   void SetAutofillSpecifics(const sync_pb::AutofillSpecifics& specifics);
 
+  // Set the password specifics.
+  // Should only be called if GetModelType() == PASSWORD.
+  void SetPasswordSpecifics(const sync_pb::PasswordSpecificsData& specifics);
+
   // Set the preference specifics (name and value).
   // Should only be called if GetModelType() == PREFERENCE.
   void SetPreferenceSpecifics(const sync_pb::PreferenceSpecifics& specifics);
@@ -322,6 +332,8 @@ class WriteNode : public BaseNode {
       const sync_pb::AutofillSpecifics& new_value);
   void PutBookmarkSpecificsAndMarkForSyncing(
       const sync_pb::BookmarkSpecifics& new_value);
+  void PutPasswordSpecificsAndMarkForSyncing(
+      const sync_pb::PasswordSpecifics& new_value);
   void PutPreferenceSpecificsAndMarkForSyncing(
       const sync_pb::PreferenceSpecifics& new_value);
   void PutThemeSpecificsAndMarkForSyncing(
