@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# TODO(akalin): Reference this file from all.gyp so it's always built.
 {
   'defines': [
     'FEATURE_ENABLE_SSL',
@@ -24,6 +23,17 @@
         '<(DEPTH)/chrome/chrome.gyp:notifier',
         '<(DEPTH)/third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
         '<(DEPTH)/third_party/libjingle/libjingle.gyp:libjingle',
+      ],
+      # TODO(akalin): Figure out the right place to put this.
+      'conditions': [
+        ['OS=="win"', {
+          'link_settings': {
+            'libraries': [
+              '-lsecur32.lib',
+              '-lcrypt32.lib',
+            ],
+          },
+        },],
       ],
     },
   ],
