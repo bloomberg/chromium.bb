@@ -414,12 +414,19 @@ bool FormManager::FillForm(const FormData& form) {
     // so loop past non-matching fields in the set with more elements.
     while (form_element->control_elements[i].nameForAutofill() !=
            form.fields[j].name()) {
-      if (form_element->control_elements.size() > form.fields.size())
+      if (form_element->control_elements.size() > form.fields.size()) {
+        // We're at the end of the elements already.
+        if (i + 1 == form_element->control_elements.size())
+          break;
         ++i;
-      else if (form.fields.size() > form_element->control_elements.size())
+      } else if (form.fields.size() > form_element->control_elements.size()) {
+        // We're at the end of the elements already.
+        if (j + 1 == form.fields.size())
+          break;
         ++j;
-      else
+      } else {
         NOTREACHED();
+      }
 
       continue;
     }
