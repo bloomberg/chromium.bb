@@ -18,7 +18,10 @@ extern "C" {
 #endif
 
 #ifdef __native_client__
+#ifndef __susecond_t_defined
+#define __susecond_t_defined
 typedef long int  nacl_abi_suseconds_t;
+#endif
 #else
 typedef int32_t   nacl_abi_suseconds_t;
 #endif
