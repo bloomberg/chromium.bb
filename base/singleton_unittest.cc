@@ -32,6 +32,15 @@ struct CallbackTrait : public DefaultSingletonTraits<CallbackFunc> {
   }
 };
 
+struct StaticCallbackTrait : public StaticMemorySingletonTraits<CallbackFunc> {
+  static void Delete(CallbackFunc* p) {
+    if (*p)
+      (*p)();
+    StaticMemorySingletonTraits<CallbackFunc>::Delete(p);
+  }
+};
+
+
 struct NoLeakTrait : public CallbackTrait {
 };
 
@@ -78,6 +87,14 @@ CallbackFunc* GetLeakySingleton() {
   return Singleton<CallbackFunc, LeakTrait>::get();
 }
 
+void SingletonStatic(CallbackFunc CallOnQuit) {
+  *Singleton<CallbackFunc, StaticCallbackTrait>::get() = CallOnQuit;
+}
+
+CallbackFunc* GetStaticSingleton() {
+  return Singleton<CallbackFunc, StaticCallbackTrait>::get();
+}
+
 }  // namespace
 
 class SingletonTest : public testing::Test {
@@ -87,21 +104,26 @@ class SingletonTest : public testing::Test {
   virtual void SetUp() {
     non_leak_called_ = false;
     leaky_called_ = false;
+    static_called_ = false;
   }
 
  protected:
   void VerifiesCallbacks() {
     EXPECT_TRUE(non_leak_called_);
     EXPECT_FALSE(leaky_called_);
+    EXPECT_TRUE(static_called_);
     non_leak_called_ = false;
     leaky_called_ = false;
+    static_called_ = false;
   }
 
   void VerifiesCallbacksNotCalled() {
     EXPECT_FALSE(non_leak_called_);
     EXPECT_FALSE(leaky_called_);
+    EXPECT_FALSE(static_called_);
     non_leak_called_ = false;
     leaky_called_ = false;
+    static_called_ = false;
   }
 
   static void CallbackNoLeak() {
@@ -112,13 +134,19 @@ class SingletonTest : public testing::Test {
     leaky_called_ = true;
   }
 
+  static void CallbackStatic() {
+    static_called_ = true;
+  }
+
  private:
   static bool non_leak_called_;
   static bool leaky_called_;
+  static bool static_called_;
 };
 
 bool SingletonTest::non_leak_called_ = false;
 bool SingletonTest::leaky_called_ = false;
+bool SingletonTest::static_called_ = false;
 
 TEST_F(SingletonTest, Basic) {
   int* singleton_int_1;
@@ -127,6 +155,7 @@ TEST_F(SingletonTest, Basic) {
   int* singleton_int_4;
   int* singleton_int_5;
   CallbackFunc* leaky_singleton;
+  CallbackFunc* static_singleton;
 
   {
     base::ShadowingAtExitManager sem;
@@ -177,6 +206,8 @@ TEST_F(SingletonTest, Basic) {
 
     SingletonNoLeak(&CallbackNoLeak);
     SingletonLeak(&CallbackLeak);
+    SingletonStatic(&CallbackStatic);
+    static_singleton = GetStaticSingleton();
     leaky_singleton = GetLeakySingleton();
     EXPECT_TRUE(leaky_singleton);
   }
@@ -186,6 +217,9 @@ TEST_F(SingletonTest, Basic) {
   // Delete the leaky singleton. It is interesting to note that Purify does
   // *not* detect the leak when this call is commented out. :(
   DefaultSingletonTraits<CallbackFunc>::Delete(leaky_singleton);
+
+  // The static singleton can't be acquired post-atexit.
+  EXPECT_EQ(NULL, GetStaticSingleton());
 
   {
     base::ShadowingAtExitManager sem;
@@ -197,6 +231,12 @@ TEST_F(SingletonTest, Basic) {
     {
       singleton_int_5 = SingletonInt5();
       EXPECT_EQ(*singleton_int_5, 5);
+    }
+    {
+      // Resurrect the static singleton, and assert that it
+      // still points to the same (static) memory.
+      StaticMemorySingletonTraits<CallbackFunc>::Resurrect();
+      EXPECT_EQ(GetStaticSingleton(), static_singleton);
     }
   }
   // The leaky singleton shouldn't leak since SingletonLeak has not been called.

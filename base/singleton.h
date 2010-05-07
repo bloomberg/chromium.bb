@@ -42,6 +42,53 @@ struct LeakySingletonTraits : public DefaultSingletonTraits<Type> {
 };
 
 
+// Alternate traits for use with the Singleton<Type>.  Allocates memory
+// for the singleton instance from a static buffer.  The singleton will
+// be cleaned up at exit, but can't be revived after destruction unless
+// the Resurrect() method is called.
+template <typename Type>
+struct StaticMemorySingletonTraits {
+  // WARNING: User has to deal with get() in the singleton class
+  // this is traits for returning NULL.
+  static Type* New() {
+    if (base::subtle::NoBarrier_AtomicExchange(&dead_, 1))
+      return NULL;
+    Type* ptr = reinterpret_cast<Type*>(buffer_);
+
+    // We are protected by a memory barrier.
+    new(ptr) Type();
+    return ptr;
+  }
+
+  static void Delete(Type* p) {
+    base::subtle::NoBarrier_Store(&dead_, 1);
+    base::subtle::MemoryBarrier();
+    if (p != NULL)
+      p->Type::~Type();
+  }
+
+  static const bool kRegisterAtExit = true;
+
+  // Exposed for unittesting.
+  static void Resurrect() {
+    base::subtle::NoBarrier_Store(&dead_, 0);
+  }
+
+ private:
+  static const size_t kBufferSize = (sizeof(Type) +
+                                     sizeof(intptr_t) - 1) / sizeof(intptr_t);
+  static intptr_t buffer_[kBufferSize];
+
+  // Signal the object was already deleted, so it is not revived.
+  static base::subtle::Atomic32 dead_;
+};
+
+template <typename Type> intptr_t
+    StaticMemorySingletonTraits<Type>::buffer_[kBufferSize];
+template <typename Type> base::subtle::Atomic32
+    StaticMemorySingletonTraits<Type>::dead_ = 0;
+
+
 // The Singleton<Type, Traits, DifferentiatingType> class manages a single
 // instance of Type which will be created on first use and will be destroyed at
 // normal process exit). The Trait::Delete function will not be called on
@@ -139,7 +186,7 @@ class Singleton {
       base::subtle::Release_Store(
           &instance_, reinterpret_cast<base::subtle::AtomicWord>(newval));
 
-      if (Traits::kRegisterAtExit)
+      if (newval != NULL && Traits::kRegisterAtExit)
         base::AtExitManager::RegisterCallback(OnExit, NULL);
 
       return newval;
