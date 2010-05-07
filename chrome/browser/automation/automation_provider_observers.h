@@ -488,6 +488,28 @@ class LoginManagerObserver : public NotificationObserver {
 };
 #endif
 
+// Waits for the download shelf to appear or disappear
+// (depending on |visibility|).
+class DownloadShelfVisibilityObserver : public NotificationObserver {
+ public:
+  DownloadShelfVisibilityObserver(AutomationProvider* automation,
+                                  Browser* browser,
+                                  bool visiblity,
+                                  IPC::Message* reply_message);
+
+  // NotificationObserver interface.
+  virtual void Observe(NotificationType type, const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  NotificationRegistrar registrar_;
+  AutomationProvider* automation_;
+  bool visibility_;
+  IPC::Message* reply_message_;
+
+  DISALLOW_COPY_AND_ASSIGN(DownloadShelfVisibilityObserver);
+};
+
 // Waits for the bookmark model to load.
 class AutomationProviderBookmarkModelObserver : BookmarkModelObserver {
  public:
@@ -536,8 +558,8 @@ class AutomationProviderBookmarkModelObserver : BookmarkModelObserver {
 
 // When asked for pending downloads, the DownloadManager places
 // results in a DownloadManager::Observer.
-class AutomationProviderDownloadManagerObserver :
-    public DownloadManager::Observer {
+class AutomationProviderDownloadManagerObserver
+    : public DownloadManager::Observer {
  public:
   AutomationProviderDownloadManagerObserver() : DownloadManager::Observer()  {}
   virtual ~AutomationProviderDownloadManagerObserver() {}

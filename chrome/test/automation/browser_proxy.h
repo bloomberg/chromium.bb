@@ -178,6 +178,9 @@ class BrowserProxy : public AutomationResourceProxy {
   // Shows or hides the download shelf.
   bool SetShelfVisible(bool is_visible) WARN_UNUSED_RESULT;
 
+  // Waits for the download shelf to appear or disappear.
+  bool WaitForDownloadShelfVisibilityChange(bool visibility) WARN_UNUSED_RESULT;
+
   // Sets the int value of the specified preference.
   bool SetIntPreference(const std::wstring& name, int value) WARN_UNUSED_RESULT;
 

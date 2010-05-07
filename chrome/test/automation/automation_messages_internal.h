@@ -1396,4 +1396,11 @@ IPC_BEGIN_MESSAGES(Automation)
   IPC_SYNC_MESSAGE_ROUTED3_1(AutomationMsg_DeleteCookie, GURL, std::string,
                              int, bool)
 
+  // Waits for the download shelf to appear or disappear (depending on
+  // |visibility|) and sets |success| to true on success.
+  IPC_SYNC_MESSAGE_ROUTED2_1(AutomationMsg_WaitForDownloadShelfVisibilityChange,
+                             int /* browser handle */,
+                             bool /* visibility */,
+                             bool /* success */)
+
 IPC_END_MESSAGES(Automation)

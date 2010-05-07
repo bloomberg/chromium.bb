@@ -398,6 +398,19 @@ bool BrowserProxy::SetShelfVisible(bool is_visible) {
                                                             is_visible));
 }
 
+bool BrowserProxy::WaitForDownloadShelfVisibilityChange(bool visibility) {
+  if (!is_valid())
+    return false;
+
+  bool result = false;
+
+  if (!sender_->Send(new AutomationMsg_WaitForDownloadShelfVisibilityChange(
+      0, handle_, visibility, &result)))
+    return false;
+
+  return result;
+}
+
 bool BrowserProxy::SetIntPreference(const std::wstring& name, int value) {
   if (!is_valid())
     return false;

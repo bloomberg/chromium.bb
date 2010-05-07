@@ -79,22 +79,21 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   // complete, the completed_response object is sent; if the server requires
   // authentication, we instead send the auth_needed_response object.  A pointer
   // to the added navigation observer is returned. This object should NOT be
-  // deleted and should be released by calling the corresponding
-  // RemoveNavigationStatusListener method.
+  // deleted and should be released by calling the RemoveObserver method.
   NotificationObserver* AddNavigationStatusListener(
       NavigationController* tab, IPC::Message* reply_message,
       int number_of_navigations, bool include_current_navigation);
 
-  void RemoveNavigationStatusListener(NotificationObserver* obs);
-
   // Add an observer for the TabStrip. Currently only Tab append is observed. A
   // navigation listener is created on successful notification of tab append. A
   // pointer to the added navigation observer is returned. This object should
-  // NOT be deleted and should be released by calling the corresponding
-  // RemoveTabStripObserver method.
+  // NOT be deleted and should be released by calling the RemoveObserver method.
   NotificationObserver* AddTabStripObserver(Browser* parent,
                                             IPC::Message* reply_message);
-  void RemoveTabStripObserver(NotificationObserver* obs);
+
+  // Remove an observer. The |NotificationObserver| still needs to be deleted
+  // afterwards.
+  void RemoveObserver(NotificationObserver* obs);
 
   // Get the index of a particular NavigationController object
   // in the given parent window.  This method uses
@@ -333,6 +332,11 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void RemoveBookmark(int handle,
                       int64 id,
                       bool* success);
+
+  // Wait for the download shelf to appear or disappear.
+  void WaitForDownloadShelfVisibilityChange(int browser_handle,
+                                            bool visibility,
+                                            IPC::Message* reply_message);
 
   // Get info about downloads. This includes only ones that have been
   // registered by the history system.

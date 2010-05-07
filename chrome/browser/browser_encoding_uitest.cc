@@ -148,7 +148,7 @@ TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
                                   SavePackage::SAVE_AS_COMPLETE_HTML));
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
-  EXPECT_TRUE(WaitForDownloadShelfVisible(browser.get()));
+  EXPECT_TRUE(browser->WaitForDownloadShelfVisibilityChange(true));
   FilePath expected_file_name = FilePath().AppendASCII(kOverrideTestDir);
   expected_file_name = expected_file_name.AppendASCII(kExpectedFileName);
   CheckFile(full_file_name, expected_file_name, true);
@@ -284,7 +284,7 @@ TEST_F(BrowserEncodingTest, TestEncodingAutoDetect) {
         kTestDatas[i].expected_result);
     EXPECT_TRUE(tab->SavePage(full_saved_file_name, temp_sub_resource_dir_,
                               SavePackage::SAVE_AS_COMPLETE_HTML));
-    EXPECT_TRUE(WaitForDownloadShelfVisible(browser.get()));
+    EXPECT_TRUE(browser->WaitForDownloadShelfVisibilityChange(true));
     CheckFile(full_saved_file_name, expected_result_file_name, true);
   }
 }
