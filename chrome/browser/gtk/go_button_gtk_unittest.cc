@@ -30,11 +30,11 @@ class GoButtonGtkPeer {
   // forwarders to private methods
   Task* CreateButtonTimerTask() { return go_->CreateButtonTimerTask(); }
   gboolean OnLeave() {
-    return GoButtonGtk::OnLeave(go_->widget(), NULL, go_);
+    return go_->OnLeaveNotify(go_->widget(), NULL);
   }
 
-  gboolean OnClicked() {
-    return GoButtonGtk::OnClicked(GTK_BUTTON(go_->widget()), go_);
+  void OnClicked() {
+    go_->OnClicked(go_->widget());
   }
 
  private:
@@ -125,7 +125,7 @@ TEST_F(GoButtonGtkTest, OnLeaveIntendedGo) {
 
 TEST_F(GoButtonGtkTest, OnClickedStop) {
   peer_.set_visible_mode(GoButtonGtk::MODE_STOP);
-  EXPECT_TRUE(peer_.OnClicked());
+  peer_.OnClicked();
   EXPECT_EQ(GoButtonGtk::MODE_GO, peer_.visible_mode());
   EXPECT_EQ(GoButtonGtk::MODE_GO, peer_.intended_mode());
 }
