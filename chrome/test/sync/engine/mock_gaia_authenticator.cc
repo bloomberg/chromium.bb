@@ -29,7 +29,8 @@ void MockGaiaAuthenticator::AddMockUser(MockUser mock_user) {
 // A convenience method to add a mock user to internal list of users.
 void MockGaiaAuthenticator::AddMockUser(string email, string passwd,
                                         string auth_token, string lsid,
-                                        string sid, enum AuthenticationError
+                                        string sid,
+                                        enum gaia::AuthenticationError
                                         auth_error, string error_url,
                                         string captcha_token,
                                         string captcha_url) {
@@ -49,7 +50,8 @@ void MockGaiaAuthenticator::AddMockUser(string email, string passwd,
 // A convenience method to add a mock user to internal list of users.
 void MockGaiaAuthenticator::AddMockUser(string email, string passwd,
                                         string auth_token, string lsid,
-                                        string sid, enum AuthenticationError
+                                        string sid,
+                                        enum gaia::AuthenticationError
                                         auth_error) {
   MockUser mock_user;
   mock_user.email = email;
@@ -96,7 +98,7 @@ bool MockGaiaAuthenticator::Authenticate(const char* email,
 
   // Finding a user does not necessarily imply that the user was logged in OK.
   // Therefore also check if the AuthenticationError is None.
-  return (mock_credentials_[current_user_].auth_error == None);
+  return (mock_credentials_[current_user_].auth_error == gaia::None);
 }
 
 // Remove any stored knowledge about the currently logged-in user, but keep

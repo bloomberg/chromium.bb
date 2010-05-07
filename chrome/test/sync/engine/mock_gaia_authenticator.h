@@ -29,7 +29,7 @@
 #include "base/port.h"
 
 #include "base/basictypes.h"
-#include "chrome/browser/sync/engine/net/gaia_authenticator.h"
+#include "chrome/common/net/gaia/gaia_authenticator.h"
 
 namespace browser_sync {
 
@@ -42,7 +42,7 @@ typedef struct {
   std::string auth_token;
   std::string sid;
   std::string lsid;
-  AuthenticationError auth_error;
+  gaia::AuthenticationError auth_error;
   std::string captcha_token;
   std::string captcha_url;
   std::string error_url;
@@ -66,7 +66,7 @@ class MockGaiaAuthenticator {
   void AddMockUser(std::string email, std::string passwd,
                    std::string auth_token,
                    std::string lsid, std::string sid,
-                   AuthenticationError auth_error,
+                   gaia::AuthenticationError auth_error,
                    std::string error_url, std::string captcha_token,
                    std::string captcha_url);
 
@@ -76,7 +76,7 @@ class MockGaiaAuthenticator {
   void AddMockUser(std::string email, std::string passwd,
                    std::string auth_token,
                    std::string lsid, std::string sid,
-                   enum AuthenticationError auth_error);
+                   enum gaia::AuthenticationError auth_error);
 
   // Removes a mock user from the current list of added users.
   void RemoveMockUser(const char* email);
@@ -115,8 +115,8 @@ class MockGaiaAuthenticator {
       mock_credentials_[current_user_].lsid;
   }
 
-  AuthenticationError auth_error() {
-    return (current_user_.length() == 0) ? CredentialsNotSet :
+  gaia::AuthenticationError auth_error() {
+    return (current_user_.length() == 0) ? gaia::CredentialsNotSet :
       mock_credentials_[current_user_].auth_error;
   }
 

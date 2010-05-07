@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/engine/net/gaia_authenticator.h"
+#include "chrome/common/net/gaia/gaia_authenticator.h"
 
 #include <string>
 #include <utility>
@@ -11,8 +11,8 @@
 #include "base/basictypes.h"
 #include "base/port.h"
 #include "base/string_split.h"
-#include "chrome/browser/sync/engine/net/http_return.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
+#include "chrome/common/net/http_return.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 
@@ -20,7 +20,7 @@ using std::pair;
 using std::string;
 using std::vector;
 
-namespace browser_sync {
+namespace gaia {
 
 static const char kGaiaV1IssueAuthTokenPath[] = "/accounts/IssueAuthToken";
 
@@ -132,7 +132,12 @@ bool GaiaAuthenticator::AuthenticateImpl(const AuthParams& params,
 
   // The aim of this code is to start failing requests if due to a logic error
   // in the program we're hammering GAIA.
+#if defined(OS_WIN)
+  __time32_t now = _time32(0);
+#else  // defined(OS_WIN)
   time_t now = time(0);
+#endif  // defined(OS_WIN)
+
   if (now > next_allowed_auth_attempt_time_) {
     next_allowed_auth_attempt_time_ = now + 1;
     // If we're more than 2 minutes past the allowed time we reset the early
@@ -395,4 +400,5 @@ bool GaiaAuthenticator::Authenticate(const string& user_name,
                       empty, try_first);
 }
 
-}  // namespace browser_sync
+}  // namepace gaia
+

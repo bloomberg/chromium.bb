@@ -3,11 +3,14 @@
 // found in the LICENSE file.
 //
 // Use this class to authenticate users with Gaia and access cookies sent
-// by the Gaia servers.  This class lives on the SyncEngine_AuthWatcherThread.
+// by the Gaia servers. This class cannot be used on its own becaue it relies
+// on a subclass to provide the virtual Post and GetBackoffDelaySeconds methods.
 //
 // Sample usage:
-// GaiaAuthenticator gaia_auth("User-Agent", SYNC_SERVICE_NAME,
-//     browser_sync::kExternalGaiaUrl);
+// class ActualGaiaAuthenticator : public gaia::GaiaAuthenticator {
+//   Provides actual implementation of Post and GetBackoffDelaySeconds.
+// };
+// ActualGaiaAuthenticator gaia_auth("User-Agent", SERVICE_NAME, kGaiaUrl);
 // if (gaia_auth.Authenticate("email", "passwd", SAVE_IN_MEMORY_ONLY,
 //                            true)) { // Synchronous
 //   // Do something with: gaia_auth.auth_token(), or gaia_auth.sid(),
@@ -19,29 +22,30 @@
 // email address associated with the Gaia account can be read; the password is
 // write-only.
 
-#ifndef CHROME_BROWSER_SYNC_ENGINE_NET_GAIA_AUTHENTICATOR_H_
-#define CHROME_BROWSER_SYNC_ENGINE_NET_GAIA_AUTHENTICATOR_H_
+// TODO(sanjeevr): This class has been moved here from the bookmarks sync code.
+// While it is a generic class that handles GAIA authentication, there are some
+// artifacts of the sync code such as the SaveCredentials enum which needs to
+// be cleaned up.
+#ifndef CHROME_COMMON_NET_GAIA_GAIA_AUTHENTICATOR_H_
+#define CHROME_COMMON_NET_GAIA_GAIA_AUTHENTICATOR_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
-#include "chrome/browser/sync/util/signin.h"
+#include "chrome/common/net/gaia/signin.h"
 #include "chrome/common/deprecated/event_sys.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
-namespace browser_sync {
+namespace gaia {
 
 static const char kGaiaUrl[] =
     "https://www.google.com:443/accounts/ClientLogin";
 
 // Use of the following enum is odd. GaiaAuthenticator only looks at
 // and DONT_SAVE_CREDENTIALS and SAVE_IN_MEMORY_ONLY (PERSIST_TO_DISK is == to
-// SAVE_IN_MEMORY_ONLY for GaiaAuthenticator). The sync engine never uses
-// DONT_SAVE_CREDENTIALS. AuthWatcher does look in GaiaAuthenticator's results
-// object to decide if it should save credentials to disk. This currently
-// works so I'm leaving the odd dance alone.
+// SAVE_IN_MEMORY_ONLY for GaiaAuthenticator).
 
 enum SaveCredentials {
   DONT_SAVE_CREDENTIALS,
@@ -318,11 +322,10 @@ class GaiaAuthenticator {
 #endif  // defined(OS_WIN)
   int early_auth_attempt_count_;
 
-  // The message loop all our methods are invoked on.  Generally this is the
-  // SyncEngine_AuthWatcherThread's message loop.
+  // The message loop all our methods are invoked on.
   const MessageLoop* message_loop_;
 };
 
-}  // namespace browser_sync
+}  // namespace gaia
+#endif  // CHROME_COMMON_NET_GAIA_GAIA_AUTHENTICATOR_H_
 
-#endif  // CHROME_BROWSER_SYNC_ENGINE_NET_GAIA_AUTHENTICATOR_H_

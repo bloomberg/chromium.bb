@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_ENGINE_NET_HTTP_RETURN_H_
-#define CHROME_BROWSER_SYNC_ENGINE_NET_HTTP_RETURN_H_
+#ifndef CHROME_COMMON_NET_HTTP_RETURN_H_
+#define CHROME_COMMON_NET_HTTP_RETURN_H_
 
-namespace browser_sync {
+// TODO(sanjeevr): This has been moved from the sync library so it only
+// contains a few HTTP return codes. Add more HTTP return codes.
 enum HTTPReturnCode {
   RC_REQUEST_OK = 200,
   RC_UNAUTHORIZED = 401,
   RC_FORBIDDEN = 403,
 };
-}  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_ENGINE_NET_HTTP_RETURN_H_
+#endif  // CHROME_COMMON_NET_HTTP_RETURN_H_
+

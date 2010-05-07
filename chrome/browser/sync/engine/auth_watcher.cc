@@ -8,12 +8,12 @@
 #include "base/string_util.h"
 #include "chrome/browser/sync/engine/all_status.h"
 #include "chrome/browser/sync/engine/authenticator.h"
-#include "chrome/browser/sync/engine/net/gaia_authenticator.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/user_settings.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
+#include "chrome/common/net/gaia/gaia_authenticator.h"
 #include "chrome/common/net/notifier/listener/talk_mediator.h"
 
 // How authentication happens:
@@ -45,7 +45,7 @@ AuthWatcher::AuthWatcher(DirectoryManager* dirman,
                          const string& service_id,
                          const string& gaia_url,
                          UserSettings* user_settings,
-                         GaiaAuthenticator* gaia_auth,
+                         gaia::GaiaAuthenticator* gaia_auth,
                          notifier::TalkMediator* talk_mediator)
     : gaia_(gaia_auth),
       dirman_(dirman),
@@ -71,7 +71,7 @@ AuthWatcher::AuthWatcher(DirectoryManager* dirman,
 
 void AuthWatcher::PersistCredentials() {
   DCHECK_EQ(MessageLoop::current(), message_loop());
-  GaiaAuthenticator::AuthResults results = gaia_->results();
+  gaia::GaiaAuthenticator::AuthResults results = gaia_->results();
 
   // We just successfully signed in again, let's clear out any residual cached
   // login data from earlier sessions.
@@ -85,7 +85,7 @@ void AuthWatcher::PersistCredentials() {
   if (!user_settings_->VerifyAgainstStoredHash(results.email, results.password))
     user_settings_->StoreHashedPassword(results.email, results.password);
 
-  if (PERSIST_TO_DISK == results.credentials_saved) {
+  if (gaia::PERSIST_TO_DISK == results.credentials_saved) {
     user_settings_->SetAuthTokenForService(results.email,
                                            SYNC_SERVICE_NAME,
                                            gaia_->auth_token());
@@ -161,7 +161,7 @@ void AuthWatcher::DoAuthenticateWithToken(const std::string& gaia_email,
   }
   AuthWatcherEvent event = {AuthWatcherEvent::ILLEGAL_VALUE , 0};
   gaia_->SetUsername(email);
-  gaia_->SetAuthToken(auth_token, SAVE_IN_MEMORY_ONLY);
+  gaia_->SetAuthToken(auth_token, gaia::SAVE_IN_MEMORY_ONLY);
   const bool was_authenticated = NOT_AUTHENTICATED != status_;
   switch (result) {
     case Authenticator::SUCCESS:
@@ -231,22 +231,23 @@ bool AuthWatcher::AuthenticateLocally(string email, const string& password) {
 
 void AuthWatcher::ProcessGaiaAuthFailure() {
   DCHECK_EQ(MessageLoop::current(), message_loop());
-  GaiaAuthenticator::AuthResults results = gaia_->results();
+  gaia::GaiaAuthenticator::AuthResults results = gaia_->results();
   if (LOCALLY_AUTHENTICATED == status_) {
     return;  // nothing todo
   } else if (AuthenticateLocally(results.email, results.password)) {
     // We save the "Remember me" checkbox by putting a non-null auth
     // token into the last_user table.  So if we're offline and the
     // user checks the box, insert a bogus auth token.
-    if (PERSIST_TO_DISK == results.credentials_saved) {
+    if (gaia::PERSIST_TO_DISK == results.credentials_saved) {
       const string auth_token("bogus");
       user_settings_->SetAuthTokenForService(results.email,
                                              SYNC_SERVICE_NAME,
                                              auth_token);
     }
-    const bool unavailable = ConnectionUnavailable == results.auth_error ||
-                             Unknown == results.auth_error ||
-                             ServiceUnavailable == results.auth_error;
+    const bool unavailable =
+        gaia::ConnectionUnavailable == results.auth_error ||
+        gaia::Unknown == results.auth_error ||
+        gaia::ServiceUnavailable == results.auth_error;
     if (unavailable)
       return;
   }
@@ -262,10 +263,10 @@ void AuthWatcher::DoAuthenticate(const AuthRequest& request) {
 
   current_attempt_trigger_ = request.trigger;
 
-  SaveCredentials save = request.persist_creds_to_disk ?
-      PERSIST_TO_DISK : SAVE_IN_MEMORY_ONLY;
-  SignIn const signin = user_settings_->
-      RecallSigninType(request.email, GMAIL_SIGNIN);
+  gaia::SaveCredentials save = request.persist_creds_to_disk ?
+      gaia::PERSIST_TO_DISK : gaia::SAVE_IN_MEMORY_ONLY;
+  gaia::SignIn const signin = user_settings_->
+      RecallSigninType(request.email, gaia::GMAIL_SIGNIN);
 
   // We let the caller be lazy and try using the last captcha token seen by
   // the gaia authenticator if they haven't provided a token but have sent
@@ -329,11 +330,12 @@ void AuthWatcher::DoHandleServerConnectionEvent(
     // the auth failure should trigger UI indications that we're not logged in.
 
     // METRIC: If we get a SYNC_AUTH_ERROR, our token expired.
-    GaiaAuthenticator::AuthResults authresults = gaia_->results();
+    gaia::GaiaAuthenticator::AuthResults authresults = gaia_->results();
     AuthRequest request = { authresults.email, authresults.password,
                             authresults.auth_token, std::string(),
                             std::string(),
-                            PERSIST_TO_DISK == authresults.credentials_saved,
+                            gaia::PERSIST_TO_DISK ==
+                                authresults.credentials_saved,
                             AuthWatcherEvent::EXPIRED_CREDENTIALS };
     DoAuthenticate(request);
   }

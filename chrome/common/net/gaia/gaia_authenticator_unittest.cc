@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/engine/net/gaia_authenticator.h"
+#include "chrome/common/net/gaia/gaia_authenticator.h"
 
 #include <string>
 
-#include "chrome/browser/sync/engine/net/http_return.h"
+#include "chrome/common/net/http_return.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::string;
 
-namespace browser_sync {
+namespace gaia {
 
 class GaiaAuthenticatorTest : public testing::Test { };
 
@@ -45,4 +45,5 @@ TEST(GaiaAuthenticatorTest, TestNewlineAtEndOfAuthTokenRemoved) {
   EXPECT_EQ(0, results.auth_token.compare("body"));
 }
 
-}  // namespace browser_sync
+}  // namespace gaia
+

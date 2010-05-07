@@ -15,10 +15,10 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
-#include "chrome/browser/sync/engine/net/gaia_authenticator.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/util/sync_types.h"
 #include "chrome/common/deprecated/event_sys.h"
+#include "chrome/common/net/gaia/gaia_authenticator.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
 namespace notifier {
@@ -53,7 +53,7 @@ struct AuthWatcherEvent {
     ILLEGAL_VALUE,
   };
   WhatHappened what_happened;
-  const GaiaAuthenticator::AuthResults* auth_results;
+  const gaia::GaiaAuthenticator::AuthResults* auth_results;
   // use AuthWatcherEvent as its own traits type in hookups.
   typedef AuthWatcherEvent EventType;
   static inline bool IsChannelShutdownEvent(const AuthWatcherEvent& event) {
@@ -94,7 +94,7 @@ class AuthWatcher : public base::RefCountedThreadSafe<AuthWatcher> {
               const std::string& service_id,
               const std::string& gaia_url,
               UserSettings* user_settings,
-              GaiaAuthenticator* gaia_auth,
+              gaia::GaiaAuthenticator* gaia_auth,
               notifier::TalkMediator* talk_mediator);
   ~AuthWatcher();
 
@@ -205,7 +205,7 @@ class AuthWatcher : public base::RefCountedThreadSafe<AuthWatcher> {
       const ServerConnectionEvent& event,
       const std::string& auth_token_snapshot);
 
-  scoped_ptr<GaiaAuthenticator> const gaia_;
+  scoped_ptr<gaia::GaiaAuthenticator> const gaia_;
   syncable::DirectoryManager* const dirman_;
   ServerConnectionManager* const scm_;
   scoped_ptr<EventListenerHookup> connmgr_hookup_;

@@ -15,6 +15,11 @@
 #include "base/scoped_ptr.h"
 #include "chrome/common/deprecated/event_sys.h"
 
+namespace gaia {
+class GaiaAuthenticator;
+struct GaiaAuthEvent;
+}
+
 namespace notifier {
 class TalkMediator;
 struct TalkMediatorEvent;
@@ -23,14 +28,12 @@ struct TalkMediatorEvent;
 namespace browser_sync {
 
 class AuthWatcher;
-class GaiaAuthenticator;
 class ScopedStatusLockWithNotify;
 class ServerConnectionManager;
 class Syncer;
 class SyncerThread;
 struct AllStatusEvent;
 struct AuthWatcherEvent;
-struct GaiaAuthEvent;
 struct ServerConnectionEvent;
 struct SyncerEvent;
 
@@ -106,8 +109,8 @@ class AllStatus {
   // HandleAuthWatcherEventachieve have the same goal; use only one of the
   // following two. (The AuthWatcher is watched under Windows; the
   // GaiaAuthenticator is watched under Mac/Linux.)
-  void WatchAuthenticator(GaiaAuthenticator* gaia);
-  void HandleGaiaAuthEvent(const GaiaAuthEvent& event);
+  void WatchAuthenticator(gaia::GaiaAuthenticator* gaia);
+  void HandleGaiaAuthEvent(const gaia::GaiaAuthEvent& event);
 
   void WatchAuthWatcher(AuthWatcher* auth_watcher);
   void HandleAuthWatcherEvent(const AuthWatcherEvent& event);

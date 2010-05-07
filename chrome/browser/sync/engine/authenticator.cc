@@ -4,12 +4,12 @@
 
 #include "chrome/browser/sync/engine/authenticator.h"
 
-#include "chrome/browser/sync/engine/net/gaia_authenticator.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/util/user_settings.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
+#include "chrome/common/net/gaia/gaia_authenticator.h"
 
 namespace browser_sync {
 
@@ -33,12 +33,12 @@ Authenticator::AuthenticationResult Authenticator::Authenticate(
     string username, string password, bool save_credentials) {
   // TODO(sync): need to figure out if this routine is used anywhere other
   // than the test code.
-  GaiaAuthenticator auth_service("ChromiumBrowser", "chromiumsync",
+  gaia::GaiaAuthenticator auth_service("ChromiumBrowser", "chromiumsync",
       "https://www.google.com:443/accounts/ClientLogin");
   auth_service.set_message_loop(MessageLoop::current());
-  const SignIn signin_type =
-      settings_->RecallSigninType(username, GMAIL_SIGNIN);
-  if (!auth_service.Authenticate(username, password, SAVE_IN_MEMORY_ONLY,
+  const gaia::SignIn signin_type =
+    settings_->RecallSigninType(username, gaia::GMAIL_SIGNIN);
+  if (!auth_service.Authenticate(username, password, gaia::SAVE_IN_MEMORY_ONLY,
                                  signin_type)) {
     return UNSPECIFIC_ERROR_RETURN;
   }

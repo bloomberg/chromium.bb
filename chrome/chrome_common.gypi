@@ -306,6 +306,7 @@
       'type': '<(library)',
       'sources': [
         'common/net/dns.h',
+        'common/net/http_return.h',
         'common/net/net_resource_provider.cc',
         'common/net/net_resource_provider.h',
         'common/net/network_change_notifier_proxy.cc',
@@ -316,6 +317,9 @@
         'common/net/socket_stream.h',
         'common/net/url_request_intercept_job.cc',
         'common/net/url_request_intercept_job.h',
+        'common/net/gaia/gaia_authenticator.cc',
+        'common/net/gaia/gaia_authenticator.h',
+        'common/net/gaia/signin.h',
       ],
       'dependencies': [
         'chrome_resources',

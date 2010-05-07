@@ -4,8 +4,8 @@
 
 #include "chrome/browser/sync/engine/net/syncapi_server_connection_manager.h"
 
-#include "chrome/browser/sync/engine/net/http_return.h"
 #include "chrome/browser/sync/engine/syncapi.h"
+#include "chrome/common/net/http_return.h"
 
 using browser_sync::HttpResponse;
 using std::string;
@@ -50,7 +50,7 @@ bool SyncAPIBridgedPost::Init(const char* path, const string& auth_token,
       static_cast<int64>(http->GetResponseContentLength());
   if (response->response_code < 400)
     response->server_status = HttpResponse::SERVER_CONNECTION_OK;
-  else if (response->response_code == browser_sync::RC_UNAUTHORIZED)
+  else if (response->response_code == RC_UNAUTHORIZED)
     response->server_status = HttpResponse::SYNC_AUTH_ERROR;
   else
     response->server_status = HttpResponse::SYNC_SERVER_ERROR;

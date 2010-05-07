@@ -429,8 +429,8 @@ void UserSettings::SwitchUser(const string& username) {
   }
 }
 
-void UserSettings::RememberSigninType(const string& signin, SignIn signin_type)
-{
+void UserSettings::RememberSigninType(const string& signin,
+                                      gaia::SignIn signin_type) {
   ScopedDBHandle dbhandle(this);
     SQLStatement statement;
     statement.prepare(dbhandle.get(),
@@ -443,8 +443,8 @@ void UserSettings::RememberSigninType(const string& signin, SignIn signin_type)
     }
 }
 
-SignIn UserSettings::RecallSigninType(const string& signin, SignIn default_type)
-{
+gaia::SignIn UserSettings::RecallSigninType(const string& signin,
+                                            gaia::SignIn default_type) {
   ScopedDBHandle dbhandle(this);
   SQLStatement statement;
   statement.prepare(dbhandle.get(),
@@ -453,7 +453,7 @@ SignIn UserSettings::RecallSigninType(const string& signin, SignIn default_type)
   int query_result = statement.step();
   if (SQLITE_ROW == query_result) {
     int signin_type = statement.column_int(0);
-    return static_cast<SignIn>(signin_type);
+    return static_cast<gaia::SignIn>(signin_type);
   }
   return default_type;
 }

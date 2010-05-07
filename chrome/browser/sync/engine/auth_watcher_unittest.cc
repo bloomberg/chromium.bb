@@ -8,11 +8,11 @@
 #include "base/waitable_event.h"
 #include "chrome/browser/sync/engine/all_status.h"
 #include "chrome/browser/sync/engine/auth_watcher.h"
-#include "chrome/browser/sync/engine/net/gaia_authenticator.h"
-#include "chrome/browser/sync/engine/net/http_return.h"
 #include "chrome/browser/sync/util/user_settings.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
+#include "chrome/common/net/http_return.h"
 #include "chrome/common/net/notifier/listener/talk_mediator_impl.h"
+#include "chrome/common/net/gaia/gaia_authenticator.h"
 #include "chrome/test/sync/engine/mock_server_connection.h"
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,9 +34,9 @@ static const char* kValidAuthToken = "validAuthToken";
 
 namespace browser_sync {
 
-class GaiaAuthMockForAuthWatcher : public browser_sync::GaiaAuthenticator {
+class GaiaAuthMockForAuthWatcher : public gaia::GaiaAuthenticator {
  public:
-  GaiaAuthMockForAuthWatcher() : browser_sync::GaiaAuthenticator(
+  GaiaAuthMockForAuthWatcher() : GaiaAuthenticator(
       kTestUserAgent, kTestServiceId, kTestGaiaURL),
       use_bad_auth_token_(false) {}
   virtual ~GaiaAuthMockForAuthWatcher() {}
@@ -55,7 +55,7 @@ class GaiaAuthMockForAuthWatcher : public browser_sync::GaiaAuthenticator {
  protected:
   bool PerformGaiaRequest(const AuthParams& params, AuthResults* results) {
     if (params.password == kWrongPassword) {
-      results->auth_error = browser_sync::BadAuthentication;
+      results->auth_error = gaia::BadAuthentication;
       return false;
     }
     if (params.password == kCorrectPassword) {
@@ -71,7 +71,7 @@ class GaiaAuthMockForAuthWatcher : public browser_sync::GaiaAuthenticator {
   }
 
   bool LookupEmail(AuthResults* results) {
-    results->signin = GMAIL_SIGNIN;
+    results->signin = gaia::GMAIL_SIGNIN;
     return true;
   }
 

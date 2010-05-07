@@ -42,7 +42,6 @@
 #include "chrome/browser/sync/engine/auth_watcher.h"
 #include "chrome/browser/sync/engine/change_reorder_buffer.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
-#include "chrome/browser/sync/engine/net/gaia_authenticator.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/net/syncapi_server_connection_manager.h"
 #include "chrome/browser/sync/engine/syncer.h"
@@ -63,6 +62,7 @@
 #include "chrome/browser/sync/util/user_settings.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/deprecated/event_sys.h"
+#include "chrome/common/net/gaia/gaia_authenticator.h"
 #include "chrome/common/net/notifier/listener/notification_constants.h"
 #include "chrome/common/net/notifier/listener/talk_mediator.h"
 #include "chrome/common/net/notifier/listener/talk_mediator_impl.h"
@@ -940,7 +940,7 @@ syncable::BaseTransaction* WriteTransaction::GetWrappedTrans() const {
 }
 
 // A GaiaAuthenticator that uses HttpPostProviders instead of CURL.
-class BridgedGaiaAuthenticator : public browser_sync::GaiaAuthenticator {
+class BridgedGaiaAuthenticator : public gaia::GaiaAuthenticator {
  public:
   BridgedGaiaAuthenticator(const string& user_agent, const string& service_id,
                            const string& gaia_url,
@@ -1424,7 +1424,7 @@ bool SyncManager::SyncInternal::Init(
   // Watch various objects for aggregated status.
   allstatus()->WatchConnectionManager(connection_manager());
 
-  std::string gaia_url = browser_sync::kGaiaUrl;
+  std::string gaia_url = gaia::kGaiaUrl;
   const char* service_id = gaia_service_id ?
       gaia_service_id : SYNC_SERVICE_NAME;
 
@@ -1961,7 +1961,7 @@ void SyncManager::SyncInternal::HandleAuthWatcherEvent(
       return;
     // Authentication failures translate to GoogleServiceAuthError events.
     case AuthWatcherEvent::GAIA_AUTH_FAILED:     // Invalid GAIA credentials.
-      if (event.auth_results->auth_error == browser_sync::CaptchaRequired) {
+      if (event.auth_results->auth_error == gaia::CaptchaRequired) {
         auth_problem_ = AuthError::CAPTCHA_REQUIRED;
         std::string url_string("https://www.google.com/accounts/");
         url_string += event.auth_results->captcha_url;
@@ -1971,7 +1971,7 @@ void SyncManager::SyncInternal::HandleAuthWatcherEvent(
             GURL(event.auth_results->auth_error_url)));
         return;
       } else if (event.auth_results->auth_error ==
-                 browser_sync::ConnectionUnavailable) {
+                 gaia::ConnectionUnavailable) {
         auth_problem_ = AuthError::CONNECTION_FAILED;
       } else {
         auth_problem_ = AuthError::INVALID_GAIA_CREDENTIALS;

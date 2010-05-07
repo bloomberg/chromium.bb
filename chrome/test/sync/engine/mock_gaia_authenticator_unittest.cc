@@ -6,8 +6,8 @@
 
 #include "base/basictypes.h"
 #include "base/port.h"
-#include "chrome/browser/sync/engine/net/gaia_authenticator.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
+#include "chrome/common/net/gaia/gaia_authenticator.h"
 #include "chrome/test/sync/engine/mock_gaia_authenticator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,7 +26,7 @@ TEST(MockGaiaAuthenticatorTest, TestAuthenticationSuccess) {
   mock_user.auth_token = "SomeAuthToken";
   mock_user.lsid = "SomeLSID";
   mock_user.sid = "SomeSID";
-  mock_user.auth_error = browser_sync::None;
+  mock_user.auth_error = gaia::None;
   mock_gaia_auth.AddMockUser(mock_user);
 
   // Assert away ...
@@ -63,7 +63,7 @@ TEST(MockGaiaAuthenticatorTest, TestRemoveMockUser) {
 
   // Add our mock user
   mock_gaia_auth.AddMockUser("test", "passwd", "SomeAuthToken", "SomeLSID",
-      "SomeSID", browser_sync::None);
+      "SomeSID", gaia::None);
 
   // Make sure authentication succeeds.
   ASSERT_TRUE(mock_gaia_auth.Authenticate("test", "passwd"));
@@ -90,7 +90,7 @@ TEST(MockGaiaAuthenticatorTest, TestRemoveAllMockUsers) {
 
   // Add our sample mock user.
   mock_gaia_auth.AddMockUser("test", "passwd", "SomeAuthToken", "SomeLSID",
-      "SomeSID", browser_sync::None);
+      "SomeSID", gaia::None);
 
   // Make sure authentication succeeds
   ASSERT_TRUE(mock_gaia_auth.Authenticate("test", "passwd"));
@@ -117,7 +117,7 @@ TEST(MockGaiaAuthenticatorTest, TestSavedCredentials) {
 
   // Add our sample mock user.
   mock_gaia_auth.AddMockUser("test", "passwd", "SomeAuthToken", "SomeLSID",
-      "SomeSID", browser_sync::None);
+      "SomeSID", gaia::None);
 
   // Ask to save credentials.
   ASSERT_TRUE(mock_gaia_auth.Authenticate("test", "passwd", true));
