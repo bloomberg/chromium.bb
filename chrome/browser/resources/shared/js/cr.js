@@ -38,6 +38,31 @@ const cr = (function() {
     return cur;
   };
 
+  // cr.Event is called CrEvent in here to prevent naming conflicts. We also
+  // store the original Event in case someone does a global alias of cr.Event.
+  const DomEvent = Event;
+
+  /**
+   * Creates a new event to be used with cr.EventTarget or DOM EventTarget
+   * objects.
+   * @param {string} type The name of the event.
+   * @param {boolean=} opt_bubbles Whether the event bubbles. Default is false.
+   * @param {boolean=} opt_preventable Whether the default action of the event
+   *     can be prevented.
+   * @constructor
+   * @extends {DomEvent}
+   */
+  function CrEvent(type, opt_bubbles, opt_preventable) {
+    var e = cr.doc.createEvent('Event');
+    e.initEvent(type, !!opt_bubbles, !!opt_preventable);
+    e.__proto__ = CrEvent.prototype;
+    return e;
+  }
+
+  CrEvent.prototype = {
+    __proto__: DomEvent.prototype
+  };
+
   /**
    * Fires a property change event on the target.
    * @param {EventTarget} target The target to dispatch the event on.
@@ -46,8 +71,7 @@ const cr = (function() {
    * @param {*} oldValue The old value for the property.
    */
   function dispatchPropertyChange(target, propertyName, newValue, oldValue) {
-    // TODO(arv): Depending on cr.Event here is a bit ugly.
-    var e = new cr.Event(propertyName + 'Change');
+    var e = new CrEvent(propertyName + 'Change');
     e.propertyName = propertyName;
     e.newValue = newValue;
     e.oldValue = oldValue;
@@ -309,6 +333,7 @@ const cr = (function() {
     get doc() {
       return doc;
     },
-    withDoc: withDoc
+    withDoc: withDoc,
+    Event: CrEvent
   };
 })();

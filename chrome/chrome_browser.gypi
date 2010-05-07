@@ -3264,7 +3264,6 @@
         {
           'destination': '<(PRODUCT_DIR)/resources/shared/js/cr',
           'files': [
-            'browser/resources/shared/js/cr/event.js',
             'browser/resources/shared/js/cr/event_target.js',
             'browser/resources/shared/js/cr/link_controller.js',
             'browser/resources/shared/js/cr/promise.js',

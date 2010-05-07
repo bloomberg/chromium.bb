@@ -5,8 +5,7 @@
      tests -->
 <script src="http://closure-library.googlecode.com/svn/trunk/closure/goog/base.js"></script>
 <script src="../cr.js"></script>
-<script src="event.js"></script>
-<script src="eventtarget.js"></script>
+<script src="event_target.js"></script>
 <script>
 
 goog.require('goog.testing.jsunit');
@@ -20,7 +19,6 @@ const EventTarget = cr.EventTarget;
 const Event = cr.Event;
 
 function testFunctionListener() {
-  debugger;
   var fi = 0;
   function f(e) {
     fi++;
