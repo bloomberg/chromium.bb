@@ -83,6 +83,9 @@ class InfoBubbleContentsView : public views::View,
   // Should be called when the bubble that contains us is shown.
   void BubbleShown();
 
+  // Returns the TabContents displaying the contents for this bubble.
+  TabContents* GetBubbleTabContents();
+
   // views::View override:
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
@@ -91,6 +94,9 @@ class InfoBubbleContentsView : public views::View,
                                     views::View* child);
 
   // LocationBarView::Delegate implementation:
+
+  // WARNING: this is not the TabContents of the bubble!  Use
+  // GetBubbleTabContents() to get the bubble's TabContents.
   virtual TabContents* GetTabContents();
   virtual void OnInputInProgress(bool in_progress) {}
 
@@ -150,6 +156,10 @@ void InfoBubbleContentsView::ComputePreferredSize(
 
 void InfoBubbleContentsView::BubbleShown() {
   location_bar_->RequestFocus();
+}
+
+TabContents* InfoBubbleContentsView::GetBubbleTabContents() {
+  return dom_view_->tab_contents();
 }
 
 void InfoBubbleContentsView::ViewHierarchyChanged(
@@ -323,7 +333,7 @@ void AppLauncher::InfoBubbleClosing(InfoBubble* info_bubble,
   // Remove ourself as a delegate as on GTK the Widget destruction is
   // asynchronous and will happen after the AppLauncher has been deleted (and it
   // might notify us after we have been deleted).
-  info_bubble_content_->GetTabContents()->set_delegate(NULL);
+  info_bubble_content_->GetBubbleTabContents()->set_delegate(NULL);
   MessageLoop::current()->PostTask(FROM_HERE,
                                    new DeleteTask<AppLauncher>(this));
 }
