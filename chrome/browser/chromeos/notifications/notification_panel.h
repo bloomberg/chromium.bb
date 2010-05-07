@@ -91,6 +91,7 @@ class NotificationPanel : public PanelController::Delegate,
   virtual void Add(Balloon* balloon);
   virtual bool Update(Balloon* balloon);
   virtual void Remove(Balloon* balloon);
+  virtual void Show(Balloon* balloon);
   virtual void ResizeNotification(Balloon* balloon,
                                   const gfx::Size& size);
   virtual void SetActiveView(BalloonViewImpl* view);
@@ -150,11 +151,6 @@ class NotificationPanel : public PanelController::Delegate,
 
   // Mark the given notification as stale.
   void MarkStale(const Notification& notification);
-
-  // True if the panel is visible.
-  bool is_visible() {
-    return state_ != CLOSED && state_ != MINIMIZED;
-  }
 
   // Contains all notifications. This is owned by the panel so that we can
   // re-attach to the widget when closing and opening the panel.

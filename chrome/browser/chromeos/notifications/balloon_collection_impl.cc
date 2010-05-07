@@ -83,13 +83,25 @@ void BalloonCollectionImpl::AddSystemNotification(
 bool BalloonCollectionImpl::UpdateNotification(
     const Notification& notification) {
   Balloons::iterator iter = FindBalloon(notification);
-  if (iter != balloons_.end()) {
-    Balloon* balloon = *iter;
-    balloon->Update(notification);
-    notification_ui_->Update(balloon);
-    return true;
-  }
-  return false;
+  if (iter == balloons_.end())
+    return false;
+  Balloon* balloon = *iter;
+  balloon->Update(notification);
+  notification_ui_->Update(balloon);
+  return true;
+}
+
+bool BalloonCollectionImpl::UpdateAndShowNotification(
+    const Notification& notification) {
+  Balloons::iterator iter = FindBalloon(notification);
+  if (iter == balloons_.end())
+    return false;
+  Balloon* balloon = *iter;
+  balloon->Update(notification);
+  bool updated = notification_ui_->Update(balloon);
+  DCHECK(updated);
+  notification_ui_->Show(balloon);
+  return true;
 }
 
 bool BalloonCollectionImpl::Remove(const Notification& notification) {

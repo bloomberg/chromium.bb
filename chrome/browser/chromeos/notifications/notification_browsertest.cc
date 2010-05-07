@@ -239,6 +239,13 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestSystemNotification) {
 
   EXPECT_EQ(1, tester->GetStickyNotificationCount());
 
+  Notification update_and_show = SystemNotificationFactory::Create(
+      GURL(), ASCIIToUTF16("Title"), ASCIIToUTF16("updated and shown"),
+      delegate.get());
+  collection->UpdateAndShowNotification(update_and_show);
+
+  EXPECT_EQ(1, tester->GetStickyNotificationCount());
+
   // Dismiss the notification.
   // TODO(oshima): Consider updating API to Remove(NotificationDelegate)
   // or Remove(std::string id);
@@ -440,24 +447,45 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestScrollBalloonToVisible) {
       EXPECT_TRUE(tester->IsVisible(view));
     }
   }
-  // updated notification must be also visible
+  // Update should not change the visibility
   for (int i = 0; i < create_count; i++) {
     {
       SCOPED_TRACE(StringPrintf("update n%d", i));
-      std::string id = StringPrintf("n%d", i);
-      EXPECT_TRUE(collection->UpdateNotification(NewMockNotification(id)));
+      Notification notify = NewMockNotification(StringPrintf("n%d", i));
+      // The last shown notification is sticky, which makes all non sticky
+      // invisible.
+      EXPECT_TRUE(collection->UpdateNotification(notify));
       ui_test_utils::RunAllPendingInMessageLoop();
-      BalloonViewImpl* view =
-          tester->GetBalloonView(collection, NewMockNotification(id));
-      EXPECT_TRUE(tester->IsVisible(view));
+      BalloonViewImpl* view = tester->GetBalloonView(collection, notify);
+      EXPECT_FALSE(tester->IsVisible(view));
     }
     {
       SCOPED_TRACE(StringPrintf("update s%d", i));
-      std::string id = StringPrintf("s%d", i);
-      EXPECT_TRUE(collection->UpdateNotification(NewMockNotification(id)));
+      Notification notify = NewMockNotification(StringPrintf("s%d", i));
+      BalloonViewImpl* view = tester->GetBalloonView(collection, notify);
+      bool currently_visible = tester->IsVisible(view);
+      EXPECT_TRUE(collection->UpdateNotification(notify));
       ui_test_utils::RunAllPendingInMessageLoop();
-      BalloonViewImpl* view =
-          tester->GetBalloonView(collection, NewMockNotification(id));
+      EXPECT_EQ(view, tester->GetBalloonView(collection, notify));
+      EXPECT_EQ(currently_visible, tester->IsVisible(view));
+    }
+  }
+  // UpdateAndShowNotification makes notification visible
+  for (int i = 0; i < create_count; i++) {
+    {
+      SCOPED_TRACE(StringPrintf("update and show n%d", i));
+      Notification notify = NewMockNotification(StringPrintf("n%d", i));
+      EXPECT_TRUE(collection->UpdateAndShowNotification(notify));
+      ui_test_utils::RunAllPendingInMessageLoop();
+      BalloonViewImpl* view = tester->GetBalloonView(collection, notify);
+      EXPECT_TRUE(tester->IsVisible(view));
+    }
+    {
+      SCOPED_TRACE(StringPrintf("update and show s%d", i));
+      Notification notify = NewMockNotification(StringPrintf("s%d", i));
+      EXPECT_TRUE(collection->UpdateAndShowNotification(notify));
+      ui_test_utils::RunAllPendingInMessageLoop();
+      BalloonViewImpl* view = tester->GetBalloonView(collection, notify);
       EXPECT_TRUE(tester->IsVisible(view));
     }
   }

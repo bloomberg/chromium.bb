@@ -36,10 +36,11 @@ class BalloonCollectionImpl : public BalloonCollection,
     NotificationUI() {}
     virtual ~NotificationUI() {}
 
-    // Add, remove and resize the balloon.
+    // Add, remove, resize and show the balloon.
     virtual void Add(Balloon* balloon) = 0;
     virtual bool Update(Balloon* balloon) = 0;
     virtual void Remove(Balloon* balloon) = 0;
+    virtual void Show(Balloon* balloon) = 0;
 
     // Resize notification from webkit.
     virtual void ResizeNotification(Balloon* balloon,
@@ -76,11 +77,17 @@ class BalloonCollectionImpl : public BalloonCollection,
   void AddSystemNotification(const Notification& notification,
                              Profile* profile, bool sticky, bool controls);
 
-  // Update the notification's content. It uses
+  // Updates the notification's content. It uses
   // NotificationDelegate::id() to check the equality of notifications.
   // Returns true if the notification has been updated. False if
-  // no corresponding notification is found.
+  // no corresponding notification is found. This will not change the
+  // visibility of the notification.
   bool UpdateNotification(const Notification& notification);
+
+  // Updates and shows the notification. It will open the notification panel
+  // if it's closed or minimized, and scroll the viewport so that
+  // the updated notification is visible.
+  bool UpdateAndShowNotification(const Notification& notification);
 
   // Injects notification ui. Used to inject a mock implementation in tests.
   void set_notification_ui(NotificationUI* ui) {

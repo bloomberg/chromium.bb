@@ -502,23 +502,11 @@ void NotificationPanel::Add(Balloon* balloon) {
   UpdatePanel(false);
   UpdateControl();
   StartStaleTimer(balloon);
-  if (is_visible())
-      scroll_to_ = balloon;
+  scroll_to_ = balloon;
 }
 
 bool NotificationPanel::Update(Balloon* balloon) {
-  if (balloon_container_->Update(balloon)) {
-    if (state_ == CLOSED || state_ == MINIMIZED)
-      SET_STATE(STICKY_AND_NEW);
-    Show();
-    UpdatePanel(true);
-    StartStaleTimer(balloon);
-    if (is_visible())
-      ScrollBalloonToVisible(balloon);
-    return true;
-  } else {
-    return false;
-  }
+  return balloon_container_->Update(balloon);
 }
 
 void NotificationPanel::Remove(Balloon* balloon) {
@@ -543,6 +531,15 @@ void NotificationPanel::Remove(Balloon* balloon) {
     UpdatePanel(true);
   }
   UpdateControl();
+}
+
+void NotificationPanel::Show(Balloon* balloon) {
+  if (state_ == CLOSED || state_ == MINIMIZED)
+    SET_STATE(STICKY_AND_NEW);
+  Show();
+  UpdatePanel(true);
+  StartStaleTimer(balloon);
+  ScrollBalloonToVisible(balloon);
 }
 
 void NotificationPanel::ResizeNotification(
