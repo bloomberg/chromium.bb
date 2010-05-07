@@ -20,8 +20,6 @@ namespace {
 class AccessibilityWinBrowserTest : public InProcessBrowserTest {
  public:
   void SetUpCommandLine(CommandLine* command_line) {
-    // Turns on the accessibility in the renderer.  Off by default until
-    // http://b/issue?id=1432077 is fixed.
     command_line->AppendSwitch(switches::kEnableRendererAccessibility);
   }
 

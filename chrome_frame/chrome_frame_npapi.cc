@@ -1399,7 +1399,8 @@ NPObject* ChromeFrameNPAPI::GetWindowObject() const {
 bool ChromeFrameNPAPI::GetBrowserIncognitoMode() {
   bool incognito_mode = false;
 
-  // Check disabled for Opera due to bug: http://b/issue?id=1815494
+  // Check disabled for Opera due to bug:
+  // http://code.google.com/p/chromium/issues/detail?id=24287
   if (GetBrowserType() != BROWSER_OPERA) {
     // Check whether host browser is in private mode;
     NPBool private_mode = FALSE;

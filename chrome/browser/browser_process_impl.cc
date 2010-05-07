@@ -253,7 +253,7 @@ void BrowserProcessImpl::EndSession() {
 
 printing::PrintJobManager* BrowserProcessImpl::print_job_manager() {
   // TODO(abarth): DCHECK(CalledOnValidThread());
-  //               See <http://b/1287209>.
+  // http://code.google.com/p/chromium/issues/detail?id=6828
   // print_job_manager_ is initialized in the constructor and destroyed in the
   // destructor, so it should always be valid.
   DCHECK(print_job_manager_.get());

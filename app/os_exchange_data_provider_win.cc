@@ -303,7 +303,8 @@ void OSExchangeDataProviderWin::SetURL(const GURL& url,
   data_->contents_.push_back(new DataObjectImpl::StoredDataInfo(
       ClipboardUtil::GetUrlFormat()->cfFormat, storage));
 
-  // TODO(beng): (http://b/1085501) add CF_HTML...
+  // TODO(beng): add CF_HTML.
+  // http://code.google.com/p/chromium/issues/detail?id=6767
 
   // Also add text representations (these should be last since they're the
   // least preferable).

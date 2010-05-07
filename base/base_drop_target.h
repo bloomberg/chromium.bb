@@ -28,9 +28,6 @@ class BaseDropTarget : public IDropTarget {
 
   // When suspended is set to |true|, the drop target does not receive drops
   // from drags initiated within the owning HWND.
-  // TODO(beng): (http://b/1085385) figure out how we will handle legitimate
-  //             drag-drop operations within the same HWND, such as dragging
-  //             selected text to an edit field.
   bool suspended() const { return suspended_; }
   void set_suspended(bool suspended) { suspended_ = suspended; }
 

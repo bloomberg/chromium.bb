@@ -19,8 +19,9 @@ class AutocompleteEditController;
 class AutocompleteEditModel;
 class AutocompleteEditView;
 
-// TODO(pkasting): http://b/1343512  The names and contents of the classes in
+// TODO(pkasting): The names and contents of the classes in
 // this file are temporary.  I am in hack-and-slash mode right now.
+// http://code.google.com/p/chromium/issues/detail?id=6772
 
 // Embedders of an AutocompleteEdit widget must implement this class.
 class AutocompleteEditController {

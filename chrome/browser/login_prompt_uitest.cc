@@ -110,10 +110,6 @@ TEST_F(LoginPromptTest, TestTwoAuths) {
   ASSERT_TRUE(
       digest_tab->NavigateToURL(server->TestServerPage("auth-digest")));
 
-  // TODO(devint): http://b/1158262 basic_tab is not active, so this logs in to
-  // a page whose tab isn't active, which isn't actually possible for the user
-  // to do. I had a fix for this, but I'm reverting it to see if it makes the
-  // test less flaky.
   EXPECT_TRUE(basic_tab->NeedsAuth());
   EXPECT_TRUE(basic_tab->SetAuth(username_basic_, password_));
   EXPECT_TRUE(digest_tab->NeedsAuth());

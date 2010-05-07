@@ -14,7 +14,8 @@ namespace {
 
 void GetCursorPositions(HWND hwnd, gfx::Point* client, gfx::Point* screen) {
   // GetCursorPos will fail if the input desktop isn't the current desktop.
-  // See http://b/1173534. (0,0) is wrong, but better than uninitialized.
+  // (0,0) is wrong, but better than uninitialized.
+  // We should clean up all callers to handle failure -- http://b/1208177 .
   POINT pos;
   if (!GetCursorPos(&pos)) {
     pos.x = 0;
