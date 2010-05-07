@@ -176,6 +176,12 @@ void DatabaseDispatcherHost::DatabaseOpenFile(const string16& vfs_file_name,
       }
   }
 
+#if defined(OS_POSIX)
+  if (target_dir_handle >= 0)
+    close(target_dir_handle);
+  target_dir_handle = -1;
+#endif
+
   ViewHostMsg_DatabaseOpenFile::WriteReplyParams(
       reply_msg,
 #if defined(OS_WIN)
