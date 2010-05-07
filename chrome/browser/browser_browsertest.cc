@@ -47,6 +47,8 @@ const std::wstring OPEN_NEW_BEFOREUNLOAD_PAGE =
 const FilePath::CharType* kTitle1File = FILE_PATH_LITERAL("title1.html");
 const FilePath::CharType* kTitle2File = FILE_PATH_LITERAL("title2.html");
 
+const wchar_t kDocRoot[] = L"chrome/test/data";
+
 // Given a page title, returns the expected window caption string.
 std::wstring WindowCaptionFromPageTitle(std::wstring page_title) {
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)
@@ -310,27 +312,19 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RenderIdleTime) {
 // TODO(pinkerton): Disable app-mode in the model until we implement it
 // on the Mac. http://crbug.com/13148
 #if !defined(OS_MACOSX)
-// Disabled, flakily exceeds test timeout. See http://crbug.com/43434.
-IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_CommandCreateAppShortcut) {
-  static const wchar_t kDocRoot[] = L"chrome/test/data";
-  static const FilePath::CharType* kEmptyFile = FILE_PATH_LITERAL("empty.html");
-
+IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutFile) {
   CommandUpdater* command_updater = browser()->command_updater();
 
-  // Urls that are okay to have shortcuts.
+  static const FilePath::CharType* kEmptyFile = FILE_PATH_LITERAL("empty.html");
   GURL file_url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
                                           FilePath(kEmptyFile)));
   ASSERT_TRUE(file_url.SchemeIs(chrome::kFileScheme));
   ui_test_utils::NavigateToURL(browser(), file_url);
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
+}
 
-  scoped_refptr<FTPTestServer> ftp_server(
-        FTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != ftp_server.get());
-  GURL ftp_url(ftp_server->TestServerPage(""));
-  ASSERT_TRUE(ftp_url.SchemeIs(chrome::kFtpScheme));
-  ui_test_utils::NavigateToURL(browser(), ftp_url);
-  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
+IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutHttp) {
+  CommandUpdater* command_updater = browser()->command_updater();
 
   scoped_refptr<HTTPTestServer> http_server(
         HTTPTestServer::CreateServer(kDocRoot, NULL));
@@ -339,6 +333,10 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_CommandCreateAppShortcut) {
   ASSERT_TRUE(http_url.SchemeIs(chrome::kHttpScheme));
   ui_test_utils::NavigateToURL(browser(), http_url);
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutHttps) {
+  CommandUpdater* command_updater = browser()->command_updater();
 
   scoped_refptr<HTTPSTestServer> https_server(
         HTTPSTestServer::CreateGoodServer(kDocRoot));
@@ -347,6 +345,22 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_CommandCreateAppShortcut) {
   ASSERT_TRUE(https_url.SchemeIs(chrome::kHttpsScheme));
   ui_test_utils::NavigateToURL(browser(), https_url);
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutFtp) {
+  CommandUpdater* command_updater = browser()->command_updater();
+
+  scoped_refptr<FTPTestServer> ftp_server(
+        FTPTestServer::CreateServer(kDocRoot));
+  ASSERT_TRUE(NULL != ftp_server.get());
+  GURL ftp_url(ftp_server->TestServerPage(""));
+  ASSERT_TRUE(ftp_url.SchemeIs(chrome::kFtpScheme));
+  ui_test_utils::NavigateToURL(browser(), ftp_url);
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutInvalid) {
+  CommandUpdater* command_updater = browser()->command_updater();
 
   // Urls that should not have shortcuts.
   GURL new_tab_url(chrome::kChromeUINewTabURL);
