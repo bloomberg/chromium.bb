@@ -20,8 +20,6 @@ const char kPreloadEnginesConfigName[] = "preload_engines";
 const char kNextEngineConfigName[] = "next_engine";
 const char kTriggerConfigName[] = "trigger";
 
-// TODO(yusukes): We'll add more "next engine" hot-keys like "Zenkaku_Hankaku"
-// (Japanese keyboard specific).
 const wchar_t kHotkeyNextEngine[] = L"Shift+Alt_L,Alt+Shift_L,Alt+grave";
 const wchar_t kHotkeyTrigger[] = L"";  // We don't allow users to disable IBus.
 
