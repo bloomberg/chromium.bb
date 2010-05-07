@@ -34,13 +34,6 @@ const CGFloat kBookmarkBarFolderScrollWheelAmount =
     1 * (bookmarks::kBookmarkButtonHeight +
          bookmarks::kBookmarkVerticalPadding);
 
-// Our NSScrollView is supposed to be just barely big enough to fit its
-// contentView.  It is actually a hair too small.
-// This turns on horizontal scrolling which, although slight, is awkward.
-// Make sure our window (and NSScrollView) are wider than its documentView
-// by at least this much.
-const CGFloat kScrollViewContentWidthMargin = 2;
-
 // When constraining a scrolling bookmark bar folder window to the
 // screen, shrink the "constrain" by this much vertically.  Currently
 // this is 0.0 to avoid a problem with tracking areas leaving the
@@ -61,6 +54,11 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
 // maximum allowable button width, whichever is less) and resize all buttons.
 // Return the new width (so that the window can be adjusted, if necessary).
 - (CGFloat)adjustButtonWidths;
+
+// Adjust the height and horizontal position of the window such that the
+// scroll arrows are shown as needed and the window appears completely
+// on screen.
+- (void)adjustWindowForHeight:(int)windowHeight;
 
 // Show or hide the scroll arrows at the top/bottom of the window.
 - (void)showOrHideScrollArrows;
@@ -119,8 +117,6 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
     verticalScrollArrowHeight_ = [image size].height;
     [self configureWindow];
     hoverState_.reset([[BookmarkBarFolderHoverState alloc] init]);
-    if (scrollable_)
-      [self addOrUpdateScrollTracking];
   }
   return self;
 }
@@ -286,6 +282,60 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   [[self window] setLevel:NSPopUpMenuWindowLevel];
 }
 
+- (void)adjustWindowForHeight:(int)windowHeight {
+  // Adjust all button widths to be consistent, determine the best size for
+  // the window, and set the window frame.
+  CGFloat windowWidth =
+      [self adjustButtonWidths] + (2 * bookmarks::kBookmarkVerticalPadding) +
+      bookmarks::kScrollViewContentWidthMargin;
+  NSPoint newWindowTopLeft = [self windowTopLeft];
+  NSRect windowFrame = NSMakeRect(newWindowTopLeft.x,
+                                  newWindowTopLeft.y - windowHeight,
+                                  windowWidth,
+                                  windowHeight);
+
+  // Make the window fit on screen, with a distance of at least |padding| from
+  // the sides.
+  DCHECK([[self window] screen]);
+  NSRect screenFrame = [[[self window] screen] frame];
+  if (NSMaxX(windowFrame) + bookmarks::kBookmarkHorizontalScreenPadding >
+      NSMaxX(screenFrame))
+    windowFrame.origin.x -= NSMaxX(windowFrame) +
+        bookmarks::kBookmarkHorizontalScreenPadding - NSMaxX(screenFrame);
+  // No 'else' to provide preference for the left side of the menu
+  // being visible if neither one fits.  Wish I had an "bool isL2R()"
+  // function right here.
+  if (NSMinX(windowFrame) - bookmarks::kBookmarkHorizontalScreenPadding <
+      NSMinX(screenFrame))
+    windowFrame.origin.x += NSMinX(screenFrame) - NSMinX(windowFrame) +
+        bookmarks::kBookmarkHorizontalScreenPadding;
+
+  // Make the scrolled content be the right size (full size).
+  NSRect mainViewFrame = NSMakeRect(0, 0,
+                                    NSWidth(windowFrame) -
+                                    bookmarks::kScrollViewContentWidthMargin,
+                                    NSHeight(windowFrame));
+  [mainView_ setFrame:mainViewFrame];
+
+  // Make sure the window fits on the screen.  If not, constrain.
+  // We'll scroll to allow the user to see all the content.
+  screenFrame = NSInsetRect(screenFrame, 0, kScrollWindowVerticalMargin);
+  if (!NSContainsRect(screenFrame, windowFrame)) {
+    scrollable_ = YES;
+    windowFrame = NSIntersectionRect(screenFrame, windowFrame);
+  } else {
+    scrollable_ = NO;
+  }
+  [[self window] setFrame:windowFrame display:YES];
+  // If scrollable then offset the view and show the arrows.
+  if (scrollable_) {
+    [mainView_ scrollPoint:NSMakePoint(0, (NSHeight(mainViewFrame) -
+                                           NSHeight(windowFrame)))];
+    [self showOrHideScrollArrows];
+    [self addOrUpdateScrollTracking];
+  }
+}
+
 // Determine window size and position.
 // Create buttons for all our nodes.
 // TODO(jrg): break up into more and smaller routines for easier unit testing.
@@ -335,53 +385,7 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
     }
   }
 
-  // Now that all buttons have been installed, adjust their sizes to be
-  // consistent, determine the best size for the window, and set the window.
-  CGFloat width =
-      [self adjustButtonWidths] + (2 * bookmarks::kBookmarkVerticalPadding);
-  NSRect windowFrame = NSMakeRect(newWindowTopLeft.x,
-                                  newWindowTopLeft.y - height,
-                                  width + kScrollViewContentWidthMargin,
-                                  height);
-
-  // Make the window fit on screen, with a distance of at least |padding| from
-  // the sides.
-  DCHECK([[self window] screen]);
-  NSRect screenFrame = [[[self window] screen] frame];
-  const CGFloat padding = 8;
-  if (NSMaxX(windowFrame) + padding > NSMaxX(screenFrame))
-    windowFrame.origin.x -= NSMaxX(windowFrame) + padding - NSMaxX(screenFrame);
-  // No 'else' to provide preference for the left side of the menu
-  // being visible if neither one fits.  Wish I had an "bool isL2R()"
-  // function right here.
-  if (NSMinX(windowFrame) - padding < NSMinX(screenFrame))
-    windowFrame.origin.x += NSMinX(screenFrame) - NSMinX(windowFrame) + padding;
-
-  // Make the scrolled content be the right size (full size).
-  NSRect mainViewFrame = NSMakeRect(0, 0,
-                                    NSWidth(windowFrame) -
-                                        kScrollViewContentWidthMargin,
-                                    NSHeight(windowFrame));
-  [mainView_ setFrame:mainViewFrame];
-
-  // Make sure the window fits on the screen.  If not, constrain.
-  // We'll scroll to allow the user to see all the content.
-  screenFrame = NSInsetRect(screenFrame, 0, kScrollWindowVerticalMargin);
-  if (!NSContainsRect(screenFrame, windowFrame)) {
-    scrollable_ = YES;
-    windowFrame = NSIntersectionRect(screenFrame, windowFrame);
-  }
-  [[self window] setFrame:windowFrame display:YES];
-  if (scrollable_) {
-    [mainView_ scrollPoint:NSMakePoint(0, (NSHeight(mainViewFrame) -
-                                           NSHeight(windowFrame)))];
-  }
-
-  // If scrollable, show the arrows.
-  if (scrollable_) {
-    [self showOrHideScrollArrows];
-  }
-
+  [self adjustWindowForHeight:height];
   // Finally pop me up.
   [self configureWindowLevel];
 }
@@ -397,10 +401,9 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
 
 // TODO(mrossetti): See if the following can be moved into view's viewWillDraw:.
 - (CGFloat)adjustButtonWidths {
-  CGFloat width = 0.0;
-  for (BookmarkButton* button in buttons_.get()) {
-    width = std::max(width, NSWidth([button bounds]));
-  }
+  CGFloat width = bookmarks::kBookmarkMenuButtonMinimumWidth;
+  for (BookmarkButton* button in buttons_.get())
+    width = std::max(width, [[button cell] cellSize].width);
   width = std::min(width, bookmarks::kBookmarkMenuButtonMaximumWidth);
   // Things look and feel more menu-like if all the buttons are the
   // full width of the window, especially if there are submenus.
@@ -487,21 +490,37 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   }
 }
 
+- (BOOL)scrollable {
+  return scrollable_;
+}
+
 #pragma mark BookmarkButtonControllerProtocol
 
 - (void)addButtonForNode:(const BookmarkNode*)node
                  atIndex:(NSInteger)buttonIndex {
+  NSRect buttonFrame = NSMakeRect(bookmarks::kBookmarkHorizontalPadding,
+      bookmarks::kBookmarkVerticalPadding,
+      NSWidth([mainView_ frame]) - 2 * bookmarks::kBookmarkHorizontalPadding -
+      bookmarks::kScrollViewContentWidthMargin,
+      bookmarks::kBookmarkBarHeight - 2 * bookmarks::kBookmarkVerticalPadding);
+  // When adding a button to an empty folder we must remove the 'empty'
+  // placeholder button. This can be detected by checking for a parent
+  // child count of 1.
+  const BookmarkNode* parentNode = node->GetParent();
+  if (parentNode->GetChildCount() == 1) {
+    BookmarkButton* emptyButton = [buttons_ lastObject];
+    [emptyButton removeFromSuperview];
+    [buttons_ removeLastObject];
+  } else {
+    // Set us up to remember the last moved button's frame.
+    buttonFrame.origin.y += NSHeight([mainView_ frame]) +
+        bookmarks::kBookmarkBarHeight;
+  }
+
   if (buttonIndex == -1)
     buttonIndex = [buttons_ count];
 
-  // Remember the last moved button's frame or the default.
-  NSRect buttonFrame = NSMakeRect(bookmarks::kBookmarkHorizontalPadding,
-      NSHeight([mainView_ frame]) + bookmarks::kBookmarkBarHeight +
-          bookmarks::kBookmarkVerticalPadding,
-      NSWidth([mainView_ frame]) - 2 * bookmarks::kBookmarkHorizontalPadding
-          - kScrollViewContentWidthMargin,
-      bookmarks::kBookmarkBarHeight - 2 * bookmarks::kBookmarkVerticalPadding);
-  BookmarkButton* button = nil;  // Remember so it can be inavalidated.
+  BookmarkButton* button = nil;  // Remember so it can be de-highlighted.
   for (NSInteger i = 0; i < buttonIndex; ++i) {
     button = [buttons_ objectAtIndex:i];
     buttonFrame = [button frame];
@@ -509,7 +528,8 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
     [button setFrame:buttonFrame];
   }
   [[button cell] mouseExited:nil];  // De-highlight.
-  buttonFrame.origin.y -= bookmarks::kBookmarkBarHeight;
+  if (parentNode->GetChildCount() > 1)
+    buttonFrame.origin.y -= bookmarks::kBookmarkBarHeight;
   BookmarkButton* newButton = [self makeButtonForNode:node
                                                 frame:buttonFrame];
   [buttons_ insertObject:newButton atIndex:buttonIndex];
@@ -518,25 +538,9 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   // Close any child folder(s) which may still be open.
   [self closeBookmarkFolder:self];
 
-  // Update all button widths in case more width is needed.
-  CGFloat windowWidth =
-      [self adjustButtonWidths] + (2 * bookmarks::kBookmarkVerticalPadding) +
-      kScrollViewContentWidthMargin;
-
-  // Update vertical metrics of the window and the main view (using sizers
-  // does not do what we want).
-  NSWindow* window = [self window];
-  NSRect frame = [mainView_ frame];
-  const CGFloat verticalDelta =
-      bookmarks::kBookmarkBarHeight - bookmarks::kBookmarkVerticalPadding;
-  frame.size.height += verticalDelta;
-  frame.size.width = windowWidth;
-  [mainView_ setFrame:frame];
-  frame = [window frame];
-  frame.origin.y -= bookmarks::kBookmarkBarHeight;
-  frame.size.height += bookmarks::kBookmarkBarHeight;
-  frame.size.width = windowWidth;
-  [window setFrame:frame display:YES];
+  // Prelim height of the window.  We'll trim later as needed.
+  int height = [buttons_ count] * bookmarks::kBookmarkButtonHeight;
+  [self adjustWindowForHeight:height];
 }
 
 - (void)moveButtonFromIndex:(NSInteger)fromIndex toIndex:(NSInteger)toIndex {
@@ -576,7 +580,6 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
 // TODO(jrg): Refactor BookmarkBarFolder common code. http://crbug.com/35966
 - (void)removeButton:(NSInteger)buttonIndex animate:(BOOL)animate {
   // TODO(mrossetti): Get disappearing animation to work. http://crbug.com/42360
-  NSWindow* window = [self window];
   BookmarkButton* oldButton = [buttons_ objectAtIndex:buttonIndex];
   NSRect poofFrame = [oldButton bounds];
   NSPoint poofPoint = NSMakePoint(NSMidX(poofFrame), NSMidY(poofFrame));
@@ -595,24 +598,35 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   }
   // Search for and adjust submenus, if necessary.
   NSInteger buttonCount = [buttons_ count];
-  BookmarkButton* subButton = [folderController_ parentButton];
-  for (NSInteger i = buttonIndex; i < buttonCount; ++i) {
-    BookmarkButton* aButton = [buttons_ objectAtIndex:i];
-    // If this button is showing its menu then we need to move the menu, too.
-    if (aButton == subButton)
-      [folderController_ offsetFolderMenuWindow:NSMakeSize(0.0,
-                                               bookmarks::kBookmarkBarHeight)];
+  if (buttonCount) {
+    BookmarkButton* subButton = [folderController_ parentButton];
+    for (NSInteger i = buttonIndex; i < buttonCount; ++i) {
+      BookmarkButton* aButton = [buttons_ objectAtIndex:i];
+      // If this button is showing its menu then we need to move the menu, too.
+      if (aButton == subButton)
+        [folderController_ offsetFolderMenuWindow:NSMakeSize(0.0,
+         bookmarks::kBookmarkBarHeight)];
+    }
+  } else {
+    // If all nodes have been removed from this folder then add in the
+    // 'empty' placeholder button.
+    NSRect buttonFrame = NSMakeRect(bookmarks::kBookmarkHorizontalPadding,
+                                    bookmarks::kBookmarkButtonHeight -
+                                    (bookmarks::kBookmarkBarHeight -
+                                     bookmarks::kBookmarkVerticalPadding),
+                                    bookmarks::kDefaultBookmarkWidth,
+                                    (bookmarks::kBookmarkBarHeight -
+                                     2 * bookmarks::kBookmarkVerticalPadding));
+    BookmarkButton* button = [self makeButtonForNode:nil
+                                               frame:buttonFrame];
+    [buttons_ addObject:button];
+    [mainView_ addSubview:button];
+    buttonCount = 1;
   }
 
-  // Resize the window and the main view (using sizers does not work).
-  NSRect frame = [window frame];
-  frame.origin.y += bookmarks::kBookmarkBarHeight;
-  frame.size.height -= bookmarks::kBookmarkBarHeight;
-  [window setFrame:frame display:YES];
-  frame = [mainView_ frame];
-  frame.origin.y += bookmarks::kBookmarkBarHeight;
-  frame.size.height -= bookmarks::kBookmarkBarHeight;
-  [mainView_ setFrame:frame];
+  // Propose a height for the window.  We'll trim later as needed.
+  int height = buttonCount * bookmarks::kBookmarkButtonHeight;
+  [self adjustWindowForHeight:height];
 }
 
 - (id<BookmarkButtonControllerProtocol>)controllerForNode:

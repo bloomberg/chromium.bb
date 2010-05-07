@@ -49,7 +49,14 @@ const CGFloat kBookmarkMenuButtonMaximumWidth = 485.0;
 
 const CGFloat kBookmarkVerticalPadding = 2.0;
 const CGFloat kBookmarkHorizontalPadding = 1.0;
-// (end magic numbers from Cole)
+const CGFloat kBookmarkHorizontalScreenPadding = 8.0;
+
+// Our NSScrollView is supposed to be just barely big enough to fit its
+// contentView.  It is actually a hair too small.
+// This turns on horizontal scrolling which, although slight, is awkward.
+// Make sure our window (and NSScrollView) are wider than its documentView
+// by at least this much.
+const CGFloat kScrollViewContentWidthMargin = 2;
 
 // Make subfolder menus overlap their parent menu a bit to give a better
 // perception of a menuing system.

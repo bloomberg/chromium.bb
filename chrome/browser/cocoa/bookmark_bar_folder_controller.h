@@ -161,6 +161,8 @@
 // Return YES if we can scroll up or down.
 - (BOOL)canScrollUp;
 - (BOOL)canScrollDown;
+// Return YES if the scrollable_ flag has been set.
+- (BOOL)scrollable;
 
 @end
 
