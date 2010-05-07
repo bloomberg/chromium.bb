@@ -383,6 +383,8 @@ TEST(GLES2CommandIdTest, CommandIdsMatch) {
                  GLES2_DeleteSharedIds_kCmdId_mismatch);
   COMPILE_ASSERT(RegisterSharedIds::kCmdId == 441,
                  GLES2_RegisterSharedIds_kCmdId_mismatch);
+  COMPILE_ASSERT(CommandBufferEnable::kCmdId == 442,
+                 GLES2_CommandBufferEnable_kCmdId_mismatch);
 }
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_ID_TEST_AUTOGEN_H_

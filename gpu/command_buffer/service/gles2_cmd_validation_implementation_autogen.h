@@ -82,6 +82,15 @@ bool ValidateGLenumCmpFunction(GLenum value) {
   }
 }
 
+bool ValidateGLenumCommandBufferState(GLenum value) {
+  switch (value) {
+    case GLES2_ALLOW_BUFFERS_ON_MULTIPLE_TARGETS:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool ValidateGLenumDrawMode(GLenum value) {
   switch (value) {
     case GL_POINTS:

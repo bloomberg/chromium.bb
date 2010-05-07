@@ -32,12 +32,13 @@ void BufferManager::RemoveBufferInfo(GLuint client_id) {
   }
 }
 
-void BufferManager::BufferInfo::SetSize(GLsizeiptr size) {
+void BufferManager::BufferInfo::SetSize(GLsizeiptr size, bool shadow) {
   DCHECK(!IsDeleted());
-  if (size != size_) {
+  if (size != size_ || shadow != shadowed_) {
+    shadowed_ = shadow;
     size_ = size;
     ClearCache();
-    if (target_ == GL_ELEMENT_ARRAY_BUFFER) {
+    if (shadowed_) {
       shadow_.reset(new int8[size]);
       memset(shadow_.get(), 0, size);
     }
@@ -51,7 +52,7 @@ bool BufferManager::BufferInfo::SetRange(
         offset + size > size_) {
     return false;
   }
-  if (target_ == GL_ELEMENT_ARRAY_BUFFER) {
+  if (shadowed_) {
     memcpy(shadow_.get() + offset, data, size);
     ClearCache();
   }
@@ -78,7 +79,6 @@ GLuint GetMaxValue(const void* data, GLuint offset, GLsizei count) {
 
 bool BufferManager::BufferInfo::GetMaxValueForRange(
     GLuint offset, GLsizei count, GLenum type, GLuint* max_value) {
-  DCHECK_EQ(target_, static_cast<GLenum>(GL_ELEMENT_ARRAY_BUFFER));
   DCHECK(!IsDeleted());
   Range range(offset, count, type);
   RangeToMaxValueMap::iterator it = range_set_.find(range);
@@ -98,6 +98,10 @@ bool BufferManager::BufferInfo::GetMaxValueForRange(
   }
 
   if (size > static_cast<uint32>(size_)) {
+    return false;
+  }
+
+  if (!shadowed_) {
     return false;
   }
 
@@ -141,6 +145,25 @@ bool BufferManager::GetClientId(GLuint service_id, GLuint* client_id) const {
     }
   }
   return false;
+}
+
+void BufferManager::SetSize(BufferManager::BufferInfo* info, GLsizeiptr size) {
+  DCHECK(info);
+  info->SetSize(size,
+                info->target() == GL_ELEMENT_ARRAY_BUFFER ||
+                allow_buffers_on_multiple_targets_);
+}
+
+bool BufferManager::SetTarget(BufferManager::BufferInfo* info, GLenum target) {
+  // Check that we are not trying to bind it to a different target.
+  if (info->target() != 0 && info->target() != target &&
+      !allow_buffers_on_multiple_targets_) {
+    return false;
+  }
+  if (info->target() == 0) {
+    info->set_target(target);
+  }
+  return true;
 }
 
 }  // namespace gles2
