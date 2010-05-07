@@ -332,6 +332,10 @@
         ['OS!="win"', {
           'sources/': [['exclude', '_win\\.cc$']],
           'sources!': [
+            # These files are Windows-only now but may be ported to other
+            # platforms.
+            'webaccessibility.cc',
+            'webaccessibility.h',
             'webthemeengine_impl_win.cc',
           ],
         }, {  # else: OS=="win"

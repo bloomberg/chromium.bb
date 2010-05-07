@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,11 +7,16 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityCache.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityRole.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
 using WebKit::WebAccessibilityCache;
 using WebKit::WebAccessibilityRole;
 using WebKit::WebAccessibilityObject;
+using WebKit::WebPoint;
+using WebKit::WebRect;
+using WebKit::WebString;
 
 namespace webkit_glue {
 
@@ -96,82 +101,240 @@ WebAccessibility::Role ConvertRole(WebKit::WebAccessibilityRole role) {
   }
 }
 
-uint32 ConvertState(const WebAccessibilityObject& o) {
-  uint32 state = 0;
+long ConvertState(const WebAccessibilityObject& o) {
+  long state = 0;
   if (o.isChecked())
-    state |= (1 << WebAccessibility::STATE_CHECKED);
+    state |= static_cast<long>(1 << WebAccessibility::STATE_CHECKED);
 
   if (o.canSetFocusAttribute())
-    state |= (1 << WebAccessibility::STATE_FOCUSABLE);
+    state |= static_cast<long>(1 << WebAccessibility::STATE_FOCUSABLE);
 
   if (o.isFocused())
-    state |= (1 << WebAccessibility::STATE_FOCUSED);
+    state |= static_cast<long>(1 << WebAccessibility::STATE_FOCUSED);
 
   if (o.isHovered())
-    state |= (1 << WebAccessibility::STATE_HOTTRACKED);
+    state |= static_cast<long>(1 << WebAccessibility::STATE_HOTTRACKED);
 
   if (o.isIndeterminate())
-    state |= (1 << WebAccessibility::STATE_INDETERMINATE);
+    state |= static_cast<long>(1 << WebAccessibility::STATE_INDETERMINATE);
 
   if (o.isAnchor())
-    state |= (1 << WebAccessibility::STATE_LINKED);
+    state |= static_cast<long>(1 << WebAccessibility::STATE_LINKED);
 
   if (o.isMultiSelectable())
-    state |= (1 << WebAccessibility::STATE_MULTISELECTABLE);
+    state |= static_cast<long>(1 << WebAccessibility::STATE_MULTISELECTABLE);
 
   if (o.isOffScreen())
-    state |= (1 << WebAccessibility::STATE_OFFSCREEN);
+    state |= static_cast<long>(1 << WebAccessibility::STATE_OFFSCREEN);
 
   if (o.isPressed())
-    state |= (1 << WebAccessibility::STATE_PRESSED);
+    state |= static_cast<long>(1 << WebAccessibility::STATE_PRESSED);
 
   if (o.isPasswordField())
-    state |= (1 << WebAccessibility::STATE_PROTECTED);
+    state |= static_cast<long>(1 << WebAccessibility::STATE_PROTECTED);
 
   if (o.isReadOnly())
-    state |= (1 << WebAccessibility::STATE_READONLY);
+    state |= static_cast<long>(1 << WebAccessibility::STATE_READONLY);
 
   if (o.isVisited())
-    state |= (1 << WebAccessibility::STATE_TRAVERSED);
+    state |= static_cast<long>(1 << WebAccessibility::STATE_TRAVERSED);
 
   if (!o.isEnabled())
-    state |= (1 << WebAccessibility::STATE_UNAVAILABLE);
+    state |= static_cast<long>(1 << WebAccessibility::STATE_UNAVAILABLE);
 
   return state;
 }
 
-WebAccessibility::WebAccessibility()
-    : id(-1),
-      role(ROLE_NONE),
-      state(-1) {
-}
+int32 WebAccessibility::GetAccObjInfo(WebAccessibilityCache* cache,
+  const WebAccessibility::InParams& in_params,
+  WebAccessibility::OutParams* out_params) {
+  // Find object requested by |object_id|.
+  WebAccessibilityObject active_acc_obj;
 
-WebAccessibility::WebAccessibility(const WebKit::WebAccessibilityObject& src,
-                                   WebKit::WebAccessibilityCache* cache) {
-  Init(src, cache);
-}
+  // Since ids assigned by Chrome starts at 1000, whereas platform-specific ids
+  // used to reference a child will be in a wholly different range, we know
+  // that any id that high should be treated as a non-direct descendant.
+  bool local_child = false;
+  if (cache->isValidId(in_params.child_id)) {
+    // Object is not a direct child, re-map the input parameters accordingly.
+    // The object to be retrieved is referred to by the |in_params.child_id|, as
+    // a result of e.g. a focus event.
+    active_acc_obj = cache->getObjectById(in_params.child_id);
+  } else {
+    local_child = true;
 
-void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
-                            WebKit::WebAccessibilityCache* cache) {
-  name = src.title();
-  value = src.stringValue();
-  action = src.actionVerb();
-  description = src.accessibilityDescription();
-  help = src.helpText();
-  shortcut = src.keyboardShortcut();
-  role = ConvertRole(src.roleValue());
-  state = ConvertState(src);
-  location = src.boundingBoxRect();
+    active_acc_obj = cache->getObjectById(in_params.object_id);
+    if (active_acc_obj.isNull())
+      return RETURNCODE_FAIL;
 
-  // Add the source object to the cache and store its id.
-  id = cache->addOrGetId(src);
+    // child_id == 0 means self. Otherwise, it's a local child - 1.
+    if (in_params.child_id > 0) {
+      unsigned index = in_params.child_id - 1;
+      if (index >= active_acc_obj.childCount())
+        return RETURNCODE_FAIL;
 
-  // Recursively create children.
-  int child_count = src.childCount();
-  children.resize(child_count);
-  for (int i = 0; i < child_count; i++) {
-    children[i].Init(src.childAt(i), cache);
+      active_acc_obj = active_acc_obj.childAt(index);
+    }
   }
+
+  if (active_acc_obj.isNull())
+    return RETURNCODE_FAIL;
+
+  // Temp paramters for holding output information.
+  WebAccessibilityObject out_acc_obj;
+  string16 out_string;
+
+  switch (in_params.function_id) {
+    case WebAccessibility::FUNCTION_DODEFAULTACTION: {
+      if (!active_acc_obj.performDefaultAction())
+        return RETURNCODE_FALSE;
+      break;
+    }
+    case WebAccessibility::FUNCTION_HITTEST: {
+      WebPoint point(in_params.input_long1, in_params.input_long2);
+      out_acc_obj = active_acc_obj.hitTest(point);
+      if (out_acc_obj.isNull())
+        return RETURNCODE_FALSE;
+      break;
+    }
+    case WebAccessibility::FUNCTION_LOCATION: {
+      WebRect rect = active_acc_obj.boundingBoxRect();
+      out_params->output_long1 = rect.x;
+      out_params->output_long2 = rect.y;
+      out_params->output_long3 = rect.width;
+      out_params->output_long4 = rect.height;
+      break;
+    }
+    case WebAccessibility::FUNCTION_NAVIGATE: {
+      WebAccessibility::Direction dir =
+        static_cast<WebAccessibility::Direction>(in_params.input_long1);
+      switch (dir) {
+        case WebAccessibility::DIRECTION_DOWN:
+        case WebAccessibility::DIRECTION_UP:
+        case WebAccessibility::DIRECTION_LEFT:
+        case WebAccessibility::DIRECTION_RIGHT:
+          // These directions are not implemented, matching Mozilla and IE.
+          return RETURNCODE_FALSE;
+        case WebAccessibility::DIRECTION_LASTCHILD:
+        case WebAccessibility::DIRECTION_FIRSTCHILD:
+          // MSDN states that navigating to first/last child can only be from
+          // self.
+          if (!local_child)
+            return RETURNCODE_FALSE;
+
+          if (dir == WebAccessibility::DIRECTION_FIRSTCHILD) {
+            out_acc_obj = active_acc_obj.firstChild();
+          } else {
+            out_acc_obj = active_acc_obj.lastChild();
+          }
+          break;
+        case WebAccessibility::DIRECTION_NEXT:
+        case WebAccessibility::DIRECTION_PREVIOUS: {
+          if (dir == WebAccessibility::DIRECTION_NEXT) {
+            out_acc_obj = active_acc_obj.nextSibling();
+          } else {
+            out_acc_obj = active_acc_obj.previousSibling();
+          }
+          break;
+        }
+        default:
+          return RETURNCODE_FALSE;
+      }
+
+      if (out_acc_obj.isNull())
+        return RETURNCODE_FALSE;
+
+      break;
+    }
+    case WebAccessibility::FUNCTION_GETCHILD: {
+      out_params->object_id = in_params.object_id;
+      out_acc_obj = active_acc_obj;
+      break;
+    }
+    case WebAccessibility::FUNCTION_CHILDCOUNT: {
+      out_params->output_long1 = active_acc_obj.childCount();
+      break;
+    }
+    case WebAccessibility::FUNCTION_DEFAULTACTION: {
+      out_string = active_acc_obj.actionVerb();
+      if (out_string.empty())
+        return RETURNCODE_FALSE;
+      break;
+    }
+    case WebAccessibility::FUNCTION_DESCRIPTION: {
+      out_string = active_acc_obj.accessibilityDescription();
+      if (out_string.empty())
+        return RETURNCODE_FALSE;
+      // From the Mozilla MSAA implementation:
+      // "Signal to screen readers that this description is speakable and is not
+      // a formatted positional information description. Don't localize the
+      // 'Description: ' part of this string, it will be parsed out by assistive
+      // technologies."
+      out_string = L"Description: " + out_string;
+      break;
+    }
+    case WebAccessibility::FUNCTION_GETFOCUSEDCHILD: {
+      out_acc_obj = active_acc_obj.focusedChild();
+      if (out_acc_obj.isNull())
+        return RETURNCODE_FALSE;
+      break;
+    }
+    case WebAccessibility::FUNCTION_HELPTEXT: {
+      out_string = active_acc_obj.helpText();
+      if (out_string.empty())
+        return RETURNCODE_FALSE;
+      break;
+    }
+    case WebAccessibility::FUNCTION_KEYBOARDSHORTCUT: {
+      out_string = active_acc_obj.keyboardShortcut();
+      if (out_string.empty())
+        return RETURNCODE_FALSE;
+      break;
+    }
+    case WebAccessibility::FUNCTION_NAME: {
+      out_string = active_acc_obj.title();
+      if (out_string.empty())
+        return RETURNCODE_FALSE;
+      break;
+    }
+    case WebAccessibility::FUNCTION_GETPARENT: {
+      out_acc_obj = active_acc_obj.parentObject();
+      if (out_acc_obj.isNull())
+        return RETURNCODE_FALSE;
+      break;
+    }
+    case WebAccessibility::FUNCTION_ROLE: {
+      out_params->output_long1 = ConvertRole(active_acc_obj.roleValue());
+      break;
+    }
+    case WebAccessibility::FUNCTION_STATE: {
+      out_params->output_long1 = ConvertState(active_acc_obj);
+      break;
+    }
+    case WebAccessibility::FUNCTION_VALUE: {
+      out_string = active_acc_obj.stringValue();
+      if (out_string.empty())
+        return RETURNCODE_FALSE;
+      break;
+    }
+    default:
+      // Non-supported function id.
+      return RETURNCODE_FAIL;
+  }
+
+  // Output and hashmap assignments, as appropriate.
+  if (!out_string.empty())
+    out_params->output_string = out_string;
+
+  if (out_acc_obj.isNull())
+    return RETURNCODE_TRUE;
+
+  int id = cache->addOrGetId(out_acc_obj);
+  out_params->object_id = id;
+  out_params->output_long1 = -1;
+
+  // TODO(ctguil): Handle simple objects returned.
+  return RETURNCODE_TRUE;
 }
 
 }  // namespace webkit_glue

@@ -512,6 +512,20 @@ IPC_BEGIN_MESSAGES(View)
   // Used to instruct the RenderView to go into "view source" mode.
   IPC_MESSAGE_ROUTED0(ViewMsg_EnableViewSourceMode)
 
+  // Retreive information from the MSAA DOM subtree, for accessibility purposes.
+  IPC_SYNC_MESSAGE_ROUTED1_1(ViewMsg_GetAccessibilityInfo,
+                             webkit_glue::WebAccessibility::InParams
+                             /* input parameters */,
+                             webkit_glue::WebAccessibility::OutParams
+                             /* output parameters */)
+
+  // Requests the renderer to clear cashed accessibility information. Takes an
+  // id to clear a specific hashmap entry, and a bool; true clears all, false
+  // does not.
+  IPC_MESSAGE_ROUTED2(ViewMsg_ClearAccessibilityInfo,
+                      int  /* accessibility object id */,
+                      bool /* clear_all */)
+
   // Get all savable resource links from current webpage, include main
   // frame and sub-frame.
   IPC_MESSAGE_ROUTED1(ViewMsg_GetAllSavableResourceLinksForCurrentPage,
@@ -929,9 +943,6 @@ IPC_BEGIN_MESSAGES(View)
   // Notification that the list of extensions with web extents has been updated.
   IPC_MESSAGE_CONTROL1(ViewMsg_ExtensionExtentsUpdated,
                        ViewMsg_ExtensionExtentsUpdated_Params)
-
-  // Request a tree of Accessibility data from the render process.
-  IPC_MESSAGE_ROUTED0(ViewMsg_GetAccessibilityTree)
 IPC_END_MESSAGES(View)
 
 
@@ -2327,10 +2338,5 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_CONTROL2(ViewHostMsg_Geolocation_Resume,
                        int /* render_view_id */,
                        int /* bridge_id */)
-
-  // Send the tree of accessibility data to the browser, where it's cached
-  // in order to respond to OS accessibility queries immediately.
-  IPC_MESSAGE_ROUTED1(ViewHostMsg_AccessibilityTree,
-                      webkit_glue::WebAccessibility)
 
 IPC_END_MESSAGES(ViewHost)
