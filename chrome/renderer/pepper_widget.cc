@@ -16,11 +16,15 @@ static int g_next_id;
 typedef base::hash_map<int, PepperWidget*> WidgetMap;
 static base::LazyInstance<WidgetMap> g_widgets(base::LINKER_INITIALIZED);
 
-NPError NPCreateWidget(NPP instance, NPWidgetType type, NPWidgetID* id) {
+NPError NPCreateWidget(NPP instance,
+                       NPWidgetType type,
+                       void* params,
+                       NPWidgetID* id) {
   PepperWidget* widget;
   switch(type) {
     case NPWidgetTypeScrollbar:
-      widget = new PepperScrollbarWidget();
+      widget = new PepperScrollbarWidget(
+          *static_cast<NPScrollbarCreateParams*>(params));
       break;
     default:
       return NPERR_INVALID_PARAM;

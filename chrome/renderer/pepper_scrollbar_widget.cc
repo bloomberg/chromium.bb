@@ -21,8 +21,9 @@ const float PepperScrollbarWidget::kInitialAutoscrollTimerDelay = 0.25f;
 const float PepperScrollbarWidget::kAutoscrollTimerDelay = 0.05f;
 
 
-PepperScrollbarWidget::PepperScrollbarWidget()
-    : vertical_(true),
+PepperScrollbarWidget::PepperScrollbarWidget(
+    const NPScrollbarCreateParams& params)
+    : vertical_(params.vertical),
       enabled_(true),
       length_(0),
       total_length_(0),
@@ -122,7 +123,6 @@ void PepperScrollbarWidget::SetProperty(
       NPRect* r = static_cast<NPRect*>(value);
       gfx::Point location(r->left, r->top);
       gfx::Size size(r->right - r->left, r->bottom - r->top);
-      vertical_ = size.height() > size.width();
       SetLocation(location,
                   vertical_ ? size.height() : size.width(),
                   total_length_);

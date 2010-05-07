@@ -434,10 +434,14 @@ typedef enum {
   NPWidgetTypeScrollbar = 0,
 } NPWidgetType;
 
-typedef struct _NPTickMarks {
+typedef struct _NPScrollbarCreateParams {
+  bool vertical;
+} NPScrollbarCreateParams;
+
+typedef struct _NPScrollbarTickMarks {
   uint32 count;
   uint32* tickmarks;
-} NPTickMarks;
+} NPScrollbarTickMarks;
 
 typedef enum {
   NPWidgetPropertyLocation = 0,  // Set only.  variable is NPRect*.
@@ -445,7 +449,7 @@ typedef enum {
   NPWidgetPropertyScrollbarThickness = 2,  // Get only.  variable is int32*.
   NPWidgetPropertyScrollbarPosition = 3,  // variable is int32*.
   NPWidgetPropertyScrollbarDocumentSize = 4,  // Set only. variable is int32*.
-  // Set only.  variable is NPTickMarks*.
+  // Set only.  variable is NPScrollbarTickMarks*.
   NPWidgetPropertyScrollbarTickMarks = 5,
   // Set only.  variable is bool* (true for forward, false for backward).
   NPWidgetPropertyScrollbarScrollByLine = 6,
@@ -462,6 +466,7 @@ typedef enum {
 typedef NPError (*NPCreateWidgetPtr) (
     NPP instance,
     NPWidgetType type,
+    void* params,  // Widget specific.
     NPWidgetID* id);
 
 // Destroys a widget.

@@ -16,7 +16,7 @@
 // instead.
 class PepperScrollbarWidget : public PepperWidget {
  public:
-  PepperScrollbarWidget();
+  PepperScrollbarWidget(const NPScrollbarCreateParams& params);
   ~PepperScrollbarWidget();
 
   virtual void Destroy();
