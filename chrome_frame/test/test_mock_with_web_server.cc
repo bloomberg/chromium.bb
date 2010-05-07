@@ -1361,7 +1361,7 @@ TEST(IEPrivacy, NavigationToRestrictedSite) {
   EXPECT_CALL(mock, OnWindowDetected(_, testing::StrEq(kAlertDlgCaption)))
       .Times(1)
       .WillOnce(testing::DoAll(
-          DelaySendChar(&loop, 200, VK_RETURN, simulate_input::NONE),
+          DoCloseWindow(),
           QUIT_LOOP_SOON(loop, 1)));
 
   EXPECT_CALL(mock, OnLoad(_)).Times(0);
