@@ -317,8 +317,8 @@ bool PepperScrollbarWidget::OnMouseWheel(const NPPepperEvent& event) {
 bool PepperScrollbarWidget::OnKeyDown(const NPPepperEvent& event) {
   bool rv = true;
   int key = event.u.key.normalizedKeyCode;
-  if (vertical_ && key == base::VKEY_UP ||
-      !vertical_ && key == base::VKEY_LEFT) {
+  if ((vertical_ && key == base::VKEY_UP) ||
+      (!vertical_ && key == base::VKEY_LEFT)) {
     Scroll(true, SCROLL_BY_LINE, 0);
   } else if ((vertical_ && key == base::VKEY_DOWN) ||
              (!vertical_ && key == base::VKEY_RIGHT)) {
