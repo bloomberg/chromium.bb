@@ -922,11 +922,11 @@ class RenderView : public RenderWidget,
   // Should only be called if this object wraps a PluginDocument.
   webkit_glue::WebPluginDelegate* GetDelegateForPluginDocument();
 
-  // Returns true if the navigation attempt is to be routed to the
-  // browser.
-  bool ShouldRouteNavigationToBrowser(const GURL& url,
-                                      WebKit::WebFrame* frame,
-                                      WebKit::WebNavigationType type);
+  // Returns false unless this is a top-level navigation that
+  // crosses origins.
+  bool IsNonLocalTopLevelNavigation(const GURL& url,
+                                    WebKit::WebFrame* frame,
+                                    WebKit::WebNavigationType type);
 
   // Bitwise-ORed set of extra bindings that have been enabled.  See
   // BindingsPolicy for details.

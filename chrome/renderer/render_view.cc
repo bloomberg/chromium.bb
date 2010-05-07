@@ -2253,7 +2253,8 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
 
   // If the browser is interested, then give it a chance to look at top level
   // navigations.
-  if (ShouldRouteNavigationToBrowser(url, frame, type)) {
+  if (renderer_preferences_.browser_handles_top_level_requests &&
+      IsNonLocalTopLevelNavigation(url, frame, type)) {
     last_top_level_navigation_page_id_ = page_id_;
     GURL referrer(request.httpHeaderField(WebString::fromUTF8("Referer")));
     OpenURL(url, referrer, default_policy);
@@ -2277,12 +2278,22 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
     // punt them up to the browser to handle.
     if (CrossesExtensionExtents(frame, url) ||
         BindingsPolicy::is_dom_ui_enabled(enabled_bindings_) ||
-        BindingsPolicy::is_extension_enabled(enabled_bindings_) ||
         frame->isViewSourceModeEnabled() ||
         url.SchemeIs(chrome::kViewSourceScheme) ||
         url.SchemeIs(chrome::kPrintScheme)) {
       OpenURL(url, GURL(), default_policy);
       return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
+    }
+
+    // We forward navigations from extensions to the browser if they are
+    // top-level events, even if the browser hasn't expressed interest.
+    //
+    // Note that we've already forwarded cross-extension extents navigations
+    // above.
+    if (BindingsPolicy::is_extension_enabled(enabled_bindings_) &&
+      IsNonLocalTopLevelNavigation(url, frame, type)) {
+        OpenURL(url, GURL(), default_policy);
+        return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
     }
   }
 
@@ -4958,14 +4969,9 @@ WebKit::WebGeolocationService* RenderView::geolocationService() {
   return geolocation_dispatcher_.get();
 }
 
-bool RenderView::ShouldRouteNavigationToBrowser(
+bool RenderView::IsNonLocalTopLevelNavigation(
     const GURL& url, WebKit::WebFrame* frame, WebKit::WebNavigationType type) {
-  // If the browser is interested, then give it a chance to look at top level
-  // navigations
-  if (!renderer_preferences_.browser_handles_top_level_requests)
-    return false;
-
-    // Must be a top level frame.
+  // Must be a top level frame.
   if (frame->parent() != NULL)
     return false;
 
