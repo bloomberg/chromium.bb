@@ -26,7 +26,12 @@
 #ifndef BASE_DYNAMIC_ANNOTATIONS_H_
 #define BASE_DYNAMIC_ANNOTATIONS_H_
 
+#ifdef __GNUC__
+// valgrind.h uses gcc extensions so it may not build with other compilers.
+// Also, it defines NVALGRIND on Windows, which disables dynamic annotations
+// for ThreadSanitizer.
 #include "base/third_party/valgrind/valgrind.h"
+#endif
 
 #ifndef NVALGRIND
 // -------------------------------------------------------------

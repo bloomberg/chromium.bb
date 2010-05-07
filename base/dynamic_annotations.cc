@@ -59,7 +59,7 @@ extern "C" void AnnotateNoOp(const char *file, int line,
 
 // When running under valgrind, a non-zero value will be returned.
 extern "C" int RunningOnValgrind() {
-#if defined(NVALGRIND)
+#if defined(NVALGRIND) || !defined(RUNNING_ON_VALGRIND)
   return 0;
 #else
   return RUNNING_ON_VALGRIND;
