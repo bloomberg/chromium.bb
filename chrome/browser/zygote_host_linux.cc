@@ -211,12 +211,15 @@ pid_t ZygoteHost::ForkRenderer(
     fds.push_back(i->second);
   }
 
-  if (!base::SendMsg(control_fd_, pickle.data(), pickle.size(), fds))
-    return base::kNullProcessHandle;
-
   pid_t pid;
-  if (HANDLE_EINTR(read(control_fd_, &pid, sizeof(pid))) != sizeof(pid))
-    return base::kNullProcessHandle;
+  {
+    AutoLock lock(control_lock_);
+    if (!base::SendMsg(control_fd_, pickle.data(), pickle.size(), fds))
+      return base::kNullProcessHandle;
+
+    if (HANDLE_EINTR(read(control_fd_, &pid, sizeof(pid))) != sizeof(pid))
+      return base::kNullProcessHandle;
+  }
 
   const int kRendererScore = 5;
   if (using_suid_sandbox_) {
@@ -258,12 +261,16 @@ bool ZygoteHost::DidProcessCrash(base::ProcessHandle handle,
   pickle.WriteInt(kCmdDidProcessCrash);
   pickle.WriteInt(handle);
 
-  if (HANDLE_EINTR(write(control_fd_, pickle.data(), pickle.size())) < 0)
-    PLOG(ERROR) << "write";
-
   static const unsigned kMaxMessageLength = 128;
   char buf[kMaxMessageLength];
-  const ssize_t len = HANDLE_EINTR(read(control_fd_, buf, sizeof(buf)));
+  ssize_t len;
+  {
+    AutoLock lock(control_lock_);
+    if (HANDLE_EINTR(write(control_fd_, pickle.data(), pickle.size())) < 0)
+      PLOG(ERROR) << "write";
+
+    len = HANDLE_EINTR(read(control_fd_, buf, sizeof(buf)));
+  }
 
   if (len == -1) {
     LOG(WARNING) << "Error reading message from zygote: " << errno;

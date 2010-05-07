@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/global_descriptors_posix.h"
+#include "base/lock.h"
 #include "base/process.h"
 
 template<typename Type>
@@ -53,6 +54,10 @@ class ZygoteHost {
   ~ZygoteHost();
 
   int control_fd_;  // the socket to the zygote
+  // A lock protecting all communication with the zygote. This lock must be
+  // acquired before sending a command and released after the result has been
+  // received.
+  Lock control_lock_;
   pid_t pid_;
   bool init_;
   bool using_suid_sandbox_;
