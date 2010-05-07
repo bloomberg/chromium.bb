@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import os
+import time
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
@@ -169,6 +170,31 @@ class HistoryTest(pyauto.PyUITest):
     history = self.GetHistoryInfo().History()
     self.assertEqual(2, len(history))
     self.assertEqual(landing_url, history[0]['url'])
+
+  def testForge(self):
+    """Brief test of forging history items.
+
+    Note the history system can tweak values (e.g. lower-case a URL or
+    append an '/' on it) so be careful with exact comparison.
+    """
+    assert not self.GetHistoryInfo().History(), 'Expecting clean history.'
+    # Minimal interface
+    self.AddHistoryItem({'url': 'http://ZOINKS'})
+    history = self.GetHistoryInfo().History()
+    self.assertEqual(1, len(history))
+    self.assertTrue('zoinks' in history[0]['url'])  # yes it gets lower-cased.
+    # Full interface (specify both title and url)
+    now = time.time()
+    self.AddHistoryItem({'title': 'Google',
+                         'url': 'http://www.google.com',
+                         'time': now})
+    # Expect a second item
+    history = self.GetHistoryInfo().History()
+    self.assertEqual(2, len(history))
+    # And make sure our forged item is there.
+    self.assertEqual('Google', history[0]['title'])
+    self.assertTrue('google.com' in history[0]['url'])
+    self.assertTrue(abs(now - history[0]['time']) < 1.0)
 
 
 if __name__ == '__main__':

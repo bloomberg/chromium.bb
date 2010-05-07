@@ -349,6 +349,10 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   // Uses the JSON interface for input/output.
   void GetHistoryInfo(DictionaryValue* args, IPC::Message* reply_message);
 
+  // Add an item to the history service.
+  // Uses the JSON interface for input/output.
+  void AddHistoryItem(DictionaryValue* args, IPC::Message* reply_message);
+
   // Get info about preferences.
   // Uses the JSON interface for input/output.
   void GetPrefsInfo(DictionaryValue* args, IPC::Message* reply_message);

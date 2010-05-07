@@ -952,8 +952,8 @@ void AutomationProviderHistoryObserver::HistoryQueryComplete(
     history::URLResult const &page = (*results)[i];
     page_value->SetString(L"title", page.title());
     page_value->SetString(L"url", page.url().spec());
-    page_value->SetInteger(L"time",
-                           static_cast<int>(page.visit_time().ToTimeT()));
+    page_value->SetReal(L"time",
+                        static_cast<double>(page.visit_time().ToDoubleT()));
     page_value->SetString(L"snippet", page.snippet().text());
     page_value->SetBoolean(
         L"starred",

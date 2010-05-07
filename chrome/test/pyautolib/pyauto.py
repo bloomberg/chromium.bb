@@ -330,6 +330,32 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     return history_info.HistoryInfo(
         self._SendJSONRequest(0, json.dumps(cmd_dict)))
 
+  def AddHistoryItem(self, item):
+    """Forge a history item for Chrome.
+
+    Args:
+      item: a python dictionary representing the history item.  Example:
+      {
+        # URL is the only mandatory item.
+        'url': 'http://news.google.com',
+        # Title is optional.
+        'title': 'Google News',
+        # Time is optional; if not set, assume "now".  Time is in
+        # seconds since the Epoch.  The python construct to get "Now"
+        # in the right scale is "time.time()".  Can be float or int.
+        'time': 1271781612
+      }
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'AddHistoryItem',
+      'item': item
+    }
+    if not 'url' in item:
+      raise JSONInterfaceError('must specify url')
+    ret_dict = json.loads(self._SendJSONRequest(0, json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
+
   def GetPluginsInfo(self):
     """Return info about plugins.
 

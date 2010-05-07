@@ -1616,6 +1616,60 @@ void AutomationProvider::GetHistoryInfo(
                   &AutomationProviderHistoryObserver::HistoryQueryComplete));
 }
 
+// Sample json input: { "command": "AddHistoryItem",
+//                      "item": { "URL": "http://www.google.com",
+//                                "title": "Google",   # optional
+//                                "time": 12345        # optional (time_t)
+//                               } }
+// Refer chrome/test/pyautolib/pyauto.py for details on input.
+void AutomationProvider::AddHistoryItem(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  bool reply_return = true;
+  std::string json_return = "{}";
+
+  DictionaryValue* item = NULL;
+  args->GetDictionary(L"item", &item);
+  string16 url_text;
+  std::wstring title;
+  base::Time time = base::Time::Now();
+
+  if (item->GetString("url", &url_text)) {
+    GURL gurl(url_text);
+    item->GetString(L"title", &title);  // Don't care if it fails.
+    int it;
+    double dt;
+    if (item->GetInteger(L"time", &it))
+      time = base::Time::FromTimeT(it);
+    else if (item->GetReal(L"time", &dt))
+      time = base::Time::FromDoubleT(dt);
+
+    // Ideas for "dummy" values (e.g. id_scope) came from
+    // chrome/browser/autocomplete/history_contents_provider_unittest.cc
+    HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+    const void* id_scope = reinterpret_cast<void*>(1);
+    hs->AddPage(gurl, time,
+                id_scope,
+                0,
+                GURL(),
+                PageTransition::LINK,
+                history::RedirectList(),
+                false);
+    if (title.length()) {
+      // TODO(jrg): add a string16 interface for
+      // HistoryService::SetPageTitle(), then use it.
+      hs->SetPageTitle(gurl, title);
+    }
+  } else {
+    json_return = "{\"error\": \"bad args (no URL in dict?).\"}";
+    reply_return = false;
+  }
+
+  AutomationMsg_SendJSONRequest::WriteReplyParams(
+      reply_message, json_return, reply_return);
+  Send(reply_message);
+}
+
 // Sample json input: { "command": "GetDownloadsInfo" }
 // Refer chrome/test/pyautolib/download_info.py for sample json output.
 void AutomationProvider::GetDownloadsInfo(
@@ -1915,6 +1969,7 @@ void AutomationProvider::SendJSONRequest(
   handler_map["GetPluginsInfo"] = &AutomationProvider::GetPluginsInfo;
 
   handler_map["GetHistoryInfo"] = &AutomationProvider::GetHistoryInfo;
+  handler_map["AddHistoryItem"] = &AutomationProvider::AddHistoryItem;
 
   handler_map["GetPrefsInfo"] = &AutomationProvider::GetPrefsInfo;
   handler_map["SetPrefs"] = &AutomationProvider::SetPrefs;
