@@ -10,14 +10,20 @@
 
   console.log("Performing transaction...");
   db.transaction(function(tx) {
-    tx.executeSql("drop table if exists note", [], null, onSqlError);
-    tx.executeSql("create table note (body text)", [], null, onSqlError);
+    tx.executeSql("drop table if exists note", [], onDropSuccess, onSqlError);
+    tx.executeSql("create table note (body text)", [], onCreateSuccess, onSqlError);
     tx.executeSql("insert into note values ('hotdog')", [], onSqlExecuted,
                   onSqlError);
   }, function(error) {
     chrome.test.notifyFail(error.message);
   });
 
+  function onDropSuccess(tx, res) {
+    console.log("note table dropped");
+  }
+  function onCreateSuccess(tx, res) {
+    console.log("note table created");
+  }
   function onSqlError(tx, error) {
     chrome.test.notifyFail(error.message);
   }

@@ -3,9 +3,15 @@ chrome.test.runTests([function tab() {
   // Check that the localstorage stuff we stored is still there.
   chrome.test.assertTrue(localStorage.foo == "bar");
 
-  console.log("Opening database...");
   // Check that the database stuff we stored is still there.
-  var db = window.openDatabase("mydb2", "1.0", "database test", 2048);
+  try {
+    console.log("Opening database...");
+    var db = window.openDatabase("mydb2", "1.0", "database test", 2048);
+    console.log("DONE opening database");
+  } catch (err) {
+    console.log("Exception");
+    console.log(err.message);
+  }
   if (!db)
     chrome.test.fail("failed to open database");
 
