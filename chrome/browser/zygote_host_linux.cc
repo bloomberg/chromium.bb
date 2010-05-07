@@ -221,8 +221,40 @@ pid_t ZygoteHost::ForkRenderer(
       return base::kNullProcessHandle;
   }
 
+  // 1) You can't change the oom_adj of a non-dumpable process (EPERM) unless
+  //    you're root. Because of this, we can't set the oom_adj from the browser
+  //    process.
+  //
+  // 2) We can't set the oom_adj before entering the sandbox because the
+  //    zygote is in the sandbox and the zygote is as critical as the browser
+  //    process. Its oom_adj value shouldn't be changed.
+  //
+  // 3) A non-dumpable process can't even change its own oom_adj because it's
+  //    root owned 0644. The sandboxed processes don't even have /proc, but one
+  //    could imagine passing in a descriptor from outside.
+  //
+  // So, in the normal case, we use the SUID binary to change it for us.
+  // However, Fedora (and other SELinux systems) don't like us touching other
+  // process's oom_adj values
+  // (https://bugzilla.redhat.com/show_bug.cgi?id=581256).
+  //
+  // The offical way to get the SELinux mode is selinux_getenforcemode, but I
+  // don't want to add another library to the build as it's sure to cause
+  // problems with other, non-SELinux distros.
+  //
+  // So we just check for /selinux. This isn't foolproof, but it's not bad
+  // and it's easy.
+
+  static bool selinux;
+  static bool selinux_valid = false;
+
+  if (!selinux_valid) {
+    selinux = access("/selinux", X_OK) == 0;
+    selinux_valid = true;
+  }
+
   const int kRendererScore = 5;
-  if (using_suid_sandbox_) {
+  if (using_suid_sandbox_ && !selinux) {
     base::ProcessHandle sandbox_helper_process;
     base::file_handle_mapping_vector dummy_map;
     std::vector<std::string> adj_oom_score_cmdline;
@@ -236,8 +268,9 @@ pid_t ZygoteHost::ForkRenderer(
                         &sandbox_helper_process)) {
       ProcessWatcher::EnsureProcessGetsReaped(sandbox_helper_process);
     }
-  } else {
-    base::AdjustOOMScore(pid, kRendererScore);
+  } else if (!using_suid_sandbox_) {
+    if (!base::AdjustOOMScore(pid, kRendererScore))
+      LOG(ERROR) << "Failed to adjust OOM score of renderer";
   }
 
   return pid;
