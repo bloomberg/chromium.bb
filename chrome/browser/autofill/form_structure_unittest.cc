@@ -664,4 +664,37 @@ TEST(FormStructureTest, ThreeAddressLines) {
   EXPECT_EQ(ADDRESS_HOME_CITY, form_structure->field(3)->heuristic_type());
 }
 
+TEST(FormStructureTest, HeuristicsStateWithProvince) {
+  scoped_ptr<FormStructure> form_structure;
+  FormData form;
+
+  form.method = ASCIIToUTF16("post");
+  form.fields.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("Address Line1"),
+                             ASCIIToUTF16("Address"),
+                             string16(),
+                             ASCIIToUTF16("text")));
+  form.fields.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("Address Line2"),
+                             ASCIIToUTF16("Address"),
+                             string16(),
+                             ASCIIToUTF16("text")));
+  form.fields.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("State/Province/Region"),
+                             ASCIIToUTF16("State"),
+                             string16(),
+                             ASCIIToUTF16("text")));
+  form_structure.reset(new FormStructure(form));
+  EXPECT_TRUE(form_structure->IsAutoFillable());
+  ASSERT_EQ(3U, form_structure->field_count());
+  ASSERT_EQ(3U, form_structure->autofill_count());
+
+  // Address Line 1.
+  EXPECT_EQ(ADDRESS_HOME_LINE1, form_structure->field(0)->heuristic_type());
+  // Address Line 2.
+  EXPECT_EQ(ADDRESS_HOME_LINE2, form_structure->field(1)->heuristic_type());
+  // State.
+  EXPECT_EQ(ADDRESS_HOME_STATE, form_structure->field(2)->heuristic_type());
+}
+
 }  // namespace

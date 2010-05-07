@@ -81,21 +81,21 @@ AddressField* AddressField::Parse(
 
   // Allow address fields to appear in any order.
   while (true) {
-    // We ignore the following:
-    // * Company/Business.
-    // * Attention.
-    // * Province/Region/Other.
-    if (ParseText(&q, ASCIIToUTF16("company|business name")) ||
-        ParseText(&q, ASCIIToUTF16("attention|attn.")) ||
-        ParseText(&q, ASCIIToUTF16("province|region|other"))) {
-      continue;
-    } else if (ParseAddressLines(&q, is_ecml, &address_field) ||
+    if (ParseAddressLines(&q, is_ecml, &address_field) ||
                ParseCity(&q, is_ecml, &address_field) ||
                ParseZipCode(&q, is_ecml, &address_field) ||
                ParseCountry(&q, is_ecml, &address_field)) {
       continue;
     } else if ((!address_field.state_ || address_field.state_->IsEmpty()) &&
                address_field.ParseState(&q, is_ecml, &address_field)) {
+      continue;
+    } else if (ParseText(&q, ASCIIToUTF16("company|business name")) ||
+        ParseText(&q, ASCIIToUTF16("attention|attn.")) ||
+        ParseText(&q, ASCIIToUTF16("province|region|other"))) {
+      // We ignore the following:
+      // * Company/Business.
+      // * Attention.
+      // * Province/Region/Other.
       continue;
     } else if (*q != **iter && ParseEmpty(&q)) {
       // Ignore non-labeled fields within an address; the page
