@@ -337,10 +337,7 @@ void NativeTableWin::CreateNativeControl() {
 
   // Make the selection extend across the row.
   // Reduce overdraw/flicker artifacts by double buffering.
-  DWORD list_view_style = LVS_EX_FULLROWSELECT;
-  if (win_util::GetWinVersion() > win_util::WINVERSION_2000) {
-    list_view_style |= LVS_EX_DOUBLEBUFFER;
-  }
+  DWORD list_view_style = LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER;
   if (table_->type() == CHECK_BOX_AND_TEXT)
     list_view_style |= LVS_EX_CHECKBOXES;
   ListView_SetExtendedListViewStyleEx(hwnd, 0, list_view_style);

@@ -793,10 +793,7 @@ HWND TableView::CreateNativeControl(HWND parent_container) {
 
   // Make the selection extend across the row.
   // Reduce overdraw/flicker artifacts by double buffering.
-  DWORD list_view_style = LVS_EX_FULLROWSELECT;
-  if (win_util::GetWinVersion() > win_util::WINVERSION_2000) {
-    list_view_style |= LVS_EX_DOUBLEBUFFER;
-  }
+  DWORD list_view_style = LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER;
   if (table_type_ == CHECK_BOX_AND_TEXT)
     list_view_style |= LVS_EX_CHECKBOXES;
   ListView_SetExtendedListViewStyleEx(list_view_, 0, list_view_style);
@@ -813,8 +810,7 @@ HWND TableView::CreateNativeControl(HWND parent_container) {
     model_->SetObserver(this);
 
   // Add the groups.
-  if (model_ && model_->HasGroups() &&
-      win_util::GetWinVersion() > win_util::WINVERSION_2000) {
+  if (model_ && model_->HasGroups()) {
     ListView_EnableGroupView(list_view_, true);
 
     TableModel::Groups groups = model_->GetGroups();
@@ -1375,9 +1371,7 @@ void TableView::UpdateListViewCache0(int start, int length, bool add) {
   LVITEM item = {0};
   int start_column = 0;
   int max_row = start + length;
-  const bool has_groups =
-      (win_util::GetWinVersion() > win_util::WINVERSION_2000 &&
-       model_->HasGroups());
+  const bool has_groups = model_->HasGroups();
   if (add) {
     if (has_groups)
       item.mask = LVIF_GROUPID;

@@ -271,8 +271,8 @@ be available for now. -->
         </message>
       </if>
       <!-- Strings used to warn that an OS is not supported -->
-      <message name="IDS_UNSUPPORTED_OS_WIN2000" desc="The text used to warn the user that Windows 2000 is not supported">
-        Chromium does not support Windows 2000. Some features may not work.
+      <message name="IDS_UNSUPPORTED_OS_PRE_WIN_XP" desc="The text used to warn the user that Windows pre-XP is not supported">
+        Chromium requires Windows XP or later. Some features may not work.
       </message>
       <message name="IDS_UNSUPPORTED_OS" desc="The text used to warn the user that current OS is not supported">
         Chromium does not support <ph name="OS_NAME">$1<ex>Windows 2000</ex></ph>.

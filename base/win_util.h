@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@ namespace win_util {
 // though.
 enum WinVersion {
   WINVERSION_PRE_2000 = 0,  // Not supported
-  WINVERSION_2000 = 1,
+  WINVERSION_2000 = 1,      // Not supported
   WINVERSION_XP = 2,
   WINVERSION_SERVER_2003 = 3,
   WINVERSION_VISTA = 4,
