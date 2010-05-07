@@ -904,6 +904,8 @@ void TabRenderer::PaintLoadingAnimation(gfx::Canvas* canvas) {
   int dst_x;
   if (mini()) {
     dst_x = favicon_bounds_.x();
+    if (favicon_bounds_.width() != kFavIconSize)
+      dst_x += (favicon_bounds_.width() - kFavIconSize) / 2;
   } else {
     if (UILayoutIsRightToLeft()) {
       dst_x = width() - kLeftPadding - image_size;
