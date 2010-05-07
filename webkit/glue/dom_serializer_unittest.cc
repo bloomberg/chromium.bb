@@ -65,7 +65,7 @@ WebFrame* FindSubFrameByURL(WebView* web_view, const GURL& url) {
       if (!node.isElementNode())
         continue;
       // Check frame tag and iframe tag
-      WebElement element = node.toElement<WebElement>();
+      WebElement element = node.to<WebElement>();
       if (!element.hasTagName("frame") && !element.hasTagName("iframe"))
         continue;
       WebFrame* sub_frame = WebFrame::fromFrameOwnerElement(element);
@@ -233,7 +233,7 @@ bool HasDocType(const WebDocument& doc) {
 bool IsMetaElement(const WebNode& node, std::string& charset_info) {
   if (!node.isElementNode())
     return false;
-  const WebElement meta = node.toConstElement<WebElement>();
+  const WebElement meta = node.toConst<WebElement>();
   if (!meta.hasTagName("meta"))
     return false;
   charset_info.erase(0, charset_info.length());
@@ -703,7 +703,7 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithBaseTag) {
        node = all.nextItem()) {
     if (!node.isElementNode())
       continue;
-    WebElement element = node.toElement<WebElement>();
+    WebElement element = node.to<WebElement>();
     if (element.hasTagName("base")) {
       original_base_tag_count++;
     } else {
@@ -752,7 +752,7 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithBaseTag) {
        node = all.nextItem()) {
     if (!node.isElementNode())
       continue;
-    WebElement element = node.toElement<WebElement>();
+    WebElement element = node.to<WebElement>();
     if (element.hasTagName("base")) {
       new_base_tag_count++;
     } else {

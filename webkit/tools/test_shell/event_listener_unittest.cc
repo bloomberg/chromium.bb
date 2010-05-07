@@ -58,7 +58,7 @@ class WebEventListenerTest : public TestShellTest {
   static WebString GetNodeID(const WebNode& node) {
     if (node.nodeType() != WebNode::ElementNode)
       return WebString();
-    WebElement element = node.toConstElement<WebElement>();
+    WebElement element = node.toConst<WebElement>();
     return element.getAttribute("id");
   }
 };

@@ -286,9 +286,8 @@ TEST_F(FormManagerTest, FindForm) {
   ASSERT_EQ(1U, forms.size());
 
   // Get the input element we want to find.
-  WebElement element =
-      web_frame->document().getElementById(WebString::fromUTF8("firstname"));
-  WebInputElement input_element = element.toElement<WebInputElement>();
+  WebElement element = web_frame->document().getElementById("firstname");
+  WebInputElement input_element = element.to<WebInputElement>();
 
   // Find the form and verify it's the correct form.
   FormData form;
@@ -336,9 +335,8 @@ TEST_F(FormManagerTest, FillForm) {
   ASSERT_EQ(1U, forms.size());
 
   // Get the input element we want to find.
-  WebElement element =
-      web_frame->document().getElementById(WebString::fromUTF8("firstname"));
-  WebInputElement input_element = element.toElement<WebInputElement>();
+  WebElement element = web_frame->document().getElementById("firstname");
+  WebInputElement input_element = element.to<WebInputElement>();
 
   // Find the form that contains the input element.
   FormData form;
@@ -806,9 +804,8 @@ TEST_F(FormManagerTest, FillFormMaxLength) {
   ASSERT_EQ(1U, forms.size());
 
   // Get the input element we want to find.
-  WebElement element =
-      web_frame->document().getElementById(WebString::fromUTF8("firstname"));
-  WebInputElement input_element = element.toElement<WebInputElement>();
+  WebElement element = web_frame->document().getElementById("firstname");
+  WebInputElement input_element = element.to<WebInputElement>();
 
   // Find the form that contains the input element.
   FormData form;
@@ -893,9 +890,8 @@ TEST_F(FormManagerTest, FillFormNegativeMaxLength) {
   ASSERT_EQ(1U, forms.size());
 
   // Get the input element we want to find.
-  WebElement element =
-      web_frame->document().getElementById(WebString::fromUTF8("firstname"));
-  WebInputElement input_element = element.toElement<WebInputElement>();
+  WebElement element = web_frame->document().getElementById("firstname");
+  WebInputElement input_element = element.to<WebInputElement>();
 
   // Find the form that contains the input element.
   FormData form;
@@ -1026,9 +1022,8 @@ TEST_F(FormManagerTest, FillFormMoreFormDataFields) {
   EXPECT_TRUE(form_manager.FillForm(*form));
 
   // Get the input element we want to find.
-  WebElement element =
-      web_frame->document().getElementById(WebString::fromUTF8("firstname"));
-  WebInputElement input_element = element.toElement<WebInputElement>();
+  WebElement element = web_frame->document().getElementById("firstname");
+  WebInputElement input_element = element.to<WebInputElement>();
 
   // Find the newly-filled form that contains the input element.
   FormData form2;
@@ -1110,9 +1105,8 @@ TEST_F(FormManagerTest, FillFormFewerFormDataFields) {
   EXPECT_TRUE(form_manager.FillForm(*form));
 
   // Get the input element we want to find.
-  WebElement element =
-      web_frame->document().getElementById(WebString::fromUTF8("firstname"));
-  WebInputElement input_element = element.toElement<WebInputElement>();
+  WebElement element = web_frame->document().getElementById("firstname");
+  WebInputElement input_element = element.to<WebInputElement>();
 
   // Find the newly-filled form that contains the input element.
   FormData form2;
@@ -1278,9 +1272,8 @@ TEST_F(FormManagerTest, FillFormEmptyName) {
   ASSERT_EQ(1U, forms.size());
 
   // Get the input element we want to find.
-  WebElement element =
-      web_frame->document().getElementById(WebString::fromUTF8("firstname"));
-  WebInputElement input_element = element.toElement<WebInputElement>();
+  WebElement element = web_frame->document().getElementById("firstname");
+  WebInputElement input_element = element.to<WebInputElement>();
 
   // Find the form that contains the input element.
   FormData form;
@@ -1365,9 +1358,8 @@ TEST_F(FormManagerTest, FillFormEmptyFormNames) {
   ASSERT_EQ(2U, forms.size());
 
   // Get the input element we want to find.
-  WebElement element =
-      web_frame->document().getElementById(WebString::fromUTF8("apple"));
-  WebInputElement input_element = element.toElement<WebInputElement>();
+  WebElement element = web_frame->document().getElementById("apple");
+  WebInputElement input_element = element.to<WebInputElement>();
 
   // Find the form that contains the input element.
   FormData form;

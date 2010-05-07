@@ -102,7 +102,7 @@ TEST_F(FormAutocompleteTest, DISABLED_DynamicAutoCompleteOffFormSubmit) {
   WebKit::WebElement element =
       GetMainFrame()->document().getElementById(WebKit::WebString("myForm"));
   ASSERT_FALSE(element.isNull());
-  WebKit::WebFormElement form = element.toElement<WebKit::WebFormElement>();
+  WebKit::WebFormElement form = element.to<WebKit::WebFormElement>();
   EXPECT_TRUE(form.autoComplete());
 
   // Dynamically mark the form as autocomplete off.
