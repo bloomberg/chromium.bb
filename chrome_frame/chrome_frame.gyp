@@ -753,6 +753,7 @@
         'chrome_launcher',
         'xulrunner_sdk',
         '../chrome/chrome.gyp:chrome_version_info',
+        '../chrome/chrome.gyp:chrome_version_header',
         '../chrome/chrome.gyp:common',
         '../chrome/chrome.gyp:utility',
         '../build/temp_gyp/googleurl.gyp:googleurl',
@@ -769,7 +770,7 @@
         #   figure out something more gyp-ish.
         'resources/tlb_resource.rc',
         'chrome_tab.rgs',
-        'chrome_tab_version.rc.version',
+        'chrome_tab_version.rc',
         'resource.h',
       ],
       'include_dirs': [
@@ -816,51 +817,6 @@
             },
           },
         }],
-      ],
-      'rules': [
-        # Borrowed from chrome.gyp:chrome_dll_version, branding references
-        # removed
-        {
-          'rule_name': 'version',
-          'extension': 'version',
-          'variables': {
-            'version_py': '../chrome/tools/build/version.py',
-            'version_path': '../chrome/VERSION',
-            'lastchange_path':
-              '<(SHARED_INTERMEDIATE_DIR)/build/LASTCHANGE',
-            'template_input_path': 'chrome_tab_version.rc.version',
-          },
-          'conditions': [
-            [ 'branding == "Chrome"', {
-              'variables': {
-                 'branding_path': '../chrome/app/theme/google_chrome/BRANDING',
-              },
-            }, { # else branding!="Chrome"
-              'variables': {
-                 'branding_path': '../chrome/app/theme/chromium/BRANDING',
-              },
-            }],
-          ],
-          'inputs': [
-            '<(template_input_path)',
-            '<(version_path)',
-            '<(branding_path)',
-          ],
-          'outputs': [
-            '<(INTERMEDIATE_DIR)/chrome_tab_version.rc',
-          ],
-          'action': [
-            'python',
-            '<(version_py)',
-            '-f', '<(version_path)',
-            '-f', '<(branding_path)',
-            '-f', '<(lastchange_path)',
-            '<(template_input_path)',
-            '<@(_outputs)',
-          ],
-          'process_outputs_as_sources': 1,
-          'message': 'Generating version information in <(_outputs)'
-        },
       ],
     },
   ],

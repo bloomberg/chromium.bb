@@ -1405,6 +1405,49 @@
           ],
         },
         {
+          'target_name': 'chrome_version_header',
+          'type': 'none',
+          'actions': [
+            {
+              'action_name': 'version_header',
+              'variables': {
+                'lastchange_path':
+                  '<(SHARED_INTERMEDIATE_DIR)/build/LASTCHANGE',
+              },
+              'conditions': [
+                [ 'branding == "Chrome"', {
+                  'variables': {
+                     'branding_path': 'app/theme/google_chrome/BRANDING',
+                  },
+                }, { # else branding!="Chrome"
+                  'variables': {
+                     'branding_path': 'app/theme/chromium/BRANDING',
+                  },
+                }],
+              ],
+              'inputs': [
+                '<(version_path)',
+                '<(branding_path)',
+                '<(lastchange_path)',
+                'version.h.in',
+              ],
+              'outputs': [
+                '<(SHARED_INTERMEDIATE_DIR)/version.h',
+              ],
+              'action': [
+                'python',
+                '<(version_py_path)',
+                '-f', '<(version_path)',
+                '-f', '<(branding_path)',
+                '-f', '<(lastchange_path)',
+                'version.h.in',
+                '<@(_outputs)',
+              ],
+              'message': 'Generating version header file: <@(_outputs)',
+            },
+          ],
+        },
+        {
           'target_name': 'automation',
           'type': '<(library)',
           'msvs_guid': '1556EF78-C7E6-43C8-951F-F6B43AC0DD12',
