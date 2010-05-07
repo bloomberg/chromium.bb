@@ -320,8 +320,8 @@ bool PepperScrollbarWidget::OnKeyDown(const NPPepperEvent& event) {
   if (vertical_ && key == base::VKEY_UP ||
       !vertical_ && key == base::VKEY_LEFT) {
     Scroll(true, SCROLL_BY_LINE, 0);
-  } else if (vertical_ && key == base::VKEY_DOWN ||
-             !vertical_ && key == base::VKEY_RIGHT) {
+  } else if ((vertical_ && key == base::VKEY_DOWN) ||
+             (!vertical_ && key == base::VKEY_RIGHT)) {
     Scroll(false, SCROLL_BY_LINE, 0);
   } else if (key == base::VKEY_HOME) {
     Scroll(true, SCROLL_BY_DOCUMENT, 0);
