@@ -45,6 +45,8 @@ bool IsProtocolSupportedForMedia(const GURL& url) {
   return false;
 }
 
+#if !defined(OS_MACOSX)
+// These functions should be implemented in platform_support_*.cc
 string16 GetLocalizedString(int message_id) {
   // TODO(tkent): implement this.
   return string16();
@@ -54,6 +56,7 @@ base::StringPiece GetDataResource(int resource_id) {
   // TODO(tkent): implement this.
   return "";
 }
+#endif
 
 void CloseCurrentConnections() {
 }
