@@ -153,7 +153,7 @@ CustomizeSyncWindowGtk::CustomizeSyncWindowGtk(Profile* profile)
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), this);
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroy), this);
 
-  gtk_widget_show_all(dialog_);
+  gtk_util::ShowDialog(dialog_);
 }
 
 CustomizeSyncWindowGtk::~CustomizeSyncWindowGtk() {
@@ -162,7 +162,7 @@ CustomizeSyncWindowGtk::~CustomizeSyncWindowGtk() {
 void CustomizeSyncWindowGtk::Show() {
   // Bring options window to front if it already existed and isn't already
   // in front
-  gtk_window_present(GTK_WINDOW(dialog_));
+  gtk_util::PresentWindow(dialog_, 0);
 }
 
 bool CustomizeSyncWindowGtk::ClickOk() {
@@ -181,7 +181,7 @@ bool CustomizeSyncWindowGtk::ClickOk() {
   } else {
     // show the user that something's wrong with this dialog (not perfect, but
     // a temporary fix)
-    gtk_window_present(GTK_WINDOW(dialog_));
+    gtk_util::PresentWindow(dialog_, 0);
     return false;
   }
 }
