@@ -9,7 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/geolocation/fake_access_token_store.h"
-#include "chrome/browser/net/test_url_fetcher_factory.h"
+#include "chrome/common/net/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

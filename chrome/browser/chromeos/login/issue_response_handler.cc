@@ -7,7 +7,7 @@
 #include <string>
 
 #include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/browser/net/url_fetcher.h"
+#include "chrome/common/net/url_fetcher.h"
 #include "net/base/load_flags.h"
 
 namespace chromeos {

@@ -5,8 +5,8 @@
 // This file implements backoff in the suggest system so that we don't
 // DOS the Suggest servers when using URLFetcher.
 
-#ifndef CHROME_BROWSER_NET_URL_FETCHER_PROTECT_H_
-#define CHROME_BROWSER_NET_URL_FETCHER_PROTECT_H_
+#ifndef CHROME_COMMON_NET_URL_FETCHER_PROTECT_H_
+#define CHROME_COMMON_NET_URL_FETCHER_PROTECT_H_
 
 #include <map>
 #include <queue>
@@ -143,4 +143,4 @@ class URLFetcherProtectManager {
   DISALLOW_COPY_AND_ASSIGN(URLFetcherProtectManager);
 };
 
-#endif  // CHROME_BROWSER_NET_URL_FETCHER_PROTECT_H_
+#endif  // CHROME_COMMON_NET_URL_FETCHER_PROTECT_H_

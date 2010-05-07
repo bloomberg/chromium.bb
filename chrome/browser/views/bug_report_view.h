@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_VIEWS_BUG_REPORT_VIEW_H_
 #define CHROME_BROWSER_VIEWS_BUG_REPORT_VIEW_H_
 
-#include "chrome/browser/net/url_fetcher.h"
+#include "chrome/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/textfield/textfield.h"

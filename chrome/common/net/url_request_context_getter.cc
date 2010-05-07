@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop_proxy.h"
-#include "chrome/browser/net/url_request_context_getter.h"
+#include "chrome/common/net/url_request_context_getter.h"
 #include "net/url_request/url_request_context.h"
 
 net::CookieStore* URLRequestContextGetter::GetCookieStore() {

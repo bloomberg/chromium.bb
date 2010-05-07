@@ -40,7 +40,7 @@
 #include "base/basictypes.h"
 #include "base/task.h"
 #include "base/time.h"
-#include "chrome/browser/net/url_fetcher.h"
+#include "chrome/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"

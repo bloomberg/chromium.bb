@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "chrome/browser/net/url_fetcher.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
+#include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 

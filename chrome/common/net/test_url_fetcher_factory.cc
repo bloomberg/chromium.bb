@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/test_url_fetcher_factory.h"
+#include "chrome/common/net/test_url_fetcher_factory.h"
 
 TestURLFetcher::TestURLFetcher(const GURL& url,
                                URLFetcher::RequestType request_type,

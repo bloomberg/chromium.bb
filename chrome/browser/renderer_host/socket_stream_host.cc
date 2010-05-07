@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/common/net/socket_stream.h"
+#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/render_messages.h"
 #include "net/socket_stream/socket_stream_job.h"
 

@@ -11,7 +11,7 @@
 #include "base/ref_counted.h"
 #include "base/thread.h"
 #include "chrome/browser/printing/cloud_print/printer_info.h"
-#include "chrome/browser/net/url_fetcher.h"
+#include "chrome/common/net/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
 // Periodically monitors the status of a local print job and updates the

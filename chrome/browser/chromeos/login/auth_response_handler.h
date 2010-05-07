@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/browser/net/url_fetcher.h"
+#include "chrome/common/net/url_fetcher.h"
 
 class GURL;
 

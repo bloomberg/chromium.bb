@@ -19,8 +19,8 @@
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/browser/net/chrome_cookie_policy.h"
-#include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/notification_registrar.h"
 #include "net/url_request/url_request_context.h"
 

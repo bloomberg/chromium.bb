@@ -18,8 +18,8 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/extensions/extensions_service.h"
-#include "chrome/browser/net/url_fetcher.h"
 #include "chrome/common/extensions/update_manifest.h"
+#include "chrome/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 
 class Extension;

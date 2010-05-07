@@ -19,11 +19,11 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "chrome/browser/net/url_fetcher.h"
 #include "chrome/browser/safe_browsing/chunk_range.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
+#include "chrome/common/net/url_fetcher.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class Task;

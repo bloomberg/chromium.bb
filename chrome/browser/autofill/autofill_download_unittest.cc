@@ -6,7 +6,7 @@
 
 #include "base/string_util.h"
 #include "chrome/browser/autofill/autofill_download.h"
-#include "chrome/browser/net/test_url_fetcher_factory.h"
+#include "chrome/common/net/test_url_fetcher_factory.h"
 #include "chrome/test/testing_profile.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"

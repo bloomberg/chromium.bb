@@ -6,7 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/net/url_request_context_getter.h"
+#include "chrome/common/net/url_request_context_getter.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_context.h"
 

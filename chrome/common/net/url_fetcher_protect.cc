@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/url_fetcher_protect.h"
+#include "chrome/common/net/url_fetcher_protect.h"
 
 #include "base/logging.h"
 

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/url_fetcher.h"
+#include "chrome/common/net/url_fetcher.h"
 
 #include "base/compiler_specific.h"
 #include "base/message_loop_proxy.h"
 #include "base/string_util.h"
 #include "base/thread.h"
-#include "chrome/browser/net/url_fetcher_protect.h"
-#include "chrome/browser/net/url_request_context_getter.h"
+#include "chrome/common/net/url_fetcher_protect.h"
+#include "chrome/common/net/url_request_context_getter.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/base/io_buffer.h"

@@ -11,11 +11,11 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
-#include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/geolocation/access_token_store.h"
 #include "chrome/browser/geolocation/location_provider.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/geoposition.h"
+#include "chrome/common/net/url_request_context_getter.h"
 #include "googleurl/src/gurl.h"
 
 namespace {

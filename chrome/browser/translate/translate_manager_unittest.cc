@@ -4,7 +4,6 @@
 
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 
-#include "chrome/browser/net/test_url_fetcher_factory.h"
 #include "chrome/browser/renderer_host/mock_render_process_host.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/translate/translate_infobars_delegates.h"
@@ -18,6 +17,7 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/net/test_url_fetcher_factory.h"
 #include "chrome/test/testing_browser_process.h"
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"

@@ -10,7 +10,7 @@
 #include "chrome/browser/mock_browsing_data_appcache_helper.h"
 #include "chrome/browser/mock_browsing_data_database_helper.h"
 #include "chrome/browser/mock_browsing_data_local_storage_helper.h"
-#include "chrome/browser/net/url_request_context_getter.h"
+#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/test/testing_profile.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"

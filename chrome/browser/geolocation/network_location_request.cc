@@ -8,8 +8,8 @@
 #include "base/json/json_writer.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/common/geoposition.h"
+#include "chrome/common/net/url_request_context_getter.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
 

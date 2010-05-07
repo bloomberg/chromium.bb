@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NET_TEST_URL_FETCHER_FACTORY_H_
-#define CHROME_BROWSER_NET_TEST_URL_FETCHER_FACTORY_H_
+#ifndef CHROME_COMMON_NET_TEST_URL_FETCHER_FACTORY_H_
+#define CHROME_COMMON_NET_TEST_URL_FETCHER_FACTORY_H_
 
 #include <map>
 #include <string>
 
-#include "chrome/browser/net/url_fetcher.h"
+#include "chrome/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 
 // TestURLFetcher and TestURLFetcherFactory are used for testing consumers of
@@ -79,4 +79,4 @@ class TestURLFetcherFactory : public URLFetcher::Factory {
   DISALLOW_COPY_AND_ASSIGN(TestURLFetcherFactory);
 };
 
-#endif  // CHROME_BROWSER_NET_TEST_URL_FETCHER_FACTORY_H_
+#endif  // CHROME_COMMON_NET_TEST_URL_FETCHER_FACTORY_H_

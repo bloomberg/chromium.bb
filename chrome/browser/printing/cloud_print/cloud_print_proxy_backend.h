@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/thread.h"
-#include "chrome/browser/net/url_fetcher.h"
 #include "chrome/browser/printing/cloud_print/printer_info.h"
+#include "chrome/common/net/url_fetcher.h"
 
 class CloudPrintProxyService;
 class DictionaryValue;

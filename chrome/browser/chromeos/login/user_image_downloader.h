@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/net/url_fetcher.h"
 #include "chrome/browser/utility_process_host.h"
+#include "chrome/common/net/url_fetcher.h"
 
 class ResourceDispatcherHost;
 

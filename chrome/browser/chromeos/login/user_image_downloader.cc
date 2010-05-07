@@ -12,9 +12,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/net/url_fetcher.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/net/url_fetcher.h"
 #include "gfx/codec/png_codec.h"
 #include "googleurl/src/gurl.h"
 
