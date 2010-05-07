@@ -57,7 +57,7 @@ namespace {
 
 // Constants to specify the type of items in |model_|.
 enum {
-  COMMAND_ID_INPUT_METHODS = 0,  // US, Anthy, PinYin, ...
+  COMMAND_ID_INPUT_METHODS = 0,  // English, Chinese, Japanese, Arabic, ...
   COMMAND_ID_IME_PROPERTIES,  // Hiragana, Katakana, ...
   COMMAND_ID_CONFIGURE_IME,  // The "Configure IME..." button.
 };
@@ -355,15 +355,9 @@ void LanguageMenuButton::InputMethodChanged(LanguageLibrary* obj) {
   const std::wstring name = FormatInputLanguage(
       obj->current_input_method(), false);
   UpdateIcon(name);
-
-  // This is necessary to remove input method properties when the current
-  // language is switched to XKB.
-  // TODO(yusukes): remove this call?
-  RebuildModel();
 }
 
 void LanguageMenuButton::ImePropertiesChanged(LanguageLibrary* obj) {
-  RebuildModel();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
