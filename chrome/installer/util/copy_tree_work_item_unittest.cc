@@ -42,7 +42,7 @@ namespace {
     virtual void TearDown() {
       logging::CloseLogFile();
       // Clean up test directory
-      ASSERT_TRUE(file_util::Delete(test_dir_, false));
+      ASSERT_TRUE(file_util::Delete(test_dir_, true));
       ASSERT_FALSE(file_util::PathExists(test_dir_));
     }
 
