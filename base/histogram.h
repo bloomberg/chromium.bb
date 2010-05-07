@@ -60,6 +60,7 @@
 #define HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, bucket_count) do { \
     static scoped_refptr<Histogram> counter = Histogram::FactoryGet( \
         name, min, max, bucket_count, Histogram::kNoFlags); \
+    DCHECK_EQ(name, counter->histogram_name()); \
     counter->Add(sample); \
   } while (0)
 
@@ -71,6 +72,7 @@
 #define HISTOGRAM_CUSTOM_TIMES(name, sample, min, max, bucket_count) do { \
     static scoped_refptr<Histogram> counter = Histogram::FactoryGet( \
         name, min, max, bucket_count, Histogram::kNoFlags); \
+    DCHECK_EQ(name, counter->histogram_name()); \
     counter->AddTime(sample); \
   } while (0)
 
@@ -78,6 +80,7 @@
 #define HISTOGRAM_CLIPPED_TIMES(name, sample, min, max, bucket_count) do { \
     static scoped_refptr<Histogram> counter = Histogram::FactoryGet( \
         name, min, max, bucket_count, Histogram::kNoFlags); \
+    DCHECK_EQ(name, counter->histogram_name()); \
     if ((sample) < (max)) counter->AddTime(sample); \
   } while (0)
 
@@ -87,12 +90,14 @@
 #define HISTOGRAM_ENUMERATION(name, sample, boundary_value) do { \
     static scoped_refptr<Histogram> counter = LinearHistogram::FactoryGet( \
         name, 1, boundary_value, boundary_value + 1, Histogram::kNoFlags); \
+    DCHECK_EQ(name, counter->histogram_name()); \
     counter->Add(sample); \
   } while (0)
 
 #define HISTOGRAM_CUSTOM_ENUMERATION(name, sample, custom_ranges) do { \
     static scoped_refptr<Histogram> counter = CustomHistogram::FactoryGet( \
         name, custom_ranges, Histogram::kNoFlags); \
+    DCHECK_EQ(name, counter->histogram_name()); \
     counter->Add(sample); \
   } while (0)
 
@@ -155,6 +160,7 @@
 #define UMA_HISTOGRAM_CUSTOM_TIMES(name, sample, min, max, bucket_count) do { \
     static scoped_refptr<Histogram> counter = Histogram::FactoryGet( \
         name, min, max, bucket_count, Histogram::kUmaTargetedHistogramFlag); \
+    DCHECK_EQ(name, counter->histogram_name()); \
     counter->AddTime(sample); \
   } while (0)
 
@@ -162,6 +168,7 @@
 #define UMA_HISTOGRAM_CLIPPED_TIMES(name, sample, min, max, bucket_count) do { \
     static scoped_refptr<Histogram> counter = Histogram::FactoryGet( \
         name, min, max, bucket_count, Histogram::kUmaTargetedHistogramFlag); \
+    DCHECK_EQ(name, counter->histogram_name()); \
     if ((sample) < (max)) counter->AddTime(sample); \
   } while (0)
 
@@ -177,6 +184,7 @@
 #define UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, bucket_count) do { \
     static scoped_refptr<Histogram> counter = Histogram::FactoryGet( \
         name, min, max, bucket_count, Histogram::kUmaTargetedHistogramFlag); \
+    DCHECK_EQ(name, counter->histogram_name()); \
     counter->Add(sample); \
   } while (0)
 
@@ -193,12 +201,14 @@
     static scoped_refptr<Histogram> counter = LinearHistogram::FactoryGet( \
         name, 1, boundary_value, boundary_value + 1, \
         Histogram::kUmaTargetedHistogramFlag); \
+    DCHECK_EQ(name, counter->histogram_name()); \
     counter->Add(sample); \
   } while (0)
 
 #define UMA_HISTOGRAM_CUSTOM_ENUMERATION(name, sample, custom_ranges) do { \
     static scoped_refptr<Histogram> counter = CustomHistogram::FactoryGet( \
         name, custom_ranges, Histogram::kUmaTargetedHistogramFlag); \
+    DCHECK_EQ(name, counter->histogram_name()); \
     counter->Add(sample); \
   } while (0)
 
