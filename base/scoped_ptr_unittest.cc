@@ -115,7 +115,7 @@ TEST(ScopedPtrTest, ScopedArray) {
   {
     scoped_array<ConDecLogger> scoper;
     EXPECT_FALSE(scoper.get());
-    scoper.release();
+    EXPECT_FALSE(scoper.release());
     EXPECT_FALSE(scoper.get());
     scoper.reset();
     EXPECT_FALSE(scoper.get());

@@ -44,6 +44,8 @@
 #include <stdlib.h>
 #include <cstddef>
 
+#include "base/compiler_specific.h"
+
 // A scoped_ptr<T> is like a T*, except that the destructor of scoped_ptr<T>
 // automatically deletes the pointer it holds (if any).
 // That is, scoped_ptr<T> owns the T object that it points to.
@@ -113,7 +115,7 @@ class scoped_ptr {
   // If this object holds a NULL pointer, the return value is NULL.
   // After this operation, this object will hold a NULL pointer,
   // and will not own the object any more.
-  C* release() {
+  C* release() WARN_UNUSED_RESULT {
     C* retVal = ptr_;
     ptr_ = NULL;
     return retVal;
@@ -220,7 +222,7 @@ class scoped_array {
   // If this object holds a NULL pointer, the return value is NULL.
   // After this operation, this object will hold a NULL pointer,
   // and will not own the object any more.
-  C* release() {
+  C* release() WARN_UNUSED_RESULT {
     C* retVal = array_;
     array_ = NULL;
     return retVal;
@@ -337,7 +339,7 @@ class scoped_ptr_malloc {
   // If this object holds a NULL pointer, the return value is NULL.
   // After this operation, this object will hold a NULL pointer,
   // and will not own the object any more.
-  C* release() {
+  C* release() WARN_UNUSED_RESULT {
     C* tmp = ptr_;
     ptr_ = NULL;
     return tmp;
