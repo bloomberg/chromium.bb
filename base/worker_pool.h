@@ -11,6 +11,12 @@ class Task;
 
 // This is a facility that runs tasks that don't require a specific thread or
 // a message loop.
+//
+// WARNING: This shouldn't be used unless absolutely necessary. We don't wait
+// for the worker pool threads to finish on shutdown, so the tasks running
+// inside the pool must be extremely careful about other objects they access
+// (MessageLoops, Singletons, etc). During shutdown these object may no longer
+// exist.
 class WorkerPool {
  public:
   // This function posts |task| to run on a worker thread.  |task_is_slow|
