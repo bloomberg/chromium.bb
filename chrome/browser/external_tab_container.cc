@@ -201,20 +201,8 @@ bool ExternalTabContainer::Reinitialize(
 
   automation_ = automation_provider;
   automation_resource_message_filter_ = filter;
-
-  if (load_requests_via_automation_) {
-    InitializeAutomationRequestContext(tab_handle_);
-
-    RenderViewHost* rvh = tab_contents_->render_view_host();
-    if (rvh) {
-      AutomationResourceMessageFilter::ResumePendingRenderView(
-          rvh->process()->id(), rvh->routing_id(),
-          tab_handle_, automation_resource_message_filter_);
-    }
-  }
-
-  // We cannot send the navigation state right away as the automation channel
-  // may not have been fully setup yet.
+  // Wait for the automation channel to be initialized before resuming pending
+  // render views and sending in the navigation state.
   MessageLoop::current()->PostTask(
       FROM_HERE,
       external_method_factory_.NewRunnableMethod(
@@ -915,6 +903,17 @@ void ExternalTabContainer::LoadAccelerators() {
 }
 
 void ExternalTabContainer::OnReinitialize() {
+  if (load_requests_via_automation_) {
+    InitializeAutomationRequestContext(tab_handle_);
+
+    RenderViewHost* rvh = tab_contents_->render_view_host();
+    if (rvh) {
+      AutomationResourceMessageFilter::ResumePendingRenderView(
+          rvh->process()->id(), rvh->routing_id(),
+          tab_handle_, automation_resource_message_filter_);
+    }
+  }
+
   NavigationStateChanged(tab_contents_, 0);
   ServicePendingOpenURLRequests();
 }

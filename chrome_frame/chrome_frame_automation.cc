@@ -68,6 +68,9 @@ class ChromeFrameAutomationProxyImpl::TabProxyNotificationMessageFilter
     if (tab) {
       tab->OnMessageReceived(message);
       tab->Release();
+    } else {
+      NOTREACHED() << "Failed to find TabProxy for tab:" << tab_handle;
+      return false;
     }
     return true;
   }
