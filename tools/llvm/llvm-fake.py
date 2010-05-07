@@ -58,11 +58,6 @@ LIBDIR_ARM_2 = BASE + '/arm-newlib/arm-none-linux-gnueabi/lib'
 # arm libgcc
 LIBDIR_ARM_1 = BASE + '/arm-none-linux-gnueabi/llvm-gcc-4.2/lib/gcc/arm-none-linux-gnueabi/4.2.1/'
 
-# NOTE: ugly work around for some llvm-ld shortcomings:
-#       we need to keep some symbols alive which are referenced by
-#       native code libraries linked in at the very end
-REACHABLE_FUNCTION_SYMBOLS = LIBDIR_ARM_2 + '/reachable_function_symbols.o'
-
 PNACL_ARM_ROOT =  BASE + '/../pnacl-untrusted/arm'
 
 PNACL_X8632_ROOT = BASE + '/../pnacl-untrusted/x8632'
@@ -71,7 +66,6 @@ PNACL_X8664_ROOT = BASE + '/../pnacl-untrusted/x8664'
 
 PNACL_BITCODE_ROOT = BASE + '/../pnacl-untrusted/bitcode'
 
-REACHABLE_FUNCTION_SYMBOLS_BC = PNACL_BITCODE_ROOT + '/reachable_function_symbols.o'
 ######################################################################
 # FLAGS
 ######################################################################
@@ -626,21 +620,34 @@ def GenerateCombinedBitcodeFile(argv):
   assert output
 
   # NOTE: LLVM_LD automagically appends .bc to the output
-  # NOTE: without -disable-internalize only the symbol 'main'
-  #       is exported, but we need some more for the startup code
-  #       which kept alive via REACHABLE_FUNCTION_SYMBOLS
   if '-nostdlib' not in argv:
     if last_bitcode_pos != None:
         # Splice in the extra symbols.
         args_bit_ld = (args_bit_ld[:last_bitcode_pos] +
-                       [REACHABLE_FUNCTION_SYMBOLS_BC] +
                        args_bit_ld[last_bitcode_pos:] +
                        ['-lstdc++',
                         '-lc',
                         ])
 
   # NOTE: .bc will be appended output by LLVM_LD
-  Run([LLVM_LD] + args_bit_ld + ['-disable-internalize', '-o', output])
+  # These are the functions that are used by the NaCl runtime and therefore
+  # cannot be internalized.
+  # TODO(espindola): Give a pointer to a doc explaining how/why these are used.
+  # TODO(espindola): Check if a gold plugin can be used to do the right thing
+  # automatically.
+  public_functions = ['atexit',
+                      'exit',
+                      'main',
+                      'raise',
+                      '__av_wait',
+                      '__pthread_initialize',
+                      '__pthread_shutdown',
+                      '__srpc_init',
+                      '__srpc_wait']
+
+  Run([LLVM_LD] + args_bit_ld +
+      ['-internalize-public-api-list=' + ','.join(public_functions),
+       '-o', output])
   return output, args_native_ld
 
 
