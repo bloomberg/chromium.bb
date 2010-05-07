@@ -141,6 +141,9 @@ deps = {
   "src/third_party/ffmpeg/source/patched-ffmpeg-mt":
     "/trunk/deps/third_party/ffmpeg/patched-ffmpeg-mt@" +
     Var("ffmpeg_revision"),
+
+  "src/third_party/ppapi":
+    "http://ppapi.googlecode.com/svn/trunk@5",
 }
 
 
