@@ -108,12 +108,11 @@ CreditCardField* CreditCardField::Parse(
     if (is_ecml)
       pattern = GetEcmlPattern(kEcmlCardNumber);
     else
-      pattern = ASCIIToUTF16("number|card #|card no.|card_number");
+      pattern = ASCIIToUTF16("number|card #|card no.|card_number|card number");
 
     if (credit_card_field.number_ == NULL && ParseText(&q, pattern,
-        &credit_card_field.number_)) {
+        &credit_card_field.number_))
       continue;
-    }
 
     // "Expiration date" is the most common label here, but some pages have
     // "Expires", "exp. date" or "exp. month" and "exp. year".  We also look for
@@ -130,7 +129,7 @@ CreditCardField* CreditCardField::Parse(
     if (is_ecml)
       pattern = GetEcmlPattern(kEcmlCardExpireMonth);
     else
-      pattern = ASCIIToUTF16("expir|exp month|exp date|ccmonth|&month");
+      pattern = ASCIIToUTF16("expir|exp.*month|exp date|ccmonth");
 
     if ((!credit_card_field.expiration_month_ ||
         credit_card_field.expiration_month_->IsEmpty()) &&
@@ -140,9 +139,8 @@ CreditCardField* CreditCardField::Parse(
       else
         pattern = ASCIIToUTF16("|exp|^/|ccyear|year");
 
-      if (!ParseText(&q, pattern, &credit_card_field.expiration_year_)) {
+      if (!ParseText(&q, pattern, &credit_card_field.expiration_year_))
         return NULL;
-      }
 
       continue;
     }

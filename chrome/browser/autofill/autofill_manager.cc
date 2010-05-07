@@ -205,17 +205,11 @@ bool AutoFillManager::FillAutoFillFormData(int query_id,
   if (!profile) {
     for (std::vector<CreditCard*>::const_iterator iter = credit_cards.begin();
          iter != credit_cards.end(); ++iter) {
-      if ((*iter)->Label() != label)
-        continue;
-
-      FieldTypeSet field_types;
-      (*iter)->GetPossibleFieldTypes(value, &field_types);
-      for (FieldTypeSet::const_iterator type = field_types.begin();
-           type != field_types.end(); ++type) {
-        if ((*iter)->GetFieldText(AutoFillType(*type)) == value) {
-          credit_card = *iter;
-          break;
-        }
+      // Labels are unique, so we only need to verify the label for the credit
+      // card.
+      if ((*iter)->Label() == label) {
+        credit_card = *iter;
+        break;
       }
     }
   }
@@ -234,24 +228,18 @@ bool AutoFillManager::FillAutoFillFormData(int query_id,
     if (*form_structure != form)
       continue;
 
+    DCHECK_EQ(form_structure->field_count(), result.fields.size());
+
     for (size_t i = 0; i < form_structure->field_count(); ++i) {
       const AutoFillField* field = form_structure->field(i);
 
-      // TODO(jhawkins): We should have the same number of fields in both
-      // |form_structure| and |result|, so this loop should be unnecessary.
-      for (size_t j = 0; j < result.fields.size(); ++j) {
-        if (field->name() == result.fields[j].name() &&
-            field->label() == result.fields[j].label()) {
-          AutoFillType autofill_type(field->type());
-          if (credit_card &&
-              autofill_type.group() == AutoFillType::CREDIT_CARD) {
-            result.fields[j].set_value(
-                credit_card->GetFieldText(autofill_type));
-          } else if (profile) {
-            result.fields[j].set_value(profile->GetFieldText(autofill_type));
-          }
-          break;
-        }
+      AutoFillType autofill_type(field->type());
+      if (credit_card &&
+          autofill_type.group() == AutoFillType::CREDIT_CARD) {
+        result.fields[i].set_value(
+            credit_card->GetFieldText(autofill_type));
+      } else if (profile) {
+        result.fields[i].set_value(profile->GetFieldText(autofill_type));
       }
     }
   }
