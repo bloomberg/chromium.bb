@@ -111,6 +111,10 @@ END_COM_MAP()
   STDMETHOD(OnStopBinding)(HRESULT hresult, LPCWSTR error);
 
  protected:
+  // is it a good time to start caching progress notifications
+  bool ShouldCacheProgress(ULONG status_code) const;
+
+ protected:
   SniffData data_sniffer_;
 
   // A structure to cache the progress notifications

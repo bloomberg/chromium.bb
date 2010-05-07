@@ -88,7 +88,13 @@ HRESULT SniffData::InitializeCache(const std::wstring& url) {
   DCHECK(mem) << "GlobalAlloc failed: " << GetLastError();
 
   HRESULT hr = CreateStreamOnHGlobal(mem, TRUE, cache_.Receive());
-  DLOG_IF(ERROR, FAILED(hr)) << "CreateStreamOnHGlobal failed: " << hr;
+  if (SUCCEEDED(hr)) {
+    ULARGE_INTEGER size = {0};
+    cache_->SetSize(size);
+  } else {
+    DLOG(ERROR) << "CreateStreamOnHGlobal failed: " << hr;
+  }
+
   return hr;
 }
 
@@ -212,16 +218,21 @@ STDMETHODIMP BSCBStorageBind::OnProgress(ULONG progress, ULONG progress_max,
       status_code, PlatformThread::CurrentId(), status_text);
 
   HRESULT hr = S_OK;
-  if (data_sniffer_.is_undetermined()) {
+
+  // Remember the last redirected URL in case we get switched into
+  // chrome frame
+  if (status_code == BINDSTATUS_REDIRECTING) {
+    scoped_refptr<BindContextInfo> info =
+        BindContextInfo::FromBindContext(bind_ctx_);
+    DCHECK(info);
+    if (info)
+      info->set_url(status_text);
+  }
+
+  if (ShouldCacheProgress(status_code)) {
     Progress new_progress = { progress, progress_max, status_code,
                               status_text ? status_text : std::wstring() };
     saved_progress_.push_back(new_progress);
-    if (status_code == BINDSTATUS_REDIRECTING) {
-      scoped_refptr<BindContextInfo> info =
-          BindContextInfo::FromBindContext(bind_ctx_);
-      DCHECK(info);
-      info->set_url(status_text);
-    }
   } else {
     hr = CallbackImpl::OnProgress(progress, progress_max, status_code,
                                status_text);
@@ -336,5 +347,45 @@ HRESULT BSCBStorageBind::MayPlayBack(DWORD flags) {
   }
 
   return hr;
+}
+
+// We cache and suppress sending progress notifications till
+// we get the first OnDataAvailable. This is to prevent
+// mshtml from making up its mind about the mime type.
+// However, this is the invasive part of the patch and
+// could trip other software that's due to mistimed progress
+// notifications. It is probably not a good idea to hide redirects
+// and some cookie notifications.
+//
+// We only need to suppress data notifications like
+// BINDSTATUS_MIMETYPEAVAILABLE,
+// BINDSTATUS_CACHEFILENAMEAVAILABLE etc.
+//
+// This is an atempt to reduce the exposure by starting to
+// cache only when we receive one of the interesting progress
+// notification.
+bool BSCBStorageBind::ShouldCacheProgress(unsigned long status_code) const {
+  // We need to cache progress notifications only if we haven't yet figured
+  // out which way the request is going.
+  if (data_sniffer_.is_undetermined()) {
+    // If we are already caching then continue.
+    if (!saved_progress_.empty())
+      return true;
+    // Start caching only if we see one of the interesting progress
+    // notifications.
+    switch (status_code) {
+      case BINDSTATUS_BEGINDOWNLOADDATA:
+      case BINDSTATUS_DOWNLOADINGDATA:
+      case BINDSTATUS_USINGCACHEDCOPY:
+      case BINDSTATUS_MIMETYPEAVAILABLE:
+      case BINDSTATUS_CACHEFILENAMEAVAILABLE:
+      case BINDSTATUS_SERVER_MIMETYPEAVAILABLE:
+        return true;
+      default:
+        break;
+    }
+  }
+
+  return false;
 }
 
