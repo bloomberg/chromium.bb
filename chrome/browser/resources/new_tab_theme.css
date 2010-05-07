@@ -29,15 +29,6 @@ body {
   color: $8; /* COLOR_NTP_TEXT */
 }
 
-.list > .thumbnail-container > .title {
-  color: $$6; /* COLOR_NTP_LINK_UNDERLINE */
-}
-
-.list > .thumbnail-container > .title > div,
-.list .title > div {
-  color: $9; /* COLOR_NTP_LINK */
-}
-
 .thumbnail-container:focus .thumbnail,
 .thumbnail-container:hover .thumbnail {
   border-color: $6; /* COLOR_NTP_HEADER */
@@ -65,16 +56,16 @@ body {
 }
 
 #recently-closed {
-  color: $$3; /* COLOR_NTP_SECTION_TEXT */
+  color: $8; /* COLOR_NTP_TEXT */
 }
 
 #recently-closed > span > span {
-  color: $$7; /* COLOR_NTP_SECTION_LINK_UNDERLINE */
+  color: $$6; /* COLOR_NTP_LINK_UNDERLINE */
   text-decoration: underline;
 }
 
 #recently-closed > span > span > .item {
-  color: $$4; /* COLOR_NTP_SECTION_LINK */
+  color: $9; /* COLOR_NTP_LINK */
   text-decoration: none;
 }
 
@@ -94,8 +85,7 @@ body {
 
 :link,
 :visited,
-.link,
-.list > .thumbnail-container {
+.link {
   color: $$6; /* COLOR_NTP_LINK_UNDERLINE */
 }
 
@@ -125,9 +115,14 @@ body {
 }
 
 .section > h2 {
-  color: $6; /* COLOR_NTP_HEADER */
+  color: $8; /* COLOR_NTP_TEXT */
+}
+
+#apps-section a {
+  color: $9; /* COLOR_NTP_LINK */
 }
 
 #apps-section a:hover {
+  color: $$3; /* COLOR_NTP_SECTION_TEXT */
   background-color: $$1; /* COLOR_NTP_SECTION */;
 }

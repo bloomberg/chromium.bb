@@ -213,7 +213,7 @@ html[dir=rtl] .item {
   overflow-x: hidden;
 }
 
-#recently-closed :not(h2) {
+#recently-closed > span > span  {
   display: inline-block;
   max-width: 114px; /* Selected so that we can fit 5 items in EN-US */
   white-space: nowrap;
@@ -227,6 +227,7 @@ html[dir=rtl] .item {
 #recently-closed .nav {
   max-width: none !important;
 }
+
 .nav > a {
   /* no icon */
   padding: 0;
