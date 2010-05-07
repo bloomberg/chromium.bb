@@ -109,8 +109,9 @@ void StatsTableThread::Run() {
 
 // Create a few threads and have them poke on their counters.
 // Currently disabled. See bug report below:
-// Flaky, http://crbug.com/10611
-TEST_F(StatsTableTest, FLAKY_MultipleThreads) {
+// TODO(maruel): http://crbug.com/10611
+TEST_F(StatsTableTest, MultipleThreads) {
+#if 0
   // Create a stats table.
   const std::string kTableName = "MultipleThreadStatTable";
   const int kMaxThreads = 20;
@@ -163,6 +164,7 @@ TEST_F(StatsTableTest, FLAKY_MultipleThreads) {
   EXPECT_EQ(0, table.CountThreadsRegistered());
 
   DeleteShmem(kTableName);
+#endif
 }
 
 const std::string kMPTableName = "MultipleProcessStatTable";
