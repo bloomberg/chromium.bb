@@ -291,6 +291,11 @@ UntarAndPatchNewlib() {
     touch ${s}
   done
 
+  SubBanner "add nacl headers"
+  ${saved_dir}/src/trusted/service_runtime/export_header.py \
+       ${saved_dir}/src/trusted/service_runtime/include \
+       newlib/libc/include
+
   cd ${saved_dir}
 }
 
@@ -304,9 +309,6 @@ SetupSysRoot() {
   mkdir -p ${sys_include}
   ln -sf ${sys_include} ${sys_include2}
   cp -r ${TMP}/newlib/newlib-1.17.0/newlib/libc/include/* ${sys_include}
-  # TODO(robertm): is this really necessary at this time?
-  src/trusted/service_runtime/export_header.py \
-       src/trusted/service_runtime/include ${sys_include}
 }
 
 
@@ -577,27 +579,20 @@ ConfigureAndBuildGccStage3() {
 
 
   SubBanner "Install libgcc.a library"
-  mkdir -p  ${NEWLIB_INSTALL_DIR}/usr/lib
-  cp gcc/libgcc.a ${NEWLIB_INSTALL_DIR}/usr/lib
   # NOTE: the "cp" will fail when we upgrade to a more recent compiler,
   #       simply fix this version when this happens
   cp gcc/libg*.a ${LLVMGCC_INSTALL_DIR}/lib/gcc/${CROSS_TARGET}/4.2.1/
 
   SubBanner "Install libiberty.a"
-  mkdir -p  ${NEWLIB_INSTALL_DIR}/usr/lib
-  cp libiberty/libiberty.a ${NEWLIB_INSTALL_DIR}/usr/lib
   cp libiberty/libiberty.a ${LLVMGCC_INSTALL_DIR}/${CROSS_TARGET}/lib
 
   SubBanner "Install libstdc++, header massaging"
   echo "headers"
-  cp -r ${LLVMGCC_INSTALL_DIR}/include/c++/ ${NEWLIB_INSTALL_DIR}/usr/include/
+
   # Don't ask
   rm -f ${LLVMGCC_INSTALL_DIR}/arm-none-linux-gnueabi/include/c++
   ln -s ../../include/c++ \
         ${LLVMGCC_INSTALL_DIR}/arm-none-linux-gnueabi/include/c++
-  echo "libs"
-  cp  ${LLVMGCC_INSTALL_DIR}/lib/lib*.a  ${NEWLIB_INSTALL_DIR}/usr/lib
-
 
   cd ${saved_dir}
 }
@@ -813,11 +808,8 @@ BuildAndInstallNewlib() {
   cp ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}/include/newlib.h \
     ${sys_include}
 
-  mkdir -p ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}/usr
-  cp -rf ${sys_lib}  ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}/usr/
-  cp -rf ${sys_include}  ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}/usr/
-
   cp -r ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}/lib/* ${sys_lib}
+
 
   # NOTE: we provide our own pthread.h via extra-sdk
   p1="${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}/usr/include/pthread.h"
@@ -826,7 +818,6 @@ BuildAndInstallNewlib() {
     echo "remove bad pthread: $p"
     rm -f $p
   done
-
 
   cd ${saved_dir}
 }
