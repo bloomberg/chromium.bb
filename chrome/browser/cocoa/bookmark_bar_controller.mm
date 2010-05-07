@@ -388,6 +388,12 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   if (bookmarkChildren > displayedButtonCount_) {
     [offTheSideButton_ setHidden:NO];
   } else {
+    // If we just deleted the last item in an off-the-side menu so the
+    // button will be going away, make sure the menu goes away.
+    if (folderController_ &&
+        ([folderController_ parentButton] == offTheSideButton_))
+      [self closeAllBookmarkFolders];
+    // (And hide the button, too.)
     [offTheSideButton_ setHidden:YES];
   }
 }
@@ -1537,12 +1543,19 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [self openURL:node->GetURL() disposition:disposition];
 }
 
+// For the given root node of the bookmark bar, show or hide (as
+// appropriate) the "no items" container (text which says "bookmarks
+// go here").
+- (void)showOrHideNoItemContainerForNode:(const BookmarkNode*)node {
+  BOOL hideNoItemWarning = node->GetChildCount() > 0;
+  [[buttonView_ noItemContainer] setHidden:hideNoItemWarning];
+}
+
 // TODO(jrg): write a "build bar" so there is a nice spot for things
 // like the contextual menu which is invoked when not over a
 // bookmark.  On Safari that menu has a "new folder" option.
 - (void)addNodesToButtonList:(const BookmarkNode*)node {
-  BOOL hideNoItemWarning = node->GetChildCount() > 0;
-  [[buttonView_ noItemContainer] setHidden:hideNoItemWarning];
+  [self showOrHideNoItemContainerForNode:node];
 
   CGFloat maxViewX = NSMaxX([[self view] bounds]);
   int xOffset = 0;
@@ -1640,6 +1653,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [button setDraggable:NO];
   otherBookmarksButton_.reset(button);
 
+  // Make sure this button, like all other BookmarkButtons, lives
+  // until the end of the current event loop.
+  [[button retain] autorelease];
+
   // Peg at right; keep same height as bar.
   [button setAutoresizingMask:(NSViewMinXMargin)];
   [button setCell:cell];
@@ -1710,6 +1727,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     [oldController removeButton:oldIndex animate:NO];
     [newController addButtonForNode:movedNode atIndex:newIndex];
   }
+  // If we moved the only item on the "off the side" menu somewhere
+  // else, we may no longer need to show it.
+  [self configureOffTheSideButtonContentsAndVisibility];
 }
 
 - (void)nodeAdded:(BookmarkModel*)model
@@ -1718,6 +1738,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   id<BookmarkButtonControllerProtocol> newController =
       [self controllerForNode:newParent];
   [newController addButtonForNode:newNode atIndex:newIndex];
+  // If we go from 0 --> 1 bookmarks we may need to hide the
+  // "bookmarks go here" text container.
+  [self showOrHideNoItemContainerForNode:model->GetBookmarkBarNode()];
 }
 
 - (void)nodeRemoved:(BookmarkModel*)model
@@ -1727,6 +1750,12 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   id<BookmarkButtonControllerProtocol> parentController =
       [self controllerForNode:oldParent];
   [parentController removeButton:index animate:YES];
+  // If we go from 1 --> 0 bookmarks we may need to show the
+  // "bookmarks go here" text container.
+  [self showOrHideNoItemContainerForNode:model->GetBookmarkBarNode()];
+  // If we deleted the only item on the "off the side" menu we no
+  // longer need to show it.
+  [self configureOffTheSideButtonContentsAndVisibility];
 }
 
 // TODO(jrg): for now this is brute force.

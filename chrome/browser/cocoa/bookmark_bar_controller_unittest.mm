@@ -418,6 +418,27 @@ TEST_F(BookmarkBarControllerTest, FrameChangeNotification) {
   EXPECT_GT([bar toggles], 0);
 }
 
+// Confirm our "no items" container goes away when we add the 1st
+// bookmark, and comes back when we delete the bookmark.
+TEST_F(BookmarkBarControllerTest, NoItemContainerGoesAway) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  const BookmarkNode* parent = model->GetBookmarkBarNode();
+
+  [bar_ loaded:model];
+  BookmarkBarView* view = [bar_ buttonView];
+  DCHECK(view);
+  NSView* noItemContainer = [view noItemContainer];
+  DCHECK(noItemContainer);
+
+  EXPECT_FALSE([noItemContainer isHidden]);
+  const BookmarkNode* node = model->AddURL(parent, parent->GetChildCount(),
+                                           L"title",
+                                           GURL("http://www.google.com"));
+  EXPECT_TRUE([noItemContainer isHidden]);
+  model->Remove(parent, parent->IndexOfChild(node));
+  EXPECT_FALSE([noItemContainer isHidden]);
+}
+
 // Confirm off the side button only enabled when reasonable.
 TEST_F(BookmarkBarControllerTest, OffTheSideButtonHidden) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
@@ -437,6 +458,28 @@ TEST_F(BookmarkBarControllerTest, OffTheSideButtonHidden) {
                   GURL("http://superfriends.hall-of-justice.edu"));
   }
   EXPECT_FALSE([bar_ offTheSideButtonIsHidden]);
+
+  // Open the "off the side" and start deleting nodes.  Make sure
+  // deletion of the last node in "off the side" causes the folder to
+  // close.
+  EXPECT_FALSE([bar_ offTheSideButtonIsHidden]);
+  NSButton* offTheSideButton = [bar_ offTheSideButton];
+  // Open "off the side" menu.
+  [bar_ openBookmarkFolderFromButton:offTheSideButton];
+  while (parent->GetChildCount()) {
+    // We've completed the job so we're done.
+    if ([bar_ offTheSideButtonIsHidden])
+      break;
+    // Delete the last button.
+    model->Remove(parent, parent->GetChildCount()-1);
+    // If last one make sure the menu is closed and the button is hidden.
+    // Else make sure menu stays open.
+    if ([bar_ offTheSideButtonIsHidden]) {
+      EXPECT_FALSE([bar_ folderController]);
+    } else {
+      EXPECT_TRUE([bar_ folderController]);
+    }
+  }
 }
 
 // Test whether |-dragShouldLockBarVisibility| returns NO iff the bar is
