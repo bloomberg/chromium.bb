@@ -4,6 +4,8 @@ CookieMonsterTest.TestLastAccess
 SpdyNetwork*Error*
 SpdyNetwork*Get*
 X509CertificateTest.UnoSoftCertParsing
+URLRequestTest.DoNotSaveCookies
+URLRequestTest.QuitTest
 
 #########################################
 # These tests fail if you don't have our SSL certificate installed.
