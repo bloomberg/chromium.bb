@@ -94,11 +94,6 @@ void PageInfoWindowMac::ShowCertDialog(int) {
 }
 
 void PageInfoWindowMac::LayoutSections() {
-  // These wstring's will be converted to NSString's and passed to the
-  // window controller when we're done figuring out what text should go in them.
-  std::wstring identity_msg;
-  std::wstring connection_msg;
-
   // Identity section
   PageInfoModel::SectionInfo identity_section =
       model_.GetSectionInfo(PageInfoModel::IDENTITY);
