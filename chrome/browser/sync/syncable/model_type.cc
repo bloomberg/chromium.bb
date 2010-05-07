@@ -7,7 +7,6 @@
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
-#include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/protocol/theme_specifics.pb.h"
@@ -20,9 +19,6 @@ void AddDefaultExtensionValue(syncable::ModelType datatype,
   switch (datatype) {
     case BOOKMARKS:
       specifics->MutableExtension(sync_pb::bookmark);
-      break;
-    case PASSWORD:
-      specifics->MutableExtension(sync_pb::password);
       break;
     case PREFERENCES:
       specifics->MutableExtension(sync_pb::preference);
@@ -75,9 +71,6 @@ ModelType GetModelType(const sync_pb::SyncEntity& sync_pb_entity) {
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   if (specifics.HasExtension(sync_pb::bookmark))
     return BOOKMARKS;
-
-  if (specifics.HasExtension(sync_pb::password))
-    return PASSWORD;
 
   if (specifics.HasExtension(sync_pb::preference))
     return PREFERENCES;

@@ -44,8 +44,6 @@ enum ModelType {
 
   // A preference folder or a preference object.
   PREFERENCES,
-  // A password folder or password object.
-  PASSWORD,
   // An autofill folder or an autofill object.
   AUTOFILL,
   // A themes folder or a themes object.
