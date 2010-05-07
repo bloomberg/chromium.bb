@@ -8,17 +8,11 @@
 #include <string>
 
 #include "base/timer.h"
-#include "chrome/browser/views/dom_view.h"
+#include "chrome/browser/chromeos/login/web_page_view.h"
 #include "views/view.h"
 
 class Profile;
 class SiteContents;
-class TabContentsDelegate;
-
-namespace views {
-class Label;
-class Throbber;
-}  // namespace views
 
 namespace chromeos {
 
@@ -31,24 +25,15 @@ class AccountCreationViewDelegate {
   // this function will be called on each try.
   virtual void OnUserCreated(const std::string& username,
                              const std::string& password) = 0;
-
-  // Notify about document load event.
-  virtual void OnPageLoaded() = 0;
-
-  // Notify about navigation errors.
-  virtual void OnPageLoadFailed(const std::string& url) = 0;
 };
 
-class AccountCreationDomView : public DOMView {
+class AccountCreationDomView : public WebPageDomView {
  public:
   AccountCreationDomView();
   virtual ~AccountCreationDomView();
 
   // Set delegate that will be notified about user actions.
   void SetAccountCreationViewDelegate(AccountCreationViewDelegate* delegate);
-
-  // Set delegate that will be notified about tab contents changes.
-  void SetTabContentsDelegate(TabContentsDelegate* delegate);
 
  protected:
   // Overriden from DOMView:
@@ -61,51 +46,20 @@ class AccountCreationDomView : public DOMView {
   DISALLOW_COPY_AND_ASSIGN(AccountCreationDomView);
 };
 
-class AccountCreationView : public views::View {
+class AccountCreationView : public WebPageView {
  public:
   AccountCreationView();
   virtual ~AccountCreationView();
 
-  // Initialize view layout.
-  void Init();
-
-  void InitDOM(Profile* profile, SiteInstance* site_instance);
-  void LoadURL(const GURL& url);
-  void SetTabContentsDelegate(TabContentsDelegate* delegate);
-
   // Set delegate that will be notified about user actions.
   void SetAccountCreationViewDelegate(AccountCreationViewDelegate* delegate);
 
-  // Stops throbber and shows page content (starts renderer_timer_ for that).
-  void ShowPageContent();
+ protected:
+  virtual WebPageDomView* dom_view() { return dom_view_; }
 
  private:
-  // Overriden from views::View:
-  virtual void Layout();
-
-  // Called by stop_timer_. Shows rendered page.
-  void ShowRenderedPage();
-
-  // Called by start_timer_. Shows throbber and waiting label.
-  void ShowWaitingControls();
-
-  // View that renderes account creation page.
+  // View that renders page.
   AccountCreationDomView* dom_view_;
-
-  // Screen border insets. Used for layout.
-  gfx::Insets insets_;
-
-  // Throbber shown during page load.
-  views::Throbber* throbber_;
-
-  // "Connecting..." label shown while waiting for the page to load/render.
-  views::Label* connecting_label_;
-
-  // Timer used when waiting for network response.
-  base::OneShotTimer<AccountCreationView> start_timer_;
-
-  // Timer used before toggling loaded page visibility.
-  base::OneShotTimer<AccountCreationView> stop_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountCreationView);
 };

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login/account_screen.h"
 
-#include "base/logging.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/login/account_creation_view.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
@@ -85,6 +84,7 @@ bool AccountScreen::check_for_https_ = true;
 // AccountScreen, ViewScreen implementation:
 void AccountScreen::CreateView() {
   ViewScreen<AccountCreationView>::CreateView();
+  view()->SetWebPageDelegate(this);
   view()->SetAccountCreationViewDelegate(this);
 }
 
@@ -125,9 +125,14 @@ void AccountScreen::NavigationStateChanged(const TabContents* source,
   }
 }
 
-bool AccountScreen::HandleContextMenu(const ContextMenuParams& params) {
-  // Just return true because we don't want to show context menue.
-  return true;
+///////////////////////////////////////////////////////////////////////////////
+// AccountScreen, WebPageDelegate implementation:
+void AccountScreen::OnPageLoaded() {
+  view()->ShowPageContent();
+}
+
+void AccountScreen::OnPageLoadFailed(const std::string& url) {
+  delegate()->GetObserver(this)->OnExit(ScreenObserver::CONNECTION_FAILED);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -135,14 +140,6 @@ bool AccountScreen::HandleContextMenu(const ContextMenuParams& params) {
 void AccountScreen::OnUserCreated(const std::string& username,
                                   const std::string& password) {
   delegate()->GetObserver(this)->OnSetUserNamePassword(username, password);
-}
-
-void AccountScreen::OnPageLoaded() {
-  view()->ShowPageContent();
-}
-
-void AccountScreen::OnPageLoadFailed(const std::string& url) {
-  delegate()->GetObserver(this)->OnExit(ScreenObserver::CONNECTION_FAILED);
 }
 
 }  // namespace chromeos
