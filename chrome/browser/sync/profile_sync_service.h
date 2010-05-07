@@ -173,7 +173,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // occurred preventing the action. We make it the duty of ProfileSyncService
   // to open the dialog to easily ensure only one is ever showing.
   bool SetupInProgress() const {
-    return !HasSyncSetupCompleted() && WizardIsVisible();
+    return !HasSyncSetupCompleted() &&
+        (WizardIsVisible() || bootstrap_sync_authentication_);
   }
   bool WizardIsVisible() const {
     return wizard_.IsVisible();
