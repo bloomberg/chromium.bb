@@ -270,6 +270,8 @@ void NativeTableGtk::CreateNativeControl() {
   // Updates the gtk model with the actual model.
   if (table_->model())
     OnRowsAdded(0, table_->model()->RowCount());
+
+  gtk_widget_show_all(native_view());
 }
 
 void NativeTableGtk::InsertTextColumn(const TableColumn& column, int index) {
