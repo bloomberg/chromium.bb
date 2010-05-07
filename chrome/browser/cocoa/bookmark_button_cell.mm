@@ -75,7 +75,6 @@
   [self setButtonType:NSMomentaryPushInButton];
   [self setBezelStyle:NSShadowlessSquareBezelStyle];
   [self setShowsBorderOnlyWhileMouseInside:YES];
-  [self setControlSize:NSSmallControlSize];
   [self setAlignment:NSLeftTextAlignment];
   [self setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
   [self setWraps:NO];
@@ -98,7 +97,11 @@
 
 - (NSSize)cellSizeForBounds:(NSRect)aRect {
   NSSize size = [super cellSizeForBounds:aRect];
-  size.width += 2;
+  // See comments in setBookmarkCellText:image: about squeezing
+  // buttons with no title.
+  if ([[self title] length]) {
+    size.width += 2;
+  }
   size.height += 4;
   return size;
 }
@@ -109,7 +112,14 @@
                                            withString:@" "];
   title = [title stringByReplacingOccurrencesOfString:@"\r"
                                            withString:@" "];
-  [self setImagePosition:NSImageLeft];
+  // If no title squeeze things tight with a NSMiniControlSize.
+  // Else make them small and place the image on the left.
+  if ([title length]) {
+    [self setImagePosition:NSImageLeft];
+    [self setControlSize:NSSmallControlSize];
+  } else {
+    [self setControlSize:NSMiniControlSize];
+  }
   if (image)
     [self setImage:image];
   if (title)
