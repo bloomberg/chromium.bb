@@ -42,6 +42,8 @@ class PageInfoWindowGtk : public PageInfoModel::PageInfoModelObserver {
   // Shows the certificate info window.
   void ShowCertDialog();
 
+  GtkWidget* widget() { return dialog_; }
+
  private:
   // Layouts the different sections retrieved from the model.
   void InitContents();
@@ -55,6 +57,9 @@ class PageInfoWindowGtk : public PageInfoModel::PageInfoModelObserver {
   // The page info dialog.
   GtkWidget* dialog_;
 
+  // The url for this dialog. Should be unique among active dialogs.
+  GURL url_;
+
   // The virtual box containing the sections.
   GtkWidget* contents_;
 
@@ -63,6 +68,10 @@ class PageInfoWindowGtk : public PageInfoModel::PageInfoModelObserver {
 
   DISALLOW_COPY_AND_ASSIGN(PageInfoWindowGtk);
 };
+
+// We only show one page info per URL (keyed on url.spec()).
+typedef std::map<std::string, PageInfoWindowGtk*> PageInfoWindowMap;
+PageInfoWindowMap g_page_info_window_map;
 
 // Button callbacks.
 void OnDialogResponse(GtkDialog* dialog, gint response_id,
@@ -88,6 +97,7 @@ PageInfoWindowGtk::PageInfoWindowGtk(gfx::NativeWindow parent,
                                      bool show_history)
     : ALLOW_THIS_IN_INITIALIZER_LIST(model_(profile, url, ssl,
                                             show_history, this)),
+      url_(url),
       contents_(NULL),
       cert_id_(ssl.cert_id()) {
   dialog_ = gtk_dialog_new_with_buttons(
@@ -112,9 +122,13 @@ PageInfoWindowGtk::PageInfoWindowGtk(gfx::NativeWindow parent,
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnDestroy), this);
 
   InitContents();
+
+  g_page_info_window_map[url.spec()] = this;
 }
 
-PageInfoWindowGtk::~PageInfoWindowGtk() {}
+PageInfoWindowGtk::~PageInfoWindowGtk() {
+  g_page_info_window_map.erase(url_.spec());
+}
 
 void PageInfoWindowGtk::ModelChanged() {
   InitContents();
@@ -190,9 +204,16 @@ void ShowPageInfo(gfx::NativeWindow parent,
                   const GURL& url,
                   const NavigationEntry::SSLStatus& ssl,
                   bool show_history) {
-  PageInfoWindowGtk* window = new PageInfoWindowGtk(parent, profile, url,
-                                                    ssl, show_history);
-  window->Show();
+  PageInfoWindowMap::iterator iter =
+      g_page_info_window_map.find(url.spec());
+  if (iter != g_page_info_window_map.end()) {
+    gtk_window_present(GTK_WINDOW(iter->second->widget()));
+    return;
+  }
+
+  PageInfoWindowGtk* page_info_window =
+      new PageInfoWindowGtk(parent, profile, url, ssl, show_history);
+  page_info_window->Show();
 }
 
 }  // namespace browser
