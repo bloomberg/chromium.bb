@@ -1206,9 +1206,8 @@ TEST_F(FormManagerTest, FillFormExtraFieldInCache) {
   EXPECT_TRUE(form_manager.FillForm(*form));
 
   // Get the input element we want to find.
-  WebElement element =
-      web_frame->document().getElementById(WebString::fromUTF8("firstname"));
-  WebInputElement input_element = element.toElement<WebInputElement>();
+  WebElement element = web_frame->document().getElementById("firstname");
+  WebInputElement input_element = element.to<WebInputElement>();
 
   // Find the newly-filled form that contains the input element.
   FormData form2;
