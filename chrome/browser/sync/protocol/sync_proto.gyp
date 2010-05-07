@@ -16,6 +16,7 @@
         'sync.proto',
         'autofill_specifics.proto',
         'bookmark_specifics.proto',
+        'password_specifics.proto',
         'preference_specifics.proto',
         'theme_specifics.proto',
         'typed_url_specifics.proto',
