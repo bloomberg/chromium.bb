@@ -209,6 +209,9 @@ HRESULT MonikerPatch::BindToStorage(IMoniker_BindToStorage_Fn original,
                                     IMoniker* to_left, REFIID iid, void** obj) {
   DCHECK(to_left == NULL);
 
+  // Report a crash if the crash is in our own module.
+  ExceptionBarrierReportOnlyModule barrier;
+
   HRESULT hr = S_OK;
   CComObject<BSCBStorageBind>* callback = NULL;
   if (ShouldWrapCallback(me, iid, bind_ctx)) {
@@ -216,15 +219,8 @@ HRESULT MonikerPatch::BindToStorage(IMoniker_BindToStorage_Fn original,
     callback->AddRef();
     hr = callback->Initialize(me, bind_ctx);
     DCHECK(SUCCEEDED(hr));
-
-    // Report all crashes in the exception handler if we wrap the callback.
-    // Note that this avoids having the VEH report a crash if an SEH earlier in
-    // the chain handles the exception.
-    ExceptionBarrier barrier;
     hr = original(me, bind_ctx, to_left, iid, obj);
   } else {
-    // If we don't wrap, only report a crash if the crash is in our own module.
-    ExceptionBarrierReportOnlyModule barrier;
     hr = original(me, bind_ctx, to_left, iid, obj);
   }
 

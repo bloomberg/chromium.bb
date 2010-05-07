@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 
 #include "chrome_frame/bind_context_info.h"
+#include "chrome_frame/exception_barrier.h"
 #include "chrome_frame/urlmon_moniker.h"
 #include "chrome_tab.h"  // NOLINT
 
@@ -216,6 +217,10 @@ STDMETHODIMP BSCBStorageBind::OnProgress(ULONG progress, ULONG progress_max,
                                     ULONG status_code, LPCWSTR status_text) {
   DLOG(INFO) << __FUNCTION__ << me() << StringPrintf(" status=%i tid=%i %ls",
       status_code, PlatformThread::CurrentId(), status_text);
+  // Report all crashes in the exception handler if we wrap the callback.
+  // Note that this avoids having the VEH report a crash if an SEH earlier in
+  // the chain handles the exception.
+  ExceptionBarrier barrier;
 
   HRESULT hr = S_OK;
 
@@ -247,7 +252,10 @@ STDMETHODIMP BSCBStorageBind::OnDataAvailable(DWORD flags, DWORD size,
                                               STGMEDIUM* stgmed) {
   DLOG(INFO) << __FUNCTION__ << StringPrintf(" tid=%i",
       PlatformThread::CurrentId());
-
+  // Report all crashes in the exception handler if we wrap the callback.
+  // Note that this avoids having the VEH report a crash if an SEH earlier in
+  // the chain handles the exception.
+  ExceptionBarrier barrier;
   // Do not touch anything other than text/html.
   bool is_interesting = (format_etc && stgmed && stgmed->pstm &&
       stgmed->tymed == TYMED_ISTREAM &&
@@ -287,6 +295,11 @@ STDMETHODIMP BSCBStorageBind::OnDataAvailable(DWORD flags, DWORD size,
 STDMETHODIMP BSCBStorageBind::OnStopBinding(HRESULT hresult, LPCWSTR error) {
   DLOG(INFO) << __FUNCTION__ << StringPrintf(" tid=%i",
       PlatformThread::CurrentId());
+  // Report all crashes in the exception handler if we wrap the callback.
+  // Note that this avoids having the VEH report a crash if an SEH earlier in
+  // the chain handles the exception.
+  ExceptionBarrier barrier;
+
   HRESULT hr = MayPlayBack(BSCF_LASTDATANOTIFICATION);
   hr = CallbackImpl::OnStopBinding(hresult, error);
   ReleaseBind();
