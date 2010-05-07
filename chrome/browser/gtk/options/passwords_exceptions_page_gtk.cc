@@ -90,7 +90,7 @@ void PasswordsExceptionsPageGtk::InitExceptionTree() {
   gtk_tree_selection_set_mode(exception_selection_,
                               GTK_SELECTION_SINGLE);
   g_signal_connect(exception_selection_, "changed",
-                   G_CALLBACK(OnExceptionSelectionChanged), this);
+                   G_CALLBACK(OnExceptionSelectionChangedThunk), this);
 
   GtkTreeViewColumn* column = gtk_tree_view_column_new_with_attributes(
       l10n_util::GetStringUTF8(IDS_PASSWORDS_PAGE_VIEW_SITE_COLUMN).c_str(),
@@ -162,16 +162,14 @@ void PasswordsExceptionsPageGtk::OnRemoveAllButtonClicked(GtkWidget* widget) {
   gtk_widget_set_sensitive(remove_all_button_, FALSE);
 }
 
-// static
 void PasswordsExceptionsPageGtk::OnExceptionSelectionChanged(
-    GtkTreeSelection* selection,
-    PasswordsExceptionsPageGtk* page) {
+    GtkTreeSelection* selection) {
   GtkTreeIter iter;
   if (!gtk_tree_selection_get_selected(selection, NULL, &iter)) {
-    gtk_widget_set_sensitive(page->remove_button_, FALSE);
+    gtk_widget_set_sensitive(remove_button_, FALSE);
     return;
   }
-  gtk_widget_set_sensitive(page->remove_button_, TRUE);
+  gtk_widget_set_sensitive(remove_button_, TRUE);
 }
 
 // static

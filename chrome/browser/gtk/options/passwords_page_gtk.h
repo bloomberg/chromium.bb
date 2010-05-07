@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,9 +18,7 @@ class PasswordsPageGtk {
   explicit PasswordsPageGtk(Profile* profile);
   ~PasswordsPageGtk();
 
-  GtkWidget* get_page_widget() const {
-    return page_;
-  }
+  GtkWidget* get_page_widget() const { return page_; }
 
  private:
   // Initialize the password tree widget, setting the member variables.
@@ -37,11 +35,8 @@ class PasswordsPageGtk {
   CHROMEGTK_CALLBACK_1(PasswordsPageGtk, void, OnRemoveAllConfirmResponse, int);
   CHROMEGTK_CALLBACK_0(PasswordsPageGtk, void, OnShowPasswordButtonClicked);
 
-  static void OnPasswordSelectionChangedThunk(GtkTreeSelection* selection,
-                                              PasswordsPageGtk* page) {
-    page->OnPasswordSelectionChanged(selection);
-  }
-  void OnPasswordSelectionChanged(GtkTreeSelection* selection);
+  CHROMEG_CALLBACK_0(PasswordsPageGtk, void, OnPasswordSelectionChanged,
+                     GtkTreeSelection*);
 
   // Sorting functions.
   static gint CompareSite(GtkTreeModel* model,

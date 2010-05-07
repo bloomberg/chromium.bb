@@ -166,7 +166,7 @@ void LanguagesPageGtk::Init() {
   gtk_tree_selection_set_mode(language_order_selection_,
                               GTK_SELECTION_MULTIPLE);
   g_signal_connect(language_order_selection_, "changed",
-                   G_CALLBACK(OnSelectionChanged), this);
+                   G_CALLBACK(OnSelectionChangedThunk), this);
   GtkWidget* scroll_window = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll_window),
                                  GTK_POLICY_AUTOMATIC,
@@ -356,10 +356,8 @@ void LanguagesPageGtk::OnAddLanguage(const std::string& new_language) {
                                    GTK_TREE_VIEW(language_order_tree_));
 }
 
-// static
-void LanguagesPageGtk::OnSelectionChanged(GtkTreeSelection *selection,
-                                          LanguagesPageGtk* languages_page) {
-  languages_page->EnableControls();
+void LanguagesPageGtk::OnSelectionChanged(GtkTreeSelection* selection) {
+  EnableControls();
 }
 
 void LanguagesPageGtk::OnAddButtonClicked(GtkWidget* button) {

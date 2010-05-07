@@ -117,7 +117,7 @@ UrlPickerDialogGtk::UrlPickerDialogGtk(UrlPickerCallback* callback,
   gtk_tree_selection_set_mode(history_selection_,
                               GTK_SELECTION_SINGLE);
   g_signal_connect(history_selection_, "changed",
-                   G_CALLBACK(OnHistorySelectionChanged), this);
+                   G_CALLBACK(OnHistorySelectionChangedThunk), this);
 
   // History list columns.
   GtkTreeViewColumn* column = gtk_tree_view_column_new();
@@ -245,18 +245,17 @@ void UrlPickerDialogGtk::OnUrlEntryChanged(GtkWidget* editable) {
   EnableControls();
 }
 
-// static
 void UrlPickerDialogGtk::OnHistorySelectionChanged(
-    GtkTreeSelection *selection, UrlPickerDialogGtk* window) {
+    GtkTreeSelection* selection) {
   GtkTreeIter iter;
   if (!gtk_tree_selection_get_selected(selection, NULL, &iter)) {
     // The user has unselected the history element, nothing to do.
     return;
   }
   GtkTreePath* path = gtk_tree_model_get_path(
-      GTK_TREE_MODEL(window->history_list_sort_), &iter);
-  gtk_entry_set_text(GTK_ENTRY(window->url_entry_),
-                     window->GetURLForPath(path).c_str());
+      GTK_TREE_MODEL(history_list_sort_), &iter);
+  gtk_entry_set_text(GTK_ENTRY(url_entry_),
+                     GetURLForPath(path).c_str());
   gtk_tree_path_free(path);
 }
 

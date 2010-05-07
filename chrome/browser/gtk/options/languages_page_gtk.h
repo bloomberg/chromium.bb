@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,9 +33,7 @@ class LanguagesPageGtk
   explicit LanguagesPageGtk(Profile* profile);
   virtual ~LanguagesPageGtk();
 
-  GtkWidget* get_page_widget() const {
-    return page_;
-  }
+  GtkWidget* get_page_widget() const { return page_; }
 
   // gtk_tree::TableAdapter::Delegate implementation.
   virtual void OnAnyModelUpdate();
@@ -63,8 +61,8 @@ class LanguagesPageGtk
   virtual void NotifyPrefChanged(const std::wstring* pref_name);
 
   // Callbacks for accept languages widgets.
-  static void OnSelectionChanged(GtkTreeSelection* selection,
-                                 LanguagesPageGtk* languages_page);
+  CHROMEG_CALLBACK_0(LanguagesPageGtk, void, OnSelectionChanged,
+                     GtkTreeSelection*);
   CHROMEGTK_CALLBACK_0(LanguagesPageGtk, void, OnAddButtonClicked);
   CHROMEGTK_CALLBACK_0(LanguagesPageGtk, void, OnRemoveButtonClicked);
   CHROMEGTK_CALLBACK_0(LanguagesPageGtk, void, OnMoveUpButtonClicked);

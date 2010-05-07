@@ -244,7 +244,7 @@ GtkWidget* GeneralPageGtk::InitStartupGroup() {
   gtk_tree_selection_set_mode(startup_custom_pages_selection_,
                               GTK_SELECTION_MULTIPLE);
   g_signal_connect(startup_custom_pages_selection_, "changed",
-                   G_CALLBACK(OnStartupPagesSelectionChanged), this);
+                   G_CALLBACK(OnStartupPagesSelectionChangedThunk), this);
   favicon_loader_.reset(new ListStoreFavIconLoader(startup_custom_pages_model_,
                                                    COL_FAVICON,
                                                    COL_FAVICON_HANDLE,
@@ -420,10 +420,9 @@ void GeneralPageGtk::OnStartupUseCurrentPageClicked(GtkWidget* button) {
   SetCustomUrlListFromCurrentPages();
 }
 
-// static
 void GeneralPageGtk::OnStartupPagesSelectionChanged(
-    GtkTreeSelection* selection, GeneralPageGtk* general_page) {
-  general_page->EnableCustomHomepagesControls(true);
+    GtkTreeSelection* selection) {
+  EnableCustomHomepagesControls(true);
 }
 
 void GeneralPageGtk::OnNewTabIsHomePageToggled(GtkWidget* toggle_button) {

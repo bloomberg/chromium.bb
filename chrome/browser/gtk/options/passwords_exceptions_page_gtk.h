@@ -21,9 +21,7 @@ class PasswordsExceptionsPageGtk {
   explicit PasswordsExceptionsPageGtk(Profile* profile);
   ~PasswordsExceptionsPageGtk();
 
-  GtkWidget* get_page_widget() const {
-    return page_;
-  }
+  GtkWidget* get_page_widget() const { return page_; }
 
  private:
   // Initialize the exception tree widget, setting the member variables.
@@ -39,9 +37,8 @@ class PasswordsExceptionsPageGtk {
   CHROMEGTK_CALLBACK_0(PasswordsExceptionsPageGtk, void,
                        OnRemoveAllButtonClicked);
 
-  static void OnExceptionSelectionChanged(
-      GtkTreeSelection* selection,
-      PasswordsExceptionsPageGtk* page);
+  CHROMEG_CALLBACK_0(PasswordsExceptionsPageGtk, void,
+                     OnExceptionSelectionChanged, GtkTreeSelection*);
 
   // Sorting function.
   static gint CompareSite(GtkTreeModel* model,
