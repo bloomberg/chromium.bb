@@ -232,8 +232,8 @@ static const int kUnsentLogDelay = 15;  // 15 seconds
 // response, we use this duration to specify how long we should wait before
 // sending the next log.  If the channel is busy, such as when there is a
 // failure during an attempt to transmit a previous log, then a log may wait
-// (and continue to accrue now log entries) for a much greater period of time.
-static const int kMinSecondsPerLog = 20 * 60;  // Twenty minutes.
+// (and continue to accrue new log entries) for a much greater period of time.
+static const int kMinSecondsPerLog = 30 * 60;  // Thirty minutes.
 
 // When we don't succeed at transmitting a log to a server, we progressively
 // wait longer and longer before sending the next log.  This backoff process
