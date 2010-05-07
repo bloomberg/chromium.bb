@@ -80,13 +80,13 @@ class ContentView : public views::View {
       return false;
 
     if (accel == accel_account_screen_) {
-      controller->SetCurrentScreen(controller->GetAccountScreen());
+      controller->ShowAccountScreen();
     } else if (accel == accel_login_screen_) {
-      controller->SetCurrentScreen(controller->GetLoginScreen());
+      controller->ShowLoginScreen();
     } else if (accel == accel_network_screen_) {
-      controller->SetCurrentScreen(controller->GetNetworkScreen());
+      controller->ShowNetworkScreen();
     } else if (accel == accel_update_screen_) {
-      controller->SetCurrentScreen(controller->GetUpdateScreen());
+      controller->ShowUpdateScreen();
     } else {
       return false;
     }
@@ -269,15 +269,24 @@ chromeos::UpdateScreen* WizardController::GetUpdateScreen() {
   return update_screen_.get();
 }
 
-void WizardController::SetCurrentScreen(WizardScreen* new_current) {
-  if (current_screen_)
-    current_screen_->Hide();
-  current_screen_ = new_current;
-  if (current_screen_) {
-    current_screen_->Show();
-    contents_->Layout();
-  }
-  contents_->SchedulePaint();
+void WizardController::ShowNetworkScreen() {
+  background_view_->SetStatusAreaVisible(false);
+  SetCurrentScreen(GetNetworkScreen());
+}
+
+void WizardController::ShowLoginScreen() {
+  background_view_->SetStatusAreaVisible(true);
+  SetCurrentScreen(GetLoginScreen());
+}
+
+void WizardController::ShowAccountScreen() {
+  background_view_->SetStatusAreaVisible(true);
+  SetCurrentScreen(GetAccountScreen());
+}
+
+void WizardController::ShowUpdateScreen() {
+  background_view_->SetStatusAreaVisible(true);
+  SetCurrentScreen(GetUpdateScreen());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -288,31 +297,31 @@ void WizardController::OnLoginSignInSelected() {
 }
 
 void WizardController::OnLoginCreateAccount() {
-  SetCurrentScreen(GetAccountScreen());
+  ShowAccountScreen();
 }
 
 void WizardController::OnNetworkConnected() {
   if (is_out_of_box_) {
-    SetCurrentScreen(GetUpdateScreen());
-    update_screen_->StartUpdate();
+    ShowUpdateScreen();
+    GetUpdateScreen()->StartUpdate();
   } else {
-    SetCurrentScreen(GetLoginScreen());
+    ShowLoginScreen();
   }
 }
 
 void WizardController::OnNetworkOffline() {
   // TODO(dpolukhin): if(is_out_of_box_) we cannot work offline and
   // should report some error message here and stay on the same screen.
-  SetCurrentScreen(GetLoginScreen());
+  ShowLoginScreen();
 }
 
 void WizardController::OnAccountCreateBack() {
-  SetCurrentScreen(GetLoginScreen());
+  ShowLoginScreen();
 }
 
 void WizardController::OnAccountCreated() {
+  ShowLoginScreen();
   LoginScreen* login = GetLoginScreen();
-  SetCurrentScreen(login);
   if (!username_.empty()) {
     login->view()->SetUsername(username_);
     if (!password_.empty()) {
@@ -328,22 +337,33 @@ void WizardController::OnAccountCreated() {
 void WizardController::OnConnectionFailed() {
   // TODO(dpolukhin): show error message before going back to network screen.
   is_out_of_box_ = false;
-  SetCurrentScreen(GetNetworkScreen());
+  ShowNetworkScreen();
 }
 
 void WizardController::OnUpdateCompleted() {
-  SetCurrentScreen(GetLoginScreen());
+  ShowLoginScreen();
 }
 
 void WizardController::OnUpdateNetworkError() {
   // If network connection got interrupted while downloading the update,
   // return to network selection screen.
   // TODO(nkostylev): Show message to the user explaining update error.
-  SetCurrentScreen(GetNetworkScreen());
+  ShowNetworkScreen();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, private:
+
+void WizardController::SetCurrentScreen(WizardScreen* new_current) {
+  if (current_screen_)
+    current_screen_->Hide();
+  current_screen_ = new_current;
+  if (current_screen_) {
+    current_screen_->Show();
+    contents_->Layout();
+  }
+  contents_->SchedulePaint();
+}
 
 void WizardController::OnSetUserNamePassword(const std::string& username,
                                              const std::string& password) {
@@ -353,19 +373,19 @@ void WizardController::OnSetUserNamePassword(const std::string& username,
 
 void WizardController::ShowFirstScreen(const std::string& first_screen_name) {
   if (first_screen_name == kNetworkScreenName) {
-    SetCurrentScreen(GetNetworkScreen());
+    ShowNetworkScreen();
   } else if (first_screen_name == kLoginScreenName) {
-    SetCurrentScreen(GetLoginScreen());
+    ShowLoginScreen();
   } else if (first_screen_name == kAccountScreenName) {
-    SetCurrentScreen(GetAccountScreen());
+    ShowAccountScreen();
   } else if (first_screen_name == kUpdateScreenName) {
-    SetCurrentScreen(GetUpdateScreen());
-    update_screen_->StartUpdate();
+    ShowUpdateScreen();
+    GetUpdateScreen()->StartUpdate();
   } else if (first_screen_name != kTestNoScreenName) {
     if (is_out_of_box_) {
-      SetCurrentScreen(GetNetworkScreen());
+      ShowNetworkScreen();
     } else {
-      SetCurrentScreen(GetLoginScreen());
+      ShowLoginScreen();
     }
   }
 }

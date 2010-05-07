@@ -72,11 +72,15 @@ class WizardController : public chromeos::ScreenObserver,
   chromeos::AccountScreen* GetAccountScreen();
   chromeos::UpdateScreen* GetUpdateScreen();
 
+  // Show specific screen.
+  void ShowNetworkScreen();
+  void ShowLoginScreen();
+  void ShowAccountScreen();
+  void ShowUpdateScreen();
+
   // Returns a pointer to the current screen or NULL if there's no such
   // screen.
   WizardScreen* current_screen() const { return current_screen_; }
-  // Switches from one screen to another.
-  void SetCurrentScreen(WizardScreen* screen);
 
   // Overrides observer for testing.
   void set_observer(ScreenObserver* observer) { observer_ = observer; }
@@ -99,6 +103,9 @@ class WizardController : public chromeos::ScreenObserver,
   void OnConnectionFailed();
   void OnUpdateCompleted();
   void OnUpdateNetworkError();
+
+  // Switches from one screen to another.
+  void SetCurrentScreen(WizardScreen* screen);
 
   // Overridden from chromeos::ScreenObserver:
   virtual void OnExit(ExitCodes exit_code);

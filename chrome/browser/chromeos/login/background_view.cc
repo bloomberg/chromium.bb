@@ -72,6 +72,10 @@ views::Widget* BackgroundView::CreateWindowContainingView(
   return window;
 }
 
+void BackgroundView::SetStatusAreaVisible(bool visible) {
+  status_area_->SetVisible(visible);
+}
+
 void BackgroundView::Paint(gfx::Canvas* canvas) {
   views::View::Paint(canvas);
   if (!did_paint_) {

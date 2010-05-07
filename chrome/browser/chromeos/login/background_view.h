@@ -34,6 +34,9 @@ class BackgroundView : public views::View, public StatusAreaHost {
   static views::Widget* CreateWindowContainingView(const gfx::Rect& bounds,
                                                    BackgroundView** view);
 
+  // Toggles status area visibility.
+  void SetStatusAreaVisible(bool visible);
+
  protected:
   // Overridden from views::View:
   virtual void Paint(gfx::Canvas* canvas);
