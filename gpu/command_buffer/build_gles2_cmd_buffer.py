@@ -177,7 +177,7 @@ GL_APICALL void         GL_APIENTRY glVertexAttribPointer (GLuint indx, GLintVer
 GL_APICALL void         GL_APIENTRY glViewport (GLint x, GLint y, GLsizei width, GLsizei height);
 // Non-GL commands.
 GL_APICALL void         GL_APIENTRY glSwapBuffers (void);
-GL_APICALL GLuint       GL_APIENTRY glGetMaxValueInBuffer (GLidBuffer buffer_id, GLsizei count, GLenumIndexType type, GLuint offset);
+GL_APICALL GLuint       GL_APIENTRY glGetMaxValueInBuffer (GLidBuffer buffer_id, GLsizei count, GLenumGetMaxIndexType type, GLuint offset);
 GL_APICALL void         GL_APIENTRY glGenSharedIds (GLuint namespace_id, GLuint id_offset, GLsizei n, GLuint* ids);
 GL_APICALL void         GL_APIENTRY glDeleteSharedIds (GLuint namespace_id, GLsizei n, const GLuint* ids);
 GL_APICALL void         GL_APIENTRY glRegisterSharedIds (GLuint namespace_id, GLsizei n, const GLuint* ids);
@@ -668,6 +668,17 @@ _ENUM_LISTS = {
     ],
     'invalid': [
       'GL_UNSIGNED_INT',
+      'GL_INT',
+    ],
+  },
+  'GetMaxIndexType': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_UNSIGNED_BYTE',
+      'GL_UNSIGNED_SHORT',
+      'GL_UNSIGNED_INT',
+    ],
+    'invalid': [
       'GL_INT',
     ],
   },

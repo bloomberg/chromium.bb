@@ -273,6 +273,17 @@ bool ValidateGLenumGLState(GLenum value) {
   }
 }
 
+bool ValidateGLenumGetMaxIndexType(GLenum value) {
+  switch (value) {
+    case GL_UNSIGNED_BYTE:
+    case GL_UNSIGNED_SHORT:
+    case GL_UNSIGNED_INT:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool ValidateGLenumHintMode(GLenum value) {
   switch (value) {
     case GL_FASTEST:

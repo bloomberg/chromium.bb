@@ -131,6 +131,40 @@ TEST_F(BufferManagerTest, GetMaxValueForRangeUint16) {
   EXPECT_FALSE(info->GetMaxValueForRange(20, 1, GL_UNSIGNED_SHORT, &max_value));
 }
 
+TEST_F(BufferManagerTest, GetMaxValueForRangeUint32) {
+  const GLuint kClientBufferId = 1;
+  const GLuint kServiceBufferId = 11;
+  const uint32 data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+  const uint32 new_data[] = {100, 120, 110};
+  manager_.CreateBufferInfo(kClientBufferId, kServiceBufferId);
+  BufferManager::BufferInfo* info = manager_.GetBufferInfo(kClientBufferId);
+  ASSERT_TRUE(info != NULL);
+  info->set_target(GL_ELEMENT_ARRAY_BUFFER);
+  info->SetSize(sizeof(data));
+  EXPECT_TRUE(info->SetRange(0, sizeof(data), data));
+  GLuint max_value;
+  // Check entire range succeeds.
+  EXPECT_TRUE(info->GetMaxValueForRange(0, 10, GL_UNSIGNED_INT, &max_value));
+  EXPECT_EQ(10u, max_value);
+  // Check non aligned offsets fails for GL_UNSIGNED_INT.
+  EXPECT_FALSE(info->GetMaxValueForRange(1, 10, GL_UNSIGNED_INT, &max_value));
+  EXPECT_FALSE(info->GetMaxValueForRange(2, 10, GL_UNSIGNED_INT, &max_value));
+  EXPECT_FALSE(info->GetMaxValueForRange(3, 10, GL_UNSIGNED_INT, &max_value));
+  // Check sub range succeeds.
+  EXPECT_TRUE(info->GetMaxValueForRange(16, 3, GL_UNSIGNED_INT, &max_value));
+  EXPECT_EQ(6u, max_value);
+  // Check changing sub range succeeds.
+  EXPECT_TRUE(info->SetRange(16, sizeof(new_data), new_data));
+  EXPECT_TRUE(info->GetMaxValueForRange(16, 3, GL_UNSIGNED_INT, &max_value));
+  EXPECT_EQ(120u, max_value);
+  max_value = 0;
+  EXPECT_TRUE(info->GetMaxValueForRange(0, 10, GL_UNSIGNED_INT, &max_value));
+  EXPECT_EQ(120u, max_value);
+  // Check out of range fails.
+  EXPECT_FALSE(info->GetMaxValueForRange(0, 11, GL_UNSIGNED_INT, &max_value));
+  EXPECT_FALSE(info->GetMaxValueForRange(40, 1, GL_UNSIGNED_INT, &max_value));
+}
+
 }  // namespace gles2
 }  // namespace gpu
 

@@ -2763,7 +2763,7 @@ error::Error GLES2DecoderImpl::HandleGetMaxValueInBuffer(
     SetGLError(GL_INVALID_VALUE, "glGetMaxValueInBuffer: count < 0");
     return error::kNoError;
   }
-  if (!ValidateGLenumIndexType(type)) {
+  if (!ValidateGLenumGetMaxIndexType(type)) {
     SetGLError(GL_INVALID_ENUM, "glGetMaxValueInBuffer: type GL_INVALID_ENUM");
     return error::kNoError;
   }

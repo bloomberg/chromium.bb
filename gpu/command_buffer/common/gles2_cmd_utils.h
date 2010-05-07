@@ -80,6 +80,10 @@ class GLES2Util {
 
   static uint32 IndexToGLFaceTarget(int index);
 
+  static bool IsNPOT(uint32 value) {
+    return value > 0 && (value & (value - 1)) != 0;
+  }
+
  private:
   int num_compressed_texture_formats_;
 };

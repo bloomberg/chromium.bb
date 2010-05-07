@@ -199,9 +199,9 @@ void TextureManager::TextureInfo::Update() {
   npot_ = false;
   for (size_t ii = 0; ii < level_infos_.size(); ++ii) {
     const TextureInfo::LevelInfo& info = level_infos_[ii][0];
-    if (((info.width & (info.width - 1)) != 0) ||
-        ((info.height & (info.height - 1)) != 0) ||
-        ((info.depth & (info.depth - 1)) != 0)) {
+    if (GLES2Util::IsNPOT(info.width) ||
+        GLES2Util::IsNPOT(info.height) ||
+        GLES2Util::IsNPOT(info.depth)) {
       npot_ = true;
       break;
     }
@@ -275,6 +275,26 @@ TextureManager::TextureManager(
       GLES2Util::IndexToGLFaceTarget(ii),
       0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
   }
+}
+
+bool TextureManager::ValidForTarget(
+    GLenum target, GLint level,
+    GLsizei width, GLsizei height, GLsizei depth) {
+  GLsizei max_size = MaxSizeForTarget(target);
+  return level >= 0 &&
+         width >= 0 &&
+         height >= 0 &&
+         depth >= 0 &&
+         level < MaxLevelsForTarget(target) &&
+         width <= max_size &&
+         height <= max_size &&
+         depth <= max_size &&
+         (level == 0 ||
+          (!GLES2Util::IsNPOT(width) &&
+           !GLES2Util::IsNPOT(height) &&
+           !GLES2Util::IsNPOT(depth))) &&
+         (target != GL_TEXTURE_CUBE_MAP || (width == height && depth == 1)) &&
+         (target != GL_TEXTURE_2D || (depth == 1));
 }
 
 TextureManager::TextureInfo* TextureManager::CreateTextureInfo(

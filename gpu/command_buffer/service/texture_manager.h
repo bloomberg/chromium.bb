@@ -210,19 +210,7 @@ class TextureManager {
   // Checks if a dimensions are valid for a given target.
   bool ValidForTarget(
       GLenum target, GLint level,
-      GLsizei width, GLsizei height, GLsizei depth) {
-    GLsizei max_size = MaxSizeForTarget(target);
-    return level >= 0 &&
-           width >= 0 &&
-           height >= 0 &&
-           depth >= 0 &&
-           level < MaxLevelsForTarget(target) &&
-           width <= max_size &&
-           height <= max_size &&
-           depth <= max_size &&
-           (target != GL_TEXTURE_CUBE_MAP || (width == height && depth == 1)) &&
-           (target != GL_TEXTURE_2D || (depth == 1));
-  }
+      GLsizei width, GLsizei height, GLsizei depth);
 
   // Sets the TextureInfo's target
   // Parameters:

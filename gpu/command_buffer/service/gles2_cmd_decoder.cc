@@ -1247,7 +1247,7 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
   // Make black textures for replacing non-renderable textures.
   black_2d_texture_id_ = ids[0];
   black_cube_texture_id_ = ids[1];
-  static int8 black[] = {0, 0, 0, 0};
+  static int8 black[] = {0, 0, 0, 1};
   glBindTexture(GL_TEXTURE_2D, black_2d_texture_id_);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA,
                GL_UNSIGNED_BYTE, black);
@@ -1972,6 +1972,10 @@ bool GLES2DecoderImpl::GetHelper(
       *params /= 4;
       return true;
 #endif
+    case GL_COMPRESSED_TEXTURE_FORMATS:
+      *num_written = 0;
+      // We don't support compressed textures.
+      return true;
     case GL_NUM_COMPRESSED_TEXTURE_FORMATS:
       *num_written = 1;
       *params = 0;  // We don't support compressed textures.
@@ -3072,7 +3076,6 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
     return error::kNoError;
   }
 
-  glFinish();
   if (x < 0 || y < 0 || max_x > max_size.width() || max_y > max_size.height()) {
     // The user requested an out of range area. Get the results 1 line
     // at a time.
@@ -3154,7 +3157,7 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(
       break;
   default:
       // Validation should have prevented us from getting here.
-      DCHECK(false);
+      NOTREACHED();
       break;
   }
   return error::kNoError;

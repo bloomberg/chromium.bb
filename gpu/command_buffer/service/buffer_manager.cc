@@ -114,6 +114,13 @@ bool BufferManager::BufferInfo::GetMaxValueForRange(
       }
       max_v = GetMaxValue<uint16>(shadow_.get(), offset, count);
       break;
+    case GL_UNSIGNED_INT:
+      // Check we are not accessing a non aligned address for a 4 byte value.
+      if ((offset & 3) != 0) {
+        return false;
+      }
+      max_v = GetMaxValue<uint32>(shadow_.get(), offset, count);
+      break;
     default:
       NOTREACHED();  // should never get here by validation.
       break;
