@@ -30,9 +30,6 @@ const int kCellHeightAdjust = 7.0;
 // buttons.
 const CGFloat kPopupRoundingRadius = 3.5;
 
-// Gap between the field and the popup.
-const CGFloat kPopupFieldGap = 0.0;
-
 // How opaque the popup window should be.  This matches Windows (see
 // autocomplete_popup_contents_view.cc, kGlassPopupTransparency).
 const CGFloat kPopupAlpha = 240.0 / 255.0;
@@ -55,6 +52,16 @@ const float kMaxContentsFraction = 0.7;
 
 // NSEvent -buttonNumber for middle mouse button.
 const static NSInteger kMiddleButtonNumber(2);
+
+// The autocomplete field's visual border is slightly inset from the
+// actual border so that it can spill a glow into the toolbar or
+// something like that.  This is how much to inset vertically.
+const CGFloat kFieldVisualInset = 1.0;
+
+// The popup window has a single-pixel border in screen coordinates,
+// which has to be backed out to line the borders up with the field
+// borders.
+const CGFloat kWindowBorderWidth = 1.0;
 
 // Background colors for different states of the popup elements.
 NSColor* BackgroundColor() {
@@ -268,7 +275,8 @@ AutocompletePopupViewMac::~AutocompletePopupViewMac() {
   // it can call back to us in the destructor.
   model_.reset();
 
-  // Break references to matrix_target_ before it is released.
+  // Break references to |this| because the popup may not be
+  // deallocated immediately.
   AutocompleteMatrix* matrix = [popup_ contentView];
   DCHECK(matrix == nil || [matrix isKindOfClass:[AutocompleteMatrix class]]);
   [matrix setPopupView:NULL];
@@ -299,18 +307,37 @@ void AutocompletePopupViewMac::CreatePopupIfNeeded() {
   }
 }
 
-void AutocompletePopupViewMac::SetPopupFrame(const NSRect frame) {
+void AutocompletePopupViewMac::PositionPopup(const CGFloat matrixHeight) {
+  // Calculate the popup's position on the screen.  It should abut the
+  // field's visual border vertically, and be below the bounds
+  // horizontally.
+
+  // Start with the field's rect on the screen.
+  NSRect popupFrame = NSInsetRect([field_ bounds], 0.0, kFieldVisualInset);
+  popupFrame = [field_ convertRect:popupFrame toView:nil];
+  popupFrame.origin = [[field_ window] convertBaseToScreen:popupFrame.origin];
+
+  // Size to fit the matrix, and shift down by the size plus the top
+  // window border.  Would prefer -convertSize:fromView: to
+  // -userSpaceScaleFactor for the scale conversion, but until the
+  // window is on-screen that doesn't work right (bug?).
+  popupFrame.size.height = matrixHeight * [popup_ userSpaceScaleFactor];
+  popupFrame.origin.y -= NSHeight(popupFrame) + kWindowBorderWidth;
+
+  // Inset to account for the horizontal border.
+  popupFrame = NSInsetRect(popupFrame, kWindowBorderWidth, 0.0);
+
   // Do nothing if the popup is already animating to the given |frame|.
-  if  (NSEqualRects(frame, targetPopupFrame_))
+  if (NSEqualRects(popupFrame, targetPopupFrame_))
     return;
 
   NSRect currentPopupFrame = [popup_ frame];
-  targetPopupFrame_ = frame;
+  targetPopupFrame_ = popupFrame;
 
   // Animate the frame change if the only change is that the height got smaller.
   // Otherwise, resize immediately.
-  bool animate = (NSHeight(frame) < NSHeight(currentPopupFrame) &&
-                  NSWidth(frame) == NSWidth(currentPopupFrame));
+  bool animate = (NSHeight(popupFrame) < NSHeight(currentPopupFrame) &&
+                  NSWidth(popupFrame) == NSWidth(currentPopupFrame));
   NSTimeInterval duration =
       (animate ? kShrinkAnimationDuration: kCancelAnimationDuration);
 
@@ -318,8 +345,11 @@ void AutocompletePopupViewMac::SetPopupFrame(const NSRect frame) {
   // Don't use the GTM additon for the "Steve" slowdown because this can happen
   // async from user actions and the effects could be a surprise.
   [[NSAnimationContext currentContext] setDuration:duration];
-  [[popup_ animator] setFrame:frame display:YES];
+  [[popup_ animator] setFrame:popupFrame display:YES];
   [NSAnimationContext endGrouping];
+
+  if (!IsOpen())
+    [[field_ window] addChildWindow:popup_ ordered:NSWindowAbove];
 }
 
 void AutocompletePopupViewMac::UpdatePopupAppearance() {
@@ -329,9 +359,11 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
     [[popup_ parentWindow] removeChildWindow:popup_];
     [popup_ orderOut:nil];
 
-    // Break references to matrix_target_ before releasing popup_.
-    NSMatrix* matrix = [popup_ contentView];
-    [matrix setTarget:nil];
+    // Break references to |this| because the popup may not be
+    // deallocated immediately.
+    AutocompleteMatrix* matrix = [popup_ contentView];
+    DCHECK(matrix == nil || [matrix isKindOfClass:[AutocompleteMatrix class]]);
+    [matrix setPopupView:NULL];
 
     popup_.reset(nil);
 
@@ -340,16 +372,6 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
 
   CreatePopupIfNeeded();
 
-  // Layout the popup and size it to land underneath the field.
-  // The field has a single-pixel border on the left and right.  This
-  // needs to be factored out so that the popup window's border (which
-  // is outside the frame) lines up.
-  const int kLocationStackEdgeWidth = 1;
-  NSRect r = NSInsetRect([field_ convertRect:[field_ bounds] toView:nil],
-                         kLocationStackEdgeWidth, 0);
-  r.origin = [[field_ window] convertBaseToScreen:r.origin];
-  DCHECK_GT(r.size.width, 0.0);
-
   // The popup's font is a slightly smaller version of what |field_|
   // uses.
   NSFont* fieldFont = [field_ font];
@@ -357,9 +379,18 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
   gfx::Font resultFont = gfx::Font::CreateFont(
       base::SysNSStringToWide([fieldFont fontName]), (int)resultFontSize);
 
-  // Load the results into the popup's matrix.  The popup window must be
-  // correctly sized before calling MatchText().
   AutocompleteMatrix* matrix = [popup_ contentView];
+
+  // Calculate the width of the matrix based on backing out the
+  // popup's border from the width of the field.  Would prefer to use
+  // [matrix convertSize:fromView:] for converting from screen size,
+  // but that doesn't work until the popup is on-screen (bug?).
+  const NSRect fieldRectBase = [field_ convertRect:[field_ bounds] toView:nil];
+  const CGFloat popupWidth = NSWidth(fieldRectBase) - 2 * kWindowBorderWidth;
+  DCHECK_GT(popupWidth, 0.0);
+  const CGFloat matrixWidth = popupWidth / [popup_ userSpaceScaleFactor];
+
+  // Load the results into the popup's matrix.
   const size_t rows = model_->result().size();
   DCHECK_GT(rows, 0U);
   [matrix renewRows:rows columns:1];
@@ -369,7 +400,7 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
     const int resource_id = match.starred ? IDR_OMNIBOX_STAR
         : AutocompleteMatch::TypeToIcon(match.type);
     [cell setImage:AutocompleteEditViewMac::ImageForResource(resource_id)];
-    [cell setAttributedTitle:MatchText(match, resultFont, r.size.width)];
+    [cell setAttributedTitle:MatchText(match, resultFont, matrixWidth)];
   }
 
   // Set the cell size to fit a line of text in the cell's font.  All
@@ -377,31 +408,17 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
   // line, so they should all be about the same height.
   const NSSize cellSize = [[matrix cellAtRow:0 column:0] cellSize];
   DCHECK_GT(cellSize.height, 0.0);
-  [matrix setCellSize:NSMakeSize(r.size.width,
-                                 cellSize.height + kCellHeightAdjust)];
+  const CGFloat cellHeight = cellSize.height + kCellHeightAdjust;
+  [matrix setCellSize:NSMakeSize(matrixWidth, cellHeight)];
 
-  // Save the old matrix frame in order to later restore it.
-  NSRect savedMatrixFrame = [matrix frame];
-
-  // Make the matrix big enough to hold all the cells.
-  [matrix sizeToCells];
-
-  // Make the window just as big.
-  r.size.height = [matrix frame].size.height;
-  r.origin.y -= r.size.height + kPopupFieldGap;
-
-  // Resize the matrix back to its original size, since we aren't resizing the
-  // window immediately.
-  [matrix setFrame:savedMatrixFrame];
-
-  // Update the selection.
+  // Update the selection before placing (and displaying) the window.
   PaintUpdatesNow();
 
-  SetPopupFrame(r);
-
-  if (!IsOpen()) {
-    [[field_ window] addChildWindow:popup_ ordered:NSWindowAbove];
-  }
+  // Calculate the matrix size manually rather than using -sizeToCells
+  // because actually resizing the matrix messed up the popup size
+  // animation.
+  DCHECK_EQ([matrix intercellSpacing].height, 0.0);
+  PositionPopup(rows * cellHeight);
 }
 
 // This is only called by model in SetSelectedLine() after updating

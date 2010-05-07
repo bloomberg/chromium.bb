@@ -106,10 +106,13 @@ class AutocompletePopupViewMac : public AutocompletePopupView {
   // Create the popup_ instance if needed.
   void CreatePopupIfNeeded();
 
-  // Sets the popup frame, animating to the new frame if the popup is shrinking,
-  // setting the frame immediately otherwise.  Does nothing if the popup is
-  // already animating to the given frame.
-  void SetPopupFrame(const NSRect frame);
+  // Calculate the appropriate position for the popup based on the
+  // field's screen position and the given target for the matrix
+  // height, and makes the popup visible.  Animates to the new frame
+  // if the popup shrinks, snaps to the new frame if the popup grows,
+  // allows existing animations to continue if the size doesn't
+  // change.
+  void PositionPopup(const CGFloat matrixHeight);
 
   scoped_ptr<AutocompletePopupModel> model_;
   AutocompleteEditViewMac* edit_view_;
