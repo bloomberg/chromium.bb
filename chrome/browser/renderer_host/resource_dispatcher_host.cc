@@ -396,7 +396,9 @@ void ResourceDispatcherHost::BeginRequest(
   request->set_first_party_for_cookies(request_data.first_party_for_cookies);
   request->set_referrer(CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kNoReferrers) ? std::string() : request_data.referrer.spec());
-  request->SetExtraRequestHeaders(request_data.headers);
+  net::HttpRequestHeaders headers;
+  headers.AddHeadersFromString(request_data.headers);
+  request->SetExtraRequestHeaders(headers);
 
   int load_flags = request_data.load_flags;
   // EV certificate verification could be expensive.  We don't want to spend

@@ -10,6 +10,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_request_headers.h"
 #include "webkit/appcache/appcache_group.h"
 #include "webkit/appcache/appcache_policy.h"
 #include "webkit/appcache/appcache_response.h"
@@ -274,15 +275,15 @@ void AppCacheUpdateJob::AddHttpHeadersAndFetch(
     URLRequest* request, const net::HttpResponseInfo* info) {
   DCHECK(request);
   if (info) {
-    std::string extra_headers;
+    net::HttpRequestHeaders extra_headers;
 
     // Add If-Modified-Since header if response info has Last-Modified header.
     const std::string last_modified = "Last-Modified";
     std::string last_modified_value;
     info->headers->EnumerateHeader(NULL, last_modified, &last_modified_value);
     if (!last_modified_value.empty()) {
-      extra_headers.append("If-Modified-Since: ");
-      extra_headers.append(last_modified_value);
+      extra_headers.SetHeader(net::HttpRequestHeaders::kIfModifiedSince,
+                              last_modified_value);
     }
 
     // Add If-None-Match header if resposne info has ETag header.
@@ -290,13 +291,11 @@ void AppCacheUpdateJob::AddHttpHeadersAndFetch(
     std::string etag_value;
     info->headers->EnumerateHeader(NULL, etag, &etag_value);
     if (!etag_value.empty()) {
-      if (!extra_headers.empty())
-        extra_headers.append("\r\n");
-      extra_headers.append("If-None-Match: ");
-      extra_headers.append(etag_value);
+      extra_headers.SetHeader(net::HttpRequestHeaders::kIfNoneMatch,
+                              etag_value);
     }
 
-    if (!extra_headers.empty())
+    if (!extra_headers.IsEmpty())
       request->SetExtraRequestHeaders(extra_headers);
   }
   request->Start();

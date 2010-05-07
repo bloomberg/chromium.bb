@@ -41,6 +41,7 @@
 #include "net/base/cookie_monster.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_request_headers.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_error_job.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -629,7 +630,9 @@ void STDCALL CPR_SetExtraRequestHeaders(CPRequest* request,
   CHECK(ChromePluginLib::IsPluginThread());
   PluginRequestHandler* handler = PluginRequestHandler::FromCPRequest(request);
   CHECK(handler);
-  handler->request()->SetExtraRequestHeaders(headers);
+  net::HttpRequestHeaders http_headers;
+  http_headers.AddHeadersFromString(headers);
+  handler->request()->SetExtraRequestHeaders(http_headers);
 }
 
 void STDCALL CPR_SetRequestLoadFlags(CPRequest* request, uint32 flags) {

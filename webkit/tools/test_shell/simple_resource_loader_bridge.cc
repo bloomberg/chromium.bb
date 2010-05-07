@@ -44,6 +44,7 @@
 #include "net/base/net_util.h"
 #include "net/base/static_cookie_policy.h"
 #include "net/base/upload_data.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request.h"
@@ -215,7 +216,9 @@ class RequestProxy : public URLRequest::Delegate,
     request_->set_method(params->method);
     request_->set_first_party_for_cookies(params->first_party_for_cookies);
     request_->set_referrer(params->referrer.spec());
-    request_->SetExtraRequestHeaders(params->headers);
+    net::HttpRequestHeaders headers;
+    headers.AddHeadersFromString(params->headers);
+    request_->SetExtraRequestHeaders(headers);
     request_->set_load_flags(params->load_flags);
     request_->set_upload(params->upload.get());
     request_->set_context(request_context);
