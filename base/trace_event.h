@@ -18,8 +18,10 @@
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
-#include <windows.h>
-#endif
+// On Windows we always pull in an alternative implementation
+// which logs to Event Tracing for Windows.
+#include "base/trace_event_win.h"
+#else  // defined(OS_WIN)
 
 #include <string>
 
@@ -34,7 +36,7 @@
 #define TRACE_EVENT_END(name, id, extra) ((void) 0)
 #define TRACE_EVENT_INSTANT(name, id, extra) ((void) 0)
 
-#else
+#else  // CHROMIUM_ENABLE_TRACE_EVENT
 // Use the following macros rather than using the TraceLog class directly as the
 // underlying implementation may change in the future.  Here's a sample usage:
 // TRACE_EVENT_BEGIN("v8.run", documentId, scriptLocation);
@@ -129,5 +131,6 @@ class TraceLog {
 };
 
 } // namespace base
+#endif  // defined(OS_WIN)
 
 #endif  // BASE_TRACE_EVENT_H_
