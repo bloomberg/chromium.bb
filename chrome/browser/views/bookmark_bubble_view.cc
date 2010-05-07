@@ -25,6 +25,8 @@
 #include "views/controls/button/native_button.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/focus/focus_manager.h"
+#include "views/window/client_view.h"
+#include "views/window/window.h"
 
 using views::Combobox;
 using views::ColumnSet;
@@ -146,7 +148,8 @@ void BookmarkBubbleView::Show(views::Window* parent,
     return;
 
   bubble_ = new BookmarkBubbleView(delegate, profile, url, newly_bookmarked);
-  InfoBubble::Show(parent, bounds, bubble_, bubble_);
+  InfoBubble::Show(parent->GetClientView()->GetWidget(), bounds,
+                   BubbleBorder::TOP_LEFT, bubble_, bubble_);
   GURL url_ptr(url);
   NotificationService::current()->Notify(
       NotificationType::BOOKMARK_BUBBLE_SHOWN,

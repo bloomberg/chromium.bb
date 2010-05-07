@@ -16,8 +16,9 @@ class Profile;
 class FirstRunBubble : public InfoBubble,
                        public InfoBubbleDelegate {
  public:
-  static FirstRunBubble* Show(Profile* profile, views::Window* window,
+  static FirstRunBubble* Show(Profile* profile, views::Widget* parent,
                               const gfx::Rect& position_relative_to,
+                              BubbleBorder::ArrowLocation arrow_location,
                               FirstRun::BubbleType bubble_type);
 
  private:

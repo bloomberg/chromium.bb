@@ -332,7 +332,8 @@ void ExtensionInstalledBubble::ShowInternal() {
 
   bubble_content_ = new InstalledBubbleContent(extension_, type_,
       &icon_);
-  InfoBubble::Show(browser_view->GetWindow(), bounds, bubble_content_, this);
+  InfoBubble::Show(browser_view->GetWidget(), bounds, BubbleBorder::TOP_RIGHT,
+                   bubble_content_, this);
 }
 
 // InfoBubbleDelegate

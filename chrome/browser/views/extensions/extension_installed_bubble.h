@@ -67,10 +67,6 @@ class ExtensionInstalledBubble
                                  bool closed_by_escape);
   virtual bool CloseOnEscape() { return true; }
 
-  // Arrow subjects appear on the right side (for RTL), so do not prefer
-  // origin side anchor.
-  virtual bool PreferOriginSideAnchor() { return false; }
-
   Extension* extension_;
   Browser* browser_;
   SkBitmap icon_;

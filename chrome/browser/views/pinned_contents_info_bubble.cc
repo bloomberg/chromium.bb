@@ -5,15 +5,14 @@
 #include "chrome/browser/views/pinned_contents_info_bubble.h"
 
 #include "chrome/browser/views/bubble_border.h"
-#include "views/window/window.h"
 
 #if defined(OS_WIN)
 // BorderWidget ---------------------------------------------------------------
 
 void PinnedContentsBorderContents::SizeAndGetBounds(
     const gfx::Rect& position_relative_to,
+    BubbleBorder::ArrowLocation arrow_location,
     const gfx::Size& contents_size,
-    bool prefer_arrow_on_right,
     gfx::Rect* contents_bounds,
     gfx::Rect* window_bounds) {
   // Arrow offset is calculated from the middle of the |position_relative_to|.
@@ -23,10 +22,10 @@ void PinnedContentsBorderContents::SizeAndGetBounds(
   gfx::Insets insets;
   bubble_border_->GetInsets(&insets);
   offset += kLeftMargin + insets.left() + 1;
-  bubble_border_->set_arrow_offset(offset);
+  bubble_border_->SetArrowOffset(offset, contents_size);
 
   BorderContents::SizeAndGetBounds(
-      position_relative_to, contents_size, prefer_arrow_on_right,
+      position_relative_to, arrow_location, contents_size,
       contents_bounds, window_bounds);
 
   // Now move the y position to make sure the bubble contents overlap the view.
@@ -42,14 +41,16 @@ BorderContents* PinnedContentsBorderWidget::CreateBorderContents() {
 
 // static
 PinnedContentsInfoBubble* PinnedContentsInfoBubble::Show(
-    views::Window* parent,
+    views::Widget* parent,
     const gfx::Rect& position_relative_to,
+    BubbleBorder::ArrowLocation arrow_location,
     const gfx::Point& bubble_anchor,
     views::View* contents,
     InfoBubbleDelegate* delegate) {
   PinnedContentsInfoBubble* window =
       new PinnedContentsInfoBubble(bubble_anchor);
-  window->Init(parent, position_relative_to, contents, delegate);
+  window->Init(parent, position_relative_to, arrow_location,
+               contents, delegate);
   return window;
 }
 

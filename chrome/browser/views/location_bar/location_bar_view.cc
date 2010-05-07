@@ -781,8 +781,8 @@ void LocationBarView::ShowFirstRunBubbleInternal(
   if (UILayoutIsRightToLeft())
     origin.set_x(width() - origin.x());
   views::View::ConvertPointToScreen(this, &origin);
-  FirstRunBubble::Show(profile_, GetWindow(), gfx::Rect(origin, gfx::Size()),
-                       bubble_type);
+  FirstRunBubble::Show(profile_, GetWidget(), gfx::Rect(origin, gfx::Size()),
+                       BubbleBorder::TOP_LEFT, bubble_type);
 #endif
 }
 
