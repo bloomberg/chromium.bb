@@ -217,6 +217,8 @@ enum CreateNewUpdateItem {
 
 typedef std::set<std::string> AttributeKeySet;
 
+typedef std::set<int64> MetahandleSet;
+
 // Why the singular enums?  So the code compile-time dispatches instead of
 // runtime dispatches as it would with a single enum and an if() statement.
 
@@ -231,11 +233,19 @@ struct EntryKernel {
   std::bitset<BIT_TEMPS_COUNT> bit_temps;
 
  public:
-  inline void mark_dirty() {
+  inline void mark_dirty(syncable::MetahandleSet* dirty_index) {
+    if (!dirty_ && dirty_index) {
+      DCHECK_NE(0, ref(META_HANDLE));
+      dirty_index->insert(ref(META_HANDLE));
+    }
     dirty_ = true;
   }
 
-  inline void clear_dirty() {
+  inline void clear_dirty(syncable::MetahandleSet* dirty_index) {
+    if (dirty_ && dirty_index) {
+      DCHECK_NE(0, ref(META_HANDLE));
+      dirty_index->erase(ref(META_HANDLE));
+    }
     dirty_ = false;
   }
 
@@ -317,6 +327,7 @@ struct EntryKernel {
   inline Id& mutable_ref(IdField field) {
     return id_fields[field - ID_FIELDS_BEGIN];
   }
+
  private:
   // Tracks whether this entry needs to be saved to the database.
   bool dirty_;
@@ -466,16 +477,7 @@ class MutableEntry : public Entry {
   bool Put(StringField field, const std::string& value);
   bool Put(BaseVersion field, int64 value);
 
-  inline bool Put(ProtoField field, const sync_pb::EntitySpecifics& value) {
-    DCHECK(kernel_);
-    // TODO(ncarter): This is unfortunately heavyweight.  Can we do
-    // better?
-    if (kernel_->ref(field).SerializeAsString() != value.SerializeAsString()) {
-      kernel_->put(field, value);
-      kernel_->mark_dirty();
-    }
-    return true;
-  }
+  bool Put(ProtoField field, const sync_pb::EntitySpecifics& value);
   inline bool Put(BitField field, bool value) {
     return PutField(field, value);
   }
@@ -495,12 +497,14 @@ class MutableEntry : public Entry {
   }
 
  protected:
+  syncable::MetahandleSet* GetDirtyIndexHelper();
+
   template <typename FieldType, typename ValueType>
   inline bool PutField(FieldType field, const ValueType& value) {
     DCHECK(kernel_);
     if (kernel_->ref(field) != value) {
       kernel_->put(field, value);
-      kernel_->mark_dirty();
+      kernel_->mark_dirty(GetDirtyIndexHelper());
     }
     return true;
   }
@@ -612,8 +616,6 @@ struct ExtendedAttributeValue {
 
 typedef std::map<ExtendedAttributeKey, ExtendedAttributeValue>
     ExtendedAttributes;
-
-typedef std::set<int64> MetahandleSet;
 
 // A list of metahandles whose metadata should not be purged.
 typedef std::multiset<int64> Pegs;
@@ -779,7 +781,6 @@ class Directory {
   EntryKernel* GetRootEntry();
   bool ReindexId(EntryKernel* const entry, const Id& new_id);
   void ReindexParentId(EntryKernel* const entry, const Id& new_parent_id);
-  void AddToDirtyMetahandles(int64 handle);
   void ClearDirtyMetahandles();
 
   // These don't do semantic checking.
@@ -906,7 +907,7 @@ class Directory {
   // Used by CheckTreeInvariants
   void GetAllMetaHandles(BaseTransaction* trans, MetahandleSet* result);
 
-  static bool SafeToPurgeFromMemory(const EntryKernel* const entry);
+  bool SafeToPurgeFromMemory(const EntryKernel* const entry) const;
 
   // Helper method used to implement GetFirstChildId/GetLastChildId.
   Id GetChildWithNullIdField(IdField field,

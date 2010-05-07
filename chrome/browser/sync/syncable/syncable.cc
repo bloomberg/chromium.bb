@@ -421,6 +421,7 @@ void ZeroFields(EntryKernel* entry, int first_field) {
     entry->put(static_cast<BitField>(i), false);
   if (i < PROTO_FIELDS_END)
     i = PROTO_FIELDS_END;
+  entry->clear_dirty(NULL);
 }
 
 void Directory::InsertEntry(EntryKernel* entry) {
@@ -447,14 +448,14 @@ void Directory::Undelete(EntryKernel* const entry) {
   DCHECK(entry->ref(IS_DEL));
   ScopedKernelLock lock(this);
   entry->put(IS_DEL, false);
-  entry->mark_dirty();
+  entry->mark_dirty(kernel_->dirty_metahandles);
   CHECK(kernel_->parent_id_child_index->insert(entry).second);
 }
 
 void Directory::Delete(EntryKernel* const entry) {
   DCHECK(!entry->ref(IS_DEL));
   entry->put(IS_DEL, true);
-  entry->mark_dirty();
+  entry->mark_dirty(kernel_->dirty_metahandles);
   ScopedKernelLock lock(this);
   CHECK(1 == kernel_->parent_id_child_index->erase(entry));
 }
@@ -487,20 +488,20 @@ void Directory::ReindexParentId(EntryKernel* const entry,
   CHECK(kernel_->parent_id_child_index->insert(entry).second);
 }
 
-void Directory::AddToDirtyMetahandles(int64 handle) {
-  kernel_->transaction_mutex.AssertAcquired();
-  kernel_->dirty_metahandles->insert(handle);
-}
-
 void Directory::ClearDirtyMetahandles() {
   kernel_->transaction_mutex.AssertAcquired();
   kernel_->dirty_metahandles->clear();
 }
 
-// static
-bool Directory::SafeToPurgeFromMemory(const EntryKernel* const entry) {
-  return entry->ref(IS_DEL) && !entry->is_dirty() && !entry->ref(SYNCING) &&
-         !entry->ref(IS_UNAPPLIED_UPDATE) && !entry->ref(IS_UNSYNCED);
+bool Directory::SafeToPurgeFromMemory(const EntryKernel* const entry) const {
+  bool safe = entry->ref(IS_DEL) && !entry->is_dirty() &&
+      !entry->ref(SYNCING) && !entry->ref(IS_UNAPPLIED_UPDATE) &&
+      !entry->ref(IS_UNSYNCED);
+
+  if (safe)
+    DCHECK(kernel_->dirty_metahandles->count(entry->ref(META_HANDLE)) == 0);
+
+  return safe;
 }
 
 void Directory::TakeSnapshotForSaveChanges(SaveChangesSnapshot* snapshot) {
@@ -518,7 +519,10 @@ void Directory::TakeSnapshotForSaveChanges(SaveChangesSnapshot* snapshot) {
     if (!entry->is_dirty())
       continue;
     snapshot->dirty_metas.insert(snapshot->dirty_metas.end(), *entry);
-    entry->clear_dirty();
+    DCHECK_EQ(1U, kernel_->dirty_metahandles->count(*i));
+    // We don't bother removing from the index here as we blow the entire thing
+    // in a moment, and it unnecessarily complicates iteration.
+    entry->clear_dirty(NULL);
   }
   ClearDirtyMetahandles();
 
@@ -620,7 +624,7 @@ void Directory::HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot) {
     MetahandlesIndex::iterator found =
         kernel_->metahandles_index->find(&kernel_->needle);
     if (found != kernel_->metahandles_index->end()) {
-      (*found)->mark_dirty();
+      (*found)->mark_dirty(kernel_->dirty_metahandles);
     }
   }
 
@@ -1003,10 +1007,6 @@ WriteTransaction::~WriteTransaction() {
       directory()->CheckTreeInvariants(this, originals_);
   }
 
-  for (OriginalEntries::const_iterator i = originals_->begin();
-      i != originals_->end(); ++i) {
-    directory()->AddToDirtyMetahandles(i->ref(META_HANDLE));
-  }
   UnlockAndLog(originals_);
 }
 
@@ -1108,9 +1108,9 @@ void MutableEntry::Init(WriteTransaction* trans, const Id& parent_id,
                         const string& name) {
   kernel_ = new EntryKernel;
   ZeroFields(kernel_, BEGIN_FIELDS);
-  kernel_->mark_dirty();
   kernel_->put(ID, trans->directory_->NextId());
   kernel_->put(META_HANDLE, trans->directory_->NextMetahandle());
+  kernel_->mark_dirty(trans->directory_->kernel_->dirty_metahandles);
   kernel_->put(PARENT_ID, parent_id);
   kernel_->put(NON_UNIQUE_NAME, name);
   const int64 now = Now();
@@ -1136,8 +1136,8 @@ MutableEntry::MutableEntry(WriteTransaction* trans, CreateNewUpdateItem,
   kernel_ = new EntryKernel;
   ZeroFields(kernel_, BEGIN_FIELDS);
   kernel_->put(ID, id);
-  kernel_->mark_dirty();
   kernel_->put(META_HANDLE, trans->directory_->NextMetahandle());
+  kernel_->mark_dirty(trans->directory_->kernel_->dirty_metahandles);
   kernel_->put(IS_DEL, true);
   // We match the database defaults here
   kernel_->put(BASE_VERSION, CHANGES_VERSION);
@@ -1182,7 +1182,7 @@ bool MutableEntry::Put(Int64Field field, const int64& value) {
   DCHECK(kernel_);
   if (kernel_->ref(field) != value) {
     kernel_->put(field, value);
-    kernel_->mark_dirty();
+    kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
   }
   return true;
 }
@@ -1199,27 +1199,43 @@ bool MutableEntry::Put(IdField field, const Id& value) {
     } else {
       kernel_->put(field, value);
     }
-    kernel_->mark_dirty();
+    kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
   }
   return true;
 }
 
 void MutableEntry::PutParentIdPropertyOnly(const Id& parent_id) {
   dir()->ReindexParentId(kernel_, parent_id);
-  kernel_->mark_dirty();
+  kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
 }
 
 bool MutableEntry::Put(BaseVersion field, int64 value) {
   DCHECK(kernel_);
   if (kernel_->ref(field) != value) {
     kernel_->put(field, value);
-    kernel_->mark_dirty();
+    kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
   }
   return true;
 }
 
 bool MutableEntry::Put(StringField field, const string& value) {
   return PutImpl(field, value);
+}
+
+bool MutableEntry::Put(ProtoField field,
+                       const sync_pb::EntitySpecifics& value) {
+  DCHECK(kernel_);
+  // TODO(ncarter): This is unfortunately heavyweight.  Can we do
+  // better?
+  if (kernel_->ref(field).SerializeAsString() != value.SerializeAsString()) {
+    kernel_->put(field, value);
+    kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
+  }
+  return true;
+}
+
+MetahandleSet* MutableEntry::GetDirtyIndexHelper() {
+  return dir()->kernel_->dirty_metahandles;
 }
 
 bool MutableEntry::PutUniqueClientTag(const string& new_tag) {
@@ -1243,14 +1259,14 @@ bool MutableEntry::PutUniqueClientTag(const string& new_tag) {
     // erase the old tag and finish up.
     dir()->kernel_->client_tag_index->erase(kernel_);
     kernel_->put(UNIQUE_CLIENT_TAG, new_tag);
-    kernel_->mark_dirty();
+    kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
     CHECK(dir()->kernel_->client_tag_index->insert(kernel_).second);
   } else {
     // The new tag is empty. Since the old tag is not equal to the new tag,
     // The old tag isn't empty, and thus must exist in the index.
     CHECK(dir()->kernel_->client_tag_index->erase(kernel_));
     kernel_->put(UNIQUE_CLIENT_TAG, new_tag);
-    kernel_->mark_dirty();
+    kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
   }
   return true;
 }
@@ -1263,7 +1279,7 @@ bool MutableEntry::PutImpl(StringField field, const string& value) {
 
   if (kernel_->ref(field) != value) {
     kernel_->put(field, value);
-    kernel_->mark_dirty();
+    kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
   }
   return true;
 }
@@ -1283,7 +1299,7 @@ bool MutableEntry::Put(IndexedBitField field, bool value) {
     else
       CHECK(1 == index->erase(kernel_->ref(META_HANDLE)));
     kernel_->put(field, value);
-    kernel_->mark_dirty();
+    kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
   }
   return true;
 }

@@ -94,7 +94,7 @@ int UnpackEntry(SQLStatement* statement, EntryKernel** kernel) {
   int query_result = statement->step();
   if (SQLITE_ROW == query_result) {
     *kernel = new EntryKernel;
-    (*kernel)->clear_dirty();
+    (*kernel)->clear_dirty(NULL);
     DCHECK(statement->column_count() == static_cast<int>(FIELD_COUNT));
     int i = 0;
     for (i = BEGIN_FIELDS; i < INT64_FIELDS_END; ++i) {

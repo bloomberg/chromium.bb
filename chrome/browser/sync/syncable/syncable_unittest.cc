@@ -293,6 +293,10 @@ class SyncableDirectoryTest : public testing::Test {
     ASSERT_TRUE(OPENED == dir_->Open(file_path_, kName));
   }
 
+  bool IsInDirtyMetahandles(int64 metahandle) {
+    return 1 == dir_->kernel_->dirty_metahandles->count(metahandle);
+  }
+
   scoped_ptr<Directory> dir_;
   FilePath file_path_;
 
@@ -968,6 +972,7 @@ TEST_F(SyncableDirectoryTest, TestSaveChangesFailure) {
     e1.Put(IS_DIR, true);
     e1.Put(ID, TestIdFactory::FromNumber(101));
     EXPECT_TRUE(e1.GetKernelCopy().is_dirty());
+    EXPECT_TRUE(IsInDirtyMetahandles(handle1));
   }
   ASSERT_TRUE(dir_->SaveChanges());
 
@@ -982,6 +987,7 @@ TEST_F(SyncableDirectoryTest, TestSaveChangesFailure) {
     EXPECT_EQ(aguilera.Get(NON_UNIQUE_NAME), "aguilera");
     aguilera.Put(NON_UNIQUE_NAME, "overwritten");
     EXPECT_TRUE(aguilera.GetKernelCopy().is_dirty());
+    EXPECT_TRUE(IsInDirtyMetahandles(handle1));
   }
   ASSERT_TRUE(dir_->SaveChanges());
 
@@ -1000,8 +1006,10 @@ TEST_F(SyncableDirectoryTest, TestSaveChangesFailure) {
     EXPECT_FALSE(aguilera.GetKernelCopy().is_dirty());
     EXPECT_EQ(aguilera.Get(NON_UNIQUE_NAME), "overwritten");
     EXPECT_FALSE(aguilera.GetKernelCopy().is_dirty());
+    EXPECT_FALSE(IsInDirtyMetahandles(handle1));
     aguilera.Put(NON_UNIQUE_NAME, "christina");
     EXPECT_TRUE(aguilera.GetKernelCopy().is_dirty());
+    EXPECT_TRUE(IsInDirtyMetahandles(handle1));
 
     // New item.
     MutableEntry kids_on_block(&trans, CREATE, trans.root_id(), "kids");
@@ -1011,6 +1019,7 @@ TEST_F(SyncableDirectoryTest, TestSaveChangesFailure) {
     kids_on_block.Put(IS_DIR, true);
     kids_on_block.Put(ID, TestIdFactory::FromNumber(102));
     EXPECT_TRUE(kids_on_block.GetKernelCopy().is_dirty());
+    EXPECT_TRUE(IsInDirtyMetahandles(handle2));
   }
 
   // We are using an unsaveable directory, so this can't succeed.  However,
@@ -1026,7 +1035,9 @@ TEST_F(SyncableDirectoryTest, TestSaveChangesFailure) {
      Entry kids(&trans, GET_BY_HANDLE, handle2);
      ASSERT_TRUE(kids.good());
      EXPECT_TRUE(kids.GetKernelCopy().is_dirty());
+     EXPECT_TRUE(IsInDirtyMetahandles(handle2));
      EXPECT_TRUE(aguilera.is_dirty());
+     EXPECT_TRUE(IsInDirtyMetahandles(handle1));
   }
 }
 
