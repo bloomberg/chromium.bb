@@ -8,71 +8,31 @@
 #include <ObjBase.h>
 #include <windows.h>
 
-#include <map>
-
-// A helper class that will find the named loaded module in the current
-// process with the lowest version, increment its ref count and return
-// a pointer to its DllGetClassObject() function if it exports one. If
-// the oldest named module is the current module, then this class does nothing
-// (does not muck with module ref count) and calls to
-// get_dll_get_class_object_ptr() will return NULL.
 class DllRedirector {
  public:
-  typedef std::map<std::wstring, HMODULE> PathToHModuleMap;
+  // Attempts to register a window class under a well known name and appends to
+  // its extra data a handle to the current module. Will fail if the window
+  // class is already registered. This is intended to be called from DllMain
+  // under PROCESS_ATTACH.
+  static bool DllRedirector::RegisterAsFirstCFModule();
 
-  DllRedirector();
-  ~DllRedirector();
+  // Unregisters the well known window class if we registered it earlier.
+  // This is intended to be called from DllMain under PROCESS_DETACH.
+  static void DllRedirector::UnregisterAsFirstCFModule();
 
-  // Must call this before calling get_dll_get_class_object_ptr(). On first call
-  // this performs the work of scanning the loaded modules for an old version
-  // to delegate to. Not thread safe.
-  void EnsureInitialized(const wchar_t* module_name, REFCLSID clsid);
+  // Helper function that extracts the HMODULE parameter from our well known
+  // window class.
+  static HMODULE GetFirstCFModule();
 
-  LPFNGETCLASSOBJECT get_dll_get_class_object_ptr() const;
-
- private:
-
-  // Returns the pointer to the named loaded module's DllGetClassObject export
-  // or NULL if either the pointer could not be found or if the pointer would
-  // point into the current module.
-  // Sets module_handle_ and increments the modules reference count.
-  //
-  // For sanity's sake, the module must return a non-null class factory for
-  // the given class id.
-  LPFNGETCLASSOBJECT GetDllGetClassObjectFromModuleName(
-      const wchar_t* module_name, REFCLSID clsid);
-
-  // Returns a handle in |module_handle| to the loaded module called
-  // |module_name| in the current process. If there are multiple modules with
-  // the same name, it returns the module with the oldest version number in its
-  // VERSIONINFO block. The version string is expected to be of a form that
-  // base::Version can parse.
-  //
-  // For sanity's sake, when there are multiple instances of the module,
-  // |product_short_name|, if non-NULL, must match the module's
-  // ProductShortName value
-  //
-  // Returns true if a named module with the given ProductShortName can be
-  // found, returns false otherwise. Can return the current module handle.
-  bool GetOldestNamedModuleHandle(const std::wstring& module_name,
-                                  REFCLSID clsid,
-                                  HMODULE* module_handle);
-
-  // Given a PathToBaseAddressMap, iterates over the module images whose paths
-  // are the keys and returns the handle to the module with the lowest
-  // version number in its VERSIONINFO block whose DllGetClassObject returns a
-  // class factory for the given CLSID.
-  HMODULE GetHandleOfOldestModule(const PathToHModuleMap& map, REFCLSID clsid);
-
- private:
   // Helper function to return the DllGetClassObject function pointer from
   // the given module. On success, the return value is non-null and module
   // will have had its reference count incremented.
-  LPFNGETCLASSOBJECT GetDllGetClassObjectPtr(HMODULE module);
+  static LPFNGETCLASSOBJECT GetDllGetClassObjectPtr(HMODULE module);
 
-  HMODULE module_handle_;
-  LPFNGETCLASSOBJECT dcgo_ptr_;
-  bool initialized_;
+ private:
+  // Use this to keep track of whether or not we have registered the window
+  // class in this module.
+  static ATOM atom_;
 
   friend class ModuleUtilsTest;
 };

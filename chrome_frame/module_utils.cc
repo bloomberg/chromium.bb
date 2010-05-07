@@ -5,161 +5,77 @@
 #include "chrome_frame/module_utils.h"
 
 #include <atlbase.h>
-#include <TlHelp32.h>
-
-#include "base/scoped_ptr.h"
-#include "base/file_version_info.h"
 #include "base/logging.h"
-#include "base/scoped_handle.h"
-#include "base/string_util.h"
-#include "base/version.h"
-#include "chrome_frame/exception_barrier.h"
 
-DllRedirector::DllRedirector() : dcgo_ptr_(NULL), initialized_(false),
-                                 module_handle_(NULL) {}
+const wchar_t kBeaconWindowClassName[] =
+    L"ChromeFrameBeaconWindowClass826C5D01-E355-4b23-8AC2-40650E0B7843";
 
-DllRedirector::~DllRedirector() {
-  if (module_handle_) {
-    FreeLibrary(module_handle_);
-    module_handle_ = NULL;
-  }
-}
+// static
+ATOM DllRedirector::atom_ = 0;
 
-void DllRedirector::EnsureInitialized(const wchar_t* module_name,
-                                      REFCLSID clsid) {
-  if (!initialized_) {
-    initialized_ = true;
-    // Also sets module_handle_.
-    dcgo_ptr_ = GetDllGetClassObjectFromModuleName(module_name, clsid);
-  }
-}
-
-LPFNGETCLASSOBJECT DllRedirector::get_dll_get_class_object_ptr() const {
-  DCHECK(initialized_);
-  return dcgo_ptr_;
-}
-
-LPFNGETCLASSOBJECT DllRedirector::GetDllGetClassObjectFromModuleName(
-    const wchar_t* module_name, REFCLSID clsid) {
-  module_handle_ = NULL;
-  LPFNGETCLASSOBJECT proc_ptr = NULL;
-  HMODULE module_handle;
-  if (GetOldestNamedModuleHandle(module_name, clsid, &module_handle)) {
-    HMODULE this_module = reinterpret_cast<HMODULE>(&__ImageBase);
-    if (module_handle != this_module) {
-      proc_ptr = GetDllGetClassObjectPtr(module_handle);
-      if (proc_ptr) {
-        // Stash away the module handle in module_handle_ so that it will be
-        // automatically closed when we get destroyed. GetDllGetClassObjectPtr
-        // above will have incremented the module's ref count.
-        module_handle_ = module_handle;
-      }
-    } else {
-      LOG(INFO) << "Module Scan: DllGetClassObject found in current module.";
-    }
+bool DllRedirector::RegisterAsFirstCFModule() {
+  // This would imply that this module had already registered a window class
+  // which should never happen.
+  if (atom_) {
+    NOTREACHED();
+    return true;
   }
 
-  return proc_ptr;
-}
+  WNDCLASSEX wnd_class = {0};
+  wnd_class.cbSize = sizeof(WNDCLASSEX);
+  wnd_class.style = CS_GLOBALCLASS;
+  wnd_class.lpfnWndProc = &DefWindowProc;
+  wnd_class.cbClsExtra = sizeof(HMODULE);
+  wnd_class.cbWndExtra = 0;
+  wnd_class.hInstance = NULL;
+  wnd_class.hIcon = NULL;
 
-bool DllRedirector::GetOldestNamedModuleHandle(const std::wstring& module_name,
-                                               REFCLSID clsid,
-                                               HMODULE* oldest_module_handle) {
-  DCHECK(oldest_module_handle);
+  wnd_class.hCursor = LoadCursor(NULL, IDC_ARROW);
+  wnd_class.hbrBackground = NULL;
+  wnd_class.lpszMenuName = NULL;
+  wnd_class.lpszClassName = kBeaconWindowClassName;
+  wnd_class.hIconSm = wnd_class.hIcon;
 
-  ScopedHandle snapshot(CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, 0));
-  if (snapshot == INVALID_HANDLE_VALUE) {
-    LOG(ERROR) << "Could not create module snapshot!";
-    return false;
-  }
-
+  ATOM atom = RegisterClassEx(&wnd_class);
 
   bool success = false;
-  PathToHModuleMap map;
-
-  {
-    // Here we add an SEH to the chain to prevent our VEH from picking up on any
-    // exceptions thrown in DLLs who hook some of the below api calls. We will
-    // still report the exceptions if they make our way back to us, the hope is
-    // that they will not.
-    ExceptionBarrier exception_barrier;
-
-    // First get the list of module paths, and save the full path to base
-    // address mapping.
-    MODULEENTRY32W module_entry = {0};
-    module_entry.dwSize = sizeof(module_entry);
-    BOOL cont = Module32FirstW(snapshot, &module_entry);
-    while (cont) {
-      if (!lstrcmpi(module_entry.szModule, module_name.c_str())) {
-        std::wstring full_path(module_entry.szExePath);
-        map[full_path] = module_entry.hModule;
+  if (atom != 0) {
+    HWND hwnd = CreateWindow(MAKEINTATOM(atom), L"temp_window", WS_POPUP,
+                             0, 0, 0, 0, NULL, NULL, NULL, NULL);
+    DCHECK(IsWindow(hwnd));
+    if (hwnd) {
+      HMODULE this_module = reinterpret_cast<HMODULE>(&__ImageBase);
+      LONG_PTR lp = reinterpret_cast<LONG_PTR>(this_module);
+      SetClassLongPtr(hwnd, 0, lp);
+      // We need to check the GLE value since SetClassLongPtr returns 0 on
+      // failure as well as on the first call.
+      if (GetLastError() == ERROR_SUCCESS) {
+        atom_ = atom;
+        success = true;
       }
-      SecureZeroMemory(&module_entry, sizeof(MODULEENTRY32W));
-      module_entry.dwSize = sizeof(module_entry);
-      cont = Module32NextW(snapshot, &module_entry);
+      DestroyWindow(hwnd);
     }
-  }
-
-  // Next, enumerate the map and find the oldest version of the module.
-  // (check if the map is of size 1 first)
-  if (!map.empty()) {
-    if (map.size() == 1) {
-      *oldest_module_handle = map.begin()->second;
-    } else {
-      *oldest_module_handle = GetHandleOfOldestModule(map, clsid);
-    }
-
-    if (*oldest_module_handle != NULL) {
-      success = true;
-    }
-  } else {
-    LOG(INFO) << "Module Scan: No modules named " << module_name
-              << " were found.";
   }
 
   return success;
 }
 
-HMODULE DllRedirector::GetHandleOfOldestModule(const PathToHModuleMap& map,
-                                               REFCLSID clsid) {
-  HMODULE oldest_module = NULL;
-  scoped_ptr<Version> min_version(
-      Version::GetVersionFromString("999.999.999.999"));
-
-  PathToHModuleMap::const_iterator map_iter(map.begin());
-  for (; map_iter != map.end(); ++map_iter) {
-    // First check that either we are in the current module or that the DLL
-    // returns a class factory for our clsid.
-    bool current_module =
-        (map_iter->second == reinterpret_cast<HMODULE>(&__ImageBase));
-    bool gco_succeeded = false;
-    if (!current_module) {
-      LPFNGETCLASSOBJECT dgco_ptr = GetDllGetClassObjectPtr(map_iter->second);
-      if (dgco_ptr) {
-        {
-          CComPtr<IClassFactory> class_factory;
-          HRESULT hr = dgco_ptr(clsid, IID_IClassFactory,
-                                reinterpret_cast<void**>(&class_factory));
-          gco_succeeded = SUCCEEDED(hr) && class_factory != NULL;
-        }
-        // Release the module ref count we picked up in GetDllGetClassObjectPtr.
-        FreeLibrary(map_iter->second);
-      }
-    }
-
-    if (current_module || gco_succeeded) {
-      // Then check that the version is less than we've already found:
-      scoped_ptr<FileVersionInfo> version_info(
-          FileVersionInfo::CreateFileVersionInfo(map_iter->first));
-      scoped_ptr<Version> version(
-          Version::GetVersionFromString(version_info->file_version()));
-      if (version->CompareTo(*min_version.get()) < 0) {
-        oldest_module = map_iter->second;
-        min_version.reset(version.release());
-      }
-    }
+void DllRedirector::UnregisterAsFirstCFModule() {
+  if (atom_) {
+    UnregisterClass(MAKEINTATOM(atom_), NULL);
   }
+}
 
+HMODULE DllRedirector::GetFirstCFModule() {
+  WNDCLASSEX wnd_class = {0};
+  HMODULE oldest_module = NULL;
+  HWND hwnd = CreateWindow(kBeaconWindowClassName, L"temp_window", WS_POPUP, 0,
+                           0, 0, 0, NULL, NULL, NULL, NULL);
+  DCHECK(IsWindow(hwnd));
+  if (hwnd) {
+    oldest_module = reinterpret_cast<HMODULE>(GetClassLongPtr(hwnd, 0));
+    DestroyWindow(hwnd);
+  }
   return oldest_module;
 }
 

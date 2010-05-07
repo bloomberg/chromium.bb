@@ -75,8 +75,7 @@ OBJECT_ENTRY_AUTO(__uuidof(ChromeProtocol), ChromeProtocol)
 
 
 // See comments in DllGetClassObject.
-DllRedirector g_dll_redirector;
-Lock g_redirector_lock;
+LPFNGETCLASSOBJECT g_dll_get_class_object_redir_ptr = NULL;
 
 class ChromeTabModule
     : public AtlPerUserModule<CAtlDllModuleT<ChromeTabModule> > {
@@ -173,9 +172,27 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance,
     InitializeCrashReporting();
     logging::InitLogging(NULL, logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
                         logging::LOCK_LOG_FILE, logging::DELETE_OLD_LOG_FILE);
+
+    if (!DllRedirector::RegisterAsFirstCFModule()) {
+      // We are not the first ones in, get the module who registered first.
+      HMODULE original_module = DllRedirector::GetFirstCFModule();
+      DCHECK(original_module != NULL)
+          << "Could not get first CF module handle.";
+      HMODULE this_module = reinterpret_cast<HMODULE>(&__ImageBase);
+      if (original_module != this_module) {
+        // Someone else was here first, try and get a pointer to their
+        // DllGetClassObject export:
+        g_dll_get_class_object_redir_ptr =
+            DllRedirector::GetDllGetClassObjectPtr(original_module);
+        DCHECK(g_dll_get_class_object_redir_ptr != NULL)
+            << "Found CF module with no DllGetClassObject export.";
+      }
+    }
+
     // Enable ETW logging.
     logging::LogEventProvider::Initialize(kChromeFrameProvider);
   } else if (reason == DLL_PROCESS_DETACH) {
+    DllRedirector::UnregisterAsFirstCFModule();
     g_patch_helper.UnpatchIfNeeded();
     delete g_exit_manager;
     g_exit_manager = NULL;
@@ -322,21 +339,10 @@ STDAPI DllCanUnloadNow() {
 
 // Returns a class factory to create an object of the requested type
 STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) {
-  // On first call, we scan the loaded module list to see if an older version
-  // of Chrome Frame is already loaded. If it is, then we delegate all calls
-  // to DllGetClassObject to it. This is to avoid having instances of
-  // different versions of e.g. the BHO through an upgrade. It also prevents
-  // us from repeatedly patching.
-  LPFNGETCLASSOBJECT redir_ptr = NULL;
-  {
-    AutoLock lock(g_redirector_lock);
-    g_dll_redirector.EnsureInitialized(L"npchrome_frame.dll",
-                                       CLSID_ChromeActiveDocument);
-    redir_ptr = g_dll_redirector.get_dll_get_class_object_ptr();
-  }
-
-  if (redir_ptr) {
-    return redir_ptr(rclsid, riid, ppv);
+  // If we found another module present when we were loaded, then delegate to
+  // that:
+  if (g_dll_get_class_object_redir_ptr) {
+    return g_dll_get_class_object_redir_ptr(rclsid, riid, ppv);
   } else {
     g_patch_helper.InitializeAndPatchProtocolsIfNeeded();
     return _AtlModule.DllGetClassObject(rclsid, riid, ppv);
