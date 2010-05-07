@@ -101,9 +101,6 @@ static const wchar_t* kSynchronizedPreferences[] = {
 
 #if defined(OS_CHROMEOS)
   // IME prefs
-  prefs::kLanguageUseGlobalEngine,
-  prefs::kLanguageHotkeyNextEngine,
-  prefs::kLanguageHotkeyTrigger,
   prefs::kLanguagePreloadEngines,
   prefs::kLanguageHangulKeyboard,
   prefs::kLanguagePinyinCorrectPinyin,
