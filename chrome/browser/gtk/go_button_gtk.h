@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 
 #include <gtk/gtk.h>
 
+#include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/task.h"
 #include "chrome/browser/gtk/custom_button.h"
@@ -40,20 +41,11 @@ class GoButtonGtk : public NotificationObserver {
  private:
   friend class GoButtonGtkPeer;
 
-  // gtk signals
-  static gboolean OnExpose(GtkWidget* widget,
-                           GdkEventExpose* e,
-                           GoButtonGtk* button);
-  static gboolean OnLeave(GtkWidget* widget, GdkEventCrossing* event,
-                          GoButtonGtk* button);
-  static gboolean OnClicked(GtkButton* widget, GoButtonGtk* button);
-  static gboolean OnQueryTooltipThunk(GtkWidget* widget,
-                                      gint x, gint y, gboolean keyboard_mode,
-                                      GtkTooltip* tooltip,
-                                      GoButtonGtk* button) {
-    return button->OnQueryTooltip(tooltip);
-  }
-  gboolean OnQueryTooltip(GtkTooltip* tooltip);
+  CHROMEGTK_CALLBACK_1(GoButtonGtk, gboolean, OnExpose, GdkEventExpose*);
+  CHROMEGTK_CALLBACK_1(GoButtonGtk, gboolean, OnLeaveNotify, GdkEventCrossing*);
+  CHROMEGTK_CALLBACK_0(GoButtonGtk, void, OnClicked);
+  CHROMEGTK_CALLBACK_4(GoButtonGtk, gboolean, OnQueryTooltip,
+                       gint, gint, gboolean, GtkTooltip*);
 
   void SetToggled();
 

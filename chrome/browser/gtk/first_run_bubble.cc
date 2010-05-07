@@ -177,17 +177,17 @@ FirstRunBubble::FirstRunBubble(Profile* profile,
   theme_provider_->InitThemesFor(this);
 }
 
-void FirstRunBubble::HandleChangeButton() {
-  bubble_->Close();
-  ShowOptionsWindow(OPTIONS_PAGE_GENERAL, OPTIONS_GROUP_DEFAULT_SEARCH,
-                    profile_);
-}
-
-void FirstRunBubble::HandleDestroy() {
+void FirstRunBubble::HandleDestroy(GtkWidget* sender) {
   content_ = NULL;
   delete this;
 }
 
-void FirstRunBubble::HandleKeepButton() {
+void FirstRunBubble::HandleKeepButton(GtkWidget* sender) {
   bubble_->Close();
+
+}
+void FirstRunBubble::HandleChangeButton(GtkWidget* sender) {
+  bubble_->Close();
+  ShowOptionsWindow(OPTIONS_PAGE_GENERAL, OPTIONS_GROUP_DEFAULT_SEARCH,
+                    profile_);
 }

@@ -378,7 +378,8 @@ void InfoBubbleGtk::GrabPointerAndKeyboard() {
   }
 }
 
-gboolean InfoBubbleGtk::OnEscape() {
+gboolean InfoBubbleGtk::OnEscape(GtkAccelGroup* group, GObject* acceleratable,
+                                 guint keyval, GdkModifierType modifier) {
   closed_by_escape_ = true;
   Close();
   return TRUE;

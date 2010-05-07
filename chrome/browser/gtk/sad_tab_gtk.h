@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 
 typedef struct _GtkWidget GtkWidget;
 
+#include "app/gtk_signal.h"
 #include "chrome/common/owned_widget_gtk.h"
 
 class TabContents;
@@ -19,11 +20,7 @@ class SadTabGtk {
   GtkWidget* widget() const { return event_box_.get(); }
 
  private:
-  // Clicked-event handler for link to launch associated url.
-  static void OnLinkButtonClickThunk(GtkWidget* widget,
-                                     SadTabGtk* sad_tab) {
-    sad_tab->OnLinkButtonClick();
-  }
+  CHROMEGTK_CALLBACK_0(SadTabGtk, void, OnLinkButtonClick);
 
   void OnLinkButtonClick();
 
@@ -33,4 +30,4 @@ class SadTabGtk {
   DISALLOW_COPY_AND_ASSIGN(SadTabGtk);
 };
 
-#endif  // CHROME_BROWSER_GTK_SAD_TAB_GTK_H__
+#endif  // CHROME_BROWSER_GTK_SAD_TAB_GTK_H_

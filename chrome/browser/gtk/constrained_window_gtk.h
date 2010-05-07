@@ -7,6 +7,7 @@
 
 #include <gtk/gtk.h>
 
+#include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "chrome/browser/tab_contents/constrained_window.h"
 #include "chrome/common/owned_widget_gtk.h"
@@ -58,15 +59,8 @@ class ConstrainedWindowGtk : public ConstrainedWindow {
   void ConnectAccelerators();
 
   // Handles an ESC accelerator being pressed.
-  static gboolean OnEscapeThunk(GtkAccelGroup* accel_group,
-                                GObject* acceleratable,
-                                guint keyval,
-                                GdkModifierType modifier,
-                                gpointer user_data) {
-    return reinterpret_cast<ConstrainedWindowGtk*>(user_data)->OnEscape();
-  }
-
-  gboolean OnEscape();
+  CHROMEG_CALLBACK_3(ConstrainedWindowGtk, gboolean, OnEscape, GtkAccelGroup*,
+                     GObject*, guint, GdkModifierType);
 
   // The TabContents that owns and constrains this ConstrainedWindow.
   TabContents* owner_;

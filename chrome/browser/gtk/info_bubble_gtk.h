@@ -141,14 +141,8 @@ class InfoBubbleGtk : public NotificationObserver {
   // sure that we have the input focus.
   void GrabPointerAndKeyboard();
 
-  static gboolean OnEscapeThunk(GtkAccelGroup* group,
-                                GObject* acceleratable,
-                                guint keyval,
-                                GdkModifierType modifier,
-                                gpointer user_data) {
-    return reinterpret_cast<InfoBubbleGtk*>(user_data)->OnEscape();
-  }
-  gboolean OnEscape();
+  CHROMEG_CALLBACK_3(InfoBubbleGtk, gboolean, OnEscape, GtkAccelGroup*,
+                     GObject*, guint, GdkModifierType);
 
   CHROMEGTK_CALLBACK_1(InfoBubbleGtk, gboolean, OnExpose, GdkEventExpose*);
   CHROMEGTK_CALLBACK_1(InfoBubbleGtk, void, OnSizeAllocate, GtkAllocation*);

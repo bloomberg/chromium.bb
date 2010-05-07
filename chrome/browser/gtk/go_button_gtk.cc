@@ -41,11 +41,11 @@ GoButtonGtk::GoButtonGtk(LocationBarViewGtk* location_bar, Browser* browser)
   gtk_widget_set_app_paintable(widget_.get(), TRUE);
 
   g_signal_connect(widget_.get(), "expose-event",
-                   G_CALLBACK(OnExpose), this);
+                   G_CALLBACK(OnExposeThunk), this);
   g_signal_connect(widget_.get(), "leave-notify-event",
-                   G_CALLBACK(OnLeave), this);
+                   G_CALLBACK(OnLeaveNotifyThunk), this);
   g_signal_connect(widget_.get(), "clicked",
-                   G_CALLBACK(OnClicked), this);
+                   G_CALLBACK(OnClickedThunk), this);
   GTK_WIDGET_UNSET_FLAGS(widget_.get(), GTK_CAN_FOCUS);
 
   gtk_widget_set_has_tooltip(widget_.get(), TRUE);
@@ -103,57 +103,52 @@ void GoButtonGtk::OnButtonTimer() {
   ChangeMode(intended_mode_, true);
 }
 
-// static
 gboolean GoButtonGtk::OnExpose(GtkWidget* widget,
-                               GdkEventExpose* e,
-                               GoButtonGtk* button) {
-  if (button->theme_provider_ && button->theme_provider_->UseGtkTheme()) {
+                               GdkEventExpose* e) {
+  if (theme_provider_ && theme_provider_->UseGtkTheme()) {
     return FALSE;
   } else {
-    double hover_state = button->hover_controller_.GetCurrentValue();
-    if (button->visible_mode_ == MODE_GO) {
-      return button->go_.OnExpose(widget, e, hover_state);
+    double hover_state = hover_controller_.GetCurrentValue();
+    if (visible_mode_ == MODE_GO) {
+      return go_.OnExpose(widget, e, hover_state);
     } else {
-      return button->stop_.OnExpose(widget, e, hover_state);
+      return stop_.OnExpose(widget, e, hover_state);
     }
   }
 }
 
-// static
-gboolean GoButtonGtk::OnLeave(GtkWidget* widget,
-                              GdkEventCrossing* event,
-                              GoButtonGtk* button) {
-  button->ChangeMode(button->intended_mode_, true);
+gboolean GoButtonGtk::OnLeaveNotify(GtkWidget* widget,
+                                    GdkEventCrossing* event) {
+  ChangeMode(intended_mode_, true);
   return FALSE;
 }
 
-// static
-gboolean GoButtonGtk::OnClicked(GtkButton* widget, GoButtonGtk* button) {
-  if (button->visible_mode_ == MODE_STOP) {
-    if (button->browser_)
-      button->browser_->Stop();
+void GoButtonGtk::OnClicked(GtkWidget* sender) {
+  if (visible_mode_ == MODE_STOP) {
+    if (browser_)
+      browser_->Stop();
 
     // The user has clicked, so we can feel free to update the button,
     // even if the mouse is still hovering.
-    button->ChangeMode(MODE_GO, true);
-  } else if (button->visible_mode_ == MODE_GO && button->stop_timer_.empty()) {
+    ChangeMode(MODE_GO, true);
+  } else if (visible_mode_ == MODE_GO && stop_timer_.empty()) {
     // If the go button is visible and not within the double click timer, go.
-    if (button->browser_) {
-      button->browser_->ExecuteCommandWithDisposition(IDC_GO,
+    if (browser_) {
+      browser_->ExecuteCommandWithDisposition(IDC_GO,
           gtk_util::DispositionForCurrentButtonPressEvent());
     }
 
     // Figure out the system double-click time.
-    if (button->button_delay_ == 0) {
+    if (button_delay_ == 0) {
       GtkSettings* settings = gtk_settings_get_default();
       g_object_get(G_OBJECT(settings),
                    "gtk-double-click-time",
-                   &button->button_delay_,
+                   &button_delay_,
                    NULL);
     }
 
     // Stop any existing timers.
-    button->stop_timer_.RevokeAll();
+    stop_timer_.RevokeAll();
 
     // Start a timer - while this timer is running, the go button
     // cannot be changed to a stop button. We do not set intended_mode_
@@ -161,14 +156,14 @@ gboolean GoButtonGtk::OnClicked(GtkButton* widget, GoButtonGtk* button) {
     // us that it has started loading (and this may occur only after
     // some delay).
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                            button->CreateButtonTimerTask(),
-                                            button->button_delay_);
+                                            CreateButtonTimerTask(),
+                                            button_delay_);
   }
-
-  return TRUE;
 }
 
-gboolean GoButtonGtk::OnQueryTooltip(GtkTooltip* tooltip) {
+gboolean GoButtonGtk::OnQueryTooltip(GtkWidget* sender,
+                                     gint x, gint y, gboolean keyboard_mode,
+                                     GtkTooltip* tooltip) {
   // |location_bar_| can be NULL in tests.
   if (!location_bar_)
     return FALSE;

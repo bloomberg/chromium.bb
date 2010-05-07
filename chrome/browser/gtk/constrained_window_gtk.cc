@@ -85,7 +85,10 @@ void ConstrainedWindowGtk::ConnectAccelerators() {
 }
 
 
-gboolean ConstrainedWindowGtk::OnEscape() {
+gboolean ConstrainedWindowGtk::OnEscape(GtkAccelGroup* group,
+                                        GObject* acceleratable,
+                                        guint keyval,
+                                        GdkModifierType modifier) {
   // Handle this accelerator only if this is on the currently selected tab.
   Browser* browser = BrowserList::GetLastActive();
   if (!browser || browser->GetSelectedTabContents() != owner_)

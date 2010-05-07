@@ -110,7 +110,7 @@ SadTabGtk::~SadTabGtk() {
   event_box_.Destroy();
 }
 
-void SadTabGtk::OnLinkButtonClick() {
+void SadTabGtk::OnLinkButtonClick(GtkWidget* sender) {
   if (tab_contents_ != NULL) {
     tab_contents_->OpenURL(GURL(l10n_util::GetStringUTF8(IDS_CRASH_REASON_URL)),
         GURL(), CURRENT_TAB, PageTransition::LINK);

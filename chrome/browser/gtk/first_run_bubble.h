@@ -46,20 +46,9 @@ class FirstRunBubble : public InfoBubbleGtkDelegate,
                  const gfx::Rect& rect);
   ~FirstRunBubble() { }
 
-  static void HandleChangeButtonThunk(GtkWidget* widget, gpointer user_data) {
-    reinterpret_cast<FirstRunBubble*>(user_data)->HandleChangeButton();
-  }
-  void HandleChangeButton();
-
-  static void HandleDestroyThunk(GtkWidget* widget, gpointer userdata) {
-    reinterpret_cast<FirstRunBubble*>(userdata)->HandleDestroy();
-  }
-  void HandleDestroy();
-
-  static void HandleKeepButtonThunk(GtkWidget* widget, gpointer user_data) {
-    reinterpret_cast<FirstRunBubble*>(user_data)->HandleKeepButton();
-  }
-  void HandleKeepButton();
+  CHROMEGTK_CALLBACK_0(FirstRunBubble, void, HandleDestroy);
+  CHROMEGTK_CALLBACK_0(FirstRunBubble, void, HandleKeepButton);
+  CHROMEGTK_CALLBACK_0(FirstRunBubble, void, HandleChangeButton);
 
   // Our current profile.
   Profile* profile_;
