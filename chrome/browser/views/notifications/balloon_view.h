@@ -28,6 +28,7 @@
 
 namespace views {
 class ButtonListener;
+class ImageButton;
 class ImagePainter;
 class TextButton;
 class WidgetWin;
@@ -115,12 +116,6 @@ class BalloonViewImpl : public BalloonView,
   // The shelf is where is close button is located.
   int GetShelfHeight() const;
 
-  // The width of the frame (not including any shadow).
-  int GetFrameWidth() const;
-
-  // The height of the frame (not including any shadow).
-  int GetTotalFrameHeight() const;
-
   // The height of the part of the frame around the balloon.
   int GetBalloonFrameHeight() const;
 
@@ -163,7 +158,7 @@ class BalloonViewImpl : public BalloonView,
   scoped_ptr<views::Painter> balloon_background_;
 
   // Pointer to sub-view is owned by the View sub-class.
-  views::TextButton* close_button_;
+  views::ImageButton* close_button_;
 
   // Pointer to sub-view is owned by View class.
   views::Label* source_label_;

@@ -123,7 +123,7 @@ class ImagePainter : public Painter {
     if (paint_center_) {
       canvas->DrawBitmapInt(
           image_,
-          insets_.top(), insets_.left(),
+          insets_.left(), insets_.top(),
           image_.width() - insets_.width(), image_.height() - insets_.height(),
           insets_.left(), insets_.top(),
           w - insets_.width(), h - insets_.height(), true);

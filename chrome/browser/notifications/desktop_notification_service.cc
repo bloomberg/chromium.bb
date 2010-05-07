@@ -446,5 +446,5 @@ std::wstring DesktopNotificationService::DisplayNameForOrigin(
         return ASCIIToWide(extension->name());
     }
   }
-  return UTF8ToWide(origin.spec());
+  return UTF8ToWide(origin.host());
 }

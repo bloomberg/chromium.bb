@@ -27,6 +27,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/controls/button/button.h"
+#include "views/controls/button/image_button.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/native/native_view_host.h"
@@ -46,27 +47,29 @@ namespace {
 // How many pixels of overlap there is between the shelf top and the
 // balloon bottom.
 const int kTopMargin = 1;
-const int kBottomMargin = 1;
+const int kBottomMargin = 0;
 const int kLeftMargin = 1;
 const int kRightMargin = 1;
-const int kShelfBorderTopOverlap = 3;
+const int kShelfBorderTopOverlap = 0;
 
 // Properties of the dismiss button.
-const int kDismissButtonWidth = 60;
-const int kDismissButtonHeight = 20;
+const int kDismissButtonWidth = 14;
+const int kDismissButtonHeight = 14;
+const int kDismissButtonTopMargin = 4;
+const int kDismissButtonRightMargin = 8;
 
 // Properties of the options menu.
-const int kOptionsMenuWidth = 60;
+const int kOptionsMenuWidth = 55;
 const int kOptionsMenuHeight = 20;
 
 // Properties of the origin label.
 const int kLeftLabelMargin = 5;
 
-// TODO(johnnyg): Add a shadow for the frame.
-const int kLeftShadowWidth = 0;
-const int kRightShadowWidth = 0;
+// Size of the drop shadow.
+const int kLeftShadowWidth = 5;
+const int kRightShadowWidth = 5;
 const int kTopShadowWidth = 0;
-const int kBottomShadowWidth = 0;
+const int kBottomShadowWidth = 5;
 
 // Optional animation.
 const bool kAnimateEnabled = true;
@@ -103,12 +106,12 @@ BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
   SkBitmap* shelf_bitmap = rb.GetBitmapNamed(IDR_BALLOON_SHELF);
   SkBitmap* border_bitmap = rb.GetBitmapNamed(IDR_BALLOON_BORDER);
 
-  // Insets are such because the sprites have 3x3 corners.
-  gfx::Insets insets(3, 3, 3, 3);
+  gfx::Insets shelf_insets(1, 9, 9, 9);
   shelf_background_.reset(
-      views::Painter::CreateImagePainter(*shelf_bitmap, insets, true));
+      views::Painter::CreateImagePainter(*shelf_bitmap, shelf_insets, true));
+  gfx::Insets border_insets(4, 9, 1, 9);
   balloon_background_.reset(
-      views::Painter::CreateImagePainter(*border_bitmap, insets, false));
+      views::Painter::CreateImagePainter(*border_bitmap, border_insets, false));
 }
 
 BalloonViewImpl::~BalloonViewImpl() {
@@ -239,28 +242,28 @@ void BalloonViewImpl::AnimationProgressed(const Animation* animation) {
 
 gfx::Rect BalloonViewImpl::GetCloseButtonBounds() const {
   return gfx::Rect(
-      width() - kDismissButtonWidth - kRightMargin,
-      height() - kDismissButtonHeight - kShelfBorderTopOverlap - kBottomMargin,
+      width() - kDismissButtonWidth -
+          kDismissButtonRightMargin - kRightShadowWidth,
+      kTopMargin + kDismissButtonTopMargin,
       kDismissButtonWidth,
       kDismissButtonHeight);
 }
 
 gfx::Rect BalloonViewImpl::GetOptionsMenuBounds() const {
   return gfx::Rect(
-      width() - kDismissButtonWidth - kOptionsMenuWidth - kRightMargin,
-      height() - kOptionsMenuHeight - kShelfBorderTopOverlap - kBottomMargin,
+      width() - kOptionsMenuWidth - kRightMargin - kRightShadowWidth,
+      GetBalloonFrameHeight() + kTopMargin,
       kOptionsMenuWidth,
       kOptionsMenuHeight);
 }
 
 gfx::Rect BalloonViewImpl::GetLabelBounds() const {
   return gfx::Rect(
-      kLeftLabelMargin,
-      std::max(0, height() - kDismissButtonHeight - kShelfBorderTopOverlap -
-               kBottomMargin),
-      std::max(0, width() - kDismissButtonWidth - kOptionsMenuWidth -
+      kLeftShadowWidth + kLeftLabelMargin,
+      GetBalloonFrameHeight() + kTopMargin,
+      std::max(0, width() - kOptionsMenuWidth -
                kRightMargin),
-      kDismissButtonHeight);
+      kOptionsMenuHeight);
 }
 
 void BalloonViewImpl::Show(Balloon* balloon) {
@@ -283,7 +286,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   AddChildView(source_label_);
   options_menu_button_ = new views::MenuButton(NULL, options_text, this, false);
   AddChildView(options_menu_button_);
-  close_button_ = new views::TextButton(this, dismiss_text);
+  close_button_ = new views::ImageButton(this);
   AddChildView(close_button_);
 
   // We have to create two windows: one for the contents and one for the
@@ -309,7 +312,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   html_container_->Init(NULL, contents_rect);
   html_container_->SetContentsView(html_contents_->view());
 
-  gfx::Rect balloon_rect(x(), y(), width(), height());
+  gfx::Rect balloon_rect(x(), y(), GetTotalWidth(), GetTotalHeight());
   frame_container_ = Widget::CreatePopupWidget(Widget::Transparent,
                                                Widget::AcceptEvents,
                                                Widget::DeleteOnDestroy);
@@ -317,28 +320,28 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   frame_container_->SetAlwaysOnTop(true);
   frame_container_->Init(NULL, balloon_rect);
   frame_container_->SetContentsView(this);
+  frame_container_->MoveAbove(html_container_);
 
-  close_button_->SetIcon(*rb.GetBitmapNamed(IDR_BALLOON_CLOSE));
-  close_button_->SetHoverIcon(*rb.GetBitmapNamed(IDR_BALLOON_CLOSE_HOVER));
-  close_button_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
-  close_button_->SetEnabledColor(SK_ColorWHITE);
-  close_button_->SetHoverColor(SK_ColorDKGRAY);
-  close_button_->set_alignment(views::TextButton::ALIGN_CENTER);
-  close_button_->set_icon_placement(views::TextButton::ICON_ON_RIGHT);
+  close_button_->SetImage(views::CustomButton::BS_NORMAL,
+      rb.GetBitmapNamed(IDR_BALLOON_CLOSE));
+  close_button_->SetImage(views::CustomButton::BS_HOT,
+      rb.GetBitmapNamed(IDR_BALLOON_CLOSE_HOVER));
+  close_button_->SetImage(views::CustomButton::BS_PUSHED,
+      rb.GetBitmapNamed(IDR_BALLOON_CLOSE_HOVER));
   close_button_->SetBounds(GetCloseButtonBounds());
 
   options_menu_button_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
-  options_menu_button_->SetIcon(*rb.GetBitmapNamed(IDR_BALLOON_OPTIONS_ARROW));
+  options_menu_button_->SetIcon(*rb.GetBitmapNamed(IDR_BALLOON_OPTIONS_ARROW_HOVER));
   options_menu_button_->SetHoverIcon(
       *rb.GetBitmapNamed(IDR_BALLOON_OPTIONS_ARROW_HOVER));
   options_menu_button_->set_alignment(views::TextButton::ALIGN_CENTER);
   options_menu_button_->set_icon_placement(views::TextButton::ICON_ON_RIGHT);
-  options_menu_button_->SetEnabledColor(SK_ColorWHITE);
+  options_menu_button_->SetEnabledColor(SK_ColorDKGRAY);
   options_menu_button_->SetHoverColor(SK_ColorDKGRAY);
   options_menu_button_->SetBounds(GetOptionsMenuBounds());
 
   source_label_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
-  source_label_->SetColor(SK_ColorWHITE);
+  source_label_->SetColor(SK_ColorDKGRAY);
   source_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   source_label_->SetBounds(GetLabelBounds());
 
@@ -371,47 +374,45 @@ void BalloonViewImpl::CreateOptionsMenu() {
 
 void BalloonViewImpl::GetContentsMask(const gfx::Rect& rect,
                                       gfx::Path* path) const {
+
+  gfx::Point cutout = GetCloseButtonBounds().CenterPoint();
+  cutout = cutout.Subtract(GetContentsOffset());
   // This needs to remove areas that look like the following from each corner:
   //
   //   xx
   //   x
+  //
+  // We also cut out a circle for the close button, since we can't guarantee
+  // the ordering of two TOP_MOST windows.
   path->moveTo(SkScalar(0.5), SkScalar(0));
+  path->lineTo(SkScalar(cutout.x() - 0.5), SkScalar(0));
+  path->addCircle(SkScalar(cutout.x() - 0.5), SkScalar(cutout.y() - 0.5),
+                  SkScalar(kDismissButtonWidth / 2.0));
+  path->lineTo(SkScalar(cutout.x() - 0.5), SkScalar(0));
   // Upper right corner
   path->arcTo(rect.width() - SkScalar(1.5), SkScalar(0),
               rect.width() - SkScalar(0.5), SkScalar(1.5),
               SkScalar(1));
   // Lower right corner
-  path->arcTo(rect.width() - SkScalar(0.5), rect.height() - SkScalar(1.5),
-              rect.width() - SkScalar(1.5), rect.height() - SkScalar(0.5),
-              SkScalar(1));
+  path->lineTo(rect.width() - SkScalar(0.5), SkScalar(rect.height()));
   // Lower left corner
-  path->arcTo(SkScalar(0.5), rect.height() - SkScalar(0.5),
-              0, rect.height() - SkScalar(1.5),
-              SkScalar(1));
+  path->lineTo(SkScalar(0), SkScalar(rect.height()));
   // Upper left corner
   path->arcTo(0, SkScalar(0.5), SkScalar(0.5), 0, SkScalar(1));
 }
 
 gfx::Point BalloonViewImpl::GetContentsOffset() const {
-  return gfx::Point(kTopShadowWidth + kTopMargin,
-                    kLeftShadowWidth + kLeftMargin);
+  return gfx::Point(kLeftShadowWidth + kLeftMargin,
+                    kTopShadowWidth + kTopMargin);
 }
 
 int BalloonViewImpl::GetShelfHeight() const {
   // TODO(johnnyg): add scaling here.
-  return kDefaultShelfHeight;
-}
-
-int BalloonViewImpl::GetFrameWidth() const {
-  return size().width() - kLeftShadowWidth - kRightShadowWidth;
-}
-
-int BalloonViewImpl::GetTotalFrameHeight() const {
-  return size().height() - kTopShadowWidth - kBottomShadowWidth;
+  return kDefaultShelfHeight + kBottomShadowWidth;
 }
 
 int BalloonViewImpl::GetBalloonFrameHeight() const {
-  return GetTotalFrameHeight() - GetShelfHeight();
+  return GetTotalHeight() - GetShelfHeight();
 }
 
 int BalloonViewImpl::GetTotalWidth() const {
@@ -421,8 +422,7 @@ int BalloonViewImpl::GetTotalWidth() const {
 
 int BalloonViewImpl::GetTotalHeight() const {
   return balloon_->content_size().height()
-      + kTopMargin + kBottomMargin + kTopShadowWidth + kBottomShadowWidth
-      + GetShelfHeight();
+      + kTopMargin + kBottomMargin + kTopShadowWidth + GetShelfHeight();
 }
 
 gfx::Rect BalloonViewImpl::GetContentsRectangle() const {
@@ -439,7 +439,7 @@ gfx::Rect BalloonViewImpl::GetContentsRectangle() const {
 
 void BalloonViewImpl::Paint(gfx::Canvas* canvas) {
   DCHECK(canvas);
-  int background_width = GetFrameWidth();
+  int background_width = GetTotalWidth();
   int background_height = GetBalloonFrameHeight();
   balloon_background_->Paint(background_width, background_height, canvas);
   canvas->save();
