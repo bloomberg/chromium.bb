@@ -104,3 +104,120 @@ function getKeyWithValue(map, value) {
   }
   return '?';
 }
+
+/**
+ * Builds a string by repeating |str| |count| times.
+ */
+function makeRepeatedString(str, count) {
+  var out = [];
+  for (var i = 0; i < count; ++i)
+    out.push(str);
+  return out.join('');
+}
+
+/**
+ * TablePrinter is a helper to format a table as ascii art.
+ *
+ * Usage: call addRow() and addCell() repeatedly to specify the data. Ones
+ * all the fields have been inputted, call toText() to format it as text.
+ */
+function TablePrinter() {
+  this.rows_ = [];
+}
+
+function TablePrinterCell(value) {
+  this.text = '' + value;
+  this.alignRight = false;
+  this.allowOverflow = false;
+}
+
+/**
+ * Starts a new row.
+ */
+TablePrinter.prototype.addRow = function() {
+  this.rows_.push([]);
+};
+
+/**
+ * Adds a column to the current row, setting its value to cellText.
+ *
+ * @returns {!TablePrinterCell} the cell that was added.
+ */
+TablePrinter.prototype.addCell = function(cellText) {
+  var r = this.rows_[this.rows_.length - 1];
+  var cell = new TablePrinterCell(cellText);
+  r.push(cell);
+  return cell;
+};
+
+/**
+ * Returns the maximum number of columns this table contains.
+ */
+TablePrinter.prototype.getNumColumns = function() {
+  var numColumns = 0;
+  for (var i = 0; i < this.rows_.length; ++i) {
+    numColumns = Math.max(numColumns, this.rows_[i].length);
+  }
+  return numColumns;
+}
+
+/**
+ * Returns the cell at position (rowIndex, columnIndex), or null if there is
+ * no such cell.
+ */
+TablePrinter.prototype.getCell_ = function(rowIndex, columnIndex) {
+  if (rowIndex >= this.rows_.length)
+    return null;
+  var row = this.rows_[rowIndex];
+  if (columnIndex >= row.length)
+    return null;
+  return row[columnIndex];
+};
+
+/**
+ * Returns a formatted text representation of the table data.
+ */
+TablePrinter.prototype.toText = function() {
+  var numRows = this.rows_.length;
+  var numColumns = this.getNumColumns();
+
+  // Figure out the maximum width of each column.
+  var columnWidths = [];
+  columnWidths.length = numColumns;
+  for (var i = 0; i < numColumns; ++i)
+    columnWidths[i] = 0;
+
+  for (var c = 0; c < numColumns; ++c) {
+    for (var r = 0; r < numRows; ++r) {
+      var cell = this.getCell_(r, c);
+      if (cell && !cell.allowOverflow) {
+        columnWidths[c] = Math.max(columnWidths[c], cell.text.length);
+      }
+    }
+  }
+
+  // Print each row.
+  var out = [];
+  for (var r = 0; r < numRows; ++r) {
+    for (var c = 0; c < numColumns; ++c) {
+      var cell = this.getCell_(r, c);
+      if (cell) {
+        // Padd the cell with spaces to make it fit the maximum column width.
+        var padding = columnWidths[c] - cell.text.length;
+        var paddingStr = makeRepeatedString(' ', padding);
+
+        if (cell.alignRight) {
+          out.push(paddingStr);
+          out.push(cell.text);
+        } else {
+          out.push(cell.text);
+          out.push(paddingStr);
+        }
+      }
+    }
+    out.push('\n');
+  }
+
+  return out.join('');
+};
+

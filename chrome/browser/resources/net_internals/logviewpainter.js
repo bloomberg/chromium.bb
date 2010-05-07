@@ -9,6 +9,7 @@
  */
 
 var PaintLogView;
+var PrintSourceEntriesAsText;
 
 // Start of anonymous namespace.
 (function() {
@@ -32,15 +33,14 @@ function addSourceEntry_(node, sourceEntry) {
 
   addTextNode(nobr, sourceEntry.getDescription());
 
-  var groupedEntries = LogGroupEntry.createArrayFrom(
-      sourceEntry.getLogEntries());
-
-  makeLoadLogTable_(div, groupedEntries);
+  var pre = addNode(div, 'pre');
+  addTextNode(pre, PrintSourceEntriesAsText(sourceEntry.getLogEntries()));
 }
 
-function makeLoadLogTable_(node, entries) {
-  var table = addNode(node, 'table');
-  var tbody = addNode(node, 'tbody');
+PrintSourceEntriesAsText = function(sourceEntries) {
+  var entries = LogGroupEntry.createArrayFrom(sourceEntries);
+
+  var tablePrinter = new TablePrinter();
 
   for (var i = 0; i < entries.length; ++i) {
     var entry = entries[i];
@@ -50,48 +50,63 @@ function makeLoadLogTable_(node, entries) {
       continue;
     }
 
-    var tr = addNode(node, 'tr');
+    tablePrinter.addRow();
 
-    var timeLabelCell = addNode(tr, 'td');
-    addTextNode(timeLabelCell, 't=');
+    tablePrinter.addCell('t=');
+    var tCell = tablePrinter.addCell(entry.orig.time);
+    tCell.alignRight = true;
+    tablePrinter.addCell('  ');
 
-    var timeCell = addNode(tr, 'td');
-    timeCell.style.textAlign = 'right';
-    timeCell.style.paddingRight = '5px';
-    addTextNode(timeCell, entry.orig.time);
-
-    var mainCell = addNode(tr, 'td');
-    mainCell.style.paddingRight = '5px';
-    var dtLabelCell = addNode(tr, 'td');
-    var dtCell = addNode(tr, 'td');
-    dtCell.style.textAlign = 'right';
-
-    mainCell.style.paddingLeft = (INDENTATION_PX * entry.getDepth()) + "px";
-
-    addTextNode(mainCell, getTextForEvent(entry));
+    var indentationStr = makeRepeatedString(' ', entry.getDepth() * 3);
+    var mainCell =
+        tablePrinter.addCell(indentationStr + getTextForEvent(entry));
+    tablePrinter.addCell('  ');
 
     // Get the elapsed time.
     if (entry.isBegin()) {
-      addTextNode(dtLabelCell, '[dt=');
-
+      tablePrinter.addCell('[dt=');
+      var dt = '?';
       // Definite time.
       if (entry.end) {
-        var dt = entry.end.orig.time - entry.orig.time;
-        addTextNode(dtCell, dt + ']');
-      } else {
-        addTextNode(dtCell, '?]');
+        dt = entry.end.orig.time - entry.orig.time;
       }
+      var dtCell = tablePrinter.addCell(dt);
+      dtCell.alignRight = true;
+
+      tablePrinter.addCell(']');
     } else {
-      mainCell.colSpan = '3';
+      mainCell.allowOverflow = true;
     }
 
     // Output the extra parameters.
-    // TODO(eroman): Do type-specific formatting.
     if (entry.orig.extra_parameters != undefined) {
-       addNode(mainCell, 'br');
-      addTextNode(mainCell, JSON.stringify(entry.orig.extra_parameters));
+      // Add a continuation row for each line of text from the extra parameters.
+      var extraParamsText = getTextForExtraParams(entry.orig);
+      var extraParamsTextLines = extraParamsText.split('\n');
+
+      for (var j = 0; j < extraParamsTextLines.length; ++j) {
+        tablePrinter.addRow();
+        tablePrinter.addCell('');  // No t=.
+        tablePrinter.addCell('');
+        tablePrinter.addCell('  ');
+
+        var mainExtraCell =
+            tablePrinter.addCell(indentationStr + extraParamsTextLines[j]);
+        mainExtraCell.allowOverflow = true;
+      }
     }
   }
+
+  // Format the table for fixed-width text.
+  return tablePrinter.toText();
+}
+
+function getTextForExtraParams(entry) {
+  var out = [];
+  for (var k in entry.extra_parameters) {
+    out.push(' --> ' + k + ' = ' + JSON.stringify(entry.extra_parameters[k]));
+  }
+  return out.join('\n');
 }
 
 function getTextForEvent(entry) {
@@ -102,7 +117,7 @@ function getTextForEvent(entry) {
   } else if (entry.isEnd()) {
     text = '-' + text;
   } else {
-    text = '.';
+    text = ' ';
   }
 
   text += getKeyWithValue(LogEventType, entry.orig.type);

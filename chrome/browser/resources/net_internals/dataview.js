@@ -143,15 +143,62 @@ DataView.prototype.onExportToText_ = function() {
 
   text.push('');
   text.push('----------------------------------------------');
-  text.push(' URL requests');
+  text.push(' Requests');
   text.push('----------------------------------------------');
   text.push('');
 
-  // TODO(eroman): Output the per-request events.
-  text.push('TODO');
+  this.appendRequestsPrintedAsText_(text);
 
   // Open a new window to display this text.
   this.displayPopupWindow_(text.join('\n'));
+};
+
+DataView.prototype.appendRequestsPrintedAsText_ = function(out) {
+  // Concatenate the passively captured events with the actively captured events
+  // into a single array.
+  var allEvents = g_browser.getAllPassivelyCapturedEvents().concat(
+      g_browser.getAllActivelyCapturedEvents());
+
+  // Group the events into buckets by source ID, and buckets by source type.
+  var sourceIds = [];
+  var sourceIdToEventList = {};
+  var sourceTypeToSourceIdList = {}
+
+  for (var i = 0; i < allEvents.length; ++i) {
+    var e = allEvents[i];
+    var eventList = sourceIdToEventList[e.source.id];
+    if (!eventList) {
+      eventList = [];
+      sourceIdToEventList[e.source.id] = eventList;
+
+      // Update sourceIds
+      sourceIds.push(e.source.id);
+
+      // Update the sourceTypeToSourceIdList list.
+      var idList = sourceTypeToSourceIdList[e.source.type];
+      if (!idList) {
+        idList = [];
+        sourceTypeToSourceIdList[e.source.type] = idList;
+      }
+      idList.push(e.source.id);
+    }
+    eventList.push(e);
+  }
+
+
+  // For each source (ordered by when that source was first started).
+  for (var i = 0; i < sourceIds.length; ++i) {
+    var sourceId = sourceIds[i];
+    var eventList = sourceIdToEventList[sourceId];
+    var sourceType = eventList[0].source.type;
+
+    out.push('------------------------------');
+    out.push(getKeyWithValue(LogSourceType, sourceType) +
+             ' (id=' + sourceId + ')');
+    out.push('------------------------------');
+
+    out.push(PrintSourceEntriesAsText(eventList));
+  }
 };
 
 /**

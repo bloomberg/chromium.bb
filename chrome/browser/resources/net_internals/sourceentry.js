@@ -155,7 +155,16 @@ SourceEntry.prototype.getDescription = function() {
   var e = this.getStartEntry_();
   if (!e || e.extra_parameters == undefined)
     return '';
-  return JSON.stringify(e.extra_parameters);  // The URL / hostname / whatever.
+
+  switch (e.source.type) {
+    case LogSourceType.URL_REQUEST:
+    case LogSourceType.SOCKET_STREAM:
+      return e.extra_parameters.url;
+    case LogSourceType.CONNECT_JOB:
+      return e.extra_parameters.group_name;
+  }
+
+  return '';
 };
 
 /**

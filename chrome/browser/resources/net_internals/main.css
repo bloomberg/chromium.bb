@@ -87,8 +87,12 @@ body {
   color: blue;
 }
 
+#requestsListTableBody .source_SOCKET {
+  color: purple;
+}
+
 #requestsListTableBody .source_INIT_PROXY_RESOLVER {
-  color: orange;
+  color: green;
 }
 
 .tabSwitcher {
