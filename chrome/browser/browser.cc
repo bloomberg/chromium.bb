@@ -2604,11 +2604,6 @@ void Browser::UpdateTargetURL(TabContents* source, const GURL& url) {
 void Browser::UpdateDownloadShelfVisibility(bool visible) {
   if (GetStatusBubble())
     GetStatusBubble()->UpdateDownloadShelfVisibility(visible);
-
-  NotificationService::current()->Notify(
-      NotificationType::DOWNLOAD_SHELF_VISIBILITY_CHANGED,
-      Source<Browser>(this),
-      NotificationService::NoDetails());
 }
 
 void Browser::ContentsZoomChange(bool zoom_in) {

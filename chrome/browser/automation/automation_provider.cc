@@ -213,6 +213,11 @@ NotificationObserver* AutomationProvider::AddNavigationStatusListener(
   return observer;
 }
 
+void AutomationProvider::RemoveNavigationStatusListener(
+    NotificationObserver* obs) {
+  notification_observer_list_.RemoveObserver(obs);
+}
+
 NotificationObserver* AutomationProvider::AddTabStripObserver(
     Browser* parent,
     IPC::Message* reply_message) {
@@ -223,7 +228,7 @@ NotificationObserver* AutomationProvider::AddTabStripObserver(
   return observer;
 }
 
-void AutomationProvider::RemoveObserver(NotificationObserver* obs) {
+void AutomationProvider::RemoveTabStripObserver(NotificationObserver* obs) {
   notification_observer_list_.RemoveObserver(obs);
 }
 
@@ -491,9 +496,6 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_SetEnableExtensionAutomation,
                         SetEnableExtensionAutomation)
 #endif
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(
-        AutomationMsg_WaitForDownloadShelfVisibilityChange,
-        WaitForDownloadShelfVisibilityChange)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetShelfVisibility, SetShelfVisibility)
     IPC_MESSAGE_HANDLER(AutomationMsg_BlockedPopupCount, GetBlockedPopupCount)
     IPC_MESSAGE_HANDLER(AutomationMsg_SelectAll, SelectAll)
@@ -597,7 +599,7 @@ void AutomationProvider::AppendTab(int handle, const GURL& url,
   if (append_tab_response < 0) {
     // The append tab failed. Remove the TabStripObserver
     if (observer) {
-      RemoveObserver(observer);
+      RemoveTabStripObserver(observer);
       delete observer;
     }
 
@@ -1587,29 +1589,6 @@ void AutomationProvider::RemoveBookmark(int handle,
     }
   }
   *success = false;
-}
-
-void AutomationProvider::WaitForDownloadShelfVisibilityChange(
-    int browser_handle,
-    bool visibility,
-    IPC::Message* reply_message) {
-  bool success = false;
-  if (browser_tracker_->ContainsHandle(browser_handle)) {
-    Browser* browser = browser_tracker_->GetResource(browser_handle);
-    if (browser->window()->IsDownloadShelfVisible() == visibility) {
-      success = true;
-    } else {
-      notification_observer_list_.AddObserver(
-          new DownloadShelfVisibilityObserver(this,
-                                              browser,
-                                              visibility,
-                                              reply_message));
-      return;
-    }
-  }
-  AutomationMsg_WaitForDownloadShelfVisibilityChange::WriteReplyParams(
-      reply_message, success);
-  Send(reply_message);
 }
 
 // Sample json input: { "command": "GetHistoryInfo",
