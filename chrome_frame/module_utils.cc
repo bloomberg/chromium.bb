@@ -13,6 +13,7 @@
 #include "base/scoped_handle.h"
 #include "base/string_util.h"
 #include "base/version.h"
+#include "chrome_frame/exception_barrier.h"
 
 DllRedirector::DllRedirector() : dcgo_ptr_(NULL), initialized_(false),
                                  module_handle_(NULL) {}
@@ -72,20 +73,31 @@ bool DllRedirector::GetOldestNamedModuleHandle(const std::wstring& module_name,
     return false;
   }
 
+
   bool success = false;
   PathToHModuleMap map;
 
-  // First get the list of module paths, and save the full path to base address
-  // mapping.
-  MODULEENTRY32W module_entry;
-  module_entry.dwSize = sizeof(module_entry);
-  BOOL cont = Module32FirstW(snapshot, &module_entry);
-  while (cont) {
-    if (!lstrcmpi(module_entry.szModule, module_name.c_str())) {
-      std::wstring full_path(module_entry.szExePath);
-      map[full_path] = module_entry.hModule;
+  {
+    // Here we add an SEH to the chain to prevent our VEH from picking up on any
+    // exceptions thrown in DLLs who hook some of the below api calls. We will
+    // still report the exceptions if they make our way back to us, the hope is
+    // that they will not.
+    ExceptionBarrier exception_barrier;
+
+    // First get the list of module paths, and save the full path to base
+    // address mapping.
+    MODULEENTRY32W module_entry = {0};
+    module_entry.dwSize = sizeof(module_entry);
+    BOOL cont = Module32FirstW(snapshot, &module_entry);
+    while (cont) {
+      if (!lstrcmpi(module_entry.szModule, module_name.c_str())) {
+        std::wstring full_path(module_entry.szExePath);
+        map[full_path] = module_entry.hModule;
+      }
+      SecureZeroMemory(&module_entry, sizeof(MODULEENTRY32W));
+      module_entry.dwSize = sizeof(module_entry);
+      cont = Module32NextW(snapshot, &module_entry);
     }
-    cont = Module32NextW(snapshot, &module_entry);
   }
 
   // Next, enumerate the map and find the oldest version of the module.
