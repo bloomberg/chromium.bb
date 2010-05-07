@@ -14,6 +14,7 @@
 #include "base/i18n/rtl.h"
 #include "base/keyboard_codes.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/win_util.h"
 #include "gfx/native_theme_win.h"
 #include "grit/app_strings.h"
@@ -124,7 +125,13 @@ string16 NativeTextfieldWin::GetText() const {
   int len = GetTextLength() + 1;
   std::wstring str;
   GetWindowText(WriteInto(&str, len), len);
-  return str;
+  // The text get from GetWindowText() might be wrapped with explicit bidi
+  // control characters. Refer to UpdateText() for detail. Without such
+  // wrapping, in RTL chrome, a pure LTR string ending with parenthesis will
+  // not be displayed correctly in a textfield. For example, "Yahoo!" will be
+  // displayed as "!Yahoo", and "Google (by default)" will be displayed as
+  // "(Google (by default".
+  return base::i18n::StripWrappingBidiControlCharacters(WideToUTF16(str));
 }
 
 void NativeTextfieldWin::UpdateText() {
