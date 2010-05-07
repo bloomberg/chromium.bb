@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -360,7 +360,6 @@ void WriteBookmarksToSelection(const std::vector<const BookmarkNode*>& nodes,
       gtk_selection_data_set_text(selection_data,
                                   nodes[0]->GetURL().spec().c_str(), -1);
       break;
-
     }
     default: {
       DLOG(ERROR) << "Unsupported drag get type!";
@@ -380,7 +379,7 @@ std::vector<const BookmarkNode*> GetNodesFromSelection(
   if (dnd_success)
     *dnd_success = FALSE;
 
-  if ((selection_data != NULL) && (selection_data->length >= 0)) {
+  if (selection_data && selection_data->length > 0) {
     if (context && delete_selection_data && context->action == GDK_ACTION_MOVE)
       *delete_selection_data = TRUE;
 
