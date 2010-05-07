@@ -49,6 +49,7 @@
 #include "chrome/renderer/media/ipc_video_renderer.h"
 #include "chrome/renderer/navigation_state.h"
 #include "chrome/renderer/notification_provider.h"
+#include "chrome/renderer/pepper_scrollbar_widget.h"
 #include "chrome/renderer/plugin_channel_host.h"
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/renderer/render_process.h"
@@ -3873,6 +3874,11 @@ void RenderView::OnSetRendererPrefs(const RendererPreferences& renderer_prefs) {
   WebColorName name = WebKit::WebColorWebkitFocusRingColor;
   WebKit::setNamedColors(&name, &renderer_prefs.focus_ring_color, 1);
   WebKit::setCaretBlinkInterval(renderer_prefs.caret_blink_interval);
+
+  PepperScrollbarWidget::SetScrollbarColors(
+      renderer_prefs.thumb_inactive_color,
+      renderer_prefs.thumb_active_color,
+      renderer_prefs.track_color);
 
   if (webview()) {
     webview()->setScrollbarColors(

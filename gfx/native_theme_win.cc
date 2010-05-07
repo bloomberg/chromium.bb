@@ -659,6 +659,13 @@ void NativeTheme::CloseHandles() const
   }
 }
 
+bool NativeTheme::IsClassicTheme(ThemeName name) const {
+  if (!theme_dll_)
+    return true;
+
+  return !GetThemeHandle(name);
+}
+
 HANDLE NativeTheme::GetThemeHandle(ThemeName theme_name) const
 {
   if (!open_theme_ || theme_name < 0 || theme_name >= LAST)

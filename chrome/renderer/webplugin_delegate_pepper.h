@@ -88,11 +88,13 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate,
   virtual void StopFind();
   virtual void NumberOfFindResultsChanged(int total, bool final_result);
   virtual void SelectedFindResultChanged(int index);
-  virtual void Zoom(int factor);
   virtual bool ChooseFile(const char* mime_types,
                           int mode,
                           NPChooseFileCallback callback,
                           void* user_data);
+  virtual NPWidgetExtensions* GetWidgetExtensions();
+
+  virtual void Zoom(int factor);
 
   // WebPlugin2DDeviceDelegate implementation.
   virtual NPError Device2DQueryCapability(int32 capability, int32* value);
@@ -112,11 +114,6 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate,
                                        NPDeviceFlushContextCallbackPtr callback,
                                        void* user_data);
   virtual NPError Device2DDestroyContext(NPDeviceContext2D* context);
-  virtual NPError Device2DThemeGetSize(NPThemeItem item,
-                                       int* width,
-                                       int* height);
-  virtual NPError Device2DThemePaint(NPDeviceContext2D* context,
-                                     NPThemeParams* params);
 
   // WebPlugin3DDeviceDelegate implementation.
   virtual NPError Device3DQueryCapability(int32 capability, int32* value);
@@ -199,6 +196,8 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate,
   // (FlushedPaint).
   void RenderViewInitiatedPaint();
   void RenderViewFlushedPaint();
+
+  Graphics2DDeviceContext* GetGraphicsContext(NPDeviceContext2D* context);
 
  private:
   WebPluginDelegatePepper(

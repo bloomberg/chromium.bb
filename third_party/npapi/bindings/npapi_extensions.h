@@ -27,42 +27,142 @@ typedef void NPUserData;
 /* unique id for each device interface */
 typedef int32 NPDeviceID;
 
-typedef struct _NPPoint {
-  uint16 x;
-  uint16 y;
-} NPPoint;
+/* Events -------------------------------------------------------------------*/
 
 typedef enum {
-  NPThemeItemScrollbarDownArrow       = 0,
-  NPThemeItemScrollbarLeftArrow       = 1,
-  NPThemeItemScrollbarRightArrow      = 2,
-  NPThemeItemScrollbarUpArrow         = 3,
-  NPThemeItemScrollbarHorizontalThumb = 4,
-  NPThemeItemScrollbarVerticalThumb   = 5,
-  NPThemeItemScrollbarHoriztonalTrack = 6,
-  NPThemeItemScrollbarVerticalTrack   = 7
-} NPThemeItem;
+  NPMouseButton_None    = -1,
+  NPMouseButton_Left    = 0,
+  NPMouseButton_Middle  = 1,
+  NPMouseButton_Right   = 2
+} NPMouseButtons;
 
 typedef enum {
-  NPThemeStateDisabled = 0,
-  // Mouse is over this item.
-  NPThemeStateHot      = 1,
-  // Mouse is over another part of this component.  This is only used on Windows
-  // Vista and above.  The plugin should pass it in, and the host will convert
-  // it to NPThemeStateNormal if on other platforms or on Windows XP.
-  NPThemeStateHover    = 2,
-  NPThemeStateNormal   = 3,
-  NPThemeStatePressed  = 4
-} NPThemeState;
+  NPEventType_Undefined   = -1,
+  NPEventType_MouseDown   = 0,
+  NPEventType_MouseUp     = 1,
+  NPEventType_MouseMove   = 2,
+  NPEventType_MouseEnter  = 3,
+  NPEventType_MouseLeave  = 4,
+  NPEventType_MouseWheel  = 5,
+  NPEventType_RawKeyDown  = 6,
+  NPEventType_KeyDown     = 7,
+  NPEventType_KeyUp       = 8,
+  NPEventType_Char        = 9,
+  NPEventType_Minimize    = 10,
+  NPEventType_Focus       = 11,
+  NPEventType_Device      = 12
+} NPEventTypes;
 
-typedef struct _NPThemeParams {
-  NPThemeItem item;
-  NPThemeState state;
-  NPRect location;
-  // Used for scroll bar tracks, needed for classic theme in Windows which draws
-  // a checkered pattern.
-  NPPoint align;
-} NPThemeParams;
+typedef enum {
+  NPEventModifier_ShiftKey         = 1 << 0,
+  NPEventModifier_ControlKey       = 1 << 1,
+  NPEventModifier_AltKey           = 1 << 2,
+  NPEventModifier_MetaKey          = 1 << 3,
+  NPEventModifier_IsKeyPad         = 1 << 4,
+  NPEventModifier_IsAutoRepeat     = 1 << 5,
+  NPEventModifier_LeftButtonDown   = 1 << 6,
+  NPEventModifier_MiddleButtonDown = 1 << 7,
+  NPEventModifier_RightButtonDown  = 1 << 8
+} NPEventModifiers;
+
+typedef struct _NPKeyEvent
+{
+  uint32 modifier;
+  uint32 normalizedKeyCode;
+} NPKeyEvent;
+
+typedef struct _NPCharacterEvent
+{
+  uint32 modifier;
+  uint16 text[4];
+  uint16 unmodifiedText[4];
+} NPCharacterEvent;
+
+typedef struct _NPMouseEvent
+{
+  uint32 modifier;
+  int32 button;
+  int32 x;
+  int32 y;
+  int32 clickCount;
+} NPMouseEvent;
+
+typedef struct _NPMouseWheelEvent
+{
+  uint32 modifier;
+  float deltaX;
+  float deltaY;
+  float wheelTicksX;
+  float wheelTicksY;
+  uint32 scrollByPage;
+} NPMouseWheelEvent;
+
+typedef struct _NPDeviceEvent {
+  uint32 device_uid;
+  uint32 subtype;
+  /* uint8 generic[0]; */
+} NPDeviceEvent;
+
+typedef struct _NPMinimizeEvent {
+  int32 value;
+} NPMinimizeEvent;
+
+typedef struct _NPFocusEvent {
+  int32 value;
+} NPFocusEvent;
+
+typedef struct _NPPepperEvent
+{
+  uint32 size;
+  int32 type;
+  double timeStampSeconds;
+  union {
+    NPKeyEvent key;
+    NPCharacterEvent character;
+    NPMouseEvent mouse;
+    NPMouseWheelEvent wheel;
+    NPMinimizeEvent minimize;
+    NPFocusEvent focus;
+    NPDeviceEvent device;
+  } u;
+} NPPepperEvent;
+
+/* 2D -----------------------------------------------------------------------*/
+
+#define NPPepper2DDevice 1
+
+typedef struct _NPDeviceContext2DConfig {
+} NPDeviceContext2DConfig;
+
+typedef struct _NPDeviceContext2D
+{
+  /* Internal value used by the browser to identify this device. */
+  void* reserved;
+
+  /* A pointer to the pixel data. This data is 8-bit values in BGRA order in
+   * memory. Each row will start |stride| bytes after the previous one.
+   *
+   * THIS DATA USES PREMULTIPLIED ALPHA. This means that each color channel has
+   * been multiplied with the corresponding alpha, which makes compositing
+   * easier. If any color channels have a value greater than the alpha value,
+   * you'll likely get crazy colors and weird artifacts. */
+  void* region;
+
+  /* Length of each row of pixels in bytes. This may be larger than width * 4
+   * if there is padding at the end of each row to help with alignment. */
+  int32 stride;
+
+  /* The dirty region that the plugin has painted into the buffer. This
+   * will be initialized to the size of the plugin image in
+   * initializeContextPtr. The plugin can change the values to only
+   * update portions of the image. */
+  struct {
+    int32 left;
+    int32 top;
+    int32 right;
+    int32 bottom;
+  } dirty;
+} NPDeviceContext2D;
 
 typedef struct _NPDeviceBuffer {
   void* ptr;
@@ -134,19 +234,6 @@ typedef NPError (*NPDeviceMapBufferPtr)(
     NPDeviceContext* context,
     int32 id,
     NPDeviceBuffer* buffer);
-/* Gets the size of the given theme component.  For variable sized items like */
-/* vertical scrollbar tracks, the width will be the required width of the */
-/* track while the height will be the minimum height. */
-typedef NPError (*NPDeviceThemeGetSize)(
-    NPP instance,
-    NPThemeItem item,
-    int* width,
-    int* height);
-/* Draw a themed item (i.e. scrollbar arrow). */
-typedef NPError (*NPDeviceThemePaint)(
-    NPP instance,
-    NPDeviceContext* context,
-    NPThemeParams* params);
 
 
 /* forward decl typdef structs */
@@ -303,8 +390,6 @@ struct NPDevice {
   NPDeviceCreateBufferPtr createBuffer;
   NPDeviceDestroyBufferPtr destroyBuffer;
   NPDeviceMapBufferPtr mapBuffer;
-  NPDeviceThemeGetSize themeGetSize;
-  NPDeviceThemePaint themePaint;
 
   /* Experimental device API */
   NPDeviceGetNumConfigsPtr getNumConfigs;
@@ -341,6 +426,88 @@ typedef void (*NPNumberOfFindResultsChangedPtr)(
 typedef void (*NPSelectedFindResultChangedPtr)(
     NPP instance,
     int index);
+
+/* Theming -----------------------------------------------------------------*/
+typedef int32 NPWidgetID;
+
+typedef enum {
+  NPWidgetTypeScrollbar = 0,
+} NPWidgetType;
+
+typedef struct _NPTickMarks {
+  uint32 count;
+  uint32* tickmarks;
+} NPTickMarks;
+
+typedef enum {
+  NPWidgetPropertyLocation = 0,  // Set only.  variable is NPRect*.
+  NPWidgetPropertyDirtyRect = 1,  // Get only.  variable is NPRec*t.
+  NPWidgetPropertyScrollbarThickness = 2,  // Get only.  variable is int32*.
+  NPWidgetPropertyScrollbarPosition = 3,  // variable is int32*.
+  NPWidgetPropertyScrollbarDocumentSize = 4,  // Set only. variable is int32*.
+  // Set only.  variable is NPTickMarks*.
+  NPWidgetPropertyScrollbarTickMarks = 5,
+  // Set only.  variable is bool* (true for forward, false for backward).
+  NPWidgetPropertyScrollbarScrollByLine = 6,
+  // Set only.  variable is bool* (true for forward, false for backward).
+  NPWidgetPropertyScrollbarScrollByPage = 7,
+  // Set only.  variable is bool* (true for forward, false for backward).
+  NPWidgetPropertyScrollbarScrollByDocument = 8,
+  // Set only.  variable is int32* (positive forward, negative  backward).
+  NPWidgetPropertyScrollbarScrollByPixels = 9,
+} NPWidgetProperty;
+
+// Creates a widget.  If it returns NPERR_NO_ERROR then id will contain a unique
+// identifer for the widget that's used for the next functions.
+typedef NPError (*NPCreateWidgetPtr) (
+    NPP instance,
+    NPWidgetType type,
+    NPWidgetID* id);
+
+// Destroys a widget.
+typedef NPError (*NPDestroyWidgetPtr) (
+    NPP instance,
+    NPWidgetID id);
+
+// Paint the dirty rectangle of the given widget into context.
+typedef NPError (*NPPaintWidgetPtr) (
+    NPP instance,
+    NPWidgetID id,
+    NPDeviceContext2D* context,
+    NPRect* dirty);
+
+// Pass in a pepper event to a plugin.  It'll return true iff it uses it.
+typedef bool (*NPHandleWidgetEventPtr) (
+    NPP instance,
+    NPWidgetID id,
+    NPPepperEvent* event);
+
+// Gets a property of the widget.  "value" varies depending on the variable.
+typedef NPError (*NPGetWidgetPropertyPtr) (
+    NPP instance,
+    NPWidgetID id,
+    NPWidgetProperty property,
+    void* value);
+
+// Sets a property of the widget.
+typedef NPError (*NPSetWidgetPropertyPtr) (
+    NPP instance,
+    NPWidgetID id,
+    NPWidgetProperty property,
+    void* value);
+
+typedef struct _NPWidgetExtensions {
+  NPCreateWidgetPtr createWidget;
+  NPDestroyWidgetPtr destroyWidget;
+  NPPaintWidgetPtr paintWidget;
+  NPHandleWidgetEventPtr handleWidgetEvent;
+  NPGetWidgetPropertyPtr getWidgetProperty;
+  NPSetWidgetPropertyPtr setWidgetProperty;
+} NPWidgetExtensions;
+
+typedef NPWidgetExtensions* (*NPGetWidgetExtensionsPtr)(
+    NPP instance);
+
 
 /* Supports opening files anywhere on the system after prompting the user to
  * pick one.
@@ -410,144 +577,9 @@ struct NPNExtensions {
   NPSelectedFindResultChangedPtr selectedFindResultChanged;
   /* File I/O extensions */
   NPChooseFilePtr chooseFile;
+  /* Widget */
+  NPGetWidgetExtensionsPtr getWidgetExtensions;
 };
-
-/* Events -------------------------------------------------------------------*/
-
-typedef enum {
-  NPMouseButton_None    = -1,
-  NPMouseButton_Left    = 0,
-  NPMouseButton_Middle  = 1,
-  NPMouseButton_Right   = 2
-} NPMouseButtons;
-
-typedef enum {
-  NPEventType_Undefined   = -1,
-  NPEventType_MouseDown   = 0,
-  NPEventType_MouseUp     = 1,
-  NPEventType_MouseMove   = 2,
-  NPEventType_MouseEnter  = 3,
-  NPEventType_MouseLeave  = 4,
-  NPEventType_MouseWheel  = 5,
-  NPEventType_RawKeyDown  = 6,
-  NPEventType_KeyDown     = 7,
-  NPEventType_KeyUp       = 8,
-  NPEventType_Char        = 9,
-  NPEventType_Minimize    = 10,
-  NPEventType_Focus       = 11,
-  NPEventType_Device      = 12
-} NPEventTypes;
-
-typedef enum {
-  NPEventModifier_ShiftKey         = 1 << 0,
-  NPEventModifier_ControlKey       = 1 << 1,
-  NPEventModifier_AltKey           = 1 << 2,
-  NPEventModifier_MetaKey          = 1 << 3,
-  NPEventModifier_IsKeyPad         = 1 << 4,
-  NPEventModifier_IsAutoRepeat     = 1 << 5,
-  NPEventModifier_LeftButtonDown   = 1 << 6,
-  NPEventModifier_MiddleButtonDown = 1 << 7,
-  NPEventModifier_RightButtonDown  = 1 << 8
-} NPEventModifiers;
-
-typedef struct _NPKeyEvent
-{
-  uint32 modifier;
-  uint32 normalizedKeyCode;
-} NPKeyEvent;
-
-typedef struct _NPCharacterEvent
-{
-  uint32 modifier;
-  uint16 text[4];
-  uint16 unmodifiedText[4];
-} NPCharacterEvent;
-
-typedef struct _NPMouseEvent
-{
-  uint32 modifier;
-  int32 button;
-  int32 x;
-  int32 y;
-  int32 clickCount;
-} NPMouseEvent;
-
-typedef struct _NPMouseWheelEvent
-{
-  uint32 modifier;
-  float deltaX;
-  float deltaY;
-  float wheelTicksX;
-  float wheelTicksY;
-  uint32 scrollByPage;
-} NPMouseWheelEvent;
-
-typedef struct _NPDeviceEvent {
-  uint32 device_uid;
-  uint32 subtype;
-  /* uint8 generic[0]; */
-} NPDeviceEvent;
-
-typedef struct _NPMinimizeEvent {
-  int32 value;
-} NPMinimizeEvent;
-
-typedef struct _NPFocusEvent {
-  int32 value;
-} NPFocusEvent;
-
-typedef struct _NPPepperEvent
-{
-  uint32 size;
-  int32 type;
-  double timeStampSeconds;
-  union {
-    NPKeyEvent key;
-    NPCharacterEvent character;
-    NPMouseEvent mouse;
-    NPMouseWheelEvent wheel;
-    NPMinimizeEvent minimize;
-    NPFocusEvent focus;
-    NPDeviceEvent device;
-  } u;
-} NPPepperEvent;
-
-/* 2D -----------------------------------------------------------------------*/
-
-#define NPPepper2DDevice 1
-
-typedef struct _NPDeviceContext2DConfig {
-} NPDeviceContext2DConfig;
-
-typedef struct _NPDeviceContext2D
-{
-  /* Internal value used by the browser to identify this device. */
-  void* reserved;
-
-  /* A pointer to the pixel data. This data is 8-bit values in BGRA order in
-   * memory. Each row will start |stride| bytes after the previous one.
-   *
-   * THIS DATA USES PREMULTIPLIED ALPHA. This means that each color channel has
-   * been multiplied with the corresponding alpha, which makes compositing
-   * easier. If any color channels have a value greater than the alpha value,
-   * you'll likely get crazy colors and weird artifacts. */
-  void* region;
-
-  /* Length of each row of pixels in bytes. This may be larger than width * 4
-   * if there is padding at the end of each row to help with alignment. */
-  int32 stride;
-
-  /* The dirty region that the plugin has painted into the buffer. This
-   * will be initialized to the size of the plugin image in
-   * initializeContextPtr. The plugin can change the values to only
-   * update portions of the image. */
-  struct {
-    int32 left;
-    int32 top;
-    int32 right;
-    int32 bottom;
-  } dirty;
-} NPDeviceContext2D;
 
 /* 3D -----------------------------------------------------------------------*/
 
@@ -855,10 +887,16 @@ typedef NPError (*NPPZoomPtr) (
     NPP instance,
     int factor);
 
+typedef NPError (*NPPWidgetPropertyChangedPtr) (
+    NPP instance,
+    NPWidgetID id,
+    NPWidgetProperty property);
+
 typedef struct _NPPExtensions {
   NPPGetPrintExtensionsPtr getPrintExtensions;
   NPPGetFindExtensionsPtr getFindExtensions;
   NPPZoomPtr zoom;
+  NPPWidgetPropertyChangedPtr widgetPropertyChanged;
 } NPPExtensions;
 
 #endif  /* _NP_EXTENSIONS_H_ */

@@ -4,11 +4,6 @@
 
 #define PEPPER_APIS_ENABLED 1
 
-#include "build/build_config.h"
-#if defined(OS_WIN)
-#include <vsstyle.h>
-#endif
-
 #include "chrome/renderer/webplugin_delegate_pepper.h"
 
 #include <string>
@@ -28,17 +23,14 @@
 #include "base/stats_counters.h"
 #include "base/string_util.h"
 #include "base/time.h"
-#if defined(OS_WIN)
-#include "base/win_util.h"
-#endif
 #include "chrome/common/render_messages.h"
+#include "chrome/renderer/pepper_widget.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/webplugin_delegate_proxy.h"
 #include "gfx/blit.h"
 #if defined(OS_WIN)
 #include "gfx/codec/jpeg_codec.h"
 #include "gfx/gdi_util.h"
-#include "gfx/native_theme_win.h"
 #include "skia/ext/vector_platform_device.h"
 #endif
 #include "third_party/npapi/bindings/npapi_extensions.h"
@@ -78,55 +70,6 @@ struct Device3DImpl {
 };
 
 const int32 kDefaultCommandBufferSize = 1024 * 1024;
-
-#if defined(OS_WIN)
-struct ScrollbarThemeMapping {
-  NPThemeItem item;
-  NPThemeState state;
-  int state_id;  // Used by uxtheme.
-};
-static const ScrollbarThemeMapping scrollbar_mappings[] = {
-  { NPThemeItemScrollbarDownArrow, NPThemeStateDisabled, ABS_DOWNDISABLED},
-  { NPThemeItemScrollbarDownArrow, NPThemeStateHot, ABS_DOWNHOT},
-  { NPThemeItemScrollbarDownArrow, NPThemeStateHover, ABS_DOWNHOVER},
-  { NPThemeItemScrollbarDownArrow, NPThemeStateNormal, ABS_DOWNNORMAL},
-  { NPThemeItemScrollbarDownArrow, NPThemeStatePressed, ABS_DOWNPRESSED},
-  { NPThemeItemScrollbarLeftArrow, NPThemeStateDisabled, ABS_LEFTDISABLED},
-  { NPThemeItemScrollbarLeftArrow, NPThemeStateHot, ABS_LEFTHOT},
-  { NPThemeItemScrollbarLeftArrow, NPThemeStateHover, ABS_LEFTHOVER},
-  { NPThemeItemScrollbarLeftArrow, NPThemeStateNormal, ABS_LEFTNORMAL},
-  { NPThemeItemScrollbarLeftArrow, NPThemeStatePressed, ABS_LEFTPRESSED},
-  { NPThemeItemScrollbarRightArrow, NPThemeStateDisabled, ABS_RIGHTDISABLED},
-  { NPThemeItemScrollbarRightArrow, NPThemeStateHot, ABS_RIGHTHOT},
-  { NPThemeItemScrollbarRightArrow, NPThemeStateHover, ABS_RIGHTHOVER},
-  { NPThemeItemScrollbarRightArrow, NPThemeStateNormal, ABS_RIGHTNORMAL},
-  { NPThemeItemScrollbarRightArrow, NPThemeStatePressed, ABS_RIGHTPRESSED},
-  { NPThemeItemScrollbarUpArrow, NPThemeStateDisabled, ABS_UPDISABLED},
-  { NPThemeItemScrollbarUpArrow, NPThemeStateHot, ABS_UPHOT},
-  { NPThemeItemScrollbarUpArrow, NPThemeStateHover, ABS_UPHOVER},
-  { NPThemeItemScrollbarUpArrow, NPThemeStateNormal, ABS_UPNORMAL},
-  { NPThemeItemScrollbarUpArrow, NPThemeStatePressed, ABS_UPPRESSED},
-};
-
-int GetStateIdFromNPState(int state) {
-  switch (state) {
-    case NPThemeStateDisabled:
-      return SCRBS_DISABLED;
-    case NPThemeStateHot:
-      return SCRBS_HOT;
-    case NPThemeStateHover:
-      return SCRBS_HOVER;
-    case NPThemeStateNormal:
-      return SCRBS_NORMAL;
-    case NPThemeStatePressed:
-      return SCRBS_PRESSED;
-    default:
-      return -1;
-  };
-}
-#else
-  // TODO(port)
-#endif
 
 } // namespace
 
@@ -387,13 +330,6 @@ void WebPluginDelegatePepper::SelectedFindResultChanged(int index) {
         find_identifier_, index + 1, WebKit::WebRect());
 }
 
-void WebPluginDelegatePepper::Zoom(int factor) {
-  NPPExtensions* extensions = NULL;
-  instance()->NPP_GetValue(NPPVPepperExtensions, &extensions);
-  if (extensions && extensions->zoom)
-    extensions->zoom(instance()->npp(), factor);
-}
-
 bool WebPluginDelegatePepper::ChooseFile(const char* mime_types,
                                          int mode,
                                          NPChooseFileCallback callback,
@@ -424,6 +360,17 @@ bool WebPluginDelegatePepper::ChooseFile(const char* mime_types,
       return false;
   }
   return render_view_->ScheduleFileChooser(ipc_params, this);
+}
+
+NPWidgetExtensions* WebPluginDelegatePepper::GetWidgetExtensions() {
+  return PepperWidget::GetWidgetExtensions();
+}
+
+void WebPluginDelegatePepper::Zoom(int factor) {
+  NPPExtensions* extensions = NULL;
+  instance()->NPP_GetValue(NPPVPepperExtensions, &extensions);
+  if (extensions && extensions->zoom)
+    extensions->zoom(instance()->npp(), factor);
 }
 
 NPError WebPluginDelegatePepper::Device2DQueryCapability(int32 capability,
@@ -473,8 +420,7 @@ NPError WebPluginDelegatePepper::Device2DGetStateContext(
   if (state == NPExtensionsReservedStateSharedMemory) {
     if (!context)
       return NPERR_INVALID_PARAM;
-    Graphics2DDeviceContext* ctx = graphic2d_contexts_.Lookup(
-        reinterpret_cast<intptr_t>(context->reserved));
+    Graphics2DDeviceContext* ctx = GetGraphicsContext(context);
     if (!ctx)
       return NPERR_INVALID_PARAM;
     *value = reinterpret_cast<intptr_t>(ctx->transport_dib());
@@ -526,144 +472,10 @@ NPError WebPluginDelegatePepper::Device2DDestroyContext(
   return NPERR_NO_ERROR;
 }
 
-NPError WebPluginDelegatePepper::Device2DThemeGetSize(NPThemeItem item,
-                                                      int* width,
-                                                      int* height) {
-#if defined(OS_WIN)
-  switch (item) {
-    case NPThemeItemScrollbarDownArrow:
-    case NPThemeItemScrollbarUpArrow:
-      *width = GetSystemMetrics(SM_CXVSCROLL);
-      *height = GetSystemMetrics(SM_CYVSCROLL);
-      break;
-    case NPThemeItemScrollbarLeftArrow:
-    case NPThemeItemScrollbarRightArrow:
-      *width = GetSystemMetrics(SM_CXHSCROLL);
-      *height = GetSystemMetrics(SM_CYHSCROLL);
-      break;
-    case NPThemeItemScrollbarHorizontalThumb:
-      *width = GetSystemMetrics(SM_CXHTHUMB);
-      *height = *width;  // Make the min size a square.
-      break;
-    case NPThemeItemScrollbarVerticalThumb:
-      *height = GetSystemMetrics(SM_CYVTHUMB);
-      *width = *height;  // Make the min size a square.
-      break;
-    case NPThemeItemScrollbarHoriztonalTrack:
-      *height = GetSystemMetrics(SM_CYHSCROLL);
-      *width = 0;
-      break;
-    case NPThemeItemScrollbarVerticalTrack:
-      *width = GetSystemMetrics(SM_CXVSCROLL);
-      *height = 0;
-      break;
-    default:
-      return NPERR_GENERIC_ERROR;
-  }
-  return NPERR_NO_ERROR;
-#else
-  NOTIMPLEMENTED();
-  return NPERR_GENERIC_ERROR;
-#endif
-}
-
-NPError WebPluginDelegatePepper::Device2DThemePaint(NPDeviceContext2D* context,
-                                                    NPThemeParams* params) {
-  if (!context)
-    return NPERR_INVALID_PARAM;
-
-  Graphics2DDeviceContext* ctx = graphic2d_contexts_.Lookup(
+Graphics2DDeviceContext* WebPluginDelegatePepper::GetGraphicsContext(
+    NPDeviceContext2D* context) {
+  return graphic2d_contexts_.Lookup(
       reinterpret_cast<intptr_t>(context->reserved));
-  if (!ctx)
-    return NPERR_INVALID_PARAM;
-
-  NPError rv = NPERR_GENERIC_ERROR;
-  gfx::Rect rect(params->location.left,
-                 params->location.top,
-                 params->location.right - params->location.left,
-                 params->location.bottom - params->location.top);
-  skia::PlatformCanvas* canvas = ctx->canvas();
-
-#if defined(OS_WIN)
-  int state = -1;
-  int part = -1;
-  int classic_state = 0;
-  skia::PlatformDevice::PlatformSurface surface = canvas->beginPlatformPaint();
-#endif
-
-  switch (params->item) {
-    case NPThemeItemScrollbarDownArrow:
-    case NPThemeItemScrollbarLeftArrow:
-    case NPThemeItemScrollbarRightArrow:
-    case NPThemeItemScrollbarUpArrow: {
-      int state_to_use = params->state;
-      if (state_to_use == NPThemeStateHover
-#if defined(OS_WIN)
-          && win_util::GetWinVersion() < win_util::WINVERSION_VISTA
-#endif
-          ) {
-        state_to_use = NPThemeStateHover;
-      }
-
-#if defined(OS_WIN)
-      for (size_t i = 0; i < arraysize(scrollbar_mappings); ++i) {
-        if (scrollbar_mappings[i].item == params->item &&
-            scrollbar_mappings[i].state == state_to_use) {
-          state = scrollbar_mappings[i].state_id;
-          gfx::NativeTheme::instance()->PaintScrollbarArrow(
-              surface, state, classic_state, &rect.ToRECT());
-          rv = NPERR_NO_ERROR;
-          break;
-        }
-      }
-#else
-          // TODO(port)
-#endif
-      break;
-    }
-    case NPThemeItemScrollbarHorizontalThumb:
-    case NPThemeItemScrollbarVerticalThumb:
-#if defined(OS_WIN)
-      // First draw the thumb, then the gripper.
-      part = params->item == NPThemeItemScrollbarHorizontalThumb ?
-          SBP_THUMBBTNHORZ : SBP_THUMBBTNVERT;
-      state = GetStateIdFromNPState(params->state);
-      gfx::NativeTheme::instance()->PaintScrollbarThumb(
-          surface, part, state, classic_state, &rect.ToRECT());
-
-      part = params->item == NPThemeItemScrollbarHorizontalThumb ?
-        SBP_GRIPPERHORZ : SBP_GRIPPERVERT;
-      gfx::NativeTheme::instance()->PaintScrollbarThumb(
-          surface, part, state, classic_state, &rect.ToRECT());
-      rv = NPERR_NO_ERROR;
-#else
-          // TODO(port)
-#endif
-      break;
-    case NPThemeItemScrollbarHoriztonalTrack:
-    case NPThemeItemScrollbarVerticalTrack: {
-#if defined(OS_WIN)
-      part = params->item == NPThemeItemScrollbarHoriztonalTrack ?
-          SBP_LOWERTRACKHORZ : SBP_LOWERTRACKVERT;
-      state = GetStateIdFromNPState(params->state);
-      RECT align;
-      align.left = align.right = params->align.x;
-      align.top = align.bottom = params->align.y;
-      gfx::NativeTheme::instance()->PaintScrollbarTrack(
-          surface, part, state, classic_state, &rect.ToRECT(), &align, canvas);
-      rv = NPERR_NO_ERROR;
-#else
-      // TODO(port)
-      NOTIMPLEMENTED();
-#endif
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
-
-  canvas->endPlatformPaint();
-  return rv;
 }
 
 NPError WebPluginDelegatePepper::Device3DQueryCapability(int32 capability,
@@ -1344,7 +1156,8 @@ void WebPluginDelegatePepper::Paint(WebKit::WebCanvas* canvas,
 
       // Flip the transform
       CGContextSaveGState(canvas);
-      float window_height = static_cast<float>(CGBitmapContextGetHeight(canvas));
+      float window_height =
+          static_cast<float>(CGBitmapContextGetHeight(canvas));
       CGContextTranslateCTM(canvas, 0, window_height);
       CGContextScaleCTM(canvas, 1.0, -1.0);
 

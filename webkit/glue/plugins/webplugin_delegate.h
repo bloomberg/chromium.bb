@@ -150,6 +150,7 @@ class WebPluginDelegate : public WebPlugin2DDeviceDelegate,
   virtual void StopFind() {}
   virtual void NumberOfFindResultsChanged(int total, bool final_result) {}
   virtual void SelectedFindResultChanged(int index) {}
+  virtual NPWidgetExtensions* GetWidgetExtensions() { return NULL; }
 
   // Used for zooming of full page plugins.  0 means reset, while -1 means zoom
   // out and +1 means zoom in.

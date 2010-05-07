@@ -254,6 +254,9 @@ class NativeTheme {
   // for a theme change.
   void CloseHandles() const;
 
+  // Returns true if classic theme is in use.
+  bool IsClassicTheme(ThemeName name) const;
+
   // Gets our singleton instance.
   static const NativeTheme* instance();
 
