@@ -60,13 +60,6 @@
 #endif
 #endif
 
-#ifdef INCLUDE_JAVA
-#include "jri.h"                /* Java Runtime Interface */
-#else
-#define jref    void *
-#define JRIEnv  void
-#endif
-
 #ifdef _WIN32
 #include <windows.h>
 #ifndef XP_WIN
@@ -777,7 +770,6 @@ void    NP_LOADDS NPP_Print(NPP instance, NPPrint* platformPrint);
 int16_t           NPP_HandleEvent(NPP instance, void* event);
 void    NP_LOADDS NPP_URLNotify(NPP instance, const char* url,
                                 NPReason reason, void* notifyData);
-jref    NP_LOADDS NPP_GetJavaClass(void);
 NPError           NPP_GetValue(NPP instance, NPPVariable variable, void *value);
 NPError           NPP_SetValue(NPP instance, NPNVariable variable, void *value);
 
@@ -809,8 +801,6 @@ void*                 NPN_MemAlloc(uint32_t size);
 void                  NPN_MemFree(void* ptr);
 uint32_t              NPN_MemFlush(uint32_t size);
 void                  NPN_ReloadPlugins(NPBool reloadPages);
-JRIEnv*               NPN_GetJavaEnv(void);
-jref                  NPN_GetJavaPeer(NPP instance);
 NPError               NPN_GetValue(NPP instance, NPNVariable variable,
                                    void *value);
 NPError               NPN_SetValue(NPP instance, NPPVariable variable,

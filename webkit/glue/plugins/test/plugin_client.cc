@@ -33,7 +33,7 @@ NPError PluginClient::GetEntryPoints(NPPluginFuncs* pFuncs) {
   pFuncs->urlnotify     = NPP_URLNotify;
   pFuncs->getvalue      = NPP_GetValue;
   pFuncs->setvalue      = NPP_SetValue;
-  pFuncs->javaClass     = reinterpret_cast<JRIGlobalRef>(NPP_GetJavaClass);
+  pFuncs->javaClass     = NULL;
 
   return NPERR_NO_ERROR;
 }
@@ -226,10 +226,5 @@ int16 NPP_HandleEvent(NPP instance, void* event) {
     (NPAPIClient::PluginTest*)instance->pdata;
 
   return plugin->HandleEvent(event);
-}
-
-void* NPP_GetJavaClass(void) {
-  // XXXMB - do work here.
-  return NULL;
 }
 } // extern "C"

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO:  Did not implement JRIGlobalRef function yet.  Not sure if this is used?
-
 #ifndef _NPHOSTAPI_H_
 #define _NPHOSTAPI_H_
 
@@ -56,7 +54,6 @@ typedef void         (*NPP_URLNotifyProcPtr)(NPP instance,
                          const char* url,
                          NPReason reason,
                          void* notifyData);
-typedef void* JRIGlobalRef; //not using this right now
 typedef NPError      (*NPP_GetValueProcPtr)(NPP instance,
                          NPPVariable variable,
                          void *ret_alue);
@@ -240,7 +237,7 @@ typedef struct _NPPluginFuncs {
     NPP_PrintProcPtr print;
     NPP_HandleEventProcPtr event;
     NPP_URLNotifyProcPtr urlnotify;
-    JRIGlobalRef javaClass;
+    void* javaClass;
     NPP_GetValueProcPtr getvalue;
     NPP_SetValueProcPtr setvalue;
 } NPPluginFuncs;
