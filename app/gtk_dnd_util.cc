@@ -1,8 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "app/gtk_dnd_util.h"
+
+#include <string>
 
 #include "base/logging.h"
 #include "base/pickle.h"
@@ -200,6 +202,9 @@ void WriteURLWithName(GtkSelectionData* selection_data,
 bool ExtractNamedURL(GtkSelectionData* selection_data,
                      GURL* url,
                      string16* title) {
+  if (!selection_data || selection_data->length <= 0)
+    return false;
+
   Pickle data(reinterpret_cast<char*>(selection_data->data),
               selection_data->length);
   void* iter = NULL;

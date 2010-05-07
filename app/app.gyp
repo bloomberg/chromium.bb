@@ -47,12 +47,12 @@
         'os_exchange_data_win_unittest.cc',
         'run_all_unittests.cc',
         'slide_animation_unittest.cc',
-        'system_monitor_unittest.cc',
-        'test_suite.h',
-        'text_elider_unittest.cc',
         'sql/connection_unittest.cc',
         'sql/statement_unittest.cc',
         'sql/transaction_unittest.cc',
+        'system_monitor_unittest.cc',
+        'test_suite.h',
+        'text_elider_unittest.cc',
         'tree_node_iterator_unittest.cc',
         'win_util_unittest.cc',
       ],
@@ -61,6 +61,9 @@
       ],
       'conditions': [
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
+          'sources': [
+            'gtk_dnd_util_unittest.cc',
+          ],
           'dependencies': [
             'app_unittest_strings',
             '../build/linux/system.gyp:gtk',
