@@ -38,9 +38,6 @@ const int kBrowserViewTabStripHorizontalOverlap = 4;
 const int kSeparationLineHeight = 1;
 // Spacing between extension app icon and title.
 const int kExtensionAppIconTitleSpacing = 4;
-// We don't actually display the toolbar in extension app mode, but this is the
-// height of the spacing where it usually goes.
-const int kExtensionAppToolbarHeight = 7;
 
 }  // namespace
 
@@ -350,18 +347,11 @@ int BrowserViewLayout::LayoutToolbar(int top) {
     y -= ((visible && browser_view_->IsTabStripVisible()) ?
           kToolbarTabStripVerticalOverlap : 0);
   }
+
   int height = 0;
   if (visible) {
-    if (browser_view_->browser()->type() == Browser::TYPE_EXTENSION_APP) {
-      // TODO(aa): Find a more sensible way to handle this. We want
-      // OpaqueBroserFrame to continue to paint the area where the toolstrip
-      // would be, but we don't actually want a toolbar in this case.
-      toolbar_->SetVisible(false);
-      height = kExtensionAppToolbarHeight;
-    } else {
-      toolbar_->SetVisible(true);
-      height = toolbar_->GetPreferredSize().height();
-    }
+    height = toolbar_->GetPreferredSize().height();
+    toolbar_->SetVisible(true);
   } else {
     toolbar_->SetVisible(false);
   }

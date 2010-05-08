@@ -1239,6 +1239,10 @@ void BrowserView::ToggleTabStripMode() {
   frame_->TabStripDisplayModeChanged();
 }
 
+void BrowserView::SetToolbarCollapsedMode(bool val) {
+  toolbar_->set_collapsed(val);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, BrowserWindowTesting implementation:
 
@@ -1734,6 +1738,8 @@ void BrowserView::Init() {
   AddChildView(toolbar_);
   toolbar_->Init(browser_->profile());
   toolbar_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_TOOLBAR));
+  if (browser_->type() == Browser::TYPE_EXTENSION_APP)
+    toolbar_->set_collapsed(true);
 
   infobar_container_ = new InfoBarContainer(this);
   AddChildView(infobar_container_);

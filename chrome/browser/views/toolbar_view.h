@@ -87,6 +87,8 @@ class ToolbarView : public AccessibleToolbarView,
   LocationBarView* location_bar() const { return location_bar_; }
   views::MenuButton* page_menu() const { return page_menu_; }
   views::MenuButton* app_menu() const { return app_menu_; }
+  bool collapsed() const { return collapsed_; }
+  void set_collapsed(bool val) { collapsed_ = val; }
 
   // Overridden from views::FocusChangeListener:
   virtual void FocusWillChange(views::View* focused_before,
@@ -231,6 +233,9 @@ class ToolbarView : public AccessibleToolbarView,
   // while the menu is showing and used to detect if the menu was deleted while
   // running.
   bool* destroyed_flag_;
+
+  // When collapsed, the toolbar is just a tiny strip, no controls are visible.
+  bool collapsed_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ToolbarView);
 };

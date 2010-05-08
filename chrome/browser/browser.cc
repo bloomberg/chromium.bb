@@ -1144,8 +1144,9 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
     if (type() == TYPE_NORMAL || type() == TYPE_EXTENSION_APP)
       features |= FEATURE_TABSTRIP;
 
-    // Note: the toolbar is collapsed for TYPE_EXTENSION_APP but it is still
-    // there.
+    // TODO(aa): This is kinda a hack. The toolbar is not really there, it is
+    // collapsed. We probably want to add a FEATURE_MINI_TOOLBAR to represent
+    // the collapsed state.
     if (type() == TYPE_NORMAL || type() == TYPE_EXTENSION_APP)
       features |= FEATURE_TOOLBAR;
 
@@ -2370,6 +2371,11 @@ void Browser::TabSelectedAt(TabContents* old_contents,
           session_id(), tabstrip_model_.selected_index());
     }
   }
+
+  // For TYPE_EXTENSION_APP we're always collapsed. For other windows, it
+  // depends on whether the tab is an app tab.
+  if (type_ != TYPE_EXTENSION_APP)
+    window()->SetToolbarCollapsedMode(new_contents->is_app());
 }
 
 void Browser::TabMoved(TabContents* contents,
