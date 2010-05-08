@@ -27,6 +27,21 @@
 
 namespace nacl {
 
+// for http/https protocols, an URL is
+//
+// <protospec>://[<user>[:<pass>]@]<host>[:<port>]/<pathspec>
+//
+// where <protospec> is either "http" or "https", and none of the
+// other meta-syntactic variables' values contain the separater
+// characters ":", "@", or "/".
+//
+// when <protospec> is "chrome-extension", an URL is
+//
+// chrome-extension://<hash>/<pathspec>
+//
+// where <hash> is 32 lower-case ascii characters from a-p, and
+// <pathspec> is never empty.
+
   nacl::string UrlToOrigin(nacl::string url) {
     nacl::string::iterator it = find(url.begin(), url.end(), ':');
     if (url.end() == it) {
@@ -48,6 +63,11 @@ namespace nacl {
     // canonicalize to all lower case.  NB: Internationalizing Domain
     // Names in Applications (IDNA) encodes unicode in this reduced
     // alphabet.
+    //
+    // NB: If the <host> part isn't really a host name, e.g., when
+    // <protospec> is "chrome-extension", then we may be downcasing
+    // other data.  In the case of "chrome-extension", this is <hash>
+    // as above, so it should already be lower case characters.
     //
     for (it = origin.begin(); origin.end() != it; ++it) {
       *it = tolower(*it);
@@ -142,6 +162,7 @@ namespace nacl {
     static char const *allowed_protocols[] = {
       "http",
       "https",
+      "chrome-extension",
     };
 
     nacl::string::iterator it = find(origin.begin(), origin.end(), ':');
