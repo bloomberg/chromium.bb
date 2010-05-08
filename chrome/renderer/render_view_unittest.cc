@@ -872,22 +872,19 @@ TEST_F(RenderViewTest, InsertCharacters) {
 #endif
 }
 
-#if 0
 // TODO(tyoshino): After fixing flakiness, enable this test.
-TEST_F(RenderViewTest, DidFailProvisionalLoadWithErrorForError) {
-  GetMainFrame()->SetInViewSourceMode(true);
+TEST_F(RenderViewTest, FLAKY_DidFailProvisionalLoadWithErrorForError) {
+  GetMainFrame()->enableViewSourceMode(true);
   WebURLError error;
   error.domain.fromUTF8("test_domain");
   error.reason = net::ERR_FILE_NOT_FOUND;
   error.unreachableURL = GURL("http://foo");
   WebFrame* web_frame = GetMainFrame();
-  WebView* web_view = web_frame->GetView();
   // An error occurred.
-  view_->DidFailProvisionalLoadWithError(web_view, error, web_frame);
+  view_->didFailProvisionalLoad(web_frame, error);
   // Frame should exit view-source mode.
-  EXPECT_FALSE(web_frame->GetInViewSourceMode());
+  EXPECT_FALSE(web_frame->isViewSourceModeEnabled());
 }
-#endif
 
 TEST_F(RenderViewTest, DidFailProvisionalLoadWithErrorForCancellation) {
   GetMainFrame()->enableViewSourceMode(true);

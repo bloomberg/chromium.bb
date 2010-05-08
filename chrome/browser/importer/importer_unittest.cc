@@ -364,7 +364,7 @@ TEST_F(ImporterTest, IEImporter) {
 
   // Sets up dummy password data.
   HRESULT res;
-  #if 0  // This part of the test is disabled. See bug #2466
+#if 0  // This part of the test is disabled. See bug #2466
   ScopedComPtr<IPStore> pstore;
   HMODULE pstorec_dll;
   GUID type = IEImporter::kUnittestGUID;
