@@ -107,7 +107,8 @@ class Tab::TabContextMenuContents : public menus::SimpleMenuModel::Delegate {
 Tab::Tab(TabDelegate* delegate)
     : TabRenderer(),
       delegate_(delegate),
-      closing_(false) {
+      closing_(false),
+      dragging_(false) {
   close_button()->SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_CLOSE_TAB));
   close_button()->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_CLOSE));
   close_button()->SetAnimationDuration(0);

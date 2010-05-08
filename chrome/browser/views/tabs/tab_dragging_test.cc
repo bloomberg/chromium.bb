@@ -19,7 +19,8 @@
 #include "views/event.h"
 
 #if defined(OS_CHROMEOS)
-// Disabled, see http://crbug.com/40043.
+// This test doesn't make sense on chromeos as chromeos doesn't allow dragging
+// tabs out.
 #define MAYBE_Tab2OutOfTabStrip DISABLED_Tab2OutOfTabStrip
 #else
 #define MAYBE_Tab2OutOfTabStrip Tab2OutOfTabStrip
@@ -270,7 +271,7 @@ TEST_F(TabDraggingTest, MAYBE_Tab1Tab3Escape) {
   ASSERT_TRUE(tab1->GetCurrentURL(&tab1_url));
 
   // Add Tab_2.
-  GURL tab2_url("about:");
+  GURL tab2_url("about:blank");
   ASSERT_TRUE(browser->AppendTab(tab2_url));
   scoped_refptr<TabProxy> tab2(browser->GetTab(1));
   ASSERT_TRUE(tab2.get());

@@ -36,6 +36,7 @@
 #include "views/controls/image_view.h"
 #include "views/painter.h"
 #include "views/widget/default_theme_provider.h"
+#include "views/widget/root_view.h"
 #include "views/window/non_client_view.h"
 #include "views/window/window.h"
 
@@ -114,6 +115,28 @@ class NewTabAlphaDelegate
   Tab* tab_;
 
   DISALLOW_COPY_AND_ASSIGN(NewTabAlphaDelegate);
+};
+
+// Animation delegate used when a dragged tab is released. When done sets the
+// dragging state to false.
+class ResetDraggingStateDelegate
+    : public views::BoundsAnimator::OwnedAnimationDelegate {
+ public:
+  explicit ResetDraggingStateDelegate(Tab* tab) : tab_(tab) {
+  }
+
+  virtual void AnimationEnded(const Animation* animation) {
+    tab_->set_dragging(false);
+  }
+
+  virtual void AnimationCanceled(const Animation* animation) {
+    tab_->set_dragging(false);
+  }
+
+ private:
+  Tab* tab_;
+
+  DISALLOW_COPY_AND_ASSIGN(ResetDraggingStateDelegate);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -256,7 +279,8 @@ TabStrip::TabStrip(TabStripModel* model)
       ALLOW_THIS_IN_INITIALIZER_LIST(bounds_animator_(this)),
       animation_type_(ANIMATION_DEFAULT),
       new_tab_button_enabled_(true),
-      cancelling_animation_(false) {
+      cancelling_animation_(false),
+      attaching_dragged_tab_(false) {
   Init();
 }
 
@@ -287,28 +311,6 @@ bool TabStrip::CanProcessInputEvents() const {
 void TabStrip::DestroyDragController() {
   if (IsDragSessionActive())
     drag_controller_.reset(NULL);
-}
-
-void TabStrip::DestroyDraggedSourceTab(Tab* tab) {
-  // We could be running an animation that references this Tab.
-  StopAnimating(true);
-
-  // Make sure we leave the tab_data_ vector in a consistent state, otherwise
-  // we'll be pointing to tabs that have been deleted and removed from the
-  // child view list.
-  int tab_data_index = TabDataIndexOfTab(tab);
-  if (tab_data_index != -1) {
-    if (!model_->closing_all())
-      NOTREACHED() << "Leaving in an inconsistent state!";
-    tab_data_.erase(tab_data_.begin() + tab_data_index);
-  }
-
-  delete tab;
-
-  // Force a layout here, because if we've just quickly drag detached a Tab,
-  // the stopping of the active animation above may have left the TabStrip in a
-  // bad (visual) state.
-  Layout();
 }
 
 gfx::Rect TabStrip::GetIdealBounds(int tab_data_index) {
@@ -459,13 +461,17 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
 
   Tab* selected_tab = NULL;
 
+  Tab* dragging_tab = NULL;
+
   for (int i = tab_count - 1; i >= 0; --i) {
     Tab* tab = GetTabAtTabDataIndex(i);
     // We must ask the _Tab's_ model, not ourselves, because in some situations
     // the model will be different to this object, e.g. when a Tab is being
     // removed after its TabContents has been destroyed.
     if (!tab->phantom()) {
-      if (!tab->IsSelected()) {
+      if (tab->dragging()) {
+        dragging_tab = tab;
+      } else if (!tab->IsSelected()) {
         if (tab->render_unselected() && model_->count() > 1) {
           // See comment above kNetTabAnimationSelectedOffset as to why we do
           // this.
@@ -511,6 +517,10 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
       animation_type_ != ANIMATION_NEW_TAB_3) {
     newtab_button_->ProcessPaint(canvas);
   }
+
+  // And the dragged tab.
+  if (dragging_tab)
+    dragging_tab->ProcessPaint(canvas);
 }
 
 // Overridden to support automation. See automation_proxy_uitest.cc.
@@ -656,6 +666,16 @@ void TabStrip::ViewHierarchyChanged(bool is_add,
     InitTabStripButtons();
 }
 
+bool TabStrip::OnMouseDragged(const views::MouseEvent&  event) {
+  if (drag_controller_.get())
+    drag_controller_->Drag();
+  return true;
+}
+
+void TabStrip::OnMouseReleased(const views::MouseEvent& event,
+                               bool canceled) {
+  EndDrag(canceled);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // TabStrip, TabStripModelObserver implementation:
@@ -671,69 +691,23 @@ void TabStrip::TabInsertedAt(TabContents* contents,
   contents->render_view_host()->UpdateBrowserWindowId(
       contents->controller().window_id().id());
 
-  bool contains_tab = false;
-  Tab* tab = NULL;
-  // First see if this Tab is one that was dragged out of this TabStrip and is
-  // now being dragged back in. In this case, the DraggedTabController actually
-  // has the Tab already constructed and we can just insert it into our list
-  // again.
-  if (IsDragSessionActive()) {
-    tab = drag_controller_->GetDragSourceTabForContents(contents);
-    if (tab) {
-      // If the Tab was detached, it would have been animated closed but not
-      // removed, so we need to reset this property.
-      tab->set_closing(false);
-      tab->ValidateLoadingAnimation(TabRenderer::ANIMATION_NONE);
-      tab->SetVisible(true);
-    }
+  Tab* tab = CreateTab();
 
-    // See if we're already in the list. We don't want to add ourselves twice.
-    int tab_data_index = TabDataIndexOfTab(tab);
-
-    if (tab_data_index != -1) {
-      contains_tab = true;
-
-      // Make sure we stop animating the view. This is necessary otherwise when
-      // the animation is done it'll try to remove the tab.
-      bounds_animator_.StopAnimatingView(tab);
-
-      // We have the tab, but it might not be at the right index. Reset the data
-      // to ensure it's at the right index.
-      TabData tab_data = tab_data_[tab_data_index];
-      DCHECK(tab_data.tab == tab);
-      tab_data_.erase(tab_data_.begin() + tab_data_index);
-      tab_data_.insert(
-          tab_data_.begin() + ModelIndexToTabDataIndex(model_index),
-          tab_data);
-    }
-  }
-
-  // Otherwise we need to make a new Tab.
-  if (!tab)
-    tab = CreateTab();
-
-  // Only insert if we're not already in the list.
-  if (!contains_tab) {
-    TabData d = { tab, gfx::Rect() };
-    tab_data_.insert(tab_data_.begin() +
-                     ModelIndexToTabDataIndex(model_index), d);
-    tab->UpdateData(contents, model_->IsPhantomTab(model_index), false);
-  }
+  TabData d = { tab, gfx::Rect() };
+  tab_data_.insert(tab_data_.begin() +
+                   ModelIndexToTabDataIndex(model_index), d);
+  tab->UpdateData(contents, model_->IsPhantomTab(model_index), false);
   tab->set_mini(model_->IsMiniTab(model_index));
   tab->set_app(model_->IsAppTab(model_index));
   tab->SetBlocked(model_->IsTabBlocked(model_index));
+  tab->SetAnimationContainer(animation_container_.get());
 
-  // We only add the tab to the child list if it's not already - an invisible
-  // tab maintained by the DraggedTabController will already be parented.
-  if (!tab->GetParent()) {
-    AddChildView(tab);
-    tab->SetAnimationContainer(animation_container_.get());
-  }
+  AddChildView(tab);
 
   // Don't animate the first tab, it looks weird, and don't animate anything
   // if the containing window isn't visible yet.
   if (GetTabCount() > 1 && GetWindow() && GetWindow()->IsVisible()) {
-    if (!IsDragSessionActive() &&
+    if (!IsDragSessionActive() && !attaching_dragged_tab_ &&
         ShouldStartIntertTabAnimationAtEnd(model_index, foreground)) {
       StartInsertTabAnimationAtEnd();
     } else {
@@ -943,19 +917,30 @@ void TabStrip::MaybeStartDrag(Tab* tab, const views::MouseEvent& event) {
     return;
   }
   drag_controller_.reset(new DraggedTabController(tab, this));
-  drag_controller_->CaptureDragInfo(event.location());
+  drag_controller_->CaptureDragInfo(tab, event.location());
 }
 
 void TabStrip::ContinueDrag(const views::MouseEvent& event) {
   // We can get called even if |MaybeStartDrag| wasn't called in the event of
   // a TabStrip animation when the mouse button is down. In this case we should
   // _not_ continue the drag because it can lead to weird bugs.
-  if (drag_controller_.get())
+  if (drag_controller_.get()) {
+    bool started_drag = drag_controller_->started_drag();
     drag_controller_->Drag();
+    if (drag_controller_->started_drag() && !started_drag) {
+      // The drag just started. Redirect mouse events to us to that the tab that
+      // originated the drag can be safely deleted.
+      GetRootView()->SetMouseHandler(this);
+    }
+  }
 }
 
 bool TabStrip::EndDrag(bool canceled) {
-  return drag_controller_.get() ? drag_controller_->EndDrag(canceled) : false;
+  if (!drag_controller_.get())
+    return false;
+  bool started_drag = drag_controller_->started_drag();
+  drag_controller_->EndDrag(canceled);
+  return started_drag;
 }
 
 bool TabStrip::HasAvailableDragActions() const {
@@ -1537,7 +1522,7 @@ void TabStrip::NewTabAnimation2Done() {
 
 void TabStrip::AnimateToIdealBounds() {
   for (size_t i = 0; i < tab_data_.size(); ++i) {
-    if (!tab_data_[i].tab->closing()) {
+    if (!tab_data_[i].tab->closing() && !tab_data_[i].tab->dragging()) {
       bounds_animator_.AnimateViewTo(tab_data_[i].tab,
                                      tab_data_[i].ideal_bounds);
     }
@@ -1743,13 +1728,7 @@ void TabStrip::RemoveTab(Tab* tab) {
   // Remove the Tab from the TabStrip's list...
   tab_data_.erase(tab_data_.begin() + tab_data_index);
 
-  // If the TabContents being detached was removed as a result of a drag
-  // gesture from its corresponding Tab, we don't want to remove the Tab from
-  // the child list, because if we do so it'll stop receiving events and the
-  // drag will stall. So we only remove if a drag isn't active, or the Tab
-  // was for some other TabContents.
-  if (!IsDragSessionActive() || !drag_controller_->IsDragSourceTab(tab))
-    delete tab;
+  delete tab;
 }
 
 void TabStrip::HandleGlobalMouseMoveEvent() {
@@ -1808,4 +1787,40 @@ int TabStrip::TabDataIndexOfTab(Tab* tab) const {
       return i;
   }
   return -1;
+}
+
+void TabStrip::StartedDraggingTab(Tab* tab) {
+  tab->set_dragging(true);
+
+  // Stop any animations on the tab.
+  bounds_animator_.StopAnimatingView(tab);
+
+  // Move the tab to its ideal bounds.
+  GenerateIdealBounds();
+  int tab_data_index = TabDataIndexOfTab(tab);
+  DCHECK(tab_data_index != -1);
+  tab->SetBounds(tab_data_[tab_data_index].ideal_bounds);
+  SchedulePaint();
+}
+
+void TabStrip::StoppedDraggingTab(Tab* tab) {
+  int tab_data_index = TabDataIndexOfTab(tab);
+  if (tab_data_index == -1) {
+    // The tab was removed before the drag completed. Don't do anything.
+    return;
+  }
+
+  // Animate the view back to its correct position.
+  ResetAnimationState(true);
+  GenerateIdealBounds();
+  AnimateToIdealBounds();
+  bounds_animator_.AnimateViewTo(
+      tab,
+      tab_data_[TabDataIndexOfTab(tab)].ideal_bounds);
+
+  // Install a delegate to reset the dragging state when done. We have to leave
+  // dragging true for the tab otherwise it'll draw beneath the new tab button.
+  bounds_animator_.SetAnimationDelegate(tab,
+                                        new ResetDraggingStateDelegate(tab),
+                                        true);
 }

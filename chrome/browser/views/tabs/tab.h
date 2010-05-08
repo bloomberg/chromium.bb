@@ -90,6 +90,10 @@ class Tab : public TabRenderer,
   void set_closing(bool closing) { closing_ = closing; }
   bool closing() const { return closing_; }
 
+  // See description above field.
+  void set_dragging(bool dragging) { dragging_ = dragging; }
+  bool dragging() const { return dragging_; }
+
   // TabRenderer overrides:
   virtual bool IsSelected() const;
 
@@ -124,6 +128,9 @@ class Tab : public TabRenderer,
 
   // True if the tab is being animated closed.
   bool closing_;
+
+  // True if the tab is being dragged.
+  bool dragging_;
 
   // If non-null it means we're showing a menu for the tab.
   class TabContextMenuContents;

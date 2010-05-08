@@ -76,9 +76,6 @@ class TabStrip : public BaseTabStrip,
   // Destroys the active drag controller.
   void DestroyDragController();
 
-  // Removes the drag source Tab from this TabStrip, and deletes it.
-  void DestroyDraggedSourceTab(Tab* tab);
-
   // Retrieves the ideal bounds for the Tab at the specified index.
   gfx::Rect GetIdealBounds(int tab_data_index);
 
@@ -137,6 +134,9 @@ class TabStrip : public BaseTabStrip,
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
                                     views::View* child);
+  virtual bool OnMouseDragged(const views::MouseEvent& event);
+  virtual void OnMouseReleased(const views::MouseEvent& event,
+                               bool canceled);
 
   // TabStripModelObserver implementation:
   virtual void TabInsertedAt(TabContents* contents,
@@ -419,6 +419,13 @@ class TabStrip : public BaseTabStrip,
   // -1 if the tab isn't in |tab_data_|.
   int TabDataIndexOfTab(Tab* tab) const;
 
+  // See description above field for details.
+  void set_attaching_dragged_tab(bool value) { attaching_dragged_tab_ = value; }
+
+  // Used by DraggedTabController when the user starts or stops dragging a tab.
+  void StartedDraggingTab(Tab* tab);
+  void StoppedDraggingTab(Tab* tab);
+
   // -- Member Variables ------------------------------------------------------
 
   // Our model.
@@ -490,6 +497,9 @@ class TabStrip : public BaseTabStrip,
 
   // If true, we're cancelling the animation.
   bool cancelling_animation_;
+
+  // Used by DraggedTabController when inserting a tab into our model.
+  bool attaching_dragged_tab_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };

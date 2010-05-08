@@ -9,22 +9,16 @@
 #include "base/timer.h"
 #include "chrome/browser/dock_info.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
-#include "chrome/browser/tabs/tab_strip_model.h"
-#include "chrome/browser/views/tabs/tab_renderer.h"
 #include "chrome/common/notification_registrar.h"
 #include "gfx/rect.h"
 
 namespace views {
-class MouseEvent;
 class View;
 }
-class BrowserWindow;
 class DraggedTabView;
 class NativeViewPhotobooth;
-class SkBitmap;
 class Tab;
 class TabStrip;
-class TabStripModel;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -47,7 +41,7 @@ class DraggedTabController : public TabContentsDelegate,
   // Capture information needed to be used during a drag session for this
   // controller's associated source Tab and TabStrip. |mouse_offset| is the
   // distance of the mouse pointer from the Tab's origin.
-  void CaptureDragInfo(const gfx::Point& mouse_offset);
+  void CaptureDragInfo(Tab* tab, const gfx::Point& mouse_offset);
 
   // Responds to drag events subsequent to StartDrag. If the mouse moves a
   // sufficient distance before the mouse is released, a drag session is
@@ -57,22 +51,19 @@ class DraggedTabController : public TabContentsDelegate,
   // Complete the current drag session. If the drag session was canceled
   // because the user pressed Escape or something interrupted it, |canceled|
   // is true so the helper can revert the state to the world before the drag
-  // begun. Returns whether the tab has been destroyed.
-  bool EndDrag(bool canceled);
-
-  // Retrieve the source Tab if the TabContents specified matches the one being
-  // dragged by this controller, or NULL if the specified TabContents is not
-  // the same as the one being dragged.
-  Tab* GetDragSourceTabForContents(TabContents* contents) const;
-
-  // Returns true if the specified Tab matches the Tab being dragged.
-  bool IsDragSourceTab(Tab* tab) const;
+  // begun.
+  void EndDrag(bool canceled);
 
   TabContents* dragged_contents() { return dragged_contents_; }
+
+  // Returns true if a drag started.
+  bool started_drag() const { return started_drag_; }
 
  private:
   class DockDisplayer;
   friend class DockDisplayer;
+
+  typedef std::set<gfx::NativeView> DockWindows;
 
   // Enumeration of the ways a drag session can end.
   enum EndDragType {
@@ -155,8 +146,11 @@ class DraggedTabController : public TabContentsDelegate,
   // potentially updating the source and other TabStrips.
   void ContinueDragging();
 
-  // Handles moving the Tab within a TabStrip as well as updating the View.
-  void MoveTab(const gfx::Point& screen_point);
+  // Handles dragging a tab while the tab is attached.
+  void MoveAttachedTab(const gfx::Point& screen_point);
+
+  // Handles dragging while the tab is detached.
+  void MoveDetachedTab(const gfx::Point& screen_point);
 
   // Returns the compatible TabStrip that is under the specified point (screen
   // coordinates), or NULL if there is none.
@@ -188,22 +182,21 @@ class DraggedTabController : public TabContentsDelegate,
 
   // Get the position of the dragged tab view relative to the attached tab
   // strip.
-  gfx::Point GetDraggedViewPoint(const gfx::Point& screen_point);
+  gfx::Point GetAttachedTabDragPoint(const gfx::Point& screen_point);
 
   // Finds the Tab within the specified TabStrip that corresponds to the
   // dragged TabContents.
   Tab* GetTabMatchingDraggedContents(TabStrip* tabstrip) const;
 
-  // Does the work for EndDrag. Returns whether the tab has been destroyed.
-  bool EndDragImpl(EndDragType how_end);
+  // Does the work for EndDrag. If we actually started a drag and |how_end| is
+  // not TAB_DESTROYED then one of EndDrag or RevertDrag is invoked.
+  void EndDragImpl(EndDragType how_end);
 
-  // If the drag was aborted for some reason, this function is called to un-do
-  // the changes made during the drag operation.
+  // Reverts a cancelled drag operation.
   void RevertDrag();
 
-  // Finishes the drag operation. Returns true if the drag controller should
-  // be destroyed immediately, false otherwise.
-  bool CompleteDrag();
+  // Finishes a succesful drag operation.
+  void CompleteDrag();
 
   // Create the DraggedTabView, if it does not yet exist.
   void EnsureDraggedView();
@@ -225,13 +218,6 @@ class DraggedTabController : public TabContentsDelegate,
   // Closes a hidden frame at the end of a drag session.
   void CleanUpHiddenFrame();
 
-  // Cleans up a source tab that is no longer used.
-  void CleanUpSourceTab();
-
-  // Completes the drag session after the view has animated to its final
-  // position.
-  void OnAnimateToBoundsComplete();
-
   void DockDisplayerDestroyed(DockDisplayer* controller);
 
   void BringWindowUnderMouseToFront();
@@ -247,9 +233,6 @@ class DraggedTabController : public TabContentsDelegate,
   // certain delegate notifications back to it if we can't handle them locally.
   TabContentsDelegate* original_delegate_;
 
-  // The Tab that initiated the drag session.
-  Tab* source_tab_;
-
   // The TabStrip |source_tab_| originated from.
   TabStrip* source_tabstrip_;
 
@@ -260,6 +243,9 @@ class DraggedTabController : public TabContentsDelegate,
   // The TabStrip the dragged Tab is currently attached to, or NULL if the
   // dragged Tab is detached.
   TabStrip* attached_tabstrip_;
+
+  // If attached this is the tab we're dragging.
+  Tab* attached_tab_;
 
   // The visual representation of the dragged Tab.
   scoped_ptr<DraggedTabView> view_;
@@ -278,6 +264,9 @@ class DraggedTabController : public TabContentsDelegate,
   // positioned at the correct location during the drag, and to ensure that the
   // detached window is created at the right location.
   gfx::Point mouse_offset_;
+
+  // Ratio of the x-coordinate of the mouse offset to the width of the tab.
+  float offset_to_width_ratio_;
 
   // A hint to use when positioning new windows created by detaching Tabs. This
   // is the distance of the mouse from the top left of the dragged tab as if it
@@ -309,8 +298,8 @@ class DraggedTabController : public TabContentsDelegate,
 
   DockInfo dock_info_;
 
-  typedef std::set<gfx::NativeView> DockWindows;
   DockWindows dock_windows_;
+
   std::vector<DockDisplayer*> dock_controllers_;
 
   // Is the tab mini?
@@ -323,6 +312,9 @@ class DraggedTabController : public TabContentsDelegate,
   // stops moving the mouse for a brief time over a browser window, it is
   // brought to front.
   base::OneShotTimer<DraggedTabController> bring_to_front_timer_;
+
+  // Did the mouse move enough that we started a drag?
+  bool started_drag_;
 
   DISALLOW_COPY_AND_ASSIGN(DraggedTabController);
 };

@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_VIEWS_TABS_DRAGGED_TAB_VIEW_H_
 #define CHROME_BROWSER_VIEWS_TABS_DRAGGED_TAB_VIEW_H_
 
-#include "app/slide_animation.h"
-#include "base/callback.h"
 #include "build/build_config.h"
 #include "gfx/point.h"
 #include "gfx/size.h"
@@ -26,8 +24,7 @@ class NativeViewPhotobooth;
 class Tab;
 class TabRenderer;
 
-class DraggedTabView : public views::View,
-                       public AnimationDelegate {
+class DraggedTabView : public views::View {
  public:
   // Creates a new DraggedTabView using |renderer| as the View. DraggedTabView
   // takes ownership of |renderer|.
@@ -58,20 +55,11 @@ class DraggedTabView : public views::View,
   // Notifies the DraggedTabView that it should update itself.
   void Update();
 
-  // Animates the DraggedTabView to the specified bounds, then calls back to
-  // |callback|.
-  void AnimateToBounds(const gfx::Rect& bounds, Callback0::Type* callback);
-
   // Returns the size of the DraggedTabView. Used when attaching to a TabStrip
   // to determine where to place the Tab in the attached TabStrip.
   const gfx::Size& attached_tab_size() const { return attached_tab_size_; }
 
  private:
-  // Overridden from AnimationDelegate:
-  virtual void AnimationProgressed(const Animation* animation);
-  virtual void AnimationEnded(const Animation* animation);
-  virtual void AnimationCanceled(const Animation* animation);
-
   // Overridden from views::View:
   virtual void Paint(gfx::Canvas* canvas);
   virtual void Layout();
@@ -125,16 +113,6 @@ class DraggedTabView : public views::View,
 
   // Size of the TabContents being dragged.
   gfx::Size contents_size_;
-
-  // The animation used to slide the attached view to its final location.
-  SlideAnimation close_animation_;
-
-  // A callback notified when the animation is complete.
-  scoped_ptr<Callback0::Type> animation_callback_;
-
-  // The start and end bounds of the animation sequence.
-  gfx::Rect animation_start_bounds_;
-  gfx::Rect animation_end_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(DraggedTabView);
 };

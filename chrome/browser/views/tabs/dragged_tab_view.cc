@@ -20,7 +20,6 @@ static const int kOpaqueAlpha = 255;
 static const int kDragFrameBorderSize = 2;
 static const int kTwiceDragFrameBorderSize = 2 * kDragFrameBorderSize;
 static const float kScalingFactor = 0.5;
-static const int kAnimateToBoundsDurationMs = 150;
 static const SkColor kDraggedTabBorderColor = SkColorSetRGB(103, 129, 162);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -36,8 +35,7 @@ DraggedTabView::DraggedTabView(views::View* renderer,
       mouse_tab_offset_(mouse_tab_offset),
       attached_tab_size_(min_size),
       photobooth_(NULL),
-      contents_size_(contents_size),
-      close_animation_(this) {
+      contents_size_(contents_size) {
   set_parent_owned(false);
 
 #if defined(OS_WIN)
@@ -65,8 +63,6 @@ DraggedTabView::DraggedTabView(views::View* renderer,
 }
 
 DraggedTabView::~DraggedTabView() {
-  if (close_animation_.is_animating())
-    close_animation_.Stop();
   GetParent()->RemoveChildView(this);
   container_->CloseNow();
 }
@@ -136,48 +132,6 @@ void DraggedTabView::Update() {
 #else
   SchedulePaint();
 #endif
-}
-
-void DraggedTabView::AnimateToBounds(const gfx::Rect& bounds,
-                                     Callback0::Type* callback) {
-  animation_callback_.reset(callback);
-
-  gfx::Rect initial_bounds;
-  GetWidget()->GetBounds(&initial_bounds, true);
-  animation_start_bounds_ = initial_bounds;
-  animation_end_bounds_ = bounds;
-
-  close_animation_.SetSlideDuration(kAnimateToBoundsDurationMs);
-  close_animation_.SetTweenType(Tween::EASE_OUT);
-  if (!close_animation_.IsShowing()) {
-    close_animation_.Reset();
-    close_animation_.Show();
-  }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// DraggedTabView, AnimationDelegate implementation:
-
-void DraggedTabView::AnimationProgressed(const Animation* animation) {
-  int delta_x = (animation_end_bounds_.x() - animation_start_bounds_.x());
-  int x = animation_start_bounds_.x() +
-      static_cast<int>(delta_x * animation->GetCurrentValue());
-  int y = animation_end_bounds_.y();
-#if defined(OS_WIN)
-  container_->SetWindowPos(NULL, x, y, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE);
-#else
-  gfx::Rect bounds;
-  container_->GetBounds(&bounds, true);
-  container_->SetBounds(gfx::Rect(x, y, bounds.width(), bounds.height()));
-#endif
-}
-
-void DraggedTabView::AnimationEnded(const Animation* animation) {
-  animation_callback_->Run();
-}
-
-void DraggedTabView::AnimationCanceled(const Animation* animation) {
-  AnimationEnded(animation);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
