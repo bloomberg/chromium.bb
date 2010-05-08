@@ -3365,6 +3365,9 @@ each locale. -->
       <message name="IDS_EXTENSION_PROMPT2_WARNING_BROWSING_HISTORY" desc="Permission string for access to browsing history.">
         Your browsing history
       </message>
+      <message name="IDS_EXTENSION_PROMPT2_WARNING_GEOLOCATION" desc="Permissin string for access to geolocation.">
+        Your physical location
+      </message>
 
       <!-- Extension error messages -->
       <message name="IDS_EXTENSION_DIRECTORY_NO_EXISTS" desc="Warning displayed in pack dialog when the extension directory does not exist.">
