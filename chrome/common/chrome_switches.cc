@@ -193,6 +193,10 @@ const char kDisableSyncThemes[]             = "disable-sync-themes";
 // Disable syncing of typed urls.
 const char kDisableSyncTypedUrls[]          = "disable-sync-typed-urls";
 
+// Disable throbber for extension apps.
+const char kDisableThrobberForExtensionApps[] =
+    "disable-throbber-for-extension-apps";
+
 // Enables the backend service for web resources, used in the new tab page for
 // loading tips and recommendations from a JSON feed.
 const char kDisableWebResources[]           = "disable-web-resources";

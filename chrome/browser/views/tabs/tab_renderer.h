@@ -219,6 +219,11 @@ class TabRenderer : public views::View,
   // Close Button.
   views::ImageButton* close_button_;
 
+  // Whether to disable throbber animations. Only true if this is a
+  // Nano tab renderer and a command line flag has been passed in to
+  // disable the animations.
+  bool throbber_disabled_;
+
   // Hover animation.
   scoped_ptr<SlideAnimation> hover_animation_;
 

@@ -12,6 +12,7 @@
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
 #include "app/throb_animation.h"
+#include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_theme_provider.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_switches.h"
 #include "gfx/canvas.h"
 #include "gfx/favicon_size.h"
 #include "gfx/font.h"
@@ -271,6 +273,7 @@ class TabRenderer::FavIconCrashAnimation : public LinearAnimation,
 TabRenderer::TabRenderer()
     : animation_state_(ANIMATION_NONE),
       animation_frame_(0),
+      throbber_disabled_(false),
       showing_icon_(false),
       showing_close_button_(false),
       fav_icon_hiding_offset_(0),
@@ -338,6 +341,12 @@ void TabRenderer::UpdateData(TabContents* contents,
     SetAccessibleName(UTF16ToWide(data_.title));
   }
 
+  // If this is an extension app and a command line flag is set,
+  // then disable the throbber.
+  throbber_disabled_ = data_.app &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableThrobberForExtensionApps);
+
   // TODO(glen): Temporary hax.
   theme_provider_ = contents->profile()->GetThemeProvider();
 
@@ -371,6 +380,9 @@ bool TabRenderer::IsSelected() const {
 }
 
 void TabRenderer::ValidateLoadingAnimation(AnimationState animation_state) {
+  if (throbber_disabled_)
+    return;
+
   if (animation_state_ != animation_state) {
     // The waiting animation is the reverse of the loading animation, but at a
     // different rate - the following reverses and scales the animation_frame_
