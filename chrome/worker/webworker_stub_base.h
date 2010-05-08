@@ -6,13 +6,15 @@
 #define CHROME_WORKER_WEBWORKER_STUB_BASE_H_
 
 #include "chrome/worker/webworkerclient_proxy.h"
+#include "chrome/worker/worker_webapplicationcachehost_impl.h"
 #include "ipc/ipc_channel.h"
 
 // This class is the common base class for both WebWorkerStub and
 // WebSharedWorkerStub and contains common setup/teardown functionality.
 class WebWorkerStubBase : public IPC::Channel::Listener {
  public:
-  explicit WebWorkerStubBase(int route_id);
+  WebWorkerStubBase(int route_id,
+                    const WorkerAppCacheInitInfo& appcache_init_info);
   virtual ~WebWorkerStubBase();
 
   // Invoked when the WebWorkerClientProxy is shutting down.
@@ -24,8 +26,12 @@ class WebWorkerStubBase : public IPC::Channel::Listener {
 
   WebWorkerClientProxy* client() { return &client_; }
 
+  const WorkerAppCacheInitInfo& appcache_init_info() const {
+    return appcache_init_info_;
+  }
  private:
   int route_id_;
+  WorkerAppCacheInitInfo appcache_init_info_;
 
   // WebWorkerClient that responds to outgoing API calls from the worker object.
   WebWorkerClientProxy client_;

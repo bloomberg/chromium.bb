@@ -117,6 +117,11 @@ bool WorkerProcessHost::Init() {
   }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableApplicationCache)) {
+    cmd_line->AppendSwitch(switches::kDisableApplicationCache);
+  }
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableDatabases)) {
     cmd_line->AppendSwitch(switches::kDisableDatabases);
   }
@@ -196,10 +201,16 @@ void WorkerProcessHost::CreateWorker(const WorkerInstance& instance) {
       id(), instance.url());
 
   instances_.push_back(instance);
-  Send(new WorkerProcessMsg_CreateWorker(instance.url(),
-                                         instance.shared(),
-                                         instance.name(),
-                                         instance.worker_route_id()));
+
+  WorkerProcessMsg_CreateWorker_Params params;
+  params.url = instance.url();
+  params.is_shared = instance.shared();
+  params.name = instance.name();
+  params.route_id = instance.worker_route_id();
+  params.creator_process_id = 0;  // TODO(michaeln): Set these param values.
+  params.creator_appcache_host_id = 0;
+  params.shared_worker_appcache_id = 0;
+  Send(new WorkerProcessMsg_CreateWorker(params));
 
   UpdateTitle();
 

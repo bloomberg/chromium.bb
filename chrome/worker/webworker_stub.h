@@ -17,7 +17,8 @@ class WebWorker;
 // appropriate WebWorker APIs.
 class WebWorkerStub : public WebWorkerStubBase {
  public:
-  WebWorkerStub(const GURL& url, int route_id);
+  WebWorkerStub(const GURL& url, int route_id,
+                const WorkerAppCacheInitInfo& appcache_init_info);
 
   // IPC::Channel::Listener implementation.
   virtual void OnMessageReceived(const IPC::Message& message);

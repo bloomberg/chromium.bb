@@ -33,8 +33,9 @@ static bool UrlIsNativeWorker(const GURL& url) {
   return (suffix_index == pos);
 }
 
-WebWorkerStub::WebWorkerStub(const GURL& url, int route_id)
-    : WebWorkerStubBase(route_id) {
+WebWorkerStub::WebWorkerStub(const GURL& url, int route_id,
+                             const WorkerAppCacheInitInfo& appcache_init_info)
+    : WebWorkerStubBase(route_id, appcache_init_info) {
   if (UrlIsNativeWorker(url)) {
     // Launch a native worker.
     impl_ = NativeWebWorkerImpl::create(client());

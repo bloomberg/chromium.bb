@@ -13,11 +13,8 @@
 // WorkerProcess messages
 // These are messages sent from the browser to the worker process.
 IPC_BEGIN_MESSAGES(WorkerProcess)
-  IPC_MESSAGE_CONTROL4(WorkerProcessMsg_CreateWorker,
-                       GURL  /* url */,
-                       bool /* is_shared */,
-                       string16 /* name */,
-                       int  /* route_id */)
+  IPC_MESSAGE_CONTROL1(WorkerProcessMsg_CreateWorker,
+                       WorkerProcessMsg_CreateWorker_Params)
 
   // Note: these Message Port related messages can also be sent to the
   // renderer process.  Putting them here since we don't have a shared place

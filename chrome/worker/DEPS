@@ -4,6 +4,7 @@ include_rules = [
   "+chrome/renderer",
   "+chrome/worker",
   "+sandbox/src",
+  "+webkit/appcache",
   "+webkit/glue",
 ]
 

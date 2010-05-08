@@ -11,14 +11,13 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 
 WebSharedWorkerStub::WebSharedWorkerStub(
-    const string16& name, int route_id)
-    : WebWorkerStubBase(route_id),
+    const string16& name, int route_id,
+    const WorkerAppCacheInitInfo& appcache_init_info)
+    : WebWorkerStubBase(route_id, appcache_init_info),
       name_(name),
       started_(false) {
-
   // TODO(atwilson): Add support for NaCl when they support MessagePorts.
   impl_ = WebKit::WebSharedWorker::create(client());
-
 }
 
 WebSharedWorkerStub::~WebSharedWorkerStub() {
@@ -44,6 +43,10 @@ void WebSharedWorkerStub::OnStartWorkerContext(
   // try to start it simultaneously).
   if (started_)
     return;
+
+  // TODO(michaeln): Fixup this callsite once
+  // https://bugs.webkit.org/show_bug.cgi?id=38605
+  // has landed and rolled into view.
   impl_->startWorkerContext(url, name_, user_agent, source_code);
   started_ = true;
 

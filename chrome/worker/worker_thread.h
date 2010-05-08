@@ -10,10 +10,12 @@
 #include "chrome/common/child_thread.h"
 
 class GURL;
+class AppCacheDispatcher;
 class DBMessageFilter;
 class WebDatabaseObserverImpl;
 class WebWorkerStubBase;
 class WorkerWebKitClientImpl;
+struct WorkerProcessMsg_CreateWorker_Params;
 
 class WorkerThread : public ChildThread {
  public:
@@ -27,17 +29,19 @@ class WorkerThread : public ChildThread {
   void AddWorkerStub(WebWorkerStubBase* stub);
   void RemoveWorkerStub(WebWorkerStubBase* stub);
 
- private:
-  scoped_ptr<WebDatabaseObserverImpl> web_database_observer_impl_;
+  AppCacheDispatcher* appcache_dispatcher() {
+    return appcache_dispatcher_.get();
+  }
 
+ private:
   virtual void OnControlMessageReceived(const IPC::Message& msg);
   virtual void OnChannelError();
 
-  void OnCreateWorker(
-      const GURL& url, bool is_shared, const string16& name, int route_id);
+  void OnCreateWorker(const WorkerProcessMsg_CreateWorker_Params& params);
 
   scoped_ptr<WorkerWebKitClientImpl> webkit_client_;
-
+  scoped_ptr<AppCacheDispatcher> appcache_dispatcher_;
+  scoped_ptr<WebDatabaseObserverImpl> web_database_observer_impl_;
   scoped_refptr<DBMessageFilter> db_message_filter_;
 
   typedef std::set<WebWorkerStubBase*> WorkerStubsList;

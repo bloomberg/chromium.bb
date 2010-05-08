@@ -17,7 +17,8 @@ class WebSharedWorker;
 // appropriate WebSharedWorker APIs.
 class WebSharedWorkerStub : public WebWorkerStubBase {
  public:
-  WebSharedWorkerStub(const string16& name, int route_id);
+  WebSharedWorkerStub(const string16& name, int route_id,
+                      const WorkerAppCacheInitInfo& appcache_init_info);
 
   // IPC::Channel::Listener implementation.
   virtual void OnMessageReceived(const IPC::Message& message);

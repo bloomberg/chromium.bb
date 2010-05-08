@@ -71,10 +71,7 @@ class WebWorkerClientProxy : public WebKit::WebWorkerClient {
   }
 
   virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
-      WebKit::WebApplicationCacheHostClient*) {
-    // TODO(michaeln): Create and initialize an appcache host for our worker.
-    return NULL;
-  }
+      WebKit::WebApplicationCacheHostClient* client);
 
   void EnsureWorkerContextTerminates();
 
@@ -82,6 +79,7 @@ class WebWorkerClientProxy : public WebKit::WebWorkerClient {
   bool Send(IPC::Message* message);
 
   int route_id_;
+  int appcache_host_id_;
   WebWorkerStubBase* stub_;
   ScopedRunnableMethodFactory<WebWorkerClientProxy> kill_process_factory_;
 

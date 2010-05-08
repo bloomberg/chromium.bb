@@ -8,8 +8,10 @@
 #include "chrome/common/child_process.h"
 #include "chrome/worker/worker_thread.h"
 
-WebWorkerStubBase::WebWorkerStubBase(int route_id)
+WebWorkerStubBase::WebWorkerStubBase(
+    int route_id, const WorkerAppCacheInitInfo& appcache_init_info)
     : route_id_(route_id),
+      appcache_init_info_(appcache_init_info),
       ALLOW_THIS_IN_INITIALIZER_LIST(client_(route_id, this)) {
 
   WorkerThread* workerThread = WorkerThread::current();

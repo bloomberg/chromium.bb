@@ -660,6 +660,8 @@
         'worker/worker_main.cc',
         'worker/worker_thread.cc',
         'worker/worker_thread.h',
+        'worker/worker_webapplicationcachehost_impl.cc',
+        'worker/worker_webapplicationcachehost_impl.h',
         'worker/worker_webkitclient_impl.cc',
         'worker/worker_webkitclient_impl.h',
       ],
