@@ -296,9 +296,9 @@ void AutocompleteEditViewGtk::Init() {
   g_signal_connect(text_view_, "backspace",
                    G_CALLBACK(&HandleBackSpaceThunk), this);
   g_signal_connect(text_view_, "copy-clipboard",
-                   G_CALLBACK(&HandleCopyOrCutClipboardThunk), this);
+                   G_CALLBACK(&HandleCopyClipboardThunk), this);
   g_signal_connect(text_view_, "cut-clipboard",
-                   G_CALLBACK(&HandleCopyOrCutClipboardThunk), this);
+                   G_CALLBACK(&HandleCutClipboardThunk), this);
   g_signal_connect(text_view_, "paste-clipboard",
                    G_CALLBACK(&HandlePasteClipboardThunk), this);
   g_signal_connect_after(text_view_, "expose-event",
@@ -1186,7 +1186,15 @@ void AutocompleteEditViewGtk::HandleViewMoveFocus(GtkWidget* widget,
   // Propagate the signal so that focus can be moved as normal.
 }
 
-void AutocompleteEditViewGtk::HandleCopyOrCutClipboard(GtkWidget* sender) {
+void AutocompleteEditViewGtk::HandleCopyClipboard(GtkWidget* sender) {
+  HandleCopyOrCutClipboard(true);
+}
+
+void AutocompleteEditViewGtk::HandleCutClipboard(GtkWidget* sender) {
+  HandleCopyOrCutClipboard(false);
+}
+
+void AutocompleteEditViewGtk::HandleCopyOrCutClipboard(bool copy) {
   // On copy or cut, we manually update the PRIMARY selection to contain the
   // highlighted text.  This matches Firefox -- we highlight the URL but don't
   // update PRIMARY on Ctrl-L, so Ctrl-L, Ctrl-C and then middle-click is a
@@ -1217,8 +1225,9 @@ void AutocompleteEditViewGtk::HandleCopyOrCutClipboard(GtkWidget* sender) {
     scw.WriteHyperlink(UTF16ToUTF8(EscapeForHTML(text16)), url.spec());
 
     // Stop propagating the signal.
-    static guint signal_id =
-        g_signal_lookup("copy-clipboard", GTK_TYPE_TEXT_VIEW);
+    static guint signal_id = copy ?
+        g_signal_lookup("copy-clipboard", GTK_TYPE_TEXT_VIEW) :
+        g_signal_lookup("cut-clipboard", GTK_TYPE_TEXT_VIEW);
     g_signal_stop_emission(text_view_, signal_id, 0);
   }
 }

@@ -179,7 +179,8 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
                        GdkDragContext*, gint, gint, GtkSelectionData*,
                        guint, guint);
   CHROMEGTK_CALLBACK_0(AutocompleteEditViewGtk, void, HandleBackSpace);
-  CHROMEGTK_CALLBACK_0(AutocompleteEditViewGtk, void, HandleCopyOrCutClipboard);
+  CHROMEGTK_CALLBACK_0(AutocompleteEditViewGtk, void, HandleCopyClipboard);
+  CHROMEGTK_CALLBACK_0(AutocompleteEditViewGtk, void, HandleCutClipboard);
   CHROMEGTK_CALLBACK_0(AutocompleteEditViewGtk, void, HandlePasteClipboard);
   CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, gboolean, HandleExposeEvent,
                        GdkEventExpose*);
@@ -194,6 +195,8 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   void ClipboardGetSelection(GtkClipboard* clipboard,
                              GtkSelectionData* selection_data,
                              guint info);
+
+  void HandleCopyOrCutClipboard(bool copy);
 
   // Take control of the PRIMARY selection clipboard with |text|. Use
   // |text_buffer_| as the owner, so that this doesn't remove the selection on
