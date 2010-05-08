@@ -33,7 +33,7 @@ class PrefService;
 ///////////////////////////////////////////////////////////////////////////////
 // AutoFillProfilesView
 //
-//  The contents of the "Autofill profiles" dialog window.
+//  The contents of the "AutoFill profiles" dialog window.
 //
 // Overview: has following sub-views:
 // AutoFillScrollView - scroll view that has all of the addresses and credit

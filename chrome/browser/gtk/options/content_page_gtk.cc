@@ -122,15 +122,11 @@ ContentPageGtk::ContentPageGtk(Profile* profile)
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
   ObserveThemeChanged();
-
-  personal_data_ = profile->GetPersonalDataManager();
 }
 
 ContentPageGtk::~ContentPageGtk() {
   if (sync_service_)
     sync_service_->RemoveObserver(this);
-  if (personal_data_)
-    personal_data_->RemoveObserver(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -207,15 +203,6 @@ void ContentPageGtk::ObserveThemeChanged() {
 
   bool is_classic_theme = !is_gtk_theme && provider->GetThemeID().empty();
   gtk_widget_set_sensitive(themes_reset_button_, !is_classic_theme);
-}
-
-void ContentPageGtk::OnPersonalDataLoaded() {
-  DCHECK(personal_data_);
-  // We might have been alerted that the PersonalDataManager has loaded, so
-  // remove ourselves as observer.
-  personal_data_->RemoveObserver(this);
-
-  ShowAutoFillDialog(NULL, personal_data_, profile(), NULL, NULL);
 }
 
 GtkWidget* ContentPageGtk::InitPasswordSavingGroup() {
@@ -462,13 +449,8 @@ void ContentPageGtk::UpdateSyncControls() {
 }
 
 void ContentPageGtk::OnAutoFillButtonClicked(GtkWidget* widget) {
-  DCHECK(personal_data_);
-  // If the personal data manager has not loaded the data yet, set ourselves as
-  // its observer so that we can listen for the OnPersonalDataLoaded signal.
-  if (!personal_data_->IsDataLoaded())
-    personal_data_->SetObserver(this);
-  else
-    OnPersonalDataLoaded();
+  ShowAutoFillDialog(
+      NULL, profile()->GetPersonalDataManager(), profile(), NULL, NULL);
 }
 
 void ContentPageGtk::OnImportButtonClicked(GtkWidget* widget) {

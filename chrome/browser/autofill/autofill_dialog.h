@@ -30,8 +30,10 @@ class AutoFillDialogObserver {
 // Shows the AutoFill dialog, which allows the user to edit profile information.
 // |profile| is profile from which you can get vectors of of autofill profiles
 // that contains the current profile information and credit cards.
-// The dialog fills out the profile fields using this data. |observer| will be
-// notified by OnAutoFillDialogAccept when the user has applied changes.
+// The dialog fills out the profile fields using this data.
+//
+// |observer| will be notified by OnAutoFillDialogAccept when the user has
+// applied changes.  May not be NULL.
 //
 // The |parent| parameter (currently only used on Windows) specifies the parent
 // view in the view hierarchy.  May be NULL on Mac and gtk.

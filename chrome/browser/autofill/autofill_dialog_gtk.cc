@@ -237,15 +237,17 @@ GtkWidget* FormTableAddLabelEntry(
 //
 // The contents of the AutoFill dialog.  This dialog allows users to add, edit
 // and remove AutoFill profiles.
-class AutoFillDialog {
+class AutoFillDialog : public PersonalDataManager::Observer {
  public:
-  AutoFillDialog(Profile* profile,
-                 AutoFillDialogObserver* observer,
+  AutoFillDialog(AutoFillDialogObserver* observer,
+                 PersonalDataManager* personal_data_manager,
+                 PrefService* pref_service,
                  AutoFillProfile* imported_profile,
-                 CreditCard* imported_credit_card,
-                 const std::vector<AutoFillProfile*>& profiles,
-                 const std::vector<CreditCard*>& credit_cards);
-  ~AutoFillDialog() {}
+                 CreditCard* imported_credit_card);
+  ~AutoFillDialog();
+
+  // PersonalDataManager::Observer implementation:
+  void OnPersonalDataLoaded();
 
   // Shows the AutoFill dialog.
   void Show();
@@ -290,6 +292,12 @@ class AutoFillDialog {
   // Opens the 'Learn more' link in a new foreground tab.
   void OnLinkActivated();
 
+  // Loads AutoFill profiles and credit cards using the PersonalDataManager.
+  void LoadAutoFillData();
+
+  // Creates the dialog UI widgets.
+  void InitializeWidgets();
+
   // Initializes the group widgets and returns their container.  |name_id| is
   // the resource ID of the group label.  |button_id| is the resource name of
   // the button label.  |clicked_callback| is a callback that handles the
@@ -319,8 +327,21 @@ class AutoFillDialog {
   // Adds a new credit card filled out with information from |credit_card|.
   void AddCreditCard(const CreditCard& credit_card, bool is_default);
 
-  // The browser profile.  Unowned pointer, may not be NULL.
-  Profile* profile_;
+  // Our observer.  May not be NULL.
+  AutoFillDialogObserver* observer_;
+
+  // The personal data manager, used to load AutoFill profiles and credit cards.
+  // Unowned pointer, may not be NULL.
+  PersonalDataManager* personal_data_;
+
+  // The preference service. Unowned pointer, may not be NULL.
+  PrefService* pref_service_;
+
+  // The imported profile.  May be NULL.
+  AutoFillProfile* imported_profile_;
+
+  // The imported credit card.  May be NULL.
+  CreditCard* imported_credit_card_;
 
   // The list of current AutoFill profiles.
   std::vector<AutoFillProfile> profiles_;
@@ -343,124 +364,46 @@ class AutoFillDialog {
   // The credit cards group.
   GtkWidget* creditcards_vbox_;
 
-  // Our observer.
-  AutoFillDialogObserver* observer_;
-
   DISALLOW_COPY_AND_ASSIGN(AutoFillDialog);
 };
 
 // The singleton AutoFill dialog object.
 static AutoFillDialog* dialog = NULL;
 
-AutoFillDialog::AutoFillDialog(Profile* profile,
-                               AutoFillDialogObserver* observer,
+AutoFillDialog::AutoFillDialog(AutoFillDialogObserver* observer,
+                               PersonalDataManager* personal_data_manager,
+                               PrefService* pref_service,
                                AutoFillProfile* imported_profile,
-                               CreditCard* imported_credit_card,
-                               const std::vector<AutoFillProfile*>& profiles,
-                               const std::vector<CreditCard*>& credit_cards)
-    : profile_(profile),
-      observer_(observer) {
-  DCHECK(profile);
-  DCHECK(observer);
+                               CreditCard* imported_credit_card)
+    : observer_(observer),
+      personal_data_(personal_data_manager),
+      pref_service_(pref_service),
+      imported_profile_(imported_profile),
+      imported_credit_card_(imported_credit_card) {
+  DCHECK(observer_);
+  DCHECK(personal_data_);
+  DCHECK(pref_service_);
 
-  if (imported_profile) {
-    profiles_.push_back(*imported_profile);
-  } else {
-    // Copy the profiles.
-    for (std::vector<AutoFillProfile*>::const_iterator iter = profiles.begin();
-       iter != profiles.end(); ++iter)
-    profiles_.push_back(**iter);
-  }
-
-  if (imported_credit_card) {
-    credit_cards_.push_back(*imported_credit_card);
-  } else {
-    // Copy the credit cards.
-    for (std::vector<CreditCard*>::const_iterator iter = credit_cards.begin();
-       iter != credit_cards.end(); ++iter)
-    credit_cards_.push_back(**iter);
-  }
-
-  dialog_ = gtk_dialog_new_with_buttons(
-      l10n_util::GetStringUTF8(IDS_AUTOFILL_DIALOG_TITLE).c_str(),
-      // AutoFill dialog is shared between all browser windows.
-      NULL,
-      // Non-modal.
-      GTK_DIALOG_NO_SEPARATOR,
-      GTK_STOCK_APPLY,
-      GTK_RESPONSE_APPLY,
-      GTK_STOCK_CANCEL,
-      GTK_RESPONSE_CANCEL,
-      GTK_STOCK_OK,
-      GTK_RESPONSE_OK,
-      NULL);
-
-  // Allow browser windows to go in front of the AutoFill dialog in Metacity.
-  gtk_window_set_type_hint(GTK_WINDOW(dialog_), GDK_WINDOW_TYPE_HINT_NORMAL);
-  gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
-                      gtk_util::kContentAreaSpacing);
-  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), this);
-  g_signal_connect(dialog_, "destroy", G_CALLBACK(OnDestroy), this);
-
-  // Allow the contents to be scrolled.
-  GtkWidget* scrolled_window = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window),
-                                 GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), scrolled_window);
-
-  // We create an event box so that we can color the frame background white.
-  GtkWidget* frame_event_box = gtk_event_box_new();
-  SetWhiteBackground(frame_event_box);
-  gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled_window),
-                                        frame_event_box);
-
-  // The frame outline of the content area.
-  GtkWidget* frame = gtk_frame_new(NULL);
-  gtk_container_add(GTK_CONTAINER(frame_event_box), frame);
-
-  // The content vbox.
-  GtkWidget* outer_vbox = gtk_vbox_new(false, 0);
-  gtk_box_set_spacing(GTK_BOX(outer_vbox), gtk_util::kContentAreaSpacing);
-  gtk_container_add(GTK_CONTAINER(frame), outer_vbox);
-
-  addresses_vbox_ = InitGroup(IDS_AUTOFILL_ADDRESSES_GROUP_NAME,
-                              IDS_AUTOFILL_ADD_ADDRESS_BUTTON,
-                              G_CALLBACK(OnAddAddressClicked));
-  gtk_box_pack_start_defaults(GTK_BOX(outer_vbox), addresses_vbox_);
-
-  string16 default_profile = WideToUTF16Hack(
-      profile->GetPrefs()->GetString(prefs::kAutoFillDefaultProfile));
-  for (std::vector<AutoFillProfile>::const_iterator iter = profiles_.begin();
-       iter != profiles_.end(); ++iter) {
-    AddAddress(*iter, iter->Label() == default_profile);
-  }
-
-  creditcards_vbox_ = InitGroup(IDS_AUTOFILL_CREDITCARDS_GROUP_NAME,
-                                IDS_AUTOFILL_ADD_CREDITCARD_BUTTON,
-                                G_CALLBACK(OnAddCreditCardClicked));
-  gtk_box_pack_start_defaults(GTK_BOX(outer_vbox), creditcards_vbox_);
-
-  string16 default_creditcard = WideToUTF16Hack(
-      profile->GetPrefs()->GetString(prefs::kAutoFillDefaultCreditCard));
-  for (std::vector<CreditCard>::const_iterator iter = credit_cards_.begin();
-       iter != credit_cards_.end(); ++iter) {
-    AddCreditCard(*iter, iter->Label() == default_creditcard);
-  }
-
-  GtkWidget* link = gtk_chrome_link_button_new(
-      l10n_util::GetStringUTF8(IDS_AUTOFILL_LEARN_MORE).c_str());
-  gtk_dialog_add_action_widget(GTK_DIALOG(dialog_), link,
-                               kAutoFillDialogLearnMoreLink);
-
-  // Setting the link widget to secondary positions the button on the left side
-  // of the action area (vice versa for RTL layout).
-  gtk_button_box_set_child_secondary(
-      GTK_BUTTON_BOX(GTK_DIALOG(dialog_)->action_area), link, TRUE);
+  InitializeWidgets();
+  LoadAutoFillData();
 
   gtk_util::ShowDialogWithLocalizedSize(dialog_,
                                         IDS_AUTOFILL_DIALOG_WIDTH_CHARS,
                                         IDS_AUTOFILL_DIALOG_HEIGHT_LINES,
                                         true);
+}
+
+AutoFillDialog::~AutoFillDialog() {
+  // Removes observer if we are observing Profile load. Does nothing otherwise.
+  if (personal_data_)
+    personal_data_->RemoveObserver(this);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// PersonalDataManager::Observer implementation:
+void  AutoFillDialog::OnPersonalDataLoaded() {
+  personal_data_->RemoveObserver(this);
+  LoadAutoFillData();
 }
 
 void AutoFillDialog::Show() {
@@ -556,7 +499,7 @@ void AutoFillDialog::OnResponse(GtkDialog* dialog, gint response_id,
       // Set this profile as the default profile if the check button is toggled.
       if (gtk_toggle_button_get_active(
           GTK_TOGGLE_BUTTON(iter->default_profile))) {
-        autofill_dialog->profile_->GetPrefs()->SetString(
+        autofill_dialog->pref_service_->SetString(
             prefs::kAutoFillDefaultProfile, UTF16ToWideHack(profile.Label()));
       }
 
@@ -574,7 +517,7 @@ void AutoFillDialog::OnResponse(GtkDialog* dialog, gint response_id,
       // toggled.
       if (gtk_toggle_button_get_active(
           GTK_TOGGLE_BUTTON(iter->default_creditcard))) {
-        autofill_dialog->profile_->GetPrefs()->SetString(
+        autofill_dialog->pref_service_->SetString(
             prefs::kAutoFillDefaultCreditCard,
             UTF16ToWideHack(credit_card.Label()));
       }
@@ -781,6 +724,119 @@ void AutoFillDialog::OnLinkActivated() {
   Browser* browser = BrowserList::GetLastActive();
   browser->OpenURL(GURL(kAutoFillLearnMoreUrl), GURL(), NEW_FOREGROUND_TAB,
                    PageTransition::TYPED);
+}
+
+void AutoFillDialog::LoadAutoFillData() {
+  if (!personal_data_->IsDataLoaded()) {
+    personal_data_->SetObserver(this);
+    return;
+  }
+
+  if (imported_profile_) {
+    profiles_.push_back(*imported_profile_);
+    AddAddress(*imported_profile_, true);
+  } else {
+    string16 default_profile = WideToUTF16Hack(
+        pref_service_->GetString(prefs::kAutoFillDefaultProfile));
+
+    for (std::vector<AutoFillProfile*>::const_iterator iter =
+             personal_data_->profiles().begin();
+         iter != personal_data_->profiles().end(); ++iter) {
+      // The profile list is terminated by a NULL entry;
+      if (!*iter)
+        break;
+
+      AutoFillProfile* profile = *iter;
+      profiles_.push_back(*profile);
+      AddAddress(*profile, profile->Label() == default_profile);
+    }
+  }
+
+  if (imported_credit_card_) {
+    credit_cards_.push_back(*imported_credit_card_);
+    AddCreditCard(*imported_credit_card_, true);
+  } else {
+    string16 default_creditcard = WideToUTF16Hack(
+        pref_service_->GetString(prefs::kAutoFillDefaultCreditCard));
+
+    for (std::vector<CreditCard*>::const_iterator iter =
+             personal_data_->credit_cards().begin();
+         iter != personal_data_->credit_cards().end(); ++iter) {
+      // The credit card list is terminated by a NULL entry;
+      if (!*iter)
+        break;
+
+      CreditCard* credit_card = *iter;
+      credit_cards_.push_back(*credit_card);
+      AddCreditCard(*credit_card, credit_card->Label() == default_creditcard);
+    }
+  }
+}
+
+void AutoFillDialog::InitializeWidgets() {
+  dialog_ = gtk_dialog_new_with_buttons(
+      l10n_util::GetStringUTF8(IDS_AUTOFILL_DIALOG_TITLE).c_str(),
+      // AutoFill dialog is shared between all browser windows.
+      NULL,
+      // Non-modal.
+      GTK_DIALOG_NO_SEPARATOR,
+      GTK_STOCK_APPLY,
+      GTK_RESPONSE_APPLY,
+      GTK_STOCK_CANCEL,
+      GTK_RESPONSE_CANCEL,
+      GTK_STOCK_OK,
+      GTK_RESPONSE_OK,
+      NULL);
+
+  // Allow browser windows to go in front of the AutoFill dialog in Metacity.
+  gtk_window_set_type_hint(GTK_WINDOW(dialog_), GDK_WINDOW_TYPE_HINT_NORMAL);
+  gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
+                      gtk_util::kContentAreaSpacing);
+  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), this);
+  g_signal_connect(dialog_, "destroy", G_CALLBACK(OnDestroy), this);
+
+  // Allow the contents to be scrolled.
+  GtkWidget* scrolled_window = gtk_scrolled_window_new(NULL, NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window),
+                                 GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+  gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), scrolled_window);
+
+  // We create an event box so that we can color the frame background white.
+  GtkWidget* frame_event_box = gtk_event_box_new();
+  SetWhiteBackground(frame_event_box);
+  gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled_window),
+                                        frame_event_box);
+
+  // The frame outline of the content area.
+  GtkWidget* frame = gtk_frame_new(NULL);
+  gtk_container_add(GTK_CONTAINER(frame_event_box), frame);
+
+  // The content vbox.
+  GtkWidget* outer_vbox = gtk_vbox_new(false, 0);
+  gtk_box_set_spacing(GTK_BOX(outer_vbox), gtk_util::kContentAreaSpacing);
+  gtk_container_add(GTK_CONTAINER(frame), outer_vbox);
+
+  addresses_vbox_ = InitGroup(IDS_AUTOFILL_ADDRESSES_GROUP_NAME,
+                              IDS_AUTOFILL_ADD_ADDRESS_BUTTON,
+                              G_CALLBACK(OnAddAddressClicked));
+  gtk_box_pack_start_defaults(GTK_BOX(outer_vbox), addresses_vbox_);
+
+
+
+  creditcards_vbox_ = InitGroup(IDS_AUTOFILL_CREDITCARDS_GROUP_NAME,
+                                IDS_AUTOFILL_ADD_CREDITCARD_BUTTON,
+                                G_CALLBACK(OnAddCreditCardClicked));
+  gtk_box_pack_start_defaults(GTK_BOX(outer_vbox), creditcards_vbox_);
+
+  GtkWidget* link = gtk_chrome_link_button_new(
+      l10n_util::GetStringUTF8(IDS_AUTOFILL_LEARN_MORE).c_str());
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog_), link,
+                               kAutoFillDialogLearnMoreLink);
+
+  // Setting the link widget to secondary positions the button on the left side
+  // of the action area (vice versa for RTL layout).
+  gtk_button_box_set_child_secondary(
+      GTK_BUTTON_BOX(GTK_DIALOG(dialog_)->action_area), link, TRUE);
 }
 
 GtkWidget* AutoFillDialog::InitGroup(int name_id,
@@ -1083,19 +1139,19 @@ void ShowAutoFillDialog(gfx::NativeView parent,
                         Profile* profile,
                         AutoFillProfile* imported_profile,
                         CreditCard* imported_credit_card) {
+  DCHECK(profile);
+
   // It's possible we haven't shown the InfoBar yet, but if the user is in the
   // AutoFill dialog, she doesn't need to be asked to enable or disable
   // AutoFill.
   profile->GetPrefs()->SetBoolean(prefs::kAutoFillInfoBarShown, true);
 
   if (!dialog) {
-    dialog = new AutoFillDialog(
-        profile,
-        observer,
-        imported_profile,
-        imported_credit_card,
-        profile->GetPersonalDataManager()->profiles(),
-        profile->GetPersonalDataManager()->credit_cards());
+    dialog = new AutoFillDialog(observer,
+                                profile->GetPersonalDataManager(),
+                                profile->GetPrefs(),
+                                imported_profile,
+                                imported_credit_card);
   }
   dialog->Show();
 }
