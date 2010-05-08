@@ -20,6 +20,10 @@ class BufferManagerTest : public testing::Test {
   virtual void TearDown() {
   }
 
+  GLenum GetTarget(const BufferManager::BufferInfo* info) const {
+    return info->target();
+  }
+
   BufferManager manager_;
 };
 
@@ -33,17 +37,17 @@ TEST_F(BufferManagerTest, Basic) {
   // Check buffer got created.
   BufferManager::BufferInfo* info1 = manager_.GetBufferInfo(kClientBuffer1Id);
   ASSERT_TRUE(info1 != NULL);
-  EXPECT_EQ(0u, info1->target());
+  EXPECT_EQ(0u, GetTarget(info1));
   EXPECT_EQ(0, info1->size());
   EXPECT_FALSE(info1->IsDeleted());
   EXPECT_EQ(kServiceBuffer1Id, info1->service_id());
   GLuint client_id = 0;
   EXPECT_TRUE(manager_.GetClientId(info1->service_id(), &client_id));
   EXPECT_EQ(kClientBuffer1Id, client_id);
-  info1->set_target(GL_ELEMENT_ARRAY_BUFFER);
-  EXPECT_EQ(static_cast<GLenum>(GL_ELEMENT_ARRAY_BUFFER), info1->target());
+  manager_.SetTarget(info1, GL_ELEMENT_ARRAY_BUFFER);
+  EXPECT_EQ(static_cast<GLenum>(GL_ELEMENT_ARRAY_BUFFER), GetTarget(info1));
   // Check we and set its size.
-  info1->SetSize(kBuffer1Size);
+  manager_.SetSize(info1, kBuffer1Size);
   EXPECT_EQ(kBuffer1Size, info1->size());
   // Check we get nothing for a non-existent buffer.
   EXPECT_TRUE(manager_.GetBufferInfo(kClientBuffer2Id) == NULL);
@@ -61,8 +65,8 @@ TEST_F(BufferManagerTest, SetRange) {
   manager_.CreateBufferInfo(kClientBufferId, kServiceBufferId);
   BufferManager::BufferInfo* info = manager_.GetBufferInfo(kClientBufferId);
   ASSERT_TRUE(info != NULL);
-  info->set_target(GL_ELEMENT_ARRAY_BUFFER);
-  info->SetSize(sizeof(data));
+  manager_.SetTarget(info, GL_ELEMENT_ARRAY_BUFFER);
+  manager_.SetSize(info, sizeof(data));
   EXPECT_TRUE(info->SetRange(0, sizeof(data), data));
   EXPECT_TRUE(info->SetRange(sizeof(data), 0, data));
   EXPECT_FALSE(info->SetRange(sizeof(data), 1, data));
@@ -77,8 +81,8 @@ TEST_F(BufferManagerTest, GetMaxValueForRangeUint8) {
   manager_.CreateBufferInfo(kClientBufferId, kServiceBufferId);
   BufferManager::BufferInfo* info = manager_.GetBufferInfo(kClientBufferId);
   ASSERT_TRUE(info != NULL);
-  info->set_target(GL_ELEMENT_ARRAY_BUFFER);
-  info->SetSize(sizeof(data));
+  manager_.SetTarget(info, GL_ELEMENT_ARRAY_BUFFER);
+  manager_.SetSize(info, sizeof(data));
   EXPECT_TRUE(info->SetRange(0, sizeof(data), data));
   GLuint max_value;
   // Check entire range succeeds.
@@ -107,8 +111,8 @@ TEST_F(BufferManagerTest, GetMaxValueForRangeUint16) {
   manager_.CreateBufferInfo(kClientBufferId, kServiceBufferId);
   BufferManager::BufferInfo* info = manager_.GetBufferInfo(kClientBufferId);
   ASSERT_TRUE(info != NULL);
-  info->set_target(GL_ELEMENT_ARRAY_BUFFER);
-  info->SetSize(sizeof(data));
+  manager_.SetTarget(info, GL_ELEMENT_ARRAY_BUFFER);
+  manager_.SetSize(info, sizeof(data));
   EXPECT_TRUE(info->SetRange(0, sizeof(data), data));
   GLuint max_value;
   // Check entire range succeeds.
@@ -139,8 +143,8 @@ TEST_F(BufferManagerTest, GetMaxValueForRangeUint32) {
   manager_.CreateBufferInfo(kClientBufferId, kServiceBufferId);
   BufferManager::BufferInfo* info = manager_.GetBufferInfo(kClientBufferId);
   ASSERT_TRUE(info != NULL);
-  info->set_target(GL_ELEMENT_ARRAY_BUFFER);
-  info->SetSize(sizeof(data));
+  manager_.SetTarget(info, GL_ELEMENT_ARRAY_BUFFER);
+  manager_.SetSize(info, sizeof(data));
   EXPECT_TRUE(info->SetRange(0, sizeof(data), data));
   GLuint max_value;
   // Check entire range succeeds.

@@ -1340,6 +1340,10 @@ void GLES2Implementation::BindBuffer(GLenum target, GLuint buffer) {
 }
 
 void GLES2Implementation::DeleteBuffers(GLsizei n, const GLuint* buffers) {
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE, "glDeleteBuffers: n < 0");
+    return;
+  }
   buffer_id_handler_->FreeIds(n, buffers);
   for (GLsizei ii = 0; ii < n; ++ii) {
     if (buffers[ii] == bound_array_buffer_id_) {

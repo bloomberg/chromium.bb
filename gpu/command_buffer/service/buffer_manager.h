@@ -30,27 +30,17 @@ class BufferManager {
     explicit BufferInfo(GLuint service_id)
         : service_id_(service_id),
           target_(0),
-          size_(0) {
+          size_(0),
+          shadowed_(false) {
     }
 
     GLuint service_id() const {
       return service_id_;
     }
 
-    GLenum target() const {
-      return target_;
-    }
-
-    void set_target(GLenum target) {
-      DCHECK_EQ(target_, 0u);  // you can only set this once.
-      target_ = target;
-    }
-
     GLsizeiptr size() const {
       return size_;
     }
-
-    void SetSize(GLsizeiptr size);
 
     // Sets a range of data for this buffer. Returns false if the offset or size
     // is out of range.
@@ -70,6 +60,7 @@ class BufferManager {
 
    private:
     friend class BufferManager;
+    friend class BufferManagerTest;
     friend class base::RefCounted<BufferInfo>;
 
     // Represents a range in a buffer.
@@ -102,11 +93,26 @@ class BufferManager {
 
     ~BufferInfo() { }
 
+    GLenum target() const {
+      return target_;
+    }
+
+    void set_target(GLenum target) {
+      DCHECK_EQ(target_, 0u);  // you can only set this once.
+      target_ = target;
+    }
+
+    bool shadowed() const {
+      return shadowed_;
+    }
+
     void MarkAsDeleted() {
       service_id_ = 0;
       shadow_.reset();
       ClearCache();
     }
+
+    void SetSize(GLsizeiptr size, bool shadow);
 
     // Clears any cache of index ranges.
     void ClearCache();
@@ -122,8 +128,11 @@ class BufferManager {
     // Size of buffer.
     GLsizeiptr size_;
 
+    // Whether or not the data is shadowed.
+    bool shadowed_;
+
     // A copy of the data in the buffer. This data is only kept if the target
-    // is GL_ELEMENT_BUFFER_ARRAY
+    // is backed_ = true.
     scoped_array<int8> shadow_;
 
     // A map of ranges to the highest value in that range of a certain type.
@@ -131,7 +140,9 @@ class BufferManager {
     RangeToMaxValueMap range_set_;
   };
 
-  BufferManager() { }
+  BufferManager()
+      : allow_buffers_on_multiple_targets_(false) {
+  }
 
   // Creates a BufferInfo for the given buffer.
   void CreateBufferInfo(GLuint client_id, GLuint service_id);
@@ -145,11 +156,24 @@ class BufferManager {
   // Gets a client id for a given service id.
   bool GetClientId(GLuint service_id, GLuint* client_id) const;
 
+  // Sets the size of a buffer.
+  void SetSize(BufferInfo* info, GLsizeiptr size);
+
+  // Sets the target of a buffer. Returns false if the target can not be set.
+  bool SetTarget(BufferInfo* info, GLenum target);
+
+  void set_allow_buffers_on_multiple_targets(bool allow) {
+    allow_buffers_on_multiple_targets_ = allow;
+  }
+
  private:
   // Info for each buffer in the system.
   // TODO(gman): Choose a faster container.
   typedef std::map<GLuint, BufferInfo::Ref> BufferInfoMap;
   BufferInfoMap buffer_infos_;
+
+  // Whether or not buffers can be bound to multiple targets.
+  bool allow_buffers_on_multiple_targets_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferManager);
 };

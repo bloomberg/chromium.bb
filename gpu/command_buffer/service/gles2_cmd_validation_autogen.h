@@ -13,6 +13,7 @@ bool ValidateGLenumBufferTarget(GLenum value);
 bool ValidateGLenumBufferUsage(GLenum value);
 bool ValidateGLenumCapability(GLenum value);
 bool ValidateGLenumCmpFunction(GLenum value);
+bool ValidateGLenumCommandBufferState(GLenum value);
 bool ValidateGLenumDrawMode(GLenum value);
 bool ValidateGLenumDstBlendFactor(GLenum value);
 bool ValidateGLenumEquation(GLenum value);
