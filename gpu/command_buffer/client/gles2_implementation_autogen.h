@@ -167,10 +167,6 @@ void CullFace(GLenum mode) {
 }
 
 void DeleteFramebuffers(GLsizei n, const GLuint* framebuffers) {
-  if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glDeleteFramebuffers: n < 0");
-    return;
-  }
   framebuffer_id_handler_->FreeIds(n, framebuffers);
   helper_->DeleteFramebuffersImmediate(n, framebuffers);
 }
@@ -181,10 +177,6 @@ void DeleteProgram(GLuint program) {
 }
 
 void DeleteRenderbuffers(GLsizei n, const GLuint* renderbuffers) {
-  if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glDeleteRenderbuffers: n < 0");
-    return;
-  }
   renderbuffer_id_handler_->FreeIds(n, renderbuffers);
   helper_->DeleteRenderbuffersImmediate(n, renderbuffers);
 }
@@ -195,10 +187,6 @@ void DeleteShader(GLuint shader) {
 }
 
 void DeleteTextures(GLsizei n, const GLuint* textures) {
-  if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glDeleteTextures: n < 0");
-    return;
-  }
   texture_id_handler_->FreeIds(n, textures);
   helper_->DeleteTexturesImmediate(n, textures);
 }
@@ -252,10 +240,6 @@ void FrontFace(GLenum mode) {
 }
 
 void GenBuffers(GLsizei n, GLuint* buffers) {
-  if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glGenBuffers: n < 0");
-    return;
-  }
   buffer_id_handler_->MakeIds(0, n, buffers);
   helper_->GenBuffersImmediate(n, buffers);
 }
@@ -265,28 +249,16 @@ void GenerateMipmap(GLenum target) {
 }
 
 void GenFramebuffers(GLsizei n, GLuint* framebuffers) {
-  if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glGenFramebuffers: n < 0");
-    return;
-  }
   framebuffer_id_handler_->MakeIds(0, n, framebuffers);
   helper_->GenFramebuffersImmediate(n, framebuffers);
 }
 
 void GenRenderbuffers(GLsizei n, GLuint* renderbuffers) {
-  if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glGenRenderbuffers: n < 0");
-    return;
-  }
   renderbuffer_id_handler_->MakeIds(0, n, renderbuffers);
   helper_->GenRenderbuffersImmediate(n, renderbuffers);
 }
 
 void GenTextures(GLsizei n, GLuint* textures) {
-  if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glGenTextures: n < 0");
-    return;
-  }
   texture_id_handler_->MakeIds(0, n, textures);
   helper_->GenTexturesImmediate(n, textures);
 }
@@ -789,10 +761,6 @@ void GenSharedIds(
 void DeleteSharedIds(GLuint namespace_id, GLsizei n, const GLuint* ids);
 
 void RegisterSharedIds(GLuint namespace_id, GLsizei n, const GLuint* ids);
-
-void CommandBufferEnable(GLenum cap, GLboolean enable) {
-  helper_->CommandBufferEnable(cap, enable);
-}
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_
 

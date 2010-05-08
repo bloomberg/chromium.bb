@@ -1148,10 +1148,5 @@
     c.Init(namespace_id, n, ids_shm_id, ids_shm_offset);
   }
 
-  void CommandBufferEnable(GLenum cap, GLboolean enable) {
-    gles2::CommandBufferEnable& c = GetCmdSpace<gles2::CommandBufferEnable>();
-    c.Init(cap, enable);
-  }
-
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_
 

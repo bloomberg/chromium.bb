@@ -944,7 +944,11 @@ error::Error GLES2DecoderImpl::HandleGetBooleanv(
     uint32 immediate_data_size, const gles2::GetBooleanv& c) {
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef GetBooleanv::Result Result;
-  GLsizei num_values = GetNumValuesReturnedForGLGet(pname, &num_values);
+  GLsizei num_values = util_.GLGetNumValuesReturned(pname);
+  if (num_values == 0) {
+    SetGLError(GL_INVALID_ENUM, "glGetBooleanv: invalid enum");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLboolean* params = result ? result->GetData() : NULL;
@@ -975,7 +979,11 @@ error::Error GLES2DecoderImpl::HandleGetBufferParameteriv(
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef GetBufferParameteriv::Result Result;
-  GLsizei num_values = GetNumValuesReturnedForGLGet(pname, &num_values);
+  GLsizei num_values = util_.GLGetNumValuesReturned(pname);
+  if (num_values == 0) {
+    SetGLError(GL_INVALID_ENUM, "glGetBufferParameteriv: invalid enum");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
@@ -1023,7 +1031,11 @@ error::Error GLES2DecoderImpl::HandleGetFloatv(
     uint32 immediate_data_size, const gles2::GetFloatv& c) {
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef GetFloatv::Result Result;
-  GLsizei num_values = GetNumValuesReturnedForGLGet(pname, &num_values);
+  GLsizei num_values = util_.GLGetNumValuesReturned(pname);
+  if (num_values == 0) {
+    SetGLError(GL_INVALID_ENUM, "glGetFloatv: invalid enum");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLfloat* params = result ? result->GetData() : NULL;
@@ -1056,7 +1068,13 @@ error::Error GLES2DecoderImpl::HandleGetFramebufferAttachmentParameteriv(
   GLenum attachment = static_cast<GLenum>(c.attachment);
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef GetFramebufferAttachmentParameteriv::Result Result;
-  GLsizei num_values = GetNumValuesReturnedForGLGet(pname, &num_values);
+  GLsizei num_values = util_.GLGetNumValuesReturned(pname);
+  if (num_values == 0) {
+    SetGLError(
+        GL_INVALID_ENUM,
+        "glGetFramebufferAttachmentParameteriv: invalid enum");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
@@ -1100,7 +1118,11 @@ error::Error GLES2DecoderImpl::HandleGetIntegerv(
     uint32 immediate_data_size, const gles2::GetIntegerv& c) {
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef GetIntegerv::Result Result;
-  GLsizei num_values = GetNumValuesReturnedForGLGet(pname, &num_values);
+  GLsizei num_values = util_.GLGetNumValuesReturned(pname);
+  if (num_values == 0) {
+    SetGLError(GL_INVALID_ENUM, "glGetIntegerv: invalid enum");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
@@ -1131,7 +1153,11 @@ error::Error GLES2DecoderImpl::HandleGetProgramiv(
   GLuint program = c.program;
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef GetProgramiv::Result Result;
-  GLsizei num_values = GetNumValuesReturnedForGLGet(pname, &num_values);
+  GLsizei num_values = util_.GLGetNumValuesReturned(pname);
+  if (num_values == 0) {
+    SetGLError(GL_INVALID_ENUM, "glGetProgramiv: invalid enum");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
@@ -1162,7 +1188,11 @@ error::Error GLES2DecoderImpl::HandleGetRenderbufferParameteriv(
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef GetRenderbufferParameteriv::Result Result;
-  GLsizei num_values = GetNumValuesReturnedForGLGet(pname, &num_values);
+  GLsizei num_values = util_.GLGetNumValuesReturned(pname);
+  if (num_values == 0) {
+    SetGLError(GL_INVALID_ENUM, "glGetRenderbufferParameteriv: invalid enum");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
@@ -1201,7 +1231,11 @@ error::Error GLES2DecoderImpl::HandleGetShaderiv(
   GLuint shader = c.shader;
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef GetShaderiv::Result Result;
-  GLsizei num_values = GetNumValuesReturnedForGLGet(pname, &num_values);
+  GLsizei num_values = util_.GLGetNumValuesReturned(pname);
+  if (num_values == 0) {
+    SetGLError(GL_INVALID_ENUM, "glGetShaderiv: invalid enum");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
@@ -1232,7 +1266,11 @@ error::Error GLES2DecoderImpl::HandleGetTexParameterfv(
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef GetTexParameterfv::Result Result;
-  GLsizei num_values = GetNumValuesReturnedForGLGet(pname, &num_values);
+  GLsizei num_values = util_.GLGetNumValuesReturned(pname);
+  if (num_values == 0) {
+    SetGLError(GL_INVALID_ENUM, "glGetTexParameterfv: invalid enum");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLfloat* params = result ? result->GetData() : NULL;
@@ -1267,7 +1305,11 @@ error::Error GLES2DecoderImpl::HandleGetTexParameteriv(
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef GetTexParameteriv::Result Result;
-  GLsizei num_values = GetNumValuesReturnedForGLGet(pname, &num_values);
+  GLsizei num_values = util_.GLGetNumValuesReturned(pname);
+  if (num_values == 0) {
+    SetGLError(GL_INVALID_ENUM, "glGetTexParameteriv: invalid enum");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
@@ -1302,7 +1344,11 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribfv(
   GLuint index = static_cast<GLuint>(c.index);
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef GetVertexAttribfv::Result Result;
-  GLsizei num_values = GetNumValuesReturnedForGLGet(pname, &num_values);
+  GLsizei num_values = util_.GLGetNumValuesReturned(pname);
+  if (num_values == 0) {
+    SetGLError(GL_INVALID_ENUM, "glGetVertexAttribfv: invalid enum");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLfloat* params = result ? result->GetData() : NULL;
@@ -1333,7 +1379,11 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribiv(
   GLuint index = static_cast<GLuint>(c.index);
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef GetVertexAttribiv::Result Result;
-  GLsizei num_values = GetNumValuesReturnedForGLGet(pname, &num_values);
+  GLsizei num_values = util_.GLGetNumValuesReturned(pname);
+  if (num_values == 0) {
+    SetGLError(GL_INVALID_ENUM, "glGetVertexAttribiv: invalid enum");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
@@ -2718,18 +2768,6 @@ error::Error GLES2DecoderImpl::HandleGetMaxValueInBuffer(
     return error::kNoError;
   }
   *result_dst = DoGetMaxValueInBuffer(buffer_id, count, type, offset);
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderImpl::HandleCommandBufferEnable(
-    uint32 immediate_data_size, const gles2::CommandBufferEnable& c) {
-  GLenum cap = static_cast<GLenum>(c.cap);
-  GLboolean enable = static_cast<GLboolean>(c.enable);
-  if (!ValidateGLenumCommandBufferState(cap)) {
-    SetGLError(GL_INVALID_ENUM, "glCommandBufferEnable: cap GL_INVALID_ENUM");
-    return error::kNoError;
-  }
-  DoCommandBufferEnable(cap, enable);
   return error::kNoError;
 }
 

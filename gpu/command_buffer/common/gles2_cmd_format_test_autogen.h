@@ -3329,20 +3329,5 @@ TEST(GLES2FormatTest, RegisterSharedIds) {
   EXPECT_EQ(static_cast<uint32>(14), cmd.ids_shm_offset);
 }
 
-TEST(GLES2FormatTest, CommandBufferEnable) {
-  CommandBufferEnable cmd = { { 0 } };
-  void* next_cmd = cmd.Set(
-      &cmd,
-      static_cast<GLenum>(11),
-      static_cast<GLboolean>(12));
-  EXPECT_EQ(static_cast<uint32>(CommandBufferEnable::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<char*>(next_cmd),
-            reinterpret_cast<char*>(&cmd) + sizeof(cmd));
-  EXPECT_EQ(static_cast<GLenum>(11), cmd.cap);
-  EXPECT_EQ(static_cast<GLboolean>(12), cmd.enable);
-}
-
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_TEST_AUTOGEN_H_
 

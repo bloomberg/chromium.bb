@@ -181,7 +181,7 @@ GL_APICALL GLuint       GL_APIENTRY glGetMaxValueInBuffer (GLidBuffer buffer_id,
 GL_APICALL void         GL_APIENTRY glGenSharedIds (GLuint namespace_id, GLuint id_offset, GLsizei n, GLuint* ids);
 GL_APICALL void         GL_APIENTRY glDeleteSharedIds (GLuint namespace_id, GLsizei n, const GLuint* ids);
 GL_APICALL void         GL_APIENTRY glRegisterSharedIds (GLuint namespace_id, GLsizei n, const GLuint* ids);
-GL_APICALL void         GL_APIENTRY glCommandBufferEnable (GLenumCommandBufferState cap, GLboolean enable);"""
+"""
 
 # This is the list of all commmands that will be generated and their Id.
 # If a command is not listed in this table it is an error.
@@ -375,7 +375,6 @@ _CMD_ID_TABLE = {
   'GenSharedIds':                                              439,
   'DeleteSharedIds':                                           440,
   'RegisterSharedIds':                                         441,
-  'CommandBufferEnable':                                       442,
 }
 
 # This is a list of enum names and their valid values. It is used to map
@@ -510,12 +509,6 @@ _ENUM_LISTS = {
     ],
     'invalid': [
       'GL_FOG_HINT',
-    ],
-  },
-  'CommandBufferState': {
-    'type': 'GLenum',
-    'valid': [
-      'GLES2_ALLOW_BUFFERS_ON_MULTIPLE_TARGETS',
     ],
   },
   'TextureTarget': {
@@ -1016,10 +1009,6 @@ _FUNCTION_INFO = {
     'result': ['GLenum'],
   },
   'ClearDepthf': {'decoder_func': 'glClearDepth'},
-  'CommandBufferEnable': {
-    'decoder_func': 'DoCommandBufferEnable',
-    'expectation': False,
-  },
   'CompileShader': {'decoder_func': 'DoCompileShader', 'unit_test': False},
   'CompressedTexImage2D': {'type': 'Manual','immediate': True},
   'CompressedTexSubImage2D': {'type': 'Data'},
@@ -2307,10 +2296,6 @@ class GENnHandler(TypeHandler):
   def WriteGLES2ImplementationHeader(self, func, file):
     """Overrriden from TypeHandler."""
     code = """%(return_type)s %(name)s(%(typed_args)s) {
-  if (%(count_name)s < 0) {
-    SetGLError(GL_INVALID_VALUE, "gl%(name)s: n < 0");
-    return;
-  }
   %(resource_type)s_id_handler_->MakeIds(0, %(args)s);
   helper_->%(name)sImmediate(%(args)s);
 }
@@ -2321,8 +2306,7 @@ class GENnHandler(TypeHandler):
         'name': func.original_name,
         'typed_args': func.MakeTypedOriginalArgString(""),
         'args': func.MakeOriginalArgString(""),
-        'resource_type': func.name[3:-1].lower(),
-        'count_name': func.GetOriginalArgs()[0].name,
+        'resource_type': func.name[3:-1].lower()
       })
 
   def WriteServiceUnitTest(self, func, file):
@@ -2674,24 +2658,15 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs) {
     """Overrriden from TypeHandler."""
     impl_decl = func.GetInfo('impl_decl')
     if impl_decl == None or impl_decl == True:
-      code = """%(return_type)s %(name)s(%(typed_args)s) {
-  if (%(count_name)s < 0) {
-    SetGLError(GL_INVALID_VALUE, "gl%(name)s: n < 0");
-    return;
-  }
-  %(resource_type)s_id_handler_->FreeIds(%(args)s);
-  helper_->%(name)sImmediate(%(args)s);
-}
-
-"""
-      file.Write(code % {
-          'return_type': func.return_type,
-          'name': func.original_name,
-          'typed_args': func.MakeTypedOriginalArgString(""),
-          'args': func.MakeOriginalArgString(""),
-          'resource_type': func.name[6:-1].lower(),
-          'count_name': func.GetOriginalArgs()[0].name,
-        })
+      file.Write("%s %s(%s) {\n" %
+                 (func.return_type, func.original_name,
+                  func.MakeTypedOriginalArgString("")))
+      file.Write("  %s_id_handler_->FreeIds(%s);\n" %
+         (func.name[6:-1].lower(), func.MakeOriginalArgString("")))
+      file.Write("  helper_->%sImmediate(%s);\n" %
+                 (func.name, func.MakeOriginalArgString("")))
+      file.Write("}\n")
+      file.Write("\n")
 
   def WriteImmediateCmdComputeSize(self, func, file):
     """Overrriden from TypeHandler."""
@@ -2813,7 +2788,11 @@ class GETnHandler(TypeHandler):
       arg.WriteGetCode(file)
 
     code = """  typedef %(func_name)s::Result Result;
-  GLsizei num_values = GetNumValuesReturnedForGLGet(pname, &num_values);
+  GLsizei num_values = util_.GLGetNumValuesReturned(pname);
+  if (num_values == 0) {
+    SetGLError(GL_INVALID_ENUM, "gl%(func_name)s: invalid enum");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   %(last_arg_type)s params = result ? result->GetData() : NULL;

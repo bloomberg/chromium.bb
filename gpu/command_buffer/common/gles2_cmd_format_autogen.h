@@ -8438,44 +8438,6 @@ COMPILE_ASSERT(offsetof(RegisterSharedIds, ids_shm_id) == 12,
 COMPILE_ASSERT(offsetof(RegisterSharedIds, ids_shm_offset) == 16,
                OffsetOf_RegisterSharedIds_ids_shm_offset_not_16);
 
-struct CommandBufferEnable {
-  typedef CommandBufferEnable ValueType;
-  static const CommandId kCmdId = kCommandBufferEnable;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-
-  static uint32 ComputeSize() {
-    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
-
-  void Init(GLenum _cap, GLboolean _enable) {
-    SetHeader();
-    cap = _cap;
-    enable = _enable;
-  }
-
-  void* Set(void* cmd, GLenum _cap, GLboolean _enable) {
-    static_cast<ValueType*>(cmd)->Init(_cap, _enable);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  gpu::CommandHeader header;
-  uint32 cap;
-  uint32 enable;
-};
-
-COMPILE_ASSERT(sizeof(CommandBufferEnable) == 12,
-               Sizeof_CommandBufferEnable_is_not_12);
-COMPILE_ASSERT(offsetof(CommandBufferEnable, header) == 0,
-               OffsetOf_CommandBufferEnable_header_not_0);
-COMPILE_ASSERT(offsetof(CommandBufferEnable, cap) == 4,
-               OffsetOf_CommandBufferEnable_cap_not_4);
-COMPILE_ASSERT(offsetof(CommandBufferEnable, enable) == 8,
-               OffsetOf_CommandBufferEnable_enable_not_8);
-
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 

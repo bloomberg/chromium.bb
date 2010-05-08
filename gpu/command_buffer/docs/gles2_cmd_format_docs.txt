@@ -2214,12 +2214,4 @@ struct RegisterSharedIds {
   uint32 ids_shm_offset;  //!< uint32
 };
 
-//! Command that enables or disables command buffer specific features.
-struct CommandBufferEnable {
-  static const CommandId kCmdId = 442;
-
-  CommandHeader header;
-  uint32 cap;  //!< GLenum
-  uint32 enable;  //!< GLboolean
-};
 

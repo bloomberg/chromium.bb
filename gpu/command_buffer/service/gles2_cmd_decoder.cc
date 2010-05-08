@@ -30,7 +30,6 @@
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
-#include "gpu/GLES2/gles2_command_buffer.h"
 
 // TODO(alokp): Remove GLES2_GPU_SERVICE_TRANSLATE_SHADER guard
 // as soon as translator is ready.
@@ -673,9 +672,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Wrapper for glCheckFramebufferStatus
   GLenum DoCheckFramebufferStatus(GLenum target);
 
-  // Helper for CommandBufferEnable cmd.
-  void DoCommandBufferEnable(GLenum pname, GLboolean enable);
-
   // Wrapper for glCompileShader.
   void DoCompileShader(GLuint shader);
 
@@ -776,10 +772,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   // Wrapper for glValidateProgram.
   void DoValidateProgram(GLuint program_client_id);
-
-  // Gets the number of values that will be returned by glGetXXX. Returns
-  // false if pname is unknown.
-  bool GetNumValuesReturnedForGLGet(GLenum pname, GLsizei* num_values);
 
   // Gets the GLError through our wrapper.
   GLenum GetGLError();
@@ -1250,7 +1242,6 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
     texture_units_[tt].bound_texture_cube_map =
         texture_manager()->GetDefaultTextureInfo(GL_TEXTURE_CUBE_MAP);
   }
-
   GLuint ids[2];
   glGenTextures(2, ids);
   // Make black textures for replacing non-renderable textures.
@@ -1803,10 +1794,15 @@ void GLES2DecoderImpl::DoBindBuffer(GLenum target, GLuint client_id) {
     }
   }
   if (info) {
-    if (!buffer_manager()->SetTarget(info, target)) {
+    // Check the buffer exists
+    // Check that we are not trying to bind it to a different target.
+    if ((info->target() != 0 && info->target() != target)) {
       SetGLError(GL_INVALID_OPERATION,
                  "glBindBuffer: buffer bound to more than 1 target");
       return;
+    }
+    if (info->target() == 0) {
+      info->set_target(target);
     }
     service_id = info->service_id();
   }
@@ -1948,41 +1944,32 @@ void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
 
 bool GLES2DecoderImpl::GetHelper(
     GLenum pname, GLint* params, GLsizei* num_written) {
+  DCHECK(params);
   DCHECK(num_written);
   switch (pname) {
 #if !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
     case GL_IMPLEMENTATION_COLOR_READ_FORMAT:
       *num_written = 1;
-      if (params) {
-        *params = GL_RGBA;  // TODO(gman): get correct format.
-      }
+      *params = GL_RGBA;  // TODO(gman): get correct format.
       return true;
     case GL_IMPLEMENTATION_COLOR_READ_TYPE:
       *num_written = 1;
-      if (params) {
-        *params = GL_UNSIGNED_BYTE;  // TODO(gman): get correct type.
-      }
+      *params = GL_UNSIGNED_BYTE;  // TODO(gman): get correct type.
       return true;
     case GL_MAX_FRAGMENT_UNIFORM_VECTORS:
+      glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, params);
       *num_written = 1;
-      if (params) {
-        glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, params);
-        *params /= 4;
-      }
+      *params /= 4;
       return true;
     case GL_MAX_VARYING_VECTORS:
+      glGetIntegerv(GL_MAX_VARYING_FLOATS, params);
       *num_written = 1;
-      if (params) {
-        glGetIntegerv(GL_MAX_VARYING_FLOATS, params);
-        *params /= 4;
-      }
+      *params /= 4;
       return true;
     case GL_MAX_VERTEX_UNIFORM_VECTORS:
+      glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, params);
       *num_written = 1;
-      if (params) {
-        glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, params);
-        *params /= 4;
-      }
+      *params /= 4;
       return true;
 #endif
     case GL_COMPRESSED_TEXTURE_FORMATS:
@@ -1991,93 +1978,76 @@ bool GLES2DecoderImpl::GetHelper(
       return true;
     case GL_NUM_COMPRESSED_TEXTURE_FORMATS:
       *num_written = 1;
-      if (params) {
-        *params = 0;  // We don't support compressed textures.
-      }
+      *params = 0;  // We don't support compressed textures.
       return true;
     case GL_NUM_SHADER_BINARY_FORMATS:
       *num_written = 1;
-      if (params) {
-        *params = 0;  // We don't support binary shader formats.
-      }
+      *params = 0;  // We don't support binary shader formats.
       return true;
     case GL_SHADER_BINARY_FORMATS:
       *num_written = 0;
       return true;  // We don't support binary shader format.s
     case GL_SHADER_COMPILER:
       *num_written = 1;
-      if (params) {
-        *params = GL_TRUE;
-      }
+      *params = GL_TRUE;
       return true;
     case GL_ARRAY_BUFFER_BINDING:
       *num_written = 1;
-      if (params) {
-        if (bound_array_buffer_) {
-          GLuint client_id = 0;
-          buffer_manager()->GetClientId(bound_array_buffer_->service_id(),
-                                        &client_id);
-          *params = client_id;
-        } else {
-          *params = 0;
-        }
+      if (bound_array_buffer_) {
+        GLuint client_id = 0;
+        buffer_manager()->GetClientId(bound_array_buffer_->service_id(),
+                                      &client_id);
+        *params = client_id;
+      } else {
+        *params = 0;
       }
       return true;
     case GL_ELEMENT_ARRAY_BUFFER_BINDING:
       *num_written = 1;
-      if (params) {
-        if (bound_element_array_buffer_) {
-          GLuint client_id = 0;
-          buffer_manager()->GetClientId(bound_element_array_buffer_->service_id(),
-                                        &client_id);
-          *params = client_id;
-        } else {
-          *params = 0;
-        }
+      if (bound_element_array_buffer_) {
+        GLuint client_id = 0;
+        buffer_manager()->GetClientId(bound_element_array_buffer_->service_id(),
+                                      &client_id);
+        *params = client_id;
+      } else {
+        *params = 0;
       }
       return true;
     case GL_FRAMEBUFFER_BINDING:
       *num_written = 1;
-      if (params) {
-        if (bound_framebuffer_) {
-          GLuint client_id = 0;
-          framebuffer_manager()->GetClientId(
-              bound_framebuffer_->service_id(), &client_id);
-          *params = client_id;
-        } else {
-          *params = 0;
-        }
+      if (bound_framebuffer_) {
+        GLuint client_id = 0;
+        framebuffer_manager()->GetClientId(
+            bound_framebuffer_->service_id(), &client_id);
+        *params = client_id;
+      } else {
+        *params = 0;
       }
       return true;
     case GL_RENDERBUFFER_BINDING:
       *num_written = 1;
-      if (params) {
-        if (bound_renderbuffer_) {
-          GLuint client_id = 0;
-          renderbuffer_manager()->GetClientId(
-              bound_renderbuffer_->service_id(), &client_id);
-          *params = client_id;
-        } else {
-          *params = 0;
-        }
+      if (bound_renderbuffer_) {
+        GLuint client_id = 0;
+        renderbuffer_manager()->GetClientId(
+            bound_renderbuffer_->service_id(), &client_id);
+        *params = client_id;
+      } else {
+        *params = 0;
       }
       return true;
     case GL_CURRENT_PROGRAM:
       *num_written = 1;
-      if (params) {
-        if (current_program_) {
-          GLuint client_id = 0;
-          program_manager()->GetClientId(
-              current_program_->service_id(), &client_id);
-          *params = client_id;
-        } else {
-          *params = 0;
-        }
+      if (current_program_) {
+        GLuint client_id = 0;
+        program_manager()->GetClientId(
+            current_program_->service_id(), &client_id);
+        *params = client_id;
+      } else {
+        *params = 0;
       }
       return true;
-    case GL_TEXTURE_BINDING_2D:
-      *num_written = 1;
-      if (params) {
+    case GL_TEXTURE_BINDING_2D: {
+        *num_written = 1;
         TextureUnit& unit = texture_units_[active_texture_unit_];
         if (unit.bound_texture_2d) {
           GLuint client_id = 0;
@@ -2087,11 +2057,10 @@ bool GLES2DecoderImpl::GetHelper(
         } else {
           *params = 0;
         }
+        return true;
       }
-      return true;
-    case GL_TEXTURE_BINDING_CUBE_MAP:
-      *num_written = 1;
-      if (params) {
+    case GL_TEXTURE_BINDING_CUBE_MAP: {
+        *num_written = 1;
         TextureUnit& unit = texture_units_[active_texture_unit_];
         if (unit.bound_texture_cube_map) {
           GLuint client_id = 0;
@@ -2101,20 +2070,11 @@ bool GLES2DecoderImpl::GetHelper(
         } else {
           *params = 0;
         }
+        return true;
       }
-      return true;
     default:
-      *num_written = util_.GLGetNumValuesReturned(pname);
-      if (params) {
-        glGetIntegerv(pname, params);
-      }
-      return true;
+      return false;
   }
-}
-
-bool GLES2DecoderImpl::GetNumValuesReturnedForGLGet(
-    GLenum pname, GLsizei* num_values) {
-  return GetHelper(pname, NULL, num_values);
 }
 
 void GLES2DecoderImpl::DoGetBooleanv(GLenum pname, GLboolean* params) {
@@ -2762,6 +2722,10 @@ GLuint GLES2DecoderImpl::DoGetMaxValueInBuffer(
     // TODO(gman): Should this be a GL error or a command buffer error?
     SetGLError(GL_INVALID_VALUE,
                "GetMaxValueInBuffer: unknown buffer");
+  } else if (info->target() != GL_ELEMENT_ARRAY_BUFFER) {
+    // TODO(gman): Should this be a GL error or a command buffer error?
+    SetGLError(GL_INVALID_OPERATION,
+               "GetMaxValueInBuffer: buffer not element array buffer");
   } else {
     if (!info->GetMaxValueForRange(offset, count, type, &max_vertex_accessed)) {
       // TODO(gman): Should this be a GL error or a command buffer error?
@@ -3388,7 +3352,7 @@ void GLES2DecoderImpl::DoBufferData(
   if (error != GL_NO_ERROR) {
     SetGLError(error, NULL);
   } else {
-    buffer_manager()->SetSize(info, size);
+    info->SetSize(size);
     info->SetRange(0, size, data);
   }
 }
@@ -3780,7 +3744,6 @@ error::Error GLES2DecoderImpl::HandleGetShaderPrecisionFormat(
       result->min_range = -31;
       result->max_range = 31;
       result->precision = 0;
-      break;
     case GL_LOW_FLOAT:
     case GL_MEDIUM_FLOAT:
     case GL_HIGH_FLOAT:
@@ -3973,16 +3936,6 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
   }
 
   return error::kNoError;
-}
-
-void GLES2DecoderImpl::DoCommandBufferEnable(GLenum pname, GLboolean enable) {
-  switch (pname) {
-    case GLES2_ALLOW_BUFFERS_ON_MULTIPLE_TARGETS:
-      buffer_manager()->set_allow_buffers_on_multiple_targets(enable != 0);
-      break;
-    default:
-      break;
-  }
 }
 
 // Include the auto-generated part of this file. We split this because it means
