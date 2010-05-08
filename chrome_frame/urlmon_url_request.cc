@@ -21,6 +21,28 @@
 #include "net/http/http_util.h"
 #include "net/http/http_response_headers.h"
 
+namespace {
+
+// Reads data from a stream into a string.
+HRESULT ReadStream(IStream* stream, size_t size, std::string* data) {
+  DCHECK(stream);
+  DCHECK(data);
+
+  DWORD read = 0;
+  HRESULT hr = stream->Read(WriteInto(data, size + 1), size, &read);
+  DCHECK(hr == S_OK || hr == S_FALSE || hr == E_PENDING);
+  if (read) {
+    data->erase(read);
+    DCHECK_EQ(read, data->length());
+  } else {
+    data->clear();
+  }
+
+  return hr;
+}
+
+}  // end namespace
+
 UrlmonUrlRequest::UrlmonUrlRequest()
     : pending_read_size_(0),
       headers_received_(false),
@@ -29,14 +51,20 @@ UrlmonUrlRequest::UrlmonUrlRequest()
       parent_window_(NULL),
       privileged_mode_(false),
       pending_(false) {
-  DLOG(INFO) << StringPrintf("Created request. Obj: %X", this);
+  DLOG(INFO) << __FUNCTION__ << me();
 }
 
 UrlmonUrlRequest::~UrlmonUrlRequest() {
-  DLOG(INFO) << StringPrintf("Deleted request. Obj: %X", this);
+  DLOG(INFO) << __FUNCTION__ << me();
+}
+
+std::string UrlmonUrlRequest::me() const {
+  return StringPrintf(" id: %i Obj: %X ", id(), this);
 }
 
 bool UrlmonUrlRequest::Start() {
+  DLOG(INFO) << __FUNCTION__ << me() << url();
+  DCHECK(thread_ == 0 || thread_ == PlatformThread::CurrentId());
   thread_ = PlatformThread::CurrentId();
   status_.Start();
   // The UrlmonUrlRequest instance can get destroyed in the context of
@@ -85,6 +113,8 @@ bool UrlmonUrlRequest::Read(int bytes_to_read) {
   DCHECK_EQ(thread_, PlatformThread::CurrentId());
   DCHECK_GE(bytes_to_read, 0);
   DCHECK_EQ(0, calling_delegate_);
+  DLOG(INFO) << __FUNCTION__ << me();
+
   // Re-entrancy check. Thou shall not call Read() while process OnReadComplete!
   DCHECK_EQ(0, pending_read_size_);
   if (pending_read_size_ != 0)
@@ -95,21 +125,18 @@ bool UrlmonUrlRequest::Read(int bytes_to_read) {
     return true;
   }
 
-  // Send cached data if available.
-  if (delegate_ && cached_data_.is_valid()) {
-    size_t bytes_copied = SendDataToDelegate(bytes_to_read);
-    DLOG(INFO) << StringPrintf("URL: %s Obj: %X - bytes read from cache: %d",
-        url().c_str(), this, bytes_copied);
+  // Send data if available.
+  size_t bytes_copied = 0;
+  if ((bytes_copied = SendDataToDelegate(bytes_to_read))) {
+    DLOG(INFO) << __FUNCTION__ << me() << " bytes read: " << bytes_copied;
     return true;
   }
 
   if (status_.get_state() == Status::WORKING) {
-    DLOG(INFO) << StringPrintf("URL: %s Obj: %X", url().c_str(), this) <<
-        "- Read pending for: " << bytes_to_read;
+    DLOG(INFO) << __FUNCTION__ << me() << " pending: " << bytes_to_read;
     pending_read_size_ = bytes_to_read;
   } else {
-    DLOG(INFO) << StringPrintf("URL: %s Obj: %X. Response finished.",
-        url().c_str(), this);
+    DLOG(INFO) << __FUNCTION__ << me() << " Response finished.";
     NotifyDelegateAndDie();
   }
 
@@ -122,18 +149,20 @@ HRESULT UrlmonUrlRequest::InitPending(const GURL& url, IMoniker* moniker,
                                       bool privileged_mode,
                                       HWND notification_window,
                                       IStream* cache) {
+  DLOG(INFO) << __FUNCTION__ << me() << url.spec();
   DCHECK(bind_context_ == NULL);
   DCHECK(moniker_ == NULL);
+  DCHECK(cache_ == NULL);
+  DCHECK(thread_ == 0 || thread_ == PlatformThread::CurrentId());
+  thread_ = PlatformThread::CurrentId();
   bind_context_ = bind_context;
   moniker_ = moniker;
-  url_ = url;
   enable_frame_busting_ = enable_frame_busting;
   privileged_mode_ = privileged_mode;
   parent_window_ = notification_window;
+  cache_ = cache;
+  set_url(url.spec());
   set_pending(true);
-
-  if (cache)
-    cached_data_.Append(cache);
 
   // Request has already started and data is fetched. We will get the
   // GetBindInfo call as per contract but the return values are
@@ -145,8 +174,7 @@ HRESULT UrlmonUrlRequest::InitPending(const GURL& url, IMoniker* moniker,
 
 void UrlmonUrlRequest::TerminateBind(TerminateBindCallback* callback) {
   DCHECK_EQ(thread_, PlatformThread::CurrentId());
-  DLOG(INFO) << __FUNCTION__ << " id: " << id();
-
+  DLOG(INFO) << __FUNCTION__ << me();
   if (status_.get_state() == Status::DONE) {
     // Binding is stopped. Note result could be an error.
     callback->Run(moniker_, bind_context_);
@@ -157,30 +185,73 @@ void UrlmonUrlRequest::TerminateBind(TerminateBindCallback* callback) {
     // ::OnStopBinding will invoke the callback passing our moniker and
     // bind context.
     terminate_bind_callback_.reset(callback);
+    if (pending_data_) {
+      // For downloads to work correctly, we must induce a call to
+      // OnDataAvailable so that we can download INET_E_TERMINATED_BIND and
+      // get IE into the correct state.
+      // To accomplish this we read everything that's readily available in
+      // the current stream.  Once we've reached the end of the stream we
+      // should get E_PENDING back and then later we'll get that call
+      // to OnDataAvailable.
+      std::string data;
+      ScopedComPtr<IStream> read_stream(pending_data_);
+      HRESULT hr;
+      while ((hr = ReadStream(read_stream, 0xffff, &data)) == S_OK) {
+        // Just drop the data.
+      }
+      DLOG_IF(WARNING, hr != E_PENDING) << __FUNCTION__ <<
+          StringPrintf(" expected E_PENDING but got 0x%08X", hr);
+    }
   }
 }
 
 size_t UrlmonUrlRequest::SendDataToDelegate(size_t bytes_to_read) {
+  DCHECK_EQ(thread_, PlatformThread::CurrentId());
+  DCHECK(id() != -1);
+  DCHECK_GT(bytes_to_read, 0U);
   size_t bytes_copied = 0;
   if (delegate_) {
-    // We can optimize a bit by setting this string as a class member
-    // and avoid frequent memory reallocations.
-    std::string data;
+    std::string read_data;
+    if (cache_) {
+      HRESULT hr = ReadStream(cache_, bytes_to_read, &read_data);
+      if (hr == S_FALSE || read_data.length() < bytes_to_read) {
+        DLOG(INFO) << __FUNCTION__ << me() << "all cached data read";
+        cache_.Release();
+      }
+    }
 
-    size_t bytes = std::min(static_cast<size_t>(bytes_to_read),
-                            cached_data_.size());
-    cached_data_.Read(WriteInto(&data, 1 + bytes), bytes, &bytes_copied);
-    DCHECK_EQ(bytes, data.length());
-    ++calling_delegate_;
-    delegate_->OnReadComplete(id(), data);
-    --calling_delegate_;
+    if (read_data.empty() && pending_data_) {
+      size_t pending_data_read_save = pending_read_size_;
+      pending_read_size_ = 0;
+
+      // AddRef the stream while we call Read to avoid a potential issue
+      // where we can get a call to OnDataAvailable while inside Read and
+      // in our OnDataAvailable call, we can release the stream object
+      // while still using it.
+      ScopedComPtr<IStream> pending(pending_data_);
+      HRESULT hr = ReadStream(pending, bytes_to_read, &read_data);
+      if (read_data.empty()) {
+        pending_read_size_ = pending_data_read_save;
+      }
+    }
+
+    bytes_copied = read_data.length();
+
+    if (bytes_copied) {
+      ++calling_delegate_;
+      DCHECK(id() != -1);
+      delegate_->OnReadComplete(id(), read_data);
+      --calling_delegate_;
+    }
+  } else {
+    DLOG(ERROR) << __FUNCTION__ << me() << "no delegate";
   }
 
   return bytes_copied;
 }
 
 STDMETHODIMP UrlmonUrlRequest::OnStartBinding(DWORD reserved,
-                                              IBinding *binding) {
+                                              IBinding* binding) {
   DCHECK_EQ(thread_, PlatformThread::CurrentId());
   binding_ = binding;
   if (pending_) {
@@ -224,7 +295,8 @@ STDMETHODIMP UrlmonUrlRequest::OnProgress(ULONG progress, ULONG max_progress,
       DCHECK(info);
       GURL previously_redirected(info ? info->url() : std::wstring());
       if (GURL(status_text) != previously_redirected) {
-        DLOG(INFO) << "URL: " << url() << " redirected to " << status_text;
+        DLOG(INFO) << __FUNCTION__ << me() << "redirect from " << url()
+            << " to " << status_text;
         // Fetch the redirect status as they aren't all equal (307 in particular
         // retains the HTTP request verb).
         int http_code = GetHttpResponseStatusFromBinding(binding_);
@@ -265,8 +337,8 @@ STDMETHODIMP UrlmonUrlRequest::OnProgress(ULONG progress, ULONG max_progress,
       break;
 
     default:
-      DLOG(INFO) << " Obj: " << std::hex << this << " OnProgress(" << url()
-          << StringPrintf(L") code: %i status: %ls", status_code, status_text);
+      DLOG(INFO) << __FUNCTION__ << me()
+          << StringPrintf(L"code: %i status: %ls", status_code, status_text);
       break;
   }
 
@@ -275,8 +347,8 @@ STDMETHODIMP UrlmonUrlRequest::OnProgress(ULONG progress, ULONG max_progress,
 
 STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
   DCHECK_EQ(thread_, PlatformThread::CurrentId());
-  DLOG(INFO) << StringPrintf("URL: %s Obj: %X", url().c_str(), this) <<
-      " - Request stopped, Result: " << std::hex << result;
+  DLOG(INFO) << __FUNCTION__ << me() <<
+      "- Request stopped, Result: " << std::hex << result;
   DCHECK(status_.get_state() == Status::WORKING ||
          status_.get_state() == Status::ABORTING);
 
@@ -311,17 +383,14 @@ STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
     // The code below seems easy but it is not. :)
     // The network policy in Chrome network is that error code/end_of_stream
     // should be returned only as a result of read (or start) request.
-    // Here is the possible cases:
+    // Here are the possible cases:
     // cached_data|pending_read
-    //     FALSE  |FALSE    => EndRequest if no headers, otherwise wait for Read
-    //     FALSE  |TRUE     => EndRequest.
-    //     TRUE   |FALSE    => Wait for Read.
-    //     TRUE   |TRUE     => Something went wrong!!
+    //     FALSE  |FALSE   => EndRequest if no headers, otherwise wait for Read.
+    //     FALSE  |TRUE    => EndRequest.
+    //     TRUE   |FALSE   => Wait for Read.
+    //     TRUE   |TRUE    => Something went wrong!!
 
-    // we cannot have pending read and data_avail at the same time.
-    DCHECK(!(pending_read_size_ > 0 && cached_data_.is_valid()));
-
-    if (cached_data_.is_valid()) {
+    if (pending_data_) {
       ReleaseBindings();
       return S_OK;
     }
@@ -395,12 +464,11 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
 
     if (get_upload_data(&bind_info->stgmedData.pstm) == S_OK) {
       bind_info->stgmedData.tymed = TYMED_ISTREAM;
-      DLOG(INFO) << " Obj: " << std::hex << this << " " << method()
+      DLOG(INFO) << __FUNCTION__ << me() << method()
                  << " request with " << Int64ToString(post_data_len())
-                 << " bytes";
+                 << " bytes. url=" << url();
     } else {
-      DLOG(INFO) << " Obj: " << std::hex << this
-          << "POST request with no data!";
+      DLOG(INFO) << __FUNCTION__ << me() << "POST request with no data!";
     }
   }
 
@@ -410,8 +478,8 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
 STDMETHODIMP UrlmonUrlRequest::OnDataAvailable(DWORD flags, DWORD size,
                                                FORMATETC* formatetc,
                                                STGMEDIUM* storage) {
-  DLOG(INFO) << StringPrintf("URL: %s Obj: %X - Bytes available: %d",
-                             url().c_str(), this, size);
+  DCHECK_EQ(thread_, PlatformThread::CurrentId());
+  DLOG(INFO) << __FUNCTION__ << me() << "bytes available: " << size;
 
   if (terminate_requested())
     return INET_E_TERMINATED_BIND;
@@ -427,30 +495,19 @@ STDMETHODIMP UrlmonUrlRequest::OnDataAvailable(DWORD flags, DWORD size,
     return E_UNEXPECTED;
   }
 
-  HRESULT hr = S_OK;
-  // Always read data into cache. We have to read all the data here at this
-  // time or it won't be available later. Since the size of the data could
-  // be more than pending read size, it's not straightforward (or might even
-  // be impossible) to implement a true data pull model.
-  size_t cached = cached_data_.size();
-  cached_data_.Append(read_stream);
-  DLOG(INFO) << StringPrintf("URL: %s Obj: %X", url().c_str(), this) <<
-      " -  Bytes read into cache: " << cached_data_.size() - cached;
+  // Some requests such as HEAD have zero data.
+  if (size > 0)
+    pending_data_ = read_stream;
 
-  if (pending_read_size_ && cached_data_.is_valid()) {
+  if (pending_read_size_) {
     size_t bytes_copied = SendDataToDelegate(pending_read_size_);
-    DLOG(INFO) << StringPrintf("URL: %s Obj: %X", url().c_str(), this) <<
-        " - size read: " << bytes_copied;
-    pending_read_size_ = 0;
+    DLOG(INFO) << __FUNCTION__ << me() << "size read: " << bytes_copied;
   } else {
-    DLOG(INFO) << StringPrintf("URL: %s Obj: %X", url().c_str(), this) <<
-        " - waiting for remote read";
+    DLOG(INFO) << __FUNCTION__ << me() << "- waiting for remote read";
   }
 
   if (BSCF_LASTDATANOTIFICATION & flags) {
-    DLOG(INFO) << StringPrintf("URL: %s Obj: %X", url().c_str(), this) <<
-        " - end of data.";
-
+    DLOG(INFO) << __FUNCTION__ << me() << "end of data.";
     // Always return INET_E_TERMINATED_BIND to allow bind context reuse
     // if DownloadToHost is suddenly requested.
     return INET_E_TERMINATED_BIND;
@@ -475,8 +532,7 @@ STDMETHODIMP UrlmonUrlRequest::BeginningTransaction(const wchar_t* url,
     return E_POINTER;
   }
 
-  DLOG(INFO) << "URL: " << url << " Obj: " << std::hex << this <<
-      " - Request headers: \n" << current_headers;
+  DLOG(INFO) << __FUNCTION__ << me() << "headers: \n" << current_headers;
 
   if (status_.get_state() == Status::ABORTING) {
     // At times the BINDSTATUS_REDIRECTING notification which is sent to the
@@ -488,7 +544,7 @@ STDMETHODIMP UrlmonUrlRequest::BeginningTransaction(const wchar_t* url,
     // However urlmon still tries to establish a transaction with the
     // redirected URL which confuses the web server.
     // Fix is to abort the attempted transaction.
-    DLOG(WARNING) << __FUNCTION__
+    DLOG(WARNING) << __FUNCTION__ << me()
                   << ": Aborting connection to URL:"
                   << url
                   << " as the binding has been aborted";
@@ -534,11 +590,8 @@ STDMETHODIMP UrlmonUrlRequest::BeginningTransaction(const wchar_t* url,
 STDMETHODIMP UrlmonUrlRequest::OnResponse(DWORD dwResponseCode,
     const wchar_t* response_headers, const wchar_t* request_headers,
     wchar_t** additional_headers) {
-  DLOG(INFO) << __FUNCTION__ << " " << url() << std::endl << " headers: " <<
-      std::endl << response_headers;
-  DLOG(INFO) << __FUNCTION__
-      << StringPrintf(" this=0x%08X, tid=%i", this, ::GetCurrentThreadId());
   DCHECK_EQ(thread_, PlatformThread::CurrentId());
+  DLOG(INFO) << __FUNCTION__ << me() << "headers: \n" << response_headers;
 
   std::string raw_headers = WideToUTF8(response_headers);
 
@@ -568,10 +621,11 @@ STDMETHODIMP UrlmonUrlRequest::OnResponse(DWORD dwResponseCode,
     }
   }
 
-  DLOG(INFO) << "Calling OnResponseStarted";
+  DLOG(INFO) << __FUNCTION__ << me() << "Calling OnResponseStarted";
 
   // Inform the delegate.
   headers_received_ = true;
+  DCHECK(id() != -1);
   delegate_->OnResponseStarted(id(),
                     "",                   // mime_type
                     raw_headers.c_str(),  // headers
@@ -592,7 +646,7 @@ STDMETHODIMP UrlmonUrlRequest::GetWindow(const GUID& guid_reason,
   wchar_t guid[40] = {0};
   ::StringFromGUID2(guid_reason, guid, arraysize(guid));
 
-  DLOG(INFO) << " Obj: " << std::hex << this << " GetWindow: " <<
+  DLOG(INFO) << __FUNCTION__ << me() << "GetWindow: " <<
       (guid_reason == IID_IAuthenticate ? L" - IAuthenticate" :
        (guid_reason == IID_IHttpSecurity ? L"IHttpSecurity" :
         (guid_reason == IID_IWindowForBindingUI ? L"IWindowForBindingUI" :
@@ -600,7 +654,7 @@ STDMETHODIMP UrlmonUrlRequest::GetWindow(const GUID& guid_reason,
 #endif
   // We should return a non-NULL HWND as parent. Otherwise no dialog is shown.
   // TODO(iyengar): This hits when running the URL request tests.
-  DLOG_IF(ERROR, !::IsWindow(parent_window_))
+  DLOG_IF(WARNING, !::IsWindow(parent_window_))
       << "UrlmonUrlRequest::GetWindow - no window!";
   *parent_window = parent_window_;
   return S_OK;
@@ -648,7 +702,7 @@ STDMETHODIMP UrlmonUrlRequest::OnSecurityProblem(DWORD problem) {
   // decided to go with the easier option of implementing the IHttpSecurity
   // interface and replicating the checks performed by Urlmon. This
   // causes Urlmon to display a dialog box on the same lines as IE6.
-  DLOG(INFO) << __FUNCTION__ << " Security problem : " << problem;
+  DLOG(INFO) << __FUNCTION__ << me() << "Security problem : " << problem;
 
   // On IE6 the default IBindStatusCallback interface does not implement the
   // IHttpSecurity interface and thus causes IE to put up a certificate error
@@ -681,8 +735,7 @@ STDMETHODIMP UrlmonUrlRequest::OnSecurityProblem(DWORD problem) {
 }
 
 HRESULT UrlmonUrlRequest::StartAsyncDownload() {
-  DLOG(INFO) << __FUNCTION__
-      << StringPrintf(" this=0x%08X, tid=%i", this, ::GetCurrentThreadId());
+  DLOG(INFO) << __FUNCTION__ << me() << url();
   HRESULT hr = E_FAIL;
   DCHECK((moniker_ && bind_context_) || (!moniker_ && !bind_context_));
 
@@ -732,22 +785,24 @@ HRESULT UrlmonUrlRequest::StartAsyncDownload() {
       // TODO(joshia): Look into. This currently fails for:
       // http://user2:secret@localhost:1337/auth-basic?set-cookie-if-challenged
       // when running the UrlRequest unit tests.
-      DLOG(ERROR) <<
-          StringPrintf("IUrlMoniker::BindToStorage failed. Error: 0x%08X.", hr)
-          << std::endl << url();
-      DCHECK(hr == MK_E_SYNTAX);
+      DLOG(ERROR) << __FUNCTION__ << me() <<
+          StringPrintf("IUrlMoniker::BindToStorage failed 0x%08X.", hr);
+      // In most cases we'll get a MK_E_SYNTAX error here but if we abort
+      // the navigation ourselves such as in the case of seeing something
+      // else than ALLOWALL in X-Frame-Options.
     }
   }
 
-  DLOG_IF(ERROR, FAILED(hr))
-      << StringPrintf(L"StartAsyncDownload failed: 0x%08X", hr);
+  DLOG_IF(ERROR, FAILED(hr)) << me() <<
+      StringPrintf(L"StartAsyncDownload failed: 0x%08X", hr);
 
   return hr;
 }
 
 void UrlmonUrlRequest::NotifyDelegateAndDie() {
   DCHECK_EQ(thread_, PlatformThread::CurrentId());
-  DLOG(INFO) << __FUNCTION__;
+  DLOG(INFO) << __FUNCTION__ << me();
+
   PluginUrlRequestDelegate* delegate = delegate_;
   delegate_ = NULL;
   ReleaseBindings();
@@ -755,6 +810,8 @@ void UrlmonUrlRequest::NotifyDelegateAndDie() {
   if (delegate) {
     URLRequestStatus result = status_.get_result();
     delegate->OnResponseEnd(id(), result);
+  } else {
+    DLOG(WARNING) << __FUNCTION__ << me() << "no delegate";
   }
 }
 
@@ -766,133 +823,6 @@ void UrlmonUrlRequest::ReleaseBindings() {
   if (bind_context_) {
     ::RevokeBindStatusCallback(bind_context_, this);
   }
-}
-
-//
-// UrlmonUrlRequest::Cache implementation.
-//
-
-UrlmonUrlRequest::Cache::~Cache() {
-  while (cache_.size()) {
-    uint8* t = cache_.front();
-    cache_.pop_front();
-    delete [] t;
-  }
-
-  while (pool_.size()) {
-    uint8* t = pool_.front();
-    pool_.pop_front();
-    delete [] t;
-  }
-}
-
-void UrlmonUrlRequest::Cache::GetReadBuffer(void** src, size_t* bytes_avail) {
-  DCHECK_LT(read_offset_, BUF_SIZE);
-  *src = NULL;
-  *bytes_avail = 0;
-  if (cache_.size()) {
-    if (cache_.size() == 1)
-      *bytes_avail = write_offset_ - read_offset_;
-    else
-      *bytes_avail = BUF_SIZE - read_offset_;
-
-    // Return non-NULL pointer only if there is some data
-    if (*bytes_avail)
-      *src = cache_.front() + read_offset_;
-  }
-}
-
-void UrlmonUrlRequest::Cache::BytesRead(size_t bytes) {
-  DCHECK_LT(read_offset_, BUF_SIZE);
-  DCHECK_LE(read_offset_ + bytes, BUF_SIZE);
-  DCHECK_LE(bytes, size_);
-
-  size_ -= bytes;
-  read_offset_ += bytes;
-  if (read_offset_ == BUF_SIZE) {
-    uint8* p = cache_.front();
-    cache_.pop_front();
-    // check if pool_ became too large
-    pool_.push_front(p);
-    read_offset_ = 0;
-  }
-}
-
-bool UrlmonUrlRequest::Cache::Read(void* dest, size_t bytes,
-                                   size_t* bytes_copied) {
-  void* src;
-  size_t src_size;
-
-  DLOG(INFO) << __FUNCTION__;
-  *bytes_copied = 0;
-  while (bytes) {
-    GetReadBuffer(&src, &src_size);
-    if (src_size == 0)
-      break;
-
-    size_t bytes_to_copy = std::min(src_size, bytes);
-    memcpy(dest, src, bytes_to_copy);
-
-    BytesRead(bytes_to_copy);
-    dest = reinterpret_cast<uint8*>(dest) + bytes_to_copy;
-    bytes -= bytes_to_copy;
-    *bytes_copied += bytes_to_copy;
-  }
-
-  return true;
-}
-
-
-void UrlmonUrlRequest::Cache::GetWriteBuffer(void** dest, size_t* bytes_avail) {
-  if (cache_.size() == 0 || write_offset_ == BUF_SIZE) {
-
-    if (pool_.size()) {
-      cache_.push_back(pool_.front());
-      pool_.pop_front();
-    } else {
-      cache_.push_back(new uint8[BUF_SIZE]);
-    }
-
-    write_offset_ = 0;
-  }
-
-  *dest = cache_.back() + write_offset_;
-  *bytes_avail = BUF_SIZE - write_offset_;
-}
-
-void UrlmonUrlRequest::Cache::BytesWritten(size_t bytes) {
-  DCHECK_LE(write_offset_ + bytes, BUF_SIZE);
-  write_offset_ += bytes;
-  size_ += bytes;
-}
-
-bool UrlmonUrlRequest::Cache::Append(IStream* source) {
-  if (!source) {
-    NOTREACHED();
-    return false;
-  }
-
-  HRESULT hr = S_OK;
-  while (SUCCEEDED(hr)) {
-    void* dest = 0;
-    size_t bytes = 0;
-    DWORD chunk_read = 0;  // NOLINT
-    GetWriteBuffer(&dest, &bytes);
-    hr = source->Read(dest, bytes, &chunk_read);
-    BytesWritten(chunk_read);
-
-    if (hr == S_OK && chunk_read == 0) {
-      // implied EOF
-      break;
-    }
-
-    if (hr == S_FALSE) {
-      // EOF
-      break;
-    }
-  }
-
-  return SUCCEEDED(hr);
 }
 
 net::Error UrlmonUrlRequest::HresultToNetError(HRESULT hr) {
@@ -984,22 +914,24 @@ void UrlmonUrlRequestManager::SetInfoForUrl(const std::wstring& url,
 
 void UrlmonUrlRequestManager::StartRequest(int request_id,
     const IPC::AutomationURLRequest& request_info) {
-  DLOG(INFO) << __FUNCTION__;
+  DLOG(INFO) << __FUNCTION__ << " id: " << request_id;
   DCHECK_EQ(0, calling_delegate_);
 
   if (stopping_)
     return;
 
-  DCHECK(LookupRequest(request_id).get() == NULL);
+  DCHECK(request_map_.find(request_id) == request_map_.end());
   DCHECK(GURL(request_info.url).is_valid());
 
   scoped_refptr<UrlmonUrlRequest> new_request;
   bool is_started = false;
   if (pending_request_) {
-    DCHECK(pending_request_->IsForUrl(GURL(request_info.url)));
+    DCHECK_EQ(pending_request_->url(), request_info.url);
     new_request.swap(pending_request_);
     new_request->set_pending(false);
     is_started = true;
+    DLOG(INFO) << __FUNCTION__ << new_request->me()
+        << "assigned id " << request_id;
   } else {
     CComObject<UrlmonUrlRequest>* created_request = NULL;
     CComObject<UrlmonUrlRequest>::CreateInstance(&created_request);
@@ -1025,6 +957,7 @@ void UrlmonUrlRequestManager::StartRequest(int request_id,
   } else {
     // Request is already underway, call OnResponse so that the
     // other side can start reading.
+    DCHECK(!new_request->response_headers().empty());
     new_request->OnResponse(
         0, UTF8ToWide(new_request->response_headers()).c_str(), NULL, NULL);
   }
@@ -1048,6 +981,8 @@ void UrlmonUrlRequestManager::DownloadRequestInHost(int request_id) {
       UrlmonUrlRequest::TerminateBindCallback* callback = NewCallback(this,
           &UrlmonUrlRequestManager::BindTerminated);
       request->TerminateBind(callback);
+    } else {
+      NOTREACHED();
     }
   } else {
     NOTREACHED()
@@ -1115,6 +1050,8 @@ void UrlmonUrlRequestManager::EndRequest(int request_id) {
   if (request) {
     request_map_.erase(request_id);
     request->Stop();
+  } else {
+    DLOG(ERROR) << __FUNCTION__ << " no request found for " << request_id;
   }
 }
 
@@ -1124,6 +1061,10 @@ void UrlmonUrlRequestManager::StopAll() {
     return;
 
   stopping_ = true;
+
+  DLOG(INFO) << __FUNCTION__ << " stopping " <<
+      request_map_.size() << " requests";
+
   for (RequestMap::iterator it = request_map_.begin();
        it != request_map_.end(); ++it) {
     DCHECK(it->second != NULL);
@@ -1137,8 +1078,9 @@ void UrlmonUrlRequestManager::OnResponseStarted(int request_id,
     const char* mime_type, const char* headers, int size,
     base::Time last_modified, const std::string& redirect_url,
     int redirect_status) {
+  DCHECK_NE(request_id, -1);
   DLOG(INFO) << __FUNCTION__;
-  DCHECK(LookupRequest(request_id).get() != NULL);
+  DCHECK(LookupRequest(request_id) != NULL);
   ++calling_delegate_;
   delegate_->OnResponseStarted(request_id, mime_type, headers, size,
       last_modified, redirect_url, redirect_status);
@@ -1147,15 +1089,18 @@ void UrlmonUrlRequestManager::OnResponseStarted(int request_id,
 
 void UrlmonUrlRequestManager::OnReadComplete(int request_id,
                                              const std::string& data) {
-  DLOG(INFO) << __FUNCTION__;
-  DCHECK(LookupRequest(request_id).get() != NULL);
+  DCHECK_NE(request_id, -1);
+  DLOG(INFO) << __FUNCTION__ << " id: " << request_id;
+  DCHECK(LookupRequest(request_id) != NULL);
   ++calling_delegate_;
   delegate_->OnReadComplete(request_id, data);
   --calling_delegate_;
+  DLOG(INFO) << __FUNCTION__ << " done id: " << request_id;
 }
 
 void UrlmonUrlRequestManager::OnResponseEnd(int request_id,
                                             const URLRequestStatus& status) {
+  DCHECK_NE(request_id, -1);
   DLOG(INFO) << __FUNCTION__;
   DCHECK(status.status() != URLRequestStatus::CANCELED);
   RequestMap::size_type n = request_map_.erase(request_id);
@@ -1167,6 +1112,7 @@ void UrlmonUrlRequestManager::OnResponseEnd(int request_id,
 
 void UrlmonUrlRequestManager::OnCookiesRetrieved(bool success, const GURL& url,
     const std::string& cookie_string, int cookie_id) {
+  DCHECK(url.is_valid());
   delegate_->OnCookiesRetrieved(success, url, cookie_string, cookie_id);
 }
 
@@ -1175,6 +1121,7 @@ scoped_refptr<UrlmonUrlRequest> UrlmonUrlRequestManager::LookupRequest(
   RequestMap::iterator it = request_map_.find(request_id);
   if (request_map_.end() != it)
     return it->second;
+  DLOG(ERROR) << __FUNCTION__ << " no request found for " << request_id;
   return NULL;
 }
 
@@ -1190,6 +1137,7 @@ UrlmonUrlRequestManager::~UrlmonUrlRequestManager() {
 void UrlmonUrlRequestManager::AddPrivacyDataForUrl(
     const std::string& url, const std::string& policy_ref,
     int32 flags) {
+  DCHECK(!url.empty());
   AutoLock lock(privacy_info_lock_);
 
   bool fire_privacy_event = false;
