@@ -55,8 +55,7 @@ class SVNUnittest(TryChangeTestsBase):
   """trychange.SVN tests."""
   def testMembersChanged(self):
     members = [
-      'AutomagicalSettings', 'GclStyleSettings', 'GclientStyleSettings',
-      'GetCodeReviewSetting', 'ReadRootFile',
+      'AutomagicalSettings', 'GetCodeReviewSetting', 'ReadRootFile',
       'GenerateDiff', 'GetFileNames',
     ]
     # If this test fails, you should add the relevant test.
@@ -80,8 +79,7 @@ class GITUnittest(TryChangeTestsBase):
   """trychange.GIT tests."""
   def testMembersChanged(self):
     members = [
-      'AutomagicalSettings', 'GclStyleSettings', 'GclientStyleSettings',
-      'GetCodeReviewSetting', 'ReadRootFile',
+      'AutomagicalSettings', 'GetCodeReviewSetting', 'ReadRootFile',
       'GenerateDiff', 'GetFileNames',
     ]
     # If this test fails, you should add the relevant test.

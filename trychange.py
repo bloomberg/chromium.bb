@@ -117,7 +117,7 @@ class SCM(object):
           self.codereview_settings[k.strip()] = v.strip()
     return self.codereview_settings.get(key, '')
 
-  def GclStyleSettings(self):
+  def _GclStyleSettings(self):
     """Set default settings based on the gcl-style settings from the
     repository."""
     settings = {
@@ -128,26 +128,47 @@ class SCM(object):
       'root': self.GetCodeReviewSetting('TRYSERVER_ROOT'),
       'patchlevel': self.GetCodeReviewSetting('TRYSERVER_PATCHLEVEL'),
     }
+    logging.info('\n'.join(['%s: %s' % (k, v)
+                            for (k, v) in settings.iteritems() if v]))
     for (k, v) in settings.iteritems():
       if v and getattr(self.options, k) is None:
         setattr(self.options, k, v)
 
-  def GclientStyleSettings(self):
+  def _GclientStyleSettings(self):
     """Find the root, assuming a gclient-style checkout."""
+    self.gclient_root = None
     if not self.options.no_gclient and not self.options.root:
       root = self.checkout_root
-      gclient_root = gclient_utils.FindGclientRoot(root)
-      if gclient_root:
-        self.options.root = gclient_utils.PathDifference(gclient_root, root)
+      self.gclient_root = gclient_utils.FindGclientRoot(root)
+      if self.gclient_root:
+        logging.info('Found .gclient at %s' % self.gclient_root)
+        self.options.root = gclient_utils.PathDifference(self.gclient_root,
+                                                         root)
 
   def AutomagicalSettings(self):
     """Determines settings based on supported code review and checkout tools.
     """
-    self.GclStyleSettings()
-    self.GclientStyleSettings()
+    self._GclientStyleSettings()
+    self._GclStyleSettings()
 
   def ReadRootFile(self, filename):
-    raise NotImplementedError()
+    if not self.options.root:
+      filepath = os.path.join(self.checkout_root, filename)
+      if os.path.isfile(filepath):
+        logging.info('Found %s at %s' % (filename, self.checkout_root))
+        return gclient_util.FileRead(filepath)
+      return None
+    root = os.path.abspath(self.gclient_root)
+    cur = os.path.abspath(self.checkout_root)
+    assert cur.startswith(root), (root, cur)
+    while cur.startswith(root):
+      filepath = os.path.join(cur, filename)
+      if os.path.isfile(filepath):
+        logging.info('Found %s at %s' % (filename, cur))
+        return gclient_utils.FileRead(filepath)
+      cur = os.path.dirname(cur)
+    logging.warning('Didn\'t find %s' % filename)
+    return None
 
 
 class SVN(SCM):
@@ -161,21 +182,18 @@ class SVN(SCM):
     logging.info("SVN(%s)" % self.checkout_root)
 
   def ReadRootFile(self, filename):
-    try:
-      # Try to search on the subversion repository for the file.
-      import gcl
-      data = gcl.GetCachedFile(filename)
-      logging.debug('%s:\n%s' % (filename, data))
+    data = SCM.ReadRootFile(self, filename)
+    if data:
       return data
+
+    # Try to search on the subversion repository for the file.
+    try:
+      from gcl import GetCachedFile
     except ImportError:
-      try:
-        data = gclient_utils.FileRead(os.path.join(self.checkout_root,
-                                                   filename))
-        logging.debug('%s:\n%s' % (filename, data))
-        return data
-      except (IOError, OSError):
-        logging.debug('%s:\nNone' % filename)
-        return None
+      return None
+    data = GetCachedFile(filename)
+    logging.debug('%s:\n%s' % (filename, data))
+    return data
 
   def GenerateDiff(self):
     """Returns a string containing the diff for the given file list.
@@ -221,16 +239,6 @@ class GIT(SCM):
             "Verify this branch is set up to track another"
             "(via the --track argument to \"git checkout -b ...\"")
     logging.info("GIT(%s)" % self.checkout_root)
-
-  def ReadRootFile(self, filename):
-    try:
-      # A git checkout is always a full checkout.
-      data = gclient_utils.FileRead(os.path.join(self.checkout_root, filename))
-      logging.debug('%s:\n%s' % (filename, data))
-      return data
-    except (IOError, OSError):
-      logging.debug('%s:\nNone' % filename)
-      return None
 
   def GenerateDiff(self):
     if not self.files:
@@ -583,12 +591,10 @@ def TryChange(argv,
 
   if not swallow_exception:
     if options.verbose == 0:
-      logging.basicConfig(level=logging.ERROR)
-    elif options.verbose == 1:
       logging.basicConfig(level=logging.WARNING)
-    elif options.verbose == 2:
+    elif options.verbose == 1:
       logging.basicConfig(level=logging.INFO)
-    elif options.verbose > 2:
+    elif options.verbose > 1:
       logging.basicConfig(level=logging.DEBUG)
 
   logging.debug(argv)
