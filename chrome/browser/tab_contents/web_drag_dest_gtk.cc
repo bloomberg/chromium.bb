@@ -119,7 +119,7 @@ void WebDragDestGtk::OnDragDataReceived(
   data_requests_--;
 
   // Decode the data.
-  if (data->data) {
+  if (data->data && data->length > 0) {
     // If the source can't provide us with valid data for a requested target,
     // data->data will be NULL.
     if (data->target ==
@@ -175,7 +175,7 @@ void WebDragDestGtk::OnDragDataReceived(
   // URL bookmark.
   if (data->target ==
       gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::CHROME_BOOKMARK_ITEM))  {
-    if (data->data) {
+    if (data->data && data->length > 0) {
       bookmark_drag_data_.ReadFromVector(
           bookmark_utils::GetNodesFromSelection(
               NULL, data,
