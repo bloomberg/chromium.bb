@@ -2093,6 +2093,22 @@ void Browser::ExecuteCommand(int id) {
 // Browser, TabStripModelDelegate implementation:
 
 TabContents* Browser::AddBlankTab(bool foreground) {
+  // To make a more "launchy" experience, try to reuse an existing NTP if there
+  // is one.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableExtensionApps)) {
+    for (int i = tabstrip_model_.count() - 1; i >= 0; --i) {
+      TabContents* contents = tabstrip_model_.GetTabContentsAt(i);
+      if (StartsWithASCII(contents->GetURL().spec(),
+                          chrome::kChromeUINewTabURL, true)) {
+        if (foreground)
+          SelectTabContentsAt(i, true);
+
+        return contents;
+      }
+    }
+  }
+
   return AddBlankTabAt(-1, foreground);
 }
 
