@@ -3576,6 +3576,7 @@ void RenderView::OnZoom(PageZoom::Function function) {
   if (!webview())  // Not sure if this can happen, but no harm in being safe.
     return;
 
+  webview()->hidePopups();
   // Should we be saving zoom levels for plugins?  It's not clear, so for now
   // don't.
   if (webview()->mainFrame()->document().isPluginDocument()) {
