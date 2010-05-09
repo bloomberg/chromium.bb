@@ -30,12 +30,9 @@
  */
 
 #include <wchar.h>
-#include <process.h>
 #include <windows.h>
 
-#undef MAX_PATH
-#define MAX_PATH 2048
-#define ERROR { wprintf(L"Can not find filename to execute!"); return 1; }
+#pragma comment(linker, "/entry:entry")
 
 /*
  * The SDK redirector reads it's name and invokes the appropriate binary from a
@@ -49,26 +46,44 @@
  *
  * The binary should be built by visual studio (not cygwin) since when it starts
  * cygwin has not been located yet.
+ *
+ * Use the folliwong commands:
+ *   cl /c /O2 /GS- redirector.c
+ *   link /subsystem:console redirector.obj kernel32.lib
  */
 
-int wmain(int argc, wchar_t* argv[], wchar_t* envp[]) {
-  wchar_t newpath[MAX_PATH+64];
-  wchar_t oldpath[MAX_PATH];
-  wchar_t selector[] = { L'-', 0, L'3', L'2', 0, 0, 0, 0, 0, 0, 0 };
-  wchar_t *delimeter = oldpath;
-  int nacl64 = 0, done;
+void entry() {
+  wchar_t selector[] = { L' ', L'-', 0, L'3', L'2', 0, 0, 0, 0, 0, 0, 0 };
+  wchar_t *newpath = NULL, *oldpath = NULL, *cmdline, *delimeter;
+  int nacl64, done;
+  static STARTUPINFOW si = { sizeof(STARTUPINFOW), 0};
+  static PROCESS_INFORMATION pi;
 
-  if (GetModuleFileNameW(NULL, oldpath, MAX_PATH) == 0)
-    ERROR;
+  nacl64 = 128; /* Nice default size, we'll increase it if needed */
+  do {
+    oldpath = HeapAlloc(GetProcessHeap(), 0, sizeof(wchar_t)*(nacl64));
+    if (!oldpath)
+      goto ShowErrorMessage;
+    done = GetModuleFileNameW(NULL, oldpath, nacl64);
+    if (done == 0)
+      goto ShowErrorMessage;
+    if (done >= nacl64-1) {
+      nacl64 <<= 1;
+      HeapFree(GetProcessHeap(), 0, oldpath);
+      done = 0;
+    }
+  } while (!done);
+  newpath = HeapAlloc(GetProcessHeap(), 0, sizeof(wchar_t)*(nacl64+64));
+  if (!newpath)
+    goto ShowErrorMessage;
+  nacl64 = 0;
+  delimeter = oldpath;
   while (*delimeter)
     ++delimeter;
-  if (delimeter-oldpath>MAX_PATH)
-    ERROR;
   while (delimeter>oldpath && *delimeter != L'/' && *delimeter != L'\\')
     --delimeter;
   if (delimeter == oldpath)
-    ERROR;
-
+    goto ShowErrorMessage;
   if ((delimeter[-4] == L'/' || delimeter[-4] == L'\\') &&
       (delimeter[-3] == L'b' || delimeter[-3] == L'B') &&
       (delimeter[-2] == L'i' || delimeter[-2] == L'I') &&
@@ -117,25 +132,28 @@ int wmain(int argc, wchar_t* argv[], wchar_t* envp[]) {
     nacl64=1;
   }
   done = delimeter-oldpath;
-  wmemcpy(newpath, oldpath, done);
+  /* We don't need L'\0' here, but lstrcpynW will copy it anyway */
+  lstrcpynW(newpath, oldpath, done+1);
   if (nacl64) {
-    wmemcpy(newpath + done, L"\\libexec\\nacl64-", 16);
+    lstrcpyW(newpath + done, L"\\libexec\\nacl64-");
+    cmdline = newpath + done + 9;
     done += 16; delimeter += 12;
-    selector[2] = L'6';
-    selector[3] = L'4';
+    selector[3] = L'6';
+    selector[4] = L'4';
   } else {
-    wmemcpy(newpath + done, L"\\libexec\\nacl-", 14);
+    lstrcpyW(newpath + done, L"\\libexec\\nacl-");
+    cmdline = newpath + done + 9;
     done += 14; delimeter += 10;
   }
-  wcscpy(newpath + done, delimeter);
+  lstrcpynW(newpath + done, delimeter, 32);
   if ((delimeter[0] == L'a' || delimeter[0] == L'A') &&
       (delimeter[1] == L's' || delimeter[0] == L'S') &&
       (delimeter[2] == '.'))
-    selector[1] = '-';
+    selector[2] = '-';
   else if ((delimeter[0] == L'l' || delimeter[0] == L'L') &&
            (delimeter[1] == L'd' || delimeter[0] == L'D') &&
            (delimeter[2] == '.'))
-    wcsncpy(selector+1, L"melf_nacl", 9);
+    lstrcpyW(selector+2, L"melf_nacl");
   else if (((delimeter[0] == L'c' || delimeter[0] == L'C') &&
             (delimeter[1] == L'+') && (delimeter[2] == L'+') &&
             (delimeter[3] == '.')) ||
@@ -159,17 +177,53 @@ int wmain(int argc, wchar_t* argv[], wchar_t* envp[]) {
             (delimeter[6] == L'a' || delimeter[6] == L'A') &&
             (delimeter[7] == L'n' || delimeter[7] == L'N') &&
             (delimeter[8] == '.')))
-    selector[1] = 'm';
-  if (selector[1]) {
-    memcpy(((wchar_t**)oldpath)+2, argv+1, sizeof(wchar_t*)*(argc-1));
-    argv = (wchar_t**)oldpath;
-    argv[1] = selector;
-    argv[argc+1] = 0;
+    selector[2] = 'm',
+    cmdline = newpath;
+  HeapFree(GetProcessHeap(), 0, oldpath);
+  oldpath = NULL;
+  delimeter = GetCommandLineW();
+  if (!delimeter)
+    goto ShowErrorMessage;
+  if (delimeter[0] == L'\"') {
+    delimeter++;
+    while (delimeter[0] && delimeter[0] != L'\"') {
+      if (delimeter[0] == L'\\' &&
+          (delimeter[1] == L'\"' || delimeter[1] == L'\\'))
+        delimeter++;
+      delimeter++;
+    }
+    delimeter++;
   } else {
-    memcpy(((wchar_t**)oldpath)+1, argv+1, sizeof(wchar_t*)*(argc-1));
-    argv = (wchar_t**)oldpath;
-    argv[argc] = 0;
+    while (delimeter[0] && delimeter[0] != L' ')
+      delimeter++;
   }
-  argv[0] = newpath;
-  return _wspawnvpe(_P_WAIT, newpath, argv, envp);
+  nacl64 = lstrlenW(cmdline);
+  if (selector[2])
+    done = lstrlenW(selector);
+  else
+    done = 0;
+  oldpath = HeapAlloc(GetProcessHeap(), 0,
+                      (lstrlenW(delimeter)+nacl64+done+4)*sizeof(wchar_t));
+  if (!oldpath)
+    goto ShowErrorMessage;
+  lstrcpyW(oldpath, cmdline);
+  lstrcpyW(oldpath+nacl64, selector);
+  lstrcpyW(oldpath+nacl64+done, delimeter);
+  if (CreateProcessW(newpath, oldpath, NULL, NULL, TRUE,
+                 CREATE_UNICODE_ENVIRONMENT, NULL, NULL, &si, &pi) != 0) {
+    WaitForSingleObject(pi.hProcess, INFINITE);
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+    HeapFree(GetProcessHeap(), 0, newpath);
+    HeapFree(GetProcessHeap(), 0, oldpath);
+    ExitProcess(0);
+  }
+ ShowErrorMessage:
+  if (newpath)
+    HeapFree(GetProcessHeap(), 0, newpath);
+  if (oldpath)
+    HeapFree(GetProcessHeap(), 0, oldpath);
+#define ShowErrorMessage "Can not find filename to execute!\r\n"
+  WriteFile(GetStdHandle(STD_ERROR_HANDLE),
+            ShowErrorMessage, sizeof(ShowErrorMessage)-1, &nacl64, NULL);
 }
