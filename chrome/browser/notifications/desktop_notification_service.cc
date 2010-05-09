@@ -285,8 +285,10 @@ void DesktopNotificationService::Observe(NotificationType type,
     const ListValue* allowed_sites =
         prefs->GetList(prefs::kDesktopNotificationAllowedOrigins);
     std::vector<GURL> allowed_origins;
-    NotificationsPrefsCache::ListValueToGurlVector(*allowed_sites,
-                                                   &allowed_origins);
+    if (allowed_sites) {
+      NotificationsPrefsCache::ListValueToGurlVector(*allowed_sites,
+                                                     &allowed_origins);
+    }
     // Schedule a cache update on the IO thread.
     ChromeThread::PostTask(
         ChromeThread::IO, FROM_HERE,
@@ -298,8 +300,10 @@ void DesktopNotificationService::Observe(NotificationType type,
     const ListValue* denied_sites =
         prefs->GetList(prefs::kDesktopNotificationDeniedOrigins);
     std::vector<GURL> denied_origins;
-    NotificationsPrefsCache::ListValueToGurlVector(*denied_sites,
-                                                   &denied_origins);
+    if (denied_sites) {
+      NotificationsPrefsCache::ListValueToGurlVector(*denied_sites,
+                                                     &denied_origins);
+    }
     // Schedule a cache update on the IO thread.
     ChromeThread::PostTask(
         ChromeThread::IO, FROM_HERE,
