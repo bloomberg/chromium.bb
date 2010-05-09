@@ -33,7 +33,7 @@ const SkColor InfoBubble::kBackgroundColor = SK_ColorWHITE;
 
 void BorderContents::Init() {
   DCHECK(!bubble_border_);
-  bubble_border_ = new BubbleBorder(BubbleBorder::LEFT_TOP);
+  bubble_border_ = new BubbleBorder(BubbleBorder::TOP_LEFT);
   set_border(bubble_border_);
   bubble_border_->set_background_color(InfoBubble::kBackgroundColor);
 }
