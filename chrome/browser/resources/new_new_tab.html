@@ -127,8 +127,7 @@ if ('mode' in hashParams) {
 <div id="main">
 
   <div id=top-bar>
-    <div id="tip-line"></div>
-    <script>updateSimpleSection('tip-line', Section.TIPS)</script>
+    <div id="tip-line" class="section" section="TIPS"></div>
     <input type="button" id="option-button"
         i18n-values="title:pagedisplaytooltip">
   </div>
@@ -180,11 +179,10 @@ if ('mode' in hashParams) {
   </div>
 
   <script>
-    (function() {
-      updateSimpleSection('recently-closed', Section.RECENT);
-      updateSimpleSection('most-visited-section', Section.THUMB);
-      updateSimpleSection('debug', Section.DEBUG);
-    })();
+    updateSimpleSection('tip-line', Section.TIPS);
+    updateSimpleSection('recently-closed', Section.RECENT);
+    updateSimpleSection('most-visited-section', Section.THUMB);
+    updateSimpleSection('debug', Section.DEBUG);
   </script>
 
   <div id="sync-status">

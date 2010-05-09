@@ -272,12 +272,15 @@ html[dir=rtl] .item {
 
 #tip-line {
   -webkit-box-flex: 1;
+  -webkit-transition: opacity .15s;
   -webkit-user-select: text;
+  border: 0;
   cursor: text;
-  text-align: end;
+  display: block;  /* Since we are reusing the section display logic we need
+                      to override the display for hidden tips. */
   margin: 10px;
   -webkit-margin-start: 50%;
-  -webkit-transition: opacity .15s;
+  text-align: end;
 }
 
 .notification.hidden,
