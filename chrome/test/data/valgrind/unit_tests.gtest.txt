@@ -6,3 +6,6 @@ VisitedLinkRelayTest.Basics
 RenderViewTest.ImeComposition
 # Hangs sometimes; see http://crbug.com/24416
 DnsMasterTest.MassiveConcurrentLookupTest
+# From r44017: Failure is related to the fact that I can't create distinct
+# WebCore objects in the test.  http://crbug.com/43764
+ActiveNotificationTrackerTest.TestLookupAndClear
