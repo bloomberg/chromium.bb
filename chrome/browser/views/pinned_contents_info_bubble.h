@@ -19,6 +19,7 @@ class PinnedContentsBorderContents : public BorderContents {
   virtual void SizeAndGetBounds(
       const gfx::Rect& position_relative_to,  // In screen coordinates
       BubbleBorder::ArrowLocation arrow_location,
+      bool allow_bubble_offscreen,
       const gfx::Size& contents_size,
       gfx::Rect* contents_bounds,             // Returned in window coordinates
       gfx::Rect* window_bounds);              // Returned in screen coordinates

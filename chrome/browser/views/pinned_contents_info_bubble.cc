@@ -12,6 +12,7 @@
 void PinnedContentsBorderContents::SizeAndGetBounds(
     const gfx::Rect& position_relative_to,
     BubbleBorder::ArrowLocation arrow_location,
+    bool allow_bubble_offscreen,
     const gfx::Size& contents_size,
     gfx::Rect* contents_bounds,
     gfx::Rect* window_bounds) {
@@ -25,8 +26,9 @@ void PinnedContentsBorderContents::SizeAndGetBounds(
   bubble_border_->SetArrowOffset(offset, contents_size);
 
   BorderContents::SizeAndGetBounds(
-      position_relative_to, arrow_location, contents_size,
-      contents_bounds, window_bounds);
+      position_relative_to, arrow_location,
+      true,  // Don't move the bubble around if it does not fit on the screen.
+      contents_size, contents_bounds, window_bounds);
 
   // Now move the y position to make sure the bubble contents overlap the view.
   window_bounds->Offset(0, -(kTopMargin + 1));

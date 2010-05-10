@@ -49,11 +49,13 @@ class BorderContents : public views::View {
   // Given the size of the contents and the rect to point at, returns the bounds
   // of both the border and the contents inside the bubble.
   // |arrow_location| specifies the preferred location for the arrow
-  // anchor. If the bubble does not fit on the monitor, the arrow location may
-  // changed so it can. In case of RTL arrow is mirrored.
+  // anchor. If the bubble does not fit on the monitor and
+  // |allow_bubble_offscreen| is false, the arrow location may change so the
+  // bubble shows entirely.
   virtual void SizeAndGetBounds(
       const gfx::Rect& position_relative_to,  // In screen coordinates
       BubbleBorder::ArrowLocation arrow_location,
+      bool allow_bubble_offscreen,
       const gfx::Size& contents_size,
       gfx::Rect* contents_bounds,             // Returned in window coordinates
       gfx::Rect* window_bounds);              // Returned in screen coordinates

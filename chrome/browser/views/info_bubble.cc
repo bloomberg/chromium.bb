@@ -41,6 +41,7 @@ void BorderContents::Init() {
 void BorderContents::SizeAndGetBounds(
     const gfx::Rect& position_relative_to,
     BubbleBorder::ArrowLocation arrow_location,
+    bool allow_bubble_offscreen,
     const gfx::Size& contents_size,
     gfx::Rect* contents_bounds,
     gfx::Rect* window_bounds) {
@@ -60,26 +61,28 @@ void BorderContents::SizeAndGetBounds(
   *window_bounds =
       bubble_border_->GetBounds(position_relative_to, local_contents_size);
 
-  // See if those bounds will fit on the monitor.
-  scoped_ptr<WindowSizer::MonitorInfoProvider> monitor_provider(
-      WindowSizer::CreateDefaultMonitorInfoProvider());
-  gfx::Rect monitor_bounds(
-      monitor_provider->GetMonitorWorkAreaMatching(position_relative_to));
-  if (!monitor_bounds.IsEmpty() && !monitor_bounds.Contains(*window_bounds)) {
-    // The bounds don't fit.  Move the arrow to try and improve things.
-    if (window_bounds->bottom() > monitor_bounds.bottom())
-      arrow_location = BubbleBorder::horizontal_mirror(arrow_location);
-    else if (BubbleBorder::is_arrow_on_left(arrow_location) ?
-             (window_bounds->right() > monitor_bounds.right()) :
-             (window_bounds->x() < monitor_bounds.x())) {
-      arrow_location = BubbleBorder::rtl_mirror(arrow_location);
+  if (!allow_bubble_offscreen) {
+    // See if those bounds will fit on the monitor.
+    scoped_ptr<WindowSizer::MonitorInfoProvider> monitor_provider(
+        WindowSizer::CreateDefaultMonitorInfoProvider());
+    gfx::Rect monitor_bounds(
+        monitor_provider->GetMonitorWorkAreaMatching(position_relative_to));
+    if (!monitor_bounds.IsEmpty() && !monitor_bounds.Contains(*window_bounds)) {
+      // The bounds don't fit.  Move the arrow to try and improve things.
+      if (window_bounds->bottom() > monitor_bounds.bottom())
+        arrow_location = BubbleBorder::horizontal_mirror(arrow_location);
+      else if (BubbleBorder::is_arrow_on_left(arrow_location) ?
+               (window_bounds->right() > monitor_bounds.right()) :
+               (window_bounds->x() < monitor_bounds.x())) {
+        arrow_location = BubbleBorder::rtl_mirror(arrow_location);
+      }
+
+      bubble_border_->set_arrow_location(arrow_location);
+
+      // Now get the recalculated bounds.
+      *window_bounds = bubble_border_->GetBounds(position_relative_to,
+                                                 local_contents_size);
     }
-
-    bubble_border_->set_arrow_location(arrow_location);
-
-    // Now get the recalculated bounds.
-    *window_bounds = bubble_border_->GetBounds(position_relative_to,
-                                              local_contents_size);
   }
 
   // Calculate the bounds of the contained contents (in window coordinates) by
@@ -143,7 +146,7 @@ gfx::Rect BorderWidget::SizeAndGetBounds(
   gfx::Rect contents_bounds;
   gfx::Rect window_bounds;
   border_contents_->SizeAndGetBounds(position_relative_to, arrow_location,
-                                     contents_size, &contents_bounds,
+                                     false, contents_size, &contents_bounds,
                                      &window_bounds);
   SetBounds(window_bounds);
 
@@ -271,7 +274,7 @@ void InfoBubble::Init(views::Widget* parent,
   border_contents_->Init();
   gfx::Rect contents_bounds;
   border_contents_->SizeAndGetBounds(position_relative_to,
-      arrow_location, contents->GetPreferredSize(),
+      arrow_location, false, contents->GetPreferredSize(),
       &contents_bounds, &window_bounds);
   // This new view must be added before |contents| so it will paint under it.
   contents_view->AddChildView(0, border_contents_);
@@ -318,7 +321,7 @@ void InfoBubble::SizeToContents() {
 #else
   gfx::Rect contents_bounds;
   border_contents_->SizeAndGetBounds(position_relative_to_,
-      arrow_location_, contents_->GetPreferredSize(),
+      arrow_location_, false, contents_->GetPreferredSize(),
       &contents_bounds, &window_bounds);
   // |contents_view| has no layout manager, so we have to explicitly position
   // its children.
