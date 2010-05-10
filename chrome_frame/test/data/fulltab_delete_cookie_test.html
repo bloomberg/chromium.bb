@@ -4,8 +4,7 @@
     <title>FullTab mode cookie deletion test</title>
   </head>
 
-  <script type="text/javascript"
-  src="chrome_frame_tester_helpers.js"></script>
+  <script type="text/javascript" src="chrome_frame_tester_helpers.js"></script>
 
   <script type="text/javascript">
     function onLoad() {
@@ -20,19 +19,23 @@
       // "CF_FullTabDeleteCookie=1".
       // Then erase the first cookie and validate that it no longer contains
       // this string.
-      var original_cookies = document.cookie;
-      var cookie_found = /CF_FullTabDeleteCookie=1/.test(document.cookie);
-      if (cookie_found) {
-        eraseCookie("CF_FullTabDeleteCookie");
-        cookie_found = /CF_FullTabDeleteCookie=1/.test(document.cookie);
-        if (!cookie_found) {
-          onSuccess("FullTab_DeleteCookieTest", 1);
+      try {
+        var original_cookies = document.cookie;
+        var cookie_found = /CF_FullTabDeleteCookie=1/.test(document.cookie);
+        if (cookie_found) {
+          eraseCookie("CF_FullTabDeleteCookie");
+          cookie_found = /CF_FullTabDeleteCookie=1/.test(document.cookie);
+          if (!cookie_found) {
+            onSuccess("FullTab_DeleteCookieTest", 1);
+          } else {
+            onFailure("FullTab_DeleteCookieTest", 1,
+                "CF_FullTabDeleteCookie still exists: " + original_cookies);
+          }
         } else {
-          onFailure("FullTab_DeleteCookieTest", 1,
-              "CF_FullTabDeleteCookie still exists: " + original_cookies);
+          onFailure("FullTab_DeleteCookieTest", 1, "Expected cookies not set");
         }
-      } else {
-        onFailure("FullTab_DeleteCookieTest", 1, "Expected cookies not set");
+      } catch (e) {
+        onFailure("FullTab_DeleteCookieTest", 1, "exception: " + e.description);
       }
     }
   </script>
