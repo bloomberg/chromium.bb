@@ -219,16 +219,21 @@ void SetWindowSizeFromResources(GtkWindow* window,
     gtk_window_set_default_size(window, width, height);
   } else {
     // For a non-resizable window, GTK tries to snap the window size
-    // to the minimum size around the content.  We still want to set
-    // the *minimum* window size to allow windows with long titles to
-    // be wide enough to display their titles, but if GTK needs to
-    // make the window *wider* due to very wide controls, we should
-    // allow that too.
-    GdkGeometry geometry;
-    geometry.min_width = width;
-    geometry.min_height = height;
-    gtk_window_set_geometry_hints(window, GTK_WIDGET(window),
-                                  &geometry, GDK_HINT_MIN_SIZE);
+    // to the minimum size around the content.  We use the sizes in
+    // the resources to set *minimum* window size to allow windows
+    // with long titles to be wide enough to display their titles.
+    //
+    // But if GTK wants to make the window *wider* due to very wide
+    // controls, we should allow that too, so be careful to pick the
+    // wider of the resources size and the natural window size.
+
+    gtk_widget_show_all(GTK_BIN(window)->child);
+    GtkRequisition requisition;
+    gtk_widget_size_request(GTK_WIDGET(window), &requisition);
+    gtk_widget_set_size_request(
+        GTK_WIDGET(window),
+        width == -1 ? -1 : std::max(width, requisition.width),
+        height == -1 ? -1 : std::max(height, requisition.height));
   }
   gtk_window_set_resizable(window, resizable ? TRUE : FALSE);
 }
