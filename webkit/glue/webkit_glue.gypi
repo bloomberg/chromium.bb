@@ -111,10 +111,11 @@
       'dependencies': [
         '<(DEPTH)/app/app.gyp:app_base',
         '<(DEPTH)/net/net.gyp:net',
+        '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
+        '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
         '<(DEPTH)/third_party/ppapi/ppapi.gyp:ppapi_c',
-        '<(webkit_src_dir)/WebKit/chromium/WebKit.gyp:webkit',
         'webkit_resources',
         'webkit_strings',
       ],
