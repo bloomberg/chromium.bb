@@ -336,8 +336,10 @@ void TabRenderer::UpdateData(TabContents* contents,
     else
       data_.favicon = contents->GetFavIcon();
     data_.phantom = phantom;
-    if (phantom)
+    if (phantom) {
       data_.crashed = false;  // Phantom tabs can never crash.
+      StopMiniTabTitleAnimation();
+    }
 
     // Sets the accessible name for the tab.
     SetAccessibleName(UTF16ToWide(data_.title));
@@ -431,8 +433,8 @@ void TabRenderer::StartMiniTabTitleAnimation() {
     mini_title_animation_.reset(new MultiAnimation(parts));
     mini_title_animation_->SetContainer(container_.get());
     mini_title_animation_->set_delegate(this);
-    mini_title_animation_->Start();
   }
+  mini_title_animation_->Start();
 }
 
 void TabRenderer::StopMiniTabTitleAnimation() {
