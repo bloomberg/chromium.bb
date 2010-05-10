@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,11 +35,6 @@ class TestTableModel : public TableModel {
  public:
   TestTableModel();
 
-  struct CheckNotification {
-    int row;
-    bool state;
-  };
-
   // Adds a new row at index |row| with values |c1_value| and |c2_value|.
   void AddRow(int row, int c1_value, int c2_value);
 
@@ -54,11 +49,6 @@ class TestTableModel : public TableModel {
   virtual std::wstring GetText(int row, int column_id);
   virtual void SetObserver(TableModelObserver* observer);
   virtual int CompareValues(int row1, int row2, int column_id);
-  virtual bool IsChecked(int row);
-  virtual void SetChecked(int row, bool is_checked);
-
-  // Contains a record of the SetChecked calls.
-  std::vector<CheckNotification> check_notifications_;
 
  private:
   TableModelObserver* observer_;
@@ -113,16 +103,6 @@ void TestTableModel::SetObserver(TableModelObserver* observer) {
 
 int TestTableModel::CompareValues(int row1, int row2, int column_id) {
   return rows_[row1][column_id] - rows_[row2][column_id];
-}
-
-bool TestTableModel::IsChecked(int row) {
-  // Let's make the first row the only checked one.
-  return (row == 1);
-}
-
-void TestTableModel::SetChecked(int row, bool is_checked) {
-  CheckNotification check_notification = { row, is_checked };
-  check_notifications_.push_back(check_notification);
 }
 
 #if defined(OS_WIN)
@@ -564,7 +544,7 @@ TEST_F(TableView2Test, SingleSelectionTest) {
   EXPECT_EQ(-1, table_->GetFirstSelectedRow());
 }
 
-// Row focusing and checkbox cell are not supported on Linux yet,
+// Row focusing are not supported on Linux yet.
 #if defined(OS_WIN)
 // Test the row focus on a single-selection table.
 TEST_F(TableView2Test, RowFocusTest) {
@@ -578,40 +558,5 @@ TEST_F(TableView2Test, RowFocusTest) {
 
   table_->ClearRowFocus();
   EXPECT_EQ(-1, table_->GetFirstSelectedRow());
-}
-
-class CheckTableView2Test : public TableView2Test {
- protected:
-  virtual views::TableTypes GetTableType() {
-    return views::CHECK_BOX_AND_TEXT;
-  }
-
-  // Sets the row check state natively.
-  void SetRowCheckState(int row, bool state) {
-#if defined(OS_WIN)
-  ListView_SetCheckState(table_->GetTestingHandle(), row, state);
-#else
-  NOTIMPLEMENTED();
-#endif
-  }
-};
-
-TEST_F(CheckTableView2Test, TestCheckTable) {
-  // Test that we were notified of the initial check states.
-  ASSERT_EQ(1U, model_->check_notifications_.size());
-  EXPECT_EQ(1, model_->check_notifications_[0].row);
-
-  // Test that we get the notification correctly.
-  model_->check_notifications_.clear();
-  SetRowCheckState(1, false);
-  SetRowCheckState(0, true);
-  SetRowCheckState(0, false);
-  ASSERT_LE(3U, model_->check_notifications_.size());
-  EXPECT_EQ(1, model_->check_notifications_[0].row);
-  EXPECT_FALSE(model_->check_notifications_[0].state);
-  EXPECT_EQ(0, model_->check_notifications_[1].row);
-  EXPECT_TRUE(model_->check_notifications_[1].state);
-  EXPECT_EQ(0, model_->check_notifications_[2].row);
-  EXPECT_FALSE(model_->check_notifications_[2].state);
 }
 #endif

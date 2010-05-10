@@ -26,6 +26,17 @@
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/table/table_view_observer.h"
 
+namespace {
+
+int GetViewIndexFromPoint(HWND window, const gfx::Point& p) {
+  LVHITTESTINFO hit_info = {0};
+  hit_info.pt.x = p.x();
+  hit_info.pt.y = p.y();
+  return ListView_HitTest(window, &hit_info);
+}
+
+}  // namespace
+
 namespace views {
 
 // Added to column width to prevent truncation.
@@ -500,15 +511,6 @@ bool TableView::GetCellColors(int model_row,
   return false;
 }
 
-static int GetViewIndexFromMouseEvent(HWND window, LPARAM l_param) {
-  int x = GET_X_LPARAM(l_param);
-  int y = GET_Y_LPARAM(l_param);
-  LVHITTESTINFO hit_info = {0};
-  hit_info.pt.x = x;
-  hit_info.pt.y = y;
-  return ListView_HitTest(window, &hit_info);
-}
-
 // static
 LRESULT CALLBACK TableView::TableWndProc(HWND window,
                                          UINT message,
@@ -547,10 +549,8 @@ LRESULT CALLBACK TableView::TableWndProc(HWND window,
             PtInRect(&client_rect, table_point)) {
           // The point is over the client area of the table, handle it ourself.
           // But first select the row if it isn't already selected.
-          LVHITTESTINFO hit_info = {0};
-          hit_info.pt.x = table_point.x;
-          hit_info.pt.y = table_point.y;
-          int view_index = ListView_HitTest(window, &hit_info);
+          int view_index =
+              GetViewIndexFromPoint(window, gfx::Point(table_point));
           if (view_index != -1) {
             int model_index = table_view->view_to_model(view_index);
             if (!table_view->IsItemSelected(model_index))
@@ -611,7 +611,7 @@ LRESULT CALLBACK TableView::TableWndProc(HWND window,
 
     case WM_MBUTTONDOWN: {
       if (w_param == MK_MBUTTON) {
-        int view_index = GetViewIndexFromMouseEvent(window, l_param);
+        int view_index = GetViewIndexFromPoint(window, gfx::Point(l_param));
         if (view_index != -1) {
           int model_index = table_view->view_to_model(view_index);
           // Clear all and select the row that was middle clicked.
@@ -628,7 +628,7 @@ LRESULT CALLBACK TableView::TableWndProc(HWND window,
         ReleaseCapture();
         SetFocus(window);
         if (select_on_mouse_up) {
-          int view_index = GetViewIndexFromMouseEvent(window, l_param);
+          int view_index = GetViewIndexFromPoint(window, gfx::Point(l_param));
           if (view_index != -1)
             table_view->Select(table_view->view_to_model(view_index));
         }
@@ -650,7 +650,7 @@ LRESULT CALLBACK TableView::TableWndProc(HWND window,
         if (in_mouse_down)
           return 0;
 
-        int view_index = GetViewIndexFromMouseEvent(window, l_param);
+        int view_index = GetViewIndexFromPoint(window, gfx::Point(l_param));
         if (view_index != -1) {
           table_view->ignore_listview_change_ = true;
           in_mouse_down = true;
@@ -791,12 +791,10 @@ HWND TableView::CreateNativeControl(HWND parent_container) {
                                 0, 0, width(), height(),
                                 parent_container, NULL, NULL, NULL);
 
-  // Make the selection extend across the row.
-  // Reduce overdraw/flicker artifacts by double buffering.
-  DWORD list_view_style = LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER;
-  if (table_type_ == CHECK_BOX_AND_TEXT)
-    list_view_style |= LVS_EX_CHECKBOXES;
-  ListView_SetExtendedListViewStyleEx(list_view_, 0, list_view_style);
+  // Reduce overdraw/flicker artifacts by double buffering.  Make the selection
+  // extend across the row.
+  ListView_SetExtendedListViewStyle(list_view_,
+                                    LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT);
   l10n_util::AdjustUIFontForWindow(list_view_);
 
   // Add the columns.
@@ -1024,22 +1022,13 @@ LRESULT TableView::OnNotify(int w_param, LPNMHDR hdr) {
 
     case LVN_ITEMCHANGED: {
       // Notification that the state of an item has changed. The state
-      // includes such things as whether the item is selected or checked.
+      // includes such things as whether the item is selected.
       NMLISTVIEW* state_change = reinterpret_cast<NMLISTVIEW*>(hdr);
       if ((state_change->uChanged & LVIF_STATE) != 0) {
         if ((state_change->uOldState & LVIS_SELECTED) !=
             (state_change->uNewState & LVIS_SELECTED)) {
           // Selected state of the item changed.
           OnSelectedStateChanged();
-        }
-        if ((state_change->uOldState & LVIS_STATEIMAGEMASK) !=
-            (state_change->uNewState & LVIS_STATEIMAGEMASK)) {
-          // Checked state of the item changed.
-          bool is_checked =
-            ((state_change->uNewState & LVIS_STATEIMAGEMASK) ==
-             INDEXTOSTATEIMAGEMASK(2));
-          OnCheckedStateChanged(view_to_model(state_change->iItem),
-                                is_checked);
         }
       }
       break;
@@ -1369,14 +1358,10 @@ void TableView::UpdateListViewCache0(int start, int length, bool add) {
   }
 
   LVITEM item = {0};
-  int start_column = 0;
-  int max_row = start + length;
-  const bool has_groups = model_->HasGroups();
   if (add) {
-    if (has_groups)
-      item.mask = LVIF_GROUPID;
-    item.mask |= LVIF_PARAM;
-    for (int i = start; i < max_row; ++i) {
+    const bool has_groups = model_->HasGroups();
+    item.mask = has_groups ? (LVIF_GROUPID | LVIF_PARAM) : LVIF_PARAM;
+    for (int i = start; i < start + length; ++i) {
       item.iItem = i;
       if (has_groups)
         item.iGroupId = model_->GetGroupID(i);
@@ -1386,38 +1371,18 @@ void TableView::UpdateListViewCache0(int start, int length, bool add) {
   }
 
   memset(&item, 0, sizeof(LVITEM));
-
-  // NOTE: I don't quite get why the iSubItem in the following is not offset
-  // by 1. According to the docs it should be offset by one, but that doesn't
-  // work.
-  if (table_type_ == CHECK_BOX_AND_TEXT) {
-    start_column = 1;
-    item.iSubItem = 0;
-    item.mask = LVIF_TEXT | LVIF_STATE;
-    item.stateMask = LVIS_STATEIMAGEMASK;
-    for (int i = start; i < max_row; ++i) {
-      std::wstring text = model_->GetText(i, visible_columns_[0]);
-      item.iItem = add ? i : model_to_view(i);
-      item.pszText = const_cast<LPWSTR>(text.c_str());
-      item.state = INDEXTOSTATEIMAGEMASK(model_->IsChecked(i) ? 2 : 1);
-      ListView_SetItem(list_view_, &item);
-    }
-  }
-
+  item.mask =
+      (table_type_ == ICON_AND_TEXT) ? (LVIF_IMAGE | LVIF_TEXT) : LVIF_TEXT;
   item.stateMask = 0;
-  item.mask = LVIF_TEXT;
-  if (table_type_ == ICON_AND_TEXT) {
-    item.mask |= LVIF_IMAGE;
-  }
-  for (int j = start_column; j < column_count_; ++j) {
+  for (int j = 0; j < column_count_; ++j) {
     TableColumn& col = all_columns_[visible_columns_[j]];
     int max_text_width = ListView_GetStringWidth(list_view_, col.title.c_str());
-    for (int i = start; i < max_row; ++i) {
+    for (int i = start; i < start + length; ++i) {
+      // Set item.
       item.iItem = add ? i : model_to_view(i);
       item.iSubItem = j;
       std::wstring text = model_->GetText(i, visible_columns_[j]);
       item.pszText = const_cast<LPWSTR>(text.c_str());
-      item.iImage = 0;
       ListView_SetItem(list_view_, &item);
 
       // Compute width in px, using current font.
@@ -1470,11 +1435,6 @@ bool TableView::OnKeyDown(base::KeyboardCode virtual_keycode) {
     table_view_observer_->OnKeyDown(virtual_keycode);
   }
   return false;  // Let the key event be processed as ususal.
-}
-
-void TableView::OnCheckedStateChanged(int model_row, bool is_checked) {
-  if (!ignore_listview_change_)
-    model_->SetChecked(model_row, is_checked);
 }
 
 int TableView::PreviousSelectedViewIndex(int view_index) {

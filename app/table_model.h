@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,18 +39,6 @@ class TableModel {
   // with the ICON_AND_TEXT table type. Returns an isNull() bitmap if there is
   // no bitmap.
   virtual SkBitmap GetIcon(int row);
-
-  // Sets whether a particular row is checked. This is only invoked
-  // if the TableView was created with show_check_in_first_column true.
-  virtual void SetChecked(int row, bool is_checked) {
-    NOTREACHED();
-  }
-
-  // Returns whether a particular row is checked. This is only invoked
-  // if the TableView was created with show_check_in_first_column true.
-  virtual bool IsChecked(int row) {
-    return false;
-  }
 
   // Returns true if the TableView has groups. Groups provide a way to visually
   // delineate the rows in a table view. When groups are enabled table view

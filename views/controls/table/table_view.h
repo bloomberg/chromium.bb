@@ -375,10 +375,6 @@ class TableView : public NativeControl,
   // range start - [start + length] are updated from the model.
   void UpdateListViewCache0(int start, int length, bool add);
 
-  // Notification from the ListView that the checked state of the item has
-  // changed.
-  void OnCheckedStateChanged(int model_row, bool is_checked);
-
   // Returns the index of the selected item before |view_index|, or -1 if
   // |view_index| is the first selected item.
   //

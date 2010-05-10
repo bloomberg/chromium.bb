@@ -266,21 +266,13 @@ bool NativeTableWin::ProcessMessage(UINT message, WPARAM w_param,
 
       case LVN_ITEMCHANGED: {
         // Notification that the state of an item has changed. The state
-        // includes such things as whether the item is selected or checked.
+        // includes such things as whether the item is selected.
         NMLISTVIEW* state_change = reinterpret_cast<NMLISTVIEW*>(hdr);
         if ((state_change->uChanged & LVIF_STATE) != 0) {
           if ((state_change->uOldState & LVIS_SELECTED) !=
               (state_change->uNewState & LVIS_SELECTED)) {
             // Selected state of the item changed.
             OnSelectedStateChanged();
-          }
-          if ((state_change->uOldState & LVIS_STATEIMAGEMASK) !=
-              (state_change->uNewState & LVIS_STATEIMAGEMASK)) {
-            // Checked state of the item changed.
-            bool is_checked =
-                ((state_change->uNewState & LVIS_STATEIMAGEMASK) ==
-                INDEXTOSTATEIMAGEMASK(2));
-            OnCheckedStateChanged(state_change->iItem, is_checked);
           }
         }
         break;
@@ -335,12 +327,10 @@ void NativeTableWin::CreateNativeControl() {
                                table_->GetWidget()->GetNativeView(),
                                NULL, NULL, NULL);
 
-  // Make the selection extend across the row.
-  // Reduce overdraw/flicker artifacts by double buffering.
-  DWORD list_view_style = LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER;
-  if (table_->type() == CHECK_BOX_AND_TEXT)
-    list_view_style |= LVS_EX_CHECKBOXES;
-  ListView_SetExtendedListViewStyleEx(hwnd, 0, list_view_style);
+  // Reduce overdraw/flicker artifacts by double buffering.  Make the selection
+  // extend across the row.
+  ListView_SetExtendedListViewStyle(hwnd,
+                                    LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT);
   l10n_util::AdjustUIFontForWindow(hwnd);
 
   NativeControlCreated(hwnd);
@@ -437,11 +427,6 @@ bool NativeTableWin::OnKeyDown(base::KeyboardCode virtual_keycode) {
   if (!ignore_listview_change_ && table_->observer())
     table_->observer()->OnKeyDown(virtual_keycode);
   return false;  // Let the key event be processed as ususal.
-}
-
-void NativeTableWin::OnCheckedStateChanged(int model_row, bool is_checked) {
-  if (!ignore_listview_change_)
-    table_->model()->SetChecked(model_row, is_checked);
 }
 
 LRESULT NativeTableWin::OnCustomDraw(NMLVCUSTOMDRAW* draw_info) {
@@ -545,15 +530,9 @@ void NativeTableWin::UpdateListViewCache(int start, int length, bool add) {
     for (int i = start; i < max_row; ++i) {
       item.iItem = i;
       item.lParam = i;
-      // We do not want to notify of the check state when we insert the items.
       ignore_listview_change_ = true;
       ListView_InsertItem(native_view(), &item);
       ignore_listview_change_ = false;
-      if (table_->type() == CHECK_BOX_AND_TEXT &&
-          table_->model()->IsChecked(i)) {
-        // Setting the state notifies of the check state change.
-        ListView_SetCheckState(native_view(), i, true);
-      }
     }
   }
 
