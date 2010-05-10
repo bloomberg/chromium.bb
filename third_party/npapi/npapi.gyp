@@ -20,6 +20,7 @@
       'sources': [
         'bindings/npapi.h',
         'bindings/npapi_extensions.h',
+        'bindings/npfunctions.h',
         'bindings/nphostapi.h',
         'bindings/nptypes.h',
         'bindings/npruntime.h',
