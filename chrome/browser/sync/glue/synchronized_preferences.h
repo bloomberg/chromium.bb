@@ -101,22 +101,27 @@ static const wchar_t* kSynchronizedPreferences[] = {
 
 #if defined(OS_CHROMEOS)
   // IME prefs
-  prefs::kLanguagePreloadEngines,
   prefs::kLanguageHangulKeyboard,
-  prefs::kLanguagePinyinCorrectPinyin,
-  prefs::kLanguagePinyinFuzzyPinyin,
-  prefs::kLanguagePinyinLookupTablePageSize,
-  prefs::kLanguagePinyinShiftSelectCandidate,
-  prefs::kLanguagePinyinMinusEqualPage,
-  prefs::kLanguagePinyinCommaPeriodPage,
   prefs::kLanguagePinyinAutoCommit,
+  prefs::kLanguagePinyinCommaPeriodPage,
+  prefs::kLanguagePinyinCorrectPinyin,
   prefs::kLanguagePinyinDoublePinyin,
-  prefs::kLanguagePinyinDoublePinyinSchema,
+  prefs::kLanguagePinyinFuzzyPinyin,
   prefs::kLanguagePinyinInitChinese,
   prefs::kLanguagePinyinInitFull,
   prefs::kLanguagePinyinInitFullPunct,
   prefs::kLanguagePinyinInitSimplifiedChinese,
+  prefs::kLanguagePinyinMinusEqualPage,
+  prefs::kLanguagePinyinShiftSelectCandidate,
   prefs::kLanguagePinyinTradCandidate,
+  prefs::kLanguagePreloadEngines,
+  // We don't sync the following IME prefs since they are not user-configurable
+  // (yet):
+  //   prefs::kLanguageHotkeyNextEngine,
+  //   prefs::kLanguageHotkeyTrigger,
+  //   prefs::kLanguagePinyinDoublePinyinSchema,
+  //   prefs::kLanguagePinyinLookupTablePageSize,
+  //   prefs::kLanguageUseGlobalEngine,
 #endif
 };
 
