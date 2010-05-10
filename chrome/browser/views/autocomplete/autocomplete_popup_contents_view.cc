@@ -8,6 +8,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
+#include "app/text_elider.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
@@ -80,6 +81,8 @@ SkColor GetColor(ResultViewState state, ColorKind kind) {
   return colors[state][kind];
 }
 
+const wchar_t kEllipsis[] = L"\x2026";
+
 const SkAlpha kGlassPopupAlpha = 240;
 const SkAlpha kOpaquePopupAlpha = 255;
 // The minimum distance between the top and bottom of the icon and the top or
@@ -121,6 +124,34 @@ class AutocompleteResultView : public views::View {
   virtual gfx::Size GetPreferredSize();
 
  private:
+  // Precalculated data used to draw the portion of a match classification that
+  // fits entirely within one run.
+  struct ClassificationData {
+    std::wstring text;
+    const gfx::Font* font;
+    SkColor color;
+    int pixel_width;
+  };
+  typedef std::vector<ClassificationData> Classifications;
+
+  // Precalculated data used to draw a complete visual run within the match.
+  // This will include all or part of at leasdt one, and possibly several,
+  // classifications.
+  struct RunData {
+    size_t run_start;  // Offset within the match text where this run begins.
+    int visual_order;  // Where this run occurs in visual order.  The earliest
+                       // run drawn is run 0.
+    bool is_rtl;
+    int pixel_width;
+    Classifications classifications;  // Classification pieces within this run,
+                                      // in logical order.
+  };
+  typedef std::vector<RunData> Runs;
+
+  // Predicate functions for use when sorting the runs.
+  static bool SortRunsLogically(const RunData& lhs, const RunData& rhs);
+  static bool SortRunsVisually(const RunData& lhs, const RunData& rhs);
+
   ResultViewState GetState() const;
 
   SkBitmap* GetIcon() const;
@@ -136,25 +167,32 @@ class AutocompleteResultView : public views::View {
                  int x,
                  int y);
 
-  // Draws an individual sub-fragment with the specified style. Returns the x
-  // position to the right of the fragment.
-  int DrawStringFragment(gfx::Canvas* canvas,
-                         const std::wstring& text,
-                         int style,
-                         int x,
-                         int y,
-                         bool force_rtl_directionality);
-
-  // Gets the font and text color for a fragment with the specified style.
-  gfx::Font GetFragmentFont(int style) const;
-  SkColor GetFragmentTextColor(int style) const;
+  // Elides |runs| to fit in |remaining_width|.  The runs in |runs| should be in
+  // logical order.
+  //
+  // When we need to elide a run, the ellipsis will be placed at the end of that
+  // run.  This means that if we elide a run whose visual direction is opposite
+  // that of the drawing context, the ellipsis will not be at the "end" of the
+  // drawn string.  For example, if in an LTR context we have the LTR run
+  // "LTR_STRING" and the RTL run "RTL_STRING", the unelided text would be drawn
+  // like:
+  //     LTR_STRING GNIRTS_LTR
+  // If we need to elide the RTL run, then it will be drawn like:
+  //     LTR_STRING ...RTS_LTR
+  // Instead of:
+  //     LTR_STRING RTS_LTR...
+  void Elide(Runs* runs, int remaining_width) const;
 
   // This row's model and model index.
   AutocompleteResultViewModel* model_;
   size_t model_index_;
 
-  // The font used to derive fonts for rendering the text in this row.
-  gfx::Font font_;
+  // The fonts used to render the text in this row.
+  gfx::Font normal_font_;
+  gfx::Font bold_font_;
+
+  // Width of the ellipsis in the normal font.
+  int ellipsis_width_;
 
   // A context used for mirroring regions.
   class MirroringContext;
@@ -174,112 +212,41 @@ class AutocompleteResultView : public views::View {
 // static
 int AutocompleteResultView::icon_size_ = 0;
 
-// This class is a utility class which mirrors an x position, calculates the
-// index of the i-th run of a text, and calculates the index of the i-th
-// fragment of a run.
-// To render a styled text, we split a text into fragments and draw each
-// fragment with the specified style. Unfortunately, it is not trivial to
-// implement the above steps in a mirrored window.
-// When we split a URL "www.google.com" into three fragments ('www.', 'google',
-// and '.com') and draw them in a mirrored window as shown in the following
-// steps, the output text becomes ".comgooglewww.".
-// 1. Draw 'www.'
-//      +-----------------+ +-----------------+
-//      |LTR window       | |       RTL window|
-//      +-----------------+ +-----------------+
-//      |www.             | |             www.|
-//      +-----------------+ +-----------------+
-// 2. Draw 'google'
-//      +-----------------+ +-----------------+
-//      |LTR window       | |       RTL window|
-//      +-----------------+ +-----------------+
-//      |www.google       | |       googlewww.|
-//      +-----------------+ +-----------------+
-// 3. Draw '.com'
-//      +-----------------+ +-----------------+
-//      |LTR window       | |       RTL window|
-//      +-----------------+ +-----------------+
-//      |www.google.com   | |   .comgooglewww.|
-//      +-----------------+ +-----------------+
-// To fix this fragment-ordering problem, we should swap the run indices and
-// fragment indices when rendering in a mirrred coordinate as listed below.
-// 1. Draw 'www.' for LTR (or ".com" for RTL)
-//      +-----------------+ +-----------------+
-//      |LTR window       | |       RTL window|
-//      +-----------------+ +-----------------+
-//      |www.             | |             .com|
-//      +-----------------+ +-----------------+
-// 2. Draw 'google'
-//      +-----------------+ +-----------------+
-//      |LTR window       | |       RTL window|
-//      +-----------------+ +-----------------+
-//      |www.google       | |       google.com|
-//      +-----------------+ +-----------------+
-// 3. Draw '.com' for LTR (or "www." for RTL)
-//      +-----------------+ +-----------------+
-//      |LTR window       | |       RTL window|
-//      +-----------------+ +-----------------+
-//      |www.google.com   | |   www.google.com|
-//      +-----------------+ +-----------------+
-// This class encapsulates the above steps for AutocompleteResultView.
+// This class is a utility class for calculations affected by whether the result
+// view is horizontally mirrored.  The drawing functions can be written as if
+// all drawing occurs left-to-right, and then use this class to get the actual
+// coordinates to begin drawing onscreen.
 class AutocompleteResultView::MirroringContext {
  public:
-  MirroringContext() : min_x_(0), center_x_(0), max_x_(0), mirrored_(false) { }
+  MirroringContext() : center_(0), right_(0) {}
 
-  // Initializes a mirroring context with the bounding region of a text.
-  // This class uses the center of this region as an axis for calculating
-  // mirrored coordinates.
-  int Initialize(int x1, int x2, bool enabled);
-
-  // Returns the "left" side of the specified region.
-  // When the application language is a right-to-left one, this function
-  // calculates the mirrored coordinates of the input region and returns the
-  // left side of the mirrored region.
-  // The input region must be in the bounding region specified in the
-  // Initialize() function.
-  int GetLeft(int x1, int x2) const;
-
-  // Returns the index of the i-th run of a text.
-  // When we split a text into runs, we need to write each run in the LTR
-  // (or RTL) order if UI language is LTR (or RTL), respectively.
-  int GetRun(int i, int size) const {
-    return mirrored_ ? (size - i - 1) : i;
+  // Tells the mirroring context to use the provided range as the physical
+  // bounds of the drawing region.  When coordinate mirroring is needed, the
+  // mirror point will be the center of this range.
+  void Initialize(int x, int width) {
+    center_ = x + width / 2;
+    right_ = x + width;
   }
 
-  // Returns the index of the i-th text fragment of a run.
-  // When we split a run into fragments, we need to write each fragment in the
-  // LTR (or RTL) order if UI language is LTR (or RTL), respectively.
-  size_t GetClassification(size_t i, size_t size, bool run_rtl) const {
-    return (mirrored_ != run_rtl) ? (size - i - 1) : i;
+  // Given a logical range within the drawing region, returns the coordinate of
+  // the possibly-mirrored "left" side.  (This functions exactly like
+  // View::MirroredLeftPointForRect().)
+  int mirrored_left_coord(int left, int right) const {
+    return base::i18n::IsRTL() ? (center_ + (center_ - right)) : left;
   }
 
-  // Returns whether or not the x coordinate is mirrored.
-  bool mirrored() const {
-    return mirrored_;
+  // Given a logical coordinate within the drawing region, returns the remaining
+  // width available.
+  int remaining_width(int x) const {
+    return right_ - x;
   }
 
  private:
-  int min_x_;
-  int center_x_;
-  int max_x_;
-  bool mirrored_;
+  int center_;
+  int right_;
 
   DISALLOW_COPY_AND_ASSIGN(MirroringContext);
 };
-
-int AutocompleteResultView::MirroringContext::Initialize(int x1, int x2,
-                                                         bool mirrored) {
-  min_x_ = std::min(x1, x2);
-  max_x_ = std::max(x1, x2);
-  center_x_ = min_x_ + (max_x_ - min_x_) / 2;
-  mirrored_ = mirrored;
-  return x1;
-}
-
-int AutocompleteResultView::MirroringContext::GetLeft(int x1, int x2) const {
-  return mirrored_ ?
-      (center_x_ + (center_x_ - std::max(x1, x2))) : std::min(x1, x2);
-}
 
 AutocompleteResultView::AutocompleteResultView(
     AutocompleteResultViewModel* model,
@@ -287,7 +254,9 @@ AutocompleteResultView::AutocompleteResultView(
     const gfx::Font& font)
     : model_(model),
       model_index_(model_index),
-      font_(font),
+      normal_font_(font),
+      bold_font_(normal_font_.DeriveFont(0, gfx::Font::BOLD)),
+      ellipsis_width_(font.GetStringWidth(kEllipsis)),
       mirroring_context_(new MirroringContext()),
       match_(NULL, 0, false, AutocompleteMatch::URL_WHAT_YOU_TYPED) {
   CHECK(model_index >= 0);
@@ -306,24 +275,22 @@ void AutocompleteResultView::Paint(gfx::Canvas* canvas) {
   if (state != NORMAL)
     canvas->drawColor(GetColor(state, BACKGROUND));
 
-  int x = MirroredLeftPointForRect(icon_bounds_);
-
   // Paint the icon.
-  canvas->DrawBitmapInt(*GetIcon(), x, icon_bounds_.y());
+  canvas->DrawBitmapInt(*GetIcon(), MirroredLeftPointForRect(icon_bounds_),
+                        icon_bounds_.y());
 
   // Paint the text.
-  // Initialize the |mirroring_context_| with the left and right positions.
-  // The DrawString() function uses this |mirroring_context_| to calculate the
-  // position of an input text.
-  bool text_mirroring = View::UILayoutIsRightToLeft();
-  int text_left = MirroredLeftPointForRect(text_bounds_);
-  int text_right =
-      text_mirroring ? (x - kHorizontalPadding) : text_bounds_.right();
-  x = mirroring_context_->Initialize(text_left, text_right, text_mirroring);
+  int x = MirroredLeftPointForRect(text_bounds_);
+  mirroring_context_->Initialize(x, text_bounds_.width());
   x = DrawString(canvas, match_.contents, match_.contents_class, false, x,
                  text_bounds_.y());
 
   // Paint the description.
+  // TODO(pkasting): Because we paint in multiple separate pieces, we can wind
+  // up with no space even for an ellipsis for one or both of these pieces.
+  // Instead, we should paint the entire match as a single long string.  This
+  // would also let us use a more properly-localizable string than we get with
+  // just the IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR.
   if (!match_.description.empty()) {
     std::wstring separator =
         l10n_util::GetString(IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR);
@@ -342,17 +309,29 @@ void AutocompleteResultView::Layout() {
   icon_bounds_.SetRect(kHorizontalPadding, (height() - icon_size_) / 2,
                        icon_size_, icon_size_);
   int text_x = icon_bounds_.right() + kHorizontalPadding;
-  text_bounds_.SetRect(text_x, std::max(0, (height() - font_.height()) / 2),
-      std::max(0, bounds().right() - text_x - kHorizontalPadding),
-      font_.height());
+  int font_height = std::max(normal_font_.height(), bold_font_.height());
+  text_bounds_.SetRect(text_x, std::max(0, (height() - font_height) / 2),
+      std::max(0, bounds().width() - text_x - kHorizontalPadding), font_height);
 }
 
 gfx::Size AutocompleteResultView::GetPreferredSize() {
-  int text_height = font_.height() + 2 * kTextVerticalPadding;
-  int icon_height = icon_size_ + 2 * kIconVerticalPadding;
+  int text_height = std::max(normal_font_.height(), bold_font_.height()) +
+      (kTextVerticalPadding * 2);
+  int icon_height = icon_size_ + (kIconVerticalPadding * 2);
   return gfx::Size(0, std::max(icon_height, text_height));
 }
 
+// static
+bool AutocompleteResultView::SortRunsLogically(const RunData& lhs,
+                                               const RunData& rhs) {
+  return lhs.run_start < rhs.run_start;
+}
+
+// static
+bool AutocompleteResultView::SortRunsVisually(const RunData& lhs,
+                                              const RunData& rhs) {
+  return lhs.visual_order < rhs.visual_order;
+}
 
 ResultViewState AutocompleteResultView::GetState() const {
   if (model_->IsSelectedIndex(model_index_))
@@ -383,31 +362,31 @@ int AutocompleteResultView::DrawString(
     bool force_dim,
     int x,
     int y) {
-  if (!text.length())
+  if (text.empty())
     return x;
 
-  // Initialize a bidirectional line iterator of ICU and split the text into
-  // visual runs. (A visual run is consecutive characters which have the same
-  // display direction and should be displayed at once.)
+  // Check whether or not this text is a URL.  URLs are always displayed LTR
+  // regardless of locale.
+  bool is_url = true;
+  for (ACMatchClassifications::const_iterator i(classifications.begin());
+       i != classifications.end(); ++i) {
+    if (!(i->style & ACMatchClassification::URL)) {
+      is_url = false;
+      break;
+    }
+  }
+
+  // Split the text into visual runs.  We do this first so that we don't need to
+  // worry about whether our eliding might change the visual display in
+  // unintended ways, e.g. by removing directional markings or by adding an
+  // ellipsis that's not enclosed in appropriate markings.
   BiDiLineIterator bidi_line;
-  if (!bidi_line.Open(text, mirroring_context_->mirrored(), false))
+  if (!bidi_line.Open(text, base::i18n::IsRTL(), is_url))
     return x;
-  const int runs = bidi_line.CountRuns();
-
-  // Draw the visual runs.
-  // This loop splits each run into text fragments with the given
-  // classifications and draws the text fragments.
-  // When the direction of a run is right-to-left, we have to mirror the
-  // x-coordinate of this run and render the fragments in the right-to-left
-  // reading order. To handle this display order independently from the one of
-  // this popup window, this loop renders a run with the steps below:
-  // 1. Create a local display context for each run;
-  // 2. Render the run into the local display context, and;
-  // 3. Copy the local display context to the one of the popup window.
-  for (int run = 0; run < runs; ++run) {
-    int run_start = 0;
-    int run_length = 0;
-
+  const int num_runs = bidi_line.CountRuns();
+  Runs runs;
+  for (int run = 0; run < num_runs; ++run) {
+    int run_start_int = 0, run_length_int = 0;
     // The index we pass to GetVisualRun corresponds to the position of the run
     // in the displayed text. For example, the string "Google in HEBREW" (where
     // HEBREW is text in the Hebrew language) has two runs: "Google in " which
@@ -416,81 +395,192 @@ int AutocompleteResultView::DrawString(
     // displayed). In an RTL context, the same run has the index 1 because it
     // is the rightmost run. This is why the order in which we traverse the
     // runs is different depending on the locale direction.
-    //
-    // Note that for URLs we always traverse the runs from lower to higher
-    // indexes because the return order of runs for a URL always matches the
-    // physical order of the context.
-    int current_run = mirroring_context_->GetRun(run, runs);
-    const UBiDiDirection run_direction = bidi_line.GetVisualRun(current_run,
-                                                                &run_start,
-                                                                &run_length);
-    const int run_end = run_start + run_length;
+    const UBiDiDirection run_direction = bidi_line.GetVisualRun(
+        (base::i18n::IsRTL() && !is_url) ? (num_runs - run - 1) : run,
+        &run_start_int, &run_length_int);
+    DCHECK_GT(run_length_int, 0);
+    runs.push_back(RunData());
+    RunData* current_run = &runs.back();
+    current_run->run_start = run_start_int;
+    const size_t run_end = current_run->run_start + run_length_int;
+    current_run->visual_order = run;
+    current_run->is_rtl = !is_url && (run_direction == UBIDI_RTL);
+    current_run->pixel_width = 0;
 
-    // Split this run with the given classifications and draw the fragments.
-    for (size_t classification = 0; classification < classifications.size();
-         ++classification) {
-      size_t i = mirroring_context_->GetClassification(
-          classification, classifications.size(), run_direction == UBIDI_RTL);
-      size_t text_start = std::max(static_cast<size_t>(run_start),
-                                   classifications[i].offset);
-      size_t text_end = std::min(static_cast<size_t>(run_end),
-          i < classifications.size() - 1 ?
-          classifications[i + 1].offset : run_end);
-      int style = classifications[i].style;
-      if (force_dim)
-        style |= ACMatchClassification::DIM;
+    // Compute classifications for this run.
+    for (size_t i = 0; i < classifications.size(); ++i) {
+      const size_t text_start =
+          std::max(classifications[i].offset, current_run->run_start);
+      if (text_start >= run_end)
+        break;  // We're past the last classification in the run.
 
-      // We specify RTL directionlity explicitly only if the run is an RTL run
-      // and we can't specify the string directionlaity using an LRE/PDF pair.
-      // Note that URLs are always displayed using LTR directionality
-      // (regardless of the locale) and therefore they are excluded.
-      const bool force_rtl_directionality =
-           !(classifications[i].style & ACMatchClassification::URL) &&
-           (run_direction == UBIDI_RTL) &&
-           !base::i18n::IsRTL();
+      const size_t text_end = (i < (classifications.size() - 1)) ?
+          std::min(classifications[i + 1].offset, run_end) : run_end;
+      if (text_end <= current_run->run_start)
+        continue;  // We haven't reached the first classification in the run.
 
-      if (text_start < text_end) {
-        x += DrawStringFragment(canvas,
-                                text.substr(text_start, text_end - text_start),
-                                style, x, y, force_rtl_directionality);
+      current_run->classifications.push_back(ClassificationData());
+      ClassificationData* current_data =
+          &current_run->classifications.back();
+      current_data->text = text.substr(text_start, text_end - text_start);
+
+      // Calculate style-related data.
+      const int style = classifications[i].style;
+      const bool use_bold_font = !!(style & ACMatchClassification::MATCH);
+      current_data->font = &(use_bold_font ? bold_font_ : normal_font_);
+      const ResultViewState state = GetState();
+      if (style & ACMatchClassification::URL)
+        current_data->color = GetColor(state, URL);
+      else
+        current_data->color = GetColor(state, force_dim ? DIMMED_TEXT : TEXT);
+      current_data->pixel_width =
+          current_data->font->GetStringWidth(current_data->text);
+      current_run->pixel_width += current_data->pixel_width;
+    }
+    DCHECK(!current_run->classifications.empty());
+  }
+  DCHECK(!runs.empty());
+
+  // Sort into logical order so we can elide logically.
+  std::sort(runs.begin(), runs.end(), &SortRunsLogically);
+
+  // Now determine what to elide, if anything.  Several subtle points:
+  //   * Because we have the run data, we can get edge cases correct, like
+  //     whether to place an ellipsis before or after the end of a run when the
+  //     text needs to be elided at the run boundary.
+  //   * The "or one before it" comments below refer to cases where an earlier
+  //     classification fits completely, but leaves too little space for an
+  //     ellipsis that turns out to be needed later.  These cases are commented
+  //     more completely in Elide().
+  int remaining_width = mirroring_context_->remaining_width(x);
+  for (Runs::iterator i(runs.begin()); i != runs.end(); ++i) {
+    if (i->pixel_width > remaining_width) {
+      // This run or one before it needs to be elided.
+      for (Classifications::iterator j(i->classifications.begin());
+           j != i->classifications.end(); ++j) {
+        if (j->pixel_width > remaining_width) {
+          // This classification or one before it needs to be elided.  Erase all
+          // further classifications and runs so Elide() can simply reverse-
+          // iterate over everything to find the specific classification to
+          // elide.
+          i->classifications.erase(++j, i->classifications.end());
+          runs.erase(++i, runs.end());
+          Elide(&runs, remaining_width);
+          break;
+        }
+        remaining_width -= j->pixel_width;
       }
+      break;
+    }
+    remaining_width -= i->pixel_width;
+  }
+
+  // Sort back into visual order so we can display the runs correctly.
+  std::sort(runs.begin(), runs.end(), &SortRunsVisually);
+
+  // Draw the runs.
+  for (Runs::iterator i(runs.begin()); i != runs.end(); ++i) {
+    const bool reverse_visible_order = (i->is_rtl != base::i18n::IsRTL());
+    int flags = gfx::Canvas::NO_ELLIPSIS;  // We've already elided.
+    if (reverse_visible_order) {
+      std::reverse(i->classifications.begin(), i->classifications.end());
+      if (i->is_rtl)
+        flags |= gfx::Canvas::FORCE_RTL_DIRECTIONALITY;
+    }
+    for (Classifications::const_iterator j(i->classifications.begin());
+         j != i->classifications.end(); ++j) {
+      int left = mirroring_context_->mirrored_left_coord(x, x + j->pixel_width);
+      canvas->DrawStringInt(j->text, *j->font, j->color, left, y,
+                            j->pixel_width, j->font->height(), flags);
+      x += j->pixel_width;
     }
   }
+
   return x;
 }
 
-int AutocompleteResultView::DrawStringFragment(
-    gfx::Canvas* canvas,
-    const std::wstring& text,
-    int style,
-    int x,
-    int y,
-    bool force_rtl_directionality) {
-  gfx::Font display_font = GetFragmentFont(style);
-  // Clamp text width to the available width within the popup so we elide if
-  // necessary.
-  int string_width = std::min(display_font.GetStringWidth(text),
-                              width() - kHorizontalPadding - x);
-  int string_left = mirroring_context_->GetLeft(x, x + string_width);
-  const int flags = force_rtl_directionality ?
-      gfx::Canvas::FORCE_RTL_DIRECTIONALITY : 0;
-  canvas->DrawStringInt(text, GetFragmentFont(style),
-                        GetFragmentTextColor(style), string_left, y,
-                        string_width, display_font.height(), flags);
-  return string_width;
-}
+void AutocompleteResultView::Elide(Runs* runs, int remaining_width) const {
+  // The complexity of this function is due to edge cases like the following:
+  // We have 100 px of available space, an initial classification that takes 86
+  // px, and a font that has a 15 px wide ellipsis character.  Now if the first
+  // classification is followed by several very narrow classifications (e.g. 3
+  // px wide each), we don't know whether we need to elide or not at the time we
+  // see the first classification -- it depends on how many subsequent
+  // classifications follow, and some of those may be in the next run (or
+  // several runs!).  This is why instead we let our caller move forward until
+  // we know we definitely need to elide, and then in this function we move
+  // backward again until we find a string that we can successfully do the
+  // eliding on.
+  bool first_classification = true;
+  for (Runs::reverse_iterator i(runs->rbegin()); i != runs->rend(); ++i) {
+    for (Classifications::reverse_iterator j(i->classifications.rbegin());
+         j != i->classifications.rend(); ++j) {
+      if (!first_classification) {
+        // For all but the first classification we consider, we need to append
+        // an ellipsis, since there isn't enough room to draw it after this
+        // classification.
+        j->text += kEllipsis;
 
-gfx::Font AutocompleteResultView::GetFragmentFont(int style) const {
-  return (style & ACMatchClassification::MATCH) ?
-      font_.DeriveFont(0, gfx::Font::BOLD) : font_;
-}
+        // We also add this classification's width (sans ellipsis) back to the
+        // available width since we want to consider the available space we'll
+        // have when we draw this classification.
+        remaining_width += j->pixel_width;
+      }
+      first_classification = false;
 
-SkColor AutocompleteResultView::GetFragmentTextColor(int style) const {
-  const ResultViewState state = GetState();
-  if (style & ACMatchClassification::URL)
-    return GetColor(state, URL);
-  return GetColor(state,
-      (style & ACMatchClassification::DIM) ? DIMMED_TEXT : TEXT);
+      // Can we fit at least an ellipsis?
+      std::wstring elided_text(
+          gfx::ElideText(j->text, *j->font, remaining_width));
+      Classifications::reverse_iterator prior_classification(j);
+      ++prior_classification;
+      const bool on_first_classification =
+        (prior_classification == i->classifications.rend());
+      if (elided_text.empty() && (remaining_width >= ellipsis_width_) &&
+          on_first_classification) {
+        // Edge case: This classification is bold, we can't fit a bold ellipsis
+        // but we can fit a normal one, and this is the first classification in
+        // the run.  We should display a lone normal ellipsis, because appending
+        // one to the end of the previous run might put it in the wrong visual
+        // location (if the previous run is reversed from the normal visual
+        // order).
+        // NOTE: If this isn't the first classification in the run, we don't
+        // need to bother with this; see note below.
+        elided_text = kEllipsis;
+      }
+      if (!elided_text.empty()) {
+        // Success.  Elide this classification and stop.
+        j->text = elided_text;
+
+        // If we could only fit an ellipsis, then only make it bold if there was
+        // an immediate prior classification in this run that was also bold, or
+        // it will look orphaned.
+        if ((elided_text.length() == 1) &&
+            (on_first_classification ||
+             (prior_classification->font == &normal_font_)))
+          j->font = &normal_font_;
+
+        j->pixel_width = j->font->GetStringWidth(elided_text);
+
+        // Erase any other classifications that come after the elided one.
+        i->classifications.erase(j.base(), i->classifications.end());
+        runs->erase(i.base(), runs->end());
+        return;
+      }
+
+      // We couldn't fit an ellipsis.  Move back one classification,
+      // append an ellipsis, and try again.
+      // NOTE: In the edge case that a bold ellipsis doesn't fit but a
+      // normal one would, and we reach here, then there is a previous
+      // classification in this run, and so either:
+      //   * It's normal, and will be able to draw successfully with the
+      //     ellipsis we'll append to it, or
+      //   * It is also bold, in which case we don't want to fall back
+      //     to a normal ellipsis anyway (see comment above).
+    }
+  }
+
+  // We couldn't draw anything.
+  runs->clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
