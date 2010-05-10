@@ -12,16 +12,11 @@
 #include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 
-#if defined(OS_MACOSX)
-// window->GetViewBounds is not implemented
-// window->SimulateOSMouseMove is not implemented
-// http://code.google.com/p/chromium/issues/detail?id=26102
-#define MAYBE_TestOnMouseOut DISABLED_TestOnMouseOut
-#elif defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 // Test succeeds locally, flaky on trybot
 // http://code.google.com/p/chromium/issues/detail?id=26349
-#define MAYBE_TestOnMouseOut FLAKY_TestOnMouseOut
-#endif
+#define TestOnMouseOut FLAKY_TestOnMouseOut
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 namespace {
 
@@ -35,7 +30,7 @@ class MouseLeaveTest : public UITest {
   DISALLOW_COPY_AND_ASSIGN(MouseLeaveTest);
 };
 
-TEST_F(MouseLeaveTest, MAYBE_TestOnMouseOut) {
+TEST_F(MouseLeaveTest, TestOnMouseOut) {
   GURL test_url = ui_test_utils::GetTestUrl(
       FilePath(FilePath::kCurrentDirectory),
       FilePath(FILE_PATH_LITERAL("mouseleave.html")));
