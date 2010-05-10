@@ -43,6 +43,12 @@ const char kAppLaunchAsPanel[]              = "app-launch-as-panel";
 // Makes the app launcher popup when a new tab is created.
 const char kAppLauncherForNewTab[]          = "app-launcher-new-tab";
 
+// The title to use for the gallery link in the app launcher.
+const char kAppLauncherGalleryTitle[]         = "app-launcher-gallery-title";
+
+// The URL to use for the gallery link in the app launcher.
+const char kAppLauncherGalleryURL[]         = "app-launcher-gallery-url";
+
 // Authentication white list for servers
 const char kAuthServerWhitelist[]           = "auth-server-whitelist";
 

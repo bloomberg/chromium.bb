@@ -17,13 +17,18 @@ function getAppsCallback(data) {
   var debugSection = $('debug');
   appsSection.innerHTML = '';
 
-  data.forEach(function(app) {
+  data.apps.forEach(function(app) {
     appsSection.appendChild(apps.createElement(app));
   });
 
+  if (data.galleryTitle && data.galleryURL) {
+    appsSection.appendChild(apps.createGalleryElement(
+        data.galleryTitle, data.galleryURL));
+  }
+
   // TODO(aa): Figure out what to do with the debug mode when we turn apps on
   // for everyone.
-  if (data.length) {
+  if (appsSection.hasChildNodes()) {
     appsSection.classList.remove('disabled');
     debugSection.classList.remove('disabled');
   } else {
@@ -64,6 +69,15 @@ var apps = {
         a.setAttribute('new', 'installed');
       }, 500);
     }
+    return a;
+  },
+
+  createGalleryElement: function(title, url) {
+    var a = document.createElement('a');
+    a.title = title;
+    a.href = url;
+    a.id = 'gallery-entry';
+    a.textContent = title;
     return a;
   }
 };

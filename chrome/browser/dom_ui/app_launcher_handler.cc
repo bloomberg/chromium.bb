@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/url_constants.h"
@@ -82,18 +83,32 @@ void AppLauncherHandler::CreateAppInfo(Extension* extension,
 }
 
 void AppLauncherHandler::HandleGetApps(const Value* value) {
-  ListValue list;
+  std::string gallery_title;
+  std::string gallery_url;
+
+  // TODO(aa): Decide the final values for these and remove the switches.
+  gallery_title = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      switches::kAppLauncherGalleryTitle);
+  gallery_url = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      switches::kAppLauncherGalleryURL);
+
+  DictionaryValue dictionary;
+  dictionary.SetString(L"galleryTitle", gallery_title);
+  dictionary.SetString(L"galleryURL", gallery_url);
+
+  ListValue* list = new ListValue();
   const ExtensionList* extensions = extensions_service_->extensions();
   for (ExtensionList::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
      if (TreatAsApp(*it)) {
        DictionaryValue* app_info = new DictionaryValue();
        CreateAppInfo(*it, app_info);
-       list.Append(app_info);
+       list->Append(app_info);
      }
   }
 
-  dom_ui_->CallJavascriptFunction(L"getAppsCallback", list);
+  dictionary.Set(L"apps", list);
+  dom_ui_->CallJavascriptFunction(L"getAppsCallback", dictionary);
 
   // First time we get here we set up the observer so that we can tell update
   // the apps as they change.

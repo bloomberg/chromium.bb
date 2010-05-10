@@ -619,3 +619,7 @@ html[dir=rtl] #option-menu > [command=hide]:before {
   -webkit-animation: bounce .5s ease-in-out;
   -webkit-transition: opacity .5s;
 }
+
+#apps-section #gallery-entry {
+  background-image: url('app_gallery_icon.png');
+}
