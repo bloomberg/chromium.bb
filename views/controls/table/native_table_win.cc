@@ -369,7 +369,7 @@ void NativeTableWin::CreateNativeControl() {
   // Reduce overdraw/flicker artifacts by double buffering.  Support tooltips
   // and display elided items completely on hover (see comments in OnNotify()
   // under LVN_GETINFOTIP).  Make the selection extend across the row.
-  ListView_SetExtendedListViewStyle(list_view_,
+  ListView_SetExtendedListViewStyle(hwnd,
       LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP | LVS_EX_FULLROWSELECT);
   l10n_util::AdjustUIFontForWindow(hwnd);
 
