@@ -40,6 +40,13 @@ class TableModel {
   // no bitmap.
   virtual SkBitmap GetIcon(int row);
 
+  // Returns the tooltip, if any, to show for a particular row.  If there are
+  // multiple columns in the row, this will only be shown when hovering over
+  // column zero.
+  virtual std::wstring GetTooltip(int row) {
+    return std::wstring();
+  }
+
   // Returns true if the TableView has groups. Groups provide a way to visually
   // delineate the rows in a table view. When groups are enabled table view
   // shows a visual separator for each group, followed by all the rows in

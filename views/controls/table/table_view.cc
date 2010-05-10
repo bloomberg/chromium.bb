@@ -791,10 +791,11 @@ HWND TableView::CreateNativeControl(HWND parent_container) {
                                 0, 0, width(), height(),
                                 parent_container, NULL, NULL, NULL);
 
-  // Reduce overdraw/flicker artifacts by double buffering.  Make the selection
-  // extend across the row.
+  // Reduce overdraw/flicker artifacts by double buffering.  Support tooltips
+  // and display elided items completely on hover (see comments in OnNotify()
+  // under LVN_GETINFOTIP).  Make the selection extend across the row.
   ListView_SetExtendedListViewStyle(list_view_,
-                                    LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT);
+      LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP | LVS_EX_FULLROWSELECT);
   l10n_util::AdjustUIFontForWindow(list_view_);
 
   // Add the columns.
@@ -1053,8 +1054,47 @@ LRESULT TableView::OnNotify(int w_param, LPNMHDR hdr) {
       break;
     }
 
-    case LVN_MARQUEEBEGIN:  // We don't want the marque selection.
+    case LVN_MARQUEEBEGIN:  // We don't want the marquee selection.
       return 1;
+
+    case LVN_GETINFOTIP: {
+      // This is called when the user hovers items in column zero.
+      //   * If the text in this column is not fully visible, the dwFlags field
+      //     will be set to 0, and pszText will contain the full text.  If you
+      //     return without making any changes, this text will be displayed in a
+      //     "labeltip" - a bubble that's overlaid (at the correct alignment!)
+      //     on the item.  If you return with a different pszText, it will be
+      //     displayed as a tooltip if nonempty.
+      //   * Otherwise, dwFlags will be LVGIT_UNFOLDED and pszText will be
+      //     empty.  On return, if pszText is nonempty, it will be displayed as
+      //     a labeltip if dwFlags has been changed to 0 (even if it bears no
+      //     resemblance to the item text), or as a tooltip otherwise.
+      //
+      // Once the tooltip for an item has been obtained, this will not be called
+      // again until the user hovers a different item.  If after that the
+      // original item is hovered a second time, this will be called.
+      //
+      // When the user hovers items in other columns, they will be "unfolded"
+      // (displayed as labeltips) when necessary, but this function will never
+      // be called.
+      //
+      // Changing the LVS_EX_INFOTIP extended style to LVS_EX_LABELTIP will
+      // cause all of the above to be true except that this function will not be
+      // called when dwFlags would be LVGIT_UNFOLDED.  Removing it entirely will
+      // disable all of the above behavior.
+      NMLVGETINFOTIP* info_tip = reinterpret_cast<NMLVGETINFOTIP*>(hdr);
+      std::wstring tooltip =
+          model_->GetTooltip(view_to_model(info_tip->iItem));
+      CHECK(info_tip->cchTextMax >= 2);
+      if (tooltip.length() >= static_cast<size_t>(info_tip->cchTextMax)) {
+        tooltip.erase(info_tip->cchTextMax - 2);  // Ellipsis + '\0'
+        const wchar_t kEllipsis = L'\x2026';
+        tooltip += kEllipsis;
+      }
+      if (!tooltip.empty())
+        wcscpy_s(info_tip->pszText, tooltip.length() + 1, tooltip.c_str());
+      return 1;
+    }
 
     default:
       break;
