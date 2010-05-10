@@ -910,10 +910,9 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
   if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutBlankURL))
     return false;
 
-  // Rewrite about:cache/* URLs to chrome://net-internals/view-cache/*
+  // Rewrite about:cache/* URLs to chrome://view-http-cache/*
   if (StartsWithAboutSpecifier(*url, chrome::kAboutCacheURL)) {
-    *url = RemapAboutURL(chrome::kNetworkViewCacheURL + std::string("/"),
-                         *url);
+    *url = RemapAboutURL(chrome::kNetworkViewCacheURL, *url);
     return true;
   }
 

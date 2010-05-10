@@ -40,7 +40,7 @@ HttpCacheView.prototype.onHttpCacheInfoReceived = function(info) {
     var li = addNode(keysOl, 'li');
     var a = addNode(li, 'a');
     addTextNode(a, key);
-    a.href = 'chrome://net-internals/view-cache/' + key;
+    a.href = 'chrome://view-http-cache/' + key;
     a.target = '_blank';
   }
 };

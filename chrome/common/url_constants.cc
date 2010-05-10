@@ -79,8 +79,7 @@ const char kChromeUIResourcesHost[] = "resources";
 const char kChromeUIFileBrowseHost[] = "filebrowse";
 const char kChromeUIMediaplayerHost[] = "mediaplayer";
 const char kChromeUIInspectorHost[] = "inspector";
-// TODO(eroman): This value is temporary, while the page is being implemented.
-const char kChromeUINetInternalsHost[] = "net2";
+const char kChromeUINetInternalsHost[] = "net-internals";
 const char kChromeUINewTabHost[] = "newtab";
 const char kChromeUIThumbnailPath[] = "thumb";
 const char kChromeUIThemePath[] = "theme";
@@ -95,7 +94,7 @@ const char kSyncSetupDonePath[] = "setupdone";
 const char kAppCacheViewInternalsURL[] = "chrome://appcache-internals/";
 
 const char kNetworkViewInternalsURL[] = "chrome://net-internals/";
-const char kNetworkViewCacheURL[] = "chrome://net-internals/view-cache";
+const char kNetworkViewCacheURL[] = "chrome://view-http-cache/";
 
 void RegisterChromeSchemes() {
   // Don't need "chrome-internal" which was used in old versions of Chrome for

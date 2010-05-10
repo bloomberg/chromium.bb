@@ -20,7 +20,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/browser/net/view_net_internals_job_factory.h"
+#include "chrome/browser/net/view_http_cache_job_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/ref_counted_util.h"
 #include "chrome/common/url_constants.h"
@@ -325,9 +325,9 @@ URLRequestJob* ChromeURLDataManager::Factory(URLRequest* request,
   if (ChromeURLDataManager::URLToFilePath(request->url(), &path))
     return new URLRequestChromeFileJob(request, path);
 
-  // Next check for chrome://net-internals/, which uses its own job type.
-  if (ViewNetInternalsJobFactory::IsSupportedURL(request->url()))
-    return ViewNetInternalsJobFactory::CreateJobForRequest(request);
+  // Next check for chrome://view-http-cache/*, which uses its own job type.
+  if (ViewHttpCacheJobFactory::IsSupportedURL(request->url()))
+    return ViewHttpCacheJobFactory::CreateJobForRequest(request);
 
   // Next check for chrome://appcache-internals/, which uses its own job type.
   if (ViewAppCacheInternalsJobFactory::IsSupportedURL(request->url()))

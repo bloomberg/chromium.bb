@@ -323,9 +323,28 @@ void NetInternalsHTMLSource::StartDataRequest(const std::string& path,
 
   if (!file_util::ReadFileToString(file_path, &data_string)) {
     LOG(WARNING) << "Could not read resource: " << file_path.value();
-    data_string = StringPrintf(
-        "Failed to read file RESOURCES/net_internals/%s",
-        filename.c_str());
+    data_string = StringPrintf("<p style='color:red'>Failed to read file "
+                               "RESOURCES/net_internals/%s</p>",
+                               EscapeForHTML(filename).c_str());
+
+    // During the transition from old implementation to new implementation,
+    // users may be entering the URLs for the old frontend.
+    data_string.append(
+        "<p>Note that the URL scheme for net-internals has changed because of "
+        "its new implementation (bug 37421):</p>"
+        "<ul>"
+        "<li>chrome://net-internals/proxyservice.* &rarr; "
+        "<a href='chrome://net-internals#proxy'>chrome://net-internals#proxy"
+        "</a></li>"
+        "<li>chrome://net-internals/hostresolver.* &rarr; <a href='chrome://net"
+        "-internals#dns'>chrome://net-internals#dns</a></li>"
+        "<li>chrome://net-internals/urlrequest.* &rarr; <a href='chrome://net-"
+        "internals#requests'>chrome://net-internals#requests</a></li>"
+        "<li>chrome://net-internals/ (overview for copy-pasting) &rarr; <a href"
+        "='chrome://net-internals#data'>chrome://net-internals#data</a></li>"
+        "<li>chrome://net-internals/view-cache/* &rarr; <a href="
+        "'chrome://view-http-cache'>chrome://view-http-cache</a></li>"
+        "</ul>");
   }
 
   scoped_refptr<RefCountedBytes> bytes(new RefCountedBytes);
