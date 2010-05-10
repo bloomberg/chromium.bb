@@ -37,7 +37,7 @@ LIB_C_SRC = ../../common/convert_UTF.c
 LIB_CC_OBJ=$(patsubst %.cc, $(OBJ_DIR)/%.o,$(LIB_CC_SRC))
 LIB_C_OBJ=$(patsubst %.c, $(OBJ_DIR)/%.o, $(LIB_C_SRC))
 
-DUMPER_HELPER_TEST_C_SRC=minidump_writer/linux_dumper_unittest_helper.c
+DUMPER_HELPER_TEST_C_SRC=minidump_writer/linux_dumper_unittest_helper.cc
 
 DUMPER_HELPER_TEST_C_OBJ=$(patsubst %.cc, $(OBJ_DIR)/%.o, \
 			   $(DUMPER_HELPER_TEST_C_SRC))
