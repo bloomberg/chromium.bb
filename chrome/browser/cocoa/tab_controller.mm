@@ -16,6 +16,7 @@
 
 @synthesize loadingState = loadingState_;
 @synthesize mini = mini_;
+@synthesize pinned = pinned_;
 @synthesize phantom = phantom_;
 @synthesize target = target_;
 @synthesize action = action_;
@@ -125,9 +126,8 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
 - (NSMenu*)menu {
   contextMenuDelegate_.reset(
       new TabControllerInternal::MenuDelegate(target_, self));
-  // TODO(42339): this is wrong, it should use pinned, not mini.
   contextMenuModel_.reset(new TabMenuModel(contextMenuDelegate_.get(),
-                                           [self mini]));
+                                           [self pinned]));
   contextMenuController_.reset(
       [[MenuController alloc] initWithModel:contextMenuModel_.get()
                      useWithPopUpButtonCell:NO]);

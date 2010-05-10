@@ -883,6 +883,7 @@ private:
   // Make a new tab and add it to the strip. Keep track of its controller.
   TabController* newController = [self newTab];
   [newController setMini:tabStripModel_->IsMiniTab(modelIndex)];
+  [newController setPinned:tabStripModel_->IsTabPinned(modelIndex)];
   [tabArray_ insertObject:newController atIndex:index];
   NSView* newView = [newController view];
 
@@ -1247,8 +1248,8 @@ private:
 
   TabController* tabController = [tabArray_ objectAtIndex:index];
   DCHECK([tabController isKindOfClass:[TabController class]]);
-  [tabController setMini:
-      (tabStripModel_->IsMiniTab(modelIndex) ? YES : NO)];
+  [tabController setMini:tabStripModel_->IsMiniTab(modelIndex)];
+  [tabController setPinned:tabStripModel_->IsTabPinned(modelIndex)];
   [self updateFavIconForContents:contents atIndex:modelIndex];
   // If the tab is being restored and it's pinned, the mini state is set after
   // the tab has already been rendered, so re-layout the tabstrip. In all other

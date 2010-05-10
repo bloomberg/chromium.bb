@@ -45,6 +45,7 @@ class MenuDelegate;
   BOOL isIconShowing_;  // last state of iconView_ in updateVisibility
   BOOL selected_;
   BOOL mini_;
+  BOOL pinned_;
   BOOL phantom_;
   TabLoadingState loadingState_;
   CGFloat iconTitleXOffset_;  // between left edges of icon and title
@@ -60,6 +61,7 @@ class MenuDelegate;
 
 @property(assign, nonatomic) BOOL selected;
 @property(assign, nonatomic) BOOL mini;
+@property(assign, nonatomic) BOOL pinned;
 @property(assign, nonatomic) BOOL phantom;
 @property(assign, nonatomic) id target;
 @property(assign, nonatomic) SEL action;
