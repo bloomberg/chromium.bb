@@ -131,8 +131,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
     : render_widget_host_(widget),
       about_to_validate_and_paint_(false),
       call_set_needs_display_in_rect_pending_(false),
-      im_attributes_(nil),
-      im_composing_(false),
       is_loading_(false),
       is_hidden_(false),
       is_popup_menu_(false),
@@ -147,7 +145,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
-  [im_attributes_ release];
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -321,18 +318,14 @@ void RenderWidgetHostViewMac::IMEUpdateStatus(int control,
                                               const gfx::Rect& caret_rect) {
   // Reset the IME state and finish an ongoing composition in the renderer.
   if (control == IME_DISABLE || control == IME_COMPLETE_COMPOSITION)
-    IMECleanupComposition();
+    [cocoa_view_ cancelComposition];
 
   // We need to convert the coordinate of the cursor rectangle sent from the
   // renderer and save it. Our IME backend uses a coordinate system whose
   // origin is the upper-left corner of this view. On the other hand, Cocoa
   // uses a coordinate system whose origin is the lower-left corner of this
   // view. So, we convert the cursor rectangle and save it.
-  NSRect view_rect = [cocoa_view_ bounds];
-  const int y_offset = static_cast<int>(view_rect.size.height);
-  im_caret_rect_ = NSMakeRect(caret_rect.x(),
-                              y_offset - caret_rect.y() - caret_rect.height(),
-                              caret_rect.width(), caret_rect.height());
+  [cocoa_view_ setCaretRect:[cocoa_view_ RectToNSRect:caret_rect]];
 }
 
 void RenderWidgetHostViewMac::DidPaintBackingStoreRects(
@@ -542,22 +535,6 @@ void RenderWidgetHostViewMac::KillSelf() {
         shutdown_factory_.NewRunnableMethod(
             &RenderWidgetHostViewMac::ShutdownHost));
   }
-}
-
-void RenderWidgetHostViewMac::IMECleanupComposition() {
-  if (!im_composing_)
-    return;
-
-  // Cancel the ongoing composition. [NSInputManager markedTextAbandoned:]
-  // doesn't call any NSTextInput functions, such as setMarkedText or
-  // insertText. So, we need to send an IPC message to a renderer so it can
-  // delete the composition node.
-  NSInputManager *currentInputManager = [NSInputManager currentInputManager];
-  [currentInputManager markedTextAbandoned:[cocoa_view_ self]];
-
-  render_widget_host_->ImeCancelComposition();
-  im_text_.clear();
-  im_composing_ = false;
 }
 
 gfx::PluginWindowHandle
@@ -780,6 +757,8 @@ bool RenderWidgetHostViewMac::ContainsNativeView(
 
 @implementation RenderWidgetHostViewCocoa
 
+@synthesize caretRect = caretRect_;
+
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r {
   self = [super initWithFrame:NSZeroRect];
   if (self != nil) {
@@ -814,7 +793,7 @@ bool RenderWidgetHostViewMac::ContainsNativeView(
     renderWidgetHostView_->render_widget_host_->ForwardMouseEvent(event);
 
   if ([theEvent type] == NSLeftMouseDown) {
-    renderWidgetHostView_->IMECleanupComposition();
+    [self cancelComposition];
 
     hasOpenMouseDown_ = YES;
   }
@@ -881,74 +860,125 @@ bool RenderWidgetHostViewMac::ContainsNativeView(
       return;
   }
 
-  scoped_nsobject<RenderWidgetHostViewCocoa> keepSelfAlive([self retain]);
-
   // Don't cancel child popups; the key events are probably what's triggering
   // the popup in the first place.
 
+  RenderWidgetHost* widgetHost = renderWidgetHostView_->render_widget_host_;
+  DCHECK(widgetHost);
+
   NativeWebKeyboardEvent event(theEvent);
 
-  // Save the modifier keys so the insertText method can use it when it sends
-  // a Char event, which is dispatched as an onkeypress() event of JavaScript.
-  renderWidgetHostView_->im_modifiers_ = event.modifiers;
+  // We only handle key down events and just simply forward other events.
+  if ([theEvent type] != NSKeyDown) {
+    widgetHost->ForwardKeyboardEvent(event);
+
+    // Possibly autohide the cursor.
+    if ([RenderWidgetHostViewCocoa shouldAutohideCursorForEvent:theEvent])
+      [NSCursor setHiddenUntilMouseMoves:YES];
+
+    return;
+  }
+
+  scoped_nsobject<RenderWidgetHostViewCocoa> keepSelfAlive([self retain]);
+
+  // Records the current marked text state, so that we can know if the marked
+  // text was deleted or not after handling the key down event.
+  BOOL oldHasMarkedText = hasMarkedText_;
+
+  // This method should not be called recursively.
+  DCHECK(!handlingKeyDown_);
+
+  // Tells insertText: and doCommandBySelector: that we are handling a key
+  // down event.
+  handlingKeyDown_ = YES;
+
+  // These two variables might be set when handling the keyboard event.
+  // Clear them here so that we can know whether they have changed afterwards.
+  textToBeInserted_.clear();
+  newMarkedText_.clear();
+
+  // Sends key down events to input method first, then we can decide what should
+  // be done according to input method's feedback.
+  [self interpretKeyEvents:[NSArray arrayWithObject:theEvent]];
+
+  handlingKeyDown_ = NO;
 
   // To emulate Windows, over-write |event.windowsKeyCode| to VK_PROCESSKEY
-  // while an input method is composing a text.
+  // while an input method is composing or inserting a text.
   // Gmail checks this code in its onkeydown handler to stop auto-completing
   // e-mail addresses while composing a CJK text.
-  if ([theEvent type] == NSKeyDown && renderWidgetHostView_->im_composing_) {
+  // If the text to be inserted has only one character, then we don't need this
+  // trick, because we'll send the text as a key press event instead.
+  if (hasMarkedText_ || oldHasMarkedText || textToBeInserted_.length() > 1) {
     event.windowsKeyCode = 0xE5;  // VKEY_PROCESSKEY
     event.setKeyIdentifierFromWindowsKeyCode();
     event.skip_in_browser = true;
-  }
-
-  // Dispatch this keyboard event to the renderer.
-  if (renderWidgetHostView_->render_widget_host_) {
-    RenderWidgetHost* widgetHost = renderWidgetHostView_->render_widget_host_;
+  } else {
     // Look up shortcut, if any, for this key combination.
     EditCommands editCommands;
     [EditCommandMatcher matchEditCommands:&editCommands forEvent:theEvent];
     if (!editCommands.empty())
       widgetHost->ForwardEditCommandsForNextKeyEvent(editCommands);
-    widgetHost->ForwardKeyboardEvent(event);
   }
 
-  currentKeyEvent_.reset([theEvent retain]);
-  textInserted_ = NO;
+  // Forward the key down event first.
+  widgetHost->ForwardKeyboardEvent(event);
 
-  // Dispatch a NSKeyDown event to an input method.
-  // To send an onkeydown() event before an onkeypress() event, we should
-  // dispatch this NSKeyDown event AFTER sending it to the renderer.
-  // (See <https://bugs.webkit.org/show_bug.cgi?id=25119>).
-  //
-  // If this object's retainCount is 1, the only reference is the one held by
-  // keepSelfAlive.  All other references may have been destroyed in the
-  // RenderWidgetHost::ForwardKeyboardEvent call above if it resulted in tab
-  // closure.  Were it not for that single reference, this object would
-  // already be deallocated.  In that case, there's no point in calling
-  // -interpretKeyEvents:.
-  if ([self retainCount] > 1 && [theEvent type] == NSKeyDown) {
-    [self interpretKeyEvents:[NSArray arrayWithObject:theEvent]];
+  // Calling ForwardKeyboardEvent() could have destroyed the widget. When the
+  // widget was destroyed, |renderWidgetHostView_->render_widget_host_| will
+  // be set to NULL. So we check it here and return immediately if it's NULL.
+  if (!renderWidgetHostView_->render_widget_host_)
+    return;
 
+  // Then send keypress and/or composition related events.
+  // If there was a marked text or the text to be inserted is longer than 1
+  // character, then we send the text by calling ImeConfirmComposition().
+  // Otherwise, if the text to be inserted only contains 1 character, then we
+  // can just send a keypress event which is fabricated by changing the type of
+  // the keydown event, so that we can retain all necessary informations, such
+  // as unmodifiedText, etc. And we need to set event.skip_in_browser to true to
+  // prevent the browser from handling it again.
+  // Note that, |textToBeInserted_| is a UTF-16 string, but it's fine to only
+  // handle BMP characters here, as we can always insert non-BMP characters as
+  // text.
+  const NSUInteger kCtrlCmdKeyMask = NSControlKeyMask | NSCommandKeyMask;
+  BOOL textInserted = NO;
+  if (textToBeInserted_.length() > (oldHasMarkedText ? 0 : 1)) {
+    widgetHost->ImeConfirmComposition(textToBeInserted_);
+    textInserted = YES;
+  } else if (textToBeInserted_.length() == 1) {
+    event.type = WebKit::WebInputEvent::Char;
+    event.text[0] = textToBeInserted_[0];
+    event.text[1] = 0;
+    event.skip_in_browser = true;
+    widgetHost->ForwardKeyboardEvent(event);
+  } else if (([theEvent modifierFlags] & kCtrlCmdKeyMask) &&
+             [[theEvent characters] length] > 0) {
     // We don't get insertText: calls if ctrl is down and not even a keyDown:
     // call if cmd is down, so synthesize a keypress event for these cases.
     // Note that this makes our behavior deviate from the windows and linux
     // versions of chrome (however, see http://crbug.com/13891 ), but it makes
     // us behave similar to how Safari behaves.
-    if ([theEvent modifierFlags] & (NSControlKeyMask | NSCommandKeyMask) &&
-        !textInserted_ && [[theEvent characters] length] > 0 &&
-        renderWidgetHostView_->render_widget_host_) {
-      // Just fabricate a Char event by changing the type of the RawKeyDown
-      // event, to retain all necessary informations, such as unmodifiedText.
-      event.type = WebKit::WebInputEvent::Char;
-      // We fire menu items on keydown, we don't want to activate menu items
-      // twice.
-      event.skip_in_browser = true;
-      renderWidgetHostView_->render_widget_host_->ForwardKeyboardEvent(event);
-    }
+    event.type = WebKit::WebInputEvent::Char;
+    event.skip_in_browser = true;
+    widgetHost->ForwardKeyboardEvent(event);
   }
 
-  currentKeyEvent_.reset();
+  // Updates or cancels the composition. If some text has been inserted, then
+  // we don't need to cancel the composition explicitly.
+  if (hasMarkedText_ && newMarkedText_.length()) {
+    // Sends the updated marked text to the renderer so it can update the
+    // composition node in WebKit.
+    // When marked text is available, |selectedRange_| will be the range being
+    // selected inside the marked text. We put the cursor at the beginning of
+    // the selected range.
+    widgetHost->ImeSetComposition(newMarkedText_,
+                                  selectedRange_.location,
+                                  selectedRange_.location,
+                                  NSMaxRange(selectedRange_));
+  } else if (oldHasMarkedText && !hasMarkedText_ && !textInserted) {
+    widgetHost->ImeCancelComposition();
+  }
 
   // Possibly autohide the cursor.
   if ([RenderWidgetHostViewCocoa shouldAutohideCursorForEvent:theEvent])
@@ -1148,6 +1178,7 @@ bool RenderWidgetHostViewMac::ContainsNativeView(
     return NO;
 
   renderWidgetHostView_->render_widget_host_->Focus();
+  renderWidgetHostView_->render_widget_host_->ImeSetInputMode(true);
   return YES;
 }
 
@@ -1158,8 +1189,8 @@ bool RenderWidgetHostViewMac::ContainsNativeView(
   if (closeOnDeactivate_)
     renderWidgetHostView_->KillSelf();
 
+  renderWidgetHostView_->render_widget_host_->ImeSetInputMode(false);
   renderWidgetHostView_->render_widget_host_->Blur();
-
   return YES;
 }
 
@@ -1494,15 +1525,15 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 
 - (NSArray *)validAttributesForMarkedText {
   // This code is just copied from WebKit except renaming variables.
-  if (!renderWidgetHostView_->im_attributes_) {
-    renderWidgetHostView_->im_attributes_ = [[NSArray alloc] initWithObjects:
+  if (!validAttributesForMarkedText_) {
+    validAttributesForMarkedText_.reset([[NSArray alloc] initWithObjects:
         NSUnderlineStyleAttributeName,
         NSUnderlineColorAttributeName,
         NSMarkedClauseSegmentAttributeName,
         NSTextInputReplacementRangeAttributeName,
-        nil];
+        nil]);
   }
-  return renderWidgetHostView_->im_attributes_;
+  return validAttributesForMarkedText_.get();
 }
 
 - (NSUInteger)characterIndexForPoint:(NSPoint)thePoint {
@@ -1518,8 +1549,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // Since this window may be moved since we receive the cursor rectangle last
   // time we sent the cursor rectangle to the IME, so we should map from the
   // view coordinate to the screen coordinate every time when an IME need it.
-  NSRect resultRect = renderWidgetHostView_->im_caret_rect_;
-  resultRect = [self convertRect:resultRect toView:nil];
+  NSRect resultRect = [self convertRect:caretRect_ toView:nil];
   NSWindow* window = [self window];
   if (window)
     resultRect.origin = [window convertBaseToScreen:resultRect.origin];
@@ -1528,7 +1558,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 
 - (NSRange)selectedRange {
   // Return the selected range saved in the setMarkedText method.
-  return renderWidgetHostView_->im_selected_range_;
+  return hasMarkedText_ ? selectedRange_ : NSMakeRange(NSNotFound, 0);
 }
 
 - (NSRange)markedRange {
@@ -1538,7 +1568,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // calls the setMarkedText method and we can update the composition node
   // there. (When this method returns an empty range, the input method doesn't
   // call the setMarkedText method.)
-  return renderWidgetHostView_->im_marked_range_;
+  return hasMarkedText_ ? markedRange_ : NSMakeRange(NSNotFound, 0);
 }
 
 - (NSAttributedString *)attributedSubstringFromRange:(NSRange)nsRange {
@@ -1556,11 +1586,11 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 - (BOOL)hasMarkedText {
   // An input method calls this function to figure out whether or not an
   // application is really composing a text. If it is composing, it calls
-  // the markedRange method, and maybe calls the setMarkedTest method.
+  // the markedRange method, and maybe calls the setMarkedText method.
   // It seems an input method usually calls this function when it is about to
   // cancel an ongoing composition. If an application has a non-empty marked
   // range, it calls the setMarkedText method to delete the range.
-  return renderWidgetHostView_->im_composing_ ? YES : NO;
+  return hasMarkedText_;
 }
 
 - (void)unmarkText {
@@ -1569,8 +1599,12 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // It seems an input method calls the setMarkedText method and set an empty
   // text when it cancels an ongoing composition, i.e. I have never seen an
   // input method calls this method.
-  renderWidgetHostView_->render_widget_host_->ImeCancelComposition();
-  renderWidgetHostView_->im_composing_ = false;
+  hasMarkedText_ = NO;
+
+  // If we are handling a key down event, then ImeCancelComposition() will be
+  // called in keyEvent: method.
+  if (!handlingKeyDown_)
+    renderWidgetHostView_->render_widget_host_->ImeCancelComposition();
 }
 
 - (void)setMarkedText:(id)string selectedRange:(NSRange)newSelRange {
@@ -1580,39 +1614,24 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   BOOL isAttributedString = [string isKindOfClass:[NSAttributedString class]];
   NSString* im_text = isAttributedString ? [string string] : string;
   int length = [im_text length];
-  int cursor = newSelRange.location;
 
-  int target_start;
-  int target_end;
-  if (!newSelRange.length) {
-    // The given text doesn't have any range to be highlighted. Clear the
-    // selection range.
-    target_start = 0;
-    target_end = 0;
-  } else {
-    // The given text has a range to be highlighted.
-    // Set the selection range to the given one and put the cursor at the
-    // beginning of the selection range.
-    target_start = newSelRange.location;
-    target_end = NSMaxRange(newSelRange);
-  }
+  markedRange_ = NSMakeRange(0, length);
+  selectedRange_ = newSelRange;
+  newMarkedText_ = base::SysNSStringToUTF16(im_text);
+  hasMarkedText_ = (length > 0);
 
-  // Dispatch this IME event to the renderer and update the IME state of this
-  // object.
+  // If we are handling a key down event, then ImeSetComposition() will be
+  // called in keyEvent: method.
   // Input methods of Mac use setMarkedText calls with an empty text to cancel
   // an ongoing composition. So, we should check whether or not the given text
   // is empty to update the IME state. (Our IME backend can automatically
   // cancels an ongoing composition when we send an empty text. So, it is OK
   // to send an empty text to the renderer.)
-  renderWidgetHostView_->im_text_ = UTF8ToUTF16([im_text UTF8String]);
-  renderWidgetHostView_->render_widget_host_->ImeSetComposition(
-      renderWidgetHostView_->im_text_, cursor, target_start, target_end);
-  renderWidgetHostView_->GetRenderWidgetHost()->ImeSetInputMode(true);
-  renderWidgetHostView_->im_composing_ = length > 0;
-  renderWidgetHostView_->im_marked_range_.location = 0;
-  renderWidgetHostView_->im_marked_range_.length = length;
-  renderWidgetHostView_->im_selected_range_.location = newSelRange.location;
-  renderWidgetHostView_->im_selected_range_.length = newSelRange.length;
+  if (!handlingKeyDown_) {
+    renderWidgetHostView_->render_widget_host_->ImeSetComposition(
+        newMarkedText_, newSelRange.location, newSelRange.location,
+        NSMaxRange(newSelRange));
+  }
 }
 
 - (void)doCommandBySelector:(SEL)selector {
@@ -1624,22 +1643,17 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // character to onkeypress() event handlers.
   // TODO(hbono): need to handle more commands?
   if (selector == @selector(insertNewline:)) {
-    if (currentKeyEvent_.get()) {
-      // Create the Char event from the NSEvent object, so that we can retain
-      // necessary informations, especially unmodifiedText.
-      NativeWebKeyboardEvent event(currentKeyEvent_.get());
-      event.type = WebKit::WebInputEvent::Char;
-      event.text[0] = '\r';
-      event.text[1] = 0;
-      event.skip_in_browser = true;
-      renderWidgetHostView_->render_widget_host_->ForwardKeyboardEvent(event);
+    if (handlingKeyDown_) {
+      // If we are handling a key down event, then we just need to append a '\r'
+      // character to |textToBeInserted_| which will then be handled by
+      // keyEvent: method.
+      textToBeInserted_.push_back('\r');
     } else {
       // This call is not initiated by a key event, so just executed the
       // corresponding editor command.
       renderWidgetHostView_->render_widget_host_->ForwardEditCommand(
           "InsertNewline", "");
     }
-    textInserted_ = YES;
   }
 }
 
@@ -1659,23 +1673,15 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // sent as an IME event as well.
   BOOL isAttributedString = [string isKindOfClass:[NSAttributedString class]];
   NSString* im_text = isAttributedString ? [string string] : string;
-  if (!renderWidgetHostView_->im_composing_ && [im_text length] == 1 &&
-      currentKeyEvent_.get()) {
-    // Create the Char event from the NSEvent object, so that we can retain
-    // necessary informations, especially unmodifiedText.
-    NativeWebKeyboardEvent event(currentKeyEvent_.get());
-    event.type = WebKit::WebInputEvent::Char;
-    event.text[0] = [im_text characterAtIndex:0];
-    event.text[1] = 0;
-    event.skip_in_browser = true;
-    renderWidgetHostView_->render_widget_host_->ForwardKeyboardEvent(event);
+  if (handlingKeyDown_) {
+    textToBeInserted_.append(base::SysNSStringToUTF16(im_text));
   } else {
     renderWidgetHostView_->render_widget_host_->ImeConfirmComposition(
-        UTF8ToUTF16([im_text UTF8String]));
+        base::SysNSStringToUTF16(im_text));
   }
-  renderWidgetHostView_->im_text_.clear();
-  renderWidgetHostView_->im_composing_ = false;
-  textInserted_ = YES;
+
+  // Inserting text will delete all marked text automatically.
+  hasMarkedText_ = NO;
 }
 
 - (void)viewDidMoveToWindow {
@@ -1799,6 +1805,20 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 
 - (void)drawAcceleratedPluginLayer {
   [acceleratedPluginLayer_.get() setNeedsDisplay];
+}
+
+- (void)cancelComposition {
+  if (!hasMarkedText_)
+    return;
+
+  // Cancel the ongoing composition. [NSInputManager markedTextAbandoned:]
+  // doesn't call any NSTextInput functions, such as setMarkedText or
+  // insertText. So, we need to send an IPC message to a renderer so it can
+  // delete the composition node.
+  NSInputManager *currentInputManager = [NSInputManager currentInputManager];
+  [currentInputManager markedTextAbandoned:self];
+
+  [self unmarkText];
 }
 
 @end
