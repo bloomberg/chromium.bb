@@ -402,6 +402,12 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
 // TODO(mrossetti): See if the following can be moved into view's viewWillDraw:.
 - (CGFloat)adjustButtonWidths {
   CGFloat width = bookmarks::kBookmarkMenuButtonMinimumWidth;
+  // Use the cell's size as the base for determining the desired width of the
+  // button rather than the button's current width. -[cell cellSize] always
+  // returns the 'optimum' size of the cell based on the cell's contents even
+  // if it's less than the current button size. Relying on the button size
+  // would result in buttons that could only get wider but we want to handle
+  // the case where the widest button gets removed from a folder menu.
   for (BookmarkButton* button in buttons_.get())
     width = std::max(width, [[button cell] cellSize].width);
   width = std::min(width, bookmarks::kBookmarkMenuButtonMaximumWidth);
