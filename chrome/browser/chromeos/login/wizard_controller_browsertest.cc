@@ -74,13 +74,13 @@ IN_PROC_BROWSER_TEST_F(WizardControllerTest, SwitchLanguage) {
   // Checking the default locale. Provided that the profile is cleared in SetUp.
   EXPECT_EQ("en-US", g_browser_process->GetApplicationLocale());
   EXPECT_STREQ("en", icu::Locale::getDefault().getLanguage());
-  EXPECT_FALSE(current_screen->UILayoutIsRightToLeft());
+  EXPECT_FALSE(base::i18n::IsRTL());
   const std::wstring en_str = l10n_util::GetString(IDS_NETWORK_SELECTION_TITLE);
 
   chromeos::LanguageSwitchModel::SwitchLanguage("fr");
   EXPECT_EQ("fr", g_browser_process->GetApplicationLocale());
   EXPECT_STREQ("fr", icu::Locale::getDefault().getLanguage());
-  EXPECT_FALSE(current_screen->UILayoutIsRightToLeft());
+  EXPECT_FALSE(base::i18n::IsRTL());
   const std::wstring fr_str = l10n_util::GetString(IDS_NETWORK_SELECTION_TITLE);
 
   EXPECT_NE(en_str, fr_str);
@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerTest, SwitchLanguage) {
   chromeos::LanguageSwitchModel::SwitchLanguage("ar");
   EXPECT_EQ("ar", g_browser_process->GetApplicationLocale());
   EXPECT_STREQ("ar", icu::Locale::getDefault().getLanguage());
-  EXPECT_TRUE(current_screen->UILayoutIsRightToLeft());
+  EXPECT_TRUE(base::i18n::IsRTL());
   const std::wstring ar_str = l10n_util::GetString(IDS_NETWORK_SELECTION_TITLE);
 
   EXPECT_NE(fr_str, ar_str);
