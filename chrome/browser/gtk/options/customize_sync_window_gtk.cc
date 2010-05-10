@@ -96,10 +96,10 @@ CustomizeSyncWindowGtk::CustomizeSyncWindowGtk(Profile* profile)
       NULL,
       // Non-modal.
       GTK_DIALOG_NO_SEPARATOR,
-      GTK_STOCK_OK,
-      GTK_RESPONSE_OK,
       GTK_STOCK_CANCEL,
       GTK_RESPONSE_CANCEL,
+      GTK_STOCK_OK,
+      GTK_RESPONSE_OK,
       NULL);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);
