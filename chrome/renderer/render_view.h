@@ -45,6 +45,7 @@
 #include "gfx/rect.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrameClient.h"
@@ -496,6 +497,8 @@ class RenderView : public RenderWidget,
   // UserScript::DOCUMENT_IDLE.
   void OnUserScriptIdleTriggered(WebKit::WebFrame* frame);
 
+  void OnGetAccessibilityTree();
+
 #if defined(OS_MACOSX)
   // Helper routines for GPU plugin support. Used by the
   // WebPluginDelegateProxy, which has a pointer to the RenderView.
@@ -729,10 +732,6 @@ class RenderView : public RenderWidget,
   void OnExecuteCode(const ViewMsg_ExecuteCode_Params& params);
   void ExecuteCodeImpl(WebKit::WebFrame* frame,
                        const ViewMsg_ExecuteCode_Params& params);
-  void OnGetAccessibilityInfo(
-      const webkit_glue::WebAccessibility::InParams& in_params,
-      webkit_glue::WebAccessibility::OutParams* out_params);
-  void OnClearAccessibilityInfo(int acc_obj_id, bool clear_all);
 
   void OnExtensionMessageInvoke(const std::string& function_name,
                                 const ListValue& args,
@@ -1063,11 +1062,10 @@ class RenderView : public RenderWidget,
   bool decrement_shared_popup_at_destruction_;
 
   // TODO(port): revisit once we have accessibility
-#if defined(OS_WIN)
+
   // Handles accessibility requests into the renderer side, as well as
   // maintains the cache and other features of the accessibility tree.
   scoped_ptr<WebKit::WebAccessibilityCache> accessibility_;
-#endif
 
   // Resource message queue. Used to queue up resource IPCs if we need
   // to wait for an ACK from the browser before proceeding.

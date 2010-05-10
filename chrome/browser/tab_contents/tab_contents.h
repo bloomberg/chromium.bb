@@ -1265,6 +1265,15 @@ class TabContents : public PageNavigator,
   // Maps each frame on this page to its geolocation content settings.
   GeolocationContentSettings geolocation_content_settings_;
 
+  // Whether the renderer is made accessible.
+  // TODO(dmazzoni): http://crbug.com/25564 This is a temporary work-around
+  // until that bug is fixed.
+  bool renderer_accessible_;
+
+  // Keep track of if we've already requested the accessibility tree so
+  // we don't do it more than once.
+  bool requested_accessibility_tree_;
+
   // ---------------------------------------------------------------------------
 
   DISALLOW_COPY_AND_ASSIGN(TabContents);
