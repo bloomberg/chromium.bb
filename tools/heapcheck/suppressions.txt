@@ -344,3 +344,16 @@
   fun:AutoFillProfile::Clone
   fun:browser_sync::AutofillChangeProcessor::ObserveAutofillProfileChanged
 }
+{
+  bug_43775
+  Heapcheck:Leak
+  fun:WebCore::makeExternalString
+  fun:WebCore::v8ExternalString
+  fun:WebCore::V8Proxy::evaluate
+  fun:WebCore::ScriptController::evaluate
+  fun:WebCore::ScriptController::executeScript
+  fun:WebKit::WebFrameImpl::executeScript
+  fun:RenderViewTest::ExecuteJavaScript
+  fun:ExtensionAPIClientTest::ExpectJsFailInternal
+  fun:ExtensionAPIClientTest_CollapseToolstrip_Test::TestBody
+}
