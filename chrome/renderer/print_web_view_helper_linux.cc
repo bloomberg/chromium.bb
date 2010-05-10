@@ -18,7 +18,8 @@ void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
   if (IsPrinting())
     return;
 
-  // TODO(myhuang): Get printing parameters via IPC.
+  // TODO(myhuang): Get printing parameters via IPC
+  // using the print_web_view_helper.cc version of Print.
   // For testing purpose, we hard-coded printing parameters here.
 
   // The paper size is US Letter (8.5 in. by 11 in.).
