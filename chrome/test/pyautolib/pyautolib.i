@@ -38,6 +38,9 @@
 #include "chrome/test/pyautolib/pyautolib.h"
 %}
 
+// Handle type uint32 conversions as int
+%apply int { uint32 };
+
 // scoped_refptr
 template <class T>
 class scoped_refptr {
@@ -126,6 +129,9 @@ class TabProxy {
            "since it might close the browser.") Close;
   bool Close();
   bool Close(bool wait_until_closed);
+  %feature("docstring", "Blocks until tab is completely restored.")
+      WaitForTabToBeRestored;
+  bool WaitForTabToBeRestored(uint32 timeout_ms);
 
   // HTTP Auth
   %feature("docstring",
