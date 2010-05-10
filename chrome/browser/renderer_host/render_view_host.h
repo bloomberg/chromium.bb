@@ -22,7 +22,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
 #include "webkit/glue/password_form_dom_manager.h"
-#include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class FilePath;
@@ -465,9 +464,6 @@ class RenderViewHost : public RenderWidgetHost {
   // changed.
   void EnablePreferredSizeChangedMode();
 
-  // Requests a snapshot of an accessible DOM tree from the renderer.
-  void RequestAccessibilityTree();
-
  protected:
   // RenderWidgetHost protected overrides.
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
@@ -629,7 +625,6 @@ class RenderViewHost : public RenderWidgetHost {
   void OnExtensionPostMessage(int port_id, const std::string& message);
   void OnAccessibilityFocusChange(int acc_obj_id);
   void OnAccessibilityObjectStateChange(int acc_obj_id);
-  void OnAccessibilityTree(const webkit_glue::WebAccessibility& tree);
   void OnCSSInserted();
   void OnPageContents(const GURL& url,
                       int32 page_id,

@@ -676,10 +676,6 @@ bool RenderViewHost::SuddenTerminationAllowed() const {
   return sudden_termination_allowed_ || process()->sudden_termination_allowed();
 }
 
-void RenderViewHost::RequestAccessibilityTree() {
-  Send(new ViewMsg_GetAccessibilityTree(routing_id()));
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // RenderViewHost, IPC message handlers:
 
@@ -832,7 +828,6 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageContents, OnPageContents)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageTranslated, OnPageTranslated)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ContentBlocked, OnContentBlocked)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AccessibilityTree, OnAccessibilityTree)
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(RenderWidgetHost::OnMessageReceived(msg))
   IPC_END_MESSAGE_MAP_EX()
@@ -1831,16 +1826,21 @@ void RenderViewHost::OnExtensionPostMessage(
 }
 
 void RenderViewHost::OnAccessibilityFocusChange(int acc_obj_id) {
-  view()->OnAccessibilityFocusChange(acc_obj_id);
+#if defined(OS_WIN)
+  BrowserAccessibilityManager::GetInstance()->ChangeAccessibilityFocus(
+      acc_obj_id, process()->id(), routing_id());
+#else
+  // TODO(port): accessibility not yet implemented. See http://crbug.com/8288.
+#endif
 }
 
 void RenderViewHost::OnAccessibilityObjectStateChange(int acc_obj_id) {
-  view()->OnAccessibilityObjectStateChange(acc_obj_id);
-}
-
-void RenderViewHost::OnAccessibilityTree(
-    const webkit_glue::WebAccessibility& tree) {
-  view()->UpdateAccessibilityTree(tree);
+#if defined(OS_WIN)
+  BrowserAccessibilityManager::GetInstance()->OnAccessibilityObjectStateChange(
+      acc_obj_id, process()->id(), routing_id());
+#else
+  // TODO(port): accessibility not yet implemented. See http://crbug.com/8288.
+#endif
 }
 
 void RenderViewHost::OnCSSInserted() {

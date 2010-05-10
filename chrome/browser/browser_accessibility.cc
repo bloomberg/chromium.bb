@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,116 +9,48 @@
 
 using webkit_glue::WebAccessibility;
 
-BrowserAccessibility::BrowserAccessibility()
-    : manager_(NULL),
-      parent_(NULL),
-      child_id_(-1),
-      index_in_parent_(-1),
-      renderer_id_(-1),
-      instance_active_(false) {
-}
+HRESULT BrowserAccessibility::Initialize(int iaccessible_id, int routing_id,
+                                         int process_id, HWND parent_hwnd) {
+  // Check input parameters. Root id is 1000, to avoid conflicts with the ids
+  // used by MSAA.
+  if (!parent_hwnd || iaccessible_id < 1000)
+    return E_INVALIDARG;
 
-BrowserAccessibility::~BrowserAccessibility() {
-  InactivateTree();
-}
+  iaccessible_id_ = iaccessible_id;
+  routing_id_ = routing_id;
+  process_id_ = process_id;
+  parent_hwnd_ = parent_hwnd;
 
-void BrowserAccessibility::Initialize(
-    BrowserAccessibilityManager* manager,
-    BrowserAccessibility* parent,
-    LONG child_id,
-    LONG index_in_parent,
-    const webkit_glue::WebAccessibility& src) {
-  manager_ = manager;
-  parent_ = parent;
-  child_id_ = child_id;
-  index_in_parent_ = index_in_parent;
-
-  renderer_id_ = src.id;
-  name_ = src.name;
-  value_ = src.value;
-  action_ = src.action;
-  description_ = src.description;
-  help_ = src.help;
-  shortcut_ = src.shortcut;
-  role_ = MSAARole(src.role);
-  state_ = MSAAState(src.state);
-  location_ = src.location;
-
+  // Mark instance as active.
   instance_active_ = true;
-
-  // Focused is a dynamic state, only one node will be focused at a time.
-  state_ &= ~STATE_SYSTEM_FOCUSED;
+  return S_OK;
 }
-
-void BrowserAccessibility::AddChild(BrowserAccessibility* child) {
-  children_.push_back(child);
-}
-
-void BrowserAccessibility::InactivateTree() {
-  // Mark this object as inactive, so calls to all COM methods will return
-  // failure.
-  instance_active_ = false;
-
-  // Now we can safely call InactivateTree on our children and remove
-  // references to them, so that as much of the tree as possible will be
-  // destroyed now - however, nodes that still have references to them
-  // might stick around a while until all clients have released them.
-  for (std::vector<BrowserAccessibility*>::iterator iter =
-           children_.begin();
-       iter != children_.end(); ++iter) {
-    (*iter)->InactivateTree();
-    (*iter)->Release();
-  }
-  children_.clear();
-}
-
-bool BrowserAccessibility::IsDescendantOf(BrowserAccessibility* ancestor) {
-  if (this == ancestor) {
-    return true;
-  } else if (parent_) {
-    return parent_->IsDescendantOf(ancestor);
-  }
-
-  return false;
-}
-
-BrowserAccessibility* BrowserAccessibility::GetPreviousSibling() {
-  if (parent_ && index_in_parent_ > 0)
-    return parent_->children_[index_in_parent_ - 1];
-
-  return NULL;
-}
-
-BrowserAccessibility* BrowserAccessibility::GetNextSibling() {
-  if (parent_ &&
-      index_in_parent_ < static_cast<int>(parent_->children_.size() - 1)) {
-    return parent_->children_[index_in_parent_ + 1];
-  }
-
-  return NULL;
-}
-
-BrowserAccessibility* BrowserAccessibility::NewReference() {
-  AddRef();
-  return this;
-}
-
-//
-// IAccessible methods.
-//
 
 HRESULT BrowserAccessibility::accDoDefaultAction(VARIANT var_id) {
-  if (!instance_active_) {
+  if (!instance_active()) {
     // Instance no longer active, fail gracefully.
+    // TODO(ctguil): Once we have MSAA events, change these fails to having
+    // BrowserAccessibilityManager firing the right event.
     return E_FAIL;
   }
 
-  return E_NOTIMPL;
+  if (var_id.vt != VT_I4)
+    return E_INVALIDARG;
+
+  if (!RequestAccessibilityInfo(WebAccessibility::FUNCTION_DODEFAULTACTION,
+                                var_id, NULL, NULL)) {
+    return E_FAIL;
+  }
+
+  if (response().return_code == WebAccessibility::RETURNCODE_FALSE)
+    return S_FALSE;
+
+  return S_OK;
 }
 
 STDMETHODIMP BrowserAccessibility::accHitTest(LONG x_left, LONG y_top,
                                               VARIANT* child) {
-  if (!instance_active_) {
+  if (!instance_active()) {
     // Instance no longer active, fail gracefully.
     return E_FAIL;
   }
@@ -126,42 +58,85 @@ STDMETHODIMP BrowserAccessibility::accHitTest(LONG x_left, LONG y_top,
   if (!child)
     return E_INVALIDARG;
 
-  return E_NOTIMPL;
+  if (!parent_hwnd_) {
+    // Parent HWND needed for coordinate conversion.
+    return E_FAIL;
+  }
+
+  // Convert coordinates to test from screen into client window coordinates, to
+  // maintain sandbox functionality on renderer side.
+  POINT p = {x_left, y_top};
+  ::ScreenToClient(parent_hwnd_, &p);
+
+  if (!RequestAccessibilityInfo(WebAccessibility::FUNCTION_HITTEST,
+                                ChildSelfVariant(), p.x, p.y)) {
+    return E_FAIL;
+  }
+
+  if (response().return_code == WebAccessibility::RETURNCODE_FALSE) {
+    // The point is outside of the object's boundaries.
+    child->vt = VT_EMPTY;
+    return S_FALSE;
+  }
+
+  if (response().output_long1 == -1) {
+    if (CreateInstance(IID_IAccessible, response().object_id,
+                       reinterpret_cast<void**>(&child->pdispVal)) == S_OK) {
+      child->vt = VT_DISPATCH;
+      // Increment the reference count for the retrieved interface.
+      child->pdispVal->AddRef();
+    } else {
+      return E_NOINTERFACE;
+    }
+  } else {
+    child->vt = VT_I4;
+    child->lVal = response().output_long1;
+  }
+
+  return S_OK;
 }
 
 STDMETHODIMP BrowserAccessibility::accLocation(LONG* x_left, LONG* y_top,
                                                LONG* width, LONG* height,
                                                VARIANT var_id) {
-  if (!instance_active_) {
+  if (!instance_active()) {
     // Instance no longer active, fail gracefully.
     return E_FAIL;
   }
 
-  if (!x_left || !y_top || !width || !height)
+  if (var_id.vt != VT_I4 || !x_left || !y_top || !width || !height ||
+      !parent_hwnd_) {
     return E_INVALIDARG;
+  }
 
-  BrowserAccessibility* target = GetTargetFromChildID(var_id);
-  if (!target)
-    return E_INVALIDARG;
+  if (!RequestAccessibilityInfo(WebAccessibility::FUNCTION_LOCATION, var_id,
+                                NULL, NULL)) {
+    return E_FAIL;
+  }
+
+  POINT top_left = {0, 0};
 
   // Find the top left corner of the containing window in screen coords, and
   // adjust the output position by this amount.
-  HWND parent_hwnd = manager_->GetParentHWND();
-  POINT top_left = {0, 0};
-  ::ClientToScreen(parent_hwnd, &top_left);
+  ::ClientToScreen(parent_hwnd_, &top_left);
 
-  *x_left = target->location_.x + top_left.x;
-  *y_top  = target->location_.y + top_left.y;
-  *width  = target->location_.width;
-  *height = target->location_.height;
+  *x_left = response().output_long1 + top_left.x;
+  *y_top  = response().output_long2 + top_left.y;
+
+  *width  = response().output_long3;
+  *height = response().output_long4;
 
   return S_OK;
 }
 
-STDMETHODIMP BrowserAccessibility::accNavigate(
-    LONG nav_dir, VARIANT start, VARIANT* end) {
-  BrowserAccessibility* target = GetTargetFromChildID(start);
-  if (!target)
+STDMETHODIMP BrowserAccessibility::accNavigate(LONG nav_dir, VARIANT start,
+                                               VARIANT* end) {
+  if (!instance_active()) {
+    // Instance no longer active, fail gracefully.
+    return E_FAIL;
+  }
+
+  if (start.vt != VT_I4 || !end)
     return E_INVALIDARG;
 
   if ((nav_dir == NAVDIR_LASTCHILD || nav_dir == NAVDIR_FIRSTCHILD) &&
@@ -170,62 +145,80 @@ STDMETHODIMP BrowserAccessibility::accNavigate(
     return E_INVALIDARG;
   }
 
-  BrowserAccessibility* result;
-  switch (nav_dir) {
-    case NAVDIR_DOWN:
-    case NAVDIR_UP:
-    case NAVDIR_LEFT:
-    case NAVDIR_RIGHT:
-    // These directions are not implemented, matching Mozilla and IE.
-    return E_NOTIMPL;
-  case NAVDIR_FIRSTCHILD:
-    if (target->children_.size() > 0)
-      result = target->children_[0];
-    break;
-  case NAVDIR_LASTCHILD:
-    if (target->children_.size() > 0)
-      result = target->children_[target->children_.size() - 1];
-    break;
-  case NAVDIR_NEXT:
-    result = target->GetNextSibling();
-    break;
-  case NAVDIR_PREVIOUS:
-    result = target->GetPreviousSibling();
-    break;
+  if (nav_dir == NAVDIR_DOWN || nav_dir == NAVDIR_UP ||
+      nav_dir == NAVDIR_LEFT || nav_dir == NAVDIR_RIGHT) {
+    // Directions not implemented, matching Mozilla and IE.
+    return E_INVALIDARG;
   }
 
-  if (!result) {
+  if (!RequestAccessibilityInfo(WebAccessibility::FUNCTION_NAVIGATE, start,
+                                nav_dir, NULL)) {
+    return E_FAIL;
+  }
+
+  if (response().return_code == WebAccessibility::RETURNCODE_FALSE) {
+    // No screen element was found in the specified direction.
     end->vt = VT_EMPTY;
     return S_FALSE;
   }
 
-  end->vt = VT_DISPATCH;
-  end->pdispVal = result->NewReference();
+  if (response().output_long1 == -1) {
+    if (CreateInstance(IID_IAccessible, response().object_id,
+                       reinterpret_cast<void**>(&end->pdispVal)) == S_OK) {
+      end->vt = VT_DISPATCH;
+      // Increment the reference count for the retrieved interface.
+      end->pdispVal->AddRef();
+    } else {
+      return E_NOINTERFACE;
+    }
+  } else {
+    end->vt = VT_I4;
+    end->lVal = response().output_long1;
+  }
+
   return S_OK;
 }
 
 STDMETHODIMP BrowserAccessibility::get_accChild(VARIANT var_child,
                                                 IDispatch** disp_child) {
-  if (!instance_active_) {
+  if (!instance_active()) {
     // Instance no longer active, fail gracefully.
     return E_FAIL;
   }
 
-  if (!disp_child)
+  if (var_child.vt != VT_I4 || !disp_child)
     return E_INVALIDARG;
 
-  *disp_child = NULL;
+  // If var_child is the parent, remain with the same IDispatch.
+  if (var_child.lVal == CHILDID_SELF && iaccessible_id_ != 1000)
+    return S_OK;
 
-  BrowserAccessibility* target = GetTargetFromChildID(var_child);
-  if (!target)
-    return E_INVALIDARG;
+  if (!RequestAccessibilityInfo(WebAccessibility::FUNCTION_GETCHILD, var_child,
+                                NULL, NULL)) {
+    return E_FAIL;
+  }
 
-  (*disp_child) = target->NewReference();
-  return S_OK;
+  // TODO(ctguil): Figure out when the return code would be false
+  if (response().return_code == WebAccessibility::RETURNCODE_FALSE) {
+    // When at a leaf, children are handled by the parent object.
+    *disp_child = NULL;
+    return S_FALSE;
+  }
+
+  // Retrieve the IUnknown interface for the parent view, and assign the
+  // IDispatch returned.
+  if (CreateInstance(IID_IAccessible, response().object_id,
+                     reinterpret_cast<void**>(disp_child)) == S_OK) {
+    // Increment the reference count for the retrieved interface.
+    (*disp_child)->AddRef();
+    return S_OK;
+  } else {
+    return E_NOINTERFACE;
+  }
 }
 
 STDMETHODIMP BrowserAccessibility::get_accChildCount(LONG* child_count) {
-  if (!instance_active_) {
+  if (!instance_active()) {
     // Instance no longer active, fail gracefully.
     return E_FAIL;
   }
@@ -233,29 +226,36 @@ STDMETHODIMP BrowserAccessibility::get_accChildCount(LONG* child_count) {
   if (!child_count)
     return E_INVALIDARG;
 
-  *child_count = children_.size();
+  if (!RequestAccessibilityInfo(WebAccessibility::FUNCTION_CHILDCOUNT,
+                                ChildSelfVariant(), NULL, NULL)) {
+    return E_FAIL;
+  }
+
+  *child_count = response().output_long1;
   return S_OK;
 }
 
 STDMETHODIMP BrowserAccessibility::get_accDefaultAction(VARIANT var_id,
                                                         BSTR* def_action) {
-  if (!instance_active_) {
+  if (!instance_active()) {
     // Instance no longer active, fail gracefully.
     return E_FAIL;
   }
 
-  if (!def_action)
+  if (var_id.vt != VT_I4 || !def_action)
     return E_INVALIDARG;
 
-  BrowserAccessibility* target = GetTargetFromChildID(var_id);
-  if (!target)
-    return E_INVALIDARG;
+  if (!RequestAccessibilityInfo(WebAccessibility::FUNCTION_DEFAULTACTION,
+                                var_id, NULL, NULL)) {
+    return E_FAIL;
+  }
 
-  // Return false if the string is empty.
-  if (target->action_.size() == 0)
+  if (response().return_code == WebAccessibility::RETURNCODE_FALSE) {
+    // No string found.
     return S_FALSE;
+  }
 
-  *def_action = SysAllocString(target->action_.c_str());
+  *def_action = SysAllocString(response().output_string.c_str());
 
   DCHECK(*def_action);
   return S_OK;
@@ -263,30 +263,32 @@ STDMETHODIMP BrowserAccessibility::get_accDefaultAction(VARIANT var_id,
 
 STDMETHODIMP BrowserAccessibility::get_accDescription(VARIANT var_id,
                                                       BSTR* desc) {
-  if (!instance_active_) {
+  if (!instance_active()) {
     // Instance no longer active, fail gracefully.
     return E_FAIL;
   }
 
-  if (!desc)
+  if (var_id.vt != VT_I4 || !desc)
     return E_INVALIDARG;
 
-  BrowserAccessibility* target = GetTargetFromChildID(var_id);
-  if (!target)
-    return E_INVALIDARG;
+  if (!RequestAccessibilityInfo(WebAccessibility::FUNCTION_DESCRIPTION, var_id,
+                                NULL, NULL)) {
+    return E_FAIL;
+  }
 
-  // Return false if the string is empty.
-  if (target->description_.size() == 0)
+  if (response().return_code == WebAccessibility::RETURNCODE_FALSE) {
+    // No string found.
     return S_FALSE;
+  }
 
-  *desc = SysAllocString(target->description_.c_str());
+  *desc = SysAllocString(response().output_string.c_str());
 
   DCHECK(*desc);
   return S_OK;
 }
 
 STDMETHODIMP BrowserAccessibility::get_accFocus(VARIANT* focus_child) {
-  if (!instance_active_) {
+  if (!instance_active()) {
     // Instance no longer active, fail gracefully.
     return E_FAIL;
   }
@@ -294,38 +296,55 @@ STDMETHODIMP BrowserAccessibility::get_accFocus(VARIANT* focus_child) {
   if (!focus_child)
     return E_INVALIDARG;
 
-  BrowserAccessibility* focus = manager_->GetFocus(this);
-  if (focus == this) {
-    focus_child->vt = VT_I4;
-    focus_child->lVal = CHILDID_SELF;
-  } else if (focus == NULL) {
+  if (!RequestAccessibilityInfo(WebAccessibility::FUNCTION_GETFOCUSEDCHILD,
+                                ChildSelfVariant(), NULL, NULL)) {
+    return E_FAIL;
+  }
+
+  if (response().return_code == WebAccessibility::RETURNCODE_FALSE) {
+    // The window that contains this object is not the active window.
     focus_child->vt = VT_EMPTY;
+    return S_FALSE;
+  }
+
+  if (response().output_long1 == -1) {
+    if (CreateInstance(IID_IAccessible, response().object_id,
+           reinterpret_cast<void**>(&focus_child->pdispVal)) == S_OK) {
+      focus_child->vt = VT_DISPATCH;
+      // Increment the reference count for the retrieved interface.
+      focus_child->pdispVal->AddRef();
+    } else {
+      return E_NOINTERFACE;
+    }
   } else {
-    focus_child->vt = VT_DISPATCH;
-    focus_child->pdispVal = focus->NewReference();
+    focus_child->vt = VT_I4;
+    focus_child->lVal = response().output_long1;
   }
 
   return S_OK;
 }
 
 STDMETHODIMP BrowserAccessibility::get_accHelp(VARIANT var_id, BSTR* help) {
-  if (!instance_active_) {
+  if (!instance_active()) {
     // Instance no longer active, fail gracefully.
     return E_FAIL;
   }
 
-  if (!help)
+  if (var_id.vt != VT_I4 || !help)
     return E_INVALIDARG;
 
-  BrowserAccessibility* target = GetTargetFromChildID(var_id);
-  if (!target)
-    return E_INVALIDARG;
+  if (!RequestAccessibilityInfo(WebAccessibility::FUNCTION_HELPTEXT, var_id,
+                                NULL, NULL)) {
+    return E_FAIL;
+  }
 
-  // Return false if the string is empty.
-  if (target->help_.size() == 0)
+  if (response().return_code == WebAccessibility::RETURNCODE_FALSE ||
+      response().output_string.empty()) {
+    // No string found.
     return S_FALSE;
+  }
 
-  *help = SysAllocString(target->help_.c_str());
+  *help = SysAllocString(response().output_string.c_str());
 
   DCHECK(*help);
   return S_OK;
@@ -333,126 +352,162 @@ STDMETHODIMP BrowserAccessibility::get_accHelp(VARIANT var_id, BSTR* help) {
 
 STDMETHODIMP BrowserAccessibility::get_accKeyboardShortcut(VARIANT var_id,
                                                            BSTR* acc_key) {
-  if (!instance_active_) {
+  if (!instance_active()) {
     // Instance no longer active, fail gracefully.
     return E_FAIL;
   }
 
-  if (!acc_key)
+  if (var_id.vt != VT_I4 || !acc_key)
     return E_INVALIDARG;
 
-  BrowserAccessibility* target = GetTargetFromChildID(var_id);
-  if (!target)
-    return E_INVALIDARG;
+  if (!RequestAccessibilityInfo(WebAccessibility::FUNCTION_KEYBOARDSHORTCUT,
+                                var_id, NULL, NULL)) {
+    return E_FAIL;
+  }
 
-  // Return false if the string is empty.
-  if (target->shortcut_.size() == 0)
+  if (response().return_code == WebAccessibility::RETURNCODE_FALSE) {
+    // No string found.
     return S_FALSE;
+  }
 
-  *acc_key = SysAllocString(target->shortcut_.c_str());
+  *acc_key = SysAllocString(response().output_string.c_str());
 
   DCHECK(*acc_key);
   return S_OK;
 }
 
 STDMETHODIMP BrowserAccessibility::get_accName(VARIANT var_id, BSTR* name) {
-  if (!instance_active_) {
+  if (!instance_active()) {
     // Instance no longer active, fail gracefully.
     return E_FAIL;
   }
 
-  if (!name)
+  if (var_id.vt != VT_I4 || !name)
     return E_INVALIDARG;
 
-  BrowserAccessibility* target = GetTargetFromChildID(var_id);
-  if (!target)
-    return E_INVALIDARG;
+  if (!RequestAccessibilityInfo(WebAccessibility::FUNCTION_NAME, var_id, NULL,
+                                NULL)) {
+    return E_FAIL;
+  }
 
-  // Return false if the string is empty.
-  if (target->name_.size() == 0)
+  if (response().return_code == WebAccessibility::RETURNCODE_FALSE) {
+    // No string found.
     return S_FALSE;
+  }
 
-  *name = SysAllocString(target->name_.c_str());
+  *name = SysAllocString(response().output_string.c_str());
 
   DCHECK(*name);
   return S_OK;
 }
 
 STDMETHODIMP BrowserAccessibility::get_accParent(IDispatch** disp_parent) {
-  if (!instance_active_) {
+  if (!instance_active()) {
     // Instance no longer active, fail gracefully.
     return E_FAIL;
   }
 
-  if (!disp_parent)
+  if (!disp_parent || !parent_hwnd_)
     return E_INVALIDARG;
 
-  IAccessible* parent = parent_;
-  if (parent == NULL) {
-    // This happens if we're the root of the tree;
-    // return the IAccessible for the window.
-    parent = manager_->GetParentWindowIAccessible();
+  // Root node's parent is the containing HWND's IAccessible.
+  if (iaccessible_id_ == 1000) {
+    // For an object that has no parent (e.g. root), point the accessible parent
+    // to the default implementation.
+    HRESULT hr =
+        ::CreateStdAccessibleObject(parent_hwnd_, OBJID_WINDOW,
+                                    IID_IAccessible,
+                                    reinterpret_cast<void**>(disp_parent));
+
+    if (!SUCCEEDED(hr)) {
+      *disp_parent = NULL;
+      return S_FALSE;
+    }
+    return S_OK;
   }
 
-  parent->AddRef();
-  *disp_parent = parent;
-  return S_OK;
+  if (!RequestAccessibilityInfo(WebAccessibility::FUNCTION_GETPARENT,
+                                ChildSelfVariant(), NULL, NULL)) {
+    return E_FAIL;
+  }
+
+  if (response().return_code == WebAccessibility::RETURNCODE_FALSE) {
+    // No parent exists for this object.
+    return S_FALSE;
+  }
+
+  // Retrieve the IUnknown interface for the parent view, and assign the
+  // IDispatch returned.
+  if (CreateInstance(IID_IAccessible, response().object_id,
+                     reinterpret_cast<void**>(disp_parent)) == S_OK) {
+    // Increment the reference count for the retrieved interface.
+    (*disp_parent)->AddRef();
+    return S_OK;
+  } else {
+    return E_NOINTERFACE;
+  }
 }
 
 STDMETHODIMP BrowserAccessibility::get_accRole(VARIANT var_id, VARIANT* role) {
-  if (!instance_active_) {
+  if (!instance_active()) {
     // Instance no longer active, fail gracefully.
     return E_FAIL;
   }
 
-  if (!role)
+  if (var_id.vt != VT_I4 || !role)
     return E_INVALIDARG;
 
-  BrowserAccessibility* target = GetTargetFromChildID(var_id);
-  if (!target)
-    return E_INVALIDARG;
+  if (!RequestAccessibilityInfo(WebAccessibility::FUNCTION_ROLE, var_id, NULL,
+                                NULL)) {
+    return E_FAIL;
+  }
 
   role->vt = VT_I4;
-  role->lVal = target->role_;
+  role->lVal = MSAARole(response().output_long1);
   return S_OK;
 }
 
 STDMETHODIMP BrowserAccessibility::get_accState(VARIANT var_id,
                                                 VARIANT* state) {
-  if (!instance_active_) {
+  if (!instance_active()) {
     // Instance no longer active, fail gracefully.
     return E_FAIL;
   }
 
-  if (!state)
+  if (var_id.vt != VT_I4 || !state)
     return E_INVALIDARG;
 
-  BrowserAccessibility* target = GetTargetFromChildID(var_id);
-  if (!target)
-    return E_INVALIDARG;
+  if (!RequestAccessibilityInfo(WebAccessibility::FUNCTION_STATE, var_id, NULL,
+                                NULL)) {
+    return E_FAIL;
+  }
 
   state->vt = VT_I4;
-  state->lVal = target->state_;
-  if (manager_->GetFocus(NULL) == this)
-    state->lVal |= STATE_SYSTEM_FOCUSED;
-
+  state->lVal = MSAAState(response().output_long1);
   return S_OK;
 }
 
 STDMETHODIMP BrowserAccessibility::get_accValue(VARIANT var_id, BSTR* value) {
-  if (!instance_active_) {
+  if (!instance_active()) {
     // Instance no longer active, fail gracefully.
     return E_FAIL;
   }
 
-  if (!value)
+  if (var_id.vt != VT_I4 || !value)
     return E_INVALIDARG;
 
-  BrowserAccessibility* target = GetTargetFromChildID(var_id);
-  if (!target)
-    return E_INVALIDARG;
+  if (!RequestAccessibilityInfo(WebAccessibility::FUNCTION_VALUE, var_id, NULL,
+                                NULL)) {
+    return E_FAIL;
+  }
 
-  *value = SysAllocString(target->value_.c_str());
+  if (response().return_code == WebAccessibility::RETURNCODE_FALSE ||
+      response().output_string.empty()) {
+    // No string found.
+    return S_FALSE;
+  }
+
+  *value = SysAllocString(response().output_string.c_str());
 
   DCHECK(*value);
   return S_OK;
@@ -461,136 +516,54 @@ STDMETHODIMP BrowserAccessibility::get_accValue(VARIANT var_id, BSTR* value) {
 STDMETHODIMP BrowserAccessibility::get_accHelpTopic(BSTR* help_file,
                                                     VARIANT var_id,
                                                     LONG* topic_id) {
+  if (help_file)
+    *help_file = NULL;
+
+  if (topic_id)
+    *topic_id = static_cast<LONG>(-1);
+
   return E_NOTIMPL;
 }
 
 STDMETHODIMP BrowserAccessibility::get_accSelection(VARIANT* selected) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
-    return E_FAIL;
-  }
+  if (selected)
+    selected->vt = VT_EMPTY;
 
   return E_NOTIMPL;
 }
 
-STDMETHODIMP BrowserAccessibility::accSelect(LONG flags_sel, VARIANT var_id) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
-    return E_FAIL;
-  }
-
-  return E_NOTIMPL;
+STDMETHODIMP BrowserAccessibility::CreateInstance(REFIID iid,
+                                                  int iaccessible_id,
+                                                  void** interface_ptr) {
+  return BrowserAccessibilityManager::GetInstance()->
+      CreateAccessibilityInstance(iid, iaccessible_id, routing_id_,
+                                  process_id_, parent_hwnd_, interface_ptr);
 }
 
-//
-// IAccessible2 methods.
-//
+bool BrowserAccessibility::RequestAccessibilityInfo(int iaccessible_func_id,
+                                                    VARIANT var_id, LONG input1,
+                                                    LONG input2) {
+  DCHECK(V_VT(&var_id) == VT_I4);
 
-STDMETHODIMP BrowserAccessibility::role(LONG* role) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
-    return E_FAIL;
-  }
+  // Create and populate IPC message structure, for retrieval of accessibility
+  // information from the renderer.
+  WebAccessibility::InParams in_params;
+  in_params.object_id = iaccessible_id_;
+  in_params.function_id = iaccessible_func_id;
+  in_params.child_id = V_I4(&var_id);
+  in_params.input_long1 = input1;
+  in_params.input_long2 = input2;
 
-  if (!role)
-    return E_INVALIDARG;
-
-  *role = role_;
-
-  return S_OK;
+  return BrowserAccessibilityManager::GetInstance()->
+           RequestAccessibilityInfo(&in_params, routing_id_, process_id_) &&
+         response().return_code != WebAccessibility::RETURNCODE_FAIL;
 }
 
-STDMETHODIMP BrowserAccessibility::get_states(AccessibleStates* states) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
-    return E_FAIL;
-  }
-
-  if (!states)
-    return E_INVALIDARG;
-
-  *states = state_;
-
-  return S_OK;
+const WebAccessibility::OutParams& BrowserAccessibility::response() {
+  return BrowserAccessibilityManager::GetInstance()->response();
 }
 
-STDMETHODIMP BrowserAccessibility::get_uniqueID(LONG* unique_id) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
-    return E_FAIL;
-  }
-
-  if (!unique_id)
-    return E_INVALIDARG;
-
-  *unique_id = child_id_;
-  return S_OK;
-}
-
-STDMETHODIMP BrowserAccessibility::get_windowHandle(HWND* window_handle) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
-    return E_FAIL;
-  }
-
-  if (!window_handle)
-    return E_INVALIDARG;
-
-  *window_handle = manager_->GetParentHWND();
-  return S_OK;
-}
-
-STDMETHODIMP BrowserAccessibility::get_indexInParent(LONG* index_in_parent) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
-    return E_FAIL;
-  }
-
-  if (!index_in_parent)
-    return E_INVALIDARG;
-
-  *index_in_parent = index_in_parent_;
-  return S_OK;
-}
-
-//
-// IServiceProvider methods.
-//
-
-STDMETHODIMP BrowserAccessibility::QueryService(
-    REFGUID guidService, REFIID riid, void** object) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
-    return E_FAIL;
-  }
-
-  if (guidService == IID_IAccessible || guidService == IID_IAccessible2)
-    return QueryInterface(riid, object);
-
-  *object = NULL;
-  return E_FAIL;
-}
-
-//
-// Private methods.
-//
-
-BrowserAccessibility* BrowserAccessibility::GetTargetFromChildID(
-    const VARIANT& var_id) {
-  if (var_id.vt != VT_I4)
-    return NULL;
-
-  LONG child_id = var_id.lVal;
-  if (child_id == CHILDID_SELF)
-    return this;
-
-  if (child_id >= 1 && child_id <= static_cast<LONG>(children_.size()))
-    return children_[child_id - 1];
-
-  return manager_->GetFromChildID(child_id);
-}
-
-LONG BrowserAccessibility::MSAARole(LONG browser_accessibility_role) {
+long BrowserAccessibility::MSAARole(long browser_accessibility_role) {
   switch (browser_accessibility_role) {
     case WebAccessibility::ROLE_APPLICATION:
       return ROLE_SYSTEM_APPLICATION;
@@ -658,8 +631,8 @@ LONG BrowserAccessibility::MSAARole(LONG browser_accessibility_role) {
   }
 }
 
-LONG BrowserAccessibility::MSAAState(LONG browser_accessibility_state) {
-  LONG state = 0;
+long BrowserAccessibility::MSAAState(long browser_accessibility_state) {
+  long state = 0;
 
   if ((browser_accessibility_state >> WebAccessibility::STATE_CHECKED) & 1)
     state |= STATE_SYSTEM_CHECKED;

@@ -261,8 +261,6 @@ class RenderThread : public RenderThreadBase,
 
   void OnGpuChannelEstablished(const IPC::ChannelHandle& channel_handle);
 
-  void OnGetAccessibilityTree();
-
   // Gather usage statistics from the in-memory cache and inform our host.
   // These functions should be call periodically so that the host can make
   // decisions about how to allocation resources using current information.

@@ -1,102 +1,104 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_BROWSER_ACCESSIBILITY_MANAGER_H_
 #define CHROME_BROWSER_BROWSER_ACCESSIBILITY_MANAGER_H_
 
-#include <atlbase.h>
-#include <atlcom.h>
-#include <oleacc.h>
-
 #include <map>
 
-#include "base/hash_tables.h"
-#include "base/scoped_comptr_win.h"
-#include "base/scoped_ptr.h"
+#include "base/singleton.h"
+#include "chrome/common/notification_registrar.h"
 #include "webkit/glue/webaccessibility.h"
 
 class BrowserAccessibility;
 class RenderProcessHost;
 class RenderWidgetHost;
 
-class BrowserAccessibilityFactory {
+using webkit_glue::WebAccessibility;
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// BrowserAccessibilityManager
+//
+// Used to manage instance creation and memory handling for browser side
+// accessibility. A singleton class. It implements NotificationObserver to
+// ensure that a termination of a renderer process gets propagated to the
+// active BrowserAccessibility instances calling into it. Each such instance
+// will upon such an event be set to an inactive state, failing calls from the
+// assistive technology gracefully.
+////////////////////////////////////////////////////////////////////////////////
+class BrowserAccessibilityManager : public NotificationObserver {
  public:
-  virtual ~BrowserAccessibilityFactory() {}
+  // Gets the singleton BrowserAccessibilityManager object. The first time this
+  // method is called, a CacheManagerHost object is constructed and returned.
+  // Subsequent calls will return the same object.
+  static BrowserAccessibilityManager* GetInstance();
 
-  // Create an instance of BrowserAccessibility and return a new
-  // reference to it.
-  virtual BrowserAccessibility* Create();
-};
+  // Creates an instance of BrowserAccessibility, initializes it and sets the
+  // |acc_obj_id|, which is used for IPC communication, and |instance_id|,
+  // which is used to identify the mapping between accessibility instance and
+  // RenderProcess.
+  STDMETHODIMP CreateAccessibilityInstance(REFIID iid,
+                                           int acc_obj_id,
+                                           int routing_id,
+                                           int process_id,
+                                           HWND parent_hwnd,
+                                           void** interface_ptr);
 
-// Manages a tree of BrowserAccessibility objects.
-class BrowserAccessibilityManager {
- public:
-  BrowserAccessibilityManager(
-      HWND parent_hwnd,
-      const webkit_glue::WebAccessibility& src,
-      BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
+  // Composes and sends a message for requesting needed accessibility
+  // information.
+  bool RequestAccessibilityInfo(WebAccessibility::InParams* in,
+                                int routing_id,
+                                int process_id);
 
-  virtual ~BrowserAccessibilityManager();
+  // Notifies assistive technology that renderer focus changed, through the
+  // platform-specific channels.
+  bool ChangeAccessibilityFocus(int acc_obj_id, int process_id, int routing_id);
 
-  // Return a pointer to the root of the tree, does not make a new reference.
-  BrowserAccessibility* GetRoot();
+  // Notifies assistive technology that an object's state changed, through the
+  // platform-specific channels.
+  bool OnAccessibilityObjectStateChange(int acc_obj_id,
+                                        int process_id,
+                                        int routing_id);
 
-  // Return a pointer to the object corresponding to the given child_id,
-  // does not make a new reference.
-  BrowserAccessibility* GetFromChildID(LONG child_id);
+  // Wrapper function, for cleaner code.
+  const WebAccessibility::OutParams& response();
 
-  // Get a the default IAccessible for the parent window, does not make a
-  // new reference.
-  IAccessible* GetParentWindowIAccessible();
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
-  // Get the parent window.
-  HWND GetParentHWND();
+ protected:
+  // This class is a singleton.  Do not instantiate directly.
+  BrowserAccessibilityManager();
+  friend struct DefaultSingletonTraits<BrowserAccessibilityManager>;
 
-  // Return the object that has focus, if it's a descandant of the
-  // given root (inclusive). Does not make a new reference.
-  BrowserAccessibility* GetFocus(BrowserAccessibility* root);
-
-  // Called when the renderer process has notified us of a focus or state
-  // change. Send a notification to MSAA clients of the change.
-  void OnAccessibilityFocusChange(int acc_obj_id);
-  void OnAccessibilityObjectStateChange(int acc_obj_id);
+  ~BrowserAccessibilityManager();
 
  private:
-  // Recursively build a tree of BrowserAccessibility objects from
-  // the WebAccessibility tree received from the renderer process.
-  BrowserAccessibility* CreateAccessibilityTree(
-      BrowserAccessibility* parent,
-      const webkit_glue::WebAccessibility& src,
-      int index_in_parent);
+  // Retrieves the BrowserAccessibility instance connected to the
+  // RenderProcessHost identified by the process/routing id pair.
+  BrowserAccessibility* GetBrowserAccessibility(int process_id, int routing_id);
 
-  // The parent window.
-  HWND parent_hwnd_;
+  // Multi-map from process id (key) to active BrowserAccessibility instances
+  // for that RenderProcessHost.
+  typedef std::multimap<int, BrowserAccessibility*> RenderProcessHostMap;
+  typedef std::pair<int, BrowserAccessibility*> MapEntry;
 
-  // Factory to create BrowserAccessibility objects (for dependency injection).
-  scoped_ptr<BrowserAccessibilityFactory> factory_;
+  NotificationRegistrar registrar_;
 
-  // A default IAccessible instance for the parent window.
-  ScopedComPtr<IAccessible> window_iaccessible_;
+  // Mapping to track which RenderProcessHosts ids are active. If a
+  // RenderProcessHost is found to be terminated, its id (key) should be removed
+  // from this mapping, and the connected BrowserAccessibility ids/instances
+  // invalidated.
+  RenderProcessHostMap render_process_host_map_;
 
-  // The root of the tree of IAccessible objects and the element that
-  // currently has focus, if any.
-  BrowserAccessibility* root_;
-  BrowserAccessibility* focus_;
-
-  // A mapping from the IDs of objects in the renderer, to the child IDs
-  // we use internally here.
-  base::hash_map<int, LONG> renderer_id_to_child_id_map_;
-
-  // A mapping from child IDs to BrowserAccessibility objects.
-  base::hash_map<LONG, BrowserAccessibility*> child_id_map_;
-
-  // The next child ID to use; static so that they're global to the process.
-  // Screen readers cache these IDs to see if they've seen the same object
-  // before so we should avoid reusing them within the same project.
-  static LONG next_child_id_;
+  // Structure passed by reference to hold response parameters from the
+  // renderer.
+  WebAccessibility::OutParams out_params_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManager);
 };
-
 #endif  // CHROME_BROWSER_BROWSER_ACCESSIBILITY_MANAGER_H_

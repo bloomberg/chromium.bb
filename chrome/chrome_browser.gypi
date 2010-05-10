@@ -2785,7 +2785,6 @@
           'dependencies': [
             '../gears/gears.gyp:gears',
             '../google_update/google_update.gyp:google_update',
-            '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../views/views.gyp:views',
             '<(allocator_target)',
           ],
