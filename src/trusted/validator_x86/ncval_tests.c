@@ -170,8 +170,8 @@ struct NCValTestCase NCValTests[] = {
   },
   {
     "test 5",
-    "like test 4; with bad jump target",
-    1, 90, 0, 336, 0x8054600,
+    "a big chunk of code whose origin is not clear",
+    0, 90, 0, 336, 0x8054600,
     (uint8_t *)
     "\x8d\x4c\x24\x04"                  /* lea    0x4(%esp),%ecx           */
     "\x83\xe4\xf0"                      /* and    $0xfffffff0,%esp         */
@@ -885,7 +885,56 @@ struct NCValTestCase NCValTests[] = {
     (uint8_t *)"\x90\x0f\xae\xf7"
     "\x90\x90\x90\x90\x90\x90\xf4",
   },
-
+  {
+    "test 92",
+    "test 92: jump to zero should be allowed",
+    /* A jump/call to a zero address will be emitted for a jump/call
+       to a weak symbol that is undefined. */
+    0, 1, 0, 6, 0x08049000,
+    (uint8_t *)
+    "\xe9\xfb\x6f\xfb\xf7"              /* jmp    0                        */
+    "\xf4"                              /* hlt                             */
+  },
+  {
+    "test 93",
+    "test 93: jump to bundle-aligned zero page address is currently allowed",
+    0, 1, 0, 6, 0x08049000,
+    (uint8_t *)
+    "\xe9\xfb\x70\xfb\xf7"              /* jmp    100                      */
+    "\xf4"                              /* hlt                             */
+  },
+  {
+    "test 94",
+    "test 94: jump to syscall trampoline should be allowed",
+    0, 1, 0, 6, 0x08049000,
+    (uint8_t *)
+    "\xe9\xfb\x6f\xfc\xf7"              /* jmp    10000                    */
+    "\xf4"                              /* hlt                             */
+  },
+  {
+    "test 95",
+    "test 95: unaligned jump to trampoline area must be disallowed",
+    1, 1, 0, 6, 0x08049000,
+    (uint8_t *)
+    "\xe9\xfc\x6f\xfc\xf7"              /* jmp    10001                    */
+    "\xf4"                              /* hlt                             */
+  },
+  {
+    "test 96",
+    "test 96: bundle-aligned jump to before the code chunk is allowed",
+    0, 1, 0, 6, 0x08049000,
+    (uint8_t *)
+    "\xe9\xfb\x6f\xfb\xf8"              /* jmp    1000000                  */
+    "\xf4"                              /* hlt                             */
+  },
+  {
+    "test 97",
+    "test 97: bundle-aligned jump to after the code chunk is allowed",
+    0, 1, 0, 6, 0x08049000,
+    (uint8_t *)
+    "\xe9\xfb\x6f\xfb\x07"              /* jmp    10000000                 */
+    "\xf4"                              /* hlt                             */
+  },
 };
 
 static uint8_t *memdup(uint8_t *s, int len) {

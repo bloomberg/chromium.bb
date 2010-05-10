@@ -1,5 +1,3 @@
-00007f820002027b: e8 80 fd fd 00                               call 0x7f8201000000
-ERROR: Instruction jumps to bad address
-Checking jump targets: 7f8200020260 to 7f8200020287
+Checking jump targets: 20260 to 20287
 Checking that basic blocks are aligned
-***MODULE IS UNSAFE***
+***module is safe***

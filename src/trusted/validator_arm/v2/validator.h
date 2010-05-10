@@ -116,9 +116,6 @@ class SfiValidator {
  private:
   bool is_bundle_head(uint32_t address) const;
 
-  bool is_in_trampoline_region(uint32_t addr) const;
-  bool is_trampoline_entry(uint32_t addr) const;
-
   /*
    * Validates a straight-line execution of the code, applying patterns.  This
    * is the first validation pass, which fills out the AddressSets for

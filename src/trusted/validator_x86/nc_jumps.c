@@ -185,12 +185,14 @@ static void NaClAddJumpToJumpSets(NaClValidatorState* state,
                  from_address, to_address));
     NaClAddressSetAdd(jump_sets->actual_targets, to_address, state);
   }
-  else if (to_address < state->vbase &&
-           (to_address & 0x1f) == 0) {
-    /* Allow as a jump to a syscall trampoline.
-     * TODO(mseaborn): Check against NACL_TRAMPOLINE_END (stricter) or
-     * allow bundle-aligned jumps above state->vlimit (more liberal).
-     */
+  /* The range check may not be strictly necessary given that we have
+   * guard regions around the sandbox address space, but it shouldn't
+   * hurt to disallow branches that overflow or underflow the address
+   * space.
+   */
+  else if ((to_address & state->alignment_mask) == 0 &&
+           (to_address & ~(NaClPcAddress) 0xffffffff) == 0) {
+    /* Allow bundle-aligned jump. */
   }
   else {
     NaClValidatorInstMessage(LOG_ERROR, state, inst,

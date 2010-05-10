@@ -1,0 +1,3 @@
+# Jump forwards a long way, potentially outside of the sandbox's address space.
+@f0000000
+e9 fb ff ff 3f

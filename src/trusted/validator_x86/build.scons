@@ -217,7 +217,7 @@ if env['TARGET_SUBARCH'] == '32':
       [ncval_tests[0]],
       )
 
-  env.AddNodeToTestSuite(node, ['small_tests'])
+  env.AddNodeToTestSuite(node, ['small_tests', 'validator_tests'])
 
 # ======================================================================
 if env['TARGET_SUBARCH'] == '32':
@@ -385,7 +385,8 @@ if env['TARGET_SUBARCH'] == '64':
         stdin = env.File(TESTDATA_DIR + vtest + ".hex"),
         stdout_golden = env.File(TESTDATA_DIR + vtest + ".dis"))
 
-    env.AddNodeToTestSuite(node_dis, ['small_tests'], DIS_TEST_NAME)
+    env.AddNodeToTestSuite(node_dis, ['small_tests', 'validator_tests'],
+                           DIS_TEST_NAME)
 
     VAL_TEST_NAME = TEST_PREFIX + "_val"
     node_val = env.CommandTest(
@@ -394,4 +395,5 @@ if env['TARGET_SUBARCH'] == '64':
         stdin = env.File(TESTDATA_DIR + vtest + ".hex"),
         stdout_golden = env.File(TESTDATA_DIR + vtest + ".val"))
 
-    env.AddNodeToTestSuite(node_val, ['small_tests'], VAL_TEST_NAME)
+    env.AddNodeToTestSuite(node_val, ['small_tests', 'validator_tests'],
+                           VAL_TEST_NAME)

@@ -330,30 +330,17 @@ static void RememberTP(const NaClPcAddress src, NaClPcAddress target,
                        struct NCValidatorState *vstate) {
   const NaClMemorySize ioffset =  target - vstate->iadrbase;
 
-  do {
-    if (target < vstate->iadrlimit) {
-      if (target >= vstate->iadrbase) break;
-      /*
-       * the trampolines need to be aligned 0mod32 regardless of the
-       * program's elf flags.  This allows the same library to be used
-       * with both 16 and 32 byte aligned clients.
-       */
-      if (target >= vstate->iadrbase - NACL_TRAMPOLINE_END
-          && ((target & (NACL_INSTR_BLOCK_SIZE-1)) == 0)) {
-        /*
-         * TODO(sehr): once we fully support 16/32 alignment, remove this
-         * in favor of however we communicate the fixed block size.
-         */
-        /* this is an aligned target in the trampoline area; ignore */
-        /* vprint(("ignoring target %08x in trampoline\n", target)); */
-        return;
-      }
-    }
+  if (vstate->iadrbase <= target && target < vstate->iadrlimit) {
+    /* Remember address for checking later. */
+    SetAdrTable(ioffset, vstate->kttable);
+  }
+  else if ((target & vstate->alignmask) == 0) {
+    /* Allow bundle-aligned jumps. */
+  }
+  else {
     ValidatePrintError(src, "JUMP TARGET out of range");
     Stats_BadTarget(vstate);
-    return;
-  } while (0);
-  SetAdrTable(ioffset, vstate->kttable);
+  }
 }
 
 static void ForgetIP(const NaClPcAddress ip,

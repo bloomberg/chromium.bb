@@ -310,15 +310,8 @@ bool SfiValidator::validate_branches(const vector<CodeSegment> &segments,
         }
         complete_success = false;
       }
-    } else if (is_in_trampoline_region(target_va)) {
-      if (!is_trampoline_entry(target_va)) {
-        out->report_problem(va, inst.safety(), kProblemBranchInvalidDest,
-                            target_va);
-        if (!out->should_continue()) {
-          return false;
-        }
-        complete_success = false;
-      }
+    } else if ((target_va & code_address_mask()) == 0) {
+      // Allow bundle-aligned, in-range direct jump.
     } else {
       out->report_problem(va, inst.safety(), kProblemBranchInvalidDest,
                           target_va);
@@ -415,15 +408,6 @@ const Bundle SfiValidator::bundle_for_address(uint32_t address) const {
 
 bool SfiValidator::is_bundle_head(uint32_t address) const {
   return (address % bytes_per_bundle_) == 0;
-}
-
-bool SfiValidator::is_in_trampoline_region(uint32_t address) const {
-  return address >= NACL_TRAMPOLINE_START && address < NACL_TRAMPOLINE_END;
-}
-
-bool SfiValidator::is_trampoline_entry(uint32_t address) const {
-  // TODO(cbiffle): hardcoded
-  return (address % 32) == 0;
 }
 
 

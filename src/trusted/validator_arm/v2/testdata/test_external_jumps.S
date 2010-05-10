@@ -17,26 +17,26 @@ _start:
   @ Jump backwards to the syscall trampoline page.
   b _start - 0x10000     @ allowed
   b _start - 0x0fffc     @ disallowed
-  b _start - 0x0fff0     @ disallowed (16-aligned but not 32-aligned)
+  b _start - 0x0fff0     @ allowed (16-aligned but not 32-aligned)
   b _start - 0x0ffe0     @ allowed (32-aligned)
   b _start - 0x1000      @ allowed
   b _start - 0x1004      @ disallowed
 
   @ Jump forwards to addresses outside this chunk of code.
-  b _start + 0x1000      @ disallowed
+  b _start + 0x1000      @ allowed
   b _start + 0x1004      @ disallowed
 
   @ Jump forwards further.
-  b _start + 0x1000000   @ disallowed
+  b _start + 0x1000000   @ allowed
   b _start + 0x1000004   @ disallowed
 
   @ Jump to zero page.
   @ This is intended to be "b 0", but the assembler crashes if I write that.
   @ Obviously this assumes that _start == 0x20000.
-  b _start - 0x20000     @ disallowed
+  b _start - 0x20000     @ allowed
   b _start - 0x1fffc     @ disallowed
 
-  b end_of_code          @ disallowed
+  b end_of_code          @ allowed
 
 .p2align 4
 end_of_code:

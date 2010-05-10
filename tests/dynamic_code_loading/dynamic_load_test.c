@@ -262,19 +262,14 @@ void test_fail_on_mmap_to_dyncode_area() {
 
 void test_branches_outside_chunk() {
   char *load_area = allocate_code_space(1);
-  int size = 32;
   int rc;
-  assert(&branch_forwards_end - &branch_forwards == size);
+  int size = &branch_forwards_end - &branch_forwards;
+  assert(size == 16 || size == 32);
   assert(&branch_backwards_end - &branch_backwards == size);
 
-  /* TODO(mseaborn): We should allow branches outside, but this will
-     require some validator interface changes. */
   rc = nacl_load_code(load_area, &branch_forwards, size);
-  assert(rc == -EINVAL);
-  rc = nacl_load_code(load_area, &branch_backwards, size);
-  assert(rc == -EINVAL);
-
-  rc = nacl_load_code(load_area, &branch_forwards, size * 2);
+  assert(rc == 0);
+  rc = nacl_load_code(load_area + size, &branch_backwards, size);
   assert(rc == 0);
 }
 
@@ -291,9 +286,7 @@ int main() {
   test_fail_on_overwrite();
   test_allowed_overwrite();
   test_fail_on_mmap_to_dyncode_area();
-
-  /* TODO(mseaborn): Enable this once the validators behave consistently. */
-  /* test_branches_outside_chunk(); */
+  test_branches_outside_chunk();
 
   /* Test again to make sure we didn't run out of space. */
   test_loading_code();
