@@ -336,6 +336,8 @@ void TabRenderer::UpdateData(TabContents* contents,
     else
       data_.favicon = contents->GetFavIcon();
     data_.phantom = phantom;
+    if (phantom)
+      data_.crashed = false;  // Phantom tabs can never crash.
 
     // Sets the accessible name for the tab.
     SetAccessibleName(UTF16ToWide(data_.title));
