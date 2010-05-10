@@ -45,6 +45,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mount_library.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #endif
 
 // Maximum number of search results to return in a given search. We should
@@ -170,6 +171,7 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
   void ReadInFile();
   void FireUploadComplete();
 
+  void SendPicasawebRequest();
  private:
 
   void OpenNewWindow(const Value* value, bool popup);
@@ -186,9 +188,10 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
   std::string current_file_contents_;
   std::string current_file_uploaded_;
   int upload_response_code_;
-  TaskProxy* CurrentTask_;
+  TaskProxy* current_task_;
   scoped_refptr<net::DirectoryLister> lister_;
   bool is_refresh_;
+  scoped_ptr<URLFetcher> fetch_;
 
   DownloadManager* download_manager_;
   typedef std::vector<DownloadItem*> DownloadList;
@@ -199,7 +202,8 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
 
 class TaskProxy : public base::RefCountedThreadSafe<TaskProxy> {
  public:
-  explicit TaskProxy(const base::WeakPtr<FilebrowseHandler>& handler, FilePath& path)
+  explicit TaskProxy(const base::WeakPtr<FilebrowseHandler>& handler,
+                     FilePath& path)
       : handler_(handler),
         path_(path) {}
   void ReadInFileProxy() {
@@ -207,7 +211,11 @@ class TaskProxy : public base::RefCountedThreadSafe<TaskProxy> {
       handler_->ReadInFile();
     }
   }
-
+  void SendPicasawebRequestProxy() {
+    if (handler_) {
+      handler_->SendPicasawebRequest();
+    }
+  }
   void FireUploadCompleteProxy() {
     if (handler_) {
       handler_->FireUploadComplete();
@@ -304,6 +312,7 @@ void FileBrowseUIHTMLSource::StartDataRequest(const std::string& path,
 FilebrowseHandler::FilebrowseHandler()
     : profile_(NULL),
       is_refresh_(false),
+      fetch_(NULL),
       download_manager_(NULL) {
   lister_ = NULL;
 #if defined(OS_CHROMEOS)
@@ -344,6 +353,19 @@ DOMMessageHandler* FilebrowseHandler::Attach(DOMUI* dom_ui) {
 void FilebrowseHandler::Init() {
   download_manager_ = profile_->GetOriginalProfile()->GetDownloadManager();
   download_manager_->AddObserver(this);
+  TaskProxy* task = new TaskProxy(AsWeakPtr(), currentpath_);
+  task->AddRef();
+  current_task_ = task;
+  static bool sent_request = false;
+  if (!sent_request) {
+    // If we have not sent a request before, we should do one in order to
+    // ensure that we have the correct cookies. This is for uploads.
+    ChromeThread::PostTask(
+        ChromeThread::FILE, FROM_HERE,
+        NewRunnableMethod(
+            task, &TaskProxy::SendPicasawebRequestProxy));
+    sent_request = true;
+  }
 }
 
 void FilebrowseHandler::RegisterMessages() {
@@ -385,11 +407,13 @@ void FilebrowseHandler::FireDeleteComplete(const FilePath& path) {
 };
 
 void FilebrowseHandler::FireUploadComplete() {
+#if defined(OS_CHROMEOS)
   DictionaryValue info_value;
   info_value.SetString(L"path", current_file_uploaded_);
 
   std::string username;
-  username = getenv("CHROMEOS_USER");
+  chromeos::UserManager* user_man = chromeos::UserManager::Get();
+  username = user_man->logged_in_user().email();
 
   if (username.empty()) {
     LOG(ERROR) << "Unable to get username";
@@ -408,6 +432,7 @@ void FilebrowseHandler::FireUploadComplete() {
   info_value.SetString(L"url", picture_url);
   info_value.SetInteger(L"status_code", upload_response_code_);
   dom_ui_->CallJavascriptFunction(L"uploadComplete", info_value);
+#endif
 }
 
 #if defined(OS_CHROMEOS)
@@ -428,10 +453,11 @@ void FilebrowseHandler::OnURLFetchComplete(const URLFetcher* source,
                                            const ResponseCookies& cookies,
                                            const std::string& data) {
   upload_response_code_ = response_code;
-
+  LOG(INFO) << "Response code:" << response_code;
+  LOG(INFO) << "request url" << url;
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,
-      NewRunnableMethod(CurrentTask_, &TaskProxy::FireUploadCompleteProxy));
+      NewRunnableMethod(current_task_, &TaskProxy::FireUploadCompleteProxy));
 }
 
 void FilebrowseHandler::HandleGetRoots(const Value* value) {
@@ -658,11 +684,21 @@ void FilebrowseHandler::OpenNewWindow(const Value* value, bool popup) {
   }
 }
 
+void FilebrowseHandler::SendPicasawebRequest() {
+  fetch_.reset(URLFetcher::Create(0,
+                                  GURL(kPicasawebBaseUrl),
+                                  URLFetcher::GET,
+                                  NULL));
+  fetch_->set_request_context(profile_->GetRequestContext());
+  fetch_->Start();
+}
+
 void FilebrowseHandler::ReadInFile() {
 #if defined(OS_CHROMEOS)
   // Get the users username
   std::string username;
-  username = getenv("CHROMEOS_USER");
+  chromeos::UserManager* user_man = chromeos::UserManager::Get();
+  username = user_man->logged_in_user().email();
 
   if (username.empty()) {
     LOG(ERROR) << "Unable to get username";
@@ -688,19 +724,17 @@ void FilebrowseHandler::ReadInFile() {
     LOG(ERROR) << "Unable to read this file:" << currentpath.value();
     return;
   }
-
-  URLFetcher* fetcher = URLFetcher::Create(0,
-                                           GURL(url),
-                                           URLFetcher::POST,
-                                           this);
-  fetcher->set_upload_data("image/jpeg", filecontents);
-
+  fetch_.reset(URLFetcher::Create(0,
+                                  GURL(url),
+                                  URLFetcher::POST,
+                                  this));
+  fetch_->set_upload_data("image/jpeg", filecontents);
   // Set the filename on the server
   std::string slug = "Slug: ";
   slug += filename;
-  fetcher->set_extra_request_headers(slug);
-  fetcher->set_request_context(Profile::GetDefaultRequestContext());
-  fetcher->Start();
+  fetch_->set_extra_request_headers(slug);
+  fetch_->set_request_context(profile_->GetRequestContext());
+  fetch_->Start();
 #endif
 }
 
@@ -730,7 +764,7 @@ void FilebrowseHandler::UploadToPicasaweb(const Value* value) {
   FilePath current_path(path);
   TaskProxy* task = new TaskProxy(AsWeakPtr(), current_path);
   task->AddRef();
-  CurrentTask_ = task;
+  current_task_ = task;
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
       NewRunnableMethod(
@@ -863,7 +897,7 @@ void FilebrowseHandler::DeleteFile(const FilePath& path) {
   }
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,
-      NewRunnableMethod(CurrentTask_, &TaskProxy::FireDeleteCompleteProxy));
+      NewRunnableMethod(current_task_, &TaskProxy::FireDeleteCompleteProxy));
 }
 
 void FilebrowseHandler::HandleDeleteFile(const Value* value) {
@@ -889,7 +923,7 @@ void FilebrowseHandler::HandleDeleteFile(const Value* value) {
       }
       TaskProxy* task = new TaskProxy(AsWeakPtr(), currentpath);
       task->AddRef();
-      CurrentTask_ = task;
+      current_task_ = task;
       ChromeThread::PostTask(
           ChromeThread::FILE, FROM_HERE,
           NewRunnableMethod(
