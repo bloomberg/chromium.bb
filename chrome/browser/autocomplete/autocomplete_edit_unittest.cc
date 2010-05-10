@@ -81,6 +81,7 @@ typedef testing::Test AutocompleteEditTest;
 // Tests various permutations of AutocompleteModel::AdjustTextForCopy.
 TEST(AutocompleteEditTest, AdjustTextForCopy) {
   struct Data {
+    const wchar_t* perm_text;
     const int sel_start;
     const bool is_all_selected;
     const wchar_t* input;
@@ -89,28 +90,41 @@ TEST(AutocompleteEditTest, AdjustTextForCopy) {
     const char* expected_url;
   } input[] = {
     // Test that http:// is inserted if all text is selected.
-    { 0, true,  L"a.b/c", L"http://a.b/c", true,  "http://a.b/c" },
+    { L"a.b/c", 0, true, L"a.b/c", L"http://a.b/c", true, "http://a.b/c" },
 
     // Test that http:// is inserted if the host is selected.
-    { 0, false, L"a.b/",  L"http://a.b/",  true,  "http://a.b/" },
+    { L"a.b/c", 0, false, L"a.b/", L"http://a.b/", true, "http://a.b/" },
 
     // Tests that http:// is inserted if the path is modified.
-    { 0, false, L"a.b/d", L"http://a.b/d", true,  "http://a.b/d" },
+    { L"a.b/c", 0, false, L"a.b/d", L"http://a.b/d", true, "http://a.b/d" },
 
     // Tests that http:// isn't inserted if the host is modified.
-    { 0, false, L"a.c/",  L"a.c/",         false, "" },
+    { L"a.b/c", 0, false, L"a.c/", L"a.c/", false, "" },
 
     // Tests that http:// isn't inserted if the start of the selection is 1.
-    { 1, false, L"a.b/",  L"a.b/",         false, "" },
+    { L"a.b/c", 1, false, L"a.b/", L"a.b/", false, "" },
+
+    // Tests that http:// isn't inserted if a portion of the host is selected.
+    { L"a.com/", 0, false, L"a.co", L"a.co", false, "" },
+
+    // Tests that http:// isn't inserted for an https url after the user nukes
+    // https.
+    { L"https://a.com/", 0, false, L"a.com/", L"a.com/", false, "" },
+
+    // Tests that http:// isn't inserted if the user adds to the host.
+    { L"a.b/", 0, false, L"a.bc/", L"a.bc/", false, "" },
+
+    // Tests that we don't get double http if the user manually inserts http.
+    { L"a.b/", 0, false, L"http://a.b/", L"http://a.b/", true, "http://a.b/" },
   };
   TestingAutocompleteEditView view;
   TestingAutocompleteEditController controller;
   TestingProfile profile;
   AutocompleteEditModel model(&view, &controller, &profile);
 
-  model.UpdatePermanentText(L"a.b/c");
-
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input); ++i) {
+    model.UpdatePermanentText(input[i].perm_text);
+
     std::wstring result(input[i].input);
     GURL url;
     bool write_url;

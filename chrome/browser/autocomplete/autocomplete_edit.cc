@@ -196,16 +196,17 @@ void AutocompleteEditModel::AdjustTextForCopy(int sel_start,
   // the text parses as a url with a scheme of http, the user selected the
   // entire host, and the user hasn't edited the host or manually removed the
   // scheme.
-  if (url->SchemeIs(chrome::kHttpScheme)) {
+  GURL perm_url;
+  if (GetURLForText(permanent_text_, &perm_url) &&
+      perm_url.SchemeIs(chrome::kHttpScheme) &&
+      url->SchemeIs(chrome::kHttpScheme) &&
+      perm_url.host() == url->host()) {
+    *write_url = true;
+
     std::wstring http = ASCIIToWide(chrome::kHttpScheme) +
         ASCIIToWide(chrome::kStandardSchemeSeparator);
-    std::wstring host = UTF8ToWide(url->host());
-    if (text->compare(0, http.length(), http) != 0 &&
-        text->length() >= host.length() &&
-        permanent_text_.compare(0, host.length(), host) == 0) {
+    if (text->compare(0, http.length(), http) != 0)
       *text = http + *text;
-      *write_url = true;
-    }
   }
 }
 
