@@ -4213,7 +4213,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_DEL_PASSWORDS_CHKBOX" desc="Checkbox for deleting Passwords">
         Clear saved passwords
       </message>
-      <message name="IDS_DEL_FORM_DATA_CHKBOX" desc="Checkbox for deleting form data saved for autofill">
+      <message name="IDS_DEL_FORM_DATA_CHKBOX" desc="Checkbox for deleting form data saved for AutoFill">
         Clear saved form data
       </message>
       <message name="IDS_CLEAR_BROWSING_DATA_COMMIT" desc="Text for OK button on dialog">
@@ -5495,7 +5495,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <if expr="not pp_ifdef('use_titlecase') or os != 'linux2'">
-        <message name="IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME" desc="The title of the form autofill group">
+        <message name="IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME" desc="The title of the form AutoFill group">
           Form autofill:
         </message>
       </if>
@@ -5504,28 +5504,31 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Form AutoFill
         </message>
       </if>
-      <message name="IDS_OPTIONS_AUTOFILL_ENABLE" desc="The label of the 'Ask me to enable autofill' radio button">
+      <message name="IDS_AUTOFILL_INFOBAR_TEXT" desc="Text to show in the AutoFill request infobar.">
+        AutoFill can use your information to fill in web forms with a single click.
+      </message>
+      <message name="IDS_OPTIONS_AUTOFILL_ENABLE" desc="The label of the 'Ask me to enable AutoFill' radio button">
         Enable AutoFill to fill in web forms with a single click
       </message>
-      <message name="IDS_OPTIONS_AUTOFILL_DISABLE" desc="The label of the 'Disable autofill' radio button">
+      <message name="IDS_OPTIONS_AUTOFILL_DISABLE" desc="The label of the 'Disable AutoFill' radio button">
         Disable AutoFill
       </message>
-      <message name="IDS_OPTIONS_AUTOFILL_SETTINGS" desc="The label of the 'Change autofill settings' button">
+      <message name="IDS_OPTIONS_AUTOFILL_SETTINGS" desc="The label of the 'Change AutoFill settings' button">
         Change AutoFill settings
       </message>
-      <message name="IDS_AUTOFILL_INFOBAR_ACCEPT" desc="Text to show for the autofill request infobar accept button.">
+      <message name="IDS_AUTOFILL_INFOBAR_ACCEPT" desc="Text to show for the AutoFill request infobar accept button.">
         Configure...
       </message>
-      <message name="IDS_AUTOFILL_INFOBAR_DENY" desc="Text to show for the autofill request infobar deny button.">
+      <message name="IDS_AUTOFILL_INFOBAR_DENY" desc="Text to show for the AutoFill request infobar deny button.">
         Disable AutoFill
       </message>
-      <message name="IDS_AUTOFILL_LEARN_MORE" desc="Text to show for the autofill Learn more link.">
+      <message name="IDS_AUTOFILL_LEARN_MORE" desc="Text to show for the AutoFill Learn more link.">
         Learn more
       </message>
       <message name="IDS_AUTOFILL_DIALOG_TITLE" desc="The title of the AutoFill dialog.">
         AutoFill Profiles
       </message>
-      <message name="IDS_AUTOFILL_LOADING" desc="The indicator that autofill data is being loaded.">
+      <message name="IDS_AUTOFILL_LOADING" desc="The indicator that AutoFill data is being loaded.">
         Loading...
       </message>
       <message name="IDS_AUTOFILL_USE_MAC_ADDRESS_BOOK" desc="Checkbox label to enable Address Book on Mac.">
@@ -5645,7 +5648,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_AUTOFILL_DIALOG_MAKE_DEFAULT" desc="The label of the Make this my default profile entry.">
         Make this my default profile
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_SAVE" desc="The label of the Save button on the autofill dialog.">
+      <message name="IDS_AUTOFILL_DIALOG_SAVE" desc="The label of the Save button on the AutoFill dialog.">
         Save
       </message>
       <message name="IDS_AUTOFILL_FORM_MAC" desc="The Mac menu item to autofill a form.">
@@ -6632,7 +6635,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_DATATYPE_PREFERENCES" desc="Preferences, one of the data types that we allow syncing.">
         Preferences
       </message>
-      <message name="IDS_SYNC_DATATYPE_AUTOFILL" desc="Form autofill items, one of the data types that we allow syncing.">
+      <message name="IDS_SYNC_DATATYPE_AUTOFILL" desc="Form AutoFill items, one of the data types that we allow syncing.">
         AutoFill
       </message>
       <message name="IDS_SYNC_DATATYPE_THEMES" desc="Themes, one of the data types that we allow syncing.">
