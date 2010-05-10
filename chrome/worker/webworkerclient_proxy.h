@@ -15,6 +15,7 @@
 namespace WebKit {
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
+class WebFrame;
 class WebWorker;
 }
 
@@ -72,6 +73,15 @@ class WebWorkerClientProxy : public WebKit::WebWorkerClient {
 
   virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
       WebKit::WebApplicationCacheHostClient* client);
+
+  virtual bool allowDatabase(WebKit::WebFrame* frame,
+                             const WebKit::WebString& name,
+                             const WebKit::WebString& display_name,
+                             unsigned long estimated_size) {
+    // TODO(jochen): Check content settings whether access to web databases is
+    // allowed.
+    return true;
+  }
 
   void EnsureWorkerContextTerminates();
 

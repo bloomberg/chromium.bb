@@ -14,6 +14,7 @@
 namespace WebKit {
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
+class WebFrame;
 class WebNotificationPresenter;
 class WebString;
 class WebURL;
@@ -81,6 +82,12 @@ class TestWebWorker : public WebKit::WebWorker,
   virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
       WebKit::WebApplicationCacheHostClient*) {
     return NULL;
+  }
+  virtual bool allowDatabase(WebKit::WebFrame* frame,
+                             const WebKit::WebString& name,
+                             const WebKit::WebString& display_name,
+                             unsigned long estimated_size) {
+    return true;
   }
 
  private:
