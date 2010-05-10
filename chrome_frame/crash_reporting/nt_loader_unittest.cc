@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "chrome_frame/crash_reporting/nt_loader.h"
@@ -6,6 +6,7 @@
 #include <tlhelp32.h>
 #include <winnt.h>
 #include <base/at_exit.h>
+#include <base/message_loop.h>
 #include <base/scoped_handle.h>
 #include <base/string_util.h>
 #include <base/sys_info.h>
@@ -27,7 +28,8 @@ void AssertIsCriticalSection(CRITICAL_SECTION* critsec) {
 
 class ScopedEnterCriticalSection {
  public:
-  ScopedEnterCriticalSection(CRITICAL_SECTION* critsec) : critsec_(critsec) {
+  explicit ScopedEnterCriticalSection(CRITICAL_SECTION* critsec)
+      : critsec_(critsec) {
     ::EnterCriticalSection(critsec_);
   }
 
@@ -165,7 +167,7 @@ TEST(NtLoader, GetLoaderEntry) {
         EXPECT_TRUE(is_shimeng || (flags & LDRP_PROCESS_ATTACH_CALLED));
       }
     }
-  } while(::Module32Next(snap.Get(), &module));
+  } while (::Module32Next(snap.Get(), &module));
 }
 
 namespace {

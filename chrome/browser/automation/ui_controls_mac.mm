@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/automation/ui_controls.h"
+
 #import <Cocoa/Cocoa.h>
 #include <mach/mach_time.h>
 
-#include "chrome/browser/automation/ui_controls.h"
+#include "base/message_loop.h"
 #include "chrome/browser/chrome_thread.h"
 
 // Implementation details: We use [NSApplication sendEvent:] instead

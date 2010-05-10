@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,11 +6,13 @@
 #include "chrome/browser/password_manager/password_store_mac_internal.h"
 
 #include <CoreServices/CoreServices.h>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "base/logging.h"
 #include "base/mac_util.h"
+#include "base/message_loop.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/task.h"
