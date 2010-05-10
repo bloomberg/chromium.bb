@@ -2691,23 +2691,12 @@
    fun:_ZNSt8_Rb_treeISsSt4pairIKSsSt3setIiSt4lessIiESaIiEEESt10_Select1stIS7_ES3_ISsESaIS7_EE11_M_get_nodeEv
    fun:_ZNSt8_Rb_treeISsSt4pairIKSsSt3setIiSt4lessIiESaIiEEESt10_Select1stIS7_ES3_ISsESaIS7_EE14_M_create_nodeERKS7_
    fun:_ZNSt8_Rb_treeISsSt4pairIKSsSt3setIiSt4lessIiESaIiEEESt10_Select1stIS7_ES3_ISsESaIS7_EE9_M_insertEPSt18_Rb_tree_node_baseSE_RKS7_
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsSt3setIiSt4lessIiESaIiEEESt10_Select1stIS7_ES3_ISsESaIS7_EE13insert_uniqueERKS7_
+   ...
    fun:_ZNSt8_Rb_treeISsSt4pairIKSsSt3setIiSt4lessIiESaIiEEESt10_Select1stIS7_ES3_ISsESaIS7_EE13insert_uniqueESt17_Rb_tree_iteratorIS7_ERKS7_
    fun:_ZNSt3mapISsSt3setIiSt4lessIiESaIiEES1_ISsESaISt4pairIKSsS4_EEE6insertESt17_Rb_tree_iteratorIS8_ERKS8_
    fun:_ZNSt3mapISsSt3setIiSt4lessIiESaIiEES1_ISsESaISt4pairIKSsS4_EEEixERS7_
    fun:_ZN23ExtensionMessageService24DispatchEventToRenderersERKSsS1_bRK4GURL
    fun:_ZL13DispatchEventP7ProfilePKcSs
-   fun:_ZN27ExtensionBrowserEventRouter12TabClosingAtEP11TabContentsi
-   fun:_ZN13TabStripModel16InternalCloseTabEP11TabContentsib
-   fun:_ZN13TabStripModel17InternalCloseTabsESt6vectorIiSaIiEEb
-   fun:_ZN13TabStripModel12CloseAllTabsEv
-   fun:_ZN7Browser12CloseAllTabsEv
-   fun:_ZN7Browser15OnWindowClosingEv
-   fun:-[BrowserWindowController windowShouldClose:]
-   fun:-[NSWindow _document:shouldClose:contextInfo:]
-   fun:-[NSWindow __close]
-   fun:-[NSWindow _close:]
-   fun:-[NSApplication sendAction:to:from:]
 }
 {
    bug_42896
