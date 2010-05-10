@@ -1060,17 +1060,17 @@ void TabRenderer::LoadTabImages() {
   tab_active.l_width = tab_active.image_l->width();
   tab_active.r_width = tab_active.image_r->width();
 
-  // The regular tab is high much taller *visually* than the nano tabs.
+  // The regular tab is much taller *visually* than the nano tabs.
   // The images are the same height, this is really just the difference
   // in whitespace above the tab image (regular vs nano).
-  const int kMiniTabDiffHeight = 14;
+  const int kNanoTabDiffHeight = 13;
 
   tab_active_nano.image_l = rb.GetBitmapNamed(IDR_TAB_ACTIVE_NANO_LEFT);
   tab_active_nano.image_c = rb.GetBitmapNamed(IDR_TAB_ACTIVE_NANO_CENTER);
   tab_active_nano.image_r = rb.GetBitmapNamed(IDR_TAB_ACTIVE_NANO_RIGHT);
   tab_active_nano.l_width = tab_active_nano.image_l->width();
   tab_active_nano.r_width = tab_active_nano.image_r->width();
-  tab_active_nano.y_offset = kMiniTabDiffHeight;
+  tab_active_nano.y_offset = kNanoTabDiffHeight;
 
   tab_inactive.image_l = rb.GetBitmapNamed(IDR_TAB_INACTIVE_LEFT);
   tab_inactive.image_c = rb.GetBitmapNamed(IDR_TAB_INACTIVE_CENTER);
@@ -1083,7 +1083,7 @@ void TabRenderer::LoadTabImages() {
   tab_inactive_nano.image_r = rb.GetBitmapNamed(IDR_TAB_INACTIVE_NANO_RIGHT);
   tab_inactive_nano.l_width = tab_inactive_nano.image_l->width();
   tab_inactive_nano.r_width = tab_inactive_nano.image_r->width();
-  tab_inactive_nano.y_offset = kMiniTabDiffHeight;
+  tab_inactive_nano.y_offset = kNanoTabDiffHeight;
 
   loading_animation_frames = rb.GetBitmapNamed(IDR_THROBBER);
   waiting_animation_frames = rb.GetBitmapNamed(IDR_THROBBER_WAITING);
