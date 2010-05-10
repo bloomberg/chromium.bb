@@ -213,7 +213,13 @@
             '../build/linux/system.gyp:fontconfig',
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:x11',
+            '../build/linux/system.gyp:xext',
           ],
+          'link_settings': {
+            'libraries': [
+              '-lXrender',  # For XRender* function calls in x11_util.cc.
+            ],
+          },
           'conditions': [
             ['toolkit_views==0', {
               # Note: because of gyp predence rules this has to be defined as
