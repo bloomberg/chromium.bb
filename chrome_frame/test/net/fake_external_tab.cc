@@ -217,12 +217,13 @@ void FakeExternalTab::Initialize() {
 
   RenderProcessHost::set_run_renderer_in_process(true);
 
-  Profile* profile = g_browser_process->profile_manager()->
-      GetDefaultProfile(FilePath(user_data()));
+  FilePath profile_path(ProfileManager::GetDefaultProfileDir(user_data()));
+  Profile* profile = g_browser_process->profile_manager()->GetProfile(
+      profile_path, false);
   PrefService* prefs = profile->GetPrefs();
   DCHECK(prefs != NULL);
-
   WebCacheManager::RegisterPrefs(prefs);
+
   PrefService* local_state = browser_process_->local_state();
   local_state->RegisterStringPref(prefs::kApplicationLocale, L"");
   local_state->RegisterBooleanPref(prefs::kMetricsReportingEnabled, false);
