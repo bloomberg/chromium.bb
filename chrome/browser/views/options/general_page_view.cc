@@ -81,19 +81,26 @@ class CustomHomePagesTableModel : public TableModel {
   virtual int RowCount();
   virtual std::wstring GetText(int row, int column_id);
   virtual SkBitmap GetIcon(int row);
+  virtual std::wstring GetTooltip(int row);
   virtual void SetObserver(TableModelObserver* observer);
 
  private:
-  // Each item in the model is represented as an Entry. Entry stores the URL
-  // and favicon of the page.
+  // Each item in the model is represented as an Entry. Entry stores the URL,
+  // title, and favicon of the page.
   struct Entry {
-    Entry() : fav_icon_handle(0) {}
+    Entry() : title_handle(0), fav_icon_handle(0) {}
 
     // URL of the page.
     GURL url;
 
+    // Page title.  If this is empty, we'll display the URL as the entry.
+    std::wstring title;
+
     // Icon for the page.
     SkBitmap icon;
+
+    // If non-zero, indicates we're loading the title for the page.
+    HistoryService::Handle title_handle;
 
     // If non-zero, indicates we're loading the favicon for the page.
     FaviconService::Handle fav_icon_handle;
@@ -101,20 +108,37 @@ class CustomHomePagesTableModel : public TableModel {
 
   static void InitClass();
 
-  // Loads the favicon for the specified entry.
-  void LoadFavIcon(Entry* entry);
+  // Loads the title and favicon for the specified entry.
+  void LoadTitleAndFavIcon(Entry* entry);
+
+  // Callback from history service. Updates the title of the Entry whose
+  // |title_handle| matches |handle| and notifies the observer of the change.
+  void OnGotTitle(HistoryService::Handle handle,
+                  bool found_url,
+                  const history::URLRow* row,
+                  history::VisitVector* visits);
 
   // Callback from history service. Updates the icon of the Entry whose
-  // fav_icon_handle matches handle and notifies the observer of the change.
+  // |fav_icon_handle| matches |handle| and notifies the observer of the change.
   void OnGotFavIcon(FaviconService::Handle handle,
                     bool know_fav_icon,
                     scoped_refptr<RefCountedMemory> image_data,
                     bool is_expired,
                     GURL icon_url);
 
-  // Returns the entry whose fav_icon_handle matches handle and sets entry_index
-  // to the index of the entry.
-  Entry* GetEntryByLoadHandle(FaviconService::Handle handle, int* entry_index);
+  // Returns the entry whose |member| matches |handle| and sets |entry_index| to
+  // the index of the entry.
+  Entry* GetEntryByLoadHandle(CancelableRequestProvider::Handle Entry::* member,
+                              CancelableRequestProvider::Handle handle,
+                              int* entry_index);
+
+  // Returns the entry whose |fav_icon_handle| matches |handle| and sets
+  // |entry_index| to the index of the entry.
+  Entry* GetEntryByFavIconHandle(FaviconService::Handle handle,
+                                 int* entry_index);
+
+  // Returns the URL for a particular row, formatted for display to the user.
+  std::wstring FormattedURL(int row) const;
 
   // Set of entries we're showing.
   std::vector<Entry> entries_;
@@ -122,13 +146,13 @@ class CustomHomePagesTableModel : public TableModel {
   // Default icon to show when one can't be found for the URL.
   static SkBitmap default_favicon_;
 
-  // Profile used to load icons.
+  // Profile used to load titles and icons.
   Profile* profile_;
 
   TableModelObserver* observer_;
 
-  // Used in loading favicons.
-  CancelableRequestConsumer fav_icon_consumer_;
+  // Used in loading titles and favicons.
+  CancelableRequestConsumer query_consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomHomePagesTableModel);
 };
@@ -146,7 +170,7 @@ void CustomHomePagesTableModel::SetURLs(const std::vector<GURL>& urls) {
   entries_.resize(urls.size());
   for (size_t i = 0; i < urls.size(); ++i) {
     entries_[i].url = urls[i];
-    LoadFavIcon(&(entries_[i]));
+    LoadTitleAndFavIcon(&(entries_[i]));
   }
   // Complete change, so tell the view to just rebuild itself.
   if (observer_)
@@ -164,9 +188,15 @@ void CustomHomePagesTableModel::Add(int index, const GURL& url) {
 void CustomHomePagesTableModel::Remove(int index) {
   DCHECK(index >= 0 && index < RowCount());
   Entry* entry = &(entries_[index]);
+  // Cancel any pending load requests now so we don't deref a bogus pointer when
+  // we get the loaded notification.
+  if (entry->title_handle) {
+    HistoryService* history_service =
+        profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+    if (history_service)
+      history_service->CancelRequest(entry->title_handle);
+  }
   if (entry->fav_icon_handle) {
-    // Pending load request, cancel it now so we don't deref a bogus pointer
-    // when we get loaded notification.
     FaviconService* favicon_service =
         profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
     if (favicon_service)
@@ -191,18 +221,18 @@ int CustomHomePagesTableModel::RowCount() {
 std::wstring CustomHomePagesTableModel::GetText(int row, int column_id) {
   DCHECK(column_id == 0);
   DCHECK(row >= 0 && row < RowCount());
-  std::wstring languages =
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
-  std::wstring url(net::FormatUrl(entries_[row].url, languages));
-  base::i18n::GetDisplayStringInLTRDirectionality(&url);
-  return url;
+  return entries_[row].title.empty() ? FormattedURL(row) : entries_[row].title;
 }
 
 SkBitmap CustomHomePagesTableModel::GetIcon(int row) {
   DCHECK(row >= 0 && row < RowCount());
-  if (!entries_[row].icon.isNull())
-    return entries_[row].icon;
-  return default_favicon_;
+  return entries_[row].icon.isNull() ? default_favicon_ : entries_[row].icon;
+}
+
+std::wstring CustomHomePagesTableModel::GetTooltip(int row) {
+  return entries_[row].title.empty() ? std::wstring() :
+      l10n_util::GetStringF(IDS_OPTIONS_STARTUP_PAGE_TOOLTIP,
+                            entries_[row].title, FormattedURL(row));
 }
 
 void CustomHomePagesTableModel::SetObserver(TableModelObserver* observer) {
@@ -218,14 +248,40 @@ void CustomHomePagesTableModel::InitClass() {
   }
 }
 
-void CustomHomePagesTableModel::LoadFavIcon(Entry* entry) {
+void CustomHomePagesTableModel::LoadTitleAndFavIcon(Entry* entry) {
+  HistoryService* history_service =
+      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  if (history_service) {
+    entry->title_handle = history_service->QueryURL(entry->url, false,
+        &query_consumer_,
+        NewCallback(this, &CustomHomePagesTableModel::OnGotTitle));
+  }
   FaviconService* favicon_service =
       profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
-  if (!favicon_service)
+  if (favicon_service) {
+    entry->fav_icon_handle = favicon_service->GetFaviconForURL(entry->url,
+        &query_consumer_,
+        NewCallback(this, &CustomHomePagesTableModel::OnGotFavIcon));
+  }
+}
+
+void CustomHomePagesTableModel::OnGotTitle(HistoryService::Handle handle,
+                                           bool found_url,
+                                           const history::URLRow* row,
+                                           history::VisitVector* visits) {
+  int entry_index;
+  Entry* entry =
+      GetEntryByLoadHandle(&Entry::title_handle, handle, &entry_index);
+  if (!entry) {
+    // The URLs changed before we were called back.
     return;
-  entry->fav_icon_handle = favicon_service->GetFaviconForURL(
-      entry->url, &fav_icon_consumer_,
-      NewCallback(this, &CustomHomePagesTableModel::OnGotFavIcon));
+  }
+  entry->title_handle = 0;
+  if (found_url && !row->title().empty()) {
+    entry->title = row->title();
+    if (observer_)
+      observer_->OnItemsChanged(static_cast<int>(entry_index), 1);
+  }
 }
 
 void CustomHomePagesTableModel::OnGotFavIcon(
@@ -235,10 +291,10 @@ void CustomHomePagesTableModel::OnGotFavIcon(
     bool is_expired,
     GURL icon_url) {
   int entry_index;
-  Entry* entry = GetEntryByLoadHandle(handle, &entry_index);
+  Entry* entry =
+      GetEntryByLoadHandle(&Entry::fav_icon_handle, handle, &entry_index);
   if (!entry) {
-    // If we didn't find the entry, a new set of icons was loaded before
-    // we were called back.
+    // The URLs changed before we were called back.
     return;
   }
   entry->fav_icon_handle = 0;
@@ -261,15 +317,24 @@ void CustomHomePagesTableModel::OnGotFavIcon(
 
 CustomHomePagesTableModel::Entry*
     CustomHomePagesTableModel::GetEntryByLoadHandle(
-    FaviconService::Handle handle,
+    CancelableRequestProvider::Handle Entry::* member,
+    CancelableRequestProvider::Handle handle,
     int* index) {
   for (size_t i = 0; i < entries_.size(); ++i) {
-    if (entries_[i].fav_icon_handle == handle) {
+    if (entries_[i].*member == handle) {
       *index = static_cast<int>(i);
       return &entries_[i];
     }
   }
   return NULL;
+}
+
+std::wstring CustomHomePagesTableModel::FormattedURL(int row) const {
+  std::wstring languages =
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
+  std::wstring url(net::FormatUrl(entries_[row].url, languages));
+  base::i18n::GetDisplayStringInLTRDirectionality(&url);
+  return url;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
