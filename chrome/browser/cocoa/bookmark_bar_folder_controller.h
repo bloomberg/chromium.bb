@@ -140,6 +140,7 @@
 - (IBAction)addFolder:(id)sender;
 - (IBAction)addPage:(id)sender;
 - (IBAction)editBookmark:(id)sender;
+- (IBAction)openBookmark:(id)sender;
 - (IBAction)openAllBookmarks:(id)sender;
 - (IBAction)openAllBookmarksIncognitoWindow:(id)sender;
 - (IBAction)openAllBookmarksNewWindow:(id)sender;

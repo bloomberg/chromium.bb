@@ -174,6 +174,16 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 // then show the no items label.
 - (void)reconfigureBookmarkBar;
 
+// Used for situations where the bookmark bar folder menus should no longer
+// be actively popping up. Called when the window loses focus, a click has
+// occured outside the menus or a bookmark has been activated. (Note that this
+// differs from the behavior of the -[BookmarkButtonControllerProtocol
+// closeAllBookmarkFolders] method in that the latter does not terminate menu
+// tracking since it may be being called in response to actions (such as
+// dragging) where a 'stale' menu presentation should first be collapsed before
+// presenting a new menu.)
+- (void)closeFolderAndStopTrackingMenus;
+
 - (void)addNode:(const BookmarkNode*)child toMenu:(NSMenu*)menu;
 - (void)addFolderNode:(const BookmarkNode*)node toMenu:(NSMenu*)menu;
 - (void)tagEmptyMenu:(NSMenu*)menu;
@@ -423,19 +433,23 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   [self closeAllBookmarkFolders];
 }
 
+- (void)closeFolderAndStopTrackingMenus {
+  showFolderMenus_ = NO;
+  [self closeAllBookmarkFolders];
+}
+
 - (BookmarkModel*)bookmarkModel {
   return bookmarkModel_;
 }
 
 // NSNotificationCenter callback.
 - (void)parentWindowWillClose:(NSNotification*)notification {
-  [self closeAllBookmarkFolders];
+  [self closeFolderAndStopTrackingMenus];
 }
 
 // NSNotificationCenter callback.
 - (void)parentWindowDidResignKey:(NSNotification*)notification {
-  showFolderMenus_ = NO;
-  [self closeAllBookmarkFolders];
+  [self closeFolderAndStopTrackingMenus];
 }
 
 // BookmarkButtonDelegate protocol implementation.  When menus are
@@ -498,11 +512,8 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 // Implementation of CrApplicationEventHookProtocol.
 // NOT an override of a standard Cocoa call made to NSViewControllers.
 - (void)hookForEvent:(NSEvent*)theEvent {
-  if ([self isEventAnExitEvent:theEvent]) {
-    showFolderMenus_ = NO;
-    [self watchForExitEvent:NO];
-    [self closeAllBookmarkFolders];
-  }
+  if ([self isEventAnExitEvent:theEvent])
+    [self closeFolderAndStopTrackingMenus];
 }
 
 // Return YES if the event indicates an exit from the bookmark bar
@@ -1104,7 +1115,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 }
 
 - (IBAction)openBookmark:(id)sender {
-  [self closeAllBookmarkFolders];
+  [self closeFolderAndStopTrackingMenus];
   DCHECK([sender respondsToSelector:@selector(bookmarkNode)]);
   const BookmarkNode* node = [sender bookmarkNode];
   WindowOpenDisposition disposition =
@@ -1357,7 +1368,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
 - (void)openAll:(const BookmarkNode*)node
     disposition:(WindowOpenDisposition)disposition {
-  [self closeAllBookmarkFolders];
+  [self closeFolderAndStopTrackingMenus];
   bookmark_utils::OpenAll([[self view] window],
                           browser_->profile(),
                           browser_,

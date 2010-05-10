@@ -1163,8 +1163,14 @@ TEST_F(BookmarkBarControllerTest, TestFolderButtons) {
   EXPECT_EQ(model_string, actualModelString);
   EXPECT_FALSE([bar_ folderController]);
 
+  // Add a real bookmark so we can click on it.
+  const BookmarkNode* folder = root->GetChild(3);
+  model.AddURL(folder, folder->GetChildCount(), L"CLICK ME",
+               GURL("http://www.google.com/"));
+
   // Click on a folder button.
   BookmarkButton* button = [bar_ buttonWithTitleEqualTo:@"4f"];
+  EXPECT_TRUE(button);
   [bar_ openBookmarkFolderFromButton:button];
   BookmarkBarFolderController* bbfc = [bar_ folderController];
   EXPECT_TRUE(bbfc);
@@ -1175,11 +1181,13 @@ TEST_F(BookmarkBarControllerTest, TestFolderButtons) {
 
   // Next open is a different button.
   button = [bar_ buttonWithTitleEqualTo:@"2f"];
+  EXPECT_TRUE(button);
   [bar_ openBookmarkFolderFromButton:button];
   EXPECT_TRUE([bar_ folderController]);
 
   // Mouse over a non-folder button and confirm controller has gone away.
   button = [bar_ buttonWithTitleEqualTo:@"1b"];
+  EXPECT_TRUE(button);
   NSEvent* event = test_event_utils::MouseEventAtPoint([button center],
                                                        NSMouseMoved, 0);
   [bar_ mouseEnteredButton:button event:event];
@@ -1187,19 +1195,25 @@ TEST_F(BookmarkBarControllerTest, TestFolderButtons) {
 
   // Mouse over the original folder and confirm a new controller.
   button = [bar_ buttonWithTitleEqualTo:@"2f"];
+  EXPECT_TRUE(button);
   [bar_ mouseEnteredButton:button event:event];
   BookmarkBarFolderController* oldBBFC = [bar_ folderController];
   EXPECT_TRUE(oldBBFC);
 
   // 'Jump' over to a different folder and confirm a new controller.
   button = [bar_ buttonWithTitleEqualTo:@"4f"];
+  EXPECT_TRUE(button);
   [bar_ mouseEnteredButton:button event:event];
   BookmarkBarFolderController* newBBFC = [bar_ folderController];
   EXPECT_TRUE(newBBFC);
   EXPECT_NE(oldBBFC, newBBFC);
 
-  // Another click should close the folder menus.
-  [bar_ openBookmarkFolderFromButton:button];
+  // A click on a real bookmark should close and stop tracking the folder menus.
+  BookmarkButton* bookmarkButton = [newBBFC buttonWithTitleEqualTo:@"CLICK ME"];
+  EXPECT_TRUE(bookmarkButton);
+  [newBBFC openBookmark:bookmarkButton];
+  EXPECT_FALSE([bar_ folderController]);
+  [bar_ mouseEnteredButton:button event:event];
   EXPECT_FALSE([bar_ folderController]);
 }
 
@@ -1645,7 +1659,8 @@ TEST_F(BookmarkBarControllerDragDropTest, DragMoveBarBookmarkToOffTheSide) {
   EXPECT_TRUE(otsController);
   NSWindow* toWindow = [otsController window];
   EXPECT_TRUE(toWindow);
-  BookmarkButton* draggedButton = [bar_ buttonWithTitleEqualTo:@"3bWithLongName"];
+  BookmarkButton* draggedButton =
+      [bar_ buttonWithTitleEqualTo:@"3bWithLongName"];
   ASSERT_TRUE(draggedButton);
   int oldOTSCount = (int)[[otsController buttons] count];
   EXPECT_EQ(oldOTSCount, oldChildCount - oldDisplayedButtons);
