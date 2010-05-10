@@ -468,7 +468,7 @@ TEST_F(URLFetcherPostTest, Basic) {
   MessageLoop::current()->Run();
 }
 
-TEST_F(URLFetcherHeadersTest, DISABLED_Headers) {
+TEST_F(URLFetcherHeadersTest, Headers) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(L"net/data/url_request_unittest", NULL);
   ASSERT_TRUE(NULL != server.get());
