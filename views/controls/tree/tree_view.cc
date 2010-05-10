@@ -64,7 +64,7 @@ bool TreeView::GetAccessibleRole(AccessibilityTypes::Role* role) {
 
 bool TreeView::GetAccessibleState(AccessibilityTypes::State* state) {
   DCHECK(state);
- 
+
   *state = AccessibilityTypes::STATE_READONLY;
   return true;
 }
@@ -357,7 +357,7 @@ gfx::Point TreeView::GetKeyboardContextMenuLocation() {
     }
   }
   gfx::Point screen_loc(0, y);
-  if (UILayoutIsRightToLeft())
+  if (base::i18n::IsRTL())
     screen_loc.set_x(width());
   ConvertPointToScreen(this, &screen_loc);
   return screen_loc;
@@ -656,7 +656,7 @@ HIMAGELIST TreeView::CreateImageList() {
   std::vector<SkBitmap> model_images;
   model_->GetIcons(&model_images);
 
-  bool rtl = UILayoutIsRightToLeft();
+  bool rtl = base::i18n::IsRTL();
   // Creates the default image list used for trees.
   SkBitmap* closed_icon =
       ResourceBundle::GetSharedInstance().GetBitmapNamed(

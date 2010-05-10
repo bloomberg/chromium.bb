@@ -151,7 +151,7 @@ bool SingleSplitView::OnMouseDragged(const MouseEvent& event) {
 
   int delta_offset = GetPrimaryAxisSize(event.x(), event.y()) -
       drag_info_.initial_mouse_offset;
-  if (is_horizontal_ && UILayoutIsRightToLeft())
+  if (is_horizontal_ && base::i18n::IsRTL())
     delta_offset *= -1;
   // Honor the minimum size when resizing.
   gfx::Size min = GetChildViewAt(0)->GetMinimumSize();
@@ -188,7 +188,7 @@ bool SingleSplitView::IsPointInDivider(const gfx::Point& p) {
   int divider_relative_offset;
   if (is_horizontal_) {
     divider_relative_offset =
-        p.x() - GetChildViewAt(UILayoutIsRightToLeft() ? 1 : 0)->width();
+        p.x() - GetChildViewAt(base::i18n::IsRTL() ? 1 : 0)->width();
   } else {
     divider_relative_offset = p.y() - GetChildViewAt(0)->height();
   }

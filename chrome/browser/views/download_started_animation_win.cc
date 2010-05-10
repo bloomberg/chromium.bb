@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -121,7 +121,7 @@ void DownloadStartedAnimationWin::Reposition() {
   // Align the image with the bottom left of the web contents (so that it
   // points to the newly created download).
   gfx::Size size = GetPreferredSize();
-  int x = UILayoutIsRightToLeft() ?
+  int x = base::i18n::IsRTL() ?
       tab_contents_bounds_.right() - size.width() : tab_contents_bounds_.x();
   popup_->MoveWindow(
       x,

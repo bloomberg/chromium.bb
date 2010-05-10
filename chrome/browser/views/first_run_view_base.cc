@@ -83,7 +83,7 @@ void FirstRunViewBase::SetupControls() {
   // image because the code above derives the background color from the LTR
   // image so we have to use the LTR logo initially and then replace it with
   // the RTL logo if we find out that we are running in a right-to-left locale.
-  if (UILayoutIsRightToLeft())
+  if (base::i18n::IsRTL())
     background_image_->SetImage(rb.GetBitmapNamed(IDR_WIZARD_ICON_RTL));
 
   background_image_->set_background(bkg);

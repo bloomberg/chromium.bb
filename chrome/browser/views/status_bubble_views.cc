@@ -368,7 +368,7 @@ void StatusBubbleViews::StatusView::Paint(gfx::Canvas* canvas) {
     rad[2] = 0;
     rad[3] = 0;
   } else {
-    if (UILayoutIsRightToLeft() ^ (style_ == STYLE_STANDARD_RIGHT)) {
+    if (base::i18n::IsRTL() != (style_ == STYLE_STANDARD_RIGHT)) {
       // The text is RtL or the bubble is on the right side (but not both).
 
       // Top Left corner.
@@ -721,7 +721,7 @@ void StatusBubbleViews::AvoidMouse(const gfx::Point& location) {
 
   // Get the cursor position relative to the popup.
   gfx::Point relative_location = location;
-  if (view_->UILayoutIsRightToLeft()) {
+  if (base::i18n::IsRTL()) {
     int top_right_x = top_left.x() + window_width;
     relative_location.set_x(top_right_x - relative_location.x());
   } else {

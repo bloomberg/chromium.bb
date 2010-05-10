@@ -135,7 +135,7 @@ void Label::SetHorizontalAlignment(Alignment a) {
   // If the View's UI layout is right-to-left and rtl_alignment_mode_ is
   // USE_UI_ALIGNMENT, we need to flip the alignment so that the alignment
   // settings take into account the text directionality.
-  if (UILayoutIsRightToLeft() && (rtl_alignment_mode_ == USE_UI_ALIGNMENT) &&
+  if (base::i18n::IsRTL() && (rtl_alignment_mode_ == USE_UI_ALIGNMENT) &&
       (a != ALIGN_CENTER))
     a = (a == ALIGN_LEFT) ? ALIGN_RIGHT : ALIGN_LEFT;
   if (horiz_alignment_ != a) {

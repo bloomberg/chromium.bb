@@ -386,7 +386,7 @@ void MenuItemView::PrepareForRun(bool has_mnemonics) {
 
 int MenuItemView::GetDrawStringFlags() {
   int flags = 0;
-  if (UILayoutIsRightToLeft())
+  if (base::i18n::IsRTL())
     flags |= gfx::Canvas::TEXT_ALIGN_RIGHT;
   else
     flags |= gfx::Canvas::TEXT_ALIGN_LEFT;

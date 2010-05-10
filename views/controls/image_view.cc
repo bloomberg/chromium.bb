@@ -80,7 +80,7 @@ gfx::Point ImageView::ComputeImageOrigin(const gfx::Size& image_size) const {
   // horizontal alignment is set to trailing, then we'll use left alignment for
   // the image instead of right alignment if the UI layout is RTL.
   Alignment actual_horiz_alignment = horiz_alignment_;
-  if (UILayoutIsRightToLeft() && (horiz_alignment_ != CENTER))
+  if (base::i18n::IsRTL() && (horiz_alignment_ != CENTER))
     actual_horiz_alignment = (horiz_alignment_ == LEADING) ? TRAILING : LEADING;
   switch (actual_horiz_alignment) {
     case LEADING:  x = insets.left();                                 break;

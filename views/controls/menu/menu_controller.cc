@@ -1264,7 +1264,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
     // We must make sure we take into account the UI layout. If the layout is
     // RTL, then a 'leading' menu is positioned to the left of the parent menu
     // item and not to the right.
-    bool layout_is_rtl = item->UILayoutIsRightToLeft();
+    bool layout_is_rtl = base::i18n::IsRTL();
     bool create_on_the_right = (prefer_leading && !layout_is_rtl) ||
                                (!prefer_leading && layout_is_rtl);
 

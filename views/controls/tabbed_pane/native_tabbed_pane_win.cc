@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,7 +107,7 @@ void NativeTabbedPaneWin::AddNativeTab(int index,
 
   // If the locale is RTL, we set the TCIF_RTLREADING so that BiDi text is
   // rendered properly on the tabs.
-  if (UILayoutIsRightToLeft()) {
+  if (base::i18n::IsRTL()) {
     tcitem.mask |= TCIF_RTLREADING;
   }
 
@@ -222,7 +222,7 @@ void NativeTabbedPaneWin::CreateNativeControl() {
   // Explicitly setting the WS_EX_LAYOUTRTL property for the HWND (see above
   // for a thorough explanation regarding why we waited until |content_window_|
   // if created before we set this property for the tabbed pane's HWND).
-  if (UILayoutIsRightToLeft())
+  if (base::i18n::IsRTL())
     l10n_util::HWNDSetRTLLayout(tab_control);
 
   RootView* root_view = content_window_->GetRootView();

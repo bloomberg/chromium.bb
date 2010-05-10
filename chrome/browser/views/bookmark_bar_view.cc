@@ -847,7 +847,7 @@ void BookmarkBarView::GetAnchorPositionAndStartIndexForButton(
     *anchor = MenuItemView::TOPLEFT;
 
   // Invert orientation if right to left.
-  if (UILayoutIsRightToLeft()) {
+  if (base::i18n::IsRTL()) {
     if (*anchor == MenuItemView::TOPRIGHT)
       *anchor = MenuItemView::TOPLEFT;
     else

@@ -69,7 +69,7 @@ DraggedTabView::~DraggedTabView() {
 
 void DraggedTabView::MoveTo(const gfx::Point& screen_point) {
   int x;
-  if (UILayoutIsRightToLeft() && !attached_) {
+  if (base::i18n::IsRTL() && !attached_) {
     // On RTL locales, a dragged tab (when it is not attached to a tab strip)
     // is rendered using a right-to-left orientation so we should calculate the
     // window position differently.
@@ -155,7 +155,7 @@ void DraggedTabView::Layout() {
     renderer_->SetBounds(0, 0, prefsize.width(), prefsize.height());
   } else {
     int left = 0;
-    if (UILayoutIsRightToLeft())
+    if (base::i18n::IsRTL())
       left = GetPreferredSize().width() - attached_tab_size_.width();
     // The renderer_'s width should be attached_tab_size_.width() in both LTR
     // and RTL locales. Wrong width will cause the wrong positioning of the tab

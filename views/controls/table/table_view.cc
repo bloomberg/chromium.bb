@@ -493,7 +493,7 @@ gfx::Point TableView::GetKeyboardContextMenuLocation() {
     }
   }
   gfx::Point screen_loc(0, y);
-  if (UILayoutIsRightToLeft())
+  if (base::i18n::IsRTL())
     screen_loc.set_x(width());
   ConvertPointToScreen(this, &screen_loc);
   return screen_loc;
@@ -538,7 +538,7 @@ LRESULT CALLBACK TableView::TableWndProc(HWND window,
       //
       // As a work around this uses the position of the cursor and ignores
       // the position supplied in the l_param.
-      if (table_view->UILayoutIsRightToLeft() &&
+      if (base::i18n::IsRTL() &&
           (GET_X_LPARAM(l_param) != -1 || GET_Y_LPARAM(l_param) != -1)) {
         POINT screen_point;
         GetCursorPos(&screen_point);

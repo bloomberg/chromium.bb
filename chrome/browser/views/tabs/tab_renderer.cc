@@ -533,7 +533,7 @@ void TabRenderer::OnMouseExited(const views::MouseEvent& e) {
 
 void TabRenderer::Paint(gfx::Canvas* canvas) {
   if (data_.render_as_new_tab) {
-    if (UILayoutIsRightToLeft()) {
+    if (base::i18n::IsRTL()) {
       canvas->TranslateInt(width(), 0);
       canvas->ScaleInt(-1, 1);
     }
@@ -923,7 +923,7 @@ void TabRenderer::PaintLoadingAnimation(gfx::Canvas* canvas) {
     if (favicon_bounds_.width() != kFavIconSize)
       dst_x += (favicon_bounds_.width() - kFavIconSize) / 2;
   } else {
-    if (UILayoutIsRightToLeft()) {
+    if (base::i18n::IsRTL()) {
       dst_x = width() - kLeftPadding - image_size;
     } else {
       dst_x = kLeftPadding;

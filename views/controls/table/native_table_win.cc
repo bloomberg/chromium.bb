@@ -670,7 +670,7 @@ LRESULT CALLBACK NativeTableWin::TableWndProc(HWND window,
       //
       // As a work around this uses the position of the cursor and ignores
       // the position supplied in the l_param.
-      if (table->UILayoutIsRightToLeft() &&
+      if (base::i18n::IsRTL() &&
           (GET_X_LPARAM(l_param) != -1 || GET_Y_LPARAM(l_param) != -1)) {
         POINT screen_point;
         GetCursorPos(&screen_point);

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -178,11 +178,8 @@ void AboutChromeView::Init() {
   // LTR UIs and one for RTL UIs. We load the correct bitmap based on the UI
   // layout of the view.
   about_dlg_background_logo_ = new views::ImageView();
-  SkBitmap* about_background_logo;
-  if (UILayoutIsRightToLeft())
-    about_background_logo = rb.GetBitmapNamed(IDR_ABOUT_BACKGROUND_RTL);
-  else
-    about_background_logo = rb.GetBitmapNamed(IDR_ABOUT_BACKGROUND);
+  SkBitmap* about_background_logo = rb.GetBitmapNamed(base::i18n::IsRTL() ?
+      IDR_ABOUT_BACKGROUND_RTL : IDR_ABOUT_BACKGROUND);
 
   about_dlg_background_logo_->SetImage(*about_background_logo);
   AddChildView(about_dlg_background_logo_);

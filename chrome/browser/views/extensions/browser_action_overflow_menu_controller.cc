@@ -65,9 +65,8 @@ bool BrowserActionOverflowMenuController::RunMenu(gfx::NativeWindow window,
   bounds.set_x(screen_loc.x());
   bounds.set_y(screen_loc.y());
 
-  views::MenuItemView::AnchorPosition anchor =
-      menu_button_->UILayoutIsRightToLeft() ? views::MenuItemView::TOPLEFT :
-                                              views::MenuItemView::TOPRIGHT;
+  views::MenuItemView::AnchorPosition anchor = base::i18n::IsRTL() ?
+      views::MenuItemView::TOPLEFT : views::MenuItemView::TOPRIGHT;
   if (for_drop) {
     menu_->RunMenuForDropAt(window, bounds, anchor);
   } else {

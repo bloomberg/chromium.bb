@@ -925,9 +925,8 @@ class TryChromeDialog : public views::ButtonListener,
     // account the differences between XP and Vista fonts and buttons.
     layout->Layout(root_view);
     gfx::Size preferred = layout->GetPreferredSize(root_view);
-    pos = ComputeWindowPosition(preferred.width(),
-                                preferred.height(),
-                                root_view->UILayoutIsRightToLeft());
+    pos = ComputeWindowPosition(preferred.width(), preferred.height(),
+                                base::i18n::IsRTL());
     popup->SetBounds(pos);
 
     // Carve the toast shape into the window.

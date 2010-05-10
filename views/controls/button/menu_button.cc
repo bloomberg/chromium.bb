@@ -125,11 +125,11 @@ bool MenuButton::Activate() {
     // The position of the menu depends on whether or not the locale is
     // right-to-left.
     gfx::Point menu_position(lb.right(), lb.bottom());
-    if (UILayoutIsRightToLeft())
+    if (base::i18n::IsRTL())
       menu_position.set_x(lb.x());
 
     View::ConvertPointToScreen(this, &menu_position);
-    if (UILayoutIsRightToLeft())
+    if (base::i18n::IsRTL())
       menu_position.Offset(2, -4);
     else
       menu_position.Offset(-2, -4);

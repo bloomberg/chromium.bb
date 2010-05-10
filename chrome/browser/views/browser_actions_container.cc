@@ -558,7 +558,7 @@ void BrowserActionsContainer::OnBrowserActionExecuted(
 
     gfx::NativeWindow frame_window =
         browser_->window()->GetNativeHandle();
-    BubbleBorder::ArrowLocation arrow_location = UILayoutIsRightToLeft() ?
+    BubbleBorder::ArrowLocation arrow_location = base::i18n::IsRTL() ?
         BubbleBorder::TOP_LEFT : BubbleBorder::TOP_RIGHT;
 
     popup_ = ExtensionPopup::Show(button->GetPopupUrl(), browser_,
@@ -616,7 +616,7 @@ void BrowserActionsContainer::Layout() {
     x += sz.width();
   }
 
-  x += UILayoutIsRightToLeft() ? kHorizontalPaddingRtl : kHorizontalPadding;
+  x += base::i18n::IsRTL() ? kHorizontalPaddingRtl : kHorizontalPadding;
 
   // Calculate if all icons fit without showing the chevron. We need to know
   // this beforehand, because showing the chevron will decrease the space that
@@ -661,8 +661,8 @@ void BrowserActionsContainer::Layout() {
 
 void BrowserActionsContainer::Paint(gfx::Canvas* canvas) {
   // The one-pixel themed vertical divider to the right of the browser actions.
-  int x = UILayoutIsRightToLeft() ? kDividerHorizontalMargin :
-                                    width() - kDividerHorizontalMargin;
+  int x = base::i18n::IsRTL() ?
+      kDividerHorizontalMargin : (width() - kDividerHorizontalMargin);
   DetachableToolbarView::PaintVerticalDivider(
       canvas, x, height(), kDividerVerticalPadding,
       DetachableToolbarView::kEdgeDividerColor,
@@ -746,7 +746,7 @@ int BrowserActionsContainer::OnDragUpdated(
     x += chevron_->bounds().width();
   x = ClampToNearestIconCount(x, false);
 
-  if (!UILayoutIsRightToLeft() && chevron_->IsVisible()) {
+  if (!base::i18n::IsRTL() && chevron_->IsVisible()) {
     // The clamping function includes the chevron width. In LTR locales, the
     // chevron is on the right and we never want to account for its width. In
     // RTL it is on the left and we always want to count the width.
@@ -756,9 +756,8 @@ int BrowserActionsContainer::OnDragUpdated(
   // Clamping gives us a value where the next button will be drawn, but we want
   // to subtract the padding (and then some) to make it appear in-between the
   // buttons.
-  SetDropIndicator(x - kBrowserActionButtonPadding -
-      (UILayoutIsRightToLeft() ? kDropIndicatorOffsetRtl :
-                                 kDropIndicatorOffsetLtr));
+  SetDropIndicator(x - kBrowserActionButtonPadding - (base::i18n::IsRTL() ?
+      kDropIndicatorOffsetRtl : kDropIndicatorOffsetLtr));
   return DragDropTypes::DRAG_MOVE;
 }
 
@@ -788,7 +787,7 @@ int BrowserActionsContainer::OnPerformDrop(
     int view_x =
         browser_action_views_[i]->GetBounds(APPLY_MIRRORING_TRANSFORMATION).x();
     if (!browser_action_views_[i]->IsVisible() ||
-        (UILayoutIsRightToLeft() ? view_x < target_x : view_x >= target_x)) {
+        (base::i18n::IsRTL() ? view_x < target_x : view_x >= target_x)) {
       // We have reached the end of the visible icons or found one that has a
       // higher x position than the drop point.
       break;
@@ -1028,8 +1027,8 @@ void BrowserActionsContainer::SetContainerWidth() {
 int BrowserActionsContainer::WidthOfNonIconArea() const {
   int chevron_size = (chevron_->IsVisible()) ?
                      chevron_->GetPreferredSize().width() : 0;
-  int padding = UILayoutIsRightToLeft() ? kHorizontalPaddingRtl :
-                                          kHorizontalPadding;
+  int padding = base::i18n::IsRTL() ?
+      kHorizontalPaddingRtl : kHorizontalPadding;
   return resize_gripper_->GetPreferredSize().width() + padding +
          chevron_size + kChevronRightMargin + kDividerHorizontalMargin;
 }

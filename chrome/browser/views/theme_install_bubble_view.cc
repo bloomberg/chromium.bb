@@ -99,7 +99,7 @@ void ThemeInstallBubbleView::Reposition() {
   int mid_x = tab_contents_bounds_.x() +
       (tab_contents_bounds_.right() - tab_contents_bounds_.x()) / 2;
 
-  int x = UILayoutIsRightToLeft() ?
+  int x = base::i18n::IsRTL() ?
       mid_x + size.width() / 2 : mid_x - size.width() / 2;
   int y = static_cast<int>(tab_contents_bounds_.y() +
       (tab_contents_bounds_.bottom() - tab_contents_bounds_.y()) / 2 -

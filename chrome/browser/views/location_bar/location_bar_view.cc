@@ -778,7 +778,7 @@ void LocationBarView::ShowFirstRunBubbleInternal(
   // If the UI layout is RTL, the coordinate system is not transformed and
   // therefore we need to adjust the X coordinate so that bubble appears on the
   // right hand side of the location bar.
-  if (UILayoutIsRightToLeft())
+  if (base::i18n::IsRTL())
     origin.set_x(width() - origin.x());
   views::View::ConvertPointToScreen(this, &origin);
   FirstRunBubble::Show(profile_, GetWidget(), gfx::Rect(origin, gfx::Size()),

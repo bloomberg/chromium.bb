@@ -10,7 +10,6 @@
 #endif
 
 #include "app/drag_drop_types.h"
-#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/scoped_handle.h"
@@ -71,7 +70,6 @@ View::View()
       accessibility_(NULL),
 #endif
       drag_controller_(NULL),
-      ui_mirroring_is_enabled_for_rtl_languages_(true),
       flip_canvas_on_paint_for_rtl_ui_(false) {
 }
 
@@ -234,10 +232,6 @@ void View::SetLayoutManager(LayoutManager* layout_manager) {
     layout_manager_->Installed(this);
 }
 
-bool View::UILayoutIsRightToLeft() const {
-  return (ui_mirroring_is_enabled_for_rtl_languages_ && base::i18n::IsRTL());
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // View - Right-to-left UI layout
@@ -250,7 +244,7 @@ int View::MirroredX() const {
 }
 
 int View::MirroredLeftPointForRect(const gfx::Rect& bounds) const {
-  return UILayoutIsRightToLeft() ?
+  return base::i18n::IsRTL() ?
       (width() - bounds.x() - bounds.width()) : bounds.x();
 }
 

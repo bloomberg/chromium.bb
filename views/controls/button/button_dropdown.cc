@@ -134,7 +134,7 @@ void ButtonDropDown::ShowDropDownMenu(gfx::NativeView window) {
     // is right-to-left.
     gfx::Point menu_position(lb.origin());
     menu_position.Offset(0, lb.height() - 1);
-    if (UILayoutIsRightToLeft())
+    if (base::i18n::IsRTL())
       menu_position.Offset(lb.width() - 1, 0);
 
     View::ConvertPointToScreen(this, &menu_position);

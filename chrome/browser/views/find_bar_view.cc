@@ -156,10 +156,8 @@ FindBarView::FindBarView(FindBarHost* host)
 
     // Background images for the Find edit box.
     kBackground = rb.GetBitmapNamed(IDR_FIND_BOX_BACKGROUND);
-    if (UILayoutIsRightToLeft())
-      kBackground_left = rb.GetBitmapNamed(IDR_FIND_BOX_BACKGROUND_LEFT_RTL);
-    else
-      kBackground_left = rb.GetBitmapNamed(IDR_FIND_BOX_BACKGROUND_LEFT);
+    kBackground_left = rb.GetBitmapNamed(base::i18n::IsRTL() ?
+        IDR_FIND_BOX_BACKGROUND_LEFT_RTL : IDR_FIND_BOX_BACKGROUND_LEFT);
   }
 }
 
@@ -256,7 +254,7 @@ void FindBarView::Paint(gfx::Canvas* canvas) {
   gfx::Rect back_button_rect;
   int x = 0;   // x coordinate of the curved edge background image.
   int w = 0;   // width of the background image for the text field.
-  if (UILayoutIsRightToLeft()) {
+  if (base::i18n::IsRTL()) {
     find_text_rect = find_text_->GetBounds(APPLY_MIRRORING_TRANSFORMATION);
     back_button_rect =
         find_previous_button_->GetBounds(APPLY_MIRRORING_TRANSFORMATION);
@@ -281,7 +279,7 @@ void FindBarView::Paint(gfx::Canvas* canvas) {
   // find_text_ edit box and the match_count_text_ label).
   int background_height = kBackground->height();
   canvas->TileImageInt(*kBackground,
-                       UILayoutIsRightToLeft() ?
+                       base::i18n::IsRTL() ?
                            back_button_rect.right() : find_text_rect.x(),
                        back_button_rect.y(),
                        w,

@@ -287,7 +287,7 @@ TEST(LabelTest, DrawSingleLineString) {
 
   // Turn off mirroring so that we don't need to figure out if
   // align right really means align left.
-  label.EnableUIMirroringForRTLLanguages(false);
+  label.set_rtl_alignment_mode(Label::AUTO_DETECT_ALIGNMENT);
 
   std::wstring test_text(L"Here's a string with no returns.");
   label.SetText(test_text);
@@ -405,7 +405,7 @@ TEST(LabelTest, DrawMultiLineString) {
 
   // Turn off mirroring so that we don't need to figure out if
   // align right really means align left.
-  label.EnableUIMirroringForRTLLanguages(false);
+  label.set_rtl_alignment_mode(Label::AUTO_DETECT_ALIGNMENT);
 
   std::wstring test_text(L"Another string\nwith returns\n\n!");
   label.SetText(test_text);
@@ -550,7 +550,6 @@ TEST(LabelTest, DrawSingleLineStringInRTL) {
   Label label;
   label.SetFocusable(false);
 
-  label.EnableUIMirroringForRTLLanguages(true);
   std::string locale = l10n_util::GetApplicationLocale(std::wstring());
   base::i18n::SetICUDefaultLocale("he");
 
@@ -673,7 +672,6 @@ TEST(LabelTest, DrawMultiLineStringInRTL) {
   label.SetFocusable(false);
 
   // Test for RTL.
-  label.EnableUIMirroringForRTLLanguages(true);
   std::string locale = l10n_util::GetApplicationLocale(std::wstring());
   base::i18n::SetICUDefaultLocale("he");
 

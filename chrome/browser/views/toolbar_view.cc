@@ -722,11 +722,11 @@ void ToolbarView::LoadRightSideControlsImages() {
   ThemeProvider* tp = GetThemeProvider();
 
   // We use different menu button images if the locale is right-to-left.
-  if (UILayoutIsRightToLeft())
+  if (base::i18n::IsRTL())
     page_menu_->SetIcon(*tp->GetBitmapNamed(IDR_MENU_PAGE_RTL));
   else
     page_menu_->SetIcon(*tp->GetBitmapNamed(IDR_MENU_PAGE));
-  if (UILayoutIsRightToLeft())
+  if (base::i18n::IsRTL())
     app_menu_->SetIcon(*tp->GetBitmapNamed(IDR_MENU_CHROME_RTL));
   else
     app_menu_->SetIcon(*tp->GetBitmapNamed(IDR_MENU_CHROME));

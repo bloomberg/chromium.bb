@@ -89,12 +89,12 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
   // minimize_button_offset assumes LTR layout since the window controls
   // themselves are not flipped, so we need to adjust the tabstrip's x
   // position for them in RTL languages.
-  if (UILayoutIsRightToLeft())
+  if (base::i18n::IsRTL())
     tabstrip_x += (width() - minimize_button_offset);
   int tabstrip_width = minimize_button_offset - tabstrip_x -
       (frame_->GetWindow()->IsMaximized() ?
           kNewTabCaptionMaximizedSpacing : kNewTabCaptionRestoredSpacing);
-  if (UILayoutIsRightToLeft())
+  if (base::i18n::IsRTL())
     tabstrip_width += tabstrip_x;
   return gfx::Rect(tabstrip_x, NonClientTopBorderHeight(),
                    std::max(0, tabstrip_width),
@@ -114,10 +114,8 @@ void GlassBrowserFrameView::UpdateThrobber(bool running) {
 }
 
 void GlassBrowserFrameView::PaintTabStripShadow(gfx::Canvas* canvas) {
-  if (!browser_view_->UILayoutIsRightToLeft() ||
-      !browser_view_->UseVerticalTabs()) {
+  if (!base::i18n::IsRTL() || !browser_view_->UseVerticalTabs())
     return;
-  }
 
   ThemeProvider* tp = GetThemeProvider();
   SkBitmap* shadow_top = tp->GetBitmapNamed(IDR_SIDETABS_SHADOW_TOP);

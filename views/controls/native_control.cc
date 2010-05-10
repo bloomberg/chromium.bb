@@ -330,7 +330,7 @@ DWORD NativeControl::GetAdditionalExStyle() const {
   // extended window style for a right-to-left layout so the subclass creates
   // a mirrored HWND for the underlying control.
   DWORD ex_style = 0;
-  if (UILayoutIsRightToLeft())
+  if (base::i18n::IsRTL())
     ex_style |= l10n_util::GetExtendedStyles();
 
   return ex_style;
@@ -341,7 +341,7 @@ DWORD NativeControl::GetAdditionalRTLStyle() const {
   // extended window style for a right-to-left layout so the subclass creates
   // a mirrored HWND for the underlying control.
   DWORD ex_style = 0;
-  if (UILayoutIsRightToLeft())
+  if (base::i18n::IsRTL())
     ex_style |= l10n_util::GetExtendedTooltipStyles();
 
   return ex_style;

@@ -45,7 +45,7 @@ void BorderContents::SizeAndGetBounds(
     const gfx::Size& contents_size,
     gfx::Rect* contents_bounds,
     gfx::Rect* window_bounds) {
-  if (UILayoutIsRightToLeft())
+  if (base::i18n::IsRTL())
     arrow_location = BubbleBorder::rtl_mirror(arrow_location);
   bubble_border_->set_arrow_location(arrow_location);
   // Set the border.

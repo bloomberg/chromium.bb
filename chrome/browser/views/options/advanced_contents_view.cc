@@ -186,7 +186,7 @@ void FileDisplayArea::Init() {
 void FileDisplayArea::InitClass() {
   static bool initialized = false;
   if (!initialized) {
-    // We'd prefer to use UILayoutIsRightToLeft() to perform the RTL
+    // We'd prefer to use base::i18n::IsRTL() to perform the RTL
     // environment check, but it's nonstatic, so, instead, we check whether the
     // locale is RTL.
     bool ui_is_rtl = base::i18n::IsRTL();

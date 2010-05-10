@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "app/os_exchange_data.h"
+#include "base/i18n/rtl.h"
 #include "base/scoped_ptr.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
@@ -288,24 +289,6 @@ class View : public AcceleratorTarget {
 
   // Right-to-left UI layout functions
 
-  // Indicates whether the UI layout for this view is right-to-left. The view
-  // has an RTL UI layout if RTL hasn't been disabled for the view and if the
-  // locale's language is an RTL language.
-  bool UILayoutIsRightToLeft() const;
-
-  // Enables or disables the right-to-left layout for the view. If |enable| is
-  // true, the layout will become right-to-left only if the locale's language
-  // is right-to-left.
-  //
-  // By default, right-to-left UI layout is enabled for the view and therefore
-  // this function must be called (with false as the |enable| parameter) in
-  // order to disable the right-to-left layout property for a specific instance
-  // of the view. Disabling the right-to-left UI layout is necessary in case a
-  // UI element will not appear correctly when mirrored.
-  void EnableUIMirroringForRTLLanguages(bool enable) {
-    ui_mirroring_is_enabled_for_rtl_languages_ = enable;
-  }
-
   // This method determines whether the gfx::Canvas object passed to
   // View::Paint() needs to be transformed such that anything drawn on the
   // canvas object during View::Paint() is flipped horizontally.
@@ -315,13 +298,13 @@ class View : public AcceleratorTarget {
   // a flipped gfx::Canvas when the UI layout is right-to-left need to call
   // EnableCanvasFlippingForRTLUI().
   bool FlipCanvasOnPaintForRTLUI() const {
-    return flip_canvas_on_paint_for_rtl_ui_ ? UILayoutIsRightToLeft() : false;
+    return flip_canvas_on_paint_for_rtl_ui_ ? base::i18n::IsRTL() : false;
   }
 
   // Enables or disables flipping of the gfx::Canvas during View::Paint().
   // Note that if canvas flipping is enabled, the canvas will be flipped only
   // if the UI layout is right-to-left; that is, the canvas will be flipped
-  // only if UILayoutIsRightToLeft() returns true.
+  // only if base::i18n::IsRTL() returns true.
   //
   // Enabling canvas flipping is useful for leaf views that draw a bitmap that
   // needs to be flipped horizontally when the UI layout is right-to-left
@@ -361,7 +344,7 @@ class View : public AcceleratorTarget {
   // MirroredXCoordinateInsideView(20) -> 80
   // MirroredXCoordinateInsideView(99) -> 1
   int MirroredXCoordinateInsideView(int x) const {
-    return UILayoutIsRightToLeft() ? width() - x : x;
+    return base::i18n::IsRTL() ? width() - x : x;
   }
 
   // Given a X coordinate and a width inside the View, this function returns
@@ -374,7 +357,7 @@ class View : public AcceleratorTarget {
   // MirroredXCoordinateInsideView(0, 10) -> 90
   // MirroredXCoordinateInsideView(20, 20) -> 60
   int MirroredXWithWidthInsideView(int x, int w) const {
-    return UILayoutIsRightToLeft() ? width() - x - w : x;
+    return base::i18n::IsRTL() ? width() - x - w : x;
   }
 
   // Painting functions
@@ -1286,11 +1269,6 @@ class View : public AcceleratorTarget {
 #endif
 
   DragController* drag_controller_;
-
-  // Indicates whether or not the view is going to be mirrored (that is, use a
-  // right-to-left UI layout) if the locale's language is a right-to-left
-  // language like Arabic or Hebrew.
-  bool ui_mirroring_is_enabled_for_rtl_languages_;
 
   // Indicates whether or not the gfx::Canvas object passed to View::Paint()
   // is going to be flipped horizontally (using the appropriate transform) on

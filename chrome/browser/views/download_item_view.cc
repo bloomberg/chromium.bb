@@ -226,7 +226,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     box_y_ = kVerticalPadding;
 
   gfx::Size size = GetPreferredSize();
-  if (UILayoutIsRightToLeft()) {
+  if (base::i18n::IsRTL()) {
     // Drop down button is glued to the left of the download shelf.
     drop_down_x_left_ = 0;
     drop_down_x_right_ = normal_drop_down_image_set_.top->width();
@@ -508,7 +508,7 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
 
   // Paint the background images.
   int x = kLeftPadding;
-  bool rtl_ui = UILayoutIsRightToLeft();
+  bool rtl_ui = base::i18n::IsRTL();
   if (rtl_ui) {
     // Since we do not have the mirrored images for
     // (hot_)body_image_set->top_left, (hot_)body_image_set->left,
@@ -810,7 +810,7 @@ bool DownloadItemView::OnMousePressed(const views::MouseEvent& event) {
     // DownloadShelfContextMenu will take care of setting the right anchor for
     // the menu depending on the locale.
     point.set_y(height());
-    if (UILayoutIsRightToLeft())
+    if (base::i18n::IsRTL())
       point.set_x(drop_down_x_right_);
     else
       point.set_x(drop_down_x_left_);

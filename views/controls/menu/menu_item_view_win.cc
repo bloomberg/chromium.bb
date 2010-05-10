@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -134,7 +134,7 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
     // locale is RTL) then we should make sure the menu arrow points to the
     // right direction.
     NativeTheme::MenuArrowDirection arrow_direction;
-    if (UILayoutIsRightToLeft())
+    if (base::i18n::IsRTL())
       arrow_direction = NativeTheme::LEFT_POINTING_ARROW;
     else
       arrow_direction = NativeTheme::RIGHT_POINTING_ARROW;

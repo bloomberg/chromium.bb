@@ -902,7 +902,7 @@ gfx::Point TranslateInfoBar::DetermineMenuPositionAndAlignment(
   gfx::Point menu_position(lb.origin());
   menu_position.Offset(2, lb.height() - 3);
   *alignment = views::Menu2::ALIGN_TOPLEFT;
-  if (UILayoutIsRightToLeft()) {
+  if (base::i18n::IsRTL()) {
     menu_position.Offset(lb.width() - 4, 0);
   }
   View::ConvertPointToScreen(menu_button, &menu_position);

@@ -118,7 +118,7 @@ gfx::Rect BrowserViewLayout::GetFindBarBoundingBox() const {
   // the vertical scroll bar.
   int scrollbar_width = gfx::scrollbar_size();
   bounding_box.set_width(std::max(0, bounding_box.width() - scrollbar_width));
-  if (browser_view_->UILayoutIsRightToLeft())
+  if (base::i18n::IsRTL())
     bounding_box.set_x(bounding_box.x() + scrollbar_width);
 
   return bounding_box;
