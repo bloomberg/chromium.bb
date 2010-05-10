@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/trace_event.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/lock.h"
@@ -130,6 +131,8 @@ class ChromeFrameAutomationProxyImpl::CFMsgDispatcher
 ChromeFrameAutomationProxyImpl::ChromeFrameAutomationProxyImpl(
     int launch_timeout)
     : AutomationProxy(launch_timeout) {
+  TRACE_EVENT_BEGIN("chromeframe.automationproxy", this, "");
+
   sync_ = new CFMsgDispatcher();
   message_filter_ = new TabProxyNotificationMessageFilter(tracker_.get());
   // Order of filters is not important.
@@ -138,6 +141,7 @@ ChromeFrameAutomationProxyImpl::ChromeFrameAutomationProxyImpl(
 }
 
 ChromeFrameAutomationProxyImpl::~ChromeFrameAutomationProxyImpl() {
+  TRACE_EVENT_END("chromeframe.automationproxy", this, "");
 }
 
 void ChromeFrameAutomationProxyImpl::SendAsAsync(IPC::SyncMessage* msg,
@@ -216,6 +220,8 @@ ProxyFactory::~ProxyFactory() {
 void ProxyFactory::GetAutomationServer(
     LaunchDelegate* delegate, const ChromeFrameLaunchParams& params,
     void** automation_server_id) {
+  TRACE_EVENT_BEGIN("chromeframe.createproxy", this, "");
+
   ProxyCacheEntry* entry = NULL;
   // Find already existing launcher thread for given profile
   AutoLock lock(lock_);
@@ -350,6 +356,8 @@ void ProxyFactory::CreateProxy(ProxyFactory::ProxyCacheEntry* entry,
                                             AUTOMATION_CREATE_TAB_FAILED,
                                             AUTOMATION_CREATE_TAB_FAILED + 1);
   }
+
+  TRACE_EVENT_END("chromeframe.createproxy", this, "");
 
   // Finally set the proxy.
   entry->proxy = proxy;

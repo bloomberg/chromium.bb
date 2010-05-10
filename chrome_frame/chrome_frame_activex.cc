@@ -18,6 +18,7 @@
 #include "base/scoped_bstr_win.h"
 #include "base/singleton.h"
 #include "base/string_util.h"
+#include "base/trace_event.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/tab_proxy.h"
@@ -112,6 +113,7 @@ HHOOK InstallLocalWindowHook(HWND window) {
 
 ChromeFrameActivex::ChromeFrameActivex()
     : chrome_wndproc_hook_(NULL) {
+  TRACE_EVENT_BEGIN("chromeframe.createactivex", this, "");
 }
 
 HRESULT ChromeFrameActivex::FinalConstruct() {
@@ -139,6 +141,8 @@ ChromeFrameActivex::~ChromeFrameActivex() {
 
   // ChromeFramePlugin::Uninitialize()
   Base::Uninitialize();
+
+  TRACE_EVENT_END("chromeframe.createactivex", this, "");
 }
 
 LRESULT ChromeFrameActivex::OnCreate(UINT message, WPARAM wparam, LPARAM lparam,

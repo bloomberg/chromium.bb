@@ -45,6 +45,7 @@
 #include "base/stats_counters.h"
 #include "base/stats_table.h"
 #include "base/string_util.h"
+#include "base/trace_event.h"
 #include "chrome/browser/diagnostics/diagnostics_main.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/chrome_constants.h"
@@ -419,6 +420,8 @@ int ChromeMain(int argc, char** argv) {
 
   // The exit manager is in charge of calling the dtors of singleton objects.
   base::AtExitManager exit_manager;
+
+  TRACE_EVENT_BEGIN("chrome.main", NULL, "");
 
   // We need this pool for all the objects created before we get to the
   // event loop, but we don't want to leave them hanging around until the
@@ -840,6 +843,8 @@ int ChromeMain(int argc, char** argv) {
   // TODO(mark): See the TODO(mark) above at InitCrashReporter.
   DestructCrashReporter();
 #endif  // OS_MACOSX && GOOGLE_CHROME_BUILD
+
+  TRACE_EVENT_END("chrome.main", NULL, "");
 
   return rv;
 }

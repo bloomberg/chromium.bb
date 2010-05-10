@@ -27,6 +27,7 @@
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/thread_local.h"
+#include "base/trace_event.h"
 
 #include "grit/generated_resources.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -63,6 +64,8 @@ ChromeActiveDocument::ChromeActiveDocument()
       is_automation_client_reused_(false),
       popup_allowed_(false),
       accelerator_table_(NULL) {
+  TRACE_EVENT_BEGIN("chromeframe.createactivedocument", this, "");
+
   url_fetcher_.set_frame_busting(false);
   memset(&navigation_info_, 0, sizeof(navigation_info_));
 }
@@ -121,6 +124,8 @@ ChromeActiveDocument::~ChromeActiveDocument() {
   }
   // ChromeFramePlugin
   BaseActiveX::Uninitialize();
+
+  TRACE_EVENT_END("chromeframe.createactivedocument", this, "");
 }
 
 // Override DoVerb
