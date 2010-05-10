@@ -33,6 +33,8 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/sys_addrinfo.h"
+#include "net/disk_cache/disk_cache.h"
+#include "net/http/http_cache.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 
@@ -53,6 +55,18 @@ net::HostCache* GetHostResolverCache(URLRequestContext* context) {
     return NULL;
 
   return host_resolver_impl->cache();
+}
+
+// Returns the disk cache backend for |context| if there is one, or NULL.
+disk_cache::Backend* GetDiskCacheBackend(URLRequestContext* context) {
+  if (!context->http_transaction_factory())
+    return NULL;
+
+  net::HttpCache* http_cache = context->http_transaction_factory()->GetCache();
+  if (!http_cache)
+    return NULL;
+
+  return http_cache->GetBackend();
 }
 
 // Serializes the specified event to a DictionaryValue.
@@ -200,6 +214,7 @@ class NetInternalsMessageHandler::IOThreadImpl
   void OnClearHostResolverCache(const Value* value);
   void OnGetPassiveLogEntries(const Value* value);
   void OnStartConnectionTests(const Value* value);
+  void OnGetHttpCacheInfo(const Value* value);
 
   // ChromeNetLog::Observer implementation:
   virtual void OnAddEntry(net::NetLog::EventType type,
@@ -380,6 +395,9 @@ void NetInternalsMessageHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback(
       "startConnectionTests",
       proxy_->CreateCallback(&IOThreadImpl::OnStartConnectionTests));
+  dom_ui_->RegisterMessageCallback(
+      "getHttpCacheInfo",
+      proxy_->CreateCallback(&IOThreadImpl::OnGetHttpCacheInfo));
 }
 
 void NetInternalsMessageHandler::CallJavascriptFunction(
@@ -683,6 +701,40 @@ void NetInternalsMessageHandler::IOThreadImpl::OnStartConnectionTests(
 
   connection_tester_.reset(new ConnectionTester(this));
   connection_tester_->RunAllTests(url);
+}
+
+void NetInternalsMessageHandler::IOThreadImpl::OnGetHttpCacheInfo(
+    const Value* value) {
+  DictionaryValue* info_dict = new DictionaryValue();
+  ListValue* entry_keys = new ListValue();
+  DictionaryValue* stats_dict = new DictionaryValue();
+
+  disk_cache::Backend* disk_cache = GetDiskCacheBackend(
+      context_getter_->GetURLRequestContext());
+
+  if (disk_cache) {
+    // Iterate over all the entries in the cache, to discover the keys.
+    // WARNING: this can be slow! (and will block the IO thread).
+    void* iter = NULL;
+    disk_cache::Entry* entry;
+    while (disk_cache->OpenNextEntry(&iter, &entry)) {
+      entry_keys->Append(Value::CreateStringValue(entry->GetKey()));
+      entry->Close();
+    }
+
+    // Extract the statistics key/value pairs from the backend.
+    std::vector<std::pair<std::string, std::string> > stats;
+    disk_cache->GetStats(&stats);
+    for (size_t i = 0; i < stats.size(); ++i) {
+      stats_dict->Set(ASCIIToWide(stats[i].first),
+                      Value::CreateStringValue(stats[i].second));
+    }
+  }
+
+  info_dict->Set(L"keys", entry_keys);
+  info_dict->Set(L"stats", stats_dict);
+
+  CallJavascriptFunction(L"g_browser.receivedHttpCacheInfo", info_dict);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnAddEntry(

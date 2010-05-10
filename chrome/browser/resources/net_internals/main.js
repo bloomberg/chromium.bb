@@ -66,6 +66,11 @@ function onLoaded() {
   var testView = new TestView("testTabContent", "testUrlInput", "testStart",
                               "testSummary");
 
+  var httpCacheView = new HttpCacheView("httpCacheTabContent",
+                                        "reloadHttpCacheListing",
+                                        "httpCacheStats",
+                                        "httpCacheListing");
+
   // Create a view which lets you tab between the different sub-views.
   var categoryTabSwitcher =
       new TabSwitcherView(new DivView('categoryTabHandles'));
@@ -76,8 +81,7 @@ function onLoaded() {
   categoryTabSwitcher.addTab('dnsTab', dnsView, false);
   categoryTabSwitcher.addTab('socketsTab', new DivView('socketsTabContent'),
                              false);
-  categoryTabSwitcher.addTab('httpCacheTab',
-                             new DivView('httpCacheTabContent'), false);
+  categoryTabSwitcher.addTab('httpCacheTab', httpCacheView, false);
   categoryTabSwitcher.addTab('dataTab', dataView, false);
   categoryTabSwitcher.addTab('testTab', testView, false);
 
@@ -121,6 +125,7 @@ function BrowserBridge() {
   // List of observers for various bits of browser state.
   this.logObservers_ = [];
   this.connectionTestsObservers_ = [];
+  this.httpCacheInfoObservers_ = [];
   this.proxySettings_ = new PollableDataHelper('onProxySettingsChanged');
   this.badProxies_ = new PollableDataHelper('onBadProxiesChanged');
   this.hostResolverCache_ =
@@ -181,6 +186,10 @@ BrowserBridge.prototype.sendClearHostResolverCache = function() {
 
 BrowserBridge.prototype.sendStartConnectionTests = function(url) {
   chrome.send('startConnectionTests', [url]);
+};
+
+BrowserBridge.prototype.sendGetHttpCacheInfo = function() {
+  chrome.send('getHttpCacheInfo');
 };
 
 //------------------------------------------------------------------------------
@@ -261,6 +270,11 @@ BrowserBridge.prototype.receivedCompletedConnectionTestSuite = function() {
     this.connectionTestsObservers_[i].onCompletedConnectionTestSuite();
 };
 
+BrowserBridge.prototype.receivedHttpCacheInfo = function(info) {
+  for (var i = 0; i < this.httpCacheInfoObservers_.length; ++i)
+    this.httpCacheInfoObservers_[i].onHttpCacheInfoReceived(info);
+};
+
 //------------------------------------------------------------------------------
 
 /**
@@ -322,6 +336,16 @@ BrowserBridge.prototype.addHostResolverCacheObserver = function(observer) {
  */
 BrowserBridge.prototype.addConnectionTestsObserver = function(observer) {
   this.connectionTestsObservers_.push(observer);
+};
+
+/**
+ * Adds a listener for the http cache info results.
+ * The observer will be called back with:
+ *
+ *   observer.onHttpCacheInfoReceived(info);
+ */
+BrowserBridge.prototype.addHttpCacheInfoObserver = function(observer) {
+  this.httpCacheInfoObservers_.push(observer);
 };
 
 /**
