@@ -731,6 +731,13 @@ TEST_F(TCPClientSocketPoolTest, BackupSocketConnect) {
     // One socket is stalled, the other is active.
     EXPECT_EQ(0, pool_->IdleSocketCount());
     handle.Reset();
+
+    pool_ = new TCPClientSocketPool(kMaxSockets,
+                                    kMaxSocketsPerGroup,
+                                    "TCPUnitTest",
+                                    host_resolver_,
+                                    &client_socket_factory_,
+                                    NULL);
   }
 }
 
