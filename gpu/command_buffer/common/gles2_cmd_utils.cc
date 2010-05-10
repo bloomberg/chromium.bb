@@ -30,7 +30,7 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
     case GL_ALIASED_LINE_WIDTH_RANGE:
       return 2;
     case GL_ALIASED_POINT_SIZE_RANGE:
-      return 1;
+      return 2;
     case GL_ALPHA_BITS:
       return 1;
     case GL_ARRAY_BUFFER_BINDING:
