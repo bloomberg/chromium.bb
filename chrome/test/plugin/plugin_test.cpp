@@ -171,8 +171,7 @@ TEST_F(PluginTest, DISABLED_Java) {
   TestPlugin("Java.html", action_max_timeout_ms(), false);
 }
 
-// Flaky, http://crbug.com/22666
-TEST_F(PluginTest, FLAKY_Silverlight) {
+TEST_F(PluginTest, Silverlight) {
   TestPlugin("silverlight.html", action_max_timeout_ms(), false);
 }
 #endif  // defined(OS_WIN)
