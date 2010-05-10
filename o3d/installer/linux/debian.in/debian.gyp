@@ -77,16 +77,15 @@
             '<(DEBIAN_DIR)/rules',
           ],
           'action': [
-            'cd',
-            '<(INSTALLER_DIR)',
-            '&&',
-            'dpkg-buildpackage',
-            '-uc', # Don't sign the changes file
-            '-tc', # Clean the tree
-            '-b', # Don't produce a source build
-            '-a<(ARCH)',
-            '-D', # -a suppresses build-dep checking, so turn it back on
-            '-rfakeroot',
+            'sh',
+            '-c',
+            'cd "<(INSTALLER_DIR)" && dpkg-buildpackage '
+                '-uc '  # Don't sign the changes file
+                '-tc '  # Clean the tree
+                '-b '   # Don't produce a source build
+                '-a<(ARCH) '
+                '-D '   # -a suppresses build-dep checking, so turn it back on
+                '-rfakeroot'
           ],
           'outputs': [
             '<(PRODUCT_DIR)/google-o3d_<(plugin_version)_<(ARCH).changes',
