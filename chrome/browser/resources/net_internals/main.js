@@ -59,7 +59,8 @@ function onLoaded() {
 
   // Create a view which will display import/export options to control the
   // captured data.
-  var dataView = new DataView("dataTabContent", "exportToJson", "exportToText");
+  var dataView = new DataView("dataTabContent", "exportedDataText",
+                              "exportToText");
 
   // Create a view which will display the results and controls for connection
   // tests.

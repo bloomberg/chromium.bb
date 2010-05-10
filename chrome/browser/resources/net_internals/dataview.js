@@ -12,80 +12,23 @@
  *
  *  @constructor
  */
-function DataView(mainBoxId, exportJsonButtonId, exportTextButtonId) {
+function DataView(mainBoxId, outputTextBoxId, exportTextButtonId) {
   DivView.call(this, mainBoxId);
 
-  var exportJsonButton = document.getElementById(exportJsonButtonId);
+  this.textPre_ = document.getElementById(outputTextBoxId);
   var exportTextButton = document.getElementById(exportTextButtonId);
 
-  exportJsonButton.onclick = this.onExportToJSON_.bind(this);
   exportTextButton.onclick = this.onExportToText_.bind(this);
 }
 
 inherits(DataView, DivView);
 
 /**
- * Very simple output format which directly displays the internally captured
- * data in its javascript format.
- */
-DataView.prototype.onExportToJSON_ = function() {
-  // Format some text describing the data we have captured.
-  var text = [];  // Lines of text.
-
-  text.push('//----------------------------------------------');
-  text.push('// Proxy settings');
-  text.push('//----------------------------------------------');
-  text.push('');
-
-  text.push('proxySettings = ' +
-            JSON.stringify(g_browser.proxySettings_.currentData_));
-
-  text.push('');
-  text.push('//----------------------------------------------');
-  text.push('// Bad proxies');
-  text.push('//----------------------------------------------');
-  text.push('');
-
-  text.push('badProxies = ' +
-            JSON.stringify(g_browser.badProxies_.currentData_));
-
-  text.push('');
-  text.push('//----------------------------------------------');
-  text.push('// Host resolver cache');
-  text.push('//----------------------------------------------');
-  text.push('');
-
-  text.push('hostResolverCache = ' +
-            JSON.stringify(g_browser.hostResolverCache_.currentData_));
-
-  text.push('');
-  text.push('//----------------------------------------------');
-  text.push('// Passively captured events');
-  text.push('//----------------------------------------------');
-  text.push('');
-
-  this.appendPrettyPrintedJsonArray_('passive',
-                                     g_browser.getAllPassivelyCapturedEvents(),
-                                     text);
-
-  text.push('');
-  text.push('//----------------------------------------------');
-  text.push('// Actively captured events');
-  text.push('//----------------------------------------------');
-  text.push('');
-
-  this.appendPrettyPrintedJsonArray_('active',
-                                     g_browser.getAllActivelyCapturedEvents(),
-                                     text);
-
-  // Open a new window to display this text.
-  this.displayPopupWindow_(text.join('\n'));
-};
-
-/**
  * Presents the captured data as formatted text.
  */
 DataView.prototype.onExportToText_ = function() {
+  this.setText_("Generating...");
+
   var text = [];
 
   // Print some basic information about our environment.
@@ -150,7 +93,7 @@ DataView.prototype.onExportToText_ = function() {
   this.appendRequestsPrintedAsText_(text);
 
   // Open a new window to display this text.
-  this.displayPopupWindow_(text.join('\n'));
+  this.setText_(text.join('\n'));
 };
 
 DataView.prototype.appendRequestsPrintedAsText_ = function(out) {
@@ -202,26 +145,11 @@ DataView.prototype.appendRequestsPrintedAsText_ = function(out) {
 };
 
 /**
- * Helper function to open a new window and display |text| in it.
+ * Helper function to set this view's content to |text|.
  */
-DataView.prototype.displayPopupWindow_ = function(text) {
-  // Note that we use a data:URL because the chrome:// URL scheme doesn't
-  // allow us to mutate any new windows we open.
-  dataUrl = 'data:text/plain,' + encodeURIComponent(text);
-  window.open(dataUrl, '_blank');
-};
-
-/**
- * Stringifies |arrayData| as JSON-like output, and appends it to the
- * line buffer |out|.
- */
-DataView.prototype.appendPrettyPrintedJsonArray_ = function(name,
-                                                            arrayData,
-                                                            out) {
-  out.push(name + ' = [];');
-  for (var i = 0; i < arrayData.length; ++i) {
-    out.push(name + '[' + i + '] = ' + JSON.stringify(arrayData[i]) + ';');
-  }
+DataView.prototype.setText_ = function(text) {
+  this.textPre_.innerHTML = '';
+  addTextNode(this.textPre_, text);
 };
 
 /**
