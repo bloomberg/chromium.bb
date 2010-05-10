@@ -205,7 +205,7 @@ const wchar_t kLanguageUseGlobalEngine[] =
 
 // A string pref (comma-separated list) set to the "next engine" hot-key lists.
 const wchar_t kLanguageHotkeyNextEngine[] =
-    L"settings.language.hotkey_next_engine";
+    L"settings.language.hotkey_next_engine_v2";
 
 // A string pref (comma-separated list) set to the "trigger" hot-key lists.
 const wchar_t kLanguageHotkeyTrigger[] = L"settings.language.hotkey_trigger";
