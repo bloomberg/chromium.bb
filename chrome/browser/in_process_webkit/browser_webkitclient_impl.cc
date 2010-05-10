@@ -10,6 +10,10 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 
+BrowserWebKitClientImpl::BrowserWebKitClientImpl() {
+  file_system_.set_sandbox_enabled(false);
+}
+
 WebKit::WebClipboard* BrowserWebKitClientImpl::clipboard() {
   NOTREACHED();
   return NULL;
@@ -18,6 +22,10 @@ WebKit::WebClipboard* BrowserWebKitClientImpl::clipboard() {
 WebKit::WebMimeRegistry* BrowserWebKitClientImpl::mimeRegistry() {
   NOTREACHED();
   return NULL;
+}
+
+WebKit::WebFileSystem* BrowserWebKitClientImpl::fileSystem() {
+  return &file_system_;
 }
 
 WebKit::WebSandboxSupport* BrowserWebKitClientImpl::sandboxSupport() {
