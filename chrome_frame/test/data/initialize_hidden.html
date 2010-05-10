@@ -63,9 +63,15 @@
           onFailure(g_test_name, g_test_id, 'CF2 focus() error');
         }
       }
-      
+
       function SetFocusToCF2() {
-        document.ChromeFrame2.focus();
+        try {
+          document.ChromeFrame2.focus();
+        } catch (e) {
+          appendStatus('SetFocusToCF2: Error: ' + e.description);
+          onFailure(g_test_name, g_test_id, 'SetFocusToCF2 error ' +
+                                            e.description);
+        } 
       }
 
       function OnCF2Message(evt) {
