@@ -233,6 +233,11 @@ struct EntryKernel {
   std::bitset<BIT_TEMPS_COUNT> bit_temps;
 
  public:
+  EntryKernel() : dirty_(false) {}
+
+  // Set the dirty bit, and optionally add this entry's metahandle to
+  // a provided index on dirty bits in |dirty_index|. Parameter may be null,
+  // and will result only in setting the dirty bit of this entry.
   inline void mark_dirty(syncable::MetahandleSet* dirty_index) {
     if (!dirty_ && dirty_index) {
       DCHECK_NE(0, ref(META_HANDLE));
@@ -241,6 +246,9 @@ struct EntryKernel {
     dirty_ = true;
   }
 
+  // Clear the dirty bit, and optionally remove this entry's metahandle from
+  // a provided index on dirty bits in |dirty_index|. Parameter may be null,
+  // and will result only in clearing dirty bit of this entry.
   inline void clear_dirty(syncable::MetahandleSet* dirty_index) {
     if (dirty_ && dirty_index) {
       DCHECK_NE(0, ref(META_HANDLE));
