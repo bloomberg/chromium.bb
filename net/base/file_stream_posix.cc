@@ -223,11 +223,12 @@ FileStream::AsyncContext::~AsyncContext() {
     // still running the IO task, or the completion callback is queued up on the
     // MessageLoopForIO, but AsyncContext() got deleted before then.
     const bool need_to_wait = !background_io_completed_.IsSignaled();
-    base::Time start = base::Time::Now();
+    base::TimeTicks start = base::TimeTicks::Now();
     RunAsynchronousCallback();
     if (need_to_wait) {
       // We want to see if we block the message loop for too long.
-      UMA_HISTOGRAM_TIMES("AsyncIO.FileStreamClose", base::Time::Now() - start);
+      UMA_HISTOGRAM_TIMES("AsyncIO.FileStreamClose",
+                          base::TimeTicks::Now() - start);
     }
   }
 }

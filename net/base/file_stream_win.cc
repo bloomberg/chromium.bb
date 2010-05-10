@@ -74,14 +74,15 @@ class FileStream::AsyncContext : public MessageLoopForIO::IOHandler {
 FileStream::AsyncContext::~AsyncContext() {
   is_closing_ = true;
   bool waited = false;
-  base::Time start = base::Time::Now();
+  base::TimeTicks start = base::TimeTicks::Now();
   while (callback_) {
     waited = true;
     MessageLoopForIO::current()->WaitForIOCompletion(INFINITE, this);
   }
   if (waited) {
     // We want to see if we block the message loop for too long.
-    UMA_HISTOGRAM_TIMES("AsyncIO.FileStreamClose", base::Time::Now() - start);
+    UMA_HISTOGRAM_TIMES("AsyncIO.FileStreamClose",
+                        base::TimeTicks::Now() - start);
   }
 }
 

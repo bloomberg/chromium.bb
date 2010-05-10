@@ -157,7 +157,7 @@ void SafeBrowsingDatabaseBloom::InsertChunks(const std::string& list_name,
   if (chunks.empty())
     return;
 
-  base::Time insert_start = base::Time::Now();
+  base::TimeTicks insert_start = base::TimeTicks::Now();
 
   int list_id = safe_browsing_util::GetListId(list_name);
   ChunkType chunk_type = chunks.front().is_add ? ADD_CHUNK : SUB_CHUNK;
@@ -190,7 +190,7 @@ void SafeBrowsingDatabaseBloom::InsertChunks(const std::string& list_name,
     }
   }
 
-  UMA_HISTOGRAM_TIMES("SB2.ChunkInsert", base::Time::Now() - insert_start);
+  UMA_HISTOGRAM_TIMES("SB2.ChunkInsert", base::TimeTicks::Now() - insert_start);
 }
 
 void SafeBrowsingDatabaseBloom::DeleteChunks(

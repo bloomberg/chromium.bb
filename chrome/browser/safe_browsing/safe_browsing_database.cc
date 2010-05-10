@@ -9,7 +9,7 @@
 #include "chrome/browser/safe_browsing/bloom_filter.h"
 #include "chrome/browser/safe_browsing/safe_browsing_database_bloom.h"
 
-using base::Time;
+using base::TimeTicks;
 
 // Filename suffix for the bloom filter.
 static const FilePath::CharType kBloomFilterFile[] =
@@ -47,10 +47,10 @@ void SafeBrowsingDatabase::LoadBloomFilter() {
   }
 
   // We have a bloom filter file, so use that as our filter.
-  Time before = Time::Now();
+  TimeTicks before = TimeTicks::Now();
   bloom_filter_ = BloomFilter::LoadFile(bloom_filter_filename_);
   SB_DLOG(INFO) << "SafeBrowsingDatabase read bloom filter in "
-                << (Time::Now() - before).InMilliseconds() << " ms";
+                << (TimeTicks::Now() - before).InMilliseconds() << " ms";
 
   if (!bloom_filter_.get())
     UMA_HISTOGRAM_COUNTS("SB2.FilterReadFail", 1);
@@ -64,10 +64,10 @@ void SafeBrowsingDatabase::WriteBloomFilter() {
   if (!bloom_filter_.get())
     return;
 
-  Time before = Time::Now();
+  TimeTicks before = TimeTicks::Now();
   bool write_ok = bloom_filter_->WriteFile(bloom_filter_filename_);
   SB_DLOG(INFO) << "SafeBrowsingDatabase wrote bloom filter in " <<
-      (Time::Now() - before).InMilliseconds() << " ms";
+      (TimeTicks::Now() - before).InMilliseconds() << " ms";
 
   if (!write_ok)
     UMA_HISTOGRAM_COUNTS("SB2.FilterWriteFail", 1);

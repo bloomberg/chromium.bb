@@ -12,8 +12,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/result_codes.h"
 
-using base::Time;
 using base::TimeDelta;
+using base::TimeTicks;
 
 void TerminateAllChromeProcesses(base::ProcessId browser_pid) {
   // Total time the function will wait for chrome processes
@@ -38,11 +38,11 @@ void TerminateAllChromeProcesses(base::ProcessId browser_pid) {
   for (it = handles.begin(); it != handles.end(); ++it)
     base::KillProcess(*it, ResultCodes::TASKMAN_KILL, false);
 
-  const Time start = Time::Now();
+  const TimeTicks start = TimeTicks::Now();
   for (it = handles.begin();
-       it != handles.end() && Time::Now() - start < kExitTimeout;
+       it != handles.end() && TimeTicks::Now() - start < kExitTimeout;
        ++it) {
-    int64 wait_time_ms = (Time::Now() - start).InMilliseconds();
+    int64 wait_time_ms = (TimeTicks::Now() - start).InMilliseconds();
     base::WaitForSingleProcess(*it, wait_time_ms);
   }
 

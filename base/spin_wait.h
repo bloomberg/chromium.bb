@@ -35,11 +35,11 @@
                                      (expression))
 
 #define SPIN_FOR_TIMEDELTA_OR_UNTIL_TRUE(delta, expression) do { \
-  base::Time start = base::Time::Now(); \
+  base::TimeTicks start = base::TimeTicks::Now(); \
   const base::TimeDelta kTimeout = delta; \
     while (!(expression)) { \
-      if (kTimeout < base::Time::Now() - start) { \
-      EXPECT_LE((base::Time::Now() - start).InMilliseconds(), \
+      if (kTimeout < base::TimeTicks::Now() - start) { \
+      EXPECT_LE((base::TimeTicks::Now() - start).InMilliseconds(), \
                 kTimeout.InMilliseconds()) << "Timed out"; \
         break; \
       } \

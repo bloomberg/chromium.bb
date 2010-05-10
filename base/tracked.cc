@@ -7,7 +7,7 @@
 #include "base/string_util.h"
 #include "base/tracked_objects.h"
 
-using base::Time;
+using base::TimeTicks;
 
 namespace tracked_objects {
 
@@ -56,7 +56,9 @@ void Tracked::ResetBirthTime() {}
 
 #else
 
-Tracked::Tracked() : tracked_births_(NULL), tracked_birth_time_(Time::Now()) {
+Tracked::Tracked()
+    : tracked_births_(NULL),
+      tracked_birth_time_(TimeTicks::Now()) {
   if (!ThreadData::IsActive())
     return;
   SetBirthPlace(Location("NoFunctionName", "NeedToSetBirthPlace", -1));
@@ -66,7 +68,7 @@ Tracked::~Tracked() {
   if (!ThreadData::IsActive() || !tracked_births_)
     return;
   ThreadData::current()->TallyADeath(*tracked_births_,
-                                     Time::Now() - tracked_birth_time_);
+                                     TimeTicks::Now() - tracked_birth_time_);
 }
 
 void Tracked::SetBirthPlace(const Location& from_here) {
@@ -81,7 +83,7 @@ void Tracked::SetBirthPlace(const Location& from_here) {
 }
 
 void Tracked::ResetBirthTime() {
-  tracked_birth_time_ = Time::Now();
+  tracked_birth_time_ = TimeTicks::Now();
 }
 
 bool Tracked::MissingBirthplace() const {
