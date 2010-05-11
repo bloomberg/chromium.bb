@@ -110,6 +110,7 @@
       'msvs_guid': 'C66B126D-0ECE-4CA2-B6DC-FA780AFBBF09',
       'dependencies': [
         '<(DEPTH)/app/app.gyp:app_base',
+        '<(DEPTH)/base/base.gyp:base_i18n',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',

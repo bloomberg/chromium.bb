@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/i18n/icu_encoding_detection.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
 #include "base/string_util.h"
@@ -17,7 +18,6 @@
 #include "net/base/net_util.h"
 #include "net/ftp/ftp_directory_listing_parser.h"
 #include "net/ftp/ftp_server_type_histograms.h"
-#include "unicode/ucsdet.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLLoaderClient.h"
 
@@ -29,42 +29,26 @@ using WebKit::WebURLResponse;
 
 namespace {
 
-// A very simple-minded character encoding detection.
-// TODO(jungshik): We can apply more heuristics here (e.g. using various hints
-// like TLD, the UI language/default encoding of a client, etc). In that case,
-// this should be pulled out of here and moved somewhere in base because there
-// can be other use cases.
-std::string DetectEncoding(const std::string& text) {
-  if (IsStringASCII(text))
-    return std::string();
-  UErrorCode status = U_ZERO_ERROR;
-  UCharsetDetector* detector = ucsdet_open(&status);
-  ucsdet_setText(detector, text.data(), static_cast<int32_t>(text.length()),
-                 &status);
-  const UCharsetMatch* match = ucsdet_detect(detector, &status);
-  const char* encoding = ucsdet_getName(match, &status);
-  ucsdet_close(detector);
-  // Should we check the quality of the match? A rather arbitrary number is
-  // assigned by ICU and it's hard to come up with a lower limit.
-  if (U_FAILURE(status))
-    return std::string();
-  return encoding;
-}
+string16 ConvertPathToUTF16(const std::string& path) {
+  // Per RFC 2640, FTP servers should use UTF-8 or its proper subset ASCII,
+  // but many old FTP servers use legacy encodings. Try UTF-8 first.
+  if (IsStringUTF8(path))
+    return UTF8ToUTF16(path);
 
-string16 RawByteSequenceToFilename(const char* raw_filename,
-                                   const std::string& encoding) {
-  if (encoding.empty())
-    return ASCIIToUTF16(raw_filename);
+  // Try detecting the encoding. The sample is rather small though, so it may
+  // fail.
+  std::string encoding;
+  if (base::DetectEncoding(path, &encoding) && !encoding.empty()) {
+    string16 path_utf16;
+    if (base::CodepageToUTF16(path, encoding.c_str(),
+                              base::OnStringConversionError::SUBSTITUTE,
+                              &path_utf16)) {
+      return path_utf16;
+    }
+  }
 
-  // Try the detected encoding before falling back to the native codepage.
-  // Using the native codepage does not make much sense, but we don't have
-  // much else to resort to.
-  string16 filename;
-  if (!base::CodepageToUTF16(raw_filename, encoding.c_str(),
-                             base::OnStringConversionError::SUBSTITUTE,
-                             &filename))
-    filename = WideToUTF16Hack(base::SysNativeMBToWide(raw_filename));
-  return filename;
+  // Use system native encoding as the last resort.
+  return WideToUTF16Hack(base::SysNativeMBToWide(path));
 }
 
 }  // namespace
@@ -111,24 +95,8 @@ void FtpDirectoryListingResponseDelegate::Init() {
                                       UnescapeRule::URL_SPECIAL_CHARS;
   std::string unescaped_path = UnescapeURLComponent(response_url.path(),
                                                     unescape_rules);
-  string16 path_utf16;
-  // Per RFC 2640, FTP servers should use UTF-8 or its proper subset ASCII,
-  // but many old FTP servers use legacy encodings. Try UTF-8 first and
-  // detect the encoding.
-  if (IsStringUTF8(unescaped_path)) {
-    path_utf16 = UTF8ToUTF16(unescaped_path);
-  } else {
-    std::string encoding = DetectEncoding(unescaped_path);
-    // Try the detected encoding. If it fails, resort to the
-    // OS native encoding.
-    if (encoding.empty() ||
-        !base::CodepageToUTF16(unescaped_path, encoding.c_str(),
-                               base::OnStringConversionError::SUBSTITUTE,
-                               &path_utf16))
-      path_utf16 = WideToUTF16Hack(base::SysNativeMBToWide(unescaped_path));
-  }
-
-  SendDataToClient(net::GetDirectoryListingHeader(path_utf16));
+  SendDataToClient(net::GetDirectoryListingHeader(
+                       ConvertPathToUTF16(unescaped_path)));
 
   // If this isn't top level directory (i.e. the path isn't "/",)
   // add a link to the parent directory.
@@ -136,6 +104,18 @@ void FtpDirectoryListingResponseDelegate::Init() {
     SendDataToClient(net::GetDirectoryListingEntry(
         ASCIIToUTF16(".."), std::string(), false, 0, base::Time()));
   }
+}
+
+bool FtpDirectoryListingResponseDelegate::ConvertToServerEncoding(
+    const string16& filename, std::string* raw_bytes) const {
+  if (buffer_.encoding().empty()) {
+    *raw_bytes = std::string();
+    return true;
+  }
+
+  return base::UTF16ToCodepage(filename, buffer_.encoding().c_str(),
+                               base::OnStringConversionError::FAIL,
+                               raw_bytes);
 }
 
 void FtpDirectoryListingResponseDelegate::ProcessReceivedEntries() {
@@ -157,8 +137,17 @@ void FtpDirectoryListingResponseDelegate::ProcessReceivedEntries() {
     int64 size = entry.size;
     if (entry.type != FtpDirectoryListingEntry::FILE)
       size = 0;
-    SendDataToClient(net::GetDirectoryListingEntry(
-        entry.name, std::string(), is_directory, size, entry.last_modified));
+    std::string raw_bytes;
+    if (ConvertToServerEncoding(entry.name, &raw_bytes)) {
+      SendDataToClient(net::GetDirectoryListingEntry(
+          entry.name, raw_bytes, is_directory, size, entry.last_modified));
+    } else {
+      // Consider an encoding problem a non-fatal error. The server's support
+      // for non-ASCII characters might be buggy. Display an error message,
+      // but keep trying to display the rest of the listing (most file names
+      // are ASCII anyway, we could be just unlucky with this one).
+      had_parsing_error_ = true;
+    }
   }
 }
 

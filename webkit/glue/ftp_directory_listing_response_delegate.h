@@ -33,6 +33,13 @@ class FtpDirectoryListingResponseDelegate {
  private:
   void Init();
 
+  // Converts |filename| to detected server encoding and puts the result
+  // in |raw_bytes| (if no conversion is necessary, an empty string is used).
+  // Returns true on success.
+  bool ConvertToServerEncoding(const string16& filename,
+                               std::string* raw_bytes) const;
+
+  // Fetches the listing entries from the buffer and sends them to the client.
   void ProcessReceivedEntries();
 
   void SendDataToClient(const std::string& data);

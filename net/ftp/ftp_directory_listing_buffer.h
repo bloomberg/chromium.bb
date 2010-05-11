@@ -45,6 +45,8 @@ class FtpDirectoryListingBuffer {
   // time, although it will return SERVER_UNKNOWN if it doesn't know the answer.
   FtpServerType GetServerType() const;
 
+  const std::string& encoding() const { return encoding_; }
+
  private:
   typedef std::set<FtpDirectoryListingParser*> ParserSet;
 
