@@ -10,6 +10,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -159,7 +160,7 @@ NavigationNotificationObserver::~NavigationNotificationObserver() {
     reply_message_ = NULL;
   }
 
-  automation_->RemoveNavigationStatusListener(this);
+  automation_->RemoveObserver(this);
 }
 
 void NavigationNotificationObserver::Observe(
@@ -234,7 +235,7 @@ void TabStripNotificationObserver::Observe(NotificationType type,
     ObserveTab(Source<NavigationController>(source).ptr());
 
     // If verified, no need to observe anymore
-    automation_->RemoveTabStripObserver(this);
+    automation_->RemoveObserver(this);
     delete this;
   } else {
     NOTREACHED();
@@ -821,7 +822,7 @@ DocumentPrintedNotificationObserver::~DocumentPrintedNotificationObserver() {
   DCHECK(reply_message_ != NULL);
   AutomationMsg_PrintNow::WriteReplyParams(reply_message_, success_);
   automation_->Send(reply_message_);
-  automation_->RemoveNavigationStatusListener(this);
+  automation_->RemoveObserver(this);
 }
 
 void DocumentPrintedNotificationObserver::Observe(
@@ -906,6 +907,39 @@ void LoginManagerObserver::Observe(NotificationType type,
   delete this;
 }
 #endif
+
+DownloadShelfVisibilityObserver::DownloadShelfVisibilityObserver(
+    AutomationProvider* automation,
+    Browser* browser,
+    bool visibility,
+    IPC::Message* reply_message)
+      : automation_(automation),
+        visibility_(visibility),
+        reply_message_(reply_message) {
+  registrar_.Add(this, NotificationType::DOWNLOAD_SHELF_VISIBILITY_CHANGED,
+                 Source<Browser>(browser));
+}
+
+DownloadShelfVisibilityObserver::~DownloadShelfVisibilityObserver() {
+}
+
+void DownloadShelfVisibilityObserver::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  if (type == NotificationType::DOWNLOAD_SHELF_VISIBILITY_CHANGED) {
+    Browser* browser = Source<Browser>(source).ptr();
+    if (browser->window()->IsDownloadShelfVisible() == visibility_) {
+      AutomationMsg_WaitForDownloadShelfVisibilityChange::WriteReplyParams(
+          reply_message_, true);
+      automation_->Send(reply_message_);
+      automation_->RemoveObserver(this);
+      delete this;
+    }
+  } else {
+    NOTREACHED();
+  }
+}
 
 AutomationProviderBookmarkModelObserver::AutomationProviderBookmarkModelObserver(
     AutomationProvider* provider,

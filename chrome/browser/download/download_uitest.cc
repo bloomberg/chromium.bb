@@ -112,7 +112,7 @@ class DownloadTest : public UITest {
       // TODO(tc): check download status text
 
       // Make sure the download shelf is showing.
-      EXPECT_TRUE(WaitForDownloadShelfVisible(window.get()));
+      EXPECT_TRUE(window->WaitForDownloadShelfVisibilityChange(true));
     }
 
     FilePath filename;
@@ -187,7 +187,7 @@ TEST_F(DownloadTest, FLAKY_DownloadMimeType) {
 
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
-  EXPECT_TRUE(WaitForDownloadShelfVisible(browser.get()));
+  EXPECT_TRUE(browser->WaitForDownloadShelfVisibilityChange(true));
 }
 
 // Access a file with a viewable mime-type, verify that a download
@@ -213,7 +213,7 @@ TEST_F(DownloadTest, FLAKY_NoDownload) {
 
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
-  EXPECT_FALSE(WaitForDownloadShelfVisible(browser.get()));
+  EXPECT_FALSE(browser->WaitForDownloadShelfVisibilityChange(true));
 }
 
 // Download a 0-size file with a content-disposition header, verify that the
@@ -233,7 +233,7 @@ TEST_F(DownloadTest, FLAKY_ContentDisposition) {
   // Ensure the download shelf is visible on the window.
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
-  EXPECT_TRUE(WaitForDownloadShelfVisible(browser.get()));
+  EXPECT_TRUE(browser->WaitForDownloadShelfVisibilityChange(true));
 }
 
 // Test that the download shelf is per-window by starting a download in one
@@ -254,7 +254,7 @@ TEST_F(DownloadTest, FLAKY_PerWindowShelf) {
   // Ensure the download shelf is visible on the window.
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
-  EXPECT_TRUE(WaitForDownloadShelfVisible(browser.get()));
+  EXPECT_TRUE(browser->WaitForDownloadShelfVisibilityChange(true));
 
   // Open a second tab
   ASSERT_TRUE(browser->AppendTab(GURL()));
@@ -262,7 +262,7 @@ TEST_F(DownloadTest, FLAKY_PerWindowShelf) {
 
   // Hide shelf
   EXPECT_TRUE(browser->SetShelfVisible(false));
-  EXPECT_TRUE(WaitForDownloadShelfInvisible(browser.get()));
+  EXPECT_TRUE(browser->WaitForDownloadShelfVisibilityChange(false));
 
   // Go to first tab
   EXPECT_TRUE(browser->ActivateTab(0));
@@ -336,7 +336,7 @@ TEST_F(DownloadTest, FLAKY_IncognitoDownload) {
   ASSERT_TRUE(tab->NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(file)));
 
   // Verify that the download shelf is showing for the Incognito window.
-  EXPECT_TRUE(WaitForDownloadShelfVisible(incognito.get()));
+  EXPECT_TRUE(incognito->WaitForDownloadShelfVisibilityChange(true));
 
   // Close the Incognito window and don't crash.
   ASSERT_TRUE(incognito->RunCommand(IDC_CLOSE_WINDOW));
@@ -385,8 +385,9 @@ TEST_F(DownloadTest, FLAKY_CloseNewTab1) {
   ASSERT_TRUE(tab_proxy->NavigateToURLAsyncWithDisposition(
       URLRequestMockHTTPJob::GetMockUrl(file),
       NEW_BACKGROUND_TAB));
+
   // When the download starts, we should still have one tab.
-  ASSERT_TRUE(WaitForDownloadShelfVisible(browser));
+  ASSERT_TRUE(browser->WaitForDownloadShelfVisibilityChange(true));
   EXPECT_EQ(1, GetTabCount());
 
   CheckDownload(file);
@@ -410,7 +411,7 @@ TEST_F(DownloadTest, FLAKY_DontCloseNewTab2) {
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   ASSERT_TRUE(tab_proxy->NavigateToURLAsync(GURL("javascript:openNew()")));
 
-  ASSERT_TRUE(WaitForDownloadShelfVisible(browser));
+  ASSERT_TRUE(browser->WaitForDownloadShelfVisibilityChange(true));
   EXPECT_EQ(2, GetTabCount());
 
   CheckDownload(file);
@@ -437,7 +438,7 @@ TEST_F(DownloadTest, FLAKY_DontCloseNewTab3) {
   ASSERT_TRUE(tab_proxy->NavigateToURLAsync(
       URLRequestMockHTTPJob::GetMockUrl(file)));
 
-  ASSERT_TRUE(WaitForDownloadShelfVisible(browser));
+  ASSERT_TRUE(browser->WaitForDownloadShelfVisibilityChange(true));
   EXPECT_EQ(2, GetTabCount());
 
   CheckDownload(file);
@@ -461,7 +462,7 @@ TEST_F(DownloadTest, FLAKY_CloseNewTab2) {
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   ASSERT_TRUE(tab_proxy->NavigateToURLAsync(GURL("javascript:openNew()")));
 
-  ASSERT_TRUE(WaitForDownloadShelfVisible(browser));
+  ASSERT_TRUE(browser->WaitForDownloadShelfVisibilityChange(true));
   EXPECT_EQ(1, GetTabCount());
 
   CheckDownload(file);
@@ -486,7 +487,7 @@ TEST_F(DownloadTest, FLAKY_CloseNewTab3) {
   ASSERT_TRUE(tab_proxy->NavigateToURLAsync(
       GURL("javascript:document.getElementById('form').submit()")));
 
-  ASSERT_TRUE(WaitForDownloadShelfVisible(browser));
+  ASSERT_TRUE(browser->WaitForDownloadShelfVisibilityChange(true));
   EXPECT_EQ(1, GetTabCount());
 
   CheckDownload(file);

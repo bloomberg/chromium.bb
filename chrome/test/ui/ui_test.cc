@@ -613,30 +613,6 @@ void UITestBase::NavigateToURLBlockUntilNavigationsComplete(
                 url, number_of_navigations)) << url.spec();
 }
 
-bool UITestBase::WaitForDownloadShelfVisible(BrowserProxy* browser) {
-  return WaitForDownloadShelfVisibilityChange(browser, true);
-}
-
-bool UITestBase::WaitForDownloadShelfInvisible(BrowserProxy* browser) {
-  return WaitForDownloadShelfVisibilityChange(browser, false);
-}
-
-bool UITestBase::WaitForDownloadShelfVisibilityChange(BrowserProxy* browser,
-                                                      bool wait_for_open) {
-  const int kCycles = 10;
-  for (int i = 0; i < kCycles; i++) {
-    // Give it a chance to catch up.
-    PlatformThread::Sleep(sleep_timeout_ms() / kCycles);
-
-    bool visible = !wait_for_open;
-    if (!browser->IsShelfVisible(&visible))
-      continue;
-    if (visible == wait_for_open)
-      return true;  // Got the download shelf.
-  }
-  return false;
-}
-
 bool UITestBase::WaitForFindWindowVisibilityChange(BrowserProxy* browser,
                                                    bool wait_for_open) {
   const int kCycles = 10;
