@@ -684,8 +684,8 @@ InstallDriver() {
   for s in gcc g++ \
            sfigcc bcgcc \
            sfig++ bcg++ \
-           cppas-arm cppas-x86-32 \
-           sfild bcld-arm bcld-x86-32 \
+           cppas-arm cppas-x86-32 cppas-x86-64 \
+           sfild bcld-arm bcld-x86-32 bcld-x86-64 \
            illegal nop ; do
     local t="llvm-fake-$s"
     echo "$t"

@@ -46,8 +46,12 @@ BASE = os.path.dirname(os.path.dirname(sys.argv[0]))
 
 LD_SCRIPT_ARM = BASE + '/arm-none-linux-gnueabi/ld_script_arm_untrusted'
 
-# TODO(robertm) clean this up
-LD_SCRIPT_X8632 = BASE + '/../../tools/llvm/ld_script_x86_untrusted'
+# NOTE: derived from
+# toolchain/linux_x86/sdk/nacl-sdk/nacl64/lib/ldscripts/elf_nacl.x
+LD_SCRIPT_X8632 = BASE + '/../../tools/llvm/ld_script_x8632_untrusted'
+# NOTE: derived from
+# toolchain/linux_x86/sdk/nacl-sdk/nacl64/lib/ldscripts/elf64_nacl.x
+LD_SCRIPT_X8664 = BASE + '/../../tools/llvm/ld_script_x8664_untrusted'
 
 # arm libstdc++
 LIBDIR_ARM_3 = BASE + '/arm-none-linux-gnueabi/llvm-gcc-4.2/lib'
@@ -85,6 +89,15 @@ AS_FLAGS_X8632 = [
     '-n',
     '-march=pentium4',
     '-mtune=i386',
+    ]
+
+AS_FLAGS_X8664 = [
+    '--64',
+    '--nacl-align', '5',
+    # turn off nop
+    '-n',
+    '-march=pentium4',
+    '-mtune=core2',
     ]
 
 LLVM_GCC_COMPILE_FLAGS = [
@@ -144,6 +157,11 @@ LLC_SHARED_FLAGS_X8632 = [
     '-mcpu=pentium4',
     ]
 
+LLC_SHARED_FLAGS_X8664 = [
+    '-march=x86_64',
+    '-mcpu=core2',
+    ]
+
 
 LLC_SFI_SANDBOXING_FLAGS = [
     # The following options might come in hand and are left
@@ -170,17 +188,25 @@ OPT_FLAGS = [
     ]
 
 
-# Our linker script makes sure that the section layout follows the nacl abi
+# Our linker scripts ensure that the section layout follows the nacl abi
 LD_FLAGS_ARM = [
     '-nostdlib',
     '-T', LD_SCRIPT_ARM,
     '-static',
     ]
 
-# Our linker script makes sure that the section layout follows the nacl abi
+
 LD_FLAGS_X8632 = [
     '-nostdlib',
     '-T', LD_SCRIPT_X8632,
+#    '-melf_nacl',
+    '-static',
+    ]
+
+
+LD_FLAGS_X8664 = [
+    '-nostdlib',
+    '-T', LD_SCRIPT_X8664,
 #    '-melf_nacl',
     '-static',
     ]
@@ -197,16 +223,23 @@ LLC_ARM = BASE + '/arm-none-linux-gnueabi/llvm/bin/llc'
 
 LLC_SFI_ARM = BASE + '/arm-none-linux-gnueabi/llvm/bin/llc-sfi'
 
+# NOTE: this is currently a user provided binary
+LLC_SFI_X8632 = BASE + '/llc-x86-32-sfi'
+
+# NOTE: this is currently a user provided binary
+LLC_SFI_X8664 = BASE + '/llc-x86-64-sfi'
+
 LLVM_LINK = BASE + '/arm-none-linux-gnueabi/llvm/bin/llvm-link'
 
-LLVM_LD = BASE + '/arm-none-linux-gnueabi/llvm/bin/llvm-ld'
+#LLVM_LD = BASE + '/arm-none-linux-gnueabi/llvm/bin/llvm-ld'
+LLVM_LD = '/home/robertm/llvm-ld'
 
 OPT = BASE + '/arm-none-linux-gnueabi/llvm/bin/opt'
 
 AS_ARM = BASE + '/arm-none-linux-gnueabi/llvm-gcc-4.2/bin/arm-none-linux-gnueabi-as'
 
-# NOTE: hack, assuming presence of x86/32 toolchain
-AS_X8632 = BASE + '/../linux_x86/sdk/nacl-sdk/bin/nacl64-as'
+# NOTE: hack, assuming presence of x86/32 toolchain (used for both 32/64)
+AS_X86 = BASE + '/../linux_x86/sdk/nacl-sdk/bin/nacl64-as'
 
 LD_ARM = BASE + '/arm-none-linux-gnueabi/llvm-gcc-4.2/bin/arm-none-linux-gnueabi-ld'
 
@@ -407,8 +440,11 @@ def AssembleArm(argv):
 
 
 def AssembleX8632(argv):
-  Assemble(AS_X8632, AS_FLAGS_X8632, argv)
+  Assemble(AS_X86, AS_FLAGS_X8632, argv)
 
+
+def AssembleX8664(argv):
+  Assemble(AS_X86, AS_FLAGS_X8664, argv)
 
 
 def Compile(argv, llvm_binary, mode):
@@ -496,6 +532,10 @@ def Incarnation_cppasarm(argv):
 
 def Incarnation_cppasx8632(argv):
   AssembleX8632(argv)
+
+
+def Incarnation_cppasx8664(argv):
+  AssembleX8664(argv)
 
 
 def Incarnation_nop(argv):
@@ -651,20 +691,11 @@ def GenerateCombinedBitcodeFile(argv):
   return output, args_native_ld
 
 
-def Incarnation_bcldarm(argv):
+def BitcodeToNative(argv, llc, llc_flags, as, as_flags, ld, ld_flags, root):
   """The ld step for bitcode is quite elaborate:
-     1) Run llvm-ld to produce a single bitcode file
-     2) Run llc to convert to .s
-     3) Run as to convert to .o
-     4) Run ld
-     5) Patch ABI
-
-     The tricky part is that some args apply to phase 1 and some to phase 4.
-     Most of the code below is dedicated to pick those apart.
-
-
-     TODO(robertm): llvm-ld does NOT complain when passed a native .o file.
-                    It will discard it silently.
+     1) Run llc to convert to .s
+     2) Run as to convert to .o
+     3) Run ld
   """
   output, args_native_ld = GenerateCombinedBitcodeFile(argv)
 
@@ -672,62 +703,54 @@ def Incarnation_bcldarm(argv):
   asm_combined = output + ".bc.s"
   obj_combined = output + ".bc.o"
 
-  Run([LLC_SFI_ARM] + LLC_SHARED_FLAGS_ARM + LLC_SFI_SANDBOXING_FLAGS +
-      ['-f', bitcode_combined, '-o', asm_combined])
+  if not os.path.isfile(llc):
+    LogFatal('You must create a symlink "%s" to your llc executable' % llc)
 
-  Run([AS_ARM] + AS_FLAGS_ARM + [asm_combined, '-o', obj_combined])
+  Run([llc] + llc_flags + ['-f', bitcode_combined, '-o', asm_combined])
+
+  Run([as] + as_flags + [asm_combined, '-o', obj_combined])
 
   args_native_ld = MassageFinalLinkCommandPnacl([obj_combined] + args_native_ld,
-                                                PNACL_ARM_ROOT,
-                                                LD_FLAGS_ARM)
+                                                root,
+                                                ld_flags)
+  Run([ld] +  args_native_ld)
+  return output
 
-  Run([LD_ARM] +  args_native_ld)
 
+def Incarnation_bcldarm(argv):
+  output = BitcodeToNative(argv,
+                           LLC_SFI_ARM,
+                           LLC_SHARED_FLAGS_ARM + LLC_SFI_SANDBOXING_FLAGS,
+                           AS_ARM,
+                           AS_FLAGS_ARM,
+                           LD_ARM,
+                           LD_FLAGS_ARM,
+                           PNACL_ARM_ROOT)
   PatchAbiVersionIntoElfHeader(output, 16)
 
 
-# NOTE: this has never been tested and is intended to server as
-#       a starting point for future x86 explorations
 def Incarnation_bcldx8632(argv):
-  """The ld step for bitcode is quite elaborate:
-     1) Run llvm-ld to produce a single bitcode file
-     2) Run llc to convert to .s
-     3) Run as to convert to .o
-     4) Run ld
-     5) Patch ABI
+  output = BitcodeToNative(argv,
+                           LLC_SFI_X8632,
+                           LLC_SHARED_FLAGS_X8632,
+                           AS_X86,
+                           AS_FLAGS_X8632,
+                           LD_X8632,
+                           LD_FLAGS_X8632,
+                           PNACL_X8632_ROOT)
+  PatchAbiVersionIntoElfHeader(output, 32)
 
-     The tricky part is that some args apply to phase 1 and some to phase 4.
-     Most of the code below is dedicated to pick those apart.
 
-
-     TODO(robertm): llvm-ld does NOT complain when passed a native .o file.
-                    It will discard it silently.
-  """
-  output, args_native_ld = GenerateCombinedBitcodeFile(argv)
-
-  bitcode_combined = output + ".bc"
-  asm_combined = output + ".bc.s"
-  obj_combined = output + ".bc.o"
-
-  # TODO(adonovan): use symlink until we complete llc SFI for x86.
-  # File or symlink to SFI llc executable for x86-32.
-  LLC_SFI_X86 = os.path.join(BASE, 'llc-x86-32-sfi')
-  if not os.path.isfile(LLC_SFI_X86):
-    LogFatal('You must create a symlink "%s" to your llc executable for '
-             'x86-32.' % LLC_SFI_X86)
-
-  Run([LLC_SFI_X86] +
-      LLC_SHARED_FLAGS_X8632 +
-      ['-f', bitcode_combined, '-o', asm_combined])
-
-  Run([AS_X8632] + AS_FLAGS_X8632 + [asm_combined, '-o', obj_combined])
-
-  args_native_ld = MassageFinalLinkCommandPnacl([obj_combined] + args_native_ld,
-                                                PNACL_X8632_ROOT,
-                                                LD_FLAGS_X8632)
-
-  Run([LD_X8632] +  args_native_ld)
-
+def Incarnation_bcldx8664(argv):
+  output = BitcodeToNative(argv,
+                           LLC_SFI_X8664,
+                           LLC_SHARED_FLAGS_X8664,
+                           AS_X86,
+                           AS_FLAGS_X8664,
+                           LD_X8664,
+                           LD_FLAGS_X8664,
+                           PNACL_X8664_ROOT)
+  # TODO(robertm): this is likely wrong
   PatchAbiVersionIntoElfHeader(output, 32)
 
 
@@ -762,9 +785,11 @@ INCARNATIONS = {
 
    'llvm-fake-bcld-arm': Incarnation_bcldarm,
    'llvm-fake-bcld-x86-32': Incarnation_bcldx8632,
+   'llvm-fake-bcld-x86-64': Incarnation_bcldx8664,
 
    'llvm-fake-cppas-arm': Incarnation_cppasarm,
    'llvm-fake-cppas-x86-32': Incarnation_cppasx8632,
+   'llvm-fake-cppas-x86-64': Incarnation_cppasx8664,
 
    'llvm-fake-illegal': Incarnation_illegal,
    'llvm-fake-nop': Incarnation_nop,
