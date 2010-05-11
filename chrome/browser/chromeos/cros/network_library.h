@@ -23,12 +23,16 @@ class Network {
   const std::string& service_path() const { return service_path_; }
   const std::string& device_path() const { return device_path_; }
   const std::string& ip_address() const { return ip_address_; }
-  bool connecting() const { return connecting_; }
-  bool connected() const { return connected_; }
-  bool connecting_or_connected() const { return connecting_ || connected_; }
+  ConnectionType type() const { return type_; }
+  bool connecting() const { return state_ == STATE_ASSOCIATION ||
+      state_ == STATE_CONFIGURATION || state_ == STATE_CARRIER; }
+  bool connected() const { return state_ == STATE_READY; }
+  bool connecting_or_connected() const { return connecting() || connected(); }
+  bool failed() const { return state_ == STATE_FAILURE; }
+  ConnectionError error() const { return error_; }
 
-  void set_connecting(bool connecting) { connecting_ = connecting; }
-  void set_connected(bool connected) { connected_ = connected; }
+  void set_connecting(bool connecting) { state_ = STATE_CONFIGURATION; }
+  void set_connected(bool connected) { state_ = STATE_READY; }
 
   // Clear the fields.
   virtual void Clear();
@@ -36,18 +40,27 @@ class Network {
   // Configure the Network from a ServiceInfo object.
   virtual void ConfigureFromService(const ServiceInfo& service);
 
+  // Return a string representation of the state code.
+  // This not translated and should be only used for debugging purposes.
+  std::string GetStateString();
+
+  // Return a string representation of the error code.
+  // This not translated and should be only used for debugging purposes.
+  std::string GetErrorString();
+
  protected:
   Network()
-      : connecting_(false),
-        connected_(false) {}
+      : type_(TYPE_UNKNOWN),
+        state_(STATE_UNKNOWN),
+        error_(ERROR_UNKNOWN) {}
   virtual ~Network() {}
 
- private:
   std::string service_path_;
   std::string device_path_;
   std::string ip_address_;
-  bool connecting_;
-  bool connected_;
+  ConnectionType type_;
+  int state_;
+  ConnectionError error_;
 };
 
 class EthernetNetwork : public Network {
@@ -79,7 +92,6 @@ class WirelessNetwork : public Network {
         strength_(0),
         auto_connect_(false) {}
 
- private:
   std::string name_;
   int strength_;
   bool auto_connect_;
@@ -119,7 +131,11 @@ class WifiNetwork : public WirelessNetwork {
   virtual void Clear();
   virtual void ConfigureFromService(const ServiceInfo& service);
 
- private:
+  // Return a string representation of the encryption code.
+  // This not translated and should be only used for debugging purposes.
+  std::string GetEncryptionString();
+
+ protected:
   ConnectionSecurity encryption_;
   std::string passphrase_;
 };
@@ -263,6 +279,10 @@ class NetworkLibrary {
   // Fetches IP configs for a given device_path
   virtual NetworkIPConfigVector GetIPConfigs(
       const std::string& device_path) = 0;
+
+  // Fetches debug network info for display in about:network.
+  // The page will have a meta refresh of |refresh| seconds if |refresh| > 0.
+  virtual std::string GetHtmlInfo(int refresh) = 0;
 };
 
 // This class handles the interaction with the ChromeOS network library APIs.
@@ -300,61 +320,39 @@ class NetworkLibraryImpl : public NetworkLibrary,
   virtual bool cellular_connected() const { return cellular_.connected(); }
   virtual int cellular_strength() const { return cellular_.strength(); }
 
-  // Return true if any network is currently connected.
   virtual bool Connected() const;
-
-  // Return true if any network is currently connecting.
   virtual bool Connecting() const;
-
-  // Returns the current IP address if connected. If not, returns empty string.
   virtual const std::string& IPAddress() const;
 
-  // Returns the current list of wifi networks.
   virtual const WifiNetworkVector& wifi_networks() const {
     return wifi_networks_;
   }
 
-  // Returns the list of remembered wifi networks.
   virtual const WifiNetworkVector& remembered_wifi_networks() const {
     return remembered_wifi_networks_;
   }
 
-  // Returns the current list of cellular networks.
   virtual const CellularNetworkVector& cellular_networks() const {
     return cellular_networks_;
   }
 
-  // Returns the list of remembered cellular networks.
   virtual const CellularNetworkVector& remembered_cellular_networks() const {
     return remembered_cellular_networks_;
   }
 
-  // Request a scan for new wifi networks.
   virtual void RequestWifiScan();
-
-  // Connect to the specified wireless network with password.
   virtual void ConnectToWifiNetwork(WifiNetwork network,
                                     const string16& password,
                                     const string16& identity,
                                     const string16& certpath);
-
-  // Connect to the specified wifi ssid with password.
   virtual void ConnectToWifiNetwork(const string16& ssid,
                                     const string16& password,
                                     const string16& identity,
                                     const string16& certpath,
                                     bool auto_connect);
-
-  // Connect to the specified cellular network.
   virtual void ConnectToCellularNetwork(CellularNetwork network);
-
-  // Disconnect from the specified wireless (either cellular or wifi) network.
   virtual void DisconnectFromWirelessNetwork(const WirelessNetwork& network);
-
-  // Set whether or not to auto-connect to this network.
   virtual void SaveWifiNetwork(const WifiNetwork& network);
-
-  // Forget the passed in wireless (either cellular or wifi) network.
   virtual void ForgetWirelessNetwork(const WirelessNetwork& network);
 
   virtual bool ethernet_available() const {
@@ -379,20 +377,12 @@ class NetworkLibraryImpl : public NetworkLibrary,
 
   virtual bool offline_mode() const { return offline_mode_; }
 
-  // Enables/disables the ethernet network device.
   virtual void EnableEthernetNetworkDevice(bool enable);
-
-  // Enables/disables the wifi network device.
   virtual void EnableWifiNetworkDevice(bool enable);
-
-  // Enables/disables the cellular network device.
   virtual void EnableCellularNetworkDevice(bool enable);
-
-  // Enables/disables offline mode.
   virtual void EnableOfflineMode(bool enable);
-
-  // Fetches IP configs for a given device_path
   virtual NetworkIPConfigVector GetIPConfigs(const std::string& device_path);
+  virtual std::string GetHtmlInfo(int refresh);
 
  private:
 

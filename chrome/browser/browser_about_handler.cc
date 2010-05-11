@@ -57,6 +57,8 @@
 #include "chrome/browser/views/about_ipc_dialog.h"
 #include "chrome/browser/views/about_network_dialog.h"
 #elif defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/cocoa/about_ipc_dialog.h"
@@ -98,6 +100,7 @@ const char kLinuxProxyConfigPath[] = "linux-proxy-config";
 #endif
 
 #if defined(OS_CHROMEOS)
+const char kNetworkPath[] = "network";
 const char kOSCreditsPath[] = "os-credits";
 #endif
 
@@ -214,6 +217,13 @@ std::string AboutOSCredits() {
           IDR_OS_CREDITS_HTML);
 
   return os_credits_html;
+}
+
+std::string AboutNetwork(const std::string& query) {
+  int refresh;
+  StringToInt(query, &refresh);
+  return chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
+      GetHtmlInfo(refresh);
 }
 #endif
 
@@ -702,6 +712,8 @@ void AboutSource::StartDataRequest(const std::string& path_raw,
 #if defined(OS_CHROMEOS)
   } else if (path == kOSCreditsPath) {
     response = AboutOSCredits();
+  } else if (path == kNetworkPath) {
+    response = AboutNetwork(info);
 #endif
   } else if (path == kTermsPath) {
     response = AboutTerms();

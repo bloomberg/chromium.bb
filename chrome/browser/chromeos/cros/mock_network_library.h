@@ -67,6 +67,7 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_METHOD1(EnableCellularNetworkDevice, void(bool));
   MOCK_METHOD1(EnableOfflineMode, void(bool));
   MOCK_METHOD1(GetIPConfigs, NetworkIPConfigVector(const std::string&));
+  MOCK_METHOD1(GetHtmlInfo, std::string(int));
 };
 
 }  // namespace chromeos

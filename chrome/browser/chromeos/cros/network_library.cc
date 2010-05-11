@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -21,27 +22,69 @@ struct RunnableMethodTraits<chromeos::NetworkLibraryImpl> {
 
 namespace chromeos {
 
+// Helper function to wrap Html with <th> tag.
+static std::string WrapWithTH(std::string text) {
+  return "<th>" + text + "</th>";
+}
+
+// Helper function to wrap Html with <td> tag.
+static std::string WrapWithTD(std::string text) {
+  return "<td>" + text + "</td>";
+}
+
+// Helper function to create an Html table header for a Network.
+static std::string ToHtmlTableHeader(Network* network) {
+  std::string str;
+  if (network->type() == TYPE_WIFI || network->type() == TYPE_CELLULAR) {
+    str += WrapWithTH("Name") + WrapWithTH("Auto-Connect") +
+        WrapWithTH("Strength");
+    if (network->type() == TYPE_WIFI)
+      str += WrapWithTH("Encryption") + WrapWithTH("Passphrase");
+  }
+  str += WrapWithTH("State") + WrapWithTH("Error") + WrapWithTH("IP Address");
+  return str;
+}
+
+// Helper function to create an Html table row for a Network.
+static std::string ToHtmlTableRow(Network* network) {
+  std::string str;
+  if (network->type() == TYPE_WIFI || network->type() == TYPE_CELLULAR) {
+    WirelessNetwork* wireless = static_cast<WirelessNetwork*>(network);
+    str += WrapWithTD(wireless->name()) +
+        WrapWithTD(IntToString(wireless->auto_connect())) +
+        WrapWithTD(IntToString(wireless->strength()));
+    if (network->type() == TYPE_WIFI) {
+      WifiNetwork* wifi = static_cast<WifiNetwork*>(network);
+      str += WrapWithTD(wifi->GetEncryptionString()) +
+          WrapWithTD(wifi->passphrase());
+    }
+  }
+  str += WrapWithTD(network->GetStateString()) +
+      WrapWithTD(network->GetErrorString()) + WrapWithTD(network->ip_address());
+  return str;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Network
 
 void Network::Clear() {
-  connecting_ = false;
-  connected_ = false;
+  type_ = TYPE_UNKNOWN;
+  state_ = STATE_UNKNOWN;
+  error_ = ERROR_UNKNOWN;
   service_path_.clear();
   device_path_.clear();
   ip_address_.clear();
 }
 
 void Network::ConfigureFromService(const ServiceInfo& service) {
-  connecting_ = service.state == STATE_ASSOCIATION ||
-                service.state == STATE_CONFIGURATION ||
-                service.state == STATE_CARRIER;
-  connected_ = service.state == STATE_READY;
+  type_ = service.type;
+  state_ = service.state;
+  error_ = service.error;
   service_path_ = service.service_path;
   device_path_ = service.device_path ? service.device_path : std::string();
   ip_address_.clear();
   // If connected, get ip config.
-  if (connected_ && service.device_path) {
+  if (connected() && service.device_path) {
     IPConfigStatus* ipconfig_status = ListIPConfigs(service.device_path);
     if (ipconfig_status) {
       for (int i = 0; i < ipconfig_status->size; i++) {
@@ -52,6 +95,44 @@ void Network::ConfigureFromService(const ServiceInfo& service) {
       FreeIPConfigStatus(ipconfig_status);
     }
   }
+}
+
+std::string Network::GetStateString() {
+  switch (state_) {
+    case STATE_UNKNOWN:
+      break;
+    case STATE_IDLE:
+      return "Idle";
+    case STATE_CARRIER:
+      return "Carrier";
+    case STATE_ASSOCIATION:
+      return "Association";
+    case STATE_CONFIGURATION:
+      return "Configuration";
+    case STATE_READY:
+      return "Ready";
+    case STATE_DISCONNECT:
+      return "Disconnect";
+    case STATE_FAILURE:
+      return "Failure";
+  }
+  return "Unknown";
+}
+
+std::string Network::GetErrorString() {
+  switch (error_) {
+    case ERROR_UNKNOWN:
+      break;
+    case ERROR_OUT_OF_RANGE:
+      return "Out Of Range";
+    case ERROR_PIN_MISSING:
+      return "Pin Missing";
+    case ERROR_DHCP_FAILED:
+      return "DHCP Failed";
+    case ERROR_CONNECT_FAILED:
+      return "Connect Failed";
+  }
+  return "";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -85,6 +166,23 @@ void WifiNetwork::ConfigureFromService(const ServiceInfo& service) {
   encryption_ = service.security;
   passphrase_ = service.passphrase;
 }
+
+std::string WifiNetwork::GetEncryptionString() {
+  switch (encryption_) {
+    case SECURITY_UNKNOWN:
+      break;
+    case SECURITY_NONE:
+      return "";
+    case SECURITY_WEP:
+      return "WEP";
+    case SECURITY_WPA:
+      return "WPA";
+    case SECURITY_RSN:
+      return "RSN";
+    case SECURITY_8021X:
+      return "8021X";
+  }
+  return "Unknown";}
 
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkLibrary
@@ -266,6 +364,59 @@ NetworkIPConfigVector NetworkLibraryImpl::GetIPConfigs(
     }
   }
   return ipconfig_vector;
+}
+
+std::string NetworkLibraryImpl::GetHtmlInfo(int refresh) {
+  std::string output;
+  output.append("<html><head><title>About Network</title>");
+  if (refresh > 0)
+    output.append("<meta http-equiv=\"refresh\" content=\"" +
+        IntToString(refresh) + "\"/>");
+  output.append("</head><body>");
+  if (refresh > 0)
+    output.append("(Auto-refreshing page every " + IntToString(refresh) + "s)");
+  else
+    output.append("(To auto-refresh this page: about:network/&lt;secs&gt;)");
+
+  output.append("<h3>Ethernet:</h3><table border=1>");
+  output.append("<tr>" + ToHtmlTableHeader(&ethernet_) + "</tr>");
+  output.append("<tr>" + ToHtmlTableRow(&ethernet_) + "</tr>");
+
+  output.append("</table><h3>Wifi:</h3><table border=1>");
+  for (size_t i = 0; i < wifi_networks_.size(); ++i) {
+    if (i == 0)
+      output.append("<tr>" + ToHtmlTableHeader(&wifi_networks_[i]) + "</tr>");
+    output.append("<tr>" + ToHtmlTableRow(&wifi_networks_[i]) + "</tr>");
+  }
+
+  output.append("</table><h3>Cellular:</h3><table border=1>");
+  for (size_t i = 0; i < cellular_networks_.size(); ++i) {
+    if (i == 0)
+      output.append("<tr>" + ToHtmlTableHeader(&cellular_networks_[i]) +
+          "</tr>");
+    output.append("<tr>" + ToHtmlTableRow(&cellular_networks_[i]) + "</tr>");
+  }
+
+  output.append("</table><h3>Remembered Wifi:</h3><table border=1>");
+  for (size_t i = 0; i < remembered_wifi_networks_.size(); ++i) {
+    if (i == 0)
+      output.append("<tr>" + ToHtmlTableHeader(&remembered_wifi_networks_[i]) +
+          "</tr>");
+    output.append("<tr>" + ToHtmlTableRow(&remembered_wifi_networks_[i]) +
+        "</tr>");
+  }
+
+  output.append("</table><h3>Remembered Cellular:</h3><table border=1>");
+  for (size_t i = 0; i < remembered_cellular_networks_.size(); ++i) {
+    if (i == 0)
+      output.append("<tr>" +
+          ToHtmlTableHeader(&remembered_cellular_networks_[i]) + "</tr>");
+    output.append("<tr>" + ToHtmlTableRow(&remembered_cellular_networks_[i]) +
+        "</tr>");
+  }
+
+  output.append("</table></body></html>");
+  return output;
 }
 
 // static
