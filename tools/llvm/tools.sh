@@ -46,7 +46,7 @@ case ${TARGET_CODE:=sfi} in
     CCAS_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-cppas-arm"
     LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-bcld-arm"
     ;;
-  bc-x86-32)  # => Bitcode libraries => x8632
+  bc-x86-32)  # => Bitcode libraries => x86-32
     CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-bcgcc"
     CXX_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-bcg++"
     AR_FOR_TARGET="${LLVM_BIN_PATH}/llvm/bin/llvm-ar"
@@ -54,6 +54,15 @@ case ${TARGET_CODE:=sfi} in
     RANLIB_FOR_TARGET="${LLVM_BIN_PATH}/llvm/bin/llvm-ranlib"
     CCAS_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-cppas-x86-32"
     LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-bcld-x86-32"
+    ;;
+  bc-x86-64)  # => Bitcode libraries => x86-64
+    CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-bcgcc"
+    CXX_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-bcg++"
+    AR_FOR_TARGET="${LLVM_BIN_PATH}/llvm/bin/llvm-ar"
+    NM_FOR_TARGET="${LLVM_BIN_PATH}/llvm/bin/llvm-nm"
+    RANLIB_FOR_TARGET="${LLVM_BIN_PATH}/llvm/bin/llvm-ranlib"
+    CCAS_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-cppas-x86-64"
+    LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-bcld-x86-64"
     ;;
   *)
     echo "Unknown TARGET_CODE value '${TARGET_CODE}';" \

@@ -25,8 +25,9 @@ import subprocess
 import sys
 
 # enable this for manual debugging of this script only
-# NOTE: this HAS to be zero in order to work with the llvm-gcc
-#       bootstrapping process because the compiler is used in
+# NOTE: Setting VERBOSE to "1" is useful for debugging.
+#       But it HAS to be zero in order to work with the llvm-gcc
+#       bootstrapping process. "Configure" is running the compiler in
 #       diagnostic mode and configure reads information that the driver
 #       generates on stdout and stderr
 VERBOSE = 0
@@ -96,7 +97,6 @@ AS_FLAGS_X8664 = [
     '--nacl-align', '5',
     # turn off nop
     '-n',
-    '-march=pentium4',
     '-mtune=core2',
     ]
 
@@ -158,7 +158,7 @@ LLC_SHARED_FLAGS_X8632 = [
     ]
 
 LLC_SHARED_FLAGS_X8664 = [
-    '-march=x86_64',
+    '-march=x86-64',
     '-mcpu=core2',
     ]
 
