@@ -84,7 +84,7 @@ TEST_F(SavePageTest, CleanFilenameFromPageTitle) {
   ASSERT_TRUE(browser.get());
   automation()->SavePackageShouldPromptUser(false);
   EXPECT_TRUE(browser->RunCommandAsync(IDC_SAVE_PAGE));
-  EXPECT_TRUE(browser->WaitForDownloadShelfVisibilityChange(true));
+  EXPECT_TRUE(WaitForDownloadShelfVisible(browser.get()));
   automation()->SavePackageShouldPromptUser(true);
 
   CheckFile(full_file_name, file_name);

@@ -15,16 +15,11 @@ namespace {
 class MultipartResponseUITest : public UITest {
 };
 
+#if defined(NDEBUG)
 // http://code.google.com/p/chromium/issues/detail?id=37746
 // Running this test only for release builds as it fails in debug test
 // runs
-#if defined(NDEBUG)
-#define MAYBE_SingleVisit SingleVisit
-#else
-#define MAYBE_SingleVisit DISABLED_SingleVisit
-#endif
-
-TEST_F(MultipartResponseUITest, MAYBE_SingleVisit) {
+TEST_F(MultipartResponseUITest, SingleVisit) {
   // Make sure that visiting a multipart/x-mixed-replace site only
   // creates one entry in the visits table.
   const wchar_t kDocRoot[] = L"chrome/test/data";
@@ -61,5 +56,6 @@ TEST_F(MultipartResponseUITest, MAYBE_SingleVisit) {
   }
   db.Close();
 }
+#endif
 
 }  // namespace

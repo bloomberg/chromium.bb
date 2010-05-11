@@ -946,12 +946,6 @@ class NotificationType {
     // are a ChromeCookieDetails object.
     COOKIE_CHANGED,
 
-    // Downloads ---------------------------------------------------------------
-
-    // Sent when the download shelf appears or disappears. The source is the
-    // Browser object.
-    DOWNLOAD_SHELF_VISIBILITY_CHANGED,
-
 #if defined(OS_CHROMEOS)
     // Sent when a chromium os user logs in.
     LOGIN_USER_CHANGED,

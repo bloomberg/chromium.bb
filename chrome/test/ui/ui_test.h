@@ -191,6 +191,23 @@ class UITestBase {
   // assert that the tab count is valid at the end of the wait.
   void WaitUntilTabCount(int tab_count);
 
+  // Checks whether the download shelf is visible in the current browser, giving
+  // it a chance to appear (we don't know the exact timing) while finishing as
+  // soon as possible.
+  bool WaitForDownloadShelfVisible(BrowserProxy* browser);
+
+  // Checks whether the download shelf is invisible in the current browser,
+  // giving it a chance to appear (we don't know the exact timing) while
+  // finishing as soon as possible.
+  bool WaitForDownloadShelfInvisible(BrowserProxy* browser);
+
+ private:
+  // Waits for download shelf visibility or invisibility.
+  bool WaitForDownloadShelfVisibilityChange(BrowserProxy* browser,
+                                            bool wait_for_open);
+
+ public:
+
   // Waits until the Find window has become fully visible (if |wait_for_open| is
   // true) or fully hidden (if |wait_for_open| is false). This function can time
   // out (return false) if the window doesn't appear within a specific time.
