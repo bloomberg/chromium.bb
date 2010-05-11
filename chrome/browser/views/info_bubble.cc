@@ -32,8 +32,12 @@ const SkColor InfoBubble::kBackgroundColor = SK_ColorWHITE;
 #endif
 
 void BorderContents::Init() {
+  // Default arrow location.
+  BubbleBorder::ArrowLocation arrow_location = BubbleBorder::TOP_LEFT;
+  if (base::i18n::IsRTL())
+    arrow_location = BubbleBorder::rtl_mirror(arrow_location);
   DCHECK(!bubble_border_);
-  bubble_border_ = new BubbleBorder(BubbleBorder::TOP_LEFT);
+  bubble_border_ = new BubbleBorder(arrow_location);
   set_border(bubble_border_);
   bubble_border_->set_background_color(InfoBubble::kBackgroundColor);
 }
