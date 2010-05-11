@@ -50,11 +50,14 @@ class FakeNetworkChangeNotifierThread : public NetworkChangeNotifierThread {
   virtual net::NetworkChangeNotifier* GetNetworkChangeNotifier() const;
 
  private:
+  // Used in unit tests.
+  friend class FakeNetworkChangeNotifierThreadDestructionObserver;
+
   void NotifyIPAddressChangeOnSourceThread();
 
+  scoped_ptr<net::MockNetworkChangeNotifier> network_change_notifier_;
   base::Thread thread_;
   scoped_ptr<ThreadBlocker> thread_blocker_;
-  scoped_ptr<net::MockNetworkChangeNotifier> network_change_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeNetworkChangeNotifierThread);
 };

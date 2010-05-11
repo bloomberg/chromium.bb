@@ -57,13 +57,52 @@ class FlagToggler : public net::NetworkChangeNotifier::Observer {
   DISALLOW_COPY_AND_ASSIGN(FlagToggler);
 };
 
+// Utility class that sanity-checks a
+// FakeNetworkChangeNotifierThread's member variables right before its
+// message loop gets destroyed (used in DestructionRace test).
+class FakeNetworkChangeNotifierThreadDestructionObserver
+    : public MessageLoop::DestructionObserver {
+ public:
+  explicit FakeNetworkChangeNotifierThreadDestructionObserver(
+      const FakeNetworkChangeNotifierThread& thread)
+      : thread_(thread) {}
+
+  virtual ~FakeNetworkChangeNotifierThreadDestructionObserver() {}
+
+  virtual void WillDestroyCurrentMessageLoop() {
+    EXPECT_FALSE(thread_.thread_blocker_.get());
+    // We can't use
+    // FakeNetworkChangeNotifierThread::GetNetworkChangeNotifier() as
+    // it would CHECK-fail on the current thread's message loop being
+    // NULL.
+    EXPECT_TRUE(thread_.network_change_notifier_.get());
+    delete this;
+  }
+
+ private:
+  const FakeNetworkChangeNotifierThread& thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(
+      FakeNetworkChangeNotifierThreadDestructionObserver);
+};
+
+// Utility function to add the
+// FakeNetworkChangeNotifierThreadDestructionObserver from the
+// FakeNetworkChangeNotifierThread's thread.
+void AddFakeNetworkChangeNotifierThreadDestructionObserver(
+    const FakeNetworkChangeNotifierThread* thread) {
+  CHECK_EQ(MessageLoop::current(), thread->GetMessageLoop());
+  thread->GetMessageLoop()->AddDestructionObserver(
+      new FakeNetworkChangeNotifierThreadDestructionObserver(*thread));
+}
+
 namespace {
 
-class FakeNetworkChangeNotifierTest : public testing::Test {
+class FakeNetworkChangeNotifierThreadTest : public testing::Test {
  protected:
-  FakeNetworkChangeNotifierTest() {}
+  FakeNetworkChangeNotifierThreadTest() {}
 
-  virtual ~FakeNetworkChangeNotifierTest() {}
+  virtual ~FakeNetworkChangeNotifierThreadTest() {}
 
   virtual void SetUp() {
     thread_.Start();
@@ -77,10 +116,10 @@ class FakeNetworkChangeNotifierTest : public testing::Test {
   FlagToggler flag_toggler_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FakeNetworkChangeNotifierTest);
+  DISALLOW_COPY_AND_ASSIGN(FakeNetworkChangeNotifierThreadTest);
 };
 
-TEST_F(FakeNetworkChangeNotifierTest, Pump) {
+TEST_F(FakeNetworkChangeNotifierThreadTest, Pump) {
   thread_.GetMessageLoop()->PostTask(
       FROM_HERE, NewRunnableMethod(&flag_toggler_, &FlagToggler::ToggleFlag));
   EXPECT_FALSE(flag_toggler_.flag());
@@ -88,7 +127,7 @@ TEST_F(FakeNetworkChangeNotifierTest, Pump) {
   EXPECT_TRUE(flag_toggler_.flag());
 }
 
-TEST_F(FakeNetworkChangeNotifierTest, Basic) {
+TEST_F(FakeNetworkChangeNotifierThreadTest, Basic) {
   thread_.GetMessageLoop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(&flag_toggler_, &FlagToggler::Observe, &thread_));
@@ -101,7 +140,7 @@ TEST_F(FakeNetworkChangeNotifierTest, Basic) {
   EXPECT_TRUE(flag_toggler_.flag());
 }
 
-TEST_F(FakeNetworkChangeNotifierTest, Multiple) {
+TEST_F(FakeNetworkChangeNotifierThreadTest, Multiple) {
   FlagToggler observer;
   thread_.GetMessageLoop()->PostTask(
       FROM_HERE,
@@ -114,6 +153,14 @@ TEST_F(FakeNetworkChangeNotifierTest, Multiple) {
   EXPECT_FALSE(flag_toggler_.flag());
   thread_.Pump();
   EXPECT_FALSE(flag_toggler_.flag());
+}
+
+TEST_F(FakeNetworkChangeNotifierThreadTest, DestructionRace) {
+  thread_.GetMessageLoop()->PostTask(
+      FROM_HERE,
+      NewRunnableFunction(
+          &AddFakeNetworkChangeNotifierThreadDestructionObserver,
+          &thread_));
 }
 
 }  // namespace

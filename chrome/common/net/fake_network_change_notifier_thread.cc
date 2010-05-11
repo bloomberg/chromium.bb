@@ -30,9 +30,9 @@ FakeNetworkChangeNotifierThread::~FakeNetworkChangeNotifierThread() {
 }
 
 void FakeNetworkChangeNotifierThread::Start() {
+  network_change_notifier_.reset(new net::MockNetworkChangeNotifier());
   CHECK(thread_.Start());
   thread_blocker_.reset(new ThreadBlocker(&thread_));
-  network_change_notifier_.reset(new net::MockNetworkChangeNotifier());
   thread_blocker_->Block();
 }
 
@@ -43,9 +43,9 @@ void FakeNetworkChangeNotifierThread::Pump() {
 
 void FakeNetworkChangeNotifierThread::Stop() {
   thread_blocker_->Unblock();
-  network_change_notifier_.reset();
   thread_blocker_.reset();
   thread_.Stop();
+  network_change_notifier_.reset();
 }
 
 void FakeNetworkChangeNotifierThread::NotifyIPAddressChange() {
