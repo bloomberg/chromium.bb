@@ -24,17 +24,6 @@
         '<(DEPTH)/third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
         '<(DEPTH)/third_party/libjingle/libjingle.gyp:libjingle',
       ],
-      # TODO(akalin): Figure out the right place to put this.
-      'conditions': [
-        ['OS=="win"', {
-          'link_settings': {
-            'libraries': [
-              '-lsecur32.lib',
-              '-lcrypt32.lib',
-            ],
-          },
-        },],
-      ],
     },
   ],
 }

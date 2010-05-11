@@ -28,6 +28,14 @@
         'FEATURE_ENABLE_VOICEMAIL',
       ],
       'conditions': [
+        ['OS=="win"', {
+          'link_settings': {
+            'libraries': [
+              '-lsecur32.lib',
+              '-lcrypt32.lib',
+            ],
+          },
+        }],
         ['OS=="linux" or OS=="mac" or OS=="freebsd" or OS=="openbsd"', {
           'defines': [
             'POSIX',
