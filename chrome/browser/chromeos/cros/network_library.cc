@@ -39,7 +39,8 @@ static std::string ToHtmlTableHeader(Network* network) {
     str += WrapWithTH("Name") + WrapWithTH("Auto-Connect") +
         WrapWithTH("Strength");
     if (network->type() == TYPE_WIFI)
-      str += WrapWithTH("Encryption") + WrapWithTH("Passphrase");
+      str += WrapWithTH("Encryption") + WrapWithTH("Passphrase") +
+          WrapWithTH("Identity") + WrapWithTH("Certificate");
   }
   str += WrapWithTH("State") + WrapWithTH("Error") + WrapWithTH("IP Address");
   return str;
@@ -56,7 +57,8 @@ static std::string ToHtmlTableRow(Network* network) {
     if (network->type() == TYPE_WIFI) {
       WifiNetwork* wifi = static_cast<WifiNetwork*>(network);
       str += WrapWithTD(wifi->GetEncryptionString()) +
-          WrapWithTD(wifi->passphrase());
+          WrapWithTD(wifi->passphrase()) + WrapWithTD(wifi->identity()) +
+          WrapWithTD(wifi->cert_path());
     }
   }
   str += WrapWithTD(network->GetStateString()) +
@@ -159,12 +161,16 @@ void WifiNetwork::Clear() {
   WirelessNetwork::Clear();
   encryption_ = SECURITY_NONE;
   passphrase_.clear();
+  identity_.clear();
+  cert_path_.clear();
 }
 
 void WifiNetwork::ConfigureFromService(const ServiceInfo& service) {
   WirelessNetwork::ConfigureFromService(service);
   encryption_ = service.security;
   passphrase_ = service.passphrase;
+  identity_ = service.identity;
+  cert_path_ = service.cert_path;
 }
 
 std::string WifiNetwork::GetEncryptionString() {
@@ -304,6 +310,8 @@ void NetworkLibraryImpl::DisconnectFromWirelessNetwork(
 void NetworkLibraryImpl::SaveWifiNetwork(const WifiNetwork& network) {
   if (CrosLibrary::Get()->EnsureLoaded()) {
     SetPassphrase(network.service_path().c_str(), network.passphrase().c_str());
+    SetIdentity(network.service_path().c_str(), network.identity().c_str());
+    SetCertPath(network.service_path().c_str(), network.cert_path().c_str());
     SetAutoConnect(network.service_path().c_str(), network.auto_connect());
   }
 }
@@ -447,6 +455,8 @@ void NetworkLibraryImpl::ParseSystem(SystemInfo* system,
                   " sec=" << service.security <<
                   " req=" << service.passphrase_required <<
                   " pass=" << service.passphrase <<
+                  " id=" << service.identity <<
+                  " certpath=" << service.cert_path <<
                   " str=" << service.strength <<
                   " fav=" << service.favorite <<
                   " auto=" << service.auto_connect <<
@@ -469,6 +479,8 @@ void NetworkLibraryImpl::ParseSystem(SystemInfo* system,
                     " mode=" << service.mode <<
                     " sec=" << service.security <<
                     " pass=" << service.passphrase <<
+                    " id=" << service.identity <<
+                    " certpath=" << service.cert_path <<
                     " auto=" << service.auto_connect;
       if (service.type == TYPE_WIFI)
         remembered_wifi_networks->push_back(WifiNetwork(service));

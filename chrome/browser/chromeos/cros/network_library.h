@@ -119,12 +119,20 @@ class WifiNetwork : public WirelessNetwork {
   bool encrypted() const { return encryption_ != SECURITY_NONE; }
   ConnectionSecurity encryption() const { return encryption_; }
   const std::string& passphrase() const { return passphrase_; }
+  const std::string& identity() const { return identity_; }
+  const std::string& cert_path() const { return cert_path_; }
 
   void set_encryption(ConnectionSecurity encryption) {
     encryption_ = encryption;
   }
   void set_passphrase(const std::string& passphrase) {
     passphrase_ = passphrase;
+  }
+  void set_identity(const std::string& identity) {
+    identity_ = identity;
+  }
+  void set_cert_path(const std::string& cert_path) {
+    cert_path_ = cert_path;
   }
 
   // WirelessNetwork overrides.
@@ -138,6 +146,8 @@ class WifiNetwork : public WirelessNetwork {
  protected:
   ConnectionSecurity encryption_;
   std::string passphrase_;
+  std::string identity_;
+  std::string cert_path_;
 };
 
 typedef std::vector<WifiNetwork> WifiNetworkVector;

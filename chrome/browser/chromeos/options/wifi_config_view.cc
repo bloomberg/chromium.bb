@@ -208,14 +208,23 @@ void WifiConfigView::Init() {
     identity_textfield_ = new views::Textfield(
         views::Textfield::STYLE_DEFAULT);
     identity_textfield_->SetController(this);
+    if (!wifi_.identity().empty())
+      identity_textfield_->SetText(UTF8ToUTF16(wifi_.identity()));
     layout->AddView(identity_textfield_);
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
     layout->StartRow(0, column_view_set_id);
     layout->AddView(new views::Label(l10n_util::GetString(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT)));
-    certificate_browse_button_ = new views::NativeButton(this,
-                                                         l10n_util::GetString(
-        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_BUTTON));
+    if (!wifi_.cert_path().empty()) {
+      certificate_path_ = FilePath(wifi_.cert_path());
+      certificate_browse_button_ = new views::NativeButton(
+          this, UTF8ToWide(wifi_.cert_path()));
+    } else {
+      certificate_browse_button_ = new views::NativeButton(
+          this,
+          l10n_util::GetString(
+              IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_BUTTON));
+    }
     layout->AddView(certificate_browse_button_);
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   }
@@ -225,7 +234,8 @@ void WifiConfigView::Init() {
     layout->StartRow(0, column_view_set_id);
     int label_text_id;
     if (wifi_.encryption() == SECURITY_8021X)
-      label_text_id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT;
+      label_text_id =
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PRIVATE_KEY_PASSWORD;
     else
       label_text_id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE;
     layout->AddView(new views::Label(l10n_util::GetString(label_text_id)));
