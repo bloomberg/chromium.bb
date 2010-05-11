@@ -11,7 +11,7 @@
 #include "gfx/size.h"
 #include "views/widget/widget_win.h"
 
-class RenderViewContextMenuWin;
+class RenderViewContextMenuViews;
 class SadTabView;
 class SkBitmap;
 class TabContentsDragWin;
@@ -123,7 +123,7 @@ class TabContentsViewWin : public TabContentsView,
   int last_focused_view_storage_id_;
 
   // The context menu. Callbacks are asynchronous so we need to keep it around.
-  scoped_ptr<RenderViewContextMenuWin> context_menu_;
+  scoped_ptr<RenderViewContextMenuViews> context_menu_;
 
   // The FocusManager associated with this tab.  Stored as it is not directly
   // accessible when unparented.

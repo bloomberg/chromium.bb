@@ -50,7 +50,8 @@ void AppMenuModel::Build() {
       profiles_menu_contents_.reset(new menus::SimpleMenuModel(delegate()));
       BuildProfileSubMenu();
     }
-    AddSubMenuWithStringId(IDS_PROFILE_MENU, profiles_menu_contents_.get());
+    AddSubMenuWithStringId(IDC_PROFILE_MENU, IDS_PROFILE_MENU,
+                           profiles_menu_contents_.get());
   }
 
   AddSeparator();

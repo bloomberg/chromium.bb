@@ -239,38 +239,19 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
   }
 
   bool IsItemPresent(int id) {
-    return std::find(item_ids_.begin(), item_ids_.end(), id) != item_ids_.end();
+    return menu_model_.GetIndexOfCommandId(id) != -1;
   }
 
-  bool TestIsItemCommandEnabled(int id) const {
-    return IsItemCommandEnabled(id);
-  }
-  void TestExecuteItemCommand(int id) { return ExecuteItemCommand(id); }
-
- protected:
-  virtual void AppendMenuItem(int id) { item_ids_.push_back(id); }
-  virtual void AppendMenuItem(int id, const string16& label) {
-    item_ids_.push_back(id);
-  }
-  virtual void AppendRadioMenuItem(int id, const string16& label) {
-    item_ids_.push_back(id);
-  }
-  virtual void AppendCheckboxMenuItem(int id, const string16& label) {
-    item_ids_.push_back(id);
-  }
-  virtual void AppendSeparator() {}
-  virtual void StartSubMenu(int id, const string16& label) {
-    item_ids_.push_back(id);
-  }
-  virtual void FinishSubMenu() {}
+  virtual void PlatformInit() { }
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      menus::Accelerator* accelerator) { return false; }
 
  private:
   TestRenderViewContextMenu(TabContents* tab_contents,
                             const ContextMenuParams& params)
       : RenderViewContextMenu(tab_contents, params) {
   }
-
-  std::vector<int> item_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderViewContextMenu);
 };
@@ -851,10 +832,10 @@ TEST_F(TranslateManagerTest, ContextMenu) {
       TestRenderViewContextMenu::CreateContextMenu(contents()));
   menu->Init();
   EXPECT_TRUE(menu->IsItemPresent(IDS_CONTENT_CONTEXT_TRANSLATE));
-  EXPECT_TRUE(menu->TestIsItemCommandEnabled(IDS_CONTENT_CONTEXT_TRANSLATE));
+  EXPECT_TRUE(menu->IsCommandIdEnabled(IDS_CONTENT_CONTEXT_TRANSLATE));
 
   // Use the menu to translate the page.
-  menu->TestExecuteItemCommand(IDS_CONTENT_CONTEXT_TRANSLATE);
+  menu->ExecuteCommand(IDS_CONTENT_CONTEXT_TRANSLATE);
 
   // That should have triggered a translation.
   SimulateURLFetch(true);  // Simulate the translate script being retrieved.
@@ -878,7 +859,7 @@ TEST_F(TranslateManagerTest, ContextMenu) {
   menu.reset(TestRenderViewContextMenu::CreateContextMenu(contents()));
   menu->Init();
   EXPECT_TRUE(menu->IsItemPresent(IDS_CONTENT_CONTEXT_TRANSLATE));
-  EXPECT_FALSE(menu->TestIsItemCommandEnabled(IDS_CONTENT_CONTEXT_TRANSLATE));
+  EXPECT_FALSE(menu->IsCommandIdEnabled(IDS_CONTENT_CONTEXT_TRANSLATE));
 
   // Test that selecting translate in the context menu WHILE the page is being
   // translated does nothing (this could happen if autotranslate kicks-in and
@@ -892,8 +873,8 @@ TEST_F(TranslateManagerTest, ContextMenu) {
   process()->sink().ClearMessages();
   menu.reset(TestRenderViewContextMenu::CreateContextMenu(contents()));
   menu->Init();
-  EXPECT_TRUE(menu->TestIsItemCommandEnabled(IDS_CONTENT_CONTEXT_TRANSLATE));
-  menu->TestExecuteItemCommand(IDS_CONTENT_CONTEXT_TRANSLATE);
+  EXPECT_TRUE(menu->IsCommandIdEnabled(IDS_CONTENT_CONTEXT_TRANSLATE));
+  menu->ExecuteCommand(IDS_CONTENT_CONTEXT_TRANSLATE);
   // No message expected since the translation should have been ignored.
   EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
 
@@ -908,10 +889,10 @@ TEST_F(TranslateManagerTest, ContextMenu) {
   process()->sink().ClearMessages();
   menu.reset(TestRenderViewContextMenu::CreateContextMenu(contents()));
   menu->Init();
-  EXPECT_TRUE(menu->TestIsItemCommandEnabled(IDS_CONTENT_CONTEXT_TRANSLATE));
+  EXPECT_TRUE(menu->IsCommandIdEnabled(IDS_CONTENT_CONTEXT_TRANSLATE));
   rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "de", "en",
       TranslateErrors::NONE));
-  menu->TestExecuteItemCommand(IDS_CONTENT_CONTEXT_TRANSLATE);
+  menu->ExecuteCommand(IDS_CONTENT_CONTEXT_TRANSLATE);
   // No message expected since the translation should have been ignored.
   EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
 
@@ -921,5 +902,5 @@ TEST_F(TranslateManagerTest, ContextMenu) {
   menu.reset(TestRenderViewContextMenu::CreateContextMenu(contents()));
   menu->Init();
   EXPECT_TRUE(menu->IsItemPresent(IDS_CONTENT_CONTEXT_TRANSLATE));
-  EXPECT_FALSE(menu->TestIsItemCommandEnabled(IDS_CONTENT_CONTEXT_TRANSLATE));
+  EXPECT_FALSE(menu->IsCommandIdEnabled(IDS_CONTENT_CONTEXT_TRANSLATE));
 }

@@ -75,8 +75,8 @@ TEST_F(MenuControllerTest, Submenus) {
   submodel.AddItem(2, WideToUTF16(L"sub-one"));
   submodel.AddItem(3, WideToUTF16(L"sub-two"));
   submodel.AddItem(4, WideToUTF16(L"sub-three"));
-  model.AddSubMenuWithStringId(IDS_ZOOM_MENU, &submodel);
-  model.AddItem(5, WideToUTF16(L"three"));
+  model.AddSubMenuWithStringId(5, IDS_ZOOM_MENU, &submodel);
+  model.AddItem(6, WideToUTF16(L"three"));
 
   scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
@@ -109,7 +109,7 @@ TEST_F(MenuControllerTest, EmptySubmenu) {
   menus::SimpleMenuModel model(&delegate);
   model.AddItem(1, WideToUTF16(L"one"));
   menus::SimpleMenuModel submodel(&delegate);
-  model.AddSubMenuWithStringId(IDS_ZOOM_MENU, &submodel);
+  model.AddSubMenuWithStringId(2, IDS_ZOOM_MENU, &submodel);
 
   scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
@@ -167,7 +167,7 @@ TEST_F(MenuControllerTest, Validate) {
   model.AddItem(2, WideToUTF16(L"two"));
   menus::SimpleMenuModel submodel(&delegate);
   submodel.AddItem(2, WideToUTF16(L"sub-one"));
-  model.AddSubMenuWithStringId(IDS_ZOOM_MENU, &submodel);
+  model.AddSubMenuWithStringId(3, IDS_ZOOM_MENU, &submodel);
 
   scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);

@@ -16,7 +16,6 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/gtk/accelerators_gtk.h"
 #include "chrome/browser/gtk/menu_gtk.h"
-#include "chrome/browser/gtk/standard_menus.h"
 #include "chrome/browser/tab_menu_model.h"
 #include "gfx/path.h"
 #include "grit/generated_resources.h"

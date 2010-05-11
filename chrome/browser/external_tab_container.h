@@ -25,7 +25,7 @@
 class AutomationProvider;
 class Profile;
 class TabContentsContainer;
-class RenderViewContextMenuExternalWin;
+class RenderViewContextMenuViews;
 
 namespace IPC {
 struct NavigationInfo;
@@ -276,10 +276,7 @@ class ExternalTabContainer : public TabContentsDelegate,
   // is set when we need to ignore the next load notification.
   bool ignore_next_load_notification_;
 
-  // Contains the list of disabled context menu identifiers.
-  std::vector<int> disabled_context_menu_ids_;
-
-  scoped_ptr<RenderViewContextMenuExternalWin> external_context_menu_;
+  scoped_ptr<RenderViewContextMenuViews> external_context_menu_;
 
   // A message filter to load resources via automation
   scoped_refptr<AutomationResourceMessageFilter>

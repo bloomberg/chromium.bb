@@ -1001,9 +1001,8 @@ bool BrowserWindowGtk::PreHandleKeyboardEvent(
   if (id == -1) {
     // This piece of code is based on the fact that calling
     // gtk_window_activate_key() method against |window_| may only trigger a
-    // browser command execution, by matching either a global accelerator
-    // defined in above |kAcceleratorMap| or the accelerator key of a menu
-    // item defined in chrome/browser/gtk/standard_menus.cc.
+    // browser command execution, by matching a global accelerator
+    // defined in above |kAcceleratorMap|.
     //
     // Here we need to retrieve the command id (if any) associated to the
     // keyboard event. Instead of looking up the command id in above

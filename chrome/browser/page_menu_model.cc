@@ -38,14 +38,16 @@ void PageMenuModel::Build() {
   AddSeparator();
 
   zoom_menu_model_.reset(new ZoomMenuModel(delegate()));
-  AddSubMenuWithStringId(IDS_ZOOM_MENU, zoom_menu_model_.get());
+  AddSubMenuWithStringId(IDC_ZOOM_MENU, IDS_ZOOM_MENU, zoom_menu_model_.get());
 
   encoding_menu_model_.reset(new EncodingMenuModel(browser_));
-  AddSubMenuWithStringId(IDS_ENCODING_MENU, encoding_menu_model_.get());
+  AddSubMenuWithStringId(IDC_ENCODING_MENU, IDS_ENCODING_MENU,
+                         encoding_menu_model_.get());
 
   AddSeparator();
   devtools_menu_model_.reset(new DevToolsMenuModel(delegate()));
-  AddSubMenuWithStringId(IDS_DEVELOPER_MENU, devtools_menu_model_.get());
+  AddSubMenuWithStringId(IDC_DEVELOPER_MENU, IDS_DEVELOPER_MENU,
+                         devtools_menu_model_.get());
 
   AddSeparator();
   AddItemWithStringId(IDC_REPORT_BUG, IDS_REPORT_BUG);
@@ -163,8 +165,9 @@ void PopupPageMenuModel::Build() {
   AddItemWithStringId(IDC_FIND, IDS_FIND);
   AddItemWithStringId(IDC_PRINT, IDS_PRINT);
   zoom_menu_model_.reset(new ZoomMenuModel(delegate()));
-  AddSubMenuWithStringId(IDS_ZOOM_MENU, zoom_menu_model_.get());
+  AddSubMenuWithStringId(IDC_ZOOM_MENU, IDS_ZOOM_MENU, zoom_menu_model_.get());
 
   encoding_menu_model_.reset(new EncodingMenuModel(browser_));
-  AddSubMenuWithStringId(IDS_ENCODING_MENU, encoding_menu_model_.get());
+  AddSubMenuWithStringId(IDC_ENCODING_MENU, IDS_ENCODING_MENU,
+                         encoding_menu_model_.get());
 }

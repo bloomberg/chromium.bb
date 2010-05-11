@@ -33,7 +33,6 @@
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/location_bar_view_gtk.h"
-#include "chrome/browser/gtk/standard_menus.h"
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/net/url_fixer_upper.h"
@@ -611,24 +610,6 @@ void BrowserToolbarGtk::OnStateChanged() {
 
   std::string menu_label = UTF16ToUTF8(
       sync_ui_util::GetSyncMenuLabel(sync_service_));
-
-  gtk_container_foreach(GTK_CONTAINER(app_menu_->widget()), &SetSyncMenuLabel,
-                        &menu_label);
-}
-
-// static
-void BrowserToolbarGtk::SetSyncMenuLabel(GtkWidget* widget, gpointer userdata) {
-  const MenuCreateMaterial* data =
-      reinterpret_cast<const MenuCreateMaterial*>(
-          g_object_get_data(G_OBJECT(widget), "menu-data"));
-  if (data) {
-    if (data->id == IDC_SYNC_BOOKMARKS) {
-      std::string label = gtk_util::ConvertAcceleratorsFromWindowsStyle(
-          *reinterpret_cast<const std::string*>(userdata));
-      GtkWidget *menu_label = gtk_bin_get_child(GTK_BIN(widget));
-      gtk_label_set_label(GTK_LABEL(menu_label), label.c_str());
-    }
-  }
 }
 
 bool BrowserToolbarGtk::ShouldOnlyShowLocation() const {

@@ -15,7 +15,6 @@
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/gtk/standard_menus.h"
 #include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -37,15 +36,6 @@ void SetMenuItemID(GtkWidget* menu_item, int menu_id) {
 // Gets the ID of a menu item.
 // Returns true if the menu item has an ID.
 bool GetMenuItemID(GtkWidget* menu_item, int* menu_id) {
-  const MenuCreateMaterial* data =
-      reinterpret_cast<const MenuCreateMaterial*>(
-          g_object_get_data(G_OBJECT(menu_item), "menu-data"));
-
-  if (data) {
-    *menu_id = data->id;
-    return true;
-  }
-
   gpointer id_ptr = g_object_get_data(G_OBJECT(menu_item), "menu-id");
   if (id_ptr != NULL) {
     *menu_id = GPOINTER_TO_INT(id_ptr) - 1;
@@ -103,19 +93,6 @@ int CalculateMenuYPosition(const GdkRectangle* screen_rect,
 }
 
 }  // namespace
-
-MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
-                 const MenuCreateMaterial* menu_data)
-    : delegate_(delegate),
-      model_(NULL),
-      dummy_accel_group_(gtk_accel_group_new()),
-      menu_(gtk_menu_new()),
-      factory_(this) {
-  DCHECK(menu_data);
-  g_object_ref_sink(menu_);
-  ConnectSignalHandlers();
-  BuildMenuIn(menu_, menu_data);
-}
 
 MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
                  menus::MenuModel* model)
@@ -226,83 +203,6 @@ void MenuGtk::PopupAsFromKeyEvent(GtkWidget* widget) {
 
 void MenuGtk::Cancel() {
   gtk_menu_popdown(GTK_MENU(menu_));
-}
-
-void MenuGtk::BuildMenuIn(GtkWidget* menu,
-                          const MenuCreateMaterial* menu_data) {
-  // We keep track of the last menu item in order to group radio items.
-  GtkWidget* last_menu_item = NULL;
-  for (; menu_data->type != MENU_END; ++menu_data) {
-    GtkWidget* menu_item = NULL;
-
-    std::string label;
-    if (menu_data->label_argument) {
-      label = l10n_util::GetStringFUTF8(
-          menu_data->label_id,
-          l10n_util::GetStringUTF16(menu_data->label_argument));
-    } else if (menu_data->label_id) {
-      label = l10n_util::GetStringUTF8(menu_data->label_id);
-    } else if (menu_data->type != MENU_SEPARATOR) {
-      label = delegate_->GetLabel(menu_data->id);
-      DCHECK(!label.empty());
-    }
-
-    label = ConvertAcceleratorsFromWindowsStyle(label);
-
-    switch (menu_data->type) {
-      case MENU_RADIO:
-        if (GTK_IS_RADIO_MENU_ITEM(last_menu_item)) {
-          menu_item = gtk_radio_menu_item_new_with_mnemonic_from_widget(
-              GTK_RADIO_MENU_ITEM(last_menu_item), label.c_str());
-        } else {
-          menu_item = gtk_radio_menu_item_new_with_mnemonic(
-              NULL, label.c_str());
-        }
-        break;
-      case MENU_CHECKBOX:
-        menu_item = gtk_check_menu_item_new_with_mnemonic(label.c_str());
-        break;
-      case MENU_SEPARATOR:
-        menu_item = gtk_separator_menu_item_new();
-        break;
-      case MENU_NORMAL:
-      default:
-        menu_item = gtk_menu_item_new_with_mnemonic(label.c_str());
-        break;
-    }
-
-    if (menu_data->submenu) {
-      GtkWidget* submenu = gtk_menu_new();
-      BuildMenuIn(submenu, menu_data->submenu);
-      gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), submenu);
-    } else if (menu_data->custom_submenu) {
-      gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item),
-                                menu_data->custom_submenu->menu_);
-      submenus_we_own_.push_back(menu_data->custom_submenu);
-    }
-
-    if (menu_data->accel_key) {
-      // If we ever want to let the user do any key remaping, we'll need to
-      // change the following so we make a gtk_accel_map which keeps the actual
-      // keys.
-      gtk_widget_add_accelerator(menu_item,
-                                 "activate",
-                                 dummy_accel_group_,
-                                 menu_data->accel_key,
-                                 GdkModifierType(menu_data->accel_modifiers),
-                                 GTK_ACCEL_VISIBLE);
-    }
-
-    g_object_set_data(G_OBJECT(menu_item), "menu-data",
-                      const_cast<MenuCreateMaterial*>(menu_data));
-
-    g_signal_connect(menu_item, "activate",
-                     G_CALLBACK(OnMenuItemActivated), this);
-
-    gtk_widget_show(menu_item);
-    gtk_menu_append(menu, menu_item);
-    last_menu_item = menu_item;
-  }
 }
 
 GtkWidget* MenuGtk::BuildMenuItemWithImage(const std::string& label,
@@ -420,7 +320,7 @@ void MenuGtk::OnMenuItemActivated(GtkMenuItem* menuitem, MenuGtk* menu) {
   menus::MenuModel* model = ModelForMenuItem(menuitem);
 
   // The menu item can still be activated by hotkeys even if it is disabled.
-  if (menu->IsCommandEnabled(model, id))
+  if (model->IsEnabledAt(id))
     menu->ExecuteCommand(model, id);
 }
 
@@ -490,27 +390,11 @@ void MenuGtk::UpdateMenu() {
   gtk_container_foreach(GTK_CONTAINER(menu_), SetMenuItemInfo, this);
 }
 
-// http://crbug.com/31365
-bool MenuGtk::IsCommandEnabled(menus::MenuModel* model, int id) {
-  return model ? model->IsEnabledAt(id) :
-                 delegate_->IsCommandEnabled(id);
-}
-
-// http://crbug.com/31365
 void MenuGtk::ExecuteCommand(menus::MenuModel* model, int id) {
   if (delegate_)
     delegate_->CommandWillBeExecuted();
 
-  if (model)
-    model->ActivatedAt(id);
-  else
-    delegate_->ExecuteCommandById(id);
-}
-
-// http://crbug.com/31365
-bool MenuGtk::IsItemChecked(menus::MenuModel* model, int id) {
-  return model ? model->IsItemCheckedAt(id) :
-                 delegate_->IsItemChecked(id);
+  model->ActivatedAt(id);
 }
 
 // static
@@ -537,8 +421,11 @@ void MenuGtk::SetMenuItemInfo(GtkWidget* widget, gpointer userdata) {
   if (!GetMenuItemID(widget, &id))
     return;
 
-  MenuGtk* menu = reinterpret_cast<MenuGtk*>(userdata);
   menus::MenuModel* model = ModelForMenuItem(GTK_MENU_ITEM(widget));
+  if (!model) {
+    NOTREACHED();
+    return;
+  }
 
   if (GTK_IS_CHECK_MENU_ITEM(widget)) {
     GtkCheckMenuItem* item = GTK_CHECK_MENU_ITEM(widget);
@@ -554,12 +441,12 @@ void MenuGtk::SetMenuItemInfo(GtkWidget* widget, gpointer userdata) {
     // root of the MenuGtk and we want to disable *all* MenuGtks, including
     // submenus.
     block_activation_ = true;
-    gtk_check_menu_item_set_active(item, menu->IsItemChecked(model, id));
+    gtk_check_menu_item_set_active(item, model->IsItemCheckedAt(id));
     block_activation_ = false;
   }
 
   if (GTK_IS_MENU_ITEM(widget)) {
-    gtk_widget_set_sensitive(widget, menu->IsCommandEnabled(model, id));
+    gtk_widget_set_sensitive(widget, model->IsEnabledAt(id));
 
     GtkWidget* submenu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(widget));
     if (submenu) {

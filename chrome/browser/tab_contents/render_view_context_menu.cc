@@ -55,12 +55,19 @@ bool RenderViewContextMenu::IsDevToolsURL(const GURL& url) {
       url.host() == chrome::kChromeUIDevToolsHost;
 }
 
+static const int kSpellcheckRadioGroup = 1;
+static const int kExtensionsRadioGroup = 2;
+
 RenderViewContextMenu::RenderViewContextMenu(
     TabContents* tab_contents,
     const ContextMenuParams& params)
     : params_(params),
       source_tab_contents_(tab_contents),
-      profile_(tab_contents->profile()) {
+      profile_(tab_contents->profile()),
+      ALLOW_THIS_IN_INITIALIZER_LIST(menu_model_(this)),
+      external_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(spellcheck_submenu_model_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(bidi_submenu_model_(this)) {
 }
 
 RenderViewContextMenu::~RenderViewContextMenu() {
@@ -70,7 +77,7 @@ RenderViewContextMenu::~RenderViewContextMenu() {
 
 void RenderViewContextMenu::Init() {
   InitMenu();
-  DoInit();
+  PlatformInit();
 }
 
 static bool ExtensionContextMatch(ContextMenuParams params,
@@ -127,39 +134,6 @@ void RenderViewContextMenu::GetItemsForExtension(
   }
 }
 
-bool RenderViewContextMenu::MaybeStartExtensionSubMenu(
-    const string16& selection_text, const std::string& extension_name,
-    std::vector<const ExtensionMenuItem*>* items, int* index) {
-  if (items->size() == 0 ||
-      (items->size() == 1 && items->at(0)->child_count() == 0))
-    return false;
-
-  int menu_id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST + (*index)++;
-  string16 title;
-  const ExtensionMenuItem* first_item = items->at(0);
-  if (first_item->child_count() > 0) {
-    title = first_item->TitleWithReplacement(selection_text);
-    extension_item_map_[menu_id] = first_item->id();
-  } else {
-    title = UTF8ToUTF16(extension_name);
-  }
-  StartSubMenu(menu_id, title);
-
-  // If we have 1 parent item with a submenu of children, pull the
-  // parent out of |items| and put the children in.
-  if (items->size() == 1 && first_item->child_count() > 0) {
-    const ExtensionMenuItem* parent = first_item;
-    items->clear();
-    for (int j = 0; j < parent->child_count(); j++) {
-      const ExtensionMenuItem* child = parent->ChildAt(j);
-      if (ExtensionContextMatch(params_, child->contexts()))
-        items->push_back(child);
-    }
-  }
-
-  return true;
-}
-
 void RenderViewContextMenu::AppendExtensionItems(
     const std::string& extension_id, int* index) {
   Extension* extension =
@@ -179,30 +153,68 @@ void RenderViewContextMenu::AppendExtensionItems(
 
   // If this is the first extension-provided menu item, add a separator.
   if (*index == 0)
-    AppendSeparator();
+    menu_model_.AddSeparator();
 
-  bool submenu_started = MaybeStartExtensionSubMenu(
-      selection_text, extension->name(), &items, index);
+  // When extensions have more than 1 top-level item or a single parent item
+  // with children, we will start a sub menu. In the case of 1 parent with
+  // children, we will remove the parent from |items| and insert the children
+  // into it. The |index| parameter is incremented if we start a submenu. This
+  // returns true if a submenu was started. If we had multiple top-level items
+  // that needed to be pushed into a submenu, we'll use |extension_name| as the
+  // title.
+  menus::SimpleMenuModel* menu_model;
+  if (items.empty() || (items.size() == 1 && items[0]->child_count() == 0)) {
+    menu_model = &menu_model_;
+  } else {
+    menu_model = new menus::SimpleMenuModel(this);
+    extension_menu_models_.push_back(menu_model);
+
+    int menu_id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST + (*index)++;
+    string16 title;
+    if (items[0]->child_count() > 0) {
+      title = items[0]->TitleWithReplacement(selection_text);
+      extension_item_map_[menu_id] = items[0]->id();
+    } else {
+      title = UTF8ToUTF16(extension->name());
+    }
+
+    menu_model_.AddSubMenu(menu_id, title, menu_model);
+
+    // If we have 1 parent item with a submenu of children, pull the
+    // parent out of |items| and put the children in.
+    if (items.size() == 1 && items[0]->child_count() > 0) {
+      const ExtensionMenuItem* parent = items[0];
+      items.clear();
+      for (int j = 0; j < parent->child_count(); j++) {
+        const ExtensionMenuItem* child = parent->ChildAt(j);
+        if (ExtensionContextMatch(params_, child->contexts()))
+          items.push_back(child);
+      }
+    }
+  }
 
   ExtensionMenuItem::Type last_type = ExtensionMenuItem::NORMAL;
+  int radio_group_id = kExtensionsRadioGroup;
   for (std::vector<const ExtensionMenuItem*>::iterator i = items.begin();
        i != items.end(); ++i) {
     const ExtensionMenuItem* item = *i;
     if (item->type() == ExtensionMenuItem::SEPARATOR) {
       // We don't want the case of an extension with one top-level item that is
       // just a separator, so make sure this is inside a submenu.
-      if (submenu_started) {
-        AppendSeparator();
+      if (menu_model != &menu_model_) {
+        menu_model->AddSeparator();
         last_type = ExtensionMenuItem::SEPARATOR;
       }
       continue;
     }
 
-    // Auto-prepend a separator, if needed, to group radio items together.
+    // Auto-prepend a separator, if needed, to visually group radio items
+    // together.
     if (item->type() != ExtensionMenuItem::RADIO &&
         item->type() != ExtensionMenuItem::SEPARATOR &&
         last_type == ExtensionMenuItem::RADIO) {
-      AppendSeparator();
+      menu_model->AddSeparator();
+      radio_group_id++;
     }
 
     int menu_id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST + (*index)++;
@@ -211,24 +223,24 @@ void RenderViewContextMenu::AppendExtensionItems(
     extension_item_map_[menu_id] = item->id();
     string16 title = item->TitleWithReplacement(selection_text);
     if (item->type() == ExtensionMenuItem::NORMAL) {
-      AppendMenuItem(menu_id, title);
+      menu_model->AddItem(menu_id, title);
     } else if (item->type() == ExtensionMenuItem::CHECKBOX) {
-      AppendCheckboxMenuItem(menu_id, title);
+      menu_model->AddCheckItem(menu_id, title);
     } else if (item->type() == ExtensionMenuItem::RADIO) {
-      // Auto-append a separator if needed to group radio items together.
+      // Auto-append a separator if needed to visually group radio items
+      // together.
       if (*index > 0 && last_type != ExtensionMenuItem::RADIO &&
-          last_type != ExtensionMenuItem::SEPARATOR)
-        AppendSeparator();
+          last_type != ExtensionMenuItem::SEPARATOR) {
+        menu_model->AddSeparator();
+        radio_group_id++;
+      }
 
-      AppendRadioMenuItem(menu_id, title);
+      menu_model->AddRadioItem(menu_id, title, radio_group_id);
     } else {
       NOTREACHED();
     }
     last_type = item->type();
   }
-
-  if (submenu_started)
-    FinishSubMenu();
 }
 
 void RenderViewContextMenu::AppendAllExtensionItems() {
@@ -264,7 +276,7 @@ void RenderViewContextMenu::InitMenu() {
   bool has_selection = !params_.selection_text.empty();
 
   if (AppendCustomItems()) {
-    AppendSeparator();
+    menu_model_.AddSeparator();
     AppendDeveloperItems();
     return;
   }
@@ -291,7 +303,7 @@ void RenderViewContextMenu::InitMenu() {
   if (has_link) {
     AppendLinkItems();
     if (params_.media_type != WebContextMenuData::MediaTypeNone)
-      AppendSeparator();
+      menu_model_.AddSeparator();
   }
 
   switch (params_.media_type) {
@@ -322,7 +334,7 @@ void RenderViewContextMenu::InitMenu() {
   // In the DevTools popup menu, "developer items" is normally the only section,
   // so omit the separator there.
   if (!is_devtools)
-    AppendSeparator();
+    menu_model_.AddSeparator();
   AppendDeveloperItems();
 }
 
@@ -331,111 +343,119 @@ bool RenderViewContextMenu::AppendCustomItems() {
   for (size_t i = 0; i < custom_items.size(); ++i) {
     DCHECK(IDC_CONTENT_CONTEXT_CUSTOM_FIRST + custom_items[i].action <
         IDC_CONTENT_CONTEXT_CUSTOM_LAST);
-    AppendMenuItem(custom_items[i].action + IDC_CONTENT_CONTEXT_CUSTOM_FIRST,
-                   custom_items[i].label);
+    menu_model_.AddItem(
+        custom_items[i].action + IDC_CONTENT_CONTEXT_CUSTOM_FIRST,
+        custom_items[i].label);
   }
   return custom_items.size() > 0;
 }
 
 void RenderViewContextMenu::AppendDeveloperItems() {
   if (g_browser_process->have_inspector_files())
-    AppendMenuItem(IDS_CONTENT_CONTEXT_INSPECTELEMENT);
+    menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_INSPECTELEMENT);
 }
 
 void RenderViewContextMenu::AppendLinkItems() {
-  AppendMenuItem(IDS_CONTENT_CONTEXT_OPENLINKNEWTAB);
-  AppendMenuItem(IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW);
-  AppendMenuItem(IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
-  AppendMenuItem(IDS_CONTENT_CONTEXT_SAVELINKAS);
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_OPENLINKNEWTAB);
+  menu_model_.AddItemIdentifiedByStringId(
+      IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW);
+  if (!external_) {
+    menu_model_.AddItemIdentifiedByStringId(
+        IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
+  }
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_SAVELINKAS);
 
   if (params_.link_url.SchemeIs(chrome::kMailToScheme)) {
-    AppendMenuItem(IDS_CONTENT_CONTEXT_COPYLINKLOCATION,
+    menu_model_.AddItem(IDS_CONTENT_CONTEXT_COPYLINKLOCATION,
                    l10n_util::GetStringUTF16(
                        IDS_CONTENT_CONTEXT_COPYEMAILADDRESS));
   } else {
-    AppendMenuItem(IDS_CONTENT_CONTEXT_COPYLINKLOCATION);
+    menu_model_.AddItemIdentifiedByStringId(
+        IDS_CONTENT_CONTEXT_COPYLINKLOCATION);
   }
 }
 
 void RenderViewContextMenu::AppendImageItems() {
-  AppendMenuItem(IDS_CONTENT_CONTEXT_SAVEIMAGEAS);
-  AppendMenuItem(IDS_CONTENT_CONTEXT_COPYIMAGELOCATION);
-  AppendMenuItem(IDS_CONTENT_CONTEXT_COPYIMAGE);
-  AppendMenuItem(IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB);
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_SAVEIMAGEAS);
+  menu_model_.AddItemIdentifiedByStringId(
+      IDS_CONTENT_CONTEXT_COPYIMAGELOCATION);
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_COPYIMAGE);
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB);
 }
 
 void RenderViewContextMenu::AppendAudioItems() {
   AppendMediaItems();
-  AppendSeparator();
-  AppendMenuItem(IDS_CONTENT_CONTEXT_SAVEAUDIOAS);
-  AppendMenuItem(IDS_CONTENT_CONTEXT_COPYAUDIOLOCATION);
-  AppendMenuItem(IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB);
+  menu_model_.AddSeparator();
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_SAVEAUDIOAS);
+  menu_model_.AddItemIdentifiedByStringId(
+      IDS_CONTENT_CONTEXT_COPYAUDIOLOCATION);
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB);
 }
 
 void RenderViewContextMenu::AppendVideoItems() {
   AppendMediaItems();
-  AppendSeparator();
-  AppendMenuItem(IDS_CONTENT_CONTEXT_SAVEVIDEOAS);
-  AppendMenuItem(IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION);
-  AppendMenuItem(IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB);
+  menu_model_.AddSeparator();
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_SAVEVIDEOAS);
+  menu_model_.AddItemIdentifiedByStringId(
+      IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION);
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB);
 }
 
 void RenderViewContextMenu::AppendMediaItems() {
   int media_flags = params_.media_flags;
   if (media_flags & WebContextMenuData::MediaPaused) {
-    AppendMenuItem(IDS_CONTENT_CONTEXT_PLAY);
+    menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_PLAY);
   } else {
-    AppendMenuItem(IDS_CONTENT_CONTEXT_PAUSE);
+    menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_PAUSE);
   }
 
   if (media_flags & WebContextMenuData::MediaMuted) {
-    AppendMenuItem(IDS_CONTENT_CONTEXT_UNMUTE);
+    menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_UNMUTE);
   } else {
-    AppendMenuItem(IDS_CONTENT_CONTEXT_MUTE);
+    menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_MUTE);
   }
 
-  AppendCheckboxMenuItem(IDS_CONTENT_CONTEXT_LOOP,
-      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_LOOP));
-
-  AppendCheckboxMenuItem(IDS_CONTENT_CONTEXT_CONTROLS,
-      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_CONTROLS));
+  menu_model_.AddCheckItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_LOOP);
+  menu_model_.AddCheckItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_CONTROLS);
 }
 
 void RenderViewContextMenu::AppendPageItems() {
-  AppendMenuItem(IDS_CONTENT_CONTEXT_BACK);
-  AppendMenuItem(IDS_CONTENT_CONTEXT_FORWARD);
-  AppendMenuItem(IDS_CONTENT_CONTEXT_RELOAD);
-  AppendSeparator();
-  AppendMenuItem(IDS_CONTENT_CONTEXT_SAVEPAGEAS);
-  AppendMenuItem(IDS_CONTENT_CONTEXT_PRINT);
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_BACK);
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_FORWARD);
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_RELOAD);
+  menu_model_.AddSeparator();
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_SAVEPAGEAS);
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_PRINT);
   std::string locale = g_browser_process->GetApplicationLocale();
   locale = TranslateManager::GetLanguageCode(locale);
   string16 language = l10n_util::GetDisplayNameForLocale(locale, locale, true);
-  AppendMenuItem(IDS_CONTENT_CONTEXT_TRANSLATE,
+  menu_model_.AddItem(IDS_CONTENT_CONTEXT_TRANSLATE,
       l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_TRANSLATE, language));
-  AppendMenuItem(IDS_CONTENT_CONTEXT_VIEWPAGESOURCE);
-  AppendMenuItem(IDS_CONTENT_CONTEXT_VIEWPAGEINFO);
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_VIEWPAGESOURCE);
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_VIEWPAGEINFO);
 }
 
 void RenderViewContextMenu::AppendFrameItems() {
-  AppendMenuItem(IDS_CONTENT_CONTEXT_BACK);
-  AppendMenuItem(IDS_CONTENT_CONTEXT_FORWARD);
-  AppendSeparator();
-  AppendMenuItem(IDS_CONTENT_CONTEXT_RELOADFRAME);
-  AppendMenuItem(IDS_CONTENT_CONTEXT_OPENFRAMENEWTAB);
-  AppendMenuItem(IDS_CONTENT_CONTEXT_OPENFRAMENEWWINDOW);
-  AppendMenuItem(IDS_CONTENT_CONTEXT_OPENFRAMEOFFTHERECORD);
-  AppendSeparator();
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_BACK);
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_FORWARD);
+  menu_model_.AddSeparator();
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_RELOADFRAME);
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_OPENFRAMENEWTAB);
+  menu_model_.AddItemIdentifiedByStringId(
+      IDS_CONTENT_CONTEXT_OPENFRAMENEWWINDOW);
+  menu_model_.AddItemIdentifiedByStringId(
+      IDS_CONTENT_CONTEXT_OPENFRAMEOFFTHERECORD);
+  menu_model_.AddSeparator();
   // These two menu items have yet to be implemented.
   // http://code.google.com/p/chromium/issues/detail?id=11827
-  // AppendMenuItem(IDS_CONTENT_CONTEXT_SAVEFRAMEAS);
-  // AppendMenuItem(IDS_CONTENT_CONTEXT_PRINTFRAME);
-  AppendMenuItem(IDS_CONTENT_CONTEXT_VIEWFRAMESOURCE);
-  AppendMenuItem(IDS_CONTENT_CONTEXT_VIEWFRAMEINFO);
+  // menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_SAVEFRAMEAS);
+  // menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_PRINTFRAME);
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_VIEWFRAMESOURCE);
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_VIEWFRAMEINFO);
 }
 
 void RenderViewContextMenu::AppendCopyItem() {
-  AppendMenuItem(IDS_CONTENT_CONTEXT_COPY);
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_COPY);
 }
 
 void RenderViewContextMenu::AppendSearchProvider() {
@@ -461,19 +481,21 @@ void RenderViewContextMenu::AppendSearchProvider() {
   if (match.transition == PageTransition::TYPED) {
     if (ChildProcessSecurityPolicy::GetInstance()->IsWebSafeScheme(
         selection_navigation_url_.scheme())) {
-      AppendMenuItem(IDS_CONTENT_CONTEXT_GOTOURL,
-                     l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_GOTOURL,
-                                                printable_selection_text));
+      menu_model_.AddItem(
+          IDS_CONTENT_CONTEXT_GOTOURL,
+          l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_GOTOURL,
+                                     printable_selection_text));
     }
   } else {
     const TemplateURL* const default_provider =
         profile_->GetTemplateURLModel()->GetDefaultSearchProvider();
     if (!default_provider)
       return;
-    AppendMenuItem(IDS_CONTENT_CONTEXT_SEARCHWEBFOR,
-                   l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHWEBFOR,
-                       WideToUTF16(default_provider->short_name()),
-                       printable_selection_text));
+    menu_model_.AddItem(
+        IDS_CONTENT_CONTEXT_SEARCHWEBFOR,
+        l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHWEBFOR,
+                                   WideToUTF16(default_provider->short_name()),
+                                   printable_selection_text));
   }
 }
 
@@ -482,36 +504,47 @@ void RenderViewContextMenu::AppendEditableItems() {
   for (size_t i = 0; i < params_.dictionary_suggestions.size() &&
        IDC_SPELLCHECK_SUGGESTION_0 + i <= IDC_SPELLCHECK_SUGGESTION_LAST;
        ++i) {
-    AppendMenuItem(IDC_SPELLCHECK_SUGGESTION_0 + static_cast<int>(i),
-                   params_.dictionary_suggestions[i]);
+    menu_model_.AddItem(IDC_SPELLCHECK_SUGGESTION_0 + static_cast<int>(i),
+                        params_.dictionary_suggestions[i]);
   }
   if (params_.dictionary_suggestions.size() > 0)
-    AppendSeparator();
+    menu_model_.AddSeparator();
 
   // If word is misspelled, give option for "Add to dictionary"
   if (!params_.misspelled_word.empty()) {
     if (params_.dictionary_suggestions.size() == 0) {
-      AppendMenuItem(0,
+      menu_model_.AddItem(0,
           l10n_util::GetStringUTF16(
               IDS_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS));
     }
-    AppendMenuItem(IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY);
-    AppendSeparator();
+    menu_model_.AddItemIdentifiedByStringId(
+        IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY);
+    menu_model_.AddSeparator();
   }
 
-  AppendMenuItem(IDS_CONTENT_CONTEXT_UNDO);
-  AppendMenuItem(IDS_CONTENT_CONTEXT_REDO);
-  AppendSeparator();
-  AppendMenuItem(IDS_CONTENT_CONTEXT_CUT);
-  AppendMenuItem(IDS_CONTENT_CONTEXT_COPY);
-  AppendMenuItem(IDS_CONTENT_CONTEXT_PASTE);
-  AppendMenuItem(IDS_CONTENT_CONTEXT_DELETE);
-  AppendSeparator();
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_UNDO);
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_REDO);
+  menu_model_.AddSeparator();
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_CUT);
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_COPY);
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_PASTE);
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_DELETE);
+  menu_model_.AddSeparator();
 
-  // Add Spell Check options sub menu.
-  StartSubMenu(IDC_SPELLCHECK_MENU,
-      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLCHECK_MENU));
+  AppendSpellcheckOptionsSubMenu();
 
+#if defined(OS_MACOSX)
+  // OS X provides a contextual menu to set writing direction for BiDi
+  // languages.
+  // This functionality is exposed as a keyboard shortcut on Windows & Linux.
+  AppendBidiSubMenu();
+#endif  // OS_MACOSX
+
+  menu_model_.AddSeparator();
+  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_SELECTALL);
+}
+
+void RenderViewContextMenu::AppendSpellcheckOptionsSubMenu() {
   // Add Spell Check languages to sub menu.
   std::vector<std::string> spellcheck_languages;
   SpellCheckHost::GetSpellCheckLanguages(profile_,
@@ -522,15 +555,19 @@ void RenderViewContextMenu::AppendEditableItems() {
   for (size_t i = 0; i < spellcheck_languages.size(); ++i) {
     string16 display_name(l10n_util::GetDisplayNameForLocale(
         spellcheck_languages[i], app_locale, true));
-    AppendRadioMenuItem(IDC_SPELLCHECK_LANGUAGES_FIRST + i, display_name);
+    spellcheck_submenu_model_.AddRadioItem(
+        IDC_SPELLCHECK_LANGUAGES_FIRST + i,
+        display_name,
+        kSpellcheckRadioGroup);
   }
 
   // Add item in the sub menu to pop up the fonts and languages options menu.
-  AppendSeparator();
-  AppendMenuItem(IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS);
+  spellcheck_submenu_model_.AddSeparator();
+  spellcheck_submenu_model_.AddItemIdentifiedByStringId(
+      IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS);
 
   // Add 'Check the spelling of this field' item in the sub menu.
-  AppendCheckboxMenuItem(
+  spellcheck_submenu_model_.AddCheckItem(
       IDC_CHECK_SPELLING_OF_THIS_FIELD,
       l10n_util::GetStringUTF16(
           IDS_CONTENT_CONTEXT_CHECK_SPELLING_OF_THIS_FIELD));
@@ -539,35 +576,34 @@ void RenderViewContextMenu::AppendEditableItems() {
   // supports it.
   if (SpellCheckerPlatform::SpellCheckerAvailable() &&
       SpellCheckerPlatform::SpellCheckerProvidesPanel()) {
-    AppendCheckboxMenuItem(IDC_SPELLPANEL_TOGGLE,  l10n_util::GetStringUTF16(
-              SpellCheckerPlatform::SpellingPanelVisible() ?
-              IDS_CONTENT_CONTEXT_HIDE_SPELLING_PANEL :
-              IDS_CONTENT_CONTEXT_SHOW_SPELLING_PANEL));
+    spellcheck_submenu_model_.AddCheckItem(
+        IDC_SPELLPANEL_TOGGLE,
+        l10n_util::GetStringUTF16(
+            SpellCheckerPlatform::SpellingPanelVisible() ?
+                IDS_CONTENT_CONTEXT_HIDE_SPELLING_PANEL :
+                IDS_CONTENT_CONTEXT_SHOW_SPELLING_PANEL));
   }
-  FinishSubMenu();
+
+  menu_model_.AddSubMenu(
+      -1, l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLCHECK_MENU),
+      &spellcheck_submenu_model_);
+}
 
 #if defined(OS_MACOSX)
-  // OS X provides a contextual menu to set writing direction for BiDi
-  // languages.
-  // This functionality is exposed as a keyboard shortcut on Windows & Linux.
-
-  // Add writing direction sub menu.
-  StartSubMenu(IDC_WRITING_DIRECTION_MENU,
-      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_MENU));
-
-  AppendCheckboxMenuItem(IDC_WRITING_DIRECTION_DEFAULT,
+void RenderViewContextMenu::AppendBidiSubMenu() {
+  bidi_submenu_model_.AddCheckItem(IDC_WRITING_DIRECTION_DEFAULT,
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_DEFAULT));
-  AppendCheckboxMenuItem(IDC_WRITING_DIRECTION_LTR,
+  bidi_submenu_model_.AddCheckItem(IDC_WRITING_DIRECTION_LTR,
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_LTR));
-  AppendCheckboxMenuItem(IDC_WRITING_DIRECTION_RTL,
+  bidi_submenu_model_.AddCheckItem(IDC_WRITING_DIRECTION_RTL,
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_RTL));
 
-  FinishSubMenu();
-#endif  // OS_MACOSX
-
-  AppendSeparator();
-  AppendMenuItem(IDS_CONTENT_CONTEXT_SELECTALL);
+  menu_model_.AddSubMenu(
+      -1,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_MENU),
+      &bidi_submenu_model_);
 }
+#endif  // OS_MACOSX
 
 ExtensionMenuItem* RenderViewContextMenu::GetExtensionMenuItem(int id) const {
   ExtensionMenuManager* manager =
@@ -583,7 +619,7 @@ ExtensionMenuItem* RenderViewContextMenu::GetExtensionMenuItem(int id) const {
 
 // Menu delegate functions -----------------------------------------------------
 
-bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
+bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
   // Allow Spell Check language items on sub menu for text area context menu.
   if ((id >= IDC_SPELLCHECK_LANGUAGES_FIRST) &&
       (id < IDC_SPELLCHECK_LANGUAGES_LAST)) {
@@ -775,7 +811,6 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
     case IDC_SPELLCHECK_SUGGESTION_2:
     case IDC_SPELLCHECK_SUGGESTION_3:
     case IDC_SPELLCHECK_SUGGESTION_4:
-    case IDC_SPELLCHECK_MENU:
     case IDC_SPELLPANEL_TOGGLE:
 #if !defined(OS_MACOSX)
     // TODO(jeremy): re-enable - http://crbug.com/34512 .
@@ -806,22 +841,23 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
 #endif  // OS_MACOSX
 
 #if defined(OS_LINUX)
-    // Enable the input methods context menu if the content is editable.
-    // TODO(suzhe): It should not be enabled in password boxes. Anyway,
-    // it's not a big issue.
+    // TODO(suzhe): this should not be enabled for password fields.
     case IDC_INPUT_METHODS_MENU:
-      return params_.is_editable;
+      return true;
 #endif
 
     case IDS_CONTENT_CONTEXT_SAVEFRAMEAS:
     case IDS_CONTENT_CONTEXT_PRINTFRAME:
     case IDS_CONTENT_CONTEXT_ADDSEARCHENGINE:  // Not implemented.
+      return false;
+
     default:
+      NOTREACHED();
       return false;
   }
 }
 
-bool RenderViewContextMenu::ItemIsChecked(int id) const {
+bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
   // See if the video is set to looping.
   if (id == IDS_CONTENT_CONTEXT_LOOP) {
     return (params_.media_flags &
@@ -871,7 +907,7 @@ bool RenderViewContextMenu::ItemIsChecked(int id) const {
       (id - IDC_SPELLCHECK_LANGUAGES_FIRST);
 }
 
-void RenderViewContextMenu::ExecuteItemCommand(int id) {
+void RenderViewContextMenu::ExecuteCommand(int id) {
   // Check to see if one of the spell check language ids have been clicked.
   if (id >= IDC_SPELLCHECK_LANGUAGES_FIRST &&
       id < IDC_SPELLCHECK_LANGUAGES_LAST) {
@@ -1000,16 +1036,17 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
       MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
                           WebMediaPlayerAction(
                               WebMediaPlayerAction::Loop,
-                              !ItemIsChecked(IDS_CONTENT_CONTEXT_LOOP)));
+                              !IsCommandIdChecked(IDS_CONTENT_CONTEXT_LOOP)));
       break;
 
     case IDS_CONTENT_CONTEXT_CONTROLS:
       UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Controls"),
                                 profile_);
-      MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
-                          WebMediaPlayerAction(
-                              WebMediaPlayerAction::Controls,
-                              !ItemIsChecked(IDS_CONTENT_CONTEXT_CONTROLS)));
+      MediaPlayerActionAt(
+          gfx::Point(params_.x, params_.y),
+          WebMediaPlayerAction(
+              WebMediaPlayerAction::Controls,
+              !IsCommandIdChecked(IDS_CONTENT_CONTEXT_CONTROLS)));
       break;
 
     case IDS_CONTENT_CONTEXT_BACK:
@@ -1025,7 +1062,9 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
       break;
 
     case IDS_CONTENT_CONTEXT_RELOAD:
-      source_tab_contents_->controller().Reload(true);
+      // Prevent the modal "Resubmit form post" dialog from appearing in the
+      // context of an external context menu.
+      source_tab_contents_->controller().Reload(!external_);
       break;
 
     case IDS_CONTENT_CONTEXT_PRINT:

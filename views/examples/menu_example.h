@@ -57,7 +57,7 @@ class ExampleMenuContents : public menus::SimpleMenuModel,
 
     submenu_.reset(new menus::SimpleMenuModel(this));
     submenu_->AddItem(kCommandDoSomething, WideToUTF16(L"Do Something 2"));
-    AddSubMenu(ASCIIToUTF16("Submenu"), submenu_.get());
+    AddSubMenu(-1, ASCIIToUTF16("Submenu"), submenu_.get());
     menu_.reset(new views::Menu2(this));
   }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,26 +19,12 @@ namespace menus {
 class MenuModel;
 }
 
-struct MenuCreateMaterial;
-
 class MenuGtk {
  public:
   // Delegate class that lets another class control the status of the menu.
   class Delegate {
    public:
     virtual ~Delegate() { }
-
-    // Returns whether the menu item for this command should be enabled.
-    virtual bool IsCommandEnabled(int command_id) const { return false; }
-
-    // Returns whether this command is checked (for checkbox menu items only).
-    virtual bool IsItemChecked(int command_id) const { return false; }
-
-    // Gets the label. Only needs to be implemented for custom (dynamic) labels.
-    virtual std::string GetLabel(int command_id) const { return std::string(); }
-
-    // Executes the command.
-    virtual void ExecuteCommandById(int command_id) {}
 
     // Called before a command is executed. This exists for the case where a
     // model is handling the actual execution of commands, but the delegate
@@ -57,11 +43,6 @@ class MenuGtk {
     virtual bool AlwaysShowImages() const { return false; }
   };
 
-  // Builds a MenuGtk that uses |delegate| to perform actions and |menu_data|
-  // to create the menu.
-  MenuGtk(MenuGtk::Delegate* delegate, const MenuCreateMaterial* menu_data);
-  // Creates a MenuGtk that uses |delegate| to perform actions.  Builds the
-  // menu using |model_|.
   MenuGtk(MenuGtk::Delegate* delegate, menus::MenuModel* model);
   ~MenuGtk();
 
@@ -125,11 +106,6 @@ class MenuGtk {
   GtkWidget* widget() const { return menu_; }
 
  private:
-  // A recursive function that transforms a MenuCreateMaterial tree into a set
-  // of GtkMenuItems.
-  void BuildMenuIn(GtkWidget* menu,
-                   const MenuCreateMaterial* menu_data);
-
   // Builds a GtkImageMenuItem.
   GtkWidget* BuildMenuItemWithImage(const std::string& label,
                                     const SkBitmap& icon);

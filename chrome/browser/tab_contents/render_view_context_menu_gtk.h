@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,14 +11,12 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/gtk/menu_gtk.h"
-#include "chrome/browser/gtk/standard_menus.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "gfx/point.h"
 
 class RenderWidgetHostView;
 struct ContextMenuParams;
 
-// TODO(port): we need accelerator support for this class.
 class RenderViewContextMenuGtk : public RenderViewContextMenu,
                                  public MenuGtk::Delegate {
  public:
@@ -32,32 +30,20 @@ class RenderViewContextMenuGtk : public RenderViewContextMenu,
   void Popup(const gfx::Point& point);
 
   // Menu::Delegate implementation ---------------------------------------------
-  virtual bool IsCommandEnabled(int id) const;
-  virtual bool IsItemChecked(int id) const;
-  virtual void ExecuteCommandById(int id);
-  virtual std::string GetLabel(int id) const;
   virtual void StoppedShowing();
 
  protected:
   // RenderViewContextMenu implementation --------------------------------------
-  virtual void DoInit();
-  virtual void AppendMenuItem(int id);
-  virtual void AppendMenuItem(int id, const string16& label);
-  virtual void AppendRadioMenuItem(int id, const string16& label);
-  virtual void AppendCheckboxMenuItem(int id, const string16& label);
-  virtual void AppendSeparator();
-  virtual void StartSubMenu(int id, const string16& label);
-  virtual void FinishSubMenu();
+  virtual void PlatformInit();
+  // TODO(port): implement.
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      menus::Accelerator* accelerator) {
+    return false;
+  }
 
  private:
-  void AppendItem(int id, const string16& label, MenuItemType type);
-  static void DoneMakingMenu(std::vector<MenuCreateMaterial>* menu);
-
-  scoped_ptr<MenuGtk> gtk_menu_;
-  std::map<int, std::string> label_map_;
-  std::vector<MenuCreateMaterial> menu_;
-  std::vector<MenuCreateMaterial> submenu_;
-  bool making_submenu_;
+  scoped_ptr<MenuGtk> menu_gtk_;
   uint32_t triggering_event_time_;
 };
 

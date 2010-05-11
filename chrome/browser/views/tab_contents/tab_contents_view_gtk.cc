@@ -20,7 +20,7 @@
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/tab_contents/web_drag_dest_gtk.h"
 #include "chrome/browser/views/sad_tab_view.h"
-#include "chrome/browser/views/tab_contents/render_view_context_menu_gtk.h"
+#include "chrome/browser/views/tab_contents/render_view_context_menu_views.h"
 #include "gfx/canvas_paint.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
@@ -347,7 +347,7 @@ void TabContentsViewGtk::ShowContextMenu(const ContextMenuParams& params) {
   if (tab_contents()->delegate()->HandleContextMenu(params))
     return;
 
-  context_menu_.reset(new RenderViewContextMenuGtk(tab_contents(), params));
+  context_menu_.reset(new RenderViewContextMenuViews(tab_contents(), params));
   context_menu_->Init();
 
   gfx::Point screen_point(params.x, params.y);

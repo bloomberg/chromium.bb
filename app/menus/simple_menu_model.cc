@@ -6,6 +6,8 @@
 
 #include "app/l10n_util.h"
 
+static const int kSeparatorId = -1;
+
 namespace menus {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -19,31 +21,40 @@ SimpleMenuModel::~SimpleMenuModel() {
 
 void SimpleMenuModel::AddItem(int command_id, const string16& label) {
   Item item = { command_id, label, SkBitmap(), TYPE_COMMAND, -1, NULL };
-  items_.push_back(item);
+  AppendItem(item);
 }
 
 void SimpleMenuModel::AddItemWithStringId(int command_id, int string_id) {
   AddItem(command_id, l10n_util::GetStringUTF16(string_id));
 }
 
+void SimpleMenuModel::AddItemIdentifiedByStringId(int string_id) {
+  AddItemWithStringId(string_id, string_id);
+}
+
 void SimpleMenuModel::AddSeparator() {
-  Item item = { -1, string16(), SkBitmap(), TYPE_SEPARATOR, -1, NULL };
-  items_.push_back(item);
+  Item item = { kSeparatorId, string16(), SkBitmap(), TYPE_SEPARATOR, -1,
+                NULL };
+  AppendItem(item);
 }
 
 void SimpleMenuModel::AddCheckItem(int command_id, const string16& label) {
   Item item = { command_id, label, SkBitmap(), TYPE_CHECK, -1, NULL };
-  items_.push_back(item);
+  AppendItem(item);
 }
 
 void SimpleMenuModel::AddCheckItemWithStringId(int command_id, int string_id) {
   AddCheckItem(command_id, l10n_util::GetStringUTF16(string_id));
 }
 
+void SimpleMenuModel::AddCheckItemIdentifiedByStringId(int string_id) {
+  AddCheckItemWithStringId(string_id, string_id);
+}
+
 void SimpleMenuModel::AddRadioItem(int command_id, const string16& label,
                                    int group_id) {
   Item item = { command_id, label, SkBitmap(), TYPE_RADIO, group_id, NULL };
-  items_.push_back(item);
+  AppendItem(item);
 }
 
 void SimpleMenuModel::AddRadioItemWithStringId(int command_id, int string_id,
@@ -51,19 +62,21 @@ void SimpleMenuModel::AddRadioItemWithStringId(int command_id, int string_id,
   AddRadioItem(command_id, l10n_util::GetStringUTF16(string_id), group_id);
 }
 
-void SimpleMenuModel::AddSubMenu(const string16& label, MenuModel* model) {
-  Item item = { -1, label, SkBitmap(), TYPE_SUBMENU, -1, model };
-  items_.push_back(item);
+void SimpleMenuModel::AddSubMenu(int command_id, const string16& label,
+                                 MenuModel* model) {
+  Item item = { command_id, label, SkBitmap(), TYPE_SUBMENU, -1, model };
+  AppendItem(item);
 }
 
-void SimpleMenuModel::AddSubMenuWithStringId(int string_id, MenuModel* model) {
-  AddSubMenu(l10n_util::GetStringUTF16(string_id), model);
+void SimpleMenuModel::AddSubMenuWithStringId(int command_id,
+                                             int string_id, MenuModel* model) {
+  AddSubMenu(command_id, l10n_util::GetStringUTF16(string_id), model);
 }
 
 void SimpleMenuModel::InsertItemAt(
     int index, int command_id, const string16& label) {
   Item item = { command_id, label, SkBitmap(), TYPE_COMMAND, -1, NULL };
-  items_.insert(items_.begin() + FlipIndex(index), item);
+  InsertItemAtIndex(item, index);
 }
 
 void SimpleMenuModel::InsertItemWithStringIdAt(
@@ -72,14 +85,15 @@ void SimpleMenuModel::InsertItemWithStringIdAt(
 }
 
 void SimpleMenuModel::InsertSeparatorAt(int index) {
-  Item item = { -1, string16(), SkBitmap(), TYPE_SEPARATOR, -1, NULL };
-  items_.insert(items_.begin() + FlipIndex(index), item);
+  Item item = { kSeparatorId, string16(), SkBitmap(), TYPE_SEPARATOR, -1,
+                NULL };
+  InsertItemAtIndex(item, index);
 }
 
 void SimpleMenuModel::InsertCheckItemAt(
     int index, int command_id, const string16& label) {
   Item item = { command_id, label, SkBitmap(), TYPE_CHECK, -1, NULL };
-  items_.insert(items_.begin() + FlipIndex(index), item);
+  InsertItemAtIndex(item, index);
 }
 
 void SimpleMenuModel::InsertCheckItemWithStringIdAt(
@@ -91,7 +105,7 @@ void SimpleMenuModel::InsertCheckItemWithStringIdAt(
 void SimpleMenuModel::InsertRadioItemAt(
     int index, int command_id, const string16& label, int group_id) {
   Item item = { command_id, label, SkBitmap(), TYPE_RADIO, group_id, NULL };
-  items_.insert(items_.begin() + FlipIndex(index), item);
+  InsertItemAtIndex(item, index);
 }
 
 void SimpleMenuModel::InsertRadioItemWithStringIdAt(
@@ -101,14 +115,15 @@ void SimpleMenuModel::InsertRadioItemWithStringIdAt(
 }
 
 void SimpleMenuModel::InsertSubMenuAt(
-    int index, const string16& label, MenuModel* model) {
-  Item item = { -1, label, SkBitmap(), TYPE_SUBMENU, -1, model };
-  items_.insert(items_.begin() + FlipIndex(index), item);
+    int index, int command_id, const string16& label, MenuModel* model) {
+  Item item = { command_id, label, SkBitmap(), TYPE_SUBMENU, -1, model };
+  InsertItemAtIndex(item, index);
 }
 
 void SimpleMenuModel::InsertSubMenuWithStringIdAt(
-    int index, int string_id, MenuModel* model) {
-  InsertSubMenuAt(index, l10n_util::GetStringUTF16(string_id), model);
+    int index, int command_id, int string_id, MenuModel* model) {
+  InsertSubMenuAt(index, command_id, l10n_util::GetStringUTF16(string_id),
+                  model);
 }
 
 void SimpleMenuModel::SetIcon(int index, const SkBitmap& icon) {
@@ -194,8 +209,7 @@ bool SimpleMenuModel::GetIconAt(int index, SkBitmap* icon) const {
 
 bool SimpleMenuModel::IsEnabledAt(int index) const {
   int command_id = GetCommandIdAt(index);
-  // Submenus have a command id of -1, they should always be enabled.
-  if (!delegate_ || command_id == -1)
+  if (!delegate_ || command_id == kSeparatorId)
     return true;
   return delegate_->IsCommandIdEnabled(command_id);
 }
@@ -212,6 +226,29 @@ void SimpleMenuModel::ActivatedAt(int index) {
 
 MenuModel* SimpleMenuModel::GetSubmenuModelAt(int index) const {
   return items_.at(FlipIndex(index)).submenu;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// SimpleMenuModel, Private:
+
+void SimpleMenuModel::AppendItem(const Item& item) {
+  ValidateItem(item);
+  items_.push_back(item);
+}
+
+void SimpleMenuModel::InsertItemAtIndex(const Item& item, int index) {
+  ValidateItem(item);
+  items_.insert(items_.begin() + FlipIndex(index), item);
+}
+
+void SimpleMenuModel::ValidateItem(const Item& item) {
+#ifndef NDEBUG
+  if (item.type == TYPE_SEPARATOR) {
+    DCHECK_EQ(item.command_id, kSeparatorId);
+  } else {
+    DCHECK_GE(item.command_id, 0);
+  }
+#endif  // NDEBUG
 }
 
 }  // namespace menus

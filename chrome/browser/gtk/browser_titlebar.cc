@@ -24,7 +24,6 @@
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/gtk/nine_box.h"
-#include "chrome/browser/gtk/standard_menus.h"
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/page_menu_model.h"
 #include "chrome/browser/pref_service.h"

@@ -23,7 +23,7 @@
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/tab_contents/web_drop_target_win.h"
 #include "chrome/browser/views/sad_tab_view.h"
-#include "chrome/browser/views/tab_contents/render_view_context_menu_win.h"
+#include "chrome/browser/views/tab_contents/render_view_context_menu_views.h"
 #include "chrome/browser/views/tab_contents/tab_contents_drag_win.h"
 #include "gfx/canvas_paint.h"
 #include "views/focus/view_storage.h"
@@ -325,7 +325,7 @@ void TabContentsViewWin::ShowContextMenu(const ContextMenuParams& params) {
   if (tab_contents()->delegate()->HandleContextMenu(params))
     return;
 
-  context_menu_.reset(new RenderViewContextMenuWin(tab_contents(), params));
+  context_menu_.reset(new RenderViewContextMenuViews(tab_contents(), params));
   context_menu_->Init();
 
   POINT screen_pt = { params.x, params.y };

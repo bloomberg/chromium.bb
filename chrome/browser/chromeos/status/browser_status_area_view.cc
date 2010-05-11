@@ -131,6 +131,7 @@ AppMenuModel* BrowserStatusAreaView::CreateAppMenuModel(
   DCHECK_GE(options_index, 0);
   menu_model->InsertSubMenuAt(
       options_index + 1,
+      IDC_COMPACT_NAVBAR,
       ASCIIToUTF16("Compact nav bar"), options_menu_contents_.get());
   return menu_model;
 }

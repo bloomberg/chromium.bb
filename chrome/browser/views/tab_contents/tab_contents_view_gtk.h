@@ -14,7 +14,7 @@
 
 class ConstrainedWindowGtk;
 typedef struct _GtkFloatingContainer GtkFloatingContainer;
-class RenderViewContextMenuGtk;
+class RenderViewContextMenuViews;
 class SadTabView;
 class SkBitmap;
 class TabContentsDragSource;
@@ -109,7 +109,7 @@ class TabContentsViewGtk : public TabContentsView,
   int last_focused_view_storage_id_;
 
   // The context menu. Callbacks are asynchronous so we need to keep it around.
-  scoped_ptr<RenderViewContextMenuGtk> context_menu_;
+  scoped_ptr<RenderViewContextMenuViews> context_menu_;
 
   // Handles drags from this TabContentsView.
   scoped_ptr<TabContentsDragSource> drag_source_;

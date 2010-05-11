@@ -26,7 +26,6 @@
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/gtk/nine_box.h"
-#include "chrome/browser/gtk/standard_menus.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/canvas_paint.h"
 #include "gfx/color_utils.h"

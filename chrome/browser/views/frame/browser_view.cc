@@ -2118,10 +2118,11 @@ void BrowserView::BuildSystemMenuForAppOrPopupWindow(bool is_app) {
   }
   system_menu_contents_->AddSeparator();
   encoding_menu_contents_.reset(new EncodingMenuModel(browser_.get()));
-  system_menu_contents_->AddSubMenuWithStringId(IDS_ENCODING_MENU,
+  system_menu_contents_->AddSubMenuWithStringId(IDC_ENCODING_MENU,
+                                                IDS_ENCODING_MENU,
                                                 encoding_menu_contents_.get());
   zoom_menu_contents_.reset(new ZoomMenuModel(this));
-  system_menu_contents_->AddSubMenuWithStringId(IDS_ZOOM_MENU,
+  system_menu_contents_->AddSubMenuWithStringId(IDC_ZOOM_MENU, IDS_ZOOM_MENU,
                                                 zoom_menu_contents_.get());
   system_menu_contents_->AddItemWithStringId(IDC_PRINT, IDS_PRINT);
   system_menu_contents_->AddItemWithStringId(IDC_FIND, IDS_FIND);

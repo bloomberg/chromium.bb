@@ -19,6 +19,7 @@ namespace {
 const int kLanguageMainMenuSize = 5;
 // TODO(glotov): need to specify the list as a part of the image customization.
 const char kLanguagesTopped[] = "es,it,de,fr,en-US";
+const int kMoreLanguagesSubMenu = 200;
 
 }  // namespace
 
@@ -44,8 +45,9 @@ void LanguageSwitchModel::InitLanguageMenu() {
         line, WideToUTF16(language_list_->GetLanguageNameAt(line)));
   }
   menu_model_.AddSeparator();
-  menu_model_.AddSubMenu(WideToUTF16(l10n_util::GetString(IDS_LANGUAGES_MORE)),
-                         &menu_model_submenu_);
+  menu_model_.AddSubMenuWithStringId(kMoreLanguagesSubMenu,
+                                     IDS_LANGUAGES_MORE,
+                                     &menu_model_submenu_);
   for (int line = kLanguageMainMenuSize;
        line != language_list_->get_languages_count(); line++) {
     menu_model_submenu_.AddItem(

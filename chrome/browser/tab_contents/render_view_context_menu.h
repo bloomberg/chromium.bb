@@ -9,7 +9,9 @@
 #include <string>
 #include <vector>
 
+#include "app/menus/simple_menu_model.h"
 #include "base/string16.h"
+#include "base/scoped_vector.h"
 #include "chrome/common/page_transition_types.h"
 #include "webkit/glue/context_menu.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -26,7 +28,7 @@ namespace WebKit {
 struct WebMediaPlayerAction;
 }
 
-class RenderViewContextMenu {
+class RenderViewContextMenu : public menus::SimpleMenuModel::Delegate {
  public:
   RenderViewContextMenu(TabContents* tab_contents,
                         const ContextMenuParams& params);
@@ -36,49 +38,28 @@ class RenderViewContextMenu {
   // Initializes the context menu.
   void Init();
 
+  // SimpleMenuModel::Delegate implementation.
+  virtual bool IsCommandIdChecked(int command_id) const;
+  virtual bool IsCommandIdEnabled(int command_id) const;
+  virtual void ExecuteCommand(int command_id);
+
  protected:
   void InitMenu();
 
-  // Functions to be implemented by platform-specific subclasses ---------------
+  // Platform specific functions.
+  virtual void PlatformInit() = 0;
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      menus::Accelerator* accelerator) = 0;
 
-  // Platform specific initialization goes here.
-  virtual void DoInit() {}
-
-  // Append a normal menu item, taking the name from the id.
-  virtual void AppendMenuItem(int id) = 0;
-
-  // Append a normal menu item, using |label| for the name.
-  virtual void AppendMenuItem(int id, const string16& label) = 0;
-
-  // Append a radio menu item.
-  virtual void AppendRadioMenuItem(int id, const string16& label) = 0;
-
-  // Append a checkbox menu item.
-  virtual void AppendCheckboxMenuItem(int id, const string16& label) = 0;
-
-  // Append a separator.
-  virtual void AppendSeparator() = 0;
-
-  // Start creating a submenu. Any calls to Append*() between calls to
-  // StartSubMenu() and FinishSubMenu() will apply to the submenu rather than
-  // the main menu we are building. We only support at most single-depth
-  // submenus, so calls to StartSubMenu() while we are already building a
-  // submenu will be ignored.
-  virtual void StartSubMenu(int id, const string16& label) = 0;
-
-  // Finish creating the submenu and attach it to the main menu.
-  virtual void FinishSubMenu() = 0;
-
-  // Delegate functions --------------------------------------------------------
-
-  bool IsItemCommandEnabled(int id) const;
-  bool ItemIsChecked(int id) const;
-  virtual void ExecuteItemCommand(int id);
-
- protected:
   ContextMenuParams params_;
   TabContents* source_tab_contents_;
   Profile* profile_;
+
+  menus::SimpleMenuModel menu_model_;
+
+  // True if we are showing for an external tab contents. The default is false.
+  bool external_;
 
  private:
   static bool IsDevToolsURL(const GURL& url);
@@ -95,19 +76,9 @@ class RenderViewContextMenu {
   void AppendEditableItems();
   void AppendSearchProvider();
   void AppendAllExtensionItems();
-
-  // When extensions have more than 1 top-level item or a single parent item
-  // with children, we will start a sub menu. In the case of 1 parent with
-  // children, we will remove the parent from |items| and insert the children
-  // into it. The |index| parameter is incremented if we start a submenu. This
-  // returns true if a submenu was started. If we had multiple top-level items
-  // that needed to be pushed into a submenu, we'll use |extension_name| as the
-  // title.
-  bool MaybeStartExtensionSubMenu(const string16& selection_text,
-                                  const std::string& extension_name,
-                                  std::vector<const ExtensionMenuItem*>* items,
-                                  int* index);
-
+  void AppendSpellcheckOptionsSubMenu();
+  // Add writing direction sub menu (only used on Mac).
+  void AppendBidiSubMenu();
   // Fills in |items| with matching items for extension with |extension_id|.
   void GetItemsForExtension(const std::string& extension_id,
                             std::vector<const ExtensionMenuItem*>* items);
@@ -151,6 +122,10 @@ class RenderViewContextMenu {
   // Maps the id from a context menu item to the ExtensionMenuItem's internal
   // id.
   std::map<int, int> extension_item_map_;
+
+  menus::SimpleMenuModel spellcheck_submenu_model_;
+  menus::SimpleMenuModel bidi_submenu_model_;
+  ScopedVector<menus::SimpleMenuModel> extension_menu_models_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenu);
 };

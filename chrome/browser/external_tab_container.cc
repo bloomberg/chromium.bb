@@ -22,7 +22,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/browser/tab_contents/provisional_load_details.h"
-#include "chrome/browser/views/tab_contents/render_view_context_menu_external_win.h"
+#include "chrome/browser/views/tab_contents/render_view_context_menu_views.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/tab_contents/tab_contents_container.h"
 #include "chrome/common/bindings_policy.h"
@@ -152,8 +152,6 @@ bool ExternalTabContainer::Init(Profile* profile,
 
   ::ShowWindow(tab_contents_->GetNativeView(), SW_SHOWNA);
 
-  disabled_context_menu_ids_.push_back(
-      IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
   LoadAccelerators();
   SetupExternalTabView();
   return true;
@@ -519,9 +517,8 @@ bool ExternalTabContainer::HandleContextMenu(const ContextMenuParams& params) {
   }
 
   external_context_menu_.reset(
-      new RenderViewContextMenuExternalWin(tab_contents(),
-                                           params,
-                                           disabled_context_menu_ids_));
+      new RenderViewContextMenuViews(tab_contents(), params));
+  external_context_menu_->SetExternal();
   external_context_menu_->Init();
 
   POINT screen_pt = { params.x, params.y };

@@ -60,8 +60,14 @@ class SimpleMenuModel : public MenuModel {
   void AddCheckItemWithStringId(int command_id, int string_id);
   void AddRadioItem(int command_id, const string16& label, int group_id);
   void AddRadioItemWithStringId(int command_id, int string_id, int group_id);
-  void AddSubMenu(const string16& label, MenuModel* model);
-  void AddSubMenuWithStringId(int string_id, MenuModel* model);
+  void AddSubMenu(int command_id, const string16& label, MenuModel* model);
+  void AddSubMenuWithStringId(int command_id, int string_id, MenuModel* model);
+
+  // Helpers for the above that use the |string_id| for the |command_id|
+  // as well.
+  // TODO(estade): remove these.
+  void AddItemIdentifiedByStringId(int string_id);
+  void AddCheckItemIdentifiedByStringId(int string_id);
 
   // Methods for inserting items into the model.
   void InsertItemAt(int index, int command_id, const string16& label);
@@ -73,8 +79,10 @@ class SimpleMenuModel : public MenuModel {
       int index, int command_id, const string16& label, int group_id);
   void InsertRadioItemWithStringIdAt(
       int index, int command_id, int string_id, int group_id);
-  void InsertSubMenuAt(int index, const string16& label, MenuModel* model);
-  void InsertSubMenuWithStringIdAt(int index, int string_id, MenuModel* model);
+  void InsertSubMenuAt(
+      int index, int command_id, const string16& label, MenuModel* model);
+  void InsertSubMenuWithStringIdAt(
+      int index, int command_id, int string_id, MenuModel* model);
 
   // Sets the icon for the item at |index|.
   void SetIcon(int index, const SkBitmap& icon);
@@ -125,6 +133,11 @@ class SimpleMenuModel : public MenuModel {
     MenuModel* submenu;
   };
   std::vector<Item> items_;
+
+  // Functions for inserting items into |items_|.
+  void AppendItem(const Item& item);
+  void InsertItemAtIndex(const Item& item, int index);
+  void ValidateItem(const Item& item);
 
   Delegate* delegate_;
 
