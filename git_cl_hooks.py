@@ -20,6 +20,13 @@ def Backquote(cmd, cwd=None):
                           cwd=cwd,
                           stdout=subprocess.PIPE).communicate()[0].strip()
 
+def BackquoteAsInteger(cmd, cwd=None):
+  """Like Backquote, but returns either an int or None."""
+  try:
+    return int(Backquote(cmd, cwd))
+  except ValueError:
+    return None
+
 
 class ChangeOptions:
   def __init__(self, commit=None, upstream_branch=None):
@@ -41,12 +48,12 @@ class ChangeOptions:
       raise Exception("Could not parse log message: %s" % log)
     name = m.group(1)
     files = scm.GIT.CaptureStatus([root], upstream_branch)
-    issue = Backquote(['git', 'cl', 'status', '--field=id'])
-    try:
-      description = gcl.GetIssueDescription(int(issue))
-    except ValueError:
+    issue = BackquoteAsInteger(['git', 'cl', 'status', '--field=id'])
+    patchset = BackquoteAsInteger(['git', 'cl', 'status', '--field=patch'])
+    if issue:
+      description = gcl.GetIssueDescription(issue)
+    else:
       description = m.group(2)
-    patchset = None
     self.change = presubmit_support.GitChange(name, description, absroot, files,
                                               issue, patchset)
 
