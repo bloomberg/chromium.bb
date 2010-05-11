@@ -24,6 +24,7 @@
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/setup/uninstall.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/delete_after_reboot_helper.h"
 #include "chrome/installer/util/delete_tree_work_item.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/html_dialog.h"
@@ -373,7 +374,21 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
         installer_util::switches::kInstallerData);
     cleanup_list->AddDeleteTreeWorkItem(prefs_path, std::wstring());
   }
-  cleanup_list->Do();
+
+  // The above cleanup has been observed to fail on several users machines.
+  // Specifically, it appears that the temp folder may be locked when we try
+  // to delete it. This is Rather Bad in the case where we have failed updates
+  // as we end up filling users' disks with large-ish temp files. To mitigate
+  // this, if we fail to delete the temp folders, then schedule them for
+  // deletion at next reboot.
+  if (!cleanup_list->Do()) {
+    ScheduleDirectoryForDeletion(temp_path.ToWStringHack().c_str());
+    if (cmd_line.HasSwitch(installer_util::switches::kInstallerData)) {
+      std::wstring prefs_path = cmd_line.GetSwitchValue(
+          installer_util::switches::kInstallerData);
+      ScheduleDirectoryForDeletion(prefs_path.c_str());
+    }
+  }
 
   dist->UpdateDiffInstallStatus(system_level, incremental_install,
                                 install_status);
