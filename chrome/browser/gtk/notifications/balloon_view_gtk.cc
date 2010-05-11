@@ -102,9 +102,8 @@ BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
       close_button_(NULL),
       animation_(NULL) {
   // Load the sprites for the frames.
-  // Insets are such because the sprites have 3x3 corners.
-  shelf_background_.reset(new NineBox(IDR_BALLOON_SHELF, 3, 3, 3, 3));
-  balloon_background_.reset(new NineBox(IDR_BALLOON_BORDER, 3, 3, 3, 3));
+  shelf_background_.reset(new NineBox(IDR_BALLOON_SHELF, 1, 9, 9, 9));
+  balloon_background_.reset(new NineBox(IDR_BALLOON_BORDER, 4, 1, 9, 9));
 }
 
 BalloonViewImpl::~BalloonViewImpl() {
