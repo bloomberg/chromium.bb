@@ -665,6 +665,7 @@ def GenerateCombinedBitcodeFile(argv):
     if last_bitcode_pos != None:
         # Splice in the extra symbols.
         args_bit_ld = (args_bit_ld[:last_bitcode_pos] +
+                       [PNACL_BITCODE_ROOT + '/reachable_function_symbols.o'] +
                        args_bit_ld[last_bitcode_pos:] +
                        ['-lstdc++',
                         '-lc',
@@ -687,7 +688,9 @@ def GenerateCombinedBitcodeFile(argv):
                       '__srpc_wait']
 
   Run([LLVM_LD] + args_bit_ld +
-      ['-internalize-public-api-list=' + ','.join(public_functions),
+      [# TODO(espindola): this does not seem to work yet
+       #'-internalize-public-api-list=' + ','.join(public_functions),
+       '-disable-internalize',
        '-o', output])
   return output, args_native_ld
 
