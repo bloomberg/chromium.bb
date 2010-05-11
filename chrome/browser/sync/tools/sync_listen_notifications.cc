@@ -700,7 +700,8 @@ int main(int argc, char* argv[]) {
   if (email.empty()) {
     printf("Usage: %s --email=foo@bar.com [--password=mypassword] "
            "[--server=talk.google.com] [--port=5222] [--allow-plain] "
-           "[--disable-tls] [--use-cache-invalidation]\n", argv[0]);
+           "[--disable-tls] [--use-cache-invalidation] [--use-ssl-tcp]\n",
+           argv[0]);
     return -1;
   }
   std::string password = command_line.GetSwitchValueASCII("password");
@@ -712,12 +713,19 @@ int main(int argc, char* argv[]) {
   int port = 5222;
   if (!port_str.empty()) {
     int port_from_port_str = std::strtol(port_str.c_str(), NULL, 10);
-    if (port_from_port_str != 0) {
+    if (port_from_port_str == 0) {
       LOG(WARNING) << "Invalid port " << port_str << "; using default";
+    } else {
+      port = port_from_port_str;
     }
   }
   bool allow_plain = command_line.HasSwitch("allow-plain");
   bool disable_tls = command_line.HasSwitch("disable-tls");
+  bool use_ssl_tcp = command_line.HasSwitch("use-ssl-tcp");
+  if (use_ssl_tcp && (port != 443)) {
+    LOG(WARNING) << "--use-ssl-tcp is set but port is " << port
+                 << " instead of 443";
+  }
 
   // Build XMPP client settings.
   buzz::XmppClientSettings xmpp_client_settings;
@@ -727,6 +735,9 @@ int main(int argc, char* argv[]) {
   xmpp_client_settings.set_host(jid.domain());
   xmpp_client_settings.set_allow_plain(allow_plain);
   xmpp_client_settings.set_use_tls(!disable_tls);
+  if (use_ssl_tcp) {
+    xmpp_client_settings.set_protocol(cricket::PROTO_SSLTCP);
+  }
   talk_base::InsecureCryptStringImpl insecure_crypt_string;
   insecure_crypt_string.password() = password;
   xmpp_client_settings.set_pass(
