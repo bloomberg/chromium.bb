@@ -42,17 +42,36 @@ bool CompareTime(const FileAndTime& a, const FileAndTime& b) {
 // use a "undesirable" plugin if no other option is available.
 bool IsUndesirablePlugin(const WebPluginInfo& info) {
   std::string filename = info.path.BaseName().value();
-  return (filename.find("npcxoffice") != std::string::npos || // Crossover
-          filename.find("npwrapper") != std::string::npos);   // nspluginwrapper
+  const char* kUndesiredPlugins[] = {
+    "npcxoffice",  // Crossover
+    "npwrapper",   // nspluginwrapper
+  };
+  for (size_t i = 0; i < arraysize(kUndesiredPlugins); i++) {
+    if (filename.find(kUndesiredPlugins[i]) != std::string::npos) {
+      return true;
+    }
+  }
+  return false;
 }
 
 // Return true if we shouldn't load a plugin at all.
 // This is an ugly hack to blacklist Adobe Acrobat due to not supporting
 // its Xt-based mainloop.
 // http://code.google.com/p/chromium/issues/detail?id=38229
+// The gecko-mediaplayer plugins also crashes the entire browser sometimes.
+// http://code.google.com/p/chromium/issues/detail?id=24507
 bool IsBlacklistedPlugin(const WebPluginInfo& info) {
+  const char* kBlackListedPlugins[] = {
+    "nppdf.so",           // Adobe PDF
+    "gecko-mediaplayer",  // Gecko Media Player
+  };
   std::string filename = info.path.BaseName().value();
-  return filename.find("nppdf.so") != std::string::npos;
+  for (size_t i = 0; i < arraysize(kBlackListedPlugins); i++) {
+    if (filename.find(kBlackListedPlugins[i]) != std::string::npos) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // anonymous namespace
