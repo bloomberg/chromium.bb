@@ -15,6 +15,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 #include "webkit/glue/plugins/webplugin.h"
+#include "webkit/glue/webaccessibility.h"
 
 namespace gfx {
 class Rect;
@@ -234,6 +235,11 @@ class RenderWidgetHostView {
   // Returns true if the native view, |native_view|, is contained within in the
   // widget associated with this RenderWidgetHostView.
   virtual bool ContainsNativeView(gfx::NativeView native_view) const = 0;
+
+  virtual void UpdateAccessibilityTree(
+      const webkit_glue::WebAccessibility& tree) { }
+  virtual void OnAccessibilityFocusChange(int acc_obj_id) { }
+  virtual void OnAccessibilityObjectStateChange(int acc_obj_id) { }
 
  protected:
   // Interface class only, do not construct.

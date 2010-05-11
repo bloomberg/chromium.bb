@@ -594,6 +594,7 @@
         'browser/bookmarks/bookmark_model_test_utils.h',
         'browser/bookmarks/bookmark_model_unittest.cc',
         'browser/bookmarks/bookmark_utils_unittest.cc',
+        'browser/browser_accessibility_unittest.cc',
         'browser/browser_commands_unittest.cc',
         'browser/browser_theme_pack_unittest.cc',
         'browser/browser_theme_provider_unittest.cc',
@@ -986,6 +987,7 @@
         'common/notification_service_unittest.cc',
         'common/process_watcher_unittest.cc',
         'common/property_bag_unittest.cc',
+        'common/render_messages_unittest.cc',
         'common/resource_dispatcher_unittest.cc',
         'common/sandbox_mac_unittest.mm',
         'common/thumbnail_score_unittest.cc',
@@ -1168,6 +1170,7 @@
           'dependencies': [
             'chrome_dll_version',
             'installer/installer.gyp:installer_util_strings',
+            '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             'test_chrome_plugin',  # run time dependency
             '<(allocator_target)',
           ],
@@ -1219,6 +1222,7 @@
           'sources!': [
             'browser/bookmarks/bookmark_codec_unittest.cc',
             'browser/bookmarks/bookmark_drag_data_unittest.cc',
+            'browser/browser_accessibility_unittest.cc',
             'browser/browser_unittest.cc',
             'browser/chrome_plugin_unittest.cc',
             'browser/extensions/extension_process_manager_unittest.cc',

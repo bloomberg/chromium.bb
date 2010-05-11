@@ -711,80 +711,6 @@ struct ParamTraits<FilterPolicy::Type> {
 };
 
 template <>
-struct ParamTraits<webkit_glue::WebAccessibility::InParams> {
-  typedef webkit_glue::WebAccessibility::InParams param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.object_id);
-    WriteParam(m, p.function_id);
-    WriteParam(m, p.child_id);
-    WriteParam(m, p.input_long1);
-    WriteParam(m, p.input_long2);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    return
-      ReadParam(m, iter, &p->object_id) &&
-      ReadParam(m, iter, &p->function_id) &&
-      ReadParam(m, iter, &p->child_id) &&
-      ReadParam(m, iter, &p->input_long1) &&
-      ReadParam(m, iter, &p->input_long2);
-  }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"(");
-    LogParam(p.object_id, l);
-    l->append(L", ");
-    LogParam(p.function_id, l);
-    l->append(L", ");
-    LogParam(p.child_id, l);
-    l->append(L", ");
-    LogParam(p.input_long1, l);
-    l->append(L", ");
-    LogParam(p.input_long2, l);
-    l->append(L")");
-  }
-};
-
-template <>
-struct ParamTraits<webkit_glue::WebAccessibility::OutParams> {
-  typedef webkit_glue::WebAccessibility::OutParams param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.object_id);
-    WriteParam(m, p.output_long1);
-    WriteParam(m, p.output_long2);
-    WriteParam(m, p.output_long3);
-    WriteParam(m, p.output_long4);
-    WriteParam(m, p.output_string);
-    WriteParam(m, p.return_code);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    return
-      ReadParam(m, iter, &p->object_id) &&
-      ReadParam(m, iter, &p->output_long1) &&
-      ReadParam(m, iter, &p->output_long2) &&
-      ReadParam(m, iter, &p->output_long3) &&
-      ReadParam(m, iter, &p->output_long4) &&
-      ReadParam(m, iter, &p->output_string) &&
-      ReadParam(m, iter, &p->return_code);
-  }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"(");
-    LogParam(p.object_id, l);
-    l->append(L", ");
-    LogParam(p.output_long1, l);
-    l->append(L", ");
-    LogParam(p.output_long2, l);
-    l->append(L", ");
-    LogParam(p.output_long3, l);
-    l->append(L", ");
-    LogParam(p.output_long4, l);
-    l->append(L", ");
-    LogParam(p.output_string, l);
-    l->append(L", ");
-    LogParam(p.return_code, l);
-    l->append(L")");
-  }
-};
-
-template <>
 struct ParamTraits<ViewHostMsg_ImeControl> {
   typedef ViewHostMsg_ImeControl param_type;
   static void Write(Message* m, const param_type& p) {
@@ -2668,8 +2594,73 @@ struct ParamTraits<WindowContainerType> {
   }
 };
 
-}  // namespace IPC
+template <>
+struct ParamTraits<webkit_glue::WebAccessibility> {
+  typedef webkit_glue::WebAccessibility param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.id);
+    WriteParam(m, p.name);
+    WriteParam(m, p.value);
+    WriteParam(m, p.action);
+    WriteParam(m, p.description);
+    WriteParam(m, p.help);
+    WriteParam(m, p.shortcut);
+    WriteParam(m, static_cast<int>(p.role));
+    WriteParam(m, static_cast<int>(p.state));
+    WriteParam(m, p.location);
+    WriteParam(m, p.children);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    bool ret = ReadParam(m, iter, &p->id);
+    ret = ret && ReadParam(m, iter, &p->name);
+    ret = ret && ReadParam(m, iter, &p->value);
+    ret = ret && ReadParam(m, iter, &p->action);
+    ret = ret && ReadParam(m, iter, &p->description);
+    ret = ret && ReadParam(m, iter, &p->help);
+    ret = ret && ReadParam(m, iter, &p->shortcut);
+    int role = -1;
+    ret = ret && ReadParam(m, iter, &role);
+    if (role >= webkit_glue::WebAccessibility::ROLE_NONE &&
+      role < webkit_glue::WebAccessibility::NUM_ROLES) {
+      p->role = static_cast<webkit_glue::WebAccessibility::Role>(role);
+    } else {
+      p->role = webkit_glue::WebAccessibility::ROLE_NONE;
+    }
+    int state = 0;
+    ret = ret && ReadParam(m, iter, &state);
+    p->state = static_cast<webkit_glue::WebAccessibility::State>(state);
+    ret = ret && ReadParam(m, iter, &p->location);
+    ret = ret && ReadParam(m, iter, &p->children);
+    return ret;
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.id, l);
+    l->append(L", ");
+    LogParam(p.name, l);
+    l->append(L", ");
+    LogParam(p.value, l);
+    l->append(L", ");
+    LogParam(p.action, l);
+    l->append(L", ");
+    LogParam(p.description, l);
+    l->append(L", ");
+    LogParam(p.help, l);
+    l->append(L", ");
+    LogParam(p.shortcut, l);
+    l->append(L", ");
+    LogParam(static_cast<int>(p.role), l);
+    l->append(L", ");
+    LogParam(static_cast<int>(p.state), l);
+    l->append(L", ");
+    LogParam(p.location, l);
+    l->append(L", ");
+    LogParam(p.children, l);
+    l->append(L")");
+  }
+};
 
+}  // namespace IPC
 
 #define MESSAGES_INTERNAL_FILE "chrome/common/render_messages_internal.h"
 #include "ipc/ipc_message_macros.h"

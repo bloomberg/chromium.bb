@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,13 @@
 
 #include <atlbase.h>
 #include <atlcom.h>
-
 #include <oleacc.h>
 
+#include <vector>
+
+#include "base/scoped_comptr_win.h"
+#include "chrome/browser/browser_accessibility_manager.h"
+#include "ia2_api_all.h"  // Generated
 #include "webkit/glue/webaccessibility.h"
 
 using webkit_glue::WebAccessibility;
@@ -25,29 +29,58 @@ using webkit_glue::WebAccessibility;
 ////////////////////////////////////////////////////////////////////////////////
 class ATL_NO_VTABLE BrowserAccessibility
   : public CComObjectRootEx<CComMultiThreadModel>,
-    public IDispatchImpl<IAccessible, &IID_IAccessible, &LIBID_Accessibility> {
+    public IDispatchImpl<IAccessible2, &IID_IAccessible2,
+                         &LIBID_IAccessible2Lib>,
+    public IServiceProvider {
  public:
   BEGIN_COM_MAP(BrowserAccessibility)
-    COM_INTERFACE_ENTRY2(IDispatch, IAccessible)
-    COM_INTERFACE_ENTRY(IAccessible)
+    COM_INTERFACE_ENTRY2(IDispatch, IAccessible2)
+    COM_INTERFACE_ENTRY2(IAccessible, IAccessible2)
+    COM_INTERFACE_ENTRY(IAccessible2)
+    COM_INTERFACE_ENTRY(IServiceProvider)
   END_COM_MAP()
 
-  BrowserAccessibility()
-      : iaccessible_id_(-1),
-        routing_id_(-1),
-        process_id_(-1),
-        parent_hwnd_(NULL),
-        instance_active_(false) {
-  }
+  BrowserAccessibility();
 
-  ~BrowserAccessibility() {}
+  virtual ~BrowserAccessibility();
 
-  HRESULT Initialize(int iaccessible_id,
-                     int routing_id,
-                     int process_id,
-                     HWND parent_hwnd);
+  // Initialize this object and mark it as active.
+  void Initialize(BrowserAccessibilityManager* manager,
+                  BrowserAccessibility* parent,
+                  LONG child_id,
+                  LONG index_in_parent,
+                  const webkit_glue::WebAccessibility& src);
 
-  // Supported IAccessible methods.
+  // Add a child of this object.
+  void AddChild(BrowserAccessibility* child);
+
+  // Mark this object as inactive, and remove references to all children.
+  // When no other clients hold any references to this object it will be
+  // deleted, and in the meantime, calls to any methods will return E_FAIL.
+  void InactivateTree();
+
+  // Return true if this object is equal to or a descendant of |ancestor|.
+  bool IsDescendantOf(BrowserAccessibility* ancestor);
+
+  // Return the previous sibling of this object, or NULL if it's the first
+  // child of its parent.
+  BrowserAccessibility* GetPreviousSibling();
+
+  // Return the next sibling of this object, or NULL if it's the last child
+  // of its parent.
+  BrowserAccessibility* GetNextSibling();
+
+  // Accessors
+  LONG child_id() { return child_id_; }
+
+  // Add one to the reference count and return the same object. Always
+  // use this method when returning a BrowserAccessibility object as
+  // an output parameter to a COM interface, never use it otherwise.
+  BrowserAccessibility* NewReference();
+
+  //
+  // IAccessible methods.
+  //
 
   // Performs the default action on a given object.
   STDMETHODIMP accDoDefaultAction(VARIANT var_id);
@@ -101,8 +134,8 @@ class ATL_NO_VTABLE BrowserAccessibility
   // Returns the value associated with the object.
   STDMETHODIMP get_accValue(VARIANT var_id, BSTR* value);
 
-  // Non-supported (by WebKit) IAccessible methods.
-  STDMETHODIMP accSelect(LONG flags_sel, VARIANT var_id) { return E_NOTIMPL; }
+  // Make an object take focus or extend the selection.
+  STDMETHODIMP accSelect(LONG flags_sel, VARIANT var_id);
 
   STDMETHODIMP get_accHelpTopic(BSTR* help_file,
                                 VARIANT var_id,
@@ -110,77 +143,143 @@ class ATL_NO_VTABLE BrowserAccessibility
 
   STDMETHODIMP get_accSelection(VARIANT* selected);
 
-  // Deprecated functions, not implemented here.
-  STDMETHODIMP put_accName(VARIANT var_id, BSTR put_name) { return E_NOTIMPL; }
-  STDMETHODIMP put_accValue(VARIANT var_id, BSTR put_val) { return E_NOTIMPL; }
-
-  // Accessors/mutators.
-  HWND parent_hwnd() const { return parent_hwnd_;}
-
-  // Modify/retrieve the state (active/inactive) of this instance.
-  void set_instance_active(bool instance_active) {
-    instance_active_ = instance_active;
+  // Deprecated methods, not implemented.
+  STDMETHODIMP put_accName(VARIANT var_id, BSTR put_name) {
+    return E_NOTIMPL;
   }
-  int instance_active() const { return instance_active_; }
+  STDMETHODIMP put_accValue(VARIANT var_id, BSTR put_val) {
+    return E_NOTIMPL;
+  }
 
-  int routing_id() const { return routing_id_; }
+  //
+  // IAccessible2 methods.
+  //
+
+  // Returns role from a longer list of possible roles.
+  STDMETHODIMP role(LONG* role);
+
+  // Returns the state bitmask from a larger set of possible states.
+  STDMETHODIMP get_states(AccessibleStates* states);
+
+  // Get the unique ID of this object so that the client knows if it's
+  // been encountered previously.
+  STDMETHODIMP get_uniqueID(LONG* unique_id);
+
+  // Get the window handle of the enclosing window.
+  STDMETHODIMP get_windowHandle(HWND* window_handle);
+
+  // Get this object's index in its parent object.
+  STDMETHODIMP get_indexInParent(LONG* index_in_parent);
+
+  // IAccessible2 methods not implemented.
+  STDMETHODIMP get_extendedRole(BSTR* extended_role) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_nRelations(LONG* n_relations) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_relation(LONG relation_index,
+                            IAccessibleRelation** relation) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_relations(LONG max_relations,
+                             IAccessibleRelation** relations,
+                             LONG *n_relations) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP scrollTo(enum IA2ScrollType scroll_type) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP scrollToPoint(enum IA2CoordinateType coordinate_type,
+                             LONG x,
+                             LONG y) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_groupPosition(LONG* group_level,
+                                 LONG* similar_items_in_group,
+                                 LONG* position_in_group) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_localizedExtendedRole(BSTR* localized_extended_role) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_nExtendedStates(LONG* n_extended_states) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_extendedStates(LONG max_extended_states,
+                                  BSTR** extended_states,
+                                  LONG* n_extended_states) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_localizedExtendedStates(LONG max_localized_extended_states,
+                                           BSTR** localized_extended_states,
+                                           LONG* n_localized_extended_states) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_locale(IA2Locale* locale) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_attributes(BSTR* attributes) {
+    return E_NOTIMPL;
+  }
+
+  //
+  // IServiceProvider methods.
+  //
+
+  STDMETHODIMP QueryService(REFGUID guidService, REFIID riid, void** object);
 
  private:
-  // Creates a VARIANT that will reference the current accessibility
-  // object, not a child accessibility object.
-  VARIANT ChildSelfVariant() const {
-    VARIANT var;
-    V_VT(&var) = VT_I4;
-    V_I4(&var) = CHILDID_SELF;
-    return var;
-  }
-
-  // Wrapper functions, calling through to singleton instance of
-  // BrowserAccessibilityManager.
-
-  // Creates an instance of BrowserAccessibility, initializes it and sets the
-  // [iaccessible_id] and [parent_id].
-  STDMETHODIMP CreateInstance(REFIID iid,
-                              int iaccessible_id,
-                              void** interface_ptr);
-
-  // Composes and sends a message for requesting needed accessibility
-  // information. Unused LONG input parameters should be NULL, and the VARIANT
-  // an empty, valid instance.
-  bool RequestAccessibilityInfo(int iaccessible_func_id,
-                                VARIANT var_id,
-                                LONG input1, LONG input2);
-
-  // Accessors.
-  const WebAccessibility::OutParams& response();
+  // Many MSAA methods take a var_id parameter indicating that the operation
+  // should be performed on a particular child ID, rather than this object.
+  // This method tries to figure out the target object from |var_id| and
+  // returns a pointer to the target object if it exists, otherwise NULL.
+  // Does not return a new reference.
+  BrowserAccessibility* GetTargetFromChildID(const VARIANT& var_id);
 
   // Returns a conversion from the BrowserAccessibilityRole (as defined in
   // webkit/glue/webaccessibility.h) to an MSAA role.
-  long MSAARole(long browser_accessibility_role);
+  LONG MSAARole(LONG browser_accessibility_role);
 
   // Returns a conversion from the BrowserAccessibilityState (as defined in
   // webkit/glue/webaccessibility.h) to MSAA states set.
-  long MSAAState(long browser_accessibility_state);
+  LONG MSAAState(LONG browser_accessibility_state);
 
-  // Id to uniquely distinguish this instance in the render-side caching,
-  // mapping it to the correct IAccessible on that side. Initialized to -1.
-  int iaccessible_id_;
+  // The manager of this tree of accessibility objects; needed for
+  // global operations like focus tracking.
+  BrowserAccessibilityManager* manager_;
+  // The parent of this object, may be NULL if we're the root object.
+  BrowserAccessibility* parent_;
+  // The ID of this object; globally unique within the browser process.
+  LONG child_id_;
+  // The index of this within its parent object.
+  LONG index_in_parent_;
+  // The ID of this object in the renderer process.
+  int32 renderer_id_;
 
-  // The unique ids of this IAccessible instance. Used to help
-  // BrowserAccessibilityManager instance retrieve the correct member
-  // variables for this process.
-  int routing_id_;
-  int process_id_;
+  // The children of this object.
+  std::vector<BrowserAccessibility*> children_;
 
-  HWND parent_hwnd_;
+  // Accessibility metadata from the renderer, used to respond to MSAA
+  // events.
+  string16 name_;
+  string16 value_;
+  string16 action_;
+  string16 description_;
+  string16 help_;
+  string16 shortcut_;
+  LONG role_;
+  LONG state_;
+  WebKit::WebRect location_;
 
-  // The instance should only be active if there is a non-terminated
-  // RenderProcessHost associated with it. The BrowserAccessibilityManager keeps
-  // track of this state, and sets it to false to disable all calls into the
-  // renderer from this instance of BroweserAccessibility, and have all
-  // IAccessible functions return E_FAIL.
+  // COM objects are reference-counted. When we're done with this object
+  // and it's removed from our accessibility tree, a client may still be
+  // holding onto a pointer to this object, so we mark it as inactive
+  // so that calls to any of this object's methods immediately return
+  // failure.
   bool instance_active_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibility);
 };
+
 #endif  // CHROME_BROWSER_BROWSER_ACCESSIBILITY_H_
