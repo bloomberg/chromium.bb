@@ -55,8 +55,8 @@ class SRPC_Plugin : public NPInstance, public PortablePluginInterface {
                     uint16_t* stype);
   int32_t WriteReady(NPStream* stream);
   int32_t Write(NPStream* stream,
-                int32 offset,
-                int32 len,
+                int32_t offset,
+                int32_t len,
                 void* buf);
 
   void StreamAsFile(NPStream* stream, const char* filename);
