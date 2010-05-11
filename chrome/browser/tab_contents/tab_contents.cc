@@ -1966,6 +1966,9 @@ void TabContents::OnPageContents(const GURL& url,
   // TODO(brettw) we may want to consider more elaborate heuristics such as
   // the cachability of the page. We may also want to consider subframes (this
   // test will still index subframes if the subframe is SSL).
+  // TODO(zelidrag) bug chromium-os:2808 - figure out if we want to reenable
+  // content indexing for chromeos in some future releases.
+#if !defined(OS_CHROMEOS)
   if (!url.SchemeIsSecure()) {
     Profile* p = profile();
     if (p && !p->IsOffTheRecord()) {
@@ -1974,6 +1977,7 @@ void TabContents::OnPageContents(const GURL& url,
         hs->SetPageContents(url, contents);
     }
   }
+#endif
 
   language_state_.LanguageDetermined(language);
 
