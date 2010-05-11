@@ -274,8 +274,6 @@ void LanguageLibraryImpl::FlushImeConfig() {
       timer_.Stop();  // no-op if it's not running.
     }
   } else {
-    LOG(INFO) << "No connection to IBus. # of pending set config commands: "
-              << pending_config_requests_.size();
     if (!timer_.IsRunning()) {
       static const int64 kTimerIntervalInSec = 1;
       timer_.Start(base::TimeDelta::FromSeconds(kTimerIntervalInSec), this,
