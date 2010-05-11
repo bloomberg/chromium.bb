@@ -175,6 +175,7 @@ class ProfileSyncServiceTypedUrlTest : public testing::Test {
       // State changes once for the backend init and once for startup done.
       EXPECT_CALL(observer_, OnStateChanged()).
           WillOnce(InvokeTask(task)).
+          WillOnce(Return()).
           WillOnce(QuitUIMessageLoop());
       service_->RegisterDataTypeController(data_type_controller);
       service_->Initialize();

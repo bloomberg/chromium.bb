@@ -96,7 +96,7 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartFirstTime)) {
   EXPECT_CALL(*data_type_manager, state()).
       WillOnce(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
-  EXPECT_CALL(observer_, OnStateChanged()).Times(3);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(4);
   service_->EnableForUser();
 }
 
@@ -107,7 +107,7 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartNormal)) {
       WillOnce(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
 
-  EXPECT_CALL(observer_, OnStateChanged()).Times(2);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(3);
 
   service_->Initialize();
 }
@@ -124,7 +124,7 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartFailure)) {
   EXPECT_CALL(*data_type_manager, state()).
       WillOnce(Return(DataTypeManager::STOPPED));
 
-  EXPECT_CALL(observer_, OnStateChanged()).Times(2);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(3);
 
   service_->Initialize();
   EXPECT_TRUE(service_->unrecoverable_error_detected());
@@ -148,7 +148,7 @@ TEST_F(ProfileSyncServiceStartupBootstrapTest, SKIP_MACOSX(StartFirstTime)) {
   EXPECT_CALL(*data_type_manager, state()).
       WillOnce(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
-  EXPECT_CALL(observer_, OnStateChanged()).Times(3);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(5);
 
   profile_.GetPrefs()->ClearPref(prefs::kSyncHasSetupCompleted);
   // Will start sync even though setup hasn't been completed (since

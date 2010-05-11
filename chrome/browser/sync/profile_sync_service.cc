@@ -88,6 +88,7 @@ void ProfileSyncService::Initialize() {
       // profile,) then bootstrap it.
       StartUp();
       profile()->GetPrefs()->SetBoolean(prefs::kSyncBootstrappedAuth, true);
+      FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
     }
   } else {
     StartUp();
@@ -585,6 +586,7 @@ void ProfileSyncService::Observe(NotificationType type,
                                  const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::SYNC_CONFIGURE_START: {
+      FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
       // TODO(sync): Maybe toast?
       break;
     }
