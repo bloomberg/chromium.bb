@@ -419,7 +419,7 @@ void Browser::OpenURLOffTheRecord(Profile* profile, const GURL& url) {
 }
 
 // static
-Browser* Browser::FindAppWindowOrPanel(Profile* profile, 
+Browser* Browser::FindAppWindowOrPanel(Profile* profile,
                                        Extension* extension_app) {
   // Test the focused browser first.
   Browser* browser = BrowserList::GetLastActive();
@@ -478,7 +478,7 @@ TabContents* Browser::OpenApplication(Profile* profile,
 TabContents* Browser::OpenApplication(Profile* profile,
                                       Extension* extension,
                                       Extension::LaunchContainer container) {
-  TabContents* tab;
+  TabContents* tab = NULL;
 
   // If the app is loaded in an existing window or panel, focus it.
   Browser* browser = FindAppWindowOrPanel(profile, extension);
