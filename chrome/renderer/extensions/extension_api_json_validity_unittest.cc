@@ -118,6 +118,7 @@ TEST_F(ExtensionApiJsonValidityTest, Basic) {
       << error_message;
 }
 
+// Crashes on Vista, see http://crbug.com/43855
 #if defined(OS_WIN)
 #define MAYBE_WithV8 DISABLED_WithV8
 #else
