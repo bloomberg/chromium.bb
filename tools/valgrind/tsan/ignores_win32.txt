@@ -5,10 +5,22 @@
 # TODO(timurrrr): investigate whether we need to instrument them
 obj:*CRYPT32.dll*
 obj:*RPCRT4.dll*
+fun_r:*SHA256*
+fun_r:*BCryptGenerateSymmetricKey*
 
-# Benign race on mutext unlock
+obj:*WINHTTP.dll*
+
+# Benign race on mutex unlock
 fun:_Mtxunlock
+
+# Benign race during clock initialization
+fun_r:*InitializeClock*
 
 # Some unknown Windows guts
 fun_r:Ordinal_*
 fun:unnamedImageEntryPoint
+
+# Strange reports on net_unittests, maybe related to raising
+# a debug exception by PlatformThread
+# TODO(timurrrr): investigate
+fun_r:*PlatformThread*SetName*
