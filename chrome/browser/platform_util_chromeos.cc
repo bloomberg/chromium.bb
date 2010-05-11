@@ -51,7 +51,7 @@ void OpenItem(const FilePath& full_path) {
       ext == ".htm") {
     std::string path;
     path = "file://";
-    path += full_path.value();
+    path.append(full_path.value());
     if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
       bool result = ChromeThread::PostTask(
           ChromeThread::UI, FROM_HERE,
@@ -61,8 +61,8 @@ void OpenItem(const FilePath& full_path) {
     }
     Browser* browser = BrowserList::GetLastActive();
     browser->AddTabWithURL(
-        GURL(path), GURL(), PageTransition::LINK,
-        true, -1, false, NULL);
+        GURL(path), GURL(), PageTransition::LINK, -1, Browser::ADD_SELECTED,
+        NULL, std::string());
     return;
   }
   if (ext == ".avi" ||
