@@ -139,7 +139,17 @@
           {
             'mac_bundle': 1,
             'product_extension': 'plugin',
-            'product_name': '<(plugin_npapi_filename)',
+            'conditions': [
+              ['"<(plugin_npapi_filename)" == "npo3dautoplugin"',
+                {
+                  # The unbranded Mac plugin's name is a special case.
+                  'product_name': 'O3D',
+                },
+                {
+                  'product_name': '<(plugin_npapi_filename)',
+                },
+              ],
+            ],
             'dependencies': [
               '../../breakpad/breakpad.gyp:breakpad',
             ],
@@ -202,7 +212,18 @@
                   'copy_frameworks_path': 'mac/plugin_copy_frameworks.sh',
                 },
                 'postbuild_name': 'Copy Frameworks',
-                'action': ['<(copy_frameworks_path)', '<(plugin_npapi_filename)'],
+                'conditions': [
+                  ['"<(plugin_npapi_filename)" == "npo3dautoplugin"',
+                    {
+                      # The unbranded Mac plugin's name is a special case.
+                      'action': ['<(copy_frameworks_path)', 'O3D'],
+                    },
+                    {
+                      'action': ['<(copy_frameworks_path)',
+                                 '<(plugin_npapi_filename)'],
+                    },
+                  ],
+                ],
               },
               {
                 'postbuild_name': 'Process Resource File',
@@ -217,10 +238,24 @@
               },
               {
                 'postbuild_name': 'Compile Resource File',
-                'action': ['/usr/bin/Rez',
-                  '-o',
-                  '${BUILT_PRODUCTS_DIR}/<(plugin_npapi_filename).plugin/Contents/Resources/<(plugin_npapi_filename).rsrc',
-                  '${BUILT_PRODUCTS_DIR}/O3D.r',
+                'conditions': [
+                  ['"<(plugin_npapi_filename)" == "npo3dautoplugin"',
+                    {
+                      # The unbranded Mac plugin's name is a special case.
+                      'action': ['/usr/bin/Rez',
+                        '-o',
+                        '${BUILT_PRODUCTS_DIR}/O3D.plugin/Contents/Resources/O3D.rsrc',
+                        '${BUILT_PRODUCTS_DIR}/O3D.r',
+                      ],
+                    },
+                    {
+                      'action': ['/usr/bin/Rez',
+                        '-o',
+                        '${BUILT_PRODUCTS_DIR}/<(plugin_npapi_filename).plugin/Contents/Resources/<(plugin_npapi_filename).rsrc',
+                        '${BUILT_PRODUCTS_DIR}/O3D.r',
+                      ],
+                    },
+                  ],
                 ],
               },
             ],
@@ -364,7 +399,17 @@
                 {
                   'mac_bundle': 1,
                   'product_extension': 'plugin',
-                  'product_name': '<(plugin_npapi_filename)',
+                  'conditions': [
+                    ['"<(plugin_npapi_filename)" == "npo3dautoplugin"',
+                      {
+                        # The unbranded Mac plugin's name is a special case.
+                        'product_name': 'O3D',
+                      },
+                      {
+                        'product_name': '<(plugin_npapi_filename)',
+                      },
+                    ],
+                  ],
                   'dependencies': [
                     '../../breakpad/breakpad.gyp:breakpad',
                   ],
@@ -550,14 +595,32 @@
                       'outputs': [
                         '<(SHARED_INTERMEDIATE_DIR)/plugin/Info.plist',
                       ],
-                      'action': ['python',
-                        'version_info.py',
-                        '--set_name=<(plugin_name)',
-                        '--set_version=<(plugin_version)',
-                        '--set_npapi_filename=<(plugin_npapi_filename)',
-                        '--set_npapi_mimetype=<(plugin_npapi_mimetype)',
-                        'mac/Info.plist',
-                        '<(SHARED_INTERMEDIATE_DIR)/plugin/Info.plist',
+                      'conditions': [
+                        ['"<(plugin_npapi_filename)" == "npo3dautoplugin"',
+                          {
+                            # The unbranded Mac plugin's name is a special case.
+                            'action': ['python',
+                              'version_info.py',
+                              '--set_name=<(plugin_name)',
+                              '--set_version=<(plugin_version)',
+                              '--set_npapi_filename=O3D',
+                              '--set_npapi_mimetype=<(plugin_npapi_mimetype)',
+                              'mac/Info.plist',
+                              '<(SHARED_INTERMEDIATE_DIR)/plugin/Info.plist',
+                            ],
+                          },
+                          {
+                            'action': ['python',
+                              'version_info.py',
+                              '--set_name=<(plugin_name)',
+                              '--set_version=<(plugin_version)',
+                              '--set_npapi_filename=<(plugin_npapi_filename)',
+                              '--set_npapi_mimetype=<(plugin_npapi_mimetype)',
+                              'mac/Info.plist',
+                              '<(SHARED_INTERMEDIATE_DIR)/plugin/Info.plist',
+                            ],
+                          },
+                        ],
                       ],
                     },
                   ],

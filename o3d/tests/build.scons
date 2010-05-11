@@ -546,7 +546,7 @@ cleanup_steps = []
 selenium_good_to_go = True
 
 if run_env.Bit('mac'):
-  plugin_path = '$ARTIFACTS_DIR/npo3dautoplugin.plugin'
+  plugin_path = '$ARTIFACTS_DIR/O3D.plugin'
 
   if run_env['MAC_HERMETIC_FIREFOX_DIR']:
     # if we have a hermetic version of Firefox, then run it
