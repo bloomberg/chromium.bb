@@ -161,6 +161,23 @@ TEST(test_clone_disallowed_flags) {
   assert(errno == EPERM);
 }
 
+void *fp_thread(void *x) {
+  int val;
+  asm("movss %%xmm0, %0" : "=m"(val));
+  printf("val=%i\n", val);
+  return NULL;
+}
+
+TEST(test_fp_regs) {
+  StartSeccompSandbox();
+  int val = 1234;
+  asm("movss %0, %%xmm0" : "=m"(val));
+  pthread_t tid;
+  pthread_create(&tid, NULL, fp_thread, NULL);
+  pthread_join(tid, NULL);
+  printf("thread done OK\n");
+}
+
 long long read_tsc() {
   long long rc;
   asm volatile(

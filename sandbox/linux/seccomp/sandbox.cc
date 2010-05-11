@@ -252,16 +252,8 @@ void (*Sandbox::segv())(int signo, SysCalls::siginfo *context, void *unused) {
       // Copy signal frame onto new stack. See clone.cc for details
    "14:cmp  $56+0xF000, %%rax\n"   // NR_clone + 0xF000
       "jnz  15f\n"
-      "mov  0xA8(%%rsp), %%rcx\n"  // %rsp at time of segmentation fault
-      "sub  %%rsp, %%rcx\n"        // %rcx = size of stack frame
-      "sub  $8, %%rcx\n"           // skip return address
-      "mov  %%rcx, %%rax\n"        // return size of signal stack frame
-      "mov  0(%%rdx), %%rdi\n"     // stack for newly clone()'d thread
-      "sub  %%rcx, %%rdi\n"        // copy onto new stack
-      "mov  %%rdi, 0(%%rdx)\n"     // allocate space on new stack
-      "lea  8(%%rsp), %%rsi\n"     // copy from current stack
-      "cld\n"
-      "rep  movsb\n"
+      "lea  8(%%rsp), %%rax\n"     // retain stack frame upon returning
+      "mov  %%rax, 0xA8(%%rsp)\n"  // %rsp at time of segmentation fault
       "jmp  7b\n"
 
       // Forward system call to syscallWrapper()
@@ -441,32 +433,9 @@ void (*Sandbox::segv())(int signo, SysCalls::siginfo *context, void *unused) {
       // See clone.cc for details
    "18:cmp  $120+0xF000, %%eax\n"  // NR_clone + 0xF000
       "jnz  19f\n"
-      "mov  0xC0(%%esp), %%ecx\n"  // %esp at time of segmentation fault
-      "sub  %%esp, %%ecx\n"        // %ecx = size of RT stack frame
-      "mov  %%ecx, %%eax\n"
-      "add  $0x1C8, %%eax\n"       // adjust for size of legacy stack frame
-      "sub  $0x100, %%ecx\n"
-      "mov  0(%%edx), %%edi\n"     // stack for newly clone()'d thread
-      "sub  %%ecx, %%edi\n"        // copy onto new stack
-      "lea  0x100(%%esp), %%esi\n"
-      "cld\n"
-      "rep movsb\n"                // copy parts of RT stack(sigmask, FP state)
-      "mov  0xF0(%%esp), %%ebx\n"  // adjust pointer to fpstate
-      "sub  %%esi, %%ebx\n"
-      "add  %%edi, %%ebx\n"
-      "sub  %%eax, %%edi\n"
-      "mov  %%edi, 0(%%edx)\n"     // allocate space on new stack
-      "lea  0xA4(%%esp), %%esi\n"  // copy sigcontext from current stack
-      "mov  $0x16, %%ecx\n"
-      "rep  movsl\n"
-      "mov  %%ebx, -0xC(%%edi)\n"  // set pointer to fpstate
-      "mov  0xFC(%%esp), %%ebx\n"  // copy first half of signal mask
-      "mov  %%ebx, -0x8(%%edi)\n"
-      "mov  %%eax, -0x2C(%%edi)\n" // return size of stack frame in %%eax
-      "addl $2, -0x20(%%edi)\n"    // adjust %eip
-      "mov  0(%%edx), %%esp\n"
-      "mov  $119, %%eax\n"         // NR_sigreturn
-      "int  $0x80\n"
+      "lea  -0x1C8(%%esp), %%eax\n"// retain stack frame upon returning
+      "mov  %%eax, 0xC0(%%esp)\n"  // %esp at time of segmentation fault
+      "jmp  3b\n"
 
       // Forward system call to syscallWrapper()
    "19:call playground$syscallWrapper\n"

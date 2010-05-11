@@ -63,18 +63,29 @@ long Sandbox::sandbox_clone(int flags, char* stack, int* pid, int* ctid,
     // developers treat the initial part of the stack frame as a stable part
     // of the ABI. So, we can rely on fixed, well-defined offsets for accessing
     // register values and for accessing the signal mask.
-    #if defined(__x86_64__) || defined(__i386__)
     #if defined(__x86_64__)
     // Red zone compensation. The instrumented system call will remove 128
     // bytes from the thread's stack prior to returning to the original
     // call site.
     stack                   -= 128;
     request.clone_req.stack  = stack;
-    #endif
-    asm("int $0"
-        : "=m"(request.clone_req.stack)
-        : "a"(__NR_clone + 0xF000), "d"(&request.clone_req.stack)
-        : "memory");
+    void *dummy;
+    asm volatile("mov %%rsp, %%rcx\n"
+                 "mov %3, %%rsp\n"
+                 "int $0\n"
+                 "mov %%rcx, %%rsp\n"
+                 : "=a"(request.clone_req.stack), "=&c"(dummy)
+                 : "a"(__NR_clone + 0xF000), "m"(request.clone_req.stack)
+                 : "memory");
+    #elif defined(__i386__)
+    void *dummy;
+    asm volatile("mov %%esp, %%ecx\n"
+                 "mov %3, %%esp\n"
+                 "int $0\n"
+                 "mov %%ecx, %%esp\n"
+                 : "=a"(request.clone_req.stack), "=&c"(dummy)
+                 : "a"(__NR_clone + 0xF000), "m"(request.clone_req.stack)
+                 : "memory");
     #else
     #error Unsupported target platform
     #endif

@@ -45,14 +45,12 @@ void Sandbox::createTrustedThread(int processFdPub, int cloneFdPub,
       // newly created thread's stacks prior to cloning. See clone.cc for
       // details.
       "mov  $56+0xF000, %%eax\n"   // __NR_clone + 0xF000
-      "sub  $8, %%rsp\n"
-      "mov  %%rsp, %%rdx\n"        // push a signal stack frame (see clone.cc)
-      "mov  %%rsp, 0(%%rsp)\n"
-      "int  $0\n"
-      "mov  0(%%rsp), %%r9\n"
-      "add  $8, 0xA0(%%r9)\n"      // pop stack upon call to sigreturn()
+      "mov  %%rsp, %%rcx\n"
+      "int  $0\n"                  // push a signal stack frame (see clone.cc)
+      "mov  %%rcx, 0xA0(%%rsp)\n"  // pop stack upon call to sigreturn()
+      "mov  %%rsp, %%r9\n"
       "mov  $2, %%rdi\n"           // how     = SIG_SETMASK
-      "movq $-1, 0(%%rsp)\n"
+      "pushq $-1\n"
       "mov  %%rsp, %%rsi\n"        // set     = full mask
       "xor  %%rdx, %%rdx\n"        // old_set = NULL
       "mov  $8, %%r10\n"           // mask all 64 signals
@@ -699,7 +697,6 @@ void Sandbox::createTrustedThread(int processFdPub, int cloneFdPub,
       "pop  %%rax\n"
 
       // Return to caller. We are in the new thread, now.
-      "xor  %%rax, %%rax\n"
       "test %%r15, %%r15\n"
       "jnz  34f\n"                 // Returning to createTrustedThread()
 
@@ -745,11 +742,6 @@ void Sandbox::createTrustedThread(int processFdPub, int cloneFdPub,
   asm volatile(
       "push %%ebx\n"
       "push %%ebp\n"
-      "movd %0, %%mm6\n"           // %mm6 = args
-      "lea  999f, %%ebx\n"         // continue in same thread
-      "movd %%ebx, %%mm3\n"
-      "xor  %%edi, %%edi\n"        // initial sequence number
-      "movd %%edi, %%mm2\n"
 
       // Signal handlers are process-wide. This means that for security
       // reasons, we cannot allow that the trusted thread ever executes any
@@ -773,16 +765,15 @@ void Sandbox::createTrustedThread(int processFdPub, int cloneFdPub,
       // through the same steps of creating a signal stack frame on the
       // newly created thread's stacks prior to cloning. See clone.cc for
       // details.
+      "mov  %0, %%edi\n"           // create signal stack before accessing MMX
       "mov  $120+0xF000, %%eax\n"  // __NR_clone + 0xF000
-      "sub  $8, %%esp\n"
-      "mov  %%esp, %%edx\n"        // push a signal stack frame (see clone.cc)
-      "mov  %%esp, 0(%%esp)\n"
-      "int  $0\n"
-      "mov  0(%%esp), %%ebp\n"
-      "add  $8, 0x1C(%%ebp)\n"     // pop stack upon call to sigreturn()
+      "mov  %%esp, %%ebp\n"
+      "int  $0\n"                  // push a signal stack frame (see clone.cc)
+      "mov  %%ebp, 0x1C(%%esp)\n"  // pop stack upon call to sigreturn()
+      "mov  %%esp, %%ebp\n"
       "mov  $2, %%ebx\n"           // how     = SIG_SETMASK
-      "movl $-1, 0(%%esp)\n"
-      "movl $-1, 4(%%esp)\n"
+      "pushl $-1\n"
+      "pushl $-1\n"
       "mov  %%esp, %%ecx\n"        // set     = full mask
       "xor  %%edx, %%edx\n"        // old_set = NULL
       "mov  $8, %%esi\n"           // mask all 64 signals
@@ -791,6 +782,11 @@ void Sandbox::createTrustedThread(int processFdPub, int cloneFdPub,
       "mov  $126, %%eax\n"         // NR_sigprocmask
       "int  $0x80\n"
       "xor  %%esp, %%esp\n"        // invalidate the stack in all trusted code
+      "movd %%edi, %%mm6\n"        // %mm6 = args
+      "lea  999f, %%edi\n"         // continue in same thread
+      "movd %%edi, %%mm3\n"
+      "xor  %%edi, %%edi\n"        // initial sequence number
+      "movd %%edi, %%mm2\n"
       "jmp  20f\n"                 // create trusted thread
 
       // TODO(markus): Coalesce the read() operations by reading into a bigger
@@ -1452,13 +1448,7 @@ void Sandbox::createTrustedThread(int processFdPub, int cloneFdPub,
       "pop  %%eax\n"
 
       // Return to caller. We are in the new thread, now.
-      "xor  %%eax, %%eax\n"
       "movd %%mm3, %%ebx\n"
-
-      // Release MMX registers, so that they can be used for floating point
-      // operations.
-      "emms\n"
-
       "test %%ebx, %%ebx\n"
       "jnz  35f\n"                 // Returning to createTrustedThread()
 
