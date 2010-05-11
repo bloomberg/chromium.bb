@@ -102,12 +102,11 @@ void DeviceContext2D::PaintImageData(PP_Resource image,
   const SkBitmap& new_image_bitmap = new_image_data->GetMappedBitmap();
 
   // TODO(brettw) handle multiple dirty rects.
-  DCHECK(dirty_rect_count == 1);
+  DCHECK(dirty_rect_count <= 1);
 
   // Draw the bitmap to the backing store.
   SkIRect src_rect;
-  if (dirty->point.x == 0 && dirty->point.y == 0 &&
-      dirty->size.width == 0 && dirty->size.height == 0) {
+  if (dirty_rect_count == 0 || !dirty) {
     // Default to the entire bitmap.
     src_rect.fLeft = 0;
     src_rect.fTop = 0;
