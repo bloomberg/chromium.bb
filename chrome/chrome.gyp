@@ -787,7 +787,6 @@
         '../net/net.gyp:net',
         '../third_party/expat/expat.gyp:expat',
         '../third_party/libjingle/libjingle.gyp:libjingle',
-        'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
       ],
       'conditions': [
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {

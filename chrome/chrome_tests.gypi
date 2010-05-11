@@ -1738,11 +1738,6 @@
       # TODO(akalin): Remove this once we have our own test suite and
       # runner.
       'conditions': [
-        ['OS == "win"', {
-          'sources!': [
-            'common/net/url_util_unittest.cc',
-          ],
-        }],
         ['OS == "linux" or OS == "freebsd" or OS == "openbsd" or OS == "solaris"', {
           'dependencies': [
             # Needed to handle the #include chain:
@@ -1757,6 +1752,9 @@
       'target_name': 'notifier_unit_tests',
       'type': 'executable',
       'sources': [
+        # TODO(akalin): Write our own test suite and runner.
+        '../base/test/run_all_unittests.cc',
+        '../base/test/test_suite.h',
         'common/net/notifier/base/mac/network_status_detector_task_mac_unittest.cc',
         'common/net/notifier/listener/talk_mediator_unittest.cc',
         'common/net/notifier/listener/send_update_task_unittest.cc',
@@ -1767,45 +1765,21 @@
         '..',
       ],
       'dependencies': [
-        'common',
-        'debugger',
+        'notifier',
+        '../base/base.gyp:base',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/libjingle/libjingle.gyp:libjingle',
-        'test_support_unit',
       ],
+      # TODO(akalin): Remove this once we have our own test suite and
+      # runner.
       'conditions': [
-        ['OS=="win"', {
+        ['OS == "linux" or OS == "freebsd" or OS == "openbsd" or OS == "solaris"', {
           'dependencies': [
-            '<(allocator_target)',
-          ],
-          'link_settings': {
-            'libraries': [
-              '-lcrypt32.lib',
-              '-lws2_32.lib',
-              '-lsecur32.lib',
-            ],
-          },
-          'configurations': {
-            'Debug_Base': {
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
-                },
-              },
-            },
-          },
-        }],
-        ['OS=="linux"', {
-          'dependencies': [
+            # Needed to handle the #include chain:
+            #   base/test/test_suite.h
+            #   gtk/gtk.h
             '../build/linux/system.gyp:gtk',
-            '../build/linux/system.gyp:nss',
-            'packed_resources'
-          ],
-        }],
-        ['OS=="linux" and chromeos==1', {
-          'include_dirs': [
-            '<(grit_out_dir)',
           ],
         }],
       ],
