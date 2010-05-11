@@ -336,6 +336,9 @@ TEST_F(GeolocationPermissionContextTests, SameOriginMultipleTabs) {
       process_id_for_tab(1), render_id_for_tab(1), bridge_id(), url_a);
   EXPECT_EQ(1, extra_tabs_[1]->infobar_delegate_count());
 
+  ConfirmInfoBarDelegate* removed_infobar =
+      extra_tabs_[1]->GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
+
   // Accept the first tab.
   ConfirmInfoBarDelegate* infobar_0 =
       contents()->GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
@@ -349,6 +352,8 @@ TEST_F(GeolocationPermissionContextTests, SameOriginMultipleTabs) {
   // Now the infobar for the tab with the same origin should have gone.
   EXPECT_EQ(0, extra_tabs_[1]->infobar_delegate_count());
   CheckPermissionMessageSentForTab(1, bridge_id(), true);
+  // Destroy the infobar that has just been removed.
+  removed_infobar->InfoBarClosed();
 
   // But the other tab should still have the info bar...
   EXPECT_EQ(1, extra_tabs_[0]->infobar_delegate_count());
@@ -374,6 +379,9 @@ TEST_F(GeolocationPermissionContextTests, QueuedOriginMultipleTabs) {
       process_id_for_tab(0), render_id_for_tab(0), bridge_id() + 1, url_b);
   EXPECT_EQ(1, extra_tabs_[0]->infobar_delegate_count());
 
+  ConfirmInfoBarDelegate* removed_infobar =
+      contents()->GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
+
   // Accept the second tab.
   ConfirmInfoBarDelegate* infobar_0 =
       extra_tabs_[0]->GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
@@ -387,6 +395,8 @@ TEST_F(GeolocationPermissionContextTests, QueuedOriginMultipleTabs) {
   // Now the infobar for the tab with the same origin should have gone.
   EXPECT_EQ(0, contents()->infobar_delegate_count());
   CheckPermissionMessageSent(bridge_id(), true);
+  // Destroy the infobar that has just been removed.
+  removed_infobar->InfoBarClosed();
 
   // And we should have the queued infobar displayed now.
   EXPECT_EQ(1, extra_tabs_[0]->infobar_delegate_count());
