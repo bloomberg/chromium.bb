@@ -219,7 +219,7 @@ void SSLPolicy::UpdateStateForMixedContent(SSLRequestInfo* info) {
   // TODO(abarth): This function isn't right because we need to remove
   //               info->main_frame_origin().
 
-  if (info->resource_type() != ResourceType::MAIN_FRAME ||
+  if (info->resource_type() != ResourceType::MAIN_FRAME &&
       info->resource_type() != ResourceType::SUB_FRAME) {
     // The frame's origin now contains mixed content and therefore is broken.
     MarkOriginAsBroken(info->frame_origin(), info->child_id());
