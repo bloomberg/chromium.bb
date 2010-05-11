@@ -778,6 +778,8 @@ pre_base_env.AddMethod(CommandTestAgainstGoldenOutput)
 # ----------------------------------------------------------
 if ARGUMENTS.get('pp', 0):
   def CommandPrettyPrinter(cmd, targets, source, env):
+    if not targets:
+      return
     prefix = env.subst('$SOURCE_ROOT') + '/'
     target =  targets[0]
     cmd_tokens = cmd.split()
