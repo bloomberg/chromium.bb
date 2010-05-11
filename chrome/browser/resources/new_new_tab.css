@@ -552,12 +552,12 @@ html[dir=rtl] #option-menu > [command=hide]:before {
 }
 
 .section > * {
-  font-size: 13px;
+  font-size: 12px;
 }
 
 /* small */
 
-@media (max-width: 920px) {
+@media (max-width: 940px) {
 
   #main {
     width: 692px;
@@ -569,6 +569,14 @@ html[dir=rtl] #option-menu > [command=hide]:before {
 
   #notification > span > .blacklist-title {
     max-width: 15ex;
+  }
+}
+
+/* Ensure we have at least 10px horizontal marging. */
+@media (max-width: 712px) {
+  #main {
+    margin-left: 10px;
+    margin-right: 10px;
   }
 }
 
@@ -594,7 +602,7 @@ html[dir=rtl] #option-menu > [command=hide]:before {
   -webkit-transition: background-color .15s;
   background: rgba(255, 255, 255, 0) /* transparent white */
               no-repeat center 5px;
-  background-size: 98px 98px;
+  background-size: 96px 96px;
   border-radius: 10px;
   color: black;
   display: inline-block;
@@ -603,7 +611,7 @@ html[dir=rtl] #option-menu > [command=hide]:before {
   margin-right:5px;
   overflow: hidden;
   padding: 5px;
-  padding-top: 108px; /* 98 + 5 + 5 */
+  padding-top: 106px; /* 96 + 5 + 5 */
   text-align: center;
   text-decoration: none;
   text-overflow: ellipsis;

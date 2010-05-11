@@ -239,7 +239,7 @@ html[dir=rtl] .thumbnail-container > .title > div {
   -webkit-animation: 'fade-in' .15s;
 }
 
-@media (max-width: 920px) {
+@media (max-width: 940px) {
   #most-visited {
     height: 294px;
   }

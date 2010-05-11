@@ -119,7 +119,7 @@ body {
 }
 
 #apps-section a {
-  color: $9; /* COLOR_NTP_LINK */
+  color: $8; /* COLOR_NTP_TEXT */
 }
 
 #apps-section a:hover {
