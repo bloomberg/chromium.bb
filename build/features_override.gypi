@@ -56,7 +56,10 @@
     'enable_touch_events%': '<(enable_touch_events)',
     'conditions': [
       ['use_accelerated_compositing==1', {
-        'feature_defines': ['WTF_USE_ACCELERATED_COMPOSITING=1'],
+        'feature_defines': [
+         'WTF_USE_ACCELERATED_COMPOSITING=1',
+         'ENABLE_3D_RENDERING=1',
+        ],
       }],
     ],
     # TODO: If the need arises, create a mechanism that will intelligently
