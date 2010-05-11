@@ -232,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_JavascriptAlertActivatesTab) {
 #define MAYBE_ThirtyFourTabs ThirtyFourTabs
 #endif
 
-IN_PROC_BROWSER_TEST_F(BrowserTest, ThirtyFourTabs) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_ThirtyFourTabs) {
   GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
                                      FilePath(kTitle2File)));
 
