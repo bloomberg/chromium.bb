@@ -61,7 +61,9 @@ class AutoFillProfilesView : public views::View,
   static int Show(gfx::NativeWindow parent,
                   AutoFillDialogObserver* observer,
                   PersonalDataManager* personal_data_manager,
-                  PrefService* preferences);
+                  PrefService* preferences,
+                  AutoFillProfile* imported_profile,
+                  CreditCard* imported_credit_card);
 
  protected:
   enum EditableSetType {
@@ -173,7 +175,9 @@ class AutoFillProfilesView : public views::View,
 
   AutoFillProfilesView(AutoFillDialogObserver* observer,
                        PersonalDataManager* personal_data_manager,
-                       PrefService* preferences);
+                       PrefService* preferences,
+                       AutoFillProfile* imported_profile,
+                       CreditCard* imported_credit_card);
   void Init();
 
   void GetData();

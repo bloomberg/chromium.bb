@@ -59,7 +59,9 @@ int AutoFillProfilesView::ScrollViewContents::line_height_ = 0;
 AutoFillProfilesView::AutoFillProfilesView(
     AutoFillDialogObserver* observer,
     PersonalDataManager* personal_data_manager,
-    PrefService* preferences)
+    PrefService* preferences,
+    AutoFillProfile* imported_profile,
+    CreditCard* imported_credit_card)
     : observer_(observer),
       personal_data_manager_(personal_data_manager),
       preferences_(preferences),
@@ -72,6 +74,15 @@ AutoFillProfilesView::AutoFillProfilesView(
       preferences_->GetString(prefs::kAutoFillDefaultCreditCard);
   default_profile_iterator_ = profiles_set_.end();
   default_credit_card_iterator_ = credit_card_set_.end();
+  if (imported_profile) {
+    profiles_set_.push_back(EditableSetInfo(imported_profile, true, true));
+    default_profile_iterator_ = profiles_set_.begin();
+  }
+  if (imported_credit_card) {
+    credit_card_set_.push_back(
+        EditableSetInfo(imported_credit_card, true, true));
+    default_credit_card_iterator_ = credit_card_set_.begin();
+  }
 }
 
 AutoFillProfilesView::~AutoFillProfilesView() {
@@ -83,10 +94,12 @@ AutoFillProfilesView::~AutoFillProfilesView() {
 int AutoFillProfilesView::Show(gfx::NativeWindow parent,
                                AutoFillDialogObserver* observer,
                                PersonalDataManager* personal_data_manager,
-                               PrefService* preferences) {
+                               PrefService* preferences,
+                               AutoFillProfile* imported_profile,
+                               CreditCard* imported_credit_card) {
   if (!instance_) {
     instance_ = new AutoFillProfilesView(observer, personal_data_manager,
-                                         preferences);
+        preferences, imported_profile, imported_credit_card);
 
     // |instance_| will get deleted once Close() is called.
     views::Window::CreateChromeWindow(parent, gfx::Rect(), instance_);
@@ -395,36 +408,39 @@ void AutoFillProfilesView::GetData() {
     personal_data_manager_->SetObserver(this);
     return;
   }
-  bool first_item = true;  // first item must be opened.
-  profiles_set_.reserve(personal_data_manager_->profiles().size());
-  bool deafult_set = false;
-  for (std::vector<AutoFillProfile*>::const_iterator address_it =
-       personal_data_manager_->profiles().begin();
-       address_it != personal_data_manager_->profiles().end();
-       ++address_it) {
-    bool default_profile = ((*address_it)->Label() == default_profile_);
-    deafult_set = (deafult_set || default_profile);
-    profiles_set_.push_back(EditableSetInfo(*address_it, first_item,
-                                            default_profile));
-    first_item = false;
+  bool imported_data_present = !profiles_set_.empty() ||
+                               !credit_card_set_.empty();
+  bool default_set = !profiles_set_.empty();
+  if (!imported_data_present) {
+    profiles_set_.reserve(personal_data_manager_->profiles().size());
+    for (std::vector<AutoFillProfile*>::const_iterator address_it =
+         personal_data_manager_->profiles().begin();
+         address_it != personal_data_manager_->profiles().end();
+         ++address_it) {
+      bool default_profile = ((*address_it)->Label() == default_profile_);
+      default_set = (default_set || default_profile);
+      profiles_set_.push_back(EditableSetInfo(*address_it, false,
+                                              default_profile));
+    }
   }
 
   // If nothing is default, set first to be default.
-  if (!deafult_set && profiles_set_.size() > 0)
+  if (!default_set && profiles_set_.size() > 0)
     profiles_set_[0].is_default = true;
-  credit_card_set_.reserve(personal_data_manager_->credit_cards().size());
-  deafult_set = false;
-  for (std::vector<CreditCard*>::const_iterator cc_it =
-       personal_data_manager_->credit_cards().begin();
-       cc_it != personal_data_manager_->credit_cards().end();
-       ++cc_it) {
-    bool default_cc = ((*cc_it)->Label() == default_credit_card_);
-    deafult_set = (deafult_set || default_cc);
-    credit_card_set_.push_back(EditableSetInfo(*cc_it, first_item, default_cc));
-    first_item = false;
+  default_set = !credit_card_set_.empty();
+  if (!imported_data_present) {
+    credit_card_set_.reserve(personal_data_manager_->credit_cards().size());
+    for (std::vector<CreditCard*>::const_iterator cc_it =
+         personal_data_manager_->credit_cards().begin();
+         cc_it != personal_data_manager_->credit_cards().end();
+         ++cc_it) {
+      bool default_cc = ((*cc_it)->Label() == default_credit_card_);
+      default_set = (default_set || default_cc);
+      credit_card_set_.push_back(EditableSetInfo(*cc_it, false, default_cc));
+    }
   }
   // If nothing is default, set first to be default.
-  if (!deafult_set && credit_card_set_.size() > 0)
+  if (!default_set && credit_card_set_.size() > 0)
      credit_card_set_[0].is_default = true;
 
   // Remember default iterators.
@@ -1435,9 +1451,6 @@ void AutoFillProfilesView::AutoFillScrollView::Layout() {
 }
 
 // Declared in "chrome/browser/autofill/autofill_dialog.h"
-// TODO(georgey): Need to update implementation to match new interface for
-// |imported_profile| and |imported_credit_card| parameters.
-// See http://crbug.com/41010
 void ShowAutoFillDialog(gfx::NativeView parent,
                         AutoFillDialogObserver* observer,
                         Profile* profile,
@@ -1454,5 +1467,5 @@ void ShowAutoFillDialog(gfx::NativeView parent,
       profile->GetPersonalDataManager();
   DCHECK(personal_data_manager);
   AutoFillProfilesView::Show(parent, observer, personal_data_manager,
-                             profile->GetPrefs());
+      profile->GetPrefs(), imported_profile, imported_credit_card);
 }
