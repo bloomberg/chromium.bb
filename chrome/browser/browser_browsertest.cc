@@ -226,7 +226,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_JavascriptAlertActivatesTab) {
 // verifying that we don't crash when we pass this limit.
 
 // BrowserTest.ThirtyFourTabs times out on Mac, see http://crbug.com/43862
-#if defined OS(MAC)
+#if defined OS_MACOSX
 #define MAYBE_ThirtyFourTabs DISABLED_ThirtyFourTabs
 #else
 #define MAYBE_ThirtyFourTabs ThirtyFourTabs
