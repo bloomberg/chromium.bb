@@ -33,6 +33,7 @@
 #include "chrome/browser/views/event_utils.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/location_bar/location_bar_view.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/pref_names.h"
@@ -460,7 +461,15 @@ void BookmarkBarView::SetPageNavigator(PageNavigator* navigator) {
 }
 
 gfx::Size BookmarkBarView::GetPreferredSize() {
-  return LayoutItems(true);
+  // We don't want the bookmark bar view in the app launcher new tab page.
+  static bool extension_apps = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableExtensionApps);
+  bool show_bookmark_bar = !(extension_apps && OnNewTabPage());
+
+  if (show_bookmark_bar)
+    return LayoutItems(true);
+  else
+    return gfx::Size();
 }
 
 gfx::Size BookmarkBarView::GetMinimumSize() {
