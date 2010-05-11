@@ -42,8 +42,8 @@ uint32 ChromeNetLog::NextID() {
 
 bool ChromeNetLog::HasListener() const {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  // TODO(eroman): Hack to get refactor working.
-  return passive_collector_->url_request_tracker()->is_unbounded();
+  // (Don't count the PassiveLogCollector observer).
+  return observers_.size() > 1;
 }
 
 void ChromeNetLog::AddObserver(Observer* observer) {
