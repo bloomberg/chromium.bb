@@ -71,11 +71,10 @@ ScreenLocker::~ScreenLocker() {
 void ScreenLocker::Init(const gfx::Rect& bounds) {
   // TODO(oshima): Figure out which UI to keep and remove in the background.
   views::View* screen = new chromeos::BackgroundView();
-  lock_window_ = new views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW);
+  lock_window_ = new views::WidgetGtk(views::WidgetGtk::TYPE_POPUP);
   lock_window_->Init(NULL, bounds);
   lock_window_->SetContentsView(screen);
   lock_window_->Show();
-  lock_window_->MoveAbove(NULL);
 
   authenticator_ =
       LoginUtils::Get()->CreateAuthenticator(this);
@@ -85,6 +84,7 @@ void ScreenLocker::Init(const gfx::Rect& bounds) {
   gfx::Size size = screen_lock_view_->GetPreferredSize();
 
   lock_widget_ = new GrabWidget();
+  lock_widget_->MakeTransparent();
   lock_widget_->Init(lock_window_->window_contents(),
                      gfx::Rect((bounds.width() - size.width()) /2,
                                (bounds.height() - size.width()) /2,
