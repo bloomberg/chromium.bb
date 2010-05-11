@@ -749,6 +749,8 @@ void ToolbarView::RunPageMenu(const gfx::Point& pt) {
   if (destroyed_flag)
     return;
 
+  destroyed_flag_ = NULL;
+
   for (unsigned int i = 0; i < menu_listeners_.size(); i++) {
     page_menu_menu_->RemoveMenuListener(menu_listeners_[i]);
   }
@@ -768,6 +770,8 @@ void ToolbarView::RunAppMenu(const gfx::Point& pt) {
 
   if (destroyed_flag)
     return;
+
+  destroyed_flag_ = NULL;
 
   for (unsigned int i = 0; i < menu_listeners_.size(); i++) {
     app_menu_menu_->RemoveMenuListener(menu_listeners_[i]);

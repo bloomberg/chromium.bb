@@ -159,6 +159,8 @@ bool MenuButton::Activate() {
       return false;
     }
 
+    destroyed_flag_ = NULL;
+
     menu_visible_ = false;
     menu_closed_time_ = Time::Now();
 
