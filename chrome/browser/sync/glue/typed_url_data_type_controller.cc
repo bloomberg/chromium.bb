@@ -14,7 +14,6 @@
 #include "chrome/browser/sync/glue/typed_url_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
-#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/notification_service.h"
 
 namespace browser_sync {
