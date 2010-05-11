@@ -270,23 +270,31 @@ chromeos::UpdateScreen* WizardController::GetUpdateScreen() {
 }
 
 void WizardController::ShowNetworkScreen() {
-  background_view_->SetStatusAreaVisible(false);
+  SetStatusAreaVisible(false);
   SetCurrentScreen(GetNetworkScreen());
 }
 
 void WizardController::ShowLoginScreen() {
-  background_view_->SetStatusAreaVisible(true);
+  SetStatusAreaVisible(true);
   SetCurrentScreen(GetLoginScreen());
 }
 
 void WizardController::ShowAccountScreen() {
-  background_view_->SetStatusAreaVisible(true);
+  SetStatusAreaVisible(true);
   SetCurrentScreen(GetAccountScreen());
 }
 
 void WizardController::ShowUpdateScreen() {
-  background_view_->SetStatusAreaVisible(true);
+  SetStatusAreaVisible(true);
   SetCurrentScreen(GetUpdateScreen());
+}
+
+void WizardController::SetStatusAreaVisible(bool visible) {
+  // When ExistingUserController passes background ownership
+  // to WizardController it happens after screen is shown.
+  if (background_view_) {
+    background_view_->SetStatusAreaVisible(visible);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -107,6 +107,9 @@ class WizardController : public chromeos::ScreenObserver,
   // Switches from one screen to another.
   void SetCurrentScreen(WizardScreen* screen);
 
+  // Changes status area visibility.
+  void SetStatusAreaVisible(bool visible);
+
   // Overridden from chromeos::ScreenObserver:
   virtual void OnExit(ExitCodes exit_code);
   virtual void OnSetUserNamePassword(const std::string& username,
