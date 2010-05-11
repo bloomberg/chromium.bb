@@ -25,10 +25,8 @@ namespace pepper {
 namespace {
 
 void RectToPPRect(const gfx::Rect& input, PP_Rect* output) {
-  output->left = input.x();
-  output->top = input.y();
-  output->right = input.right();
-  output->bottom = input.bottom();
+  *output = PP_MakeRectFromXYWH(input.x(), input.y(),
+                                input.width(), input.height());
 }
 
 PP_Event_Type ConvertEventTypes(WebInputEvent::Type wetype) {

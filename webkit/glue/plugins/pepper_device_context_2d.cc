@@ -106,18 +106,18 @@ void DeviceContext2D::PaintImageData(PP_Resource image,
 
   // Draw the bitmap to the backing store.
   SkIRect src_rect;
-  if (dirty->left == 0 && dirty->top == 0 &&
-      dirty->right == 0 && dirty->bottom == 0) {
+  if (dirty->point.x == 0 && dirty->point.y == 0 &&
+      dirty->size.width == 0 && dirty->size.height == 0) {
     // Default to the entire bitmap.
     src_rect.fLeft = 0;
     src_rect.fTop = 0;
     src_rect.fRight = new_image_bitmap.width();
     src_rect.fBottom = new_image_bitmap.height();
   } else {
-    src_rect.fLeft = dirty->left;
-    src_rect.fTop = dirty->top;
-    src_rect.fRight = dirty->right;
-    src_rect.fBottom = dirty->bottom;
+    src_rect.fLeft = dirty->point.x;
+    src_rect.fTop = dirty->point.y;
+    src_rect.fRight = dirty->point.x + dirty->size.width;
+    src_rect.fBottom = dirty->point.y + dirty->size.height;
   }
   SkRect dest_rect = { SkIntToScalar(src_rect.fLeft),
                        SkIntToScalar(src_rect.fTop),
