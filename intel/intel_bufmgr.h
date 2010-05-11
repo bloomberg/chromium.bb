@@ -126,6 +126,7 @@ int drm_intel_bo_busy(drm_intel_bo *bo);
 int drm_intel_bo_madvise(drm_intel_bo *bo, int madv);
 
 int drm_intel_bo_disable_reuse(drm_intel_bo *bo);
+int drm_intel_bo_is_reusable(drm_intel_bo *bo);
 int drm_intel_bo_references(drm_intel_bo *bo, drm_intel_bo *target_bo);
 
 /* drm_intel_bufmgr_gem.c */

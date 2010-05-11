@@ -247,6 +247,13 @@ struct _drm_intel_bufmgr {
 	int (*bo_disable_reuse) (drm_intel_bo *bo);
 
 	/**
+	 * Query whether a buffer is reusable.
+	 *
+	 * \param bo Buffer to query
+	 */
+	int (*bo_is_reusable) (drm_intel_bo *bo);
+
+	/**
 	 *
 	 * Return the pipe associated with a crtc_id so that vblank
 	 * synchronization can use the correct data in the request.

@@ -229,6 +229,13 @@ int drm_intel_bo_disable_reuse(drm_intel_bo *bo)
 	return 0;
 }
 
+int drm_intel_bo_is_reusable(drm_intel_bo *bo)
+{
+	if (bo->bufmgr->bo_is_reusable)
+		return bo->bufmgr->bo_is_reusable(bo);
+	return 0;
+}
+
 int drm_intel_bo_busy(drm_intel_bo *bo)
 {
 	if (bo->bufmgr->bo_busy)
