@@ -126,6 +126,48 @@
 #define NP_VERSION_MINOR 23
 
 
+/* The OS/2 version of Netscape uses RC_DATA to define the
+   mime types, file extensions, etc that are required.
+   Use a vertical bar to separate types, end types with \0.
+   FileVersion and ProductVersion are 32bit ints, all other
+   entries are strings that MUST be terminated with a \0.
+
+AN EXAMPLE:
+
+RCDATA NP_INFO_ProductVersion { 1,0,0,1,}
+
+RCDATA NP_INFO_MIMEType    { "video/x-video|",
+                             "video/x-flick\0" }
+RCDATA NP_INFO_FileExtents { "avi|",
+                             "flc\0" }
+RCDATA NP_INFO_FileOpenName{ "MMOS2 video player(*.avi)|",
+                             "MMOS2 Flc/Fli player(*.flc)\0" }
+
+RCDATA NP_INFO_FileVersion       { 1,0,0,1 }
+RCDATA NP_INFO_CompanyName       { "Netscape Communications\0" }
+RCDATA NP_INFO_FileDescription   { "NPAVI32 Extension DLL\0"
+RCDATA NP_INFO_InternalName      { "NPAVI32\0" )
+RCDATA NP_INFO_LegalCopyright    { "Copyright Netscape Communications \251 1996\0"
+RCDATA NP_INFO_OriginalFilename  { "NVAPI32.DLL" }
+RCDATA NP_INFO_ProductName       { "NPAVI32 Dynamic Link Library\0" }
+*/
+/* RC_DATA types for version info - required */
+#define NP_INFO_ProductVersion      1
+#define NP_INFO_MIMEType            2
+#define NP_INFO_FileOpenName        3
+#define NP_INFO_FileExtents         4
+/* RC_DATA types for version info - used if found */
+#define NP_INFO_FileDescription     5
+#define NP_INFO_ProductName         6
+/* RC_DATA types for version info - optional */
+#define NP_INFO_CompanyName         7
+#define NP_INFO_FileVersion         8
+#define NP_INFO_InternalName        9
+#define NP_INFO_LegalCopyright      10
+#define NP_INFO_OriginalFilename    11
+
+#ifndef RC_INVOKED
+
 /*----------------------------------------------------------------------*/
 /*                       Definition of Basic Types                      */
 /*----------------------------------------------------------------------*/
@@ -845,6 +887,7 @@ NPBool                NPN_ConvertPoint(NPP instance, double sourceX, double sour
 }  /* end extern "C" */
 #endif
 
+#endif /* RC_INVOKED */
 #ifdef __OS2__
 #pragma pack()
 #endif
