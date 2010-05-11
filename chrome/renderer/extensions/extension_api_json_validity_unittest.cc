@@ -118,10 +118,16 @@ TEST_F(ExtensionApiJsonValidityTest, Basic) {
       << error_message;
 }
 
+#if defined(OS_WIN)
+#define MAYBE_WithV8 DISABLED_WithV8
+#else
+#define MAYBE_WithV8 WithV8
+#endif
+
 // Use V8 to load the string resource version of extension_api.json .
 // This test mimics the method extension_api.json is loaded in
 // chrome/renderer/resources/extension_process_bindings.js .
-TEST_F(ExtensionApiJsonValidityTest, WithV8) {
+TEST_F(ExtensionApiJsonValidityTest, MAYBE_WithV8) {
   std::string ext_api_string =
       bindings_utils::GetStringResource<IDR_EXTENSION_API_JSON>();
 
