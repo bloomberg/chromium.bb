@@ -311,7 +311,8 @@ FileStream::FileStream(base::PlatformFile file, int flags)
 }
 
 FileStream::~FileStream() {
-  Close();
+  if (auto_closed_)
+    Close();
 }
 
 void FileStream::Close() {
