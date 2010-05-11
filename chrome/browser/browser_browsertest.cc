@@ -650,7 +650,7 @@ class BrowserAppRefocusTest : public ExtensionBrowserTest {
   GURL url_;
 };
 
-#if defined(OS_WINDOWS)
+#if defined(OS_WIN)
 
 #define MAYBE_OpenTab OpenTab
 #define MAYBE_OpenPanel OpenPanel
@@ -680,6 +680,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenTab) {
 
   ui_test_utils::NavigateToURL(browser(), url_);
   ASSERT_EQ(1, browser()->tab_count());
+  ASSERT_EQ(NULL, Browser::FindAppTab(browser(), extension_app_));
 
   // Open a tab with the app.
   Browser::OpenApplicationTab(profile_, extension_app_);
@@ -687,6 +688,8 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenTab) {
   ASSERT_EQ(2, browser()->tab_count());
   int app_tab_index = browser()->selected_index();
   ASSERT_EQ(0, app_tab_index) << "App tab should be the left most tab.";
+  ASSERT_EQ(browser()->GetTabContentsAt(0),
+            Browser::FindAppTab(browser(), extension_app_));
 
   // Open the same app.  The existing tab should stay focused.
   Browser::OpenApplication(profile_, extension_app_->id());
@@ -700,6 +703,24 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenTab) {
   Browser::OpenApplication(profile_, extension_app_->id());
   ASSERT_EQ(2, browser()->tab_count());
   ASSERT_EQ(app_tab_index, browser()->selected_index());
+
+  // Open a second browser window, and open the app in a tab.
+  Browser* second_browser = CreateBrowser(profile_);
+  second_browser->window()->Show();
+
+  ASSERT_EQ(NULL, Browser::FindAppTab(second_browser, extension_app_)) <<
+      "Browser::FindAppTab() should not find an app tab in the second " <<
+      "window, beacuse it has not been added yet.";
+
+  Browser::OpenApplication(profile_, extension_app_, Extension::LAUNCH_TAB);
+  ASSERT_EQ(2, second_browser->tab_count()) <<
+      "Expect the app to open in a tab under |second_browser|.";
+  int second_app_tab_index = second_browser->selected_index();
+  ASSERT_EQ(0, second_app_tab_index) <<
+      "Second app tab should be the left most tab.";
+  ASSERT_EQ(second_browser->GetTabContentsAt(0),
+            Browser::FindAppTab(second_browser, extension_app_)) <<
+      "Browser::FindAppTab() should look at the focused window.";
 }
 
 // Test that launching an app refocuses a panel running the app.
@@ -708,6 +729,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenPanel) {
 
   ui_test_utils::NavigateToURL(browser(), url_);
   ASSERT_EQ(1, browser()->tab_count());
+  ASSERT_EQ(NULL, Browser::FindAppWindowOrPanel(profile_, extension_app_));
 
   // Open the app in a panel.
   Browser::OpenApplicationWindow(profile_, extension_app_,
@@ -716,6 +738,8 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenPanel) {
   ASSERT_TRUE(app_panel);
   ASSERT_NE(app_panel, browser()) << "New browser should have opened.";
   ASSERT_EQ(app_panel, BrowserList::GetLastActive());
+  ASSERT_EQ(app_panel,
+            Browser::FindAppWindowOrPanel(profile_, extension_app_));
 
   // Focus the initial browser.
   browser()->window()->Show();
@@ -726,6 +750,8 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenPanel) {
 
   // Focus should move to the panel.
   ASSERT_EQ(app_panel, BrowserList::GetLastActive());
+  ASSERT_EQ(app_panel,
+            Browser::FindAppWindowOrPanel(profile_, extension_app_));
 
   // No new tab should have been created in the initial browser.
   ASSERT_EQ(1, browser()->tab_count());
@@ -737,6 +763,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenWindow) {
 
   ui_test_utils::NavigateToURL(browser(), url_);
   ASSERT_EQ(1, browser()->tab_count());
+  ASSERT_EQ(NULL, Browser::FindAppWindowOrPanel(profile_, extension_app_));
 
   // Open a window with the app.
   Browser::OpenApplicationWindow(profile_, extension_app_,
@@ -754,7 +781,8 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenWindow) {
 
   // Focus should move to the window.
   ASSERT_EQ(app_window, BrowserList::GetLastActive());
-
+  ASSERT_EQ(app_window,
+            Browser::FindAppWindowOrPanel(profile_, extension_app_));
   // No new tab should have been created in the initial browser.
   ASSERT_EQ(1, browser()->tab_count());
 }

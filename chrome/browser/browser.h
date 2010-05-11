@@ -213,6 +213,13 @@ class Browser : public TabStripModelDelegate,
   // |profile|, that session is re-used.
   static void OpenURLOffTheRecord(Profile* profile, const GURL& url);
 
+  // Finds an app tab running a given app in a browser.
+  static TabContents* FindAppTab(Browser* browser, Extension* extension_app);
+
+  // Finds a browser running an app as an app window or panel.
+  static Browser* FindAppWindowOrPanel(Profile* profile,
+                                       Extension* extension_app);
+
   // Open an application specified by |app_id| in the appropriate launch
   // container.  Returns NULL if the app_id is invalid or if ExtensionsService
   // isn't ready/available.

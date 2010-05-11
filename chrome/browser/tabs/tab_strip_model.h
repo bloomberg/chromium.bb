@@ -409,8 +409,8 @@ class TabStripModel : public NotificationObserver {
   // Returns the TabContents at the specified index, or NULL if there is none.
   TabContents* GetTabContentsAt(int index) const;
 
-  // Returns the index of the specified TabContents, or -1 if the TabContents
-  // is not in this TabStripModel.
+  // Returns the index of the specified TabContents, or TabContents::kNoTab if
+  // the TabContents is not in this TabStripModel.
   int GetIndexOfTabContents(const TabContents* contents) const;
 
   // Returns the index of the specified NavigationController, or -1 if it is

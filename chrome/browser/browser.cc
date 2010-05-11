@@ -138,7 +138,7 @@ bool TabHasUnloadListener(TabContents* contents) {
 }
 
 // Returns true if two URLs are equal ignoring their ref (hash fragment).
-static bool CompareURLsIgnoreRef(const GURL& url, const GURL& other) {
+bool CompareURLsIgnoreRef(const GURL& url, const GURL& other) {
   if (url == other)
     return true;
   // If neither has a ref than there is no point in stripping the refs and
@@ -153,110 +153,22 @@ static bool CompareURLsIgnoreRef(const GURL& url, const GURL& other) {
   return url_no_ref == other_no_ref;
 }
 
-// Helper for FindOpenAppInstance(), defined below.  Given a browser, test
-// if it runs under |profile| and hosts app |extension_app|.  If
-// |find_panel_or_window| is true, check that |browser| is an app window
-// or panel, otherwise check that it is not.  Set |out_tab_idx| to
-// the index of the tab that hosts the app.  If the entire browser hosts
-// app, |out_tab_idx| is set to kNoTab.
-bool FindOpenAppInstanceInBrowser(Browser* browser,
-                                  Profile* profile,
-                                  Extension* extension_app,
-                                  bool find_panel_or_window,
-                                  int* out_tab_idx) {
+// Return true if a browser is an app window or panel hosting
+// extension |extension_app|, and running under |profile|.
+bool BrowserHostsExtensionApp(Browser* browser,
+                              Profile* profile,
+                              Extension* extension_app) {
   if (browser->profile() != profile)
+     return false;
+
+  if (browser->type() != Browser::TYPE_EXTENSION_APP &&
+      browser->type() != Browser::TYPE_APP_PANEL)
     return false;
 
-  // If we are looking for an app panel or app window and |browser| is not
-  // one of those types, or vise-versa, then return.
-  Browser::Type type = browser->type();
-  if (find_panel_or_window != ((type == Browser::TYPE_EXTENSION_APP) ||
-                               (type == Browser::TYPE_APP_PANEL)))
+  if (browser->extension_app() != extension_app)
     return false;
 
-  if (browser->extension_app() &&
-      browser->extension_app() == extension_app) {
-    DCHECK(find_panel_or_window) << "Non-app window has an extension app?";
-    *out_tab_idx = TabStripModel::kNoTab;  // The whole window contains the app.
-    return true;
-  }
-
-  for (int tab_idx = 0; tab_idx < browser->tab_count(); ++tab_idx) {
-    TabContents* tab_contents = browser->GetTabContentsAt(tab_idx);
-    if (!tab_contents)
-      continue;
-
-    if (tab_contents->extension_app() != extension_app)
-      continue;
-
-    *out_tab_idx = tab_idx;
-    return true;
-  }
-  return false;
-}
-
-// Find a tab in an open browser window which is running an application
-// |extension_app|.  The browser must use profile |profile|, and be an
-// app window or panel if and only if |find_panel_or_window| is true.
-// Sets |out_browser| and |out_tab_idx| to the browser and tab index of
-// the matching tab on success.  |out_tab_idx| will be kNoTab if the
-// browser is an app window.
-bool FindOpenAppInstance(Profile* profile,
-                         Extension* extension_app,
-                         bool find_panel_or_window,
-                         Browser** out_browser,
-                         int* out_tab_idx) {
-  // Test the focused browser first.
-  Browser* browser = BrowserList::GetLastActive();
-  if (browser && FindOpenAppInstanceInBrowser(browser,
-                                              profile,
-                                              extension_app,
-                                              find_panel_or_window,
-                                              out_tab_idx)) {
-    *out_browser = browser;
-    return true;
-  }
-
-  BrowserList::const_iterator browser_all;
-  for (browser_all = BrowserList::begin();
-       browser_all != BrowserList::end();
-       ++browser_all) {
-    if (FindOpenAppInstanceInBrowser(*browser_all,
-                                     profile,
-                                     extension_app,
-                                     find_panel_or_window,
-                                     out_tab_idx)) {
-      *out_browser = *browser_all;
-      return true;
-    }
-  }
-  return false;
-}
-
-// Find an existing browser window running under |profile| and hosting
-// the app |extension_app|.  Focus it, and return the TabContents of the
-// focused tab.
-TabContents* FocusExistingAppInstance(Profile* profile,
-                                      Extension* extension_app) {
-  Browser* browser;
-  int tab_idx;
-
-  // Fist, search for app windows or panels.  If none are found, search
-  // for app tabs.
-  if (FindOpenAppInstance(profile, extension_app, true, &browser, &tab_idx) ||
-      FindOpenAppInstance(profile, extension_app, false, &browser, &tab_idx)) {
-
-    // If the entire window is owned by the app, then select the first
-    // tab.  TODO(skerner): Does it make more sense to not change the
-    // focused tab?  Reconsider this after using apps for a week or two.
-    if (tab_idx == TabStripModel::kNoTab)
-      tab_idx = 0;
-
-    browser->SelectTabContentsAt(tab_idx, false);
-    browser->window()->Show();
-    return browser->GetTabContentsAt(tab_idx);
-  }
-  return NULL;
+  return true;
 }
 
 }  // namespace
@@ -507,6 +419,43 @@ void Browser::OpenURLOffTheRecord(Profile* profile, const GURL& url) {
 }
 
 // static
+Browser* Browser::FindAppWindowOrPanel(Profile* profile, 
+                                       Extension* extension_app) {
+  // Test the focused browser first.
+  Browser* browser = BrowserList::GetLastActive();
+  if (browser && BrowserHostsExtensionApp(browser, profile, extension_app))
+    return browser;
+
+  BrowserList::const_iterator browser_all;
+  for (browser_all = BrowserList::begin();
+       browser_all != BrowserList::end();
+       ++browser_all) {
+    if (BrowserHostsExtensionApp(*browser_all, profile, extension_app))
+      return *browser_all;
+  }
+  return NULL;
+}
+
+// static
+TabContents* Browser::FindAppTab(Browser* browser, Extension* extension_app) {
+  if (browser->type() != Browser::TYPE_NORMAL)
+    return NULL;
+
+  for (int tab_idx = 0; tab_idx < browser->tab_count(); ++tab_idx) {
+    TabContents* tab_contents = browser->GetTabContentsAt(tab_idx);
+    if (!tab_contents)
+      continue;
+
+    if (tab_contents->extension_app() != extension_app)
+      continue;
+
+    return tab_contents;
+  }
+
+  return NULL;
+}
+
+// static
 // TODO(erikkay): There are multiple reasons why this could fail.  Should
 // this function return an error reason as well so that callers can show
 // reasonable errors?
@@ -522,19 +471,35 @@ TabContents* Browser::OpenApplication(Profile* profile,
   if (!extension)
     return NULL;
 
-  // If the app is loaded in an existing window or tab, Focus it.
-  TabContents* tab = FocusExistingAppInstance(profile, extension);
-  if (tab)
-    return tab;
-
-  // The app is not yet open.  Load it.
   return OpenApplication(profile, extension, extension->launch_container());
 }
 
+// static
 TabContents* Browser::OpenApplication(Profile* profile,
                                       Extension* extension,
                                       Extension::LaunchContainer container) {
-  TabContents* tab = NULL;
+  TabContents* tab;
+
+  // If the app is loaded in an existing window or panel, focus it.
+  Browser* browser = FindAppWindowOrPanel(profile, extension);
+  if (browser) {
+    browser->window()->Show();
+    return browser->GetSelectedTabContents();
+  }
+
+  // If an app is loaded in an app tab in the focused browser, select it.
+  browser = BrowserList::GetLastActive();
+  if (browser && browser->profile() == profile) {
+    tab = Browser::FindAppTab(browser, extension);
+    if (tab) {
+      int tab_idx = browser->tabstrip_model()->GetIndexOfTabContents(tab);
+      DCHECK(tab_idx != TabStripModel::kNoTab);
+      browser->SelectTabContentsAt(tab_idx, false);
+      return tab;
+    }
+  }
+
+  // The app is not yet open.  Load it.
   switch (container) {
     case Extension::LAUNCH_WINDOW:
     case Extension::LAUNCH_PANEL:
