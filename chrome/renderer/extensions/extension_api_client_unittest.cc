@@ -176,7 +176,7 @@ TEST_F(ExtensionAPIClientTest, GetCurrentWindow) {
 }
 
 // http://crbug.com/22248
-TEST_F(ExtensionAPIClientTest, DISABLED_GetLastFocusedWindow) {
+TEST_F(ExtensionAPIClientTest, FLAKY_GetLastFocusedWindow) {
   ExpectJsFail("chrome.windows.getLastFocused(function(){}, 20);",
                "Uncaught Error: Too many arguments.");
 
@@ -492,7 +492,7 @@ TEST_F(ExtensionAPIClientTest, CaptureVisibleTab) {
 
   // Use old signiture.  Check that a null value of the options paramenter
   // is added.
-  ExpectJsPass("chrome.tabs.captureVisibleTab(null, function(img){});", 
+  ExpectJsPass("chrome.tabs.captureVisibleTab(null, function(img){});",
                "tabs.captureVisibleTab", "[null, null]");
 
   ExpectJsPass("chrome.tabs.captureVisibleTab(1, function(img){});",
