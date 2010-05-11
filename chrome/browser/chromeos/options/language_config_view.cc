@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/language_combobox_model.h"
 #include "chrome/browser/pref_service.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/views/restart_message_box.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
