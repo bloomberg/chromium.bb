@@ -395,7 +395,7 @@ NPError WebPluginDelegatePepper::Device2DInitializeContext(
   // This is a windowless plugin, so set it to have no handle. Defer this
   // until we know the plugin will use the 2D device. If it uses the 3D device
   // it will have a window handle.
-  plugin_->SetWindow(0);
+  plugin_->SetWindow(gfx::kNullPluginWindow);
 
   scoped_ptr<Graphics2DDeviceContext> g2d(new Graphics2DDeviceContext(this));
   NPError status = g2d->Initialize(window_rect_, config, context);

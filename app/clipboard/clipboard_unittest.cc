@@ -232,7 +232,7 @@ TEST_F(ClipboardTest, SharedBitmapTest) {
   ASSERT_TRUE(shared_buf.Map(bytes));
   memcpy(shared_buf.memory(), fake_bitmap, bytes);
   base::SharedMemoryHandle handle_to_share;
-  base::ProcessHandle current_process = NULL;
+  base::ProcessHandle current_process = base::kNullProcessHandle;
 #if defined(OS_WIN)
   current_process = GetCurrentProcess();
 #endif

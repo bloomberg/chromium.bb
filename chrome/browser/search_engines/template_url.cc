@@ -102,7 +102,7 @@ bool TemplateURLRef::ParseParameter(size_t start,
   // Remove the parameter from the string.
   url->erase(start, end - start + 1);
   if (parameter == kSearchTermsParameter) {
-    replacements->push_back(Replacement(SEARCH_TERMS, static_cast<int>(start)));
+    replacements->push_back(Replacement(SEARCH_TERMS, start));
   } else if (parameter == kCountParameter) {
     if (!optional)
       url->insert(start, kDefaultCount);
@@ -115,30 +115,26 @@ bool TemplateURLRef::ParseParameter(size_t start,
       url->insert(start, IntToWString(page_offset_));
     }
   } else if (parameter == kLanguageParameter) {
-    replacements->push_back(Replacement(LANGUAGE, static_cast<int>(start)));
+    replacements->push_back(Replacement(LANGUAGE, start));
   } else if (parameter == kInputEncodingParameter) {
-    replacements->push_back(Replacement(ENCODING, static_cast<int>(start)));
+    replacements->push_back(Replacement(ENCODING, start));
   } else if (parameter == kOutputEncodingParameter) {
     if (!optional)
       url->insert(start, kOutputEncodingType);
   } else if (parameter == kGoogleAcceptedSuggestionParameter) {
-    replacements->push_back(Replacement(GOOGLE_ACCEPTED_SUGGESTION,
-                                        static_cast<int>(start)));
+    replacements->push_back(Replacement(GOOGLE_ACCEPTED_SUGGESTION, start));
   } else if (parameter == kGoogleBaseURLParameter) {
-    replacements->push_back(Replacement(GOOGLE_BASE_URL,
-                                        static_cast<int>(start)));
+    replacements->push_back(Replacement(GOOGLE_BASE_URL, start));
   } else if (WideToUTF16Hack(parameter) ==
              ASCIIToUTF16(kGoogleBaseSuggestURLParameter)) {
-    replacements->push_back(Replacement(GOOGLE_BASE_SUGGEST_URL,
-                                        static_cast<int>(start)));
+    replacements->push_back(Replacement(GOOGLE_BASE_SUGGEST_URL, start));
   } else if (parameter == kGoogleOriginalQueryForSuggestionParameter) {
     replacements->push_back(Replacement(GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION,
-                                        static_cast<int>(start)));
+                                        start));
   } else if (parameter == kGoogleRLZParameter) {
-    replacements->push_back(Replacement(GOOGLE_RLZ, static_cast<int>(start)));
+    replacements->push_back(Replacement(GOOGLE_RLZ, start));
   } else if (parameter == kGoogleUnescapedSearchTermsParameter) {
-    replacements->push_back(Replacement(GOOGLE_UNESCAPED_SEARCH_TERMS,
-                                        static_cast<int>(start)));
+    replacements->push_back(Replacement(GOOGLE_UNESCAPED_SEARCH_TERMS, start));
   } else {
     // It can be some garbage but can also be a javascript block. Put it back.
     url->insert(start, full_parameter);

@@ -421,7 +421,7 @@ TEST_F(TemplateURLTest, ParseParameterKnown) {
   EXPECT_TRUE(url_ref.ParseParameter(0, 12, &parsed_url, &replacements));
   EXPECT_EQ(std::wstring(), parsed_url);
   ASSERT_EQ(1U, replacements.size());
-  EXPECT_EQ(0, replacements[0].index);
+  EXPECT_EQ(static_cast<size_t>(0), replacements[0].index);
   EXPECT_EQ(TemplateURLRef::SEARCH_TERMS, replacements[0].type);
 }
 
@@ -468,7 +468,7 @@ TEST_F(TemplateURLTest, ParseURLTwoParameters) {
   EXPECT_EQ(L"{}{}",
             url_ref.ParseURL(L"{}{{searchTerms}}", &replacements, &valid));
   ASSERT_EQ(1U, replacements.size());
-  EXPECT_EQ(3, replacements[0].index);
+  EXPECT_EQ(static_cast<size_t>(3), replacements[0].index);
   EXPECT_EQ(TemplateURLRef::SEARCH_TERMS, replacements[0].type);
   EXPECT_TRUE(valid);
 }
@@ -479,7 +479,7 @@ TEST_F(TemplateURLTest, ParseURLNestedParameter) {
   bool valid = false;
   EXPECT_EQ(L"{", url_ref.ParseURL(L"{{searchTerms}", &replacements, &valid));
   ASSERT_EQ(1U, replacements.size());
-  EXPECT_EQ(1, replacements[0].index);
+  EXPECT_EQ(static_cast<size_t>(1), replacements[0].index);
   EXPECT_EQ(TemplateURLRef::SEARCH_TERMS, replacements[0].type);
   EXPECT_TRUE(valid);
 }

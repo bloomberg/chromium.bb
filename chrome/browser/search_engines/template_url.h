@@ -136,9 +136,10 @@ class TemplateURLRef {
 
   // Used to identify an element of the raw url that can be replaced.
   struct Replacement {
-    Replacement(ReplacementType type, int index) : type(type), index(index) {}
+    Replacement(ReplacementType type, size_t index)
+        : type(type), index(index) {}
     ReplacementType type;
-    int index;
+    size_t index;
   };
 
   // The list of elements to replace.

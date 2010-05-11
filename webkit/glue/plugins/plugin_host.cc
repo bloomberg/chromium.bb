@@ -656,7 +656,7 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
 
   NPError rv = NPERR_GENERIC_ERROR;
 
-  switch (variable) {
+  switch (static_cast<int>(variable)) {
     case NPNVWindowNPObject: {
       scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
       NPObject *np_object = plugin->webplugin()->GetWindowScriptNPObject();

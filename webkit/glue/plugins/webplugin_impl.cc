@@ -412,7 +412,7 @@ WebPluginImpl::WebPluginImpl(
     WebFrame* webframe, const WebPluginParams& params,
     const base::WeakPtr<WebPluginPageDelegate>& page_delegate)
     : windowless_(false),
-      window_(0),
+      window_(gfx::kNullPluginWindow),
       accepts_input_events_(false),
       page_delegate_(page_delegate),
       webframe_(webframe),
@@ -473,7 +473,7 @@ void WebPluginImpl::SetWindow(gfx::PluginWindowHandle window) {
 
 void WebPluginImpl::WillDestroyWindow(gfx::PluginWindowHandle window) {
   DCHECK_EQ(window, window_);
-  window_ = 0;
+  window_ = gfx::kNullPluginWindow;
   if (page_delegate_)
     page_delegate_->WillDestroyPluginWindow(window);
 }

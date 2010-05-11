@@ -158,7 +158,7 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
       command_line.GetSwitchValue(switches::kPluginPath));
 
 
-  gfx::PluginWindowHandle parent = 0;
+  gfx::PluginWindowHandle parent = gfx::kNullPluginWindow;
 #if defined(OS_WIN)
   parent = gfx::NativeViewFromId(params.containing_window);
 #elif defined(OS_LINUX)
