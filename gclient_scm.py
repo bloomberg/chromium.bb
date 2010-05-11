@@ -260,7 +260,7 @@ class GitWrapper(SCMWrapper):
             self.checkout_path,
             print_error=False)
         break
-      except gclient_utils.CheckCallError:
+      except gclient_utils.CheckCallError, e:
         # Hackish but at that point, git is known to work so just checking for
         # 502 in stderr should be fine.
         if '502' in e.stderr:
