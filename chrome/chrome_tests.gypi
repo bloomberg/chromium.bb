@@ -901,7 +901,6 @@
         'browser/sessions/session_service_unittest.cc',
         'browser/sessions/tab_restore_service_unittest.cc',
         'browser/shell_integration_unittest.cc',
-        'browser/spellchecker_platform_engine_unittest.cc',
         'browser/ssl/ssl_host_state_unittest.cc',
         'browser/status_icons/status_icon_unittest.cc',
         'browser/status_icons/status_tray_unittest.cc',
@@ -1105,6 +1104,9 @@
           'include_dirs': [
             '../third_party/GTM',
             '../third_party/GTM/AppKit',
+          ],
+          'sources': [
+            'browser/spellchecker_platform_engine_unittest.cc',
           ],
           'sources!': [
             # Blocked on bookmark manager.
