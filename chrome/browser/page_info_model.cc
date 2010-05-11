@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -146,14 +146,6 @@ PageInfoModel::PageInfoModel(Profile* profile,
               description,
               l10n_util::GetStringUTF16(
                   IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_MIXED_CONTENT_WARNING)));
-    } else if (ssl.has_unsafe_content()) {
-      state = false;
-      description.assign(
-          l10n_util::GetStringFUTF16(
-              IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK,
-              description,
-              l10n_util::GetStringUTF16(
-                  IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_BAD_HTTPS_WARNING)));
     }
   }
   sections_.push_back(SectionInfo(

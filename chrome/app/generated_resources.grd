@@ -5049,9 +5049,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_MIXED_CONTENT_WARNING" desc="Some extra text of the connection section when the connection is encrypted and there is some mixed content on the page.">
         However, this page includes other resources which are not secure. These resources can be viewed by others while in transit, and can be modified by an attacker to change the look or behavior of the page.
       </message>
-      <message name="IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_BAD_HTTPS_WARNING" desc="Some extra text of the connection section when the connection is encrypted but there are some resources loaded over bad HTTPS on the page.">
-        However, this page includes resources from other websites whose identity cannot be verified.
-      </message>
       <message name="IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK" desc="Linking 2 sentences in 1 paragraph.">
         <ph name="SENTENCE1">$1<ex>Your connection is encrypted.</ex></ph> <ph name="SENTENCE2">$2<ex>However, this page includes resources from other pages whose identity cannot be verified.</ex></ph>
       </message>

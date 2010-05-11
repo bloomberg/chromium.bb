@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,15 +87,6 @@ class NavigationEntry {
     }
     bool has_mixed_content() const {
       return (content_status_ & MIXED_CONTENT) != 0;
-    }
-
-    // Unsafe content means that this page is served over https but contains
-    // https sub-resources with cert errors.
-    void set_has_unsafe_content() {
-      content_status_ |= UNSAFE_CONTENT;
-    }
-    bool has_unsafe_content() const {
-      return (content_status_ & UNSAFE_CONTENT) != 0;
     }
 
     // Raw accessors for all the content status flags. This contains a

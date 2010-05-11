@@ -34,15 +34,13 @@ class SSLUITest : public InProcessBrowserTest {
   }
 
   void CheckAuthenticatedState(TabContents* tab,
-                               bool mixed_content,
-                               bool unsafe_content) {
+                               bool mixed_content) {
     NavigationEntry* entry = tab->controller().GetActiveEntry();
     ASSERT_TRUE(entry);
     EXPECT_EQ(NavigationEntry::NORMAL_PAGE, entry->page_type());
     EXPECT_EQ(SECURITY_STYLE_AUTHENTICATED, entry->ssl().security_style());
     EXPECT_EQ(0, entry->ssl().cert_status() & net::CERT_STATUS_ALL_ERRORS);
     EXPECT_EQ(mixed_content, entry->ssl().has_mixed_content());
-    EXPECT_EQ(unsafe_content, entry->ssl().has_unsafe_content());
   }
 
   void CheckUnauthenticatedState(TabContents* tab) {
@@ -52,7 +50,6 @@ class SSLUITest : public InProcessBrowserTest {
     EXPECT_EQ(SECURITY_STYLE_UNAUTHENTICATED, entry->ssl().security_style());
     EXPECT_EQ(0, entry->ssl().cert_status() & net::CERT_STATUS_ALL_ERRORS);
     EXPECT_FALSE(entry->ssl().has_mixed_content());
-    EXPECT_FALSE(entry->ssl().has_unsafe_content());
   }
 
   void CheckAuthenticationBrokenState(TabContents* tab,
@@ -70,7 +67,6 @@ class SSLUITest : public InProcessBrowserTest {
     ASSERT_NE(net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION, error);
     EXPECT_EQ(error, entry->ssl().cert_status() & net::CERT_STATUS_ALL_ERRORS);
     EXPECT_FALSE(entry->ssl().has_mixed_content());
-    EXPECT_FALSE(entry->ssl().has_unsafe_content());
   }
 
   void CheckWorkerLoadResult(TabContents* tab, bool expectLoaded) {
@@ -152,8 +148,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestOKHTTPS) {
   ui_test_utils::NavigateToURL(browser(),
       https_server->TestServerPage("files/ssl/google.html"));
 
-  CheckAuthenticatedState(browser()->GetSelectedTabContents(),
-                          false, false);  // No mixed/unsafe content.
+  CheckAuthenticatedState(browser()->GetSelectedTabContents(), false);
 }
 
 // Visits a page with https error and proceed:
@@ -217,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestHTTPSExpiredCertAndDontProceed) {
   interstitial_page->DontProceed();
 
   // We should be back to the original good page.
-  CheckAuthenticatedState(tab, false, false);
+  CheckAuthenticatedState(tab, false);
 
   // Try to navigate to a new page. (to make sure bug 5800 is fixed).
   ui_test_utils::NavigateToURL(browser(),
@@ -385,8 +380,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestMixedContents) {
   ui_test_utils::NavigateToURL(browser(), https_server->TestServerPage(
       "files/ssl/page_with_mixed_contents.html"));
 
-  CheckAuthenticatedState(browser()->GetSelectedTabContents(),
-                          true /* mixed-content */, false);
+  CheckAuthenticatedState(browser()->GetSelectedTabContents(), true);
 }
 
 // Visits a page with an http script that tries to suppress our mixed content
@@ -401,8 +395,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestMixedContentsRandomizeHash) {
   ui_test_utils::NavigateToURL(browser(), https_server->TestServerPage(
       "files/ssl/page_with_http_script.html"));
 
-  CheckAuthenticatedState(browser()->GetSelectedTabContents(),
-                          true /* mixed-content */, false);
+  CheckAuthenticatedState(browser()->GetSelectedTabContents(), true);
 }
 
 // Visits a page with unsafe content and make sure that:
@@ -421,7 +414,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestUnsafeContents) {
   TabContents* tab = browser()->GetSelectedTabContents();
   // When the bad content is filtered, the state is expected to be
   // authenticated.
-  CheckAuthenticatedState(tab, false, false);
+  CheckAuthenticatedState(tab, false);
 
   // Because of cross-frame scripting restrictions, we cannot access the iframe
   // content.  So to know if the frame was loaded, we just check if a popup was
@@ -457,7 +450,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestMixedContentsLoadedFromJS) {
       "files/ssl/page_with_dynamic_mixed_contents.html"));
 
   TabContents* tab = browser()->GetSelectedTabContents();
-  CheckAuthenticatedState(tab, false, false);
+  CheckAuthenticatedState(tab, false);
 
   // Load the insecure image.
   bool js_result = false;
@@ -466,7 +459,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestMixedContentsLoadedFromJS) {
   EXPECT_TRUE(js_result);
 
   // We should now have mixed-contents.
-  CheckAuthenticatedState(tab, true /* mixed-content */, false);
+  CheckAuthenticatedState(tab, true);
 }
 
 // Visits two pages from the same origin: one with mixed content and one
@@ -485,7 +478,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestMixedContentsTwoTabs) {
   TabContents* tab1 = browser()->GetSelectedTabContents();
 
   // This tab should be fine.
-  CheckAuthenticatedState(tab1, false, false);
+  CheckAuthenticatedState(tab1, false);
 
   // Create a new tab.
   GURL url =
@@ -496,11 +489,11 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestMixedContentsTwoTabs) {
   ui_test_utils::WaitForNavigation(&(tab2->controller()));
 
   // The new tab has mixed content.
-  CheckAuthenticatedState(tab2, true /* mixed-content */, false);
+  CheckAuthenticatedState(tab2, true);
 
   // Which means the origin for the first tab has also been contaminated with
   // mixed content.
-  CheckAuthenticatedState(tab1, true /* mixed-content */, false);
+  CheckAuthenticatedState(tab1, true);
 }
 
 // Visits a page with an image over http.  Visits another page over https
@@ -521,7 +514,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestCachedMixedContents) {
   // image comes from the WebCore memory cache).
   ui_test_utils::NavigateToURL(browser(), https_server->TestServerPage(
       "files/ssl/page_with_mixed_contents.html"));
-  CheckAuthenticatedState(tab, true /* mixed-content */, false);
+  CheckAuthenticatedState(tab, true);
 }
 
 // This test ensures the CN invalid status does not 'stick' to a certificate
@@ -561,7 +554,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestCNInvalidStickiness) {
   ui_test_utils::NavigateToURL(browser(), GURL(new_url));
 
   // Security state should be OK.
-  CheckAuthenticatedState(tab, false, false);
+  CheckAuthenticatedState(tab, false);
 
   // Now try again the broken one to make sure it is still broken.
   ui_test_utils::NavigateToURL(browser(),
@@ -656,7 +649,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestRedirectBadToGoodHTTPS) {
   ProceedThroughInterstitial(tab);
 
   // We have been redirected to the good page.
-  CheckAuthenticatedState(tab, false, false);  // No mixed/unsafe content.
+  CheckAuthenticatedState(tab, false);
 }
 
 // Visit a page over good https that is a redirect to a page with bad https.
@@ -697,7 +690,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectHTTPToGoodHTTPS) {
 
   ui_test_utils::NavigateToURL(browser(),
                                GURL(http_url.spec() + good_https_url.spec()));
-  CheckAuthenticatedState(tab, false, false);  // No mixed/unsafe content.
+  CheckAuthenticatedState(tab, false);
 }
 
 // Visit a page over http that is a redirect to a page with bad HTTPS.
@@ -773,7 +766,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestGoodFrameNavigation) {
       browser(),
       good_https_server->TestServerPage("files/ssl/top_frame.html"));
 
-  CheckAuthenticatedState(tab, false, false);
+  CheckAuthenticatedState(tab, false);
 
   bool success = false;
   // Now navigate inside the frame.
@@ -785,7 +778,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestGoodFrameNavigation) {
   ui_test_utils::WaitForNavigation(&tab->controller());
 
   // We should still be fine.
-  CheckAuthenticatedState(tab, false, false);
+  CheckAuthenticatedState(tab, false);
 
   // Now let's hit a bad page.
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
@@ -796,7 +789,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestGoodFrameNavigation) {
   ui_test_utils::WaitForNavigation(&tab->controller());
 
   // The security style should still be secure.
-  CheckAuthenticatedState(tab, false, false);
+  CheckAuthenticatedState(tab, false);
 
   // And the frame should be blocked.
   bool is_content_evil = true;
@@ -814,7 +807,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestGoodFrameNavigation) {
   // Now go back, our state should still be OK.
   tab->controller().GoBack();
   ui_test_utils::WaitForNavigation(&tab->controller());
-  CheckAuthenticatedState(tab, false, false);
+  CheckAuthenticatedState(tab, false);
 
   // Navigate to a page served over HTTP.
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
@@ -826,12 +819,12 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestGoodFrameNavigation) {
   ui_test_utils::WaitForNavigation(&tab->controller());
 
   // Our state should be mixed-content.
-  CheckAuthenticatedState(tab, true, false);
+  CheckAuthenticatedState(tab, true);
 
   // Go back, our state should be unchanged.
   tab->controller().GoBack();
   ui_test_utils::WaitForNavigation(&tab->controller());
-  CheckAuthenticatedState(tab, true, false);
+  CheckAuthenticatedState(tab, true);
 }
 
 // From a bad HTTPS top frame:
@@ -935,7 +928,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestUnsafeContentsInWorkerFiltered) {
   // Expect Worker not to load mixed content.
   CheckWorkerLoadResult(tab, false);
   // The bad content is filtered, expect the state to be authenticated.
-  CheckAuthenticatedState(tab, false, false);
+  CheckAuthenticatedState(tab, false);
 }
 
 // Marked as flaky, see bug 40932.
@@ -961,7 +954,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestUnsafeContentsInWorker) {
   ui_test_utils::NavigateToURL(browser(), good_https_server->TestServerPage(
       "files/ssl/page_with_unsafe_worker.html"));
   CheckWorkerLoadResult(tab, true);  // Worker loads mixed content
-  CheckAuthenticatedState(tab, true, false);  // Mixed content UI shown.
+  CheckAuthenticatedState(tab, true);
 }
 
 // TODO(jcampan): more tests to do below.
