@@ -23,7 +23,7 @@
 //! program must be careful to leave the data available until the command has
 //! executed.
 //!
-//! Other commands have an 'immediate' version where the data appears directly
+//! Some commands have an 'immediate' version where the data appears directly
 //! after the command in memory.
 //!
 //! A 3rd way of passing data is through Buckets. Buckets are indentified by
@@ -48,21 +48,25 @@
 //!  - A shared memory offset is out of range for the given shared memory
 //!  - The size of the data a command would access in shared memory is out of
 //!    range for the given shared memory buffer.
-//!  - A result buffer is not initialized to the failure case.
+//!  - A result (in the transfer buffer) is not initialized to the 
+//!    failure case. For example, any command that returns a SizedResult
+//!    will take a shared memory id and offset to where to store the result.
+//!    That size field of the result must be set to 0 before issuing the
+//!    the command. That way, if the command buffer service fails the
+//!    client will see a 0 size.
 //!
 //! The docs are a little terse. For any command that corresponds to an OpenGL
 //! ES 2.0 function the arguments should be clear by looking at the OpenGL ES
 //! 2.0 documentation with minor caveats.
 //!
-//!  - Client side arrays are not supported so DrawArrays and
-//!    VertexAttribPointer only take offsets into buffers.
-//!  - A Buffer can not be bound to both GL_ARRAY_BUFFER and
-//!    GL_ELEMENT_ARRAY_BUFFER. Only 1 is allowed per buffer.
-//!  - You can not bind to arbitrary names with the glBind functions. You must
-//!    register an id with GenBuffers, GenTextures, etc.
+//!  - Client side arrays are not supported at the command buffer level
+//!    so DrawArrays and VertexAttribPointer only take offsets into buffers.
 //!  - The commands GenBuffers, GetTextures, CreateProgram, CreateShader, etc
 //!    take client side ids and register them with the service. It's up to the
 //!    client to make up the ids.
+//!  - For shared resources, it's still up to the client to make up ids.
+//!    but to help keep them in sync with other threads the commands
+//!    GenSharedIds, RegisterSharedIds and DeleteSharedIds can be used.
 //!
 
 //! The command header.
