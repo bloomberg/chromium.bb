@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/chrome_process_util.h"
 #include "chrome/test/ui/ui_test.h"
+#include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -120,6 +121,44 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessFailure) {
 
   // Wait for a while to make sure the browser process is actually killed.
   EXPECT_FALSE(CrashAwareSleep(sleep_timeout_ms()));
+}
+
+// Test that we don't kill ourselves by accident if a lockfile with the same pid
+// happens to exist.
+// TODO(mattm): This doesn't really need to be a uitest.  (We don't use the
+// uitest created browser process, but we do use some uitest provided stuff like
+// the user_data_dir and the NotifyOtherProcess function in this file, which
+// would have to be duplicated or shared if this test was moved into a
+// unittest.)
+TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessNoSuicide) {
+  FilePath lock_path = user_data_dir().Append(chrome::kSingletonLockFilename);
+  EXPECT_EQ(0, unlink(lock_path.value().c_str()));
+  std::string symlink_content = StringPrintf(
+      "%s%c%u",
+      net::GetHostName().c_str(),
+      '-',
+      base::GetCurrentProcId());
+  EXPECT_EQ(0, symlink(symlink_content.c_str(), lock_path.value().c_str()));
+
+  base::ProcessId pid = browser_process_id();
+
+  ASSERT_GE(pid, 1);
+
+  // Block the browser process, so that ProcessSingleton::NotifyOtherProcess()
+  // will want to kill something.
+  kill(pid, SIGSTOP);
+
+  // Wait to make sure the browser process is actually stopped.
+  // It's necessary when running with valgrind.
+  HANDLE_EINTR(waitpid(pid, 0, WUNTRACED));
+
+  std::string url("about:blank");
+  EXPECT_EQ(ProcessSingleton::PROCESS_NONE,
+            NotifyOtherProcess(url, action_timeout_ms()));
+  // If we've gotten to this point without killing ourself, the test succeeded.
+
+  // Unblock the browser process so the test actually finishes.
+  kill(pid, SIGCONT);
 }
 
 // Test that we can still notify a process on the same host even after the

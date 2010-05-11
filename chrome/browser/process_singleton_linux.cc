@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -280,8 +280,31 @@ void DisplayProfileInUseError(const std::string& lock_path,
 #endif
 }
 
+bool IsChromeProcess(pid_t pid) {
+  FilePath other_chrome_path(base::GetProcessExecutablePath(pid));
+  return (!other_chrome_path.empty() &&
+          other_chrome_path.BaseName() ==
+          FilePath::FromWStringHack(chrome::kBrowserProcessExecutableName));
+}
+
+// Return true if the given pid is one of our child processes.
+// Assumes that the current pid is the root of all pids of the current instance.
+bool IsSameChromeInstance(pid_t pid) {
+  pid_t cur_pid = base::GetCurrentProcId();
+  while (pid != cur_pid) {
+    pid = base::GetParentProcessId(pid);
+    if (pid < 0)
+      return false;
+    if (!IsChromeProcess(pid))
+      return false;
+  }
+  return true;
+}
+
 // Extract the process's pid from a symbol link path and if it is on
 // the same host, kill the process, unlink the lock file and return true.
+// If the process is part of the same chrome instance, unlink the lock file and
+// return true without killing it.
 // If the process is on a different host, return false.
 bool KillProcessByLockPath(const std::string& path) {
   std::string hostname;
@@ -294,7 +317,10 @@ bool KillProcessByLockPath(const std::string& path) {
   }
   UnlinkPath(path);
 
-  if (pid >= 0) {
+  if (IsSameChromeInstance(pid))
+    return true;
+
+  if (pid > 0) {
     // TODO(james.su@gmail.com): Is SIGKILL ok?
     int rv = kill(static_cast<base::ProcessHandle>(pid), SIGKILL);
     // ESRCH = No Such Process (can happen if the other process is already in
@@ -669,11 +695,15 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
       return PROFILE_IN_USE;
     }
 
-    FilePath other_chrome_path(base::GetProcessExecutablePath(pid));
-    if (other_chrome_path.empty() ||
-        other_chrome_path.BaseName() !=
-        FilePath::FromWStringHack(chrome::kBrowserProcessExecutableName)) {
+    if (!IsChromeProcess(pid)) {
       // Orphaned lockfile (no process with pid, or non-chrome process.)
+      UnlinkPath(lock_path_.value());
+      return PROCESS_NONE;
+    }
+
+    if (IsSameChromeInstance(pid)) {
+      // Orphaned lockfile (pid is part of same chrome instance we are, even
+      // though we haven't tried to create a lockfile yet).
       UnlinkPath(lock_path_.value());
       return PROCESS_NONE;
     }
