@@ -35,8 +35,8 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef _NPAPI_H_
-#define _NPAPI_H_
+#ifndef npapi_h_
+#define npapi_h_
 
 #ifdef __OS2__
 #pragma pack(1)
@@ -892,4 +892,4 @@ NPBool                NPN_ConvertPoint(NPP instance, double sourceX, double sour
 #pragma pack()
 #endif
 
-#endif /* _NPAPI_H_ */
+#endif /* npapi_h_ */
