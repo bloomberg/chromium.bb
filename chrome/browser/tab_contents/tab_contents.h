@@ -23,6 +23,7 @@
 #include "chrome/browser/fav_icon_helper.h"
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/find_notification_details.h"
+#include "chrome/browser/geolocation/geolocation_settings_state.h"
 #include "chrome/browser/jsmessage_box_client.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/printing/print_view_manager.h"
@@ -262,12 +263,10 @@ class TabContents : public PageNavigator,
   // page.
   bool IsContentBlocked(ContentSettingsType content_type) const;
 
-  // Returns the map of settings applied per frame that has used the
-  // geolocation API on this page. Note this is a full URL, not redacted to
-  // origin or otherwise.
-  typedef std::map<GURL, ContentSetting> GeolocationContentSettings;
-  const GeolocationContentSettings& geolocation_content_settings() const {
-    return geolocation_content_settings_;
+  // Returns the GeolocationSettingsState that controls the
+  // geolocation API usage on this page.
+  const GeolocationSettingsState& geolocation_settings_state() const {
+    return geolocation_settings_state_;
   }
 
   // Returns a human-readable description the tab's loading state.
@@ -726,10 +725,6 @@ class TabContents : public PageNavigator,
 
   // Resets the |content_blocked_| array.
   void ClearBlockedContentSettings();
-
-  // Resets the |geolocation_settings_| map.
-  void ClearGeolocationContentSettings(
-      const NavigationController::LoadCommittedDetails& details);
 
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished
@@ -1262,8 +1257,8 @@ class TabContents : public PageNavigator,
   // Information about the language the page is in and has been translated to.
   LanguageState language_state_;
 
-  // Maps each frame on this page to its geolocation content settings.
-  GeolocationContentSettings geolocation_content_settings_;
+  // Manages information about Geolocation API usage in this page.
+  GeolocationSettingsState geolocation_settings_state_;
 
   // ---------------------------------------------------------------------------
 

@@ -38,7 +38,6 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/find_bar_state.h"
-#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/google_util.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/hung_renderer_dialog.h"
@@ -291,7 +290,8 @@ TabContents::TabContents(Profile* profile,
       is_showing_before_unload_dialog_(false),
       renderer_preferences_(),
       opener_dom_ui_type_(DOMUIFactory::kNoDOMUI),
-      language_state_(&controller_) {
+      language_state_(&controller_),
+      geolocation_settings_state_(profile) {
   ClearBlockedContentSettings();
   renderer_preferences_util::UpdateFromSystemSettings(
       &renderer_preferences_, profile);
@@ -1378,26 +1378,6 @@ void TabContents::ClearBlockedContentSettings() {
     content_blocked_[i] = false;
 }
 
-// Resets the |geolocation_settings_| map.
-void TabContents::ClearGeolocationContentSettings(
-    const NavigationController::LoadCommittedDetails& details) {
-  if (!geolocation_content_settings_.empty()) {
-    // Clear the geolocation settings only if we're going to a new origin,
-    // or if we're staying at the same origin and its setting is ASK.
-    // This is to prevent clearing the icon by just changing some URL param.
-    // TODO(bulach): refactor this logic into its own class and remove the
-    // duplication from ContentSettingDomainListBubbleModel.
-    if (!details.entry ||
-        details.previous_url.GetOrigin() != details.entry->url().GetOrigin() ||
-        (details.entry->url().is_valid() &&
-         profile()->GetGeolocationContentSettingsMap()->GetContentSetting(
-             details.entry->url(), details.entry->url()) ==
-         CONTENT_SETTING_ASK)) {
-      geolocation_content_settings_.clear();
-    }
-  }
-}
-
 // Notifies the RenderWidgetHost instance about the fact that the page is
 // loading, or done loading and calls the base implementation.
 void TabContents::SetIsLoading(bool is_loading,
@@ -1594,7 +1574,7 @@ void TabContents::DidNavigateMainFramePostCommit(
 
     // Clear "blocked" flags.
     ClearBlockedContentSettings();
-    ClearGeolocationContentSettings(details);
+    geolocation_settings_state_.DidNavigate(details);
     if (delegate_)
       delegate_->OnContentSettingsChange(this);
   }
@@ -2139,8 +2119,8 @@ void TabContents::OnContentBlocked(ContentSettingsType type) {
 
 void TabContents::OnGeolocationPermissionSet(const GURL& requesting_origin,
                                              bool allowed) {
-  geolocation_content_settings_[requesting_origin] =
-      allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
+  geolocation_settings_state_.OnGeolocationPermissionSet(requesting_origin,
+                                                         allowed);
   if (delegate_)
     delegate_->OnContentSettingsChange(this);
 }

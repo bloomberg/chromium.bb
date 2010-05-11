@@ -186,53 +186,33 @@ class ContentSettingDomainListBubbleModel
   }
 
  private:
-  void MaybeAddDomainList(DomainList* domain_list, int title_id) {
-    if (!domain_list->hosts.empty()) {
-      domain_list->title = l10n_util::GetStringUTF8(title_id);
-      add_domain_list(*domain_list);
+  void MaybeAddDomainList(const std::set<std::string>& hosts, int title_id) {
+    if (!hosts.empty()) {
+      DomainList domain_list;
+      domain_list.title = l10n_util::GetStringUTF8(title_id);
+      domain_list.hosts = hosts;
+      add_domain_list(domain_list);
     }
   }
   void SetDomainsAndClearLink() {
-    const TabContents::GeolocationContentSettings& settings =
-        tab_contents()->geolocation_content_settings();
-    const GURL& embedder_url = tab_contents()->GetURL();
-    const GeolocationContentSettingsMap* settings_map =
-        profile()->GetGeolocationContentSettingsMap();
-    const ContentSetting default_setting =
-        settings_map->GetDefaultContentSetting();
-
-    // Will be true if the current page permission state does not
-    // match that in the content map (i.e. if a reload will yield a different
-    // permission state).
-    bool needs_reload = false;
-    // Will be true if there are any exceptions in the content map
-    // (i.e. non-default entries) for the frames using geolocaiton on this page.
-    bool has_exception = false;
+    const GeolocationSettingsState& settings =
+        tab_contents()->geolocation_settings_state();
+    GeolocationSettingsState::FormattedHostsPerState formatted_hosts_per_state;
+    unsigned int tab_state_flags = 0;
+    settings.GetDetailedInfo(&formatted_hosts_per_state, &tab_state_flags);
     // Divide the tab's current geolocation users into sets according to their
     // permission state.
-    DomainList domains[CONTENT_SETTING_NUM_SETTINGS];
-    for (TabContents::GeolocationContentSettings::const_iterator it =
-        settings.begin(); it != settings.end(); ++it) {
-      std::wstring display_host_wide;
-      net::AppendFormattedHost(it->first,
-          profile()->GetPrefs()->GetString(prefs::kAcceptLanguages),
-          &display_host_wide, NULL, NULL);
-      domains[it->second].hosts.insert(WideToUTF8(display_host_wide));
-      const ContentSetting saved_setting =
-          settings_map->GetContentSetting(it->first, embedder_url);
-      if (saved_setting != default_setting)
-        has_exception = true;
-      if (saved_setting != it->second)
-        needs_reload = true;
-    }
-    MaybeAddDomainList(&domains[CONTENT_SETTING_ALLOW],
+    MaybeAddDomainList(formatted_hosts_per_state[CONTENT_SETTING_ALLOW],
                        IDS_GEOLOCATION_BUBBLE_SECTION_ALLOWED);
-    MaybeAddDomainList(&domains[CONTENT_SETTING_BLOCK],
+
+    MaybeAddDomainList(formatted_hosts_per_state[CONTENT_SETTING_BLOCK],
                        IDS_GEOLOCATION_BUBBLE_SECTION_DENIED);
-    if (has_exception) {
+
+    if (tab_state_flags & GeolocationSettingsState::TABSTATE_HAS_EXCEPTION) {
       set_clear_link(
           l10n_util::GetStringUTF8(IDS_GEOLOCATION_BUBBLE_CLEAR_LINK));
-    } else if (needs_reload) {
+    } else if (tab_state_flags &
+               GeolocationSettingsState::TABSTATE_HAS_CHANGED) {
       // It is a slight abuse of the domain list field to use it for the reload
       // hint, but works fine for now. TODO(joth): If we need to style it
       // differently, consider adding an explicit field, or generalize the
@@ -249,12 +229,12 @@ class ContentSettingDomainListBubbleModel
     // Reset this embedder's entry to default for each of the requesting
     // origins currently on the page.
     const GURL& embedder_url = tab_contents()->GetURL();
-    const TabContents::GeolocationContentSettings& settings =
-        tab_contents()->geolocation_content_settings();
+    const GeolocationSettingsState::StateMap& state_map =
+        tab_contents()->geolocation_settings_state().state_map();
     GeolocationContentSettingsMap* settings_map =
         profile()->GetGeolocationContentSettingsMap();
-    for (TabContents::GeolocationContentSettings::const_iterator it =
-        settings.begin(); it != settings.end(); ++it) {
+    for (GeolocationSettingsState::StateMap::const_iterator it =
+         state_map.begin(); it != state_map.end(); ++it) {
       settings_map->SetContentSetting(it->first, embedder_url,
                                       CONTENT_SETTING_DEFAULT);
     }

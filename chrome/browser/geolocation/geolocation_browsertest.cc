@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
+#include "chrome/browser/geolocation/geolocation_settings_state.h"
 #include "chrome/browser/geolocation/location_arbitrator.h"
 #include "chrome/browser/geolocation/location_provider.h"
 #include "chrome/browser/geolocation/mock_location_provider.h"
@@ -266,9 +267,9 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
 
   void SetInfobarResponse(const GURL& requesting_url, bool allowed) {
     TabContents* tab_contents = current_browser_->GetSelectedTabContents();
-    TabContents::GeolocationContentSettings content_settings =
-        tab_contents->geolocation_content_settings();
-    size_t settings_size = content_settings.size();
+    const GeolocationSettingsState& settings_state =
+        tab_contents->geolocation_settings_state();
+    size_t state_map_size = settings_state.state_map().size();
     ASSERT_TRUE(infobar_);
     LOG(WARNING) << "will set infobar response";
     if (allowed)
@@ -279,13 +280,13 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
     tab_contents->RemoveInfoBar(infobar_);
     LOG(WARNING) << "infobar response set";
     infobar_ = NULL;
-    content_settings = tab_contents->geolocation_content_settings();
-    EXPECT_GT(content_settings.size(), settings_size);
+    EXPECT_GT(settings_state.state_map().size(), state_map_size);
     GURL requesting_origin = requesting_url.GetOrigin();
-    EXPECT_EQ(1U, content_settings.count(requesting_origin));
+    EXPECT_EQ(1U, settings_state.state_map().count(requesting_origin));
     ContentSetting expected_setting =
           allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
-    EXPECT_EQ(expected_setting, content_settings[requesting_origin]);
+    EXPECT_EQ(expected_setting,
+              settings_state.state_map().find(requesting_origin)->second);
   }
 
   void WaitForJSPrompt() {

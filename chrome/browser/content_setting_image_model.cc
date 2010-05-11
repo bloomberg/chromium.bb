@@ -73,22 +73,21 @@ void ContentSettingGeolocationImageModel::UpdateFromTabContents(
     set_visible(false);
     return;
   }
-  const TabContents::GeolocationContentSettings& settings =
-      tab_contents->geolocation_content_settings();
-  if (settings.empty()) {
+  const GeolocationSettingsState& settings_state =
+      tab_contents->geolocation_settings_state();
+  if (settings_state.state_map().empty()) {
     set_visible(false);
     return;
   }
   set_visible(true);
+  unsigned int tab_state_flags = 0;
+  settings_state.GetDetailedInfo(NULL, &tab_state_flags);
   // If any embedded site has access the allowed icon takes priority over the
   // blocked icon.
-  for (TabContents::GeolocationContentSettings::const_iterator it =
-       settings.begin(); it != settings.end(); ++it ) {
-    if (it->second == CONTENT_SETTING_ALLOW) {
-      set_icon(IDR_GEOLOCATION_ALLOWED_LOCATIONBAR_ICON);
-      set_tooltip(l10n_util::GetStringUTF8(IDS_GEOLOCATION_ALLOWED_TOOLTIP));
-      return;
-    }
+  if (tab_state_flags & GeolocationSettingsState::TABSTATE_HAS_ANY_ALLOWED) {
+    set_icon(IDR_GEOLOCATION_ALLOWED_LOCATIONBAR_ICON);
+    set_tooltip(l10n_util::GetStringUTF8(IDS_GEOLOCATION_ALLOWED_TOOLTIP));
+    return;
   }
   set_icon(IDR_GEOLOCATION_DENIED_LOCATIONBAR_ICON);
   set_tooltip(l10n_util::GetStringUTF8(IDS_GEOLOCATION_BLOCKED_TOOLTIP));
