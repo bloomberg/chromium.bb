@@ -207,7 +207,8 @@ FilePath IconTheme::GetIconPath(const std::string& icon_name, int size,
     return icon_path;
 
   IconTheme* theme = LoadTheme(inherits_);
-  if (theme)
+  // Inheriting from itself means the theme is buggy but we shouldn't crash.
+  if (theme && theme != this)
     return theme->GetIconPath(icon_name, size, inherits);
   else
     return FilePath();
