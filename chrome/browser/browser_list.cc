@@ -336,8 +336,8 @@ Browser* BrowserList::GetLastActive() {
 
 // static
 Browser* BrowserList::GetLastActiveWithProfile(Profile* p) {
-  // We are only interested in last active browsers, so we don't fall back to all
-  // browsers like FindBrowserWith* do.
+  // We are only interested in last active browsers, so we don't fall back to
+  // all browsers like FindBrowserWith* do.
   return FindBrowserMatching(
       BrowserList::begin_last_active(), BrowserList::end_last_active(), p,
       Browser::TYPE_ANY, Browser::FEATURE_NONE, kMatchNothing);
@@ -361,12 +361,12 @@ Browser* BrowserList::FindBrowserWithFeature(Profile* p,
                                              Browser::WindowFeature feature) {
   Browser* browser = FindBrowserMatching(
       BrowserList::begin_last_active(), BrowserList::end_last_active(),
-      p, Browser::TYPE_ANY, Browser::FEATURE_NONE, kMatchNothing);
+      p, Browser::TYPE_ANY, feature, kMatchCanSupportWindowFeature);
   // Fall back to a forward scan of all Browsers if no active one was found.
   return browser ? browser :
       FindBrowserMatching(BrowserList::begin(), BrowserList::end(), p,
-                          Browser::TYPE_ANY, Browser::FEATURE_NONE,
-                          kMatchNothing);
+                          Browser::TYPE_ANY, feature,
+                          kMatchCanSupportWindowFeature);
 }
 
 // static
