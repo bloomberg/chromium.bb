@@ -990,9 +990,12 @@ void CandidateWindowController::OnUpdateLookupTable(
   // controller->frame_->Show(), as GetHorizontalOffset() returns a valid
   // value only after the Show() method is called.
   if (orientation == CandidateWindowView::kVertical) {
-    controller->MoveCandidateWindow(
-        controller->cursor_location(),
-        controller->candidate_window_->GetHorizontalOffset());
+    // Temporarily disabled the window position adjustment since it does not
+    // work fine with ibus-mozc.  TODO(satorux): re-enable the feature.
+    //
+    // controller->MoveCandidateWindow(
+    //     controller->cursor_location(),
+    //     controller->candidate_window_->GetHorizontalOffset());
   }
 }
 
