@@ -281,10 +281,11 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
     infobar_ = NULL;
     content_settings = tab_contents->geolocation_content_settings();
     EXPECT_GT(content_settings.size(), settings_size);
-    EXPECT_EQ(1U, content_settings.count(requesting_url));
+    GURL requesting_origin = requesting_url.GetOrigin();
+    EXPECT_EQ(1U, content_settings.count(requesting_origin));
     ContentSetting expected_setting =
           allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
-    EXPECT_EQ(expected_setting, content_settings[requesting_url]);
+    EXPECT_EQ(expected_setting, content_settings[requesting_origin]);
   }
 
   void WaitForJSPrompt() {

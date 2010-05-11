@@ -100,6 +100,22 @@ class GeolocationPermissionContextTests : public RenderViewHostTestHarness {
     process()->sink().ClearMessages();
   }
 
+  void CheckTabContentsState(const GURL& requesting_frame,
+                             ContentSetting expected_content_setting) {
+    EXPECT_EQ(1U,
+              contents()->geolocation_content_settings().count(
+                  requesting_frame.GetOrigin()));
+    EXPECT_EQ(0U,
+              contents()->geolocation_content_settings().count(
+                  requesting_frame));
+    TabContents::GeolocationContentSettings::const_iterator settings =
+        contents()->geolocation_content_settings().find(
+            requesting_frame.GetOrigin());
+    ASSERT_FALSE(settings == contents()->geolocation_content_settings().end())
+        << "geolocation state not found " << requesting_frame;
+    EXPECT_EQ(expected_content_setting, settings->second);
+  }
+
  protected:
   ChromeThread ui_thread_;
   TestTabContentsWithPendingInfoBar* tab_contents_with_pending_infobar_;
@@ -142,6 +158,7 @@ TEST_F(GeolocationPermissionContextTests, QueuedPermission) {
 
   // Accept the first frame.
   infobar_0->Accept();
+  CheckTabContentsState(requesting_frame_0, CONTENT_SETTING_ALLOW);
   CheckPermissionMessageSent(bridge_id(), true);
 
   contents()->RemoveInfoBar(infobar_0);
@@ -158,6 +175,7 @@ TEST_F(GeolocationPermissionContextTests, QueuedPermission) {
 
   // Cancel (block) this frame.
   infobar_1->Cancel();
+  CheckTabContentsState(requesting_frame_1, CONTENT_SETTING_BLOCK);
   CheckPermissionMessageSent(bridge_id() + 1, false);
   contents()->RemoveInfoBar(infobar_1);
   EXPECT_EQ(infobar_1,
@@ -216,6 +234,7 @@ TEST_F(GeolocationPermissionContextTests, CancelGeolocationPermissionRequest) {
 
   // Allow this frame.
   infobar_1->Accept();
+  CheckTabContentsState(requesting_frame_1, CONTENT_SETTING_ALLOW);
   CheckPermissionMessageSent(bridge_id() + 1, true);
   contents()->RemoveInfoBar(infobar_1);
   EXPECT_EQ(infobar_1,

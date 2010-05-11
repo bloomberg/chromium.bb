@@ -289,7 +289,7 @@ void GeolocationPermissionContext::NotifyPermissionSet(
       tab_util::GetTabContentsByID(render_process_id, render_view_id);
   // TabContents may have gone away (or not exists for extension).
   if (resource)
-    resource->OnGeolocationPermissionSet(requesting_frame, allowed);
+    resource->OnGeolocationPermissionSet(requesting_frame.GetOrigin(), allowed);
 
   CallRenderViewHost(
       render_process_id, render_view_id,
