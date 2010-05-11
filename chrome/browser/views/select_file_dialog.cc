@@ -27,6 +27,7 @@
 namespace {
 
 static const wchar_t* kKeyNamePath = L"path";
+static const int kSaveCompletePageIndex = 2;
 
 };  // namespace
 
@@ -234,7 +235,8 @@ void SelectFileDialogImpl::OnDialogClosed(FileBrowseDelegate* delegate,
             dict->GetString(kKeyNamePath, &path_string)) {
           FilePath path = FilePath::FromWStringHack(path_string);
 
-          listener_->FileSelected(path, 0, delegate->params_);
+          listener_->FileSelected(path, kSaveCompletePageIndex,
+                                  delegate->params_);
           notification_fired = true;
         }
       } else if (delegate->type_ == SELECT_OPEN_MULTI_FILE) {
