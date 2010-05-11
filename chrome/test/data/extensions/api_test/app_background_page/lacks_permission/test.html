@@ -1,0 +1,19 @@
+<script>
+// This test uses the same code path as the has_permission case, but only tests
+// that a visible window was created that contains the bg.html page.
+
+var pagePrefix =
+    'http://a.com:1337/files/extensions/api_test/app_background_page/common';
+
+// The open(..., 'background') was ignored and a popup window resulted.
+chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+  if (tab.url.match("bg\.html$")) {
+    chrome.test.notifyPass();
+  }
+});
+
+// Start the test by opening the first page in the app.
+window.onload = function() {
+  chrome.tabs.create({ 'url': pagePrefix + '/a.html' }, function(tab) {});
+}
+</script>
