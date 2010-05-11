@@ -109,6 +109,10 @@ function getTextForExtraParams(entry) {
     case LogEventType.HTTP_TRANSACTION_SEND_TUNNEL_HEADERS:
       return getTextForRequestHeadersExtraParam(entry);
 
+    case LogEventType.HTTP_TRANSACTION_READ_RESPONSE_HEADERS:
+    case LogEventType.HTTP_TRANSACTION_READ_TUNNEL_RESPONSE_HEADERS:
+      return getTextForResponseHeadersExtraParam(entry);
+
     default:
       var out = [];
       for (var k in entry.extra_parameters) {
@@ -135,6 +139,25 @@ function getTextForRequestHeadersExtraParam(entry) {
   // Concatenate all of the header lines.
   for (var i = 0; i < params.headers.length; ++i)
     out.push(prefix + params.headers[i]);
+
+  return out.join("\n");
+}
+
+function getTextForResponseHeadersExtraParam(entry) {
+  var headers = entry.extra_parameters.headers;
+
+  // We prepend spaces to each line to make it line up with the arrow.
+  var firstLinePrefix = " --> "
+  var prefix = "     ";
+
+  var out = [];
+
+  if (headers.length > 0)
+    out.push(firstLinePrefix + headers[0])
+
+  // Concatenate all the rest of the header lines.
+  for (var i = 1; i < headers.length; ++i)
+    out.push(prefix + headers[i]);
 
   return out.join("\n");
 }
