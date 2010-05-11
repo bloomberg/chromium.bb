@@ -33,6 +33,8 @@
         'webkit_support.h',
         'webkit_support_glue.cc',
         # TODO(tkent): Move the following files to here.
+        '<(DEPTH)/webkit/tools/test_shell/mac/DumpRenderTreePasteboard.h',
+        '<(DEPTH)/webkit/tools/test_shell/mac/DumpRenderTreePasteboard.m',
         '<(DEPTH)/webkit/tools/test_shell/mock_webclipboard_impl.cc',
         '<(DEPTH)/webkit/tools/test_shell/mock_webclipboard_impl.h',
         '<(DEPTH)/webkit/tools/test_shell/simple_appcache_system.cc',
@@ -48,6 +50,8 @@
         '<(DEPTH)/webkit/tools/test_shell/simple_webcookiejar_impl.h',
         '<(DEPTH)/webkit/tools/test_shell/test_shell_request_context.cc',
         '<(DEPTH)/webkit/tools/test_shell/test_shell_request_context.h',
+        '<(DEPTH)/webkit/tools/test_shell/test_shell_webmimeregistry_impl.cc',
+        '<(DEPTH)/webkit/tools/test_shell/test_shell_webmimeregistry_impl.h',
       ],
     },
   ],

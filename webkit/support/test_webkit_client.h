@@ -5,12 +5,13 @@
 #ifndef WEBKIT_SUPPORT_TEST_WEBKIT_CLIENT_H_
 #define WEBKIT_SUPPORT_TEST_WEBKIT_CLIENT_H_
 
-#include "webkit/glue/simple_webmimeregistry_impl.h"
+#include "webkit/glue/webfilesystem_impl.h"
 #include "webkit/glue/webkitclient_impl.h"
 #include "webkit/tools/test_shell/mock_webclipboard_impl.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
 #include "webkit/tools/test_shell/simple_database_system.h"
 #include "webkit/tools/test_shell/simple_webcookiejar_impl.h"
+#include "webkit/tools/test_shell/test_shell_webmimeregistry_impl.h"
 
 // An implementation of WebKitClient for tests.
 class TestWebKitClient : public webkit_glue::WebKitClientImpl {
@@ -20,6 +21,7 @@ class TestWebKitClient : public webkit_glue::WebKitClientImpl {
 
   virtual WebKit::WebMimeRegistry* mimeRegistry();
   WebKit::WebClipboard* clipboard();
+  virtual WebKit::WebFileSystem* fileSystem();
   virtual WebKit::WebSandboxSupport* sandboxSupport();
   virtual WebKit::WebCookieJar* cookieJar();
   virtual bool sandboxEnabled();
@@ -32,7 +34,6 @@ class TestWebKitClient : public webkit_glue::WebKitClientImpl {
       const WebKit::WebString& vfs_file_name);
   virtual long long databaseGetFileSize(
       const WebKit::WebString& vfs_file_name);
-  virtual bool getFileSize(const WebKit::WebString& path, long long& result);
   virtual unsigned long long visitedLinkHash(const char* canonicalURL,
                                              size_t length);
   virtual bool isLinkVisited(unsigned long long linkHash);
@@ -54,10 +55,12 @@ class TestWebKitClient : public webkit_glue::WebKitClientImpl {
 #endif
 
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
+  virtual WebKit::WebGraphicsContext3D* createGraphicsContext3D();
 
  private:
-  webkit_glue::SimpleWebMimeRegistryImpl mime_registry_;
+  TestShellWebMimeRegistryImpl mime_registry_;
   MockWebClipboardImpl mock_clipboard_;
+  webkit_glue::WebFileSystemImpl file_system_;
   ScopedTempDir appcache_dir_;
   SimpleAppCacheSystem appcache_system_;
   SimpleDatabaseSystem database_system_;

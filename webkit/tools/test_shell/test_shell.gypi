@@ -47,8 +47,6 @@
       ],
       'msvs_guid': '77C32787-1B96-CB84-B905-7F170629F0AC',
       'sources': [
-        'mac/DumpRenderTreePasteboard.h',
-        'mac/DumpRenderTreePasteboard.m',
         'mac/test_shell_webview.h',
         'mac/test_shell_webview.mm',
         'mac/test_webview_delegate.mm',
@@ -95,8 +93,6 @@
         'test_shell_switches.h',
         'test_shell_win.cc',
         'test_shell_webkit_init.h',
-        'test_shell_webmimeregistry_impl.cc',
-        'test_shell_webmimeregistry_impl.h',
         'test_shell_webthemecontrol.h',
         'test_shell_webthemecontrol.cc',
         'test_shell_webthemeengine.h',

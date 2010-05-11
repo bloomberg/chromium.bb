@@ -11,14 +11,16 @@
 
 class Task;
 namespace WebKit {
+class WebApplicationCacheHost;
+class WebApplicationCacheHostClient;
 class WebFrame;
 class WebKitClient;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebPlugin;
-struct WebPluginParams;
 class WebString;
 class WebURL;
+struct WebPluginParams;
 }
 
 // This package provides functions used by DumpRenderTree/chromium.
@@ -46,6 +48,11 @@ WebKit::WebPlugin* CreateWebPlugin(WebKit::WebFrame* frame,
 // This is used by WebFrameClient::createMediaPlayer().
 WebKit::WebMediaPlayer* CreateMediaPlayer(WebKit::WebFrame* frame,
                                           WebKit::WebMediaPlayerClient* client);
+
+// This is used by WebFrameClient::createApplicationCacheHost().
+WebKit::WebApplicationCacheHost* CreateApplicationCacheHost(
+    WebKit::WebFrame* frame, WebKit::WebApplicationCacheHostClient* client);
+
 
 // Wrappers to minimize dependecy.
 

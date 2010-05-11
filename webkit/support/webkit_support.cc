@@ -143,6 +143,11 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(WebFrame* frame,
       new webkit_glue::VideoRendererImpl::FactoryFactory(false));
 }
 
+WebKit::WebApplicationCacheHost* CreateApplicationCacheHost(
+    WebFrame*, WebKit::WebApplicationCacheHostClient* client) {
+  return SimpleAppCacheSystem::CreateApplicationCacheHost(client);
+}
+
 // Wrapper for debug_util
 bool BeingDebugged() {
   return DebugUtil::BeingDebugged();

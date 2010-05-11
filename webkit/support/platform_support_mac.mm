@@ -6,6 +6,7 @@
 
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
+#import <objc/objc-runtime.h>
 
 #include "base/data_pack.h"
 #include "base/file_util.h"
@@ -15,6 +16,7 @@
 #include "base/string16.h"
 #include "grit/webkit_resources.h"
 #include "third_party/WebKit/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
+#import "webkit/tools/test_shell/mac/DumpRenderTreePasteboard.h"
 
 static base::DataPack* g_resource_data_pack = NULL;
 
@@ -27,6 +29,68 @@ void BeforeInitialize() {
   autorelease_pool = [[NSAutoreleasePool alloc] init];
   DCHECK(autorelease_pool);
   InitWebCoreSystemInterface();
+}
+
+#if OBJC_API_VERSION == 2
+static void SwizzleAllMethods(Class imposter, Class original) {
+  unsigned int imposterMethodCount = 0;
+  Method* imposterMethods =
+      class_copyMethodList(imposter, &imposterMethodCount);
+
+  unsigned int originalMethodCount = 0;
+  Method* originalMethods =
+      class_copyMethodList(original, &originalMethodCount);
+
+  for (unsigned int i = 0; i < imposterMethodCount; i++) {
+    SEL imposterMethodName = method_getName(imposterMethods[i]);
+
+    // Attempt to add the method to the original class.  If it fails, the method
+    // already exists and we should instead exchange the implementations.
+    if (class_addMethod(original,
+                        imposterMethodName,
+                        method_getImplementation(originalMethods[i]),
+                        method_getTypeEncoding(originalMethods[i]))) {
+      continue;
+    }
+
+    unsigned int j = 0;
+    for (; j < originalMethodCount; j++) {
+      SEL originalMethodName = method_getName(originalMethods[j]);
+      if (sel_isEqual(imposterMethodName, originalMethodName)) {
+        break;
+      }
+    }
+
+    // If class_addMethod failed above then the method must exist on the
+    // original class.
+    DCHECK(j < originalMethodCount) << "method wasn't found?";
+    method_exchangeImplementations(imposterMethods[i], originalMethods[j]);
+  }
+
+  if (imposterMethods) {
+    free(imposterMethods);
+  }
+  if (originalMethods) {
+    free(originalMethods);
+  }
+}
+#endif
+
+static void SwizzleNSPasteboard() {
+  // We replace NSPaseboard w/ the shim (from WebKit) that avoids having
+  // sideeffects w/ whatever the user does at the same time.
+
+  Class imposterClass = objc_getClass("DumpRenderTreePasteboard");
+  Class originalClass = objc_getClass("NSPasteboard");
+#if OBJC_API_VERSION == 0
+  class_poseAs(imposterClass, originalClass);
+#else
+  // Swizzle instance methods...
+  SwizzleAllMethods(imposterClass, originalClass);
+  // and then class methods.
+  SwizzleAllMethods(object_getClass(imposterClass),
+                    object_getClass(originalClass));
+#endif
 }
 
 void AfterIniitalize() {
@@ -69,12 +133,15 @@ void AfterIniitalize() {
       DLOG(FATAL) << "Fail to activate font: %s" << resource_path;
     }
   }
+
+  SwizzleNSPasteboard();
 }
 
 void BeforeShutdown() {
 }
 
 void AfterShutdown() {
+  [DumpRenderTreePasteboard releaseLocalPasteboards];
   [autorelease_pool drain];
   delete g_resource_data_pack;
 }

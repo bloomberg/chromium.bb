@@ -13,6 +13,7 @@
 #include "media/base/media.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDatabase.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScriptController.h"
@@ -67,7 +68,10 @@ TestWebKitClient::TestWebKitClient() {
   WebKit::WebRuntimeFeatures::enableSockets(true);
   WebKit::WebRuntimeFeatures::enableApplicationCache(true);
   WebKit::WebRuntimeFeatures::enableDatabase(true);
+  WebKit::WebRuntimeFeatures::enableWebGL(true);
+  WebKit::WebRuntimeFeatures::enablePushState(true);
   WebKit::WebRuntimeFeatures::enableNotifications(true);
+  WebKit::WebRuntimeFeatures::enableTouch(true);
 
   // Load libraries for media and enable the media player.
   bool enable_media = false;
@@ -100,6 +104,8 @@ TestWebKitClient::TestWebKitClient() {
 
   WebKit::WebDatabase::setObserver(&database_system_);
 
+  file_system_.set_sandbox_enabled(false);
+
 #if defined(OS_WIN)
   // Ensure we pick up the default theme engine.
   SetThemeEngine(NULL);
@@ -131,6 +137,10 @@ WebKit::WebClipboard* TestWebKitClient::clipboard() {
   // Mock out clipboard calls so that tests don't mess
   // with each other's copies/pastes when running in parallel.
   return &mock_clipboard_;
+}
+
+WebKit::WebFileSystem* TestWebKitClient::fileSystem() {
+  return &file_system_;
 }
 
 WebKit::WebSandboxSupport* TestWebKitClient::sandboxSupport() {
@@ -166,12 +176,6 @@ long TestWebKitClient::databaseGetFileAttributes(
 long long TestWebKitClient::databaseGetFileSize(
     const WebKit::WebString& vfs_file_name) {
   return SimpleDatabaseSystem::GetInstance()->GetFileSize(vfs_file_name);
-}
-
-bool TestWebKitClient::getFileSize(const WebKit::WebString& path, long long& result) {
-  return file_util::GetFileSize(
-      webkit_glue::WebStringToFilePath(path),
-      reinterpret_cast<int64*>(&result));
 }
 
 unsigned long long TestWebKitClient::visitedLinkHash(const char* canonicalURL,
@@ -238,4 +242,8 @@ WebKit::WebThemeEngine* TestWebKitClient::themeEngine() {
 
 WebKit::WebSharedWorkerRepository* TestWebKitClient::sharedWorkerRepository() {
   return NULL;
+}
+
+WebKit::WebGraphicsContext3D* TestWebKitClient::createGraphicsContext3D() {
+  return WebKit::WebGraphicsContext3D::createDefault();
 }
