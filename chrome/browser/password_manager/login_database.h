@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,9 @@
 #include <string>
 #include <vector>
 
+#include "app/sql/connection.h"
+#include "app/sql/meta_table.h"
 #include "base/string16.h"
-#include "chrome/browser/meta_table_helper.h"
 #include "webkit/glue/password_form.h"
 
 class FilePath;
@@ -63,8 +64,7 @@ class LoginDatabase {
       std::vector<webkit_glue::PasswordForm*>* forms) const;
 
   // Loads the complete list of blacklist forms into |forms|.
-  bool GetBlacklistLogins(
-      std::vector<webkit_glue::PasswordForm*>* forms) const;
+  bool GetBlacklistLogins(std::vector<webkit_glue::PasswordForm*>* forms) const;
 
  private:
   // Returns an encrypted version of plain_text.
@@ -79,15 +79,15 @@ class LoginDatabase {
   // Fills |form| from the values in the given statement (which is assumed to
   // be of the form used by the Get*Logins methods).
   void InitPasswordFormFromStatement(webkit_glue::PasswordForm* form,
-                                     SQLStatement* s) const;
+                                     sql::Statement& s) const;
 
   // Loads all logins whose blacklist setting matches |blacklisted| into
   // |forms|.
   bool GetAllLoginsWithBlacklistSetting(
       bool blacklisted, std::vector<webkit_glue::PasswordForm*>* forms) const;
 
-  sqlite3* db_;
-  MetaTableHelper meta_table_;
+  mutable sql::Connection db_;
+  sql::MetaTable meta_table_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDatabase);
 };

@@ -1,10 +1,11 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "app/sql/statement.h"
 
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "third_party/sqlite/preprocessed/sqlite3.h"
 
 namespace sql {
@@ -117,6 +118,10 @@ bool Statement::BindString(int col, const std::string& val) {
   return false;
 }
 
+bool Statement::BindString16(int col, const string16& value) {
+  return BindString(col, UTF16ToUTF8(value));
+}
+
 bool Statement::BindBlob(int col, const void* val, int val_len) {
   if (is_valid()) {
     int err = CheckError(sqlite3_bind_blob(ref_->stmt(), col + 1,
@@ -188,6 +193,15 @@ std::string Statement::ColumnString(int col) const {
   return result;
 }
 
+string16 Statement::ColumnString16(int col) const {
+  if (!is_valid()) {
+    NOTREACHED();
+    return string16();
+  }
+  std::string s = ColumnString(col);
+  return !s.empty() ? UTF8ToUTF16(s) : string16();
+}
+
 int Statement::ColumnByteLength(int col) const {
   if (!is_valid()) {
     NOTREACHED();
@@ -203,6 +217,21 @@ const void* Statement::ColumnBlob(int col) const {
   }
 
   return sqlite3_column_blob(ref_->stmt(), col);
+}
+
+bool Statement::ColumnBlobAsString(int col, std::string* blob) {
+  if (!is_valid()) {
+    NOTREACHED();
+    return false;
+  }
+  const void* p = ColumnBlob(col);
+  size_t len = ColumnByteLength(col);
+  blob->resize(len);
+  if (blob->size() != len) {
+    return false;
+  }
+  blob->assign(reinterpret_cast<const char*>(p), len);
+  return true;
 }
 
 void Statement::ColumnBlobAsVector(int col, std::vector<char>* val) const {

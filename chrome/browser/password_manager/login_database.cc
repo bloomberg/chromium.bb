@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <limits>
 
+#include "app/sql/statement.h"
+#include "app/sql/transaction.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/time.h"
@@ -35,50 +37,53 @@ typedef enum {
   COLUMN_SCHEME
 } LoginTableColumns;
 
-LoginDatabase::LoginDatabase() : db_(NULL) {
+LoginDatabase::LoginDatabase() {
 }
 
 LoginDatabase::~LoginDatabase() {
-  if (db_) {
-    sqlite3_close(db_);
-    db_ = NULL;
-  }
 }
 
 bool LoginDatabase::Init(const FilePath& db_path) {
-  if (OpenSqliteDb(db_path, &db_) != SQLITE_OK) {
+  // Set pragmas for a small, private database (based on WebDatabase).
+  db_.set_page_size(2048);
+  db_.set_cache_size(32);
+  db_.set_exclusive_locking();
+
+  if (!db_.Open(db_path)) {
     LOG(WARNING) << "Unable to open the password store database.";
     return false;
   }
 
-  // Set pragmas for a small, private database (based on WebDatabase).
-  sqlite3_exec(db_, "PRAGMA page_size=2048", NULL, NULL, NULL);
-  sqlite3_exec(db_, "PRAGMA cache_size=32", NULL, NULL, NULL);
-  sqlite3_exec(db_, "PRAGMA locking_mode=EXCLUSIVE", NULL, NULL, NULL);
-
-  SQLTransaction transaction(db_);
+  sql::Transaction transaction(&db_);
   transaction.Begin();
 
   // Check the database version.
-  if (!meta_table_.Init(std::string(), kCurrentVersionNumber,
-                        kCompatibleVersionNumber, db_)) {
+  if (!meta_table_.Init(&db_, kCurrentVersionNumber,
+                        kCompatibleVersionNumber)) {
+    db_.Close();
     return false;
   }
   if (meta_table_.GetCompatibleVersionNumber() > kCurrentVersionNumber) {
     LOG(WARNING) << "Password store database is too new.";
+    db_.Close();
     return false;
   }
 
   // Initialize the tables.
   if (!InitLoginsTable()) {
     LOG(WARNING) << "Unable to initialize the password store database.";
+    db_.Close();
     return false;
   }
 
   // If the file on disk is an older database version, bring it up to date.
   MigrateOldVersionsAsNeeded();
 
-  return (transaction.Commit() == SQLITE_OK);
+  if (!transaction.Commit()) {
+    db_.Close();
+    return false;
+  }
+  return true;
 }
 
 void LoginDatabase::MigrateOldVersionsAsNeeded() {
@@ -90,8 +95,8 @@ void LoginDatabase::MigrateOldVersionsAsNeeded() {
 }
 
 bool LoginDatabase::InitLoginsTable() {
-  if (!DoesSqliteTableExist(db_, "logins")) {
-    if (sqlite3_exec(db_, "CREATE TABLE logins ("
+  if (!db_.DoesTableExist("logins")) {
+    if (!db_.Execute("CREATE TABLE logins ("
                      "origin_url VARCHAR NOT NULL, "
                      "action_url VARCHAR, "
                      "username_element VARCHAR, "
@@ -108,14 +113,12 @@ bool LoginDatabase::InitLoginsTable() {
                      "UNIQUE "
                      "(origin_url, username_element, "
                      "username_value, password_element, "
-                     "submit_element, signon_realm))",
-                     NULL, NULL, NULL) != SQLITE_OK) {
+                     "submit_element, signon_realm))")) {
       NOTREACHED();
       return false;
     }
-    if (sqlite3_exec(db_, "CREATE INDEX logins_signon ON "
-                     "logins (signon_realm)",
-                     NULL, NULL, NULL) != SQLITE_OK) {
+    if (!db_.Execute("CREATE INDEX logins_signon ON "
+                     "logins (signon_realm)")) {
       NOTREACHED();
       return false;
     }
@@ -125,36 +128,36 @@ bool LoginDatabase::InitLoginsTable() {
 
 
 bool LoginDatabase::AddLogin(const PasswordForm& form) {
-  SQLStatement s;
   // You *must* change LoginTableColumns if this query changes.
-  if (s.prepare(db_,
-                "INSERT OR REPLACE INTO logins "
-                "(origin_url, action_url, username_element, username_value, "
-                " password_element, password_value, submit_element, "
-                " signon_realm, ssl_valid, preferred, date_created, "
-                " blacklisted_by_user, scheme) "
-                "VALUES "
-                "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)") != SQLITE_OK) {
+  sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
+      "INSERT OR REPLACE INTO logins "
+      "(origin_url, action_url, username_element, username_value, "
+      " password_element, password_value, submit_element, "
+      " signon_realm, ssl_valid, preferred, date_created, "
+      " blacklisted_by_user, scheme) "
+      "VALUES "
+      "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+  if (!s) {
     NOTREACHED() << "Statement prepare failed";
     return false;
   }
 
-  s.bind_string(COLUMN_ORIGIN_URL, form.origin.spec());
-  s.bind_string(COLUMN_ACTION_URL, form.action.spec());
-  s.bind_string16(COLUMN_USERNAME_ELEMENT, form.username_element);
-  s.bind_string16(COLUMN_USERNAME_VALUE, form.username_value);
-  s.bind_string16(COLUMN_PASSWORD_ELEMENT, form.password_element);
+  s.BindString(COLUMN_ORIGIN_URL, form.origin.spec());
+  s.BindString(COLUMN_ACTION_URL, form.action.spec());
+  s.BindString16(COLUMN_USERNAME_ELEMENT, form.username_element);
+  s.BindString16(COLUMN_USERNAME_VALUE, form.username_value);
+  s.BindString16(COLUMN_PASSWORD_ELEMENT, form.password_element);
   std::string encrypted_password = EncryptedString(form.password_value);
-  s.bind_blob(COLUMN_PASSWORD_VALUE, encrypted_password.data(),
+  s.BindBlob(COLUMN_PASSWORD_VALUE, encrypted_password.data(),
               static_cast<int>(encrypted_password.length()));
-  s.bind_string16(COLUMN_SUBMIT_ELEMENT, form.submit_element);
-  s.bind_string(COLUMN_SIGNON_REALM, form.signon_realm);
-  s.bind_int(COLUMN_SSL_VALID, form.ssl_valid);
-  s.bind_int(COLUMN_PREFERRED, form.preferred);
-  s.bind_int64(COLUMN_DATE_CREATED, form.date_created.ToTimeT());
-  s.bind_int(COLUMN_BLACKLISTED_BY_USER, form.blacklisted_by_user);
-  s.bind_int(COLUMN_SCHEME, form.scheme);
-  if (s.step() != SQLITE_DONE) {
+  s.BindString16(COLUMN_SUBMIT_ELEMENT, form.submit_element);
+  s.BindString(COLUMN_SIGNON_REALM, form.signon_realm);
+  s.BindInt(COLUMN_SSL_VALID, form.ssl_valid);
+  s.BindInt(COLUMN_PREFERRED, form.preferred);
+  s.BindInt64(COLUMN_DATE_CREATED, form.date_created.ToTimeT());
+  s.BindInt(COLUMN_BLACKLISTED_BY_USER, form.blacklisted_by_user);
+  s.BindInt(COLUMN_SCHEME, form.scheme);
+  if (!s.Run()) {
     NOTREACHED();
     return false;
   }
@@ -162,66 +165,67 @@ bool LoginDatabase::AddLogin(const PasswordForm& form) {
 }
 
 bool LoginDatabase::UpdateLogin(const PasswordForm& form, int* items_changed) {
-  SQLStatement s;
-  if (s.prepare(db_, "UPDATE logins SET "
-                "action_url = ?, "
-                "password_value = ?, "
-                "ssl_valid = ?, "
-                "preferred = ? "
-                "WHERE origin_url = ? AND "
-                "username_element = ? AND "
-                "username_value = ? AND "
-                "password_element = ? AND "
-                "signon_realm = ?") != SQLITE_OK) {
+  sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
+      "UPDATE logins SET "
+      "action_url = ?, "
+      "password_value = ?, "
+      "ssl_valid = ?, "
+      "preferred = ? "
+      "WHERE origin_url = ? AND "
+      "username_element = ? AND "
+      "username_value = ? AND "
+      "password_element = ? AND "
+      "signon_realm = ?"));
+  if (!s) {
     NOTREACHED() << "Statement prepare failed";
     return false;
   }
 
-  s.bind_string(0, form.action.spec());
+  s.BindString(0, form.action.spec());
   std::string encrypted_password = EncryptedString(form.password_value);
-  s.bind_blob(1, encrypted_password.data(),
-              static_cast<int>(encrypted_password.length()));
-  s.bind_int(2, form.ssl_valid);
-  s.bind_int(3, form.preferred);
-  s.bind_string(4, form.origin.spec());
-  s.bind_string16(5, form.username_element);
-  s.bind_string16(6, form.username_value);
-  s.bind_string16(7, form.password_element);
-  s.bind_string(8, form.signon_realm);
+  s.BindBlob(1, encrypted_password.data(),
+             static_cast<int>(encrypted_password.length()));
+  s.BindInt(2, form.ssl_valid);
+  s.BindInt(3, form.preferred);
+  s.BindString(4, form.origin.spec());
+  s.BindString16(5, form.username_element);
+  s.BindString16(6, form.username_value);
+  s.BindString16(7, form.password_element);
+  s.BindString(8, form.signon_realm);
 
-  if (s.step() != SQLITE_DONE) {
+  if (!s.Run()) {
     NOTREACHED();
     return false;
   }
   if (items_changed) {
-    *items_changed = s.changes();
+    *items_changed = db_.GetLastChangeCount();
   }
   return true;
 }
 
 bool LoginDatabase::RemoveLogin(const PasswordForm& form) {
-  SQLStatement s;
   // Remove a login by UNIQUE-constrained fields.
-  if (s.prepare(db_,
-                "DELETE FROM logins WHERE "
-                "origin_url = ? AND "
-                "username_element = ? AND "
-                "username_value = ? AND "
-                "password_element = ? AND "
-                "submit_element = ? AND "
-                "signon_realm = ? ") != SQLITE_OK) {
+  sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
+      "DELETE FROM logins WHERE "
+      "origin_url = ? AND "
+      "username_element = ? AND "
+      "username_value = ? AND "
+      "password_element = ? AND "
+      "submit_element = ? AND "
+      "signon_realm = ? "));
+  if (!s) {
     NOTREACHED() << "Statement prepare failed";
     return false;
   }
 
-  s.bind_string(0, form.origin.spec());
-  s.bind_string16(1, form.username_element);
-  s.bind_string16(2, form.username_value);
-  s.bind_string16(3, form.password_element);
-  s.bind_string16(4, form.submit_element);
-  s.bind_string(5, form.signon_realm);
+  s.BindString(0, form.origin.spec());
+  s.BindString16(1, form.username_element);
+  s.BindString16(2, form.username_value);
+  s.BindString16(3, form.password_element);
+  s.BindString16(4, form.submit_element);
+  s.BindString(5, form.signon_realm);
 
-  if (s.step() != SQLITE_DONE) {
+  if (!s.Run()) {
     NOTREACHED();
     return false;
   }
@@ -230,42 +234,41 @@ bool LoginDatabase::RemoveLogin(const PasswordForm& form) {
 
 bool LoginDatabase::RemoveLoginsCreatedBetween(const base::Time delete_begin,
                                                const base::Time delete_end) {
-  SQLStatement s;
-  if (s.prepare(db_,
-                "DELETE FROM logins WHERE "
-                "date_created >= ? AND date_created < ?") != SQLITE_OK) {
+  sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
+      "DELETE FROM logins WHERE "
+      "date_created >= ? AND date_created < ?"));
+  if (!s) {
     NOTREACHED() << "Statement prepare failed";
     return false;
   }
-  s.bind_int64(0, delete_begin.ToTimeT());
-  s.bind_int64(1, delete_end.is_null() ? std::numeric_limits<int64>::max()
-                                       : delete_end.ToTimeT());
+  s.BindInt64(0, delete_begin.ToTimeT());
+  s.BindInt64(1, delete_end.is_null() ? std::numeric_limits<int64>::max()
+                                      : delete_end.ToTimeT());
 
-  return s.step() == SQLITE_DONE;
+  return s.Run();
 }
 
 void LoginDatabase::InitPasswordFormFromStatement(PasswordForm* form,
-                                                  SQLStatement* s) const {
-  std::string tmp;
-  s->column_string(COLUMN_ORIGIN_URL, &tmp);
+                                                  sql::Statement& s) const {
+  std::string tmp = s.ColumnString(COLUMN_ORIGIN_URL);
   form->origin = GURL(tmp);
-  s->column_string(COLUMN_ACTION_URL, &tmp);
+  tmp = s.ColumnString(COLUMN_ACTION_URL);
   form->action = GURL(tmp);
-  s->column_string16(COLUMN_USERNAME_ELEMENT, &form->username_element);
-  s->column_string16(COLUMN_USERNAME_VALUE, &form->username_value);
-  s->column_string16(COLUMN_PASSWORD_ELEMENT, &form->password_element);
+  form->username_element = s.ColumnString16(COLUMN_USERNAME_ELEMENT);
+  form->username_value = s.ColumnString16(COLUMN_USERNAME_VALUE);
+  form->password_element = s.ColumnString16(COLUMN_PASSWORD_ELEMENT);
   std::string encrypted_password;
-  s->column_blob_as_string(COLUMN_PASSWORD_VALUE, &encrypted_password);
+  s.ColumnBlobAsString(COLUMN_PASSWORD_VALUE, &encrypted_password);
   form->password_value = DecryptedString(encrypted_password);
-  s->column_string16(COLUMN_SUBMIT_ELEMENT, &form->submit_element);
-  s->column_string(COLUMN_SIGNON_REALM, &tmp);
+  form->submit_element = s.ColumnString16(COLUMN_SUBMIT_ELEMENT);
+  tmp = s.ColumnString(COLUMN_SIGNON_REALM);
   form->signon_realm = tmp;
-  form->ssl_valid = (s->column_int(COLUMN_SSL_VALID) > 0);
-  form->preferred = (s->column_int(COLUMN_PREFERRED) > 0);
+  form->ssl_valid = (s.ColumnInt(COLUMN_SSL_VALID) > 0);
+  form->preferred = (s.ColumnInt(COLUMN_PREFERRED) > 0);
   form->date_created = base::Time::FromTimeT(
-      s->column_int64(COLUMN_DATE_CREATED));
-  form->blacklisted_by_user = (s->column_int(COLUMN_BLACKLISTED_BY_USER) > 0);
-  int scheme_int = s->column_int(COLUMN_SCHEME);
+      s.ColumnInt64(COLUMN_DATE_CREATED));
+  form->blacklisted_by_user = (s.ColumnInt(COLUMN_BLACKLISTED_BY_USER) > 0);
+  int scheme_int = s.ColumnInt(COLUMN_SCHEME);
   DCHECK((scheme_int >= 0) && (scheme_int <= PasswordForm::SCHEME_OTHER));
   form->scheme = static_cast<PasswordForm::Scheme>(scheme_int);
 }
@@ -273,29 +276,28 @@ void LoginDatabase::InitPasswordFormFromStatement(PasswordForm* form,
 bool LoginDatabase::GetLogins(const PasswordForm& form,
                               std::vector<PasswordForm*>* forms) const {
   DCHECK(forms);
-  SQLStatement s;
   // You *must* change LoginTableColumns if this query changes.
-  if (s.prepare(db_,
-                "SELECT origin_url, action_url, "
-                "username_element, username_value, "
-                "password_element, password_value, "
-                "submit_element, signon_realm, ssl_valid, preferred, "
-                "date_created, blacklisted_by_user, scheme FROM logins "
-                "WHERE signon_realm == ? ") != SQLITE_OK) {
+  sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
+      "SELECT origin_url, action_url, "
+      "username_element, username_value, "
+      "password_element, password_value, "
+      "submit_element, signon_realm, ssl_valid, preferred, "
+      "date_created, blacklisted_by_user, scheme FROM logins "
+      "WHERE signon_realm == ? "));
+  if (!s) {
     NOTREACHED() << "Statement prepare failed";
     return false;
   }
 
-  s.bind_string(0, form.signon_realm);
+  s.BindString(0, form.signon_realm);
 
-  int result;
-  while ((result = s.step()) == SQLITE_ROW) {
+  while (s.Step()) {
     PasswordForm* new_form = new PasswordForm();
-    InitPasswordFormFromStatement(new_form, &s);
+    InitPasswordFormFromStatement(new_form, s);
 
     forms->push_back(new_form);
   }
-  return result == SQLITE_DONE;
+  return s.Succeeded();
 }
 
 bool LoginDatabase::GetLoginsCreatedBetween(
@@ -303,31 +305,30 @@ bool LoginDatabase::GetLoginsCreatedBetween(
     const base::Time end,
     std::vector<webkit_glue::PasswordForm*>* forms) const {
   DCHECK(forms);
-  SQLStatement s;
-  std::string stmt = "SELECT origin_url, action_url, "
-                     "username_element, username_value, "
-                     "password_element, password_value, "
-                     "submit_element, signon_realm, ssl_valid, preferred, "
-                     "date_created, blacklisted_by_user, scheme FROM logins "
-                     "WHERE date_created >= ? AND date_created < ?"
-                     "ORDER BY origin_url";
+  sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
+      "SELECT origin_url, action_url, "
+      "username_element, username_value, "
+      "password_element, password_value, "
+      "submit_element, signon_realm, ssl_valid, preferred, "
+      "date_created, blacklisted_by_user, scheme FROM logins "
+      "WHERE date_created >= ? AND date_created < ?"
+      "ORDER BY origin_url"));
 
-  if (s.prepare(db_, stmt.c_str()) != SQLITE_OK) {
+  if (!s) {
     NOTREACHED() << "Statement prepare failed";
     return false;
   }
-  s.bind_int64(0, begin.ToTimeT());
-  s.bind_int64(1, end.is_null() ? std::numeric_limits<int64>::max()
-                                : end.ToTimeT());
+  s.BindInt64(0, begin.ToTimeT());
+  s.BindInt64(1, end.is_null() ? std::numeric_limits<int64>::max()
+                               : end.ToTimeT());
 
-  int result;
-  while ((result = s.step()) == SQLITE_ROW) {
+  while (s.Step()) {
     PasswordForm* new_form = new PasswordForm();
-    InitPasswordFormFromStatement(new_form, &s);
+    InitPasswordFormFromStatement(new_form, s);
 
     forms->push_back(new_form);
   }
-  return result == SQLITE_DONE;
+  return s.Succeeded();
 }
 
 bool LoginDatabase::GetAutofillableLogins(
@@ -343,28 +344,27 @@ bool LoginDatabase::GetBlacklistLogins(
 bool LoginDatabase::GetAllLoginsWithBlacklistSetting(
     bool blacklisted, std::vector<PasswordForm*>* forms) const {
   DCHECK(forms);
-  SQLStatement s;
   // You *must* change LoginTableColumns if this query changes.
-  std::string stmt = "SELECT origin_url, action_url, "
-                     "username_element, username_value, "
-                     "password_element, password_value, "
-                     "submit_element, signon_realm, ssl_valid, preferred, "
-                     "date_created, blacklisted_by_user, scheme FROM logins "
-                     "WHERE blacklisted_by_user == ? "
-                     "ORDER BY origin_url";
+  sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
+      "SELECT origin_url, action_url, "
+      "username_element, username_value, "
+      "password_element, password_value, "
+      "submit_element, signon_realm, ssl_valid, preferred, "
+      "date_created, blacklisted_by_user, scheme FROM logins "
+      "WHERE blacklisted_by_user == ? "
+      "ORDER BY origin_url"));
 
-  if (s.prepare(db_, stmt.c_str()) != SQLITE_OK) {
+  if (!s) {
     NOTREACHED() << "Statement prepare failed";
     return false;
   }
-  s.bind_int(0, blacklisted ? 1 : 0);
+  s.BindInt(0, blacklisted ? 1 : 0);
 
-  int result;
-  while ((result = s.step()) == SQLITE_ROW) {
+  while (s.Step()) {
     PasswordForm* new_form = new PasswordForm();
-    InitPasswordFormFromStatement(new_form, &s);
+    InitPasswordFormFromStatement(new_form, s);
 
     forms->push_back(new_form);
   }
-  return result == SQLITE_DONE;
+  return s.Succeeded();
 }

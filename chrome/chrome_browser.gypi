@@ -1576,8 +1576,6 @@
         'browser/memory_purger.h',
         'browser/message_box_handler.cc',
         'browser/message_box_handler.h',
-        'browser/meta_table_helper.cc',
-        'browser/meta_table_helper.h',
         'browser/metrics/histogram_synchronizer.cc',
         'browser/metrics/histogram_synchronizer.h',
         'browser/metrics/metric_event_duration_details.h',
