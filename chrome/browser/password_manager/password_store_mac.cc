@@ -883,11 +883,20 @@ void PasswordStoreMac::GetLoginsImpl(GetLoginsRequest* request,
 
 void PasswordStoreMac::GetBlacklistLoginsImpl(GetLoginsRequest* request) {
   std::vector<PasswordForm*> database_forms;
-  login_metadata_db_->GetBlacklistLogins(&database_forms);
+  FillBlacklistLogins(&database_forms);
   NotifyConsumer(request, database_forms);
 }
 
 void PasswordStoreMac::GetAutofillableLoginsImpl(GetLoginsRequest* request) {
+  std::vector<PasswordForm*> database_forms;
+  FillAutofillableLogins(&database_forms);
+  NotifyConsumer(request, database_forms);
+}
+
+bool PasswordStoreMac::FillAutofillableLogins(
+         std::vector<PasswordForm*>* forms) {
+  DCHECK(thread_->message_loop() == MessageLoop::current());
+
   std::vector<PasswordForm*> database_forms;
   login_metadata_db_->GetAutofillableLogins(&database_forms);
 
@@ -899,7 +908,14 @@ void PasswordStoreMac::GetAutofillableLoginsImpl(GetLoginsRequest* request) {
   RemoveDatabaseForms(database_forms);
   STLDeleteElements(&database_forms);
 
-  NotifyConsumer(request, merged_forms);
+  forms->insert(forms->end(), merged_forms.begin(), merged_forms.end());
+  return true;
+}
+
+bool PasswordStoreMac::FillBlacklistLogins(
+         std::vector<PasswordForm*>* forms) {
+  DCHECK(thread_->message_loop() == MessageLoop::current());
+  return login_metadata_db_->GetBlacklistLogins(forms);
 }
 
 bool PasswordStoreMac::AddToKeychainIfNecessary(const PasswordForm& form) {

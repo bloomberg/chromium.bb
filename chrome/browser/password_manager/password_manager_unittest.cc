@@ -53,6 +53,10 @@ class MockPasswordStore : public PasswordStore {
   MOCK_METHOD2(GetLoginsImpl, void(GetLoginsRequest*, const PasswordForm&));
   MOCK_METHOD1(GetAutofillableLoginsImpl, void(GetLoginsRequest*));
   MOCK_METHOD1(GetBlacklistLoginsImpl, void(GetLoginsRequest*));
+  MOCK_METHOD1(FillAutofillableLogins,
+      bool(std::vector<webkit_glue::PasswordForm*>*));
+  MOCK_METHOD1(FillBlacklistLogins,
+      bool(std::vector<webkit_glue::PasswordForm*>*));
 };
 
 ACTION_P2(InvokeConsumer, handle, forms) {

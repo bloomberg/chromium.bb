@@ -45,6 +45,10 @@ class PasswordStoreMac : public PasswordStore {
                      const webkit_glue::PasswordForm& form);
   void GetAutofillableLoginsImpl(GetLoginsRequest* request);
   void GetBlacklistLoginsImpl(GetLoginsRequest* request);
+  bool FillAutofillableLogins(
+      std::vector<webkit_glue::PasswordForm*>* forms);
+  bool FillBlacklistLogins(
+      std::vector<webkit_glue::PasswordForm*>* forms);
 
   // Adds the given form to the Keychain if it's something we want to store
   // there (i.e., not a blacklist entry). Returns true if the operation

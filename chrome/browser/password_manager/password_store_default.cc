@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/browser/password_manager/password_store_default.h"
+
+#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_constants.h"
@@ -91,15 +93,27 @@ void PasswordStoreDefault::GetLoginsImpl(
 void PasswordStoreDefault::GetAutofillableLoginsImpl(
     GetLoginsRequest* request) {
   std::vector<PasswordForm*> forms;
-  login_db_->GetAutofillableLogins(&forms);
+  FillAutofillableLogins(&forms);
   NotifyConsumer(request, forms);
 }
 
 void PasswordStoreDefault::GetBlacklistLoginsImpl(
     GetLoginsRequest* request) {
   std::vector<PasswordForm*> forms;
-  login_db_->GetBlacklistLogins(&forms);
+  FillBlacklistLogins(&forms);
   NotifyConsumer(request, forms);
+}
+
+bool PasswordStoreDefault::FillAutofillableLogins(
+         std::vector<PasswordForm*>* forms) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  return login_db_->GetAutofillableLogins(forms);
+}
+
+bool PasswordStoreDefault::FillBlacklistLogins(
+         std::vector<PasswordForm*>* forms) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  return login_db_->GetBlacklistLogins(forms);
 }
 
 void PasswordStoreDefault::MigrateIfNecessary() {

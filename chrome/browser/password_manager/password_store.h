@@ -17,6 +17,12 @@
 class Profile;
 class Task;
 
+namespace browser_sync {
+class PasswordDataTypeController;
+class PasswordModelAssociator;
+class PasswordModelWorker;
+};
+
 class PasswordStoreConsumer {
  public:
   virtual ~PasswordStoreConsumer() {}
@@ -70,6 +76,9 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
 
  protected:
   friend class base::RefCountedThreadSafe<PasswordStore>;
+  friend class browser_sync::PasswordDataTypeController;
+  friend class browser_sync::PasswordModelAssociator;
+  friend class browser_sync::PasswordModelWorker;
 
   virtual ~PasswordStore() {}
 
@@ -112,6 +121,13 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request) = 0;
   // Finds all blacklist PasswordForms, and notifies the consumer.
   virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request) = 0;
+
+  // Finds all non-blacklist PasswordForms, and fills the vector.
+  virtual bool FillAutofillableLogins(
+      std::vector<webkit_glue::PasswordForm*>* forms) = 0;
+  // Finds all blacklist PasswordForms, and fills the vector.
+  virtual bool FillBlacklistLogins(
+      std::vector<webkit_glue::PasswordForm*>* forms) = 0;
 
   // Notifies the consumer that a Get*Logins() request is complete.
   virtual void NotifyConsumer(
