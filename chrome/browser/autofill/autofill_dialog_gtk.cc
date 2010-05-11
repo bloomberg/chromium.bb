@@ -788,8 +788,6 @@ void AutoFillDialog::InitializeWidgets() {
       GTK_RESPONSE_OK,
       NULL);
 
-  // Allow browser windows to go in front of the AutoFill dialog in Metacity.
-  gtk_window_set_type_hint(GTK_WINDOW(dialog_), GDK_WINDOW_TYPE_HINT_NORMAL);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), this);
