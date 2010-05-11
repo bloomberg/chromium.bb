@@ -344,8 +344,11 @@
   fun:AutoFillProfile::Clone
   fun:browser_sync::AutofillChangeProcessor::ObserveAutofillProfileChanged
 }
+# ExpectJs*Internal = ExpectJs{Pass,Fail}Internal
+# ExtensionAPIClientTest_*_Test =
+#   ExtensionAPIClientTest_{CollapseToolstrip_Test,GetAcceptLanguages}_Test
 {
-  bug_43775
+  bug_43775_a
   Heapcheck:Leak
   fun:WebCore::makeExternalString
   fun:WebCore::v8ExternalString
@@ -354,8 +357,20 @@
   fun:WebCore::ScriptController::executeScript
   fun:WebKit::WebFrameImpl::executeScript
   fun:RenderViewTest::ExecuteJavaScript
-  fun:ExtensionAPIClientTest::ExpectJsFailInternal
-  fun:ExtensionAPIClientTest_CollapseToolstrip_Test::TestBody
+  fun:ExtensionAPIClientTest::ExpectJs*Internal
+  fun:ExtensionAPIClientTest_*_Test::TestBody
+}
+{
+  bug_43775_b
+  Heapcheck:Leak
+  fun:WTF::fastMalloc
+  fun:WebCore::StringImpl::createUninitialized
+  fun:WebCore::String::fromUTF8
+  fun:WebCore::String::fromUTF8
+  fun:WebKit::WebString::fromUTF8
+  fun:RenderViewTest::ExecuteJavaScript
+  fun:ExtensionAPIClientTest::ExpectJs*Internal
+  fun:ExtensionAPIClientTest_*_Test::TestBody
 }
 {
   bug_43779
