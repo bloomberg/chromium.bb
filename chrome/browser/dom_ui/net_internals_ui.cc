@@ -16,6 +16,7 @@
 #include "base/singleton.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/connection_tester.h"
 #include "chrome/browser/net/passive_log_collector.h"
+#include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/net/url_request_context_getter.h"
@@ -100,7 +102,9 @@ Value* EntryToDictionaryValue(net::NetLog::EventType type,
 
 Value* ExperimentToValue(const ConnectionTester::Experiment& experiment) {
   DictionaryValue* dict = new DictionaryValue();
-  dict->SetString(L"url", experiment.url.spec());
+
+  if (experiment.url.is_valid())
+    dict->SetString(L"url", experiment.url.spec());
 
   dict->SetStringFromUTF16(
       L"proxy_settings_experiment",
@@ -716,7 +720,9 @@ void NetInternalsMessageHandler::IOThreadImpl::OnStartConnectionTests(
     list->GetStringAsUTF16(0, &url_str);
   }
 
-  GURL url(url_str);
+  // Try to fix-up the user provided URL into something valid.
+  // For example, turn "www.google.com" into "http://www.google.com".
+  GURL url(URLFixerUpper::FixupURL(UTF16ToUTF8(url_str), std::string()));
 
   connection_tester_.reset(new ConnectionTester(this));
   connection_tester_->RunAllTests(url);
