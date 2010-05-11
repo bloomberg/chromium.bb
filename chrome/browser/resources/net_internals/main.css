@@ -201,3 +201,21 @@ body {
 #proxyTabContent th {
   font-size: 12px;
 }
+
+/*
+ * Styles for TABLE that uses a thin collapsed border.
+ */
+table.styledTable {
+  border-collapse:collapse;
+}
+
+table.styledTable,
+.styledTable th,
+.styledTable td {
+  border: 1px solid #777;
+}
+
+.styledTable th {
+  background: rgb(224,236,255);
+}
+

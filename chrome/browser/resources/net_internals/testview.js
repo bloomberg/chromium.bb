@@ -42,7 +42,7 @@ TestView.prototype.onStartedConnectionTestSuite = function() {
 
   // Add a table that will hold the individual test results.
   var table = addNode(this.summaryDiv_, 'table');
-  table.border = 1;
+  table.className = 'styledTable';
   var thead = addNode(table, 'thead');
   thead.innerHTML = '<tr><th>Result</th><th>Experiment</th>' +
                     '<th>Error</th><th>Time (ms)</th></tr>';
