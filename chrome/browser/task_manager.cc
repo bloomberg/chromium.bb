@@ -404,25 +404,34 @@ double TaskManagerModel::GetCPUUsage(TaskManager::Resource* resource) const {
 }
 
 bool TaskManagerModel::GetPrivateMemory(int index, size_t* result) const {
-  *result = 0;
-  base::ProcessMetrics* process_metrics;
-  if (!GetProcessMetricsForRow(index, &process_metrics))
-    return false;
-  *result = process_metrics->GetPrivateBytes();
-  if (*result == 0)
-    return false;
+  base::ProcessHandle handle = resources_[index]->GetProcess();
+  MemoryUsageMap::const_iterator iter = memory_usage_map_.find(handle);
+  if (iter == memory_usage_map_.end()) {
+    std::pair<size_t, size_t> usage;
+    if (!GetAndCacheMemoryMetrics(handle, &usage))
+      return false;
+
+    *result = usage.first;
+  } else {
+    *result = iter->second.first;
+  }
+
   return true;
 }
 
 bool TaskManagerModel::GetSharedMemory(int index, size_t* result) const {
-  *result = 0;
-  base::ProcessMetrics* process_metrics;
-  if (!GetProcessMetricsForRow(index, &process_metrics))
-    return false;
-  base::WorkingSetKBytes ws_usage;
-  if (!process_metrics->GetWorkingSetKBytes(&ws_usage))
-    return false;
-  *result = ws_usage.shared * 1024;
+  base::ProcessHandle handle = resources_[index]->GetProcess();
+  MemoryUsageMap::const_iterator iter = memory_usage_map_.find(handle);
+  if (iter == memory_usage_map_.end()) {
+    std::pair<size_t, size_t> usage;
+    if (!GetAndCacheMemoryMetrics(handle, &usage))
+      return false;
+
+    *result = usage.second;
+  } else {
+    *result = iter->second.second;
+  }
+
   return true;
 }
 
@@ -718,6 +727,9 @@ void TaskManagerModel::Refresh() {
     cpu_usage_map_[process] = metrics_iter->second->GetCPUUsage();
   }
 
+  // Clear the memory values so they can be querried lazily.
+  memory_usage_map_.clear();
+
   // Compute the new network usage values.
   displayed_network_usage_map_.clear();
   for (ResourceValueMap::iterator iter = current_byte_count_map_.begin();
@@ -951,4 +963,18 @@ void TaskManager::OpenAboutMemory() {
 
     browser->window()->Show();
   }
+}
+
+bool TaskManagerModel::GetAndCacheMemoryMetrics(
+    base::ProcessHandle handle,
+    std::pair<size_t, size_t>* usage) const {
+  MetricsMap::const_iterator iter = metrics_map_.find(handle);
+  if (iter == metrics_map_.end())
+    return false;
+
+  if (!iter->second->GetMemoryBytes(&usage->first, &usage->second))
+    return false;
+
+  memory_usage_map_.insert(std::make_pair(handle, *usage));
+  return true;
 }

@@ -300,6 +300,8 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
   typedef std::map<base::ProcessHandle, base::ProcessMetrics*> MetricsMap;
   typedef std::map<base::ProcessHandle, double> CPUUsageMap;
   typedef std::map<TaskManager::Resource*, int64> ResourceValueMap;
+  typedef std::map<base::ProcessHandle,
+                   std::pair<size_t, size_t> > MemoryUsageMap;
 
   // Updates the values for all rows.
   void Refresh();
@@ -328,11 +330,13 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
   double GetCPUUsage(TaskManager::Resource* resource) const;
 
   // Gets the private memory (in bytes) that should be displayed for the passed
-  // resource index.
+  // resource index. Caches the result since this calculation can take time on
+  // some platforms.
   bool GetPrivateMemory(int index, size_t* result) const;
 
   // Gets the shared memory (in bytes) that should be displayed for the passed
-  // resource index.
+  // resource index. Caches the result since this calculation can take time on
+  // some platforms.
   bool GetSharedMemory(int index, size_t* result) const;
 
   // Gets the physical memory (in bytes) that should be displayed for the passed
@@ -354,6 +358,11 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
   // Given a number, this function returns the formatted string that should be
   // displayed in the task manager's memory cell.
   std::wstring GetMemCellText(int64 number) const;
+
+  // Looks up the data for |handle| and puts it in the mutable cache
+  // |memory_usage_map_|.
+  bool GetAndCacheMemoryMetrics(base::ProcessHandle handle,
+                                std::pair<size_t, size_t>* usage) const;
 
   // The list of providers to the task manager. They are ref counted.
   ResourceProviderList providers_;
@@ -382,6 +391,12 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
 
   // A map that contains the CPU usage (in %) for a process since last refresh.
   CPUUsageMap cpu_usage_map_;
+
+  // A map that contains the private/shared memory usage of the process. We
+  // cache this because the same APIs are called on linux and windows, and
+  // because the linux call takes >10ms to complete. This cache is cleared on
+  // every Refresh().
+  mutable MemoryUsageMap memory_usage_map_;
 
   ObserverList<TaskManagerModelObserver> observer_list_;
 
