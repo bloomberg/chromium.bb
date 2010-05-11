@@ -21,8 +21,8 @@
 #include "chrome/browser/views/extensions/extension_shelf.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #endif
-
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"

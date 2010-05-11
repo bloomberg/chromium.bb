@@ -14,14 +14,15 @@
 #include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_extent.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+
+class ExtensionAction;
+class ExtensionResource;
 
 // Represents a Chrome extension.
 class Extension {

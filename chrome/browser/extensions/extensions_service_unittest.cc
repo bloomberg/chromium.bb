@@ -26,6 +26,7 @@
 #include "chrome/browser/extensions/external_pref_extension_provider.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"

@@ -12,6 +12,7 @@
 #include "chrome/browser/views/browser_actions_container.h"
 #include "chrome/browser/views/extensions/browser_action_drag_data.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_action.h"
 #include "gfx/canvas.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_2.h"

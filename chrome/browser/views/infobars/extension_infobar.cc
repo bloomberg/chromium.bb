@@ -12,6 +12,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_resource.h"
 #include "gfx/canvas.h"
 #include "grit/theme_resources.h"
 #include "views/controls/button/menu_button.h"

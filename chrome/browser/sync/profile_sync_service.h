@@ -13,7 +13,6 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/google_service_auth_error.h"
-#include "chrome/browser/profile.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
@@ -29,6 +28,8 @@
 class NotificationDetails;
 class NotificationSource;
 class NotificationType;
+class Profile;
+class ProfileSyncFactory;
 
 // Various UI components such as the New Tab page can be driven by observing
 // the ProfileSyncService through this interface.

@@ -15,6 +15,11 @@
 class ChildProcessLauncher;
 class CommandBufferProxy;
 
+namespace IPC {
+struct ChannelHandle;
+class Message;
+}
+
 class GpuProcessHost : public ChildProcessHost {
  public:
   // Getter for the singleton. This will return NULL on failure.

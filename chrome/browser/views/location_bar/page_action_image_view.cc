@@ -11,6 +11,8 @@
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/location_bar/location_bar_view.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/common/extensions/extension_action.h"
+#include "chrome/common/extensions/extension_resource.h"
 #include "views/controls/menu/menu_2.h"
 
 PageActionImageView::PageActionImageView(LocationBarView* owner,

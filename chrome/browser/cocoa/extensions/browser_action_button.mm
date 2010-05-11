@@ -7,10 +7,13 @@
 #include <algorithm>
 #include <cmath>
 
+#include "base/logging.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/cocoa/extensions/extension_action_context_menu.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_action.h"
+#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_source.h"

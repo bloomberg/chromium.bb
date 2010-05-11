@@ -19,7 +19,6 @@
 #include "chrome/common/css_colors.h"
 #include "chrome/common/dom_storage_common.h"
 #include "chrome/common/extensions/extension_extent.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/renderer/gpu_channel_host.h"
 #include "chrome/renderer/renderer_histogram_snapshots.h"
 #include "chrome/renderer/visitedlink_slave.h"
@@ -46,6 +45,7 @@ class WebDatabaseObserverImpl;
 struct ContentSettings;
 struct RendererPreferences;
 struct ViewMsg_DOMStorageEvent_Params;
+struct ViewMsg_ExtensionExtentsUpdated_Params;
 struct ViewMsg_New_Params;
 struct WebPreferences;
 

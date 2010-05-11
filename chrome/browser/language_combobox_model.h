@@ -10,7 +10,9 @@
 #include <vector>
 
 #include "app/combobox_model.h"
-#include "chrome/browser/profile.h"
+#include "base/basictypes.h"
+
+class Profile;
 
 ///////////////////////////////////////////////////////////////////////////////
 // LanguageList

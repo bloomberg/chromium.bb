@@ -12,8 +12,6 @@
 #include "base/scoped_ptr.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
-#include "chrome/browser/extensions/extensions_service.h"
-#include "chrome/browser/profile.h"
 
 class ExtensionFunctionDispatcher;
 class Profile;
@@ -107,11 +105,7 @@ class ExtensionFunction : public base::RefCounted<ExtensionFunction> {
   // Gets the extension that called this function. This can return NULL for
   // async functions, for example if the extension is unloaded while the
   // function is running.
-  Extension* GetExtension() {
-    ExtensionsService* service = profile_->GetExtensionsService();
-    DCHECK(service);
-    return service->GetExtensionById(extension_id_, false);
-  }
+  Extension* GetExtension();
 
   // Gets the "current" browser, if any.
   //

@@ -7,6 +7,14 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
+#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/profile.h"
+
+Extension* ExtensionFunction::GetExtension() {
+  ExtensionsService* service = profile_->GetExtensionsService();
+  DCHECK(service);
+  return service->GetExtensionById(extension_id_, false);
+}
 
 void AsyncExtensionFunction::SetArgs(const Value* args) {
   DCHECK(!args_.get());  // Should only be called once.

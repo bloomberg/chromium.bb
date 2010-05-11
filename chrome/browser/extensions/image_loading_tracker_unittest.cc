@@ -7,6 +7,8 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"

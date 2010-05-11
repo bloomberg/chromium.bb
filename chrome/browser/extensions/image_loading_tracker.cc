@@ -6,6 +6,7 @@
 
 #include "base/file_util.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"

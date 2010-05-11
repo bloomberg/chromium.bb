@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/message_loop.h"
+#include "base/string_util.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/views/accessibility_event_router_views.h"
 #include "chrome/browser/views/accessible_view_helper.h"

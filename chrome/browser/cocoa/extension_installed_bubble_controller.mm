@@ -18,6 +18,7 @@
 #include "chrome/browser/cocoa/location_bar_view_mac.h"
 #include "chrome/browser/cocoa/toolbar_controller.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"

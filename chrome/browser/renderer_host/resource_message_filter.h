@@ -26,7 +26,6 @@
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/common/nacl_types.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/common/window_container_type.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"

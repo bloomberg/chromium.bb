@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/json_value_serializer.h"

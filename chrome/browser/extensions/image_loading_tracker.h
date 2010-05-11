@@ -8,10 +8,10 @@
 #include <map>
 
 #include "base/ref_counted.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
+class Extension;
 class ExtensionResource;
 class SkBitmap;
 
