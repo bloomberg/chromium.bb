@@ -211,6 +211,9 @@ class TaskProxy : public base::RefCountedThreadSafe<TaskProxy> {
       handler_->ReadInFile();
     }
   }
+  void DeleteFetcher(URLFetcher* fetch) {
+    delete fetch;
+  }
   void SendPicasawebRequestProxy() {
     if (handler_) {
       handler_->SendPicasawebRequest();
@@ -237,6 +240,7 @@ class TaskProxy : public base::RefCountedThreadSafe<TaskProxy> {
   base::WeakPtr<FilebrowseHandler> handler_;
   FilePath path_;
   friend class base::RefCountedThreadSafe<TaskProxy>;
+  DISALLOW_COPY_AND_ASSIGN(TaskProxy);
 };
 
 
@@ -335,6 +339,15 @@ FilebrowseHandler::~FilebrowseHandler() {
 
   ClearDownloadItems();
   download_manager_->RemoveObserver(this);
+  URLFetcher* fetch = fetch_.release();
+  if (fetch) {
+    TaskProxy* task = new TaskProxy(AsWeakPtr(), currentpath_);
+    task->AddRef();
+    ChromeThread::PostTask(
+        ChromeThread::FILE, FROM_HERE,
+        NewRunnableMethod(
+            task, &TaskProxy::DeleteFetcher, fetch));
+  }
 }
 
 DOMMessageHandler* FilebrowseHandler::Attach(DOMUI* dom_ui) {
@@ -455,9 +468,12 @@ void FilebrowseHandler::OnURLFetchComplete(const URLFetcher* source,
   upload_response_code_ = response_code;
   LOG(INFO) << "Response code:" << response_code;
   LOG(INFO) << "request url" << url;
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
-      NewRunnableMethod(current_task_, &TaskProxy::FireUploadCompleteProxy));
+  if (StartsWithASCII(url.spec(), kPicasawebUserPrefix, true)) {
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(current_task_, &TaskProxy::FireUploadCompleteProxy));
+  }
+  fetch_.reset();
 }
 
 void FilebrowseHandler::HandleGetRoots(const Value* value) {
@@ -685,12 +701,22 @@ void FilebrowseHandler::OpenNewWindow(const Value* value, bool popup) {
 }
 
 void FilebrowseHandler::SendPicasawebRequest() {
+#if defined(OS_CHROMEOS)
+  chromeos::UserManager* user_man = chromeos::UserManager::Get();
+  std::string username = user_man->logged_in_user().email();
+
+  if (username.empty()) {
+    LOG(ERROR) << "Unable to get username";
+    return;
+  }
+
   fetch_.reset(URLFetcher::Create(0,
                                   GURL(kPicasawebBaseUrl),
                                   URLFetcher::GET,
-                                  NULL));
+                                  this));
   fetch_->set_request_context(profile_->GetRequestContext());
   fetch_->Start();
+#endif
 }
 
 void FilebrowseHandler::ReadInFile() {
