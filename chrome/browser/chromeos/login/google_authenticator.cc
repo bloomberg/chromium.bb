@@ -69,7 +69,8 @@ GoogleAuthenticator::GoogleAuthenticator(LoginStatusConsumer* consumer)
     : Authenticator(consumer),
       fetcher_(NULL),
       getter_(NULL),
-      checked_for_localaccount_(false) {
+      checked_for_localaccount_(false),
+      unlock_(false) {
   CHECK(chromeos::CrosLibrary::Get()->EnsureLoaded());
 }
 
@@ -77,10 +78,11 @@ GoogleAuthenticator::~GoogleAuthenticator() {
   ChromeThread::DeleteSoon(ChromeThread::FILE, FROM_HERE, fetcher_);
 }
 
-bool GoogleAuthenticator::Authenticate(Profile* profile,
-                                       const std::string& username,
-                                       const std::string& password) {
+bool GoogleAuthenticator::AuthenticateToLogin(Profile* profile,
+                                              const std::string& username,
+                                              const std::string& password) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  unlock_ = false;
   getter_ = profile->GetRequestContext();
   fetcher_ = URLFetcher::Create(0,
                                 GURL(AuthResponseHandler::kClientLoginUrl),
@@ -105,6 +107,18 @@ bool GoogleAuthenticator::Authenticate(Profile* profile,
   return true;
 }
 
+bool GoogleAuthenticator::AuthenticateToUnlock(const std::string& username,
+                                               const std::string& password) {
+  username_.assign(Canonicalize(username));
+  StoreHashedPassword(password);
+  unlock_ = true;
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &GoogleAuthenticator::CheckOffline,
+                        std::string("unlock failed")));
+  return true;
+}
+
 void GoogleAuthenticator::OnURLFetchComplete(const URLFetcher* source,
                                              const GURL& url,
                                              const URLRequestStatus& status,
@@ -122,7 +136,8 @@ void GoogleAuthenticator::OnURLFetchComplete(const URLFetcher* source,
     LoadLocalaccount(kLocalaccountFile);
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &GoogleAuthenticator::CheckOffline, status));
+        NewRunnableMethod(this, &GoogleAuthenticator::CheckOffline,
+                          strerror(status.os_error())));
   } else {
     if (IsSecondFactorSuccess(data)) {
       ChromeThread::PostTask(
@@ -150,7 +165,8 @@ void GoogleAuthenticator::OnLoginSuccess(const std::string& data) {
       NotificationService::AllSources(),
       Details<AuthenticationNotificationDetails>(&details));
 
-  if (CrosLibrary::Get()->GetCryptohomeLibrary()->Mount(username_.c_str(),
+  if (unlock_ ||
+      CrosLibrary::Get()->GetCryptohomeLibrary()->Mount(username_.c_str(),
                                                         ascii_hash_.c_str())) {
     consumer_->OnLoginSuccess(username_, data);
   } else {
@@ -158,7 +174,7 @@ void GoogleAuthenticator::OnLoginSuccess(const std::string& data) {
   }
 }
 
-void GoogleAuthenticator::CheckOffline(const URLRequestStatus& status) {
+void GoogleAuthenticator::CheckOffline(const std::string& error) {
   LOG(INFO) << "Attempting offline login";
   if (CrosLibrary::Get()->GetCryptohomeLibrary()->CheckKey(
           username_.c_str(),
@@ -168,7 +184,7 @@ void GoogleAuthenticator::CheckOffline(const URLRequestStatus& status) {
     OnLoginSuccess(std::string());
   } else {
     // We couldn't hit the network, and offline login failed.
-    GoogleAuthenticator::CheckLocalaccount(strerror(status.os_error()));
+    GoogleAuthenticator::CheckLocalaccount(error);
   }
 }
 

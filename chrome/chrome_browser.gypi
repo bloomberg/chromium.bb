@@ -395,8 +395,6 @@
         'browser/chromeos/login/issue_response_handler.h',
         'browser/chromeos/login/google_authenticator.cc',
         'browser/chromeos/login/google_authenticator.h',
-        'browser/chromeos/login/pam_google_authenticator.cc',
-        'browser/chromeos/login/pam_google_authenticator.h',
         'browser/chromeos/login/language_switch_model.cc',
         'browser/chromeos/login/language_switch_model.h',
         'browser/chromeos/login/login_manager_view.cc',

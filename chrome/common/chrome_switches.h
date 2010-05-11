@@ -232,12 +232,10 @@ extern const char kZygoteCmdPrefix[];
 extern const char kZygoteProcess[];
 
 #if defined(OS_CHROMEOS)
-extern const char kCookiePipe[];
 extern const char kEnableChatManager[];
 extern const char kEnableGView[];
 extern const char kEnableLoginImages[];
 extern const char kLoginManager[];
-extern const char kInChromeAuth[];
 // TODO(avayvod): Remove this flag when it's unnecessary for testing
 // purposes.
 extern const char kLoginScreen[];

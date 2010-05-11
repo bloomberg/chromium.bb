@@ -462,7 +462,7 @@ TEST_F(GoogleAuthenticatorTest, FullLoginTest) {
     ChromeThread::PostTask(
         ChromeThread::FILE, FROM_HERE,
         NewRunnableMethod(auth.get(),
-                          &Authenticator::Authenticate,
+                          &Authenticator::AuthenticateToLogin,
                           &profile, username_, hash_ascii_));
 
     // The following awkwardness is here to force the above Task to run,

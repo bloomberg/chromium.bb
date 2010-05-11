@@ -7,7 +7,7 @@
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_login_library.h"
 #include "chrome/browser/chromeos/login/login_manager_view.h"
-#include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/mock_authenticator.h"
 #include "chrome/browser/chromeos/login/mock_screen_observer.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_in_process_browser_test.h"
@@ -15,8 +15,6 @@
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-class Profile;
 
 namespace chromeos {
 
@@ -26,90 +24,6 @@ using ::testing::Return;
 
 const char kUsername[] = "test_user@gmail.com";
 const char kPassword[] = "test_password";
-const char kLoginError[] = "Login failed";
-
-class MockAuthenticator : public Authenticator {
- public:
-  MockAuthenticator(LoginStatusConsumer* consumer,
-                    const std::string& expected_username,
-                    const std::string& expected_password)
-      : Authenticator(consumer),
-        expected_username_(expected_username),
-        expected_password_(expected_password),
-        authenticate_result_(true) {
-  }
-
-  // Returns true after posting task to UI thread to call OnLoginSuccess().
-  // This is called on the FILE thread now, so we need to do this.
-  virtual bool Authenticate(Profile* profile,
-                            const std::string& username,
-                            const std::string& password) {
-    EXPECT_EQ(expected_username_, username);
-    EXPECT_EQ(expected_password_, password);
-
-    if (authenticate_result_) {
-      ChromeThread::PostTask(
-          ChromeThread::UI, FROM_HERE,
-          NewRunnableMethod(this,
-                            &MockAuthenticator::OnLoginSuccess,
-                            username));
-    } else {
-      ChromeThread::PostTask(
-          ChromeThread::UI, FROM_HERE,
-          NewRunnableMethod(this,
-                            &MockAuthenticator::OnLoginFailure,
-                            std::string(kLoginError)));
-    }
-    return authenticate_result_;
-  }
-
-  void OnLoginSuccess(const std::string& username) {
-    consumer_->OnLoginSuccess(username, std::string());
-  }
-
-  void OnLoginFailure(const std::string& data) {
-      consumer_->OnLoginFailure(data);
-      LOG(INFO) << "Posting a QuitTask to UI thread";
-      ChromeThread::PostTask(
-          ChromeThread::UI, FROM_HERE, new MessageLoop::QuitTask);
-  }
-
-  void set_authenticate_result(bool b) {
-    authenticate_result_ = b;
-  }
-
- private:
-  std::string expected_username_;
-  std::string expected_password_;
-  bool authenticate_result_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockAuthenticator);
-};
-
-class MockLoginUtils : public LoginUtils {
- public:
-  explicit MockLoginUtils(const std::string& expected_username,
-                          const std::string& expected_password)
-      : expected_username_(expected_username),
-        expected_password_(expected_password) {
-  }
-
-  virtual void CompleteLogin(const std::string& username,
-                             const std::string& cookies) {
-    EXPECT_EQ(expected_username_, username);
-  }
-
-  virtual Authenticator* CreateAuthenticator(LoginStatusConsumer* consumer) {
-    return new MockAuthenticator(
-        consumer, expected_username_, expected_password_);
-  }
-
- private:
-  std::string expected_username_;
-  std::string expected_password_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockLoginUtils);
-};
 
 class LoginManagerViewTest : public WizardInProcessBrowserTest {
  public:

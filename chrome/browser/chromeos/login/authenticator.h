@@ -28,11 +28,19 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
   virtual ~Authenticator() {}
 
   // Given a |username| and |password|, this method attempts to authenticate
+  // to login.
   // Returns true if we kick off the attempt successfully and false if we can't.
   // Must be called on the FILE thread.
-  virtual bool Authenticate(Profile* profile,
-                            const std::string& username,
-                            const std::string& password) = 0;
+  virtual bool AuthenticateToLogin(Profile* profile,
+                                   const std::string& username,
+                                   const std::string& password) = 0;
+
+  // Given a |username| and |password|, this method attempts to
+  // authenticate to unlock the computer.
+  // Returns true if we kick off the attempt successfully and false if
+  // we can't.  Must be called on the FILE thread.
+  virtual bool AuthenticateToUnlock(const std::string& username,
+                                    const std::string& password) = 0;
 
   // These methods must be called on the UI thread, as they make DBus calls
   // and also call back to the login UI.
@@ -44,47 +52,6 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Authenticator);
-};
-
-class StubAuthenticator : public Authenticator {
- public:
-  explicit StubAuthenticator(LoginStatusConsumer* consumer)
-      : Authenticator(consumer) {
-  }
-  virtual ~StubAuthenticator() {}
-
-  // Returns true after calling OnLoginSuccess().
-  virtual bool Authenticate(Profile* profile,
-                            const std::string& username,
-                            const std::string& password) {
-    username_ = username;
-    if (password == "fail") {
-      ChromeThread::PostTask(
-          ChromeThread::UI, FROM_HERE,
-          NewRunnableMethod(this,
-                            &StubAuthenticator::OnLoginFailure,
-                            std::string()));
-    } else {
-      ChromeThread::PostTask(
-          ChromeThread::UI, FROM_HERE,
-          NewRunnableMethod(this,
-                            &StubAuthenticator::OnLoginSuccess,
-                            std::string()));
-    }
-    return true;
-  }
-
-  void OnLoginSuccess(const std::string& credentials) {
-    consumer_->OnLoginSuccess(username_, credentials);
-  }
-
-  void OnLoginFailure(const std::string& data) {
-    consumer_->OnLoginFailure(data);
-  }
-
- private:
-  std::string username_;
-  DISALLOW_COPY_AND_ASSIGN(StubAuthenticator);
 };
 
 }  // namespace chromeos

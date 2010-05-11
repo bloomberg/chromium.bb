@@ -55,12 +55,11 @@ class GrabWidget : public views::WidgetGtk {
 
 namespace chromeos {
 
-ScreenLocker::ScreenLocker(const UserManager::User& user, Profile* profile)
+ScreenLocker::ScreenLocker(const UserManager::User& user)
     : lock_window_(NULL),
       lock_widget_(NULL),
       screen_lock_view_(NULL),
-      user_(user),
-      profile_(profile) {
+      user_(user) {
 }
 
 ScreenLocker::~ScreenLocker() {
@@ -119,8 +118,7 @@ void ScreenLocker::Authenticate(const string16& password) {
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
       NewRunnableMethod(authenticator_.get(),
-                        &Authenticator::Authenticate,
-                        profile_,
+                        &Authenticator::AuthenticateToUnlock,
                         user_.email(),
                         UTF16ToUTF8(password)));
 }
@@ -129,13 +127,12 @@ void ScreenLocker::Authenticate(const string16& password) {
 
 namespace browser {
 
-void ShowScreenLock(Profile* profile) {
+void ShowScreenLock() {
   DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
   gfx::Rect bounds(views::Screen::GetMonitorWorkAreaNearestWindow(NULL));
 
-  chromeos::ScreenLocker* locker =
-      new chromeos::ScreenLocker(chromeos::UserManager::Get()->logged_in_user(),
-                                 profile);
+  chromeos::ScreenLocker* locker = new chromeos::ScreenLocker(
+      chromeos::UserManager::Get()->logged_in_user());
   locker->Init(bounds);
 }
 

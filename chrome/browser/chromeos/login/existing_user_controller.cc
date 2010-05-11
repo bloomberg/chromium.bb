@@ -127,7 +127,7 @@ void ExistingUserController::Login(UserController* source,
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
       NewRunnableMethod(authenticator_.get(),
-                        &Authenticator::Authenticate,
+                        &Authenticator::AuthenticateToLogin,
                         profile,
                         controllers_[index_of_view_logging_in_]->user().email(),
                         UTF16ToUTF8(password)));

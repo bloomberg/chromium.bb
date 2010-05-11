@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/external_cookie_handler.h"
 #include "chrome/browser/chromeos/login/cookie_fetcher.h"
 #include "chrome/browser/chromeos/login/google_authenticator.h"
-#include "chrome/browser/chromeos/login/pam_google_authenticator.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
@@ -97,7 +96,6 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
   UserManager::Get()->UserLoggedIn(username);
 
   // Now launch the initial browser window.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -105,26 +103,19 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
   // will process the notification that the UserManager sends out.
   Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kInChromeAuth)) {
-    ExternalCookieHandler::GetCookies(command_line, profile);
-    DoBrowserLaunch(profile);
-  } else {
-    // Take the credentials passed in and try to exchange them for
-    // full-fledged Google authentication cookies.  This is
-    // best-effort; it's possible that we'll fail due to network
-    // troubles or some such.  Either way, |cf| will call
-    // DoBrowserLaunch on the UI thread when it's done, and then
-    // delete itself.
-    CookieFetcher* cf = new CookieFetcher(profile);
-    cf->AttemptFetch(credentials);
-  }
+  // Take the credentials passed in and try to exchange them for
+  // full-fledged Google authentication cookies.  This is
+  // best-effort; it's possible that we'll fail due to network
+  // troubles or some such.  Either way, |cf| will call
+  // DoBrowserLaunch on the UI thread when it's done, and then
+  // delete itself.
+  CookieFetcher* cf = new CookieFetcher(profile);
+  cf->AttemptFetch(credentials);
 }
 
 Authenticator* LoginUtilsImpl::CreateAuthenticator(
     LoginStatusConsumer* consumer) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInChromeAuth))
-    return new GoogleAuthenticator(consumer);
-  return new PamGoogleAuthenticator(consumer);
+  return new GoogleAuthenticator(consumer);
 }
 
 void LoginUtilsImpl::Observe(NotificationType type,

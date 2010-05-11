@@ -11,8 +11,6 @@
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 
-class Profile;
-
 namespace gfx {
 class Rect;
 }  // namespace gfx
@@ -31,7 +29,7 @@ class ScreenLockView;
 // delete itself when it's unlocked.
 class ScreenLocker : public LoginStatusConsumer {
  public:
-  ScreenLocker(const UserManager::User& user, Profile* profile);
+  ScreenLocker(const UserManager::User& user);
 
   // Initialize and show the screen locker with given |bounds|.
   void Init(const gfx::Rect& bounds);
@@ -66,9 +64,8 @@ class ScreenLocker : public LoginStatusConsumer {
   // A view that accepts password.
   ScreenLockView* screen_lock_view_;
 
-  // Logged in user and its profile.
+  // Logged in user.
   UserManager::User user_;
-  Profile* profile_;
 
   // Used for logging in.
   scoped_refptr<Authenticator> authenticator_;

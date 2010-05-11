@@ -819,10 +819,6 @@ const char kZygoteCmdPrefix[]               = "zygote-cmd-prefix";
 const char kZygoteProcess[]                 = "zygote";
 
 #if defined(OS_CHROMEOS)
-// The name of the pipe over which the Chrome OS login manager will send
-// single-sign-on cookies.
-const char kCookiePipe[]                    = "cookie-pipe";
-
 // Enables the chat manager component extension.
 const char kEnableChatManager[]             = "enable-chat-manager";
 
@@ -835,8 +831,6 @@ const char kEnableLoginImages[]             = "enable-login-images";
 
 // Enable Chrome-as-a-login-manager behavior.
 const char kLoginManager[]                  = "login-manager";
-// Enable Chrome to do ClientLogin on its own in the login-manager context.
-const char kInChromeAuth[]                  = "in-chrome-auth";
 // Allows to override the first login screen. The value should be the name
 // of the first login screen to show (see
 // chrome/browser/chromeos/login/login_wizard_view.cc for actual names).

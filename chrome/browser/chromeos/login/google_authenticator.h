@@ -40,9 +40,16 @@ class GoogleAuthenticator : public Authenticator,
   // Should be called on the FILE thread!
   //
   // Returns true if the attempt gets sent successfully and false if not.
-  bool Authenticate(Profile* profile,
-                    const std::string& username,
-                    const std::string& password);
+  bool AuthenticateToLogin(Profile* profile,
+                           const std::string& username,
+                           const std::string& password);
+
+  // Given a |username| and |password|, this method attempts to
+  // authenticate to the cached credentials. This will never contact
+  // the server even if it's online. The auth result is sent to
+  // LoginStatusConsumer in a same way as AuthenticateToLogin does.
+  bool AuthenticateToUnlock(const std::string& username,
+                            const std::string& password);
 
   // Overridden from URLFetcher::Delegate
   // When the authentication attempt comes back, will call
@@ -73,7 +80,7 @@ class GoogleAuthenticator : public Authenticator,
   // These methods must be called on the UI thread, as they make DBus calls
   // and also call back to the login UI.
   void OnLoginSuccess(const std::string& credentials);
-  void CheckOffline(const URLRequestStatus& status);
+  void CheckOffline(const std::string& error);
   void CheckLocalaccount(const std::string& error);
   void OnLoginFailure(const std::string& data);
 
@@ -146,6 +153,7 @@ class GoogleAuthenticator : public Authenticator,
   std::vector<unsigned char> system_salt_;
   std::string localaccount_;
   bool checked_for_localaccount_;  // needed becasuse empty localaccount_ is ok.
+  bool unlock_;  // True if authenticating to unlock the computer.
 
   friend class GoogleAuthenticatorTest;
   FRIEND_TEST(GoogleAuthenticatorTest, SaltToAsciiTest);

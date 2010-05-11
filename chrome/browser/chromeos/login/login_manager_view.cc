@@ -60,9 +60,6 @@ const SkColor kLabelColor = 0xFF808080;
 const SkColor kErrorColor = 0xFF8F384F;
 const char *kDefaultDomain = "@gmail.com";
 
-// Set to true to run on linux and test login.
-const bool kStubOutLogin = false;
-
 }  // namespace
 
 namespace chromeos {
@@ -84,10 +81,7 @@ LoginManagerView::LoginManagerView(ScreenObserver* observer)
       login_in_process_(false) {
   // Create login observer to record time of login when successful.
   LogLoginSuccessObserver::Get();
-  if (kStubOutLogin)
-    authenticator_ = new StubAuthenticator(this);
-  else
-    authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
+  authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
 }
 
 LoginManagerView::~LoginManagerView() {
@@ -315,7 +309,7 @@ void LoginManagerView::Login() {
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
       NewRunnableMethod(authenticator_.get(),
-                        &Authenticator::Authenticate,
+                        &Authenticator::AuthenticateToLogin,
                         profile, username, password));
 }
 
@@ -377,7 +371,7 @@ void LoginManagerView::ShowError(int error_id) {
 
 bool LoginManagerView::HandleKeystroke(views::Textfield* s,
     const views::Textfield::Keystroke& keystroke) {
-  if (!kStubOutLogin && !CrosLibrary::Get()->EnsureLoaded())
+  if (!CrosLibrary::Get()->EnsureLoaded())
     return false;
 
   if (login_in_process_)
