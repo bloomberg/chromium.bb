@@ -318,7 +318,7 @@ ResourceMessageFilter::ResourceMessageFilter(
           render_widget_helper, &RenderWidgetHelper::GetNextRoutingID)),
       ALLOW_THIS_IN_INITIALIZER_LIST(geolocation_dispatcher_host_(
           new GeolocationDispatcherHost(
-              this->id(), new GeolocationPermissionContext(profile)))) {
+              this->id(), profile->GetGeolocationPermissionContext()))) {
   DCHECK(request_context_);
   DCHECK(media_request_context_);
   DCHECK(audio_renderer_host_.get());

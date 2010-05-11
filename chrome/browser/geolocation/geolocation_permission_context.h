@@ -9,8 +9,11 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 
 class GeolocationDispatcherHost;
+class GeolocationInfoBarQueueController;
+class GeolocationPermissionContext;
 class GURL;
 class GeolocationArbitrator;
 class InfoBarDelegate;
@@ -19,7 +22,7 @@ class RenderViewHost;
 class TabContents;
 
 // GeolocationPermissionContext manages Geolocation permissions flow,
-// creating UI elements to ask the user for permission when necessary.
+// and delegates UI handling via GeolocationInfoBarQueueController.
 // It always notifies the requesting render_view asynchronously via
 // ViewMsg_Geolocation_PermissionSet.
 class GeolocationPermissionContext
@@ -38,9 +41,9 @@ class GeolocationPermissionContext
       int render_process_id, int render_view_id, int bridge_id,
       const GURL& requesting_frame);
 
-  // Called once the user sets the geolocation permission.
-  // It'll notify the render via ViewMsg_Geolocation_PermissionSet.
-  void SetPermission(
+  // Notifies whether or not the corresponding bridge is allowed to use
+  // geolocation via ViewMsg_Geolocation_PermissionSet.
+  void NotifyPermissionSet(
       int render_process_id, int render_view_id, int bridge_id,
       const GURL& requesting_frame, bool allowed);
 
@@ -62,42 +65,22 @@ class GeolocationPermissionContext
   void StopUpdatingRequested(
       int render_process_id, int render_view_id, int bridge_id);
 
-  // Called by the InfoBarDelegate to notify it's closed.
-  void OnInfoBarClosed(
-      TabContents* tab_contents, int render_process_id, int render_view_id,
-      int bridge_id);
-
  private:
-  struct PendingInfoBarRequest;
   friend class base::RefCountedThreadSafe<GeolocationPermissionContext>;
   virtual ~GeolocationPermissionContext();
-
-  // Triggers (or queues) the associated UI element to request permission.
-  void RequestPermissionFromUI(
-      TabContents* tab_contents, int render_process_id, int render_view_id,
-      int bridge_id, const GURL& requesting_frame);
-
-  // Notifies whether or not the corresponding render is allowed to use
-  // geolocation.
-  void NotifyPermissionSet(
-      int render_process_id, int render_view_id, int bridge_id,
-      const GURL& requesting_frame, bool allowed);
 
   // Calls GeolocationArbitrator::OnPermissionGranted.
   void NotifyArbitratorPermissionGranted(const GURL& requesting_frame);
 
-  // Shows an infobar if there's any pending for this tab.
-  void ShowQueuedInfoBar(TabContents* tab_contents, int render_process_id,
-                         int render_view_id);
-
-  void CancelPendingInfoBar(
+  // Removes any pending InfoBar request.
+  void CancelPendingInfoBarRequest(
       int render_process_id, int render_view_id, int bridge_id);
 
   // This should only be accessed from the UI thread.
   Profile* const profile_;
 
-  typedef std::vector<PendingInfoBarRequest> PendingInfoBarRequests;
-  PendingInfoBarRequests pending_infobar_requests_;
+  scoped_ptr<GeolocationInfoBarQueueController>
+      geolocation_infobar_queue_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationPermissionContext);
 };

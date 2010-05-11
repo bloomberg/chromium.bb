@@ -15,6 +15,7 @@
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/find_bar_state.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
+#include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
@@ -205,6 +206,13 @@ class TestingProfile : public Profile {
     }
     return geolocation_content_settings_map_.get();
   }
+  virtual GeolocationPermissionContext* GetGeolocationPermissionContext() {
+    if (!geolocation_permission_context_.get()) {
+      geolocation_permission_context_ =
+          new GeolocationPermissionContext(this);
+    }
+    return geolocation_permission_context_.get();
+  }
   virtual HostZoomMap* GetHostZoomMap() { return NULL; }
   void set_session_service(SessionService* session_service);
   virtual SessionService* GetSessionService() { return session_service_.get(); }
@@ -334,6 +342,7 @@ class TestingProfile : public Profile {
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<GeolocationContentSettingsMap>
       geolocation_content_settings_map_;
+  scoped_refptr<GeolocationPermissionContext> geolocation_permission_context_;
 
   // Find bar state.  Created lazily by GetFindBarState().
   scoped_ptr<FindBarState> find_bar_state_;

@@ -33,6 +33,7 @@
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/find_bar_state.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
+#include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "chrome/browser/spellcheck_host.h"
 #include "chrome/browser/transport_security_persister.h"
 #include "chrome/browser/history/history.h"
@@ -452,6 +453,10 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual GeolocationContentSettingsMap* GetGeolocationContentSettingsMap() {
     return profile_->GetGeolocationContentSettingsMap();
+  }
+
+  virtual GeolocationPermissionContext* GetGeolocationPermissionContext() {
+    return profile_->GetGeolocationPermissionContext();
   }
 
   virtual Blacklist* GetPrivacyBlacklist() {
@@ -1114,6 +1119,12 @@ GeolocationContentSettingsMap* ProfileImpl::GetGeolocationContentSettingsMap() {
   if (!geolocation_content_settings_map_.get())
     geolocation_content_settings_map_ = new GeolocationContentSettingsMap(this);
   return geolocation_content_settings_map_.get();
+}
+
+GeolocationPermissionContext* ProfileImpl::GetGeolocationPermissionContext() {
+  if (!geolocation_permission_context_.get())
+    geolocation_permission_context_ = new GeolocationPermissionContext(this);
+  return geolocation_permission_context_.get();
 }
 
 Blacklist* ProfileImpl::GetPrivacyBlacklist() {

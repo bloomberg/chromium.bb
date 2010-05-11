@@ -45,6 +45,7 @@ class ExtensionsService;
 class FaviconService;
 class FindBarState;
 class GeolocationContentSettingsMap;
+class GeolocationPermissionContext;
 class HistoryService;
 class HostContentSettingsMap;
 class HostZoomMap;
@@ -315,6 +316,9 @@ class Profile {
   // Returns the geolocation settings map for this profile.
   virtual GeolocationContentSettingsMap* GetGeolocationContentSettingsMap() = 0;
 
+  // Returns the geolocation permission context for this profile.
+  virtual GeolocationPermissionContext* GetGeolocationPermissionContext() = 0;
+
   // Returns the Privacy Blacklist for this profile.
   virtual Blacklist* GetPrivacyBlacklist() = 0;
 
@@ -498,6 +502,7 @@ class ProfileImpl : public Profile,
   virtual HostContentSettingsMap* GetHostContentSettingsMap();
   virtual HostZoomMap* GetHostZoomMap();
   virtual GeolocationContentSettingsMap* GetGeolocationContentSettingsMap();
+  virtual GeolocationPermissionContext* GetGeolocationPermissionContext();
   virtual Blacklist* GetPrivacyBlacklist();
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher();
   virtual FindBarState* GetFindBarState();
@@ -591,6 +596,8 @@ class ProfileImpl : public Profile,
   scoped_refptr<HostZoomMap> host_zoom_map_;
   scoped_refptr<GeolocationContentSettingsMap>
       geolocation_content_settings_map_;
+  scoped_refptr<GeolocationPermissionContext>
+      geolocation_permission_context_;
   scoped_refptr<Blacklist> privacy_blacklist_;
   scoped_refptr<UserStyleSheetWatcher> user_style_sheet_watcher_;
   scoped_ptr<FindBarState> find_bar_state_;
