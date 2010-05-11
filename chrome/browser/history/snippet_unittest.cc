@@ -163,7 +163,10 @@ TEST(Snippets, UTF8) {
 }
 
 // Bug: 1274923
-TEST(Snippets, DISABLED_ThaiUTF8) {
+// TODO(jungshik): Move this bug report to crbugs.com
+// Fails consistently. From the report, "Broken by latest ICU. Need new expected
+// results."
+TEST(Snippets, FLAKY_ThaiUTF8) {
   // There are 3 instances of '\u0E43\u0E2B\u0E49'
   // (\xE0\xB9\x83\xE0\xB8\xAB\xE0\xB9\x89) in kThaiSample.
   // The 1st is more than |kSniipetContext| graphemes away from the
