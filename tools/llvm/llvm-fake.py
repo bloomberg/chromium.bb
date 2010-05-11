@@ -249,6 +249,7 @@ LD_ARM = BASE + '/arm-none-linux-gnueabi/llvm-gcc-4.2/bin/arm-none-linux-gnueabi
 #                so we use the system linker for now
 #LD_X8632 = BASE + '/../linux_x86-32/sdk/nacl-sdk/bin/nacl-ld'
 LD_X8632 = '/usr/bin/ld'
+LD_X8664 = '/usr/bin/ld'
 # NOTE(adonovan): this should _not_ be the Gold linker, e.g. 2.18.*.
 # Beware, one of the Chrome installation scripts may have changed
 # /usr/bin/ld (which is evil).
@@ -691,7 +692,7 @@ def GenerateCombinedBitcodeFile(argv):
   return output, args_native_ld
 
 
-def BitcodeToNative(argv, llc, llc_flags, as, as_flags, ld, ld_flags, root):
+def BitcodeToNative(argv, llc, llc_flags, ascom, as_flags, ld, ld_flags, root):
   """The ld step for bitcode is quite elaborate:
      1) Run llc to convert to .s
      2) Run as to convert to .o
@@ -708,7 +709,7 @@ def BitcodeToNative(argv, llc, llc_flags, as, as_flags, ld, ld_flags, root):
 
   Run([llc] + llc_flags + ['-f', bitcode_combined, '-o', asm_combined])
 
-  Run([as] + as_flags + [asm_combined, '-o', obj_combined])
+  Run([ascom] + as_flags + [asm_combined, '-o', obj_combined])
 
   args_native_ld = MassageFinalLinkCommandPnacl([obj_combined] + args_native_ld,
                                                 root,
