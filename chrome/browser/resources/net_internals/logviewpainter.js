@@ -102,11 +102,41 @@ PrintSourceEntriesAsText = function(sourceEntries) {
 }
 
 function getTextForExtraParams(entry) {
-  var out = [];
-  for (var k in entry.extra_parameters) {
-    out.push(' --> ' + k + ' = ' + JSON.stringify(entry.extra_parameters[k]));
+  // Format the extra parameters (use a custom formatter for certain types,
+  // but default to displaying as JSON).
+  switch (entry.type) {
+    case LogEventType.HTTP_TRANSACTION_SEND_REQUEST_HEADERS:
+    case LogEventType.HTTP_TRANSACTION_SEND_TUNNEL_HEADERS:
+      return getTextForRequestHeadersExtraParam(entry);
+
+    default:
+      var out = [];
+      for (var k in entry.extra_parameters) {
+        out.push(' --> ' + k + ' = ' +
+                 JSON.stringify(entry.extra_parameters[k]));
+      }
+      return out.join('\n');
   }
-  return out.join('\n');
+}
+
+function getTextForRequestHeadersExtraParam(entry) {
+  var params = entry.extra_parameters;
+
+  // We prepend spaces to each line to make it line up with the arrow.
+  var firstLinePrefix = " --> "
+  var prefix = "     ";
+
+  var out = [];
+
+  // Strip the trailing CRLF that params.line contains.
+  var lineWithoutCRLF = params.line.replace(/\r\n$/g, '');
+  out.push(firstLinePrefix + lineWithoutCRLF);
+
+  // Concatenate all of the header lines.
+  for (var i = 0; i < params.headers.length; ++i)
+    out.push(prefix + params.headers[i]);
+
+  return out.join("\n");
 }
 
 function getTextForEvent(entry) {
