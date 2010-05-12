@@ -9,6 +9,7 @@
 
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 class Profile;
 
@@ -23,8 +24,7 @@ class MockAuthenticator : public Authenticator {
                     const std::string& expected_password)
       : Authenticator(consumer),
         expected_username_(expected_username),
-        expected_password_(expected_password),
-        authenticate_result_(true) {
+        expected_password_(expected_password) {
   }
 
   // Returns true after posting task to UI thread to call OnLoginSuccess().
@@ -32,23 +32,22 @@ class MockAuthenticator : public Authenticator {
   virtual bool AuthenticateToLogin(Profile* profile,
                                    const std::string& username,
                                    const std::string& password) {
-    EXPECT_EQ(expected_username_, username);
-    EXPECT_EQ(expected_password_, password);
-
-    if (authenticate_result_) {
+    if (expected_username_ == username &&
+        expected_password_ == password) {
       ChromeThread::PostTask(
           ChromeThread::UI, FROM_HERE,
           NewRunnableMethod(this,
                             &MockAuthenticator::OnLoginSuccess,
                             username));
+      return true;
     } else {
       ChromeThread::PostTask(
           ChromeThread::UI, FROM_HERE,
           NewRunnableMethod(this,
                             &MockAuthenticator::OnLoginFailure,
                             std::string("Login failed")));
+      return false;
     }
-    return authenticate_result_;
   }
 
   virtual bool AuthenticateToUnlock(const std::string& username,
@@ -67,14 +66,9 @@ class MockAuthenticator : public Authenticator {
           ChromeThread::UI, FROM_HERE, new MessageLoop::QuitTask);
   }
 
-  void set_authenticate_result(bool b) {
-    authenticate_result_ = b;
-  }
-
  private:
   std::string expected_username_;
   std::string expected_password_;
-  bool authenticate_result_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAuthenticator);
 };

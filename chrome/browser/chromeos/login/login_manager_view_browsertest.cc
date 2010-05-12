@@ -92,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(LoginManagerViewTest, TestBasic) {
   login->set_observer(NULL);
 }
 
-IN_PROC_BROWSER_TEST_F(LoginManagerViewTest, AuthentionFailed) {
+IN_PROC_BROWSER_TEST_F(LoginManagerViewTest, AuthenticationFailed) {
   ASSERT_TRUE(controller() != NULL);
   ASSERT_EQ(controller()->current_screen(), controller()->GetLoginScreen());
 
@@ -106,10 +106,7 @@ IN_PROC_BROWSER_TEST_F(LoginManagerViewTest, AuthentionFailed) {
   LoginManagerView* login = controller()->GetLoginScreen()->view();
   login->set_observer(mock_screen_observer.get());
   login->SetUsername(kUsername);
-  login->SetPassword(kPassword);
-  MockAuthenticator* authenticator = static_cast<MockAuthenticator*>(
-      login->authenticator());
-  authenticator->set_authenticate_result(false);
+  login->SetPassword("wrong password");
 
   bool old_state = MessageLoop::current()->NestableTasksAllowed();
   MessageLoop::current()->SetNestableTasksAllowed(true);
