@@ -112,6 +112,14 @@ download-toolchains() {
   ./scons platform=x86-64 --download sdl=none
 }
 
+#@ clean
+#@
+#@   Removes the toolchain/pnacl-untrusted directory, undoing the effect
+#@   of all other steps except download-toolchains.
+clean() {
+  rm -rf ${PNACL_TOOLCHAIN_ROOT}
+}
+
 #@
 #@ organize-native-code
 #@
@@ -121,35 +129,33 @@ download-toolchains() {
 #@   (You'll need to re-run this step after you modify the native code sources
 #@   and re-run the "nacl_extra_sdk" build.)
 organize-native-code() {
-  rm -rf ${PNACL_TOOLCHAIN_ROOT}  # (a bit aggressive when making mods?)
-
   readonly arm_src=toolchain/linux_arm-untrusted
   readonly x86_src=toolchain/linux_x86/sdk/nacl-sdk
 
   Banner "arm native code: ${PNACL_ARM_ROOT}"
   mkdir -p ${PNACL_ARM_ROOT}
-  cp ${arm_src}/arm-none-linux-gnueabi/llvm-gcc-4.2/lib/gcc/arm-none-linux-gnueabi/4.2.1/libgcc.a ${PNACL_ARM_ROOT}
-  cp ${arm_src}/arm-newlib/arm-none-linux-gnueabi/lib/crt*.o \
-     ${arm_src}/arm-newlib/arm-none-linux-gnueabi/lib/libcrt*.a \
-     ${arm_src}/arm-newlib/arm-none-linux-gnueabi/lib/intrinsics.o \
-     ${PNACL_ARM_ROOT}
+  cp -f ${arm_src}/arm-none-linux-gnueabi/llvm-gcc-4.2/lib/gcc/arm-none-linux-gnueabi/4.2.1/libgcc.a \
+    ${arm_src}/arm-newlib/arm-none-linux-gnueabi/lib/crt*.o \
+    ${arm_src}/arm-newlib/arm-none-linux-gnueabi/lib/libcrt*.a \
+    ${arm_src}/arm-newlib/arm-none-linux-gnueabi/lib/intrinsics.o \
+    ${PNACL_ARM_ROOT}
   ls -l ${PNACL_ARM_ROOT}
 
   Banner "x86-32 native code: ${PNACL_X8632_ROOT}"
   mkdir -p ${PNACL_X8632_ROOT}
-  cp ${x86_src}/lib/gcc/nacl64/4.4.3/32/libgcc.a \
-     ${x86_src}/nacl64/lib/32/crt*.o \
-     ${x86_src}/nacl64/lib/32/libcrt*.a \
-     ${x86_src}/nacl64/lib/32/intrinsics.o \
-     ${PNACL_X8632_ROOT}
+  cp -f ${x86_src}/lib/gcc/nacl64/4.4.3/32/libgcc.a \
+    ${x86_src}/nacl64/lib/32/crt*.o \
+    ${x86_src}/nacl64/lib/32/libcrt*.a \
+    ${x86_src}/nacl64/lib/32/intrinsics.o \
+    ${PNACL_X8632_ROOT}
   ls -l ${PNACL_X8632_ROOT}
 
   Banner "x86-64 native code: ${PNACL_X8664_ROOT}"
   mkdir -p ${PNACL_X8664_ROOT}
-  cp ${x86_src}/lib/gcc/nacl64/4.4.3/libgcc.a \
-     ${x86_src}/nacl64/lib/crt*.o \
-     ${x86_src}/nacl64/lib/libcrt*.a \
-     ${PNACL_X8664_ROOT}
+  cp -f ${x86_src}/lib/gcc/nacl64/4.4.3/libgcc.a \
+    ${x86_src}/nacl64/lib/crt*.o \
+    ${x86_src}/nacl64/lib/libcrt*.a \
+    ${PNACL_X8664_ROOT}
   # NOTE: we do not yet have a this for x86-64
   #cp ${x86_src}/nacl64/lib/intrinsics.o ${X8664_ROOT}
   ls -l ${PNACL_X8664_ROOT}
@@ -173,7 +179,7 @@ build-bitcode-cpp() {
 #@
 #@   Build bitcode libraries for newlib
 build-bitcode-newlib() {
-  export TARGET_CODE=bc-arm
+  export TARGET_CODE=bc-arm  # "bc" is important; "arm" is incidental.
   Banner "Newlib"
   tools/llvm/untrusted-toolchain-creator.sh newlib-libonly \
        $(pwd)/${PNACL_BITCODE_ROOT}
@@ -183,9 +189,10 @@ build-bitcode-newlib() {
 #@ build-bitcode-extra-sdk
 #@
 #@   Build bitcode libraries for extra sdk
+#@   Note: clobbers toolchain/pnacl-untrusted/bitcode tree, so subsequent
+#@   "verify" calls will fail.
 build-bitcode-extra-sdk() {
-  export TARGET_CODE=bc-arm
-
+  export TARGET_CODE=bc-arm  # "bc" is important; "arm" is incidental.
   Banner "Extra SDK"
   ./scons MODE=nacl_extra_sdk \
       platform=arm \
@@ -197,10 +204,10 @@ build-bitcode-extra-sdk() {
       install_libpthread \
       extra_sdk_update
 
-  # NOTE: as collateral damage we also generate these as native code
-  rm ${PNACL_BITCODE_ROOT}/crt*.o
-  rm ${PNACL_BITCODE_ROOT}/intrinsics.o
-  rm ${PNACL_BITCODE_ROOT}/libcrt_platform.a
+  # NOTE: as collateral damage we also generate these as (arm) native code
+  rm -f ${PNACL_BITCODE_ROOT}/crt*.o \
+    ${PNACL_BITCODE_ROOT}/intrinsics.o \
+    ${PNACL_BITCODE_ROOT}/libcrt_platform.a
 }
 
 #@
