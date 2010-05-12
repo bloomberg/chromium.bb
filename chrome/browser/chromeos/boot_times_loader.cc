@@ -18,12 +18,6 @@
 
 namespace chromeos {
 
-// Beginning of line we look for that gives version number.
-static const char kPrefix[] = "CHROMEOS_RELEASE_DESCRIPTION=";
-
-// File to look for version number in.
-static const char kVersionPath[] = "/etc/lsb-release";
-
 // File uptime logs are located in.
 static const char kLogPath[] = "/tmp";
 
@@ -116,11 +110,15 @@ void BootTimesLoader::Backend::GetBootTimes(
   if (request->canceled())
     return;
 
-  // Wait until login_prompt_ready is output.
+  // Wait until login_prompt_ready is output by reposting.
   FilePath log_dir(kLogPath);
   FilePath log_file = log_dir.Append(kLoginPromptReady);
-  while (!file_util::PathExists(log_file)) {
-    usleep(500000);
+  if (!file_util::PathExists(log_file)) {
+    g_browser_process->file_thread()->message_loop()->PostDelayedTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &Backend::GetBootTimes, request),
+        500);
+    return;
   }
 
   BootTimes boot_times;
