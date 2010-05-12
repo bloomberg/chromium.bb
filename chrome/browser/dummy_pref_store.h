@@ -1,7 +1,6 @@
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 #ifndef CHROME_BROWSER_DUMMY_PREF_STORE_H_
 #define CHROME_BROWSER_DUMMY_PREF_STORE_H_
 
@@ -13,7 +12,7 @@ class DummyPrefStore : public PrefStore {
  public:
   DummyPrefStore();
 
-  virtual DictionaryValue* Prefs() { return prefs_.get(); }
+  virtual DictionaryValue* prefs() { return prefs_.get(); }
   void SetPrefs(DictionaryValue* prefs) { prefs_.reset(prefs); }
 
   virtual PrefStore::PrefReadError ReadPrefs();

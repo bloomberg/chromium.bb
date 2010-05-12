@@ -51,7 +51,7 @@ TEST_F(JsonPrefStoreTest, NonExistentFile) {
   JsonPrefStore pref_store(bogus_input_file);
   EXPECT_EQ(PrefStore::PREF_READ_ERROR_NO_FILE, pref_store.ReadPrefs());
   EXPECT_FALSE(pref_store.ReadOnly());
-  EXPECT_TRUE(pref_store.Prefs()->empty());
+  EXPECT_TRUE(pref_store.prefs()->empty());
 }
 
 // Test fallback behavior for an invalid file.
@@ -62,7 +62,7 @@ TEST_F(JsonPrefStoreTest, InvalidFile) {
   JsonPrefStore pref_store(invalid_file);
   EXPECT_EQ(PrefStore::PREF_READ_ERROR_JSON_PARSE, pref_store.ReadPrefs());
   EXPECT_FALSE(pref_store.ReadOnly());
-  EXPECT_TRUE(pref_store.Prefs()->empty());
+  EXPECT_TRUE(pref_store.prefs()->empty());
 
   // The file should have been moved aside.
   EXPECT_FALSE(file_util::PathExists(invalid_file));
@@ -82,7 +82,7 @@ TEST_F(JsonPrefStoreTest, Basic) {
   JsonPrefStore pref_store(input_file);
   ASSERT_EQ(PrefStore::PREF_READ_ERROR_NONE, pref_store.ReadPrefs());
   ASSERT_FALSE(pref_store.ReadOnly());
-  DictionaryValue* prefs = pref_store.Prefs();
+  DictionaryValue* prefs = pref_store.prefs();
 
   // The JSON file looks like this:
   // {

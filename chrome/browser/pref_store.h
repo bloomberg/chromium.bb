@@ -26,6 +26,7 @@ class PrefStore {
     PREF_READ_ERROR_FILE_LOCKED,
     PREF_READ_ERROR_NO_FILE,
     PREF_READ_ERROR_JSON_REPEAT,
+    PREF_READ_ERROR_OTHER
   };
 
   virtual ~PrefStore() { }
@@ -35,7 +36,7 @@ class PrefStore {
   // read errors during startup.
   virtual bool ReadOnly() { return true; }
 
-  virtual DictionaryValue* Prefs() = 0;
+  virtual DictionaryValue* prefs() = 0;
 
   virtual PrefReadError ReadPrefs() = 0;
 

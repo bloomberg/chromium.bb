@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -128,7 +128,7 @@ PrefStore::PrefReadError PrefService::LoadPersistentPrefs() {
 
   PrefStore::PrefReadError pref_error = store_->ReadPrefs();
 
-  persistent_ = store_->Prefs();
+  persistent_ = store_->prefs();
 
   for (PreferenceSet::iterator it = prefs_.begin();
        it != prefs_.end(); ++it) {
