@@ -160,7 +160,8 @@ TEST_F(ExtensionAPIClientTest, GetWindow) {
                "windows.get", "2");
 }
 
-TEST_F(ExtensionAPIClientTest, GetCurrentWindow) {
+// This test flakily crashes (http://crbug.com/22248)
+TEST_F(ExtensionAPIClientTest, DISABLED_GetCurrentWindow) {
   ExpectJsFail("chrome.windows.getCurrent(function(){}, 20);",
                "Uncaught Error: Too many arguments.");
 
@@ -175,8 +176,7 @@ TEST_F(ExtensionAPIClientTest, GetCurrentWindow) {
                "windows.getCurrent", "null");
 }
 
-// This test flakily crashes.
-// http://crbug.com/22248
+// This test flakily crashes (http://crbug.com/22248)
 TEST_F(ExtensionAPIClientTest, DISABLED_GetLastFocusedWindow) {
   ExpectJsFail("chrome.windows.getLastFocused(function(){}, 20);",
                "Uncaught Error: Too many arguments.");
