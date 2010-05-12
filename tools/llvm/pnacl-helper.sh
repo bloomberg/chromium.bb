@@ -156,54 +156,6 @@ organize-native-code() {
 }
 
 #@
-#@ verify-llvm-archive <archive>
-#@
-#@   Verifies that a given archive is bitcode and free of ASMSs
-verify-llvm-archive() {
-  Banner "verify $1"
-  VerifyLlvmArchive "$@"
-}
-
-#@
-#@ verify-llvm-object <archive>
-#@
-#@   Verifies that a given .o file is bitcode and free of ASMSs
-verify-llvm-object() {
-  Banner "verify $1"
-  VerifyLlvmObj "$@"
-}
-
-#@
-#@ verify
-#@
-#@   Verifies that toolchain/pnacl-untrusted ELF files are of the correct
-#@   architecture.
-verify() {
-  Banner "Verify ${PNACL_ARM_ROOT}"
-  for i in ${PNACL_ARM_ROOT}/*.[oa] ; do
-    VerifyObject 'elf32-little\(arm\)\?' $i  # objdumps vary in their output.
-  done
-
-  Banner "Verify ${PNACL_X8632_ROOT}"
-  for i in ${PNACL_X8632_ROOT}/*.[oa] ; do
-    VerifyObject elf32-i386  $i
-  done
-
-  Banner "Verify ${PNACL_X8664_ROOT}"
-  for i in ${PNACL_X8664_ROOT}/*.[oa] ; do
-    VerifyObject elf64-x86-64 $i
-  done
-
-  Banner "Verify ${PNACL_BITCODE_ROOT}"
-  for i in ${PNACL_BITCODE_ROOT}/*.a ; do
-    VerifyLlvmArchive $i
-  done
-  for i in ${PNACL_BITCODE_ROOT}/*.o ; do
-    VerifyLlvmObj $i
-  done
-}
-
-#@
 #@ build-bitcode-cpp
 #@
 #@   Build bitcode libraries for C++.
@@ -264,6 +216,53 @@ build-bitcode() {
   build-bitcode-cpp
 }
 
+#@
+#@ verify-llvm-archive <archive>
+#@
+#@   Verifies that a given archive is bitcode and free of ASMSs
+verify-llvm-archive() {
+  Banner "verify $1"
+  VerifyLlvmArchive "$@"
+}
+
+#@
+#@ verify-llvm-object <archive>
+#@
+#@   Verifies that a given .o file is bitcode and free of ASMSs
+verify-llvm-object() {
+  Banner "verify $1"
+  VerifyLlvmObj "$@"
+}
+
+#@
+#@ verify
+#@
+#@   Verifies that toolchain/pnacl-untrusted ELF files are of the correct
+#@   architecture.
+verify() {
+  Banner "Verify ${PNACL_ARM_ROOT}"
+  for i in ${PNACL_ARM_ROOT}/*.[oa] ; do
+    VerifyObject 'elf32-little\(arm\)\?' $i  # objdumps vary in their output.
+  done
+
+  Banner "Verify ${PNACL_X8632_ROOT}"
+  for i in ${PNACL_X8632_ROOT}/*.[oa] ; do
+    VerifyObject elf32-i386  $i
+  done
+
+  Banner "Verify ${PNACL_X8664_ROOT}"
+  for i in ${PNACL_X8664_ROOT}/*.[oa] ; do
+    VerifyObject elf64-x86-64 $i
+  done
+
+  Banner "Verify ${PNACL_BITCODE_ROOT}"
+  for i in ${PNACL_BITCODE_ROOT}/*.a ; do
+    VerifyLlvmArchive $i
+  done
+  for i in ${PNACL_BITCODE_ROOT}/*.o ; do
+    VerifyLlvmObj $i
+  done
+}
 
 ######################################################################
 # Main
@@ -273,6 +272,7 @@ if [ $(basename $(pwd)) != "native_client" ]; then
   exit -1
 fi
 
+[ $# = 0 ] && set -- help  # Avoid reference to undefined $1.
 if [ "$(type -t $1)" != "function" ]; then
   Usage
   echo "ERROR: unknown mode '$1'." >&2
