@@ -11,7 +11,7 @@
 #include "chrome/renderer/pepper_devices.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/platform_device.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebScrollBar.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebScrollbar.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 
 using WebKit::WebInputEvent;
