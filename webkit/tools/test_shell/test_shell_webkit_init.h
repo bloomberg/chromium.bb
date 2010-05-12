@@ -198,8 +198,9 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
 
   virtual WebKit::WebStorageNamespace* createLocalStorageNamespace(
       const WebKit::WebString& path, unsigned quota) {
+    // Enforce quota here, ignoring the value from the renderer as in Chrome.
     return WebKit::WebStorageNamespace::createLocalStorageNamespace(path,
-                                                                    quota);
+        WebKit::WebStorageNamespace::m_localStorageQuota);
   }
 
   void dispatchStorageEvent(const WebKit::WebString& key,

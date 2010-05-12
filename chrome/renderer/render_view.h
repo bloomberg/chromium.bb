@@ -213,7 +213,8 @@ class RenderView : public RenderWidget,
   virtual WebKit::WebWidget* createPopupMenu(WebKit::WebPopupType popup_type);
   virtual WebKit::WebWidget* createPopupMenu(
       const WebKit::WebPopupMenuInfo& info);
-  virtual WebKit::WebStorageNamespace* createSessionStorageNamespace();
+  virtual WebKit::WebStorageNamespace* createSessionStorageNamespace(
+      unsigned quota);
   virtual void didAddMessageToConsole(
       const WebKit::WebConsoleMessage& message,
       const WebKit::WebString& source_name, unsigned source_line);

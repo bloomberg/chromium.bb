@@ -104,9 +104,9 @@ void DOMStorageNamespace::CreateWebStorageNamespaceIfNecessary() {
   if (dom_storage_type_ == DOM_STORAGE_LOCAL) {
     storage_namespace_.reset(
         WebStorageNamespace::createLocalStorageNamespace(data_dir_path_,
-                                                         kLocalStorageQuota));
+            WebStorageNamespace::m_localStorageQuota));
   } else {
-    storage_namespace_.reset(
-        WebStorageNamespace::createSessionStorageNamespace());
+    storage_namespace_.reset(WebStorageNamespace::createSessionStorageNamespace(
+        WebStorageNamespace::m_sessionStorageQuota));
   }
 }

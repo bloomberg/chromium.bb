@@ -333,8 +333,11 @@ WebWidget* TestWebViewDelegate::createPopupMenu(WebPopupType popup_type) {
   return shell_->CreatePopupWidget();
 }
 
-WebStorageNamespace* TestWebViewDelegate::createSessionStorageNamespace() {
-  return WebKit::WebStorageNamespace::createSessionStorageNamespace();
+WebStorageNamespace* TestWebViewDelegate::createSessionStorageNamespace(
+    unsigned quota) {
+  // Enforce quota, ignoring the parameter from WebCore as in Chrome.
+  return WebKit::WebStorageNamespace::createSessionStorageNamespace(
+      WebStorageNamespace::m_sessionStorageQuota);
 }
 
 void TestWebViewDelegate::didAddMessageToConsole(

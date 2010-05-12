@@ -1610,9 +1610,9 @@ WebWidget* RenderView::createPopupMenu(const WebPopupMenuInfo& info) {
   return widget->webwidget();
 }
 
-WebStorageNamespace* RenderView::createSessionStorageNamespace() {
+WebStorageNamespace* RenderView::createSessionStorageNamespace(unsigned quota) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
-    return WebStorageNamespace::createSessionStorageNamespace();
+    return WebStorageNamespace::createSessionStorageNamespace(quota);
   CHECK(session_storage_namespace_id_ != kInvalidSessionStorageNamespaceId);
   return new RendererWebStorageNamespaceImpl(DOM_STORAGE_SESSION,
                                              session_storage_namespace_id_);

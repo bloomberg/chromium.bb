@@ -78,9 +78,6 @@ class DOMStorageNamespace {
   // SessionStorage vs. LocalStorage.
   const DOMStorageType dom_storage_type_;
 
-  // The quota for each storage area.  Suggested by the spec.
-  static const unsigned kLocalStorageQuota = 5 * 1024 * 1024;
-
   DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageNamespace);
 };
 
