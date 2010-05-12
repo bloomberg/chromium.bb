@@ -66,8 +66,8 @@ PluginChannelBase::PluginChannelBase()
       peer_pid_(0),
       in_remove_route_(false),
       channel_valid_(false),
-      in_sync_dispatch_(0),
-      send_unblocking_only_during_sync_dispatch_(false) {
+      in_unblock_dispatch_(0),
+      send_unblocking_only_during_unblock_dispatch_(false) {
 }
 
 PluginChannelBase::~PluginChannelBase() {
@@ -119,7 +119,8 @@ bool PluginChannelBase::Send(IPC::Message* message) {
     return false;
   }
 
-  if (send_unblocking_only_during_sync_dispatch_ && in_sync_dispatch_ == 0 &&
+  if (send_unblocking_only_during_unblock_dispatch_ &&
+      in_unblock_dispatch_ == 0 &&
       message->is_sync()) {
     message->set_unblock(false);
   }
@@ -137,8 +138,8 @@ void PluginChannelBase::OnMessageReceived(const IPC::Message& message) {
   lazy_plugin_channel_stack_.Pointer()->push(
       scoped_refptr<PluginChannelBase>(this));
 
-  if (message.is_sync())
-    in_sync_dispatch_++;
+  if (message.should_unblock())
+    in_unblock_dispatch_++;
   if (message.routing_id() == MSG_ROUTING_CONTROL) {
     OnControlMessageReceived(message);
   } else {
@@ -151,8 +152,8 @@ void PluginChannelBase::OnMessageReceived(const IPC::Message& message) {
       Send(reply);
     }
   }
-  if (message.is_sync())
-    in_sync_dispatch_--;
+  if (message.should_unblock())
+    in_unblock_dispatch_--;
 
   lazy_plugin_channel_stack_.Pointer()->pop();
 }
@@ -236,8 +237,4 @@ void PluginChannelBase::OnChannelError() {
   }
 #endif
   channel_valid_ = false;
-}
-
-void PluginChannelBase::SendUnblockingOnlyDuringSyncDispatch() {
-  send_unblocking_only_during_sync_dispatch_ = true;
 }

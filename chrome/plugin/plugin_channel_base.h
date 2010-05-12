@@ -94,9 +94,9 @@ class PluginChannelBase : public IPC::Channel::Listener,
   virtual void OnChannelConnected(int32 peer_pid);
   virtual void OnChannelError();
 
-  // If this is set, sync messages that are sent will only unblock the receiver
-  // if this channel is in the middle of a sync dispatch.
-  void SendUnblockingOnlyDuringSyncDispatch();
+  void set_send_unblocking_only_during_unblock_dispatch() {
+      send_unblocking_only_during_unblock_dispatch_ = true;
+  }
 
   virtual bool Init(MessageLoop* ipc_message_loop, bool create_pipe_now);
 
@@ -124,13 +124,22 @@ class PluginChannelBase : public IPC::Channel::Listener,
   // error. This flag is used to indicate the same.
   bool channel_valid_;
 
-  // Track whether we're within a synchronous dispatch; works like a refcount,
-  // 0 when we're not.
-  int in_sync_dispatch_;
+  // Track whether we're dispatching a message with the unblock flag; works like
+  // a refcount, 0 when we're not.
+  int in_unblock_dispatch_;
 
   // If true, sync messages will only be marked as unblocking if the channel is
-  // in the middle of dispatching a synchronous message.
-  bool send_unblocking_only_during_sync_dispatch_;
+  // in the middle of dispatching an unblocking message.
+  // The plugin process wants to avoid setting the unblock flag on its sync
+  // messages unless necessary, since it can potentially introduce reentrancy
+  // into WebKit in ways that it doesn't expect (i.e. causing layoutout during
+  // paint).  However to avoid deadlock, we must ensure that any message that's
+  // sent as a result of a sync call from the renderer must unblock the
+  // renderer.  We additionally have to do this for async messages from the
+  // renderer that have the unblock flag set, since they could be followed by a
+  // sync message that won't get dispatched until the call to the renderer is
+  // complete.
+  bool send_unblocking_only_during_unblock_dispatch_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginChannelBase);
 };
