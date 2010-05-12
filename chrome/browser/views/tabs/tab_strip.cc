@@ -955,7 +955,8 @@ void TabStrip::ButtonPressed(views::Button* sender, const views::Event& event) {
     // TODO(jcampan): if we decide to keep the app launcher as the default
     //                behavior for the new tab button, we should add a method
     //                on the TabStripDelegate to do so.
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAppsPanel)) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kAppLauncherForNewTab)) {
       NavigationController& controller =
           model_->GetSelectedTabContents()->controller();
       AppLauncher::ShowForNewTab(

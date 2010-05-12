@@ -41,16 +41,13 @@ const char kAppId[]                         = "app-id";
 const char kAppLaunchAsPanel[]              = "app-launch-as-panel";
 
 // Makes the app launcher popup when a new tab is created.
-const char kAppsPanel[]                     = "apps-panel";
+const char kAppLauncherForNewTab[]          = "app-launcher-new-tab";
 
 // The title to use for the gallery link in the app launcher.
-const char kAppsGalleryTitle[]              = "apps-gallery-title";
+const char kAppLauncherGalleryTitle[]        = "app-launcher-gallery-title";
 
 // The URL to use for the gallery link in the app launcher.
-const char kAppsGalleryURL[]                = "apps-gallery-url";
-
-// Disable throbber for extension apps.
-const char kAppsNoThrob[]                   = "apps-no-throb";
+const char kAppLauncherGalleryURL[]         = "app-launcher-gallery-url";
 
 // Whether to display the "Debug" link for app launch behavior.
 const char kAppsDebug[]      = "apps-debug";
@@ -208,6 +205,10 @@ const char kDisableSyncThemes[]             = "disable-sync-themes";
 // Disable syncing of typed urls.
 const char kDisableSyncTypedUrls[]          = "disable-sync-typed-urls";
 
+// Disable throbber for extension apps.
+const char kDisableThrobberForExtensionApps[] =
+    "disable-throbber-for-extension-apps";
+
 // Enables the backend service for web resources, used in the new tab page for
 // loading tips and recommendations from a JSON feed.
 const char kDisableWebResources[]           = "disable-web-resources";
@@ -244,9 +245,6 @@ const char kDumpHistogramsOnExit[]          = "dump-histograms-on-exit";
 // Enables AeroPeek for each tab. (This switch only works on Windows 7).
 const char kEnableAeroPeekTabs[]            = "enable-aero-peek-tabs";
 
-// Enable experimental extension apps.
-const char kEnableApps[]                    = "enable-apps";
-
 // Enable the inclusion of non-standard ports when generating the Kerberos SPN
 // in response to a Negotiate challenge. See HttpAuthHandlerNegotiate::CreateSPN
 // for more background.
@@ -268,6 +266,9 @@ const char kEnableExperimentalExtensionApis[] =
 
 // Enable experimental WebGL support.
 const char kEnableExperimentalWebGL[]       = "enable-webgl";
+
+// Enable experimental extension apps.
+const char kEnableExtensionApps[]           = "enable-extension-apps";
 
 // Enable experimental timeline API.
 const char kEnableExtensionTimelineApi[]    = "enable-extension-timeline-api";

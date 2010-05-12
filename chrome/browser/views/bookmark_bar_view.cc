@@ -463,7 +463,7 @@ void BookmarkBarView::SetPageNavigator(PageNavigator* navigator) {
 gfx::Size BookmarkBarView::GetPreferredSize() {
   // We don't want the bookmark bar view in the app launcher new tab page.
   static bool extension_apps = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableApps);
+      switches::kEnableExtensionApps);
   bool show_bookmark_bar = !(extension_apps && OnNewTabPage());
 
   if (show_bookmark_bar)

@@ -138,7 +138,7 @@ bool ExtensionsService::IsDownloadFromGallery(const GURL& download_url,
   // Allow command line gallery url to be referrer for the gallery downloads.
   std::string command_line_gallery_url =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kAppsGalleryURL);
+          switches::kAppLauncherGalleryURL);
   if (!command_line_gallery_url.empty() &&
       StartsWithASCII(download_url.spec(),
                       extension_urls::kGalleryDownloadPrefix, false) &&

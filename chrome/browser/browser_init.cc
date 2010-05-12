@@ -559,7 +559,7 @@ bool BrowserInit::LaunchWithProfile::IsAppLaunch(std::string* app_url,
       *app_url = command_line_.GetSwitchValueASCII(switches::kApp);
     return true;
   }
-  if (command_line_.HasSwitch(switches::kEnableApps) &&
+  if (command_line_.HasSwitch(switches::kEnableExtensionApps) &&
       command_line_.HasSwitch(switches::kAppId)) {
     if (app_id)
       *app_id = command_line_.GetSwitchValueASCII(switches::kAppId);

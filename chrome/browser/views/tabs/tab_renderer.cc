@@ -348,7 +348,8 @@ void TabRenderer::UpdateData(TabContents* contents,
   // If this is an extension app and a command line flag is set,
   // then disable the throbber.
   throbber_disabled_ = data_.app &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kAppsNoThrob);
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableThrobberForExtensionApps);
 
   // TODO(glen): Temporary hax.
   theme_provider_ = contents->profile()->GetThemeProvider();
