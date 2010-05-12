@@ -836,4 +836,18 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithEmptyHead) {
   ASSERT_TRUE(std::string(text_node_contents.utf8()) == "hello world");
 }
 
+// Test that we don't crash when the page contains an iframe that
+// was handled as a download (http://crbug.com/42212).
+TEST_F(DomSerializerTests, SerializeDocumentWithDownloadedIFrame) {
+  FilePath page_file_path = data_dir_;
+  page_file_path = page_file_path.AppendASCII("dom_serializer");
+  page_file_path = page_file_path.AppendASCII("iframe-src-is-exe.htm");
+  GURL file_url = net::FilePathToFileURL(page_file_path);
+  ASSERT_TRUE(file_url.SchemeIsFile());
+  // Load the test file.
+  LoadPageFromURL(file_url);
+  // Do a recursive serialization. We pass if we don't crash.
+  SerializeDomForURL(file_url, true);
+}
+
 }  // namespace
