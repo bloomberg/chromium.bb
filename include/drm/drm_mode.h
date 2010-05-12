@@ -75,6 +75,11 @@
 #define DRM_MODE_DITHERING_OFF	0
 #define DRM_MODE_DITHERING_ON	1
 
+/* Dirty info options */
+#define DRM_MODE_DIRTY_OFF      0
+#define DRM_MODE_DIRTY_ON       1
+#define DRM_MODE_DIRTY_ANNOTATE 2
+
 struct drm_mode_modeinfo {
 	__u32 clock;
 	__u16 hdisplay, hsync_start, hsync_end, htotal, hskew;
@@ -307,12 +312,34 @@ struct drm_mode_crtc_lut {
 #define DRM_MODE_PAGE_FLIP_EVENT 0x01
 #define DRM_MODE_PAGE_FLIP_FLAGS DRM_MODE_PAGE_FLIP_EVENT
 
+/*
+ * Request a page flip on the specified crtc.
+ *
+ * This ioctl will ask KMS to schedule a page flip for the specified
+ * crtc.  Once any pending rendering targeting the specified fb (as of
+ * ioctl time) has completed, the crtc will be reprogrammed to display
+ * that fb after the next vertical refresh.  The ioctl returns
+ * immediately, but subsequent rendering to the current fb will block
+ * in the execbuffer ioctl until the page flip happens.  If a page
+ * flip is already pending as the ioctl is called, EBUSY will be
+ * returned.
+ *
+ * The ioctl supports one flag, DRM_MODE_PAGE_FLIP_EVENT, which will
+ * request that drm sends back a vblank event (see drm.h: struct
+ * drm_event_vblank) when the page flip is done.  The user_data field
+ * passed in with this ioctl will be returned as the user_data field
+ * in the vblank event struct.
+ *
+ * The reserved field must be zero until we figure out something
+ * clever to use it for.
+ */
+
 struct drm_mode_crtc_page_flip {
-	uint32_t crtc_id;
-	uint32_t fb_id;
-	uint32_t flags;
-	uint32_t reserved;
-	uint64_t user_data;
+	__u32 crtc_id;
+	__u32 fb_id;
+	__u32 flags;
+	__u32 reserved;
+	__u64 user_data;
 };
 
 #endif
