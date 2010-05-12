@@ -158,7 +158,7 @@ class TextDatabaseManager {
   // These tests call ExpireRecentChangesForTime to force expiration.
   FRIEND_TEST(TextDatabaseManagerTest, InsertPartial);
   FRIEND_TEST(TextDatabaseManagerTest, PartialComplete);
-  FRIEND_TEST(ExpireHistoryTest, FLAKY_DeleteURLAndFavicon);
+  FRIEND_TEST(ExpireHistoryTest, FAILS_DeleteURLAndFavicon);
   FRIEND_TEST(ExpireHistoryTest, FlushRecentURLsUnstarred);
   FRIEND_TEST(ExpireHistoryTest, FlushRecentURLsUnstarredRestricted);
 

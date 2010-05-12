@@ -381,8 +381,8 @@ bool ExpireHistoryTest::IsStringInFile(const FilePath& filename,
 
 // Deletes a URL with a favicon that it is the last referencer of, so that it
 // should also get deleted.
-// Marking as flaky because it fails near end of month. http://crbug.com/43586
-TEST_F(ExpireHistoryTest, FLAKY_DeleteURLAndFavicon) {
+// Fails near end of month. http://crbug.com/43586
+TEST_F(ExpireHistoryTest, FAILS_DeleteURLAndFavicon) {
   URLID url_ids[3];
   Time visit_times[4];
   AddExampleData(url_ids, visit_times);
