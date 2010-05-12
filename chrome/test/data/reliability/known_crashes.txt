@@ -57,6 +57,9 @@ PREFIX : base::subtle::refcountedthreadsafebase::release___messageloop::posttask
 # 15620
 PREFIX : browser::processpendingtabs___browser::clearunloadstate
 
+# 44015
+PREFIX : domuifaviconsource::onfavicondataavailable
+
 # 9615
 SUBSTRING : history::historybackend::~historybackend
 
