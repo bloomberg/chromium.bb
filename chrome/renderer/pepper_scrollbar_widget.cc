@@ -265,6 +265,9 @@ void PepperScrollbarWidget::SetProperty(
           granularity, multiplier);
       break;
     }
+    default:
+      NOTREACHED();
+      break;
   }
 }
 
