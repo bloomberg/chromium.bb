@@ -315,12 +315,6 @@ void TestWebViewDelegate::SetAuthorAndUserStylesEnabled(bool is_enabled) {
 
 // WebViewClient -------------------------------------------------------------
 
-// TODO(rafaelw): remove when
-// WebViewClient::createView(WebFrame,WebWindowFeatures) lands.
-WebView* TestWebViewDelegate::createView(WebFrame* creator) {
-  return createView(creator, WebWindowFeatures());
-}
-
 WebView* TestWebViewDelegate::createView(
     WebFrame* creator,
     const WebWindowFeatures& window_features) {

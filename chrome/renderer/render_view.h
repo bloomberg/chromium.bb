@@ -204,9 +204,6 @@ class RenderView : public RenderWidget,
   virtual void DnsPrefetch(const std::vector<std::string>& host_names);
 
   // WebKit::WebViewClient
-  // TODO(rafaelw): Remove this when
-  // WebViewClient::createView(WebFrame,WebWindowFeatures&) lands.
-  virtual WebKit::WebView* createView(WebKit::WebFrame* creator);
   virtual WebKit::WebView* createView(
       WebKit::WebFrame* creator,
       const WebKit::WebWindowFeatures& features);

@@ -1536,12 +1536,6 @@ void RenderView::OnMissingPluginStatus(
 
 // WebKit::WebViewClient ------------------------------------------------------
 
-// TODO(rafaelw): remove when
-// WebViewClient::createView(WebFrame,WebWindowFeatures) lands.
-WebView* RenderView::createView(WebFrame* creator) {
-  return createView(creator, WebWindowFeatures());
-}
-
 WebView* RenderView::createView(
     WebFrame* creator,
     const WebWindowFeatures& features) {

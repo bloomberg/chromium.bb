@@ -75,9 +75,6 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   typedef std::vector<CapturedContextMenuEvent> CapturedContextMenuEvents;
 
   // WebKit::WebViewClient
-  // TODO(rafaelw): Remove this when
-  // WebViewClient::createView(WebFrame,WebWindowFeatures&) lands.
-  virtual WebKit::WebView* createView(WebKit::WebFrame* creator);
   virtual WebKit::WebView* createView(
       WebKit::WebFrame* creator,
       const WebKit::WebWindowFeatures& window_features);
