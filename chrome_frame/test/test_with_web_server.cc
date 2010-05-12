@@ -158,7 +158,7 @@ bool ChromeFrameTestWithWebServer::WaitForOnLoad(int milliseconds) {
 }
 
 bool ChromeFrameTestWithWebServer::ReadResultFile(const std::wstring& file_name,
-                                                std::string* data) {
+                                                  std::string* data) {
   std::wstring full_path = results_dir_;
   file_util::AppendToPath(&full_path, file_name);
   return file_util::ReadFileToString(full_path, data);
@@ -171,12 +171,24 @@ bool ChromeFrameTestWithWebServer::CheckResultFile(
   if (ret)
     ret = (data == expected_result);
 
+  LogScriptErrorResultFile();
+
   if (!ret) {
     LOG(ERROR) << "Error text: " << (data.empty() ? "<empty>" : data.c_str());
   }
 
   return ret;
 }
+
+void ChromeFrameTestWithWebServer::LogScriptErrorResultFile() {
+  std::string data;
+  ReadResultFile(L"tester_helpers", &data);
+  if (!data.empty()) {
+    // Data will be set to the URL of the failing page.
+    LOG(ERROR) << "Script exception: " << data;
+  }
+}
+
 
 void ChromeFrameTestWithWebServer::SimpleBrowserTest(BrowserKind browser,
     const wchar_t* page, const wchar_t* result_file_to_check) {

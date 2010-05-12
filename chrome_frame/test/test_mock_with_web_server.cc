@@ -320,6 +320,9 @@ TEST(ChromeFrameTest, FullTabModeIE_DisallowedUrls) {
   ASSERT_TRUE(mock.web_browser2() != NULL);
 
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  if (loop.WasTimedOut()) {
+    LOG(ERROR) << __FUNCTION__ " - timeout!";
+  }
 }
 
 const wchar_t kKeyEventUrl[] = L"http://localhost:1337/files/keyevent.html";
@@ -351,6 +354,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_KeyboardTest) {
     return;
 
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  if (loop.WasTimedOut()) {
+    LogScriptErrorResultFile();
+  }
 }
 
 const wchar_t kAboutVersionUrl[] = L"gcf:about:version";
@@ -378,6 +384,9 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_FocusTest) {
 
   // Allow some time for chrome to be launched.
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  if (loop.WasTimedOut()) {
+    LogScriptErrorResultFile();
+  }
 }
 
 const wchar_t kWindowOpenUrl[] =
@@ -429,6 +438,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_WindowOpenInChrome) {
   ASSERT_TRUE(mock.web_browser2() != NULL);
 
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  if (loop.WasTimedOut()) {
+    LogScriptErrorResultFile();
+  }
 }
 
 const wchar_t kSubFrameUrl1[] =
@@ -473,6 +485,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_CtrlN) {
 
   ASSERT_TRUE(mock.web_browser2() != NULL);
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  if (loop.WasTimedOut()) {
+    LogScriptErrorResultFile();
+  }
 }
 
 // Test page reload with ctrl+R
@@ -508,6 +523,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_CtrlR) {
 
   ASSERT_TRUE(mock.web_browser2() != NULL);
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  if (loop.WasTimedOut()) {
+    LogScriptErrorResultFile();
+  }
 }
 
 // Test window close with ctrl+w
@@ -531,6 +549,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_CtrlW) {
 
   ASSERT_TRUE(mock.web_browser2() != NULL);
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  if (loop.WasTimedOut()) {
+    LogScriptErrorResultFile();
+  }
 }
 
 // Test address bar navigation with Alt+d and URL
@@ -561,6 +582,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_AltD) {
 
   ASSERT_TRUE(mock.web_browser2() != NULL);
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  if (loop.WasTimedOut()) {
+    LogScriptErrorResultFile();
+  }
 }
 
 // This test launches chrome frame in full tab mode in IE by having IE navigate
@@ -608,6 +632,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_AboutChromeFrame) {
 
   ASSERT_TRUE(mock.web_browser2() != NULL);
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  if (loop.WasTimedOut()) {
+    LogScriptErrorResultFile();
+  }
 }
 
 // Hack to pass a reference to the argument instead of value. Passing by
@@ -678,6 +705,9 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForward) {
 
   ASSERT_TRUE(mock.web_browser2() != NULL);
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  if (loop.WasTimedOut()) {
+    LogScriptErrorResultFile();
+  }
 }
 
 const wchar_t kAnchorUrl[] = L"http://localhost:1337/files/anchor.html";
@@ -796,6 +826,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
 
   ASSERT_TRUE(mock.web_browser2() != NULL);
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  if (loop.WasTimedOut()) {
+    LogScriptErrorResultFile();
+  }
 }
 
 // Full tab mode view source test
@@ -849,6 +882,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_ViewSource) {
 
   ASSERT_TRUE(mock.web_browser2() != NULL);
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  if (loop.WasTimedOut()) {
+    LogScriptErrorResultFile();
+  }
 }
 
 const wchar_t kBeforeUnloadTest[] =
@@ -882,6 +918,9 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_UnloadEventTest) {
 
   ASSERT_TRUE(mock.web_browser2() != NULL);
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  if (loop.WasTimedOut()) {
+    LogScriptErrorResultFile();
+  }
 }
 
 // NOTE: This test is currently disabled as we haven't finished implementing
@@ -924,6 +963,9 @@ TEST_F(ChromeFrameTestWithWebServer,
   ASSERT_TRUE(mock.web_browser2() != NULL);
 
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  if (loop.WasTimedOut()) {
+    LogScriptErrorResultFile();
+  }
 }
 
 // Test Back/Forward from context menu. Loads page 1 in chrome and page 2
@@ -972,6 +1014,9 @@ TEST_F(ChromeFrameTestWithWebServer,
 
   ASSERT_TRUE(mock.web_browser2() != NULL);
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  if (loop.WasTimedOut()) {
+    LogScriptErrorResultFile();
+  }
 }
 
 // Test Reload from context menu.
@@ -1005,6 +1050,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_ContextMenuReload) {
 
   ASSERT_TRUE(mock.web_browser2() != NULL);
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  if (loop.WasTimedOut()) {
+    LogScriptErrorResultFile();
+  }
 }
 
 // Test view source using context menu
@@ -1054,6 +1102,9 @@ TEST_F(ChromeFrameTestWithWebServer,
 
   ASSERT_TRUE(mock.web_browser2() != NULL);
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  if (loop.WasTimedOut()) {
+    LogScriptErrorResultFile();
+  }
 }
 
 TEST_F(ChromeFrameTestWithWebServer,
@@ -1088,6 +1139,9 @@ TEST_F(ChromeFrameTestWithWebServer,
 
   ASSERT_TRUE(mock.web_browser2() != NULL);
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  if (loop.WasTimedOut()) {
+    LogScriptErrorResultFile();
+  }
 }
 
 TEST_F(ChromeFrameTestWithWebServer,
@@ -1124,6 +1178,9 @@ TEST_F(ChromeFrameTestWithWebServer,
 
   ASSERT_TRUE(mock.web_browser2() != NULL);
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  if (loop.WasTimedOut()) {
+    LogScriptErrorResultFile();
+  }
 }
 
 TEST_F(ChromeFrameTestWithWebServer,
@@ -1166,6 +1223,9 @@ TEST_F(ChromeFrameTestWithWebServer,
 
   ASSERT_TRUE(mock.web_browser2() != NULL);
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  if (loop.WasTimedOut()) {
+    LogScriptErrorResultFile();
+  }
 
   ASSERT_NE(INVALID_FILE_ATTRIBUTES, GetFileAttributes(kSaveFileName));
   ASSERT_TRUE(DeleteFile(kSaveFileName));
@@ -1223,6 +1283,9 @@ TEST_F(ChromeFrameTestWithWebServer,
 
   ASSERT_TRUE(mock.web_browser2() != NULL);
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  if (loop.WasTimedOut()) {
+    LogScriptErrorResultFile();
+  }
 }
 
 // http://code.google.com/p/chromium/issues/detail?id=38566
@@ -1265,6 +1328,9 @@ TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_MenuSaveAs) {
 
   ASSERT_TRUE(mock.web_browser2() != NULL);
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  if (loop.WasTimedOut()) {
+    LogScriptErrorResultFile();
+  }
 
   ASSERT_NE(INVALID_FILE_ATTRIBUTES, GetFileAttributes(kSaveFileName));
   ASSERT_TRUE(DeleteFile(kSaveFileName));
@@ -1322,6 +1388,9 @@ TEST_F(ChromeFrameTestWithWebServer,
 
   ASSERT_TRUE(mock.web_browser2() != NULL);
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds * 2);
+  if (loop.WasTimedOut()) {
+    LogScriptErrorResultFile();
+  }
 }
 
 TEST(IEPrivacy, NavigationToRestrictedSite) {
@@ -1371,6 +1440,9 @@ TEST(IEPrivacy, NavigationToRestrictedSite) {
   if (hr == S_OK) {
     ASSERT_TRUE(mock.web_browser2() != NULL);
     loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds * 2);
+    if (loop.WasTimedOut()) {
+      LOG(ERROR) << __FUNCTION__ " - timeout!";
+    }
   }
 
   ASSERT_HRESULT_SUCCEEDED(security_manager->SetZoneMapping(URLZONE_UNTRUSTED,
@@ -1518,6 +1590,9 @@ TEST_F(ChromeFrameTestWithWebServer,
   if (hr == S_OK) {
     ASSERT_TRUE(mock.web_browser2() != NULL);
     loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds * 2);
+    if (loop.WasTimedOut()) {
+      LogScriptErrorResultFile();
+    }
   }
 
   EXPECT_EQ(1, response->get_request_count());
@@ -1559,4 +1634,7 @@ TEST_F(ChromeFrameTestWithWebServer,
 
   ASSERT_TRUE(mock.web_browser2() != NULL);
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  if (loop.WasTimedOut()) {
+    LogScriptErrorResultFile();
+  }
 }
