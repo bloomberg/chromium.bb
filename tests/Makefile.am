@@ -6,7 +6,7 @@ AM_CPPFLAGS = \
 
 LDADD = $(top_builddir)/libdrm.la
 
-noinst_PROGRAMS = \
+check_PROGRAMS = \
 	dristat \
 	drmstat
 
@@ -21,7 +21,7 @@ endif
 
 if HAVE_LIBUDEV
 
-EXTRA_LTLIBRARIES = libdrmtest.la
+check_LTLIBRARIES = libdrmtest.la
 
 libdrmtest_la_SOURCES = \
 	drmtest.c \
@@ -63,8 +63,6 @@ TESTS +=					\
 	$(NULL)
 endif
 
-EXTRA_PROGRAMS = $(TESTS)
+check_PROGRAMS += $(TESTS)
 
 endif
-
-CLEANFILES = $(EXTRA_PROGRAMS) $(EXTRA_LTLIBRARIES)
