@@ -12,22 +12,23 @@
  *
  *  @constructor
  */
-function TestView(mainBoxId, urlInputId, startButtonId, summaryDivId) {
+function TestView(mainBoxId, urlInputId, formId, summaryDivId) {
   DivView.call(this, mainBoxId);
 
   this.urlInput_ = document.getElementById(urlInputId);
-  var startButton = document.getElementById(startButtonId);
   this.summaryDiv_ = document.getElementById(summaryDivId);
 
-  startButton.onclick = this.startTests_.bind(this);
+  var form = document.getElementById(formId);
+  form.addEventListener('submit', this.onSubmitForm_.bind(this), false);
 
   g_browser.addConnectionTestsObserver(this);
 }
 
 inherits(TestView, DivView);
 
-TestView.prototype.startTests_ = function() {
+TestView.prototype.onSubmitForm_ = function(event) {
   g_browser.sendStartConnectionTests(this.urlInput_.value);
+  event.preventDefault();
 };
 
 /**

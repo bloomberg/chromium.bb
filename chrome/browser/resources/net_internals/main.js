@@ -64,8 +64,8 @@ function onLoaded() {
 
   // Create a view which will display the results and controls for connection
   // tests.
-  var testView = new TestView("testTabContent", "testUrlInput", "testStart",
-                              "testSummary");
+  var testView = new TestView("testTabContent", "testUrlInput",
+                              "connectionTestsForm", "testSummary");
 
   var httpCacheView = new HttpCacheView("httpCacheTabContent",
                                         "reloadHttpCacheListing",
