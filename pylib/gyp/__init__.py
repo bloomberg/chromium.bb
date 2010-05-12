@@ -281,15 +281,15 @@ def main(args):
   if sys.platform in ('cygwin', 'win32'):
     home_vars.append('USERPROFILE')
   home = None
+  home_dot_gyp = None
   for home_var in home_vars:
     home = os.getenv(home_var)
     if home != None:
-      break
-  home_dot_gyp = None
-  if home != None:
-    home_dot_gyp = os.path.join(home, '.gyp')
-    if not os.path.exists(home_dot_gyp):
-      home_dot_gyp = None
+      home_dot_gyp = os.path.join(home, '.gyp')
+      if not os.path.exists(home_dot_gyp):
+        home_dot_gyp = None
+      else:
+        break
 
   # TODO(thomasvl): add support for ~/.gyp/defaults
 
