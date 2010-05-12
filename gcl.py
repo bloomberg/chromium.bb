@@ -15,6 +15,7 @@ import string
 import subprocess
 import sys
 import tempfile
+import time
 from third_party import upload
 import urllib2
 
@@ -131,7 +132,7 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
     except gclient_utils.Error:
       return None
     if (not os.path.exists(cached_file) or
-        os.stat(cached_file).st_mtime > max_age):
+        (time.time() - os.stat(cached_file).st_mtime) > max_age):
       dir_info = SVN.CaptureInfo(".")
       repo_root = dir_info["Repository Root"]
       if use_root:
