@@ -4313,17 +4313,33 @@ void RenderView::DumpLoadHistograms() const {
   WebFrame* main_frame = webview()->mainFrame();
   NavigationState* navigation_state =
       NavigationState::FromDataSource(main_frame->dataSource());
-  Time finish = navigation_state->finish_load_time();
 
   // If we've already dumped, do nothing.
   if (navigation_state->load_histograms_recorded())
     return;
+  Time start = navigation_state->start_load_time();
+  if (start.is_null())
+    return;  // Probably very premature abandonment of page.
+  Time commit = navigation_state->commit_load_time();
+  if (commit.is_null())
+    return;  // Probably very premature abandonment of page.
+  // We properly handle null values for the next 3 variables.
+  Time request = navigation_state->request_time();
+  Time first_paint = navigation_state->first_paint_time();
+  Time first_paint_after_load = navigation_state->first_paint_after_load_time();
+
+  Time finish = navigation_state->finish_load_time();
+  Time finish_doc = navigation_state->finish_document_load_time();
 
   // Handle case where user hits "stop" or "back" before loading completely.
   bool abandoned_page = finish.is_null();
   if (abandoned_page) {
     finish = Time::Now();
     navigation_state->set_finish_load_time(finish);
+  }
+  if (finish_doc.is_null()) {
+      finish_doc = Time::Now();
+      navigation_state->set_finish_document_load_time(finish_doc);
   }
   UMA_HISTOGRAM_ENUMERATION("Renderer4.Abandoned", abandoned_page ? 1 : 0, 2);
 
@@ -4339,13 +4355,6 @@ void RenderView::DumpLoadHistograms() const {
   UMA_HISTOGRAM_COUNTS("SiteIsolation.PageLoadsWithSameSiteFrameAccess",
                        same_origin_access_count_);
 
-  Time request = navigation_state->request_time();
-  Time start = navigation_state->start_load_time();
-  Time commit = navigation_state->commit_load_time();
-  Time finish_doc = navigation_state->finish_document_load_time();
-  Time first_paint = navigation_state->first_paint_time();
-  Time first_paint_after_load =
-      navigation_state->first_paint_after_load_time();
 
   Time begin;
   // Client side redirects will have no request time.
@@ -4546,18 +4555,23 @@ void RenderView::DumpLoadHistograms() const {
   UMA_HISTOGRAM_MEDIUM_TIMES("Renderer4.CommitToFinish", finish - commit);
 
   if (!first_paint.is_null()) {
+    DCHECK(begin <= first_paint);
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "Renderer4.BeginToFirstPaint", first_paint - begin);
+    DCHECK(commit <= first_paint);
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "Renderer4.CommitToFirstPaint", first_paint - commit);
   }
 
   if (!first_paint_after_load.is_null()) {
+    DCHECK(begin <= first_paint_after_load);
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "Renderer4.BeginToFirstPaintAfterLoad", first_paint_after_load - begin);
+    DCHECK(commit <= first_paint_after_load);
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "Renderer4.CommitToFirstPaintAfterLoad",
         first_paint_after_load - commit);
+    DCHECK(finish <= first_paint_after_load);
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "Renderer4.FinishToFirstPaintAfterLoad",
         first_paint_after_load - finish);
