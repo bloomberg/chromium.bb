@@ -117,6 +117,11 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     MAX_SYNC_EVENT_CODE
   };
 
+  // Default sync server URL.
+  static const char* kSyncServerUrl;
+  // Sync server URL for dev channel users
+  static const char* kDevServerUrl;
+
   ProfileSyncService(ProfileSyncFactory* factory_,
                      Profile* profile,
                      bool bootstrap_sync_authentication);
@@ -310,6 +315,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   friend class ProfileSyncServiceTest;
   friend class ProfileSyncServicePreferenceTest;
   friend class ProfileSyncServiceTestHarness;
+  FRIEND_TEST(ProfileSyncServiceTest, InitialState);
   FRIEND_TEST(ProfileSyncServiceTest, UnrecoverableErrorSuspendsService);
 
   // Initializes the various settings from the command line.
