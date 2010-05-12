@@ -438,16 +438,24 @@ typedef struct _NPScrollbarCreateParams {
   bool vertical;
 } NPScrollbarCreateParams;
 
+typedef struct _NPRect32
+{
+  uint32_t top;
+  uint32_t left;
+  uint32_t bottom;
+  uint32_t right;
+} NPRect32;
+
 typedef struct _NPScrollbarTickMarks {
   uint32 count;
-  uint32* tickmarks;
+  NPRect32* tickmarks;
 } NPScrollbarTickMarks;
 
 typedef enum {
-  NPWidgetPropertyLocation = 0,  // Set only.  variable is NPRect*.
-  NPWidgetPropertyDirtyRect = 1,  // Get only.  variable is NPRec*t.
+  NPWidgetPropertyLocation = 0,  // variable is NPRect*.
+  NPWidgetPropertyDirtyRect = 1,  // Get only.  variable is NPRec*.
   NPWidgetPropertyScrollbarThickness = 2,  // Get only.  variable is int32*.
-  NPWidgetPropertyScrollbarPosition = 3,  // variable is int32*.
+  NPWidgetPropertyScrollbarValue = 3,  // variable is int32*.
   NPWidgetPropertyScrollbarDocumentSize = 4,  // Set only. variable is int32*.
   // Set only.  variable is NPScrollbarTickMarks*.
   NPWidgetPropertyScrollbarTickMarks = 5,
