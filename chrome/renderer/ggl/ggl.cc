@@ -147,7 +147,7 @@ bool Context::Initialize(gfx::NativeViewId view, const gfx::Size& size) {
 
   // Create the GLES2 helper, which writes the command buffer protocol.
   gles2_helper_ = new gpu::gles2::GLES2CmdHelper(command_buffer_);
-  if (!gles2_helper_->Initialize()) {
+  if (!gles2_helper_->Initialize(kCommandBufferSize)) {
     Destroy();
     return false;
   }

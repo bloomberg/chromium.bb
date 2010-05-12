@@ -71,7 +71,7 @@ struct Device3DImpl {
 
 const int32 kDefaultCommandBufferSize = 1024 * 1024;
 
-} // namespace
+}  // namespace
 
 WebPluginDelegatePepper* WebPluginDelegatePepper::Create(
     const FilePath& filename,
@@ -526,7 +526,7 @@ NPError WebPluginDelegatePepper::Device3DInitializeContext(
         context->waitForProgress = true;
         Buffer ring_buffer = command_buffer_->GetRingBuffer();
         context->commandBuffer = ring_buffer.ptr;
-        context->commandBufferSize = state.size;
+        context->commandBufferSize = state.num_entries;
         context->repaintCallback = NULL;
         Synchronize3DContext(context, state);
 

@@ -36,7 +36,11 @@ class CommandBufferHelper {
   explicit CommandBufferHelper(CommandBuffer* command_buffer);
   virtual ~CommandBufferHelper();
 
-  bool Initialize();
+  // Initializes the CommandBufferHelper.
+  // Parameters:
+  //   ring_buffer_size: The size of the ring buffer portion of the command
+  //       buffer.
+  bool Initialize(int32 ring_buffer_size);
 
   // Flushes the commands, setting the put pointer to let the buffer interface
   // know that new commands have been added. After a flush returns, the command

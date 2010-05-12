@@ -19,14 +19,18 @@ CommandBufferHelper::CommandBufferHelper(CommandBuffer* command_buffer)
       put_(0) {
 }
 
-bool CommandBufferHelper::Initialize() {
+bool CommandBufferHelper::Initialize(int32 ring_buffer_size) {
   ring_buffer_ = command_buffer_->GetRingBuffer();
   if (!ring_buffer_.ptr)
     return false;
 
   CommandBuffer::State state = command_buffer_->GetState();
   entries_ = static_cast<CommandBufferEntry*>(ring_buffer_.ptr);
-  entry_count_ = state.size;
+  int32 num_ring_buffer_entries = ring_buffer_size / sizeof(CommandBufferEntry);
+  if (num_ring_buffer_entries > state.num_entries) {
+    return false;
+  }
+  entry_count_ = num_ring_buffer_entries;
   put_ = state.put_offset;
   SynchronizeState(state);
   return true;

@@ -63,7 +63,7 @@ CommandBuffer::State CommandBufferPepper::GetState() {
                               NULL);
 
   CommandBuffer::State state;
-  state.size = output_attribs[1];
+  state.num_entries = output_attribs[1];
   state.get_offset = output_attribs[3];
   state.put_offset = output_attribs[5];
   state.token = output_attribs[7];
@@ -106,7 +106,7 @@ CommandBuffer::State CommandBufferPepper::Flush(int32 put_offset) {
                               NULL);
 
   CommandBuffer::State state;
-  state.size = output_attribs[1];
+  state.num_entries = output_attribs[1];
   state.get_offset = output_attribs[3];
   state.put_offset = output_attribs[5];
   state.token = output_attribs[7];
@@ -181,7 +181,7 @@ gpu::error::Error CommandBufferPepper::GetCachedError() {
 
 CommandBuffer::State CommandBufferPepper::ConvertState() {
   CommandBuffer::State state;
-  state.size = context_->commandBufferSize;
+  state.num_entries = context_->commandBufferSize;
   state.get_offset = context_->getOffset;
   state.put_offset = context_->putOffset;
   state.token = context_->token;

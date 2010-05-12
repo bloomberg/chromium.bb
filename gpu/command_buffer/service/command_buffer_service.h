@@ -50,7 +50,7 @@ class CommandBufferService : public CommandBuffer {
 
  private:
   scoped_ptr< base::SharedMemory> ring_buffer_;
-  int32 size_;
+  int32 num_entries_;
   int32 get_offset_;
   int32 put_offset_;
   scoped_ptr<Callback0::Type> put_offset_change_callback_;

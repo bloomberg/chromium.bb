@@ -14,7 +14,7 @@ using ::base::SharedMemory;
 namespace gpu {
 
 CommandBufferService::CommandBufferService()
-    : size_(0),
+    : num_entries_(0),
       get_offset_(0),
       put_offset_(0),
       token_(0),
@@ -34,16 +34,15 @@ bool CommandBufferService::Initialize(int32 size) {
   if (size <= 0 || size > kMaxCommandBufferSize)
     return false;
 
-  size_ = size;
+  num_entries_ = size / sizeof(CommandBufferEntry);
 
   ring_buffer_.reset(new SharedMemory);
-  uint32 size_bytes = size * sizeof(CommandBufferEntry);
-  if (ring_buffer_->Create(std::wstring(), false, false, size_bytes)) {
-    if (ring_buffer_->Map(size_bytes))
+  if (ring_buffer_->Create(std::wstring(), false, false, size)) {
+    if (ring_buffer_->Map(size))
       return true;
   }
 
-  size_ = 0;
+  num_entries_ = 0;
   ring_buffer_.reset();
   return false;
 }
@@ -60,7 +59,7 @@ Buffer CommandBufferService::GetRingBuffer() {
 
 CommandBufferService::State CommandBufferService::GetState() {
   State state;
-  state.size = size_;
+  state.num_entries = num_entries_;
   state.get_offset = get_offset_;
   state.put_offset = put_offset_;
   state.token = token_;
@@ -70,7 +69,7 @@ CommandBufferService::State CommandBufferService::GetState() {
 }
 
 CommandBufferService::State CommandBufferService::Flush(int32 put_offset) {
-  if (put_offset < 0 || put_offset > size_) {
+  if (put_offset < 0 || put_offset > num_entries_) {
     error_ = gpu::error::kOutOfBounds;
     return GetState();
   }
@@ -85,7 +84,7 @@ CommandBufferService::State CommandBufferService::Flush(int32 put_offset) {
 }
 
 void CommandBufferService::SetGetOffset(int32 get_offset) {
-  DCHECK(get_offset >= 0 && get_offset < size_);
+  DCHECK(get_offset >= 0 && get_offset < num_entries_);
   get_offset_ = get_offset;
 }
 

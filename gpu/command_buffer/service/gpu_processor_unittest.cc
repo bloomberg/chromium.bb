@@ -43,7 +43,7 @@ class GPUProcessorTest : public testing::Test {
       .WillByDefault(Return(shared_memory_buffer_));
 
     CommandBuffer::State default_state;
-    default_state.size = kRingBufferEntries;
+    default_state.num_entries = kRingBufferEntries;
     ON_CALL(*command_buffer_.get(), GetState())
       .WillByDefault(Return(default_state));
 

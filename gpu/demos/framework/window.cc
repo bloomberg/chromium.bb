@@ -69,7 +69,7 @@ bool Window::CreateRenderContext(gfx::PluginWindowHandle hwnd) {
       NewCallback(gpu_processor, &GPUProcessor::ProcessCommands));
 
   GLES2CmdHelper* helper = new GLES2CmdHelper(command_buffer.get());
-  if (!helper->Initialize()) {
+  if (!helper->Initialize(kCommandBufferSize)) {
     // TODO(alokp): cleanup.
     return false;
   }

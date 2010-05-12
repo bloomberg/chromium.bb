@@ -15,7 +15,7 @@ using gpu::Buffer;
 CommandBufferProxy::CommandBufferProxy(
     IPC::Channel::Sender* channel,
     int route_id)
-    : size_(0),
+    : num_entries_(0),
       channel_(channel),
       route_id_(route_id) {
 }
@@ -69,8 +69,8 @@ bool CommandBufferProxy::Initialize(int32 size) {
   if (Send(new GpuCommandBufferMsg_Initialize(route_id_, size, &handle)) &&
       base::SharedMemory::IsHandleValid(handle)) {
     ring_buffer_.reset(new base::SharedMemory(handle, false));
-    if (ring_buffer_->Map(size * sizeof(int32))) {
-      size_ = size;
+    if (ring_buffer_->Map(size)) {
+      num_entries_ = size / sizeof(gpu::CommandBufferEntry);
       return true;
     }
 
@@ -84,7 +84,7 @@ Buffer CommandBufferProxy::GetRingBuffer() {
   // Return locally cached ring buffer.
   Buffer buffer;
   buffer.ptr = ring_buffer_->memory();
-  buffer.size = size_ * sizeof(gpu::CommandBufferEntry);
+  buffer.size = num_entries_ * sizeof(gpu::CommandBufferEntry);
   buffer.shared_memory = ring_buffer_.get();
   return buffer;
 }
@@ -96,8 +96,8 @@ gpu::CommandBuffer::State CommandBufferProxy::GetState() {
 
 gpu::CommandBuffer::State CommandBufferProxy::Flush(int32 put_offset) {
   Send(new GpuCommandBufferMsg_Flush(route_id_,
-                                  put_offset,
-                                  &last_state_));
+                                     put_offset,
+                                     &last_state_));
   return last_state_;
 }
 
@@ -140,9 +140,9 @@ Buffer CommandBufferProxy::GetTransferBuffer(int32 id) {
   base::SharedMemoryHandle handle;
   uint32 size;
   if (!Send(new GpuCommandBufferMsg_GetTransferBuffer(route_id_,
-                                                   id,
-                                                   &handle,
-                                                   &size))) {
+                                                      id,
+                                                      &handle,
+                                                      &size))) {
     return Buffer();
   }
 

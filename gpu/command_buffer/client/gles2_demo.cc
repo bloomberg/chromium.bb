@@ -66,7 +66,7 @@ bool GLES2Demo::Setup(void* hwnd, int32 size) {
       NewCallback(gpu_processor, &GPUProcessor::ProcessCommands));
 
   GLES2CmdHelper* helper = new GLES2CmdHelper(command_buffer.get());
-  if (!helper->Initialize()) {
+  if (!helper->Initialize(size)) {
     // TODO(gman): cleanup.
     return false;
   }

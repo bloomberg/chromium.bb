@@ -22,7 +22,7 @@ template <>
 struct ParamTraits<gpu::CommandBuffer::State> {
   typedef gpu::CommandBuffer::State param_type;
   static void Write(Message* m, const param_type& p) {
-    m->WriteInt(p.size);
+    m->WriteInt(p.num_entries);
     m->WriteInt(p.get_offset);
     m->WriteInt(p.put_offset);
     m->WriteInt(p.token);
@@ -30,7 +30,7 @@ struct ParamTraits<gpu::CommandBuffer::State> {
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     int32 temp;
-    if (m->ReadInt(iter, &p->size) &&
+    if (m->ReadInt(iter, &p->num_entries) &&
         m->ReadInt(iter, &p->get_offset) &&
         m->ReadInt(iter, &p->put_offset) &&
         m->ReadInt(iter, &p->token) &&

@@ -19,7 +19,7 @@ class CommandBuffer {
 
   struct State {
     State()
-        : size(0),
+        : num_entries(0),
           get_offset(0),
           put_offset(0),
           token(-1),
@@ -27,7 +27,7 @@ class CommandBuffer {
     }
 
     // Size of the command buffer in command buffer entries.
-    int32 size;
+    int32 num_entries;
 
     // The offset (in entries) from which the reader is reading.
     int32 get_offset;
@@ -52,8 +52,7 @@ class CommandBuffer {
   virtual ~CommandBuffer() {
   }
 
-  // Initialize the command buffer with the given size (number of command
-  // entries).
+  // Initialize the command buffer with the given size.
   virtual bool Initialize(int32 size) = 0;
 
   // Gets the ring buffer for the command buffer.

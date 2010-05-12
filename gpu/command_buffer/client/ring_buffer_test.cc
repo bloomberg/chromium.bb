@@ -43,7 +43,7 @@ class BaseRingBufferTest : public testing::Test {
                               Return(error::kNoError)));
 
     command_buffer_.reset(new CommandBufferService);
-    command_buffer_->Initialize(kBufferSize / sizeof(CommandBufferEntry));
+    command_buffer_->Initialize(kBufferSize);
     Buffer ring_buffer = command_buffer_->GetRingBuffer();
 
     parser_ = new CommandParser(ring_buffer.ptr,
@@ -61,7 +61,7 @@ class BaseRingBufferTest : public testing::Test {
     api_mock_->set_engine(gpu_processor_.get());
 
     helper_.reset(new CommandBufferHelper(command_buffer_.get()));
-    helper_->Initialize();
+    helper_->Initialize(kBufferSize);
   }
 
   int32 GetToken() {

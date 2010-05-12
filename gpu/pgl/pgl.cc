@@ -18,8 +18,8 @@ const int32 kTransferBufferSize = 512 * 1024;
 class PGLContextImpl {
  public:
   PGLContextImpl(NPP npp,
-              NPDevice* device,
-              NPDeviceContext3D* device_context);
+                 NPDevice* device,
+                 NPDeviceContext3D* device_context);
   ~PGLContextImpl();
 
   // Initlaize a PGL context with a transfer buffer of a particular size.
@@ -74,7 +74,8 @@ PGLBoolean PGLContextImpl::Initialize(int32 transfer_buffer_size) {
   command_buffer_ = new CommandBufferPepper(
       npp_, device_, device_context_);
   gles2_helper_ = new gpu::gles2::GLES2CmdHelper(command_buffer_);
-  if (gles2_helper_->Initialize()) {
+  gpu::Buffer buffer = command_buffer_->GetRingBuffer();
+  if (gles2_helper_->Initialize(buffer.size)) {
     transfer_buffer_id_ =
         command_buffer_->CreateTransferBuffer(kTransferBufferSize);
     gpu::Buffer transfer_buffer =
@@ -131,8 +132,7 @@ PGLBoolean PGLContextImpl::MakeCurrent(PGLContextImpl* pgl_context) {
     if (pgl_context->device_context_->error != NPDeviceContext3DError_NoError)
       return PGL_FALSE;
 #endif
-  }
-  else {
+  } else {
     gles2::SetGLContext(NULL);
   }
 
@@ -167,7 +167,6 @@ PGLInt PGLContextImpl::GetError() {
 }  // namespace anonymous
 
 extern "C" {
-
 PGLBoolean pglInitialize() {
   if (g_pgl_context_key_allocated)
     return PGL_TRUE;

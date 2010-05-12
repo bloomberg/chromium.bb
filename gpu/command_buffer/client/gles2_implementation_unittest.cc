@@ -22,8 +22,8 @@ class GLES2MockCommandBufferHelper : public CommandBuffer {
   virtual bool Initialize(int32 size) {
     ring_buffer_.reset(new CommandBufferEntry[size]);
     ring_buffer_buffer_.ptr = ring_buffer_.get();
-    ring_buffer_buffer_.size = size * sizeof(ring_buffer_[0]);
-    state_.size = size;
+    ring_buffer_buffer_.size = size;
+    state_.num_entries = size / sizeof(ring_buffer_[0]);
     state_.token = 10000;  // All token checks in the tests should pass.
     return true;
   }
@@ -150,7 +150,7 @@ class GLES2ImplementationTest : public testing::Test {
 
   virtual void SetUp() {
     command_buffer_.reset(new MockGLES2CommandBuffer());
-    command_buffer_->Initialize(kNumCommandEntries);
+    command_buffer_->Initialize(kCommandBufferSizeBytes);
 
     EXPECT_EQ(kTransferBufferId,
               command_buffer_->CreateTransferBuffer(kTransferBufferSize));
@@ -158,7 +158,7 @@ class GLES2ImplementationTest : public testing::Test {
     ClearTransferBuffer();
 
     helper_.reset(new GLES2CmdHelper(command_buffer_.get()));
-    helper_->Initialize();
+    helper_->Initialize(kCommandBufferSizeBytes);
 
     #if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
       EXPECT_CALL(*command_buffer_, OnFlush(_))
@@ -681,8 +681,8 @@ TEST_F(GLES2ImplementationTest, ReadPixels2Reads) {
   scoped_array<int8> buffer(new int8[kWidth * kHeight * kBytesPerPixel]);
 
   EXPECT_CALL(*command_buffer_, OnFlush(_))
-      .WillOnce(SetMemory(uint32(1)))
-      .WillOnce(SetMemory(uint32(1)))
+      .WillOnce(SetMemory(static_cast<uint32>(1)))
+      .WillOnce(SetMemory(static_cast<uint32>(1)))
       .RetiresOnSaturation();
 
   gl_->ReadPixels(0, 0, kWidth, kHeight, kFormat, kType, buffer.get());

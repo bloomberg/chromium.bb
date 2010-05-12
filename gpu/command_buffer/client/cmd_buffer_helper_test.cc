@@ -41,7 +41,7 @@ class CommandBufferHelperTest : public testing::Test {
         .WillRepeatedly(Return(error::kNoError));
 
     command_buffer_.reset(new CommandBufferService);
-    command_buffer_->Initialize(kNumCommandEntries);
+    command_buffer_->Initialize(kCommandBufferSizeBytes);
     Buffer ring_buffer = command_buffer_->GetRingBuffer();
 
     parser_ = new CommandParser(ring_buffer.ptr,
@@ -59,7 +59,7 @@ class CommandBufferHelperTest : public testing::Test {
     api_mock_->set_engine(gpu_processor_.get());
 
     helper_.reset(new CommandBufferHelper(command_buffer_.get()));
-    helper_->Initialize();
+    helper_->Initialize(kCommandBufferSizeBytes);
   }
 
   virtual void TearDown() {

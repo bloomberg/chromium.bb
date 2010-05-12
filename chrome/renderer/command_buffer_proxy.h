@@ -84,7 +84,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   void OnNotifyRepaint();
 
   // As with the service, the client takes ownership of the ring buffer.
-  int32 size_;
+  int32 num_entries_;
   scoped_ptr<base::SharedMemory> ring_buffer_;
 
   // Local cache of id to transfer buffer mapping.
