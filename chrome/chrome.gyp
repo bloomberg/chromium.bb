@@ -30,6 +30,7 @@
       'utility',
       'profile_import',
       'worker',
+      'service',
       '../printing/printing.gyp:printing',
       '../webkit/webkit.gyp:inspector_resources',
     ],
@@ -970,6 +971,35 @@
               '$(SDKROOT)/System/Library/Frameworks/IOKit.framework',
             ],
           },
+        }],
+      ],
+    },
+    {
+      'target_name': 'service',
+      'type': '<(library)',
+      'msvs_guid': '2DA87614-55C5-4E56-A17E-0CD099786197',
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+      'sources': [
+        'service/service_main.cc',
+        'service/service_process.cc',
+        'service/service_process.h',
+        'service/cloud_print/cloud_print_proxy.cc',
+        'service/cloud_print/cloud_print_proxy.h',
+        'service/gaia/service_gaia_authenticator.cc',
+        'service/gaia/service_gaia_authenticator.h',
+        'service/net/service_url_request_context.cc',
+        'service/net/service_url_request_context.h',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'conditions': [
+        ['OS=="linux"', {
+          'dependencies': [
+            '../build/linux/system.gyp:gtk',
+          ],
         }],
       ],
     },

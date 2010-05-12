@@ -75,6 +75,9 @@ const char kBrowserSubprocessPath[]         = "browser-subprocess-path";
 // as a dependent process of the Chrome Frame plugin.
 const char kChromeFrame[]                   = "chrome-frame";
 
+// The unique id to be used for this cloud print proxy instance.
+const char kCloudPrintProxyId[]             = "cloud-print-proxy-id";
+
 // The Country we should use.  This is normally obtained from the operating
 // system during first run and cached in the preferences afterwards.  This is a
 // string value, the 2 letter code from ISO 3166-1.
@@ -249,6 +252,13 @@ const char kEnableAuthNegotiatePort[]       = "enable-auth-negotiate-port";
 
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
+
+// This applies only when the process type is "service". Enables the
+// Cloud Print Proxy component within the service process.
+const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";
+
+// Enables the Cloud Print dialog hosting code.
+const char kEnableCloudPrint[]              = "enable-cloud-print";
 
 // Enables extension APIs that are in development.
 const char kEnableExperimentalExtensionApis[] =
@@ -679,6 +689,12 @@ const char kSdchFilter[]                    = "enable-sdch";
 // Enables the showing of an info-bar instructing user they can search directly
 // from the omnibox.
 const char kSearchInOmniboxHint[]           = "search-in-omnibox-hint";
+
+// Causes the process to run as a service process.
+const char kServiceProcess[]                = "service";
+
+// The LSID of the account to use for the service process.
+const char kServiceAccountLsid[]            = "service-account-lsid";
 
 // See kHideIcons.
 const char kShowIcons[]                     = "show-icons";

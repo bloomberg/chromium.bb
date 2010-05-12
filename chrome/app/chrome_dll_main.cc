@@ -103,6 +103,7 @@ extern int ZygoteMain(const MainFunctionParams&);
 #if defined(_WIN64)
 extern int NaClBrokerMain(const MainFunctionParams&);
 #endif
+extern int ServiceProcessMain(const MainFunctionParams&);
 
 #if defined(OS_WIN)
 // TODO(erikkay): isn't this already defined somewhere?
@@ -263,7 +264,8 @@ static void AdjustLinuxOOMScore(const std::string& process_type) {
     score = kPluginScore;
   } else if (process_type == switches::kUtilityProcess ||
              process_type == switches::kWorkerProcess ||
-             process_type == switches::kGpuProcess) {
+             process_type == switches::kGpuProcess ||
+             process_type == switches::kServiceProcess) {
     score = kMiscScore;
   } else if (process_type == switches::kProfileImportProcess) {
     NOTIMPLEMENTED();
@@ -365,6 +367,14 @@ bool SubprocessNeedsResourceBundle(const std::string& process_type) {
       process_type == switches::kRendererProcess ||
       process_type == switches::kExtensionProcess ||
       process_type == switches::kUtilityProcess;
+}
+
+// Returns true if this process is a child of the browser process.
+bool SubprocessIsBrowserChild(const std::string& process_type) {
+  if (process_type.empty() || process_type == switches::kServiceProcess) {
+    return false;
+  }
+  return true;
 }
 
 #if defined(OS_MACOSX)
@@ -513,7 +523,7 @@ int ChromeMain(int argc, char** argv) {
   base::ProcessId browser_pid;
   if (process_type.empty()) {
     browser_pid = base::GetCurrentProcId();
-  } else {
+  } else if (SubprocessIsBrowserChild(process_type)) {
 #if defined(OS_WIN)
     std::wstring channel_name =
       parsed_command_line.GetSwitchValue(switches::kProcessChannelID);
@@ -780,6 +790,8 @@ int ChromeMain(int argc, char** argv) {
 #else
     NOTIMPLEMENTED();
 #endif
+  } else if (process_type == switches::kServiceProcess) {
+    rv = ServiceProcessMain(main_params);
   } else if (process_type.empty()) {
 #if defined(OS_LINUX)
     const char* sandbox_binary = NULL;

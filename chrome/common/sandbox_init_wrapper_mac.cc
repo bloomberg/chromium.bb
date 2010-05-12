@@ -59,7 +59,8 @@ bool SandboxInitWrapper::InitializeSandbox(const CommandLine& command_line,
     sandbox_process_type = sandbox::SANDBOX_TYPE_NACL_LOADER;
   } else if ((process_type == switches::kPluginProcess) ||
              (process_type == switches::kProfileImportProcess) ||
-             (process_type == switches::kGpuProcess)) {
+             (process_type == switches::kGpuProcess) ||
+             (process_type == switches::kServiceProcess)) {
     return true;
   } else {
     // Failsafe: If you hit an unreached here, is your new process type in need

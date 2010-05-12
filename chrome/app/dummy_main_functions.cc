@@ -42,3 +42,7 @@ int DiagnosticsMain(const CommandLine& command_line) {
 int GpuMain(const MainFunctionParams&) {
   return ResultCodes::BAD_PROCESS_TYPE;
 }
+
+int ServiceProcessMain(const MainFunctionParams& parameters) {
+  return ResultCodes::BAD_PROCESS_TYPE;
+}
