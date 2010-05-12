@@ -192,7 +192,8 @@ TEST_F(ExtensionAPIClientTest, DISABLED_GetLastFocusedWindow) {
                "windows.getLastFocused", "null");
 }
 
-TEST_F(ExtensionAPIClientTest, GetAllWindows) {
+// This test flakily crashes (http://crbug.com/22248)
+TEST_F(ExtensionAPIClientTest, DISABLED_GetAllWindows) {
   ExpectJsFail("chrome.windows.getAll({populate: true}, function(){}, 20);",
                "Uncaught Error: Too many arguments.");
 
