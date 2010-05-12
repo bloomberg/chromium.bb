@@ -152,12 +152,21 @@ PrintingContext::~PrintingContext() {
 }
 
 PrintingContext::Result PrintingContext::AskUserForSettings(
-    HWND window,
+    HWND view,
     int max_pages,
     bool has_selection) {
-  DCHECK(window);
   DCHECK(!in_print_job_);
   dialog_box_dismissed_ = false;
+
+  HWND window;
+  if (!view || !IsWindow(view)) {
+    // TODO(maruel):  bug 1214347 Get the right browser window instead.
+    window = GetDesktopWindow();
+  } else {
+    window = GetAncestor(view, GA_ROOTOWNER);
+  }
+  DCHECK(window);
+
   // Show the OS-dependent dialog box.
   // If the user press
   // - OK, the settings are reset and reinitialized with the new settings. OK is

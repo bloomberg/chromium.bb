@@ -89,10 +89,24 @@ typedef intptr_t NativeViewId;
 
 #if defined(OS_WIN)
 // Convert a NativeViewId to a NativeView.
-// This is only used on Windows, where we pass an HWND into the renderer and
-// let the renderer operate on it.  On other platforms, the renderer doesn't
-// have access to native platform widgets.
+//
+// On Windows, we pass an HWND into the renderer. As stated above, the renderer
+// should not be performing operations on the view.
 static inline NativeView NativeViewFromId(NativeViewId id) {
+  return reinterpret_cast<NativeView>(id);
+}
+#define NativeViewFromIdInBrowser(x) NativeViewFromId(x)
+#elif defined(OS_MACOSX)
+// On the Mac, a NativeView is a pointer to an object, and is useless outside
+// the process in which it was created. NativeViewFromId should only be used
+// inside the appropriate platform ifdef outside of the browser.
+// (NativeViewFromIdInBrowser can be used everywhere in the browser.) If your
+// cross-platform design involves a call to NativeViewFromId from outside the
+// browser it will never work on the Mac and is fundamentally broken.
+
+// Please do not call this from outside the browser. It won't work; the name
+// should give you a subtle hint.
+static inline NativeView NativeViewFromIdInBrowser(NativeViewId id) {
   return reinterpret_cast<NativeView>(id);
 }
 #endif

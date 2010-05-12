@@ -34,7 +34,7 @@ class PrintJobWorker : public base::Thread {
   // Initializes the print settings. If |ask_user_for_settings| is true, a
   // Print... dialog box will be shown to ask the user his preference.
   void GetSettings(bool ask_user_for_settings,
-                   gfx::NativeWindow parent_window,
+                   gfx::NativeView parent_view,
                    int document_page_count,
                    bool has_selection,
                    bool use_overlays);
@@ -83,7 +83,7 @@ class PrintJobWorker : public base::Thread {
 #if defined(OS_MACOSX)
   // Asks the user for print settings. Must be called on the UI thread.
   // Mac-only since Windows can display UI from non-main threads.
-  void GetSettingsWithUI(gfx::NativeWindow parent_window,
+  void GetSettingsWithUI(gfx::NativeView parent_view,
                          int document_page_count,
                          bool has_selection);
 #endif

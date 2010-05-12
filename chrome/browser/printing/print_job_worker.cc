@@ -65,7 +65,7 @@ void PrintJobWorker::SetNewOwner(PrintJobWorkerOwner* new_owner) {
 }
 
 void PrintJobWorker::GetSettings(bool ask_user_for_settings,
-                                 gfx::NativeWindow parent_window,
+                                 gfx::NativeView parent_view,
                                  int document_page_count,
                                  bool has_selection,
                                  bool use_overlays) {
@@ -82,11 +82,11 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(this, &PrintJobWorker::GetSettingsWithUI,
-                          parent_window, document_page_count,
+                          parent_view, document_page_count,
                           has_selection));
 #else
     PrintingContext::Result result = printing_context_.AskUserForSettings(
-        parent_window, document_page_count, has_selection);
+        parent_view, document_page_count, has_selection);
     GetSettingsDone(result);
 #endif
   } else {
@@ -111,13 +111,13 @@ void PrintJobWorker::GetSettingsDone(PrintingContext::Result result) {
 }
 
 #if defined(OS_MACOSX)
-void PrintJobWorker::GetSettingsWithUI(gfx::NativeWindow parent_window,
+void PrintJobWorker::GetSettingsWithUI(gfx::NativeView parent_view,
                                        int document_page_count,
                                        bool has_selection) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   PrintingContext::Result result = printing_context_.AskUserForSettings(
-      parent_window, document_page_count, has_selection);
+      parent_view, document_page_count, has_selection);
   message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
       this, &PrintJobWorker::GetSettingsDone, result));
 }

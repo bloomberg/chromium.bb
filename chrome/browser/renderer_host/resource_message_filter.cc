@@ -433,7 +433,8 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnMsgCreateWidget)
       IPC_MESSAGE_HANDLER(ViewHostMsg_SetCookie, OnSetCookie)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetCookies, OnGetCookies)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetRawCookies, OnGetRawCookies)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetRawCookies,
+                                      OnGetRawCookies)
       IPC_MESSAGE_HANDLER(ViewHostMsg_DeleteCookie, OnDeleteCookie)
       IPC_MESSAGE_HANDLER(ViewHostMsg_GetCookiesEnabled, OnGetCookiesEnabled)
 #if defined(OS_WIN)  // This hack is Windows-specific.
@@ -1131,12 +1132,8 @@ void ResourceMessageFilter::OnGetDefaultPrintSettingsReply(
 void ResourceMessageFilter::OnScriptedPrint(
     const ViewHostMsg_ScriptedPrint_Params& params,
     IPC::Message* reply_msg) {
-#if defined(OS_WIN)
-  HWND host_window = gfx::NativeViewFromId(params.host_window_id);
-#elif defined(OS_MACOSX)
-  gfx::NativeWindow host_window = NULL;
-  // TODO: Get an actual window ref here, to allow a sheet-based print dialog.
-#endif
+  gfx::NativeView host_view =
+      gfx::NativeViewFromIdInBrowser(params.host_window_id);
 
   scoped_refptr<printing::PrinterQuery> printer_query;
   print_job_manager_->PopPrinterQuery(params.cookie, &printer_query);
@@ -1150,20 +1147,9 @@ void ResourceMessageFilter::OnScriptedPrint(
       printer_query,
       params.routing_id,
       reply_msg);
-#if defined(OS_WIN)
-  // Shows the Print... dialog box. This is asynchronous, only the IPC message
-  // sender will hang until the Print dialog is dismissed.
-  if (!host_window || !IsWindow(host_window)) {
-    // TODO(maruel):  bug 1214347 Get the right browser window instead.
-    host_window = GetDesktopWindow();
-  } else {
-    host_window = GetAncestor(host_window, GA_ROOTOWNER);
-  }
-  DCHECK(host_window);
-#endif
 
   printer_query->GetSettings(printing::PrinterQuery::ASK_USER,
-                             host_window,
+                             host_view,
                              params.expected_pages_count,
                              params.has_selection,
                              params.use_overlays,

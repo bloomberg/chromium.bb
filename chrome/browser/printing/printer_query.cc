@@ -62,7 +62,7 @@ PrintJobWorker* PrinterQuery::DetachWorker(PrintJobWorkerOwner* new_owner) {
 }
 
 void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
-                               gfx::NativeWindow parent_window,
+                               gfx::NativeView parent_view,
                                int expected_page_count,
                                bool has_selection,
                                bool use_overlays,
@@ -92,7 +92,7 @@ void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
       worker_.get(),
       &PrintJobWorker::GetSettings,
       is_print_dialog_box_shown_,
-      parent_window,
+      parent_view,
       expected_page_count,
       has_selection,
       use_overlays));

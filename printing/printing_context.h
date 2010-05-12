@@ -47,7 +47,7 @@ class PrintingContext {
 
   // Asks the user what printer and format should be used to print. Updates the
   // context with the select device settings.
-  Result AskUserForSettings(gfx::NativeWindow window, int max_pages,
+  Result AskUserForSettings(gfx::NativeView parent_view, int max_pages,
                             bool has_selection);
 
   // Selects the user's default printer and format. Updates the context with the
