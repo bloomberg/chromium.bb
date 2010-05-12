@@ -95,7 +95,7 @@ class PluginChannelBase : public IPC::Channel::Listener,
   virtual void OnChannelError();
 
   void set_send_unblocking_only_during_unblock_dispatch() {
-      send_unblocking_only_during_unblock_dispatch_ = true;
+    send_unblocking_only_during_unblock_dispatch_ = true;
   }
 
   virtual bool Init(MessageLoop* ipc_message_loop, bool create_pipe_now);
