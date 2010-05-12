@@ -30,7 +30,9 @@ function getAppsCallback(data) {
   // for everyone.
   if (appsSection.hasChildNodes()) {
     appsSection.classList.remove('disabled');
-    debugSection.classList.remove('disabled');
+    if (data.showDebugLink) {
+      debugSection.classList.remove('disabled');
+    }
   } else {
     appsSection.classList.add('disabled');
     debugSection.classList.add('disabled');

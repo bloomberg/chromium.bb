@@ -92,10 +92,13 @@ void AppLauncherHandler::HandleGetApps(const Value* value) {
       switches::kAppLauncherGalleryTitle);
   gallery_url = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kAppLauncherGalleryURL);
+  bool show_debug_link = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAppsDebug);
 
   DictionaryValue dictionary;
   dictionary.SetString(L"galleryTitle", gallery_title);
   dictionary.SetString(L"galleryURL", gallery_url);
+  dictionary.SetBoolean(L"showDebugLink", show_debug_link);
 
   ListValue* list = new ListValue();
   const ExtensionList* extensions = extensions_service_->extensions();

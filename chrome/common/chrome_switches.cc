@@ -44,10 +44,13 @@ const char kAppLaunchAsPanel[]              = "app-launch-as-panel";
 const char kAppLauncherForNewTab[]          = "app-launcher-new-tab";
 
 // The title to use for the gallery link in the app launcher.
-const char kAppLauncherGalleryTitle[]         = "app-launcher-gallery-title";
+const char kAppLauncherGalleryTitle[]        = "app-launcher-gallery-title";
 
 // The URL to use for the gallery link in the app launcher.
 const char kAppLauncherGalleryURL[]         = "app-launcher-gallery-url";
+
+// Whether to display the "Debug" link for app launch behavior.
+const char kAppsDebug[]      = "apps-debug";
 
 // Authentication white list for servers
 const char kAuthServerWhitelist[]           = "auth-server-whitelist";
