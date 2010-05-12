@@ -19,15 +19,12 @@ using WebKit::WebKitClient;
 using WebKit::WebString;
 
 WebKitClient::FileHandle DatabaseUtil::databaseOpenFile(
-    const WebString& vfs_file_name, int desired_flags,
-    WebKitClient::FileHandle* dir_handle) {
+    const WebString& vfs_file_name, int desired_flags) {
   IPC::PlatformFileForTransit file_handle;
 #if defined(OS_WIN)
   file_handle = base::kInvalidPlatformFileValue;
 #elif defined(OS_POSIX)
   file_handle =
-      base::FileDescriptor(base::kInvalidPlatformFileValue, true);
-  base::FileDescriptor dir_handle_rv =
       base::FileDescriptor(base::kInvalidPlatformFileValue, true);
 #endif
 
@@ -35,19 +32,11 @@ WebKitClient::FileHandle DatabaseUtil::databaseOpenFile(
       ChildThread::current()->sync_message_filter();
 
   filter->Send(new ViewHostMsg_DatabaseOpenFile(
-      vfs_file_name,
-      desired_flags,
-      &file_handle
-#if defined(OS_POSIX)
-      , &dir_handle_rv
-#endif
-      ));
+      vfs_file_name, desired_flags, &file_handle));
 
 #if defined(OS_WIN)
   return file_handle;
 #elif defined(OS_POSIX)
-  if (dir_handle)
-    *dir_handle = dir_handle_rv.fd;
   return file_handle.fd;
 #endif
 }

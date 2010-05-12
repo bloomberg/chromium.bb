@@ -24,9 +24,7 @@ class SimpleDatabaseSystem : public webkit_database::DatabaseTracker::Observer,
   ~SimpleDatabaseSystem();
 
   // VFS functions
-  base::PlatformFile OpenFile(const string16& vfs_file_name,
-                              int desired_flags,
-                              base::PlatformFile* dir_handle);
+  base::PlatformFile OpenFile(const string16& vfs_file_name, int desired_flags);
   int DeleteFile(const string16& vfs_file_name, bool sync_dir);
   long GetFileAttributes(const string16& vfs_file_name);
   long long GetFileSize(const string16& vfs_file_name);

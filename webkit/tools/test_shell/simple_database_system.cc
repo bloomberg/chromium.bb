@@ -46,18 +46,16 @@ SimpleDatabaseSystem::~SimpleDatabaseSystem() {
 }
 
 base::PlatformFile SimpleDatabaseSystem::OpenFile(
-      const string16& vfs_file_name, int desired_flags,
-      base::PlatformFile* dir_handle) {
+    const string16& vfs_file_name, int desired_flags) {
   base::PlatformFile file_handle = base::kInvalidPlatformFileValue;
   FilePath file_name = GetFullFilePathForVfsFile(vfs_file_name);
   if (file_name.empty()) {
     VfsBackend::OpenTempFileInDirectory(
         db_tracker_->DatabaseDirectory(), desired_flags,
-        base::GetCurrentProcessHandle(), &file_handle, dir_handle);
+        base::GetCurrentProcessHandle(), &file_handle);
   } else {
     VfsBackend::OpenFile(file_name, desired_flags,
-                         base::GetCurrentProcessHandle(), &file_handle,
-                         dir_handle);
+                         base::GetCurrentProcessHandle(), &file_handle);
   }
 
   return file_handle;

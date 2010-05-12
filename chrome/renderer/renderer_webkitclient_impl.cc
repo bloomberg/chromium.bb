@@ -290,10 +290,8 @@ void RendererWebKitClientImpl::SandboxSupport::getRenderStyleForStrike(
 //------------------------------------------------------------------------------
 
 WebKitClient::FileHandle RendererWebKitClientImpl::databaseOpenFile(
-    const WebString& vfs_file_name, int desired_flags,
-  WebKitClient::FileHandle* dir_handle) {
-  return DatabaseUtil::databaseOpenFile(vfs_file_name, desired_flags,
-      dir_handle);
+    const WebString& vfs_file_name, int desired_flags) {
+  return DatabaseUtil::databaseOpenFile(vfs_file_name, desired_flags);
 }
 
 int RendererWebKitClientImpl::databaseDeleteFile(

@@ -12,8 +12,7 @@
 class DatabaseUtil {
  public:
   static WebKit::WebKitClient::FileHandle databaseOpenFile(
-      const WebKit::WebString& vfs_file_name,
-      int desired_flags, WebKit::WebKitClient::FileHandle* dir_handle);
+      const WebKit::WebString& vfs_file_name, int desired_flags);
   static int databaseDeleteFile(const WebKit::WebString& vfs_file_name,
                                 bool sync_dir);
   static long databaseGetFileAttributes(const WebKit::WebString& vfs_file_name);

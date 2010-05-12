@@ -71,8 +71,7 @@ bool VfsBackend::OpenFileFlagsAreConsistent(int desired_flags) {
 void VfsBackend::OpenFile(const FilePath& file_path,
                           int desired_flags,
                           base::ProcessHandle handle,
-                          base::PlatformFile* target_handle,
-                          base::PlatformFile* target_dir_handle) {
+                          base::PlatformFile* target_handle) {
   DCHECK(!file_path.empty());
 
   // Verify the flags for consistency and create the database
@@ -118,22 +117,6 @@ void VfsBackend::OpenFile(const FilePath& file_path,
     }
 #elif defined(OS_POSIX)
     *target_handle = file_handle;
-
-    int file_type = desired_flags & 0x00007F00;
-    bool creating_new_file = (desired_flags & SQLITE_OPEN_CREATE);
-    if (creating_new_file && ((file_type == SQLITE_OPEN_MASTER_JOURNAL) ||
-                              (file_type == SQLITE_OPEN_MAIN_JOURNAL))) {
-      // We return a handle to the containing directory because on POSIX
-      // systems the VFS might want to fsync it after changing a file.
-      // By returning it here, we avoid an extra IPC call.
-      *target_dir_handle = base::CreatePlatformFile(
-          file_path.DirName().ToWStringHack(),
-          base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ, NULL);
-      if (*target_dir_handle == base::kInvalidPlatformFileValue) {
-        base::ClosePlatformFile(*target_handle);
-        *target_handle = base::kInvalidPlatformFileValue;
-      }
-    }
 #endif
   }
 }
@@ -143,8 +126,7 @@ void VfsBackend::OpenTempFileInDirectory(
     const FilePath& dir_path,
     int desired_flags,
     base::ProcessHandle handle,
-    base::PlatformFile* target_handle,
-    base::PlatformFile* target_dir_handle) {
+    base::PlatformFile* target_handle) {
   // We should be able to delete temp files when they're closed
   // and create them as needed
   if (!(desired_flags & SQLITE_OPEN_DELETEONCLOSE) ||
@@ -157,8 +139,7 @@ void VfsBackend::OpenTempFileInDirectory(
   if (!file_util::CreateTemporaryFileInDir(dir_path, &temp_file_path))
     return;
 
-  OpenFile(temp_file_path, desired_flags, handle,
-           target_handle, target_dir_handle);
+  OpenFile(temp_file_path, desired_flags, handle, target_handle);
 }
 
 // static

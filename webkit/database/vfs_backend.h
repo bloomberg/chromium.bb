@@ -18,14 +18,12 @@ class VfsBackend {
   static void OpenFile(const FilePath& file_path,
                        int desired_flags,
                        base::ProcessHandle handle,
-                       base::PlatformFile* target_handle,
-                       base::PlatformFile* target_dir_handle);
+                       base::PlatformFile* target_handle);
 
   static void OpenTempFileInDirectory(const FilePath& dir_path,
                                       int desired_flags,
                                       base::ProcessHandle handle,
-                                      base::PlatformFile* target_handle,
-                                      base::PlatformFile* target_dir_handle);
+                                      base::PlatformFile* target_handle);
 
   static int DeleteFile(const FilePath& file_path, bool sync_dir);
 

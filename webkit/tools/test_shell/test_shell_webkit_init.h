@@ -134,10 +134,9 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
   }
 
   virtual WebKit::WebKitClient::FileHandle databaseOpenFile(
-      const WebKit::WebString& vfs_file_name, int desired_flags,
-      WebKit::WebKitClient::FileHandle* dir_handle) {
+      const WebKit::WebString& vfs_file_name, int desired_flags) {
     return SimpleDatabaseSystem::GetInstance()->OpenFile(
-        vfs_file_name, desired_flags, dir_handle);
+        vfs_file_name, desired_flags);
   }
 
   virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,

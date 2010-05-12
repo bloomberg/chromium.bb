@@ -2151,18 +2151,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
                              bool /* result */)
 
   // Asks the browser process to open a DB file with the given name.
-#if defined (OS_WIN)
   IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_DatabaseOpenFile,
                               string16 /* vfs file name */,
                               int /* desired flags */,
                               IPC::PlatformFileForTransit /* file_handle */)
-#elif defined(OS_POSIX)
-  IPC_SYNC_MESSAGE_CONTROL2_2(ViewHostMsg_DatabaseOpenFile,
-                       string16 /* vfs file name */,
-                       int /* desired flags */,
-                              IPC::PlatformFileForTransit /* file_handle */,
-                              base::FileDescriptor /* dir_handle */)
-#endif
 
   // Asks the browser process to delete a DB file
   IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_DatabaseDeleteFile,

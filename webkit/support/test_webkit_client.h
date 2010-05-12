@@ -26,8 +26,7 @@ class TestWebKitClient : public webkit_glue::WebKitClientImpl {
   virtual WebKit::WebCookieJar* cookieJar();
   virtual bool sandboxEnabled();
   virtual WebKit::WebKitClient::FileHandle databaseOpenFile(
-      const WebKit::WebString& vfs_file_name, int desired_flags,
-      WebKit::WebKitClient::FileHandle* dir_handle);
+      const WebKit::WebString& vfs_file_name, int desired_flags);
   virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,
                                  bool sync_dir);
   virtual long databaseGetFileAttributes(

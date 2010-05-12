@@ -157,13 +157,12 @@ void DatabaseDispatcherHost::DatabaseOpenFile(const string16& vfs_file_name,
                                               IPC::Message* reply_msg) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   base::PlatformFile target_handle = base::kInvalidPlatformFileValue;
-  base::PlatformFile target_dir_handle = base::kInvalidPlatformFileValue;
   string16 origin_identifier;
   string16 database_name;
   if (vfs_file_name.empty()) {
     VfsBackend::OpenTempFileInDirectory(db_tracker_->DatabaseDirectory(),
                                         desired_flags, process_handle_,
-                                        &target_handle, &target_dir_handle);
+                                        &target_handle);
   } else if (DatabaseUtil::CrackVfsFileName(vfs_file_name, &origin_identifier,
                                             &database_name, NULL) &&
              !db_tracker_->IsDatabaseScheduledForDeletion(origin_identifier,
@@ -172,23 +171,16 @@ void DatabaseDispatcherHost::DatabaseOpenFile(const string16& vfs_file_name,
           DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_, vfs_file_name);
       if (!db_file.empty()) {
         VfsBackend::OpenFile(db_file, desired_flags, process_handle_,
-                             &target_handle, &target_dir_handle);
+                             &target_handle);
       }
   }
-
-#if defined(OS_POSIX)
-  if (target_dir_handle >= 0)
-    close(target_dir_handle);
-  target_dir_handle = -1;
-#endif
 
   ViewHostMsg_DatabaseOpenFile::WriteReplyParams(
       reply_msg,
 #if defined(OS_WIN)
       target_handle
 #elif defined(OS_POSIX)
-      base::FileDescriptor(target_handle, true),
-      base::FileDescriptor(target_dir_handle, true)
+      base::FileDescriptor(target_handle, true)
 #endif
       );
   Send(reply_msg);
