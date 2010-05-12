@@ -12,6 +12,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_log.h"
 #include "net/base/net_util.h"
 #include "net/base/upload_data_stream.h"
 #include "net/http/http_network_session.h"
@@ -229,11 +230,12 @@ int SpdyNetworkTransaction::DoInitConnection() {
   TCPSocketParams tcp_params(host_port_pair, request_->priority,
                              request_->referrer, false);
 
-  spdy_ = session_->spdy_session_pool()->Get(host_port_pair, session_);
+  spdy_ = session_->spdy_session_pool()->Get(
+      host_port_pair, session_, net_log_);
   DCHECK(spdy_);
 
   return spdy_->Connect(
-      connection_group, tcp_params, request_->priority, net_log_);
+      connection_group, tcp_params, request_->priority);
 }
 
 int SpdyNetworkTransaction::DoInitConnectionComplete(int result) {
@@ -254,7 +256,7 @@ int SpdyNetworkTransaction::DoSendRequest() {
     if (!upload_data)
       return error_code;
   }
-  stream_ = spdy_->GetOrCreateStream(*request_, upload_data, net_log_);
+  stream_ = spdy_->GetOrCreateStream(*request_, upload_data);
   // Release the reference to |spdy_| since we don't need it anymore.
   spdy_ = NULL;
   return stream_->SendRequest(upload_data, &response_, &io_callback_);
