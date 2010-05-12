@@ -118,6 +118,35 @@ class ProfileSyncServiceObserverMock : public ProfileSyncServiceObserver {
   MOCK_METHOD0(OnStateChanged, void());
 };
 
+class TestingProfileSyncService : public ProfileSyncService {
+ public:
+  explicit TestingProfileSyncService(ProfileSyncFactory* factory,
+                                     Profile* profile,
+                                     bool bootstrap_sync_authentication)
+      : ProfileSyncService(factory, profile, bootstrap_sync_authentication) {
+    RegisterPreferences();
+    SetSyncSetupCompleted();
+  }
+  virtual ~TestingProfileSyncService() {
+  }
+
+  virtual void InitializeBackend(bool delete_sync_data_folder) {
+    browser_sync::TestHttpBridgeFactory* factory =
+        new browser_sync::TestHttpBridgeFactory();
+    browser_sync::TestHttpBridgeFactory* factory2 =
+        new browser_sync::TestHttpBridgeFactory();
+    backend()->InitializeForTestMode(L"testuser", factory, factory2,
+        delete_sync_data_folder, browser_sync::kDefaultNotificationMethod);
+  }
+
+ private:
+  // When testing under ChromiumOS, this method must not return an empty
+  // value value in order for the profile sync service to start.
+  virtual std::string GetLsidForAuthBootstraping() {
+    return "foo";
+  }
+};
+
 class ThreadNotificationService
     : public base::RefCountedThreadSafe<ThreadNotificationService> {
  public:
