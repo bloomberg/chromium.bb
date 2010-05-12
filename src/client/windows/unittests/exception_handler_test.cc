@@ -36,27 +36,49 @@
 #include "../../../breakpad_googletest_includes.h"
 #include "../crash_generation/crash_generation_server.h"
 #include "../handler/exception_handler.h"
+#include "dump_analysis.h"  // NOLINT
 
 namespace {
 const wchar_t kPipeName[] = L"\\\\.\\pipe\\BreakpadCrashTest\\TestCaseServer";
 const char kSuccessIndicator[] = "success";
 const char kFailureIndicator[] = "failure";
 
-// Utility function to test for a path's existence.
-BOOL DoesPathExist(const TCHAR *path_name);
+const MINIDUMP_TYPE kFullDumpType = static_cast<MINIDUMP_TYPE>(
+    MiniDumpWithFullMemory |  // Full memory from process.
+    MiniDumpWithProcessThreadData |  // Get PEB and TEB.
+    MiniDumpWithHandleData);  // Get all handle information.
 
-class ExceptionHandlerDeathTest : public ::testing::Test {
+class ExceptionHandlerTest : public ::testing::Test {
  protected:
   // Member variable for each test that they can use
   // for temporary storage.
   TCHAR temp_path_[MAX_PATH];
+
   // Actually constructs a temp path name.
   virtual void SetUp();
-  // A helper method that tests can use to crash.
+
+  // Deletes temporary files.
+  virtual void TearDown();
+
   void DoCrash();
+
+  // Utility function to test for a path's existence.
+  static BOOL DoesPathExist(const TCHAR *path_name);
+
+  // Client callback.
+  static void ClientDumpCallback(
+      void *dump_context,
+      const google_breakpad::ClientInfo *client_info,
+      const std::wstring *dump_path);
+
+  static std::wstring dump_file;
+  static std::wstring full_dump_file;
 };
 
-void ExceptionHandlerDeathTest::SetUp() {
+std::wstring ExceptionHandlerTest::dump_file;
+std::wstring ExceptionHandlerTest::full_dump_file;
+
+void ExceptionHandlerTest::SetUp() {
   const ::testing::TestInfo* const test_info =
     ::testing::UnitTest::GetInstance()->current_test_info();
   TCHAR temp_path[MAX_PATH] = { '\0' };
@@ -77,7 +99,18 @@ void ExceptionHandlerDeathTest::SetUp() {
   CreateDirectory(temp_path_, NULL);
 }
 
-BOOL DoesPathExist(const TCHAR *path_name) {
+void ExceptionHandlerTest::TearDown() {
+  if (!dump_file.empty()) {
+    ::DeleteFile(dump_file.c_str());
+    dump_file = L"";
+  }
+  if (!full_dump_file.empty()) {
+    ::DeleteFile(full_dump_file.c_str());
+    full_dump_file = L"";
+  }
+}
+
+BOOL ExceptionHandlerTest::DoesPathExist(const TCHAR *path_name) {
   DWORD flags = GetFileAttributes(path_name);
   if (flags == INVALID_FILE_ATTRIBUTES) {
     return FALSE;
@@ -85,82 +118,99 @@ BOOL DoesPathExist(const TCHAR *path_name) {
   return TRUE;
 }
 
-bool MinidumpWrittenCallback(const wchar_t* dump_path,
-                             const wchar_t* minidump_id,
-                             void* context,
-                             EXCEPTION_POINTERS* exinfo,
-                             MDRawAssertionInfo* assertion,
-                             bool succeeded) {
-  if (succeeded && DoesPathExist(dump_path)) {
-    fprintf(stderr, kSuccessIndicator);
-  } else {
-    fprintf(stderr, kFailureIndicator);
-  }
-  // If we don't flush, the output doesn't get sent before
-  // this process dies.
-  fflush(stderr);
-  return succeeded;
+void ExceptionHandlerTest::ClientDumpCallback(
+    void *dump_context,
+    const google_breakpad::ClientInfo *client_info,
+    const std::wstring *dump_path) {
+  dump_file = *dump_path;
+  // Create the full dump file name from the dump path.
+  full_dump_file = dump_file.substr(0, dump_file.length() - 4) + L"-full.dmp";
 }
 
-TEST_F(ExceptionHandlerDeathTest, InProcTest) {
-  // For the in-proc test, we just need to instantiate an exception
-  // handler in in-proc mode, and crash.   Since the entire test is
-  // reexecuted in the child process, we don't have to worry about
-  // the semantics of the exception handler being inherited/not
-  // inherited across CreateProcess().
-  ASSERT_TRUE(DoesPathExist(temp_path_));
+void ExceptionHandlerTest::DoCrash() {
   google_breakpad::ExceptionHandler *exc =
-    new google_breakpad::ExceptionHandler(
-    temp_path_, NULL, &MinidumpWrittenCallback, NULL,
-    google_breakpad::ExceptionHandler::HANDLER_ALL);
-  int *i = NULL;
-  ASSERT_DEATH((*i)++, kSuccessIndicator);
-  delete exc;
-}
+      new google_breakpad::ExceptionHandler(
+          temp_path_, NULL, NULL, NULL,
+          google_breakpad::ExceptionHandler::HANDLER_INVALID_PARAMETER,
+          kFullDumpType, kPipeName, NULL);
 
-static bool gDumpCallbackCalled = false;
+  // Disable the message box for assertions
+  _CrtSetReportMode(_CRT_ASSERT, 0);
 
-void clientDumpCallback(void *dump_context,
-                        const google_breakpad::ClientInfo *client_info,
-                        const std::wstring *dump_path) {
-  gDumpCallbackCalled = true;
-}
-
-void ExceptionHandlerDeathTest::DoCrash() {
-  google_breakpad::ExceptionHandler *exc =
-    new google_breakpad::ExceptionHandler(
-    temp_path_, NULL, NULL, NULL,
-    google_breakpad::ExceptionHandler::HANDLER_ALL, MiniDumpNormal, kPipeName,
-    NULL);
   // Although this is executing in the child process of the death test,
   // if it's not true we'll still get an error rather than the crash
   // being expected.
   ASSERT_TRUE(exc->IsOutOfProcess());
-  int *i = NULL;
-  printf("%d\n", (*i)++);
+  printf(NULL);
 }
 
-TEST_F(ExceptionHandlerDeathTest, OutOfProcTest) {
-  // We can take advantage of a detail of google test here to save some
-  // complexity in testing: when you do a death test, it actually forks.
-  // So we can make the main test harness the crash generation server,
-  // and call ASSERT_DEATH on a NULL dereference, it to expecting test
-  // the out of process scenario, since it's happening in a different
-  // process!  This is different from the above because, above, we pass
-  // a NULL pipe name, and we also don't start a crash generation server.
+// This test validates that the minidump is written correctly.
+TEST_F(ExceptionHandlerTest, InvalidParameterMiniDumpTest) {
+  ASSERT_TRUE(DoesPathExist(temp_path_));
 
+  // Call with a bad argument
   ASSERT_TRUE(DoesPathExist(temp_path_));
   std::wstring dump_path(temp_path_);
   google_breakpad::CrashGenerationServer server(
-    kPipeName, NULL, NULL, NULL, &clientDumpCallback, NULL, NULL, NULL, true,
-    &dump_path);
+      kPipeName, NULL, NULL, NULL, ClientDumpCallback, NULL, NULL, NULL, true,
+      &dump_path);
+
+  ASSERT_TRUE(dump_file.empty() && full_dump_file.empty());
 
   // This HAS to be EXPECT_, because when this test case is executed in the
   // child process, the server registration will fail due to the named pipe
   // being the same.
   EXPECT_TRUE(server.Start());
-  EXPECT_FALSE(gDumpCallbackCalled);
-  ASSERT_DEATH(this->DoCrash(), "");
-  EXPECT_TRUE(gDumpCallbackCalled);
+  EXPECT_EXIT(this->DoCrash(), ::testing::ExitedWithCode(0), "");
+  ASSERT_TRUE(!dump_file.empty() && !full_dump_file.empty());
+  ASSERT_TRUE(DoesPathExist(dump_file.c_str()));
+
+  // Verify the dump for infos.
+  DumpAnalysis mini(dump_file);
+  DumpAnalysis full(full_dump_file);
+
+  // The dump should have all of these streams.
+  EXPECT_TRUE(mini.HasStream(ThreadListStream));
+  EXPECT_TRUE(full.HasStream(ThreadListStream));
+  EXPECT_TRUE(mini.HasStream(ModuleListStream));
+  EXPECT_TRUE(full.HasStream(ModuleListStream));
+  EXPECT_TRUE(mini.HasStream(ExceptionStream));
+  EXPECT_TRUE(full.HasStream(ExceptionStream));
+  EXPECT_TRUE(mini.HasStream(SystemInfoStream));
+  EXPECT_TRUE(full.HasStream(SystemInfoStream));
+  EXPECT_TRUE(mini.HasStream(MiscInfoStream));
+  EXPECT_TRUE(full.HasStream(MiscInfoStream));
+  EXPECT_TRUE(mini.HasStream(HandleDataStream));
+  EXPECT_TRUE(full.HasStream(HandleDataStream));
+
+  // We expect PEB and TEBs in this dump.
+  EXPECT_TRUE(mini.HasTebs() || full.HasTebs());
+  EXPECT_TRUE(mini.HasPeb() || full.HasPeb());
+
+  // Minidump should have a memory listing, but no 64-bit memory.
+  EXPECT_TRUE(mini.HasStream(MemoryListStream));
+  EXPECT_FALSE(mini.HasStream(Memory64ListStream));
+
+  EXPECT_FALSE(full.HasStream(MemoryListStream));
+  EXPECT_TRUE(full.HasStream(Memory64ListStream));
+
+  // This is the only place we don't use OR because we want both not
+  // to have the streams.
+  EXPECT_FALSE(mini.HasStream(ThreadExListStream));
+  EXPECT_FALSE(full.HasStream(ThreadExListStream));
+  EXPECT_FALSE(mini.HasStream(CommentStreamA));
+  EXPECT_FALSE(full.HasStream(CommentStreamA));
+  EXPECT_FALSE(mini.HasStream(CommentStreamW));
+  EXPECT_FALSE(full.HasStream(CommentStreamW));
+  EXPECT_FALSE(mini.HasStream(FunctionTableStream));
+  EXPECT_FALSE(full.HasStream(FunctionTableStream));
+  EXPECT_FALSE(mini.HasStream(MemoryInfoListStream));
+  EXPECT_FALSE(full.HasStream(MemoryInfoListStream));
+  EXPECT_FALSE(mini.HasStream(ThreadInfoListStream));
+  EXPECT_FALSE(full.HasStream(ThreadInfoListStream));
+  EXPECT_FALSE(mini.HasStream(HandleOperationListStream));
+  EXPECT_FALSE(full.HasStream(HandleOperationListStream));
+  EXPECT_FALSE(mini.HasStream(TokenStream));
+  EXPECT_FALSE(full.HasStream(TokenStream));
 }
 }

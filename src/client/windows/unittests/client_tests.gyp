@@ -37,11 +37,15 @@
       'type': 'executable',
       'sources': [
         'exception_handler_test.cc',
+        'exception_handler_death_test.cc',
         'minidump_test.cc',
+        'dump_analysis.cc',
+        'dump_analysis.h',
       ],
       'dependencies': [
         'gtest.gyp:gtest',
         '../breakpad_client.gyp:common',
+        '../crash_generation/crash_generation.gyp:crash_generation_server',
         '../crash_generation/crash_generation.gyp:crash_generation_client',
         '../handler/exception_handler.gyp:exception_handler',
       ]

@@ -31,15 +31,12 @@
 #include <objbase.h>
 #include <dbghelp.h>
 
+#include "../crash_generation/minidump_generator.h"
+#include "dump_analysis.h"  // NOLINT
+
 #include "gtest/gtest.h"
 
 namespace {
-
-// Convenience to get to the PEB pointer in a TEB.
-struct FakeTEB {
-  char dummy[0x30];
-  void* peb;
-};
 
 // Minidump with stacks, PEB, TEB, and unloaded module list.
 const MINIDUMP_TYPE kSmallDumpType = static_cast<MINIDUMP_TYPE>(
@@ -61,8 +58,10 @@ const MINIDUMP_TYPE kFullDumpType = static_cast<MINIDUMP_TYPE>(
 
 class MinidumpTest: public testing::Test {
  public:
-  MinidumpTest() : dump_file_view_(NULL), dump_file_handle_(NULL),
-      dump_file_mapping_(NULL) {
+  MinidumpTest() {
+    wchar_t temp_dir_path[ MAX_PATH ] = {0};
+    ::GetTempPath(MAX_PATH, temp_dir_path);
+    dump_path_ = temp_dir_path;
   }
 
   virtual void SetUp() {
@@ -74,58 +73,22 @@ class MinidumpTest: public testing::Test {
     HMODULE urlmon = ::LoadLibrary(L"urlmon.dll");
     ASSERT_TRUE(urlmon != NULL);
     ASSERT_TRUE(::FreeLibrary(urlmon));
-
-    wchar_t temp_dir_path[ MAX_PATH ] = {0};
-    wchar_t dump_file_name[ MAX_PATH ] = {0};
-    ::GetTempPath(MAX_PATH, temp_dir_path);
-    ::GetTempFileName(temp_dir_path, L"tst", 0, dump_file_name);
-    dump_file_ = dump_file_name;
-    dump_file_handle_ = ::CreateFile(dump_file_.c_str(),
-                                     GENERIC_WRITE | GENERIC_READ,
-                                     0,
-                                     NULL,
-                                     OPEN_EXISTING,
-                                     0,
-                                     NULL);
-    ASSERT_TRUE(dump_file_handle_ != NULL);
   }
 
   virtual void TearDown() {
-    if (dump_file_view_ != NULL) {
-      EXPECT_TRUE(::UnmapViewOfFile(dump_file_view_));
-      ::CloseHandle(dump_file_mapping_);
-      dump_file_mapping_ = NULL;
+    if (!dump_file_.empty()) {
+      ::DeleteFile(dump_file_.c_str());
+      dump_file_ = L"";
     }
-
-    ::CloseHandle(dump_file_handle_);
-    dump_file_handle_ = NULL;
-
-    EXPECT_TRUE(::DeleteFile(dump_file_.c_str()));
-  }
-
-  void EnsureDumpMapped() {
-    ASSERT_TRUE(dump_file_handle_ != NULL);
-    if (dump_file_view_ == NULL) {
-      ASSERT_TRUE(dump_file_mapping_ == NULL);
-
-      dump_file_mapping_ = ::CreateFileMapping(dump_file_handle_,
-                                               NULL,
-                                               PAGE_READONLY,
-                                               0,
-                                               0,
-                                               NULL);
-      ASSERT_TRUE(dump_file_mapping_ != NULL);
-
-      dump_file_view_ = ::MapViewOfFile(dump_file_mapping_,
-                                        FILE_MAP_READ,
-                                        0,
-                                        0,
-                                        0);
-      ASSERT_TRUE(dump_file_view_ != NULL);
+    if (!full_dump_file_.empty()) {
+      ::DeleteFile(full_dump_file_.c_str());
+      full_dump_file_ = L"";
     }
   }
 
   bool WriteDump(ULONG flags) {
+    using google_breakpad::MinidumpGenerator;
+
     // Fake exception is access violation on write to this.
     EXCEPTION_RECORD ex_record = {
         STATUS_ACCESS_VIOLATION,  // ExceptionCode
@@ -140,171 +103,28 @@ class MinidumpTest: public testing::Test {
       &ex_record,
       &ctx_record,
     };
-    MINIDUMP_EXCEPTION_INFORMATION ex_info = {
-        ::GetCurrentThreadId(),
-        &ex_ptrs,
-        FALSE,
-    };
 
-    // Capture our register context.
-    ::RtlCaptureContext(&ctx_record);
+    MinidumpGenerator generator(dump_path_);
 
     // And write a dump
-    BOOL result = ::MiniDumpWriteDump(::GetCurrentProcess(),
-                                      ::GetCurrentProcessId(),
-                                      dump_file_handle_,
-                                      static_cast<MINIDUMP_TYPE>(flags),
-                                      &ex_info,
-                                      NULL,
-                                      NULL);
+    bool result = generator.WriteMinidump(::GetCurrentProcess(),
+                                          ::GetCurrentProcessId(),
+                                          ::GetCurrentThreadId(),
+                                          ::GetCurrentThreadId(),
+                                          &ex_ptrs,
+                                          NULL,
+                                          static_cast<MINIDUMP_TYPE>(flags),
+                                          TRUE,
+                                          &dump_file_,
+                                          &full_dump_file_);
     return result == TRUE;
   }
 
-  bool DumpHasStream(ULONG stream_number) {
-    EnsureDumpMapped();
-
-    MINIDUMP_DIRECTORY* directory = NULL;
-    void* stream = NULL;
-    ULONG stream_size = 0;
-    BOOL ret = ::MiniDumpReadDumpStream(dump_file_view_,
-                                        stream_number,
-                                        &directory,
-                                        &stream,
-                                        &stream_size);
-
-    return ret != FALSE && stream != NULL && stream_size > 0;
-  }
-
-  template <class StreamType>
-  size_t GetStream(ULONG stream_number, StreamType** stream) {
-    EnsureDumpMapped();
-    MINIDUMP_DIRECTORY* directory = NULL;
-    ULONG memory_list_size = 0;
-    BOOL ret = ::MiniDumpReadDumpStream(dump_file_view_,
-                                        stream_number,
-                                        &directory,
-                                        reinterpret_cast<void**>(stream),
-                                        &memory_list_size);
-
-    return ret ? memory_list_size : 0;
-  }
-
-  bool DumpHasTebs() {
-    MINIDUMP_THREAD_LIST* thread_list = NULL;
-    size_t thread_list_size = GetStream(ThreadListStream, &thread_list);
-
-    if (thread_list_size > 0 && thread_list != NULL) {
-      for (ULONG i = 0; i < thread_list->NumberOfThreads; ++i) {
-        if (!DumpHasMemory(thread_list->Threads[i].Teb))
-          return false;
-      }
-
-      return true;
-    }
-
-    // No thread list, no TEB info.
-    return false;
-  }
-
-  bool DumpHasPeb() {
-    MINIDUMP_THREAD_LIST* thread_list = NULL;
-    size_t thread_list_size = GetStream(ThreadListStream, &thread_list);
-
-    if (thread_list_size > 0 && thread_list != NULL &&
-        thread_list->NumberOfThreads > 0) {
-      FakeTEB* teb = NULL;
-      if (!DumpHasMemory(thread_list->Threads[0].Teb, &teb))
-        return false;
-
-      return DumpHasMemory(teb->peb);
-    }
-
-    return false;
-  }
-
-  bool DumpHasMemory(ULONG64 address) {
-    return DumpHasMemory<BYTE>(address, NULL);
-  }
-
-  bool DumpHasMemory(const void* address) {
-    return DumpHasMemory<BYTE>(address, NULL);
-  }
-
-  template <class StructureType>
-  bool DumpHasMemory(ULONG64 address, StructureType** structure = NULL) {
-    // We can't cope with 64 bit addresses for now.
-    if (address > 0xFFFFFFFFUL)
-      return false;
-
-    return DumpHasMemory(reinterpret_cast<void*>(address), structure);
-  }
-
-  template <class StructureType>
-  bool DumpHasMemory(const void* addr_in, StructureType** structure = NULL) {
-    uintptr_t address = reinterpret_cast<uintptr_t>(addr_in);
-    MINIDUMP_MEMORY_LIST* memory_list = NULL;
-    size_t memory_list_size = GetStream(MemoryListStream, &memory_list);
-    if (memory_list_size > 0 && memory_list != NULL) {
-      for (ULONG i = 0; i < memory_list->NumberOfMemoryRanges; ++i) {
-        MINIDUMP_MEMORY_DESCRIPTOR& descr = memory_list->MemoryRanges[i];
-        const uintptr_t range_start =
-            static_cast<uintptr_t>(descr.StartOfMemoryRange);
-        uintptr_t range_end = range_start + descr.Memory.DataSize;
-
-        if (address >= range_start &&
-            address + sizeof(StructureType) < range_end) {
-          // The start address falls in the range, and the end address is
-          // in bounds, return a pointer to the structure if requested.
-          if (structure != NULL)
-            *structure = reinterpret_cast<StructureType*>(
-                RVA_TO_ADDR(dump_file_view_, descr.Memory.Rva));
-
-          return true;
-        }
-      }
-    }
-
-    // We didn't find the range in a MINIDUMP_MEMORY_LIST, so maybe this
-    // is a full dump using MINIDUMP_MEMORY64_LIST with all the memory at the
-    // end of the dump file.
-    MINIDUMP_MEMORY64_LIST* memory64_list = NULL;
-    memory_list_size = GetStream(Memory64ListStream, &memory64_list);
-    if (memory_list_size > 0 && memory64_list != NULL) {
-      // Keep track of where the current descriptor maps to.
-      RVA64 curr_rva = memory64_list->BaseRva;
-      for (ULONG i = 0; i < memory64_list->NumberOfMemoryRanges; ++i) {
-        MINIDUMP_MEMORY_DESCRIPTOR64& descr = memory64_list->MemoryRanges[i];
-        uintptr_t range_start =
-            static_cast<uintptr_t>(descr.StartOfMemoryRange);
-        uintptr_t range_end = range_start + static_cast<size_t>(descr.DataSize);
-
-        if (address >= range_start &&
-            address + sizeof(StructureType) < range_end) {
-          // The start address falls in the range, and the end address is
-          // in bounds, return a pointer to the structure if requested.
-          if (structure != NULL)
-            *structure = reinterpret_cast<StructureType*>(
-                RVA_TO_ADDR(dump_file_view_, curr_rva));
-
-          return true;
-        }
-
-        // Advance the current RVA.
-        curr_rva += descr.DataSize;
-      }
-    }
-
-
-
-    return false;
-  }
-
  protected:
-  HANDLE dump_file_handle_;
-  HANDLE dump_file_mapping_;
-  void* dump_file_view_;
-
   std::wstring dump_file_;
+  std::wstring full_dump_file_;
+
+  std::wstring dump_path_;
 };
 
 // We need to be able to get file information from Windows
@@ -358,125 +178,155 @@ TEST_F(MinidumpTest, Version) {
 
 TEST_F(MinidumpTest, Normal) {
   EXPECT_TRUE(WriteDump(MiniDumpNormal));
+  DumpAnalysis mini(dump_file_);
 
   // We expect threads, modules and some memory.
-  EXPECT_TRUE(DumpHasStream(ThreadListStream));
-  EXPECT_TRUE(DumpHasStream(ModuleListStream));
-  EXPECT_TRUE(DumpHasStream(MemoryListStream));
-  EXPECT_TRUE(DumpHasStream(ExceptionStream));
-  EXPECT_TRUE(DumpHasStream(SystemInfoStream));
-  EXPECT_TRUE(DumpHasStream(MiscInfoStream));
+  EXPECT_TRUE(mini.HasStream(ThreadListStream));
+  EXPECT_TRUE(mini.HasStream(ModuleListStream));
+  EXPECT_TRUE(mini.HasStream(MemoryListStream));
+  EXPECT_TRUE(mini.HasStream(ExceptionStream));
+  EXPECT_TRUE(mini.HasStream(SystemInfoStream));
+  EXPECT_TRUE(mini.HasStream(MiscInfoStream));
 
-  EXPECT_FALSE(DumpHasStream(ThreadExListStream));
-  EXPECT_FALSE(DumpHasStream(Memory64ListStream));
-  EXPECT_FALSE(DumpHasStream(CommentStreamA));
-  EXPECT_FALSE(DumpHasStream(CommentStreamW));
-  EXPECT_FALSE(DumpHasStream(HandleDataStream));
-  EXPECT_FALSE(DumpHasStream(FunctionTableStream));
-  EXPECT_FALSE(DumpHasStream(UnloadedModuleListStream));
-  EXPECT_FALSE(DumpHasStream(MemoryInfoListStream));
-  EXPECT_FALSE(DumpHasStream(ThreadInfoListStream));
-  EXPECT_FALSE(DumpHasStream(HandleOperationListStream));
-  EXPECT_FALSE(DumpHasStream(TokenStream));
+  EXPECT_FALSE(mini.HasStream(ThreadExListStream));
+  EXPECT_FALSE(mini.HasStream(Memory64ListStream));
+  EXPECT_FALSE(mini.HasStream(CommentStreamA));
+  EXPECT_FALSE(mini.HasStream(CommentStreamW));
+  EXPECT_FALSE(mini.HasStream(HandleDataStream));
+  EXPECT_FALSE(mini.HasStream(FunctionTableStream));
+  EXPECT_FALSE(mini.HasStream(UnloadedModuleListStream));
+  EXPECT_FALSE(mini.HasStream(MemoryInfoListStream));
+  EXPECT_FALSE(mini.HasStream(ThreadInfoListStream));
+  EXPECT_FALSE(mini.HasStream(HandleOperationListStream));
+  EXPECT_FALSE(mini.HasStream(TokenStream));
 
   // We expect no PEB nor TEBs in this dump.
-  EXPECT_FALSE(DumpHasTebs());
-  EXPECT_FALSE(DumpHasPeb());
+  EXPECT_FALSE(mini.HasTebs());
+  EXPECT_FALSE(mini.HasPeb());
 
   // We expect no off-stack memory in this dump.
-  EXPECT_FALSE(DumpHasMemory(this));
+  EXPECT_FALSE(mini.HasMemory(this));
 }
 
 TEST_F(MinidumpTest, SmallDump) {
   ASSERT_TRUE(WriteDump(kSmallDumpType));
+  DumpAnalysis mini(dump_file_);
 
-  EXPECT_TRUE(DumpHasStream(ThreadListStream));
-  EXPECT_TRUE(DumpHasStream(ModuleListStream));
-  EXPECT_TRUE(DumpHasStream(MemoryListStream));
-  EXPECT_TRUE(DumpHasStream(ExceptionStream));
-  EXPECT_TRUE(DumpHasStream(SystemInfoStream));
-  EXPECT_TRUE(DumpHasStream(UnloadedModuleListStream));
-  EXPECT_TRUE(DumpHasStream(MiscInfoStream));
+  EXPECT_TRUE(mini.HasStream(ThreadListStream));
+  EXPECT_TRUE(mini.HasStream(ModuleListStream));
+  EXPECT_TRUE(mini.HasStream(MemoryListStream));
+  EXPECT_TRUE(mini.HasStream(ExceptionStream));
+  EXPECT_TRUE(mini.HasStream(SystemInfoStream));
+  EXPECT_TRUE(mini.HasStream(UnloadedModuleListStream));
+  EXPECT_TRUE(mini.HasStream(MiscInfoStream));
 
   // We expect PEB and TEBs in this dump.
-  EXPECT_TRUE(DumpHasTebs());
-  EXPECT_TRUE(DumpHasPeb());
+  EXPECT_TRUE(mini.HasTebs());
+  EXPECT_TRUE(mini.HasPeb());
 
-  EXPECT_FALSE(DumpHasStream(ThreadExListStream));
-  EXPECT_FALSE(DumpHasStream(Memory64ListStream));
-  EXPECT_FALSE(DumpHasStream(CommentStreamA));
-  EXPECT_FALSE(DumpHasStream(CommentStreamW));
-  EXPECT_FALSE(DumpHasStream(HandleDataStream));
-  EXPECT_FALSE(DumpHasStream(FunctionTableStream));
-  EXPECT_FALSE(DumpHasStream(MemoryInfoListStream));
-  EXPECT_FALSE(DumpHasStream(ThreadInfoListStream));
-  EXPECT_FALSE(DumpHasStream(HandleOperationListStream));
-  EXPECT_FALSE(DumpHasStream(TokenStream));
+  EXPECT_FALSE(mini.HasStream(ThreadExListStream));
+  EXPECT_FALSE(mini.HasStream(Memory64ListStream));
+  EXPECT_FALSE(mini.HasStream(CommentStreamA));
+  EXPECT_FALSE(mini.HasStream(CommentStreamW));
+  EXPECT_FALSE(mini.HasStream(HandleDataStream));
+  EXPECT_FALSE(mini.HasStream(FunctionTableStream));
+  EXPECT_FALSE(mini.HasStream(MemoryInfoListStream));
+  EXPECT_FALSE(mini.HasStream(ThreadInfoListStream));
+  EXPECT_FALSE(mini.HasStream(HandleOperationListStream));
+  EXPECT_FALSE(mini.HasStream(TokenStream));
 
   // We expect no off-stack memory in this dump.
-  EXPECT_FALSE(DumpHasMemory(this));
+  EXPECT_FALSE(mini.HasMemory(this));
 }
 
 TEST_F(MinidumpTest, LargerDump) {
   ASSERT_TRUE(WriteDump(kLargerDumpType));
+  DumpAnalysis mini(dump_file_);
 
   // The dump should have all of these streams.
-  EXPECT_TRUE(DumpHasStream(ThreadListStream));
-  EXPECT_TRUE(DumpHasStream(ModuleListStream));
-  EXPECT_TRUE(DumpHasStream(MemoryListStream));
-  EXPECT_TRUE(DumpHasStream(ExceptionStream));
-  EXPECT_TRUE(DumpHasStream(SystemInfoStream));
-  EXPECT_TRUE(DumpHasStream(UnloadedModuleListStream));
-  EXPECT_TRUE(DumpHasStream(MiscInfoStream));
+  EXPECT_TRUE(mini.HasStream(ThreadListStream));
+  EXPECT_TRUE(mini.HasStream(ModuleListStream));
+  EXPECT_TRUE(mini.HasStream(MemoryListStream));
+  EXPECT_TRUE(mini.HasStream(ExceptionStream));
+  EXPECT_TRUE(mini.HasStream(SystemInfoStream));
+  EXPECT_TRUE(mini.HasStream(UnloadedModuleListStream));
+  EXPECT_TRUE(mini.HasStream(MiscInfoStream));
 
   // We expect memory referenced by stack in this dump.
-  EXPECT_TRUE(DumpHasMemory(this));
+  EXPECT_TRUE(mini.HasMemory(this));
 
   // We expect PEB and TEBs in this dump.
-  EXPECT_TRUE(DumpHasTebs());
-  EXPECT_TRUE(DumpHasPeb());
+  EXPECT_TRUE(mini.HasTebs());
+  EXPECT_TRUE(mini.HasPeb());
 
-  EXPECT_FALSE(DumpHasStream(ThreadExListStream));
-  EXPECT_FALSE(DumpHasStream(Memory64ListStream));
-  EXPECT_FALSE(DumpHasStream(CommentStreamA));
-  EXPECT_FALSE(DumpHasStream(CommentStreamW));
-  EXPECT_FALSE(DumpHasStream(HandleDataStream));
-  EXPECT_FALSE(DumpHasStream(FunctionTableStream));
-  EXPECT_FALSE(DumpHasStream(MemoryInfoListStream));
-  EXPECT_FALSE(DumpHasStream(ThreadInfoListStream));
-  EXPECT_FALSE(DumpHasStream(HandleOperationListStream));
-  EXPECT_FALSE(DumpHasStream(TokenStream));
+  EXPECT_FALSE(mini.HasStream(ThreadExListStream));
+  EXPECT_FALSE(mini.HasStream(Memory64ListStream));
+  EXPECT_FALSE(mini.HasStream(CommentStreamA));
+  EXPECT_FALSE(mini.HasStream(CommentStreamW));
+  EXPECT_FALSE(mini.HasStream(HandleDataStream));
+  EXPECT_FALSE(mini.HasStream(FunctionTableStream));
+  EXPECT_FALSE(mini.HasStream(MemoryInfoListStream));
+  EXPECT_FALSE(mini.HasStream(ThreadInfoListStream));
+  EXPECT_FALSE(mini.HasStream(HandleOperationListStream));
+  EXPECT_FALSE(mini.HasStream(TokenStream));
 }
 
 TEST_F(MinidumpTest, FullDump) {
   ASSERT_TRUE(WriteDump(kFullDumpType));
+  ASSERT_TRUE(dump_file_ != L"");
+  ASSERT_TRUE(full_dump_file_ != L"");
+  DumpAnalysis mini(dump_file_);
+  DumpAnalysis full(full_dump_file_);
+
+  // Either dumps can contain part of the information.
 
   // The dump should have all of these streams.
-  EXPECT_TRUE(DumpHasStream(ThreadListStream));
-  EXPECT_TRUE(DumpHasStream(ModuleListStream));
-  EXPECT_TRUE(DumpHasStream(Memory64ListStream));
-  EXPECT_TRUE(DumpHasStream(ExceptionStream));
-  EXPECT_TRUE(DumpHasStream(SystemInfoStream));
-  EXPECT_TRUE(DumpHasStream(UnloadedModuleListStream));
-  EXPECT_TRUE(DumpHasStream(MiscInfoStream));
-  EXPECT_TRUE(DumpHasStream(HandleDataStream));
+  EXPECT_TRUE(mini.HasStream(ThreadListStream));
+  EXPECT_TRUE(full.HasStream(ThreadListStream));
+  EXPECT_TRUE(mini.HasStream(ModuleListStream));
+  EXPECT_TRUE(full.HasStream(ModuleListStream));
+  EXPECT_TRUE(mini.HasStream(ExceptionStream));
+  EXPECT_TRUE(full.HasStream(ExceptionStream));
+  EXPECT_TRUE(mini.HasStream(SystemInfoStream));
+  EXPECT_TRUE(full.HasStream(SystemInfoStream));
+  EXPECT_TRUE(mini.HasStream(UnloadedModuleListStream));
+  EXPECT_TRUE(full.HasStream(UnloadedModuleListStream));
+  EXPECT_TRUE(mini.HasStream(MiscInfoStream));
+  EXPECT_TRUE(full.HasStream(MiscInfoStream));
+  EXPECT_TRUE(mini.HasStream(HandleDataStream));
+  EXPECT_TRUE(full.HasStream(HandleDataStream));
 
   // We expect memory referenced by stack in this dump.
-  EXPECT_TRUE(DumpHasMemory(this));
+  EXPECT_FALSE(mini.HasMemory(this));
+  EXPECT_TRUE(full.HasMemory(this));
 
   // We expect PEB and TEBs in this dump.
-  EXPECT_TRUE(DumpHasTebs());
-  EXPECT_TRUE(DumpHasPeb());
+  EXPECT_TRUE(mini.HasTebs() || full.HasTebs());
+  EXPECT_TRUE(mini.HasPeb() || full.HasPeb());
 
-  EXPECT_FALSE(DumpHasStream(ThreadExListStream));
-  EXPECT_FALSE(DumpHasStream(MemoryListStream));
-  EXPECT_FALSE(DumpHasStream(CommentStreamA));
-  EXPECT_FALSE(DumpHasStream(CommentStreamW));
-  EXPECT_FALSE(DumpHasStream(FunctionTableStream));
-  EXPECT_FALSE(DumpHasStream(MemoryInfoListStream));
-  EXPECT_FALSE(DumpHasStream(ThreadInfoListStream));
-  EXPECT_FALSE(DumpHasStream(HandleOperationListStream));
-  EXPECT_FALSE(DumpHasStream(TokenStream));
+  EXPECT_TRUE(mini.HasStream(MemoryListStream));
+  EXPECT_TRUE(full.HasStream(Memory64ListStream));
+  EXPECT_FALSE(mini.HasStream(Memory64ListStream));
+  EXPECT_FALSE(full.HasStream(MemoryListStream));
+
+  // This is the only place we don't use OR because we want both not
+  // to have the streams.
+  EXPECT_FALSE(mini.HasStream(ThreadExListStream));
+  EXPECT_FALSE(full.HasStream(ThreadExListStream));
+  EXPECT_FALSE(mini.HasStream(CommentStreamA));
+  EXPECT_FALSE(full.HasStream(CommentStreamA));
+  EXPECT_FALSE(mini.HasStream(CommentStreamW));
+  EXPECT_FALSE(full.HasStream(CommentStreamW));
+  EXPECT_FALSE(mini.HasStream(FunctionTableStream));
+  EXPECT_FALSE(full.HasStream(FunctionTableStream));
+  EXPECT_FALSE(mini.HasStream(MemoryInfoListStream));
+  EXPECT_FALSE(full.HasStream(MemoryInfoListStream));
+  EXPECT_FALSE(mini.HasStream(ThreadInfoListStream));
+  EXPECT_FALSE(full.HasStream(ThreadInfoListStream));
+  EXPECT_FALSE(mini.HasStream(HandleOperationListStream));
+  EXPECT_FALSE(full.HasStream(HandleOperationListStream));
+  EXPECT_FALSE(mini.HasStream(TokenStream));
+  EXPECT_FALSE(full.HasStream(TokenStream));
 }
 
 }  // namespace

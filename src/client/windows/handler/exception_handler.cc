@@ -490,12 +490,12 @@ void ExceptionHandler::HandleInvalidParameter(const wchar_t* expression,
   EXCEPTION_POINTERS exception_ptrs = { &exception_record, &exception_context };
   RtlCaptureContext(&exception_context);
   exception_record.ExceptionCode = STATUS_NONCONTINUABLE_EXCEPTION;
-  
+
   // We store pointers to the the expression and function strings,
-  // and the line as exception parameters to make them easy to 
+  // and the line as exception parameters to make them easy to
   // access by the developer on the far side.
   exception_record.NumberParameters = 3;
-  exception_record.ExceptionInformation[0] = 
+  exception_record.ExceptionInformation[0] =
       reinterpret_cast<ULONG_PTR>(&assertion.expression);
   exception_record.ExceptionInformation[1] =
       reinterpret_cast<ULONG_PTR>(&assertion.file);
@@ -510,7 +510,7 @@ void ExceptionHandler::HandleInvalidParameter(const wchar_t* expression,
         &exception_ptrs,
         &assertion);
   } else {
-    success = current_handler->WriteMinidumpOnHandlerThread(&exception_ptrs, 
+    success = current_handler->WriteMinidumpOnHandlerThread(&exception_ptrs,
                                                             &assertion);
   }
 
@@ -668,13 +668,7 @@ bool ExceptionHandler::WriteMinidumpWithException(
 
   bool success = false;
   if (IsOutOfProcess()) {
-    // Use the EXCEPTION_POINTERS overload for RequestDump if
-    // both exinfo and assertion are NULL.
-    if (!assertion) {
-      success = crash_generation_client_->RequestDump(exinfo);
-    } else {
-      success = crash_generation_client_->RequestDump(assertion);
-    }
+    success = crash_generation_client_->RequestDump(exinfo, assertion);
   } else {
     if (minidump_write_dump_) {
       HANDLE dump_file = CreateFile(next_minidump_path_c_,
@@ -690,12 +684,13 @@ bool ExceptionHandler::WriteMinidumpWithException(
         except_info.ExceptionPointers = exinfo;
         except_info.ClientPointers = FALSE;
 
-        // Add an MDRawBreakpadInfo stream to the minidump, to provide additional
-        // information about the exception handler to the Breakpad processor.  The
-        // information will help the processor determine which threads are
-        // relevant.  The Breakpad processor does not require this information but
-        // can function better with Breakpad-generated dumps when it is present.
-        // The native debugger is not harmed by the presence of this information.
+        // Add an MDRawBreakpadInfo stream to the minidump, to provide
+        // additional information about the exception handler to the Breakpad
+        // processor. The information will help the processor determine which
+        // threads are relevant.  The Breakpad processor does not require this
+        // information but can function better with Breakpad-generated dumps
+        // when it is present. The native debugger is not harmed by the
+        // presence of this information.
         MDRawBreakpadInfo breakpad_info;
         breakpad_info.validity = MD_BREAKPAD_INFO_VALID_DUMP_THREAD_ID |
                                MD_BREAKPAD_INFO_VALID_REQUESTING_THREAD_ID;
