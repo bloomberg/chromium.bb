@@ -108,8 +108,8 @@ class ClientSideBufferHelper {
     VertexAttribInfo()
         : enabled_(false),
           buffer_id_(0),
-          size_(0),
-          type_(0),
+          size_(4),
+          type_(GL_FLOAT),
           normalized_(GL_FALSE),
           pointer_(NULL),
           gl_stride_(0) {

@@ -25,13 +25,15 @@ void ProgramManager::ProgramInfo::Reset() {
   attrib_infos_.clear();
   uniform_infos_.clear();
   sampler_indices_.clear();
-  location_to_index_map_.clear();
+  attrib_location_to_index_map_.clear();
+  uniform_location_to_index_map_.clear();
 }
 
 void ProgramManager::ProgramInfo::Update() {
   Reset();
   GLint num_attribs = 0;
   GLint max_len = 0;
+  GLint max_location = -1;
   glGetProgramiv(service_id_, GL_ACTIVE_ATTRIBUTES, &num_attribs);
   glGetProgramiv(service_id_, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_len);
   // TODO(gman): Should we check for error?
@@ -45,10 +47,23 @@ void ProgramManager::ProgramInfo::Update() {
     if (!IsInvalidPrefix(name_buffer.get(), length)) {
       // TODO(gman): Should we check for error?
       GLint location = glGetAttribLocation(service_id_, name_buffer.get());
+      if (location > max_location) {
+        max_location = location;
+      }
       attrib_infos_.push_back(
           VertexAttribInfo(size, type, name_buffer.get(), location));
       max_attrib_name_length_ = std::max(max_attrib_name_length_, length);
     }
+  }
+
+  // Create attrib location to index map.
+  attrib_location_to_index_map_.resize(max_location + 1);
+  for (GLint ii = 0; ii <= max_location; ++ii) {
+    attrib_location_to_index_map_[ii] = -1;
+  }
+  for (size_t ii = 0; ii < attrib_infos_.size(); ++ii) {
+    const VertexAttribInfo& info = attrib_infos_[ii];
+    attrib_location_to_index_map_[info.location] = ii;
   }
 
   GLint num_uniforms = 0;
@@ -56,7 +71,7 @@ void ProgramManager::ProgramInfo::Update() {
   glGetProgramiv(service_id_, GL_ACTIVE_UNIFORMS, &num_uniforms);
   glGetProgramiv(service_id_, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_len);
   name_buffer.reset(new char[max_len]);
-  GLint max_location = -1;
+  max_location = -1;
   int index = 0;  // this index tracks valid uniforms.
   for (GLint ii = 0; ii < num_uniforms; ++ii) {
     GLsizei length;
@@ -83,15 +98,15 @@ void ProgramManager::ProgramInfo::Update() {
       ++index;
     }
   }
-  // Create location to index map.
-  location_to_index_map_.resize(max_location + 1);
+  // Create uniform location to index map.
+  uniform_location_to_index_map_.resize(max_location + 1);
   for (GLint ii = 0; ii <= max_location; ++ii) {
-    location_to_index_map_[ii] = -1;
+    uniform_location_to_index_map_[ii] = -1;
   }
   for (size_t ii = 0; ii < uniform_infos_.size(); ++ii) {
     const UniformInfo& info = uniform_infos_[ii];
     for (size_t jj = 0; jj < info.element_locations.size(); ++jj) {
-      location_to_index_map_[info.element_locations[jj]] = ii;
+      uniform_location_to_index_map_[info.element_locations[jj]] = ii;
     }
   }
   valid_ = true;
@@ -147,8 +162,8 @@ GLint ProgramManager::ProgramInfo::GetAttribLocation(
 bool ProgramManager::ProgramInfo::GetUniformTypeByLocation(
     GLint location, GLenum* type) const {
   if (location >= 0 &&
-      static_cast<size_t>(location) < location_to_index_map_.size()) {
-    GLint index = location_to_index_map_[location];
+      static_cast<size_t>(location) < uniform_location_to_index_map_.size()) {
+    GLint index = uniform_location_to_index_map_[location];
     if (index >= 0) {
       *type = uniform_infos_[index].type;
       return true;
@@ -202,8 +217,8 @@ const ProgramManager::ProgramInfo::UniformInfo*
 bool ProgramManager::ProgramInfo::SetSamplers(
     GLint location, GLsizei count, const GLint* value) {
   if (location >= 0 &&
-      static_cast<size_t>(location) < location_to_index_map_.size()) {
-    GLint index = location_to_index_map_[location];
+      static_cast<size_t>(location) < uniform_location_to_index_map_.size()) {
+    GLint index = uniform_location_to_index_map_[location];
     if (index >= 0) {
       UniformInfo& info = uniform_infos_[index];
       if (info.IsSampler() && count <= info.size) {

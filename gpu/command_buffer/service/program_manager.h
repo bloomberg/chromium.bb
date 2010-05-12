@@ -96,6 +96,16 @@ class ProgramManager {
 
     GLint GetAttribLocation(const std::string& name) const;
 
+    const VertexAttribInfo* GetAttribInfoByLocation(GLuint location) const {
+      if (location < attrib_location_to_index_map_.size()) {
+        GLint index = attrib_location_to_index_map_[location];
+        if (index >= 0) {
+          return &attrib_infos_[index];
+        }
+      }
+      return NULL;
+    }
+
     const UniformInfo* GetUniformInfo(GLint index) const {
       return (static_cast<size_t>(index) < uniform_infos_.size()) ?
          &uniform_infos_[index] : NULL;
@@ -137,7 +147,11 @@ class ProgramManager {
 
     GLsizei max_attrib_name_length_;
 
+    // Attrib by index.
     AttribInfoVector attrib_infos_;
+
+    // Attrib by location to index.
+    std::vector<GLint> attrib_location_to_index_map_;
 
     GLsizei max_uniform_name_length_;
 
@@ -145,7 +159,7 @@ class ProgramManager {
     UniformInfoVector uniform_infos_;
 
     // Uniform location to index.
-    std::vector<GLint> location_to_index_map_;
+    std::vector<GLint> uniform_location_to_index_map_;
 
     // The indices of the uniforms that are samplers.
     SamplerIndices sampler_indices_;

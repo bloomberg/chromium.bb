@@ -225,6 +225,19 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsMissingAttributesFails) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
+TEST_F(GLES2DecoderWithShaderTest, DrawElementsExtraAttributesFails) {
+  SetupIndexBuffer();
+  DoEnableVertexAttribArray(6);
+
+  EXPECT_CALL(*gl_, DrawElements(_, _, _, _))
+      .Times(0);
+  DrawElements cmd;
+  cmd.Init(GL_TRIANGLES, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
+           kValidIndexRangeStart * 2);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
 TEST_F(GLES2DecoderWithShaderTest, DrawElementsValidAttributesSucceeds) {
   SetupTexture();
   SetupVertexBuffer();

@@ -7,9 +7,10 @@
 #include <stdio.h>
 
 #include <algorithm>
-#include <vector>
-#include <string>
+#include <list>
 #include <map>
+#include <string>
+#include <vector>
 
 #include "app/gfx/gl/gl_context.h"
 #include "base/callback.h"
@@ -292,32 +293,27 @@ GLES2Decoder::GLES2Decoder(ContextGroup* group)
 GLES2Decoder::~GLES2Decoder() {
 }
 
-// This class implements GLES2Decoder so we don't have to expose all the GLES2
-// cmd stuff to outside this class.
-class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
-                         public GLES2Decoder {
+class VertexAttribManager {
  public:
-  explicit GLES2DecoderImpl(ContextGroup* group);
-
   // Info about Vertex Attributes. This is used to track what the user currently
   // has bound on each Vertex Attribute so that checking can be done at
   // glDrawXXX time.
   class VertexAttribInfo {
    public:
+    typedef std::list<VertexAttribInfo*> VertexAttribInfoList;
+
     VertexAttribInfo()
-        : enabled_(false),
-          size_(0),
-          type_(0),
+        : index_(0),
+          enabled_(false),
+          size_(4),
+          type_(GL_FLOAT),
           offset_(0),
-          real_stride_(0) {
+          real_stride_(16),
+          list_(NULL) {
     }
 
     // Returns true if this VertexAttrib can access index.
-    bool CanAccess(GLuint index);
-
-    void set_enabled(bool enabled) {
-      enabled_ = enabled;
-    }
+    bool CanAccess(GLuint index) const;
 
     BufferManager::BufferInfo* buffer() const {
       return buffer_;
@@ -325,6 +321,10 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
     GLsizei offset() const {
       return offset_;
+    }
+
+    GLuint index() const {
+      return index_;
     }
 
     void SetInfo(
@@ -345,7 +345,35 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
       buffer_ = NULL;
     }
 
+    bool enabled() const {
+      return enabled_;
+    }
+
    private:
+    friend class VertexAttribManager;
+
+    void set_enabled(bool enabled) {
+      enabled_ = enabled;
+    }
+
+    void set_index(GLuint index) {
+      index_ = index;
+    }
+
+    void SetList(VertexAttribInfoList* new_list) {
+      DCHECK(new_list);
+
+      if (list_) {
+        list_->erase(it_);
+      }
+
+      it_ = new_list->insert(new_list->end(), this);
+      list_ = new_list;
+    }
+
+    // The index of this attrib.
+    GLuint index_;
+
     // Whether or not this attribute is enabled.
     bool enabled_;
 
@@ -365,7 +393,96 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
     // The buffer bound to this attribute.
     BufferManager::BufferInfo::Ref buffer_;
+
+    // List this info is on.
+    VertexAttribInfoList* list_;
+
+    // Iterator for list this info is on. Enabled/Disabled
+    VertexAttribInfoList::iterator it_;
   };
+
+  typedef std::list<VertexAttribInfo*> VertexAttribInfoList;
+
+  VertexAttribManager()
+      : max_vertex_attribs_(0) {
+  }
+
+  void Initialize(uint32 num_vertex_attribs);
+
+  bool Enable(GLuint index, bool enable);
+
+  const VertexAttribInfoList& GetEnabledVertexAttribInfos() const {
+    return enabled_vertex_attribs_;
+  }
+
+  VertexAttribInfo* GetVertexAttribInfo(GLuint index) {
+    DCHECK(index < max_vertex_attribs_);
+    return &vertex_attrib_infos_[index];
+  }
+
+ private:
+  uint32 max_vertex_attribs_;
+
+  // Info for each vertex attribute saved so we can check at glDrawXXX time
+  // if it is safe to draw.
+  scoped_array<VertexAttribInfo> vertex_attrib_infos_;
+
+  // Lists for which vertex attribs are enabled, disabled.
+  VertexAttribInfoList enabled_vertex_attribs_;
+  VertexAttribInfoList disabled_vertex_attribs_;
+};
+
+bool VertexAttribManager::VertexAttribInfo::CanAccess(GLuint index) const {
+  if (!enabled_) {
+    return true;
+  }
+
+  if (!buffer_ || buffer_->IsDeleted()) {
+    return false;
+  }
+
+  // The number of elements that can be accessed.
+  GLsizeiptr buffer_size = buffer_->size();
+  if (offset_ > buffer_size || real_stride_ == 0) {
+    return false;
+  }
+
+  uint32 usable_size = buffer_size - offset_;
+  GLuint num_elements = usable_size / real_stride_ +
+      ((usable_size % real_stride_) >=
+       (GLES2Util::GetGLTypeSizeForTexturesAndBuffers(type_) * size_) ? 1 : 0);
+  return index < num_elements;
+}
+
+
+void VertexAttribManager::Initialize(uint32 max_vertex_attribs) {
+  max_vertex_attribs_ = max_vertex_attribs;
+  vertex_attrib_infos_.reset(
+      new VertexAttribInfo[max_vertex_attribs]);
+  for (uint32 vv = 0; vv < max_vertex_attribs; ++vv) {
+    vertex_attrib_infos_[vv].set_index(vv);
+    vertex_attrib_infos_[vv].SetList(&disabled_vertex_attribs_);
+  }
+}
+
+bool VertexAttribManager::Enable(GLuint index, bool enable) {
+  if (index >= max_vertex_attribs_) {
+    return false;
+  }
+  VertexAttribInfo& info = vertex_attrib_infos_[index];
+  if (info.enabled() != enable) {
+    info.set_enabled(enable);
+    info.SetList(enable ? &enabled_vertex_attribs_ : &disabled_vertex_attribs_);
+  }
+  return true;
+}
+
+// This class implements GLES2Decoder so we don't have to expose all the GLES2
+// cmd stuff to outside this class.
+class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
+                         public GLES2Decoder {
+ public:
+  explicit GLES2DecoderImpl(ContextGroup* group);
 
   // Overridden from AsyncAPIInterface.
   virtual Error DoCommand(unsigned int command,
@@ -899,9 +1016,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // to call glDrawElements.
   BufferManager::BufferInfo::Ref bound_element_array_buffer_;
 
-  // Info for each vertex attribute saved so we can check at glDrawXXX time
-  // if it is safe to draw.
-  scoped_array<VertexAttribInfo> vertex_attrib_infos_;
+  // Class that manages vertex attribs.
+  VertexAttribManager vertex_attrib_manager_;
 
   // Current active texture by 0 - n index.
   // In other words, if we call glActiveTexture(GL_TEXTURE2) this value would
@@ -1240,8 +1356,8 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
     return false;
   }
 
-  vertex_attrib_infos_.reset(
-      new VertexAttribInfo[group_->max_vertex_attribs()]);
+  vertex_attrib_manager_.Initialize(group_->max_vertex_attribs());
+
   texture_units_.reset(
       new TextureUnit[group_->max_texture_units()]);
   for (uint32 tt = 0; tt < group_->max_texture_units(); ++tt) {
@@ -1708,7 +1824,7 @@ error::Error GLES2DecoderImpl::DoCommand(
   error::Error result = error::kNoError;
   if (debug()) {
     // TODO(gman): Change output to something useful for NaCl.
-    printf("cmd: %s\n", GetCommandName(command));
+    DLOG(INFO) << "cmd: " << GetCommandName(command);
   }
   unsigned int command_index = command - kStartPoint - 1;
   if (command_index < arraysize(g_command_info)) {
@@ -1734,7 +1850,8 @@ error::Error GLES2DecoderImpl::DoCommand(
         while ((error = glGetError()) != GL_NO_ERROR) {
           // TODO(gman): Change output to something useful for NaCl.
           SetGLError(error, NULL);
-          printf("GL ERROR b4: %s\n", GetCommandName(command));
+          DLOG(INFO) << "GL ERROR: " << error
+                     << " : " << GetCommandName(command);
         }
       }
     } else {
@@ -1917,8 +2034,7 @@ void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
 }
 
 void GLES2DecoderImpl::DoDisableVertexAttribArray(GLuint index) {
-  if (index < group_->max_vertex_attribs()) {
-    vertex_attrib_infos_[index].set_enabled(false);
+  if (vertex_attrib_manager_.Enable(index, false)) {
     glDisableVertexAttribArray(index);
   } else {
     SetGLError(GL_INVALID_VALUE,
@@ -1927,8 +2043,7 @@ void GLES2DecoderImpl::DoDisableVertexAttribArray(GLuint index) {
 }
 
 void GLES2DecoderImpl::DoEnableVertexAttribArray(GLuint index) {
-  if (index < group_->max_vertex_attribs()) {
-    vertex_attrib_infos_[index].set_enabled(true);
+  if (vertex_attrib_manager_.Enable(index, true)) {
     glEnableVertexAttribArray(index);
   } else {
     SetGLError(GL_INVALID_VALUE,
@@ -2590,28 +2705,6 @@ void GLES2DecoderImpl::ClearRealGLErrors() {
   }
 }
 
-bool GLES2DecoderImpl::VertexAttribInfo::CanAccess(GLuint index) {
-  if (!enabled_) {
-    return true;
-  }
-
-  if (!buffer_ || buffer_->IsDeleted()) {
-    return false;
-  }
-
-  // The number of elements that can be accessed.
-  GLsizeiptr buffer_size = buffer_->size();
-  if (offset_ > buffer_size || real_stride_ == 0) {
-    return false;
-  }
-
-  uint32 usable_size = buffer_size - offset_;
-  GLuint num_elements = usable_size / real_stride_ +
-      ((usable_size % real_stride_) >=
-       (GLES2Util::GetGLTypeSizeForTexturesAndBuffers(type_) * size_) ? 1 : 0);
-  return index < num_elements;
-}
-
 void GLES2DecoderImpl::SetBlackTextureForNonRenderableTextures(
     bool* has_non_renderable_textures) {
   DCHECK(has_non_renderable_textures);
@@ -2686,19 +2779,33 @@ bool GLES2DecoderImpl::IsDrawValid(GLuint max_vertex_accessed) {
     // But GL says no ERROR.
     return false;
   }
-  // Validate that all attribs current program needs are setup correctly.
-  const ProgramManager::ProgramInfo::AttribInfoVector& infos =
-      current_program_->GetAttribInfos();
-  for (size_t ii = 0; ii < infos.size(); ++ii) {
-    GLint location = infos[ii].location;
-    if (location < 0) {
-      return false;
-    }
-    DCHECK_LT(static_cast<GLuint>(location), group_->max_vertex_attribs());
-    if (!vertex_attrib_infos_[location].CanAccess(max_vertex_accessed)) {
-      SetGLError(GL_INVALID_OPERATION,
-                 "glDrawXXX: attempt to access out of range vertices");
-      return false;
+  // Validate all attribs currently enabled. If they are used by the current
+  // program then check that they have enough elements to handle the draw call.
+  // If they are not used by the current program check that they have a buffer
+  // assigned.
+  const VertexAttribManager::VertexAttribInfoList& infos =
+      vertex_attrib_manager_.GetEnabledVertexAttribInfos();
+  for (VertexAttribManager::VertexAttribInfoList::const_iterator it =
+           infos.begin(); it != infos.end(); ++it) {
+    const VertexAttribManager::VertexAttribInfo* info = *it;
+    const ProgramManager::ProgramInfo::VertexAttribInfo* attrib_info =
+        current_program_->GetAttribInfoByLocation(info->index());
+    if (attrib_info) {
+      // This attrib is used in the current program.
+      if (!info->CanAccess(max_vertex_accessed)) {
+        SetGLError(GL_INVALID_OPERATION,
+                   "glDrawXXX: attempt to access out of range vertices");
+        return false;
+      }
+    } else {
+      // This attrib is not used in the current program.
+      if (!info->buffer() || info->buffer()->IsDeleted()) {
+        SetGLError(
+            GL_INVALID_OPERATION,
+            "glDrawXXX: attempt to render with no buffer attached to enabled "
+            "attrib");
+        return false;
+      }
     }
   }
   return true;
@@ -3053,7 +3160,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
                "glVertexAttribPointer: stride not valid for type");
     return error::kNoError;
   }
-  vertex_attrib_infos_[indx].SetInfo(
+  vertex_attrib_manager_.GetVertexAttribInfo(indx)->SetInfo(
       bound_array_buffer_,
       size,
       type,
@@ -3660,7 +3767,8 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribPointerv(
     return error::kNoError;
   }
   result->SetNumResults(1);
-  *result->GetData() = vertex_attrib_infos_[index].offset();
+  *result->GetData() =
+      vertex_attrib_manager_.GetVertexAttribInfo(index)->offset();
   return error::kNoError;
 }
 
