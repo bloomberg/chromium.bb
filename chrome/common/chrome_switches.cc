@@ -432,10 +432,10 @@ const char kHideIcons[]                     = "hide-icons";
 // that the UI tests don't depend on what comes up for http://google.com.
 const char kHomePage[]                      = "homepage";
 
-// Comma separated list of rules that control how hostnames are resolved.
+// Comma separated list of rules that control how hostnames are mapped.
 //
 // For example:
-//    "MAP * 127.0.0.1" --> Forces all hostnames to be resolved to 127.0.0.1
+//    "MAP * 127.0.0.1" --> Forces all hostnames to be mapped to 127.0.0.1
 //    "MAP *.google.com proxy" --> Forces all google.com subdomains to be
 //                                 resolved to "proxy".
 //    "MAP test.com [::1]:77 --> Forces "test.com" to resolve to IPv6 loopback.
@@ -443,6 +443,13 @@ const char kHomePage[]                      = "homepage";
 //                               socket address to be 77.
 //    "MAP * baz, EXCLUDE www.google.com" --> Remaps everything to "baz",
 //                                            except for "www.google.com".
+//
+// These mappings apply to the endpoint host in a URLRequest (the TCP connect
+// and host resolver in a direct connection, and the CONNECT in an http proxy
+// connection, and the endpoint host in a SOCKS proxy connection).
+const char kHostRules[]                     = "host-rules";
+
+// These mappins only apply to the host resolver.
 const char kHostResolverRules[]             = "host-resolver-rules";
 
 // Perform importing from another browser. The value associated with this

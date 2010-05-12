@@ -131,6 +131,7 @@ extern const char kGpuProcess[];
 extern const char kGpuStartupDialog[];
 extern const char kHideIcons[];
 extern const char kHomePage[];
+extern const char kHostRules[];
 extern const char kHostResolverRules[];
 extern const char kImport[];
 extern const char kImportFromFile[];
