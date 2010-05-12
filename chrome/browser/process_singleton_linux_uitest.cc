@@ -132,6 +132,9 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessFailure) {
 // unittest.)
 TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessNoSuicide) {
   FilePath lock_path = user_data_dir().Append(chrome::kSingletonLockFilename);
+  FilePath socket_path = user_data_dir().Append(chrome::kSingletonSocketFilename);
+
+  // Replace lockfile with one containing our own pid.
   EXPECT_EQ(0, unlink(lock_path.value().c_str()));
   std::string symlink_content = StringPrintf(
       "%s%c%u",
@@ -140,25 +143,13 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessNoSuicide) {
       base::GetCurrentProcId());
   EXPECT_EQ(0, symlink(symlink_content.c_str(), lock_path.value().c_str()));
 
-  base::ProcessId pid = browser_process_id();
-
-  ASSERT_GE(pid, 1);
-
-  // Block the browser process, so that ProcessSingleton::NotifyOtherProcess()
-  // will want to kill something.
-  kill(pid, SIGSTOP);
-
-  // Wait to make sure the browser process is actually stopped.
-  // It's necessary when running with valgrind.
-  HANDLE_EINTR(waitpid(pid, 0, WUNTRACED));
+  // Remove socket so that we will not be able to notify the existing browser.
+  EXPECT_EQ(0, unlink(socket_path.value().c_str()));
 
   std::string url("about:blank");
   EXPECT_EQ(ProcessSingleton::PROCESS_NONE,
             NotifyOtherProcess(url, action_timeout_ms()));
   // If we've gotten to this point without killing ourself, the test succeeded.
-
-  // Unblock the browser process so the test actually finishes.
-  kill(pid, SIGCONT);
 }
 
 // Test that we can still notify a process on the same host even after the
