@@ -175,8 +175,9 @@ TEST_F(ExtensionAPIClientTest, GetCurrentWindow) {
                "windows.getCurrent", "null");
 }
 
+// This test flakily crashes.
 // http://crbug.com/22248
-TEST_F(ExtensionAPIClientTest, FLAKY_GetLastFocusedWindow) {
+TEST_F(ExtensionAPIClientTest, DISABLED_GetLastFocusedWindow) {
   ExpectJsFail("chrome.windows.getLastFocused(function(){}, 20);",
                "Uncaught Error: Too many arguments.");
 
