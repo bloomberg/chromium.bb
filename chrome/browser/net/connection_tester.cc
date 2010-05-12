@@ -59,7 +59,7 @@ class ExperimentURLRequestContext : public URLRequestContext {
                                                  proxy_service_,
                                                  ssl_config_service_,
                                                  http_auth_handler_factory_),
-            disk_cache::CreateInMemoryCacheBackend(0));
+            net::HttpCache::DefaultBackend::InMemory(0));
     // In-memory cookie store.
     cookie_store_ = new net::CookieMonster(NULL, NULL);
 

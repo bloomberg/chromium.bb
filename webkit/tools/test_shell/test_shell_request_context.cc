@@ -78,16 +78,15 @@ void TestShellRequestContext::Init(
   base::EnsureNSPRInit();
 #endif
 
-  net::HttpCache *cache;
-  if (cache_path.empty()) {
-    cache = new net::HttpCache(NULL, host_resolver_, proxy_service_,
-                               ssl_config_service_, http_auth_handler_factory_,
-                               0);
-  } else {
-    cache = new net::HttpCache(NULL, host_resolver_, proxy_service_,
-                               ssl_config_service_, http_auth_handler_factory_,
-                               cache_path, NULL, 0);
-  }
+  net::HttpCache::DefaultBackend* backend = new net::HttpCache::DefaultBackend(
+      cache_path.empty() ? net::MEMORY_CACHE : net::DISK_CACHE,
+      cache_path, 0, NULL);
+
+  net::HttpCache* cache =
+      new net::HttpCache(NULL, host_resolver_, proxy_service_,
+                         ssl_config_service_, http_auth_handler_factory_,
+                         backend);
+
   cache->set_mode(cache_mode);
   http_transaction_factory_ = cache;
 

@@ -247,13 +247,16 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
                          command_line,
                          MessageLoop::current() /*io_loop*/));
 
+  net::HttpCache::DefaultBackend* backend =
+      new net::HttpCache::DefaultBackend(net::DISK_CACHE, disk_cache_path_,
+                                         cache_size_, NULL);
   net::HttpCache* cache =
       new net::HttpCache(io_thread()->globals()->network_change_notifier.get(),
                          context->host_resolver(),
                          context->proxy_service(),
                          context->ssl_config_service(),
                          context->http_auth_handler_factory(),
-                         disk_cache_path_, NULL, cache_size_);
+                         backend);
 
   if (command_line.HasSwitch(switches::kDisableByteRangeSupport))
     cache->set_enable_range_support(false);
@@ -367,13 +370,16 @@ ChromeURLRequestContext* FactoryForOffTheRecord::Create() {
   context->set_http_auth_handler_factory(
       original_context->http_auth_handler_factory());
 
+  net::HttpCache::BackendFactory* backend =
+      net::HttpCache::DefaultBackend::InMemory(0);
+
   net::HttpCache* cache =
       new net::HttpCache(io_thread()->globals()->network_change_notifier.get(),
                          context->host_resolver(),
                          context->proxy_service(),
                          context->ssl_config_service(),
                          context->http_auth_handler_factory(),
-                         0);
+                         backend);
   context->set_cookie_store(new net::CookieMonster(NULL,
       cookie_monster_delegate_));
   context->set_cookie_policy(
@@ -440,6 +446,10 @@ ChromeURLRequestContext* FactoryForMedia::Create() {
 
   // Create a media cache with default size.
   // TODO(hclam): make the maximum size of media cache configurable.
+  net::HttpCache::DefaultBackend* backend =
+      new net::HttpCache::DefaultBackend(net::MEDIA_CACHE, disk_cache_path_,
+                                         cache_size_, NULL);
+
   net::HttpCache* main_cache =
       main_context->http_transaction_factory()->GetCache();
   net::HttpCache* cache;
@@ -448,11 +458,10 @@ ChromeURLRequestContext* FactoryForMedia::Create() {
     // HttpTransactionFactory (network_layer()) of HttpCache is implemented
     // by HttpNetworkLayer so we can reuse HttpNetworkSession within it. This
     // assumption will be invalid if the original HttpCache is constructed with
-    // HttpCache(HttpTransactionFactory*, disk_cache::Backend*) constructor.
+    // HttpCache(HttpTransactionFactory*, BackendFactory*) constructor.
     net::HttpNetworkLayer* main_network_layer =
         static_cast<net::HttpNetworkLayer*>(main_cache->network_layer());
-    cache = new net::HttpCache(main_network_layer->GetSession(),
-                               disk_cache_path_, NULL, cache_size_);
+    cache = new net::HttpCache(main_network_layer->GetSession(), backend);
     // TODO(eroman): Since this is poaching the session from the main
     // context, it should hold a reference to that context preventing the
     // session from getting deleted.
@@ -465,14 +474,13 @@ ChromeURLRequestContext* FactoryForMedia::Create() {
         main_context->proxy_service(),
         main_context->ssl_config_service(),
         main_context->http_auth_handler_factory(),
-        disk_cache_path_, NULL, cache_size_);
+        backend);
   }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableByteRangeSupport))
     cache->set_enable_range_support(false);
 
-  cache->set_type(net::MEDIA_CACHE);
   context->set_http_transaction_factory(cache);
 
   // Use the same appcache service as the profile's main context.
