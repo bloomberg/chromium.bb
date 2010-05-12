@@ -35,7 +35,7 @@ void BorderContents::Init() {
   // Default arrow location.
   BubbleBorder::ArrowLocation arrow_location = BubbleBorder::TOP_LEFT;
   if (base::i18n::IsRTL())
-    arrow_location = BubbleBorder::rtl_mirror(arrow_location);
+    arrow_location = BubbleBorder::horizontal_mirror(arrow_location);
   DCHECK(!bubble_border_);
   bubble_border_ = new BubbleBorder(arrow_location);
   set_border(bubble_border_);
@@ -50,7 +50,7 @@ void BorderContents::SizeAndGetBounds(
     gfx::Rect* contents_bounds,
     gfx::Rect* window_bounds) {
   if (base::i18n::IsRTL())
-    arrow_location = BubbleBorder::rtl_mirror(arrow_location);
+    arrow_location = BubbleBorder::horizontal_mirror(arrow_location);
   bubble_border_->set_arrow_location(arrow_location);
   // Set the border.
   set_border(bubble_border_);
@@ -64,28 +64,19 @@ void BorderContents::SizeAndGetBounds(
   // Try putting the arrow in its initial location, and calculating the bounds.
   *window_bounds =
       bubble_border_->GetBounds(position_relative_to, local_contents_size);
-
   if (!allow_bubble_offscreen) {
-    // See if those bounds will fit on the monitor.
-    scoped_ptr<WindowSizer::MonitorInfoProvider> monitor_provider(
-        WindowSizer::CreateDefaultMonitorInfoProvider());
-    gfx::Rect monitor_bounds(
-        monitor_provider->GetMonitorWorkAreaMatching(position_relative_to));
-    if (!monitor_bounds.IsEmpty() && !monitor_bounds.Contains(*window_bounds)) {
-      // The bounds don't fit.  Move the arrow to try and improve things.
-      if (window_bounds->bottom() > monitor_bounds.bottom())
-        arrow_location = BubbleBorder::horizontal_mirror(arrow_location);
-      else if (BubbleBorder::is_arrow_on_left(arrow_location) ?
-               (window_bounds->right() > monitor_bounds.right()) :
-               (window_bounds->x() < monitor_bounds.x())) {
-        arrow_location = BubbleBorder::rtl_mirror(arrow_location);
-      }
-
-      bubble_border_->set_arrow_location(arrow_location);
-
-      // Now get the recalculated bounds.
-      *window_bounds = bubble_border_->GetBounds(position_relative_to,
-                                                 local_contents_size);
+    gfx::Rect monitor_bounds = GetMonitorBounds(position_relative_to);
+    if (!monitor_bounds.IsEmpty()) {
+      // Try to resize vertically if this does not fit on the screen.
+      MirrorArrowIfOffScreen(true,  // |vertical|.
+                             position_relative_to, monitor_bounds,
+                             local_contents_size, &arrow_location,
+                             window_bounds);
+      // Then try to resize horizontally if it still does not fit on the screen.
+      MirrorArrowIfOffScreen(false,  // |vertical|.
+                             position_relative_to, monitor_bounds,
+                             local_contents_size, &arrow_location,
+                             window_bounds);
     }
   }
 
@@ -96,6 +87,13 @@ void BorderContents::SizeAndGetBounds(
   bubble_border_->GetInsets(&insets);
   contents_bounds->Inset(insets.left() + kLeftMargin, insets.top() + kTopMargin,
       insets.right() + kRightMargin, insets.bottom() + kBottomMargin);
+}
+
+gfx::Rect BorderContents::GetMonitorBounds(const gfx::Rect& rect) {
+  scoped_ptr<WindowSizer::MonitorInfoProvider> monitor_provider(
+      WindowSizer::CreateDefaultMonitorInfoProvider());
+  return monitor_provider->GetMonitorWorkAreaMatching(rect);
+
 }
 
 void BorderContents::Paint(gfx::Canvas* canvas) {
@@ -120,6 +118,75 @@ void BorderContents::Paint(gfx::Canvas* canvas) {
   // This looks slightly better in the corners than drawing the contents atop
   // the border.
   PaintBorder(canvas);
+}
+
+void BorderContents::MirrorArrowIfOffScreen(
+    bool vertical,
+    const gfx::Rect& position_relative_to,
+    const gfx::Rect& monitor_bounds,
+    const gfx::Size& local_contents_size,
+    BubbleBorder::ArrowLocation* arrow_location,
+    gfx::Rect* window_bounds) {
+  // If the bounds don't fit, move the arrow to its mirrored position to see if
+  // it improves things.
+  gfx::Insets offscreen_insets;
+  if (ComputeOffScreenInsets(monitor_bounds, *window_bounds,
+                             &offscreen_insets) &&
+      GetInsetsLength(offscreen_insets, vertical) > 0) {
+    BubbleBorder::ArrowLocation original_arrow_location = *arrow_location;
+    *arrow_location =
+        vertical ? BubbleBorder::vertical_mirror(*arrow_location) :
+                   BubbleBorder::horizontal_mirror(*arrow_location);
+
+    // Change the arrow and get the new bounds.
+    bubble_border_->set_arrow_location(*arrow_location);
+    *window_bounds = bubble_border_->GetBounds(position_relative_to,
+                                               local_contents_size);
+    gfx::Insets new_offscreen_insets;
+    // If there is more of the window offscreen, we'll keep the old arrow.
+    if (ComputeOffScreenInsets(monitor_bounds, *window_bounds,
+                               &new_offscreen_insets) &&
+        GetInsetsLength(new_offscreen_insets, vertical) >=
+            GetInsetsLength(offscreen_insets, vertical)) {
+      *arrow_location = original_arrow_location;
+      bubble_border_->set_arrow_location(*arrow_location);
+      *window_bounds = bubble_border_->GetBounds(position_relative_to,
+                                                 local_contents_size);
+    }
+  }
+}
+
+// static
+bool BorderContents::ComputeOffScreenInsets(const gfx::Rect& monitor_bounds,
+                                            const gfx::Rect& window_bounds,
+                                            gfx::Insets* offscreen_insets) {
+  if (monitor_bounds.Contains(window_bounds))
+    return false;
+
+  if (!offscreen_insets)
+    return true;
+
+  int top = 0;
+  int left = 0;
+  int bottom = 0;
+  int right = 0;
+
+  if (window_bounds.y() < monitor_bounds.y())
+    top = monitor_bounds.y() - window_bounds.y();
+  if (window_bounds.x() < monitor_bounds.x())
+    left = monitor_bounds.x() - window_bounds.x();
+  if (window_bounds.bottom() > monitor_bounds.bottom())
+    bottom = window_bounds.bottom() - monitor_bounds.bottom();
+  if (window_bounds.right() > monitor_bounds.right())
+    right = window_bounds.right() - monitor_bounds.right();
+
+  offscreen_insets->Set(top, left, bottom, right);
+  return true;
+}
+
+// static
+int BorderContents::GetInsetsLength(const gfx::Insets& insets, bool vertical) {
+  return vertical ? insets.height() : insets.width();
 }
 
 #if defined(OS_WIN)

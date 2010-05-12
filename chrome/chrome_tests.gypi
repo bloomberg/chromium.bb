@@ -952,6 +952,7 @@
         'browser/views/bookmark_editor_view_unittest.cc',
         'browser/views/extensions/browser_action_drag_data_unittest.cc',
         'browser/views/generic_info_view_unittest.cc',
+        'browser/views/info_bubble_unittest.cc',
         'browser/views/status_icons/status_tray_win_unittest.cc',
         'browser/visitedlink_unittest.cc',
         'browser/webdata/web_data_service_test_util.h',
@@ -1033,6 +1034,11 @@
           'sources/': [
             ['exclude', '^browser/chromeos'],
           ],
+        }],
+        ['chromeos==0 and toolkit_views==0 and OS!="win"', {
+          'sources/': [
+             ['exclude', 'browser/views/info_bubble_unittest.cc'],
+          ]
         }],
         ['OS=="linux" and selinux==0', {
           'dependencies': [

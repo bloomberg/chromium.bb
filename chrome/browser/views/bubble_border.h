@@ -52,12 +52,13 @@ class BubbleBorder : public views::Border {
   void set_arrow_location(ArrowLocation arrow_location) {
     arrow_location_ = arrow_location;
   }
+  ArrowLocation arrow_location() const { return arrow_location_; }
 
-  static ArrowLocation rtl_mirror(ArrowLocation loc) {
+  static ArrowLocation horizontal_mirror(ArrowLocation loc) {
     return loc >= NONE ? loc : static_cast<ArrowLocation>(loc ^ 1);
   }
 
-  static ArrowLocation horizontal_mirror(ArrowLocation loc) {
+  static ArrowLocation vertical_mirror(ArrowLocation loc) {
     return loc >= NONE ? loc : static_cast<ArrowLocation>(loc ^ 2);
   }
 
