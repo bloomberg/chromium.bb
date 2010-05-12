@@ -15,9 +15,6 @@ import sys
 
 
 def SendStack(stack, url='http://chromium-status.appspot.com/breakpad'):
-  print 'Do you want to send a crash report [y/N]? ',
-  if sys.stdin.read(1).lower() != 'y':
-    return
   print 'Sending crash report ...'
   try:
     params = {
