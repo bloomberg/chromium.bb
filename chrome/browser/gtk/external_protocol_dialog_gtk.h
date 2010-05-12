@@ -23,7 +23,7 @@ class ExternalProtocolDialogGtk {
   GtkWidget* dialog_;
   GtkWidget* checkbox_;
   GURL url_;
-  base::Time creation_time_;
+  base::TimeTicks creation_time_;
 };
 
 #endif  // CHROME_BROWSER_GTK_EXTERNAL_PROTOCOL_DIALOG_GTK_H_

@@ -81,7 +81,7 @@ views::View* ExternalProtocolDialog::GetContentsView() {
 
 ExternalProtocolDialog::ExternalProtocolDialog(TabContents* tab_contents,
                                                const GURL& url)
-    : creation_time_(base::Time::Now()),
+    : creation_time_(base::TimeTicks::Now()),
       scheme_(UTF8ToWide(url.scheme())) {
   const int kMaxUrlWithoutSchemeSize = 256;
   std::wstring elided_url_without_scheme;

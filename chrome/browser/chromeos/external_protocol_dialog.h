@@ -40,7 +40,7 @@ class ExternalProtocolDialog : public views::DialogDelegate {
   MessageBoxView* message_box_view_;
 
   // The time at which this dialog was created.
-  base::Time creation_time_;
+  base::TimeTicks creation_time_;
 
   // The scheme of the url.
   std::wstring scheme_;

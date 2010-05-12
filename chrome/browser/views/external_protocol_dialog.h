@@ -50,7 +50,7 @@ class ExternalProtocolDialog : public views::DialogDelegate {
   GURL url_;
 
   // The time at which this dialog was created.
-  base::Time creation_time_;
+  base::TimeTicks creation_time_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalProtocolDialog);
 };

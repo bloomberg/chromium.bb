@@ -41,7 +41,7 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
 
 ExternalProtocolDialogGtk::ExternalProtocolDialogGtk(const GURL& url)
     : url_(url),
-      creation_time_(base::Time::Now()) {
+      creation_time_(base::TimeTicks::Now()) {
   DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
 
   dialog_ = gtk_dialog_new_with_buttons(
@@ -124,7 +124,7 @@ void ExternalProtocolDialogGtk::OnDialogResponse(GtkWidget* widget,
 
   if (response == GTK_RESPONSE_ACCEPT) {
     UMA_HISTOGRAM_LONG_TIMES("clickjacking.launch_url",
-                             base::Time::Now() - creation_time_);
+                             base::TimeTicks::Now() - creation_time_);
 
     ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url_);
   }

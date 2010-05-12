@@ -93,7 +93,7 @@ bool ExternalProtocolDialog::Accept() {
   // users start accepting these dialogs too quickly, we should worry about
   // clickjacking.
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.launch_url",
-                           base::Time::Now() - creation_time_);
+                           base::TimeTicks::Now() - creation_time_);
 
   if (message_box_view_->IsCheckBoxSelected()) {
     ExternalProtocolHandler::SetBlockState(
@@ -117,7 +117,7 @@ ExternalProtocolDialog::ExternalProtocolDialog(TabContents* tab_contents,
                                                const std::wstring& command)
     : tab_contents_(tab_contents),
       url_(url),
-      creation_time_(base::Time::Now()) {
+      creation_time_(base::TimeTicks::Now()) {
   const int kMaxUrlWithoutSchemeSize = 256;
   const int kMaxCommandSize = 256;
   std::wstring elided_url_without_scheme;
