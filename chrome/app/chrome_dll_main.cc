@@ -520,10 +520,8 @@ int ChromeMain(int argc, char** argv) {
     singleton_command_line->AppendSwitch(switches::kEnableGPUPlugin);
   }
 
-  base::ProcessId browser_pid;
-  if (process_type.empty()) {
-    browser_pid = base::GetCurrentProcId();
-  } else if (SubprocessIsBrowserChild(process_type)) {
+  base::ProcessId browser_pid = base::GetCurrentProcId();
+  if (SubprocessIsBrowserChild(process_type)) {
 #if defined(OS_WIN)
     std::wstring channel_name =
       parsed_command_line.GetSwitchValue(switches::kProcessChannelID);
