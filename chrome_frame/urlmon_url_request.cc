@@ -36,6 +36,9 @@ HRESULT ReadStream(IStream* stream, size_t size, std::string* data) {
     DCHECK_EQ(read, data->length());
   } else {
     data->clear();
+    // Return S_FALSE if the underlying stream returned S_OK and zero bytes.
+    if (hr == S_OK)
+      hr = S_FALSE;
   }
 
   return hr;
@@ -233,6 +236,12 @@ size_t UrlmonUrlRequest::SendDataToDelegate(size_t bytes_to_read) {
       if (read_data.empty()) {
         pending_read_size_ = pending_data_read_save;
       }
+      // If we received S_FALSE it indicates that there is no more data in the
+      // stream. Clear it to ensure that OnStopBinding correctly sends over the
+      // response end notification to chrome.
+      if (hr == S_FALSE) {
+        pending_data_.Release();
+      }
     }
 
     bytes_copied = read_data.length();
@@ -389,13 +398,14 @@ STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
     // The network policy in Chrome network is that error code/end_of_stream
     // should be returned only as a result of read (or start) request.
     // Here are the possible cases:
-    // cached_data|pending_read
+    // pending_data_|pending_read
     //     FALSE  |FALSE   => EndRequest if no headers, otherwise wait for Read.
     //     FALSE  |TRUE    => EndRequest.
     //     TRUE   |FALSE   => Wait for Read.
     //     TRUE   |TRUE    => Something went wrong!!
 
     if (pending_data_) {
+      DCHECK(pending_read_size_ == 0);
       ReleaseBindings();
       return S_OK;
     }
