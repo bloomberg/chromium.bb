@@ -559,7 +559,7 @@ nacl_libraries: ALWAYS
 	-#include \"npapi_extensions.h\"\n\
 	+#include <nacl/npapi.h>\n\
 	+#include <nacl/npapi_extensions.h>\n" |\
-	patch -p0
+	patch -p0 -N
 
 sdk_minimal_test: ALWAYS
 	cd .. && \
