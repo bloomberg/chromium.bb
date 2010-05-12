@@ -24,3 +24,14 @@ middle_bad:
   b bundle_good
   b middle_good
   b middle_bad
+
+@ Test similar jumps with variations on the mask
+.p2align 4
+  bic lr, lr, #0xc000000f  @ 1GiB mask
+  bx lr                    @ should succeed
+
+  bic lr, lr, #0x8000000f  @ 2GiB mask
+  bx lr                    @ must fail
+
+  bic lr, lr, #0xe000000f  @ in between mask
+  bx lr                    @ also succeeds

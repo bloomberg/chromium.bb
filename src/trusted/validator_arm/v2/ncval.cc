@@ -53,7 +53,7 @@ int validate(const ncfile *ncf) {
       16,  // bytes per bundle
       // TODO(cbiffle): maybe check region sizes from ELF headers?
       //                verify that instructions are in right region
-      256U * 1024 * 1024,  // code region size
+      1U * 1024 * 1024 * 1024,  // code region size
       1U * 1024 * 1024 * 1024,  // data region size
       nacl_arm_dec::Register(9),  // read only register
       nacl_arm_dec::Register(13));  // stack pointer
