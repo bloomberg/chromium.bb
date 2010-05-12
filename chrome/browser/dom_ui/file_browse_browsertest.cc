@@ -33,6 +33,8 @@ class FileBrowseUiObserver : public NotificationObserver {
   FileBrowseUiObserver() : file_browse_tab_(NULL), is_waiting_(false) {
     registrar_.Add(this, NotificationType::LOAD_STOP,
                    NotificationService::AllSources());
+    registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
+                   NotificationService::AllSources());
   }
 
   void WaitForFileBrowseLoad() {
@@ -46,8 +48,6 @@ class FileBrowseUiObserver : public NotificationObserver {
   // not get related notification because test body runs in a task already.
   // Uses a periodical check of the dialog window to implement the wait.
   void WaitForFileBrowseClose() {
-    CheckFileBrowseClosed();
-
     if (file_browse_tab_ != NULL) {
       is_waiting_ = true;
       ui_test_utils::RunMessageLoop();
@@ -74,6 +74,16 @@ class FileBrowseUiObserver : public NotificationObserver {
           }
         }
       }
+    } else if (type == NotificationType::TAB_CONTENTS_DESTROYED) {
+      TabContents* tab_contents = Source<TabContents>(source).ptr();
+      if (file_browse_tab_ == tab_contents) {
+        file_browse_tab_ = NULL;
+
+        if (is_waiting_) {
+          is_waiting_ = false;
+          MessageLoopForUI::current()->Quit();
+        }
+      }
     }
   }
 
@@ -87,37 +97,6 @@ class FileBrowseUiObserver : public NotificationObserver {
   }
 
  private:
-  class CheckFileBrowseClosedTask : public Task {
-   public:
-    explicit CheckFileBrowseClosedTask(FileBrowseUiObserver* owner)
-        : owner_(owner) {
-    }
-
-    virtual void Run() {
-      owner_->CheckFileBrowseClosed();
-    }
-
-   private:
-    FileBrowseUiObserver* owner_;
-  };
-
-  void CheckFileBrowseClosed() {
-    HtmlDialogView* dialog_view =
-        static_cast<HtmlDialogView*>(file_browse_tab_->delegate());
-
-    if (dialog_view->native_view()) {
-      MessageLoopForUI::current()->PostDelayedTask(
-          FROM_HERE, new CheckFileBrowseClosedTask(this), 100);
-    } else {
-      file_browse_tab_ = NULL;
-
-      if (is_waiting_) {
-        is_waiting_ = false;
-        MessageLoopForUI::current()->Quit();
-      }
-    }
-  }
-
   NotificationRegistrar registrar_;
   TabContents* file_browse_tab_;
   bool is_waiting_;
