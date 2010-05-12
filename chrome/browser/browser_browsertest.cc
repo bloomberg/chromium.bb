@@ -652,7 +652,9 @@ class BrowserAppRefocusTest : public ExtensionBrowserTest {
 
 #if defined(OS_WIN)
 
-#define MAYBE_OpenTab OpenTab
+// OpenTab hangs flakily.
+// http://code.google.com/p/chromium/issues/detail?id=44026
+#define MAYBE_OpenTab FLAKY_OpenTab
 #define MAYBE_OpenPanel OpenPanel
 #define MAYBE_OpenWindow OpenWindow
 #define MAYBE_WindowBeforeTab WindowBeforeTab
