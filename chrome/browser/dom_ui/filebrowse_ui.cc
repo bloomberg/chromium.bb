@@ -685,9 +685,13 @@ void FilebrowseHandler::OpenNewWindow(const Value* value, bool popup) {
     } else {
       browser = BrowserList::GetLastActive();
     }
-    browser->AddTabWithURL(
+    TabContents* contents = browser->AddTabWithURL(
         GURL(path), GURL(), PageTransition::LINK, -1, Browser::ADD_SELECTED,
         NULL, std::string());
+    // AddTabWithURL could have picked another Browser instance to create this
+    // new tab at. So we have to reset the ptr of the browser that we want to
+    // talk to.
+    browser = contents->delegate()->GetBrowser();
     if (popup) {
       // TODO(dhg): Remove these from being hardcoded. Allow javascript
       // to specify.
