@@ -524,8 +524,80 @@ gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
 
   gfx::Point tabstrip_origin =
       window_->tabstrip()->GetTabStripOriginForWidget(widget);
-  gtk_util::DrawThemedToolbarBackground(widget, cr, e, tabstrip_origin,
-                                        theme_provider_);
+  // Fill the entire region with the toolbar color.
+  GdkColor color = theme_provider_->GetGdkColor(
+      BrowserThemeProvider::COLOR_TOOLBAR);
+  gdk_cairo_set_source_color(cr, &color);
+  cairo_fill(cr);
+
+  // The horizontal size of the top left and right corner images.
+  const int kCornerWidth = 4;
+  // The thickness of the shadow outside the toolbar's bounds; the offset
+  // between the edge of the toolbar and where we anchor the corner images.
+  const int kShadowThickness = 2;
+
+  gfx::Rect area(e->area);
+  gfx::Rect right(widget->allocation.x + widget->allocation.width -
+                      kCornerWidth,
+                  widget->allocation.y - kShadowThickness,
+                  kCornerWidth,
+                  widget->allocation.height + kShadowThickness);
+  gfx::Rect left(widget->allocation.x - kShadowThickness,
+                 widget->allocation.y - kShadowThickness,
+                 kCornerWidth,
+                 widget->allocation.height + kShadowThickness);
+  area = area.Subtract(right).Subtract(left);
+
+  CairoCachedSurface* background = theme_provider_->GetSurfaceNamed(
+      IDR_THEME_TOOLBAR, widget);
+  background->SetSource(cr, tabstrip_origin.x(), tabstrip_origin.y());
+  cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+  cairo_rectangle(cr, area.x(), area.y(), area.width(), area.height());
+  cairo_fill(cr);
+
+  bool draw_left_corner = left.Intersects(gfx::Rect(e->area));
+  bool draw_right_corner = right.Intersects(gfx::Rect(e->area));
+
+  if (draw_left_corner || draw_right_corner) {
+    // Create a mask which is composed of the left and/or right corners.
+    cairo_surface_t* target = cairo_surface_create_similar(
+        cairo_get_target(cr),
+        CAIRO_CONTENT_COLOR_ALPHA,
+        widget->allocation.x + widget->allocation.width,
+        widget->allocation.y + widget->allocation.height);
+    cairo_t* copy_cr = cairo_create(target);
+
+    cairo_set_operator(copy_cr, CAIRO_OPERATOR_SOURCE);
+    if (draw_left_corner) {
+      CairoCachedSurface* left_corner = theme_provider_->GetSurfaceNamed(
+          IDR_CONTENT_TOP_LEFT_CORNER_MASK, widget);
+      left_corner->SetSource(copy_cr, left.x(), left.y());
+      cairo_paint(copy_cr);
+    }
+    if (draw_right_corner) {
+      CairoCachedSurface* right_corner = theme_provider_->GetSurfaceNamed(
+          IDR_CONTENT_TOP_RIGHT_CORNER_MASK, widget);
+      right_corner->SetSource(copy_cr, right.x(), right.y());
+      // We fill a path rather than just painting because we don't want to
+      // overwrite the left corner.
+      cairo_rectangle(copy_cr, right.x(), right.y(),
+                      right.width(), right.height());
+      cairo_fill(copy_cr);
+    }
+
+    // Draw the background. CAIRO_OPERATOR_IN uses the existing pixel data as
+    // an alpha mask.
+    background->SetSource(copy_cr, tabstrip_origin.x(), tabstrip_origin.y());
+    cairo_set_operator(copy_cr, CAIRO_OPERATOR_IN);
+    cairo_pattern_set_extend(cairo_get_source(copy_cr), CAIRO_EXTEND_REPEAT);
+    cairo_paint(copy_cr);
+    cairo_destroy(copy_cr);
+
+    // Copy the temporary surface to the screen.
+    cairo_set_source_surface(cr, target, 0, 0);
+    cairo_paint(cr);
+    cairo_surface_destroy(target);
+  }
 
   cairo_destroy(cr);
 

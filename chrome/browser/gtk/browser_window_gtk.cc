@@ -431,14 +431,27 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr) {
   gtk_widget_translate_coordinates(toolbar_->widget(),
       GTK_WIDGET(window_), 0, 0, &left_x,
       &top_y);
-  int width = window_vbox_->allocation.width;
+  int center_width = window_vbox_->allocation.width;
 
   CairoCachedSurface* top_center = theme_provider->GetSurfaceNamed(
       IDR_CONTENT_TOP_CENTER, GTK_WIDGET(window_));
-  top_center->SetSource(cr, left_x, top_y - kContentShadowThickness);
+  CairoCachedSurface* top_right = theme_provider->GetSurfaceNamed(
+      IDR_CONTENT_TOP_RIGHT_CORNER, GTK_WIDGET(window_));
+  CairoCachedSurface* top_left = theme_provider->GetSurfaceNamed(
+      IDR_CONTENT_TOP_LEFT_CORNER, GTK_WIDGET(window_));
+
+  int center_left_x = left_x;
+  if (UseCustomFrame()) {
+    // Don't draw over the corners.
+    center_left_x += top_left->Width() - kContentShadowThickness;
+    center_width -= (top_left->Width() + top_right->Width());
+    center_width += 2 * kContentShadowThickness;
+  }
+
+  top_center->SetSource(cr, center_left_x, top_y - kContentShadowThickness);
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
-  cairo_rectangle(cr, left_x, top_y - kContentShadowThickness, width,
-                  top_center->Height());
+  cairo_rectangle(cr, center_left_x, top_y - kContentShadowThickness,
+                  center_width, top_center->Height());
   cairo_fill(cr);
 
   // Only draw the rest of the shadow if the user has the custom frame enabled.
@@ -449,31 +462,25 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr) {
   // of pixels overlap the toolbar. We just crop it off on Linux.  The top
   // corners extend to the base of the toolbar (one pixel above the dividing
   // line).
-  int right_x = left_x + width;
-  CairoCachedSurface* top_left = theme_provider->GetSurfaceNamed(
-      IDR_CONTENT_TOP_LEFT_CORNER, GTK_WIDGET(window_));
+  int right_x = center_left_x + center_width;
   top_left->SetSource(
       cr, left_x - kContentShadowThickness, top_y - kContentShadowThickness);
   // The toolbar is shorter in location bar only mode so clip the image to the
   // height of the toolbar + the amount of shadow above the toolbar.
-  int top_corner_height =
-      toolbar_->widget()->allocation.height + kContentShadowThickness;
   cairo_rectangle(cr,
       left_x - kContentShadowThickness,
       top_y - kContentShadowThickness,
-      kContentShadowThickness,
-      top_corner_height);
+      top_left->Width(),
+      top_left->Height());
   cairo_fill(cr);
 
   // Likewise, we crop off the left column of pixels for the top right corner.
-  CairoCachedSurface* top_right = theme_provider->GetSurfaceNamed(
-      IDR_CONTENT_TOP_RIGHT_CORNER, GTK_WIDGET(window_));
-  top_right->SetSource(cr, right_x - 1, top_y - kContentShadowThickness);
+  top_right->SetSource(cr, right_x, top_y - kContentShadowThickness);
   cairo_rectangle(cr,
       right_x,
       top_y - kContentShadowThickness,
-      kContentShadowThickness,
-      top_corner_height);
+      top_right->Width(),
+      top_right->Height());
   cairo_fill(cr);
 
   // Fill in the sides.  As above, we only draw 2 of the 3 columns on Linux.
@@ -484,7 +491,7 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr) {
       NULL, &bottom_y);
   // |side_y| is where to start drawing the side shadows.  The top corners draw
   // the sides down to the bottom of the toolbar.
-  int side_y = top_y - kContentShadowThickness + top_corner_height;
+  int side_y = top_y - kContentShadowThickness + top_right->Height();
   // |side_height| is how many pixels to draw for the side borders.  We do one
   // pixel before the bottom of the web contents because that extra pixel is
   // drawn by the bottom corners.
@@ -503,10 +510,12 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr) {
 
     CairoCachedSurface* right = theme_provider->GetSurfaceNamed(
         IDR_CONTENT_RIGHT_SIDE, GTK_WIDGET(window_));
-    right->SetSource(cr, right_x - 1, side_y);
+    int right_side_x =
+        right_x + top_right->Width() - kContentShadowThickness - 1;
+    right->SetSource(cr, right_side_x, side_y);
     cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
     cairo_rectangle(cr,
-        right_x,
+        right_side_x,
         side_y,
         kContentShadowThickness,
         side_height);
@@ -534,7 +543,7 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr) {
   cairo_rectangle(cr,
       left_x + 1,
       bottom_y,
-      width - 2,
+      window_vbox_->allocation.width - 2,
       kContentShadowThickness);
   cairo_fill(cr);
 }
@@ -1630,14 +1639,21 @@ void BrowserWindowGtk::OnSizeChanged(int width, int height) {
 
 void BrowserWindowGtk::UpdateWindowShape(int width, int height) {
   if (UseCustomFrame() && !IsFullscreen() && !IsMaximized()) {
-    // Make the top corners rounded.  We set a mask that includes most of the
-    // window except for a few pixels in the top two corners.
-    GdkRectangle top_rect = { 3, 0, width - 6, 1 };
-    GdkRectangle mid_rect = { 1, 1, width - 2, 2 };
-    GdkRectangle bot_rect = { 0, 3, width, height - 3 };
-    GdkRegion* mask = gdk_region_rectangle(&top_rect);
+    // Make the corners rounded.  We set a mask that includes most of the
+    // window except for a few pixels in each corner.
+    GdkRectangle top_top_rect = { 3, 0, width - 6, 1 };
+    GdkRectangle top_mid_rect = { 1, 1, width - 2, 2 };
+    GdkRectangle mid_rect = { 0, 3, width, height - 6 };
+    // The bottom two rects are mirror images of the top two rects.
+    GdkRectangle bot_mid_rect = top_mid_rect;
+    bot_mid_rect.y = height - 3;
+    GdkRectangle bot_bot_rect = top_top_rect;
+    bot_bot_rect.y = height - 1;
+    GdkRegion* mask = gdk_region_rectangle(&top_top_rect);
+    gdk_region_union_with_rect(mask, &top_mid_rect);
     gdk_region_union_with_rect(mask, &mid_rect);
-    gdk_region_union_with_rect(mask, &bot_rect);
+    gdk_region_union_with_rect(mask, &bot_mid_rect);
+    gdk_region_union_with_rect(mask, &bot_bot_rect);
     gdk_window_shape_combine_region(GTK_WIDGET(window_)->window, mask, 0, 0);
     gdk_region_destroy(mask);
     gtk_alignment_set_padding(GTK_ALIGNMENT(window_container_), 1,
