@@ -1841,6 +1841,11 @@ void RenderViewHost::OnAccessibilityObjectStateChange(int acc_obj_id) {
 void RenderViewHost::OnAccessibilityTree(
     const webkit_glue::WebAccessibility& tree) {
   view()->UpdateAccessibilityTree(tree);
+
+  NotificationService::current()->Notify(
+      NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
+      Source<RenderViewHost>(this),
+      NotificationService::NoDetails());
 }
 
 void RenderViewHost::OnCSSInserted() {

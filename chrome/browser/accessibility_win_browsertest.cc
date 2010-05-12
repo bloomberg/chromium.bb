@@ -12,6 +12,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_view_win.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 
@@ -179,12 +180,14 @@ void AccessibleChecker::CheckAccessibleChildren(IAccessible* parent) {
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       FLAKY_TestRendererAccessibilityTree) {
+                       TestRendererAccessibilityTree) {
   GURL tree_url(
       "data:text/html,<html><head><title>Accessibility Win Test</title></head>"
       "<body><input type='button' value='push' /><input type='checkbox' />"
       "</body></html>");
-  ui_test_utils::NavigateToURL(browser(), tree_url);
+  browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  ui_test_utils::WaitForNotification(
+      NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
 
   ScopedComPtr<IAccessible> document_accessible(
       GetRenderWidgetHostViewClientAccessible());
