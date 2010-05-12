@@ -87,8 +87,7 @@ void ShownSectionsHandler::SetFirstAppLauncherRunPref(
   // If we have turned on Apps we want to hide most visited and recent to give
   // more focus to the Apps section. We do not do this in MigrateUserPrefs
   // because the pref version should not depend on command line switches.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExtensionApps) &&
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableApps) &&
       !pref_service->GetBoolean(prefs::kNTPAppLauncherFirstRun)) {
     int sections = pref_service->GetInteger(prefs::kNTPShownSections);
     sections &= ~THUMB;
@@ -102,8 +101,7 @@ void ShownSectionsHandler::SetFirstAppLauncherRunPref(
 void ShownSectionsHandler::RegisterUserPrefs(PrefService* pref_service) {
   pref_service->RegisterIntegerPref(prefs::kNTPShownSections,
                                     THUMB | RECENT | TIPS | SYNC);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExtensionApps)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableApps)) {
     pref_service->RegisterBooleanPref(prefs::kNTPAppLauncherFirstRun, false);
   }
 }

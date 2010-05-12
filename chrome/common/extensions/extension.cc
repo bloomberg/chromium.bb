@@ -724,7 +724,7 @@ Extension::Extension(const FilePath& path)
   DCHECK(path.IsAbsolute());
 
   apps_enabled_ = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableExtensionApps);
+      switches::kEnableApps);
   location_ = INVALID;
 
 #if defined(OS_WIN)
