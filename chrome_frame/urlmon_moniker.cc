@@ -142,7 +142,7 @@ bool ShouldWrapCallback(IMoniker* moniker, REFIID iid, IBindCtx* bind_context) {
   NavigationManager* mgr = NavigationManager::GetThreadInstance();
   if (!mgr) {
     DLOG(INFO) << __FUNCTION__ << " Url: " << url <<
-        " No navitagion manager to wrap";
+        " No navigation manager to wrap";
     return false;
   }
 
