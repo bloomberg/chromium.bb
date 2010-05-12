@@ -1,0 +1,2 @@
+# Fails on Valgrind/Mac, see http://crbug.com/43972
+ConditionVariableTest.LargeFastTaskTest
