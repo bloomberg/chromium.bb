@@ -132,7 +132,7 @@ class PluginChannelBase : public IPC::Channel::Listener,
   // in the middle of dispatching an unblocking message.
   // The plugin process wants to avoid setting the unblock flag on its sync
   // messages unless necessary, since it can potentially introduce reentrancy
-  // into WebKit in ways that it doesn't expect (i.e. causing layoutout during
+  // into WebKit in ways that it doesn't expect (i.e. causing layout during
   // paint).  However to avoid deadlock, we must ensure that any message that's
   // sent as a result of a sync call from the renderer must unblock the
   // renderer.  We additionally have to do this for async messages from the
