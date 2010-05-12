@@ -593,6 +593,11 @@ STDMETHODIMP UrlmonUrlRequest::OnResponse(DWORD dwResponseCode,
   DCHECK_EQ(thread_, PlatformThread::CurrentId());
   DLOG(INFO) << __FUNCTION__ << me() << "headers: \n" << response_headers;
 
+  if (!delegate_) {
+    DLOG(WARNING) << "Invalid delegate";
+    return E_FAIL;
+  }
+
   std::string raw_headers = WideToUTF8(response_headers);
 
   delegate_->AddPrivacyDataForUrl(url(), "", 0);
