@@ -7,6 +7,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/worker_host/worker_service.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_layout_test.h"
@@ -121,7 +122,32 @@ class WorkerTest : public UILayoutTest {
     // Navigate to a blank page so that any workers are cleaned up.
     // This helps leaks trackers do a better job of reporting.
     scoped_refptr<TabProxy> tab(GetActiveTab());
-    GURL about_url(std::string("about:blank"));
+    GURL about_url(chrome::kAboutBlankURL);
+    EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(about_url));
+  }
+
+  void RunWorkerStorageLayoutTest(const std::string& test_case_file_name) {
+    FilePath worker_test_dir;
+    worker_test_dir = worker_test_dir.AppendASCII("fast");
+    worker_test_dir = worker_test_dir.AppendASCII("workers");
+
+    FilePath storage_test_dir;
+    storage_test_dir = storage_test_dir.AppendASCII("storage");
+    InitializeForLayoutTest(worker_test_dir, storage_test_dir, kNoHttpPort);
+
+    // Storage worker tests also rely on common files in 'resources'.
+    FilePath resource_dir;
+    resource_dir = resource_dir.AppendASCII("resources");
+    AddResourceForLayoutTest(worker_test_dir.Append(storage_test_dir),
+                             resource_dir);
+
+    printf("Test: %s\n", test_case_file_name.c_str());
+    RunLayoutTest(test_case_file_name, kNoHttpPort);
+
+    // Navigate to a blank page so that any workers are cleaned up.
+    // This helps leaks trackers do a better job of reporting.
+    scoped_refptr<TabProxy> tab(GetActiveTab());
+    GURL about_url(chrome::kAboutBlankURL);
     EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(about_url));
   }
 
@@ -629,4 +655,8 @@ TEST_F(WorkerTest, DISABLED_QueuedSharedWorkerStartedFromOtherTab) {
       kTestCompleteCookie, action_max_timeout_ms());
   ASSERT_STREQ(kTestCompleteSuccess, value.c_str());
   ASSERT_TRUE(WaitForProcessCountToBe(2, max_workers_per_tab+1));
+}
+
+TEST_F(WorkerTest, OpenDatabaseSyncInputs) {
+  RunWorkerStorageLayoutTest("open-database-sync-inputs.html");
 }
