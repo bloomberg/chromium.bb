@@ -7,10 +7,6 @@
     '../third_party/WebKit/WebKit/chromium/features.gypi',
     '../third_party/WebKit/WebKit/chromium/WebKit.gypi',
     '../third_party/WebKit/WebCore/WebCore.gypi',
-    'appcache/webkit_appcache.gypi',
-    'database/webkit_database.gypi',
-    'glue/webkit_glue.gypi',
-    'support/webkit_support.gypi',
     'tools/test_shell/test_shell.gypi',
   ],
   'variables': {

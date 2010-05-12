@@ -135,8 +135,8 @@
         '../third_party/sqlite/sqlite.gyp:sqlite',
         '../third_party/zlib/zlib.gyp:zlib',
         '../third_party/npapi/npapi.gyp:npapi',
-        '../webkit/webkit.gyp:appcache',
-        '../webkit/webkit.gyp:glue',
+        '../webkit/support/webkit_support_in_chromium.gyp:appcache',
+        '../webkit/support/webkit_support_in_chromium.gyp:glue',
       ],
       'sources': [
         # .cc, .h, and .mm files under chrome/common that are not required for

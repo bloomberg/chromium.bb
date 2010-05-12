@@ -3,12 +3,11 @@
 # found in the LICENSE file.
 
 {
-  # This file is the same as webkit_support_in_chromium.gyp except it
-  # references features.gypi based on its location in a webkit checkout
-  # (WebKit/Webkit/chromium/webkit/support/).  If you add .gypi files
-  # here, please add them in webkit_support_in_chromium.gyp as well.
+  # This file is the same as webkit_support.gyp except it references
+  # features.gypi based on its location in a chromium checkout.  If you
+  # add .gypi files here, please add them in webkit_support.gyp as well.
   'includes': [
-    '../../features.gypi',
+    '../../third_party/WebKit/WebKit/chromium/features.gypi',
     '../appcache/webkit_appcache.gypi',
     '../database/webkit_database.gypi',
     '../glue/webkit_glue.gypi',

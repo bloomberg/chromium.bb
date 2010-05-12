@@ -21,7 +21,7 @@
     '<(DEPTH)/testing/gtest.gyp:gtest',
     '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
     # run time dependency
-    '<(DEPTH)/webkit/webkit.gyp:webkit_resources',
+    '<(DEPTH)/webkit/support/webkit_support_in_chromium.gyp:webkit_resources',
   ],
   'include_dirs': [
     '<(DEPTH)',

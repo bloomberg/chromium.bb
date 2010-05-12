@@ -86,7 +86,7 @@
                 '../build/util/support/support.gyp:*',
                 '../third_party/cld/cld.gyp:cld',
                 '../views/views.gyp:views',
-                '../webkit/webkit.gyp:webkit_resources',
+                '../webkit/support/webkit_support_in_chromium.gyp:webkit_resources',
                 '../gears/gears.gyp:gears',
               ],
               'sources': [

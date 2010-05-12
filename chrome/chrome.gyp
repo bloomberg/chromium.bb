@@ -478,7 +478,7 @@
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/hunspell/hunspell.gyp:hunspell',
-        '../webkit/webkit.gyp:glue',
+        '../webkit/support/webkit_support_in_chromium.gyp:glue',
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
@@ -1334,6 +1334,7 @@
             '../third_party/npapi/npapi.gyp:*',
             '../third_party/sqlite/sqlite.gyp:*',
             '../third_party/zlib/zlib.gyp:*',
+            '../webkit/support/webkit_support_in_chromium.gyp:*',
             '../webkit/webkit.gyp:*',
 
             '../build/temp_gyp/googleurl.gyp:*',

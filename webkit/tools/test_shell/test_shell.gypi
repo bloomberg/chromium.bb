@@ -37,12 +37,12 @@
         '<(DEPTH)/testing/gmock.gyp:gmock',
         '<(DEPTH)/testing/gtest.gyp:gtest',
         '<(DEPTH)/third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
-        '<(DEPTH)/webkit/webkit.gyp:appcache',
-        '<(DEPTH)/webkit/webkit.gyp:database',
-        '<(DEPTH)/webkit/webkit.gyp:glue',
+        '<(DEPTH)/webkit/support/webkit_support_in_chromium.gyp:appcache',
+        '<(DEPTH)/webkit/support/webkit_support_in_chromium.gyp:database',
+        '<(DEPTH)/webkit/support/webkit_support_in_chromium.gyp:glue',
+        '<(DEPTH)/webkit/support/webkit_support_in_chromium.gyp:webkit_resources',
+        '<(DEPTH)/webkit/support/webkit_support_in_chromium.gyp:webkit_support',
         '<(DEPTH)/webkit/webkit.gyp:inspector_resources',
-        '<(DEPTH)/webkit/webkit.gyp:webkit_resources',
-        '<(DEPTH)/webkit/webkit.gyp:webkit_support',
         'npapi_layout_test_plugin',
       ],
       'msvs_guid': '77C32787-1B96-CB84-B905-7F170629F0AC',
@@ -115,7 +115,7 @@
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
-        '<(DEPTH)/webkit/webkit.gyp:glue',
+        '<(DEPTH)/webkit/support/webkit_support_in_chromium.gyp:glue',
       ],
       'conditions': [
         # http://code.google.com/p/chromium/issues/detail?id=18337
@@ -347,8 +347,8 @@
         }, { # OS != "mac"
           'dependencies': [
             '<(DEPTH)/net/net.gyp:net_resources',
-            '<(DEPTH)/webkit/webkit.gyp:webkit_resources',
-            '<(DEPTH)/webkit/webkit.gyp:webkit_strings',
+            '<(DEPTH)/webkit/support/webkit_support_in_chromium.gyp:webkit_resources',
+            '<(DEPTH)/webkit/support/webkit_support_in_chromium.gyp:webkit_strings',
           ]
         }],
       ],
