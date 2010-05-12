@@ -148,6 +148,88 @@ TEST_F(ExtensionMenuManagerTest, ChildFunctions) {
   ASSERT_EQ(0, item2->child_count());
 }
 
+// Tests changing parents.
+TEST_F(ExtensionMenuManagerTest, ChangeParent) {
+  // First create two items and add them both to the manager.
+  ExtensionMenuItem* item1 = CreateTestItem(NULL);
+  ExtensionMenuItem* item2 = CreateTestItem(NULL);
+
+  int id1 = manager_.AddContextItem(item1);
+  ASSERT_GT(id1, 0);
+  int id2 = manager_.AddContextItem(item2);
+  ASSERT_GT(id2, 0);
+
+  std::vector<const ExtensionMenuItem*> items =
+      manager_.MenuItems(item1->extension_id());
+  ASSERT_EQ(2u, items.size());
+  ASSERT_EQ(item1, items.at(0));
+  ASSERT_EQ(item2, items.at(1));
+
+  // Now create a third item, initially add it as a child of item1, then move
+  // it to be a child of item2.
+  ExtensionMenuItem* item3 = CreateTestItem(NULL);
+
+  int id3 = manager_.AddChildItem(id1, item3);
+  ASSERT_GT(id3, 0);
+  ASSERT_EQ(1, item1->child_count());
+  ASSERT_EQ(item3, item1->ChildAt(0));
+
+  ASSERT_TRUE(manager_.ChangeParent(id3, id2));
+  ASSERT_EQ(0, item1->child_count());
+  ASSERT_EQ(1, item2->child_count());
+  ASSERT_EQ(item3, item2->ChildAt(0));
+
+  // Move item2 to be a child of item1.
+  ASSERT_TRUE(manager_.ChangeParent(id2, id1));
+  ASSERT_EQ(1, item1->child_count());
+  ASSERT_EQ(item2, item1->ChildAt(0));
+  ASSERT_EQ(1, item2->child_count());
+  ASSERT_EQ(item3, item2->ChildAt(0));
+
+  // Since item2 was a top-level item but is no longer, we should only have 1
+  // top-level item.
+  items = manager_.MenuItems(item1->extension_id());
+  ASSERT_EQ(1u, items.size());
+  ASSERT_EQ(item1, items.at(0));
+
+  // Move item3 back to being a child of item1, so it's now a sibling of item2.
+  ASSERT_TRUE(manager_.ChangeParent(id3, id1));
+  ASSERT_EQ(2, item1->child_count());
+  ASSERT_EQ(item2, item1->ChildAt(0));
+  ASSERT_EQ(item3, item1->ChildAt(1));
+
+  // Try switching item3 to be the parent of item1 - this should fail.
+  ASSERT_FALSE(manager_.ChangeParent(id1, id3));
+  ASSERT_EQ(0, item3->child_count());
+  ASSERT_EQ(2, item1->child_count());
+  ASSERT_EQ(item2, item1->ChildAt(0));
+  ASSERT_EQ(item3, item1->ChildAt(1));
+  items = manager_.MenuItems(item1->extension_id());
+  ASSERT_EQ(1u, items.size());
+  ASSERT_EQ(item1, items.at(0));
+
+  // Move item2 to be a top-level item.
+  ASSERT_TRUE(manager_.ChangeParent(id2, 0));
+  items = manager_.MenuItems(item1->extension_id());
+  ASSERT_EQ(2u, items.size());
+  ASSERT_EQ(item1, items.at(0));
+  ASSERT_EQ(item2, items.at(1));
+  ASSERT_EQ(1, item1->child_count());
+  ASSERT_EQ(item3, item1->ChildAt(0));
+
+  // Make sure you can't move a node to be a child of another extension's item.
+  DictionaryValue properties;
+  properties.SetString(L"extension_id", "4444");
+  ExtensionMenuItem* item4 = CreateTestItem(&properties);
+  int id4 = manager_.AddContextItem(item4);
+  ASSERT_GT(id4, 0);
+  ASSERT_FALSE(manager_.ChangeParent(id4, id1));
+  ASSERT_FALSE(manager_.ChangeParent(id1, id4));
+
+  // Make sure you can't make an item be it's own parent.
+  ASSERT_FALSE(manager_.ChangeParent(id1, id1));
+}
+
 // Tests that we properly remove an extension's menu item when that extension is
 // unloaded.
 TEST_F(ExtensionMenuManagerTest, ExtensionUnloadRemovesMenuItems) {
@@ -220,6 +302,42 @@ class MockTestingProfile : public TestingProfile {
  private:
   DISALLOW_COPY_AND_ASSIGN(MockTestingProfile);
 };
+
+// Tests the RemoveAll functionality.
+TEST_F(ExtensionMenuManagerTest, RemoveAll) {
+  // Try removing all items for an extension id that doesn't have any items.
+  manager_.RemoveAllContextItems("CCCC");
+
+  // Add 2 top-level and one child item for extension id AAAA.
+  DictionaryValue properties;
+  properties.SetString(L"extension_id", "AAAA");
+  ExtensionMenuItem* item1 = CreateTestItem(&properties);
+  ExtensionMenuItem* item2 = CreateTestItem(&properties);
+  ExtensionMenuItem* item3 = CreateTestItem(&properties);
+  int id1 = manager_.AddContextItem(item1);
+  int id2 = manager_.AddContextItem(item2);
+  EXPECT_GT(id1, 0);
+  EXPECT_GT(id2, 0);
+  int id3 = manager_.AddChildItem(id1, item3);
+  EXPECT_GT(id3, 0);
+
+  // Add one top-level item for extension id BBBB.
+  properties.SetString(L"extension_id", "BBBB");
+  ExtensionMenuItem* item4 = CreateTestItem(&properties);
+  manager_.AddContextItem(item4);
+
+  EXPECT_EQ(2u, manager_.MenuItems("AAAA").size());
+  EXPECT_EQ(1u, manager_.MenuItems("BBBB").size());
+
+  // Remove the BBBB item.
+  manager_.RemoveAllContextItems("BBBB");
+  EXPECT_EQ(2u, manager_.MenuItems("AAAA").size());
+  EXPECT_EQ(0u, manager_.MenuItems("BBBB").size());
+
+  // Remove the AAAA items.
+  manager_.RemoveAllContextItems("AAAA");
+  EXPECT_EQ(0u, manager_.MenuItems("AAAA").size());
+}
 
 TEST_F(ExtensionMenuManagerTest, ExecuteCommand) {
   MessageLoopForUI message_loop;

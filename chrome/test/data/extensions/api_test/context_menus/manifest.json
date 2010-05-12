@@ -1,0 +1,7 @@
+{
+  "name": "chrome.extension.contextMenu",
+  "version": "0.1",
+  "description": "end-to-end browser test for chrome.contextMenu API",
+  "background_page": "test.html",
+  "permissions": ["experimental"]
+}

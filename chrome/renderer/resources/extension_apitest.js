@@ -19,9 +19,15 @@ var chrome = chrome || {};
     throw "completed";
   }
 
+  // Helper function to get around the fact that function names in javascript
+  // are read-only, and you can't assign one to anonymous functions.
+  function testName(test) {
+    return test.name || test.generatedName;
+  }
+
   chrome.test.fail = function(message) {
     if (completed) throw "completed";
-    chrome.test.log("(  FAILED  ) " + currentTest.name);
+    chrome.test.log("(  FAILED  ) " + testName(currentTest));
 
     var stack = "(no stack available)";
     try {
@@ -38,7 +44,7 @@ var chrome = chrome || {};
       message = "FAIL (no message)";
     }
     message += "\n" + stack;
-    console.log("[FAIL] " + currentTest.name + ": " + message);
+    console.log("[FAIL] " + testName(currentTest) + ": " + message);
     chrome.test.notifyFail(message);
     complete();
   };
@@ -53,7 +59,7 @@ var chrome = chrome || {};
 
   var pendingCallbacks = 0;
 
-  chrome.test.callbackAdded = function () {
+  chrome.test.callbackAdded = function() {
     pendingCallbacks++;
 
     return function() {
@@ -73,18 +79,18 @@ var chrome = chrome || {};
       return;
     }
     try {
-      chrome.test.log("( RUN      ) " + currentTest.name);
+      chrome.test.log("( RUN      ) " + testName(currentTest));
       currentTest.call();
     } catch (e) {
       var message = e.stack || "(no stack available)";
-      console.log("[FAIL] " + currentTest.name + ": " + message);
+      console.log("[FAIL] " + testName(currentTest) + ": " + message);
       chrome.test.notifyFail(message);
       complete();
     }
   };
 
   chrome.test.succeed = function() {
-    console.log("[SUCCESS] " + currentTest.name);
+    console.log("[SUCCESS] " + testName(currentTest));
     chrome.test.log("(  SUCCESS )");
     // Use setTimeout here to allow previous test contexts to be
     // eligible for garbage collection.
@@ -106,11 +112,11 @@ var chrome = chrome || {};
 
   chrome.test.assertEq = function(expected, actual) {
     if (expected != actual) {
-      chrome.test.fail("API Test Error in " + currentTest.name +
+      chrome.test.fail("API Test Error in " + testName(currentTest) +
                        "\nActual: " + actual + "\nExpected: " + expected);
     }
     if (typeof(expected) != typeof(actual)) {
-      chrome.test.fail("API Test Error in " + currentTest.name +
+      chrome.test.fail("API Test Error in " + testName(currentTest) +
                        " (type mismatch)\nActual Type: " + typeof(actual) +
                        "\nExpected Type:" + typeof(expected));
     }
@@ -134,9 +140,9 @@ var chrome = chrome || {};
         stack = e.stack.toString();
       }
       var msg = "Exception during execution of callback in " +
-                currentTest.name;
+                testName(currentTest);
       msg += "\n" + stack;
-      console.log("[FAIL] " + currentTest.name + ": " + msg);
+      console.log("[FAIL] " + testName(currentTest) + ": " + msg);
       chrome.test.notifyFail(msg);
       complete();
     }

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_menu_manager.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -39,15 +41,42 @@ ExtensionMenuItem* ExtensionMenuItem::ChildAt(int index) const {
 }
 
 bool ExtensionMenuItem::RemoveChild(int child_id) {
+  ExtensionMenuItem* child = ReleaseChild(child_id, true);
+  if (child) {
+    delete child;
+    return true;
+  } else {
+    return false;
+  }
+}
+
+ExtensionMenuItem* ExtensionMenuItem::ReleaseChild(int child_id,
+                                                   bool recursive) {
   for (List::iterator i = children_.begin(); i != children_.end(); ++i) {
+    ExtensionMenuItem* child = NULL;
     if ((*i)->id() == child_id) {
+      child = i->release();
       children_.erase(i);
-      return true;
-    } else if ((*i)->RemoveChild(child_id)) {
-      return true;
+      return child;
+    } else if (recursive) {
+      child = (*i)->ReleaseChild(child_id, recursive);
+      if (child)
+        return child;
     }
   }
-  return false;
+  return NULL;
+}
+
+std::set<int> ExtensionMenuItem::RemoveAllDescendants() {
+  std::set<int> result;
+  for (List::iterator i = children_.begin(); i != children_.end(); ++i) {
+    ExtensionMenuItem* child = i->get();
+    result.insert(child->id());
+    std::set<int> removed = child->RemoveAllDescendants();
+    result.insert(removed.begin(), removed.end());
+  }
+  children_.clear();
+  return result;
 }
 
 string16 ExtensionMenuItem::TitleWithReplacement(
@@ -133,31 +162,120 @@ int ExtensionMenuManager::AddChildItem(int parent_id,
   return child->id();
 }
 
-bool ExtensionMenuManager::RemoveContextMenuItem(int id) {
-  if (items_by_id_.find(id) == items_by_id_.end())
+bool ExtensionMenuManager::DescendantOf(ExtensionMenuItem* item,
+                                        int ancestor_id) {
+  DCHECK_GT(ancestor_id, 0);
+
+  // Work our way up the tree until we find the ancestor or 0.
+  int id = item->parent_id();
+  while (id > 0) {
+    DCHECK(id != item->id());  // Catch circular graphs.
+    if (id == ancestor_id)
+      return true;
+    ExtensionMenuItem* next = GetItemById(id);
+    if (!next) {
+      NOTREACHED();
+      return false;
+    }
+    id = next->parent_id();
+  }
+  return false;
+}
+
+bool ExtensionMenuManager::ChangeParent(int child_id, int parent_id) {
+  ExtensionMenuItem* child = GetItemById(child_id);
+  ExtensionMenuItem* new_parent = GetItemById(parent_id);
+  if (child_id == parent_id || !child || (!new_parent && parent_id > 0) ||
+      (new_parent && (DescendantOf(new_parent, child_id) ||
+                      child->extension_id() != new_parent->extension_id())))
     return false;
 
-  MenuItemMap::iterator i;
-  for (i = context_items_.begin(); i != context_items_.end(); ++i) {
+  int old_parent_id = child->parent_id();
+  if (old_parent_id > 0) {
+    ExtensionMenuItem* old_parent = GetItemById(old_parent_id);
+    if (!old_parent) {
+      NOTREACHED();
+      return false;
+    }
+    ExtensionMenuItem* taken =
+      old_parent->ReleaseChild(child_id, false /* non-recursive search*/);
+    DCHECK(taken == child);
+  } else {
+    // This is a top-level item, so we need to pull it out of our list of
+    // top-level items.
+    DCHECK_EQ(0, old_parent_id);
+    MenuItemMap::iterator i = context_items_.find(child->extension_id());
+    if (i == context_items_.end()) {
+      NOTREACHED();
+      return false;
+    }
     ExtensionMenuItem::List& list = i->second;
-    ExtensionMenuItem::List::iterator j;
-    for (j = list.begin(); j < list.end(); ++j) {
-      // See if the current item is a match, or if one of its children was.
-      if ((*j)->id() == id) {
-        list.erase(j);
-        items_by_id_.erase(id);
-        return true;
-      } else if ((*j)->RemoveChild(id)) {
-        items_by_id_.erase(id);
-        return true;
-      }
+    ExtensionMenuItem::List::iterator j = std::find(list.begin(), list.end(),
+                                                    child);
+    if (j == list.end()) {
+      NOTREACHED();
+      return false;
+    }
+    j->release();
+    list.erase(j);
+  }
+
+  if (new_parent) {
+    new_parent->AddChild(child);
+  } else {
+    context_items_[child->extension_id()].push_back(
+        linked_ptr<ExtensionMenuItem>(child));
+    child->parent_id_ = 0;
+  }
+  return true;
+}
+
+bool ExtensionMenuManager::RemoveContextMenuItem(int id) {
+  if (!ContainsKey(items_by_id_, id))
+    return false;
+
+  std::string extension_id = GetItemById(id)->extension_id();
+  MenuItemMap::iterator i = context_items_.find(extension_id);
+  if (i == context_items_.end()) {
+    NOTREACHED();
+    return false;
+  }
+
+  ExtensionMenuItem::List& list = i->second;
+  ExtensionMenuItem::List::iterator j;
+  for (j = list.begin(); j < list.end(); ++j) {
+    // See if the current item is a match, or if one of its children was.
+    if ((*j)->id() == id) {
+      list.erase(j);
+      items_by_id_.erase(id);
+      return true;
+    } else if ((*j)->RemoveChild(id)) {
+      items_by_id_.erase(id);
+      return true;
     }
   }
   NOTREACHED();  // The check at the very top should prevent getting here.
   return false;
 }
 
-ExtensionMenuItem* ExtensionMenuManager::GetItemById(int id) {
+void ExtensionMenuManager::RemoveAllContextItems(std::string extension_id) {
+  ExtensionMenuItem::List::iterator i;
+  for (i = context_items_[extension_id].begin();
+       i != context_items_[extension_id].end(); ++i) {
+    ExtensionMenuItem* item = i->get();
+    items_by_id_.erase(item->id());
+
+    // Remove descendants from this item and erase them from the lookup cache.
+    std::set<int> removed_ids = item->RemoveAllDescendants();
+    for (std::set<int>::const_iterator j = removed_ids.begin();
+        j != removed_ids.end(); ++j) {
+      items_by_id_.erase(*j);
+    }
+  }
+  context_items_.erase(extension_id);
+}
+
+ExtensionMenuItem* ExtensionMenuManager::GetItemById(int id) const {
   std::map<int, ExtensionMenuItem*>::const_iterator i = items_by_id_.find(id);
   if (i != items_by_id_.end())
     return i->second;

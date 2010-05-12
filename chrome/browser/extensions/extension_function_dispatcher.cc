@@ -215,7 +215,9 @@ void FactoryRegistry::ResetFunctions() {
 
   // Context Menus.
   RegisterFunction<CreateContextMenuFunction>();
+  RegisterFunction<UpdateContextMenuFunction>();
   RegisterFunction<RemoveContextMenuFunction>();
+  RegisterFunction<RemoveAllContextMenusFunction>();
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {

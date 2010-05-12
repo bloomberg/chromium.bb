@@ -1503,7 +1503,7 @@
         "type": "function",
         "description": "Shows an infobar in the specified tab. The infobar will be closed automatically when the tab navigates. Use window.close() to close the infobar before then.",
         "parameters": [
-          { 
+          {
             "name": "details",
             "type": "object",
             "properties": {
@@ -2496,11 +2496,11 @@
       {
         "name": "create",
         "type": "function",
-        "description": "An API to add items to context menus.",        
+        "description": "An API to add items to context menus.",
         "parameters": [
           {
             "type": "object",
-            "name": "createProperties", 
+            "name": "createProperties",
             "properties": {
               "type": {
                 "type": "string",
@@ -2535,7 +2535,7 @@
                 "type": "function",
                 "optional": true,
                 "description": "Function to be called back when your menu item or one of its children is clicked."
-              }, 
+              },
               "parentId": {
                 "type": "integer",
                 "optional": true,
@@ -2558,6 +2558,65 @@
         ]
       },
       {
+        "name": "update",
+        "type": "function",
+        "description": "Update a previously created context menu item.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "id",
+            "description": "The id of the item to update."
+          },
+          {
+            "type": "object",
+            "name": "updateProperties",
+            "description": "The properties to update. Accepts the same values as the create function.",
+            "properties": {
+              "type": {
+                "type": "string",
+                "optional": true
+              },
+              "title": {
+                "type": "string",
+                "optional": "true"
+              },
+              "checked": {
+                "type": "boolean",
+                "optional": true
+              },
+              "contexts": {
+                "type": "array",
+                "items": {"type": "string"},
+                "minItems": 1,
+                "optional": true
+              },
+              "enabledContexts": {
+                "type": "array",
+                "optional": true,
+                "items": {"type": "string"},
+                "minItems": 1
+              },
+              "onclick": {
+                "type": "function",
+                "optional": true
+              },
+              "parentId": {
+                "type": "integer",
+                "optional": true,
+                "description": "Note: you cannot change an item to be a child of one of it's own descendants."
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [],
+            "description": "Called when the context menu has been updated."
+          }
+        ]
+      },
+      {
         "name": "remove",
         "type": "function",
         "description": "Remove a context menu item.",
@@ -2575,8 +2634,22 @@
             "description": "Called when the context menu has been removed."
           }
         ]
+      },
+      {
+        "name": "removeAll",
+        "type": "function",
+        "description": "Remove all context menu items added by this extension.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [],
+            "description": "Called when removal is complete."
+          }
+        ]
       }
-    ]  
+    ]
   },
   {
     "namespace": "experimental.metrics",

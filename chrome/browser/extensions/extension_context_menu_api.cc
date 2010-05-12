@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_context_menu_api.h"
 
-#include "chrome/browser/extensions/extension_menu_manager.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
 
@@ -22,11 +22,12 @@ const char kCheckedError[] =
 const char kParentsMustBeNormalError[] =
     "Parent items must have type NORMAL";
 
-bool ParseContexts(const DictionaryValue* properties,
-                   const std::wstring& key,
-                   ExtensionMenuItem::ContextList* result) {
+bool ExtensionContextMenuFunction::ParseContexts(
+    const DictionaryValue& properties,
+    const wchar_t* key,
+    ExtensionMenuItem::ContextList* result) {
   ListValue* list = NULL;
-  if (!properties->GetList(key, &list)) {
+  if (!properties.GetList(key, &list)) {
     return true;
   }
   ExtensionMenuItem::ContextList tmp_result;
@@ -36,72 +37,136 @@ bool ParseContexts(const DictionaryValue* properties,
     if (!list->GetString(i, &value))
       return false;
 
-    if (value == "ALL")
+    if (value == "ALL") {
       tmp_result.Add(ExtensionMenuItem::ALL);
-    else if (value == "PAGE")
+    } else if (value == "PAGE") {
       tmp_result.Add(ExtensionMenuItem::PAGE);
-    else if (value == "SELECTION")
+    } else if (value == "SELECTION") {
       tmp_result.Add(ExtensionMenuItem::SELECTION);
-    else if (value == "LINK")
+    } else if (value == "LINK") {
       tmp_result.Add(ExtensionMenuItem::LINK);
-    else if (value == "EDITABLE")
+    } else if (value == "EDITABLE") {
       tmp_result.Add(ExtensionMenuItem::EDITABLE);
-    else if (value == "IMAGE")
+    } else if (value == "IMAGE") {
       tmp_result.Add(ExtensionMenuItem::IMAGE);
-    else if (value == "VIDEO")
+    } else if (value == "VIDEO") {
       tmp_result.Add(ExtensionMenuItem::VIDEO);
-    else if (value == "AUDIO")
+    } else if (value == "AUDIO") {
       tmp_result.Add(ExtensionMenuItem::AUDIO);
-    else
+    } else {
+      error_ = "Invalid value for " + WideToASCII(key);
       return false;
+    }
   }
   *result = tmp_result;
+  return true;
+}
+
+bool ExtensionContextMenuFunction::ParseType(
+    const DictionaryValue& properties,
+    const ExtensionMenuItem::Type& default_value,
+    ExtensionMenuItem::Type* result) {
+  DCHECK(result);
+  if (!properties.HasKey(kTypeKey)) {
+    *result = default_value;
+    return true;
+  }
+
+  std::string type_string;
+  if (!properties.GetString(kTypeKey, &type_string))
+    return false;
+
+  if (type_string == "NORMAL") {
+    *result = ExtensionMenuItem::NORMAL;
+  } else if (type_string == "CHECKBOX") {
+    *result = ExtensionMenuItem::CHECKBOX;
+  } else if (type_string == "RADIO") {
+    *result = ExtensionMenuItem::RADIO;
+  } else if (type_string == "SEPARATOR") {
+    *result = ExtensionMenuItem::SEPARATOR;
+  } else {
+    error_ = "Invalid type string '" + type_string + "'";
+    return false;
+  }
+  return true;
+}
+
+bool ExtensionContextMenuFunction::ParseChecked(
+    ExtensionMenuItem::Type type,
+    const DictionaryValue& properties,
+    bool default_value,
+    bool* checked) {
+  if (!properties.HasKey(kCheckedKey)) {
+    *checked = default_value;
+    return true;
+  }
+  if (!properties.GetBoolean(kCheckedKey, checked))
+    return false;
+  if (checked && type != ExtensionMenuItem::CHECKBOX &&
+      type != ExtensionMenuItem::RADIO) {
+    error_ = "Only CHECKBOX and RADIO type items can be checked";
+    return false;
+  }
+  return true;
+}
+
+bool ExtensionContextMenuFunction::GetParent(
+    const DictionaryValue& properties,
+    const ExtensionMenuManager& manager,
+    ExtensionMenuItem** result) {
+  if (!properties.HasKey(kParentIdKey))
+    return true;
+  int parent_id = 0;
+  if (properties.HasKey(kParentIdKey) &&
+      !properties.GetInteger(kParentIdKey, &parent_id))
+    return false;
+
+  ExtensionMenuItem* parent = manager.GetItemById(parent_id);
+  if (!parent) {
+    error_ = "Cannot find menu item with id " + IntToString(parent_id);
+    return false;
+  }
+  if (parent->type() != ExtensionMenuItem::NORMAL) {
+    error_ = kParentsMustBeNormalError;
+    return false;
+  }
+  *result = parent;
   return true;
 }
 
 bool CreateContextMenuFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
   const DictionaryValue* properties = args_as_dictionary();
+  EXTENSION_FUNCTION_VALIDATE(properties != NULL);
+
   std::string title;
-  if (properties->HasKey(kTitleKey))
-    EXTENSION_FUNCTION_VALIDATE(properties->GetString(kTitleKey, &title));
+  if (properties->HasKey(kTitleKey) &&
+      !properties->GetString(kTitleKey, &title))
+    return false;
 
   ExtensionMenuManager* menu_manager =
       profile()->GetExtensionsService()->menu_manager();
 
   ExtensionMenuItem::ContextList contexts(ExtensionMenuItem::PAGE);
-  if (!ParseContexts(properties, kContextsKey, &contexts))
-    EXTENSION_FUNCTION_ERROR("Invalid value for " + WideToASCII(kContextsKey));
+  if (!ParseContexts(*properties, kContextsKey, &contexts))
+    return false;
 
   ExtensionMenuItem::ContextList enabled_contexts = contexts;
-  if (!ParseContexts(properties, kEnabledContextsKey, &enabled_contexts))
-    EXTENSION_FUNCTION_ERROR("Invalid value for " +
-                             WideToASCII(kEnabledContextsKey));
+  if (!ParseContexts(*properties, kEnabledContextsKey, &enabled_contexts))
+    return false;
 
-  ExtensionMenuItem::Type type = ExtensionMenuItem::NORMAL;
-  if (properties->HasKey(kTypeKey)) {
-    std::string type_string;
-    EXTENSION_FUNCTION_VALIDATE(properties->GetString(kTypeKey, &type_string));
-    if (type_string == "CHECKBOX")
-      type = ExtensionMenuItem::CHECKBOX;
-    else if (type_string == "RADIO")
-      type = ExtensionMenuItem::RADIO;
-    else if (type_string == "SEPARATOR")
-      type = ExtensionMenuItem::SEPARATOR;
-    else if (type_string != "NORMAL")
-      EXTENSION_FUNCTION_ERROR("Invalid type string '" + type_string + "'");
+  ExtensionMenuItem::Type type;
+  if (!ParseType(*properties, ExtensionMenuItem::NORMAL, &type))
+    return false;
+
+  if (title.empty() && type != ExtensionMenuItem::SEPARATOR) {
+    error_ = kTitleNeededError;
+    return false;
   }
 
-  if (title.empty() && type != ExtensionMenuItem::SEPARATOR)
-    EXTENSION_FUNCTION_ERROR(kTitleNeededError);
-
-  bool checked = false;
-  if (properties->HasKey(kCheckedKey)) {
-    EXTENSION_FUNCTION_VALIDATE(properties->GetBoolean(kCheckedKey, &checked));
-    if (checked && type != ExtensionMenuItem::CHECKBOX &&
-        type != ExtensionMenuItem::RADIO)
-      EXTENSION_FUNCTION_ERROR(kCheckedError);
-  }
+  bool checked;
+  if (!ParseChecked(type, *properties, false, &checked))
+    return false;
 
   scoped_ptr<ExtensionMenuItem> item(
       new ExtensionMenuItem(extension_id(), title, checked, type, contexts,
@@ -110,23 +175,99 @@ bool CreateContextMenuFunction::RunImpl() {
   int id = 0;
   if (properties->HasKey(kParentIdKey)) {
     int parent_id = 0;
-    EXTENSION_FUNCTION_VALIDATE(properties->GetInteger(kParentIdKey,
-                                                       &parent_id));
+    if (properties->GetInteger(kParentIdKey, &parent_id))
+      return false;
     ExtensionMenuItem* parent = menu_manager->GetItemById(parent_id);
-    if (!parent)
-      EXTENSION_FUNCTION_ERROR("Cannot find menu item with id " +
-                               IntToString(parent_id));
-    if (parent->type() != ExtensionMenuItem::NORMAL)
-      EXTENSION_FUNCTION_ERROR(kParentsMustBeNormalError);
-
+    if (!parent) {
+      error_ = "Cannot find menu item with id " + IntToString(parent_id);
+      return false;
+    }
+    if (parent->type() != ExtensionMenuItem::NORMAL) {
+      error_ = kParentsMustBeNormalError;
+      return false;
+    }
     id = menu_manager->AddChildItem(parent_id, item.release());
   } else {
     id = menu_manager->AddContextItem(item.release());
   }
-  EXTENSION_FUNCTION_VALIDATE(id > 0);
+
+  if (id <= 0)
+    return false;
 
   if (has_callback())
     result_.reset(Value::CreateIntegerValue(id));
+
+  return true;
+}
+
+bool UpdateContextMenuFunction::RunImpl() {
+  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_LIST));
+  const ListValue* args = args_as_list();
+  int item_id = 0;
+  EXTENSION_FUNCTION_VALIDATE(args->GetInteger(0, &item_id));
+
+  ExtensionsService* service = profile()->GetExtensionsService();
+  ExtensionMenuManager* manager = service->menu_manager();
+  ExtensionMenuItem* item = manager->GetItemById(item_id);
+  if (!item || item->extension_id() != extension_id()) {
+    error_ = "Invalid menu item id: " + IntToString(item_id);
+    return false;
+  }
+
+  DictionaryValue *properties = NULL;
+  EXTENSION_FUNCTION_VALIDATE(args->GetDictionary(1, &properties));
+  EXTENSION_FUNCTION_VALIDATE(properties != NULL);
+
+  ExtensionMenuManager* menu_manager =
+      profile()->GetExtensionsService()->menu_manager();
+
+  // Type.
+  ExtensionMenuItem::Type type;
+  if (!ParseType(*properties, item->type(), &type))
+    return false;
+  if (type != item->type())
+    item->set_type(type);
+
+  // Title.
+  std::string title;
+  if (properties->HasKey(kTitleKey) &&
+      !properties->GetString(kTitleKey, &title))
+    return false;
+  if (title.empty() && type != ExtensionMenuItem::SEPARATOR) {
+    error_ = kTitleNeededError;
+    return false;
+  }
+  item->set_title(title);
+
+  // Checked state.
+  bool checked;
+  if (!ParseChecked(item->type(), *properties, item->checked(), &checked))
+    return false;
+  if (checked != item->checked()) {
+    if (!item->SetChecked(checked))
+      return false;
+  }
+
+  // Contexts.
+  ExtensionMenuItem::ContextList contexts(item->contexts());
+  if (!ParseContexts(*properties, kContextsKey, &contexts))
+    return false;
+  if (contexts != item->contexts())
+    item->set_contexts(contexts);
+
+  // Enabled contexts.
+  ExtensionMenuItem::ContextList enabled_contexts(item->contexts());
+  if (!ParseContexts(*properties, kEnabledContextsKey, &enabled_contexts))
+    return false;
+  if (enabled_contexts != item->enabled_contexts())
+    item->set_enabled_contexts(enabled_contexts);
+
+  // Parent id.
+  ExtensionMenuItem* parent = NULL;
+  if (!GetParent(*properties, *menu_manager, &parent))
+    return false;
+  if (parent && !menu_manager->ChangeParent(item->id(), parent->id()))
+    return false;
 
   return true;
 }
@@ -140,10 +281,17 @@ bool RemoveContextMenuFunction::RunImpl() {
 
   ExtensionMenuItem* item = manager->GetItemById(id);
   // Ensure one extension can't remove another's menu items.
-  if (!item || item->extension_id() != extension_id())
-    EXTENSION_FUNCTION_ERROR(
-        StringPrintf("no menu item with id %d is registered", id));
+  if (!item || item->extension_id() != extension_id()) {
+    error_ = StringPrintf("no menu item with id %d is registered", id);
+    return false;
+  }
 
-  EXTENSION_FUNCTION_VALIDATE(manager->RemoveContextMenuItem(id));
+  return manager->RemoveContextMenuItem(id);
+}
+
+bool RemoveAllContextMenusFunction::RunImpl() {
+  ExtensionsService* service = profile()->GetExtensionsService();
+  ExtensionMenuManager* manager = service->menu_manager();
+  manager->RemoveAllContextItems(extension_id());
   return true;
 }

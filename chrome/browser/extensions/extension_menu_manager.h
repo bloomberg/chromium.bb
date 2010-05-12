@@ -61,6 +61,14 @@ class ExtensionMenuItem {
       value_ = other.value_;
     }
 
+    bool operator==(const ContextList& other) const {
+      return value_ == other.value_;
+    }
+
+    bool operator!=(const ContextList& other) const {
+      return !(*this == other);
+    }
+
     bool Contains(Context context) const {
       return (value_ & context) > 0;
     }
@@ -89,11 +97,20 @@ class ExtensionMenuItem {
   Type type() const { return type_; }
   bool checked() const { return checked_; }
 
+  // Simple mutator methods.
+  void set_title(std::string new_title) { title_ = new_title; }
+  void set_contexts(ContextList contexts) { contexts_ = contexts; }
+  void set_enabled_contexts(ContextList contexts) { contexts_ = contexts; }
+  void set_type(Type type) { type_ = type; }
+
   // Returns the child at the given index, or NULL.
   ExtensionMenuItem* ChildAt(int index) const;
 
   // Returns the title with any instances of %s replaced by |selection|.
   string16 TitleWithReplacement(const string16& selection) const;
+
+  // Set the checked state to |checked|. Returns true if successful.
+  bool SetChecked(bool checked);
 
  protected:
   friend class ExtensionMenuManager;
@@ -107,15 +124,20 @@ class ExtensionMenuItem {
   // Provides direct access to the children of this item.
   List* children() { return &children_; }
 
-  // Set the checked state to |checked|. Returns true if successful.
-  bool SetChecked(bool checked);
-
   // Takes ownership of |item| and sets its parent_id_.
   void AddChild(ExtensionMenuItem* item);
 
   // Removes child menu item with the given id, returning true if the item was
   // found and removed, or false otherwise.
   bool RemoveChild(int child_id);
+
+  // Takes the child item from this parent. The item is returned and the caller
+  // then owns the pointer.
+  ExtensionMenuItem* ReleaseChild(int child_id, bool recursive);
+
+  // Recursively removes all descendant items (children, grandchildren, etc.),
+  // returning the ids of the removed items.
+  std::set<int> RemoveAllDescendants();
 
  private:
   // The extension that added this item.
@@ -175,13 +197,22 @@ class ExtensionMenuManager : public NotificationObserver {
   // error.  Has the side-effect of incrementing the next_item_id_ member.
   int AddChildItem(int parent_id, ExtensionMenuItem* child);
 
+  // Makes existing item with |child_id| a child of the item with |parent_id|.
+  // If the child item was already a child of another parent, this will remove
+  // it from that parent first. It is an error to try and move an item to be a
+  // child of one of its own descendants.
+  bool ChangeParent(int child_id, int parent_id);
+
   // Removes a context menu item with the given id (whether it is a top-level
   // item or a child of some other item), returning true if the item was found
   // and removed or false otherwise.
   bool RemoveContextMenuItem(int id);
 
+  // Removes all items for the given extension id.
+  void RemoveAllContextItems(std::string extension_id);
+
   // Returns the item with the given |id| or NULL.
-  ExtensionMenuItem* GetItemById(int id);
+  ExtensionMenuItem* GetItemById(int id) const;
 
   // Called when a menu item is clicked on by the user.
   void ExecuteCommand(Profile* profile, TabContents* tab_contents,
@@ -200,6 +231,9 @@ class ExtensionMenuManager : public NotificationObserver {
   // If an item with |id| is found, |item| will be set to point to it and
   // |index| will be set to its index within the containing list.
   void GetItemAndIndex(int id, ExtensionMenuItem** item, size_t* index);
+
+  // Returns true if item is a descendant of an item with id |ancestor_id|.
+  bool DescendantOf(ExtensionMenuItem* item, int ancestor_id);
 
   // We keep items organized by mapping an extension id to a list of items.
   typedef std::map<std::string, ExtensionMenuItem::List> MenuItemMap;
