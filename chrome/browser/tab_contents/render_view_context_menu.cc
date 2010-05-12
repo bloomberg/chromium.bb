@@ -600,7 +600,7 @@ void RenderViewContextMenu::AppendBidiSubMenu() {
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_RTL));
 
   menu_model_.AddSubMenu(
-      IDC_CONTENT_CONTEXT_WRITING_DIRECTION_MENU,
+      IDC_WRITING_DIRECTION_MENU,
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_MENU),
       &bidi_submenu_model_);
 }
@@ -839,7 +839,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_WRITING_DIRECTION_LTR:
       return params_.writing_direction_left_to_right &
           WebContextMenuData::CheckableMenuItemEnabled;
-    case IDC_CONTENT_CONTEXT_WRITING_DIRECTION_MENU:
+    case IDC_WRITING_DIRECTION_MENU:
       return true;
 #endif  // OS_MACOSX
 
