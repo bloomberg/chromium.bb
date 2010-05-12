@@ -35,13 +35,13 @@ TEST(LanguageLibraryTest, IsKeyboardLayout) {
 
 TEST(LanguageLibraryTest, GetLanguageCodeFromDescriptor) {
   EXPECT_EQ("ja", LanguageLibrary::GetLanguageCodeFromDescriptor(
-      InputMethodDescriptor("anthy", "Anthy", "ja")));
+      InputMethodDescriptor("anthy", "Anthy", "us", "ja")));
   EXPECT_EQ("zh-TW", LanguageLibrary::GetLanguageCodeFromDescriptor(
-      InputMethodDescriptor("chewing", "Chewing", "zh")));
+      InputMethodDescriptor("chewing", "Chewing", "us", "zh")));
   EXPECT_EQ("en-US", LanguageLibrary::GetLanguageCodeFromDescriptor(
-      InputMethodDescriptor("xkb:us::eng", "USA", "eng")));
+      InputMethodDescriptor("xkb:us::eng", "USA", "us", "eng")));
   EXPECT_EQ("en-UK", LanguageLibrary::GetLanguageCodeFromDescriptor(
-      InputMethodDescriptor("xkb:uk::eng", "United Kingdom", "eng")));
+      InputMethodDescriptor("xkb:uk::eng", "United Kingdom", "us", "eng")));
 }
 
 TEST(LanguageLibraryTest, GetKeyboardLayoutName) {
