@@ -64,6 +64,8 @@ ACCEPTABLE_ARGUMENTS = {
     'SYMBOLS': None,
     # Inherit environment variables instead of scrubbing environment.
     'USE_ENVIRON': None,
+    # assume we are building via bitcode
+    'bitcode': None,
     # enable building of apps that use multi media function
     'build_av_apps': None,
     # set build platform

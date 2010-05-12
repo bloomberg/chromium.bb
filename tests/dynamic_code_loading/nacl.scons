@@ -3,48 +3,62 @@
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
-
 Import('env')
+
+if ARGUMENTS.get('bitcode'):
+  Return()
+
+# This leaves a gap between the code and data segments.
+def GetLinkFlag(env):
+  if env['TARGET_ARCHITECTURE'] == 'arm':
+    # On ARM, we invoke the linker directly rather than via gcc.
+    # TODO(mseaborn): Change driver script to accept -Wl args.
+    return '--section-start .rodata=0x1000000'
+  else:
+    return '-Wl,--section-start,.rodata=0x1000000'
 
 # Using the default set of libraries fails to link in the ARM build.
 env.Replace(LIBS=['c', 'nacl'])
+# for building the tests
+env.Append(LINKFLAGS=GetLinkFlag(env))
+# for running the tests
+env['ENV']['NACLDYNCODE'] = '1'
 
-# This leaves a gap between the code and data segments.
-if env['TARGET_ARCHITECTURE'] == 'arm':
-  # On ARM, we invoke the linker directly rather than via gcc.
-  # TODO(mseaborn): Change driver script to accept -Wl args.
-  link_flag = '--section-start .rodata=0x1000000'
-  templates_file = 'templates_arm.S'
-else:
-  link_flag = '-Wl,--section-start,.rodata=0x1000000'
-  templates_file = 'templates_x86.S'
 
-dyncode_env = env.Clone()
-dyncode_env.Append(LINKFLAGS=link_flag)
-dyncode_env.ComponentProgram('dynamic_load_test.nexe',
-                             ['dynamic_load_test.c', templates_file])
-dyncode_env.ComponentProgram('write_to_dyncode.nexe',
-                             ['write_to_dyncode.c'])
-dyncode_env.ComponentProgram('dyncode_disabled_test.nexe',
-                             ['dyncode_disabled_test.c'])
+def GetTemplate(env):
+  if env['TARGET_ARCHITECTURE'] == 'arm':
+    return 'templates_arm.S'
+  else:
+    return 'templates_x86.S'
 
-enabled_env = env.Clone()
-enabled_env['ENV'] = enabled_env['ENV'].copy()
-enabled_env['ENV']['NACLDYNCODE'] = '1'
+env.ComponentProgram('dynamic_load_test.nexe',
+                     ['dynamic_load_test.c',
+                      GetTemplate(env)])
+
+env.ComponentProgram('write_to_dyncode.nexe',
+                     ['write_to_dyncode.c'])
+
+env.ComponentProgram('dyncode_disabled_test.nexe',
+                     ['dyncode_disabled_test.c'])
+
 
 tests = [
-  enabled_env.CommandSelLdrTestNacl(
-      'dynamic_load_test.out',
-      command=[env.File('dynamic_load_test.nexe')]),
-  enabled_env.CommandSelLdrTestNacl(
-      'write_to_dyncode.out',
-      command=[env.File('write_to_dyncode.nexe')],
-      exit_status='segfault',
-      stdout_golden=env.File('write_to_dyncode.stdout')),
-  env.CommandSelLdrTestNacl(
-      'dyncode_disabled_test.out',
-      command=[env.File('dyncode_disabled_test.nexe')]),
+    env.CommandSelLdrTestNacl(
+        'dynamic_load_test.out',
+        command=[env.File('dynamic_load_test.nexe')]
+        ),
+    env.CommandSelLdrTestNacl(
+        'write_to_dyncode.out',
+        command=[env.File('write_to_dyncode.nexe')],
+        exit_status='segfault',
+        stdout_golden=env.File('write_to_dyncode.stdout')
+        ),
+    env.CommandSelLdrTestNacl(
+        'dyncode_disabled_test.out',
+        command=[env.File('dyncode_disabled_test.nexe')]
+        ),
   ]
+
 env.AddNodeToTestSuite(tests,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_dynamic_load_test')
