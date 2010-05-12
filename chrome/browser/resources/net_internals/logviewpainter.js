@@ -123,43 +123,31 @@ function getTextForExtraParams(entry) {
   }
 }
 
+/**
+ * Indent |lines| by |start|.
+ *
+ * For example, if |start| = ' -> ' and |lines| = ['line1', 'line2', 'line3']
+ * the output will be:
+ *
+ *   " -> line1\n" +
+ *   "    line2\n" +
+ *   "    line3"
+ */
+function indentLines(start, lines) {
+  return start + lines.join('\n' + makeRepeatedString(' ', start.length));
+}
+
 function getTextForRequestHeadersExtraParam(entry) {
   var params = entry.extra_parameters;
 
-  // We prepend spaces to each line to make it line up with the arrow.
-  var firstLinePrefix = " --> "
-  var prefix = "     ";
-
-  var out = [];
-
   // Strip the trailing CRLF that params.line contains.
   var lineWithoutCRLF = params.line.replace(/\r\n$/g, '');
-  out.push(firstLinePrefix + lineWithoutCRLF);
 
-  // Concatenate all of the header lines.
-  for (var i = 0; i < params.headers.length; ++i)
-    out.push(prefix + params.headers[i]);
-
-  return out.join("\n");
+  return indentLines(' --> ', [lineWithoutCRLF].concat(params.headers));
 }
 
 function getTextForResponseHeadersExtraParam(entry) {
-  var headers = entry.extra_parameters.headers;
-
-  // We prepend spaces to each line to make it line up with the arrow.
-  var firstLinePrefix = " --> "
-  var prefix = "     ";
-
-  var out = [];
-
-  if (headers.length > 0)
-    out.push(firstLinePrefix + headers[0])
-
-  // Concatenate all the rest of the header lines.
-  for (var i = 1; i < headers.length; ++i)
-    out.push(prefix + headers[i]);
-
-  return out.join("\n");
+  return indentLines(' --> ', entry.extra_parameters.headers);
 }
 
 function getTextForEvent(entry) {
