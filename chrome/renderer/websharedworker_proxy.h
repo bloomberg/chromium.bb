@@ -39,14 +39,6 @@ class WebSharedWorkerProxy : public WebKit::WebSharedWorker,
   virtual void terminateWorkerContext();
   virtual void clientDestroyed();
 
-  // TODO(michaeln): Remove after the webkit API changes have rolled into view.
-  virtual void startWorkerContext(const WebKit::WebURL& script_url,
-                                  const WebKit::WebString& name,
-                                  const WebKit::WebString& user_agent,
-                                  const WebKit::WebString& source_code) {
-    startWorkerContext(script_url, name, user_agent, source_code, 0);
-  }
-
   // IPC::Channel::Listener implementation.
   void OnMessageReceived(const IPC::Message& message);
 

@@ -44,10 +44,7 @@ void WebSharedWorkerStub::OnStartWorkerContext(
   if (started_)
     return;
 
-  // TODO(michaeln): Fixup this callsite once
-  // https://bugs.webkit.org/show_bug.cgi?id=38605
-  // has landed and rolled into view.
-  impl_->startWorkerContext(url, name_, user_agent, source_code);
+  impl_->startWorkerContext(url, name_, user_agent, source_code, 0);
   started_ = true;
 
   // Process any pending connections.
