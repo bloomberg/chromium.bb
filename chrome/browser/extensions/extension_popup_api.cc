@@ -12,6 +12,9 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/renderer_host/render_view_host_delegate.h"
+#include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_details.h"
@@ -22,9 +25,6 @@
 #include "gfx/point.h"
 
 #if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/renderer_host/render_view_host_delegate.h"
-#include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/views/extensions/extension_popup.h"
 #include "views/view.h"
 #include "views/focus/focus_manager.h"
@@ -42,6 +42,8 @@ namespace {
 const char kBadAnchorArgument[] = "Invalid anchor argument.";
 const char kInvalidURLError[] = "Invalid URL.";
 const char kNotAnExtension[] = "Not an extension view.";
+const char kPopupsDisallowed[] =
+    "Popups are only supported from toolstrip or tab-contents views.";
 
 // Keys.
 const wchar_t kUrlKey[] = L"url";
@@ -70,7 +72,8 @@ const char kRectangleChrome[] = "rectangle";
 // containing view or any of *its* children.
 class ExtensionPopupHost : public ExtensionPopup::Observer,
                            public views::WidgetFocusChangeListener,
-                           public base::RefCounted<ExtensionPopupHost> {
+                           public base::RefCounted<ExtensionPopupHost>,
+                           public NotificationObserver {
  public:
   explicit ExtensionPopupHost(ExtensionFunctionDispatcher* dispatcher)
       : dispatcher_(dispatcher), popup_(NULL) {
@@ -85,9 +88,18 @@ class ExtensionPopupHost : public ExtensionPopup::Observer,
 
   void set_popup(ExtensionPopup* popup) {
     popup_ = popup;
+
+    // Now that a popup has been assigned, listen for subsequent popups being
+    // created in the same extension - we want to disallow more than one
+    // concurrently displayed popup windows.
+    registrar_.Add(
+        this,
+        NotificationType::EXTENSION_HOST_CREATED,
+        Source<ExtensionProcessManager>(
+            dispatcher_->profile()->GetExtensionProcessManager()));
   }
 
-  // Overriden from ExtensionPopup::Observer
+  // Overridden from ExtensionPopup::Observer
   virtual void ExtensionPopupClosed(ExtensionPopup* popup) {
     // Unregister the automation resource routing registered upon host
     // creation.
@@ -119,9 +131,13 @@ class ExtensionPopupHost : public ExtensionPopup::Observer,
     Release();  // Balanced in ctor.
   }
 
-  // Overriden from views::WidgetFocusChangeListener
+  // Overridden from views::WidgetFocusChangeListener
   virtual void NativeFocusWillChange(gfx::NativeView focused_before,
                                      gfx::NativeView focused_now) {
+    // If the popup doesn't exist, then do nothing.
+    if (!popup_)
+      return;
+
     // If no view is to be focused, then Chrome was deactivated, so hide the
     // popup.
     if (focused_now) {
@@ -130,10 +146,13 @@ class ExtensionPopupHost : public ExtensionPopup::Observer,
 
       // If the widget hosting the popup contains the newly focused view, then
       // don't dismiss the pop-up.
-      views::Widget* popup_root_widget = popup_->host()->view()->GetWidget();
-      if (popup_root_widget &&
-          popup_root_widget->ContainsNativeView(focused_now))
-        return;
+      ExtensionView* view = popup_->host()->view();
+      if (view) {
+        views::Widget* popup_root_widget = view->GetWidget();
+        if (popup_root_widget &&
+            popup_root_widget->ContainsNativeView(focused_now))
+          return;
+      }
 
       // If the widget or RenderWidgetHostView hosting the extension that
       // launched the pop-up is receiving focus, then don't dismiss the popup.
@@ -156,6 +175,23 @@ class ExtensionPopupHost : public ExtensionPopup::Observer,
         &ExtensionPopup::Close));
   }
 
+  // Overridden from NotificationObserver
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    DCHECK(NotificationType::EXTENSION_HOST_CREATED == type);
+    if (NotificationType::EXTENSION_HOST_CREATED == type) {
+      Details<ExtensionHost> details_host(details);
+      // Disallow multiple pop-ups from the same extension, by closing
+      // the presently opened popup during construction of any new popups.
+      if (ViewType::EXTENSION_POPUP == details_host->GetRenderViewType() &&
+          popup_->host()->extension() == details_host->extension() &&
+          Details<ExtensionHost>(popup_->host()) != details) {
+        popup_->Close();
+      }
+    }
+  }
+
  private:
   // Returns the AutomationResourceRoutingDelegate interface for |dispatcher|.
   static AutomationResourceRoutingDelegate*
@@ -176,6 +212,8 @@ class ExtensionPopupHost : public ExtensionPopup::Observer,
 
   // A pointer to the popup.
   ExtensionPopup* popup_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionPopupHost);
 };
@@ -211,6 +249,16 @@ void PopupShowFunction::Run() {
 }
 
 bool PopupShowFunction::RunImpl() {
+  // Popups may only be displayed from TAB_CONTENTS and EXTENSION_TOOLSTRIP
+  // views.
+  ViewType::Type view_type =
+      dispatcher()->render_view_host()->delegate()->GetRenderViewType();
+  if (ViewType::EXTENSION_TOOLSTRIP != view_type &&
+      ViewType::TAB_CONTENTS != view_type) {
+    error_ = kPopupsDisallowed;
+    return false;
+  }
+
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_LIST));
   const ListValue* args = args_as_list();
 
@@ -272,7 +320,6 @@ bool PopupShowFunction::RunImpl() {
     return false;
   }
 
-#if defined(TOOLKIT_VIEWS)
   gfx::Point origin(dom_left, dom_top);
   if (!dispatcher()->render_view_host()->view()) {
     error_ = kNotAnExtension;
@@ -284,14 +331,6 @@ bool PopupShowFunction::RunImpl() {
   origin.Offset(content_bounds.x(), content_bounds.y());
   gfx::Rect rect(origin.x(), origin.y(), dom_width, dom_height);
 
-  // Pop-up from extension views (ExtensionShelf, etc.), and drop-down when
-  // in a TabContents view.
-  ViewType::Type view_type =
-      dispatcher()->render_view_host()->delegate()->GetRenderViewType();
-  BubbleBorder::ArrowLocation arrow_location =
-      view_type == ViewType::TAB_CONTENTS ?
-          BubbleBorder::TOP_LEFT : BubbleBorder::BOTTOM_LEFT;
-
   // Get the correct native window to pass to ExtensionPopup.
   // ExtensionFunctionDispatcher::Delegate may provide a custom implementation
   // of this.
@@ -299,6 +338,13 @@ bool PopupShowFunction::RunImpl() {
       dispatcher()->delegate()->GetCustomFrameNativeWindow();
   if (!window)
     window = GetCurrentBrowser()->window()->GetNativeHandle();
+
+#if defined(TOOLKIT_VIEWS)
+  // Pop-up from extension views (ExtensionShelf, etc.), and drop-down when
+  // in a TabContents view.
+  BubbleBorder::ArrowLocation arrow_location =
+      view_type == ViewType::TAB_CONTENTS ?
+          BubbleBorder::TOP_LEFT : BubbleBorder::BOTTOM_LEFT;
 
   // ExtensionPopupHost manages it's own lifetime.
   ExtensionPopupHost* popup_host = new ExtensionPopupHost(dispatcher());
@@ -329,6 +375,8 @@ void PopupShowFunction::Observe(NotificationType type,
          type == NotificationType::EXTENSION_HOST_DESTROYED);
   DCHECK(popup_ != NULL);
 
+  // Wait for notification that the popup view is ready (and onload has been
+  // called), before completing the API call.
   if (popup_ && type == NotificationType::EXTENSION_POPUP_VIEW_READY &&
       Details<ExtensionHost>(popup_->host()) == details) {
     SendResponse(true);

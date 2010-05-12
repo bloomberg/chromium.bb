@@ -1054,6 +1054,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // finished.
   IPC_MESSAGE_ROUTED0(ViewHostMsg_DocumentAvailableInMainFrame)
 
+  // Sent when after the onload handler has been invoked for the document
+  // in the toplevel frame.
+  IPC_MESSAGE_ROUTED0(ViewHostMsg_DocumentOnLoadCompletedInMainFrame)
+
   // Sent when the renderer loads a resource from its memory cache.
   // The security info is non empty if the resource was originally loaded over
   // a secure connection.

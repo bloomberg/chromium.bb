@@ -111,8 +111,7 @@ window.onload = function() {
     },
     function popupBlackBorder() {
       // Ensure that the test waits until the popup is dismissed.
-      chrome.test.listenOnce(chrome.experimental.popup.onClosed,
-                             function() {});
+      chrome.test.listenOnce(chrome.experimental.popup.onClosed);
 
       // Validate that displaying a pop-up with a black border still invokes
       // the callback successfully.  Note that this test does not validate
@@ -126,6 +125,62 @@ window.onload = function() {
                                      chrome.test.callbackPass(function() {
         chrome.experimental.extension.getPopupView().close();
       }));
+    },
+    function disallowMultiplePopups() {
+      // This test ensures that for a given extension with a popup displayed,
+      // displaying a subsequent popup will dismiss the first.
+      var showDetails1 = {
+        "relativeTo": document.getElementById("anchorHere"),
+      };
+
+      var showDetails2 = {
+        "relativeTo": document.getElementById("anchorHere2"),
+        "borderStyle": "rectangle"
+      };
+
+      // Track the number of popups opened and closed, so that we can signal
+      // the test as completed when appropriate.
+      var numberClosed = 0;
+      var doneListening = chrome.test.listenForever(
+          chrome.experimental.popup.onClosed,
+          function() {
+        // This test expects to open and close two popups, so signify that
+        // the test has succeeded, after closing the second popup.
+        if (++numberClosed == 2) {
+          doneListening();
+        }
+      });
+      
+      chrome.experimental.popup.show("toolband_popup_a.html",
+                                     showDetails1,
+                                     function() {
+        // Validate that the popup view returned is the one we expect.
+        chrome.test.assertEq(
+            'a',
+            chrome.experimental.extension.getPopupView().getIdentity());
+
+        // Ensure that only one popup is open.
+        chrome.test.assertEq(
+            1,
+            chrome.extension.getViews({type: "popup"}).length);
+
+        chrome.experimental.popup.show("toolband_popup_b.html",
+                                       showDetails2,
+                                       function() {
+          // Validate that the first popup view is fully closed, and that
+          // getPopupView returns the most recently opened popup.
+          chrome.test.assertEq(
+              'b',
+              chrome.experimental.extension.getPopupView().getIdentity());
+
+          // Ensure that only one popup is open.
+          chrome.test.assertEq(
+              1,
+              chrome.extension.getViews({type: 'popup'}).length);
+
+          chrome.experimental.extension.getPopupView().close();
+        });
+      });
     },
     function popupChromeSizing() {
       // Ensure that the test waits until the popup is dismissed.
@@ -159,8 +214,11 @@ window.onload = function() {
 </script>
 </head>
 <body>
-<div>
-<span id="anchorHere">TEST</span>
+<div id="anchorHere">
+<span>TEST</span>
+</div>
+<div id="anchorHere2">
+<span>TESTING 2</span>
 </div>
 <form>
 <input id="entryForm" onfocus="onFormFocused();" onblur="onFormBlurred();"/>
