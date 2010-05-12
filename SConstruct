@@ -650,6 +650,14 @@ def CommandGdbTestNacl(env, name, command,
 
 pre_base_env.AddMethod(CommandGdbTestNacl)
 
+
+# ----------------------------------------------------------
+def AddToStringifiedList(lst, additions):
+  if not lst:
+    return additions
+  else:
+    return additions + "," + lst
+
 # ----------------------------------------------------------
 def CommandSelLdrTestNacl(env, name, command,
                           log_verbosity=2,
@@ -679,7 +687,9 @@ def CommandSelLdrTestNacl(env, name, command,
   if 'log_golden' in extra:
     logout = '${TARGET}.log'
     extra['logout'] = logout
-    extra['osenv'] = 'NACLLOG=%s,NACLVERBOSITY=%d' % (logout, log_verbosity)
+    extra_env  = 'NACLLOG=%s,NACLVERBOSITY=%d' % (logout, log_verbosity)
+    extra['osenv'] = AddToStringifiedList(extra.get('osenv'),
+                                          extra_env)
 
   return CommandTest(env, name, command, size, **extra)
 
@@ -745,10 +755,9 @@ def CommandTest(env, name, command, size='small',
     if direct_emulation:
       command = [emulator] + command
     else:
-      orig = extra.get('osenv', '')
-      if orig: orig = orig + ','
-      extra['osenv'] = (orig +
-                        'EMULATOR=%s' %  env['EMULATOR'].replace(' ', r'\ '))
+      extra_env = 'EMULATOR=%s' %  env['EMULATOR'].replace(' ', r'\ ')
+      extra['osenv'] = AddToStringifiedList(extra.get('osenv'),
+                                            extra_env)
 
   # extract deps from flags and rewrite
   for e in extra:
