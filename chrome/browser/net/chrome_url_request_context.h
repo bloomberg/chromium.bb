@@ -23,6 +23,7 @@
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/notification_registrar.h"
 #include "net/url_request/url_request_context.h"
+#include "webkit/database/database_tracker.h"
 
 class CommandLine;
 class Profile;
@@ -83,6 +84,11 @@ class ChromeURLRequestContext : public URLRequestContext {
   // May be NULL if requests for this context aren't subject to appcaching.
   ChromeAppCacheService* appcache_service() const {
     return appcache_service_.get();
+  }
+
+  // Gets the database tracker associated with this context's profile.
+  webkit_database::DatabaseTracker* database_tracker() const {
+    return database_tracker_.get();
   }
 
   bool is_off_the_record() const {
@@ -201,6 +207,9 @@ class ChromeURLRequestContext : public URLRequestContext {
   void set_appcache_service(ChromeAppCacheService* service) {
     appcache_service_ = service;
   }
+  void set_database_tracker(webkit_database::DatabaseTracker* tracker) {
+    database_tracker_ = tracker;
+  }
   void set_net_log(net::NetLog* net_log) {
     net_log_ = net_log;
   }
@@ -218,6 +227,7 @@ class ChromeURLRequestContext : public URLRequestContext {
   FilePath user_script_dir_path_;
 
   scoped_refptr<ChromeAppCacheService> appcache_service_;
+  scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;
   scoped_refptr<ChromeCookiePolicy> chrome_cookie_policy_;
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<HostZoomMap> host_zoom_map_;
@@ -381,6 +391,7 @@ class ChromeURLRequestContextFactory {
   // user scripts.
   FilePath user_script_dir_path_;
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
+  scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;
   scoped_refptr<HostZoomMap> host_zoom_map_;
   scoped_refptr<Blacklist> privacy_blacklist_;
   scoped_refptr<net::TransportSecurityState> transport_security_state_;

@@ -881,6 +881,7 @@ ChromeURLRequestContext::ChromeURLRequestContext(
   extension_info_ = other->extension_info_;
   user_script_dir_path_ = other->user_script_dir_path_;
   appcache_service_ = other->appcache_service_;
+  database_tracker_ = other->database_tracker_;
   chrome_cookie_policy_ = other->chrome_cookie_policy_;
   host_content_settings_map_ = other->host_content_settings_map_;
   host_zoom_map_ = other->host_zoom_map_;
@@ -969,6 +970,8 @@ ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
   profile_dir_path_ = profile->GetPath();
 
   cookie_monster_delegate_ = new ChromeCookieMonsterDelegate(profile);
+
+  database_tracker_ = profile->GetDatabaseTracker();
 }
 
 ChromeURLRequestContextFactory::~ChromeURLRequestContextFactory() {
@@ -992,6 +995,7 @@ void ChromeURLRequestContextFactory::ApplyProfileParametersToContext(
   context->set_transport_security_state(
       transport_security_state_);
   context->set_ssl_config_service(ssl_config_service_);
+  context->set_database_tracker(database_tracker_);
 }
 
 // ----------------------------------------------------------------------------
