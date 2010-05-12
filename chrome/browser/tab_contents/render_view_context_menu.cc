@@ -585,7 +585,8 @@ void RenderViewContextMenu::AppendSpellcheckOptionsSubMenu() {
   }
 
   menu_model_.AddSubMenu(
-      -1, l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLCHECK_MENU),
+      IDC_SPELLCHECK_MENU,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLCHECK_MENU),
       &spellcheck_submenu_model_);
 }
 
@@ -599,7 +600,7 @@ void RenderViewContextMenu::AppendBidiSubMenu() {
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_RTL));
 
   menu_model_.AddSubMenu(
-      -1,
+      IDC_CONTENT_CONTEXT_WRITING_DIRECTION_MENU,
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_MENU),
       &bidi_submenu_model_);
 }
@@ -838,6 +839,8 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_WRITING_DIRECTION_LTR:
       return params_.writing_direction_left_to_right &
           WebContextMenuData::CheckableMenuItemEnabled;
+    case IDC_CONTENT_CONTEXT_WRITING_DIRECTION_MENU:
+      return true;
 #endif  // OS_MACOSX
 
 #if defined(OS_LINUX)
@@ -850,6 +853,9 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDS_CONTENT_CONTEXT_PRINTFRAME:
     case IDS_CONTENT_CONTEXT_ADDSEARCHENGINE:  // Not implemented.
       return false;
+
+    case IDC_SPELLCHECK_MENU:
+      return true;
 
     default:
       NOTREACHED();
