@@ -289,20 +289,34 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
   const ContentSettingBubbleModel::BubbleContent& content =
       contentSettingBubbleModel_->bubble_content();
   NSRect containerFrame = [contentsContainer_ frame];
-  NSRect frame = NSMakeRect(0, 0, containerFrame.size.width, kGeoLabelHeight);
+  NSRect frame = NSMakeRect(0, 0, NSWidth(containerFrame), kGeoLabelHeight);
 
   // "Clear" button.
   if (!content.clear_link.empty()) {
     NSRect buttonFrame = NSMakeRect(0, 0,
-                                    containerFrame.size.width,
+                                    NSWidth(containerFrame),
                                     kGeoClearButtonHeight);
-    NSButton* button = [[NSButton alloc] initWithFrame:buttonFrame];
+    scoped_nsobject<NSButton> button([[NSButton alloc]
+                                      initWithFrame:buttonFrame]);
     [button setTitle:base::SysUTF8ToNSString(content.clear_link)];
     [button setTarget:self];
     [button setAction:@selector(clearGeolocationForCurrentHost:)];
     [button setBezelStyle:NSRoundRectBezelStyle];
     SetControlSize(button, NSSmallControlSize);
     [button sizeToFit];
+
+    // If the button is wider than the container, widen the window.
+    CGFloat buttonWidth = NSWidth([button frame]);
+    if (buttonWidth > NSWidth(containerFrame)) {
+      NSRect windowFrame = [[self window] frame];
+      windowFrame.size.width += buttonWidth - NSWidth(containerFrame);
+      [[self window] setFrame:windowFrame display:NO];
+      // Fetch the updated sizes.
+      containerFrame = [contentsContainer_ frame];
+      frame = NSMakeRect(0, 0, NSWidth(containerFrame), kGeoLabelHeight);
+    }
+
+    // Add the button.
     [contentsContainer_ addSubview:button];
 
     frame.origin.y = NSMaxY([button frame]) + kGeoPadding;
@@ -343,7 +357,7 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
 
   // Resize container to fit its subviews, and window to fit the container.
   NSRect windowFrame = [[self window] frame];
-  windowFrame.size.height += containerHeight - containerFrame.size.height;
+  windowFrame.size.height += containerHeight - NSHeight(containerFrame);
   [[self window] setFrame:windowFrame display:NO];
   containerFrame.size.height = containerHeight;
   [contentsContainer_ setFrame:containerFrame];
