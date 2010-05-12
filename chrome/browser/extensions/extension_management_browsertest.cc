@@ -123,11 +123,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, Incognito) {
   UninstallExtension("ldnnhddmnhbkjipkidpdiheffobcpfmf");
 }
 
-#if defined(OS_LINUX)
-// See http://crbug.com/32906.
-#define UpdatePermissions DISABLED_UpdatePermissions
-#endif
-
 // Tests the process of updating an extension to one that requires higher
 // permissions.
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, UpdatePermissions) {
@@ -186,9 +181,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, DisableEnable) {
   ASSERT_TRUE(service->HasInstalledExtensions());
 }
 
-// TODO(asargent): This test seems to crash on linux buildbots.
-// (http://crbug.com/31737)
-#if !defined(OS_LINUX)
 // Tests extension autoupdate.
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, AutoUpdate) {
   FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
@@ -242,4 +234,3 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, AutoUpdate) {
             extensions->at(size_before)->id());
   ASSERT_EQ("2.0", extensions->at(size_before)->VersionString());
 }
-#endif  // !defined(OS_LINUX)
