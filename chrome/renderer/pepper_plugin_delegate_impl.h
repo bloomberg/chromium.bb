@@ -6,11 +6,14 @@
 #define CHROME_RENDERER_PEPPER_PLUGIN_DELEGATE_IMPL_H_
 
 #include "base/basictypes.h"
+#include "base/weak_ptr.h"
 #include "webkit/glue/plugins/pepper_plugin_delegate.h"
 
 class RenderView;
 
-class PepperPluginDelegateImpl : public pepper::PluginDelegate {
+class PepperPluginDelegateImpl
+    : public pepper::PluginDelegate,
+      public base::SupportsWeakPtr<PepperPluginDelegateImpl> {
  public:
   explicit PepperPluginDelegateImpl(RenderView* render_view);
 
