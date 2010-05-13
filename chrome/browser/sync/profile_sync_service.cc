@@ -18,7 +18,6 @@
 #include "base/task.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
@@ -43,11 +42,8 @@ using browser_sync::SyncBackendHost;
 
 typedef GoogleServiceAuthError AuthError;
 
-const char* ProfileSyncService::kSyncServerUrl =
-    "https://clients4.google.com/chrome-sync";
-
-const char* ProfileSyncService::kDevServerUrl =
-    "https://clients4.google.com/chrome-sync";
+// Default sync server URL.
+static const char kSyncServerUrl[] = "https://clients4.google.com/chrome-sync";
 
 ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
                                        Profile* profile,
@@ -56,7 +52,7 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
       factory_(factory),
       profile_(profile),
       bootstrap_sync_authentication_(bootstrap_sync_authentication),
-      sync_service_url_(kDevServerUrl),
+      sync_service_url_(kSyncServerUrl),
       backend_initialized_(false),
       expecting_first_run_auth_needed_event_(false),
       is_auth_in_progress_(false),
@@ -70,25 +66,6 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
   registrar_.Add(this,
                  NotificationType::SYNC_CONFIGURE_DONE,
                  NotificationService::AllSources());
-
-  // By default, dev & chromium users will go to the development servers.
-  // Dev servers have more features than standard sync servers.
-  // Chrome stable and beta builds will go to the standard sync servers.
-#if defined(GOOGLE_CHROME_BUILD)
-  // For stable, this is "". For dev, this is "dev". For beta, this is "beta".
-  // For linux Chromium builds, this could be anything depending on the
-  // distribution, so always direct those users to dev server urls.
-  // If this is an official build, it will always be one of the above.
-  string16 channel = platform_util::GetVersionStringModifier();
-  if (channel == "" || channel == "beta") {
-    LOG(INFO) << "Detected official build, using official sync server.";
-    sync_service_url_ = kSyncServerUrl;
-  } else {
-    LOG(INFO) << "Detected official build, but using dev channel sync server.";
-  }
-#else
-  LOG(INFO) << "Unofficial build, using dev channel sync server.";
-#endif
 }
 
 ProfileSyncService::~ProfileSyncService() {
@@ -152,8 +129,6 @@ void ProfileSyncService::InitSettings() {
       }
     }
   }
-
-  LOG(INFO) << "Using " << sync_service_url_ << " for sync server URL.";
 
   if (command_line.HasSwitch(switches::kSyncNotificationMethod)) {
     const std::string notification_method_str(
