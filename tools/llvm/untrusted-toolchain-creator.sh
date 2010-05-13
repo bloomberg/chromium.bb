@@ -757,7 +757,12 @@ BuildAndInstallBinutils() {
 BuildAndInstallNewlib() {
   local saved_dir=$(pwd)
   local tmpdir=${TMP}/newlib
-  rm -rf ${NEWLIB_INSTALL_DIR}
+  # NOTE: When an argument is given to this fucntion we abuse it to generate
+  #       a bitcode version of the library. In the scenario we just want to
+  #       build libc.a and do install or uninstall anything.
+  if [ $# == 0 ] ; then
+    rm -rf ${NEWLIB_INSTALL_DIR}
+  fi
   Banner "building and installing newlib"
 
   cd ${tmpdir}/newlib-1.17.0

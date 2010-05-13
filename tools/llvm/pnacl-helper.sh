@@ -18,6 +18,7 @@ readonly PNACL_ARM_ROOT=${PNACL_TOOLCHAIN_ROOT}/arm
 readonly PNACL_X8632_ROOT=${PNACL_TOOLCHAIN_ROOT}/x8632
 readonly PNACL_X8664_ROOT=${PNACL_TOOLCHAIN_ROOT}/x8664
 readonly PNACL_BITCODE_ROOT=${PNACL_TOOLCHAIN_ROOT}/bitcode
+readonly PNACL_HG_CLIENT=${PNACL_TOOLCHAIN_ROOT}/hg
 
 readonly LLVM_DIS=$(readlink -f toolchain/linux_arm-untrusted/arm-none-linux-gnueabi/llvm/bin/llvm-dis)
 
@@ -269,6 +270,89 @@ verify() {
   for i in ${PNACL_BITCODE_ROOT}/*.o ; do
     VerifyLlvmObj $i
   done
+}
+
+#@
+#@ test-preparation
+#@
+#@   prepare for tests, i.e. set up the pnacl toolchain including"
+#@   * copying of native libraries from other toolchains
+#@   * building the bitcode libraries
+test-preparation() {
+  clean
+  organize-native-code
+  build-bitcode
+  verify
+}
+
+readonly SCONS_ARGS=(MODE=nacl
+                     platform=arm
+                     sdl=none
+                     naclsdk_validate=0
+                     sysinfo=
+                     bitcode=1)
+
+#@
+#@ test-arm
+#@
+#@   run arm tests via pnacl toolchain
+test-arm() {
+  ./scons platform=arm sdl=none naclsdk_validate=0 sel_ldr
+  export TARGET_CODE=bc-arm
+  rm -rf scons-out/nacl-arm
+  ./scons ${SCONS_ARGS[@]} \
+          force_sel_ldr=scons-out/opt-linux-arm/staging/sel_ldr \
+          smoke_tests "$@"
+}
+
+#@
+#@ test-x86-32
+#@
+#@   run x86-32 tests via pnacl toolchain
+test-x86-32() {
+  ./scons platform=x86-32 sdl=none naclsdk_validate=0 sel_ldr
+  export TARGET_CODE=bc-x86-32
+  rm -rf scons-out/nacl-arm
+  ./scons ${SCONS_ARGS[@]} \
+          force_emulator= \
+          force_sel_ldr=scons-out/opt-linux-x86-32/staging/sel_ldr \
+          smoke_tests "$@"
+}
+
+#@
+#@ test-x86-64
+#@
+#@   test-x86-64
+test-x86-64() {
+  ./scons platform=x86-32 sdl=none sel_ldr
+  export TARGET_CODE=bc-x86-64
+  rm -rf scons-out/nacl-arm
+  # TODO(robertm): NYI
+  echo "ERROR: NYI"
+  exit -1
+}
+
+#@
+#@ checkout-and-build-llc
+#@
+#@   checkout and build llc
+checkout-and-build-llc() {
+  Banner "creating llvm client in ${PNACL_HG_CLIENT}"
+  rm -rf ${PNACL_HG_CLIENT}
+  mkdir -p ${PNACL_HG_CLIENT}
+  cd ${PNACL_HG_CLIENT}
+  hg clone https://nacl-llvm-branches.googlecode.com/hg/ nacl-llvm-branches
+  cd  nacl-llvm-branches
+  hg up pnacl-sfi
+  cd llvm-trunk
+  ./configure --disable-jit \
+              --enable-optimized \
+              --enable-targets=x86,x86_64 \
+              --target=arm-none-linux-gnueabi
+  make -j 6 tools-only
+  echo "TODO(robetrm): add symlinks expected by llvm-fake.py"
+  Banner "your llvm client can be found in ${PNACL_HG_CLIENT}"
+  exit 0
 }
 
 ######################################################################
