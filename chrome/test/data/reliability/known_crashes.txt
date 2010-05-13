@@ -176,3 +176,6 @@ SUBSTRING : webcore::containernode::removechild___webcore::htmlparser::handleres
 
 # 44065
 PREFIX : webcore::reportfatalerrorinv8___v8::internal::v8::fatalprocessoutofmemory___v8::internal::setelement___v8::internal::runtime::setobjectproperty___v8::internal::runtime_setproperty
+
+# 44066
+PREFIX : views::view::propagatenativeviewhierarchychanged___views::rootview::notifynativeviewhierarchychanged___views::nativeviewhostwin::nativeviewdetaching___views::nativeviewhost::detach
