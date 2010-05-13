@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_VIEWS_BOOKMARK_BAR_VIEW_H_
 #define CHROME_BROWSER_VIEWS_BOOKMARK_BAR_VIEW_H_
 
+#include <set>
+
 #include "app/slide_animation.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
@@ -151,6 +153,9 @@ class BookmarkBarView : public DetachableToolbarView,
 
   // True if we're on a page where the bookmarks bar is always visible.
   bool OnNewTabPage() const;
+
+  // True if we're on an extension apps page.
+  bool OnAppsPage() const;
 
   // How much we want the bookmark bar to overlap the toolbar.  If |return_max|
   // is true, we return the maximum overlap rather than the current overlap.

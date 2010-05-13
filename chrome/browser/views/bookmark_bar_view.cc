@@ -464,9 +464,10 @@ gfx::Size BookmarkBarView::GetPreferredSize() {
   // We don't want the bookmark bar view in the app launcher new tab page.
   static bool extension_apps = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableApps);
-  bool show_bookmark_bar = !(extension_apps && OnNewTabPage());
+  bool hide_bookmark_bar = (extension_apps && OnNewTabPage()) ||
+                           OnAppsPage();
 
-  if (show_bookmark_bar)
+  if (!hide_bookmark_bar)
     return LayoutItems(true);
   else
     return gfx::Size();
@@ -759,6 +760,11 @@ bool BookmarkBarView::IsAlwaysShown() const {
 bool BookmarkBarView::OnNewTabPage() const {
   return (browser_ && browser_->GetSelectedTabContents() &&
           browser_->GetSelectedTabContents()->ShouldShowBookmarkBar());
+}
+
+bool BookmarkBarView::OnAppsPage() const {
+  return (browser_ && browser_->GetSelectedTabContents() &&
+          browser_->GetSelectedTabContents()->is_app());
 }
 
 int BookmarkBarView::GetToolbarOverlap(bool return_max) {
