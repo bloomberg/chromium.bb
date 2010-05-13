@@ -31,6 +31,8 @@ bool ServiceGaiaAuthenticator::Post(const GURL& url,
       FROM_HERE,
       NewRunnableMethod(this, &ServiceGaiaAuthenticator::DoPost, url,
                         post_body));
+  // TODO(sanjeevr): Waiting here until the network request completes is not
+  // desirable. We need to change Post to be asynchronous.
   if (!http_post_completed_.Wait())  // Block until network request completes.
     NOTREACHED();                    // See OnURLFetchComplete.
 
@@ -60,12 +62,12 @@ int ServiceGaiaAuthenticator::GetBackoffDelaySeconds(
 void ServiceGaiaAuthenticator::DoPost(const GURL& post_url,
                                       const std::string& post_body) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
-  request_.reset(new URLFetcher(post_url, URLFetcher::POST, this));
+  URLFetcher* request = new URLFetcher(post_url, URLFetcher::POST, this);
   ServiceURLRequestContextGetter* context_getter =
       new ServiceURLRequestContextGetter();
-  request_->set_request_context(context_getter);
-  request_->set_upload_data("application/x-www-form-urlencoded", post_body);
-  request_->Start();
+  request->set_request_context(context_getter);
+  request->set_upload_data("application/x-www-form-urlencoded", post_body);
+  request->Start();
 }
 
 // URLFetcher::Delegate implementation
@@ -76,6 +78,7 @@ void ServiceGaiaAuthenticator::OnURLFetchComplete(
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   http_response_code_ = response_code;
   response_data_ = data;
+  delete source;
   // Add an extra reference because we want http_post_completed_ to remain
   // valid until after Signal() returns.
   scoped_refptr<ServiceGaiaAuthenticator> keep_alive(this);

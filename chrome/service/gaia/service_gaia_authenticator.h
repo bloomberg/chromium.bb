@@ -48,7 +48,6 @@ class ServiceGaiaAuthenticator
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
   int http_response_code_;
   std::string response_data_;
-  scoped_ptr<URLFetcher> request_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceGaiaAuthenticator);
 };
