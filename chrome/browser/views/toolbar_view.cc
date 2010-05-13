@@ -198,6 +198,22 @@ void ToolbarView::RemoveMenuListener(views::MenuListener* listener) {
   }
 }
 
+void ToolbarView::SetCollapsed(bool val) {
+  if (collapsed_ == val)
+    return;
+
+  collapsed_ = val;
+
+  // When switching to and from collapsed view, we need to force hide/show the
+  // location bar entry view, like we do when we switch to full screen mode in
+  // BrowserView::ProcessFullscreen. Otherwise the text view can appear floating
+  // on top of web content.
+  if (collapsed_)
+    location_bar_->PushForceHidden();
+  else
+    location_bar_->PopForceHidden();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, FocusChangeListener overrides:
 

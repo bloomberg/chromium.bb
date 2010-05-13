@@ -198,6 +198,8 @@ class LocationBarView : public LocationBar,
   virtual AutocompleteEditView* location_entry() {
     return location_entry_.get();
   }
+  virtual void PushForceHidden();
+  virtual void PopForceHidden();
   virtual LocationBarTesting* GetLocationBarForTesting() { return this; }
 
   // Overridden from LocationBarTesting:
@@ -328,6 +330,10 @@ class LocationBarView : public LocationBar,
 
   // The mode that dictates how the bar shows.
   Mode mode_;
+
+  // Counts the number of times consumers have asked us to be hidden.
+  // We should actually be hidden iff this is greater than zero.
+  int force_hidden_count_;
 
   // Used schedule a task for the first run info bubble.
   ScopedRunnableMethodFactory<LocationBarView> first_run_bubble_;

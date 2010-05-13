@@ -88,7 +88,7 @@ class ToolbarView : public AccessibleToolbarView,
   views::MenuButton* page_menu() const { return page_menu_; }
   views::MenuButton* app_menu() const { return app_menu_; }
   bool collapsed() const { return collapsed_; }
-  void set_collapsed(bool val) { collapsed_ = val; }
+  void SetCollapsed(bool val);
 
   // Overridden from views::FocusChangeListener:
   virtual void FocusWillChange(views::View* focused_before,

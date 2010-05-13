@@ -659,12 +659,12 @@ void BrowserView::Show() {
   accessible_view_helper_.reset(new AccessibleViewHelper(
       this, browser_->profile()));
 
- #if defined(OS_LINUX)
+#if defined(OS_LINUX)
   if (!accessible_widget_helper_.get()) {
     accessible_widget_helper_.reset(new AccessibleWidgetHelper(
         GTK_WIDGET(GetWindow()->GetNativeWindow()), browser_->profile()));
   }
- #endif
+#endif
 
   // If the window is already visible, just activate it.
   if (frame_->GetWindow()->IsVisible()) {
@@ -1242,7 +1242,7 @@ void BrowserView::ToggleTabStripMode() {
 }
 
 void BrowserView::SetToolbarCollapsedMode(bool val) {
-  toolbar_->set_collapsed(val);
+  toolbar_->SetCollapsed(val);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1741,7 +1741,7 @@ void BrowserView::Init() {
   toolbar_->Init(browser_->profile());
   toolbar_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_TOOLBAR));
   if (browser_->type() == Browser::TYPE_EXTENSION_APP)
-    toolbar_->set_collapsed(true);
+    toolbar_->SetCollapsed(true);
 
   infobar_container_ = new InfoBarContainer(this);
   AddChildView(infobar_container_);
@@ -1970,10 +1970,6 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
   //     thus are slow and look ugly
   ignore_layout_ = true;
   LocationBarView* location_bar = toolbar_->location_bar();
-#if defined(OS_WIN)
-  AutocompleteEditViewWin* edit_view =
-      static_cast<AutocompleteEditViewWin*>(location_bar->location_entry());
-#endif
   if (!fullscreen) {
     // Hide the fullscreen bubble as soon as possible, since the mode toggle can
     // take enough time for the user to notice.
@@ -1985,15 +1981,12 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
     if (focus_manager->GetFocusedView() == location_bar)
       focus_manager->ClearFocus();
 
-#if defined(OS_WIN)
     // If we don't hide the edit and force it to not show until we come out of
     // fullscreen, then if the user was on the New Tab Page, the edit contents
     // will appear atop the web contents once we go into fullscreen mode.  This
     // has something to do with how we move the main window while it's hidden;
     // if we don't hide the main window below, we don't get this problem.
-    edit_view->set_force_hidden(true);
-    ShowWindow(edit_view->m_hWnd, SW_HIDE);
-#endif
+    location_bar->PushForceHidden();
   }
 #if defined(OS_WIN)
   frame_->GetWindow()->PushForceHidden();
@@ -2030,11 +2023,8 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
                                                         browser_.get()));
     }
   } else {
-#if defined(OS_WIN)
     // Show the edit again since we're no longer in fullscreen mode.
-    edit_view->set_force_hidden(false);
-    ShowWindow(edit_view->m_hWnd, SW_SHOW);
-#endif
+    location_bar->PopForceHidden();
   }
 
   // Undo our anti-jankiness hacks and force the window to relayout now that

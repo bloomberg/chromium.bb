@@ -49,6 +49,8 @@ class TestLocationBar : public LocationBar {
   virtual AutocompleteEditView* location_entry() {
     return NULL;
   }
+  virtual void PushForceHidden() {}
+  virtual void PopForceHidden() {}
   virtual LocationBarTesting* GetLocationBarForTesting() {
     return NULL;
   }
