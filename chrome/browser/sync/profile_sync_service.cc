@@ -203,6 +203,11 @@ std::string ProfileSyncService::GetLsidForAuthBootstraping() {
 }
 
 void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
+  if (!backend_.get()) {
+    NOTREACHED();
+    return;
+  }
+
   bool invalidate_sync_login = false;
   bool invalidate_sync_xmpp_login = false;
 #if !defined(NDEBUG)
@@ -429,11 +434,20 @@ void ProfileSyncService::ShowLoginDialog() {
 }
 
 SyncBackendHost::StatusSummary ProfileSyncService::QuerySyncStatusSummary() {
-  return backend_->GetStatusSummary();
+  if (backend_.get())
+    return backend_->GetStatusSummary();
+  else
+    return SyncBackendHost::Status::OFFLINE_UNUSABLE;
 }
 
 SyncBackendHost::Status ProfileSyncService::QueryDetailedSyncStatus() {
-  return backend_->GetDetailedStatus();
+  if (backend_.get()) {
+    return backend_->GetDetailedStatus();
+  } else {
+    SyncBackendHost::Status status =
+        { SyncBackendHost::Status::OFFLINE_UNUSABLE };
+    return status;
+  }
 }
 
 std::wstring ProfileSyncService::BuildSyncStatusSummaryText(
@@ -470,12 +484,19 @@ std::wstring ProfileSyncService::GetLastSyncedTimeString() const {
 }
 
 string16 ProfileSyncService::GetAuthenticatedUsername() const {
-  return backend_->GetAuthenticatedUsername();
+  if (backend_.get())
+    return backend_->GetAuthenticatedUsername();
+  else
+    return string16();
 }
 
 void ProfileSyncService::OnUserSubmittedAuth(
     const std::string& username, const std::string& password,
     const std::string& captcha) {
+  if (!backend_.get()) {
+    NOTREACHED();
+    return;
+  }
   last_attempted_user_email_ = username;
   is_auth_in_progress_ = true;
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
@@ -569,6 +590,10 @@ void ProfileSyncService::StartProcessingChangesIfReady() {
 void ProfileSyncService::ActivateDataType(
     DataTypeController* data_type_controller,
     ChangeProcessor* change_processor) {
+  if (!backend_.get()) {
+    NOTREACHED();
+    return;
+  }
   change_processor->Start(profile(), backend_->GetUserShareHandle());
   backend_->ActivateDataType(data_type_controller, change_processor);
 }
