@@ -22,6 +22,9 @@ class Profile;
 
 namespace platform_util {
 
+static const std::string kGmailComposeUrl =
+    "https://mail.google.com/mail/?extsrc=mailto&url=";
+
 // TODO(estade): It would be nice to be able to select the file in the file
 // manager, but that probably requires extending xdg-open. For now just
 // show the folder.
@@ -79,8 +82,20 @@ void OpenItem(const FilePath& full_path) {
   }
 }
 
-void OpenExternal(const GURL& url) {
+static void OpenURL(const std::string& url) {
+  Browser* browser = BrowserList::GetLastActive();
+  browser->AddTabWithURL(
+      GURL(url), GURL(), PageTransition::LINK, -1, Browser::ADD_SELECTED,
+      NULL, std::string());
+}
 
+void OpenExternal(const GURL& url) {
+  if (url.SchemeIs("mailto")) {
+    std::string string_url = kGmailComposeUrl;
+    string_url.append(url.spec());
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE, NewRunnableFunction(OpenURL, string_url));
+  }
 }
 
 }  // namespace platform_util
