@@ -115,8 +115,8 @@ bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
   if (browser_command_line.HasSwitch(switches::kChromeFrame))
     cmd_line->AppendSwitch(switches::kChromeFrame);
 
-  if (browser_command_line.HasSwitch(switches::kEnableExtensionApps))
-    cmd_line->AppendSwitch(switches::kEnableExtensionApps);
+  if (browser_command_line.HasSwitch(switches::kEnableApps))
+    cmd_line->AppendSwitch(switches::kEnableApps);
 
   if (browser_command_line.HasSwitch(
       switches::kEnableExperimentalExtensionApis)) {

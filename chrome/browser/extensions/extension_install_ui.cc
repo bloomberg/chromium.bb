@@ -205,8 +205,7 @@ void ExtensionInstallUI::OnInstallSuccess(Extension* extension) {
     std::string hash_params = "app-id=";
     hash_params += extension->id();
 
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kAppLauncherForNewTab)) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAppsPanel)) {
 #if defined(TOOLKIT_VIEWS)
       AppLauncher::ShowForNewTab(browser, hash_params);
 #else

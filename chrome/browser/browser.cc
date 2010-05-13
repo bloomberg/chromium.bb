@@ -1249,8 +1249,7 @@ void Browser::CloseWindow() {
 void Browser::NewTab() {
   UserMetrics::RecordAction(UserMetricsAction("NewTab"), profile_);
 #if defined(OS_WIN)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAppLauncherForNewTab)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAppsPanel)) {
     AppLauncher::ShowForNewTab(this, std::string());
     return;
   }
@@ -2060,8 +2059,7 @@ void Browser::ExecuteCommand(int id) {
 TabContents* Browser::AddBlankTab(bool foreground) {
   // To make a more "launchy" experience, try to reuse an existing NTP if there
   // is one.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableExtensionApps)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableApps)) {
     for (int i = tabstrip_model_.count() - 1; i >= 0; --i) {
       TabContents* contents = tabstrip_model_.GetTabContentsAt(i);
       if (StartsWithASCII(contents->GetURL().spec(),

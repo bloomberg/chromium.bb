@@ -133,7 +133,7 @@ class BrowserTest : public ExtensionBrowserTest {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
 
     // Needed for phantom tab tests.
-    command_line->AppendSwitch(switches::kEnableExtensionApps);
+    command_line->AppendSwitch(switches::kEnableApps);
   }
 
   // In RTL locales wrap the page title with RTL embedding characters so that it
@@ -616,7 +616,7 @@ class BrowserAppRefocusTest : public ExtensionBrowserTest {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableExtensionApps);
+    command_line->AppendSwitch(switches::kEnableApps);
   }
 
   // Common setup for all tests.  Can't use SetUpInProcessBrowserTestFixture

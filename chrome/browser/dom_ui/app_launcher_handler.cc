@@ -89,9 +89,9 @@ void AppLauncherHandler::HandleGetApps(const Value* value) {
 
   // TODO(aa): Decide the final values for these and remove the switches.
   gallery_title = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kAppLauncherGalleryTitle);
+      switches::kAppsGalleryTitle);
   gallery_url = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kAppLauncherGalleryURL);
+      switches::kAppsGalleryURL);
   bool show_debug_link = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAppsDebug);
 
