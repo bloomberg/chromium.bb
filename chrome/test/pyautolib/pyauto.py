@@ -308,6 +308,36 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     self.assertTrue(self.WaitUntil(
         lambda: len(self.GetDownloadsInfo().Downloads()) == num_downloads + 1))
 
+  def GetBrowserInfo(self):
+    """Return info about the browser.
+
+    This includes things like the version number, the executable name,
+    executable path, and so on.
+
+    Returns:
+      a dictionary of properties about the browser
+      Sample:
+        { u'BrowserProcessExecutableName': u'Chromium',
+          u'BrowserProcessExecutablePath': u'Chromium.app/Contents/'
+                                            'MacOS/Chromium',
+          u'ChromeVersion': u'6.0.401.0',
+          u'HelperProcessExecutableName': u'Chromium Helper',
+          u'HelperProcessExecutablePath': u'Chromium Helper.app/Contents/'
+                                           'MacOS/Chromium Helper',
+          u'command_line_string': "command_line_string --with-flags"
+        }
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'GetBrowserInfo',
+    }
+    ret_dict = json.loads(self._SendJSONRequest(0, json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
+    return ret_dict['properties']
+
   def GetHistoryInfo(self, search_text=''):
     """Return info about browsing history.
 

@@ -71,6 +71,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/automation_constants.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/json_value_serializer.h"
@@ -1591,6 +1592,45 @@ void AutomationProvider::RemoveBookmark(int handle,
   *success = false;
 }
 
+// Sample json input: { "command": "GetBrowserInfo" }
+// Refer to GetBrowserInfo() in chrome/test/pyautolib/pyauto.py for
+// sample json output.
+void AutomationProvider::GetBrowserInfo(DictionaryValue* args,
+                                        IPC::Message* reply_message) {
+  std::string json_return;
+  bool reply_return = true;
+
+  DictionaryValue* properties = new DictionaryValue;
+  properties->SetString(L"ChromeVersion", chrome::kChromeVersion);
+  properties->SetString(L"BrowserProcessExecutableName",
+                        chrome::kBrowserProcessExecutableName);
+  properties->SetString(L"HelperProcessExecutableName",
+                        chrome::kHelperProcessExecutableName);
+  properties->SetString(L"BrowserProcessExecutablePath",
+                        chrome::kBrowserProcessExecutablePath);
+  properties->SetString(L"HelperProcessExecutablePath",
+                        chrome::kHelperProcessExecutablePath);
+#if defined(OS_WIN)
+  properties->SetString(L"command_line_string",
+      CommandLine::ForCurrentProcess()->command_line_string());
+#elif defined(OS_POSIX)
+  std::string command_line_string;
+  const std::vector<std::string>& argv =
+      CommandLine::ForCurrentProcess()->argv();
+  for (uint i = 0; i < argv.size(); ++i)
+    command_line_string += argv[i] + " ";
+  properties->SetString(L"command_line_string", command_line_string);
+#endif
+
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  return_value->Set(L"properties", properties);
+
+  base::JSONWriter::Write(return_value.get(), false, &json_return);
+  AutomationMsg_SendJSONRequest::WriteReplyParams(
+      reply_message, json_return, reply_return);
+  Send(reply_message);
+}
+
 // Sample json input: { "command": "GetHistoryInfo",
 //                      "search_text": "some text" }
 // Refer chrome/test/pyautolib/history_info.py for sample json output.
@@ -1967,6 +2007,8 @@ void AutomationProvider::SendJSONRequest(
   handler_map["DisablePlugin"] = &AutomationProvider::DisablePlugin;
   handler_map["EnablePlugin"] = &AutomationProvider::EnablePlugin;
   handler_map["GetPluginsInfo"] = &AutomationProvider::GetPluginsInfo;
+
+  handler_map["GetBrowserInfo"] = &AutomationProvider::GetBrowserInfo;
 
   handler_map["GetHistoryInfo"] = &AutomationProvider::GetHistoryInfo;
   handler_map["AddHistoryItem"] = &AutomationProvider::AddHistoryItem;

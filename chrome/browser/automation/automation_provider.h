@@ -334,6 +334,11 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                       int64 id,
                       bool* success);
 
+  // Get info about the chromium/chrome in use.
+  // This includes things like version, executable name, executable path.
+  // Uses the JSON interface for input/output.
+  void GetBrowserInfo(DictionaryValue* args, IPC::Message* reply_message);
+
   // Get info about downloads. This includes only ones that have been
   // registered by the history system.
   // Uses the JSON interface for input/output.
