@@ -702,7 +702,7 @@ bool BasicSourceLineResolver::Module::ParseStackInfo(char *stack_info_line) {
 
   // MSVC stack frame info.
   if (strcmp(platform, "WIN") == 0) {
-    int type;
+    int type = 0;
     u_int64_t rva, code_size;
     linked_ptr<WindowsFrameInfo>
       stack_frame_info(WindowsFrameInfo::ParseFromString(stack_info_line,
