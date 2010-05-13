@@ -1441,6 +1441,9 @@
         {
           'target_name': 'chrome_version_header',
           'type': 'none',
+          'dependencies': [
+            '../build/util/build_util.gyp:lastchange',
+          ],
           'actions': [
             {
               'action_name': 'version_header',
