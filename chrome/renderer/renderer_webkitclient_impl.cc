@@ -23,6 +23,7 @@
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/renderer_webstoragenamespace_impl.h"
 #include "chrome/renderer/visitedlink_slave.h"
+#include "chrome/renderer/webgles2context_impl.h"
 #include "chrome/renderer/webgraphicscontext3d_command_buffer_impl.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_sync_message_filter.h"
@@ -332,6 +333,15 @@ RendererWebKitClientImpl::createGraphicsContext3D() {
     return NULL;
 #endif
   }
+}
+
+WebKit::WebGLES2Context*
+RendererWebKitClientImpl::createGLES2Context() {
+#if defined(ENABLE_GPU)
+    return new WebGLES2ContextImpl();
+#else
+    return NULL;
+#endif
 }
 
 //------------------------------------------------------------------------------
