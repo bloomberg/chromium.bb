@@ -25,6 +25,9 @@
       'command_buffer/service/gl_utils.h',
       'command_buffer/service/gpu_processor.h',
       'command_buffer/service/gpu_processor.cc',
+      'command_buffer/service/gpu_processor_linux.cc',
+      'command_buffer/service/gpu_processor_mac.cc',
+      'command_buffer/service/gpu_processor_win.cc',
       'command_buffer/service/gpu_processor_mock.h',
       'command_buffer/service/id_manager.h',
       'command_buffer/service/id_manager.cc',
@@ -37,29 +40,7 @@
       'command_buffer/service/texture_manager.h',
       'command_buffer/service/texture_manager.cc',
     ],
-    'conditions': [
-      ['OS == "linux"',
-        {
-          'gpu_service_source_files': [
-            'command_buffer/service/gpu_processor_linux.cc',
-          ],
-        },
-      ],
-      ['OS == "win"',
-        {
-          'gpu_service_source_files': [
-            'command_buffer/service/gpu_processor_win.cc',
-          ],
-        },
-      ],
-      ['OS == "mac"',
-        {
-          'gpu_service_source_files': [
-            'command_buffer/service/gpu_processor_mac.cc',
-          ],
-        },
-      ],
-    ],
+    'enable_shader_translation%': 0,
   },
   'targets': [
     {
@@ -279,27 +260,20 @@
         'command_buffer_service_impl',
         'gl_libs',
         '../app/app.gyp:app_base',
+        '../third_party/angle/src/build_angle.gyp:translator_glsl',
       ],
       'sources': [
         '<@(gpu_service_source_files)',
       ],
       'conditions': [
-        ['OS == "linux"',
-          {
-            'dependencies': [
-              '../build/linux/system.gyp:gtk',
-            ],
-          },
-        ],
-        #TODO(alokp): Remove os-conditional when translator_glsl starts
-        #compiling on all platforms.
-        ['OS == "win"',
-          {
-            'dependencies': [
-              '../third_party/angle/src/build_angle.gyp:translator_glsl',
-            ],
-          },
-        ],
+        ['OS == "linux"', {
+          'dependencies': [
+            '../build/linux/system.gyp:gtk',
+          ],
+        }],
+        ['enable_shader_translation==1', {
+          'defines': ['GLES2_GPU_SERVICE_TRANSLATE_SHADER'],
+        }],
       ],
     },
     {
