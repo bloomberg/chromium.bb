@@ -36,8 +36,10 @@ HRESULT CacheStream::BSCBFeedData(IBindStatusCallback* bscb, const char* data,
     return hr;
   }
 
-  cache_stream->AddRef();
-  cache_stream->Initialize(data, size, eof);
+  scoped_refptr<CacheStream> cache_ref = cache_stream;
+  hr = cache_stream->Initialize(data, size, eof);
+  if (FAILED(hr))
+    return hr;
 
   FORMATETC format_etc = { clip_format, NULL, DVASPECT_CONTENT, -1,
                            TYMED_ISTREAM };
@@ -46,16 +48,24 @@ HRESULT CacheStream::BSCBFeedData(IBindStatusCallback* bscb, const char* data,
   medium.pstm = cache_stream;
 
   hr = bscb->OnDataAvailable(flags, size, &format_etc, &medium);
-
-  cache_stream->Release();
   return hr;
 }
 
-void CacheStream::Initialize(const char* cache, size_t size, bool eof) {
-  cache_ = cache;
-  size_ = size;
+HRESULT CacheStream::Initialize(const char* cache, size_t size, bool eof) {
   position_ = 0;
   eof_ = eof;
+
+  HRESULT hr = S_OK;
+  cache_.reset(new char[size]);
+  if (cache_.get()) {
+    memcpy(cache_.get(), cache, size);
+    size_ = size;
+  } else {
+    DLOG(ERROR) << "failed to allocate cache stream.";
+    hr = E_OUTOFMEMORY;
+  }
+
+  return hr;
 }
 
 // Read is the only call that we expect. Return E_PENDING if there
@@ -65,11 +75,14 @@ STDMETHODIMP CacheStream::Read(void* pv, ULONG cb, ULONG* read) {
   if (!pv || !read)
     return E_INVALIDARG;
 
+  if (!cache_.get())
+    return E_FAIL;
+
   // Default to E_PENDING to signal that this is a partial data.
   HRESULT hr = eof_ ? S_FALSE : E_PENDING;
   if (position_ < size_) {
     *read = std::min(size_ - position_, size_t(cb));
-    memcpy(pv, cache_ + position_, *read);
+    memcpy(pv, cache_ .get() + position_, *read);
     position_ += *read;
     hr = S_OK;
   }

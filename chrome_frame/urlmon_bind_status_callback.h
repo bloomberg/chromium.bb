@@ -23,7 +23,7 @@ class CacheStream : public CComObjectRoot, public StreamImpl {
 
   CacheStream() : cache_(NULL), size_(0), position_(0), eof_(false) {
   }
-  void Initialize(const char* cache, size_t size, bool eof);
+  HRESULT Initialize(const char* cache, size_t size, bool eof);
   static HRESULT BSCBFeedData(IBindStatusCallback* bscb, const char* data,
                               size_t size, CLIPFORMAT clip_format,
                               size_t flags, bool eof);
@@ -32,7 +32,7 @@ class CacheStream : public CComObjectRoot, public StreamImpl {
   STDMETHOD(Read)(void* pv, ULONG cb, ULONG* read);
 
  protected:
-  const char* cache_;
+  scoped_ptr<char> cache_;
   size_t size_;
   size_t position_;
   bool eof_;
