@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <set>
 
 #include "base/file_path.h"
 #include "base/format_macros.h"
@@ -38,6 +39,8 @@ enum IPCMessageStart {
   PluginProcessHostMsgStart,
   PluginMsgStart,
   PluginHostMsgStart,
+  ProfileImportProcessMsgStart,
+  ProfileImportProcessHostMsgStart,
   NPObjectMsgStart,
   TestMsgStart,
   DevToolsAgentMsgStart,
@@ -467,11 +470,37 @@ struct ParamTraits<std::vector<P> > {
     for (size_t i = 0; i < p.size(); ++i) {
       if (i != 0)
         l->append(L" ");
-
       LogParam((p[i]), l);
     }
   }
 };
+
+template <class P>
+struct ParamTraits<std::set<P> > {
+  typedef std::set<P> param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, static_cast<int>(p.size()));
+    typename param_type::const_iterator iter;
+    for (iter = p.begin(); iter != p.end(); ++iter)
+      WriteParam(m, *iter);
+  }
+  static bool Read(const Message* m, void** iter, param_type* r) {
+    int size;
+    if (!m->ReadLength(iter, &size))
+      return false;
+    for (int i = 0; i < size; ++i) {
+      P item;
+      if (!ReadParam(m, iter, &item))
+        return false;
+      r->insert(item);
+    }
+    return true;
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"<std::set>");
+  }
+};
+
 
 template <class K, class V>
 struct ParamTraits<std::map<K, V> > {
