@@ -14,12 +14,16 @@
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/common/chrome_switches.h"
 
 namespace chromeos {
 
 // File uptime logs are located in.
 static const char kLogPath[] = "/tmp";
+
+// Delay in milliseconds between file read attempts.
+static const int64 kReadAttemptDelayMs = 500;
 
 BootTimesLoader::BootTimesLoader() : backend_(new Backend()) {
 }
@@ -44,7 +48,8 @@ BootTimesLoader::Handle BootTimesLoader::GetBootTimes(
       new CancelableRequest<GetBootTimesCallback>(callback));
   AddRequest(request, consumer);
 
-  g_browser_process->file_thread()->message_loop()->PostTask(
+  ChromeThread::PostTask(
+      ChromeThread::FILE,
       FROM_HERE,
       NewRunnableMethod(backend_.get(), &Backend::GetBootTimes, request));
   return request->handle();
@@ -114,10 +119,11 @@ void BootTimesLoader::Backend::GetBootTimes(
   FilePath log_dir(kLogPath);
   FilePath log_file = log_dir.Append(kLoginPromptReady);
   if (!file_util::PathExists(log_file)) {
-    g_browser_process->file_thread()->message_loop()->PostDelayedTask(
+    ChromeThread::PostDelayedTask(
+        ChromeThread::FILE,
         FROM_HERE,
         NewRunnableMethod(this, &Backend::GetBootTimes, request),
-        500);
+        kReadAttemptDelayMs);
     return;
   }
 
