@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/user_controller.h"
 #include "chrome/browser/chromeos/wm_message_listener.h"
+#include "chrome/browser/views/info_bubble.h"
 #include "gfx/size.h"
 
 namespace views {
@@ -25,6 +26,7 @@ namespace chromeos {
 
 class Authenticator;
 class BackgroundView;
+class MessageBubble;
 
 // ExistingUserController is used to handle login when someone has already
 // logged into the machine. When Init is invoked a UserController is created for
@@ -38,7 +40,8 @@ class BackgroundView;
 // the user logs in (or chooses to see other settings).
 class ExistingUserController : public WmMessageListener::Observer,
                                public UserController::Delegate,
-                               public LoginStatusConsumer {
+                               public LoginStatusConsumer,
+                               public InfoBubbleDelegate {
  public:
   // Initializes views for known users. |background_bounds| determines the
   // bounds of background view.
@@ -68,6 +71,16 @@ class ExistingUserController : public WmMessageListener::Observer,
   virtual void OnLoginSuccess(const std::string& username,
                               const std::string& credentials);
 
+  // Overriden from views::InfoBubbleDelegate.
+  virtual void InfoBubbleClosing(InfoBubble* info_bubble,
+                                 bool closed_by_escape) {
+    bubble_ = NULL;
+  }
+  virtual bool CloseOnEscape() { return true; }
+
+  // Show error message. |error_id| error message ID in resources.
+  void ShowError(int error_id);
+
   // Bounds of the background window.
   const gfx::Rect background_bounds_;
 
@@ -86,6 +99,10 @@ class ExistingUserController : public WmMessageListener::Observer,
 
   // See comment in ProcessWmMessage.
   base::OneShotTimer<ExistingUserController> delete_timer_;
+
+  // Pointer to shown message bubble. We don't need to delete it because
+  // it will be deleted on bubble closing.
+  MessageBubble* bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(ExistingUserController);
 };

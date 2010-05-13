@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <functional>
 
+#include "app/l10n_util.h"
+#include "app/resource_bundle.h"
 #include "base/message_loop.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
@@ -14,13 +16,16 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
+#include "grit/theme_resources.h"
 #include "views/screen.h"
 #include "views/widget/widget.h"
 
@@ -43,7 +48,8 @@ ExistingUserController::ExistingUserController(
     : background_bounds_(background_bounds),
       background_window_(NULL),
       background_view_(NULL),
-      index_of_view_logging_in_(kNoLogin) {
+      index_of_view_logging_in_(kNoLogin),
+      bubble_(NULL) {
   DCHECK(!users.empty());  // There must be at least one user when using
                            // ExistingUserController.
 
@@ -83,6 +89,9 @@ void ExistingUserController::Init() {
 }
 
 ExistingUserController::~ExistingUserController() {
+  if (bubble_)
+    bubble_->Close();
+
   if (background_window_)
     background_window_->Close();
 
@@ -141,7 +150,16 @@ void ExistingUserController::Login(UserController* source,
 void ExistingUserController::OnLoginFailure(const std::string& error) {
   LOG(INFO) << "OnLoginFailure";
 
-  // TODO(sky): alert the user in some way to the failure.
+  // Check networking after trying to login in case user is
+  // cached locally or the local admin account.
+  NetworkLibrary* network = CrosLibrary::Get()->GetNetworkLibrary();
+  if (!network || !CrosLibrary::Get()->EnsureLoaded()) {
+    ShowError(IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY);
+  } else if (!network->Connected()) {
+    ShowError(IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED);
+  } else {
+    ShowError(IDS_LOGIN_ERROR_AUTHENTICATING);
+  }
 
   controllers_[index_of_view_logging_in_]->SetPasswordEnabled(true);
 
@@ -149,6 +167,22 @@ void ExistingUserController::OnLoginFailure(const std::string& error) {
   WmIpc::Message message(WM_IPC_MESSAGE_WM_SET_LOGIN_STATE);
   message.set_param(0, 1);
   WmIpc::instance()->SendMessage(message);
+}
+
+void ExistingUserController::ShowError(int error_id) {
+  // Close bubble before showing anything new.
+  // bubble_ will be set to NULL in callback.
+  if (bubble_)
+    bubble_->Close();
+
+  std::wstring error_text = l10n_util::GetString(error_id);
+  bubble_ = MessageBubble::Show(
+      controllers_[index_of_view_logging_in_]->controls_window(),
+      controllers_[index_of_view_logging_in_]->GetScreenBounds(),
+      BubbleBorder::BOTTOM_LEFT,
+      ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_WARNING),
+      error_text,
+      this);
 }
 
 void ExistingUserController::OnLoginSuccess(const std::string& username,

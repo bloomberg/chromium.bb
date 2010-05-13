@@ -402,6 +402,8 @@
         'browser/chromeos/login/login_status_consumer.h',
         'browser/chromeos/login/login_utils.cc',
         'browser/chromeos/login/login_utils.h',
+        'browser/chromeos/login/message_bubble.h',
+        'browser/chromeos/login/message_bubble.cc',
         'browser/chromeos/login/network_selection_view.cc',
         'browser/chromeos/login/network_selection_view.h',
         'browser/chromeos/login/network_screen.cc',

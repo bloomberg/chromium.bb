@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -32,6 +33,7 @@
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
 #include "views/widget/widget.h"
@@ -68,12 +70,12 @@ LoginManagerView::LoginManagerView(ScreenObserver* observer)
     : username_field_(NULL),
       password_field_(NULL),
       title_label_(NULL),
-      error_label_(NULL),
       sign_in_button_(NULL),
       create_account_link_(NULL),
       languages_menubutton_(NULL),
       accel_focus_user_(views::Accelerator(base::VKEY_U, false, false, true)),
       accel_focus_pass_(views::Accelerator(base::VKEY_P, false, false, true)),
+      bubble_(NULL),
       observer_(observer),
       error_id_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)),
@@ -85,6 +87,8 @@ LoginManagerView::LoginManagerView(ScreenObserver* observer)
 }
 
 LoginManagerView::~LoginManagerView() {
+  if (bubble_)
+    bubble_->Close();
 }
 
 void LoginManagerView::Init() {
@@ -115,11 +119,6 @@ void LoginManagerView::Init() {
   create_account_link_ = new views::Link(std::wstring());
   create_account_link_->SetController(this);
   AddChildView(create_account_link_);
-
-  error_label_ = new views::Label();
-  error_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  error_label_->SetColor(kErrorColor);
-  AddChildView(error_label_);
 
   language_switch_model_.InitLanguageMenu();
   languages_menubutton_ = new views::MenuButton(
@@ -251,16 +250,6 @@ void LoginManagerView::Layout() {
   y += setViewBounds(create_account_link_, x, y, kTextfieldWidth, false);
   y += kRowPad;
 
-  int padding = BorderDefinition::kScreenBorder.shadow +
-                BorderDefinition::kScreenBorder.corner_radius / 2;
-
-  y += setViewBounds(
-      error_label_,
-      padding,
-      y,
-      width() - 2 * padding,
-      true);
-
   x = width() - kLanguagesMenuWidth - kLanguageMenuOffsetRight;
   y = kLanguageMenuOffsetTop;
   languages_menubutton_->SetBounds(x, y,
@@ -364,9 +353,27 @@ void LoginManagerView::OnLoginSuccess(const std::string& username,
 
 void LoginManagerView::ShowError(int error_id) {
   error_id_ = error_id;
-  error_label_->SetText((error_id_ == -1)
-                        ? std::wstring()
-                        : l10n_util::GetString(error_id_));
+
+  // Close bubble before showing anything new.
+  // bubble_ will be set to NULL in callback.
+  if (bubble_)
+    bubble_->Close();
+
+  if (error_id_ != -1) {
+    std::wstring error_text = l10n_util::GetString(error_id_);
+
+    gfx::Rect screen_bounds(password_field_->bounds());
+    gfx::Point origin(screen_bounds.origin());
+    views::View::ConvertPointToScreen(this, &origin);
+    screen_bounds.set_origin(origin);
+    bubble_ = MessageBubble::Show(
+        GetWidget(),
+        screen_bounds,
+        BubbleBorder::LEFT_TOP,
+        ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_WARNING),
+        error_text,
+        this);
+  }
 }
 
 bool LoginManagerView::HandleKeystroke(views::Textfield* s,

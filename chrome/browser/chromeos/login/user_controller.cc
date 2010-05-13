@@ -278,4 +278,12 @@ void UserController::SetImage(const SkBitmap& image,
                 std::min(desired_height, kSize)));
 }
 
+gfx::Rect UserController::GetScreenBounds() const {
+  gfx::Rect screen_bounds(password_field_->bounds());
+  gfx::Point origin(screen_bounds.origin());
+  views::View::ConvertPointToScreen(password_field_->GetParent(), &origin);
+  screen_bounds.set_origin(origin);
+  return screen_bounds;
+}
+
 }  // namespace chromeos

@@ -53,6 +53,14 @@ class UserController : public views::ButtonListener,
   // Sets the enabled state of the password field to |enable|.
   void SetPasswordEnabled(bool enable);
 
+  // Returns bounds of password field in screen coordinates.
+  gfx::Rect GetScreenBounds() const;
+
+  // Get widget that contains all controls.
+  views::WidgetGtk* controls_window() {
+    return controls_window_;
+  }
+
   // ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 

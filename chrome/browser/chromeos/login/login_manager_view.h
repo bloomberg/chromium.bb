@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/language_switch_model.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
+#include "chrome/browser/views/info_bubble.h"
 #include "views/accelerator.h"
 #include "views/controls/button/button.h"
 #include "views/controls/button/menu_button.h"
@@ -28,13 +29,15 @@ class NativeButton;
 
 namespace chromeos {
 
+class MessageBubble;
 class ScreenObserver;
 
 class LoginManagerView : public views::View,
                          public LoginStatusConsumer,
                          public views::Textfield::Controller,
                          public views::LinkController,
-                         public views::ButtonListener {
+                         public views::ButtonListener,
+                         public InfoBubbleDelegate {
  public:
   explicit LoginManagerView(ScreenObserver* observer);
   virtual ~LoginManagerView();
@@ -89,6 +92,13 @@ class LoginManagerView : public views::View,
   virtual void OnLoginSuccess(const std::string& username,
                               const std::string& credentials);
 
+  // Overriden from views::InfoBubbleDelegate.
+  virtual void InfoBubbleClosing(InfoBubble* info_bubble,
+                                 bool closed_by_escape) {
+    bubble_ = NULL;
+  }
+  virtual bool CloseOnEscape() { return true; }
+
  protected:
   // views::View overrides:
   virtual void ViewHierarchyChanged(bool is_add, views::View *parent,
@@ -115,13 +125,16 @@ class LoginManagerView : public views::View,
   views::Textfield* username_field_;
   views::Textfield* password_field_;
   views::Label* title_label_;
-  views::Label* error_label_;
   views::NativeButton* sign_in_button_;
   views::Link* create_account_link_;
   views::MenuButton* languages_menubutton_;
 
   views::Accelerator accel_focus_user_;
   views::Accelerator accel_focus_pass_;
+
+  // Pointer to shown message bubble. We don't need to delete it because
+  // it will be deleted on bubble closing.
+  MessageBubble* bubble_;
 
   // Notifications receiver.
   ScreenObserver* observer_;
