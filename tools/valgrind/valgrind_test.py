@@ -5,9 +5,9 @@
 
 # valgrind_test.py
 
-'''Runs an exe through Valgrind and puts the intermediate files in a
+"""Runs an exe through Valgrind and puts the intermediate files in a
 directory.
-'''
+"""
 
 import datetime
 import glob
@@ -28,36 +28,39 @@ import tsan_analyze
 
 import logging_utils
 
-class ValgrindTool(object):
+class BaseTool(object):
+  """Abstract class for running Valgrind-, PIN-based and other dynamic
+  error detector tools.
 
-  """Abstract class for running Valgrind.
-
-  Always subclass this and implement ValgrindCommand() with platform specific
-  stuff.
+  Always subclass this and implement ToolCommand with framework- and
+  tool-specific stuff.
   """
 
-  TMP_DIR = "valgrind.tmp"
+  # Temporary directory for tools to write logs, create some useful files etc.
+  TMP_DIR = "testing.tmp"
 
   def __init__(self):
-    # If we have a valgrind.tmp directory, we failed to cleanup last time.
+    # If we have a testing.tmp directory, we didn't cleanup last time.
     if os.path.exists(self.TMP_DIR):
       shutil.rmtree(self.TMP_DIR)
     os.mkdir(self.TMP_DIR)
 
-  def UseXML(self):
-    # Override if tool prefers nonxml output
-    return True
-
-  def SelfContained(self):
-    # Returns true iff the tool is distibuted as a self-contained
-    # .sh script (e.g. ThreadSanitizer)
-    return False
+    self.option_parser_hooks = []
 
   def ToolName(self):
-    raise RuntimeError, "This method should be implemented " \
-                        "in the tool-specific subclass"
+    raise NotImplementedError, "This method should be implemented " \
+                               "in the tool-specific subclass"
+
+  def Analyze(self, check_sanity=False):
+    raise NotImplementedError, "This method should be implemented " \
+                               "in the tool-specific subclass"
+
+  def RegisterOptionParserHook(self, hook):
+    # Frameworks and tools can add their own flags to the parser.
+    self.option_parser_hooks.append(hook)
 
   def CreateOptionParser(self):
+    # Defines Chromium-specific flags.
     self._parser = optparse.OptionParser("usage: %prog [options] <program to "
                                          "test>")
     self._parser.add_option("-t", "--timeout",
@@ -73,33 +76,19 @@ class ValgrindTool(object):
     self._parser.add_option("", "--gtest_print_time", action="store_true",
                             default=False,
                             help="show how long each test takes")
-    self._parser.add_option("", "--indirect", action="store_true",
-                            default=False,
-                            help="set BROWSER_WRAPPER rather than "
-                                 "running valgrind directly")
-    self._parser.add_option("-v", "--verbose", action="store_true",
-                            default=False,
-                            help="verbose output - enable debug log messages")
-    self._parser.add_option("", "--trace_children", action="store_true",
-                            default=False,
-                            help="also trace child processes")
-    self._parser.add_option("", "--num-callers",
-                            dest="num_callers", default=30,
-                            help="number of callers to show in stack traces")
-    self._parser.add_option("", "--nocleanup_on_exit", action="store_true",
-                            default=False,
-                            help="don't delete directory with logs on exit")
     self._parser.add_option("", "--ignore_exit_code", action="store_true",
                             default=False,
                             help="ignore exit code of the test "
                                  "(e.g. test failures)")
-    self.ExtendOptionParser(self._parser)
-    self._parser.description = __doc__
+    self._parser.add_option("", "--nocleanup_on_exit", action="store_true",
+                            default=False,
+                            help="don't delete directory with logs on exit")
 
-  def ExtendOptionParser(self, parser):
-    parser.add_option("", "--generate_dsym", action="store_true",
-                          default=False,
-                          help="Generate .dSYM file on Mac if needed. Slow!")
+    # To add framework- or tool-specific flags, please add a hook using
+    # RegisterOptionParserHook in the corresponding subclass.
+    # See ValgrindTool and ThreadSanitizerBase for examples.
+    for hook in self.option_parser_hooks:
+      hook(self, self._parser)
 
   def ParseArgv(self, args):
     self.CreateOptionParser()
@@ -109,8 +98,8 @@ class ValgrindTool(object):
     self._tool_flags = []
     known_args = []
 
-    """ We assume that the first argument not starting with "-" is a program name
-    and all the following flags should be passed to the program.
+    """ We assume that the first argument not starting with "-" is a program
+    name and all the following flags should be passed to the program.
     TODO(timurrrr): customize optparse instead
     """
     while len(args) > 0 and args[0][:1] == "-":
@@ -129,8 +118,6 @@ class ValgrindTool(object):
     self._options, self._args = self._parser.parse_args(known_args)
 
     self._timeout = int(self._options.timeout)
-    self._num_callers = int(self._options.num_callers)
-    self._suppressions = self._options.suppressions
     self._source_dir = self._options.source_dir
     self._nocleanup_on_exit = self._options.nocleanup_on_exit
     self._ignore_exit_code = self._options.ignore_exit_code
@@ -146,11 +133,124 @@ class ValgrindTool(object):
   def Setup(self, args):
     return self.ParseArgv(args)
 
-  def PrepareForTest(self):
+  def ToolCommand(self):
+    raise NotImplementedError, "This method should be implemented " \
+                               "in the tool-specific subclass"
+
+  def Cleanup(self):
+    # You may override it in the tool-specific subclass
+    pass
+
+  def Execute(self):
+    """ Execute the app to be tested after successful instrumentation.
+    Full execution command-line provided by subclassers via proc."""
+    logging.info("starting execution...")
+
+    proc = self.ToolCommand()
+
+    add_env = {
+      "G_SLICE" : "always-malloc",
+      "NSS_DISABLE_ARENA_FREE_LIST" : "1",
+      "GTEST_DEATH_TEST_USE_FORK" : "1",
+    }
+    if common.IsWine():
+      # TODO(timurrrr): Maybe we need it for TSan/Win too?
+      add_env["CHROME_ALLOCATOR"] = "winheap"
+
+    for k,v in add_env.iteritems():
+      logging.info("export %s=%s", k, v)
+      os.putenv(k, v)
+
+    return common.RunSubprocess(proc, self._timeout)
+
+  def RunTestsAndAnalyze(self, check_sanity):
+    exec_retcode = self.Execute()
+    analyze_retcode = self.Analyze(check_sanity)
+
+    if analyze_retcode:
+      logging.error("Analyze failed.")
+      return analyze_retcode
+
+    if exec_retcode:
+      if self._ignore_exit_code:
+        logging.info("Test execution failed, but the exit code is ignored.")
+      else:
+        logging.error("Test execution failed.")
+        return exec_retcode
+    else:
+      logging.info("Test execution completed successfully.")
+
+    if not analyze_retcode:
+      logging.info("Analysis completed successfully.")
+
+    return 0
+
+  def Main(self, args, check_sanity):
+    """Call this to run through the whole process: Setup, Execute, Analyze"""
+    start = datetime.datetime.now()
+    retcode = -1
+    if self.Setup(args):
+      retcode = self.RunTestsAndAnalyze(check_sanity)
+      if not self._nocleanup_on_exit:
+        shutil.rmtree(self.TMP_DIR, ignore_errors=True)
+      self.Cleanup()
+    else:
+      logging.error("Setup failed")
+    end = datetime.datetime.now()
+    seconds = (end - start).seconds
+    hours = seconds / 3600
+    seconds = seconds % 3600
+    minutes = seconds / 60
+    seconds = seconds % 60
+    logging.info("elapsed time: %02d:%02d:%02d" % (hours, minutes, seconds))
+    return retcode
+
+
+class ValgrindTool(BaseTool):
+  """Abstract class for running Valgrind tools.
+
+  Always subclass this and implement ToolSpecificFlags() and
+  ExtendOptionParser() for tool-specific stuff.
+  """
+  def __init__(self):
+    BaseTool.__init__(self)
+    self.RegisterOptionParserHook(ValgrindTool.ExtendOptionParser)
+
+  def UseXML(self):
+    # Override if tool prefers nonxml output
+    return True
+
+  def SelfContained(self):
+    # Returns true iff the tool is distibuted as a self-contained
+    # .sh script (e.g. ThreadSanitizer)
+    return False
+
+  def ExtendOptionParser(self, parser):
+    parser.add_option("", "--suppressions", default=[],
+                            action="append",
+                            help="path to a valgrind suppression file")
+    parser.add_option("", "--indirect", action="store_true",
+                            default=False,
+                            help="set BROWSER_WRAPPER rather than "
+                                 "running valgrind directly")
+    parser.add_option("", "--trace_children", action="store_true",
+                            default=False,
+                            help="also trace child processes")
+    parser.add_option("", "--num-callers",
+                            dest="num_callers", default=30,
+                            help="number of callers to show in stack traces")
+    parser.add_option("", "--generate_dsym", action="store_true",
+                          default=False,
+                          help="Generate .dSYM file on Mac if needed. Slow!")
+
+  def Setup(self, args):
+    if not BaseTool.Setup(self, args):
+      return False
     if common.IsWine():
       self.PrepareForTestWine()
     elif common.IsMac():
       self.PrepareForTestMac()
+    return True
 
   def PrepareForTestMac(self):
     """Runs dsymutil if needed.
@@ -248,7 +348,7 @@ class ValgrindTool(object):
     common.RunSubprocessInBackground([os.environ.get('WINE'), 'winemine'])
     return
 
-  def ValgrindCommand(self):
+  def ToolCommand(self):
     """Get the valgrind command to run."""
     # Note that self._args begins with the exe to be run.
     tool_name = self.ToolName()
@@ -259,7 +359,7 @@ class ValgrindTool(object):
     else:
       proc = ["valgrind", "--tool=%s" % tool_name]
 
-    proc += ["--num-callers=%i" % self._num_callers]
+    proc += ["--num-callers=%i" % int(self._options.num_callers)]
 
     if self._options.trace_children:
       proc += ["--trace-children=yes"]
@@ -268,7 +368,7 @@ class ValgrindTool(object):
     proc += self._tool_flags
 
     suppression_count = 0
-    for suppression_file in self._suppressions:
+    for suppression_file in self._options.suppressions:
       if os.path.exists(suppression_file):
         suppression_count += 1
         proc += ["--suppressions=%s" % suppression_file]
@@ -295,64 +395,13 @@ class ValgrindTool(object):
     return proc
 
   def ToolSpecificFlags(self):
-    return []
-
-  def Execute(self):
-    ''' Execute the app to be tested after successful instrumentation.
-    Full execution command-line provided by subclassers via proc.'''
-    logging.info("starting execution...")
-
-    proc = self.ValgrindCommand()
-    os.putenv("G_SLICE", "always-malloc")
-    logging.info("export G_SLICE=always-malloc")
-    os.putenv("NSS_DISABLE_ARENA_FREE_LIST", "1")
-    logging.info("export NSS_DISABLE_ARENA_FREE_LIST=1")
-    os.putenv("GTEST_DEATH_TEST_USE_FORK", "1")
-    logging.info("export GTEST_DEATH_TEST_USE_FORK=1")
-
-    if common.IsWine():
-      os.putenv("CHROME_ALLOCATOR", "winheap")
-      logging.info("export CHROME_ALLOCATOR=winheap")
-
-    return common.RunSubprocess(proc, self._timeout)
-
-  def Analyze(self, check_sanity=False):
-    raise RuntimeError, "This method should be implemented " \
-                        "in the tool-specific subclass"
+    raise NotImplementedError, "This method should be implemented " \
+                               "in the tool-specific subclass"
 
   def Cleanup(self):
-    # Right now, we can cleanup by deleting our temporary directory. Other
-    # cleanup is still a TODO?
-    if not self._nocleanup_on_exit:
-      shutil.rmtree(self.TMP_DIR, ignore_errors=True)
-
     if common.IsWine():
       # Shutdown the Wine server.
       common.RunSubprocess([os.environ.get('WINESERVER'), '-k'])
-    return True
-
-  def RunTestsAndAnalyze(self, check_sanity):
-    self.PrepareForTest()
-    exec_retcode = self.Execute()
-    analyze_retcode = self.Analyze(check_sanity)
-
-    if analyze_retcode:
-      logging.error("Analyze failed.")
-      return analyze_retcode
-
-    if exec_retcode:
-      if self._ignore_exit_code:
-        logging.info("Test execution failed, but the exit code is ignored.")
-      else:
-        logging.error("Test execution failed.")
-        return exec_retcode
-    else:
-      logging.info("Test execution completed successfully.")
-
-    if not analyze_retcode:
-      logging.info("Analysis completed successfully.")
-
-    return 0
 
   def CreateBrowserWrapper(self, command):
     """The program being run invokes Python or something else
@@ -361,7 +410,9 @@ class ValgrindTool(object):
     tell the program to prefix the Chrome commandline
     with a magic wrapper.  Build the magic wrapper here.
     """
-    (fd, indirect_fname) = tempfile.mkstemp(dir=self.TMP_DIR, prefix="browser_wrapper.", text=True)
+    (fd, indirect_fname) = tempfile.mkstemp(dir=self.TMP_DIR,
+                                            prefix="browser_wrapper.",
+                                            text=True)
     f = os.fdopen(fd, "w")
     f.write("#!/bin/sh\n")
     f.write(command)
@@ -371,39 +422,18 @@ class ValgrindTool(object):
     os.putenv("BROWSER_WRAPPER", indirect_fname)
     logging.info('export BROWSER_WRAPPER=' + indirect_fname)
 
-  def Main(self, args, check_sanity):
-    '''Call this to run through the whole process: Setup, Execute, Analyze'''
-    start = datetime.datetime.now()
-    retcode = -1
-    if self.Setup(args):
-      retcode = self.RunTestsAndAnalyze(check_sanity)
-      self.Cleanup()
-    else:
-      logging.error("Setup failed")
-    end = datetime.datetime.now()
-    seconds = (end - start).seconds
-    hours = seconds / 3600
-    seconds = seconds % 3600
-    minutes = seconds / 60
-    seconds = seconds % 60
-    logging.info("elapsed time: %02d:%02d:%02d" % (hours, minutes, seconds))
-    return retcode
-
 # TODO(timurrrr): Split into a separate file.
 class Memcheck(ValgrindTool):
   """Memcheck"""
 
   def __init__(self):
     ValgrindTool.__init__(self)
+    self.RegisterOptionParserHook(Memcheck.ExtendOptionParser)
 
   def ToolName(self):
     return "memcheck"
 
   def ExtendOptionParser(self, parser):
-    ValgrindTool.ExtendOptionParser(self, parser)
-    parser.add_option("", "--suppressions", default=[],
-                      action="append",
-                      help="path to a valgrind suppression file")
     parser.add_option("", "--show_all_leaks", action="store_true",
                       default=False,
                       help="also show less blatant leaks")
@@ -438,11 +468,51 @@ class Memcheck(ValgrindTool):
                    "using-valgrind for the info on Memcheck/Valgrind")
     return ret
 
-class ThreadSanitizer(ValgrindTool):
-  """ThreadSanitizer"""
+class PinTool(BaseTool):
+  """Abstract class for running PIN tools.
+
+  Always subclass this and implement ToolSpecificFlags() and
+  ExtendOptionParser() for tool-specific stuff.
+  """
+  def __init__(self):
+    BaseTool.__init__(self)
+
+  def PrepareForTest(self):
+    pass
+
+  def ToolSpecificFlags(self):
+    raise NotImplementedError, "This method should be implemented " \
+                               "in the tool-specific subclass"
+
+  def ToolCommand(self):
+    """Get the PIN command to run."""
+
+    # Construct the PIN command.
+    pin_cmd = os.getenv("PIN_COMMAND")
+    if not pin_cmd:
+      raise RuntimeError, "Please set PIN_COMMAND environment variable " \
+                          "with the path to pin.exe"
+    proc = pin_cmd.split(" ")
+
+    proc += self.ToolSpecificFlags()
+
+    # The PIN command is constructed.
+
+    # PIN requires -- to separate PIN flags from the executable name.
+    # self._args begins with the exe to be run.
+    proc += ["--"]
+
+    proc += self._args
+    return proc
+
+class ThreadSanitizerBase(object):
+  """ThreadSanitizer
+
+  Since TSan works on both Valgrind (Linux, Mac) and PIN (Windows), we need
+  to have multiple inheritance"""
 
   def __init__(self):
-    ValgrindTool.__init__(self)
+    self.RegisterOptionParserHook(ThreadSanitizerBase.ExtendOptionParser)
 
   def ToolName(self):
     return "tsan"
@@ -454,16 +524,9 @@ class ThreadSanitizer(ValgrindTool):
     return True
 
   def ExtendOptionParser(self, parser):
-    ValgrindTool.ExtendOptionParser(self, parser)
-    parser.add_option("", "--suppressions", default=[],
-                      action="append",
-                      help="path to a valgrind suppression file")
     parser.add_option("", "--pure-happens-before", default="yes",
                       dest="pure_happens_before",
                       help="Less false reports, more missed races")
-    parser.add_option("", "--ignore-in-dtor", default="no",
-                      dest="ignore_in_dtor",
-                      help="Ignore data races inside destructors")
     parser.add_option("", "--announce-threads", default="yes",
                       dest="announce_threads",
                       help="Show the the stack traces of thread creation")
@@ -487,9 +550,6 @@ class ThreadSanitizer(ValgrindTool):
       if os.path.exists(fullname):
         ret += ["--ignore=%s" % fullname]
 
-    # The -v flag is needed for printing the list of used suppressions.
-    ret += ["-v"]
-
     # This should shorten filepaths for local builds.
     ret += ["--file-prefix-to-cut=%s/" % self._source_dir]
 
@@ -501,9 +561,6 @@ class ThreadSanitizer(ValgrindTool):
 
     if self.EvalBoolFlag(self._options.pure_happens_before):
       ret += ["--pure-happens-before=yes"] # "no" is the default value for TSAN
-
-    if not self.EvalBoolFlag(self._options.ignore_in_dtor):
-      ret += ["--ignore-in-dtor=no"] # "yes" is the default value for TSAN
 
     if self.EvalBoolFlag(self._options.announce_threads):
       ret += ["--announce-threads"]
@@ -529,6 +586,50 @@ class ThreadSanitizer(ValgrindTool):
                    "ThreadSanitizer")
     return ret
 
+class ThreadSanitizerPosix(ThreadSanitizerBase, ValgrindTool):
+  def __init__(self):
+    ValgrindTool.__init__(self)
+    ThreadSanitizerBase.__init__(self)
+
+  def ToolSpecificFlags(self):
+    proc = ThreadSanitizerBase.ToolSpecificFlags(self)
+    # The -v flag is needed for printing the list of used suppressions and
+    # obtaining addresses for loaded shared libraries on Mac.
+    proc += ["-v"]
+    return proc
+
+class ThreadSanitizerWindows(ThreadSanitizerBase, PinTool):
+  def __init__(self):
+    PinTool.__init__(self)
+    ThreadSanitizerBase.__init__(self)
+    self.RegisterOptionParserHook(ThreadSanitizerWindows.ExtendOptionParser)
+
+  def ExtendOptionParser(self, parser):
+    parser.add_option("", "--suppressions", default=[],
+                      action="append",
+                      help="path to TSan suppression file")
+
+
+  def ToolSpecificFlags(self):
+    proc = ThreadSanitizerBase.ToolSpecificFlags(self)
+    # On PIN, ThreadSanitizer has its own suppression mechanism
+    # and --log-file flag which work exactly on Valgrind.
+    suppression_count = 0
+    for suppression_file in self._options.suppressions:
+      if os.path.exists(suppression_file):
+        suppression_count += 1
+        proc += ["--suppressions=%s" % suppression_file]
+
+    if not suppression_count:
+      logging.warning("WARNING: NOT USING SUPPRESSIONS!")
+
+    logfilename = self.TMP_DIR + "/tsan.%p"
+    proc += ["--log-file=" + logfilename]
+
+    # TODO(timurrrr): Add flags for Valgrind trace children analog when we
+    # start running complex tests (e.g. UI) under TSan/Win.
+
+    return proc
 
 class ToolFactory:
   def Create(self, tool_name):
@@ -538,8 +639,10 @@ class ToolFactory:
       return Memcheck()
     if tool_name == "tsan":
       if common.IsWindows():
-        logging.info("WARNING: ThreadSanitizer Windows support is experimental.")
-      return ThreadSanitizer()
+        logging.info("WARNING: ThreadSanitizer on Windows is experimental.")
+        return ThreadSanitizerWindows()
+      else:
+        return ThreadSanitizerPosix()
     try:
       platform_name = common.PlatformNames()[0]
     except common.NotImplementedError:
