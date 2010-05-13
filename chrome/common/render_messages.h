@@ -830,46 +830,6 @@ struct ParamTraits<ViewMsg_Navigate_Params::NavigationType> {
   }
 };
 
-// Traits for PasswordForm_Params structure to pack/unpack.
-template <>
-struct ParamTraits<webkit_glue::PasswordForm> {
-  typedef webkit_glue::PasswordForm param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.signon_realm);
-    WriteParam(m, p.origin);
-    WriteParam(m, p.action);
-    WriteParam(m, p.submit_element);
-    WriteParam(m, p.username_element);
-    WriteParam(m, p.username_value);
-    WriteParam(m, p.password_element);
-    WriteParam(m, p.password_value);
-    WriteParam(m, p.old_password_element);
-    WriteParam(m, p.old_password_value);
-    WriteParam(m, p.ssl_valid);
-    WriteParam(m, p.preferred);
-    WriteParam(m, p.blacklisted_by_user);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    return
-      ReadParam(m, iter, &p->signon_realm) &&
-      ReadParam(m, iter, &p->origin) &&
-      ReadParam(m, iter, &p->action) &&
-      ReadParam(m, iter, &p->submit_element) &&
-      ReadParam(m, iter, &p->username_element) &&
-      ReadParam(m, iter, &p->username_value) &&
-      ReadParam(m, iter, &p->password_element) &&
-      ReadParam(m, iter, &p->password_value) &&
-      ReadParam(m, iter, &p->old_password_element) &&
-      ReadParam(m, iter, &p->old_password_value) &&
-      ReadParam(m, iter, &p->ssl_valid) &&
-      ReadParam(m, iter, &p->preferred) &&
-      ReadParam(m, iter, &p->blacklisted_by_user);
-  }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"<PasswordForm>");
-  }
-};
-
 // Traits for FormField_Params structure to pack/unpack.
 template <>
 struct ParamTraits<webkit_glue::FormField> {
