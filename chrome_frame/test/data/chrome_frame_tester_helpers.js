@@ -1,17 +1,6 @@
 //
 // This script provides some mechanics for testing ChromeFrame
 //
-
-var reportURL = "/writefile/";
-
-// Start by setting a default error handler.
-// Use onerror without any arguments due to webkit bugs 7771 and 8939.
-window.onerror = new function() {
-  onFailure("tester_helpers", "script exception", window.location.href);
-  return true;
-}
-
-
 function onSuccess(name, id) {
   appendStatus("Success reported!");
   onFinished(name, id, "OK");
@@ -26,7 +15,7 @@ function byId(id) {
   return document.getElementById(id);
 }
 
-function getXHRObject() {
+function getXHRObject(){
   var XMLHTTP_PROGIDS = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP',
                          'Msxml2.XMLHTTP.4.0'];
   var http = null;
@@ -50,6 +39,8 @@ function getXHRObject() {
   }
   return http;
 }
+
+var reportURL = "/writefile/";
 
 function shutdownServer() {
   var xhr = getXHRObject();
@@ -76,8 +67,7 @@ function writeToServer(name, result) {
     return;
 
   // synchronously POST the results
-  var target = reportURL + name;
-  xhr.open("POST", target, false);
+  xhr.open("POST", reportURL + name, false);
   xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
   try {
     xhr.send(result);

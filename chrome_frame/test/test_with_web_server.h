@@ -62,10 +62,6 @@ class ChromeFrameTestWithWebServer: public testing::Test {
   bool CheckResultFile(const std::wstring& file_name,
                        const std::string& expected_result);
 
-  // If a script error was caught and reported by chrome_frame_test_helpers.js,
-  // we log it as an error.
-  void LogScriptErrorResultFile();
-
   const FilePath& GetCFTestFilePath() {
     return test_file_path_;
   }
