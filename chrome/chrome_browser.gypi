@@ -1231,6 +1231,8 @@
         'browser/gtk/constrained_window_gtk.h',
         'browser/gtk/content_setting_bubble_gtk.cc',
         'browser/gtk/content_setting_bubble_gtk.h',
+        'browser/gtk/gconf_titlebar_listener.cc',
+        'browser/gtk/gconf_titlebar_listener.h',
         'browser/gtk/gtk_chrome_cookie_view.cc',
         'browser/gtk/gtk_chrome_cookie_view.h',
         'browser/gtk/create_application_shortcuts_dialog_gtk.cc',
@@ -2532,6 +2534,7 @@
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:dbus-glib',
+            '../build/linux/system.gyp:gconf',
             # Temporarily disabled while we figure some stuff out.
             # http://code.google.com/p/chromium/issues/detail?id=12351
             # '../build/linux/system.gyp:gnome-keyring',

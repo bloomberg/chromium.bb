@@ -39,6 +39,9 @@ class BrowserTitlebar : public NotificationObserver,
 
   void set_window(GtkWindow* window) { window_ = window; }
 
+  // Builds the buttons based on the metacity |button_string|.
+  void BuildButtons(const std::string& button_string);
+
   // Update the appearance of the title bar based on whether we're showing a
   // custom frame or not.  If |use_custom_frame| is true, we show an extra
   // tall titlebar and the min/max/close buttons.
@@ -89,6 +92,12 @@ class BrowserTitlebar : public NotificationObserver,
   // continer that we put the widget into.
   void Init();
 
+  // Lazily builds and returns |titlebar_{left,right}_buttons_vbox_| and their
+  // subtrees. We do this lazily because in most situations, only one of them
+  // is allocated (though the user can (and do) manually mess with their gconf
+  // settings to get absolutely horrid combinations of buttons on both sides.
+  GtkWidget* GetButtonHBox(bool left_side);
+
   // Constructs a CustomDraw button given 3 image ids (IDR_), the box to place
   // the button into, and a tooltip id (IDS_).
   CustomDrawButton* BuildTitlebarButton(int image, int image_pressed,
@@ -108,6 +117,10 @@ class BrowserTitlebar : public NotificationObserver,
   // The maximize button was clicked, take an action depending on which mouse
   // button the user pressed.
   void MaximizeButtonClicked();
+
+  // Updates the visibility of the maximize and restore buttons; only one can
+  // be visible at a time.
+  void UpdateMaximizeRestoreVisibility();
 
   // Callback for changes to window state.  This includes
   // maximizing/restoring/minimizing the window.
@@ -147,18 +160,31 @@ class BrowserTitlebar : public NotificationObserver,
   BrowserWindowGtk* browser_window_;
   GtkWindow* window_;
 
-  // The container widget the holds the whole titlebar.
+  // The container widget the holds the hbox which contains the whole titlebar.
   GtkWidget* container_;
-  // Box that holds the min/max/close buttons if the user turns off window
-  // manager decorations.
-  GtkWidget* titlebar_buttons_box_;
-  // Gtk alignment that contains the tab strip.  If the user turns off window
-  // manager decorations, we draw this taller.
-  GtkWidget* titlebar_alignment_;
+
+  // The hbox that contains the whole titlebar.
+  GtkWidget* container_hbox_;
+
+  // VBoxes that holds the min/max/close buttons box and an optional padding
+  // that defines the skyline if the user turns off window manager decorations.
+  // There is a left and right version of this box since we try to integrate
+  // with the recent Ubuntu theme changes which put the buttons on the left.
+  GtkWidget* titlebar_left_buttons_vbox_;
+  GtkWidget* titlebar_right_buttons_vbox_;
+
+  // HBoxes that contains the actual min/max/close buttons.
+  GtkWidget* titlebar_left_buttons_hbox_;
+  GtkWidget* titlebar_right_buttons_hbox_;
 
   // Padding between the titlebar buttons and the top of the screen. Only show
   // when not maximized.
-  GtkWidget* top_padding_;
+  GtkWidget* top_padding_left_;
+  GtkWidget* top_padding_right_;
+
+  // Gtk alignment that contains the tab strip.  If the user turns off window
+  // manager decorations, we draw this taller.
+  GtkWidget* titlebar_alignment_;
 
   // The favicon and page title used when in app mode or popup mode.
   GtkWidget* app_mode_favicon_;
