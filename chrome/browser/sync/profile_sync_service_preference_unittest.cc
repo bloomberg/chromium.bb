@@ -50,7 +50,8 @@ class ProfileSyncServicePreferenceTest : public testing::Test {
     if (!service_.get()) {
       service_.reset(new TestProfileSyncService(&factory_,
                                                 profile_.get(),
-                                                false));
+                                                false,
+                                                true));
 
       // Register the preference data type.
       model_associator_ =

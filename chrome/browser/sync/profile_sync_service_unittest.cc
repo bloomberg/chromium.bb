@@ -232,7 +232,7 @@ class ProfileSyncServiceTest : public testing::Test {
     if (!service_.get()) {
       service_.reset(new TestProfileSyncService(&factory_,
                                                 profile_.get(),
-                                                false));
+                                                false, true));
 
       // Register the bookmark data type.
       model_associator_ = new TestBookmarkModelAssociator(service_.get());
@@ -445,7 +445,8 @@ TEST_F(ProfileSyncServiceTest, InitialState) {
 }
 
 TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
-  service_.reset(new TestProfileSyncService(&factory_, profile_.get(), false));
+  service_.reset(new TestProfileSyncService(&factory_, profile_.get(),
+                                            false, true));
   EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
       WillOnce(MakeDataTypeManager(&backend_mock_));
   EXPECT_CALL(factory_, CreateBookmarkSyncComponents(_, _)).Times(0);
@@ -1326,7 +1327,8 @@ TEST_F(ProfileSyncServiceTestWithData, MAYBE_TestStartupWithOldSyncData) {
   LoadBookmarkModel(LOAD_FROM_STORAGE, SAVE_TO_STORAGE);
   if (!service_.get()) {
     service_.reset(
-        new TestProfileSyncService(&factory_, profile_.get(), false));
+        new TestProfileSyncService(&factory_, profile_.get(),
+                                   false, true));
     profile_->GetPrefs()->SetBoolean(prefs::kSyncHasSetupCompleted, false);
 
     model_associator_ = new TestBookmarkModelAssociator(service_.get());

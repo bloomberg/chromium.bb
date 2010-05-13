@@ -17,8 +17,11 @@ class TestProfileSyncService : public ProfileSyncService {
  public:
   explicit TestProfileSyncService(ProfileSyncFactory* factory,
                                   Profile* profile,
-                                  bool bootstrap_sync_authentication)
-      : ProfileSyncService(factory, profile, bootstrap_sync_authentication) {
+                                  bool bootstrap_sync_authentication,
+                                  bool synchronous_backend_initialization)
+      : ProfileSyncService(factory, profile, bootstrap_sync_authentication),
+        synchronous_backend_initialization_(
+            synchronous_backend_initialization) {
     RegisterPreferences();
     SetSyncSetupCompleted();
   }
@@ -32,16 +35,23 @@ class TestProfileSyncService : public ProfileSyncService {
         new browser_sync::TestHttpBridgeFactory();
     backend()->InitializeForTestMode(L"testuser", factory, factory2,
         delete_sync_data_folder, browser_sync::kDefaultNotificationMethod);
-    // The SyncBackend posts a task to the current loop when initialization
-    // completes.
-    MessageLoop::current()->Run();
-    // Initialization is synchronous for test mode, so we should be good to go.
-    DCHECK(sync_initialized());
+    // TODO(akalin): Figure out a better way to do this.
+    if (synchronous_backend_initialization_) {
+      // The SyncBackend posts a task to the current loop when
+      // initialization completes.
+      MessageLoop::current()->Run();
+      // Initialization is synchronous for test mode, so we should be
+      // good to go.
+      DCHECK(sync_initialized());
+    }
   }
 
   virtual void OnBackendInitialized() {
     ProfileSyncService::OnBackendInitialized();
-    MessageLoop::current()->Quit();
+    // TODO(akalin): Figure out a better way to do this.
+    if (synchronous_backend_initialization_) {
+      MessageLoop::current()->Quit();
+    }
   }
 
  private:
@@ -50,6 +60,8 @@ class TestProfileSyncService : public ProfileSyncService {
   virtual std::string GetLsidForAuthBootstraping() {
     return "foo";
   }
+
+  bool synchronous_backend_initialization_;
 };
 
 #endif  // CHROME_BROWSER_SYNC_TEST_PROFILE_SYNC_SERVICE_H_

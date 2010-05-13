@@ -25,6 +25,7 @@
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/protocol/typed_url_specifics.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
+#include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/test/profile_mock.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
@@ -152,7 +153,7 @@ class ProfileSyncServiceTypedUrlTest : public testing::Test {
   void StartSyncService(Task* task) {
     if (!service_.get()) {
       service_.reset(
-          new TestingProfileSyncService(&factory_, &profile_, false));
+          new TestProfileSyncService(&factory_, &profile_, false, false));
       service_->AddObserver(&observer_);
       TypedUrlDataTypeController* data_type_controller =
           new TypedUrlDataTypeController(&factory_,
@@ -297,7 +298,7 @@ class ProfileSyncServiceTypedUrlTest : public testing::Test {
   Thread history_thread_;
   scoped_refptr<ThreadNotificationService> notification_service_;
 
-  scoped_ptr<TestingProfileSyncService> service_;
+  scoped_ptr<TestProfileSyncService> service_;
   ProfileMock profile_;
   ProfileSyncFactoryMock factory_;
   SyncBackendHostMock backend_mock_;

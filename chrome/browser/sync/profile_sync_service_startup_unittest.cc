@@ -50,7 +50,8 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    service_.reset(new TestProfileSyncService(&factory_, &profile_, false));
+    service_.reset(new TestProfileSyncService(&factory_, &profile_,
+                                              false, true));
     service_->AddObserver(&observer_);
   }
 
@@ -137,7 +138,8 @@ class ProfileSyncServiceStartupBootstrapTest
   virtual ~ProfileSyncServiceStartupBootstrapTest() {}
 
   virtual void SetUp() {
-    service_.reset(new TestProfileSyncService(&factory_, &profile_, true));
+    service_.reset(new TestProfileSyncService(&factory_, &profile_,
+                                              true, true));
     service_->AddObserver(&observer_);
   }
 };
