@@ -14,17 +14,22 @@
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/ref_counted_memory.h"
+#include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/history/history.h"
+#include "chrome/browser/history/page_usage_data.h"
 #include "chrome/common/thumbnail_score.h"
 #include "googleurl/src/gurl.h"
 
 class SkBitmap;
-struct ThumbnailScore;
+class Profile;
 
 namespace history {
 
 class TopSitesBackend;
 class TopSitesTest;
+
+typedef std::vector<MostVisitedURL> MostVisitedURLList;
 
 // Stores the data for the top "most visited" sites. This includes a cache of
 // the most visited data from history, as well as the corresponding thumbnails
@@ -38,8 +43,18 @@ class TopSitesTest;
 // the UI thread is busy.
 class TopSites : public base::RefCountedThreadSafe<TopSites> {
  public:
-  TopSites();
-  ~TopSites();
+  explicit TopSites(Profile* profile);
+
+  class MockHistoryService {
+    // A mockup of a HistoryService used for testing TopSites.
+   public:
+    virtual HistoryService::Handle QuerySegmentUsageSince(
+        CancelableRequestConsumerBase* consumer,
+        base::Time from_time,
+        int max_result_count,
+        HistoryService::SegmentQueryCallback* callback) = 0;
+    virtual ~MockHistoryService() {}
+  };
 
   // Initializes this component, returning true on success.
   bool Init();
@@ -51,11 +66,17 @@ class TopSites : public base::RefCountedThreadSafe<TopSites> {
                         const SkBitmap& thumbnail,
                         const ThumbnailScore& score);
 
+  MostVisitedURLList GetMostVisitedURLs();
+
   // TODO(brettw): write this.
   // bool GetPageThumbnail(const GURL& url, RefCountedBytes** data) const;
 
  private:
+  friend class base::RefCountedThreadSafe<TopSites>;
   friend class TopSitesTest;
+  friend class TopSitesTest_GetMostVisited_Test;
+
+  ~TopSites();
 
   struct Images {
     scoped_refptr<RefCountedBytes> thumbnail;
@@ -65,11 +86,22 @@ class TopSites : public base::RefCountedThreadSafe<TopSites> {
     // scoped_refptr<RefCountedBytes> favicon;
   };
 
+  void StartQueryForMostVisited();
+
+  // Handler for the query response.
+  void OnTopSitesAvailable(CancelableRequestProvider::Handle handle,
+                           std::vector<PageUsageData*>* data);
+
+  // Converts from PageUsageData to MostVisitedURL. redirects is a
+  // list of redirects for this URL. Empty list means no redirects.
+  static MostVisitedURL MakeMostVisitedURL(const PageUsageData& page_data,
+                                           const RedirectList& redirects);
+
   // Saves the set of the top URLs visited by this user. The 0th item is the
   // most popular.
   //
   // DANGER! This will clear all data from the input argument.
-  void StoreMostVisited(std::vector<MostVisitedURL>* most_visited);
+  void StoreMostVisited(MostVisitedURLList* most_visited);
 
   // Saves the given set of redirects. The redirects are in order of the
   // given vector, so [0] -> [1] -> [2].
@@ -97,17 +129,25 @@ class TopSites : public base::RefCountedThreadSafe<TopSites> {
   //
   // URLs appearing in both old and new lists but having different indices will
   // have their index into "new" be put into |moved_urls|.
-  static void DiffMostVisited(const std::vector<MostVisitedURL>& old_list,
-                              const std::vector<MostVisitedURL>& new_list,
+  static void DiffMostVisited(const MostVisitedURLList& old_list,
+                              const MostVisitedURLList& new_list,
                               std::vector<size_t>* added_urls,
                               std::vector<size_t>* deleted_urls,
                               std::vector<size_t>* moved_urls);
 
+  // For testing with a HistoryService mock.
+  void SetMockHistoryService(MockHistoryService* mhs);
+
+  Profile* profile_;
+  // A mockup to use for testing. If NULL, use the real HistoryService
+  // from the profile_. See SetMockHistoryService.
+  MockHistoryService* mock_history_service_;
+  CancelableRequestConsumerTSimple<PageUsageData*> cancelable_consumer_;
   mutable Lock lock_;
 
   // The cached version of the top sites. The 0th item in this vector is the
   // #1 site.
-  std::vector<MostVisitedURL> top_sites_;
+  MostVisitedURLList top_sites_;
 
   // The images corresponding to the top_sites. This is indexed by the URL of
   // the top site, so this doesn't have to be shuffled around when the ordering
@@ -127,4 +167,3 @@ class TopSites : public base::RefCountedThreadSafe<TopSites> {
 }  // namespace history
 
 #endif  // CHROME_BROWSER_HISTORY_TOP_SITES_H_
-

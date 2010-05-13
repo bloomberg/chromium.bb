@@ -5,12 +5,19 @@
 #include "chrome/browser/history/top_sites.h"
 
 #include "base/logging.h"
+#include "chrome/browser/profile.h"
+#include "chrome/browser/history/page_usage_data.h"
 #include "gfx/codec/jpeg_codec.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace history {
 
-TopSites::TopSites() {
+// How many top sites to store in the cache.
+static const int kTopSitesNumber = 20;
+static const int kDaysOfHistory = 90;
+
+TopSites::TopSites(Profile* profile) : profile_(profile),
+                                       mock_history_service_(NULL) {
 }
 
 TopSites::~TopSites() {
@@ -56,6 +63,10 @@ bool TopSites::SetPageThumbnail(const GURL& url,
   image.thumbnail_score = new_score_with_redirects;
 
   return true;
+}
+
+MostVisitedURLList TopSites::GetMostVisitedURLs() {
+  return top_sites_;
 }
 
 void TopSites::StoreMostVisited(std::vector<MostVisitedURL>* most_visited) {
@@ -165,6 +176,63 @@ void TopSites::DiffMostVisited(const std::vector<MostVisitedURL>& old_list,
     if (i->second != kAlreadyFoundMarker)
       deleted_urls->push_back(i->second);
   }
+}
+
+void TopSites::StartQueryForMostVisited() {
+  if (mock_history_service_) {
+    // Testing with a mockup.
+    // QuerySegmentUsageSince is not virtual, so we have to duplicate the code.
+    mock_history_service_->QuerySegmentUsageSince(
+        &cancelable_consumer_,
+        base::Time::Now() - base::TimeDelta::FromDays(kDaysOfHistory),
+        kTopSitesNumber,
+        NewCallback(this, &TopSites::OnTopSitesAvailable));
+  } else {
+    HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+    // |hs| may be null during unit tests.
+    if (hs) {
+      hs->QuerySegmentUsageSince(
+          &cancelable_consumer_,
+          base::Time::Now() - base::TimeDelta::FromDays(kDaysOfHistory),
+          kTopSitesNumber,
+          NewCallback(this, &TopSites::OnTopSitesAvailable));
+    } else {
+      LOG(INFO) << "History Service not available.";
+    }
+  }
+}
+
+MostVisitedURL TopSites::MakeMostVisitedURL(const PageUsageData& page_data,
+                                            const RedirectList& redirects) {
+  MostVisitedURL mv;
+  mv.url = page_data.GetURL();
+  mv.title = page_data.GetTitle();
+  if (redirects.empty()) {
+    // Redirects must contain at least the target url.
+    mv.redirects.push_back(mv.url);
+  } else {
+    mv.redirects = redirects;
+  }
+  return mv;
+}
+
+void TopSites::OnTopSitesAvailable(
+    CancelableRequestProvider::Handle handle,
+    std::vector<PageUsageData*>* pages) {
+  AutoLock lock(lock_);
+  std::vector<MostVisitedURL> most_visited;
+
+  for (size_t i = 0; i < pages->size(); i++) {
+    PageUsageData* pd = (*pages)[i];
+    MostVisitedURL mv = MakeMostVisitedURL(*pd, RedirectList());
+    most_visited.push_back(mv);
+  }
+
+  StoreMostVisited(&most_visited);
+}
+
+void TopSites::SetMockHistoryService(MockHistoryService* mhs) {
+  mock_history_service_ = mhs;
 }
 
 }  // namespace history

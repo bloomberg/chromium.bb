@@ -504,7 +504,7 @@ struct KeywordSearchTermVisit {
 struct MostVisitedURL {
   GURL url;
   GURL favicon_url;
-  std::wstring title;
+  string16 title;
 
   RedirectList redirects;
 };

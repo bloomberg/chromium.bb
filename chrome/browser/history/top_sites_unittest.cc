@@ -2,15 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/string_util.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/test/testing_profile.h"
+#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+
 
 namespace history {
 
 class TopSitesTest : public testing::Test {
  public:
-  TopSitesTest() : top_sites_(new TopSites) {
+  TopSitesTest() {
   }
   ~TopSitesTest() {
   }
@@ -18,9 +22,13 @@ class TopSitesTest : public testing::Test {
   TopSites& top_sites() { return *top_sites_; }
 
   virtual void SetUp() {
+    profile_.reset(new TestingProfile);
+    top_sites_ = new TopSites(profile_.get());
   }
 
   virtual void TearDown() {
+    profile_.reset();
+    top_sites_ = NULL;
   }
 
   // Wrappers that allow private TopSites functions to be called from the
@@ -46,9 +54,39 @@ class TopSitesTest : public testing::Test {
 
  private:
   scoped_refptr<TopSites> top_sites_;
+  scoped_ptr<TestingProfile> profile_;
 
   DISALLOW_COPY_AND_ASSIGN(TopSitesTest);
 };
+
+class MockHistoryServiceImpl: public TopSites::MockHistoryService {
+  // A mockup of a HistoryService used for testing TopSites.
+ public:
+  // Calls the callback directly with the results.
+  HistoryService::Handle QuerySegmentUsageSince(
+      CancelableRequestConsumerBase* consumer,
+      base::Time from_time,
+      int max_result_count,
+      HistoryService::SegmentQueryCallback* callback) {
+    callback->Run(CancelableRequestProvider::Handle(0),  // Handle is unused.
+                  &page_usage_data_);
+    return 0;
+  }
+
+  // Add a page to the end of the pages list.
+  void AppendMockPage(const GURL& url,
+                      const string16& title) {
+    PageUsageData* pd = new PageUsageData(URLID(0));
+    pd->SetURL(url);
+    pd->SetTitle(title);
+    page_usage_data_.push_back(pd);
+  }
+
+ private:
+  std::vector<PageUsageData*> page_usage_data_;
+};
+
+
 
 // Helper function for appending a URL to a vector of "most visited" URLs,
 // using the default values for everything but the URL.
@@ -183,6 +221,23 @@ TEST_F(TopSitesTest, SetPageThumbnail) {
   EXPECT_TRUE(top_sites().SetPageThumbnail(url1a, thumbnail, medium_score));
   EXPECT_TRUE(top_sites().SetPageThumbnail(url1b, thumbnail, medium_score));
   EXPECT_FALSE(top_sites().SetPageThumbnail(url1a, thumbnail, medium_score));
+}
+
+TEST_F(TopSitesTest, GetMostVisited) {
+  GURL news("http://news.google.com/");
+  GURL google("http://google.com/");
+
+  MockHistoryServiceImpl hs;
+  hs.AppendMockPage(news, ASCIIToUTF16("Google News"));
+  hs.AppendMockPage(google, ASCIIToUTF16("Google"));
+  top_sites().SetMockHistoryService(&hs);
+
+  top_sites().StartQueryForMostVisited();
+
+  MostVisitedURLList results = top_sites().GetMostVisitedURLs();
+  EXPECT_EQ(2u, results.size());
+  EXPECT_EQ(news, results[0].url);
+  EXPECT_EQ(google, results[1].url);
 }
 
 }  // namespace history
