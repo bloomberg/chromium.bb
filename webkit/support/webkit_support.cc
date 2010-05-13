@@ -5,6 +5,7 @@
 #include "webkit/support/webkit_support.h"
 
 #include "base/at_exit.h"
+#include "base/command_line.h"
 #include "base/debug_util.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -80,6 +81,18 @@ static TestEnvironment* test_environment;
 
 void SetUpTestEnvironment() {
   base::EnableTerminationOnHeapCorruption();
+
+  // Initialize the singleton CommandLine with fixed values.  Some code refer to
+  // CommandLine::ForCurrentProcess().  We don't use the actual command-line
+  // arguments of DRT to avoid unexpected behavior change.
+  //
+  // webkit/glue/webmediaplayer_impl.cc checks --enable-openmax.
+  // webkit/glue/plugin/plugin_list_posix.cc checks --debug-plugin-loading.
+  // webkit/glue/plugin/plugin_list_win.cc checks --old-wmp.
+  // If DRT needs these flags, specify them in the following kFixedArguments.
+  const char* kFixedArguments[] = {"DumpRenderTree"};
+  CommandLine::Init(arraysize(kFixedArguments), kFixedArguments);
+
   BeforeInitialize();
   test_environment = new TestEnvironment;
   AfterIniitalize();
