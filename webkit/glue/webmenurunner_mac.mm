@@ -26,7 +26,8 @@ BOOL gNewNSMenuAPI;
 @interface WebMenuRunner (PrivateAPI)
 
 // Worker function used during initialization.
-- (void)addItem:(const WebMenuItem&)item;
+- (void)addItem:(const WebMenuItem&)item
+ withAttributes:(NSDictionary*)attrs;
 
 // A callback for the menu controller object to call when an item is selected
 // from the menu. This is not called if the menu is dismissed without a
@@ -38,7 +39,8 @@ BOOL gNewNSMenuAPI;
 @implementation WebMenuRunner
 
 - (id)initWithItems:(const std::vector<WebMenuItem>&)items
-           fontSize:(CGFloat)fontSize {
+           fontSize:(CGFloat)fontSize
+       rightAligned:(BOOL)rightAligned {
   static BOOL newNSMenuAPIInitialized = NO;
   if (!newNSMenuAPIInitialized) {
     newNSMenuAPIInitialized = YES;
@@ -54,13 +56,24 @@ BOOL gNewNSMenuAPI;
     [menu_ setAutoenablesItems:NO];
     index_ = -1;
     fontSize_ = fontSize;
+    scoped_nsobject<NSDictionary> attrs;
+    if (rightAligned) {
+      // NB: Right-aligning menu items in this manner is known to not work in
+      // Mac OS X 10.5.
+      scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
+          [[NSMutableParagraphStyle alloc] init]);
+      [paragraphStyle setAlignment:NSRightTextAlignment];
+      attrs.reset([[NSDictionary alloc] initWithObjectsAndKeys:
+          paragraphStyle, NSParagraphStyleAttributeName, nil]);
+    }
     for (size_t i = 0; i < items.size(); ++i)
-      [self addItem:items[i]];
+      [self addItem:items[i] withAttributes:attrs];
   }
   return self;
 }
 
-- (void)addItem:(const WebMenuItem&)item {
+- (void)addItem:(const WebMenuItem&)item
+ withAttributes:(NSDictionary*)attrs {
   if (item.type == WebMenuItem::SEPARATOR) {
     [menu_ addItem:[NSMenuItem separatorItem]];
     return;
@@ -72,6 +85,12 @@ BOOL gNewNSMenuAPI;
                                    keyEquivalent:@""];
   [menuItem setEnabled:(item.enabled && item.type != WebMenuItem::GROUP)];
   [menuItem setTarget:self];
+  if (attrs) {
+    scoped_nsobject<NSAttributedString> attrTitle(
+        [[NSAttributedString alloc] initWithString:title
+                                        attributes:attrs]);
+    [menuItem setAttributedTitle:attrTitle];
+  }
   if (gNewNSMenuAPI)
     [menuItem setTag:[menu_ numberOfItems] - 1];
 }

@@ -48,6 +48,7 @@ void TestWebViewDelegate::show(WebNavigationPolicy policy) {
   int item_height = popup_menu_info_->itemHeight;
   double font_size = popup_menu_info_->itemFontSize;
   int selected_index = popup_menu_info_->selectedIndex;
+  bool right_aligned = popup_menu_info_->rightAligned;
   popup_menu_info_.reset();  // No longer needed.
 
   const WebRect& bounds = popup_bounds_;
@@ -62,7 +63,8 @@ void TestWebViewDelegate::show(WebNavigationPolicy policy) {
   // Display the menu.
   scoped_nsobject<WebMenuRunner> menu_runner;
   menu_runner.reset([[WebMenuRunner alloc] initWithItems:items
-                                                fontSize:font_size]);
+                                                fontSize:font_size
+                                            rightAligned:right_aligned]);
 
   [menu_runner runMenuInView:shell_->webViewWnd()
                   withBounds:position

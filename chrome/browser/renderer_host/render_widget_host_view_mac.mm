@@ -464,7 +464,8 @@ void RenderWidgetHostViewMac::ShowPopupWithItems(
     int item_height,
     double item_font_size,
     int selected_item,
-    const std::vector<WebMenuItem>& items) {
+    const std::vector<WebMenuItem>& items,
+    bool right_aligned) {
   is_popup_menu_ = true;
 
   // Retain the Cocoa view for the duration of the pop-up so that it can't
@@ -483,7 +484,8 @@ void RenderWidgetHostViewMac::ShowPopupWithItems(
   // Display the menu.
   scoped_nsobject<WebMenuRunner> menu_runner;
   menu_runner.reset([[WebMenuRunner alloc] initWithItems:items
-                                                fontSize:item_font_size]);
+                                                fontSize:item_font_size
+                                            rightAligned:right_aligned]);
 
   {
     // Make sure events can be pumped while the menu is up.
@@ -1041,7 +1043,8 @@ bool RenderWidgetHostViewMac::ContainsNativeView(
     return;
   }
 
-  DCHECK(renderWidgetHostView_->render_widget_host_->process()->HasConnection());
+  DCHECK(
+      renderWidgetHostView_->render_widget_host_->process()->HasConnection());
   DCHECK(!renderWidgetHostView_->about_to_validate_and_paint_);
 
   renderWidgetHostView_->about_to_validate_and_paint_ = true;

@@ -492,6 +492,9 @@ struct ViewHostMsg_ShowPopup_Params {
 
   // The entire list of items in the popup menu.
   std::vector<WebMenuItem> popup_items;
+
+  // Whether items should be right-aligned.
+  bool right_aligned;
 };
 
 // Parameters for the IPC message ViewHostMsg_ScriptedPrint
@@ -2076,6 +2079,7 @@ struct ParamTraits<ViewHostMsg_ShowPopup_Params> {
     WriteParam(m, p.item_font_size);
     WriteParam(m, p.selected_item);
     WriteParam(m, p.popup_items);
+    WriteParam(m, p.right_aligned);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return
@@ -2083,7 +2087,8 @@ struct ParamTraits<ViewHostMsg_ShowPopup_Params> {
         ReadParam(m, iter, &p->item_height) &&
         ReadParam(m, iter, &p->item_font_size) &&
         ReadParam(m, iter, &p->selected_item) &&
-        ReadParam(m, iter, &p->popup_items);
+        ReadParam(m, iter, &p->popup_items) &&
+        ReadParam(m, iter, &p->right_aligned);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"(");
@@ -2096,6 +2101,8 @@ struct ParamTraits<ViewHostMsg_ShowPopup_Params> {
     LogParam(p.selected_item, l);
     l->append(L", ");
     LogParam(p.popup_items, l);
+    l->append(L", ");
+    LogParam(p.right_aligned, l);
     l->append(L")");
   }
 };

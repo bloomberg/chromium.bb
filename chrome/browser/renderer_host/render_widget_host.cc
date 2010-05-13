@@ -917,7 +917,8 @@ void RenderWidgetHost::OnMsgShowPopup(
                             params.item_height,
                             params.item_font_size,
                             params.selected_item,
-                            params.popup_items);
+                            params.popup_items,
+                            params.right_aligned);
 }
 
 void RenderWidgetHost::OnMsgGetScreenInfo(gfx::NativeViewId view,

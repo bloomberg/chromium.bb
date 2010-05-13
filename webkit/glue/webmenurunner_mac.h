@@ -37,7 +37,8 @@
 
 // Initializes the MenuDelegate with a list of items sent from WebKit.
 - (id)initWithItems:(const std::vector<WebMenuItem>&)items
-           fontSize:(CGFloat)fontSize;
+           fontSize:(CGFloat)fontSize
+       rightAligned:(BOOL)rightAligned;
 
 // Returns YES if an item was selected from the menu, NO if the menu was
 // dismissed.
