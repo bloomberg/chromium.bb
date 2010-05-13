@@ -5,6 +5,7 @@
 #ifndef APP_GTK_UTIL_H_
 #define APP_GTK_UTIL_H_
 
+#include <stdint.h>
 typedef struct _GtkWidget GtkWidget;
 
 namespace gtk_util {
@@ -28,6 +29,11 @@ void GetWidgetSizeFromCharacters(
 // window manager bugs. You should always call it after creating a dialog
 // with gtk_message_dialog_new.
 void ApplyMessageDialogQuirks(GtkWidget* dialog);
+
+// Makes a copy of |pixels| with the ordering changed from BGRA to RGBA.
+// The caller is responsible for free()ing the data. If |stride| is 0,
+// it's assumed to be 4 * |width|.
+uint8_t* BGRAToRGBA(const uint8_t* pixels, int width, int height, int stride);
 
 }  // namespace gtk_util
 

@@ -56,7 +56,7 @@ bool PathProvider(int key, FilePath* result) {
 #endif
       break;
     case app::FILE_RESOURCES_PAK:
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
       if (!PathService::Get(base::DIR_EXE, &cur))
         return false;
       // TODO(tony): We shouldn't be referencing chrome here.

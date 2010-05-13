@@ -10,7 +10,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/linux_util.h"
+#include "app/gtk_util.h"
 #include "base/message_loop.h"
 #include "base/mime_util.h"
 #include "base/thread.h"
@@ -60,7 +60,8 @@ void IconLoader::ParseIcon() {
     if (!gdk_pixbuf_get_has_alpha(pixbuf)) {
       LOG(WARNING) << "Got an image with no alpha channel, aborting load.";
     } else {
-      uint8_t* BGRA_pixels = base::BGRAToRGBA(pixels, width, height, stride);
+      uint8_t* BGRA_pixels =
+          gtk_util::BGRAToRGBA(pixels, width, height, stride);
       std::vector<unsigned char> pixel_vector;
       pixel_vector.resize(height * stride);
       memcpy(const_cast<unsigned char*>(pixel_vector.data()), BGRA_pixels,

@@ -13,7 +13,7 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
-#include "base/linux_util.h"
+#include "app/gtk_util.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/size.h"
 
@@ -189,8 +189,9 @@ void Clipboard::WriteWebSmartPaste() {
 void Clipboard::WriteBitmap(const char* pixel_data, const char* size_data) {
   const gfx::Size* size = reinterpret_cast<const gfx::Size*>(size_data);
 
-  guchar* data = base::BGRAToRGBA(reinterpret_cast<const uint8_t*>(pixel_data),
-                                  size->width(), size->height(), 0);
+  guchar* data =
+      gtk_util::BGRAToRGBA(reinterpret_cast<const uint8_t*>(pixel_data),
+                           size->width(), size->height(), 0);
 
   GdkPixbuf* pixbuf =
       gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE,
