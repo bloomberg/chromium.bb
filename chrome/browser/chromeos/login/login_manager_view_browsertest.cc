@@ -41,24 +41,20 @@ class LoginManagerViewTest : public WizardInProcessBrowserTest {
         .Times(1);
     test_api()->SetLoginLibrary(mock_login_library_, true);
 
-    mock_cryptohome_library_ = new MockCryptohomeLibrary();
+    InitMockCryptohomeLibrary();
     EXPECT_CALL(*mock_cryptohome_library_, IsMounted())
         .Times(AnyNumber())
         .WillRepeatedly((Return(true)));
-    test_api()->SetCryptohomeLibrary(mock_cryptohome_library_, true);
-
     LoginUtils::Set(new MockLoginUtils(kUsername, kPassword));
   }
 
   virtual void TearDownInProcessBrowserTestFixture() {
     WizardInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
     test_api()->SetLoginLibrary(NULL, false);
-    test_api()->SetCryptohomeLibrary(NULL, false);
   }
 
  private:
   MockLoginLibrary* mock_login_library_;
-  MockCryptohomeLibrary* mock_cryptohome_library_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginManagerViewTest);
 };
