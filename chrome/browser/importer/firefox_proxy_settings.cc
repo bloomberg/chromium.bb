@@ -178,7 +178,7 @@ bool FirefoxProxySettings::GetSettingsFromFile(const FilePath& pref_file,
                                    &(settings->autoconfig_url_))) {
       LOG(ERROR) << "Failed to retrieve Firefox proxy autoconfig URL";
     }
-    return false;
+    return true;
   }
 
   if (settings->config_type_ == MANUAL) {

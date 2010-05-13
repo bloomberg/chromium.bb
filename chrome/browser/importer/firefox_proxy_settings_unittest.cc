@@ -50,6 +50,7 @@ TEST_F(FirefoxProxySettingsTest, TestParse) {
   EXPECT_EQ("localhost", settings.proxy_bypass_list()[0]);
   EXPECT_EQ("127.0.0.1", settings.proxy_bypass_list()[1]);
   EXPECT_EQ("noproxy.com", settings.proxy_bypass_list()[2]);
+  EXPECT_EQ("", settings.autoconfig_url());
 
   // Test that ToProxyConfig() properly translates into a net::ProxyConfig.
   net::ProxyConfig config;
@@ -74,5 +75,50 @@ TEST_F(FirefoxProxySettingsTest, TestParse) {
       "    *localhost\n"
       "    127.0.0.1\n"
       "    *noproxy.com",
+      pretty_printed_config);
+}
+
+TEST_F(FirefoxProxySettingsTest, TestParseAutoConfigUrl) {
+  FirefoxProxySettings settings;
+
+  FilePath js_pref_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &js_pref_path));
+  js_pref_path = js_pref_path.AppendASCII("firefox3_pref_pac_url.js");
+
+  EXPECT_TRUE(TestFirefoxProxySettings::TestGetSettingsFromFile(js_pref_path,
+                                                                &settings));
+  EXPECT_EQ(FirefoxProxySettings::AUTO_FROM_URL, settings.config_type());
+
+  // Everything should be empty except for the autoconfig URL.
+  EXPECT_EQ("http://custom-pac-url/", settings.autoconfig_url());
+  EXPECT_EQ("", settings.http_proxy());
+  EXPECT_EQ(0, settings.http_proxy_port());
+  EXPECT_EQ("", settings.ssl_proxy());
+  EXPECT_EQ(0, settings.ssl_proxy_port());
+  EXPECT_EQ("", settings.ftp_proxy());
+  EXPECT_EQ(0, settings.ftp_proxy_port());
+  EXPECT_EQ("", settings.gopher_proxy());
+  EXPECT_EQ(0, settings.gopher_proxy_port());
+  EXPECT_EQ("", settings.socks_host());
+  EXPECT_EQ(0, settings.socks_port());
+  EXPECT_EQ(0, settings.socks_port());
+  EXPECT_EQ(0U, settings.proxy_bypass_list().size());
+
+  // Test that ToProxyConfig() properly translates into a net::ProxyConfig.
+  net::ProxyConfig config;
+  EXPECT_TRUE(settings.ToProxyConfig(&config));
+
+  // Pretty-print |config| to a string (easy way to define the expectations).
+  std::ostringstream stream;
+  stream << config;
+  std::string pretty_printed_config = stream.str();
+
+  EXPECT_EQ(
+      "Automatic settings:\n"
+      "  Auto-detect: No\n"
+      "  Custom PAC script: http://custom-pac-url/\n"
+      "Manual settings:\n"
+      "  Proxy server: [None]\n"
+      "  Bypass list: [None]",
       pretty_printed_config);
 }
