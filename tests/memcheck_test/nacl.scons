@@ -5,6 +5,10 @@
 
 Import('env')
 
+# tests in this directory contain (inline) assembler
+if ARGUMENTS.get('bitcode'):
+  Return()
+
 # This is to make ARM compile which does not automatically link in pthread.
 env.Replace(LIBS=['c', 'nacl'])
 

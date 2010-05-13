@@ -5,6 +5,10 @@
 
 Import('env')
 
+# tests in this directory contain c++ which does not work on pnacl/x86
+if ARGUMENTS.get('bitcode'):
+  Return()
+
 # NOTE: make sure we can compile these benchmarks without libsrpc
 #       sadly this does not do anything on x86 since libsrpc
 #       is added by the driver
