@@ -147,4 +147,39 @@ TEST_F(NameFieldTest, FirstLast2) {
   EXPECT_EQ(NAME_LAST, field_type_map_[ASCIIToUTF16("name2")]);
 }
 
+TEST_F(NameFieldTest, FirstLastMiddleWithSpaces) {
+  list_.push_back(
+      new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("First  Name"),
+                                               ASCIIToUTF16("first  name"),
+                                               string16(),
+                                               ASCIIToUTF16("text")),
+                        ASCIIToUTF16("name1")));
+  list_.push_back(
+      new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Middle  Name"),
+                                               ASCIIToUTF16("middle  name"),
+                                               string16(),
+                                               ASCIIToUTF16("text")),
+                        ASCIIToUTF16("name2")));
+  list_.push_back(
+      new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Last  Name"),
+                                               ASCIIToUTF16("last  name"),
+                                               string16(),
+                                               ASCIIToUTF16("text")),
+                        ASCIIToUTF16("name3")));
+  list_.push_back(NULL);
+  iter_ = list_.begin();
+  field_.reset(NameField::Parse(&iter_, false));
+  ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
+  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
+  EXPECT_EQ(NAME_FIRST, field_type_map_[ASCIIToUTF16("name1")]);
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("name2")) != field_type_map_.end());
+  EXPECT_EQ(NAME_MIDDLE, field_type_map_[ASCIIToUTF16("name2")]);
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("name3")) != field_type_map_.end());
+  EXPECT_EQ(NAME_LAST, field_type_map_[ASCIIToUTF16("name3")]);
+}
+
 }  // namespace

@@ -28,7 +28,7 @@ FullNameField* FullNameField::Parse(
   // for example, Travelocity_Edit travel profile.html contains a field
   // "Travel Profile Name".
   const string16 name_match =
-      ASCIIToUTF16("^name|full name|fullname|your name|customer name");
+      ASCIIToUTF16("^name|full *name|your name|customer name");
   if (ParseText(iter, name_match, &field))
     return new FullNameField(field);
 
@@ -75,7 +75,7 @@ FirstLastNameField* FirstLastNameField::Parse2(
   // American-style).
   // The ".*first$" matches fields ending in "first" (example in sample8.html).
   string16 match =
-      ASCIIToUTF16("first name|first_name|firstname|initials|fname|.*first$");
+      ASCIIToUTF16("first *name|first_name|initials|fname|.*first$");
   if (!ParseText(&q, match, &v.first_name_))
     return NULL;
 
@@ -88,12 +88,12 @@ FirstLastNameField* FirstLastNameField::Parse2(
   if (ParseText(&q, match, &v.middle_name_)) {
     v.middle_initial_ = true;
   } else {
-    match = ASCIIToUTF16("middle name|mname|middlename");
+    match = ASCIIToUTF16("middle *name|mname");
     ParseText(&q, match, &v.middle_name_);
   }
 
   // The ".*last$" matches fields ending in "last" (example in sample8.html).
-  match = ASCIIToUTF16("last name|last_name|lastname|lname|surname|.*last$");
+  match = ASCIIToUTF16("last *name|last_name|lname|surname|.*last$");
   if (!ParseText(&q, match, &v.last_name_))
     return NULL;
 
