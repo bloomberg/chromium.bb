@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,8 +17,8 @@ namespace {
 
 const char kGTestListTestsFlag[] = "gtest_list_tests";
 const char kGTestHelpFlag[]   = "gtest_help";
-const char kSingleProcessFlag[]   = "single-process";
-const char kSingleProcessAltFlag[]   = "single_process";
+const char kSingleProcessTestsFlag[]   = "single_process";
+const char kSingleProcessTestsAndChromeFlag[]   = "single-process";
 const char kTestTerminateTimeoutFlag[] = "test-terminate-timeout";
 // The following is kept for historical reasons (so people that are used to
 // using it don't get surprised).
@@ -99,14 +99,21 @@ class OutOfProcTestRunnerFactory : public tests::TestRunnerFactory {
 };
 
 void PrintUsage() {
-  fprintf(stdout, "Runs tests using the gtest framework, each test being run in"
-      " its own process.\nAny gtest flags can be specified.\n"
-      "  --single_process\n    Runs the tests and the launcher in the same "
-      "process. Useful for debugging a\n    specific test in a debugger\n  "
-      "--test-terminate-timeout\n    Specifies a timeout (in milliseconds) "
-      "after which a running test will be\n    forcefully terminated\n  "
-      "--help\n    Shows this message.\n  --gtest_help\n    Shows the gtest "
-      "help message\n");
+  fprintf(stdout,
+      "Runs tests using the gtest framework, each test being run in its own\n"
+      "process.  Any gtest flags can be specified.\n"
+      "  --single_process\n"
+      "    Runs the tests and the launcher in the same process. Useful for \n"
+      "    debugging a specific test in a debugger.\n"
+      "  --single-process\n"
+      "    Same as above, and also runs Chrome in single-process mode.\n"
+      "  --test-terminate-timeout\n"
+      "    Specifies a timeout (in milliseconds) after which a running test\n"
+      "    will be forcefully terminated.\n"
+      "  --help\n"
+      "    Shows this message.\n"
+      "  --gtest_help\n"
+      "    Shows the gtest help message.\n");
 }
 
 }  // namespace
@@ -120,24 +127,25 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  if (command_line->HasSwitch(kSingleProcessFlag)) {
-    fprintf(stdout,
-            "\n  Did you mean --%s instead? (note underscore)\n\n",
-            kSingleProcessAltFlag);
-  }
-
+  // TODO(pkasting): This "single_process vs. single-process" design is terrible
+  // UI.  Instead, there should be some sort of signal flag on the command line,
+  // with all subsequent arguments passed through to the underlying browser.
   if (command_line->HasSwitch(kChildProcessFlag) ||
-      command_line->HasSwitch(kSingleProcessFlag) ||
-      command_line->HasSwitch(kSingleProcessAltFlag) ||
+      command_line->HasSwitch(kSingleProcessTestsFlag) ||
+      command_line->HasSwitch(kSingleProcessTestsAndChromeFlag) ||
       command_line->HasSwitch(kGTestListTestsFlag) ||
       command_line->HasSwitch(kGTestHelpFlag)) {
     return ChromeTestSuite(argc, argv).Run();
   }
 
   fprintf(stdout,
-          "Starting tests...\nIMPORTANT DEBUGGING NOTE: each test is run inside"
-          " its own process.\nFor debugging a test inside a debugger, use the "
-          "--single_process and\n--gtest_filter=<your_test_name> flags.\n");
+      "Starting tests...\n"
+      "IMPORTANT DEBUGGING NOTE: each test is run inside its own process.\n"
+      "For debugging a test inside a debugger, use the\n"
+      "--gtest_filter=<your_test_name> flag along with either\n"
+      "--single_process (to run all tests in one launcher/browser process) or\n"
+      "--single-process (to do the above, and also run Chrome in single-\n"
+      "process mode).\n");
   OutOfProcTestRunnerFactory test_runner_factory;
   return tests::RunTests(test_runner_factory) ? 0 : 1;
 }

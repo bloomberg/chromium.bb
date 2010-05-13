@@ -78,7 +78,6 @@ InProcessBrowserTest::InProcessBrowserTest()
     : browser_(NULL),
       show_window_(false),
       dom_automation_enabled_(false),
-      single_process_(false),
       original_single_process_(false),
       initial_timeout_(kInitialTimeoutInMS) {
 }
@@ -108,6 +107,10 @@ void InProcessBrowserTest::SetUp() {
   // bundle we'll crash.
   browser_shutdown::delete_resources_on_shutdown = false;
 
+  // Remember the command line.  Normally this doesn't matter, because the test
+  // harness creates a new process for each test, but when the test harness is
+  // running in single process mode, we can't let one test's command-line
+  // changes (e.g. enabling DOM automation) affect other tests.
   CommandLine* command_line = CommandLine::ForCurrentProcessMutable();
   original_command_line_.reset(new CommandLine(*command_line));
 
@@ -121,9 +124,6 @@ void InProcessBrowserTest::SetUp() {
 
   if (dom_automation_enabled_)
     command_line->AppendSwitch(switches::kDomAutomationController);
-
-  if (single_process_)
-    command_line->AppendSwitch(switches::kSingleProcess);
 
   // Turn off tip loading for tests; see http://crbug.com/17725
   command_line->AppendSwitch(switches::kDisableWebResources);

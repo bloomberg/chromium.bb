@@ -114,7 +114,6 @@ class InProcessBrowserTest : public testing::Test {
   // constructor.
   void set_show_window(bool show) { show_window_ = show; }
   void EnableDOMAutomation() { dom_automation_enabled_ = true; }
-  void EnableSingleProcess() { single_process_ = true; }
 
  private:
   // This is invoked from main after browser_init/browser_main have completed.
@@ -139,11 +138,9 @@ class InProcessBrowserTest : public testing::Test {
   // that can send messages back to the browser).
   bool dom_automation_enabled_;
 
-  // Whether to run the test in single-process mode.
-  bool single_process_;
-
   // We muck with the global command line for this process.  Keep the original
-  // so we can reset it when we're done.
+  // so we can reset it when we're done.  This matters when running the browser
+  // tests in "single process" (all tests in one process) mode.
   scoped_ptr<CommandLine> original_command_line_;
 
   // Saved to restore the value of RenderProcessHost::run_renderer_in_process.
