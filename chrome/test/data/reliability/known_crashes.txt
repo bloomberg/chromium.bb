@@ -173,3 +173,6 @@ wtf::hashtable<webcore::atomicstring,std::pair<webcore::atomicstring,webcore::st
 
 # 44064
 SUBSTRING : webcore::containernode::removechild___webcore::htmlparser::handleresidualstyleclosetagacrossblocks___webcore::htmlparser::popblock___webcore::htmlparser::processclosetag___webcore::htmlparser::parsetoken___webcore::htmltokenizer::processtoken
+
+# 44065
+PREFIX : webcore::reportfatalerrorinv8___v8::internal::v8::fatalprocessoutofmemory___v8::internal::setelement___v8::internal::runtime::setobjectproperty___v8::internal::runtime_setproperty
