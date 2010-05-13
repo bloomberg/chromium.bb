@@ -13,14 +13,19 @@ import traceback
 import socket
 import sys
 
+# Configure these values.
+DEFAULT_URL = 'http://chromium-status.appspot.com/breakpad'
 
-def SendStack(stack, url='http://chromium-status.appspot.com/breakpad'):
+def SendStack(last_tb, stack, url=None):
+  if not url:
+    url = DEFAULT_URL
   print 'Sending crash report ...'
   try:
     params = {
         'args': sys.argv,
         'stack': stack,
         'user': getpass.getuser(),
+        'exception': last_tb,
     }
     request = urllib.urlopen(url, urllib.urlencode(params))
     print request.read()
@@ -30,9 +35,11 @@ def SendStack(stack, url='http://chromium-status.appspot.com/breakpad'):
 
 
 def CheckForException():
-  last_tb = getattr(sys, 'last_traceback', None)
-  if last_tb and sys.last_type is not KeyboardInterrupt:
-    SendStack(''.join(traceback.format_tb(last_tb)))
+  last_value = getattr(sys, 'last_value', None)
+  if last_value and not isinstance(last_value, KeyboardInterrupt):
+    last_tb = getattr(sys, 'last_traceback', None)
+    if last_tb:
+      SendStack(repr(last_value), ''.join(traceback.format_tb(last_tb)))
 
 
 if (not 'test' in sys.modules['__main__'].__file__ and
