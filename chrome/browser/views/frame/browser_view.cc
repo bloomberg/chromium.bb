@@ -109,6 +109,25 @@ static const int kExtensionAppTitleMaxWidth = 150;
 // Returned from BrowserView::GetClassName.
 const char BrowserView::kViewClassName[] = "browser/views/BrowserView";
 
+#if defined(OS_CHROMEOS)
+// Get a normal browser window of given |profile| to use as dialog parent
+// if given |browser| is not one. Otherwise, returns browser window of
+// |browser|. If |profile| is NULL, |browser|'s profile is used to find the
+// normal browser.
+static gfx::NativeWindow GetNormalBrowserWindowForBrowser(Browser* browser,
+                                                          Profile* profile) {
+  if (browser->type() != Browser::TYPE_NORMAL) {
+    Browser* normal_browser = BrowserList::FindBrowserWithType(
+        profile ? profile : browser->profile(),
+        Browser::TYPE_NORMAL, true);
+    if (normal_browser && normal_browser->window())
+      return normal_browser->window()->GetNativeHandle();
+  }
+
+  return browser->window()->GetNativeHandle();
+}
+#endif  // defined(OS_CHROMEOS)
+
 ///////////////////////////////////////////////////////////////////////////////
 // BookmarkExtensionBackground, private:
 // This object serves as the views::Background object which is used to layout
@@ -1067,6 +1086,10 @@ void BrowserView::ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
   // Default to using our window as the parent if the argument is not specified.
   gfx::NativeWindow parent = parent_window ? parent_window
                                            : GetNativeHandle();
+#if defined(OS_CHROMEOS)
+  parent = GetNormalBrowserWindowForBrowser(browser(), NULL);
+#endif  // defined(OS_CHROMEOS)
+
   browser::ShowHtmlDialogView(parent, browser_.get()->profile(), delegate);
 }
 
@@ -1099,13 +1122,7 @@ void BrowserView::ShowPageInfo(Profile* profile,
   gfx::NativeWindow parent = GetWindow()->GetNativeWindow();
 
 #if defined(OS_CHROMEOS)
-  // Use normal browser window as parent window for ChromeOS.
-  if (!IsBrowserTypeNormal()) {
-    Browser* browser = BrowserList::FindBrowserWithType(profile,
-        Browser::TYPE_NORMAL, true);
-    if (browser && browser->window())
-      parent = browser->window()->GetNativeHandle();
-  }
+  parent = GetNormalBrowserWindowForBrowser(browser(), profile);
 #endif  // defined(OS_CHROMEOS)
 
   browser::ShowPageInfo(parent, profile, url, ssl, show_history);
