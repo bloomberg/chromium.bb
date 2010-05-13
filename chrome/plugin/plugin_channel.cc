@@ -30,7 +30,7 @@ class PluginReleaseTask : public Task {
 };
 
 // How long we wait before releasing the plugin process.
-static const int kPluginReleaseTimeMS = 10000;
+static const int kPluginReleaseTimeMS = 5 * 60 * 1000;  // 5 minutes
 
 
 // If a sync call to the renderer results in a modal dialog, we need to have a
