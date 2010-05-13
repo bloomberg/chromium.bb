@@ -24,12 +24,16 @@ namespace chromeos {
 class Authenticator;
 class ScreenLockView;
 
+namespace test {
+class ScreenLockerTester;
+}  // namespace test
+
 // ScreenLocker creates a background view as well as ScreenLockView to
 // authenticate the user. ScreenLocker manages its life cycle and will
 // delete itself when it's unlocked.
 class ScreenLocker : public LoginStatusConsumer {
  public:
-  ScreenLocker(const UserManager::User& user);
+  explicit ScreenLocker(const UserManager::User& user);
 
   // Initialize and show the screen locker with given |bounds|.
   void Init(const gfx::Rect& bounds);
@@ -42,18 +46,30 @@ class ScreenLocker : public LoginStatusConsumer {
   // Authenticates the user with given |password| and authenticator.
   void Authenticate(const string16& password);
 
-  // Sets the authenticator.
-  void SetAuthenticator(Authenticator* authenticator);
-
   // Returns the user to authenticate.
   const UserManager::User& user() const {
     return user_;
   }
 
+  // Initialize ScreenLocker class. It will listen to
+  // LOGIN_USER_CHANGED notification so that the screen locker accepts
+  // lock event only after a user is logged in.
+  static void InitClass();
+
+  // Show the screen locker. Does nothign if it's already opened.
+  static void Show();
+
+  // Returns the tester
+  static test::ScreenLockerTester* GetTester();
+
  private:
   friend class DeleteTask<ScreenLocker>;
+  friend class test::ScreenLockerTester;
 
   virtual ~ScreenLocker();
+
+  // Sets the authenticator.
+  void SetAuthenticator(Authenticator* authenticator);
 
   // The screen locker window.
   views::WidgetGtk* lock_window_;
@@ -69,6 +85,10 @@ class ScreenLocker : public LoginStatusConsumer {
 
   // Used for logging in.
   scoped_refptr<Authenticator> authenticator_;
+
+  // Reference to the single instance of the screen locker object.
+  // This is used to make sure there is only one screen locker instance.
+  static ScreenLocker* screen_locker_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenLocker);
 };

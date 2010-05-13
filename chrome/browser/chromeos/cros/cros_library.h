@@ -18,6 +18,7 @@ class LoginLibrary;
 class MountLibrary;
 class NetworkLibrary;
 class PowerLibrary;
+class ScreenLockLibrary;
 class SpeechSynthesisLibrary;
 class SynapticsLibrary;
 
@@ -48,6 +49,8 @@ class CrosLibrary {
     void SetNetworkLibrary(NetworkLibrary* library, bool own);
     // Setter for PowerLibrary.
     void SetPowerLibrary(PowerLibrary* library, bool own);
+    // Setter for ScreenLockLibrary.
+    void SetScreenLockLibrary(ScreenLockLibrary* library, bool own);
     // Setter for SpeechSynthesisLibrary.
     void SetSpeechSynthesisLibrary(SpeechSynthesisLibrary* library, bool own);
     // Setter for SynapticsLibrary.
@@ -79,6 +82,9 @@ class CrosLibrary {
 
   // Getter for PowerLibrary
   PowerLibrary* GetPowerLibrary();
+
+  // Getter for ScreenLockLibrary
+  ScreenLockLibrary* GetScreenLockLibrary();
 
   // This gets the singleton SpeechSynthesisLibrary.
   SpeechSynthesisLibrary* GetSpeechSynthesisLibrary();
@@ -112,6 +118,7 @@ class CrosLibrary {
   MountLibrary* mount_lib_;
   NetworkLibrary* network_lib_;
   PowerLibrary* power_lib_;
+  ScreenLockLibrary* screen_lock_lib_;
   SpeechSynthesisLibrary* speech_synthesis_lib_;
   SynapticsLibrary* synaptics_lib_;
 
@@ -122,6 +129,7 @@ class CrosLibrary {
   bool own_mount_loader_;
   bool own_network_loader_;
   bool own_power_loader_;
+  bool own_screen_lock_lib_;
   bool own_speech_synthesis_library_;
   bool own_synaptics_library_;
 
