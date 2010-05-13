@@ -207,7 +207,6 @@ LD_FLAGS_X8632 = [
 LD_FLAGS_X8664 = [
     '-nostdlib',
     '-T', LD_SCRIPT_X8664,
-#    '-melf_nacl',
     '-static',
     ]
 
@@ -231,8 +230,7 @@ LLC_SFI_X8664 = BASE + '/llc-x86-64-sfi'
 
 LLVM_LINK = BASE + '/arm-none-linux-gnueabi/llvm/bin/llvm-link'
 
-#LLVM_LD = BASE + '/arm-none-linux-gnueabi/llvm/bin/llvm-ld'
-LLVM_LD = '/home/robertm/llvm-ld'
+LLVM_LD = BASE + '/arm-none-linux-gnueabi/llvm/bin/llvm-ld'
 
 OPT = BASE + '/arm-none-linux-gnueabi/llvm/bin/opt'
 
@@ -315,31 +313,30 @@ def SfiCompile(argv, out_pos, mode):
   Run([LLVM_GCC] + [filename + '.s', '-c', '-o', filename])
 
 
-def PatchAbiVersionIntoElfHeader(filename, alignment):
-  # modeling Elf32_Ehdr
-  FORMAT = '16BHH5I6H'
-  if alignment == 16:
-    alignment_bitmask = 0x100000
-  elif alignment == 32:
-    alignment_bitmask = 0x200000
-  else:
-    LogFatal('unsupported alignment: ' + alignment)
+# See http://docs.python.org/library/struct.html for encoding
+# and <elf.h> for structure definitions.
+ELF32_EHDR = '16BHHI3II6H'  # struct encoding of Elf32_Ehdr
+ELF64_EHDR = '16BHHI3QI6H'  # struct encoding of Elf64_Ehdr
+ELF_OSABI_INDEX = 7         # field number of OSABI in e_ident
+ELF_ABIVERSION_INDEX = 8    # field number of ABIVERSION in e_ident
+ELF_E_FLAGS_INDEX = 22      # field number of e_flags
+OS_ABI = 123
+ABIVERSION = 7              # NOTE: Update this when abi changes
 
-  fp = open(filename, 'rb')
-  data = fp.read(struct.calcsize(FORMAT))
-  fp.close()
 
-  ELF_OSABI_INDEX = 7
-  ELF_ABIVERSION_INDEX = 8
-  ELF_FLAGS_INDEX = 22
-  t = list(struct.unpack(FORMAT, data))
-  # c.f. nacl_elf.h
-  t[ELF_OSABI_INDEX] = 123
-  t[ELF_ABIVERSION_INDEX] = 7
-  t[ELF_FLAGS_INDEX] = t[ELF_FLAGS_INDEX] | alignment_bitmask
-  data = struct.pack(FORMAT, *t)
+def PatchAbiVersionIntoElfHeader(filename, format, alignment):
+  if alignment not in (16, 32):
+    LogFatal('Error: unsupported alignment: ' + alignment)
+
   fp = open(filename, 'rb+')
-  fp.write(data)
+  elf_hdr = list(struct.unpack(format, fp.read(struct.calcsize(format))))
+
+  elf_hdr[ELF_OSABI_INDEX] = OS_ABI
+  elf_hdr[ELF_ABIVERSION_INDEX] = ABIVERSION
+  elf_hdr[ELF_E_FLAGS_INDEX] |= 0x10 << alignment
+
+  fp.seek(0, 0)  # rewind
+  fp.write(struct.pack(format, *elf_hdr))
   fp.close()
 
 def FindObjectFilePos(argv):
@@ -730,7 +727,7 @@ def Incarnation_bcldarm(argv):
                            LD_ARM,
                            LD_FLAGS_ARM,
                            PNACL_ARM_ROOT)
-  PatchAbiVersionIntoElfHeader(output, 16)
+  PatchAbiVersionIntoElfHeader(output, ELF32_EHDR, alignment=16)
 
 
 def Incarnation_bcldx8632(argv):
@@ -742,7 +739,7 @@ def Incarnation_bcldx8632(argv):
                            LD_X8632,
                            LD_FLAGS_X8632,
                            PNACL_X8632_ROOT)
-  PatchAbiVersionIntoElfHeader(output, 32)
+  PatchAbiVersionIntoElfHeader(output, ELF32_EHDR, alignment=32)
 
 
 def Incarnation_bcldx8664(argv):
@@ -754,8 +751,7 @@ def Incarnation_bcldx8664(argv):
                            LD_X8664,
                            LD_FLAGS_X8664,
                            PNACL_X8664_ROOT)
-  # TODO(robertm): this is likely wrong
-  PatchAbiVersionIntoElfHeader(output, 32)
+  PatchAbiVersionIntoElfHeader(output, ELF64_EHDR, alignment=32)
 
 
 def Incarnation_sfild(argv):

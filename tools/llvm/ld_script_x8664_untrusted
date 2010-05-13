@@ -1,6 +1,6 @@
 /* Default linker script, for normal executables */
-OUTPUT_FORMAT("elf64-nacl", "elf64-nacl",
-	      "elf64-nacl")
+OUTPUT_FORMAT("elf64-x86-64")    /* TODO(adonovan): revert to "elf64-nacl" 
+                                  * when we use "combined" binutils. */
 OUTPUT_ARCH(i386:x86-64)
 ENTRY(_start)
 SEARCH_DIR("/b/slave/hardy32-toolchain_x86-32/build/native_client/tools/sdk/nacl-sdk/nacl64/lib");
@@ -66,11 +66,6 @@ SECTIONS
   PROVIDE (__etext = .);
   PROVIDE (_etext = .);
   PROVIDE (etext = .);
-  . = DEFINED (__executable_start) ?
-                     ALIGN(CEILP2(. - __executable_start)) : .;
-  PROVIDE (__nacl_and_mask =
-                          DEFINED (__executable_start) ?
-                            NACL_MASK (. - __executable_start) : 0xffffffff);
   . = . + 32; /* reserve space for HLTs */
   . = ALIGN(CONSTANT (MAXPAGESIZE)); /* nacl wants page alignment */
   .rodata         : { *(.rodata .rodata.* .gnu.linkonce.r.*) } :rodata
