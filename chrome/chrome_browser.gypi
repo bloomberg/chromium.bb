@@ -1304,8 +1304,6 @@
         'browser/gtk/infobar_gtk.h',
         'browser/gtk/keyword_editor_view.cc',
         'browser/gtk/keyword_editor_view.h',
-        'browser/gtk/list_store_favicon_loader.cc',
-        'browser/gtk/list_store_favicon_loader.h',
         'browser/gtk/location_bar_view_gtk.cc',
         'browser/gtk/location_bar_view_gtk.h',
         'browser/gtk/menu_bar_helper.cc',

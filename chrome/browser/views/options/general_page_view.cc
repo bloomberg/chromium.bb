@@ -9,8 +9,7 @@
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "chrome/browser/browser.h"
-#include "chrome/browser/browser_list.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/net/url_fixer_upper.h"
@@ -19,7 +18,6 @@
 #include "chrome/browser/session_startup_pref.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/keyword_editor_view.h"
 #include "chrome/browser/views/options/options_group_view.h"
 #include "chrome/common/chrome_constants.h"
@@ -720,27 +718,7 @@ void GeneralPageView::RemoveURLsFromStartupURLs() {
 }
 
 void GeneralPageView::SetStartupURLToCurrentPage() {
-  // Remove the current entries.
-  while (startup_custom_pages_table_model_->RowCount())
-    startup_custom_pages_table_model_->Remove(0);
-
-  // And add all entries for all open browsers with our profile.
-  int add_index = 0;
-  for (BrowserList::const_iterator browser_i = BrowserList::begin();
-       browser_i != BrowserList::end(); ++browser_i) {
-    Browser* browser = *browser_i;
-    if (browser->profile() != profile())
-      continue;  // Only want entries for open profile.
-
-    for (int tab_index = 0; tab_index < browser->tab_count(); ++tab_index) {
-      TabContents* tab = browser->GetTabContentsAt(tab_index);
-      if (tab->ShouldDisplayURL()) {
-        const GURL url = browser->GetTabContentsAt(tab_index)->GetURL();
-        if (!url.is_empty())
-          startup_custom_pages_table_model_->Add(add_index++, url);
-      }
-    }
-  }
+  startup_custom_pages_table_model_->SetToCurrentlyOpenPages();
 
   SaveStartupPref();
 }

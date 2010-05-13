@@ -8,10 +8,9 @@
 #include <gtk/gtk.h>
 
 #include <string>
-#include <vector>
 
 #include "app/gtk_signal.h"
-#include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/gtk/gtk_tree.h"
 #include "chrome/browser/options_page_base.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -19,12 +18,13 @@
 #include "googleurl/src/gurl.h"
 
 class AccessibleWidgetHelper;
+class CustomHomePagesTableModel;
 class Profile;
-class ListStoreFavIconLoader;
 
 class GeneralPageGtk : public OptionsPageBase,
                        public TemplateURLModelObserver,
-                       public ShellIntegration::DefaultBrowserObserver {
+                       public ShellIntegration::DefaultBrowserObserver,
+                       public gtk_tree::TableAdapter::Delegate {
  public:
   explicit GeneralPageGtk(Profile* profile);
   ~GeneralPageGtk();
@@ -45,12 +45,6 @@ class GeneralPageGtk : public OptionsPageBase,
   // Saves the startup preference from the values in the ui
   void SaveStartupPref();
 
-  // Fill the startup_custom_pages_model_
-  void PopulateCustomUrlList(const std::vector<GURL>& urls);
-
-  // Fill a single row in the startup_custom_pages_model_
-  void PopulateCustomUrlRow(const GURL& url, GtkTreeIter *iter);
-
   // Set the custom url list using the pages currently open
   void SetCustomUrlListFromCurrentPages();
 
@@ -61,9 +55,6 @@ class GeneralPageGtk : public OptionsPageBase,
 
   // Removes urls that are currently selected
   void RemoveSelectedCustomUrls();
-
-  // Retrieve entries from the startup_custom_pages_model_
-  std::vector<GURL> GetCustomUrlList() const;
 
   // Overridden from TemplateURLModelObserver.
   // Populates the default search engine combobox from the model.
@@ -107,16 +98,23 @@ class GeneralPageGtk : public OptionsPageBase,
   virtual void SetDefaultBrowserUIState(
       ShellIntegration::DefaultBrowserUIState state);
 
+  // gtk_tree::TableAdapter::Delegate implementation.
+  virtual void SetColumnValues(int row, GtkTreeIter* iter);
+
   // Widgets of the startup group
   GtkWidget* startup_homepage_radio_;
   GtkWidget* startup_last_session_radio_;
   GtkWidget* startup_custom_radio_;
   GtkWidget* startup_custom_pages_tree_;
-  GtkListStore* startup_custom_pages_model_;
+  GtkListStore* startup_custom_pages_store_;
   GtkTreeSelection* startup_custom_pages_selection_;
   GtkWidget* startup_add_custom_page_button_;
   GtkWidget* startup_remove_custom_page_button_;
   GtkWidget* startup_use_current_page_button_;
+
+  // The model for |startup_custom_pages_store_|.
+  scoped_ptr<CustomHomePagesTableModel> startup_custom_pages_table_model_;
+  scoped_ptr<gtk_tree::TableAdapter> startup_custom_pages_table_adapter_;
 
   // Widgets and prefs of the homepage group
   GtkWidget* homepage_use_newtab_radio_;
@@ -146,12 +144,6 @@ class GeneralPageGtk : public OptionsPageBase,
   // Flag to ignore gtk callbacks while we are loading prefs, to avoid
   // then turning around and saving them again.
   bool initializing_;
-
-  // Used in loading favicons.
-  CancelableRequestConsumer fav_icon_consumer_;
-
-  // Helper to load the favicon pixbufs into the |startup_custom_pages_model_|.
-  scoped_ptr<ListStoreFavIconLoader> favicon_loader_;
 
   // The helper object that performs default browser set/check tasks.
   scoped_refptr<ShellIntegration::DefaultBrowserWorker> default_browser_worker_;

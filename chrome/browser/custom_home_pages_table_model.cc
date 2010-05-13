@@ -8,8 +8,11 @@
 #include "app/resource_bundle.h"
 #include "app/table_model_observer.h"
 #include "base/i18n/rtl.h"
+#include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/codec/png_codec.h"
 #include "grit/app_resources.h"
@@ -64,6 +67,27 @@ void CustomHomePagesTableModel::Remove(int index) {
   entries_.erase(entries_.begin() + static_cast<size_t>(index));
   if (observer_)
     observer_->OnItemsRemoved(index, 1);
+}
+
+void CustomHomePagesTableModel::SetToCurrentlyOpenPages() {
+  // Remove the current entries.
+  while (RowCount())
+    Remove(0);
+
+  // And add all tabs for all open browsers with our profile.
+  int add_index = 0;
+  for (BrowserList::const_iterator browser_i = BrowserList::begin();
+       browser_i != BrowserList::end(); ++browser_i) {
+    Browser* browser = *browser_i;
+    if (browser->profile() != profile_)
+      continue;  // Skip incognito browsers.
+
+    for (int tab_index = 0; tab_index < browser->tab_count(); ++tab_index) {
+      const GURL url = browser->GetTabContentsAt(tab_index)->GetURL();
+      if (!url.is_empty())
+        Add(add_index++, url);
+    }
+  }
 }
 
 std::vector<GURL> CustomHomePagesTableModel::GetURLs() {

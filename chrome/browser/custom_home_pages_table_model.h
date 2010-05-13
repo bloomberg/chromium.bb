@@ -34,6 +34,10 @@ class CustomHomePagesTableModel : public TableModel {
   // Removes the entry at the specified index.
   void Remove(int index);
 
+  // Clears any entries and fills the list with pages currently opened in the
+  // browser.
+  void SetToCurrentlyOpenPages();
+
   // Returns the set of urls this model contains.
   std::vector<GURL> GetURLs();
 
