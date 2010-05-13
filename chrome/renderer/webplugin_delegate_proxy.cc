@@ -191,8 +191,7 @@ WebPluginDelegateProxy::~WebPluginDelegateProxy() {
     ReleaseTransportDIB(iterator->second.get());
   }
 
-  // Ask the browser to release the "live" TransportDIB objects.
-  ReleaseTransportDIB(backing_store_.get());
+  // Ask the browser to release the "live" TransportDIB object.
   ReleaseTransportDIB(transport_store_.get());
   DCHECK(!background_store_.get());
 #endif
@@ -569,10 +568,15 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
       // asynchronously.
       ResetWindowlessBitmaps();
       if (!window_rect.IsEmpty()) {
-        if (!CreateBitmap(&backing_store_, &backing_store_canvas_) ||
-            !CreateBitmap(&transport_store_, &transport_store_canvas_) ||
+        if (!CreateSharedBitmap(&transport_store_, &transport_store_canvas_) ||
+#if defined(OS_WIN)
+            !CreateSharedBitmap(&backing_store_, &backing_store_canvas_) ||
+#else
+            !CreateLocalBitmap(&backing_store_, &backing_store_canvas_) ||
+#endif
             (needs_background_store &&
-             !CreateBitmap(&background_store_, &background_store_canvas_))) {
+             !CreateSharedBitmap(&background_store_,
+                                 &background_store_canvas_))) {
           DCHECK(false);
           ResetWindowlessBitmaps();
           return;
@@ -617,7 +621,6 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
 
 void WebPluginDelegateProxy::ResetWindowlessBitmaps() {
 #if defined(OS_MACOSX)
-  ReleaseTransportDIB(backing_store_.get());
   DCHECK(!background_store_.get());
   // The Mac TransportDIB implementation uses base::SharedMemory, which
   // cannot be disposed of if an in-flight UpdateGeometry message refers to
@@ -642,7 +645,11 @@ void WebPluginDelegateProxy::ResetWindowlessBitmaps() {
   transport_store_.reset();
   background_store_.reset();
 #endif
+#if defined(OS_WIN)
   backing_store_.reset();
+#else
+  backing_store_.resize(0);
+#endif
 
   backing_store_canvas_.reset();
   transport_store_canvas_.reset();
@@ -650,13 +657,30 @@ void WebPluginDelegateProxy::ResetWindowlessBitmaps() {
   backing_store_painted_ = gfx::Rect();
 }
 
-bool WebPluginDelegateProxy::CreateBitmap(
+static size_t BitmapSizeForPluginRect(const gfx::Rect& plugin_rect) {
+  const size_t stride =
+      skia::PlatformCanvas::StrideForWidth(plugin_rect.width());
+  return stride * plugin_rect.height();
+}
+
+#if !defined(OS_WIN)
+bool WebPluginDelegateProxy::CreateLocalBitmap(
+    std::vector<uint8>* memory,
+    scoped_ptr<skia::PlatformCanvas>* canvas) {
+  const size_t size = BitmapSizeForPluginRect(plugin_rect_);
+  memory->resize(size);
+  if (memory->size() != size)
+    return false;
+  canvas->reset(new skia::PlatformCanvas(
+      plugin_rect_.width(), plugin_rect_.height(), true, &((*memory)[0])));
+  return true;
+}
+#endif
+
+bool WebPluginDelegateProxy::CreateSharedBitmap(
     scoped_ptr<TransportDIB>* memory,
     scoped_ptr<skia::PlatformCanvas>* canvas) {
-  int width = plugin_rect_.width();
-  int height = plugin_rect_.height();
-  const size_t stride = skia::PlatformCanvas::StrideForWidth(width);
-  const size_t size = stride * height;
+  const size_t size = BitmapSizeForPluginRect(plugin_rect_);
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   memory->reset(TransportDIB::Create(size, 0));
   if (!memory->get())
@@ -674,7 +698,8 @@ bool WebPluginDelegateProxy::CreateBitmap(
   static uint32 sequence_number = 0;
   memory->reset(TransportDIB::Create(size, sequence_number++));
 #endif
-  canvas->reset((*memory)->GetPlatformCanvas(width, height));
+  canvas->reset((*memory)->GetPlatformCanvas(plugin_rect_.width(),
+                                             plugin_rect_.height()));
   return true;
 }
 
@@ -1299,12 +1324,13 @@ void WebPluginDelegateProxy::CopyFromTransportToBacking(const gfx::Rect& rect) {
   const size_t stride =
       skia::PlatformCanvas::StrideForWidth(plugin_rect_.width());
   const size_t chunk_size = 4 * rect.width();
-  char* source_data = static_cast<char*>(transport_store_->memory()) +
-      rect.y() * stride + 4 * rect.x();
+  uint8* source_data = static_cast<uint8*>(transport_store_->memory()) +
+                       rect.y() * stride + 4 * rect.x();
   // The two bitmaps are flipped relative to each other.
   int dest_starting_row = plugin_rect_.height() - rect.y() - 1;
-  char* target_data = static_cast<char*>(backing_store_->memory()) +
-      dest_starting_row * stride + 4 * rect.x();
+  DCHECK(backing_store_.size() > 0);
+  uint8* target_data = &(backing_store_[0]) + dest_starting_row * stride +
+                       4 * rect.x();
   for (int row = 0; row < rect.height(); ++row) {
     memcpy(target_data, source_data, chunk_size);
     source_data += stride;
@@ -1464,8 +1490,7 @@ void WebPluginDelegateProxy::OnUpdateGeometry_ACK(int ack_key) {
 
   // Now that the ACK has been received, the TransportDIB that was used
   // prior to the UpdateGeometry message now being acknowledged is known to
-  // be no longer needed.  Release it, and take the stale entry out of the
-  // map.;
+  // be no longer needed.  Release it, and take the stale entry out of the map.
   ReleaseTransportDIB(iterator->second.get());
 
   old_transport_dibs_.erase(iterator);

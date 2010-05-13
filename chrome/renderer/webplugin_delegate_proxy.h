@@ -183,9 +183,16 @@ class WebPluginDelegateProxy
   // Clears the shared memory section and canvases used for windowless plugins.
   void ResetWindowlessBitmaps();
 
+#if !defined(OS_WIN)
+  // Creates a process-local memory section and canvas. PlatformCanvas on
+  // Windows only works with a DIB, not arbitrary memory.
+  bool CreateLocalBitmap(std::vector<uint8>* memory,
+                         scoped_ptr<skia::PlatformCanvas>* canvas);
+#endif
+
   // Creates a shared memory section and canvas.
-  bool CreateBitmap(scoped_ptr<TransportDIB>* memory,
-                    scoped_ptr<skia::PlatformCanvas>* canvas);
+  bool CreateSharedBitmap(scoped_ptr<TransportDIB>* memory,
+                          scoped_ptr<skia::PlatformCanvas>* canvas);
 
   // Called for cleanup during plugin destruction. Normally right before the
   // plugin window gets destroyed, or when the plugin has crashed (at which
@@ -240,7 +247,11 @@ class WebPluginDelegateProxy
   // store when we get an invalidate from it.  The background bitmap is used
   // for transparent plugins, as they need the backgroud data during painting.
   bool transparent_;
+#if defined(OS_WIN)
   scoped_ptr<TransportDIB> backing_store_;
+#else
+  std::vector<uint8> backing_store_;
+#endif
   scoped_ptr<skia::PlatformCanvas> backing_store_canvas_;
   scoped_ptr<TransportDIB> transport_store_;
   scoped_ptr<skia::PlatformCanvas> transport_store_canvas_;
