@@ -54,7 +54,7 @@ class AcceleratedSurface {
   // Sets the GL context to be the current one for drawing. Returns true if
   // it succeeded.
   bool MakeCurrent();
-  // Clear the surface to all white. Assumes the caller has already called
+  // Clear the surface to be transparent. Assumes the caller has already called
   // MakeCurrent().
   void Clear(const gfx::Rect& rect);
   // Call after making changes to the surface which require a visual update.

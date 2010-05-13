@@ -216,7 +216,7 @@ bool AcceleratedSurface::MakeCurrent() {
 }
 
 void AcceleratedSurface::Clear(const gfx::Rect& rect) {
-  glClearColor(1.0, 1.0, 1.0, 1.0);
+  glClearColor(0, 0, 0, 0);
   glViewport(0, 0, rect.width(), rect.height());
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
