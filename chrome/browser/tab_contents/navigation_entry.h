@@ -37,9 +37,8 @@ class NavigationEntry {
    public:
     // Flags used for the page security content status.
     enum ContentStatusFlags {
-      NORMAL_CONTENT = 0,       // Neither of the 2 cases below.
+      NORMAL_CONTENT = 0,       // No mixed content.
       MIXED_CONTENT  = 1 << 0,  // https page containing http resources.
-      UNSAFE_CONTENT = 1 << 1   // https page containing broken https resources.
     };
 
     SSLStatus();

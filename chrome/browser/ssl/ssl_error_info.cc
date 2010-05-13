@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -166,18 +166,6 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
       extra_info.push_back(
           l10n_util::GetString(
               IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_EXTRA_INFO_2));
-      break;
-    case MIXED_CONTENTS:
-      title = l10n_util::GetString(IDS_SSL_MIXED_CONTENT_TITLE);
-      details = l10n_util::GetString(IDS_SSL_MIXED_CONTENT_DETAILS);
-      short_description =
-          l10n_util::GetString(IDS_SSL_MIXED_CONTENT_DESCRIPTION);
-      break;
-    case UNSAFE_CONTENTS:
-      title = l10n_util::GetString(IDS_SSL_UNSAFE_CONTENT_TITLE);
-      details = l10n_util::GetString(IDS_SSL_UNSAFE_CONTENT_DETAILS);
-      short_description =
-          l10n_util::GetString(IDS_SSL_UNSAFE_CONTENT_DESCRIPTION);
       break;
     case UNKNOWN:
       title = l10n_util::GetString(IDS_CERT_ERROR_UNKNOWN_ERROR_TITLE);
