@@ -26,7 +26,7 @@ bool QuoteStringForRegex(const std::string& str_utf8, std::string* dst);
 
 static const char* kSandboxAccessPathKey = "sandbox_dir";
 
-class MacSandboxTest : public MultiProcessTest {
+class MacDirAccessSandboxTest : public MultiProcessTest {
  public:
   bool CheckSandbox(std::string directory_to_try) {
     setenv(kSandboxAccessPathKey, directory_to_try.c_str(), 1);
@@ -40,7 +40,7 @@ class MacSandboxTest : public MultiProcessTest {
   }
 };
 
-TEST_F(MacSandboxTest, StringEscape) {
+TEST_F(MacDirAccessSandboxTest, StringEscape) {
   using sandbox::QuotePlainString;
 
   const struct string_escape_test_data {
@@ -63,7 +63,7 @@ TEST_F(MacSandboxTest, StringEscape) {
   }
 }
 
-TEST_F(MacSandboxTest, RegexEscape) {
+TEST_F(MacDirAccessSandboxTest, RegexEscape) {
   using sandbox::QuoteStringForRegex;
 
   const std::string kSandboxEscapeSuffix("(/|$)");
@@ -137,7 +137,7 @@ class ScopedDirectoryDelete {
 
 typedef scoped_ptr_malloc<FilePath, ScopedDirectoryDelete> ScopedDirectory;
 
-TEST_F(MacSandboxTest, SandboxAccess) {
+TEST_F(MacDirAccessSandboxTest, SandboxAccess) {
   FilePath tmp_dir;
   ASSERT_TRUE(file_util::CreateNewTempDirectory("", &tmp_dir));
   // This step is important on OS X since the sandbox only understands "real"

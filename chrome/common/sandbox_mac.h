@@ -10,7 +10,10 @@
 namespace sandbox {
 
 enum SandboxProcessType {
-  SANDBOX_TYPE_RENDERER,
+
+  SANDBOX_TYPE_FIRST_TYPE,  // Placeholder to ease iteration.
+
+  SANDBOX_TYPE_RENDERER = SANDBOX_TYPE_FIRST_TYPE,
 
   // The worker processes uses the most restrictive sandbox which has almost
   // *everything* locked down. Only a couple of /System/Library/ paths and
@@ -26,6 +29,8 @@ enum SandboxProcessType {
   // loader contains the user's untrusted code.
   SANDBOX_TYPE_NACL_PLUGIN,
   SANDBOX_TYPE_NACL_LOADER,
+
+  SANDBOX_AFTER_TYPE_LAST_TYPE,  // Placeholder to ease iteration.
 };
 
 // Warm up System APIs that empirically need to be accessed before the Sandbox
