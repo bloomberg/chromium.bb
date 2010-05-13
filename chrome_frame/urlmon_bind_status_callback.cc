@@ -75,8 +75,10 @@ STDMETHODIMP CacheStream::Read(void* pv, ULONG cb, ULONG* read) {
   if (!pv || !read)
     return E_INVALIDARG;
 
-  if (!cache_.get())
-    return E_FAIL;
+  if (!cache_.get()) {
+    *read = 0;
+    return S_FALSE;
+  }
 
   // Default to E_PENDING to signal that this is a partial data.
   HRESULT hr = eof_ ? S_FALSE : E_PENDING;

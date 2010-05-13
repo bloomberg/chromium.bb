@@ -69,7 +69,7 @@ TEST_F(MonikerPatchTest, CacheStream) {
 
   // Test 1: empty stream reads nothing
   CComObjectStackEx<CacheStream> cache_stream1;
-  EXPECT_EQ(E_PENDING, cache_stream1.Read(ret, sizeof(ret), &read));
+  EXPECT_EQ(S_FALSE, cache_stream1.Read(ret, sizeof(ret), &read));
   EXPECT_EQ(0, read);
 
   // Test 2: Read from initialized cache
