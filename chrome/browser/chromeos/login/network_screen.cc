@@ -203,6 +203,7 @@ void NetworkScreen::NotifyOnOffline() {
 
 void NetworkScreen::OpenPasswordDialog(WifiNetwork network) {
   NetworkConfigView* dialog = new NetworkConfigView(network, true);
+  dialog->set_browser_mode(false);
   views::Window* window = views::Window::CreateChromeWindow(
       view()->GetNativeWindow(), gfx::Rect(), dialog);
   window->SetIsAlwaysOnTop(true);

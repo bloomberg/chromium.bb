@@ -18,11 +18,14 @@
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/browser/views/html_dialog_view.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "views/window/non_client_view.h"
 #include "views/window/window.h"
+
+#include "chrome/browser/profile_manager.h"
 
 namespace {
 
@@ -51,6 +54,10 @@ class SelectFileDialogImpl : public SelectFileDialog {
                           const FilePath::StringType& default_extension,
                           gfx::NativeWindow owning_window,
                           void* params);
+
+  virtual void set_browser_mode(bool value) {
+    browser_mode_ = value;
+  }
 
  private:
   virtual ~SelectFileDialogImpl();
@@ -130,11 +137,18 @@ class SelectFileDialogImpl : public SelectFileDialog {
   // Notification from FileBrowseDelegate when file browse UI is dismissed.
   void OnDialogClosed(FileBrowseDelegate* delegate, const std::string& json);
 
+  // Callback method to open HTML
+  void OpenHtmlDialog(gfx::NativeWindow owning_window,
+                      FileBrowseDelegate* file_browse_delegate);
+
   // The set of all parent windows for which we are currently running dialogs.
   std::set<gfx::NativeWindow> parents_;
 
   // The set of all FileBrowseDelegate that we are currently running.
   std::set<FileBrowseDelegate*> delegates_;
+
+  // True when opening in browser, otherwise in OOBE/login mode.
+  bool browser_mode_;
 
   // The listener to be notified of selection completion.
   Listener* listener_;
@@ -150,7 +164,8 @@ SelectFileDialog* SelectFileDialog::Create(Listener* listener) {
 }
 
 SelectFileDialogImpl::SelectFileDialogImpl(Listener* listener)
-    : listener_(listener) {
+    : browser_mode_(true),
+      listener_(listener) {
 }
 
 SelectFileDialogImpl::~SelectFileDialogImpl() {
@@ -206,9 +221,19 @@ void SelectFileDialogImpl::SelectFile(
       default_extension, owning_window, params);
   delegates_.insert(file_browse_delegate);
 
-  Browser* browser = BrowserList::GetLastActive();
-  DCHECK(browser);
-  browser->BrowserShowHtmlDialog(file_browse_delegate, owning_window);
+  if (browser_mode_) {
+    Browser* browser = BrowserList::GetLastActive();
+    DCHECK(browser);
+    browser->BrowserShowHtmlDialog(file_browse_delegate, owning_window);
+  } else {
+    ChromeThread::PostTask(
+        ChromeThread::UI,
+        FROM_HERE,
+        NewRunnableMethod(this,
+                          &SelectFileDialogImpl::OpenHtmlDialog,
+                          owning_window,
+                          file_browse_delegate));
+  }
 }
 
 void SelectFileDialogImpl::OnDialogClosed(FileBrowseDelegate* delegate,
@@ -269,6 +294,14 @@ void SelectFileDialogImpl::OnDialogClosed(FileBrowseDelegate* delegate,
 
   parents_.erase(delegate->parent_);
   delegates_.erase(delegate);
+}
+
+void SelectFileDialogImpl::OpenHtmlDialog(
+    gfx::NativeWindow owning_window,
+    FileBrowseDelegate* file_browse_delegate) {
+  browser::ShowHtmlDialogView(owning_window,
+                              ProfileManager::GetDefaultProfile(),
+                              file_browse_delegate);
 }
 
 SelectFileDialogImpl::FileBrowseDelegate::FileBrowseDelegate(

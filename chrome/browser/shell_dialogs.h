@@ -116,6 +116,9 @@ class SelectFileDialog
                           gfx::NativeWindow owning_window,
                           void* params) = 0;
 
+  // browser_mode is true when running inside the browser.
+  virtual void set_browser_mode(bool value) {}
+
  protected:
   friend class base::RefCountedThreadSafe<SelectFileDialog>;
 

@@ -37,6 +37,9 @@ class StatusAreaHost {
   // Indicates if the button specified should be visible at the moment.
   virtual bool IsButtonVisible(const views::View* button_view) const = 0;
 
+  // True if status area hosted in browser. Otherwise it's OOBE/login state.
+  virtual bool IsBrowserMode() const = 0;
+
  protected:
   virtual ~StatusAreaHost() {}
 };

@@ -72,7 +72,7 @@ void ShowAboutChromeView(gfx::NativeWindow parent,
                          Profile* profile);
 
 // Shows an HTML dialog. See HtmlDialogView.
-void ShowHtmlDialogView(gfx::NativeWindow parent, Browser* browser,
+void ShowHtmlDialogView(gfx::NativeWindow parent, Profile* profile,
                         HtmlDialogUIDelegate* delegate);
 
 // Creates and returns a find bar for the given browser window. See FindBarWin.

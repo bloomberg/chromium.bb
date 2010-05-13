@@ -14,10 +14,10 @@
 namespace browser {
 
 // Declared in browser_dialogs.h so that others don't need to depend on our .h.
-void ShowHtmlDialogView(gfx::NativeWindow parent, Browser* browser,
+void ShowHtmlDialogView(gfx::NativeWindow parent, Profile* profile,
                         HtmlDialogUIDelegate* delegate) {
   HtmlDialogView* html_view =
-      new HtmlDialogView(browser->profile(), delegate);
+      new HtmlDialogView(profile, delegate);
   views::Window::CreateChromeWindow(parent, gfx::Rect(), html_view);
   html_view->InitDialog();
   html_view->window()->Show();

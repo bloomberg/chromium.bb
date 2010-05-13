@@ -100,6 +100,7 @@ void NetworkMenuButton::ActivatedAt(int index) {
     cros->EnableOfflineMode(!cros->offline_mode());
   } else if (flags & FLAG_OTHER_NETWORK) {
     NetworkConfigView* view = new NetworkConfigView();
+    view->set_browser_mode(host_->IsBrowserMode());
     views::Window* window = views::Window::CreateChromeWindow(
         host_->GetNativeWindow(), gfx::Rect(), view);
     window->SetIsAlwaysOnTop(true);
@@ -108,6 +109,7 @@ void NetworkMenuButton::ActivatedAt(int index) {
   } else if (flags & FLAG_ETHERNET) {
     if (cros->ethernet_connected()) {
       NetworkConfigView* view = new NetworkConfigView(cros->ethernet_network());
+      view->set_browser_mode(host_->IsBrowserMode());
       views::Window* window = views::Window::CreateChromeWindow(
             host_->GetNativeWindow(), gfx::Rect(), view);
       window->SetIsAlwaysOnTop(true);
@@ -121,6 +123,7 @@ void NetworkMenuButton::ActivatedAt(int index) {
     if (wifi.name() == cros->wifi_name()) {
       if (cros->wifi_connected()) {
         NetworkConfigView* view = new NetworkConfigView(wifi, false);
+        view->set_browser_mode(host_->IsBrowserMode());
         views::Window* window = views::Window::CreateChromeWindow(
             host_->GetNativeWindow(), gfx::Rect(), view);
         window->SetIsAlwaysOnTop(true);
@@ -133,6 +136,7 @@ void NetworkMenuButton::ActivatedAt(int index) {
         cros->ConnectToWifiNetwork(wifi, string16(), string16(), string16());
       } else {
         NetworkConfigView* view = new NetworkConfigView(wifi, true);
+        view->set_browser_mode(host_->IsBrowserMode());
         views::Window* window = views::Window::CreateChromeWindow(
             host_->GetNativeWindow(), gfx::Rect(), view);
         window->SetIsAlwaysOnTop(true);
@@ -148,6 +152,7 @@ void NetworkMenuButton::ActivatedAt(int index) {
     if (cellular.name() == cros->cellular_name()) {
       if (cros->cellular_connected()) {
         NetworkConfigView* view = new NetworkConfigView(cellular);
+        view->set_browser_mode(host_->IsBrowserMode());
         views::Window* window = views::Window::CreateChromeWindow(
             host_->GetNativeWindow(), gfx::Rect(), view);
         window->SetIsAlwaysOnTop(true);

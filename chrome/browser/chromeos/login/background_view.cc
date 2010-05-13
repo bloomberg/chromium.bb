@@ -141,6 +141,10 @@ bool BackgroundView::IsButtonVisible(const views::View* button_view) const {
   return true;
 }
 
+bool BackgroundView::IsBrowserMode() const {
+  return false;
+}
+
 void BackgroundView::LocaleChanged() {
   Layout();
   SchedulePaint();

@@ -513,6 +513,10 @@ bool BrowserView::IsButtonVisible(const views::View* button_view) const {
   return true;
 }
 
+bool BrowserView::IsBrowserMode() const {
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserView public:
 

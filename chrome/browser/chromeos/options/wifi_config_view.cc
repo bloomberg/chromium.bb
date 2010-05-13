@@ -87,9 +87,14 @@ void WifiConfigView::ButtonPressed(views::Button* sender,
       passphrase_textfield_->SetPassword(!passphrase_textfield_->IsPassword());
   } else if (sender == certificate_browse_button_) {
     select_file_dialog_ = SelectFileDialog::Create(this);
+    select_file_dialog_->set_browser_mode(parent_->is_browser_mode());
     select_file_dialog_->SelectFile(SelectFileDialog::SELECT_OPEN_FILE,
                                     string16(), FilePath(), NULL, 0,
-                                    std::string(), NULL, NULL);
+                                    std::string(),
+                                    parent_->is_browser_mode() ?
+                                        NULL :
+                                        parent_->GetNativeWindow(),
+                                    NULL);
   } else {
     NOTREACHED();
   }

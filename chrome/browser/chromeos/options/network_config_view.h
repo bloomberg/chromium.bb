@@ -38,6 +38,9 @@ class NetworkConfigView : public views::View,
   explicit NetworkConfigView();
   virtual ~NetworkConfigView() {}
 
+  // Returns corresponding native window.
+  gfx::NativeWindow GetNativeWindow() const;
+
   // views::DialogDelegate methods.
   virtual std::wstring GetDialogButtonLabel(
       MessageBoxFlags::DialogButton button) const;
@@ -59,6 +62,14 @@ class NetworkConfigView : public views::View,
   // Sets the focus on the login tab's first textfield.
   void SetLoginTextfieldFocus();
 
+  // Getter/setter for browser mode.
+  void set_browser_mode(bool value) {
+    browser_mode_ = value;
+  }
+  bool is_browser_mode() const {
+    return browser_mode_;
+  }
+
  protected:
   // views::View overrides:
   virtual void Layout();
@@ -79,6 +90,9 @@ class NetworkConfigView : public views::View,
 
   // Initializes UI.
   void Init();
+
+  // True when opening in browser, otherwise in OOBE/login mode.
+  bool browser_mode_;
 
   views::TabbedPane* tabs_;
 

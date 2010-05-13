@@ -51,6 +51,7 @@ class BackgroundView : public views::View, public StatusAreaHost {
       const views::View* button_view) const;
   virtual void OpenButtonOptions(const views::View* button_view) const;
   virtual bool IsButtonVisible(const views::View* button_view) const;
+  virtual bool IsBrowserMode() const;
 
  private:
   // Creates and adds the status_area.

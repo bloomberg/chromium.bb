@@ -13,19 +13,24 @@
 #include "grit/locale_settings.h"
 #include "views/grid_layout.h"
 #include "views/standard_layout.h"
+#include "views/widget/widget_gtk.h"
 #include "views/window/window.h"
+
+using views::WidgetGtk;
 
 namespace chromeos {
 
 NetworkConfigView::NetworkConfigView(EthernetNetwork ethernet)
-    : flags_(FLAG_ETHERNET | FLAG_SHOW_IPCONFIG),
+    : browser_mode_(true),
+      flags_(FLAG_ETHERNET | FLAG_SHOW_IPCONFIG),
       ethernet_(ethernet),
       wificonfig_view_(NULL),
       ipconfig_view_(NULL) {
 }
 
 NetworkConfigView::NetworkConfigView(WifiNetwork wifi, bool login_only)
-    : flags_(FLAG_WIFI),
+    : browser_mode_(true),
+      flags_(FLAG_WIFI),
       wifi_(wifi),
       wificonfig_view_(NULL),
       ipconfig_view_(NULL) {
@@ -36,16 +41,22 @@ NetworkConfigView::NetworkConfigView(WifiNetwork wifi, bool login_only)
 }
 
 NetworkConfigView::NetworkConfigView(CellularNetwork cellular)
-    : flags_(FLAG_CELLULAR | FLAG_SHOW_IPCONFIG),
+    : browser_mode_(true),
+      flags_(FLAG_CELLULAR | FLAG_SHOW_IPCONFIG),
       cellular_(cellular),
       wificonfig_view_(NULL),
       ipconfig_view_(NULL) {
 }
 
 NetworkConfigView::NetworkConfigView()
-    : flags_(FLAG_WIFI | FLAG_LOGIN_ONLY | FLAG_OTHER_NETWORK),
+    : browser_mode_(true),
+      flags_(FLAG_WIFI | FLAG_LOGIN_ONLY | FLAG_OTHER_NETWORK),
       wificonfig_view_(NULL),
       ipconfig_view_(NULL) {
+}
+
+gfx::NativeWindow NetworkConfigView::GetNativeWindow() const {
+  return GTK_WINDOW(static_cast<WidgetGtk*>(GetWidget())->GetNativeView());
 }
 
 std::wstring NetworkConfigView::GetDialogButtonLabel(
