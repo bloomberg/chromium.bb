@@ -11,15 +11,24 @@
 #include "base/scoped_bstr_win.h"
 #include "base/scoped_comptr_win.h"
 
+class __declspec(uuid("71CC3EC7-7E8A-457f-93BC-1090CF31CC18"))
+IBindContextInfoInternal : public IUnknown {
+ public:
+  STDMETHOD(GetCppObject)(void** me) = 0;
+};
+
 // This class maintains contextual information used by ChromeFrame.
 // This information is maintained in the bind context.
-class BindContextInfo : public IUnknown, public CComObjectRoot {
+class BindContextInfo
+  : public IBindContextInfoInternal,
+    public CComObjectRoot {
  public:
   BindContextInfo();
-  virtual ~BindContextInfo() {}
+  ~BindContextInfo();
 
   BEGIN_COM_MAP(BindContextInfo)
-    COM_INTERFACE_ENTRY(IUnknown)
+    COM_INTERFACE_ENTRY(IBindContextInfoInternal)
+    COM_INTERFACE_ENTRY_AGGREGATE(IID_IMarshal, ftm_)
   END_COM_MAP()
 
   // Returns the BindContextInfo instance associated with the bind
@@ -52,13 +61,29 @@ class BindContextInfo : public IUnknown, public CComObjectRoot {
     return cache_;
   }
 
-  void set_url(const std::wstring& url) {
-    url_ = url;
+  // Accept a const wchar_t* to ensure that we don't have a reference
+  // to someone else's buffer.
+  void set_url(const wchar_t* url) {
+    DCHECK(url);
+    if (url) {
+      url_ = url;
+    } else {
+      url_.clear();
+    }
   }
 
-  const std::wstring url() const {
+  const std::wstring& url() const {
     return url_;
   }
+
+ protected:
+  STDMETHOD(GetCppObject)(void** me) {
+    DCHECK(me);
+    *me = static_cast<BindContextInfo*>(this);
+    return S_OK;
+  }
+
+  HRESULT Initialize(IBindCtx* bind_ctx);
 
  private:
   ScopedComPtr<IStream> cache_;
@@ -66,6 +91,7 @@ class BindContextInfo : public IUnknown, public CComObjectRoot {
   bool chrome_request_;
   bool is_switching_;
   std::wstring url_;
+  ScopedComPtr<IUnknown> ftm_;
 
   DISALLOW_COPY_AND_ASSIGN(BindContextInfo);
 };

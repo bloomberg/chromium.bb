@@ -15,6 +15,22 @@ BindContextInfo::BindContextInfo()
       is_switching_(false) {
 }
 
+BindContextInfo::~BindContextInfo() {
+}
+
+HRESULT BindContextInfo::Initialize(IBindCtx* bind_ctx) {
+  DCHECK(bind_ctx);
+  DCHECK(!ftm_);
+  HRESULT hr = CoCreateFreeThreadedMarshaler(GetUnknown(), ftm_.Receive());
+  DCHECK(ftm_);
+  if (SUCCEEDED(hr)) {
+    hr = bind_ctx->RegisterObjectParam(kBindContextInfo, GetUnknown());
+  }
+
+  DCHECK(SUCCEEDED(hr)) << "Failed to initialize BindContextInfo";
+  return hr;
+}
+
 BindContextInfo* BindContextInfo::FromBindContext(IBindCtx* bind_context) {
   if (!bind_context) {
     NOTREACHED();
@@ -24,14 +40,31 @@ BindContextInfo* BindContextInfo::FromBindContext(IBindCtx* bind_context) {
   ScopedComPtr<IUnknown> context;
   bind_context->GetObjectParam(kBindContextInfo, context.Receive());
   if (context) {
-    return static_cast<BindContextInfo*>(context.get());
+    ScopedComPtr<IBindContextInfoInternal> internal;
+    HRESULT hr = internal.QueryFrom(context);
+    DCHECK(SUCCEEDED(hr));
+    if (SUCCEEDED(hr)) {
+      BindContextInfo* ret = NULL;
+      internal->GetCppObject(reinterpret_cast<void**>(&ret));
+      DCHECK(ret);
+      DLOG_IF(ERROR, reinterpret_cast<void*>(ret) !=
+                     reinterpret_cast<void*>(internal.get()))
+          << "marshalling took place!";
+      return ret;
+    }
   }
 
   CComObject<BindContextInfo>* bind_context_info = NULL;
-  CComObject<BindContextInfo>::CreateInstance(&bind_context_info);
+  HRESULT hr = CComObject<BindContextInfo>::CreateInstance(&bind_context_info);
   DCHECK(bind_context_info != NULL);
+  if (bind_context_info) {
+    bind_context_info->AddRef();
+    hr = bind_context_info->Initialize(bind_context);
+    bind_context_info->Release();
+    if (FAILED(hr))
+      bind_context_info = NULL;
+  }
 
-  bind_context->RegisterObjectParam(kBindContextInfo, bind_context_info);
   return bind_context_info;
 }
 
