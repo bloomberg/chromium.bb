@@ -10,6 +10,7 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "gfx/size.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebViewClient.h"
 
 namespace gfx {
@@ -70,7 +71,8 @@ class PrepareFrameAndViewForPrint {
 // PrintWebViewHelper handles most of the printing grunt work for RenderView.
 // We plan on making print asynchronous and that will require copying the DOM
 // of the document and creating a new WebView with the contents.
-class PrintWebViewHelper : public WebKit::WebViewClient {
+class PrintWebViewHelper : public WebKit::WebViewClient,
+                           public WebKit::WebFrameClient {
  public:
   explicit PrintWebViewHelper(RenderView* render_view);
   virtual ~PrintWebViewHelper();

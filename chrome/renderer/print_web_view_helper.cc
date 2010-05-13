@@ -153,10 +153,7 @@ void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
       // of this message has to deal with this.
       params.host_window_id = render_view_->host_window();
       params.cookie = default_settings.document_cookie;
-      // TODO(maruel): Reenable once http://crbug.com/22937 is fixed.
-      // Print selection is broken because DidStopLoading is never called.
-      // params.has_selection = frame->hasSelection();
-      params.has_selection = false;
+      params.has_selection = frame->hasSelection();
       params.expected_pages_count = expected_pages_count;
       params.use_overlays = use_browser_overlays;
 
@@ -240,7 +237,7 @@ bool PrintWebViewHelper::CopyAndPrint(const ViewMsg_PrintPages_Params& params,
 
   print_web_view_ = WebView::create(this);
   prefs.Apply(print_web_view_);
-  print_web_view_->initializeMainFrame(NULL);
+  print_web_view_->initializeMainFrame(this);
 
   print_pages_params_.reset(new ViewMsg_PrintPages_Params(params));
   print_pages_params_->pages.clear();  // Print all pages of selection.
