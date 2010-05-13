@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/printing/cloud_print/printer_job_handler.h"
+#include "chrome/service/cloud_print/printer_job_handler.h"
 
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
@@ -10,9 +10,9 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/printing/cloud_print/cloud_print_consts.h"
-#include "chrome/browser/printing/cloud_print/cloud_print_helpers.h"
-#include "chrome/browser/printing/cloud_print/job_status_updater.h"
+#include "chrome/service/cloud_print/cloud_print_consts.h"
+#include "chrome/service/cloud_print/cloud_print_helpers.h"
+#include "chrome/service/cloud_print/job_status_updater.h"
 #include "googleurl/src/gurl.h"
 #include "net/http/http_response_headers.h"
 

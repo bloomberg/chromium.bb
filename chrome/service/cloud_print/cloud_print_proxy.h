@@ -9,13 +9,11 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-
-// TODO(sanjeevr): Integrate this with the CloudPrintProxyBackend. This needs to
-// happen after the cloud_print related files are moved to chrome/service.
+#include "chrome/service/cloud_print/cloud_print_proxy_backend.h"
 
 // CloudPrintProxy is the layer between the service process UI thread
 // and the cloud print proxy backend.
-class CloudPrintProxy {
+class CloudPrintProxy : public CloudPrintProxyFrontend {
  public:
   explicit CloudPrintProxy();
   virtual ~CloudPrintProxy();
@@ -33,8 +31,15 @@ class CloudPrintProxy {
   // We need to inform the backend to look for jobs for this printer.
   void HandlePrinterNotification(const std::string& printer_id);
 
+  // Notification methods from the backend. Called on UI thread.
+  void OnPrinterListAvailable(const cloud_print::PrinterList& printer_list);
+
  protected:
   void Shutdown();
+
+  // Our asynchronous backend to communicate with sync components living on
+  // other threads.
+  scoped_ptr<CloudPrintProxyBackend> backend_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintProxy);
 };

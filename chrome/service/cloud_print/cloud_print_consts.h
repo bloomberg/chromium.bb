@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PRINTING_CLOUD_PRINT_CLOUD_PRINT_CONSTS_H_
-#define CHROME_BROWSER_PRINTING_CLOUD_PRINT_CLOUD_PRINT_CONSTS_H_
+#ifndef CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_CONSTS_H_
+#define CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_CONSTS_H_
 
 #include "base/basictypes.h"
 
@@ -26,6 +26,10 @@ extern const wchar_t kTitleValue[];
 extern const wchar_t kPrinterCapsHashValue[];
 
 extern const char kCloudPrintServerUrl[];
+extern const char kCloudPrintTalkServiceUrl[];
+extern const char kGaiaUrl[];
+extern const char kCloudPrintGaiaServiceId[];
+extern const char kSyncGaiaServiceId[];
 
 // Max interval between retrying connection to the server
 const int64 kMaxRetryInterval = 5*60*1000;  // 5 minutes in millseconds
@@ -33,5 +37,5 @@ const int64 kBaseRetryInterval = 5*1000;  // 5 seconds
 const int kMaxRetryCount = 5;
 const int64 kJobStatusUpdateInterval = 10*1000;  // 10 seconds
 
-#endif  // CHROME_BROWSER_PRINTING_CLOUD_PRINT_CLOUD_PRINT_CONSTS_H_
+#endif  // CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_CONSTS_H_
 

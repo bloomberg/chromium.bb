@@ -2,18 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/printing/cloud_print/cloud_print_proxy_backend.h"
+#include "chrome/service/cloud_print/cloud_print_proxy_backend.h"
 
 #include "base/file_util.h"
 #include "base/md5.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/profile.h"
-#include "chrome/browser/printing/cloud_print/cloud_print_consts.h"
-#include "chrome/browser/printing/cloud_print/cloud_print_helpers.h"
-#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
-#include "chrome/browser/printing/cloud_print/printer_job_handler.h"
+#include "chrome/service/cloud_print/cloud_print_consts.h"
+#include "chrome/service/cloud_print/cloud_print_helpers.h"
+#include "chrome/service/cloud_print/printer_job_handler.h"
+#include "chrome/common/deprecated/event_sys-inl.h"
+#include "chrome/common/net/notifier/listener/talk_mediator_impl.h"
+#include "chrome/service/gaia/service_gaia_authenticator.h"
+#include "chrome/service/service_process.h"
+
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
 
@@ -33,8 +36,7 @@ class CloudPrintProxyBackend::Core
   //
   // Called on the CloudPrintProxyBackend core_thread_ to perform
   // initialization
-  void DoInitialize(const std::string& auth_token,
-                    const std::string& proxy_id);
+  void DoInitialize(const std::string& lsid, const std::string& proxy_id);
   // Called on the CloudPrintProxyBackend core_thread_ to perform
   // shutdown.
   void DoShutdown();
@@ -107,6 +109,7 @@ class CloudPrintProxyBackend::Core
   // handler is responsible for checking for pending print jobs for this
   // printer and print them.
   void InitJobHandlerForPrinter(DictionaryValue* printer_data);
+  void HandleTalkMediatorEvent(const notifier::TalkMediatorEvent& event);
 
   // Our parent CloudPrintProxyBackend
   CloudPrintProxyBackend* backend_;
@@ -140,6 +143,9 @@ class CloudPrintProxyBackend::Core
   ResponseHandler next_response_handler_;
   cloud_print::PrinterChangeNotifier printer_change_notifier_;
   bool new_printers_available_;
+  // Notification (xmpp) handler.
+  scoped_ptr<notifier::TalkMediator> talk_mediator_;
+  scoped_ptr<EventListenerHookup> talk_mediator_hookup_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -157,13 +163,13 @@ CloudPrintProxyBackend::~CloudPrintProxyBackend() {
   DCHECK(!core_);
 }
 
-bool CloudPrintProxyBackend::Initialize(const std::string& auth_token,
+bool CloudPrintProxyBackend::Initialize(const std::string& lsid,
                                         const std::string& proxy_id) {
   if (!core_thread_.Start())
     return false;
   core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(
-        core_.get(), &CloudPrintProxyBackend::Core::DoInitialize, auth_token,
+        core_.get(), &CloudPrintProxyBackend::Core::DoInitialize, lsid,
         proxy_id));
   return true;
 }
@@ -199,12 +205,47 @@ CloudPrintProxyBackend::Core::Core(CloudPrintProxyBackend* backend)
      next_response_handler_(NULL), new_printers_available_(false) {
 }
 
-void CloudPrintProxyBackend::Core::DoInitialize(const std::string& auth_token,
+void CloudPrintProxyBackend::Core::DoInitialize(const std::string& lsid,
                                                 const std::string& proxy_id) {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
+  // Since Talk does not accept a Cloud Print token, for now, we make 2 auth
+  // requests, one for the chromiumsync service and another for print. This is
+  // temporary and should be removed once Talk supports our token.
+  // Note: The GAIA login is synchronous but that should be OK because we are in
+  // the CloudPrintProxyCoreThread and we cannot really do anything else until
+  // the GAIA signin is successful.
+  std::string user_agent = "ChromiumBrowser";
+  scoped_refptr<ServiceGaiaAuthenticator> gaia_auth_for_talk =
+      new ServiceGaiaAuthenticator(
+          user_agent, kSyncGaiaServiceId, kGaiaUrl,
+          g_service_process->io_thread()->message_loop_proxy());
+  gaia_auth_for_talk->set_message_loop(MessageLoop::current());
+  // TODO(sanjeevr): Handle auth failure case. We basically need to disable
+  // cloud print and shutdown.
+  if (gaia_auth_for_talk->AuthenticateWithLsid(lsid, true)) {
+    scoped_refptr<ServiceGaiaAuthenticator> gaia_auth_for_print =
+        new ServiceGaiaAuthenticator(
+            user_agent, kCloudPrintGaiaServiceId, kGaiaUrl,
+            g_service_process->io_thread()->message_loop_proxy());
+    gaia_auth_for_print->set_message_loop(MessageLoop::current());
+    if (gaia_auth_for_print->AuthenticateWithLsid(lsid, true)) {
+      auth_token_ = gaia_auth_for_print->auth_token();
+      talk_mediator_.reset(
+          new notifier::TalkMediatorImpl(false));
+      talk_mediator_->AddSubscribedServiceUrl(kCloudPrintTalkServiceUrl);
+      talk_mediator_hookup_.reset(
+          NewEventListenerHookup(
+              talk_mediator_->channel(),
+              this,
+              &CloudPrintProxyBackend::Core::HandleTalkMediatorEvent));
+      talk_mediator_->SetAuthToken(gaia_auth_for_talk->email(),
+                                   gaia_auth_for_talk->auth_token(),
+                                   kSyncGaiaServiceId);
+      talk_mediator_->Login();
+    }
+  }
   printer_change_notifier_.StartWatching(std::string(), this);
   proxy_id_ = proxy_id;
-  auth_token_ = auth_token;
   StartRegistration();
 }
 
@@ -477,6 +518,20 @@ bool CloudPrintProxyBackend::Core::RemovePrinterFromList(
     }
   }
   return ret;
+}
+
+void CloudPrintProxyBackend::Core::HandleTalkMediatorEvent(
+    const notifier::TalkMediatorEvent& event) {
+  if ((event.what_happened ==
+      notifier::TalkMediatorEvent::NOTIFICATION_RECEIVED) &&
+      (0 == base::strcasecmp(kCloudPrintTalkServiceUrl,
+                             event.notification_data.service_url.c_str()))) {
+    backend_->core_thread_.message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(
+            this, &CloudPrintProxyBackend::Core::DoHandlePrinterNotification,
+            event.notification_data.service_specific_data));
+  }
 }
 
 // cloud_print::PrinterChangeNotifier::Delegate implementation

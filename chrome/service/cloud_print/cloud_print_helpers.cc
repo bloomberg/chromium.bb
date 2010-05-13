@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/printing/cloud_print/cloud_print_helpers.h"
+#include "chrome/service/cloud_print/cloud_print_helpers.h"
 
 #include "base/json/json_reader.h"
 #include "base/rand_util.h"
@@ -11,9 +11,10 @@
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/printing/cloud_print/cloud_print_consts.h"
-#include "chrome/browser/profile.h"
+#include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/common/net/url_fetcher.h"
+#include "chrome/service/net/service_url_request_context.h"
+#include "chrome/service/service_process.h"
 
 std::string StringFromJobStatus(cloud_print::PrintJobStatus status) {
   std::string ret;
@@ -103,8 +104,8 @@ bool CloudPrintHelpers::ParseResponseJSON(
 
 void CloudPrintHelpers::PrepCloudPrintRequest(URLFetcher* request,
                                               const std::string& auth_token) {
-  request->set_request_context(
-      Profile::GetDefaultRequestContext());
+  DCHECK(g_service_process);
+  request->set_request_context(new ServiceURLRequestContextGetter());
   std::string headers = "Authorization: GoogleLogin auth=";
   headers += auth_token;
   request->set_extra_request_headers(headers);

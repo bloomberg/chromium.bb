@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/printing/cloud_print/printer_info.h"
+#include "chrome/service/cloud_print/printer_info.h"
 
 #include <windows.h>
 #include <objidl.h>

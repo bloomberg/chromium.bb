@@ -4,7 +4,7 @@
 
 // Constant defines used in the cloud print proxy code
 
-#include "chrome/browser/printing/cloud_print/cloud_print_consts.h"
+#include "chrome/service/cloud_print/cloud_print_consts.h"
 
 const char kProxyIdValue[] = "proxy";
 const char kPrinterNameValue[] = "printer";
@@ -26,5 +26,11 @@ const wchar_t kPrinterCapsHashValue[] = L"capsHash";
 
 // TODO(sanjeevr): Change this to a real one. Also read this from prefs instead
 // of hardcoding.
-const char kCloudPrintServerUrl[] = "https://<TBD>";
+const char kCloudPrintServerUrl[] = "http://<TBD>";
+// TODO(sanjeevr): Change this to a real one.
+const char kCloudPrintTalkServiceUrl[] = "http://www.google.com/printing";
+const char kGaiaUrl[] = "https://www.google.com/accounts/ClientLogin";
+// TODO(sanjeevr): Change this to a real one once we get a GAIA service id.
+const char kCloudPrintGaiaServiceId[] = "print";
+const char kSyncGaiaServiceId[] = "chromiumsync";
 

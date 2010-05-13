@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PRINTING_CLOUD_PRINT_PRINTER_INFO_H_
-#define CHROME_BROWSER_PRINTING_CLOUD_PRINT_PRINTER_INFO_H_
+#ifndef CHROME_SERVICE_CLOUD_PRINT_PRINTER_INFO_H_
+#define CHROME_SERVICE_CLOUD_PRINT_PRINTER_INFO_H_
 
 #include <string>
 #include <vector>
@@ -121,5 +121,5 @@ typedef PrinterChangeNotifier::Delegate PrinterChangeNotifierDelegate;
 
 }  // namespace cloud_print
 
-#endif  // CHROME_BROWSER_PRINTING_CLOUD_PRINT_PRINTER_INFO_H_
+#endif  // CHROME_SERVICE_CLOUD_PRINT_PRINTER_INFO_H_
 

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/printing/cloud_print/printer_info.h"
+#include "chrome/service/cloud_print/printer_info.h"
 
 #include "base/logging.h"
 
-// TODO(sanjeevr): Implement the Mac interfaces.
+// TODO(sanjeevr): Implement the Linux interfaces.
 namespace cloud_print {
 
 void EnumeratePrinters(PrinterList* printer_list) {

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PRINTING_CLOUD_PRINT_CLOUD_PRINT_PROXY_BACKEND_H_
-#define CHROME_BROWSER_PRINTING_CLOUD_PRINT_CLOUD_PRINT_PROXY_BACKEND_H_
+#ifndef CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_PROXY_BACKEND_H_
+#define CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_PROXY_BACKEND_H_
 
 #include <map>
 #include <string>
 
 #include "base/thread.h"
-#include "chrome/browser/printing/cloud_print/printer_info.h"
+#include "chrome/service/cloud_print/printer_info.h"
 #include "chrome/common/net/url_fetcher.h"
 
 class CloudPrintProxyService;
@@ -41,7 +41,7 @@ class CloudPrintProxyBackend {
   explicit CloudPrintProxyBackend(CloudPrintProxyFrontend* frontend);
   ~CloudPrintProxyBackend();
 
-  bool Initialize(const std::string& auth_token, const std::string& proxy_id);
+  bool Initialize(const std::string& lsid, const std::string& proxy_id);
   void Shutdown();
   void RegisterPrinters(const cloud_print::PrinterList& printer_list);
   void HandlePrinterNotification(const std::string& printer_id);
@@ -66,5 +66,5 @@ class CloudPrintProxyBackend {
   DISALLOW_COPY_AND_ASSIGN(CloudPrintProxyBackend);
 };
 
-#endif  // CHROME_BROWSER_PRINTING_CLOUD_PRINT_CLOUD_PRINT_PROXY_BACKEND_H_
+#endif  // CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_PROXY_BACKEND_H_
 

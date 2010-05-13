@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PRINTING_CLOUD_PRINT_CLOUD_PRINT_HELPERS_H_
-#define CHROME_BROWSER_PRINTING_CLOUD_PRINT_CLOUD_PRINT_HELPERS_H_
+#ifndef CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_HELPERS_H_
+#define CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_HELPERS_H_
 
 #include <string>
 
-#include "chrome/browser/printing/cloud_print/printer_info.h"
+#include "chrome/service/cloud_print/printer_info.h"
 #include "googleurl/src/gurl.h"
 
 class DictionaryValue;
@@ -67,5 +67,5 @@ class CloudPrintHelpers {
   }
 };
 
-#endif  // CHROME_BROWSER_PRINTING_CLOUD_PRINT_CLOUD_PRINT_HELPERS_H_
+#endif  // CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_HELPERS_H_
 
