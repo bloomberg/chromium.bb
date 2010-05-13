@@ -256,7 +256,7 @@ int SpdyNetworkTransaction::DoSendRequest() {
     if (!upload_data)
       return error_code;
   }
-  stream_ = spdy_->GetOrCreateStream(*request_, upload_data);
+  stream_ = spdy_->GetOrCreateStream(*request_, upload_data, net_log_);
   // Release the reference to |spdy_| since we don't need it anymore.
   spdy_ = NULL;
   return stream_->SendRequest(upload_data, &response_, &io_callback_);
