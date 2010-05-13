@@ -7,6 +7,11 @@
 #include "app/surface/transport_dib.h"
 #include "base/scoped_ptr.h"
 
+#if defined(OS_MACOSX)
+#include "chrome/common/render_messages.h"
+#include "chrome/renderer/render_thread.h"
+#endif
+
 namespace {
 
 // Implements the Image2D using a TransportDIB.
@@ -24,7 +29,7 @@ class PlatformImage2DImpl : public pepper::PluginDelegate::PlatformImage2D {
   }
 
   virtual intptr_t GetSharedMemoryHandle() const {
-    return dib_->handle();
+    return reinterpret_cast<intptr_t>(dib_.get());
   }
 
  private:

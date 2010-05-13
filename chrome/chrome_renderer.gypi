@@ -107,6 +107,8 @@
         'renderer/paint_aggregator.cc',
         'renderer/pepper_devices.cc',
         'renderer/pepper_devices.h',
+        'renderer/pepper_plugin_delegate_impl.cc',
+        'renderer/pepper_plugin_delegate_impl.h',
         'renderer/pepper_scrollbar_widget.cc',
         'renderer/pepper_scrollbar_widget.h',
         'renderer/pepper_widget.cc',

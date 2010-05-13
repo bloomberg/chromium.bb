@@ -90,6 +90,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebNodeList.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPageSerializer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPlugin.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRange.h"
@@ -117,6 +118,7 @@
 #include "webkit/glue/media/simple_data_source.h"
 #include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/password_form.h"
+#include "webkit/glue/plugins/pepper_webplugin_impl.h"
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/plugins/webplugin_delegate.h"
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"
@@ -135,6 +137,9 @@
 #elif defined(OS_MACOSX)
 #include "skia/ext/skia_utils_mac.h"
 #endif
+
+// Uncomment to enable the new Pepper API
+// #define PPAPI_HACKER
 
 using appcache::WebApplicationCacheHostImpl;
 using base::Time;
@@ -396,7 +401,8 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(translate_helper_(this)),
       cross_origin_access_count_(0),
-      same_origin_access_count_(0) {
+      same_origin_access_count_(0),
+      ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)) {
   ClearBlockedContentSettings();
 }
 
@@ -2084,6 +2090,12 @@ void RenderView::runModal() {
 
 WebPlugin* RenderView::createPlugin(
     WebFrame* frame, const WebPluginParams& params) {
+#ifdef PPAPI_HACKER
+  if (params.mimeType == "application/x-nacl-srpc") {
+    return new pepper::WebPluginImpl(frame, params,
+                                     pepper_delegate_.AsWeakPtr());
+  }
+#endif
   return new webkit_glue::WebPluginImpl(frame, params, AsWeakPtr());
 }
 

@@ -37,6 +37,7 @@
 #include "chrome/renderer/external_host_bindings.h"
 #include "chrome/renderer/form_manager.h"
 #include "chrome/renderer/notification_provider.h"
+#include "chrome/renderer/pepper_plugin_delegate_impl.h"
 #include "chrome/renderer/render_widget.h"
 #include "chrome/renderer/render_view_visitor.h"
 #include "chrome/renderer/renderer_webcookiejar_impl.h"
@@ -1214,6 +1215,8 @@ class RenderView : public RenderWidget,
   // in OnClosePage.
   int cross_origin_access_count_;
   int same_origin_access_count_;
+
+  PepperPluginDelegateImpl pepper_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderView);
 };
