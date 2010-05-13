@@ -424,7 +424,11 @@ class ValgrindTool(BaseTool):
 
 # TODO(timurrrr): Split into a separate file.
 class Memcheck(ValgrindTool):
-  """Memcheck"""
+  """Memcheck
+  Dynamic memory error detector for Linux & Mac
+
+  http://valgrind.org/info/tools.html#memcheck
+  """
 
   def __init__(self):
     ValgrindTool.__init__(self)
@@ -507,9 +511,13 @@ class PinTool(BaseTool):
 
 class ThreadSanitizerBase(object):
   """ThreadSanitizer
+  Dynamic data race detector for Linux, Mac and Windows.
+
+  http://code.google.com/p/data-race-test/wiki/ThreadSanitizer
 
   Since TSan works on both Valgrind (Linux, Mac) and PIN (Windows), we need
-  to have multiple inheritance"""
+  to have multiple inheritance
+  """
 
   def __init__(self):
     self.RegisterOptionParserHook(ThreadSanitizerBase.ExtendOptionParser)
