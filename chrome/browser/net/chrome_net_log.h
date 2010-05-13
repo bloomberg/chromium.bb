@@ -29,7 +29,7 @@ class ChromeNetLog : public net::NetLog {
                             const base::TimeTicks& time,
                             const Source& source,
                             EventPhase phase,
-                            EventParameters* extra_parameters) = 0;
+                            EventParameters* params) = 0;
   };
 
   ChromeNetLog();
@@ -40,7 +40,7 @@ class ChromeNetLog : public net::NetLog {
                         const base::TimeTicks& time,
                         const Source& source,
                         EventPhase phase,
-                        EventParameters* extra_parameters);
+                        EventParameters* params);
   virtual uint32 NextID();
   virtual bool HasListener() const;
 

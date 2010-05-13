@@ -79,7 +79,7 @@ PrintSourceEntriesAsText = function(sourceEntries) {
     }
 
     // Output the extra parameters.
-    if (entry.orig.extra_parameters != undefined) {
+    if (entry.orig.params != undefined) {
       // Add a continuation row for each line of text from the extra parameters.
       var extraParamsText = getTextForExtraParams(entry.orig);
       var extraParamsTextLines = extraParamsText.split('\n');
@@ -115,9 +115,9 @@ function getTextForExtraParams(entry) {
 
     default:
       var out = [];
-      for (var k in entry.extra_parameters) {
+      for (var k in entry.params) {
         out.push(' --> ' + k + ' = ' +
-                 JSON.stringify(entry.extra_parameters[k]));
+                 JSON.stringify(entry.params[k]));
       }
       return out.join('\n');
   }
@@ -138,7 +138,7 @@ function indentLines(start, lines) {
 }
 
 function getTextForRequestHeadersExtraParam(entry) {
-  var params = entry.extra_parameters;
+  var params = entry.params;
 
   // Strip the trailing CRLF that params.line contains.
   var lineWithoutCRLF = params.line.replace(/\r\n$/g, '');
@@ -147,7 +147,7 @@ function getTextForRequestHeadersExtraParam(entry) {
 }
 
 function getTextForResponseHeadersExtraParam(entry) {
-  return indentLines(' --> ', entry.extra_parameters.headers);
+  return indentLines(' --> ', entry.params.headers);
 }
 
 function getTextForEvent(entry) {

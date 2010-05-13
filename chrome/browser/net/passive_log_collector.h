@@ -25,9 +25,9 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
           const base::TimeTicks& time,
           net::NetLog::Source source,
           net::NetLog::EventPhase phase,
-          net::NetLog::EventParameters* extra_parameters)
+          net::NetLog::EventParameters* params)
         : order(order), type(type), time(time), source(source), phase(phase),
-          extra_parameters(extra_parameters) {
+          params(params) {
     }
 
     uint32 order;
@@ -35,7 +35,7 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     base::TimeTicks time;
     net::NetLog::Source source;
     net::NetLog::EventPhase phase;
-    scoped_refptr<net::NetLog::EventParameters> extra_parameters;
+    scoped_refptr<net::NetLog::EventParameters> params;
   };
 
   typedef std::vector<Entry> EntryList;
@@ -208,7 +208,7 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
                           const base::TimeTicks& time,
                           const net::NetLog::Source& source,
                           net::NetLog::EventPhase phase,
-                          net::NetLog::EventParameters* extra_parameters);
+                          net::NetLog::EventParameters* params);
 
   // Clears all of the passively logged data.
   void Clear();

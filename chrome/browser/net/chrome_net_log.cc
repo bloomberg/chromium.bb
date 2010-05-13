@@ -27,12 +27,12 @@ void ChromeNetLog::AddEntry(EventType type,
                             const base::TimeTicks& time,
                             const Source& source,
                             EventPhase phase,
-                            EventParameters* extra_parameters) {
+                            EventParameters* params) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   // Notify all of the log observers.
   FOR_EACH_OBSERVER(Observer, observers_,
-                    OnAddEntry(type, time, source, phase, extra_parameters));
+                    OnAddEntry(type, time, source, phase, params));
 }
 
 uint32 ChromeNetLog::NextID() {

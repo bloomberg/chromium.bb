@@ -76,7 +76,7 @@ Value* EntryToDictionaryValue(net::NetLog::EventType type,
                               const base::TimeTicks& time,
                               const net::NetLog::Source& source,
                               net::NetLog::EventPhase phase,
-                              net::NetLog::EventParameters* extra_parameters) {
+                              net::NetLog::EventParameters* params) {
   DictionaryValue* entry_dict = new DictionaryValue();
 
   // Set the entry time. (Note that we send it as a string since integers
@@ -94,8 +94,8 @@ Value* EntryToDictionaryValue(net::NetLog::EventType type,
   entry_dict->SetInteger(L"phase", static_cast<int>(phase));
 
   // Set the event-specific parameters.
-  if (extra_parameters)
-    entry_dict->Set(L"extra_parameters", extra_parameters->ToValue());
+  if (params)
+    entry_dict->Set(L"params", params->ToValue());
 
   return entry_dict;
 }
@@ -225,7 +225,7 @@ class NetInternalsMessageHandler::IOThreadImpl
                           const base::TimeTicks& time,
                           const net::NetLog::Source& source,
                           net::NetLog::EventPhase phase,
-                          net::NetLog::EventParameters* extra_parameters);
+                          net::NetLog::EventParameters* params);
 
   // ConnectionTester::Delegate implementation:
   virtual void OnStartConnectionTestSuite();
@@ -705,7 +705,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetPassiveLogEntries(
                                         e.time,
                                         e.source,
                                         e.phase,
-                                        e.extra_parameters));
+                                        e.params));
   }
 
   CallJavascriptFunction(L"g_browser.receivedPassiveLogEntries", list);
@@ -767,12 +767,12 @@ void NetInternalsMessageHandler::IOThreadImpl::OnAddEntry(
     const base::TimeTicks& time,
     const net::NetLog::Source& source,
     net::NetLog::EventPhase phase,
-    net::NetLog::EventParameters* extra_parameters) {
+    net::NetLog::EventParameters* params) {
   DCHECK(is_observing_log_);
 
   CallJavascriptFunction(
       L"g_browser.receivedLogEntry",
-      EntryToDictionaryValue(type, time, source, phase, extra_parameters));
+      EntryToDictionaryValue(type, time, source, phase, params));
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnStartConnectionTestSuite() {

@@ -61,7 +61,7 @@ void AddEndURLRequestEntries(PassiveLogCollector* collector, uint32 id) {
 
 std::string GetStringParam(const PassiveLogCollector::Entry& entry) {
   return static_cast<net::NetLogStringParameter*>(
-      entry.extra_parameters.get())->value();
+      entry.params.get())->value();
 }
 
 static const int kMaxNumLoadLogEntries = 1;

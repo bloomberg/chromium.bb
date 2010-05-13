@@ -60,7 +60,7 @@ bool SortByOrderComparator(const PassiveLogCollector::Entry& a,
 void SetSubordinateSource(PassiveLogCollector::RequestInfo* info,
                           const PassiveLogCollector::Entry& entry) {
   info->subordinate_source.id = static_cast<net::NetLogIntegerParameter*>(
-      entry.extra_parameters.get())->value();
+      entry.params.get())->value();
   switch (entry.type) {
     case net::NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID:
       info->subordinate_source.type = net::NetLog::SOURCE_CONNECT_JOB;
@@ -94,9 +94,9 @@ void PassiveLogCollector::OnAddEntry(
     const base::TimeTicks& time,
     const net::NetLog::Source& source,
     net::NetLog::EventPhase phase,
-    net::NetLog::EventParameters* extra_parameters) {
+    net::NetLog::EventParameters* params) {
   // Package the parameters into a single struct for convenience.
-  Entry entry(num_events_seen_++, type, time, source, phase, extra_parameters);
+  Entry entry(num_events_seen_++, type, time, source, phase, params);
 
   switch (entry.source.type) {
     case net::NetLog::SOURCE_URL_REQUEST:
@@ -355,7 +355,7 @@ PassiveLogCollector::SocketTracker::DoAddEntry(const Entry& entry,
   switch (entry.type) {
     case net::NetLog::TYPE_SOCKET_BYTES_SENT:
       int_arg = static_cast<net::NetLogIntegerParameter*>(
-          entry.extra_parameters.get())->value();
+          entry.params.get())->value();
       out_info->total_bytes_transmitted += int_arg;
       out_info->bytes_transmitted += int_arg;
       out_info->last_tx_rx_time = entry.time;
@@ -363,7 +363,7 @@ PassiveLogCollector::SocketTracker::DoAddEntry(const Entry& entry,
       break;
     case net::NetLog::TYPE_SOCKET_BYTES_RECEIVED:
       int_arg = static_cast<net::NetLogIntegerParameter*>(
-          entry.extra_parameters.get())->value();
+          entry.params.get())->value();
       out_info->total_bytes_received += int_arg;
       out_info->bytes_received += int_arg;
       out_info->last_tx_rx_time = entry.time;
@@ -496,11 +496,11 @@ PassiveLogCollector::RequestTracker::DoAddEntry(const Entry& entry,
   // Note: we look at the first *two* entries, since the outer REQUEST_ALIVE
   // doesn't actually contain any data.
   if (out_info->url.empty() && out_info->entries.size() <= 2 &&
-      entry.phase == net::NetLog::PHASE_BEGIN && entry.extra_parameters &&
+      entry.phase == net::NetLog::PHASE_BEGIN && entry.params &&
       (entry.type == net::NetLog::TYPE_URL_REQUEST_START ||
        entry.type == net::NetLog::TYPE_SOCKET_STREAM_CONNECT)) {
     out_info->url = static_cast<net::NetLogStringParameter*>(
-        entry.extra_parameters.get())->value();
+        entry.params.get())->value();
   }
 
   // If the request has ended, move it to the graveyard.
