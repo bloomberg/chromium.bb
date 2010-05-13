@@ -39,3 +39,10 @@ Function __KEEP_THESE_FUNCTIONS_ALIVE[] = {
   &__srpc_init,
   &__srpc_wait,
 };
+
+/* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
+extern void *environ;
+
+void **_KEEP_THESE_POINTERS_ALIVE[] = {
+  &environ
+};
