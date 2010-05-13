@@ -4,6 +4,7 @@
 
 cr.define('cr.ui', function() {
   const Menu = cr.ui.Menu;
+  const positionPopupAroundElement = cr.ui.positionPopupAroundElement;
 
   /**
    * Creates a new menu button element.
@@ -86,6 +87,7 @@ cr.define('cr.ui', function() {
 
         case 'activate':
         case 'blur':
+        case 'resize':
           this.hideMenu();
           break;
       }
@@ -96,10 +98,14 @@ cr.define('cr.ui', function() {
      */
     showMenu: function() {
       this.menu.style.display = 'block';
+
       // when the menu is shown we steal all keyboard events.
-      this.ownerDocument.addEventListener('keydown', this, true);
-      this.ownerDocument.addEventListener('mousedown', this, true);
-      this.ownerDocument.addEventListener('blur', this, true);
+      var doc = this.ownerDocument;
+      var win = doc.defaultView;
+      doc.addEventListener('keydown', this, true);
+      doc.addEventListener('mousedown', this, true);
+      doc.addEventListener('blur', this, true);
+      win.addEventListener('resize', this);
       this.menu.addEventListener('activate', this);
       this.positionMenu_();
     },
@@ -109,9 +115,12 @@ cr.define('cr.ui', function() {
      */
     hideMenu: function() {
       this.menu.style.display = 'none';
-      this.ownerDocument.removeEventListener('keydown', this, true);
-      this.ownerDocument.removeEventListener('mousedown', this, true);
-      this.ownerDocument.removeEventListener('blur', this, true);
+      var doc = this.ownerDocument;
+      var win = doc.defaultView;
+      doc.removeEventListener('keydown', this, true);
+      doc.removeEventListener('mousedown', this, true);
+      doc.removeEventListener('blur', this, true);
+      win.removeEventListener('resize', this);
       this.menu.removeEventListener('activate', this);
       this.menu.selectedIndex = -1;
     },
@@ -129,14 +138,7 @@ cr.define('cr.ui', function() {
      * @private
      */
     positionMenu_: function() {
-      var buttonRect = this.getBoundingClientRect();
-      this.menu.style.top = buttonRect.bottom + 'px';
-      if (getComputedStyle(this).direction == 'rtl') {
-        var menuRect = this.menu.getBoundingClientRect();
-        this.menu.style.left = buttonRect.right - menuRect.width + 'px';
-      } else {
-        this.menu.style.left = buttonRect.left + 'px';
-      }
+      positionPopupAroundElement(this, this.menu, cr.ui.AnchorType.BELOW);
     },
 
     /**

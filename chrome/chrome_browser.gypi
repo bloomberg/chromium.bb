@@ -3273,6 +3273,7 @@
             'browser/resources/shared/js/cr/ui/menu.js',
             'browser/resources/shared/js/cr/ui/menu_button.js',
             'browser/resources/shared/js/cr/ui/menu_item.js',
+            'browser/resources/shared/js/cr/ui/position_util.js',
             'browser/resources/shared/js/cr/ui/splitter.js',
             'browser/resources/shared/js/cr/ui/tree.js',
           ]
