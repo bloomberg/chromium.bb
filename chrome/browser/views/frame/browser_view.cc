@@ -1655,27 +1655,20 @@ void BrowserView::InitTabStrip(TabStripModel* model) {
     delete tabstrip_;
   }
 
-  TabStrip* tabstrip_as_tabstrip = NULL;
-  BrowserTabStripController* tabstrip_controller = NULL;
+  BrowserTabStripController* tabstrip_controller =
+      new BrowserTabStripController(model);
 
-  if (UseVerticalTabs()) {
-    SideTabStrip* tabstrip = new SideTabStrip;
-    tabstrip_controller = new BrowserTabStripController(model, tabstrip);
-    tabstrip->SetModel(tabstrip_controller);
-    tabstrip_ = tabstrip;
-  } else {
-    tabstrip_as_tabstrip = new TabStrip(model);
-    tabstrip_ = tabstrip_as_tabstrip;
-  }
+  if (UseVerticalTabs())
+    tabstrip_ = new SideTabStrip(tabstrip_controller);
+  else
+    tabstrip_ = new TabStrip(tabstrip_controller);
+
   tabstrip_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_TABSTRIP));
   if (browser_->extension_app() && tabstrip_->AsTabStrip())
     tabstrip_->AsTabStrip()->set_new_tab_button_enabled(false);
   AddChildView(tabstrip_);
 
-  if (tabstrip_controller)
-    tabstrip_controller->InitFromModel();
-  else
-    tabstrip_as_tabstrip->InitFromModel();
+  tabstrip_controller->InitFromModel(tabstrip_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

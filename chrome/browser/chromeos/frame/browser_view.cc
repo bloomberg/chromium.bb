@@ -73,6 +73,8 @@ class Spacer : public views::View {
   DISALLOW_COPY_AND_ASSIGN(Spacer);
 };
 
+// TODO(sky): wire this back up.
+/*
 // A chromeos implementation of Tab that shows the compact location bar.
 class ChromeosTab : public Tab {
  public:
@@ -113,6 +115,7 @@ class ChromeosTabStrip : public TabStrip {
 
   DISALLOW_COPY_AND_ASSIGN(ChromeosTabStrip);
 };
+*/
 
 }  // namespace
 
@@ -442,11 +445,6 @@ void BrowserView::ToggleCompactNavigationBar() {
 
 views::LayoutManager* BrowserView::CreateLayoutManager() const {
   return new BrowserViewLayout();
-}
-
-BaseTabStrip* BrowserView::CreateTabStrip(
-    TabStripModel* tab_strip_model) {
-  return new ChromeosTabStrip(tab_strip_model, this);
 }
 
 void BrowserView::ChildPreferredSizeChanged(View* child) {

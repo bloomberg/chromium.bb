@@ -7,34 +7,24 @@
 #include "app/animation_container.h"
 #include "app/drag_drop_types.h"
 #include "app/l10n_util.h"
-#include "app/os_exchange_data.h"
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/browser/profile.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/view_ids.h"
-#include "chrome/browser/views/app_launcher.h"
 #include "chrome/browser/views/tabs/dragged_tab_controller.h"
 #include "chrome/browser/views/tabs/tab.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/browser/views/tabs/tab_strip_controller.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "gfx/canvas.h"
 #include "gfx/path.h"
 #include "gfx/size.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/controls/image_view.h"
-#include "views/painter.h"
 #include "views/widget/default_theme_provider.h"
 #include "views/widget/root_view.h"
 #include "views/window/non_client_view.h"
@@ -267,8 +257,8 @@ const int TabStrip::mini_to_non_mini_gap_ = 3;
 // static
 const int TabStrip::extra_gap_for_nano_ = 10;
 
-TabStrip::TabStrip(TabStripModel* model)
-    : model_(model),
+TabStrip::TabStrip(TabStripController* controller)
+    : BaseTabStrip(controller),
       resize_layout_factory_(this),
       added_as_message_loop_observer_(false),
       needs_resize_layout_(false),
@@ -289,8 +279,6 @@ TabStrip::~TabStrip() {
   // delete the tabs.
   StopAnimating(false);
 
-  model_->RemoveObserver(this);
-
   // TODO(beng): remove this if it doesn't work to fix the TabSelectedAt bug.
   drag_controller_.reset(NULL);
 
@@ -304,10 +292,6 @@ TabStrip::~TabStrip() {
   RemoveAllChildViews(true);
 }
 
-bool TabStrip::CanProcessInputEvents() const {
-  return !IsAnimating();
-}
-
 void TabStrip::DestroyDragController() {
   if (IsDragSessionActive())
     drag_controller_.reset(NULL);
@@ -317,10 +301,6 @@ gfx::Rect TabStrip::GetIdealBounds(int tab_data_index) {
   DCHECK_GE(tab_data_index, 0);
   DCHECK_LT(tab_data_index, GetTabCount());
   return tab_data_[tab_data_index].ideal_bounds;
-}
-
-Tab* TabStrip::GetSelectedTab() const {
-  return GetTabAtModelIndex(model()->selected_index());
 }
 
 void TabStrip::InitTabStripButtons() {
@@ -334,21 +314,8 @@ void TabStrip::InitTabStripButtons() {
   AddChildView(newtab_button_);
 }
 
-bool TabStrip::IsCompatibleWith(TabStrip* other) const {
-  return model_->profile() == other->model()->profile();
-}
-
 gfx::Rect TabStrip::GetNewTabButtonBounds() {
   return newtab_button_->bounds();
-}
-
-void TabStrip::InitFromModel() {
-  // Walk the model, calling our insertion observer method for each item within
-  // it.
-  for (int i = 0; i < model_->count(); ++i) {
-    TabInsertedAt(model_->GetTabContentsAt(i), i,
-                  i == model_->selected_index());
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -395,29 +362,131 @@ bool TabStrip::IsDragSessionActive() const {
   return drag_controller_.get() != NULL;
 }
 
-void TabStrip::UpdateLoadingAnimations() {
-  for (int i = 0, model_index = 0; i < GetTabCount(); ++i) {
-    Tab* current_tab = GetTabAtTabDataIndex(i);
-    if (!current_tab->closing()) {
-      TabContents* contents = model_->GetTabContentsAt(model_index);
-      if (!contents || !contents->is_loading()) {
-        current_tab->ValidateLoadingAnimation(Tab::ANIMATION_NONE);
-      } else if (contents->waiting_for_response()) {
-        current_tab->ValidateLoadingAnimation(Tab::ANIMATION_WAITING);
-      } else {
-        current_tab->ValidateLoadingAnimation(Tab::ANIMATION_LOADING);
-      }
-      model_index++;
-    }
-  }
-}
-
 bool TabStrip::IsAnimating() const {
   return bounds_animator_.IsAnimating() || new_tab_timer_.IsRunning();
 }
 
 TabStrip* TabStrip::AsTabStrip() {
   return this;
+}
+
+void TabStrip::AddTabAt(int model_index,
+                        bool foreground,
+                        const TabRendererData& data) {
+  Tab* tab = CreateTab();
+  tab->SetAnimationContainer(animation_container_.get());
+  tab->SetData(data);
+
+  TabData d = { tab, gfx::Rect() };
+  tab_data_.insert(tab_data_.begin() +
+                   ModelIndexToTabDataIndex(model_index), d);
+
+  AddChildView(tab);
+
+  // Don't animate the first tab, it looks weird, and don't animate anything
+  // if the containing window isn't visible yet.
+  if (GetTabCount() > 1 && GetWindow() && GetWindow()->IsVisible()) {
+    if (!IsDragSessionActive() && !attaching_dragged_tab_ &&
+        ShouldStartIntertTabAnimationAtEnd(model_index, foreground)) {
+      StartInsertTabAnimationAtEnd();
+    } else {
+      StartInsertTabAnimation(model_index);
+    }
+  } else {
+    Layout();
+  }
+}
+
+void TabStrip::RemoveTabAt(int model_index) {
+  int model_count = GetModelCount();
+  if (model_index != model_count && model_count > 0) {
+    Tab* last_tab = GetTabAtModelIndex(model_count - 1);
+    // Limit the width available to the TabStrip for laying out Tabs, so that
+    // Tabs are not resized until a later time (when the mouse pointer leaves
+    // the TabStrip).
+    available_width_for_tabs_ = GetAvailableWidthForTabs(last_tab);
+    needs_resize_layout_ = true;
+    AddMessageLoopObserver();
+  } else if (model_count) {
+    Tab* last_tab = GetTabAtModelIndex(model_count);
+    // Limit the width available to the TabStrip for laying out Tabs, so that
+    // Tabs are not resized until a later time (when the mouse pointer leaves
+    // the TabStrip).
+    available_width_for_tabs_ = GetAvailableWidthForTabs(last_tab);
+    needs_resize_layout_ = true;
+    AddMessageLoopObserver();
+  }
+
+  StartRemoveTabAnimation(model_index);
+}
+
+void TabStrip::SelectTabAt(int old_model_index, int new_model_index) {
+  // We have "tiny tabs" if the tabs are so tiny that the unselected ones are
+  // a different size to the selected ones.
+  bool tiny_tabs = current_unselected_width_ != current_selected_width_;
+  if (!IsAnimating() && (!needs_resize_layout_ || tiny_tabs)) {
+    Layout();
+  } else {
+    SchedulePaint();
+  }
+
+  if (old_model_index >= 0) {
+    GetTabAtTabDataIndex(ModelIndexToTabDataIndex(old_model_index))->
+        StopMiniTabTitleAnimation();
+  }
+}
+
+void TabStrip::MoveTab(int from_model_index, int to_model_index) {
+  StartMoveTabAnimation(from_model_index, to_model_index);
+}
+
+void TabStrip::TabTitleChangedNotLoading(int model_index) {
+  Tab* tab = GetTabAtModelIndex(model_index);
+  if (tab->data().mini && !tab->IsSelected())
+    tab->StartMiniTabTitleAnimation();
+}
+
+void TabStrip::SetTabData(int model_index, const TabRendererData& data) {
+  Tab* tab = GetTabAtModelIndex(model_index);
+  bool mini_state_changed = tab->data().mini != data.mini;
+  tab->SetData(data);
+  tab->SchedulePaint();
+
+  if (mini_state_changed) {
+    if (GetWindow() && GetWindow()->IsVisible())
+      StartMiniTabAnimation();
+    else
+      Layout();
+  }
+}
+
+void TabStrip::StartHighlight(int model_index) {
+  GetTabAtModelIndex(model_index)->StartPulse();
+}
+
+void TabStrip::StopAllHighlighting() {
+  for (int i = 0; i < GetTabCount(); ++i)
+    GetTabAtTabDataIndex(i)->StopPulse();
+}
+
+BaseTabRenderer* TabStrip::GetBaseTabAtModelIndex(int model_index) const {
+  return GetTabAtModelIndex(model_index);
+}
+
+BaseTabRenderer* TabStrip::GetBaseTabAtTabIndex(int tab_index) const {
+  return GetTabAtTabDataIndex(tab_index);
+}
+
+int TabStrip::GetModelIndexOfBaseTab(const BaseTabRenderer* tab) const {
+  return GetModelIndexOfTab(static_cast<const Tab*>(tab));
+}
+
+BaseTabRenderer* TabStrip::CreateTabForDragging() {
+  Tab* tab = new Tab(NULL);
+  // Make sure the dragged tab shares our theme provider. We need to explicitly
+  // do this as during dragging there isn't a theme provider.
+  tab->SetThemeProvider(GetThemeProvider());
+  return tab;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -437,7 +506,7 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
     canvas->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
     for (int i = tab_count - 1; i >= 0; --i) {
       Tab* tab = GetTabAtTabDataIndex(i);
-      if (tab->phantom())
+      if (tab->data().phantom)
         tab->ProcessPaint(canvas);
     }
     canvas->restore();
@@ -447,7 +516,7 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
     canvas->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
     for (int i = tab_count - 1; i >= 0; --i) {
       Tab* tab = GetTabAtTabDataIndex(i);
-      if (tab->phantom()) {
+      if (tab->data().phantom) {
         canvas->save();
         canvas->ClipRectInt(tab->MirroredX(), tab->y(), tab->width(),
                             tab->height());
@@ -463,19 +532,21 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
 
   Tab* dragging_tab = NULL;
 
+  int model_count = GetModelCount();
+
   for (int i = tab_count - 1; i >= 0; --i) {
     Tab* tab = GetTabAtTabDataIndex(i);
     // We must ask the _Tab's_ model, not ourselves, because in some situations
     // the model will be different to this object, e.g. when a Tab is being
     // removed after its TabContents has been destroyed.
-    if (!tab->phantom()) {
+    if (!tab->data().phantom) {
       if (tab->dragging()) {
         dragging_tab = tab;
       } else if (!tab->IsSelected()) {
-        if (tab->render_unselected() && model_->count() > 1) {
+        if (tab->render_unselected() && model_count > 1) {
           // See comment above kNetTabAnimationSelectedOffset as to why we do
           // this.
-          Tab* last_tab = GetTabAtModelIndex(model_->count() - 2);
+          Tab* last_tab = GetTabAtModelIndex(model_count - 2);
           canvas->save();
           int clip_x = last_tab->bounds().right() + kNetTabSelectedOffset;
           int clip_width = width() - clip_x;
@@ -596,25 +667,7 @@ int TabStrip::OnPerformDrop(const DropTargetEvent& event) {
   if (!event.GetData().GetURLAndTitle(&url, &title) || !url.is_valid())
     return DragDropTypes::DRAG_NONE;
 
-  if (drop_before) {
-    UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLBetweenTabs"),
-                              model_->profile());
-
-    // Insert a new tab.
-    TabContents* contents =
-        model_->delegate()->CreateTabContentsForURL(
-            url, GURL(), model_->profile(), PageTransition::TYPED, false,
-            NULL);
-    model_->AddTabContents(contents, drop_index, false,
-                           PageTransition::GENERATED, true);
-  } else {
-    UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLOnTab"),
-                              model_->profile());
-
-    model_->GetTabContentsAt(drop_index)->controller().LoadURL(
-        url, GURL(), PageTransition::GENERATED);
-    model_->SelectTabContentsAt(drop_index, true);
-  }
+  controller()->PerformDrop(drop_before, drop_index, url);
 
   return GetDropEffect(event);
 }
@@ -655,6 +708,15 @@ void TabStrip::ThemeChanged() {
   LoadNewTabButtonImage();
 }
 
+void TabStrip::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
+  AnimationType last_type = animation_type_;
+
+  ResetAnimationState(false);
+
+  if (!cancelling_animation_ && last_type == ANIMATION_NEW_TAB_2)
+    NewTabAnimation2Done();
+}
+
 Tab* TabStrip::CreateTab() {
   return new Tab(this);
 }
@@ -678,233 +740,27 @@ void TabStrip::OnMouseReleased(const views::MouseEvent& event,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// TabStrip, TabStripModelObserver implementation:
-
-void TabStrip::TabInsertedAt(TabContents* contents,
-                             int model_index,
-                             bool foreground) {
-  DCHECK(contents);
-  DCHECK(model_index == TabStripModel::kNoTab ||
-         model_->ContainsIndex(model_index));
-  // This tab may be attached to another browser window, we should notify
-  // renderer.
-  contents->render_view_host()->UpdateBrowserWindowId(
-      contents->controller().window_id().id());
-
-  Tab* tab = CreateTab();
-
-  TabData d = { tab, gfx::Rect() };
-  tab_data_.insert(tab_data_.begin() +
-                   ModelIndexToTabDataIndex(model_index), d);
-  tab->UpdateData(contents, model_->IsPhantomTab(model_index), false);
-  tab->set_mini(model_->IsMiniTab(model_index));
-  tab->set_app(model_->IsAppTab(model_index));
-  tab->SetBlocked(model_->IsTabBlocked(model_index));
-  tab->SetAnimationContainer(animation_container_.get());
-
-  AddChildView(tab);
-
-  // Don't animate the first tab, it looks weird, and don't animate anything
-  // if the containing window isn't visible yet.
-  if (GetTabCount() > 1 && GetWindow() && GetWindow()->IsVisible()) {
-    if (!IsDragSessionActive() && !attaching_dragged_tab_ &&
-        ShouldStartIntertTabAnimationAtEnd(model_index, foreground)) {
-      StartInsertTabAnimationAtEnd();
-    } else {
-      StartInsertTabAnimation(model_index);
-    }
-  } else {
-    Layout();
-  }
-}
-
-void TabStrip::TabDetachedAt(TabContents* contents, int model_index) {
-  StartRemoveTabAnimation(model_index);
-}
-
-void TabStrip::TabSelectedAt(TabContents* old_contents,
-                             TabContents* new_contents,
-                             int model_index,
-                             bool user_gesture) {
-  // We have "tiny tabs" if the tabs are so tiny that the unselected ones are
-  // a different size to the selected ones.
-  bool tiny_tabs = current_unselected_width_ != current_selected_width_;
-  if (!IsAnimating() && (!needs_resize_layout_ || tiny_tabs)) {
-    Layout();
-  } else {
-    SchedulePaint();
-  }
-
-  int old_model_index = model_->GetIndexOfTabContents(old_contents);
-  if (old_model_index >= 0) {
-    GetTabAtTabDataIndex(ModelIndexToTabDataIndex(old_model_index))->
-        StopMiniTabTitleAnimation();
-  }
-}
-
-void TabStrip::TabMoved(TabContents* contents,
-                        int from_model_index,
-                        int to_model_index) {
-  StartMoveTabAnimation(from_model_index, to_model_index);
-}
-
-void TabStrip::TabChangedAt(TabContents* contents,
-                            int model_index,
-                            TabChangeType change_type) {
-  // Index is in terms of the model. Need to make sure we adjust that index in
-  // case we have an animation going.
-  Tab* tab = GetTabAtModelIndex(model_index);
-  if (change_type == TITLE_NOT_LOADING) {
-    if (tab->mini() && !tab->IsSelected())
-      tab->StartMiniTabTitleAnimation();
-    // We'll receive another notification of the change asynchronously.
-    return;
-  }
-  tab->UpdateData(contents, model_->IsPhantomTab(model_index),
-                  change_type == LOADING_ONLY);
-  tab->UpdateFromModel();
-}
-
-void TabStrip::TabReplacedAt(TabContents* old_contents,
-                             TabContents* new_contents,
-                             int model_index) {
-  TabChangedAt(new_contents, model_index, ALL);
-}
-
-void TabStrip::TabMiniStateChanged(TabContents* contents, int model_index) {
-  GetTabAtModelIndex(model_index)->set_mini(
-      model_->IsMiniTab(model_index));
-  // Don't animate if the window isn't visible yet. The window won't be visible
-  // when dragging a mini-tab to a new window.
-  if (GetWindow() && GetWindow()->IsVisible())
-    StartMiniTabAnimation();
-  else
-    Layout();
-}
-
-void TabStrip::TabBlockedStateChanged(TabContents* contents, int model_index) {
-  GetTabAtModelIndex(model_index)->SetBlocked(
-      model_->IsTabBlocked(model_index));
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // TabStrip, Tab::Delegate implementation:
 
-bool TabStrip::IsTabSelected(const Tab* tab) const {
+bool TabStrip::IsTabSelected(const BaseTabRenderer* btr) const {
+  const Tab* tab = static_cast<const Tab*>(btr);
   if (tab->closing() || tab->render_unselected())
     return false;
 
-  return GetModelIndexOfTab(tab) == model_->selected_index();
+  return BaseTabStrip::IsTabSelected(btr);
 }
 
-bool TabStrip::IsTabPinned(const Tab* tab) const {
+bool TabStrip::IsTabPinned(const BaseTabRenderer* btr) const {
+  const Tab* tab = static_cast<const Tab*>(btr);
   if (tab->closing())
     return false;
 
-  return model_->IsTabPinned(GetModelIndexOfTab(tab));
+  return BaseTabStrip::IsTabPinned(tab);
 }
 
-void TabStrip::SelectTab(Tab* tab) {
-  int model_index = GetModelIndexOfTab(tab);
-  if (model_->ContainsIndex(model_index))
-    model_->SelectTabContentsAt(model_index, true);
-}
-
-void TabStrip::CloseTab(Tab* tab) {
-  int model_index = GetModelIndexOfTab(tab);
-  if (model_->ContainsIndex(model_index)) {
-    TabContents* contents = model_->GetTabContentsAt(model_index);
-    if (contents)
-      UserMetrics::RecordAction(UserMetricsAction("CloseTab_Mouse"),
-                                contents->profile());
-    if (model_index + 1 != model_->count() && model_->count() > 1) {
-      Tab* last_tab = GetTabAtModelIndex(model_->count() - 2);
-      // Limit the width available to the TabStrip for laying out Tabs, so that
-      // Tabs are not resized until a later time (when the mouse pointer leaves
-      // the TabStrip).
-      available_width_for_tabs_ = GetAvailableWidthForTabs(last_tab);
-      needs_resize_layout_ = true;
-      AddMessageLoopObserver();
-    } else if (model_->count() > 1) {
-      Tab* last_tab = GetTabAtModelIndex(model_->count() - 1);
-      // Limit the width available to the TabStrip for laying out Tabs, so that
-      // Tabs are not resized until a later time (when the mouse pointer leaves
-      // the TabStrip).
-      available_width_for_tabs_ = GetAvailableWidthForTabs(last_tab);
-      needs_resize_layout_ = true;
-      AddMessageLoopObserver();
-    }
-    // Note that the next call might not close the tab (because of unload
-    // hanlders or if the delegate veto the close).
-    model_->CloseTabContentsAt(model_index);
-  }
-}
-
-bool TabStrip::IsCommandEnabledForTab(
-    TabStripModel::ContextMenuCommand command_id, const Tab* tab) const {
-  int model_index = GetModelIndexOfTab(tab);
-  if (model_->ContainsIndex(model_index))
-    return model_->IsContextMenuCommandEnabled(model_index, command_id);
-  return false;
-}
-
-bool TabStrip::IsCommandCheckedForTab(
-    TabStripModel::ContextMenuCommand command_id, const Tab* tab) const {
-  int model_index = GetModelIndexOfTab(tab);
-  if (model_->ContainsIndex(model_index))
-    return model_->IsContextMenuCommandChecked(model_index, command_id);
-  return false;
-}
-
-void TabStrip::ExecuteCommandForTab(
-    TabStripModel::ContextMenuCommand command_id, Tab* tab) {
-  int model_index = GetModelIndexOfTab(tab);
-  if (model_->ContainsIndex(model_index))
-    model_->ExecuteContextMenuCommand(model_index, command_id);
-}
-
-void TabStrip::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
-  AnimationType last_type = animation_type_;
-
-  ResetAnimationState(false);
-
-  if (!cancelling_animation_ && last_type == ANIMATION_NEW_TAB_2)
-    NewTabAnimation2Done();
-}
-
-void TabStrip::StartHighlightTabsForCommand(
-    TabStripModel::ContextMenuCommand command_id, Tab* tab) {
-  if (command_id == TabStripModel::CommandCloseTabsOpenedBy ||
-      command_id == TabStripModel::CommandCloseOtherTabs ||
-      command_id == TabStripModel::CommandCloseTabsToRight) {
-    int model_index = GetModelIndexOfTab(tab);
-    if (model_->ContainsIndex(model_index)) {
-      std::vector<int> indices =
-          model_->GetIndicesClosedByCommand(model_index, command_id);
-      for (std::vector<int>::const_iterator i = indices.begin();
-           i != indices.end(); ++i) {
-        GetTabAtModelIndex(*i)->StartPulse();
-      }
-    }
-  }
-}
-
-void TabStrip::StopHighlightTabsForCommand(
-    TabStripModel::ContextMenuCommand command_id, Tab* tab) {
-  if (command_id == TabStripModel::CommandCloseTabsOpenedBy ||
-      command_id == TabStripModel::CommandCloseTabsToRight ||
-      command_id == TabStripModel::CommandCloseOtherTabs) {
-    // Just tell all Tabs to stop pulsing - it's safe.
-    StopAllHighlighting();
-  }
-}
-
-void TabStrip::StopAllHighlighting() {
-  for (int i = 0; i < GetTabCount(); ++i)
-    GetTabAtTabDataIndex(i)->StopPulse();
-}
-
-void TabStrip::MaybeStartDrag(Tab* tab, const views::MouseEvent& event) {
+void TabStrip::MaybeStartDrag(BaseTabRenderer* btr,
+                              const views::MouseEvent& event) {
+  Tab* tab = static_cast<Tab*>(btr);
   // Don't accidentally start any drag operations during animations if the
   // mouse is down... during an animation tabs are being resized automatically,
   // so the View system can misinterpret this easily if the mouse is down that
@@ -912,7 +768,7 @@ void TabStrip::MaybeStartDrag(Tab* tab, const views::MouseEvent& event) {
   if (IsAnimating() || tab->closing() || !HasAvailableDragActions())
     return;
   int model_index = GetModelIndexOfTab(tab);
-  if (!model_->ContainsIndex(model_index)) {
+  if (!IsValidModelIndex(model_index)) {
     CHECK(false);
     return;
   }
@@ -944,28 +800,15 @@ bool TabStrip::EndDrag(bool canceled) {
 }
 
 bool TabStrip::HasAvailableDragActions() const {
-  return model_->delegate()->GetDragActions() != 0;
+  return controller()->HasAvailableDragActions() != 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // TabStrip, views::BaseButton::ButtonListener implementation:
 
 void TabStrip::ButtonPressed(views::Button* sender, const views::Event& event) {
-  if (sender == newtab_button_) {
-    // TODO(jcampan): if we decide to keep the app launcher as the default
-    //                behavior for the new tab button, we should add a method
-    //                on the TabStripDelegate to do so.
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAppsPanel)) {
-      NavigationController& controller =
-          model_->GetSelectedTabContents()->controller();
-      AppLauncher::ShowForNewTab(
-          Browser::GetBrowserForController(&controller, NULL), std::string());
-      return;
-    }
-    UserMetrics::RecordAction(UserMetricsAction("NewTab_Button"),
-                              model_->profile());
-    model_->delegate()->AddBlankTab(true);
-  }
+  if (sender == newtab_button_)
+    controller()->CreateNewTab();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1029,7 +872,6 @@ void TabStrip::DidProcessEvent(GdkEvent* event) {
 
 void TabStrip::Init() {
   SetID(VIEW_ID_TAB_STRIP);
-  model_->AddObserver(this);
   newtab_button_bounds_.SetRect(0, 0, kNewTabButtonWidth, kNewTabButtonHeight);
   if (browser_defaults::kSizeTabButtonToTopOfTabStrip) {
     newtab_button_bounds_.set_height(
@@ -1412,9 +1254,9 @@ void TabStrip::GenerateIdealBounds() {
   for (int i = 0; i < tab_count; ++i) {
     if (!tab_data_[i].tab->closing()) {
       ++non_closing_tab_count;
-      if (tab_data_[i].tab->mini())
+      if (tab_data_[i].tab->data().mini)
         mini_tab_count++;
-      if (tab_data_[i].tab->app())
+      if (tab_data_[i].tab->data().app)
         nano_tab_count++;
     }
   }
@@ -1435,7 +1277,7 @@ void TabStrip::GenerateIdealBounds() {
     if (!tab_data_[i].tab->closing()) {
       Tab* tab = GetTabAtTabDataIndex(i);
       double tab_width = unselected;
-      if (tab->mini()) {
+      if (tab->data().mini) {
         tab_width = Tab::GetMiniWidth();
       } else {
         if (last_was_mini) {
@@ -1453,7 +1295,7 @@ void TabStrip::GenerateIdealBounds() {
           gfx::Rect(rounded_tab_x, 0, Round(end_of_tab) - rounded_tab_x,
                     tab_height);
       tab_x = end_of_tab + kTabHOffset;
-      last_was_mini = tab->mini();
+      last_was_mini = tab->data().mini;
     }
   }
 
@@ -1534,9 +1376,8 @@ void TabStrip::AnimateToIdealBounds() {
 
 bool TabStrip::ShouldStartIntertTabAnimationAtEnd(int model_index,
                                                   bool foreground) {
-  return foreground && (model_index + 1 == model_->count()) &&
-      (model_->GetTabContentsAt(model_index)->GetURL() ==
-       GURL(chrome::kChromeUINewTabURL));
+  return foreground && (model_index + 1 == GetModelCount()) &&
+      controller()->IsNewTabPage(model_index);
 }
 
 void TabStrip::StartResizeLayoutAnimation() {
@@ -1555,7 +1396,7 @@ void TabStrip::StartInsertTabAnimationAtEnd() {
 
   GenerateIdealBounds();
 
-  int tab_data_index = ModelIndexToTabDataIndex(model_->count() - 1);
+  int tab_data_index = ModelIndexToTabDataIndex(GetModelCount() - 1);
   Tab* tab = tab_data_[tab_data_index].tab;
   tab->SizeToNewTabButtonImages();
   tab->SetBounds(newtab_button_->x() +
@@ -1624,15 +1465,10 @@ void TabStrip::StartMoveTabAnimation(int from_model_index,
   tab_data_.erase(tab_data_.begin() + from_tab_data_index);
 
   TabData data = {tab, gfx::Rect()};
-  tab->set_mini(model_->IsMiniTab(to_model_index));
-  tab->set_app(model_->IsAppTab(to_model_index));
-  tab->SetBlocked(model_->IsTabBlocked(to_model_index));
 
   int to_tab_data_index = ModelIndexToTabDataIndex(to_model_index);
 
   tab_data_.insert(tab_data_.begin() + to_tab_data_index, data);
-  if (tab->phantom() != model_->IsPhantomTab(to_model_index))
-    tab->set_phantom(!tab->phantom());
 
   GenerateIdealBounds();
   AnimateToIdealBounds();
@@ -1679,7 +1515,6 @@ void TabStrip::ResetAnimationState(bool stop_new_tab_timer) {
   // Reset the animation state of each tab.
   for (int i = 0, count = GetTabCount(); i < count; ++i) {
     Tab* tab = GetTabAtTabDataIndex(i);
-    tab->set_animating_mini_change(false);
     tab->set_render_as_new_tab(false);
     tab->set_render_unselected(false);
     tab->set_alpha(1);
@@ -1689,7 +1524,7 @@ void TabStrip::ResetAnimationState(bool stop_new_tab_timer) {
 int TabStrip::GetMiniTabCount() const {
   int mini_count = 0;
   for (size_t i = 0; i < tab_data_.size(); ++i) {
-    if (tab_data_[i].tab->mini())
+    if (tab_data_[i].tab->data().mini)
       mini_count++;
     else
       return mini_count;
@@ -1700,7 +1535,7 @@ int TabStrip::GetMiniTabCount() const {
 int TabStrip::GetNanoTabCount() const {
   int nano_count = 0;
   for (size_t i = 0; i < tab_data_.size(); ++i) {
-    if (tab_data_[i].tab->app())
+    if (tab_data_[i].tab->data().app)
       nano_count++;
     else
       return nano_count;
@@ -1750,7 +1585,7 @@ void TabStrip::HandleGlobalMouseMoveEvent() {
 
 bool TabStrip::HasPhantomTabs() const {
   for (int i = 0; i < GetTabCount(); ++i) {
-    if (GetTabAtTabDataIndex(i)->phantom())
+    if (GetTabAtTabDataIndex(i)->data().phantom)
       return true;
   }
   return false;

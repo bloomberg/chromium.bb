@@ -445,7 +445,7 @@ class View : public AcceleratorTarget {
 
   // Returns the index of the specified |view| in this view's children, or -1
   // if the specified view is not a child of this view.
-  int GetChildIndex(View* v) const;
+  int GetChildIndex(const View* v) const;
 
   // Returns true if the specified view is a direct or indirect child of this
   // view.

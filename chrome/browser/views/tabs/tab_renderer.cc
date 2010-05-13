@@ -17,9 +17,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "gfx/canvas.h"
 #include "gfx/favicon_size.h"
@@ -270,14 +268,17 @@ class TabRenderer::FavIconCrashAnimation : public LinearAnimation,
 ////////////////////////////////////////////////////////////////////////////////
 // TabRenderer, public:
 
-TabRenderer::TabRenderer()
-    : animation_state_(ANIMATION_NONE),
+TabRenderer::TabRenderer(TabController* controller)
+    : BaseTabRenderer(controller),
       animation_frame_(0),
       throbber_disabled_(false),
       showing_icon_(false),
       showing_close_button_(false),
       fav_icon_hiding_offset_(0),
       close_button_color_(NULL),
+      render_as_new_tab_(false),
+      render_unselected_(false),
+      alpha_(1),
       crash_animation_(NULL),
       should_display_crashed_favicon_(false),
       theme_provider_(NULL) {
@@ -321,94 +322,8 @@ ThemeProvider* TabRenderer::GetThemeProvider() {
   return NULL;
 }
 
-void TabRenderer::UpdateData(TabContents* contents,
-                             bool phantom,
-                             bool loading_only) {
-  DCHECK(contents);
-  if (data_.phantom != phantom || !loading_only) {
-    data_.title = contents->GetTitle();
-    data_.off_the_record = contents->profile()->IsOffTheRecord();
-    data_.crashed = contents->is_crashed();
-    data_.app = contents->is_app();
-    SkBitmap* app_icon = contents->GetExtensionAppIcon();
-    if (app_icon)
-      data_.favicon = *app_icon;
-    else
-      data_.favicon = contents->GetFavIcon();
-    data_.phantom = phantom;
-    if (phantom) {
-      data_.crashed = false;  // Phantom tabs can never crash.
-      StopMiniTabTitleAnimation();
-    }
-
-    // Sets the accessible name for the tab.
-    SetAccessibleName(UTF16ToWide(data_.title));
-  }
-
-  // If this is an extension app and a command line flag is set,
-  // then disable the throbber.
-  throbber_disabled_ = data_.app &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kAppsNoThrob);
-
-  // TODO(glen): Temporary hax.
-  theme_provider_ = contents->profile()->GetThemeProvider();
-
-  // Loading state also involves whether we show the favicon, since that's where
-  // we display the throbber.
-  data_.loading = contents->is_loading();
-  data_.show_icon = contents->ShouldDisplayFavIcon();
-}
-
-void TabRenderer::UpdateFromModel() {
-  // Force a layout, since the tab may have grown a favicon.
-  Layout();
-  SchedulePaint();
-
-  if (data_.crashed) {
-    if (!should_display_crashed_favicon_ && !IsPerformingCrashAnimation())
-      StartCrashAnimation();
-  } else {
-    if (IsPerformingCrashAnimation())
-      StopCrashAnimation();
-    ResetCrashedFavIcon();
-  }
-}
-
-void TabRenderer::set_animating_mini_change(bool value) {
-  data_.animating_mini_change = value;
-}
-
 bool TabRenderer::IsSelected() const {
   return true;
-}
-
-void TabRenderer::ValidateLoadingAnimation(AnimationState animation_state) {
-  if (throbber_disabled_)
-    return;
-
-  if (animation_state_ != animation_state) {
-    // The waiting animation is the reverse of the loading animation, but at a
-    // different rate - the following reverses and scales the animation_frame_
-    // so that the frame is at an equivalent position when going from one
-    // animation to the other.
-    if (animation_state_ == ANIMATION_WAITING &&
-        animation_state == ANIMATION_LOADING) {
-      animation_frame_ = loading_animation_frame_count -
-          (animation_frame_ / waiting_to_loading_frame_count_ratio);
-    }
-    animation_state_ = animation_state;
-  }
-
-  if (animation_state_ != ANIMATION_NONE) {
-    animation_frame_ = ++animation_frame_ %
-                       ((animation_state_ == ANIMATION_WAITING) ?
-                         waiting_animation_frame_count :
-                         loading_animation_frame_count);
-  } else {
-    animation_frame_ = 0;
-  }
-
-  SchedulePaint();
 }
 
 void TabRenderer::StartPulse() {
@@ -447,7 +362,7 @@ void TabRenderer::SetAnimationContainer(AnimationContainer* container) {
 }
 
 void TabRenderer::PaintIcon(gfx::Canvas* canvas) {
-  if (animation_state_ != ANIMATION_NONE) {
+  if (data().network_state != TabRendererData::NETWORK_STATE_NONE) {
     PaintLoadingAnimation(canvas);
   } else {
     canvas->save();
@@ -461,15 +376,15 @@ void TabRenderer::PaintIcon(gfx::Canvas* canvas) {
                             kFavIconSize, kFavIconSize,
                             true);
     } else {
-      if (!data_.favicon.isNull()) {
+      if (!data().favicon.isNull()) {
         // TODO(pkasting): Use code in tab_icon_view.cc:PaintIcon() (or switch
         // to using that class to render the favicon).
         int x = favicon_bounds_.x();
         int y = favicon_bounds_.y() + fav_icon_hiding_offset_;
-        int size = data_.favicon.width();
-        canvas->DrawBitmapInt(data_.favicon, 0, 0,
-                              data_.favicon.width(),
-                              data_.favicon.height(),
+        int size = data().favicon.width();
+        canvas->DrawBitmapInt(data().favicon, 0, 0,
+                              data().favicon.width(),
+                              data().favicon.height(),
                               x, y, size, size,
                               true);
       }
@@ -514,7 +429,7 @@ int TabRenderer::GetMiniWidth() {
 // TabRenderer, protected:
 
 std::wstring TabRenderer::GetTitle() const {
-  return UTF16ToWideHack(data_.title);
+  return UTF16ToWideHack(data().title);
 }
 
 void TabRenderer::OnMouseEntered(const views::MouseEvent& e) {
@@ -527,11 +442,66 @@ void TabRenderer::OnMouseExited(const views::MouseEvent& e) {
   hover_animation_->Hide();
 }
 
+void TabRenderer::DataChanged(const TabRendererData& old) {
+  if (data().phantom)
+    StopMiniTabTitleAnimation();
+
+  // Sets the accessible name for the tab.
+  SetAccessibleName(UTF16ToWide(data().title));
+
+  if (data().blocked != old.blocked) {
+    if (data().blocked)
+      StartPulse();
+    else
+      StopPulse();
+  }
+
+  // If this is an extension app and a command line flag is set,
+  // then disable the throbber.
+  throbber_disabled_ = data().app &&
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kAppsNoThrob);
+
+  if (data().crashed) {
+    if (!should_display_crashed_favicon_ && !IsPerformingCrashAnimation())
+      StartCrashAnimation();
+  } else {
+    if (IsPerformingCrashAnimation())
+      StopCrashAnimation();
+    ResetCrashedFavIcon();
+  }
+}
+
+void TabRenderer::AdvanceLoadingAnimation(TabRendererData::NetworkState state) {
+  if (throbber_disabled_)
+    return;
+
+  // The waiting animation is the reverse of the loading animation, but at a
+  // different rate - the following reverses and scales the animation_frame_ so
+  // that the frame is at an equivalent position when going from one animation
+  // to the other.
+  if (state == TabRendererData::NETWORK_STATE_WAITING &&
+      state == TabRendererData::NETWORK_STATE_LOADING) {
+      animation_frame_ = loading_animation_frame_count -
+          (animation_frame_ / waiting_to_loading_frame_count_ratio);
+  }
+
+  if (state != TabRendererData::NETWORK_STATE_NONE) {
+    animation_frame_ = ++animation_frame_ %
+        ((state == TabRendererData::NETWORK_STATE_WAITING) ?
+         waiting_animation_frame_count :
+         loading_animation_frame_count);
+  } else {
+    animation_frame_ = 0;
+  }
+
+  SchedulePaint();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TabRenderer, views::View overrides:
 
 void TabRenderer::Paint(gfx::Canvas* canvas) {
-  if (data_.render_as_new_tab) {
+  if (render_as_new_tab_) {
     if (base::i18n::IsRTL()) {
       canvas->TranslateInt(width(), 0);
       canvas->ScaleInt(-1, 1);
@@ -542,11 +512,11 @@ void TabRenderer::Paint(gfx::Canvas* canvas) {
 
   // Don't paint if we're narrower than we can render correctly. (This should
   // only happen during animations).
-  if (width() < GetMinimumUnselectedSize().width() && !mini())
+  if (width() < GetMinimumUnselectedSize().width() && !data().mini)
     return;
 
   // See if the model changes whether the icons should be painted.
-  const bool show_icon = ShouldShowIcon() && !phantom();
+  const bool show_icon = ShouldShowIcon() && !data().phantom;
   const bool show_close_button = ShouldShowCloseBox();
   if (show_icon != showing_icon_ ||
       show_close_button != showing_close_button_)
@@ -559,7 +529,7 @@ void TabRenderer::Paint(gfx::Canvas* canvas) {
           BrowserThemeProvider::COLOR_TAB_TEXT :
           BrowserThemeProvider::COLOR_BACKGROUND_TAB_TEXT);
 
-  if (!mini() || width() > kMiniTabRendererAsNormalTabWidth)
+  if (!data().mini || width() > kMiniTabRendererAsNormalTabWidth)
     PaintTitle(title_color, canvas);
 
   if (show_icon)
@@ -589,7 +559,7 @@ void TabRenderer::Layout() {
   if (showing_icon_) {
     // Use the size of the favicon as apps use a bigger favicon size.
     int favicon_size =
-        !data_.favicon.empty() ? data_.favicon.width() : kFavIconSize;
+        !data().favicon.empty() ? data().favicon.width() : kFavIconSize;
     int favicon_top = kTopPadding + content_height / 2 - favicon_size / 2;
     int favicon_left = lb.x();
     if (favicon_size != kFavIconSize) {
@@ -598,8 +568,7 @@ void TabRenderer::Layout() {
     }
     favicon_bounds_.SetRect(favicon_left, favicon_top,
                             favicon_size, favicon_size);
-    if ((mini() || data_.animating_mini_change) &&
-        width() < kMiniTabRendererAsNormalTabWidth) {
+    if (data().mini && width() < kMiniTabRendererAsNormalTabWidth) {
       // Adjust the location of the favicon when transitioning from a normal
       // tab to a mini-tab.
       int mini_delta = kMiniTabRendererAsNormalTabWidth - GetMiniWidth();
@@ -636,7 +605,7 @@ void TabRenderer::Layout() {
   int title_left = favicon_bounds_.right() + kFavIconTitleSpacing;
   int title_top = kTopPadding + (content_height - title_font_height) / 2;
   // Size the Title text to fill the remaining space.
-  if (!mini() || width() >= kMiniTabRendererAsNormalTabWidth) {
+  if (!data().mini || width() >= kMiniTabRendererAsNormalTabWidth) {
     // If the user has big fonts, the title will appear rendered too far down
     // on the y-axis if we use the regular top padding, so we need to adjust it
     // so that the text appears centered.
@@ -694,9 +663,9 @@ void TabRenderer::AnimationEnded(const Animation* animation) {
 
 void TabRenderer::PaintTitle(SkColor title_color, gfx::Canvas* canvas) {
   // Paint the Title.
-  string16 title = data_.title;
+  string16 title = data().title;
   if (title.empty()) {
-    title = data_.loading ?
+    title = data().loading ?
         l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE) :
         TabContents::GetDefaultTitle();
   } else {
@@ -787,7 +756,7 @@ void TabRenderer::PaintInactiveTabBackgroundWithTitleChange(
 }
 
 void TabRenderer::PaintInactiveTabBackground(gfx::Canvas* canvas) {
-  bool is_otr = data_.off_the_record;
+  bool is_otr = data().off_the_record;
 
   // The tab image needs to be lined up with the background image
   // so that it feels partially transparent.  These offsets represent the tab
@@ -807,10 +776,10 @@ void TabRenderer::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   SkBitmap* tab_bg = GetThemeProvider()->GetBitmapNamed(tab_id);
 
   // App tabs are drawn slightly differently (as nano tabs).
-  TabImage* tab_image = data_.app ? &tab_active_nano : &tab_active;
-  TabImage* tab_inactive_image = data_.app ? &tab_inactive_nano :
+  TabImage* tab_image = data().app ? &tab_active_nano : &tab_active;
+  TabImage* tab_inactive_image = data().app ? &tab_inactive_nano :
                                              &tab_inactive;
-  TabImage* alpha = data_.app ? &tab_alpha_nano : &tab_alpha;
+  TabImage* alpha = data().app ? &tab_alpha_nano : &tab_alpha;
 
   // If the theme is providing a custom background image, then its top edge
   // should be at the top of the tab. Otherwise, we assume that the background
@@ -872,8 +841,8 @@ void TabRenderer::PaintActiveTabBackground(gfx::Canvas* canvas) {
   SkBitmap* tab_bg = GetThemeProvider()->GetBitmapNamed(IDR_THEME_TOOLBAR);
 
   // App tabs are drawn slightly differently (as nano tabs).
-  TabImage* tab_image = data_.app ? &tab_active_nano : &tab_active;
-  TabImage* alpha = data_.app ? &tab_alpha_nano : &tab_alpha;
+  TabImage* tab_image = data().app ? &tab_active_nano : &tab_active;
+  TabImage* alpha = data().app ? &tab_alpha_nano : &tab_alpha;
 
   // Draw left edge.
   SkBitmap tab_l = SkBitmapOperations::CreateTiledBitmap(
@@ -907,8 +876,9 @@ void TabRenderer::PaintActiveTabBackground(gfx::Canvas* canvas) {
 }
 
 void TabRenderer::PaintLoadingAnimation(gfx::Canvas* canvas) {
-  SkBitmap* frames = (animation_state_ == ANIMATION_WAITING) ?
-                      waiting_animation_frames : loading_animation_frames;
+  SkBitmap* frames =
+      (data().network_state == TabRendererData::NETWORK_STATE_WAITING) ?
+      waiting_animation_frames : loading_animation_frames;
   int image_size = frames->height();
   int image_offset = animation_frame_ * image_size;
   int dst_y = (height() - image_size) / 2;
@@ -917,7 +887,7 @@ void TabRenderer::PaintLoadingAnimation(gfx::Canvas* canvas) {
   // loading animation also needs to be mirrored if the View's UI layout is
   // right-to-left.
   int dst_x;
-  if (mini()) {
+  if (data().mini) {
     dst_x = favicon_bounds_.x();
     if (favicon_bounds_.width() != kFavIconSize)
       dst_x += (favicon_bounds_.width() - kFavIconSize) / 2;
@@ -934,7 +904,7 @@ void TabRenderer::PaintLoadingAnimation(gfx::Canvas* canvas) {
 }
 
 void TabRenderer::PaintAsNewTab(gfx::Canvas* canvas) {
-  bool is_otr = data_.off_the_record;
+  bool is_otr = data().off_the_record;
 
   // The tab image needs to be lined up with the background image
   // so that it feels partially transparent.  These offsets represent the tab
@@ -981,9 +951,9 @@ int TabRenderer::IconCapacity() const {
 }
 
 bool TabRenderer::ShouldShowIcon() const {
-  if (mini() && height() >= GetMinimumUnselectedSize().height())
+  if (data().mini && height() >= GetMinimumUnselectedSize().height())
     return true;
-  if (!data_.show_icon) {
+  if (!data().show_icon) {
     return false;
   } else if (IsSelected()) {
     // The selected tab clips favicon before close button.
@@ -995,12 +965,12 @@ bool TabRenderer::ShouldShowIcon() const {
 
 bool TabRenderer::ShouldShowCloseBox() const {
   // The selected tab never clips close button.
-  return !mini() && (IsSelected() || IconCapacity() >= 3);
+  return !data().mini && (IsSelected() || IconCapacity() >= 3);
 }
 
 double TabRenderer::GetThrobValue() {
-  if (data_.alpha != 1)
-    return data_.alpha;
+  if (alpha_ != 1)
+    return alpha_;
 
   if (pulse_animation_->is_animating())
     return pulse_animation_->GetCurrentValue() * kHoverOpacity;
@@ -1089,14 +1059,4 @@ void TabRenderer::LoadTabImages() {
 
   new_tab_mask = rb.GetBitmapNamed(IDR_TAB_ALPHA_NEW_TAB);
   new_tab_shadow = rb.GetBitmapNamed(IDR_TAB_NEW_TAB_SHADOW);
-}
-
-void TabRenderer::SetBlocked(bool blocked) {
-  if (data_.blocked == blocked)
-    return;
-  data_.blocked = blocked;
-  if (blocked)
-    StartPulse();
-  else
-    StopPulse();
 }

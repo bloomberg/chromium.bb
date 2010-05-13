@@ -6,43 +6,21 @@
 #define CHROME_BROWSER_VIEWS_TABS_SIDE_TAB_H_
 
 #include "app/slide_animation.h"
-#include "chrome/browser/views/tabs/side_tab_strip_model.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "chrome/browser/views/tabs/base_tab_renderer.h"
 #include "gfx/font.h"
 #include "views/controls/button/button.h"
 #include "views/view.h"
 
 class SideTab;
+class TabStripController;
 
-class SideTabModel {
- public:
-  // Returns metadata about the specified |tab|.
-  virtual string16 GetTitle(SideTab* tab) const = 0;
-  virtual SkBitmap GetIcon(SideTab* tab) const = 0;
-  virtual bool IsSelected(SideTab* tab) const = 0;
-
-  // Selects the tab.
-  virtual void SelectTab(SideTab* tab) = 0;
-
-  // Closes the tab.
-  virtual void CloseTab(SideTab* tab) = 0;
-
-  // Shows a context menu for the tab at the specified point in screen coords.
-  virtual void ShowContextMenu(SideTab* tab, const gfx::Point& p) = 0;
-};
-
-class SideTab : public views::View,
+class SideTab : public BaseTabRenderer,
                 public views::ContextMenuController,
                 public views::ButtonListener,
                 public AnimationDelegate {
  public:
-  explicit SideTab(SideTabModel* model);
+  explicit SideTab(TabController* controller);
   virtual ~SideTab();
-
-  // Sets the current network state of the tab. The tab renders different
-  // animations in place of the icon when different types of network activity
-  // are occurring.
-  void SetNetworkState(SideTabStripModel::NetworkState state);
 
   // AnimationDelegate implementation:
   virtual void AnimationProgressed(const Animation* animation);
@@ -65,6 +43,10 @@ class SideTab : public views::View,
   virtual void OnMouseExited(const views::MouseEvent& event);
   virtual bool OnMousePressed(const views::MouseEvent& event);
 
+ protected:
+  // BaseTabRenderer overrides.
+  virtual void AdvanceLoadingAnimation(TabRendererData::NetworkState state);
+
  private:
   void FillTabShapePath(gfx::Path* path);
 
@@ -74,8 +56,6 @@ class SideTab : public views::View,
 
   // Loads class-specific resources.
   static void InitClass();
-
-  SideTabModel* model_;
 
   gfx::Rect icon_bounds_;
   gfx::Rect title_bounds_;
@@ -90,9 +70,6 @@ class SideTab : public views::View,
   static SkBitmap* close_button_m_;
   static SkBitmap* close_button_h_;
   static SkBitmap* close_button_p_;
-
-  // The current network state for this tab.
-  SideTabStripModel::NetworkState current_state_;
 
   // The current index into the Animation image strip.
   int loading_animation_frame_;

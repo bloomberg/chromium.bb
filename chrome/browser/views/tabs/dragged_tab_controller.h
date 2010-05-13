@@ -15,10 +15,14 @@
 namespace views {
 class View;
 }
+class BaseTabStrip;
 class DraggedTabView;
 class NativeViewPhotobooth;
 class Tab;
 class TabStrip;
+class TabStripModel;
+
+struct TabRendererData;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -199,7 +203,7 @@ class DraggedTabController : public TabContentsDelegate,
   void CompleteDrag();
 
   // Create the DraggedTabView, if it does not yet exist.
-  void EnsureDraggedView();
+  void EnsureDraggedView(const TabRendererData& data);
 
   // Utility for getting the mouse position in screen coordinates.
   gfx::Point GetCursorScreenPoint() const;
@@ -221,6 +225,9 @@ class DraggedTabController : public TabContentsDelegate,
   void DockDisplayerDestroyed(DockDisplayer* controller);
 
   void BringWindowUnderMouseToFront();
+
+  // Returns the TabStripModel for the specified tabstrip.
+  TabStripModel* GetModel(BaseTabStrip* tabstrip) const;
 
   // Handles registering for notifications.
   NotificationRegistrar registrar_;

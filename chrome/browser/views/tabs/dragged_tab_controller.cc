@@ -20,6 +20,7 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/views/frame/browser_view.h"
+#include "chrome/browser/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/views/tabs/dragged_tab_view.h"
 #include "chrome/browser/views/tabs/native_view_photobooth.h"
 #include "chrome/browser/views/tabs/tab.h"
@@ -322,11 +323,11 @@ DraggedTabController::DraggedTabController(Tab* source_tab,
       old_focused_view_(NULL),
       in_destructor_(false),
       last_move_screen_x_(0),
-      mini_(source_tabstrip->model()->IsMiniTab(source_model_index_)),
-      pinned_(source_tabstrip->model()->IsTabPinned(source_model_index_)),
+      mini_(source_tab->data().mini),
+      pinned_(source_tabstrip->IsTabPinned(source_tab)),
       started_drag_(false) {
   SetDraggedContents(
-      source_tabstrip_->model()->GetTabContentsAt(source_model_index_));
+      GetModel(source_tabstrip_)->GetTabContentsAt(source_model_index_));
   // Listen for Esc key presses.
   MessageLoopForUI::current()->AddObserver(this);
 }
@@ -653,7 +654,7 @@ void DraggedTabController::MoveAttachedTab(const gfx::Point& screen_point) {
 
   gfx::Point dragged_view_point = GetAttachedTabDragPoint(screen_point);
 
-  TabStripModel* attached_model = attached_tabstrip_->model();
+  TabStripModel* attached_model = GetModel(attached_tabstrip_);
   int from_index = attached_model->GetIndexOfTabContents(dragged_contents_);
 
   // Determine the horizontal move threshold. This is dependent on the width
@@ -738,7 +739,7 @@ TabStrip* DraggedTabController::GetTabStripForPoint(
     return NULL;
 
   TabStrip* other_tabstrip = browser->tabstrip()->AsTabStrip();
-  if (!other_tabstrip->IsCompatibleWith(source_tabstrip_))
+  if (!other_tabstrip->controller()->IsCompatibleWith(source_tabstrip_))
     return NULL;
   return GetTabStripIfItContains(other_tabstrip, screen_point);
 }
@@ -802,8 +803,8 @@ void DraggedTabController::Attach(TabStrip* attached_tabstrip,
     gfx::Rect bounds = GetDraggedViewTabStripBounds(screen_point);
     int index = GetInsertionIndexForDraggedBounds(bounds, false);
     attached_tabstrip_->set_attaching_dragged_tab(true);
-    attached_tabstrip_->model()->InsertTabContentsAt(index, dragged_contents_,
-        true, false, pinned_);
+    GetModel(attached_tabstrip_)->InsertTabContentsAt(index, dragged_contents_,
+                                                      true, false, pinned_);
     attached_tabstrip_->set_attaching_dragged_tab(false);
 
     tab = GetTabMatchingDraggedContents(attached_tabstrip_);
@@ -828,7 +829,8 @@ void DraggedTabController::Detach() {
   dragged_contents_->set_capturing_contents(true);
 
   // Update the Model.
-  TabStripModel* attached_model = attached_tabstrip_->model();
+  TabRendererData tab_data = attached_tab_->data();
+  TabStripModel* attached_model = GetModel(attached_tabstrip_);
   int index = attached_model->GetIndexOfTabContents(dragged_contents_);
   DCHECK(index != -1);
   attached_model->DetachTabContentsAt(index);
@@ -845,7 +847,7 @@ void DraggedTabController::Detach() {
   }
 
   // Create the dragged view.
-  EnsureDraggedView();
+  EnsureDraggedView(tab_data);
   view_->Attach(attached_tab_->width());
   view_->Detach(photobooth_.get());
 
@@ -896,14 +898,14 @@ int DraggedTabController::GetInsertionIndexForDraggedBounds(
   }
   if (index == -1) {
     if (adjusted_bounds.right() > right_tab_x)
-      index = attached_tabstrip_->model()->count();
+      index = GetModel(attached_tabstrip_)->count();
     else
       index = 0;
   }
 
-  index = attached_tabstrip_->model()->ConstrainInsertionIndex(index, mini_);
+  index = GetModel(attached_tabstrip_)->ConstrainInsertionIndex(index, mini_);
   if (is_tab_attached && mini_ &&
-      index == attached_tabstrip_->model()->IndexOfFirstNonMiniTab()) {
+      index == GetModel(attached_tabstrip_)->IndexOfFirstNonMiniTab()) {
     index--;
   }
   return index;
@@ -950,7 +952,7 @@ gfx::Point DraggedTabController::GetAttachedTabDragPoint(
 
 Tab* DraggedTabController::GetTabMatchingDraggedContents(
     TabStrip* tabstrip) const {
-  int model_index = tabstrip->model()->GetIndexOfTabContents(dragged_contents_);
+  int model_index = GetModel(tabstrip)->GetIndexOfTabContents(dragged_contents_);
   return model_index == TabStripModel::kNoTab ?
       NULL : tabstrip->GetTabAtModelIndex(model_index);
 }
@@ -1011,22 +1013,22 @@ void DraggedTabController::RevertDrag() {
   // We save this here because code below will modify |attached_tabstrip_|.
   bool restore_frame = attached_tabstrip_ != source_tabstrip_;
   if (attached_tabstrip_) {
-    int index = attached_tabstrip_->model()->GetIndexOfTabContents(
+    int index = GetModel(attached_tabstrip_)->GetIndexOfTabContents(
         dragged_contents_);
     if (attached_tabstrip_ != source_tabstrip_) {
       // The Tab was inserted into another TabStrip. We need to put it back
       // into the original one.
-      attached_tabstrip_->model()->DetachTabContentsAt(index);
+      GetModel(attached_tabstrip_)->DetachTabContentsAt(index);
       // TODO(beng): (Cleanup) seems like we should use Attach() for this
       //             somehow.
       attached_tabstrip_ = source_tabstrip_;
-      source_tabstrip_->model()->InsertTabContentsAt(source_model_index_,
+      GetModel(source_tabstrip_)->InsertTabContentsAt(source_model_index_,
           dragged_contents_, true, false, pinned_);
     } else {
       // The Tab was moved within the TabStrip where the drag was initiated.
       // Move it back to the starting location.
       source_tabstrip_->StoppedDraggingTab(attached_tab_);
-      source_tabstrip_->model()->MoveTabContentsAt(index, source_model_index_,
+      GetModel(source_tabstrip_)->MoveTabContentsAt(index, source_model_index_,
           true);
     }
   } else {
@@ -1036,7 +1038,7 @@ void DraggedTabController::RevertDrag() {
     // The Tab was detached from the TabStrip where the drag began, and has not
     // been attached to any other TabStrip. We need to put it back into the
     // source TabStrip.
-    source_tabstrip_->model()->InsertTabContentsAt(source_model_index_,
+    GetModel(source_tabstrip_)->InsertTabContentsAt(source_model_index_,
         dragged_contents_, true, false, pinned_);
   }
 
@@ -1063,47 +1065,48 @@ void DraggedTabController::CompleteDrag() {
     attached_tabstrip_->StoppedDraggingTab(attached_tab_);
   } else {
     if (dock_info_.type() != DockInfo::NONE) {
+      Profile* profile = GetModel(source_tabstrip_)->profile();
       switch (dock_info_.type()) {
         case DockInfo::LEFT_OF_WINDOW:
           UserMetrics::RecordAction(UserMetricsAction("DockingWindow_Left"),
-                                    source_tabstrip_->model()->profile());
+                                    profile);
           break;
 
         case DockInfo::RIGHT_OF_WINDOW:
           UserMetrics::RecordAction(UserMetricsAction("DockingWindow_Right"),
-                                    source_tabstrip_->model()->profile());
+                                    profile);
           break;
 
         case DockInfo::BOTTOM_OF_WINDOW:
           UserMetrics::RecordAction(UserMetricsAction("DockingWindow_Bottom"),
-                                    source_tabstrip_->model()->profile());
+                                    profile);
           break;
 
         case DockInfo::TOP_OF_WINDOW:
           UserMetrics::RecordAction(UserMetricsAction("DockingWindow_Top"),
-                                    source_tabstrip_->model()->profile());
+                                    profile);
           break;
 
         case DockInfo::MAXIMIZE:
           UserMetrics::RecordAction(UserMetricsAction("DockingWindow_Maximize"),
-                                    source_tabstrip_->model()->profile());
+                                    profile);
           break;
 
         case DockInfo::LEFT_HALF:
           UserMetrics::RecordAction(UserMetricsAction("DockingWindow_LeftHalf"),
-                                    source_tabstrip_->model()->profile());
+                                    profile);
           break;
 
         case DockInfo::RIGHT_HALF:
           UserMetrics::RecordAction(
               UserMetricsAction("DockingWindow_RightHalf"),
-              source_tabstrip_->model()->profile());
+              profile);
           break;
 
         case DockInfo::BOTTOM_HALF:
           UserMetrics::RecordAction(
               UserMetricsAction("DockingWindow_BottomHalf"),
-              source_tabstrip_->model()->profile());
+              profile);
           break;
 
         default:
@@ -1126,7 +1129,7 @@ void DraggedTabController::CompleteDrag() {
       window_bounds.set_x(window_bounds.x() - window_bounds.width());
     }
     Browser* new_browser =
-        source_tabstrip_->model()->delegate()->CreateNewStripWithContents(
+        GetModel(source_tabstrip_)->delegate()->CreateNewStripWithContents(
             dragged_contents_, window_bounds, dock_info_);
     TabStripModel* new_model = new_browser->tabstrip_model();
     new_model->SetTabPinned(new_model->GetIndexOfTabContents(dragged_contents_),
@@ -1137,13 +1140,12 @@ void DraggedTabController::CompleteDrag() {
   CleanUpHiddenFrame();
 }
 
-void DraggedTabController::EnsureDraggedView() {
+void DraggedTabController::EnsureDraggedView(const TabRendererData& data) {
   if (!view_.get()) {
     gfx::Rect tab_bounds;
     dragged_contents_->GetContainerBounds(&tab_bounds);
-    TabRenderer* renderer = new TabRenderer();
-    renderer->UpdateData(dragged_contents_, false, false);
-    renderer->set_mini(mini_);
+    BaseTabRenderer* renderer = source_tabstrip_->CreateTabForDragging();
+    renderer->SetData(data);
     // DraggedTabView takes ownership of renderer.
     view_.reset(new DraggedTabView(renderer, mouse_offset_,
                                    tab_bounds.size(),
@@ -1172,7 +1174,7 @@ gfx::Rect DraggedTabController::GetViewScreenBounds(views::View* view) const {
 
 int DraggedTabController::NormalizeIndexToAttachedTabStrip(int index) const {
   DCHECK(attached_tabstrip_) << "Can only be called when attached!";
-  TabStripModel* attached_model = attached_tabstrip_->model();
+  TabStripModel* attached_model = GetModel(attached_tabstrip_);
   if (index >= attached_model->count())
     return attached_model->count() - 1;
   if (index == TabStripModel::kNoTab)
@@ -1201,8 +1203,8 @@ void DraggedTabController::HideFrame() {
 void DraggedTabController::CleanUpHiddenFrame() {
   // If the model we started dragging from is now empty, we must ask the
   // delegate to close the frame.
-  if (!source_tabstrip_->model()->HasNonPhantomTabs())
-    source_tabstrip_->model()->delegate()->CloseFrameAfterDragSession();
+  if (!GetModel(source_tabstrip_)->HasNonPhantomTabs())
+    GetModel(source_tabstrip_)->delegate()->CloseFrameAfterDragSession();
 }
 
 void DraggedTabController::DockDisplayerDestroyed(
@@ -1247,4 +1249,9 @@ void DraggedTabController::BringWindowUnderMouseToFront() {
     NOTIMPLEMENTED();
 #endif
   }
+}
+
+TabStripModel* DraggedTabController::GetModel(BaseTabStrip* tabstrip) const {
+  return static_cast<BrowserTabStripController*>(tabstrip->controller())->
+      model();
 }

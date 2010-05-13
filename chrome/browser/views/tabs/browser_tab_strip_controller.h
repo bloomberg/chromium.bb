@@ -7,58 +7,94 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
-#include "chrome/browser/views/tabs/side_tab_strip_model.h"
+#include "chrome/browser/views/tabs/tab_strip_controller.h"
 
-class SideTabStrip;
+class BaseTabRenderer;
+class BaseTabStrip;
 
-// An implementation of SideTabStripModel that sources data from
-// the TabContentses in a TabStripModel.
-class BrowserTabStripController : public SideTabStripModel,
+struct TabRendererData;
+
+// An implementation of TabStripController that sources data from the
+// TabContentses in a TabStripModel.
+class BrowserTabStripController : public TabStripController,
                                   public TabStripModelObserver {
  public:
-  BrowserTabStripController(TabStripModel* model, SideTabStrip* tabstrip);
+  explicit BrowserTabStripController(TabStripModel* model);
   virtual ~BrowserTabStripController();
 
-  void InitFromModel();
+  void InitFromModel(BaseTabStrip* tabstrip);
+
+  TabStripModel* model() const { return model_; }
 
   bool IsCommandEnabledForTab(TabStripModel::ContextMenuCommand command_id,
-                              int tab_index) const;
+                              BaseTabRenderer* tab) const;
   bool IsCommandCheckedForTab(TabStripModel::ContextMenuCommand command_id,
-                              int tab_index) const;
+                              BaseTabRenderer* tab) const;
   void ExecuteCommandForTab(TabStripModel::ContextMenuCommand command_id,
-                            int tab_index);
-  bool IsTabPinned(int tab_index);
+                            BaseTabRenderer* tab);
+  bool IsTabPinned(BaseTabRenderer* tab);
 
-  // SideTabStripModel implementation:
-  virtual SkBitmap GetIcon(int index) const;
-  virtual string16 GetTitle(int index) const;
-  virtual bool IsSelected(int index) const;
-  virtual NetworkState GetNetworkState(int index) const;
-  virtual void SelectTab(int index);
-  virtual void CloseTab(int index);
-  virtual void ShowContextMenu(int index, const gfx::Point& p);
+  // TabStripController implementation:
+  virtual int GetCount() const;
+  virtual bool IsValidIndex(int model_index) const;
+  virtual int GetSelectedIndex() const;
+  virtual bool IsTabSelected(int model_index) const;
+  virtual bool IsTabPinned(int model_index) const;
+  virtual bool IsNewTabPage(int model_index) const;
+  virtual void SelectTab(int model_index);
+  virtual void CloseTab(int model_index);
+  virtual void ShowContextMenu(BaseTabRenderer* tab, const gfx::Point& p);
+  virtual void UpdateLoadingAnimations();
+  virtual int HasAvailableDragActions() const;
+  virtual void PerformDrop(bool drop_before, int index, const GURL& url);
+  virtual bool IsCompatibleWith(BaseTabStrip* other) const;
+  virtual void CreateNewTab();
 
   // TabStripModelObserver implementation:
-  virtual void TabInsertedAt(TabContents* contents, int index,
+  virtual void TabInsertedAt(TabContents* contents,
+                             int model_index,
                              bool foreground);
-  virtual void TabDetachedAt(TabContents* contents, int index);
+  virtual void TabDetachedAt(TabContents* contents, int model_index);
   virtual void TabSelectedAt(TabContents* old_contents,
-                             TabContents* contents, int index,
+                             TabContents* contents,
+                             int model_index,
                              bool user_gesture);
-  virtual void TabMoved(TabContents* contents, int from_index,
-                        int to_index);
-  virtual void TabChangedAt(TabContents* contents, int index,
+  virtual void TabMoved(TabContents* contents,
+                        int from_model_index,
+                        int to_model_index);
+  virtual void TabChangedAt(TabContents* contents,
+                            int model_index,
                             TabChangeType change_type);
   virtual void TabReplacedAt(TabContents* old_contents,
-                             TabContents* new_contents, int index);
-  virtual void TabPinnedStateChanged(TabContents* contents, int index);
-  virtual void TabBlockedStateChanged(TabContents* contents, int index);
+                             TabContents* new_contents,
+                             int model_index);
+  virtual void TabPinnedStateChanged(TabContents* contents, int model_index);
+  virtual void TabMiniStateChanged(TabContents* contents, int model_index);
+  virtual void TabBlockedStateChanged(TabContents* contents, int model_index);
 
  private:
   class TabContextMenuContents;
 
+  // Invokes tabstrip_->SetTabData.
+  void SetTabDataAt(TabContents* contents, int model_index);
+
+  // Sets the TabRendererData from the TabStripModel.
+  void SetTabRendererDataFromModel(TabContents* contents,
+                                   int model_index,
+                                   TabRendererData* data);
+
+  void StartHighlightTabsForCommand(
+      TabStripModel::ContextMenuCommand command_id,
+      BaseTabRenderer* tab);
+  void StopHighlightTabsForCommand(
+      TabStripModel::ContextMenuCommand command_id,
+      BaseTabRenderer* tab);
+
+  Profile* profile() const { return model_->profile(); }
+
   TabStripModel* model_;
-  SideTabStrip* tabstrip_;
+
+  BaseTabStrip* tabstrip_;
 
   // If non-NULL it means we're showing a menu for the tab.
   scoped_ptr<TabContextMenuContents> context_menu_contents_;

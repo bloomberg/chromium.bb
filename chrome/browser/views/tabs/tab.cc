@@ -26,87 +26,11 @@ static const SkScalar kTabCapWidth = 15;
 static const SkScalar kTabTopCurveWidth = 4;
 static const SkScalar kTabBottomCurveWidth = 3;
 
-class Tab::TabContextMenuContents : public menus::SimpleMenuModel::Delegate {
- public:
-  explicit TabContextMenuContents(Tab* tab)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(
-          model_(this, tab->delegate()->IsTabPinned(tab))),
-        tab_(tab),
-        last_command_(TabStripModel::CommandFirst) {
-    Build();
-  }
-  virtual ~TabContextMenuContents() {
-    menu_->CancelMenu();
-    tab_->delegate()->StopAllHighlighting();
-  }
-
-  void RunMenuAt(const gfx::Point& point) {
-    // Save a pointer to delegate before we call RunMenuAt, because it runs a
-    // nested message loop that may not return until after we are deleted.
-    Tab::TabDelegate* delegate = tab_->delegate();
-    menu_->RunMenuAt(point, views::Menu2::ALIGN_TOPLEFT);
-    // We could be gone now. Assume |this| is junk!
-    if (delegate)
-      delegate->StopAllHighlighting();
-  }
-
-  // Overridden from menus::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const {
-    return tab_ && tab_->delegate()->IsCommandCheckedForTab(
-        static_cast<TabStripModel::ContextMenuCommand>(command_id),
-        tab_);
-  }
-  virtual bool IsCommandIdEnabled(int command_id) const {
-    return tab_ && tab_->delegate()->IsCommandEnabledForTab(
-        static_cast<TabStripModel::ContextMenuCommand>(command_id),
-        tab_);
-  }
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      menus::Accelerator* accelerator) {
-    return tab_->GetWidget()->GetAccelerator(command_id, accelerator);
-  }
-  virtual void CommandIdHighlighted(int command_id) {
-    if (!tab_)
-      return;
-
-    tab_->delegate()->StopHighlightTabsForCommand(last_command_, tab_);
-    last_command_ = static_cast<TabStripModel::ContextMenuCommand>(command_id);
-    tab_->delegate()->StartHighlightTabsForCommand(last_command_, tab_);
-  }
-  virtual void ExecuteCommand(int command_id) {
-    if (!tab_)
-      return;
-    tab_->delegate()->ExecuteCommandForTab(
-        static_cast<TabStripModel::ContextMenuCommand>(command_id),
-        tab_);
-  }
-
- private:
-  void Build() {
-    menu_.reset(new views::Menu2(&model_));
-  }
-
-  TabMenuModel model_;
-  scoped_ptr<views::Menu2> menu_;
-
-  // The Tab the context menu was brought up for. Set to NULL when the menu
-  // is canceled.
-  Tab* tab_;
-
-  // The last command that was selected, so that we can start/stop highlighting
-  // appropriately as the user moves through the menu.
-  TabStripModel::ContextMenuCommand last_command_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabContextMenuContents);
-};
-
 ///////////////////////////////////////////////////////////////////////////////
 // Tab, public:
 
-Tab::Tab(TabDelegate* delegate)
-    : TabRenderer(),
-      delegate_(delegate),
+Tab::Tab(TabController* controller)
+    : TabRenderer(controller),
       closing_(false),
       dragging_(false) {
   close_button()->SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_CLOSE_TAB));
@@ -122,7 +46,7 @@ Tab::~Tab() {
 // Tab, TabRenderer overrides:
 
 bool Tab::IsSelected() const {
-  return delegate_->IsTabSelected(this);
+  return controller() ? controller()->IsTabSelected(this) : true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -143,15 +67,15 @@ bool Tab::OnMousePressed(const views::MouseEvent& event) {
     // it was in the background.
     bool just_selected = !IsSelected();
     if (just_selected) {
-      delegate_->SelectTab(this);
+      controller()->SelectTab(this);
     }
-    delegate_->MaybeStartDrag(this, event);
+    controller()->MaybeStartDrag(this, event);
   }
   return true;
 }
 
 bool Tab::OnMouseDragged(const views::MouseEvent& event) {
-  delegate_->ContinueDrag(event);
+  controller()->ContinueDrag(event);
   return true;
 }
 
@@ -161,14 +85,14 @@ void Tab::OnMouseReleased(const views::MouseEvent& event, bool canceled) {
   // In some cases, ending the drag will schedule the tab for destruction; if
   // so, bail immediately, since our members are already dead and we shouldn't
   // do anything else except drop the tab where it is.
-  if (delegate_->EndDrag(canceled))
+  if (controller()->EndDrag(canceled))
     return;
 
   // Close tab on middle click, but only if the button is released over the tab
   // (normal windows behavior is to discard presses of a UI element where the
   // releases happen off the element).
   if (event.IsMiddleMouseButton() && HitTest(event.location()))
-    delegate_->CloseTab(this);
+    controller()->CloseTab(this);
 }
 
 bool Tab::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
@@ -204,8 +128,7 @@ bool Tab::GetAccessibleRole(AccessibilityTypes::Role* role) {
 void Tab::ShowContextMenu(views::View* source,
                           const gfx::Point& p,
                           bool is_mouse_gesture) {
-  context_menu_contents_.reset(new TabContextMenuContents(this));
-  context_menu_contents_->RunMenuAt(p);
+  controller()->ShowContextMenu(this, p);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -213,7 +136,7 @@ void Tab::ShowContextMenu(views::View* source,
 
 void Tab::ButtonPressed(views::Button* sender, const views::Event& event) {
   if (sender == close_button())
-    delegate_->CloseTab(this);
+    controller()->CloseTab(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

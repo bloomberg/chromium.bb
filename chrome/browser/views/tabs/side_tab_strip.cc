@@ -4,6 +4,7 @@
 
 #include "chrome/browser/views/tabs/side_tab_strip.h"
 
+#include "chrome/browser/views/tabs/side_tab.h"
 #include "chrome/browser/view_ids.h"
 
 namespace {
@@ -15,63 +16,12 @@ const int kTabStripInset = 3;
 ////////////////////////////////////////////////////////////////////////////////
 // SideTabStrip, public:
 
-SideTabStrip::SideTabStrip() {
+SideTabStrip::SideTabStrip(TabStripController* controller)
+    : BaseTabStrip(controller) {
   SetID(VIEW_ID_TAB_STRIP);
 }
 
 SideTabStrip::~SideTabStrip() {
-}
-
-void SideTabStrip::SetModel(SideTabStripModel* model) {
-  model_.reset(model);
-}
-
-void SideTabStrip::AddTabAt(int index) {
-  SideTab* tab = new SideTab(this);
-  AddChildView(tab);
-  Layout();
-}
-
-void SideTabStrip::RemoveTabAt(int index) {
-  View* v = GetChildViewAt(index);
-  RemoveChildView(v);
-  delete v;
-  Layout();
-}
-
-void SideTabStrip::SelectTabAt(int index) {
-  GetChildViewAt(index)->SchedulePaint();
-}
-
-void SideTabStrip::UpdateTabAt(int index) {
-  GetChildViewAt(index)->SchedulePaint();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// SideTabStrip, SideTabModel implementation:
-
-string16 SideTabStrip::GetTitle(SideTab* tab) const {
-  return model_->GetTitle(GetIndexOfSideTab(tab));
-}
-
-SkBitmap SideTabStrip::GetIcon(SideTab* tab) const {
-  return model_->GetIcon(GetIndexOfSideTab(tab));
-}
-
-bool SideTabStrip::IsSelected(SideTab* tab) const {
-  return model_->IsSelected(GetIndexOfSideTab(tab));
-}
-
-void SideTabStrip::SelectTab(SideTab* tab) {
-  model_->SelectTab(GetIndexOfSideTab(tab));
-}
-
-void SideTabStrip::CloseTab(SideTab* tab) {
-  model_->CloseTab(GetIndexOfSideTab(tab));
-}
-
-void SideTabStrip::ShowContextMenu(SideTab* tab, const gfx::Point& p) {
-  model_->ShowContextMenu(GetIndexOfSideTab(tab), p);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -96,18 +46,77 @@ bool SideTabStrip::IsDragSessionActive() const {
   return false;
 }
 
-void SideTabStrip::UpdateLoadingAnimations() {
-  int count = GetChildViewCount();
-  for (int i = 0; i < count; ++i)
-    GetSideTabAt(i)->SetNetworkState(model_->GetNetworkState(i));
-}
-
 bool SideTabStrip::IsAnimating() const {
   return false;
 }
 
 TabStrip* SideTabStrip::AsTabStrip() {
   return NULL;
+}
+
+void SideTabStrip::StartHighlight(int model_index) {
+}
+
+void SideTabStrip::StopAllHighlighting() {
+}
+
+BaseTabRenderer* SideTabStrip::GetBaseTabAtModelIndex(int model_index) const {
+  return static_cast<BaseTabRenderer*>(GetChildViewAt(model_index));
+}
+
+BaseTabRenderer* SideTabStrip::GetBaseTabAtTabIndex(int tab_index) const {
+  return static_cast<BaseTabRenderer*>(GetChildViewAt(tab_index));
+}
+
+int SideTabStrip::GetTabCount() const {
+  return GetChildViewCount();
+}
+
+BaseTabRenderer* SideTabStrip::CreateTabForDragging() {
+  return new SideTab(NULL);
+}
+
+int SideTabStrip::GetModelIndexOfBaseTab(const BaseTabRenderer* tab) const {
+  return GetChildIndex(tab);
+}
+
+void SideTabStrip::AddTabAt(int model_index,
+                            bool foreground,
+                            const TabRendererData& data) {
+  SideTab* tab = new SideTab(this);
+  AddChildView(tab);
+  Layout();
+}
+
+void SideTabStrip::RemoveTabAt(int index) {
+  View* v = GetChildViewAt(index);
+  RemoveChildView(v);
+  delete v;
+  Layout();
+}
+
+void SideTabStrip::SelectTabAt(int old_model_index, int new_model_index) {
+  GetChildViewAt(new_model_index)->SchedulePaint();
+}
+
+void SideTabStrip::MoveTab(int from_model_index, int to_model_index) {
+}
+
+void SideTabStrip::TabTitleChangedNotLoading(int model_index) {
+}
+
+void SideTabStrip::SetTabData(int model_index, const TabRendererData& data) {
+}
+
+void SideTabStrip::MaybeStartDrag(BaseTabRenderer* tab,
+                                  const views::MouseEvent& event) {
+}
+
+void SideTabStrip::ContinueDrag(const views::MouseEvent& event) {
+}
+
+bool SideTabStrip::EndDrag(bool canceled) {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -127,15 +136,4 @@ void SideTabStrip::Layout() {
 
 gfx::Size SideTabStrip::GetPreferredSize() {
   return gfx::Size(kTabStripWidth, 0);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// SideTabStrip, private:
-
-int SideTabStrip::GetIndexOfSideTab(SideTab* tab) const {
-  return GetChildIndex(tab);
-}
-
-SideTab* SideTabStrip::GetSideTabAt(int index) const {
-  return static_cast<SideTab*>(GetChildViewAt(index));
 }

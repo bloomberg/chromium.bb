@@ -41,10 +41,9 @@ SkBitmap* SideTab::close_button_p_ = NULL;
 ////////////////////////////////////////////////////////////////////////////////
 // SideTab, public:
 
-SideTab::SideTab(SideTabModel* model)
-    : model_(model),
+SideTab::SideTab(TabController* controller)
+    : BaseTabRenderer(controller),
       close_button_(NULL),
-      current_state_(SideTabStripModel::NetworkState_None),
       loading_animation_frame_(0) {
   InitClass();
 
@@ -62,31 +61,6 @@ SideTab::SideTab(SideTabModel* model)
 }
 
 SideTab::~SideTab() {
-}
-
-void SideTab::SetNetworkState(SideTabStripModel::NetworkState state) {
-  if (current_state_ != state) {
-    // The waiting animation is the reverse of the loading animation, but at a
-    // different rate - the following reverses and scales the animation_frame_
-    // so that the frame is at an equivalent position when going from one
-    // animation to the other.
-    if (current_state_ == SideTabStripModel::NetworkState_Waiting &&
-        current_state_ == SideTabStripModel::NetworkState_Loading) {
-      loading_animation_frame_ = loading_animation_frame_count -
-          (loading_animation_frame_ / waiting_to_loading_frame_count_ratio);
-    }
-    current_state_ = state;
-  }
-
-  if (current_state_ != SideTabStripModel::NetworkState_None) {
-    loading_animation_frame_ = ++loading_animation_frame_ %
-        ((current_state_ == SideTabStripModel::NetworkState_Waiting) ?
-            waiting_animation_frame_count :
-            loading_animation_frame_count);
-  } else {
-    loading_animation_frame_ = 0;
-  }
-  SchedulePaint();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -109,7 +83,7 @@ void SideTab::AnimationEnded(const Animation* animation) {
 
 void SideTab::ButtonPressed(views::Button* sender, const views::Event& event) {
   DCHECK(sender == close_button_);
-  model_->CloseTab(this);
+  controller()->CloseTab(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -118,7 +92,7 @@ void SideTab::ButtonPressed(views::Button* sender, const views::Event& event) {
 void SideTab::ShowContextMenu(views::View* source,
                               const gfx::Point& p,
                               bool is_mouse_gesture) {
-  model_->ShowContextMenu(this, p);
+  controller()->ShowContextMenu(this, p);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -155,11 +129,11 @@ void SideTab::Paint(gfx::Canvas* canvas) {
   canvas->drawPath(tab_shape, paint);
 
   PaintIcon(canvas);
-  canvas->DrawStringInt(UTF16ToWideHack(model_->GetTitle(this)), *font_,
+  canvas->DrawStringInt(UTF16ToWideHack(data().title), *font_,
                         SK_ColorBLACK, title_bounds_.x(), title_bounds_.y(),
                         title_bounds_.width(), title_bounds_.height());
 
-  if (!model_->IsSelected(this) &&
+  if (!controller()->IsTabSelected(this) &&
       GetThemeProvider()->ShouldUseNativeFrame()) {
     // Make sure un-selected tabs are somewhat transparent.
     SkPaint paint;
@@ -192,8 +166,31 @@ void SideTab::OnMouseExited(const views::MouseEvent& event) {
 
 bool SideTab::OnMousePressed(const views::MouseEvent& event) {
   if (event.IsOnlyLeftMouseButton())
-    model_->SelectTab(this);
+    controller()->SelectTab(this);
   return true;
+}
+
+// TODO(sky): refactor to BaseTabRenderer.
+void SideTab::AdvanceLoadingAnimation(TabRendererData::NetworkState state) {
+  // The waiting animation is the reverse of the loading animation, but at a
+  // different rate - the following reverses and scales the animation_frame_
+  // so that the frame is at an equivalent position when going from one
+  // animation to the other.
+  if (state == TabRendererData::NETWORK_STATE_WAITING &&
+      state == TabRendererData::NETWORK_STATE_LOADING) {
+    loading_animation_frame_ = loading_animation_frame_count -
+        (loading_animation_frame_ / waiting_to_loading_frame_count_ratio);
+  }
+
+  if (state != TabRendererData::NETWORK_STATE_NONE) {
+    loading_animation_frame_ = ++loading_animation_frame_ %
+        ((state == TabRendererData::NETWORK_STATE_WAITING) ?
+            waiting_animation_frame_count :
+            loading_animation_frame_count);
+  } else {
+    loading_animation_frame_ = 0;
+  }
+  SchedulePaint();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -219,8 +216,8 @@ void SideTab::FillTabShapePath(gfx::Path* path) {
 }
 
 void SideTab::PaintIcon(gfx::Canvas* canvas) {
-  if (current_state_ == SideTabStripModel::NetworkState_None) {
-    canvas->DrawBitmapInt(model_->GetIcon(this), 0, 0, kIconSize, kIconSize,
+  if (data().network_state == TabRendererData::NETWORK_STATE_NONE) {
+    canvas->DrawBitmapInt(data().favicon, 0, 0, kIconSize, kIconSize,
                           icon_bounds_.x(), icon_bounds_.y(),
                           icon_bounds_.width(), icon_bounds_.height(), false);
   } else {
@@ -230,7 +227,7 @@ void SideTab::PaintIcon(gfx::Canvas* canvas) {
 
 void SideTab::PaintLoadingAnimation(gfx::Canvas* canvas) {
   SkBitmap* frames =
-      (current_state_ == SideTabStripModel::NetworkState_Waiting) ?
+      (data().network_state == TabRendererData::NETWORK_STATE_WAITING) ?
           waiting_animation_frames : loading_animation_frames;
   int image_size = frames->height();
   int image_offset = loading_animation_frame_ * image_size;

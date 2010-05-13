@@ -6,17 +6,14 @@
 #define CHROME_BROWSER_VIEWS_TABS_TAB_RENDERER_H_
 
 #include "app/animation.h"
-#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "base/string16.h"
+#include "chrome/browser/views/tabs/base_tab_renderer.h"
 #include "gfx/point.h"
 #include "views/controls/button/image_button.h"
-#include "views/view.h"
 
 class AnimationContainer;
 class MultiAnimation;
 class SlideAnimation;
-class TabContents;
 class ThrobAnimation;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -26,18 +23,11 @@ class ThrobAnimation;
 //  A View that renders a Tab, either in a TabStrip or in a DraggedTabView.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class TabRenderer : public views::View,
+class TabRenderer : public BaseTabRenderer,
                     public views::ButtonListener,
                     public AnimationDelegate {
  public:
-  // Possible animation states.
-  enum AnimationState {
-    ANIMATION_NONE,
-    ANIMATION_WAITING,
-    ANIMATION_LOADING
-  };
-
-  TabRenderer();
+  explicit TabRenderer(TabController* controller);
   virtual ~TabRenderer();
 
   // Sizes the renderer to the size of the new tab images. This is used
@@ -49,52 +39,20 @@ class TabRenderer : public views::View,
   void ViewHierarchyChanged(bool is_add, View* parent, View* child);
   ThemeProvider* GetThemeProvider();
 
-  // Updates the data the Tab uses to render itself from the specified
-  // TabContents.
-  //
-  // See TabStripModel::TabChangedAt documentation for what loading_only means.
-  void UpdateData(TabContents* contents, bool phantom, bool loading_only);
-
-  // Sets the blocked state of the tab.
-  void SetBlocked(bool blocked);
-  bool blocked() const { return data_.blocked; }
-
-  // Sets the mini-state of the tab.
-  void set_mini(bool mini) { data_.mini = mini; }
-  bool mini() const { return data_.mini; }
-
-  // Sets the mini-state of the tab.
-  void set_app(bool app) { data_.app = app; }
-  bool app() const { return data_.app; }
-
-  // Sets the phantom state of the tab.
-  void set_phantom(bool phantom) { data_.phantom = phantom; }
-  bool phantom() const { return data_.phantom; }
-
   // Used during new tab animation to force the tab to render a new tab like
   // animation.
-  void set_render_as_new_tab(bool value) { data_.render_as_new_tab = value; }
+  void set_render_as_new_tab(bool value) { render_as_new_tab_ = value; }
 
   // Sets the alpha value to render the tab at. This is used during the new
   // tab animation.
-  void set_alpha(double value) { data_.alpha = value; }
+  void set_alpha(double value) { alpha_ = value; }
 
   // Forces the tab to render unselected even though it is selected.
-  void set_render_unselected(bool value) { data_.render_unselected = value; }
-  bool render_unselected() const { return data_.render_unselected; }
-
-  // Are we in the process of animating a mini tab state change on this tab?
-  void set_animating_mini_change(bool value);
-
-  // Updates the display to reflect the contents of this TabRenderer's model.
-  void UpdateFromModel();
+  void set_render_unselected(bool value) { render_unselected_ = value; }
+  bool render_unselected() const { return render_unselected_; }
 
   // Returns true if the Tab is selected, false otherwise.
   virtual bool IsSelected() const;
-
-  // Advance the Loading Animation to the next frame, or hide the animation if
-  // the tab isn't loading.
-  void ValidateLoadingAnimation(AnimationState animation_state);
 
   // Starts/Stops a pulse animation.
   void StartPulse();
@@ -155,6 +113,10 @@ class TabRenderer : public views::View,
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) {}
 
+  // BaseTabRenderer overrides:
+  virtual void DataChanged(const TabRendererData& old);
+  virtual void AdvanceLoadingAnimation(TabRendererData::NetworkState state);
+
  private:
   // Overridden from views::View:
   virtual void Paint(gfx::Canvas* canvas);
@@ -210,9 +172,6 @@ class TabRenderer : public views::View,
   // The offset used to paint the inactive background image.
   gfx::Point background_offset_;
 
-  // Current state of the animation.
-  AnimationState animation_state_;
-
   // The current index into the Animation image strip.
   int animation_frame_;
 
@@ -232,42 +191,6 @@ class TabRenderer : public views::View,
 
   // Animation used when the title of an inactive mini tab changes.
   scoped_ptr<MultiAnimation> mini_title_animation_;
-
-  // Model data. We store this here so that we don't need to ask the underlying
-  // model, which is tricky since instances of this object can outlive the
-  // corresponding objects in the underlying model.
-  struct TabData {
-    TabData()
-        : loading(false),
-          crashed(false),
-          off_the_record(false),
-          show_icon(true),
-          mini(false),
-          blocked(false),
-          animating_mini_change(false),
-          phantom(false),
-          app(false),
-          render_as_new_tab(false),
-          render_unselected(false),
-          alpha(1) {
-    }
-
-    SkBitmap favicon;
-    string16 title;
-    bool loading;
-    bool crashed;
-    bool off_the_record;
-    bool show_icon;
-    bool mini;
-    bool blocked;
-    bool animating_mini_change;
-    bool phantom;
-    bool app;
-    bool render_as_new_tab;
-    bool render_unselected;
-    double alpha;
-  };
-  TabData data_;
 
   struct TabImage {
     SkBitmap* image_l;
@@ -298,6 +221,15 @@ class TabRenderer : public views::View,
   // The current color of the close button.
   SkColor close_button_color_;
 
+  // See description above setter.
+  bool render_as_new_tab_;
+
+  // See description above setter.
+  bool render_unselected_;
+
+  // See description above setter.
+  double alpha_;
+
   // The animation object used to swap the favicon with the sad tab icon.
   class FavIconCrashAnimation;
   FavIconCrashAnimation* crash_animation_;
@@ -308,7 +240,6 @@ class TabRenderer : public views::View,
 
   scoped_refptr<AnimationContainer> container_;
 
-  static void InitClass();
   static bool initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(TabRenderer);

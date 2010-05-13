@@ -103,7 +103,7 @@ class TabStripModelObserver {
   virtual void TabReplacedAt(TabContents* old_contents,
                              TabContents* new_contents, int index) {}
 
-  // Invoked when the mini state of a tab changes. This is not invoked if the
+  // Invoked when the pinned state of a tab changes. This is not invoked if the
   // tab ends up moving as a result of the mini state changing.
   // See note in TabMiniStateChanged as to how this relates to
   // TabMiniStateChanged.

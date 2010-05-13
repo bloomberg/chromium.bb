@@ -11,7 +11,6 @@
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/timer.h"
-#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/views/tabs/base_tab_strip.h"
 #include "chrome/browser/views/tabs/tab.h"
 #include "gfx/point.h"
@@ -20,8 +19,6 @@
 #include "views/controls/button/image_button.h"
 
 class DraggedTabController;
-class ScopedMouseCloseWidthCalculator;
-class TabStripModel;
 
 namespace views {
 class ImageView;
@@ -46,22 +43,12 @@ class WidgetWin;
 //
 ///////////////////////////////////////////////////////////////////////////////
 class TabStrip : public BaseTabStrip,
-                 public TabStripModelObserver,
-                 public Tab::TabDelegate,
                  public views::ButtonListener,
                  public MessageLoopForUI::Observer,
                  public views::BoundsAnimatorObserver {
  public:
-  explicit TabStrip(TabStripModel* model);
+  explicit TabStrip(TabStripController* controller);
   virtual ~TabStrip();
-
-  // Returns true if the TabStrip can accept input events. This returns false
-  // when the TabStrip is animating to a new state and as such the user should
-  // not be allowed to interact with the TabStrip.
-  bool CanProcessInputEvents() const;
-
-  // Accessors for the model and individual Tabs.
-  TabStripModel* model() const { return model_; }
 
   // Set whether the new tab button is enabled.
   void set_new_tab_button_enabled(bool enabled) {
@@ -79,23 +66,11 @@ class TabStrip : public BaseTabStrip,
   // Retrieves the ideal bounds for the Tab at the specified index.
   gfx::Rect GetIdealBounds(int tab_data_index);
 
-  // Returns the currently selected tab.
-  Tab* GetSelectedTab() const;
-
   // Creates the new tab button.
   void InitTabStripButtons();
 
-  // Return true if this tab strip is compatible with the provided tab strip.
-  // Compatible tab strips can transfer tabs during drag and drop.
-  bool IsCompatibleWith(TabStrip* other) const;
-
   // Returns the bounds of the new tab button.
   gfx::Rect GetNewTabButtonBounds();
-
-  // Populates the BaseTabStrip implementation from its model. This is primarily
-  // useful when switching between display types and there are existing tabs.
-  // Upon initial creation the TabStrip is empty.
-  void InitFromModel();
 
   // BaseTabStrip implementation:
   virtual int GetPreferredHeight();
@@ -104,9 +79,22 @@ class TabStrip : public BaseTabStrip,
   virtual void SetDraggedTabBounds(int tab_index,
                                    const gfx::Rect& tab_bounds);
   virtual bool IsDragSessionActive() const;
-  virtual void UpdateLoadingAnimations();
   virtual bool IsAnimating() const;
   virtual TabStrip* AsTabStrip();
+  virtual void AddTabAt(int model_index,
+                        bool foreground,
+                        const TabRendererData& data);
+  virtual void RemoveTabAt(int model_index);
+  virtual void SelectTabAt(int old_model_index, int new_model_index);
+  virtual void MoveTab(int from_model_index, int to_model_index);
+  virtual void TabTitleChangedNotLoading(int model_index);
+  virtual void SetTabData(int model_index, const TabRendererData& data);
+  virtual void StartHighlight(int model_index);
+  virtual void StopAllHighlighting();
+  virtual BaseTabRenderer* GetBaseTabAtModelIndex(int model_index) const;
+  virtual BaseTabRenderer* GetBaseTabAtTabIndex(int tab_index) const;
+  virtual int GetModelIndexOfBaseTab(const BaseTabRenderer* tab) const;
+  virtual BaseTabRenderer* CreateTabForDragging();
 
   // views::View overrides:
   virtual void PaintChildren(gfx::Canvas* canvas);
@@ -138,44 +126,11 @@ class TabStrip : public BaseTabStrip,
   virtual void OnMouseReleased(const views::MouseEvent& event,
                                bool canceled);
 
-  // TabStripModelObserver implementation:
-  virtual void TabInsertedAt(TabContents* contents,
-                             int model_index,
-                             bool foreground);
-  virtual void TabDetachedAt(TabContents* contents, int model_index);
-  virtual void TabSelectedAt(TabContents* old_contents,
-                             TabContents* contents,
-                             int model_index,
-                             bool user_gesture);
-  virtual void TabMoved(TabContents* contents,
-                        int from_model_index,
-                        int to_model_index);
-  virtual void TabChangedAt(TabContents* contents,
-                            int model_index,
-                            TabChangeType change_type);
-  virtual void TabReplacedAt(TabContents* old_contents,
-                             TabContents* new_contents,
-                             int model_index);
-  virtual void TabMiniStateChanged(TabContents* contents, int model_index);
-  virtual void TabBlockedStateChanged(TabContents* contents, int model_index);
-
-  // Tab::Delegate implementation:
-  virtual bool IsTabSelected(const Tab* tab) const;
-  virtual bool IsTabPinned(const Tab* tab) const;
-  virtual void SelectTab(Tab* tab);
-  virtual void CloseTab(Tab* tab);
-  virtual bool IsCommandEnabledForTab(
-      TabStripModel::ContextMenuCommand command_id, const Tab* tab) const;
-  virtual bool IsCommandCheckedForTab(
-      TabStripModel::ContextMenuCommand command_id, const Tab* tab) const;
-  virtual void ExecuteCommandForTab(
-      TabStripModel::ContextMenuCommand command_id, Tab* tab);
-  virtual void StartHighlightTabsForCommand(
-      TabStripModel::ContextMenuCommand command_id, Tab* tab);
-  virtual void StopHighlightTabsForCommand(
-      TabStripModel::ContextMenuCommand command_id, Tab* tab);
-  virtual void StopAllHighlighting();
-  virtual void MaybeStartDrag(Tab* tab, const views::MouseEvent& event);
+  // TabController overrides.
+  virtual bool IsTabSelected(const BaseTabRenderer* btr) const;
+  virtual bool IsTabPinned(const BaseTabRenderer* btr) const;
+  virtual void MaybeStartDrag(BaseTabRenderer* btr,
+                              const views::MouseEvent& event);
   virtual void ContinueDrag(const views::MouseEvent& event);
   virtual bool EndDrag(bool canceled);
   virtual bool HasAvailableDragActions() const;
@@ -265,7 +220,6 @@ class TabStrip : public BaseTabStrip,
     gfx::Rect ideal_bounds;
   };
 
-  TabStrip();
   void Init();
 
   // Set the images for the new tab button.
@@ -288,7 +242,7 @@ class TabStrip : public BaseTabStrip,
   // WARNING: this is the number of tabs displayed by the tabstrip, which if
   // an animation is ongoing is not necessarily the same as the number of tabs
   // in the model.
-  int GetTabCount() const;
+  virtual int GetTabCount() const;
 
   // Returns the number of mini-tabs.
   int GetMiniTabCount() const;
@@ -427,9 +381,6 @@ class TabStrip : public BaseTabStrip,
   void StoppedDraggingTab(Tab* tab);
 
   // -- Member Variables ------------------------------------------------------
-
-  // Our model.
-  TabStripModel* model_;
 
   // A factory that is used to construct a delayed callback to the
   // ResizeLayoutTabsNow method.

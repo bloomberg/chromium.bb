@@ -860,7 +860,7 @@ bool View::IsParentOf(View* v) const {
   return false;
 }
 
-int View::GetChildIndex(View* v) const {
+int View::GetChildIndex(const View* v) const {
   for (int i = 0, count = GetChildViewCount(); i < count; i++) {
     if (v == GetChildViewAt(i))
       return i;
