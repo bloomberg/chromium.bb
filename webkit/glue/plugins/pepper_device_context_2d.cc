@@ -75,10 +75,10 @@ const PPB_DeviceContext2D* DeviceContext2D::GetInterface() {
 }
 
 bool DeviceContext2D::Init(int width, int height) {
-  image_data_.reset(new ImageData(module()));
+  image_data_ = new ImageData(module());
   if (!image_data_->Init(PP_IMAGEDATAFORMAT_BGRA_PREMUL, width, height) ||
       !image_data_->Map()) {
-    image_data_.reset();
+    image_data_ = NULL;
     return false;
   }
 

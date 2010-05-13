@@ -59,8 +59,10 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
 void WebPluginImpl::destroy() {
   container_ = NULL;
 
-  instance_->Delete();
-  instance_ = NULL;
+  if (instance_) {
+    instance_->Delete();
+    instance_ = NULL;
+  }
 
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }

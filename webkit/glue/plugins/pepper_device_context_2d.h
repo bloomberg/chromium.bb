@@ -6,7 +6,6 @@
 #define WEBKIT_GLUE_PLUGINS_PEPPER_DEVICE_CONTEXT_2D_H_
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
 #include "third_party/ppapi/c/ppb_device_context_2d.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCanvas.h"
 #include "webkit/glue/plugins/pepper_resource.h"
@@ -48,7 +47,7 @@ class DeviceContext2D : public Resource {
              const gfx::Rect& paint_rect);
 
  private:
-  scoped_ptr<ImageData> image_data_;
+  scoped_refptr<ImageData> image_data_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceContext2D);
 };
