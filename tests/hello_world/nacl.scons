@@ -80,7 +80,6 @@ env.AddNodeToTestSuite(node,
 
 
 env.ComponentProgram('float.nexe', 'float.c')
-
 node = env.CommandSelLdrTestNacl(
     'float_test.out',
     command=[env.File('float.nexe'),
@@ -88,6 +87,19 @@ node = env.CommandSelLdrTestNacl(
     stdout_golden=env.File('float.stdout'),
     )
 env.AddNodeToTestSuite(node, ['small_tests', 'sel_ldr_tests'], 'run_float_test')
+
+
+# TODO(robertm): use a golden file
+env.ComponentProgram('dump_env.nexe', 'dump_env.c')
+node = env.CommandSelLdrTestNacl(
+    'dump_env.out',
+    command=[env.File('dump_env.nexe'),
+             'arg1', 'arg2', 'arg3', 'arg4', 'arg5', 'argv6', 'argv7'],
+    )
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_dump_env_test')
+
 
 #NOTE: this test currently fails for all platforms
 env.ComponentProgram('abi.nexe', 'abi.c')
