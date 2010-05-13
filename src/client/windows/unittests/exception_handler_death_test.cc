@@ -53,7 +53,8 @@ class ExceptionHandlerDeathTest : public ::testing::Test {
   // Actually constructs a temp path name.
   virtual void SetUp();
   // A helper method that tests can use to crash.
-  void DoCrash();
+  void DoCrashAccessViolation();
+  void DoCrashPureVirtualCall();
 };
 
 void ExceptionHandlerDeathTest::SetUp() {
@@ -126,7 +127,7 @@ void clientDumpCallback(void *dump_context,
   gDumpCallbackCalled = true;
 }
 
-void ExceptionHandlerDeathTest::DoCrash() {
+void ExceptionHandlerDeathTest::DoCrashAccessViolation() {
   google_breakpad::ExceptionHandler *exc =
     new google_breakpad::ExceptionHandler(
     temp_path_, NULL, NULL, NULL,
@@ -160,7 +161,7 @@ TEST_F(ExceptionHandlerDeathTest, OutOfProcTest) {
   // being the same.
   EXPECT_TRUE(server.Start());
   EXPECT_FALSE(gDumpCallbackCalled);
-  ASSERT_DEATH(this->DoCrash(), "");
+  ASSERT_DEATH(this->DoCrashAccessViolation(), "");
   EXPECT_TRUE(gDumpCallbackCalled);
 }
 
@@ -177,5 +178,38 @@ TEST_F(ExceptionHandlerDeathTest, InvalidParameterTest) {
   // Call with a bad argument. The invalid parameter will be swallowed
   // and a dump will be generated, the process will exit(0).
   ASSERT_EXIT(printf(NULL), ::testing::ExitedWithCode(0), "");
+}
+
+
+struct PureVirtualCallBase {
+  PureVirtualCallBase() {
+    // We have to reinterpret so the linker doesn't get confused because the
+    // method isn't defined.
+    reinterpret_cast<PureVirtualCallBase*>(this)->PureFunction();
+  }
+  virtual ~PureVirtualCallBase() {}
+  virtual void PureFunction() const = 0;
+};
+struct PureVirtualCall : public PureVirtualCallBase {
+  PureVirtualCall() { PureFunction(); }
+  virtual void PureFunction() const {}
+};
+
+void ExceptionHandlerDeathTest::DoCrashPureVirtualCall() {
+  PureVirtualCall instance;
+}
+
+TEST_F(ExceptionHandlerDeathTest, PureVirtualCallTest) {
+  using google_breakpad::ExceptionHandler;
+
+  ASSERT_TRUE(DoesPathExist(temp_path_));
+  ExceptionHandler handler(temp_path_, NULL, NULL, NULL,
+                           ExceptionHandler::HANDLER_PURECALL);
+
+  // Disable the message box for assertions
+  _CrtSetReportMode(_CRT_ASSERT, 0);
+
+  // Calls a pure virtual function.
+  EXPECT_EXIT(DoCrashPureVirtualCall(), ::testing::ExitedWithCode(0), "");
 }
 }

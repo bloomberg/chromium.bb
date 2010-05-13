@@ -60,7 +60,8 @@ class ExceptionHandlerTest : public ::testing::Test {
   // Deletes temporary files.
   virtual void TearDown();
 
-  void DoCrash();
+  void DoCrashInvalidParameter();
+  void DoCrashPureVirtualCall();
 
   // Utility function to test for a path's existence.
   static BOOL DoesPathExist(const TCHAR *path_name);
@@ -127,7 +128,7 @@ void ExceptionHandlerTest::ClientDumpCallback(
   full_dump_file = dump_file.substr(0, dump_file.length() - 4) + L"-full.dmp";
 }
 
-void ExceptionHandlerTest::DoCrash() {
+void ExceptionHandlerTest::DoCrashInvalidParameter() {
   google_breakpad::ExceptionHandler *exc =
       new google_breakpad::ExceptionHandler(
           temp_path_, NULL, NULL, NULL,
@@ -142,6 +143,43 @@ void ExceptionHandlerTest::DoCrash() {
   // being expected.
   ASSERT_TRUE(exc->IsOutOfProcess());
   printf(NULL);
+}
+
+
+struct PureVirtualCallBase {
+  PureVirtualCallBase() {
+    // We have to reinterpret so the linker doesn't get confused because the
+    // method isn't defined.
+    reinterpret_cast<PureVirtualCallBase*>(this)->PureFunction();
+  }
+  virtual ~PureVirtualCallBase() {}
+  virtual void PureFunction() const = 0;
+};
+struct PureVirtualCall : public PureVirtualCallBase {
+  PureVirtualCall() { PureFunction(); }
+  virtual void PureFunction() const {}
+};
+
+void ExceptionHandlerTest::DoCrashPureVirtualCall() {
+  google_breakpad::ExceptionHandler *exc =
+      new google_breakpad::ExceptionHandler(
+          temp_path_, NULL, NULL, NULL,
+          google_breakpad::ExceptionHandler::HANDLER_PURECALL,
+          kFullDumpType, kPipeName, NULL);
+
+  // Disable the message box for assertions
+  _CrtSetReportMode(_CRT_ASSERT, 0);
+
+  // Although this is executing in the child process of the death test,
+  // if it's not true we'll still get an error rather than the crash
+  // being expected.
+  ASSERT_TRUE(exc->IsOutOfProcess());
+
+  // Create a new frame to ensure PureVirtualCall is not optimized to some
+  // other line in this function.
+  {
+    PureVirtualCall instance;
+  }
 }
 
 // This test validates that the minidump is written correctly.
@@ -161,7 +199,78 @@ TEST_F(ExceptionHandlerTest, InvalidParameterMiniDumpTest) {
   // child process, the server registration will fail due to the named pipe
   // being the same.
   EXPECT_TRUE(server.Start());
-  EXPECT_EXIT(this->DoCrash(), ::testing::ExitedWithCode(0), "");
+  EXPECT_EXIT(DoCrashInvalidParameter(), ::testing::ExitedWithCode(0), "");
+  ASSERT_TRUE(!dump_file.empty() && !full_dump_file.empty());
+  ASSERT_TRUE(DoesPathExist(dump_file.c_str()));
+
+  // Verify the dump for infos.
+  DumpAnalysis mini(dump_file);
+  DumpAnalysis full(full_dump_file);
+
+  // The dump should have all of these streams.
+  EXPECT_TRUE(mini.HasStream(ThreadListStream));
+  EXPECT_TRUE(full.HasStream(ThreadListStream));
+  EXPECT_TRUE(mini.HasStream(ModuleListStream));
+  EXPECT_TRUE(full.HasStream(ModuleListStream));
+  EXPECT_TRUE(mini.HasStream(ExceptionStream));
+  EXPECT_TRUE(full.HasStream(ExceptionStream));
+  EXPECT_TRUE(mini.HasStream(SystemInfoStream));
+  EXPECT_TRUE(full.HasStream(SystemInfoStream));
+  EXPECT_TRUE(mini.HasStream(MiscInfoStream));
+  EXPECT_TRUE(full.HasStream(MiscInfoStream));
+  EXPECT_TRUE(mini.HasStream(HandleDataStream));
+  EXPECT_TRUE(full.HasStream(HandleDataStream));
+
+  // We expect PEB and TEBs in this dump.
+  EXPECT_TRUE(mini.HasTebs() || full.HasTebs());
+  EXPECT_TRUE(mini.HasPeb() || full.HasPeb());
+
+  // Minidump should have a memory listing, but no 64-bit memory.
+  EXPECT_TRUE(mini.HasStream(MemoryListStream));
+  EXPECT_FALSE(mini.HasStream(Memory64ListStream));
+
+  EXPECT_FALSE(full.HasStream(MemoryListStream));
+  EXPECT_TRUE(full.HasStream(Memory64ListStream));
+
+  // This is the only place we don't use OR because we want both not
+  // to have the streams.
+  EXPECT_FALSE(mini.HasStream(ThreadExListStream));
+  EXPECT_FALSE(full.HasStream(ThreadExListStream));
+  EXPECT_FALSE(mini.HasStream(CommentStreamA));
+  EXPECT_FALSE(full.HasStream(CommentStreamA));
+  EXPECT_FALSE(mini.HasStream(CommentStreamW));
+  EXPECT_FALSE(full.HasStream(CommentStreamW));
+  EXPECT_FALSE(mini.HasStream(FunctionTableStream));
+  EXPECT_FALSE(full.HasStream(FunctionTableStream));
+  EXPECT_FALSE(mini.HasStream(MemoryInfoListStream));
+  EXPECT_FALSE(full.HasStream(MemoryInfoListStream));
+  EXPECT_FALSE(mini.HasStream(ThreadInfoListStream));
+  EXPECT_FALSE(full.HasStream(ThreadInfoListStream));
+  EXPECT_FALSE(mini.HasStream(HandleOperationListStream));
+  EXPECT_FALSE(full.HasStream(HandleOperationListStream));
+  EXPECT_FALSE(mini.HasStream(TokenStream));
+  EXPECT_FALSE(full.HasStream(TokenStream));
+}
+
+
+// This test validates that the minidump is written correctly.
+TEST_F(ExceptionHandlerTest, PureVirtualCallMiniDumpTest) {
+  ASSERT_TRUE(DoesPathExist(temp_path_));
+
+  // Call with a bad argument
+  ASSERT_TRUE(DoesPathExist(temp_path_));
+  std::wstring dump_path(temp_path_);
+  google_breakpad::CrashGenerationServer server(
+      kPipeName, NULL, NULL, NULL, ClientDumpCallback, NULL, NULL, NULL, true,
+      &dump_path);
+
+  ASSERT_TRUE(dump_file.empty() && full_dump_file.empty());
+
+  // This HAS to be EXPECT_, because when this test case is executed in the
+  // child process, the server registration will fail due to the named pipe
+  // being the same.
+  EXPECT_TRUE(server.Start());
+  EXPECT_EXIT(DoCrashPureVirtualCall(), ::testing::ExitedWithCode(0), "");
   ASSERT_TRUE(!dump_file.empty() && !full_dump_file.empty());
   ASSERT_TRUE(DoesPathExist(dump_file.c_str()));
 
