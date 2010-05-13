@@ -13,6 +13,8 @@ import sys
 import action_tree
 import cmd_env
 
+import dirtree
+
 
 script_dir = os.path.abspath(os.path.dirname(__file__))
 # This allows "src" to be a symlink pointing to NaCl's "trunk/src".
@@ -38,11 +40,6 @@ def FindFile(name):
   raise Exception("Couldn't find %r in %r" % (name, search_path))
 
 
-def GetOne(lst):
-  assert len(lst) == 1, lst
-  return lst[0]
-
-
 def WriteFile(filename, data):
   fh = open(filename, "w")
   try:
@@ -53,68 +50,6 @@ def WriteFile(filename, data):
 
 def MkdirP(dir_path):
   subprocess.check_call(["mkdir", "-p", dir_path])
-
-
-class DirTree(object):
-
-  # WriteTree(dest_dir) makes a fresh copy of the tree in dest_dir.
-  # It can assume that dest_dir is initially empty.
-  # The state of dest_dir is undefined if WriteTree() fails.
-  def WriteTree(self, env, dest_dir):
-    raise NotImplementedError()
-
-
-class EmptyTree(DirTree):
-
-  def WriteTree(self, env, dest_dir):
-    pass
-
-
-class TarballTree(DirTree):
-
-  def __init__(self, tar_path):
-    self._tar_path = tar_path
-
-  def WriteTree(self, env, dest_dir):
-    # Tarballs normally contain a single top-level directory with
-    # a name like foo-module-1.2.3.  We strip this off.
-    assert os.listdir(dest_dir) == []
-    env.cmd(["tar", "-C", dest_dir, "-xf", self._tar_path])
-    tar_name = GetOne(os.listdir(dest_dir))
-    for leafname in os.listdir(os.path.join(dest_dir, tar_name)):
-      os.rename(os.path.join(dest_dir, tar_name, leafname),
-                os.path.join(dest_dir, leafname))
-    os.rmdir(os.path.join(dest_dir, tar_name))
-
-
-# This handles gcc, where two source tarballs must be unpacked on top
-# of each other.
-class MultiTarballTree(DirTree):
-
-  def __init__(self, tar_paths):
-    self._tar_paths = tar_paths
-
-  def WriteTree(self, env, dest_dir):
-    assert os.listdir(dest_dir) == []
-    for tar_file in self._tar_paths:
-      env.cmd(["tar", "-C", dest_dir, "-xf", tar_file])
-    tar_name = GetOne(os.listdir(dest_dir))
-    for leafname in os.listdir(os.path.join(dest_dir, tar_name)):
-      os.rename(os.path.join(dest_dir, tar_name, leafname),
-                os.path.join(dest_dir, leafname))
-    os.rmdir(os.path.join(dest_dir, tar_name))
-
-
-class PatchedTree(DirTree):
-
-  def __init__(self, orig_tree, patch_files):
-    self._orig_tree = orig_tree
-    self._patch_files = patch_files
-
-  def WriteTree(self, env, dest_dir):
-    self._orig_tree.WriteTree(env, dest_dir)
-    for patch_file in self._patch_files:
-      env.cmd(["patch", "-d", dest_dir, "-p1", "-i", patch_file])
 
 
 class EnvVarEnv(object):
@@ -190,18 +125,21 @@ def InstallDestdir(prefix_dir, install_dir, func):
   CopyOnto(install_dir, prefix_dir)
 
 
-binutils_tree = PatchedTree(TarballTree(FindFile("binutils-2.20.tar.bz2")),
-                            [FindFile("binutils-2.20.patch")])
+binutils_tree = dirtree.PatchedTree(
+    dirtree.TarballTree(FindFile("binutils-2.20.tar.bz2")),
+    [FindFile("binutils-2.20.patch")])
 gcc_patches = sorted(glob.glob(os.path.join(
       nacl_dir, "tools/patches/*-gcc-4.4.3.patch")))
 assert len(gcc_patches) > 0
-gcc_tree = PatchedTree(MultiTarballTree(
-                           [FindFile("gcc-core-4.4.3.tar.bz2"),
-                            FindFile("gcc-g++-4.4.3.tar.bz2"),
-                            FindFile("gcc-testsuite-4.4.3.tar.bz2")]),
-                       gcc_patches)
-newlib_tree = PatchedTree(TarballTree(FindFile("newlib-1.18.0.tar.gz")),
-                          [FindFile("newlib-1.18.0.patch")])
+gcc_tree = dirtree.PatchedTree(
+    dirtree.MultiTarballTree(
+        [FindFile("gcc-core-4.4.3.tar.bz2"),
+         FindFile("gcc-g++-4.4.3.tar.bz2"),
+         FindFile("gcc-testsuite-4.4.3.tar.bz2")]),
+    gcc_patches)
+newlib_tree = dirtree.PatchedTree(
+    dirtree.TarballTree(FindFile("newlib-1.18.0.tar.gz")),
+    [FindFile("newlib-1.18.0.patch")])
 
 
 def Module(name, source, configure_cmd, make_cmd, install_cmd):
@@ -338,7 +276,7 @@ class ModuleNewlib(ModuleBase):
 class ModuleNcthreads(ModuleBase):
 
   name = "nc_threads"
-  source = EmptyTree()
+  source = dirtree.EmptyTree()
 
   def configure(self, log):
     pass
@@ -363,7 +301,7 @@ class ModuleNcthreads(ModuleBase):
 class ModuleLibnaclHeaders(ModuleBase):
 
   name = "libnacl_headers"
-  source = EmptyTree()
+  source = dirtree.EmptyTree()
 
   def configure(self, log):
     pass
@@ -395,7 +333,7 @@ class ModuleLibnacl(ModuleBase):
 
   # Covers libnacl.a, crt[1ni].o and misc libraries built with Scons.
   name = "libnacl"
-  source = EmptyTree()
+  source = dirtree.EmptyTree()
 
   def configure(self, log):
     pass
@@ -426,7 +364,7 @@ class ModuleLibnacl(ModuleBase):
 class TestModule(ModuleBase):
 
   name = "test"
-  source = EmptyTree()
+  source = dirtree.EmptyTree()
 
   def configure(self, log):
     pass

@@ -10,7 +10,7 @@ import subprocess
 import tempfile
 import unittest
 
-import build
+import dirtree
 import cmd_env
 
 
@@ -60,12 +60,12 @@ class Test(TempDirTestCase):
                           cwd=temp_dir)
 
     dest_dir = self.MakeTempDir()
-    tree = build.TarballTree(tar_file)
+    tree = dirtree.TarballTree(tar_file)
     tree.WriteTree(cmd_env.BasicEnv(), dest_dir)
     self.assertEquals(os.listdir(dest_dir), ["README"])
 
     dest_dir = self.MakeTempDir()
-    tree = build.MultiTarballTree([tar_file, tar_file])
+    tree = dirtree.MultiTarballTree([tar_file, tar_file])
     tree.WriteTree(cmd_env.BasicEnv(), dest_dir)
     self.assertEquals(os.listdir(dest_dir), ["README"])
 
