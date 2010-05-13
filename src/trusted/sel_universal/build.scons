@@ -72,7 +72,7 @@ def ReplicateDlls(sdl_dll):
     lib = '${SDL_DIR}/lib/SDL.dll'
   elif env.Bit('mac'):
     # TODO: why do we replicate this THREE times?
-    dsts = ['{$TARGET_ROOT}/Frameworks',
+    dsts = ['${TARGET_ROOT}/Frameworks',
             '${OBJ_ROOT}/Frameworks',
             '${OBJ_ROOT}/src/trusted/Frameworks']
     lib = '${SDL_DIR}/SDL.framework'
