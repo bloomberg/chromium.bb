@@ -74,10 +74,31 @@ case $tool in
   *) echo "Error: unknown tool: $tool"; exit 1;;
 esac
 
-cat >"${script}" <<ENDSCRIPT
+if [ "x$opt32" = "x-m32" ]; then
+  cat >"${script}" <<ENDSCRIPT
+#!/bin/bash
+
+# Put -V argument(s) prior to -m32. Otherwise the GCC driver does not accept it.
+mSwSiwvygOu2Ngcp="\${0%/*}/${progdir}${progname}"
+if [[ "\$1" = "-V" ]]; then
+  shift
+  OPTV="\$1"
+  shift
+  exec "\$mSwSiwvygOu2Ngcp" -V "\$OPTV" -m32 "\$@"
+elif [[ "\${1:0:2}" = "-V" ]]; then
+  OPTV="\$1"
+  shift
+  exec "\$mSwSiwvygOu2Ngcp" "\$OPTV" -m32 "\$@"
+else
+  exec "\$mSwSiwvygOu2Ngcp" -m32 "\$@"
+fi
+ENDSCRIPT
+else
+  cat >"${script}" <<ENDSCRIPT
 #!/bin/bash
 
 exec \${0%/*}/${progdir}${progname} ${opt32} "\$@"
 ENDSCRIPT
+fi
 
 chmod 755 "${script}"

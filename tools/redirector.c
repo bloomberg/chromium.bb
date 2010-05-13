@@ -34,6 +34,8 @@
 
 #pragma comment(linker, "/entry:entry")
 
+#define FILE_NOT_FOUND_ERROR_MESSAGE "Can not find filename to execute!\r\n"
+
 /*
  * The SDK redirector reads it's name and invokes the appropriate binary from a
  * location with cygwin1.dll nearby so that all cygwin-oriented SDK programs can
@@ -49,168 +51,230 @@
  *
  * Use the folliwong commands:
  *   cl /c /O2 /GS- redirector.c
- *   link /subsystem:console redirector.obj kernel32.lib
+ *   link /subsystem:console /MERGE:.rdata=.text /NODEFAULTLIB redirector.obj kernel32.lib
  */
 
-void entry() {
-  wchar_t selector[] = { L' ', L'-', 0, L'3', L'2', 0, 0, 0, 0, 0, 0, 0 };
-  wchar_t *newpath = NULL, *oldpath = NULL, *cmdline, *delimeter;
-  int nacl64, done;
-  static STARTUPINFOW si = { sizeof(STARTUPINFOW), 0};
-  static PROCESS_INFORMATION pi;
+__inline void get_module_name_safely_and_allocate_buffer_for_rewrite(
+  wchar_t **oldpath, wchar_t **newpath, int path_delta) {
 
-  nacl64 = 128; /* Nice default size, we'll increase it if needed */
+  int len = 128, done;
   do {
-    oldpath = HeapAlloc(GetProcessHeap(), 0, sizeof(wchar_t)*(nacl64));
-    if (!oldpath)
-      goto ShowErrorMessage;
-    done = GetModuleFileNameW(NULL, oldpath, nacl64);
-    if (done == 0)
-      goto ShowErrorMessage;
-    if (done >= nacl64-1) {
-      nacl64 <<= 1;
+    *oldpath = HeapAlloc(GetProcessHeap(), 0, sizeof(wchar_t)*(len));
+    if (!*oldpath) return;
+    done = GetModuleFileNameW(NULL, *oldpath, len);
+    if (done == 0) return;
+    if (done >= len-1) {
+      len <<= 1;
       HeapFree(GetProcessHeap(), 0, oldpath);
       done = 0;
     }
   } while (!done);
-  newpath = HeapAlloc(GetProcessHeap(), 0, sizeof(wchar_t)*(nacl64+64));
-  if (!newpath)
-    goto ShowErrorMessage;
-  nacl64 = 0;
-  delimeter = oldpath;
-  while (*delimeter)
-    ++delimeter;
-  while (delimeter>oldpath && *delimeter != L'/' && *delimeter != L'\\')
-    --delimeter;
-  if (delimeter == oldpath)
-    goto ShowErrorMessage;
-  if ((delimeter[-4] == L'/' || delimeter[-4] == L'\\') &&
-      (delimeter[-3] == L'b' || delimeter[-3] == L'B') &&
-      (delimeter[-2] == L'i' || delimeter[-2] == L'I') &&
-      (delimeter[-1] == L'n' || delimeter[-1] == L'N') &&
-      (delimeter[1] == L'n' || delimeter[1] == L'N') &&
-      (delimeter[2] == L'a' || delimeter[2] == L'A') &&
-      (delimeter[3] == L'c' || delimeter[3] == L'C') &&
-      (delimeter[4] == L'l' || delimeter[4] == L'L') &&
-       delimeter[5] == L'-') {
-    delimeter-=4;
-  } else if ((delimeter[-4] == L'/' || delimeter[-4] == L'\\') &&
-           (delimeter[-3] == L'b' || delimeter[-3] == L'B') &&
-           (delimeter[-2] == L'i' || delimeter[-2] == L'I') &&
-           (delimeter[-1] == L'n' || delimeter[-1] == L'N') &&
-           (delimeter[1] == L'n' || delimeter[1] == L'N') &&
-           (delimeter[2] == L'a' || delimeter[2] == L'A') &&
-           (delimeter[3] == L'c' || delimeter[3] == L'C') &&
-           (delimeter[4] == L'l' || delimeter[4] == L'L') &&
-           (delimeter[5] == L'6' || delimeter[5] == L'6') &&
-           (delimeter[6] == L'4' || delimeter[6] == L'4') &&
-            delimeter[7] == L'-') {
-    delimeter-=4;
-    nacl64=1;
-  } else if ((delimeter[-9] == L'/' || delimeter[-9] == L'\\') &&
-             (delimeter[-8] == L'n' || delimeter[-8] == L'N') &&
-             (delimeter[-7] == L'a' || delimeter[-7] == L'A') &&
-             (delimeter[-6] == L'c' || delimeter[-6] == L'C') &&
-             (delimeter[-5] == L'l' || delimeter[-5] == L'L') &&
-             (delimeter[-4] == L'/' || delimeter[-4] == L'\\') &&
-             (delimeter[-3] == L'b' || delimeter[-3] == L'B') &&
-             (delimeter[-2] == L'i' || delimeter[-2] == L'I') &&
-             (delimeter[-1] == L'n' || delimeter[-1] == L'N')) {
-    delimeter-=9;
-  } else if ((delimeter[-11] == L'/' || delimeter[-11] == L'\\') &&
-             (delimeter[-10] == L'n' || delimeter[-10] == L'N') &&
-             (delimeter[-9] == L'a' || delimeter[-9] == L'A') &&
-             (delimeter[-8] == L'c' || delimeter[-8] == L'C') &&
-             (delimeter[-7] == L'l' || delimeter[-7] == L'L') &&
-             (delimeter[-6] == L'6' || delimeter[-6] == L'6') &&
-             (delimeter[-5] == L'4' || delimeter[-5] == L'4') &&
-             (delimeter[-4] == L'/' || delimeter[-4] == L'\\') &&
-             (delimeter[-3] == L'b' || delimeter[-3] == L'B') &&
-             (delimeter[-2] == L'i' || delimeter[-2] == L'I') &&
-             (delimeter[-1] == L'n' || delimeter[-1] == L'N')) {
-    delimeter-=11;
-    nacl64=1;
+  *newpath=HeapAlloc(GetProcessHeap(), 0, sizeof(wchar_t)*(len + path_delta));
+}
+
+
+__inline wchar_t *find_last_slash_or_backslash_delimiter(wchar_t *start) {
+  wchar_t *delimiter = start + lstrlenW(start);
+  while (delimiter>start && *delimiter != L'/' && *delimiter != L'\\')
+    --delimiter;
+  return delimiter;
+}
+
+
+__inline wchar_t *move_delimiter_to_the_root_of_toolchain(wchar_t *delimiter,
+                                                          int *nacl64) {
+  if ((delimiter[-4] == L'/' || delimiter[-4] == L'\\') &&
+      (delimiter[-3] == L'b' || delimiter[-3] == L'B') &&
+      (delimiter[-2] == L'i' || delimiter[-2] == L'I') &&
+      (delimiter[-1] == L'n' || delimiter[-1] == L'N') &&
+      (delimiter[1] == L'n' || delimiter[1] == L'N') &&
+      (delimiter[2] == L'a' || delimiter[2] == L'A') &&
+      (delimiter[3] == L'c' || delimiter[3] == L'C') &&
+      (delimiter[4] == L'l' || delimiter[4] == L'L') &&
+       delimiter[5] == L'-') {
+    delimiter -= 4;
+    *nacl64 = 0;
+  } else if ((delimiter[-4] == L'/' || delimiter[-4] == L'\\') &&
+           (delimiter[-3] == L'b' || delimiter[-3] == L'B') &&
+           (delimiter[-2] == L'i' || delimiter[-2] == L'I') &&
+           (delimiter[-1] == L'n' || delimiter[-1] == L'N') &&
+           (delimiter[1] == L'n' || delimiter[1] == L'N') &&
+           (delimiter[2] == L'a' || delimiter[2] == L'A') &&
+           (delimiter[3] == L'c' || delimiter[3] == L'C') &&
+           (delimiter[4] == L'l' || delimiter[4] == L'L') &&
+           (delimiter[5] == L'6' || delimiter[5] == L'6') &&
+           (delimiter[6] == L'4' || delimiter[6] == L'4') &&
+            delimiter[7] == L'-') {
+    delimiter -= 4;
+    *nacl64 = 1;
+  } else if ((delimiter[-9] == L'/' || delimiter[-9] == L'\\') &&
+             (delimiter[-8] == L'n' || delimiter[-8] == L'N') &&
+             (delimiter[-7] == L'a' || delimiter[-7] == L'A') &&
+             (delimiter[-6] == L'c' || delimiter[-6] == L'C') &&
+             (delimiter[-5] == L'l' || delimiter[-5] == L'L') &&
+             (delimiter[-4] == L'/' || delimiter[-4] == L'\\') &&
+             (delimiter[-3] == L'b' || delimiter[-3] == L'B') &&
+             (delimiter[-2] == L'i' || delimiter[-2] == L'I') &&
+             (delimiter[-1] == L'n' || delimiter[-1] == L'N')) {
+    delimiter -= 9;
+    *nacl64 = 0;
+  } else if ((delimiter[-11] == L'/' || delimiter[-11] == L'\\') &&
+             (delimiter[-10] == L'n' || delimiter[-10] == L'N') &&
+             (delimiter[-9] == L'a' || delimiter[-9] == L'A') &&
+             (delimiter[-8] == L'c' || delimiter[-8] == L'C') &&
+             (delimiter[-7] == L'l' || delimiter[-7] == L'L') &&
+             (delimiter[-6] == L'6' || delimiter[-6] == L'6') &&
+             (delimiter[-5] == L'4' || delimiter[-5] == L'4') &&
+             (delimiter[-4] == L'/' || delimiter[-4] == L'\\') &&
+             (delimiter[-3] == L'b' || delimiter[-3] == L'B') &&
+             (delimiter[-2] == L'i' || delimiter[-2] == L'I') &&
+             (delimiter[-1] == L'n' || delimiter[-1] == L'N')) {
+    delimiter -= 11;
+    *nacl64 = 1;
+  } else {
+    *nacl64 = 2;
   }
-  done = delimeter-oldpath;
-  /* We don't need L'\0' here, but lstrcpynW will copy it anyway */
-  lstrcpynW(newpath, oldpath, done+1);
+  return delimiter;
+}
+
+__inline wchar_t *contrive_full_name_of_executable(wchar_t *newpath,
+                                                   wchar_t *oldpath,
+                                                   wchar_t **delimiter,
+                                                   wchar_t **shortname,
+                                                   int nacl64) {
+  int done = *delimiter - oldpath;
+  lstrcpynW(newpath, oldpath, done + 1);
   if (nacl64) {
     lstrcpyW(newpath + done, L"\\libexec\\nacl64-");
-    cmdline = newpath + done + 9;
-    done += 16; delimeter += 12;
-    selector[3] = L'6';
-    selector[4] = L'4';
+    *shortname = newpath + done + 9;
+    done += 16;
+    *delimiter += 12;
   } else {
     lstrcpyW(newpath + done, L"\\libexec\\nacl-");
-    cmdline = newpath + done + 9;
-    done += 14; delimeter += 10;
+    *shortname = newpath + done + 9;
+    done += 14;
+    *delimiter += 10;
   }
-  lstrcpynW(newpath + done, delimeter, 32);
-  if ((delimeter[0] == L'a' || delimeter[0] == L'A') &&
-      (delimeter[1] == L's' || delimeter[0] == L'S') &&
-      (delimeter[2] == '.'))
+  lstrcpynW(newpath + done, *delimiter, 32);
+  return newpath;
+}
+
+
+__inline wchar_t *adjust_selector_by_program_name(wchar_t *selector,
+                                                  wchar_t *program_name,
+                                                  wchar_t *cmdline,
+                                                  wchar_t *fullpath) {
+  /*
+   * For as we use --32/--64,
+   * for 32bit ld it's -melf_nacl,
+   * for gcc it's -m32/-m64
+   */
+  if ((program_name[0] == L'a' || program_name[0] == L'A') &&
+      (program_name[1] == L's' || program_name[0] == L'S') &&
+      (program_name[2] == '.')) {
     selector[2] = '-';
-  else if ((delimeter[0] == L'l' || delimeter[0] == L'L') &&
-           (delimeter[1] == L'd' || delimeter[0] == L'D') &&
-           (delimeter[2] == '.'))
-    lstrcpyW(selector+2, L"melf_nacl");
-  else if (((delimeter[0] == L'c' || delimeter[0] == L'C') &&
-            (delimeter[1] == L'+') && (delimeter[2] == L'+') &&
-            (delimeter[3] == '.')) ||
-           ((delimeter[0] == L'c' || delimeter[0] == L'C') &&
-            (delimeter[1] == L'p' || delimeter[1] == L'P') &&
-            (delimeter[2] == L'p' || delimeter[2] == L'P') &&
-            (delimeter[3] == '.')) ||
-           ((delimeter[0] == L'g' || delimeter[0] == L'G') &&
-            (delimeter[1] == L'+') && (delimeter[2] == L'+') &&
-            (delimeter[3] == '.')) ||
-           ((delimeter[0] == L'g' || delimeter[0] == L'G') &&
-            (delimeter[1] == L'c' || delimeter[1] == L'C') &&
-            (delimeter[2] == L'c' || delimeter[2] == L'C') &&
-            (delimeter[3] == '.') || (delimeter[3] == '-')) ||
-           ((delimeter[0] == L'g' || delimeter[0] == L'G') &&
-            (delimeter[1] == L'f' || delimeter[1] == L'F') &&
-            (delimeter[2] == L'o' || delimeter[2] == L'O') &&
-            (delimeter[3] == L'r' || delimeter[3] == L'R') &&
-            (delimeter[4] == L't' || delimeter[4] == L'T') &&
-            (delimeter[5] == L'r' || delimeter[5] == L'R') &&
-            (delimeter[6] == L'a' || delimeter[6] == L'A') &&
-            (delimeter[7] == L'n' || delimeter[7] == L'N') &&
-            (delimeter[8] == '.')))
-    selector[2] = 'm',
-    cmdline = newpath;
+  } else if ((program_name[0] == L'l' || program_name[0] == L'L') &&
+           (program_name[1] == L'd' || program_name[0] == L'D') &&
+           (program_name[2] == '.') && (selector[3] == '3')) {
+    lstrcpyW(selector + 2, L"melf_nacl");
+  } else if (((program_name[0] == L'c' || program_name[0] == L'C') &&
+            (program_name[1] == L'+') && (program_name[2] == L'+') &&
+            (program_name[3] == '.')) ||
+           ((program_name[0] == L'c' || program_name[0] == L'C') &&
+            (program_name[1] == L'p' || program_name[1] == L'P') &&
+            (program_name[2] == L'p' || program_name[2] == L'P') &&
+            (program_name[3] == '.')) ||
+           ((program_name[0] == L'g' || program_name[0] == L'G') &&
+            (program_name[1] == L'+') && (program_name[2] == L'+') &&
+            (program_name[3] == '.')) ||
+           ((program_name[0] == L'g' || program_name[0] == L'G') &&
+            (program_name[1] == L'c' || program_name[1] == L'C') &&
+            (program_name[2] == L'c' || program_name[2] == L'C') &&
+            (program_name[3] == '.') || (program_name[3] == '-')) ||
+           ((program_name[0] == L'g' || program_name[0] == L'G') &&
+            (program_name[1] == L'f' || program_name[1] == L'F') &&
+            (program_name[2] == L'o' || program_name[2] == L'O') &&
+            (program_name[3] == L'r' || program_name[3] == L'R') &&
+            (program_name[4] == L't' || program_name[4] == L'T') &&
+            (program_name[5] == L'r' || program_name[5] == L'R') &&
+            (program_name[6] == L'a' || program_name[6] == L'A') &&
+            (program_name[7] == L'n' || program_name[7] == L'N') &&
+            (program_name[8] == '.'))) {
+    selector[2] = 'm';
+    return fullpath;
+  }
+  return cmdline;
+}
+
+
+__inline wchar_t *skip_program_name_and_find_program_arguments() {
+  wchar_t *arguments;
+
+  arguments = GetCommandLineW();
+  if (!arguments) return NULL;
+  if (arguments[0] == L'\"') {
+    arguments++;
+    while (arguments[0] && arguments[0] != L'\"') {
+      if (arguments[0] == L'\\' &&
+          (arguments[1] == L'\"' || arguments[1] == L'\\'))
+        arguments++;
+      arguments++;
+    }
+    arguments++;
+  }
+  while (arguments[0] && arguments[0] != L' ') arguments++;
+  if (arguments[0]) while (arguments[1] == ' ') arguments++;
+  return arguments;
+}
+
+
+void entry() {
+  wchar_t selector[] = { L' ', L'-', 0, L'3', L'2', 0, 0, 0, 0, 0, 0, 0 };
+  wchar_t *newpath = NULL, *oldpath = NULL, *cmdline, *delimiter;
+  int nacl64, len, done;
+  static STARTUPINFOW si = { sizeof(STARTUPINFOW), 0};
+  static PROCESS_INFORMATION pi;
+  get_module_name_safely_and_allocate_buffer_for_rewrite(
+     &oldpath, &newpath, 64);
+  if (!oldpath || !newpath) goto ShowErrorMessage;
+  delimiter = find_last_slash_or_backslash_delimiter(oldpath);
+  if (delimiter == oldpath) goto ShowErrorMessage;
+  delimiter = move_delimiter_to_the_root_of_toolchain(delimiter, &nacl64);
+  if (nacl64 == 2) goto ShowErrorMessage;
+  contrive_full_name_of_executable(
+    newpath, oldpath, &delimiter, &cmdline, nacl64);
+  if (nacl64) {
+    selector[3] = L'6';
+    selector[4] = L'4';
+  }
+  cmdline = adjust_selector_by_program_name(selector, delimiter,
+                                            cmdline, newpath);
   HeapFree(GetProcessHeap(), 0, oldpath);
   oldpath = NULL;
-  delimeter = GetCommandLineW();
-  if (!delimeter)
-    goto ShowErrorMessage;
-  if (delimeter[0] == L'\"') {
-    delimeter++;
-    while (delimeter[0] && delimeter[0] != L'\"') {
-      if (delimeter[0] == L'\\' &&
-          (delimeter[1] == L'\"' || delimeter[1] == L'\\'))
-        delimeter++;
-      delimeter++;
-    }
-    delimeter++;
-  } else {
-    while (delimeter[0] && delimeter[0] != L' ')
-      delimeter++;
-  }
-  nacl64 = lstrlenW(cmdline);
-  if (selector[2])
-    done = lstrlenW(selector);
-  else
-    done = 0;
+  delimiter = skip_program_name_and_find_program_arguments();
+  if (!delimiter) goto ShowErrorMessage;
+  len = lstrlenW(cmdline);
+  done = 0;
+  if (selector[2]) done = lstrlenW(selector);
   oldpath = HeapAlloc(GetProcessHeap(), 0,
-                      (lstrlenW(delimeter)+nacl64+done+4)*sizeof(wchar_t));
-  if (!oldpath)
-    goto ShowErrorMessage;
+                      (lstrlenW(delimiter) + len + done + 4) * sizeof(wchar_t));
+  if (!oldpath) goto ShowErrorMessage;
   lstrcpyW(oldpath, cmdline);
-  lstrcpyW(oldpath+nacl64, selector);
-  lstrcpyW(oldpath+nacl64+done, delimeter);
+  if (cmdline == newpath && delimiter[1] == L'-' && delimiter[2] == L'V') {
+    oldpath[len++] = (delimiter++)[0];
+    oldpath[len++] = (delimiter++)[0];
+    oldpath[len++] = (delimiter++)[0];
+    if (delimiter[0] == L' ')
+      while (delimiter[1] == ' ')
+        delimiter++;
+    oldpath[len++] = (delimiter++)[0];
+    while (delimiter[0] && delimiter[0] != L' ')
+      oldpath[len++] = (delimiter++)[0];
+  }
+  lstrcpyW(oldpath + len, selector);
+  lstrcpyW(oldpath + len + done, delimiter);
   if (CreateProcessW(newpath, oldpath, NULL, NULL, TRUE,
-                 CREATE_UNICODE_ENVIRONMENT, NULL, NULL, &si, &pi) != 0) {
+                     CREATE_UNICODE_ENVIRONMENT, NULL, NULL, &si, &pi) != 0) {
     WaitForSingleObject(pi.hProcess, INFINITE);
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
@@ -218,12 +282,9 @@ void entry() {
     HeapFree(GetProcessHeap(), 0, oldpath);
     ExitProcess(0);
   }
- ShowErrorMessage:
-  if (newpath)
-    HeapFree(GetProcessHeap(), 0, newpath);
-  if (oldpath)
-    HeapFree(GetProcessHeap(), 0, oldpath);
-#define ShowErrorMessage "Can not find filename to execute!\r\n"
-  WriteFile(GetStdHandle(STD_ERROR_HANDLE),
-            ShowErrorMessage, sizeof(ShowErrorMessage)-1, &nacl64, NULL);
+ShowErrorMessage:
+  if (newpath) HeapFree(GetProcessHeap(), 0, newpath);
+  if (oldpath) HeapFree(GetProcessHeap(), 0, oldpath);
+  WriteFile(GetStdHandle(STD_ERROR_HANDLE), FILE_NOT_FOUND_ERROR_MESSAGE,
+            sizeof(FILE_NOT_FOUND_ERROR_MESSAGE) - 1, &len, NULL);
 }
