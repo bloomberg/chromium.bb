@@ -103,8 +103,7 @@ std::string LanguageLibrary::NormalizeLanguageCode(
   return two_letter_code;
 }
 
-bool LanguageLibrary::IsKeyboardLayout(
-    const std::string& input_method_id) {
+bool LanguageLibrary::IsKeyboardLayout(const std::string& input_method_id) {
   const bool kCaseInsensitive = false;
   return StartsWithASCII(input_method_id, "xkb:", kCaseInsensitive);
 }
@@ -112,6 +111,7 @@ bool LanguageLibrary::IsKeyboardLayout(
 std::string LanguageLibrary::GetLanguageCodeFromDescriptor(
     const InputMethodDescriptor& descriptor) {
   // Special-case Chewing. Handle this as zh-TW, rather than zh.
+  // TODO: we should fix this issue in chewing engine rather than here.
   if (descriptor.id == "chewing" &&
       descriptor.language_code == "zh") {
     return "zh-TW";
@@ -123,6 +123,8 @@ std::string LanguageLibrary::GetLanguageCodeFromDescriptor(
   // Add country codes to language codes of some XKB input methods to make
   // these compatible with Chrome's application locale codes like "en-US".
   // TODO(satorux): Maybe we need to handle "es" for "es-419".
+  // TODO: We should not rely on the format of the engine name. Should we add
+  //       |country_code| in InputMethodDescriptor?
   if (IsKeyboardLayout(descriptor.id) &&
       (language_code == "en" ||
        language_code == "zh" ||
@@ -135,22 +137,6 @@ std::string LanguageLibrary::GetLanguageCodeFromDescriptor(
     }
   }
   return language_code;
-}
-
-std::string LanguageLibrary::GetKeyboardLayoutName(
-    const std::string& input_method_id) {
-  std::vector<std::string> portions;
-  SplitString(input_method_id, ':', &portions);
-  if (portions.size() > 1 && !portions[1].empty()) {
-    std::string keyboard_layout = portions[1];
-    if (portions.size() > 2 && !portions[2].empty()) {
-      keyboard_layout.append("(");
-      keyboard_layout.append(portions[2]);
-      keyboard_layout.append(")");
-    }
-    return keyboard_layout;
-  }
-  return kDefaultKeyboardLayout;
 }
 
 LanguageLibraryImpl::LanguageLibraryImpl()
@@ -351,16 +337,9 @@ void LanguageLibraryImpl::UpdateCurrentInputMethod(
   }
 
   DLOG(INFO) << "UpdateCurrentInputMethod (UI thread)";
-  if (IsKeyboardLayout(current_input_method.id)) {
-    // If the new input method is a keyboard layout, switch the keyboard.
-    chromeos::SetCurrentKeyboardLayoutByName(
-        GetKeyboardLayoutName(current_input_method.id));
-  } else {
-    // If the new input method is an IME, change the keyboard back to the
-    // default layout (US).  TODO(satorux): What if the user is using a non-US
-    // keyboard, such as a Japanese keyboard? We need to rework this.
-    chromeos::SetCurrentKeyboardLayoutByName(kDefaultKeyboardLayout);
-  }
+  // Change the keyboard layout to a preferred layout for the input method.
+  chromeos::SetCurrentKeyboardLayoutByName(
+      current_input_method.keyboard_layout);
 
   current_input_method_ = current_input_method;
   FOR_EACH_OBSERVER(Observer, observers_, InputMethodChanged(this));
