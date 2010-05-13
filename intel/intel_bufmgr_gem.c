@@ -927,6 +927,8 @@ static int drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
 	struct drm_i915_gem_set_domain set_domain;
 	int ret;
 
+	pthread_mutex_lock(&bufmgr_gem->lock);
+
 	/* Allow recursive mapping. Mesa may recursively map buffers with
 	 * nested display loops.
 	 */
@@ -950,6 +952,7 @@ static int drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
 				"%s:%d: Error mapping buffer %d (%s): %s .\n",
 				__FILE__, __LINE__, bo_gem->gem_handle,
 				bo_gem->name, strerror(errno));
+			pthread_mutex_unlock(&bufmgr_gem->lock);
 			return ret;
 		}
 		bo_gem->mem_virtual = (void *)(uintptr_t) mmap_arg.addr_ptr;
@@ -974,8 +977,11 @@ static int drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
 		fprintf(stderr, "%s:%d: Error setting to CPU domain %d: %s\n",
 			__FILE__, __LINE__, bo_gem->gem_handle,
 			strerror(errno));
+		pthread_mutex_unlock(&bufmgr_gem->lock);
 		return ret;
 	}
+
+	pthread_mutex_unlock(&bufmgr_gem->lock);
 
 	return 0;
 }
@@ -986,6 +992,8 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
 	struct drm_i915_gem_set_domain set_domain;
 	int ret;
+
+	pthread_mutex_lock(&bufmgr_gem->lock);
 
 	/* Get a mapping of the buffer if we haven't before. */
 	if (bo_gem->gtt_virtual == NULL) {
@@ -1010,6 +1018,7 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 				__FILE__, __LINE__,
 				bo_gem->gem_handle, bo_gem->name,
 				strerror(errno));
+			pthread_mutex_unlock(&bufmgr_gem->lock);
 			return ret;
 		}
 
@@ -1025,6 +1034,7 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 				__FILE__, __LINE__,
 				bo_gem->gem_handle, bo_gem->name,
 				strerror(errno));
+			pthread_mutex_unlock(&bufmgr_gem->lock);
 			return ret;
 		}
 	}
@@ -1051,6 +1061,8 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 			strerror(errno));
 	}
 
+	pthread_mutex_unlock(&bufmgr_gem->lock);
+
 	return ret;
 }
 
@@ -1065,7 +1077,9 @@ int drm_intel_gem_bo_unmap_gtt(drm_intel_bo *bo)
 
 	assert(bo_gem->gtt_virtual != NULL);
 
+	pthread_mutex_lock(&bufmgr_gem->lock);
 	bo->virtual = NULL;
+	pthread_mutex_unlock(&bufmgr_gem->lock);
 
 	return ret;
 }
@@ -1082,6 +1096,8 @@ static int drm_intel_gem_bo_unmap(drm_intel_bo *bo)
 
 	assert(bo_gem->mem_virtual != NULL);
 
+	pthread_mutex_lock(&bufmgr_gem->lock);
+
 	/* Cause a flush to happen if the buffer's pinned for scanout, so the
 	 * results show up in a timely manner.
 	 */
@@ -1094,6 +1110,7 @@ static int drm_intel_gem_bo_unmap(drm_intel_bo *bo)
 	ret = ret == -1 ? -errno : 0;
 
 	bo->virtual = NULL;
+	pthread_mutex_unlock(&bufmgr_gem->lock);
 
 	return ret;
 }
