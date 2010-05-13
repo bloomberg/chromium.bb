@@ -271,7 +271,7 @@ BUILD/stamp-binutils: BUILD/stamp-binutils-$(BINUTILS_VERSION) Makefile
 	mkdir BUILD/build-binutils-$(CROSSARCH)
 	cd BUILD/build-binutils-$(CROSSARCH) && \
 	  CC="gcc" \
-	  CFLAGS="-m32 -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)" \
+	  CFLAGS="-m32 -O3 -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)" \
 	  LDFLAGS="-s" \
 	  ../binutils-$(BINUTILS_VERSION)/configure \
 	    --prefix=$(SDKROOT) \
