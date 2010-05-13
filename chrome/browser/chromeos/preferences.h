@@ -83,9 +83,8 @@ class Preferences : public NotificationObserver {
   IntegerPrefMember sensitivity_;
 
   // Input method preferences.
-  BooleanPrefMember language_use_global_engine_;
-  StringPrefMember language_hotkey_next_engine_;
-  StringPrefMember language_hotkey_trigger_;
+  StringPrefMember language_hotkey_next_engine_in_menu_;
+  StringPrefMember language_hotkey_previous_engine_;
   StringPrefMember language_preload_engines_;
   StringPrefMember language_hangul_keyboard_;
   BooleanPrefMember language_pinyin_boolean_prefs_[kNumPinyinBooleanPrefs];

@@ -24,10 +24,10 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kVertEdgeScrollEnabled, false);
   prefs->RegisterIntegerPref(prefs::kTouchpadSpeedFactor, 5);
   prefs->RegisterIntegerPref(prefs::kTouchpadSensitivity, 5);
-  prefs->RegisterBooleanPref(prefs::kLanguageUseGlobalEngine, true);
-  prefs->RegisterStringPref(prefs::kLanguageHotkeyNextEngine,
-                            kHotkeyNextEngine);
-  prefs->RegisterStringPref(prefs::kLanguageHotkeyTrigger, kHotkeyTrigger);
+  prefs->RegisterStringPref(prefs::kLanguageHotkeyNextEngineInMenu,
+                            kHotkeyNextEngineInMenu);
+  prefs->RegisterStringPref(prefs::kLanguageHotkeyPreviousEngine,
+                            kHotkeyPreviousEngine);
   prefs->RegisterStringPref(prefs::kLanguagePreloadEngines,
                             UTF8ToWide(kFallbackInputMethodId));  // EN layout
   prefs->RegisterStringPref(prefs::kLanguageHangulKeyboard,
@@ -48,11 +48,10 @@ void Preferences::Init(PrefService* prefs) {
   vert_edge_scroll_enabled_.Init(prefs::kVertEdgeScrollEnabled, prefs, this);
   speed_factor_.Init(prefs::kTouchpadSpeedFactor, prefs, this);
   sensitivity_.Init(prefs::kTouchpadSensitivity, prefs, this);
-  language_use_global_engine_.Init(
-      prefs::kLanguageUseGlobalEngine, prefs, this);
-  language_hotkey_next_engine_.Init(
-      prefs::kLanguageHotkeyNextEngine, prefs, this);
-  language_hotkey_trigger_.Init(prefs::kLanguageHotkeyTrigger, prefs, this);
+  language_hotkey_next_engine_in_menu_.Init(
+      prefs::kLanguageHotkeyNextEngineInMenu, prefs, this);
+  language_hotkey_previous_engine_.Init(
+      prefs::kLanguageHotkeyPreviousEngine, prefs, this);
   language_preload_engines_.Init(prefs::kLanguagePreloadEngines, prefs, this);
   language_hangul_keyboard_.Init(prefs::kLanguageHangulKeyboard, prefs, this);
   for (size_t i = 0; i < kNumPinyinBooleanPrefs; ++i) {
@@ -78,40 +77,45 @@ void Preferences::Observe(NotificationType type,
 void Preferences::NotifyPrefChanged(const std::wstring* pref_name) {
   if (!pref_name || *pref_name == prefs::kTimeZone)
     SetTimeZone(timezone_.GetValue());
-  if (!pref_name || *pref_name == prefs::kTapToClickEnabled)
+  if (!pref_name || *pref_name == prefs::kTapToClickEnabled) {
     CrosLibrary::Get()->GetSynapticsLibrary()->SetBoolParameter(
         PARAM_BOOL_TAP_TO_CLICK,
         tap_to_click_enabled_.GetValue());
-  if (!pref_name || *pref_name == prefs::kVertEdgeScrollEnabled)
+  }
+  if (!pref_name || *pref_name == prefs::kVertEdgeScrollEnabled) {
     CrosLibrary::Get()->GetSynapticsLibrary()->SetBoolParameter(
         PARAM_BOOL_VERTICAL_EDGE_SCROLLING,
         vert_edge_scroll_enabled_.GetValue());
-  if (!pref_name || *pref_name == prefs::kTouchpadSpeedFactor)
+  }
+  if (!pref_name || *pref_name == prefs::kTouchpadSpeedFactor) {
     CrosLibrary::Get()->GetSynapticsLibrary()->SetRangeParameter(
         PARAM_RANGE_SPEED_SENSITIVITY,
         speed_factor_.GetValue());
-  if (!pref_name || *pref_name == prefs::kTouchpadSensitivity)
+  }
+  if (!pref_name || *pref_name == prefs::kTouchpadSensitivity) {
     CrosLibrary::Get()->GetSynapticsLibrary()->SetRangeParameter(
           PARAM_RANGE_TOUCH_SENSITIVITY,
           sensitivity_.GetValue());
-  if (!pref_name || *pref_name == prefs::kLanguageUseGlobalEngine)
-    SetLanguageConfigBoolean(kGeneralSectionName, kUseGlobalEngineConfigName,
-                             language_use_global_engine_.GetValue());
-  if (!pref_name || *pref_name == prefs::kLanguageHotkeyNextEngine)
+  }
+  if (!pref_name || *pref_name == prefs::kLanguageHotkeyNextEngineInMenu) {
     SetLanguageConfigStringListAsCSV(kHotKeySectionName,
-                                     kNextEngineConfigName,
-                                     language_hotkey_next_engine_.GetValue());
-  if (!pref_name || *pref_name == prefs::kLanguageHotkeyTrigger)
+                             kNextEngineInMenuConfigName,
+                             language_hotkey_next_engine_in_menu_.GetValue());
+  }
+  if (!pref_name || *pref_name == prefs::kLanguageHotkeyPreviousEngine) {
     SetLanguageConfigStringListAsCSV(kHotKeySectionName,
-                                     kTriggerConfigName,
-                                     language_hotkey_trigger_.GetValue());
-  if (!pref_name || *pref_name == prefs::kLanguagePreloadEngines)
+                             kPreviousEngineConfigName,
+                             language_hotkey_previous_engine_.GetValue());
+  }
+  if (!pref_name || *pref_name == prefs::kLanguagePreloadEngines) {
     SetLanguageConfigStringListAsCSV(kGeneralSectionName,
                                      kPreloadEnginesConfigName,
                                      language_preload_engines_.GetValue());
-  if (!pref_name || *pref_name == prefs::kLanguageHangulKeyboard)
+  }
+  if (!pref_name || *pref_name == prefs::kLanguageHangulKeyboard) {
     SetLanguageConfigString(kHangulSectionName, kHangulKeyboardConfigName,
                             language_hangul_keyboard_.GetValue());
+  }
   for (size_t i = 0; i < kNumPinyinBooleanPrefs; ++i) {
     if (!pref_name || *pref_name == kPinyinBooleanPrefs[i].pref_name) {
       SetLanguageConfigBoolean(kPinyinSectionName,

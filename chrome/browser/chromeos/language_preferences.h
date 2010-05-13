@@ -15,13 +15,13 @@ namespace chromeos {
 // For ibus-daemon
 const char kGeneralSectionName[] = "general";
 const char kHotKeySectionName[] = "general/hotkey";
-const char kUseGlobalEngineConfigName[] = "use_global_engine";
 const char kPreloadEnginesConfigName[] = "preload_engines";
-const char kNextEngineConfigName[] = "next_engine";
-const char kTriggerConfigName[] = "trigger";
+const char kNextEngineInMenuConfigName[] = "next_engine_in_menu";
+const char kPreviousEngineConfigName[] = "previous_engine";
 
-const wchar_t kHotkeyNextEngine[] = L"Shift+Alt_L,Alt+Shift_L,Alt+grave";
-const wchar_t kHotkeyTrigger[] = L"";  // We don't allow users to disable IBus.
+const wchar_t kHotkeyNextEngineInMenu[] =
+    L"Shift+Alt_L,Alt+Shift_L,Control+Shift+space";
+const wchar_t kHotkeyPreviousEngine[] = L"Control+space";
 
 // For Korean input method (ibus-hangul)
 const char kHangulSectionName[] = "engine/Hangul";

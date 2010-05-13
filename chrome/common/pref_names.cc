@@ -198,17 +198,15 @@ const wchar_t kTouchpadSpeedFactor[] = L"settings.touchpad.speed_factor";
 // A integer pref for the touchpad sensitivity.
 const wchar_t kTouchpadSensitivity[] = L"settings.touchpad.sensitivity";
 
-// Boolean that is true when one input method status can be shared by all input
-// contexts in all Chrome processes.
-const wchar_t kLanguageUseGlobalEngine[] =
-    L"settings.language.use_global_engine";
+// A string pref (comma-separated list) set to the "next engine in menu"
+// hot-key lists.
+const wchar_t kLanguageHotkeyNextEngineInMenu[] =
+    L"settings.language.hotkey_next_engine_in_menu";
 
-// A string pref (comma-separated list) set to the "next engine" hot-key lists.
-const wchar_t kLanguageHotkeyNextEngine[] =
-    L"settings.language.hotkey_next_engine_v2";
-
-// A string pref (comma-separated list) set to the "trigger" hot-key lists.
-const wchar_t kLanguageHotkeyTrigger[] = L"settings.language.hotkey_trigger";
+// A string pref (comma-separated list) set to the "previous engine"
+// hot-key lists.
+const wchar_t kLanguageHotkeyPreviousEngine[] =
+    L"settings.language.hotkey_previous_engine";
 
 // A string pref (comma-separated list) set to the preloaded (active) input
 // method IDs.

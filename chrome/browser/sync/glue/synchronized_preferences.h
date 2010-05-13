@@ -117,11 +117,10 @@ static const wchar_t* kSynchronizedPreferences[] = {
   prefs::kLanguagePreloadEngines,
   // We don't sync the following IME prefs since they are not user-configurable
   // (yet):
-  //   prefs::kLanguageHotkeyNextEngine,
-  //   prefs::kLanguageHotkeyTrigger,
+  //   prefs::kLanguageHotkeyNextEngineInMenu,
+  //   prefs::kLanguageHotkeyPreviousEngine,
   //   prefs::kLanguagePinyinDoublePinyinSchema,
   //   prefs::kLanguagePinyinLookupTablePageSize,
-  //   prefs::kLanguageUseGlobalEngine,
 #endif
 };
 
