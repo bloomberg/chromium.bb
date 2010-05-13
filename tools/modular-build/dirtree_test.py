@@ -49,25 +49,71 @@ class TempDirTestCase(unittest.TestCase):
       func()
 
 
+class Dir(dirtree.DirTree):
+
+  def __init__(self, entries=()):
+    self._entries = entries
+
+  def WriteTree(self, env, dest_path):
+    for leafname, entry in self._entries:
+      dest = os.path.join(dest_path, leafname)
+      # This is cheating slightly.  DirTrees other than File assume
+      # that the directory has already been created.
+      if not isinstance(entry, File):
+        os.mkdir(dest)
+      entry.WriteTree(env, dest)
+
+
+class File(dirtree.DirTree):
+
+  def __init__(self, data):
+    self._data = data
+
+  def WriteTree(self, env, dest_path):
+    WriteFile(dest_path, self._data)
+
+
+example_tree = Dir([("foo-1.0", Dir([("README", File("hello"))]))])
+
+tree1 = Dir([("foo", File("a\nhello world\nb"))])
+tree2 = Dir([("foo", File("a\nbye\nb"))])
+
+
 class Test(TempDirTestCase):
 
-  def test_untar(self):
+  def _RealizeTree(self, tree):
     temp_dir = self.MakeTempDir()
-    os.mkdir(os.path.join(temp_dir, "foo-1.0"))
-    WriteFile(os.path.join(temp_dir, "foo-1.0", "README"), "hello")
+    tree.WriteTree(cmd_env.BasicEnv(), temp_dir)
+    return temp_dir
+
+  def test_untar(self):
+    temp_dir = self._RealizeTree(example_tree)
     tar_file = os.path.join(temp_dir, "foo-1.0.tar.gz")
     subprocess.check_call(["tar", "-cf", tar_file, "foo-1.0"],
                           cwd=temp_dir)
 
-    dest_dir = self.MakeTempDir()
     tree = dirtree.TarballTree(tar_file)
-    tree.WriteTree(cmd_env.BasicEnv(), dest_dir)
+    dest_dir = self._RealizeTree(tree)
     self.assertEquals(os.listdir(dest_dir), ["README"])
 
-    dest_dir = self.MakeTempDir()
     tree = dirtree.MultiTarballTree([tar_file, tar_file])
-    tree.WriteTree(cmd_env.BasicEnv(), dest_dir)
+    dest_dir = self._RealizeTree(tree)
     self.assertEquals(os.listdir(dest_dir), ["README"])
+
+  def test_patch_tree(self):
+    temp_dir = self.MakeTempDir()
+    os.mkdir(os.path.join(temp_dir, "a"))
+    os.mkdir(os.path.join(temp_dir, "b"))
+    tree1.WriteTree(cmd_env.BasicEnv(), os.path.join(temp_dir, "a"))
+    tree2.WriteTree(cmd_env.BasicEnv(), os.path.join(temp_dir, "b"))
+    diff_file = os.path.join(temp_dir, "diff")
+    rc = subprocess.call(["diff", "-urN", "a", "b"],
+                         stdout=open(diff_file, "w"), cwd=temp_dir)
+    self.assertEquals(rc, 1)
+    result_dir = self._RealizeTree(dirtree.PatchedTree(tree1, [diff_file]))
+    rc = subprocess.call(["diff", "-urN",
+                          os.path.join(temp_dir, "b"), result_dir])
+    self.assertEquals(rc, 0)
 
 
 if __name__ == "__main__":
