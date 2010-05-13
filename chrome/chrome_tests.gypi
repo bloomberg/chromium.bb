@@ -510,6 +510,7 @@
         'chrome_resources',
         'chrome_strings',
         'common',
+        'common_net_test_support',
         'debugger',
         'renderer',
         'test_support_unit',
@@ -920,6 +921,7 @@
         'browser/sync/glue/theme_util_unittest.cc',
         'browser/sync/glue/typed_url_model_associator_unittest.cc',
         'browser/sync/glue/ui_model_worker_unittest.cc',
+        'browser/sync/net/network_change_notifier_io_thread_unittest.cc',
         'browser/sync/profile_sync_factory_impl_unittest.cc',
         'browser/sync/profile_sync_factory_mock.cc',
         'browser/sync/profile_sync_factory_mock.h',
@@ -1722,6 +1724,21 @@
       ], # conditions
     },
     {
+      'target_name': 'common_net_test_support',
+      'type': '<(library)',
+      'sources': [
+        'common/net/fake_network_change_notifier_thread.cc',
+        'common/net/fake_network_change_notifier_thread.h',
+        'common/net/thread_blocker.cc',
+        'common/net/thread_blocker.h',
+      ],
+      'dependencies': [
+        'common_net',
+        '../base/base.gyp:base',
+        '../net/net.gyp:net_base',
+      ],
+    },
+    {
       # TODO(akalin): Add this to all.gyp.
       'target_name': 'common_net_unit_tests',
       'type': 'executable',
@@ -1730,20 +1747,17 @@
         '../base/test/run_all_unittests.cc',
         '../base/test/test_suite.h',
         'common/net/fake_network_change_notifier_thread_unittest.cc',
-        'common/net/fake_network_change_notifier_thread.cc',
-        'common/net/fake_network_change_notifier_thread.h',
         'common/net/mock_network_change_observer.h',
         'common/net/network_change_notifier_proxy_unittest.cc',
         'common/net/network_change_observer_proxy_unittest.cc',
         'common/net/thread_blocker_unittest.cc',
-        'common/net/thread_blocker.cc',
-        'common/net/thread_blocker.h',
       ],
       'include_dirs': [
         '..',
       ],
       'dependencies': [
         'common_net',
+        'common_net_test_support',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
