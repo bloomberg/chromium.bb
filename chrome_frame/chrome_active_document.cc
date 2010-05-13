@@ -685,6 +685,10 @@ void ChromeActiveDocument::UpdateNavigationState(
        StartsWith(static_cast<BSTR>(url_), kChromeAttachExternalTabPrefix,
                   false);
 
+  if (new_navigation_info.url.is_valid()) {
+    url_.Allocate(UTF8ToWide(new_navigation_info.url.spec()).c_str());
+  }
+
   if (is_internal_navigation) {
     ScopedComPtr<IDocObjectService> doc_object_svc;
     ScopedComPtr<IWebBrowserEventsService> web_browser_events_svc;
