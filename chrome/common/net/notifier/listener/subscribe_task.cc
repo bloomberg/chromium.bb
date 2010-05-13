@@ -76,7 +76,7 @@ buzz::XmlElement* SubscribeTask::MakeSubscriptionMessage(
     const buzz::Jid& to_jid_bare, const std::string& task_id) {
   DCHECK(to_jid_bare.IsBare());
   static const buzz::QName kQnNotifierGetAll(
-      true, kNotifierNamespace, "getAll");
+      kNotifierNamespace, "getAll");
 
   // Create the subscription stanza using the notifications protocol.
   // <iq type='get' from='{fullJid}' to='{bareJid}' id='{#}'>

@@ -24,7 +24,7 @@ namespace {
 class XmlElementUtilTest : public testing::Test {};
 
 TEST_F(XmlElementUtilTest, XmlElementToString) {
-  const buzz::QName kQName(true, "namespace", "element");
+  const buzz::QName kQName("namespace", "element");
   const buzz::XmlElement kXmlElement(kQName, true);
   std::ostringstream expected_xml_stream;
   buzz::XmlPrinter::PrintXml(&expected_xml_stream, &kXmlElement);

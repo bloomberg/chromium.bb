@@ -76,9 +76,9 @@ buzz::XmlElement* SendUpdateTask::MakeUpdateMessage(
     const OutgoingNotificationData& notification_data,
     const buzz::Jid& to_jid_bare, const std::string& task_id) {
   DCHECK(to_jid_bare.IsBare());
-  static const buzz::QName kQnNotifierSet(true, kNotifierNamespace, "set");
-  static const buzz::QName kQnId(true, buzz::STR_EMPTY, "Id");
-  static const buzz::QName kQnContent(true, buzz::STR_EMPTY, "Content");
+  static const buzz::QName kQnNotifierSet(kNotifierNamespace, "set");
+  static const buzz::QName kQnId(buzz::STR_EMPTY, "Id");
+  static const buzz::QName kQnContent(buzz::STR_EMPTY, "Content");
 
   // Create our update stanza. The message is constructed as:
   // <iq type='get' from='{fullJid}' to='{bareJid}' id='{#}'>

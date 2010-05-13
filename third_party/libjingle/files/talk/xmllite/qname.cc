@@ -35,80 +35,11 @@
 
 namespace buzz {
 
-static int QName_Hash(const std::string & ns, const char * local) {
-  int result = static_cast<int>(ns.size()) * 101;
-  while (*local) {
-    result *= 19;
-    result += *local;
-    local += 1;
-  }
-  return result;
-}
+QName::QName() : namespace_(QN_EMPTY.namespace_),
+                 localPart_(QN_EMPTY.localPart_) {}
 
-static const int bits = 9;
-static QName::Data * get_qname_table() {
-  static QName::Data qname_table[1 << bits];
-  return qname_table;
-}
-
-static QName::Data *
-AllocateOrFind(const std::string & ns, const char * local) {
-  int index = QName_Hash(ns, local);
-  int increment = index >> (bits - 1) | 1;
-  QName::Data * qname_table = get_qname_table();
-  for (;;) {
-    index &= ((1 << bits) - 1);
-    if (!qname_table[index].Occupied()) {
-      return new QName::Data(ns, local);
-    }
-    if (qname_table[index].localPart_ == local &&
-        qname_table[index].namespace_ == ns) {
-      qname_table[index].AddRef();
-      return qname_table + index;
-    }
-    index += increment;
-  }
-}
-
-static QName::Data *
-Add(const std::string & ns, const char * local) {
-  int index = QName_Hash(ns, local);
-  int increment = index >> (bits - 1) | 1;
-  QName::Data * qname_table = get_qname_table();
-  for (;;) {
-    index &= ((1 << bits) - 1);
-    if (!qname_table[index].Occupied()) {
-      qname_table[index].namespace_ = ns;
-      qname_table[index].localPart_ = local;
-      qname_table[index].AddRef(); // AddRef twice so it's never deleted
-      qname_table[index].AddRef();
-      return qname_table + index;
-    }
-    if (qname_table[index].localPart_ == local &&
-        qname_table[index].namespace_ == ns) {
-      qname_table[index].AddRef();
-      return qname_table + index;
-    }
-    index += increment;
-  }
-}
-
-QName::~QName() {
-  data_->Release();
-}
-
-QName::QName() : data_(QN_EMPTY.data_) {
-  data_->AddRef();
-}
-
-QName::QName(bool add, const std::string & ns, const char * local) :
-  data_(add ? Add(ns, local) : AllocateOrFind(ns, local)) {}
-  
-QName::QName(bool add, const std::string & ns, const std::string & local) :
-  data_(add ? Add(ns, local.c_str()) : AllocateOrFind(ns, local.c_str())) {}
-  
-QName::QName(const std::string & ns, const char * local) :
-  data_(AllocateOrFind(ns, local)) {}
+QName::QName(const std::string & ns, const std::string & local) :
+  namespace_(ns), localPart_(local) {}
 
 static std::string
 QName_LocalPart(const std::string & name) {
@@ -127,38 +58,30 @@ QName_Namespace(const std::string & name) {
 }
 
 QName::QName(const std::string & mergedOrLocal) :
-  data_(AllocateOrFind(QName_Namespace(mergedOrLocal),
-                 QName_LocalPart(mergedOrLocal).c_str())) {}
+  namespace_(QName_Namespace(mergedOrLocal)),
+  localPart_(QName_LocalPart(mergedOrLocal)) {}
 
 std::string
 QName::Merged() const {
-  if (data_->namespace_ == STR_EMPTY)
-    return data_->localPart_;
-
-  std::string result(data_->namespace_);
-  result.reserve(result.length() + 1 + data_->localPart_.length());
-  result += ':';
-  result += data_->localPart_;
-  return result;
+  if (namespace_ == STR_EMPTY)
+    return localPart_;
+  return namespace_ + ':' + localPart_;
 }
 
 bool
 QName::operator==(const QName & other) const {
-  return other.data_ == data_ ||
-    data_->localPart_ == other.data_->localPart_ &&
-    data_->namespace_ == other.data_->namespace_;
+  return
+    localPart_ == other.localPart_ &&
+    namespace_ == other.namespace_;
 }
 
 int
 QName::Compare(const QName & other) const {
-  if (data_ == other.data_)
-    return 0;
-  
-  int result = data_->localPart_.compare(other.data_->localPart_);
+  int result = localPart_.compare(other.localPart_);
   if (result)
     return result;
 
-  return data_->namespace_.compare(other.data_->namespace_);
+  return namespace_.compare(other.namespace_);
 }
 
 }

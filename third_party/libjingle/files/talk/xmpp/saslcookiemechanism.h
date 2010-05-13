@@ -62,7 +62,7 @@ public:
     el->AddAttr(QN_MECHANISM, mechanism_);
     if (!token_service_.empty()) {
       el->AddAttr(
-          QName(true, "http://www.google.com/talk/protocol/auth", "service"),
+          QName("http://www.google.com/talk/protocol/auth", "service"),
           token_service_);
     }
     

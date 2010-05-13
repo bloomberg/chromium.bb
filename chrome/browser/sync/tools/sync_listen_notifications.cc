@@ -382,9 +382,9 @@ class ChromeInvalidationListener
   DISALLOW_COPY_AND_ASSIGN(ChromeInvalidationListener);
 };
 
-static const buzz::QName kQnTangoIqPacket(true, "google:tango", "packet");
+static const buzz::QName kQnTangoIqPacket("google:tango", "packet");
 static const buzz::QName kQnTangoIqPacketContent(
-    true, "google:tango", "content");
+    "google:tango", "content");
 
 // A task that listens for ClientInvalidation messages and calls the
 // given callback on them.

@@ -40,8 +40,8 @@
 
 namespace buzz {
 
-const QName QN_EMPTY(true, STR_EMPTY, STR_EMPTY);
-const QName QN_XMLNS(true, STR_EMPTY, STR_XMLNS);
+const QName QN_EMPTY(STR_EMPTY, STR_EMPTY);
+const QName QN_XMLNS(STR_EMPTY, STR_XMLNS);
 
 
 XmlChild::~XmlChild() {

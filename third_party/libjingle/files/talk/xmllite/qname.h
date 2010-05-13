@@ -36,49 +36,21 @@ namespace buzz {
 class QName
 {
 public:
-  explicit QName();
-  QName(const QName & qname) : data_(qname.data_) { data_->AddRef(); }
-  explicit QName(bool add, const std::string & ns, const char * local);
-  explicit QName(bool add, const std::string & ns, const std::string & local);
-  explicit QName(const std::string & ns, const char * local);
+  QName();
+  QName(const std::string & ns, const std::string & local);
   explicit QName(const std::string & mergedOrLocal);
-  QName & operator=(const QName & qn) {
-    qn.data_->AddRef();
-    data_->Release();
-    data_ = qn.data_;
-    return *this;
-  }
-  ~QName();
   
-  const std::string & Namespace() const { return data_->namespace_; }
-  const std::string & LocalPart() const { return data_->localPart_; }
+  const std::string & Namespace() const { return namespace_; }
+  const std::string & LocalPart() const { return localPart_; }
   std::string Merged() const;
   int Compare(const QName & other) const;
   bool operator==(const QName & other) const;
   bool operator!=(const QName & other) const { return !operator==(other); }
   bool operator<(const QName & other) const { return Compare(other) < 0; }
   
-  class Data {
-  public:
-    Data(const std::string & ns, const std::string & local) :
-      namespace_(ns),
-      localPart_(local),
-      refcount_(1) {}
-
-    Data() : refcount_(0) {}
-      
-    std::string namespace_;
-    std::string localPart_;
-    void AddRef() { refcount_++; }
-    void Release() { if (!--refcount_) { delete this; } }
-    bool Occupied() { return !!refcount_; }
-
-  private:
-    int refcount_;
-  };
-
 private:
-  Data * data_;
+  std::string namespace_;
+  std::string localPart_;
 };
 
 

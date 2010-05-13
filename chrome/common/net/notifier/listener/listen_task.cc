@@ -67,34 +67,34 @@ int ListenTask::ProcessResponse() {
   // through all of them.
   bool update_signaled = false;
   const buzz::XmlElement* get_all_element =
-      stanza->FirstNamed(buzz::QName(true, "google:notifier", "getAll"));
+      stanza->FirstNamed(buzz::QName("google:notifier", "getAll"));
   if (get_all_element) {
     const buzz::XmlElement* result_element =
         get_all_element->FirstNamed(
-            buzz::QName(true, buzz::STR_EMPTY, "Result"));
+            buzz::QName(buzz::STR_EMPTY, "Result"));
     while (result_element) {
       IncomingNotificationData notification_data;
       const buzz::XmlElement* id_element =
-          result_element->FirstNamed(buzz::QName(true, buzz::STR_EMPTY, "Id"));
+          result_element->FirstNamed(buzz::QName(buzz::STR_EMPTY, "Id"));
       if (id_element) {
         const buzz::XmlElement* service_url_element =
             id_element->FirstNamed(
-                buzz::QName(true, buzz::STR_EMPTY, "ServiceUrl"));
+                buzz::QName(buzz::STR_EMPTY, "ServiceUrl"));
         if (service_url_element) {
           notification_data.service_url = service_url_element->Attr(
-              buzz::QName(true, buzz::STR_EMPTY, "data"));
+              buzz::QName(buzz::STR_EMPTY, "data"));
         }
       }
       const buzz::XmlElement* content_element =
           result_element->FirstNamed(
-              buzz::QName(true, buzz::STR_EMPTY, "Content"));
+              buzz::QName(buzz::STR_EMPTY, "Content"));
       if (content_element) {
         const buzz::XmlElement* service_data_element =
             content_element->FirstNamed(
-                buzz::QName(true, buzz::STR_EMPTY, "ServiceSpecificData"));
+                buzz::QName(buzz::STR_EMPTY, "ServiceSpecificData"));
         if (service_data_element) {
           notification_data.service_specific_data = service_data_element->Attr(
-              buzz::QName(true, buzz::STR_EMPTY, "data"));
+              buzz::QName(buzz::STR_EMPTY, "data"));
         }
       }
       // Inform listeners that a notification has been received.
@@ -102,7 +102,7 @@ int ListenTask::ProcessResponse() {
       update_signaled = true;
       // Now go to the next Result element
       result_element = result_element->NextNamed(
-          buzz::QName(true, buzz::STR_EMPTY, "Result"));
+          buzz::QName(buzz::STR_EMPTY, "Result"));
     }
   }
   if (!update_signaled) {
@@ -127,7 +127,7 @@ bool ListenTask::HandleStanza(const buzz::XmlElement* stanza) {
 
 bool ListenTask::IsValidNotification(const buzz::XmlElement* stanza) {
   static const buzz::QName kQnNotifierGetAll(
-      true, kNotifierNamespace, "getAll");
+      kNotifierNamespace, "getAll");
   // An update notificaiton has the following form.
   //  <cli:iq from="{bare_jid}" to="{full_jid}"
   //      id="#" type="set" xmlns:cli="jabber:client">

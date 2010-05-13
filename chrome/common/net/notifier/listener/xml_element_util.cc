@@ -22,8 +22,8 @@ std::string XmlElementToString(const buzz::XmlElement& xml_element) {
 }
 
 buzz::XmlElement* MakeBoolXmlElement(const char* name, bool value) {
-  const buzz::QName elementQName(true, buzz::STR_EMPTY, name);
-  const buzz::QName boolAttrQName(true, buzz::STR_EMPTY, "bool");
+  const buzz::QName elementQName(buzz::STR_EMPTY, name);
+  const buzz::QName boolAttrQName(buzz::STR_EMPTY, "bool");
   buzz::XmlElement* bool_xml_element =
       new buzz::XmlElement(elementQName, true);
   bool_xml_element->AddAttr(boolAttrQName, value ? "true" : "false");
@@ -31,8 +31,8 @@ buzz::XmlElement* MakeBoolXmlElement(const char* name, bool value) {
 }
 
 buzz::XmlElement* MakeIntXmlElement(const char* name, int value) {
-  const buzz::QName elementQName(true, buzz::STR_EMPTY, name);
-  const buzz::QName intAttrQName(true, buzz::STR_EMPTY, "int");
+  const buzz::QName elementQName(buzz::STR_EMPTY, name);
+  const buzz::QName intAttrQName(buzz::STR_EMPTY, "int");
   buzz::XmlElement* int_xml_element =
       new buzz::XmlElement(elementQName, true);
   int_xml_element->AddAttr(intAttrQName, IntToString(value));
@@ -40,8 +40,8 @@ buzz::XmlElement* MakeIntXmlElement(const char* name, int value) {
 }
 
 buzz::XmlElement* MakeStringXmlElement(const char* name, const char* value) {
-  const buzz::QName elementQName(true, buzz::STR_EMPTY, name);
-  const buzz::QName dataAttrQName(true, buzz::STR_EMPTY, "data");
+  const buzz::QName elementQName(buzz::STR_EMPTY, name);
+  const buzz::QName dataAttrQName(buzz::STR_EMPTY, "data");
   buzz::XmlElement* data_xml_element =
       new buzz::XmlElement(elementQName, true);
   data_xml_element->AddAttr(dataAttrQName, value);
