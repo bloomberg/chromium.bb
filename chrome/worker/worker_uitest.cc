@@ -657,6 +657,7 @@ TEST_F(WorkerTest, DISABLED_QueuedSharedWorkerStartedFromOtherTab) {
   ASSERT_TRUE(WaitForProcessCountToBe(2, max_workers_per_tab+1));
 }
 
-TEST_F(WorkerTest, OpenDatabaseSyncInputs) {
+// http://crbug.com/43974 failing on Valgrind Linux
+TEST_F(WorkerTest, DISABLED_OpenDatabaseSyncInputs) {
   RunWorkerStorageLayoutTest("open-database-sync-inputs.html");
 }
