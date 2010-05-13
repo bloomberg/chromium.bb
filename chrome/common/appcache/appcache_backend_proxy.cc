@@ -25,6 +25,19 @@ void AppCacheBackendProxy::SelectCache(
                                     manifest_url));
 }
 
+void AppCacheBackendProxy::SelectCacheForWorker(
+    int host_id, int parent_process_id, int parent_host_id) {
+  sender_->Send(new AppCacheMsg_SelectCacheForWorker(
+                                    host_id, parent_process_id,
+                                    parent_host_id));
+}
+
+void AppCacheBackendProxy::SelectCacheForSharedWorker(
+    int host_id, int64 appcache_id) {
+  sender_->Send(new AppCacheMsg_SelectCacheForSharedWorker(
+                                    host_id, appcache_id));
+}
+
 void AppCacheBackendProxy::MarkAsForeignEntry(
     int host_id, const GURL& document_url,
     int64 cache_document_was_loaded_from) {

@@ -23,6 +23,13 @@ class AppCacheBackendProxy : public appcache::AppCacheBackend {
                            const GURL& document_url,
                            const int64 cache_document_was_loaded_from,
                            const GURL& manifest_url);
+  virtual void SelectCacheForWorker(
+                           int host_id,
+                           int parent_process_id,
+                           int parent_host_id);
+  virtual void SelectCacheForSharedWorker(
+                           int host_id,
+                           int64 appcache_id);
   virtual void MarkAsForeignEntry(int host_id, const GURL& document_url,
                                   int64 cache_document_was_loaded_from);
   virtual appcache::Status GetStatus(int host_id);

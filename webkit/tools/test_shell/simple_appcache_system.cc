@@ -166,6 +166,19 @@ class SimpleBackendProxy
     }
   }
 
+  virtual void SelectCacheForWorker(
+                           int host_id,
+                           int parent_process_id,
+                           int parent_host_id) {
+    NOTREACHED();  // Workers are not supported in test_shell.
+  }
+
+  virtual void SelectCacheForSharedWorker(
+                           int host_id,
+                           int64 appcache_id) {
+    NOTREACHED();  // Workers are not supported in test_shell.
+  }
+
   virtual void MarkAsForeignEntry(int host_id, const GURL& document_url,
                                   int64 cache_document_was_loaded_from) {
     if (system_->is_ui_thread()) {

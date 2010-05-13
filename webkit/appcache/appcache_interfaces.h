@@ -44,7 +44,7 @@ enum EventID {
   OBSOLETE_EVENT
 };
 
-// Interface used by backend to talk to frontend.
+// Interface used by backend (browser-process) to talk to frontend (renderer).
 class AppCacheFrontend {
  public:
   virtual void OnCacheSelected(int host_id, int64 cache_id ,
@@ -58,7 +58,7 @@ class AppCacheFrontend {
   virtual ~AppCacheFrontend() {}
 };
 
-// Interface used by frontend to talk to backend.
+// Interface used by frontend (renderer) to talk to backend (browser-process).
 class AppCacheBackend {
  public:
   virtual void RegisterHost(int host_id) = 0;
@@ -67,6 +67,13 @@ class AppCacheBackend {
                            const GURL& document_url,
                            const int64 cache_document_was_loaded_from,
                            const GURL& manifest_url) = 0;
+  virtual void SelectCacheForWorker(
+                           int host_id,
+                           int parent_process_id,
+                           int parent_host_id) = 0;
+  virtual void SelectCacheForSharedWorker(
+                           int host_id,
+                           int64 appcache_id) = 0;
   virtual void MarkAsForeignEntry(int host_id, const GURL& document_url,
                                   int64 cache_document_was_loaded_from) = 0;
   virtual Status GetStatus(int host_id) = 0;

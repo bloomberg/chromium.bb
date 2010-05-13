@@ -1785,6 +1785,15 @@ IPC_BEGIN_MESSAGES(ViewHost)
                        int64 /* appcache_document_was_loaded_from */,
                        GURL  /* opt_manifest_url */)
 
+  // Initiates worker specific cache selection algorithm for the given host.
+  IPC_MESSAGE_CONTROL3(AppCacheMsg_SelectCacheForWorker,
+                       int /* host_id */,
+                       int /* parent_process_id */,
+                       int /* parent_host_id */)
+  IPC_MESSAGE_CONTROL2(AppCacheMsg_SelectCacheForSharedWorker,
+                       int /* host_id */,
+                       int64 /* appcache_id */)
+
   // Informs the browser of a 'foreign' entry in an appcache.
   IPC_MESSAGE_CONTROL3(AppCacheMsg_MarkAsForeignEntry,
                        int /* host_id */,
