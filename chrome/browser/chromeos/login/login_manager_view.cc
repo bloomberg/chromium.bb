@@ -28,7 +28,6 @@
 #include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/notification_service.h"
@@ -129,12 +128,6 @@ void LoginManagerView::Init() {
   AddAccelerator(accel_focus_pass_);
 
   UpdateLocalizedStrings();
-
-  // Restore previously logged in user.
-  std::vector<UserManager::User> users = UserManager::Get()->GetUsers();
-  if (users.size() > 0) {
-    username_field_->SetText(UTF8ToUTF16(users[0].email()));
-  }
   RequestFocus();
 
   // Controller to handle events from textfields
