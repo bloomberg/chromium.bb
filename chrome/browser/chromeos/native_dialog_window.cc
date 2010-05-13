@@ -128,7 +128,7 @@ void NativeDialogHost::WindowClosing() {
     // Disconnect the "destroy" signal because we are about to destroy
     // the dialog ourselves and no longer interested in it.
     g_signal_handler_disconnect(G_OBJECT(dialog_), destroy_signal_id_);
-    gtk_dialog_response(GTK_DIALOG(dialog_), GTK_RESPONSE_CLOSE);
+    gtk_dialog_response(GTK_DIALOG(dialog_), GTK_RESPONSE_DELETE_EVENT);
   }
 }
 
