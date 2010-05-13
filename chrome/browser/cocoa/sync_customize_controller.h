@@ -18,6 +18,8 @@ class ProfileSyncService;
  @private
   ProfileSyncService* syncService_;  // weak
 
+  IBOutlet NSTextField* customizeSyncDescriptionTextField_;
+
   // The member variables below are connected to the dialog with KVO.
 
   // The registered flags indicate which model types are enabled for

@@ -13,6 +13,7 @@
 #import "base/stl_util-inl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 
 @implementation SyncCustomizeController
@@ -74,6 +75,23 @@
 - (void)awakeFromNib {
   DCHECK([self window]);
   [[self window] setDelegate:self];
+
+  CGFloat viewHeightChange =
+      [GTMUILocalizerAndLayoutTweaker
+       sizeToFitFixedWidthTextField:customizeSyncDescriptionTextField_];
+  if (viewHeightChange > 0) {
+    // Resize the window.  No need to move the controls as they're all
+    // bottom-anchored.
+    NSSize viewSizeChange = NSMakeSize(0, viewHeightChange);
+    NSSize windowSizeChange =
+        [customizeSyncDescriptionTextField_ convertSize:viewSizeChange
+                                                 toView:nil];
+    CGFloat windowHeightChange = windowSizeChange.height;
+    NSRect frame = [[self window] frame];
+    frame.origin.y -= windowHeightChange;
+    frame.size.height += windowHeightChange;
+    [[self window] setFrame:frame display:NO];
+  }
 
   syncable::ModelTypeSet registered_types;
   syncService_->GetRegisteredDataTypes(&registered_types);
