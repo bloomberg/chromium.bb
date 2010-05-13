@@ -333,7 +333,7 @@ def PatchAbiVersionIntoElfHeader(filename, format, alignment):
 
   elf_hdr[ELF_OSABI_INDEX] = OS_ABI
   elf_hdr[ELF_ABIVERSION_INDEX] = ABIVERSION
-  elf_hdr[ELF_E_FLAGS_INDEX] |= 0x10 << alignment
+  elf_hdr[ELF_E_FLAGS_INDEX] |= 0x10000 * alignment
 
   fp.seek(0, 0)  # rewind
   fp.write(struct.pack(format, *elf_hdr))
@@ -762,7 +762,7 @@ def Incarnation_sfild(argv):
   extra = []
   Run([LD_ARM] +  MassageFinalLinkCommandArm(extra + argv[1:]))
 
-  PatchAbiVersionIntoElfHeader(output, 16)
+  PatchAbiVersionIntoElfHeader(output, ELF32_EHDR, alignment=16)
 
 ######################################################################
 # Dispatch based on name the scripts is invoked with
