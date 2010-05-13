@@ -86,11 +86,11 @@ class SyncerThreadWithSyncerTest : public testing::Test,
     // Wait for the SyncerThread to detect loss of connection, up to a max of
     // 10 seconds to timeout the test.
     AutoLock lock(syncer_thread()->lock_);
-    TimeTicks start = TimeTicks::HighResNow();
+    TimeTicks start = TimeTicks::Now();
     TimeDelta ten_seconds = TimeDelta::FromSeconds(10);
     while (syncer_thread()->vault_.connected_) {
       syncer_thread()->vault_field_changed_.TimedWait(ten_seconds);
-      if (TimeTicks::HighResNow() - start > ten_seconds)
+      if (TimeTicks::Now() - start > ten_seconds)
         break;
     }
     EXPECT_FALSE(syncer_thread()->vault_.connected_);
