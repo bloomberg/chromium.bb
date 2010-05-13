@@ -53,6 +53,9 @@ class NativeDialogHost : public views::View,
   // Init and attach to native dialog.
   void Init();
 
+  // Check and apply minimum size restriction.
+  void CheckSize();
+
   // The GtkDialog whose vbox will be displayed in this view.
   gfx::NativeView dialog_;
 
@@ -62,6 +65,7 @@ class NativeDialogHost : public views::View,
   std::wstring title_;
   int flags_;
   gfx::Size size_;
+  gfx::Size preferred_size_;
   gfx::Size min_size_;
 
   int destroy_signal_id_;
@@ -80,6 +84,7 @@ NativeDialogHost::NativeDialogHost(gfx::NativeView native_dialog,
       contents_view_(NULL),
       flags_(flags),
       size_(size),
+      preferred_size_(size),
       min_size_(min_size),
       destroy_signal_id_(0) {
   const char* title = gtk_window_get_title(GTK_WINDOW(dialog_));
@@ -94,24 +99,28 @@ NativeDialogHost::~NativeDialogHost() {
 }
 
 void NativeDialogHost::OnCheckResize(GtkWidget* widget) {
-  gfx::NativeView contents = contents_view_->native_view();
+  // Do auto height resize only when we are asked to do so.
+  if (size_.height() == 0) {
+    gfx::NativeView contents = contents_view_->native_view();
 
-  // Check whether preferred height has changed. We keep the current width
-  // unchanged and pass "-1" as height to let gtk calculate a proper height.
-  gtk_widget_set_size_request(contents, width(), -1);
-  GtkRequisition requsition = { 0 };
-  gtk_widget_size_request(contents, &requsition);
+    // Check whether preferred height has changed. We keep the current width
+    // unchanged and pass "-1" as height to let gtk calculate a proper height.
+    gtk_widget_set_size_request(contents, width(), -1);
+    GtkRequisition requsition = { 0 };
+    gtk_widget_size_request(contents, &requsition);
 
-  if (size_.height() != requsition.height) {
-    size_.set_width(requsition.width);
-    size_.set_height(requsition.height);
-    SizeToPreferredSize();
+    if (preferred_size_.height() != requsition.height) {
+      preferred_size_.set_width(requsition.width);
+      preferred_size_.set_height(requsition.height);
+      CheckSize();
+      SizeToPreferredSize();
 
-    gfx::Size window_size = window()->GetNonClientView()->GetPreferredSize();
-    gfx::Rect window_bounds = window()->GetBounds();
-    window_bounds.set_width(window_size.width());
-    window_bounds.set_height(window_size.height());
-    window()->SetBounds(window_bounds, NULL);
+      gfx::Size window_size = window()->GetNonClientView()->GetPreferredSize();
+      gfx::Rect window_bounds = window()->GetBounds();
+      window_bounds.set_width(window_size.width());
+      window_bounds.set_height(window_size.height());
+      window()->SetBounds(window_bounds, NULL);
+    }
   }
 }
 
@@ -136,7 +145,7 @@ void NativeDialogHost::WindowClosing() {
 // NativeDialogHost, views::View implementation:
 
 gfx::Size NativeDialogHost::GetPreferredSize() {
-  return size_;
+  return preferred_size_;
 }
 
 void NativeDialogHost::Layout() {
@@ -193,15 +202,19 @@ void NativeDialogHost::Init() {
 
     GtkRequisition requsition = { 0 };
     gtk_widget_size_request(contents, &requsition);
-    size_.set_width(requsition.width);
-    size_.set_height(requsition.height);
+    preferred_size_.set_width(requsition.width);
+    preferred_size_.set_height(requsition.height);
   }
 
+  CheckSize();
+}
+
+void NativeDialogHost::CheckSize() {
   // Apply the minimum size.
-  if (size_.width() < min_size_.width())
-    size_.set_width(min_size_.width());
-  if (size_.height() < min_size_.height())
-    size_.set_height(min_size_.height());
+  if (preferred_size_.width() < min_size_.width())
+    preferred_size_.set_width(min_size_.width());
+  if (preferred_size_.height() < min_size_.height())
+    preferred_size_.set_height(min_size_.height());
 }
 
 void ShowNativeDialog(gfx::NativeWindow parent,
