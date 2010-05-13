@@ -802,7 +802,10 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY:
       return !params_.misspelled_word.empty();
 
-#if !defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+    case IDS_CONTENT_CONTEXT_PRINT:
+      return false;
+#else
     case IDS_CONTENT_CONTEXT_PRINT:
 #endif
     case IDS_CONTENT_CONTEXT_SEARCHWEBFOR:
