@@ -128,9 +128,19 @@ void NetworkSelectionView::UpdateLocalizedStrings() {
 ////////////////////////////////////////////////////////////////////////////////
 // views::View: implementation:
 
+void NetworkSelectionView::ChildPreferredSizeChanged(View* child) {
+  Layout();
+  SchedulePaint();
+}
+
 void NetworkSelectionView::LocaleChanged() {
   UpdateLocalizedStrings();
   NetworkModelChanged();
+  // Explicitly set selected item - index 0 is a localized string.
+  if (GetSelectedNetworkItem() <= 0 &&
+      delegate_->GetItemCount() > 0) {
+    SetSelectedNetworkItem(0);
+  }
   Layout();
   SchedulePaint();
 }
@@ -192,7 +202,6 @@ void NetworkSelectionView::Layout() {
   // Need to refresh combobox layout explicitly.
   network_combobox_->Layout();
   offline_button_->Layout();
-  SchedulePaint();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

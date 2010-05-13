@@ -60,12 +60,6 @@ void NetworkScreen::ItemChanged(views::Combobox* sender,
   if (new_index == prev_index || new_index < 0 || prev_index < 0)
     return;
 
-  // First item is a text, not a network.
-  if (new_index == 0) {
-    view()->SetSelectedNetworkItem(prev_index);
-    return;
-  }
-
   if (networks_.IsEmpty())
     return;
 

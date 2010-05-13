@@ -54,6 +54,7 @@ class NetworkSelectionView : public views::View {
 
  protected:
   // Overridden from views::View.
+  virtual void ChildPreferredSizeChanged(View* child);
   virtual void LocaleChanged();
 
  private:
