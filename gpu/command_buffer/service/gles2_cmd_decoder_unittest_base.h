@@ -157,6 +157,27 @@ class GLES2DecoderTestBase : public testing::Test {
 
   void SetBucketAsCString(uint32 bucket_id, const char* str);
 
+  struct AttribInfo {
+    const char* name;
+    GLint size;
+    GLenum type;
+    GLint location;
+  };
+
+  struct UniformInfo {
+    const char* name;
+    GLint size;
+    GLenum type;
+    GLint location;
+  };
+
+  void SetupShader(AttribInfo* attribs, size_t num_attribs,
+                   UniformInfo* uniforms, size_t num_uniforms,
+                   GLuint client_id, GLuint service_id);
+
+  // Setups up a shader for testing glUniform.
+  void SetupShaderForUniform();
+
   // Note that the error is returned as GLint instead of GLenum.
   // This is because there is a mismatch in the types of GLenum and
   // the error values GL_NO_ERROR, GL_INVALID_ENUM, etc. GLenum is
@@ -287,26 +308,8 @@ class GLES2DecoderWithShaderTestBase : public GLES2DecoderTestBase {
   static const GLint kBadUniformIndex = 1000;
 
  protected:
-  struct AttribInfo {
-    const char* name;
-    GLint size;
-    GLenum type;
-    GLint location;
-  };
-
-  struct UniformInfo {
-    const char* name;
-    GLint size;
-    GLenum type;
-    GLint location;
-  };
-
   virtual void SetUp();
   virtual void TearDown();
-
-  void SetupShader(AttribInfo* attribs, size_t num_attribs,
-                   UniformInfo* uniforms, size_t num_uniforms,
-                   GLuint client_id, GLuint service_id);
 
   void SetupTexture();
 

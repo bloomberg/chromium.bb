@@ -179,6 +179,24 @@ void GLES2DecoderTestBase::SetBucketAsCString(
   }
 }
 
+void GLES2DecoderTestBase::SetupShaderForUniform() {
+  static AttribInfo attribs[] = {
+    { "foo", 1, GL_FLOAT, 1, },
+  };
+  static UniformInfo uniforms[] = {
+    { "bar", 1, GL_INT, 1, },
+  };
+  SetupShader(attribs, arraysize(attribs), uniforms, arraysize(uniforms),
+              client_program_id_, kServiceProgramId);
+
+  EXPECT_CALL(*gl_, UseProgram(kServiceProgramId))
+      .Times(1)
+      .RetiresOnSaturation();
+  UseProgram cmd;
+  cmd.Init(client_program_id_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
 void GLES2DecoderTestBase::DoBindFramebuffer(
     GLenum target, GLuint client_id, GLuint service_id) {
   EXPECT_CALL(*gl_, BindFramebufferEXT(target, service_id))
@@ -287,9 +305,9 @@ void GLES2DecoderWithShaderTestBase::TearDown() {
   GLES2DecoderTestBase::TearDown();
 }
 
-void GLES2DecoderWithShaderTestBase::SetupShader(
-    GLES2DecoderWithShaderTestBase::AttribInfo* attribs, size_t num_attribs,
-    GLES2DecoderWithShaderTestBase::UniformInfo* uniforms, size_t num_uniforms,
+void GLES2DecoderTestBase::SetupShader(
+    GLES2DecoderTestBase::AttribInfo* attribs, size_t num_attribs,
+    GLES2DecoderTestBase::UniformInfo* uniforms, size_t num_uniforms,
     GLuint client_id, GLuint service_id) {
   LinkProgram cmd;
   cmd.Init(client_id);
@@ -306,15 +324,19 @@ void GLES2DecoderWithShaderTestBase::SetupShader(
         GetProgramiv(service_id, GL_ACTIVE_ATTRIBUTES, _))
         .WillOnce(SetArgumentPointee<2>(num_attribs))
         .RetiresOnSaturation();
+    size_t max_attrib_len = 0;
+    for (size_t ii = 0; ii < num_attribs; ++ii) {
+      size_t len = strlen(attribs[ii].name) + 1;
+      max_attrib_len = std::max(max_attrib_len, len);
+    }
     EXPECT_CALL(*gl_,
         GetProgramiv(service_id, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, _))
-        .WillOnce(SetArgumentPointee<2>(kMaxAttribLength))
+        .WillOnce(SetArgumentPointee<2>(max_attrib_len))
         .RetiresOnSaturation();
     for (size_t ii = 0; ii < num_attribs; ++ii) {
       const AttribInfo& info = attribs[ii];
       EXPECT_CALL(*gl_,
-          GetActiveAttrib(service_id, ii,
-                          kMaxAttribLength, _, _, _, _))
+          GetActiveAttrib(service_id, ii, max_attrib_len, _, _, _, _))
           .WillOnce(DoAll(
               SetArgumentPointee<3>(strlen(info.name)),
               SetArgumentPointee<4>(info.size),
@@ -333,15 +355,19 @@ void GLES2DecoderWithShaderTestBase::SetupShader(
         GetProgramiv(service_id, GL_ACTIVE_UNIFORMS, _))
         .WillOnce(SetArgumentPointee<2>(num_uniforms))
         .RetiresOnSaturation();
+    size_t max_uniform_len = 0;
+    for (size_t ii = 0; ii < num_uniforms; ++ii) {
+      size_t len = strlen(uniforms[ii].name) + 1;
+      max_uniform_len = std::max(max_uniform_len, len);
+    }
     EXPECT_CALL(*gl_,
         GetProgramiv(service_id, GL_ACTIVE_UNIFORM_MAX_LENGTH, _))
-        .WillOnce(SetArgumentPointee<2>(kMaxUniformLength))
+        .WillOnce(SetArgumentPointee<2>(max_uniform_len))
         .RetiresOnSaturation();
     for (size_t ii = 0; ii < num_uniforms; ++ii) {
       const UniformInfo& info = uniforms[ii];
       EXPECT_CALL(*gl_,
-          GetActiveUniform(service_id, ii,
-                           kMaxUniformLength, _, _, _, _))
+          GetActiveUniform(service_id, ii, max_uniform_len, _, _, _, _))
           .WillOnce(DoAll(
               SetArgumentPointee<3>(strlen(info.name)),
               SetArgumentPointee<4>(info.size),

@@ -752,6 +752,23 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   error::Error ShaderSourceHelper(
       GLuint client_id, const char* data, uint32 data_size);
 
+  // Checks if the current program exists and is valid. If not generates the
+  // appropriate GL error.  Returns true if the current program is in a usable
+  // state.
+  bool CheckCurrentProgram(const char* function_name);
+
+  // Checks if the current program exists and is valid and that location is not
+  // -1. If the current program is not valid generates the appropriate GL
+  // error. Returns true if the current program is in a usable state and
+  // location is not -1.
+  bool CheckCurrentProgramForUniform(GLint location, const char* function_name);
+
+  // Gets the type of a uniform for a location in the current program. Sets GL
+  // errors if the current program is not valid. Returns true if the current
+  // program is valid and the location exists.
+  bool GetUniformTypeByLocation(
+      GLint location, const char* function_name, GLenum* type);
+
   // Helper for glGetBooleanv, glGetFloatv and glGetIntegerv
   bool GetHelper(GLenum pname, GLint* params, GLsizei* num_written);
 
@@ -886,7 +903,14 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Wrappers for glUniform1i and glUniform1iv as according to the GLES2
   // spec only these 2 functions can be used to set sampler uniforms.
   void DoUniform1i(GLint location, GLint v0);
-  void DoUniform1iv(GLint location, GLsizei count, const GLint *value);
+  void DoUniform1iv(GLint location, GLsizei count, const GLint* value);
+
+  // Wrappers for glUniformfv because some drivers don't correctly accept
+  // bool uniforms.
+  void DoUniform1fv(GLint location, GLsizei count, const GLfloat* value);
+  void DoUniform2fv(GLint location, GLsizei count, const GLfloat* value);
+  void DoUniform3fv(GLint location, GLsizei count, const GLfloat* value);
+  void DoUniform4fv(GLint location, GLsizei count, const GLfloat* value);
 
   // Wrapper for glUseProgram
   void DoUseProgram(GLuint program);
@@ -963,7 +987,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   bool GetUniformSetup(
       GLuint program, GLint location,
       uint32 shm_id, uint32 shm_offset,
-      error::Error* error, GLuint* service_id, void** result);
+      error::Error* error, GLuint* service_id, void** result,
+      GLenum* result_type);
 
   bool ValidateGLenumCompressedTextureInternalFormat(GLenum format);
 
@@ -2624,10 +2649,45 @@ void GLES2DecoderImpl::DoTexParameteriv(
   }
 }
 
-void GLES2DecoderImpl::DoUniform1i(GLint location, GLint v0) {
+bool GLES2DecoderImpl::CheckCurrentProgram(const char* function_name) {
   if (!current_program_ || current_program_->IsDeleted()) {
-    // The program does not exist.
-    SetGLError(GL_INVALID_OPERATION, "glUniform1i: no program in use");
+      // The program does not exist.
+      SetGLError(GL_INVALID_OPERATION,
+                 (std::string(function_name) + ": no program in use").c_str());
+      return false;
+  }
+  if (!current_program_->IsValid()) {
+    SetGLError(GL_INVALID_OPERATION,
+               (std::string(function_name) + ": program not linked").c_str());
+    return false;
+  }
+  return true;
+}
+
+bool GLES2DecoderImpl::CheckCurrentProgramForUniform(
+    GLint location, const char* function_name) {
+  if (!CheckCurrentProgram(function_name)) {
+    return false;
+  }
+  return location != -1;
+}
+
+bool GLES2DecoderImpl::GetUniformTypeByLocation(
+    GLint location, const char* function_name, GLenum* type) {
+  if (!CheckCurrentProgramForUniform(location, function_name)) {
+    return false;
+  }
+  if (!current_program_->GetUniformTypeByLocation(location, type)) {
+    SetGLError(GL_INVALID_OPERATION,
+               (std::string(function_name) + ": program not linked").c_str());
+    return false;
+  }
+  return true;
+}
+
+
+void GLES2DecoderImpl::DoUniform1i(GLint location, GLint v0) {
+  if (!CheckCurrentProgramForUniform(location, "glUniform1i")) {
     return;
   }
   current_program_->SetSamplers(location, 1, &v0);
@@ -2636,13 +2696,82 @@ void GLES2DecoderImpl::DoUniform1i(GLint location, GLint v0) {
 
 void GLES2DecoderImpl::DoUniform1iv(
     GLint location, GLsizei count, const GLint *value) {
-  if (!current_program_ || current_program_->IsDeleted()) {
-    // The program does not exist.
-    SetGLError(GL_INVALID_OPERATION, "glUniform1iv: no program in use");
+  if (!CheckCurrentProgramForUniform(location, "glUniform1iv")) {
     return;
   }
   current_program_->SetSamplers(location, count, value);
   glUniform1iv(location, count, value);
+}
+
+void GLES2DecoderImpl::DoUniform1fv(
+    GLint location, GLsizei count, const GLfloat* value) {
+  GLenum type;
+  if (!GetUniformTypeByLocation(location, "glUniform1fv", &type)) {
+    return;
+  }
+  if (type == GL_BOOL) {
+    scoped_array<GLint> temp(new GLint[count]);
+    for (GLsizei ii = 0; ii < count; ++ii) {
+      temp[ii] = static_cast<GLint>(value[ii]);
+    }
+    DoUniform1iv(location, count, temp.get());
+  } else {
+    glUniform1fv(location, count, value);
+  }
+}
+
+void GLES2DecoderImpl::DoUniform2fv(
+    GLint location, GLsizei count, const GLfloat* value) {
+  GLenum type;
+  if (!GetUniformTypeByLocation(location, "glUniform2fv", &type)) {
+    return;
+  }
+  if (type == GL_BOOL_VEC2) {
+    GLsizei num_values = count * 2;
+    scoped_array<GLint> temp(new GLint[num_values]);
+    for (GLsizei ii = 0; ii < num_values; ++ii) {
+      temp[ii] = static_cast<GLint>(value[ii]);
+    }
+    glUniform2iv(location, count, temp.get());
+  } else {
+    glUniform2fv(location, count, value);
+  }
+}
+
+void GLES2DecoderImpl::DoUniform3fv(
+    GLint location, GLsizei count, const GLfloat* value) {
+  GLenum type;
+  if (!GetUniformTypeByLocation(location, "glUniform3fv", &type)) {
+    return;
+  }
+  if (type == GL_BOOL_VEC3) {
+    GLsizei num_values = count * 3;
+    scoped_array<GLint> temp(new GLint[num_values]);
+    for (GLsizei ii = 0; ii < num_values; ++ii) {
+      temp[ii] = static_cast<GLint>(value[ii]);
+    }
+    glUniform3iv(location, count, temp.get());
+  } else {
+    glUniform3fv(location, count, value);
+  }
+}
+
+void GLES2DecoderImpl::DoUniform4fv(
+    GLint location, GLsizei count, const GLfloat* value) {
+  GLenum type;
+  if (!GetUniformTypeByLocation(location, "glUniform4fv", &type)) {
+    return;
+  }
+  if (type == GL_BOOL_VEC4) {
+    GLsizei num_values = count * 4;
+    scoped_array<GLint> temp(new GLint[num_values]);
+    for (GLsizei ii = 0; ii < num_values; ++ii) {
+      temp[ii] = static_cast<GLint>(value[ii]);
+    }
+    glUniform4iv(location, count, temp.get());
+  } else {
+    glUniform4fv(location, count, value);
+  }
 }
 
 void GLES2DecoderImpl::DoUseProgram(GLuint program) {
@@ -2774,7 +2903,8 @@ void GLES2DecoderImpl::RestoreStateForNonRenderableTextures() {
 }
 
 bool GLES2DecoderImpl::IsDrawValid(GLuint max_vertex_accessed) {
-  if (!current_program_ || current_program_->IsDeleted()) {
+  if (!current_program_ || current_program_->IsDeleted() ||
+      !current_program_->IsValid()) {
     // The program does not exist.
     // But GL says no ERROR.
     return false;
@@ -2967,6 +3097,7 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
 #endif  // GLES2_GPU_SERVICE_TRANSLATE_SHADER
 #endif  // GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2
 
+  shader_src = info->source().c_str();
   glShaderSource(info->service_id(), 1, &shader_src, NULL);
   glCompileShader(info->service_id());
 
@@ -3775,7 +3906,12 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribPointerv(
 bool GLES2DecoderImpl::GetUniformSetup(
     GLuint program, GLint location,
     uint32 shm_id, uint32 shm_offset,
-    error::Error* error, GLuint* service_id, void** result_pointer) {
+    error::Error* error, GLuint* service_id, void** result_pointer,
+    GLenum* result_type) {
+  DCHECK(error);
+  DCHECK(service_id);
+  DCHECK(result_pointer);
+  DCHECK(result_type);
   *error = error::kNoError;
   // Make sure we have enough room for the result on failure.
   SizedResult<GLint>* result;
@@ -3817,6 +3953,7 @@ bool GLES2DecoderImpl::GetUniformSetup(
     return false;
   }
   result->size = size;
+  *result_type = type;
   return true;
 }
 
@@ -3825,11 +3962,12 @@ error::Error GLES2DecoderImpl::HandleGetUniformiv(
   GLuint program = c.program;
   GLint location = c.location;
   GLuint service_id;
+  GLenum result_type;
   Error error;
   void* result;
   if (GetUniformSetup(
       program, location, c.params_shm_id, c.params_shm_offset,
-      &error, &service_id, &result)) {
+      &error, &service_id, &result, &result_type)) {
     glGetUniformiv(
         service_id, location,
         static_cast<gles2::GetUniformiv::Result*>(result)->GetData());
@@ -3843,15 +3981,24 @@ error::Error GLES2DecoderImpl::HandleGetUniformfv(
   GLint location = c.location;
   GLuint service_id;
   Error error;
-  void* result;
   typedef gles2::GetUniformfv::Result Result;
+  Result* result;
+  GLenum result_type;
   if (GetUniformSetup(
       program, location, c.params_shm_id, c.params_shm_offset,
-      &error, &service_id, &result)) {
-    glGetUniformfv(
-        service_id,
-        location,
-        static_cast<gles2::GetUniformfv::Result*>(result)->GetData());
+      &error, &service_id, reinterpret_cast<void**>(&result), &result_type)) {
+    if (result_type == GL_BOOL || result_type == GL_BOOL_VEC2 ||
+        result_type == GL_BOOL_VEC3 || result_type == GL_BOOL_VEC4) {
+      GLsizei num_values = result->GetNumResults();
+      scoped_array<GLint> temp(new GLint[num_values]);
+      glGetUniformiv(service_id, location, temp.get());
+      GLfloat* dst = result->GetData();
+      for (GLsizei ii = 0; ii < num_values; ++ii) {
+        dst[ii] = (temp[ii] != 0);
+      }
+    } else {
+      glGetUniformfv(service_id, location, result->GetData());
+    }
   }
   return error;
 }

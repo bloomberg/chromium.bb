@@ -1884,7 +1884,8 @@ error::Error GLES2DecoderImpl::HandleUniform1f(
     uint32 immediate_data_size, const gles2::Uniform1f& c) {
   GLint location = static_cast<GLint>(c.location);
   GLfloat x = static_cast<GLfloat>(c.x);
-  glUniform1f(location, x);
+  GLfloat temp[1] = { x, };
+  DoUniform1fv(location, 1, &temp[0]);
   return error::kNoError;
 }
 
@@ -1905,7 +1906,7 @@ error::Error GLES2DecoderImpl::HandleUniform1fv(
   if (v == NULL) {
     return error::kOutOfBounds;
   }
-  glUniform1fv(location, count, v);
+  DoUniform1fv(location, count, v);
   return error::kNoError;
 }
 
@@ -1929,7 +1930,7 @@ error::Error GLES2DecoderImpl::HandleUniform1fvImmediate(
   if (v == NULL) {
     return error::kOutOfBounds;
   }
-  glUniform1fv(location, count, v);
+  DoUniform1fv(location, count, v);
   return error::kNoError;
 }
 
@@ -1991,7 +1992,8 @@ error::Error GLES2DecoderImpl::HandleUniform2f(
   GLint location = static_cast<GLint>(c.location);
   GLfloat x = static_cast<GLfloat>(c.x);
   GLfloat y = static_cast<GLfloat>(c.y);
-  glUniform2f(location, x, y);
+  GLfloat temp[2] = { x, y, };
+  DoUniform2fv(location, 1, &temp[0]);
   return error::kNoError;
 }
 
@@ -2012,7 +2014,7 @@ error::Error GLES2DecoderImpl::HandleUniform2fv(
   if (v == NULL) {
     return error::kOutOfBounds;
   }
-  glUniform2fv(location, count, v);
+  DoUniform2fv(location, count, v);
   return error::kNoError;
 }
 
@@ -2036,7 +2038,7 @@ error::Error GLES2DecoderImpl::HandleUniform2fvImmediate(
   if (v == NULL) {
     return error::kOutOfBounds;
   }
-  glUniform2fv(location, count, v);
+  DoUniform2fv(location, count, v);
   return error::kNoError;
 }
 
@@ -2100,7 +2102,8 @@ error::Error GLES2DecoderImpl::HandleUniform3f(
   GLfloat x = static_cast<GLfloat>(c.x);
   GLfloat y = static_cast<GLfloat>(c.y);
   GLfloat z = static_cast<GLfloat>(c.z);
-  glUniform3f(location, x, y, z);
+  GLfloat temp[3] = { x, y, z, };
+  DoUniform3fv(location, 1, &temp[0]);
   return error::kNoError;
 }
 
@@ -2121,7 +2124,7 @@ error::Error GLES2DecoderImpl::HandleUniform3fv(
   if (v == NULL) {
     return error::kOutOfBounds;
   }
-  glUniform3fv(location, count, v);
+  DoUniform3fv(location, count, v);
   return error::kNoError;
 }
 
@@ -2145,7 +2148,7 @@ error::Error GLES2DecoderImpl::HandleUniform3fvImmediate(
   if (v == NULL) {
     return error::kOutOfBounds;
   }
-  glUniform3fv(location, count, v);
+  DoUniform3fv(location, count, v);
   return error::kNoError;
 }
 
@@ -2211,7 +2214,8 @@ error::Error GLES2DecoderImpl::HandleUniform4f(
   GLfloat y = static_cast<GLfloat>(c.y);
   GLfloat z = static_cast<GLfloat>(c.z);
   GLfloat w = static_cast<GLfloat>(c.w);
-  glUniform4f(location, x, y, z, w);
+  GLfloat temp[4] = { x, y, z, w, };
+  DoUniform4fv(location, 1, &temp[0]);
   return error::kNoError;
 }
 
@@ -2232,7 +2236,7 @@ error::Error GLES2DecoderImpl::HandleUniform4fv(
   if (v == NULL) {
     return error::kOutOfBounds;
   }
-  glUniform4fv(location, count, v);
+  DoUniform4fv(location, count, v);
   return error::kNoError;
 }
 
@@ -2256,7 +2260,7 @@ error::Error GLES2DecoderImpl::HandleUniform4fvImmediate(
   if (v == NULL) {
     return error::kOutOfBounds;
   }
-  glUniform4fv(location, count, v);
+  DoUniform4fv(location, count, v);
   return error::kNoError;
 }
 

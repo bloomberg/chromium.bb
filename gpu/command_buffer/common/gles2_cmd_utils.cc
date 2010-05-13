@@ -393,11 +393,11 @@ uint32 GLES2Util::GetGLDataTypeSizeForUniforms(int type) {
     case GL_BOOL:
       return sizeof(GLint);                // NOLINT
     case GL_BOOL_VEC2:
-      return sizeof(GLint) * 1;            // NOLINT
-    case GL_BOOL_VEC3:
       return sizeof(GLint) * 2;            // NOLINT
-    case GL_BOOL_VEC4:
+    case GL_BOOL_VEC3:
       return sizeof(GLint) * 3;            // NOLINT
+    case GL_BOOL_VEC4:
+      return sizeof(GLint) * 4;            // NOLINT
     case GL_FLOAT_MAT2:
       return sizeof(GLfloat) * 2 * 2;      // NOLINT
     case GL_FLOAT_MAT3:

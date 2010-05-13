@@ -744,7 +744,7 @@ TEST_F(GLES2DecoderTest2, TexParameterivImmediateInvalidArgs1_0) {
 
 
 TEST_F(GLES2DecoderTest2, Uniform1fValidArgs) {
-  EXPECT_CALL(*gl_, Uniform1f(1, 2));
+  EXPECT_CALL(*gl_, Uniform1fv(1, 1, _));
   SpecializedSetup<Uniform1f, 0>();
   Uniform1f cmd;
   cmd.Init(1, 2);
@@ -806,7 +806,7 @@ TEST_F(GLES2DecoderTest2, Uniform1fvImmediateValidArgs) {
 // TODO(gman): Uniform1ivImmediate
 
 TEST_F(GLES2DecoderTest2, Uniform2fValidArgs) {
-  EXPECT_CALL(*gl_, Uniform2f(1, 2, 3));
+  EXPECT_CALL(*gl_, Uniform2fv(1, 1, _));
   SpecializedSetup<Uniform2f, 0>();
   Uniform2f cmd;
   cmd.Init(1, 2, 3);
@@ -924,7 +924,7 @@ TEST_F(GLES2DecoderTest2, Uniform2ivImmediateValidArgs) {
 }
 
 TEST_F(GLES2DecoderTest2, Uniform3fValidArgs) {
-  EXPECT_CALL(*gl_, Uniform3f(1, 2, 3, 4));
+  EXPECT_CALL(*gl_, Uniform3fv(1, 1, _));
   SpecializedSetup<Uniform3f, 0>();
   Uniform3f cmd;
   cmd.Init(1, 2, 3, 4);
@@ -1042,7 +1042,7 @@ TEST_F(GLES2DecoderTest2, Uniform3ivImmediateValidArgs) {
 }
 
 TEST_F(GLES2DecoderTest2, Uniform4fValidArgs) {
-  EXPECT_CALL(*gl_, Uniform4f(1, 2, 3, 4, 5));
+  EXPECT_CALL(*gl_, Uniform4fv(1, 1, _));
   SpecializedSetup<Uniform4f, 0>();
   Uniform4f cmd;
   cmd.Init(1, 2, 3, 4, 5);

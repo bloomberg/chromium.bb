@@ -1348,7 +1348,13 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoTexParameteriv',
   },
   'TexSubImage2D': {'type': 'Data'},
-  'Uniform1fv': {'type': 'PUTn', 'data_type': 'GLfloat', 'count': 1},
+  'Uniform1f': {'type': 'PUTXn', 'data_type': 'GLfloat', 'count': 1},
+  'Uniform1fv': {
+    'type': 'PUTn',
+    'data_type': 'GLfloat',
+    'count': 1,
+    'decoder_func': 'DoUniform1fv',
+  },
   'Uniform1i': {'decoder_func': 'DoUniform1i', 'unit_test': False},
   'Uniform1iv': {
     'type': 'PUTn',
@@ -1357,11 +1363,31 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoUniform1iv',
     'unit_test': False,
   },
-  'Uniform2fv': {'type': 'PUTn', 'data_type': 'GLfloat', 'count': 2},
+  'Uniform2f': {'type': 'PUTXn', 'data_type': 'GLfloat', 'count': 2},
+  'Uniform2fv': {
+    'type': 'PUTn',
+    'data_type': 'GLfloat',
+    'count': 2,
+    'decoder_func': 'DoUniform2fv',
+  },
   'Uniform2iv': {'type': 'PUTn', 'data_type': 'GLint', 'count': 2},
-  'Uniform3fv': {'type': 'PUTn', 'data_type': 'GLfloat', 'count': 3},
+  'Uniform3f': {'type': 'PUTXn', 'data_type': 'GLfloat', 'count': 3},
+  'Uniform3fv': {
+    'type': 'PUTn',
+    'data_type': 'GLfloat',
+    'count': 3,
+    'decoder_func': 'DoUniform3fv',
+  },
   'Uniform3iv': {'type': 'PUTn', 'data_type': 'GLint', 'count': 3},
-  'Uniform4fv': {'type': 'PUTn', 'data_type': 'GLfloat', 'count': 4},
+  'Uniform4f': {
+    'type': 'PUTXn', 'data_type': 'GLfloat', 'count': 4
+  },
+  'Uniform4fv': {
+    'type': 'PUTn',
+    'data_type': 'GLfloat',
+    'count': 4,
+    'decoder_func': 'DoUniform4fv',
+  },
   'Uniform4iv': {'type': 'PUTn', 'data_type': 'GLint', 'count': 4},
   'UniformMatrix2fv': {'type': 'PUTn', 'data_type': 'GLfloat', 'count': 4},
   'UniformMatrix3fv': {'type': 'PUTn', 'data_type': 'GLfloat', 'count': 9},
@@ -3284,6 +3310,63 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     file.Write("\n")
 
 
+class PUTXnHandler(TypeHandler):
+  """Handler for glUniform?f functions."""
+  def __init__(self):
+    TypeHandler.__init__(self)
+
+  def WriteHandlerImplementation(self, func, file):
+    """Overrriden from TypeHandler."""
+    code = """  GLfloat temp[%(count)s] = { %(values)s};
+  DoUniform%(count)sfv(%(location)s, 1, &temp[0]);
+"""
+    values = ""
+    args = func.GetOriginalArgs()
+    count = int(func.GetInfo('count'))
+    num_args = len(args)
+    for ii in range(count):
+      values += "%s, " % args[len(args) - count + ii].name
+
+    file.Write(code % {
+        'count': func.GetInfo('count'),
+        'location': args[0].name,
+        'args': func.MakeOriginalArgString(""),
+        'values': values,
+      })
+
+  def WriteServiceUnitTest(self, func, file):
+    """Overrriden from TypeHandler."""
+    valid_test = """
+TEST_F(%(test_name)s, %(name)sValidArgs) {
+  EXPECT_CALL(*gl_, Uniform%(count)sfv(%(local_args)s));
+  SpecializedSetup<%(name)s, 0>();
+  %(name)s cmd;
+  cmd.Init(%(args)s);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+"""
+    args = func.GetOriginalArgs()
+    local_args = "%s, 1, _" % args[0].GetValidArg(0, 0)
+    self.WriteValidUnitTest(func, file, valid_test, {
+        'count': func.GetInfo('count'),
+        'local_args': local_args,
+      })
+
+    invalid_test = """
+TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
+  EXPECT_CALL(*gl_, Uniform%(count)s(_, _, _).Times(0);
+  SpecializedSetup<%(name)s, 0>();
+  %(name)s cmd;
+  cmd.Init(%(args)s);
+  EXPECT_EQ(error::%(parse_result)s, ExecuteCmd(cmd));%(gl_error_test)s
+}
+"""
+    self.WriteInvalidUnitTest(func, file, invalid_test, {
+        'count': func.GetInfo('count'),
+      })
+
+
 class GLcharHandler(CustomHandler):
   """Handler for functions that pass a single string ."""
 
@@ -4444,6 +4527,7 @@ class GLGenerator(object):
       'Manual': ManualHandler(),
       'PUT': PUTHandler(),
       'PUTn': PUTnHandler(),
+      'PUTXn': PUTXnHandler(),
       'STRn': STRnHandler(),
       'Todo': TodoHandler(),
     }

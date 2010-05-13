@@ -52,6 +52,66 @@ void GLES2DecoderTestBase::SpecializedSetup<LinkProgram, 0>() {
 };
 
 template <>
+void GLES2DecoderTestBase::SpecializedSetup<Uniform1f, 0>() {
+  SetupShaderForUniform();
+};
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<Uniform1fv, 0>() {
+  SetupShaderForUniform();
+};
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<Uniform1fvImmediate, 0>() {
+  SetupShaderForUniform();
+};
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<Uniform2f, 0>() {
+  SetupShaderForUniform();
+};
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<Uniform2fv, 0>() {
+  SetupShaderForUniform();
+};
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<Uniform2fvImmediate, 0>() {
+  SetupShaderForUniform();
+};
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<Uniform3f, 0>() {
+  SetupShaderForUniform();
+};
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<Uniform3fv, 0>() {
+  SetupShaderForUniform();
+};
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<Uniform3fvImmediate, 0>() {
+  SetupShaderForUniform();
+};
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<Uniform4f, 0>() {
+  SetupShaderForUniform();
+};
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<Uniform4fv, 0>() {
+  SetupShaderForUniform();
+};
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<Uniform4fvImmediate, 0>() {
+  SetupShaderForUniform();
+};
+
+template <>
 void GLES2DecoderTestBase::SpecializedSetup<RenderbufferStorage, 0>() {
   DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
                     kServiceRenderbufferId);
