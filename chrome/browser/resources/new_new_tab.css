@@ -601,22 +601,20 @@ html[dir=rtl] #option-menu > [command=hide]:before {
   -webkit-box-sizing: border-box;
   -webkit-transition: background-color .15s;
   background: rgba(255, 255, 255, 0) /* transparent white */
-              no-repeat center 5px;
+              no-repeat center 10px;
   background-size: 96px 96px;
   border-radius: 10px;
   color: black;
   display: inline-block;
   font-weight: bold;
   margin: 5px;
-  margin-right:5px;
   overflow: hidden;
-  padding: 5px;
-  padding-top: 106px; /* 96 + 5 + 5 */
+  padding: 111px 10px 10px;  /* 10 + 96 + 5 */
   text-align: center;
   text-decoration: none;
   text-overflow: ellipsis;
   white-space: nowrap;
-  width: 105px; /* 920 / 8 - margin * 2 */
+  width: 121px; /* 920 / 7 - margin * 2 */
 }
 
 #apps-section a[new=new] {
