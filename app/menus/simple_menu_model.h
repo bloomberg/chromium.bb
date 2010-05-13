@@ -63,12 +63,6 @@ class SimpleMenuModel : public MenuModel {
   void AddSubMenu(int command_id, const string16& label, MenuModel* model);
   void AddSubMenuWithStringId(int command_id, int string_id, MenuModel* model);
 
-  // Helpers for the above that use the |string_id| for the |command_id|
-  // as well.
-  // TODO(estade): remove these.
-  void AddItemIdentifiedByStringId(int string_id);
-  void AddCheckItemIdentifiedByStringId(int string_id);
-
   // Methods for inserting items into the model.
   void InsertItemAt(int index, int command_id, const string16& label);
   void InsertItemWithStringIdAt(int index, int command_id, int string_id);

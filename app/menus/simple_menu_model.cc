@@ -28,10 +28,6 @@ void SimpleMenuModel::AddItemWithStringId(int command_id, int string_id) {
   AddItem(command_id, l10n_util::GetStringUTF16(string_id));
 }
 
-void SimpleMenuModel::AddItemIdentifiedByStringId(int string_id) {
-  AddItemWithStringId(string_id, string_id);
-}
-
 void SimpleMenuModel::AddSeparator() {
   Item item = { kSeparatorId, string16(), SkBitmap(), TYPE_SEPARATOR, -1,
                 NULL };
@@ -45,10 +41,6 @@ void SimpleMenuModel::AddCheckItem(int command_id, const string16& label) {
 
 void SimpleMenuModel::AddCheckItemWithStringId(int command_id, int string_id) {
   AddCheckItem(command_id, l10n_util::GetStringUTF16(string_id));
-}
-
-void SimpleMenuModel::AddCheckItemIdentifiedByStringId(int string_id) {
-  AddCheckItemWithStringId(string_id, string_id);
 }
 
 void SimpleMenuModel::AddRadioItem(int command_id, const string16& label,

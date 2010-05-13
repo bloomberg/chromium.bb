@@ -4,6 +4,7 @@
 
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 
+#include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/renderer_host/mock_render_process_host.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/translate/translate_infobars_delegates.h"
@@ -831,11 +832,11 @@ TEST_F(TranslateManagerTest, ContextMenu) {
   scoped_ptr<TestRenderViewContextMenu> menu(
       TestRenderViewContextMenu::CreateContextMenu(contents()));
   menu->Init();
-  EXPECT_TRUE(menu->IsItemPresent(IDS_CONTENT_CONTEXT_TRANSLATE));
-  EXPECT_TRUE(menu->IsCommandIdEnabled(IDS_CONTENT_CONTEXT_TRANSLATE));
+  EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATE));
+  EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
 
   // Use the menu to translate the page.
-  menu->ExecuteCommand(IDS_CONTENT_CONTEXT_TRANSLATE);
+  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE);
 
   // That should have triggered a translation.
   SimulateURLFetch(true);  // Simulate the translate script being retrieved.
@@ -858,8 +859,8 @@ TEST_F(TranslateManagerTest, ContextMenu) {
   // The translate menu should now be disabled.
   menu.reset(TestRenderViewContextMenu::CreateContextMenu(contents()));
   menu->Init();
-  EXPECT_TRUE(menu->IsItemPresent(IDS_CONTENT_CONTEXT_TRANSLATE));
-  EXPECT_FALSE(menu->IsCommandIdEnabled(IDS_CONTENT_CONTEXT_TRANSLATE));
+  EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATE));
+  EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
 
   // Test that selecting translate in the context menu WHILE the page is being
   // translated does nothing (this could happen if autotranslate kicks-in and
@@ -873,8 +874,8 @@ TEST_F(TranslateManagerTest, ContextMenu) {
   process()->sink().ClearMessages();
   menu.reset(TestRenderViewContextMenu::CreateContextMenu(contents()));
   menu->Init();
-  EXPECT_TRUE(menu->IsCommandIdEnabled(IDS_CONTENT_CONTEXT_TRANSLATE));
-  menu->ExecuteCommand(IDS_CONTENT_CONTEXT_TRANSLATE);
+  EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
+  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE);
   // No message expected since the translation should have been ignored.
   EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
 
@@ -889,10 +890,10 @@ TEST_F(TranslateManagerTest, ContextMenu) {
   process()->sink().ClearMessages();
   menu.reset(TestRenderViewContextMenu::CreateContextMenu(contents()));
   menu->Init();
-  EXPECT_TRUE(menu->IsCommandIdEnabled(IDS_CONTENT_CONTEXT_TRANSLATE));
+  EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
   rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "de", "en",
       TranslateErrors::NONE));
-  menu->ExecuteCommand(IDS_CONTENT_CONTEXT_TRANSLATE);
+  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE);
   // No message expected since the translation should have been ignored.
   EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
 
@@ -901,6 +902,6 @@ TEST_F(TranslateManagerTest, ContextMenu) {
   SimulateNavigation(url, 0, L"Google", "en");
   menu.reset(TestRenderViewContextMenu::CreateContextMenu(contents()));
   menu->Init();
-  EXPECT_TRUE(menu->IsItemPresent(IDS_CONTENT_CONTEXT_TRANSLATE));
-  EXPECT_FALSE(menu->IsCommandIdEnabled(IDS_CONTENT_CONTEXT_TRANSLATE));
+  EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATE));
+  EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
 }

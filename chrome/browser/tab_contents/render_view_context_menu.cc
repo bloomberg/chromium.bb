@@ -276,7 +276,6 @@ void RenderViewContextMenu::InitMenu() {
   bool has_selection = !params_.selection_text.empty();
 
   if (AppendCustomItems()) {
-    menu_model_.AddSeparator();
     AppendDeveloperItems();
     return;
   }
@@ -331,10 +330,6 @@ void RenderViewContextMenu::InitMenu() {
   if (!is_devtools)
     AppendAllExtensionItems();
 
-  // In the DevTools popup menu, "developer items" is normally the only section,
-  // so omit the separator there.
-  if (!is_devtools)
-    menu_model_.AddSeparator();
   AppendDeveloperItems();
 }
 
@@ -351,111 +346,140 @@ bool RenderViewContextMenu::AppendCustomItems() {
 }
 
 void RenderViewContextMenu::AppendDeveloperItems() {
-  if (g_browser_process->have_inspector_files())
-    menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_INSPECTELEMENT);
+  if (g_browser_process->have_inspector_files()) {
+    // In the DevTools popup menu, "developer items" is normally the only
+    // section, so omit the separator there.
+    if (!IsDevToolsURL(params_.page_url))
+      menu_model_.AddSeparator();
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_INSPECTELEMENT,
+                                    IDS_CONTENT_CONTEXT_INSPECTELEMENT);
+  }
 }
 
 void RenderViewContextMenu::AppendLinkItems() {
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_OPENLINKNEWTAB);
-  menu_model_.AddItemIdentifiedByStringId(
-      IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
+                                  IDS_CONTENT_CONTEXT_OPENLINKNEWTAB);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW,
+                                  IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW);
   if (!external_) {
-    menu_model_.AddItemIdentifiedByStringId(
-        IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD,
+                                    IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
   }
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_SAVELINKAS);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVELINKAS,
+                                  IDS_CONTENT_CONTEXT_SAVELINKAS);
 
-  if (params_.link_url.SchemeIs(chrome::kMailToScheme)) {
-    menu_model_.AddItem(IDS_CONTENT_CONTEXT_COPYLINKLOCATION,
-                   l10n_util::GetStringUTF16(
-                       IDS_CONTENT_CONTEXT_COPYEMAILADDRESS));
-  } else {
-    menu_model_.AddItemIdentifiedByStringId(
-        IDS_CONTENT_CONTEXT_COPYLINKLOCATION);
-  }
+  menu_model_.AddItemWithStringId(
+      IDC_CONTENT_CONTEXT_COPYLINKLOCATION,
+      params_.link_url.SchemeIs(chrome::kMailToScheme) ?
+          IDS_CONTENT_CONTEXT_COPYEMAILADDRESS :
+          IDS_CONTENT_CONTEXT_COPYLINKLOCATION);
 }
 
 void RenderViewContextMenu::AppendImageItems() {
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_SAVEIMAGEAS);
-  menu_model_.AddItemIdentifiedByStringId(
-      IDS_CONTENT_CONTEXT_COPYIMAGELOCATION);
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_COPYIMAGE);
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEIMAGEAS,
+                                  IDS_CONTENT_CONTEXT_SAVEIMAGEAS);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYIMAGELOCATION,
+                                  IDS_CONTENT_CONTEXT_COPYIMAGELOCATION);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYIMAGE,
+                                  IDS_CONTENT_CONTEXT_COPYIMAGE);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB,
+                                  IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB);
 }
 
 void RenderViewContextMenu::AppendAudioItems() {
   AppendMediaItems();
   menu_model_.AddSeparator();
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_SAVEAUDIOAS);
-  menu_model_.AddItemIdentifiedByStringId(
-      IDS_CONTENT_CONTEXT_COPYAUDIOLOCATION);
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEAVAS,
+                                  IDS_CONTENT_CONTEXT_SAVEAUDIOAS);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYAVLOCATION,
+                                  IDS_CONTENT_CONTEXT_COPYAUDIOLOCATION);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENAVNEWTAB,
+                                  IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB);
 }
 
 void RenderViewContextMenu::AppendVideoItems() {
   AppendMediaItems();
   menu_model_.AddSeparator();
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_SAVEVIDEOAS);
-  menu_model_.AddItemIdentifiedByStringId(
-      IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION);
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEAVAS,
+                                  IDS_CONTENT_CONTEXT_SAVEVIDEOAS);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYAVLOCATION,
+                                  IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENAVNEWTAB,
+                                  IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB);
 }
 
 void RenderViewContextMenu::AppendMediaItems() {
   int media_flags = params_.media_flags;
-  if (media_flags & WebContextMenuData::MediaPaused) {
-    menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_PLAY);
-  } else {
-    menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_PAUSE);
-  }
 
-  if (media_flags & WebContextMenuData::MediaMuted) {
-    menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_UNMUTE);
-  } else {
-    menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_MUTE);
-  }
+  menu_model_.AddItemWithStringId(
+      IDC_CONTENT_CONTEXT_PLAYPAUSE,
+      media_flags & WebContextMenuData::MediaPaused ?
+          IDS_CONTENT_CONTEXT_PLAY :
+          IDS_CONTENT_CONTEXT_PAUSE);
 
-  menu_model_.AddCheckItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_LOOP);
-  menu_model_.AddCheckItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_CONTROLS);
+  menu_model_.AddItemWithStringId(
+      IDC_CONTENT_CONTEXT_MUTE,
+      media_flags & WebContextMenuData::MediaMuted ?
+          IDS_CONTENT_CONTEXT_UNMUTE :
+          IDS_CONTENT_CONTEXT_MUTE);
+
+  menu_model_.AddCheckItemWithStringId(IDC_CONTENT_CONTEXT_LOOP,
+                                       IDS_CONTENT_CONTEXT_LOOP);
+  menu_model_.AddCheckItemWithStringId(IDC_CONTENT_CONTEXT_CONTROLS,
+                                       IDS_CONTENT_CONTEXT_CONTROLS);
 }
 
 void RenderViewContextMenu::AppendPageItems() {
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_BACK);
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_FORWARD);
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_RELOAD);
+  menu_model_.AddItemWithStringId(IDC_BACK, IDS_CONTENT_CONTEXT_BACK);
+  menu_model_.AddItemWithStringId(IDC_FORWARD, IDS_CONTENT_CONTEXT_FORWARD);
+  menu_model_.AddItemWithStringId(IDC_RELOAD, IDS_CONTENT_CONTEXT_RELOAD);
   menu_model_.AddSeparator();
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_SAVEPAGEAS);
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_PRINT);
+  menu_model_.AddItemWithStringId(IDC_SAVE_PAGE,
+                                  IDS_CONTENT_CONTEXT_SAVEPAGEAS);
+  menu_model_.AddItemWithStringId(IDC_PRINT, IDS_CONTENT_CONTEXT_PRINT);
+
   std::string locale = g_browser_process->GetApplicationLocale();
   locale = TranslateManager::GetLanguageCode(locale);
   string16 language = l10n_util::GetDisplayNameForLocale(locale, locale, true);
-  menu_model_.AddItem(IDS_CONTENT_CONTEXT_TRANSLATE,
+  menu_model_.AddItem(
+      IDC_CONTENT_CONTEXT_TRANSLATE,
       l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_TRANSLATE, language));
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_VIEWPAGESOURCE);
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_VIEWPAGEINFO);
+
+  menu_model_.AddItemWithStringId(IDC_VIEW_SOURCE,
+                                  IDS_CONTENT_CONTEXT_VIEWPAGESOURCE);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_VIEWPAGEINFO,
+                                  IDS_CONTENT_CONTEXT_VIEWPAGEINFO);
 }
 
 void RenderViewContextMenu::AppendFrameItems() {
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_BACK);
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_FORWARD);
+  menu_model_.AddItemWithStringId(IDC_BACK, IDS_CONTENT_CONTEXT_BACK);
+  menu_model_.AddItemWithStringId(IDC_FORWARD, IDS_CONTENT_CONTEXT_FORWARD);
   menu_model_.AddSeparator();
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_RELOADFRAME);
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_OPENFRAMENEWTAB);
-  menu_model_.AddItemIdentifiedByStringId(
-      IDS_CONTENT_CONTEXT_OPENFRAMENEWWINDOW);
-  menu_model_.AddItemIdentifiedByStringId(
-      IDS_CONTENT_CONTEXT_OPENFRAMEOFFTHERECORD);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_RELOADFRAME,
+                                  IDS_CONTENT_CONTEXT_RELOADFRAME);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENFRAMENEWTAB,
+                                  IDS_CONTENT_CONTEXT_OPENFRAMENEWTAB);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENFRAMENEWWINDOW,
+                                  IDS_CONTENT_CONTEXT_OPENFRAMENEWWINDOW);
+  if (!external_) {
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENFRAMEOFFTHERECORD,
+                                    IDS_CONTENT_CONTEXT_OPENFRAMEOFFTHERECORD);
+  }
+
   menu_model_.AddSeparator();
   // These two menu items have yet to be implemented.
   // http://code.google.com/p/chromium/issues/detail?id=11827
-  // menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_SAVEFRAMEAS);
-  // menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_PRINTFRAME);
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_VIEWFRAMESOURCE);
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_VIEWFRAMEINFO);
+  //   IDS_CONTENT_CONTEXT_SAVEFRAMEAS
+  //   IDS_CONTENT_CONTEXT_PRINTFRAME
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE,
+                                  IDS_CONTENT_CONTEXT_VIEWFRAMESOURCE);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_VIEWFRAMEINFO,
+                                  IDS_CONTENT_CONTEXT_VIEWFRAMEINFO);
 }
 
 void RenderViewContextMenu::AppendCopyItem() {
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_COPY);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPY,
+                                  IDS_CONTENT_CONTEXT_COPY);
 }
 
 void RenderViewContextMenu::AppendSearchProvider() {
@@ -482,7 +506,7 @@ void RenderViewContextMenu::AppendSearchProvider() {
     if (ChildProcessSecurityPolicy::GetInstance()->IsWebSafeScheme(
         selection_navigation_url_.scheme())) {
       menu_model_.AddItem(
-          IDS_CONTENT_CONTEXT_GOTOURL,
+          IDC_CONTENT_CONTEXT_GOTOURL,
           l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_GOTOURL,
                                      printable_selection_text));
     }
@@ -492,7 +516,7 @@ void RenderViewContextMenu::AppendSearchProvider() {
     if (!default_provider)
       return;
     menu_model_.AddItem(
-        IDS_CONTENT_CONTEXT_SEARCHWEBFOR,
+        IDC_CONTENT_CONTEXT_SEARCHWEBFOR,
         l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHWEBFOR,
                                    WideToUTF16(default_provider->short_name()),
                                    printable_selection_text));
@@ -517,18 +541,24 @@ void RenderViewContextMenu::AppendEditableItems() {
           l10n_util::GetStringUTF16(
               IDS_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS));
     }
-    menu_model_.AddItemIdentifiedByStringId(
-        IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY);
+    menu_model_.AddItemWithStringId(IDC_SPELLCHECK_ADD_TO_DICTIONARY,
+                                    IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY);
     menu_model_.AddSeparator();
   }
 
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_UNDO);
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_REDO);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_UNDO,
+                                  IDS_CONTENT_CONTEXT_UNDO);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_REDO,
+                                  IDS_CONTENT_CONTEXT_REDO);
   menu_model_.AddSeparator();
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_CUT);
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_COPY);
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_PASTE);
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_DELETE);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_CUT,
+                                  IDS_CONTENT_CONTEXT_CUT);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPY,
+                                  IDS_CONTENT_CONTEXT_COPY);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_PASTE,
+                                  IDS_CONTENT_CONTEXT_PASTE);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_DELETE,
+                                  IDS_CONTENT_CONTEXT_DELETE);
   menu_model_.AddSeparator();
 
   AppendSpellcheckOptionsSubMenu();
@@ -541,7 +571,8 @@ void RenderViewContextMenu::AppendEditableItems() {
 #endif  // OS_MACOSX
 
   menu_model_.AddSeparator();
-  menu_model_.AddItemIdentifiedByStringId(IDS_CONTENT_CONTEXT_SELECTALL);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SELECTALL,
+                                  IDS_CONTENT_CONTEXT_SELECTALL);
 }
 
 void RenderViewContextMenu::AppendSpellcheckOptionsSubMenu() {
@@ -563,7 +594,8 @@ void RenderViewContextMenu::AppendSpellcheckOptionsSubMenu() {
 
   // Add item in the sub menu to pop up the fonts and languages options menu.
   spellcheck_submenu_model_.AddSeparator();
-  spellcheck_submenu_model_.AddItemIdentifiedByStringId(
+  spellcheck_submenu_model_.AddItemWithStringId(
+      IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS,
       IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS);
 
   // Add 'Check the spelling of this field' item in the sub menu.
@@ -650,27 +682,27 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
   }
 
   switch (id) {
-    case IDS_CONTENT_CONTEXT_BACK:
+    case IDC_BACK:
       return source_tab_contents_->controller().CanGoBack();
 
-    case IDS_CONTENT_CONTEXT_FORWARD:
+    case IDC_FORWARD:
       return source_tab_contents_->controller().CanGoForward();
 
-    case IDS_CONTENT_CONTEXT_RELOAD:
+    case IDC_RELOAD:
       return source_tab_contents_->delegate()->CanReloadContents(
           source_tab_contents_);
 
-    case IDS_CONTENT_CONTEXT_VIEWPAGESOURCE:
-    case IDS_CONTENT_CONTEXT_VIEWFRAMESOURCE:
+    case IDC_VIEW_SOURCE:
+    case IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE:
       return source_tab_contents_->controller().CanViewSource();
 
-    case IDS_CONTENT_CONTEXT_INSPECTELEMENT:
+    case IDC_CONTENT_CONTEXT_INSPECTELEMENT:
     // Viewing page info is not a developer command but is meaningful for the
     // same set of pages which developer commands are meaningful for.
-    case IDS_CONTENT_CONTEXT_VIEWPAGEINFO:
+    case IDC_CONTENT_CONTEXT_VIEWPAGEINFO:
       return IsDevCommandEnabled(id);
 
-    case IDS_CONTENT_CONTEXT_TRANSLATE: {
+    case IDC_CONTENT_CONTEXT_TRANSLATE: {
       std::string original_lang =
           source_tab_contents_->language_state().original_language();
       std::string target_lang = g_browser_process->GetApplicationLocale();
@@ -681,22 +713,22 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
              TranslateManager::IsTranslatableURL(params_.page_url);
     }
 
-    case IDS_CONTENT_CONTEXT_OPENLINKNEWTAB:
-    case IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW:
+    case IDC_CONTENT_CONTEXT_OPENLINKNEWTAB:
+    case IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW:
       return params_.link_url.is_valid();
 
-    case IDS_CONTENT_CONTEXT_COPYLINKLOCATION:
+    case IDC_CONTENT_CONTEXT_COPYLINKLOCATION:
       return params_.unfiltered_link_url.is_valid();
 
-    case IDS_CONTENT_CONTEXT_SAVELINKAS:
+    case IDC_CONTENT_CONTEXT_SAVELINKAS:
       return params_.link_url.is_valid() &&
              URLRequest::IsHandledURL(params_.link_url);
 
-    case IDS_CONTENT_CONTEXT_SAVEIMAGEAS:
+    case IDC_CONTENT_CONTEXT_SAVEIMAGEAS:
       return params_.src_url.is_valid() &&
              URLRequest::IsHandledURL(params_.src_url);
 
-    case IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB:
+    case IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB:
       // The images shown in the most visited thumbnails do not currently open
       // in a new tab as they should. Disabling this context menu option for
       // now, as a quick hack, before we resolve this issue (Issue = 2608).
@@ -705,24 +737,18 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
         return false;
       return true;
 
-    case IDS_CONTENT_CONTEXT_COPYIMAGE:
+    case IDC_CONTENT_CONTEXT_COPYIMAGE:
       return !params_.is_image_blocked;
-
-    case IDS_CONTENT_CONTEXT_FULLSCREEN:
-      // TODO(ajwong): Enable fullscreen after we actually implement this.
-      return false;
 
     // Media control commands should all be disabled if the player is in an
     // error state.
-    case IDS_CONTENT_CONTEXT_PLAY:
-    case IDS_CONTENT_CONTEXT_PAUSE:
-    case IDS_CONTENT_CONTEXT_LOOP:
+    case IDC_CONTENT_CONTEXT_PLAYPAUSE:
+    case IDC_CONTENT_CONTEXT_LOOP:
       return (params_.media_flags &
               WebContextMenuData::MediaInError) == 0;
 
     // Mute and unmute should also be disabled if the player has no audio.
-    case IDS_CONTENT_CONTEXT_MUTE:
-    case IDS_CONTENT_CONTEXT_UNMUTE:
+    case IDC_CONTENT_CONTEXT_MUTE:
       return (params_.media_flags &
               WebContextMenuData::MediaHasAudio) != 0 &&
              (params_.media_flags &
@@ -731,32 +757,24 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     // Media controls can be toggled only for video player. If we toggle
     // controls for audio then the player disappears, and there is no way to
     // return it back.
-    case IDS_CONTENT_CONTEXT_CONTROLS:
+    case IDC_CONTENT_CONTEXT_CONTROLS:
       return (params_.media_flags &
               WebContextMenuData::MediaHasVideo) != 0;
 
-    case IDS_CONTENT_CONTEXT_SAVESCREENSHOTAS:
-      // TODO(ajwong): Enable save screenshot after we actually implement
-      // this.
-      return false;
-
-    case IDS_CONTENT_CONTEXT_COPYAUDIOLOCATION:
-    case IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION:
-    case IDS_CONTENT_CONTEXT_COPYIMAGELOCATION:
+    case IDC_CONTENT_CONTEXT_COPYAVLOCATION:
+    case IDC_CONTENT_CONTEXT_COPYIMAGELOCATION:
       return params_.src_url.is_valid();
 
-    case IDS_CONTENT_CONTEXT_SAVEAUDIOAS:
-    case IDS_CONTENT_CONTEXT_SAVEVIDEOAS:
+    case IDC_CONTENT_CONTEXT_SAVEAVAS:
       return (params_.media_flags &
               WebContextMenuData::MediaCanSave) &&
              params_.src_url.is_valid() &&
              URLRequest::IsHandledURL(params_.src_url);
 
-    case IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB:
-    case IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB:
+    case IDC_CONTENT_CONTEXT_OPENAVNEWTAB:
       return true;
 
-    case IDS_CONTENT_CONTEXT_SAVEPAGEAS: {
+    case IDC_SAVE_PAGE: {
       // Instead of using GetURL here, we use url() (which is the "real" url of
       // the page) from the NavigationEntry because its reflects their origin
       // rather than the display one (returned by GetURL) which may be
@@ -767,49 +785,49 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
           (active_entry) ? active_entry->url() : GURL());
     }
 
-    case IDS_CONTENT_CONTEXT_RELOADFRAME:
-    case IDS_CONTENT_CONTEXT_OPENFRAMENEWTAB:
-    case IDS_CONTENT_CONTEXT_OPENFRAMENEWWINDOW:
+    case IDC_CONTENT_CONTEXT_RELOADFRAME:
+    case IDC_CONTENT_CONTEXT_OPENFRAMENEWTAB:
+    case IDC_CONTENT_CONTEXT_OPENFRAMENEWWINDOW:
       return params_.frame_url.is_valid();
 
-    case IDS_CONTENT_CONTEXT_UNDO:
+    case IDC_CONTENT_CONTEXT_UNDO:
       return !!(params_.edit_flags & WebContextMenuData::CanUndo);
 
-    case IDS_CONTENT_CONTEXT_REDO:
+    case IDC_CONTENT_CONTEXT_REDO:
       return !!(params_.edit_flags & WebContextMenuData::CanRedo);
 
-    case IDS_CONTENT_CONTEXT_CUT:
+    case IDC_CONTENT_CONTEXT_CUT:
       return !!(params_.edit_flags & WebContextMenuData::CanCut);
 
-    case IDS_CONTENT_CONTEXT_COPY:
+    case IDC_CONTENT_CONTEXT_COPY:
       return !!(params_.edit_flags & WebContextMenuData::CanCopy);
 
-    case IDS_CONTENT_CONTEXT_PASTE:
+    case IDC_CONTENT_CONTEXT_PASTE:
       return !!(params_.edit_flags & WebContextMenuData::CanPaste);
 
-    case IDS_CONTENT_CONTEXT_DELETE:
+    case IDC_CONTENT_CONTEXT_DELETE:
       return !!(params_.edit_flags & WebContextMenuData::CanDelete);
 
-    case IDS_CONTENT_CONTEXT_SELECTALL:
+    case IDC_CONTENT_CONTEXT_SELECTALL:
       return !!(params_.edit_flags & WebContextMenuData::CanSelectAll);
 
-    case IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD:
+    case IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD:
       return !profile_->IsOffTheRecord() && params_.link_url.is_valid();
 
-    case IDS_CONTENT_CONTEXT_OPENFRAMEOFFTHERECORD:
+    case IDC_CONTENT_CONTEXT_OPENFRAMEOFFTHERECORD:
       return !profile_->IsOffTheRecord() && params_.frame_url.is_valid();
 
-    case IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY:
+    case IDC_SPELLCHECK_ADD_TO_DICTIONARY:
       return !params_.misspelled_word.empty();
 
 #if defined(OS_CHROMEOS)
-    case IDS_CONTENT_CONTEXT_PRINT:
+    case IDC_PRINT:
       return false;
 #else
-    case IDS_CONTENT_CONTEXT_PRINT:
+    case IDC_PRINT:
 #endif
-    case IDS_CONTENT_CONTEXT_SEARCHWEBFOR:
-    case IDS_CONTENT_CONTEXT_GOTOURL:
+    case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
+    case IDC_CONTENT_CONTEXT_GOTOURL:
     case IDC_SPELLCHECK_SUGGESTION_0:
     case IDC_SPELLCHECK_SUGGESTION_1:
     case IDC_SPELLCHECK_SUGGESTION_2:
@@ -818,9 +836,9 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_SPELLPANEL_TOGGLE:
 #if !defined(OS_MACOSX)
     // TODO(jeremy): re-enable - http://crbug.com/34512 .
-    case IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
+    case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
 #endif
-    case IDS_CONTENT_CONTEXT_VIEWFRAMEINFO:
+    case IDC_CONTENT_CONTEXT_VIEWFRAMEINFO:
       return true;
 
     case IDC_CHECK_SPELLING_OF_THIS_FIELD:
@@ -828,7 +846,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 
 #if defined(OS_MACOSX)
     // TODO(jeremy): re-enable - http://crbug.com/34512 .
-    case IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
+    case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
       return false;
 #endif
 
@@ -852,11 +870,6 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return true;
 #endif
 
-    case IDS_CONTENT_CONTEXT_SAVEFRAMEAS:
-    case IDS_CONTENT_CONTEXT_PRINTFRAME:
-    case IDS_CONTENT_CONTEXT_ADDSEARCHENGINE:  // Not implemented.
-      return false;
-
     case IDC_SPELLCHECK_MENU:
       return true;
 
@@ -868,12 +881,12 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 
 bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
   // See if the video is set to looping.
-  if (id == IDS_CONTENT_CONTEXT_LOOP) {
+  if (id == IDC_CONTENT_CONTEXT_LOOP) {
     return (params_.media_flags &
             WebContextMenuData::MediaLoop) != 0;
   }
 
-  if (id == IDS_CONTENT_CONTEXT_CONTROLS) {
+  if (id == IDC_CONTENT_CONTEXT_CONTROLS) {
     return (params_.media_flags &
             WebContextMenuData::MediaControls) != 0;
   }
@@ -956,7 +969,7 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
 
 
   switch (id) {
-    case IDS_CONTENT_CONTEXT_OPENLINKNEWTAB:
+    case IDC_CONTENT_CONTEXT_OPENLINKNEWTAB:
       OpenURL(params_.link_url,
               source_tab_contents_->delegate() &&
               source_tab_contents_->delegate()->IsApplication() ?
@@ -964,22 +977,21 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
               PageTransition::LINK);
       break;
 
-    case IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW:
+    case IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW:
       OpenURL(params_.link_url, NEW_WINDOW, PageTransition::LINK);
       break;
 
-    case IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD:
+    case IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD:
       OpenURL(params_.link_url, OFF_THE_RECORD, PageTransition::LINK);
       break;
 
-    case IDS_CONTENT_CONTEXT_SAVEAUDIOAS:
-    case IDS_CONTENT_CONTEXT_SAVEVIDEOAS:
-    case IDS_CONTENT_CONTEXT_SAVEIMAGEAS:
-    case IDS_CONTENT_CONTEXT_SAVELINKAS: {
+    case IDC_CONTENT_CONTEXT_SAVEAVAS:
+    case IDC_CONTENT_CONTEXT_SAVEIMAGEAS:
+    case IDC_CONTENT_CONTEXT_SAVELINKAS: {
       const GURL& referrer =
           params_.frame_url.is_empty() ? params_.page_url : params_.frame_url;
       const GURL& url =
-          (id == IDS_CONTENT_CONTEXT_SAVELINKAS ? params_.link_url :
+          (id == IDC_CONTENT_CONTEXT_SAVELINKAS ? params_.link_url :
                                                   params_.src_url);
       DownloadManager* dlm = profile_->GetDownloadManager();
       dlm->DownloadUrl(url, referrer, params_.frame_charset,
@@ -987,109 +999,105 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       break;
     }
 
-    case IDS_CONTENT_CONTEXT_COPYLINKLOCATION:
+    case IDC_CONTENT_CONTEXT_COPYLINKLOCATION:
       WriteURLToClipboard(params_.unfiltered_link_url);
       break;
 
-    case IDS_CONTENT_CONTEXT_COPYAUDIOLOCATION:
-    case IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION:
-    case IDS_CONTENT_CONTEXT_COPYIMAGELOCATION:
+    case IDC_CONTENT_CONTEXT_COPYIMAGELOCATION:
+    case IDC_CONTENT_CONTEXT_COPYAVLOCATION:
       WriteURLToClipboard(params_.src_url);
       break;
 
-    case IDS_CONTENT_CONTEXT_COPYIMAGE:
+    case IDC_CONTENT_CONTEXT_COPYIMAGE:
       CopyImageAt(params_.x, params_.y);
       break;
 
-    case IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB:
-    case IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB:
-    case IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB:
+    case IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB:
+    case IDC_CONTENT_CONTEXT_OPENAVNEWTAB:
       OpenURL(params_.src_url, NEW_BACKGROUND_TAB, PageTransition::LINK);
       break;
 
-    case IDS_CONTENT_CONTEXT_PLAY:
-      UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Play"),
-                                profile_);
+    case IDC_CONTENT_CONTEXT_PLAYPAUSE: {
+      bool play = !!(params_.media_flags & WebContextMenuData::MediaPaused);
+      if (play) {
+        UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Play"),
+                                  profile_);
+      } else {
+        UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Pause"),
+                                  profile_);
+      }
       MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
                           WebMediaPlayerAction(
-                              WebMediaPlayerAction::Play, true));
+                              WebMediaPlayerAction::Play, play));
       break;
+    }
 
-    case IDS_CONTENT_CONTEXT_PAUSE:
-      UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Pause"),
-                                profile_);
+    case IDC_CONTENT_CONTEXT_MUTE: {
+      bool mute = !(params_.media_flags & WebContextMenuData::MediaMuted);
+      if (mute) {
+        UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Mute"),
+                                  profile_);
+      } else {
+        UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Unmute"),
+                                  profile_);
+      }
       MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
                           WebMediaPlayerAction(
-                              WebMediaPlayerAction::Play, false));
+                              WebMediaPlayerAction::Mute, mute));
       break;
+    }
 
-    case IDS_CONTENT_CONTEXT_MUTE:
-      UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Mute"),
-                                profile_);
-      MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
-                          WebMediaPlayerAction(
-                              WebMediaPlayerAction::Mute, true));
-      break;
-
-    case IDS_CONTENT_CONTEXT_UNMUTE:
-      UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Unmute"),
-                                profile_);
-      MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
-                          WebMediaPlayerAction(
-                              WebMediaPlayerAction::Mute, false));
-      break;
-
-    case IDS_CONTENT_CONTEXT_LOOP:
+    case IDC_CONTENT_CONTEXT_LOOP:
       UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Loop"),
                                 profile_);
       MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
                           WebMediaPlayerAction(
                               WebMediaPlayerAction::Loop,
-                              !IsCommandIdChecked(IDS_CONTENT_CONTEXT_LOOP)));
+                              !IsCommandIdChecked(IDC_CONTENT_CONTEXT_LOOP)));
       break;
 
-    case IDS_CONTENT_CONTEXT_CONTROLS:
+    case IDC_CONTENT_CONTEXT_CONTROLS:
       UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Controls"),
                                 profile_);
       MediaPlayerActionAt(
           gfx::Point(params_.x, params_.y),
           WebMediaPlayerAction(
               WebMediaPlayerAction::Controls,
-              !IsCommandIdChecked(IDS_CONTENT_CONTEXT_CONTROLS)));
+              !IsCommandIdChecked(IDC_CONTENT_CONTEXT_CONTROLS)));
       break;
 
-    case IDS_CONTENT_CONTEXT_BACK:
+    case IDC_BACK:
       source_tab_contents_->controller().GoBack();
       break;
 
-    case IDS_CONTENT_CONTEXT_FORWARD:
+    case IDC_FORWARD:
       source_tab_contents_->controller().GoForward();
       break;
 
-    case IDS_CONTENT_CONTEXT_SAVEPAGEAS:
+    case IDC_SAVE_PAGE:
       source_tab_contents_->OnSavePage();
       break;
 
-    case IDS_CONTENT_CONTEXT_RELOAD:
+    case IDC_RELOAD:
       // Prevent the modal "Resubmit form post" dialog from appearing in the
       // context of an external context menu.
       source_tab_contents_->controller().Reload(!external_);
       break;
 
-    case IDS_CONTENT_CONTEXT_PRINT:
+    case IDC_PRINT:
       source_tab_contents_->PrintPreview();
       break;
 
-    case IDS_CONTENT_CONTEXT_VIEWPAGESOURCE:
+    case IDC_VIEW_SOURCE:
       OpenURL(GURL("view-source:" + params_.page_url.spec()),
               NEW_FOREGROUND_TAB, PageTransition::LINK);
       break;
 
-    case IDS_CONTENT_CONTEXT_INSPECTELEMENT:
+    case IDC_CONTENT_CONTEXT_INSPECTELEMENT:
       Inspect(params_.x, params_.y);
       break;
 
-    case IDS_CONTENT_CONTEXT_VIEWPAGEINFO: {
+    case IDC_CONTENT_CONTEXT_VIEWPAGEINFO: {
       NavigationEntry* nav_entry =
           source_tab_contents_->controller().GetActiveEntry();
       source_tab_contents_->ShowPageInfo(nav_entry->url(), nav_entry->ssl(),
@@ -1097,7 +1105,7 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       break;
     }
 
-    case IDS_CONTENT_CONTEXT_TRANSLATE: {
+    case IDC_CONTENT_CONTEXT_TRANSLATE: {
       // A translation might have been triggered by the time the menu got
       // selected, do nothing in that case.
       if (source_tab_contents_->language_state().IsPageTranslated() ||
@@ -1118,38 +1126,28 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       break;
     }
 
-    case IDS_CONTENT_CONTEXT_RELOADFRAME:
+    case IDC_CONTENT_CONTEXT_RELOADFRAME:
       source_tab_contents_->render_view_host()->ReloadFrame();
       break;
 
-    case IDS_CONTENT_CONTEXT_OPENFRAMENEWTAB:
+    case IDC_CONTENT_CONTEXT_OPENFRAMENEWTAB:
       OpenURL(params_.frame_url, NEW_BACKGROUND_TAB, PageTransition::LINK);
       break;
 
-    case IDS_CONTENT_CONTEXT_OPENFRAMENEWWINDOW:
+    case IDC_CONTENT_CONTEXT_OPENFRAMENEWWINDOW:
       OpenURL(params_.frame_url, NEW_WINDOW, PageTransition::LINK);
       break;
 
-    case IDS_CONTENT_CONTEXT_OPENFRAMEOFFTHERECORD:
+    case IDC_CONTENT_CONTEXT_OPENFRAMEOFFTHERECORD:
       OpenURL(params_.frame_url, OFF_THE_RECORD, PageTransition::LINK);
       break;
 
-    case IDS_CONTENT_CONTEXT_SAVEFRAMEAS:
-      // http://code.google.com/p/chromium/issues/detail?id=11827
-      NOTIMPLEMENTED() << "IDS_CONTENT_CONTEXT_SAVEFRAMEAS";
-      break;
-
-    case IDS_CONTENT_CONTEXT_PRINTFRAME:
-      // http://code.google.com/p/chromium/issues/detail?id=11827
-      NOTIMPLEMENTED() << "IDS_CONTENT_CONTEXT_PRINTFRAME";
-      break;
-
-    case IDS_CONTENT_CONTEXT_VIEWFRAMESOURCE:
+    case IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE:
       OpenURL(GURL("view-source:" + params_.frame_url.spec()),
               NEW_FOREGROUND_TAB, PageTransition::LINK);
       break;
 
-    case IDS_CONTENT_CONTEXT_VIEWFRAMEINFO: {
+    case IDC_CONTENT_CONTEXT_VIEWFRAMEINFO: {
       // Deserialize the SSL info.
       NavigationEntry::SSLStatus ssl;
       if (!params_.security_info.empty()) {
@@ -1167,36 +1165,36 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       break;
     }
 
-    case IDS_CONTENT_CONTEXT_UNDO:
+    case IDC_CONTENT_CONTEXT_UNDO:
       source_tab_contents_->render_view_host()->Undo();
       break;
 
-    case IDS_CONTENT_CONTEXT_REDO:
+    case IDC_CONTENT_CONTEXT_REDO:
       source_tab_contents_->render_view_host()->Redo();
       break;
 
-    case IDS_CONTENT_CONTEXT_CUT:
+    case IDC_CONTENT_CONTEXT_CUT:
       source_tab_contents_->render_view_host()->Cut();
       break;
 
-    case IDS_CONTENT_CONTEXT_COPY:
+    case IDC_CONTENT_CONTEXT_COPY:
       source_tab_contents_->render_view_host()->Copy();
       break;
 
-    case IDS_CONTENT_CONTEXT_PASTE:
+    case IDC_CONTENT_CONTEXT_PASTE:
       source_tab_contents_->render_view_host()->Paste();
       break;
 
-    case IDS_CONTENT_CONTEXT_DELETE:
+    case IDC_CONTENT_CONTEXT_DELETE:
       source_tab_contents_->render_view_host()->Delete();
       break;
 
-    case IDS_CONTENT_CONTEXT_SELECTALL:
+    case IDC_CONTENT_CONTEXT_SELECTALL:
       source_tab_contents_->render_view_host()->SelectAll();
       break;
 
-    case IDS_CONTENT_CONTEXT_SEARCHWEBFOR:
-    case IDS_CONTENT_CONTEXT_GOTOURL: {
+    case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
+    case IDC_CONTENT_CONTEXT_GOTOURL: {
       OpenURL(selection_navigation_url_, NEW_FOREGROUND_TAB,
               PageTransition::LINK);
       break;
@@ -1214,7 +1212,7 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
     case IDC_CHECK_SPELLING_OF_THIS_FIELD:
       source_tab_contents_->render_view_host()->ToggleSpellCheck();
       break;
-    case IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY: {
+    case IDC_SPELLCHECK_ADD_TO_DICTIONARY: {
       SpellCheckHost* spellcheck_host = profile_->GetSpellCheckHost();
       if (!spellcheck_host) {
         NOTREACHED();
@@ -1225,7 +1223,7 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       break;
     }
 
-    case IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
+    case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
       ShowFontsLanguagesWindow(
           platform_util::GetTopLevel(
               source_tab_contents_->GetContentNativeView()),
@@ -1253,8 +1251,8 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
     }
 #endif  // OS_MACOSX
 
-    case IDS_CONTENT_CONTEXT_ADDSEARCHENGINE:  // Not implemented.
     default:
+      NOTREACHED();
       break;
   }
 }
@@ -1294,7 +1292,7 @@ bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
       !LowerCaseEqualsASCII(active_entry->virtual_url().path(), "blank"))
     return false;
 
-  if (id == IDS_CONTENT_CONTEXT_INSPECTELEMENT) {
+  if (id == IDC_CONTENT_CONTEXT_INSPECTELEMENT) {
     // Don't enable the web inspector if JavaScript is disabled.
     if (!profile_->GetPrefs()->GetBoolean(prefs::kWebKitJavascriptEnabled) ||
         command_line.HasSwitch(switches::kDisableJavaScript))
