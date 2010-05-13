@@ -79,10 +79,13 @@ LoginManagerView::LoginManagerView(ScreenObserver* observer)
       error_id_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)),
       focus_delayed_(false),
-      login_in_process_(false) {
+      login_in_process_(false),
+      authenticator_(NULL) {
   // Create login observer to record time of login when successful.
   LogLoginSuccessObserver::Get();
-  authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
+  if (CrosLibrary::Get()->EnsureLoaded()) {
+    authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
+  }
 }
 
 LoginManagerView::~LoginManagerView() {
@@ -274,7 +277,7 @@ void LoginManagerView::Login() {
   sign_in_button_->SetEnabled(false);
   create_account_link_->SetEnabled(false);
   // Disallow 0 size username.
-  if (username_field_->text().empty()) {
+  if (username_field_->text().empty() || !authenticator_) {
     // Return true so that processing ends
     return;
   }
