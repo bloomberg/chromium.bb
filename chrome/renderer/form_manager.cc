@@ -45,20 +45,41 @@ namespace {
 // it's not necessary.
 const size_t kRequiredAutoFillFields = 3;
 
-// Returns the node value of the first offspring of |element| that is a text
-// node.  This is a faster alternative to |innerText()| for performance
-// critical operations when the child structure of |element| is known.
-string16 GetChildText(const WebElement& element) {
+// This is a helper function for the FindChildText() function.
+// Returns the node value of the descendant or sibling of |node| that is a
+// non-empty text node.  This is a faster alternative to |innerText()| for
+// performance critical operations.  It does a full depth-first search so
+// can be used when the structure is not directly known.  It does not aggregate
+// the text of multiple nodes, it just returns the value of the first found.
+// "Non-empty" in this case means non-empty after the whitespace has been
+// stripped.
+string16 FindChildTextInner(const WebNode& node) {
   string16 element_text;
-  WebNode child = element.firstChild();
-  // Find the text node.
-  while (!child.isNull() && !child.isTextNode())
-    child = child.firstChild();
-  if (!child.isNull()) {
-    element_text = child.nodeValue();
-    TrimWhitespace(element_text, TRIM_ALL, &element_text);
-  }
+  if (node.isNull())
+    return element_text;
+
+  element_text = node.nodeValue();
+  TrimWhitespace(element_text, TRIM_ALL, &element_text);
+  if (!element_text.empty())
+    return element_text;
+
+  element_text = FindChildTextInner(node.firstChild());
+  if (!element_text.empty())
+    return element_text;
+
+  element_text = FindChildTextInner(node.nextSibling());
+  if (!element_text.empty())
+    return element_text;
+
   return element_text;
+}
+
+// Returns the node value of the first decendant of |element| that is a
+// non-empty text node.  "Non-empty" in this case means non-empty after the
+// whitespace has been stripped.
+string16 FindChildText(const WebElement& element) {
+  WebNode child = element.firstChild();
+  return FindChildTextInner(child);
 }
 
 }  // namespace
@@ -109,7 +130,7 @@ string16 FormManager::LabelForElement(const WebFormControlElement& element) {
     if (e.hasTagName("label")) {
       WebLabelElement label = e.to<WebLabelElement>();
       if (label.correspondingControl() == element)
-        return GetChildText(label);
+        return FindChildText(label);
     }
   }
 
@@ -200,7 +221,7 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
     std::map<string16, FormField*>::iterator iter =
         name_map.find(field_element.nameForAutofill());
     if (iter != name_map.end())
-      iter->second->set_label(GetChildText(label));
+      iter->second->set_label(FindChildText(label));
   }
 
   // Loop through the form control elements, extracting the label text from the
@@ -548,8 +569,7 @@ string16 FormManager::InferLabelForElement(
       if (previous.isElementNode()) {
         WebElement element = previous.to<WebElement>();
         if (element.hasTagName("p")) {
-          inferred_label = GetChildText(element);
-          TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
+          inferred_label = FindChildText(element);
         }
       }
     }
@@ -562,8 +582,7 @@ string16 FormManager::InferLabelForElement(
       if (!previous.isNull() && previous.isElementNode()) {
         WebElement element = previous.to<WebElement>();
         if (element.hasTagName("p")) {
-          inferred_label = GetChildText(element);
-          TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
+          inferred_label = FindChildText(element);
         }
       }
     }
@@ -571,8 +590,13 @@ string16 FormManager::InferLabelForElement(
 
   // If we didn't find paragraph, check for table cell case.
   // Eg. <tr><td>Some Text</td><td><input ...></td></tr>
+  // Eg. <tr><td><b>Some Text</b></td><td><b><input ...></b></td></tr>
   if (inferred_label.empty()) {
     WebNode parent = element.parentNode();
+    while (!parent.isNull() && parent.isElementNode() &&
+           !parent.to<WebElement>().hasTagName("td"))
+      parent = parent.parentNode();
+
     if (!parent.isNull() && parent.isElementNode()) {
       WebElement element = parent.to<WebElement>();
       if (element.hasTagName("td")) {
@@ -585,8 +609,7 @@ string16 FormManager::InferLabelForElement(
         if (!previous.isNull() && previous.isElementNode()) {
           element = previous.to<WebElement>();
           if (element.hasTagName("td")) {
-            inferred_label = GetChildText(element);
-            TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
+            inferred_label = FindChildText(element);
           }
         }
       }
