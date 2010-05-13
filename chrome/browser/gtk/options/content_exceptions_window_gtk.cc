@@ -205,7 +205,7 @@ void ContentExceptionsWindowGtk::Add(GtkWidget* widget) {
 
 void ContentExceptionsWindowGtk::Edit(GtkWidget* widget) {
   std::set<int> indices;
-  gtk_tree::GetSelectedIndicies(treeview_selection_, &indices);
+  gtk_tree::GetSelectedIndices(treeview_selection_, &indices);
   DCHECK_GT(indices.size(), 0u);
   int index = *indices.begin();
   const HostContentSettingsMap::PatternSettingPair& entry =
@@ -216,7 +216,7 @@ void ContentExceptionsWindowGtk::Edit(GtkWidget* widget) {
 
 void ContentExceptionsWindowGtk::Remove(GtkWidget* widget) {
   std::set<int> indices;
-  gtk_tree::GetSelectedIndicies(treeview_selection_, &indices);
+  gtk_tree::GetSelectedIndices(treeview_selection_, &indices);
 
   for (std::set<int>::reverse_iterator i = indices.rbegin();
        i != indices.rend(); ++i) {

@@ -532,7 +532,7 @@ void GeneralPageGtk::SetCustomUrlListFromCurrentPages() {
 
 void GeneralPageGtk::OnAddCustomUrl(const GURL& url) {
   std::set<int> indices;
-  gtk_tree::GetSelectedIndicies(startup_custom_pages_selection_, &indices);
+  gtk_tree::GetSelectedIndices(startup_custom_pages_selection_, &indices);
   int index;
   if (indices.empty())
     index = startup_custom_pages_table_model_->RowCount();
@@ -548,7 +548,7 @@ void GeneralPageGtk::OnAddCustomUrl(const GURL& url) {
 
 void GeneralPageGtk::RemoveSelectedCustomUrls() {
   std::set<int> indices;
-  gtk_tree::GetSelectedIndicies(startup_custom_pages_selection_, &indices);
+  gtk_tree::GetSelectedIndices(startup_custom_pages_selection_, &indices);
 
   int selected_row = 0;
   for (std::set<int>::reverse_iterator i = indices.rbegin();

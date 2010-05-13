@@ -367,8 +367,8 @@ void LanguagesPageGtk::OnAddButtonClicked(GtkWidget* button) {
 
 void LanguagesPageGtk::OnRemoveButtonClicked(GtkWidget* button) {
   std::set<int> selected_rows;
-  gtk_tree::GetSelectedIndicies(language_order_selection_,
-                                &selected_rows);
+  gtk_tree::GetSelectedIndices(language_order_selection_,
+                               &selected_rows);
 
   int selected_row = 0;
   for (std::set<int>::reverse_iterator selected = selected_rows.rbegin();

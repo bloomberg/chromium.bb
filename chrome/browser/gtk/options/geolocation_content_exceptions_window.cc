@@ -147,9 +147,9 @@ void GeolocationContentExceptionsWindow::UpdateButtonState() {
 
 void GeolocationContentExceptionsWindow::GetSelectedRows(
     GeolocationContentSettingsTableModel::Rows* rows) {
-  std::set<int> indicies;
-  gtk_tree::GetSelectedIndicies(treeview_selection_, &indicies);
-  for (std::set<int>::iterator i = indicies.begin(); i != indicies.end(); ++i)
+  std::set<int> indices;
+  gtk_tree::GetSelectedIndices(treeview_selection_, &indices);
+  for (std::set<int>::iterator i = indices.begin(); i != indices.end(); ++i)
     rows->insert(*i);
 }
 

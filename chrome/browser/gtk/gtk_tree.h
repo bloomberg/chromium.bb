@@ -38,7 +38,7 @@ void SelectAndFocusRowNum(int row, GtkTreeView* tree_view);
 bool RemoveRecursively(GtkTreeStore* tree_store, GtkTreeIter* iter);
 
 // Writes all the indexes of selected rows into |out|.
-void GetSelectedIndicies(GtkTreeSelection* selection, std::set<int>* out);
+void GetSelectedIndices(GtkTreeSelection* selection, std::set<int>* out);
 
 // A helper class for populating a GtkListStore from a TableModel.
 class TableAdapter : public TableModelObserver {

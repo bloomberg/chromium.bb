@@ -65,7 +65,7 @@ bool RemoveRecursively(GtkTreeStore* tree_store, GtkTreeIter* iter) {
   return gtk_tree_store_remove(tree_store, iter);
 }
 
-void GetSelectedIndicies(GtkTreeSelection* selection, std::set<int>* out) {
+void GetSelectedIndices(GtkTreeSelection* selection, std::set<int>* out) {
   GList* list = gtk_tree_selection_get_selected_rows(
       selection, NULL);
   GList* node;
