@@ -190,7 +190,8 @@ class TwoClientLiveAutofillSyncTest : public LiveSyncTest {
           webkit_glue::FormField(string16(),
                                  (*i).name(),
                                  (*i).value(),
-                                 string16()));
+                                 string16(),
+                                 0));
     }
 
     WaitableEvent done_event(false, false);
