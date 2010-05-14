@@ -80,7 +80,8 @@ PageInfoWindowMac::PageInfoWindowMac(PageInfoWindowController* controller,
 PageInfoWindowMac::PageInfoWindowMac(PageInfoWindowController* controller,
                                      PageInfoModel* model)
     : controller_(controller),
-      model_(model) {
+      model_(model),
+      cert_id_(0) {
   Init();
 }
 
