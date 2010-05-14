@@ -122,9 +122,9 @@ class ChromeosTabStrip : public TabStrip {
 namespace chromeos {
 
 // LayoutManager for BrowserView, which layouts extra components such as
-// main menu, stataus views as follows:
-//                     ____  __ __
-//      [AppLauncher] /    \   \  \     [StatusArea]
+// the status views as follows:
+//       ____  __ __
+//      /    \   \  \     [StatusArea]
 //
 class BrowserViewLayout : public ::BrowserViewLayout {
  public:
@@ -135,7 +135,6 @@ class BrowserViewLayout : public ::BrowserViewLayout {
   // BrowserViewLayout overrides:
 
   void Installed(views::View* host) {
-    main_menu_button_ = NULL;
     compact_navigation_bar_ = NULL;
     status_area_ = NULL;
     spacer_ = NULL;
@@ -148,9 +147,6 @@ class BrowserViewLayout : public ::BrowserViewLayout {
     switch (view->GetID()) {
       case VIEW_ID_SPACER:
         spacer_ = view;
-        break;
-      case VIEW_ID_APP_MENU_BUTTON:
-        main_menu_button_ = view;
         break;
       case VIEW_ID_STATUS_AREA:
         status_area_ = static_cast<chromeos::StatusAreaView*>(view);
@@ -170,7 +166,6 @@ class BrowserViewLayout : public ::BrowserViewLayout {
   virtual int LayoutTabStrip() {
     if (browser_view_->IsFullscreen() ||
         !browser_view_->IsTabStripVisible()) {
-      main_menu_button_->SetVisible(false);
       compact_navigation_bar_->SetVisible(false);
       status_area_->SetVisible(false);
       otr_avatar_icon_->SetVisible(false);
@@ -211,12 +206,6 @@ class BrowserViewLayout : public ::BrowserViewLayout {
   // considered title bar area of client view.
   bool IsPointInViewsInTitleArea(const gfx::Point& point)
       const {
-    gfx::Point point_in_main_menu_coords(point);
-    views::View::ConvertPointToView(browser_view_, main_menu_button_,
-                                    &point_in_main_menu_coords);
-    if (main_menu_button_->HitTest(point_in_main_menu_coords))
-      return true;
-
     gfx::Point point_in_status_area_coords(point);
     views::View::ConvertPointToView(browser_view_, status_area_,
                                     &point_in_status_area_coords);
@@ -241,7 +230,6 @@ class BrowserViewLayout : public ::BrowserViewLayout {
     if (bounds.IsEmpty()) {
       return 0;
     }
-    main_menu_button_->SetVisible(true);
     compact_navigation_bar_->SetVisible(
         chromeos_browser_view()->is_compact_style());
     tabstrip_->SetVisible(true);
@@ -263,11 +251,6 @@ class BrowserViewLayout : public ::BrowserViewLayout {
      }
     */
 
-    // Layout main menu before tab strip.
-    gfx::Size main_menu_size = main_menu_button_->GetPreferredSize();
-    main_menu_button_->SetBounds(0, bounds.y(),
-                                 main_menu_size.width(), bounds.height());
-
     status_area_->Update();
     // Layout status area after tab strip.
     gfx::Size status_size = status_area_->GetPreferredSize();
@@ -276,7 +259,7 @@ class BrowserViewLayout : public ::BrowserViewLayout {
                             status_size.height());
     LayoutOTRAvatar(bounds);
 
-    int curx = bounds.x() + main_menu_size.width();
+    int curx = bounds.x();
 
     if (compact_navigation_bar_->IsVisible()) {
       gfx::Size cnb_size = compact_navigation_bar_->GetPreferredSize();
@@ -326,7 +309,6 @@ class BrowserViewLayout : public ::BrowserViewLayout {
   }
 
 
-  views::View* main_menu_button_;
   chromeos::StatusAreaView* status_area_;
   views::View* compact_navigation_bar_;
   views::View* spacer_;
@@ -337,7 +319,6 @@ class BrowserViewLayout : public ::BrowserViewLayout {
 
 BrowserView::BrowserView(Browser* browser)
     : ::BrowserView(browser),
-      main_menu_button_(NULL),
       status_area_(NULL),
       compact_navigation_bar_(NULL),
       // Standard style is default.
@@ -356,15 +337,8 @@ BrowserView::~BrowserView() {
 
 void BrowserView::Init() {
   ::BrowserView::Init();
-  main_menu_button_ = new views::ImageButton(this);
-  main_menu_button_->SetID(VIEW_ID_APP_MENU_BUTTON);
   ThemeProvider* theme_provider =
       frame()->GetThemeProviderForFrame();
-  SkBitmap* image = theme_provider->GetBitmapNamed(IDR_APP_LAUNCHER_BUTTON);
-  main_menu_button_->SetImage(views::CustomButton::BS_NORMAL, image);
-  main_menu_button_->SetImage(views::CustomButton::BS_HOT, image);
-  main_menu_button_->SetImage(views::CustomButton::BS_PUSHED, image);
-  AddChildView(main_menu_button_);
 
   compact_location_bar_host_.reset(
       new chromeos::CompactLocationBarHost(this));
@@ -450,19 +424,6 @@ views::LayoutManager* BrowserView::CreateLayoutManager() const {
 void BrowserView::ChildPreferredSizeChanged(View* child) {
   Layout();
   SchedulePaint();
-}
-
-// views::ButtonListener overrides.
-void BrowserView::ButtonPressed(views::Button* sender,
-                                const views::Event& event) {
-  gfx::Rect bounds = main_menu_button_->bounds();
-  gfx::Point origin = bounds.origin();
-  // Move the origin to the right otherwise the app launcher info bubble left
-  // border will show out of screen.
-  origin.Offset(kAppLauncherLeftPadding, 0);
-  views::RootView::ConvertPointToScreen(this, &origin);
-  bounds.set_origin(origin);
-  ::AppLauncher::Show(browser(), bounds, gfx::Point(), std::string());
 }
 
 // views::ContextMenuController overrides.

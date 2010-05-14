@@ -6,9 +6,6 @@
 
 #include "chrome/browser/views/bubble_border.h"
 
-#if defined(OS_WIN)
-// BorderWidget ---------------------------------------------------------------
-
 void PinnedContentsBorderContents::SizeAndGetBounds(
     const gfx::Rect& position_relative_to,
     BubbleBorder::ArrowLocation arrow_location,
@@ -34,11 +31,6 @@ void PinnedContentsBorderContents::SizeAndGetBounds(
   window_bounds->Offset(0, -(kTopMargin + 1));
 }
 
-BorderContents* PinnedContentsBorderWidget::CreateBorderContents() {
-  return new PinnedContentsBorderContents(bubble_anchor_);
-}
-#endif
-
 // InfoBubble -----------------------------------------------------------------
 
 // static
@@ -56,10 +48,6 @@ PinnedContentsInfoBubble* PinnedContentsInfoBubble::Show(
   return window;
 }
 
-// TODO(finnur): This needs to be implemented for other platforms once we decide
-// this is the way to go.
-#if defined(OS_WIN)
-BorderWidget* PinnedContentsInfoBubble::CreateBorderWidget() {
-  return new PinnedContentsBorderWidget(bubble_anchor_);
+BorderContents* PinnedContentsInfoBubble::CreateBorderContents() {
+  return new PinnedContentsBorderContents(bubble_anchor_);
 }
-#endif

@@ -111,6 +111,10 @@
 #include "chrome/browser/cocoa/find_pasteboard.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/views/app_launcher.h"
+#endif
+
 using base::TimeDelta;
 
 // How long we wait before updating the browser chrome while loading a page.
@@ -1045,6 +1049,21 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
   command_updater_.UpdateCommandEnabled(IDC_SHOW_PAGE_MENU, show_main_ui);
 }
 
+bool Browser::OpenAppsPanelAsNewTab() {
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableAppsPanel) ||
+      (!browser_defaults::kShowAppsPanelForNewTab &&
+           !command_line->HasSwitch(switches::kAppsPanel))) {
+    return false;
+  }
+  AppLauncher::ShowForNewTab(this, std::string());
+  return true;
+#endif  // OS_CHROMEOS || OS_WIN
+
+  return false;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, Assorted browser commands:
 
@@ -1248,12 +1267,10 @@ void Browser::CloseWindow() {
 
 void Browser::NewTab() {
   UserMetrics::RecordAction(UserMetricsAction("NewTab"), profile_);
-#if defined(OS_WIN)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAppsPanel)) {
-    AppLauncher::ShowForNewTab(this, std::string());
+
+  if (OpenAppsPanelAsNewTab())
     return;
-  }
-#endif
+
   if (type() == TYPE_NORMAL) {
     AddBlankTab(true);
   } else {

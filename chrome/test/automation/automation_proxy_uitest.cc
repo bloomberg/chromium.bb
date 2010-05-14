@@ -107,12 +107,12 @@ TEST_F(AutomationProxyVisibleTest, MAYBE_WindowGetViewBounds) {
 
     gfx::Rect bounds;
     ASSERT_TRUE(window->GetViewBounds(VIEW_ID_TAB_0, &bounds, false));
-    EXPECT_GT(bounds.x(), 0);
     EXPECT_GT(bounds.width(), 0);
     EXPECT_GT(bounds.height(), 0);
 
     gfx::Rect bounds2;
     ASSERT_TRUE(window->GetViewBounds(VIEW_ID_TAB_LAST, &bounds2, false));
+    EXPECT_GT(bounds2.x(), 0);
     EXPECT_GT(bounds2.width(), 0);
     EXPECT_GT(bounds2.height(), 0);
 

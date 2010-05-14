@@ -116,7 +116,7 @@ class BorderWidget : public views::WidgetWin {
   virtual ~BorderWidget() { }
 
   // Initializes the BrowserWidget making |owner| its owning window.
-  void Init(HWND owner);
+  void Init(BorderContents* border_contents, HWND owner);
 
   // Given the size of the contained contents (without margins), and the rect
   // (in screen coordinates) to point to, sets the border window positions and
@@ -129,10 +129,6 @@ class BorderWidget : public views::WidgetWin {
                                      const gfx::Size& contents_size);
 
  protected:
-  // Instanciates and returns the BorderContents this BorderWidget should use.
-  // Subclasses can return their own BorderContents implementation.
-  virtual BorderContents* CreateBorderContents();
-
   BorderContents* border_contents_;
 
  private:
@@ -204,11 +200,9 @@ class InfoBubble
                     views::View* contents,
                     InfoBubbleDelegate* delegate);
 
-#if defined(OS_WIN)
-  // Instanciates and returns the BorderWidget this InfoBubble should use.
-  // Subclasses can return their own BorderWidget specialization.
-  virtual BorderWidget* CreateBorderWidget();
-#endif
+  // Instanciates and returns the BorderContents this InfoBubble should use.
+  // Subclasses can return their own BorderContents implementation.
+  virtual BorderContents* CreateBorderContents();
 
 #if defined(OS_WIN)
   // Overridden from WidgetWin:

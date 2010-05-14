@@ -7,7 +7,6 @@
 
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/views/frame/browser_view.h"
-#include "views/controls/button/button.h"
 
 class TabStripModel;
 
@@ -33,12 +32,11 @@ class StatusAreaButton;
 // chromeos::BrowserView adds ChromeOS specific controls and menus to a
 // BrowserView created with Browser::TYPE_NORMAL. This extender adds controls
 // to the title bar as follows:
-//                     ____  __ __
-//      [AppLauncher] /    \   \  \     [StatusArea]
+//       ____  __ __
+//      /    \   \  \     [StatusArea]
 //
 // and adds the system context menu to the remaining arae of the titlebar.
 class BrowserView : public ::BrowserView,
-                    public views::ButtonListener,
                     public views::ContextMenuController,
                     public StatusAreaHost {
  public:
@@ -65,9 +63,6 @@ class BrowserView : public ::BrowserView,
   virtual void ToggleCompactNavigationBar();
   virtual views::LayoutManager* CreateLayoutManager() const;
   virtual void ChildPreferredSizeChanged(View* child);
-
-  // views::ButtonListener overrides.
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // views::ContextMenuController overrides.
   virtual void ShowContextMenu(views::View* source,
@@ -99,9 +94,6 @@ class BrowserView : public ::BrowserView,
   }
 
   void InitSystemMenu();
-
-  // AppLauncher button.
-  views::ImageButton* main_menu_button_;
 
   // Status Area view.
   BrowserStatusAreaView* status_area_;

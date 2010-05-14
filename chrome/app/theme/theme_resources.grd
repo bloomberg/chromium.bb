@@ -511,7 +511,6 @@
         <include name="IDR_MEDIAPLAYER_PLAYLIST" file="mediaplayer_playlist.png" type="BINDATA" />
         <include name="IDR_LOGIN_DEFAULT_USER" file="login_default.png" type="BINDATA" />
         <include name="IDR_LOGIN_OTHER_USER" file="login_other.png" type="BINDATA" />
-        <include name="IDR_APP_LAUNCHER_BUTTON" file="app_launcher_button.png" type="BINDATA" />
        </if>
 
       <if expr="not pp_ifdef('chromeos') and not pp_ifdef('toolkit_views')">

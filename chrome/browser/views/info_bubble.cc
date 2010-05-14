@@ -199,9 +199,9 @@ BorderWidget::BorderWidget() : border_contents_(NULL) {
 }
 
 
-void BorderWidget::Init(HWND owner) {
+void BorderWidget::Init(BorderContents* border_contents, HWND owner) {
   DCHECK(!border_contents_);
-  border_contents_ = CreateBorderContents();
+  border_contents_ = border_contents;
   border_contents_->Init();
   WidgetWin::Init(GetAncestor(owner, GA_ROOT), gfx::Rect());
   SetContentsView(border_contents_);
@@ -234,10 +234,6 @@ gfx::Rect BorderWidget::SizeAndGetBounds(
   // Return |contents_bounds| in screen coordinates.
   contents_bounds.Offset(window_bounds.origin());
   return contents_bounds;
-}
-
-BorderContents* BorderWidget::CreateBorderContents() {
-  return new BorderContents();
 }
 
 LRESULT BorderWidget::OnMouseActivate(HWND window,
@@ -325,8 +321,8 @@ void InfoBubble::Init(views::Widget* parent,
 
 #if defined(OS_WIN)
   DCHECK(!border_.get());
-  border_.reset(CreateBorderWidget());
-  border_->Init(GetNativeView());
+  border_.reset(new BorderWidget());
+  border_->Init(CreateBorderContents(), GetNativeView());
 
   // Initialize and position the border window.
   window_bounds = border_->SizeAndGetBounds(position_relative_to,
@@ -341,7 +337,7 @@ void InfoBubble::Init(views::Widget* parent,
       views::Background::CreateSolidBackground(kBackgroundColor));
 #else
   // Create a view to paint the border and background.
-  border_contents_ = new BorderContents;
+  border_contents_ = CreateBorderContents();
   border_contents_->Init();
   gfx::Rect contents_bounds;
   border_contents_->SizeAndGetBounds(position_relative_to,
@@ -375,11 +371,9 @@ void InfoBubble::Init(views::Widget* parent,
 #endif
 }
 
-#if defined(OS_WIN)
-BorderWidget* InfoBubble::CreateBorderWidget() {
-  return new BorderWidget;
+BorderContents* InfoBubble::CreateBorderContents() {
+  return new BorderContents();
 }
-#endif
 
 void InfoBubble::SizeToContents() {
   gfx::Rect window_bounds;

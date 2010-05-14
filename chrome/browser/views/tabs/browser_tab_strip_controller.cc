@@ -252,18 +252,13 @@ bool BrowserTabStripController::IsCompatibleWith(BaseTabStrip* other) const {
 }
 
 void BrowserTabStripController::CreateNewTab() {
-  // TODO(jcampan): if we decide to keep the app launcher as the default
-  //                behavior for the new tab button, we should add a method
-  //                on the TabStripDelegate to do so.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAppsPanel)) {
-    NavigationController& controller =
-        model_->GetSelectedTabContents()->controller();
-    AppLauncher::ShowForNewTab(
-        Browser::GetBrowserForController(&controller, NULL), std::string());
-    return;
-  }
   UserMetrics::RecordAction(UserMetricsAction("NewTab_Button"),
                             model_->profile());
+
+  Browser* browser = model_->GetSelectedTabContents()->delegate()->GetBrowser();
+  if (browser->OpenAppsPanelAsNewTab())
+    return;
+
   model_->delegate()->AddBlankTab(true);
 }
 

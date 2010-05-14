@@ -25,6 +25,7 @@ const bool kDownloadPageHasShowInFolder = false;
 const bool kSizeTabButtonToTopOfTabStrip = true;
 const bool kBootstrapSyncAuthentication = true;
 const bool kShowOtherBrowsersInAboutMemory = false;
+const bool kShowAppsPanelForNewTab = true;
 
 #elif defined(TOOLKIT_USES_GTK)
 
@@ -65,7 +66,7 @@ const bool kOSSupportsOtherBrowsers = true;
 const bool kSizeTabButtonToTopOfTabStrip = false;
 const bool kBootstrapSyncAuthentication = false;
 const bool kShowOtherBrowsersInAboutMemory = true;
-
+const bool kShowAppsPanelForNewTab = false;
 #endif
 
 #if defined(OS_MACOSX)

@@ -31,25 +31,6 @@ class PinnedContentsBorderContents : public BorderContents {
   DISALLOW_COPY_AND_ASSIGN(PinnedContentsBorderContents);
 };
 
-#if defined(OS_WIN)
-// The window that surrounds the info bubble. See base class for details.
-class PinnedContentsBorderWidget : public BorderWidget {
- public:
-  explicit PinnedContentsBorderWidget(const gfx::Point& bubble_anchor)
-     : bubble_anchor_(bubble_anchor) {}
-  virtual ~PinnedContentsBorderWidget() {}
-
-  // BorderWidget overrides:
-  virtual BorderContents* CreateBorderContents();
-
- private:
-  // The location of the pinned contents (in screen coordinates).
-  const gfx::Point bubble_anchor_;
-
-  DISALLOW_COPY_AND_ASSIGN(PinnedContentsBorderWidget);
-};
-#endif
-
 // A specialization of the InfoBubble. Used to draw an InfoBubble which, in
 // addition to having an arrow pointing to where the user clicked, also shifts
 // the bubble horizontally to fix it to a specific location. See base class
@@ -69,15 +50,13 @@ class PinnedContentsInfoBubble : public InfoBubble {
       views::View* contents,
       InfoBubbleDelegate* delegate);
 
+  // InfoBubble overrides:
+  virtual BorderContents* CreateBorderContents();
+
  private:
   explicit PinnedContentsInfoBubble(const gfx::Point& bubble_anchor)
       : bubble_anchor_(bubble_anchor) {}
   virtual ~PinnedContentsInfoBubble() {}
-
-  // InfoBubble overrides:
-#if defined(OS_WIN)
-  virtual BorderWidget* CreateBorderWidget();
-#endif
 
   // The location of the pinned contents (in screen coordinates).
   const gfx::Point bubble_anchor_;
