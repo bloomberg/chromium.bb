@@ -981,6 +981,8 @@ void OmxCodec::EmptyBufferCompleteTask(OMX_BUFFERHEADERTYPE* buffer) {
 
   // Try to feed more data into the decoder.
   EmptyBufferTask();
+
+  FulfillOneRead();
 }
 
 void OmxCodec::EmptyBufferTask() {
@@ -1084,6 +1086,12 @@ void OmxCodec::FulfillOneRead() {
     } else {
       callback->Run(static_cast<OMX_BUFFERHEADERTYPE*>(NULL));
     }
+    delete callback;
+  } else if (!output_queue_.empty() &&
+             !available_input_buffers_.empty() && !input_eos_) {
+    ReadCallback* callback = output_queue_.front();
+    output_queue_.pop();
+    callback->Run(static_cast<OMX_BUFFERHEADERTYPE*>(NULL));
     delete callback;
   }
 }

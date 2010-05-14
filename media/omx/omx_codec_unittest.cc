@@ -390,24 +390,29 @@ TEST_F(OmxCodecTest, OutputFlowControl) {
   // 1. Make a read request to OmxCodec.
   // 2. Fake a response for FillBufferDone().
   // 3. Expect read response received.
-  for (int i = 0; i < kBufferCount; ++i) {
+  // 4. NULL buffer is returned in first time
+  for (int i = 0; i < kBufferCount + 1; ++i) {
     // 1. First make a read request.
-    // Since a buffer is given back to OmxCodec. A FillThisBuffer() is called
-    // to OmxCodec.
-    EXPECT_CALL(*MockOmx::get(), FillThisBuffer(NotNull()))
+    // Since a buffer is given back to OmxCodec component after first time,
+    // a FillThisBuffer() is called to OmxCodec component.
+    if (i > 0) {
+      EXPECT_CALL(*MockOmx::get(), FillThisBuffer(NotNull()))
          .WillOnce(Return(OMX_ErrorNone))
          .RetiresOnSaturation();
+    }
     MakeReadRequest();
 
-    // 2. Then fake a response from OpenMAX.
-    OMX_BUFFERHEADERTYPE* buffer = fill_this_buffer_received_.front();
-    fill_this_buffer_received_.pop_front();
-    buffer->nFlags = 0;
-    buffer->nFilledLen = kBufferSize;
-    (*MockOmx::get()->callbacks()->FillBufferDone)(
-        MockOmx::get()->component(),
-        MockOmx::get()->component()->pApplicationPrivate,
-        buffer);
+    // 2. Then fake a response from OpenMAX, only |kBufferCount| times
+    if (i < kBufferCount) {
+      OMX_BUFFERHEADERTYPE* buffer = fill_this_buffer_received_.front();
+      fill_this_buffer_received_.pop_front();
+      buffer->nFlags = 0;
+      buffer->nFilledLen = kBufferSize;
+      (*MockOmx::get()->callbacks()->FillBufferDone)(
+          MockOmx::get()->component(),
+          MockOmx::get()->component()->pApplicationPrivate,
+          buffer);
+    }
 
     // Make sure actions are completed.
     message_loop_.RunAllPending();
