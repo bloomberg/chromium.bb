@@ -336,7 +336,7 @@ bool HttpDateToSeconds(const std::string& date, unsigned long* seconds) {
 
   if (7 != sscanf(date.c_str(), "%*3s, %d %3s %d %d:%d:%d %5c",
                   &tval.tm_mday, month, &tval.tm_year,
-                  &tval.tm_hour, &tval.tm_min, &tval.tm_sec, &zone)) {
+                  &tval.tm_hour, &tval.tm_min, &tval.tm_sec, zone)) {
     return false;
   }
   switch (toupper(month[2])) {
@@ -469,7 +469,7 @@ HttpRequestData::formatLeader(char* buffer, size_t size) {
 HttpError
 HttpRequestData::parseLeader(const char* line, size_t len) {
   UNUSED(len);
-  uint32 vmajor, vminor;
+  unsigned long vmajor, vminor;
   int vend, dstart, dend;
   if ((sscanf(line, "%*s%n %n%*s%n HTTP/%lu.%lu", &vend, &dstart, &dend,
               &vmajor, &vminor) != 2)
@@ -546,8 +546,8 @@ HttpResponseData::formatLeader(char* buffer, size_t size) {
 HttpError
 HttpResponseData::parseLeader(const char* line, size_t len) {
   size_t pos = 0;
-  uint32 vmajor, vminor;
-  if ((sscanf(line, "HTTP/%lu.%lu %lu%n", &vmajor, &vminor, &scode, &pos) != 3)
+  unsigned long vmajor, vminor;
+  if ((sscanf(line, "HTTP/%lu.%lu %lu%zu", &vmajor, &vminor, &scode, &pos) != 3)
       || (vmajor != 1)) {
     return HE_PROTOCOL;
   }
@@ -690,7 +690,7 @@ HttpAuthResult HttpAuthenticate(
     cnonce = DIGEST_CNONCE;
 #else
     char buffer[256];
-    sprintf(buffer, "%d", time(0));
+    sprintf(buffer, "%ld", time(0));
     cnonce = MD5(buffer);
 #endif
     ncount = "00000001";

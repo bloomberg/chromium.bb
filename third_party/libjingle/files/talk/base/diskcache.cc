@@ -297,7 +297,7 @@ std::string DiskCache::IdToFilename(const std::string& id, size_t index) const {
 bool DiskCache::FilenameToId(const std::string& filename, std::string* id,
                              size_t* index) const {
   Pathname pathname(filename);
-  if (1 != sscanf(pathname.extension().c_str(), ".%u", index))
+  if (1 != sscanf(pathname.extension().c_str(), ".%zu", index))
     return false;
 
   size_t buffer_size = pathname.basename().length() + 1;

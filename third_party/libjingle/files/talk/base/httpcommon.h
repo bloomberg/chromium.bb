@@ -326,7 +326,7 @@ struct HttpRequestData : public HttpData {
 };
 
 struct HttpResponseData : public HttpData {
-  uint32 scode;
+  unsigned long scode;
   std::string message;
 
   HttpResponseData() : scode(HC_INTERNAL_SERVER_ERROR) { }

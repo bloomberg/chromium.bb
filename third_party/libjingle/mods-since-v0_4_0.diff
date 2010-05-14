@@ -1630,3 +1630,55 @@ diff -r libjingle-0.4.0/talk/xmpp/xmpptask.h libjingle/files/talk/xmpp/xmpptask.
 < #ifdef _DEBUG
 ---
 > #if !defined(NDEBUG)
+diff -r libjingle-0.4.0/talk/base/common.cc libjingle/files/talk/base/common.cc
+62c62
+< } // namespace talk_base
+\ No newline at end of file
+---
+> } // namespace talk_base
+diff -r libjingle-0.4.0/talk/base/httpbase.cc libjingle/files/talk/base/httpbase.cc
+154c154
+<         if (sscanf(value, "%d", &data_size_) != 1) {
+---
+>         if (sscanf(value, "%zu", &data_size_) != 1) {
+diff -r libjingle-0.4.0/talk/base/httpcommon.cc libjingle/files/talk/base/httpcommon.cc
+339c339
+<                   &tval.tm_hour, &tval.tm_min, &tval.tm_sec, &zone)) {
+---
+>                   &tval.tm_hour, &tval.tm_min, &tval.tm_sec, zone)) {
+472c472
+<   uint32 vmajor, vminor;
+---
+>   unsigned long vmajor, vminor;
+549,550c549,550
+<   uint32 vmajor, vminor;
+<   if ((sscanf(line, "HTTP/%lu.%lu %lu%n", &vmajor, &vminor, &scode, &pos) != 3)
+---
+>   unsigned long vmajor, vminor;
+>   if ((sscanf(line, "HTTP/%lu.%lu %lu%zu", &vmajor, &vminor, &scode, &pos) != 3)
+693c693
+<     sprintf(buffer, "%d", time(0));
+---
+>     sprintf(buffer, "%ld", time(0));
+diff -r libjingle-0.4.0/talk/base/httpcommon.h libjingle/files/talk/base/httpcommon.h
+329c329
+<   uint32 scode;
+---
+>   unsigned long scode;
+diff -r libjingle-0.4.0/talk/base/diskcache.cc libjingle/files/talk/base/diskcache.cc
+300c300
+<   if (1 != sscanf(pathname.extension().c_str(), ".%u", index))
+---
+>   if (1 != sscanf(pathname.extension().c_str(), ".%zu", index))
+diff -r libjingle-0.4.0/talk/base/logging.cc libjingle/files/talk/base/logging.cc
+69c69
+<   snprintf(buffer, sizeof(buffer), "0x%08lx", err);  
+---
+>   snprintf(buffer, sizeof(buffer), "0x%08x", err);  
+diff -r libjingle-0.4.0/talk/base/socketadapters.cc libjingle/files/talk/base/socketadapters.cc
+360,361c360,361
+<     uint32 code;
+<     if (sscanf(data, "HTTP/%*lu.%*lu %lu", &code) != 1) {
+---
+>     unsigned long code;
+>     if (sscanf(data, "HTTP/%*u.%*u %lu", &code) != 1) {

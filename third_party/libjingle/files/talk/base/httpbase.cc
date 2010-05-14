@@ -151,7 +151,7 @@ HttpParser::process_line(const char* line, size_t len, HttpError& err) {
       } while ((value < eol) && isspace(static_cast<unsigned char>(*value)));
       size_t vlen = eol - value;
       if (MatchHeader(line, nlen, HH_CONTENT_LENGTH)) {
-        if (sscanf(value, "%d", &data_size_) != 1) {
+        if (sscanf(value, "%zu", &data_size_) != 1) {
           err = HE_PROTOCOL;
           break;
         }

@@ -357,8 +357,8 @@ void AsyncHttpsProxySocket::ProcessLine(char * data, size_t len) {
       return;
     }
   } else if (state_ == PS_LEADER) {
-    uint32 code;
-    if (sscanf(data, "HTTP/%*lu.%*lu %lu", &code) != 1) {
+    unsigned long code;
+    if (sscanf(data, "HTTP/%*u.%*u %lu", &code) != 1) {
       Error(0);
       return;
     }
