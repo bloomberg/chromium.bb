@@ -287,8 +287,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEnableResourcesTab) {
   RunTest("testEnableResourcesTab", kSimplePage);
 }
 
+// http://crbug.com/44202
 // Tests resources have correct sizes.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestResourceContentLength) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestResourceContentLength) {
   RunTest("testResourceContentLength", kResourceContentLengthTestPage);
 }
 
