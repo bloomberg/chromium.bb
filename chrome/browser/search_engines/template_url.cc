@@ -569,10 +569,11 @@ void TemplateURL::set_keyword(const std::wstring& keyword) {
 }
 
 const std::wstring& TemplateURL::keyword() const {
-  if (autogenerate_keyword_ && keyword_.empty()) {
+  if (autogenerate_keyword_ && !keyword_generated_) {
     // Generate a keyword and cache it.
     keyword_ = TemplateURLModel::GenerateKeyword(
         TemplateURLModel::GenerateSearchURL(this).GetWithEmptyPath(), true);
+    keyword_generated_ = true;
   }
   return keyword_;
 }
@@ -615,6 +616,8 @@ GURL TemplateURL::GetFavIconURL() const {
 void TemplateURL::InvalidateCachedValues() const {
   url_.InvalidateCachedValues();
   suggestions_url_.InvalidateCachedValues();
-  if (autogenerate_keyword_)
+  if (autogenerate_keyword_) {
     keyword_.clear();
+    keyword_generated_ = false;
+  }
 }

@@ -267,6 +267,7 @@ class TemplateURL {
 
   TemplateURL()
       : autogenerate_keyword_(false),
+        keyword_generated_(false),
         show_in_default_list_(false),
         safe_for_autoreplace_(false),
         id_(0),
@@ -334,8 +335,10 @@ class TemplateURL {
   // keywords are mutually exclusive.
   void set_autogenerate_keyword(bool autogenerate_keyword) {
     autogenerate_keyword_ = autogenerate_keyword;
-    if (autogenerate_keyword_)
+    if (autogenerate_keyword_) {
       keyword_.clear();
+      keyword_generated_ = false;
+    }
   }
   bool autogenerate_keyword() const {
     return autogenerate_keyword_;
@@ -437,6 +440,9 @@ class TemplateURL {
   mutable std::wstring keyword_;
   bool autogenerate_keyword_;  // If this is set, |keyword_| holds the cached
                                // generated keyword if available.
+  mutable bool keyword_generated_;  // True if the keyword was generated. This
+                                    // is used to avoid multiple attempts if
+                                    // generating a keyword failed.
   bool show_in_default_list_;
   bool safe_for_autoreplace_;
   std::vector<ImageRef> image_refs_;
