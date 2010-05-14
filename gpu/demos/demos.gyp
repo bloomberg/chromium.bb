@@ -56,6 +56,11 @@
     {
       'target_name': 'gpu_demo_framework_pepper',
       'type': 'static_library',
+      # This target injects a bunch of source files to direct dependents.
+      # If the dependent is a none-type target (like all.gyp), gyp will
+      # generate error due to these injected source files. Workaround this
+      # problem by preventing it from being selected by demos.gyp:*.
+      'suppress_wildcard': 1,
       'dependencies': [
         'gpu_demo_framework',
         '../gpu.gyp:pgl',
