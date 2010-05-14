@@ -55,8 +55,7 @@ Hooks
     ]
 """
 
-__author__ = "darinf@gmail.com (Darin Fisher)"
-__version__ = "0.3.4"
+__version__ = "0.3.5"
 
 import errno
 import logging
@@ -103,159 +102,6 @@ For additional help on a subcommand or examples of usage, try
    %prog help files
 """)
 
-GENERIC_UPDATE_USAGE_TEXT = (
-    """Perform a checkout/update of the modules specified by the gclient
-configuration; see 'help config'.  Unless --revision is specified,
-then the latest revision of the root solutions is checked out, with
-dependent submodule versions updated according to DEPS files.
-If --revision is specified, then the given revision is used in place
-of the latest, either for a single solution or for all solutions.
-Unless the --force option is provided, solutions and modules whose
-local revision matches the one to update (i.e., they have not changed
-in the repository) are *not* modified. Unless --nohooks is provided,
-the hooks are run.
-This a synonym for 'gclient %(alias)s'
-
-usage: gclient %(cmd)s [options] [--] [SCM update options/args]
-
-Valid options:
-  --force                 : force update even for unchanged modules
-  --nohooks               : don't run the hooks after the update is complete
-  --revision SOLUTION@REV : update given solution to specified revision
-  --deps PLATFORM(S)      : sync deps for the given platform(s), or 'all'
-  --verbose               : output additional diagnostics
-  --head                  : update to latest revision, instead of last good revision
-  --reset                 : resets any local changes before updating (git only)
-
-Examples:
-  gclient %(cmd)s
-      update files from SCM according to current configuration,
-      *for modules which have changed since last update or sync*
-  gclient %(cmd)s --force
-      update files from SCM according to current configuration, for
-      all modules (useful for recovering files deleted from local copy)
-  gclient %(cmd)s --revision src@31000
-      update src directory to r31000
-""")
-
-COMMAND_USAGE_TEXT = {
-    "cleanup":
-    """Clean up all working copies, using 'svn cleanup' for each module.
-Additional options and args may be passed to 'svn cleanup'.
-
-usage: cleanup [options] [--] [svn cleanup args/options]
-
-Valid options:
-  --verbose           : output additional diagnostics
-""",
-    "config": """Create a .gclient file in the current directory; this
-specifies the configuration for further commands.  After update/sync,
-top-level DEPS files in each module are read to determine dependent
-modules to operate on as well.  If optional [url] parameter is
-provided, then configuration is read from a specified Subversion server
-URL.  Otherwise, a --spec option must be provided.  A --name option overrides
-the default name for the solutions.
-
-usage: config [option | url] [safesync url]
-
-Valid options:
-  --name path           : alternate relative path for the solution
-  --spec=GCLIENT_SPEC   : contents of .gclient are read from string parameter.
-                          *Note that due to Cygwin/Python brokenness, it
-                          probably can't contain any newlines.*
-
-Examples:
-  gclient config https://gclient.googlecode.com/svn/trunk/gclient
-      configure a new client to check out gclient.py tool sources
-  gclient config --name tools https://gclient.googlecode.com/svn/trunk/gclient
-  gclient config --spec='solutions=[{"name":"gclient","""
-    '"url":"https://gclient.googlecode.com/svn/trunk/gclient",'
-    '"custom_deps":{}}]',
-    "diff": """Display the differences between two revisions of modules.
-(Does 'svn diff' for each checked out module and dependences.)
-Additional args and options to 'svn diff' can be passed after
-gclient options.
-
-usage: diff [options] [--] [svn args/options]
-
-Valid options:
-  --verbose            : output additional diagnostics
-
-Examples:
-  gclient diff
-      simple 'svn diff' for configured client and dependences
-  gclient diff -- -x -b
-      use 'svn diff -x -b' to suppress whitespace-only differences
-  gclient diff -- -r HEAD -x -b
-      diff versus the latest version of each module
-""",
-    "export":
-    """Wrapper for svn export for all managed directories
-""",
-    "pack":
-
-    """Generate a patch which can be applied at the root of the tree.
-Internally, runs 'svn diff' on each checked out module and
-dependencies, and performs minimal postprocessing of the output. The
-resulting patch is printed to stdout and can be applied to a freshly
-checked out tree via 'patch -p0 < patchfile'. Additional args and
-options to 'svn diff' can be passed after gclient options.
-
-usage: pack [options] [--] [svn args/options]
-
-Valid options:
-  --verbose            : output additional diagnostics
-
-Examples:
-  gclient pack > patch.txt
-      generate simple patch for configured client and dependences
-  gclient pack -- -x -b > patch.txt
-      generate patch using 'svn diff -x -b' to suppress
-      whitespace-only differences
-  gclient pack -- -r HEAD -x -b > patch.txt
-      generate patch, diffing each file versus the latest version of
-      each module
-""",
-    "revert":
-    """Revert every file in every managed directory in the client view.
-
-usage: revert
-""",
-    "status":
-    """Show the status of client and dependent modules, using 'svn diff'
-for each module.  Additional options and args may be passed to 'svn diff'.
-
-usage: status [options] [--] [svn diff args/options]
-
-Valid options:
-  --verbose           : output additional diagnostics
-  --nohooks           : don't run the hooks after the update is complete
-""",
-    "sync": GENERIC_UPDATE_USAGE_TEXT % {"cmd": "sync", "alias": "update"},
-    "update": GENERIC_UPDATE_USAGE_TEXT % {"cmd": "update", "alias": "sync"},
-    "help": """Describe the usage of this program or its subcommands.
-
-usage: help [options] [subcommand]
-
-Valid options:
-  --verbose           : output additional diagnostics
-""",
-    "runhooks":
-    """Runs hooks for files that have been modified in the local working copy,
-according to 'svn status'. Implies --force.
-
-usage: runhooks [options]
-
-Valid options:
-  --verbose           : output additional diagnostics
-""",
-    "revinfo":
-    """Outputs source path, server URL and revision information for every
-dependency in all solutions.
-
-usage: revinfo [options]
-""",
-}
 
 DEFAULT_CLIENT_FILE_TEXT = ("""\
 # An element of this array (a "solution") describes a repository directory
@@ -792,7 +638,7 @@ class GClient(object):
           scm = gclient_scm.CreateSCM(file.GetPath(), self._root_dir, d)
           scm.RunCommand("updatesingle", self._options,
                          args + [file.GetFilename()], file_list)
-          
+
     if command == 'update' and not self._options.verbose:
       pm.end()
 
@@ -995,12 +841,15 @@ class GClient(object):
 ## gclient commands.
 
 
-def DoCleanup(options, args):
-  """Handle the cleanup subcommand.
+def CMDcleanup(options, args):
+  """Clean up all working copies, using 'svn cleanup' for each module.
+Additional options and args may be passed to 'svn cleanup'.
 
-  Raises:
-    Error: if client isn't configured properly.
-  """
+usage: cleanup [options] [--] [svn cleanup args/options]
+
+Valid options:
+  --verbose           : output additional diagnostics
+"""
   client = GClient.LoadCurrentConfig(options)
   if not client:
     raise gclient_utils.Error("client not configured; see 'gclient config'")
@@ -1011,17 +860,31 @@ def DoCleanup(options, args):
   return client.RunOnDeps('cleanup', args)
 
 
-def DoConfig(options, args):
-  """Handle the config subcommand.
+def CMDconfig(options, args):
+  """Create a .gclient file in the current directory; this
+specifies the configuration for further commands.  After update/sync,
+top-level DEPS files in each module are read to determine dependent
+modules to operate on as well.  If optional [url] parameter is
+provided, then configuration is read from a specified Subversion server
+URL.  Otherwise, a --spec option must be provided.  A --name option overrides
+the default name for the solutions.
 
-  Args:
-    options: If options.spec set, a string providing contents of config file.
-    args: The command line args.  If spec is not set,
-          then args[0] is a string URL to get for config file.
+usage: config [option | url] [safesync url]
 
-  Raises:
-    Error: on usage error
-  """
+Valid options:
+  --name path           : alternate relative path for the solution
+  --spec=GCLIENT_SPEC   : contents of .gclient are read from string parameter.
+                          *Note that due to Cygwin/Python brokenness, it
+                          probably can't contain any newlines.*
+
+Examples:
+  gclient config https://gclient.googlecode.com/svn/trunk/gclient
+      configure a new client to check out gclient.py tool sources
+  gclient config --name tools https://gclient.googlecode.com/svn/trunk/gclient
+  gclient config --spec='solutions=[{"name":"gclient",
+    '"url":"https://gclient.googlecode.com/svn/trunk/gclient",'
+    '"custom_deps":{}}]'
+"""
   if len(args) < 1 and not options.spec:
     raise gclient_utils.Error("required argument missing; see 'gclient help "
                               "config'")
@@ -1043,14 +906,12 @@ def DoConfig(options, args):
       safesync_url = args[1]
     client.SetDefaultConfig(name, base_url, safesync_url)
   client.SaveConfig()
+  return 0
 
 
-def DoExport(options, args):
-  """Handle the export subcommand.
-
-  Raises:
-    Error: on usage error
-  """
+def CMDexport(options, args):
+  """Wrapper for svn export for all managed directories
+"""
   if len(args) != 1:
     raise gclient_utils.Error("Need directory name")
   client = GClient.LoadCurrentConfig(options)
@@ -1064,26 +925,49 @@ def DoExport(options, args):
     print(client.ConfigContent())
   return client.RunOnDeps('export', args)
 
-def DoHelp(options, args):
-  """Handle the help subcommand giving help for another subcommand.
 
-  Raises:
-    Error: if the command is unknown.
-  """
+def CMDhelp(options, args):
+  """Describe the usage of this program or its subcommands.
+
+usage: help [options] [subcommand]
+
+Valid options:
+  --verbose           : output additional diagnostics
+"""
   __pychecker__ = 'unusednames=options'
-  if len(args) == 1 and args[0] in COMMAND_USAGE_TEXT:
-    print(COMMAND_USAGE_TEXT[args[0]])
+  module = sys.modules[__name__]
+  commands = [x[3:] for x in dir(module) if x.startswith('CMD')]
+  if len(args) == 1 and args[0] in commands:
+    print getattr(module, 'CMD' + args[0]).__doc__
   else:
     raise gclient_utils.Error("unknown subcommand '%s'; see 'gclient help'" %
                                   args[0])
+  return 0
 
 
-def DoPack(options, args):
-  """Handle the pack subcommand.
+def CMDpack(options, args):
+  """Generate a patch which can be applied at the root of the tree.
+Internally, runs 'svn diff' on each checked out module and
+dependencies, and performs minimal postprocessing of the output. The
+resulting patch is printed to stdout and can be applied to a freshly
+checked out tree via 'patch -p0 < patchfile'. Additional args and
+options to 'svn diff' can be passed after gclient options.
 
-  Raises:
-    Error: if client isn't configured properly.
-  """
+usage: pack [options] [--] [svn args/options]
+
+Valid options:
+  --verbose            : output additional diagnostics
+
+Examples:
+  gclient pack > patch.txt
+      generate simple patch for configured client and dependences
+  gclient pack -- -x -b > patch.txt
+      generate patch using 'svn diff -x -b' to suppress
+      whitespace-only differences
+  gclient pack -- -r HEAD -x -b > patch.txt
+      generate patch, diffing each file versus the latest version of
+      each module
+"""
   client = GClient.LoadCurrentConfig(options)
   if not client:
     raise gclient_utils.Error("client not configured; see 'gclient config'")
@@ -1094,12 +978,16 @@ def DoPack(options, args):
   return client.RunOnDeps('pack', args)
 
 
-def DoStatus(options, args):
-  """Handle the status subcommand.
+def CMDstatus(options, args):
+  """Show the status of client and dependent modules, using 'svn diff'
+for each module.  Additional options and args may be passed to 'svn diff'.
 
-  Raises:
-    Error: if client isn't configured properly.
-  """
+usage: status [options] [--] [svn diff args/options]
+
+Valid options:
+  --verbose           : output additional diagnostics
+  --nohooks           : don't run the hooks after the update is complete
+"""
   client = GClient.LoadCurrentConfig(options)
   if not client:
     raise gclient_utils.Error("client not configured; see 'gclient config'")
@@ -1110,12 +998,40 @@ def DoStatus(options, args):
   return client.RunOnDeps('status', args)
 
 
-def DoUpdate(options, args):
-  """Handle the update and sync subcommands.
+def CMDsync(options, args):
+  """Perform a checkout/update of the modules specified by the gclient
+configuration; see 'help config'.  Unless --revision is specified,
+then the latest revision of the root solutions is checked out, with
+dependent submodule versions updated according to DEPS files.
+If --revision is specified, then the given revision is used in place
+of the latest, either for a single solution or for all solutions.
+Unless the --force option is provided, solutions and modules whose
+local revision matches the one to update (i.e., they have not changed
+in the repository) are *not* modified. Unless --nohooks is provided,
+the hooks are run.
 
-  Raises:
-    Error: if client isn't configured properly.
-  """
+usage: gclient sync [options] [--] [SCM update options/args]
+
+Valid options:
+  --force                 : force update even for unchanged modules
+  --nohooks               : don't run the hooks after the update is complete
+  --revision SOLUTION@REV : update given solution to specified revision
+  --deps PLATFORM(S)      : sync deps for the given platform(s), or 'all'
+  --verbose               : output additional diagnostics
+  --head                  : update to latest revision, instead of last good
+                            revision
+  --reset                 : resets any local changes before updating (git only)
+
+Examples:
+  gclient sync
+      update files from SCM according to current configuration,
+      *for modules which have changed since last update or sync*
+  gclient sync --force
+      update files from SCM according to current configuration, for
+      all modules (useful for recovering files deleted from local copy)
+  gclient sync --revision src@31000
+      update src directory to r31000
+"""
   client = GClient.LoadCurrentConfig(options)
 
   if not client:
@@ -1148,12 +1064,31 @@ def DoUpdate(options, args):
   return client.RunOnDeps('update', args)
 
 
-def DoDiff(options, args):
-  """Handle the diff subcommand.
+def CMDupdate(options, args):
+  """Alias for the sync command. Deprecated.
+"""
+  return CMDsync(options, args)
 
-  Raises:
-    Error: if client isn't configured properly.
-  """
+
+def CMDdiff(options, args):
+  """Display the differences between two revisions of modules.
+(Does 'svn diff' for each checked out module and dependences.)
+Additional args and options to 'svn diff' can be passed after
+gclient options.
+
+usage: diff [options] [--] [svn args/options]
+
+Valid options:
+  --verbose            : output additional diagnostics
+
+Examples:
+  gclient diff
+      simple 'svn diff' for configured client and dependences
+  gclient diff -- -x -b
+      use 'svn diff -x -b' to suppress whitespace-only differences
+  gclient diff -- -r HEAD -x -b
+      diff versus the latest version of each module
+"""
   client = GClient.LoadCurrentConfig(options)
   if not client:
     raise gclient_utils.Error("client not configured; see 'gclient config'")
@@ -1164,24 +1099,24 @@ def DoDiff(options, args):
   return client.RunOnDeps('diff', args)
 
 
-def DoRevert(options, args):
-  """Handle the revert subcommand.
-
-  Raises:
-    Error: if client isn't configured properly.
-  """
+def CMDrevert(options, args):
+  """Revert every file in every managed directory in the client view.
+"""
   client = GClient.LoadCurrentConfig(options)
   if not client:
     raise gclient_utils.Error("client not configured; see 'gclient config'")
   return client.RunOnDeps('revert', args)
 
 
-def DoRunHooks(options, args):
-  """Handle the runhooks subcommand.
+def CMDrunhooks(options, args):
+  """Runs hooks for files that have been modified in the local working copy,
+according to 'svn status'. Implies --force.
 
-  Raises:
-    Error: if client isn't configured properly.
-  """
+usage: runhooks [options]
+
+Valid options:
+  --verbose           : output additional diagnostics
+"""
   client = GClient.LoadCurrentConfig(options)
   if not client:
     raise gclient_utils.Error("client not configured; see 'gclient config'")
@@ -1193,50 +1128,33 @@ def DoRunHooks(options, args):
   return client.RunOnDeps('runhooks', args)
 
 
-def DoRevInfo(options, args):
-  """Handle the revinfo subcommand.
+def CMDrevinfo(options, args):
+  """Outputs source path, server URL and revision information for every
+dependency in all solutions.
 
-  Raises:
-    Error: if client isn't configured properly.
-  """
+usage: revinfo [options]
+"""
   __pychecker__ = 'unusednames=args'
   client = GClient.LoadCurrentConfig(options)
   if not client:
     raise gclient_utils.Error("client not configured; see 'gclient config'")
   client.PrintRevInfo()
+  return 0
 
 
-gclient_command_map = {
-  "cleanup": DoCleanup,
-  "config": DoConfig,
-  "diff": DoDiff,
-  "export": DoExport,
-  "help": DoHelp,
-  "pack": DoPack,
-  "status": DoStatus,
-  "sync": DoUpdate,
-  "update": DoUpdate,
-  "revert": DoRevert,
-  "runhooks": DoRunHooks,
-  "revinfo" : DoRevInfo,
-}
-
-
-def DispatchCommand(command, options, args, command_map=None):
-  """Dispatches the appropriate subcommand based on command line arguments."""
-  if command_map is None:
-    command_map = gclient_command_map
-
-  if command in command_map:
-    return command_map[command](options, args)
+def DispatchCommand(command, options, args):
+  """Dispatches the appropriate subcommand based on command line arguments.
+"""
+  module = sys.modules[__name__]
+  command = getattr(module, 'CMD' + command, None)
+  if command:
+    return command(options, args)
   else:
     raise gclient_utils.Error("unknown subcommand '%s'; see 'gclient help'" %
                                   command)
 
 
 def Main(argv):
-  """Parse command line arguments and dispatch command."""
-
   option_parser = optparse.OptionParser(usage=DEFAULT_USAGE_TEXT,
                                         version=__version__)
   option_parser.disable_interspersed_args()
