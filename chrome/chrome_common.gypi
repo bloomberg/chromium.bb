@@ -330,9 +330,10 @@
       'dependencies': [
         'chrome_resources',
         'chrome_strings',
+        '../app/app.gyp:app_base',
         '../base/base.gyp:base',
-        '../net/net.gyp:net_base',
         '../net/net.gyp:net_resources',
+        '../net/net.gyp:net',
       ],
     },
   ],
