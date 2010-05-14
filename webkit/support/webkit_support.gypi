@@ -53,6 +53,12 @@
         '<(DEPTH)/webkit/tools/test_shell/test_shell_webmimeregistry_impl.cc',
         '<(DEPTH)/webkit/tools/test_shell/test_shell_webmimeregistry_impl.h',
       ],
+      'copies': [
+        {
+          'destination': '<(SHARED_INTERMEDIATE_DIR)/webkit',
+          'files': ['../tools/test_shell/resources/textAreaResizeCorner.png'],
+        },
+      ]
     },
   ],
 }
