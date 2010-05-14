@@ -108,16 +108,23 @@
       'actions': [
         {
           'action_name': 'concatenate_devtools_js',
+          'script_name': 'build/concatenate_js_files.py',
+          'input_page': '<(PRODUCT_DIR)/resources/inspector/devtools.html',
           'inputs': [
-            'build/concatenate_js_files.py',
-            '<(PRODUCT_DIR)/resources/inspector/devtools.html',
+            '<@(_script_name)',
+            '<@(_input_page)',
             '<@(webinspector_files)',
             '<@(devtools_files)',
+          ],
+          'search_path': [
+            '../third_party/WebKit/WebCore/inspector/front-end',
+            '../third_party/WebKit/WebKit/chromium/src/js',
+            '../v8/tools',
           ],
           'outputs': [
             '<(PRODUCT_DIR)/resources/inspector/DevTools.js',
           ],
-          'action': ['python', '<@(_inputs)', '<@(_outputs)'],
+          'action': ['python', '<@(_script_name)', '<@(_input_page)', '<@(_search_path)', '<@(_outputs)'],
         },
       ],
     },

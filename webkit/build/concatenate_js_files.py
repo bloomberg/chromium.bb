@@ -26,31 +26,44 @@ class OrderedJSFilesExtractor(HTMLParser):
           'src' in attrs_dict):
         self.ordered_js_files.append(attrs_dict['src'])
 
+class PathExpander:
+
+  def __init__(self, paths):
+    self.paths = paths;
+
+  def expand(self, filename):
+    last_path = None
+    expanded_name = None
+    for path in self.paths:
+      fname = "%s/%s" % (path, filename)
+      if (os.access(fname, os.F_OK)):
+        if (last_path != None):
+          raise Exception('Ambiguous file %s: found in %s and %s' %
+                          (filename, last_path, path))
+        expanded_name = fname
+        last_path = path
+    return expanded_name
+
 def main(argv):
 
   if len(argv) < 3:
-    print('usage: %s order.html input_file_1 input_file_2 ... '
+    print('usage: %s order.html input_source_dir_1 input_source_dir_2 ... '
           'output_file' % argv[0])
     return 1
 
   output_file_name = argv.pop()
-
-  full_paths = {}
-  for full_path in argv[2:]:
-    file_name = os.path.basename(full_path)
-    if file_name.endswith('.js'):
-      full_paths[file_name] = full_path
-
   extractor = OrderedJSFilesExtractor(argv[1])
+  expander = PathExpander(argv[2:])
   output = StringIO()
 
   for input_file_name in extractor.ordered_js_files:
-    if not input_file_name in full_paths:
-      print('A full path to %s isn\'t specified in command line. '
-            'Probably, you have an obsolete script entry in %s' %
-            (input_file_name, argv[1]))
+    full_path = expander.expand(input_file_name)
+    if (full_path is None):
+      raise Exception('File %s referenced in %s not found on any source paths, '
+                      'check source tree for consistency' %
+                      (input_file_name, input_file_name))
     output.write('/* %s */\n\n' % input_file_name)
-    input_file = open(full_paths[input_file_name], 'r')
+    input_file = open(full_path, 'r')
     output.write(input_file.read())
     output.write('\n')
     input_file.close()
