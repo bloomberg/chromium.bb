@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,8 @@ const SkColor kBgColors[] = {
   SkColorSetRGB(0x43, 0xf9, 0xff),  // Hot
   SkColorSetRGB(0x20, 0xf6, 0xcc),  // Focused
   SkColorSetRGB(0x00, 0xf3, 0xac),  // Hover
-  SkColorSetRGB(0xa9, 0xff, 0x12)   // Pressed
+  SkColorSetRGB(0xa9, 0xff, 0x12),  // Pressed
+  SkColorSetRGB(0xcc, 0xcc, 0xcc)   // Indeterminate
 };
 
 SkIRect Validate(const SkIRect& rect, Control::Type ctype) {
@@ -53,7 +54,7 @@ SkIRect Validate(const SkIRect& rect, Control::Type ctype) {
   return retval;
 }
 
-Control::Control(skia::PlatformCanvas *canvas, const SkIRect &irect,
+Control::Control(skia::PlatformCanvas* canvas, const SkIRect& irect,
                  Type ctype, State cstate)
     : canvas_(canvas),
       irect_(Validate(irect, ctype)),
@@ -73,7 +74,7 @@ Control::Control(skia::PlatformCanvas *canvas, const SkIRect &irect,
 Control::~Control() {
 }
 
-void Control::box(const SkIRect &rect, SkColor fill_color) {
+void Control::box(const SkIRect& rect, SkColor fill_color) {
   SkPaint paint;
 
   paint.setStyle(SkPaint::kFill_Style);
@@ -406,6 +407,26 @@ void Control::drawTextField(bool draw_edges, bool fill_content_area,
     paint.setStyle(SkPaint::kStroke_Style);
     canvas_->drawIRect(irect_, paint);
   }
+
+  markState();
+  canvas_->endPlatformPaint();
+}
+
+void
+Control::drawProgressBar(const SkIRect& fill_rect) {
+  SkPaint paint;
+
+  canvas_->beginPlatformPaint();
+  paint.setColor(bg_color_);
+  paint.setStyle(SkPaint::kFill_Style);
+  canvas_->drawIRect(irect_, paint);
+
+  // Emulate clipping
+  SkIRect tofill;
+  tofill.intersect(irect_, fill_rect);
+  paint.setColor(fg_color_);
+  paint.setStyle(SkPaint::kFill_Style);
+  canvas_->drawIRect(tofill, paint);
 
   markState();
   canvas_->endPlatformPaint();

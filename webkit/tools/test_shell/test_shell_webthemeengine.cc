@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,24 +40,31 @@ using WebKit::WebRect;
 
 namespace TestShellWebTheme {
 
-SkIRect webRectToSkIRect(const WebRect &web_rect) {
+SkIRect webRectToSkIRect(const WebRect& web_rect) {
   SkIRect irect;
   irect.set(web_rect.x, web_rect.y, web_rect.x + web_rect.width,
             web_rect.y + web_rect.height);
   return irect;
 }
 
-void drawControl(WebCanvas *canvas, const WebRect &rect, Control::Type ctype,
+void drawControl(WebCanvas* canvas, const WebRect& rect, Control::Type ctype,
                  Control::State cstate) {
   Control control(canvas, webRectToSkIRect(rect), ctype, cstate);
   control.draw();
 }
 
-void drawTextField(WebCanvas *canvas, const WebRect &rect,
+void drawTextField(WebCanvas* canvas, const WebRect& rect,
                    Control::Type ctype, Control::State cstate,
                    bool draw_edges, bool fill_content_area, WebColor color) {
   Control control(canvas, webRectToSkIRect(rect), ctype, cstate);
   control.drawTextField(draw_edges, fill_content_area, color);
+}
+
+void drawProgressBar(WebCanvas* canvas,
+                     Control::Type ctype, Control::State cstate,
+                     const WebRect& bar_rect, const WebRect& fill_rect) {
+  Control control(canvas, webRectToSkIRect(bar_rect), ctype, cstate);
+  control.drawProgressBar(webRectToSkIRect(fill_rect));
 }
 
 void Engine::paintButton(WebCanvas* canvas, int part, int state,
@@ -531,6 +538,16 @@ void Engine::paintTrackbar(WebCanvas* canvas, int part, int state,
   }
 
   drawControl(canvas, rect, ctype, cstate);
+}
+
+
+void Engine::paintProgressBar(WebKit::WebCanvas* canvas,
+                              const WebKit::WebRect& barRect,
+                              int valuePart, const WebKit::WebRect& valueRect) {
+    Control::Type ctype = Control::kProgressBar_Type;
+    Control::State cstate = valuePart == PP_FILL ?
+        Control::kNormal_State : Control::kIndeterminate_State;
+    drawProgressBar(canvas, ctype, cstate, barRect, valueRect);
 }
 
 }  // namespace TestShellWebTheme

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
@@ -111,6 +111,21 @@ void WebThemeEngineImpl::paintTrackbar(
   gfx::NativeTheme::instance()->PaintTrackbar(
       hdc, part, state, classic_state, &native_rect, canvas);
 
+  canvas->endPlatformPaint();
+}
+
+void WebThemeEngineImpl::paintProgressBar(
+      WebKit::WebCanvas* canvas,
+      const WebKit::WebRect& barRect, 
+      int valuePart, const WebKit::WebRect& valueRect)
+
+{
+  HDC hdc = canvas->beginPlatformPaint();
+  RECT native_bar_rect = WebRectToRECT(barRect);
+  RECT native_value_rect = WebRectToRECT(valueRect);
+  gfx::NativeTheme::instance()->PaintProgressBar(
+      hdc, &native_bar_rect, 
+      valuePart, &native_value_rect, canvas);
   canvas->endPlatformPaint();
 }
 

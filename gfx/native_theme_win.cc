@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -478,6 +478,56 @@ HRESULT NativeTheme::PaintTrackbar(HDC hdc,
   return S_OK;
 }
 
+// A ScopedRegion wrapper to set/restore clipping region during the scope.
+class ScopedRegionClipping {
+ public:
+  explicit ScopedRegionClipping(const HDC hdc)
+      : hdc_(hdc), clip_(NULL) {
+    RECT zero_rect = { 0 };
+    clip_ = CreateRectRgnIndirect(&zero_rect);
+    GetClipRgn(hdc_, clip_);
+  }
+
+  ~ScopedRegionClipping() {
+    SelectClipRgn(hdc_, clip_);
+  }
+
+ private:
+  HDC hdc_;
+  ScopedRegion clip_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedRegionClipping);
+};
+
+HRESULT NativeTheme::PaintProgressBar(HDC hdc,
+                                      RECT* bar_rect,
+                                      int value_part_id,
+                                      RECT* value_rect,
+                                      skia::PlatformCanvas* canvas) const {
+  // For an indeterminate progress bar, we draw a moving highlight that's animated
+  // (by the caller) across the width of the bar.  The highlight part is always
+  // drawn as being as wide as the bar, to scale it properly.  Therefore, we need
+  // to clip it against the bar rect, so that as it moves, it doesn't extend past
+  // the ends of the bar.  For a normal progress bar, we won't try to draw past
+  // the bar ends, so this clipping is useless, but harmless.
+  ScopedRegionClipping clip(hdc);
+  IntersectClipRect(hdc, bar_rect->left, bar_rect->top, 
+                    bar_rect->right, bar_rect->bottom);
+
+  HANDLE handle = GetThemeHandle(PROGRESS);
+  if (handle && draw_theme_) {
+    draw_theme_(handle, hdc, PP_BAR, 0, bar_rect, NULL);
+    draw_theme_(handle, hdc, value_part_id, 0, value_rect, NULL);
+    return S_OK;
+  }
+
+  HBRUSH bg_brush = GetSysColorBrush(COLOR_BTNFACE);
+  HBRUSH fg_brush = GetSysColorBrush(COLOR_BTNSHADOW);
+  FillRect(hdc, bar_rect, bg_brush);
+  FillRect(hdc, value_rect, fg_brush);
+  DrawEdge(hdc, bar_rect, EDGE_SUNKEN, BF_RECT | BF_ADJUST);
+  return S_OK;
+}
+
 HRESULT NativeTheme::PaintTextField(HDC hdc,
                                     int part_id,
                                     int state_id,
@@ -706,6 +756,9 @@ HANDLE NativeTheme::GetThemeHandle(ThemeName theme_name) const
     break;
   case WINDOW:
     handle = open_theme_(NULL, L"Window");
+    break;
+  case PROGRESS:
+    handle = open_theme_(NULL, L"Progress");
     break;
   default:
     NOTREACHED();

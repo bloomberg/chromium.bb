@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,6 +43,7 @@ class Control {
   //   Focused  - when the control has the keyboard focus
   //   Pressed  - when the control is being triggered (by a mousedown or
   //              a key event).
+  //   Indeterminate - when set to indeterminate (only for progress bar)
   enum State {
     kUnknown_State = 0,
     kDisabled_State,
@@ -51,7 +52,8 @@ class Control {
     kHot_State,
     kHover_State,
     kFocused_State,
-    kPressed_State
+    kPressed_State,
+    kIndeterminate_State
   };
 
   // This list of types mostly mirrors the list in
@@ -86,12 +88,13 @@ class Control {
     kDownArrow_Type,
     kHorizontalSliderTrack_Type,
     kHorizontalSliderThumb_Type,
-    kDropDownButton_Type
+    kDropDownButton_Type,
+    kProgressBar_Type
   };
 
   // canvas is the canvas to draw onto, and rect gives the size of the
   // control. ctype and cstate specify the type and state of the control.
-  Control(skia::PlatformCanvas *canvas, const SkIRect &rect,
+  Control(skia::PlatformCanvas* canvas, const SkIRect& rect,
           Type ctype, State cstate);
   ~Control();
 
@@ -104,10 +107,14 @@ class Control {
   // fill_content_area is true, fill the content area with the given color.
   void drawTextField(bool draw_edges, bool fill_content_area, SkColor color);
 
+  // Use this for drawing ProgressBar controls instead, since we
+  // need to know the rect to fill inside the bar.
+  void drawProgressBar(const SkIRect& fill_rect);
+
  private:
   // Draws a box of size specified by irect, filled with the given color.
   // The box will have a border drawn in the default edge color.
-  void box(const SkIRect &irect, SkColor color);
+  void box(const SkIRect& irect, SkColor color);
 
 
   // Draws a triangle of size specified by the three pairs of coordinates,
