@@ -18,12 +18,14 @@ class FormField {
   FormField(const string16& label,
             const string16& name,
             const string16& value,
-            const string16& form_control_type);
+            const string16& form_control_type,
+            int size);
 
   const string16& label() const { return label_; }
   const string16& name() const { return name_; }
   const string16& value() const { return value_; }
   const string16& form_control_type() const { return form_control_type_; }
+  int size() const { return size_; }
 
   void set_label(const string16& label) { label_ = label; }
   void set_name(const string16& name) { name_ = name; }
@@ -31,6 +33,7 @@ class FormField {
   void set_form_control_type(const string16& form_control_type) {
     form_control_type_ = form_control_type;
   }
+  void set_size(int size) { size_ = size; }
 
   bool operator==(const FormField& field) const;
   bool operator!=(const FormField& field) const;
@@ -40,6 +43,7 @@ class FormField {
   string16 name_;
   string16 value_;
   string16 form_control_type_;
+  int size_;
 };
 
 // So we can compare FormFields with EXPECT_EQ().

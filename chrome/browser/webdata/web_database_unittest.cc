@@ -479,7 +479,8 @@ TEST_F(WebDatabaseTest, Autofill) {
       FormField(string16(),
                 ASCIIToUTF16("Name"),
                 ASCIIToUTF16("Superman"),
-                string16()),
+                string16(),
+                0),
       &changes));
   std::vector<string16> v;
   for (int i = 0; i < 5; i++) {
@@ -487,7 +488,8 @@ TEST_F(WebDatabaseTest, Autofill) {
         FormField(string16(),
                   ASCIIToUTF16("Name"),
                   ASCIIToUTF16("Clark Kent"),
-                  string16()),
+                  string16(),
+                  0),
         &changes));
   }
   for (int i = 0; i < 3; i++) {
@@ -495,7 +497,8 @@ TEST_F(WebDatabaseTest, Autofill) {
         FormField(string16(),
                   ASCIIToUTF16("Name"),
                   ASCIIToUTF16("Clark Sutter"),
-                  string16()),
+                  string16(),
+                  0),
         &changes));
   }
   for (int i = 0; i < 2; i++) {
@@ -503,7 +506,8 @@ TEST_F(WebDatabaseTest, Autofill) {
         FormField(string16(),
                   ASCIIToUTF16("Favorite Color"),
                   ASCIIToUTF16("Green"),
-                  string16()),
+                  string16(),
+                  0),
         &changes));
   }
 
@@ -516,7 +520,8 @@ TEST_F(WebDatabaseTest, Autofill) {
       FormField(string16(),
                 ASCIIToUTF16("Name"),
                 ASCIIToUTF16("Clark Kent"),
-                string16()),
+                string16(),
+                0),
       &pair_id, &count));
   EXPECT_EQ(5, count);
   EXPECT_NE(0, pair_id);
@@ -527,7 +532,8 @@ TEST_F(WebDatabaseTest, Autofill) {
       FormField(string16(),
                 ASCIIToUTF16("Name"),
                 ASCIIToUTF16("clark kent"),
-                string16()),
+                string16(),
+                0),
       &pair_id, &count));
   EXPECT_EQ(0, count);
 
@@ -535,7 +541,8 @@ TEST_F(WebDatabaseTest, Autofill) {
       FormField(string16(),
                 ASCIIToUTF16("Favorite Color"),
                 ASCIIToUTF16("Green"),
-                string16()),
+                string16(),
+                0),
       &pair_id, &count));
   EXPECT_EQ(2, count);
 
@@ -599,7 +606,8 @@ TEST_F(WebDatabaseTest, Autofill) {
       FormField(string16(),
                 ASCIIToUTF16("Name"),
                 ASCIIToUTF16("Clark Kent"),
-                string16()),
+                string16(),
+                0),
       &pair_id, &count));
   EXPECT_EQ(0, count);
 
@@ -612,22 +620,26 @@ TEST_F(WebDatabaseTest, Autofill) {
   EXPECT_TRUE(db.AddFormFieldValue(FormField(string16(),
                                              ASCIIToUTF16("blank"),
                                              string16(),
-                                             string16()),
+                                             string16(),
+                                             0),
                                    &changes));
   EXPECT_TRUE(db.AddFormFieldValue(FormField(string16(),
                                              ASCIIToUTF16("blank"),
                                              ASCIIToUTF16(" "),
-                                             string16()),
+                                             string16(),
+                                             0),
                                    &changes));
   EXPECT_TRUE(db.AddFormFieldValue(FormField(string16(),
                                              ASCIIToUTF16("blank"),
                                              ASCIIToUTF16("      "),
-                                             string16()),
+                                             string16(),
+                                             0),
                                    &changes));
   EXPECT_TRUE(db.AddFormFieldValue(FormField(string16(),
                                              ASCIIToUTF16("blank"),
                                              kValue,
-                                             string16()),
+                                             string16(),
+                                             0),
                                    &changes));
 
   // They should be stored normally as the DB layer does not check for empty
@@ -661,14 +673,16 @@ TEST_F(WebDatabaseTest, Autofill_RemoveBetweenChanges) {
       FormField(string16(),
                 ASCIIToUTF16("Name"),
                 ASCIIToUTF16("Superman"),
-                string16()),
+                string16(),
+                0),
       &changes,
       t1));
   EXPECT_TRUE(db.AddFormFieldValueTime(
       FormField(string16(),
                 ASCIIToUTF16("Name"),
                 ASCIIToUTF16("Superman"),
-                string16()),
+                string16(),
+                0),
       &changes,
       t2));
 
@@ -702,7 +716,8 @@ TEST_F(WebDatabaseTest, Autofill_AddChanges) {
       FormField(string16(),
                 ASCIIToUTF16("Name"),
                 ASCIIToUTF16("Superman"),
-                string16()),
+                string16(),
+                0),
       &changes,
       t1));
   ASSERT_EQ(1U, changes.size());
@@ -716,7 +731,8 @@ TEST_F(WebDatabaseTest, Autofill_AddChanges) {
       FormField(string16(),
                 ASCIIToUTF16("Name"),
                 ASCIIToUTF16("Superman"),
-                string16()),
+                string16(),
+                0),
       &changes,
       t2));
   ASSERT_EQ(1U, changes.size());
@@ -738,7 +754,8 @@ TEST_F(WebDatabaseTest, Autofill_UpdateOneWithOneTimestamp) {
   FormField field(string16(),
                   ASCIIToUTF16("foo"),
                   ASCIIToUTF16("bar"),
-                  string16());
+                  string16(),
+                  0);
   int64 pair_id;
   int count;
   ASSERT_TRUE(db.GetIDAndCountOfFormElement(field, &pair_id, &count));
@@ -763,7 +780,8 @@ TEST_F(WebDatabaseTest, Autofill_UpdateOneWithTwoTimestamps) {
   FormField field(string16(),
                   ASCIIToUTF16("foo"),
                   ASCIIToUTF16("bar"),
-                  string16());
+                  string16(),
+                  0);
   int64 pair_id;
   int count;
   ASSERT_TRUE(db.GetIDAndCountOfFormElement(field, &pair_id, &count));
@@ -808,7 +826,8 @@ TEST_F(WebDatabaseTest, Autofill_UpdateTwo) {
   FormField field0(string16(),
                   ASCIIToUTF16("foo"),
                   ASCIIToUTF16("bar0"),
-                  string16());
+                  string16(),
+                  0);
   int64 pair_id;
   int count;
   ASSERT_TRUE(db.GetIDAndCountOfFormElement(field0, &pair_id, &count));
@@ -818,7 +837,8 @@ TEST_F(WebDatabaseTest, Autofill_UpdateTwo) {
   FormField field1(string16(),
                   ASCIIToUTF16("foo"),
                   ASCIIToUTF16("bar1"),
-                  string16());
+                  string16(),
+                  0);
   ASSERT_TRUE(db.GetIDAndCountOfFormElement(field1, &pair_id, &count));
   EXPECT_LE(0, pair_id);
   EXPECT_EQ(2, count);
@@ -834,7 +854,8 @@ TEST_F(WebDatabaseTest, Autofill_UpdateReplace) {
       FormField(string16(),
                 ASCIIToUTF16("Name"),
                 ASCIIToUTF16("Superman"),
-                string16()),
+                string16(),
+                0),
       &changes));
 
   AutofillEntry entry(MakeAutofillEntry("Name", "Superman", 1, 2));
@@ -862,7 +883,8 @@ TEST_F(WebDatabaseTest, Autofill_UpdateDontReplace) {
       FormField(string16(),
                 existing.key().name(),
                 existing.key().value(),
-                string16()),
+                string16(),
+                0),
       &changes,
       t));
   AutofillEntry entry(MakeAutofillEntry("Name", "Clark Kent", 1, 2));
@@ -1231,7 +1253,8 @@ TEST_F(WebDatabaseTest, Autofill_GetAllAutofillEntries_OneResult) {
       FormField(string16(),
                 ASCIIToUTF16("Name"),
                 ASCIIToUTF16("Superman"),
-                string16()),
+                string16(),
+                0),
       &changes,
       Time::FromTimeT(start)));
   timestamps1.push_back(Time::FromTimeT(start));
@@ -1274,7 +1297,8 @@ TEST_F(WebDatabaseTest, Autofill_GetAllAutofillEntries_TwoDistinct) {
       FormField(string16(),
                 ASCIIToUTF16("Name"),
                 ASCIIToUTF16("Superman"),
-                string16()),
+                string16(),
+                0),
       &changes,
       Time::FromTimeT(start)));
   timestamps1.push_back(Time::FromTimeT(start));
@@ -1288,7 +1312,8 @@ TEST_F(WebDatabaseTest, Autofill_GetAllAutofillEntries_TwoDistinct) {
       FormField(string16(),
                 ASCIIToUTF16("Name"),
                 ASCIIToUTF16("Clark Kent"),
-                string16()),
+                string16(),
+                0),
       &changes,
       Time::FromTimeT(start)));
   timestamps2.push_back(Time::FromTimeT(start));
@@ -1335,7 +1360,8 @@ TEST_F(WebDatabaseTest, Autofill_GetAllAutofillEntries_TwoSame) {
         FormField(string16(),
                   ASCIIToUTF16("Name"),
                   ASCIIToUTF16("Superman"),
-                  string16()),
+                  string16(),
+                  0),
         &changes,
         Time::FromTimeT(start)));
     timestamps.push_back(Time::FromTimeT(start));

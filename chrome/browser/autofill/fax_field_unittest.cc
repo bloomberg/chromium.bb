@@ -44,7 +44,8 @@ TEST_F(FaxFieldTest, ParseOneLineFax) {
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Fax"),
                                                ASCIIToUTF16("faxnumber"),
                                                string16(),
-                                               ASCIIToUTF16("text")),
+                                               ASCIIToUTF16("text"),
+                                               0),
                         ASCIIToUTF16("fax1")));
   list_.push_back(NULL);
   iter_ = list_.begin();

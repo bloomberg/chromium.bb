@@ -27,6 +27,12 @@ namespace {
 // The rate for positive/negative matches potentially could be different.
 const double kAutoFillPositiveUploadRateDefaultValue = 0.01;
 const double kAutoFillNegativeUploadRateDefaultValue = 0.01;
+
+// Size and offset of the prefix and suffix portions of phone numbers.
+const int kAutoFillPhoneNumberPrefixOffset = 0;
+const int kAutoFillPhoneNumberPrefixCount = 3;
+const int kAutoFillPhoneNumberSuffixOffset = 3;
+const int kAutoFillPhoneNumberSuffixCount = 4;
 }  // namespace
 
 // TODO(jhawkins): Maybe this should be in a grd file?
@@ -239,7 +245,7 @@ bool AutoFillManager::FillAutoFillFormData(int query_id,
         result.fields[i].set_value(
             credit_card->GetFieldText(autofill_type));
       } else if (profile) {
-        result.fields[i].set_value(profile->GetFieldText(autofill_type));
+        FillFormField(profile, autofill_type, &result.fields[i]);
       }
     }
   }
@@ -457,5 +463,36 @@ void AutoFillManager::GetCreditCardSuggestions(const FormField& field,
       values->push_back(credit_card->ObfuscatedNumber());
       labels->push_back(credit_card->Label());
     }
+  }
+}
+
+void AutoFillManager::FillFormField(const AutoFillProfile* profile,
+                                    AutoFillType type,
+                                    webkit_glue::FormField* field) {
+  DCHECK(profile);
+  DCHECK(field);
+
+  if (type.subgroup() == AutoFillType::PHONE_NUMBER) {
+    FillPhoneNumberField(profile, field);
+  } else {
+    field->set_value(profile->GetFieldText(type));
+  }
+}
+
+void AutoFillManager::FillPhoneNumberField(const AutoFillProfile* profile,
+                                           webkit_glue::FormField* field) {
+  // If we are filling a phone number, check to see if the size field
+  // matches the "prefix" or "suffix" sizes and fill accordingly.
+  string16 number = profile->GetFieldText(AutoFillType(PHONE_HOME_NUMBER));
+  if (field->size() == kAutoFillPhoneNumberPrefixCount) {
+    number = number.substr(kAutoFillPhoneNumberPrefixOffset,
+                           kAutoFillPhoneNumberPrefixCount);
+    field->set_value(number);
+  } else if (field->size() == kAutoFillPhoneNumberSuffixCount) {
+    number = number.substr(kAutoFillPhoneNumberSuffixOffset,
+                           kAutoFillPhoneNumberSuffixCount);
+    field->set_value(number);
+  } else {
+    field->set_value(number);
   }
 }

@@ -44,7 +44,8 @@ TEST_F(AddressFieldTest, ParseOneLineAddress) {
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Address"),
                                                ASCIIToUTF16("address"),
                                                string16(),
-                                               ASCIIToUTF16("text")),
+                                               ASCIIToUTF16("text"),
+                                               0),
                         ASCIIToUTF16("addr1")));
   list_.push_back(NULL);
   iter_ = list_.begin();
@@ -63,7 +64,8 @@ TEST_F(AddressFieldTest, ParseOneLineAddressEcml) {
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Address"),
                                                kEcmlShipToAddress1,
                                                string16(),
-                                               ASCIIToUTF16("text")),
+                                               ASCIIToUTF16("text"),
+                                               0),
                         ASCIIToUTF16("addr1")));
   list_.push_back(NULL);
   iter_ = list_.begin();
@@ -82,13 +84,15 @@ TEST_F(AddressFieldTest, ParseTwoLineAddress) {
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Address"),
                                                ASCIIToUTF16("address"),
                                                string16(),
-                                               ASCIIToUTF16("text")),
+                                               ASCIIToUTF16("text"),
+                                               0),
                         ASCIIToUTF16("addr1")));
   list_.push_back(
       new AutoFillField(webkit_glue::FormField(string16(),
                                                string16(),
                                                string16(),
-                                               ASCIIToUTF16("text")),
+                                               ASCIIToUTF16("text"),
+                                               0),
                         ASCIIToUTF16("addr2")));
   list_.push_back(NULL);
   iter_ = list_.begin();
@@ -110,19 +114,22 @@ TEST_F(AddressFieldTest, ParseThreeLineAddress) {
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Address Line1"),
                                                ASCIIToUTF16("Address"),
                                                string16(),
-                                               ASCIIToUTF16("text")),
+                                               ASCIIToUTF16("text"),
+                                               0),
                         ASCIIToUTF16("addr1")));
   list_.push_back(
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Address Line2"),
                                                ASCIIToUTF16("Address"),
                                                string16(),
-                                               ASCIIToUTF16("text")),
+                                               ASCIIToUTF16("text"),
+                                               0),
                         ASCIIToUTF16("addr2")));
   list_.push_back(
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Address Line3"),
                                                ASCIIToUTF16("Address"),
                                                string16(),
-                                               ASCIIToUTF16("text")),
+                                               ASCIIToUTF16("text"),
+                                               0),
                         ASCIIToUTF16("addr3")));
   list_.push_back(NULL);
   iter_ = list_.begin();
@@ -146,13 +153,15 @@ TEST_F(AddressFieldTest, ParseTwoLineAddressEcml) {
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Address"),
                                                kEcmlShipToAddress1,
                                                string16(),
-                                               ASCIIToUTF16("text")),
+                                               ASCIIToUTF16("text"),
+                                               0),
                         ASCIIToUTF16("addr1")));
   list_.push_back(
       new AutoFillField(webkit_glue::FormField(string16(),
                                                kEcmlShipToAddress2,
                                                string16(),
-                                               ASCIIToUTF16("text")),
+                                               ASCIIToUTF16("text"),
+                                               0),
                         ASCIIToUTF16("addr2")));
   list_.push_back(NULL);
   iter_ = list_.begin();
@@ -174,7 +183,8 @@ TEST_F(AddressFieldTest, ParseCity) {
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("City"),
                                                ASCIIToUTF16("city"),
                                                string16(),
-                                               ASCIIToUTF16("text")),
+                                               ASCIIToUTF16("text"),
+                                               0),
                         ASCIIToUTF16("city1")));
   list_.push_back(NULL);
   iter_ = list_.begin();
@@ -193,7 +203,8 @@ TEST_F(AddressFieldTest, ParseCityEcml) {
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("City"),
                                                kEcmlShipToCity,
                                                string16(),
-                                               ASCIIToUTF16("text")),
+                                               ASCIIToUTF16("text"),
+                                               0),
                         ASCIIToUTF16("city1")));
   list_.push_back(NULL);
   iter_ = list_.begin();
@@ -212,7 +223,8 @@ TEST_F(AddressFieldTest, ParseState) {
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("State"),
                                                ASCIIToUTF16("state"),
                                                string16(),
-                                               ASCIIToUTF16("text")),
+                                               ASCIIToUTF16("text"),
+                                               0),
                         ASCIIToUTF16("state1")));
   list_.push_back(NULL);
   iter_ = list_.begin();
@@ -231,7 +243,8 @@ TEST_F(AddressFieldTest, ParseStateEcml) {
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("State"),
                                                kEcmlShipToStateProv,
                                                string16(),
-                                               ASCIIToUTF16("text")),
+                                               ASCIIToUTF16("text"),
+                                               0),
                         ASCIIToUTF16("state1")));
   list_.push_back(NULL);
   iter_ = list_.begin();
@@ -250,7 +263,8 @@ TEST_F(AddressFieldTest, ParseZip) {
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Zip"),
                                                ASCIIToUTF16("zip"),
                                                string16(),
-                                               ASCIIToUTF16("text")),
+                                               ASCIIToUTF16("text"),
+                                               0),
                         ASCIIToUTF16("zip1")));
   list_.push_back(NULL);
   iter_ = list_.begin();
@@ -269,7 +283,8 @@ TEST_F(AddressFieldTest, ParseZipEcml) {
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Zip"),
                                                kEcmlShipToPostalCode,
                                                string16(),
-                                               ASCIIToUTF16("text")),
+                                               ASCIIToUTF16("text"),
+                                               0),
                         ASCIIToUTF16("zip1")));
   list_.push_back(NULL);
   iter_ = list_.begin();
@@ -288,7 +303,8 @@ TEST_F(AddressFieldTest, ParseCountry) {
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Country"),
                                                ASCIIToUTF16("country"),
                                                string16(),
-                                               ASCIIToUTF16("text")),
+                                               ASCIIToUTF16("text"),
+                                               0),
                         ASCIIToUTF16("country1")));
   list_.push_back(NULL);
   iter_ = list_.begin();
@@ -307,7 +323,8 @@ TEST_F(AddressFieldTest, ParseCountryEcml) {
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Country"),
                                                kEcmlShipToCountry,
                                                string16(),
-                                               ASCIIToUTF16("text")),
+                                               ASCIIToUTF16("text"),
+                                               0),
                         ASCIIToUTF16("country1")));
   list_.push_back(NULL);
   iter_ = list_.begin();
@@ -326,13 +343,15 @@ TEST_F(AddressFieldTest, ParseTwoLineAddressMissingLabel) {
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Address"),
                                                ASCIIToUTF16("address"),
                                                string16(),
-                                               ASCIIToUTF16("text")),
+                                               ASCIIToUTF16("text"),
+                                               0),
                         ASCIIToUTF16("addr1")));
   list_.push_back(
       new AutoFillField(webkit_glue::FormField(string16(),
                                                ASCIIToUTF16("bogus"),
                                                string16(),
-                                               ASCIIToUTF16("text")),
+                                               ASCIIToUTF16("text"),
+                                               0),
                         ASCIIToUTF16("addr2")));
   list_.push_back(NULL);
   iter_ = list_.begin();

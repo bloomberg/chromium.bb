@@ -98,31 +98,38 @@ TEST(AutoFillDownloadTest, QueryAndUploadTest) {
   form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("username"),
                                                ASCIIToUTF16("username"),
                                                string16(),
-                                               ASCIIToUTF16("text")));
+                                               ASCIIToUTF16("text"),
+                                               0));
   form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("First Name"),
                                                ASCIIToUTF16("firstname"),
                                                string16(),
-                                               ASCIIToUTF16("text")));
+                                               ASCIIToUTF16("text"),
+                                               0));
   form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Last Name"),
                                                ASCIIToUTF16("lastname"),
                                                string16(),
-                                               ASCIIToUTF16("text")));
+                                               ASCIIToUTF16("text"),
+                                               0));
   form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("email"),
                                                ASCIIToUTF16("email"),
                                                string16(),
-                                               ASCIIToUTF16("text")));
+                                               ASCIIToUTF16("text"),
+                                               0));
   form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("email2"),
                                                ASCIIToUTF16("email2"),
                                                string16(),
-                                               ASCIIToUTF16("text")));
+                                               ASCIIToUTF16("text"),
+                                               0));
   form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("password"),
                                                ASCIIToUTF16("password"),
                                                string16(),
-                                               ASCIIToUTF16("password")));
+                                               ASCIIToUTF16("password"),
+                                               0));
   form.fields.push_back(webkit_glue::FormField(string16(),
                                                ASCIIToUTF16("Submit"),
                                                string16(),
-                                               ASCIIToUTF16("submit")));
+                                               ASCIIToUTF16("submit"),
+                                               0));
 
   FormStructure *form_structure = new FormStructure(form);
   ScopedVector<FormStructure> form_structures;
@@ -132,19 +139,23 @@ TEST(AutoFillDownloadTest, QueryAndUploadTest) {
   form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("address"),
                                                ASCIIToUTF16("address"),
                                                string16(),
-                                               ASCIIToUTF16("text")));
+                                               ASCIIToUTF16("text"),
+                                               0));
   form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("address2"),
                                                ASCIIToUTF16("address2"),
                                                string16(),
-                                               ASCIIToUTF16("text")));
+                                               ASCIIToUTF16("text"),
+                                               0));
   form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("city"),
                                                ASCIIToUTF16("address2"),
                                                string16(),
-                                               ASCIIToUTF16("text")));
+                                               ASCIIToUTF16("text"),
+                                               0));
   form.fields.push_back(webkit_glue::FormField(string16(),
                                                ASCIIToUTF16("Submit"),
                                                string16(),
-                                               ASCIIToUTF16("submit")));
+                                               ASCIIToUTF16("submit"),
+                                               0));
   form_structure = new FormStructure(form);
   form_structures.push_back(form_structure);
 

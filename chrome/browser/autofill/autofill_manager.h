@@ -115,6 +115,16 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
                                 std::vector<string16>* values,
                                 std::vector<string16>* labels);
 
+  // Set |field| argument's value based on |type| and contents of the |profile|.
+  void FillFormField(const AutoFillProfile* profile,
+                     AutoFillType type,
+                     webkit_glue::FormField* field);
+
+  // Set |field| argument's value for phone number based on contents of the
+  // |profile|.
+  void FillPhoneNumberField(const AutoFillProfile* profile,
+                            webkit_glue::FormField* field);
+
   // The TabContents hosting this AutoFillManager.
   // Weak reference.
   // May not be NULL.

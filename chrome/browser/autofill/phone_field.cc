@@ -99,9 +99,23 @@ bool PhoneField::GetFieldInfo(FieldTypeMap* field_type_map) const {
     ok = Add(field_type_map, area_code_, AutoFillType(PHONE_HOME_CITY_CODE));
     DCHECK(ok);
 
-    // NOTE: we ignore the prefix/suffix thing here.
-    ok = ok && Add(field_type_map, phone_, AutoFillType(PHONE_HOME_NUMBER));
-    DCHECK(ok);
+    if (prefix_ != NULL) {
+      // We tag the prefix as PHONE_HOME_NUMBER, then when filling the form
+      // we fill only the prefix depending on the size of the input field.
+      ok = ok && Add(field_type_map,
+                     prefix_,
+                     AutoFillType(PHONE_HOME_NUMBER));
+      DCHECK(ok);
+      // We tag the suffix as PHONE_HOME_NUMBER, then when filling the form
+      // we fill only the suffix depending on the size of the input field.
+      ok = ok && Add(field_type_map,
+                     phone_,
+                     AutoFillType(PHONE_HOME_NUMBER));
+      DCHECK(ok);
+    } else {
+      ok = ok && Add(field_type_map, phone_, AutoFillType(PHONE_HOME_NUMBER));
+      DCHECK(ok);
+    }
   } else {
     ok = Add(field_type_map, phone_, AutoFillType(PHONE_HOME_WHOLE_NUMBER));
     DCHECK(ok);

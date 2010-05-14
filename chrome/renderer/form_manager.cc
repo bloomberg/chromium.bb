@@ -102,6 +102,11 @@ void FormManager::WebFormControlElementToFormField(
   field->set_name(element.nameForAutofill());
   field->set_form_control_type(element.formControlType());
 
+  if (element.formControlType() == WebString::fromUTF8("text")) {
+    const WebInputElement& input_element = element.toConst<WebInputElement>();
+    field->set_size(input_element.size());
+  }
+
   if (!get_value)
     return;
 
@@ -584,6 +589,24 @@ string16 FormManager::InferLabelForElement(
         if (element.hasTagName("p")) {
           inferred_label = FindChildText(element);
         }
+      }
+    }
+
+    // Look for text node prior to <img> tag.
+    // Eg. Some Text<img/><input ...>
+    if (inferred_label.empty()) {
+      while (inferred_label.empty() && !previous.isNull()) {
+        if (previous.isTextNode()) {
+          inferred_label = previous.nodeValue();
+          TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
+        } else if (previous.isElementNode()) {
+          WebElement element = previous.to<WebElement>();
+          if (!element.hasTagName("img"))
+            break;
+        } else {
+          break;
+        }
+        previous = previous.previousSibling();
       }
     }
   }

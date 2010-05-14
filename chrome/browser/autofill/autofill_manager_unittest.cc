@@ -95,7 +95,7 @@ void CreateTestFormField(const char* label,
                          const char* type,
                          webkit_glue::FormField* field) {
   *field = webkit_glue::FormField(ASCIIToUTF16(label), ASCIIToUTF16(name),
-                                  ASCIIToUTF16(value), ASCIIToUTF16(type));
+                                  ASCIIToUTF16(value), ASCIIToUTF16(type), 0);
 }
 
 void CreateTestFormData(FormData* form) {
