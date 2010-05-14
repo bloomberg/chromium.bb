@@ -32,6 +32,8 @@ public:
   MOCK_CONST_METHOD1(GetDialogSize, void(gfx::Size*));
   MOCK_CONST_METHOD0(GetDialogArgs, std::string());
   MOCK_METHOD1(OnDialogClosed, void(const std::string& json_retval));
+  MOCK_METHOD2(OnCloseContents,
+               void(TabContents* source, bool* out_close_dialog));
 };
 
 class HtmlDialogWindowControllerTest : public BrowserWithTestWindowTest {

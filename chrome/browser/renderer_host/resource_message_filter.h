@@ -416,6 +416,8 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   // Whether this process is used for off the record tabs.
   bool off_the_record_;
 
+  bool cloud_print_enabled_;
+
   // A callback to create a routing id for the associated renderer process.
   scoped_ptr<CallbackWithReturnValue<int>::Type> next_route_id_callback_;
 

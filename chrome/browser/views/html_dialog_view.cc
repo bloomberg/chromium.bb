@@ -136,6 +136,12 @@ void HtmlDialogView::OnDialogClosed(const std::string& json_retval) {
   window()->Close();
 }
 
+void HtmlDialogView::OnCloseContents(TabContents* source,
+                                     bool* out_close_dialog) {
+  if (delegate_)
+    delegate_->OnCloseContents(source, out_close_dialog);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TabContentsDelegate implementation:
 
@@ -160,6 +166,13 @@ void HtmlDialogView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   DefWindowProc(event.os_event.hwnd, event.os_event.message,
                   event.os_event.wParam, event.os_event.lParam);
 #endif
+}
+
+void HtmlDialogView::CloseContents(TabContents* source) {
+  bool close_dialog = false;
+  OnCloseContents(source, &close_dialog);
+  if (close_dialog)
+    OnDialogClosed(std::string());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

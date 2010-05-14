@@ -329,6 +329,8 @@ ResourceMessageFilter::ResourceMessageFilter(
   DCHECK(dom_storage_dispatcher_host_.get());
 
   render_widget_helper_->Init(id(), resource_dispatcher_host_);
+  cloud_print_enabled_ = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableCloudPrint);
 }
 
 ResourceMessageFilter::~ResourceMessageFilter() {

@@ -44,6 +44,12 @@ class HtmlDialogUIDelegate {
   // A callback to notify the delegate that the dialog closed.
   virtual void OnDialogClosed(const std::string& json_retval) = 0;
 
+  // A callback to notify the delegate that the contents have gone
+  // away. Only relevant if your dialog hosts code that calls
+  // windows.close() and you've allowed that.  If the output parameter
+  // is set to true, then the dialog is closed.  The default is false.
+  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog) = 0;
+
  protected:
   ~HtmlDialogUIDelegate() {}
 };
@@ -87,6 +93,17 @@ class HtmlDialogUI : public DOMUI {
   void OnDialogClosed(const Value* content);
 
   DISALLOW_COPY_AND_ASSIGN(HtmlDialogUI);
+};
+
+// Displays external URL contents inside a modal HTML dialog.
+//
+// Intended to be the place to collect the settings and lockdowns
+// necessary for running external UI conponents securely (e.g., the
+// cloud print dialog).
+class ExternalHtmlDialogUI : public HtmlDialogUI {
+ public:
+  explicit ExternalHtmlDialogUI(TabContents* tab_contents);
+  virtual ~ExternalHtmlDialogUI();
 };
 
 #endif  // CHROME_BROWSER_DOM_UI_HTML_DIALOG_UI_H_

@@ -75,6 +75,9 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
   virtual void OnDialogClosed(const std::string& json_retval);
 
   // HtmlDialogUIDelegate implementation.
+  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog) { }
+
+  // HtmlDialogUIDelegate implementation.
   virtual std::wstring GetDialogTitle() const {
     return l10n_util::GetString(IDS_SYNC_MY_BOOKMARKS_LABEL);
   }

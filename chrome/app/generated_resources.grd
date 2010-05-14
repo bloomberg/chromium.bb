@@ -4524,6 +4524,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Something went wrong when trying to print.  Please check your printer and try again.
       </message>
 
+      <!-- Cloud Print dialog messages -->
+      <message name="IDS_CLOUD_PRINT_TITLE" desc="Title for the print dialog">
+        Print
+      </message>
+
       <!-- Load State -->
       <message name="IDS_LOAD_STATE_IDLE"></message>
       <message name="IDS_LOAD_STATE_WAITING_FOR_CACHE">

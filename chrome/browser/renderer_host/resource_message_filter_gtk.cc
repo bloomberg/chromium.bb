@@ -16,6 +16,8 @@
 #include "chrome/browser/chrome_thread.h"
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/printing/print_dialog_gtk.h"
+#else
+#include "chrome/browser/printing/print_dialog_cloud.h"
 #endif
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/render_messages.h"
@@ -308,7 +310,10 @@ void ResourceMessageFilter::OnTempFileForPrintingWritten(int fd_in_browser) {
 #if defined(TOOLKIT_GTK)
   PrintDialogGtk::CreatePrintDialogForPdf(it->second);
 #else
-  NOTIMPLEMENTED();
+  if (cloud_print_enabled_)
+    PrintDialogCloud::CreatePrintDialogForPdf(it->second);
+  else
+    NOTIMPLEMENTED();
 #endif
 
   // Erase the entry in the map.

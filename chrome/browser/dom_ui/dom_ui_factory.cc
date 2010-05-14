@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extensions_ui.h"
+#include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/url_constants.h"
@@ -68,6 +69,12 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(const GURL& url) {
   if (url.SchemeIs(chrome::kPrintScheme))
     return &NewDOMUI<PrintUI>;
 #endif
+
+  // All platform builds of Chrome will need to have a cloud printing
+  // dialog as backup.  It's just that on Chrome OS, it's the only
+  // print dialog.
+  if (url.host() == chrome::kCloudPrintResourcesHost)
+    return &NewDOMUI<ExternalHtmlDialogUI>;
 
   // This will get called a lot to check all URLs, so do a quick check of other
   // schemes (gears was handled above) to filter out most URLs.

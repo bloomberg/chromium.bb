@@ -93,6 +93,9 @@ const char kSyncSetupDonePath[] = "setupdone";
 
 const char kAppCacheViewInternalsURL[] = "chrome://appcache-internals/";
 
+const char kCloudPrintResourcesURL[] = "chrome://cloudprintresources/";
+const char kCloudPrintResourcesHost[] = "cloudprintresources";
+
 const char kNetworkViewInternalsURL[] = "chrome://net-internals/";
 const char kNetworkViewCacheURL[] = "chrome://view-http-cache/";
 

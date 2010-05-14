@@ -93,6 +93,10 @@ extern const char kSyncSetupDonePath[];
 // AppCache related URL.
 extern const char kAppCacheViewInternalsURL[];
 
+// Cloud Print dialog URL components.
+extern const char kCloudPrintResourcesURL[];
+extern const char kCloudPrintResourcesHost[];
+
 // Network related URLs.
 extern const char kNetworkViewCacheURL[];
 extern const char kNetworkViewInternalsURL[];

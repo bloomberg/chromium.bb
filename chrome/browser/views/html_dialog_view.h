@@ -55,7 +55,7 @@ class HtmlDialogView
   virtual views::View* GetContentsView();
   virtual views::View* GetInitiallyFocusedView();
 
-  // Overridden from HtmlDialogUI::Delegate:
+  // Overridden from HtmlDialogUIDelegate:
   virtual bool IsDialogModal() const;
   virtual std::wstring GetDialogTitle() const;
   virtual GURL GetDialogContentURL() const;
@@ -64,11 +64,13 @@ class HtmlDialogView
   virtual void GetDialogSize(gfx::Size* size) const;
   virtual std::string GetDialogArgs() const;
   virtual void OnDialogClosed(const std::string& json_retval);
+  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog);
 
   // Overridden from TabContentsDelegate:
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos);
   virtual void ToolbarSizeChanged(TabContents* source, bool is_animating);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
+  virtual void CloseContents(TabContents* source);
 
  private:
   // This view is a delegate to the HTML content since it needs to get notified

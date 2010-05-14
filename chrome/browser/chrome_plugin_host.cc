@@ -326,6 +326,7 @@ class ModelessHtmlDialogDelegate : public HtmlDialogUIDelegate {
     io_message_loop_->PostTask(FROM_HERE, NewRunnableMethod(
         this, &ModelessHtmlDialogDelegate::ReportResults, json_retval));
   }
+  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog) { }
 
  private:
   // Actually shows the dialog on the UI thread.

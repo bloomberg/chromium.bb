@@ -17,6 +17,7 @@
 #if defined(OS_MACOSX)
 #include "chrome/browser/cocoa/html_dialog_window_controller_cppsafe.h"
 #endif
+#include "chrome/browser/dom_ui/dom_ui_util.h"
 #include "chrome/browser/google_service_auth_error.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -31,28 +32,6 @@
 // XPath expression for finding specific iframes.
 static const wchar_t* kLoginIFrameXPath = L"//iframe[@id='login']";
 static const wchar_t* kDoneIframeXPath = L"//iframe[@id='done']";
-
-// Helper function to read the JSON string from the Value parameter.
-static std::string GetJsonResponse(const Value* content) {
-  if (!content || !content->IsType(Value::TYPE_LIST)) {
-    NOTREACHED();
-    return std::string();
-  }
-  const ListValue* args = static_cast<const ListValue*>(content);
-  if (args->GetSize() != 1) {
-    NOTREACHED();
-    return std::string();
-  }
-
-  std::string result;
-  Value* value = NULL;
-  if (!args->Get(0, &value) || !value->GetAsString(&result)) {
-    NOTREACHED();
-    return std::string();
-  }
-
-  return result;
-}
 
 void FlowHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("ShowCustomize",
@@ -102,7 +81,7 @@ void FlowHandler::ClickCustomizeCancel(const Value* value) {
 
 
 void FlowHandler::HandleSubmitAuth(const Value* value) {
-  std::string json(GetJsonResponse(value));
+  std::string json(dom_ui_util::GetJsonResponseFromFirstArgumentInList(value));
   std::string username, password, captcha;
   if (json.empty())
     return;
