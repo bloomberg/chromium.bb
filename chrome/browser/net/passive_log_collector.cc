@@ -24,10 +24,9 @@ bool OrderBySourceID(const PassiveLogCollector::RequestInfo& a,
 }
 
 void AddEntryToRequestInfo(const PassiveLogCollector::Entry& entry,
-                           bool is_unbounded,
                            PassiveLogCollector::RequestInfo* out_info) {
   // Start dropping new entries when the log has gotten too big.
-  if (out_info->entries.size() + 1 <= kMaxNumEntriesPerLog || is_unbounded) {
+  if (out_info->entries.size() + 1 <= kMaxNumEntriesPerLog) {
     out_info->entries.push_back(entry);
   } else {
     out_info->num_entries_truncated += 1;
@@ -36,10 +35,9 @@ void AddEntryToRequestInfo(const PassiveLogCollector::Entry& entry,
 }
 
 void AppendToRequestInfo(const PassiveLogCollector::RequestInfo& info,
-                         bool is_unbounded,
                          PassiveLogCollector::RequestInfo* out_info) {
   for (size_t i = 0; i < info.entries.size(); ++i)
-    AddEntryToRequestInfo(info.entries[i], is_unbounded, out_info);
+    AddEntryToRequestInfo(info.entries[i], out_info);
 }
 
 // Appends all of the logged events in |input| to |out|.
@@ -169,8 +167,7 @@ std::string PassiveLogCollector::RequestInfo::GetURL() const {
 PassiveLogCollector::RequestTrackerBase::RequestTrackerBase(
     size_t max_graveyard_size)
     : max_graveyard_size_(max_graveyard_size),
-      next_graveyard_index_(0),
-      is_unbounded_(false) {
+      next_graveyard_index_(0) {
 }
 
 void PassiveLogCollector::RequestTrackerBase::OnAddEntry(const Entry& entry) {
@@ -262,20 +259,6 @@ void PassiveLogCollector::RequestTrackerBase::RemoveFromLiveRequests(
     live_requests_.erase(it);
 }
 
-void PassiveLogCollector::RequestTrackerBase::SetUnbounded(
-    bool unbounded) {
-  // No change.
-  if (is_unbounded_ == unbounded)
-    return;
-
-  // If we are going from unbounded to bounded, we need to trim the
-  // graveyard. For simplicity we will simply clear it.
-  if (is_unbounded_ && !unbounded)
-    ClearRecentlyDeceased();
-
-  is_unbounded_ = unbounded;
-}
-
 void PassiveLogCollector::RequestTrackerBase::Clear() {
   ClearRecentlyDeceased();
   live_requests_.clear();
@@ -289,12 +272,7 @@ void PassiveLogCollector::RequestTrackerBase::AppendAllEntries(
 
 void PassiveLogCollector::RequestTrackerBase::InsertIntoGraveyard(
     const RequestInfo& info) {
-  if (is_unbounded_) {
-    graveyard_.push_back(info);
-    return;
-  }
-
-  // Otherwise enforce a bound on the graveyard size, by treating it as a
+  // Enforce a bound on the graveyard size, by treating it as a
   // circular buffer.
   if (graveyard_.size() < max_graveyard_size_) {
     // Still growing to maximum capacity.
@@ -320,7 +298,7 @@ PassiveLogCollector::ConnectJobTracker::ConnectJobTracker()
 PassiveLogCollector::RequestTrackerBase::Action
 PassiveLogCollector::ConnectJobTracker::DoAddEntry(const Entry& entry,
                                                    RequestInfo* out_info) {
-  AddEntryToRequestInfo(entry, is_unbounded(), out_info);
+  AddEntryToRequestInfo(entry, out_info);
 
   if (entry.type == net::NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID) {
     SetSubordinateSource(out_info, entry);
@@ -336,7 +314,7 @@ PassiveLogCollector::ConnectJobTracker::DoAddEntry(const Entry& entry,
 }
 
 void PassiveLogCollector::ConnectJobTracker::AppendLogEntries(
-    RequestInfo* out_info, bool unbounded, uint32 connect_id) {
+    RequestInfo* out_info, uint32 connect_id) {
   RequestInfo* connect_info = GetRequestInfo(connect_id);
   if (!connect_info) {
     net::NetLogStringParameter* text = new net::NetLogStringParameter(
@@ -345,17 +323,17 @@ void PassiveLogCollector::ConnectJobTracker::AppendLogEntries(
                     net::NetLog::Source(net::NetLog::SOURCE_CONNECT_JOB,
                                         connect_id),
                     net::NetLog::PHASE_NONE, text);
-    AddEntryToRequestInfo(new_entry, unbounded, out_info);
+    AddEntryToRequestInfo(new_entry, out_info);
     return;
   }
 
-  AppendToRequestInfo(*connect_info, unbounded, out_info);
+  AppendToRequestInfo(*connect_info, out_info);
   std::sort(out_info->entries.begin(), out_info->entries.end(),
             &SortByOrderComparator);
   out_info->num_entries_truncated += connect_info->num_entries_truncated;
 
   if (connect_info->subordinate_source.is_valid())
-    AppendLogEntries(out_info, unbounded, connect_info->subordinate_source.id);
+    AppendLogEntries(out_info, connect_info->subordinate_source.id);
 }
 
 //----------------------------------------------------------------------------
@@ -392,14 +370,14 @@ PassiveLogCollector::SocketTracker::DoAddEntry(const Entry& entry,
     case net::NetLog::TYPE_TCP_SOCKET_DONE:
       return ACTION_MOVE_TO_GRAVEYARD;
     default:
-      AddEntryToRequestInfo(entry, is_unbounded(), out_info);
+      AddEntryToRequestInfo(entry, out_info);
       break;
   }
   return ACTION_NONE;
 }
 
 void PassiveLogCollector::SocketTracker::AppendLogEntries(
-    RequestInfo* out_info, bool unbounded, uint32 socket_id, bool clear) {
+    RequestInfo* out_info, uint32 socket_id, bool clear) {
   RequestInfo* socket_info = GetRequestInfo(socket_id);
   if (!socket_info) {
     net::NetLogStringParameter* text = new net::NetLogStringParameter(
@@ -407,11 +385,11 @@ void PassiveLogCollector::SocketTracker::AppendLogEntries(
     Entry new_entry(0, net::NetLog::TYPE_TODO_STRING, base::TimeTicks(),
                     net::NetLog::Source(net::NetLog::SOURCE_SOCKET, socket_id),
                     net::NetLog::PHASE_NONE, text);
-    AddEntryToRequestInfo(new_entry, unbounded, out_info);
+    AddEntryToRequestInfo(new_entry, out_info);
     return;
   }
 
-  AppendToRequestInfo(*socket_info, unbounded, out_info);
+  AppendToRequestInfo(*socket_info, out_info);
   out_info->num_entries_truncated += socket_info->num_entries_truncated;
 
   // Synthesize a log entry for bytes sent and received.
@@ -430,7 +408,7 @@ void PassiveLogCollector::SocketTracker::AppendLogEntries(
                     net::NetLog::Source(net::NetLog::SOURCE_SOCKET, socket_id),
                     net::NetLog::PHASE_NONE,
                     text);
-    AddEntryToRequestInfo(new_entry, unbounded, out_info);
+    AddEntryToRequestInfo(new_entry, out_info);
   }
   std::sort(out_info->entries.begin(), out_info->entries.end(),
             &SortByOrderComparator);
@@ -509,7 +487,7 @@ PassiveLogCollector::RequestTracker::DoAddEntry(const Entry& entry,
     }
   }
 
-  AddEntryToRequestInfo(entry, is_unbounded(), out_info);
+  AddEntryToRequestInfo(entry, out_info);
 
   // If the request has ended, move it to the graveyard.
   if (entry.type == net::NetLog::TYPE_REQUEST_ALIVE &&
@@ -534,12 +512,10 @@ void PassiveLogCollector::RequestTracker::IntegrateSubordinateSource(
   uint32 subordinate_id = info->subordinate_source.id;
   switch (info->subordinate_source.type) {
     case net::NetLog::SOURCE_CONNECT_JOB:
-      connect_job_tracker_->AppendLogEntries(
-          info, connect_job_tracker_->is_unbounded(), subordinate_id);
+      connect_job_tracker_->AppendLogEntries(info, subordinate_id);
       break;
     case net::NetLog::SOURCE_SOCKET:
-      socket_tracker_->AppendLogEntries(info, socket_tracker_->is_unbounded(),
-                                        subordinate_id, clear_entries);
+      socket_tracker_->AppendLogEntries(info, subordinate_id, clear_entries);
       break;
     default:
       NOTREACHED();

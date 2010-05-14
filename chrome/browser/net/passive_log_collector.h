@@ -83,9 +83,6 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     RequestInfoList GetLiveRequests() const;
     void ClearRecentlyDeceased();
     RequestInfoList GetRecentlyDeceased() const;
-    void SetUnbounded(bool unbounded);
-
-    bool is_unbounded() const { return is_unbounded_; }
 
     void Clear();
 
@@ -122,7 +119,6 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     size_t max_graveyard_size_;
     size_t next_graveyard_index_;
     RequestInfoList graveyard_;
-    bool is_unbounded_;
 
     DISALLOW_COPY_AND_ASSIGN(RequestTrackerBase);
   };
@@ -134,8 +130,7 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
 
     ConnectJobTracker();
 
-    void AppendLogEntries(RequestInfo* out_info, bool unbounded,
-                          uint32 connect_id);
+    void AppendLogEntries(RequestInfo* out_info, uint32 connect_id);
 
    protected:
     virtual Action DoAddEntry(const Entry& entry, RequestInfo* out_info);
@@ -150,8 +145,7 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
 
     SocketTracker();
 
-    void AppendLogEntries(RequestInfo* out_info, bool unbounded,
-                          uint32 socket_id, bool clear);
+    void AppendLogEntries(RequestInfo* out_info, uint32 socket_id, bool clear);
 
    protected:
     virtual Action DoAddEntry(const Entry& entry, RequestInfo* out_info);

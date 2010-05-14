@@ -70,7 +70,6 @@ static const int kMaxNumLoadLogEntries = 1;
 
 TEST(RequestTrackerTest, BasicBounded) {
   RequestTracker tracker(NULL, NULL);
-  EXPECT_FALSE(tracker.is_unbounded());
   EXPECT_EQ(0u, tracker.GetLiveRequests().size());
   EXPECT_EQ(0u, tracker.GetRecentlyDeceased().size());
 
@@ -104,7 +103,6 @@ TEST(RequestTrackerTest, BasicBounded) {
 
 TEST(RequestTrackerTest, GraveyardBounded) {
   RequestTracker tracker(NULL, NULL);
-  EXPECT_FALSE(tracker.is_unbounded());
   EXPECT_EQ(0u, tracker.GetLiveRequests().size());
   EXPECT_EQ(0u, tracker.GetRecentlyDeceased().size());
 
@@ -127,41 +125,10 @@ TEST(RequestTrackerTest, GraveyardBounded) {
   }
 }
 
-TEST(RequestTrackerTest, GraveyardUnbounded) {
-  RequestTracker tracker(NULL, NULL);
-  EXPECT_FALSE(tracker.is_unbounded());
-  EXPECT_EQ(0u, tracker.GetLiveRequests().size());
-  EXPECT_EQ(0u, tracker.GetRecentlyDeceased().size());
-
-  tracker.SetUnbounded(true);
-
-  EXPECT_TRUE(tracker.is_unbounded());
-
-  // Add twice as many requests as would fit in the bounded graveyard.
-
-  size_t kMaxSize = RequestTracker::kMaxGraveyardSize * 2;
-  for (size_t i = 0; i < kMaxSize; ++i) {
-    tracker.OnAddEntry(MakeStartLogEntry(i));
-    tracker.OnAddEntry(MakeEndLogEntry(i));
-  }
-
-  // Check that all of them got saved.
-
-  RequestInfoList recent_reqs = tracker.GetRecentlyDeceased();
-
-  ASSERT_EQ(kMaxSize, recent_reqs.size());
-
-  for (size_t i = 0; i < kMaxSize; ++i) {
-    std::string url = StringPrintf("http://req%" PRIuS, i);
-    EXPECT_EQ(url, recent_reqs[i].GetURL());
-  }
-}
-
 // Check that we exclude "chrome://" URLs from being saved into the recent
 // requests list (graveyard).
 TEST(RequestTrackerTest, GraveyardIsFiltered) {
   RequestTracker tracker(NULL, NULL);
-  EXPECT_FALSE(tracker.is_unbounded());
 
   // This will be excluded.
   std::string url1 = "chrome://dontcare/";
@@ -181,40 +148,6 @@ TEST(RequestTrackerTest, GraveyardIsFiltered) {
   ASSERT_EQ(2u, tracker.GetRecentlyDeceased().size());
   EXPECT_EQ(url2, tracker.GetRecentlyDeceased()[0].GetURL());
   EXPECT_EQ(url3, tracker.GetRecentlyDeceased()[1].GetURL());
-}
-
-// Convert an unbounded tracker back to being bounded.
-TEST(RequestTrackerTest, ConvertUnboundedToBounded) {
-  RequestTracker tracker(NULL, NULL);
-  EXPECT_FALSE(tracker.is_unbounded());
-  EXPECT_EQ(0u, tracker.GetLiveRequests().size());
-  EXPECT_EQ(0u, tracker.GetRecentlyDeceased().size());
-
-  tracker.SetUnbounded(true);
-  EXPECT_TRUE(tracker.is_unbounded());
-
-  // Add twice as many requests as would fit in the bounded graveyard.
-
-  size_t kMaxSize = RequestTracker::kMaxGraveyardSize * 2;
-  for (size_t i = 0; i < kMaxSize; ++i) {
-    tracker.OnAddEntry(MakeStartLogEntry(i));
-    tracker.OnAddEntry(MakeEndLogEntry(i));
-  }
-
-  // Check that all of them got saved.
-  ASSERT_EQ(kMaxSize, tracker.GetRecentlyDeceased().size());
-
-  // Now make the tracker bounded, and add more entries to its graveyard.
-  tracker.SetUnbounded(false);
-
-  kMaxSize = RequestTracker::kMaxGraveyardSize;
-  for (size_t i = kMaxSize; i < 2 * kMaxSize; ++i) {
-    tracker.OnAddEntry(MakeStartLogEntry(i));
-    tracker.OnAddEntry(MakeEndLogEntry(i));
-  }
-
-  // We should only have kMaxGraveyardSize entries now.
-  ASSERT_EQ(kMaxSize, tracker.GetRecentlyDeceased().size());
 }
 
 TEST(PassiveLogCollectorTest, BasicConnectJobAssociation) {
