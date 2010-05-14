@@ -607,14 +607,14 @@ html[dir=rtl] #option-menu > [command=hide]:before {
   color: black;
   display: inline-block;
   font-weight: bold;
-  margin: 5px;
+  margin: 5px 3px;
   overflow: hidden;
   padding: 111px 10px 10px;  /* 10 + 96 + 5 */
   text-align: center;
   text-decoration: none;
   text-overflow: ellipsis;
   white-space: nowrap;
-  width: 121px; /* 920 / 7 - margin * 2 */
+  width: 124px; /* 920 / 7 - margin * 2 */
 }
 
 #apps-section a[new=new] {
