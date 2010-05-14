@@ -24,13 +24,6 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   // WebKitClient methods (partial implementation):
   virtual WebKit::WebThemeEngine* themeEngine();
 
-  // TODO: remove this method once https://bugs.webkit.org/show_bug.cgi?id=38869
-  // is resolved.
-  virtual base::PlatformFile databaseOpenFile(
-      const WebKit::WebString& vfs_file_name,
-      int desired_flags,
-      base::PlatformFile* dir_handle);
-
   virtual base::PlatformFile databaseOpenFile(
       const WebKit::WebString& vfs_file_name, int desired_flags);
   virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,

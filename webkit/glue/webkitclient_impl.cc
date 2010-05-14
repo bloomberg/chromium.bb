@@ -333,16 +333,6 @@ void WebKitClientImpl::callOnMainThread(void (*func)(void*), void* context) {
   main_loop_->PostTask(FROM_HERE, NewRunnableFunction(func, context));
 }
 
-// TODO: remove this method once https://bugs.webkit.org/show_bug.cgi?id=38869
-// is resolved.
-base::PlatformFile WebKitClientImpl::databaseOpenFile(
-    const WebKit::WebString& vfs_file_name, int desired_flags,
-    base::PlatformFile* dir_handle) {
-  if (dir_handle)
-    *dir_handle = base::kInvalidPlatformFileValue;
-  return databaseOpenFile(vfs_file_name, desired_flags);
-}
-
 base::PlatformFile WebKitClientImpl::databaseOpenFile(
     const WebKit::WebString& vfs_file_name, int desired_flags) {
   return base::kInvalidPlatformFileValue;

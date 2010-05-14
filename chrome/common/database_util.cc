@@ -20,25 +20,15 @@ using WebKit::WebString;
 
 WebKitClient::FileHandle DatabaseUtil::databaseOpenFile(
     const WebString& vfs_file_name, int desired_flags) {
-  IPC::PlatformFileForTransit file_handle;
-#if defined(OS_WIN)
-  file_handle = base::kInvalidPlatformFileValue;
-#elif defined(OS_POSIX)
-  file_handle =
-      base::FileDescriptor(base::kInvalidPlatformFileValue, true);
-#endif
+  IPC::PlatformFileForTransit file_handle =
+      IPC::InvalidPlatformFileForTransit();
 
   scoped_refptr<IPC::SyncMessageFilter> filter =
       ChildThread::current()->sync_message_filter();
-
   filter->Send(new ViewHostMsg_DatabaseOpenFile(
       vfs_file_name, desired_flags, &file_handle));
 
-#if defined(OS_WIN)
-  return file_handle;
-#elif defined(OS_POSIX)
-  return file_handle.fd;
-#endif
+  return IPC::PlatformFileForTransitToPlatformFile(file_handle);
 }
 
 int DatabaseUtil::databaseDeleteFile(
