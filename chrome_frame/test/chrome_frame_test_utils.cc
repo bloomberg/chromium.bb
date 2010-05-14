@@ -14,6 +14,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/registry.h"   // to find IE and firefox
+#include "base/scoped_bstr_win.h"
 #include "base/scoped_handle.h"
 #include "base/scoped_comptr_win.h"
 #include "base/utf_string_conversions.h"
@@ -37,6 +38,7 @@ const wchar_t kSafariImageName[] = L"safari.exe";
 const wchar_t kChromeImageName[] = L"chrome.exe";
 const wchar_t kIEProfileName[] = L"iexplore";
 const wchar_t kChromeLauncher[] = L"chrome_launcher.exe";
+const int kChromeFrameLongNavigationTimeoutInSeconds = 10;
 
 // Callback function for EnumThreadWindows.
 BOOL CALLBACK CloseWindowsThreadCallback(HWND hwnd, LPARAM param) {
@@ -667,6 +669,11 @@ void WebBrowserEventSink::SendMouseClick(int x, int y,
   simulate_input::SendMouseClick(GetRendererWindow(), x, y, button);
 }
 
+void WebBrowserEventSink::SendMouseClickToIE(int x, int y,
+    simulate_input::MouseButton button) {
+  simulate_input::SendMouseClick(GetIERendererWindow(), x, y, button);
+}
+
 void WebBrowserEventSink::ConnectToChromeFrame() {
   DCHECK(web_browser2_);
   if (chrome_frame_.get())
@@ -730,6 +737,24 @@ HWND WebBrowserEventSink::GetRendererWindow() {
   return renderer_window;
 }
 
+HWND WebBrowserEventSink::GetIERendererWindow() {
+  DCHECK(web_browser2_);
+  HWND renderer_window = NULL;
+  ScopedComPtr<IDispatch> doc;
+  HRESULT hr = web_browser2_->get_Document(doc.Receive());
+  EXPECT_HRESULT_SUCCEEDED(hr);
+  EXPECT_TRUE(doc);
+  if (doc) {
+    ScopedComPtr<IOleWindow> ole_window;
+    ole_window.QueryFrom(doc);
+    EXPECT_TRUE(ole_window);
+    if (ole_window) {
+      ole_window->GetWindow(&renderer_window);
+    }
+  }
+  return renderer_window;
+}
+
 HRESULT WebBrowserEventSink::SetWebBrowser(IWebBrowser2* web_browser2) {
   DCHECK(web_browser2_.get() == NULL);
   DCHECK(!is_main_browser_object_);
@@ -749,7 +774,7 @@ HRESULT WebBrowserEventSink::CloseWebBrowser() {
   return S_OK;
 }
 
-void WebBrowserEventSink::ExpectRendererWindowHasfocus() {
+void WebBrowserEventSink::ExpectRendererWindowHasFocus() {
   HWND renderer_window = GetRendererWindow();
   EXPECT_TRUE(IsWindow(renderer_window));
 
@@ -771,6 +796,31 @@ void WebBrowserEventSink::ExpectRendererWindowHasfocus() {
   HWND focus_window = GetFocus();
   EXPECT_TRUE(focus_window == renderer_window);
   EXPECT_TRUE(AttachThreadInput(GetCurrentThreadId(), renderer_thread, FALSE));
+}
+
+void WebBrowserEventSink::ExpectIERendererWindowHasFocus() {
+  HWND renderer_window = GetIERendererWindow();
+  EXPECT_TRUE(IsWindow(renderer_window));
+
+  DWORD renderer_thread = 0;
+  DWORD renderer_process = 0;
+  renderer_thread = GetWindowThreadProcessId(renderer_window,
+                                             &renderer_process);
+
+  ASSERT_TRUE(AttachThreadInput(GetCurrentThreadId(), renderer_thread, TRUE));
+  HWND focus_window = GetFocus();
+  EXPECT_TRUE(focus_window == renderer_window);
+  EXPECT_TRUE(AttachThreadInput(GetCurrentThreadId(), renderer_thread, FALSE));
+}
+
+void WebBrowserEventSink::ExpectAddressBarUrl(
+    const std::wstring& expected_url) {
+  DCHECK(web_browser2_);
+  if (web_browser2_) {
+    ScopedBstr address_bar_url;
+    EXPECT_EQ(S_OK, web_browser2_->get_LocationURL(address_bar_url.Receive()));
+    EXPECT_EQ(expected_url, std::wstring(address_bar_url));
+  }
 }
 
 void WebBrowserEventSink::Exec(const GUID* cmd_group_guid, DWORD command_id,

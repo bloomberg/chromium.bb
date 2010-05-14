@@ -11,11 +11,11 @@
 #include "chrome_frame/utils.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 
+using chrome_frame_test::kChromeFrameLongNavigationTimeoutInSeconds;
+
 const wchar_t kDocRoot[] = L"chrome_frame\\test\\data";
 const int kLongWaitTimeout = 60 * 1000;
 const int kShortWaitTimeout = 25 * 1000;
-const int kChromeFrameLaunchDelay = 5;
-const int kChromeFrameLongNavigationTimeoutInSeconds = 10;
 
 class ChromeFrameTestEnvironment: public testing::Environment {
  public:

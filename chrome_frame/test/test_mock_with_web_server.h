@@ -86,6 +86,14 @@ class MockWebBrowserEventSink : public chrome_frame_test::WebBrowserEventSink {
       const std::wstring& url);
 };
 
+ACTION_P(CloseBrowserMock, mock) {
+  mock->CloseWebBrowser();
+}
+
+ACTION_P(VerifyAddressBarUrl, mock) {
+  mock->ExpectAddressBarUrl(std::wstring(arg0));
+}
+
 }  // namespace chrome_frame_test
 
 #endif  // CHROME_FRAME_TEST_MOCK_WITH_WEB_SERVER_H_

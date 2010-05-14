@@ -14,50 +14,17 @@
 #define GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 #include "testing/gmock_mutant.h"
 
-using testing::CreateFunctor;
 using testing::_;
+using testing::CreateFunctor;
+using chrome_frame_test::CloseIeAtEndOfScope;
+using chrome_frame_test::ComStackObjectWithUninitialize;
+using chrome_frame_test::kChromeFrameLongNavigationTimeoutInSeconds;
 using chrome_frame_test::MockWebBrowserEventSink;
-
-const int kChromeFrameLaunchDelay = 5;
-const int kChromeFrameLongNavigationTimeoutInSeconds = 10;
 
 const wchar_t kChromeFrameFileUrl[] = L"gcf:file:///C:/";
 const wchar_t enter_key[] = { VK_RETURN, 0 };
 const wchar_t escape_key[] = { VK_ESCAPE, 0 };
 const wchar_t tab_enter_keys[] = { VK_TAB, VK_RETURN, 0 };
-
-// A convenience class to close all open IE windows at the end
-// of a scope.  It's more convenient to do it this way than to
-// explicitly call chrome_frame_test::CloseAllIEWindows at the
-// end of a test since part of the test's cleanup code may be
-// in object destructors that would run after CloseAllIEWindows
-// would get called.
-// Ideally all IE windows should be closed when this happens so
-// if the test ran normally, we should not have any windows to
-// close at this point.
-class CloseIeAtEndOfScope {
- public:
-  CloseIeAtEndOfScope() {}
-  ~CloseIeAtEndOfScope() {
-    int closed = chrome_frame_test::CloseAllIEWindows();
-    DLOG_IF(ERROR, closed != 0)
-        << StringPrintf("Closed %i windows forcefully", closed);
-  }
-};
-
-// Specialization of CComObjectStackEx that performs object cleanup via
-// calling Base::Uninitialize() before we get to CComObjectStackEx' destructor.
-// The CComObjectStackEx destructor expects the reference count to be 0
-// or it will throw an assert.  To work around that and to avoid having to
-// explicitly call Uninitialize() at the end of every test, we override the
-// destructor here to perform the cleanup.
-template <class Base>
-class ComStackObjectWithUninitialize : public CComObjectStackEx<Base> {
- public:
-  virtual ~ComStackObjectWithUninitialize() {
-    Base::Uninitialize();
-  }
-};
 
 namespace chrome_frame_test {
 
@@ -182,10 +149,6 @@ ExpectationSet MockWebBrowserEventSink::ExpectNewWindow(
 
 }  // namespace chrome_frame_test
 
-ACTION_P(CloseBrowserMock, mock) {
-  mock->CloseWebBrowser();
-}
-
 ACTION_P3(DelayCloseBrowserMock, loop, delay, mock) {
   loop->PostDelayedTask(FROM_HERE, NewRunnableMethod(mock,
       &MockWebBrowserEventSink::CloseWebBrowser), delay);
@@ -269,26 +232,10 @@ ACTION_P3(TypeUrlInAddressBar, loop, url, delay) {
       next_delay);
 }
 
-void ExpectAddressBarUrl(IWebBrowser2* web_browser2,
-                         const std::wstring& expected_url) {
-  EXPECT_NE(static_cast<IWebBrowser2*>(NULL), web_browser2);
-  if (web_browser2) {
-    ScopedBstr address_bar_url;
-    EXPECT_EQ(S_OK, web_browser2->get_LocationURL(address_bar_url.Receive()));
-    EXPECT_EQ(expected_url, std::wstring(address_bar_url));
-  }
-}
-
-// To be tacked on to the EXPECT_CALL of OnLoad. This verifies that
-// the address bar URL matches with the URL reported by OnLoad
-ACTION_P(VerifyAddressBarUrl, mock) {
-  ExpectAddressBarUrl(mock->web_browser2(), std::wstring(arg0));
-}
-
 ACTION_P(VerifyAddressBarUrlWithGcf, mock) {
   std::wstring expected_url = L"gcf:";
   expected_url += arg0;
-  ExpectAddressBarUrl(mock->web_browser2(), expected_url);
+  mock->ExpectAddressBarUrl(expected_url);
 }
 
 TEST(ChromeFrameTest, FullTabModeIE_DisallowedUrls) {
@@ -366,7 +313,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_FocusTest) {
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kAboutVersion)))
       .WillOnce(testing::DoAll(
           testing::InvokeWithoutArgs(CreateFunctor(&mock,
-              &MockWebBrowserEventSink::ExpectRendererWindowHasfocus)),
+              &MockWebBrowserEventSink::ExpectRendererWindowHasFocus)),
           VerifyAddressBarUrlWithGcf(&mock),
           CloseBrowserMock(&mock)));
 

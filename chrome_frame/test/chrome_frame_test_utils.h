@@ -53,6 +53,7 @@ extern const wchar_t kOperaImageName[];
 extern const wchar_t kSafariImageName[];
 extern const wchar_t kChromeImageName[];
 extern const wchar_t kChromeLauncher[];
+extern const int kChromeFrameLongNavigationTimeoutInSeconds;
 
 // Temporarily impersonate the current thread to low integrity for the lifetime
 // of the object. Destructor will automatically revert integrity level.
@@ -106,10 +107,10 @@ class TimedMsgLoop {
 // testing::InvokeWithoutArgs since it returns a
 // non-public (testing::internal) type.
 #define QUIT_LOOP(loop) testing::InvokeWithoutArgs(\
-  CreateFunctor(&loop, &chrome_frame_test::TimedMsgLoop::Quit))
+  testing::CreateFunctor(&loop, &chrome_frame_test::TimedMsgLoop::Quit))
 
 #define QUIT_LOOP_SOON(loop, seconds) testing::InvokeWithoutArgs(\
-  CreateFunctor(&loop, &chrome_frame_test::TimedMsgLoop::QuitAfter, \
+  testing::CreateFunctor(&loop, &chrome_frame_test::TimedMsgLoop::QuitAfter, \
   seconds))
 
 // Launches IE as a COM server and returns the corresponding IWebBrowser2
@@ -194,21 +195,25 @@ END_SINK_MAP()
   void SetFocusToChrome();
 
   // Send keyboard input to the renderer window hosted in chrome using
-  // SendInput API
+  // SendInput API.
   void SendKeys(const wchar_t* input_string);
 
   // Send mouse click to the renderer window hosted in chrome using
-  // SendInput API
+  // SendInput API.
   void SendMouseClick(int x, int y, simulate_input::MouseButton button);
+
+  // Send mouse click to the renderer window hosted in IE using
+  // SendInput API.
+  void SendMouseClickToIE(int x, int y, simulate_input::MouseButton button);
 
   void Exec(const GUID* cmd_group_guid, DWORD command_id,
             DWORD cmd_exec_opt, VARIANT* in_args, VARIANT* out_args);
 
-  // Watch for new window created
+  // Watch for new window created.
   void WatchChromeWindow(const wchar_t* window_class);
   void StopWatching();
 
-  // Overridable methods for the mock
+  // Overridable methods for the mock.
   STDMETHOD_(void, OnNavigateError)(IDispatch* dispatch, VARIANT* url,
                                     VARIANT* frame_name, VARIANT* status_code,
                                     VARIANT* cancel) {
@@ -270,7 +275,9 @@ END_SINK_MAP()
   }
 
   HRESULT SetWebBrowser(IWebBrowser2* web_browser2);
-  void ExpectRendererWindowHasfocus();
+  void ExpectRendererWindowHasFocus();
+  void ExpectIERendererWindowHasFocus();
+  void ExpectAddressBarUrl(const std::wstring& url);
 
   // Closes the web browser in such a way that the OnQuit notification will
   // be fired when the window closes (async).
@@ -298,6 +305,7 @@ END_SINK_MAP()
   void ConnectToChromeFrame();
   void DisconnectFromChromeFrame();
   HWND GetRendererWindow();
+  HWND GetIERendererWindow();
 
  public:
   ScopedComPtr<IWebBrowser2> web_browser2_;
@@ -336,6 +344,39 @@ std::wstring GetExeVersion(const std::wstring& exe_path);
 
 // Returns the version of Internet Explorer on the machine.
 IEVersion GetInstalledIEVersion();
+
+// A convenience class to close all open IE windows at the end
+// of a scope.  It's more convenient to do it this way than to
+// explicitly call chrome_frame_test::CloseAllIEWindows at the
+// end of a test since part of the test's cleanup code may be
+// in object destructors that would run after CloseAllIEWindows
+// would get called.
+// Ideally all IE windows should be closed when this happens so
+// if the test ran normally, we should not have any windows to
+// close at this point.
+class CloseIeAtEndOfScope {
+ public:
+  CloseIeAtEndOfScope() {}
+  ~CloseIeAtEndOfScope() {
+    int closed = CloseAllIEWindows();
+    DLOG_IF(ERROR, closed != 0)
+        << StringPrintf("Closed %i windows forcefully", closed);
+  }
+};
+
+// Specialization of CComObjectStackEx that performs object cleanup via
+// calling Base::Uninitialize() before we get to CComObjectStackEx' destructor.
+// The CComObjectStackEx destructor expects the reference count to be 0
+// or it will throw an assert.  To work around that and to avoid having to
+// explicitly call Uninitialize() at the end of every test, we override the
+// destructor here to perform the cleanup.
+template <class Base>
+class ComStackObjectWithUninitialize : public CComObjectStackEx<Base> {
+ public:
+  virtual ~ComStackObjectWithUninitialize() {
+    Base::Uninitialize();
+  }
+};
 
 }  // namespace chrome_frame_test
 
