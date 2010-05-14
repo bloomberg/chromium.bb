@@ -7,8 +7,8 @@
 
 #include "base/at_exit.h"
 #include "base/atomicops.h"
-#include "base/dynamic_annotations.h"
 #include "base/platform_thread.h"
+#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 
 // Default traits for Singleton<Type>. Calls operator new and operator delete on
 // the object. Registers automatic deletion at process exit.

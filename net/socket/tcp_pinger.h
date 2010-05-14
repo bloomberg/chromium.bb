@@ -6,10 +6,10 @@
 #define NET_SOCKET_TCP_PINGER_H_
 
 #include "base/compiler_specific.h"
-#include "base/dynamic_annotations.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
+#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/thread.h"
 #include "base/waitable_event.h"
 #include "net/base/address_list.h"

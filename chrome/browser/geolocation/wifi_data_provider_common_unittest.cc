@@ -6,9 +6,9 @@
 
 #include <vector>
 
-#include "base/dynamic_annotations.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class MockWlanApi : public WifiDataProviderCommon::WlanApiInterface {

@@ -15,7 +15,7 @@
 #include <map>
 #include <queue>
 
-#include "base/dynamic_annotations.h"
+#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "chrome/browser/sync/sync_constants.h"
 #include "chrome/browser/sync/engine/auth_watcher.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"

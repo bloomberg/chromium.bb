@@ -8,12 +8,12 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/dynamic_annotations.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/platform_thread.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/thread.h"
 #include "base/waitable_event.h"
 #include "ipc/ipc_message.h"
