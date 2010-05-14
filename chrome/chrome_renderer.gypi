@@ -22,8 +22,8 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
-        '../webkit/support/webkit_support_in_chromium.gyp:glue',
-        '../webkit/support/webkit_support_in_chromium.gyp:webkit_resources',
+        '../webkit/support/webkit_support.gyp:glue',
+        '../webkit/support/webkit_support.gyp:webkit_resources',
       ],
       'include_dirs': [
         '..',

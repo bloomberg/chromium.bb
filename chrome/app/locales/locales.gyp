@@ -25,7 +25,7 @@
     'dependencies': [
       '../../chrome.gyp:chrome_strings',
       '../../chrome.gyp:platform_locale_settings',
-      '../../../webkit/support/webkit_support_in_chromium.gyp:webkit_strings',
+      '../../../webkit/support/webkit_support.gyp:webkit_strings',
       '../../../app/app.gyp:app_strings',
     ],
     'msvs_settings': {

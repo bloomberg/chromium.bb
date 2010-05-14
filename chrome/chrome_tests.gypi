@@ -521,7 +521,7 @@
         '../net/net.gyp:net_resources',
         '../net/net.gyp:net_test_support',
         '../printing/printing.gyp:printing',
-        '../webkit/support/webkit_support_in_chromium.gyp:webkit_resources',
+        '../webkit/support/webkit_support.gyp:webkit_resources',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
@@ -2077,7 +2077,7 @@
             '../base/base.gyp:test_support_perf',
             '../skia/skia.gyp:skia',
             '../testing/gtest.gyp:gtest',
-            '../webkit/support/webkit_support_in_chromium.gyp:glue',
+            '../webkit/support/webkit_support.gyp:glue',
           ],
           'sources': [
             'browser/privacy_blacklist/blacklist_perftest.cc',
