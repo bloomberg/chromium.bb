@@ -243,6 +243,7 @@ void KeywordEditorView::OnSelectionChanged() {
     remove_button_->SetEnabled(!only_one_url_left &&
                                controller_->CanRemove(selected_url));
   } else {
+    edit_button_->SetEnabled(false);
     make_default_button_->SetEnabled(false);
     for (views::TableView::iterator i = table_view_->SelectionBegin();
          i != table_view_->SelectionEnd(); ++i) {
