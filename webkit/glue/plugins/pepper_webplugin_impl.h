@@ -5,9 +5,11 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PEPPER_WEBPLUGIN_IMPL_H_
 #define WEBKIT_GLUE_PLUGINS_PEPPER_WEBPLUGIN_IMPL_H_
 
+#include <string>
 #include <vector>
 
 #include "base/weak_ptr.h"
+#include "base/scoped_ptr.h"
 #include "gfx/rect.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPlugin.h"
 
@@ -20,10 +22,12 @@ namespace pepper {
 
 class PluginDelegate;
 class PluginInstance;
+class PluginModule;
 
 class WebPluginImpl : public WebKit::WebPlugin {
  public:
-  WebPluginImpl(WebKit::WebFrame* frame,
+  WebPluginImpl(PluginModule* module,
+                WebKit::WebFrame* frame,
                 const WebKit::WebPluginParams& params,
                 const base::WeakPtr<PluginDelegate>& plugin_delegate);
   ~WebPluginImpl();
@@ -54,17 +58,16 @@ class WebPluginImpl : public WebKit::WebPlugin {
                                           const WebKit::WebURLError& error);
 
  public:
-  base::WeakPtr<PluginDelegate> plugin_delegate_;
+  struct InitData {
+    scoped_refptr<PluginModule> module;
+    base::WeakPtr<PluginDelegate> delegate;
+    std::vector<std::string> arg_names;
+    std::vector<std::string> arg_values;
+  };
 
+  scoped_ptr<InitData> init_data_;  // Cleared upon successful initialization.
   scoped_refptr<PluginInstance> instance_;
-
-  // Can be NULL.
-  WebKit::WebPluginContainer* container_;
-
-  // Holds the list of argument names and values passed to the plugin.
-  std::vector<std::string> arg_names_;
-  std::vector<std::string> arg_values_;
-
+  WebKit::WebPluginContainer* container_;  // Can be NULL.
   gfx::Rect plugin_rect_;
 
   DISALLOW_COPY_AND_ASSIGN(WebPluginImpl);

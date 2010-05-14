@@ -20,14 +20,18 @@ using WebKit::WebVector;
 namespace pepper {
 
 WebPluginImpl::WebPluginImpl(
+    PluginModule* plugin_module,
     WebKit::WebFrame* frame,
     const WebPluginParams& params,
     const base::WeakPtr<PluginDelegate>& plugin_delegate)
-    : plugin_delegate_(plugin_delegate),
+    : init_data_(new InitData()),
       container_(NULL) {
+  DCHECK(plugin_module);
+  init_data_->module = plugin_module;
+  init_data_->delegate = plugin_delegate;
   for (size_t i = 0; i < params.attributeNames.size(); ++i) {
-    arg_names_.push_back(params.attributeNames[i].utf8());
-    arg_values_.push_back(params.attributeValues[i].utf8());
+    init_data_->arg_names.push_back(params.attributeNames[i].utf8());
+    init_data_->arg_values.push_back(params.attributeValues[i].utf8());
   }
 }
 
@@ -35,23 +39,23 @@ WebPluginImpl::~WebPluginImpl() {
 }
 
 bool WebPluginImpl::initialize(WebPluginContainer* container) {
-  // TODO(brettw) don't hardcode this!
-  scoped_refptr<PluginModule> module = PluginModule::CreateModule(
-      FilePath(FILE_PATH_LITERAL(
-          "/usr/local/google/home/src3/src/out/Debug/lib.target/libppapi_example.so")));
-  if (!module.get())
+  // The plugin delegate may have gone away.
+  if (!init_data_->delegate)
     return false;
 
-  if (!plugin_delegate_)
+  instance_ = init_data_->module->CreateInstance(init_data_->delegate);
+  if (!instance_)
     return false;
-  instance_ = module->CreateInstance(plugin_delegate_);
-  bool success = instance_->Initialize(arg_names_, arg_values_);
+
+  bool success = instance_->Initialize(init_data_->arg_names,
+                                       init_data_->arg_values);
   if (!success) {
     instance_->Delete();
     instance_ = NULL;
     return false;
   }
 
+  init_data_.reset();
   container_ = container;
   return true;
 }

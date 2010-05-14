@@ -49,6 +49,7 @@
 #include "chrome/renderer/media/ipc_video_renderer.h"
 #include "chrome/renderer/navigation_state.h"
 #include "chrome/renderer/notification_provider.h"
+#include "chrome/renderer/pepper_plugin_registry.h"
 #include "chrome/renderer/plugin_channel_host.h"
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/renderer/render_process.h"
@@ -137,9 +138,6 @@
 #elif defined(OS_MACOSX)
 #include "skia/ext/skia_utils_mac.h"
 #endif
-
-// Uncomment to enable the new Pepper API
-// #define PPAPI_HACKER
 
 using appcache::WebApplicationCacheHostImpl;
 using base::Time;
@@ -2090,12 +2088,12 @@ void RenderView::runModal() {
 
 WebPlugin* RenderView::createPlugin(
     WebFrame* frame, const WebPluginParams& params) {
-#ifdef PPAPI_HACKER
-  if (params.mimeType == "application/x-nacl-srpc") {
-    return new pepper::WebPluginImpl(frame, params,
+  scoped_refptr<pepper::PluginModule> pepper_module =
+      PepperPluginRegistry::GetInstance()->GetModule(params.mimeType.utf8());
+  if (pepper_module) {
+    return new pepper::WebPluginImpl(pepper_module, frame, params,
                                      pepper_delegate_.AsWeakPtr());
   }
-#endif
   return new webkit_glue::WebPluginImpl(frame, params, AsWeakPtr());
 }
 

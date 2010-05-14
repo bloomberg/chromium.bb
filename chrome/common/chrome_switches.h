@@ -186,6 +186,7 @@ extern const char kProxyPacUrl[];
 extern const char kProxyServer[];
 extern const char kPurgeMemoryButton[];
 extern const char kRecordMode[];
+extern const char kRegisterPepperPlugins[];
 extern const char kRemoteShellPort[];
 extern const char kRendererAssertTest[];
 extern const char kRendererCmdPrefix[];

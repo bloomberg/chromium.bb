@@ -652,6 +652,9 @@ const char kPurgeMemoryButton[]             = "purge-memory-button";
 // See also kPlaybackMode.
 const char kRecordMode[]                    = "record-mode";
 
+// Register pepper plugins that should be loaded into the renderer.
+const char kRegisterPepperPlugins[]         = "register-pepper-plugins";
+
 // Enable remote debug / automation shell on the specified port.
 const char kRemoteShellPort[]               = "remote-shell-port";
 
