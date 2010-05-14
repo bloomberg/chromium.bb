@@ -36,7 +36,7 @@
 {
   bug_25385 (4)
   ThreadSanitizer:Race
-  fun:Chrome::~ChromeThread()
+  fun:ChromeThread::~ChromeThread()
 }
 
 {
