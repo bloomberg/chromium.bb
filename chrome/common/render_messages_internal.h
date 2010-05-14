@@ -2148,7 +2148,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_OpenFile,
                               FilePath /* path */,
                               int /* mode */,
-                              base::PlatformFile /* result */)
+                              IPC::PlatformFileForTransit /* result */)
 
   // Sent by the renderer process to acknowledge receipt of a
   // ViewMsg_CSSInsertRequest message and css has been inserted into the frame.

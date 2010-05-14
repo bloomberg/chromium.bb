@@ -244,12 +244,10 @@ bool RendererWebKitClientImpl::FileSystem::getFileModificationTime(
 base::PlatformFile RendererWebKitClientImpl::FileSystem::openFile(
     const WebString& path,
     int mode) {
-  base::PlatformFile handle;
-  if (!SendSyncMessageFromAnyThread(new ViewHostMsg_OpenFile(
-          webkit_glue::WebStringToFilePath(path), mode, &handle))) {
-    handle = base::kInvalidPlatformFileValue;
-  }
-  return handle;
+  IPC::PlatformFileForTransit handle = IPC::InvalidPlatformFileForTransit();
+  SendSyncMessageFromAnyThread(new ViewHostMsg_OpenFile(
+      webkit_glue::WebStringToFilePath(path), mode, &handle));
+  return IPC::PlatformFileForTransitToPlatformFile(handle);
 }
 
 //------------------------------------------------------------------------------

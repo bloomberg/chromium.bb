@@ -7,6 +7,9 @@
 #include "app/clipboard/clipboard.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#if defined(OS_POSIX)
+#include "base/file_descriptor_posix.h"
+#endif
 #include "base/file_util.h"
 #include "base/histogram.h"
 #include "base/process_util.h"
@@ -1385,7 +1388,13 @@ void ResourceMessageFilter::OnOpenFile(const FilePath& path,
   // TODO(jianli): Do we need separate permission to control opening the file?
   if (!ChildProcessSecurityPolicy::GetInstance()->CanUploadFile(id(), path)) {
     ViewHostMsg_OpenFile::WriteReplyParams(
-        reply_msg, base::kInvalidPlatformFileValue);
+        reply_msg,
+#if defined(OS_WIN)
+        base::kInvalidPlatformFileValue
+#elif defined(OS_POSIX)
+        base::FileDescriptor(base::kInvalidPlatformFileValue, true)
+#endif
+        );
     Send(reply_msg);
     return;
   }
@@ -1424,7 +1433,14 @@ void ResourceMessageFilter::OnOpenFileOnFileThread(const FilePath& path,
   target_file_handle = file_handle;
 #endif
 
-  ViewHostMsg_OpenFile::WriteReplyParams(reply_msg, target_file_handle);
+  ViewHostMsg_OpenFile::WriteReplyParams(
+      reply_msg,
+#if defined(OS_WIN)
+      target_file_handle
+#elif defined(OS_POSIX)
+      base::FileDescriptor(target_file_handle, true)
+#endif
+      );
 
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
