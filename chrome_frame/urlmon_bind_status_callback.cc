@@ -204,6 +204,16 @@ void SniffData::DetermineRendererType(bool last_chance) {
 
 /////////////////////////////////////////////////////////////////////
 
+BSCBStorageBind::BSCBStorageBind() : clip_format_(CF_NULL) {
+}
+
+BSCBStorageBind::~BSCBStorageBind() {
+  for (std::vector<Progress*>::iterator i = saved_progress_.begin();
+       i != saved_progress_.end(); i++) {
+    delete (*i);
+  }
+}
+
 HRESULT BSCBStorageBind::Initialize(IMoniker* moniker, IBindCtx* bind_ctx) {
   DLOG(INFO) << __FUNCTION__ << me() << StringPrintf(" tid=%i",
       PlatformThread::CurrentId());
@@ -250,9 +260,8 @@ STDMETHODIMP BSCBStorageBind::OnProgress(ULONG progress, ULONG progress_max,
   }
 
   if (ShouldCacheProgress(status_code)) {
-    Progress new_progress = { progress, progress_max, status_code,
-                              status_text ? status_text : std::wstring() };
-    saved_progress_.push_back(new_progress);
+    saved_progress_.push_back(new Progress(progress, progress_max, status_code,
+                                           status_text));
   } else {
     hr = CallbackImpl::OnProgress(progress, progress_max, status_code,
                                status_text);
@@ -347,12 +356,12 @@ HRESULT BSCBStorageBind::MayPlayBack(DWORD flags) {
     clip_format_ = kMagicClipFormat;
   } else {
     if (!saved_progress_.empty()) {
-      for (std::vector<Progress>::iterator i = saved_progress_.begin();
-          i != saved_progress_.end(); i++) {
-        const wchar_t* status_text = i->status_text_.empty() ?
-            NULL : i->status_text_.c_str();
-        CallbackImpl::OnProgress(i->progress_, i->progress_max_,
-                                 i->status_code_, status_text);
+      for (std::vector<Progress*>::iterator i = saved_progress_.begin();
+           i != saved_progress_.end(); i++) {
+        Progress* p = (*i);
+        CallbackImpl::OnProgress(p->progress(), p->progress_max(),
+                                 p->status_code(), p->status_text());
+        delete p;
       }
       saved_progress_.clear();
     }

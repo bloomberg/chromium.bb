@@ -93,7 +93,8 @@ class SniffData {
 class BSCBStorageBind : public BSCBImpl {
  public:
   typedef BSCBImpl CallbackImpl;
-  BSCBStorageBind() : clip_format_(CF_NULL) {}
+  BSCBStorageBind();
+  ~BSCBStorageBind();
 
 BEGIN_COM_MAP(BSCBStorageBind)
   COM_INTERFACE_ENTRY(IBindStatusCallback)
@@ -117,15 +118,56 @@ END_COM_MAP()
  protected:
   SniffData data_sniffer_;
 
-  // A structure to cache the progress notifications
-  struct Progress {
+  // A structure to cache the progress notifications.
+  class Progress {
+   public:
+    Progress(ULONG progress, ULONG progress_max, ULONG status_code,
+             const wchar_t* status_text)
+        : progress_(progress),
+          progress_max_(progress_max),
+          status_code_(status_code),
+          status_text_(NULL) {
+      if (status_text) {
+        int len = lstrlenW(status_text) + 1;
+        status_text_.reset(new wchar_t[len]);
+        if (status_text_.get()) {
+          lstrcpyW(status_text_.get(), status_text);
+        } else {
+          NOTREACHED();
+        }
+      }
+    }
+
+    ~Progress() {
+    }
+
+    ULONG progress() const {
+      return progress_;
+    }
+
+    ULONG progress_max() const {
+      return progress_max_;
+    }
+
+    ULONG status_code() const {
+      return status_code_;
+    }
+
+    const wchar_t* status_text() const {
+      return status_text_.get();
+    }
+
+   protected:
     ULONG progress_;
     ULONG progress_max_;
     ULONG status_code_;
-    std::wstring status_text_;
+    // We don't use std::wstring here since we want to be able to play
+    // progress notifications back exactly as we got them.  NULL and L"" are
+    // not equal.
+    scoped_ptr<wchar_t> status_text_;
   };
 
-  std::vector<Progress> saved_progress_;
+  std::vector<Progress*> saved_progress_;
   CLIPFORMAT clip_format_;
 
  private:
