@@ -110,6 +110,10 @@ void RemoveAllChildren(GtkWidget* container);
 // Force the font size of the widget to |size_pixels|.
 void ForceFontSizePixels(GtkWidget* widget, double size_pixels);
 
+// Undoes the effects of a previous ForceFontSizePixels() call. Safe to call
+// even if ForceFontSizePixels() was never called.
+void UndoForceFontSize(GtkWidget* widget);
+
 // Gets the position of a gtk widget in screen coordinates.
 gfx::Point GetWidgetScreenPosition(GtkWidget* widget);
 

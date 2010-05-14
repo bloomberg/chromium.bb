@@ -367,6 +367,10 @@ void ForceFontSizePixels(GtkWidget* widget, double size_pixels) {
   gtk_widget_modify_font(widget, font_desc);
 }
 
+void UndoForceFontSize(GtkWidget* widget) {
+  gtk_widget_modify_font(widget, NULL);
+}
+
 gfx::Point GetWidgetScreenPosition(GtkWidget* widget) {
   if (!widget->window) {
     NOTREACHED() << "Must only be called on realized widgets.";
