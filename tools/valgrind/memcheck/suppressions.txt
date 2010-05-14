@@ -2908,3 +2908,16 @@
    fun:_ZN14RunnableMethodIN10URLFetcher4CoreEMS1_FvvE6Tuple0E3RunEv
    fun:_ZN11MessageLoop7RunTaskEP4Task
 }
+{
+   bug_44130
+   Memcheck:Leak
+   ...
+   fun:_ZN7history32TopSitesTest_*
+   fun:_ZN7testing4Test3RunEv
+   fun:_ZN7testing8internal12TestInfoImpl3RunEv
+   fun:_ZN7testing8TestCase3RunEv
+   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
+   fun:_ZN7testing8UnitTest3RunEv
+   fun:_ZN9TestSuite3RunEv
+   fun:main
+}
