@@ -403,10 +403,12 @@ void CandidateView::Init() {
                               kHorizontalShortcutLabelInsets);
   views::View* wrapped_shortcut_label =
       WrapWithPadding(shortcut_label_, insets);
-  // Make the font bold.
-  gfx::Font font = shortcut_label_->font();
-  gfx::Font bold_font = font.DeriveFont(0, gfx::Font::BOLD);
-  shortcut_label_->SetFont(bold_font);
+  // We'll use a bigger font size, so Chinese characters are more readable
+  // in the candidate window.
+  const int kFontSizeDelta = 1;  // One size bigger.
+  // Make the font bold, and change the size.
+  shortcut_label_->SetFont(
+      shortcut_label_->font().DeriveFont(kFontSizeDelta, gfx::Font::BOLD));
   // TODO(satorux): Maybe we need to use language specific fonts for
   // candidate_label, like Chinese font for Chinese input method?
 
@@ -426,6 +428,10 @@ void CandidateView::Init() {
   } else {
     candidate_label_ = new views::Label;
   }
+  // Change the font size.
+  candidate_label_->SetFont(
+      candidate_label_->font().DeriveFont(kFontSizeDelta));
+
   candidate_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
 
   // Initialize the column set with two columns.
