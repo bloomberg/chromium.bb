@@ -9,6 +9,10 @@
 
 ; *** The contents of chrome/common/common.sb are implicitly included here. ***
 
+; Allow a Native Client application to use semaphores, specifically
+; sem_init(), et.al.
+(allow ipc-posix-sem)
+
 ; Needed for the Native Client plugin and loader.
 ; TODO(msneck): Refactor Native Client to use something other than Unix
 ; sockets.
