@@ -192,6 +192,15 @@ o3d.ClientInfo.prototype.software_renderer = false;
 o3d.ClientInfo.prototype.non_power_of_two_textures = true;
 
 
+
+/**
+ * True if shaders need to be GLSL instead of Cg/HLSL.
+ * In this implementation of o3d, that is true by default.
+ **/
+o3d.ClientInfo.prototype.glsl = true;
+
+
+
 /**
  * The Client class is the main point of entry to O3D.  It defines methods
  * for creating and deleting packs. Each new object created by the Client is
@@ -209,6 +218,7 @@ o3d.Client = function() {
   this.renderGraphRoot = tempPack.createObject('RenderNode');
   this.clientId = o3d.Client.nextId++;
   this.packs_ = [tempPack];
+  this.clientInfo = tempPack.createObject('ClientInfo');
 
   if (o3d.Renderer.clients_.length == 0)
     o3d.Renderer.installRenderInterval();
@@ -574,6 +584,7 @@ o3d.Client.prototype.__defineSetter__('height',
 /**
  * Initializes this client using the canvas.
  * @param {Canvas}
+ * @return {boolean} Success.
  */
 o3d.Client.prototype.initWithCanvas = function(canvas) {
   var gl;
@@ -586,16 +597,22 @@ o3d.Client.prototype.initWithCanvas = function(canvas) {
     premultipliedAlpha : true
   };
 
+  if (!canvas || !canvas.getContext) {
+    return false;
+  }
   try {gl = canvas.getContext("experimental-webgl", standard_attributes) } catch(e) { }
-  if (!gl)
-      try {gl = canvas.getContext("moz-webgl") } catch(e) { }
   if (!gl) {
-      alert("No WebGL context found");
-      return null;
+    try {
+      gl = canvas.getContext("moz-webgl")
+    } catch(e) { }
   }
 
-  // TODO(petersont): hack workaround for WebGLRenderingContext.canvas
-  // not being implemented in Firefox. Remove.
+  if (!gl) {
+    return false;
+  }
+
+  // TODO(petersont): Remove this workaround once WebGLRenderingContext.canvas
+  // is implemented in Firefox.
   gl.hack_canvas = canvas;
   this.gl = gl;
   this.root.gl = gl;
@@ -604,6 +621,8 @@ o3d.Client.prototype.initWithCanvas = function(canvas) {
   gl.client = this;
   gl.displayInfo = {width: canvas.width,
                     height: canvas.height};
+
+  return true;
 };
 
 
@@ -1073,6 +1092,12 @@ o3d.Client.prototype.profileToString = function() {
  */
 o3d.Client.prototype.clientId = 0;
 
+
+
+/**
+ * Gets info about the client.
+ */
+o3d.Client.prototype.clientInfo = null;
 
 
 /**
