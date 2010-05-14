@@ -33,9 +33,6 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/GLES2/gles2_command_buffer.h"
 
-// TODO(alokp): Remove GLES2_GPU_SERVICE_TRANSLATE_SHADER guard
-// as soon as translator is ready.
-//#define GLES2_GPU_SERVICE_TRANSLATE_SHADER
 #if defined(GLES2_GPU_SERVICE_TRANSLATE_SHADER)
 #include "third_party/angle/include/GLSLANG/ShaderLang.h"
 #endif  // GLES2_GPU_SERVICE_TRANSLATE_SHADER
@@ -1458,7 +1455,7 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
   // mailing list archives.
   glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
 
-#if defined(GLES2_GPU_SERVICE_TRANSLATE_SHADER)
+#if defined(GLES2_GPU_SERVICE_TRANSLATE_SHADER) && !defined(UNIT_TEST)
   // Initialize GLSL ES to GLSL translator.
   if (!ShInitialize()) {
     DLOG(ERROR) << "Could not initialize GLSL translator.";
@@ -1816,7 +1813,7 @@ void GLES2DecoderImpl::Destroy() {
     default_context_.reset();
   }
 
-#if !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
+#if !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2) && !defined(UNIT_TEST)
 #if defined(GLES2_GPU_SERVICE_TRANSLATE_SHADER)
   // Terminate GLSL translator.
   ShFinalize();
@@ -3069,7 +3066,7 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
   // Translate GL ES 2.0 shader to Desktop GL shader and pass that to
   // glShaderSource and then glCompileShader.
   const char* shader_src = info->source().c_str();
-#if !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
+#if !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2) && !defined(UNIT_TEST)
 #if defined(GLES2_GPU_SERVICE_TRANSLATE_SHADER)
   int dbg_options = 0;
   EShLanguage language = info->shader_type() == GL_VERTEX_SHADER ?
@@ -3089,7 +3086,7 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
                  dbg_options)) {
     // TODO(alokp): Ask gman where to set compile-status and info-log.
     // May be add member variables to ShaderManager::ShaderInfo?
-    const char* info_log = ShGetInfoLog(compiler);
+    //const char* info_log = ShGetInfoLog(compiler);
     ShDestruct(compiler);
     return;
   }
@@ -3101,7 +3098,7 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
   glShaderSource(info->service_id(), 1, &shader_src, NULL);
   glCompileShader(info->service_id());
 
-#if !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
+#if !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2) && !defined(UNIT_TEST)
 #ifdef GLES2_GPU_SERVICE_TRANSLATE_SHADER
   ShDestruct(compiler);
 #endif  // GLES2_GPU_SERVICE_TRANSLATE_SHADER
