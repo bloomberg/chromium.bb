@@ -1032,6 +1032,7 @@ function downloadUpdated(results) {
             no.className = 'link';
             pauseDiv.appendChild(yes);
             pauseDiv.appendChild(no);
+            progressDiv.textContent = '';
           } else if (results[x].state == "PAUSED") {
             pauseDiv.textContent = kResumeDownload;
           } else if (results[x].state == "IN_PROGRESS") {
@@ -1040,8 +1041,7 @@ function downloadUpdated(results) {
           pauseDiv.id = 'downloaditem' + results[x].id;
           element.appendChild(pauseDiv);
         }
-        if (results[x].state != "DANGEROUS" ||
-            results[x].percent < 100) {
+        if (results[x].percent < 100) {
           progressDiv.textContent = results[x].progress_status_text;
         }
 
