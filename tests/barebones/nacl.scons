@@ -46,13 +46,19 @@ env.Replace(LIBS=[],
             LINKFLAGS=LINK_FLAGS_MULTILIB)
 
 
+# TODO(robertm): fix this. The regualar version of 'barebones_regs
+#                triggers a well-known llvm bug
+if env['BUILD_ARCHITECTURE'] == 'arm':
+  env.Append(CPPDEFINES='SMALL_REGS_TEST')
+
 # NOTE: the x86 linker wants _start() to be the very first function
 FAKE_STARTUP = env.ComponentObject('fake_startup', 'fake_startup.c')
 
-for basename in ['hello_world', 'exit', 'fib', 'switch', 'vtable']:
+for basename in ['hello_world', 'exit', 'fib', 'switch', 'vtable', 'regs']:
   src = 'barebones_' + basename + '.c'
   nexe = 'barebones_' + basename + '.nexe'
   out = 'barebones_' + basename + '.out'
+  test = 'run_barebones_' + basename + '_test'
   test = 'run_barebones_' + basename + '_test'
   env.ComponentProgram(nexe, [FAKE_STARTUP, src])
 
