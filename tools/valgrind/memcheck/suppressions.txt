@@ -2908,3 +2908,14 @@
    fun:_ZN14RunnableMethodIN10URLFetcher4CoreEMS1_FvvE6Tuple0E3RunEv
    fun:_ZN11MessageLoop7RunTaskEP4Task
 }
+{
+   bug_44147
+   Memcheck:Cond
+   fun:_ZN8chromeos11CrosLibraryD0Ev
+   fun:_ZN22DefaultSingletonTraitsIN8chromeos11CrosLibraryEE6DeleteEPS1_
+   fun:_ZN9SingletonIN8chromeos11CrosLibraryE22DefaultSingletonTraitsIS1_ES1_E6OnExitEPv
+   fun:_ZN4base13AtExitManager19ProcessCallbacksNowEv
+   fun:_ZN4base13AtExitManagerD1Ev
+   fun:ChromeMain
+   fun:main
+}
