@@ -65,6 +65,7 @@ class ExistingUserController : public WmMessageListener::Observer,
 
   // UserController::Delegate:
   virtual void Login(UserController* source, const string16& password);
+  virtual void ClearErrors();
 
   // LoginStatusConsumer:
   virtual void OnLoginFailure(const std::string& error);

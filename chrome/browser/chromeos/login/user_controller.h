@@ -31,6 +31,7 @@ class UserController : public views::ButtonListener,
    public:
     virtual void Login(UserController* source,
                        const string16& password) = 0;
+    virtual void ClearErrors() = 0;
    protected:
     virtual ~Delegate() {}
   };

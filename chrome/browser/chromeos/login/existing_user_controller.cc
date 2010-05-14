@@ -147,6 +147,12 @@ void ExistingUserController::Login(UserController* source,
   WmIpc::instance()->SendMessage(message);
 }
 
+void ExistingUserController::ClearErrors() {
+  // bubble_ will be set to NULL in callback.
+  if (bubble_)
+    bubble_->Close();
+}
+
 void ExistingUserController::OnLoginFailure(const std::string& error) {
   LOG(INFO) << "OnLoginFailure";
 

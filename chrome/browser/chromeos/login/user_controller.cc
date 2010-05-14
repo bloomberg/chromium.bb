@@ -134,6 +134,7 @@ bool UserController::HandleKeystroke(
     Login();
     return true;
   }
+  delegate_->ClearErrors();
   return false;
 }
 
