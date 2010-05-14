@@ -2916,7 +2916,7 @@
    fun:_ZN9SingletonIN8chromeos11CrosLibraryE22DefaultSingletonTraitsIS1_ES1_E6OnExitEPv
    fun:_ZN4base13AtExitManager19ProcessCallbacksNowEv
    fun:_ZN4base13AtExitManagerD1Ev
-   fun:ChromeMain
+   ...
    fun:main
 }
 {
