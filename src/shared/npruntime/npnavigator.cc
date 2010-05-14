@@ -56,6 +56,20 @@ static bool GetCharpArray(uint32_t count,
   return true;
 }
 
+// TODO(sehr): we really need untrusted utility classes for things like this.
+class NpapiMutexLock {
+ public:
+  explicit NpapiMutexLock(pthread_mutex_t* mu) : mu_(mu) {
+    pthread_mutex_lock(mu_);
+  }
+  ~NpapiMutexLock() {
+    pthread_mutex_unlock(mu_);
+  }
+
+ private:
+  pthread_mutex_t* mu_;
+};
+
 }  // namespace
 
 namespace nacl {
@@ -74,7 +88,9 @@ NPPluginFuncs NPNavigator::plugin_funcs;
 NPNavigator::NPNavigator(NaClSrpcChannel* channel,
                          int32_t peer_pid)
     : NPBridge(),
-      upcall_channel_(NULL) {
+      upcall_channel_(NULL),
+      closure_table_(NULL),
+      is_valid_(false) {
   DebugPrintf("NPNavigator(%p, %u)\n",
               static_cast<void*>(this),
               static_cast<unsigned>(peer_pid));
@@ -83,23 +99,58 @@ NPNavigator::NPNavigator(NaClSrpcChannel* channel,
   navigator = this;
   // Set up the canonical identifier string table.
   string_set = new(std::nothrow) std::set<const NPUTF8*, StringCompare>;
+  if (NULL == string_set) {
+    return;
+  }
   // Set up the identifier mappings.
   string_id_map = new(std::nothrow) std::map<const NPUTF8*, NPIdentifier>;
+  if (NULL == string_id_map) {
+    return;
+  }
   id_string_map = new(std::nothrow) std::map<NPIdentifier, const NPUTF8*>;
+  if (NULL == id_string_map) {
+    return;
+  }
   int_id_map = new(std::nothrow) std::map<int32_t, NPIdentifier>;
+  if (NULL == int_id_map) {
+    return;
+  }
   id_int_map = new(std::nothrow) std::map<NPIdentifier, int32_t>;
+  if (NULL == id_int_map) {
+    return;
+  }
   // Allocate the closure table.
   closure_table_ = new(std::nothrow) NPClosureTable();
+  if (NULL == closure_table_) {
+    return;
+  }
   // Initialize the upcall mutex.
-  pthread_mutex_init(&upcall_mu_, NULL);
+  if (0 != pthread_mutex_init(&upcall_mu_, NULL)) {
+    return;
+  }
+  // Indicate successful construction.
+  is_valid_ = true;
 }
 
 NPNavigator::~NPNavigator() {
   DebugPrintf("~NPNavigator\n");
-  pthread_mutex_destroy(&upcall_mu_);
+  // Clean up the canonical identifier string table.
+  delete string_set;
+  string_set = NULL;
+  // Clean up up the identifier mappings.
+  delete string_id_map;
+  string_id_map = NULL;
+  delete id_string_map;
+  id_string_map = NULL;
+  delete int_id_map;
+  int_id_map = NULL;
+  delete id_int_map;
+  id_int_map = NULL;
   delete closure_table_;
-  // Note that all the mappings are per-module and only cleaned up on
-  // shutdown.
+  if (!is_valid_) {
+    return;
+  }
+  pthread_mutex_destroy(&upcall_mu_);
 }
 
 NaClSrpcError NPNavigator::Initialize(NaClSrpcChannel* channel,
@@ -595,7 +646,7 @@ int32_t NPNavigator::IntFromIdentifier(NPIdentifier identifier) {
 }
 
 void NPNavigator::PluginThreadAsyncCall(NPP instance,
-                                        NPClosureTable::FunctionPointer func,
+                                        NPClosure::FunctionPointer func,
                                         void* user_data) {
   DebugPrintf("PluginThreadAsyncCall(%p, %p)\n",
               reinterpret_cast<void*>(instance),
@@ -604,18 +655,23 @@ void NPNavigator::PluginThreadAsyncCall(NPP instance,
   uint32_t id;
   // Add a closure to the table.
   if (NULL == closure_table_ ||
-      NULL == func ||
-      !closure_table_->Add(func, user_data, &id)) {
+      NULL == func) {
+    return;
+  }
+  NPClosure* closure = new(std::nothrow) NPClosure(func, user_data);
+  if (NULL == closure) {
+    return;
+  }
+  id = closure_table_->Add(closure);
+  if (NPClosureTable::kInvalidId == id) {
     return;
   }
   // RPCs through the NPUpcallRpcClient are guarded by a mutex.
-  pthread_mutex_lock(&upcall_mu_);
+  NpapiMutexLock ml(&upcall_mu_);
   // Send an RPC to the NPAPI upcall thread in the browser plugin.
   NPUpcallRpcClient::NPN_PluginThreadAsyncCall(upcall_channel_,
                                                NPPToWireFormat(instance),
                                                static_cast<int32_t>(id));
-  // Release the mutex.
-  pthread_mutex_unlock(&upcall_mu_);
 }
 
 NaClSrpcError NPNavigator::Device3DFlush(int32_t wire_npp,
@@ -624,7 +680,7 @@ NaClSrpcError NPNavigator::Device3DFlush(int32_t wire_npp,
                                          int32_t* token,
                                          int32_t* error) {
   // RPCs through the NPUpcallRpcClient are guarded by a mutex.
-  pthread_mutex_lock(&upcall_mu_);
+  NpapiMutexLock ml(&upcall_mu_);
   NaClSrpcError retval =
       NPUpcallRpcClient::Device3DFlush(upcall_channel_,
                                        wire_npp,
@@ -632,8 +688,6 @@ NaClSrpcError NPNavigator::Device3DFlush(int32_t wire_npp,
                                        getOffset,
                                        token,
                                        error);
-  // Release the mutex.
-  pthread_mutex_unlock(&upcall_mu_);
   // Return the RPC result.
   return retval;
 }
@@ -645,15 +699,20 @@ NaClSrpcError NPNavigator::Device3DFlush(int32_t wire_npp,
 // NPN_PluginThreadAsyncCall.
 NaClSrpcError NPNavigator::DoAsyncCall(int32_t number) {
   uint32_t id = static_cast<uint32_t>(number);
-  NPClosureTable::FunctionPointer func;
-  void* user_data;
-  if (NULL == closure_table_ ||
-      !closure_table_->Remove(id, &func, &user_data) ||
-      NULL == func) {
+  NPClosure* closure;
+
+  if (NULL == closure_table_) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+
+  closure = closure_table_->Remove(id);
+  if (NULL == closure) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
   // Invoke the function with the data.
-  (*func)(user_data);
+  closure->Run();
+  // Free the closure.
+  delete closure;
   // Return success.
   return NACL_SRPC_RESULT_OK;
 }

@@ -40,6 +40,8 @@ class NPNavigator : public NPBridge {
               int32_t peer_pid);
   ~NPNavigator();
 
+  bool is_valid() const { return is_valid_; }
+
   // Get the Navigator for the current module.
   static inline NPNavigator* GetNavigator() {
     return navigator;
@@ -105,7 +107,7 @@ class NPNavigator : public NPBridge {
   // which allows them to be invoked from any thread in the NaCl module.  These
   // APIs synchronize the calls on the upcall channel.
   void PluginThreadAsyncCall(NPP instance,
-                             NPClosureTable::FunctionPointer func,
+                             NPClosure::FunctionPointer func,
                              void* user_data);
 
   NaClSrpcError Device3DFlush(int32_t wire_npp,
@@ -156,6 +158,8 @@ class NPNavigator : public NPBridge {
   pthread_mutex_t upcall_mu_;
   // The table of closures created for calls back from the browser.
   NPClosureTable* closure_table_;
+  // Indicates whether the navigator was successfully set up.
+  bool is_valid_;
 
   static NPPluginFuncs plugin_funcs;
 };

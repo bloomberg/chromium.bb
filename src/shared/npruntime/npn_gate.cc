@@ -544,3 +544,88 @@ bool NPN_Construct(NPP npp,
   }
   return object->_class->construct(object, args, argCount, result);
 }
+
+namespace nacl {
+
+class BlockingCallClosure : public NPClosure {
+ public:
+  BlockingCallClosure(FunctionPointer user_func, void* user_data) :
+    NPClosure(user_func, user_data),
+    done_(false),
+    is_valid_(false) {
+    if (0 != pthread_mutex_init(&mutex_, NULL)) {
+      return;
+    }
+    if (0 != pthread_cond_init(&condvar_, NULL)) {
+      return;
+    }
+    is_valid_ = true;
+  }
+
+  ~BlockingCallClosure() {
+    if (!is_valid_) {
+      return;
+    }
+    pthread_cond_destroy(&condvar_);
+    pthread_mutex_destroy(&mutex_);
+  }
+
+  bool is_valid() { return is_valid_; }
+
+  // The thunk enqueued for NPN_PluginThreadAsyncCall.
+  static void NpapiThunk(void* closure_as_void) {
+    // Fail gracefully if invoked without a proper closure pointer.
+    if (NULL == closure_as_void) {
+      return;
+    }
+    // Get a pointer to this class.
+    BlockingCallClosure* closure =
+        reinterpret_cast<BlockingCallClosure*>(closure_as_void);
+    // Invoke the closure.
+    static_cast<NPClosure*>(closure)->Run();
+    // Signal the thread that enqueued the callback.
+    pthread_mutex_lock(&closure->mutex_);
+    closure->done_ = true;
+    pthread_cond_broadcast(&closure->condvar_);
+    pthread_mutex_unlock(&closure->mutex_);
+  }
+
+  void Wait() {
+    pthread_mutex_lock(&mutex_);
+    while (!done_) {
+      pthread_cond_wait(&condvar_, &mutex_);
+    }
+    pthread_mutex_unlock(&mutex_);
+  }
+
+ private:
+  BlockingCallClosure(const BlockingCallClosure&);
+  void operator=(const BlockingCallClosure&);
+
+  pthread_mutex_t mutex_;
+  pthread_cond_t condvar_;
+  bool done_;
+  bool is_valid_;
+};
+
+bool NPN_PluginBlockingAsyncCall(NPP instance,
+                                 void (*func)(void* invocation_user_data),
+                                 void* user_data) {
+  // Set up the closure that will invoke the user function and signal
+  // its completion.
+  BlockingCallClosure data(func, user_data);
+  // Check for successful construction.
+  if (!data.is_valid()) {
+    return false;
+  }
+  // Enqueue the thunk on the main thread.
+  NPN_PluginThreadAsyncCall(instance,
+                            BlockingCallClosure::NpapiThunk,
+                            reinterpret_cast<void*>(&data));
+  // Wait for the closure to signal completion of the user function.
+  data.Wait();
+  // Signal success to the caller.
+  return false;
+}
+
+}  // namespace nacl

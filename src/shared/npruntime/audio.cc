@@ -22,12 +22,14 @@
 
 #include "native_client/src/include/portability_string.h"
 #include "gen/native_client/src/shared/npruntime/npmodule_rpc.h"
+#include "native_client/src/shared/npruntime/npclosure.h"
 #include "native_client/src/shared/npruntime/npnavigator.h"
 #include "native_client/src/shared/npruntime/pointer_translations.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 
+using nacl::NPClosure;
 using nacl::NPClosureTable;
 using nacl::NPNavigator;
 using nacl::NPPToWireFormat;
@@ -43,6 +45,99 @@ struct AudioImpl {
   int shared_memory_desc;
   size_t shared_memory_size;
   int sync_desc;
+};
+
+// Some clients may use --wrap read, which replaces read by a user-specified
+// alternate function.  That will cause major problems here as we need to use
+// the real read syscall.  To handle this, we add a static binding to the
+// real system call.
+// TODO(sehr): All of this support will be unnecessary once we have file
+// system access from Pepper.  Remove this once we do.
+static ssize_t socketread(int desc, void *buf, size_t count) {
+  ssize_t retval = NACL_SYSCALL(read)(desc, buf, count);
+  if (retval < 0) {
+    errno = -retval;
+    return -1;
+  }
+  return retval;
+}
+
+class NPAudioClosure : public NPClosure {
+ public:
+  NPAudioClosure(NPClosure::FunctionPointer callback,
+                 void* impl) : NPClosure(callback, impl) { }
+  ~NPAudioClosure() { }
+
+  bool Run(int shm_desc, size_t shm_size, int sync_desc) {
+    AudioImpl* impl = reinterpret_cast<AudioImpl*>(data_);
+    if (NULL == impl) {
+      return false;
+    }
+    impl->shared_memory_desc = shm_desc;
+    impl->shared_memory_size = shm_size;
+    impl->sync_desc = sync_desc;
+
+    void* buf = mmap(NULL,
+                     shm_size,
+                     PROT_READ | PROT_WRITE,
+                     MAP_SHARED,
+                     shm_desc,
+                     0);
+    if (MAP_FAILED == buf) {
+      DebugPrintf("mmap failed %d %"NACL_PRIxS" %d\n",
+                  shm_desc, shm_size, sync_desc);
+      return false;
+    }
+    DebugPrintf("mmap succeeded %p\n", buf);
+    impl->context->outBuffer = buf;
+    if (impl->context->config.startThread) {
+      DebugPrintf("starting thread\n");
+      pthread_t callback_thread;
+      int ret = pthread_create(&callback_thread,
+                               NULL,
+                               AudioThread,
+                               impl->context);
+      if (0 != ret) {
+        DebugPrintf("Thread creation failed %d %d\n", ret, errno);
+        return false;
+      }
+    } else {
+      // Invoke the callback function with the data.
+      (*func_)(reinterpret_cast<void*>(impl->context));
+    }
+    // Return success.
+    return true;
+  }
+
+ private:
+  // TODO(sehr): we need a DISALLOW_COPY_AND_ASSIGN here.
+  NPAudioClosure(const NPAudioClosure&);
+  void operator=(const NPAudioClosure&);
+
+  // The body executed by the low-latency audio thread.
+  static void* AudioThread(void* data) {
+    NPDeviceContextAudio* context_audio =
+        reinterpret_cast<NPDeviceContextAudio*>(data);
+    DebugPrintf("AudioThread %p\n", data);
+    if (NULL == context_audio) {
+      return NULL;
+    }
+    DebugPrintf("AudioThread impl %p\n", context_audio->reserved);
+    AudioImpl* impl = reinterpret_cast<AudioImpl*>(context_audio->reserved);
+    if (NULL == impl) {
+      return NULL;
+    }
+    DebugPrintf("AudioThread entering loop\n");
+    int pending_data;
+    while (sizeof(pending_data) ==
+           socketread(impl->sync_desc, &pending_data, sizeof(pending_data))) {
+      DebugPrintf("invoking callback\n");
+      if (NULL != context_audio->config.callback) {
+        context_audio->config.callback(context_audio);
+      }
+    }
+    return NULL;
+  }
 };
 
 static NPError QueryCapability(NPP instance,
@@ -115,8 +210,8 @@ static NPError InitializeContext(NPP instance,
   // the context.
   uint32_t id;
   NPNavigator* nav = NPNavigator::GetNavigator();
-  NPClosureTable::FunctionPointer func =
-      reinterpret_cast<NPClosureTable::FunctionPointer>(
+  NPClosure::FunctionPointer func =
+      reinterpret_cast<NPClosure::FunctionPointer>(
           context_audio->config.callback);
   // Pedantic mode refuses zu format, hence casting to void*. The cast to size_t
   // fixes the GCC warning about the cast of function ptr to data ptr.
@@ -124,10 +219,14 @@ static NPError InitializeContext(NPP instance,
               reinterpret_cast<void*>(reinterpret_cast<size_t>(func)),
               reinterpret_cast<void*>(
                   reinterpret_cast<size_t>(context_audio->config.callback)));
-  if (NULL == nav->closure_table() ||
-      !nav->closure_table()->Add(func,
-                                 context_audio->reserved,
-                                 &id)) {
+  NPAudioClosure* closure =
+      new(std::nothrow) NPAudioClosure(func, context_audio->reserved);
+  if (NULL == closure ||
+      NULL == nav->closure_table()) {
+    return NPERR_GENERIC_ERROR;
+  }
+  id = nav->closure_table()->Add(closure);
+  if (NPClosureTable::kInvalidId == id) {
     return NPERR_GENERIC_ERROR;
   }
   DebugPrintf("Added the closure %p\n",
@@ -275,45 +374,6 @@ NPError MapBuffer(NPP instance,
   return NPERR_GENERIC_ERROR;
 }
 
-// Some clients may use --wrap read, which replaces read by a user-specified
-// alternate function.  That will cause major problems here as we need to use
-// the real read syscall.  To handle this, we add a static binding to the
-// real system call.
-// TODO(sehr): All of this support will be unnecessary once we have file
-// system access from Pepper.  Remove this once we do.
-static ssize_t socketread(int desc, void *buf, size_t count) {
-  ssize_t retval = NACL_SYSCALL(read)(desc, buf, count);
-  if (retval < 0) {
-    errno = -retval;
-    return -1;
-  }
-  return retval;
-}
-
-static void* AudioCallbackThread(void* data) {
-  NPDeviceContextAudio* context_audio =
-      reinterpret_cast<NPDeviceContextAudio*>(data);
-  DebugPrintf("AudioCallbackThread %p\n", data);
-  if (NULL == context_audio) {
-    return NULL;
-  }
-  DebugPrintf("AudioCallbackThread impl %p\n", context_audio->reserved);
-  AudioImpl* impl = reinterpret_cast<AudioImpl*>(context_audio->reserved);
-  if (NULL == impl) {
-    return NULL;
-  }
-  DebugPrintf("AudioCallbackThread entering loop\n");
-  int pending_data;
-  while (sizeof(pending_data) ==
-         socketread(impl->sync_desc, &pending_data, sizeof(pending_data))) {
-    DebugPrintf("invoking callback\n");
-    if (NULL != context_audio->config.callback) {
-      context_audio->config.callback(context_audio);
-    }
-  }
-  return NULL;
-}
-
 }  // namespace
 
 namespace nacl {
@@ -341,50 +401,19 @@ bool DoAudioCallback(NPClosureTable* closure_table,
                      int32_t shm_size,
                      int sync_desc) {
   uint32_t id = static_cast<uint32_t>(number);
-  NPClosureTable::FunctionPointer func;
-  void* user_data;
   DebugPrintf("DoAudioCallback\n");
-  if (NULL == closure_table ||
-      !closure_table->Remove(id, &func, &user_data) ||
-      NULL == func ||
-      NULL == user_data) {
+  if (NULL == closure_table) {
     return false;
   }
-  // Place the returned handle in the struct passed as user_data.
-  AudioImpl* impl = reinterpret_cast<AudioImpl*>(user_data);
-  impl->sync_desc = sync_desc;
-  impl->shared_memory_desc = shm_desc;
-  impl->shared_memory_size = shm_size;
-  void* buf = mmap(NULL,
-                   shm_size,
-                   PROT_READ | PROT_WRITE,
-                   MAP_SHARED,
-                   shm_desc,
-                   0);
-  if (MAP_FAILED == buf) {
-    DebugPrintf("mmap failed %"NACL_PRIx32" %d %d\n",
-                shm_size, shm_desc, sync_desc);
+  // TODO(sehr): use scoped_ptr to allow "return closure->Run(...)"
+  NPAudioClosure* closure =
+      static_cast<NPAudioClosure*>(closure_table->Remove(id));
+  if (NULL == closure) {
     return false;
   }
-  DebugPrintf("mmap succeeded %p\n", buf);
-  impl->context->outBuffer = buf;
-  if (impl->context->config.startThread) {
-    DebugPrintf("starting thread\n");
-    pthread_t callback_thread;
-    int ret = pthread_create(&callback_thread,
-                             NULL,
-                             AudioCallbackThread,
-                             impl->context);
-    if (0 != ret) {
-      DebugPrintf("Thread creation failed %d %d\n", ret, errno);
-      return false;
-    }
-  } else {
-    // Invoke the function with the data.
-    (*func)(reinterpret_cast<void*>(impl->context));
-  }
-  // Return success.
-  return true;
+  bool retval = closure->Run(shm_desc, shm_size, sync_desc);
+  delete closure;
+  return retval;
 }
 
 }  // namespace nacl

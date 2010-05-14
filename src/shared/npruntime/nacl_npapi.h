@@ -26,6 +26,21 @@
 #endif
 
 #ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+/**
+ * NaCl unique: enqueue a thunk on the main thread and block until it has
+ * completed.  Returns true if the enqueued thunk executed and signalled
+ * this thread.  Returns false otherwise.
+ */
+  bool NPN_BlockingThreadAsyncCall(NPP instance,
+                                   void (*func)(void* user_instance_data),
+                                   void* user_data);
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
+
+#ifdef __cplusplus
 namespace nacl {
 
 /**

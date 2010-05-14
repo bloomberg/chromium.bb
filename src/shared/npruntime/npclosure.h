@@ -16,11 +16,36 @@
 
 namespace nacl {
 
-// A class maintaining a synchronized table of closures.
-class NPClosureTable {
+// A class representing a closure.
+class NPClosure {
  public:
   // A typedef used for function pointers to be used in closures.
   typedef void (*FunctionPointer)(void* user_data);
+
+  NPClosure(FunctionPointer func, void* data) :
+    func_(func), data_(data) {
+  }
+  virtual ~NPClosure() { }
+
+  virtual bool Run() {
+    (*func_)(data_);
+    return true;
+  }
+
+ protected:
+  FunctionPointer func_;
+  void* data_;
+
+ private:
+  // TODO(sehr): we need a DISALLOW_COPY_AND_ASSIGN here.
+  NPClosure(const NPClosure&);
+  void operator=(const NPClosure&);
+};
+
+// A class maintaining a synchronized table of closures.
+class NPClosureTable {
+ public:
+  static const uint32_t kInvalidId = static_cast<uint32_t>(-1);
 
   NPClosureTable() {
     pthread_mutex_init(&mu_, NULL);
@@ -31,22 +56,22 @@ class NPClosureTable {
     pthread_mutex_destroy(&mu_);
   }
 
-  // Add a closure consisting of func and user_data to the table.  If
-  // successful, it returns true, and id can be used to remove the closure
-  // from the table.
-  bool Add(FunctionPointer func, void* user_data, uint32_t* id);
+  // Add a closure to the table.  If successful, the table takes ownership
+  // of the closure, and this call returns the index used to remove the
+  // closure from the table.  On failure it returns kInvalidId.
+  uint32_t Add(NPClosure* closure);
 
   // Remove the closure for id from the table.  If successful, it returns
-  // true and sets func and user_data.
-  bool Remove(uint32_t id, FunctionPointer* func, void** user_data);
+  // a non-NULL closure pointer, and the client takes ownership of the closure.
+  // Returns NULL on failure.
+  NPClosure* Remove(uint32_t id);
 
  private:
-  // The class used to represent a closure.
-  class NPClosure;
-
+  // TODO(sehr): we need a DISALLOW_COPY_AND_ASSIGN here.
+  NPClosureTable(const NPClosureTable&);
+  void operator=(const NPClosureTable&);
   // The type of the mapping used to keep track of the live closures.
   typedef std::map<uint32_t, NPClosure*> ClosureMap;
-
   // The map of pending closures.
   ClosureMap closures_;
   // The identifier of the next closure to be created.

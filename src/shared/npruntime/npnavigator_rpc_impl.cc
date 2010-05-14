@@ -83,7 +83,7 @@ NaClSrpcError NPNavigatorRpcServer::NP_Initialize(
   }
   NPNavigator* navigator =
       new(std::nothrow) NPNavigator(channel, pid);
-  if (NULL == navigator) {
+  if (NULL == navigator || !navigator->is_valid()) {
     // Out of memory.
     nacl::DebugPrintf("  Error: couldn't create navigator\n");
     return NACL_SRPC_RESULT_APP_ERROR;
