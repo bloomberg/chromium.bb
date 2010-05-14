@@ -74,6 +74,7 @@ except ImportError:
 import bookmark_model
 import download_info
 import history_info
+import omnibox_info
 import plugins_info
 import prefs_info
 from pyauto_errors import JSONInterfaceError
@@ -240,6 +241,95 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     return download_info.DownloadInfo(
         self._SendJSONRequest(0, json.dumps({'command': 'GetDownloadsInfo'})))
+
+  def GetOmniboxInfo(self, windex=0):
+    """Return info about Omnibox.
+
+    This represents a snapshot of the omnibox.  If you expect changes
+    you need to call this method again to get a fresh snapshot.
+    Note that this DOES NOT shift focus to the omnibox; you've to ensure that
+    the omnibox is in focus or else you won't get any interesting info.
+
+    It's OK to call this even when the omnibox popup is not showing.  In this
+    case however, there won't be any matches, but other properties (like the
+    current text in the omnibox) will still be fetched.
+
+    Due to the nature of the omnibox, this function is sensitive to mouse
+    focus.  DO NOT HOVER MOUSE OVER OMNIBOX OR CHANGE WINDOW FOCUS WHEN USING
+    THIS METHOD.
+
+    Args:
+      windex: the index of the browser window to work on.
+              Default: 0 (first window)
+
+    Returns:
+      an instance of omnibox_info.OmniboxInfo
+    """
+    return omnibox_info.OmniboxInfo(
+        self._SendJSONRequest(windex,
+                              json.dumps({'command': 'GetOmniboxInfo'})))
+
+  def SetOmniboxText(self, text, windex=0):
+    """Enter text into the omnibox. This shifts focus to the omnibox.
+
+    Args:
+      text: the text to be set.
+      windex: the index of the browser window to work on.
+              Default: 0 (first window)
+    """
+    cmd_dict = {
+        'command': 'SetOmniboxText',
+        'text': text,
+    }
+    ret_dict = json.loads(self._SendJSONRequest(windex, json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
+
+  def WaitUntilOmniboxQueryDone(self, windex=0):
+    """Wait until omnibox has finished populating results.
+
+    Uses WaitUntil() so the wait duration is capped by the timeout values
+    used by automation, which WaitUntil() uses.
+
+    Args:
+      windex: the index of the browser window to work on.
+              Default: 0 (first window)
+    """
+    return self.WaitUntil(
+        lambda : not self.GetOmniboxInfo(windex).IsQueryInProgress())
+
+  def OmniboxMovePopupSelection(self, count, windex=0):
+    """Move omnibox popup selection up or down.
+
+    Args:
+      count: number of rows by which to move.
+             -ve implies down, +ve implies up
+      windex: the index of the browser window to work on.
+              Default: 0 (first window)
+    """
+    cmd_dict = {
+        'command': 'OmniboxMovePopupSelection',
+        'count': count,
+    }
+    ret_dict = json.loads(self._SendJSONRequest(windex, json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
+
+  def OmniboxAcceptInput(self, windex=0):
+    """Accepts the current string of text in the omnibox.
+
+    This is equivalent to clicking or hiting enter on a popup selection.
+
+    Args:
+      windex: the index of the browser window to work on.
+              Default: 0 (first window)
+    """
+    cmd_dict = {
+        'command': 'OmniboxAcceptInput',
+    }
+    ret_dict = json.loads(self._SendJSONRequest(windex, json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
 
   def GetPrefsInfo(self):
     """Return info about preferences.

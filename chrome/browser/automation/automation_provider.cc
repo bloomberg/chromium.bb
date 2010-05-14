@@ -1595,7 +1595,8 @@ void AutomationProvider::RemoveBookmark(int handle,
 // Sample json input: { "command": "GetBrowserInfo" }
 // Refer to GetBrowserInfo() in chrome/test/pyautolib/pyauto.py for
 // sample json output.
-void AutomationProvider::GetBrowserInfo(DictionaryValue* args,
+void AutomationProvider::GetBrowserInfo(Browser* browser,
+                                        DictionaryValue* args,
                                         IPC::Message* reply_message) {
   std::string json_return;
   bool reply_return = true;
@@ -1634,9 +1635,9 @@ void AutomationProvider::GetBrowserInfo(DictionaryValue* args,
 // Sample json input: { "command": "GetHistoryInfo",
 //                      "search_text": "some text" }
 // Refer chrome/test/pyautolib/history_info.py for sample json output.
-void AutomationProvider::GetHistoryInfo(
-    DictionaryValue* args,
-    IPC::Message* reply_message) {
+void AutomationProvider::GetHistoryInfo(Browser* browser,
+                                        DictionaryValue* args,
+                                        IPC::Message* reply_message) {
   consumer_.CancelAllRequests();
 
   std::wstring search_text;
@@ -1662,9 +1663,9 @@ void AutomationProvider::GetHistoryInfo(
 //                                "time": 12345        # optional (time_t)
 //                               } }
 // Refer chrome/test/pyautolib/pyauto.py for details on input.
-void AutomationProvider::AddHistoryItem(
-    DictionaryValue* args,
-    IPC::Message* reply_message) {
+void AutomationProvider::AddHistoryItem(Browser* browser,
+                                        DictionaryValue* args,
+                                        IPC::Message* reply_message) {
   bool reply_return = true;
   std::string json_return = "{}";
 
@@ -1712,9 +1713,9 @@ void AutomationProvider::AddHistoryItem(
 
 // Sample json input: { "command": "GetDownloadsInfo" }
 // Refer chrome/test/pyautolib/download_info.py for sample json output.
-void AutomationProvider::GetDownloadsInfo(
-    DictionaryValue* args,
-    IPC::Message* reply_message) {
+void AutomationProvider::GetDownloadsInfo(Browser* browser,
+                                          DictionaryValue* args,
+                                          IPC::Message* reply_message) {
   std::string json_return;
   bool reply_return = true;
   AutomationProviderDownloadManagerObserver observer;
@@ -1778,6 +1779,7 @@ void AutomationProvider::GetDownloadsInfo(
 }
 
 void AutomationProvider::WaitForDownloadsToComplete(
+    Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
   std::string json_return;
@@ -1817,7 +1819,8 @@ void AutomationProvider::WaitForDownloadsToComplete(
 
 // Sample json input: { "command": "GetPrefsInfo" }
 // Refer chrome/test/pyautolib/prefs_info.py for sample json output.
-void AutomationProvider::GetPrefsInfo(DictionaryValue* args,
+void AutomationProvider::GetPrefsInfo(Browser* browser,
+                                      DictionaryValue* args,
                                       IPC::Message* reply_message) {
   std::string json_return;
   bool reply_return = true;
@@ -1839,7 +1842,8 @@ void AutomationProvider::GetPrefsInfo(DictionaryValue* args,
 }
 
 // Sample json input: { "command": "SetPrefs", "path": path, "value": value }
-void AutomationProvider::SetPrefs(DictionaryValue* args,
+void AutomationProvider::SetPrefs(Browser* browser,
+                                  DictionaryValue* args,
                                   IPC::Message* reply_message) {
   bool reply_return = true;
   std::string json_return = "{}";
@@ -1868,9 +1872,118 @@ void AutomationProvider::SetPrefs(DictionaryValue* args,
   Send(reply_message);
 }
 
+// Sample json input: { "command": "GetOmniboxInfo" }
+// Refer chrome/test/pyautolib/omnibox_info.py for sample json output.
+void AutomationProvider::GetOmniboxInfo(Browser* browser,
+                                        DictionaryValue* args,
+                                        IPC::Message* reply_message) {
+  std::string json_return;
+  bool reply_return = true;
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+
+  LocationBar* loc_bar = browser->window()->GetLocationBar();
+  AutocompleteEditView* edit_view = loc_bar->location_entry();
+  AutocompleteEditModel* model = edit_view->model();
+
+  // Fill up matches.
+  ListValue* matches = new ListValue;
+  const AutocompleteResult& result = model->result();
+  for (AutocompleteResult::const_iterator i = result.begin();
+       i != result.end(); ++i) {
+    const AutocompleteMatch& match = *i;
+    DictionaryValue* item = new DictionaryValue;  // owned by return_value
+    item->SetString(L"type", AutocompleteMatch::TypeToString(match.type));
+    item->SetBoolean(L"starred", match.starred);
+    item->SetString(L"destination_url", match.destination_url.spec());
+    item->SetString(L"contents", match.contents);
+    item->SetString(L"description", match.description);
+    matches->Append(item);
+  }
+  return_value->Set(L"matches", matches);
+
+  // Fill up other properties.
+  DictionaryValue* properties = new DictionaryValue;  // owned by return_value
+  properties->SetBoolean(L"has_focus", model->has_focus());
+  properties->SetBoolean(L"query_in_progress", model->query_in_progress());
+  properties->SetString(L"keyword", model->keyword());
+  properties->SetString(L"text", edit_view->GetText());
+  return_value->Set(L"properties", properties);
+
+  base::JSONWriter::Write(return_value.get(), false, &json_return);
+  AutomationMsg_SendJSONRequest::WriteReplyParams(
+      reply_message, json_return, reply_return);
+  Send(reply_message);
+}
+
+// Sample json input: { "command": "SetOmniboxText",
+//                      "text": "goog" }
+void AutomationProvider::SetOmniboxText(Browser* browser,
+                                        DictionaryValue* args,
+                                        IPC::Message* reply_message) {
+  std::string json_return = "{}";
+  bool reply_return = true;
+  std::wstring text;
+
+  if (!args->GetString(L"text", &text)) {
+    json_return = "{\"error\": \"text missing\"}";
+    reply_return = false;
+  } else {
+    browser->FocusLocationBar();
+    LocationBar* loc_bar = browser->window()->GetLocationBar();
+    AutocompleteEditView* edit_view = loc_bar->location_entry();
+    edit_view->model()->OnSetFocus(false);
+    edit_view->SetUserText(text);
+  }
+
+  AutomationMsg_SendJSONRequest::WriteReplyParams(
+      reply_message, json_return, reply_return);
+  Send(reply_message);
+}
+
+// Sample json input: { "command": "OmniboxMovePopupSelection",
+//                      "count": 1 }
+// Negative count implies up, positive implies down. Count values will be
+// capped by the size of the popup list.
+void AutomationProvider::OmniboxMovePopupSelection(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  std::string json_return = "{}";
+  bool reply_return = true;
+  int count;
+
+  if (!args->GetInteger(L"count", &count)) {
+    json_return = "{\"error\": \"count missing\"}";
+    reply_return = false;
+  } else {
+    LocationBar* loc_bar = browser->window()->GetLocationBar();
+    AutocompleteEditModel* model = loc_bar->location_entry()->model();
+    model->OnUpOrDownKeyPressed(count);
+  }
+
+  AutomationMsg_SendJSONRequest::WriteReplyParams(
+      reply_message, json_return, reply_return);
+  Send(reply_message);
+}
+
+// Sample json input: { "command": "OmniboxAcceptInput" }
+void AutomationProvider::OmniboxAcceptInput(Browser* browser,
+                                            DictionaryValue* args,
+                                            IPC::Message* reply_message) {
+  std::string json_return = "{}";
+  bool reply_return = true;
+
+  browser->window()->GetLocationBar()->AcceptInput();
+
+  AutomationMsg_SendJSONRequest::WriteReplyParams(
+      reply_message, json_return, reply_return);
+  Send(reply_message);
+}
+
 // Sample json input: { "command": "GetPluginsInfo" }
 // Refer chrome/test/pyautolib/plugins_info.py for sample json output.
-void AutomationProvider::GetPluginsInfo(DictionaryValue* args,
+void AutomationProvider::GetPluginsInfo(Browser* browser,
+                                        DictionaryValue* args,
                                         IPC::Message* reply_message) {
   std::string json_return;
   bool reply_return = true;
@@ -1923,7 +2036,8 @@ void AutomationProvider::GetPluginsInfo(DictionaryValue* args,
 // Sample json input:
 //    { "command": "EnablePlugin",
 //      "path": "/Library/Internet Plug-Ins/Flash Player.plugin" }
-void AutomationProvider::EnablePlugin(DictionaryValue* args,
+void AutomationProvider::EnablePlugin(Browser* browser,
+                                      DictionaryValue* args,
                                       IPC::Message* reply_message) {
   std::string json_return = "{}";
   bool reply_return = true;
@@ -1945,8 +2059,9 @@ void AutomationProvider::EnablePlugin(DictionaryValue* args,
 // Sample json input:
 //    { "command": "DisablePlugin",
 //      "path": "/Library/Internet Plug-Ins/Flash Player.plugin" }
-void AutomationProvider::DisablePlugin(DictionaryValue* args,
-                                      IPC::Message* reply_message) {
+void AutomationProvider::DisablePlugin(Browser* browser,
+                                       DictionaryValue* args,
+                                       IPC::Message* reply_message) {
   std::string json_return = "{}";
   bool reply_return = true;
   FilePath::StringType path;
@@ -1964,10 +2079,9 @@ void AutomationProvider::DisablePlugin(DictionaryValue* args,
   Send(reply_message);
 }
 
-void AutomationProvider::SendJSONRequest(
-    int handle,
-    std::string json_request,
-    IPC::Message* reply_message) {
+void AutomationProvider::SendJSONRequest(int handle,
+                                         std::string json_request,
+                                         IPC::Message* reply_message) {
   Browser* browser = NULL;
   std::string error_string;
   scoped_ptr<Value> values;
@@ -2013,6 +2127,12 @@ void AutomationProvider::SendJSONRequest(
   handler_map["GetHistoryInfo"] = &AutomationProvider::GetHistoryInfo;
   handler_map["AddHistoryItem"] = &AutomationProvider::AddHistoryItem;
 
+  handler_map["GetOmniboxInfo"] = &AutomationProvider::GetOmniboxInfo;
+  handler_map["SetOmniboxText"] = &AutomationProvider::SetOmniboxText;
+  handler_map["OmniboxAcceptInput"] = &AutomationProvider::OmniboxAcceptInput;
+  handler_map["OmniboxMovePopupSelection"] =
+      &AutomationProvider::OmniboxMovePopupSelection;
+
   handler_map["GetPrefsInfo"] = &AutomationProvider::GetPrefsInfo;
   handler_map["SetPrefs"] = &AutomationProvider::SetPrefs;
 
@@ -2022,7 +2142,7 @@ void AutomationProvider::SendJSONRequest(
 
   if (error_string.empty()) {
     if (handler_map.find(std::string(command)) != handler_map.end()) {
-      (this->*handler_map[command])(dict_value, reply_message);
+      (this->*handler_map[command])(browser, dict_value, reply_message);
       return;
     } else {
       error_string = "Unknown command. Options: ";

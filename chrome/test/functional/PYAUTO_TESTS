@@ -33,16 +33,19 @@
     # testBookmarkBarVisible fails on windows. crbug.com/42823
     # 'bookmark_bar.BookmarkBarTest.testBookmarkBarVisible',
     'bookmark_bar.BookmarkBarTest.testBookmarkBarVisibleWait',
+    'omnibox',
   ],
 
   'mac': [
     'bookmark_bar.BookmarkBarTest.testBookmarkBarVisibleWait',
     'bookmark_bar.BookmarkBarTest.testBookmarkBarVisibleWait',
+    'omnibox',
   ],
 
   'linux': [
     'bookmark_bar.BookmarkBarTest.testBookmarkBarVisibleWait',
     'bookmark_bar.BookmarkBarTest.testBookmarkBarVisibleWait',
+    # 'omnibox',  # http://crbug.com/44203
   ],
 
   # TODO(nirnimesh): Add a ChromeOS section

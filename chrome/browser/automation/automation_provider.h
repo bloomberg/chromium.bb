@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -337,54 +337,102 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   // Get info about the chromium/chrome in use.
   // This includes things like version, executable name, executable path.
   // Uses the JSON interface for input/output.
-  void GetBrowserInfo(DictionaryValue* args, IPC::Message* reply_message);
+  void GetBrowserInfo(Browser* browser,
+                      DictionaryValue* args,
+                      IPC::Message* reply_message);
 
   // Get info about downloads. This includes only ones that have been
   // registered by the history system.
   // Uses the JSON interface for input/output.
-  void GetDownloadsInfo(DictionaryValue* args, IPC::Message* reply_message);
+  void GetDownloadsInfo(Browser* browser,
+                        DictionaryValue* args,
+                        IPC::Message* reply_message);
 
   // Wait for all downloads to complete.
   // Uses the JSON interface for input/output.
-  void WaitForDownloadsToComplete(
-      DictionaryValue* args,
-      IPC::Message* reply_message);
+  void WaitForDownloadsToComplete(Browser* browser,
+                                  DictionaryValue* args,
+                                  IPC::Message* reply_message);
 
   // Get info about history.
   // Uses the JSON interface for input/output.
-  void GetHistoryInfo(DictionaryValue* args, IPC::Message* reply_message);
+  void GetHistoryInfo(Browser* browser,
+                      DictionaryValue* args,
+                      IPC::Message* reply_message);
 
   // Add an item to the history service.
   // Uses the JSON interface for input/output.
-  void AddHistoryItem(DictionaryValue* args, IPC::Message* reply_message);
+  void AddHistoryItem(Browser* browser,
+                      DictionaryValue* args,
+                      IPC::Message* reply_message);
 
   // Get info about preferences.
   // Uses the JSON interface for input/output.
-  void GetPrefsInfo(DictionaryValue* args, IPC::Message* reply_message);
-
-  // Get info about plugins.
-  // Uses the JSON interface for input/output.
-  void GetPluginsInfo(DictionaryValue* args, IPC::Message* reply_message);
-
-  // Enable a plugin.
-  // Uses the JSON interface for input/output.
-  void EnablePlugin(DictionaryValue* args, IPC::Message* reply_message);
-
-  // Disable a plugin.
-  // Uses the JSON interface for input/output.
-  void DisablePlugin(DictionaryValue* args, IPC::Message* reply_message);
+  void GetPrefsInfo(Browser* browser,
+                    DictionaryValue* args,
+                    IPC::Message* reply_message);
 
   // Set prefs.
   // Uses the JSON interface for input/output.
-  void SetPrefs(DictionaryValue* args, IPC::Message* reply_message);
+  void SetPrefs(Browser* browser,
+                DictionaryValue* args,
+                IPC::Message* reply_message);
+
+  // Get info about plugins.
+  // Uses the JSON interface for input/output.
+  void GetPluginsInfo(Browser* browser,
+                      DictionaryValue* args,
+                      IPC::Message* reply_message);
+
+  // Enable a plugin.
+  // Uses the JSON interface for input/output.
+  void EnablePlugin(Browser* browser,
+                    DictionaryValue* args,
+                    IPC::Message* reply_message);
+
+  // Disable a plugin.
+  // Uses the JSON interface for input/output.
+  void DisablePlugin(Browser* browser,
+                     DictionaryValue* args,
+                     IPC::Message* reply_message);
+
+  // Get info about omnibox.
+  // Contains data about the matches (url, content, description)
+  // in the omnibox popup, the text in the omnibox.
+  // Uses the JSON interface for input/output.
+  void GetOmniboxInfo(Browser* browser,
+                      DictionaryValue* args,
+                      IPC::Message* reply_message);
+
+  // Set text in the omnibox. This sets focus to the omnibox.
+  // Uses the JSON interface for input/output.
+  void SetOmniboxText(Browser* browser,
+                      DictionaryValue* args,
+                      IPC::Message* reply_message);
+
+  // Move omnibox popup selection up or down.
+  // Uses the JSON interface for input/output.
+  void OmniboxMovePopupSelection(Browser* browser,
+                                 DictionaryValue* args,
+                                 IPC::Message* reply_message);
+
+  // Accept the current string of text in the omnibox.
+  // This is equivalent to clicking or hiting enter on a popup selection.
+  // Uses the JSON interface for input/output.
+  void OmniboxAcceptInput(Browser* browser,
+                          DictionaryValue* args,
+                          IPC::Message* reply_message);
 
   // Generic pattern for pyautolib
+  // Uses the JSON interface for input/output.
   void SendJSONRequest(int handle,
                        std::string json_request,
                        IPC::Message* reply_message);
 
   // Method ptr for json handlers.
-  typedef void (AutomationProvider::*JsonHandler)(DictionaryValue*,
+  // Uses the JSON interface for input/output.
+  typedef void (AutomationProvider::*JsonHandler)(Browser* browser,
+                                                  DictionaryValue*,
                                                   IPC::Message*);
 
   // Responds to InspectElement request
