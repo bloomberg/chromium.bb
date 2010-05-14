@@ -143,8 +143,10 @@ GtkThemeProvider::GtkThemeProvider()
   fake_entry_.Own(gtk_entry_new());
 
   // Only realized widgets receive style-set notifications, which we need to
-  // broadcast new theme images and colors.
+  // broadcast new theme images and colors. Only realized widgets have style
+  // properties, too, which we query for some colors.
   gtk_widget_realize(fake_frame_);
+  gtk_widget_realize(fake_window_);
   signals_.Connect(fake_frame_, "style-set", G_CALLBACK(&OnStyleSet), this);
 }
 
