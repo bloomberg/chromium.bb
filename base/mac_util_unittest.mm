@@ -66,7 +66,9 @@ TEST_F(MacUtilTest, TestGrabWindowSnapshot) {
 
   scoped_ptr<std::vector<unsigned char> > png_representation(
       new std::vector<unsigned char>);
-  GrabWindowSnapshot(window, png_representation.get());
+  int width, height;
+  GrabWindowSnapshot(window, png_representation.get(),
+                     &width, &height);
 
   // Copy png back into NSData object so we can make sure we grabbed a png.
   scoped_nsobject<NSData> image_data(

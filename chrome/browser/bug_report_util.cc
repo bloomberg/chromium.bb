@@ -17,6 +17,8 @@
 #include "grit/locale_settings.h"
 #include "unicode/locid.h"
 
+#include <string>
+
 namespace {
 
 const int kBugReportVersion = 1;
@@ -26,7 +28,17 @@ const char kReportPhishingUrl[] =
 
 // URL to post bug reports to.
 const char* const kBugReportPostUrl =
-    "http://web-bug.appspot.com/bugreport";
+    "http://feedback2-dev.corp.google.com/tools/feedback/chrome/__submit";
+
+const char* const kProtBufMimeType = "application/x-protobuf";
+const char* const kPngMimeType = "image/png";
+
+// Tags we use in product specific data
+const char* const kPageTitleTag = "PAGE TITLE";
+const char* const kProblemTypeTag = "PROBLEM TYPE";
+const char* const kChromeVersionTag = "CHROME VERSION";
+const char* const kOsVersionTag = "OS VERSION";
+
 
 }  // namespace
 
@@ -89,60 +101,59 @@ void BugReportUtil::SetOSVersion(std::string *os_version) {
 #endif
 }
 
-// Create a MIME boundary marker (27 '-' characters followed by 16 hex digits).
-void BugReportUtil::CreateMimeBoundary(std::string *out) {
-  int r1 = rand();
-  int r2 = rand();
-  SStringPrintf(out, "---------------------------%08X%08X", r1, r2);
+// static
+void BugReportUtil::AddFeedbackData(
+    userfeedback::ExternalExtensionSubmit* feedback_data,
+    const std::string& key, const std::string& value) {
+  // Create log_value object and add it to the web_data object
+  userfeedback::ProductSpecificData log_value;
+  log_value.set_key(key);
+  log_value.set_value(value);
+  userfeedback::WebData* web_data = feedback_data->mutable_web_data();
+  *(web_data->add_product_specific_data()) = log_value;
 }
 
 // static
 void BugReportUtil::SendReport(Profile* profile,
-    std::string page_title_text,
+    const std::string& page_title_text,
     int problem_type,
-    std::string page_url_text,
-    std::string description,
+    const std::string& page_url_text,
+    const std::string& description,
     const char* png_data,
-    int png_data_length) {
+    int png_data_length,
+    int png_width,
+    int png_height) {
   GURL post_url(kBugReportPostUrl);
-  std::string mime_boundary;
-  CreateMimeBoundary(&mime_boundary);
 
-  // Create a request body and add the mandatory parameters.
-  std::string post_body;
+  // Create google feedback protocol buffer objects
+  userfeedback::ExternalExtensionSubmit feedback_data;
+  // type id set to 0, unused field but needs to be initialized to 0
+  feedback_data.set_type_id(0);
 
-  // Add the protocol version:
-  post_body.append("--" + mime_boundary + "\r\n");
-  post_body.append("Content-Disposition: form-data; "
-                   "name=\"data_version\"\r\n\r\n");
-  post_body.append(StringPrintf("%d\r\n", kBugReportVersion));
+  userfeedback::CommonData* common_data = feedback_data.mutable_common_data();
+  userfeedback::WebData* web_data = feedback_data.mutable_web_data();
+
+  // set GAIA id to 0 to indicate no username available
+  common_data->set_gaia_id(0);
 
   // Add the page title.
-  post_body.append("--" + mime_boundary + "\r\n");
-  post_body.append(page_title_text + "\r\n");
+  AddFeedbackData(&feedback_data, std::string(kPageTitleTag),
+                  page_title_text);
 
-  // Add the problem type.
-  post_body.append("--" + mime_boundary + "\r\n");
-  post_body.append("Content-Disposition: form-data; "
-                   "name=\"problem\"\r\n\r\n");
-  post_body.append(StringPrintf("%d\r\n", problem_type));
+  AddFeedbackData(&feedback_data, std::string(kProblemTypeTag),
+                  StringPrintf("%d\r\n", problem_type));
 
-  // Add in the URL, if we have one.
-  post_body.append("--" + mime_boundary + "\r\n");
-  post_body.append("Content-Disposition: form-data; "
-                   "name=\"url\"\r\n\r\n");
+  // Add the description to the feedback object
+  common_data->set_description(description);
 
-  // Convert URL to UTF8.
-  if (page_url_text.empty())
-    post_body.append("n/a\r\n");
-  else
-    post_body.append(page_url_text + "\r\n");
+  // Add the language
+  std::string chrome_locale = g_browser_process->GetApplicationLocale();
+  common_data->set_source_descripton_language(chrome_locale);
 
-  // Add Chrome version.
-  post_body.append("--" + mime_boundary + "\r\n");
-  post_body.append("Content-Disposition: form-data; "
-                   "name=\"chrome_version\"\r\n\r\n");
+  // Set the url
+  web_data->set_url(page_url_text);
 
+  // Add the Chrome version
   std::string chrome_version;
   scoped_ptr<FileVersionInfo> version_info(
       chrome_app::GetChromeVersionInfo());
@@ -152,79 +163,45 @@ void BugReportUtil::SendReport(Profile* profile,
         " (" + WideToUTF8(version_info->last_change()) + ")";
   }
 
-  if (chrome_version.empty())
-    post_body.append("n/a\r\n");
-  else
-    post_body.append(chrome_version + "\r\n");
+  if (!chrome_version.empty())
+    AddFeedbackData(&feedback_data, std::string(kChromeVersionTag),
+                    chrome_version);
 
   // Add OS version (eg, for WinXP SP2: "5.1.2600 Service Pack 2").
   std::string os_version = "";
-  post_body.append("--" + mime_boundary + "\r\n");
-  post_body.append("Content-Disposition: form-data; "
-                   "name=\"os_version\"\r\n\r\n");
   SetOSVersion(&os_version);
-  post_body.append(os_version + "\r\n");
+  AddFeedbackData(&feedback_data, std::string(kOsVersionTag), os_version);
 
-  // Add locale.
-#if defined(OS_MACOSX)
-  std::string chrome_locale = g_browser_process->GetApplicationLocale();
-#else
-  icu::Locale locale = icu::Locale::getDefault();
-  const char *lang = locale.getLanguage();
-  std::string chrome_locale = (lang)? lang:"en";
-#endif
-
-  post_body.append("--" + mime_boundary + "\r\n");
-  post_body.append("Content-Disposition: form-data; "
-                   "name=\"chrome_locale\"\r\n\r\n");
-  post_body.append(chrome_locale + "\r\n");
-
-  // Add a description if we have one.
-  post_body.append("--" + mime_boundary + "\r\n");
-  post_body.append("Content-Disposition: form-data; "
-                   "name=\"description\"\r\n\r\n");
-
-  if (description.empty())
-    post_body.append("n/a\r\n");
-  else
-    post_body.append(description + "\r\n");
 
   // Include the page image if we have one.
-  if (png_data != NULL && png_data_length > 0) {
-    post_body.append("--" + mime_boundary + "\r\n");
-    post_body.append("Content-Disposition: form-data; name=\"screenshot\"; "
-                      "filename=\"screenshot.png\"\r\n");
-    post_body.append("Content-Type: application/octet-stream\r\n");
-    post_body.append(StringPrintf("Content-Length: %d\r\n\r\n",
-                     png_data_length));
-    post_body.append(png_data, png_data_length);
-    post_body.append("\r\n");
+  if (png_data) {
+    userfeedback::PostedScreenshot screenshot;
+    screenshot.set_mime_type(kPngMimeType);
+
+    // Set the dimensions of the screenshot
+    userfeedback::Dimensions dimensions;
+    dimensions.set_width(static_cast<float>(png_width));
+    dimensions.set_height(static_cast<float>(png_height));
+    *(screenshot.mutable_dimensions()) = dimensions;
+    screenshot.set_binary_content(std::string(png_data, png_data_length));
+
+    // Set the screenshot object in feedback
+    *(feedback_data.mutable_screenshot()) = screenshot;
   }
 
   // TODO(awalker): include the page source if we can get it.
   // if (include_page_source_checkbox_->checked()) {
   // }
 
-  // Terminate the body.
-  post_body.append("--" + mime_boundary + "--\r\n");
-
   // We have the body of our POST, so send it off to the server.
   URLFetcher* fetcher = new URLFetcher(post_url, URLFetcher::POST,
                                        new BugReportUtil::PostCleanup);
   fetcher->set_request_context(profile->GetRequestContext());
-  std::string mime_type("multipart/form-data; boundary=");
-  mime_type += mime_boundary;
-  fetcher->set_upload_data(mime_type, post_body);
-  fetcher->Start();
-}
 
-// static
-std::string BugReportUtil::GetMimeType() {
-  std::string mime_type("multipart/form-data; boundary=");
-  std::string mime_boundary;
-  CreateMimeBoundary(&mime_boundary);
-  mime_type += mime_boundary;
-  return mime_type;
+  std::string post_body;
+  feedback_data.SerializeToString(&post_body);
+  fetcher->set_upload_data(std::string(kProtBufMimeType), post_body);
+  fetcher->Start();
 }
 
 // static
@@ -236,4 +213,3 @@ void BugReportUtil::ReportPhishing(TabContents* currentTab,
       GURL(),
       PageTransition::LINK);
 }
-

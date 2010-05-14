@@ -6,9 +6,13 @@
 #define CHROME_BROWSER_VIEWS_BUG_REPORT_VIEW_H_
 
 #include "chrome/common/net/url_fetcher.h"
+#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
+#include "views/controls/button/radio_button.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/textfield/textfield.h"
+#include "views/controls/link.h"
+#include "views/controls/image_view.h"
 #include "views/view.h"
 #include "views/window/dialog_delegate.h"
 
@@ -17,6 +21,8 @@ class Checkbox;
 class Label;
 class Throbber;
 class Window;
+class RadioButton;
+class Link;
 }
 
 class Profile;
@@ -35,6 +41,9 @@ class BugReportComboBoxModel;
 class BugReportView : public views::View,
                       public views::DialogDelegate,
                       public views::Combobox::Listener,
+#if defined(OS_CHROMEOS)
+                      public views::LinkController,
+#endif
                       public views::Textfield::Controller {
  public:
   explicit BugReportView(Profile* profile, TabContents* tab);
@@ -44,6 +53,12 @@ class BugReportView : public views::View,
   void set_png_data(std::vector<unsigned char> *png_data) {
     png_data_.reset(png_data);
   };
+  void set_screenshot_size(const gfx::Rect& screenshot_size) {
+    screenshot_size_ = screenshot_size;
+  };
+  // Set all additional reporting controls to disabled
+  // if phishing report
+  void UpdateReportingControls(bool is_phishing_report);
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
@@ -57,6 +72,11 @@ class BugReportView : public views::View,
   // views::Combobox::Listener implementation:
   virtual void ItemChanged(views::Combobox* combobox, int prev_index,
                            int new_index);
+
+#if defined(OS_CHROMEOS)
+  // Overridden from views::LinkController:
+  virtual void LinkActivated(views::Link* source, int event_flags);
+#endif
 
   // Overridden from views::DialogDelegate:
   virtual std::wstring GetDialogButtonLabel(
@@ -96,13 +116,23 @@ class BugReportView : public views::View,
   views::Label* description_label_;
   views::Textfield* description_text_;
   views::Checkbox* include_page_source_checkbox_;
+#if defined(OS_CHROMEOS)
+  views::RadioButton* include_last_screen_image_radio_;
+  views::ImageView* last_screenshot_iv_;
+  views::RadioButton* include_new_screen_image_radio_;
+  views::Checkbox* include_system_information_checkbox_;
+  views::Link* system_information_url_;
+#endif
+  // TODO: #else this once the BugReport function is fixed up
   views::Checkbox* include_page_image_checkbox_;
+
 
   scoped_ptr<BugReportComboBoxModel> bug_type_model_;
 
   Profile* profile_;
 
   std::wstring version_;
+  gfx::Rect screenshot_size_;
   scoped_ptr< std::vector<unsigned char> > png_data_;
 
   TabContents* tab_;

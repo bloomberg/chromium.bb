@@ -25,6 +25,9 @@ class TabContents;
 
   // Holds screenshot of current tab.
   std::vector<unsigned char> pngData_;
+  // Width and height of the current tab's screenshot.
+  int pngWidth_;
+  int pngHeight_;
 
   // Values bound to data in the dialog box. These values cannot be boxed in
   // scoped_nsobjects because we use them for bindings.

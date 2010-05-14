@@ -118,7 +118,8 @@ void ActivateProcess(pid_t);
 
 // Pulls a snapshot of the entire browser into png_representation.
 void GrabWindowSnapshot(NSWindow* window,
-                        std::vector<unsigned char>* png_representation);
+                        std::vector<unsigned char>* png_representation,
+                        int* width, int* height);
 
 // Takes a path to an (executable) binary and tries to provide the path to an
 // application bundle containing it. It takes the outermost bundle that it can

@@ -95,7 +95,7 @@
     {
       'target_name': 'protobuf',
       'type': '<(library)',
-      'toolsets': ['host'],
+      'toolsets': ['host','target'],
       'sources': [
         'src/src/google/protobuf/descriptor.h',
         'src/src/google/protobuf/descriptor.pb.h',

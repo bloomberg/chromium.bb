@@ -15,6 +15,11 @@
 #endif
 #include "base/scoped_ptr.h"
 
+#include "chrome/browser/userfeedback/proto/common.pb.h"
+#include "chrome/browser/userfeedback/proto/extension.pb.h"
+#include "chrome/browser/userfeedback/proto/math.pb.h"
+#include "gfx/rect.h"
+
 class Profile;
 class TabContents;
 
@@ -44,26 +49,28 @@ class BugReportUtil {
 
   // Generates bug report data.
   static void SendReport(Profile* profile,
-      std::string page_title_text,
+      const std::string& page_title_text,
       int problem_type,
-      std::string page_url_text,
-      std::string description,
+      const std::string& page_url_text,
+      const std::string& description,
       const char* png_data,
-      int png_data_length);
+      int png_data_length,
+      int png_width,
+      int png_height);
 
   // Redirects the user to Google's phishing reporting page.
   static void ReportPhishing(TabContents* currentTab,
                              const std::string& phishing_url);
 
-  static std::string GetMimeType();
-
   class PostCleanup;
 
  private:
-  static void CreateMimeBoundary(std::string *out);
+  // Add a key value pair to the feedback object
+  static void AddFeedbackData(
+      userfeedback::ExternalExtensionSubmit* feedback_data,
+      const std::string& key, const std::string& value);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(BugReportUtil);
 };
 
 #endif  // CHROME_BROWSER_BUG_REPORT_UTIL_H_
-

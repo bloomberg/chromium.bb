@@ -736,7 +736,7 @@ void GrabWindowSnapshot(GtkWindow* gtk_window,
   Display* display = GDK_WINDOW_XDISPLAY(gdk_window);
   XID win = GDK_WINDOW_XID(gdk_window);
   XWindowAttributes attr;
-  if (XGetWindowAttributes(display, win, &attr) != 0) {
+  if (XGetWindowAttributes(display, win, &attr) == 0) {
     LOG(ERROR) << "Couldn't get window attributes";
     return;
   }

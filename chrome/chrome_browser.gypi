@@ -21,6 +21,7 @@
         'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
         'syncapi',
         'theme_resources',
+        'userfeedback_proto',
         '../app/app.gyp:app_resources',
         '../app/app.gyp:app_strings',
         '../media/media.gyp:media',
@@ -298,6 +299,14 @@
         'browser/browsing_instance.h',
         'browser/bug_report_util.cc',
         'browser/bug_report_util.h',
+        # TODO(rkc): Find a better way to include these files
+        '<(protoc_out_dir)/chrome/browser/userfeedback/proto/annotations.pb.cc',
+        '<(protoc_out_dir)/chrome/browser/userfeedback/proto/common.pb.cc',
+        '<(protoc_out_dir)/chrome/browser/userfeedback/proto/config.pb.cc',
+        '<(protoc_out_dir)/chrome/browser/userfeedback/proto/dom.pb.cc',
+        '<(protoc_out_dir)/chrome/browser/userfeedback/proto/extension.pb.cc',
+        '<(protoc_out_dir)/chrome/browser/userfeedback/proto/math.pb.cc',
+        '<(protoc_out_dir)/chrome/browser/userfeedback/proto/web.pb.cc',
         'browser/cancelable_request.cc',
         'browser/cancelable_request.h',
         'browser/cert_store.cc',
@@ -3180,6 +3189,7 @@
               ],
               'dependencies': [
                 '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
+                #'../third_party/protobuf2/protobuf.gyp:protobuf',
                 '../third_party/protobuf2/protobuf.gyp:protoc#host',
                 '../third_party/chromeos_login_manager/chromeos_login_manager/chromeos_login_manager.gyp:session',
                 '../third_party/chromeos_login_manager/chromeos_login_manager/chromeos_login_manager.gyp:emit_login_prompt_ready',
@@ -3427,6 +3437,61 @@
           ]
         },
       ]
+    },
+    {
+      # Protobuf compiler / generate rule for feedback
+      'target_name': 'userfeedback_proto',
+      'type': 'none',
+      'sources': [
+        'browser/userfeedback/proto/annotations.proto',
+        'browser/userfeedback/proto/common.proto',
+        'browser/userfeedback/proto/config.proto',
+        'browser/userfeedback/proto/dom.proto',
+        'browser/userfeedback/proto/extension.proto',
+        'browser/userfeedback/proto/math.proto',
+        'browser/userfeedback/proto/web.proto',
+      ],
+      'rules': [
+        {
+          'rule_name': 'genproto',
+          'extension': 'proto',
+          'inputs': [
+            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
+          ],
+          'variables': {
+            # The protoc compiler requires a proto_path argument with the
+            # directory containing the .proto file.
+            # There's no generator variable that corresponds to this, so fake it.
+            'rule_input_relpath': 'browser/userfeedback/proto',
+          },
+          'outputs': [
+            '<(protoc_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).pb.h',
+            '<(protoc_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).pb.cc',
+          ],
+          'action': [
+            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
+            '--proto_path=./<(rule_input_relpath)',
+            './<(rule_input_relpath)/<(RULE_INPUT_ROOT)<(RULE_INPUT_EXT)',
+            '--cpp_out=<(protoc_out_dir)/chrome/<(rule_input_relpath)',
+          ],
+          'message': 'Generating C++ code from <(RULE_INPUT_PATH)',
+        },
+      ],
+      'dependencies': [
+        '../third_party/protobuf2/protobuf.gyp:protobuf',
+        '../third_party/protobuf2/protobuf.gyp:protoc#host',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '<(protoc_out_dir)',
+        ]
+      },
+      'export_dependent_settings': [
+        '../third_party/protobuf2/protobuf.gyp:protobuf',
+      ],
+     'dependencies': [
+        '../third_party/protobuf2/protobuf.gyp:protobuf',
+      ],
     },
   ],
 }

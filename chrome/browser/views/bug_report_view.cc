@@ -12,6 +12,7 @@
 #include "chrome/browser/bug_report_util.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
@@ -42,6 +43,8 @@ using views::GridLayout;
 
 // Report a bug data version.
 static const int kBugReportVersion = 1;
+static const int kScreenImageRadioGroup = 2;
+
 
 // Number of lines description field can display at one time.
 static const int kDescriptionLines = 5;
@@ -105,9 +108,14 @@ void ShowBugReportView(views::Window* parent,
   win_util::GrabWindowSnapshot(parent->GetNativeWindow(), screenshot_png);
 #endif
 
+  // Get the size of the parent window to capture screenshot dimensions
+  gfx::Rect screenshot_size = parent->GetBounds();
+
+
   // The BugReportView takes ownership of the png data, and will dispose of
   // it in its destructor.
   view->set_png_data(screenshot_png);
+  view->set_screenshot_size(screenshot_size);
 
   // Create and show the dialog.
   views::Window::CreateChromeWindow(parent->GetNativeWindow(), gfx::Rect(),
@@ -184,6 +192,25 @@ void BugReportView::SetupControl() {
       l10n_util::GetString(IDS_BUGREPORT_INCLUDE_PAGE_SOURCE_CHKBOX));
   include_page_source_checkbox_->SetChecked(true);
 
+#if defined(OS_CHROMEOS)
+  include_last_screen_image_radio_ = new views::RadioButton(
+      l10n_util::GetString(IDS_BUGREPORT_INCLUDE_LAST_SCREEN_IMAGE),
+      kScreenImageRadioGroup);
+  last_screenshot_iv_ = new views::ImageView();
+
+  include_new_screen_image_radio_ = new views::RadioButton(
+      l10n_util::GetString(IDS_BUGREPORT_INCLUDE_NEW_SCREEN_IMAGE),
+      kScreenImageRadioGroup);
+
+  include_system_information_checkbox_ = new views::Checkbox(
+      l10n_util::GetString(IDS_BUGREPORT_INCLUDE_SYSTEM_INFORMATION_CHKBOX));
+  system_information_url_ = new views::Link(
+      l10n_util::GetString(IDS_BUGREPORT_SYSTEM_INFORMATION_URL_TEXT));
+  system_information_url_->SetController(this);
+
+  include_last_screen_image_radio_->SetChecked(true);
+  include_system_information_checkbox_->SetChecked(true);
+#endif
   include_page_image_checkbox_ = new views::Checkbox(
       l10n_util::GetString(IDS_BUGREPORT_INCLUDE_PAGE_IMAGE_CHKBOX));
   include_page_image_checkbox_->SetChecked(true);
@@ -232,11 +259,31 @@ void BugReportView::SetupControl() {
   // layout->SkipColumns(1);
   // layout->AddView(include_page_source_checkbox_);
   // layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    layout->StartRow(0, column_set_id);
+    layout->SkipColumns(1);
+#if defined(OS_CHROMEOS)
+    // Radio boxes to select last screen shot or,
+    layout->AddView(include_last_screen_image_radio_);
+    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    // new screenshot
+    layout->StartRow(0, column_set_id);
+    layout->SkipColumns(1);
+    layout->AddView(include_new_screen_image_radio_);
+    layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
+
+    // Checkbox for system information
+    layout->StartRow(0, column_set_id);
+    layout->SkipColumns(1);
+    layout->AddView(include_system_information_checkbox_);
+
+    // TODO(rkc): Add a link once we're pulling system info, to it
+#else
   if (include_page_image_checkbox_) {
     layout->StartRow(0, column_set_id);
     layout->SkipColumns(1);
     layout->AddView(include_page_image_checkbox_);
   }
+#endif
 
   layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
 }
@@ -245,6 +292,30 @@ gfx::Size BugReportView::GetPreferredSize() {
   return gfx::Size(views::Window::GetLocalizedContentsSize(
       IDS_BUGREPORT_DIALOG_WIDTH_CHARS,
       IDS_BUGREPORT_DIALOG_HEIGHT_LINES));
+}
+
+
+void BugReportView::UpdateReportingControls(bool is_phishing_report) {
+  // page source, screen/page images, system information
+  // are not needed if it's a phishing report
+
+  include_page_source_checkbox_->SetEnabled(!is_phishing_report);
+  include_page_source_checkbox_->SetChecked(!is_phishing_report);
+
+#if defined(OS_CHROMEOS)
+  include_last_screen_image_radio_->SetEnabled(!is_phishing_report);
+  include_new_screen_image_radio_->SetEnabled(!is_phishing_report);
+
+  include_system_information_checkbox_->SetEnabled(!is_phishing_report);
+  include_system_information_checkbox_->SetChecked(!is_phishing_report);
+
+  system_information_url_->SetEnabled(!is_phishing_report);
+#else
+  if (include_page_image_checkbox_) {
+    include_page_image_checkbox_->SetEnabled(!is_phishing_report);
+    include_page_image_checkbox_->SetChecked(!is_phishing_report);
+  }
+#endif
 }
 
 void BugReportView::ItemChanged(views::Combobox* combobox,
@@ -265,12 +336,8 @@ void BugReportView::ItemChanged(views::Combobox* combobox,
     description_text_->SetText(WideToUTF16Hack(old_report_text_));
     old_report_text_.clear();
   }
-  include_page_source_checkbox_->SetEnabled(!is_phishing_report);
-  include_page_source_checkbox_->SetChecked(!is_phishing_report);
-  if (include_page_image_checkbox_) {
-    include_page_image_checkbox_->SetEnabled(!is_phishing_report);
-    include_page_image_checkbox_->SetChecked(!is_phishing_report);
-  }
+
+  UpdateReportingControls(is_phishing_report);
   GetDialogClientView()->UpdateDialogButtons();
 }
 
@@ -334,12 +401,34 @@ bool BugReportView::Accept() {
           problem_type_,
           UTF16ToUTF8(page_url_text_->text()),
           UTF16ToUTF8(description_text_->text()),
+#if defined(OS_CHROMEOS)
+          include_new_screen_image_radio_->checked() && png_data_.get() ?
+#else
           include_page_image_checkbox_->checked() && png_data_.get() ?
+#endif
               reinterpret_cast<const char *>(&((*png_data_.get())[0])) : NULL,
-          png_data_->size());
+          png_data_->size(), screenshot_size_.width(),
+          screenshot_size_.height());
   }
   return true;
 }
+
+#if defined(OS_CHROMEOS)
+void BugReportView::LinkActivated(views::Link* source,
+                                    int event_flags) {
+  GURL url;
+  if (source == system_information_url_) {
+    url = GURL(l10n_util::GetStringUTF16(IDS_BUGREPORT_SYSTEM_INFORMATION_URL));
+  } else {
+    NOTREACHED() << "Unknown link source";
+    return;
+  }
+
+  Browser* browser = BrowserList::GetLastActive();
+  browser->OpenURL(url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+}
+#endif
+
 
 views::View* BugReportView::GetContentsView() {
   return this;

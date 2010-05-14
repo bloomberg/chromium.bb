@@ -4102,6 +4102,23 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_BUGREPORT_DESCRIPTION_LABEL" desc="Label for description field">
         Description:
       </message>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_BUGREPORT_INCLUDE_LAST_SCREEN_IMAGE" desc="Radio button for including the last screen image on the bug report dialog box">
+          Send last screen shot
+        </message>
+        <message name="IDS_BUGREPORT_INCLUDE_NEW_SCREEN_IMAGE" desc="Radio button for including a new screen image on the bug report dialog box">
+          Send a new screen shot
+        </message>
+        <message name="IDS_BUGREPORT_INCLUDE_SYSTEM_INFORMATION_CHKBOX" desc="Checkbox for including system information on the bug report dialog box">
+          Send system information
+        </message>
+        <message name="IDS_BUGREPORT_SYSTEM_INFORMATION_URL" desc="URL for system information on the bug report dialog box">
+          file:///etc/logs/last
+        </message>
+        <message name="IDS_BUGREPORT_SYSTEM_INFORMATION_URL_TEXT" desc="Text for system information url on the bug report dialog box">
+          System Information
+        </message>
+      </if>
       <message name="IDS_BUGREPORT_INCLUDE_PAGE_SOURCE_CHKBOX" desc="Checkbox for including page source">
         Send source of current page
       </message>

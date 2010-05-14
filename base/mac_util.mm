@@ -244,7 +244,8 @@ bool ShouldWindowsMiniaturizeOnDoubleClick() {
 }
 
 void GrabWindowSnapshot(NSWindow* window,
-    std::vector<unsigned char>* png_representation) {
+    std::vector<unsigned char>* png_representation,
+    int* width, int* height) {
   // Make sure to grab the "window frame" view so we get current tab +
   // tabstrip.
   NSView* view = [[window contentView] superview];
@@ -255,6 +256,8 @@ void GrabWindowSnapshot(NSWindow* window,
   const unsigned char* buf = static_cast<const unsigned char*>([data bytes]);
   NSUInteger length = [data length];
   if (buf != NULL && length > 0){
+    *width = static_cast<int>([rep pixelsWide]);
+    *height = static_cast<int>([rep pixelsHigh]);
     png_representation->assign(buf, buf + length);
     DCHECK(png_representation->size() > 0);
   }
