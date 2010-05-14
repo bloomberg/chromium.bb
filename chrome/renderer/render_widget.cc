@@ -506,8 +506,15 @@ void RenderWidget::DoDeferredUpdate() {
   params.bitmap_rect = bounds;
   params.dx = update.scroll_delta.x();
   params.dy = update.scroll_delta.y();
-  params.scroll_rect = update.scroll_rect;
-  params.copy_rects.swap(copy_rects);  // TODO(darin): clip to bounds?
+  if (is_gpu_rendering_active_) {
+    // If painting is done via the gpu process then we clear out all damage
+    // rects to save the browser process from doing unecessary work.
+    params.scroll_rect = gfx::Rect();
+    params.copy_rects.clear();
+  } else {
+    params.scroll_rect = update.scroll_rect;
+    params.copy_rects.swap(copy_rects);  // TODO(darin): clip to bounds?
+  }
   params.view_size = size_;
   params.plugin_window_moves.swap(plugin_window_moves_);
   params.flags = next_paint_flags_;
