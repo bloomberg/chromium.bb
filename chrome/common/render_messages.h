@@ -528,6 +528,27 @@ struct ViewMsg_DOMStorageEvent_Params {
   DOMStorageType storage_type_;
 };
 
+// Used to open an indexed database.
+struct ViewHostMsg_IndexedDatabaseOpen_Params {
+  // The routing ID of the view initiating the open.
+  int32 routing_id_;
+
+  // The response should have this id.
+  int32 response_id_;
+
+  // The origin doing the initiating.
+  string16 origin_;
+
+  // The name of the database.
+  string16 name_;
+
+  // The description of the database.
+  string16 description_;
+
+  // Should the database be modified if it doesn't match the above params.
+  bool modify_database_;
+};
+
 // Allows an extension to execute code in a tab.
 struct ViewMsg_ExecuteCode_Params {
   ViewMsg_ExecuteCode_Params() {}
@@ -2323,6 +2344,44 @@ struct ParamTraits<ViewMsg_DOMStorageEvent_Params> {
     LogParam(p.url_, l);
     l->append(L", ");
     LogParam(p.storage_type_, l);
+    l->append(L")");
+  }
+};
+
+// Traits for ViewHostMsg_IndexedDatabaseOpen_Params.
+template <>
+struct ParamTraits<ViewHostMsg_IndexedDatabaseOpen_Params> {
+  typedef ViewHostMsg_IndexedDatabaseOpen_Params param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.routing_id_);
+    WriteParam(m, p.response_id_);
+    WriteParam(m, p.origin_);
+    WriteParam(m, p.name_);
+    WriteParam(m, p.description_);
+    WriteParam(m, p.modify_database_);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return
+        ReadParam(m, iter, &p->routing_id_) &&
+        ReadParam(m, iter, &p->response_id_) &&
+        ReadParam(m, iter, &p->origin_) &&
+        ReadParam(m, iter, &p->name_) &&
+        ReadParam(m, iter, &p->description_) &&
+        ReadParam(m, iter, &p->modify_database_);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.routing_id_, l);
+    l->append(L", ");
+    LogParam(p.response_id_, l);
+    l->append(L", ");
+    LogParam(p.origin_, l);
+    l->append(L", ");
+    LogParam(p.name_, l);
+    l->append(L", ");
+    LogParam(p.description_, l);
+    l->append(L", ");
+    LogParam(p.modify_database_, l);
     l->append(L")");
   }
 };

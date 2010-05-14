@@ -10,8 +10,9 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/in_process_webkit/dom_storage_context.h"
+#include "chrome/browser/in_process_webkit/indexed_db_context.h"
 
-class WebKitThread;
+class Profile;
 
 // There's one WebKitContext per profile.  Various DispatcherHost classes
 // have a pointer to the Context to store shared state.  Unfortunately, this
@@ -22,12 +23,17 @@ class WebKitThread;
 // threads.
 class WebKitContext : public base::RefCountedThreadSafe<WebKitContext> {
  public:
-  WebKitContext(const FilePath& data_path, bool is_incognito);
+  explicit WebKitContext(Profile* profile);
 
   const FilePath& data_path() const { return data_path_; }
   bool is_incognito() const { return is_incognito_; }
+
   DOMStorageContext* dom_storage_context() {
     return dom_storage_context_.get();
+  }
+
+  IndexedDBContext* indexed_db_context() {
+    return indexed_db_context_.get();
   }
 
 #ifdef UNIT_TEST
@@ -59,6 +65,8 @@ class WebKitContext : public base::RefCountedThreadSafe<WebKitContext> {
   const bool is_incognito_;
 
   scoped_ptr<DOMStorageContext> dom_storage_context_;
+
+  scoped_ptr<IndexedDBContext> indexed_db_context_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebKitContext);
 };

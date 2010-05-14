@@ -16,8 +16,9 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDatabase.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebGraphicsContext3D.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebRuntimeFeatures.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebIndexedDatabase.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScriptController.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageArea.h"
@@ -68,6 +69,7 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
     WebKit::WebRuntimeFeatures::enablePushState(true);
     WebKit::WebRuntimeFeatures::enableNotifications(true);
     WebKit::WebRuntimeFeatures::enableTouch(true);
+    WebKit::WebRuntimeFeatures::enableIndexedDatabase(true);
 
     // Load libraries for media and enable the media player.
     FilePath module_path;
@@ -208,6 +210,10 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
       const WebKit::WebString& origin, const WebKit::WebURL& url,
       bool is_local_storage) {
     // The event is dispatched by the proxy.
+  }
+
+  virtual WebKit::WebIndexedDatabase* indexedDatabase() {
+    return WebKit::WebIndexedDatabase::create();
   }
 
 #if defined(OS_WIN)

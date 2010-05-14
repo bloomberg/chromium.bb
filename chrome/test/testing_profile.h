@@ -245,7 +245,7 @@ class TestingProfile : public Profile {
   virtual void ReinitializeSpellCheckHost(bool force) { }
   virtual WebKitContext* GetWebKitContext() {
     if (webkit_context_ == NULL)
-      webkit_context_ = new WebKitContext(GetPath(), false);
+      webkit_context_ = new WebKitContext(this);
     return webkit_context_;
   }
   virtual WebKitContext* GetOffTheRecordWebKitContext() { return NULL; }

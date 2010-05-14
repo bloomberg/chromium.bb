@@ -26,6 +26,7 @@
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/in_process_webkit/dom_storage_dispatcher_host.h"
+#include "chrome/browser/in_process_webkit/indexed_db_dispatcher_host.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -308,8 +309,9 @@ ResourceMessageFilter::ResourceMessageFilter(
       appcache_dispatcher_host_(
           new AppCacheDispatcherHost(profile->GetRequestContext())),
       ALLOW_THIS_IN_INITIALIZER_LIST(dom_storage_dispatcher_host_(
-          new DOMStorageDispatcherHost(this, profile->GetWebKitContext(),
-              resource_dispatcher_host->webkit_thread()))),
+          new DOMStorageDispatcherHost(this, profile->GetWebKitContext()))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(indexed_db_dispatcher_host_(
+          new IndexedDBDispatcherHost(this, profile->GetWebKitContext()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(db_dispatcher_host_(
           new DatabaseDispatcherHost(profile->GetDatabaseTracker(), this,
               profile->GetHostContentSettingsMap()))),
@@ -339,6 +341,9 @@ ResourceMessageFilter::~ResourceMessageFilter() {
 
   // Tell the DOM Storage dispatcher host to stop sending messages via us.
   dom_storage_dispatcher_host_->Shutdown();
+
+  // Tell the Indexed DB dispatcher host to stop sending messages via us.
+  indexed_db_dispatcher_host_->Shutdown();
 
   // Shut down the database dispatcher host.
   db_dispatcher_host_->Shutdown();
@@ -380,6 +385,7 @@ void ResourceMessageFilter::OnChannelConnected(int32 peer_pid) {
   WorkerService::GetInstance()->Initialize(resource_dispatcher_host_);
   appcache_dispatcher_host_->Initialize(this, id(), handle());
   dom_storage_dispatcher_host_->Init(id(), handle());
+  indexed_db_dispatcher_host_->Init(id(), handle());
   db_dispatcher_host_->Init(handle());
 }
 
@@ -410,6 +416,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       resource_dispatcher_host_->OnMessageReceived(msg, this, &msg_is_ok) ||
       appcache_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
       dom_storage_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
+      indexed_db_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
       audio_renderer_host_->OnMessageReceived(msg, &msg_is_ok) ||
       db_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
       mp_dispatcher->OnMessageReceived(

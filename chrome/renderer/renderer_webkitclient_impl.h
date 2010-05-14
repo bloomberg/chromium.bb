@@ -6,6 +6,7 @@
 #define CHROME_RENDERER_RENDERER_WEBKITCLIENT_IMPL_H_
 
 #include "base/platform_file.h"
+#include "base/scoped_ptr.h"
 #include "chrome/renderer/websharedworkerrepository_impl.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webclipboard_impl.h"
@@ -27,7 +28,8 @@ class SyncMessage;
 
 class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
  public:
-  RendererWebKitClientImpl() : sudden_termination_disables_(0) {}
+  RendererWebKitClientImpl();
+  virtual ~RendererWebKitClientImpl();
 
   // WebKitClient methods:
   virtual WebKit::WebClipboard* clipboard();
@@ -62,6 +64,8 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
       unsigned key_size_index,
       const WebKit::WebString& challenge,
       const WebKit::WebURL& url);
+  virtual WebKit::WebIndexedDatabase* indexedDatabase();
+
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
   virtual WebKit::WebGraphicsContext3D* createGraphicsContext3D();
   virtual WebKit::WebGLES2Context* createGLES2Context();
@@ -129,6 +133,7 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   // to WorkerService on the browser thread.
   WebSharedWorkerRepositoryImpl shared_worker_repository_;
 
+  scoped_ptr<WebKit::WebIndexedDatabase> web_indexed_database_;
 };
 
 #endif  // CHROME_RENDERER_RENDERER_WEBKITCLIENT_IMPL_H_

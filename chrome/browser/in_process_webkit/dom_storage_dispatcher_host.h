@@ -18,7 +18,6 @@ class GURL;
 class HostContentSettingsMap;
 class ResourceMessageFilter;
 class Task;
-class WebKitThread;
 struct ViewMsg_DOMStorageEvent_Params;
 
 // This class handles the logistics of DOM Storage within the browser process.
@@ -30,7 +29,7 @@ class DOMStorageDispatcherHost
   // Only call the constructor from the UI thread.
   DOMStorageDispatcherHost(
       ResourceMessageFilter* resource_message_filter_,
-      WebKitContext* webkit_context, WebKitThread* webkit_thread);
+      WebKitContext* webkit_context);
 
   // Only call from ResourceMessageFilter on the IO thread.
   void Init(int process_id, base::ProcessHandle process_handle);
@@ -40,7 +39,7 @@ class DOMStorageDispatcherHost
   void Shutdown();
 
   // Only call from ResourceMessageFilter on the IO thread.
-  bool OnMessageReceived(const IPC::Message& message, bool *msg_is_ok);
+  bool OnMessageReceived(const IPC::Message& message, bool* msg_is_ok);
 
   // Clones a session storage namespace and returns the cloned namespaces' id.
   // Only call on the IO thread.
@@ -100,9 +99,6 @@ class DOMStorageDispatcherHost
 
   // Data shared between renderer processes with the same profile.
   scoped_refptr<WebKitContext> webkit_context_;
-
-  // ResourceDispatcherHost takes care of destruction.  Immutable.
-  WebKitThread* webkit_thread_;
 
   // Only set and use on the IO thread.
   ResourceMessageFilter* resource_message_filter_;

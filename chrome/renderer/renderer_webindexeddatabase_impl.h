@@ -1,0 +1,30 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
+// source code is governed by a BSD-style license that can be found in the
+// LICENSE file.
+
+#ifndef CHROME_RENDERER_RENDERER_WEBINDEXEDDATABASE_IMPL_H_
+#define CHROME_RENDERER_RENDERER_WEBINDEXEDDATABASE_IMPL_H_
+
+#include "third_party/WebKit/WebKit/chromium/public/WebIDBCallbacks.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebIndexedDatabase.h"
+
+namespace WebKit {
+class WebFrame;
+class WebIDBDatabase;
+class WebString;
+}
+
+class RendererWebIndexedDatabaseImpl : public WebKit::WebIndexedDatabase {
+ public:
+  RendererWebIndexedDatabaseImpl();
+  virtual ~RendererWebIndexedDatabaseImpl();
+
+  // See WebIndexedDatabase.h for documentation on these functions.
+  virtual void open(
+      const WebKit::WebString& name, const WebKit::WebString& description,
+      bool modify_database, WebKit::WebIDBCallbacks* callbacks,
+      const WebKit::WebString& origin, WebKit::WebFrame* web_frame,
+      int& exception_code);
+};
+
+#endif  // CHROME_RENDERER_RENDERER_WEBINDEXEDDATABASE_IMPL_H_

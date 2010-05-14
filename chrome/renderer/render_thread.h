@@ -31,6 +31,7 @@ class CookieMessageFilter;
 class DBMessageFilter;
 class DevToolsAgentFilter;
 class FilePath;
+class IndexedDBDispatcher;
 class ListValue;
 class NullableString16;
 class RenderDnsMaster;
@@ -141,6 +142,10 @@ class RenderThread : public RenderThreadBase,
 
   AppCacheDispatcher* appcache_dispatcher() const {
     return appcache_dispatcher_.get();
+  }
+
+  IndexedDBDispatcher* indexed_db_dispatcher() const {
+    return indexed_db_dispatcher_.get();
   }
 
   SpellCheck* spellchecker() const {
@@ -283,6 +288,7 @@ class RenderThread : public RenderThreadBase,
   scoped_ptr<UserScriptSlave> user_script_slave_;
   scoped_ptr<RenderDnsMaster> dns_master_;
   scoped_ptr<AppCacheDispatcher> appcache_dispatcher_;
+  scoped_ptr<IndexedDBDispatcher> indexed_db_dispatcher_;
   scoped_refptr<DevToolsAgentFilter> devtools_agent_filter_;
   scoped_ptr<RendererHistogramSnapshots> histogram_snapshots_;
   scoped_ptr<RendererWebKitClientImpl> webkit_client_;

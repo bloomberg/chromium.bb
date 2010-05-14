@@ -536,7 +536,7 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual WebKitContext* GetWebKitContext() {
     if (!webkit_context_.get())
-      webkit_context_ = new WebKitContext(FilePath(), true);
+      webkit_context_ = new WebKitContext(this);
     DCHECK(webkit_context_.get());
     return webkit_context_.get();
   }
@@ -1425,7 +1425,7 @@ void ProfileImpl::SpellCheckHostInitialized() {
 
 WebKitContext* ProfileImpl::GetWebKitContext() {
   if (!webkit_context_.get())
-    webkit_context_ = new WebKitContext(path_, false);
+    webkit_context_ = new WebKitContext(this);
   DCHECK(webkit_context_.get());
   return webkit_context_.get();
 }

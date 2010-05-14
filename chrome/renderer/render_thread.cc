@@ -50,12 +50,14 @@
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/external_extension.h"
+#include "chrome/renderer/indexed_db_dispatcher.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
 #include "chrome/renderer/net/render_dns_master.h"
 #include "chrome/renderer/plugin_channel_host.h"
 #include "chrome/renderer/render_process_impl.h"
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/render_view_visitor.h"
+#include "chrome/renderer/renderer_webindexeddatabase_impl.h"
 #include "chrome/renderer/renderer_webkitclient_impl.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/user_script_slave.h"
@@ -234,6 +236,7 @@ void RenderThread::Init() {
   dns_master_.reset(new RenderDnsMaster());
   histogram_snapshots_.reset(new RendererHistogramSnapshots());
   appcache_dispatcher_.reset(new AppCacheDispatcher(this));
+  indexed_db_dispatcher_.reset(new IndexedDBDispatcher());
   spellchecker_.reset(new SpellCheck());
 
   devtools_agent_filter_ = new DevToolsAgentFilter();
@@ -522,8 +525,10 @@ void RenderThread::OnDOMStorageEvent(
 }
 
 void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
-  // App cache messages are handled by a delegate.
+  // Some messages are handled by delegates.
   if (appcache_dispatcher_->OnMessageReceived(msg))
+    return;
+  if (indexed_db_dispatcher_->OnMessageReceived(msg))
     return;
 
   IPC_BEGIN_MESSAGE_MAP(RenderThread, msg)

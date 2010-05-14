@@ -833,6 +833,15 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_CONTROL1(ViewMsg_DOMStorageEvent,
                        ViewMsg_DOMStorageEvent_Params)
 
+  // IndexedDatabase::open message responses.
+  IPC_MESSAGE_CONTROL2(ViewMsg_IndexedDatabaseOpenSuccess,
+                       int32 /* response_id */,
+                       int32 /* idb_database_id */)
+  IPC_MESSAGE_CONTROL3(ViewMsg_IndexedDatabaseOpenError,
+                       int32 /* response_id */,
+                       int /* code */,
+                       string16 /* message */)
+
 #if defined(IPC_MESSAGE_LOG_ENABLED)
   // Tell the renderer process to begin or end IPC message logging.
   IPC_MESSAGE_CONTROL1(ViewMsg_SetIPCLoggingEnabled,
@@ -2132,6 +2141,14 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               int64 /* storage_area_id */,
                               GURL /* url */,
                               bool /* something_cleared */)
+
+  // IndexedDatabase::open() message.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_IndexedDatabaseOpen,
+                       ViewHostMsg_IndexedDatabaseOpen_Params)
+
+  // IDBDatabase::~IDBDatabase() message.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBDatabaseDestroyed,
+                       int32 /* idb_database_id */)
 
   // Get file size in bytes. Set result to -1 if failed to get the file size.
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetFileSize,

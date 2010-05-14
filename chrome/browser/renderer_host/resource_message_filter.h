@@ -41,6 +41,7 @@ class DOMStorageDispatcherHost;
 class ExtensionMessageService;
 class GeolocationDispatcherHost;
 class HostZoomMap;
+class IndexedDBDispatcherHost;
 class NotificationsPrefsCache;
 class Profile;
 class RenderWidgetHelper;
@@ -402,6 +403,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   // Handles DOM Storage related messages.
   scoped_refptr<DOMStorageDispatcherHost> dom_storage_dispatcher_host_;
+
+  // Handles Indexed Database related messages.
+  scoped_refptr<IndexedDBDispatcherHost> indexed_db_dispatcher_host_;
 
   // Handles HTML5 DB related messages
   scoped_refptr<DatabaseDispatcherHost> db_dispatcher_host_;

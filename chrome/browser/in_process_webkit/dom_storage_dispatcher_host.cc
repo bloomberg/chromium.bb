@@ -9,7 +9,6 @@
 #include "chrome/browser/in_process_webkit/dom_storage_area.h"
 #include "chrome/browser/in_process_webkit/dom_storage_context.h"
 #include "chrome/browser/in_process_webkit/dom_storage_namespace.h"
-#include "chrome/browser/in_process_webkit/webkit_thread.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host_notification_task.h"
@@ -45,14 +44,11 @@ ScopedStorageEventContext::~ScopedStorageEventContext() {
 
 DOMStorageDispatcherHost::DOMStorageDispatcherHost(
     ResourceMessageFilter* resource_message_filter,
-    WebKitContext* webkit_context,
-    WebKitThread* webkit_thread)
+    WebKitContext* webkit_context)
     : webkit_context_(webkit_context),
-      webkit_thread_(webkit_thread),
       resource_message_filter_(resource_message_filter),
       process_handle_(0) {
   DCHECK(webkit_context_.get());
-  DCHECK(webkit_thread_);
   DCHECK(resource_message_filter_);
 }
 
@@ -71,24 +67,11 @@ void DOMStorageDispatcherHost::Init(int process_id,
 }
 
 void DOMStorageDispatcherHost::Shutdown() {
-  if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    if (process_handle_)  // Init() was called
-      Context()->UnregisterDispatcherHost(this);
-    resource_message_filter_ = NULL;
-
-    // The task will only execute if the WebKit thread is already running.
-    ChromeThread::PostTask(
-        ChromeThread::WEBKIT, FROM_HERE,
-        NewRunnableMethod(this, &DOMStorageDispatcherHost::Shutdown));
-    return;
-  }
-
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  DCHECK(!resource_message_filter_);
-
-  // TODO(jorlow): Do stuff that needs to be run on the WebKit thread.  Locks
-  //               and others will likely need this, so let's not delete this
-  //               code even though it doesn't do anyting yet.
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  // This is not always true during testing.
+  if (process_handle_)
+    Context()->UnregisterDispatcherHost(this);
+  resource_message_filter_ = NULL;
 }
 
 /* static */
@@ -114,7 +97,7 @@ void DOMStorageDispatcherHost::DispatchStorageEvent(const NullableString16& key,
 }
 
 bool DOMStorageDispatcherHost::OnMessageReceived(const IPC::Message& message,
-                                                 bool *msg_is_ok) {
+                                                 bool* msg_is_ok) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DCHECK(process_handle_);
 
@@ -139,21 +122,25 @@ int64 DOMStorageDispatcherHost::CloneSessionStorage(int64 original_id) {
 }
 
 void DOMStorageDispatcherHost::Send(IPC::Message* message) {
-  if (!resource_message_filter_) {
+  if (!ChromeThread::CurrentlyOn(ChromeThread::IO)) {
+    // TODO(jorlow): Even if we successfully post, I believe it's possible for
+    //               the task to never run (if the IO thread is already shutting
+    //               down).  We may want to handle this case, though
+    //               realistically it probably doesn't matter.
+    if (!ChromeThread::PostTask(
+            ChromeThread::IO, FROM_HERE, NewRunnableMethod(
+                this, &DOMStorageDispatcherHost::Send, message))) {
+      // The IO thread is dead.
+      delete message;
+    }
+    return;
+  }
+
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  if (!resource_message_filter_)
     delete message;
-    return;
-  }
-
-  if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
+  else
     resource_message_filter_->Send(message);
-    return;
-  }
-
-  // The IO thread can't go away while the WebKit thread is still running.
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &DOMStorageDispatcherHost::Send, message));
 }
 
 void DOMStorageDispatcherHost::OnStorageAreaId(int64 namespace_id,
