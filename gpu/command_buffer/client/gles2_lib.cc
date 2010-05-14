@@ -6,9 +6,11 @@
 #include "../common/thread_local.h"
 
 namespace gles2 {
-namespace {
-gpu::ThreadLocalKey g_gl_context_key;
-}  // namespace anonymous
+// TODO(kbr): the use of this anonymous namespace core dumps the
+// linker on Mac OS X 10.6 when the symbol ordering file is used
+// namespace {
+static gpu::ThreadLocalKey g_gl_context_key;
+// }  // namespace anonymous
 
 void Initialize() {
   g_gl_context_key = gpu::ThreadLocalAlloc();
