@@ -58,10 +58,21 @@ class URLRow {
   URLRow() {
     Initialize();
   }
+
   explicit URLRow(const GURL& url) : url_(url) {
     // Initialize will not set the URL, so our initialization above will stay.
     Initialize();
   }
+
+  // We need to be able to set the id of a URLRow that's being passed through
+  // an IPC message.  This constructor should probably not be used otherwise.
+  URLRow(const GURL& url, URLID id) : url_(url) {
+    // Initialize will not set the URL, so our initialization above will stay.
+    Initialize();
+    // Initialize will zero the id_, so set it here.
+    id_ = id;
+  }
+
   virtual ~URLRow() {}
 
   URLID id() const { return id_; }
