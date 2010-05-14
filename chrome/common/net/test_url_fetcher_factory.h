@@ -25,7 +25,7 @@
 //   URLFetcher::set_factory(&factory);
 //   // Do something that triggers creation of a URLFetcher.
 //   TestURLFetcher* fetcher = factory.GetFetcherByID(expected_id);
-//   ASSERT(fetcher);
+//   DCHECK(fetcher);
 //   // Notify delegate with whatever data you want.
 //   fetcher->delegate()->OnURLFetchComplete(...);
 //   // Make sure consumer of URLFetcher does the right thing.

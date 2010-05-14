@@ -4,6 +4,7 @@
 
 #include "chrome/common/net/notifier/base/network_status_detector_task_mt.h"
 
+#include "base/logging.h"
 #include "chrome/common/net/notifier/base/async_network_alive.h"
 #include "chrome/common/net/notifier/base/signal_thread_task.h"
 
@@ -13,7 +14,7 @@ namespace notifier {
 
 void NetworkStatusDetectorTaskMT::OnNetworkAliveDone(
     AsyncNetworkAlive* network_alive) {
-  ASSERT(network_alive);
+  DCHECK(network_alive);
   SetNetworkAlive(network_alive->alive());
   // If we got an error from detecting the network alive state, then stop
   // retrying the detection.
@@ -41,7 +42,7 @@ void NetworkStatusDetectorTaskMT::StartAsyncDetection(
 
 NetworkStatusDetectorTask* NetworkStatusDetectorTask::Create(
     talk_base::Task* parent) {
-  ASSERT(parent);
+  DCHECK(parent);
   return new NetworkStatusDetectorTaskMT(parent);
 }
 

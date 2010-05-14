@@ -4,6 +4,8 @@
 
 #include "chrome/common/net/notifier/communicator/login_failure.h"
 
+#include "base/logging.h"
+
 namespace notifier {
 
 LoginFailure::LoginFailure(LoginError error)
@@ -21,7 +23,7 @@ LoginFailure::LoginFailure(LoginError error,
 }
 
 buzz::XmppEngine::Error LoginFailure::xmpp_error() const {
-  ASSERT(error_ == XMPP_ERROR);
+  DCHECK_EQ(error_, XMPP_ERROR);
   return xmpp_error_;
 }
 

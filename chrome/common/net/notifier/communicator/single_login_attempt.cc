@@ -36,8 +36,10 @@ static void GetClientErrorInformation(
     buzz::XmppEngine::Error* error,
     int* subcode,
     buzz::XmlElement** stream_error) {
-  ASSERT(client != NULL);
-  ASSERT(error && subcode && stream_error);
+  DCHECK(client);
+  DCHECK(error);
+  DCHECK(subcode);
+  DCHECK(stream_error);
 
   *error = client->GetError(subcode);
 
@@ -138,7 +140,7 @@ SingleLoginAttempt::SingleLoginAttempt(talk_base::Task* parent,
 SingleLoginAttempt::~SingleLoginAttempt() {
   // If this assertion goes off, it means that "Stop()" didn't get called like
   // it should have been.
-  ASSERT(client_ == NULL);
+  DCHECK(!client_);
 }
 
 bool SingleLoginAttempt::auto_reconnect() const {
@@ -146,12 +148,12 @@ bool SingleLoginAttempt::auto_reconnect() const {
 }
 
 const talk_base::ProxyInfo& SingleLoginAttempt::proxy() const {
-  ASSERT(connection_generator_.get());
+  DCHECK(connection_generator_.get());
   return connection_generator_->proxy();
 }
 
 int SingleLoginAttempt::ProcessStart() {
-  ASSERT(GetState() == talk_base::Task::STATE_START);
+  DCHECK_EQ(GetState(), talk_base::Task::STATE_START);
   connection_generator_->StartGenerating();
 
   // After being started, this class is callback driven and does signaling from
@@ -209,13 +211,13 @@ void SingleLoginAttempt::OnAttemptedAllConnections(
 }
 
 void SingleLoginAttempt::UseNextConnection() {
-  ASSERT(connection_generator_.get() != NULL);
+  DCHECK(connection_generator_.get());
   ClearClient();
   connection_generator_->UseNextConnection();
 }
 
 void SingleLoginAttempt::UseCurrentConnection() {
-  ASSERT(connection_generator_.get() != NULL);
+  DCHECK(connection_generator_.get());
   ClearClient();
   connection_generator_->UseCurrentConnection();
 }
@@ -349,7 +351,7 @@ void SingleLoginAttempt::DiagnoseConnectionError() {
   http_request->request().verb = talk_base::HV_GET;
 
   talk_base::ProxyInfo proxy;
-  ASSERT(connection_generator_.get() != NULL);
+  DCHECK(connection_generator_.get());
   if (connection_generator_.get()) {
     proxy = connection_generator_->proxy();
   }
@@ -363,7 +365,7 @@ void SingleLoginAttempt::DiagnoseConnectionError() {
 }
 
 void SingleLoginAttempt::OnHttpTestDone(talk_base::SignalThread* thread) {
-  ASSERT(thread != NULL);
+  DCHECK(thread);
 
   talk_base::AsyncHttpRequest* request =
     static_cast<talk_base::AsyncHttpRequest*>(thread);
@@ -457,7 +459,7 @@ void SingleLoginAttempt::ClearClient() {
     // If this assertion goes off, it means that the disconnect didn't occur
     // properly.  See SingleLoginAttempt::OnClientStateChange,
     // case XmppEngine::STATE_CLOSED
-    ASSERT(client_ == NULL);
+    DCHECK(!client_);
   }
 }
 
@@ -558,7 +560,7 @@ void SingleLoginAttempt::HandleConnectionError(
     }
   }
 
-  ASSERT(connection_generator_.get() != NULL);
+  DCHECK(connection_generator_.get());
   if (!connection_generator_.get()) {
     return;
   }

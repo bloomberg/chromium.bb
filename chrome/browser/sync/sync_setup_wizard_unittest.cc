@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "testing/gtest/include/gtest/gtest.h"
+#include "chrome/browser/sync/sync_setup_wizard.h"
 
 #include "base/json/json_writer.h"
 #include "base/scoped_ptr.h"
@@ -14,16 +14,16 @@
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
-#include "chrome/browser/sync/sync_setup_wizard.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/browser_with_test_window_test.h"
 #include "chrome/test/testing_profile.h"
 #include "chrome/test/test_browser_window.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
-static const char* kTestUser = "chrome.p13n.test@gmail.com";
-static const char* kTestPassword = "passwd";
-static const char* kTestCaptcha = "pizzamyheart";
-static const char* kTestCaptchaUrl = "http://pizzamyheart/";
+static const char kTestUser[] = "chrome.p13n.test@gmail.com";
+static const char kTestPassword[] = "passwd";
+static const char kTestCaptcha[] = "pizzamyheart";
+static const char kTestCaptchaUrl[] = "http://pizzamyheart/";
 
 typedef GoogleServiceAuthError AuthError;
 

@@ -5,6 +5,7 @@
 #ifndef CHROME_COMMON_NET_NOTIFIER_BASE_SIGNAL_THREAD_TASK_H_
 #define CHROME_COMMON_NET_NOTIFIER_BASE_SIGNAL_THREAD_TASK_H_
 
+#include "base/logging.h"
 #include "talk/base/common.h"
 #include "talk/base/signalthread.h"
 #include "talk/base/sigslot.h"
@@ -34,7 +35,7 @@ class SignalThreadTask : public talk_base::Task,
   }
 
   virtual int ProcessStart() {
-    ASSERT(GetState() == talk_base::Task::STATE_START);
+    DCHECK_EQ(GetState(), talk_base::Task::STATE_START);
     signal_thread_->SignalWorkDone.connect(
         this,
         &SignalThreadTask<T>::OnWorkDone);
@@ -56,10 +57,12 @@ class SignalThreadTask : public talk_base::Task,
  private:
   // Takes ownership of signal_thread.
   void SetSignalThread(T** signal_thread) {
-    ASSERT(!signal_thread_ && signal_thread && *signal_thread);
-    // Verify that no one is listening to the signal thread for work done.
-    // They should be using this class instead.
-    ASSERT((*signal_thread)->SignalWorkDone.is_empty());
+    DCHECK(!signal_thread_);
+    DCHECK(signal_thread);
+    DCHECK(*signal_thread);
+    // No one should be listening to the signal thread for work done.
+    // They should be using this class instead.  Unfortunately, we
+    // can't verify this.
 
     signal_thread_ = *signal_thread;
 
@@ -70,7 +73,7 @@ class SignalThreadTask : public talk_base::Task,
   }
 
   void OnWorkDone(talk_base::SignalThread* signal_thread) {
-    ASSERT(signal_thread == signal_thread_);
+    DCHECK_EQ(signal_thread, signal_thread_);
     finished_ = true;
     Wake();
   }

@@ -169,7 +169,7 @@ bool XmppSocketAdapter::Read(char* data, size_t len, size_t* len_read) {
     return false;
   }
 
-  ASSERT(socket_ != NULL);
+  DCHECK(socket_);
 
   if (IsOpen()) {
     int result = socket_->Recv(data, len);
@@ -196,7 +196,7 @@ bool XmppSocketAdapter::Write(const char* data, size_t len) {
     return false;
   }
 
-  ASSERT(socket_ != NULL);
+  DCHECK(socket_);
 
   size_t sent = 0;
 
@@ -287,8 +287,8 @@ void XmppSocketAdapter::OnConnectEvent(talk_base::AsyncSocket *socket) {
     }
 #endif  // defined(FEATURE_ENABLE_SSL)
   } else {
-    LOG(INFO) << "XmppSocketAdapter::OnConnectEvent - state is " << state_;
-    ASSERT(false);
+    LOG(DFATAL) << "unexpected XmppSocketAdapter::OnConnectEvent state: "
+                << state_;
   }
 }
 
@@ -319,7 +319,7 @@ bool XmppSocketAdapter::StartTls(const std::string& verify_host_name) {
 
   state_ = STATE_TLS_CONNECTING;
 
-  ASSERT(write_buffer_length_ == 0);
+  DCHECK_EQ(write_buffer_length_, 0U);
 
   talk_base::SSLAdapter* ssl_adapter =
       static_cast<talk_base::SSLAdapter*>(socket_);
@@ -346,7 +346,7 @@ void XmppSocketAdapter::QueueWriteData(const char* data, size_t len) {
       new_capacity = new_capacity * 2;
     }
     char* new_buffer = new char[new_capacity];
-    ASSERT(write_buffer_length_ <= 64000);
+    DCHECK_LE(write_buffer_length_, 64000U);
     memcpy(new_buffer, write_buffer_, write_buffer_length_);
     delete[] write_buffer_;
     write_buffer_ = new_buffer;
@@ -359,7 +359,8 @@ void XmppSocketAdapter::QueueWriteData(const char* data, size_t len) {
 }
 
 void XmppSocketAdapter::FlushWriteQueue(Error* error, int* wsa_error) {
-  ASSERT(error && wsa_error);
+  DCHECK(error);
+  DCHECK(wsa_error);
 
   size_t flushed = 0;
   while (flushed < write_buffer_length_) {

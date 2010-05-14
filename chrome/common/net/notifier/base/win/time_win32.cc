@@ -9,6 +9,7 @@
 
 #include "chrome/common/net/notifier/base/time.h"
 
+#include "base/logging.h"
 #include "chrome/common/net/notifier/base/utils.h"
 #include "talk/base/common.h"
 #include "talk/base/logging.h"
@@ -21,14 +22,14 @@ time64 FileTimeToTime64(const FILETIME& file_time) {
 }
 
 void Time64ToFileTime(const time64& time, FILETIME* ft) {
-  ASSERT(ft);
+  DCHECK(ft);
 
   ft->dwHighDateTime = static_cast<DWORD>(time >> 32);
   ft->dwLowDateTime = static_cast<DWORD>(time & 0xffffffff);
 }
 
 void TmTimeToSystemTime(const struct tm& tm, SYSTEMTIME* sys_time) {
-  ASSERT(sys_time);
+  DCHECK(sys_time);
 
   SetZero(*sys_time);
   // tm's year is 1900 based, systemtime's year is absolute.
@@ -43,7 +44,7 @@ void TmTimeToSystemTime(const struct tm& tm, SYSTEMTIME* sys_time) {
 }
 
 void SystemTimeToTmTime(const SYSTEMTIME& sys_time, struct tm* tm) {
-  ASSERT(tm);
+  DCHECK(tm);
 
   SetZero(*tm);
   // tm's year is 1900 based, systemtime's year is absolute.
@@ -84,7 +85,7 @@ time64 TmToTime64(const struct tm& tm) {
 }
 
 bool Time64ToTm(time64 t, struct tm* tm) {
-  ASSERT(tm);
+  DCHECK(tm);
 
   FILETIME file_time;
   SetZero(file_time);

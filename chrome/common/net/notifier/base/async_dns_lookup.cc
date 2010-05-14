@@ -103,7 +103,7 @@ void AsyncDNSLookup::DoWork() {
 }
 
 void AsyncDNSLookup::OnMessage(talk_base::Message* message) {
-  ASSERT(message);
+  DCHECK(message);
   if (message->message_id == MSG_TIMEOUT) {
     OnTimeout();
   } else {

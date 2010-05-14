@@ -6,6 +6,7 @@
 
 #include <winsock2.h>
 
+#include "base/logging.h"
 #include "base/scoped_handle_win.h"
 #include "chrome/common/net/notifier/base/utils.h"
 #include "talk/base/common.h"
@@ -39,7 +40,7 @@ class PlatformNetworkInfo {
   }
 
   bool IsAlive(bool* error) {
-    ASSERT(error);
+    DCHECK(error);
     *error = false;
 
     // If IsAlive was previously called, we need a new handle.
@@ -82,7 +83,7 @@ class PlatformNetworkInfo {
         // get at least one connection, return "connected".
         alive = true;
       } else {
-        ASSERT(result == SOCKET_ERROR);
+        DCHECK_EQ(result, SOCKET_ERROR);
         result = ::WSAGetLastError();
         if (result == WSA_E_NO_MORE || result == WSAENOMORE) {
           break;
@@ -117,7 +118,7 @@ class PlatformNetworkInfo {
       talk_base::CritScope crit_scope(&crit_sect_);
       if (!ws_handle_)
         return false;
-      ASSERT(!event_handle_.IsValid());
+      DCHECK(!event_handle_.IsValid());
       event_handle_.Set(CreateEvent(NULL, FALSE, FALSE, NULL));
       if (!event_handle_.IsValid()) {
         LOG(WARNING) << "failed to CreateEvent";
@@ -178,7 +179,7 @@ class PlatformNetworkInfo {
       result = ::WSAGetLastError();
       LOG(INFO) << "WSACleanup 2";
       ::WSACleanup();
-      ASSERT(ws_handle_ == NULL);
+      DCHECK(!ws_handle_);
       ws_handle_ = NULL;
       return result;
     }

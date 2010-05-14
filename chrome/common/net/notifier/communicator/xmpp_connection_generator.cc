@@ -104,8 +104,8 @@ void XmppConnectionGenerator::OnProxyDetect(
     talk_base::AutoDetectProxy* proxy_detect) {
   LOG(INFO) << "XmppConnectionGenerator::OnProxyDetect";
 
-  ASSERT(settings_list_.get());
-  ASSERT(proxy_detect);
+  DCHECK(settings_list_.get());
+  DCHECK(proxy_detect);
   settings_list_->SetProxy(proxy_detect->proxy());
 
   // Start iterating through the connections (which are generated on demand).

@@ -10,6 +10,7 @@
 #include <stack>
 #include <vector>
 
+#include "base/logging.h"
 #include "chrome/common/net/notifier/base/string.h"
 #include "chrome/common/net/notifier/base/utils.h"
 #include "chrome/common/net/notifier/communicator/xml_parse_helpers.h"
@@ -235,7 +236,8 @@ bool MailBox::InitFromXml(const buzz::XmlElement* src) {
 
   highest_thread_id_ = 0;
 
-  const buzz::XmlElement* thread_element = src->FirstNamed(buzz::kQnMailThreadInfo);
+  const buzz::XmlElement* thread_element =
+      src->FirstNamed(buzz::kQnMailThreadInfo);
   while (thread_element) {
     MessageThread* thread = MessageThread::CreateFromXML(thread_element);
     if (thread) {
@@ -534,7 +536,7 @@ class SenderFormatterList {
 
       case REMOVED_MESSAGE:
       default:
-        ASSERT(false);
+        LOG(DFATAL) << "invalid state: " << state_;
         return false;
     }
 
@@ -654,7 +656,7 @@ std::string GetSenderHtml(const MailSenderList& sender_list,
                           const std::string& me_address,
                           int space) {
   // There has to be at least 9 spaces to show something reasonable.
-  ASSERT(space >= 10);
+  DCHECK_GE(space, 10);
   std::string count_html;
   if (message_count > 1) {
     std::string count(IntToString(message_count));

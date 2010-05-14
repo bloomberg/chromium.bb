@@ -6,6 +6,8 @@
 
 #include "chrome/common/net/notifier/communicator/login.h"
 
+#include "base/logging.h"
+
 #include "chrome/common/net/notifier/base/network_status_detector_task.h"
 #include "chrome/common/net/notifier/base/time.h"
 #include "chrome/common/net/notifier/base/timer.h"
@@ -102,7 +104,7 @@ void Login::StartConnection() {
     // Override server/port with redirect values.
     talk_base::SocketAddress server_override;
     server_override.SetIP(redirect_server_, false);
-    ASSERT(redirect_port_ != 0);
+    DCHECK_NE(redirect_port_, 0);
     server_override.SetPort(redirect_port_);
     login_settings_->set_server_override(server_override);
   } else {
@@ -183,7 +185,7 @@ void Login::OnClientStateChange(buzz::XmppEngine::State state) {
       break;
 
     default:
-      ASSERT(false);
+      DCHECK(false);
       break;
   }
   HandleClientStateChange(new_state);
@@ -264,7 +266,7 @@ void Login::UseCurrentConnection() {
 }
 
 void Login::OnRedirect(const std::string& redirect_server, int redirect_port) {
-  ASSERT(redirect_port_ != 0);
+  DCHECK_NE(redirect_port_, 0);
 
   redirect_time_ns_ = GetCurrent100NSTime();
   redirect_server_ = redirect_server;
@@ -325,7 +327,7 @@ void Login::OnNetworkStateDetected(bool was_alive, bool is_alive) {
     // Our network connection just went down. Setup a timer to disconnect.
     // Don't disconnect immediately to avoid constant
     // connection/disconnection due to flaky network interfaces.
-    ASSERT(disconnect_timer_ == NULL);
+    DCHECK(!disconnect_timer_);
     disconnect_timer_ = new Timer(parent_, kDisconnectionDelaySecs, false);
     disconnect_timer_->SignalTimeout.connect(this,
                                              &Login::OnDisconnectTimeout);

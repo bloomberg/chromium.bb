@@ -6,6 +6,7 @@
 
 #include "chrome/common/net/notifier/communicator/login_settings.h"
 
+#include "base/logging.h"
 #include "chrome/common/net/notifier/communicator/connection_options.h"
 #include "chrome/common/net/notifier/communicator/xmpp_connection_generator.h"
 #include "talk/base/common.h"
@@ -29,8 +30,8 @@ LoginSettings::LoginSettings(const buzz::XmppClientSettings& user_settings,
        user_settings_(new buzz::XmppClientSettings(user_settings)),
        connection_options_(new ConnectionOptions(options)) {
   // Note: firewall may be NULL.
-  ASSERT(server_list != 0);
-  ASSERT(server_count > 0);
+  DCHECK(server_list);
+  DCHECK_GT(server_count, 0);
   for (int i = 0; i < server_count_; ++i) {
     server_list_[i] = server_list[i];
   }
