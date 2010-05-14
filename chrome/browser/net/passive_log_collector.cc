@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "base/format_macros.h"
 #include "chrome/browser/chrome_thread.h"
+#include "net/url_request/url_request_netlog_params.h"
 
 namespace {
 
@@ -149,6 +150,8 @@ std::string PassiveLogCollector::RequestInfo::GetURL() const {
     if (entry.phase == net::NetLog::PHASE_BEGIN && entry.params) {
       switch (entry.type) {
         case net::NetLog::TYPE_URL_REQUEST_START:
+          return static_cast<URLRequestStartEventParameters*>(
+              entry.params.get())->url().possibly_invalid_spec();
         case net::NetLog::TYPE_SOCKET_STREAM_CONNECT:
           return static_cast<net::NetLogStringParameter*>(
               entry.params.get())->value();

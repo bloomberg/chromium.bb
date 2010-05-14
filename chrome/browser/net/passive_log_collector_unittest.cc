@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/string_util.h"
+#include "net/url_request/url_request_netlog_params.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -25,7 +26,7 @@ PassiveLogCollector::Entry MakeStartLogEntryWithURL(int source_id,
       base::TimeTicks(),
       NetLog::Source(kSourceType, source_id),
       NetLog::PHASE_BEGIN,
-      new net::NetLogStringParameter("url", url));
+      new URLRequestStartEventParameters(GURL(url), "GET", 0));
 }
 
 PassiveLogCollector::Entry MakeStartLogEntry(int source_id) {
@@ -49,8 +50,8 @@ void AddStartURLRequestEntries(PassiveLogCollector* collector, uint32 id) {
                         NetLog::PHASE_BEGIN, NULL);
   collector->OnAddEntry(NetLog::TYPE_URL_REQUEST_START, base::TimeTicks(),
                         NetLog::Source(NetLog::SOURCE_URL_REQUEST, id),
-                        NetLog::PHASE_BEGIN, new net::NetLogStringParameter(
-                            "url", StringPrintf("http://req%d", id)));
+                        NetLog::PHASE_BEGIN, new URLRequestStartEventParameters(
+                            GURL(StringPrintf("http://req%d", id)), "GET", 0));
 }
 
 void AddEndURLRequestEntries(PassiveLogCollector* collector, uint32 id) {
@@ -82,11 +83,11 @@ TEST(RequestTrackerTest, BasicBounded) {
   RequestInfoList live_reqs = tracker.GetLiveRequests();
 
   ASSERT_EQ(5u, live_reqs.size());
-  EXPECT_EQ("http://req1", live_reqs[0].GetURL());
-  EXPECT_EQ("http://req2", live_reqs[1].GetURL());
-  EXPECT_EQ("http://req3", live_reqs[2].GetURL());
-  EXPECT_EQ("http://req4", live_reqs[3].GetURL());
-  EXPECT_EQ("http://req5", live_reqs[4].GetURL());
+  EXPECT_EQ("http://req1/", live_reqs[0].GetURL());
+  EXPECT_EQ("http://req2/", live_reqs[1].GetURL());
+  EXPECT_EQ("http://req3/", live_reqs[2].GetURL());
+  EXPECT_EQ("http://req4/", live_reqs[3].GetURL());
+  EXPECT_EQ("http://req5/", live_reqs[4].GetURL());
 
   tracker.OnAddEntry(MakeEndLogEntry(1));
   tracker.OnAddEntry(MakeEndLogEntry(5));
@@ -97,8 +98,8 @@ TEST(RequestTrackerTest, BasicBounded) {
   live_reqs = tracker.GetLiveRequests();
 
   ASSERT_EQ(2u, live_reqs.size());
-  EXPECT_EQ("http://req2", live_reqs[0].GetURL());
-  EXPECT_EQ("http://req4", live_reqs[1].GetURL());
+  EXPECT_EQ("http://req2/", live_reqs[0].GetURL());
+  EXPECT_EQ("http://req4/", live_reqs[1].GetURL());
 }
 
 TEST(RequestTrackerTest, GraveyardBounded) {
@@ -120,7 +121,7 @@ TEST(RequestTrackerTest, GraveyardBounded) {
 
   for (size_t i = 0; i < RequestTracker::kMaxGraveyardSize; ++i) {
     size_t req_number = i + RequestTracker::kMaxGraveyardSize;
-    std::string url = StringPrintf("http://req%" PRIuS, req_number);
+    std::string url = StringPrintf("http://req%" PRIuS "/", req_number);
     EXPECT_EQ(url, recent_reqs[i].GetURL());
   }
 }
