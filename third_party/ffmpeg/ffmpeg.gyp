@@ -756,8 +756,8 @@
           ],
 
           'conditions': [
-            # Non-Mac platforms need libdl for dlopen() and friends.
-            ['OS!="mac"', {
+            # Linux/Solaris need libdl for dlopen() and friends.
+            ['OS=="linux" or OS=="solaris"', {
               'link_settings': {
                 'libraries': [
                   '-ldl',

@@ -15,7 +15,7 @@
     ]
   },
   'conditions': [
-    ['OS=="linux"', {
+    ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
       # On Linux, we implicitly already depend on expat via fontconfig;
       # let's not pull it in twice.
       'targets': [
@@ -59,7 +59,7 @@
                 'COMPILED_FROM_DSP',
               ],
             }],
-            ['OS=="mac"', {
+            ['OS=="mac" or OS=="freebsd" or OS=="openbsd"', {
               'defines': [
                 'HAVE_EXPAT_CONFIG_H',
               ],

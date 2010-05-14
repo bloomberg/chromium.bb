@@ -54,6 +54,11 @@
           'POSIX',
         ],
       }],
+      ['OS=="openbsd" or OS=="freebsd"', {
+        'defines': [
+          'BSD',
+        ],
+      }],
     ],
   },
   'targets': [

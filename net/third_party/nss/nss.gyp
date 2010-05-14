@@ -4,7 +4,7 @@
 
 {
   'conditions': [
-    [ 'OS == "linux"', {
+    [ 'OS == "linux" or OS == "freebsd" or OS == "openbsd"', {
       'conditions': [
         ['sysroot!=""', {
           'variables': {
@@ -77,7 +77,7 @@
         'NO_NSPR_10_SUPPORT',
       ],
       'conditions': [
-        [ 'OS == "linux"', {
+        [ 'OS == "linux" or OS == "freebsd" or OS == "openbsd"', {
           'sources!': [
             'ssl/os2_err.c',
             'ssl/os2_err.h',

@@ -128,7 +128,7 @@
         },
       ],
     }],
-    ['OS=="linux"', {
+    ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
       'targets': [
         {
           'target_name': 'installer_util',

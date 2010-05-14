@@ -5,7 +5,7 @@
 {
   'variables': {
     'conditions': [
-      [ 'OS=="linux"', {
+      [ 'OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
         # Link to system .so since we already use it due to GTK.
         'use_system_bzip2%': 1,
       }, {  # OS!="linux"

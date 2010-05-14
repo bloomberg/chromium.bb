@@ -693,7 +693,7 @@
         '../third_party/skia/src/core',
       ],
       'conditions': [
-        [ 'OS == "linux" and target_arch != "arm"', {
+        [ '(OS == "linux" or OS == "freebsd" or OS == "openbsd") and target_arch != "arm"', {
           'cflags': [
             '-msse2',
           ],
