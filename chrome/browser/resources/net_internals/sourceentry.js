@@ -172,8 +172,6 @@ SourceEntry.prototype.getDescription = function() {
  * first entry that was logged to this source. However, we skip over the
  * TYPE_REQUEST_ALIVE entries which wrap TYPE_URL_REQUEST_START /
  * TYPE_SOCKET_STREAM_CONNECT.
- *
- * TODO(eroman): Get rid of TYPE_REQUEST_ALIVE so this isn't necessary.
  */
 SourceEntry.prototype.getStartEntry_ = function() {
   if (this.entries_.length < 1)

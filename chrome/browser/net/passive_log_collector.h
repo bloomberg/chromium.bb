@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_NET_PASSIVE_LOG_COLLECTOR_H_
 #define CHROME_BROWSER_NET_PASSIVE_LOG_COLLECTOR_H_
 
+#include <string>
 #include <vector>
 
 #include "base/hash_tables.h"
@@ -49,13 +50,16 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
           bytes_transmitted(0),
           bytes_received(0),
           last_tx_rx_position(0) {}
+
+    // Returns the URL that corresponds with this source. This is
+    // only meaningful for certain source types (URL_REQUEST, SOCKET_STREAM).
+    // For the rest, it will return an empty string.
+    std::string GetURL() const;
+
     uint32 source_id;
     EntryList entries;
     size_t num_entries_truncated;
     net::NetLog::Source subordinate_source;
-
-    // Only used in RequestTracker.
-    std::string url;
 
     // Only used in SocketTracker.
     uint64 total_bytes_transmitted;
@@ -162,7 +166,6 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
   class RequestTracker : public RequestTrackerBase {
    public:
     static const size_t kMaxGraveyardSize;
-    static const size_t kMaxGraveyardURLSize;
 
     RequestTracker(ConnectJobTracker* connect_job_tracker,
                    SocketTracker* socket_tracker);

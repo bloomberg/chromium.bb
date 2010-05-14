@@ -83,11 +83,11 @@ TEST(RequestTrackerTest, BasicBounded) {
   RequestInfoList live_reqs = tracker.GetLiveRequests();
 
   ASSERT_EQ(5u, live_reqs.size());
-  EXPECT_EQ("http://req1", live_reqs[0].url);
-  EXPECT_EQ("http://req2", live_reqs[1].url);
-  EXPECT_EQ("http://req3", live_reqs[2].url);
-  EXPECT_EQ("http://req4", live_reqs[3].url);
-  EXPECT_EQ("http://req5", live_reqs[4].url);
+  EXPECT_EQ("http://req1", live_reqs[0].GetURL());
+  EXPECT_EQ("http://req2", live_reqs[1].GetURL());
+  EXPECT_EQ("http://req3", live_reqs[2].GetURL());
+  EXPECT_EQ("http://req4", live_reqs[3].GetURL());
+  EXPECT_EQ("http://req5", live_reqs[4].GetURL());
 
   tracker.OnAddEntry(MakeEndLogEntry(1));
   tracker.OnAddEntry(MakeEndLogEntry(5));
@@ -98,8 +98,8 @@ TEST(RequestTrackerTest, BasicBounded) {
   live_reqs = tracker.GetLiveRequests();
 
   ASSERT_EQ(2u, live_reqs.size());
-  EXPECT_EQ("http://req2", live_reqs[0].url);
-  EXPECT_EQ("http://req4", live_reqs[1].url);
+  EXPECT_EQ("http://req2", live_reqs[0].GetURL());
+  EXPECT_EQ("http://req4", live_reqs[1].GetURL());
 }
 
 TEST(RequestTrackerTest, GraveyardBounded) {
@@ -123,7 +123,7 @@ TEST(RequestTrackerTest, GraveyardBounded) {
   for (size_t i = 0; i < RequestTracker::kMaxGraveyardSize; ++i) {
     size_t req_number = i + RequestTracker::kMaxGraveyardSize;
     std::string url = StringPrintf("http://req%" PRIuS, req_number);
-    EXPECT_EQ(url, recent_reqs[i].url);
+    EXPECT_EQ(url, recent_reqs[i].GetURL());
   }
 }
 
@@ -153,7 +153,7 @@ TEST(RequestTrackerTest, GraveyardUnbounded) {
 
   for (size_t i = 0; i < kMaxSize; ++i) {
     std::string url = StringPrintf("http://req%" PRIuS, i);
-    EXPECT_EQ(url, recent_reqs[i].url);
+    EXPECT_EQ(url, recent_reqs[i].GetURL());
   }
 }
 
@@ -179,8 +179,8 @@ TEST(RequestTrackerTest, GraveyardIsFiltered) {
   tracker.OnAddEntry(MakeEndLogEntry(3));
 
   ASSERT_EQ(2u, tracker.GetRecentlyDeceased().size());
-  EXPECT_EQ(url2, tracker.GetRecentlyDeceased()[0].url);
-  EXPECT_EQ(url3, tracker.GetRecentlyDeceased()[1].url);
+  EXPECT_EQ(url2, tracker.GetRecentlyDeceased()[0].GetURL());
+  EXPECT_EQ(url3, tracker.GetRecentlyDeceased()[1].GetURL());
 }
 
 // Convert an unbounded tracker back to being bounded.

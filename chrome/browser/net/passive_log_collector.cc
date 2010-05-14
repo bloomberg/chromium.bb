@@ -11,6 +11,7 @@
 #include "chrome/browser/chrome_thread.h"
 
 namespace {
+
 const size_t kMaxNumEntriesPerLog = 50;
 const size_t kMaxConnectJobGraveyardSize = 3;
 const size_t kMaxRequestGraveyardSize = 25;
@@ -140,6 +141,25 @@ void PassiveLogCollector::GetAllCapturedEvents(EntryList* out) const {
 
   // Now sort the list of entries by their insertion time (ascending).
   std::sort(out->begin(), out->end(), &SortByOrderComparator);
+}
+
+std::string PassiveLogCollector::RequestInfo::GetURL() const {
+  // Note: we look at the first *two* entries, since the outer REQUEST_ALIVE
+  // doesn't actually contain any data.
+  for (size_t i = 0; i < 2 && i < entries.size(); ++i) {
+    const PassiveLogCollector::Entry& entry = entries[i];
+    if (entry.phase == net::NetLog::PHASE_BEGIN && entry.params) {
+      switch (entry.type) {
+        case net::NetLog::TYPE_URL_REQUEST_START:
+        case net::NetLog::TYPE_SOCKET_STREAM_CONNECT:
+          return static_cast<net::NetLogStringParameter*>(
+              entry.params.get())->value();
+        default:
+          break;
+      }
+    }
+  }
+  return std::string();
 }
 
 //----------------------------------------------------------------------------
@@ -433,7 +453,6 @@ void PassiveLogCollector::SocketTracker::ClearInfo(RequestInfo* info) {
 //----------------------------------------------------------------------------
 
 const size_t PassiveLogCollector::RequestTracker::kMaxGraveyardSize = 25;
-const size_t PassiveLogCollector::RequestTracker::kMaxGraveyardURLSize = 1000;
 
 PassiveLogCollector::RequestTracker::RequestTracker(
     ConnectJobTracker* connect_job_tracker, SocketTracker* socket_tracker)
@@ -492,22 +511,11 @@ PassiveLogCollector::RequestTracker::DoAddEntry(const Entry& entry,
 
   AddEntryToRequestInfo(entry, is_unbounded(), out_info);
 
-  // If this was the start of a URLRequest/SocketStream, extract the URL.
-  // Note: we look at the first *two* entries, since the outer REQUEST_ALIVE
-  // doesn't actually contain any data.
-  if (out_info->url.empty() && out_info->entries.size() <= 2 &&
-      entry.phase == net::NetLog::PHASE_BEGIN && entry.params &&
-      (entry.type == net::NetLog::TYPE_URL_REQUEST_START ||
-       entry.type == net::NetLog::TYPE_SOCKET_STREAM_CONNECT)) {
-    out_info->url = static_cast<net::NetLogStringParameter*>(
-        entry.params.get())->value();
-  }
-
   // If the request has ended, move it to the graveyard.
   if (entry.type == net::NetLog::TYPE_REQUEST_ALIVE &&
       entry.phase == net::NetLog::PHASE_END) {
     IntegrateSubordinateSource(out_info, true);
-    if (StartsWithASCII(out_info->url, "chrome://", false)) {
+    if (StartsWithASCII(out_info->GetURL(), "chrome://", false)) {
       // Avoid sending "chrome://" requests to the graveyard, since it just
       // adds to clutter.
       return ACTION_DELETE;
