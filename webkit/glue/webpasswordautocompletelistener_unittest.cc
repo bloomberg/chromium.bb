@@ -107,11 +107,13 @@ class PasswordManagerAutocompleteTests : public testing::Test {
     data_.basic_data.fields.push_back(FormField(string16(),
                                                 string16(),
                                                 username1_,
-                                                string16()));
+                                                string16(),
+                                                0));
     data_.basic_data.fields.push_back(FormField(string16(),
                                                 string16(),
                                                 password1_,
-                                                string16()));
+                                                string16(),
+                                                0));
     data_.additional_logins[username2_] = password2_;
     testing::Test::SetUp();
   }
