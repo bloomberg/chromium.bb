@@ -242,8 +242,8 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
 
   std::wstring url;
 
-  scoped_refptr<BindContextInfo> info =
-      BindContextInfo::FromBindContext(bind_context);
+  ScopedComPtr<BindContextInfo> info;
+  BindContextInfo::FromBindContext(bind_context, info.Receive());
   DCHECK(info);
   if (info && !info->url().empty()) {
     url = info->url();

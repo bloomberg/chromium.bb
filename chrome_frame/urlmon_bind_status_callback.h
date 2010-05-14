@@ -131,7 +131,7 @@ END_COM_MAP()
         int len = lstrlenW(status_text) + 1;
         status_text_.reset(new wchar_t[len]);
         if (status_text_.get()) {
-          lstrcpyW(status_text_.get(), status_text);
+          lstrcpynW(status_text_.get(), status_text, len);
         } else {
           NOTREACHED();
         }
@@ -167,7 +167,8 @@ END_COM_MAP()
     scoped_ptr<wchar_t> status_text_;
   };
 
-  std::vector<Progress*> saved_progress_;
+  typedef std::vector<Progress*> ProgressVector;
+  ProgressVector saved_progress_;
   CLIPFORMAT clip_format_;
 
  private:

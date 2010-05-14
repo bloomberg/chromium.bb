@@ -19,9 +19,10 @@ IBindContextInfoInternal : public IUnknown {
 
 // This class maintains contextual information used by ChromeFrame.
 // This information is maintained in the bind context.
-class BindContextInfo
-  : public IBindContextInfoInternal,
-    public CComObjectRoot {
+// Association with GUID_NULL is for convenience.
+class __declspec(uuid("00000000-0000-0000-0000-000000000000")) BindContextInfo
+  : public CComObjectRootEx<CComMultiThreadModel>,
+    public IBindContextInfoInternal {
  public:
   BindContextInfo();
   ~BindContextInfo();
@@ -33,7 +34,10 @@ class BindContextInfo
 
   // Returns the BindContextInfo instance associated with the bind
   // context. Creates it if needed.
-  static BindContextInfo* FromBindContext(IBindCtx* bind_context);
+  // The returned info object will be AddRef-ed on return, so use
+  // ScopedComPtr<>::Receive() to receive this pointer.
+  static HRESULT FromBindContext(IBindCtx* bind_context,
+                                 BindContextInfo** info);
 
   void set_chrome_request(bool chrome_request) {
     chrome_request_ = chrome_request;
@@ -79,6 +83,7 @@ class BindContextInfo
  protected:
   STDMETHOD(GetCppObject)(void** me) {
     DCHECK(me);
+    AddRef();
     *me = static_cast<BindContextInfo*>(this);
     return S_OK;
   }

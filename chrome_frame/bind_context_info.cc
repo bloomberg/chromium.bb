@@ -31,41 +31,46 @@ HRESULT BindContextInfo::Initialize(IBindCtx* bind_ctx) {
   return hr;
 }
 
-BindContextInfo* BindContextInfo::FromBindContext(IBindCtx* bind_context) {
+HRESULT BindContextInfo::FromBindContext(IBindCtx* bind_context,
+                                         BindContextInfo** info) {
+  DCHECK(info);
   if (!bind_context) {
     NOTREACHED();
-    return NULL;
+    return E_POINTER;
   }
 
   ScopedComPtr<IUnknown> context;
-  bind_context->GetObjectParam(kBindContextInfo, context.Receive());
+  HRESULT hr = bind_context->GetObjectParam(kBindContextInfo,
+                                            context.Receive());
   if (context) {
     ScopedComPtr<IBindContextInfoInternal> internal;
-    HRESULT hr = internal.QueryFrom(context);
+    hr = internal.QueryFrom(context);
     DCHECK(SUCCEEDED(hr));
     if (SUCCEEDED(hr)) {
       BindContextInfo* ret = NULL;
-      internal->GetCppObject(reinterpret_cast<void**>(&ret));
-      DCHECK(ret);
+      hr = internal->GetCppObject(reinterpret_cast<void**>(info));
+      DCHECK_EQ(hr, S_OK);
       DLOG_IF(ERROR, reinterpret_cast<void*>(ret) !=
                      reinterpret_cast<void*>(internal.get()))
           << "marshalling took place!";
-      return ret;
+    }
+  } else {
+    DCHECK(FAILED(hr));
+    CComObject<BindContextInfo>* bind_context_info = NULL;
+    hr = CComObject<BindContextInfo>::CreateInstance(&bind_context_info);
+    DCHECK(bind_context_info != NULL);
+    if (bind_context_info) {
+      bind_context_info->AddRef();
+      hr = bind_context_info->Initialize(bind_context);
+      if (FAILED(hr)) {
+        bind_context_info->Release();
+      } else {
+        *info = bind_context_info;
+      }
     }
   }
 
-  CComObject<BindContextInfo>* bind_context_info = NULL;
-  HRESULT hr = CComObject<BindContextInfo>::CreateInstance(&bind_context_info);
-  DCHECK(bind_context_info != NULL);
-  if (bind_context_info) {
-    bind_context_info->AddRef();
-    hr = bind_context_info->Initialize(bind_context);
-    bind_context_info->Release();
-    if (FAILED(hr))
-      bind_context_info = NULL;
-  }
-
-  return bind_context_info;
+  return hr;
 }
 
 void BindContextInfo::SetToSwitch(IStream* cache) {

@@ -304,8 +304,8 @@ STDMETHODIMP UrlmonUrlRequest::OnProgress(ULONG progress, ULONG max_progress,
       // If we receive a redirect for the initial pending request initiated
       // when our document loads we should stash it away and inform Chrome
       // accordingly when it requests data for the original URL.
-      scoped_refptr<BindContextInfo> info =
-          BindContextInfo::FromBindContext(bind_context_);
+      ScopedComPtr<BindContextInfo> info;
+      BindContextInfo::FromBindContext(bind_context_, info.Receive());
       DCHECK(info);
       GURL previously_redirected(info ? info->url() : std::wstring());
       if (GURL(status_text) != previously_redirected) {
@@ -789,8 +789,8 @@ HRESULT UrlmonUrlRequest::StartAsyncDownload() {
     ScopedComPtr<IHttpSecurity> self(this);
 
     // Inform our moniker patch this binding should not be tortured.
-    scoped_refptr<BindContextInfo> info =
-        BindContextInfo::FromBindContext(bind_context_);
+    ScopedComPtr<BindContextInfo> info;
+    BindContextInfo::FromBindContext(bind_context_, info.Receive());
     DCHECK(info);
     if (info)
       info->set_chrome_request(true);
@@ -918,8 +918,8 @@ void UrlmonUrlRequestManager::SetInfoForUrl(const std::wstring& url,
     DCHECK(start_url.is_valid());
     DCHECK(pending_request_ == NULL);
 
-    scoped_refptr<BindContextInfo> info =
-        BindContextInfo::FromBindContext(bind_ctx);
+    ScopedComPtr<BindContextInfo> info;
+    BindContextInfo::FromBindContext(bind_ctx, info.Receive());
     DCHECK(info);
     IStream* cache = info ? info->cache() : NULL;
     pending_request_ = new_request;

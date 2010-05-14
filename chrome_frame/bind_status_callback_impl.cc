@@ -44,12 +44,19 @@ HRESULT BSCBImpl::AttachToBind(IBindCtx* bind_ctx) {
 }
 
 HRESULT BSCBImpl::ReleaseBind() {
+  // AddRef ourselves while we release these objects as we might
+  // perish during this operation.
+  AddRef();
+
   HRESULT hr = S_OK;
   if (bind_ctx_) {
     hr = ::RevokeBindStatusCallback(bind_ctx_, this);
   }
   delegate_.Release();
   bind_ctx_.Release();
+
+  Release();
+
   return hr;
 }
 

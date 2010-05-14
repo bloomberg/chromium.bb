@@ -439,4 +439,16 @@ ProtocolPatchMethod GetPatchMethod();
 // Returns true if the IMoniker patch is enabled.
 bool MonikerPatchEnabled();
 
+// STL helper class that implements a functor to delete objects.
+// E.g: std::for_each(v.begin(), v.end(), utils::DeleteObject());
+namespace utils {
+class DeleteObject {
+ public:
+  template <typename T>
+  void operator()(T* obj) {
+    delete obj;
+  }
+};
+}
+
 #endif  // CHROME_FRAME_UTILS_H_

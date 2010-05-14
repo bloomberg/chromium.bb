@@ -208,10 +208,8 @@ BSCBStorageBind::BSCBStorageBind() : clip_format_(CF_NULL) {
 }
 
 BSCBStorageBind::~BSCBStorageBind() {
-  for (std::vector<Progress*>::iterator i = saved_progress_.begin();
-       i != saved_progress_.end(); i++) {
-    delete (*i);
-  }
+  std::for_each(saved_progress_.begin(), saved_progress_.end(),
+                utils::DeleteObject());
 }
 
 HRESULT BSCBStorageBind::Initialize(IMoniker* moniker, IBindCtx* bind_ctx) {
@@ -252,8 +250,8 @@ STDMETHODIMP BSCBStorageBind::OnProgress(ULONG progress, ULONG progress_max,
   // Remember the last redirected URL in case we get switched into
   // chrome frame
   if (status_code == BINDSTATUS_REDIRECTING) {
-    scoped_refptr<BindContextInfo> info =
-        BindContextInfo::FromBindContext(bind_ctx_);
+    ScopedComPtr<BindContextInfo> info;
+    BindContextInfo::FromBindContext(bind_ctx_, info.Receive());
     DCHECK(info);
     if (info)
       info->set_url(status_text);
@@ -356,12 +354,17 @@ HRESULT BSCBStorageBind::MayPlayBack(DWORD flags) {
     clip_format_ = kMagicClipFormat;
   } else {
     if (!saved_progress_.empty()) {
-      for (std::vector<Progress*>::iterator i = saved_progress_.begin();
+      for (ProgressVector::iterator i = saved_progress_.begin();
            i != saved_progress_.end(); i++) {
         Progress* p = (*i);
-        CallbackImpl::OnProgress(p->progress(), p->progress_max(),
-                                 p->status_code(), p->status_text());
-        delete p;
+        // We don't really expect a race condition here but just for sake
+        // of completeness we check.
+        if (p) {
+          (*i) = NULL;
+          CallbackImpl::OnProgress(p->progress(), p->progress_max(),
+                                   p->status_code(), p->status_text());
+          delete p;
+        }
       }
       saved_progress_.clear();
     }
@@ -369,8 +372,8 @@ HRESULT BSCBStorageBind::MayPlayBack(DWORD flags) {
 
   if (data_sniffer_.is_cache_valid()) {
     if (data_sniffer_.is_chrome()) {
-      scoped_refptr<BindContextInfo> info =
-          BindContextInfo::FromBindContext(bind_ctx_);
+      ScopedComPtr<BindContextInfo> info;
+      BindContextInfo::FromBindContext(bind_ctx_, info.Receive());
       DCHECK(info);
       if (info) {
         info->SetToSwitch(data_sniffer_.cache_);

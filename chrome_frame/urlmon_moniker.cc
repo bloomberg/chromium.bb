@@ -130,8 +130,8 @@ bool ShouldWrapCallback(IMoniker* moniker, REFIID iid, IBindCtx* bind_context) {
     return false;
   }
 
-  scoped_refptr<BindContextInfo> info =
-      BindContextInfo::FromBindContext(bind_context);
+  ScopedComPtr<BindContextInfo> info;
+  BindContextInfo::FromBindContext(bind_context, info.Receive());
   DCHECK(info);
   if (info && info->chrome_request()) {
     DLOG(INFO) << __FUNCTION__ << " Url: " << url <<
@@ -179,8 +179,8 @@ HRESULT MonikerPatch::BindToObject(IMoniker_BindToObject_Fn original,
   HRESULT hr = S_OK;
   // Bind context is marked for switch when we sniff data in BSCBStorageBind
   // and determine that the renderer to be used is Chrome.
-  scoped_refptr<BindContextInfo> info =
-      BindContextInfo::FromBindContext(bind_ctx);
+  ScopedComPtr<BindContextInfo> info;
+  BindContextInfo::FromBindContext(bind_ctx, info.Receive());
   DCHECK(info);
   if (info) {
     if (info->is_switching()) {
@@ -188,7 +188,7 @@ HRESULT MonikerPatch::BindToObject(IMoniker_BindToObject_Fn original,
       // simply register Chrome Frame ActiveDoc as a handler for 'text/html'
       // in this bind context.  This makes urlmon instantiate CF Active doc
       // instead of mshtml.
-      char* media_types[] = { "text/html" };
+      const char* media_types[] = { "text/html" };
       CLSID classes[] = { CLSID_ChromeActiveDocument };
       hr = RegisterMediaTypeClass(bind_ctx, arraysize(media_types), media_types,
                                   classes, 0);
@@ -213,22 +213,24 @@ HRESULT MonikerPatch::BindToStorage(IMoniker_BindToStorage_Fn original,
   ExceptionBarrierReportOnlyModule barrier;
 
   HRESULT hr = S_OK;
+  scoped_refptr<BSCBStorageBind> auto_release_callback;
   CComObject<BSCBStorageBind>* callback = NULL;
   if (ShouldWrapCallback(me, iid, bind_ctx)) {
     hr = CComObject<BSCBStorageBind>::CreateInstance(&callback);
-    callback->AddRef();
+    auto_release_callback = callback;
+    DCHECK_EQ(callback->m_dwRef, 1);
     hr = callback->Initialize(me, bind_ctx);
     DCHECK(SUCCEEDED(hr));
-    hr = original(me, bind_ctx, to_left, iid, obj);
-  } else {
-    hr = original(me, bind_ctx, to_left, iid, obj);
   }
+
+  hr = original(me, bind_ctx, to_left, iid, obj);
 
   // If the binding terminates before the data could be played back
   // now is the chance. Sometimes OnStopBinding happens after this returns
   // and then it's too late.
   if ((S_OK == hr) && callback)
     callback->MayPlayBack(BSCF_LASTDATANOTIFICATION);
+
   return hr;
 }
 
