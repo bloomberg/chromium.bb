@@ -22,6 +22,9 @@
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
 #endif
 
+// How long the fade should last for.
+static const int kHideFadeDurationMS = 200;
+
 // Background color of the bubble.
 #if defined(OS_WIN)
 const SkColor InfoBubble::kBackgroundColor =
@@ -93,7 +96,6 @@ gfx::Rect BorderContents::GetMonitorBounds(const gfx::Rect& rect) {
   scoped_ptr<WindowSizer::MonitorInfoProvider> monitor_provider(
       WindowSizer::CreateDefaultMonitorInfoProvider());
   return monitor_provider->GetMonitorWorkAreaMatching(rect);
-
 }
 
 void BorderContents::Paint(gfx::Canvas* canvas) {
@@ -198,7 +200,6 @@ BorderWidget::BorderWidget() : border_contents_(NULL) {
   set_window_ex_style(WS_EX_TOOLWINDOW | WS_EX_LAYERED);
 }
 
-
 void BorderWidget::Init(BorderContents* border_contents, HWND owner) {
   DCHECK(!border_contents_);
   border_contents_ = border_contents;
@@ -259,7 +260,29 @@ InfoBubble* InfoBubble::Show(views::Widget* parent,
 }
 
 void InfoBubble::Close() {
+  if (!delegate_ || !delegate_->FadeOutOnClose())
+    Close(false);
+  else
+    FadeOut();
+}
+
+void InfoBubble::AnimationEnded(const Animation* animation) {
   Close(false);
+}
+
+void InfoBubble::AnimationProgressed(const Animation* animation) {
+#if defined(OS_WIN)
+  unsigned char opacity = static_cast<unsigned char>(
+      animation_->GetCurrentValue() * 255);
+  SetLayeredWindowAttributes(GetNativeView(), 0,
+      static_cast<byte>(opacity), LWA_ALPHA);
+
+  // Also fade out the bubble border window.
+  border_->SetOpacity(opacity);
+  border_->border_contents()->SchedulePaint();
+#else
+  NOTIMPLEMENTED();
+#endif
 }
 
 InfoBubble::InfoBubble()
@@ -400,7 +423,10 @@ void InfoBubble::SizeToContents() {
 void InfoBubble::OnActivate(UINT action, BOOL minimized, HWND window) {
   // The popup should close when it is deactivated.
   if (action == WA_INACTIVE && !closed_) {
-    Close();
+    if (!delegate_ || !delegate_->FadeOutOnClose())
+      Close();
+    else
+      FadeOut();
   } else if (action == WA_ACTIVE) {
     DCHECK(GetRootView()->GetChildViewCount() > 0);
     GetRootView()->GetChildViewAt(0)->RequestFocus();
@@ -426,6 +452,22 @@ void InfoBubble::Close(bool closed_by_escape) {
 #elif defined(OS_LINUX)
   WidgetGtk::Close();
 #endif
+}
+
+void InfoBubble::FadeOut() {
+#if defined(OS_WIN)
+  // The contents window cannot be created layered, since its content doesn't
+  // always work inside a layered window, but when animating it is ok to set
+  // that style on the window for the purpose of fading it out.
+  SetWindowLong(GWL_EXSTYLE, GetWindowLong(GWL_EXSTYLE) | WS_EX_LAYERED);
+#endif
+
+  animation_.reset(new SlideAnimation(this));
+  animation_->SetDuration(kHideFadeDurationMS);
+  animation_->SetTweenType(Tween::LINEAR);
+
+  animation_->Reset(1.0);
+  animation_->Hide();
 }
 
 bool InfoBubble::AcceleratorPressed(const views::Accelerator& accelerator) {

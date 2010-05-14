@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_VIEWS_INFO_BUBBLE_H_
 #define CHROME_BROWSER_VIEWS_INFO_BUBBLE_H_
 
+#include "app/slide_animation.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "views/accelerator.h"
 #include "views/view.h"
@@ -64,7 +65,7 @@ class BorderContents : public views::View {
   virtual ~BorderContents() { }
 
   // Returns the bounds for the monitor showing the specified |rect|.
-  // Overriden in unit-tests.
+  // Overridden in unit-tests.
   virtual gfx::Rect GetMonitorBounds(const gfx::Rect& rect);
 
   // Margins between the contents and the inside of the border, in pixels.
@@ -128,6 +129,9 @@ class BorderWidget : public views::WidgetWin {
                                      BubbleBorder::ArrowLocation arrow_location,
                                      const gfx::Size& contents_size);
 
+  // Simple accessors.
+  BorderContents* border_contents() { return border_contents_; }
+
  protected:
   BorderContents* border_contents_;
 
@@ -151,6 +155,9 @@ class InfoBubbleDelegate {
 
   // Whether the InfoBubble should be closed when the Esc key is pressed.
   virtual bool CloseOnEscape() = 0;
+
+  // Whether the InfoBubble should fade away when closing.
+  virtual bool FadeOutOnClose() = 0;
 };
 
 // TODO(sky): this code is ifdef-tastic. It might be cleaner to refactor the
@@ -162,14 +169,15 @@ class InfoBubble
 #elif defined(OS_LINUX)
     : public views::WidgetGtk,
 #endif
-      public views::AcceleratorTarget {
+      public views::AcceleratorTarget,
+      public AnimationDelegate {
  public:
   // Shows the InfoBubble.  |parent| is set as the parent window, |contents| are
   // the contents shown in the bubble, and |position_relative_to| is a rect in
   // screen coordinates at which the InfoBubble will point.  Show() takes
   // ownership of |contents| and deletes the created InfoBubble when another
   // window is activated.  You can explicitly close the bubble by invoking
-  // Close(). |arrow_location| specifies prefered bubble alignment.
+  // Close(). |arrow_location| specifies preferred bubble alignment.
   // You may provide an optional |delegate| to:
   //     - Be notified when the InfoBubble is closed.
   //     - Prevent the InfoBubble from being closed when the Escape key is
@@ -180,12 +188,16 @@ class InfoBubble
                           views::View* contents,
                           InfoBubbleDelegate* delegate);
 
-  // Resizes and potentially moves the InfoBubble to best accomodate the
+  // Resizes and potentially moves the InfoBubble to best accommodate the
   // contents preferred size.
   void SizeToContents();
 
   // Overridden from WidgetWin:
   virtual void Close();
+
+  // Overridden from AnimationDelegate:
+  virtual void AnimationEnded(const Animation* animation);
+  virtual void AnimationProgressed(const Animation* animation);
 
   static const SkColor kBackgroundColor;
 
@@ -200,7 +212,7 @@ class InfoBubble
                     views::View* contents,
                     InfoBubbleDelegate* delegate);
 
-  // Instanciates and returns the BorderContents this InfoBubble should use.
+  // Instantiates and returns the BorderContents this InfoBubble should use.
   // Subclasses can return their own BorderContents implementation.
   virtual BorderContents* CreateBorderContents();
 
@@ -225,11 +237,17 @@ class InfoBubble
   // the close is the result of pressing escape.
   void Close(bool closed_by_escape);
 
+  // Fade out on close.
+  void FadeOut();
+
   // Overridden from AcceleratorTarget:
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
 
   // The delegate, if any.
   InfoBubbleDelegate* delegate_;
+
+  // The animation used to fade the bubble out.
+  scoped_ptr<SlideAnimation> animation_;
 
   // Have we been closed?
   bool closed_;
@@ -238,7 +256,6 @@ class InfoBubble
   BubbleBorder::ArrowLocation arrow_location_;
 
   views::View* contents_;
-
 
   DISALLOW_COPY_AND_ASSIGN(InfoBubble);
 };

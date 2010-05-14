@@ -66,6 +66,7 @@ class ExtensionInstalledBubble
   virtual void InfoBubbleClosing(InfoBubble* info_bubble,
                                  bool closed_by_escape);
   virtual bool CloseOnEscape() { return true; }
+  virtual bool FadeOutOnClose() { return false; }
 
   Extension* extension_;
   Browser* browser_;

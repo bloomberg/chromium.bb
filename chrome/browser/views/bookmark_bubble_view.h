@@ -118,6 +118,7 @@ class BookmarkBubbleView : public views::View,
   virtual void InfoBubbleClosing(InfoBubble* info_bubble,
                                  bool closed_by_escape);
   virtual bool CloseOnEscape();
+  virtual bool FadeOutOnClose() { return false; }
 
   // Closes the bubble.
   void Close();

@@ -39,6 +39,7 @@ class FirstRunBubble : public InfoBubble,
   virtual void InfoBubbleClosing(InfoBubble* info_bubble,
                                  bool closed_by_escape);
   virtual bool CloseOnEscape() { return true; }
+  virtual bool FadeOutOnClose() { return false; }
 
   // Whether we have already been activated.
   bool has_been_activated_;

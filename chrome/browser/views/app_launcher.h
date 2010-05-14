@@ -76,6 +76,13 @@ class AppLauncher : public InfoBubbleDelegate,
   virtual void InfoBubbleClosing(InfoBubble* info_bubble,
                                  bool closed_by_escape);
   virtual bool CloseOnEscape() { return true; }
+  virtual bool FadeOutOnClose() {
+#if defined(OS_WIN)
+    return true;
+#else
+    return false;
+#endif
+  }
 
   // TabContentsDelegate.
   virtual void OpenURLFromTab(TabContents* source,
