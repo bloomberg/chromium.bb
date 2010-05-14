@@ -1528,6 +1528,8 @@
         'browser/importer/nss_decryptor_system_nss.h',
         'browser/importer/nss_decryptor_win.cc',
         'browser/importer/nss_decryptor_win.h',
+        'browser/importer/profile_writer.cc',
+        'browser/importer/profile_writer.h',
         'browser/importer/safari_importer.h',
         'browser/importer/safari_importer.mm',
         'browser/importer/toolbar_importer.cc',
