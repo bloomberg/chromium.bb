@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,16 +23,6 @@ class PageInfoModel {
   class PageInfoModelObserver {
     public:
      virtual void ModelChanged() = 0;
-  };
-
-  // Because the UI on the Mac is statically laid-out, this enum provides the
-  // section type for the associated index. It is only used on Mac.
-  // Ideally the view wouldn't have to know anything regarding the semantics of
-  // the model and would only use GetSectionCount()/GetSectionInfo().
-  enum SectionType {
-    IDENTITY = 0,
-    CONNECTION,
-    HISTORY
   };
 
   struct SectionInfo {
@@ -76,7 +66,10 @@ class PageInfoModel {
 
   static void RegisterPrefs(PrefService* prefs);
 
- private:
+ protected:
+  // Testing constructor. DO NOT USE.
+  PageInfoModel() {}
+
   PageInfoModelObserver* observer_;
 
   std::vector<SectionInfo> sections_;
@@ -84,6 +77,7 @@ class PageInfoModel {
   // Used to request number of visits.
   CancelableRequestConsumer request_consumer_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(PageInfoModel);
 };
 
