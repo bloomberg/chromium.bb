@@ -14,7 +14,11 @@ struct SkIRect;
 struct SkPoint;
 struct SkRect;
 class SkBitmap;
+#ifdef __LP64__
+typedef CGSize NSSize;
+#else
 typedef struct _NSSize NSSize;
+#endif
 
 #ifdef __OBJC__
 @class NSImage;
