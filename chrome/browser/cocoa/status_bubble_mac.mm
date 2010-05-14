@@ -292,10 +292,6 @@ void StatusBubbleMac::MouseMoved(
 void StatusBubbleMac::UpdateDownloadShelfVisibility(bool visible) {
 }
 
-void StatusBubbleMac::SetBubbleWidth(int width) {
-  NOTIMPLEMENTED();
-}
-
 void StatusBubbleMac::Create() {
   if (window_)
     return;

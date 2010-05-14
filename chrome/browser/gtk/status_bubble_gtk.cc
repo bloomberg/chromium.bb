@@ -18,7 +18,6 @@
 #include "chrome/browser/gtk/slide_animator_gtk.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/gtk_util.h"
-#include "googleurl/src/gurl.h"
 
 namespace {
 
@@ -42,7 +41,6 @@ StatusBubbleGtk::StatusBubbleGtk(Profile* profile)
     : theme_provider_(GtkThemeProvider::GetFrom(profile)),
       padding_(NULL),
       label_(NULL),
-      timer_factory_(this),
       flip_horizontally_(false),
       y_offset_(0),
       download_shelf_is_visible_(false),
@@ -75,6 +73,9 @@ void StatusBubbleGtk::SetStatus(const std::wstring& status_text_wide) {
 }
 
 void StatusBubbleGtk::SetURL(const GURL& url, const std::wstring& languages) {
+  url_ = url;
+  languages_ = languages;
+
   // If we want to clear a displayed URL but there is a status still to
   // display, display that status instead.
   if (url.is_empty() && !status_text_.empty()) {
@@ -83,21 +84,32 @@ void StatusBubbleGtk::SetURL(const GURL& url, const std::wstring& languages) {
     return;
   }
 
-  // Set Elided Text corresponding to the GURL object.  We limit the width of
-  // the URL to a third of the width of the browser window (matching the width
-  // on Windows).
+  SetStatusTextToURL();
+}
+
+void StatusBubbleGtk::SetStatusTextToURL() {
   GtkWidget* parent = gtk_widget_get_parent(container_.get());
-  int window_width = parent->allocation.width;
+  int desired_width = parent->allocation.width;
+  if (!expanded()) {
+    expand_timer_.Stop();
+    expand_timer_.Start(base::TimeDelta::FromMilliseconds(kExpandHoverDelay),
+                        this, &StatusBubbleGtk::ExpandURL);
+    // When not expanded, we limit the size to one third the browser's
+    // width.
+    desired_width /= 3;
+  }
+
   // TODO(tc): We don't actually use gfx::Font as the font in the status
   // bubble.  We should extend gfx::ElideUrl to take some sort of pango font.
-  url_text_ = WideToUTF8(gfx::ElideUrl(url, gfx::Font(), window_width / 3,
-                                       languages));
+  url_text_ = WideToUTF8(gfx::ElideUrl(url_, gfx::Font(), desired_width,
+                         languages_));
   SetStatusTextTo(url_text_);
 }
 
+
 void StatusBubbleGtk::Show() {
   // If we were going to hide, stop.
-  timer_factory_.RevokeAll();
+  hide_timer_.Stop();
 
   gtk_widget_show_all(container_.get());
   if (container_->window)
@@ -105,14 +117,26 @@ void StatusBubbleGtk::Show() {
 }
 
 void StatusBubbleGtk::Hide() {
+  // If we were going to expand the bubble, stop.
+  expand_timer_.Stop();
+  expand_animation_.reset();
+
   gtk_widget_hide_all(container_.get());
 }
 
 void StatusBubbleGtk::SetStatusTextTo(const std::string& status_utf8) {
   if (status_utf8.empty()) {
-    HideInASecond();
+    hide_timer_.Stop();
+    hide_timer_.Start(base::TimeDelta::FromMilliseconds(kHideDelay),
+                      this, &StatusBubbleGtk::Hide);
   } else {
     gtk_label_set_text(GTK_LABEL(label_), status_utf8.c_str());
+    GtkRequisition req;
+    gtk_widget_size_request(label_, &req);
+    desired_width_ = req.width;
+
+    UpdateLabelSizeRequest();
+
     if (!last_mouse_left_content_) {
       // Show the padding and label to update our requisition and then
       // re-process the last mouse event -- if the label was empty before or the
@@ -123,15 +147,6 @@ void StatusBubbleGtk::SetStatusTextTo(const std::string& status_utf8) {
     }
     Show();
   }
-}
-
-void StatusBubbleGtk::HideInASecond() {
-  if (!timer_factory_.empty())
-    timer_factory_.RevokeAll();
-
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      timer_factory_.NewRunnableMethod(&StatusBubbleGtk::Hide),
-      kHideDelay);
 }
 
 void StatusBubbleGtk::MouseMoved(
@@ -208,10 +223,6 @@ void StatusBubbleGtk::MouseMoved(
 
 void StatusBubbleGtk::UpdateDownloadShelfVisibility(bool visible) {
   download_shelf_is_visible_ = visible;
-}
-
-void StatusBubbleGtk::SetBubbleWidth(int width) {
-  NOTIMPLEMENTED();
 }
 
 void StatusBubbleGtk::Observe(NotificationType type,
@@ -298,7 +309,36 @@ void StatusBubbleGtk::SetFlipHorizontally(bool flip_horizontally) {
   gtk_widget_queue_draw(container_.get());
 }
 
-gboolean StatusBubbleGtk::HandleMotionNotify(GdkEventMotion* event) {
+void StatusBubbleGtk::ExpandURL() {
+  start_width_ = label_->allocation.width;
+  expand_animation_.reset(new SlideAnimation(this));
+  expand_animation_->SetTweenType(Tween::LINEAR);
+  expand_animation_->Show();
+
+  SetStatusTextToURL();
+}
+
+void StatusBubbleGtk::UpdateLabelSizeRequest() {
+  if (!expanded() || !expand_animation_->is_animating()) {
+    gtk_widget_set_size_request(label_, -1, -1);
+    return;
+  }
+
+  int new_width = start_width_ +
+      (desired_width_ - start_width_) * expand_animation_->GetCurrentValue();
+  gtk_widget_set_size_request(label_, new_width, -1);
+}
+
+gboolean StatusBubbleGtk::HandleMotionNotify(GtkWidget* sender,
+                                             GdkEventMotion* event) {
   MouseMoved(gfx::Point(event->x_root, event->y_root), false);
   return FALSE;
+}
+
+void StatusBubbleGtk::AnimationEnded(const Animation* animation) {
+  UpdateLabelSizeRequest();
+}
+
+void StatusBubbleGtk::AnimationProgressed(const Animation* animation) {
+  UpdateLabelSizeRequest();
 }

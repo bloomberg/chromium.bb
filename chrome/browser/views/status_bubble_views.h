@@ -31,9 +31,6 @@ class StatusBubbleViews : public StatusBubble {
   // The combined vertical padding above and below the text.
   static const int kTotalVerticalPadding = 7;
 
-  // On hover, expand status bubble to fit long URL after this delay.
-  static const int kExpandHoverDelay = 1600;
-
   explicit StatusBubbleViews(views::Widget* frame);
   ~StatusBubbleViews();
 

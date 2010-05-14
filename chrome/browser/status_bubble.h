@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,9 @@ class Point;
 //
 class StatusBubble {
  public:
+  // On hover, expand status bubble to fit long URL after this delay.
+  static const int kExpandHoverDelay = 1600;
+
   virtual ~StatusBubble() {}
 
   // Sets the bubble contents to a specific string and causes the bubble
@@ -49,9 +52,6 @@ class StatusBubble {
   // This is used by to ensure that the status bubble does not obscure
   // the download shelf, when it is visible.
   virtual void UpdateDownloadShelfVisibility(bool visible) = 0;
-
-  // Allow StatusView animation to set width of StatusBubble.
-  virtual void SetBubbleWidth(int width) = 0;
 };
 
 #endif  // CHROME_BROWSER_STATUS_BUBBLE_H_

@@ -468,7 +468,7 @@ void StatusBubbleViews::StatusView::Paint(gfx::Canvas* canvas) {
 class StatusBubbleViews::StatusViewExpander : public LinearAnimation,
                                               public AnimationDelegate {
  public:
-  StatusViewExpander(StatusBubble* status_bubble,
+  StatusViewExpander(StatusBubbleViews* status_bubble,
                      StatusView* status_view)
       : ALLOW_THIS_IN_INITIALIZER_LIST(LinearAnimation(kFramerate, this)),
         status_bubble_(status_bubble),
@@ -492,7 +492,7 @@ class StatusBubbleViews::StatusViewExpander : public LinearAnimation,
   void AnimationEnded(const Animation* animation);
 
   // Manager that owns us.
-  StatusBubble* status_bubble_;
+  StatusBubbleViews* status_bubble_;
 
   // Change the bounds and text of this view.
   StatusView* status_view_;

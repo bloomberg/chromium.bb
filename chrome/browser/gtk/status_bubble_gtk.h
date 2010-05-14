@@ -9,16 +9,18 @@
 
 #include <string>
 
+#include "app/gtk_signal.h"
+#include "app/slide_animation.h"
 #include "base/scoped_ptr.h"
-#include "base/task.h"
+#include "base/timer.h"
 #include "chrome/browser/status_bubble.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
 #include "gfx/point.h"
+#include "googleurl/src/gurl.h"
 
 class GtkThemeProvider;
-class GURL;
 class Profile;
 
 // GTK implementation of StatusBubble. Unlike Windows, our status bubble
@@ -26,7 +28,8 @@ class Profile;
 // window manager to not try to be "helpful" and center our popups, etc.
 // We therefore position it absolutely in a GtkFixed, that we don't own.
 class StatusBubbleGtk : public StatusBubble,
-                        public NotificationObserver {
+                        public NotificationObserver,
+                        public AnimationDelegate {
  public:
   explicit StatusBubbleGtk(Profile* profile);
   virtual ~StatusBubbleGtk();
@@ -40,12 +43,14 @@ class StatusBubbleGtk : public StatusBubble,
   virtual void Hide();
   virtual void MouseMoved(const gfx::Point& location, bool left_content);
 
+  // AnimationDelegate implementation.
+  virtual void AnimationEnded(const Animation* animation);
+  virtual void AnimationProgressed(const Animation* animation);
+
   // Called when the download shelf becomes visible or invisible.
   // This is used by to ensure that the status bubble does not obscure
   // the download shelf, when it is visible.
   virtual void UpdateDownloadShelfVisibility(bool visible);
-
-  virtual void SetBubbleWidth(int width);
 
   // Overridden from NotificationObserver:
   void Observe(NotificationType type,
@@ -62,12 +67,13 @@ class StatusBubbleGtk : public StatusBubble,
   // with setting the current status or URL text, which may be ignored for now).
   void SetStatusTextTo(const std::string& status_utf8);
 
+  // Sets the status text to the current value of |url_|, eliding it as
+  // necessary.
+  void SetStatusTextToURL();
+
   // Sets the status bubble's location in the parent GtkFixed, shows the widget
   // and makes sure that the status bubble has the highest z-order.
   void Show();
-
-  // Sets an internal timer to hide the status bubble after a delay.
-  void HideInASecond();
 
   // Builds the widgets, containers, etc.
   void InitWidgets();
@@ -80,13 +86,22 @@ class StatusBubbleGtk : public StatusBubble,
   // redraw if necessary.
   void SetFlipHorizontally(bool flip_horizontally);
 
-  static gboolean HandleMotionNotifyThunk(GtkWidget* widget,
-                                          GdkEventMotion* event,
-                                          gpointer user_data) {
-    return reinterpret_cast<StatusBubbleGtk*>(user_data)->
-        HandleMotionNotify(event);
+  // Expand the bubble up to the full width of the browser, so that the entire
+  // URL may be seen. Called after the user hovers over a link for sufficient
+  // time.
+  void ExpandURL();
+
+  // Adjust the actual size of the bubble by changing the label's size request.
+  void UpdateLabelSizeRequest();
+
+  // Returns true if the status bubble is in the expand-state (i.e., is
+  // currently expanded or in the process of expanding).
+  bool expanded() {
+    return expand_animation_.get();
   }
-  gboolean HandleMotionNotify(GdkEventMotion* event);
+
+  CHROMEGTK_CALLBACK_1(StatusBubbleGtk, gboolean, HandleMotionNotify,
+                       GdkEventMotion*);
 
   NotificationRegistrar registrar_;
 
@@ -105,11 +120,28 @@ class StatusBubbleGtk : public StatusBubble,
   // The status text we want to display when there are no URLs to display.
   std::string status_text_;
 
-  // The url we want to display when there is no status text to display.
+  // The URL we are displaying for.
+  GURL url_;
+
+  // The possibly elided url text we want to display.
   std::string url_text_;
 
+  // Used to determine the character set that the user can read (for eliding
+  // the url text).
+  std::wstring languages_;
+
   // A timer that hides our window after a delay.
-  ScopedRunnableMethodFactory<StatusBubbleGtk> timer_factory_;
+  base::OneShotTimer<StatusBubbleGtk> hide_timer_;
+
+  // A timer that expands our window after a delay.
+  base::OneShotTimer<StatusBubbleGtk> expand_timer_;
+
+  // The animation for resizing the status bubble on long hovers.
+  scoped_ptr<SlideAnimation> expand_animation_;
+
+  // The start and end width of the current resize animation.
+  int start_width_;
+  int desired_width_;
 
   // Should the bubble be flipped horizontally (e.g. displayed on the right for
   // an LTR language)?  We move the bubble to the other side of the tab contents
