@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/cros/mount_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
+#include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/cros/speech_synthesis_library.h"
 #include "chrome/browser/chromeos/cros/synaptics_library.h"
 
@@ -23,6 +24,7 @@ CrosLibrary::CrosLibrary() : library_loader_(NULL),
                              mount_lib_(NULL),
                              network_lib_(NULL),
                              power_lib_(NULL),
+                             screen_lock_lib_(NULL),
                              speech_synthesis_lib_(NULL),
                              synaptics_lib_(NULL),
                              own_library_loader_(true),
@@ -32,6 +34,7 @@ CrosLibrary::CrosLibrary() : library_loader_(NULL),
                              own_mount_loader_(true),
                              own_network_loader_(true),
                              own_power_loader_(true),
+                             own_screen_lock_lib_(true),
                              own_speech_synthesis_library_(true),
                              own_synaptics_library_(true),
                              loaded_(false),
@@ -55,6 +58,8 @@ CrosLibrary::~CrosLibrary() {
     delete network_lib_;
   if (own_power_loader_ && power_lib_)
     delete power_lib_;
+  if (own_screen_lock_lib_ && screen_lock_lib_)
+    delete screen_lock_lib_;
   if (own_speech_synthesis_library_ && speech_synthesis_lib_)
     delete speech_synthesis_lib_;
   if (own_synaptics_library_ && synaptics_lib_)
@@ -102,6 +107,12 @@ PowerLibrary* CrosLibrary::GetPowerLibrary() {
   if (!power_lib_)
     power_lib_ = new PowerLibraryImpl();
   return power_lib_;
+}
+
+ScreenLockLibrary* CrosLibrary::GetScreenLockLibrary() {
+  if (!screen_lock_lib_)
+    screen_lock_lib_ = new ScreenLockLibraryImpl();
+  return screen_lock_lib_;
 }
 
 SpeechSynthesisLibrary* CrosLibrary::GetSpeechSynthesisLibrary() {
@@ -188,6 +199,14 @@ void CrosLibrary::TestApi::SetPowerLibrary(PowerLibrary* library, bool own) {
     delete library_->power_lib_;
   library_->own_power_loader_ = own;
   library_->power_lib_ = library;
+}
+
+void CrosLibrary::TestApi::SetScreenLockLibrary(ScreenLockLibrary* library,
+                                                bool own) {
+  if (library_->own_screen_lock_lib_ && library_->screen_lock_lib_)
+    delete library_->screen_lock_lib_;
+  library_->own_screen_lock_lib_ = own;
+  library_->screen_lock_lib_ = library;
 }
 
 void CrosLibrary::TestApi::SetSpeechSynthesisLibrary(

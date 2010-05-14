@@ -29,6 +29,7 @@ class TemplateURL;
 
 namespace gfx {
 class Rect;
+class Size;
 }  // namespace gfx
 
 namespace views {

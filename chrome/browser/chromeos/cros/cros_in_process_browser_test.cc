@@ -9,6 +9,13 @@
 #include "base/time.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
+#include "chrome/browser/chromeos/cros/mock_language_library.h"
+#include "chrome/browser/chromeos/cros/mock_library_loader.h"
+#include "chrome/browser/chromeos/cros/mock_network_library.h"
+#include "chrome/browser/chromeos/cros/mock_power_library.h"
+#include "chrome/browser/chromeos/cros/mock_screen_lock_library.h"
+#include "chrome/browser/chromeos/cros/mock_synaptics_library.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "chrome/test/in_process_browser_test.h"
@@ -29,6 +36,7 @@ CrosInProcessBrowserTest::CrosInProcessBrowserTest()
       mock_language_library_(NULL),
       mock_network_library_(NULL),
       mock_power_library_(NULL),
+      mock_screen_lock_library_(NULL),
       mock_synaptics_library_(NULL) {}
 
 CrosInProcessBrowserTest::~CrosInProcessBrowserTest() {
@@ -85,6 +93,14 @@ void CrosInProcessBrowserTest::InitMockPowerLibrary() {
     return;
   mock_power_library_ = new MockPowerLibrary();
   test_api()->SetPowerLibrary(mock_power_library_, true);
+}
+
+void CrosInProcessBrowserTest::InitMockScreenLockLibrary() {
+  InitMockLibraryLoader();
+  if (mock_screen_lock_library_)
+    return;
+  mock_screen_lock_library_ = new MockScreenLockLibrary();
+  test_api()->SetScreenLockLibrary(mock_screen_lock_library_, true);
 }
 
 void CrosInProcessBrowserTest::InitMockSynapticsLibrary() {
@@ -208,6 +224,8 @@ void CrosInProcessBrowserTest::TearDownInProcessBrowserTestFixture() {
     test_api()->SetNetworkLibrary(NULL, false);
   if (mock_power_library_)
     test_api()->SetPowerLibrary(NULL, false);
+  if (mock_screen_lock_library_)
+    test_api()->SetScreenLockLibrary(NULL, false);
   if (mock_synaptics_library_)
     test_api()->SetSynapticsLibrary(NULL, false);
 }
