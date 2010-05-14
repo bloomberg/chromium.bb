@@ -72,12 +72,13 @@ class ExistingUserController : public WmMessageListener::Observer,
   virtual void OnLoginSuccess(const std::string& username,
                               const std::string& credentials);
 
-  // Overriden from views::InfoBubbleDelegate.
+  // Overridden from views::InfoBubbleDelegate.
   virtual void InfoBubbleClosing(InfoBubble* info_bubble,
                                  bool closed_by_escape) {
     bubble_ = NULL;
   }
   virtual bool CloseOnEscape() { return true; }
+  virtual bool FadeOutOnClose() { return false; }
 
   // Show error message. |error_id| error message ID in resources.
   void ShowError(int error_id);

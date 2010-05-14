@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,25 +79,26 @@ class LoginManagerView : public views::View,
   virtual void ContentsChanged(views::Textfield* sender,
                                const string16& new_contents) {}
 
-  // Overriden from views::ButtonListener.
+  // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
-  // Overriden from views::LinkController.
+  // Overridden from views::LinkController.
   virtual void LinkActivated(views::Link* source, int event_flags);
 
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
 
-  // Overriden from LoginStatusConsumer.
+  // Overridden from LoginStatusConsumer.
   virtual void OnLoginFailure(const std::string& error);
   virtual void OnLoginSuccess(const std::string& username,
                               const std::string& credentials);
 
-  // Overriden from views::InfoBubbleDelegate.
+  // Overridden from views::InfoBubbleDelegate.
   virtual void InfoBubbleClosing(InfoBubble* info_bubble,
                                  bool closed_by_escape) {
     bubble_ = NULL;
   }
   virtual bool CloseOnEscape() { return true; }
+  virtual bool FadeOutOnClose() { return false; }
 
  protected:
   // views::View overrides:
