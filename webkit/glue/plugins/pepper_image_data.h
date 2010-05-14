@@ -27,6 +27,13 @@ class ImageData : public Resource {
   explicit ImageData(PluginModule* module);
   virtual ~ImageData();
 
+  int width() const { return width_; }
+  int height() const { return height_; }
+
+  // Returns true if this image is valid and can be used. False means that the
+  // image is invalid and can't be used.
+  bool is_valid() const { return !!platform_image_.get(); }
+
   // Returns a pointer to the interface implementing PPB_ImageData that is
   // exposed to the plugin.
   static const PPB_ImageData* GetInterface();
@@ -36,8 +43,8 @@ class ImageData : public Resource {
 
   // PPB_ImageData implementation.
   bool Init(PP_ImageDataFormat format,
-            int width,
-            int height);
+            int width, int height,
+            bool init_to_zero);
   void Describe(PP_ImageDataDesc* desc) const;
   void* Map();
   void Unmap();
@@ -46,7 +53,12 @@ class ImageData : public Resource {
 
   const SkBitmap& GetMappedBitmap() const;
 
+  // Swaps the guts of this image data with another.
+  void Swap(ImageData* other);
+
  private:
+  // This will be NULL before initialization, and if this ImageData is
+  // swapped with another.
   scoped_ptr<PluginDelegate::PlatformImage2D> platform_image_;
 
   // When the device is mapped, this is the image. Null when umapped.
@@ -54,6 +66,8 @@ class ImageData : public Resource {
 
   int width_;
   int height_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImageData);
 };
 
 }  // namespace pepper

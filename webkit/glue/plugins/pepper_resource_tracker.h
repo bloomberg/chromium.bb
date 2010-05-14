@@ -17,6 +17,8 @@ typedef struct _pp_Resource PP_Resource;
 
 namespace pepper {
 
+class DeviceContext2D;
+class ImageData;
 class Resource;
 
 // This class maintains a global list of all live pepper resources. It allows
@@ -28,14 +30,23 @@ class ResourceTracker {
   // Returns the pointer to the singleton object.
   static ResourceTracker* Get();
 
-  // The returned pointer will be NULL if there is no resource.
-  Resource* GetResource(PP_Resource res) const;
+  // The returned pointer will be NULL if there is no resource. Note that this
+  // return value is a scoped_refptr so that we ensure the resource is valid
+  // from the point of the loopkup to the point that the calling code needs it.
+  // Otherwise, the plugin could Release() the resource on another thread and
+  // the object will get deleted out from under us.
+  scoped_refptr<Resource> GetResource(PP_Resource res) const;
 
   // Adds the given resource to the tracker and assigns it a resource ID. The
   // assigned resource ID will be returned.
   void AddResource(Resource* resource);
 
   void DeleteResource(Resource* resource);
+
+  // Helpers for converting resources to a specific type. Returns NULL if the
+  // resource is invalid or is a different type.
+  scoped_refptr<DeviceContext2D> GetAsDeviceContext2D(PP_Resource res) const;
+  scoped_refptr<ImageData> GetAsImageData(PP_Resource res) const;
 
  private:
   friend struct DefaultSingletonTraits<ResourceTracker>;

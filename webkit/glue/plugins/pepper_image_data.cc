@@ -4,6 +4,9 @@
 
 #include "webkit/glue/plugins/pepper_image_data.h"
 
+#include <algorithm>
+
+#include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/ppapi/c/pp_instance.h"
@@ -28,14 +31,14 @@ ImageData* ResourceAsImageData(PP_Resource resource) {
 
 PP_Resource Create(PP_Module module_id,
                    PP_ImageDataFormat format,
-                   int32_t width,
-                   int32_t height) {
+                   int32_t width, int32_t height,
+                   bool init_to_zero) {
   PluginModule* module = PluginModule::FromPPModule(module_id);
   if (!module)
     return NullPPResource();
 
   scoped_refptr<ImageData> data(new ImageData(module));
-  if (!data->Init(format, width, height))
+  if (!data->Init(format, width, height, init_to_zero))
     return NullPPResource();
   data->AddRef();  // AddRef for the caller.
 
@@ -43,11 +46,7 @@ PP_Resource Create(PP_Module module_id,
 }
 
 bool IsImageData(PP_Resource resource) {
-  scoped_refptr<Resource> image_resource =
-      ResourceTracker::Get()->GetResource(resource);
-  if (!image_resource.get())
-    return false;
-  return !!image_resource->AsImageData();
+  return !!ResourceTracker::Get()->GetAsImageData(resource).get();
 }
 
 bool Describe(PP_Resource resource,
@@ -55,22 +54,25 @@ bool Describe(PP_Resource resource,
   // Give predictable values on failure.
   memset(desc, 0, sizeof(PP_ImageDataDesc));
 
-  ImageData* image_data = ResourceAsImageData(resource);
-  if (!image_data)
+  scoped_refptr<ImageData> image_data(
+      ResourceTracker::Get()->GetAsImageData(resource));
+  if (!image_data.get())
     return false;
   image_data->Describe(desc);
   return true;
 }
 
 void* Map(PP_Resource resource) {
-  ImageData* image_data = ResourceAsImageData(resource);
-  if (!image_data)
+  scoped_refptr<ImageData> image_data(
+      ResourceTracker::Get()->GetAsImageData(resource));
+  if (!image_data.get())
     return NULL;
   return image_data->Map();
 }
 
 void Unmap(PP_Resource resource) {
-  ImageData* image_data = ResourceAsImageData(resource);
+  scoped_refptr<ImageData> image_data(
+      ResourceTracker::Get()->GetAsImageData(resource));
   if (!image_data)
     return;
   return image_data->Unmap();
@@ -101,9 +103,10 @@ const PPB_ImageData* ImageData::GetInterface() {
 }
 
 bool ImageData::Init(PP_ImageDataFormat format,
-                     int width,
-                     int height) {
+                     int width, int height,
+                     bool init_to_zero) {
   // TODO(brettw) this should be called only on the main thread!
+  // TODO(brettw) use init_to_zero when we implement caching.
   platform_image_.reset(
       module()->GetSomeInstance()->delegate()->CreateImage2D(width, height));
   width_ = width;
@@ -119,6 +122,9 @@ void ImageData::Describe(PP_ImageDataDesc* desc) const {
 }
 
 void* ImageData::Map() {
+  if (!is_valid())
+    return NULL;
+
   if (!mapped_canvas_.get()) {
     mapped_canvas_.reset(platform_image_->Map());
     if (!mapped_canvas_.get())
@@ -142,7 +148,15 @@ void ImageData::Unmap() {
 }
 
 const SkBitmap& ImageData::GetMappedBitmap() const {
+  DCHECK(is_valid());
   return mapped_canvas_->getTopPlatformDevice().accessBitmap(false);
+}
+
+void ImageData::Swap(ImageData* other) {
+  swap(other->platform_image_, platform_image_);
+  swap(other->mapped_canvas_, mapped_canvas_);
+  std::swap(other->width_, width_);
+  std::swap(other->height_, height_);
 }
 
 }  // namespace pepper

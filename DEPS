@@ -143,7 +143,7 @@ deps = {
     Var("ffmpeg_revision"),
 
   "src/third_party/ppapi":
-    "http://ppapi.googlecode.com/svn/trunk@11",
+    "http://ppapi.googlecode.com/svn/trunk@26",
 }
 
 
