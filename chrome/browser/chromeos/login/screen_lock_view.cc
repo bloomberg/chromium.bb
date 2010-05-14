@@ -183,3 +183,4 @@ void ScreenLockView::SetImage(const SkBitmap& image,
 }
 
 }  // namespace chromeos
+

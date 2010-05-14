@@ -362,8 +362,6 @@
         'browser/chromeos/cros/network_library.h',
         'browser/chromeos/cros/power_library.cc',
         'browser/chromeos/cros/power_library.h',
-        'browser/chromeos/cros/screen_lock_library.cc',
-        'browser/chromeos/cros/screen_lock_library.h',
         'browser/chromeos/cros/speech_synthesis_library.cc',
         'browser/chromeos/cros/speech_synthesis_library.h',
         'browser/chromeos/cros/synaptics_library.cc',

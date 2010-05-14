@@ -7,19 +7,16 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
+#include "chrome/browser/chromeos/cros/mock_language_library.h"
+#include "chrome/browser/chromeos/cros/mock_library_loader.h"
+#include "chrome/browser/chromeos/cros/mock_network_library.h"
+#include "chrome/browser/chromeos/cros/mock_power_library.h"
+#include "chrome/browser/chromeos/cros/mock_synaptics_library.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "third_party/cros/chromeos_language.h"
 
 namespace chromeos {
-
-class MockLibraryLoader;
-class MockScreenLockLibrary;
-class MockCryptohomeLibrary;
-class MockLanguageLibrary;
-class MockNetworkLibrary;
-class MockPowerLibrary;
-class MockScreenLockLibrary;
-class MockSynapticsLibrary;
 
 // Base class for Chromium OS tests wanting to bring up a browser in the
 // unit test process and mock some parts of CrosLibrary. Once you mock part of
@@ -50,7 +47,6 @@ class CrosInProcessBrowserTest : public InProcessBrowserTest {
   void InitMockLanguageLibrary();
   void InitMockNetworkLibrary();
   void InitMockPowerLibrary();
-  void InitMockScreenLockLibrary();
   void InitMockSynapticsLibrary();
 
   // This method setups corresponding expectations for basic mocks that
@@ -79,7 +75,6 @@ class CrosInProcessBrowserTest : public InProcessBrowserTest {
   MockLanguageLibrary* mock_language_library_;
   MockNetworkLibrary* mock_network_library_;
   MockPowerLibrary* mock_power_library_;
-  MockScreenLockLibrary* mock_screen_lock_library_;
   MockSynapticsLibrary* mock_synaptics_library_;
 
   ImePropertyList ime_properties_;

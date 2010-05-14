@@ -19,10 +19,6 @@ namespace chromeos {
 
 class ScreenLocker;
 
-namespace test {
-class ScreenLockerTester;
-}  // namespace test
-
 // ScreenLockView creates view components necessary to authenticate
 // a user to unlock the screen.
 class ScreenLockView : public views::View,
@@ -56,8 +52,6 @@ class ScreenLockView : public views::View,
                                const views::Textfield::Keystroke& keystroke);
 
  private:
-  friend class test::ScreenLockerTester;
-
   // Set the user's image.
   void SetImage(const SkBitmap& image,
                 int desired_width,

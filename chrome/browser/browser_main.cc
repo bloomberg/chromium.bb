@@ -143,9 +143,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/external_metrics.h"
-#include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/views/browser_dialogs.h"
 #endif
@@ -605,7 +603,6 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line) {
     }
     browser::ShowLoginWizard(first_screen, size);
   }
-  chromeos::ScreenLocker::InitClass();
 }
 #else
 void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line) {
