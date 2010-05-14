@@ -13,13 +13,13 @@ without changes to the corresponding grd file. paaaae -->
     <includes>
       <include name="IDR_ABOUT_VERSION_HTML" file="resources\about_version.html" flattenhtml="true" type="BINDATA" />
 
-      <if expr="os == 'linux2' or os == 'freebsd7' or os == 'openbsd4'">
+      <if expr="os == 'linux2' or os.find('bsd') != -1">
         <include name="IDR_ABOUT_MEMORY_HTML" file="resources\about_memory_linux.html" flattenhtml="true" type="BINDATA" />
       </if>
       <if expr="os == 'darwin'">
         <include name="IDR_ABOUT_MEMORY_HTML" file="resources\about_memory_mac.html" flattenhtml="true" type="BINDATA" />
       </if>
-      <if expr="os != 'linux2' and os != 'darwin' and os != 'freebsd' and os != 'openbsd'">
+      <if expr="os != 'linux2' and os != 'darwin' and os.find('bsd') == -1">
         <include name="IDR_ABOUT_MEMORY_HTML" file="resources\about_memory.html" flattenhtml="true" type="BINDATA" />
       </if>
 
