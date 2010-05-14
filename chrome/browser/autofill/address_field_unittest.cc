@@ -370,4 +370,44 @@ TEST_F(AddressFieldTest, ParseTwoLineAddressMissingLabel) {
   EXPECT_NE(ADDRESS_HOME_LINE2, field_type_map_[ASCIIToUTF16("addr2")]);
 }
 
+TEST_F(AddressFieldTest, ParseCompany) {
+  list_.push_back(
+      new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Company"),
+                                               ASCIIToUTF16("company"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0),
+                        ASCIIToUTF16("company1")));
+  list_.push_back(NULL);
+  iter_ = list_.begin();
+  field_.reset(AddressField::Parse(&iter_, false));
+  ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
+  EXPECT_EQ(kGenericAddress, field_->FindType());
+  EXPECT_FALSE(field_->IsFullAddress());
+  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("company1")) != field_type_map_.end());
+  EXPECT_EQ(COMPANY_NAME, field_type_map_[ASCIIToUTF16("company1")]);
+}
+
+TEST_F(AddressFieldTest, ParseCompanyEcml) {
+  list_.push_back(
+      new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Company"),
+                                               kEcmlShipToCompanyName,
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0),
+                        ASCIIToUTF16("company1")));
+  list_.push_back(NULL);
+  iter_ = list_.begin();
+  field_.reset(AddressField::Parse(&iter_, true));
+  ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
+  EXPECT_EQ(kGenericAddress, field_->FindType());
+  EXPECT_FALSE(field_->IsFullAddress());
+  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("company1")) != field_type_map_.end());
+  EXPECT_EQ(COMPANY_NAME, field_type_map_[ASCIIToUTF16("company1")]);
+}
+
 }  // namespace

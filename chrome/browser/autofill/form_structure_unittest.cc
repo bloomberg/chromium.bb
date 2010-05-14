@@ -480,14 +480,14 @@ TEST(FormStructureTest, HeuristicsSample6) {
   form_structure.reset(new FormStructure(form));
   EXPECT_TRUE(form_structure->IsAutoFillable());
   ASSERT_EQ(7U, form_structure->field_count());
-  ASSERT_EQ(5U, form_structure->autofill_count());
+  ASSERT_EQ(6U, form_structure->autofill_count());
 
   // Email.
   EXPECT_EQ(EMAIL_ADDRESS, form_structure->field(0)->heuristic_type());
   // Full name.
   EXPECT_EQ(NAME_FULL, form_structure->field(1)->heuristic_type());
   // Company
-  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(2)->heuristic_type());
+  EXPECT_EQ(COMPANY_NAME, form_structure->field(2)->heuristic_type());
   // Address.
   EXPECT_EQ(ADDRESS_HOME_LINE1, form_structure->field(3)->heuristic_type());
   // City.
@@ -776,6 +776,100 @@ TEST(FormStructureTest, HeuristicsStateWithProvince) {
   EXPECT_EQ(ADDRESS_HOME_LINE2, form_structure->field(1)->heuristic_type());
   // State.
   EXPECT_EQ(ADDRESS_HOME_STATE, form_structure->field(2)->heuristic_type());
+}
+
+// This example comes from lego.com's checkout page.
+TEST(FormStructureTest, HeuristicsWithBilling) {
+  scoped_ptr<FormStructure> form_structure;
+  FormData form;
+
+  form.method = ASCIIToUTF16("post");
+  form.fields.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("First Name*:"),
+                             ASCIIToUTF16("editBillingAddress$firstNameBox"),
+                             string16(),
+                             ASCIIToUTF16("text"),
+                             0));
+  form.fields.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("Last Name*:"),
+                             ASCIIToUTF16("editBillingAddress$lastNameBox"),
+                             string16(),
+                             ASCIIToUTF16("text"),
+                             0));
+  form.fields.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("Company Name:"),
+                             ASCIIToUTF16("editBillingAddress$companyBox"),
+                             string16(),
+                             ASCIIToUTF16("text"),
+                             0));
+  form.fields.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("Address*:"),
+                             ASCIIToUTF16("editBillingAddress$addressLine1Box"),
+                             string16(),
+                             ASCIIToUTF16("text"),
+                             0));
+  form.fields.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("Apt/Suite :"),
+                             ASCIIToUTF16("editBillingAddress$addressLine2Box"),
+                             string16(),
+                             ASCIIToUTF16("text"),
+                             0));
+  form.fields.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("City*:"),
+                             ASCIIToUTF16("editBillingAddress$cityBox"),
+                             string16(),
+                             ASCIIToUTF16("text"),
+                             0));
+  form.fields.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("State/Province*:"),
+                             ASCIIToUTF16("editBillingAddress$stateDropDown"),
+                             string16(),
+                             ASCIIToUTF16("text"),
+                             0));
+  form.fields.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("Country*:"),
+                             ASCIIToUTF16("editBillingAddress$countryDropDown"),
+                             string16(),
+                             ASCIIToUTF16("text"),
+                             0));
+  form.fields.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("Postal Code*:"),
+                             ASCIIToUTF16("editBillingAddress$zipCodeBox"),
+                             string16(),
+                             ASCIIToUTF16("text"),
+                             0));
+  form.fields.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("Phone*:"),
+                             ASCIIToUTF16("editBillingAddress$phoneBox"),
+                             string16(),
+                             ASCIIToUTF16("text"),
+                             0));
+  form.fields.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("Email Address*:"),
+                             ASCIIToUTF16("email$emailBox"),
+                             string16(),
+                             ASCIIToUTF16("text"),
+                             0));
+  form_structure.reset(new FormStructure(form));
+  EXPECT_TRUE(form_structure->IsAutoFillable());
+  ASSERT_EQ(11U, form_structure->field_count());
+  ASSERT_EQ(10U, form_structure->autofill_count());
+
+  EXPECT_EQ(NAME_FIRST, form_structure->field(0)->heuristic_type());
+  EXPECT_EQ(NAME_LAST, form_structure->field(1)->heuristic_type());
+  EXPECT_EQ(COMPANY_NAME, form_structure->field(2)->heuristic_type());
+  EXPECT_EQ(ADDRESS_BILLING_LINE1, form_structure->field(3)->heuristic_type());
+  // Note: We'd expect this to match ADDRESS_BILLING_LINE2, but due to toolbar
+  // heuristics for other pages we skip fields with label including "suite".
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(4)->heuristic_type());
+  EXPECT_EQ(ADDRESS_BILLING_CITY, form_structure->field(5)->heuristic_type());
+  EXPECT_EQ(ADDRESS_BILLING_STATE, form_structure->field(6)->heuristic_type());
+  EXPECT_EQ(ADDRESS_BILLING_COUNTRY,
+            form_structure->field(7)->heuristic_type());
+  EXPECT_EQ(ADDRESS_BILLING_ZIP, form_structure->field(8)->heuristic_type());
+  EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
+            form_structure->field(9)->heuristic_type());
+  EXPECT_EQ(EMAIL_ADDRESS, form_structure->field(10)->heuristic_type());
 }
 
 TEST(FormStructureTest, ThreePartPhoneNumber) {

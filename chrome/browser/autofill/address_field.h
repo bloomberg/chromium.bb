@@ -34,6 +34,8 @@ class AddressField : public FormField {
   explicit AddressField(const AddressField& field);
   void operator=(const AddressField&);
 
+  static bool ParseCompany(std::vector<AutoFillField*>::const_iterator* iter,
+                           bool is_ecml, AddressField* address_field);
   static bool ParseAddressLines(
       std::vector<AutoFillField*>::const_iterator* iter,
       bool is_ecml, AddressField* address_field);
@@ -50,6 +52,7 @@ class AddressField : public FormField {
   // convert to lowercase.
   static AddressType AddressTypeFromText(const string16& text);
 
+  AutoFillField* company_;   // optional
   AutoFillField* address1_;
   AutoFillField* address2_;  // optional
   AutoFillField* city_;

@@ -11,7 +11,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/address.h"
 #include "chrome/browser/autofill/autofill_manager.h"
-#include "chrome/browser/autofill/billing_address.h"
 #include "chrome/browser/autofill/contact_info.h"
 #include "chrome/browser/autofill/fax_number.h"
 #include "chrome/browser/autofill/home_address.h"
@@ -25,21 +24,18 @@ void InitPersonalInfo(FormGroupMap* personal_info) {
   (*personal_info)[AutoFillType::PHONE_HOME] = new HomePhoneNumber();
   (*personal_info)[AutoFillType::PHONE_FAX] = new FaxNumber();
   (*personal_info)[AutoFillType::ADDRESS_HOME] = new HomeAddress();
-  (*personal_info)[AutoFillType::ADDRESS_BILLING] = new BillingAddress();
 }
 
 }  // namespace
 
 AutoFillProfile::AutoFillProfile(const string16& label, int unique_id)
     : label_(label),
-      unique_id_(unique_id),
-      use_billing_address_(true) {
+      unique_id_(unique_id) {
   InitPersonalInfo(&personal_info_);
 }
 
 AutoFillProfile::AutoFillProfile()
-    : unique_id_(0),
-      use_billing_address_(true) {
+    : unique_id_(0) {
   InitPersonalInfo(&personal_info_);
 }
 
@@ -66,11 +62,42 @@ void AutoFillProfile::GetPossibleFieldTypes(
 }
 
 string16 AutoFillProfile::GetFieldText(const AutoFillType& type) const {
-  FormGroupMap::const_iterator iter = personal_info_.find(type.group());
+  AutoFillType return_type = type;
+
+  // When billing information is requested from the profile we map to the
+  // home address equivalents.  This indicates the address information within
+  // this profile is being used to fill billing fields in the form.
+  switch (type.field_type()) {
+    case ADDRESS_BILLING_LINE1:
+      return_type = AutoFillType(ADDRESS_HOME_LINE1);
+      break;
+    case ADDRESS_BILLING_LINE2:
+      return_type = AutoFillType(ADDRESS_HOME_LINE2);
+      break;
+    case ADDRESS_BILLING_APT_NUM:
+      return_type = AutoFillType(ADDRESS_HOME_APT_NUM);
+      break;
+    case ADDRESS_BILLING_CITY:
+      return_type = AutoFillType(ADDRESS_HOME_CITY);
+      break;
+    case ADDRESS_BILLING_STATE:
+      return_type = AutoFillType(ADDRESS_HOME_STATE);
+      break;
+    case ADDRESS_BILLING_ZIP:
+      return_type = AutoFillType(ADDRESS_HOME_ZIP);
+      break;
+    case ADDRESS_BILLING_COUNTRY:
+      return_type = AutoFillType(ADDRESS_HOME_COUNTRY);
+      break;
+    default:
+      break;
+  }
+
+  FormGroupMap::const_iterator iter = personal_info_.find(return_type.group());
   if (iter == personal_info_.end() || iter->second == NULL)
     return string16();
 
-  return iter->second->GetFieldText(type);
+  return iter->second->GetFieldText(return_type);
 }
 
 void AutoFillProfile::FindInfoMatches(
@@ -110,7 +137,6 @@ FormGroup* AutoFillProfile::Clone() const {
   AutoFillProfile* profile = new AutoFillProfile();
   profile->label_ = label_;
   profile->unique_id_ = unique_id();
-  profile->use_billing_address_ = use_billing_address_;
 
   FormGroupMap::const_iterator iter;
   for (iter = personal_info_.begin(); iter != personal_info_.end(); ++iter) {
@@ -168,7 +194,6 @@ string16 AutoFillProfile::PreviewSummary() const {
 void AutoFillProfile::operator=(const AutoFillProfile& source) {
   label_ = source.label_;
   unique_id_ = source.unique_id_;
-  use_billing_address_ = source.use_billing_address_;
 
   STLDeleteContainerPairSecondPointers(personal_info_.begin(),
                                        personal_info_.end());
@@ -200,8 +225,7 @@ bool AutoFillProfile::operator==(const AutoFillProfile& profile) const {
                                       PHONE_FAX_NUMBER };
 
   if (label_ != profile.label_ ||
-      unique_id_ != profile.unique_id_ ||
-      use_billing_address_ != profile.use_billing_address_) {
+      unique_id_ != profile.unique_id_) {
     return false;
   }
 
@@ -216,30 +240,6 @@ bool AutoFillProfile::operator==(const AutoFillProfile& profile) const {
 
 bool AutoFillProfile::operator!=(const AutoFillProfile& profile) const {
   return !operator==(profile);
-}
-
-void AutoFillProfile::set_use_billing_address(bool use) {
-  if (use_billing_address_ == use)
-    return;
-
-  Address* billing_address = GetBillingAddress();
-
-  if (use) {
-    // If we were using the home address as a billing address then the home
-    // address information should be cleared out of the billing address object.
-    billing_address->Clear();
-  } else {
-    // If we no longer want to use an alternate billing address then clone the
-    // home address information for our billing address.
-    Address* home_address = GetHomeAddress();
-    billing_address->Clone(*home_address);
-  }
-
-  use_billing_address_ = use;
-}
-
-Address* AutoFillProfile::GetBillingAddress() {
-  return static_cast<Address*>(personal_info_[AutoFillType::ADDRESS_BILLING]);
 }
 
 Address* AutoFillProfile::GetHomeAddress() {

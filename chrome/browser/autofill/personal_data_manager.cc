@@ -201,9 +201,6 @@ bool PersonalDataManager::ImportFormData(
   if (importable_fields + importable_credit_card_fields < kMinImportSize)
     return false;
 
-  if (!billing_address_info)
-    imported_profile_->set_use_billing_address(false);
-
   if (importable_fields == 0)
     imported_profile_.reset();
 

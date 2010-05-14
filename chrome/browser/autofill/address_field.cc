@@ -10,6 +10,7 @@
 #include "chrome/browser/autofill/autofill_field.h"
 
 bool AddressField::GetFieldInfo(FieldTypeMap* field_type_map) const {
+  AutoFillFieldType address_company;
   AutoFillFieldType address_line1;
   AutoFillFieldType address_line2;
   AutoFillFieldType address_appt_num;
@@ -22,6 +23,7 @@ bool AddressField::GetFieldInfo(FieldTypeMap* field_type_map) const {
     case kShippingAddress:
      // Fallthrough. Autofill no longer supports shipping addresses.
     case kGenericAddress:
+      address_company = COMPANY_NAME;
       address_line1 = ADDRESS_HOME_LINE1;
       address_line2 = ADDRESS_HOME_LINE2;
       address_appt_num = ADDRESS_HOME_APT_NUM;
@@ -32,6 +34,7 @@ bool AddressField::GetFieldInfo(FieldTypeMap* field_type_map) const {
       break;
 
     case kBillingAddress:
+      address_company = COMPANY_NAME;
       address_line1 = ADDRESS_BILLING_LINE1;
       address_line2 = ADDRESS_BILLING_LINE2;
       address_appt_num = ADDRESS_BILLING_APT_NUM;
@@ -47,7 +50,9 @@ bool AddressField::GetFieldInfo(FieldTypeMap* field_type_map) const {
   }
 
   bool ok;
-  ok = Add(field_type_map, address1_, AutoFillType(address_line1));
+  ok = Add(field_type_map, company_, AutoFillType(address_company));
+  DCHECK(ok);
+  ok = ok && Add(field_type_map, address1_, AutoFillType(address_line1));
   DCHECK(ok);
   ok = ok && Add(field_type_map, address2_, AutoFillType(address_line2));
   DCHECK(ok);
@@ -81,19 +86,18 @@ AddressField* AddressField::Parse(
 
   // Allow address fields to appear in any order.
   while (true) {
-    if (ParseAddressLines(&q, is_ecml, &address_field) ||
-               ParseCity(&q, is_ecml, &address_field) ||
-               ParseZipCode(&q, is_ecml, &address_field) ||
-               ParseCountry(&q, is_ecml, &address_field)) {
+    if (ParseCompany(&q, is_ecml, &address_field) ||
+        ParseAddressLines(&q, is_ecml, &address_field) ||
+        ParseCity(&q, is_ecml, &address_field) ||
+        ParseZipCode(&q, is_ecml, &address_field) ||
+        ParseCountry(&q, is_ecml, &address_field)) {
       continue;
     } else if ((!address_field.state_ || address_field.state_->IsEmpty()) &&
                address_field.ParseState(&q, is_ecml, &address_field)) {
       continue;
-    } else if (ParseText(&q, ASCIIToUTF16("company|business name")) ||
-        ParseText(&q, ASCIIToUTF16("attention|attn.")) ||
-        ParseText(&q, ASCIIToUTF16("province|region|other"))) {
+    } else if (ParseText(&q, ASCIIToUTF16("attention|attn.")) ||
+               ParseText(&q, ASCIIToUTF16("province|region|other"))) {
       // We ignore the following:
-      // * Company/Business.
       // * Attention.
       // * Province/Region/Other.
       continue;
@@ -114,7 +118,8 @@ AddressField* AddressField::Parse(
 
   // If we have identified any address fields in this field then it should be
   // added to the list of fields.
-  if (address_field.address1_ != NULL || address_field.address2_ != NULL ||
+  if (address_field.company_ != NULL ||
+      address_field.address1_ != NULL || address_field.address2_ != NULL ||
       address_field.city_ != NULL || address_field.state_ != NULL ||
       address_field.zip_ != NULL || address_field.zip4_ ||
       address_field.country_ != NULL) {
@@ -145,7 +150,8 @@ AddressType AddressField::FindType() const {
 }
 
 AddressField::AddressField()
-    : address1_(NULL),
+    : company_(NULL),
+      address1_(NULL),
       address2_(NULL),
       city_(NULL),
       state_(NULL),
@@ -158,6 +164,7 @@ AddressField::AddressField()
 
 AddressField::AddressField(const AddressField& field)
     : FormField(),
+      company_(field.company_),
       address1_(field.address1_),
       address2_(field.address2_),
       city_(field.city_),
@@ -167,6 +174,26 @@ AddressField::AddressField(const AddressField& field)
       country_(field.country_),
       type_(field.type_),
       is_ecml_(field.is_ecml_) {
+}
+
+// static
+bool AddressField::ParseCompany(
+    std::vector<AutoFillField*>::const_iterator* iter,
+    bool is_ecml, AddressField* address_field) {
+  if (address_field->company_ && !address_field->company_->IsEmpty())
+    return false;
+
+  string16 pattern;
+  if (is_ecml)
+    pattern = GetEcmlPattern(kEcmlShipToCompanyName,
+                             kEcmlBillToCompanyName, '|');
+  else
+    pattern = ASCIIToUTF16("company|business name");
+
+  if (!ParseText(iter, pattern, &address_field->company_))
+    return false;
+
+  return true;
 }
 
 // static
@@ -212,12 +239,15 @@ bool AddressField::ParseAddressLines(
   if (is_ecml) {
     pattern = GetEcmlPattern(kEcmlShipToAddress2,
                              kEcmlBillToAddress2, '|');
+    if (!ParseEmptyText(iter, &address_field->address2_))
+      ParseText(iter, pattern, &address_field->address2_);
   } else {
-    pattern = ASCIIToUTF16("address|address2|street|street_line2|addr2");
+    pattern = ASCIIToUTF16("address2|street|street_line2|addr2");
+    string16 label_pattern = ASCIIToUTF16("address");
+    if (!ParseEmptyText(iter, &address_field->address2_))
+      if (!ParseText(iter, pattern, &address_field->address2_))
+        ParseLabelText(iter, label_pattern, &address_field->address2_);
   }
-
-  if (!ParseEmptyText(iter, &address_field->address2_))
-    ParseText(iter, pattern, &address_field->address2_);
 
   // Try for a third line, which we will promptly discard.
   if (address_field->address2_ != NULL) {

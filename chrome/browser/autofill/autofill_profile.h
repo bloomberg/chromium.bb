@@ -42,11 +42,6 @@ class AutoFillProfile : public FormGroup {
   virtual FormGroup* Clone() const;
   virtual const string16& Label() const { return label_; }
 
-  // NOTE: callers must write the profile to the WebDB after changing the value
-  // of use_billing_address.
-  void set_use_billing_address(bool use);
-  bool use_billing_address() const { return use_billing_address_; }
-
   void set_unique_id(int id) { unique_id_ = id; }
   int unique_id() const { return unique_id_; }
 
@@ -70,7 +65,6 @@ class AutoFillProfile : public FormGroup {
   void set_label(const string16& label) { label_ = label; }
 
  private:
-  Address* GetBillingAddress();
   Address* GetHomeAddress();
 
   // The label presented to the user when selecting a profile.
@@ -78,10 +72,6 @@ class AutoFillProfile : public FormGroup {
 
   // The unique ID of this profile.
   int unique_id_;
-
-  // If true, the billing address will be used for the home address.  Correlates
-  // with the "Use billing address" option on some billing forms.
-  bool use_billing_address_;
 
   // Personal information for this profile.
   FormGroupMap personal_info_;
