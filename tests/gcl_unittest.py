@@ -31,20 +31,25 @@ class GclUnittest(GclTestsBase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-        'CODEREVIEW_SETTINGS', 'CODEREVIEW_SETTINGS_FILE', 'Change',
-        'ChangeInfo', 'Changes', 'Commit', 'DEFAULT_LINT_IGNORE_REGEX',
-        'DEFAULT_LINT_REGEX', 'CheckHomeForFile', 'DeleteEmptyChangeLists',
+        'CODEREVIEW_SETTINGS', 'CODEREVIEW_SETTINGS_FILE',
+        'CMDchange', 'CMDchanges', 'CMDcommit', 'CMDdelete', 'CMDdeleteempties',
+        'CMDdescription', 'CMDdiff', 'CMDhelp', 'CMDlint', 'CMDnothave',
+        'CMDopened', 'CMDpresubmit', 'CMDrename', 'CMDsettings', 'CMDstatus',
+        'CMDtry', 'CMDupload',
+        'ChangeInfo', 'DEFAULT_LINT_IGNORE_REGEX',
+        'DEFAULT_LINT_REGEX', 'CheckHomeForFile',
         'DoPresubmitChecks', 'ErrorExit', 'FILES_CACHE', 'FilterFlag',
         'GenerateChangeName', 'GenerateDiff', 'GetCLs', 'GetCacheDir',
         'GetCachedFile', 'GetChangelistInfoFile', 'GetChangesDir',
         'GetCodeReviewSetting', 'GetEditor', 'GetFilesNotInCL', 'GetInfoDir',
-        'GetIssueDescription', 'GetModifiedFiles', 'GetRepositoryRoot', 'Help',
-        'Lint', 'LoadChangelistInfoForMultiple', 'MISSING_TEST_MSG', 'Opened',
-        'OptionallyDoPresubmitChecks', 'PresubmitCL', 'REPOSITORY_ROOT',
+        'GetIssueDescription', 'GetModifiedFiles', 'GetRepositoryRoot',
+        'ListFiles',
+        'LoadChangelistInfoForMultiple', 'MISSING_TEST_MSG',
+        'OptionallyDoPresubmitChecks', 'REPOSITORY_ROOT',
         'RunShell', 'RunShellWithReturnCode', 'SVN',
-        'SendToRietveld', 'TryChange', 'UnknownFiles', 'UploadCL', 'Warn',
+        'SendToRietveld', 'TryChange', 'UnknownFiles', 'Warn',
         'breakpad', 'gclient_utils', 'getpass', 'main', 'os', 'random', 're',
-        'shutil', 'string', 'subprocess', 'sys', 'tempfile', 'upload',
+        'shutil', 'string', 'subprocess', 'sys', 'tempfile', 'time', 'upload',
         'urllib2',
     ]
     # If this test fails, you should add the relevant test.
@@ -79,71 +84,11 @@ class GclUnittest(GclTestsBase):
     self.mox.ReplayAll()
     self.assertEquals(gcl.GetRepositoryRoot(), root_path + '.~')
 
-  def testGetCachedFile(self):
-    # TODO(maruel): TEST ME
-    pass
-
-  def testGetCodeReviewSetting(self):
-    # TODO(maruel): TEST ME
-    pass
-
-  def testGetChangelistInfoFile(self):
-    # TODO(maruel): TEST ME
-    pass
-
-  def testLoadChangelistInfoForMultiple(self):
-    # TODO(maruel): TEST ME
-    pass
-
-  def testGetModifiedFiles(self):
-    # TODO(maruel): TEST ME
-    pass
-
-  def testGetFilesNotInCL(self):
-    # TODO(maruel): TEST ME
-    pass
-
-  def testSendToRietveld(self):
-    # TODO(maruel): TEST ME
-    pass
-
-  def testOpened(self):
-    # TODO(maruel): TEST ME
-    pass
-
   def testHelp(self):
     gcl.sys.stdout.write(mox.StrContains('GCL is a wrapper for Subversion'))
     gcl.sys.stdout.write('\n')
     self.mox.ReplayAll()
-    gcl.Help()
-
-  def testGenerateDiff(self):
-    # TODO(maruel): TEST ME
-    pass
-
-  def testPresubmitCL(self):
-    # TODO(maruel): TEST ME
-    pass
-
-  def testTryChange(self):
-    # TODO(maruel): TEST ME
-    pass
-
-  def testCommit(self):
-    # TODO(maruel): TEST ME
-    pass
-
-  def testChange(self):
-    # TODO(maruel): TEST ME
-    pass
-
-  def testLint(self):
-    # TODO(maruel): TEST ME
-    pass
-
-  def testDoPresubmitChecks(self):
-    # TODO(maruel): TEST ME
-    pass
+    gcl.CMDhelp()
 
 
 class ChangeInfoUnittest(GclTestsBase):
@@ -230,7 +175,7 @@ class ChangeInfoUnittest(GclTestsBase):
     change_info.Save()
 
 
-class UploadCLUnittest(GclTestsBase):
+class CMDuploadUnittest(GclTestsBase):
   def setUp(self):
     GclTestsBase.setUp(self)
     self.mox.StubOutWithMock(gcl, 'CheckHomeForFile')
@@ -270,7 +215,7 @@ class UploadCLUnittest(GclTestsBase):
     change_info.Save()
     self.mox.ReplayAll()
 
-    gcl.UploadCL(change_info, args)
+    gcl.CMDupload(change_info, args)
 
   def testServerOverride(self):
     change_info = gcl.ChangeInfo('naame', 0, 0, 'deescription',
@@ -298,7 +243,7 @@ class UploadCLUnittest(GclTestsBase):
     gcl.os.chdir('somewhere')
     self.mox.ReplayAll()
 
-    gcl.UploadCL(change_info, args)
+    gcl.CMDupload(change_info, args)
 
   def testNoTry(self):
     change_info = gcl.ChangeInfo('naame', 0, 0, 'deescription',
@@ -325,7 +270,7 @@ class UploadCLUnittest(GclTestsBase):
     gcl.os.chdir('somewhere')
     self.mox.ReplayAll()
 
-    gcl.UploadCL(change_info, args)
+    gcl.CMDupload(change_info, args)
 
   def testNormal(self):
     change_info = gcl.ChangeInfo('naame', 0, 0, 'deescription',
@@ -355,7 +300,7 @@ class UploadCLUnittest(GclTestsBase):
     gcl.os.chdir('somewhere')
     self.mox.ReplayAll()
 
-    gcl.UploadCL(change_info, args)
+    gcl.CMDupload(change_info, args)
     self.assertEquals(change_info.issue, 1)
     self.assertEquals(change_info.patchset, 2)
 

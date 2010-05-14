@@ -19,7 +19,9 @@ import time
 from third_party import upload
 import urllib2
 
+__pychecker__ = 'unusednames=breakpad'
 import breakpad
+__pychecker__ = ''
 
 # gcl now depends on gclient.
 from scm import SVN
@@ -58,6 +60,11 @@ MISSING_TEST_MSG = "Change contains new or modified methods, but no new tests!"
 
 # Global cache of files cached in GetCacheDir().
 FILES_CACHE = {}
+
+# Valid extensions for files we want to lint.
+DEFAULT_LINT_REGEX = r"(.*\.cpp|.*\.cc|.*\.h)"
+DEFAULT_LINT_IGNORE_REGEX = r"$^"
+
 
 def CheckHomeForFile(filename):
   """Checks the users home dir for the existence of the given file.  Returns
@@ -588,8 +595,7 @@ def GetIssueDescription(issue):
   return SendToRietveld("/%d/description" % issue)
 
 
-def Opened(show_unknown_files):
-  """Prints a list of modified files in the current directory down."""
+def ListFiles(show_unknown_files):
   files = GetModifiedFiles()
   cl_keys = files.keys()
   cl_keys.sort()
@@ -613,16 +619,30 @@ def Opened(show_unknown_files):
     if show_unknown_files:
       for filename in unknown_files:
         print "?      %s" % filename
+  return 0
 
 
-def Help(argv=None):
-  if argv:
-    if argv[0] == 'try':
+def CMDopened(argv):
+  """Lists modified files in the current directory down."""
+  __pychecker__ = 'unusednames=argv'
+  return ListFiles(False)
+
+
+def CMDstatus(argv):
+  """Lists modified and unknown files in the current directory down."""
+  __pychecker__ = 'unusednames=argv'
+  return ListFiles(True)
+
+
+def CMDhelp(argv=None):
+  """Prints this help or help for the given command."""
+  if len(argv) > 2:
+    if argv[2] == 'try':
       TryChange(None, ['--help'], swallow_exception=False)
-      return
-    if argv[0] == 'upload':
+      return 0
+    if argv[2] == 'upload':
       upload.RealMain(['upload.py', '--help'])
-      return
+      return 0
 
   print (
 """GCL is a wrapper for Subversion that simplifies working with groups of files.
@@ -697,6 +717,8 @@ Advanced commands:
    gcl help [command]
       Print this help menu, or help for the given command if it exists.
 """)
+  return 0
+
 
 def GetEditor():
   editor = os.environ.get("SVN_EDITOR")
@@ -722,7 +744,7 @@ def OptionallyDoPresubmitChecks(change_info, committing, args):
   return DoPresubmitChecks(change_info, committing, True)
 
 
-def UploadCL(change_info, args):
+def CMDupload(change_info, args):
   if not change_info.GetFiles():
     print "Nothing to upload, changelist is empty."
     return
@@ -838,17 +860,19 @@ def UploadCL(change_info, args):
 
 
 
-def PresubmitCL(change_info):
-  """Reports what presubmit checks on the change would report."""
+def CMDpresubmit(change_info, argv):
+  """Runs presubmit checks on the change."""
+  __pychecker__ = 'unusednames=argv'
   if not change_info.GetFiles():
     print "Nothing to presubmit check, changelist is empty."
-    return
+    return 0
 
   print "*** Presubmit checks for UPLOAD would report: ***"
-  DoPresubmitChecks(change_info, False, False)
+  result = DoPresubmitChecks(change_info, False, False)
 
   print "\n*** Presubmit checks for COMMIT would report: ***"
-  DoPresubmitChecks(change_info, True, False)
+  result &= DoPresubmitChecks(change_info, True, False)
+  return not result
 
 
 def TryChange(change_info, args, swallow_exception):
@@ -878,12 +902,12 @@ def TryChange(change_info, args, swallow_exception):
                       prog='gcl try')
 
 
-def Commit(change_info, args):
+def CMDcommit(change_info, args):
   if not change_info.GetFiles():
     print "Nothing to commit, changelist is empty."
-    return
+    return 1
   if not OptionallyDoPresubmitChecks(change_info, True, args):
-    return
+    return 1
 
   # We face a problem with svn here: Let's say change 'bleh' modifies
   # svn:ignore on dir1\. but another unrelated change 'pouet' modifies
@@ -932,9 +956,10 @@ def Commit(change_info, args):
         change_info.description += "\nCommitted: " + viewvc_url + revision
       change_info.CloseIssue()
   os.chdir(previous_cwd)
+  return 0
 
 
-def Change(change_info, args):
+def CMDchange(change_info, args):
   """Creates/edits a changelist."""
   silent = FilterFlag(args, "--silent")
 
@@ -1003,7 +1028,7 @@ def Change(change_info, args):
   os.remove(filename)
 
   if not result:
-    return
+    return 0
 
   split_result = result.split(separator1, 1)
   if len(split_result) != 2:
@@ -1045,13 +1070,10 @@ def Change(change_info, args):
     change_info.UpdateRietveldDescription()
     change_info.needs_upload = False
     change_info.Save()
+  return 0
 
 
-# Valid extensions for files we want to lint.
-DEFAULT_LINT_REGEX = r"(.*\.cpp|.*\.cc|.*\.h)"
-DEFAULT_LINT_IGNORE_REGEX = r"$^"
-
-def Lint(change_info, args):
+def CMDlint(change_info, args):
   """Runs cpplint.py on all the files in |change_info|"""
   try:
     import cpplint
@@ -1085,6 +1107,7 @@ def Lint(change_info, args):
 
   print "Total errors found: %d\n" % cpplint._cpplint_state.error_count
   os.chdir(previous_cwd)
+  return 1
 
 
 def DoPresubmitChecks(change_info, committing, may_prompt):
@@ -1110,32 +1133,111 @@ def DoPresubmitChecks(change_info, committing, may_prompt):
   return result
 
 
-def Changes():
-  """Print all the changelists and their files."""
+def CMDchanges(argv):
+  """Lists all the changelists and their files."""
+  __pychecker__ = 'unusednames=argv'
   for cl in GetCLs():
     change_info = ChangeInfo.Load(cl, GetRepositoryRoot(), True, True)
     print "\n--- Changelist " + change_info.name + ":"
     for filename in change_info.GetFiles():
       print "".join(filename)
+  return 0
 
 
-def DeleteEmptyChangeLists():
+def CMDdeleteempties(argv):
   """Delete all changelists that have no files."""
+  __pychecker__ = 'unusednames=argv'
   print "\n--- Deleting:"
   for cl in GetCLs():
     change_info = ChangeInfo.Load(cl, GetRepositoryRoot(), True, True)
     if not len(change_info._files):
       print change_info.name
       change_info.Delete()
+  return 0
+
+
+def CMDnothave(argv):
+  """Lists files unknown to Subversion."""
+  __pychecker__ = 'unusednames=argv'
+  for filename in UnknownFiles(argv[2:]):
+    print "?      " + "".join(filename)
+  return 0
+
+
+def CMDdiff(argv):
+  """Diffs all files in the changelist."""
+  __pychecker__ = 'unusednames=argv'
+  files = GetFilesNotInCL()
+  print GenerateDiff([x[1] for x in files])
+  return 0
+
+
+def CMDsettings(argv):
+  """Prints code review settings."""
+  __pychecker__ = 'unusednames=argv'
+  # Force load settings
+  GetCodeReviewSetting("UNKNOWN");
+  del CODEREVIEW_SETTINGS['__just_initialized']
+  print '\n'.join(("%s: %s" % (str(k), str(v))
+                    for (k,v) in CODEREVIEW_SETTINGS.iteritems()))
+  return 0
+
+
+def CMDdescription(change_info, argv):
+  """Prints the description of the specified change to stdout."""
+  __pychecker__ = 'unusednames=argv'
+  print change_info.description
+  return 0
+
+
+def CMDdelete(change_info, argv):
+  """Deletes a changelist."""
+  __pychecker__ = 'unusednames=argv'
+  change_info.Delete()
+  return 0
+
+
+def CMDtry(change_info, argv):
+  """Sends the change to the tryserver so a trybot can do a test run on your
+  code.
+
+  To send multiple changes as one path, use a comma-separated list of
+  changenames. Use 'gcl help try' for more information!"""
+  # When the change contains no file, send the "changename" positional
+  # argument to trychange.py.
+  __pychecker__ = 'unusednames=argv'
+  if change_info.GetFiles():
+    args = argv[3:]
+  else:
+    change_info = None
+    args = argv[2:]
+  TryChange(change_info, args, swallow_exception=False)
+  return 0
+
+
+def CMDrename(argv):
+  """Renames an existing change."""
+  if len(argv) != 4:
+    ErrorExit("Usage: gcl rename <old-name> <new-name>.")
+  src, dst = argv[2:4]
+  src_file = GetChangelistInfoFile(src)
+  if not os.path.isfile(src_file):
+    ErrorExit("Change '%s' does not exist." % src)
+  dst_file = GetChangelistInfoFile(dst)
+  if os.path.isfile(dst_file):
+    ErrorExit("Change '%s' already exists; pick a new name." % dst)
+  os.rename(src_file, dst_file)
+  print "Change '%s' renamed '%s'." % (src, dst)
+  return 0
 
 
 def main(argv=None):
+  __pychecker__ = 'maxreturns=0'
   if argv is None:
     argv = sys.argv
 
   if len(argv) == 1:
-    Help()
-    return 0;
+    return CMDhelp()
 
   try:
     # Create the directories where we store information about changelists if it
@@ -1152,48 +1254,24 @@ def main(argv=None):
 
   # Commands that don't require an argument.
   command = argv[1]
-  if command == "opened" or command == "status":
-    Opened(command == "status")
-    return 0
+  if command == "opened":
+    return CMDopened(argv)
+  if command == "status":
+    return CMDstatus(argv)
   if command == "nothave":
-    __pychecker__ = 'no-returnvalues'
-    for filename in UnknownFiles(argv[2:]):
-      print "?      " + "".join(filename)
-    return 0
+    return CMDnothave(argv)
   if command == "changes":
-    Changes()
-    return 0
+    return CMDchanges(argv)
   if command == "help":
-    Help(argv[2:])
-    return 0
+    return CMDhelp(argv)
   if command == "diff" and len(argv) == 2:
-    files = GetFilesNotInCL()
-    print GenerateDiff([x[1] for x in files])
-    return 0
+    return CMDdiff(argv)
   if command == "settings":
-    # Force load settings
-    GetCodeReviewSetting("UNKNOWN");
-    del CODEREVIEW_SETTINGS['__just_initialized']
-    print '\n'.join(("%s: %s" % (str(k), str(v))
-                     for (k,v) in CODEREVIEW_SETTINGS.iteritems()))
-    return 0
+    return CMDsettings(argv)
   if command == "deleteempties":
-    DeleteEmptyChangeLists()
-    return 0
-
+    return CMDdeleteempties(argv)
   if command == "rename":
-    if len(argv) != 4:
-      ErrorExit("Usage: gcl rename <old-name> <new-name>.")
-    src, dst = argv[2:4]
-    src_file = GetChangelistInfoFile(src)
-    if not os.path.isfile(src_file):
-      ErrorExit("Change '%s' does not exist." % src)
-    dst_file = GetChangelistInfoFile(dst)
-    if os.path.isfile(dst_file):
-      ErrorExit("Change '%s' already exists; pick a new name." % dst)
-    os.rename(src_file, dst_file)
-    print "Change '%s' renamed '%s'." % (src, dst)
-    return 0
+    return CMDrename(argv)
   if command == "change":
     if len(argv) == 2:
       # Generate a random changelist name.
@@ -1222,28 +1300,21 @@ def main(argv=None):
                                   fail_on_not_found, True)
 
   if command == "change":
-    Change(change_info, argv[3:])
+    return CMDchange(change_info, argv[3:])
   elif command == "description":
-    print change_info.description
+    return CMDdescription(change_info, argv[3:])
   elif command == "lint":
-    Lint(change_info, argv[3:])
+    return CMDlint(change_info, argv[3:])
   elif command == "upload":
-    UploadCL(change_info, argv[3:])
+    return CMDupload(change_info, argv[3:])
   elif command == "presubmit":
-    PresubmitCL(change_info)
+    return CMDpresubmit(change_info, argv[3:])
   elif command in ("commit", "submit"):
-    Commit(change_info, argv[3:])
+    return CMDcommit(change_info, argv[3:])
   elif command == "delete":
-    change_info.Delete()
+    return CMDdelete(change_info, argv[3:])
   elif command == "try":
-    # When the change contains no file, send the "changename" positional
-    # argument to trychange.py.
-    if change_info.GetFiles():
-      args = argv[3:]
-    else:
-      change_info = None
-      args = argv[2:]
-    TryChange(change_info, args, swallow_exception=False)
+    return CMDtry(change_info, argv)
   else:
     # Everything else that is passed into gcl we redirect to svn, after adding
     # the files. This allows commands such as 'gcl diff xxx' to work.
