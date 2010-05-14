@@ -6,7 +6,3 @@
 // until the changes can be landed upstream.
 
 BUG42740 : storage/domstorage/quota.html = TEXT
-
-// Re-enable on the next WebKit roll (hopefully a proper baseline should be
-// set by then).
-BUGWK39116 : fast/dom/prototype-inheritance.html = TEXT
