@@ -31,11 +31,13 @@ void BookmarksUIHTMLSource::StartDataRequest(const std::string& path,
                                              int request_id) {
   NOTREACHED() << "We should never get here since the extension should have"
                << "been triggered";
+
+  SendResponse(request_id, NULL);
 }
 
 std::string BookmarksUIHTMLSource::GetMimeType(const std::string& path) const {
-    NOTREACHED() << "We should never get here since the extension should have"
-                 << "been triggered";
+  NOTREACHED() << "We should never get here since the extension should have"
+               << "been triggered";
   return "text/html";
 }
 

@@ -379,7 +379,7 @@ void URLRequestChromeJob::DataAvailable(RefCountedMemory* bytes) {
     }
   } else {
     // The request failed.
-    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, 0));
+    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, net::ERR_FAILED));
   }
 }
 

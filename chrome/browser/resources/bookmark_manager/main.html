@@ -48,7 +48,7 @@ found in the LICENSE file.
 
 // Sometimes the extension API is not initialized.
 if (!chrome.bookmarks)
-  window.location.reload();
+  console.error('Bookmarks extension API is not avaiable');
 
 // Allow platform specific CSS rules.
 if (cr.isMac)
