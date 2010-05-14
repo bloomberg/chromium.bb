@@ -19,8 +19,15 @@ const char kPreloadEnginesConfigName[] = "preload_engines";
 const char kNextEngineInMenuConfigName[] = "next_engine_in_menu";
 const char kPreviousEngineConfigName[] = "previous_engine";
 
+// TODO(suzhe): In order to avoid blocking any accelerator keys with alt+shift
+// modifiers, we should use release events of alt+shift key binding instead of
+// press events. The corresponding release events are:
+// "Alt+Shift+Shift_L+Release" and "Alt+Shift+Meta_L+Release"
+// But unfortunately http://crbug.com/40754 prevents these release events
+// from taking effect.
 const wchar_t kHotkeyNextEngineInMenu[] =
-    L"Shift+Alt_L,Alt+Shift_L,Control+Shift+space";
+    L"Alt+Shift_L,Shift+Meta_L,Control+Shift+space";
+// TODO(suzhe): Add more key bindings?
 const wchar_t kHotkeyPreviousEngine[] = L"Control+space";
 
 // For Korean input method (ibus-hangul)
