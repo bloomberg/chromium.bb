@@ -375,7 +375,7 @@ enum {
 
   /* Error status of context. Non-zero means error. Shared by all devices,    */
   /* though error values are device specific.                                 */
-  NPAttrib_Error = 0x80000000,
+  NPAttrib_Error = 0x80000000
 };
 
 /* generic device interface */
@@ -431,7 +431,7 @@ typedef void (*NPSelectedFindResultChangedPtr)(
 typedef int32 NPWidgetID;
 
 typedef enum {
-  NPWidgetTypeScrollbar = 0,
+  NPWidgetTypeScrollbar = 0
 } NPWidgetType;
 
 typedef struct _NPScrollbarCreateParams {
@@ -466,7 +466,7 @@ typedef enum {
   // Set only.  variable is bool* (true for forward, false for backward).
   NPWidgetPropertyScrollbarScrollByDocument = 8,
   // Set only.  variable is int32* (positive forward, negative  backward).
-  NPWidgetPropertyScrollbarScrollByPixels = 9,
+  NPWidgetPropertyScrollbarScrollByPixels = 9
 } NPWidgetProperty;
 
 // Creates a widget.  If it returns NPERR_NO_ERROR then id will contain a unique
@@ -709,7 +709,7 @@ enum {
   NP3DAttrib_GetOffset,
 
   /* Last processed token. Out only. */
-  NP3DAttrib_Token,
+  NP3DAttrib_Token
 };
 
 /* 3D callbacks */
@@ -735,7 +735,7 @@ enum {
 /* Values for NPConfig3DInAttrib_MultisampleResolve */
 enum {
   NP3DMultisampleResolve_Default        = 0x309A,
-  NP3DMultisampleResolve_Box            = 0x309B,
+  NP3DMultisampleResolve_Box            = 0x309B
 };
 
 /* End 3D specific API */
