@@ -1017,11 +1017,6 @@
           'dependencies': [
             '../build/linux/system.gyp:gtk',
           ],
-          'link_settings': {
-            'libraries': [
-              '-lcups',
-            ],
-          },
         }],
       ],
     },
