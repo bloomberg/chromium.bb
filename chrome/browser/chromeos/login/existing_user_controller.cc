@@ -161,7 +161,7 @@ void ExistingUserController::OnLoginFailure(const std::string& error) {
     ShowError(IDS_LOGIN_ERROR_AUTHENTICATING);
   }
 
-  controllers_[index_of_view_logging_in_]->SetPasswordEnabled(true);
+  controllers_[index_of_view_logging_in_]->ClearAndEnablePassword();
 
   // Reenable clicking on other windows.
   WmIpc::Message message(WM_IPC_MESSAGE_WM_SET_LOGIN_STATE);

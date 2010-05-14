@@ -50,8 +50,8 @@ class UserController : public views::ButtonListener,
 
   const UserManager::User& user() const { return user_; }
 
-  // Sets the enabled state of the password field to |enable|.
-  void SetPasswordEnabled(bool enable);
+  // Resets password text and sets the enabled state of the password.
+  void ClearAndEnablePassword();
 
   // Returns bounds of password field in screen coordinates.
   gfx::Rect GetScreenBounds() const;
@@ -99,6 +99,9 @@ class UserController : public views::ButtonListener,
   // Does not repaint the window so SchedulePaint is to be called explicitly
   // when needed.
   void SetImage(const SkBitmap& image, int desired_width, int desired_height);
+
+  // Sets the enabled state of the password field to |enable|.
+  void SetPasswordEnabled(bool enable);
 
   // Is this the guest user?
   const bool is_guest_;

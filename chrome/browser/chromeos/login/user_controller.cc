@@ -117,6 +117,11 @@ void UserController::SetPasswordEnabled(bool enable) {
   submit_button_->SetEnabled(enable);
 }
 
+void UserController::ClearAndEnablePassword() {
+  password_field_->SetText(string16());
+  SetPasswordEnabled(true);
+}
+
 void UserController::ButtonPressed(views::Button* sender,
                                    const views::Event& event) {
   Login();
