@@ -838,57 +838,43 @@ o3d.ParamSampler.prototype.applyToLocation = function(gl, location) {
  */
 o3d.Param.SAS = new o3d.ParamObject;
 
-o3d.Param.SAS.createParam('world',
-    'WorldParamMatrix4');
-o3d.Param.SAS.createParam('view',
-    'ViewParamMatrix4');
-o3d.Param.SAS.createParam('projection',
-    'ProjectionParamMatrix4');
-o3d.Param.SAS.createParam('worldView',
-    'WorldViewParamMatrix4');
-o3d.Param.SAS.createParam('viewProjection',
-    'ViewProjectionParamMatrix4');
-o3d.Param.SAS.createParam('worldViewProjection',
-    'WorldViewProjectionParamMatrix4');
+/**
+ * A map linking the names of SAS parameters to their standard matrix parameter
+ * types.
+ * @private
+ */
+o3d.Param.sasTypes_ = {
+  'world': 'WorldParamMatrix4',
+  'view': 'ViewParamMatrix4',
+  'projection': 'ProjectionParamMatrix4',
+  'worldView': 'WorldViewParamMatrix4',
+  'viewProjection': 'ViewProjectionParamMatrix4',
+  'worldViewProjection': 'WorldViewProjectionParamMatrix4',
+  'worldInverse': 'WorldInverseParamMatrix4',
+  'viewInverse': 'ViewInverseParamMatrix4',
+  'projectionInverse': 'ProjectionInverseParamMatrix4',
+  'worldViewInverse': 'WorldViewInverseParamMatrix4',
+  'viewProjectionInverse': 'ViewProjectionInverseParamMatrix4',
+  'worldViewProjectionInverse': 'WorldViewProjectionInverseParamMatrix4',
+  'worldTranspose': 'WorldTransposeParamMatrix4',
+  'viewTranspose': 'ViewTransposeParamMatrix4',
+  'projectionTranspose': 'ProjectionTransposeParamMatrix4',
+  'worldViewTranspose': 'WorldViewTransposeParamMatrix4',
+  'viewProjectionTranspose': 'ViewProjectionTransposeParamMatrix4',
+  'worldViewProjectionTranspose': 'WorldViewProjectionTransposeParamMatrix4',
+  'worldInverseTranspose': 'WorldInverseTransposeParamMatrix4',
+  'viewInverseTranspose': 'ViewInverseTransposeParamMatrix4',
+  'projectionInverseTranspose': 'ProjectionInverseTransposeParamMatrix4',
+  'worldViewInverseTranspose': 'WorldViewInverseTransposeParamMatrix4',
+  'viewProjectionInverseTranspose':
+      'ViewProjectionInverseTransposeParamMatrix4',
+  'worldViewProjectionInverseTranspose':
+      'WorldViewProjectionInverseTransposeParamMatrix4'
+};
 
-o3d.Param.SAS.createParam('worldInverse',
-    'WorldInverseParamMatrix4');
-o3d.Param.SAS.createParam('viewInverse',
-    'ViewInverseParamMatrix4');
-o3d.Param.SAS.createParam('projectionInverse',
-    'ProjectionInverseParamMatrix4');
-o3d.Param.SAS.createParam('worldViewInverse',
-    'WorldViewInverseParamMatrix4');
-o3d.Param.SAS.createParam('viewProjectionInverse',
-    'ViewProjectionInverseParamMatrix4');
-o3d.Param.SAS.createParam('worldViewProjectionInverse',
-    'WorldViewProjectionInverseParamMatrix4');
-
-o3d.Param.SAS.createParam('worldTranspose',
-    'WorldInverseParamMatrix4');
-o3d.Param.SAS.createParam('viewTranspose',
-    'ViewTransposeParamMatrix4');
-o3d.Param.SAS.createParam('projectionTranspose',
-    'ProjectionTransposeParamMatrix4');
-o3d.Param.SAS.createParam('worldViewTranspose',
-    'WorldViewTransposeParamMatrix4');
-o3d.Param.SAS.createParam('viewProjectionTranspose',
-    'ViewProjectionTransposeParamMatrix4');
-o3d.Param.SAS.createParam('worldViewProjectionTranspose',
-    'WorldViewProjectionTransposeParamMatrix4');
-
-o3d.Param.SAS.createParam('worldInverseTranspose',
-    'WorldInverseTransposeParamMatrix4');
-o3d.Param.SAS.createParam('viewInverseTranspose',
-    'ViewInverseTransposeParamMatrix4');
-o3d.Param.SAS.createParam('projectionInverseTranspose',
-    'ProjectionInverseTransposeParamMatrix4');
-o3d.Param.SAS.createParam('worldViewInverseTranspose',
-    'WorldViewInverseTransposeParamMatrix4');
-o3d.Param.SAS.createParam('viewProjectionInverseTranspose',
-    'ViewProjectionInverseTransposeParamMatrix4');
-o3d.Param.SAS.createParam('worldViewProjectionInverseTranspose',
-    'WorldViewProjectionInverseTransposeParamMatrix4');
+for (name in o3d.Param.sasTypes_) {
+  o3d.Param.SAS.createParam(name, o3d.Param.sasTypes_[name]);
+}
 
 /**
  * Sets the base world matrix that gets use to compute all other products for

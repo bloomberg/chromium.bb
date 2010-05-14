@@ -33,53 +33,51 @@
 /**
  * EffectParameterInfo holds information about the Parameters an Effect needs.
  * o3d.Effect.getParameterInfo
+ * @param {string} name Tne name of the parameter.
+ * @param {string} className The param class name.
+ * @param {number} numElements The number of Elements if the param is an array.
+ * @param {string} sasClassName The sas class name if the param is an sas type.
+ * @param {string} semantic The relevant semantic.
  */
-o3d.EffectParameterInfo = function() { };
+o3d.EffectParameterInfo =
+    function(name, className, numElements, semantic, sasClassName) {
+  /**
+   * The name of the parameter.
+   * @type {string}
+   */
+  this.name = name || '';
+
+  /**
+   * The type of the parameter.
+   * @type {string}
+   */
+  this.className = className || '';
+
+  /**
+   * The number of elements.  Non-zero for array types, zero for non-array
+   * types.
+   * @type {number}
+   */
+  this.numElements = numElements || 0;
+
+  /**
+   * The semantic of the parameter. This is always in UPPERCASE.
+   * @type {o3d.Stream.Semantic}
+   */
+  this.semantic = semantic || o3d.Stream.UNKNOWN_SEMANTIC;
+
+  /**
+   * If this is a standard parameter (SAS) this will be the name of the type
+   * of Param needed. Otherwise it will be the empty string.
+   *
+   * Standard Parameters are generally handled automatically by o3d but you
+   * can supply your own if you have a unique situation.
+   *
+   * @type {string}
+   */
+  this.sasClassName = sasClassName || '';
+};
 o3d.inherit('EffectParameterInfo', 'NamedObject');
-
-
-/**
- * The name of the parameter.
- * @type {string}
- */
-o3d.EffectParameterInfo.prototype.name = '';
-
-
-
-/**
- * The type of the parameter.
- * @type {string}
- */
-o3d.EffectParameterInfo.prototype.className = '';
-
-
-
-/**
- * The number of elements.  Non-zero for array types, zero for non-array types.
- * @type {number}
- */
-o3d.EffectParameterInfo.prototype.numElements = 0;
-
-
-
-/**
- * The semantic of the parameter. This is always in UPPERCASE.
- * @type {o3d.Stream.Semantic}
- */
-o3d.EffectParameterInfo.prototype.semantic = o3d.Stream.UNKNOWN_SEMANTIC;
-
-
-/**
- * If this is a standard parameter (SAS) this will be the name of the type
- * of Param needed. Otherwise it will be the empty string.
- *
- * Standard Parameters are generally handled automatically by o3d but you
- * can supply your own if you have a unique situation.
- *
- * @type {string}
- */
-o3d.EffectParameterInfo.prototype.sas_class_name = '';
-
 
 
 /**
@@ -173,11 +171,10 @@ o3d.Effect.prototype.fragmentShaderLoaded_ = false;
  */
 o3d.Effect.prototype.bindAttributesAndLinkIfReady = function() {
   if (this.vertexShaderLoaded_ && this.fragmentShaderLoaded_) {
-    var attributes = ['position', 'normal', 'tangent', 'binormal', 'color',
-                      'texCoord0', 'texCoord1', 'texCoord2', 'texCoord3',
-                      'texCoord4', 'texCoord5', 'texCoord6', 'texCoord7'];
-    for (var i = 0; i < attributes.length; ++i) {
-      this.gl.bindAttribLocation(this.program_, i, attributes[i]);
+    var semanticMap = o3d.Effect.semanticMap_;
+    for (var name in semanticMap) {
+      this.gl.bindAttribLocation(
+          this.program_, semanticMap[name].gl_index, name);
     }
     this.gl.linkProgram(this.program_);
     if (!this.gl.getProgramParameter(this.program_, this.gl.LINK_STATUS)) {
@@ -281,8 +278,8 @@ o3d.Effect.prototype.getUniforms_ =
       this.program_, this.gl.ACTIVE_UNIFORMS);
   for (var i = 0; i < numUniforms; ++i) {
     var info = this.gl.getActiveUniform(this.program_, i);
-    this.uniforms_[info.name] = {info:info,
-        location:this.gl.getUniformLocation(this.program_, info.name)};
+    this.uniforms_[info.name] = {info: info,
+        location: this.gl.getUniformLocation(this.program_, info.name)};
   }
 };
 
@@ -307,6 +304,59 @@ o3d.Effect.prototype.getAttributes_ =
 
 
 /**
+ * A map linking the WebGL type of a uniform to the appropriate param type.
+ * This gets memoized in the function createUniformParameters.
+ * @private
+ */
+o3d.Effect.paramTypes_ = null;
+
+/**
+ * Accesses the paramTypes map, builds it if it isn't already built.
+ * @private;
+ */
+o3d.Effect.getParamTypes_ = function(gl)  {
+  // Even though these constants should be the same for different webgl
+  // contexts, we can't create this table until the context is loaded, so
+  // we initialize it here rather than when the file loads.
+  if (!o3d.Effect.paramTypes_) {
+    o3d.Effect.paramTypes_ = {};
+    o3d.Effect.paramTypes_[gl.FLOAT] = 'ParamFloat';
+    o3d.Effect.paramTypes_[gl.FLOAT_VEC2] = 'ParamFloat2';
+    o3d.Effect.paramTypes_[gl.FLOAT_VEC3] = 'ParamFloat3';
+    o3d.Effect.paramTypes_[gl.FLOAT_VEC4] = 'ParamFloat4';
+    o3d.Effect.paramTypes_[gl.INT] = 'ParamInteger';
+    o3d.Effect.paramTypes_[gl.BOOL] = 'ParamBoolean';
+    o3d.Effect.paramTypes_[gl.FLOAT_MAT4] = 'ParamMatrix4';
+    o3d.Effect.paramTypes_[gl.SAMPLER_2D] = 'ParamSampler';
+    o3d.Effect.paramTypes_[gl.SAMPLER_CUBE] = 'ParamSampler';
+  }
+
+  return o3d.Effect.paramTypes_;
+}
+
+/**
+ * A map linking names of certain attributes in the shader to the corresponding
+ * semantic and semantic index.
+ * @private
+ */
+o3d.Effect.semanticMap_ = {
+  'position': {semantic: o3d.Stream.POSITION, index: 0, gl_index: 0},
+  'normal': {semantic: o3d.Stream.NORMAL, index: 0, gl_index: 1},
+  'tangent': {semantic: o3d.Stream.TANGENT, index: 0, gl_index: 2},
+  'binormal': {semantic: o3d.Stream.BINORMAL, index: 0, gl_index: 3},
+  'color': {semantic: o3d.Stream.COLOR, index: 0, gl_index: 4},
+  'texCoord0': {semantic: o3d.Stream.TEXCOORD, index: 0, gl_index: 5},
+  'texCoord1': {semantic: o3d.Stream.TEXCOORD, index: 1, gl_index: 6},
+  'texCoord2': {semantic: o3d.Stream.TEXCOORD, index: 2, gl_index: 7},
+  'texCoord3': {semantic: o3d.Stream.TEXCOORD, index: 3, gl_index: 8},
+  'texCoord4': {semantic: o3d.Stream.TEXCOORD, index: 4, gl_index: 9},
+  'texCoord5': {semantic: o3d.Stream.TEXCOORD, index: 5, gl_index: 10},
+  'texCoord6': {semantic: o3d.Stream.TEXCOORD, index: 6, gl_index: 11},
+  'texCoord7': {semantic: o3d.Stream.TEXCOORD, index: 7, gl_index: 12}
+};
+
+
+/**
  * For each of the effect's uniform parameters, creates corresponding
  * parameters on the given ParamObject. Skips SAS Parameters.
  *
@@ -323,69 +373,14 @@ o3d.Effect.prototype.getAttributes_ =
  */
 o3d.Effect.prototype.createUniformParameters =
     function(param_object) {
-  var sasNames = {'world': true,
-                  'view': true,
-                  'projection': true,
-                  'worldView': true,
-                  'worldProjection': true,
-                  'worldViewProjection': true,
-                  'worldInverse': true,
-                  'viewInverse': true,
-                  'projectionInverse': true,
-                  'worldViewInverse': true,
-                  'worldProjectionInverse': true,
-                  'worldViewProjectionInverse': true,
-                  'worldTranspose': true,
-                  'viewTranspose': true,
-                  'projectionTranspose': true,
-                  'worldViewTranspose': true,
-                  'worldProjectionTranspose': true,
-                  'worldViewProjectionTranspose': true,
-                  'worldInverseTranspose': true,
-                  'viewInverseTranspose': true,
-                  'projectionInverseTranspose': true,
-                  'worldViewInverseTranspose': true,
-                  'worldProjectionInverseTranspose': true,
-                  'worldViewProjectionInverseTranspose': true};
+  var sasTypes = o3d.Param.sasTypes_;
+  var paramTypes = o3d.Effect.getParamTypes_(this.gl);
 
   for (var name in this.uniforms_) {
     var info = this.uniforms_[name].info;
-
-    if (sasNames[name])
-      continue;
-
-    var paramType = '';
-    switch (info.type) {
-      case this.gl.FLOAT:
-        paramType = 'ParamFloat';
-        break;
-      case this.gl.FLOAT_VEC2:
-        paramType = 'ParamFloat2';
-        break;
-      case this.gl.FLOAT_VEC3:
-        paramType = 'ParamFloat3';
-        break;
-      case this.gl.FLOAT_VEC4:
-        paramType = 'ParamFloat4';
-        break;
-      case this.gl.INT:
-        paramType = 'ParamInteger';
-        break;
-      case this.gl.BOOL:
-        paramType = 'ParamBoolean';
-        break;
-      case this.gl.FLOAT_MAT4:
-        paramType = 'ParamMatrix4';
-        break;
-      case this.gl.SAMPLER_2D:
-        paramType = 'ParamSampler';
-        break;
-      case this.gl.SAMPLER_CUBE:
-        paramType = 'ParamSampler';
-        break;
+    if (!sasTypes[name]) {
+      param_object.createParam(info.name, paramTypes[info.type]);
     }
-
-    param_object.createParam(info.name, paramType);
   }
 };
 
@@ -408,7 +403,14 @@ o3d.Effect.prototype.createUniformParameters =
  */
 o3d.Effect.prototype.createSASParameters =
     function(param_object) {
-  o3d.notImplemented();
+  var sasTypes = o3d.Param.sasTypes_;
+  for (var name in this.uniforms_) {
+    var info = this.uniforms_[name].info;
+    var sasType = sasTypes[name];
+    if (sasType) {
+      param_object.createParam(info.name, sasType);
+    }
+  }
 };
 
 
@@ -418,8 +420,23 @@ o3d.Effect.prototype.createSASParameters =
  *     EffectParameterInfo objects.
  */
 o3d.Effect.prototype.getParameterInfo = function() {
-  o3d.notImplemented();
-  return [];
+  var infoArray = [];
+  var sasTypes = o3d.Param.sasTypes_;
+  var paramTypes = o3d.Effect.getParamTypes_(this.gl);
+  var semanticMap = o3d.Effect.semanticMap_;
+
+  for (var name in this.uniforms_) {
+    var info = this.uniforms_[name].info;
+    var sasTypeName = sasTypes[name] || '';
+    var className = paramTypes[info.type] || '';
+    var numElements = 0;  // TODO(petersont): Add array support.
+    var semantic = semanticMap[name].semantic || o3d.Stream.UNKNOWN_SEMANTIC;
+
+    infoArray.push(new EffectParameterInfo(
+      name, className, numElements, semantic, sasClassName));
+  }
+
+  return infoArray;
 };
 
 
@@ -432,21 +449,7 @@ o3d.Effect.prototype.getStreamInfo = function() {
   var infoList = [];
 
   for (var name in this.attributes_) {
-    var attributes = {
-      'position': {semantic: o3d.Stream.POSITION, index: 0},
-      'normal': {semantic: o3d.Stream.NORMAL, index: 0},
-      'tangent': {semantic: o3d.Stream.TANGENT, index: 0},
-      'binormal': {semantic: o3d.Stream.BINORMAL, index: 0},
-      'color': {semantic: o3d.Stream.COLOR, index: 0},
-      'texCoord0': {semantic: o3d.Stream.TEXCOORD, index: 0},
-      'texCoord1': {semantic: o3d.Stream.TEXCOORD, index: 1},
-      'texCoord2': {semantic: o3d.Stream.TEXCOORD, index: 2},
-      'texCoord3': {semantic: o3d.Stream.TEXCOORD, index: 3},
-      'texCoord4': {semantic: o3d.Stream.TEXCOORD, index: 4},
-      'texCoord5': {semantic: o3d.Stream.TEXCOORD, index: 5},
-      'texCoord6': {semantic: o3d.Stream.TEXCOORD, index: 6},
-      'texCoord7': {semantic: o3d.Stream.TEXCOORD, index: 7}};
-    var semantic_index_pair = attributes[name];
+    var semantic_index_pair = o3d.Effect.semanticMap_[name];
     infoList.push(new o3d.EffectStreamInfo(
         semantic_index_pair.semantic, semantic_index_pair.index));
   }
