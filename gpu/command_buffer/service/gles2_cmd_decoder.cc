@@ -2573,6 +2573,10 @@ void GLES2DecoderImpl::DoGetRenderbufferParameteriv(
                "glGetRenderbufferParameteriv: no renderbuffer bound");
     return;
   }
+  if (pname == GL_RENDERBUFFER_INTERNAL_FORMAT) {
+    *params = bound_renderbuffer_->internalformat();
+    return;
+  }
   glGetRenderbufferParameterivEXT(target, pname, params);
 }
 
@@ -2583,6 +2587,21 @@ void GLES2DecoderImpl::DoRenderbufferStorage(
                "glGetRenderbufferStorage: no renderbuffer bound");
     return;
   }
+  bound_renderbuffer_->set_internalformat(internalformat);
+#if !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
+  switch (internalformat) {
+    case GL_DEPTH_COMPONENT16:
+      internalformat = GL_DEPTH_COMPONENT;
+      break;
+    case GL_RGBA4:
+    case GL_RGB5_A1:
+      internalformat = GL_RGBA;
+      break;
+    case GL_RGB565:
+      internalformat = GL_RGB;
+      break;
+  }
+#endif  // GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2
   glRenderbufferStorageEXT(target, internalformat, width, height);
 }
 

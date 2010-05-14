@@ -71,6 +71,7 @@
     #define GL_MAX_FRAGMENT_UNIFORM_VECTORS     0x8DFD
     #define GL_MAX_VERTEX_UNIFORM_VECTORS       0x8DFB
     #define GL_MAX_VARYING_VECTORS              0x8DFC
+    #define GL_RGB565                         0x8D62
     #define GL_SHADER_BINARY_FORMATS          0x8DF8
     #define GL_NUM_SHADER_BINARY_FORMATS      0x8DF9
     #define GL_SHADER_COMPILER                0x8DFA
