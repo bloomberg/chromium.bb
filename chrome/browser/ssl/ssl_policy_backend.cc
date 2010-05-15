@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
@@ -102,15 +103,14 @@ void SSLPolicyBackend::ShowMessageWithLink(const std::wstring& msg,
   }
 }
 
-void SSLPolicyBackend::HostRanInsecureContent(const std::string& host,
-                                              int id) {
-  ssl_host_state_->HostRanInsecureContent(host, id);
-  SSLManager::NotifySSLInternalStateChanged();
+void SSLPolicyBackend::MarkHostAsBroken(const std::string& host, int id) {
+  ssl_host_state_->MarkHostAsBroken(host, id);
+  DispatchSSLInternalStateChanged();
 }
 
-bool SSLPolicyBackend::DidHostRunInsecureContent(const std::string& host,
-                                                 int pid) const {
-  return ssl_host_state_->DidHostRunInsecureContent(host, pid);
+bool SSLPolicyBackend::DidMarkHostAsBroken(const std::string& host,
+                                           int pid) const {
+  return ssl_host_state_->DidMarkHostAsBroken(host, pid);
 }
 
 void SSLPolicyBackend::DenyCertForHost(net::X509Certificate* cert,
@@ -126,6 +126,13 @@ void SSLPolicyBackend::AllowCertForHost(net::X509Certificate* cert,
 net::X509Certificate::Policy::Judgment SSLPolicyBackend::QueryPolicy(
     net::X509Certificate* cert, const std::string& host) {
   return ssl_host_state_->QueryPolicy(cert, host);
+}
+
+void SSLPolicyBackend::DispatchSSLInternalStateChanged() {
+  NotificationService::current()->Notify(
+      NotificationType::SSL_INTERNAL_STATE_CHANGED,
+      Source<NavigationController>(controller_),
+      NotificationService::NoDetails());
 }
 
 void SSLPolicyBackend::ShowPendingMessages() {

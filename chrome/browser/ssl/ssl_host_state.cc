@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,21 +23,22 @@ SSLHostState::SSLHostState() {
 SSLHostState::~SSLHostState() {
 }
 
-void SSLHostState::HostRanInsecureContent(const std::string& host, int pid) {
+void SSLHostState::MarkHostAsBroken(const std::string& host, int pid) {
   DCHECK(CalledOnValidThread());
-  ran_insecure_content_hosts_.insert(BrokenHostEntry(host, pid));
+
+  broken_hosts_.insert(BrokenHostEntry(host, pid));
 }
 
-bool SSLHostState::DidHostRunInsecureContent(const std::string& host,
-                                             int pid) const {
+bool SSLHostState::DidMarkHostAsBroken(const std::string& host, int pid) {
   DCHECK(CalledOnValidThread());
 
-  // CAs issue certificates for intranet hosts to everyone.  Therefore, we
-  // always treat intranet hosts as having run insecure content.
+  // CAs issue certificate for intranet hosts to everyone.  Therefore, we always
+  // treat intranet hosts as broken.
   if (IsIntranetHost(host))
     return true;
 
-  return !!ran_insecure_content_hosts_.count(BrokenHostEntry(host, pid));
+  return (broken_hosts_.find(
+      BrokenHostEntry(host, pid)) != broken_hosts_.end());
 }
 
 void SSLHostState::DenyCertForHost(net::X509Certificate* cert,

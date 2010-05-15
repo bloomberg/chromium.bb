@@ -83,6 +83,15 @@ void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
   }
 }
 
+void SSLPolicy::DidDisplayInsecureContent(NavigationEntry* entry) {
+  if (!entry)
+    return;
+
+  // TODO(abarth): We don't actually need to break the whole origin here,
+  //               but we can handle that in a later patch.
+  DidRunInsecureContent(entry, entry->url().spec());
+}
+
 void SSLPolicy::DidRunInsecureContent(NavigationEntry* entry,
                                       const std::string& security_origin) {
   if (!entry)
@@ -92,52 +101,16 @@ void SSLPolicy::DidRunInsecureContent(NavigationEntry* entry,
   if (!site_instance)
       return;
 
-  backend_->HostRanInsecureContent(GURL(security_origin).host(),
-                                   site_instance->GetProcess()->id());
+  backend_->MarkHostAsBroken(GURL(security_origin).host(),
+                             site_instance->GetProcess()->id());
 }
 
 void SSLPolicy::OnRequestStarted(SSLRequestInfo* info) {
-  // TODO(abarth): This mechanism is wrong.  What we should be doing is sending
-  // this information back through WebKit and out some FrameLoaderClient
-  // methods.
-  //
-  // The behavior for HTTPS resources with cert errors should be as follows:
-  //   1) If we don't know anything about this host (the one hosting the
-  //      resource), the resource load just fails.
-  //   2) If the user has previously approved the same certificate error for
-  //      this host in a full-page interstitial, then we'll proceed with the
-  //      load.
-  //   3) If we proceed with the load, we should treat the resources as if they
-  //      were loaded over HTTP, w.r.t. the display vs. run distinction above.
-  //
-  // However, right now we don't have the proper context to understand where
-  // these resources will be used.  Consequently, we're conservative and treat
-  // them all like DidRunInsecureContent().
-
-  if (net::IsCertStatusError(info->ssl_cert_status())) {
-    backend_->HostRanInsecureContent(info->url().host(), info->child_id());
-
-    // TODO(abarth): We should eventually remove the main_frame_origin and
-    // frame_origin properties.  First, not every resource load is associated
-    // with a frame, so they don't always make sense.  Second, the
-    // main_frame_origin is computed from the first_party_for_cookies, which has
-    // been hacked to death to support third-party cookie blocking.
-
-    if (info->resource_type() != ResourceType::MAIN_FRAME &&
-        info->resource_type() != ResourceType::SUB_FRAME) {
-      // The frame's origin now contains mixed content and therefore is broken.
-      OriginRanInsecureContent(info->frame_origin(), info->child_id());
-    }
-
-    if (info->resource_type() != ResourceType::MAIN_FRAME) {
-      // The main frame now contains a frame with mixed content.  Therefore, we
-      // mark the main frame's origin as broken too.
-      OriginRanInsecureContent(info->main_frame_origin(), info->child_id());
-    }
-  }
+  if (net::IsCertStatusError(info->ssl_cert_status()))
+    UpdateStateForUnsafeContent(info);
 }
 
-void SSLPolicy::UpdateEntry(NavigationEntry* entry, TabContents* tab_contents) {
+void SSLPolicy::UpdateEntry(NavigationEntry* entry) {
   DCHECK(entry);
 
   InitializeEntryIfNeeded(entry);
@@ -167,15 +140,9 @@ void SSLPolicy::UpdateEntry(NavigationEntry* entry, TabContents* tab_contents) {
   // necessarily have site instances.  Without a process, the entry can't
   // possibly have mixed content.  See bug http://crbug.com/12423.
   if (site_instance &&
-      backend_->DidHostRunInsecureContent(entry->url().host(),
-                                          site_instance->GetProcess()->id())) {
-    entry->ssl().set_security_style(SECURITY_STYLE_AUTHENTICATION_BROKEN);
-    entry->ssl().set_ran_mixed_content();
-    return;
-  }
-
-  if (tab_contents->displayed_insecure_content())
-    entry->ssl().set_displayed_mixed_content();
+      backend_->DidMarkHostAsBroken(entry->url().host(),
+                                    site_instance->GetProcess()->id()))
+    entry->ssl().set_has_mixed_content();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -240,8 +207,33 @@ void SSLPolicy::InitializeEntryIfNeeded(NavigationEntry* entry) {
       SECURITY_STYLE_AUTHENTICATED : SECURITY_STYLE_UNAUTHENTICATED);
 }
 
-void SSLPolicy::OriginRanInsecureContent(const std::string& origin, int pid) {
+void SSLPolicy::MarkOriginAsBroken(const std::string& origin, int pid) {
   GURL parsed_origin(origin);
-  if (parsed_origin.SchemeIsSecure())
-    backend_->HostRanInsecureContent(parsed_origin.host(), pid);
+  if (!parsed_origin.SchemeIsSecure())
+    return;
+
+  backend_->MarkHostAsBroken(parsed_origin.host(), pid);
+}
+
+void SSLPolicy::UpdateStateForMixedContent(SSLRequestInfo* info) {
+  // TODO(abarth): This function isn't right because we need to remove
+  //               info->main_frame_origin().
+
+  if (info->resource_type() != ResourceType::MAIN_FRAME &&
+      info->resource_type() != ResourceType::SUB_FRAME) {
+    // The frame's origin now contains mixed content and therefore is broken.
+    MarkOriginAsBroken(info->frame_origin(), info->child_id());
+  }
+
+  if (info->resource_type() != ResourceType::MAIN_FRAME) {
+    // The main frame now contains a frame with mixed content.  Therefore, we
+    // mark the main frame's origin as broken too.
+    MarkOriginAsBroken(info->main_frame_origin(), info->child_id());
+  }
+}
+
+void SSLPolicy::UpdateStateForUnsafeContent(SSLRequestInfo* info) {
+  // This request as a broken cert, which means its host is broken.
+  backend_->MarkHostAsBroken(info->url().host(), info->child_id());
+  UpdateStateForMixedContent(info);
 }

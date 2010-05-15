@@ -37,17 +37,8 @@ class NavigationEntry {
    public:
     // Flags used for the page security content status.
     enum ContentStatusFlags {
-      // HTTP page, or HTTPS page with no insecure content.
-      NORMAL_CONTENT          = 0,
-
-      // HTTPS page containing "displayed" HTTP resources (e.g. images, CSS).
-      DISPLAYED_MIXED_CONTENT = 1 << 0,
-
-      // HTTPS page containing "executed" HTTP resources (i.e. script).
-      // Also currently used for HTTPS page containing broken-HTTPS resources;
-      // this is wrong and should be fixed (see comments in
-      // SSLPolicy::OnRequestStarted()).
-      RAN_MIXED_CONTENT       = 1 << 1,
+      NORMAL_CONTENT = 0,       // No mixed content.
+      MIXED_CONTENT  = 1 << 0,  // https page containing http resources.
     };
 
     SSLStatus();
@@ -88,18 +79,13 @@ class NavigationEntry {
       return security_bits_;
     }
 
-    void set_displayed_mixed_content() {
-      content_status_ |= DISPLAYED_MIXED_CONTENT;
+    // Mixed content means that this page which is served over https contains
+    // http sub-resources.
+    void set_has_mixed_content() {
+      content_status_ |= MIXED_CONTENT;
     }
-    bool displayed_mixed_content() const {
-      return (content_status_ & DISPLAYED_MIXED_CONTENT) != 0;
-    }
-
-    void set_ran_mixed_content() {
-      content_status_ |= RAN_MIXED_CONTENT;
-    }
-    bool ran_mixed_content() const {
-      return (content_status_ & RAN_MIXED_CONTENT) != 0;
+    bool has_mixed_content() const {
+      return (content_status_ & MIXED_CONTENT) != 0;
     }
 
     // Raw accessors for all the content status flags. This contains a

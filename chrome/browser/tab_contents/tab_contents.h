@@ -298,10 +298,6 @@ class TabContents : public PageNavigator,
   // navigation state change to trigger repaint of title.
   void SetAppIcon(const SkBitmap& app_icon);
 
-  bool displayed_insecure_content() const {
-    return displayed_insecure_content_;
-  }
-
   // Internal state ------------------------------------------------------------
 
   // This flag indicates whether the tab contents is currently being
@@ -1138,9 +1134,6 @@ class TabContents : public PageNavigator,
 
   // Stores which content setting types actually have blocked content.
   bool content_blocked_[CONTENT_SETTINGS_NUM_TYPES];
-
-  // True if this is a secure page which displayed insecure content.
-  bool displayed_insecure_content_;
 
   // Data for shelves and stuff ------------------------------------------------
 

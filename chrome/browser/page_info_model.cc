@@ -138,14 +138,13 @@ PageInfoModel::PageInfoModel(Profile* profile,
             IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_CONNECTION_TEXT,
             subject_name,
             IntToString16(ssl.security_bits())));
-    if (ssl.displayed_mixed_content() || ssl.ran_mixed_content()) {
+    if (ssl.has_mixed_content()) {
       state = false;
       description.assign(
           l10n_util::GetStringFUTF16(
               IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK,
               description,
-              l10n_util::GetStringUTF16(ssl.ran_mixed_content() ?
-                  IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_MIXED_CONTENT_ERROR :
+              l10n_util::GetStringUTF16(
                   IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_MIXED_CONTENT_WARNING)));
     }
   }
