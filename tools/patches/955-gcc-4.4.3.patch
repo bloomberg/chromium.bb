@@ -22,3 +22,63 @@ Disable "bt" instruction even if optimization for size is used.
    "bt{l}\t{%1, %0|%0, %1}"
    [(set_attr "type" "alu1")])
  
+@@ -14775,7 +14775,8 @@
+ 		      (label_ref (match_operand 3 "" ""))
+ 		      (pc)))
+    (clobber (reg:CC FLAGS_REG))]
+-  "TARGET_64BIT && (TARGET_USE_BT || optimize_function_for_size_p (cfun))"
++  "TARGET_64BIT && (TARGET_USE_BT ||
++   optimize_function_for_size_p (cfun) && !flag_control_integrity)"
+   "#"
+   "&& 1"
+   [(set (reg:CCC FLAGS_REG)
+@@ -14808,7 +14809,8 @@
+ 		      (label_ref (match_operand 4 "" ""))
+ 		      (pc)))
+    (clobber (reg:CC FLAGS_REG))]
+-  "TARGET_64BIT && (TARGET_USE_BT || optimize_function_for_size_p (cfun))
++  "TARGET_64BIT && (TARGET_USE_BT ||
++   optimize_function_for_size_p (cfun) && !flag_control_integrity)
+    && (INTVAL (operands[3]) & 0x3f) == 0x3f"
+   "#"
+   "&& 1"
+@@ -14841,7 +14843,8 @@
+ 		      (label_ref (match_operand 3 "" ""))
+ 		      (pc)))
+    (clobber (reg:CC FLAGS_REG))]
+-  "TARGET_USE_BT || optimize_function_for_size_p (cfun)"
++  "TARGET_USE_BT ||
++   optimize_function_for_size_p (cfun) && !flag_control_integrity"
+   "#"
+   "&& 1"
+   [(set (reg:CCC FLAGS_REG)
+@@ -14874,7 +14877,8 @@
+ 		      (label_ref (match_operand 4 "" ""))
+ 		      (pc)))
+    (clobber (reg:CC FLAGS_REG))]
+-  "(TARGET_USE_BT || optimize_function_for_size_p (cfun))
++  "(TARGET_USE_BT ||
++    optimize_function_for_size_p (cfun) && !flag_control_integrity)
+    && (INTVAL (operands[3]) & 0x1f) == 0x1f"
+   "#"
+   "&& 1"
+@@ -14903,7 +14907,8 @@
+ 		      (label_ref (match_operand 3 "" ""))
+ 		      (pc)))
+    (clobber (reg:CC FLAGS_REG))]
+-  "TARGET_USE_BT || optimize_function_for_size_p (cfun)"
++  "TARGET_USE_BT ||
++   optimize_function_for_size_p (cfun) && !flag_control_integrity"
+   "#"
+   "&& 1"
+   [(set (reg:CCC FLAGS_REG)
+@@ -14940,7 +14945,8 @@
+ 	  (label_ref (match_operand 4 "" ""))
+ 	  (pc)))
+    (clobber (reg:CC FLAGS_REG))]
+-  "(TARGET_USE_BT || optimize_function_for_size_p (cfun))
++  "(TARGET_USE_BT ||
++    optimize_function_for_size_p (cfun) && !flag_control_integrity)
+    && (INTVAL (operands[3]) & 0x1f) == 0x1f"
+   "#"
+   "&& 1"
