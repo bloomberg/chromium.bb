@@ -1212,6 +1212,141 @@ diff -uNr newlib-1.18.0.orig/newlib/libc/posix/telldir.c newlib-1.18.0/newlib/li
  
  #ifdef HAVE_DD_LOCK
  	__lock_acquire(dd_hash_lock);
+diff -uNr newlib-1.18.0.orig/newlib/libc/reent/Makefile.am newlib-1.18.0/newlib/libc/reent/Makefile.am
+--- newlib-1.18.0.orig/newlib/libc/reent/Makefile.am	2009-08-12 20:22:38.000000000 +0200
++++ newlib-1.18.0/newlib/libc/reent/Makefile.am	2010-05-15 13:57:35.000000000 +0200
+@@ -37,6 +37,7 @@
+ 	impure.c \
+ 	fcntlr.c \
+ 	fstatr.c \
++	getpidr.c \
+ 	getreent.c \
+ 	gettimeofdayr.c \
+ 	isattyr.c \
+@@ -75,6 +76,7 @@
+ 	execr.def \
+ 	fcntlr.def \
+ 	fstatr.def \
++	getpidr.def \
+ 	gettimeofdayr.def \
+ 	linkr.def \
+ 	lseekr.def \
+diff -uNr newlib-1.18.0.orig/newlib/libc/reent/Makefile.in newlib-1.18.0/newlib/libc/reent/Makefile.in
+--- newlib-1.18.0.orig/newlib/libc/reent/Makefile.in	2009-10-21 00:44:09.000000000 +0200
++++ newlib-1.18.0/newlib/libc/reent/Makefile.in	2010-05-15 14:01:28.000000000 +0200
+@@ -57,7 +57,7 @@
+ lib_a_LIBADD =
+ am__objects_1 = lib_a-closer.$(OBJEXT) lib_a-reent.$(OBJEXT) \
+ 	lib_a-impure.$(OBJEXT) lib_a-fcntlr.$(OBJEXT) \
+-	lib_a-fstatr.$(OBJEXT) lib_a-getreent.$(OBJEXT) \
++	lib_a-fstatr.$(OBJEXT) lib_a-getpidr.$(OBJEXT) lib_a-getreent.$(OBJEXT) \
+ 	lib_a-gettimeofdayr.$(OBJEXT) lib_a-isattyr.$(OBJEXT) \
+ 	lib_a-linkr.$(OBJEXT) lib_a-lseekr.$(OBJEXT) \
+ 	lib_a-mkdirr.$(OBJEXT) lib_a-openr.$(OBJEXT) \
+@@ -83,7 +83,7 @@
+ LTLIBRARIES = $(noinst_LTLIBRARIES)
+ libreent_la_LIBADD =
+ am__objects_6 = closer.lo reent.lo impure.lo fcntlr.lo fstatr.lo \
+-	getreent.lo gettimeofdayr.lo isattyr.lo linkr.lo lseekr.lo \
++	getpidr.lo getreent.lo gettimeofdayr.lo isattyr.lo linkr.lo lseekr.lo \
+ 	mkdirr.lo openr.lo readr.lo renamer.lo signalr.lo signgam.lo \
+ 	sbrkr.lo statr.lo timesr.lo unlinkr.lo writer.lo
+ @HAVE_STDIO64_DIR_TRUE@am__objects_7 = fstat64r.lo lseek64r.lo \
+@@ -283,6 +283,7 @@
+ 	impure.c \
+ 	fcntlr.c \
+ 	fstatr.c \
++	getpidr.c \
+ 	getreent.c \
+ 	gettimeofdayr.c \
+ 	isattyr.c \
+@@ -314,6 +315,7 @@
+ 	execr.def \
+ 	fcntlr.def \
+ 	fstatr.def \
++	getpidr.def \
+ 	gettimeofdayr.def \
+ 	linkr.def \
+ 	lseekr.def \
+@@ -431,6 +433,12 @@
+ lib_a-fstatr.obj: fstatr.c
+ 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_a_CFLAGS) $(CFLAGS) -c -o lib_a-fstatr.obj `if test -f 'fstatr.c'; then $(CYGPATH_W) 'fstatr.c'; else $(CYGPATH_W) '$(srcdir)/fstatr.c'; fi`
+ 
++lib_a-getpidr.o: getpidr.c
++	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_a_CFLAGS) $(CFLAGS) -c -o lib_a-getpidr.o `test -f 'getpidr.c' || echo '$(srcdir)/'`getpidr.c
++
++lib_a-getpidr.obj: getpidr.c
++	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_a_CFLAGS) $(CFLAGS) -c -o lib_a-getpidr.obj `if test -f 'getpidr.c'; then $(CYGPATH_W) 'getpidr.c'; else $(CYGPATH_W) '$(srcdir)/getpidr.c'; fi`
++
+ lib_a-getreent.o: getreent.c
+ 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_a_CFLAGS) $(CFLAGS) -c -o lib_a-getreent.o `test -f 'getreent.c' || echo '$(srcdir)/'`getreent.c
+ 
+diff -uNr newlib-1.18.0.orig/newlib/libc/reent/getpidr.c newlib-1.18.0/newlib/libc/reent/getpidr.c
+--- newlib-1.18.0.orig/newlib/libc/reent/getpidr.c	1970-01-01 01:00:00.000000000 +0100
++++ newlib-1.18.0/newlib/libc/reent/getpidr.c	2010-05-15 13:56:35.000000000 +0200
+@@ -0,0 +1,62 @@
++/* Reentrant versions of syscalls need to support signal/raise.
++   These implementations just call the usual system calls.  */
++
++#include <reent.h>
++#include <signal.h>
++#include <unistd.h>
++#include <_syslist.h>
++
++/* Some targets provides their own versions of these functions.  Those
++   targets should define REENTRANT_SYSCALLS_PROVIDED in TARGET_CFLAGS.  */
++
++#ifdef _REENT_ONLY
++#ifndef REENTRANT_SYSCALLS_PROVIDED
++#define REENTRANT_SYSCALLS_PROVIDED
++#endif
++#endif
++
++#ifdef REENTRANT_SYSCALLS_PROVIDED
++
++int _dummy_link_syscalls = 1;
++
++#else
++
++/* We use the errno variable used by the system dependent layer.  */
++#undef errno
++extern int errno;
++
++/*
++FUNCTION
++	<<_getpid_r>>---Reentrant version of getpid
++	
++INDEX
++	_getpid_r
++
++ANSI_SYNOPSIS
++	#include <reent.h>
++	int _getpid_r(struct _reent *<[ptr]>);
++
++TRAD_SYNOPSIS
++	#include <reent.h>
++	int _getpid_r(<[ptr]>)
++	struct _reent *<[ptr]>;
++
++DESCRIPTION
++	This is a reentrant version of <<getpid>>.  It
++	takes a pointer to the global data block, which holds
++	<<errno>>.
++
++	We never need <<errno>>, of course, but for consistency we
++	still must have the reentrant pointer argument.
++*/
++
++int
++_DEFUN (_getpid_r, (ptr),
++     struct _reent *ptr)
++{
++  int ret;
++  ret = _getpid ();
++  return ret;
++}
++
++#endif /* ! defined (REENTRANT_SYSCALLS_PROVIDED) */
 diff -uNr newlib-1.18.0.orig/newlib/libc/reent/impure.c newlib-1.18.0/newlib/libc/reent/impure.c
 --- newlib-1.18.0.orig/newlib/libc/reent/impure.c	2009-04-21 20:38:53.000000000 +0200
 +++ newlib-1.18.0/newlib/libc/reent/impure.c	2010-02-13 00:21:37.000000000 +0100
@@ -1255,6 +1390,48 @@ diff -uNr newlib-1.18.0.orig/newlib/libc/reent/impure.c newlib-1.18.0/newlib/lib
 +{
 +  _cleanup_r (_REENT);
 +}
+diff -uNr newlib-1.18.0.orig/newlib/libc/reent/signalr.c newlib-1.18.0/newlib/libc/reent/signalr.c
+--- newlib-1.18.0.orig/newlib/libc/reent/signalr.c	2003-06-03 21:48:07.000000000 +0200
++++ newlib-1.18.0/newlib/libc/reent/signalr.c	2010-05-15 13:56:49.000000000 +0200
+@@ -63,38 +63,4 @@
+   return ret;
+ }
+ 
+-/*
+-FUNCTION
+-	<<_getpid_r>>---Reentrant version of getpid
+-	
+-INDEX
+-	_getpid_r
+-
+-ANSI_SYNOPSIS
+-	#include <reent.h>
+-	int _getpid_r(struct _reent *<[ptr]>);
+-
+-TRAD_SYNOPSIS
+-	#include <reent.h>
+-	int _getpid_r(<[ptr]>)
+-	struct _reent *<[ptr]>;
+-
+-DESCRIPTION
+-	This is a reentrant version of <<getpid>>.  It
+-	takes a pointer to the global data block, which holds
+-	<<errno>>.
+-
+-	We never need <<errno>>, of course, but for consistency we
+-	still must have the reentrant pointer argument.
+-*/
+-
+-int
+-_DEFUN (_getpid_r, (ptr),
+-     struct _reent *ptr)
+-{
+-  int ret;
+-  ret = _getpid ();
+-  return ret;
+-}
+-
+ #endif /* ! defined (REENTRANT_SYSCALLS_PROVIDED) */
 diff -uNr newlib-1.18.0.orig/newlib/libc/stdlib/abort.c newlib-1.18.0/newlib/libc/stdlib/abort.c
 --- newlib-1.18.0.orig/newlib/libc/stdlib/abort.c	2000-08-24 20:51:09.000000000 +0200
 +++ newlib-1.18.0/newlib/libc/stdlib/abort.c	2010-04-11 00:51:36.000000000 +0200
