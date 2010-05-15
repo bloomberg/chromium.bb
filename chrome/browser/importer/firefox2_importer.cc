@@ -51,8 +51,8 @@ void Firefox2Importer::StartImport(ProfileInfo profile_info,
                                    uint16 items,
                                    ImporterBridge* bridge) {
   bridge_ = bridge;
-  source_path_ = FilePath::FromWStringHack(profile_info.source_path);
-  app_path_ = FilePath::FromWStringHack(profile_info.app_path);
+  source_path_ = profile_info.source_path;
+  app_path_ = profile_info.app_path;
 
   parsing_bookmarks_html_file_ = (profile_info.browser_type == BOOKMARKS_HTML);
 

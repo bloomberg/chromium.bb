@@ -145,12 +145,13 @@ void ImporterList::DetectFirefoxProfiles() {
   importer::ProfileInfo* firefox = new importer::ProfileInfo();
   firefox->description = l10n_util::GetString(IDS_IMPORT_FROM_FIREFOX);
   firefox->browser_type = firefox_type;
-  firefox->source_path = profile_path.ToWStringHack();
+  firefox->source_path = profile_path;
 #if defined(OS_WIN)
-  firefox->app_path = GetFirefoxInstallPathFromRegistry();
+  firefox->app_path = FilePath::FromWStringHack(
+      GetFirefoxInstallPathFromRegistry());
 #endif
   if (firefox->app_path.empty())
-    firefox->app_path = app_path.ToWStringHack();
+    firefox->app_path = app_path;
   firefox->services_supported = importer::HISTORY | importer::FAVORITES |
       importer::COOKIES | importer::PASSWORDS | importer::SEARCH_ENGINES;
   source_profiles_.push_back(firefox);

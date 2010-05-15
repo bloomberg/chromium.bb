@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,7 @@ class FirefoxProfileLockTest : public testing::Test {
 };
 
 TEST_F(FirefoxProfileLockTest, LockTest) {
-  FirefoxProfileLock lock1(test_path_.ToWStringHack());
+  FirefoxProfileLock lock1(test_path_);
   ASSERT_TRUE(lock1.HasAcquired());
   lock1.Unlock();
   ASSERT_FALSE(lock1.HasAcquired());
@@ -55,7 +55,7 @@ TEST_F(FirefoxProfileLockTest, ProfileLock) {
   scoped_ptr<FirefoxProfileLock> lock;
   EXPECT_EQ(static_cast<FirefoxProfileLock*>(NULL), lock.get());
   EXPECT_FALSE(file_util::PathExists(lock_file_path));
-  lock.reset(new FirefoxProfileLock(test_path.ToWStringHack()));
+  lock.reset(new FirefoxProfileLock(test_path));
   EXPECT_TRUE(lock->HasAcquired());
   EXPECT_TRUE(file_util::PathExists(lock_file_path));
   lock->Unlock();
@@ -96,7 +96,7 @@ TEST_F(FirefoxProfileLockTest, ProfileLockOrphaned) {
 
   scoped_ptr<FirefoxProfileLock> lock;
   EXPECT_EQ(static_cast<FirefoxProfileLock*>(NULL), lock.get());
-  lock.reset(new FirefoxProfileLock(test_path.ToWStringHack()));
+  lock.reset(new FirefoxProfileLock(test_path));
   EXPECT_TRUE(lock->HasAcquired());
   lock->Unlock();
   EXPECT_FALSE(lock->HasAcquired());
@@ -114,12 +114,12 @@ TEST_F(FirefoxProfileLockTest, ProfileLockContention) {
 
   scoped_ptr<FirefoxProfileLock> lock1;
   EXPECT_EQ(static_cast<FirefoxProfileLock*>(NULL), lock1.get());
-  lock1.reset(new FirefoxProfileLock(test_path.ToWStringHack()));
+  lock1.reset(new FirefoxProfileLock(test_path));
   EXPECT_TRUE(lock1->HasAcquired());
 
   scoped_ptr<FirefoxProfileLock> lock2;
   EXPECT_EQ(static_cast<FirefoxProfileLock*>(NULL), lock2.get());
-  lock2.reset(new FirefoxProfileLock(test_path.ToWStringHack()));
+  lock2.reset(new FirefoxProfileLock(test_path));
   EXPECT_FALSE(lock2->HasAcquired());
 
   lock1->Unlock();

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,7 +68,7 @@ void IEImporter::StartImport(ProfileInfo profile_info,
                              uint16 items,
                              ImporterBridge* bridge) {
   bridge_ = bridge;
-  source_path_ = profile_info.source_path;
+  source_path_ = profile_info.source_path.ToWStringHack();
 
   bridge_->NotifyStarted();
 

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
 
 // Types needed for importing data from other browsers and the Google
 // Toolbar.
@@ -15,14 +16,14 @@ namespace importer {
 
 // An enumeration of the type of data that can be imported.
 enum ImportItem {
-  NONE           = 0x0000,
-  HISTORY        = 0x0001,
-  FAVORITES      = 0x0002,
-  COOKIES        = 0x0004,  // Not supported yet.
-  PASSWORDS      = 0x0008,
-  SEARCH_ENGINES = 0x0010,
-  HOME_PAGE      = 0x0020,
-  ALL            = 0x003f
+  NONE           = 0,
+  HISTORY        = 1 << 0,
+  FAVORITES      = 1 << 1,
+  COOKIES        = 1 << 2,  // Not supported yet.
+  PASSWORDS      = 1 << 3,
+  SEARCH_ENGINES = 1 << 4,
+  HOME_PAGE      = 1 << 5,
+  ALL            = (1 << 6) - 1  // All the bits should be 1, hence the -1.
 };
 
 // An enumeration of the type of browsers that we support to import
@@ -46,9 +47,9 @@ enum ProfileType {
 struct ProfileInfo {
   std::wstring description;
   importer::ProfileType browser_type;
-  std::wstring source_path;
-  std::wstring app_path;
-  uint16 services_supported;  // Bitmap of ImportItem
+  FilePath source_path;
+  FilePath app_path;
+  uint16 services_supported;  // Bitmask of ImportItem.
 };
 
 }  // namespace importer

@@ -828,7 +828,7 @@ void ImportBookmarksFunction::FileSelected(const FilePath& path,
   ImporterHost* host = new ImporterHost();
   importer::ProfileInfo profile_info;
   profile_info.browser_type = importer::BOOKMARKS_HTML;
-  profile_info.source_path = path.ToWStringHack();
+  profile_info.source_path = path;
   host->StartImportSettings(profile_info,
                             profile(),
                             importer::FAVORITES,

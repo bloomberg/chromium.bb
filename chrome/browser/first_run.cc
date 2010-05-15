@@ -127,7 +127,7 @@ bool FirstRun::SetMinimalFirstRunBubblePref() {
 }
 
 int FirstRun::ImportFromFile(Profile* profile, const CommandLine& cmdline) {
-  std::wstring file_path = cmdline.GetSwitchValue(switches::kImportFromFile);
+  FilePath file_path = cmdline.GetSwitchValuePath(switches::kImportFromFile);
   if (file_path.empty()) {
     NOTREACHED();
     return false;
