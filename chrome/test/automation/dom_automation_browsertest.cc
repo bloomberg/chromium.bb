@@ -31,7 +31,7 @@ class DOMAutomationTest : public InProcessBrowserTest {
 typedef DOMElementProxy::By By;
 
 IN_PROC_BROWSER_TEST_F(DOMAutomationTest, FindByXPath) {
-  StartHTTPServer();
+  ASSERT_TRUE(StartHTTPServer());
   ui_test_utils::NavigateToURL(browser(),
                                GetTestURL("find_elements/test.html"));
   DOMElementProxyRef main_doc = ui_test_utils::GetActiveDOMDocument(browser());
@@ -75,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(DOMAutomationTest, FindByXPath) {
 }
 
 IN_PROC_BROWSER_TEST_F(DOMAutomationTest, FindBySelectors) {
-  StartHTTPServer();
+  ASSERT_TRUE(StartHTTPServer());
   ui_test_utils::NavigateToURL(browser(),
                                GetTestURL("find_elements/test.html"));
   DOMElementProxyRef main_doc = ui_test_utils::GetActiveDOMDocument(browser());
@@ -117,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(DOMAutomationTest, FindBySelectors) {
 }
 
 IN_PROC_BROWSER_TEST_F(DOMAutomationTest, FindByText) {
-  StartHTTPServer();
+  ASSERT_TRUE(StartHTTPServer());
   ui_test_utils::NavigateToURL(browser(),
                                GetTestURL("find_elements/test.html"));
   DOMElementProxyRef main_doc = ui_test_utils::GetActiveDOMDocument(browser());
@@ -163,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(DOMAutomationTest, FindByText) {
 }
 
 IN_PROC_BROWSER_TEST_F(DOMAutomationTest, WaitFor1VisibleElement) {
-  StartHTTPServer();
+  ASSERT_TRUE(StartHTTPServer());
   ui_test_utils::NavigateToURL(browser(), GetTestURL("wait/test.html"));
   DOMElementProxyRef main_doc = ui_test_utils::GetActiveDOMDocument(browser());
 
@@ -174,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(DOMAutomationTest, WaitFor1VisibleElement) {
 }
 
 IN_PROC_BROWSER_TEST_F(DOMAutomationTest, WaitForElementsToDisappear) {
-  StartHTTPServer();
+  ASSERT_TRUE(StartHTTPServer());
   ui_test_utils::NavigateToURL(browser(), GetTestURL("wait/test.html"));
   DOMElementProxyRef main_doc = ui_test_utils::GetActiveDOMDocument(browser());
 
@@ -185,7 +185,7 @@ IN_PROC_BROWSER_TEST_F(DOMAutomationTest, WaitForElementsToDisappear) {
 }
 
 IN_PROC_BROWSER_TEST_F(DOMAutomationTest, EnsureAttributeEventuallyMatches) {
-  StartHTTPServer();
+  ASSERT_TRUE(StartHTTPServer());
   ui_test_utils::NavigateToURL(browser(), GetTestURL("wait/test.html"));
   DOMElementProxyRef main_doc = ui_test_utils::GetActiveDOMDocument(browser());
 
@@ -196,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(DOMAutomationTest, EnsureAttributeEventuallyMatches) {
 }
 
 IN_PROC_BROWSER_TEST_F(DOMAutomationTest, Frames) {
-  StartHTTPServer();
+  ASSERT_TRUE(StartHTTPServer());
   ui_test_utils::NavigateToURL(browser(), GetTestURL("frames/test.html"));
   DOMElementProxyRef main_doc = ui_test_utils::GetActiveDOMDocument(browser());
 
@@ -236,7 +236,7 @@ IN_PROC_BROWSER_TEST_F(DOMAutomationTest, Frames) {
 }
 
 IN_PROC_BROWSER_TEST_F(DOMAutomationTest, Events) {
-  StartHTTPServer();
+  ASSERT_TRUE(StartHTTPServer());
   ui_test_utils::NavigateToURL(browser(), GetTestURL("events/test.html"));
   DOMElementProxyRef main_doc = ui_test_utils::GetActiveDOMDocument(browser());
 
@@ -264,7 +264,7 @@ IN_PROC_BROWSER_TEST_F(DOMAutomationTest, Events) {
 }
 
 IN_PROC_BROWSER_TEST_F(DOMAutomationTest, StringEscape) {
-  StartHTTPServer();
+  ASSERT_TRUE(StartHTTPServer());
   ui_test_utils::NavigateToURL(browser(),
                                GetTestURL("string_escape/test.html"));
   DOMElementProxyRef main_doc = ui_test_utils::GetActiveDOMDocument(browser());

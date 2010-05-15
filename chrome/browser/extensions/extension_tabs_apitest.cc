@@ -11,7 +11,7 @@
 
 // Disabled due to timeouts, see http://crbug.com/39843, http://crbug.com/43440.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Tabs) {
-  StartHTTPServer();
+  ASSERT_TRUE(StartHTTPServer());
 
   // The test creates a tab and checks that the URL of the new tab
   // is that of the new tab page.  Make sure the pref that controls
@@ -23,7 +23,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Tabs) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Tabs2) {
-  StartHTTPServer();
+  ASSERT_TRUE(StartHTTPServer());
 
   // This test runs through additional tabs functionality.
   browser()->profile()->GetPrefs()->SetBoolean(
@@ -33,7 +33,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Tabs2) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleTab) {
-  StartHTTPServer();
+  ASSERT_TRUE(StartHTTPServer());
 
   ASSERT_TRUE(RunExtensionTest("tabs/capture_visible_tab")) << message_;
 }

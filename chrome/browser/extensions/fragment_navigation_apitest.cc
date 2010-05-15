@@ -6,13 +6,13 @@
 
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptFragmentNavigation) {
-  StartHTTPServer();
+  ASSERT_TRUE(StartHTTPServer());
   const char* extension_name = "content_scripts/fragment";
   ASSERT_TRUE(RunExtensionTest(extension_name)) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ExecuteScriptFragmentNavigation) {
-  StartHTTPServer();
+  ASSERT_TRUE(StartHTTPServer());
   const char* extension_name = "executescript/fragment";
   ASSERT_TRUE(RunExtensionTest(extension_name)) << message_;
 }

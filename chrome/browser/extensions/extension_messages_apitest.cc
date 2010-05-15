@@ -50,7 +50,7 @@ class MessageSender : public NotificationObserver {
 
 // Tests that message passing between extensions and content scripts works.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Messaging) {
-  StartHTTPServer();
+  ASSERT_TRUE(StartHTTPServer());
   ASSERT_TRUE(RunExtensionTest("messaging/connect")) << message_;
 }
 

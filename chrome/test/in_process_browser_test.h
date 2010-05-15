@@ -5,6 +5,7 @@
 #ifndef CHROME_TEST_IN_PROCESS_BROWSER_TEST_H_
 #define CHROME_TEST_IN_PROCESS_BROWSER_TEST_H_
 
+#include "base/compiler_specific.h"
 #include "net/url_request/url_request_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -96,7 +97,7 @@ class InProcessBrowserTest : public testing::Test {
   void SetInitialTimeoutInMS(int initial_timeout);
 
   // Starts an HTTP server.
-  HTTPTestServer* StartHTTPServer();
+  HTTPTestServer* StartHTTPServer() WARN_UNUSED_RESULT;
 
   // Creates a browser with a single tab (about:blank), waits for the tab to
   // finish loading and shows the browser.
