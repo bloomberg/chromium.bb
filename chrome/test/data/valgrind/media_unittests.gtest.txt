@@ -1,0 +1,5 @@
+# See http://crbug.com/44253.
+AlsaPcmOutputStreamTest.StartStop
+AlsaPcmOutputStreamTest.BufferPacket
+AlsaPcmOutputStreamTest.BufferPacket_Negative
+AlsaPcmOutputStreamTest.BufferPacket_Underrun
