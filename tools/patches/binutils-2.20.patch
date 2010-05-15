@@ -1885,8 +1885,8 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/frags.c binutils-2.20/gas/frags.c
 +     * alignment contents in the current chunk, force the allocation of a new
 +     * chunk. */
 +
-+    int space = obstack_room (ob);
-+    if (space < SIZEOF_STRUCT_FRAG + (1 << (nacl_alignment + 2))) {
++    (unsigned) space = obstack_room (ob);
++    if (space < (unsigned)SIZEOF_STRUCT_FRAG + (1 << (nacl_alignment + 2))) {
 +      (void) obstack_alloc (ob, space-1);
 +    }
 +  }
