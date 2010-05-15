@@ -14,7 +14,7 @@ namespace {
 
 typedef PassiveLogCollector::RequestTracker RequestTracker;
 typedef PassiveLogCollector::RequestInfoList RequestInfoList;
-using net::NetLog;
+typedef net::NetLog NetLog;
 
 const NetLog::SourceType kSourceType = NetLog::SOURCE_NONE;
 
@@ -958,34 +958,4 @@ TEST(PassiveLogCollectorTest, AccumulateRxTxData) {
   EXPECT_EQ(2u, requests.size());
   EXPECT_EQ(6u, requests[0].entries.size());
   EXPECT_EQ(6u, requests[1].entries.size());
-}
-
-TEST(SpdySessionTracker, MovesToGraveyard) {
-  PassiveLogCollector::SpdySessionTracker tracker;
-  EXPECT_EQ(0u, tracker.GetLiveRequests().size());
-  EXPECT_EQ(0u, tracker.GetRecentlyDeceased().size());
-
-  PassiveLogCollector::Entry begin(
-      0u,
-      NetLog::TYPE_SPDY_SESSION,
-      base::TimeTicks(),
-      NetLog::Source(NetLog::SOURCE_SPDY_SESSION, 1),
-      NetLog::PHASE_BEGIN,
-      NULL);
-
-  tracker.OnAddEntry(begin);
-  EXPECT_EQ(1u, tracker.GetLiveRequests().size());
-  EXPECT_EQ(0u, tracker.GetRecentlyDeceased().size());
-
-  PassiveLogCollector::Entry end(
-      0u,
-      NetLog::TYPE_SPDY_SESSION,
-      base::TimeTicks(),
-      NetLog::Source(NetLog::SOURCE_SPDY_SESSION, 1),
-      NetLog::PHASE_END,
-      NULL);
-
-  tracker.OnAddEntry(end);
-  EXPECT_EQ(0u, tracker.GetLiveRequests().size());
-  EXPECT_EQ(1u, tracker.GetRecentlyDeceased().size());
 }

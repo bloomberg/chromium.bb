@@ -133,7 +133,6 @@ void PassiveLogCollector::GetAllCapturedEvents(EntryList* out) const {
   // |out|.
   socket_stream_tracker_.AppendAllEntries(out);
   url_request_tracker_.AppendAllEntries(out);
-  spdy_session_tracker_.AppendAllEntries(out);
 
   const EntryList& proxy_entries =
       init_proxy_resolver_tracker_.entries();
@@ -557,24 +556,3 @@ void PassiveLogCollector::InitProxyResolverTracker::OnAddEntry(
     entries_.clear();
 }
 
-//----------------------------------------------------------------------------
-// SpdySessionTracker
-//----------------------------------------------------------------------------
-
-const size_t PassiveLogCollector::SpdySessionTracker::kMaxGraveyardSize = 10;
-
-PassiveLogCollector::SpdySessionTracker::SpdySessionTracker()
-    : RequestTrackerBase(kMaxGraveyardSize) {
-}
-
-PassiveLogCollector::RequestTrackerBase::Action
-PassiveLogCollector::SpdySessionTracker::DoAddEntry(const Entry& entry,
-                                                    RequestInfo* out_info) {
-  if (entry.type == net::NetLog::TYPE_SPDY_SESSION &&
-      entry.phase == net::NetLog::PHASE_END) {
-    return ACTION_MOVE_TO_GRAVEYARD;
-  } else {
-    AddEntryToRequestInfo(entry, is_unbounded(), out_info);
-    return ACTION_NONE;
-  }
-}

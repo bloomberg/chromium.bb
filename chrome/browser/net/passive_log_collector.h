@@ -96,6 +96,10 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
       ACTION_MOVE_TO_GRAVEYARD,
     };
 
+    // Updates |out_info| with the information from |entry|. Returns an action
+    // to perform for this map entry on completion.
+    virtual Action DoAddEntry(const Entry& entry, RequestInfo* out_info) = 0;
+
     // Finds a request, either in the live entries or the graveyard and returns
     // it.
     RequestInfo* GetRequestInfo(uint32 id);
@@ -107,10 +111,6 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
 
    private:
     typedef base::hash_map<uint32, RequestInfo> SourceIDToInfoMap;
-
-    // Updates |out_info| with the information from |entry|. Returns an action
-    // to perform for this map entry on completion.
-    virtual Action DoAddEntry(const Entry& entry, RequestInfo* out_info) = 0;
 
     void RemoveFromLiveRequests(uint32 source_id);
     void InsertIntoGraveyard(const RequestInfo& info);
@@ -197,20 +197,6 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     DISALLOW_COPY_AND_ASSIGN(InitProxyResolverTracker);
   };
 
-  // Tracks the log entries for the last seen SOURCE_SPDY_SESSION.
-  class SpdySessionTracker : public RequestTrackerBase {
-   public:
-    static const size_t kMaxGraveyardSize;
-
-    SpdySessionTracker();
-
-   protected:
-    virtual Action DoAddEntry(const Entry& entry, RequestInfo* out_info);
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(SpdySessionTracker);
-  };
-
   PassiveLogCollector();
   ~PassiveLogCollector();
 
@@ -236,10 +222,6 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     return &init_proxy_resolver_tracker_;
   }
 
-  SpdySessionTracker* spdy_session_tracker() {
-    return &spdy_session_tracker_;
-  }
-
   // Fills |out| with the full list of events that have been passively
   // captured. The list is ordered by capture time.
   void GetAllCapturedEvents(EntryList* out) const;
@@ -253,7 +235,6 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
   RequestTracker url_request_tracker_;
   RequestTracker socket_stream_tracker_;
   InitProxyResolverTracker init_proxy_resolver_tracker_;
-  SpdySessionTracker spdy_session_tracker_;
 
   // The count of how many events have flowed through this log. Used to set the
   // "order" field on captured events.
