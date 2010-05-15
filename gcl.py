@@ -636,7 +636,7 @@ def CMDstatus(argv):
 
 def CMDhelp(argv=None):
   """Prints this help or help for the given command."""
-  if len(argv) > 2:
+  if argv and len(argv) > 2:
     if argv[2] == 'try':
       TryChange(None, ['--help'], swallow_exception=False)
       return 0
