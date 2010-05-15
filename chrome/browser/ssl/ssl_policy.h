@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,6 @@ class SSLPolicy : public SSLBlockingPage::Delegate {
   // An error occurred with the certificate in an SSL connection.
   void OnCertError(SSLCertErrorHandler* handler);
 
-  void DidDisplayInsecureContent(NavigationEntry* entry);
   void DidRunInsecureContent(NavigationEntry* entry,
                              const std::string& security_origin);
 
@@ -37,7 +36,8 @@ class SSLPolicy : public SSLBlockingPage::Delegate {
   void OnRequestStarted(SSLRequestInfo* info);
 
   // Update the SSL information in |entry| to match the current state.
-  void UpdateEntry(NavigationEntry* entry);
+  // |tab_contents| is the TabContents associated with this entry.
+  void UpdateEntry(NavigationEntry* entry, TabContents* tab_contents);
 
   SSLPolicyBackend* backend() const { return backend_; }
 
@@ -59,16 +59,8 @@ class SSLPolicy : public SSLBlockingPage::Delegate {
   // it with the default style for its URL.
   void InitializeEntryIfNeeded(NavigationEntry* entry);
 
-  // Mark |origin| as containing insecure content in the process with ID |pid|.
-  void MarkOriginAsBroken(const std::string& origin, int pid);
-
-  // Called after we've decided that |info| represents a request for mixed
-  // content.  Updates our internal state to reflect that we've loaded |info|.
-  void UpdateStateForMixedContent(SSLRequestInfo* info);
-
-  // Called after we've decided that |info| represents a request for unsafe
-  // content.  Updates our internal state to reflect that we've loaded |info|.
-  void UpdateStateForUnsafeContent(SSLRequestInfo* info);
+  // Mark |origin| as having run insecure content in the process with ID |pid|.
+  void OriginRanInsecureContent(const std::string& origin, int pid);
 
   // The backend we use to enact our decisions.
   SSLPolicyBackend* backend_;

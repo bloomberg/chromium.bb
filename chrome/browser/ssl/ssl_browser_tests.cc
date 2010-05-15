@@ -34,13 +34,14 @@ class SSLUITest : public InProcessBrowserTest {
   }
 
   void CheckAuthenticatedState(TabContents* tab,
-                               bool mixed_content) {
+                               bool displayed_mixed_content) {
     NavigationEntry* entry = tab->controller().GetActiveEntry();
     ASSERT_TRUE(entry);
     EXPECT_EQ(NavigationEntry::NORMAL_PAGE, entry->page_type());
     EXPECT_EQ(SECURITY_STYLE_AUTHENTICATED, entry->ssl().security_style());
     EXPECT_EQ(0, entry->ssl().cert_status() & net::CERT_STATUS_ALL_ERRORS);
-    EXPECT_EQ(mixed_content, entry->ssl().has_mixed_content());
+    EXPECT_EQ(displayed_mixed_content, entry->ssl().displayed_mixed_content());
+    EXPECT_FALSE(entry->ssl().ran_mixed_content());
   }
 
   void CheckUnauthenticatedState(TabContents* tab) {
@@ -49,11 +50,13 @@ class SSLUITest : public InProcessBrowserTest {
     EXPECT_EQ(NavigationEntry::NORMAL_PAGE, entry->page_type());
     EXPECT_EQ(SECURITY_STYLE_UNAUTHENTICATED, entry->ssl().security_style());
     EXPECT_EQ(0, entry->ssl().cert_status() & net::CERT_STATUS_ALL_ERRORS);
-    EXPECT_FALSE(entry->ssl().has_mixed_content());
+    EXPECT_FALSE(entry->ssl().displayed_mixed_content());
+    EXPECT_FALSE(entry->ssl().ran_mixed_content());
   }
 
   void CheckAuthenticationBrokenState(TabContents* tab,
                                       int error,
+                                      bool ran_mixed_content,
                                       bool interstitial) {
     NavigationEntry* entry = tab->controller().GetActiveEntry();
     ASSERT_TRUE(entry);
@@ -66,7 +69,8 @@ class SSLUITest : public InProcessBrowserTest {
     // to SECURITY_STYLE_AUTHENTICATION_BROKEN.
     ASSERT_NE(net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION, error);
     EXPECT_EQ(error, entry->ssl().cert_status() & net::CERT_STATUS_ALL_ERRORS);
-    EXPECT_FALSE(entry->ssl().has_mixed_content());
+    EXPECT_FALSE(entry->ssl().displayed_mixed_content());
+    EXPECT_EQ(ran_mixed_content, entry->ssl().ran_mixed_content());
   }
 
   void CheckWorkerLoadResult(TabContents* tab, bool expectLoaded) {
@@ -160,12 +164,12 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndProceed) {
       bad_https_server->TestServerPage("files/ssl/google.html"));
 
   TabContents* tab = browser()->GetSelectedTabContents();
-  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID, false,
                                  true);  // Interstitial showing
 
   ProceedThroughInterstitial(tab);
 
-  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID, false,
                                  false);  // No interstitial showing
 }
 
@@ -204,7 +208,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestHTTPSExpiredCertAndDontProceed) {
 
   // An interstitial should be showing.
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
-                                 true);  // Interstitial showing.
+                                 false, true);
 
   // Simulate user clicking "Take me back".
   InterstitialPage* interstitial_page = tab->interstitial_page();
@@ -237,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndGoBackViaButton) {
   // Now go to a bad HTTPS page that shows an interstitial.
   ui_test_utils::NavigateToURL(browser(),
       bad_https_server->TestServerPage("files/ssl/google.html"));
-  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID, false,
                                  true);  // Interstitial showing
 
   // Simulate user clicking on back button (crbug.com/39248).
@@ -266,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestHTTPSExpiredCertAndGoBackViaMenu) {
   // Now go to a bad HTTPS page that shows an interstitial.
   ui_test_utils::NavigateToURL(browser(),
       bad_https_server->TestServerPage("files/ssl/google.html"));
-  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID, false,
                                  true);  // Interstitial showing
 
   // Simulate user clicking and holding on back button (crbug.com/37215).
@@ -306,7 +310,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestHTTPSExpiredCertAndGoForward) {
   // Now go to a bad HTTPS page that shows an interstitial.
   ui_test_utils::NavigateToURL(browser(),
       bad_https_server->TestServerPage("files/ssl/google.html"));
-  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID, false,
                                  true);  // Interstitial showing
 
   // Simulate user clicking and holding on forward button.
@@ -368,34 +372,34 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorWithNoNavEntry) {
 // Mixed contents
 //
 
-// Visits a page with mixed content.
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestMixedContents) {
+// Visits a page that displays mixed content.
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysMixedContent) {
   scoped_refptr<HTTPSTestServer> https_server = GoodCertServer();
   ASSERT_TRUE(https_server.get() != NULL);
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
   ASSERT_TRUE(http_server.get() != NULL);
 
-  // Load a page with mixed-content, the default behavior is to show the mixed
-  // content.
+  // Load a page that displays mixed content.
   ui_test_utils::NavigateToURL(browser(), https_server->TestServerPage(
-                               "files/ssl/page_with_mixed_contents.html"));
+                               "files/ssl/page_displays_mixed_content.html"));
 
   CheckAuthenticatedState(browser()->GetSelectedTabContents(), true);
 }
 
-// Visits a page with an http script that tries to suppress our mixed content
-// warnings by randomize location.hash.
+// Visits a page that runs mixed content and tries to suppress the mixed content
+// warnings by randomizing location.hash.
 // Based on http://crbug.com/8706
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestMixedContentsRandomizeHash) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsMixedContentRandomizeHash) {
   scoped_refptr<HTTPSTestServer> https_server = GoodCertServer();
   ASSERT_TRUE(https_server.get() != NULL);
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
   ASSERT_TRUE(http_server.get() != NULL);
 
   ui_test_utils::NavigateToURL(browser(),
-      https_server->TestServerPage("files/ssl/page_with_http_script.html"));
+      https_server->TestServerPage("files/ssl/page_runs_mixed_content.html"));
 
-  CheckAuthenticatedState(browser()->GetSelectedTabContents(), true);
+  CheckAuthenticationBrokenState(browser()->GetSelectedTabContents(), 0, true,
+                                 false);
 }
 
 // Visits a page with unsafe content and make sure that:
@@ -434,13 +438,13 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestUnsafeContents) {
 
   bool js_result = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      tab->render_view_host(), L"",
+      tab->render_view_host(), std::wstring(),
       L"window.domAutomationController.send(IsFooSet());", &js_result));
   EXPECT_FALSE(js_result);
 }
 
 // Visits a page with mixed content loaded by JS (after the initial page load).
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestMixedContentsLoadedFromJS) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysMixedContentLoadedFromJS) {
   scoped_refptr<HTTPSTestServer> https_server = GoodCertServer();
   ASSERT_TRUE(https_server.get() != NULL);
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
@@ -462,11 +466,42 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestMixedContentsLoadedFromJS) {
   CheckAuthenticatedState(tab, true);
 }
 
-// Visits two pages from the same origin: one with mixed content and one
-// without.  The test checks that we propagate the mixed content state from one
-// to the other.
-// TODO(jcampan): http://crbug.com/15072 this test fails.
-IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestMixedContentsTwoTabs) {
+// Visits two pages from the same origin: one that displays mixed content and
+// one that doesn't.  The test checks that we do not propagate the mixed content
+// state from one to the other.
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysMixedContentTwoTabs) {
+  scoped_refptr<HTTPSTestServer> https_server = GoodCertServer();
+  ASSERT_TRUE(https_server.get() != NULL);
+  scoped_refptr<HTTPTestServer> http_server = PlainServer();
+  ASSERT_TRUE(http_server.get() != NULL);
+
+  ui_test_utils::NavigateToURL(browser(),
+      https_server->TestServerPage("files/ssl/blank_page.html"));
+
+  TabContents* tab1 = browser()->GetSelectedTabContents();
+
+  // This tab should be fine.
+  CheckAuthenticatedState(tab1, false);
+
+  // Create a new tab.
+  GURL url = https_server->TestServerPage(
+      "files/ssl/page_displays_mixed_content.html");
+  TabContents* tab2 = browser()->AddTabWithURL(url, GURL(),
+      PageTransition::TYPED, 0, Browser::ADD_SELECTED, tab1->GetSiteInstance(),
+      std::string());
+  ui_test_utils::WaitForNavigation(&(tab2->controller()));
+
+  // The new tab has mixed content.
+  CheckAuthenticatedState(tab2, true);
+
+  // The original tab should not be contaminated.
+  CheckAuthenticatedState(tab1, false);
+}
+
+// Visits two pages from the same origin: one that runs mixed content and one
+// that doesn't.  The test checks that we propagate the mixed content state from
+// one to the other.
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsMixedContentTwoTabs) {
   scoped_refptr<HTTPSTestServer> https_server = GoodCertServer();
   ASSERT_TRUE(https_server.get() != NULL);
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
@@ -482,38 +517,60 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestMixedContentsTwoTabs) {
 
   // Create a new tab.
   GURL url =
-      https_server->TestServerPage("files/ssl/page_with_http_script.html");
+      https_server->TestServerPage("files/ssl/page_runs_mixed_content.html");
   TabContents* tab2 = browser()->AddTabWithURL(url, GURL(),
-      PageTransition::TYPED, 0, Browser::ADD_SELECTED, NULL, std::string());
+      PageTransition::TYPED, 0, Browser::ADD_SELECTED, tab1->GetSiteInstance(),
+      std::string());
   ui_test_utils::WaitForNavigation(&(tab2->controller()));
 
   // The new tab has mixed content.
-  CheckAuthenticatedState(tab2, true);
+  CheckAuthenticationBrokenState(tab2, 0, true, false);
 
   // Which means the origin for the first tab has also been contaminated with
   // mixed content.
-  CheckAuthenticatedState(tab1, true);
+  CheckAuthenticationBrokenState(tab1, 0, true, false);
 }
 
 // Visits a page with an image over http.  Visits another page over https
 // referencing that same image over http (hoping it is coming from the webcore
 // memory cache).
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestCachedMixedContents) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysCachedMixedContent) {
   scoped_refptr<HTTPSTestServer> https_server = GoodCertServer();
   ASSERT_TRUE(https_server.get() != NULL);
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
   ASSERT_TRUE(http_server.get() != NULL);
 
   ui_test_utils::NavigateToURL(browser(), http_server->TestServerPage(
-      "files/ssl/page_with_mixed_contents.html"));
+      "files/ssl/page_displays_mixed_content.html"));
   TabContents* tab = browser()->GetSelectedTabContents();
   CheckUnauthenticatedState(tab);
 
-  // Load again but over SSL.  It should have mixed-contents (even though the
-  // image comes from the WebCore memory cache).
+  // Load again but over SSL.  It should be marked as displaying mixed content
+  // (even though the image comes from the WebCore memory cache).
   ui_test_utils::NavigateToURL(browser(), https_server->TestServerPage(
-      "files/ssl/page_with_mixed_contents.html"));
+      "files/ssl/page_displays_mixed_content.html"));
   CheckAuthenticatedState(tab, true);
+}
+
+// Visits a page with script over http.  Visits another page over https
+// referencing that same script over http (hoping it is coming from the webcore
+// memory cache).
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsCachedMixedContent) {
+  scoped_refptr<HTTPSTestServer> https_server = GoodCertServer();
+  ASSERT_TRUE(https_server.get() != NULL);
+  scoped_refptr<HTTPTestServer> http_server = PlainServer();
+  ASSERT_TRUE(http_server.get() != NULL);
+
+  ui_test_utils::NavigateToURL(browser(),
+      http_server->TestServerPage("files/ssl/page_runs_mixed_content.html"));
+  TabContents* tab = browser()->GetSelectedTabContents();
+  CheckUnauthenticatedState(tab);
+
+  // Load again but over SSL.  It should be marked as displaying mixed content
+  // (even though the image comes from the WebCore memory cache).
+  ui_test_utils::NavigateToURL(browser(),
+      https_server->TestServerPage("files/ssl/page_runs_mixed_content.html"));
+  CheckAuthenticationBrokenState(tab, 0, true, false);
 }
 
 // This test ensures the CN invalid status does not 'stick' to a certificate
@@ -532,12 +589,12 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestCNInvalidStickiness) {
   // We get an interstitial page as a result.
   TabContents* tab = browser()->GetSelectedTabContents();
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
-                                 true);  // Interstitial showing.
+                                 false, true);  // Interstitial showing.
 
   ProceedThroughInterstitial(tab);
 
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
-                                 false);  // No interstitial showing.
+                                 false, false);  // No interstitial showing.
 
   // Now we try again with the right host name this time.
 
@@ -561,7 +618,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestCNInvalidStickiness) {
 
   // Since we OKed the interstitial last time, we get right to the page.
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
-                                 false);  // No interstitial showing.
+                                 false, false);  // No interstitial showing.
 }
 
 // Test that navigating to a #ref does not change a bad security state.
@@ -573,12 +630,12 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRefNavigation) {
       bad_https_server->TestServerPage("files/ssl/page_with_refs.html"));
 
   TabContents* tab = browser()->GetSelectedTabContents();
-  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID, false,
                                  true);  // Interstitial showing.
 
   ProceedThroughInterstitial(tab);
 
-  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID, false,
                                  false);  // No interstitial showing.
 
   // Now navigate to a ref in the page, the security state should not have
@@ -586,7 +643,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRefNavigation) {
   ui_test_utils::NavigateToURL(browser(),
       bad_https_server->TestServerPage("files/ssl/page_with_refs.html#jp"));
 
-  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID, false,
                                  false);  // No interstitial showing.
 }
 
@@ -642,7 +699,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestRedirectBadToGoodHTTPS) {
 
   TabContents* tab = browser()->GetSelectedTabContents();
 
-  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID, false,
                                  true);  // Interstitial showing.
 
   ProceedThroughInterstitial(tab);
@@ -664,12 +721,12 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestRedirectGoodToBadHTTPS) {
   ui_test_utils::NavigateToURL(browser(), GURL(url1.spec() + url2.spec()));
 
   TabContents* tab = browser()->GetSelectedTabContents();
-  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID, false,
                                  true);  // Interstitial showing.
 
   ProceedThroughInterstitial(tab);
 
-  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID, false,
                                  false);  // No interstitial showing.
 }
 
@@ -706,12 +763,12 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestRedirectHTTPToBadHTTPS) {
       bad_https_server->TestServerPage("files/ssl/google.html");
   ui_test_utils::NavigateToURL(browser(),
                                GURL(http_url.spec() + bad_https_url.spec()));
-  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID, false,
                                  true);  // Interstitial showing.
 
   ProceedThroughInterstitial(tab);
 
-  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID, false,
                                  false);  // No interstitial showing.
 }
 
@@ -752,7 +809,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestConnectToBadPort) {
 // - navigate to a bad HTTPS (expect unsafe content and filtered frame), then
 //   back
 // - navigate to HTTP (expect mixed content), then back
-IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestGoodFrameNavigation) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestGoodFrameNavigation) {
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
   ASSERT_TRUE(http_server.get() != NULL);
   scoped_refptr<HTTPSTestServer> good_https_server = GoodCertServer();
@@ -833,7 +890,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestBadFrameNavigation) {
   TabContents* tab = browser()->GetSelectedTabContents();
   ui_test_utils::NavigateToURL(browser(),
       bad_https_server->TestServerPage("files/ssl/top_frame.html"));
-  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID, false,
                                  true);  // Interstitial showing
 
   ProceedThroughInterstitial(tab);
@@ -848,7 +905,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestBadFrameNavigation) {
   ui_test_utils::WaitForNavigation(&tab->controller());
 
   // We should still be authentication broken.
-  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID, false);
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID, false,
+                                 false);
 }
 
 // From an HTTP top frame, navigate to good and bad HTTPS (security state should
@@ -932,18 +990,19 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestUnsafeContentsInWorker) {
   ui_test_utils::NavigateToURL(browser(),
       bad_https_server->TestServerPage("files/ssl/blank_page.html"));
   TabContents* tab = browser()->GetSelectedTabContents();
-  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID, false,
                                  true);  // Interstitial showing
   ProceedThroughInterstitial(tab);
-  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID, false,
                                  false);  // No Interstitial
 
   // Navigate to safe page that has Worker loading unsafe content.
-  // Expect content to load but 'mixed' indicators show up.
+  // Expect content to load but be marked as auth broken due to running mixed
+  // content.
   ui_test_utils::NavigateToURL(browser(), good_https_server->TestServerPage(
       "files/ssl/page_with_unsafe_worker.html"));
   CheckWorkerLoadResult(tab, true);  // Worker loads mixed content
-  CheckAuthenticatedState(tab, true);
+  CheckAuthenticationBrokenState(tab, 0, true, false);
 }
 
 // TODO(jcampan): more tests to do below.

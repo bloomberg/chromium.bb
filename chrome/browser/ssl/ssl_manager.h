@@ -38,18 +38,6 @@ class URLRequest;
 
 class SSLManager : public NotificationObserver {
  public:
-  // Construct an SSLManager for the specified tab.
-  // If |delegate| is NULL, SSLPolicy::GetDefaultPolicy() is used.
-  explicit SSLManager(NavigationController* controller);
-  ~SSLManager();
-
-  SSLPolicy* policy() { return policy_.get(); }
-  SSLPolicyBackend* backend() { return &backend_; }
-
-  // The navigation controller associated with this SSLManager.  The
-  // NavigationController is guaranteed to outlive the SSLManager.
-  NavigationController* controller() { return controller_; }
-
   static void RegisterUserPrefs(PrefService* prefs);
 
   // Entry point for SSLCertificateErrors.  This function begins the process
@@ -63,25 +51,9 @@ class SSLManager : public NotificationObserver {
                                     int cert_error,
                                     net::X509Certificate* cert);
 
-  // Mixed content entry points.
-  void DidDisplayInsecureContent();
-  void DidRunInsecureContent(const std::string& security_origin);
-
-  // Entry point for navigation.  This function begins the process of updating
-  // the security UI when the main frame navigates to a new URL.
-  //
-  // Called on the UI thread.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
-  // This entry point is called directly (instead of via the notification
-  // service) because we need more precise control of the order in which folks
-  // are notified of this event.
-  void DidCommitProvisionalLoad(const NotificationDetails& details);
-
-  // Called to determine if there were any processed SSL errors from request.
-  bool ProcessedSSLErrorFromRequest() const;
+  // Called when SSL state for a host or tab changes.  Broadcasts the
+  // SSL_INTERNAL_STATE_CHANGED notification.
+  static void NotifySSLInternalStateChanged();
 
   // Convenience methods for serializing/deserializing the security info.
   static std::string SerializeSecurityInfo(int cert_id,
@@ -94,6 +66,37 @@ class SSLManager : public NotificationObserver {
 
   // Returns "<organization_name> [<country>]".
   static std::wstring GetEVCertName(const net::X509Certificate& cert);
+
+  // Construct an SSLManager for the specified tab.
+  // If |delegate| is NULL, SSLPolicy::GetDefaultPolicy() is used.
+  explicit SSLManager(NavigationController* controller);
+  ~SSLManager();
+
+  SSLPolicy* policy() { return policy_.get(); }
+  SSLPolicyBackend* backend() { return &backend_; }
+
+  // The navigation controller associated with this SSLManager.  The
+  // NavigationController is guaranteed to outlive the SSLManager.
+  NavigationController* controller() { return controller_; }
+
+  // This entry point is called directly (instead of via the notification
+  // service) because we need more precise control of the order in which folks
+  // are notified of this event.
+  void DidCommitProvisionalLoad(const NotificationDetails& details);
+
+  // Mixed content entry point.
+  void DidRunInsecureContent(const std::string& security_origin);
+
+  // Called to determine if there were any processed SSL errors from request.
+  bool ProcessedSSLErrorFromRequest() const;
+
+  // Entry point for navigation.  This function begins the process of updating
+  // the security UI when the main frame navigates to a new URL.
+  //
+  // Called on the UI thread.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
  private:
   // SSLMessageInfo contains the information necessary for displaying a message
@@ -129,9 +132,6 @@ class SSLManager : public NotificationObserver {
   void DidStartResourceResponse(ResourceRequestDetails* details);
   void DidReceiveResourceRedirect(ResourceRedirectDetails* details);
   void DidChangeSSLInternalState();
-
-  // Dispatch NotificationType::SSL_VISIBLE_STATE_CHANGED notification.
-  void DispatchSSLVisibleStateChanged();
 
   // Update the NavigationEntry with our current state.
   void UpdateEntry(NavigationEntry* entry);
