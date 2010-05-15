@@ -4,6 +4,7 @@
 
 #include "chrome/browser/views/tabs/browser_tab_strip_controller.h"
 
+#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/profile.h"
@@ -112,7 +113,8 @@ class BrowserTabStripController::TabContextMenuContents
 
 BrowserTabStripController::BrowserTabStripController(TabStripModel* model)
     : model_(model),
-      tabstrip_(NULL) {
+      tabstrip_(NULL),
+      initiated_close_(false) {
   model_->AddObserver(this);
 }
 
@@ -195,6 +197,7 @@ void BrowserTabStripController::SelectTab(int model_index) {
 }
 
 void BrowserTabStripController::CloseTab(int model_index) {
+  AutoReset close_reset(&initiated_close_, true);
   model_->CloseTabContentsAt(model_index);
 }
 
@@ -283,7 +286,7 @@ void BrowserTabStripController::TabInsertedAt(TabContents* contents,
 
 void BrowserTabStripController::TabDetachedAt(TabContents* contents,
                                               int model_index) {
-  tabstrip_->RemoveTabAt(model_index);
+  tabstrip_->RemoveTabAt(model_index, initiated_close_);
 }
 
 void BrowserTabStripController::TabSelectedAt(TabContents* old_contents,

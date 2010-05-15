@@ -84,7 +84,7 @@ class TabStrip : public BaseTabStrip,
   virtual void AddTabAt(int model_index,
                         bool foreground,
                         const TabRendererData& data);
-  virtual void RemoveTabAt(int model_index);
+  virtual void RemoveTabAt(int model_index, bool initiated_close);
   virtual void SelectTabAt(int old_model_index, int new_model_index);
   virtual void MoveTab(int from_model_index, int to_model_index);
   virtual void TabTitleChangedNotLoading(int model_index);

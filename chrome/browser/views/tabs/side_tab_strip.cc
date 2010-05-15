@@ -88,7 +88,7 @@ void SideTabStrip::AddTabAt(int model_index,
   Layout();
 }
 
-void SideTabStrip::RemoveTabAt(int index) {
+void SideTabStrip::RemoveTabAt(int index, bool initiated_close) {
   View* v = GetChildViewAt(index);
   RemoveChildView(v);
   delete v;

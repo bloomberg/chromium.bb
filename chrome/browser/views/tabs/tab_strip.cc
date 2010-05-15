@@ -397,24 +397,26 @@ void TabStrip::AddTabAt(int model_index,
   }
 }
 
-void TabStrip::RemoveTabAt(int model_index) {
-  int model_count = GetModelCount();
-  if (model_index != model_count && model_count > 0) {
-    Tab* last_tab = GetTabAtModelIndex(model_count - 1);
-    // Limit the width available to the TabStrip for laying out Tabs, so that
-    // Tabs are not resized until a later time (when the mouse pointer leaves
-    // the TabStrip).
-    available_width_for_tabs_ = GetAvailableWidthForTabs(last_tab);
-    needs_resize_layout_ = true;
-    AddMessageLoopObserver();
-  } else if (model_count) {
-    Tab* last_tab = GetTabAtModelIndex(model_count);
-    // Limit the width available to the TabStrip for laying out Tabs, so that
-    // Tabs are not resized until a later time (when the mouse pointer leaves
-    // the TabStrip).
-    available_width_for_tabs_ = GetAvailableWidthForTabs(last_tab);
-    needs_resize_layout_ = true;
-    AddMessageLoopObserver();
+void TabStrip::RemoveTabAt(int model_index, bool initiated_close) {
+  if (initiated_close) {
+    int model_count = GetModelCount();
+    if (model_index != model_count && model_count > 0) {
+      Tab* last_tab = GetTabAtModelIndex(model_count - 1);
+      // Limit the width available to the TabStrip for laying out Tabs, so that
+      // Tabs are not resized until a later time (when the mouse pointer leaves
+      // the TabStrip).
+      available_width_for_tabs_ = GetAvailableWidthForTabs(last_tab);
+      needs_resize_layout_ = true;
+      AddMessageLoopObserver();
+    } else if (model_count) {
+      Tab* last_tab = GetTabAtModelIndex(model_count);
+      // Limit the width available to the TabStrip for laying out Tabs, so that
+      // Tabs are not resized until a later time (when the mouse pointer leaves
+      // the TabStrip).
+      available_width_for_tabs_ = GetAvailableWidthForTabs(last_tab);
+      needs_resize_layout_ = true;
+      AddMessageLoopObserver();
+    }
   }
 
   StartRemoveTabAnimation(model_index);

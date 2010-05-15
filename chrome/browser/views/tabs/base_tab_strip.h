@@ -81,8 +81,9 @@ class BaseTabStrip : public views::View,
                         bool foreground,
                         const TabRendererData& data) = 0;
 
-  // Removes a tab at the specified index.
-  virtual void RemoveTabAt(int model_index) = 0;
+  // Removes a tab at the specified index. If |initiated_close| is true, the
+  // close was initiated by the tab strip (such as clicking the close button).
+  virtual void RemoveTabAt(int model_index, bool initiated_close) = 0;
 
   // Selects a tab at the specified index. |old_model_index| is the selected
   // index prior to the selection change.
