@@ -1,8 +1,8 @@
 {
   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDDrlwvcbUtVrbQvI7EPV1BTa63N8YkbBToHzxlMl0IzSBwOV+TUOsHE8vRq0HZWuwMAGeH8WdWVC3HRNdES8lScjlzxb1TsTQJAsF+hLXgcjgCUSSSGCfFzypvuvKsRQTx0d02yfWKJa47o0Ws5wL72NVtc7c51HujwWYg+Mz01wIDAQAB",
-  "name": "Gmail to Chrome chat bridge (by Google)",
+  "name": "Chrome chat manager (by Google)",
   "version": "1.0",
-  "description": "Gmail to Chrome chat bridge",
+  "description": "Chrome chat manager",
   "background_page": "background.html",
   "content_scripts": [ {
     "js": [
@@ -25,12 +25,21 @@
       "https://mail.google.com/*"
     ],
     "run_at": "document_end"
+  }, {
+    "js": [
+      "js/chatbridgeeventtypes.js",
+      "js/centralrosterhook.js"
+    ],
+    "matches": [
+      "file:///*/*",
+      "http://*/*",
+      "https://*/*"
+    ],
+    "run_at": "document_end"
   }],
   "permissions": [
     "tabs",
     "http://talkgadget.google.com/*",
-    "https://talkgadget.google.com/*",
-    "http://mail.google.com/*",
-    "https://mail.google.com/*"
+    "https://talkgadget.google.com/*"
   ]
 }

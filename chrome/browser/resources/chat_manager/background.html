@@ -12,126 +12,139 @@ to route both incoming and outgoing chats through this central roster.
 
 -->
 <body>
-<style>
-  .talk_roster {
-    position: fixed;
-    left: 0px;
-    top: 0px;
-  }
-  .talk_iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-    overflow-x: hidden;
-    overflow-y: hidden;
-  }
-</style>
-<script>
-  var args = {
-    'host': 'talkgadget.google.com',
-    'jsmode': 'pre',
-    'hl': 'en',
-  };
-  // Read args.
-  var urlParts = window.location.href.split(/[?&#]/);
-  for (var i = 1; i < urlParts.length; i++) {
-    var argParts = urlParts[i].split('=');
-    if (argParts.length == 2) {
-      args[argParts[0]] = argParts[1];
-    }
-  }
-  document.write('<script src="https://' + args['host'] +
-      '/talkgadget/notifier-js?silent=true&host=https://' + args['host'] +
-      '/talkgadget/notifier-js' +
-      (args['jsmode'] != '' ? ('&jsmode=' + args['jsmode']) : '') +
-      '"></scr' + 'ipt>');
-</script>
+  <iframe
+    id='centralRoster'
+    src='central_roster.html'>Central Roster</iframe>
 <script src="js/chatbridgeeventtypes.js"></script>
 <script>
-  var chatClient = null;
-  if (window.GTalkNotifier) {
-    chatClient = new GTalkNotifier(
-        'http://' + args['host'] + '/talkgadget/',
-        'notifierclient' +
-            (args['jsmode'] != '' ? ('?jsmode=' + args['jsmode']) : ''),
-        'ifpc_relay',
-        'ifpc.js',
-        'Google Talk',
-        {
-          hostCallback: function(){},
-          xpcRelay: 'xpc_relay',
-          xpcBlank: 'xpc_blank',
-          locale: args['hl'],
-          isCentralRoster: true,
-          hideProfileCard: true
-        }
-    );
-  } else {
-    document.write(
-        '<div class="talk_roster"><b>GTalkNotifier undefined</b></div>');
-  }
+  var centralRosterWindow;
   var centralRosterJid;
-  var tabIdToGmPort = {};
+  var centralRosterPort;
+  var centralJidListenerPorts = [];
 
-  // Notify all open Gmail pages of updated central roster jid.
-  function forwardCentralRosterJidToGmPorts() {
-    for (var tabId in tabIdToGmPort) {
-      var port = tabIdToGmPort[tabId];
-      if (port != null) {
-        port.postMessage({jid: centralRosterJid});
+  // On loading central roster, reparent roster to viewer window.
+  function reparentCentralRosterToWindow() {
+    var backgroundDocument = centralRosterWindow.backgroundDocument;
+    if (backgroundDocument) {
+      var iframe = backgroundDocument.getElementById('centralRoster');
+      if (iframe) {
+        var windowDocument = centralRosterWindow.document;
+        if (windowDocument) {
+          if (windowDocument.adoptNode) {
+            windowDocument.adoptNode(iframe);
+          }
+          windowDocument.body.appendChild(iframe);
+        }
       }
     }
   }
 
-  // Observe all tab closures. Clear the corresponding Gmail tracking entry.
-  chrome.tabs.onRemoved.addListener(function(tabId) {
-    if (tabIdToGmPort[tabId] != null) {
-      delete tabIdToGmPort[tabId];
+  // On unloading central roster, reparent roster to background.
+  function reparentCenterRosterToBackground(event) {
+    var windowDocument = centralRosterWindow.document;
+    if (windowDocument) {
+      var iframe = windowDocument.getElementById('centralRoster');
+      if (iframe) {
+        var backgroundDocument = centralRosterWindow.backgroundDocument;
+        if (backgroundDocument) {
+          if (backgroundDocument.adoptNode) {
+            backgroundDocument.adoptNode(iframe);
+          }
+          backgroundDocument.body.appendChild(iframe);
+        }
+      }
     }
-  });
+    centralRosterWindow = null;
+  }
 
-  // Listen for content script connections with Gmail pages and add a
-  // corresponding tracking entry.
+  // Open central roster or give it focus.
+  function openCentralRosterWindow() {
+    if (!centralRosterWindow) {
+      centralRosterWindow = window.open(
+          chrome.extension.getURL('central_roster_viewer.html'),
+          'centralRosterWindow',
+          'width=300,height=360,resizable=0,menubar=0,scrollbars=0');
+      centralRosterWindow.backgroundDocument = document;
+      centralRosterWindow.onload = reparentCentralRosterToWindow;
+      centralRosterWindow.onbeforeunload = reparentCenterRosterToBackground;
+    } else {
+      centralRosterWindow.focus();
+    }
+  }
+
+  // Notify all port listeners of updated central roster jid.
+  function forwardCentralRosterJidToPortListeners() {
+    for (var listenerPort in centralJidListenerPorts) {
+      listenerPort.postMessage({jid: centralRosterJid});
+    }
+  }
+
+  // Central roster jid changed. Notify all listeners.
+  function centralJidUpdate(msg) {
+    if (centralRosterJid != msg.jid) {
+      centralRosterJid = msg.jid;
+      forwardCentralRosterJidToPortListeners();
+    }
+  }
+
+  // Listen for content script connections.
   chrome.extension.onConnect.addListener(function(port) {
-    if (port.name == 'centralJidWatcher') {
-      tabIdToGmPort[port.sender.tab.id] = port;
+    // New central jid listener.
+    // Update with current central roster jid, and add to tracking array.
+    if (port.name == 'centralJidListener') {
+      port.postMessage({jid: centralRosterJid});
+      centralJidListenerPorts.push(port);
+
+      // Clear tracking array entry when content script closes.
+      port.onDisconnect.addListener(function(port) {
+        for (var index = 0; index < centralJidListenerPorts.length; ++index) {
+          var listenerPort = centralJidListenerPorts[index];
+          if (listenerPort == port) {
+            centralJidListenerPorts.splice(index, 1);
+            break;
+          }
+        }
+      });
+    // New central jid broadcaster.
+    // Add listener for jid changes, and track port for forwarding chats.
+    } else if (port.name == 'centralJidBroadcaster') {
+      if (centralRosterPort != port) {
+        if (centralRosterPort) {
+          centralRosterPort.onMessage.removeListener(centralJidUpdate);
+        }
+        centralRosterPort = port;
+        centralRosterPort.onMessage.addListener(centralJidUpdate);
+
+        // Clear listener and central roster jid when content script closes
+        centralRosterPort.onDisconnect.addListener(function(port) {
+          if (centralRosterPort) {
+            centralRosterPort.onMessage.removeListener(centralJidUpdate);
+            centralRosterPort = null;
+            centralJidUpdate({jid: null});
+          }
+        });
+      }
     }
   });
 
   // Listen for requests from our content scripts.
   chrome.extension.onRequest.addListener(function(request, sender) {
     switch (request.msg) {
-      // For new initiated chats, forward to this page's GTalk client.
+      // For new initiated chats, forward to the central roster port.
       case ChatBridgeEventTypes.SHOW_CHAT:
-        if (chatClient != null) {
-          chatClient._showChat(request.jid);
-        }
-        break;
       case ChatBridgeEventTypes.START_VIDEO:
-        if (chatClient != null) {
-          chatClient._startVideoChat(request.jid);
-        }
-        break;
       case ChatBridgeEventTypes.START_VOICE:
-        if (chatClient != null) {
-          chatClient._startVoiceChat(request.jid);
+        if (centralRosterPort) {
+          centralRosterPort.postMessage(
+              {chatType: request.msg, jid: request.jid});
+        } else {
+          // We should not have been forwarded this message. Make sure our
+          // listeners are updated with the current central roster jid.
+          forwardCentralRosterJidToPortListeners();
         }
         break;
-      // For changes in the central roster, forward to all Gmail pages.
-      case ChatBridgeEventTypes.CENTRAL_USER_UPDATE:
-        if (centralRosterJid != request.jid) {
-          centralRosterJid = request.jid;
-          forwardCentralRosterJidToGmPorts();
-        }
-        break;
-      // For a request of the latest central roster jid, respond back to the
-      // requesting port.
-      case ChatBridgeEventTypes.REQUEST_CENTRAL_USER:
-        var tabId = sender.tab.id;
-        var port = tabIdToGmPort[tabId];
-        if (port != null) {
-          port.postMessage({jid: centralRosterJid});
-        }
+      case ChatBridgeEventTypes.OPEN_CENTRAL_ROSTER:
+        openCentralRosterWindow();
         break;
     }
   });

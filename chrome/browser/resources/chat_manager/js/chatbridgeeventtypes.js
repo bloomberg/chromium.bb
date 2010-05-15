@@ -10,6 +10,8 @@ var ChatBridgeEventTypes = {
   SHOW_CHAT: 'showChat',
   START_VIDEO: 'startVideo',
   START_VOICE: 'startVoice',
+  CENTRAL_USER_SET: 'centralJidSet',
   CENTRAL_USER_UPDATE: 'centralJidUpdate',
-  REQUEST_CENTRAL_USER: 'getCentralJid'
+  CENTRAL_USER_WATCHER: 'getCentralJid',
+  OPEN_CENTRAL_ROSTER: 'openCentralRoster'
 };

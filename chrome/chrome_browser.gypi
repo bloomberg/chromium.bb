@@ -3400,12 +3400,15 @@
               'destination': '<(PRODUCT_DIR)/resources/chat_manager',
               'files': [
                 'browser/resources/chat_manager/background.html',
+                'browser/resources/chat_manager/central_roster.html',
+                'browser/resources/chat_manager/central_roster_viewer.html',
                 'browser/resources/chat_manager/manifest.json',
               ]
             },
             {
               'destination': '<(PRODUCT_DIR)/resources/chat_manager/js',
               'files': [
+                'browser/resources/chat_manager/js/centralrosterhook.js',
                 'browser/resources/chat_manager/js/chatbridgeeventtypes.js',
                 'browser/resources/chat_manager/js/chatbridgehook.js',
                 'browser/resources/chat_manager/js/gmailbridgehook.js',

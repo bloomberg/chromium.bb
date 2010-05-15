@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<!--
+
+Copyright (c) 2010 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+
+Central roster: hosting all Google Talk chats in ChromeOS.
+
+-->
+<body>
+<style>
+  .talk_roster {
+    position: fixed;
+    left: 0px;
+    top: 0px;
+  }
+  .talk_iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    overflow-x: hidden;
+    overflow-y: hidden;
+  }
+</style>
+<script>
+  var args = {
+    'protocol': 'https',
+    'host': 'talkgadget.google.com',
+    'jsmode': 'pre',
+    'hl': 'en',
+  };
+  // Read args.
+  var urlParts = window.location.href.split(/[?&#]/);
+  for (var i = 1; i < urlParts.length; i++) {
+    var argParts = urlParts[i].split('=');
+    if (argParts.length == 2) {
+      args[argParts[0]] = argParts[1];
+    }
+  }
+  document.write('<script src="' +
+      args['protocol'] + '://' + args['host'] +
+      '/talkgadget/notifier-js?silent=true&host=' +
+      args['protocol'] + '://' + args['host'] +
+      '/talkgadget/notifier-js' +
+      (args['jsmode'] != '' ? ('&jsmode=' + args['jsmode']) : '') +
+      '"></scr' + 'ipt>');
+</script>
+<script>
+  var chatClient = null;
+  if (window.GTalkNotifier) {
+    chatClient = new GTalkNotifier(
+        args['protocol'] + '://' + args['host'] + '/talkgadget/',
+        'notifierclient' +
+            (args['jsmode'] != '' ? ('?jsmode=' + args['jsmode']) : ''),
+        'ifpc_relay',
+        'ifpc.js',
+        'Google Talk',
+        {
+          hostCallback: function(){},
+          xpcRelay: 'xpc_relay',
+          xpcBlank: 'xpc_blank',
+          locale: args['hl'],
+          isCentralRoster: true,
+          hideProfileCard: true
+        }
+    );
+  } else {
+    document.write(
+        '<div class="talk_roster"><b>GTalkNotifier undefined</b></div>');
+  }
+</script>
+</body>
+</html>
