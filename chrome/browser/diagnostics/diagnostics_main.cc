@@ -4,51 +4,87 @@
 
 #include "chrome/browser/diagnostics/diagnostics_main.h"
 
+#if defined(OS_POSIX)
+#include <stdio.h>
+#include <unistd.h>
+#endif
+
 #include "app/app_paths.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
 #include "base/string_util.h"
+#include "base/sys_string_conversions.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/diagnostics/diagnostics_model.h"
 #include "chrome/common/chrome_paths.h"
 
 #if defined(OS_WIN)
 #include "base/win_util.h"
+#endif
 
 namespace {
-// This is a minimalistic class to wrap the windows console operating
-// in high-level IO mode. This will be eventually replaced by a view
-// that can be subclassed for each platform and that the approved look
-// and feel.
+// This is a minimalistic interface to wrap the platform console.  This will be
+// eventually replaced by a view that can be subclassed for each platform and
+// that the approved look and feel.
 class SimpleConsole {
+ public:
+  enum Color {
+    DEFAULT,
+    RED,
+    GREEN,
+  };
+
+  virtual ~SimpleConsole() { }
+
+  // Init must be called before using any other method. If it returns
+  // false there would be no console output.
+  virtual bool Init() = 0;
+
+  // Writes a string to the console with the current color.
+  virtual bool Write(const std::wstring& text) = 0;
+
+  // Reads a string from the console. Internally it may be limited to 256
+  // characters.
+  virtual bool Read(std::wstring* txt) = 0;
+
+  // Sets the foreground and background color.
+  virtual bool SetColor(Color color) = 0;
+
+  // Create an appropriate SimpleConsole instance.  May return NULL if there is
+  // no implementation for the current platform.
+  static SimpleConsole* Create();
+};
+
+#if defined(OS_WIN)
+// Wrapper for the windows console operating in high-level IO mode.
+class WinConsole : public SimpleConsole {
  public:
   // The ctor allocates a console always. This avoids having to ask
   // the user to start chrome from a command prompt.
-  SimpleConsole()
+  WinConsole()
       : std_out_(INVALID_HANDLE_VALUE),
         std_in_(INVALID_HANDLE_VALUE)  {
   }
 
-  ~SimpleConsole() {
+  virtual ~WinConsole() {
     ::FreeConsole();
   }
-  // Init must be called before using any other method. If it returns
-  // false there would be no console output.
-  bool Init() {
+
+  virtual bool Init() {
     ::AllocConsole();
     return SetIOHandles();
   }
 
-  // Writes a string to the console with the current color.
-  bool Write(const std::wstring& txt) {
+  virtual bool Write(const std::wstring& txt) {
     DWORD sz = txt.size();
     return (TRUE == ::WriteConsoleW(std_out_, txt.c_str(), sz, &sz, NULL));
   }
 
   // Reads a string from the console. Internally it is limited to 256
   // characters.
-  bool Read(std::wstring* txt) {
+  virtual bool Read(std::wstring* txt) {
     wchar_t buf[256];
     DWORD read = sizeof(buf) - sizeof(buf[0]);
     if (!::ReadConsoleW(std_in_, buf, read, &read, NULL))
@@ -58,9 +94,22 @@ class SimpleConsole {
     return true;
   }
 
-  // Sets the foreground and backgroudn color. See |kRedFG| or |kGreenFG|
-  // below for examples how to combine colors.
-  bool SetColor(uint16 color_combo) {
+  // Sets the foreground and background color.
+  virtual bool SetColor(Color color) {
+    uint16 color_combo =
+        FOREGROUND_RED|FOREGROUND_GREEN|FOREGROUND_BLUE|FOREGROUND_INTENSITY;
+    switch (color) {
+      case RED:
+        color_combo = FOREGROUND_RED|FOREGROUND_INTENSITY;
+        break;
+      case GREEN:
+        color_combo = FOREGROUND_GREEN|FOREGROUND_INTENSITY;
+        break;
+      case DEFAULT:
+        break;
+      default:
+        NOTREACHED();
+    }
     return (TRUE == ::SetConsoleTextAttribute(std_out_, color_combo));
   }
 
@@ -77,8 +126,73 @@ class SimpleConsole {
   HANDLE std_out_;
   HANDLE std_in_;
 
-  DISALLOW_COPY_AND_ASSIGN(SimpleConsole);
+  DISALLOW_COPY_AND_ASSIGN(WinConsole);
 };
+
+SimpleConsole* SimpleConsole::Create() {
+  return new WinConsole();
+}
+
+#elif defined(OS_POSIX)
+
+class PosixConsole : public SimpleConsole {
+ public:
+  PosixConsole() { }
+
+  virtual bool Init() {
+    // Technically, we should also check the terminal capabilities before using
+    // color, but in practice this is unlikely to be an issue.
+    use_color_ = isatty(STDOUT_FILENO);
+    return true;
+  }
+
+  virtual bool Write(const std::wstring& text) {
+    printf("%s", base::SysWideToNativeMB(text).c_str());
+    return true;
+  }
+
+  virtual bool Read(std::wstring* txt) {
+    // TODO(mattm): implement this.
+    return false;
+  }
+
+  virtual bool SetColor(Color color) {
+    if (!use_color_)
+      return false;
+
+    const char* code = "\033[m";
+    switch (color) {
+      case RED:
+        code = "\033[1;31m";
+        break;
+      case GREEN:
+        code = "\033[1;32m";
+        break;
+      case DEFAULT:
+        break;
+      default:
+        NOTREACHED();
+    }
+    printf("%s", code);
+    return true;
+  }
+
+ private:
+  bool use_color_;
+
+  DISALLOW_COPY_AND_ASSIGN(PosixConsole);
+};
+
+SimpleConsole* SimpleConsole::Create() {
+  return new PosixConsole();
+}
+
+#else  // !defined(OS_WIN) && !defined(OS_POSIX)
+
+SimpleConsole* SimpleConsole::Create() {
+  return NULL;
+}
+#endif
 
 // This class wraps a SimpleConsole for the specific use case of
 // writing the results of the diagnostic tests.
@@ -92,7 +206,7 @@ class TestWriter {
 
   // Write an informational line of text in white over black.
   bool WriteInfoText(const std::wstring& txt) {
-    console_->SetColor(kWhiteFG);
+    console_->SetColor(SimpleConsole::DEFAULT);
     return console_->Write(txt);
   }
 
@@ -102,10 +216,10 @@ class TestWriter {
   bool WriteResult(bool success, const std::wstring& name,
                    const std::wstring& extra) {
     if (success) {
-      console_->SetColor(kGreenFG);
+      console_->SetColor(SimpleConsole::GREEN);
       console_->Write(L"[PASS] ");
     } else {
-      console_->SetColor(kRedFG);
+      console_->SetColor(SimpleConsole::RED);
       console_->Write(L"[FAIL] ");
     }
     WriteInfoText(name + L"\n");
@@ -115,10 +229,6 @@ class TestWriter {
   }
 
  private:
-  // constants for the colors we use.
-  static const uint16 kRedFG = FOREGROUND_RED|FOREGROUND_INTENSITY;
-  static const uint16 kGreenFG = FOREGROUND_GREEN|FOREGROUND_INTENSITY;
-  static const uint16 kWhiteFG = kRedFG | kGreenFG | FOREGROUND_BLUE;
 
   SimpleConsole* console_;
 
@@ -181,8 +291,8 @@ class TestController : public DiagnosticsModel::Observer {
  private:
   void ShowResult(DiagnosticsModel::TestInfo& test_info) {
     bool success = (DiagnosticsModel::TEST_OK == test_info.GetResult());
-    writer_->WriteResult(success, test_info.GetTitle(),
-                         test_info.GetAdditionalInfo());
+    writer_->WriteResult(success, UTF16ToWide(test_info.GetTitle()),
+                         UTF16ToWide(test_info.GetAdditionalInfo()));
   }
 
   DiagnosticsModel* model_;
@@ -207,8 +317,8 @@ class TestController : public DiagnosticsModel::Observer {
 
 int DiagnosticsMain(const CommandLine& command_line) {
   // If we can't initialize the console exit right away.
-  SimpleConsole console;
-  if (!console.Init())
+  SimpleConsole* console = SimpleConsole::Create();
+  if (!console || !console->Init())
     return 1;
 
   // We need to have the path providers registered. They both
@@ -216,7 +326,7 @@ int DiagnosticsMain(const CommandLine& command_line) {
   app::RegisterPathProvider();
   chrome::RegisterPathProvider();
 
-  TestWriter writer(&console);
+  TestWriter writer(console);
   DiagnosticsModel* model = MakeDiagnosticsModel(command_line);
   TestController controller(&writer);
 
@@ -224,17 +334,14 @@ int DiagnosticsMain(const CommandLine& command_line) {
   controller.Run(model);
   delete model;
 
+  // The "press enter to continue" prompt isn't very unixy, so only do that on
+  // Windows.
+#if defined(OS_WIN)
   // Block here so the user can see the results.
   writer.WriteInfoText(L"Press [enter] to continue\n");
   std::wstring txt;
-  console.Read(&txt);
-  return 0;
-}
-
-#else  // defined(OS_WIN)
-
-int DiagnosticsMain(const CommandLine& command_line) {
-  return 0;
-}
-
+  console->Read(&txt);
 #endif
+  delete console;
+  return 0;
+}
