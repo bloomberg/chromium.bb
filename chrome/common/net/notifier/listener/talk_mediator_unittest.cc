@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "chrome/common/net/fake_network_change_notifier_thread.h"
 #include "chrome/common/net/notifier/listener/mediator_thread_mock.h"
 #include "chrome/common/net/notifier/listener/talk_mediator_impl.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
@@ -31,12 +32,15 @@ class TalkMediatorImplTest : public testing::Test {
   virtual void TearDown() {
   }
 
+  chrome_common_net::FakeNetworkChangeNotifierThread
+      fake_network_change_notifier_thread_;
   int last_message_;
 };
 
 TEST_F(TalkMediatorImplTest, ConstructionOfTheClass) {
   // Constructing a single talk mediator enables SSL through the singleton.
-  scoped_ptr<TalkMediatorImpl> talk1(new TalkMediatorImpl(false));
+  scoped_ptr<TalkMediatorImpl> talk1(
+      new TalkMediatorImpl(&fake_network_change_notifier_thread_, false));
   talk1.reset(NULL);
 }
 

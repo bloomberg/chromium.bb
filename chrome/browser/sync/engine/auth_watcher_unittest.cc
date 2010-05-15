@@ -10,6 +10,7 @@
 #include "chrome/browser/sync/engine/auth_watcher.h"
 #include "chrome/browser/sync/util/user_settings.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
+#include "chrome/common/net/fake_network_change_notifier_thread.h"
 #include "chrome/common/net/http_return.h"
 #include "chrome/common/net/notifier/listener/talk_mediator_impl.h"
 #include "chrome/common/net/gaia/gaia_authenticator.h"
@@ -103,7 +104,9 @@ class AuthWatcherTest : public testing::Test {
     FilePath user_settings_path = temp_dir_.path().Append(kUserSettingsDB);
     user_settings_->Init(user_settings_path);
     gaia_auth_ = new GaiaAuthMockForAuthWatcher();
-    talk_mediator_.reset(new notifier::TalkMediatorImpl(false));
+    fake_network_change_notifier_thread_.Start();
+    talk_mediator_.reset(new notifier::TalkMediatorImpl(
+        &fake_network_change_notifier_thread_, false));
     auth_watcher_ = new AuthWatcher(metadb_.manager(), connection_.get(),
         allstatus_.get(), kTestUserAgent, kTestServiceId, kTestGaiaURL,
         user_settings_.get(), gaia_auth_, talk_mediator_.get());
@@ -115,6 +118,8 @@ class AuthWatcherTest : public testing::Test {
     metadb_.TearDown();
     auth_watcher_->Shutdown();
     EXPECT_FALSE(auth_watcher()->message_loop());
+    talk_mediator_.reset();
+    fake_network_change_notifier_thread_.Stop();
   }
 
   void HandleAuthWatcherEvent(const AuthWatcherEvent& event) {
@@ -154,6 +159,9 @@ class AuthWatcherTest : public testing::Test {
   scoped_ptr<UserSettings> user_settings_;
   GaiaAuthMockForAuthWatcher* gaia_auth_;  // Owned by auth_watcher_.
   scoped_ptr<notifier::TalkMediator> talk_mediator_;
+  // Needed by talk_mediator_.
+  chrome_common_net::FakeNetworkChangeNotifierThread
+      fake_network_change_notifier_thread_;
   scoped_refptr<AuthWatcher> auth_watcher_;
 
   // This is used to block the AuthWatcherThread when it raises events until we

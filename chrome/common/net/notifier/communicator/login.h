@@ -9,6 +9,7 @@
 
 #include "chrome/common/net/notifier/base/sigslotrepeater.h"
 #include "chrome/common/net/notifier/base/time.h"
+#include "net/base/network_change_notifier.h"
 #include "talk/base/proxyinfo.h"
 #include "talk/base/scoped_ptr.h"
 #include "talk/base/sigslot.h"
@@ -32,7 +33,6 @@ class AutoReconnect;
 class ConnectionOptions;
 class LoginFailure;
 class LoginSettings;
-class NetworkStatusDetectorTask;
 struct ServerInformation;
 class SingleLoginAttempt;
 class Timer;
@@ -40,7 +40,8 @@ class Timer;
 // Does the login, keeps it alive (with refreshing cookies and reattempting
 // login when disconnected), figures out what actions to take on the various
 // errors that may occur.
-class Login : public sigslot::has_slots<> {
+class Login : public net::NetworkChangeNotifier::Observer,
+              public sigslot::has_slots<> {
  public:
   // network_status and firewall may be NULL.
   Login(talk_base::Task* parent,
@@ -49,11 +50,11 @@ class Login : public sigslot::has_slots<> {
         std::string lang,
         ServerInformation* server_list,
         int server_count,
-        NetworkStatusDetectorTask* network_status,
+        net::NetworkChangeNotifier* network_change_notifier,
         talk_base::FirewallManager* firewall,
         bool proxy_only,
         bool previous_login_successful);
-  ~Login();
+  virtual ~Login();
 
   enum ConnectionState {
     STATE_CLOSED,
@@ -100,6 +101,8 @@ class Login : public sigslot::has_slots<> {
 
   int seconds_until_reconnect() const;
 
+  virtual void OnIPAddressChanged();
+
   // SignalClientStateChange(ConnectionState new_state);
   sigslot::signal1<ConnectionState> SignalClientStateChange;
 
@@ -113,6 +116,8 @@ class Login : public sigslot::has_slots<> {
   sigslot::repeater1<bool> SignalPowerSuspended;
 
  private:
+  void CheckConnection();
+
   void OnRedirect(const std::string& redirect_server, int redirect_port);
   void OnUnexpectedDisconnect();
   void OnClientStateChange(buzz::XmppEngine::State state);
@@ -123,14 +128,14 @@ class Login : public sigslot::has_slots<> {
   void HandleClientStateChange(ConnectionState new_state);
   void ResetUnexpectedDisconnect();
 
-  void OnNetworkStateDetected(bool was_alive, bool is_alive);
   void OnDisconnectTimeout();
 
+  talk_base::Task* parent_;
   scoped_ptr<LoginSettings> login_settings_;
+  net::NetworkChangeNotifier* network_change_notifier_;
   scoped_ptr<AutoReconnect> auto_reconnect_;
   SingleLoginAttempt* single_attempt_;
   bool successful_connection_;
-  talk_base::Task* parent_;
 
   ConnectionState state_;
 

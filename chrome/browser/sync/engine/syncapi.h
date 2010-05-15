@@ -59,6 +59,10 @@ struct SyncSessionSnapshot;
 }
 }
 
+namespace chrome_common_net {
+class NetworkChangeNotifierThread;
+}
+
 // Forward declarations of internal class types so that sync API objects
 // may have opaque pointers to these types.
 namespace syncable {
@@ -649,6 +653,9 @@ class SyncManager {
   // the default is false.
   // |gaia_service_id| is the service id used for GAIA authentication. If it's
   // null then default will be used.
+  // |network_change_notifier_thread| (which we don't own) is the
+  // thread from which we get notifications regarding changes to the
+  // network state.
   // |post_factory| will be owned internally and used to create
   // instances of an HttpPostProvider.
   // |auth_post_factory| will be owned internally and used to create
@@ -681,6 +688,8 @@ class SyncManager {
             const char* gaia_service_id,
             const char* gaia_source,
             bool use_ssl,
+            chrome_common_net::NetworkChangeNotifierThread*
+                network_change_notifier_thread,
             HttpPostProviderFactory* post_factory,
             HttpPostProviderFactory* auth_post_factory,
             browser_sync::ModelSafeWorkerRegistrar* registrar,

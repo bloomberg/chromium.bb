@@ -7,8 +7,6 @@
 #include "chrome/common/net/notifier/communicator/login.h"
 
 #include "base/logging.h"
-
-#include "chrome/common/net/notifier/base/network_status_detector_task.h"
 #include "chrome/common/net/notifier/base/time.h"
 #include "chrome/common/net/notifier/base/timer.h"
 #include "chrome/common/net/notifier/communicator/auto_reconnect.h"
@@ -16,9 +14,11 @@
 #include "chrome/common/net/notifier/communicator/login_settings.h"
 #include "chrome/common/net/notifier/communicator/product_info.h"
 #include "chrome/common/net/notifier/communicator/single_login_attempt.h"
+#include "net/base/network_change_notifier.h"
 #include "talk/base/common.h"
 #include "talk/base/firewallsocketserver.h"
 #include "talk/base/logging.h"
+#include "talk/base/physicalsocketserver.h"
 #include "talk/base/taskrunner.h"
 #include "talk/xmllite/xmlelement.h"
 #include "talk/xmpp/asyncsocket.h"
@@ -41,20 +41,22 @@ Login::Login(talk_base::Task* parent,
              std::string lang,
              ServerInformation* server_list,
              int server_count,
-             NetworkStatusDetectorTask* network_status,
+             net::NetworkChangeNotifier* network_change_notifier,
              talk_base::FirewallManager* firewall,
              bool proxy_only,
              bool previous_login_successful)
-    : login_settings_(new LoginSettings(user_settings,
+    : parent_(parent),
+      login_settings_(new LoginSettings(user_settings,
                                         options,
                                         lang,
                                         server_list,
                                         server_count,
                                         firewall,
                                         proxy_only)),
+      network_change_notifier_(network_change_notifier),
+      auto_reconnect_(new AutoReconnect(parent)),
       single_attempt_(NULL),
       successful_connection_(previous_login_successful),
-      parent_(parent),
       state_(STATE_OPENING),
       redirect_time_ns_(0),
       redirect_port_(0),
@@ -63,30 +65,23 @@ Login::Login(talk_base::Task* parent,
       google_host_(user_settings.host()),
       google_user_(user_settings.user()),
       disconnect_timer_(NULL) {
-  if (!network_status) {
-    network_status = NetworkStatusDetectorTask::Create(parent_);
-    if (network_status) {
-      // On linux we don't have an implementation of NetworkStatusDetectorTask.
-      network_status->Start();
-    }
-  }
+  DCHECK(network_change_notifier_);
+  // Hook up all the signals and observers.
+  network_change_notifier_->AddObserver(this);
+  auto_reconnect_->SignalStartConnection.connect(this,
+                                                 &Login::StartConnection);
+  auto_reconnect_->SignalTimerStartStop.connect(
+      this,
+      &Login::OnAutoReconnectTimerChange);
+  SignalClientStateChange.connect(auto_reconnect_.get(),
+                                  &AutoReconnect::OnClientStateChange);
+  SignalIdleChange.connect(auto_reconnect_.get(),
+                           &AutoReconnect::set_idle);
+  SignalPowerSuspended.connect(auto_reconnect_.get(),
+                               &AutoReconnect::OnPowerSuspend);
 
-  if (network_status) {
-    network_status->SignalNetworkStateDetected.connect(
-        this, &Login::OnNetworkStateDetected);
-    auto_reconnect_.reset(new AutoReconnect(parent_, network_status));
-    auto_reconnect_->SignalStartConnection.connect(this,
-                                                   &Login::StartConnection);
-    auto_reconnect_->SignalTimerStartStop.connect(
-        this,
-        &Login::OnAutoReconnectTimerChange);
-    SignalClientStateChange.connect(auto_reconnect_.get(),
-                                    &AutoReconnect::OnClientStateChange);
-    SignalIdleChange.connect(auto_reconnect_.get(),
-                             &AutoReconnect::set_idle);
-    SignalPowerSuspended.connect(auto_reconnect_.get(),
-                                 &AutoReconnect::OnPowerSuspend);
-  }
+  // Then check the initial state of the connection.
+  CheckConnection();
 }
 
 // Defined so that the destructors are executed here (and the corresponding
@@ -96,6 +91,7 @@ Login::~Login() {
     single_attempt_->Abort();
     single_attempt_ = NULL;
   }
+  network_change_notifier_->RemoveObserver(this);
 }
 
 void Login::StartConnection() {
@@ -322,16 +318,19 @@ void Login::DoAutoReconnect() {
   }
 }
 
-void Login::OnNetworkStateDetected(bool was_alive, bool is_alive) {
-  if (was_alive && !is_alive) {
-    // Our network connection just went down. Setup a timer to disconnect.
-    // Don't disconnect immediately to avoid constant
-    // connection/disconnection due to flaky network interfaces.
-    DCHECK(!disconnect_timer_);
-    disconnect_timer_ = new Timer(parent_, kDisconnectionDelaySecs, false);
-    disconnect_timer_->SignalTimeout.connect(this,
-                                             &Login::OnDisconnectTimeout);
-  } else if (!was_alive && is_alive) {
+void Login::OnIPAddressChanged() {
+  LOG(INFO) << "IP address change detected";
+  CheckConnection();
+}
+
+void Login::CheckConnection() {
+  LOG(INFO) << "Checking connection";
+  talk_base::PhysicalSocketServer physical;
+  scoped_ptr<talk_base::Socket> socket(physical.CreateSocket(SOCK_STREAM));
+  bool alive =
+      !socket->Connect(talk_base::SocketAddress("talk.google.com", 5222));
+  LOG(INFO) << "Network is " << (alive ? "alive" : "not alive");
+  if (alive) {
     // Our connection has come back up. If we have a disconnect timer going,
     // abort it so we don't disconnect.
     if (disconnect_timer_) {
@@ -339,7 +338,16 @@ void Login::OnNetworkStateDetected(bool was_alive, bool is_alive) {
       // It will free itself.
       disconnect_timer_ = NULL;
     }
+  } else {
+    // Our network connection just went down. Setup a timer to disconnect.
+    // Don't disconnect immediately to avoid constant
+    // connection/disconnection due to flaky network interfaces.
+    DCHECK(disconnect_timer_ == NULL);
+    disconnect_timer_ = new Timer(parent_, kDisconnectionDelaySecs, false);
+    disconnect_timer_->SignalTimeout.connect(this,
+                                             &Login::OnDisconnectTimeout);
   }
+  auto_reconnect_->NetworkStateChanged(alive);
 }
 
 void Login::OnDisconnectTimeout() {

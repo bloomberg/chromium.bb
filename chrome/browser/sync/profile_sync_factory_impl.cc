@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/glue/autofill_change_processor.h"
@@ -50,14 +51,20 @@ using browser_sync::UnrecoverableErrorHandler;
 
 ProfileSyncFactoryImpl::ProfileSyncFactoryImpl(
     Profile* profile,
+    chrome_common_net::NetworkChangeNotifierThread*
+        network_change_notifier_thread,
     CommandLine* command_line)
-    : profile_(profile), command_line_(command_line) {
+    : profile_(profile),
+      network_change_notifier_thread_(network_change_notifier_thread),
+      command_line_(command_line) {
+  DCHECK(network_change_notifier_thread_);
 }
 
 ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService() {
   ProfileSyncService* pss =
       new ProfileSyncService(this,
                              profile_,
+                             network_change_notifier_thread_,
                              browser_defaults::kBootstrapSyncAuthentication);
 
   // Autofill sync is disabled by default.

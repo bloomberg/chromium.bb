@@ -54,6 +54,7 @@
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/ssl/ssl_host_state.h"
+#include "chrome/browser/sync/net/network_change_notifier_io_thread.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_factory_impl.h"
 #include "chrome/browser/tabs/pinned_tab_service.h"
@@ -1495,8 +1496,11 @@ CloudPrintProxyService* ProfileImpl::GetCloudPrintProxyService() {
 }
 
 void ProfileImpl::InitSyncService() {
+  network_change_notifier_thread_.reset(
+      new NetworkChangeNotifierIOThread(g_browser_process->io_thread()));
   profile_sync_factory_.reset(
       new ProfileSyncFactoryImpl(this,
+                                 network_change_notifier_thread_.get(),
                                  CommandLine::ForCurrentProcess()));
   sync_service_.reset(
       profile_sync_factory_->CreateProfileSyncService());

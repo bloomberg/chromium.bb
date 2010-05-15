@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/platform_thread.h"
+#include "chrome/common/net/network_change_notifier_proxy.h"
 #include "chrome/common/net/notifier/base/async_dns_lookup.h"
 #include "chrome/common/net/notifier/base/task_pump.h"
 #include "chrome/common/net/notifier/communicator/connection_options.h"
@@ -23,7 +24,12 @@ using std::string;
 
 namespace notifier {
 
-MediatorThreadImpl::MediatorThreadImpl() {}
+MediatorThreadImpl::MediatorThreadImpl(
+    chrome_common_net::NetworkChangeNotifierThread*
+        network_change_notifier_thread)
+    : network_change_notifier_thread_(network_change_notifier_thread) {
+  DCHECK(network_change_notifier_thread_);
+}
 
 MediatorThreadImpl::~MediatorThreadImpl() {
 }
@@ -59,8 +65,8 @@ void MediatorThreadImpl::Login(const buzz::XmppClientSettings& settings) {
 
 void MediatorThreadImpl::Stop() {
   Thread::Stop();
-  CHECK(!login_.get() && !pump_.get()) << "Logout should be called prior to"
-      << "message queue exit.";
+  CHECK(!login_.get() && !network_change_notifier_.get() && !pump_.get())
+      << "Logout should be called prior to message queue exit.";
 }
 
 void MediatorThreadImpl::Logout() {
@@ -132,6 +138,9 @@ void MediatorThreadImpl::DoLogin(LoginData* login_data) {
 
   // Start a new pump for the login.
   login_.reset();
+  network_change_notifier_.reset(
+      new chrome_common_net::NetworkChangeNotifierProxy(
+          network_change_notifier_thread_));
   pump_.reset(new notifier::TaskPump());
 
   notifier::ServerInformation server_list[2];
@@ -158,12 +167,7 @@ void MediatorThreadImpl::DoLogin(LoginData* login_data) {
                                    lang,
                                    server_list,
                                    server_list_count,
-                                   // NetworkStatusDetectionTask will be
-                                   // created for you if NULL is passed in.
-                                   // It helps shorten the autoreconnect
-                                   // time after going offline and coming
-                                   // back online.
-                                   NULL,
+                                   network_change_notifier_.get(),
                                    // talk_base::FirewallManager* is NULL.
                                    NULL,
                                    // Both the proxy and a non-proxy route
@@ -195,6 +199,7 @@ void MediatorThreadImpl::OnOutputDebug(const char* msg, int length) {
 void MediatorThreadImpl::DoDisconnect() {
   LOG(INFO) << "P2P: Thread logging out of talk network.";
   login_.reset();
+  network_change_notifier_.reset();
   // Delete the old pump while on the thread to ensure that everything is
   // cleaned-up in a predicatable manner.
   pump_.reset();

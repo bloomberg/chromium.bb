@@ -32,6 +32,14 @@
 #include "talk/base/thread.h"
 #include "talk/xmpp/xmppclientsettings.h"
 
+namespace chrome_common_net {
+class NetworkChangeNotifierThread;
+}  // namespace chrome_common_net
+
+namespace net {
+class NetworkChangeNotifier;
+}  // namespace net
+
 namespace notifier {
 class TaskPump;
 }  // namespace notifier
@@ -95,7 +103,9 @@ class MediatorThreadImpl
       public talk_base::MessageHandler,
       public talk_base::Thread {
  public:
-  explicit MediatorThreadImpl();
+  explicit MediatorThreadImpl(
+      chrome_common_net::NetworkChangeNotifierThread*
+          network_change_notifier_thread);
   virtual ~MediatorThreadImpl();
 
   // Start the thread.
@@ -143,6 +153,9 @@ class MediatorThreadImpl
   // owned by the TaskPump.  They are destroyed either when processing is
   // complete or the pump shuts down.
   scoped_ptr<notifier::TaskPump> pump_;
+  chrome_common_net::NetworkChangeNotifierThread*
+      network_change_notifier_thread_;
+  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_ptr<notifier::Login> login_;
   DISALLOW_COPY_AND_ASSIGN(MediatorThreadImpl);
 };

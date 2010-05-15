@@ -31,12 +31,14 @@
 #include "base/basictypes.h"
 #include "base/base64.h"
 #include "base/lock.h"
+#include "base/logging.h"
 #include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
 #include "base/sha1.h"
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/sync/sync_constants.h"
 #include "chrome/browser/sync/engine/all_status.h"
 #include "chrome/browser/sync/engine/auth_watcher.h"
@@ -1039,6 +1041,8 @@ class SyncManager::SyncInternal {
             const char* gaia_service_id,
             const char* gaia_source,
             bool use_ssl,
+            chrome_common_net::NetworkChangeNotifierThread*
+                network_change_notifier_thread,
             HttpPostProviderFactory* post_factory,
             HttpPostProviderFactory* auth_post_factory,
             ModelSafeWorkerRegistrar* model_safe_worker_registrar,
@@ -1334,6 +1338,8 @@ bool SyncManager::Init(const FilePath& database_location,
                        const char* gaia_service_id,
                        const char* gaia_source,
                        bool use_ssl,
+                       chrome_common_net::NetworkChangeNotifierThread*
+                           network_change_notifier_thread,
                        HttpPostProviderFactory* post_factory,
                        HttpPostProviderFactory* auth_post_factory,
                        ModelSafeWorkerRegistrar* registrar,
@@ -1352,6 +1358,7 @@ bool SyncManager::Init(const FilePath& database_location,
                      gaia_service_id,
                      gaia_source,
                      use_ssl,
+                     network_change_notifier_thread,
                      post_factory,
                      auth_post_factory,
                      registrar,
@@ -1392,7 +1399,10 @@ bool SyncManager::SyncInternal::Init(
     int port,
     const char* gaia_service_id,
     const char* gaia_source,
-    bool use_ssl, HttpPostProviderFactory* post_factory,
+    bool use_ssl,
+    chrome_common_net::NetworkChangeNotifierThread*
+        network_change_notifier_thread,
+    HttpPostProviderFactory* post_factory,
     HttpPostProviderFactory* auth_post_factory,
     ModelSafeWorkerRegistrar* model_safe_worker_registrar,
     bool attempt_last_user_authentication,
@@ -1455,7 +1465,8 @@ bool SyncManager::SyncInternal::Init(
   const char* service_id = gaia_service_id ?
       gaia_service_id : SYNC_SERVICE_NAME;
 
-  talk_mediator_.reset(new TalkMediatorImpl(invalidate_xmpp_auth_token));
+  talk_mediator_.reset(new TalkMediatorImpl(
+      network_change_notifier_thread, invalidate_xmpp_auth_token));
   if (notification_method != browser_sync::NOTIFICATION_LEGACY) {
     if (notification_method == browser_sync::NOTIFICATION_TRANSITIONAL) {
       talk_mediator_->AddSubscribedServiceUrl(

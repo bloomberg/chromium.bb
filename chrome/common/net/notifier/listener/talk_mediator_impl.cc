@@ -39,8 +39,12 @@ class SslInitializationSingleton {
   DISALLOW_COPY_AND_ASSIGN(SslInitializationSingleton);
 };
 
-TalkMediatorImpl::TalkMediatorImpl(bool invalidate_xmpp_auth_token)
-    : mediator_thread_(new MediatorThreadImpl()),
+TalkMediatorImpl::TalkMediatorImpl(
+      chrome_common_net::NetworkChangeNotifierThread*
+          network_change_notifier_thread,
+      bool invalidate_xmpp_auth_token)
+    : mediator_thread_(
+        new MediatorThreadImpl(network_change_notifier_thread)),
       invalidate_xmpp_auth_token_(invalidate_xmpp_auth_token) {
   // Ensure the SSL library is initialized.
   SslInitializationSingleton::GetInstance()->RegisterClient();

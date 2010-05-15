@@ -11,6 +11,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/common/net/fake_network_change_notifier_thread.h"
 #include "chrome/test/sync/test_http_bridge_factory.h"
 
 class TestProfileSyncService : public ProfileSyncService {
@@ -19,7 +20,9 @@ class TestProfileSyncService : public ProfileSyncService {
                                   Profile* profile,
                                   bool bootstrap_sync_authentication,
                                   bool synchronous_backend_initialization)
-      : ProfileSyncService(factory, profile, bootstrap_sync_authentication),
+      : ProfileSyncService(factory, profile,
+                           &fake_network_change_notifier_thread_,
+                           bootstrap_sync_authentication),
         synchronous_backend_initialization_(
             synchronous_backend_initialization) {
     RegisterPreferences();
@@ -33,8 +36,10 @@ class TestProfileSyncService : public ProfileSyncService {
         new browser_sync::TestHttpBridgeFactory();
     browser_sync::TestHttpBridgeFactory* factory2 =
         new browser_sync::TestHttpBridgeFactory();
-    backend()->InitializeForTestMode(L"testuser", factory, factory2,
-        delete_sync_data_folder, browser_sync::kDefaultNotificationMethod);
+    backend()->InitializeForTestMode(
+        L"testuser", &fake_network_change_notifier_thread_,
+        factory, factory2, delete_sync_data_folder,
+        browser_sync::kDefaultNotificationMethod);
     // TODO(akalin): Figure out a better way to do this.
     if (synchronous_backend_initialization_) {
       // The SyncBackend posts a task to the current loop when
@@ -62,6 +67,8 @@ class TestProfileSyncService : public ProfileSyncService {
   }
 
   bool synchronous_backend_initialization_;
+  chrome_common_net::FakeNetworkChangeNotifierThread
+      fake_network_change_notifier_thread_;
 };
 
 #endif  // CHROME_BROWSER_SYNC_TEST_PROFILE_SYNC_SERVICE_H_

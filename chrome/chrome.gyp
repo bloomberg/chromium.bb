@@ -704,17 +704,9 @@
       'sources': [
         'common/net/notifier/base/async_dns_lookup.cc',
         'common/net/notifier/base/async_dns_lookup.h',
-        'common/net/notifier/base/async_network_alive.h',
         'common/net/notifier/base/fastalloc.h',
-        'common/net/notifier/base/linux/async_network_alive_linux.cc',
-        'common/net/notifier/base/mac/network_status_detector_task_mac.h',
-        'common/net/notifier/base/mac/network_status_detector_task_mac.cc',
         'common/net/notifier/base/nethelpers.cc',
         'common/net/notifier/base/nethelpers.h',
-        'common/net/notifier/base/network_status_detector_task.cc',
-        'common/net/notifier/base/network_status_detector_task.h',
-        'common/net/notifier/base/network_status_detector_task_mt.cc',
-        'common/net/notifier/base/network_status_detector_task_mt.h',
         'common/net/notifier/base/posix/time_posix.cc',
         'common/net/notifier/base/signal_thread_task.h',
         'common/net/notifier/base/ssl_adapter.h',
@@ -727,7 +719,6 @@
         'common/net/notifier/base/timer.cc',
         'common/net/notifier/base/timer.h',
         'common/net/notifier/base/utils.h',
-        'common/net/notifier/base/win/async_network_alive_win32.cc',
         'common/net/notifier/base/win/time_win32.cc',
         'common/net/notifier/communicator/auto_reconnect.cc',
         'common/net/notifier/communicator/auto_reconnect.h',
@@ -788,6 +779,7 @@
         '../net/net.gyp:net',
         '../third_party/expat/expat.gyp:expat',
         '../third_party/libjingle/libjingle.gyp:libjingle',
+        'common_net',
       ],
       'conditions': [
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {

@@ -13,6 +13,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/histogram.h"
+#include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/task.h"
@@ -45,12 +46,16 @@ typedef GoogleServiceAuthError AuthError;
 // Default sync server URL.
 static const char kSyncServerUrl[] = "https://clients4.google.com/chrome-sync";
 
-ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
-                                       Profile* profile,
-                                       bool bootstrap_sync_authentication)
+ProfileSyncService::ProfileSyncService(
+    ProfileSyncFactory* factory,
+    Profile* profile,
+    chrome_common_net::NetworkChangeNotifierThread*
+        network_change_notifier_thread,
+    bool bootstrap_sync_authentication)
     : last_auth_error_(AuthError::None()),
       factory_(factory),
       profile_(profile),
+      network_change_notifier_thread_(network_change_notifier_thread),
       bootstrap_sync_authentication_(bootstrap_sync_authentication),
       sync_service_url_(kSyncServerUrl),
       backend_initialized_(false),
@@ -60,12 +65,31 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
       unrecoverable_error_detected_(false),
       notification_method_(browser_sync::kDefaultNotificationMethod),
       ALLOW_THIS_IN_INITIALIZER_LIST(scoped_runnable_method_factory_(this)) {
+  DCHECK(factory);
+  DCHECK(profile);
+  DCHECK(network_change_notifier_thread_);
   registrar_.Add(this,
                  NotificationType::SYNC_CONFIGURE_START,
                  NotificationService::AllSources());
   registrar_.Add(this,
                  NotificationType::SYNC_CONFIGURE_DONE,
                  NotificationService::AllSources());
+}
+
+ProfileSyncService::ProfileSyncService()
+    : last_auth_error_(AuthError::None()),
+      factory_(NULL),
+      profile_(NULL),
+      network_change_notifier_thread_(NULL),
+      bootstrap_sync_authentication_(false),
+      sync_service_url_(kSyncServerUrl),
+      backend_initialized_(false),
+      expecting_first_run_auth_needed_event_(false),
+      is_auth_in_progress_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(wizard_(this)),
+      unrecoverable_error_detected_(false),
+      notification_method_(browser_sync::kDefaultNotificationMethod),
+      ALLOW_THIS_IN_INITIALIZER_LIST(scoped_runnable_method_factory_(this)) {
 }
 
 ProfileSyncService::~ProfileSyncService() {
@@ -221,6 +245,7 @@ void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
   GetPreferredDataTypes(&types);
   backend_->Initialize(sync_service_url_,
                        types,
+                       network_change_notifier_thread_,
                        profile_->GetRequestContext(),
                        GetLsidForAuthBootstraping(),
                        delete_sync_data_folder,

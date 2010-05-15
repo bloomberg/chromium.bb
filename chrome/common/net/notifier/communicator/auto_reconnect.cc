@@ -4,7 +4,6 @@
 
 #include "chrome/common/net/notifier/communicator/auto_reconnect.h"
 
-#include "chrome/common/net/notifier/base/network_status_detector_task.h"
 #include "chrome/common/net/notifier/base/time.h"
 #include "chrome/common/net/notifier/base/timer.h"
 #include "talk/base/common.h"
@@ -13,22 +12,17 @@ namespace notifier {
 
 const int kResetReconnectInfoDelaySec = 2;
 
-AutoReconnect::AutoReconnect(talk_base::Task* parent,
-                             NetworkStatusDetectorTask* network_status)
+AutoReconnect::AutoReconnect(talk_base::Task* parent)
   : reconnect_interval_ns_(0),
     reconnect_timer_(NULL),
     delayed_reset_timer_(NULL),
     parent_(parent),
     is_idle_(false) {
   SetupReconnectInterval();
-  if (network_status) {
-    network_status->SignalNetworkStateDetected.connect(
-        this, &AutoReconnect::OnNetworkStateDetected);
-  }
 }
 
-void AutoReconnect::OnNetworkStateDetected(bool was_alive, bool is_alive) {
-  if (is_retrying() && !was_alive && is_alive) {
+void AutoReconnect::NetworkStateChanged(bool is_alive) {
+  if (is_retrying() && is_alive) {
     // Reconnect in 1 to 9 seconds (vary the time a little to try to avoid
     // spikey behavior on network hiccups).
     StartReconnectTimerWithInterval((rand() % 9 + 1) * kSecsTo100ns);

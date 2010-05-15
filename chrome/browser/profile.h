@@ -21,6 +21,10 @@
 #include "chrome/browser/chromeos/preferences.h"
 #endif
 
+namespace chrome_common_net {
+class NetworkChangeNotifierThread;
+}
+
 namespace net {
 class TransportSecurityState;
 class SSLConfigService;
@@ -580,6 +584,9 @@ class ProfileImpl : public Profile,
   scoped_refptr<WebResourceService> web_resource_service_;
   scoped_ptr<NTPResourceCache> ntp_resource_cache_;
 
+  // Used by |profile_sync_factory_|.
+  scoped_ptr<chrome_common_net::NetworkChangeNotifierThread>
+      network_change_notifier_thread_;
   scoped_ptr<ProfileSyncFactory> profile_sync_factory_;
   scoped_ptr<ProfileSyncService> sync_service_;
   scoped_ptr<CloudPrintProxyService> cloud_print_proxy_service_;

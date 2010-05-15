@@ -29,6 +29,10 @@
 class CancelableTask;
 class Profile;
 
+namespace chrome_common_net {
+class NetworkChangeNotifierThread;
+}
+
 namespace browser_sync {
 
 namespace sessions {
@@ -96,6 +100,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // Optionally delete the Sync Data folder (if it's corrupt).
   void Initialize(const GURL& service_url,
                   const syncable::ModelTypeSet& types,
+                  chrome_common_net::NetworkChangeNotifierThread*
+                      network_change_notifier_thread,
                   URLRequestContextGetter* baseline_context_getter,
                   const std::string& lsid,
                   bool delete_sync_data_folder,
@@ -168,6 +174,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // Called from unit test to bypass authentication and initialize the syncapi
   // to a state suitable for testing but not production.
   void InitializeForTestMode(const std::wstring& test_user,
+                             chrome_common_net::NetworkChangeNotifierThread*
+                                 network_change_notifier_thread,
                              sync_api::HttpPostProviderFactory* factory,
                              sync_api::HttpPostProviderFactory* auth_factory,
                              bool delete_sync_data_folder,
@@ -185,6 +193,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
         NewRunnableMethod(core_.get(),
         &SyncBackendHost::Core::DoInitializeForTest,
         test_user,
+        network_change_notifier_thread,
         factory,
         auth_factory,
         delete_sync_data_folder,
@@ -218,6 +227,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
       DoInitializeOptions(
           const GURL& service_url,
           bool attempt_last_user_authentication,
+          chrome_common_net::NetworkChangeNotifierThread*
+              network_change_notifier_thread,
           sync_api::HttpPostProviderFactory* http_bridge_factory,
           sync_api::HttpPostProviderFactory* auth_http_bridge_factory,
           const std::string& lsid,
@@ -227,6 +238,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
           NotificationMethod notification_method)
           : service_url(service_url),
             attempt_last_user_authentication(attempt_last_user_authentication),
+            network_change_notifier_thread(network_change_notifier_thread),
             http_bridge_factory(http_bridge_factory),
             auth_http_bridge_factory(auth_http_bridge_factory),
             lsid(lsid),
@@ -237,6 +249,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
       GURL service_url;
       bool attempt_last_user_authentication;
+      chrome_common_net::NetworkChangeNotifierThread*
+          network_change_notifier_thread;
       sync_api::HttpPostProviderFactory* http_bridge_factory;
       sync_api::HttpPostProviderFactory* auth_http_bridge_factory;
       std::string lsid;
@@ -289,12 +303,16 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // last known user (since it will fail in test mode) and does some extra
     // setup to nudge the syncapi into a useable state.
     void DoInitializeForTest(const std::wstring& test_user,
+                             chrome_common_net::NetworkChangeNotifierThread*
+                                 network_change_notifier_thread,
                              sync_api::HttpPostProviderFactory* factory,
                              sync_api::HttpPostProviderFactory* auth_factory,
                              bool delete_sync_data_folder,
                              NotificationMethod notification_method) {
       DoInitialize(
-          DoInitializeOptions(GURL(), false, factory, auth_factory,
+          DoInitializeOptions(GURL(), false,
+                              network_change_notifier_thread,
+                              factory, auth_factory,
                               std::string(), delete_sync_data_folder,
                               false, false,
                               notification_method));

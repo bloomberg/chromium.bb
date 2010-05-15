@@ -1784,7 +1784,6 @@
         # TODO(akalin): Write our own test suite and runner.
         '../base/test/run_all_unittests.cc',
         '../base/test/test_suite.h',
-        'common/net/notifier/base/mac/network_status_detector_task_mac_unittest.cc',
         'common/net/notifier/listener/talk_mediator_unittest.cc',
         'common/net/notifier/listener/send_update_task_unittest.cc',
         'common/net/notifier/listener/subscribe_task_unittest.cc',
@@ -1794,6 +1793,7 @@
         '..',
       ],
       'dependencies': [
+        'common_net_test_support',
         'notifier',
         '../base/base.gyp:base',
         '../testing/gmock.gyp:gmock',
@@ -1867,6 +1867,7 @@
       'dependencies': [
         'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
         'common',
+        'common_net_test_support',
         'debugger',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',

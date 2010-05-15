@@ -17,16 +17,16 @@ class Task;
 
 namespace notifier {
 
-class NetworkStatusDetectorTask;
 class Timer;
 
 class AutoReconnect : public sigslot::has_slots<> {
  public:
-  AutoReconnect(talk_base::Task* parent,
-                NetworkStatusDetectorTask* network_status);
+  explicit AutoReconnect(talk_base::Task* parent);
   void StartReconnectTimer();
   void StopReconnectTimer();
   void OnClientStateChange(Login::ConnectionState state);
+
+  void NetworkStateChanged(bool is_alive);
 
   // Callback when power is suspended.
   void OnPowerSuspend(bool suspended);
@@ -50,8 +50,6 @@ class AutoReconnect : public sigslot::has_slots<> {
   void ResetState();
   void SetupReconnectInterval();
   void StopDelayedResetTimer();
-
-  void OnNetworkStateDetected(bool was_alive, bool is_alive);
 
   time64 reconnect_interval_ns_;
   Timer* reconnect_timer_;

@@ -22,13 +22,20 @@
 
 class EventListenerHookup;
 
+namespace chrome_common_net {
+class NetworkChangeNotifierThread;
+}  // namespace chrome_common_net
+
 namespace notifier {
 
 class TalkMediatorImpl
     : public TalkMediator,
       public sigslot::has_slots<> {
  public:
-  explicit TalkMediatorImpl(bool invalidate_xmpp_auth_token);
+  TalkMediatorImpl(
+      chrome_common_net::NetworkChangeNotifierThread*
+          network_change_notifier_thread,
+      bool invalidate_xmpp_auth_token);
   explicit TalkMediatorImpl(MediatorThread* thread);
   virtual ~TalkMediatorImpl();
 
