@@ -223,6 +223,13 @@
                 </li>
               </ol>
             </li><li>
+              <a href="#toc-debugging">Monitoring analytics requests</a>
+              <ol>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
               <a href="#toc-tracking-events">Tracking events</a>
               <ol>
                 <li style="display: none; ">
@@ -334,7 +341,7 @@ extension.</p>
 <pre>(function() {
   var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
   <strong>ga.src = 'https://ssl.google-analytics.com/ga.js';</strong>
-  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
 })();
 </pre>
 
@@ -357,7 +364,7 @@ extension.</p>
      (function() {
        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
        ga.src = 'https://ssl.google-analytics.com/ga.js';
-       (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+       var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
      })();
    &lt;/script&gt;
 
@@ -389,6 +396,21 @@ extension.</p>
 
 <p style="text-align: center">
   <img src="images/tut_analytics/screenshot02.png" style="width:300px;height:119px;" alt="Analytics view of the top content for a site.">
+</p>
+
+<h2 id="toc-debugging">Monitoring analytics requests</h2>
+
+<p>
+  To ensure that tracking data from your extension is being sent to Google
+  Analytics, you can inspect the pages of your extension in the
+  Developer Tools window (see the
+  <a href="tut_debugging.html">debugging tutorial</a> for more information).
+  As the following figure shows, you should see requests for a file named
+  <strong>__utm.gif</strong> if everything is set up correctly.
+</p>
+
+<p style="text-align: center">
+  <img src="images/tut_analytics/screenshot04.png" style="width:683px;height:418px;" alt="Developer Tools window showing the __utm.gif request">
 </p>
 
 <h2 id="toc-tracking-events">Tracking events</h2>
