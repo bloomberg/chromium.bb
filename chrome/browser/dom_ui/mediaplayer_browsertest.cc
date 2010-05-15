@@ -58,7 +58,7 @@ class MediaPlayerBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(MediaPlayerBrowserTest, Popup) {
-  StartHTTPServer();
+  ASSERT_TRUE(StartHTTPServer());
   // Doing this so we have a valid profile.
   ui_test_utils::NavigateToURL(browser(),
                                GURL("chrome://downloads"));
@@ -72,7 +72,7 @@ IN_PROC_BROWSER_TEST_F(MediaPlayerBrowserTest, Popup) {
 }
 
 IN_PROC_BROWSER_TEST_F(MediaPlayerBrowserTest, PopupPlaylist) {
-  StartHTTPServer();
+  ASSERT_TRUE(StartHTTPServer());
   // Doing this so we have a valid profile.
   ui_test_utils::NavigateToURL(browser(),
                                GURL("chrome://downloads"));
