@@ -58,6 +58,14 @@ class BaseTabRenderer : public views::View {
   // invoked.
   virtual void UpdateLoadingAnimation(TabRendererData::NetworkState state);
 
+  // Used to set/check whether this Tab is being animated closed.
+  void set_closing(bool closing) { closing_ = closing; }
+  bool closing() const { return closing_; }
+
+  // See description above field.
+  void set_dragging(bool dragging) { dragging_ = dragging; }
+  bool dragging() const { return dragging_; }
+
  protected:
   // Invoked from SetData after |data_| has been updated to the new data.
   virtual void DataChanged(const TabRendererData& old) {}
@@ -73,6 +81,12 @@ class BaseTabRenderer : public views::View {
   TabController* controller_;
 
   TabRendererData data_;
+
+  // True if the tab is being animated closed.
+  bool closing_;
+
+  // True if the tab is being dragged.
+  bool dragging_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseTabRenderer);
 };

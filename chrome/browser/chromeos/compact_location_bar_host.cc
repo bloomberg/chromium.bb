@@ -20,8 +20,7 @@
 #include "chrome/browser/views/bookmark_bar_view.h"
 #include "chrome/browser/views/find_bar_view.h"
 #include "chrome/browser/views/frame/browser_view.h"
-#include "chrome/browser/views/tabs/tab.h"
-#include "chrome/browser/views/tabs/tab_strip.h"
+#include "chrome/browser/views/tabs/base_tab_strip.h"
 #include "views/controls/scrollbar/native_scroll_bar.h"
 #include "views/focus/external_focus_tracker.h"
 #include "views/focus/view_storage.h"
@@ -98,7 +97,7 @@ class MouseObserver : public MessageLoopForUI::Observer {
 
 CompactLocationBarHost::CompactLocationBarHost(::BrowserView* browser_view)
     : DropdownBarHost(browser_view),
-      current_tab_index_(-1) {
+      current_tab_model_index_(-1) {
   auto_hide_timer_.reset(new base::OneShotTimer<CompactLocationBarHost>());
   mouse_observer_.reset(new MouseObserver(this, browser_view));
   Init(new CompactLocationBarView(this));
@@ -135,8 +134,8 @@ bool CompactLocationBarHost::AcceleratorPressed(
 
 gfx::Rect CompactLocationBarHost::GetDialogPosition(
     gfx::Rect avoid_overlapping_rect) {
-  DCHECK_GE(current_tab_index_, 0);
-  gfx::Rect new_pos = GetBoundsUnderTab(current_tab_index_);
+  DCHECK_GE(current_tab_model_index_, 0);
+  gfx::Rect new_pos = GetBoundsUnderTab(current_tab_model_index_);
 
   if (animation_offset() > 0)
     new_pos.Offset(0, std::min(0, -animation_offset()));
@@ -206,12 +205,13 @@ void CompactLocationBarHost::TabChangedAt(TabContents* contents, int index,
 ////////////////////////////////////////////////////////////////////////////////
 // CompactLocationBarHost public:
 
-gfx::Rect CompactLocationBarHost::GetBoundsUnderTab(int index) const {
+gfx::Rect CompactLocationBarHost::GetBoundsUnderTab(int model_index) const {
   // Get the position of the left-bottom corner of the tab on the
   // widget.  The widget of the tab is same as the widget of the
   // BrowserView which is the parent of the host.
-  TabStrip* tabstrip = browser_view()->tabstrip()->AsTabStrip();
-  gfx::Rect bounds = tabstrip->GetIdealBounds(index);
+  BaseTabStrip* tabstrip = browser_view()->tabstrip();
+  gfx::Rect bounds =
+      tabstrip->ideal_bounds(tabstrip->ModelIndexToTabIndex(model_index));
   gfx::Rect navbar_bounds(gfx::Point(bounds.x(), bounds.height()),
                           view()->GetPreferredSize());
 
@@ -241,14 +241,14 @@ gfx::Rect CompactLocationBarHost::GetBoundsUnderTab(int index) const {
   return navbar_bounds.AdjustToFit(browser_view()->bounds());
 }
 
-void CompactLocationBarHost::Update(int index,
+void CompactLocationBarHost::Update(int model_index,
                                     bool animate_x,
                                     bool select_all) {
-  DCHECK_GE(index, 0);
-  if (IsCurrentTabIndex(index) && IsVisible()) {
+  DCHECK_GE(model_index, 0);
+  if (IsCurrentTabIndex(model_index) && IsVisible()) {
     return;
   }
-  current_tab_index_ = index;
+  current_tab_model_index_ = model_index;
   // Don't aminate if the bar is already shown.
   bool animate = !animation()->IsShowing();
   Hide(false);
@@ -287,7 +287,7 @@ CompactLocationBarView* CompactLocationBarHost::GetClbView() {
 }
 
 bool CompactLocationBarHost::IsCurrentTabIndex(int index) {
-  return current_tab_index_ == index;
+  return current_tab_model_index_ == index;
 }
 
 }  // namespace chromeos

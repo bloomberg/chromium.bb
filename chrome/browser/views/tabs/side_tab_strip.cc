@@ -17,11 +17,12 @@ const int kTabStripInset = 3;
 // SideTabStrip, public:
 
 SideTabStrip::SideTabStrip(TabStripController* controller)
-    : BaseTabStrip(controller) {
+    : BaseTabStrip(controller, BaseTabStrip::VERTICAL_TAB_STRIP) {
   SetID(VIEW_ID_TAB_STRIP);
 }
 
 SideTabStrip::~SideTabStrip() {
+  DestroyDragController();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -42,10 +43,6 @@ void SideTabStrip::SetDraggedTabBounds(int tab_index,
                                        const gfx::Rect& tab_bounds) {
 }
 
-bool SideTabStrip::IsDragSessionActive() const {
-  return false;
-}
-
 bool SideTabStrip::IsAnimating() const {
   return false;
 }
@@ -64,28 +61,8 @@ BaseTabRenderer* SideTabStrip::GetBaseTabAtModelIndex(int model_index) const {
   return static_cast<BaseTabRenderer*>(GetChildViewAt(model_index));
 }
 
-BaseTabRenderer* SideTabStrip::GetBaseTabAtTabIndex(int tab_index) const {
-  return static_cast<BaseTabRenderer*>(GetChildViewAt(tab_index));
-}
-
-int SideTabStrip::GetTabCount() const {
-  return GetChildViewCount();
-}
-
 BaseTabRenderer* SideTabStrip::CreateTabForDragging() {
   return new SideTab(NULL);
-}
-
-int SideTabStrip::GetModelIndexOfBaseTab(const BaseTabRenderer* tab) const {
-  return GetChildIndex(tab);
-}
-
-void SideTabStrip::AddTabAt(int model_index,
-                            bool foreground,
-                            const TabRendererData& data) {
-  SideTab* tab = new SideTab(this);
-  AddChildView(tab);
-  Layout();
 }
 
 void SideTabStrip::RemoveTabAt(int index, bool initiated_close) {
@@ -99,41 +76,46 @@ void SideTabStrip::SelectTabAt(int old_model_index, int new_model_index) {
   GetChildViewAt(new_model_index)->SchedulePaint();
 }
 
-void SideTabStrip::MoveTab(int from_model_index, int to_model_index) {
-}
-
 void SideTabStrip::TabTitleChangedNotLoading(int model_index) {
 }
 
 void SideTabStrip::SetTabData(int model_index, const TabRendererData& data) {
-}
-
-void SideTabStrip::MaybeStartDrag(BaseTabRenderer* tab,
-                                  const views::MouseEvent& event) {
-}
-
-void SideTabStrip::ContinueDrag(const views::MouseEvent& event) {
-}
-
-bool SideTabStrip::EndDrag(bool canceled) {
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// SideTabStrip, views::View overrides:
-
-void SideTabStrip::Layout() {
-  gfx::Rect layout_rect = GetLocalBounds(false);
-  layout_rect.Inset(kTabStripInset, kTabStripInset);
-  int y = layout_rect.y();
-  for (int c = GetChildViewCount(), i = 0; i < c; ++i) {
-    views::View* child = GetChildViewAt(i);
-    child->SetBounds(layout_rect.x(), y, layout_rect.width(),
-                     child->GetPreferredSize().height());
-    y = child->bounds().bottom() + kVerticalTabSpacing;
-  }
+  BaseTabRenderer* tab = GetBaseTabAtModelIndex(model_index);
+  tab->SetData(data);
+  tab->SchedulePaint();
 }
 
 gfx::Size SideTabStrip::GetPreferredSize() {
   return gfx::Size(kTabStripWidth, 0);
+}
+
+BaseTabRenderer* SideTabStrip::CreateTab() {
+  return new SideTab(this);
+}
+
+void SideTabStrip::GenerateIdealBounds() {
+  gfx::Rect layout_rect = GetLocalBounds(false);
+  layout_rect.Inset(kTabStripInset, kTabStripInset);
+
+  int y = layout_rect.y();
+  for (int i = 0; i < tab_count(); ++i) {
+    BaseTabRenderer* tab = base_tab_at_tab_index(i);
+    if (!tab->closing()) {
+      gfx::Rect bounds = gfx::Rect(layout_rect.x(), y, layout_rect.width(),
+                                   tab->GetPreferredSize().height());
+      set_ideal_bounds(i, bounds);
+      y = bounds.bottom() + kVerticalTabSpacing;
+    }
+  }
+}
+
+void SideTabStrip::StartInsertTabAnimation(int model_index, bool foreground) {
+  Layout();
+}
+
+void SideTabStrip::StartMoveTabAnimation() {
+  Layout();
+}
+
+void SideTabStrip::StopAnimating(bool layout) {
 }

@@ -43,13 +43,13 @@ class CompactLocationBarHost : public DropdownBarHost,
   virtual ~CompactLocationBarHost();
 
   // Returns the bounds to locale the compact location bar under the tab.
-  gfx::Rect GetBoundsUnderTab(int tab_index) const;
+  gfx::Rect GetBoundsUnderTab(int model_index) const;
 
   // Updates the content and the position of the compact location bar.
-  // |index| is the index of the tab the compact location bar
+  // |model_index| is the index of the tab the compact location bar
   // will be attached to and |animate| specifies if the location bar
   // should animate when shown.
-  void Update(int index, bool animate, bool select_all);
+  void Update(int model_index, bool animate, bool select_all);
 
   // (Re)Starts the popup timer that hides the popup after X seconds.
   void StartAutoHideTimer();
@@ -99,8 +99,9 @@ class CompactLocationBarHost : public DropdownBarHost,
 
   bool IsCurrentTabIndex(int index);
 
-  // The index of the tab that the compact location bar is attached to.
-  int current_tab_index_;
+  // The index of the tab, in terms of the model, that the compact location bar
+  // is attached to.
+  int current_tab_model_index_;
 
   scoped_ptr<base::OneShotTimer<CompactLocationBarHost> > auto_hide_timer_;
 

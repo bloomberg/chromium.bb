@@ -30,9 +30,7 @@ static const SkScalar kTabBottomCurveWidth = 3;
 // Tab, public:
 
 Tab::Tab(TabController* controller)
-    : TabRenderer(controller),
-      closing_(false),
-      dragging_(false) {
+    : TabRenderer(controller) {
   close_button()->SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_CLOSE_TAB));
   close_button()->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_CLOSE));
   close_button()->SetAnimationDuration(0);

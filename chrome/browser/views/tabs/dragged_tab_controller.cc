@@ -20,10 +20,11 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/views/frame/browser_view.h"
+#include "chrome/browser/views/tabs/base_tab_renderer.h"
+#include "chrome/browser/views/tabs/base_tab_strip.h"
 #include "chrome/browser/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/views/tabs/dragged_tab_view.h"
 #include "chrome/browser/views/tabs/native_view_photobooth.h"
-#include "chrome/browser/views/tabs/tab.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/canvas.h"
@@ -178,7 +179,7 @@ class DockView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(DockView);
 };
 
-gfx::Point ConvertScreenPointToTabStripPoint(TabStrip* tabstrip,
+gfx::Point ConvertScreenPointToTabStripPoint(BaseTabStrip* tabstrip,
                                              const gfx::Point& screen_point) {
   gfx::Point tabstrip_topleft;
   views::View::ConvertPointToScreen(tabstrip, &tabstrip_topleft);
@@ -311,12 +312,12 @@ class DraggedTabController::DockDisplayer : public AnimationDelegate {
 ///////////////////////////////////////////////////////////////////////////////
 // DraggedTabController, public:
 
-DraggedTabController::DraggedTabController(Tab* source_tab,
-                                           TabStrip* source_tabstrip)
+DraggedTabController::DraggedTabController(BaseTabRenderer* source_tab,
+                                           BaseTabStrip* source_tabstrip)
     : dragged_contents_(NULL),
       original_delegate_(NULL),
       source_tabstrip_(source_tabstrip),
-      source_model_index_(source_tabstrip->GetModelIndexOfTab(source_tab)),
+      source_model_index_(source_tabstrip->GetModelIndexOfBaseTab(source_tab)),
       attached_tabstrip_(NULL),
       attached_tab_(NULL),
       offset_to_width_ratio_(0),
@@ -343,7 +344,7 @@ DraggedTabController::~DraggedTabController() {
   SetDraggedContents(NULL);  // This removes our observer.
 }
 
-void DraggedTabController::CaptureDragInfo(Tab* tab,
+void DraggedTabController::CaptureDragInfo(views::View* tab,
                                            const gfx::Point& mouse_offset) {
   if (tab->width() > 0) {
     offset_to_width_ratio_ = static_cast<float>(mouse_offset.x()) /
@@ -505,7 +506,7 @@ void DraggedTabController::InitWindowCreatePoint() {
   // first_tab based on source_tabstrip_, not attached_tabstrip_. Otherwise,
   // the window_create_point_ is not in the correct coordinate system. Please
   // refer to http://crbug.com/6223 comment #15 for detailed information.
-  Tab* first_tab = source_tabstrip_->GetTabAtTabDataIndex(0);
+  views::View* first_tab = source_tabstrip_->base_tab_at_tab_index(0);
   views::View::ConvertPointToWidget(first_tab, &first_source_tab_point_);
   UpdateWindowCreatePoint();
 }
@@ -619,12 +620,12 @@ void DraggedTabController::ContinueDragging() {
 
 #if defined(OS_CHROMEOS)
   // We don't allow detaching in chrome os.
-  TabStrip* target_tabstrip = source_tabstrip_;
+  BaseTabStrip* target_tabstrip = source_tabstrip_;
 #else
   // Determine whether or not we have dragged over a compatible TabStrip in
   // another browser window. If we have, we should attach to it and start
   // dragging within it.
-  TabStrip* target_tabstrip = GetTabStripForPoint(screen_point);
+  BaseTabStrip* target_tabstrip = GetTabStripForPoint(screen_point);
 #endif
   if (target_tabstrip != attached_tabstrip_) {
     // Make sure we're fully detached from whatever TabStrip we're attached to
@@ -653,15 +654,33 @@ void DraggedTabController::MoveAttachedTab(const gfx::Point& screen_point) {
   DCHECK(!view_.get());
 
   gfx::Point dragged_view_point = GetAttachedTabDragPoint(screen_point);
-
   TabStripModel* attached_model = GetModel(attached_tabstrip_);
   int from_index = attached_model->GetIndexOfTabContents(dragged_contents_);
 
+  if (attached_tabstrip_->type() == BaseTabStrip::HORIZONTAL_TAB_STRIP) {
+    MoveAttachedTabHorizontalTabStrip(screen_point, attached_model,
+                                      dragged_view_point, from_index);
+  } else {
+    MoveAttachedTabVerticalTabStrip(screen_point, attached_model,
+                                    dragged_view_point, from_index);
+  }
+  attached_tab_->SchedulePaint();
+  attached_tab_->SetX(dragged_view_point.x());
+  attached_tab_->SetY(dragged_view_point.y());
+  attached_tab_->SchedulePaint();
+}
+
+void DraggedTabController::MoveAttachedTabHorizontalTabStrip(
+    const gfx::Point& screen_point,
+    TabStripModel* model,
+    const gfx::Point& dragged_view_point,
+    int from_index) {
+  TabStrip* tab_strip = static_cast<TabStrip*>(attached_tabstrip_);
   // Determine the horizontal move threshold. This is dependent on the width
   // of tabs. The smaller the tabs compared to the standard size, the smaller
   // the threshold.
   double unselected, selected;
-  attached_tabstrip_->GetCurrentTabWidths(&unselected, &selected);
+  tab_strip->GetCurrentTabWidths(&unselected, &selected);
   double ratio = unselected / Tab::GetStandardSize().width();
   int threshold = static_cast<int>(ratio * kHorizontalMoveThreshold);
 
@@ -670,20 +689,23 @@ void DraggedTabController::MoveAttachedTab(const gfx::Point& screen_point) {
   // jitter).
   if (abs(screen_point.x() - last_move_screen_x_) > threshold) {
     gfx::Point dragged_view_screen_point(dragged_view_point);
-    views::View::ConvertPointToScreen(attached_tabstrip_,
-                                      &dragged_view_screen_point);
+    views::View::ConvertPointToScreen(tab_strip, &dragged_view_screen_point);
     gfx::Rect bounds = GetDraggedViewTabStripBounds(dragged_view_screen_point);
     int to_index = GetInsertionIndexForDraggedBounds(bounds, true);
     to_index = NormalizeIndexToAttachedTabStrip(to_index);
     if (from_index != to_index) {
       last_move_screen_x_ = screen_point.x();
-      attached_model->MoveTabContentsAt(from_index, to_index, true);
+      model->MoveTabContentsAt(from_index, to_index, true);
     }
   }
-  attached_tab_->SchedulePaint();
-  attached_tab_->SetX(dragged_view_point.x());
-  attached_tab_->SetY(dragged_view_point.y());
-  attached_tab_->SchedulePaint();
+}
+
+void DraggedTabController::MoveAttachedTabVerticalTabStrip(
+    const gfx::Point& screen_point,
+    TabStripModel* model,
+    const gfx::Point& dragged_view_point,
+    int from_index) {
+  // TODO(sky): implement me.
 }
 
 void DraggedTabController::MoveDetachedTab(const gfx::Point& screen_point) {
@@ -718,7 +740,7 @@ DockInfo DraggedTabController::GetDockInfoAtPoint(
   return info;
 }
 
-TabStrip* DraggedTabController::GetTabStripForPoint(
+BaseTabStrip* DraggedTabController::GetTabStripForPoint(
     const gfx::Point& screen_point) {
   gfx::NativeView dragged_view = NULL;
   if (view_.get()) {
@@ -738,14 +760,15 @@ TabStrip* DraggedTabController::GetTabStripForPoint(
       !browser->browser()->SupportsWindowFeature(Browser::FEATURE_TABSTRIP))
     return NULL;
 
-  TabStrip* other_tabstrip = browser->tabstrip()->AsTabStrip();
+  BaseTabStrip* other_tabstrip = browser->tabstrip();
   if (!other_tabstrip->controller()->IsCompatibleWith(source_tabstrip_))
     return NULL;
   return GetTabStripIfItContains(other_tabstrip, screen_point);
 }
 
-TabStrip* DraggedTabController::GetTabStripIfItContains(
-    TabStrip* tabstrip, const gfx::Point& screen_point) const {
+BaseTabStrip* DraggedTabController::GetTabStripIfItContains(
+    BaseTabStrip* tabstrip, const gfx::Point& screen_point) const {
+  // TODO(sky): this likely needs to be adjusted for vertical tabs.
   static const int kVerticalDetachMagnetism = 15;
   // Make sure the specified screen point is actually within the bounds of the
   // specified tabstrip...
@@ -764,7 +787,7 @@ TabStrip* DraggedTabController::GetTabStripIfItContains(
   return NULL;
 }
 
-void DraggedTabController::Attach(TabStrip* attached_tabstrip,
+void DraggedTabController::Attach(BaseTabStrip* attached_tabstrip,
                                   const gfx::Point& screen_point) {
   DCHECK(!attached_tabstrip_);  // We should already have detached by the time
                                 // we get here.
@@ -778,7 +801,7 @@ void DraggedTabController::Attach(TabStrip* attached_tabstrip,
   // And we don't need the dragged view.
   view_.reset();
 
-  Tab* tab = GetTabMatchingDraggedContents(attached_tabstrip_);
+  BaseTabRenderer* tab = GetTabMatchingDraggedContents(attached_tabstrip_);
 
   if (!tab) {
     // There is no Tab in |attached_tabstrip| that corresponds to the dragged
@@ -878,8 +901,8 @@ int DraggedTabController::GetInsertionIndexForDraggedBounds(
       attached_tabstrip_->MirroredLeftPointForRect(adjusted_bounds));
 
   int index = -1;
-  for (int i = 0; i < attached_tabstrip_->GetTabCount(); ++i) {
-    gfx::Rect ideal_bounds = attached_tabstrip_->GetIdealBounds(i);
+  for (int i = 0; i < attached_tabstrip_->tab_count(); ++i) {
+    const gfx::Rect& ideal_bounds = attached_tabstrip_->ideal_bounds(i);
     gfx::Rect left_half = ideal_bounds;
     left_half.set_width(left_half.width() / 2);
     gfx::Rect right_half = ideal_bounds;
@@ -919,13 +942,18 @@ gfx::Rect DraggedTabController::GetDraggedViewTabStripBounds(
     return gfx::Rect(client_point.x(), client_point.y(),
                      attached_tab_->width(), attached_tab_->height());
   }
-  // attached_tab_ is NULL when inserting into a new tabstrip.
-  double sel_width, unselected_width;
-  attached_tabstrip_->GetCurrentTabWidths(&sel_width, &unselected_width);
+  if (attached_tabstrip_->type() == BaseTabStrip::HORIZONTAL_TAB_STRIP) {
+    // attached_tab_ is NULL when inserting into a new tabstrip.
+    double sel_width, unselected_width;
+    static_cast<TabStrip*>(attached_tabstrip_)->GetCurrentTabWidths(
+        &sel_width, &unselected_width);
+    return gfx::Rect(client_point.x(), client_point.y(),
+                     static_cast<int>(sel_width),
+                     Tab::GetStandardSize().height());
+  }
   // TODO(sky): this needs to adjust based on orientation of the tab strip.
   return gfx::Rect(client_point.x(), client_point.y(),
-                   static_cast<int>(sel_width),
-                   Tab::GetStandardSize().height());
+                   0, Tab::GetStandardSize().height());
 }
 
 gfx::Point DraggedTabController::GetAttachedTabDragPoint(
@@ -950,11 +978,12 @@ gfx::Point DraggedTabController::GetAttachedTabDragPoint(
   return gfx::Point(x, y);
 }
 
-Tab* DraggedTabController::GetTabMatchingDraggedContents(
-    TabStrip* tabstrip) const {
-  int model_index = GetModel(tabstrip)->GetIndexOfTabContents(dragged_contents_);
+BaseTabRenderer* DraggedTabController::GetTabMatchingDraggedContents(
+    BaseTabStrip* tabstrip) const {
+  int model_index =
+      GetModel(tabstrip)->GetIndexOfTabContents(dragged_contents_);
   return model_index == TabStripModel::kNoTab ?
-      NULL : tabstrip->GetTabAtModelIndex(model_index);
+      NULL : tabstrip->GetBaseTabAtModelIndex(model_index);
 }
 
 void DraggedTabController::EndDragImpl(EndDragType type) {

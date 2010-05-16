@@ -211,9 +211,9 @@ void BrowserTabStripController::UpdateLoadingAnimations() {
   // Don't use the model count here as it's possible for this to be invoked
   // before we've applied an update from the model (Browser::TabInsertedAt may
   // be processed before us and invokes this).
-  for (int tab_index = 0, tab_count = tabstrip_->GetTabCount();
+  for (int tab_index = 0, tab_count = tabstrip_->tab_count();
        tab_index < tab_count; ++tab_index) {
-    BaseTabRenderer* tab = tabstrip_->GetBaseTabAtTabIndex(tab_index);
+    BaseTabRenderer* tab = tabstrip_->base_tab_at_tab_index(tab_index);
     int model_index = tabstrip_->GetModelIndexOfBaseTab(tab);
     if (model_->ContainsIndex(model_index)) {
       TabContents* contents = model_->GetTabContentsAt(model_index);

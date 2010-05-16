@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_VIEWS_TABS_TAB_STRIP_H_
 #define CHROME_BROWSER_VIEWS_TABS_TAB_STRIP_H_
 
-#include <vector>
-
 #include "app/animation_container.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
@@ -17,8 +15,6 @@
 #include "gfx/rect.h"
 #include "views/animation/bounds_animator.h"
 #include "views/controls/button/image_button.h"
-
-class DraggedTabController;
 
 namespace views {
 class ImageView;
@@ -60,12 +56,6 @@ class TabStrip : public BaseTabStrip,
     return new_tab_button_enabled_;
   }
 
-  // Destroys the active drag controller.
-  void DestroyDragController();
-
-  // Retrieves the ideal bounds for the Tab at the specified index.
-  gfx::Rect GetIdealBounds(int tab_data_index);
-
   // Creates the new tab button.
   void InitTabStripButtons();
 
@@ -78,22 +68,14 @@ class TabStrip : public BaseTabStrip,
   virtual bool IsPositionInWindowCaption(const gfx::Point& point);
   virtual void SetDraggedTabBounds(int tab_index,
                                    const gfx::Rect& tab_bounds);
-  virtual bool IsDragSessionActive() const;
   virtual bool IsAnimating() const;
   virtual TabStrip* AsTabStrip();
-  virtual void AddTabAt(int model_index,
-                        bool foreground,
-                        const TabRendererData& data);
   virtual void RemoveTabAt(int model_index, bool initiated_close);
   virtual void SelectTabAt(int old_model_index, int new_model_index);
-  virtual void MoveTab(int from_model_index, int to_model_index);
   virtual void TabTitleChangedNotLoading(int model_index);
   virtual void SetTabData(int model_index, const TabRendererData& data);
   virtual void StartHighlight(int model_index);
   virtual void StopAllHighlighting();
-  virtual BaseTabRenderer* GetBaseTabAtModelIndex(int model_index) const;
-  virtual BaseTabRenderer* GetBaseTabAtTabIndex(int tab_index) const;
-  virtual int GetModelIndexOfBaseTab(const BaseTabRenderer* tab) const;
   virtual BaseTabRenderer* CreateTabForDragging();
 
   // views::View overrides:
@@ -115,25 +97,20 @@ class TabStrip : public BaseTabStrip,
   virtual void OnBoundsAnimatorDone(views::BoundsAnimator* animator);
 
  protected:
-  // Creates a new tab.
+  // BaseTabStrip overrides:
   virtual Tab* CreateTab();
+  virtual void StartInsertTabAnimation(int model_index, bool foreground);
+  virtual void StartMoveTabAnimation();
+  virtual void StartedDraggingTab(BaseTabRenderer* tab);
+  virtual void StoppedDraggingTab(BaseTabRenderer* tab);
 
   // views::View implementation:
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
                                     views::View* child);
-  virtual bool OnMouseDragged(const views::MouseEvent& event);
-  virtual void OnMouseReleased(const views::MouseEvent& event,
-                               bool canceled);
 
   // TabController overrides.
   virtual bool IsTabSelected(const BaseTabRenderer* btr) const;
-  virtual bool IsTabPinned(const BaseTabRenderer* btr) const;
-  virtual void MaybeStartDrag(BaseTabRenderer* btr,
-                              const views::MouseEvent& event);
-  virtual void ContinueDrag(const views::MouseEvent& event);
-  virtual bool EndDrag(bool canceled);
-  virtual bool HasAvailableDragActions() const;
 
   // views::ButtonListener implementation:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
@@ -214,12 +191,6 @@ class TabStrip : public BaseTabStrip,
     DISALLOW_COPY_AND_ASSIGN(DropInfo);
   };
 
-  // The Tabs we contain, and their last generated "good" bounds.
-  struct TabData {
-    Tab* tab;
-    gfx::Rect ideal_bounds;
-  };
-
   void Init();
 
   // Set the images for the new tab button.
@@ -237,12 +208,6 @@ class TabStrip : public BaseTabStrip,
   //
   // Use this instead of GetTabAtTabDataIndex if the index comes from the model.
   Tab* GetTabAtModelIndex(int model_index) const;
-
-  // Gets the number of Tabs in the collection.
-  // WARNING: this is the number of tabs displayed by the tabstrip, which if
-  // an animation is ongoing is not necessarily the same as the number of tabs
-  // in the model.
-  virtual int GetTabCount() const;
 
   // Returns the number of mini-tabs.
   int GetMiniTabCount() const;
@@ -327,7 +292,7 @@ class TabStrip : public BaseTabStrip,
   // Starts various types of TabStrip animations.
   void StartResizeLayoutAnimation();
   void StartInsertTabAnimationAtEnd();
-  void StartInsertTabAnimation(int model_index);
+  void StartInsertTabAnimationImpl(int model_index);
   void StartRemoveTabAnimation(int model_index);
   void StartMoveTabAnimation(int from_model_index,
                              int to_model_index);
@@ -335,7 +300,7 @@ class TabStrip : public BaseTabStrip,
 
   // Stops any ongoing animations. If |layout| is true and an animation is
   // ongoing this does a layout.
-  void StopAnimating(bool layout);
+  virtual void StopAnimating(bool layout);
 
   // Resets all state related to animations. This is invoked when an animation
   // completes, prior to starting an animation or when we cancel an animation.
@@ -349,36 +314,12 @@ class TabStrip : public BaseTabStrip,
   // hit-test region of the specified Tab.
   bool IsPointInTab(Tab* tab, const gfx::Point& point_in_tabstrip_coords);
 
-  // Cleans up the Tab from the TabStrip. This is called from the tab animation
-  // code and is not a general-purpose method.
-  void RemoveTab(Tab* tab);
-
   // Called from the message loop observer when a mouse movement has occurred
   // anywhere over our containing window.
   void HandleGlobalMouseMoveEvent();
 
   // Returns true if any of the tabs are phantom.
   bool HasPhantomTabs() const;
-
-  // Returns the index of the specified tab in the model coordiate system, or
-  // -1 if tab is closing or not in |tab_data_|.
-  int GetModelIndexOfTab(const Tab* tab) const;
-
-  // Returns the index into |tab_data_| corresponding to the index from the
-  // TabStripModel, or |tab_data_.size()| if there is no tab representing
-  // |model_index|.
-  int ModelIndexToTabDataIndex(int model_index) const;
-
-  // Returns the index into |tab_data_| corresponding to the specified tab, or
-  // -1 if the tab isn't in |tab_data_|.
-  int TabDataIndexOfTab(Tab* tab) const;
-
-  // See description above field for details.
-  void set_attaching_dragged_tab(bool value) { attaching_dragged_tab_ = value; }
-
-  // Used by DraggedTabController when the user starts or stops dragging a tab.
-  void StartedDraggingTab(Tab* tab);
-  void StoppedDraggingTab(Tab* tab);
 
   // -- Member Variables ------------------------------------------------------
 
@@ -425,12 +366,6 @@ class TabStrip : public BaseTabStrip,
   // Valid for the lifetime of a drag over us.
   scoped_ptr<DropInfo> drop_info_;
 
-  // The controller for a drag initiated from a Tab. Valid for the lifetime of
-  // the drag session.
-  scoped_ptr<DraggedTabController> drag_controller_;
-
-  std::vector<TabData> tab_data_;
-
   // To ensure all tabs pulse at the same time they share the same animation
   // container. This is that animation container.
   scoped_refptr<AnimationContainer> animation_container_;
@@ -448,9 +383,6 @@ class TabStrip : public BaseTabStrip,
 
   // If true, we're cancelling the animation.
   bool cancelling_animation_;
-
-  // Used by DraggedTabController when inserting a tab into our model.
-  bool attaching_dragged_tab_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };

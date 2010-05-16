@@ -5,7 +5,9 @@
 #include "chrome/browser/views/tabs/base_tab_renderer.h"
 
 BaseTabRenderer::BaseTabRenderer(TabController* controller)
-    : controller_(controller) {
+    : controller_(controller),
+      closing_(false),
+      dragging_(false) {
 }
 
 void BaseTabRenderer::SetData(const TabRendererData& data) {

@@ -28,14 +28,6 @@ class Tab : public TabRenderer,
   explicit Tab(TabController* controller);
   virtual ~Tab();
 
-  // Used to set/check whether this Tab is being animated closed.
-  void set_closing(bool closing) { closing_ = closing; }
-  bool closing() const { return closing_; }
-
-  // See description above field.
-  void set_dragging(bool dragging) { dragging_ = dragging; }
-  bool dragging() const { return dragging_; }
-
   // TabRenderer overrides:
   virtual bool IsSelected() const;
 
@@ -63,12 +55,6 @@ class Tab : public TabRenderer,
   // Creates a path that contains the clickable region of the tab's visual
   // representation. Used by GetViewForPoint for hit-testing.
   void MakePathForTab(gfx::Path* path) const;
-
-  // True if the tab is being animated closed.
-  bool closing_;
-
-  // True if the tab is being dragged.
-  bool dragging_;
 
   DISALLOW_COPY_AND_ASSIGN(Tab);
 };

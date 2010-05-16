@@ -15,11 +15,10 @@
 namespace views {
 class View;
 }
+class BaseTabRenderer;
 class BaseTabStrip;
 class DraggedTabView;
 class NativeViewPhotobooth;
-class Tab;
-class TabStrip;
 class TabStripModel;
 
 struct TabRendererData;
@@ -39,13 +38,14 @@ class DraggedTabController : public TabContentsDelegate,
                              public NotificationObserver,
                              public MessageLoopForUI::Observer {
  public:
-  DraggedTabController(Tab* source_tab, TabStrip* source_tabstrip);
+  DraggedTabController(BaseTabRenderer* source_tab,
+                       BaseTabStrip* source_tabstrip);
   virtual ~DraggedTabController();
 
   // Capture information needed to be used during a drag session for this
-  // controller's associated source Tab and TabStrip. |mouse_offset| is the
-  // distance of the mouse pointer from the Tab's origin.
-  void CaptureDragInfo(Tab* tab, const gfx::Point& mouse_offset);
+  // controller's associated source tab and BaseTabStrip. |mouse_offset| is the
+  // distance of the mouse pointer from the tab's origin.
+  void CaptureDragInfo(views::View* tab, const gfx::Point& mouse_offset);
 
   // Responds to drag events subsequent to StartDrag. If the mouse moves a
   // sufficient distance before the mouse is released, a drag session is
@@ -153,22 +153,36 @@ class DraggedTabController : public TabContentsDelegate,
   // Handles dragging a tab while the tab is attached.
   void MoveAttachedTab(const gfx::Point& screen_point);
 
+  // Adjusts the model as necessary for a move when the attached tab strip is
+  // horizontal.
+  void MoveAttachedTabHorizontalTabStrip(const gfx::Point& screen_point,
+                                         TabStripModel* model,
+                                         const gfx::Point& dragged_view_point,
+                                         int from_index);
+
+  // Adjusts the model as necessary for a move when the attached tab strip is
+  // vertical.
+  void MoveAttachedTabVerticalTabStrip(const gfx::Point& screen_point,
+                                       TabStripModel* model,
+                                       const gfx::Point& dragged_view_point,
+                                       int from_index);
+
   // Handles dragging while the tab is detached.
   void MoveDetachedTab(const gfx::Point& screen_point);
 
   // Returns the compatible TabStrip that is under the specified point (screen
   // coordinates), or NULL if there is none.
-  TabStrip* GetTabStripForPoint(const gfx::Point& screen_point);
+  BaseTabStrip* GetTabStripForPoint(const gfx::Point& screen_point);
 
   DockInfo GetDockInfoAtPoint(const gfx::Point& screen_point);
 
   // Returns the specified |tabstrip| if it contains the specified point
   // (screen coordinates), NULL if it does not.
-  TabStrip* GetTabStripIfItContains(TabStrip* tabstrip,
-                                    const gfx::Point& screen_point) const;
+  BaseTabStrip* GetTabStripIfItContains(BaseTabStrip* tabstrip,
+                                        const gfx::Point& screen_point) const;
 
   // Attach the dragged Tab to the specified TabStrip.
-  void Attach(TabStrip* attached_tabstrip, const gfx::Point& screen_point);
+  void Attach(BaseTabStrip* attached_tabstrip, const gfx::Point& screen_point);
 
   // Detach the dragged Tab from the current TabStrip.
   void Detach();
@@ -190,7 +204,7 @@ class DraggedTabController : public TabContentsDelegate,
 
   // Finds the Tab within the specified TabStrip that corresponds to the
   // dragged TabContents.
-  Tab* GetTabMatchingDraggedContents(TabStrip* tabstrip) const;
+  BaseTabRenderer* GetTabMatchingDraggedContents(BaseTabStrip* tabstrip) const;
 
   // Does the work for EndDrag. If we actually started a drag and |how_end| is
   // not TAB_DESTROYED then one of EndDrag or RevertDrag is invoked.
@@ -241,7 +255,7 @@ class DraggedTabController : public TabContentsDelegate,
   TabContentsDelegate* original_delegate_;
 
   // The TabStrip |source_tab_| originated from.
-  TabStrip* source_tabstrip_;
+  BaseTabStrip* source_tabstrip_;
 
   // This is the index of the |source_tab_| in |source_tabstrip_| when the drag
   // began. This is used to restore the previous state if the drag is aborted.
@@ -249,10 +263,10 @@ class DraggedTabController : public TabContentsDelegate,
 
   // The TabStrip the dragged Tab is currently attached to, or NULL if the
   // dragged Tab is detached.
-  TabStrip* attached_tabstrip_;
+  BaseTabStrip* attached_tabstrip_;
 
   // If attached this is the tab we're dragging.
-  Tab* attached_tab_;
+  BaseTabRenderer* attached_tab_;
 
   // The visual representation of the dragged Tab.
   scoped_ptr<DraggedTabView> view_;
