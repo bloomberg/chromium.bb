@@ -155,7 +155,8 @@ function getTextForResponseHeadersExtraParam(entry) {
 function getTextForEvent(entry) {
   var text = '';
 
-  if (entry.isBegin() && entry.end && entry.end.index == entry.index + 1) {
+  if (entry.isBegin() && entry.end && entry.end.index == entry.index + 1 &&
+      !entry.end.orig.params) {
     // Don't prefix with '+' if we are going to collapse the END event.
     text = ' ';
   } else if (entry.isBegin()) {
