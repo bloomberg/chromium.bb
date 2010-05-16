@@ -523,6 +523,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
                      net::NetLog::SOURCE_INIT_PROXY_RESOLVER);
     dict->SetInteger(L"CONNECT_JOB", net::NetLog::SOURCE_CONNECT_JOB);
     dict->SetInteger(L"SOCKET", net::NetLog::SOURCE_SOCKET);
+    dict->SetInteger(L"SPDY_SESSION", net::NetLog::SOURCE_SPDY_SESSION);
 
     CallJavascriptFunction(L"g_browser.receivedLogSourceTypeConstants", dict);
   }
