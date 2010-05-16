@@ -101,7 +101,8 @@ class IntranetRedirectHostResolverProc : public net::HostResolverProc {
   virtual int Resolve(const std::string& host,
                       net::AddressFamily address_family,
                       net::HostResolverFlags host_resolver_flags,
-                      net::AddressList* addrlist);
+                      net::AddressList* addrlist,
+                      int* os_error);
 };
 
 #endif  // CHROME_BROWSER_INTRANET_REDIRECT_DETECTOR_H_

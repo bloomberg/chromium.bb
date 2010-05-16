@@ -46,7 +46,9 @@ PrintSourceEntriesAsText = function(sourceEntries) {
     var entry = entries[i];
 
     // Avoid printing the END for a BEGIN that was immediately before.
-    if (entry.isEnd() && entry.begin && entry.begin.index == i - 1) {
+    // (Except if the END contains any extra parameters).
+    if (entry.isEnd() && !entry.orig.params && entry.begin &&
+        entry.begin.index == i - 1) {
       continue;
     }
 
@@ -153,7 +155,10 @@ function getTextForResponseHeadersExtraParam(entry) {
 function getTextForEvent(entry) {
   var text = '';
 
-  if (entry.isBegin()) {
+  if (entry.isBegin() && entry.end && entry.end.index == entry.index + 1) {
+    // Don't prefix with '+' if we are going to collapse the END event.
+    text = ' ';
+  } else if (entry.isBegin()) {
     text = '+' + text;
   } else if (entry.isEnd()) {
     text = '-' + text;
