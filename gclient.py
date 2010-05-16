@@ -1157,51 +1157,46 @@ def DispatchCommand(command, options, args):
 def Main(argv):
   option_parser = optparse.OptionParser(usage=DEFAULT_USAGE_TEXT,
                                         version=__version__)
-  option_parser.disable_interspersed_args()
-  option_parser.add_option("", "--force", action="store_true", default=False,
-                           help=("(update/sync only) force update even "
-                                 "for modules which haven't changed"))
-  option_parser.add_option("", "--nohooks", action="store_true", default=False,
-                           help=("(update/sync/revert only) prevent the hooks from "
-                                 "running"))
-  option_parser.add_option("", "--revision", action="append", dest="revisions",
+  option_parser.add_option("--force", action="store_true",
+                           help="(update/sync only) force update even "
+                                "for modules which haven't changed")
+  option_parser.add_option("--nohooks", action="store_true",
+                           help="(update/sync/revert only) prevent the hooks "
+                                "from running")
+  option_parser.add_option("--revision", action="append", dest="revisions",
                            metavar="REV", default=[],
-                           help=("(update/sync only) sync to a specific "
-                                 "revision, can be used multiple times for "
-                                 "each solution, e.g. --revision=src@123, "
-                                 "--revision=internal@32"))
-  option_parser.add_option("", "--deps", default=None, dest="deps_os",
-                           metavar="OS_LIST",
-                           help=("(update/sync only) sync deps for the "
-                                 "specified (comma-separated) platform(s); "
-                                 "'all' will sync all platforms"))
-  option_parser.add_option("", "--reset", action="store_true", default=False,
-                           help=("(update/sync only) resets any local changes "
-                                 "before updating (git only)"))
-  option_parser.add_option("", "--spec", default=None,
-                           help=("(config only) create a gclient file "
-                                 "containing the provided string"))
+                           help="(update/sync only) sync to a specific "
+                                "revision, can be used multiple times for "
+                                "each solution, e.g. --revision=src@123, "
+                                "--revision=internal@32")
+  option_parser.add_option("--deps", dest="deps_os", metavar="OS_LIST",
+                           help="(update/sync only) sync deps for the "
+                                "specified (comma-separated) platform(s); "
+                                "'all' will sync all platforms")
+  option_parser.add_option("--reset", action="store_true",
+                           help="(update/sync only) resets any local changes "
+                                "before updating (git only)")
+  option_parser.add_option("--spec",
+                           help="(config only) create a gclient file "
+                                "containing the provided string")
   option_parser.add_option("-v", "--verbose", action="count", default=0,
                            help="produce additional output for diagnostics")
-  option_parser.add_option("", "--manually_grab_svn_rev", action="store_true",
-                           default=False,
+  option_parser.add_option("--manually_grab_svn_rev", action="store_true",
                            help="Skip svn up whenever possible by requesting "
                                 "actual HEAD revision from the repository")
-  option_parser.add_option("", "--head", action="store_true", default=False,
-                           help=("skips any safesync_urls specified in "
-                                 "configured solutions"))
-  option_parser.add_option("", "--delete_unversioned_trees",
-                           action="store_true", default=False,
-                           help=("on update, delete any unexpected "
-                                 "unversioned trees that are in the checkout"))
-  option_parser.add_option("", "--snapshot", action="store_true", default=False,
-                           help=("(revinfo only), create a snapshot file "
-                                 "of the current version of all repositories"))
-  option_parser.add_option("", "--name",
+  option_parser.add_option("--head", action="store_true",
+                           help="skips any safesync_urls specified in "
+                                 "configured solutions")
+  option_parser.add_option("--delete_unversioned_trees", action="store_true",
+                           help="on update, delete any unexpected "
+                                "unversioned trees that are in the checkout")
+  option_parser.add_option("--snapshot", action="store_true",
+                           help="(revinfo only), create a snapshot file "
+                                "of the current version of all repositories")
+  option_parser.add_option("--name",
                            help="specify alternate relative solution path")
-  option_parser.add_option("", "--gclientfile", default=None,
-                           metavar="FILENAME",
-                           help=("specify an alternate .gclient file"))
+  option_parser.add_option("--gclientfile", metavar="FILENAME",
+                           help="specify an alternate .gclient file")
 
   if len(argv) < 2:
     # Users don't need to be told to use the 'help' command.
