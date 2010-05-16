@@ -86,6 +86,9 @@ fi
 
 if ((NSIS)) && ((CygWin)) && ! [ -d NSIS ] ; then
   7z -oNSIS x ../../../third_party/NSIS/nsis-2.46-Unicode-setup.exe
+  ln -sfn NSIS AccessControl
+  7z x ../../../third_party/NSIS/AccessControl.zip
+  rm AccessControl
   mkdir -p NSIS/Contrib/Graphics/{Checks,Header,Icons,Wizard}
   for dirname in Checks Header Icons Wizard ; do
     mv NSIS/\$_OUTDIR/$dirname/* NSIS/Contrib/Graphics/$dirname
@@ -173,6 +176,13 @@ InstallDir "c:\\cygwin"
 Section "" sec_Preinstall
   SectionIn `seq -s ' ' $((${#packages[@]}+3))`
   Push \$R0
+  CreateDirectory "\$INSTDIR"
+  ; Owner can do anything
+  AccessControlW::GrantOnFile "\$INSTDIR" "(S-1-3-0)" "FullAccess"
+  ; Group can read
+  AccessControlW::GrantOnFile "\$INSTDIR" "(S-1-3-1)" "Traverse + GenericRead"
+  ; "Everyone" can read too
+  AccessControlW::GrantOnFile "\$INSTDIR" "(S-1-1-0)" "Traverse + GenericRead"
   CreateDirectory "\$INSTDIR\\etc"
   CreateDirectory "\$INSTDIR\\etc\\setup"
   FileOpen \$R0 \$INSTDIR\\postinstall.sh w
