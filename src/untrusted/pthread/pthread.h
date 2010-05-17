@@ -677,6 +677,13 @@ extern int pthread_once(pthread_once_t *__once_control,
 
 extern int pthread_cancel(pthread_t th);
 
+/*
+ * NOTE: There are only stub implementations of these functions.
+ */
+
+void pthread_cleanup_push(void (*func)(void *cleanup_arg), void *arg);
+void pthread_cleanup_pop(int execute);
+
 /**
 * @} End of PTHREAD group
 */
