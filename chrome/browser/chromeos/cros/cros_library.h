@@ -123,15 +123,15 @@ class CrosLibrary {
   SynapticsLibrary* synaptics_lib_;
 
   bool own_library_loader_;
-  bool own_cryptohome_loader_;
-  bool own_language_loader_;
-  bool own_login_loader_;
-  bool own_mount_loader_;
-  bool own_network_loader_;
-  bool own_power_loader_;
+  bool own_cryptohome_lib_;
+  bool own_language_lib_;
+  bool own_login_lib_;
+  bool own_mount_lib_;
+  bool own_network_lib_;
+  bool own_power_lib_;
   bool own_screen_lock_lib_;
-  bool own_speech_synthesis_library_;
-  bool own_synaptics_library_;
+  bool own_speech_synthesis_lib_;
+  bool own_synaptics_lib_;
 
   // True if libcros was successfully loaded.
   bool loaded_;

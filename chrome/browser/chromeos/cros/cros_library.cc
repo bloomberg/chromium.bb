@@ -28,15 +28,15 @@ CrosLibrary::CrosLibrary() : library_loader_(NULL),
                              speech_synthesis_lib_(NULL),
                              synaptics_lib_(NULL),
                              own_library_loader_(true),
-                             own_cryptohome_loader_(true),
-                             own_language_loader_(true),
-                             own_login_loader_(true),
-                             own_mount_loader_(true),
-                             own_network_loader_(true),
-                             own_power_loader_(true),
+                             own_cryptohome_lib_(true),
+                             own_language_lib_(true),
+                             own_login_lib_(true),
+                             own_mount_lib_(true),
+                             own_network_lib_(true),
+                             own_power_lib_(true),
                              own_screen_lock_lib_(true),
-                             own_speech_synthesis_library_(true),
-                             own_synaptics_library_(true),
+                             own_speech_synthesis_lib_(true),
+                             own_synaptics_lib_(true),
                              loaded_(false),
                              load_error_(false),
                              test_api_(NULL) {
@@ -44,28 +44,27 @@ CrosLibrary::CrosLibrary() : library_loader_(NULL),
 }
 
 CrosLibrary::~CrosLibrary() {
-  if (own_library_loader_ && library_loader_)
+  if (own_library_loader_)
     delete library_loader_;
-  if (own_cryptohome_loader_ && crypto_lib_)
+  if (own_cryptohome_lib_)
     delete crypto_lib_;
-  if (own_language_loader_ && language_lib_)
+  if (own_language_lib_)
     delete language_lib_;
-  if (own_login_loader_ && login_lib_)
+  if (own_login_lib_)
     delete login_lib_;
-  if (own_mount_loader_ && mount_lib_)
+  if (own_mount_lib_)
     delete mount_lib_;
-  if (own_network_loader_ && network_lib_)
+  if (own_network_lib_)
     delete network_lib_;
-  if (own_power_loader_ && power_lib_)
+  if (own_power_lib_)
     delete power_lib_;
-  if (own_screen_lock_lib_ && screen_lock_lib_)
+  if (own_screen_lock_lib_)
     delete screen_lock_lib_;
-  if (own_speech_synthesis_library_ && speech_synthesis_lib_)
+  if (own_speech_synthesis_lib_)
     delete speech_synthesis_lib_;
-  if (own_synaptics_library_ && synaptics_lib_)
+  if (own_synaptics_lib_)
     delete synaptics_lib_;
-  if (test_api_)
-    delete test_api_;
+  delete test_api_;
 }
 
 // static
@@ -146,7 +145,7 @@ CrosLibrary::TestApi* CrosLibrary::GetTestApi() {
 void CrosLibrary::TestApi::SetLibraryLoader(LibraryLoader* loader, bool own) {
   if (library_->library_loader_ == loader)
     return;
-  if (library_->own_library_loader_ && library_->library_loader_)
+  if (library_->own_library_loader_)
     delete library_->library_loader_;
   library_->own_library_loader_ = own;
   library_->library_loader_ = loader;
@@ -158,52 +157,52 @@ void CrosLibrary::TestApi::SetLibraryLoader(LibraryLoader* loader, bool own) {
 
 void CrosLibrary::TestApi::SetCryptohomeLibrary(CryptohomeLibrary* library,
                                                 bool own) {
-  if (library_->own_cryptohome_loader_ && library_->crypto_lib_)
+  if (library_->own_cryptohome_lib_)
     delete library_->crypto_lib_;
-  library_->own_cryptohome_loader_ = own;
+  library_->own_cryptohome_lib_ = own;
   library_->crypto_lib_ = library;
 }
 
 void CrosLibrary::TestApi::SetLanguageLibrary(LanguageLibrary* library,
                                               bool own) {
-  if (library_->own_language_loader_ && library_->language_lib_)
+  if (library_->own_language_lib_)
     delete library_->language_lib_;
-  library_->own_language_loader_ = own;
+  library_->own_language_lib_ = own;
   library_->language_lib_ = library;
 }
 
 void CrosLibrary::TestApi::SetLoginLibrary(LoginLibrary* library, bool own) {
-  if (library_->own_login_loader_ && library_->login_lib_)
+  if (library_->own_login_lib_)
     delete library_->login_lib_;
-  library_->own_login_loader_ = own;
+  library_->own_login_lib_ = own;
   library_->login_lib_ = library;
 }
 
 void CrosLibrary::TestApi::SetMountLibrary(MountLibrary* library, bool own) {
-  if (library_->own_mount_loader_ && library_->mount_lib_)
+  if (library_->own_mount_lib_)
     delete library_->mount_lib_;
-  library_->own_mount_loader_ = own;
+  library_->own_mount_lib_ = own;
   library_->mount_lib_ = library;
 }
 
 void CrosLibrary::TestApi::SetNetworkLibrary(NetworkLibrary* library,
                                              bool own) {
-  if (library_->own_network_loader_ && library_->network_lib_)
+  if (library_->own_network_lib_)
     delete library_->network_lib_;
-  library_->own_network_loader_ = own;
+  library_->own_network_lib_ = own;
   library_->network_lib_ = library;
 }
 
 void CrosLibrary::TestApi::SetPowerLibrary(PowerLibrary* library, bool own) {
-  if (library_->own_power_loader_ && library_->power_lib_)
+  if (library_->own_power_lib_)
     delete library_->power_lib_;
-  library_->own_power_loader_ = own;
+  library_->own_power_lib_ = own;
   library_->power_lib_ = library;
 }
 
 void CrosLibrary::TestApi::SetScreenLockLibrary(ScreenLockLibrary* library,
                                                 bool own) {
-  if (library_->own_screen_lock_lib_ && library_->screen_lock_lib_)
+  if (library_->own_screen_lock_lib_)
     delete library_->screen_lock_lib_;
   library_->own_screen_lock_lib_ = own;
   library_->screen_lock_lib_ = library;
@@ -211,18 +210,17 @@ void CrosLibrary::TestApi::SetScreenLockLibrary(ScreenLockLibrary* library,
 
 void CrosLibrary::TestApi::SetSpeechSynthesisLibrary(
     SpeechSynthesisLibrary* library, bool own) {
-  if (library_->own_speech_synthesis_library_ &&
-      library_->speech_synthesis_lib_)
+  if (library_->own_speech_synthesis_lib_)
     delete library_->speech_synthesis_lib_;
-  library_->own_speech_synthesis_library_ = own;
+  library_->own_speech_synthesis_lib_ = own;
   library_->speech_synthesis_lib_ = library;
 }
 
 void CrosLibrary::TestApi::SetSynapticsLibrary(SynapticsLibrary* library,
                                                bool own) {
-  if (library_->own_synaptics_library_ && library_->synaptics_lib_)
+  if (library_->own_synaptics_lib_)
     delete library_->synaptics_lib_;
-  library_->own_synaptics_library_ = own;
+  library_->own_synaptics_lib_ = own;
   library_->synaptics_lib_ = library;
 }
 
