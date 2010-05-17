@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if !defined(__LP64__)
+
 #include <Carbon/Carbon.h>
 
 #include "chrome/plugin/plugin_interpose_util_mac.h"
@@ -187,3 +189,5 @@ __attribute__((used)) static const interpose_substitution substitutions[]
   INTERPOSE_FUNCTION(SetThemeCursor),
   INTERPOSE_FUNCTION(SetCursor),
 };
+
+#endif  // !__LP64__
