@@ -38,7 +38,6 @@ DataView.prototype.onExportToText_ = function() {
             g_browser.getAllPassivelyCapturedEvents().length);
   text.push('Number of actively captured events: ' +
             g_browser.getAllActivelyCapturedEvents().length);
-  text.push('Timetick to timestamp offset: ' + g_browser.timeTickOffset_);
   text.push('');
   // TODO(eroman): fill this with proper values.
   text.push('Chrome version: ' + 'TODO');
@@ -56,13 +55,19 @@ DataView.prototype.onExportToText_ = function() {
   text.push('----------------------------------------------');
   text.push(' Bad proxies cache');
   text.push('----------------------------------------------');
-  text.push('');
 
   var badProxiesList = g_browser.badProxies_.currentData_;
   if (badProxiesList.length == 0) {
+    text.push('');
     text.push('None');
   } else {
-    this.appendPrettyPrintedTable_(badProxiesList, text);
+    for (var i = 0; i < badProxiesList.length; ++i) {
+      var e = badProxiesList[i];
+      text.push('');
+      text.push('(' + (i+1) + ')');
+      text.push('Proxy: ' + e.proxy_uri);
+      text.push('Bad until: ' + this.formatExpirationTime_(e.bad_until));
+    }
   }
 
   text.push('');
@@ -80,8 +85,27 @@ DataView.prototype.onExportToText_ = function() {
             hostResolverCache.ttl_failure_ms);
 
   if (hostResolverCache.entries.length > 0) {
+    for (var i = 0; i < hostResolverCache.entries.length; ++i) {
+      var e = hostResolverCache.entries[i];
+
+      text.push('');
+      text.push('(' + (i+1) + ')');
+      text.push('Hostname: ' + e.hostname);
+      text.push('Address family: ' + e.address_family);
+
+      if (e.error != undefined) {
+         text.push('Error: ' + e.error);
+      } else {
+        for (var j = 0; j < e.addresses.length; ++j) {
+          text.push('Address ' + (j + 1) + ': ' + e.addresses[j]);
+        }
+      }
+
+      text.push('Valid until: ' + this.formatExpirationTime_(e.expiration));
+    }
+  } else {
     text.push('');
-    this.appendPrettyPrintedTable_(hostResolverCache.entries, text);
+    text.push('None');
   }
 
   text.push('');
@@ -153,17 +177,12 @@ DataView.prototype.setText_ = function(text) {
 };
 
 /**
- * Stringifies |arrayData| to formatted table output, and appends it to the
- * line buffer |out|.
+ * Format a time ticks count as a timestamp.
  */
-DataView.prototype.appendPrettyPrintedTable_ = function(arrayData, out) {
-  for (var i = 0; i < arrayData.length; ++i) {
-    var e = arrayData[i];
-    var eString = '[' + i + ']: ';
-    for (var key in e) {
-      eString += key + "=" + e[key] + "; ";
-    }
-    out.push(eString);
-  }
+DataView.prototype.formatExpirationTime_ = function(timeTicks) {
+  var d = g_browser.convertTimeTicksToDate(timeTicks);
+  var isExpired = d.getTime() < (new Date()).getTime();
+  return 't=' + d.getTime() + (isExpired ? ' [EXPIRED]' : '');
 };
+
 

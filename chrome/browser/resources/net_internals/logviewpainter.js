@@ -55,7 +55,8 @@ PrintSourceEntriesAsText = function(sourceEntries) {
     tablePrinter.addRow();
 
     tablePrinter.addCell('t=');
-    var tCell = tablePrinter.addCell(entry.orig.time);
+    var tCell = tablePrinter.addCell(
+        g_browser.convertTimeTicksToDate(entry.orig.time).getTime());
     tCell.alignRight = true;
     tablePrinter.addCell('  ');
 
