@@ -57,30 +57,28 @@ void SideTabStrip::StartHighlight(int model_index) {
 void SideTabStrip::StopAllHighlighting() {
 }
 
-BaseTabRenderer* SideTabStrip::GetBaseTabAtModelIndex(int model_index) const {
-  return static_cast<BaseTabRenderer*>(GetChildViewAt(model_index));
+BaseTab* SideTabStrip::CreateTabForDragging() {
+  SideTab* tab = new SideTab(NULL);
+  // Make sure the dragged tab shares our theme provider. We need to explicitly
+  // do this as during dragging there isn't a theme provider.
+  tab->set_theme_provider(GetThemeProvider());
+  return tab;
 }
 
-BaseTabRenderer* SideTabStrip::CreateTabForDragging() {
-  return new SideTab(NULL);
-}
-
-void SideTabStrip::RemoveTabAt(int index, bool initiated_close) {
-  View* v = GetChildViewAt(index);
-  RemoveChildView(v);
-  delete v;
+void SideTabStrip::RemoveTabAt(int model_index, bool initiated_close) {
+  RemoveAndDeleteTab(GetBaseTabAtModelIndex(model_index));
   Layout();
 }
 
 void SideTabStrip::SelectTabAt(int old_model_index, int new_model_index) {
-  GetChildViewAt(new_model_index)->SchedulePaint();
+  GetBaseTabAtModelIndex(new_model_index)->SchedulePaint();
 }
 
 void SideTabStrip::TabTitleChangedNotLoading(int model_index) {
 }
 
 void SideTabStrip::SetTabData(int model_index, const TabRendererData& data) {
-  BaseTabRenderer* tab = GetBaseTabAtModelIndex(model_index);
+  BaseTab* tab = GetBaseTabAtModelIndex(model_index);
   tab->SetData(data);
   tab->SchedulePaint();
 }
@@ -89,7 +87,7 @@ gfx::Size SideTabStrip::GetPreferredSize() {
   return gfx::Size(kTabStripWidth, 0);
 }
 
-BaseTabRenderer* SideTabStrip::CreateTab() {
+BaseTab* SideTabStrip::CreateTab() {
   return new SideTab(this);
 }
 
@@ -99,7 +97,7 @@ void SideTabStrip::GenerateIdealBounds() {
 
   int y = layout_rect.y();
   for (int i = 0; i < tab_count(); ++i) {
-    BaseTabRenderer* tab = base_tab_at_tab_index(i);
+    BaseTab* tab = base_tab_at_tab_index(i);
     if (!tab->closing()) {
       gfx::Rect bounds = gfx::Rect(layout_rect.x(), y, layout_rect.width(),
                                    tab->GetPreferredSize().height());

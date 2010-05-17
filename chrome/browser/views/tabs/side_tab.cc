@@ -23,76 +23,16 @@ const int kTitleCloseSpacing = 4;
 const SkScalar kRoundRectRadius = 5;
 const SkColor kTabBackgroundColor = SK_ColorWHITE;
 const SkAlpha kBackgroundTabAlpha = 170;
-static const int kHoverDurationMs = 900;
-
-static SkBitmap* waiting_animation_frames = NULL;
-static SkBitmap* loading_animation_frames = NULL;
-static int loading_animation_frame_count = 0;
-static int waiting_animation_frame_count = 0;
-static int waiting_to_loading_frame_count_ratio = 0;
 };
-
-// static
-gfx::Font* SideTab::font_ = NULL;
-SkBitmap* SideTab::close_button_n_ = NULL;
-SkBitmap* SideTab::close_button_h_ = NULL;
-SkBitmap* SideTab::close_button_p_ = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
 // SideTab, public:
 
 SideTab::SideTab(TabController* controller)
-    : BaseTabRenderer(controller),
-      close_button_(NULL),
-      loading_animation_frame_(0) {
-  InitClass();
-
-  views::ImageButton* close_button = new views::ImageButton(this);
-  close_button->SetImage(views::CustomButton::BS_NORMAL, close_button_n_);
-  close_button->SetImage(views::CustomButton::BS_HOT, close_button_h_);
-  close_button->SetImage(views::CustomButton::BS_PUSHED, close_button_p_);
-  close_button_ = close_button;
-  AddChildView(close_button_);
-
-  hover_animation_.reset(new SlideAnimation(this));
-  hover_animation_->SetSlideDuration(kHoverDurationMs);
-
-  SetContextMenuController(this);
+    : BaseTab(controller) {
 }
 
 SideTab::~SideTab() {
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// SideTab, AnimationDelegate implementation:
-
-void SideTab::AnimationProgressed(const Animation* animation) {
-  SchedulePaint();
-}
-
-void SideTab::AnimationCanceled(const Animation* animation) {
-  AnimationEnded(animation);
-}
-
-void SideTab::AnimationEnded(const Animation* animation) {
-  SchedulePaint();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// SideTab, views::ButtonListener implementation:
-
-void SideTab::ButtonPressed(views::Button* sender, const views::Event& event) {
-  DCHECK(sender == close_button_);
-  controller()->CloseTab(this);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// SideTab, views::ContextMenuController implementation:
-
-void SideTab::ShowContextMenu(views::View* source,
-                              const gfx::Point& p,
-                              bool is_mouse_gesture) {
-  controller()->ShowContextMenu(this, p);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -101,23 +41,24 @@ void SideTab::ShowContextMenu(views::View* source,
 void SideTab::Layout() {
   int icon_y;
   int icon_x = icon_y = (height() - kIconSize) / 2;
+  // TODO(sky): big mini icons.
   icon_bounds_.SetRect(icon_x, icon_y, kIconSize, kIconSize);
 
-  gfx::Size ps = close_button_->GetPreferredSize();
+  gfx::Size ps = close_button()->GetPreferredSize();
   int close_y = (height() - ps.height()) / 2;
-  close_button_->SetBounds(
+  close_button()->SetBounds(
       std::max(0, width() - ps.width() - close_y),
       close_y,
       ps.width(),
       ps.height());
 
-  int title_y = (height() - font_->height()) / 2;
+  int title_y = (height() - font_height()) / 2;
   int title_x = icon_bounds_.right() + kIconTitleSpacing;
   title_bounds_.SetRect(
       title_x,
       title_y,
-      std::max(0, close_button_->x() - kTitleCloseSpacing - title_x),
-      font_->height());
+      std::max(0, close_button()->x() - kTitleCloseSpacing - title_x),
+      font_height());
 }
 
 void SideTab::Paint(gfx::Canvas* canvas) {
@@ -128,19 +69,18 @@ void SideTab::Paint(gfx::Canvas* canvas) {
   FillTabShapePath(&tab_shape);
   canvas->drawPath(tab_shape, paint);
 
-  PaintIcon(canvas);
-  canvas->DrawStringInt(UTF16ToWideHack(data().title), *font_,
-                        SK_ColorBLACK, title_bounds_.x(), title_bounds_.y(),
-                        title_bounds_.width(), title_bounds_.height());
+  PaintIcon(canvas, icon_bounds_.x(), icon_bounds_.y());
+  PaintTitle(canvas, SK_ColorBLACK);
 
-  if (!controller()->IsTabSelected(this) &&
-      GetThemeProvider()->ShouldUseNativeFrame()) {
+  if (!IsSelected() && GetThemeProvider()->ShouldUseNativeFrame()) {
     // Make sure un-selected tabs are somewhat transparent.
     SkPaint paint;
 
     SkAlpha opacity = kBackgroundTabAlpha;
-    if (hover_animation_->is_animating())
-      opacity = static_cast<SkAlpha>(hover_animation_->GetCurrentValue() * 255);
+    if (hover_animation() && hover_animation()->is_animating()) {
+      opacity =
+          static_cast<SkAlpha>(hover_animation()->GetCurrentValue() * 255);
+    }
 
     paint.setColor(SkColorSetARGB(kBackgroundTabAlpha, 255, 255, 255));
     paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
@@ -152,45 +92,6 @@ void SideTab::Paint(gfx::Canvas* canvas) {
 
 gfx::Size SideTab::GetPreferredSize() {
   return gfx::Size(0, 27);
-}
-
-void SideTab::OnMouseEntered(const views::MouseEvent& event) {
-  hover_animation_->SetTweenType(Tween::EASE_OUT);
-  hover_animation_->Show();
-}
-
-void SideTab::OnMouseExited(const views::MouseEvent& event) {
-  hover_animation_->SetTweenType(Tween::EASE_IN);
-  hover_animation_->Hide();
-}
-
-bool SideTab::OnMousePressed(const views::MouseEvent& event) {
-  if (event.IsOnlyLeftMouseButton())
-    controller()->SelectTab(this);
-  return true;
-}
-
-// TODO(sky): refactor to BaseTabRenderer.
-void SideTab::AdvanceLoadingAnimation(TabRendererData::NetworkState state) {
-  // The waiting animation is the reverse of the loading animation, but at a
-  // different rate - the following reverses and scales the animation_frame_
-  // so that the frame is at an equivalent position when going from one
-  // animation to the other.
-  if (state == TabRendererData::NETWORK_STATE_WAITING &&
-      state == TabRendererData::NETWORK_STATE_LOADING) {
-    loading_animation_frame_ = loading_animation_frame_count -
-        (loading_animation_frame_ / waiting_to_loading_frame_count_ratio);
-  }
-
-  if (state != TabRendererData::NETWORK_STATE_NONE) {
-    loading_animation_frame_ = ++loading_animation_frame_ %
-        ((state == TabRendererData::NETWORK_STATE_WAITING) ?
-            waiting_animation_frame_count :
-            loading_animation_frame_count);
-  } else {
-    loading_animation_frame_ = 0;
-  }
-  SchedulePaint();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -214,60 +115,3 @@ void SideTab::FillTabShapePath(gfx::Path* path) {
   path->lineTo(SkIntToScalar(kRoundRectRadius), 0);
   path->close();
 }
-
-void SideTab::PaintIcon(gfx::Canvas* canvas) {
-  if (data().network_state == TabRendererData::NETWORK_STATE_NONE) {
-    canvas->DrawBitmapInt(data().favicon, 0, 0, kIconSize, kIconSize,
-                          icon_bounds_.x(), icon_bounds_.y(),
-                          icon_bounds_.width(), icon_bounds_.height(), false);
-  } else {
-    PaintLoadingAnimation(canvas);
-  }
-}
-
-void SideTab::PaintLoadingAnimation(gfx::Canvas* canvas) {
-  SkBitmap* frames =
-      (data().network_state == TabRendererData::NETWORK_STATE_WAITING) ?
-          waiting_animation_frames : loading_animation_frames;
-  int image_size = frames->height();
-  int image_offset = loading_animation_frame_ * image_size;
-  int dst_y = (height() - image_size) / 2;
-  canvas->DrawBitmapInt(*frames, image_offset, 0, image_size,
-                        image_size, icon_bounds_.x(), dst_y, image_size,
-                        image_size, false);
-}
-
-// static
-void SideTab::InitClass() {
-  static bool initialized = false;
-  if (!initialized) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    font_ = new gfx::Font(rb.GetFont(ResourceBundle::BaseFont));
-
-    close_button_n_ = rb.GetBitmapNamed(IDR_TAB_CLOSE);
-    close_button_h_ = rb.GetBitmapNamed(IDR_TAB_CLOSE_H);
-    close_button_p_ = rb.GetBitmapNamed(IDR_TAB_CLOSE_P);
-
-    // The loading animation image is a strip of states. Each state must be
-    // square, so the height must divide the width evenly.
-    loading_animation_frames = rb.GetBitmapNamed(IDR_THROBBER);
-    DCHECK(loading_animation_frames);
-    DCHECK(loading_animation_frames->width() %
-           loading_animation_frames->height() == 0);
-    loading_animation_frame_count =
-        loading_animation_frames->width() / loading_animation_frames->height();
-
-    waiting_animation_frames = rb.GetBitmapNamed(IDR_THROBBER_WAITING);
-    DCHECK(waiting_animation_frames);
-    DCHECK(waiting_animation_frames->width() %
-           waiting_animation_frames->height() == 0);
-    waiting_animation_frame_count =
-        waiting_animation_frames->width() / waiting_animation_frames->height();
-
-    waiting_to_loading_frame_count_ratio =
-        waiting_animation_frame_count / loading_animation_frame_count;
-
-    initialized = true;
-  }
-}
-

@@ -10,11 +10,12 @@
 #include "base/ref_counted.h"
 #include "base/timer.h"
 #include "chrome/browser/views/tabs/base_tab_strip.h"
-#include "chrome/browser/views/tabs/tab.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "views/animation/bounds_animator.h"
 #include "views/controls/button/image_button.h"
+
+class Tab;
 
 namespace views {
 class ImageView;
@@ -76,7 +77,7 @@ class TabStrip : public BaseTabStrip,
   virtual void SetTabData(int model_index, const TabRendererData& data);
   virtual void StartHighlight(int model_index);
   virtual void StopAllHighlighting();
-  virtual BaseTabRenderer* CreateTabForDragging();
+  virtual BaseTab* CreateTabForDragging();
 
   // views::View overrides:
   virtual void PaintChildren(gfx::Canvas* canvas);
@@ -98,11 +99,11 @@ class TabStrip : public BaseTabStrip,
 
  protected:
   // BaseTabStrip overrides:
-  virtual Tab* CreateTab();
+  virtual BaseTab* CreateTab();
   virtual void StartInsertTabAnimation(int model_index, bool foreground);
   virtual void StartMoveTabAnimation();
-  virtual void StartedDraggingTab(BaseTabRenderer* tab);
-  virtual void StoppedDraggingTab(BaseTabRenderer* tab);
+  virtual void StartedDraggingTab(BaseTab* tab);
+  virtual void StoppedDraggingTab(BaseTab* tab);
 
   // views::View implementation:
   virtual void ViewHierarchyChanged(bool is_add,
@@ -110,7 +111,7 @@ class TabStrip : public BaseTabStrip,
                                     views::View* child);
 
   // TabController overrides.
-  virtual bool IsTabSelected(const BaseTabRenderer* btr) const;
+  virtual bool IsTabSelected(const BaseTab* btr) const;
 
   // views::ButtonListener implementation:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);

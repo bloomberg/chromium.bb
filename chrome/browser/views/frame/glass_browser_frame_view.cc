@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/tabs/side_tab_strip.h"
+#include "chrome/browser/views/tabs/tab.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "gfx/canvas.h"
 #include "gfx/icon_util.h"
@@ -257,7 +258,7 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   // Draw the toolbar background, setting src_y of the paint to the tab
   // strip height as the toolbar background begins at the top of the tabs.
   int src_y = browser_view_->UseVerticalTabs()
-      ? TabRenderer::GetMinimumUnselectedSize().height()
+      ? Tab::GetMinimumUnselectedSize().height()
       : browser_view_->GetTabStripHeight() - 1;
   canvas->TileImageInt(*theme_toolbar, 0, src_y,
       toolbar_bounds.x() - 1, toolbar_bounds.y() + 2,

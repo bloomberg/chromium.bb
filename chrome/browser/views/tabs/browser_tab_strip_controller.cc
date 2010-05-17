@@ -32,7 +32,7 @@ static TabRendererData::NetworkState TabContentsNetworkState(
 class BrowserTabStripController::TabContextMenuContents
     : public menus::SimpleMenuModel::Delegate {
  public:
-  TabContextMenuContents(BaseTabRenderer* tab,
+  TabContextMenuContents(BaseTab* tab,
                          BrowserTabStripController* controller)
       : ALLOW_THIS_IN_INITIALIZER_LIST(
           model_(this, controller->IsTabPinned(tab))),
@@ -96,7 +96,7 @@ class BrowserTabStripController::TabContextMenuContents
   scoped_ptr<views::Menu2> menu_;
 
   // The tab we're showing a menu for.
-  BaseTabRenderer* tab_;
+  BaseTab* tab_;
 
   // A pointer back to our hosting controller, for command state information.
   BrowserTabStripController* controller_;
@@ -140,7 +140,7 @@ void BrowserTabStripController::InitFromModel(BaseTabStrip* tabstrip) {
 
 bool BrowserTabStripController::IsCommandEnabledForTab(
     TabStripModel::ContextMenuCommand command_id,
-    BaseTabRenderer* tab) const {
+    BaseTab* tab) const {
   int model_index = tabstrip_->GetModelIndexOfBaseTab(tab);
   return model_->ContainsIndex(model_index) ?
       model_->IsContextMenuCommandEnabled(model_index, command_id) : false;
@@ -148,7 +148,7 @@ bool BrowserTabStripController::IsCommandEnabledForTab(
 
 bool BrowserTabStripController::IsCommandCheckedForTab(
     TabStripModel::ContextMenuCommand command_id,
-    BaseTabRenderer* tab) const {
+    BaseTab* tab) const {
   int model_index = tabstrip_->GetModelIndexOfBaseTab(tab);
   return model_->ContainsIndex(model_index) ?
       model_->IsContextMenuCommandChecked(model_index, command_id) : false;
@@ -156,13 +156,13 @@ bool BrowserTabStripController::IsCommandCheckedForTab(
 
 void BrowserTabStripController::ExecuteCommandForTab(
     TabStripModel::ContextMenuCommand command_id,
-    BaseTabRenderer* tab) {
+    BaseTab* tab) {
   int model_index = tabstrip_->GetModelIndexOfBaseTab(tab);
   if (model_->ContainsIndex(model_index))
     model_->ExecuteContextMenuCommand(model_index, command_id);
 }
 
-bool BrowserTabStripController::IsTabPinned(BaseTabRenderer* tab) {
+bool BrowserTabStripController::IsTabPinned(BaseTab* tab) {
   return IsTabPinned(tabstrip_->GetModelIndexOfBaseTab(tab));
 }
 
@@ -201,7 +201,7 @@ void BrowserTabStripController::CloseTab(int model_index) {
   model_->CloseTabContentsAt(model_index);
 }
 
-void BrowserTabStripController::ShowContextMenu(BaseTabRenderer* tab,
+void BrowserTabStripController::ShowContextMenu(BaseTab* tab,
                                                 const gfx::Point& p) {
   context_menu_contents_.reset(new TabContextMenuContents(tab, this));
   context_menu_contents_->RunMenuAt(p);
@@ -213,7 +213,7 @@ void BrowserTabStripController::UpdateLoadingAnimations() {
   // be processed before us and invokes this).
   for (int tab_index = 0, tab_count = tabstrip_->tab_count();
        tab_index < tab_count; ++tab_index) {
-    BaseTabRenderer* tab = tabstrip_->base_tab_at_tab_index(tab_index);
+    BaseTab* tab = tabstrip_->base_tab_at_tab_index(tab_index);
     int model_index = tabstrip_->GetModelIndexOfBaseTab(tab);
     if (model_->ContainsIndex(model_index)) {
       TabContents* contents = model_->GetTabContentsAt(model_index);
@@ -372,7 +372,7 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
 
 void BrowserTabStripController::StartHighlightTabsForCommand(
     TabStripModel::ContextMenuCommand command_id,
-    BaseTabRenderer* tab) {
+    BaseTab* tab) {
   if (command_id == TabStripModel::CommandCloseTabsOpenedBy ||
       command_id == TabStripModel::CommandCloseOtherTabs ||
       command_id == TabStripModel::CommandCloseTabsToRight) {
@@ -390,7 +390,7 @@ void BrowserTabStripController::StartHighlightTabsForCommand(
 
 void BrowserTabStripController::StopHighlightTabsForCommand(
     TabStripModel::ContextMenuCommand command_id,
-    BaseTabRenderer* tab) {
+    BaseTab* tab) {
   if (command_id == TabStripModel::CommandCloseTabsOpenedBy ||
       command_id == TabStripModel::CommandCloseTabsToRight ||
       command_id == TabStripModel::CommandCloseOtherTabs) {

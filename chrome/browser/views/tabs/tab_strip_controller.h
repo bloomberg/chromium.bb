@@ -7,7 +7,7 @@
 
 #include <vector>
 
-class BaseTabRenderer;
+class BaseTab;
 class BaseTabStrip;
 class GURL;
 
@@ -46,7 +46,7 @@ class TabStripController {
   virtual void CloseTab(int index) = 0;
 
   // Shows a context menu for the tab at the specified point in screen coords.
-  virtual void ShowContextMenu(BaseTabRenderer* tab, const gfx::Point& p) = 0;
+  virtual void ShowContextMenu(BaseTab* tab, const gfx::Point& p) = 0;
 
   // Updates the loading animations of all the tabs.
   virtual void UpdateLoadingAnimations() = 0;

@@ -20,11 +20,12 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/views/frame/browser_view.h"
-#include "chrome/browser/views/tabs/base_tab_renderer.h"
+#include "chrome/browser/views/tabs/base_tab.h"
 #include "chrome/browser/views/tabs/base_tab_strip.h"
 #include "chrome/browser/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/views/tabs/dragged_tab_view.h"
 #include "chrome/browser/views/tabs/native_view_photobooth.h"
+#include "chrome/browser/views/tabs/tab.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/canvas.h"
@@ -312,7 +313,7 @@ class DraggedTabController::DockDisplayer : public AnimationDelegate {
 ///////////////////////////////////////////////////////////////////////////////
 // DraggedTabController, public:
 
-DraggedTabController::DraggedTabController(BaseTabRenderer* source_tab,
+DraggedTabController::DraggedTabController(BaseTab* source_tab,
                                            BaseTabStrip* source_tabstrip)
     : dragged_contents_(NULL),
       original_delegate_(NULL),
@@ -801,7 +802,7 @@ void DraggedTabController::Attach(BaseTabStrip* attached_tabstrip,
   // And we don't need the dragged view.
   view_.reset();
 
-  BaseTabRenderer* tab = GetTabMatchingDraggedContents(attached_tabstrip_);
+  BaseTab* tab = GetTabMatchingDraggedContents(attached_tabstrip_);
 
   if (!tab) {
     // There is no Tab in |attached_tabstrip| that corresponds to the dragged
@@ -978,7 +979,7 @@ gfx::Point DraggedTabController::GetAttachedTabDragPoint(
   return gfx::Point(x, y);
 }
 
-BaseTabRenderer* DraggedTabController::GetTabMatchingDraggedContents(
+BaseTab* DraggedTabController::GetTabMatchingDraggedContents(
     BaseTabStrip* tabstrip) const {
   int model_index =
       GetModel(tabstrip)->GetIndexOfTabContents(dragged_contents_);
@@ -1173,12 +1174,12 @@ void DraggedTabController::EnsureDraggedView(const TabRendererData& data) {
   if (!view_.get()) {
     gfx::Rect tab_bounds;
     dragged_contents_->GetContainerBounds(&tab_bounds);
-    BaseTabRenderer* renderer = source_tabstrip_->CreateTabForDragging();
+    BaseTab* renderer = source_tabstrip_->CreateTabForDragging();
     renderer->SetData(data);
     // DraggedTabView takes ownership of renderer.
     view_.reset(new DraggedTabView(renderer, mouse_offset_,
                                    tab_bounds.size(),
-                                   TabRenderer::GetMinimumSelectedSize()));
+                                   Tab::GetMinimumSelectedSize()));
   }
 }
 

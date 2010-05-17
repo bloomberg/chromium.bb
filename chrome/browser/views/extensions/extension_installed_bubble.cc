@@ -14,7 +14,7 @@
 #include "chrome/browser/views/browser_actions_container.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/location_bar/location_bar_view.h"
-#include "chrome/browser/views/tabs/base_tab_renderer.h"
+#include "chrome/browser/views/tabs/base_tab.h"
 #include "chrome/browser/views/tabs/base_tab_strip.h"
 #include "chrome/browser/views/toolbar_view.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -318,7 +318,7 @@ void ExtensionInstalledBubble::ShowInternal() {
     DCHECK(reference_view);
   } else if (type_ == EXTENSION_APP) {
     BaseTabStrip* tabstrip = browser_view->tabstrip();
-    BaseTabRenderer* tab = tabstrip->GetSelectedBaseTab();
+    BaseTab* tab = tabstrip->GetSelectedBaseTab();
     DCHECK(tab->data().app);
     reference_view = tab;
   }

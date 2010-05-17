@@ -25,8 +25,7 @@ class SideTabStrip : public BaseTabStrip {
 
   virtual void StartHighlight(int model_index);
   virtual void StopAllHighlighting();
-  virtual BaseTabRenderer* GetBaseTabAtModelIndex(int model_index) const;
-  virtual BaseTabRenderer* CreateTabForDragging();
+  virtual BaseTab* CreateTabForDragging();
   virtual void RemoveTabAt(int model_index, bool initiated_close);
   virtual void SelectTabAt(int old_model_index, int new_model_index);
   virtual void TabTitleChangedNotLoading(int model_index);
@@ -37,13 +36,13 @@ class SideTabStrip : public BaseTabStrip {
 
  protected:
   // BaseTabStrip overrides:
-  virtual BaseTabRenderer* CreateTab();
+  virtual BaseTab* CreateTab();
   virtual void GenerateIdealBounds();
   virtual void StartInsertTabAnimation(int model_index, bool foreground);
   virtual void StartMoveTabAnimation();
   virtual void StopAnimating(bool layout);
-  virtual void StartedDraggingTab(BaseTabRenderer* tab) {}
-  virtual void StoppedDraggingTab(BaseTabRenderer* tab) {}
+  virtual void StartedDraggingTab(BaseTab* tab) {}
+  virtual void StoppedDraggingTab(BaseTab* tab) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SideTabStrip);

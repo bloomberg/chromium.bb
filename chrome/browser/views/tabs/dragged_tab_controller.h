@@ -15,7 +15,7 @@
 namespace views {
 class View;
 }
-class BaseTabRenderer;
+class BaseTab;
 class BaseTabStrip;
 class DraggedTabView;
 class NativeViewPhotobooth;
@@ -38,7 +38,7 @@ class DraggedTabController : public TabContentsDelegate,
                              public NotificationObserver,
                              public MessageLoopForUI::Observer {
  public:
-  DraggedTabController(BaseTabRenderer* source_tab,
+  DraggedTabController(BaseTab* source_tab,
                        BaseTabStrip* source_tabstrip);
   virtual ~DraggedTabController();
 
@@ -204,7 +204,7 @@ class DraggedTabController : public TabContentsDelegate,
 
   // Finds the Tab within the specified TabStrip that corresponds to the
   // dragged TabContents.
-  BaseTabRenderer* GetTabMatchingDraggedContents(BaseTabStrip* tabstrip) const;
+  BaseTab* GetTabMatchingDraggedContents(BaseTabStrip* tabstrip) const;
 
   // Does the work for EndDrag. If we actually started a drag and |how_end| is
   // not TAB_DESTROYED then one of EndDrag or RevertDrag is invoked.
@@ -266,7 +266,7 @@ class DraggedTabController : public TabContentsDelegate,
   BaseTabStrip* attached_tabstrip_;
 
   // If attached this is the tab we're dragging.
-  BaseTabRenderer* attached_tab_;
+  BaseTab* attached_tab_;
 
   // The visual representation of the dragged Tab.
   scoped_ptr<DraggedTabView> view_;

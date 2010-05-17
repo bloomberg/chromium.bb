@@ -110,7 +110,7 @@ class NewTabAlphaDelegate
 class ResetDraggingStateDelegate
     : public views::BoundsAnimator::OwnedAnimationDelegate {
  public:
-  explicit ResetDraggingStateDelegate(BaseTabRenderer* tab) : tab_(tab) {
+  explicit ResetDraggingStateDelegate(BaseTab* tab) : tab_(tab) {
   }
 
   virtual void AnimationEnded(const Animation* animation) {
@@ -122,7 +122,7 @@ class ResetDraggingStateDelegate
   }
 
  private:
-  BaseTabRenderer* tab_;
+  BaseTab* tab_;
 
   DISALLOW_COPY_AND_ASSIGN(ResetDraggingStateDelegate);
 };
@@ -419,11 +419,11 @@ void TabStrip::StopAllHighlighting() {
     GetTabAtTabDataIndex(i)->StopPulse();
 }
 
-BaseTabRenderer* TabStrip::CreateTabForDragging() {
+BaseTab* TabStrip::CreateTabForDragging() {
   Tab* tab = new Tab(NULL);
   // Make sure the dragged tab shares our theme provider. We need to explicitly
   // do this as during dragging there isn't a theme provider.
-  tab->SetThemeProvider(GetThemeProvider());
+  tab->set_theme_provider(GetThemeProvider());
   return tab;
 }
 
@@ -610,7 +610,7 @@ views::View* TabStrip::GetViewForPoint(const gfx::Point& point) {
   // Return any view that isn't a Tab or this TabStrip immediately. We don't
   // want to interfere.
   views::View* v = View::GetViewForPoint(point);
-  if (v && v != this && v->GetClassName() != Tab::kTabClassName)
+  if (v && v != this && v->GetClassName() != Tab::kViewClassName)
     return v;
 
   // The display order doesn't necessarily match the child list order, so we
@@ -643,9 +643,9 @@ void TabStrip::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
     NewTabAnimation2Done();
 }
 
-Tab* TabStrip::CreateTab() {
+BaseTab* TabStrip::CreateTab() {
   Tab* tab = new Tab(this);
-  tab->SetAnimationContainer(animation_container_.get());
+  tab->set_animation_container(animation_container_.get());
   return tab;
 }
 
@@ -665,7 +665,7 @@ void TabStrip::StartMoveTabAnimation() {
   AnimateToIdealBounds();
 }
 
-void TabStrip::StartedDraggingTab(BaseTabRenderer* tab) {
+void TabStrip::StartedDraggingTab(BaseTab* tab) {
   tab->set_dragging(true);
 
   // Stop any animations on the tab.
@@ -679,7 +679,7 @@ void TabStrip::StartedDraggingTab(BaseTabRenderer* tab) {
   SchedulePaint();
 }
 
-void TabStrip::StoppedDraggingTab(BaseTabRenderer* tab) {
+void TabStrip::StoppedDraggingTab(BaseTab* tab) {
   int tab_data_index = TabIndexOfTab(tab);
   if (tab_data_index == -1) {
     // The tab was removed before the drag completed. Don't do anything.
@@ -709,7 +709,7 @@ void TabStrip::ViewHierarchyChanged(bool is_add,
 ///////////////////////////////////////////////////////////////////////////////
 // TabStrip, Tab::Delegate implementation:
 
-bool TabStrip::IsTabSelected(const BaseTabRenderer* btr) const {
+bool TabStrip::IsTabSelected(const BaseTab* btr) const {
   const Tab* tab = static_cast<const Tab*>(btr);
   if (tab->closing() || tab->render_unselected())
     return false;
@@ -1159,7 +1159,7 @@ void TabStrip::GenerateIdealBounds() {
   int mini_tab_count = 0;
   int nano_tab_count = 0;
   for (int i = 0; i < tab_count(); ++i) {
-    BaseTabRenderer* tab = base_tab_at_tab_index(i);
+    BaseTab* tab = base_tab_at_tab_index(i);
     if (!tab->closing()) {
       ++non_closing_tab_count;
       if (tab->data().mini)
@@ -1327,12 +1327,12 @@ void TabStrip::StartInsertTabAnimationImpl(int model_index) {
   GenerateIdealBounds();
 
   int tab_data_index = ModelIndexToTabIndex(model_index);
-  BaseTabRenderer* tab = base_tab_at_tab_index(tab_data_index);
+  BaseTab* tab = base_tab_at_tab_index(tab_data_index);
   if (model_index == 0) {
     tab->SetBounds(0, ideal_bounds(tab_data_index).y(), 0,
                    ideal_bounds(tab_data_index).height());
   } else {
-    BaseTabRenderer* last_tab = base_tab_at_tab_index(tab_data_index - 1);
+    BaseTab* last_tab = base_tab_at_tab_index(tab_data_index - 1);
     tab->SetBounds(last_tab->bounds().right() + kTabHOffset,
                    ideal_bounds(tab_data_index).y(), 0,
                    ideal_bounds(tab_data_index).height());

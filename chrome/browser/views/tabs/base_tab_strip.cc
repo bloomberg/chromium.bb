@@ -23,14 +23,14 @@ void BaseTabStrip::UpdateLoadingAnimations() {
   controller_->UpdateLoadingAnimations();
 }
 
-BaseTabRenderer* BaseTabStrip::GetSelectedBaseTab() const {
+BaseTab* BaseTabStrip::GetSelectedBaseTab() const {
   return GetBaseTabAtModelIndex(controller_->GetSelectedIndex());
 }
 
 void BaseTabStrip::AddTabAt(int model_index,
                             bool foreground,
                             const TabRendererData& data) {
-  BaseTabRenderer* tab = CreateTab();
+  BaseTab* tab = CreateTab();
   tab->SetData(data);
 
   TabData d = { tab, gfx::Rect() };
@@ -49,7 +49,7 @@ void BaseTabStrip::AddTabAt(int model_index,
 void BaseTabStrip::MoveTab(int from_model_index, int to_model_index) {
   int from_tab_data_index = ModelIndexToTabIndex(from_model_index);
 
-  BaseTabRenderer* tab = tab_data_[from_tab_data_index].tab;
+  BaseTab* tab = tab_data_[from_tab_data_index].tab;
   tab_data_.erase(tab_data_.begin() + from_tab_data_index);
 
   TabData data = {tab, gfx::Rect()};
@@ -61,13 +61,13 @@ void BaseTabStrip::MoveTab(int from_model_index, int to_model_index) {
   StartMoveTabAnimation();
 }
 
-BaseTabRenderer* BaseTabStrip::GetBaseTabAtModelIndex(int model_index) const {
+BaseTab* BaseTabStrip::GetBaseTabAtModelIndex(int model_index) const {
   return base_tab_at_tab_index(ModelIndexToTabIndex(model_index));
 }
 
-int BaseTabStrip::GetModelIndexOfBaseTab(const BaseTabRenderer* tab) const {
+int BaseTabStrip::GetModelIndexOfBaseTab(const BaseTab* tab) const {
   for (int i = 0, model_index = 0; i < tab_count(); ++i) {
-    BaseTabRenderer* current_tab = base_tab_at_tab_index(i);
+    BaseTab* current_tab = base_tab_at_tab_index(i);
     if (!current_tab->closing()) {
       if (current_tab == tab)
         return model_index;
@@ -101,29 +101,29 @@ bool BaseTabStrip::IsDragSessionActive() const {
   return drag_controller_.get() != NULL;
 }
 
-void BaseTabStrip::SelectTab(BaseTabRenderer* tab) {
+void BaseTabStrip::SelectTab(BaseTab* tab) {
   int model_index = GetModelIndexOfBaseTab(tab);
   if (IsValidModelIndex(model_index))
     controller_->SelectTab(model_index);
 }
 
-void BaseTabStrip::CloseTab(BaseTabRenderer* tab) {
+void BaseTabStrip::CloseTab(BaseTab* tab) {
   int model_index = GetModelIndexOfBaseTab(tab);
   if (IsValidModelIndex(model_index))
     controller_->CloseTab(model_index);
 }
 
-void BaseTabStrip::ShowContextMenu(BaseTabRenderer* tab, const gfx::Point& p) {
+void BaseTabStrip::ShowContextMenu(BaseTab* tab, const gfx::Point& p) {
   controller_->ShowContextMenu(tab, p);
 }
 
-bool BaseTabStrip::IsTabSelected(const BaseTabRenderer* tab) const {
+bool BaseTabStrip::IsTabSelected(const BaseTab* tab) const {
   int model_index = GetModelIndexOfBaseTab(tab);
   return IsValidModelIndex(model_index) &&
       controller_->IsTabSelected(model_index);
 }
 
-bool BaseTabStrip::IsTabPinned(const BaseTabRenderer* tab) const {
+bool BaseTabStrip::IsTabPinned(const BaseTab* tab) const {
   if (tab->closing())
     return false;
 
@@ -132,7 +132,7 @@ bool BaseTabStrip::IsTabPinned(const BaseTabRenderer* tab) const {
       controller_->IsTabPinned(model_index);
 }
 
-void BaseTabStrip::MaybeStartDrag(BaseTabRenderer* tab,
+void BaseTabStrip::MaybeStartDrag(BaseTab* tab,
                                   const views::MouseEvent& event) {
   // Don't accidentally start any drag operations during animations if the
   // mouse is down... during an animation tabs are being resized automatically,
@@ -196,7 +196,7 @@ void BaseTabStrip::OnMouseReleased(const views::MouseEvent& event,
   EndDrag(canceled);
 }
 
-void BaseTabStrip::RemoveAndDeleteTab(BaseTabRenderer* tab) {
+void BaseTabStrip::RemoveAndDeleteTab(BaseTab* tab) {
   int tab_data_index = TabIndexOfTab(tab);
 
   DCHECK(tab_data_index != -1);
@@ -207,7 +207,7 @@ void BaseTabStrip::RemoveAndDeleteTab(BaseTabRenderer* tab) {
   delete tab;
 }
 
-int BaseTabStrip::TabIndexOfTab(BaseTabRenderer* tab) const {
+int BaseTabStrip::TabIndexOfTab(BaseTab* tab) const {
   for (int i = 0; i < tab_count(); ++i) {
     if (base_tab_at_tab_index(i) == tab)
       return i;
