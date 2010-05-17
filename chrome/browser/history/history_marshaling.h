@@ -81,6 +81,10 @@ typedef CancelableRequest1<HistoryService::QueryTopURLsAndRedirectsCallback,
                                   history::RedirectMap> >
     QueryTopURLsAndRedirectsRequest;
 
+typedef CancelableRequest1<HistoryService::QueryMostVisitedURLsCallback,
+                           history::MostVisitedURLList>
+    QueryMostVisitedURLsRequest;
+
 // Thumbnails -----------------------------------------------------------------
 
 typedef CancelableRequest<HistoryService::ThumbnailDataCallback>

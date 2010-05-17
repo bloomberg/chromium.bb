@@ -84,6 +84,26 @@ static const int kMaxRedirectCount = 32;
 // and is archived.
 static const int kArchiveDaysThreshold = 90;
 
+// Converts from PageUsageData to MostVisitedURL. |redirects| is a
+// list of redirects for this URL. Empty list means no redirects.
+MostVisitedURL MakeMostVisitedURL(const PageUsageData& page_data,
+                                           const RedirectList& redirects) {
+  MostVisitedURL mv;
+  mv.url = page_data.GetURL();
+  mv.title = page_data.GetTitle();
+  if (redirects.empty()) {
+    // Redirects must contain at least the target url.
+    mv.redirects.push_back(mv.url);
+  } else {
+    mv.redirects = redirects;
+    if (mv.redirects[mv.redirects.size() - 1] != mv.url) {
+      // The last url must be the target url.
+      mv.redirects.push_back(mv.url);
+    }
+  }
+  return mv;
+}
+
 // This task is run on a timer so that commits happen at regular intervals
 // so they are batched together. The important thing about this class is that
 // it supports canceling of the task so the reference to the backend will be
@@ -1291,6 +1311,40 @@ void HistoryBackend::QueryTopURLsAndRedirects(
 
   request->ForwardResult(QueryTopURLsAndRedirectsRequest::TupleType(
       request->handle(), true, top_urls, redirects));
+}
+
+// Will replace QueryTopURLsAndRedirectsRequest.
+void HistoryBackend::QueryMostVisitedURLs(
+    scoped_refptr<QueryMostVisitedURLsRequest> request,
+    int result_count,
+    int days_back) {
+  if (request->canceled())
+    return;
+
+  if (!db_.get()) {
+    // No History Database - return an empty list.
+    request->ForwardResult(QueryMostVisitedURLsRequest::TupleType(
+        request->handle(), MostVisitedURLList()));
+    return;
+  }
+
+  MostVisitedURLList* result = &request->value;
+
+  ScopedVector<PageUsageData> data;
+  db_->QuerySegmentUsage(base::Time::Now() -
+                         base::TimeDelta::FromDays(days_back),
+                         result_count, &data.get());
+
+  for (size_t i = 0; i < data.size(); ++i) {
+    PageUsageData* current_data = data[i];
+    RedirectList redirects;
+    GetMostRecentRedirectsFrom(current_data->GetURL(), &redirects);
+    MostVisitedURL url = MakeMostVisitedURL(*current_data, redirects);
+    result->push_back(url);
+  }
+
+  request->ForwardResult(QueryMostVisitedURLsRequest::TupleType(
+      request->handle(), *result));
 }
 
 void HistoryBackend::GetRedirectsFromSpecificVisit(

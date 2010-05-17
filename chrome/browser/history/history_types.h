@@ -520,6 +520,8 @@ struct MostVisitedURL {
   RedirectList redirects;
 };
 
+typedef std::vector<MostVisitedURL> MostVisitedURLList;
+
 }  // history
 
 #endif  // CHROME_BROWSER_HISTORY_HISTORY_TYPES_H_

@@ -574,6 +574,17 @@ HistoryService::Handle HistoryService::QueryTopURLsAndRedirects(
       result_count);
 }
 
+HistoryService::Handle HistoryService::QueryMostVisitedURLs(
+    int result_count,
+    int days_back,
+    CancelableRequestConsumerBase* consumer,
+    QueryMostVisitedURLsCallback* callback) {
+  return Schedule(PRIORITY_NORMAL, &HistoryBackend::QueryMostVisitedURLs,
+                  consumer,
+                  new history::QueryMostVisitedURLsRequest(callback),
+                  result_count, days_back);
+}
+
 void HistoryService::Observe(NotificationType type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {

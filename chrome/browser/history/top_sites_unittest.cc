@@ -63,27 +63,28 @@ class MockHistoryServiceImpl: public TopSites::MockHistoryService {
   // A mockup of a HistoryService used for testing TopSites.
  public:
   // Calls the callback directly with the results.
-  HistoryService::Handle QuerySegmentUsageSince(
+  HistoryService::Handle QueryMostVisitedURLs(
+      int result_count, int days_back,
       CancelableRequestConsumerBase* consumer,
-      base::Time from_time,
-      int max_result_count,
-      HistoryService::SegmentQueryCallback* callback) {
+      HistoryService::QueryMostVisitedURLsCallback* callback) {
     callback->Run(CancelableRequestProvider::Handle(0),  // Handle is unused.
-                  &page_usage_data_);
+                  most_visited_urls_);
     return 0;
   }
 
   // Add a page to the end of the pages list.
   void AppendMockPage(const GURL& url,
                       const string16& title) {
-    PageUsageData* pd = new PageUsageData(URLID(0));
-    pd->SetURL(url);
-    pd->SetTitle(title);
-    page_usage_data_.push_back(pd);
+    MostVisitedURL page;
+    page.url = url;
+    page.title = title;
+    page.redirects = RedirectList();
+    page.redirects.push_back(url);
+    most_visited_urls_.push_back(page);
   }
 
  private:
-  std::vector<PageUsageData*> page_usage_data_;
+  MostVisitedURLList most_visited_urls_;
 };
 
 

@@ -156,6 +156,12 @@ class HistoryTest : public testing::Test {
     MessageLoop::current()->Quit();
   }
 
+  void OnMostVisitedURLsAvailable(CancelableRequestProvider::Handle handle,
+                                  MostVisitedURLList url_list) {
+    most_visited_urls_.swap(url_list);
+    MessageLoop::current()->Quit();
+  }
+
  protected:
   friend class BackendDelegate;
 
@@ -263,6 +269,8 @@ class HistoryTest : public testing::Test {
 
   // PageUsageData vector to test segments.
   ScopedVector<PageUsageData> page_usage_data_;
+
+  MostVisitedURLList most_visited_urls_;
 
   // When non-NULL, this will be deleted on tear down and we will block until
   // the backend thread has completed. This allows tests for the history
@@ -739,6 +747,99 @@ TEST_F(HistoryTest, Thumbnails) {
   MessageLoop::current()->PostDelayedTask(FROM_HERE, new QuitMessageLoop, 2000);
   MessageLoop::current()->Run();
   EXPECT_FALSE(got_thumbnail_callback_);
+}
+
+TEST_F(HistoryTest, MostVisitedURLs) {
+  scoped_refptr<HistoryService> history(new HistoryService);
+  history_service_ = history;
+  ASSERT_TRUE(history->Init(history_dir_, NULL));
+
+  const GURL url0("http://www.google.com/url0/");
+  const GURL url1("http://www.google.com/url1/");
+  const GURL url2("http://www.google.com/url2/");
+  const GURL url3("http://www.google.com/url3/");
+  const GURL url4("http://www.google.com/url4/");
+
+  static const void* scope = static_cast<void*>(this);
+
+  // Add two pages.
+  history->AddPage(url0, scope, 0, GURL(),
+                   PageTransition::TYPED, history::RedirectList(),
+                   false);
+  history->AddPage(url1, scope, 0, GURL(),
+                   PageTransition::TYPED, history::RedirectList(),
+                   false);
+  history->QueryMostVisitedURLs(20, 90, &consumer_,
+                                NewCallback(static_cast<HistoryTest*>(this),
+                                    &HistoryTest::OnMostVisitedURLsAvailable));
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(2U, most_visited_urls_.size());
+  EXPECT_EQ(url0, most_visited_urls_[0].url);
+  EXPECT_EQ(url1, most_visited_urls_[1].url);
+
+  // Add another page.
+  history->AddPage(url2, scope, 0, GURL(),
+                   PageTransition::TYPED, history::RedirectList(),
+                   false);
+  history->QueryMostVisitedURLs(20, 90, &consumer_,
+                                NewCallback(static_cast<HistoryTest*>(this),
+                                    &HistoryTest::OnMostVisitedURLsAvailable));
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(3U, most_visited_urls_.size());
+  EXPECT_EQ(url0, most_visited_urls_[0].url);
+  EXPECT_EQ(url1, most_visited_urls_[1].url);
+  EXPECT_EQ(url2, most_visited_urls_[2].url);
+
+  // Revisit url2, making it the top URL.
+  history->AddPage(url2, scope, 0, GURL(),
+                   PageTransition::TYPED, history::RedirectList(),
+                   false);
+  history->QueryMostVisitedURLs(20, 90, &consumer_,
+                                NewCallback(static_cast<HistoryTest*>(this),
+                                    &HistoryTest::OnMostVisitedURLsAvailable));
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(3U, most_visited_urls_.size());
+  EXPECT_EQ(url2, most_visited_urls_[0].url);
+  EXPECT_EQ(url0, most_visited_urls_[1].url);
+  EXPECT_EQ(url1, most_visited_urls_[2].url);
+
+  // Revisit url1, making it the top URL.
+  history->AddPage(url1, scope, 0, GURL(),
+                   PageTransition::TYPED, history::RedirectList(),
+                   false);
+  history->QueryMostVisitedURLs(20, 90, &consumer_,
+                                NewCallback(static_cast<HistoryTest*>(this),
+                                    &HistoryTest::OnMostVisitedURLsAvailable));
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(3U, most_visited_urls_.size());
+  EXPECT_EQ(url1, most_visited_urls_[0].url);
+  EXPECT_EQ(url2, most_visited_urls_[1].url);
+  EXPECT_EQ(url0, most_visited_urls_[2].url);
+
+  // Redirects
+  history::RedirectList redirects;
+  redirects.push_back(url3);
+  redirects.push_back(url4);
+
+  // Visit url4 using redirects.
+  history->AddPage(url4, scope, 0, GURL(),
+                   PageTransition::TYPED, redirects,
+                   false);
+  history->QueryMostVisitedURLs(20, 90, &consumer_,
+                                NewCallback(static_cast<HistoryTest*>(this),
+                                    &HistoryTest::OnMostVisitedURLsAvailable));
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(4U, most_visited_urls_.size());
+  EXPECT_EQ(url1, most_visited_urls_[0].url);
+  EXPECT_EQ(url2, most_visited_urls_[1].url);
+  EXPECT_EQ(url0, most_visited_urls_[2].url);
+  EXPECT_EQ(url3, most_visited_urls_[3].url);
+  EXPECT_EQ(2U, most_visited_urls_[3].redirects.size());
 }
 
 // The version of the history database should be current in the "typical

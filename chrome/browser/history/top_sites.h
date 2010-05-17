@@ -48,11 +48,10 @@ class TopSites : public base::RefCountedThreadSafe<TopSites> {
   class MockHistoryService {
     // A mockup of a HistoryService used for testing TopSites.
    public:
-    virtual HistoryService::Handle QuerySegmentUsageSince(
+    virtual HistoryService::Handle QueryMostVisitedURLs(
+        int result_count, int days_back,
         CancelableRequestConsumerBase* consumer,
-        base::Time from_time,
-        int max_result_count,
-        HistoryService::SegmentQueryCallback* callback) = 0;
+        HistoryService::QueryMostVisitedURLsCallback* callback) = 0;
     virtual ~MockHistoryService() {}
   };
 
@@ -90,12 +89,7 @@ class TopSites : public base::RefCountedThreadSafe<TopSites> {
 
   // Handler for the query response.
   void OnTopSitesAvailable(CancelableRequestProvider::Handle handle,
-                           std::vector<PageUsageData*>* data);
-
-  // Converts from PageUsageData to MostVisitedURL. redirects is a
-  // list of redirects for this URL. Empty list means no redirects.
-  static MostVisitedURL MakeMostVisitedURL(const PageUsageData& page_data,
-                                           const RedirectList& redirects);
+                           MostVisitedURLList data);
 
   // Saves the set of the top URLs visited by this user. The 0th item is the
   // most popular.

@@ -141,9 +141,18 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void GetVisitCountToHost(scoped_refptr<GetVisitCountToHostRequest> request,
                            const GURL& url);
 
+  // TODO(Nik): remove. Use QueryMostVisitedURLs instead.
   void QueryTopURLsAndRedirects(
       scoped_refptr<QueryTopURLsAndRedirectsRequest> request,
       int result_count);
+
+  // Request the |result_count| most visited URLs and the chain of
+  // redirects leading to each of these URLs. |days_back| is the
+  // number of days of history to use. Used by TopSites.
+  void QueryMostVisitedURLs(
+      scoped_refptr<QueryMostVisitedURLsRequest> request,
+      int result_count,
+      int days_back);
 
   // Computes the most recent URL(s) that the given canonical URL has
   // redirected to and returns true on success. There may be more than one

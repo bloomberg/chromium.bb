@@ -333,9 +333,20 @@ class HistoryService : public CancelableRequestProvider,
 
   // Request the top |result_count| most visited URLs and the chain of redirects
   // leading to each of these URLs.
+  // TODO(Nik): remove this. Use QueryMostVisitedURLs instead.
   Handle QueryTopURLsAndRedirects(int result_count,
                                   CancelableRequestConsumerBase* consumer,
                                   QueryTopURLsAndRedirectsCallback* callback);
+
+  typedef Callback2<Handle, history::MostVisitedURLList>::Type
+                    QueryMostVisitedURLsCallback;
+
+  // Request the |result_count| most visited URLs and the chain of
+  // redirects leading to each of these URLs. |days_back| is the
+  // number of days of history to use. Used by TopSites.
+  Handle QueryMostVisitedURLs(int result_count, int days_back,
+                              CancelableRequestConsumerBase* consumer,
+                              QueryMostVisitedURLsCallback* callback);
 
   // Thumbnails ----------------------------------------------------------------
 
