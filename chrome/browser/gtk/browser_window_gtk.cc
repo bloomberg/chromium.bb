@@ -643,7 +643,12 @@ void BrowserWindowGtk::SetBoundsImpl(const gfx::Rect& bounds, bool exterior) {
   gint width = static_cast<gint>(bounds.width());
   gint height = static_cast<gint>(bounds.height());
 
-  gtk_window_move(window_, x, y);
+  // For popup windows, we assume that if x == y == 0, the opening page
+  // did not specify a position.  Let the WM position the popup instead.
+  bool popup_without_position = browser_->type() & Browser::TYPE_POPUP &&
+      bounds.x() == 0 && bounds.y() == 0;
+  if (!popup_without_position)
+    gtk_window_move(window_, x, y);
 
   if (exterior) {
     SetWindowSize(window_, width, height);
@@ -1442,12 +1447,9 @@ void BrowserWindowGtk::SetGeometryHints() {
   // force the position as part of session restore, as applications
   // that restore other, similar state (for instance GIMP, audacity,
   // pidgin, dia, and gkrellm) do tend to restore their positions.
-  //
-  // For popup windows, we assume that if x == y == 0, the opening page
-  // did not specify a position.  Let the WM position the popup instead.
+
   bool is_popup = browser_->type() & Browser::TYPE_POPUP;
-  bool popup_without_position = is_popup && bounds.x() == 0 && bounds.y() == 0;
-  if (browser_->bounds_overridden() && !popup_without_position) {
+  if (browser_->bounds_overridden()) {
     // For popups, bounds are set in terms of the client area rather than the
     // entire window.
     SetBoundsImpl(bounds, !is_popup);
