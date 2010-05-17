@@ -657,6 +657,8 @@ class PrefObserverBridge : public NotificationObserver,
   [customPagesSource_ removeObserver:self forKeyPath:@"customHomePages"];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [self unregisterPrefObservers];
+  [animation_ setDelegate:nil];
+  [animation_ stopAnimation];
   [super dealloc];
 }
 
@@ -737,6 +739,15 @@ class PrefObserverBridge : public NotificationObserver,
                        ofObject:object
                          change:change
                         context:context];
+}
+
+// Called when the window wants to be closed.
+- (BOOL)windowShouldClose:(id)sender {
+  // Stop any animation and clear the delegate to avoid stale pointers.
+  [animation_ setDelegate:nil];
+  [animation_ stopAnimation];
+
+  return YES;
 }
 
 // Called when the user hits the escape key. Closes the window.
