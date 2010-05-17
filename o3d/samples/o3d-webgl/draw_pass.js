@@ -32,7 +32,7 @@
 
 /**
  * A DrawPass renders a DrawList.
- * 
+ *
  * @param {o3d.DrawList} drawList The DrawList used by this DrawPass.
  * @param {o3d.DrawPass.SortMethod} sortMethod ParamInteger The method
  *     of sorting this DrawPass.
@@ -69,6 +69,7 @@ o3d.ParamObject.setUpO3DParam_(o3d.DrawPass, 'sortMethod', 'ParamInteger');
  */
 o3d.DrawPass.prototype.before = function() {
   if (this.drawList) {
+    this.drawList.sort_(this.sortMethod);
     this.drawList.render();
   }
 };

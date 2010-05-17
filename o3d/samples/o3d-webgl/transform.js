@@ -612,11 +612,6 @@ o3d.Transform.transformPoint = function(m, v) {
   var v0 = v[0];
   var v1 = v[1];
   var v2 = v[2];
-
-  if (!m) {
-    debugger;
-  }
-
   var m0 = m[0];
   var m1 = m[1];
   var m2 = m[2];
@@ -628,6 +623,27 @@ o3d.Transform.transformPoint = function(m, v) {
           (v0 * m0[2] + v1 * m1[2] + v2 * m2[2] + m3[2]) / d];
 };
 
+
+/**
+ * Takes a 4-by-4 matrix and a vector with 3 entries,
+ * interprets the vector as a point, transforms that point by the matrix,
+ * returning the z-component of the result only.
+ * @param {!o3djs.math.Matrix4} m The matrix.
+ * @param {!o3djs.math.Vector3} v The point.
+ * @return {number} The z coordinate of the transformed point.
+ */
+o3d.Transform.transformPointZOnly = function(m, v) {
+  var v0 = v[0];
+  var v1 = v[1];
+  var v2 = v[2];
+  var m0 = m[0];
+  var m1 = m[1];
+  var m2 = m[2];
+  var m3 = m[3];
+
+  var d = (v0 * m0[2] + v1 * m1[2] + v2 * m2[2] + m3[2]) /
+          (v0 * m0[3] + v1 * m1[3] + v2 * m2[3] + m3[3]);
+};
 
 
 /**
