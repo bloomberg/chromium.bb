@@ -158,8 +158,11 @@ class SCM(object):
         logging.info('Found %s at %s' % (filename, self.checkout_root))
         return gclient_util.FileRead(filepath)
       return None
-    root = os.path.abspath(self.gclient_root)
     cur = os.path.abspath(self.checkout_root)
+    if self.gclient_root:
+      root = os.path.abspath(self.gclient_root)
+    else:
+      root = gclient_utils.FindGclientRoot(cur)
     assert cur.startswith(root), (root, cur)
     while cur.startswith(root):
       filepath = os.path.join(cur, filename)
