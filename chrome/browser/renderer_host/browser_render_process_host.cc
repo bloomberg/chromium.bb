@@ -200,11 +200,11 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
   widget_helper_ = new RenderWidgetHelper();
 
   registrar_.Add(this, NotificationType::USER_SCRIPTS_UPDATED,
-                 Source<Profile>(profile));
+                 Source<Profile>(profile->GetOriginalProfile()));
   registrar_.Add(this, NotificationType::EXTENSION_LOADED,
-                 Source<Profile>(profile));
+                 Source<Profile>(profile->GetOriginalProfile()));
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
-                 Source<Profile>(profile));
+                 Source<Profile>(profile->GetOriginalProfile()));
   registrar_.Add(this, NotificationType::SPELLCHECK_HOST_REINITIALIZED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::SPELLCHECK_WORD_ADDED,
