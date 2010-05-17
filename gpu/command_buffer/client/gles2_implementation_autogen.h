@@ -790,9 +790,7 @@ void DeleteSharedIds(GLuint namespace_id, GLsizei n, const GLuint* ids);
 
 void RegisterSharedIds(GLuint namespace_id, GLsizei n, const GLuint* ids);
 
-void CommandBufferEnable(GLenum cap, GLboolean enable) {
-  helper_->CommandBufferEnable(cap, enable);
-}
+GLboolean CommandBufferEnable(const char* feature);
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_
 

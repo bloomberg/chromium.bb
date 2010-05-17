@@ -804,9 +804,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Wrapper for glCheckFramebufferStatus
   GLenum DoCheckFramebufferStatus(GLenum target);
 
-  // Helper for CommandBufferEnable cmd.
-  void DoCommandBufferEnable(GLenum pname, GLboolean enable);
-
   // Wrapper for glCompileShader.
   void DoCompileShader(GLuint shader);
 
@@ -1079,6 +1076,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // The last error message set.
   std::string last_error_;
 
+  bool use_shader_translator_;
+
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
 
@@ -1341,7 +1340,8 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       active_texture_unit_(0),
       black_2d_texture_id_(0),
       black_cube_texture_id_(0),
-      anti_aliased_(false) {
+      anti_aliased_(false),
+      use_shader_translator_(true) {
 }
 
 bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
@@ -2355,7 +2355,9 @@ error::Error GLES2DecoderImpl::HandleBindAttribLocationBucket(
     return error::kInvalidArguments;
   }
   std::string name_str;
-  bucket->GetAsString(&name_str);
+  if (!bucket->GetAsString(&name_str)) {
+    return error::kInvalidArguments;
+  }
   glBindAttribLocation(info->service_id(), index, name_str.c_str());
   return error::kNoError;
 }
@@ -3068,29 +3070,32 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
   const char* shader_src = info->source().c_str();
 #if !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2) && !defined(UNIT_TEST)
 #if defined(GLES2_GPU_SERVICE_TRANSLATE_SHADER)
-  int dbg_options = 0;
-  EShLanguage language = info->shader_type() == GL_VERTEX_SHADER ?
-      EShLangVertex : EShLangFragment;
-  TBuiltInResource resources;
-  // TODO(alokp): Ask gman how to get appropriate values.
-  resources.maxVertexAttribs = 8;
-  resources.maxVertexUniformVectors = 128;
-  resources.maxVaryingVectors = 8;
-  resources.maxVertexTextureImageUnits = 0;
-  resources.maxCombinedTextureImageUnits = 8;
-  resources.maxTextureImageUnits = 8;
-  resources.maxFragmentUniformVectors = 16;
-  resources.maxDrawBuffers = 1;
-  ShHandle compiler = ShConstructCompiler(language, dbg_options);
-  if (!ShCompile(compiler, &shader_src, 1, EShOptNone, &resources,
-                 dbg_options)) {
-    // TODO(alokp): Ask gman where to set compile-status and info-log.
-    // May be add member variables to ShaderManager::ShaderInfo?
-    //const char* info_log = ShGetInfoLog(compiler);
-    ShDestruct(compiler);
-    return;
+  ShHandle compiler;
+  if (use_shader_translator_) {
+    int dbg_options = 0;
+    EShLanguage language = info->shader_type() == GL_VERTEX_SHADER ?
+        EShLangVertex : EShLangFragment;
+    TBuiltInResource resources;
+    // TODO(alokp): Ask gman how to get appropriate values.
+    resources.maxVertexAttribs = group_->max_vertex_attribs();
+    resources.maxVertexUniformVectors = 128;
+    resources.maxVaryingVectors = 8;
+    resources.maxVertexTextureImageUnits = 0;
+    resources.maxCombinedTextureImageUnits = group_->max_texture_units();
+    resources.maxTextureImageUnits = 8;
+    resources.maxFragmentUniformVectors = 16;
+    resources.maxDrawBuffers = 1;
+    compiler = ShConstructCompiler(language, dbg_options);
+    if (!ShCompile(compiler, &shader_src, 1, EShOptNone, &resources,
+                   dbg_options)) {
+      // TODO(alokp): Ask gman where to set compile-status and info-log.
+      // May be add member variables to ShaderManager::ShaderInfo?
+      // const char* info_log = ShGetInfoLog(compiler);
+      ShDestruct(compiler);
+      return;
+    }
+    shader_src = ShGetObjectCode(compiler);
   }
-  shader_src = ShGetObjectCode(compiler);
 #endif  // GLES2_GPU_SERVICE_TRANSLATE_SHADER
 #endif  // GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2
 
@@ -3100,7 +3105,9 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
 
 #if !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2) && !defined(UNIT_TEST)
 #ifdef GLES2_GPU_SERVICE_TRANSLATE_SHADER
-  ShDestruct(compiler);
+  if (use_shader_translator_) {
+    ShDestruct(compiler);
+  }
 #endif  // GLES2_GPU_SERVICE_TRANSLATE_SHADER
 #endif  // GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2
 };
@@ -3494,7 +3501,9 @@ error::Error GLES2DecoderImpl::HandleGetAttribLocationBucket(
     return error::kInvalidArguments;
   }
   std::string name_str;
-  bucket->GetAsString(&name_str);
+  if (!bucket->GetAsString(&name_str)) {
+    return error::kInvalidArguments;
+  }
   return GetAttribLocationHelper(
     c.program, c.location_shm_id, c.location_shm_offset, name_str);
 }
@@ -3559,7 +3568,9 @@ error::Error GLES2DecoderImpl::HandleGetUniformLocationBucket(
     return error::kInvalidArguments;
   }
   std::string name_str;
-  bucket->GetAsString(&name_str);
+  if (!bucket->GetAsString(&name_str)) {
+    return error::kInvalidArguments;
+  }
   return GetUniformLocationHelper(
     c.program, c.location_shm_id, c.location_shm_offset, name_str);
 }
@@ -4278,14 +4289,35 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
   return error::kNoError;
 }
 
-void GLES2DecoderImpl::DoCommandBufferEnable(GLenum pname, GLboolean enable) {
-  switch (pname) {
-    case GLES2_ALLOW_BUFFERS_ON_MULTIPLE_TARGETS:
-      buffer_manager()->set_allow_buffers_on_multiple_targets(enable != 0);
-      break;
-    default:
-      break;
+error::Error GLES2DecoderImpl::HandleCommandBufferEnable(
+    uint32 immediate_data_size, const gles2::CommandBufferEnable& c) {
+  Bucket* bucket = GetBucket(c.bucket_id);
+  typedef gles2::CommandBufferEnable::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.result_shm_id, c.result_shm_offset, sizeof(*result));
+  if (!result) {
+    return error::kOutOfBounds;
   }
+  // Check that the client initialized the result.
+  if (*result != 0) {
+    return error::kInvalidArguments;
+  }
+  std::string feature_str;
+  if (!bucket->GetAsString(&feature_str)) {
+    return error::kInvalidArguments;
+  }
+
+  // TODO(gman): make this some kind of table to function pointer thingy.
+  if (feature_str.compare(PEPPER3D_ALLOW_BUFFERS_ON_MULTIPLE_TARGETS) == 0) {
+    buffer_manager()->set_allow_buffers_on_multiple_targets(true);
+  } else if (feature_str.compare(PEPPER3D_SKIP_GLSL_TRANSLATION) == 0) {
+    use_shader_translator_ = false;
+  } else {
+    return error::kNoError;
+  }
+
+  *result = 1;  // true.
+  return error::kNoError;
 }
 
 // Include the auto-generated part of this file. We split this because it means

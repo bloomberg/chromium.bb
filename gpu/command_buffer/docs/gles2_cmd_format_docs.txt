@@ -1,32 +1,32 @@
 //! \file
 //!
-//! The public interface for 3D graphics is based on a commmand buffer.
+//! The public interface for 3D graphics is based on a command buffer.
 //!
-//! This was choosen because it provides an easy way to separate the process
-//! writing commands from the process reading those commands without requiring
-//! too much overhead to keep the two processes in sync.
+//! This was chosen because it provides an easy way to separate the process of
+//! writing commands from the process of reading those commands without
+//! requiring too much overhead to keep the two processes in sync.
 //!
 //! You can use this info to write commands yourself. Most developers will use
 //! the provided OpenGL ES 2.0 implementation that issues these commands for
 //! them.
 //!
-//! Each command starts with a header. The header is 32 bits where the first 21
+//! Each command starts with a header. The header is 32 bits, where the first 21
 //! bits define the number of 32 bit entries, including the header, the command
-//! represnts. The last 11 bits specify the specific command.
+//! represents. The last 11 bits specify the command.
 //!
 //! Commands that send a variable amount of data have 1 to 3 ways to send that
 //! data.
 //!
-//! For many commands they can send their data in shared memory. The command
-//! will take an id of the shared memory and an offset into that shared memory
-//! of where the data lives. Commands are executed asynchronously so the client
+//! Many commands can send their data in shared memory. The command will take
+//! an id of the shared memory and an offset into that shared memory of where
+//! the data lives. Commands are executed asynchronously, so the client
 //! program must be careful to leave the data available until the command has
 //! executed.
 //!
 //! Some commands have an 'immediate' version where the data appears directly
 //! after the command in memory.
 //!
-//! A 3rd way of passing data is through Buckets. Buckets are indentified by
+//! A 3rd way of passing data is through Buckets. Buckets are identified by
 //! number. You create a bucket with the command SetBucketSize, you can then
 //! fill the bucket with SetBucketData commands. Once you've sent all your
 //! data you can then issue a command that uses the bucket and takes a bucket
@@ -81,7 +81,7 @@ struct CommandHeader {
 //! the command failed its result size will 0.  You must set the size to 0
 //! before issuing the command.
 //!
-//! To retreive the data you might do something like this pseudo code:
+//! To retrieve the data you might do something like this pseudo code:
 //!
 //!   GetAttachedShaders::Result* result = address-of-shared-memory
 //!   int num_results = result->size / sizeof(GLuint);  // the type returned
@@ -123,7 +123,7 @@ struct Jump {
 
 //! The JumpRelative command jumps to another place in the command buffer
 //! relative to the end of this command. In other words. JumpRelative with an
-//! offset of zero is effectively a noop.
+//! offset of zero is effectively a no-op.
 struct JumpRelative {
   static const CommandId kCmdId = 4;
 
@@ -2247,12 +2247,16 @@ struct RegisterSharedIds {
   uint32 ids_shm_offset;  //!< uint32
 };
 
-//! Command that enables or disables command buffer specific features.
+//! Command that enables features. The bucket should contain the feature string.
 struct CommandBufferEnable {
   static const CommandId kCmdId = 442;
 
+  typedef GLint Result;
+
   CommandHeader header;
-  uint32 cap;  //!< GLenum
-  uint32 enable;  //!< GLboolean
+  uint32 bucket_id;  //!< GLuint
+  uint32 result_shm_id;  //!< uint32
+  uint32 result_shm_offset;  //!< uint32
 };
+
 

@@ -40,6 +40,8 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
   context_ = ggl::CreateOffscreenContext(host, NULL, gfx::Size(1, 1));
   if (!context_)
     return false;
+  // TODO(gman): Remove this.
+  DisableShaderTranslation(context_);
   return true;
 }
 

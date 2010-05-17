@@ -1448,6 +1448,18 @@ void GLES2Implementation::GetVertexAttribiv(
   result->CopyResult(params);
 }
 
+GLboolean GLES2Implementation::CommandBufferEnable(const char* feature) {
+  typedef CommandBufferEnable::Result Result;
+  Result* result = GetResultAs<Result*>();
+  *result = 0;
+  SetBucketAsCString(kResultBucketId, feature);
+  helper_->CommandBufferEnable(
+      kResultBucketId, result_shm_id(), result_shm_offset());
+  WaitForCmd();
+  helper_->SetBucketSize(kResultBucketId, 0);
+  return *result;
+}
+
 #endif  // defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
 
 }  // namespace gles2

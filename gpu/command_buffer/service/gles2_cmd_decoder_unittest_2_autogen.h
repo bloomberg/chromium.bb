@@ -1626,13 +1626,7 @@ TEST_F(GLES2DecoderTest2, ViewportInvalidArgs3_0) {
 
 // TODO(gman): RegisterSharedIds
 
+// TODO(gman): CommandBufferEnable
 
-TEST_F(GLES2DecoderTest2, CommandBufferEnableValidArgs) {
-  SpecializedSetup<CommandBufferEnable, 0>();
-  CommandBufferEnable cmd;
-  cmd.Init(GLES2_ALLOW_BUFFERS_ON_MULTIPLE_TARGETS, 2);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 

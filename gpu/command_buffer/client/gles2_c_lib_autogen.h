@@ -519,8 +519,8 @@ void GLES2RegisterSharedIds(
     GLuint namespace_id, GLsizei n, const GLuint* ids) {
   gles2::GetGLContext()->RegisterSharedIds(namespace_id, n, ids);
 }
-void GLES2CommandBufferEnable(GLenum cap, GLboolean enable) {
-  gles2::GetGLContext()->CommandBufferEnable(cap, enable);
+GLboolean GLES2CommandBufferEnable(const char* feature) {
+  return gles2::GetGLContext()->CommandBufferEnable(feature);
 }
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_C_LIB_AUTOGEN_H_

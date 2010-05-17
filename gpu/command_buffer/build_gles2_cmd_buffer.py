@@ -181,7 +181,8 @@ GL_APICALL GLuint       GL_APIENTRY glGetMaxValueInBuffer (GLidBuffer buffer_id,
 GL_APICALL void         GL_APIENTRY glGenSharedIds (GLuint namespace_id, GLuint id_offset, GLsizei n, GLuint* ids);
 GL_APICALL void         GL_APIENTRY glDeleteSharedIds (GLuint namespace_id, GLsizei n, const GLuint* ids);
 GL_APICALL void         GL_APIENTRY glRegisterSharedIds (GLuint namespace_id, GLsizei n, const GLuint* ids);
-GL_APICALL void         GL_APIENTRY glCommandBufferEnable (GLenumCommandBufferState cap, GLboolean enable);"""
+GL_APICALL GLboolean    GL_APIENTRY glCommandBufferEnable (const char* feature);
+"""
 
 # This is the list of all commmands that will be generated and their Id.
 # If a command is not listed in this table it is an error.
@@ -520,12 +521,6 @@ _ENUM_LISTS = {
     ],
     'invalid': [
       'GL_FOG_HINT',
-    ],
-  },
-  'CommandBufferState': {
-    'type': 'GLenum',
-    'valid': [
-      'GLES2_ALLOW_BUFFERS_ON_MULTIPLE_TARGETS',
     ],
   },
   'TextureTarget': {
@@ -1027,8 +1022,12 @@ _FUNCTION_INFO = {
   },
   'ClearDepthf': {'decoder_func': 'glClearDepth'},
   'CommandBufferEnable': {
+    'type': 'Custom',
+    'immediate': False,
     'decoder_func': 'DoCommandBufferEnable',
     'expectation': False,
+    'cmd_args': 'GLuint bucket_id, GLint* result',
+    'result': ['GLint'],
   },
   'CompileShader': {'decoder_func': 'DoCompileShader', 'unit_test': False},
   'CompressedTexImage2D': {

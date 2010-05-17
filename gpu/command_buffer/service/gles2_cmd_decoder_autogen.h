@@ -2735,17 +2735,5 @@ error::Error GLES2DecoderImpl::HandleGetMaxValueInBuffer(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleCommandBufferEnable(
-    uint32 immediate_data_size, const gles2::CommandBufferEnable& c) {
-  GLenum cap = static_cast<GLenum>(c.cap);
-  GLboolean enable = static_cast<GLboolean>(c.enable);
-  if (!ValidateGLenumCommandBufferState(cap)) {
-    SetGLError(GL_INVALID_ENUM, "glCommandBufferEnable: cap GL_INVALID_ENUM");
-    return error::kNoError;
-  }
-  DoCommandBufferEnable(cap, enable);
-  return error::kNoError;
-}
-
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_AUTOGEN_H_
 

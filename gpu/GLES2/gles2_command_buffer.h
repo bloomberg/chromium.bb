@@ -9,7 +9,11 @@
 #define GPU_GLES2_GLES2_COMMAND_BUFFER_H_
 
 // constants for CommandBufferEnable command.
-#define GLES2_ALLOW_BUFFERS_ON_MULTIPLE_TARGETS 0x0001
+#define PEPPER3D_ALLOW_BUFFERS_ON_MULTIPLE_TARGETS \
+    "pepper3d_allow_buffers_on_multiple_targets"
+// TODO(gman): remove this
+#define PEPPER3D_SKIP_GLSL_TRANSLATION \
+    "pepper3d_skip_glsl_translation"
 
 #endif  // GPU_GLES2_GLES2_COMMAND_BUFFER_H_
 

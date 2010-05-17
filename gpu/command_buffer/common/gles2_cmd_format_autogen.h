@@ -8577,6 +8577,8 @@ struct CommandBufferEnable {
   static const CommandId kCmdId = kCommandBufferEnable;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
+  typedef GLint Result;
+
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
@@ -8585,30 +8587,38 @@ struct CommandBufferEnable {
     header.SetCmd<ValueType>();
   }
 
-  void Init(GLenum _cap, GLboolean _enable) {
+  void Init(
+      GLuint _bucket_id, uint32 _result_shm_id, uint32 _result_shm_offset) {
     SetHeader();
-    cap = _cap;
-    enable = _enable;
+    bucket_id = _bucket_id;
+    result_shm_id = _result_shm_id;
+    result_shm_offset = _result_shm_offset;
   }
 
-  void* Set(void* cmd, GLenum _cap, GLboolean _enable) {
-    static_cast<ValueType*>(cmd)->Init(_cap, _enable);
+  void* Set(
+      void* cmd, GLuint _bucket_id, uint32 _result_shm_id,
+      uint32 _result_shm_offset) {
+    static_cast<ValueType*>(
+        cmd)->Init(_bucket_id, _result_shm_id, _result_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
-  uint32 cap;
-  uint32 enable;
+  uint32 bucket_id;
+  uint32 result_shm_id;
+  uint32 result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(CommandBufferEnable) == 12,
-               Sizeof_CommandBufferEnable_is_not_12);
+COMPILE_ASSERT(sizeof(CommandBufferEnable) == 16,
+               Sizeof_CommandBufferEnable_is_not_16);
 COMPILE_ASSERT(offsetof(CommandBufferEnable, header) == 0,
                OffsetOf_CommandBufferEnable_header_not_0);
-COMPILE_ASSERT(offsetof(CommandBufferEnable, cap) == 4,
-               OffsetOf_CommandBufferEnable_cap_not_4);
-COMPILE_ASSERT(offsetof(CommandBufferEnable, enable) == 8,
-               OffsetOf_CommandBufferEnable_enable_not_8);
+COMPILE_ASSERT(offsetof(CommandBufferEnable, bucket_id) == 4,
+               OffsetOf_CommandBufferEnable_bucket_id_not_4);
+COMPILE_ASSERT(offsetof(CommandBufferEnable, result_shm_id) == 8,
+               OffsetOf_CommandBufferEnable_result_shm_id_not_8);
+COMPILE_ASSERT(offsetof(CommandBufferEnable, result_shm_offset) == 12,
+               OffsetOf_CommandBufferEnable_result_shm_offset_not_12);
 
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_

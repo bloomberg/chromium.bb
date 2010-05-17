@@ -18,6 +18,7 @@
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "gpu/GLES2/gles2_command_buffer.h"
 #endif  // ENABLE_GPU
 
 namespace ggl {
@@ -81,6 +82,9 @@ class Context {
 
   // Get the current error code.
   Error GetError();
+
+  // TODO(gman): Remove this.
+  void DisableShaderTranslation();
 
  private:
   scoped_refptr<GpuChannelHost> channel_;
@@ -248,6 +252,11 @@ Error Context::GetError() {
   }
 }
 
+// TODO(gman): Remove This
+void Context::DisableShaderTranslation() {
+  gles2_implementation_->CommandBufferEnable(PEPPER3D_SKIP_GLSL_TRANSLATION);
+}
+
 #endif  // ENABLE_GPU
 
 Context* CreateViewContext(GpuChannelHost* channel, gfx::NativeViewId view) {
@@ -345,4 +354,12 @@ Error GetError() {
 #endif
 }
 
+// TODO(gman): Remove This
+void DisableShaderTranslation(Context* context) {
+#if defined(ENABLE_GPU)
+  if (context) {
+    context->DisableShaderTranslation();
+  }
+#endif
+}
 }  // namespace ggl

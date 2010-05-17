@@ -75,6 +75,9 @@ bool SwapBuffers();
 // Destroy the given GGL context.
 bool DestroyContext(Context* context);
 
+// TODO(gman): Remove this
+void DisableShaderTranslation(Context* context);
+
 // Return the current GGL error.
 Error GetError();
 
