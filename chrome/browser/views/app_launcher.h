@@ -130,9 +130,12 @@ class AppLauncher : public AnimationDelegate,
   // The previous preferred size of the DOM contents.
   gfx::Size previous_contents_pref_size_;
 
+  // Whether we should use an animation when showing the info-bubble.
+  bool animate_;
+
   // The animation that grows the info-bubble.
   scoped_ptr<SlideAnimation> animation_;
-  
+
   DISALLOW_COPY_AND_ASSIGN(AppLauncher);
 };
 

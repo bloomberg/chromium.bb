@@ -249,8 +249,13 @@ AppLauncher::AppLauncher(Browser* browser)
       info_bubble_(NULL) {
   DCHECK(browser);
   info_bubble_content_ = new InfoBubbleContentsView(this);
+#if defined(OS_WIN)
+  animate_ = true;
   animation_.reset(new SlideAnimation(this));
   animation_->SetTweenType(Tween::LINEAR);
+#else
+  animate_ = false;
+#endif
 }
 
 AppLauncher::~AppLauncher() {
@@ -331,6 +336,12 @@ void AppLauncher::UpdatePreferredSize(const gfx::Size& pref_size) {
 
   previous_contents_pref_size_ = contents_pref_size_;
   contents_pref_size_ = pref_size;
+
+  if (!animate_) {
+    info_bubble_content_->ComputePreferredSize(pref_size);
+    info_bubble_->SizeToContents();
+    return;
+  }
 
   int original_height = previous_contents_pref_size_.height();
   int new_height = contents_pref_size_.height();
