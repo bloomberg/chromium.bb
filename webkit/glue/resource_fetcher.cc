@@ -80,6 +80,14 @@ void ResourceFetcher::didReceiveData(
   data_.append(data, data_length);
 }
 
+void ResourceFetcher::didReceiveCachedMetadata(
+    WebURLLoader* loader, const char* data, int data_length) {
+  DCHECK(!completed_);
+  DCHECK(data_length > 0);
+
+  metadata_.assign(data, data_length);
+}
+
 void ResourceFetcher::didFinishLoading(WebURLLoader* loader) {
   DCHECK(!completed_);
   completed_ = true;

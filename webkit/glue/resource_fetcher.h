@@ -61,6 +61,8 @@ class ResourceFetcher : public WebKit::WebURLLoaderClient {
       unsigned long long total_bytes_to_be_sent);
   virtual void didReceiveResponse(
       WebKit::WebURLLoader* loader, const WebKit::WebURLResponse& response);
+  virtual void didReceiveCachedMetadata(
+      WebKit::WebURLLoader* loader, const char* data, int data_length);
   virtual void didReceiveData(
       WebKit::WebURLLoader* loader, const char* data, int data_length);
   virtual void didFinishLoading(WebKit::WebURLLoader* loader);
@@ -87,6 +89,9 @@ class ResourceFetcher : public WebKit::WebURLLoaderClient {
 
   // Buffer to hold the content from the server.
   std::string data_;
+
+  // Buffer to hold metadata from the cache.
+  std::string metadata_;
 };
 
 /////////////////////////////////////////////////////////////////////////////

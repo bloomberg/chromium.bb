@@ -163,6 +163,7 @@ void PopulateURLResponse(
     const ResourceLoaderBridge::ResponseInfo& info,
     WebURLResponse* response) {
   response->setURL(url);
+  response->setResponseTime(info.response_time.ToDoubleT());
   response->setMIMEType(WebString::fromUTF8(info.mime_type));
   response->setTextEncodingName(WebString::fromUTF8(info.charset));
   response->setExpectedContentLength(info.content_length);
@@ -232,6 +233,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   virtual void OnReceivedResponse(
       const ResourceLoaderBridge::ResponseInfo& info, bool content_filtered);
   virtual void OnReceivedData(const char* data, int len);
+  virtual void OnReceivedCachedMetadata(const char* data, int len);
   virtual void OnCompletedRequest(
       const URLRequestStatus& status, const std::string& security_info);
   virtual GURL GetURLForDebugging() const;
@@ -530,6 +532,12 @@ void WebURLLoaderImpl::Context::OnReceivedData(const char* data, int len) {
   } else {
     client_->didReceiveData(loader_, data, len);
   }
+}
+
+void WebURLLoaderImpl::Context::OnReceivedCachedMetadata(
+    const char* data, int len) {
+  if (client_)
+    client_->didReceiveCachedMetadata(loader_, data, len);
 }
 
 void WebURLLoaderImpl::Context::OnCompletedRequest(
