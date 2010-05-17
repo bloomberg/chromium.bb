@@ -438,6 +438,12 @@ TEST_F(ProfileSyncServiceTest, InitialState) {
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
   StartSyncService();
 
+  EXPECT_TRUE(
+    service_->sync_service_url_.spec() ==
+        ProfileSyncService::kSyncServerUrl ||
+    service_->sync_service_url_.spec() ==
+        ProfileSyncService::kDevServerUrl);
+
   EXPECT_TRUE(other_bookmarks_id());
   EXPECT_TRUE(bookmark_bar_id());
 
