@@ -103,56 +103,12 @@ For additional help on a subcommand or examples of usage, try
 """)
 
 
-DEFAULT_CLIENT_FILE_TEXT = ("""\
-# An element of this array (a "solution") describes a repository directory
-# that will be checked out into your working copy.  Each solution may
-# optionally define additional dependencies (via its DEPS file) to be
-# checked out alongside the solution's directory.  A solution may also
-# specify custom dependencies (via the "custom_deps" property) that
-# override or augment the dependencies specified by the DEPS file.
-# If a "safesync_url" is specified, it is assumed to reference the location of
-# a text file which contains nothing but the last known good SCM revision to
-# sync against. It is fetched if specified and used unless --head is passed
-
-solutions = [
-  { "name"        : "%(solution_name)s",
-    "url"         : "%(solution_url)s",
-    "custom_deps" : {
-      # To use the trunk of a component instead of what's in DEPS:
-      #"component": "https://svnserver/component/trunk/",
-      # To exclude a component from your working copy:
-      #"data/really_large_component": None,
-    },
-    "safesync_url": "%(safesync_url)s"
-  },
-]
-""")
-
-DEFAULT_SNAPSHOT_SOLUTION_TEXT = ("""\
-  { "name"        : "%(solution_name)s",
-    "url"         : "%(solution_url)s",
-    "custom_deps" : {
-      %(solution_deps)s,
-    },
-    "safesync_url": "%(safesync_url)s"
-  },
-""")
-
-DEFAULT_SNAPSHOT_FILE_TEXT = ("""\
-# An element of this array (a "solution") describes a repository directory
-# that will be checked out into your working copy.  Each solution may
-# optionally define additional dependencies (via its DEPS file) to be
-# checked out alongside the solution's directory.  A solution may also
-# specify custom dependencies (via the "custom_deps" property) that
-# override or augment the dependencies specified by the DEPS file.
-# If a "safesync_url" is specified, it is assumed to reference the location of
-# a text file which contains nothing but the last known good SCM revision to
-# sync against. It is fetched if specified and used unless --head is passed
-
-solutions = [
-%(solution_list)s
-]
-""")
+def attr(attr, data):
+  """Sets an attribute on a function."""
+  def hook(fn):
+    setattr(fn, attr, data)
+    return fn
+  return hook
 
 
 ## GClient implementation.
@@ -165,6 +121,36 @@ class GClient(object):
     'cleanup', 'diff', 'export', 'pack', 'revert', 'status', 'update',
     'runhooks'
   ]
+
+  DEPS_FILE = 'DEPS'
+
+  DEFAULT_CLIENT_FILE_TEXT = ("""\
+solutions = [
+  { "name"        : "%(solution_name)s",
+    "url"         : "%(solution_url)s",
+    "custom_deps" : {
+    },
+    "safesync_url": "%(safesync_url)s"
+  },
+]
+""")
+
+  DEFAULT_SNAPSHOT_SOLUTION_TEXT = ("""\
+  { "name"        : "%(solution_name)s",
+    "url"         : "%(solution_url)s",
+    "custom_deps" : {
+      %(solution_deps)s,
+    },
+    "safesync_url": "%(safesync_url)s"
+  },
+""")
+
+  DEFAULT_SNAPSHOT_FILE_TEXT = ("""\
+# Snapshot generated with gclient revinfo --snapshot
+solutions = [
+%(solution_list)s
+]
+""")
 
   def __init__(self, root_dir, options):
     self._root_dir = root_dir
@@ -231,7 +217,7 @@ class GClient(object):
     return client
 
   def SetDefaultConfig(self, solution_name, solution_url, safesync_url):
-    self.SetConfig(DEFAULT_CLIENT_FILE_TEXT % {
+    self.SetConfig(self.DEFAULT_CLIENT_FILE_TEXT % {
       'solution_name': solution_name,
       'solution_url': solution_url,
       'safesync_url' : safesync_url,
@@ -386,7 +372,7 @@ class GClient(object):
         if "all" in deps_to_include:
           deps_to_include = list(set(deps_os_choices.itervalues()))
       else:
-        deps_to_include = [deps_os_choices.get(self._options.platform, "unix")]
+        deps_to_include = [deps_os_choices.get(sys.platform, "unix")]
 
       deps_to_include = set(deps_to_include)
       for deps_os_key in deps_to_include:
@@ -588,7 +574,7 @@ class GClient(object):
     # Run on the base solutions first.
     for solution in solutions:
       name = solution["name"]
-      deps_file = solution.get("deps_file", self._options.deps_file)
+      deps_file = solution.get("deps_file", self.DEPS_FILE)
       if '/' in deps_file or '\\' in deps_file:
         raise gclient_utils.Error('deps_file name must not be a path, just a '
                                   'filename.')
@@ -647,7 +633,7 @@ class GClient(object):
       if isinstance(deps[d], self.FromImpl):
         filename = os.path.join(self._root_dir,
                                 deps[d].module_name,
-                                self._options.deps_file)
+                                self.DEPS_FILE)
         content =  gclient_utils.FileRead(filename)
         sub_deps = self._ParseSolutionDeps(deps[d].module_name, content, {},
                                            False)
@@ -774,7 +760,7 @@ class GClient(object):
       (url, rev) = GetURLAndRev(name, solution["url"])
       entries[name] = "%s@%s" % (url, rev)
       solution_names[name] = "%s@%s" % (url, rev)
-      deps_file = solution.get("deps_file", self._options.deps_file)
+      deps_file = solution.get("deps_file", DEPS_FILE)
       if '/' in deps_file or '\\' in deps_file:
         raise gclient_utils.Error('deps_file name must not be a path, just a '
                                   'filename.')
@@ -809,7 +795,7 @@ class GClient(object):
         content =  gclient_utils.FileRead(os.path.join(
                                             self._root_dir,
                                             deps[d].module_name,
-                                            self._options.deps_file))
+                                            DEPS_FILE))
         sub_deps = self._ParseSolutionDeps(deps[d].module_name, content, {})
         (url, rev) = GetURLAndRev(d, sub_deps[d])
         entries[d] = "%s@%s" % (url, rev)
@@ -820,7 +806,7 @@ class GClient(object):
       custom_deps = ",\n      ".join(["\"%s\": \"%s\"" % (x, entries[x])
                                       for x in sorted(entries.keys())])
 
-      new_gclient += DEFAULT_SNAPSHOT_SOLUTION_TEXT % {
+      new_gclient += self.DEFAULT_SNAPSHOT_SOLUTION_TEXT % {
                      'solution_name': name,
                      'solution_url': url,
                      'safesync_url' : "",

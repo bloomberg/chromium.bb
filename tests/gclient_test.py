@@ -52,16 +52,15 @@ class GClientBaseTestCase(BaseTestCase):
 
 class GclientTestCase(GClientBaseTestCase):
   class OptionsObject(object):
-    def __init__(self, test_case, verbose=False, spec=None,
+    def __init__(self, test_case, verbose=0, spec=None,
                  config_filename='a_file_name',
                  entries_filename='a_entry_file_name',
-                 deps_file='a_deps_file_name', force=False, nohooks=False):
+                 force=False, nohooks=False):
       self.verbose = verbose
+      self.config_filename = config_filename
+      #self.entries_filename = entries_filename
       self.spec = spec
       self.name = None
-      self.config_filename = config_filename
-      self.entries_filename = entries_filename
-      self.deps_file = deps_file
       self.force = force
       self.nohooks = nohooks
       self.revisions = []
@@ -69,13 +68,8 @@ class GclientTestCase(GClientBaseTestCase):
       self.deps_os = None
       self.head = False
 
-      # Mox
-      self.platform = test_case.platform
-
   def setUp(self):
     GClientBaseTestCase.setUp(self)
-    self.platform = 'darwin'
-
     self.args = self.Args()
     self.root_dir = self.Dir()
     self.url = self.Url()
@@ -309,7 +303,7 @@ class GClientClassTestCase(GclientTestCase):
     solution_name = 'solution name'
     solution_url = 'solution url'
     safesync_url = 'safesync url'
-    default_text = gclient.DEFAULT_CLIENT_FILE_TEXT % {
+    default_text = gclient.Gclient.DEFAULT_CLIENT_FILE_TEXT % {
       'solution_name' : solution_name,
       'solution_url'  : solution_url,
       'safesync_url' : safesync_url
@@ -1037,7 +1031,7 @@ deps = {
     gclient.gclient_utils.FileRead(
         gclient.os.path.join(self.root_dir, name, options.deps_file)
         ).AndReturn(deps_content)
-    
+
     # base gets updated.
     gclient.gclient_scm.CreateSCM(base_url, self.root_dir, 'base').AndReturn(
         gclient.gclient_scm.CreateSCM)
@@ -1051,7 +1045,7 @@ deps = {
         gclient.gclient_scm.CreateSCM)
     gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
 
-    # Process is done and will write an .gclient_entries.    
+    # Process is done and will write an .gclient_entries.
     gclient.os.path.exists(
         gclient.os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
@@ -1100,7 +1094,7 @@ deps = {
     gclient.gclient_utils.FileRead(
         gclient.os.path.join(self.root_dir, name, options.deps_file)
         ).AndReturn(deps_content)
-    
+
     # base gets updated.
     gclient.gclient_scm.CreateSCM(base_url, self.root_dir, 'base').AndReturn(
         gclient.gclient_scm.CreateSCM)
@@ -1114,7 +1108,7 @@ deps = {
         gclient.gclient_scm.CreateSCM)
     gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
 
-    # Process is done and will write an .gclient_entries.    
+    # Process is done and will write an .gclient_entries.
     gclient.os.path.exists(
         gclient.os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
@@ -1163,7 +1157,7 @@ deps = {
     gclient.gclient_utils.FileRead(
         gclient.os.path.join(self.root_dir, name, options.deps_file)
         ).AndReturn(deps_content)
-    
+
     # base gets updated.
     gclient.gclient_scm.CreateSCM(base_url, self.root_dir, 'base').AndReturn(
         gclient.gclient_scm.CreateSCM)
@@ -1181,7 +1175,7 @@ deps = {
         'main').AndReturn(gclient.gclient_scm.CreateSCM)
     gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
 
-    # Process is done and will write an .gclient_entries.    
+    # Process is done and will write an .gclient_entries.
     gclient.os.path.exists(
         gclient.os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
