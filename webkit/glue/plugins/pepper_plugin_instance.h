@@ -14,6 +14,7 @@
 
 typedef struct _pp_Instance PP_Instance;
 typedef struct _pp_Resource PP_Resource;
+typedef struct _pp_Var PP_Var;
 typedef struct _ppb_Instance PPB_Instance;
 typedef struct _ppp_Instance PPP_Instance;
 
@@ -24,6 +25,7 @@ class Rect;
 namespace WebKit {
 struct WebCursorInfo;
 class WebInputEvent;
+class WebPluginContainer;
 }
 
 namespace pepper {
@@ -54,11 +56,14 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
              const gfx::Rect& paint_rect);
 
   // PPB_Instance implementation.
+  PP_Var GetWindowObject();
+  PP_Var GetOwnerElementObject();
   bool BindGraphicsDeviceContext(PP_Resource device_id);
 
   // PPP_Instance pass-through.
   void Delete();
-  bool Initialize(const std::vector<std::string>& arg_names,
+  bool Initialize(WebKit::WebPluginContainer* container,
+                  const std::vector<std::string>& arg_names,
                   const std::vector<std::string>& arg_values);
   bool HandleInputEvent(const WebKit::WebInputEvent& event,
                         WebKit::WebCursorInfo* cursor_info);
@@ -68,6 +73,9 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   PluginDelegate* delegate_;
   scoped_refptr<PluginModule> module_;
   const PPP_Instance* instance_interface_;
+
+  // NULL until we have been initialized.
+  WebKit::WebPluginContainer* container_;
 
   // The current device context for painting in 2D.
   scoped_refptr<DeviceContext2D> device_context_2d_;
