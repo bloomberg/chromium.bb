@@ -38,6 +38,7 @@ const char kStream[]       = "stream";
 const char kVideoThreads[] = "video-threads";
 const char kVerbose[]      = "verbose";
 const char kFast2[]        = "fast2";
+const char kErrorCorrection[] = "error-correction";
 const char kSkip[]         = "skip";
 const char kFlush[]        = "flush";
 const char kDjb2[]         = "djb2";
@@ -97,6 +98,8 @@ int main(int argc, const char** argv) {
               << "Loop N times\n"
               << "  --fast2                         "
               << "Enable fast2 flag\n"
+              << "  --error-correction              "
+              << "Enable ffmpeg error correction\n"
               << "  --flush                         "
               << "Flush last frame\n"
               << "  --djb2 (aka --hash)             "
@@ -172,6 +175,11 @@ int main(int argc, const char** argv) {
   bool fast2 = false;
   if (cmd_line->HasSwitch(switches::kFast2)) {
     fast2 = true;
+  }
+
+  bool error_correction = false;
+  if (cmd_line->HasSwitch(switches::kErrorCorrection)) {
+    error_correction = true;
   }
 
   bool flush = false;
@@ -308,6 +316,10 @@ int main(int argc, const char** argv) {
   }
   if (fast2) {
     codec_context->flags2 |= CODEC_FLAG2_FAST;
+  }
+  if (error_correction) {
+    codec_context->error_concealment = FF_EC_GUESS_MVS | FF_EC_DEBLOCK;
+    codec_context->error_recognition = FF_ER_CAREFUL;
   }
 
   // Initialize threaded decode.
