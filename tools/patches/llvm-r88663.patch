@@ -1,6 +1,6 @@
 diff -r c06933b0e3e6 llvm-trunk/include/llvm/CodeGen/MachineConstantPool.h
---- a/llvm-trunk/include/llvm/CodeGen/MachineConstantPool.h	Wed Mar 24 16:37:54 2010 -0400
-+++ b/llvm-trunk/include/llvm/CodeGen/MachineConstantPool.h	Wed Apr 14 12:14:23 2010 -0400
+--- a/llvm-trunk/include/llvm/CodeGen/MachineConstantPool.h
++++ b/llvm-trunk/include/llvm/CodeGen/MachineConstantPool.h
 @@ -54,6 +54,17 @@
                                          unsigned Alignment) = 0;
  
@@ -20,8 +20,8 @@ diff -r c06933b0e3e6 llvm-trunk/include/llvm/CodeGen/MachineConstantPool.h
    /// print - Implement operator<<
    virtual void print(raw_ostream &O) const = 0;
 diff -r c06933b0e3e6 llvm-trunk/lib/CodeGen/BranchFolding.cpp
---- a/llvm-trunk/lib/CodeGen/BranchFolding.cpp	Wed Mar 24 16:37:54 2010 -0400
-+++ b/llvm-trunk/lib/CodeGen/BranchFolding.cpp	Wed Apr 14 12:14:23 2010 -0400
+--- a/llvm-trunk/lib/CodeGen/BranchFolding.cpp
++++ b/llvm-trunk/lib/CodeGen/BranchFolding.cpp
 @@ -20,6 +20,7 @@
  #include "BranchFolding.h"
  #include "llvm/Function.h"
@@ -56,8 +56,8 @@ diff -r c06933b0e3e6 llvm-trunk/lib/CodeGen/BranchFolding.cpp
      // Finally, remove dead jump tables.  This happens either because the
      // indirect jump was unreachable (and thus deleted) or because the jump
 diff -r c06933b0e3e6 llvm-trunk/lib/CodeGen/SelectionDAG/DAGCombiner.cpp
---- a/llvm-trunk/lib/CodeGen/SelectionDAG/DAGCombiner.cpp	Wed Mar 24 16:37:54 2010 -0400
-+++ b/llvm-trunk/lib/CodeGen/SelectionDAG/DAGCombiner.cpp	Wed Apr 14 12:14:23 2010 -0400
+--- a/llvm-trunk/lib/CodeGen/SelectionDAG/DAGCombiner.cpp
++++ b/llvm-trunk/lib/CodeGen/SelectionDAG/DAGCombiner.cpp
 @@ -5853,6 +5853,11 @@
    if (ConstantFPSDNode *TV = dyn_cast<ConstantFPSDNode>(N2))
      if (ConstantFPSDNode *FV = dyn_cast<ConstantFPSDNode>(N3)) {
@@ -71,8 +71,8 @@ diff -r c06933b0e3e6 llvm-trunk/lib/CodeGen/SelectionDAG/DAGCombiner.cpp
             TargetLowering::Legal) &&
            // If both constants have multiple uses, then we won't need to do an
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMBaseInstrInfo.cpp
---- a/llvm-trunk/lib/Target/ARM/ARMBaseInstrInfo.cpp	Wed Mar 24 16:37:54 2010 -0400
-+++ b/llvm-trunk/lib/Target/ARM/ARMBaseInstrInfo.cpp	Wed Apr 14 12:14:23 2010 -0400
+--- a/llvm-trunk/lib/Target/ARM/ARMBaseInstrInfo.cpp
++++ b/llvm-trunk/lib/Target/ARM/ARMBaseInstrInfo.cpp
 @@ -34,6 +34,9 @@
  #include "llvm/Support/Debug.h"
  #include "llvm/Support/ErrorHandling.h"
@@ -131,8 +131,8 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMBaseInstrInfo.cpp
        .addReg(BaseReg, RegState::Kill).addImm(ThisVal)
        .addImm((unsigned)Pred).addReg(PredReg).addReg(0);
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMConstantIslandPass.cpp
---- a/llvm-trunk/lib/Target/ARM/ARMConstantIslandPass.cpp	Wed Mar 24 16:37:54 2010 -0400
-+++ b/llvm-trunk/lib/Target/ARM/ARMConstantIslandPass.cpp	Wed Apr 14 12:14:23 2010 -0400
+--- a/llvm-trunk/lib/Target/ARM/ARMConstantIslandPass.cpp
++++ b/llvm-trunk/lib/Target/ARM/ARMConstantIslandPass.cpp
 @@ -35,6 +35,15 @@
  #include <algorithm>
  using namespace llvm;
@@ -437,8 +437,8 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMConstantIslandPass.cpp
    MachineBasicBlock *DestBB = MI->getOperand(0).getMBB();
  
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMConstantPoolValue.cpp
---- a/llvm-trunk/lib/Target/ARM/ARMConstantPoolValue.cpp	Wed Mar 24 16:37:54 2010 -0400
-+++ b/llvm-trunk/lib/Target/ARM/ARMConstantPoolValue.cpp	Wed Apr 14 12:14:23 2010 -0400
+--- a/llvm-trunk/lib/Target/ARM/ARMConstantPoolValue.cpp
++++ b/llvm-trunk/lib/Target/ARM/ARMConstantPoolValue.cpp
 @@ -27,7 +27,8 @@
                                             const char *Modif,
                                             bool AddCA)
@@ -512,8 +512,8 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMConstantPoolValue.cpp
      O << S;
    if (Modifier) O << "(" << Modifier << ")";
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMConstantPoolValue.h
---- a/llvm-trunk/lib/Target/ARM/ARMConstantPoolValue.h	Wed Mar 24 16:37:54 2010 -0400
-+++ b/llvm-trunk/lib/Target/ARM/ARMConstantPoolValue.h	Wed Apr 14 12:14:23 2010 -0400
+--- a/llvm-trunk/lib/Target/ARM/ARMConstantPoolValue.h
++++ b/llvm-trunk/lib/Target/ARM/ARMConstantPoolValue.h
 @@ -28,7 +28,8 @@
      CPValue,
      CPExtSymbol,
@@ -555,8 +555,8 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMConstantPoolValue.h
    virtual unsigned getRelocationInfo() const {
      // FIXME: This is conservatively claiming that these entries require a
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMISelDAGToDAG.cpp
---- a/llvm-trunk/lib/Target/ARM/ARMISelDAGToDAG.cpp	Wed Mar 24 16:37:54 2010 -0400
-+++ b/llvm-trunk/lib/Target/ARM/ARMISelDAGToDAG.cpp	Wed Apr 14 12:14:23 2010 -0400
+--- a/llvm-trunk/lib/Target/ARM/ARMISelDAGToDAG.cpp
++++ b/llvm-trunk/lib/Target/ARM/ARMISelDAGToDAG.cpp
 @@ -34,6 +34,10 @@
  #include "llvm/Support/raw_ostream.h"
  
@@ -704,8 +704,8 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMISelDAGToDAG.cpp
    Base = N.getOperand(0);
    Offset = N.getOperand(1);
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMISelLowering.cpp
---- a/llvm-trunk/lib/Target/ARM/ARMISelLowering.cpp	Wed Mar 24 16:37:54 2010 -0400
-+++ b/llvm-trunk/lib/Target/ARM/ARMISelLowering.cpp	Wed Apr 14 12:14:23 2010 -0400
+--- a/llvm-trunk/lib/Target/ARM/ARMISelLowering.cpp
++++ b/llvm-trunk/lib/Target/ARM/ARMISelLowering.cpp
 @@ -42,9 +42,14 @@
  #include "llvm/Support/ErrorHandling.h"
  #include "llvm/Support/MathExtras.h"
@@ -933,8 +933,8 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMISelLowering.cpp
    EVT VT;
    SDValue Ptr;
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMISelLowering.h
---- a/llvm-trunk/lib/Target/ARM/ARMISelLowering.h	Wed Mar 24 16:37:54 2010 -0400
-+++ b/llvm-trunk/lib/Target/ARM/ARMISelLowering.h	Wed Apr 14 12:14:23 2010 -0400
+--- a/llvm-trunk/lib/Target/ARM/ARMISelLowering.h
++++ b/llvm-trunk/lib/Target/ARM/ARMISelLowering.h
 @@ -274,6 +274,7 @@
                               ISD::ArgFlagsTy Flags);
      SDValue LowerINTRINSIC_W_CHAIN(SDValue Op, SelectionDAG &DAG);
@@ -944,8 +944,8 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMISelLowering.h
      SDValue LowerGlobalAddressDarwin(SDValue Op, SelectionDAG &DAG);
      SDValue LowerGlobalAddressELF(SDValue Op, SelectionDAG &DAG);
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMInstrInfo.cpp
---- a/llvm-trunk/lib/Target/ARM/ARMInstrInfo.cpp	Wed Mar 24 16:37:54 2010 -0400
-+++ b/llvm-trunk/lib/Target/ARM/ARMInstrInfo.cpp	Wed Apr 14 12:14:23 2010 -0400
+--- a/llvm-trunk/lib/Target/ARM/ARMInstrInfo.cpp
++++ b/llvm-trunk/lib/Target/ARM/ARMInstrInfo.cpp
 @@ -22,7 +22,22 @@
  #include "llvm/CodeGen/MachineInstrBuilder.h"
  #include "llvm/CodeGen/MachineJumpTableInfo.h"
@@ -975,8 +975,8 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMInstrInfo.cpp
  }
 -
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMInstrInfo.td
---- a/llvm-trunk/lib/Target/ARM/ARMInstrInfo.td	Wed Mar 24 16:37:54 2010 -0400
-+++ b/llvm-trunk/lib/Target/ARM/ARMInstrInfo.td	Wed Apr 14 12:14:23 2010 -0400
+--- a/llvm-trunk/lib/Target/ARM/ARMInstrInfo.td
++++ b/llvm-trunk/lib/Target/ARM/ARMInstrInfo.td
 @@ -321,6 +321,11 @@
    let MIOperandInfo = (ops GPR, i32imm);
  }
@@ -1257,8 +1257,8 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMInstrInfo.td
  }
  
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMInstrVFP.td
---- a/llvm-trunk/lib/Target/ARM/ARMInstrVFP.td	Wed Mar 24 16:37:54 2010 -0400
-+++ b/llvm-trunk/lib/Target/ARM/ARMInstrVFP.td	Wed Apr 14 12:14:23 2010 -0400
+--- a/llvm-trunk/lib/Target/ARM/ARMInstrVFP.td
++++ b/llvm-trunk/lib/Target/ARM/ARMInstrVFP.td
 @@ -65,11 +65,11 @@
  } // canFoldAsLoad
  
@@ -1304,8 +1304,8 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMInstrVFP.td
  // FLDMX, FSTMX - mixing S/D registers for pre-armv6 cores
  
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMLoadStoreOptimizer.cpp
---- a/llvm-trunk/lib/Target/ARM/ARMLoadStoreOptimizer.cpp	Wed Mar 24 16:37:54 2010 -0400
-+++ b/llvm-trunk/lib/Target/ARM/ARMLoadStoreOptimizer.cpp	Wed Apr 14 12:14:23 2010 -0400
+--- a/llvm-trunk/lib/Target/ARM/ARMLoadStoreOptimizer.cpp
++++ b/llvm-trunk/lib/Target/ARM/ARMLoadStoreOptimizer.cpp
 @@ -38,6 +38,9 @@
  #include "llvm/ADT/SmallVector.h"
  #include "llvm/ADT/Statistic.h"
@@ -1372,8 +1372,8 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMLoadStoreOptimizer.cpp
  
    MachineBasicBlock::iterator MBBI = prior(MBB.end());
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMSubtarget.cpp
---- a/llvm-trunk/lib/Target/ARM/ARMSubtarget.cpp	Wed Mar 24 16:37:54 2010 -0400
-+++ b/llvm-trunk/lib/Target/ARM/ARMSubtarget.cpp	Wed Apr 14 12:14:23 2010 -0400
+--- a/llvm-trunk/lib/Target/ARM/ARMSubtarget.cpp
++++ b/llvm-trunk/lib/Target/ARM/ARMSubtarget.cpp
 @@ -27,6 +27,17 @@
            cl::desc("Use NEON for single-precision FP"),
            cl::init(false), cl::Hidden);
@@ -1401,8 +1401,8 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMSubtarget.cpp
    , CPUString("generic")
    , TargetType(isELF) // Default to ELF unless otherwise specified.
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMSubtarget.h
---- a/llvm-trunk/lib/Target/ARM/ARMSubtarget.h	Wed Mar 24 16:37:54 2010 -0400
-+++ b/llvm-trunk/lib/Target/ARM/ARMSubtarget.h	Wed Apr 14 12:14:23 2010 -0400
+--- a/llvm-trunk/lib/Target/ARM/ARMSubtarget.h
++++ b/llvm-trunk/lib/Target/ARM/ARMSubtarget.h
 @@ -61,6 +61,11 @@
  
    /// IsR9Reserved - True if R9 is a not available as general purpose register.
@@ -1426,8 +1426,8 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMSubtarget.h
  } // End llvm namespace
  
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
---- a/llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp	Wed Mar 24 16:37:54 2010 -0400
-+++ b/llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp	Wed Apr 14 12:14:23 2010 -0400
+--- a/llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
++++ b/llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
 @@ -51,7 +51,13 @@
  #include "llvm/Support/Mangler.h"
  #include "llvm/Support/MathExtras.h"
@@ -1808,7 +1808,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
 +
 +    O <<
 +      "\t.macro sfi_code_mask reg cond=\n"
-+      "\tbic\\cond \\reg, \\reg, #0xf000000f\n"
++      "\tbic\\cond \\reg, \\reg, #0xc000000f\n"
 +      "\t.endm\n"
 +      "\n\n";
 +  }
@@ -2001,8 +2001,8 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
  }
 -
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMInstPrinter.cpp
---- a/llvm-trunk/lib/Target/ARM/AsmPrinter/ARMInstPrinter.cpp	Wed Mar 24 16:37:54 2010 -0400
-+++ b/llvm-trunk/lib/Target/ARM/AsmPrinter/ARMInstPrinter.cpp	Wed Apr 14 12:14:23 2010 -0400
+--- a/llvm-trunk/lib/Target/ARM/AsmPrinter/ARMInstPrinter.cpp
++++ b/llvm-trunk/lib/Target/ARM/AsmPrinter/ARMInstPrinter.cpp
 @@ -18,8 +18,15 @@
  #include "llvm/MC/MCInst.h"
  #include "llvm/MC/MCAsmInfo.h"
@@ -2090,8 +2090,8 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMInstPrinter.cpp
  void ARMInstPrinter::printAddrMode2OffsetOperand(const MCInst *MI,
                                                   unsigned OpNum) {
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMInstPrinter.h
---- a/llvm-trunk/lib/Target/ARM/AsmPrinter/ARMInstPrinter.h	Wed Mar 24 16:37:54 2010 -0400
-+++ b/llvm-trunk/lib/Target/ARM/AsmPrinter/ARMInstPrinter.h	Wed Apr 14 12:14:23 2010 -0400
+--- a/llvm-trunk/lib/Target/ARM/AsmPrinter/ARMInstPrinter.h
++++ b/llvm-trunk/lib/Target/ARM/AsmPrinter/ARMInstPrinter.h
 @@ -40,8 +40,19 @@
    
    void printSORegOperand(const MCInst *MI, unsigned OpNum);
