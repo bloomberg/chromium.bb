@@ -17,6 +17,7 @@
 namespace chromeos {
 
 static const int kBorderSize = 4;
+static const int kMaxLabelWidth = 250;
 
 MessageBubble::MessageBubble(views::Widget* parent, SkBitmap* image,
     const std::wstring& text) : parent_(parent) {
@@ -45,6 +46,7 @@ MessageBubble::MessageBubble(views::Widget* parent, SkBitmap* image,
   text_ = new views::Label(text);
   text_->SetMultiLine(true);
   text_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  text_->SizeToFit(kMaxLabelWidth);
   layout->AddView(text_);
 
   close_button_ = new views::ImageButton(this);

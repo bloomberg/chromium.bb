@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/browser_notification_observers.h"
@@ -167,7 +168,7 @@ void LoginManagerView::UpdateLocalizedStrings() {
   sign_in_button_->SetLabel(l10n_util::GetString(IDS_LOGIN_BUTTON));
   create_account_link_->SetText(
       l10n_util::GetString(IDS_CREATE_ACCOUNT_BUTTON));
-  ShowError(error_id_);
+  ShowError(-1, "");
   languages_menubutton_->SetText(language_switch_model_.GetCurrentLocaleName());
 }
 
@@ -270,17 +271,14 @@ void LoginManagerView::SetPassword(const std::string& password) {
 }
 
 void LoginManagerView::Login() {
-  if (login_in_process_) {
+  if (login_in_process_ || !authenticator_ ||
+      username_field_->text().empty())
     return;
-  }
+
   login_in_process_ = true;
+  password_field_->SetEnabled(false);
   sign_in_button_->SetEnabled(false);
   create_account_link_->SetEnabled(false);
-  // Disallow 0 size username.
-  if (username_field_->text().empty() || !authenticator_) {
-    // Return true so that processing ends
-    return;
-  }
   std::string username = UTF16ToUTF8(username_field_->text());
   // todo(cmasone) Need to sanitize memory used to store password.
   std::string password = UTF16ToUTF8(password_field_->text());
@@ -323,14 +321,14 @@ void LoginManagerView::OnLoginFailure(const std::string& error) {
   // Check networking after trying to login in case user is
   // cached locally or the local admin account.
   if (!network || !CrosLibrary::Get()->EnsureLoaded()) {
-    ShowError(IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY);
+    ShowError(IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY, error);
   } else if (!network->Connected()) {
-    ShowError(IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED);
+    ShowError(IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED, error);
   } else {
-    ShowError(IDS_LOGIN_ERROR_AUTHENTICATING);
-    // TODO(someone): get |error| onto the UI somehow?
+    ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
   }
   login_in_process_ = false;
+  password_field_->SetEnabled(true);
   sign_in_button_->SetEnabled(true);
   create_account_link_->SetEnabled(true);
   SetPassword(std::string());
@@ -347,7 +345,7 @@ void LoginManagerView::OnLoginSuccess(const std::string& username,
   LoginUtils::Get()->CompleteLogin(username, credentials);
 }
 
-void LoginManagerView::ShowError(int error_id) {
+void LoginManagerView::ShowError(int error_id, const std::string& details) {
   error_id_ = error_id;
 
   // Close bubble before showing anything new.
@@ -357,6 +355,8 @@ void LoginManagerView::ShowError(int error_id) {
 
   if (error_id_ != -1) {
     std::wstring error_text = l10n_util::GetString(error_id_);
+    if (!details.empty())
+      error_text += L"\n" + ASCIIToWide(details);
 
     gfx::Rect screen_bounds(password_field_->bounds());
     gfx::Point origin(screen_bounds.origin());
@@ -396,7 +396,7 @@ bool LoginManagerView::HandleKeystroke(views::Textfield* s,
     return true;
   } else if (error_id_ != -1) {
     // Clear all previous error messages.
-    ShowError(-1);
+    ShowError(-1, "");
     return false;
   }
   // Return false so that processing does not end

@@ -160,11 +160,11 @@ void ExistingUserController::OnLoginFailure(const std::string& error) {
   // cached locally or the local admin account.
   NetworkLibrary* network = CrosLibrary::Get()->GetNetworkLibrary();
   if (!network || !CrosLibrary::Get()->EnsureLoaded()) {
-    ShowError(IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY);
+    ShowError(IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY, error);
   } else if (!network->Connected()) {
-    ShowError(IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED);
+    ShowError(IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED, error);
   } else {
-    ShowError(IDS_LOGIN_ERROR_AUTHENTICATING);
+    ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
   }
 
   controllers_[index_of_view_logging_in_]->ClearAndEnablePassword();
@@ -175,13 +175,16 @@ void ExistingUserController::OnLoginFailure(const std::string& error) {
   WmIpc::instance()->SendMessage(message);
 }
 
-void ExistingUserController::ShowError(int error_id) {
+void ExistingUserController::ShowError(int error_id,
+                                       const std::string& details) {
   // Close bubble before showing anything new.
   // bubble_ will be set to NULL in callback.
   if (bubble_)
     bubble_->Close();
 
   std::wstring error_text = l10n_util::GetString(error_id);
+  if (!details.empty())
+    error_text += L"\n" + ASCIIToWide(details);
   bubble_ = MessageBubble::Show(
       controllers_[index_of_view_logging_in_]->controls_window(),
       controllers_[index_of_view_logging_in_]->GetScreenBounds(),

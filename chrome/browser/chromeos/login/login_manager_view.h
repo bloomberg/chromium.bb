@@ -118,8 +118,9 @@ class LoginManagerView : public views::View,
                     const std::string& password);
 
   // Shows error message with the specified message id.
-  // -1 stands for no error.
-  void ShowError(int error_id);
+  // -1 stands for no error. If |details| string is not empty, it specify
+  // additional error text provided by authenticator, it is not localized.
+  void ShowError(int error_id, const std::string& details);
 
   void FocusFirstField();
 

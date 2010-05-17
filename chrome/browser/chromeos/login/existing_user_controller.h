@@ -81,7 +81,9 @@ class ExistingUserController : public WmMessageListener::Observer,
   virtual bool FadeOutOnClose() { return false; }
 
   // Show error message. |error_id| error message ID in resources.
-  void ShowError(int error_id);
+  // If |details| string is not empty, it specify additional error text
+  // provided by authenticator, it is not localized.
+  void ShowError(int error_id, const std::string& details);
 
   // Bounds of the background window.
   const gfx::Rect background_bounds_;
