@@ -283,8 +283,9 @@ class GClientClassTestCase(GclientTestCase):
       'ConfigContent', 'DEFAULT_CLIENT_FILE_TEXT',
       'DEFAULT_SNAPSHOT_FILE_TEXT', 'DEFAULT_SNAPSHOT_SOLUTION_TEXT',
       'DEPS_FILE', 'FileImpl', 'FromImpl', 'GetVar', 'LoadCurrentConfig',
-      'RunOnDeps', 'SaveConfig', 'SetConfig', 'SetDefaultConfig',
-      'supported_commands', 'PrintRevInfo',
+      'PrintRevInfo', 'RunOnDeps', 'SaveConfig', 'SetConfig',
+      'SetDefaultConfig',
+      'deps_os_choices', 'supported_commands',
     ]
 
     # If you add a member, be sure to add the relevant test!
