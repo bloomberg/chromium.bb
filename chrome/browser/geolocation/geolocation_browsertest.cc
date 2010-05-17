@@ -610,3 +610,35 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   CheckStringValueFromJavascript("1", "requestGeolocationFromInvalidUrl()");
   CheckStringValueFromJavascriptForTab("1", "isAlive()", original_tab);
 }
+
+#if defined(OS_MACOSX)
+// TODO(bulach): investigate why this fails on mac. It may be related to:
+// http://crbug.com/29424
+#define MAYBE_NoInfoBarBeforeStart DISABLED_NoInfoBarBeforeStart
+#else
+// TODO(bulach): enable after https://bugs.webkit.org/show_bug.cgi?id=38323
+#define MAYBE_NoInfoBarBeforeStart NoInfoBarBeforeStart
+#endif
+
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfoBarBeforeStart) {
+  // See http://crbug.com/42789
+  html_for_tests_ = "files/geolocation/iframes_different_origin.html";
+  ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
+  LOG(WARNING) << "frames loaded";
+
+  // Access navigator.geolocation, but ensure it won't request permission.
+  iframe_xpath_ = L"//iframe[@id='iframe_1']";
+  CheckStringValueFromJavascript("object", "geoAccessNavigatorGeolocation()");
+
+  iframe_xpath_ = L"//iframe[@id='iframe_0']";
+  AddGeolocationWatch(true);
+  SetInfobarResponse(iframe0_url_, true);
+  CheckGeoposition(MockLocationProvider::instance_->position_);
+  CheckStringValueFromJavascript("false", "geoEnableAlerts(false)");
+
+  // Permission should be requested after adding a watch.
+  iframe_xpath_ = L"//iframe[@id='iframe_1']";
+  AddGeolocationWatch(true);
+  SetInfobarResponse(iframe1_url_, true);
+  CheckGeoposition(MockLocationProvider::instance_->position_);
+}
