@@ -154,7 +154,6 @@ o3d.BoundingBox.prototype.add =
 /**
  * Checks if a ray defined in same coordinate system as this box intersects
  * this bounding box.
- * TODO(petersont): this can also take six coordinates as input.
  * @param {!o3d.math.Point3} start position of start of ray in local space.
  * @param {!o3d.math.Point3} end position of end of ray in local space.
  * @return {!o3d.RayIntersectionInfo}  RayIntersectionInfo. If result.value
@@ -165,6 +164,12 @@ o3d.BoundingBox.prototype.add =
  */
 o3d.BoundingBox.prototype.intersectRay =
     function(start, end) {
+  // If there are six arguments, assume they are the coordinates of two points.
+  if (arguments.length == 6) {
+    start = [arguments[0], arguments[1], arguments[2]];
+    end = [arguments[3], arguments[4], arguments[5]];
+  }
+
   var result = new RayIntersectionInfo;
 
   if (this.valid) {

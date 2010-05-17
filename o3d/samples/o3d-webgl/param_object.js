@@ -46,7 +46,7 @@ o3d.ParamObject.O3D_PREFIX_ = 'o3d.';
 /**
  * Creates a Param with the given name and type on the ParamObject.
  * Will fail if a param with the same name already exists.
- * 
+ *
  * @param {string} param_name The name of the Param to be created.
  * @param {string} param_type_name The type of Param to create.
  *     Valid types are
@@ -116,7 +116,7 @@ o3d.ParamObject.prototype.createParam =
 
 /**
  * Searches by name for a Param defined in the object.
- * 
+ *
  * @param {string} param_name Name to search for.
  * @return {!o3d.Param}  The Param with the given name, or null otherwise.
  */
@@ -153,30 +153,30 @@ o3d.ParamObject.prototype.getParam =
 
 /**
  * Removes a Param from a ParamObject.
- * 
+ *
  * This function will fail if the param does not exist on this ParamObject
  * or if the param is unremovable.
- * 
+ *
  * @param {!o3d.Param} param param to remove.
  * @return {boolean}  True if the param was removed.
  */
 o3d.ParamObject.prototype.removeParam =
     function(param) {
-  o3d.notImplemented();
+  o3d.removeFromArray(param, this.params_);
 };
 
 
 /**
  * Gets all the param on this param object.
- * 
+ *
  * Each access to this field gets the entire list, so it is best to get it
  * just once. For example:
- * 
+ *
  * var params = paramObject.params;
  * for (var i = 0; i < params.length; i++) {
  *   var param = params[i];
  * }
- * 
+ *
  * Note that modifications to this array [e.g. push()] will not affect
  * the underlying ParamObject, while modifications to the array's members
  * will affect them.
@@ -193,7 +193,9 @@ o3d.ParamObject.prototype.params_ = {};
  */
 o3d.ParamObject.prototype.copyParams =
     function(source_param_object) {
-  o3d.notImplemented();
+  for (param in source_param_object.params_) {
+    this.createParam(param.name, param.className);
+  }
 };
 
 

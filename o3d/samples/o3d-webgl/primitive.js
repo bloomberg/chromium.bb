@@ -130,10 +130,13 @@ o3d.Primitive.prototype.render = function() {
         this.gl.enableVertexAttribArray(gl_index);
         enabled_attribs.push(gl_index);
 
-        // TODO(petersont): Change that hard-coded 4 down there.
+        // TODO(petersont): When the constant WebGLFloatArray.BYTES_PER_ELEMENT
+        // becomes available in implementations, use that here instead of this
+        // hard-coded 4.
+        var kFloatSize = 4;
         this.gl.vertexAttribPointer(
             gl_index, field.numComponents, this.gl.FLOAT, false,
-            buffer.totalComponents * 4, field.offset_ * 4);
+            buffer.totalComponents * kFloatSize, field.offset_ * kFloatSize);
       }
     }
   }
