@@ -6,61 +6,56 @@
 
 #include "ipc/ipc_sync_message.h"
 
-void SyncMessageReplyDispatcher::Push(IPC::SyncMessage* msg,
-                                      SyncMessageCallContext* context,
+void SyncMessageReplyDispatcher::Push(IPC::SyncMessage* msg, void* callback,
                                       void* key) {
-  context->message_type_ = msg->type();
-  context->id_ = IPC::SyncMessage::GetMessageId(*msg);
-  context->key_ = key;
-
+  MessageSent pending(IPC::SyncMessage::GetMessageId(*msg),
+                      msg->type(), callback, key);
   AutoLock lock(message_queue_lock_);
-  message_queue_.push_back(context);
+  message_queue_.push_back(pending);
 }
 
-bool SyncMessageReplyDispatcher::HandleMessageType(
-    const IPC::Message& msg, SyncMessageCallContext* context) {
+bool SyncMessageReplyDispatcher::HandleMessageType(const IPC::Message& msg,
+                                                   const MessageSent& origin) {
   return false;
 }
 
 bool SyncMessageReplyDispatcher::OnMessageReceived(const IPC::Message& msg) {
-  SyncMessageCallContext* context = GetContext(msg);
-  // No context e.g. no return values and/or don't care
-  if (!context) {
+  MessageSent origin;
+  if (!Pop(msg, &origin)) {
     return false;
   }
 
-  return HandleMessageType(msg, context);
+  // No callback e.g. no return values and/or don't care
+  if (origin.callback == NULL)
+    return true;
+
+  return HandleMessageType(msg, origin);
 }
 
 void SyncMessageReplyDispatcher::Cancel(void* key) {
   DCHECK(key != NULL);
   AutoLock lock(message_queue_lock_);
-  PendingSyncMessageQueue::iterator it = message_queue_.begin();
-  while (it != message_queue_.end()) {
-    SyncMessageCallContext* context = *it;
-    if (context->key_ == key) {
-      it = message_queue_.erase(it);
-      delete context;
-    } else {
-      ++it;
+  PendingSyncMessageQueue::iterator it;
+  for (it = message_queue_.begin(); it != message_queue_.end(); ++it) {
+    if (it->key == key) {
+      it->key = NULL;
     }
   }
 }
 
-SyncMessageReplyDispatcher::SyncMessageCallContext*
-    SyncMessageReplyDispatcher::GetContext(const IPC::Message& msg) {
+bool SyncMessageReplyDispatcher::Pop(const IPC::Message& msg, MessageSent* t) {
   if (!msg.is_reply())
-    return NULL;
+    return false;
 
   int id = IPC::SyncMessage::GetMessageId(msg);
   AutoLock lock(message_queue_lock_);
   PendingSyncMessageQueue::iterator it;
   for (it = message_queue_.begin(); it != message_queue_.end(); ++it) {
-    SyncMessageCallContext* context = *it;
-    if (context->id_ == id) {
+    if (it->id == id) {
+      *t = *it;
       message_queue_.erase(it);
-      return context;
+      return true;
     }
   }
-  return NULL;
+  return false;
 }
