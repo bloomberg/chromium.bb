@@ -73,6 +73,7 @@
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
 #include "chrome/browser/chromeos/low_battery_observer.h"
+#include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/chromeos/usb_mount_observer.h"
 #include "chrome/browser/chromeos/wm_message_listener.h"
 #include "chrome/browser/chromeos/wm_overview_controller.h"
@@ -423,6 +424,10 @@ bool BrowserInit::LaunchBrowser(
     static chromeos::LowBatteryObserver* observer =
         new chromeos::LowBatteryObserver(profile);
     chromeos::CrosLibrary::Get()->GetPowerLibrary()->AddObserver(observer);
+
+    // Creates the SystemKeyEventListener to listen for keypress messages
+    // regardless of what window has focus.
+    chromeos::SystemKeyEventListener::instance();
   }
 #endif
 

@@ -500,6 +500,8 @@
         'browser/chromeos/status/status_area_host.h',
         'browser/chromeos/status/status_area_view.cc',
         'browser/chromeos/status/status_area_view.h',
+        'browser/chromeos/system_key_event_listener.cc',
+        'browser/chromeos/system_key_event_listener.h',
         'browser/chromeos/usb_mount_observer.cc',
         'browser/chromeos/usb_mount_observer.h',
         'browser/chromeos/version_loader.cc',
