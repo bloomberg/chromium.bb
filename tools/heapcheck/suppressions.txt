@@ -398,3 +398,10 @@
    fun:main
    fun:__libc_start_main
 }
+{
+   bug_44354
+   Heapcheck:Leak
+   ...
+   fun:NetTestSuite::InitializeTestThread
+   fun:NetTestSuite::Initialize
+}
