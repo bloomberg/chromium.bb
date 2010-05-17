@@ -124,7 +124,8 @@ class BrowserViewsAccessibilityTest : public InProcessBrowserTest {
 };
 
 // Retrieve accessibility object for main window and verify accessibility info.
-IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest, TestChromeWindowAccObj) {
+IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
+                       FLAKY_TestChromeWindowAccObj) {
   BrowserWindow* browser_window = browser()->window();
   ASSERT_TRUE(NULL != browser_window);
 
@@ -138,6 +139,8 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest, TestChromeWindowAccObj) {
   ASSERT_EQ(S_OK, hr);
   ASSERT_TRUE(NULL != acc_obj);
 
+  // TODO(ctguil): Fix. The window title could be "New Tab - Chromium" or
+  // "about:blank - Chromium"
   TestAccessibilityInfo(acc_obj, l10n_util::GetString(IDS_PRODUCT_NAME),
                         ROLE_SYSTEM_WINDOW);
 
@@ -151,8 +154,8 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest, TestNonClientViewAccObj) {
   GetBrowserView()->GetWindow()->GetNonClientView();
 
   TestViewAccessibilityObject(non_client_view,
-  l10n_util::GetString(IDS_PRODUCT_NAME),
-  ROLE_SYSTEM_WINDOW);
+      l10n_util::GetString(IDS_PRODUCT_NAME),
+      ROLE_SYSTEM_WINDOW);
 }
 
 // Retrieve accessibility object for browser root view and verify
