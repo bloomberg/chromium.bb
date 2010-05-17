@@ -94,7 +94,8 @@ TEST_F(ExtensionProxyUITest, Uninstall) {
   ASSERT_TRUE(simple_extension_->Uninstall());
 }
 
-TEST_F(ExtensionProxyUITest, ExecuteBrowserActionInActiveTabAsync) {
+// http://crbug.com/44370
+TEST_F(ExtensionProxyUITest, DISABLED_ExecuteBrowserActionInActiveTabAsync) {
   scoped_refptr<BrowserProxy> browser = automation()->GetBrowserWindow(0);
   ASSERT_TRUE(browser.get());
   scoped_refptr<ExtensionProxy> rename_tab_extension =

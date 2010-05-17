@@ -117,42 +117,43 @@ void NaClTest::TearDown() {
   UITest::TearDown();
 }
 
-TEST_F(NaClTest, ServerTest) {
+// http://crbug.com/44371
+TEST_F(NaClTest, DISABLED_ServerTest) {
   FilePath test_file(kServerHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
 
-TEST_F(NaClTest, SrpcHelloWorld) {
+TEST_F(NaClTest, DISABLED_SrpcHelloWorld) {
   FilePath test_file(kSrpcHwHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
 
-TEST_F(NaClTest, SrpcBasicTest) {
+TEST_F(NaClTest, DISABLED_SrpcBasicTest) {
   FilePath test_file(kSrpcBasicHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
 
-TEST_F(NaClTest, SrpcSockAddrTest) {
+TEST_F(NaClTest, DISABLED_SrpcSockAddrTest) {
   FilePath test_file(kSrpcSockAddrHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
 
-TEST_F(NaClTest, SrpcShmTest) {
+TEST_F(NaClTest, DISABLED_SrpcShmTest) {
   FilePath test_file(kSrpcShmHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
 
-TEST_F(NaClTest, SrpcPluginTest) {
+TEST_F(NaClTest, DISABLED_SrpcPluginTest) {
   FilePath test_file(kSrpcPluginHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
 
-TEST_F(NaClTest, SrpcNrdXferTest) {
+TEST_F(NaClTest, DISABLED_SrpcNrdXferTest) {
   FilePath test_file(kSrpcNrdXferHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
 
-TEST_F(NaClTest, NpapiHwTest) {
+TEST_F(NaClTest, DISABLED_NpapiHwTest) {
   FilePath test_file(kNpapiHwHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
