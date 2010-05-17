@@ -214,7 +214,7 @@ void AudioRendererImpl::OnStateChanged(
       // TODO(hclam): We need more handling of these kind of error. For example
       // re-try creating the audio output stream on the browser side or fail
       // nicely and report to demuxer that the whole audio stream is discarded.
-      host()->BroadcastMessage(media::kMsgDisableAudio);
+      host()->DisableAudioRenderer();
       break;
     // TODO(hclam): handle these events.
     case ViewMsg_AudioStreamState_Params::kPlaying:
@@ -350,4 +350,3 @@ void AudioRendererImpl::WillDestroyCurrentMessageLoop() {
   stopped_ = true;
   DestroyTask();
 }
-

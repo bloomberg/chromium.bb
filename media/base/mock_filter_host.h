@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 //
 // A FilterHost implementation based on gmock.  Combined with setting a message
 // loop on a filter, permits single-threaded testing of filters without
@@ -41,7 +41,7 @@ class MockFilterHost : public FilterHost {
   MOCK_METHOD1(SetLoaded, void(bool loaded));
   MOCK_METHOD1(SetNetworkActivity, void(bool network_activity));
   MOCK_METHOD0(NotifyEnded, void());
-  MOCK_METHOD1(BroadcastMessage, void(FilterMessage message));
+  MOCK_METHOD0(DisableAudioRenderer, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockFilterHost);
