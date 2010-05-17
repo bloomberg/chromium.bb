@@ -23,6 +23,7 @@
 #include "chrome_frame/chrome_frame_delegate.h"
 #include "chrome_frame/chrome_frame_histograms.h"
 #include "chrome_frame/plugin_url_request.h"
+#include "chrome_frame/sync_msg_reply_dispatcher.h"
 
 // By a convoluated route, this timeout also winds up being the sync automation
 // message timeout. See the ChromeFrameAutomationProxyImpl ctor and the
@@ -35,8 +36,10 @@ enum AutomationPageFontSize;
 struct DECLSPEC_NOVTABLE ChromeFrameAutomationProxy {  // NOLINT
   virtual bool Send(IPC::Message* msg) = 0;
 
-  virtual void SendAsAsync(IPC::SyncMessage* msg, void* callback,
-                           void* key) = 0;
+  virtual void SendAsAsync(
+      IPC::SyncMessage* msg,
+      SyncMessageReplyDispatcher::SyncMessageCallContext* context,
+      void* key) = 0;
   virtual void CancelAsync(void* key) = 0;
   virtual scoped_refptr<TabProxy> CreateTabProxy(int handle) = 0;
   virtual void ReleaseTabProxy(AutomationHandle handle) = 0;
@@ -55,7 +58,10 @@ class ChromeFrameAutomationProxyImpl : public ChromeFrameAutomationProxy,
   // .. and non-public inheritance is verboten.
   public AutomationProxy {
  public:
-  virtual void SendAsAsync(IPC::SyncMessage* msg, void* callback, void* key);
+  virtual void SendAsAsync(
+      IPC::SyncMessage* msg,
+      SyncMessageReplyDispatcher::SyncMessageCallContext* context,
+      void* key);
 
   virtual void CancelAsync(void* key);
 
@@ -361,6 +367,9 @@ class ChromeFrameAutomationClient
   virtual void OnResponseEnd(int request_id, const URLRequestStatus& status);
   virtual void OnCookiesRetrieved(bool success, const GURL& url,
       const std::string& cookie_string, int cookie_id);
+
+  friend class BeginNavigateContext;
+  friend class CreateExternalTabContext;
 
  public:
   void SetUrlFetcher(PluginUrlRequestManager* url_fetcher) {
