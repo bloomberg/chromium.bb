@@ -5,15 +5,12 @@
 # be found in the LICENSE file.
 
 import glob
+import optparse
 import os
-import shutil
-import subprocess
 import sys
 
-import action_tree
-import cmd_env
-
 import dirtree
+import btarget
 
 
 script_dir = os.path.abspath(os.path.dirname(__file__))
@@ -40,401 +37,167 @@ def FindFile(name):
   raise Exception("Couldn't find %r in %r" % (name, search_path))
 
 
-def WriteFile(filename, data):
-  fh = open(filename, "w")
-  try:
-    fh.write(data)
-  finally:
-    fh.close()
-
-
-def MkdirP(dir_path):
-  subprocess.check_call(["mkdir", "-p", dir_path])
-
-
-class EnvVarEnv(object):
-
-  def __init__(self, envvars, env):
-    self._envvars = envvars
-    self._env = env
-
-  def cmd(self, args, **kwargs):
-    return self._env.cmd(
-        ["env"] + ["%s=%s" % (key, value) for key, value in self._envvars]
-        + args, **kwargs)
-
-
-class ModuleBase(object):
-
-  def __init__(self, source_dir, build_dir, prefix, install_dir, env_vars):
-    self._env = cmd_env.VerboseWrapper(cmd_env.BasicEnv())
-    self._source_dir = source_dir
-    self._build_dir = build_dir
-    self._prefix = prefix
-    self._install_dir = install_dir
-    self._build_env = cmd_env.PrefixCmdEnv(
-        cmd_env.in_dir(self._build_dir), EnvVarEnv(env_vars, self._env))
-    self._args = {"prefix": self._prefix,
-                  "source_dir": self._source_dir}
-
-  def all(self):
-    return action_tree.make_node(
-        [self.unpack, self.configure, self.make, self.install], self.name)
-
-  def unpack(self, log):
-    if not os.path.exists(self._source_dir):
-      temp_dir = "%s.temp" % self._source_dir
-      os.makedirs(temp_dir)
-      self.source.WriteTree(self._env, temp_dir)
-      os.rename(temp_dir, self._source_dir)
-
-
-def RemoveTree(dir_path):
-  if os.path.exists(dir_path):
-    shutil.rmtree(dir_path)
-
-
-def CopyOnto(source_dir, dest_dir):
-  for leafname in os.listdir(source_dir):
-    subprocess.check_call(["cp", "-a", os.path.join(source_dir, leafname),
-                           "-t", dest_dir])
-
-
-def MungeMultilibDir(install_dir):
-  # This is done instead of the lib32 -> lib/32 symlink that Makefile uses.
-  # TODO(mseaborn): Fix newlib to not output using this odd layout.
-  if os.path.exists(os.path.join(install_dir, "nacl64/lib/32")):
-    os.rename(os.path.join(install_dir, "nacl64/lib/32"),
-              os.path.join(install_dir, "nacl64/lib32"))
-
-
-def InstallDestdir(prefix_dir, install_dir, func):
-  temp_dir = "%s.tmp" % install_dir
-  RemoveTree(temp_dir)
-  func(temp_dir)
-  RemoveTree(install_dir)
-  # Tree is installed into $DESTDIR/$prefix.
-  # We need to strip $prefix.
-  assert prefix_dir.startswith("/")
-  temp_subdir = os.path.join(temp_dir, prefix_dir.lstrip("/"))
-  MungeMultilibDir(temp_subdir)
-  os.rename(temp_subdir, install_dir)
-  # TODO: assert that temp_dir doesn't contain anything except prefix dirs
-  RemoveTree(temp_dir)
-  MkdirP(prefix_dir)
-  CopyOnto(install_dir, prefix_dir)
-
-
-binutils_tree = dirtree.PatchedTree(
-    dirtree.TarballTree(FindFile("binutils-2.20.tar.bz2")),
-    [FindFile("binutils-2.20.patch")])
-gcc_patches = sorted(glob.glob(os.path.join(
-      nacl_dir, "tools/patches/*-gcc-4.4.3.patch")))
-assert len(gcc_patches) > 0
-gcc_tree = dirtree.PatchedTree(
-    dirtree.MultiTarballTree(
-        [FindFile("gcc-core-4.4.3.tar.bz2"),
-         FindFile("gcc-g++-4.4.3.tar.bz2"),
-         FindFile("gcc-testsuite-4.4.3.tar.bz2")]),
-    gcc_patches)
-newlib_tree = dirtree.PatchedTree(
-    dirtree.TarballTree(FindFile("newlib-1.18.0.tar.gz")),
-    [FindFile("newlib-1.18.0.patch")])
-
-
-def Module(name, source, configure_cmd, make_cmd, install_cmd):
-  # TODO: this nested class is ugly
-  class Mod(ModuleBase):
-
-    # These assignments don't work because of Python's odd scoping rules:
-    # name = name
-    # source = source
-
-    def _Subst(self, Cmd):
-      return [arg % self._args for arg in Cmd]
-
-    def configure(self, log):
-      MkdirP(self._build_dir)
-      self._build_env.cmd(self._Subst(configure_cmd))
-
-    def make(self, log):
-      self._build_env.cmd(self._Subst(make_cmd))
-
-    def install(self, log):
-      def run(dest):
-        Cmd = [arg % {"destdir": dest} for arg in install_cmd]
-        self._build_env.cmd(Cmd)
-      InstallDestdir(self._prefix, self._install_dir, run)
-
-  Mod.name = name
-  Mod.source = source
-  return Mod
-
-
-ModuleBinutils = Module(
-    name="binutils",
-    source=binutils_tree,
-    configure_cmd=[
-        "sh", "-c",
-        "%(source_dir)s/configure "
-        'CFLAGS="-DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5" '
-        "--prefix=%(prefix)s "
-        "--target=nacl64"],
-    make_cmd=["make", "-j4"],
-    install_cmd=["make", "install", "DESTDIR=%(destdir)s"])
-
-
-common_gcc_options = (
-    "--disable-libmudflap "
-    "--disable-decimal-float "
-    "--disable-libssp "
-    "--disable-libstdcxx-pch "
-    "--disable-shared "
-    "--prefix=%(prefix)s "
-    "--target=nacl64 ")
-
-# Dependencies: libgmp3-dev libmpfr-dev
-ModulePregcc = Module(
-    name="pregcc",
-    source=gcc_tree,
-    # CFLAGS has to be passed via environment because the
-    # configure script can't cope with spaces otherwise.
-    configure_cmd=[
-        "sh", "-c",
-        "CC=gcc "
-        'CFLAGS="-Dinhibit_libc -D__gthr_posix_h '
-            '-DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5" '
-        "%(source_dir)s/configure "
-        "--without-headers "
-        "--enable-languages=c "
-        "--disable-threads " # pregcc
-        + common_gcc_options],
-    # The default make target doesn't work - it gives libiberty
-    # configure failures.  Need to do "all-gcc" instead.
-    make_cmd=["make", "all-gcc", "-j2"],
-    install_cmd=["make", "install-gcc", "DESTDIR=%(destdir)s"])
-
-ModuleFullgcc = Module(
-    name="fullgcc",
-    source=gcc_tree,
-    # CFLAGS has to be passed via environment because the
-    # configure script can't cope with spaces otherwise.
-    configure_cmd=[
-        "sh", "-c",
-        "CC=gcc "
-        'CFLAGS="-Dinhibit_libc -DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5" '
-        "%(source_dir)s/configure "
-        "--with-newlib "
-        "--enable-threads=nacl "
-        "--enable-tls "
-        "--disable-libgomp "
-        '--enable-languages="c,c++" '
-        + common_gcc_options],
-    make_cmd=["make", "all", "-j2"],
-    install_cmd=["make", "install", "DESTDIR=%(destdir)s"])
-
-
-class ModuleNewlib(ModuleBase):
-
-  name = "newlib"
-  source = newlib_tree
-
-  def configure(self, log):
-    # This is like exporting the kernel headers to glibc.
-    # This should be done differently.
-    self._env.cmd(
-        [os.path.join(nacl_dir,
-                      "src/trusted/service_runtime/export_header.py"),
-         os.path.join(nacl_dir, "src/trusted/service_runtime/include"),
-         os.path.join(self._source_dir, "newlib/libc/sys/nacl")])
-
-    MkdirP(self._build_dir)
-    # CFLAGS has to be passed via environment because the
-    # configure script can't cope with spaces otherwise.
-    self._build_env.cmd([
-            "sh", "-c",
-            'CFLAGS="-O2" '
-            "%(source_dir)s/configure "
-            "--disable-libgloss "
-            "--enable-newlib-io-long-long "
-            "--enable-newlib-io-c99-formats "
-            "--enable-newlib-mb "
-            "--prefix=%(prefix)s "
-            "--target=nacl64"
-            % self._args])
-
-  def make(self, log):
-    self._build_env.cmd(["sh", "-c", "make", "CFLAGS_FOR_TARGET=-m64 -O2"])
-
-  def install(self, log):
-    InstallDestdir(
-        self._prefix, self._install_dir,
-        lambda dest: self._build_env.cmd(["make", "install",
-                                          "DESTDIR=%s" % dest]))
-
-
-class ModuleNcthreads(ModuleBase):
-
-  name = "nc_threads"
-  source = dirtree.EmptyTree()
-
-  def configure(self, log):
-    pass
-
-  def make(self, log):
-    pass
-
-  def install(self, log):
-    MkdirP(self._build_dir)
-    def DoMake(dest):
-      self._build_env.cmd(
-          cmd_env.in_dir(nacl_dir) +
-          ["./scons", "MODE=nacl_extra_sdk", "install_libpthread",
-           "USE_ENVIRON=1",
-           "naclsdk_mode=custom:%s" %
-           os.path.join(dest, self._prefix.lstrip("/")),
-           "naclsdk_validate=0",
-           "--verbose"])
-    InstallDestdir(self._prefix, self._install_dir, DoMake)
-
-
-class ModuleLibnaclHeaders(ModuleBase):
-
-  name = "libnacl_headers"
-  source = dirtree.EmptyTree()
-
-  def configure(self, log):
-    pass
-
-  def make(self, log):
-    pass
-
-  def install(self, log):
-    MkdirP(self._build_dir)
-    # This requires scons to pass PATH through so that it can run
-    # nacl-gcc.  We set naclsdk_mode to point to an empty
-    # directory so it can't get nacl-gcc from there.  However, if
-    # scons-out is already populated, scons won't try to run
-    # nacl-gcc.
-    def DoMake(dest):
-      self._build_env.cmd(
-          cmd_env.in_dir(nacl_dir) +
-          ["./scons", "MODE=nacl_extra_sdk", "extra_sdk_update_header",
-           "USE_ENVIRON=1",
-           "nocpp=yes",
-           "naclsdk_mode=custom:%s" %
-           os.path.join(dest, self._prefix.lstrip("/")),
-           "naclsdk_validate=0",
-           "--verbose"])
-    InstallDestdir(self._prefix, self._install_dir, DoMake)
-
-
-class ModuleLibnacl(ModuleBase):
-
-  # Covers libnacl.a, crt[1ni].o and misc libraries built with Scons.
-  name = "libnacl"
-  source = dirtree.EmptyTree()
-
-  def configure(self, log):
-    pass
-
-  def make(self, log):
-    pass
-
-  def install(self, log):
-    MkdirP(self._build_dir)
-    # This requires scons to pass PATH through so that it can run
-    # nacl-gcc.  We set naclsdk_mode to point to an empty
-    # directory so it can't get nacl-gcc from there.  However, if
-    # scons-out is already populated, scons won't try to run
-    # nacl-gcc.
-    def DoMake(dest):
-      self._build_env.cmd(
-          cmd_env.in_dir(nacl_dir) +
-          ["./scons", "MODE=nacl_extra_sdk", "extra_sdk_update",
-           "USE_ENVIRON=1",
-           "nocpp=yes",
-           "naclsdk_mode=custom:%s" %
-           os.path.join(dest, self._prefix.lstrip("/")),
-           "naclsdk_validate=0",
-           "--verbose"])
-    InstallDestdir(self._prefix, self._install_dir, DoMake)
-
-
-class TestModule(ModuleBase):
-
-  name = "test"
-  source = dirtree.EmptyTree()
-
-  def configure(self, log):
-    pass
-
-  def make(self, log):
-    MkdirP(self._build_dir)
-    WriteFile(os.path.join(self._build_dir, "hellow.c"), """
+def GetSources():
+  gcc_patches = sorted(glob.glob(os.path.join(
+              nacl_dir, "tools/patches/*-gcc-4.4.3.patch")))
+  assert len(gcc_patches) > 0
+  return {
+    "binutils": dirtree.PatchedTree(
+        dirtree.TarballTree(FindFile("binutils-2.20.tar.bz2")),
+        [FindFile("binutils-2.20.patch")]),
+    "gcc": dirtree.PatchedTree(
+        dirtree.MultiTarballTree(
+            [FindFile("gcc-core-4.4.3.tar.bz2"),
+             FindFile("gcc-g++-4.4.3.tar.bz2"),
+             FindFile("gcc-testsuite-4.4.3.tar.bz2")]),
+        gcc_patches),
+    "newlib": dirtree.PatchedTree(
+        dirtree.TarballTree(FindFile("newlib-1.18.0.tar.gz")),
+        [FindFile("newlib-1.18.0.patch")]),
+    }
+
+
+common_gcc_options = [
+    "--disable-libmudflap",
+    "--disable-decimal-float",
+    "--disable-libssp",
+    "--disable-libstdcxx-pch",
+    "--disable-shared",
+    "--target=nacl64"]
+
+
+def GetTargets(src):
+  top_dir = os.path.abspath("out")
+  src = dict((src_name,
+              btarget.SourceTarget("%s-src" % src_name,
+                                  os.path.join(top_dir, "source", src_name),
+                                  src_tree))
+             for src_name, src_tree in src.iteritems())
+  modules = {}
+  module_list = []
+
+  def MakeInstallPrefix(name, deps):
+    return btarget.UnionDir("%s-input" % name,
+                            os.path.join(top_dir, "input-prefix", name),
+                            [modules[dep] for dep in deps])
+
+  def AddModule(name, module):
+    modules[name] = module
+    module_list.append(module)
+
+  def AddAutoconfModule(name, src_name, deps, **kwargs):
+    module = btarget.AutoconfModule(
+        name,
+        os.path.join(top_dir, "install", name),
+        os.path.join(top_dir, "build", name),
+        MakeInstallPrefix(name, deps), src[src_name], **kwargs)
+    AddModule(name, module)
+
+  def AddSconsModule(name, deps, scons_args):
+    module = btarget.SconsBuild(
+        name,
+        os.path.join(top_dir, "install", name),
+        modules["nacl_src"],
+        MakeInstallPrefix(name, deps), scons_args)
+    AddModule(name, module)
+
+  modules["nacl_src"] = btarget.ExistingSource("nacl-src", nacl_dir)
+  modules["nacl-headers"] = \
+      btarget.ExportHeaders("nacl-headers", os.path.join(top_dir, "headers"),
+                            modules["nacl_src"])
+  # newlib requires the NaCl headers to be copied into its source directory.
+  # TODO(mseaborn): Fix newlib to not require this.
+  src["newlib2"] = \
+      btarget.UnionDir2("newlib2", os.path.join(top_dir, "newlib2"),
+                        [("", src["newlib"]),
+                         ("newlib/libc/sys/nacl", modules["nacl-headers"])])
+  AddAutoconfModule(
+      "binutils", "binutils", deps=[],
+      configure_opts=[
+          "--target=nacl64",
+          "CFLAGS=-DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5"])
+  # Undeclared Debian dependencies:
+  # sudo apt-get install libgmp3-dev libmpfr-dev
+  AddAutoconfModule(
+      "pre-gcc", "gcc", deps=["binutils"],
+      configure_opts=common_gcc_options + [
+          "--without-headers",
+          "--enable-languages=c",
+          "--disable-threads"],
+      # CFLAGS has to be passed via environment because the
+      # configure script can't cope with spaces otherwise.
+      configure_env=[
+          "CC=gcc",
+          "CFLAGS=-Dinhibit_libc -D__gthr_posix_h "
+          "-DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5"],
+      # The default make target doesn't work - it gives libiberty
+      # configure failures.  Need to do "all-gcc" instead.
+      make_cmd=["make", "all-gcc"],
+      install_cmd=["make", "install-gcc"])
+  AddAutoconfModule(
+      "newlib", "newlib2", deps=["binutils", "pre-gcc"],
+      configure_opts=[
+          "--disable-libgloss",
+          "--enable-newlib-io-long-long",
+          "--enable-newlib-io-c99-formats",
+          "--enable-newlib-mb",
+          "--target=nacl64"],
+      configure_env=["CFLAGS=-O2"],
+      make_cmd=["make", "CFLAGS_FOR_TARGET=-m64 -O2"])
+
+  AddSconsModule(
+      "nc_threads",
+      deps=["binutils", "pre-gcc"],
+      scons_args=["MODE=nacl_extra_sdk", "install_libpthread"])
+  AddSconsModule(
+      "libnacl_headers",
+      deps=["binutils", "pre-gcc"],
+      scons_args=["MODE=nacl_extra_sdk", "extra_sdk_update_header"])
+  AddSconsModule(
+      "libnacl",
+      deps=["binutils", "pre-gcc", "newlib", "libnacl_headers", "nc_threads"],
+      scons_args=["MODE=nacl_extra_sdk", "extra_sdk_update", "nocpp=yes"])
+
+  AddAutoconfModule(
+      "full-gcc", "gcc",
+      deps=["binutils", "newlib", "libnacl", "libnacl_headers", "nc_threads"],
+      configure_opts=common_gcc_options + [
+          "--with-newlib",
+          "--enable-threads=nacl",
+          "--enable-tls",
+          "--disable-libgomp",
+          "--enable-languages=c,c++"],
+      configure_env=[
+          "CC=gcc",
+          "CFLAGS=-Dinhibit_libc -DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5"],
+      make_cmd=["make", "all"])
+
+  hello_c = """
 #include <stdio.h>
 int main() {
   printf("Hello world\\n");
   return 0;
 }
-""")
-    self._build_env.cmd(["sh", "-c", "nacl64-gcc -m32 hellow.c -o hellow"])
-
-  def install(self, log):
-    pass
-
-
-def AddToPath(path, dir_path):
-  return "%s:%s" % (dir_path, path)
-
-
-mods = [
-    ModuleBinutils,
-    ModulePregcc,
-    ModuleNewlib,
-    ModuleNcthreads,
-    ModuleFullgcc,
-    ModuleLibnaclHeaders,
-    ModuleLibnacl,
-    TestModule,
-    ]
-
-
-def AllMods(top_dir, use_shared_prefix):
-  nodes = []
-  env_vars = []
-  path_dirs = []
-
-  source_base = os.path.join(top_dir, "source")
-  if use_shared_prefix:
-    base_dir = os.path.join(top_dir, "shared")
-    prefix = os.path.join(base_dir, "prefix")
-    path_dirs.append(os.path.join(prefix, "bin"))
-  else:
-    base_dir = os.path.join(top_dir, "split")
-    prefix_base = os.path.join(base_dir, "prefixes")
-
-  for mod in mods:
-    if not use_shared_prefix:
-      # TODO: In split-prefix case, we don't really need "prefix" dirs.
-      # Just use the "install" dirs.
-      prefix = os.path.join(prefix_base, mod.name)
-      path_dirs.append(os.path.join(prefix, "bin"))
-    source_dir = os.path.join(source_base, mod.name)
-    build_dir = os.path.join(base_dir, "build", mod.name)
-    install_dir = os.path.join(base_dir, "install", mod.name)
-    builder = mod(source_dir, build_dir, prefix, install_dir, env_vars)
-    nodes.append(builder.all())
-
-  env_vars.append(("PATH",
-                   reduce(AddToPath, path_dirs, os.environ["PATH"])))
-  return action_tree.make_node(nodes, name="all")
+"""
+  modules["hello"] = btarget.TestModule(
+      "hello",
+      os.path.join(top_dir, "build", "hello"),
+      MakeInstallPrefix("hello", ["newlib", "full-gcc", "libnacl", "binutils"]),
+      hello_c)
+  module_list.append(modules["hello"])
+  return module_list
 
 
 def Main(args):
-  base_dir = os.getcwd()
-  top = AllMods(base_dir, use_shared_prefix=True)
-  action_tree.action_main(top, args)
+  # TODO(mseaborn): Add the ability to build subsets of targets.
+  parser = optparse.OptionParser()
+  parser.add_option("-b", "--build", dest="do_build", action="store_true",
+                    help="Do the build")
+  options, args = parser.parse_args(args)
+  mods = GetTargets(GetSources())
+  btarget.PrintPlan(mods, sys.stdout)
+  if options.do_build:
+    btarget.Rebuild(mods)
 
 
 if __name__ == "__main__":

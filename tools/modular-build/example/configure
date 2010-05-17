@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# A simple configure script, used for testing, which supports
+# autoconf's --prefix option.  It is a lot faster than autoconf.
+
+set -e
+
+ac_srcdir=`dirname $0`
+
+ac_prefix=/usr
+for ac_option in "$@"; do
+  case "$ac_option" in
+    --prefix=*) ac_prefix=`expr "X$ac_option" : '[^=]*=\(.*\)'`;;
+  esac
+done
+
+sed "s#@prefix@#$ac_prefix#g" $ac_srcdir/Makefile.in |
+  sed "s#@srcdir@#$ac_srcdir#g" >Makefile

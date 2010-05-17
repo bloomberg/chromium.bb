@@ -5,11 +5,28 @@
 # be found in the LICENSE file.
 
 import os
+import shutil
+import subprocess
 
 
 def GetOne(lst):
   assert len(lst) == 1, lst
   return lst[0]
+
+
+def CopyOnto(source_dir, dest_dir):
+  for leafname in os.listdir(source_dir):
+    subprocess.check_call(["cp", "-a", os.path.join(source_dir, leafname),
+                           "-t", dest_dir])
+
+
+def RemoveTree(dir_path):
+  if os.path.exists(dir_path):
+    shutil.rmtree(dir_path)
+
+
+def MkdirP(dir_path):
+  subprocess.check_call(["mkdir", "-p", dir_path])
 
 
 class DirTree(object):
@@ -72,3 +89,12 @@ class PatchedTree(DirTree):
     self._orig_tree.WriteTree(env, dest_dir)
     for patch_file in self._patch_files:
       env.cmd(["patch", "-d", dest_dir, "-p1", "-i", patch_file])
+
+
+class CopyTree(DirTree):
+
+  def __init__(self, src_path):
+    self._src_path = src_path
+
+  def WriteTree(self, env, dest_path):
+    CopyOnto(self._src_path, dest_path)

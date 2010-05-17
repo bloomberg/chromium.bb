@@ -79,7 +79,7 @@ tree1 = Dir([("foo", File("a\nhello world\nb"))])
 tree2 = Dir([("foo", File("a\nbye\nb"))])
 
 
-class Test(TempDirTestCase):
+class DirTreeTests(TempDirTestCase):
 
   def _RealizeTree(self, tree):
     temp_dir = self.MakeTempDir()
