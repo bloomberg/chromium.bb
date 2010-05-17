@@ -20,6 +20,11 @@
 #if defined(OS_WIN)
 // On Windows we always pull in an alternative implementation
 // which logs to Event Tracing for Windows.
+//
+// Note that the Windows implementation is always enabled, irrespective the
+// value of the CHROMIUM_ENABLE_TRACE_EVENT define. The Windows implementation
+// is controlled by Event Tracing for Windows, which will turn tracing on only
+// if there is someone listening for the events it generates.
 #include "base/trace_event_win.h"
 #else  // defined(OS_WIN)
 

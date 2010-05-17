@@ -46,6 +46,23 @@ struct LeakySingletonTraits : public DefaultSingletonTraits<Type> {
 // for the singleton instance from a static buffer.  The singleton will
 // be cleaned up at exit, but can't be revived after destruction unless
 // the Resurrect() method is called.
+//
+// This is useful for a certain category of things, notably logging and
+// tracing, where the singleton instance is of a type carefully constructed to
+// be safe to access post-destruction.
+// In logging and tracing you'll typically get stray calls at odd times, like
+// during static destruction, thread teardown and the like, and there's a
+// termination race on the heap-based singleton - e.g. if one thread calls
+// get(), but then another thread initiates AtExit processing, the first thread
+// may call into an object residing in unallocated memory. If the instance is
+// allocated from the data segment, then this is survivable.
+//
+// The destructor is to deallocate system resources, in this case to unregister
+// a callback the system will invoke when logging levels change. Note that
+// this is also used in e.g. Chrome Frame, where you have to allow for the
+// possibility of loading briefly into someone else's process space, and
+// so leaking is not an option, as that would sabotage the state of your host
+// process once you've unloaded.
 template <typename Type>
 struct StaticMemorySingletonTraits {
   // WARNING: User has to deal with get() in the singleton class
