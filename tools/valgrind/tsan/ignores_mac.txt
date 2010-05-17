@@ -35,7 +35,8 @@ obj:*/libcrypto*
 # ignored recursively.
 fun_r:*SensitiveAllocator*free*
 
-# The CFBag operators should be thread-safe, but they are not annotated
-# properly.
+# The CFBag and CFDictionary operators should be thread-safe, but they are not
+# annotated properly.
 # TODO(glider): replace all the CoreFoundation suppressions with ignores.
 fun_r:CFBag*
+fun_r:CFDictionary*
