@@ -37,6 +37,13 @@
       ],
     },
     {
+      'target_name': 'pull_in_DumpRenderTree',
+      'type': 'none',
+      'dependencies': [
+        '../third_party/WebKit/WebKit/chromium/WebKit.gyp:DumpRenderTree'
+      ],
+    },
+    {
       'target_name': 'inspector_resources',
       'type': 'none',
       'msvs_guid': '5330F8EE-00F5-D65C-166E-E3150171055D',
