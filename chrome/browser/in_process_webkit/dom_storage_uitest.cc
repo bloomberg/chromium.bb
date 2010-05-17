@@ -12,7 +12,7 @@ static const char* kRootFiles[] = {
   "clear.html",
 //  "complex-keys.html",  // Output too big for a cookie.  crbug.com/33472
 //  "complex-values.html",  // crbug.com/33472
-//  "quota.html",  // FIXME(hans): We enforce quota on Session Storage now.
+  "quota.html",
   "remove-item.html",
   "window-attributes-exist.html",
   NULL
