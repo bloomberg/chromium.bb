@@ -63,6 +63,7 @@ enum ButtonTag {
 // The column set IDs are used for creating the per-language config view.
 const int kPerLanguageTitleColumnSetId = 1;
 const int kPerLanguageDoubleColumnSetId = 2;
+const int kPerLanguageSingleColumnSetId = 3;
 
 }  // namespace
 
@@ -119,11 +120,9 @@ class AddLanguageView : public views::View,
 
   // views::View overrides:
   gfx::Size GetPreferredSize() {
-    // TODO(satorux): Create our own localized content size once the UI is
-    // done.
     return gfx::Size(views::Window::GetLocalizedContentsSize(
-        IDS_FONTSLANG_DIALOG_WIDTH_CHARS,
-        IDS_FONTSLANG_DIALOG_HEIGHT_LINES));
+        IDS_LANGUAGES_INPUT_DIALOG_WIDTH_CHARS,
+        IDS_LANGUAGES_INPUT_DIALOG_HEIGHT_LINES));
   }
 
   virtual void Layout() {
@@ -318,10 +317,9 @@ std::wstring LanguageConfigView::GetWindowTitle() const {
 }
 
 gfx::Size LanguageConfigView::GetPreferredSize() {
-  // TODO(satorux): Create our own localized content size once the UI is done.
   return gfx::Size(views::Window::GetLocalizedContentsSize(
-      IDS_FONTSLANG_DIALOG_WIDTH_CHARS,
-      IDS_FONTSLANG_DIALOG_HEIGHT_LINES));
+      IDS_LANGUAGES_INPUT_DIALOG_WIDTH_CHARS,
+      IDS_LANGUAGES_INPUT_DIALOG_HEIGHT_LINES));
 }
 
 views::View* LanguageConfigView::CreatePerLanguageConfigView(
@@ -340,6 +338,11 @@ views::View* LanguageConfigView::CreatePerLanguageConfigView(
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
+                        GridLayout::USE_PREF, 0, 0);
+
+  column_set = layout->AddColumnSet(kPerLanguageSingleColumnSetId);
+  column_set->AddPaddingColumn(0, kUnrelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
 
@@ -368,7 +371,7 @@ void LanguageConfigView::AddUiLanguageSection(const std::string& language_code,
   layout->AddView(language_name_label);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
-  layout->StartRow(0, kPerLanguageDoubleColumnSetId);
+  layout->StartRow(0, kPerLanguageSingleColumnSetId);
   if (application_locale == language_code) {
     layout->AddView(
         new views::Label(
