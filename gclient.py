@@ -55,7 +55,7 @@ Hooks
     ]
 """
 
-__version__ = "0.3.5"
+__version__ = "0.3.7"
 
 import errno
 import logging
@@ -75,22 +75,9 @@ from third_party.repo.progress import Progress
 
 # default help text
 DEFAULT_USAGE_TEXT = (
-"""usage: %prog <subcommand> [options] [--] [SCM options/args...]
+"""%prog <subcommand> [options] [--] [SCM options/args...]
 a wrapper for managing a set of svn client modules and/or git repositories.
 Version """ + __version__ + """
-
-subcommands:
-   cleanup
-   config
-   diff
-   export
-   pack
-   revert
-   status
-   sync
-   update
-   runhooks
-   revinfo
 
 Options and extra arguments can be passed to invoked SCM commands by
 appending them to the command line.  Note that if the first such
@@ -829,8 +816,9 @@ solutions = [
 ## gclient commands.
 
 
-def CMDcleanup(options, args):
+def CMDcleanup(parser, options, args):
   """Clean up all working copies, using 'svn cleanup' for each module.
+
 Additional options and args may be passed to 'svn cleanup'.
 
 usage: cleanup [options] [--] [svn cleanup args/options]
@@ -848,9 +836,10 @@ Valid options:
   return client.RunOnDeps('cleanup', args)
 
 
-def CMDconfig(options, args):
-  """Create a .gclient file in the current directory; this
-specifies the configuration for further commands.  After update/sync,
+def CMDconfig(parser, options, args):
+  """Create a .gclient file in the current directory.
+
+This specifies the configuration for further commands.  After update/sync,
 top-level DEPS files in each module are read to determine dependent
 modules to operate on as well.  If optional [url] parameter is
 provided, then configuration is read from a specified Subversion server
@@ -897,9 +886,8 @@ Examples:
   return 0
 
 
-def CMDexport(options, args):
-  """Wrapper for svn export for all managed directories
-"""
+def CMDexport(parser, options, args):
+  """Wrapper for svn export for all managed directories."""
   if len(args) != 1:
     raise gclient_utils.Error("Need directory name")
   client = GClient.LoadCurrentConfig(options)
@@ -914,27 +902,9 @@ def CMDexport(options, args):
   return client.RunOnDeps('export', args)
 
 
-def CMDhelp(options, args):
-  """Describe the usage of this program or its subcommands.
-
-usage: help [options] [subcommand]
-
-Valid options:
-  --verbose           : output additional diagnostics
-"""
-  __pychecker__ = 'unusednames=options'
-  module = sys.modules[__name__]
-  commands = [x[3:] for x in dir(module) if x.startswith('CMD')]
-  if len(args) == 1 and args[0] in commands:
-    print getattr(module, 'CMD' + args[0]).__doc__
-  else:
-    raise gclient_utils.Error("unknown subcommand '%s'; see 'gclient help'" %
-                                  args[0])
-  return 0
-
-
-def CMDpack(options, args):
+def CMDpack(parser, options, args):
   """Generate a patch which can be applied at the root of the tree.
+
 Internally, runs 'svn diff' on each checked out module and
 dependencies, and performs minimal postprocessing of the output. The
 resulting patch is printed to stdout and can be applied to a freshly
@@ -966,9 +936,10 @@ Examples:
   return client.RunOnDeps('pack', args)
 
 
-def CMDstatus(options, args):
-  """Show the status of client and dependent modules, using 'svn diff'
-for each module.  Additional options and args may be passed to 'svn diff'.
+def CMDstatus(parser, options, args):
+  """Show the modification status of for every dependencies.
+
+Additional options and args may be passed to 'svn status'.
 
 usage: status [options] [--] [svn diff args/options]
 
@@ -986,17 +957,17 @@ Valid options:
   return client.RunOnDeps('status', args)
 
 
-def CMDsync(options, args):
-  """Perform a checkout/update of the modules specified by the gclient
-configuration; see 'help config'.  Unless --revision is specified,
-then the latest revision of the root solutions is checked out, with
-dependent submodule versions updated according to DEPS files.
-If --revision is specified, then the given revision is used in place
+def CMDsync(parser, options, args):
+  """Checkout/update the modules specified by the gclient configuration.
+
+Unless --revision is specified, then the latest revision of the root solutions
+is checked out, with dependent submodule versions updated according to DEPS
+files. If --revision is specified, then the given revision is used in place
 of the latest, either for a single solution or for all solutions.
 Unless the --force option is provided, solutions and modules whose
 local revision matches the one to update (i.e., they have not changed
 in the repository) are *not* modified. Unless --nohooks is provided,
-the hooks are run.
+the hooks are run. See 'help config' for more information.
 
 usage: gclient sync [options] [--] [SCM update options/args]
 
@@ -1052,14 +1023,14 @@ Examples:
   return client.RunOnDeps('update', args)
 
 
-def CMDupdate(options, args):
-  """Alias for the sync command. Deprecated.
-"""
-  return CMDsync(options, args)
+def CMDupdate(parser, options, args):
+  """Alias for the sync command. Deprecated."""
+  return CMDsync(parser, options, args)
 
 
-def CMDdiff(options, args):
+def CMDdiff(parser, options, args):
   """Display the differences between two revisions of modules.
+
 (Does 'svn diff' for each checked out module and dependences.)
 Additional args and options to 'svn diff' can be passed after
 gclient options.
@@ -1087,18 +1058,18 @@ Examples:
   return client.RunOnDeps('diff', args)
 
 
-def CMDrevert(options, args):
-  """Revert every file in every managed directory in the client view.
-"""
+def CMDrevert(parser, options, args):
+  """Revert every file in every managed directory in the client view."""
   client = GClient.LoadCurrentConfig(options)
   if not client:
     raise gclient_utils.Error("client not configured; see 'gclient config'")
   return client.RunOnDeps('revert', args)
 
 
-def CMDrunhooks(options, args):
-  """Runs hooks for files that have been modified in the local working copy,
-according to 'svn status'. Implies --force.
+def CMDrunhooks(parser, options, args):
+  """Runs hooks for files that have been modified in the local working copy.
+
+Implies --force.
 
 usage: runhooks [options]
 
@@ -1116,8 +1087,10 @@ Valid options:
   return client.RunOnDeps('runhooks', args)
 
 
-def CMDrevinfo(options, args):
-  """Outputs source path, server URL and revision information for every
+def CMDrevinfo(parser, options, args):
+  """Outputs defails for every dependencies.
+
+This includes source path, server URL and revision information for every
 dependency in all solutions.
 
 usage: revinfo [options]
@@ -1130,102 +1103,102 @@ usage: revinfo [options]
   return 0
 
 
-def DispatchCommand(command, options, args):
-  """Dispatches the appropriate subcommand based on command line arguments.
-"""
-  module = sys.modules[__name__]
-  command = getattr(module, 'CMD' + command, None)
-  if command:
-    return command(options, args)
-  else:
-    raise gclient_utils.Error("unknown subcommand '%s'; see 'gclient help'" %
-                                  command)
+def CMDhelp(parser, options, args):
+  """Prints general help or command-specific documentation."""
+  if len(args) == 1:
+    command = Command(args[0])
+    if command:
+      print getattr(sys.modules[__name__], 'CMD' + args[0]).__doc__
+      return 0
+  parser.usage = (DEFAULT_USAGE_TEXT + '\nCommands are:\n' + '\n'.join([
+      '  %-10s %s' % (fn[3:], Command(fn[3:]).__doc__.split('\n')[0].strip())
+      for fn in dir(sys.modules[__name__]) if fn.startswith('CMD')]))
+  parser.print_help()
+  return 0
+
+
+def Command(command):
+  return getattr(sys.modules[__name__], 'CMD' + command, CMDhelp)
 
 
 def Main(argv):
-  option_parser = optparse.OptionParser(usage=DEFAULT_USAGE_TEXT,
-                                        version=__version__)
-  option_parser.add_option("--force", action="store_true",
-                           help="(update/sync only) force update even "
-                                "for modules which haven't changed")
-  option_parser.add_option("--nohooks", action="store_true",
-                           help="(update/sync/revert only) prevent the hooks "
-                                "from running")
-  option_parser.add_option("--revision", action="append", dest="revisions",
-                           metavar="REV", default=[],
-                           help="(update/sync only) sync to a specific "
-                                "revision, can be used multiple times for "
-                                "each solution, e.g. --revision=src@123, "
-                                "--revision=internal@32")
-  option_parser.add_option("--deps", dest="deps_os", metavar="OS_LIST",
-                           help="(update/sync only) sync deps for the "
-                                "specified (comma-separated) platform(s); "
-                                "'all' will sync all platforms")
-  option_parser.add_option("--reset", action="store_true",
-                           help="(update/sync only) resets any local changes "
-                                "before updating (git only)")
-  option_parser.add_option("--spec",
-                           help="(config only) create a gclient file "
-                                "containing the provided string")
-  option_parser.add_option("-v", "--verbose", action="count", default=0,
-                           help="produce additional output for diagnostics")
-  option_parser.add_option("--manually_grab_svn_rev", action="store_true",
-                           help="Skip svn up whenever possible by requesting "
-                                "actual HEAD revision from the repository")
-  option_parser.add_option("--head", action="store_true",
-                           help="skips any safesync_urls specified in "
-                                 "configured solutions")
-  option_parser.add_option("--delete_unversioned_trees", action="store_true",
-                           help="on update, delete any unexpected "
-                                "unversioned trees that are in the checkout")
-  option_parser.add_option("--snapshot", action="store_true",
-                           help="(revinfo only), create a snapshot file "
-                                "of the current version of all repositories")
-  option_parser.add_option("--name",
-                           help="specify alternate relative solution path")
-  option_parser.add_option("--gclientfile", metavar="FILENAME",
-                           help="specify an alternate .gclient file")
+  parser = optparse.OptionParser(usage=DEFAULT_USAGE_TEXT,
+                                 version='%prog ' + __version__)
+  parser.add_option("-v", "--verbose", action="count", default=0,
+                    help="Produces additional output for diagnostics. Can be "
+                         "used up to three times for more logging info.")
+  parser.add_option("--gclientfile", metavar="FILENAME", dest="config_filename",
+                    default=os.environ.get("GCLIENT_FILE", ".gclient"),
+                    help="Specify an alternate .gclient file")
+  # The other options will be moved eventually.
+  parser.add_option("--force", action="store_true",
+                    help="(update/sync only) force update even "
+                         "for modules which haven't changed")
+  parser.add_option("--nohooks", action="store_true",
+                    help="(update/sync/revert only) prevent the hooks "
+                         "from running")
+  parser.add_option("--revision", action="append", dest="revisions",
+                    metavar="REV", default=[],
+                    help="(update/sync only) sync to a specific "
+                         "revision, can be used multiple times for "
+                         "each solution, e.g. --revision=src@123, "
+                         "--revision=internal@32")
+  parser.add_option("--deps", dest="deps_os", metavar="OS_LIST",
+                    help="(update/sync only) sync deps for the "
+                         "specified (comma-separated) platform(s); "
+                         "'all' will sync all platforms")
+  parser.add_option("--reset", action="store_true",
+                    help="(update/sync only) resets any local changes "
+                         "before updating (git only)")
+  parser.add_option("--spec",
+                    help="(config only) create a gclient file "
+                         "containing the provided string")
+  parser.add_option("--manually_grab_svn_rev", action="store_true",
+                    help="Skip svn up whenever possible by requesting "
+                         "actual HEAD revision from the repository")
+  parser.add_option("--head", action="store_true",
+                    help="skips any safesync_urls specified in "
+                          "configured solutions")
+  parser.add_option("--delete_unversioned_trees", action="store_true",
+                    help="on update, delete any unexpected "
+                         "unversioned trees that are in the checkout")
+  parser.add_option("--snapshot", action="store_true",
+                    help="(revinfo only), create a snapshot file "
+                         "of the current version of all repositories")
+  parser.add_option("--name",
+                    help="specify alternate relative solution path")
+  # Integrate standard options processing.
+  old_parser = parser.parse_args
+  def Parse(args):
+    (options, args) = old_parser(args)
+    if options.verbose == 2:
+      logging.basicConfig(level=logging.INFO)
+    elif options.verbose > 2:
+      logging.basicConfig(level=logging.DEBUG)
+    options.entries_filename = options.config_filename + "_entries"
+    return (options, args)
+  parser.parse_args = Parse
+  # We don't want wordwrapping in epilog (usually examples)
+  parser.format_epilog = lambda _: parser.epilog or ''
 
-  if len(argv) < 2:
-    # Users don't need to be told to use the 'help' command.
-    option_parser.print_help()
-    return 1
+  if not len(argv):
+    argv = ['help']
   # Add manual support for --version as first argument.
-  if argv[1] == '--version':
-    option_parser.print_version()
+  if argv[0] == '--version':
+    parser.print_version()
     return 0
-
   # Add manual support for --help as first argument.
-  if argv[1] == '--help':
-    argv[1] = 'help'
-
-  command = argv[1]
-  options, args = option_parser.parse_args(argv[2:])
-
-  if len(argv) < 3 and command == "help":
-    option_parser.print_help()
-    return 0
-
-  if options.verbose > 1:
-    logging.basicConfig(level=logging.DEBUG)
-
-  # Files used for configuration and state saving.
-  options.config_filename = os.environ.get("GCLIENT_FILE", ".gclient")
-  if options.gclientfile:
-    options.config_filename = options.gclientfile
-  options.entries_filename = options.config_filename + "_entries"
-  options.deps_file = "DEPS"
-
-  options.platform = sys.platform
-  return DispatchCommand(command, options, args)
+  if argv[0] == '--help':
+    argv[0] = 'help'
+  options, args = parser.parse_args(argv[1:])
+  return Command(argv[0])(parser, options, args)
 
 
 if "__main__" == __name__:
   try:
-    result = Main(sys.argv)
+    sys.exit(Main(sys.argv[1:]))
   except gclient_utils.Error, e:
     print >> sys.stderr, "Error: %s" % str(e)
-    result = 1
-  sys.exit(result)
+    sys.exit(1)
 
 # vim: ts=2:sw=2:tw=80:et:

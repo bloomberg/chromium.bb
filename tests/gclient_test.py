@@ -97,7 +97,8 @@ class TestCMDconfig(GclientTestCase):
     exception_msg = "required argument missing; see 'gclient help config'"
 
     self.mox.ReplayAll()
-    self.assertRaisesError(exception_msg, gclient.CMDconfig, self.Options(), ())
+    self.assertRaisesError(exception_msg, gclient.CMDconfig, None,
+                           self.Options(), ())
 
   def testExistingClientFile(self):
     options = self.Options()
@@ -106,7 +107,8 @@ class TestCMDconfig(GclientTestCase):
     gclient.os.path.exists(options.config_filename).AndReturn(True)
 
     self.mox.ReplayAll()
-    self.assertRaisesError(exception_msg, gclient.CMDconfig, options, (1,))
+    self.assertRaisesError(exception_msg, gclient.CMDconfig, None, options,
+                           (1,))
 
   def testFromText(self):
     options = self.Options(spec='config_source_content')
@@ -116,7 +118,7 @@ class TestCMDconfig(GclientTestCase):
     gclient.GClient.SaveConfig()
 
     self.mox.ReplayAll()
-    gclient.CMDconfig(options, (1,),)
+    gclient.CMDconfig(None, options, (1,),)
 
   def testCreateClientFile(self):
     options = self.Options()
@@ -127,7 +129,7 @@ class TestCMDconfig(GclientTestCase):
     gclient.GClient.SaveConfig()
 
     self.mox.ReplayAll()
-    gclient.CMDconfig(options,
+    gclient.CMDconfig(None, options,
                       ('http://svn/url/the_name', 'other', 'args', 'ignored'))
 
 
@@ -138,7 +140,7 @@ class GenericCommandTestCase(GclientTestCase):
     gclient.GClient.RunOnDeps(command, self.args).AndReturn(return_value)
 
     self.mox.ReplayAll()
-    result = function(options, self.args)
+    result = function(None, options, self.args)
     self.assertEquals(result, return_value)
 
   def BadClient(self, function):
@@ -148,7 +150,7 @@ class GenericCommandTestCase(GclientTestCase):
     self.mox.ReplayAll()
     self.assertRaisesError(
         "client not configured; see 'gclient config'",
-        function, options, self.args)
+        function, None, options, self.args)
 
   def Verbose(self, command, function):
     options = self.Options(verbose=True)
@@ -159,7 +161,7 @@ class GenericCommandTestCase(GclientTestCase):
     gclient.GClient.RunOnDeps(command, self.args).AndReturn(0)
 
     self.mox.ReplayAll()
-    result = function(options, self.args)
+    result = function(None, options, self.args)
     self.assertEquals(result, 0)
 
 
@@ -201,7 +203,7 @@ class TestCMDupdate(GenericCommandTestCase):
     gclient.GClient.RunOnDeps(command, self.args).AndReturn(return_value)
 
     self.mox.ReplayAll()
-    result = function(options, self.args)
+    result = function(None, options, self.args)
     self.assertEquals(result, return_value)
 
   def Verbose(self, command, function):
@@ -214,7 +216,7 @@ class TestCMDupdate(GenericCommandTestCase):
     gclient.GClient.RunOnDeps(command, self.args).AndReturn(0)
 
     self.mox.ReplayAll()
-    result = function(options, self.args)
+    result = function(None, options, self.args)
     self.assertEquals(result, 0)
 
   def Options(self, verbose=False, *args, **kwargs):
