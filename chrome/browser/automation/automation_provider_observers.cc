@@ -969,3 +969,36 @@ void AutomationProviderHistoryObserver::HistoryQueryComplete(
   provider_->Send(reply_message_);
   delete this;
 }
+
+OmniboxAcceptNotificationObserver::OmniboxAcceptNotificationObserver(
+    NavigationController* controller,
+    AutomationProvider* automation,
+    IPC::Message* reply_message)
+  : automation_(automation),
+    reply_message_(reply_message),
+    controller_(controller) {
+  Source<NavigationController> source(controller_);
+  registrar_.Add(this, NotificationType::LOAD_STOP, source);
+  // Pages requiring auth don't send LOAD_STOP.
+  registrar_.Add(this, NotificationType::AUTH_NEEDED, source);
+}
+
+OmniboxAcceptNotificationObserver::~OmniboxAcceptNotificationObserver() {
+  automation_->RemoveNavigationStatusListener(this);
+}
+
+void OmniboxAcceptNotificationObserver::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  if (type == NotificationType::LOAD_STOP ||
+      type == NotificationType::AUTH_NEEDED) {
+    AutomationMsg_SendJSONRequest::WriteReplyParams(
+        reply_message_, std::string("{}"), false);
+    automation_->Send(reply_message_);
+    delete this;
+  } else {
+    NOTREACHED();
+  }
+}
+

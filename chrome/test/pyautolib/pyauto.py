@@ -319,6 +319,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """Accepts the current string of text in the omnibox.
 
     This is equivalent to clicking or hiting enter on a popup selection.
+    Blocks until the page loads.
 
     Args:
       windex: the index of the browser window to work on.

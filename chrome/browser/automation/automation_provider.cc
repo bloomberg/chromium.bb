@@ -1970,14 +1970,14 @@ void AutomationProvider::OmniboxMovePopupSelection(
 void AutomationProvider::OmniboxAcceptInput(Browser* browser,
                                             DictionaryValue* args,
                                             IPC::Message* reply_message) {
-  std::string json_return = "{}";
-  bool reply_return = true;
+  NavigationController& tab =
+      browser->GetOrCloneNavigationControllerForDisposition(CURRENT_TAB);
+  // Setup observer to wait until the selected item loads.
+  NotificationObserver* observer =
+      new OmniboxAcceptNotificationObserver(&tab, this, reply_message);
+  notification_observer_list_.AddObserver(observer);
 
   browser->window()->GetLocationBar()->AcceptInput();
-
-  AutomationMsg_SendJSONRequest::WriteReplyParams(
-      reply_message, json_return, reply_return);
-  Send(reply_message);
 }
 
 // Sample json input: { "command": "GetPluginsInfo" }

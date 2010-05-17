@@ -598,4 +598,26 @@ class AutomationProviderHistoryObserver {
   IPC::Message* reply_message_;
 };
 
+// Allows automation provider to wait until page load after selecting an item
+// in the omnibox popup.
+class OmniboxAcceptNotificationObserver : public NotificationObserver {
+ public:
+  OmniboxAcceptNotificationObserver(NavigationController* controller,
+                                 AutomationProvider* automation,
+                                 IPC::Message* reply_message);
+  ~OmniboxAcceptNotificationObserver();
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  NotificationRegistrar registrar_;
+  AutomationProvider* automation_;
+  IPC::Message* reply_message_;
+  NavigationController* controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(OmniboxAcceptNotificationObserver);
+};
+
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_OBSERVERS_H_

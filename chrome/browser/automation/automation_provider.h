@@ -418,6 +418,7 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
   // Accept the current string of text in the omnibox.
   // This is equivalent to clicking or hiting enter on a popup selection.
+  // Blocks until the page loads.
   // Uses the JSON interface for input/output.
   void OmniboxAcceptInput(Browser* browser,
                           DictionaryValue* args,
