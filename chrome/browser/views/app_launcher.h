@@ -5,26 +5,14 @@
 #ifndef CHROME_BROWSER_VIEWS_APP_LAUNCHER_H_
 #define CHROME_BROWSER_VIEWS_APP_LAUNCHER_H_
 
+#include "app/slide_animation.h"
 #include "base/scoped_ptr.h"
+#include "base/task.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/views/pinned_contents_info_bubble.h"
-#include "views/view.h"
 
 class Browser;
-class SiteInstance;
-
-namespace gfx {
-class Size;
-}
-namespace views {
-class NativeViewHost;
-class View;
-class WidgetGtk;
-}
-
 class InfoBubbleContentsView;
-class NavigationBar;
-class TabContentsDelegateImpl;
 
 // AppLauncher manages showing the application launcher and optionally the
 // navigation bar in compact navigation bar mode. The app launcher is
@@ -38,7 +26,8 @@ class TabContentsDelegateImpl;
 //
 // When a new url is opened, or the user clicks outsides the bounds of the
 // widget the app launcher is closed.
-class AppLauncher : public InfoBubbleDelegate,
+class AppLauncher : public AnimationDelegate,
+                    public InfoBubbleDelegate,
                     public TabContentsDelegate {
  public:
   // Shows an application launcher bubble pointing to the |bounds| (which should
@@ -71,6 +60,9 @@ class AppLauncher : public InfoBubbleDelegate,
 
   // Hides the app launcher.
   void Hide();
+
+  // AnimationDelegate overrides:
+  virtual void AnimationProgressed(const Animation* animation);
 
   // InfoBubbleDelegate overrides.
   virtual void InfoBubbleClosing(InfoBubble* info_bubble,
@@ -109,13 +101,15 @@ class AppLauncher : public InfoBubbleDelegate,
 
  private:
   friend class DeleteTask<AppLauncher>;
-  friend class NavigationBar;
   friend class InfoBubbleContentsView;
 
   explicit AppLauncher(Browser* browser);
   ~AppLauncher();
 
   void AddTabWithURL(const GURL& url, PageTransition::Type transition);
+
+  // Resizes the bubble so it matches its contents's size |contents_size|.
+  void Resize(const gfx::Size& contents_size);
 
   // The currently active browser. We use this to open urls.
   Browser* browser_;
@@ -130,6 +124,15 @@ class AppLauncher : public InfoBubbleDelegate,
   // sent into the launcher's HTML page via its hash.
   std::string hash_params_;
 
+  // The preferred size of the DOM contents.
+  gfx::Size contents_pref_size_;
+
+  // The previous preferred size of the DOM contents.
+  gfx::Size previous_contents_pref_size_;
+
+  // The animation that grows the info-bubble.
+  scoped_ptr<SlideAnimation> animation_;
+  
   DISALLOW_COPY_AND_ASSIGN(AppLauncher);
 };
 

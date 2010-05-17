@@ -11,12 +11,9 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "base/task.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/dom_view.h"
 #include "chrome/browser/views/info_bubble.h"
@@ -36,6 +33,11 @@ const int kNavigationBarBottomPadding = 3;
 
 // NavigationBar constants.
 const int kNavigationBarBorderThickness = 1;
+
+// The speed in pixels per milli-second at which the animation should progress.
+// It is easier to use a speed than a duration as the contents may report
+// several changes in size over-time.
+const double kAnimationSpeedPxPerMS = 1.5;
 
 const SkColor kBorderColor = SkColorSetRGB(205, 201, 201);
 
@@ -228,8 +230,7 @@ void InfoBubbleContentsView::Layout() {
                            location_bar_height);
   int render_y = location_bar_->bounds().bottom() + kNavigationBarBottomPadding;
   dom_view_->SetBounds(0, render_y,
-                       width(),
-                       std::max(0, bounds.height() - render_y + bounds.y()));
+                       width(), app_launcher_->contents_pref_size_.height());
 }
 
 void InfoBubbleContentsView::ExecuteCommand(int id) {
@@ -248,6 +249,8 @@ AppLauncher::AppLauncher(Browser* browser)
       info_bubble_(NULL) {
   DCHECK(browser);
   info_bubble_content_ = new InfoBubbleContentsView(this);
+  animation_.reset(new SlideAnimation(this));
+  animation_->SetTweenType(Tween::LINEAR);
 }
 
 AppLauncher::~AppLauncher() {
@@ -326,8 +329,31 @@ void AppLauncher::UpdatePreferredSize(const gfx::Size& pref_size) {
   if (pref_size.width() == 0 || pref_size.height() == 0)
     return;
 
-  gfx::Size size(pref_size);
-  info_bubble_content_->ComputePreferredSize(size);
+  previous_contents_pref_size_ = contents_pref_size_;
+  contents_pref_size_ = pref_size;
+
+  int original_height = previous_contents_pref_size_.height();
+  int new_height = contents_pref_size_.height();
+  int new_duration;
+  if (animation_->is_animating()) {
+    // Modify the animation duration so that the current running animation does
+    // not appear janky.
+    new_duration = static_cast<int>(new_height / kAnimationSpeedPxPerMS);
+  } else {
+    // The animation is not running.
+    animation_->Reset();  // It may have already been run.
+    new_duration = static_cast<int>(abs(new_height - original_height) /
+                                    kAnimationSpeedPxPerMS);
+  }
+  animation_->SetSlideDuration(new_duration);
+  animation_->Show();  // No-op if already showing.
+}
+
+void AppLauncher::AnimationProgressed(const Animation* animation) {
+  gfx::Size contents_size(contents_pref_size_.width(),
+      animation->CurrentValueBetween(previous_contents_pref_size_.height(),
+                                     contents_pref_size_.height()));
+  info_bubble_content_->ComputePreferredSize(contents_size);
   info_bubble_->SizeToContents();
 }
 
@@ -371,4 +397,9 @@ void AppLauncher::AddTabWithURL(const GURL& url,
                           Browser::ADD_SELECTED | Browser::ADD_FORCE_INDEX,
                           NULL, std::string());
 #endif
+}
+
+void AppLauncher::Resize(const gfx::Size& contents_size) {
+  info_bubble_content_->ComputePreferredSize(contents_size);
+  info_bubble_->SizeToContents();
 }

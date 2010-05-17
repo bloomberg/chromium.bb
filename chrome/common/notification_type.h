@@ -253,6 +253,9 @@ class NotificationType {
     PAGE_TRANSLATED,
 
     // Sent after the renderer returns a snapshot of tab contents.
+    // The source (Source<RenderViewHost>) is the RenderViewHost for which the
+    // snapshot was generated and the details (Details<const SkBitmap>) is the
+    // actual snapshot.
     TAB_SNAPSHOT_TAKEN,
 
     // Send after the code is run in specified tab.

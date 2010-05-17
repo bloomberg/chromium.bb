@@ -226,7 +226,7 @@ class InfoBubble
 
 #if defined(OS_WIN)
   // The window used to render the padding, border and arrow.
-  scoped_ptr<BorderWidget> border_;
+  BorderWidget* border_;
 #elif defined(OS_LINUX)
   // The view displaying the border.
   BorderContents* border_contents_;

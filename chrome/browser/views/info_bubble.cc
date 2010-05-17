@@ -195,7 +195,6 @@ int BorderContents::GetInsetsLength(const gfx::Insets& insets, bool vertical) {
 // BorderWidget ---------------------------------------------------------------
 
 BorderWidget::BorderWidget() : border_contents_(NULL) {
-  set_delete_on_destroy(false);  // Our owner will free us manually.
   set_window_style(WS_POPUP);
   set_window_ex_style(WS_EX_TOOLWINDOW | WS_EX_LAYERED);
 }
@@ -204,7 +203,7 @@ void BorderWidget::Init(BorderContents* border_contents, HWND owner) {
   DCHECK(!border_contents_);
   border_contents_ = border_contents;
   border_contents_->Init();
-  WidgetWin::Init(GetAncestor(owner, GA_ROOT), gfx::Rect());
+  WidgetWin::Init(owner, gfx::Rect());
   SetContentsView(border_contents_);
   SetWindowPos(owner, 0, 0, 0, 0,
                SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOREDRAW);
@@ -221,16 +220,6 @@ gfx::Rect BorderWidget::SizeAndGetBounds(
                                      false, contents_size, &contents_bounds,
                                      &window_bounds);
   SetBounds(window_bounds);
-
-  // Chop a hole out of our region to show the contents through.
-  // CreateRectRgn() expects (left, top, right, bottom) in window coordinates.
-  HRGN contents_region = CreateRectRgn(contents_bounds.x(), contents_bounds.y(),
-      contents_bounds.right(), contents_bounds.bottom());
-  HRGN window_region = CreateRectRgn(0, 0, window_bounds.width(),
-                                     window_bounds.height());
-  CombineRgn(window_region, window_region, contents_region, RGN_XOR);
-  DeleteObject(contents_region);
-  SetWindowRgn(window_region, true);
 
   // Return |contents_bounds| in screen coordinates.
   contents_bounds.Offset(window_bounds.origin());
@@ -290,6 +279,8 @@ InfoBubble::InfoBubble()
 #if defined(OS_LINUX)
       WidgetGtk(TYPE_WINDOW),
       border_contents_(NULL),
+#elif defined(OS_WIN)
+      border_(NULL),
 #endif
       delegate_(NULL),
       closed_(false) {
@@ -312,7 +303,14 @@ void InfoBubble::Init(views::Widget* parent,
     parent_window->DisableInactiveRendering();
   set_window_style(WS_POPUP | WS_CLIPCHILDREN);
   set_window_ex_style(WS_EX_TOOLWINDOW);
-  WidgetWin::Init(parent->GetNativeView(), gfx::Rect());
+  
+  DCHECK(!border_);
+  border_ = new BorderWidget();
+  border_->Init(CreateBorderContents(), parent->GetNativeView());
+
+  // We make the BorderWidget the owner of the InfoBubble HWND, so that the
+  // latter is displayed on top of the former.
+  WidgetWin::Init(border_->GetNativeView(), gfx::Rect());
 #elif defined(OS_LINUX)
   MakeTransparent();
   make_transient_to_parent();
@@ -343,10 +341,6 @@ void InfoBubble::Init(views::Widget* parent,
   gfx::Rect window_bounds;
 
 #if defined(OS_WIN)
-  DCHECK(!border_.get());
-  border_.reset(new BorderWidget());
-  border_->Init(CreateBorderContents(), GetNativeView());
-
   // Initialize and position the border window.
   window_bounds = border_->SizeAndGetBounds(position_relative_to,
                                             arrow_location,
