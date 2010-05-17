@@ -35,7 +35,6 @@
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/views/autocomplete/autocomplete_popup_contents_view.h"
 #include "chrome/browser/views/location_bar/location_bar_view.h"
-#include "gfx/skia_utils_gtk.h"
 #else
 #include "chrome/browser/autocomplete/autocomplete_popup_view_gtk.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
@@ -1222,7 +1221,7 @@ void AutocompleteEditViewGtk::HandleCopyOrCutClipboard(bool copy) {
 
     scw.WriteText(text16);
     scw.WriteBookmark(text16, url.spec());
-    scw.WriteHyperlink(UTF16ToUTF8(EscapeForHTML(text16)), url.spec());
+    scw.WriteHyperlink(EscapeForHTML(text16), url.spec());
 
     // Stop propagating the signal.
     static guint signal_id = copy ?

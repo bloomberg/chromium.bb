@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,7 +65,7 @@ void ScopedClipboardWriter::WriteBookmark(const string16& bookmark_title,
   objects_[Clipboard::CBF_BOOKMARK] = parameters;
 }
 
-void ScopedClipboardWriter::WriteHyperlink(const std::string& anchor_text,
+void ScopedClipboardWriter::WriteHyperlink(const string16& anchor_text,
                                            const std::string& url) {
   if (anchor_text.empty() || url.empty())
     return;
@@ -74,7 +74,7 @@ void ScopedClipboardWriter::WriteHyperlink(const std::string& anchor_text,
   std::string html("<a href=\"");
   html.append(url);
   html.append("\">");
-  html.append(anchor_text);
+  html.append(UTF16ToUTF8(anchor_text));
   html.append("</a>");
   WriteHTML(UTF8ToUTF16(html), std::string());
 }
@@ -134,4 +134,3 @@ void ScopedClipboardWriter::WriteTextOrURL(const string16& text, bool is_url) {
     url_text_.clear();
   }
 }
-

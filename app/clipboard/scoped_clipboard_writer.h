@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,7 @@ class ScopedClipboardWriter {
 
   // Adds an html hyperlink (<a href>) to the clipboard. |anchor_text| should
   // be escaped prior to being passed in.
-  void WriteHyperlink(const std::string& anchor_text, const std::string& url);
+  void WriteHyperlink(const string16& anchor_text, const std::string& url);
 
   // Used by WebKit to determine whether WebKit wrote the clipboard last
   void WriteWebSmartPaste();

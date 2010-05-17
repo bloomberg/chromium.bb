@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -153,8 +153,9 @@ void Clipboard::SetGtkClipboard() {
 }
 
 void Clipboard::WriteText(const char* text_data, size_t text_len) {
-  char* data = new char[text_len];
+  char* data = new char[text_len + 1];
   memcpy(data, text_data, text_len);
+  data[text_len] = '\0';
 
   InsertMapping(kMimeText, data, text_len);
   InsertMapping("TEXT", data, text_len);
@@ -171,11 +172,12 @@ void Clipboard::WriteHTML(const char* markup_data,
   static const char* html_prefix = "<meta http-equiv=\"content-type\" "
                                    "content=\"text/html; charset=utf-8\">";
   size_t html_prefix_len = strlen(html_prefix);
-  size_t total_len = html_prefix_len + markup_len;
+  size_t total_len = html_prefix_len + markup_len + 1;
 
   char* data = new char[total_len];
   snprintf(data, total_len, "%s", html_prefix);
   memcpy(data + html_prefix_len, markup_data, markup_len);
+  data[total_len - 1] = '\0';
 
   InsertMapping(kMimeHtml, data, total_len);
 }
@@ -353,6 +355,7 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
 
 void Clipboard::ReadBookmark(string16* title, std::string* url) const {
   // TODO(estade): implement this.
+  NOTIMPLEMENTED();
 }
 
 void Clipboard::ReadData(const std::string& format, std::string* result) {

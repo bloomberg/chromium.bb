@@ -129,10 +129,10 @@ void BookmarkDragData::WriteToClipboard(Profile* profile) const {
   // clipboard.
   if (elements.size() == 1 && elements[0].is_url) {
     const string16& title = elements[0].title;
-    std::string url = elements[0].url.spec();
+    const std::string url = elements[0].url.spec();
 
     scw.WriteBookmark(title, url);
-    scw.WriteHyperlink(EscapeForHTML(UTF16ToUTF8(title)), url);
+    scw.WriteHyperlink(EscapeForHTML(title), url);
 
     // Also write the URL to the clipboard as text so that it can be pasted
     // into text fields
@@ -234,7 +234,7 @@ bool BookmarkDragData::Read(const OSExchangeData& data) {
     std::wstring title;
     if (data.GetURLAndTitle(&url, &title))
       ReadFromTuple(url, WideToUTF16(title));
- }
+  }
 
   return is_valid();
 }

@@ -1,22 +1,28 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#include "build/build_config.h"
 
 #include <string>
 
 #include "app/clipboard/clipboard.h"
-#if defined(OS_WIN)
-#include "app/clipboard/clipboard_util_win.h"
-#endif
 #include "app/clipboard/scoped_clipboard_writer.h"
 #include "base/basictypes.h"
-#include "base/message_loop.h"
-#include "base/pickle.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/size.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+#if defined(OS_WIN)
+#include "app/clipboard/clipboard_util_win.h"
+#include "base/message_loop.h"
+#endif
+
+#if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_MACOSX))
+#include "base/pickle.h"
+#endif
 
 #if defined(OS_WIN)
 class ClipboardTest : public PlatformTest {
@@ -264,20 +270,20 @@ TEST_F(ClipboardTest, SharedBitmapTest) {
 #if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_MACOSX))
 TEST_F(ClipboardTest, DataTest) {
   Clipboard clipboard;
-  const char* format = "chromium/x-test-format";
+  const char* kFormat = "chromium/x-test-format";
   std::string payload("test string");
   Pickle write_pickle;
   write_pickle.WriteString(payload);
 
   {
     ScopedClipboardWriter clipboard_writer(&clipboard);
-    clipboard_writer.WritePickledData(write_pickle, format);
+    clipboard_writer.WritePickledData(write_pickle, kFormat);
   }
 
   ASSERT_TRUE(clipboard.IsFormatAvailableByString(
-      format, Clipboard::BUFFER_STANDARD));
+      kFormat, Clipboard::BUFFER_STANDARD));
   std::string output;
-  clipboard.ReadData(format, &output);
+  clipboard.ReadData(kFormat, &output);
   ASSERT_FALSE(output.empty());
 
   Pickle read_pickle(output.data(), output.size());
@@ -292,21 +298,22 @@ TEST_F(ClipboardTest, DataTest) {
 TEST_F(ClipboardTest, HyperlinkTest) {
   Clipboard clipboard;
 
-  std::string title("The Example Company");
-  std::string url("http://www.example.com/"), url_result;
-  std::string html("<a href=\"http://www.example.com/\">"
-                   "The Example Company</a>");
+  const std::string kTitle("The Example Company");
+  const std::string kUrl("http://www.example.com/");
+  const std::string kExpectedHtml("<a href=\"http://www.example.com/\">"
+                                  "The Example Company</a>");
+  std::string url_result;
   string16 html_result;
 
   {
     ScopedClipboardWriter clipboard_writer(&clipboard);
-    clipboard_writer.WriteHyperlink(title, url);
+    clipboard_writer.WriteHyperlink(ASCIIToUTF16(kTitle), kUrl);
   }
 
   EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetHtmlFormatType(),
                                           Clipboard::BUFFER_STANDARD));
   clipboard.ReadHTML(Clipboard::BUFFER_STANDARD, &html_result, &url_result);
-  EXPECT_EQ(UTF8ToUTF16(html), html_result);
+  EXPECT_EQ(ASCIIToUTF16(kExpectedHtml), html_result);
 }
 
 TEST_F(ClipboardTest, WebSmartPasteTest) {
@@ -392,7 +399,7 @@ TEST_F(ClipboardTest, WriteEverything) {
     writer.WriteURL(UTF8ToUTF16("foo"));
     writer.WriteHTML(UTF8ToUTF16("foo"), "bar");
     writer.WriteBookmark(UTF8ToUTF16("foo"), "bar");
-    writer.WriteHyperlink("foo", "bar");
+    writer.WriteHyperlink(ASCIIToUTF16("foo"), "bar");
     writer.WriteWebSmartPaste();
     // Left out: WriteFile, WriteFiles, WriteBitmapFromPixels, WritePickledData.
   }
