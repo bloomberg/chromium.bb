@@ -3,12 +3,12 @@
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
 		<string key="IBDocument.SystemVersion">9L31a</string>
-		<string key="IBDocument.InterfaceBuilderVersion">677</string>
+		<string key="IBDocument.InterfaceBuilderVersion">680</string>
 		<string key="IBDocument.AppKitVersion">949.54</string>
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="81"/>
+			<integer value="205"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -483,26 +483,6 @@
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="353210768"/>
 									<reference key="NSMixedImage" ref="549394948"/>
-								</object>
-								<object class="NSMenuItem" id="610384735">
-									<reference key="NSMenu" ref="789758025"/>
-									<bool key="NSIsDisabled">YES</bool>
-									<bool key="NSIsSeparator">YES</bool>
-									<string key="NSTitle"/>
-									<string key="NSKeyEquiv"/>
-									<int key="NSMnemonicLoc">2147483647</int>
-									<reference key="NSOnImage" ref="353210768"/>
-									<reference key="NSMixedImage" ref="549394948"/>
-								</object>
-								<object class="NSMenuItem" id="872582728">
-									<reference key="NSMenu" ref="789758025"/>
-									<string key="NSTitle">^IDS_AUTOFILL_FORM_MAC</string>
-									<string key="NSKeyEquiv">A</string>
-									<int key="NSKeyEquivModMask">1048576</int>
-									<int key="NSMnemonicLoc">2147483647</int>
-									<reference key="NSOnImage" ref="353210768"/>
-									<reference key="NSMixedImage" ref="549394948"/>
-									<int key="NSTag">40024</int>
 								</object>
 								<object class="NSMenuItem" id="212016141">
 									<reference key="NSMenu" ref="789758025"/>
@@ -1759,14 +1739,6 @@
 					<object class="IBActionConnection" key="connection">
 						<string key="label">commandDispatch:</string>
 						<reference key="source" ref="1014"/>
-						<reference key="destination" ref="872582728"/>
-					</object>
-					<int key="connectionID">680</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">commandDispatch:</string>
-						<reference key="source" ref="1014"/>
 						<reference key="destination" ref="442256518"/>
 					</object>
 					<int key="connectionID">681</int>
@@ -1940,8 +1912,6 @@
 							<reference ref="972420730"/>
 							<reference ref="442256518"/>
 							<reference ref="688066565"/>
-							<reference ref="610384735"/>
-							<reference ref="872582728"/>
 						</object>
 						<reference key="parent" ref="952259628"/>
 					</object>
@@ -2623,16 +2593,6 @@
 						<reference key="object" ref="902861825"/>
 						<reference key="parent" ref="466310130"/>
 					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">678</int>
-						<reference key="object" ref="610384735"/>
-						<reference key="parent" ref="789758025"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">679</int>
-						<reference key="object" ref="872582728"/>
-						<reference key="parent" ref="789758025"/>
-					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -2829,10 +2789,6 @@
 					<string>672.IBPluginDependency</string>
 					<string>674.IBPluginDependency</string>
 					<string>676.IBPluginDependency</string>
-					<string>678.IBPluginDependency</string>
-					<string>678.ImportedFromIB2</string>
-					<string>679.IBPluginDependency</string>
-					<string>679.ImportedFromIB2</string>
 					<string>72.IBPluginDependency</string>
 					<string>72.ImportedFromIB2</string>
 					<string>73.IBPluginDependency</string>
@@ -2911,7 +2867,7 @@
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{478, 164}, {361, 273}}</string>
+					<string>{{514, 368}, {361, 243}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{197, 734}, {243, 243}}</string>
@@ -3048,10 +3004,6 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<reference ref="9"/>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
