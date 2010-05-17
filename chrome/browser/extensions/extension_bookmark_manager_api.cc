@@ -279,7 +279,6 @@ bool BookmarkManagerGetStringsFunction::RunImpl() {
       l10n_util::GetString(IDS_BOOKMARK_MANAGER_IMPORT_MENU));
   localized_strings->SetString(L"export_menu",
       l10n_util::GetString(IDS_BOOKMARK_MANAGER_EXPORT_MENU));
-
   localized_strings->SetString(L"rename_folder",
       l10n_util::GetString(IDS_BOOKMARK_BAR_RENAME_FOLDER));
   localized_strings->SetString(L"edit",
@@ -320,6 +319,10 @@ bool BookmarkManagerGetStringsFunction::RunImpl() {
       l10n_util::GetString(IDS_BOOKMARK_MANAGER_URL_INPUT_PLACE_HOLDER));
   localized_strings->SetString(L"invalid_url",
       l10n_util::GetString(IDS_BOOKMARK_MANAGER_INVALID_URL));
+  localized_strings->SetString(L"recent",
+      l10n_util::GetString(IDS_BOOKMARK_MANAGER_RECENT));
+  localized_strings->SetString(L"search",
+      l10n_util::GetString(IDS_BOOKMARK_MANAGER_SEARCH));
 
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(localized_strings);
 

@@ -98,7 +98,7 @@ const ROOT_ID = '0';
 var bookmarkCache = {
   /**
    * This returns a reference to the bookmark node that is cached by the tree
-   * or list. Use this funciton when we need to update the local cachea after
+   * or list. Use this funciton when we need to update the local cache after
    * changes. It only returns bookmarks that are used by the tree and/or the
    * list.
    * @param {string} The ID of the bookmark that we want to get.
@@ -166,14 +166,12 @@ splitter.addEventListener('resize', function(e) {
 BookmarkList.decorate(list);
 
 var searchTreeItem = new TreeItem({
-  label: 'Search',
   icon: 'images/bookmark_manager_search.png',
   bookmarkId: 'q='
 });
 bmm.treeLookup[searchTreeItem.bookmarkId] = searchTreeItem;
 
 var recentTreeItem = new TreeItem({
-  label: 'Recent',
   icon: 'images/bookmark_manager_recent.png',
   bookmarkId: 'recent'
 });
@@ -1601,7 +1599,7 @@ tree.addEventListener('command', handleCommand);
 var localStrings = new LocalStrings;
 
 // Get the localized strings from the backend.
-chrome.experimental.bookmarkManager.getStrings(function setTemplateData(data) {
+chrome.experimental.bookmarkManager.getStrings(function(data) {
   // The strings may contain & which we need to strip.
   for (var key in data) {
     data[key] = data[key].replace(/&/, '');
@@ -1609,6 +1607,9 @@ chrome.experimental.bookmarkManager.getStrings(function setTemplateData(data) {
 
   localStrings.templateData = data;
   i18nTemplate.process(document, data);
+
+  recentTreeItem.label = localStrings.getString('recent');
+  searchTreeItem.label = localStrings.getString('search');
 });
 
 </script>

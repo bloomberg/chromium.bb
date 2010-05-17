@@ -6431,6 +6431,21 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_BOOKMARK_MANAGER_EXPORT_MENU" desc="Title of the export menu item in the bookmark manager.">
           Export bookmarks...
         </message>
+        <message name="IDS_BOOKMARK_MANAGER_NAME_INPUT_PLACE_HOLDER" desc="Text to show in the URL input field when editing or creating bookmarks.">
+          Name
+        </message>
+        <message name="IDS_BOOKMARK_MANAGER_URL_INPUT_PLACE_HOLDER" desc="Text to show in the URL input field when editing or creating bookmarks.">
+          URL
+        </message>
+        <message name="IDS_BOOKMARK_MANAGER_INVALID_URL" desc="Error message to display when the user tries to edit or create a bookmark with an invalud URL.">
+          Invalid URL.
+        </message>
+        <message name="IDS_BOOKMARK_MANAGER_RECENT" desc="The label for the tree item that shows the recently added bookmarks.">
+          Recent
+        </message>
+        <message name="IDS_BOOKMARK_MANAGER_SEARCH" desc="The label for the tree item that shows the search results for the bookmarks.">
+          Search
+        </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_BOOKMARK_MANAGER" desc="In Title Case: The label of the menu item that shows the bookmark manager">
@@ -6454,16 +6469,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_BOOKMARK_MANAGER_EXPORT_MENU" desc="In Title Case: Title of the export menu item in the bookmark manager.">
           Export Bookmarks...
         </message>
+        <message name="IDS_BOOKMARK_MANAGER_NAME_INPUT_PLACE_HOLDER" desc="In Title Case: Text to show in the URL input field when editing or creating bookmarks.">
+          Name
+        </message>
+        <message name="IDS_BOOKMARK_MANAGER_URL_INPUT_PLACE_HOLDER" desc="In Title Case: Text to show in the URL input field when editing or creating bookmarks.">
+          URL
+        </message>
+        <message name="IDS_BOOKMARK_MANAGER_INVALID_URL" desc="In Title Case: Error message to display when the user tries to edit or create a bookmark with an invalud URL.">
+          Invalid URL.
+        </message>
+        <message name="IDS_BOOKMARK_MANAGER_RECENT" desc="In Title Case: The label for the tree item that shows the recently added bookmarks.">
+          Recent
+        </message>
+        <message name="IDS_BOOKMARK_MANAGER_SEARCH" desc="In Title Case: The label for the tree item that shows the search results for the bookmarks.">
+          Search
+        </message>        
       </if>
-      <message name="IDS_BOOKMARK_MANAGER_NAME_INPUT_PLACE_HOLDER" desc="Text to show in the URL input field when editing or creating bookmarks.">
-        Name
-      </message>
-      <message name="IDS_BOOKMARK_MANAGER_URL_INPUT_PLACE_HOLDER" desc="Text to show in the URL input field when editing or creating bookmarks.">
-        URL
-      </message>
-      <message name="IDS_BOOKMARK_MANAGER_INVALID_URL" desc="Error message to display when the user tries to edit or create a bookmark with an invalud URL.">
-        Invalid URL.
-      </message>
 
       <message name="IDS_DEFAULT_FILENAME" desc="Default name for saved files when we have no idea what they could be.">
         unknown
