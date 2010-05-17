@@ -17,6 +17,7 @@
 #include "gfx/font.h"
 #include "gfx/icon_util.h"
 #include "gfx/path.h"
+#include "views/accessibility/view_accessibility.h"
 #include "views/widget/root_view.h"
 #include "views/window/client_view.h"
 #include "views/window/custom_frame_view.h"
@@ -410,6 +411,9 @@ void WindowWin::UpdateWindowTitle() {
   if (base::i18n::AdjustStringForLocaleDirection(window_title, &localized_text))
     window_title.assign(localized_text);
   SetWindowText(GetNativeView(), window_title.c_str());
+
+  // Also update the accessibility name.
+  UpdateAccessibleName(window_title);
 }
 
 void WindowWin::UpdateWindowIcon() {
@@ -542,6 +546,8 @@ void WindowWin::Init(HWND parent, const gfx::Rect& bounds) {
   WidgetWin::SetContentsView(non_client_view_);
 
   UpdateWindowTitle();
+  UpdateAccessibleRole();
+  UpdateAccessibleState();
 
   SetInitialBounds(bounds);
 
@@ -1390,6 +1396,50 @@ void WindowWin::ResetWindowRegion(bool force) {
   }
 
   DeleteObject(current_rgn);
+}
+
+void WindowWin::UpdateAccessibleName(std::wstring name) {
+  ScopedComPtr<IAccPropServices> pAccPropServices;
+  HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
+    IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
+  if (SUCCEEDED(hr)) {
+    VARIANT var;
+    var.vt = VT_BSTR;
+    var.bstrVal = SysAllocString(name.c_str());
+    hr = pAccPropServices->SetHwndProp(GetNativeView(), OBJID_CLIENT,
+      CHILDID_SELF, PROPID_ACC_NAME, var);
+  }
+}
+
+void WindowWin::UpdateAccessibleRole() {
+  ScopedComPtr<IAccPropServices> pAccPropServices;
+  HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
+    IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
+  if (SUCCEEDED(hr)) {
+    VARIANT var;
+    AccessibilityTypes::Role role = window_delegate_->accessible_role();
+    if (role) {
+      var.vt = VT_I4;
+      var.lVal = ViewAccessibility::MSAARole(role);
+      hr = pAccPropServices->SetHwndProp(GetNativeView(), OBJID_CLIENT,
+        CHILDID_SELF, PROPID_ACC_ROLE, var);
+    }
+  }
+}
+
+void WindowWin::UpdateAccessibleState() {
+  ScopedComPtr<IAccPropServices> pAccPropServices;
+  HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
+    IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
+  if (SUCCEEDED(hr)) {
+    VARIANT var;
+    AccessibilityTypes::State state = window_delegate_->accessible_state();
+    if (state) {
+      var.lVal = ViewAccessibility::MSAAState(state);
+      hr = pAccPropServices->SetHwndProp(GetNativeView(), OBJID_CLIENT,
+        CHILDID_SELF, PROPID_ACC_STATE, var);
+    }
+  }
 }
 
 void WindowWin::ProcessNCMousePress(const CPoint& point, int flags) {

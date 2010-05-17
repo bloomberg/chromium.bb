@@ -6,6 +6,8 @@
 #define VIEWS_ACCESSIBILITY_VIEW_ACCESSIBILITY_WRAPPER_H_
 
 #include <atlcomcli.h>
+//  Necessary to define OleAcc GUID's used in window_win.cc.
+#include <initguid.h>
 #include <oleacc.h>
 
 #include "base/basictypes.h"

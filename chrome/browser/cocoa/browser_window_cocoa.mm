@@ -252,8 +252,9 @@ void BrowserWindowCocoa::AddFindBar(
   return [controller_ addFindBar:find_bar_cocoa_controller];
 }
 
-void BrowserWindowCocoa::ShowAboutChromeDialog() {
+views::Window* BrowserWindowCocoa::ShowAboutChromeDialog() {
   NOTIMPLEMENTED();
+  return NULL;
 }
 
 void BrowserWindowCocoa::ShowTaskManager() {
@@ -308,7 +309,8 @@ void BrowserWindowCocoa::ShowNewProfileDialog() {
   NOTIMPLEMENTED();
 }
 
-void BrowserWindowCocoa::ShowRepostFormWarningDialog(TabContents* tab_contents) {
+void BrowserWindowCocoa::ShowRepostFormWarningDialog(
+    TabContents* tab_contents) {
   RepostFormWarningMac::Create(GetNativeHandle(), tab_contents);
 }
 

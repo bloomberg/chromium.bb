@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define VIEWS_WINDOW_DIALOG_DELEGATE_H_
 
 #include "app/message_box_flags.h"
+#include "views/accessibility/accessibility_types.h"
 #include "views/window/dialog_client_view.h"
 #include "views/window/window_delegate.h"
 
@@ -115,6 +116,12 @@ class DialogDelegate : public WindowDelegate {
   // A helper for accessing the DialogClientView object contained by this
   // delegate's Window.
   DialogClientView* GetDialogClientView() const;
+
+ private:
+  // Overridden from WindowDelegate:
+  AccessibilityTypes::Role accessible_role() const {
+    return AccessibilityTypes::ROLE_DIALOG;
+  }
 };
 
 }  // namespace views

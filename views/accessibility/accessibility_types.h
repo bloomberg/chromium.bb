@@ -5,6 +5,8 @@
 #ifndef VIEWS_ACCESSIBILITY_ACCESSIBILITY_TYPES_H_
 #define VIEWS_ACCESSIBILITY_ACCESSIBILITY_TYPES_H_
 
+#include "base/basictypes.h"
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // AccessibilityTypes
@@ -15,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 class AccessibilityTypes {
  public:
-   
 
   // This defines states of the supported accessibility roles in our
   // Views (e.g. used in View::GetAccessibleState). Any interface using roles
@@ -41,6 +42,7 @@ class AccessibilityTypes {
     ROLE_CHECKBUTTON,
     ROLE_CLIENT,
     ROLE_COMBOBOX,
+    ROLE_DIALOG,
     ROLE_GRAPHIC,
     ROLE_GROUPING,
     ROLE_LINK,

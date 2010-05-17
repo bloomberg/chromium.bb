@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -103,6 +103,14 @@ class ATL_NO_VTABLE ViewAccessibility
   STDMETHODIMP put_accName(VARIANT var_id, BSTR put_name);
   STDMETHODIMP put_accValue(VARIANT var_id, BSTR put_val);
 
+  // Returns a conversion from the Role (as defined in accessibility_types.h)
+  // to an MSAA role.
+  static int32 MSAARole(AccessibilityTypes::Role role);
+
+  // Returns a conversion from the State (as defined in accessibility_types.h)
+  // to MSAA states set.
+  static int32 MSAAState(AccessibilityTypes::State state);
+
  private:
   // Checks to see if child_id is within the child bounds of view. Returns true
   // if the child is within the bounds, false otherwise.
@@ -127,14 +135,6 @@ class ATL_NO_VTABLE ViewAccessibility
 
   // Helper function which sets applicable states of view.
   void SetState(VARIANT* msaa_state, views::View* view);
-
-  // Returns a conversion from the Role (as defined in accessibility_types.h)
-  // to an MSAA role.
-  int32 MSAARole(AccessibilityTypes::Role role);
-
-  // Returns a conversion from the State (as defined in accessibility_types.h)
-  // to MSAA states set.
-  int32 MSAAState(AccessibilityTypes::State state);
 
   // Returns the IAccessible interface for a native view if applicable.
   // Returns S_OK on success.

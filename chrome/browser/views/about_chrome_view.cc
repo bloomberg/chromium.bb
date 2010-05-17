@@ -70,13 +70,17 @@ std::wstring StringSubRange(const std::wstring& text, size_t start,
 
 namespace browser {
 
-// Declared in browser_dialogs.h so that others don't need to depend on our .h.
-void ShowAboutChromeView(gfx::NativeWindow parent,
-                         Profile* profile) {
-  views::Window::CreateChromeWindow(parent,
-                                    gfx::Rect(),
-                                    new AboutChromeView(profile))->Show();
-}
+  // Declared in browser_dialogs.h so that others don't
+  // need to depend on our .h.
+  views::Window* ShowAboutChromeView(gfx::NativeWindow parent,
+                                     Profile* profile) {
+      views::Window* about_chrome_window =
+        views::Window::CreateChromeWindow(parent,
+        gfx::Rect(),
+        new AboutChromeView(profile));
+      about_chrome_window->Show();
+      return about_chrome_window;
+  }
 
 }  // namespace browser
 
@@ -559,6 +563,10 @@ std::wstring AboutChromeView::GetDialogButtonLabel(
   return L"";
 }
 
+std::wstring AboutChromeView::GetWindowTitle() const {
+  return l10n_util::GetString(IDS_ABOUT_CHROME_TITLE);
+}
+
 bool AboutChromeView::IsDialogButtonEnabled(
     MessageBoxFlags::DialogButton button) const {
   if (button == MessageBoxFlags::DIALOGBUTTON_OK &&
@@ -597,10 +605,6 @@ bool AboutChromeView::HasAlwaysOnTopMenu() const {
 
 bool AboutChromeView::IsModal() const {
   return true;
-}
-
-std::wstring AboutChromeView::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_ABOUT_CHROME_TITLE);
 }
 
 bool AboutChromeView::Accept() {
@@ -762,7 +766,7 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
                                   new_version_available_);
       update_label_.SetText(update_string);
       show_success_indicator = true;
-      // TODO (seanparent) : Need to see if this code needs to change to
+      // TODO(seanparent): Need to see if this code needs to change to
       // force a machine restart.
 #if defined(OS_WIN)
       RestartMessageBox::ShowMessageBox(window()->GetNativeWindow());

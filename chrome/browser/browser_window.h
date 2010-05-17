@@ -30,6 +30,10 @@ namespace gfx {
 class Rect;
 }
 
+namespace views {
+class Window;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserWindow interface
 //  An interface implemented by the "view" of the Browser window.
@@ -177,7 +181,7 @@ class BrowserWindow {
   virtual void ToggleExtensionShelf() = 0;
 
   // Shows the About Chrome dialog box.
-  virtual void ShowAboutChromeDialog() = 0;
+  virtual views::Window* ShowAboutChromeDialog() = 0;
 
   // Shows the Task manager.
   virtual void ShowTaskManager() = 0;

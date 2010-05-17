@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/scoped_ptr.h"
+#include "views/accessibility/accessibility_types.h"
 
 class SkBitmap;
 
@@ -52,6 +53,14 @@ class WindowDelegate {
   // opened it. Only windows with WindowType == DIALOG can be modal.
   virtual bool IsModal() const {
     return false;
+  }
+
+  virtual AccessibilityTypes::Role accessible_role() const {
+    return AccessibilityTypes::ROLE_WINDOW;
+  }
+
+  virtual AccessibilityTypes::State accessible_state() const {
+    return 0;
   }
 
   // Returns the text to be displayed in the window title.

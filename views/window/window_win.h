@@ -191,6 +191,11 @@ class WindowWin : public WidgetWin,
   // frame windows.
   void ResetWindowRegion(bool force);
 
+  //  Update accessibility information via our WindowDelegate.
+  void UpdateAccessibleName(std::wstring name);
+  void UpdateAccessibleRole();
+  void UpdateAccessibleState();
+
   // Converts a non-client mouse down message to a regular ChromeViews event
   // and handle it. |point| is the mouse position of the message in screen
   // coords. |flags| are flags that would be passed with a WM_L/M/RBUTTON*

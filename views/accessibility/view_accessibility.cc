@@ -702,6 +702,56 @@ void ViewAccessibility::SetState(VARIANT* msaa_state, views::View* view) {
   msaa_state->lVal |= MSAAState(state);
 }
 
+// IAccessible functions not supported.
+
+HRESULT ViewAccessibility::accDoDefaultAction(VARIANT var_id) {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP ViewAccessibility::get_accSelection(VARIANT* selected) {
+  if (selected)
+    selected->vt = VT_EMPTY;
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP ViewAccessibility::accSelect(LONG flagsSelect, VARIANT var_id) {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP ViewAccessibility::get_accHelp(VARIANT var_id, BSTR* help) {
+  if (help)
+    *help = NULL;
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP ViewAccessibility::get_accHelpTopic(BSTR* help_file,
+                                                 VARIANT var_id,
+                                                 LONG* topic_id) {
+  if (help_file) {
+    *help_file = NULL;
+  }
+  if (topic_id) {
+    *topic_id = static_cast<LONG>(-1);
+  }
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP ViewAccessibility::put_accName(VARIANT var_id, BSTR put_name) {
+  // Deprecated.
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP ViewAccessibility::put_accValue(VARIANT var_id, BSTR put_val) {
+  if (V_VT(&var_id) == VT_BSTR) {
+    if (!lstrcmpi(var_id.bstrVal, kViewsUninitializeAccessibilityInstance)) {
+      view_ = NULL;
+      return S_OK;
+    }
+  }
+  // Deprecated.
+  return E_NOTIMPL;
+}
+
 int32 ViewAccessibility::MSAARole(AccessibilityTypes::Role role) {
   switch (role) {
     case AccessibilityTypes::ROLE_APPLICATION:
@@ -714,6 +764,8 @@ int32 ViewAccessibility::MSAARole(AccessibilityTypes::Role role) {
       return ROLE_SYSTEM_CHECKBUTTON;
     case AccessibilityTypes::ROLE_COMBOBOX:
       return ROLE_SYSTEM_COMBOBOX;
+    case AccessibilityTypes::ROLE_DIALOG:
+      return ROLE_SYSTEM_DIALOG;
     case AccessibilityTypes::ROLE_GRAPHIC:
       return ROLE_SYSTEM_GRAPHIC;
     case AccessibilityTypes::ROLE_GROUPING:
@@ -772,56 +824,6 @@ int32 ViewAccessibility::MSAAState(AccessibilityTypes::State state) {
   if (state & AccessibilityTypes::STATE_READONLY)
     msaa_state |= STATE_SYSTEM_READONLY;
   return msaa_state;
-}
-
-// IAccessible functions not supported.
-
-HRESULT ViewAccessibility::accDoDefaultAction(VARIANT var_id) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP ViewAccessibility::get_accSelection(VARIANT* selected) {
-  if (selected)
-    selected->vt = VT_EMPTY;
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP ViewAccessibility::accSelect(LONG flagsSelect, VARIANT var_id) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP ViewAccessibility::get_accHelp(VARIANT var_id, BSTR* help) {
-  if (help)
-    *help = NULL;
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP ViewAccessibility::get_accHelpTopic(BSTR* help_file,
-                                                 VARIANT var_id,
-                                                 LONG* topic_id) {
-  if (help_file) {
-    *help_file = NULL;
-  }
-  if (topic_id) {
-    *topic_id = static_cast<LONG>(-1);
-  }
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP ViewAccessibility::put_accName(VARIANT var_id, BSTR put_name) {
-  // Deprecated.
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP ViewAccessibility::put_accValue(VARIANT var_id, BSTR put_val) {
-  if (V_VT(&var_id) == VT_BSTR) {
-    if (!lstrcmpi(var_id.bstrVal, kViewsUninitializeAccessibilityInstance)) {
-      view_ = NULL;
-      return S_OK;
-    }
-  }
-  // Deprecated.
-  return E_NOTIMPL;
 }
 
 HRESULT ViewAccessibility::GetNativeIAccessibleInterface(

@@ -961,9 +961,9 @@ void BrowserView::ToggleExtensionShelf() {
   ExtensionShelf::ToggleWhenExtensionShelfVisible(browser_->profile());
 }
 
-void BrowserView::ShowAboutChromeDialog() {
-  browser::ShowAboutChromeView(GetWindow()->GetNativeWindow(),
-                               browser_->profile());
+views::Window* BrowserView::ShowAboutChromeDialog() {
+  return browser::ShowAboutChromeView(GetWindow()->GetNativeWindow(),
+                                      browser_->profile());
 }
 
 void BrowserView::ShowTaskManager() {

@@ -271,5 +271,30 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
                               l10n_util::GetString(IDS_ACCNAME_BOOKMARKS),
                               ROLE_SYSTEM_TOOLBAR);
 }
+
+IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
+                       TestAboutChromeViewAccObj) {
+  //  Firstly, test that the WindowDelegate got updated.
+  views::Window* aboutChromeWindow = GetBrowserView()->ShowAboutChromeDialog();
+  EXPECT_STREQ(aboutChromeWindow->GetDelegate()->GetWindowTitle().c_str(),
+               l10n_util::GetString(IDS_ABOUT_CHROME_TITLE).c_str());
+  EXPECT_EQ(aboutChromeWindow->GetDelegate()->accessible_role(),
+            AccessibilityTypes::ROLE_DIALOG);
+
+  // Also test the accessibility object directly.
+  IAccessible* acc_obj = NULL;
+  HRESULT hr =
+    ::AccessibleObjectFromWindow(aboutChromeWindow->GetNativeWindow(),
+                                 OBJID_CLIENT,
+                                 IID_IAccessible,
+                                 reinterpret_cast<void**>(&acc_obj));
+  ASSERT_EQ(S_OK, hr);
+  ASSERT_TRUE(NULL != acc_obj);
+
+  TestAccessibilityInfo(acc_obj, l10n_util::GetString(IDS_ABOUT_CHROME_TITLE),
+                        ROLE_SYSTEM_DIALOG);
+
+  acc_obj->Release();
+}
 }  // Namespace.
 

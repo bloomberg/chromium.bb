@@ -878,8 +878,9 @@ void BrowserWindowGtk::ToggleExtensionShelf() {
   NOTIMPLEMENTED();
 }
 
-void BrowserWindowGtk::ShowAboutChromeDialog() {
+views::Window* BrowserWindowGtk::ShowAboutChromeDialog() {
   ShowAboutDialogForProfile(window_, browser_->profile());
+  return NULL;
 }
 
 void BrowserWindowGtk::ShowTaskManager() {
