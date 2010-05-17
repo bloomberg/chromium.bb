@@ -5,6 +5,7 @@
 
 import logging
 import os
+import shutil
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
@@ -43,6 +44,26 @@ class PrefsTest(pyauto.PyUITest):
       raw_input('Interact with the browser and hit <enter> to dump prefs... ')
       pp.pprint(self.GetPrefsInfo().Prefs())
 
+  def testNavigationStateOnSessionRestore(self):
+    """Verify navigation state is preserved on session restore."""
+    urls = ('http://www.google.com/',
+            'http://news.google.com/',
+            'http://www.google.com/chrome',)
+    for url in urls:
+      self.NavigateToURL(url)
+    tab = self.GetBrowserWindow(0).GetTab(0)
+    tab.GoBack()
+    self.assertEqual(self.GetActiveTabURL().spec(), urls[-2])
+    self.SetPrefs(pyauto.kRestoreOnStartup, 1)  # set pref to restore session
+    self.RestartBrowser(clear_profile=False)
+    # Verify that navigation state (forward/back state) is restored.
+    tab = self.GetBrowserWindow(0).GetTab(0)
+    tab.GoBack()
+    self.assertEqual(self.GetActiveTabURL().spec(), urls[0])
+    for i in (-2, -1):
+      tab.GoForward()
+      self.assertEqual(self.GetActiveTabURL().spec(), urls[i])
+
   def testSessionRestoreURLs(self):
     """Verify restore URLs preference."""
     url1 = self.GetFileURLForPath(os.path.join(self.DataDir(), 'title1.html'))
@@ -67,6 +88,51 @@ class PrefsTest(pyauto.PyUITest):
     self.RestartBrowser(clear_profile=False)
     self.assertEqual(True, self.GetPrefsInfo().Prefs(pyauto.kShowBookmarkBar))
     self.assertTrue(self.GetBookmarkBarVisibility())
+
+  def testDownloadDirPref(self):
+    """Verify download dir pref."""
+    test_dir = os.path.join(self.DataDir(), 'downloads')
+    file_url = self.GetFileURLForPath(os.path.join(test_dir, 'a_zip_file.zip'))
+    download_dir = self.GetDownloadDirectory().value()
+    new_dl_dir = os.path.join(download_dir, 'My+Downloads Folder')
+    downloaded_pkg = os.path.join(new_dl_dir, 'a_zip_file.zip')
+    os.path.exists(new_dl_dir) and shutil.rmtree(new_dl_dir)
+    os.makedirs(new_dl_dir)
+    # Set pref to download in new_dl_dir
+    self.SetPrefs(pyauto.kDownloadDefaultDirectory, new_dl_dir)
+    self.DownloadAndWaitForStart(file_url)
+    self.WaitForAllDownloadsToComplete()
+    self.assertTrue(os.path.exists(downloaded_pkg))
+    shutil.rmtree(new_dl_dir)  # cleanup
+
+  def testToolbarButtonsPref(self):
+    """Verify toolbar buttons prefs.."""
+    # Assert defaults first
+    self.assertFalse(self.GetPrefsInfo().Prefs(pyauto.kShowHomeButton))
+    self.assertFalse(self.GetPrefsInfo().Prefs(pyauto.kShowPageOptionsButtons))
+    self.SetPrefs(pyauto.kShowHomeButton, True)
+    self.SetPrefs(pyauto.kShowPageOptionsButtons, True)
+    self.RestartBrowser(clear_profile=False)
+    self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kShowHomeButton))
+    self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kShowPageOptionsButtons))
+
+  def testHomepagePrefs(self):
+    """Verify homepage prefs."""
+    # "Use the New Tab page"
+    self.SetPrefs(pyauto.kHomePageIsNewTabPage, True)
+    logging.debug('Setting %s to 1' % pyauto.kHomePageIsNewTabPage)
+    self.RestartBrowser(clear_profile=False)
+    self.assertEqual(self.GetPrefsInfo().Prefs(pyauto.kHomePageIsNewTabPage),
+                     True)
+    # "Open this page"
+    url = self.GetFileURLForPath(os.path.join(self.DataDir(), 'title1.html'))
+    self.SetPrefs(pyauto.kHomePage, url)
+    self.SetPrefs(pyauto.kHomePageIsNewTabPage, False)
+    self.RestartBrowser(clear_profile=False)
+    self.assertEqual(self.GetPrefsInfo().Prefs(pyauto.kHomePage), url)
+    self.assertFalse(self.GetPrefsInfo().Prefs(pyauto.kHomePageIsNewTabPage))
+    # TODO(nirnimesh): Actually verify that homepage loads.
+    # This requires telling pyauto *not* to set about:blank as homepage.
 
 
 if __name__ == '__main__':
