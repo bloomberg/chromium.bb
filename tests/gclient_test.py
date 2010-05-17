@@ -83,21 +83,24 @@ class GclientTestCase(GClientBaseTestCase):
 
 class GClientCommandsTestCase(GClientBaseTestCase):
   def testCommands(self):
-    known_commands = [gclient.DoCleanup, gclient.DoConfig, gclient.DoDiff,
-                      gclient.DoExport, gclient.DoHelp, gclient.DoStatus,
-                      gclient.DoUpdate, gclient.DoRevert, gclient.DoRunHooks,
-                      gclient.DoRevInfo, gclient.DoPack]
-    for (k,v) in gclient.gclient_command_map.iteritems():
+    known_commands = [gclient.CMDcleanup, gclient.CMDconfig, gclient.CMDdiff,
+                      gclient.CMDexport, gclient.CMDhelp, gclient.CMDpack,
+                      gclient.CMDrevert, gclient.CMDrevinfo,
+                      gclient.CMDrunhooks, gclient.CMDstatus, gclient.CMDsync,
+                      gclient.CMDupdate]
+    cmds = [getattr(gclient, x) for x in dir(gclient) if x.startswith('CMD')]
+    self.assertEquals(len(known_commands), len(cmds))
+    for v in cmds:
       # If it fails, you need to add a test case for the new command.
       self.assert_(v in known_commands)
     self.mox.ReplayAll()
 
-class TestDoConfig(GclientTestCase):
+class TestCMDconfig(GclientTestCase):
   def testMissingArgument(self):
     exception_msg = "required argument missing; see 'gclient help config'"
 
     self.mox.ReplayAll()
-    self.assertRaisesError(exception_msg, gclient.DoConfig, self.Options(), ())
+    self.assertRaisesError(exception_msg, gclient.CMDconfig, self.Options(), ())
 
   def testExistingClientFile(self):
     options = self.Options()
@@ -106,7 +109,7 @@ class TestDoConfig(GclientTestCase):
     gclient.os.path.exists(options.config_filename).AndReturn(True)
 
     self.mox.ReplayAll()
-    self.assertRaisesError(exception_msg, gclient.DoConfig, options, (1,))
+    self.assertRaisesError(exception_msg, gclient.CMDconfig, options, (1,))
 
   def testFromText(self):
     options = self.Options(spec='config_source_content')
@@ -116,7 +119,7 @@ class TestDoConfig(GclientTestCase):
     gclient.GClient.SaveConfig()
 
     self.mox.ReplayAll()
-    gclient.DoConfig(options, (1,),)
+    gclient.CMDconfig(options, (1,),)
 
   def testCreateClientFile(self):
     options = self.Options()
@@ -127,29 +130,8 @@ class TestDoConfig(GclientTestCase):
     gclient.GClient.SaveConfig()
 
     self.mox.ReplayAll()
-    gclient.DoConfig(options,
-                     ('http://svn/url/the_name', 'other', 'args', 'ignored'))
-
-
-class TestDoHelp(GclientTestCase):
-  def testGetUsage(self):
-    print(gclient.COMMAND_USAGE_TEXT['config'])
-    self.mox.ReplayAll()
-    options = self.Options()
-    gclient.DoHelp(options, ('config',))
-
-  def testTooManyArgs(self):
-    self.mox.ReplayAll()
-    options = self.Options()
-    self.assertRaisesError("unknown subcommand 'config'; see 'gclient help'",
-                           gclient.DoHelp, options, ('config',
-                                                     'another argument'))
-
-  def testUnknownSubcommand(self):
-    self.mox.ReplayAll()
-    options = self.Options()
-    self.assertRaisesError("unknown subcommand 'xyzzy'; see 'gclient help'",
-                           gclient.DoHelp, options, ('xyzzy',))
+    gclient.CMDconfig(options,
+                      ('http://svn/url/the_name', 'other', 'args', 'ignored'))
 
 
 class GenericCommandTestCase(GclientTestCase):
@@ -183,36 +165,38 @@ class GenericCommandTestCase(GclientTestCase):
     result = function(options, self.args)
     self.assertEquals(result, 0)
 
-class TestDoCleanup(GenericCommandTestCase):
+
+class TestCMDcleanup(GenericCommandTestCase):
   def testGoodClient(self):
-    self.ReturnValue('cleanup', gclient.DoCleanup, 0)
+    self.ReturnValue('cleanup', gclient.CMDcleanup, 0)
   def testError(self):
-    self.ReturnValue('cleanup', gclient.DoCleanup, 42)
+    self.ReturnValue('cleanup', gclient.CMDcleanup, 42)
   def testBadClient(self):
-    self.BadClient(gclient.DoCleanup)
+    self.BadClient(gclient.CMDcleanup)
 
-class TestDoStatus(GenericCommandTestCase):
+
+class TestCMDstatus(GenericCommandTestCase):
   def testGoodClient(self):
-    self.ReturnValue('status', gclient.DoStatus, 0)
+    self.ReturnValue('status', gclient.CMDstatus, 0)
   def testError(self):
-    self.ReturnValue('status', gclient.DoStatus, 42)
+    self.ReturnValue('status', gclient.CMDstatus, 42)
   def testBadClient(self):
-    self.BadClient(gclient.DoStatus)
+    self.BadClient(gclient.CMDstatus)
 
 
-class TestDoRunHooks(GenericCommandTestCase):
+class TestCMDrunhooks(GenericCommandTestCase):
   def Options(self, verbose=False, *args, **kwargs):
     return self.OptionsObject(self, verbose=verbose, *args, **kwargs)
 
   def testGoodClient(self):
-    self.ReturnValue('runhooks', gclient.DoRunHooks, 0)
+    self.ReturnValue('runhooks', gclient.CMDrunhooks, 0)
   def testError(self):
-    self.ReturnValue('runhooks', gclient.DoRunHooks, 42)
+    self.ReturnValue('runhooks', gclient.CMDrunhooks, 42)
   def testBadClient(self):
-    self.BadClient(gclient.DoRunHooks)
+    self.BadClient(gclient.CMDrunhooks)
 
 
-class TestDoUpdate(GenericCommandTestCase):
+class TestCMDupdate(GenericCommandTestCase):
   def ReturnValue(self, command, function, return_value):
     options = self.Options()
     gclient.GClient.LoadCurrentConfig(options).AndReturn(gclient.GClient)
@@ -240,60 +224,60 @@ class TestDoUpdate(GenericCommandTestCase):
     return self.OptionsObject(self, verbose=verbose, *args, **kwargs)
 
   def testBasic(self):
-    self.ReturnValue('update', gclient.DoUpdate, 0)
+    self.ReturnValue('update', gclient.CMDupdate, 0)
   def testError(self):
-    self.ReturnValue('update', gclient.DoUpdate, 42)
+    self.ReturnValue('update', gclient.CMDupdate, 42)
   def testBadClient(self):
-    self.BadClient(gclient.DoUpdate)
+    self.BadClient(gclient.CMDupdate)
   def testVerbose(self):
-    self.Verbose('update', gclient.DoUpdate)
+    self.Verbose('update', gclient.CMDupdate)
 
 
-class TestDoDiff(GenericCommandTestCase):
+class TestCMDdiff(GenericCommandTestCase):
   def Options(self, *args, **kwargs):
       return self.OptionsObject(self, *args, **kwargs)
 
   def testBasic(self):
-    self.ReturnValue('diff', gclient.DoDiff, 0)
+    self.ReturnValue('diff', gclient.CMDdiff, 0)
   def testError(self):
-    self.ReturnValue('diff', gclient.DoDiff, 42)
+    self.ReturnValue('diff', gclient.CMDdiff, 42)
   def testBadClient(self):
-    self.BadClient(gclient.DoDiff)
+    self.BadClient(gclient.CMDdiff)
   def testVerbose(self):
-    self.Verbose('diff', gclient.DoDiff)
+    self.Verbose('diff', gclient.CMDdiff)
 
 
-class TestDoExport(GenericCommandTestCase):
+class TestCMDexport(GenericCommandTestCase):
   def testBasic(self):
     self.args = ['dir']
-    self.ReturnValue('export', gclient.DoExport, 0)
+    self.ReturnValue('export', gclient.CMDexport, 0)
   def testError(self):
     self.args = ['dir']
-    self.ReturnValue('export', gclient.DoExport, 42)
+    self.ReturnValue('export', gclient.CMDexport, 42)
   def testBadClient(self):
     self.args = ['dir']
-    self.BadClient(gclient.DoExport)
+    self.BadClient(gclient.CMDexport)
 
 
-class TestDoPack(GenericCommandTestCase):
+class TestCMDpack(GenericCommandTestCase):
   def Options(self, *args, **kwargs):
       return self.OptionsObject(self, *args, **kwargs)
 
   def testBasic(self):
-    self.ReturnValue('pack', gclient.DoPack, 0)
+    self.ReturnValue('pack', gclient.CMDpack, 0)
   def testError(self):
-    self.ReturnValue('pack', gclient.DoPack, 42)
+    self.ReturnValue('pack', gclient.CMDpack, 42)
   def testBadClient(self):
-    self.BadClient(gclient.DoPack)
+    self.BadClient(gclient.CMDpack)
 
 
-class TestDoRevert(GenericCommandTestCase):
+class TestCMDrevert(GenericCommandTestCase):
   def testBasic(self):
-    self.ReturnValue('revert', gclient.DoRevert, 0)
+    self.ReturnValue('revert', gclient.CMDrevert, 0)
   def testError(self):
-    self.ReturnValue('revert', gclient.DoRevert, 42)
+    self.ReturnValue('revert', gclient.CMDrevert, 42)
   def testBadClient(self):
-    self.BadClient(gclient.DoRevert)
+    self.BadClient(gclient.CMDrevert)
 
 
 class GClientClassTestCase(GclientTestCase):
