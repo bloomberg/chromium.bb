@@ -131,16 +131,15 @@ class NotificationType {
     // Updating the SSL security indicators (the lock icon and such) proceeds
     // in two phases:
     //
-    // 1) An SSLManager changes the SSLHostState (which hangs off the profile
-    //    object).  When this happens, the SSLManager broadcasts an
-    //    SSL_INTERNAL_STATE_CHANGED notification.
+    // 1) The internal SSL state for a host or tab changes.  When this happens,
+    //    the SSLManager broadcasts an SSL_INTERNAL_STATE_CHANGED notification.
     //
     // 2) The SSLManager for each tab receives this notification and might or
     //    might not update the navigation entry for its tab, depending on
-    //    whether the change in SSLHostState affects that tab.  If the
-    //    SSLManager does change the navigation entry, then the SSLManager
-    //    broadcasts an SSL_VISIBLE_STATE_CHANGED notification to the user
-    //    interface can redraw properly.
+    //    whether the change in state affects that tab.  If the SSLManager does
+    //    change the navigation entry, then the SSLManager broadcasts an
+    //    SSL_VISIBLE_STATE_CHANGED notification to the user interface can
+    //    redraw properly.
 
     // The SSL state of a page has changed in some visible way.  For example,
     // if an insecure resource is loaded on a secure page.  Note that a
@@ -149,9 +148,7 @@ class NotificationType {
     // case.  Listen to this notification if you need to refresh SSL-related UI
     // elements.
     //
-    // The source will be the navigation controller associated with the load.
-    // There are no details.  The entry changed will be the active entry of the
-    // controller.
+    // There is no source or details.
     SSL_VISIBLE_STATE_CHANGED,
 
     // The SSL state of the browser has changed in some internal way.  For

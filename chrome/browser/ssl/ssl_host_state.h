@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,14 +27,11 @@ class SSLHostState : public NonThreadSafe {
   SSLHostState();
   ~SSLHostState();
 
-  // Records that a host is "broken" in a particular render process.  That is,
-  // the origin for that host has been contaminated with insecure content,
-  // either via HTTP or via HTTPS with a bad certificate.
-  void MarkHostAsBroken(const std::string& host, int pid);
+  // Records that a host has run insecure content.
+  void HostRanInsecureContent(const std::string& host, int pid);
 
-  // Returns whether the specified host was marked as broken in a particular
-  // render process.
-  bool DidMarkHostAsBroken(const std::string& host, int pid);
+  // Returns whether the specified host ran insecure content.
+  bool DidHostRunInsecureContent(const std::string& host, int pid) const;
 
   // Records that |cert| is permitted to be used for |host| in the future.
   void DenyCertForHost(net::X509Certificate* cert, const std::string& host);
@@ -54,7 +51,7 @@ class SSLHostState : public NonThreadSafe {
   // Hosts which have been contaminated with insecure content in the
   // specified process.  Note that insecure content can travel between
   // same-origin frames in one processs but cannot jump between processes.
-  std::set<BrokenHostEntry> broken_hosts_;
+  std::set<BrokenHostEntry> ran_insecure_content_hosts_;
 
   // Certificate policies for each host.
   std::map<std::string, net::X509Certificate::Policy> cert_policy_for_host_;

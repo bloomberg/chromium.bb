@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -452,7 +452,8 @@ struct NavigationInfo {
   std::wstring title;
   GURL url;
   SecurityStyle security_style;
-  bool has_mixed_content;
+  bool displayed_mixed_content;
+  bool ran_mixed_content;
 };
 
 // Traits for NavigationInfo structure to pack/unpack.
@@ -466,7 +467,8 @@ struct ParamTraits<NavigationInfo> {
     WriteParam(m, p.title);
     WriteParam(m, p.url);
     WriteParam(m, p.security_style);
-    WriteParam(m, p.has_mixed_content);
+    WriteParam(m, p.displayed_mixed_content);
+    WriteParam(m, p.ran_mixed_content);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return ReadParam(m, iter, &p->navigation_type) &&
@@ -475,7 +477,8 @@ struct ParamTraits<NavigationInfo> {
            ReadParam(m, iter, &p->title) &&
            ReadParam(m, iter, &p->url) &&
            ReadParam(m, iter, &p->security_style) &&
-           ReadParam(m, iter, &p->has_mixed_content);
+           ReadParam(m, iter, &p->displayed_mixed_content) &&
+           ReadParam(m, iter, &p->ran_mixed_content);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"(");
@@ -491,7 +494,9 @@ struct ParamTraits<NavigationInfo> {
     l->append(L", ");
     LogParam(p.security_style, l);
     l->append(L", ");
-    LogParam(p.has_mixed_content, l);
+    LogParam(p.displayed_mixed_content, l);
+    l->append(L", ");
+    LogParam(p.ran_mixed_content, l);
     l->append(L")");
   }
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -750,7 +750,8 @@ bool ExternalTabContainer::InitNavigationInfo(IPC::NavigationInfo* nav_info,
     nav_info->title = UTF8ToWide(nav_info->url.spec());
 
   nav_info->security_style = entry->ssl().security_style();
-  nav_info->has_mixed_content = entry->ssl().has_mixed_content();
+  nav_info->displayed_mixed_content = entry->ssl().displayed_mixed_content();
+  nav_info->ran_mixed_content = entry->ssl().ran_mixed_content();
   return true;
 }
 

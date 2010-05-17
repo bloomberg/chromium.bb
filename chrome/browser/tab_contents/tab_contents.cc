@@ -270,6 +270,7 @@ TabContents::TabContents(Profile* profile,
       encoding_(),
       blocked_popups_(NULL),
       dont_notify_render_view_(false),
+      displayed_insecure_content_(false),
       infobar_delegates_(),
       find_ui_active_(false),
       find_op_aborted_(false),
@@ -1582,6 +1583,10 @@ void TabContents::DidNavigateMainFramePostCommit(
     geolocation_settings_state_.DidNavigate(details);
     if (delegate_)
       delegate_->OnContentSettingsChange(this);
+
+    // Once the main frame is navigated, we're no longer considered to have
+    // displayed insecure content.
+    displayed_insecure_content_ = false;
   }
 
   // Close constrained windows if necessary.
@@ -2051,7 +2056,8 @@ void TabContents::DidLoadResourceFromMemoryCache(
 }
 
 void TabContents::DidDisplayInsecureContent() {
-  controller_.ssl_manager()->DidDisplayInsecureContent();
+  displayed_insecure_content_ = true;
+  SSLManager::NotifySSLInternalStateChanged();
 }
 
 void TabContents::DidRunInsecureContent(const std::string& security_origin) {

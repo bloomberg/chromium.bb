@@ -101,23 +101,27 @@ TEST_F(NavigationEntryTest, NavigationEntrySSLStatus) {
   EXPECT_EQ(0, entry1_.get()->ssl().cert_id());
   EXPECT_EQ(0, entry1_.get()->ssl().cert_status());
   EXPECT_EQ(-1, entry1_.get()->ssl().security_bits());
-  EXPECT_FALSE(entry1_.get()->ssl().has_mixed_content());
+  EXPECT_FALSE(entry1_.get()->ssl().displayed_mixed_content());
+  EXPECT_FALSE(entry1_.get()->ssl().ran_mixed_content());
 
   // Change from the defaults
   entry2_.get()->ssl().set_security_style(SECURITY_STYLE_AUTHENTICATED);
   entry2_.get()->ssl().set_cert_id(4);
   entry2_.get()->ssl().set_cert_status(1);
   entry2_.get()->ssl().set_security_bits(0);
+  entry2_.get()->ssl().set_displayed_mixed_content();
   EXPECT_EQ(SECURITY_STYLE_AUTHENTICATED,
             entry2_.get()->ssl().security_style());
   EXPECT_EQ(4, entry2_.get()->ssl().cert_id());
   EXPECT_EQ(1, entry2_.get()->ssl().cert_status());
   EXPECT_EQ(0, entry2_.get()->ssl().security_bits());
+  EXPECT_TRUE(entry2_.get()->ssl().displayed_mixed_content());
 
-  // Mixed content unaffected by unsafe content
-  EXPECT_FALSE(entry2_.get()->ssl().has_mixed_content());
-  entry2_.get()->ssl().set_has_mixed_content();
-  EXPECT_TRUE(entry2_.get()->ssl().has_mixed_content());
+  entry2_.get()->ssl().set_security_style(SECURITY_STYLE_AUTHENTICATION_BROKEN);
+  entry2_.get()->ssl().set_ran_mixed_content();
+  EXPECT_EQ(SECURITY_STYLE_AUTHENTICATION_BROKEN,
+            entry2_.get()->ssl().security_style());
+  EXPECT_TRUE(entry2_.get()->ssl().ran_mixed_content());
 }
 
 // Test other basic accessors
