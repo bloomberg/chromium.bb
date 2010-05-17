@@ -122,6 +122,17 @@ class GClient(object):
     'runhooks'
   ]
 
+  deps_os_choices = {
+    "win32": "win",
+    "win": "win",
+    "cygwin": "win",
+    "darwin": "mac",
+    "mac": "mac",
+    "unix": "unix",
+    "linux": "unix",
+    "linux2": "unix",
+  }
+
   DEPS_FILE = 'DEPS'
 
   DEFAULT_CLIENT_FILE_TEXT = ("""\
@@ -356,23 +367,13 @@ solutions = [
     # load os specific dependencies if defined.  these dependencies may
     # override or extend the values defined by the 'deps' member.
     if "deps_os" in local_scope:
-      deps_os_choices = {
-          "win32": "win",
-          "win": "win",
-          "cygwin": "win",
-          "darwin": "mac",
-          "mac": "mac",
-          "unix": "unix",
-          "linux": "unix",
-          "linux2": "unix",
-         }
 
       if self._options.deps_os is not None:
         deps_to_include = self._options.deps_os.split(",")
         if "all" in deps_to_include:
-          deps_to_include = list(set(deps_os_choices.itervalues()))
+          deps_to_include = list(set(self.deps_os_choices.itervalues()))
       else:
-        deps_to_include = [deps_os_choices.get(sys.platform, "unix")]
+        deps_to_include = [self.deps_os_choices.get(sys.platform, "unix")]
 
       deps_to_include = set(deps_to_include)
       for deps_os_key in deps_to_include:
@@ -618,12 +619,12 @@ solutions = [
           scm.RunCommand(command, self._options, args, file_list)
           self._options.revision = None
       elif isinstance(deps[d], self.FileImpl):
-        file = deps[d]
-        self._options.revision = file.GetRevision()
+        file_dep = deps[d]
+        self._options.revision = file_dep.GetRevision()
         if run_scm:
-          scm = gclient_scm.CreateSCM(file.GetPath(), self._root_dir, d)
+          scm = gclient_scm.CreateSCM(file_dep.GetPath(), self._root_dir, d)
           scm.RunCommand("updatesingle", self._options,
-                         args + [file.GetFilename()], file_list)
+                         args + [file_dep.GetFilename()], file_list)
 
     if command == 'update' and not self._options.verbose:
       pm.end()
@@ -760,7 +761,7 @@ solutions = [
       (url, rev) = GetURLAndRev(name, solution["url"])
       entries[name] = "%s@%s" % (url, rev)
       solution_names[name] = "%s@%s" % (url, rev)
-      deps_file = solution.get("deps_file", DEPS_FILE)
+      deps_file = solution.get("deps_file", self.DEPS_FILE)
       if '/' in deps_file or '\\' in deps_file:
         raise gclient_utils.Error('deps_file name must not be a path, just a '
                                   'filename.')
@@ -795,8 +796,9 @@ solutions = [
         content =  gclient_utils.FileRead(os.path.join(
                                             self._root_dir,
                                             deps[d].module_name,
-                                            DEPS_FILE))
-        sub_deps = self._ParseSolutionDeps(deps[d].module_name, content, {})
+                                            self.DEPS_FILE))
+        sub_deps = self._ParseSolutionDeps(deps[d].module_name, content, {},
+                                           False)
         (url, rev) = GetURLAndRev(d, sub_deps[d])
         entries[d] = "%s@%s" % (url, rev)
 
@@ -818,7 +820,7 @@ solutions = [
 
     # Print the snapshot configuration file
     if self._options.snapshot:
-      config = DEFAULT_SNAPSHOT_FILE_TEXT % {'solution_list': new_gclient}
+      config = self.DEFAULT_SNAPSHOT_FILE_TEXT % {'solution_list': new_gclient}
       snapclient = GClient(self._root_dir, self._options)
       snapclient.SetConfig(config)
       print(snapclient._config_content)
