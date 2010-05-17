@@ -41,6 +41,9 @@ class GClientBaseTestCase(BaseTestCase):
     self.mox.StubOutWithMock(gclient.gclient_scm.scm.SVN, 'RunAndGetFileList')
     self._gclient_gclient = gclient.GClient
     gclient.GClient = self.mox.CreateMockAnything()
+    gclient.GClient.DEPS_FILE = self._gclient_gclient.DEPS_FILE
+    gclient.GClient.DEFAULT_CLIENT_FILE_TEXT = (
+        self._gclient_gclient.DEFAULT_CLIENT_FILE_TEXT)
     self._scm_wrapper = gclient.gclient_scm.CreateSCM
     gclient.gclient_scm.CreateSCM = self.mox.CreateMockAnything()
 
@@ -58,7 +61,7 @@ class GclientTestCase(GClientBaseTestCase):
                  force=False, nohooks=False):
       self.verbose = verbose
       self.config_filename = config_filename
-      #self.entries_filename = entries_filename
+      self.entries_filename = entries_filename
       self.spec = spec
       self.name = None
       self.force = force
@@ -277,7 +280,9 @@ class TestCMDrevert(GenericCommandTestCase):
 class GClientClassTestCase(GclientTestCase):
   def testDir(self):
     members = [
-      'ConfigContent', 'FileImpl', 'FromImpl', 'GetVar', 'LoadCurrentConfig',
+      'ConfigContent', 'DEFAULT_CLIENT_FILE_TEXT',
+      'DEFAULT_SNAPSHOT_FILE_TEXT', 'DEFAULT_SNAPSHOT_SOLUTION_TEXT',
+      'DEPS_FILE', 'FileImpl', 'FromImpl', 'GetVar', 'LoadCurrentConfig',
       'RunOnDeps', 'SaveConfig', 'SetConfig', 'SetDefaultConfig',
       'supported_commands', 'PrintRevInfo',
     ]
@@ -303,7 +308,7 @@ class GClientClassTestCase(GclientTestCase):
     solution_name = 'solution name'
     solution_url = 'solution url'
     safesync_url = 'safesync url'
-    default_text = gclient.Gclient.DEFAULT_CLIENT_FILE_TEXT % {
+    default_text = gclient.GClient.DEFAULT_CLIENT_FILE_TEXT % {
       'solution_name' : solution_name,
       'solution_url'  : solution_url,
       'safesync_url' : safesync_url
@@ -365,7 +370,8 @@ class GClientClassTestCase(GclientTestCase):
     scm_wrapper_sol.RunCommand('update', options, self.args, [])
     # Then an attempt will be made to read its DEPS file.
     gclient.gclient_utils.FileRead(
-        gclient.os.path.join(self.root_dir, solution_name, options.deps_file)
+        gclient.os.path.join(self.root_dir, solution_name,
+                             gclient.GClient.DEPS_FILE)
         ).AndRaise(IOError(2, 'No DEPS file'))
 
     # After everything is done, an attempt is made to write an entries
@@ -425,7 +431,8 @@ class GClientClassTestCase(GclientTestCase):
     scm_wrapper_sol.RunCommand('update', options, self.args, [])
     # Then an attempt will be made to read its DEPS file.
     gclient.gclient_utils.FileRead(
-        gclient.os.path.join(self.root_dir, solution_name, options.deps_file)
+        gclient.os.path.join(self.root_dir, solution_name,
+                             gclient.GClient.DEPS_FILE)
         ).AndReturn(deps)
 
     # Next we expect an scm to be request for dep src/t but it should
@@ -502,7 +509,7 @@ class GClientClassTestCase(GclientTestCase):
     scm_wrapper_sol.RunCommand('update', options, self.args, [])
     # Then an attempt will be made to read its DEPS file.
     gclient.gclient_utils.FileRead(
-        gclient.os.path.join(checkout_path, options.deps_file)
+        gclient.os.path.join(checkout_path, gclient.GClient.DEPS_FILE)
         ).AndReturn(deps)
 
     # Next we expect an scm to be request for dep src/n even though it does not
@@ -590,7 +597,7 @@ class GClientClassTestCase(GclientTestCase):
         scm_wrapper_a)
     # Then an attempt will be made to read it's DEPS file.
     gclient.gclient_utils.FileRead(
-        gclient.os.path.join(self.root_dir, name_a, options.deps_file)
+        gclient.os.path.join(self.root_dir, name_a, gclient.GClient.DEPS_FILE)
         ).AndReturn(deps_a)
     # Then an update will be performed.
     scm_wrapper_a.RunCommand('update', options, self.args, [])
@@ -600,7 +607,7 @@ class GClientClassTestCase(GclientTestCase):
         scm_wrapper_b)
     # Then an attempt will be made to read its DEPS file.
     gclient.gclient_utils.FileRead(
-        gclient.os.path.join(self.root_dir, name_b, options.deps_file)
+        gclient.os.path.join(self.root_dir, name_b, gclient.GClient.DEPS_FILE)
         ).AndReturn(deps_b)
     # Then an update will be performed.
     scm_wrapper_b.RunCommand('update', options, self.args, [])
@@ -646,7 +653,7 @@ class GClientClassTestCase(GclientTestCase):
         gclient.gclient_scm.CreateSCM)
     gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
     gclient.gclient_utils.FileRead(
-        gclient.os.path.join(self.root_dir, name, options.deps_file)
+        gclient.os.path.join(self.root_dir, name, gclient.GClient.DEPS_FILE)
         ).AndReturn("Boo = 'a'")
     gclient.gclient_utils.FileWrite(
         gclient.os.path.join(self.root_dir, options.entries_filename),
@@ -718,11 +725,11 @@ deps_os = {
     options = self.Options()
     options.revisions = [ 'src@123', 'foo/third_party/WebKit@42',
                           'src/third_party/cygwin@333' ]
-
+    options.deps_os = 'mac'
     # Also, pymox doesn't verify the order of function calling w.r.t. different
     # mock objects. Pretty lame. So reorder as we wish to make it clearer.
     gclient.gclient_utils.FileRead(
-        gclient.os.path.join(self.root_dir, 'src', options.deps_file)
+        gclient.os.path.join(self.root_dir, 'src', gclient.GClient.DEPS_FILE)
         ).AndReturn(deps_content)
     gclient.gclient_utils.FileWrite(
         gclient.os.path.join(self.root_dir, options.entries_filename),
@@ -847,7 +854,8 @@ deps = {
 
     options = self.Options()
     gclient.gclient_utils.FileRead(
-        gclient.os.path.join(self.root_dir, name, options.deps_file)
+        gclient.os.path.join(self.root_dir, name,
+                             gclient.GClient.DEPS_FILE)
         ).AndReturn(deps_content)
     gclient.gclient_utils.FileWrite(
         gclient.os.path.join(self.root_dir, options.entries_filename),
@@ -911,7 +919,7 @@ deps = {
 
     options = self.Options()
     gclient.gclient_utils.FileRead(
-        gclient.os.path.join(self.root_dir, name, options.deps_file)
+        gclient.os.path.join(self.root_dir, name, gclient.GClient.DEPS_FILE)
         ).AndReturn(deps_content)
     gclient.gclient_utils.FileWrite(
         gclient.os.path.join(self.root_dir, options.entries_filename),
@@ -960,7 +968,7 @@ deps = {
 
     options = self.Options()
     gclient.gclient_utils.FileRead(
-        gclient.os.path.join(self.root_dir, name, options.deps_file)
+        gclient.os.path.join(self.root_dir, name, gclient.GClient.DEPS_FILE)
         ).AndReturn(deps_content)
     gclient.gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
         gclient.gclient_scm.CreateSCM)
@@ -1029,7 +1037,7 @@ deps = {
         gclient.gclient_scm.CreateSCM)
     gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
     gclient.gclient_utils.FileRead(
-        gclient.os.path.join(self.root_dir, name, options.deps_file)
+        gclient.os.path.join(self.root_dir, name, gclient.GClient.DEPS_FILE)
         ).AndReturn(deps_content)
 
     # base gets updated.
@@ -1037,7 +1045,7 @@ deps = {
         gclient.gclient_scm.CreateSCM)
     gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
     gclient.gclient_utils.FileRead(
-        gclient.os.path.join(self.root_dir, 'base', options.deps_file)
+        gclient.os.path.join(self.root_dir, 'base', gclient.GClient.DEPS_FILE)
         ).AndReturn(base_deps_content)
 
     # main gets updated.
@@ -1092,7 +1100,7 @@ deps = {
         gclient.gclient_scm.CreateSCM)
     gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
     gclient.gclient_utils.FileRead(
-        gclient.os.path.join(self.root_dir, name, options.deps_file)
+        gclient.os.path.join(self.root_dir, name, gclient.GClient.DEPS_FILE)
         ).AndReturn(deps_content)
 
     # base gets updated.
@@ -1100,7 +1108,7 @@ deps = {
         gclient.gclient_scm.CreateSCM)
     gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
     gclient.gclient_utils.FileRead(
-        gclient.os.path.join(self.root_dir, 'base', options.deps_file)
+        gclient.os.path.join(self.root_dir, 'base', gclient.GClient.DEPS_FILE)
         ).AndReturn(base_deps_content)
 
     # main gets updated.
@@ -1155,7 +1163,7 @@ deps = {
         gclient.gclient_scm.CreateSCM)
     gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
     gclient.gclient_utils.FileRead(
-        gclient.os.path.join(self.root_dir, name, options.deps_file)
+        gclient.os.path.join(self.root_dir, name, gclient.GClient.DEPS_FILE)
         ).AndReturn(deps_content)
 
     # base gets updated.
@@ -1163,7 +1171,7 @@ deps = {
         gclient.gclient_scm.CreateSCM)
     gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
     gclient.gclient_utils.FileRead(
-        gclient.os.path.join(self.root_dir, 'base', options.deps_file)
+        gclient.os.path.join(self.root_dir, 'base', gclient.GClient.DEPS_FILE)
         ).AndReturn(base_deps_content)
 
     # main gets updated after resolving the relative url.
@@ -1207,7 +1215,7 @@ deps = {
     options = self.Options()
     gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
     gclient.gclient_utils.FileRead(
-        gclient.os.path.join(self.root_dir, name, options.deps_file)
+        gclient.os.path.join(self.root_dir, name, gclient.GClient.DEPS_FILE)
         ).AndReturn(deps_content)
     gclient.os.path.exists(
         gclient.os.path.join(self.root_dir, name, '.git')
