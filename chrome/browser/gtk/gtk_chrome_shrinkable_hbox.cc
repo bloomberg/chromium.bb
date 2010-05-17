@@ -182,12 +182,13 @@ static void gtk_chrome_shrinkable_hbox_size_allocate(
   // hidden children.
   if (widget->allocation.width < allocation->width ||
       box->children_width_requisition > children_width_requisition) {
-    gint count = 0;
-    gtk_container_foreach(GTK_CONTAINER(widget), ShowInvisibleChildren, &count);
+    gtk_container_foreach(GTK_CONTAINER(widget),
+                          reinterpret_cast<GtkCallback>(gtk_widget_show), NULL);
 
     // If there were any invisible children, showing them will trigger another
-    // allocate, so we can just return here.
-    if (count > 0) return;
+    // allocate. But we still need to go through the size allocate process
+    // in this iteration, otherwise before the next allocate iteration, the
+    // children may be redrawn on the screen with incorrect size allocation.
   }
 
   // Let the parent class do size allocation first. After that all children will
