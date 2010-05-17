@@ -479,23 +479,23 @@ HRESULT NativeTheme::PaintTrackbar(HDC hdc,
 }
 
 // A ScopedRegion wrapper to set/restore clipping region during the scope.
-class ScopedRegionClipping {
+class ScopedClipRegion {
  public:
-  explicit ScopedRegionClipping(const HDC hdc)
+  explicit ScopedClipRegion(const HDC hdc)
       : hdc_(hdc), clip_(NULL) {
     RECT zero_rect = { 0 };
     clip_ = CreateRectRgnIndirect(&zero_rect);
     GetClipRgn(hdc_, clip_);
   }
 
-  ~ScopedRegionClipping() {
+  ~ScopedClipRegion() {
     SelectClipRgn(hdc_, clip_);
   }
 
  private:
   HDC hdc_;
   ScopedRegion clip_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedRegionClipping);
+  DISALLOW_COPY_AND_ASSIGN(ScopedClipRegion);
 };
 
 HRESULT NativeTheme::PaintProgressBar(HDC hdc,
@@ -503,14 +503,15 @@ HRESULT NativeTheme::PaintProgressBar(HDC hdc,
                                       int value_part_id,
                                       RECT* value_rect,
                                       skia::PlatformCanvas* canvas) const {
-  // For an indeterminate progress bar, we draw a moving highlight that's animated
-  // (by the caller) across the width of the bar.  The highlight part is always
-  // drawn as being as wide as the bar, to scale it properly.  Therefore, we need
-  // to clip it against the bar rect, so that as it moves, it doesn't extend past
-  // the ends of the bar.  For a normal progress bar, we won't try to draw past
-  // the bar ends, so this clipping is useless, but harmless.
-  ScopedRegionClipping clip(hdc);
-  IntersectClipRect(hdc, bar_rect->left, bar_rect->top, 
+  // For an indeterminate progress bar, we draw a moving highlight that's
+  // animated (by the caller) across the width of the bar.  The highlight part
+  // is always drawn as being as wide as the bar, to scale it properly.
+  // Therefore, we need to clip it against the bar rect, so that as it moves,
+  // it doesn't extend past the ends of the bar.  For a normal progress bar,
+  // we won't try to draw past the bar ends, so this clipping is useless,
+  // but harmless.
+  ScopedClipRegion clip(hdc);
+  IntersectClipRect(hdc, bar_rect->left, bar_rect->top,
                     bar_rect->right, bar_rect->bottom);
 
   HANDLE handle = GetThemeHandle(PROGRESS);
