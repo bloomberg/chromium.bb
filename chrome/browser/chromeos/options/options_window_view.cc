@@ -301,6 +301,11 @@ OptionsPageView* OptionsWindowView::GetCurrentOptionsPageView() const {
   }
 }
 
+void CloseOptionsWindow() {
+  if (OptionsWindowView::instance_)
+    OptionsWindowView::instance_->window()->Close();
+}
+
 gfx::NativeWindow GetOptionsViewParent() {
   if (Browser* b = BrowserList::GetLastActive())
     return b->window()->GetNativeHandle();
@@ -322,8 +327,7 @@ void ShowOptionsWindow(OptionsPage page,
 
   // If there's already an existing options window, close it and create
   // a new one for the current active browser.
-  if (OptionsWindowView::instance_)
-    OptionsWindowView::instance_->window()->Close();
+  chromeos::CloseOptionsWindow();
 
   OptionsWindowView::instance_ = new OptionsWindowView(profile);
   views::Window::CreateChromeWindow(chromeos::GetOptionsViewParent(),

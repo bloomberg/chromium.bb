@@ -7,6 +7,9 @@
 
 namespace chromeos {
 
+// Closes the options dialog.
+void CloseOptionsWindow();
+
 // Get a proper parent for options dialogs. This returns the last active browser
 // window for now.
 gfx::NativeWindow GetOptionsViewParent();

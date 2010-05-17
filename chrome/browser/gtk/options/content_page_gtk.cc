@@ -34,6 +34,10 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/options/options_window_view.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace {
 
 // Background color for the status label when it's showing an error.
@@ -474,6 +478,12 @@ void ContentPageGtk::OnResetDefaultThemeButtonClicked(GtkWidget* widget) {
 void ContentPageGtk::OnGetThemesButtonClicked(GtkWidget* widget) {
   UserMetricsRecordAction(UserMetricsAction("Options_ThemesGallery"),
                           profile()->GetPrefs());
+#if defined(OS_CHROMEOS)
+  // Close options dialog for ChromeOS becuase it is always stacked on top
+  // of browser window and blocks user's view.
+  chromeos::CloseOptionsWindow();
+#endif  // defined(OS_CHROMEOS)
+
   BrowserList::GetLastActive()->OpenThemeGalleryTabAndActivate();
 }
 
