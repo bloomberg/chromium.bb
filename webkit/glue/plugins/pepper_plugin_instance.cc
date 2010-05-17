@@ -11,14 +11,22 @@
 #include "third_party/ppapi/c/pp_event.h"
 #include "third_party/ppapi/c/pp_rect.h"
 #include "third_party/ppapi/c/pp_resource.h"
+#include "third_party/ppapi/c/pp_var.h"
 #include "third_party/ppapi/c/ppb_instance.h"
 #include "third_party/ppapi/c/ppp_instance.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
 #include "webkit/glue/plugins/pepper_device_context_2d.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 #include "webkit/glue/plugins/pepper_resource_tracker.h"
+#include "webkit/glue/plugins/pepper_var.h"
 
+using WebKit::WebFrame;
 using WebKit::WebInputEvent;
+using WebKit::WebPluginContainer;
 
 namespace pepper {
 
@@ -99,6 +107,20 @@ void BuildMouseWheelEvent(const WebInputEvent* event, PP_Event* pp_event) {
   pp_event->u.wheel.scrollByPage = mouse_wheel_event->scrollByPage;
 }
 
+PP_Var GetWindowObject(PP_Instance instance_id) {
+  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  if (!instance)
+    return PP_MakeVoid();
+  return instance->GetWindowObject();
+}
+
+PP_Var GetOwnerElementObject(PP_Instance instance_id) {
+  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  if (!instance)
+    return PP_MakeVoid();
+  return instance->GetOwnerElementObject();
+}
+
 bool BindGraphicsDeviceContext(PP_Instance instance_id, PP_Resource device_id) {
   PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
   if (!instance)
@@ -107,6 +129,8 @@ bool BindGraphicsDeviceContext(PP_Instance instance_id, PP_Resource device_id) {
 }
 
 const PPB_Instance ppb_instance = {
+  &GetWindowObject,
+  &GetOwnerElementObject,
   &BindGraphicsDeviceContext,
 };
 
@@ -117,7 +141,8 @@ PluginInstance::PluginInstance(PluginDelegate* delegate,
                                const PPP_Instance* instance_interface)
     : delegate_(delegate),
       module_(module),
-      instance_interface_(instance_interface) {
+      instance_interface_(instance_interface),
+      container_(NULL) {
   DCHECK(delegate);
   module_->InstanceCreated(this);
 }
@@ -149,6 +174,24 @@ void PluginInstance::Paint(WebKit::WebCanvas* canvas,
     device_context_2d_->Paint(canvas, plugin_rect, paint_rect);
 }
 
+PP_Var PluginInstance::GetWindowObject() {
+  if (!container_)
+    return PP_MakeVoid();
+
+  WebFrame* frame = container_->element().document().frame();
+  if (!frame)
+    return PP_MakeVoid();
+
+  return NPObjectToPPVar(frame->windowObject());
+}
+
+PP_Var PluginInstance::GetOwnerElementObject() {
+  if (!container_)
+    return PP_MakeVoid();
+
+  return NPObjectToPPVar(container_->scriptableObjectForElement());
+}
+
 bool PluginInstance::BindGraphicsDeviceContext(PP_Resource device_id) {
   scoped_refptr<Resource> device_resource =
       ResourceTracker::Get()->GetResource(device_id);
@@ -166,10 +209,15 @@ bool PluginInstance::BindGraphicsDeviceContext(PP_Resource device_id) {
 
 void PluginInstance::Delete() {
   instance_interface_->Delete(GetPPInstance());
+
+  container_ = NULL;
 }
 
-bool PluginInstance::Initialize(const std::vector<std::string>& arg_names,
+bool PluginInstance::Initialize(WebPluginContainer* container,
+                                const std::vector<std::string>& arg_names,
                                 const std::vector<std::string>& arg_values) {
+  container_ = container;
+
   if (!instance_interface_->New(GetPPInstance()))
     return false;
 
