@@ -9,6 +9,7 @@ fun_r:*SHA256*
 fun_r:*BCryptGenerateSymmetricKey*
 
 obj:*WINHTTP.dll*
+obj:*imagehlp.dll*
 
 # Benign race on mutex unlock
 fun:_Mtxunlock

@@ -62,8 +62,12 @@ fun_r:*disk_cache*BackendImpl*CheckAllEntries*
 # Can we miss data races on V8 objects due to non thread-safe API calls
 # if we don't instrument v8::internals?
 fun_r:*v8*internal*
+
 # unibrow namespace contains lots of tiny unicode conversion functions.
 fun_hist:*unibrow*
+
+# Histogram has tiny functions that can be called frequently
+fun_hist:*Histogram*
 
 # TODO(timurrrr): SKIA - needs separate testing?
 # SKIA unittest is single-threaded...
