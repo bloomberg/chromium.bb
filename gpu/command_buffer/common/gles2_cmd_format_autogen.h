@@ -1210,6 +1210,71 @@ COMPILE_ASSERT(offsetof(CompressedTexImage2DImmediate, border) == 24,
 COMPILE_ASSERT(offsetof(CompressedTexImage2DImmediate, imageSize) == 28,
                OffsetOf_CompressedTexImage2DImmediate_imageSize_not_28);
 
+struct CompressedTexImage2DBucket {
+  typedef CompressedTexImage2DBucket ValueType;
+  static const CommandId kCmdId = kCompressedTexImage2DBucket;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(
+      GLenum _target, GLint _level, GLenum _internalformat, GLsizei _width,
+      GLsizei _height, GLint _border, GLuint _bucket_id) {
+    SetHeader();
+    target = _target;
+    level = _level;
+    internalformat = _internalformat;
+    width = _width;
+    height = _height;
+    border = _border;
+    bucket_id = _bucket_id;
+  }
+
+  void* Set(
+      void* cmd, GLenum _target, GLint _level, GLenum _internalformat,
+      GLsizei _width, GLsizei _height, GLint _border, GLuint _bucket_id) {
+    static_cast<ValueType*>(
+        cmd)->Init(
+            _target, _level, _internalformat, _width, _height, _border,
+            _bucket_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 target;
+  int32 level;
+  uint32 internalformat;
+  int32 width;
+  int32 height;
+  int32 border;
+  uint32 bucket_id;
+};
+
+COMPILE_ASSERT(sizeof(CompressedTexImage2DBucket) == 32,
+               Sizeof_CompressedTexImage2DBucket_is_not_32);
+COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, header) == 0,
+               OffsetOf_CompressedTexImage2DBucket_header_not_0);
+COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, target) == 4,
+               OffsetOf_CompressedTexImage2DBucket_target_not_4);
+COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, level) == 8,
+               OffsetOf_CompressedTexImage2DBucket_level_not_8);
+COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, internalformat) == 12,
+               OffsetOf_CompressedTexImage2DBucket_internalformat_not_12);
+COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, width) == 16,
+               OffsetOf_CompressedTexImage2DBucket_width_not_16);
+COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, height) == 20,
+               OffsetOf_CompressedTexImage2DBucket_height_not_20);
+COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, border) == 24,
+               OffsetOf_CompressedTexImage2DBucket_border_not_24);
+COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, bucket_id) == 28,
+               OffsetOf_CompressedTexImage2DBucket_bucket_id_not_28);
+
 struct CompressedTexSubImage2D {
   typedef CompressedTexSubImage2D ValueType;
   static const CommandId kCmdId = kCompressedTexSubImage2D;
@@ -1361,6 +1426,75 @@ COMPILE_ASSERT(offsetof(CompressedTexSubImage2DImmediate, format) == 28,
                OffsetOf_CompressedTexSubImage2DImmediate_format_not_28);
 COMPILE_ASSERT(offsetof(CompressedTexSubImage2DImmediate, imageSize) == 32,
                OffsetOf_CompressedTexSubImage2DImmediate_imageSize_not_32);
+
+struct CompressedTexSubImage2DBucket {
+  typedef CompressedTexSubImage2DBucket ValueType;
+  static const CommandId kCmdId = kCompressedTexSubImage2DBucket;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(
+      GLenum _target, GLint _level, GLint _xoffset, GLint _yoffset,
+      GLsizei _width, GLsizei _height, GLenum _format, GLuint _bucket_id) {
+    SetHeader();
+    target = _target;
+    level = _level;
+    xoffset = _xoffset;
+    yoffset = _yoffset;
+    width = _width;
+    height = _height;
+    format = _format;
+    bucket_id = _bucket_id;
+  }
+
+  void* Set(
+      void* cmd, GLenum _target, GLint _level, GLint _xoffset, GLint _yoffset,
+      GLsizei _width, GLsizei _height, GLenum _format, GLuint _bucket_id) {
+    static_cast<ValueType*>(
+        cmd)->Init(
+            _target, _level, _xoffset, _yoffset, _width, _height, _format,
+            _bucket_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 target;
+  int32 level;
+  int32 xoffset;
+  int32 yoffset;
+  int32 width;
+  int32 height;
+  uint32 format;
+  uint32 bucket_id;
+};
+
+COMPILE_ASSERT(sizeof(CompressedTexSubImage2DBucket) == 36,
+               Sizeof_CompressedTexSubImage2DBucket_is_not_36);
+COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, header) == 0,
+               OffsetOf_CompressedTexSubImage2DBucket_header_not_0);
+COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, target) == 4,
+               OffsetOf_CompressedTexSubImage2DBucket_target_not_4);
+COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, level) == 8,
+               OffsetOf_CompressedTexSubImage2DBucket_level_not_8);
+COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, xoffset) == 12,
+               OffsetOf_CompressedTexSubImage2DBucket_xoffset_not_12);
+COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, yoffset) == 16,
+               OffsetOf_CompressedTexSubImage2DBucket_yoffset_not_16);
+COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, width) == 20,
+               OffsetOf_CompressedTexSubImage2DBucket_width_not_20);
+COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, height) == 24,
+               OffsetOf_CompressedTexSubImage2DBucket_height_not_24);
+COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, format) == 28,
+               OffsetOf_CompressedTexSubImage2DBucket_format_not_28);
+COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, bucket_id) == 32,
+               OffsetOf_CompressedTexSubImage2DBucket_bucket_id_not_32);
 
 struct CopyTexImage2D {
   typedef CopyTexImage2D ValueType;

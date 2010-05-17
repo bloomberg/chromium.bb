@@ -892,17 +892,13 @@ void GLES2Implementation::CompressedTexImage2D(
   if (height == 0 || width == 0) {
     return;
   }
-  // TODO(gman): Switch to use buckets always or at least if no room in shared
-  //    memory.
-  DCHECK_LE(image_size,
-            static_cast<GLsizei>(
-                transfer_buffer_.GetLargestFreeOrPendingSize()));
-  void* buffer = transfer_buffer_.Alloc(image_size);
-  memcpy(buffer, data, image_size);
-  helper_->CompressedTexImage2D(
-      target, level, internalformat, width, height, border, image_size,
-      transfer_buffer_id_, transfer_buffer_.GetOffset(buffer));
-  transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
+  SetBucketContents(kResultBucketId, data, image_size);
+  helper_->CompressedTexImage2DBucket(
+      target, level, internalformat, width, height, border, kResultBucketId);
+  // Free the bucket. This is not required but it does free up the memory.
+  // and we don't have to wait for the result so from the client's perspective
+  // it's cheap.
+  helper_->SetBucketSize(kResultBucketId, 0);
 }
 
 void GLES2Implementation::CompressedTexSubImage2D(
@@ -912,17 +908,13 @@ void GLES2Implementation::CompressedTexSubImage2D(
     SetGLError(GL_INVALID_VALUE, "glCompressedTexSubImage2D dimension < 0");
     return;
   }
-  // TODO(gman): Switch to use buckets always or at least if no room in shared
-  //    memory.
-  DCHECK_LE(image_size,
-            static_cast<GLsizei>(
-                transfer_buffer_.GetLargestFreeOrPendingSize()));
-  void* buffer = transfer_buffer_.Alloc(image_size);
-  memcpy(buffer, data, image_size);
-  helper_->CompressedTexSubImage2D(
-      target, level, xoffset, yoffset, width, height, format, image_size,
-      transfer_buffer_id_, transfer_buffer_.GetOffset(buffer));
-  transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
+  SetBucketContents(kResultBucketId, data, image_size);
+  helper_->CompressedTexSubImage2DBucket(
+      target, level, xoffset, yoffset, width, height, format, kResultBucketId);
+  // Free the bucket. This is not required but it does free up the memory.
+  // and we don't have to wait for the result so from the client's perspective
+  // it's cheap.
+  helper_->SetBucketSize(kResultBucketId, 0);
 }
 
 void GLES2Implementation::TexImage2D(

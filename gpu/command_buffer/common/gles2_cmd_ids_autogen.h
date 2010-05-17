@@ -195,6 +195,8 @@
   OP(DeleteSharedIds)                                          /* 440 */ \
   OP(RegisterSharedIds)                                        /* 441 */ \
   OP(CommandBufferEnable)                                      /* 442 */ \
+  OP(CompressedTexImage2DBucket)                               /* 443 */ \
+  OP(CompressedTexSubImage2DBucket)                            /* 444 */ \
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.

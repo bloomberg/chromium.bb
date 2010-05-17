@@ -175,6 +175,14 @@
     c.Init(target, level, internalformat, width, height, border, imageSize);
   }
 
+  void CompressedTexImage2DBucket(
+      GLenum target, GLint level, GLenum internalformat, GLsizei width,
+      GLsizei height, GLint border, GLuint bucket_id) {
+    gles2::CompressedTexImage2DBucket& c =
+        GetCmdSpace<gles2::CompressedTexImage2DBucket>();
+    c.Init(target, level, internalformat, width, height, border, bucket_id);
+  }
+
   void CompressedTexSubImage2D(
       GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
       GLsizei height, GLenum format, GLsizei imageSize, uint32 data_shm_id,
@@ -194,6 +202,14 @@
         GetImmediateCmdSpaceTotalSize<gles2::CompressedTexSubImage2DImmediate>(
             s);
     c.Init(target, level, xoffset, yoffset, width, height, format, imageSize);
+  }
+
+  void CompressedTexSubImage2DBucket(
+      GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
+      GLsizei height, GLenum format, GLuint bucket_id) {
+    gles2::CompressedTexSubImage2DBucket& c =
+        GetCmdSpace<gles2::CompressedTexSubImage2DBucket>();
+    c.Init(target, level, xoffset, yoffset, width, height, format, bucket_id);
   }
 
   void CopyTexImage2D(

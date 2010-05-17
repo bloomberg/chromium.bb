@@ -338,10 +338,12 @@ TEST_F(GLES2DecoderTest1, ColorMaskValidArgs) {
 
 // TODO(gman): CompressedTexImage2DImmediate
 
+// TODO(gman): CompressedTexImage2DBucket
 // TODO(gman): CompressedTexSubImage2D
 
 // TODO(gman): CompressedTexSubImage2DImmediate
 
+// TODO(gman): CompressedTexSubImage2DBucket
 
 TEST_F(GLES2DecoderTest1, CopyTexImage2DValidArgs) {
   EXPECT_CALL(*gl_, CopyTexImage2D(GL_TEXTURE_2D, 2, 3, 4, 5, 6, 7, 8));
@@ -1820,8 +1822,6 @@ TEST_F(GLES2DecoderTest1, GetTexParameterivInvalidArgs2_1) {
 // TODO(gman): GetUniformiv
 
 // TODO(gman): GetUniformLocation
-
-// TODO(gman): GetUniformLocationImmediate
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_1_AUTOGEN_H_
 

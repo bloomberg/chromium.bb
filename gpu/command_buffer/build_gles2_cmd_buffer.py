@@ -54,8 +54,8 @@ GL_APICALL void         GL_APIENTRY glClearDepthf (GLclampf depth);
 GL_APICALL void         GL_APIENTRY glClearStencil (GLint s);
 GL_APICALL void         GL_APIENTRY glColorMask (GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha);
 GL_APICALL void         GL_APIENTRY glCompileShader (GLidShader shader);
-GL_APICALL void         GL_APIENTRY glCompressedTexImage2D (GLenumTextureTarget target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const void* data);
-GL_APICALL void         GL_APIENTRY glCompressedTexSubImage2D (GLenumTextureTarget target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const void* data);
+GL_APICALL void         GL_APIENTRY glCompressedTexImage2D (GLenumTextureTarget target, GLint level, GLenumCompressedTextureFormat internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const void* data);
+GL_APICALL void         GL_APIENTRY glCompressedTexSubImage2D (GLenumTextureTarget target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenumCompressedTextureFormat format, GLsizei imageSize, const void* data);
 GL_APICALL void         GL_APIENTRY glCopyTexImage2D (GLenumTextureTarget target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border);
 GL_APICALL void         GL_APIENTRY glCopyTexSubImage2D (GLenumTextureTarget target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height);
 GL_APICALL GLuint       GL_APIENTRY glCreateProgram (void);
@@ -376,6 +376,8 @@ _CMD_ID_TABLE = {
   'DeleteSharedIds':                                           440,
   'RegisterSharedIds':                                         441,
   'CommandBufferEnable':                                       442,
+  'CompressedTexImage2DBucket':                                443,
+  'CompressedTexSubImage2DBucket':                             444,
 }
 
 # This is a list of enum names and their valid values. It is used to map
@@ -418,6 +420,14 @@ _ENUM_LISTS = {
     ],
     'invalid': [
       'GL_STATIC_READ',
+    ],
+  },
+  'CompressedTextureFormat': {
+    'type': 'GLenum',
+    # TODO(gman): Refactor validation code so these can be added at runtime
+    'valid': [
+      'GL_COMPRESSED_RGB_S3TC_DXT1_EXT',
+      'GL_COMPRESSED_RGBA_S3TC_DXT1_EXT',
     ],
   },
   'GLState': {
@@ -1021,8 +1031,15 @@ _FUNCTION_INFO = {
     'expectation': False,
   },
   'CompileShader': {'decoder_func': 'DoCompileShader', 'unit_test': False},
-  'CompressedTexImage2D': {'type': 'Manual','immediate': True},
-  'CompressedTexSubImage2D': {'type': 'Data'},
+  'CompressedTexImage2D': {
+    'type': 'Manual',
+    'immediate': True,
+    'bucket': True,
+  },
+  'CompressedTexSubImage2D': {
+    'type': 'Data',
+    'bucket': True,
+  },
   'CreateProgram': {'type': 'Create'},
   'CreateShader': {'type': 'Create'},
   'DeleteBuffers': {
@@ -1518,7 +1535,7 @@ class TypeHandler(object):
 
   def InitFunction(self, func):
     """Add or adjust anything type specific for this function."""
-    if func.GetInfo('needs_size'):
+    if func.GetInfo('needs_size') and not func.name.endswith('Bucket'):
       func.AddCmdArg(DataSizeArgument('data_size'))
 
   def AddImmediateFunction(self, generator, func):
@@ -1962,6 +1979,10 @@ class CustomHandler(TypeHandler):
     """Overrriden from TypeHandler."""
     pass
 
+  def WriteBucketServiceImplementation(self, func, file):
+    """Overrriden from TypeHandler."""
+    pass
+
   def WriteServiceUnitTest(self, func, file):
     """Overrriden from TypeHandler."""
     file.Write("// TODO(gman): %s\n\n" % func.name)
@@ -2078,7 +2099,19 @@ class ManualHandler(CustomHandler):
   def __init__(self):
     CustomHandler.__init__(self)
 
+  def InitFunction(self, func):
+    """Overrriden from TypeHandler."""
+    if (func.name == 'CompressedTexImage2DBucket'):
+      func.cmd_args = func.cmd_args[:-1]
+      func.AddCmdArg(Argument('bucket_id', 'GLuint'))
+    else:
+      CustomHandler.InitFunction(self, func)
+
   def WriteServiceImplementation(self, func, file):
+    """Overrriden from TypeHandler."""
+    pass
+
+  def WriteBucketServiceImplementation(self, func, file):
     """Overrriden from TypeHandler."""
     pass
 
@@ -2120,6 +2153,12 @@ class DataHandler(TypeHandler):
   def __init__(self):
     TypeHandler.__init__(self)
 
+  def InitFunction(self, func):
+    """Overrriden from TypeHandler."""
+    if func.name == 'CompressedTexSubImage2DBucket':
+      func.cmd_args = func.cmd_args[:-1]
+      func.AddCmdArg(Argument('bucket_id', 'GLuint'))
+
   def WriteGetDataSizeCode(self, func, file):
     """Overrriden from TypeHandler."""
     # TODO(gman): Move this data to _FUNCTION_INFO?
@@ -2131,6 +2170,10 @@ class DataHandler(TypeHandler):
     elif (name == 'CompressedTexImage2D' or
           name == 'CompressedTexSubImage2D'):
       file.Write("  uint32 data_size = imageSize;\n")
+    elif (name == 'CompressedTexSubImage2DBucket'):
+      file.Write("  Bucket* bucket = GetBucket(c.bucket_id);\n")
+      file.Write("  uint32 data_size = bucket->size();\n")
+      file.Write("  GLsizei imageSize = data_size;\n")
     elif name == 'TexImage2D' or name == 'TexSubImage2D':
       code = """  uint32 data_size;
   if (!GLES2Util::ComputeImageDataSize(
@@ -2215,6 +2258,11 @@ class DataHandler(TypeHandler):
   def WriteImmediateServiceUnitTest(self, func, file):
     """Overrriden from TypeHandler."""
     file.Write("// TODO(gman): %s\n\n" % func.name)
+
+  def WriteBucketServiceImplementation(self, func, file):
+    """Overrriden from TypeHandler."""
+    if not func.name == 'CompressedTexSubImage2DBucket':
+      TypeHandler.WriteBucketServiceImplemenation(self, func, file)
 
 
 class BindHandler(TypeHandler):
@@ -3927,6 +3975,31 @@ class ImmediatePointerArgument(Argument):
     return None
 
 
+class BucketPointerArgument(Argument):
+  """A class that represents an bucket argument to a function."""
+
+  def __init__(self, name, type):
+    Argument.__init__(self, name, type)
+
+  def AddCmdArgs(self, args):
+    """Overridden from Argument."""
+    pass
+
+  def WriteGetCode(self, file):
+    """Overridden from Argument."""
+    file.Write(
+      "  %s %s = bucket->GetData(0, data_size);\n" %
+      (self.type, self.name))
+
+  def WriteValidationCode(self, file, func):
+    """Overridden from Argument."""
+    pass
+
+  def GetImmediateVersion(self):
+    """Overridden from Argument."""
+    return None
+
+
 class PointerArgument(Argument):
   """A class that represents a pointer argument to a function."""
 
@@ -3994,7 +4067,7 @@ class PointerArgument(Argument):
     """Overridden from Argument."""
     if self.type == "const char*":
       return InputStringBucketArgument(self.name, self.type)
-    return self
+    return BucketPointerArgument(self.name, self.type)
 
 
 class InputStringBucketArgument(Argument):
@@ -4441,9 +4514,9 @@ class BucketFunction(Function):
         new_init_args,
         0)
 
-  def InitFunction(self):
-    """Overridden from Function"""
-    pass
+#  def InitFunction(self):
+#    """Overridden from Function"""
+#    pass
 
   def WriteCommandDescription(self, file):
     """Overridden from Function"""
@@ -4452,7 +4525,7 @@ class BucketFunction(Function):
 
   def WriteServiceImplementation(self, file):
     """Overridden from Function"""
-    pass
+    self.type_handler.WriteBucketServiceImplementation(self, file)
 
   def WriteHandlerImplementation(self, file):
     """Overridden from Function"""

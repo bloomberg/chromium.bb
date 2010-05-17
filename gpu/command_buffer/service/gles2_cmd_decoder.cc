@@ -3761,6 +3761,56 @@ error::Error GLES2DecoderImpl::HandleCompressedTexImage2DImmediate(
       target, level, internal_format, width, height, border, image_size, data);
 }
 
+error::Error GLES2DecoderImpl::HandleCompressedTexImage2DBucket(
+    uint32 immediate_data_size, const gles2::CompressedTexImage2DBucket& c) {
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLenum internal_format = static_cast<GLenum>(c.internalformat);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLint border = static_cast<GLint>(c.border);
+  Bucket* bucket = GetBucket(c.bucket_id);
+  return DoCompressedTexImage2D(
+      target, level, internal_format, width, height, border,
+      bucket->size(), bucket->GetData(0, bucket->size()));
+}
+
+error::Error GLES2DecoderImpl::HandleCompressedTexSubImage2DBucket(
+    uint32 immediate_data_size,
+    const gles2::CompressedTexSubImage2DBucket& c) {
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLint xoffset = static_cast<GLint>(c.xoffset);
+  GLint yoffset = static_cast<GLint>(c.yoffset);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLenum format = static_cast<GLenum>(c.format);
+  Bucket* bucket = GetBucket(c.bucket_id);
+  uint32 data_size = bucket->size();
+  GLsizei imageSize = data_size;
+  const void* data = bucket->GetData(0, data_size);
+  if (!ValidateGLenumTextureTarget(target)) {
+    SetGLError(
+        GL_INVALID_ENUM, "glCompressedTexSubImage2D: target GL_INVALID_ENUM");
+    return error::kNoError;
+  }
+  if (width < 0) {
+    SetGLError(GL_INVALID_VALUE, "glCompressedTexSubImage2D: width < 0");
+    return error::kNoError;
+  }
+  if (height < 0) {
+    SetGLError(GL_INVALID_VALUE, "glCompressedTexSubImage2D: height < 0");
+    return error::kNoError;
+  }
+  if (imageSize < 0) {
+    SetGLError(GL_INVALID_VALUE, "glCompressedTexSubImage2D: imageSize < 0");
+    return error::kNoError;
+  }
+  glCompressedTexSubImage2D(
+      target, level, xoffset, yoffset, width, height, format, imageSize, data);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::DoTexImage2D(
   GLenum target,
   GLint level,

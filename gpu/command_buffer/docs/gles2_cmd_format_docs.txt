@@ -48,7 +48,7 @@
 //!  - A shared memory offset is out of range for the given shared memory
 //!  - The size of the data a command would access in shared memory is out of
 //!    range for the given shared memory buffer.
-//!  - A result (in the transfer buffer) is not initialized to the 
+//!  - A result (in the transfer buffer) is not initialized to the
 //!    failure case. For example, any command that returns a SizedResult
 //!    will take a shared memory id and offset to where to store the result.
 //!    That size field of the result must be set to 0 before issuing the
@@ -507,6 +507,20 @@ struct CompressedTexImage2DImmediate {
   int32 imageSize;  //!< GLsizei
 };
 
+//! Bucket version of command that corresponds to glCompressedTexImage2D.
+struct CompressedTexImage2DBucket {
+  static const CommandId kCmdId = 443;
+
+  CommandHeader header;
+  uint32 target;  //!< GLenum
+  int32 level;  //!< GLint
+  uint32 internalformat;  //!< GLenum
+  int32 width;  //!< GLsizei
+  int32 height;  //!< GLsizei
+  int32 border;  //!< GLint
+  uint32 bucket_id;  //!< GLuint
+};
+
 //! Command that corresponds to glCompressedTexSubImage2D.
 struct CompressedTexSubImage2D {
   static const CommandId kCmdId = 282;
@@ -537,6 +551,21 @@ struct CompressedTexSubImage2DImmediate {
   int32 height;  //!< GLsizei
   uint32 format;  //!< GLenum
   int32 imageSize;  //!< GLsizei
+};
+
+//! Bucket version of command that corresponds to glCompressedTexSubImage2D.
+struct CompressedTexSubImage2DBucket {
+  static const CommandId kCmdId = 444;
+
+  CommandHeader header;
+  uint32 target;  //!< GLenum
+  int32 level;  //!< GLint
+  int32 xoffset;  //!< GLint
+  int32 yoffset;  //!< GLint
+  int32 width;  //!< GLsizei
+  int32 height;  //!< GLsizei
+  uint32 format;  //!< GLenum
+  uint32 bucket_id;  //!< GLuint
 };
 
 //! Command that corresponds to glCopyTexImage2D.

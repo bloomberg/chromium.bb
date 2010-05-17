@@ -9,6 +9,7 @@
 //     some of the GLenum definitions exist only in GLES2 and not in Desktop
 //     GL.
 #include <GLES2/gl2types.h>
+#include <GLES2/gl2ext.h>
 #include <GLES2/gles2_command_buffer.h>
 
 namespace gpu {

@@ -424,6 +424,31 @@ TEST(GLES2FormatTest, CompressedTexImage2D) {
 }
 
 // TODO(gman): Implement test for CompressedTexImage2DImmediate
+TEST(GLES2FormatTest, CompressedTexImage2DBucket) {
+  CompressedTexImage2DBucket cmd = { { 0 } };
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLenum>(11),
+      static_cast<GLint>(12),
+      static_cast<GLenum>(13),
+      static_cast<GLsizei>(14),
+      static_cast<GLsizei>(15),
+      static_cast<GLint>(16),
+      static_cast<GLuint>(17));
+  EXPECT_EQ(static_cast<uint32>(CompressedTexImage2DBucket::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<char*>(next_cmd),
+            reinterpret_cast<char*>(&cmd) + sizeof(cmd));
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.level);
+  EXPECT_EQ(static_cast<GLenum>(13), cmd.internalformat);
+  EXPECT_EQ(static_cast<GLsizei>(14), cmd.width);
+  EXPECT_EQ(static_cast<GLsizei>(15), cmd.height);
+  EXPECT_EQ(static_cast<GLint>(16), cmd.border);
+  EXPECT_EQ(static_cast<GLuint>(17), cmd.bucket_id);
+}
+
 TEST(GLES2FormatTest, CompressedTexSubImage2D) {
   CompressedTexSubImage2D cmd = { { 0 } };
   void* next_cmd = cmd.Set(
@@ -456,6 +481,33 @@ TEST(GLES2FormatTest, CompressedTexSubImage2D) {
 }
 
 // TODO(gman): Implement test for CompressedTexSubImage2DImmediate
+TEST(GLES2FormatTest, CompressedTexSubImage2DBucket) {
+  CompressedTexSubImage2DBucket cmd = { { 0 } };
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLenum>(11),
+      static_cast<GLint>(12),
+      static_cast<GLint>(13),
+      static_cast<GLint>(14),
+      static_cast<GLsizei>(15),
+      static_cast<GLsizei>(16),
+      static_cast<GLenum>(17),
+      static_cast<GLuint>(18));
+  EXPECT_EQ(static_cast<uint32>(CompressedTexSubImage2DBucket::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<char*>(next_cmd),
+            reinterpret_cast<char*>(&cmd) + sizeof(cmd));
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.level);
+  EXPECT_EQ(static_cast<GLint>(13), cmd.xoffset);
+  EXPECT_EQ(static_cast<GLint>(14), cmd.yoffset);
+  EXPECT_EQ(static_cast<GLsizei>(15), cmd.width);
+  EXPECT_EQ(static_cast<GLsizei>(16), cmd.height);
+  EXPECT_EQ(static_cast<GLenum>(17), cmd.format);
+  EXPECT_EQ(static_cast<GLuint>(18), cmd.bucket_id);
+}
+
 TEST(GLES2FormatTest, CopyTexImage2D) {
   CopyTexImage2D cmd = { { 0 } };
   void* next_cmd = cmd.Set(

@@ -292,6 +292,11 @@ error::Error GLES2DecoderImpl::HandleCompressedTexSubImage2D(
     SetGLError(GL_INVALID_VALUE, "glCompressedTexSubImage2D: height < 0");
     return error::kNoError;
   }
+  if (!ValidateGLenumCompressedTextureFormat(format)) {
+    SetGLError(
+        GL_INVALID_ENUM, "glCompressedTexSubImage2D: format GL_INVALID_ENUM");
+    return error::kNoError;
+  }
   if (imageSize < 0) {
     SetGLError(GL_INVALID_VALUE, "glCompressedTexSubImage2D: imageSize < 0");
     return error::kNoError;
@@ -329,6 +334,11 @@ error::Error GLES2DecoderImpl::HandleCompressedTexSubImage2DImmediate(
   }
   if (height < 0) {
     SetGLError(GL_INVALID_VALUE, "glCompressedTexSubImage2D: height < 0");
+    return error::kNoError;
+  }
+  if (!ValidateGLenumCompressedTextureFormat(format)) {
+    SetGLError(
+        GL_INVALID_ENUM, "glCompressedTexSubImage2D: format GL_INVALID_ENUM");
     return error::kNoError;
   }
   if (imageSize < 0) {

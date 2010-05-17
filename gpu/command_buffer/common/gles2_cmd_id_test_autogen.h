@@ -65,10 +65,14 @@ TEST(GLES2CommandIdTest, CommandIdsMatch) {
                  GLES2_CompressedTexImage2D_kCmdId_mismatch);
   COMPILE_ASSERT(CompressedTexImage2DImmediate::kCmdId == 281,
                  GLES2_CompressedTexImage2DImmediate_kCmdId_mismatch);
+  COMPILE_ASSERT(CompressedTexImage2DBucket::kCmdId == 443,
+                 GLES2_CompressedTexImage2DBucket_kCmdId_mismatch);
   COMPILE_ASSERT(CompressedTexSubImage2D::kCmdId == 282,
                  GLES2_CompressedTexSubImage2D_kCmdId_mismatch);
   COMPILE_ASSERT(CompressedTexSubImage2DImmediate::kCmdId == 283,
                  GLES2_CompressedTexSubImage2DImmediate_kCmdId_mismatch);
+  COMPILE_ASSERT(CompressedTexSubImage2DBucket::kCmdId == 444,
+                 GLES2_CompressedTexSubImage2DBucket_kCmdId_mismatch);
   COMPILE_ASSERT(CopyTexImage2D::kCmdId == 284,
                  GLES2_CopyTexImage2D_kCmdId_mismatch);
   COMPILE_ASSERT(CopyTexSubImage2D::kCmdId == 285,
