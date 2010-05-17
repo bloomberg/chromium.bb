@@ -24,7 +24,8 @@ WebPluginImpl::WebPluginImpl(
     WebKit::WebFrame* frame,
     const WebPluginParams& params,
     const base::WeakPtr<PluginDelegate>& plugin_delegate)
-    : init_data_(new InitData()) {
+    : init_data_(new InitData()),
+      container_(NULL) {
   DCHECK(plugin_module);
   init_data_->module = plugin_module;
   init_data_->delegate = plugin_delegate;
@@ -46,8 +47,7 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
   if (!instance_)
     return false;
 
-  bool success = instance_->Initialize(container,
-                                       init_data_->arg_names,
+  bool success = instance_->Initialize(init_data_->arg_names,
                                        init_data_->arg_values);
   if (!success) {
     instance_->Delete();
@@ -56,10 +56,13 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
   }
 
   init_data_.reset();
+  container_ = container;
   return true;
 }
 
 void WebPluginImpl::destroy() {
+  container_ = NULL;
+
   if (instance_) {
     instance_->Delete();
     instance_ = NULL;

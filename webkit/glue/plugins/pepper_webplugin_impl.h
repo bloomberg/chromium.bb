@@ -10,7 +10,6 @@
 
 #include "base/weak_ptr.h"
 #include "base/scoped_ptr.h"
-#include "base/task.h"
 #include "gfx/rect.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPlugin.h"
 
@@ -31,10 +30,6 @@ class WebPluginImpl : public WebKit::WebPlugin {
                 WebKit::WebFrame* frame,
                 const WebKit::WebPluginParams& params,
                 const base::WeakPtr<PluginDelegate>& plugin_delegate);
-
- private:
-  friend class DeleteTask<WebPluginImpl>;
-
   ~WebPluginImpl();
 
   // WebKit::WebPlugin implementation.
@@ -62,6 +57,7 @@ class WebPluginImpl : public WebKit::WebPlugin {
                                           void* notify_data,
                                           const WebKit::WebURLError& error);
 
+ public:
   struct InitData {
     scoped_refptr<PluginModule> module;
     base::WeakPtr<PluginDelegate> delegate;
@@ -71,6 +67,7 @@ class WebPluginImpl : public WebKit::WebPlugin {
 
   scoped_ptr<InitData> init_data_;  // Cleared upon successful initialization.
   scoped_refptr<PluginInstance> instance_;
+  WebKit::WebPluginContainer* container_;  // Can be NULL.
   gfx::Rect plugin_rect_;
 
   DISALLOW_COPY_AND_ASSIGN(WebPluginImpl);
