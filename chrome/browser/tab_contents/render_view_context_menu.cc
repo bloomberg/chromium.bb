@@ -349,7 +349,7 @@ void RenderViewContextMenu::AppendDeveloperItems() {
   if (g_browser_process->have_inspector_files()) {
     // In the DevTools popup menu, "developer items" is normally the only
     // section, so omit the separator there.
-    if (!IsDevToolsURL(params_.page_url))
+    if (menu_model_.GetItemCount() > 0)
       menu_model_.AddSeparator();
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_INSPECTELEMENT,
                                     IDS_CONTENT_CONTEXT_INSPECTELEMENT);
