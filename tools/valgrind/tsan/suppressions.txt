@@ -23,26 +23,26 @@
   bug_25385 (2)
   ThreadSanitizer:Race
   ...
-  fun:base::Thread::~Thread()
+  fun:base::Thread::~Thread*
 }
 
 {
   bug_25385 (3)
   ThreadSanitizer:Race
   ...
-  fun:*WebKitThread*~InternalWebKitThread()
+  fun:*WebKitThread*~InternalWebKitThread*
 }
 
 {
   bug_25385 (4)
   ThreadSanitizer:Race
-  fun:ChromeThread::~ChromeThread()
+  fun:ChromeThread::~ChromeThread*
 }
 
 {
   bug_25385 (5)
   ThreadSanitizer:Race
-  fun:*BrowserProcessSubThread::~BrowserProcessSubThread()
+  fun:*BrowserProcessSubThread::~BrowserProcessSubThread*
 }
 
 {
@@ -122,7 +122,7 @@
 {
   bug_44168 (benign race in libjingle)
   ThreadSanitizer:Race
-  fun:notifier::MediatorThreadImpl::~MediatorThreadImpl()
+  fun:notifier::MediatorThreadImpl::~MediatorThreadImpl*
 }
 
 {
