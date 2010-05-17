@@ -134,25 +134,27 @@ class TestCMDconfig(GclientTestCase):
 
 
 class GenericCommandTestCase(GclientTestCase):
-  def ReturnValue(self, command, function, return_value):
+  def ReturnValue(self, command, return_value):
     options = self.Options()
     gclient.GClient.LoadCurrentConfig(options).AndReturn(gclient.GClient)
     gclient.GClient.RunOnDeps(command, self.args).AndReturn(return_value)
 
     self.mox.ReplayAll()
+    function = getattr(gclient, 'CMD' + command)
     result = function(None, options, self.args)
     self.assertEquals(result, return_value)
 
-  def BadClient(self, function):
+  def BadClient(self, command):
     options = self.Options()
     gclient.GClient.LoadCurrentConfig(options).AndReturn(None)
 
     self.mox.ReplayAll()
+    function = getattr(gclient, 'CMD' + command)
     self.assertRaisesError(
         "client not configured; see 'gclient config'",
         function, None, options, self.args)
 
-  def Verbose(self, command, function):
+  def Verbose(self, command):
     options = self.Options(verbose=True)
     gclient.GClient.LoadCurrentConfig(options).AndReturn(gclient.GClient)
     text = "# Dummy content\nclient = 'my client'"
@@ -161,26 +163,27 @@ class GenericCommandTestCase(GclientTestCase):
     gclient.GClient.RunOnDeps(command, self.args).AndReturn(0)
 
     self.mox.ReplayAll()
+    function = getattr(gclient, 'CMD' + command)
     result = function(None, options, self.args)
     self.assertEquals(result, 0)
 
 
 class TestCMDcleanup(GenericCommandTestCase):
   def testGoodClient(self):
-    self.ReturnValue('cleanup', gclient.CMDcleanup, 0)
+    self.ReturnValue('cleanup', 0)
   def testError(self):
-    self.ReturnValue('cleanup', gclient.CMDcleanup, 42)
+    self.ReturnValue('cleanup', 42)
   def testBadClient(self):
-    self.BadClient(gclient.CMDcleanup)
+    self.BadClient('cleanup')
 
 
 class TestCMDstatus(GenericCommandTestCase):
   def testGoodClient(self):
-    self.ReturnValue('status', gclient.CMDstatus, 0)
+    self.ReturnValue('status', 0)
   def testError(self):
-    self.ReturnValue('status', gclient.CMDstatus, 42)
+    self.ReturnValue('status', 42)
   def testBadClient(self):
-    self.BadClient(gclient.CMDstatus)
+    self.BadClient('status')
 
 
 class TestCMDrunhooks(GenericCommandTestCase):
@@ -188,25 +191,26 @@ class TestCMDrunhooks(GenericCommandTestCase):
     return self.OptionsObject(self, verbose=verbose, *args, **kwargs)
 
   def testGoodClient(self):
-    self.ReturnValue('runhooks', gclient.CMDrunhooks, 0)
+    self.ReturnValue('runhooks', 0)
   def testError(self):
-    self.ReturnValue('runhooks', gclient.CMDrunhooks, 42)
+    self.ReturnValue('runhooks', 42)
   def testBadClient(self):
-    self.BadClient(gclient.CMDrunhooks)
+    self.BadClient('runhooks')
 
 
 class TestCMDupdate(GenericCommandTestCase):
-  def ReturnValue(self, command, function, return_value):
+  def ReturnValue(self, command, return_value):
     options = self.Options()
     gclient.GClient.LoadCurrentConfig(options).AndReturn(gclient.GClient)
     gclient.GClient.GetVar("solutions")
     gclient.GClient.RunOnDeps(command, self.args).AndReturn(return_value)
 
     self.mox.ReplayAll()
+    function = getattr(gclient, 'CMD' + command)
     result = function(None, options, self.args)
     self.assertEquals(result, return_value)
 
-  def Verbose(self, command, function):
+  def Verbose(self, command):
     options = self.Options(verbose=True)
     gclient.GClient.LoadCurrentConfig(options).AndReturn(gclient.GClient)
     gclient.GClient.GetVar("solutions")
@@ -216,6 +220,7 @@ class TestCMDupdate(GenericCommandTestCase):
     gclient.GClient.RunOnDeps(command, self.args).AndReturn(0)
 
     self.mox.ReplayAll()
+    function = getattr(gclient, 'CMD' + command)
     result = function(None, options, self.args)
     self.assertEquals(result, 0)
 
@@ -223,13 +228,13 @@ class TestCMDupdate(GenericCommandTestCase):
     return self.OptionsObject(self, verbose=verbose, *args, **kwargs)
 
   def testBasic(self):
-    self.ReturnValue('update', gclient.CMDupdate, 0)
+    self.ReturnValue('update', 0)
   def testError(self):
-    self.ReturnValue('update', gclient.CMDupdate, 42)
+    self.ReturnValue('update', 42)
   def testBadClient(self):
-    self.BadClient(gclient.CMDupdate)
+    self.BadClient('update')
   def testVerbose(self):
-    self.Verbose('update', gclient.CMDupdate)
+    self.Verbose('update')
 
 
 class TestCMDdiff(GenericCommandTestCase):
@@ -237,25 +242,25 @@ class TestCMDdiff(GenericCommandTestCase):
       return self.OptionsObject(self, *args, **kwargs)
 
   def testBasic(self):
-    self.ReturnValue('diff', gclient.CMDdiff, 0)
+    self.ReturnValue('diff', 0)
   def testError(self):
-    self.ReturnValue('diff', gclient.CMDdiff, 42)
+    self.ReturnValue('diff', 42)
   def testBadClient(self):
-    self.BadClient(gclient.CMDdiff)
+    self.BadClient('diff')
   def testVerbose(self):
-    self.Verbose('diff', gclient.CMDdiff)
+    self.Verbose('diff')
 
 
 class TestCMDexport(GenericCommandTestCase):
   def testBasic(self):
     self.args = ['dir']
-    self.ReturnValue('export', gclient.CMDexport, 0)
+    self.ReturnValue('export', 0)
   def testError(self):
     self.args = ['dir']
-    self.ReturnValue('export', gclient.CMDexport, 42)
+    self.ReturnValue('export', 42)
   def testBadClient(self):
     self.args = ['dir']
-    self.BadClient(gclient.CMDexport)
+    self.BadClient('export')
 
 
 class TestCMDpack(GenericCommandTestCase):
@@ -263,20 +268,20 @@ class TestCMDpack(GenericCommandTestCase):
       return self.OptionsObject(self, *args, **kwargs)
 
   def testBasic(self):
-    self.ReturnValue('pack', gclient.CMDpack, 0)
+    self.ReturnValue('pack', 0)
   def testError(self):
-    self.ReturnValue('pack', gclient.CMDpack, 42)
+    self.ReturnValue('pack', 42)
   def testBadClient(self):
-    self.BadClient(gclient.CMDpack)
+    self.BadClient('pack')
 
 
 class TestCMDrevert(GenericCommandTestCase):
   def testBasic(self):
-    self.ReturnValue('revert', gclient.CMDrevert, 0)
+    self.ReturnValue('revert', 0)
   def testError(self):
-    self.ReturnValue('revert', gclient.CMDrevert, 42)
+    self.ReturnValue('revert', 42)
   def testBadClient(self):
-    self.BadClient(gclient.CMDrevert)
+    self.BadClient('revert')
 
 
 class GClientClassTestCase(GclientTestCase):
