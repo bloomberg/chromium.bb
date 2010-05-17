@@ -45,12 +45,34 @@ void GLES2DecoderTestBase::SetUp() {
   EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, _))
       .WillOnce(SetArgumentPointee<1>(kMaxCubeMapTextureSize))
       .RetiresOnSaturation();
+
+  EXPECT_CALL(*gl_, EnableVertexAttribArray(0))
+      .Times(1)
+      .RetiresOnSaturation();
+  static GLuint attrib_ids[] = {
+    kServiceAttrib0BufferId,
+  };
+  EXPECT_CALL(*gl_, GenBuffersARB(arraysize(attrib_ids), _))
+      .WillOnce(SetArrayArgument<1>(attrib_ids,
+                                    attrib_ids + arraysize(attrib_ids)))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, kServiceAttrib0BufferId))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, VertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, 0, NULL))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, 0))
+      .Times(1)
+      .RetiresOnSaturation();
+
   static GLuint black_ids[] = {
     kServiceBlackTexture2dId,
     kServiceBlackTextureCubemapId,
   };
-  EXPECT_CALL(*gl_, GenTextures(2, _))
-      .WillOnce(SetArrayArgument<1>(black_ids, black_ids + 2))
+  EXPECT_CALL(*gl_, GenTextures(arraysize(black_ids), _))
+      .WillOnce(SetArrayArgument<1>(black_ids,
+                                    black_ids + arraysize(black_ids)))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, kServiceBlackTexture2dId))
       .Times(1)
@@ -147,6 +169,12 @@ void GLES2DecoderTestBase::SetUp() {
 void GLES2DecoderTestBase::TearDown() {
   // All Tests should have read all their GLErrors before getting here.
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_CALL(*gl_, DeleteTextures(1, _))
+      .Times(2)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, DeleteBuffersARB(1, _))
+      .Times(1)
+      .RetiresOnSaturation();
   decoder_->Destroy();
   decoder_.reset();
   engine_.reset();
@@ -197,6 +225,27 @@ void GLES2DecoderTestBase::SetupShaderForUniform() {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
+void GLES2DecoderTestBase::DoBindBuffer(
+    GLenum target, GLuint client_id, GLuint service_id) {
+  EXPECT_CALL(*gl_, BindBuffer(target, service_id))
+      .Times(1)
+      .RetiresOnSaturation();
+  BindBuffer cmd;
+  cmd.Init(target, client_id);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
+void GLES2DecoderTestBase::DoDeleteBuffer(
+    GLuint client_id, GLuint service_id) {
+  EXPECT_CALL(*gl_, DeleteBuffersARB(1, Pointee(service_id)))
+      .Times(1)
+      .RetiresOnSaturation();
+  DeleteBuffers cmd;
+  cmd.Init(1, shared_memory_id_, shared_memory_offset_);
+  memcpy(shared_memory_address_, &client_id, sizeof(client_id));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
 void GLES2DecoderTestBase::DoBindFramebuffer(
     GLenum target, GLuint client_id, GLuint service_id) {
   EXPECT_CALL(*gl_, BindFramebufferEXT(target, service_id))
@@ -242,6 +291,18 @@ void GLES2DecoderTestBase::DoTexImage2D(
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
+void GLES2DecoderTestBase::DoVertexAttribPointer(
+    GLuint index, GLint size, GLenum type, GLsizei stride, GLuint offset) {
+  EXPECT_CALL(*gl_,
+              VertexAttribPointer(index, size, type, GL_FALSE, stride,
+                                  BufferOffset(offset)))
+      .Times(1)
+      .RetiresOnSaturation();
+  VertexAttribPointer cmd;
+  cmd.Init(index, size, GL_FLOAT, GL_FALSE, stride, offset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
 // GCC requires these declarations, but MSVC requires they not be present
 #ifndef COMPILER_MSVC
 const GLint GLES2DecoderTestBase::kMaxTextureSize;
@@ -251,6 +312,8 @@ const GLint GLES2DecoderTestBase::kNumTextureUnits;
 
 const GLuint GLES2DecoderTestBase::kServiceBlackTexture2dId;
 const GLuint GLES2DecoderTestBase::kServiceBlackTextureCubemapId;
+
+const GLuint GLES2DecoderTestBase::kServiceAttrib0BufferId;
 
 const GLuint GLES2DecoderTestBase::kServiceBufferId;
 const GLuint GLES2DecoderTestBase::kServiceFramebufferId;
@@ -406,16 +469,6 @@ void GLES2DecoderWithShaderTestBase::DoEnableVertexAttribArray(GLint index) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
-void GLES2DecoderWithShaderTestBase::DoBindBuffer(
-    GLenum target, GLuint client_id, GLuint service_id) {
-  EXPECT_CALL(*gl_, BindBuffer(target, service_id))
-      .Times(1)
-      .RetiresOnSaturation();
-  BindBuffer cmd;
-  cmd.Init(target, client_id);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-}
-
 void GLES2DecoderWithShaderTestBase::DoBufferData(GLenum target, GLsizei size) {
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
@@ -443,17 +496,6 @@ void GLES2DecoderWithShaderTestBase::DoBufferSubData(
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
-void GLES2DecoderWithShaderTestBase::DoDeleteBuffer(
-    GLuint client_id, GLuint service_id) {
-  EXPECT_CALL(*gl_, DeleteBuffersARB(1, Pointee(service_id)))
-      .Times(1)
-      .RetiresOnSaturation();
-  DeleteBuffers cmd;
-  cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  memcpy(shared_memory_address_, &client_id, sizeof(client_id));
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-}
-
 void GLES2DecoderWithShaderTestBase::DoDeleteProgram(
     GLuint client_id, GLuint service_id) {
   EXPECT_CALL(*gl_, DeleteProgram(service_id))
@@ -461,18 +503,6 @@ void GLES2DecoderWithShaderTestBase::DoDeleteProgram(
       .RetiresOnSaturation();
   DeleteProgram cmd;
   cmd.Init(client_id);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-}
-
-void GLES2DecoderWithShaderTestBase::DoVertexAttribPointer(
-    GLuint index, GLint size, GLenum type, GLsizei stride, GLuint offset) {
-  EXPECT_CALL(*gl_,
-              VertexAttribPointer(index, size, type, GL_FALSE, stride,
-                                  BufferOffset(offset)))
-      .Times(1)
-      .RetiresOnSaturation();
-  VertexAttribPointer cmd;
-  cmd.Init(index, size, GL_FLOAT, GL_FALSE, stride, offset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
@@ -516,6 +546,7 @@ const int GLES2DecoderWithShaderTestBase::kValidIndexRangeCount;
 const int GLES2DecoderWithShaderTestBase::kInvalidIndexRangeStart;
 const int GLES2DecoderWithShaderTestBase::kInvalidIndexRangeCount;
 const int GLES2DecoderWithShaderTestBase::kOutOfRangeIndexRangeEnd;
+const GLuint GLES2DecoderWithShaderTestBase::kMaxValidIndex;
 
 const GLint GLES2DecoderWithShaderTestBase::kMaxAttribLength;
 const GLint GLES2DecoderWithShaderTestBase::kAttrib1Size;

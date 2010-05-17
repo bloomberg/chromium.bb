@@ -795,12 +795,14 @@ _ENUM_LISTS = {
   'VertexAttribute': {
     'type': 'GLenum',
     'valid': [
+      # some enum that the decoder actually passes through to GL needs
+      # to be the first listed here since it's used in unit tests.
+      'GL_VERTEX_ATTRIB_ARRAY_NORMALIZED',
       'GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING',
       'GL_VERTEX_ATTRIB_ARRAY_ENABLED',
       'GL_VERTEX_ATTRIB_ARRAY_SIZE',
       'GL_VERTEX_ATTRIB_ARRAY_STRIDE',
       'GL_VERTEX_ATTRIB_ARRAY_TYPE',
-      'GL_VERTEX_ATTRIB_ARRAY_NORMALIZED',
       'GL_CURRENT_VERTEX_ATTRIB',
     ],
   },
@@ -1261,11 +1263,15 @@ _FUNCTION_INFO = {
     'type': 'GETn',
     'result': ['SizedResult<GLfloat>'],
     'impl_decl': False,
+    'decoder_func': 'DoGetVertexAttribfv',
+    'expectation': False,
   },
   'GetVertexAttribiv': {
     'type': 'GETn',
     'result': ['SizedResult<GLint>'],
     'impl_decl': False,
+    'decoder_func': 'DoGetVertexAttribiv',
+    'expectation': False,
   },
   'GetVertexAttribPointerv': {
     'type': 'Custom',
@@ -1410,10 +1416,34 @@ _FUNCTION_INFO = {
   'UniformMatrix4fv': {'type': 'PUTn', 'data_type': 'GLfloat', 'count': 16},
   'UseProgram': {'decoder_func': 'DoUseProgram', 'unit_test': False},
   'ValidateProgram': {'decoder_func': 'DoValidateProgram'},
-  'VertexAttrib1fv': {'type': 'PUT', 'data_type': 'GLfloat', 'count': 1},
-  'VertexAttrib2fv': {'type': 'PUT', 'data_type': 'GLfloat', 'count': 2},
-  'VertexAttrib3fv': {'type': 'PUT', 'data_type': 'GLfloat', 'count': 3},
-  'VertexAttrib4fv': {'type': 'PUT', 'data_type': 'GLfloat', 'count': 4},
+  'VertexAttrib1f': {'decoder_func': 'DoVertexAttrib1f'},
+  'VertexAttrib1fv': {
+    'type': 'PUT',
+    'data_type': 'GLfloat',
+    'count': 1,
+    'decoder_func': 'DoVertexAttrib1fv',
+  },
+  'VertexAttrib2f': {'decoder_func': 'DoVertexAttrib2f'},
+  'VertexAttrib2fv': {
+    'type': 'PUT',
+    'data_type': 'GLfloat',
+    'count': 2,
+    'decoder_func': 'DoVertexAttrib2fv',
+  },
+  'VertexAttrib3f': {'decoder_func': 'DoVertexAttrib3f'},
+  'VertexAttrib3fv': {
+    'type': 'PUT',
+    'data_type': 'GLfloat',
+    'count': 3,
+    'decoder_func': 'DoVertexAttrib3fv',
+  },
+  'VertexAttrib4f': {'decoder_func': 'DoVertexAttrib4f'},
+  'VertexAttrib4fv': {
+    'type': 'PUT',
+    'data_type': 'GLfloat',
+    'count': 4,
+    'decoder_func': 'DoVertexAttrib4fv',
+  },
   'VertexAttribPointer': {
       'type': 'Manual',
       'cmd_args': 'GLuint indx, GLint size, GLenum type, GLboolean normalized, '
@@ -1853,7 +1883,7 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     valid_test = """
 TEST_F(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s));
-  SpecializedSetup<%(name)s, 0>();
+  SpecializedSetup<%(name)s, 0>(true);
   %(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -1865,7 +1895,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s)).Times(0);
-  SpecializedSetup<%(name)s, 0>();
+  SpecializedSetup<%(name)s, 0>(false);
   %(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::%(parse_result)s, ExecuteCmd(cmd));%(gl_error_test)s
@@ -2275,7 +2305,7 @@ class BindHandler(TypeHandler):
     valid_test = """
 TEST_F(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s));
-  SpecializedSetup<%(name)s, 0>();
+  SpecializedSetup<%(name)s, 0>(true);
   %(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -2286,7 +2316,7 @@ TEST_F(%(test_name)s, %(name)sValidArgsNewId) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(first_gl_arg)s, kNewServiceId));
   EXPECT_CALL(*gl_, %(gl_gen_func_name)s(1, _))
      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
-  SpecializedSetup<%(name)s, 0>();
+  SpecializedSetup<%(name)s, 0>(true);
   %(name)s cmd;
   cmd.Init(%(first_arg)s, kNewClientId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -2306,7 +2336,7 @@ TEST_F(%(test_name)s, %(name)sValidArgsNewId) {
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s)).Times(0);
-  SpecializedSetup<%(name)s, 0>();
+  SpecializedSetup<%(name)s, 0>(false);
   %(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::%(parse_result)s, ExecuteCmd(cmd));%(gl_error_test)s
@@ -2407,7 +2437,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(1, _))
       .WillOnce(SetArgumentPointee<1>(kNewServiceId));
   GetSharedMemoryAs<GLuint*>()[0] = kNewClientId;
-  SpecializedSetup<%(name)s, 0>();
+  SpecializedSetup<%(name)s, 0>(true);
   %(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -2422,7 +2452,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
 TEST_F(%(test_name)s, %(name)sInvalidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(_, _)).Times(0);
   GetSharedMemoryAs<GLuint*>()[0] = client_%(resource_name)s_id_;
-  SpecializedSetup<%(name)s, 0>();
+  SpecializedSetup<%(name)s, 0>(false);
   %(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
@@ -2440,7 +2470,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
       .WillOnce(SetArgumentPointee<1>(kNewServiceId));
   %(name)s& cmd = *GetImmediateAs<%(name)s>();
   GLuint temp = kNewClientId;
-  SpecializedSetup<%(name)s, 0>();
+  SpecializedSetup<%(name)s, 0>(true);
   cmd.Init(1, &temp);
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
@@ -2455,7 +2485,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
 TEST_F(%(test_name)s, %(name)sInvalidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(_, _)).Times(0);
   %(name)s& cmd = *GetImmediateAs<%(name)s>();
-  SpecializedSetup<%(name)s, 0>();
+  SpecializedSetup<%(name)s, 0>(false);
   cmd.Init(1, &client_%(resource_name)s_id_);
   EXPECT_EQ(error::kInvalidArguments,
             ExecuteImmediateCmd(cmd, sizeof(&client_%(resource_name)s_id_)));
@@ -2578,7 +2608,7 @@ class CreateHandler(TypeHandler):
 TEST_F(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s))
       .WillOnce(Return(kNewServiceId));
-  SpecializedSetup<%(name)s, 0>();
+  SpecializedSetup<%(name)s, 0>(true);
   %(name)s cmd;
   cmd.Init(%(args)s%(comma)skNewClientId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -2596,7 +2626,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s)).Times(0);
-  SpecializedSetup<%(name)s, 0>();
+  SpecializedSetup<%(name)s, 0>(false);
   %(name)s cmd;
   cmd.Init(%(args)s%(comma)skNewClientId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));%(gl_error_test)s
@@ -2675,7 +2705,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
       %(gl_func_name)s(1, Pointee(kService%(upper_resource_name)sId)))
       .Times(1);
   GetSharedMemoryAs<GLuint*>()[0] = client_%(resource_name)s_id_;
-  SpecializedSetup<%(name)s, 0>();
+  SpecializedSetup<%(name)s, 0>(true);
   %(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -2692,7 +2722,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgs) {
   GetSharedMemoryAs<GLuint*>()[0] = kInvalidClientId;
-  SpecializedSetup<%(name)s, 0>();
+  SpecializedSetup<%(name)s, 0>(false);
   %(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -2709,7 +2739,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
       %(gl_func_name)s(1, Pointee(kService%(upper_resource_name)sId)))
       .Times(1);
   %(name)s& cmd = *GetImmediateAs<%(name)s>();
-  SpecializedSetup<%(name)s, 0>();
+  SpecializedSetup<%(name)s, 0>(true);
   cmd.Init(1, &client_%(resource_name)s_id_);
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(client_%(resource_name)s_id_)));
@@ -2726,7 +2756,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgs) {
   %(name)s& cmd = *GetImmediateAs<%(name)s>();
-  SpecializedSetup<%(name)s, 0>();
+  SpecializedSetup<%(name)s, 0>(false);
   GLuint temp = kInvalidClientId;
   cmd.Init(1, &temp);
   EXPECT_EQ(error::kNoError,
@@ -2888,7 +2918,8 @@ class GETnHandler(TypeHandler):
       arg.WriteGetCode(file)
 
     code = """  typedef %(func_name)s::Result Result;
-  GLsizei num_values = GetNumValuesReturnedForGLGet(pname, &num_values);
+  GLsizei num_values = 0;
+  GetNumValuesReturnedForGLGet(pname, &num_values);
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   %(last_arg_type)s params = result ? result->GetData() : NULL;
@@ -2950,7 +2981,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
       .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
-  SpecializedSetup<%(name)s, 0>();
+  SpecializedSetup<%(name)s, 0>(true);
   typedef %(name)s::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(local_gl_args)s));
@@ -2986,7 +3017,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s)).Times(0);
-  SpecializedSetup<%(name)s, 0>();
+  SpecializedSetup<%(name)s, 0>(false);
   %(name)s::Result* result =
       static_cast<%(name)s::Result*>(shared_memory_address_);
   result->size = 0;
@@ -3014,7 +3045,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
       *gl_,
       %(gl_func_name)s(%(gl_args)s,
           reinterpret_cast<%(data_type)s*>(ImmediateDataAddress(&cmd))));
-  SpecializedSetup<%(name)s, 0>();
+  SpecializedSetup<%(name)s, 0>(true);
   %(data_type)s temp[%(data_count)s] = { 0, };
   cmd.Init(%(gl_args)s, &temp[0]);
   EXPECT_EQ(error::kNoError,
@@ -3041,7 +3072,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
 TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   %(name)s& cmd = *GetImmediateAs<%(name)s>();
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_any_args)s, _)).Times(0);
-  SpecializedSetup<%(name)s, 0>();
+  SpecializedSetup<%(name)s, 0>(false);
   %(data_type)s temp[%(data_count)s] = { 0, };
   cmd.Init(%(all_but_last_args)s, &temp[0]);
   EXPECT_EQ(error::%(parse_result)s,
@@ -3193,7 +3224,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
       *gl_,
       %(gl_func_name)s(%(gl_args)s,
           reinterpret_cast<%(data_type)s*>(ImmediateDataAddress(&cmd))));
-  SpecializedSetup<%(name)s, 0>();
+  SpecializedSetup<%(name)s, 0>(true);
   %(data_type)s temp[%(data_count)s * 2] = { 0, };
   cmd.Init(%(gl_args)s, &temp[0]);
   EXPECT_EQ(error::kNoError,
@@ -3220,7 +3251,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
 TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   %(name)s& cmd = *GetImmediateAs<%(name)s>();
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_any_args)s, _)).Times(0);
-  SpecializedSetup<%(name)s, 0>();
+  SpecializedSetup<%(name)s, 0>(false);
   %(data_type)s temp[%(data_count)s * 2] = { 0, };
   cmd.Init(%(all_but_last_args)s, &temp[0]);
   EXPECT_EQ(error::%(parse_result)s,
@@ -3386,7 +3417,7 @@ class PUTXnHandler(TypeHandler):
     valid_test = """
 TEST_F(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, Uniform%(count)sfv(%(local_args)s));
-  SpecializedSetup<%(name)s, 0>();
+  SpecializedSetup<%(name)s, 0>(true);
   %(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -3403,7 +3434,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   EXPECT_CALL(*gl_, Uniform%(count)s(_, _, _).Times(0);
-  SpecializedSetup<%(name)s, 0>();
+  SpecializedSetup<%(name)s, 0>(false);
   %(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::%(parse_result)s, ExecuteCmd(cmd));%(gl_error_test)s
@@ -3545,7 +3576,7 @@ class IsHandler(TypeHandler):
     valid_test = """
 TEST_F(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s));
-  SpecializedSetup<%(name)s, 0>();
+  SpecializedSetup<%(name)s, 0>(true);
   %(name)s cmd;
   cmd.Init(%(args)s%(comma)sshared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -3562,7 +3593,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s)).Times(0);
-  SpecializedSetup<%(name)s, 0>();
+  SpecializedSetup<%(name)s, 0>(false);
   %(name)s cmd;
   cmd.Init(%(args)s%(comma)sshared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::%(parse_result)s, ExecuteCmd(cmd));%(gl_error_test)s
@@ -3575,7 +3606,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s)).Times(0);
-  SpecializedSetup<%(name)s, 0>();
+  SpecializedSetup<%(name)s, 0>(false);
   %(name)s cmd;
   cmd.Init(%(args)s%(comma)skInvalidSharedMemoryId, shared_memory_offset_);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
@@ -3687,7 +3718,7 @@ class STRnHandler(TypeHandler):
 TEST_F(%(test_name)s, %(name)sValidArgs) {
   const char* kInfo = "hello";
   const uint32 kBucketId = 123;
-  SpecializedSetup<%(name)s, 0>();
+  SpecializedSetup<%(name)s, 0>(true);
 %(expect_len_code)s
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s))
       .WillOnce(DoAll(SetArgumentPointee<2>(strlen(kInfo)),

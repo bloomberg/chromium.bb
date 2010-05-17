@@ -954,7 +954,8 @@ error::Error GLES2DecoderImpl::HandleGetBooleanv(
     uint32 immediate_data_size, const gles2::GetBooleanv& c) {
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef GetBooleanv::Result Result;
-  GLsizei num_values = GetNumValuesReturnedForGLGet(pname, &num_values);
+  GLsizei num_values = 0;
+  GetNumValuesReturnedForGLGet(pname, &num_values);
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLboolean* params = result ? result->GetData() : NULL;
@@ -985,7 +986,8 @@ error::Error GLES2DecoderImpl::HandleGetBufferParameteriv(
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef GetBufferParameteriv::Result Result;
-  GLsizei num_values = GetNumValuesReturnedForGLGet(pname, &num_values);
+  GLsizei num_values = 0;
+  GetNumValuesReturnedForGLGet(pname, &num_values);
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
@@ -1033,7 +1035,8 @@ error::Error GLES2DecoderImpl::HandleGetFloatv(
     uint32 immediate_data_size, const gles2::GetFloatv& c) {
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef GetFloatv::Result Result;
-  GLsizei num_values = GetNumValuesReturnedForGLGet(pname, &num_values);
+  GLsizei num_values = 0;
+  GetNumValuesReturnedForGLGet(pname, &num_values);
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLfloat* params = result ? result->GetData() : NULL;
@@ -1066,7 +1069,8 @@ error::Error GLES2DecoderImpl::HandleGetFramebufferAttachmentParameteriv(
   GLenum attachment = static_cast<GLenum>(c.attachment);
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef GetFramebufferAttachmentParameteriv::Result Result;
-  GLsizei num_values = GetNumValuesReturnedForGLGet(pname, &num_values);
+  GLsizei num_values = 0;
+  GetNumValuesReturnedForGLGet(pname, &num_values);
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
@@ -1110,7 +1114,8 @@ error::Error GLES2DecoderImpl::HandleGetIntegerv(
     uint32 immediate_data_size, const gles2::GetIntegerv& c) {
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef GetIntegerv::Result Result;
-  GLsizei num_values = GetNumValuesReturnedForGLGet(pname, &num_values);
+  GLsizei num_values = 0;
+  GetNumValuesReturnedForGLGet(pname, &num_values);
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
@@ -1141,7 +1146,8 @@ error::Error GLES2DecoderImpl::HandleGetProgramiv(
   GLuint program = c.program;
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef GetProgramiv::Result Result;
-  GLsizei num_values = GetNumValuesReturnedForGLGet(pname, &num_values);
+  GLsizei num_values = 0;
+  GetNumValuesReturnedForGLGet(pname, &num_values);
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
@@ -1172,7 +1178,8 @@ error::Error GLES2DecoderImpl::HandleGetRenderbufferParameteriv(
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef GetRenderbufferParameteriv::Result Result;
-  GLsizei num_values = GetNumValuesReturnedForGLGet(pname, &num_values);
+  GLsizei num_values = 0;
+  GetNumValuesReturnedForGLGet(pname, &num_values);
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
@@ -1211,7 +1218,8 @@ error::Error GLES2DecoderImpl::HandleGetShaderiv(
   GLuint shader = c.shader;
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef GetShaderiv::Result Result;
-  GLsizei num_values = GetNumValuesReturnedForGLGet(pname, &num_values);
+  GLsizei num_values = 0;
+  GetNumValuesReturnedForGLGet(pname, &num_values);
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
@@ -1242,7 +1250,8 @@ error::Error GLES2DecoderImpl::HandleGetTexParameterfv(
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef GetTexParameterfv::Result Result;
-  GLsizei num_values = GetNumValuesReturnedForGLGet(pname, &num_values);
+  GLsizei num_values = 0;
+  GetNumValuesReturnedForGLGet(pname, &num_values);
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLfloat* params = result ? result->GetData() : NULL;
@@ -1277,7 +1286,8 @@ error::Error GLES2DecoderImpl::HandleGetTexParameteriv(
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef GetTexParameteriv::Result Result;
-  GLsizei num_values = GetNumValuesReturnedForGLGet(pname, &num_values);
+  GLsizei num_values = 0;
+  GetNumValuesReturnedForGLGet(pname, &num_values);
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
@@ -1312,7 +1322,8 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribfv(
   GLuint index = static_cast<GLuint>(c.index);
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef GetVertexAttribfv::Result Result;
-  GLsizei num_values = GetNumValuesReturnedForGLGet(pname, &num_values);
+  GLsizei num_values = 0;
+  GetNumValuesReturnedForGLGet(pname, &num_values);
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLfloat* params = result ? result->GetData() : NULL;
@@ -1328,7 +1339,7 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribfv(
     return error::kInvalidArguments;
   }
   CopyRealGLErrorsToWrapper();
-  glGetVertexAttribfv(index, pname, params);
+  DoGetVertexAttribfv(index, pname, params);
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
@@ -1343,7 +1354,8 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribiv(
   GLuint index = static_cast<GLuint>(c.index);
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef GetVertexAttribiv::Result Result;
-  GLsizei num_values = GetNumValuesReturnedForGLGet(pname, &num_values);
+  GLsizei num_values = 0;
+  GetNumValuesReturnedForGLGet(pname, &num_values);
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
@@ -1359,7 +1371,7 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribiv(
     return error::kInvalidArguments;
   }
   CopyRealGLErrorsToWrapper();
-  glGetVertexAttribiv(index, pname, params);
+  DoGetVertexAttribiv(index, pname, params);
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
@@ -2519,7 +2531,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttrib1f(
     uint32 immediate_data_size, const gles2::VertexAttrib1f& c) {
   GLuint indx = static_cast<GLuint>(c.indx);
   GLfloat x = static_cast<GLfloat>(c.x);
-  glVertexAttrib1f(indx, x);
+  DoVertexAttrib1f(indx, x);
   return error::kNoError;
 }
 
@@ -2535,7 +2547,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttrib1fv(
   if (values == NULL) {
     return error::kOutOfBounds;
   }
-  glVertexAttrib1fv(indx, values);
+  DoVertexAttrib1fv(indx, values);
   return error::kNoError;
 }
 
@@ -2554,7 +2566,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttrib1fvImmediate(
   if (values == NULL) {
     return error::kOutOfBounds;
   }
-  glVertexAttrib1fv(indx, values);
+  DoVertexAttrib1fv(indx, values);
   return error::kNoError;
 }
 
@@ -2563,7 +2575,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttrib2f(
   GLuint indx = static_cast<GLuint>(c.indx);
   GLfloat x = static_cast<GLfloat>(c.x);
   GLfloat y = static_cast<GLfloat>(c.y);
-  glVertexAttrib2f(indx, x, y);
+  DoVertexAttrib2f(indx, x, y);
   return error::kNoError;
 }
 
@@ -2579,7 +2591,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttrib2fv(
   if (values == NULL) {
     return error::kOutOfBounds;
   }
-  glVertexAttrib2fv(indx, values);
+  DoVertexAttrib2fv(indx, values);
   return error::kNoError;
 }
 
@@ -2598,7 +2610,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttrib2fvImmediate(
   if (values == NULL) {
     return error::kOutOfBounds;
   }
-  glVertexAttrib2fv(indx, values);
+  DoVertexAttrib2fv(indx, values);
   return error::kNoError;
 }
 
@@ -2608,7 +2620,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttrib3f(
   GLfloat x = static_cast<GLfloat>(c.x);
   GLfloat y = static_cast<GLfloat>(c.y);
   GLfloat z = static_cast<GLfloat>(c.z);
-  glVertexAttrib3f(indx, x, y, z);
+  DoVertexAttrib3f(indx, x, y, z);
   return error::kNoError;
 }
 
@@ -2624,7 +2636,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttrib3fv(
   if (values == NULL) {
     return error::kOutOfBounds;
   }
-  glVertexAttrib3fv(indx, values);
+  DoVertexAttrib3fv(indx, values);
   return error::kNoError;
 }
 
@@ -2643,7 +2655,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttrib3fvImmediate(
   if (values == NULL) {
     return error::kOutOfBounds;
   }
-  glVertexAttrib3fv(indx, values);
+  DoVertexAttrib3fv(indx, values);
   return error::kNoError;
 }
 
@@ -2654,7 +2666,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttrib4f(
   GLfloat y = static_cast<GLfloat>(c.y);
   GLfloat z = static_cast<GLfloat>(c.z);
   GLfloat w = static_cast<GLfloat>(c.w);
-  glVertexAttrib4f(indx, x, y, z, w);
+  DoVertexAttrib4f(indx, x, y, z, w);
   return error::kNoError;
 }
 
@@ -2670,7 +2682,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttrib4fv(
   if (values == NULL) {
     return error::kOutOfBounds;
   }
-  glVertexAttrib4fv(indx, values);
+  DoVertexAttrib4fv(indx, values);
   return error::kNoError;
 }
 
@@ -2689,7 +2701,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttrib4fvImmediate(
   if (values == NULL) {
     return error::kOutOfBounds;
   }
-  glVertexAttrib4fv(indx, values);
+  DoVertexAttrib4fv(indx, values);
   return error::kNoError;
 }
 

@@ -46,6 +46,8 @@ class GLES2DecoderTestBase : public testing::Test {
   static const GLuint kServiceBlackTexture2dId = 701;
   static const GLuint kServiceBlackTextureCubemapId = 702;
 
+  static const GLuint kServiceAttrib0BufferId = 801;
+
   static const GLuint kServiceBufferId = 301;
   static const GLuint kServiceFramebufferId = 302;
   static const GLuint kServiceRenderbufferId = 303;
@@ -79,7 +81,7 @@ class GLES2DecoderTestBase : public testing::Test {
   // This template exists solely so we can specialize it for
   // certain commands.
   template <typename T, int id>
-  void SpecializedSetup() {
+  void SpecializedSetup(bool valid) {
   }
 
   template <typename T>
@@ -186,13 +188,21 @@ class GLES2DecoderTestBase : public testing::Test {
   // EXPECT_EQ that expect both types to be the same.
   GLint GetGLError();
 
+  void DoBindBuffer(GLenum target, GLuint client_id, GLuint service_id);
   void DoBindFramebuffer(GLenum target, GLuint client_id, GLuint service_id);
   void DoBindRenderbuffer(GLenum target, GLuint client_id, GLuint service_id);
   void DoBindTexture(GLenum target, GLuint client_id, GLuint service_id);
+  void DoDeleteBuffer(GLuint client_id, GLuint service_id);
   void DoTexImage2D(GLenum target, GLint level, GLenum internal_format,
                     GLsizei width, GLsizei height, GLint border,
                     GLenum format, GLenum type,
                     uint32 shared_memory_id, uint32 shared_memory_offset);
+  void DoVertexAttribPointer(
+      GLuint index, GLint size, GLenum type, GLsizei stride, GLuint offset);
+
+  GLvoid* BufferOffset(unsigned i) {
+    return static_cast<int8 *>(NULL)+(i);
+  }
 
   // Use StrictMock to make 100% sure we know how GL will be called.
   scoped_ptr< ::testing::StrictMock< ::gles2::MockGLInterface> > gl_;
@@ -273,6 +283,7 @@ class GLES2DecoderWithShaderTestBase : public GLES2DecoderTestBase {
   static const int kInvalidIndexRangeStart = 0;
   static const int kInvalidIndexRangeCount = 7;
   static const int kOutOfRangeIndexRangeEnd = 10;
+  static const GLuint kMaxValidIndex = 7;
 
   static const GLint kMaxAttribLength = 10;
   static const char* kAttrib1Name;
@@ -313,25 +324,14 @@ class GLES2DecoderWithShaderTestBase : public GLES2DecoderTestBase {
 
   void SetupTexture();
 
-  GLvoid* BufferOffset(unsigned i) {
-    return static_cast<int8 *>(NULL)+(i);
-  }
-
   void DoEnableVertexAttribArray(GLint index);
-
-  void DoBindBuffer(GLenum target, GLuint client_id, GLuint service_id);
 
   void DoBufferData(GLenum target, GLsizei size);
 
   void DoBufferSubData(
       GLenum target, GLint offset, GLsizei size, const void* data);
 
-  void DoDeleteBuffer(GLuint client_id, GLuint service_id);
-
   void DoDeleteProgram(GLuint client_id, GLuint service_id);
-
-  void DoVertexAttribPointer(
-      GLuint index, GLint size, GLenum type, GLsizei stride, GLuint offset);
 
   void SetupVertexBuffer();
 

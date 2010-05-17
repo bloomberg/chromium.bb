@@ -33,7 +33,7 @@ class GLES2DecoderTest2 : public GLES2DecoderTestBase {
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<LinkProgram, 0>() {
+void GLES2DecoderTestBase::SpecializedSetup<LinkProgram, 0>(bool /* valid */) {
   InSequence dummy;
   EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
       .WillOnce(SetArgumentPointee<2>(1));
@@ -52,99 +52,134 @@ void GLES2DecoderTestBase::SpecializedSetup<LinkProgram, 0>() {
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<Uniform1f, 0>() {
+void GLES2DecoderTestBase::SpecializedSetup<Uniform1f, 0>(bool /* valid */) {
   SetupShaderForUniform();
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<Uniform1fv, 0>() {
+void GLES2DecoderTestBase::SpecializedSetup<Uniform1fv, 0>(bool /* valid */) {
   SetupShaderForUniform();
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<Uniform1fvImmediate, 0>() {
+void GLES2DecoderTestBase::SpecializedSetup<Uniform1fvImmediate, 0>(
+    bool /* valid */) {
   SetupShaderForUniform();
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<Uniform2f, 0>() {
+void GLES2DecoderTestBase::SpecializedSetup<Uniform2f, 0>(bool /* valid */) {
   SetupShaderForUniform();
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<Uniform2fv, 0>() {
+void GLES2DecoderTestBase::SpecializedSetup<Uniform2fv, 0>(bool /* valid */) {
   SetupShaderForUniform();
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<Uniform2fvImmediate, 0>() {
+void GLES2DecoderTestBase::SpecializedSetup<Uniform2fvImmediate, 0>(
+    bool /* valid */) {
   SetupShaderForUniform();
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<Uniform3f, 0>() {
+void GLES2DecoderTestBase::SpecializedSetup<Uniform3f, 0>(bool /* valid */) {
   SetupShaderForUniform();
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<Uniform3fv, 0>() {
+void GLES2DecoderTestBase::SpecializedSetup<Uniform3fv, 0>(bool /* valid */) {
   SetupShaderForUniform();
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<Uniform3fvImmediate, 0>() {
+void GLES2DecoderTestBase::SpecializedSetup<Uniform3fvImmediate, 0>(
+    bool /* valid */) {
   SetupShaderForUniform();
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<Uniform4f, 0>() {
+void GLES2DecoderTestBase::SpecializedSetup<Uniform4f, 0>(bool /* valid */) {
   SetupShaderForUniform();
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<Uniform4fv, 0>() {
+void GLES2DecoderTestBase::SpecializedSetup<Uniform4fv, 0>(bool /* valid */) {
   SetupShaderForUniform();
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<Uniform4fvImmediate, 0>() {
+void GLES2DecoderTestBase::SpecializedSetup<Uniform4fvImmediate, 0>(
+    bool /* valid */) {
   SetupShaderForUniform();
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<RenderbufferStorage, 0>() {
+void GLES2DecoderTestBase::SpecializedSetup<RenderbufferStorage, 0>(
+    bool /* valid */) {
   DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
                     kServiceRenderbufferId);
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<TexParameterf, 0>() {
+void GLES2DecoderTestBase::SpecializedSetup<TexParameterf, 0>(
+    bool /* valid */) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<TexParameteri, 0>() {
+void GLES2DecoderTestBase::SpecializedSetup<TexParameteri, 0>(
+    bool /* valid */) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<TexParameterfv, 0>() {
+void GLES2DecoderTestBase::SpecializedSetup<TexParameterfv, 0>(
+    bool /* valid */) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<TexParameterfvImmediate, 0>() {
+void GLES2DecoderTestBase::SpecializedSetup<TexParameterfvImmediate, 0>(
+    bool /* valid */) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<TexParameteriv, 0>() {
+void GLES2DecoderTestBase::SpecializedSetup<TexParameteriv, 0>(
+    bool /* valid */) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<TexParameterivImmediate, 0>() {
+void GLES2DecoderTestBase::SpecializedSetup<TexParameterivImmediate, 0>(
+    bool /* valid */) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+};
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<GetVertexAttribfv, 0>(bool valid) {
+  DoBindBuffer(GL_ARRAY_BUFFER, client_buffer_id_, kServiceBufferId);
+  DoVertexAttribPointer(1, 1, GL_FLOAT, 0, 0);
+  if (valid) {
+    EXPECT_CALL(*gl_, GetError())
+        .WillOnce(Return(GL_NO_ERROR))
+        .WillOnce(Return(GL_NO_ERROR))
+        .RetiresOnSaturation();
+  }
+};
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<GetVertexAttribiv, 0>(bool valid) {
+  DoBindBuffer(GL_ARRAY_BUFFER, client_buffer_id_, kServiceBufferId);
+  DoVertexAttribPointer(1, 1, GL_FLOAT, 0, 0);
+  if (valid) {
+    EXPECT_CALL(*gl_, GetError())
+        .WillOnce(Return(GL_NO_ERROR))
+        .WillOnce(Return(GL_NO_ERROR))
+        .RetiresOnSaturation();
+  }
 };
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_2_autogen.h"

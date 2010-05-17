@@ -600,12 +600,12 @@ bool ValidateGLenumVertexAttribType(GLenum value) {
 
 bool ValidateGLenumVertexAttribute(GLenum value) {
   switch (value) {
+    case GL_VERTEX_ATTRIB_ARRAY_NORMALIZED:
     case GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING:
     case GL_VERTEX_ATTRIB_ARRAY_ENABLED:
     case GL_VERTEX_ATTRIB_ARRAY_SIZE:
     case GL_VERTEX_ATTRIB_ARRAY_STRIDE:
     case GL_VERTEX_ATTRIB_ARRAY_TYPE:
-    case GL_VERTEX_ATTRIB_ARRAY_NORMALIZED:
     case GL_CURRENT_VERTEX_ATTRIB:
       return true;
     default:

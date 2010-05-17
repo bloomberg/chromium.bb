@@ -33,7 +33,8 @@ class GLES2DecoderTest1 : public GLES2DecoderTestBase {
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<GenerateMipmap, 0>() {
+void GLES2DecoderTestBase::SpecializedSetup<GenerateMipmap, 0>(
+    bool /* valid */) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoTexImage2D(
       GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0, GL_RGBA, GL_UNSIGNED_BYTE,
@@ -41,32 +42,36 @@ void GLES2DecoderTestBase::SpecializedSetup<GenerateMipmap, 0>() {
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<CheckFramebufferStatus, 0>() {
+void GLES2DecoderTestBase::SpecializedSetup<CheckFramebufferStatus, 0>(
+    bool /* valid */) {
   DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
                     kServiceFramebufferId);
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<FramebufferRenderbuffer, 0>() {
+void GLES2DecoderTestBase::SpecializedSetup<FramebufferRenderbuffer, 0>(
+    bool /* valid */) {
   DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
                     kServiceFramebufferId);
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<FramebufferTexture2D, 0>() {
+void GLES2DecoderTestBase::SpecializedSetup<FramebufferTexture2D, 0>(
+    bool /* valid */) {
   DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
                     kServiceFramebufferId);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<GetFramebufferAttachmentParameteriv,
-                                            0>() {
+                                            0>(bool /* valid */) {
   DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
                     kServiceFramebufferId);
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<GetRenderbufferParameteriv, 0>() {
+void GLES2DecoderTestBase::SpecializedSetup<GetRenderbufferParameteriv, 0>(
+    bool /* valid */) {
   DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
                     kServiceRenderbufferId);
 };
