@@ -170,7 +170,7 @@ SourceEntry.prototype.getDescription = function() {
 /**
  * Returns the starting entry for this source. Conceptually this is the
  * first entry that was logged to this source. However, we skip over the
- * TYPE_REQUEST_ALIVE entries which wrap TYPE_URL_REQUEST_START /
+ * TYPE_REQUEST_ALIVE entries which wrap TYPE_URL_REQUEST_START_JOB /
  * TYPE_SOCKET_STREAM_CONNECT.
  */
 SourceEntry.prototype.getStartEntry_ = function() {

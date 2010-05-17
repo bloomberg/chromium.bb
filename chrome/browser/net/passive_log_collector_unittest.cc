@@ -22,7 +22,7 @@ PassiveLogCollector::Entry MakeStartLogEntryWithURL(int source_id,
                                                     const std::string& url) {
   return PassiveLogCollector::Entry(
       0,
-      NetLog::TYPE_URL_REQUEST_START,
+      NetLog::TYPE_URL_REQUEST_START_JOB,
       base::TimeTicks(),
       NetLog::Source(kSourceType, source_id),
       NetLog::PHASE_BEGIN,
@@ -48,7 +48,7 @@ void AddStartURLRequestEntries(PassiveLogCollector* collector, uint32 id) {
   collector->OnAddEntry(NetLog::TYPE_REQUEST_ALIVE, base::TimeTicks(),
                         NetLog::Source(NetLog::SOURCE_URL_REQUEST, id),
                         NetLog::PHASE_BEGIN, NULL);
-  collector->OnAddEntry(NetLog::TYPE_URL_REQUEST_START, base::TimeTicks(),
+  collector->OnAddEntry(NetLog::TYPE_URL_REQUEST_START_JOB, base::TimeTicks(),
                         NetLog::Source(NetLog::SOURCE_URL_REQUEST, id),
                         NetLog::PHASE_BEGIN, new URLRequestStartEventParameters(
                             GURL(StringPrintf("http://req%d", id)), "GET", 0));

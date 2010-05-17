@@ -150,7 +150,7 @@ std::string PassiveLogCollector::RequestInfo::GetURL() const {
     const PassiveLogCollector::Entry& entry = entries[i];
     if (entry.phase == net::NetLog::PHASE_BEGIN && entry.params) {
       switch (entry.type) {
-        case net::NetLog::TYPE_URL_REQUEST_START:
+        case net::NetLog::TYPE_URL_REQUEST_START_JOB:
           return static_cast<URLRequestStartEventParameters*>(
               entry.params.get())->url().possibly_invalid_spec();
         case net::NetLog::TYPE_SOCKET_STREAM_CONNECT:
