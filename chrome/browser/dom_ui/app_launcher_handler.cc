@@ -4,19 +4,23 @@
 
 #include "chrome/browser/dom_ui/app_launcher_handler.h"
 
+#include "app/animation.h"
 #include "app/resource_bundle.h"
 #include "base/base64.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/app_launched_animation.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/url_constants.h"
+#include "gfx/rect.h"
 #include "grit/browser_resources.h"
 
 namespace {
@@ -25,10 +29,21 @@ bool TreatAsApp(const Extension* extension) {
   return !extension->GetFullLaunchURL().is_empty();
 }
 
+// This extracts an int from a ListValue at the given |index|.
+bool ExtractInt(const ListValue* list, size_t index, int* out_int) {
+  std::string string_value;
+
+  if (list->GetString(index, &string_value)) {
+    *out_int = StringToInt(string_value);
+    return true;
+  }
+
+  return false;
+}
+
 }  // namespace
 
-AppLauncherHandler::AppLauncherHandler(
-    ExtensionsService* extension_service)
+AppLauncherHandler::AppLauncherHandler(ExtensionsService* extension_service)
     : extensions_service_(extension_service) {
 }
 
@@ -63,7 +78,7 @@ void AppLauncherHandler::Observe(NotificationType type,
 
 // static
 void AppLauncherHandler::CreateAppInfo(Extension* extension,
-                                          DictionaryValue* value) {
+                                       DictionaryValue* value) {
   value->Clear();
   value->SetString(L"id", extension->id());
   value->SetString(L"name", extension->name());
@@ -132,24 +147,40 @@ void AppLauncherHandler::HandleLaunchApp(const Value* value) {
 
   std::string extension_id;
   std::string launch_container;
+  int left;
+  int top;
+  int width;
+  int height;
 
   const ListValue* list = static_cast<const ListValue*>(value);
   if (!list->GetString(0, &extension_id) ||
-      !list->GetString(1, &launch_container)) {
+      !list->GetString(1, &launch_container) ||
+      !ExtractInt(list, 2, &left) ||
+      !ExtractInt(list, 3, &top) ||
+      !ExtractInt(list, 4, &width) ||
+      !ExtractInt(list, 5, &height)) {
     NOTREACHED();
     return;
   }
 
-  Profile* profile = extensions_service_->profile();
-  if (launch_container.empty()) {
-    Browser::OpenApplication(profile, extension_id);
-    return;
-  }
+  // The rect we get from the client is relative to the browser client viewport.
+  // Offset the rect by the tab contents bounds.
+  gfx::Rect rect(left, top, width, height);
+  gfx::Rect tab_contents_bounds;
+  dom_ui_->tab_contents()->GetContainerBounds(&tab_contents_bounds);
+  rect.Offset(tab_contents_bounds.origin());
 
   // Override the default launch container.
   Extension* extension =
       extensions_service_->GetExtensionById(extension_id, false);
   DCHECK(extension);
+
+  Profile* profile = extensions_service_->profile();
+  if (launch_container.empty()) {
+    AnimateAppIcon(extension, rect);
+    Browser::OpenApplication(profile, extension_id);
+    return;
+  }
 
   Extension::LaunchContainer container = Extension::LAUNCH_TAB;
   if (launch_container == "tab")
@@ -168,11 +199,25 @@ void AppLauncherHandler::HandleLaunchApp(const Value* value) {
   if (browser)
     old_contents = browser->GetSelectedTabContents();
 
+  AnimateAppIcon(extension, rect);
   Browser::OpenApplication(profile, extension, container);
 
   if (old_contents &&
       old_contents->GetURL().GetOrigin() ==
           GURL(chrome::kChromeUINewTabURL).GetOrigin()) {
     browser->CloseTabContents(old_contents);
+  }
+}
+
+void AppLauncherHandler::AnimateAppIcon(Extension* extension,
+                                        const gfx::Rect& rect) {
+  // We make this check for the case of minimized windows, unit tests, etc.
+  if (platform_util::IsVisible(dom_ui_->tab_contents()->GetNativeView()) &&
+      Animation::ShouldRenderRichAnimation()) {
+#if defined(OS_WIN)
+    AppLaunchedAnimation::Show(extension, rect);
+#else
+    NOTIMPLEMENTED();
+#endif
   }
 }

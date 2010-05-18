@@ -69,6 +69,8 @@ class AppLauncher : public AnimationDelegate,
                                  bool closed_by_escape);
   virtual bool CloseOnEscape() { return true; }
   virtual bool FadeOutOnClose() {
+    // If this is changed we also need to update
+    // AppLauncherHandler::AnimateAppIcon.
 #if defined(OS_WIN)
     return true;
 #else

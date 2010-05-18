@@ -303,7 +303,7 @@ void InfoBubble::Init(views::Widget* parent,
     parent_window->DisableInactiveRendering();
   set_window_style(WS_POPUP | WS_CLIPCHILDREN);
   set_window_ex_style(WS_EX_TOOLWINDOW);
-  
+
   DCHECK(!border_);
   border_ = new BorderWidget();
   border_->Init(CreateBorderContents(), parent->GetNativeView());
@@ -457,7 +457,7 @@ void InfoBubble::FadeOut() {
 #endif
 
   animation_.reset(new SlideAnimation(this));
-  animation_->SetDuration(kHideFadeDurationMS);
+  animation_->SetSlideDuration(kHideFadeDurationMS);
   animation_->SetTweenType(Tween::LINEAR);
 
   animation_->Reset(1.0);

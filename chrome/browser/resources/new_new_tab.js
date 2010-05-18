@@ -53,7 +53,21 @@ var apps = {
         break;
       }
     }
-    chrome.send('launchApp', [this.id, launchType]);
+
+    // TODO(arv): Handle zoom?
+    var rect = this.getBoundingClientRect();
+    var cs = getComputedStyle(this);
+    var size = cs.backgroundSize.split(/\s+/);  // background-size has the
+                                                // format '123px 456px'.
+    var width = parseInt(size[0], 10);
+    var height = parseInt(size[1], 10);
+    // We are using background-position-x 50%.
+    var left = rect.left + ((rect.width - width) >> 1);  // Integer divide by 2.
+    var top = rect.top + parseInt(cs.backgroundPositionY, 10);
+
+    chrome.send('launchApp', [this.id, launchType,
+                              String(left), String(top),
+                              String(width), String(height)]);
     return false;
   },
 

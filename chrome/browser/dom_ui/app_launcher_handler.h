@@ -11,6 +11,10 @@
 class Extension;
 class ExtensionsService;
 
+namespace gfx {
+  class Rect;
+}
+
 // The handler for Javascript messages related to the "apps" view.
 class AppLauncherHandler
     : public DOMMessageHandler,
@@ -38,6 +42,9 @@ class AppLauncherHandler
   void HandleLaunchApp(const Value* value);
 
  private:
+  // Starts the animation of the app icon.
+  void AnimateAppIcon(Extension* extension, const gfx::Rect& rect);
+
   // The apps are represented in the extensions model.
   scoped_refptr<ExtensionsService> extensions_service_;
 
