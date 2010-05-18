@@ -1486,7 +1486,7 @@ TEST_F(GLES2DecoderTest1, GetProgramInfoLogValidArgs) {
   const uint32 kBucketId = 123;
   SpecializedSetup<GetProgramInfoLog, 0>(true);
   EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_INFO_LOG_LENGTH, _))
-      .WillOnce(SetArgumentPointee<2>(strlen(kInfo) + 1));
+      .WillOnce(SetArgumentPointee<2>(strlen(kInfo)));
   EXPECT_CALL(
       *gl_, GetProgramInfoLog(kServiceProgramId, strlen(kInfo) + 1, _, _))
       .WillOnce(DoAll(SetArgumentPointee<2>(strlen(kInfo)),
@@ -1623,7 +1623,37 @@ TEST_F(GLES2DecoderTest1, GetShaderivInvalidArgs2_1) {
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
   EXPECT_EQ(0u, result->size);
 }
-// TODO(gman): GetShaderInfoLog
+
+TEST_F(GLES2DecoderTest1, GetShaderInfoLogValidArgs) {
+  const char* kInfo = "hello";
+  const uint32 kBucketId = 123;
+  SpecializedSetup<GetShaderInfoLog, 0>(true);
+  EXPECT_CALL(*gl_, GetShaderiv(kServiceShaderId, GL_INFO_LOG_LENGTH, _))
+      .WillOnce(SetArgumentPointee<2>(strlen(kInfo)));
+  EXPECT_CALL(
+      *gl_, GetShaderInfoLog(kServiceShaderId, strlen(kInfo) + 1, _, _))
+      .WillOnce(DoAll(SetArgumentPointee<2>(strlen(kInfo)),
+                      SetArrayArgument<3>(kInfo, kInfo + strlen(kInfo) + 1)));
+  GetShaderInfoLog cmd;
+  cmd.Init(client_shader_id_, kBucketId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  CommonDecoder::Bucket* bucket = decoder_->GetBucket(kBucketId);
+  ASSERT_TRUE(bucket != NULL);
+  EXPECT_EQ(strlen(kInfo) + 1, bucket->size());
+  EXPECT_EQ(0, memcmp(bucket->GetData(0, bucket->size()), kInfo,
+                      bucket->size()));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest1, GetShaderInfoLogInvalidArgs) {
+  const uint32 kBucketId = 123;
+  EXPECT_CALL(*gl_, GetShaderInfoLog(_, _, _, _))
+      .Times(0);
+  GetShaderInfoLog cmd;
+  cmd.Init(kInvalidClientId, kBucketId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
 // TODO(gman): GetShaderPrecisionFormat
 
 // TODO(gman): GetShaderSource

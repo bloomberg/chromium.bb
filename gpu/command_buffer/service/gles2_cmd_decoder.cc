@@ -41,6 +41,17 @@
 #define GL_DEPTH24_STENCIL8 0x88F0
 #endif
 
+#if defined(UNIT_TEST)
+
+// OpenGL constants not defined in OpenGL ES 2.0 needed when compiling
+// unit tests. For native OpenGL ES 2.0 backend these are not used. For OpenGL
+// backend these must be defined by the local system.
+#define GL_MAX_FRAGMENT_UNIFORM_COMPONENTS 0x8B49
+#define GL_MAX_VERTEX_UNIFORM_COMPONENTS 0x8B4A
+#define GL_MAX_VARYING_FLOATS 0x8B4B
+
+#endif
+
 namespace gpu {
 namespace gles2 {
 
@@ -2192,19 +2203,22 @@ bool GLES2DecoderImpl::GetHelper(
     case GL_MAX_FRAGMENT_UNIFORM_VECTORS:
       *num_written = 1;
       if (params) {
-        *params = group_->max_fragment_uniform_vectors();
+        glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, params);
+        *params /= 4;
       }
       return true;
     case GL_MAX_VARYING_VECTORS:
       *num_written = 1;
       if (params) {
-        *params = group_->max_varying_vectors();
+        glGetIntegerv(GL_MAX_VARYING_FLOATS, params);
+        *params /= 4;
       }
       return true;
     case GL_MAX_VERTEX_UNIFORM_VECTORS:
       *num_written = 1;
       if (params) {
-        *params = group_->max_vertex_uniform_vectors();
+        glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, params);
+        *params /= 4;
       }
       return true;
 #endif
@@ -3221,38 +3235,39 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
   const char* shader_src = info->source().c_str();
 #if !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2) && !defined(UNIT_TEST)
 #if defined(GLES2_GPU_SERVICE_TRANSLATE_SHADER)
-  ShHandle compiler = 0;
+  ShHandle compiler;
   if (use_shader_translator_) {
     int dbg_options = 0;
     EShLanguage language = info->shader_type() == GL_VERTEX_SHADER ?
         EShLangVertex : EShLangFragment;
     TBuiltInResource resources;
+    // TODO(alokp): Ask gman how to get appropriate values.
     resources.maxVertexAttribs = group_->max_vertex_attribs();
-    resources.maxVertexUniformVectors =
-        group_->max_vertex_uniform_vectors();
-    resources.maxVaryingVectors = group_->max_varying_vectors();
-    resources.maxVertexTextureImageUnits =
-        group_->max_vertex_texture_image_units();
+    resources.maxVertexUniformVectors = 128;
+    resources.maxVaryingVectors = 8;
+    resources.maxVertexTextureImageUnits = 0;
     resources.maxCombinedTextureImageUnits = group_->max_texture_units();
-    resources.maxTextureImageUnits = group_->max_texture_image_units();
-    resources.maxFragmentUniformVectors =
-        group_->max_fragment_uniform_vectors();
+    resources.maxTextureImageUnits = 8;
+    resources.maxFragmentUniformVectors = 16;
     resources.maxDrawBuffers = 1;
     compiler = ShConstructCompiler(language, dbg_options);
     if (!ShCompile(compiler, &shader_src, 1, EShOptNone, &resources,
                    dbg_options)) {
-      info->SetTranslationStatus(false, ShGetInfoLog(compiler));
+      // TODO(alokp): Ask gman where to set compile-status and info-log.
+      // May be add member variables to ShaderManager::ShaderInfo?
+      // const char* info_log = ShGetInfoLog(compiler);
       ShDestruct(compiler);
       return;
     }
-    info->SetTranslationStatus(true, "");
     shader_src = ShGetObjectCode(compiler);
   }
 #endif  // GLES2_GPU_SERVICE_TRANSLATE_SHADER
 #endif  // GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2
 
+  shader_src = info->source().c_str();
   glShaderSource(info->service_id(), 1, &shader_src, NULL);
   glCompileShader(info->service_id());
+
 #if !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2) && !defined(UNIT_TEST)
 #ifdef GLES2_GPU_SERVICE_TRANSLATE_SHADER
   if (use_shader_translator_) {
@@ -3269,26 +3284,11 @@ void GLES2DecoderImpl::DoGetShaderiv(
   if (!info) {
     return;
   }
-  switch (pname) {
-    case GL_SHADER_SOURCE_LENGTH:
-      *params = info->source().size();
-      return;
-    case GL_COMPILE_STATUS:
-      if (!info->translation_valid()) {
-        *params = GL_FALSE;
-        return;
-      }
-      break;
-    case GL_INFO_LOG_LENGTH:
-      if (!info->translation_valid()) {
-        *params = info->translation_log().size() + 1;
-        return;
-      }
-      break;
-    default:
-      break;
+  if (pname == GL_SHADER_SOURCE_LENGTH) {
+    *params = info->source().size();
+  } else {
+    glGetShaderiv(info->service_id(), pname, params);
   }
-  glGetShaderiv(info->service_id(), pname, params);
 }
 
 error::Error GLES2DecoderImpl::HandleGetShaderSource(
@@ -3318,10 +3318,10 @@ error::Error GLES2DecoderImpl::HandleGetProgramInfoLog(
   }
   GLint len = 0;
   glGetProgramiv(info->service_id(), GL_INFO_LOG_LENGTH, &len);
-  bucket->SetSize(len);
+  bucket->SetSize(len + 1);
   glGetProgramInfoLog(
       info->service_id(),
-      len, &len, bucket->GetDataAs<GLchar*>(0, len));
+      len + 1, &len, bucket->GetDataAs<GLchar*>(0, len + 1));
   return error::kNoError;
 }
 
@@ -3336,16 +3336,12 @@ error::Error GLES2DecoderImpl::HandleGetShaderInfoLog(
     bucket->SetSize(0);
     return error::kNoError;
   }
-  if (!info->translation_valid()) {
-    bucket->SetFromString(info->translation_log());
-  } else {
-    GLint len = 0;
-    glGetShaderiv(info->service_id(), GL_INFO_LOG_LENGTH, &len);
-    bucket->SetSize(len);
-    glGetShaderInfoLog(
-        info->service_id(),
-        len, &len, bucket->GetDataAs<GLchar*>(0, len));
-  }
+  GLint len = 0;
+  glGetShaderiv(info->service_id(), GL_INFO_LOG_LENGTH, &len);
+  bucket->SetSize(len + 1);
+  glGetShaderInfoLog(
+      info->service_id(),
+      len + 1, &len, bucket->GetDataAs<GLchar*>(0, len + 1));
   return error::kNoError;
 }
 

@@ -1214,8 +1214,7 @@ _FUNCTION_INFO = {
     'type': 'STRn',
     'get_len_func': 'glGetShaderiv',
     'get_len_enum': 'GL_INFO_LOG_LENGTH',
-    'unit_test': False,
-  },
+    },
   'GetShaderPrecisionFormat': {
     'type': 'Custom',
     'immediate': False,
@@ -3750,7 +3749,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     if get_len_func[0:2] == 'gl':
       sub['expect_len_code'] = (
         "  EXPECT_CALL(*gl_, %s(%s, %s, _))\n"
-        "      .WillOnce(SetArgumentPointee<2>(strlen(kInfo) + 1));") % (
+        "      .WillOnce(SetArgumentPointee<2>(strlen(kInfo)));") % (
             get_len_func[2:], id_name, get_len_enum)
     self.WriteValidUnitTest(func, file, valid_test, sub)
 
