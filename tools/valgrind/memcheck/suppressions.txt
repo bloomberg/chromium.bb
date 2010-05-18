@@ -409,26 +409,56 @@
    fun:_Znw*
    fun:_ZN13TCMallocGuardC1Ev
 }
+# zlib-1.2.x uses uninitialised memory in some tricky way which
+# apparently is harmless (it must amount to a vectorised while-loop,
+# nothing else makes sense).  Fools Memcheck though.  See the mentioned
+# URL for details.
+# Valgrind already suppresses deflate-related errors.  These rules
+# filter "*flate", capturing issues with both deflate and inflate.
 {
-  # zlib is smarter than we are:
-  #   http://www.zlib.net/zlib_faq.html#faq36
-  zlib_conditional_jump_performance_a
-  Memcheck:Value4
-  ...
-  fun:inflate
-  fun:_ZN4spdy10SpdyFramer15DecompressFrameEPKNS_9SpdyFrameE
-  ...
+   zlib-1.2.x trickyness (1a): See http://www.zlib.net/zlib_faq.html#faq36
+   Memcheck:Cond
+   obj:/*lib*/libz.so.1.2.*
+   ...
+   obj:/*lib*/libz.so.1.2.*
+   fun:*flate
 }
 {
-  # zlib is smarter than we are:
-  #   http://www.zlib.net/zlib_faq.html#faq36
-  zlib_conditional_jump_performance_b
-  Memcheck:Value8
-  ...
-  fun:inflate
-  fun:_ZN4spdy10SpdyFramer15DecompressFrameEPKNS_9SpdyFrameE
-  ...
+   zlib-1.2.x trickyness (1b): See http://www.zlib.net/zlib_faq.html#faq36
+   Memcheck:Cond
+   obj:/*lib*/libz.so.1.2.*
+   fun:*flate
 }
+
+{
+   zlib-1.2.x trickyness (2a): See http://www.zlib.net/zlib_faq.html#faq36
+   Memcheck:Value8
+   obj:/*lib*/libz.so.1.2.*
+   ...
+   obj:/*lib*/libz.so.1.2.*
+   fun:*flate
+}
+{
+   zlib-1.2.x trickyness (2b): See http://www.zlib.net/zlib_faq.html#faq36
+   Memcheck:Value8
+   obj:/*lib*/libz.so.1.2.*
+   fun:*flate
+}
+{
+   zlib-1.2.x trickyness (3a): See http://www.zlib.net/zlib_faq.html#faq36
+   Memcheck:Value4
+   obj:/*lib*/libz.so.1.2.*
+   ...
+   obj:/*lib*/libz.so.1.2.*
+   fun:*flate
+}
+{
+   zlib-1.2.x trickyness (3b): See http://www.zlib.net/zlib_faq.html#faq36
+   Memcheck:Value4
+   obj:/*lib*/libz.so.1.2.*
+   fun:*flate
+}
+#-- end of zlib filters
 {
    bug_33394
    Memcheck:Leak
@@ -1889,49 +1919,6 @@
    fun:_ZN7WebCore11RenderLayer17updateZOrderListsEv
    fun:_ZN7WebCore11RenderLayer24updateLayerListsIfNeededEv
    fun:_ZN7WebCore11RenderLayer38updateCompositingAndLayerListsIfNeededEv
-}
-{
-   bug_30667a
-   Memcheck:Value4
-   fun:inflate
-   fun:_ZN4spdy10SpdyFramer15DecompressFrameEPKNS_9SpdyFrameE
-   ...
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
-}
-{
-   bug_30667b
-   Memcheck:Cond
-   fun:inflate_fast
-   fun:inflate
-   fun:_ZN4spdy10SpdyFramer15DecompressFrameEPKNS_9SpdyFrameE
-   ...
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
-}
-{
-   bug_30667c
-   Memcheck:Cond
-   fun:inflate
-   fun:_ZN4spdy10SpdyFramer15DecompressFrameEPKNS_9SpdyFrameE
-   ...
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
 }
 {
    bug_30703a
