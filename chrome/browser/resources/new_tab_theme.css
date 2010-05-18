@@ -20,6 +20,19 @@ body {
   background: url(chrome://theme/product_logo?$1) no-repeat 0 8px;
 }
 
+#notification.first-run {
+  background-color: $$1; /* COLOR_NTP_SECTION */
+  border-color: $$2; /* COLOR_NTP_SECTION_BORDER */
+}
+
+#notification.first-run .link {
+   color: $$6; /* COLOR_NTP_LINK_UNDERLINE */
+}
+
+#notification.first-run .link-color {
+  color: $9; /* COLOR_NTP_LINK */
+}
+
 .thumbnail {
   border-color: $$1; /* COLOR_NTP_SECTION */
 }
@@ -43,6 +56,16 @@ body {
 }
 .thumbnail-container:hover > .edit-mode-border {
   background-color: $6; /* COLOR_NTP_HEADER */
+}
+
+.filler .thumbnail-wrapper {
+  border: 3px solid $$1; /* COLOR_NTP_SECTION */
+  background-color: $2; /* COLOR_NTP_BACKGROUND */
+}
+
+.filler .thumbnail {
+  border: 1px solid $2; /* COLOR_NTP_BACKGROUND */
+  background-color: $$1; /* COLOR_NTP_SECTION */
 }
 
 #option-button {
