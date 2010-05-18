@@ -136,44 +136,46 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/configure.in binutils-2.20/bfd/configur
 diff -Naur ../PRISTINE/binutils-2.20/bfd/elf.c binutils-2.20/bfd/elf.c
 --- ../PRISTINE/binutils-2.20/bfd/elf.c	2009-09-10 13:47:12.000000000 +0200
 +++ binutils-2.20/bfd/elf.c	2010-05-17 17:38:36.000000000 +0200
-@@ -7266,7 +7266,13 @@
- 			       bfd_size_type count)
- {
-   Elf_Internal_Shdr *hdr;
--  bfd_signed_vma pos;
-+  bfd_signed_vma pos, hlts_pos;
-+  static unsigned char HLTs[0x20] = {
-+    0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4,
-+    0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4,
-+    0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4,
-+    0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4
-+  };
+@@ -7258,6 +7258,8 @@
+   return ret;
+ }
  
-   if (! abfd->output_has_begun
-       && ! _bfd_elf_compute_section_file_positions (abfd, NULL))
-@@ -7274,6 +7280,26 @@
++int _bfd_elf_set_section_contents_hlts = 0;
++
+ bfd_boolean
+ _bfd_elf_set_section_contents (bfd *abfd,
+ 			       sec_ptr section,
+@@ -7274,6 +7276,34 @@
  
    hdr = &elf_section_data (section)->this_hdr;
    pos = hdr->sh_offset + offset;
 +
 +  /* TODO(khim): make the behaviour configurable */
-+  hlts_pos = ((pos + count - 1) & ~0xFFFF) + 0xFFE0;
-+  if (hlts_pos > pos)
++  if (_bfd_elf_set_section_contents_hlts)
 +    {
-+      if ((bfd_get_section_flags (abfd, section) & SEC_CODE) &&
-+          (bfd_seek (abfd, hlts_pos, SEEK_SET) != 0
-+           || bfd_bwrite(HLTs, 0x20, abfd) != 0x20))
-+        return FALSE;
++      bfd_signed_vma hlts_pos = ((pos + count - 1) & ~0xFFFF) + 0xFFE0;
++      static unsigned char HLTs[0x20] = {
++        0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4,
++        0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4,
++        0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4,
++        0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4
++      };
++      if (hlts_pos > pos)
++        {
++          if ((bfd_get_section_flags (abfd, section) & SEC_CODE) &&
++              (bfd_seek (abfd, hlts_pos, SEEK_SET) != 0
++               || bfd_bwrite(HLTs, 0x20, abfd) != 0x20))
++           return FALSE;
++        }
++      else
++        {
++          bfd_size_type hlts_count = 0x20 + hlts_pos - pos;
++          if ((bfd_get_section_flags (abfd, section) & SEC_CODE) &&
++              (bfd_seek (abfd, pos, SEEK_SET) != 0
++               || bfd_bwrite(HLTs, hlts_count, abfd) != hlts_count))
++          return FALSE;
++        }
 +    }
-+  else
-+    {
-+      bfd_size_type hlts_count = 0x20 + hlts_pos - pos;
-+      if ((bfd_get_section_flags (abfd, section) & SEC_CODE) &&
-+          (bfd_seek (abfd, pos, SEEK_SET) != 0
-+           || bfd_bwrite(HLTs, hlts_count, abfd) != hlts_count))
-+      return FALSE;
-+    }
-+    
 +
    if (bfd_seek (abfd, pos, SEEK_SET) != 0
        || bfd_bwrite (location, count, abfd) != count)
@@ -2320,6 +2322,27 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/ldlex.l binutils-2.20/ld/ldlex.l
  <EXPRESSION,BOTH,SCRIPT>"ASSERT"	{ RTOKEN(ASSERT_K); }
  <BOTH,SCRIPT>"ENTRY"			{ RTOKEN(ENTRY);}
  <BOTH,SCRIPT,MRI>"EXTERN"		{ RTOKEN(EXTERN);}
+diff -Naur ../PRISTINE/binutils-2.20/ld/ldmain.c binutils-2.20/ld/ldmain.c
+--- ../PRISTINE/binutils-2.20/ld/ldmain.c	2009-09-14 13:43:29.000000000 +0200
++++ binutils-2.20/ld/ldmain.c	2010-05-18 23:27:07.000000000 +0200
+@@ -179,6 +179,8 @@
+     }
+ }
+ 
++extern int _bfd_elf_set_section_contents_hlts;
++
+ int
+ main (int argc, char **argv)
+ {
+@@ -278,6 +280,8 @@
+ 
+   ldfile_add_arch ("");
+   emulation = get_emulation (argc, argv);
++  if (!strcmp(emulation, "elf_nacl") || !strcmp(emulation, "elf64_nacl"))
++    _bfd_elf_set_section_contents_hlts = 1;
+   ldemul_choose_mode (emulation);
+   default_target = ldemul_choose_target (argc, argv);
+   config.maxpagesize = bfd_emul_get_maxpagesize (default_target);
 diff -Naur ../PRISTINE/binutils-2.20/ld/scripttempl/naclelf.sc binutils-2.20/ld/scripttempl/naclelf.sc
 --- ../PRISTINE/binutils-2.20/ld/scripttempl/naclelf.sc	1969-12-31 16:00:00.000000000 -0800
 +++ binutils-2.20/ld/scripttempl/naclelf.sc	2010-01-05 13:21:03.846110000 -0800
@@ -2977,7 +3000,7 @@ diff -Naur ../PRISTINE/binutils-2.20/opcodes/i386-opc.tbl binutils-2.20/opcodes/
 +naclrestbp, 2, 0x01, None, 1, Cpu64, W|Modrm|No_sSuf|No_ldSuf, { Unspecified|BaseIndex|Disp8|Disp32S|Reg32, Reg64 }
 +naclrestsp, 2, 0x01, None, 1, Cpu64, W|Modrm|No_sSuf|No_ldSuf, { Unspecified|BaseIndex|Disp8|Disp32S|Reg32, Reg64 }
 +
-+// Native client string operations
++// Native client string operations.
 +cmps, 3, 0xa6, None, 1, Cpu64, W|No_sSuf|No_ldSuf|IsString, { Byte|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S|EsSeg, Byte|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S, Reg64 }
 +scmp, 3, 0xa6, None, 1, Cpu64, W|No_sSuf|No_ldSuf|IsString, { Byte|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S|EsSeg, Byte|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S, Reg64 }
 +ins, 3, 0x6c, None, 1, Cpu64, W|No_sSuf|No_qSuf|No_ldSuf|IsString, { InOutPortReg, Byte|Word|Dword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S|EsSeg, Reg64 }
