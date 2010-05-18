@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -156,6 +156,7 @@ void ShowFontsLanguagesWindow(gfx::NativeWindow window,
   // Validate whatever editing is currently happening.
   if ([[self window] makeFirstResponder:nil]) {
     NSFontManager* manager = [NSFontManager sharedFontManager];
+    [manager setTarget:self];
     [manager setSelectedFont:currentFont_ isMultiple:NO];
     [manager orderFrontFontPanel:self];
   }
