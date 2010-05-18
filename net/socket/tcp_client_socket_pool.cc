@@ -182,7 +182,7 @@ TCPClientSocketPool::TCPClientSocketPool(
             base::TimeDelta::FromSeconds(kUnusedIdleSocketTimeout),
             base::TimeDelta::FromSeconds(kUsedIdleSocketTimeout),
             new TCPConnectJobFactory(client_socket_factory, host_resolver)) {
-  base_.enable_backup_jobs();
+  base_.EnableBackupJobs();
 }
 
 TCPClientSocketPool::~TCPClientSocketPool() {}
