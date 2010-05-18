@@ -53,10 +53,10 @@ void SystemKeyEventListener::ProcessWmMessage(const WmIpc::Message& message,
       RunCommand(kMuteAudioCommand);
       break;
     case 1:
-      RunCommand(kIncreaseVolumeLevelCommand);
+      RunCommand(kDecreaseVolumeLevelCommand);
       break;
     case 2:
-      RunCommand(kDecreaseVolumeLevelCommand);
+      RunCommand(kIncreaseVolumeLevelCommand);
       break;
     default:
       DLOG(ERROR) << "SystemKeyEventListener: Unexpected message "
@@ -75,4 +75,3 @@ void SystemKeyEventListener::RunCommand(std::string command) {
 }
 
 }  // namespace chromeos
-
