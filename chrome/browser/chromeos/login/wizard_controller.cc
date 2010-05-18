@@ -363,6 +363,8 @@ void WizardController::OnUpdateNetworkError() {
 // WizardController, private:
 
 void WizardController::SetCurrentScreen(WizardScreen* new_current) {
+  if (current_screen_ == new_current)
+    return;
   if (current_screen_)
     current_screen_->Hide();
   current_screen_ = new_current;

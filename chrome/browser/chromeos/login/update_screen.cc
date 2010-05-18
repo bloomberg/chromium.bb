@@ -75,7 +75,6 @@ void UpdateScreen::StartUpdate() {
   view()->set_controller(this);
 
   // Start the minimal update time timer.
-  DCHECK(!minimal_update_time_timer_.IsRunning());
   minimal_update_time_timer_.Start(
       base::TimeDelta::FromSeconds(kMinimalUpdateTime),
       this,
@@ -91,12 +90,12 @@ void UpdateScreen::CancelUpdate() {
 #if !defined(OFFICIAL_BUILD)
   update_result_ = UPGRADE_ALREADY_UP_TO_DATE;
   update_error_ = GOOGLE_UPDATE_NO_ERROR;
-  minimal_update_time_timer_.Stop();
   ExitUpdate();
 #endif
 }
 
 void UpdateScreen::ExitUpdate() {
+  minimal_update_time_timer_.Stop();
   ScreenObserver* observer = delegate()->GetObserver(this);
   if (observer) {
     switch (update_result_) {
