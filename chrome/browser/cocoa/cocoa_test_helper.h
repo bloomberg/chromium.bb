@@ -188,4 +188,33 @@ class CocoaTestHelper : public CocoaNoWindowTestHelper {
   scoped_nsobject<CocoaTestHelperWindow> window_;
 };
 
+// A macro which determines the proper float epsilon for a CGFloat.
+#if CGFLOAT_IS_DOUBLE
+#define CGFLOAT_EPSILON DBL_EPSILON
+#else
+#define CGFLOAT_EPSILON FLT_EPSILON
+#endif
+
+// A macro which which determines if two CGFloats are equal taking a
+// proper epsilon into consideration.
+#define CGFLOAT_EQ(expected, actual) \
+    (actual >= (expected - CGFLOAT_EPSILON) && \
+     actual <= (expected + CGFLOAT_EPSILON))
+
+// A test support macro which ascertains if two CGFloats are equal.
+#define EXPECT_CGFLOAT_EQ(expected, actual) \
+    EXPECT_TRUE(CGFLOAT_EQ(expected, actual)) << \
+                expected << " != " << actual
+
+// A test support macro which compares two NSRects for equality taking
+// the float epsilon into consideration.
+#define EXPECT_NSRECT_EQ(expected, actual) \
+    EXPECT_TRUE(CGFLOAT_EQ(expected.origin.x, actual.origin.x) && \
+                CGFLOAT_EQ(expected.origin.y, actual.origin.y) && \
+                CGFLOAT_EQ(expected.size.width, actual.size.width) && \
+                CGFLOAT_EQ(expected.size.height, actual.size.height)) << \
+                "Rects do not match: " << \
+                [NSStringFromRect(expected) UTF8String] << \
+                " != " << [NSStringFromRect(actual) UTF8String]
+
 #endif  // CHROME_BROWSER_COCOA_COCOA_TEST_HELPER_H_

@@ -3,22 +3,40 @@
 // found in the LICENSE file.
 
 #import "chrome/browser/cocoa/bookmark_bar_folder_view.h"
+#include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
+#import "chrome/browser/cocoa/bookmark_folder_target.h"
+#import "third_party/mozilla/NSPasteboard+Utils.h"
 
 @implementation BookmarkBarFolderView
 
-- (id<BookmarkButtonControllerProtocol>)controller {
-  return [[self window] windowController];
-}
+@synthesize dropIndicatorShown = dropIndicatorShown_;
+@synthesize dropIndicatorPosition = dropIndicatorPosition_;
 
 - (void)awakeFromNib {
-  NSArray* types = [NSArray arrayWithObject:kBookmarkButtonDragType];
+  NSArray* types = [NSArray arrayWithObjects:
+                    NSStringPboardType,
+                    NSHTMLPboardType,
+                    NSURLPboardType,
+                    kBookmarkButtonDragType,
+                    kBookmarkDictionaryListPboardType,
+                    nil];
   [self registerForDraggedTypes:types];
 }
 
 - (void)dealloc {
   [self unregisterDraggedTypes];
   [super dealloc];
+}
+
+- (id<BookmarkButtonControllerProtocol>)controller {
+  // When needed for testing, set the local data member |controller_| to
+  // the test controller.
+  return controller_ ? controller_ : [[self window] windowController];
+}
+
+- (void)setController:(id)controller {
+  controller_ = controller;
 }
 
 - (void)drawRect:(NSRect)rect {
@@ -45,23 +63,25 @@
   }
 }
 
+// TODO(mrossetti,jrg): Identical to -[BookmarkBarView
+// dragClipboardContainsBookmarks].  http://crbug.com/35966
+// Shim function to assist in unit testing.
+- (BOOL)dragClipboardContainsBookmarks {
+  return bookmark_pasteboard_helper_mac::DragClipboardContainsBookmarks();
+}
+
 // Virtually identical to [BookmarkBarView draggingEntered:].
 // TODO(jrg): find a way to share code.  Lack of multiple inheritance
 // makes things more of a pain but there should be no excuse for laziness.
 // http://crbug.com/35966
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)info {
   inDrag_ = YES;
-
-  NSData* data = [[info draggingPasteboard]
-                     dataForType:kBookmarkButtonDragType];
-  // [info draggingSource] is nil if not the same application.
-  if (data && [info draggingSource]) {
+  if ([[info draggingPasteboard] dataForType:kBookmarkButtonDragType] ||
+      [self dragClipboardContainsBookmarks] ||
+      [[info draggingPasteboard] containsURLData]) {
     // Find the position of the drop indicator.
-    BookmarkButton* button = nil;
-    [data getBytes:&button length:sizeof(button)];
-
     BOOL showIt = [[self controller]
-                      shouldShowIndicatorShownForPoint:[info draggingLocation]];
+                   shouldShowIndicatorShownForPoint:[info draggingLocation]];
     if (!showIt) {
       if (dropIndicatorShown_) {
         dropIndicatorShown_ = NO;
@@ -69,9 +89,8 @@
       }
     } else {
       CGFloat y =
-          [[self controller]
-              indicatorPosForDragOfButton:button
-                                  toPoint:[info draggingLocation]];
+      [[self controller]
+       indicatorPosForDragToPoint:[info draggingLocation]];
 
       // Need an update if the indicator wasn't previously shown or if it has
       // moved.
@@ -83,9 +102,8 @@
     }
 
     [[self controller] draggingEntered:info];  // allow hover-open to work
-    return NSDragOperationMove;
+    return [info draggingSource] ? NSDragOperationMove : NSDragOperationCopy;
   }
-
   return NSDragOperationNone;
 }
 
@@ -129,9 +147,30 @@
   return YES;
 }
 
+// This code is practically identical to the same function in BookmarkBarView
+// with the only difference being how the controller is retrieved.
+// TODO(mrossetti,jrg): http://crbug.com/35966
 // Implement NSDraggingDestination protocol method
-// performDragOperation: for bookmarks.
-- (BOOL)performDragOperationForBookmark:(id<NSDraggingInfo>)info {
+// performDragOperation: for URLs.
+- (BOOL)performDragOperationForURL:(id<NSDraggingInfo>)info {
+  NSPasteboard* pboard = [info draggingPasteboard];
+  DCHECK([pboard containsURLData]);
+
+  NSArray* urls = nil;
+  NSArray* titles = nil;
+  [pboard getURLs:&urls andTitles:&titles];
+
+  return [[self controller] addURLs:urls
+                         withTitles:titles
+                                 at:[info draggingLocation]];
+}
+
+// This code is practically identical to the same function in BookmarkBarView
+// with the only difference being how the controller is retrieved.
+// http://crbug.com/35966
+// Implement NSDraggingDestination protocol method
+// performDragOperation: for bookmark buttons.
+- (BOOL)performDragOperationForBookmarkButton:(id<NSDraggingInfo>)info {
   BOOL doDrag = NO;
   NSData* data = [[info draggingPasteboard]
                    dataForType:kBookmarkButtonDragType];
@@ -148,22 +187,15 @@
 }
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)info {
+  if ([[self controller] dragBookmarkData:info])
+    return YES;
   NSPasteboard* pboard = [info draggingPasteboard];
-  if ([pboard dataForType:kBookmarkButtonDragType]) {
-    if ([self performDragOperationForBookmark:info])
-      return YES;
-    // Fall through....
-  }
+  if ([pboard dataForType:kBookmarkButtonDragType] &&
+      [self performDragOperationForBookmarkButton:info])
+    return YES;
+  if ([pboard containsURLData] && [self performDragOperationForURL:info])
+    return YES;
   return NO;
-}
-
-@end  // BookmarkBarFolderView
-
-
-@implementation BookmarkBarFolderView(TestingAPI)
-
-- (void)setDropIndicatorShown:(BOOL)shown {
-  dropIndicatorShown_ = shown;
 }
 
 @end

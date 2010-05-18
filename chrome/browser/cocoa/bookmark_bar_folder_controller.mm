@@ -63,6 +63,15 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
 // Show or hide the scroll arrows at the top/bottom of the window.
 - (void)showOrHideScrollArrows;
 
+// |point| is in the base coordinate system of the destination window;
+// it comes from an id<NSDraggingInfo>. |copy| is YES if a copy is to be
+// made and inserted into the new location while leaving the bookmark in
+// the old location, otherwise move the bookmark by removing from its old
+// location and inserting into the new location.
+- (BOOL)dragBookmark:(const BookmarkNode*)sourceNode
+                  to:(NSPoint)point
+                copy:(BOOL)copy;
+
 @end
 
 @interface BookmarkButton (BookmarkBarFolderMenuHighlighting)
@@ -942,10 +951,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // difference is accomodation for the "empty" button (which may not
 // exist in the future).
 // http://crbug.com/35966
-- (int)indexForDragOfButton:(BookmarkButton*)sourceButton
-                    toPoint:(NSPoint)point {
-  DCHECK([sourceButton isKindOfClass:[BookmarkButton class]]);
-
+- (int)indexForDragToPoint:(NSPoint)point {
   // Identify which buttons we are between.  For now, assume a button
   // location is at the center point of its view, and that an exact
   // match means "place before".
@@ -986,6 +992,52 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
           [[parentButton_ cell] startingChildIndex]);
 }
 
+// More code which essentially duplicates that of BookmarkBarController.
+// TODO(mrossetti,jrg): http://crbug.com/35966
+- (BOOL)addURLs:(NSArray*)urls withTitles:(NSArray*)titles at:(NSPoint)point {
+  DCHECK([urls count] == [titles count]);
+  BOOL nodesWereAdded = NO;
+  // Figure out where these new bookmarks nodes are to be added.
+  BookmarkButton* button = [self buttonForDroppingOnAtPoint:point];
+  BookmarkModel* bookmarkModel = [self bookmarkModel];
+  const BookmarkNode* destParent = NULL;
+  int destIndex = 0;
+  if ([button isFolder]) {
+    destParent = [button bookmarkNode];
+    // Drop it at the end.
+    destIndex = [button bookmarkNode]->GetChildCount();
+  } else {
+    // Else we're dropping somewhere in the folder, so find the right spot.
+    destParent = [parentButton_ bookmarkNode];
+    destIndex = [self indexForDragToPoint:point];
+    // Be careful if the number of buttons != number of nodes.
+    destIndex += [[parentButton_ cell] startingChildIndex];
+  }
+
+  // Create and add the new bookmark nodes.
+  size_t urlCount = [urls count];
+  for (size_t i = 0; i < urlCount; ++i) {
+    // URLs come in several forms (see NSPasteboard+Utils.mm).
+    GURL gurl;
+    const char* string = [[urls objectAtIndex:i] UTF8String];
+    if (string)
+      gurl = GURL(string);
+    if (!gurl.is_valid() && string) {
+      gurl = GURL([[NSString stringWithFormat:@"file://%s", string]
+                   UTF8String]);
+    }
+    DCHECK(gurl.is_valid());
+    if (gurl.is_valid()) {
+      bookmarkModel->AddURL(destParent,
+                            destIndex++,
+                            base::SysNSStringToWide([titles objectAtIndex:i]),
+                            gurl);
+      nodesWereAdded = YES;
+    }
+  }
+  return nodesWereAdded;
+}
+
 - (BookmarkModel*)bookmarkModel {
   return [barController_ bookmarkModel];
 }
@@ -996,8 +1048,15 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
                 to:(NSPoint)point
               copy:(BOOL)copy {
   DCHECK([sourceButton isKindOfClass:[BookmarkButton class]]);
-
   const BookmarkNode* sourceNode = [sourceButton bookmarkNode];
+  return [self dragBookmark:sourceNode to:point copy:copy];
+}
+
+// TODO(jrg): Yet more code dup.
+// http://crbug.com/35966
+- (BOOL)dragBookmark:(const BookmarkNode*)sourceNode
+                  to:(NSPoint)point
+                copy:(BOOL)copy {
   DCHECK(sourceNode);
 
   // Drop destination.
@@ -1014,7 +1073,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   } else {
     // Else we're dropping somewhere in the folder, so find the right spot.
     destParent = [parentButton_ bookmarkNode];
-    destIndex = [self indexForDragOfButton:sourceButton toPoint:point];
+    destIndex = [self indexForDragToPoint:point];
     // Be careful if the number of buttons != number of nodes.
     destIndex += [[parentButton_ cell] startingChildIndex];
   }
@@ -1034,6 +1093,37 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   return wasCopiedOrMoved;
 }
 
+// TODO(mrossetti,jrg): Identical to the same function in BookmarkBarController.
+// http://crbug.com/35966
+- (std::vector<const BookmarkNode*>)retrieveBookmarkDragDataNodes {
+  std::vector<const BookmarkNode*> dragDataNodes;
+  BookmarkDragData dragData;
+  if(dragData.ReadFromDragClipboard()) {
+    BookmarkModel* bookmarkModel = [self bookmarkModel];
+    Profile* profile = bookmarkModel->profile();
+    std::vector<const BookmarkNode*> nodes(dragData.GetNodes(profile));
+    dragDataNodes.assign(nodes.begin(), nodes.end());
+  }
+  return dragDataNodes;
+}
+
+// TODO(mrossetti,jrg): Identical to the same function in BookmarkBarController.
+// http://crbug.com/35966
+- (BOOL)dragBookmarkData:(id<NSDraggingInfo>)info {
+  BOOL dragged = NO;
+  std::vector<const BookmarkNode*> nodes([self retrieveBookmarkDragDataNodes]);
+  if (nodes.size()) {
+    BOOL copy = !([info draggingSourceOperationMask] & NSDragOperationMove);
+    NSPoint dropPoint = [info draggingLocation];
+    for (std::vector<const BookmarkNode*>::const_iterator it = nodes.begin();
+         it != nodes.end(); ++it) {
+      const BookmarkNode* sourceNode = *it;
+      dragged = [self dragBookmark:sourceNode to:dropPoint copy:copy];
+    }
+  }
+  return dragged;
+}
+
 // Return YES if we should show the drop indicator, else NO.
 // TODO(jrg): ARGH code dup!
 // http://crbug.com/35966
@@ -1047,10 +1137,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // TODO(jrg): again we have code dup, sort of, with
 // bookmark_bar_controller.mm, but the axis is changed.
 // http://crbug.com/35966
-- (CGFloat)indicatorPosForDragOfButton:(BookmarkButton*)sourceButton
-                               toPoint:(NSPoint)point {
+- (CGFloat)indicatorPosForDragToPoint:(NSPoint)point {
   CGFloat y = 0;
-  int destIndex = [self indexForDragOfButton:sourceButton toPoint:point];
+  int destIndex = [self indexForDragToPoint:point];
   int numButtons = static_cast<int>([buttons_ count]);
 
   // If it's a drop strictly between existing buttons or at the very beginning
@@ -1060,9 +1149,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
         [buttons_ objectAtIndex:static_cast<NSUInteger>(destIndex)];
     DCHECK(button);
     NSRect buttonFrame = [button frame];
-    y = buttonFrame.origin.y +
-        buttonFrame.size.height  +
-        0.5 * bookmarks::kBookmarkVerticalPadding;
+    y = NSMaxY(buttonFrame) + 0.5 * bookmarks::kBookmarkVerticalPadding;
 
   // If it's a drop at the end (past the last button, if there are any) ...
   } else if (destIndex == numButtons) {

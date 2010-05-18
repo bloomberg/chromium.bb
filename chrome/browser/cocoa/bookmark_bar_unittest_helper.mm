@@ -57,11 +57,25 @@
   return top;
 }
 
+- (NSPoint)bottom {
+  NSRect frame = [self frame];
+  NSPoint bottom = NSMakePoint(NSMidX(frame), NSMinY(frame));
+  bottom = [[self superview] convertPoint:bottom toView:nil];
+  return bottom;
+}
+
 - (NSPoint)left {
   NSRect frame = [self frame];
   NSPoint left = NSMakePoint(NSMinX(frame), NSMidY(frame));
   left = [[self superview] convertPoint:left toView:nil];
   return left;
+}
+
+- (NSPoint)right {
+  NSRect frame = [self frame];
+  NSPoint right = NSMakePoint(NSMaxX(frame), NSMidY(frame));
+  right = [[self superview] convertPoint:right toView:nil];
+  return right;
 }
 
 @end

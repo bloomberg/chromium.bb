@@ -39,9 +39,17 @@
 // containing window.
 - (NSPoint)top;
 
+// Return the bottom of the button in the base coordinate system of the
+// containing window.
+- (NSPoint)bottom;
+
 // Return the center-left point of the button in the base coordinate system
 // of the containing window.
 - (NSPoint)left;
+
+// Return the center-right point of the button in the base coordinate system
+// of the containing window.
+- (NSPoint)right;
 
 @end
 

@@ -128,6 +128,43 @@
 
 @end
 
+// Just like a BookmarkBarController but intercedes when providing
+// pasteboard drag data.
+@interface BookmarkBarControllerDragData : BookmarkBarController {
+  const BookmarkNode* dragDataNode_;  // Weak
+}
+- (void)setDragDataNode:(const BookmarkNode*)node;
+@end
+
+@implementation BookmarkBarControllerDragData
+
+- (id)initWithBrowser:(Browser*)browser
+         initialWidth:(CGFloat)initialWidth
+             delegate:(id<BookmarkBarControllerDelegate>)delegate
+       resizeDelegate:(id<ViewResizer>)resizeDelegate {
+  if ((self = [super initWithBrowser:browser
+                        initialWidth:initialWidth
+                            delegate:delegate
+                      resizeDelegate:resizeDelegate])) {
+    dragDataNode_ = NULL;
+  }
+  return self;
+}
+
+- (void)setDragDataNode:(const BookmarkNode*)node {
+  dragDataNode_ = node;
+}
+
+- (std::vector<const BookmarkNode*>)retrieveBookmarkDragDataNodes {
+  std::vector<const BookmarkNode*> dragDataNodes;
+  if(dragDataNode_) {
+    dragDataNodes.push_back(dragDataNode_);
+  }
+  return dragDataNodes;
+}
+
+@end
+
 
 class FakeTheme : public ThemeProvider {
  public:
@@ -157,6 +194,54 @@ class FakeTheme : public ThemeProvider {
     return nil;
   }
 };
+
+
+@interface FakeDragInfo : NSObject {
+ @public
+  NSPoint dropLocation_;
+  NSDragOperation sourceMask_;
+}
+@property (assign) NSPoint dropLocation;
+- (void)setDraggingSourceOperationMask:(NSDragOperation)mask;
+@end
+
+@implementation FakeDragInfo
+
+@synthesize dropLocation = dropLocation_;
+
+- (id)init {
+  if ((self = [super init])) {
+    dropLocation_ = NSZeroPoint;
+    sourceMask_ = NSDragOperationMove;
+  }
+  return self;
+}
+
+// NSDraggingInfo protocol functions.
+
+- (id)draggingPasteboard {
+  return self;
+}
+
+- (id)draggingSource {
+  return self;
+}
+
+- (NSDragOperation)draggingSourceOperationMask {
+  return sourceMask_;
+}
+
+- (NSPoint)draggingLocation {
+  return dropLocation_;
+}
+
+// Other functions.
+
+- (void)setDraggingSourceOperationMask:(NSDragOperation)mask {
+  sourceMask_ = mask;
+}
+
+@end
 
 
 namespace {
@@ -1011,7 +1096,8 @@ TEST_F(BookmarkBarControllerTest, TestDragButton) {
   model->AddURL(folder, 0, L"already", GURL("http://www.google.com"));
   EXPECT_EQ(arraysize(titles) + 1, [[bar_ buttons] count]);
   EXPECT_EQ(1, folder->GetChildCount());
-  x = [[[bar_ buttons] objectAtIndex:0] frame].size.width / 2;
+  x = NSMidX([[[bar_ buttons] objectAtIndex:0] frame]);
+  x += [[bar_ view] frame].origin.x;
   std::wstring title = [[[bar_ buttons] objectAtIndex:2]
                          bookmarkNode]->GetTitle();
   [bar_ dragButton:[[bar_ buttons] objectAtIndex:2]
@@ -1307,8 +1393,9 @@ TEST_F(BookmarkBarControllerTest, DropDestination) {
   // Confirm "right in the center" (give or take a pixel) is a match,
   // and confirm "just barely in the button" is not.  Anything more
   // specific seems likely to be tweaked.
+  CGFloat viewFrameXOffset = [[bar_ view] frame].origin.x;
   for (BookmarkButton* button in [bar_ buttons]) {
-    CGFloat x = NSMidX([button frame]);
+    CGFloat x = NSMidX([button frame]) + viewFrameXOffset;
     // Somewhere near the center: a match
     EXPECT_EQ(button,
               [bar_ buttonForDroppingOnAtPoint:NSMakePoint(x-1, 10)]);
@@ -1317,10 +1404,10 @@ TEST_F(BookmarkBarControllerTest, DropDestination) {
     EXPECT_FALSE([bar_ shouldShowIndicatorShownForPoint:NSMakePoint(x, 10)]);;
 
     // On the very edges: NOT a match
-    x = NSMinX([button frame]);
+    x = NSMinX([button frame]) + viewFrameXOffset;
     EXPECT_NE(button,
               [bar_ buttonForDroppingOnAtPoint:NSMakePoint(x, 9)]);
-    x = NSMaxX([button frame]);
+    x = NSMaxX([button frame]) + viewFrameXOffset;
     EXPECT_NE(button,
               [bar_ buttonForDroppingOnAtPoint:NSMakePoint(x, 11)]);
   }
@@ -1494,8 +1581,6 @@ TEST_F(BookmarkBarControllerOpenAllTest, OpenAllBookmarks) {
       (BookmarkBarControllerOpenAllPong*)bar_.get();
   EXPECT_EQ([specialBar dispositionDetected], NEW_FOREGROUND_TAB);
 
-  std::cout << "OPEN_ALL_BOOKMARKS C" << std::endl;
-
   // Now try an OpenAll... from a folder node.
   [specialBar setDispositionDetected:IGNORE_ACTION]; // Reset
   [bar_ openAllBookmarks:ItemForBookmarkBarMenu(folder_)];
@@ -1509,8 +1594,6 @@ TEST_F(BookmarkBarControllerOpenAllTest, OpenAllNewWindow) {
       (BookmarkBarControllerOpenAllPong*)bar_.get();
   EXPECT_EQ([specialBar dispositionDetected], NEW_WINDOW);
 
-  std::cout << "OPEN_ALL_BOOKMARKS C" << std::endl;
-
   // Now try an OpenAll... from a folder node.
   [specialBar setDispositionDetected:IGNORE_ACTION]; // Reset
   [bar_ openAllBookmarksNewWindow:ItemForBookmarkBarMenu(folder_)];
@@ -1523,8 +1606,6 @@ TEST_F(BookmarkBarControllerOpenAllTest, OpenAllIncognito) {
   BookmarkBarControllerOpenAllPong* specialBar =
   (BookmarkBarControllerOpenAllPong*)bar_.get();
   EXPECT_EQ([specialBar dispositionDetected], OFF_THE_RECORD);
-
-  std::cout << "OPEN_ALL_BOOKMARKS C" << std::endl;
 
   // Now try an OpenAll... from a folder node.
   [specialBar setDispositionDetected:IGNORE_ACTION]; // Reset
@@ -1624,6 +1705,12 @@ TEST_F(BookmarkBarControllerNotificationTest, DeregistersForNotifications) {
 class BookmarkBarControllerDragDropTest : public BookmarkBarControllerTestBase {
  public:
   BookmarkBarControllerDragDropTest() {
+    bar_.reset(
+               [[BookmarkBarControllerDragData alloc]
+                initWithBrowser:helper_.browser()
+                   initialWidth:NSWidth([parent_view_ frame])
+                       delegate:nil
+                 resizeDelegate:resizeDelegate_.get()]);
     InstallAndToggleBar(bar_.get());
   }
 };
@@ -1643,7 +1730,7 @@ TEST_F(BookmarkBarControllerDragDropTest, DragMoveBarBookmarkToOffTheSide) {
   std::wstring actualModelString = model_test_utils::ModelStringFromNode(root);
   EXPECT_EQ(model_string, actualModelString);
 
-  // Insure that the off-the-side is showing.
+  // Insure that the off-the-side is not showing.
   ASSERT_FALSE([bar_ offTheSideButtonIsHidden]);
 
   // Remember how many buttons are showing and are available.
@@ -1680,6 +1767,98 @@ TEST_F(BookmarkBarControllerDragDropTest, DragMoveBarBookmarkToOffTheSide) {
   EXPECT_EQ(newOTSCount, newChildCount - newDisplayedButtons);
 }
 
+TEST_F(BookmarkBarControllerDragDropTest, DragBookmarkData) {
+  BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
+  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const std::wstring model_string(L"1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b 2f2f3b ] "
+                                  "2f3b ] 3b 4b ");
+  model_test_utils::AddNodesFromModelString(model, root, model_string);
+  const BookmarkNode* other = model.other_node();
+  const std::wstring other_string(L"O1b O2b O3f:[ O3f1b O3f2f ] "
+                                  "O4f:[ O4f1b O4f2f ] 05b ");
+  model_test_utils::AddNodesFromModelString(model, other, other_string);
+
+  // Validate initial model.
+  std::wstring actual = model_test_utils::ModelStringFromNode(root);
+  EXPECT_EQ(model_string, actual);
+  actual = model_test_utils::ModelStringFromNode(other);
+  EXPECT_EQ(other_string, actual);
+
+  // Remember the little ones.
+  int oldChildCount = root->GetChildCount();
+
+  BookmarkButton* targetButton = [bar_ buttonWithTitleEqualTo:@"3b"];
+  ASSERT_TRUE(targetButton);
+
+  // Gen up some dragging data.
+  const BookmarkNode* newNode = other->GetChild(2);
+  [bar_ setDragDataNode:newNode];
+  scoped_nsobject<FakeDragInfo> dragInfo([[FakeDragInfo alloc] init]);
+  [dragInfo setDropLocation:[targetButton center]];
+  [bar_ dragBookmarkData:(id<NSDraggingInfo>)dragInfo.get()];
+
+  // There should one more button in the bar.
+  int newChildCount = root->GetChildCount();
+  EXPECT_EQ(oldChildCount + 1, newChildCount);
+  // Verify the model.
+  const std::wstring expected(L"1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b 2f2f3b ] "
+                              "2f3b ] O3f:[ O3f1b O3f2f ] 3b 4b ");
+  actual = model_test_utils::ModelStringFromNode(root);
+  EXPECT_EQ(expected, actual);
+  oldChildCount = newChildCount;
+
+  // Now do it over a folder button.
+  targetButton = [bar_ buttonWithTitleEqualTo:@"2f"];
+  ASSERT_TRUE(targetButton);
+  NSPoint targetPoint = [targetButton center];
+  newNode = other->GetChild(2);  // Should be O4f.
+  EXPECT_EQ(newNode->GetTitle(), L"O4f");
+  [bar_ setDragDataNode:newNode];
+  [dragInfo setDropLocation:targetPoint];
+  [bar_ dragBookmarkData:(id<NSDraggingInfo>)dragInfo.get()];
+
+  newChildCount = root->GetChildCount();
+  EXPECT_EQ(oldChildCount, newChildCount);
+  // Verify the model.
+  const std::wstring expected1(L"1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b 2f2f3b ] "
+                               "2f3b O4f:[ O4f1b O4f2f ] ] O3f:[ O3f1b O3f2f ] "
+                               "3b 4b ");
+  actual = model_test_utils::ModelStringFromNode(root);
+  EXPECT_EQ(expected1, actual);
+}
+
+TEST_F(BookmarkBarControllerDragDropTest, AddURLs) {
+  BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
+  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const std::wstring model_string(L"1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b 2f2f3b ] "
+                                  "2f3b ] 3b 4b ");
+  model_test_utils::AddNodesFromModelString(model, root, model_string);
+
+  // Validate initial model.
+  std::wstring actual = model_test_utils::ModelStringFromNode(root);
+  EXPECT_EQ(model_string, actual);
+
+  // Remember the children.
+  int oldChildCount = root->GetChildCount();
+
+  BookmarkButton* targetButton = [bar_ buttonWithTitleEqualTo:@"3b"];
+  ASSERT_TRUE(targetButton);
+
+  NSArray* urls = [NSArray arrayWithObjects: @"http://www.a.com/",
+                   @"http://www.b.com/", nil];
+  NSArray* titles = [NSArray arrayWithObjects: @"SiteA", @"SiteB", nil];
+  [bar_ addURLs:urls withTitles:titles at:[targetButton center]];
+
+  // There should two more nodes in the bar.
+  int newChildCount = root->GetChildCount();
+  EXPECT_EQ(oldChildCount + 2, newChildCount);
+  // Verify the model.
+  const std::wstring expected(L"1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b 2f2f3b ] "
+                              "2f3b ] SiteA SiteB 3b 4b ");
+  actual = model_test_utils::ModelStringFromNode(root);
+  EXPECT_EQ(expected, actual);
+}
+
 TEST_F(BookmarkBarControllerDragDropTest, ControllerForNode) {
   BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
   const BookmarkNode* root = model.GetBookmarkBarNode();
@@ -1694,6 +1873,38 @@ TEST_F(BookmarkBarControllerDragDropTest, ControllerForNode) {
   const void* expectedController = bar_;
   const void* actualController = [bar_ controllerForNode:root];
   EXPECT_EQ(expectedController, actualController);
+}
+
+TEST_F(BookmarkBarControllerDragDropTest, DropPositionIndicator) {
+  BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
+  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const std::wstring model_string(L"1b 2f:[ 2f1b 2f2b 2f3b ] 3b 4b ");
+  model_test_utils::AddNodesFromModelString(model, root, model_string);
+
+  // Validate initial model.
+  std::wstring actualModel = model_test_utils::ModelStringFromNode(root);
+  EXPECT_EQ(model_string, actualModel);
+
+  // Test a series of points starting at the right edge of the bar.
+  BookmarkButton* targetButton = [bar_ buttonWithTitleEqualTo:@"1b"];
+  ASSERT_TRUE(targetButton);
+  NSPoint targetPoint = [targetButton left];
+  const CGFloat xDelta = 0.5 * bookmarks::kBookmarkHorizontalPadding;
+  const CGFloat baseOffset = targetPoint.x;
+  CGFloat expected = xDelta;
+  CGFloat actual = [bar_ indicatorPosForDragToPoint:targetPoint];
+  EXPECT_CGFLOAT_EQ(expected, actual);
+  targetButton = [bar_ buttonWithTitleEqualTo:@"2f"];
+  actual = [bar_ indicatorPosForDragToPoint:[targetButton right]];
+  targetButton = [bar_ buttonWithTitleEqualTo:@"3b"];
+  expected = [targetButton left].x - baseOffset + xDelta;
+  EXPECT_CGFLOAT_EQ(expected, actual);
+  targetButton = [bar_ buttonWithTitleEqualTo:@"4b"];
+  targetPoint = [targetButton right];
+  targetPoint.x += 100;  // Somewhere off to the right.
+  expected = NSMaxX([targetButton frame]) + xDelta;
+  actual = [bar_ indicatorPosForDragToPoint:targetPoint];
+  EXPECT_CGFLOAT_EQ(expected, actual);
 }
 
 }  // namespace

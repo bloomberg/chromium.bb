@@ -6,41 +6,62 @@
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #import "chrome/browser/cocoa/bookmark_bar_view.h"
 #import "chrome/browser/cocoa/bookmark_button.h"
+#import "chrome/browser/cocoa/bookmark_folder_target.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#import "third_party/mozilla/NSPasteboard+Utils.h"
 
 namespace {
-const CGFloat kFakeIndicatorPos = 7.0;
+  const CGFloat kFakeIndicatorPos = 7.0;
 };
 
-// Fake DraggingInfo, fake BookmarkBarController, fake pasteboard...
+// Fake DraggingInfo, fake BookmarkBarController, fake NSPasteboard...
 @interface FakeBookmarkDraggingInfo : NSObject {
  @public
-  scoped_nsobject<NSData> data_;
-  BOOL pong_;
+  BOOL dragButtonToPong_;
+  BOOL dragURLsPong_;
+  BOOL dragBookmarkDataPong_;
   BOOL dropIndicatorShown_;
   BOOL draggingEnteredCalled_;
+  // Only mock one type of drag data at a time.
+  NSString* dragDataType_;
 }
 @property (readwrite) BOOL dropIndicatorShown;
 @property (readwrite) BOOL draggingEnteredCalled;
+@property (copy) NSString* dragDataType;
 @end
 
 @implementation FakeBookmarkDraggingInfo
 
 @synthesize dropIndicatorShown = dropIndicatorShown_;
 @synthesize draggingEnteredCalled = draggingEnteredCalled_;
+@synthesize dragDataType = dragDataType_;
 
 - (id)init {
   if ((self = [super init])) {
     dropIndicatorShown_ = YES;
-    draggingEnteredCalled_ = NO;
-    data_.reset([[NSData dataWithBytes:&self length:sizeof(self)] retain]);
   }
   return self;
 }
 
-// So we can be both info and pasteboard.
+- (void)dealloc {
+  [dragDataType_ release];
+  [super dealloc];
+}
+
+- (void)reset {
+  [dragDataType_ release];
+  dragDataType_ = nil;
+  dragButtonToPong_ = NO;
+  dragURLsPong_ = NO;
+  dragBookmarkDataPong_ = NO;
+  dropIndicatorShown_ = YES;
+  draggingEnteredCalled_ = NO;
+}
+
+// NSDragInfo mocking functions.
+
 - (id)draggingPasteboard {
   return self;
 }
@@ -50,33 +71,69 @@ const CGFloat kFakeIndicatorPos = 7.0;
   return self;
 }
 
-- (BOOL)containsURLData {
-  return NO;
+- (NSDragOperation)draggingSourceOperationMask {
+  return NSDragOperationCopy | NSDragOperationMove;
 }
 
 - (NSPoint)draggingLocation {
   return NSMakePoint(10, 10);
 }
 
+// NSPasteboard mocking functions.
+
+- (BOOL)containsURLData {
+  NSArray* urlTypes = [NSArray arrayWithObjects:
+                       kWebURLsWithTitlesPboardType,
+                       NSURLPboardType,
+                       NSFilenamesPboardType,
+                       NSStringPboardType,
+                       nil];
+  if (dragDataType_)
+    return [urlTypes containsObject:dragDataType_];
+  return NO;
+}
+
 - (NSData*)dataForType:(NSString*)type {
-  if ([type isEqual:kBookmarkButtonDragType])
-    return data_.get();
+  if (dragDataType_ && [dragDataType_ isEqualToString:type])
+    return [NSData data];  // Return something, anything.
   return nil;
 }
 
 // Fake a controller for callback ponging
+
 - (BOOL)dragButton:(BookmarkButton*)button to:(NSPoint)point copy:(BOOL)copy {
-  pong_ = YES;
+  dragButtonToPong_ = YES;
   return YES;
 }
 
-// Confirm the pong.
-- (BOOL)dragButtonToPong {
-  return pong_;
+- (BOOL)addURLs:(NSArray*)urls withTitles:(NSArray*)titles at:(NSPoint)point {
+  dragURLsPong_ = YES;
+  return YES;
 }
 
-- (CGFloat)indicatorPosForDragOfButton:(BookmarkButton*)sourceButton
-                               toPoint:(NSPoint)point {
+- (void)getURLs:(NSArray**)outUrls andTitles:(NSArray**)outTitles {
+}
+
+- (BOOL)dragBookmarkData:(id<NSDraggingInfo>)info {
+  dragBookmarkDataPong_ = YES;
+  return NO;
+}
+
+// Confirm the pongs.
+
+- (BOOL)dragButtonToPong {
+  return dragButtonToPong_;
+}
+
+- (BOOL)dragURLsPong {
+  return dragURLsPong_;
+}
+
+- (BOOL)dragBookmarkDataPong {
+  return dragBookmarkDataPong_;
+}
+
+- (CGFloat)indicatorPosForDragToPoint:(NSPoint)point {
   return kFakeIndicatorPos;
 }
 
@@ -87,10 +144,6 @@ const CGFloat kFakeIndicatorPos = 7.0;
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)info {
   draggingEnteredCalled_ = YES;
   return NSDragOperationNone;
-}
-
-- (NSDragOperation)draggingSourceOperationMask {
-  return NSDragOperationCopy | NSDragOperationMove;
 }
 
 @end
@@ -114,21 +167,65 @@ TEST_F(BookmarkBarViewTest, CanDragWindow) {
 TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDrop) {
   scoped_nsobject<FakeBookmarkDraggingInfo>
       info([[FakeBookmarkDraggingInfo alloc] init]);
-
   [view_ setController:info.get()];
+  [info reset];
+
+  [info setDragDataType:kBookmarkButtonDragType];
   EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
   EXPECT_TRUE([view_ performDragOperation:(id)info.get()]);
   EXPECT_TRUE([info dragButtonToPong]);
+  EXPECT_FALSE([info dragURLsPong]);
+  EXPECT_TRUE([info dragBookmarkDataPong]);
+}
+
+TEST_F(BookmarkBarViewTest, URLDragAndDrop) {
+  scoped_nsobject<FakeBookmarkDraggingInfo>
+      info([[FakeBookmarkDraggingInfo alloc] init]);
+  [view_ setController:info.get()];
+  [info reset];
+
+  [info setDragDataType:kWebURLsWithTitlesPboardType];
+  EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
+  EXPECT_TRUE([view_ performDragOperation:(id)info.get()]);
+  EXPECT_FALSE([info dragButtonToPong]);
+  EXPECT_TRUE([info dragURLsPong]);
+  EXPECT_TRUE([info dragBookmarkDataPong]);
+  [info reset];
+
+  [info setDragDataType:NSURLPboardType];
+  EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
+  EXPECT_TRUE([view_ performDragOperation:(id)info.get()]);
+  EXPECT_FALSE([info dragButtonToPong]);
+  EXPECT_TRUE([info dragURLsPong]);
+  EXPECT_TRUE([info dragBookmarkDataPong]);
+  [info reset];
+
+  [info setDragDataType:NSFilenamesPboardType];
+  EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
+  EXPECT_TRUE([view_ performDragOperation:(id)info.get()]);
+  EXPECT_FALSE([info dragButtonToPong]);
+  EXPECT_TRUE([info dragURLsPong]);
+  EXPECT_TRUE([info dragBookmarkDataPong]);
+  [info reset];
+
+  [info setDragDataType:NSStringPboardType];
+  EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
+  EXPECT_TRUE([view_ performDragOperation:(id)info.get()]);
+  EXPECT_FALSE([info dragButtonToPong]);
+  EXPECT_TRUE([info dragURLsPong]);
+  EXPECT_TRUE([info dragBookmarkDataPong]);
 }
 
 TEST_F(BookmarkBarViewTest, BookmarkButtonDropIndicator) {
   scoped_nsobject<FakeBookmarkDraggingInfo>
       info([[FakeBookmarkDraggingInfo alloc] init]);
-
   [view_ setController:info.get()];
+
+  [info reset];
+  [info setDragDataType:kBookmarkButtonDragType];
   EXPECT_FALSE([info draggingEnteredCalled]);
   EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
-  EXPECT_TRUE([info draggingEnteredCalled]);  // Ensure controller pingged.
+  EXPECT_TRUE([info draggingEnteredCalled]);  // Ensure controller pinged.
   EXPECT_TRUE([view_ dropIndicatorShown]);
   EXPECT_EQ([view_ dropIndicatorPosition], kFakeIndicatorPos);
 

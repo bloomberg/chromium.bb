@@ -48,4 +48,11 @@ void StartDrag(Profile* profile, const std::vector<const BookmarkNode*>& nodes,
 
 }
 
+#ifdef __OBJC__
+@class NSString;
+// Pasteboard type for dictionary containing bookmark structure consisting
+// of individual bookmark nodes and/or bookmark folders.
+extern "C" NSString* const kBookmarkDictionaryListPboardType;
+#endif  // __OBJC__
+
 #endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_PASTEBOARD_HELPER_MAC_H_

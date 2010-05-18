@@ -41,4 +41,9 @@ class BookmarkNode;
 
 @end
 
+// The (internal) |NSPasteboard| type string for bookmark button drags, used for
+// dragging buttons around the bookmark bar. The data for this type is just a
+// pointer to the |BookmarkButton| being dragged.
+extern NSString* kBookmarkButtonDragType;
+
 #endif  // CHROME_BROWSER_COCOA_BOOKMARK_FOLDER_TARGET_CONTROLLER_H_

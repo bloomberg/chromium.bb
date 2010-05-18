@@ -261,9 +261,6 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 // shouldn't be shown.
 - (CGFloat)toolbarDividerOpacity;
 
-// Returns true if at least one bookmark was added.
-- (BOOL)addURLs:(NSArray*)urls withTitles:(NSArray*)titles at:(NSPoint)point;
-
 // Updates the sizes and positions of the subviews.
 // TODO(viettrungluu): I'm not convinced this should be public, but I currently
 // need it for animations. Try not to propagate its use.
@@ -277,6 +274,16 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
 // Provide a favIcon for a bookmark node.  May return nil.
 - (NSImage*)favIconForNode:(const BookmarkNode*)node;
+
+// Used for situations where the bookmark bar folder menus should no longer
+// be actively popping up. Called when the window loses focus, a click has
+// occured outside the menus or a bookmark has been activated. (Note that this
+// differs from the behavior of the -[BookmarkButtonControllerProtocol
+// closeAllBookmarkFolders] method in that the latter does not terminate menu
+// tracking since it may be being called in response to actions (such as
+// dragging) where a 'stale' menu presentation should first be collapsed before
+// presenting a new menu.)
+- (void)closeFolderAndStopTrackingMenus;
 
 // Actions for manipulating bookmarks.
 // Open a normal bookmark or folder from a button, ...
@@ -350,10 +357,5 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 - (int)displayedButtonCount;
 
 @end
-
-// The (internal) |NSPasteboard| type string for bookmark button drags, used for
-// dragging buttons around the bookmark bar. The data for this type is just a
-// pointer to the |BookmarkButton| being dragged.
-extern NSString* kBookmarkButtonDragType;
 
 #endif  // CHROME_BROWSER_COCOA_BOOKMARK_BAR_CONTROLLER_H_

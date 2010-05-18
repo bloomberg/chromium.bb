@@ -4,9 +4,11 @@
 
 #import "chrome/browser/cocoa/bookmark_bar_view.h"
 
+#include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
 #import "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #import "chrome/browser/cocoa/bookmark_button.h"
+#import "chrome/browser/cocoa/bookmark_folder_target.h"
 #import "chrome/browser/cocoa/themed_window.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 
@@ -42,11 +44,12 @@
 
   DCHECK(controller_ && "Expected this to be hooked up via Interface Builder");
   NSArray* types = [NSArray arrayWithObjects:
-                              NSStringPboardType,
-                              NSHTMLPboardType,
-                              NSURLPboardType,
-                              kBookmarkButtonDragType,
-                              nil];
+                    NSStringPboardType,
+                    NSHTMLPboardType,
+                    NSURLPboardType,
+                    kBookmarkButtonDragType,
+                    kBookmarkDictionaryListPboardType,
+                    nil];
   [self registerForDraggedTypes:types];
 }
 
@@ -119,48 +122,41 @@
   }
 }
 
+// Shim function to assist in unit testing.
+- (BOOL)dragClipboardContainsBookmarks {
+  return bookmark_pasteboard_helper_mac::DragClipboardContainsBookmarks();
+}
+
 // NSDraggingDestination methods
 
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)info {
-  if ([[info draggingPasteboard] dataForType:kBookmarkButtonDragType]) {
-    NSData* data = [[info draggingPasteboard]
-                     dataForType:kBookmarkButtonDragType];
-    // [info draggingSource] is nil if not the same application.
-    if (data && [info draggingSource]) {
-      // Find the position of the drop indicator.
-      BookmarkButton* button = nil;
-      [data getBytes:&button length:sizeof(button)];
-
-      // We only show the drop indicator if we're not in a position to
-      // perform a hover-open since it doesn't make sense to do both.
-      BOOL showIt =
-          [controller_ shouldShowIndicatorShownForPoint:
-              [info draggingLocation]];
-      if (!showIt) {
-        if (dropIndicatorShown_) {
-          dropIndicatorShown_ = NO;
-          [self setNeedsDisplay:YES];
-        }
-      } else {
-        CGFloat x =
-            [controller_ indicatorPosForDragOfButton:button
-                                             toPoint:[info draggingLocation]];
-        // Need an update if the indicator wasn't previously shown or if it has
-        // moved.
-        if (!dropIndicatorShown_ || dropIndicatorPosition_ != x) {
-          dropIndicatorShown_ = YES;
-          dropIndicatorPosition_ = x;
-          [self setNeedsDisplay:YES];
-        }
+  if ([[info draggingPasteboard] dataForType:kBookmarkButtonDragType] ||
+      [self dragClipboardContainsBookmarks] ||
+      [[info draggingPasteboard] containsURLData]) {
+    // We only show the drop indicator if we're not in a position to
+    // perform a hover-open since it doesn't make sense to do both.
+    BOOL showIt = [controller_ shouldShowIndicatorShownForPoint:
+                   [info draggingLocation]];
+    if (!showIt) {
+      if (dropIndicatorShown_) {
+        dropIndicatorShown_ = NO;
+        [self setNeedsDisplay:YES];
       }
-
-      [controller_ draggingEntered:info];  // allow hover-open to work.
-      return NSDragOperationMove;
+    } else {
+      CGFloat x =
+      [controller_ indicatorPosForDragToPoint:[info draggingLocation]];
+      // Need an update if the indicator wasn't previously shown or if it has
+      // moved.
+      if (!dropIndicatorShown_ || dropIndicatorPosition_ != x) {
+        dropIndicatorShown_ = YES;
+        dropIndicatorPosition_ = x;
+        [self setNeedsDisplay:YES];
+      }
     }
-    // Fall through otherwise.
+
+    [controller_ draggingEntered:info];  // allow hover-open to work.
+    return [info draggingSource] ? NSDragOperationMove : NSDragOperationCopy;
   }
-  if ([[info draggingPasteboard] containsURLData])
-    return NSDragOperationCopy;
   return NSDragOperationNone;
 }
 
@@ -212,11 +208,11 @@
 }
 
 // Implement NSDraggingDestination protocol method
-// performDragOperation: for bookmarks.
-- (BOOL)performDragOperationForBookmark:(id<NSDraggingInfo>)info {
+// performDragOperation: for bookmark buttons.
+- (BOOL)performDragOperationForBookmarkButton:(id<NSDraggingInfo>)info {
   BOOL rtn = NO;
   NSData* data = [[info draggingPasteboard]
-                   dataForType:kBookmarkButtonDragType];
+                  dataForType:kBookmarkButtonDragType];
   // [info draggingSource] is nil if not the same application.
   if (data && [info draggingSource]) {
     BookmarkButton* button = nil;
@@ -230,9 +226,11 @@
 }
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)info {
+  if ([controller_ dragBookmarkData:info])
+    return YES;
   NSPasteboard* pboard = [info draggingPasteboard];
   if ([pboard dataForType:kBookmarkButtonDragType]) {
-    if ([self performDragOperationForBookmark:info])
+    if ([self performDragOperationForBookmarkButton:info])
       return YES;
     // Fall through....
   }

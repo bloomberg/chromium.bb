@@ -11,6 +11,9 @@
 #include "chrome/browser/cocoa/bookmark_drag_source.h"
 #include "chrome/browser/tab_contents/tab_contents_view_mac.h"
 
+NSString* const kBookmarkDictionaryListPboardType =
+    @"BookmarkDictionaryListPboardType";
+
 namespace {
 
 // An unofficial standard pasteboard title type to be provided alongside the
@@ -32,9 +35,6 @@ NSString* const kChromiumBookmarkId =
 // WebKit/mac/History/WebURLsWithTitles.h.
 NSString* const kWebURLsWithTitlesPboardType =
     @"WebURLsWithTitlesPboardType";
-
-NSString* const kBookmarkDictionaryListPboardType =
-    @"BookmarkDictionaryListPboardType";
 
 // Keys for the type of node in BookmarkDictionaryListPboardType.
 NSString* const kWebBookmarkType =

@@ -5,6 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 @protocol BookmarkButtonControllerProtocol;
+@class BookmarkBarFolderController;
 
 // Main content view for a bookmark bar folder "menu" window.  This is
 // logically similar to a BookmarkBarView but is oriented vertically.
@@ -13,12 +14,17 @@
   BOOL inDrag_;  // Are we in the middle of a drag?
   BOOL dropIndicatorShown_;
   CGFloat dropIndicatorPosition_;  // y position
+  // The following |controller_| is weak; used for testing only. See the imple-
+  // mentation comment for - (id<BookmarkButtonControllerProtocol>)controller.
+  BookmarkBarFolderController* controller_;
 }
 // Return the controller that owns this view.
 - (id<BookmarkButtonControllerProtocol>)controller;
 @end
 
-@interface BookmarkBarFolderView(TestingAPI)
-- (void)setDropIndicatorShown:(BOOL)shown;
+@interface BookmarkBarFolderView()  // TestingOrInternalAPI
+@property (assign) BOOL dropIndicatorShown;
+@property (readonly) CGFloat dropIndicatorPosition;
+- (void)setController:(id)controller;
 @end
 
