@@ -700,7 +700,7 @@ bool WebPluginDelegateProxy::CreateSharedBitmap(
 #endif
   canvas->reset((*memory)->GetPlatformCanvas(plugin_rect_.width(),
                                              plugin_rect_.height()));
-  return true;
+  return !!canvas->get();
 }
 
 #if defined(OS_MACOSX)

@@ -10,10 +10,10 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
+#include "third_party/ppapi/c/pp_instance.h"
+#include "third_party/ppapi/c/pp_resource.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCanvas.h"
 
-typedef struct _pp_Instance PP_Instance;
-typedef struct _pp_Resource PP_Resource;
 typedef struct _pp_Var PP_Var;
 typedef struct _ppb_Instance PPB_Instance;
 typedef struct _ppp_Instance PPP_Instance;

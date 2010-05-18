@@ -7,8 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
-
-typedef struct _pp_Resource PP_Resource;
+#include "third_party/ppapi/c/pp_resource.h"
 
 namespace pepper {
 

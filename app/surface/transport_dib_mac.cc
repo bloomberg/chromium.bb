@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 
 #include "base/eintr_wrapper.h"
+#include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "skia/ext/platform_canvas.h"
 
@@ -60,8 +61,10 @@ bool TransportDIB::is_valid(Handle dib) {
 }
 
 skia::PlatformCanvas* TransportDIB::GetPlatformCanvas(int w, int h) {
-  return new skia::PlatformCanvas(w, h, true,
-                                  reinterpret_cast<uint8_t*>(memory()));
+  scoped_ptr<skia::PlatformCanvas> canvas(new skia::PlatformCanvas);
+  if (!canvas->initialize(w, h, true, reinterpret_cast<uint8_t*>(memory())))
+    return NULL;
+  return canvas.release();
 }
 
 void* TransportDIB::memory() const {

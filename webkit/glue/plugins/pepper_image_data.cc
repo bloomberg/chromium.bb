@@ -5,6 +5,7 @@
 #include "webkit/glue/plugins/pepper_image_data.h"
 
 #include <algorithm>
+#include <limits>
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
@@ -107,6 +108,14 @@ bool ImageData::Init(PP_ImageDataFormat format,
                      bool init_to_zero) {
   // TODO(brettw) this should be called only on the main thread!
   // TODO(brettw) use init_to_zero when we implement caching.
+  if (format != PP_IMAGEDATAFORMAT_BGRA_PREMUL)
+    return false;  // Only support this one format for now.
+  if (width <= 0 || height <= 0)
+    return false;
+  if (static_cast<int64>(width) * static_cast<int64>(height) >=
+      std::numeric_limits<int32>::max())
+    return false;  // Prevent overflow of signed 32-bit ints.
+
   platform_image_.reset(
       module()->GetSomeInstance()->delegate()->CreateImage2D(width, height));
   width_ = width;

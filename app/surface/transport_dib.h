@@ -131,6 +131,9 @@ class TransportDIB {
   // Returns a canvas using the memory of this TransportDIB. The returned
   // pointer will be owned by the caller. The bitmap will be of the given size,
   // which should fit inside this memory.
+  //
+  // Will return NULL on allocation failure. This could be because the image
+  // is too large to map into the current process' address space.
   skia::PlatformCanvas* GetPlatformCanvas(int w, int h);
 
   // Return a pointer to the shared memory
