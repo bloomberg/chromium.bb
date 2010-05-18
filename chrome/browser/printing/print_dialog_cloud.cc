@@ -7,6 +7,7 @@
 
 #include "app/l10n_util.h"
 #include "base/base64.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
@@ -17,8 +18,12 @@
 #include "chrome/browser/dom_ui/dom_ui_util.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/debugger/devtools_manager.h"
+#include "chrome/browser/profile.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_source.h"
@@ -93,11 +98,43 @@
 
 namespace internal_cloud_print_helpers {
 
-// TODO(scottbyer): Replace with the real public URL when we have one.
-// That, and get it into the profile instead of as a hardwired
-// constant.
-const char* const kCloudPrintDialogUrl =
-    "http://placeholderurl.ned/printing/client/dialog.html";
+void CloudPrintService::RegisterPreferences() {
+  DCHECK(profile_);
+  PrefService* pref_service = profile_->GetPrefs();
+  if (pref_service->FindPreference(prefs::kCloudPrintServiceURL))
+    return;
+  std::wstring kDefaultCloudPrintServiceURL(
+      L"http://www.google.com/cloudprint");
+  pref_service->RegisterStringPref(prefs::kCloudPrintServiceURL,
+                                   kDefaultCloudPrintServiceURL);
+}
+
+// Returns the root service URL for the cloud print service.  The
+// default is to point at the Google Cloud Print service.  This can be
+// overridden by the command line or by the user preferences.
+GURL CloudPrintService::GetCloudPrintServiceURL() {
+  DCHECK(profile_);
+  RegisterPreferences();
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  GURL cloud_print_service_url = GURL(command_line.GetSwitchValueASCII(
+      switches::kCloudPrintServiceURL));
+  if (cloud_print_service_url.is_empty()) {
+    cloud_print_service_url = GURL(WideToUTF8(
+        profile_->GetPrefs()->GetString(prefs::kCloudPrintServiceURL)));
+  }
+  return cloud_print_service_url;
+}
+
+GURL CloudPrintService::GetCloudPrintServiceDialogURL() {
+  GURL cloud_print_service_url = GetCloudPrintServiceURL();
+  std::string path(cloud_print_service_url.path() + "/client/dialog.html");
+  GURL::Replacements replacements;
+  replacements.SetPathStr(path);
+  GURL cloud_print_dialog_url = cloud_print_service_url.ReplaceComponents(
+      replacements);
+  return cloud_print_dialog_url;
+}
 
 bool GetRealOrInt(const DictionaryValue& dictionary,
                   const std::wstring& path,
@@ -267,7 +304,8 @@ void CloudPrintFlowHandler::RegisterMessages() {
     NavigationController* controller = &dom_ui_->tab_contents()->controller();
     NavigationEntry* pending_entry = controller->pending_entry();
     if (pending_entry)
-      pending_entry->set_url(GURL(kCloudPrintDialogUrl));
+      pending_entry->set_url(CloudPrintService(
+          dom_ui_->GetProfile()).GetCloudPrintServiceDialogURL());
     registrar_.Add(this, NotificationType::LOAD_STOP,
                    Source<NavigationController>(controller));
   }

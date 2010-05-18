@@ -16,13 +16,24 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
+class GURL;
 class StringValue;
 
 namespace internal_cloud_print_helpers {
 
-// TODO(scottbyer): this should really be fetched from a profile
-// preference. 4/8/10
-extern const char* const kCloudPrintDialogUrl;
+// Centralize URL management for the cloud print service.
+class CloudPrintService {
+ public:
+  explicit CloudPrintService(Profile* profile) : profile_(profile) {}
+
+  GURL GetCloudPrintServiceURL();
+  GURL GetCloudPrintServiceDialogURL();
+
+ private:
+  void RegisterPreferences();
+
+  Profile* profile_;
+};
 
 // Small class to virtualize a few functions to aid with unit testing.
 class CloudPrintDataSenderHelper {

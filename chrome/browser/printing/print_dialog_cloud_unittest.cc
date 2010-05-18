@@ -16,13 +16,15 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using testing::A;
 using testing::AtLeast;
+using testing::HasSubstr;
 using testing::Return;
 using testing::_;
-using testing::A;
 
 static const char* const kPDFTestFile = "printing/cloud_print_unittest.pdf";
 static const char* const kEmptyPDFTestFile =
@@ -109,6 +111,45 @@ class MockCloudPrintDataSenderHelper : public CloudPrintDataSenderHelper {
                                             const Value& arg1,
                                             const Value& arg2));
 };
+
+class CloudPrintURLTest : public testing::Test {
+ public:
+  CloudPrintURLTest() {}
+
+ protected:
+  virtual void SetUp() {
+    profile_.reset(new TestingProfile());
+  }
+
+  scoped_ptr<Profile> profile_;
+};
+
+TEST_F(CloudPrintURLTest, CheckDefaultURLs) {
+  std::string service_url =
+      internal_cloud_print_helpers::CloudPrintService(profile_.get()).
+      GetCloudPrintServiceURL().spec();
+  EXPECT_THAT(service_url, HasSubstr("www.google.com"));
+  EXPECT_THAT(service_url, HasSubstr("cloudprint"));
+
+  std::string dialog_url =
+      internal_cloud_print_helpers::CloudPrintService(profile_.get()).
+      GetCloudPrintServiceDialogURL().spec();
+  EXPECT_THAT(dialog_url, HasSubstr("www.google.com"));
+  EXPECT_THAT(dialog_url, HasSubstr("/cloudprint/"));
+  EXPECT_THAT(dialog_url, HasSubstr("/client/"));
+  EXPECT_THAT(dialog_url, Not(HasSubstr("cloudprint/cloudprint")));
+  EXPECT_THAT(dialog_url, HasSubstr("/dialog.html"));
+
+  // Repeat to make sure there isn't a transient glitch.
+  dialog_url =
+      internal_cloud_print_helpers::CloudPrintService(profile_.get()).
+      GetCloudPrintServiceDialogURL().spec();
+  EXPECT_THAT(dialog_url, HasSubstr("www.google.com"));
+  EXPECT_THAT(dialog_url, HasSubstr("/cloudprint/"));
+  EXPECT_THAT(dialog_url, HasSubstr("/client/"));
+  EXPECT_THAT(dialog_url, Not(HasSubstr("cloudprint/cloudprint")));
+  EXPECT_THAT(dialog_url, HasSubstr("/dialog.html"));
+}
 
 // Testing for CloudPrintDataSender needs a mock DOMUI.
 class CloudPrintDataSenderTest : public testing::Test {

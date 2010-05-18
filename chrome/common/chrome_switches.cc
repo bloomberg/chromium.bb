@@ -81,6 +81,11 @@ const char kChromeFrame[]                   = "chrome-frame";
 // The unique id to be used for this cloud print proxy instance.
 const char kCloudPrintProxyId[]             = "cloud-print-proxy-id";
 
+// The URL of the cloud print service to use, overrides any value
+// stored in preferences, and the default.  Only used if the cloud
+// print service has been enabled (see enable-cloud-print).
+const char kCloudPrintServiceURL[]          = "cloud-print-service";
+
 // The Country we should use.  This is normally obtained from the operating
 // system during first run and cached in the preferences afterwards.  This is a
 // string value, the 2 letter code from ISO 3166-1.

@@ -790,6 +790,8 @@ const wchar_t kGeolocationAccessToken[] = L"geolocation.access_token";
 // LoginDatabase.
 const wchar_t kLoginDatabaseMigrated[] = L"login_database.migrated";
 
+// The root URL of the cloud print service.
+const wchar_t kCloudPrintServiceURL[] = L"cloud_print.service_url";
 // The unique id for this instance of the cloud print proxy.
 const wchar_t kCloudPrintProxyId[] = L"cloud_print.proxy_id";
 // The human-readable name of the Cloud Print proxy. User-supplied.

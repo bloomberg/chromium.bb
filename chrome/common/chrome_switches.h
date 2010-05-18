@@ -39,6 +39,7 @@ extern const char kBrowserCrashTest[];
 extern const char kBrowserSubprocessPath[];
 extern const char kChromeFrame[];
 extern const char kCloudPrintProxyId[];
+extern const char kCloudPrintServiceURL[];
 extern const char kCountry[];
 extern const char kDebugPrint[];
 extern const char kDiagnostics[];

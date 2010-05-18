@@ -63,8 +63,15 @@ class TestResult {
   bool GetResult() {
     return result_;
   }
+  void SetExpectedUrl(const GURL& url) {
+    expected_url_ = url;
+  }
+  const GURL GetExpectedUrl() {
+    return expected_url_;
+  }
  private:
   bool result_;
+  GURL expected_url_;
 };
 
 }  // namespace
@@ -74,8 +81,6 @@ class PrintDialogCloudTest : public InProcessBrowserTest,
  public:
   PrintDialogCloudTest() : handler_added_(false) {
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_);
-    GURL cloud_print_url(internal_cloud_print_helpers::kCloudPrintDialogUrl);
-    host_name_ = cloud_print_url.host();
   }
 
   // Must be static for handing into AddHostnameHandler.
@@ -89,7 +94,7 @@ class PrintDialogCloudTest : public InProcessBrowserTest,
   virtual void TearDown() {
     if (handler_added_) {
       URLRequestFilter* filter = URLRequestFilter::GetInstance();
-      filter->RemoveHostnameHandler("http", host_name_);
+      filter->RemoveHostnameHandler(scheme_, host_name_);
       handler_added_ = false;
     }
     InProcessBrowserTest::TearDown();
@@ -102,12 +107,22 @@ class PrintDialogCloudTest : public InProcessBrowserTest,
   void AddTestHandlers() {
     if (!handler_added_) {
       URLRequestFilter* filter = URLRequestFilter::GetInstance();
-      filter->AddHostnameHandler("http", host_name_,
+      GURL cloud_print_service_url =
+          internal_cloud_print_helpers::CloudPrintService(browser()->profile()).
+          GetCloudPrintServiceURL();
+      scheme_ = cloud_print_service_url.scheme();
+      host_name_ = cloud_print_service_url.host();
+      filter->AddHostnameHandler(scheme_, host_name_,
                                  &PrintDialogCloudTest::Factory);
       handler_added_ = true;
 
       registrar_.Add(this, NotificationType::LOAD_STOP,
                      NotificationService::AllSources());
+
+      GURL cloud_print_dialog_url =
+          internal_cloud_print_helpers::CloudPrintService(browser()->profile()).
+          GetCloudPrintServiceDialogURL();
+      Singleton<TestResult>()->SetExpectedUrl(cloud_print_dialog_url);
     }
   }
 
@@ -122,16 +137,15 @@ class PrintDialogCloudTest : public InProcessBrowserTest,
   }
 
   bool handler_added_;
+  std::string scheme_;
   std::string host_name_;
-  std::string test_data_;
   FilePath test_data_directory_;
   NotificationRegistrar registrar_;
 };
 
 URLRequestJob* PrintDialogCloudTest::Factory(URLRequest* request,
                                              const std::string& scheme) {
-  if (request && (request->url() ==
-                  GURL(internal_cloud_print_helpers::kCloudPrintDialogUrl)))
+  if (request && (request->url() == Singleton<TestResult>()->GetExpectedUrl()))
     Singleton<TestResult>()->SetResult(true);
   return new SimpleTestJob(request);
 }

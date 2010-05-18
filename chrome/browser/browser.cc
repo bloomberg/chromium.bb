@@ -3068,8 +3068,6 @@ void Browser::InitCommandState() {
 
 #if defined(OS_CHROMEOS)
   command_updater_.UpdateCommandEnabled(IDC_COMPACT_NAVBAR, true);
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableCloudPrint))
-    command_updater_.UpdateCommandEnabled(IDC_PRINT, false);
 #endif
   ExtensionsService* extensions_service = profile()->GetExtensionsService();
   bool enable_extensions =
