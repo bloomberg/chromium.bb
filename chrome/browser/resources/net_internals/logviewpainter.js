@@ -162,7 +162,7 @@ function getLoadFlagSymbolicString(loadFlag) {
   // Load flag of 0 means "NORMAL". Special case this, since and-ing with
   // 0 is always going to be false.
   if (loadFlag == 0)
-    return getKeyWithValue(LoadFlag, loadFlagNames);
+    return getKeyWithValue(LoadFlag, loadFlag);
 
   var matchingLoadFlagNames = [];
 
