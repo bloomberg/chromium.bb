@@ -64,9 +64,8 @@ if [[ -z "$script" ]]; then
 fi
 
 program_name="${script##*/}"
-declare -r pure_tool_name="${program_name##*-}"
-declare -r program_name="${program_name/nacl/nacl64}"
-
+declare pure_tool_name="${program_name##*-}"
+declare program_name="${program_name/nacl/nacl64}"
 program_dir=""
 if [[ "$is_target" = "true" ]]; then
   program_dir="../../bin/"
@@ -75,6 +74,8 @@ if [[ "$is_target" = "true" ]]; then
   fi
 fi
 declare -r program_dir
+declare -r program_name
+declare -r pure_tool_name
 
 case "$pure_tool_name" in
   as)
