@@ -458,6 +458,71 @@
    obj:/*lib*/libz.so.1.2.*
    fun:*flate
 }
+
+
+{
+  # zlib is smarter than we are:
+  #   http://www.zlib.net/zlib_faq.html#faq36
+  zlib_conditional_jump_performance_a
+  Memcheck:Value4
+  ...
+  fun:inflate
+  fun:_ZN4spdy10SpdyFramer15DecompressFrameEPKNS_9SpdyFrameE
+  ...
+}
+{
+  # zlib is smarter than we are:
+  #   http://www.zlib.net/zlib_faq.html#faq36
+  zlib_conditional_jump_performance_b
+  Memcheck:Value8
+  ...
+  fun:inflate
+  fun:_ZN4spdy10SpdyFramer15DecompressFrameEPKNS_9SpdyFrameE
+  ...
+}
+{
+   bug_30667a
+   Memcheck:Value4
+   fun:inflate
+   fun:_ZN4spdy10SpdyFramer15DecompressFrameEPKNS_9SpdyFrameE
+   ...
+   fun:_ZN7testing4Test3RunEv
+   fun:_ZN7testing8internal12TestInfoImpl3RunEv
+   fun:_ZN7testing8TestCase3RunEv
+   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
+   fun:_ZN7testing8UnitTest3RunEv
+   fun:_ZN9TestSuite3RunEv
+   fun:main
+}
+{
+   bug_30667b
+   Memcheck:Cond
+   fun:inflate_fast
+   fun:inflate
+   fun:_ZN4spdy10SpdyFramer15DecompressFrameEPKNS_9SpdyFrameE
+   ...
+   fun:_ZN7testing4Test3RunEv
+   fun:_ZN7testing8internal12TestInfoImpl3RunEv
+   fun:_ZN7testing8TestCase3RunEv
+   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
+   fun:_ZN7testing8UnitTest3RunEv
+   fun:_ZN9TestSuite3RunEv
+   fun:main
+}
+{
+   bug_30667c
+   Memcheck:Cond
+   fun:inflate
+   fun:_ZN4spdy10SpdyFramer15DecompressFrameEPKNS_9SpdyFrameE
+   ...
+   fun:_ZN7testing4Test3RunEv
+   fun:_ZN7testing8internal12TestInfoImpl3RunEv
+   fun:_ZN7testing8TestCase3RunEv
+   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
+   fun:_ZN7testing8UnitTest3RunEv
+   fun:_ZN9TestSuite3RunEv
+   fun:main
+}
 #-- end of zlib filters
 {
    bug_33394
