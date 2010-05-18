@@ -908,11 +908,10 @@ void UITestBase::WaitForFinish(const std::string &name,
 
   scoped_refptr<TabProxy> tab(GetActiveTab());
   ASSERT_TRUE(tab.get());
-  bool test_result = WaitUntilCookieValue(tab.get(), url,
-                                          cookie_name.c_str(),
-                                          wait_time,
-                                          expected_cookie_value.c_str());
-  EXPECT_EQ(true, test_result);
+  std::string cookie_value = WaitUntilCookieNonEmpty(tab.get(), url,
+                                                     cookie_name.c_str(),
+                                                     wait_time);
+  EXPECT_EQ(expected_cookie_value, cookie_value);
 }
 
 void UITestBase::PrintResult(const std::string& measurement,
