@@ -273,6 +273,11 @@ IPC_BEGIN_MESSAGES(View)
                       int /* request_id */,
                       ResourceResponseHead)
 
+  // Sent when cached metadata from a resource request is ready.
+  IPC_MESSAGE_ROUTED2(ViewMsg_Resource_ReceivedCachedMetadata,
+                      int /* request_id */,
+                      std::vector<char> /* data */)
+
   // Sent as download progress is being made, size of the resource may be
   // unknown, in that case |size| is -1.
   IPC_MESSAGE_ROUTED3(ViewMsg_Resource_DownloadProgress,
@@ -2096,6 +2101,13 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // close all idle sockets.  Used for debugging/testing.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_SetCacheMode,
                        bool /* enabled */)
+
+  // Message sent from the renderer to the browser to request that the browser
+  // cache |data| associated with |url|.
+  IPC_MESSAGE_CONTROL3(ViewHostMsg_DidGenerateCacheableMetadata,
+                       GURL /* url */,
+                       double /* expected_response_time */,
+                       std::vector<char> /* data */)
 
   // Get the storage area id for a particular origin within a namespace.
   IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_DOMStorageStorageAreaId,

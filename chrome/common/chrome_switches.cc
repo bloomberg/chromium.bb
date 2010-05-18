@@ -324,6 +324,9 @@ const char kEnableNativeWebWorkers[]        = "enable-native-web-workers";
 // Enable speculative TCP/IP preconnection.
 const char kEnablePreconnect[]              = "enable-preconnect";
 
+// Enable caching of pre-parsed JS script data.  See http://crbug.com/32407.
+const char kEnablePreparsedJsCaching[]      = "enable-preparsed-js-caching";
+
 // Enable Privacy Blacklists.
 const char kEnablePrivacyBlacklists[]       = "enable-privacy-blacklists";
 

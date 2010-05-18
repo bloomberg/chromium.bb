@@ -315,7 +315,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   void OnCloseCurrentConnections();
   void OnSetCacheMode(bool enabled);
-
+  void OnCacheableMetadataAvailable(const GURL& url,
+                                    double expected_response_time,
+                                    const std::vector<char>& data);
   void OnGetFileSize(const FilePath& path, IPC::Message* reply_msg);
   void OnGetFileModificationTime(const FilePath& path, IPC::Message* reply_msg);
   void OnGetFileInfoOnFileThread(const FilePath& path,
@@ -352,7 +354,8 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void DoOnAllocateTempFileForPrinting(IPC::Message* reply_msg);
 #endif
 
-  bool CheckBenchmarkingEnabled();
+  bool CheckBenchmarkingEnabled() const;
+  bool CheckPreparsedJsCachingEnabled() const;
 
   // We have our own clipboard because we want to access the clipboard on the
   // IO thread instead of forwarding (possibly synchronous) messages to the UI

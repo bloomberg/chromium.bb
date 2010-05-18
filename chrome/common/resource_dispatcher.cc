@@ -367,6 +367,24 @@ void ResourceDispatcher::OnReceivedResponse(
   peer->OnReceivedResponse(response_head, false);
 }
 
+void ResourceDispatcher::OnReceivedCachedMetadata(
+      int request_id, const std::vector<char>& data) {
+  PendingRequestList::iterator it = pending_requests_.find(request_id);
+  if (it == pending_requests_.end()) {
+    // this might happen for kill()ed requests on the webkit end, so perhaps
+    // it shouldn't be a warning...
+    DLOG(WARNING) << "Got metadata for a nonexistant or finished request";
+    return;
+  }
+
+  if (data.size()) {
+    PendingRequestInfo& request_info = it->second;
+    RESOURCE_LOG("Dispatching " << data.size() << " metadata bytes for " <<
+        request_info.peer->GetURLForDebugging().possibly_invalid_spec());
+    request_info.peer->OnReceivedCachedMetadata(&data.front(), data.size());
+  }
+}
+
 void ResourceDispatcher::OnReceivedData(const IPC::Message& message,
                                         int request_id,
                                         base::SharedMemoryHandle shm_handle,
@@ -528,6 +546,8 @@ void ResourceDispatcher::DispatchMessage(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ResourceDispatcher, message)
     IPC_MESSAGE_HANDLER(ViewMsg_Resource_UploadProgress, OnUploadProgress)
     IPC_MESSAGE_HANDLER(ViewMsg_Resource_ReceivedResponse, OnReceivedResponse)
+    IPC_MESSAGE_HANDLER(
+        ViewMsg_Resource_ReceivedCachedMetadata, OnReceivedCachedMetadata)
     IPC_MESSAGE_HANDLER(ViewMsg_Resource_ReceivedRedirect, OnReceivedRedirect)
     IPC_MESSAGE_HANDLER(ViewMsg_Resource_DataReceived, OnReceivedData)
     IPC_MESSAGE_HANDLER(ViewMsg_Resource_RequestComplete, OnRequestComplete)
@@ -579,6 +599,7 @@ bool ResourceDispatcher::IsResourceDispatcherMessage(
   switch (message.type()) {
     case ViewMsg_Resource_UploadProgress::ID:
     case ViewMsg_Resource_ReceivedResponse::ID:
+    case ViewMsg_Resource_ReceivedCachedMetadata::ID:
     case ViewMsg_Resource_ReceivedRedirect::ID:
     case ViewMsg_Resource_DataReceived::ID:
     case ViewMsg_Resource_RequestComplete::ID:

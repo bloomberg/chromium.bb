@@ -548,6 +548,8 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_CloseCurrentConnections,
                           OnCloseCurrentConnections)
       IPC_MESSAGE_HANDLER(ViewHostMsg_SetCacheMode, OnSetCacheMode)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_DidGenerateCacheableMetadata,
+                          OnCacheableMetadataAvailable)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetFileSize, OnGetFileSize)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetFileModificationTime,
                                       OnGetFileModificationTime)
@@ -1300,7 +1302,7 @@ void ResourceMessageFilter::OnOpenChannelToTab(
   }
 }
 
-bool ResourceMessageFilter::CheckBenchmarkingEnabled() {
+bool ResourceMessageFilter::CheckBenchmarkingEnabled() const {
   static bool checked = false;
   static bool result = false;
   if (!checked) {
@@ -1330,6 +1332,34 @@ void ResourceMessageFilter::OnSetCacheMode(bool enabled) {
       net::HttpCache::NORMAL : net::HttpCache::DISABLE;
   request_context_->GetURLRequestContext()->
       http_transaction_factory()->GetCache()->set_mode(mode);
+}
+
+bool ResourceMessageFilter::CheckPreparsedJsCachingEnabled() const {
+  static bool checked = false;
+  static bool result = false;
+  if (!checked) {
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    result = command_line.HasSwitch(switches::kEnablePreparsedJsCaching);
+    checked = true;
+  }
+  return result;
+}
+
+void ResourceMessageFilter::OnCacheableMetadataAvailable(
+    const GURL& url,
+    double expected_response_time,
+    const std::vector<char>& data) {
+  if (!CheckPreparsedJsCachingEnabled())
+    return;
+
+  net::HttpCache* cache = request_context_->GetURLRequestContext()->
+      http_transaction_factory()->GetCache();
+  DCHECK(cache);
+
+  scoped_refptr<net::IOBuffer> buf = new net::IOBuffer(data.size());
+  memcpy(buf->data(), &data.front(), data.size());
+  cache->WriteMetadata(
+      url, base::Time::FromDoubleT(expected_response_time), buf, data.size());
 }
 
 void ResourceMessageFilter::OnGetFileSize(const FilePath& path,

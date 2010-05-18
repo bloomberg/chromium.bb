@@ -105,6 +105,7 @@ extern const char kEnableLogging[];
 extern const char kEnableMonitorProfile[];
 extern const char kEnableNaCl[];
 extern const char kEnableNativeWebWorkers[];
+extern const char kEnablePreparsedJsCaching[];
 extern const char kEnablePreconnect[];
 extern const char kEnablePrivacyBlacklists[];
 extern const char kEnableRendererAccessibility[];

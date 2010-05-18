@@ -43,6 +43,8 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   virtual bool isLinkVisited(unsigned long long linkHash);
   virtual WebKit::WebMessagePortChannel* createMessagePortChannel();
   virtual void prefetchHostName(const WebKit::WebString&);
+  virtual void cacheMetadata(
+      const WebKit::WebURL&, double, const char*, size_t);
   virtual WebKit::WebString defaultLocale();
   virtual void suddenTerminationChanged(bool enabled);
   virtual WebKit::WebStorageNamespace* createLocalStorageNamespace(
@@ -87,6 +89,8 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
     virtual base::PlatformFile openFile(const WebKit::WebString& path,
                                         int mode);
   };
+
+  bool CheckPreparsedJsCachingEnabled() const;
 
 #if defined(OS_WIN)
   class SandboxSupport : public WebKit::WebSandboxSupport {

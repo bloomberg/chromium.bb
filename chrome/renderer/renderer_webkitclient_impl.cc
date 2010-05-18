@@ -135,6 +135,33 @@ void RendererWebKitClientImpl::prefetchHostName(const WebString& hostname) {
   }
 }
 
+bool RendererWebKitClientImpl::CheckPreparsedJsCachingEnabled() const {
+  static bool checked = false;
+  static bool result = false;
+  if (!checked) {
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    result = command_line.HasSwitch(switches::kEnablePreparsedJsCaching);
+    checked = true;
+  }
+  return result;
+}
+
+void RendererWebKitClientImpl::cacheMetadata(
+    const WebKit::WebURL& url,
+    double response_time,
+    const char* data,
+    size_t size) {
+  if (!CheckPreparsedJsCachingEnabled())
+    return;
+
+  // Let the browser know we generated cacheable metadata for this resource. The
+  // browser may cache it and return it on subsequent responses to speed
+  // the processing of this resource.
+  std::vector<char> copy(data, data + size);
+  RenderThread::current()->Send(new ViewHostMsg_DidGenerateCacheableMetadata(
+      url, response_time, copy));
+}
+
 WebString RendererWebKitClientImpl::defaultLocale() {
   // TODO(darin): Eliminate this webkit_glue call.
   return WideToUTF16(webkit_glue::GetWebKitLocale());

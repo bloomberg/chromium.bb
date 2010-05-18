@@ -91,6 +91,7 @@ class ResourceDispatcher {
       int64 position,
       int64 size);
   void OnReceivedResponse(int request_id, const ResourceResponseHead&);
+  void OnReceivedCachedMetadata(int request_id, const std::vector<char>& data);
   void OnReceivedRedirect(
       const IPC::Message& message,
       int request_id,

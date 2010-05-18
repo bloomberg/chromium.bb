@@ -124,6 +124,15 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
 
   receiver_->Send(new ViewMsg_Resource_ReceivedResponse(
       routing_id_, request_id, response->response_head));
+
+  if (request->response_info().metadata) {
+    std::vector<char> copy(request->response_info().metadata->data(),
+                           request->response_info().metadata->data() +
+                           request->response_info().metadata->size());
+    receiver_->Send(new ViewMsg_Resource_ReceivedCachedMetadata(
+        routing_id_, request_id, copy));
+  }
+
   return true;
 }
 
