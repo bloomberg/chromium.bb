@@ -299,6 +299,14 @@ void ProfileSyncService::StartUp() {
 
 void ProfileSyncService::Shutdown(bool sync_disabled) {
 
+ // Stop all data type controllers, if needed.
+  if (data_type_manager_.get() &&
+      data_type_manager_->state() != DataTypeManager::STOPPED) {
+    data_type_manager_->Stop();
+  }
+
+  data_type_manager_.reset();
+
   // Move aside the backend so nobody else tries to use it while we are
   // shutting it down.
   scoped_ptr<SyncBackendHost> doomed_backend(backend_.release());
@@ -306,13 +314,8 @@ void ProfileSyncService::Shutdown(bool sync_disabled) {
   if (doomed_backend.get())
     doomed_backend->Shutdown(sync_disabled);
 
-  // Stop all data type controllers, if needed.
-  if (data_type_manager_.get() &&
-      data_type_manager_->state() != DataTypeManager::STOPPED) {
-    data_type_manager_->Stop();
-  }
   doomed_backend.reset();
-  data_type_manager_.reset();
+
 
   // Clear various flags.
   is_auth_in_progress_ = false;
