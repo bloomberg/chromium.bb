@@ -107,6 +107,10 @@ class GoogleAuthenticator : public Authenticator,
   // Returns the ascii encoding of the system salt.
   std::string SaltAsAscii();
 
+  // Kicks off a new ClientLogin attempt, canceling any existing attempts.
+  // It is an error to call this before populating |getter_| and |request_body_|
+  void TryClientLogin();
+
   // To support internal two-factor authentication, check to see if
   // |alleged_error| is actually indicating the successful completion
   // of the first half of a two-factor login.
@@ -125,6 +129,12 @@ class GoogleAuthenticator : public Authenticator,
   // For example, c.masone@gmail.com == cMaSone@gmail.com, per
   // http://mail.google.com/support/bin/answer.py?hl=en&ctx=mail&answer=10313#
   static std::string Canonicalize(const std::string& email_address);
+
+  // Create and return a URLFetcher that is set up to perform a ClientLogin
+  // authentication attempt.  Caller takes ownership.
+  static URLFetcher* CreateClientLoginFetcher(URLRequestContextGetter* getter,
+                                              const std::string& body,
+                                              URLFetcher::Delegate* delegate);
 
   // Constants to use in the ClientLogin request POST body.
   static const char kCookiePersistence[];
@@ -150,10 +160,12 @@ class GoogleAuthenticator : public Authenticator,
   URLRequestContextGetter* getter_;
   std::string username_;
   std::string ascii_hash_;
+  std::string request_body_;
   std::vector<unsigned char> system_salt_;
   std::string localaccount_;
   bool checked_for_localaccount_;  // needed becasuse empty localaccount_ is ok.
   bool unlock_;  // True if authenticating to unlock the computer.
+  bool try_again_;  // True if we're willing to retry the login attempt.
 
   friend class GoogleAuthenticatorTest;
   FRIEND_TEST(GoogleAuthenticatorTest, SaltToAsciiTest);

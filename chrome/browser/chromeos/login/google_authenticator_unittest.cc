@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <errno.h>
 #include <string>
 #include <vector>
 
@@ -24,6 +23,7 @@
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/test/testing_profile.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -258,8 +258,8 @@ TEST_F(GoogleAuthenticatorTest, LoginNetFailureTest) {
   MessageLoopForUI message_loop;
   ChromeThread ui_thread(ChromeThread::UI, &message_loop);
 
-  int error_no = ECONNRESET;
-  std::string data(strerror(error_no));
+  int error_no = net::ERR_CONNECTION_RESET;
+  std::string data(net::ErrorToString(error_no));
   GURL source;
 
   URLRequestStatus status(URLRequestStatus::FAILED, error_no);
@@ -301,8 +301,8 @@ TEST_F(GoogleAuthenticatorTest, OfflineLoginTest) {
   MessageLoopForUI message_loop;
   ChromeThread ui_thread(ChromeThread::UI, &message_loop);
 
-  int error_no = ECONNRESET;
-  std::string data(strerror(error_no));
+  int error_no = net::ERR_CONNECTION_RESET;
+  std::string data(net::ErrorToString(error_no));
   GURL source;
 
   URLRequestStatus status(URLRequestStatus::FAILED, error_no);

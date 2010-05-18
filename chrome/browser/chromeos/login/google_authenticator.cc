@@ -4,13 +4,12 @@
 
 #include "chrome/browser/chromeos/login/google_authenticator.h"
 
-#include <errno.h>
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/sha2.h"
 #include "base/string_util.h"
@@ -29,6 +28,7 @@
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/notification_service.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/url_request_status.h"
 #include "third_party/libjingle/files/talk/base/urlencode.h"
 
@@ -70,12 +70,29 @@ GoogleAuthenticator::GoogleAuthenticator(LoginStatusConsumer* consumer)
       fetcher_(NULL),
       getter_(NULL),
       checked_for_localaccount_(false),
-      unlock_(false) {
+      unlock_(false),
+      try_again_(true) {
   CHECK(chromeos::CrosLibrary::Get()->EnsureLoaded());
 }
 
 GoogleAuthenticator::~GoogleAuthenticator() {
   ChromeThread::DeleteSoon(ChromeThread::FILE, FROM_HERE, fetcher_);
+}
+
+// static
+URLFetcher* GoogleAuthenticator::CreateClientLoginFetcher(
+    URLRequestContextGetter* getter,
+    const std::string& body,
+    URLFetcher::Delegate* delegate) {
+  URLFetcher* to_return =
+      URLFetcher::Create(0,
+                         GURL(AuthResponseHandler::kClientLoginUrl),
+                         URLFetcher::POST,
+                         delegate);
+  to_return->set_request_context(getter);
+  to_return->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES);
+  to_return->set_upload_data("application/x-www-form-urlencoded", body);
+  return to_return;
 }
 
 bool GoogleAuthenticator::AuthenticateToLogin(Profile* profile,
@@ -84,26 +101,20 @@ bool GoogleAuthenticator::AuthenticateToLogin(Profile* profile,
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   unlock_ = false;
   getter_ = profile->GetRequestContext();
-  fetcher_ = URLFetcher::Create(0,
-                                GURL(AuthResponseHandler::kClientLoginUrl),
-                                URLFetcher::POST,
-                                this);
-  fetcher_->set_request_context(getter_);
-  fetcher_->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES);
+
   // TODO(cmasone): be more careful about zeroing memory that stores
   // the user's password.
-  std::string body = StringPrintf(kFormat,
-                                  UrlEncodeString(username).c_str(),
-                                  UrlEncodeString(password).c_str(),
-                                  kCookiePersistence,
-                                  kAccountType,
-                                  kSource);
-  fetcher_->set_upload_data("application/x-www-form-urlencoded", body);
+  request_body_ = StringPrintf(kFormat,
+                               UrlEncodeString(username).c_str(),
+                               UrlEncodeString(password).c_str(),
+                               kCookiePersistence,
+                               kAccountType,
+                               kSource);
   // TODO(cmasone): Figure out how to parallelize fetch, username/password
   // processing without impacting testability.
   username_.assign(Canonicalize(username));
   StoreHashedPassword(password);
-  fetcher_->Start();
+  TryClientLogin();
   return true;
 }
 
@@ -131,13 +142,23 @@ void GoogleAuthenticator::OnURLFetchComplete(const URLFetcher* source,
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(this, &GoogleAuthenticator::OnLoginSuccess, data));
   } else if (!status.is_success()) {
-    LOG(INFO) << "Network fail";
+    if (status.status() == URLRequestStatus::CANCELED) {
+      if (try_again_) {
+        try_again_ = false;
+        LOG(ERROR) << "Login attempt canceled!?!?  Trying again.";
+        TryClientLogin();
+        return;
+      }
+      LOG(ERROR) << "Login attempt canceled again?  Already retried...";
+    }
+    LOG(WARNING) << "Could not reach Google Accounts servers: errno "
+              << status.os_error();
     // The fetch failed for network reasons, try offline login.
     LoadLocalaccount(kLocalaccountFile);
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(this, &GoogleAuthenticator::CheckOffline,
-                          strerror(status.os_error())));
+                          net::ErrorToString(status.os_error())));
   } else {
     if (IsSecondFactorSuccess(data)) {
       ChromeThread::PostTask(
@@ -280,6 +301,13 @@ std::string GoogleAuthenticator::SaltAsAscii() {
   } else {
     return std::string();
   }
+}
+
+void GoogleAuthenticator::TryClientLogin() {
+  if (fetcher_)
+    delete fetcher_;
+  fetcher_ = CreateClientLoginFetcher(getter_, request_body_, this);
+  fetcher_->Start();
 }
 
 // static
