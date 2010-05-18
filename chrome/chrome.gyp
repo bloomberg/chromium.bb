@@ -704,7 +704,6 @@
       'sources': [
         'common/net/notifier/base/async_dns_lookup.cc',
         'common/net/notifier/base/async_dns_lookup.h',
-        'common/net/notifier/base/fastalloc.h',
         'common/net/notifier/base/nethelpers.cc',
         'common/net/notifier/base/nethelpers.h',
         'common/net/notifier/base/posix/time_posix.cc',
