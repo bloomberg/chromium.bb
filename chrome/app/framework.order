@@ -63,5 +63,8 @@ ___gcov_fork
 _NaClSwitch
 _NaClSyscallSeg
 
+# Entry point from the app mode loader.
+_ChromeAppModeStart
+
 # _ChromeMain must be listed last.  That's the whole point of this file.
 _ChromeMain

@@ -7,9 +7,9 @@
 namespace app_mode {
 
 #if defined(GOOGLE_CHROME_BUILD)
-extern const CFStringRef kAppPrefsID = CFSTR("com.google.Chrome");
+const CFStringRef kAppPrefsID = CFSTR("com.google.Chrome");
 #else
-extern const CFStringRef kAppPrefsID = CFSTR("org.chromium.Chromium");
+const CFStringRef kAppPrefsID = CFSTR("org.chromium.Chromium");
 #endif
 
 const CFStringRef kLastRunAppBundlePathPrefsKey = CFSTR("LastRunAppBundlePath");

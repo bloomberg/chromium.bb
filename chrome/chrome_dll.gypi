@@ -170,6 +170,7 @@
                 'ORDER_FILE': 'app/framework.order',
               },
               'sources': [
+                'app/chrome_dll_app_mode_mac.mm',
                 'app/chrome_dll_main.cc',
                 'app/chrome_dll_resource.h',
               ],

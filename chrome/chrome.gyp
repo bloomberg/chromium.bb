@@ -1147,6 +1147,27 @@
           ],
         },  # target helper_app
         {
+          # This produces the app mode loader, but not as a bundle. Chromium
+          # itself is responsible for producing bundles.
+          'target_name': 'app_mode_app',
+          'type': 'executable',
+          'product_name': '<(mac_product_name) App Mode Loader',
+          'sources': [
+            'app/app_mode_loader_mac.mm',
+            'common/app_mode_common_mac.h',
+            'common/app_mode_common_mac.mm',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/CoreFoundation.framework',
+              '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
+            ],
+          },
+        },  # target app_mode_app
+        {
           # Convenience target to build a disk image.
           'target_name': 'build_app_dmg',
           # Don't place this in the 'all' list; most won't want it.

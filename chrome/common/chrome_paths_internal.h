@@ -40,6 +40,13 @@ bool GetUserDesktop(FilePath* result);
 // in the .app at Contents/Versions/w.x.y.z.
 FilePath GetVersionedDirectory();
 
+// This overrides the directory returned by |GetVersionedDirectory()|, to be
+// used when |GetVersionedDirectory()| can't automatically determine the proper
+// location. This is the case when the browser didn't load itself but by, e.g.,
+// the app mode loader. This should be called before |ChromeMain()|. This takes
+// ownership of the object |path| and the caller must not delete it.
+void SetOverrideVersionedDirectory(const FilePath* path);
+
 // Most of the application is further contained within the framework.  The
 // framework bundle is located within the versioned directory at a specific
 // path.  The only components in the versioned directory not included in the

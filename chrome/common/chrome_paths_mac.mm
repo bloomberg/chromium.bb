@@ -12,6 +12,10 @@
 #include "base/path_service.h"
 #include "chrome/common/chrome_constants.h"
 
+namespace {
+const FilePath* g_override_versioned_directory = NULL;
+}  // namespace
+
 namespace chrome {
 
 bool GetDefaultUserDataDirectory(FilePath* result) {
@@ -53,6 +57,9 @@ bool GetUserDesktop(FilePath* result) {
 }
 
 FilePath GetVersionedDirectory() {
+  if (g_override_versioned_directory)
+    return *g_override_versioned_directory;
+
   // Start out with the path to the running executable.
   FilePath path;
   PathService::Get(base::FILE_EXE, &path);
@@ -73,6 +80,13 @@ FilePath GetVersionedDirectory() {
   }
 
   return path;
+}
+
+void SetOverrideVersionedDirectory(const FilePath* path) {
+  if (path != g_override_versioned_directory) {
+    delete g_override_versioned_directory;
+    g_override_versioned_directory = path;
+  }
 }
 
 FilePath GetFrameworkBundlePath() {
