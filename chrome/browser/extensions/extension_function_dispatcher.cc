@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/extension_browser_actions_api.h"
 #include "chrome/browser/extensions/extension_clipboard_api.h"
 #include "chrome/browser/extensions/extension_context_menu_api.h"
+#include "chrome/browser/extensions/extension_cookies_api.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_history_api.h"
@@ -196,6 +197,13 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<MetricsRecordTimeFunction>();
   RegisterFunction<MetricsRecordMediumTimeFunction>();
   RegisterFunction<MetricsRecordLongTimeFunction>();
+
+  // Cookies.
+  RegisterFunction<GetCookieFunction>();
+  RegisterFunction<GetAllCookiesFunction>();
+  RegisterFunction<SetCookieFunction>();
+  RegisterFunction<RemoveCookieFunction>();
+  RegisterFunction<GetAllCookieStoresFunction>();
 
   // Test.
   RegisterFunction<ExtensionTestPassFunction>();

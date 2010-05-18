@@ -248,6 +248,7 @@ var chrome = chrome || {};
       "experimental.bookmarkManager",
       "experimental.clipboard",
       "experimental.contextMenu",
+      "experimental.cookies",
       "experimental.extension",
       "experimental.idle",
       "experimental.infobars",
