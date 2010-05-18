@@ -79,6 +79,34 @@ class PbufferGLContext : public GLContext {
   DISALLOW_COPY_AND_ASSIGN(PbufferGLContext);
 };
 
+// Backup context if Pbuffers (GLX 1.3) aren't supported. May run slower...
+class PixmapGLContext : public GLContext {
+ public:
+  explicit PixmapGLContext()
+      : context_(NULL),
+        pixmap_(0),
+        glx_pixmap_(0) {
+  }
+
+  // Initializes the GL context.
+  bool Initialize(void* shared_handle);
+
+  virtual void Destroy();
+  virtual bool MakeCurrent();
+  virtual bool IsCurrent();
+  virtual bool IsOffscreen();
+  virtual void SwapBuffers();
+  virtual gfx::Size GetSize();
+  virtual void* GetHandle();
+
+ private:
+  GLContextHandle context_;
+  Pixmap pixmap_;
+  GLXPixmap glx_pixmap_;
+
+  DISALLOW_COPY_AND_ASSIGN(PixmapGLContext);
+};
+
 // scoped_ptr functor for XFree(). Use as follows:
 //   scoped_ptr_malloc<XVisualInfo, ScopedPtrXFree> foo(...);
 // where "XVisualInfo" is any X type that is freed with XFree.
@@ -379,6 +407,130 @@ void* PbufferGLContext::GetHandle() {
   return context_;
 }
 
+bool PixmapGLContext::Initialize(void* shared_handle) {
+  DLOG(INFO) << "GL context: using pixmaps.";
+  if (!glXChooseVisual ||
+      !glXCreateGLXPixmap ||
+      !glXDestroyGLXPixmap) {
+    DLOG(ERROR) << "Pixmap support not available.";
+    return false;
+  }
+
+  static int attributes[] = {
+    GLX_RGBA,
+    0
+  };
+
+  Display* display = x11_util::GetXDisplay();
+  int screen = DefaultScreen(display);
+
+  scoped_ptr_malloc<XVisualInfo, ScopedPtrXFree> visual_info(
+      glXChooseVisual(display, screen, attributes));
+
+  if (!visual_info.get()) {
+    DLOG(ERROR) << "glXChooseVisual failed.";
+    return false;
+  }
+  context_ = glXCreateContext(display, visual_info.get(),
+                              static_cast<GLContextHandle>(shared_handle),
+                              True);
+  if (!context_) {
+    DLOG(ERROR) << "glXCreateContext failed.";
+    return false;
+  }
+
+  pixmap_ = XCreatePixmap(display, RootWindow(display, screen), 1, 1,
+                          visual_info->depth);
+  if (!pixmap_) {
+    DLOG(ERROR) << "XCreatePixmap failed.";
+    return false;
+  }
+
+  glx_pixmap_ = glXCreateGLXPixmap(display, visual_info.get(), pixmap_);
+  if (!glx_pixmap_) {
+    DLOG(ERROR) << "XCreatePixmap failed.";
+    return false;
+  }
+
+  if (!MakeCurrent()) {
+    Destroy();
+    DLOG(ERROR) << "Couldn't make context current for initialization.";
+    return false;
+  }
+
+  if (!InitializeGLEW()) {
+    Destroy();
+    return false;
+  }
+
+  if (!InitializeCommon()) {
+    Destroy();
+    return false;
+  }
+
+  return true;
+}
+
+void PixmapGLContext::Destroy() {
+  Display* display = x11_util::GetXDisplay();
+  Bool result = glXMakeCurrent(display, 0, 0);
+  // glXMakeCurrent isn't supposed to fail when unsetting the context, unless
+  // we have pending draws on an invalid window - which shouldn't be the case
+  // here.
+  DCHECK(result);
+  if (context_) {
+    glXDestroyContext(display, context_);
+    context_ = NULL;
+  }
+
+  if (glx_pixmap_) {
+    glXDestroyGLXPixmap(display, glx_pixmap_);
+    glx_pixmap_ = 0;
+  }
+
+  if (pixmap_) {
+    XFreePixmap(display, pixmap_);
+    pixmap_ = 0;
+  }
+}
+
+bool PixmapGLContext::MakeCurrent() {
+  if (IsCurrent()) {
+    return true;
+  }
+  Display* display = x11_util::GetXDisplay();
+  if (glXMakeCurrent(display, glx_pixmap_, context_) != True) {
+    glXDestroyContext(display, context_);
+    context_ = NULL;
+    DLOG(ERROR) << "Couldn't make context current.";
+    return false;
+  }
+
+  return true;
+}
+
+bool PixmapGLContext::IsCurrent() {
+  return glXGetCurrentDrawable() == glx_pixmap_ &&
+      glXGetCurrentContext() == context_;
+}
+
+bool PixmapGLContext::IsOffscreen() {
+  return true;
+}
+
+void PixmapGLContext::SwapBuffers() {
+  NOTREACHED() << "Attempted to call SwapBuffers on a pixmap.";
+}
+
+gfx::Size PixmapGLContext::GetSize() {
+  NOTREACHED() << "Should not be requesting size of this pixmap.";
+  return gfx::Size(1, 1);
+}
+
+void* PixmapGLContext::GetHandle() {
+  return context_;
+}
+
 GLContext* GLContext::CreateOffscreenGLContext(void* shared_handle) {
   if (!InitializeOneOff())
     return NULL;
@@ -392,10 +544,14 @@ GLContext* GLContext::CreateOffscreenGLContext(void* shared_handle) {
     return context.release();
   } else {
     scoped_ptr<PbufferGLContext> context(new PbufferGLContext);
-    if (!context->Initialize(shared_handle))
-      return NULL;
+    if (context->Initialize(shared_handle))
+      return context.release();
 
-    return context.release();
+    scoped_ptr<PixmapGLContext> context_pixmap(new PixmapGLContext);
+    if (context_pixmap->Initialize(shared_handle))
+      return context_pixmap.release();
+
+    return NULL;
   }
 }
 
