@@ -169,11 +169,12 @@ diff -uNr newlib-1.18.0.orig/configure.ac newlib-1.18.0/configure.ac
 diff -uNr newlib-1.18.0.orig/newlib/configure.host newlib-1.18.0/newlib/configure.host
 --- newlib-1.18.0.orig/newlib/configure.host	2009-12-10 18:12:11.000000000 +0100
 +++ newlib-1.18.0/newlib/configure.host	2010-02-13 05:24:28.000000000 +0100
-@@ -350,6 +350,10 @@
+@@ -350,6 +350,11 @@
  	posix_dir=posix
  	stdio64_dir=stdio64
  	;;
 +  *-*-nacl*)
++	newlib_cflags="${newlib_cflags} -DHAVE_NANOSLEEP"
 +	sys_dir=nacl
 +	posix_dir=posix
 +	;;
@@ -1201,6 +1202,18 @@ diff -uNr newlib-1.18.0.orig/newlib/libc/machine/x86_64/x86_64mach.h newlib-1.18
  #define st0 REG(st)
  #define st1 REG(st(1))
  #define st2 REG(st(2))
+diff -uNr newlib-1.18.0.orig/newlib/libc/posix/sleep.c newlib-1.18.0/newlib/libc/posix/sleep.c
+--- newlib-1.18.0.orig/newlib/libc/posix/sleep.c	2006-06-06 17:41:10.000000000 +0200
++++ newlib-1.18.0/newlib/libc/posix/sleep.c	2010-05-18 17:09:47.000000000 +0200
+@@ -5,7 +5,7 @@
+ #ifdef HAVE_NANOSLEEP
+ 
+ #include <errno.h>
+-#include <time.h>
++#include <sys/time.h>
+ #include <unistd.h>
+ 
+ unsigned sleep(unsigned seconds)
 diff -uNr newlib-1.18.0.orig/newlib/libc/posix/telldir.c newlib-1.18.0/newlib/libc/posix/telldir.c
 --- newlib-1.18.0.orig/newlib/libc/posix/telldir.c	2008-11-27 22:01:40.000000000 +0100
 +++ newlib-1.18.0/newlib/libc/posix/telldir.c	2010-02-13 00:21:37.000000000 +0100
@@ -1212,6 +1225,18 @@ diff -uNr newlib-1.18.0.orig/newlib/libc/posix/telldir.c newlib-1.18.0/newlib/li
  
  #ifdef HAVE_DD_LOCK
  	__lock_acquire(dd_hash_lock);
+diff -uNr newlib-1.18.0.orig/newlib/libc/posix/usleep.c newlib-1.18.0/newlib/libc/posix/usleep.c
+--- newlib-1.18.0.orig/newlib/libc/posix/usleep.c	2006-06-06 17:41:10.000000000 +0200
++++ newlib-1.18.0/newlib/libc/posix/usleep.c	2010-05-18 17:10:01.000000000 +0200
+@@ -5,7 +5,7 @@
+ #ifdef HAVE_NANOSLEEP
+ 
+ #include <errno.h>
+-#include <time.h>
++#include <sys/time.h>
+ #include <unistd.h>
+ 
+ int usleep(useconds_t useconds)
 diff -uNr newlib-1.18.0.orig/newlib/libc/reent/Makefile.am newlib-1.18.0/newlib/libc/reent/Makefile.am
 --- newlib-1.18.0.orig/newlib/libc/reent/Makefile.am	2009-08-12 20:22:38.000000000 +0200
 +++ newlib-1.18.0/newlib/libc/reent/Makefile.am	2010-05-15 13:57:35.000000000 +0200

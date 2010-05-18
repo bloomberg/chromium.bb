@@ -178,6 +178,7 @@ configureNewlib() {
   # NOTE: there were quoting issues with this which is why
   #       it is handled separately from the other env vars
   local CFLAGS_FOR_TARGET="-nostdinc \
+                           -DHAVE_NANOSLEEP=1 \
                            -DMISSING_SYSCALL_NAMES=1 \
                            -isystem ${NEWLIB_EXTRA_HEADER}"
 

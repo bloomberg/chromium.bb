@@ -134,6 +134,30 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/include/sys/types.h newlib-1.17.0/newli
 -
 +#endif
  #include <sys/features.h>
+diff -rub newlib-1.17.0.orig/newlib/libc/posix/sleep.c newlib-1.18.0/newlib/libc/posix/sleep.c
+--- newlib-1.18.0.orig/newlib/libc/posix/sleep.c	2006-06-06 17:41:10.000000000 +0200
++++ newlib-1.18.0/newlib/libc/posix/sleep.c	2010-05-18 17:09:47.000000000 +0200
+@@ -5,7 +5,7 @@
+ #ifdef HAVE_NANOSLEEP
+ 
+ #include <errno.h>
+-#include <time.h>
++#include <sys/time.h>
+ #include <unistd.h>
+ 
+ unsigned sleep(unsigned seconds)
+diff -rub newlib-1.17.0.orig/newlib/libc/posix/usleep.c newlib-1.18.0/newlib/libc/posix/usleep.c
+--- newlib-1.18.0.orig/newlib/libc/posix/usleep.c	2006-06-06 17:41:10.000000000 +0200
++++ newlib-1.18.0/newlib/libc/posix/usleep.c	2010-05-18 17:10:01.000000000 +0200
+@@ -5,7 +5,7 @@
+ #ifdef HAVE_NANOSLEEP
+ 
+ #include <errno.h>
+-#include <time.h>
++#include <sys/time.h>
+ #include <unistd.h>
+ 
+ int usleep(useconds_t useconds)
 diff -rub newlib-1.17.0/newlib/libc/reent/impure.c newlib-1.17.0_arm/newlib/libc/reent/impure.c
 --- newlib-1.17.0/newlib/libc/reent/impure.c	2004-09-15 17:44:39.000000000 -0400
 +++ newlib-1.17.0_arm/newlib/libc/reent/impure.c	2009-12-04 16:19:09.000000000 -0500
