@@ -569,6 +569,25 @@ bool AutocompleteEditModel::OnAfterPossibleChange(const std::wstring& new_text,
   return true;
 }
 
+// Return true if the suggestion type warrants a TCP/IP preconnection.
+// i.e., it is now highly likely that the user will select the related domain.
+static bool IsPreconnectable(AutocompleteMatch::Type type) {
+  UMA_HISTOGRAM_ENUMERATION("Autocomplete.MatchType", type,
+                            AutocompleteMatch::NUM_TYPES);
+  switch (type) {
+    // Matches using the user's default search engine.
+    case AutocompleteMatch::SEARCH_WHAT_YOU_TYPED:
+    case AutocompleteMatch::SEARCH_HISTORY:
+    case AutocompleteMatch::SEARCH_SUGGEST:
+    // A match that uses a non-default search engine (e.g. for tab-to-search).
+    case AutocompleteMatch::SEARCH_OTHER_ENGINE:
+      return true;
+
+    default:
+      return false;
+  }
+}
+
 void AutocompleteEditModel::Observe(NotificationType type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
@@ -588,7 +607,8 @@ void AutocompleteEditModel::Observe(NotificationType type,
           match->fill_into_edit.substr(match->inline_autocomplete_offset);
     }
     // Warm up DNS Prefetch Cache.
-    chrome_browser_net::DnsPrefetchUrl(match->destination_url);
+    chrome_browser_net::DnsPrefetchUrl(match->destination_url,
+                                       IsPreconnectable(match->type));
     // We could prefetch the alternate nav URL, if any, but because there
     // can be many of these as a user types an initial series of characters,
     // the OS DNS cache could suffer eviction problems for minimal gain.

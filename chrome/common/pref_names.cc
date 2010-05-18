@@ -164,8 +164,8 @@ const wchar_t kDnsPrefetchingEnabled[] = L"dns_prefetching.enabled";
 const wchar_t kDnsStartupPrefetchList[] = L"StartupDNSPrefetchList";
 
 // A list of host names used to fetch web pages, and their commonly used
-// sub-resource hostnames (and expected latency benefits from pre-resolving such
-// sub-resource hostnames).
+// sub-resource hostnames (and expected latency benefits from pre-resolving, or
+// preconnecting to, such sub-resource hostnames).
 // This list is adaptively grown and pruned.
 const wchar_t kDnsHostReferralList[] = L"HostReferralList";
 

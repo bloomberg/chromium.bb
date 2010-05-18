@@ -16,6 +16,7 @@
 
 #include "base/field_trial.h"
 #include "base/scoped_ptr.h"
+#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/net/dns_master.h"
 #include "net/base/host_resolver.h"
 
@@ -42,10 +43,16 @@ net::HostResolver::Observer* CreatePrefetchObserver();
 void EnableDnsPrefetch(bool enable);
 void RegisterPrefs(PrefService* local_state);
 void RegisterUserPrefs(PrefService* user_prefs);
+
 // Renderer bundles up list and sends to this browser API via IPC.
 void DnsPrefetchList(const NameList& hostnames);
+
 // This API is used by the autocomplete popup box (as user types).
-void DnsPrefetchUrl(const GURL& url);
+// This will either preresolve the domain name, or possibly preconnect creating
+// an open TCP/IP connection to the host.
+void DnsPrefetchUrl(const GURL& url, bool preconnectable);
+
+// When displaying info in about:dns, the following API is called.
 void DnsPrefetchGetHtmlInfo(std::string* output);
 
 //------------------------------------------------------------------------------
@@ -63,7 +70,8 @@ class DnsGlobalInit {
   // of that state.  The following is the suggested default time limit.
   static const int kMaxPrefetchQueueingDelayMs;
 
-  DnsGlobalInit(PrefService* user_prefs, PrefService* local_state);
+  DnsGlobalInit(PrefService* user_prefs, PrefService* local_state,
+                bool preconnect_enabled);
 
  private:
   // Maintain a field trial instance when we do A/B testing.

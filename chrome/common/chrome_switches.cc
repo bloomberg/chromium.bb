@@ -321,6 +321,9 @@ const char kEnableNaCl[]                    = "enable-nacl";
 // Enable Native Web Worker support.
 const char kEnableNativeWebWorkers[]        = "enable-native-web-workers";
 
+// Enable speculative TCP/IP preconnection.
+const char kEnablePreconnect[]              = "enable-preconnect";
+
 // Enable Privacy Blacklists.
 const char kEnablePrivacyBlacklists[]       = "enable-privacy-blacklists";
 

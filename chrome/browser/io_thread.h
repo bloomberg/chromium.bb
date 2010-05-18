@@ -53,7 +53,8 @@ class IOThread : public BrowserProcessSubThread {
                      base::TimeDelta max_queue_delay,
                      size_t max_concurrent,
                      const chrome_common_net::NameList& hostnames_to_prefetch,
-                     ListValue* referral_list);
+                     ListValue* referral_list,
+                     bool preconnect_enabled);
 
   // Handles changing to On The Record mode.  Posts a task for this onto the
   // IOThread's message loop.
@@ -72,7 +73,8 @@ class IOThread : public BrowserProcessSubThread {
       base::TimeDelta max_queue_delay,
       size_t max_concurrent,
       chrome_common_net::NameList hostnames_to_prefetch,
-      ListValue* referral_list);
+      ListValue* referral_list,
+      bool preconnect_enabled);
 
   void ChangedToOnTheRecordOnIOThread();
 

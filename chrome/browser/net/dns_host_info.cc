@@ -32,8 +32,7 @@ void EnableDnsDetailedLog(bool enable) {
 int DnsHostInfo::sequence_counter = 1;
 
 
-bool DnsHostInfo::NeedsDnsUpdate(const std::string& hostname) {
-  DCHECK(hostname == hostname_);
+bool DnsHostInfo::NeedsDnsUpdate() {
   switch (state_) {
     case PENDING:  // Just now created info.
       return true;
@@ -48,7 +47,7 @@ bool DnsHostInfo::NeedsDnsUpdate(const std::string& hostname) {
       return !IsStillCached();  // See if DNS cache expired.
 
     default:
-      DCHECK(false);
+      NOTREACHED();
       return false;
   }
 }
@@ -171,11 +170,11 @@ void DnsHostInfo::SetFinishedState(bool was_resolved) {
   DLogResultsStats("DNS HTTP Finished");
 }
 
-void DnsHostInfo::SetHostname(const std::string& hostname) {
-  if (hostname != hostname_) {
-    DCHECK_EQ(hostname_.size(), 0u);  // Not yet initialized.
-    hostname_ = hostname;
-  }
+void DnsHostInfo::SetHostname(const net::HostPortPair& hostport) {
+  if (hostport_.host.empty())  // Not yet initialized.
+    hostport_ = hostport;
+  else
+    DCHECK(hostport_.Equals(hostport));
 }
 
 // IsStillCached() guesses if the DNS cache still has IP data,
@@ -201,7 +200,7 @@ bool DnsHostInfo::IsStillCached() const {
 DnsBenefit DnsHostInfo::AccruePrefetchBenefits(DnsHostInfo* navigation_info) {
   DCHECK(FINISHED == navigation_info->state_ ||
          FINISHED_UNRESOLVED == navigation_info->state_);
-  DCHECK_EQ(navigation_info->hostname_, hostname_.data());
+  DCHECK(navigation_info->hostport().Equals(hostport_));
 
   if ((0 == benefits_remaining_.InMilliseconds()) ||
       (FOUND != state_ && NO_SUCH_NAME != state_)) {
@@ -221,7 +220,7 @@ DnsBenefit DnsHostInfo::AccruePrefetchBenefits(DnsHostInfo* navigation_info) {
   navigation_info->motivation_ = motivation_;
   if (LEARNED_REFERAL_MOTIVATED == motivation_ ||
       STATIC_REFERAL_MOTIVATED == motivation_)
-    navigation_info->referring_hostname_ = referring_hostname_;
+    navigation_info->referring_hostport_ = referring_hostport_;
 
   if (navigation_info->resolve_duration_ > kMaxNonNetworkDnsLookupDuration) {
     // Our precache effort didn't help since HTTP stack hit the network.
@@ -256,7 +255,7 @@ void DnsHostInfo::DLogResultsStats(const char* message) const {
       << resolve_duration().InMilliseconds() << "ms\tp="
       << benefits_remaining_.InMilliseconds() << "ms\tseq="
       << sequence_number_
-      << "\t" << hostname_;
+      << "\t" << hostport_.ToString();
 }
 
 //------------------------------------------------------------------------------
@@ -270,7 +269,7 @@ static std::string RemoveJs(const std::string& text) {
   size_t length = output.length();
   for (size_t i = 0; i < length; i++) {
     char next = output[i];
-    if (isalnum(next) || isspace(next) || strchr(".-:", next) != NULL)
+    if (isalnum(next) || isspace(next) || strchr(".-:/", next) != NULL)
       continue;
     output[i] = '?';
   }
@@ -362,7 +361,7 @@ void DnsHostInfo::GetHtmlTable(const DnsInfoTable host_infos,
        it != host_infos.end(); it++) {
     queue.sample((it->queue_duration_.InMilliseconds()));
     StringAppendF(output, row_format,
-                  RemoveJs(it->hostname_).c_str(),
+                  RemoveJs(it->hostport_.ToString()).c_str(),
                   preresolve.sample((it->benefits_remaining_.InMilliseconds())),
                   resolve.sample((it->resolve_duration_.InMilliseconds())),
                   HoursMinutesSeconds(when.sample(
@@ -427,10 +426,10 @@ std::string DnsHostInfo::GetAsciiMotivation() const {
       return "n/a";
 
     case STATIC_REFERAL_MOTIVATED:
-      return RemoveJs(referring_hostname_) + "*";
+      return RemoveJs(referring_hostport_.ToString()) + "*";
 
     case LEARNED_REFERAL_MOTIVATED:
-      return RemoveJs(referring_hostname_);
+      return RemoveJs(referring_hostport_.ToString());
 
     default:
       return "";

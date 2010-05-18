@@ -1644,6 +1644,8 @@
         'browser/net/metadata_url_request.h',
         'browser/net/passive_log_collector.cc',
         'browser/net/passive_log_collector.h',
+        'browser/net/preconnect.cc',
+        'browser/net/preconnect.h',
         'browser/net/referrer.cc',
         'browser/net/referrer.h',
         'browser/net/resolve_proxy_msg_helper.cc',

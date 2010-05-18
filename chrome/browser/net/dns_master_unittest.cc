@@ -41,7 +41,8 @@ class WaitForResolutionHelper {
 
   void Run() {
     for (NameList::const_iterator i = hosts_.begin(); i != hosts_.end(); ++i)
-      if (master_->GetResolutionDuration(*i) == DnsHostInfo::kNullDuration)
+      if (master_->GetResolutionDuration(net::HostPortPair(*i, 80)) ==
+          DnsHostInfo::kNullDuration)
         return;  // We don't have resolution for that host.
 
     // When all hostnames have been resolved, exit the loop.
@@ -109,19 +110,22 @@ class DnsMasterTest : public testing::Test {
 TEST_F(DnsMasterTest, StartupShutdownTest) {
   scoped_refptr<DnsMaster> testing_master = new DnsMaster(host_resolver_,
       default_max_queueing_delay_,
-      DnsGlobalInit::kMaxPrefetchConcurrentLookups);
+      DnsGlobalInit::kMaxPrefetchConcurrentLookups,
+      false);
   testing_master->Shutdown();
 }
 
 TEST_F(DnsMasterTest, BenefitLookupTest) {
-  scoped_refptr<DnsMaster> testing_master = new DnsMaster(host_resolver_,
+  scoped_refptr<DnsMaster> testing_master = new DnsMaster(
+      host_resolver_,
       default_max_queueing_delay_,
-      DnsGlobalInit::kMaxPrefetchConcurrentLookups);
+      DnsGlobalInit::kMaxPrefetchConcurrentLookups,
+      false);
 
-  std::string goog("www.google.com"),
-    goog2("gmail.google.com.com"),
-    goog3("mail.google.com"),
-    goog4("gmail.com");
+  net::HostPortPair goog("www.google.com", 80),
+      goog2("gmail.google.com.com", 80),
+      goog3("mail.google.com", 80),
+      goog4("gmail.com", 80);
   DnsHostInfo goog_info, goog2_info, goog3_info, goog4_info;
 
   // Simulate getting similar names from a network observer
@@ -141,10 +145,10 @@ TEST_F(DnsMasterTest, BenefitLookupTest) {
   goog4_info.SetFinishedState(true);
 
   NameList names;
-  names.insert(names.end(), goog);
-  names.insert(names.end(), goog2);
-  names.insert(names.end(), goog3);
-  names.insert(names.end(), goog4);
+  names.push_back(goog.host);
+  names.push_back(goog2.host);
+  names.push_back(goog3.host);
+  names.push_back(goog4.host);
 
   testing_master->ResolveList(names, DnsHostInfo::PAGE_SCAN_MOTIVATED);
 
@@ -158,18 +162,20 @@ TEST_F(DnsMasterTest, BenefitLookupTest) {
   // With the mock DNS, each of these should have taken some time, and hence
   // shown a benefit (i.e., prefetch cost more than network access time).
 
+  net::HostPortPair referer;  // Null host.
+
   // Simulate actual navigation, and acrue the benefit for "helping" the DNS
   // part of the navigation.
-  EXPECT_TRUE(testing_master->AccruePrefetchBenefits(GURL(), &goog_info));
-  EXPECT_TRUE(testing_master->AccruePrefetchBenefits(GURL(), &goog2_info));
-  EXPECT_TRUE(testing_master->AccruePrefetchBenefits(GURL(), &goog3_info));
-  EXPECT_TRUE(testing_master->AccruePrefetchBenefits(GURL(), &goog4_info));
+  EXPECT_TRUE(testing_master->AccruePrefetchBenefits(referer, &goog_info));
+  EXPECT_TRUE(testing_master->AccruePrefetchBenefits(referer, &goog2_info));
+  EXPECT_TRUE(testing_master->AccruePrefetchBenefits(referer, &goog3_info));
+  EXPECT_TRUE(testing_master->AccruePrefetchBenefits(referer, &goog4_info));
 
   // Benefits can ONLY be reported once (for the first navigation).
-  EXPECT_FALSE(testing_master->AccruePrefetchBenefits(GURL(), &goog_info));
-  EXPECT_FALSE(testing_master->AccruePrefetchBenefits(GURL(), &goog2_info));
-  EXPECT_FALSE(testing_master->AccruePrefetchBenefits(GURL(), &goog3_info));
-  EXPECT_FALSE(testing_master->AccruePrefetchBenefits(GURL(), &goog4_info));
+  EXPECT_FALSE(testing_master->AccruePrefetchBenefits(referer, &goog_info));
+  EXPECT_FALSE(testing_master->AccruePrefetchBenefits(referer, &goog2_info));
+  EXPECT_FALSE(testing_master->AccruePrefetchBenefits(referer, &goog3_info));
+  EXPECT_FALSE(testing_master->AccruePrefetchBenefits(referer, &goog4_info));
 
   testing_master->Shutdown();
 }
@@ -181,11 +187,12 @@ TEST_F(DnsMasterTest, ShutdownWhenResolutionIsPendingTest) {
 
   scoped_refptr<DnsMaster> testing_master = new DnsMaster(host_resolver_,
       default_max_queueing_delay_,
-      DnsGlobalInit::kMaxPrefetchConcurrentLookups);
+      DnsGlobalInit::kMaxPrefetchConcurrentLookups,
+      false);
 
-  std::string localhost("127.0.0.1");
+  net::HostPortPair localhost("127.0.0.1", 80);
   NameList names;
-  names.insert(names.end(), localhost);
+  names.push_back(localhost.host);
 
   testing_master->ResolveList(names, DnsHostInfo::PAGE_SCAN_MOTIVATED);
 
@@ -205,12 +212,13 @@ TEST_F(DnsMasterTest, ShutdownWhenResolutionIsPendingTest) {
 TEST_F(DnsMasterTest, SingleLookupTest) {
   scoped_refptr<DnsMaster> testing_master = new DnsMaster(host_resolver_,
       default_max_queueing_delay_,
-      DnsGlobalInit::kMaxPrefetchConcurrentLookups);
+      DnsGlobalInit::kMaxPrefetchConcurrentLookups,
+      false);
 
-  std::string goog("www.google.com");
+  net::HostPortPair goog("www.google.com", 80);
 
   NameList names;
-  names.insert(names.end(), goog);
+  names.push_back(goog.host);
 
   // Try to flood the master with many concurrent requests.
   for (int i = 0; i < 10; i++)
@@ -235,23 +243,24 @@ TEST_F(DnsMasterTest, ConcurrentLookupTest) {
 
   scoped_refptr<DnsMaster> testing_master = new DnsMaster(host_resolver_,
       default_max_queueing_delay_,
-      DnsGlobalInit::kMaxPrefetchConcurrentLookups);
+      DnsGlobalInit::kMaxPrefetchConcurrentLookups,
+      false);
 
-  std::string goog("www.google.com"),
-    goog2("gmail.google.com.com"),
-    goog3("mail.google.com"),
-    goog4("gmail.com");
-  std::string bad1("bad1.notfound"),
-    bad2("bad2.notfound");
+  net::HostPortPair goog("www.google.com", 80),
+      goog2("gmail.google.com.com", 80),
+      goog3("mail.google.com", 80),
+      goog4("gmail.com", 80);
+  net::HostPortPair bad1("bad1.notfound", 80),
+      bad2("bad2.notfound", 80);
 
   NameList names;
-  names.insert(names.end(), goog);
-  names.insert(names.end(), goog3);
-  names.insert(names.end(), bad1);
-  names.insert(names.end(), goog2);
-  names.insert(names.end(), bad2);
-  names.insert(names.end(), goog4);
-  names.insert(names.end(), goog);
+  names.push_back(goog.host);
+  names.push_back(goog3.host);
+  names.push_back(bad1.host);
+  names.push_back(goog2.host);
+  names.push_back(bad2.host);
+  names.push_back(goog4.host);
+  names.push_back(goog.host);
 
   // Try to flood the master with many concurrent requests.
   for (int i = 0; i < 10; i++)
@@ -282,9 +291,11 @@ TEST_F(DnsMasterTest, ConcurrentLookupTest) {
 TEST_F(DnsMasterTest, MassiveConcurrentLookupTest) {
   host_resolver_->rules()->AddSimulatedFailure("*.notfound");
 
-  scoped_refptr<DnsMaster> testing_master = new DnsMaster(host_resolver_,
+  scoped_refptr<DnsMaster> testing_master = new DnsMaster(
+      host_resolver_,
       default_max_queueing_delay_,
-      DnsGlobalInit::kMaxPrefetchConcurrentLookups);
+      DnsGlobalInit::kMaxPrefetchConcurrentLookups,
+      false);
 
   NameList names;
   for (int i = 0; i < 100; i++)
@@ -311,25 +322,39 @@ TEST_F(DnsMasterTest, MassiveConcurrentLookupTest) {
 
 // Return a motivation_list if we can find one for the given motivating_host (or
 // NULL if a match is not found).
-static ListValue* FindSerializationMotivation(const std::string& motivation,
-                                              const ListValue& referral_list) {
+static ListValue* FindSerializationMotivation(
+    const net::HostPortPair& motivation, const ListValue& referral_list) {
+  CHECK_LT(0u, referral_list.GetSize());  // Room for version.
+  int format_version = -1;
+  CHECK(referral_list.GetInteger(0, &format_version));
+  CHECK_EQ(DnsMaster::DNS_REFERRER_VERSION, format_version);
   ListValue* motivation_list(NULL);
-  for (size_t i = 0; i < referral_list.GetSize(); ++i) {
+  for (size_t i = 1; i < referral_list.GetSize(); ++i) {
     referral_list.GetList(i, &motivation_list);
-    std::string existing_motivation;
-    EXPECT_TRUE(motivation_list->GetString(i, &existing_motivation));
-    if (existing_motivation == motivation)
-      break;
-    motivation_list = NULL;
+    std::string existing_host;
+    int existing_port;
+    EXPECT_TRUE(motivation_list->GetInteger(0, &existing_port));
+    EXPECT_TRUE(motivation_list->GetString(1, &existing_host));
+    if (motivation.host == existing_host && motivation.port == existing_port)
+      return motivation_list;
   }
-  return motivation_list;
+  return NULL;
+}
+
+// Create a new empty serialization list.
+static ListValue* NewEmptySerializationList() {
+  ListValue* list = new ListValue;
+  list->Append(new FundamentalValue(DnsMaster::DNS_REFERRER_VERSION));
+  return list;
 }
 
 // Add a motivating_host and a subresource_host to a serialized list, using
 // this given latency. This is a helper function for quickly building these
 // lists.
-static void AddToSerializedList(const std::string& motivation,
-                                const std::string& subresource, int latency,
+static void AddToSerializedList(const net::HostPortPair& motivation,
+                                const net::HostPortPair& subresource,
+                                int latency,
+                                double rate,
                                 ListValue* referral_list ) {
   // Find the motivation if it is already used.
   ListValue* motivation_list = FindSerializationMotivation(motivation,
@@ -337,7 +362,8 @@ static void AddToSerializedList(const std::string& motivation,
   if (!motivation_list) {
     // This is the first mention of this motivation, so build a list.
     motivation_list = new ListValue;
-    motivation_list->Append(new StringValue(motivation));
+    motivation_list->Append(new FundamentalValue(motivation.port));
+    motivation_list->Append(new StringValue(motivation.host));
     // Provide empty subresource list.
     motivation_list->Append(new ListValue());
 
@@ -346,41 +372,48 @@ static void AddToSerializedList(const std::string& motivation,
   }
 
   ListValue* subresource_list(NULL);
-  EXPECT_TRUE(motivation_list->GetList(1, &subresource_list));
+  // 0 == port; 1 == host; 2 == subresource_list.
+  EXPECT_TRUE(motivation_list->GetList(2, &subresource_list));
 
   // We won't bother to check for the subresource being there already.  Worst
   // case, during deserialization, the latency value we supply plus the
   // existing value(s) will be added to the referrer.
-  subresource_list->Append(new StringValue(subresource));
+
+  subresource_list->Append(new FundamentalValue(subresource.port));
+  subresource_list->Append(new StringValue(subresource.host));
   subresource_list->Append(new FundamentalValue(latency));
+  subresource_list->Append(new FundamentalValue(rate));
 }
 
 static const int kLatencyNotFound = -1;
 
-// For a given motivation_hostname, and subresource_hostname, find what latency
-// is currently listed.  This assume a well formed serialization, which has
-// at most one such entry for any pair of names.  If no such pair is found, then
-// return kLatencyNotFound.
-int GetLatencyFromSerialization(const std::string& motivation,
-                                const std::string& subresource,
-                                const ListValue& referral_list) {
+// For a given motivation, and subresource, find what latency is currently
+// listed.  This assume a well formed serialization, which has at most one such
+// entry for any pair of names.  If no such pair is found, then return false.
+// Data is written into rate and latency arguments.
+static bool GetDataFromSerialization(const net::HostPortPair& motivation,
+                                     const net::HostPortPair& subresource,
+                                     const ListValue& referral_list,
+                                     double* rate,
+                                     int* latency) {
   ListValue* motivation_list = FindSerializationMotivation(motivation,
                                                            referral_list);
   if (!motivation_list)
-    return kLatencyNotFound;
+    return false;
   ListValue* subresource_list;
-  EXPECT_TRUE(motivation_list->GetList(1, &subresource_list));
-  for (size_t i = 0; i < subresource_list->GetSize(); ++i) {
-    std::string subresource_name;
-    EXPECT_TRUE(subresource_list->GetString(i, &subresource_name));
-    if (subresource_name == subresource) {
-      int latency;
-      EXPECT_TRUE(subresource_list->GetInteger(i + 1, &latency));
-      return latency;
+  EXPECT_TRUE(motivation_list->GetList(2, &subresource_list));
+  for (size_t i = 0; i < subresource_list->GetSize();) {
+    std::string host;
+    int port;
+    EXPECT_TRUE(subresource_list->GetInteger(i++, &port));
+    EXPECT_TRUE(subresource_list->GetString(i++, &host));
+    EXPECT_TRUE(subresource_list->GetInteger(i++, latency));
+    EXPECT_TRUE(subresource_list->GetReal(i++, rate));
+    if (subresource.host == host  && subresource.port == port) {
+      return true;
     }
-    ++i;  // Skip latency value.
   }
-  return kLatencyNotFound;
+  return false;
 }
 
 //------------------------------------------------------------------------------
@@ -389,12 +422,14 @@ int GetLatencyFromSerialization(const std::string& motivation,
 TEST_F(DnsMasterTest, ReferrerSerializationNilTest) {
   scoped_refptr<DnsMaster> master = new DnsMaster(host_resolver_,
       default_max_queueing_delay_,
-      DnsGlobalInit::kMaxPrefetchConcurrentLookups);
-  ListValue referral_list;
-  master->SerializeReferrers(&referral_list);
-  EXPECT_EQ(0U, referral_list.GetSize());
-  EXPECT_EQ(kLatencyNotFound, GetLatencyFromSerialization("a.com", "b.com",
-                                                          referral_list));
+      DnsGlobalInit::kMaxPrefetchConcurrentLookups,
+      false);
+  scoped_ptr<ListValue> referral_list(NewEmptySerializationList());
+  master->SerializeReferrers(referral_list.get());
+  EXPECT_EQ(1U, referral_list->GetSize());
+  EXPECT_FALSE(GetDataFromSerialization(
+      net::HostPortPair("a.com", 79), net::HostPortPair("b.com", 78),
+      *referral_list.get(), NULL, NULL));
 
   master->Shutdown();
 }
@@ -405,23 +440,29 @@ TEST_F(DnsMasterTest, ReferrerSerializationNilTest) {
 TEST_F(DnsMasterTest, ReferrerSerializationSingleReferrerTest) {
   scoped_refptr<DnsMaster> master = new DnsMaster(host_resolver_,
       default_max_queueing_delay_,
-      DnsGlobalInit::kMaxPrefetchConcurrentLookups);
-  std::string motivation_hostname = "www.google.com";
-  std::string subresource_hostname = "icons.google.com";
+      DnsGlobalInit::kMaxPrefetchConcurrentLookups,
+      false);
+  const net::HostPortPair motivation_hostport("www.google.com", 91);
+  const net::HostPortPair subresource_hostport("icons.google.com", 90);
   const int kLatency = 3;
-  ListValue referral_list;
+  const double kRate = 23.4;
+  scoped_ptr<ListValue> referral_list(NewEmptySerializationList());
 
-  AddToSerializedList(motivation_hostname, subresource_hostname, kLatency,
-                      &referral_list);
+  AddToSerializedList(motivation_hostport, subresource_hostport,
+      kLatency, kRate, referral_list.get());
 
-  master->DeserializeReferrers(referral_list);
+  master->DeserializeReferrers(*referral_list.get());
 
   ListValue recovered_referral_list;
   master->SerializeReferrers(&recovered_referral_list);
-  EXPECT_EQ(1U, recovered_referral_list.GetSize());
-  EXPECT_EQ(kLatency, GetLatencyFromSerialization(motivation_hostname,
-                                                  subresource_hostname,
-                                                  recovered_referral_list));
+  EXPECT_EQ(2U, recovered_referral_list.GetSize());
+  int latency;
+  double rate;
+  EXPECT_TRUE(GetDataFromSerialization(
+      motivation_hostport, subresource_hostport, recovered_referral_list, &rate,
+      &latency));
+  EXPECT_EQ(rate, kRate);
+  EXPECT_EQ(latency, kLatency);
 
   master->Shutdown();
 }
@@ -430,72 +471,104 @@ TEST_F(DnsMasterTest, ReferrerSerializationSingleReferrerTest) {
 TEST_F(DnsMasterTest, ReferrerSerializationTrimTest) {
   scoped_refptr<DnsMaster> master = new DnsMaster(host_resolver_,
       default_max_queueing_delay_,
-      DnsGlobalInit::kMaxPrefetchConcurrentLookups);
-  std::string motivation_hostname = "www.google.com";
-  std::string icon_subresource_hostname = "icons.google.com";
-  std::string img_subresource_hostname = "img.google.com";
-  ListValue referral_list;
+      DnsGlobalInit::kMaxPrefetchConcurrentLookups,
+      false);
+  net::HostPortPair motivation_hostport("www.google.com", 110);
 
-  AddToSerializedList(motivation_hostname, icon_subresource_hostname, 10,
-                      &referral_list);
-  AddToSerializedList(motivation_hostname, img_subresource_hostname, 3,
-                      &referral_list);
+  net::HostPortPair icon_subresource_hostport("icons.google.com", 111);
+  const int kLatencyIcon = 10;
+  const double kRateIcon = 0.;  // User low rate, so latency will dominate.
+  net::HostPortPair img_subresource_hostport("img.google.com", 118);
+  const int kLatencyImg = 3;
+  const double kRateImg = 0.;
 
-  master->DeserializeReferrers(referral_list);
+  scoped_ptr<ListValue> referral_list(NewEmptySerializationList());
+  AddToSerializedList(
+      motivation_hostport, icon_subresource_hostport,
+      kLatencyIcon, kRateIcon, referral_list.get());
+  AddToSerializedList(
+      motivation_hostport, img_subresource_hostport,
+      kLatencyImg, kRateImg, referral_list.get());
+
+  master->DeserializeReferrers(*referral_list.get());
 
   ListValue recovered_referral_list;
   master->SerializeReferrers(&recovered_referral_list);
-  EXPECT_EQ(1U, recovered_referral_list.GetSize());
-  EXPECT_EQ(10, GetLatencyFromSerialization(motivation_hostname,
-                                            icon_subresource_hostname,
-                                            recovered_referral_list));
-  EXPECT_EQ(3, GetLatencyFromSerialization(motivation_hostname,
-                                            img_subresource_hostname,
-                                            recovered_referral_list));
+  EXPECT_EQ(2U, recovered_referral_list.GetSize());
+  int latency;
+  double rate;
+  EXPECT_TRUE(GetDataFromSerialization(
+      motivation_hostport, icon_subresource_hostport, recovered_referral_list,
+      &rate, &latency));
+  EXPECT_EQ(latency, kLatencyIcon);
+  EXPECT_EQ(rate, kRateIcon);
+
+  EXPECT_TRUE(GetDataFromSerialization(
+      motivation_hostport, img_subresource_hostport, recovered_referral_list,
+      &rate, &latency));
+  EXPECT_EQ(latency, kLatencyImg);
+  EXPECT_EQ(rate, kRateImg);
 
   // Each time we Trim, the latency figures should reduce by a factor of two,
   // until they both are 0, an then a trim will delete the whole entry.
   master->TrimReferrers();
   master->SerializeReferrers(&recovered_referral_list);
-  EXPECT_EQ(1U, recovered_referral_list.GetSize());
-  EXPECT_EQ(5, GetLatencyFromSerialization(motivation_hostname,
-                                            icon_subresource_hostname,
-                                            recovered_referral_list));
-  EXPECT_EQ(1, GetLatencyFromSerialization(motivation_hostname,
-                                            img_subresource_hostname,
-                                            recovered_referral_list));
+  EXPECT_EQ(2U, recovered_referral_list.GetSize());
+  EXPECT_TRUE(GetDataFromSerialization(
+      motivation_hostport, icon_subresource_hostport, recovered_referral_list,
+      &rate, &latency));
+  EXPECT_EQ(latency, kLatencyIcon / 2);
+  EXPECT_EQ(rate, kRateIcon);
+
+  EXPECT_TRUE(GetDataFromSerialization(
+      motivation_hostport, img_subresource_hostport, recovered_referral_list,
+      &rate, &latency));
+  EXPECT_EQ(latency, kLatencyImg / 2);
+  EXPECT_EQ(rate, kRateImg);
 
   master->TrimReferrers();
   master->SerializeReferrers(&recovered_referral_list);
-  EXPECT_EQ(1U, recovered_referral_list.GetSize());
-  EXPECT_EQ(2, GetLatencyFromSerialization(motivation_hostname,
-                                            icon_subresource_hostname,
-                                            recovered_referral_list));
-  EXPECT_EQ(0, GetLatencyFromSerialization(motivation_hostname,
-                                            img_subresource_hostname,
-                                            recovered_referral_list));
+  EXPECT_EQ(2U, recovered_referral_list.GetSize());
+  EXPECT_TRUE(GetDataFromSerialization(
+      motivation_hostport, icon_subresource_hostport, recovered_referral_list,
+      &rate, &latency));
+  EXPECT_EQ(latency, kLatencyIcon / 4);
+  EXPECT_EQ(rate, kRateIcon);
+  // Img is down to zero, but we don't delete it yet.
+  EXPECT_TRUE(GetDataFromSerialization(
+      motivation_hostport, img_subresource_hostport, recovered_referral_list,
+      &rate, &latency));
+  EXPECT_EQ(kLatencyImg / 4, 0);
+  EXPECT_EQ(latency, kLatencyImg / 4);
+  EXPECT_EQ(rate, kRateImg);
 
   master->TrimReferrers();
   master->SerializeReferrers(&recovered_referral_list);
-  EXPECT_EQ(1U, recovered_referral_list.GetSize());
-  EXPECT_EQ(1, GetLatencyFromSerialization(motivation_hostname,
-                                           icon_subresource_hostname,
-                                           recovered_referral_list));
-  EXPECT_EQ(0, GetLatencyFromSerialization(motivation_hostname,
-                                           img_subresource_hostname,
-                                           recovered_referral_list));
+  EXPECT_EQ(2U, recovered_referral_list.GetSize());
+  EXPECT_TRUE(GetDataFromSerialization(
+      motivation_hostport, icon_subresource_hostport, recovered_referral_list,
+      &rate, &latency));
+  EXPECT_EQ(latency, kLatencyIcon / 8);
+  EXPECT_EQ(rate, kRateIcon);
+
+  // Img is down to zero, but we don't delete it yet.
+  EXPECT_TRUE(GetDataFromSerialization(
+      motivation_hostport, img_subresource_hostport, recovered_referral_list,
+      &rate, &latency));
+  EXPECT_EQ(kLatencyImg / 8, 0);
+  EXPECT_EQ(latency, kLatencyImg / 8);
+  EXPECT_EQ(rate, kRateImg);
 
   master->TrimReferrers();
   master->SerializeReferrers(&recovered_referral_list);
-  EXPECT_EQ(0U, recovered_referral_list.GetSize());
-  EXPECT_EQ(kLatencyNotFound,
-            GetLatencyFromSerialization(motivation_hostname,
-                                        icon_subresource_hostname,
-                                        recovered_referral_list));
-  EXPECT_EQ(kLatencyNotFound,
-            GetLatencyFromSerialization(motivation_hostname,
-                                        img_subresource_hostname,
-                                        recovered_referral_list));
+  // Icon is also trimmed away, so entire set gets discarded.
+  EXPECT_EQ(1U, recovered_referral_list.GetSize());
+  EXPECT_FALSE(GetDataFromSerialization(
+      motivation_hostport, icon_subresource_hostport, recovered_referral_list,
+      &rate, &latency));
+  EXPECT_FALSE(GetDataFromSerialization(
+      motivation_hostport, img_subresource_hostport, recovered_referral_list,
+      &rate, &latency));
 
   master->Shutdown();
 }
@@ -504,25 +577,27 @@ TEST_F(DnsMasterTest, ReferrerSerializationTrimTest) {
 TEST_F(DnsMasterTest, PriorityQueuePushPopTest) {
   DnsMaster::HostNameQueue queue;
 
+  net::HostPortPair first("first", 80), second("second", 90);
+
   // First check high priority queue FIFO functionality.
   EXPECT_TRUE(queue.IsEmpty());
-  queue.Push("a", DnsHostInfo::LEARNED_REFERAL_MOTIVATED);
+  queue.Push(first, DnsHostInfo::LEARNED_REFERAL_MOTIVATED);
   EXPECT_FALSE(queue.IsEmpty());
-  queue.Push("b", DnsHostInfo::MOUSE_OVER_MOTIVATED);
+  queue.Push(second, DnsHostInfo::MOUSE_OVER_MOTIVATED);
   EXPECT_FALSE(queue.IsEmpty());
-  EXPECT_EQ(queue.Pop(), "a");
+  EXPECT_EQ(queue.Pop().ToString(), first.ToString());
   EXPECT_FALSE(queue.IsEmpty());
-  EXPECT_EQ(queue.Pop(), "b");
+  EXPECT_EQ(queue.Pop().ToString(), second.ToString());
   EXPECT_TRUE(queue.IsEmpty());
 
   // Then check low priority queue FIFO functionality.
-  queue.Push("a", DnsHostInfo::PAGE_SCAN_MOTIVATED);
+  queue.Push(first, DnsHostInfo::PAGE_SCAN_MOTIVATED);
   EXPECT_FALSE(queue.IsEmpty());
-  queue.Push("b", DnsHostInfo::OMNIBOX_MOTIVATED);
+  queue.Push(second, DnsHostInfo::OMNIBOX_MOTIVATED);
   EXPECT_FALSE(queue.IsEmpty());
-  EXPECT_EQ(queue.Pop(), "a");
+  EXPECT_EQ(queue.Pop().ToString(), first.ToString());
   EXPECT_FALSE(queue.IsEmpty());
-  EXPECT_EQ(queue.Pop(), "b");
+  EXPECT_EQ(queue.Pop().ToString(), second.ToString());
   EXPECT_TRUE(queue.IsEmpty());
 }
 
@@ -530,31 +605,40 @@ TEST_F(DnsMasterTest, PriorityQueueReorderTest) {
   DnsMaster::HostNameQueue queue;
 
   // Push all the low priority items.
+  net::HostPortPair low1("low1", 80),
+      low2("low2", 80),
+      low3("low3", 443),
+      low4("low4", 80),
+      low5("low5", 80),
+      hi1("hi1", 80),
+      hi2("hi2", 80),
+      hi3("hi3", 80);
+
   EXPECT_TRUE(queue.IsEmpty());
-  queue.Push("scan", DnsHostInfo::PAGE_SCAN_MOTIVATED);
-  queue.Push("unit", DnsHostInfo::UNIT_TEST_MOTIVATED);
-  queue.Push("lmax", DnsHostInfo::LINKED_MAX_MOTIVATED);
-  queue.Push("omni", DnsHostInfo::OMNIBOX_MOTIVATED);
-  queue.Push("startup", DnsHostInfo::STARTUP_LIST_MOTIVATED);
-  queue.Push("omni", DnsHostInfo::OMNIBOX_MOTIVATED);
+  queue.Push(low1, DnsHostInfo::PAGE_SCAN_MOTIVATED);
+  queue.Push(low2, DnsHostInfo::UNIT_TEST_MOTIVATED);
+  queue.Push(low3, DnsHostInfo::LINKED_MAX_MOTIVATED);
+  queue.Push(low4, DnsHostInfo::OMNIBOX_MOTIVATED);
+  queue.Push(low5, DnsHostInfo::STARTUP_LIST_MOTIVATED);
+  queue.Push(low4, DnsHostInfo::OMNIBOX_MOTIVATED);
 
   // Push all the high prority items
-  queue.Push("learned", DnsHostInfo::LEARNED_REFERAL_MOTIVATED);
-  queue.Push("refer", DnsHostInfo::STATIC_REFERAL_MOTIVATED);
-  queue.Push("mouse", DnsHostInfo::MOUSE_OVER_MOTIVATED);
+  queue.Push(hi1, DnsHostInfo::LEARNED_REFERAL_MOTIVATED);
+  queue.Push(hi2, DnsHostInfo::STATIC_REFERAL_MOTIVATED);
+  queue.Push(hi3, DnsHostInfo::MOUSE_OVER_MOTIVATED);
 
   // Check that high priority stuff comes out first, and in FIFO order.
-  EXPECT_EQ(queue.Pop(), "learned");
-  EXPECT_EQ(queue.Pop(), "refer");
-  EXPECT_EQ(queue.Pop(), "mouse");
+  EXPECT_EQ(queue.Pop().ToString(), hi1.ToString());
+  EXPECT_EQ(queue.Pop().ToString(), hi2.ToString());
+  EXPECT_EQ(queue.Pop().ToString(), hi3.ToString());
 
   // ...and then low priority strings.
-  EXPECT_EQ(queue.Pop(), "scan");
-  EXPECT_EQ(queue.Pop(), "unit");
-  EXPECT_EQ(queue.Pop(), "lmax");
-  EXPECT_EQ(queue.Pop(), "omni");
-  EXPECT_EQ(queue.Pop(), "startup");
-  EXPECT_EQ(queue.Pop(), "omni");
+  EXPECT_EQ(queue.Pop().ToString(), low1.ToString());
+  EXPECT_EQ(queue.Pop().ToString(), low2.ToString());
+  EXPECT_EQ(queue.Pop().ToString(), low3.ToString());
+  EXPECT_EQ(queue.Pop().ToString(), low4.ToString());
+  EXPECT_EQ(queue.Pop().ToString(), low5.ToString());
+  EXPECT_EQ(queue.Pop().ToString(), low4.ToString());
 
   EXPECT_TRUE(queue.IsEmpty());
 }

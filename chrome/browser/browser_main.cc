@@ -1077,7 +1077,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   // Initialize and maintain DNS prefetcher module. Also registers an observer
   // to clear the host cache when closing incognito mode.
-  chrome_browser_net::DnsGlobalInit dns_prefetch(user_prefs, local_state);
+  chrome_browser_net::DnsGlobalInit dns_prefetch(
+      user_prefs,
+      local_state,
+      parsed_command_line.HasSwitch(switches::kEnablePreconnect));
 
 #if defined(OS_WIN)
   win_util::ScopedCOMInitializer com_initializer;

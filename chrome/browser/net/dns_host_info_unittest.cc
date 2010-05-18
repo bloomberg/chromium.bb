@@ -22,7 +22,7 @@ typedef chrome_browser_net::DnsHostInfo DnsHostInfo;
 
 TEST(DnsHostInfoTest, StateChangeTest) {
   DnsHostInfo info_practice, info;
-  std::string hostname1("domain1.com"), hostname2("domain2.com");
+  net::HostPortPair hostname1("domain1.com", 80), hostname2("domain2.com", 443);
 
   // First load DLL, so that their load time won't interfere with tests.
   // Some tests involve timing function performance, and DLL time can overwhelm
@@ -36,14 +36,14 @@ TEST(DnsHostInfoTest, StateChangeTest) {
   // Complete the construction of real test object.
   info.SetHostname(hostname1);
 
-  EXPECT_TRUE(info.NeedsDnsUpdate(hostname1)) << "error in construction state";
+  EXPECT_TRUE(info.NeedsDnsUpdate()) << "error in construction state";
   info.SetQueuedState(DnsHostInfo::UNIT_TEST_MOTIVATED);
-  EXPECT_FALSE(info.NeedsDnsUpdate(hostname1))
+  EXPECT_FALSE(info.NeedsDnsUpdate())
     << "update needed after being queued";
   info.SetAssignedState();
-  EXPECT_FALSE(info.NeedsDnsUpdate(hostname1));
+  EXPECT_FALSE(info.NeedsDnsUpdate());
   info.SetFoundState();
-  EXPECT_FALSE(info.NeedsDnsUpdate(hostname1))
+  EXPECT_FALSE(info.NeedsDnsUpdate())
     << "default expiration time is TOOOOO short";
 
   // Note that time from ASSIGNED to FOUND was VERY short (probably 0ms), so the
@@ -55,31 +55,31 @@ TEST(DnsHostInfoTest, StateChangeTest) {
     << "Non-net time is set too low";
 
   info.set_cache_expiration(TimeDelta::FromMilliseconds(300));
-  EXPECT_FALSE(info.NeedsDnsUpdate(hostname1)) << "expiration time not honored";
+  EXPECT_FALSE(info.NeedsDnsUpdate()) << "expiration time not honored";
   PlatformThread::Sleep(80);  // Not enough time to pass our 300ms mark.
-  EXPECT_FALSE(info.NeedsDnsUpdate(hostname1)) << "expiration time not honored";
+  EXPECT_FALSE(info.NeedsDnsUpdate()) << "expiration time not honored";
 
   // That was a nice life when the object was found.... but next time it won't
   // be found.  We'll sleep for a while, and then come back with not-found.
   info.SetQueuedState(DnsHostInfo::UNIT_TEST_MOTIVATED);
   info.SetAssignedState();
-  EXPECT_FALSE(info.NeedsDnsUpdate(hostname1));
+  EXPECT_FALSE(info.NeedsDnsUpdate());
   // Greater than minimal expected network latency on DNS lookup.
   PlatformThread::Sleep(25);
   info.SetNoSuchNameState();
-  EXPECT_FALSE(info.NeedsDnsUpdate(hostname1))
+  EXPECT_FALSE(info.NeedsDnsUpdate())
     << "default expiration time is TOOOOO short";
 
   // Note that now we'll actually utilize an expiration of 300ms,
   // since there was detected network activity time during lookup.
   // We're assuming the caching just started with our lookup.
   PlatformThread::Sleep(80);  // Not enough time to pass our 300ms mark.
-  EXPECT_FALSE(info.NeedsDnsUpdate(hostname1)) << "expiration time not honored";
+  EXPECT_FALSE(info.NeedsDnsUpdate()) << "expiration time not honored";
   // Still not past our 300ms mark (only about 4+2ms)
   PlatformThread::Sleep(80);
-  EXPECT_FALSE(info.NeedsDnsUpdate(hostname1)) << "expiration time not honored";
+  EXPECT_FALSE(info.NeedsDnsUpdate()) << "expiration time not honored";
   PlatformThread::Sleep(150);
-  EXPECT_TRUE(info.NeedsDnsUpdate(hostname1)) << "expiration time not honored";
+  EXPECT_TRUE(info.NeedsDnsUpdate()) << "expiration time not honored";
 }
 
 // When a system gets "congested" relative to DNS, it means it is doing too many
@@ -93,7 +93,7 @@ TEST(DnsHostInfoTest, StateChangeTest) {
 // the state transitions used in such congestion handling.
 TEST(DnsHostInfoTest, CongestionResetStateTest) {
   DnsHostInfo info;
-  std::string hostname1("domain1.com");
+  net::HostPortPair hostname1("domain1.com", 80);
 
   info.SetHostname(hostname1);
   info.SetQueuedState(DnsHostInfo::UNIT_TEST_MOTIVATED);

@@ -110,7 +110,8 @@ void IOThread::InitDnsMaster(
     base::TimeDelta max_queue_delay,
     size_t max_concurrent,
     const chrome_common_net::NameList& hostnames_to_prefetch,
-    ListValue* referral_list) {
+    ListValue* referral_list,
+    bool preconnect_enabled) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   message_loop()->PostTask(
       FROM_HERE,
@@ -118,7 +119,7 @@ void IOThread::InitDnsMaster(
           this,
           &IOThread::InitDnsMasterOnIOThread,
           prefetching_enabled, max_queue_delay, max_concurrent,
-          hostnames_to_prefetch, referral_list));
+          hostnames_to_prefetch, referral_list, preconnect_enabled));
 }
 
 void IOThread::ChangedToOnTheRecord() {
@@ -250,14 +251,18 @@ void IOThread::InitDnsMasterOnIOThread(
     base::TimeDelta max_queue_delay,
     size_t max_concurrent,
     chrome_common_net::NameList hostnames_to_prefetch,
-    ListValue* referral_list) {
+    ListValue* referral_list,
+    bool preconnect_enabled) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   CHECK(!dns_master_);
 
   chrome_browser_net::EnableDnsPrefetch(prefetching_enabled);
 
   dns_master_ = new chrome_browser_net::DnsMaster(
-      globals_->host_resolver, max_queue_delay, max_concurrent);
+      globals_->host_resolver,
+      max_queue_delay,
+      max_concurrent,
+      preconnect_enabled);
   dns_master_->AddRef();
 
   DCHECK(!prefetch_observer_);

@@ -211,7 +211,7 @@ unsigned int BrowserProcessImpl::AddRefModule() {
 
 unsigned int BrowserProcessImpl::ReleaseModule() {
   DCHECK(CalledOnValidThread());
-  DCHECK(0 != module_ref_count_);
+  DCHECK_NE(0u, module_ref_count_);
   module_ref_count_--;
   if (0 == module_ref_count_) {
     MessageLoop::current()->PostTask(
@@ -459,7 +459,7 @@ void BrowserProcessImpl::CheckForInspectorFiles() {
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
 void BrowserProcessImpl::StartAutoupdateTimer() {
   autoupdate_timer_.Start(
-      TimeDelta::FromHours(kUpdateCheckIntervalHours),
+      base::TimeDelta::FromHours(kUpdateCheckIntervalHours),
       this,
       &BrowserProcessImpl::OnAutoupdateTimer);
 }

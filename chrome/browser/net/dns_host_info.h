@@ -15,6 +15,7 @@
 
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/host_port_pair.h"
 
 namespace chrome_browser_net {
 
@@ -43,7 +44,7 @@ class DnsHostInfo {
     NO_PREFETCH_MOTIVATION,  // Browser navigation info (not prefetch related).
 
     // The following involve predictive prefetching, triggered by a navigation.
-    // The referring_hostname_ is also set when these are used.
+    // The referring_hostport_ is also set when these are used.
     // TODO(jar): Support STATIC_REFERAL_MOTIVATED API and integration.
     STATIC_REFERAL_MOTIVATED,  // External database suggested this resolution.
     LEARNED_REFERAL_MOTIVATED,  // Prior navigation taught us this resolution.
@@ -89,7 +90,7 @@ class DnsHostInfo {
   // if it would be valuable to attempt to update (prefectch)
   // DNS data for hostname.  This decision is based
   // on how recently we've done DNS prefetching for hostname.
-  bool NeedsDnsUpdate(const std::string& hostname);
+  bool NeedsDnsUpdate();
 
   static void set_cache_expiration(base::TimeDelta time);
 
@@ -105,13 +106,13 @@ class DnsHostInfo {
   void SetFinishedState(bool was_resolved);
 
   // Finish initialization. Must only be called once.
-  void SetHostname(const std::string& hostname);
+  void SetHostname(const net::HostPortPair& hostport);
 
   bool was_linked() const { return was_linked_; }
 
-  std::string referring_hostname() const { return referring_hostname_; }
-  void SetReferringHostname(const std::string& hostname) {
-    referring_hostname_ = hostname;
+  net::HostPortPair referring_hostname() const { return referring_hostport_; }
+  void SetReferringHostname(const net::HostPortPair& hostport) {
+    referring_hostport_ = hostport;
   }
 
   bool was_found() const { return FOUND == state_; }
@@ -120,10 +121,10 @@ class DnsHostInfo {
     return ASSIGNED == state_ || ASSIGNED_BUT_MARKED == state_;
   }
   bool is_marked_to_delete() const { return ASSIGNED_BUT_MARKED == state_; }
-  const std::string hostname() const { return hostname_; }
+  const net::HostPortPair hostport() const { return hostport_; }
 
-  bool HasHostname(const std::string& hostname) const {
-    return (hostname == hostname_);
+  bool HasHostname(const net::HostPortPair& hostport) const {
+    return (hostport.Equals(hostport_));
   }
 
   base::TimeDelta resolve_duration() const { return resolve_duration_;}
@@ -166,7 +167,7 @@ class DnsHostInfo {
   // out of the queue.
   DnsProcessingState old_prequeue_state_;
 
-  std::string hostname_;  // Hostname for this info.
+  net::HostPortPair hostport_;  // Hostname for this info.
 
   // When was last state changed (usually lookup completed).
   base::TimeTicks time_;
@@ -189,7 +190,7 @@ class DnsHostInfo {
   // If this instance holds data about a navigation, we store the referrer.
   // If this instance hold data about a prefetch, and the prefetch was
   // instigated by a referrer, we store it here (for use in about:dns).
-  std::string referring_hostname_;
+  net::HostPortPair referring_hostport_;
 
   // We put these objects into a std::map, and hence we
   // need some "evil" constructors.
