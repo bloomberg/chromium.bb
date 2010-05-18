@@ -93,7 +93,7 @@ bool GpuProcessHost::Init() {
   Launch(
 #if defined(OS_WIN)
       FilePath(),
-#elif defined(POSIX)
+#elif defined(OS_POSIX)
       false,  // Never use the zygote (GPU plugin can't be sandboxed).
       base::environment_vector(),
 #endif
@@ -206,4 +206,3 @@ URLRequestContext* GpuProcessHost::GetRequestContext(
 bool GpuProcessHost::CanShutdown() {
   return true;
 }
-

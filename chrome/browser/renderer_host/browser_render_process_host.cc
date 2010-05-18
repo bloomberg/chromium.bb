@@ -343,7 +343,7 @@ bool BrowserRenderProcessHost::Init(bool is_extensions_process,
     child_process_.reset(new ChildProcessLauncher(
 #if defined(OS_WIN)
         FilePath(),
-#elif defined(POSIX)
+#elif defined(OS_POSIX)
         renderer_prefix.empty(),
         base::environment_vector(),
         channel_->GetClientFileDescriptor(),

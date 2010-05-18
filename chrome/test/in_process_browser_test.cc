@@ -221,7 +221,7 @@ void InProcessBrowserTest::TearDown() {
 
   browser_shutdown::delete_resources_on_shutdown = true;
 
-#if defined(WIN)
+#if defined(OS_WIN)
   BrowserView::SetShowState(-1);
 #endif
 

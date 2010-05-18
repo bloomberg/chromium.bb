@@ -1,8 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/child_process_launcher.h"
+
+#include <utility>  // For std::pair.
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -66,7 +68,7 @@ class ChildProcessLauncher::Context
             &Context::LaunchInternal,
 #if defined(OS_WIN)
             exposed_dir,
-#elif defined(POSIX)
+#elif defined(OS_POSIX)
             use_zygote,
             environ,
             ipcfd,
