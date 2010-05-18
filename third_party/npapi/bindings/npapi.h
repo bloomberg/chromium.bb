@@ -42,9 +42,11 @@
 #pragma pack(1)
 #endif
 
-#include "nptypes.h"
-
 /* BEGIN GOOGLE MODIFICATIONS */
+
+#ifndef __native_client__
+#include "nptypes.h"
+#endif
 
 #ifdef __native_client__
 #include <stdint.h>
