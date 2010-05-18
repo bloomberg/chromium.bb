@@ -30,7 +30,8 @@ class ShaderManager {
 
     explicit ShaderInfo(GLuint service_id, GLenum shader_type)
         : service_id_(service_id),
-          shader_type_(shader_type) {
+          shader_type_(shader_type),
+          translation_valid_(true) {
     }
 
     void Update(const std::string& source) {
@@ -47,6 +48,19 @@ class ShaderManager {
 
     const std::string& source() const {
       return source_;
+    }
+
+    void SetTranslationStatus(bool valid, const std::string& log) {
+      translation_valid_ = valid;
+      translation_log_ = log;
+    }
+
+    const std::string& translation_log() const {
+      return translation_log_;
+    }
+
+    bool translation_valid() const {
+      return translation_valid_;
     }
 
     bool IsDeleted() const {
@@ -67,8 +81,14 @@ class ShaderManager {
     // Type of shader - GL_VERTEX_SHADER or GL_FRAGMENT_SHADER.
     GLenum shader_type_;
 
+    // True if translation succeeded.
+    bool translation_valid_;
+
     // The shader source as passed to glShaderSource.
     std::string source_;
+
+    // The shader translation log.
+    std::string translation_log_;
   };
 
   ShaderManager() {

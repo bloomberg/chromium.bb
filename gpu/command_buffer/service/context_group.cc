@@ -17,10 +17,21 @@ namespace gles2 {
 ContextGroup::ContextGroup()
     : initialized_(false),
       max_vertex_attribs_(0u),
-      max_texture_units_(0u) {
+      max_texture_units_(0u),
+      max_texture_image_units_(0u),
+      max_vertex_texture_image_units_(0u),
+      max_fragment_uniform_vectors_(0u),
+      max_varying_vectors_(0u),
+      max_vertex_uniform_vectors_(0u) {
 }
 
 ContextGroup::~ContextGroup() {
+}
+
+static void GetIntegerv(GLenum pname, uint32* var) {
+  GLint value = 0;
+  glGetIntegerv(pname, &value);
+  *var = value;
 }
 
 bool ContextGroup::Initialize() {
@@ -35,14 +46,11 @@ bool ContextGroup::Initialize() {
   program_manager_.reset(new ProgramManager());
 
   // Lookup GL things we need to know.
-  GLint value;
-  glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &value);
-  max_vertex_attribs_ = value;
+  GetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attribs_);
   const GLuint kGLES2RequiredMiniumumVertexAttribs = 8u;
   DCHECK_GE(max_vertex_attribs_, kGLES2RequiredMiniumumVertexAttribs);
 
-  glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &value);
-  max_texture_units_ = value;
+  GetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &max_texture_units_);
   const GLuint kGLES2RequiredMiniumumTextureUnits = 8u;
   DCHECK_GE(max_texture_units_, kGLES2RequiredMiniumumTextureUnits);
 
@@ -52,6 +60,29 @@ bool ContextGroup::Initialize() {
   glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &max_cube_map_texture_size);
   texture_manager_.reset(new TextureManager(max_texture_size,
                                             max_cube_map_texture_size));
+
+  GetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_image_units_);
+  GetIntegerv(
+      GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &max_vertex_texture_image_units_);
+
+#if defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
+
+  GetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, &max_fragment_uniform_vectors_);
+  GetIntegerv(GL_MAX_VARYING_VECTORS, &max_varying_vectors_);
+  GetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &max_vertex_uniform_vectors_);
+
+#else  // !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
+
+  GetIntegerv(
+      GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &max_fragment_uniform_vectors_);
+  max_fragment_uniform_vectors_ /= 4;
+  GetIntegerv(GL_MAX_VARYING_FLOATS, &max_varying_vectors_);
+  max_varying_vectors_ /= 4;
+  GetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &max_vertex_uniform_vectors_);
+  max_vertex_uniform_vectors_ /= 4;
+
+#endif  // !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
+
   initialized_ = true;
   return true;
 }
