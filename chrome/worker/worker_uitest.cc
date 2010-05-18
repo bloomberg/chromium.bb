@@ -305,6 +305,11 @@ TEST_F(WorkerTest, WorkerReplaceSelf) {
   RunWorkerFastLayoutTest("worker-replace-self.html");
 }
 
+// See bug 44457.
+#if defined(OS_MACOSX)
+#define WorkerScriptError FLAKY_WorkerScriptError
+#endif
+
 TEST_F(WorkerTest, WorkerScriptError) {
   RunWorkerFastLayoutTest("worker-script-error.html");
 }
