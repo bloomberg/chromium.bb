@@ -1390,6 +1390,20 @@ diff -uNr newlib-1.18.0.orig/newlib/libc/reent/impure.c newlib-1.18.0/newlib/lib
 +{
 +  _cleanup_r (_REENT);
 +}
+diff -uNr newlib-1.18.0.orig/newlib/libc/stdio/findfp.c newlib-1.18.0/newlib/libc/stdio/findfp.c
+--- newlib-1.18.0.orig/newlib/libc/stdio/findfp.c	2008-12-11 00:43:12.000000000 +0100
++++ newlib-1.18.0/newlib/libc/stdio/findfp.c	2010-05-17 17:05:46.000000000 +0200
+@@ -162,8 +162,8 @@
+ _DEFUN(_cleanup_r, (ptr),
+        struct _reent *ptr)
+ {
+-  _CAST_VOID _fwalk(ptr, fclose);
+-  /* _CAST_VOID _fwalk (ptr, fflush); */	/* `cheating' */
++  /* _CAST_VOID _fwalk(ptr, fclose); */
++  _CAST_VOID _fwalk (ptr, fflush);	/* Invoked from __newlib_thread_exit (). */
+ }
+ 
+ #ifndef _REENT_ONLY
 diff -uNr newlib-1.18.0.orig/newlib/libc/reent/signalr.c newlib-1.18.0/newlib/libc/reent/signalr.c
 --- newlib-1.18.0.orig/newlib/libc/reent/signalr.c	2003-06-03 21:48:07.000000000 +0200
 +++ newlib-1.18.0/newlib/libc/reent/signalr.c	2010-05-15 13:56:49.000000000 +0200
