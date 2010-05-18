@@ -190,6 +190,7 @@
                 'linux/seccomp/sandbox_impl.h',
                 'linux/seccomp/securemem.cc',
                 'linux/seccomp/securemem.h',
+                'linux/seccomp/sigaction.cc',
                 'linux/seccomp/sigprocmask.cc',
                 'linux/seccomp/socketcall.cc',
                 'linux/seccomp/stat.cc',

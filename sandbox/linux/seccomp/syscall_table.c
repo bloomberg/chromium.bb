@@ -97,6 +97,9 @@ const struct SyscallTable syscallTable[] __attribute__((
   [ __NR_recvfrom        ] = { (void*)&sandbox_recvfrom, process_recvfrom    },
   [ __NR_recvmsg         ] = { (void*)&sandbox_recvmsg,  process_recvmsg     },
   #endif
+  #if defined(__NR_rt_sigaction)
+  [ __NR_rt_sigaction    ] = { (void*)&sandbox_rt_sigaction,process_sigaction},
+  #endif
   #if defined(__NR_rt_sigprocmask)
   [ __NR_rt_sigprocmask  ] = { (void*)&sandbox_rt_sigprocmask, 0             },
   #endif
@@ -116,6 +119,12 @@ const struct SyscallTable syscallTable[] __attribute__((
   #endif
   #if defined(__NR_shutdown)
   [ __NR_shutdown        ] = { UNRESTRICTED_SYSCALL,     0                   },
+  #endif
+  #if defined(__NR_sigaction)
+  [ __NR_sigaction       ] = { (void*)&sandbox_sigaction,process_sigaction   },
+  #endif
+  #if defined(__NR_signal)
+  [ __NR_signal          ] = { (void*)&sandbox_signal,   process_sigaction   },
   #endif
   #if defined(__NR_sigprocmask)
   [ __NR_sigprocmask     ] = { (void*)&sandbox_sigprocmask, 0                },

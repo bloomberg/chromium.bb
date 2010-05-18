@@ -128,6 +128,7 @@ void Sandbox::createTrustedThread(int processFdPub, int cloneFdPub,
       //   0x4C: number of consecutive calls to a time fnc (not used on x86-64)
       //   0x50: nesting level of system calls (for debugging purposes only)
       //   0x54: signal mask
+      //   0x5C: in SEGV handler
 
       // We use the %fs register for accessing the secure read-only page, and
       // the untrusted scratch space immediately following it. The segment
@@ -852,6 +853,7 @@ void Sandbox::createTrustedThread(int processFdPub, int cloneFdPub,
       //   0x30: number of consecutive calls to a time fnc. (e.g. gettimeofday)
       //   0x34: nesting level of system calls (for debugging purposes only)
       //   0x38: signal mask
+      //   0x40: in SEGV handler
 
     "0:xor  %%esp, %%esp\n"
       "mov  $2, %%eax\n"           // %mm2 = initial sequence number

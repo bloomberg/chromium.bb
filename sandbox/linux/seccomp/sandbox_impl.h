@@ -139,6 +139,10 @@ class Sandbox {
   STATIC ssize_t sandbox_recvmsg(int, struct msghdr*, int)
                                          asm("playground$sandbox_recvmsg");
   #endif
+  #if defined(__NR_rt_sigaction)
+  STATIC long sandbox_rt_sigaction(int, const void*, void*, size_t)
+                                        asm("playground$sandbox_rt_sigaction");
+  #endif
   #if defined(__NR_rt_sigprocmask)
   STATIC long sandbox_rt_sigprocmask(int how, const void*, void*, size_t)
                                       asm("playground$sandbox_rt_sigprocmask");
@@ -161,6 +165,14 @@ class Sandbox {
   #if defined(__NR_setsockopt)
   STATIC long sandbox_setsockopt(int, int, int, const void*, socklen_t)
                                          asm("playground$sandbox_setsockopt");
+  #endif
+  #if defined(__NR_sigaction)
+  STATIC long sandbox_sigaction(int, const void*, void*)
+                                         asm("playground$sandbox_sigaction");
+  #endif
+  #if defined(__NR_signal)
+  STATIC void* sandbox_signal(int, const void*)
+                                         asm("playground$sandbox_signal");
   #endif
   #if defined(__NR_sigprocmask)
   STATIC long sandbox_sigprocmask(int how, const void*, void*)
@@ -226,6 +238,8 @@ class Sandbox {
   STATIC bool process_shmget(int, int, int, int, SecureMemArgs*)
                                          asm("playground$process_shmget");
   #endif
+  STATIC bool process_sigaction(int, int, int, int, SecureMemArgs*)
+                                         asm("playground$process_sigaction");
   #if defined(__NR_socketcall)
   STATIC bool process_socketcall(int, int, int, int, SecureMemArgs*)
                                          asm("playground$process_socketcall");
@@ -542,6 +556,14 @@ class Sandbox {
     int how;
   } __attribute__((packed));
 
+  struct SigAction {
+    int                               sysnum;
+    int                               signum;
+    const SysCalls::kernel_sigaction* action;
+    const SysCalls::kernel_sigaction* old_action;
+    size_t                            sigsetsize;
+  } __attribute__((packed));
+
   struct Socket {
     int domain;
     int type;
@@ -656,6 +678,10 @@ class Sandbox {
   struct SocketCallArgInfo;
   static const struct SocketCallArgInfo socketCallArgInfo[];
   #endif
+
+  // We always have to intercept SIGSEGV. If the application wants to set its
+  // own SEGV handler, we forward to it whenever necessary.
+  static SysCalls::kernel_sigaction sa_segv_ asm("playground$sa_segv");
 
   // The syscall_mutex_ can only be directly accessed by the trusted process.
   // It can be accessed by the trusted thread after fork()ing and calling

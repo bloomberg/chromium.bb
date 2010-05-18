@@ -120,6 +120,9 @@ class SecureMem {
 
         // Computing the signal mask is expensive. Keep a cached copy.
         kernel_sigset_t  signalMask;
+
+        // Keep track of whether we are in a SEGV handler
+        int              inSegvHandler;
       } __attribute__((packed));
       char               scratchPage[4096];
     };

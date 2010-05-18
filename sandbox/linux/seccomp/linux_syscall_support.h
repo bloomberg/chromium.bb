@@ -66,6 +66,7 @@ extern "C" {
 #include <errno.h>
 #include <signal.h>
 #include <stdarg.h>
+#include <stddef.h>
 #include <string.h>
 #include <sys/ptrace.h>
 #include <sys/resource.h>

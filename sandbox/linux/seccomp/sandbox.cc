@@ -9,13 +9,14 @@
 namespace playground {
 
 // Global variables
-int                           Sandbox::proc_self_maps_ = -1;
-enum Sandbox::SandboxStatus   Sandbox::status_ = STATUS_UNKNOWN;
-int                           Sandbox::pid_;
-int                           Sandbox::processFdPub_;
-int                           Sandbox::cloneFdPub_;
-Sandbox::ProtectedMap         Sandbox::protectedMap_;
-std::vector<SecureMem::Args*> Sandbox::secureMemPool_;
+int                                 Sandbox::proc_self_maps_ = -1;
+enum Sandbox::SandboxStatus         Sandbox::status_ = STATUS_UNKNOWN;
+int                                 Sandbox::pid_;
+int                                 Sandbox::processFdPub_;
+int                                 Sandbox::cloneFdPub_;
+Sandbox::SysCalls::kernel_sigaction Sandbox::sa_segv_;
+Sandbox::ProtectedMap               Sandbox::protectedMap_;
+std::vector<SecureMem::Args*>       Sandbox::secureMemPool_;
 
 bool Sandbox::sendFd(int transport, int fd0, int fd1, const void* buf,
                      size_t len) {
@@ -120,10 +121,11 @@ void Sandbox::setupSignalHandlers() {
   sys.sigaction(SIGCHLD, &sa, NULL);
 
   // Set up SEGV handler for dealing with RDTSC instructions, system calls
-  // that have been rewritten to use INT0, and for sigpending() emulation.
+  // that have been rewritten to use INT0, for sigprocmask() emulation, for
+  // the creation of threads, and for user-provided SEGV handlers.
   sa.sa_sigaction_ = segv();
-  sa.sa_flags      = SA_SIGINFO;
-  sys.sigaction(SIGSEGV, &sa, NULL);
+  sa.sa_flags      = SA_SIGINFO | SA_NODEFER;
+  sys.sigaction(SIGSEGV, &sa, &sa_segv_);
 
   // Unblock SIGSEGV and SIGCHLD
   SysCalls::kernel_sigset_t mask;
@@ -263,16 +265,77 @@ void (*Sandbox::segv())(int signo, SysCalls::siginfo *context, void *unused) {
       "lea  playground$syscallWrapper(%%rip), %%rcx\n"
       "jmp  *%%rcx\n"
 
-      // This was a genuine segmentation fault. Trigger the kernel's default
-      // signal disposition. The only way we can do this from seccomp mode
-      // is by blocking the signal and retriggering it.
-   "16:mov  $2, %%edi\n"           // stderr
-      "lea  300f(%%rip), %%rsi\n"  // "Segmentation fault\n"
-      "mov  $301f-300f, %%edx\n"
-      "mov  $1, %%eax\n"           // NR_write
+      // In order to implement SA_NODEFER, we have to keep track of recursive
+      // calls to SIGSEGV handlers. This means we have to increment a counter
+      // before calling the user's signal handler, and decrement it on
+      // leaving the user's signal handler.
+      // Some signal handlers look at the return address of the signal
+      // stack, and more importantly "gdb" uses the call to rt_sigreturn()
+      // as a magic signature when doing stacktraces. So, we have to use
+      // a little more unusual code to regain control after the user's
+      // signal handler is done. We adjust the return address to point to
+      // non-executable memory. And when we trigger another SEGV we pop the
+      // extraneous signal frame and then call rt_sigreturn().
+      // N.B. We currently do not correctly adjust the SEGV counter, if the
+      // user's signal handler exits in way other than by returning (e.g. by
+      // directly calling rt_sigreturn(), or by calling siglongjmp()).
+   "16:lea  22f(%%rip), %%r14\n"
+      "cmp  %%r14, %%r15\n"
+      "jnz  17f\n"                 // check if returning from user's handler
+      "decl %%gs:0x105C-0xE0\n"    // decrement SEGV recursion counter
+      "mov  0xA8(%%rsp), %%rsp\n"  // %rsp at time of segmentation fault
+      "mov  $0xF, %%eax\n"         // NR_rt_sigreturn
       "syscall\n"
-      "orb  $4, 0x131(%%rsp)\n"    // signal mask at time of segmentation fault
+
+      // This was a genuine segmentation fault. Check Sandbox::sa_segv_ for
+      // what we are supposed to do.
+   "17:mov  playground$sa_segv@GOTPCREL(%%rip), %%rax\n"
+      "cmp  $0, 0(%%rax)\n"        // SIG_DFL
+      "jz   18f\n"
+      "cmp  $1, 0(%%rax)\n"        // SIG_IGN
+      "jnz  19f\n"                 // can't really ignore synchronous signals
+
+      // Trigger the kernel's default signal disposition. The only way we can
+      // do this from seccomp mode is by blocking the signal and retriggering
+      // it.
+   "18:orb  $4, 0x131(%%rsp)\n"    // signal mask at time of segmentation fault
       "ret\n"
+
+      // Check sa_flags:
+      //  - We can ignore SA_NOCLDSTOP, SA_NOCLDWAIT, and SA_RESTART as they
+      //    do not have any effect for SIGSEGV.
+      //  - On x86-64, we can also ignore SA_SIGINFO, as the calling
+      //    conventions for sa_handler() are a subset of the conventions for
+      //    sa_sigaction().
+      //  - We have to always register our signal handler with SA_NODEFER so
+      //    that the user's signal handler can make system calls which might
+      //    require additional help from our SEGV handler.
+      //  - If the user's signal handler wasn't supposed to be SA_NODEFER, then
+      //    we emulate this behavior by keeping track of a recursion counter.
+      //
+      // TODO(markus): If/when we add support for sigaltstack(), we have to
+      // handle SA_ONSTACK.
+   "19:cmpl $0, %%gs:0x105C-0xE0\n"// check if we failed inside of SEGV handler
+      "jnz  18b\n"                 // if so, then terminate program
+      "mov  0(%%rax), %%rbx\n"     // sa_segv_.sa_sigaction
+      "mov  8(%%rax), %%rcx\n"     // sa_segv_.sa_flags
+      "btl  $31, %%ecx\n"          // SA_RESETHAND
+      "jnc  20f\n"
+      "movq $0, 0(%%rax)\n"        // set handler to SIG_DFL
+   "20:btl  $30, %%ecx\n"          // SA_NODEFER
+      "jc   21f\n"
+      "mov  %%r14, 0(%%rsp)\n"     // trigger a SEGV on return, so that we can
+      "incl %%gs:0x105C-0xE0\n"    //   clean up state; incr. recursion counter
+   "21:jmp  *%%rbx\n"              // call user's signal handler
+
+
+      // Non-executable version of the restorer function. We use this to
+      // trigger a SEGV upon returning from the user's signal handler, giving
+      // us an ability to clean up prior to returning from the SEGV handler.
+      ".pushsection .data\n"       // move code into non-executable section
+   "22:mov  $0xF, %%rax\n"         // gdb looks for this signature when doing
+      "syscall\n"                  //   backtraces
+      ".popsection\n"
 #elif defined(__i386__)
       // Inspect instruction at the point where the segmentation fault
       // happened. If it is RDTSC, forward the request to the trusted
@@ -441,16 +504,116 @@ void (*Sandbox::segv())(int signo, SysCalls::siginfo *context, void *unused) {
    "19:call playground$syscallWrapper\n"
       "jmp  3b\n"
 
-      // This was a genuine segmentation fault. Trigger the kernel's default
-      // signal disposition. The only way we can do this from seccomp mode
-      // is by blocking the signal and retriggering it.
-   "20:mov  $2, %%ebx\n"           // stderr
-      "lea  300f, %%ecx\n"         // "Segmentation fault\n"
-      "mov  $301f-300f, %%edx\n"
-      "mov  $4, %%eax\n"           // NR_write
+      // In order to implement SA_NODEFER, we have to keep track of recursive
+      // calls to SIGSEGV handlers. This means we have to increment a counter
+      // before calling the user's signal handler, and decrement it on
+      // leaving the user's signal handler.
+      // Some signal handlers look at the return address of the signal
+      // stack, and more importantly "gdb" uses the call to {,rt_}sigreturn()
+      // as a magic signature when doing stacktraces. So, we have to use
+      // a little more unusual code to regain control after the user's
+      // signal handler is done. We adjust the return address to point to
+      // non-executable memory. And when we trigger another SEGV we pop the
+      // extraneous signal frame and then call sigreturn().
+      // N.B. We currently do not correctly adjust the SEGV counter, if the
+      // user's signal handler exits in way other than by returning (e.g. by
+      // directly calling {,rt_}sigreturn(), or by calling siglongjmp()).
+   "20:lea  30f, %%edi\n"          // rt-style restorer function
+      "lea  31f, %%esi\n"          // legacy restorer function
+      "cmp  %%ebp, %%edi\n"        // check if returning from user's handler
+      "jnz  21f\n"
+      "decl %%fs:0x1040-0x58\n"    // decrement SEGV recursion counter
+      "mov  0xC0(%%esp), %%esp\n"  // %esp at time of segmentation fault
+      "jmp  29f\n"
+   "21:cmp  %%ebp, %%esi\n"        // check if returning from user's handler
+      "jnz  22f\n"
+      "decl %%fs:0x1040-0x58\n"    // decrement SEGV recursion counter
+      "mov  0xC0(%%esp), %%esp\n"  // %esp at time of segmentation fault
+      "jmp  6b\n"
+
+      // This was a genuine segmentation fault. Check Sandbox::sa_segv_ for
+      // what we are supposed to do.
+   "22:lea  playground$sa_segv, %%eax\n"
+      "cmp  $0, 0(%%eax)\n"        // SIG_DFL
+      "jz   23f\n"
+      "cmp  $1, 0(%%eax)\n"        // SIG_IGN
+      "jnz  24f\n"                 // can't really ignore synchronous signals
+
+      // Trigger the kernel's default signal disposition. The only way we can
+      // do this from seccomp mode is by blocking the signal and retriggering
+      // it.
+   "23:orb  $4, 0xFD(%%esp)\n"     // signal mask at time of segmentation fault
+      "jmp  5b\n"
+
+      // Check sa_flags:
+      //  - We can ignore SA_NOCLDSTOP, SA_NOCLDWAIT, and SA_RESTART as they
+      //    do not have any effect for SIGSEGV.
+      //  - We have to always register our signal handler with SA_NODEFER so
+      //    that the user's signal handler can make system calls which might
+      //    require additional help from our SEGV handler.
+      //  - If the user's signal handler wasn't supposed to be SA_NODEFER, then
+      //    we emulate this behavior by keeping track of a recursion counter.
+      //
+      // TODO(markus): If/when we add support for sigaltstack(), we have to
+      // handle SA_ONSTACK.
+   "24:cmpl $0, %%fs:0x1040-0x58\n"// check if we failed inside of SEGV handler
+      "jnz  23b\n"                 // if so, then terminate program
+      "mov  0(%%eax), %%ebx\n"     // sa_segv_.sa_sigaction
+      "mov  4(%%eax), %%ecx\n"     // sa_segv_.sa_flags
+      "btl  $31, %%ecx\n"          // SA_RESETHAND
+      "jnc  25f\n"
+      "movl $0, 0(%%eax)\n"        // set handler to SIG_DFL
+   "25:btl  $30, %%ecx\n"          // SA_NODEFER
+      "jc   28f\n"
+      "btl  $2, %%ecx\n"           // SA_SIGINFO
+      "jnc  26f\n"
+      "mov  %%edi, 0(%%esp)\n"     // trigger a SEGV on return
+      "incl %%fs:0x1040-0x58\n"    // increment recursion counter
+      "jmp  *%%ebx\n"              // call user's signal handler
+   "26:mov  %%esi, 0(%%esp)\n"
+      "incl %%fs:0x1040-0x58\n"    // increment recursion counter
+
+      // We always register the signal handler to give us rt-style signal
+      // frames. But if the user asked for legacy signal frames, we must
+      // convert the signal frame prior to calling the user's signal handler.
+   "27:sub  $0x1C8, %%esp\n"       // a legacy signal stack is much larger
+      "mov  0x1CC(%%esp), %%eax\n" // push signal number
+      "push %%eax\n"
+      "mov  0x1CC(%%esp), %%eax\n" // push restorer function
+      "push %%eax\n"
+      "lea  0x274(%%esp), %%esi\n" // copy siginfo register values
+      "lea  0x8(%%esp), %%edi\n"   //     into new location
+      "mov  $22, %%ecx\n"
+      "cld\n"
+      "rep movsl\n"
+      "mov  0x2CC(%%esp), %%eax\n" // copy first half of signal mask
+      "mov  %%eax, 0x58(%%esp)\n"
+      "lea  31f, %%esi\n"
+      "lea  0x2D4(%%esp), %%edi\n" // patch up retcode magic numbers
+      "movb $2, %%cl\n"
+      "rep movsl\n"
+      "jmp  *%%ebx\n"              // call user's signal handler
+   "28:lea  6b, %%eax\n"           // set appropriate restorer function
+      "mov  %%eax, 0(%%esp)\n"
+      "btl  $2, %%ecx\n"           // SA_SIGINFO
+      "jnc  27b\n"
+      "lea  29f, %%eax\n"
+      "mov  %%eax, 0(%%esp)\n"     // set appropriate restorer function
+      "jmp  *%%ebx\n"              // call user's signal handler
+   "29:pushl $30f\n"               // emulate rt_sigreturn()
+      "jmp  5b\n"
+
+      // Non-executable versions of the restorer function. We use these to
+      // trigger a SEGV upon returning from the user's signal handler, giving
+      // us an ability to clean up prior to returning from the SEGV handler.
+      ".pushsection .data\n"       // move code into non-executable section
+   "30:mov  $173, %%eax\n"         // NR_rt_sigreturn
+      "int  $0x80\n"               // gdb looks for this signature when doing
+      ".byte 0\n"                  //   backtraces
+   "31:pop  %%eax\n"
+      "mov  $119, %%eax\n"         // NR_sigreturn
       "int  $0x80\n"
-      "orb  $4, 0xFD(%%esp)\n"     // signal mask at time of segmentation fault
-      "jmp  4b\n"
+      ".popsection\n"
 #else
 #error Unsupported target platform
 #endif
@@ -459,8 +622,6 @@ void (*Sandbox::segv())(int signo, SysCalls::siginfo *context, void *unused) {
   "100:.asciz \"RDTSC(P): Executing handler\\n\"\n"
   "200:.asciz \"INT $0x0: Executing handler\\n\"\n"
 #endif
-  "300:.ascii \"Segmentation fault\\n\"\n"
-  "301:\n"
       ".popsection\n"
   "999:pop  %0\n"
       : "=g"(fnc)

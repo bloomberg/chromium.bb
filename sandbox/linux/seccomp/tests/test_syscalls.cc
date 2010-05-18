@@ -11,16 +11,26 @@
 
 #include "sandbox_impl.h"
 
+#ifdef DEBUG
+#define MSG(fmt, ...) printf(fmt, ##__VA_ARGS__)
+#else
+#define MSG(fmt, ...) do { } while (0)
+#endif
 
 int g_intended_status_fd = -1;
 
 // Declares the wait() status that the test subprocess intends to exit with.
-void intend_exit_status(int val) {
+void intend_exit_status(int val, bool is_signal) {
+  if (is_signal) {
+    val = W_EXITCODE(0, val);
+  } else {
+    val = W_EXITCODE(val, 0);
+  }
   if (g_intended_status_fd != -1) {
     int sent = write(g_intended_status_fd, &val, sizeof(val));
     assert(sent == sizeof(val));
-  }
-  else {
+  } else {
+    // This prints in cases where we run one test without forking
     printf("Intending to exit with status %i...\n", val);
   }
 }
@@ -39,21 +49,23 @@ TEST(test_dup) {
 }
 
 TEST(test_segfault) {
+  StartSeccompSandbox();
   // Check that the sandbox's SIGSEGV handler does not stop the
   // process from dying cleanly in the event of a real segfault.
-  intend_exit_status(SIGSEGV);
+  intend_exit_status(SIGSEGV, true);
   asm("hlt");
 }
 
 TEST(test_exit) {
-  intend_exit_status(123 << 8);
+  StartSeccompSandbox();
+  intend_exit_status(123, false);
   _exit(123);
 }
 
 // This has an off-by-three error because it counts ".", "..", and the
 // FD for the /proc/self/fd directory.  This doesn't matter because it
 // is only used to check for differences in the number of open FDs.
-int count_fds() {
+static int count_fds() {
   DIR *dir = opendir("/proc/self/fd");
   assert(dir != NULL);
   int count = 0;
@@ -68,10 +80,10 @@ int count_fds() {
   return count;
 }
 
-void *thread_func(void *x) {
+static void *thread_func(void *x) {
   int *ptr = (int *) x;
   *ptr = 123;
-  printf("In new thread\n");
+  MSG("In new thread\n");
   return (void *) 456;
 }
 
@@ -82,7 +94,7 @@ TEST(test_thread) {
   int x = 999;
   void *result;
   pthread_create(&tid, NULL, thread_func, &x);
-  printf("Waiting for thread\n");
+  MSG("Waiting for thread\n");
   pthread_join(tid, &result);
   assert(result == (void *) 456);
   assert(x == 123);
@@ -91,10 +103,10 @@ TEST(test_thread) {
   assert(fd_count2 == fd_count1);
 }
 
-int clone_func(void *x) {
+static int clone_func(void *x) {
   int *ptr = (int *) x;
   *ptr = 124;
-  printf("In thread\n");
+  MSG("In thread\n");
   // On x86-64, returning from this function calls the __NR_exit_group
   // syscall instead of __NR_exit.
   syscall(__NR_exit, 100);
@@ -103,14 +115,14 @@ int clone_func(void *x) {
 }
 
 #if defined(__i386__)
-int get_gs() {
+static int get_gs() {
   int gs;
   asm volatile("mov %%gs, %0" : "=r"(gs));
   return gs;
 }
 #endif
 
-void *get_tls_base() {
+static void *get_tls_base() {
   void *base;
 #if defined(__x86_64__)
   asm volatile("mov %%fs:0, %0" : "=r"(base));
@@ -167,7 +179,7 @@ TEST(test_clone) {
   assert(fd_count2 == fd_count1);
 }
 
-int uncalled_clone_func(void *x) {
+static int uncalled_clone_func(void *x) {
   printf("In thread func, which shouldn't happen\n");
   return 1;
 }
@@ -187,10 +199,10 @@ TEST(test_clone_disallowed_flags) {
   assert(errno == EPERM);
 }
 
-void *fp_thread(void *x) {
+static void *fp_thread(void *x) {
   int val;
   asm("movss %%xmm0, %0" : "=m"(val));
-  printf("val=%i\n", val);
+  MSG("val=%i\n", val);
   return NULL;
 }
 
@@ -201,10 +213,10 @@ TEST(test_fp_regs) {
   pthread_t tid;
   pthread_create(&tid, NULL, fp_thread, NULL);
   pthread_join(tid, NULL);
-  printf("thread done OK\n");
+  MSG("thread done OK\n");
 }
 
-long long read_tsc() {
+static long long read_tsc() {
   long long rc;
   asm volatile(
       "rdtsc\n"
@@ -240,7 +252,7 @@ TEST(test_gettid) {
   assert(tid1 == tid2);
 }
 
-void *map_something() {
+static void *map_something() {
   void *addr = mmap(NULL, 0x1000, PROT_READ,
                     MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
   assert(addr != MAP_FAILED);
@@ -298,7 +310,7 @@ TEST(test_mprotect_disallowed) {
   assert(errno == EINVAL);
 }
 
-int get_tty_fd() {
+static int get_tty_fd() {
   int master_fd, tty_fd;
   int rc = openpty(&master_fd, &tty_fd, NULL, NULL, NULL);
   assert(rc == 0);
@@ -365,16 +377,83 @@ TEST(test_stat) {
   assert(errno == EACCES);
 }
 
-int g_value;
+static int g_value;
 
-void signal_handler(int sig) {
+static void signal_handler(int sig) {
   g_value = 300;
-  printf("In signal handler\n");
+  MSG("In signal handler\n");
 }
 
-void sigaction_handler(int sig, siginfo_t *a, void *b) {
+static void sigaction_handler(int sig, siginfo_t *a, void *b) {
   g_value = 300;
-  printf("In sigaction handler\n");
+  MSG("In sigaction handler\n");
+}
+
+static void (*g_sig_handler_ptr)(int sig, void *addr) asm("g_sig_handler_ptr");
+
+static void non_fatal_sig_handler(int sig, void *addr) {
+  g_value = 300;
+  MSG("Caught signal %d at %p\n", sig, addr);
+}
+
+static void fatal_sig_handler(int sig, void *addr) {
+  // Recursively trigger another segmentation fault while already in the SEGV
+  // handler. This should terminate the program if SIGSEGV is marked as a
+  // deferred signal.
+  // Only do this on the first entry to this function. Otherwise, the signal
+  // handler was probably marked as SA_NODEFER and we want to continue
+  // execution.
+  if (!g_value++) {
+    MSG("Caught signal %d at %p\n", sig, addr);
+    if (sig == SIGSEGV) {
+      asm volatile("hlt");
+    } else {
+      asm volatile("int3");
+    }
+  }
+}
+
+static void (*generic_signal_handler(void))
+  (int signo, siginfo_t *info, void *context) {
+  void (*hdl)(int, siginfo_t *, void *);
+  asm volatile(
+    "lea  0f, %0\n"
+    "jmp  999f\n"
+  "0:\n"
+
+#if defined(__x86_64__)
+    "mov  0xB0(%%rsp), %%rsi\n"    // Pass original %rip to signal handler
+    "cmpb $0xF4, 0(%%rsi)\n"       // hlt
+    "jnz   1f\n"
+    "addq $1, 0xB0(%%rsp)\n"       // Adjust %eip past failing instruction
+  "1:jmp  *g_sig_handler_ptr\n"    // Call actual signal handler
+#elif defined(__i386__)
+    // TODO(markus): We currently don't guarantee that signal handlers always
+    //               have the correct "magic" restorer function. If we fix
+    //               this, we should add a test for it (both for SEGV and
+    //               non-SEGV).
+    "cmpw $0, 0xA(%%esp)\n"
+    "lea  0x40(%%esp), %%eax\n"    // %eip at time of exception
+    "jz   1f\n"
+    "add  $0x9C, %%eax\n"          // %eip at time of exception
+  "1:mov  0(%%eax), %%ecx\n"
+    "cmpb $0xF4, 0(%%ecx)\n"       // hlt
+    "jnz   2f\n"
+    "addl $1, 0(%%eax)\n"          // Adjust %eip past failing instruction
+  "2:push %%ecx\n"                 // Pass original %eip to signal handler
+    "mov  8(%%esp), %%eax\n"
+    "push %%eax\n"                 // Pass signal number to signal handler
+    "call *g_sig_handler_ptr\n"    // Call actual signal handler
+    "pop  %%eax\n"
+    "pop  %%ecx\n"
+    "ret\n"
+#else
+#error Unsupported target platform
+#endif
+
+"999:\n"
+    : "=r"(hdl));
+  return hdl;
 }
 
 TEST(test_signal_handler) {
@@ -383,10 +462,8 @@ TEST(test_signal_handler) {
 
   StartSeccompSandbox();
 
-  // signal() is not allowed inside the sandbox yet.
   result = signal(SIGTRAP, signal_handler);
-  assert(result == SIG_ERR);
-  assert(errno == ENOSYS);
+  assert(result != SIG_ERR);
 
   g_value = 200;
   asm("int3");
@@ -403,10 +480,8 @@ TEST(test_sigaction_handler) {
 
   StartSeccompSandbox();
 
-  // sigaction() is not allowed inside the sandbox yet.
   rc = sigaction(SIGTRAP, &act, NULL);
-  assert(rc == -1);
-  assert(errno == ENOSYS);
+  assert(rc == 0);
 
   g_value = 200;
   asm("int3");
@@ -437,7 +512,7 @@ TEST(test_blocked_signal) {
   assert(sigismember(&sigs, SIGTRAP));
 
   // Check that the signal handler really is blocked.
-  intend_exit_status(SIGTRAP);
+  intend_exit_status(SIGTRAP, true);
   asm("int3");
 }
 
@@ -455,6 +530,105 @@ TEST(test_sigaltstack) {
   assert(errno == ENOSYS);
 }
 
+TEST(test_sa_flags) {
+  StartSeccompSandbox();
+  int flags[4] = { 0, SA_NODEFER, SA_SIGINFO, SA_SIGINFO | SA_NODEFER };
+  for (int i = 0; i < 4; ++i) {
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_sigaction = generic_signal_handler();
+    g_sig_handler_ptr = non_fatal_sig_handler;
+    sa.sa_flags = flags[i];
+
+    // Test SEGV handling
+    g_value = 200;
+    sigaction(SIGSEGV, &sa, NULL);
+    asm volatile("hlt");
+    assert(g_value == 300);
+
+    // Test non-SEGV handling
+    g_value = 200;
+    sigaction(SIGTRAP, &sa, NULL);
+    asm volatile("int3");
+    assert(g_value == 300);
+  }
+}
+
+TEST(test_segv_defer) {
+  StartSeccompSandbox();
+  struct sigaction sa;
+  memset(&sa, 0, sizeof(sa));
+  sa.sa_sigaction = generic_signal_handler();
+  g_sig_handler_ptr = fatal_sig_handler;
+
+  // Test non-deferred SEGV (should continue execution)
+  sa.sa_flags = SA_NODEFER;
+  sigaction(SIGSEGV, &sa, NULL);
+  g_value = 0;
+  asm volatile("hlt");
+
+  // Test deferred SEGV (should terminate program)
+  sa.sa_flags = 0;
+  sigaction(SIGSEGV, &sa, NULL);
+  g_value = 0;
+  intend_exit_status(SIGSEGV, true);
+  asm volatile("hlt");
+}
+
+TEST(test_trap_defer) {
+  StartSeccompSandbox();
+  struct sigaction sa;
+  memset(&sa, 0, sizeof(sa));
+  sa.sa_sigaction = generic_signal_handler();
+  g_sig_handler_ptr = fatal_sig_handler;
+
+  // Test non-deferred TRAP (should continue execution)
+  sa.sa_flags = SA_NODEFER;
+  sigaction(SIGTRAP, &sa, NULL);
+  g_value = 0;
+  asm volatile("int3");
+
+  // Test deferred TRAP (should terminate program)
+  sa.sa_flags = 0;
+  sigaction(SIGTRAP, &sa, NULL);
+  g_value = 0;
+  intend_exit_status(SIGTRAP, true);
+  asm volatile("int3");
+}
+
+TEST(test_segv_resethand) {
+  StartSeccompSandbox();
+  struct sigaction sa;
+  memset(&sa, 0, sizeof(sa));
+  sa.sa_sigaction = generic_signal_handler();
+  g_sig_handler_ptr = non_fatal_sig_handler;
+  sa.sa_flags = SA_RESETHAND;
+  sigaction(SIGSEGV, &sa, NULL);
+
+  // Test first invocation of signal handler (should continue execution)
+  asm volatile("hlt");
+
+  // Test second invocation of signal handler (should terminate program)
+  intend_exit_status(SIGSEGV, true);
+  asm volatile("hlt");
+}
+
+TEST(test_trap_resethand) {
+  StartSeccompSandbox();
+  struct sigaction sa;
+  memset(&sa, 0, sizeof(sa));
+  sa.sa_sigaction = generic_signal_handler();
+  g_sig_handler_ptr = non_fatal_sig_handler;
+  sa.sa_flags = SA_RESETHAND;
+  sigaction(SIGTRAP, &sa, NULL);
+
+  // Test first invocation of signal handler (should continue execution)
+  asm volatile("int3");
+
+  // Test second invocation of signal handler (should terminate program)
+  intend_exit_status(SIGTRAP, true);
+  asm volatile("int3");
+}
 
 struct testcase {
   const char *test_name;
@@ -466,7 +640,7 @@ struct testcase all_tests[] = {
   { NULL, NULL },
 };
 
-int run_test_forked(struct testcase *test) {
+static int run_test_forked(struct testcase *test) {
   printf("** %s\n", test->test_name);
   int pipe_fds[2];
   int rc = pipe(pipe_fds);
@@ -478,7 +652,7 @@ int run_test_forked(struct testcase *test) {
     g_intended_status_fd = pipe_fds[1];
 
     test->test_func();
-    intend_exit_status(0);
+    intend_exit_status(0, false);
     _exit(0);
   }
   rc = close(pipe_fds[1]);
@@ -498,7 +672,7 @@ int run_test_forked(struct testcase *test) {
     printf("Test returned exit status %i\n", status);
     return 1;
   }
-  else if (status != intended_status) {
+  else if ((status & ~WCOREFLAG) != intended_status) {
     printf("Test failed with exit status %i, expected %i\n",
            status, intended_status);
     return 1;
@@ -508,7 +682,7 @@ int run_test_forked(struct testcase *test) {
   }
 }
 
-int run_test_by_name(const char *name) {
+static int run_test_by_name(const char *name) {
   struct testcase *test;
   for (test = all_tests; test->test_name != NULL; test++) {
     if (strcmp(name, test->test_name) == 0) {
@@ -523,6 +697,8 @@ int run_test_by_name(const char *name) {
 }
 
 int main(int argc, char **argv) {
+  setvbuf(stdout, NULL, _IONBF, 0);
+  setvbuf(stderr, NULL, _IONBF, 0);
   if (argc == 2) {
     // Run one test without forking, to aid debugging.
     return run_test_by_name(argv[1]);
