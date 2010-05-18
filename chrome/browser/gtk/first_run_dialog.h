@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 typedef struct _GtkButton GtkButton;
 typedef struct _GtkWidget GtkWidget;
 
+#include "app/gtk_signal.h"
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/importer/importer.h"
 
@@ -16,7 +17,7 @@ class FirstRunDialog : public ImportObserver {
   // Displays the first run UI for reporting opt-in, import data etc.
   static bool Show(Profile* profile, ProcessSingleton* process_singleton);
 
-  // Overridden methods from ImportObserver.
+  // Overridden from ImportObserver:
   virtual void ImportCanceled() {
     FirstRunDone();
   }
@@ -26,16 +27,10 @@ class FirstRunDialog : public ImportObserver {
 
  private:
   FirstRunDialog(Profile* profile, int& response);
-  ~FirstRunDialog() { }
+  ~FirstRunDialog() {}
 
-  static void HandleOnResponseDialog(GtkWidget* widget,
-                                     int response,
-                                     FirstRunDialog* user_data) {
-    user_data->OnDialogResponse(widget, response);
-  }
-  void OnDialogResponse(GtkWidget* widget, int response);
-  static void OnLearnMoreLinkClicked(GtkButton *button,
-                                     FirstRunDialog* first_run);
+  CHROMEGTK_CALLBACK_1(FirstRunDialog, void, OnResponseDialog, int);
+  CHROMEG_CALLBACK_0(FirstRunDialog, void, OnLearnMoreLinkClicked, GtkButton*);
 
   // This method closes the first run window and quits the message loop so that
   // the Chrome startup can continue. This should be called when all the
