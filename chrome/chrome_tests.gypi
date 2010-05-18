@@ -2320,17 +2320,56 @@
         },  # target 'pyautolib'
       ]  # targets
     }],
+    # To enable the coverage targets, do
+    #    GYP_DEFINES='coverage=1' gclient sync
+    # To match the coverage buildbot more closely, do this:
+    #    GYP_DEFINES='coverage=1 enable_svg=0 fastbuild=1' gclient sync
+    # (and, on MacOS, be sure to switch your SDK from "Base SDK" to "Mac OS X 10.6")
     ['coverage!=0',
       { 'targets': [
         {
+          ### Coverage BUILD AND RUN.
+          ### Not named coverage_build_and_run for historical reasons.
           'target_name': 'coverage',
+          'dependencies': [ 'coverage_build', 'coverage_run' ],
           # do NOT place this in the 'all' list; most won't want it.
           # In gyp, booleans are 0/1 not True/False.
           'suppress_wildcard': 1,
           'type': 'none',
-          # Cross platform test bundles.  If you add new tests you may
-          # need to update the croc configs.  For example, see the
-          # first regexp in build/(linux|mac|win)/chrome_*.croc.
+          'actions': [
+            {
+              'message': 'Coverage is now complete.',
+              # MSVS must have an input file and an output file.
+              'inputs': [ '<(PRODUCT_DIR)/coverage.info' ],
+              'outputs': [ '<(PRODUCT_DIR)/coverage-build-and-run.stamp' ],
+              'action_name': 'coverage',
+              # Wish gyp had some basic builtin commands (e.g. 'touch').
+              'action': [ 'python', '-c',
+                          'import os; ' +
+                          'open(' +
+                          '\'<(PRODUCT_DIR)\' + os.path.sep + ' +
+                          '\'coverage-build-and-run.stamp\'' +
+                          ', \'w\').close()' ],
+              # Use outputs of this action as inputs for the main target build.
+              # Seems as a misnomer but makes this happy on Linux (scons).
+              'process_outputs_as_sources': 1,
+            },
+          ],  # 'actions'
+        },
+        ### Coverage BUILD.  Compile only; does not run the bundles.
+        ### Intended as the build phase for our coverage bots.
+        ###
+        ### Builds unit test bundles needed for coverage.
+        ### Outputs this list of bundles into coverage_bundles.py.
+        ###
+        ### If you want to both build and run coverage from your IDE,
+        ### use the 'coverage' target.
+        {
+          'target_name': 'coverage_build',
+          # do NOT place this in the 'all' list; most won't want it.
+          # In gyp, booleans are 0/1 not True/False.
+          'suppress_wildcard': 1,
+          'type': 'none',
           'dependencies': [
             'automated_ui_tests',
             '../app/app.gyp:app_unittests',
@@ -2347,49 +2386,78 @@
             # investigate why.
             # 'ui_tests',
             'unit_tests',
-          ],
-          # Platform specific unit test bundles.  Unless staging
-          # a checkin, please add a comment describing why your test is
-          # in here and is not cross-platform.
+          ],  # 'dependencies'
           'conditions': [
             ['OS=="win"', {
-              'dependencies': [
+              'coverage_bundles': [
                 # Courgette has not been ported from Windows.
                 # Note build/win/chrome_win.croc uniquely has the
                 # courgette source directory in an include path.
                 '../courgette/courgette.gyp:courgette_unittests',
-              ],
-            }],
+                ]}],
             ['OS=="linux"', {
-              'dependencies': [
-                # Placeholder; empty for now.
-              ],
-            }],
+              'coverage_bundles': [
+              # Placeholder; empty for now.
+              ]}],
             ['OS=="mac"', {
-              'dependencies': [
-                # Placeholder; empty for now.
-              ],
-            }],
-          ],
-
+              'coverage_bundles': [
+              # Placeholder; empty for now.
+              ]}],
+          ],  # 'conditions'
           'actions': [
             {
               # 'message' for Linux/scons in particular.  Scons
               # requires the 'coverage' target be run from within
               # src/chrome.
-              'message': 'Running coverage_posix.py to generate coverage numbers',
+              'message': 'Compiling coverage bundles.',
               # MSVS must have an input file and an output file.
               'inputs': [ '../tools/code_coverage/coverage_posix.py' ],
+              'outputs': [ '<(PRODUCT_DIR)/coverage_bundles.py' ],
+              'action_name': 'coverage_build',
+              'action': [ 'python', '-c',
+                          'import os; '
+                          'f = open(' +
+                          '\'<(PRODUCT_DIR)\' + os.path.sep + ' +
+                          '\'coverage_bundles.py\'' +
+                          ', \'w\'); ' +
+                          'deplist = \'' + '<@(_dependencies)' + '\'.split(\' \'); ' +
+                          'f.write(str(deplist)); ' +
+                          'f.close()'],
+              # Use outputs of this action as inputs for the main target build.
+              # Seems as a misnomer but makes this happy on Linux (scons).
+              'process_outputs_as_sources': 1,
+            },
+          ],  # 'actions'
+        },
+        ### Coverage RUN.  Does not compile the bundles.  Mirrors the
+        ### run_coverage_bundles buildbot phase.  If you update this
+        ### command update the mirror in
+        ### $BUILDBOT/scripts/master/factory/chromium_commands.py.
+        ### If you want both build and run, use the 'coverage' target.
+        {
+          'target_name': 'coverage_run',
+          # do NOT place this in the 'all' list; most won't want it.
+          # In gyp, booleans are 0/1 not True/False.
+          'suppress_wildcard': 1,
+          'type': 'none',
+          'actions': [
+            {
+              # 'message' for Linux/scons in particular.  Scons
+              # requires the 'coverage' target be run from within
+              # src/chrome.
+              'message': 'Running the coverage script.  NOT building anything.',
+              # MSVS must have an input file and an output file.
+              'inputs': [ '<(PRODUCT_DIR)/coverage_bundles.py' ],
               'outputs': [ '<(PRODUCT_DIR)/coverage.info' ],
-              'action_name': 'coverage',
+              'action_name': 'coverage_run',
               'action': [ 'python',
                           '../tools/code_coverage/coverage_posix.py',
                           '--directory',
                           '<(PRODUCT_DIR)',
                           '--src_root',
                           '..',
-                          '--',
-                          '<@(_dependencies)'],
+                          '--bundles',
+                          '<(PRODUCT_DIR)/coverage_bundles.py'],
               # Use outputs of this action as inputs for the main target build.
               # Seems as a misnomer but makes this happy on Linux (scons).
               'process_outputs_as_sources': 1,

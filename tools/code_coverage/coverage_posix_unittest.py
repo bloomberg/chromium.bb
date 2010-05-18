@@ -3,16 +3,52 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Unit tests for coverage_posix.py."""
+"""Unit tests for coverage_posix.py.
+
+Run a single test with a command such as:
+  ./coverage_posix_unittest.py CoveragePosixTest.testFindTestsAsArgs
+
+Waring that running a single test like that may interfere with the arg
+parsing tests, since coverage_posix.py uses optparse.OptionParser()
+which references globals.
+"""
 
 import coverage_posix as coverage
+import os
 import sys
+import tempfile
 import unittest
 
 class CoveragePosixTest(unittest.TestCase):
 
+
   def setUp(self):
     self.parseArgs()
+    self.sample_test_names = ['zippy_tests', '../base/base.gyp:base_unittests']
+
+  def confirmSampleTestsArePresent(self, tests):
+    """Confirm the tests in self.sample_test_names are in some form in 'tests'.
+
+    The Coverage object can munge them (e.g. add .exe to the end as needed.
+    Helper function for arg parsing, bundle file tests.
+
+    Args:
+      tests: the parsed tests from a Coverage object.
+    """
+    for simple_test_name in ('zippy_tests', 'base_unittests'):
+      found = False
+      for item in tests:
+        if simple_test_name in item:
+          found = True
+          break
+      self.assertTrue(found)
+    for not_test_name in ('kablammo', 'not_a_unittest'):
+      found = False
+      for item in tests:
+        if not_test_name in item:
+          found = True
+          break
+      self.assertFalse(found)
 
   def parseArgs(self):
     """Setup and process arg parsing."""
@@ -66,6 +102,26 @@ class CoveragePosixTest(unittest.TestCase):
     self.assertRaises(Exception,
                       c.Run,
                       [sys.executable, '-u', '-c', slowscript])
+
+  def testFindTestsAsArgs(self):
+    """Test finding of tests passed as args."""
+    self.args += '--'
+    self.args += self.sample_test_names
+    c = coverage.Coverage('.', self.options, self.args)
+    c.FindTests()
+    self.confirmSampleTestsArePresent(c.tests)
+
+  def testFindTestsFromBundleFile(self):
+    """Test finding of tests from a bundlefile."""
+    (fd, filename) = tempfile.mkstemp()
+    f = os.fdopen(fd, 'w')
+    f.write(str(self.sample_test_names))
+    f.close()
+    self.options.bundles = filename
+    c = coverage.Coverage('.', self.options, self.args)
+    c.FindTests()
+    self.confirmSampleTestsArePresent(c.tests)
+    os.unlink(filename)
 
 
 if __name__ == '__main__':

@@ -48,6 +48,11 @@ Linux:
 --timeout=SECS: if a subprocess doesn't have output within SECS,
   assume it's a hang.  Kill it and give up.
 
+--bundles=BUNDLEFILE: a file containing a python list of coverage
+  bundles to be eval'd.  E.g.
+    ['../base/base.gyp:base_unittests']
+  This is used as part of the coverage bot.
+
 Strings after all options are considered tests to run.  Test names
 have all text before a ':' stripped to help with gyp compatibility.
 For example, ../base/base.gyp:base_unittests is interpreted as a test
@@ -235,9 +240,28 @@ class Coverage(object):
     if self.options.all_unittests:
       self.tests += glob.glob(os.path.join(self.directory, '*_unittests'))
 
+    # Tests can come in as args or as a file of bundles.
+    all_testnames = self.args[:]  # Copy since we might modify
+    tests_from_bundles = None
+    if self.options.bundles:
+      try:
+        tests_from_bundles = eval(open(self.options.bundles).read())
+      except IOError:
+        logging.fatal('IO error in bundle file ' +
+                      self.options.bundles + ' (doesn\'t exist?)')
+      except NameError, SyntaxError:
+        logging.fatal('Parse or syntax error in bundle file ' +
+                      self.options.bundles)
+      if hasattr(tests_from_bundles, '__iter__'):
+        all_testnames += tests_from_bundles
+      else:
+        logging.fatal('Fatal error with bundle file; could not get list from' +
+                      self.options.bundles)
+        sys.exit(1)
+
     # If told explicit tests, run those (after stripping the name as
     # appropriate)
-    for testname in self.args:
+    for testname in all_testnames:
       if ':' in testname:
         self.tests += [os.path.join(self.directory, testname.split(':')[1])]
       else:
@@ -582,6 +606,11 @@ def CoverageOptionParser():
                     default=9.9 * 60.0,
                     help='Timeout before bailing if a subprocess has no output.'
                     '  Default is a hair under 10min  (Buildbot is 10min.)')
+  parser.add_option('-B',
+                    '--bundles',
+                    dest='bundles',
+                    default=None,
+                    help='Filename of bundles for coverage.')
   return parser
 
 
