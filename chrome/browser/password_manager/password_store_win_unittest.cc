@@ -258,7 +258,7 @@ TEST_F(PasswordStoreWinTest, OutstandingWDSQueries) {
   MessageLoop::current()->RunAllPending();
 }
 
-TEST_F(PasswordStoreWinTest, MultipleWDSQueriesOnDifferentThreads) {
+TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
   IE7PasswordInfo password_info;
   ASSERT_TRUE(CreateIE7PasswordInfo(L"http://example.com/origin",
                                     base::Time::FromDoubleT(1),
