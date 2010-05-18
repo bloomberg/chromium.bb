@@ -97,18 +97,15 @@
 }
 
 // The the bookmark's URL is assumed to be valid (otherwise the OK button
-// should not be enabled).  If the bookmark previously existed then it is
-// removed from its old folder.  The bookmark is then added to its new
-// folder.  If the folder has not changed then the bookmark stays in its
-// original position (index) otherwise it is added to the end of the new
-// folder.  Called by -[BookmarkEditorBaseController ok:].
+// should not be enabled). Previously existing bookmarks for which the
+// parent has not changed are updated in-place. Those for which the parent
+// has changed are removed with a new node created under the new parent.
+// Called by -[BookmarkEditorBaseController ok:].
 - (NSNumber*)didCommit {
   NSString* name = [[self displayName] stringByTrimmingCharactersInSet:
                     [NSCharacterSet newlineCharacterSet]];
   std::wstring newTitle = base::SysNSStringToWide(name);
   const BookmarkNode* newParentNode = [self selectedNode];
-  BookmarkModel* model = [self bookmarkModel];
-  int newIndex = newParentNode->GetChildCount();
   GURL newURL = [self GURLFromUrlField];
   if (!newURL.is_valid()) {
     // Shouldn't be reached -- OK button should be disabled if not valid!
@@ -117,17 +114,22 @@
   }
 
   // Determine where the new/replacement bookmark is to go.
-  const BookmarkNode* parentNode = [self parentNode];
-  if (node_ && parentNode) {
-    // Replace the old bookmark with the updated bookmark.
-    int oldIndex = parentNode->IndexOfChild(node_);
-    if (oldIndex >= 0)
-      model->Remove(parentNode, oldIndex);
-    if (parentNode == newParentNode)
-      newIndex = oldIndex;
+  BookmarkModel* model = [self bookmarkModel];
+  // If there was an old node then we update the node, and move it to its new
+  // parent if the parent has changed (rather than deleting it from the old
+  // parent and adding to the new -- which also prevents the 'poofing' that
+  // occurs when a node is deleted).
+  if (node_) {
+    model->SetURL(node_, newURL);
+    model->SetTitle(node_, newTitle);
+    const BookmarkNode* oldParentNode = [self parentNode];
+    if (newParentNode != oldParentNode)
+      model->Move(node_, newParentNode, newParentNode->GetChildCount());
+  } else {
+    // Otherwise, add a new bookmark at the end of the newly selected folder.
+    model->AddURL(newParentNode, newParentNode->GetChildCount(), newTitle,
+                  newURL);
   }
-  // Add bookmark as new node at the end of the newly selected folder.
-  model->AddURL(newParentNode, newIndex, newTitle, newURL);
   return [NSNumber numberWithBool:YES];
 }
 
