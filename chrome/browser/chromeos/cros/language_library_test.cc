@@ -38,6 +38,8 @@ TEST(LanguageLibraryTest, GetLanguageCodeFromDescriptor) {
       InputMethodDescriptor("anthy", "Anthy", "us", "ja")));
   EXPECT_EQ("zh-TW", LanguageLibrary::GetLanguageCodeFromDescriptor(
       InputMethodDescriptor("chewing", "Chewing", "us", "zh")));
+  EXPECT_EQ("zh-CN", LanguageLibrary::GetLanguageCodeFromDescriptor(
+      InputMethodDescriptor("pinyin", "Pinyin", "us", "zh")));
   EXPECT_EQ("en-US", LanguageLibrary::GetLanguageCodeFromDescriptor(
       InputMethodDescriptor("xkb:us::eng", "USA", "us", "eng")));
   EXPECT_EQ("en-UK", LanguageLibrary::GetLanguageCodeFromDescriptor(
