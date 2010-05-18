@@ -983,6 +983,21 @@ function getPathAndFilenameForPath(path) {
   return path.match(/(.*)[\/\\]([^\/\\]+\.\w+)$/);
 }
 
+function newDownload(results) {
+  for (var x = 0; x < results.length; x++) {
+    var element = $(results[x].file_path);
+    if (!element && results[x].state != 'CANCELLED') {
+      var extracted = getPathAndFilenameForPath(results[x].file_path);
+      var dirId = $('list/dir/' + extracted[1]);
+      if (dirId) {
+        element = createNewItem(extracted[2], results[x].file_path, false);
+        dirId.appendChild(element);
+        element.scrollIntoView();
+      }
+    }
+  }
+}
+
 function downloadUpdated(results) {
   for (var x = 0; x < results.length; x++) {
     var element = $(results[x].file_path);

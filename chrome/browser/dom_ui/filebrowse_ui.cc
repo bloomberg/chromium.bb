@@ -182,6 +182,8 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
   // Send the current list of downloads to the page.
   void SendCurrentDownloads();
 
+  void SendNewDownload(DownloadItem* download);
+
   scoped_ptr<ListValue> filelist_value_;
   FilePath currentpath_;
   Profile* profile_;
@@ -195,8 +197,9 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
 
   DownloadManager* download_manager_;
   typedef std::vector<DownloadItem*> DownloadList;
+  DownloadList active_download_items_;
   DownloadList download_items_;
-
+  bool got_first_download_list_;
   DISALLOW_COPY_AND_ASSIGN(FilebrowseHandler);
 };
 
@@ -317,7 +320,8 @@ FilebrowseHandler::FilebrowseHandler()
     : profile_(NULL),
       is_refresh_(false),
       fetch_(NULL),
-      download_manager_(NULL) {
+      download_manager_(NULL),
+      got_first_download_list_(false) {
   lister_ = NULL;
 #if defined(OS_CHROMEOS)
   chromeos::MountLibrary* lib =
@@ -603,7 +607,7 @@ void FilebrowseHandler::HandlePauseToggleDownload(const Value* value) {
 
     if (list_value->GetString(0, &str_id)) {
       id = atoi(str_id.c_str());
-      DownloadItem* item = download_items_[id];
+      DownloadItem* item = active_download_items_[id];
       item->TogglePause();
     } else {
       LOG(ERROR) << "Unable to get id for download to pause";
@@ -622,7 +626,7 @@ void FilebrowseHandler::HandleAllowDownload(const Value* value) {
 
     if (list_value->GetString(0, &str_id)) {
       id = atoi(str_id.c_str());
-      DownloadItem* item = download_items_[id];
+      DownloadItem* item = active_download_items_[id];
       download_manager_->DangerousDownloadValidated(item);
     } else {
       LOG(ERROR) << "Unable to get id for download to pause";
@@ -641,7 +645,7 @@ void FilebrowseHandler::HandleCancelDownload(const Value* value) {
 
     if (list_value->GetString(0, &str_id)) {
       id = atoi(str_id.c_str());
-      DownloadItem* item = download_items_[id];
+      DownloadItem* item = active_download_items_[id];
       item->Cancel(true);
       FilePath path = item->full_path();
       FilePath dir_path = path.DirName();
@@ -900,11 +904,12 @@ void FilebrowseHandler::HandleGetDownloads(const Value* value) {
 
 void FilebrowseHandler::ModelChanged() {
   ClearDownloadItems();
-  download_manager_->GetCurrentDownloads(this, FilePath());
+  download_manager_->GetDownloads(this, std::wstring());
 }
 
 void FilebrowseHandler::SetDownloads(std::vector<DownloadItem*>& downloads) {
   ClearDownloadItems();
+  std::vector<DownloadItem*> new_downloads;
   // Scan for any in progress downloads and add ourself to them as an observer.
   for (DownloadList::iterator it = downloads.begin();
        it != downloads.end(); ++it) {
@@ -914,11 +919,25 @@ void FilebrowseHandler::SetDownloads(std::vector<DownloadItem*>& downloads) {
     if (download->state() == DownloadItem::IN_PROGRESS ||
         download->safety_state() == DownloadItem::DANGEROUS) {
       download->AddObserver(this);
-      download_items_.push_back(download);
+      active_download_items_.push_back(download);
     }
+    DownloadList::iterator item = find(download_items_.begin(),
+                                       download_items_.end(),
+                                       download);
+    if (item == download_items_.end() && got_first_download_list_) {
+      SendNewDownload(download);
+    }
+    new_downloads.push_back(download);
   }
-
+  download_items_.swap(new_downloads);
+  got_first_download_list_ = true;
   SendCurrentDownloads();
+}
+
+void FilebrowseHandler::SendNewDownload(DownloadItem* download) {
+  ListValue results_value;
+  results_value.Append(download_util::CreateDownloadItemValue(download, -1));
+  dom_ui_->CallJavascriptFunction(L"newDownload", results_value);
 }
 
 void FilebrowseHandler::DeleteFile(const FilePath& path) {
@@ -941,11 +960,11 @@ void FilebrowseHandler::HandleDeleteFile(const Value* value) {
 
       FilePath currentpath;
       currentpath = FilePath(path);
-      for (unsigned int x = 0; x < download_items_.size(); x++) {
-        FilePath item = download_items_[x]->full_path();
+      for (unsigned int x = 0; x < active_download_items_.size(); x++) {
+        FilePath item = active_download_items_[x]->full_path();
         if (item == currentpath) {
-          download_items_[x]->Cancel(true);
-          download_items_[x]->Remove(true);
+          active_download_items_[x]->Cancel(true);
+          active_download_items_[x]->Remove(true);
           FilePath dir_path = item.DirName();
           GetChildrenForPath(dir_path, true);
           return;
@@ -967,12 +986,12 @@ void FilebrowseHandler::HandleDeleteFile(const Value* value) {
 }
 
 void FilebrowseHandler::OnDownloadUpdated(DownloadItem* download) {
-  DownloadList::iterator it = find(download_items_.begin(),
-                                   download_items_.end(),
+  DownloadList::iterator it = find(active_download_items_.begin(),
+                                   active_download_items_.end(),
                                    download);
-  if (it == download_items_.end())
+  if (it == active_download_items_.end())
     return;
-  const int id = static_cast<int>(it - download_items_.begin());
+  const int id = static_cast<int>(it - active_download_items_.begin());
 
   ListValue results_value;
   results_value.Append(download_util::CreateDownloadItemValue(download, id));
@@ -980,18 +999,18 @@ void FilebrowseHandler::OnDownloadUpdated(DownloadItem* download) {
 }
 
 void FilebrowseHandler::ClearDownloadItems() {
-  for (DownloadList::iterator it = download_items_.begin();
-      it != download_items_.end(); ++it) {
+  for (DownloadList::iterator it = active_download_items_.begin();
+      it != active_download_items_.end(); ++it) {
     (*it)->RemoveObserver(this);
   }
-  download_items_.clear();
+  active_download_items_.clear();
 }
 
 void FilebrowseHandler::SendCurrentDownloads() {
   ListValue results_value;
-  for (DownloadList::iterator it = download_items_.begin();
-      it != download_items_.end(); ++it) {
-    int index = static_cast<int>(it - download_items_.begin());
+  for (DownloadList::iterator it = active_download_items_.begin();
+      it != active_download_items_.end(); ++it) {
+    int index = static_cast<int>(it - active_download_items_.begin());
     results_value.Append(download_util::CreateDownloadItemValue(*it, index));
   }
 
