@@ -12,6 +12,20 @@
 #include "sandbox_impl.h"
 
 
+int g_intended_status_fd = -1;
+
+// Declares the wait() status that the test subprocess intends to exit with.
+void intend_exit_status(int val) {
+  if (g_intended_status_fd != -1) {
+    int sent = write(g_intended_status_fd, &val, sizeof(val));
+    assert(sent == sizeof(val));
+  }
+  else {
+    printf("Intending to exit with status %i...\n", val);
+  }
+}
+
+
 // This is basically a marker to grep for.
 #define TEST(name) void name()
 
@@ -22,6 +36,18 @@ TEST(test_dup) {
   assert(fd >= 0);
   int rc = close(fd);
   assert(rc == 0);
+}
+
+TEST(test_segfault) {
+  // Check that the sandbox's SIGSEGV handler does not stop the
+  // process from dying cleanly in the event of a real segfault.
+  intend_exit_status(SIGSEGV);
+  asm("hlt");
+}
+
+TEST(test_exit) {
+  intend_exit_status(123 << 8);
+  _exit(123);
 }
 
 // This has an off-by-three error because it counts ".", "..", and the
@@ -339,6 +365,96 @@ TEST(test_stat) {
   assert(errno == EACCES);
 }
 
+int g_value;
+
+void signal_handler(int sig) {
+  g_value = 300;
+  printf("In signal handler\n");
+}
+
+void sigaction_handler(int sig, siginfo_t *a, void *b) {
+  g_value = 300;
+  printf("In sigaction handler\n");
+}
+
+TEST(test_signal_handler) {
+  sighandler_t result = signal(SIGTRAP, signal_handler);
+  assert(result != SIG_ERR);
+
+  StartSeccompSandbox();
+
+  // signal() is not allowed inside the sandbox yet.
+  result = signal(SIGTRAP, signal_handler);
+  assert(result == SIG_ERR);
+  assert(errno == ENOSYS);
+
+  g_value = 200;
+  asm("int3");
+  assert(g_value == 300);
+}
+
+TEST(test_sigaction_handler) {
+  struct sigaction act;
+  act.sa_sigaction = sigaction_handler;
+  sigemptyset(&act.sa_mask);
+  act.sa_flags = SA_SIGINFO;
+  int rc = sigaction(SIGTRAP, &act, NULL);
+  assert(rc == 0);
+
+  StartSeccompSandbox();
+
+  // sigaction() is not allowed inside the sandbox yet.
+  rc = sigaction(SIGTRAP, &act, NULL);
+  assert(rc == -1);
+  assert(errno == ENOSYS);
+
+  g_value = 200;
+  asm("int3");
+  assert(g_value == 300);
+}
+
+TEST(test_blocked_signal) {
+  sighandler_t result = signal(SIGTRAP, signal_handler);
+  assert(result != SIG_ERR);
+  StartSeccompSandbox();
+
+  // Initially the signal should not be blocked.
+  sigset_t sigs;
+  sigfillset(&sigs);
+  int rc = sigprocmask(0, NULL, &sigs);
+  assert(rc == 0);
+  assert(!sigismember(&sigs, SIGTRAP));
+
+  sigemptyset(&sigs);
+  sigaddset(&sigs, SIGTRAP);
+  rc = sigprocmask(SIG_BLOCK, &sigs, NULL);
+  assert(rc == 0);
+
+  // Check that we can read back the blocked status.
+  sigemptyset(&sigs);
+  rc = sigprocmask(0, NULL, &sigs);
+  assert(rc == 0);
+  assert(sigismember(&sigs, SIGTRAP));
+
+  // Check that the signal handler really is blocked.
+  intend_exit_status(SIGTRAP);
+  asm("int3");
+}
+
+TEST(test_sigaltstack) {
+  // The sandbox does not support sigaltstack() yet.  Just test that
+  // it returns an error.
+  StartSeccompSandbox();
+  stack_t st;
+  st.ss_size = 0x4000;
+  st.ss_sp = malloc(st.ss_size);
+  assert(st.ss_sp != NULL);
+  st.ss_flags = 0;
+  int rc = sigaltstack(&st, NULL);
+  assert(rc == -1);
+  assert(errno == ENOSYS);
+}
+
 
 struct testcase {
   const char *test_name;
@@ -352,15 +468,39 @@ struct testcase all_tests[] = {
 
 int run_test_forked(struct testcase *test) {
   printf("** %s\n", test->test_name);
+  int pipe_fds[2];
+  int rc = pipe(pipe_fds);
+  assert(rc == 0);
   int pid = fork();
   if (pid == 0) {
+    rc = close(pipe_fds[0]);
+    assert(rc == 0);
+    g_intended_status_fd = pipe_fds[1];
+
     test->test_func();
+    intend_exit_status(0);
     _exit(0);
   }
+  rc = close(pipe_fds[1]);
+  assert(rc == 0);
+
+  int intended_status;
+  int got = read(pipe_fds[0], &intended_status, sizeof(intended_status));
+  bool got_intended_status = got == sizeof(intended_status);
+  if (!got_intended_status) {
+    printf("Test runner: Did not receive intended status\n");
+  }
+
   int status;
-  waitpid(pid, &status, 0);
-  if (status != 0) {
-    printf("Test failed with exit status %i\n", status);
+  int pid2 = waitpid(pid, &status, 0);
+  assert(pid2 == pid);
+  if (!got_intended_status) {
+    printf("Test returned exit status %i\n", status);
+    return 1;
+  }
+  else if (status != intended_status) {
+    printf("Test failed with exit status %i, expected %i\n",
+           status, intended_status);
     return 1;
   }
   else {
@@ -372,7 +512,9 @@ int run_test_by_name(const char *name) {
   struct testcase *test;
   for (test = all_tests; test->test_name != NULL; test++) {
     if (strcmp(name, test->test_name) == 0) {
+      printf("Running test %s...\n", name);
       test->test_func();
+      printf("OK\n");
       return 0;
     }
   }
