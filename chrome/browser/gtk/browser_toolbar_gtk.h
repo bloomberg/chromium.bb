@@ -141,6 +141,11 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // meun and pops up the other menu.
   void ChangeActiveMenu(GtkWidget* active_menu, guint timestamp);
 
+  // Sets the top corners of the toolbar to rounded, or sets them to normal,
+  // depending on the state of the browser window. Returns false if no action
+  // was taken (the roundedness was already correct), true otherwise.
+  bool UpdateRoundedness();
+
   // Gtk callback for the "expose-event" signal.
   // The alignment contains the toolbar.
   CHROMEGTK_CALLBACK_1(BrowserToolbarGtk, gboolean, OnAlignmentExpose,

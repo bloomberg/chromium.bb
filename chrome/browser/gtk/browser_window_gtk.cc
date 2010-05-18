@@ -441,7 +441,7 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr) {
       IDR_CONTENT_TOP_LEFT_CORNER, GTK_WIDGET(window_));
 
   int center_left_x = left_x;
-  if (UseCustomFrame()) {
+  if (ShouldDrawContentDropShadow()) {
     // Don't draw over the corners.
     center_left_x += top_left->Width() - kContentShadowThickness;
     center_width -= (top_left->Width() + top_right->Width());
@@ -454,8 +454,9 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr) {
                   center_width, top_center->Height());
   cairo_fill(cr);
 
-  // Only draw the rest of the shadow if the user has the custom frame enabled.
-  if (!UseCustomFrame())
+  // Only draw the rest of the shadow if the user has the custom frame enabled
+  // and the browser is not maximized.
+  if (!ShouldDrawContentDropShadow())
     return;
 
   // The top left corner has a width of 3 pixels. On Windows, the last column
@@ -643,12 +644,7 @@ void BrowserWindowGtk::SetBoundsImpl(const gfx::Rect& bounds, bool exterior) {
   gint width = static_cast<gint>(bounds.width());
   gint height = static_cast<gint>(bounds.height());
 
-  // For popup windows, we assume that if x == y == 0, the opening page
-  // did not specify a position.  Let the WM position the popup instead.
-  bool popup_without_position = browser_->type() & Browser::TYPE_POPUP &&
-      bounds.x() == 0 && bounds.y() == 0;
-  if (!popup_without_position)
-    gtk_window_move(window_, x, y);
+  gtk_window_move(window_, x, y);
 
   if (exterior) {
     SetWindowSize(window_, width, height);
@@ -798,6 +794,10 @@ gfx::Rect BrowserWindowGtk::GetRestoredBounds() const {
 
 bool BrowserWindowGtk::IsMaximized() const {
   return (state_ & GDK_WINDOW_STATE_MAXIMIZED);
+}
+
+bool BrowserWindowGtk::ShouldDrawContentDropShadow() {
+  return !IsMaximized() && UseCustomFrame();
 }
 
 void BrowserWindowGtk::SetFullscreen(bool fullscreen) {
@@ -1448,9 +1448,12 @@ void BrowserWindowGtk::SetGeometryHints() {
   // force the position as part of session restore, as applications
   // that restore other, similar state (for instance GIMP, audacity,
   // pidgin, dia, and gkrellm) do tend to restore their positions.
-
+  //
+  // For popup windows, we assume that if x == y == 0, the opening page
+  // did not specify a position.  Let the WM position the popup instead.
   bool is_popup = browser_->type() & Browser::TYPE_POPUP;
-  if (browser_->bounds_overridden()) {
+  bool popup_without_position = is_popup && bounds.x() == 0 && bounds.y() == 0;
+  if (browser_->bounds_overridden() && !popup_without_position) {
     // For popups, bounds are set in terms of the client area rather than the
     // entire window.
     SetBoundsImpl(bounds, !is_popup);

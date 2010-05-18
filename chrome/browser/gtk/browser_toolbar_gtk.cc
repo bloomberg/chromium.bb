@@ -33,6 +33,7 @@
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/location_bar_view_gtk.h"
+#include "chrome/browser/gtk/rounded_window.h"
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/net/url_fixer_upper.h"
@@ -63,6 +64,9 @@ const int kToolbarHeightLocationBarOnly = kToolbarHeight - 2;
 
 // Interior spacing between toolbar widgets.
 const int kToolbarWidgetSpacing = 2;
+
+// Amount of rounding on top corners of toolbar. Only used in Gtk theme mode.
+const int kToolbarCornerSize = 3;
 
 }  // namespace
 
@@ -422,8 +426,9 @@ void BrowserToolbarGtk::Observe(NotificationType type,
     // When using the GTK+ theme, we need to have the event box be visible so
     // buttons don't get a halo color from the background.  When using Chromium
     // themes, we want to let the background show through the toolbar.
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_),
-                                     theme_provider_->UseGtkTheme());
+    gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_), use_gtk);
+
+    UpdateRoundedness();
   } else {
     NOTREACHED();
   }
@@ -521,8 +526,34 @@ void BrowserToolbarGtk::ChangeActiveMenu(GtkWidget* active_menu,
   new_menu->Popup(relevant_button, 0, timestamp);
 }
 
+bool BrowserToolbarGtk::UpdateRoundedness() {
+  // We still round the corners if we are in chrome theme mode, but we do it by
+  // drawing theme resources rather than changing the physical shape of the
+  // widget.
+  bool should_be_rounded = theme_provider_->UseGtkTheme() &&
+      window_->ShouldDrawContentDropShadow();
+
+  if (should_be_rounded == gtk_util::IsActingAsRoundedWindow(alignment_))
+    return false;
+
+  if (should_be_rounded) {
+    gtk_util::ActAsRoundedWindow(alignment_, GdkColor(), kToolbarCornerSize,
+                                 gtk_util::ROUNDED_TOP,
+                                 gtk_util::BORDER_NONE);
+  } else {
+    gtk_util::StopActingAsRoundedWindow(alignment_);
+  }
+
+  return true;
+}
+
 gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
                                               GdkEventExpose* e) {
+  // We may need to update the roundedness of the toolbar's top corners. In
+  // this case, don't draw; we'll be called again soon enough.
+  if (UpdateRoundedness())
+    return TRUE;
+
   // We don't need to render the toolbar image in GTK mode.
   if (theme_provider_->UseGtkTheme())
     return FALSE;
@@ -555,7 +586,11 @@ gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
                  widget->allocation.y - kShadowThickness,
                  kCornerWidth,
                  widget->allocation.height + kShadowThickness);
-  area = area.Subtract(right).Subtract(left);
+
+  if (window_->ShouldDrawContentDropShadow()) {
+    // Leave room to draw rounded corners.
+    area = area.Subtract(right).Subtract(left);
+  }
 
   CairoCachedSurface* background = theme_provider_->GetSurfaceNamed(
       IDR_THEME_TOOLBAR, widget);
@@ -563,6 +598,12 @@ gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
   cairo_rectangle(cr, area.x(), area.y(), area.width(), area.height());
   cairo_fill(cr);
+
+  if (!window_->ShouldDrawContentDropShadow()) {
+    // The rest of this function is for rounded corners. Our work is done here.
+    cairo_destroy(cr);
+    return FALSE;
+  }
 
   bool draw_left_corner = left.Intersects(gfx::Rect(e->area));
   bool draw_right_corner = right.Intersects(gfx::Rect(e->area));

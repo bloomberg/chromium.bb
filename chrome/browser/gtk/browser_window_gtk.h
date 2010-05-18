@@ -189,6 +189,11 @@ class BrowserWindowGtk : public BrowserWindow,
 
   static void RegisterUserPrefs(PrefService* prefs);
 
+  // Returns whether to draw the content drop shadow on the sides and bottom
+  // of the browser window. When false, we still draw a shadow on the top of
+  // the toolbar (under the tab strip), but do not round the top corners.
+  bool ShouldDrawContentDropShadow();
+
  protected:
   virtual void DestroyBrowser();
   // Top level window.

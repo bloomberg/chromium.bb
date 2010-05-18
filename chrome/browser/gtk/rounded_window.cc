@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -277,6 +277,9 @@ void ActAsRoundedWindow(
 
   g_object_set_data_full(G_OBJECT(widget), kRoundedData,
                          data, FreeRoundedWindowData);
+
+  if (GTK_WIDGET_VISIBLE(widget))
+    gtk_widget_queue_draw(widget);
 }
 
 void StopActingAsRoundedWindow(GtkWidget* widget) {
@@ -284,6 +287,9 @@ void StopActingAsRoundedWindow(GtkWidget* widget) {
 
   if (GTK_WIDGET_REALIZED(widget))
     gdk_window_shape_combine_mask(widget->window, NULL, 0, 0);
+
+  if (GTK_WIDGET_VISIBLE(widget))
+    gtk_widget_queue_draw(widget);
 }
 
 bool IsActingAsRoundedWindow(GtkWidget* widget) {
