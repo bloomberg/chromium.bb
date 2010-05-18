@@ -406,7 +406,7 @@ void CandidateView::Init() {
       WrapWithPadding(shortcut_label_, insets);
   // We'll use a bigger font size, so Chinese characters are more readable
   // in the candidate window.
-  const int kFontSizeDelta = 1;  // One size bigger.
+  const int kFontSizeDelta = 2;  // Two size bigger.
   // Make the font bold, and change the size.
   shortcut_label_->SetFont(
       shortcut_label_->font().DeriveFont(kFontSizeDelta, gfx::Font::BOLD));
