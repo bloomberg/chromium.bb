@@ -37,6 +37,15 @@ function addSourceEntry_(node, sourceEntry) {
   addTextNode(pre, PrintSourceEntriesAsText(sourceEntry.getLogEntries()));
 }
 
+function canCollapseBeginWithEnd(beginEntry) {
+  return beginEntry &&
+         beginEntry.isBegin() &&
+         !beginEntry.orig.params &&
+         beginEntry.end &&
+         beginEntry.end.index == beginEntry.index + 1 &&
+         !beginEntry.end.orig.params;
+}
+
 PrintSourceEntriesAsText = function(sourceEntries) {
   var entries = LogGroupEntry.createArrayFrom(sourceEntries);
 
@@ -46,11 +55,8 @@ PrintSourceEntriesAsText = function(sourceEntries) {
     var entry = entries[i];
 
     // Avoid printing the END for a BEGIN that was immediately before.
-    // (Except if the END contains any extra parameters).
-    if (entry.isEnd() && !entry.orig.params && entry.begin &&
-        entry.begin.index == i - 1) {
+    if (entry.isEnd() && canCollapseBeginWithEnd(entry.begin))
       continue;
-    }
 
     tablePrinter.addRow();
 
@@ -198,8 +204,7 @@ function getTextForResponseHeadersExtraParam(entry) {
 function getTextForEvent(entry) {
   var text = '';
 
-  if (entry.isBegin() && entry.end && entry.end.index == entry.index + 1 &&
-      !entry.end.orig.params) {
+  if (entry.isBegin() && canCollapseBeginWithEnd(entry)) {
     // Don't prefix with '+' if we are going to collapse the END event.
     text = ' ';
   } else if (entry.isBegin()) {
