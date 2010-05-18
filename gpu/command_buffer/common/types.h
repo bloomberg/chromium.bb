@@ -19,9 +19,12 @@
 
 typedef signed char         schar;
 typedef signed char         int8;
-typedef short               int16;
 // TODO(mbelshe) Remove these type guards.  These are
 //               temporary to avoid conflicts with npapi.h.
+#ifndef _INT16
+#define _INT16
+typedef short               int16;
+#endif
 #ifndef _INT32
 #define _INT32
 typedef int                 int32;
@@ -42,9 +45,12 @@ typedef long long           int64;
 // use assertions for this.
 
 typedef unsigned char      uint8;
-typedef unsigned short     uint16;
 // TODO(mbelshe) Remove these type guards.  These are
 //               temporary to avoid conflicts with npapi.h.
+#ifndef _UINT16
+#define _UINT16
+typedef unsigned short     uint16;
+#endif
 #ifndef _UINT32
 #define _UINT32
 typedef unsigned int       uint32;
@@ -119,12 +125,12 @@ char (&ArraySizeHelper(const T (&array)[N]))[N];
 // containing the name of the variable.
 
 template <bool>
-struct CompileAssert {
+struct GpuCompileAssert {
 };
 
 #undef COMPILE_ASSERT
 #define COMPILE_ASSERT(expr, msg) \
-  typedef CompileAssert<(bool(expr))> msg[bool(expr) ? 1 : -1]
+  typedef GpuCompileAssert<(bool(expr))> msg[bool(expr) ? 1 : -1]
 
 // Implementation details of COMPILE_ASSERT:
 //
