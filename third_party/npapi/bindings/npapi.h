@@ -48,6 +48,26 @@
 
 #ifdef __native_client__
 #include <stdint.h>
+#include <sys/types.h>
+/* typedefs needed for NaCl DEPS update */
+/* TODO: convert npapi_extensions.h to int32_t, etc */
+/* and remove these typedefs */
+#ifndef _INT32
+#define _INT32
+typedef int                 int32;
+#endif
+#ifndef _UINT32
+#define _UINT32
+typedef unsigned int       uint32;
+#endif
+#ifndef _INT16
+#define _INT16
+typedef short               int16;
+#endif
+#ifndef _UINT16
+#define _UINT16
+typedef unsigned short     uint16;
+#endif
 #else
 #include "base/basictypes.h"
 #endif  /* __native_client__ */
