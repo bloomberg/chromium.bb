@@ -78,6 +78,7 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
       created_file_thread_(false),
       created_db_thread_(false),
       created_process_launcher_thread_(false),
+      created_cache_thread_(false),
       created_profile_manager_(false),
       created_local_state_(false),
       created_icon_manager_(false),
@@ -154,6 +155,9 @@ BrowserProcessImpl::~BrowserProcessImpl() {
   // io_thread_ may still deref ResourceDispatcherHost and handle resource
   // request before going away.
   io_thread_.reset();
+
+  // The IO thread was the only user of this thread.
+  cache_thread_.reset();
 
   // Stop the process launcher thread after the IO thread, in case the IO thread
   // posted a task to terminate a process on the process launcher thread.
@@ -376,6 +380,19 @@ void BrowserProcessImpl::CreateProcessLauncherThread() {
   if (!thread->Start())
     return;
   process_launcher_thread_.swap(thread);
+}
+
+void BrowserProcessImpl::CreateCacheThread() {
+  DCHECK(!created_cache_thread_ && !cache_thread_.get());
+  created_cache_thread_ = true;
+
+  scoped_ptr<base::Thread> thread(
+      new BrowserProcessSubThread(ChromeThread::CACHE));
+  base::Thread::Options options;
+  options.message_loop_type = MessageLoop::TYPE_IO;
+  if (!thread->StartWithOptions(options))
+    return;
+  cache_thread_.swap(thread);
 }
 
 void BrowserProcessImpl::CreateProfileManager() {

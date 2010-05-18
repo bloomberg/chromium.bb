@@ -61,6 +61,10 @@ class TestingBrowserProcess : public BrowserProcess {
     return NULL;
   }
 
+  virtual base::Thread* cache_thread() {
+    return NULL;
+  }
+
   virtual ProfileManager* profile_manager() {
     return NULL;
   }

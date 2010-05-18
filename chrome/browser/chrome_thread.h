@@ -55,6 +55,9 @@ class ChromeThread : public base::Thread {
     // Used to launch and terminate processes.
     PROCESS_LAUNCHER,
 
+    // This is the thread to handle slow HTTP cache operations.
+    CACHE,
+
     // This is the thread that processes IPC and network messages.
     IO,
 

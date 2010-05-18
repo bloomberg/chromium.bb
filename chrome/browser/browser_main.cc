@@ -388,6 +388,7 @@ void CreateChildThreads(BrowserProcessImpl* process) {
   process->db_thread();
   process->file_thread();
   process->process_launcher_thread();
+  process->cache_thread();
   process->io_thread();
 }
 

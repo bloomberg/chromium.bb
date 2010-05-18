@@ -76,6 +76,13 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
     return process_launcher_thread_.get();
   }
 
+  virtual base::Thread* cache_thread() {
+    DCHECK(CalledOnValidThread());
+    if (!created_cache_thread_)
+      CreateCacheThread();
+    return cache_thread_.get();
+  }
+
 #if defined(USE_X11)
   virtual base::Thread* background_x11_thread() {
     DCHECK(CalledOnValidThread());
@@ -221,6 +228,7 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   void CreateFileThread();
   void CreateDBThread();
   void CreateProcessLauncherThread();
+  void CreateCacheThread();
   void CreateTemplateURLModel();
   void CreateProfileManager();
   void CreateWebDataService();
@@ -259,6 +267,9 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
 
   bool created_process_launcher_thread_;
   scoped_ptr<base::Thread> process_launcher_thread_;
+
+  bool created_cache_thread_;
+  scoped_ptr<base::Thread> cache_thread_;
 
   bool created_profile_manager_;
   scoped_ptr<ProfileManager> profile_manager_;

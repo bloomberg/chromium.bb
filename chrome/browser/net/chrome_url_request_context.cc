@@ -247,9 +247,9 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
                          command_line,
                          MessageLoop::current() /*io_loop*/));
 
-  net::HttpCache::DefaultBackend* backend =
-      new net::HttpCache::DefaultBackend(net::DISK_CACHE, disk_cache_path_,
-                                         cache_size_, NULL);
+  net::HttpCache::DefaultBackend* backend = new net::HttpCache::DefaultBackend(
+      net::DISK_CACHE, disk_cache_path_, cache_size_,
+      ChromeThread::GetMessageLoopProxyForThread(ChromeThread::CACHE));
   net::HttpCache* cache =
       new net::HttpCache(io_thread()->globals()->network_change_notifier.get(),
                          context->host_resolver(),
@@ -446,9 +446,9 @@ ChromeURLRequestContext* FactoryForMedia::Create() {
 
   // Create a media cache with default size.
   // TODO(hclam): make the maximum size of media cache configurable.
-  net::HttpCache::DefaultBackend* backend =
-      new net::HttpCache::DefaultBackend(net::MEDIA_CACHE, disk_cache_path_,
-                                         cache_size_, NULL);
+  net::HttpCache::DefaultBackend* backend = new net::HttpCache::DefaultBackend(
+      net::MEDIA_CACHE, disk_cache_path_, cache_size_,
+      ChromeThread::GetMessageLoopProxyForThread(ChromeThread::CACHE));
 
   net::HttpCache* main_cache =
       main_context->http_transaction_factory()->GetCache();
