@@ -5,13 +5,16 @@
 #include <oleacc.h>
 
 #include "app/l10n_util.h"
+#include "base/scoped_comptr_win.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/bookmark_bar_view.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/toolbar_view.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"
+#include "chrome/test/ui_test_utils.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "views/accessibility/view_accessibility_wrapper.h"
@@ -89,7 +92,7 @@ class BrowserViewsAccessibilityTest : public InProcessBrowserTest {
                                    int32 role) {
     ASSERT_TRUE(NULL != view);
 
-    IAccessible* acc_obj = NULL;
+    ScopedComPtr<IAccessible> acc_obj;
     HRESULT hr = view->GetViewAccessibilityWrapper()->GetInstance(
         IID_IAccessible, reinterpret_cast<void**>(&acc_obj));
     ASSERT_EQ(S_OK, hr);
@@ -125,26 +128,24 @@ class BrowserViewsAccessibilityTest : public InProcessBrowserTest {
 
 // Retrieve accessibility object for main window and verify accessibility info.
 IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
-                       FLAKY_TestChromeWindowAccObj) {
+                       TestChromeWindowAccObj) {
   BrowserWindow* browser_window = browser()->window();
   ASSERT_TRUE(NULL != browser_window);
-
   HWND hwnd = browser_window->GetNativeHandle();
   ASSERT_TRUE(NULL != hwnd);
 
   // Get accessibility object.
-  IAccessible* acc_obj = NULL;
+  ScopedComPtr<IAccessible> acc_obj;
   HRESULT hr = ::AccessibleObjectFromWindow(hwnd, OBJID_WINDOW, IID_IAccessible,
                                             reinterpret_cast<void**>(&acc_obj));
   ASSERT_EQ(S_OK, hr);
   ASSERT_TRUE(NULL != acc_obj);
 
-  // TODO(ctguil): Fix. The window title could be "New Tab - Chromium" or
-  // "about:blank - Chromium"
-  TestAccessibilityInfo(acc_obj, l10n_util::GetString(IDS_PRODUCT_NAME),
-                        ROLE_SYSTEM_WINDOW);
-
-  acc_obj->Release();
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutBlankURL));
+  std::wstring title =
+      l10n_util::GetStringF(IDS_BROWSER_WINDOW_TITLE_FORMAT,
+                            ASCIIToWide(chrome::kAboutBlankURL));
+  TestAccessibilityInfo(acc_obj, title, ROLE_SYSTEM_WINDOW);
 }
 
 // Retrieve accessibility object for non client view and verify accessibility
@@ -282,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
             AccessibilityTypes::ROLE_DIALOG);
 
   // Also test the accessibility object directly.
-  IAccessible* acc_obj = NULL;
+  ScopedComPtr<IAccessible> acc_obj;
   HRESULT hr =
     ::AccessibleObjectFromWindow(aboutChromeWindow->GetNativeWindow(),
                                  OBJID_CLIENT,
@@ -293,8 +294,6 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
 
   TestAccessibilityInfo(acc_obj, l10n_util::GetString(IDS_ABOUT_CHROME_TITLE),
                         ROLE_SYSTEM_DIALOG);
-
-  acc_obj->Release();
 }
 }  // Namespace.
 
