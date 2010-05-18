@@ -156,8 +156,13 @@ class InfoBubbleDelegate {
   // Whether the InfoBubble should be closed when the Esc key is pressed.
   virtual bool CloseOnEscape() = 0;
 
-  // Whether the InfoBubble should fade away when closing.
-  virtual bool FadeOutOnClose() = 0;
+  // Whether the InfoBubble should fade in when opening. When trying to
+  // determine whether to use FadeIn, consider whether the bubble is shown as a
+  // direct result of a user action or not. For example, if the bubble is being
+  // shown as a direct result of a mouse-click, we should not use FadeIn.
+  // However, if the bubble appears as a notification that something happened
+  // in the background, we use FadeIn.
+  virtual bool FadeInOnShow() = 0;
 };
 
 // TODO(sky): this code is ifdef-tastic. It might be cleaner to refactor the
@@ -191,6 +196,14 @@ class InfoBubble
   // Resizes and potentially moves the InfoBubble to best accommodate the
   // contents preferred size.
   void SizeToContents();
+
+  // Whether the InfoBubble should fade away when it closes. Generally speaking,
+  // we use FadeOut when the user selects something within the bubble that
+  // causes the bubble to dismiss. We don't use it when the bubble gets
+  // deactivated as a result of clicking outside the bubble.
+  void set_fade_away_on_close(bool fade_away_on_close) {
+    fade_away_on_close_ = fade_away_on_close;
+  }
 
   // Overridden from WidgetWin:
   virtual void Close();
@@ -237,8 +250,13 @@ class InfoBubble
   // the close is the result of pressing escape.
   void Close(bool closed_by_escape);
 
-  // Fade out on close.
+  // Animates to a visible state.
+  void FadeIn();
+  // Animates to a hidden state.
   void FadeOut();
+
+  // Animates to a visible/hidden state (visible if |fade_in| is true).
+  void Fade(bool fade_in);
 
   // Overridden from AcceleratorTarget:
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
@@ -251,6 +269,9 @@ class InfoBubble
 
   // Have we been closed?
   bool closed_;
+
+  // Whether to fade away when the bubble closes.
+  bool fade_away_on_close_;
 
   gfx::Rect position_relative_to_;
   BubbleBorder::ArrowLocation arrow_location_;

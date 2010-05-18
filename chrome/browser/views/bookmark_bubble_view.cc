@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -148,8 +148,10 @@ void BookmarkBubbleView::Show(views::Window* parent,
     return;
 
   bubble_ = new BookmarkBubbleView(delegate, profile, url, newly_bookmarked);
-  InfoBubble::Show(parent->GetClientView()->GetWidget(), bounds,
+  InfoBubble* info_bubble =
+      InfoBubble::Show(parent->GetClientView()->GetWidget(), bounds,
                    BubbleBorder::TOP_LEFT, bubble_, bubble_);
+  bubble_->set_info_bubble(info_bubble);
   GURL url_ptr(url);
   NotificationService::current()->Notify(
       NotificationType::BOOKMARK_BUBBLE_SHOWN,
@@ -344,6 +346,7 @@ void BookmarkBubbleView::LinkActivated(Link* source, int event_flags) {
   remove_bookmark_ = true;
   apply_edits_ = false;
 
+  info_bubble_->set_fade_away_on_close(true);
   Close();
 }
 
@@ -391,9 +394,11 @@ void BookmarkBubbleView::HandleButtonPressed(views::Button* sender) {
   if (sender == edit_button_) {
     UserMetrics::RecordAction(UserMetricsAction("BookmarkBubble_Edit"),
                               profile_);
+    info_bubble_->set_fade_away_on_close(true);
     ShowEditor();
   } else {
     DCHECK(sender == close_button_);
+    info_bubble_->set_fade_away_on_close(true);
     Close();
   }
   // WARNING: we've most likely been deleted when CloseWindow returns.

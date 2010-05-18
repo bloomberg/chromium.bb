@@ -274,6 +274,10 @@ AppLauncher* AppLauncher::Show(Browser* browser,
           bounds, BubbleBorder::TOP_LEFT, bubble_anchor,
           app_launcher->info_bubble_content_, app_launcher);
   app_launcher->info_bubble_content_->BubbleShown();
+
+  // TODO(finnur): Change this so that we only fade out when the user launches
+  // something from the bubble. This will fade out on dismiss as well.
+  app_launcher->info_bubble_->set_fade_away_on_close(true);
   return app_launcher;
 }
 

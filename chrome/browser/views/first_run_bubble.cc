@@ -85,7 +85,7 @@ class FirstRunBubbleView : public FirstRunBubbleViewBase {
   virtual ~FirstRunBubbleView() {}
 
   // FirstRunBubbleViewBase:
-  void BubbleShown();
+  virtual void BubbleShown();
 
   // Overridden from View:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
@@ -160,6 +160,7 @@ void FirstRunBubbleView::ButtonPressed(views::Button* sender,
                                        const views::Event& event) {
   UserMetrics::RecordAction(UserMetricsAction("FirstRunBubbleView_Clicked"),
                             profile_);
+  bubble_window_->set_fade_away_on_close(true);
   bubble_window_->Close();
   if (change_button_ == sender) {
     UserMetrics::RecordAction(
@@ -245,7 +246,7 @@ class FirstRunOEMBubbleView : public FirstRunBubbleViewBase {
   virtual ~FirstRunOEMBubbleView() { }
 
   // FirstRunBubbleViewBase:
-  void BubbleShown();
+  virtual void BubbleShown();
 
   // Overridden from View:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
@@ -316,6 +317,7 @@ void FirstRunOEMBubbleView::ButtonPressed(views::Button* sender,
                                           const views::Event& event) {
   UserMetrics::RecordAction(UserMetricsAction("FirstRunOEMBubbleView_Clicked"),
                             profile_);
+  bubble_window_->set_fade_away_on_close(true);
   bubble_window_->Close();
 }
 
@@ -386,10 +388,10 @@ class FirstRunMinimalBubbleView : public FirstRunBubbleViewBase {
   explicit FirstRunMinimalBubbleView(FirstRunBubble* bubble_window);
 
  private:
-   virtual ~FirstRunMinimalBubbleView() { }
+  virtual ~FirstRunMinimalBubbleView() { }
 
   // FirstRunBubbleViewBase:
-  void BubbleShown();
+  virtual void BubbleShown();
 
   // Overridden from View:
   virtual void ButtonPressed(views::Button* sender,

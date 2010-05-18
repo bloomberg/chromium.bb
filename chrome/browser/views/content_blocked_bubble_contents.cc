@@ -120,6 +120,7 @@ void ContentSettingBubbleContents::ViewHierarchyChanged(bool is_add,
 void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
                                                  const views::Event& event) {
   if (sender == close_button_) {
+    info_bubble_->set_fade_away_on_close(true);
     info_bubble_->Close();  // CAREFUL: This deletes us.
     return;
   }
@@ -137,6 +138,7 @@ void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
 void ContentSettingBubbleContents::LinkActivated(views::Link* source,
                                                  int event_flags) {
   if (source == manage_link_) {
+    info_bubble_->set_fade_away_on_close(true);
     content_setting_bubble_model_->OnManageLinkClicked();
     // CAREFUL: Showing the settings window activates it, which deactivates the
     // info bubble, which causes it to close, which deletes us.
@@ -144,6 +146,7 @@ void ContentSettingBubbleContents::LinkActivated(views::Link* source,
   }
   if (source == clear_link_) {
     content_setting_bubble_model_->OnClearLinkClicked();
+    info_bubble_->set_fade_away_on_close(true);
     info_bubble_->Close();  // CAREFUL: This deletes us.
     return;
   }

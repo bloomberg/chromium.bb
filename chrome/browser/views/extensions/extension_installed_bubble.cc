@@ -70,7 +70,8 @@ class InstalledBubbleContent : public views::View,
   InstalledBubbleContent(Extension* extension,
                          ExtensionInstalledBubble::BubbleType type,
                          SkBitmap* icon)
-      : type_(type),
+      : info_bubble_(NULL),
+        type_(type),
         info_(NULL),
         create_shortcut_(false) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -134,10 +135,13 @@ class InstalledBubbleContent : public views::View,
   // Whether to create a shortcut once the bubble closes.
   bool create_shortcut() { return create_shortcut_;}
 
+  void set_info_bubble(InfoBubble* info_bubble) { info_bubble_ = info_bubble; }
+
   virtual void ButtonPressed(
       views::Button* sender,
       const views::Event& event) {
     if (sender == close_button_) {
+      info_bubble_->set_fade_away_on_close(true);
       GetWidget()->Close();
     } else if (sender == create_shortcut_view_) {
       create_shortcut_ = create_shortcut_view_->checked();
@@ -218,6 +222,9 @@ class InstalledBubbleContent : public views::View,
     // title text and bubble arrow.
     close_button_->SetBounds(x - 1, y - 1, sz.width(), sz.height());
   }
+
+  // The InfoBubble showing us.
+  InfoBubble* info_bubble_;
 
   ExtensionInstalledBubble::BubbleType type_;
   views::ImageView* icon_;
@@ -335,8 +342,11 @@ void ExtensionInstalledBubble::ShowInternal() {
 
   bubble_content_ = new InstalledBubbleContent(extension_, type_,
       &icon_);
-  InfoBubble::Show(browser_view->GetWidget(), bounds, BubbleBorder::TOP_RIGHT,
-                   bubble_content_, this);
+  InfoBubble* info_bubble =
+      InfoBubble::Show(browser_view->GetWidget(), bounds,
+                       BubbleBorder::TOP_RIGHT,
+                       bubble_content_, this);
+  bubble_content_->set_info_bubble(info_bubble);
 }
 
 // InfoBubbleDelegate

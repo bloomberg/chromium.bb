@@ -249,24 +249,35 @@ InfoBubble* InfoBubble::Show(views::Widget* parent,
 }
 
 void InfoBubble::Close() {
-  if (!delegate_ || !delegate_->FadeOutOnClose())
-    Close(false);
-  else
+  if (fade_away_on_close_)
     FadeOut();
+  else
+    Close(false);
 }
 
 void InfoBubble::AnimationEnded(const Animation* animation) {
-  Close(false);
+  if (static_cast<int>(animation_->GetCurrentValue()) == 0) {
+    // When fading out we just need to close the bubble at the end
+    Close(false);
+  } else {
+#if defined(OS_WIN)
+    // When fading in we need to remove the layered window style flag, since
+    // that style prevents some bubble content from working properly.
+    SetWindowLong(GWL_EXSTYLE, GetWindowLong(GWL_EXSTYLE) & ~WS_EX_LAYERED);
+#endif
+  }
 }
 
 void InfoBubble::AnimationProgressed(const Animation* animation) {
 #if defined(OS_WIN)
+  // Set the opacity for the main contents window.
   unsigned char opacity = static_cast<unsigned char>(
       animation_->GetCurrentValue() * 255);
   SetLayeredWindowAttributes(GetNativeView(), 0,
       static_cast<byte>(opacity), LWA_ALPHA);
+  contents_->SchedulePaint();
 
-  // Also fade out the bubble border window.
+  // Also fade in/out the bubble border window.
   border_->SetOpacity(opacity);
   border_->border_contents()->SchedulePaint();
 #else
@@ -283,7 +294,8 @@ InfoBubble::InfoBubble()
       border_(NULL),
 #endif
       delegate_(NULL),
-      closed_(false) {
+      closed_(false),
+      fade_away_on_close_(false) {
 }
 
 void InfoBubble::Init(views::Widget* parent,
@@ -302,10 +314,22 @@ void InfoBubble::Init(views::Widget* parent,
   if (parent_window)
     parent_window->DisableInactiveRendering();
   set_window_style(WS_POPUP | WS_CLIPCHILDREN);
-  set_window_ex_style(WS_EX_TOOLWINDOW);
+  int extended_style = WS_EX_TOOLWINDOW;
+  // During FadeIn we need to turn on the layered window style to deal with
+  // transparency. This flag needs to be reset after fading in is complete.
+  bool fade_in = delegate_ && delegate_->FadeInOnShow();
+  if (fade_in)
+    extended_style |= WS_EX_LAYERED;
+  set_window_ex_style(extended_style);
 
   DCHECK(!border_);
   border_ = new BorderWidget();
+
+  if (fade_in) {
+    border_->SetOpacity(0);
+    SetOpacity(0);
+  }
+
   border_->Init(CreateBorderContents(), parent->GetNativeView());
 
   // We make the BorderWidget the owner of the InfoBubble HWND, so that the
@@ -383,6 +407,8 @@ void InfoBubble::Init(views::Widget* parent,
 #if defined(OS_WIN)
   border_->ShowWindow(SW_SHOW);
   ShowWindow(SW_SHOW);
+  if (fade_in)
+    FadeIn();
 #elif defined(OS_LINUX)
   views::WidgetGtk::Show();
 #endif
@@ -416,11 +442,10 @@ void InfoBubble::SizeToContents() {
 #if defined(OS_WIN)
 void InfoBubble::OnActivate(UINT action, BOOL minimized, HWND window) {
   // The popup should close when it is deactivated.
-  if (action == WA_INACTIVE && !closed_) {
-    if (!delegate_ || !delegate_->FadeOutOnClose())
-      Close();
-    else
-      FadeOut();
+  if (action == WA_INACTIVE) {
+    if (closed_ || (animation_.get() && animation_->IsClosing()))
+      return;
+    Close();
   } else if (action == WA_ACTIVE) {
     DCHECK(GetRootView()->GetChildViewCount() > 0);
     GetRootView()->GetChildViewAt(0)->RequestFocus();
@@ -448,20 +473,34 @@ void InfoBubble::Close(bool closed_by_escape) {
 #endif
 }
 
+void InfoBubble::FadeIn() {
+  Fade(true);  // |fade_in|.
+}
+
 void InfoBubble::FadeOut() {
 #if defined(OS_WIN)
-  // The contents window cannot be created layered, since its content doesn't
-  // always work inside a layered window, but when animating it is ok to set
-  // that style on the window for the purpose of fading it out.
+  // The contents window cannot have the layered flag on by default, since its
+  // content doesn't always work inside a layered window, but when animating it
+  // is ok to set that style on the window for the purpose of fading it out.
   SetWindowLong(GWL_EXSTYLE, GetWindowLong(GWL_EXSTYLE) | WS_EX_LAYERED);
+  // This must be the very next call, otherwise we can get flicker on close.
+  SetLayeredWindowAttributes(GetNativeView(), 0,
+      static_cast<byte>(255), LWA_ALPHA);
 #endif
 
+  Fade(false);  // |fade_in|.
+}
+
+void InfoBubble::Fade(bool fade_in) {
   animation_.reset(new SlideAnimation(this));
   animation_->SetSlideDuration(kHideFadeDurationMS);
   animation_->SetTweenType(Tween::LINEAR);
 
-  animation_->Reset(1.0);
-  animation_->Hide();
+  animation_->Reset(fade_in ? 0.0 : 1.0);
+  if (fade_in)
+    animation_->Show();
+  else
+    animation_->Hide();
 }
 
 bool InfoBubble::AcceleratorPressed(const views::Accelerator& accelerator) {

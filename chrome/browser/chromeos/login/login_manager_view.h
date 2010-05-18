@@ -98,7 +98,7 @@ class LoginManagerView : public views::View,
     bubble_ = NULL;
   }
   virtual bool CloseOnEscape() { return true; }
-  virtual bool FadeOutOnClose() { return false; }
+  virtual bool FadeInOnShow() { return false; }
 
  protected:
   // views::View overrides:

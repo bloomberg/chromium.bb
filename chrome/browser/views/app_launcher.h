@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_VIEWS_APP_LAUNCHER_H_
 #define CHROME_BROWSER_VIEWS_APP_LAUNCHER_H_
 
+#include <string>
+
 #include "app/slide_animation.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
@@ -44,8 +46,8 @@ class AppLauncher : public AnimationDelegate,
                            const std::string& hash_params);
 
   // Shows an application launcher bubble pointing to the new tab button.
-  // Any |hash_params| are appened to the hash of the URL that is opened in the
-  // launcher.
+  // Any |hash_params| are appended to the hash of the URL that is opened in
+  // the launcher.
   //
   // The caller DOES NOT OWN the AppLauncher returned. It is deleted
   // automatically when the AppLauncher is closed.
@@ -68,15 +70,7 @@ class AppLauncher : public AnimationDelegate,
   virtual void InfoBubbleClosing(InfoBubble* info_bubble,
                                  bool closed_by_escape);
   virtual bool CloseOnEscape() { return true; }
-  virtual bool FadeOutOnClose() {
-    // If this is changed we also need to update
-    // AppLauncherHandler::AnimateAppIcon.
-#if defined(OS_WIN)
-    return true;
-#else
-    return false;
-#endif
-  }
+  virtual bool FadeInOnShow() { return false; }
 
   // TabContentsDelegate.
   virtual void OpenURLFromTab(TabContents* source,

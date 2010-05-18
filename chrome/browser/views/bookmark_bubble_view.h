@@ -1,9 +1,11 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_VIEWS_BOOKMARK_BUBBLE_VIEW_H_
 #define CHROME_BROWSER_VIEWS_BOOKMARK_BUBBLE_VIEW_H_
+
+#include <vector>
 
 #include "app/combobox_model.h"
 #include "chrome/browser/views/info_bubble.h"
@@ -47,7 +49,9 @@ class BookmarkBubbleView : public views::View,
 
   virtual ~BookmarkBubbleView();
 
-  // Overriden to force a layout.
+  void set_info_bubble(InfoBubble* info_bubble) { info_bubble_ = info_bubble; }
+
+  // Overridden to force a layout.
   virtual void DidChangeBounds(const gfx::Rect& previous,
                                const gfx::Rect& current);
 
@@ -118,7 +122,7 @@ class BookmarkBubbleView : public views::View,
   virtual void InfoBubbleClosing(InfoBubble* info_bubble,
                                  bool closed_by_escape);
   virtual bool CloseOnEscape();
-  virtual bool FadeOutOnClose() { return false; }
+  virtual bool FadeInOnShow() { return false; }
 
   // Closes the bubble.
   void Close();
@@ -134,6 +138,9 @@ class BookmarkBubbleView : public views::View,
 
   // The bookmark bubble, if we're showing one.
   static BookmarkBubbleView* bubble_;
+
+  // The InfoBubble showing us.
+  InfoBubble* info_bubble_;
 
   // Delegate for the bubble, may be null.
   InfoBubbleDelegate* delegate_;

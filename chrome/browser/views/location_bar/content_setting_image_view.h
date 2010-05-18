@@ -41,7 +41,7 @@ class ContentSettingImageView : public views::ImageView,
   virtual void InfoBubbleClosing(InfoBubble* info_bubble,
                                  bool closed_by_escape);
   virtual bool CloseOnEscape();
-  virtual bool FadeOutOnClose() { return false; }
+  virtual bool FadeInOnShow() { return false; }
 
   scoped_ptr<ContentSettingImageModel> content_setting_image_model_;
 

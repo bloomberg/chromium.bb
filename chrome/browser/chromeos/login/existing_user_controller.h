@@ -78,7 +78,7 @@ class ExistingUserController : public WmMessageListener::Observer,
     bubble_ = NULL;
   }
   virtual bool CloseOnEscape() { return true; }
-  virtual bool FadeOutOnClose() { return false; }
+  virtual bool FadeInOnShow() { return false; }
 
   // Show error message. |error_id| error message ID in resources.
   // If |details| string is not empty, it specify additional error text
