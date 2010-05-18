@@ -24,10 +24,10 @@
 #define TXT_EXT L".txt"
 #define TAR_EXT L".tar"
 #else
-#define JPEG_EXT L""
-#define HTML_EXT L""
-#define TXT_EXT L""
-#define TAR_EXT L""
+#define JPEG_EXT L".jpg"
+#define HTML_EXT L".html"
+#define TXT_EXT L".txt"
+#define TAR_EXT L".tar"
 #endif
 
 class DownloadManagerTest : public testing::Test {
