@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,8 +41,8 @@ SSLErrorHandler::SSLErrorHandler(ResourceDispatcherHost* rdh,
   // This makes sure we don't disappear on the IO thread until we've given an
   // answer to the URLRequest.
   //
-  // Release in CompleteCancelRequest, CompleteContinueRequest,
-  // CompleteStartRequest or CompleteTakeNoAction.
+  // Release in CompleteCancelRequest, CompleteContinueRequest, or
+  // CompleteTakeNoAction.
   AddRef();
 }
 
@@ -97,16 +97,6 @@ void SSLErrorHandler::ContinueRequest() {
       NewRunnableMethod(this, &SSLErrorHandler::CompleteContinueRequest));
 }
 
-void SSLErrorHandler::StartRequest(FilterPolicy::Type filter_policy) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-
-  // We need to complete this task on the IO thread.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this, &SSLErrorHandler::CompleteStartRequest, filter_policy));
-}
-
 void SSLErrorHandler::TakeNoAction() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
@@ -159,34 +149,6 @@ void SSLErrorHandler::CompleteContinueRequest() {
     // result of the user navigating to a new page from the location bar).
     DLOG(INFO) << "CompleteContinueRequest() url: " << request->url().spec();
     request->ContinueDespiteLastError();
-  }
-  request_has_been_notified_ = true;
-
-  // We're done with this object on the IO thread.
-  Release();
-}
-
-void SSLErrorHandler::CompleteStartRequest(FilterPolicy::Type filter_policy) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-
-  // It is important that we notify the URLRequest only once.  If we try to
-  // notify the request twice, it may no longer exist and |this| might have
-  // already have been deleted.
-  DCHECK(!request_has_been_notified_);
-  if (request_has_been_notified_)
-    return;
-
-  URLRequest* request = resource_dispatcher_host_->GetURLRequest(request_id_);
-  if (request) {
-    // The request can be NULL if it was cancelled by the renderer (as the
-    // result of the user navigating to a new page from the location bar).
-    DLOG(INFO) << "CompleteStartRequest() url: " << request->url().spec();
-    // The request should not have been started (SUCCESS is the initial state).
-    DCHECK(request->status().status() == URLRequestStatus::SUCCESS);
-    ResourceDispatcherHostRequestInfo* info =
-        ResourceDispatcherHost::InfoForRequest(request);
-    info->set_filter_policy(filter_policy);
-    request->Start();
   }
   request_has_been_notified_ = true;
 

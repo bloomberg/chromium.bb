@@ -22,7 +22,6 @@
 #include "chrome/common/edit_command.h"
 #include "chrome/common/extensions/extension_extent.h"
 #include "chrome/common/extensions/url_pattern.h"
-#include "chrome/common/filter_policy.h"
 #include "chrome/common/navigation_gesture.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/renderer_preferences.h"
@@ -690,40 +689,6 @@ struct ParamTraits<ResourceType::Type> {
         break;
       case ResourceType::MEDIA:
         type = L"MEDIA";
-        break;
-      default:
-        type = L"UNKNOWN";
-        break;
-    }
-
-    LogParam(type, l);
-  }
-};
-
-template <>
-struct ParamTraits<FilterPolicy::Type> {
-  typedef FilterPolicy::Type param_type;
-  static void Write(Message* m, const param_type& p) {
-    m->WriteInt(p);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    int type;
-    if (!m->ReadInt(iter, &type) || !FilterPolicy::ValidType(type))
-      return false;
-    *p = FilterPolicy::FromInt(type);
-    return true;
-  }
-  static void Log(const param_type& p, std::wstring* l) {
-    std::wstring type;
-    switch (p) {
-      case FilterPolicy::DONT_FILTER:
-        type = L"DONT_FILTER";
-        break;
-      case FilterPolicy::FILTER_ALL:
-        type = L"FILTER_ALL";
-        break;
-      case FilterPolicy::FILTER_ALL_EXCEPT_IMAGES:
-        type = L"FILTER_ALL_EXCEPT_IMAGES";
         break;
       default:
         type = L"UNKNOWN";
@@ -1407,15 +1372,13 @@ struct ParamTraits<ResourceResponseHead> {
   static void Write(Message* m, const param_type& p) {
     ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo>::Write(m, p);
     WriteParam(m, p.status);
-    WriteParam(m, p.filter_policy);
+    WriteParam(m, p.replace_extension_localization_templates);
   }
   static bool Read(const Message* m, void** iter, param_type* r) {
-    return
-      ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo>::Read(m,
-                                                                         iter,
-                                                                         r) &&
-      ReadParam(m, iter, &r->status) &&
-      ReadParam(m, iter, &r->filter_policy);
+    return ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo>::Read(
+        m, iter, r) &&
+        ReadParam(m, iter, &r->status) &&
+        ReadParam(m, iter, &r->replace_extension_localization_templates);
   }
   static void Log(const param_type& p, std::wstring* l) {
     // log more?

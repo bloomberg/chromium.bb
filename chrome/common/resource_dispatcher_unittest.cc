@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
-#include "chrome/common/filter_policy.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/resource_dispatcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -109,7 +108,6 @@ class ResourceDispatcherTest : public testing::Test,
       response.headers = new net::HttpResponseHeaders(raw_headers);
       response.mime_type = test_page_mime_type;
       response.charset = test_page_charset;
-      response.filter_policy = FilterPolicy::DONT_FILTER;
       dispatcher_->OnReceivedResponse(request_id, response);
 
       // received data message with the test contents

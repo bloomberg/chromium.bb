@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 #ifndef CHROME_COMMON_SECURITY_FILTER_PEER_H__
 #define CHROME_COMMON_SECURITY_FILTER_PEER_H__
 
-#include "chrome/common/filter_policy.h"
 #include "webkit/glue/resource_loader_bridge.h"
 
 // The SecurityFilterPeer is a proxy to a
@@ -19,14 +18,6 @@
 class SecurityFilterPeer : public webkit_glue::ResourceLoaderBridge::Peer {
  public:
   virtual ~SecurityFilterPeer();
-
-  static SecurityFilterPeer* CreateSecurityFilterPeer(
-      webkit_glue::ResourceLoaderBridge* resource_loader_bridge,
-      webkit_glue::ResourceLoaderBridge::Peer* peer,
-      ResourceType::Type resource_type,
-      const std::string& mime_type,
-      FilterPolicy::Type filter_policy,
-      int os_error);
 
   static SecurityFilterPeer* CreateSecurityFilterPeerForDeniedRequest(
       ResourceType::Type resource_type,
@@ -126,21 +117,6 @@ class ReplaceContentPeer : public SecurityFilterPeer {
   std::string data_;
 
   DISALLOW_COPY_AND_ASSIGN(ReplaceContentPeer);
-};
-
-// This class filters insecure image by replacing them with a transparent and
-// stamped image.
-class ImageFilterPeer : public BufferedPeer {
- public:
-  ImageFilterPeer(webkit_glue::ResourceLoaderBridge* resource_loader_bridge,
-                  webkit_glue::ResourceLoaderBridge::Peer* peer);
-  virtual ~ImageFilterPeer();
-
- protected:
-  virtual bool DataReady();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ImageFilterPeer);
 };
 
 #endif  // CHROME_COMMON_SECURITY_FILTER_PEER_H__

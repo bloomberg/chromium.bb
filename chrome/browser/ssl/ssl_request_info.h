@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "chrome/common/filter_policy.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/resource_type.h"
 
@@ -20,7 +19,6 @@ class SSLRequestInfo : public base::RefCounted<SSLRequestInfo> {
                  ResourceType::Type resource_type,
                  const std::string& frame_origin,
                  const std::string& main_frame_origin,
-                 FilterPolicy::Type filter_policy,
                  int child_id,
                  int ssl_cert_id,
                  int ssl_cert_status)
@@ -28,7 +26,6 @@ class SSLRequestInfo : public base::RefCounted<SSLRequestInfo> {
         resource_type_(resource_type),
         frame_origin_(frame_origin),
         main_frame_origin_(main_frame_origin),
-        filter_policy_(filter_policy),
         child_id_(child_id),
         ssl_cert_id_(ssl_cert_id),
         ssl_cert_status_(ssl_cert_status) {
@@ -38,7 +35,6 @@ class SSLRequestInfo : public base::RefCounted<SSLRequestInfo> {
   ResourceType::Type resource_type() const { return resource_type_; }
   const std::string& frame_origin() const { return frame_origin_; }
   const std::string& main_frame_origin() const { return main_frame_origin_; }
-  FilterPolicy::Type filter_policy() const { return filter_policy_; }
   int child_id() const { return child_id_; }
   int ssl_cert_id() const { return ssl_cert_id_; }
   int ssl_cert_status() const { return ssl_cert_status_; }
@@ -52,7 +48,6 @@ class SSLRequestInfo : public base::RefCounted<SSLRequestInfo> {
   ResourceType::Type resource_type_;
   std::string frame_origin_;
   std::string main_frame_origin_;
-  FilterPolicy::Type filter_policy_;
   int child_id_;
   int ssl_cert_id_;
   int ssl_cert_status_;

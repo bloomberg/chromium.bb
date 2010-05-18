@@ -3,30 +3,30 @@
 // found in the LICENSE file.
 
 
-#ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_MESSAGE_FILTER_PEER_H_
-#define CHROME_COMMON_EXTENSIONS_EXTENSION_MESSAGE_FILTER_PEER_H_
+#ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_LOCALIZATION_PEER_H_
+#define CHROME_COMMON_EXTENSIONS_EXTENSION_LOCALIZATION_PEER_H_
 
 #include <string>
 
-#include "chrome/common/filter_policy.h"
 #include "ipc/ipc_message.h"
 #include "webkit/glue/resource_loader_bridge.h"
 
-// The ExtensionMessageFilterPeer is a proxy to a
+// The ExtensionLocalizationPeer is a proxy to a
 // webkit_glue::ResourceLoaderBridge::Peer instance.  It is used to pre-process
-// extension resources (such as css files).
-// Call the factory method CreateExtensionMessageFilterPeer() to obtain an
-// instance of ExtensionMessageFilterPeer based on the original Peer.
-class ExtensionMessageFilterPeer
+// CSS files requested by extensions to replace localization templates with the
+// appropriate localized strings.
+//
+// Call the factory method CreateExtensionLocalizationPeer() to obtain an
+// instance of ExtensionLocalizationPeer based on the original Peer.
+class ExtensionLocalizationPeer
     : public webkit_glue::ResourceLoaderBridge::Peer {
  public:
-  virtual ~ExtensionMessageFilterPeer();
+  virtual ~ExtensionLocalizationPeer();
 
-  static ExtensionMessageFilterPeer* CreateExtensionMessageFilterPeer(
+  static ExtensionLocalizationPeer* CreateExtensionLocalizationPeer(
       webkit_glue::ResourceLoaderBridge::Peer* peer,
       IPC::Message::Sender* message_sender,
       const std::string& mime_type,
-      FilterPolicy::Type filter_policy,
       const GURL& request_url);
 
   // ResourceLoaderBridge::Peer methods.
@@ -45,10 +45,10 @@ class ExtensionMessageFilterPeer
   virtual GURL GetURLForDebugging() const;
 
  private:
-  friend class ExtensionMessageFilterPeerTest;
+  friend class ExtensionLocalizationPeerTest;
 
-  // Use CreateExtensionMessageFilterPeer to create an instance.
-  ExtensionMessageFilterPeer(
+  // Use CreateExtensionLocalizationPeer to create an instance.
+  ExtensionLocalizationPeer(
       webkit_glue::ResourceLoaderBridge::Peer* peer,
       IPC::Message::Sender* message_sender,
       const GURL& request_url);
@@ -74,7 +74,7 @@ class ExtensionMessageFilterPeer
   GURL request_url_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ExtensionMessageFilterPeer);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionLocalizationPeer);
 };
 
-#endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_MESSAGE_FILTER_PEER_H_
+#endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_LOCALIZATION_PEER_H_

@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/ref_counted.h"
-#include "chrome/common/filter_policy.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
 #include "webkit/glue/resource_loader_bridge.h"
@@ -18,14 +17,15 @@
 // Parameters for a resource response header.
 struct ResourceResponseHead
     : webkit_glue::ResourceLoaderBridge::ResponseInfo {
-  ResourceResponseHead() : filter_policy(FilterPolicy::DONT_FILTER) {}
+  ResourceResponseHead() : replace_extension_localization_templates(false) {}
 
   // The response status.
   URLRequestStatus status;
 
-  // Specifies if the resource should be filtered before being displayed
-  // (insecure resources can be filtered to keep the page secure).
-  FilterPolicy::Type filter_policy;
+  // Whether we should apply a filter to this resource that replaces
+  // localization templates with the appropriate localized strings.  This is set
+  // for CSS resources used by extensions.
+  bool replace_extension_localization_templates;
 };
 
 // Parameters for a synchronous resource response.

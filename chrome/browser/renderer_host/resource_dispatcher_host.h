@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -274,14 +274,10 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
               IncrementOutstandingRequestsMemoryCost);
   FRIEND_TEST(ResourceDispatcherHostTest,
               CalculateApproximateMemoryCost);
-  FRIEND_TEST(ApplyExtensionMessageFilterPolicyTest, WrongScheme);
-  FRIEND_TEST(ApplyExtensionMessageFilterPolicyTest, GoodScheme);
-  FRIEND_TEST(ApplyExtensionMessageFilterPolicyTest,
-              GoodSchemeWithSecurityFilter);
-  FRIEND_TEST(ApplyExtensionMessageFilterPolicyTest,
+  FRIEND_TEST(ApplyExtensionLocalizationFilterTest, WrongScheme);
+  FRIEND_TEST(ApplyExtensionLocalizationFilterTest, GoodScheme);
+  FRIEND_TEST(ApplyExtensionLocalizationFilterTest,
               GoodSchemeWrongResourceType);
-  FRIEND_TEST(ApplyExtensionMessageFilterPolicyTest,
-              WrongSchemeResourceAndFilter);
 
   class ShutdownTask;
 
@@ -408,9 +404,9 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   // Returns true if the message passed in is a resource related message.
   static bool IsResourceDispatcherHostMessage(const IPC::Message&);
 
-  // Applies FilterPolicy::FILTER_EXTENSION_MESSAGES to all text/css requests
-  // that have "chrome-extension://" scheme.
-  static void ApplyExtensionMessageFilterPolicy(
+  // Sets replace_extension_localization_templates on all text/css requests that
+  // have "chrome-extension://" scheme.
+  static void ApplyExtensionLocalizationFilter(
       const GURL& url,
       const ResourceType::Type& resource_type,
       ResourceDispatcherHostRequestInfo* request_info);

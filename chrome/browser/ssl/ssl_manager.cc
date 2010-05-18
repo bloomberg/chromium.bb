@@ -202,14 +202,13 @@ void SSLManager::DidLoadFromMemoryCache(LoadFromMemoryCacheDetails* details) {
   // Simulate loading this resource through the usual path.
   // Note that we specify SUB_RESOURCE as the resource type as WebCore only
   // caches sub-resources.
-  // This resource must have been loaded with FilterPolicy::DONT_FILTER because
-  // filtered resouces aren't cachable.
+  // This resource must have been loaded with no filtering because filtered
+  // resouces aren't cachable.
   scoped_refptr<SSLRequestInfo> info = new SSLRequestInfo(
       details->url(),
       ResourceType::SUB_RESOURCE,
       details->frame_origin(),
       details->main_frame_origin(),
-      FilterPolicy::DONT_FILTER,
       details->pid(),
       details->ssl_cert_id(),
       details->ssl_cert_status());
@@ -238,7 +237,6 @@ void SSLManager::DidStartResourceResponse(ResourceRequestDetails* details) {
       details->resource_type(),
       details->frame_origin(),
       details->main_frame_origin(),
-      details->filter_policy(),
       details->origin_child_id(),
       details->ssl_cert_id(),
       details->ssl_cert_status());

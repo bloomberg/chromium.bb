@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "base/message_loop.h"
 #include "base/shared_memory.h"
 #include "base/string_util.h"
-#include "chrome/common/extensions/extension_message_filter_peer.h"
+#include "chrome/common/extensions/extension_localization_peer.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/security_filter_peer.h"
 #include "net/base/net_errors.h"
@@ -336,35 +336,18 @@ void ResourceDispatcher::OnReceivedResponse(
   }
 
   PendingRequestInfo& request_info = it->second;
-  request_info.filter_policy = response_head.filter_policy;
-  webkit_glue::ResourceLoaderBridge::Peer* peer = request_info.peer;
-  webkit_glue::ResourceLoaderBridge::Peer* new_peer = NULL;
-  if (request_info.filter_policy == FilterPolicy::FILTER_EXTENSION_MESSAGES) {
-     new_peer = ExtensionMessageFilterPeer::CreateExtensionMessageFilterPeer(
-        peer,
-        message_sender(),
-        response_head.mime_type,
-        request_info.filter_policy,
-        request_info.url);
-  } else if (request_info.filter_policy != FilterPolicy::DONT_FILTER) {
-    // TODO(jcampan): really pass the loader bridge.
-    new_peer = SecurityFilterPeer::CreateSecurityFilterPeer(
-        NULL,
-        peer,
-        request_info.resource_type,
-        response_head.mime_type,
-        request_info.filter_policy,
-        net::ERR_INSECURE_RESPONSE);
-  }
-
-  if (new_peer) {
-    request_info.peer = new_peer;
-    peer = new_peer;
+  if (response_head.replace_extension_localization_templates) {
+    webkit_glue::ResourceLoaderBridge::Peer* new_peer =
+        ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
+            request_info.peer, message_sender(), response_head.mime_type,
+            request_info.url);
+    if (new_peer)
+      request_info.peer = new_peer;
   }
 
   RESOURCE_LOG("Dispatching response for " <<
-      peer->GetURLForDebugging().possibly_invalid_spec());
-  peer->OnReceivedResponse(response_head, false);
+      request_info.peer->GetURLForDebugging().possibly_invalid_spec());
+  request_info.peer->OnReceivedResponse(response_head, false);
 }
 
 void ResourceDispatcher::OnReceivedCachedMetadata(

@@ -8,7 +8,6 @@
 #include <string>
 
 #include "chrome/browser/ssl/ssl_blocking_page.h"
-#include "chrome/common/filter_policy.h"
 #include "webkit/glue/resource_type.h"
 
 class NavigationEntry;

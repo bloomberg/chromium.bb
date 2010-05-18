@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@
 #include "base/hash_tables.h"
 #include "base/shared_memory.h"
 #include "base/task.h"
-#include "chrome/common/filter_policy.h"
 #include "ipc/ipc_channel.h"
 #include "webkit/glue/resource_loader_bridge.h"
 
@@ -70,14 +69,12 @@ class ResourceDispatcher {
                        const GURL& request_url)
         : peer(peer),
           resource_type(resource_type),
-          filter_policy(FilterPolicy::DONT_FILTER),
           is_deferred(false),
           url(request_url) {
     }
     ~PendingRequestInfo() { }
     webkit_glue::ResourceLoaderBridge::Peer* peer;
     ResourceType::Type resource_type;
-    FilterPolicy::Type filter_policy;
     MessageQueue deferred_message_queue;
     bool is_deferred;
     GURL url;

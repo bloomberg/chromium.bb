@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -984,7 +984,7 @@ class DummyResourceHandler : public ResourceHandler {
   DISALLOW_COPY_AND_ASSIGN(DummyResourceHandler);
 };
 
-class ApplyExtensionMessageFilterPolicyTest : public testing::Test {
+class ApplyExtensionLocalizationFilterTest : public testing::Test {
  protected:
   void SetUp() {
     url_.reset(new GURL(
@@ -1007,45 +1007,25 @@ class ApplyExtensionMessageFilterPolicyTest : public testing::Test {
   scoped_ptr<ResourceDispatcherHostRequestInfo> request_info_;
 };
 
-TEST_F(ApplyExtensionMessageFilterPolicyTest, WrongScheme) {
+TEST_F(ApplyExtensionLocalizationFilterTest, WrongScheme) {
   url_.reset(new GURL("html://behllobkkfkfnphdnhnkndlbkcpglgmj/popup.html"));
-  ResourceDispatcherHost::ApplyExtensionMessageFilterPolicy(
-      *url_, resource_type_, request_info_.get());
+  ResourceDispatcherHost::ApplyExtensionLocalizationFilter(*url_,
+      resource_type_, request_info_.get());
 
-  EXPECT_EQ(FilterPolicy::DONT_FILTER, request_info_->filter_policy());
+  EXPECT_FALSE(request_info_->replace_extension_localization_templates());
 }
 
-TEST_F(ApplyExtensionMessageFilterPolicyTest, GoodScheme) {
-  ResourceDispatcherHost::ApplyExtensionMessageFilterPolicy(
-      *url_, resource_type_, request_info_.get());
+TEST_F(ApplyExtensionLocalizationFilterTest, GoodScheme) {
+  ResourceDispatcherHost::ApplyExtensionLocalizationFilter(*url_,
+      resource_type_, request_info_.get());
 
-  EXPECT_EQ(FilterPolicy::FILTER_EXTENSION_MESSAGES,
-            request_info_->filter_policy());
+  EXPECT_TRUE(request_info_->replace_extension_localization_templates());
 }
 
-TEST_F(ApplyExtensionMessageFilterPolicyTest, GoodSchemeWithSecurityFilter) {
-  request_info_->set_filter_policy(FilterPolicy::FILTER_ALL_EXCEPT_IMAGES);
-  ResourceDispatcherHost::ApplyExtensionMessageFilterPolicy(
-      *url_, resource_type_, request_info_.get());
-
-  EXPECT_EQ(FilterPolicy::FILTER_ALL_EXCEPT_IMAGES,
-            request_info_->filter_policy());
-}
-
-TEST_F(ApplyExtensionMessageFilterPolicyTest, GoodSchemeWrongResourceType) {
+TEST_F(ApplyExtensionLocalizationFilterTest, GoodSchemeWrongResourceType) {
   resource_type_ = ResourceType::MAIN_FRAME;
-  ResourceDispatcherHost::ApplyExtensionMessageFilterPolicy(
-      *url_, resource_type_, request_info_.get());
+  ResourceDispatcherHost::ApplyExtensionLocalizationFilter(*url_,
+      resource_type_, request_info_.get());
 
-  EXPECT_EQ(FilterPolicy::DONT_FILTER, request_info_->filter_policy());
-}
-
-TEST_F(ApplyExtensionMessageFilterPolicyTest, WrongSchemeResourceAndFilter) {
-  url_.reset(new GURL("html://behllobkkfkfnphdnhnkndlbkcpglgmj/popup.html"));
-  resource_type_ = ResourceType::MEDIA;
-  request_info_->set_filter_policy(FilterPolicy::FILTER_ALL);
-  ResourceDispatcherHost::ApplyExtensionMessageFilterPolicy(
-      *url_, resource_type_, request_info_.get());
-
-  EXPECT_EQ(FilterPolicy::FILTER_ALL, request_info_->filter_policy());
+  EXPECT_FALSE(request_info_->replace_extension_localization_templates());
 }

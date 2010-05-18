@@ -1,22 +1,13 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/common/security_filter_peer.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
-#include "base/string_util.h"
-#include "gfx/codec/png_codec.h"
-#include "gfx/size.h"
 #include "grit/generated_resources.h"
-#include "grit/renderer_resources.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkDevice.h"
-#include "webkit/glue/webkit_glue.h"
 
 SecurityFilterPeer::SecurityFilterPeer(
     webkit_glue::ResourceLoaderBridge* resource_loader_bridge,
@@ -26,36 +17,6 @@ SecurityFilterPeer::SecurityFilterPeer(
 }
 
 SecurityFilterPeer::~SecurityFilterPeer() {
-}
-
-// static
-SecurityFilterPeer* SecurityFilterPeer::CreateSecurityFilterPeer(
-    webkit_glue::ResourceLoaderBridge* resource_loader_bridge,
-    webkit_glue::ResourceLoaderBridge::Peer* peer,
-    ResourceType::Type resource_type,
-    const std::string& mime_type,
-    FilterPolicy::Type filter_policy,
-    int os_error) {
-  if (filter_policy == FilterPolicy::DONT_FILTER) {
-    NOTREACHED();
-    return NULL;
-  }
-
-  if (StartsWithASCII(mime_type, "image/", false)) {
-    // What we do with images depends on details of the |filter_policy|.
-    if (filter_policy == FilterPolicy::FILTER_ALL_EXCEPT_IMAGES)
-      return new ImageFilterPeer(resource_loader_bridge, peer);
-    // Otherwise, fall through to blocking images hard.
-  }
-
-  // Regardless of what a frame contents replace it with our error message,
-  // so it is visible it's been filtered-out.
-  if (ResourceType::IsFrame(resource_type))
-    return CreateSecurityFilterPeerForFrame(peer, os_error);
-
-  // Any other content is entirely filtered-out.
-  return new ReplaceContentPeer(resource_loader_bridge, peer,
-                                std::string(), std::string());
 }
 
 // static
@@ -246,81 +207,4 @@ void ReplaceContentPeer::OnCompletedRequest(const URLRequestStatus& status,
 
   // The request processing is complete, we must delete ourselves.
   delete this;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ImageFilterPeer
-
-ImageFilterPeer::ImageFilterPeer(
-    webkit_glue::ResourceLoaderBridge* resource_loader_bridge,
-    webkit_glue::ResourceLoaderBridge::Peer* peer)
-    : BufferedPeer(resource_loader_bridge, peer, "image/png") {
-}
-
-ImageFilterPeer::~ImageFilterPeer() {
-}
-
-bool ImageFilterPeer::DataReady() {
-  static SkBitmap* stamp_bitmap = NULL;
-  if (!stamp_bitmap) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    stamp_bitmap = rb.GetBitmapNamed(IDR_INSECURE_CONTENT_STAMP);
-    if (!stamp_bitmap) {
-      NOTREACHED();
-      return false;
-    }
-  }
-
-  // Let's decode the image we have been given.
-  SkBitmap image;
-  if (!webkit_glue::DecodeImage(data_, &image))
-    return false;  // We could not decode that image.
-
-  // Let's create a new canvas to modify the image.
-  SkBitmap canvas_bitmap;
-  canvas_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                          image.width(), image.height());
-  canvas_bitmap.allocPixels();
-  SkCanvas canvas(canvas_bitmap);
-
-  // Let's paint the actual image with an alpha.
-  SkRect rect;
-  rect.fLeft = 0;
-  rect.fTop = 0;
-  rect.fRight = SkIntToScalar(image.width());
-  rect.fBottom = SkIntToScalar(image.height());
-
-  SkPaint paint;
-  paint.setAlpha(80);
-  canvas.drawBitmapRect(image, NULL, rect, &paint);
-
-  // Then stamp-it.
-  paint.setAlpha(150);
-  int visible_row_count = image.height() / stamp_bitmap->height();
-  if (image.height() % stamp_bitmap->height() != 0)
-    visible_row_count++;
-
-  for (int row = 0; row < visible_row_count; row++) {
-    for (int x = (row % 2 == 0) ? 0 : stamp_bitmap->width(); x < image.width();
-         x += stamp_bitmap->width() * 2) {
-      canvas.drawBitmap(*stamp_bitmap,
-                        SkIntToScalar(x),
-                        SkIntToScalar(row * stamp_bitmap->height()),
-                        &paint);
-    }
-  }
-
-  // Now encode it to a PNG.
-  std::vector<unsigned char> output;
-  if (!gfx::PNGCodec::EncodeBGRASkBitmap(
-          canvas.getDevice()->accessBitmap(false), false, &output)) {
-    return false;
-  }
-
-  // Copy the vector content to data_ which is a string.
-  data_.clear();
-  data_.resize(output.size());
-  std::copy(output.begin(), output.end(), data_.begin());
-
-  return true;
 }

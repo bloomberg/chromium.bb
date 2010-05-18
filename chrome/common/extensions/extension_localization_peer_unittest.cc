@@ -7,8 +7,7 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
-#include "chrome/common/extensions/extension_message_filter_peer.h"
-#include "chrome/common/filter_policy.h"
+#include "chrome/common/extensions/extension_localization_peer.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sync_message.h"
 #include "net/base/net_errors.h"
@@ -76,32 +75,30 @@ class MockResourceLoaderBridgePeer
   DISALLOW_COPY_AND_ASSIGN(MockResourceLoaderBridgePeer);
 };
 
-class ExtensionMessageFilterPeerTest : public testing::Test {
+class ExtensionLocalizationPeerTest : public testing::Test {
  protected:
   virtual void SetUp() {
     sender_.reset(new MockIpcMessageSender());
     original_peer_.reset(new MockResourceLoaderBridgePeer());
     filter_peer_.reset(
-        ExtensionMessageFilterPeer::CreateExtensionMessageFilterPeer(
+        ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
             original_peer_.get(), sender_.get(), "text/css",
-            FilterPolicy::FILTER_EXTENSION_MESSAGES, GURL(kExtensionUrl_1)));
+            GURL(kExtensionUrl_1)));
   }
 
-  ExtensionMessageFilterPeer* CreateExtensionMessageFilterPeer(
+  ExtensionLocalizationPeer* CreateExtensionLocalizationPeer(
       const std::string& mime_type,
-      FilterPolicy::Type filter_policy,
       const GURL& request_url) {
-    return ExtensionMessageFilterPeer::CreateExtensionMessageFilterPeer(
-        original_peer_.get(), sender_.get(),
-        mime_type, filter_policy, request_url);
+    return ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
+        original_peer_.get(), sender_.get(), mime_type, request_url);
   }
 
-  std::string GetData(ExtensionMessageFilterPeer* filter_peer) {
+  std::string GetData(ExtensionLocalizationPeer* filter_peer) {
     EXPECT_TRUE(NULL != filter_peer);
     return filter_peer->data_;
   }
 
-  void SetData(ExtensionMessageFilterPeer* filter_peer,
+  void SetData(ExtensionLocalizationPeer* filter_peer,
                const std::string& data) {
     EXPECT_TRUE(NULL != filter_peer);
     filter_peer->data_ = data;
@@ -109,28 +106,20 @@ class ExtensionMessageFilterPeerTest : public testing::Test {
 
   scoped_ptr<MockIpcMessageSender> sender_;
   scoped_ptr<MockResourceLoaderBridgePeer> original_peer_;
-  scoped_ptr<ExtensionMessageFilterPeer> filter_peer_;
+  scoped_ptr<ExtensionLocalizationPeer> filter_peer_;
 };
 
-TEST_F(ExtensionMessageFilterPeerTest, CreateWithWrongFilterPolicy) {
-  filter_peer_.reset(CreateExtensionMessageFilterPeer(
-      "text/css", FilterPolicy::DONT_FILTER, GURL(kExtensionUrl_1)));
+TEST_F(ExtensionLocalizationPeerTest, CreateWithWrongMimeType) {
+  filter_peer_.reset(
+      CreateExtensionLocalizationPeer("text/html", GURL(kExtensionUrl_1)));
   EXPECT_TRUE(NULL == filter_peer_.get());
 }
 
-TEST_F(ExtensionMessageFilterPeerTest, CreateWithWrongMimeType) {
-  filter_peer_.reset(CreateExtensionMessageFilterPeer(
-      "text/html",
-      FilterPolicy::FILTER_EXTENSION_MESSAGES,
-      GURL(kExtensionUrl_1)));
-  EXPECT_TRUE(NULL == filter_peer_.get());
-}
-
-TEST_F(ExtensionMessageFilterPeerTest, CreateWithValidInput) {
+TEST_F(ExtensionLocalizationPeerTest, CreateWithValidInput) {
   EXPECT_TRUE(NULL != filter_peer_.get());
 }
 
-TEST_F(ExtensionMessageFilterPeerTest, OnReceivedData) {
+TEST_F(ExtensionLocalizationPeerTest, OnReceivedData) {
   EXPECT_TRUE(GetData(filter_peer_.get()).empty());
 
   const std::string data_chunk("12345");
@@ -144,9 +133,9 @@ TEST_F(ExtensionMessageFilterPeerTest, OnReceivedData) {
 
 MATCHER_P(IsURLRequestEqual, status, "") { return arg.status() == status; }
 
-TEST_F(ExtensionMessageFilterPeerTest, OnCompletedRequestBadURLRequestStatus) {
+TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestBadURLRequestStatus) {
   // It will self-delete once it exits OnCompletedRequest.
-  ExtensionMessageFilterPeer* filter_peer = filter_peer_.release();
+  ExtensionLocalizationPeer* filter_peer = filter_peer_.release();
 
   EXPECT_CALL(*original_peer_, OnReceivedResponse(_, true));
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
@@ -157,9 +146,9 @@ TEST_F(ExtensionMessageFilterPeerTest, OnCompletedRequestBadURLRequestStatus) {
   filter_peer->OnCompletedRequest(status, "");
 }
 
-TEST_F(ExtensionMessageFilterPeerTest, OnCompletedRequestEmptyData) {
+TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestEmptyData) {
   // It will self-delete once it exits OnCompletedRequest.
-  ExtensionMessageFilterPeer* filter_peer = filter_peer_.release();
+  ExtensionLocalizationPeer* filter_peer = filter_peer_.release();
 
   EXPECT_CALL(*original_peer_, GetURLForDebugging()).Times(0);
   EXPECT_CALL(*original_peer_, OnReceivedData(_, _)).Times(0);
@@ -174,9 +163,9 @@ TEST_F(ExtensionMessageFilterPeerTest, OnCompletedRequestEmptyData) {
   filter_peer->OnCompletedRequest(status, "");
 }
 
-TEST_F(ExtensionMessageFilterPeerTest, OnCompletedRequestNoCatalogs) {
+TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestNoCatalogs) {
   // It will self-delete once it exits OnCompletedRequest.
-  ExtensionMessageFilterPeer* filter_peer = filter_peer_.release();
+  ExtensionLocalizationPeer* filter_peer = filter_peer_.release();
 
   SetData(filter_peer, "some text");
 
@@ -197,20 +186,16 @@ TEST_F(ExtensionMessageFilterPeerTest, OnCompletedRequestNoCatalogs) {
 
   // Test if Send gets called again (it shouldn't be) when first call returned
   // an empty dictionary.
-  filter_peer = CreateExtensionMessageFilterPeer(
-      "text/css",
-      FilterPolicy::FILTER_EXTENSION_MESSAGES,
-      GURL(kExtensionUrl_1));
+  filter_peer =
+      CreateExtensionLocalizationPeer("text/css", GURL(kExtensionUrl_1));
   SetData(filter_peer, "some text");
   filter_peer->OnCompletedRequest(status, "");
 }
 
-TEST_F(ExtensionMessageFilterPeerTest, OnCompletedRequestWithCatalogs) {
+TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestWithCatalogs) {
   // It will self-delete once it exits OnCompletedRequest.
-  ExtensionMessageFilterPeer* filter_peer = CreateExtensionMessageFilterPeer(
-      "text/css",
-      FilterPolicy::FILTER_EXTENSION_MESSAGES,
-      GURL(kExtensionUrl_2));
+  ExtensionLocalizationPeer* filter_peer =
+      CreateExtensionLocalizationPeer("text/css", GURL(kExtensionUrl_2));
 
   L10nMessagesMap messages;
   messages.insert(std::make_pair("text", "new text"));
@@ -238,12 +223,10 @@ TEST_F(ExtensionMessageFilterPeerTest, OnCompletedRequestWithCatalogs) {
   filter_peer->OnCompletedRequest(status, "");
 }
 
-TEST_F(ExtensionMessageFilterPeerTest, OnCompletedRequestReplaceMessagesFails) {
+TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestReplaceMessagesFails) {
   // It will self-delete once it exits OnCompletedRequest.
-  ExtensionMessageFilterPeer* filter_peer = CreateExtensionMessageFilterPeer(
-      "text/css",
-      FilterPolicy::FILTER_EXTENSION_MESSAGES,
-      GURL(kExtensionUrl_3));
+  ExtensionLocalizationPeer* filter_peer =
+      CreateExtensionLocalizationPeer("text/css", GURL(kExtensionUrl_3));
 
   L10nMessagesMap messages;
   messages.insert(std::make_pair("text", "new text"));

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/time.h"
 #include "chrome/common/child_process_info.h"
-#include "chrome/common/filter_policy.h"
 #include "net/base/load_states.h"
 #include "net/url_request/url_request.h"
 #include "webkit/glue/resource_type.h"
@@ -115,12 +114,15 @@ class ResourceDispatcherHostRequestInfo : public URLRequest::UserData {
   // Identifies the type of resource, such as subframe, media, etc.
   ResourceType::Type resource_type() const { return resource_type_; }
 
-  // Whether the content for this request should be filtered (on the renderer
-  // side) to make it more secure: images are stamped, frame content is
-  // replaced with an error message and all other resources are entirely
-  // filtered out.
-  FilterPolicy::Type filter_policy() const { return filter_policy_; }
-  void set_filter_policy(FilterPolicy::Type policy) { filter_policy_ = policy; }
+  // Whether we should apply a filter to this resource that replaces
+  // localization templates with the appropriate localized strings.  This is set
+  // for CSS resources used by extensions.
+  bool replace_extension_localization_templates() const {
+    return replace_extension_localization_templates_;
+  }
+  void set_replace_extension_localization_templates() {
+    replace_extension_localization_templates_ = true;
+  }
 
   // Returns the last updated state of the load. This is updated periodically
   // by the ResourceDispatcherHost and tracked here so we don't send out
@@ -209,7 +211,7 @@ class ResourceDispatcherHostRequestInfo : public URLRequest::UserData {
   std::string frame_origin_;
   std::string main_frame_origin_;
   ResourceType::Type resource_type_;
-  FilterPolicy::Type filter_policy_;
+  bool replace_extension_localization_templates_;
   net::LoadState last_load_state_;
   uint64 upload_size_;
   uint64 last_upload_position_;

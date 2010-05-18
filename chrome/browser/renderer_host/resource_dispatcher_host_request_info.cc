@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,7 @@ ResourceDispatcherHostRequestInfo::ResourceDispatcherHostRequestInfo(
       frame_origin_(frame_origin),
       main_frame_origin_(main_frame_origin),
       resource_type_(resource_type),
-      filter_policy_(FilterPolicy::DONT_FILTER),
+      replace_extension_localization_templates_(false),
       last_load_state_(net::LOAD_STATE_IDLE),
       upload_size_(upload_size),
       last_upload_position_(0),
