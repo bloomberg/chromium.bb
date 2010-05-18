@@ -1057,9 +1057,9 @@ void DraggedTabController::RevertDrag() {
     } else {
       // The Tab was moved within the TabStrip where the drag was initiated.
       // Move it back to the starting location.
-      source_tabstrip_->StoppedDraggingTab(attached_tab_);
       GetModel(source_tabstrip_)->MoveTabContentsAt(index, source_model_index_,
           true);
+      source_tabstrip_->StoppedDraggingTab(attached_tab_);
     }
   } else {
     // TODO(beng): (Cleanup) seems like we should use Attach() for this
