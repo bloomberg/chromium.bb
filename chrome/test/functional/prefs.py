@@ -6,6 +6,7 @@
 import logging
 import os
 import shutil
+import sys
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
@@ -109,12 +110,15 @@ class PrefsTest(pyauto.PyUITest):
     """Verify toolbar buttons prefs.."""
     # Assert defaults first
     self.assertFalse(self.GetPrefsInfo().Prefs(pyauto.kShowHomeButton))
-    self.assertFalse(self.GetPrefsInfo().Prefs(pyauto.kShowPageOptionsButtons))
     self.SetPrefs(pyauto.kShowHomeButton, True)
-    self.SetPrefs(pyauto.kShowPageOptionsButtons, True)
+    if self.IsMac():     # win/linux don't have the
+      self.assertFalse(  # "browser.show_page_options_buttons" pref
+          self.GetPrefsInfo().Prefs(pyauto.kShowPageOptionsButtons))
+      self.SetPrefs(pyauto.kShowPageOptionsButtons, True)
     self.RestartBrowser(clear_profile=False)
     self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kShowHomeButton))
-    self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kShowPageOptionsButtons))
+    if self.IsMac():
+      self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kShowPageOptionsButtons))
 
   def testHomepagePrefs(self):
     """Verify homepage prefs."""

@@ -179,6 +179,26 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       quoted_path = urllib.quote(abs_path)
       return 'file://' + quoted_path
 
+  @staticmethod
+  def IsMac():
+    """Are we on Mac?"""
+    return 'darwin' == sys.platform
+
+  @staticmethod
+  def IsLinux():
+    """Are we on Linux?"""
+    return 'linux2' == sys.platform
+
+  @staticmethod
+  def IsWin():
+    """Are we on Win?"""
+    return 'win32' == sys.platform
+
+  @staticmethod
+  def IsPosix():
+    """Are we on Mac/Linux?"""
+    return PyUITest.IsMac() or PyUITest.IsLinux()
+
   def WaitUntil(self, function, timeout=-1, retry_sleep=0.25, args=[]):
     """Poll on a condition until timeout.
 
