@@ -1226,10 +1226,13 @@ void AutocompleteEditViewGtk::HandleCopyOrCutClipboard(bool copy) {
     scw.WriteHyperlink(EscapeForHTML(text16), url.spec());
 
     // Stop propagating the signal.
-    static guint signal_id = copy ?
-        g_signal_lookup("copy-clipboard", GTK_TYPE_TEXT_VIEW) :
+    static guint copy_signal_id =
+        g_signal_lookup("copy-clipboard", GTK_TYPE_TEXT_VIEW);
+    static guint cut_signal_id =
         g_signal_lookup("cut-clipboard", GTK_TYPE_TEXT_VIEW);
-    g_signal_stop_emission(text_view_, signal_id, 0);
+    g_signal_stop_emission(text_view_,
+                           copy ? copy_signal_id : cut_signal_id,
+                           0);
   }
 }
 
