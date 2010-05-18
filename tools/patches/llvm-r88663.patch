@@ -371,18 +371,17 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMConstantIslandPass.cpp
    }
  }
  
-@@ -698,6 +860,10 @@
+@@ -698,6 +860,9 @@
  /// an unconditional branch.  Update data structures and renumber blocks to
  /// account for this change and returns the newly created block.
  MachineBasicBlock *ARMConstantIslands::SplitBlockBeforeInstr(MachineInstr *MI) {
 +  // @LOCALMOD-start
-+  printf("@@@@ ERROR: splitting not yet supported\n");
-+  abort();
++  assert(0 && "splitting not yet supported");
 +  // @LOCALMOD-end
    MachineBasicBlock *OrigBB = MI->getParent();
    MachineFunction &MF = *OrigBB->getParent();
  
-@@ -882,9 +1048,19 @@
+@@ -882,9 +1047,19 @@
  void ARMConstantIslands::AdjustBBOffsetsAfter(MachineBasicBlock *BB,
                                                int delta) {
    MachineFunction::iterator MBBI = BB; MBBI = next(MBBI);
@@ -402,36 +401,33 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMConstantIslandPass.cpp
      // If some existing blocks have padding, adjust the padding as needed, a
      // bit tricky.  delta can be negative so don't use % on that.
      if (!isThumb)
-@@ -1106,6 +1282,11 @@
+@@ -1106,6 +1281,10 @@
      BBSizes[UserMBB->getNumber()] += delta;
      AdjustBBOffsetsAfter(UserMBB, delta);
    } else {
 +    // @LOCALMOD-START
-+    printf("@@@@ ERROR: fix up split bbl not  implemented\n");
-+    abort();
++    assert(0 && "fix up split bbl not implemented");
 +    // @LOCALMOD-END
 +
      // What a big block.  Find a place within the block to split it.
      // This is a little tricky on Thumb1 since instructions are 2 bytes
      // and constant pool entries are 4 bytes: if instruction I references
-@@ -1354,6 +1535,10 @@
+@@ -1354,6 +1533,9 @@
  /// Otherwise, add an intermediate branch instruction to a branch.
  bool
  ARMConstantIslands::FixUpUnconditionalBr(MachineFunction &MF, ImmBranch &Br) {
 +  // @LOCALMOD-start
-+  printf("@@@@ ERROR: fix up uncond br not implemented\n");
-+  abort();
++  assert(0 && "fix up uncond br not implemented");
 +  // @LOCALMOD-end
    MachineInstr *MI = Br.MI;
    MachineBasicBlock *MBB = MI->getParent();
    if (!isThumb1)
-@@ -1377,6 +1562,10 @@
+@@ -1377,6 +1559,9 @@
  /// conditional branch + an unconditional branch to the destination.
  bool
  ARMConstantIslands::FixUpConditionalBr(MachineFunction &MF, ImmBranch &Br) {
 +  // @LOCALMOD-start
-+  printf("@@@@ ERROR: fix up cond br not implemented\n");
-+  abort();
++  assert(0 && "fix up cond br not implemented");
 +  // @LOCALMOD-end
    MachineInstr *MI = Br.MI;
    MachineBasicBlock *DestBB = MI->getOperand(0).getMBB();
