@@ -131,41 +131,38 @@ void BrowserToolbarGtk::Init(Profile* profile,
                    G_CALLBACK(&OnAlignmentExposeThunk), this);
   gtk_container_add(GTK_CONTAINER(event_box_), alignment_);
   gtk_container_add(GTK_CONTAINER(alignment_), toolbar_);
-  // Force the height of the toolbar so we get the right amount of padding
-  // above and below the location bar. -1 for width means "let GTK do its
-  // normal sizing".
-  gtk_widget_set_size_request(toolbar_, -1, ShouldOnlyShowLocation() ?
-      kToolbarHeightLocationBarOnly : kToolbarHeight);
 
-  // Group back and forward into an hbox so there's no spacing between them.
+  toolbar_left_ = gtk_hbox_new(FALSE, 0);
+
   GtkWidget* back_forward_hbox_ = gtk_hbox_new(FALSE, 0);
-
   back_.reset(new BackForwardButtonGtk(browser_, false));
-  gtk_box_pack_start(GTK_BOX(back_forward_hbox_), back_->widget(), FALSE,
-                     FALSE, 0);
   g_signal_connect(back_->widget(), "clicked",
                    G_CALLBACK(OnButtonClickThunk), this);
+  gtk_box_pack_start(GTK_BOX(back_forward_hbox_), back_->widget(), FALSE,
+                     FALSE, 0);
 
   forward_.reset(new BackForwardButtonGtk(browser_, true));
-  gtk_box_pack_start(GTK_BOX(back_forward_hbox_), forward_->widget(), FALSE,
-                     FALSE, 0);
   g_signal_connect(forward_->widget(), "clicked",
                    G_CALLBACK(OnButtonClickThunk), this);
-  gtk_box_pack_start(GTK_BOX(toolbar_), back_forward_hbox_, FALSE, FALSE,
-                     kToolbarWidgetSpacing);
+  gtk_box_pack_start(GTK_BOX(back_forward_hbox_), forward_->widget(), FALSE,
+                     FALSE, 0);
+
+  gtk_box_pack_start(GTK_BOX(toolbar_left_), back_forward_hbox_, FALSE,
+                     FALSE, kToolbarWidgetSpacing);
 
   home_.reset(BuildToolbarButton(IDR_HOME, IDR_HOME_P, IDR_HOME_H, 0,
                                  IDR_BUTTON_MASK,
                                  l10n_util::GetStringUTF8(IDS_TOOLTIP_HOME),
-                                 GTK_STOCK_HOME));
+                                 GTK_STOCK_HOME, kToolbarWidgetSpacing));
   gtk_util::SetButtonTriggersNavigation(home_->widget());
   SetUpDragForHomeButton();
-
 
   reload_.reset(BuildToolbarButton(IDR_RELOAD, IDR_RELOAD_P, IDR_RELOAD_H, 0,
                                    IDR_RELOAD_MASK,
                                    l10n_util::GetStringUTF8(IDS_TOOLTIP_RELOAD),
-                                   GTK_STOCK_REFRESH));
+                                   GTK_STOCK_REFRESH, 0));
+
+  gtk_box_pack_start(GTK_BOX(toolbar_), toolbar_left_, FALSE, FALSE, 0);
 
   location_hbox_ = gtk_hbox_new(FALSE, 0);
   location_bar_->Init(ShouldOnlyShowLocation());
@@ -177,17 +174,17 @@ void BrowserToolbarGtk::Init(Profile* profile,
   gtk_box_pack_start(GTK_BOX(toolbar_), location_hbox_, TRUE, TRUE,
       kToolbarWidgetSpacing + (ShouldOnlyShowLocation() ? 1 : 0));
 
+  toolbar_right_ = gtk_hbox_new(FALSE, 0);
+
   go_.reset(new GoButtonGtk(location_bar_.get(), browser_));
-  gtk_box_pack_start(GTK_BOX(toolbar_), go_->widget(), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(toolbar_right_), go_->widget(), FALSE, FALSE, 0);
 
   if (!ShouldOnlyShowLocation()) {
     actions_toolbar_.reset(new BrowserActionsToolbarGtk(browser_));
-    gtk_box_pack_start(GTK_BOX(toolbar_), actions_toolbar_->widget(),
+    gtk_box_pack_start(GTK_BOX(toolbar_right_), actions_toolbar_->widget(),
                        FALSE, FALSE, 0);
   }
 
-  // Group the menu buttons together in an hbox.
-  GtkWidget* menus_hbox_ = gtk_hbox_new(FALSE, 0);
   GtkWidget* page_menu = BuildToolbarMenuButton(
       l10n_util::GetStringUTF8(IDS_PAGEMENU_TOOLTIP),
       &page_menu_button_);
@@ -197,7 +194,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
   gtk_container_add(GTK_CONTAINER(page_menu), page_menu_image_);
 
   page_menu_.reset(new MenuGtk(this, &page_menu_model_));
-  gtk_box_pack_start(GTK_BOX(menus_hbox_), page_menu, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(toolbar_right_), page_menu, FALSE, FALSE, 0);
 
   GtkWidget* chrome_menu = BuildToolbarMenuButton(
       l10n_util::GetStringFUTF8(IDS_APPMENU_TOOLTIP,
@@ -209,10 +206,9 @@ void BrowserToolbarGtk::Init(Profile* profile,
   gtk_container_add(GTK_CONTAINER(chrome_menu), app_menu_image_);
 
   app_menu_.reset(new MenuGtk(this, &app_menu_model_));
-  gtk_box_pack_start(GTK_BOX(menus_hbox_), chrome_menu, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(toolbar_right_), chrome_menu, FALSE, FALSE, 0);
 
-  gtk_box_pack_start(GTK_BOX(toolbar_), menus_hbox_, FALSE, FALSE,
-                     kToolbarWidgetSpacing);
+  gtk_box_pack_start(GTK_BOX(toolbar_), toolbar_right_, FALSE, FALSE, 0);
 
   if (ShouldOnlyShowLocation()) {
     gtk_widget_show(event_box_);
@@ -385,7 +381,8 @@ void BrowserToolbarGtk::Observe(NotificationType type,
     }
   } else if (type == NotificationType::BROWSER_THEME_CHANGED) {
     // Update the spacing around the menu buttons
-    int border = theme_provider_->UseGtkTheme() ? 0 : 2;
+    bool use_gtk = theme_provider_->UseGtkTheme();
+    int border = use_gtk ? 0 : 2;
     gtk_container_set_border_width(
         GTK_CONTAINER(page_menu_button_.get()), border);
     gtk_container_set_border_width(
@@ -409,6 +406,18 @@ void BrowserToolbarGtk::Observe(NotificationType type,
         (theme_provider_->UseGtkTheme() ? kToolbarWidgetSpacing : 0) +
         (ShouldOnlyShowLocation() ? 1 : 0),
         GTK_PACK_START);
+
+    // Force the height of the toolbar so we get the right amount of padding
+    // above and below the location bar. We always force the size of the hboxes
+    // to either side of the location box, but we only force the location box
+    // size in chrome-theme mode because that's the only time we try to control
+    // the font size.
+    int toolbar_height = ShouldOnlyShowLocation() ?
+                         kToolbarHeightLocationBarOnly : kToolbarHeight;
+    gtk_widget_set_size_request(toolbar_left_, -1, toolbar_height);
+    gtk_widget_set_size_request(toolbar_right_, -1, toolbar_height);
+    gtk_widget_set_size_request(location_hbox_, -1,
+                                use_gtk ? -1 : toolbar_height);
 
     // When using the GTK+ theme, we need to have the event box be visible so
     // buttons don't get a halo color from the background.  When using Chromium
@@ -450,7 +459,7 @@ void BrowserToolbarGtk::UpdateTabContents(TabContents* contents,
 CustomDrawButton* BrowserToolbarGtk::BuildToolbarButton(
     int normal_id, int active_id, int highlight_id, int depressed_id,
     int background_id, const std::string& localized_tooltip,
-    const char* stock_id) {
+    const char* stock_id, int spacing) {
   CustomDrawButton* button = new CustomDrawButton(
       GtkThemeProvider::GetFrom(profile_),
       normal_id, active_id, highlight_id, depressed_id, background_id, stock_id,
@@ -461,8 +470,8 @@ CustomDrawButton* BrowserToolbarGtk::BuildToolbarButton(
   g_signal_connect(button->widget(), "clicked",
                    G_CALLBACK(OnButtonClickThunk), this);
 
-  gtk_box_pack_start(GTK_BOX(toolbar_), button->widget(), FALSE, FALSE,
-                     kToolbarWidgetSpacing);
+  gtk_box_pack_start(GTK_BOX(toolbar_left_), button->widget(), FALSE, FALSE,
+                     spacing);
   return button;
 }
 

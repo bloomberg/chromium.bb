@@ -126,7 +126,8 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
                                        int depressed_id,
                                        int background_id,
                                        const std::string& localized_tooltip,
-                                       const char* stock_id);
+                                       const char* stock_id,
+                                       int spacing);
 
   // Create a menu for the toolbar given the icon id and tooltip.  Returns the
   // widget created.
@@ -180,6 +181,13 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // Gtk widgets. The toolbar is an hbox with each of the other pieces of the
   // toolbar placed side by side.
   GtkWidget* toolbar_;
+
+  // All widgets to the left or right of the |location_hbox_|. We put the
+  // widgets on either side of location_hbox_ in their own toolbar so we can
+  // set their minimum sizes independently of |location_hbox_| which needs to
+  // grow/shrink in GTK+ mode.
+  GtkWidget* toolbar_left_;
+  GtkWidget* toolbar_right_;
 
   // Contains all the widgets of the location bar.
   GtkWidget* location_hbox_;

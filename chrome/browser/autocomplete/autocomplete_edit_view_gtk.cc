@@ -219,12 +219,6 @@ void AutocompleteEditViewGtk::Init() {
   if (popup_window_mode_)
     gtk_text_view_set_editable(GTK_TEXT_VIEW(text_view_), false);
 
-  // Until we switch to vector graphics, force the font size.
-  gtk_util::ForceFontSizePixels(text_view_,
-      popup_window_mode_ ?
-      browser_defaults::kAutocompleteEditFontPixelSizeInPopup :
-      browser_defaults::kAutocompleteEditFontPixelSize);
-
   // One pixel left margin is necessary to make the cursor visible when UI
   // language direction is LTR but |text_buffer_|'s content direction is RTL.
   gtk_text_view_set_left_margin(GTK_TEXT_VIEW(text_view_), 1);
@@ -626,6 +620,8 @@ void AutocompleteEditViewGtk::SetBaseColor() {
     gtk_widget_modify_base(text_view_, GTK_STATE_ACTIVE, NULL);
     gtk_widget_modify_text(text_view_, GTK_STATE_ACTIVE, NULL);
 
+    gtk_util::UndoForceFontSize(text_view_);
+
     // Grab the text colors out of the style and set our tags to use them.
     GtkStyle* style = gtk_rc_get_style(text_view_);
 
@@ -666,6 +662,12 @@ void AutocompleteEditViewGtk::SetBaseColor() {
     c = SkColorToGdkColor(theme_provider_->get_inactive_selection_fg_color());
     gtk_widget_modify_text(text_view_, GTK_STATE_ACTIVE, &c);
 #endif
+
+    // Until we switch to vector graphics, force the font size.
+    gtk_util::ForceFontSizePixels(text_view_,
+        popup_window_mode_ ?
+        browser_defaults::kAutocompleteEditFontPixelSizeInPopup :
+        browser_defaults::kAutocompleteEditFontPixelSize);
 
     g_object_set(faded_text_tag_, "foreground", kTextBaseColor, NULL);
     g_object_set(normal_text_tag_, "foreground", "#000000", NULL);

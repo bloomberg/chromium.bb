@@ -225,23 +225,21 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
                    G_CALLBACK(&OnEntryBoxSizeAllocateThunk), this);
 
   // Tab to search (the keyword box on the left hand side).
-  // Put full and partial labels into a GtkFixed, so that we can show one of
-  // them and hide the other easily.
   tab_to_search_full_label_ = gtk_label_new(NULL);
   tab_to_search_partial_label_ = gtk_label_new(NULL);
-  GtkWidget* tab_to_search_label_fixed = gtk_fixed_new();
-  gtk_fixed_put(GTK_FIXED(tab_to_search_label_fixed),
-                tab_to_search_full_label_, 0, 0);
-  gtk_fixed_put(GTK_FIXED(tab_to_search_label_fixed),
-                tab_to_search_partial_label_, 0, 0);
+  GtkWidget* tab_to_search_label_hbox = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(tab_to_search_label_hbox),
+                     tab_to_search_full_label_, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(tab_to_search_label_hbox),
+                     tab_to_search_partial_label_, FALSE, FALSE, 0);
   GtkWidget* tab_to_search_hbox = gtk_hbox_new(FALSE, 0);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   GtkWidget* tab_to_search_lens = gtk_image_new_from_pixbuf(
       rb.GetPixbufNamed(IDR_OMNIBOX_SEARCH));
   gtk_box_pack_start(GTK_BOX(tab_to_search_hbox), tab_to_search_lens,
                      FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(tab_to_search_hbox), tab_to_search_label_fixed,
-                     FALSE, FALSE, 0);
+  gtk_util::CenterWidgetInHBox(tab_to_search_hbox, tab_to_search_label_hbox,
+                               false, 0);
 
   // This creates a box around the keyword text with a border, background color,
   // and padding around the text.
@@ -258,25 +256,11 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   gtk_widget_hide(tab_to_search_partial_label_);
   gtk_box_pack_start(GTK_BOX(entry_box), tab_to_search_box_, FALSE, FALSE, 0);
 
-  GtkWidget* align = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-  // TODO(erg): Like in BrowserToolbarGtk, this used to have a code path on
-  // construction for with GTK themes and without. Doing that only on
-  // construction was wrong, and I can't see a difference between the two ways
-  // anyway... Investigate more later.
-  if (popup_window_mode_) {
-    gtk_alignment_set_padding(GTK_ALIGNMENT(align),
-                              kTopMargin + kBorderThickness,
-                              kBottomMargin + kBorderThickness,
-                              kBorderThickness,
-                              kBorderThickness);
-  } else {
-    gtk_alignment_set_padding(GTK_ALIGNMENT(align),
-                              kTopMargin + kBorderThickness,
-                              kBottomMargin + kBorderThickness,
-                              0, 0);
-  }
-  gtk_container_add(GTK_CONTAINER(align), location_entry_->GetNativeView());
-  gtk_box_pack_start(GTK_BOX(entry_box), align, TRUE, TRUE, 0);
+  location_entry_alignment_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+  gtk_container_add(GTK_CONTAINER(location_entry_alignment_),
+                    location_entry_->GetNativeView());
+  gtk_box_pack_start(GTK_BOX(entry_box), location_entry_alignment_,
+                     TRUE, TRUE, 0);
 
   // Tab to search notification (the hint on the right hand side).
   tab_to_search_hint_ = gtk_hbox_new(FALSE, 0);
@@ -329,18 +313,6 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
                       "chrome-page-action-hbox");
   gtk_box_pack_end(GTK_BOX(hbox_.get()), page_action_hbox_.get(),
                    FALSE, FALSE, 0);
-
-  // Until we switch to vector graphics, force the font size of labels.
-  gtk_util::ForceFontSizePixels(security_info_label_,
-      browser_defaults::kAutocompleteEditFontPixelSize);
-  gtk_util::ForceFontSizePixels(tab_to_search_full_label_,
-      browser_defaults::kAutocompleteEditFontPixelSize);
-  gtk_util::ForceFontSizePixels(tab_to_search_partial_label_,
-      browser_defaults::kAutocompleteEditFontPixelSize);
-  gtk_util::ForceFontSizePixels(tab_to_search_hint_leading_label_,
-      browser_defaults::kAutocompleteEditFontPixelSize);
-  gtk_util::ForceFontSizePixels(tab_to_search_hint_trailing_label_,
-      browser_defaults::kAutocompleteEditFontPixelSize);
 
   registrar_.Add(this,
                  NotificationType::BROWSER_THEME_CHANGED,
@@ -747,6 +719,15 @@ void LocationBarViewGtk::Observe(NotificationType type,
     gtk_util::SetLabelColor(tab_to_search_partial_label_, NULL);
     gtk_util::SetLabelColor(tab_to_search_hint_leading_label_, NULL);
     gtk_util::SetLabelColor(tab_to_search_hint_trailing_label_, NULL);
+
+    gtk_util::UndoForceFontSize(security_info_label_);
+    gtk_util::UndoForceFontSize(tab_to_search_full_label_);
+    gtk_util::UndoForceFontSize(tab_to_search_partial_label_);
+    gtk_util::UndoForceFontSize(tab_to_search_hint_leading_label_);
+    gtk_util::UndoForceFontSize(tab_to_search_hint_trailing_label_);
+
+    gtk_alignment_set_padding(GTK_ALIGNMENT(location_entry_alignment_),
+                              0, 0, 0, 0);
   } else {
     gtk_widget_modify_bg(tab_to_search_box_, GTK_STATE_NORMAL,
                          &kKeywordBackgroundColor);
@@ -759,6 +740,31 @@ void LocationBarViewGtk::Observe(NotificationType type,
                             &kHintTextColor);
     gtk_util::SetLabelColor(tab_to_search_hint_trailing_label_,
                             &kHintTextColor);
+
+    // Until we switch to vector graphics, force the font size of labels.
+    gtk_util::ForceFontSizePixels(security_info_label_,
+        browser_defaults::kAutocompleteEditFontPixelSize);
+    gtk_util::ForceFontSizePixels(tab_to_search_full_label_,
+        browser_defaults::kAutocompleteEditFontPixelSize);
+    gtk_util::ForceFontSizePixels(tab_to_search_partial_label_,
+        browser_defaults::kAutocompleteEditFontPixelSize);
+    gtk_util::ForceFontSizePixels(tab_to_search_hint_leading_label_,
+        browser_defaults::kAutocompleteEditFontPixelSize);
+    gtk_util::ForceFontSizePixels(tab_to_search_hint_trailing_label_,
+        browser_defaults::kAutocompleteEditFontPixelSize);
+
+    if (popup_window_mode_) {
+      gtk_alignment_set_padding(GTK_ALIGNMENT(location_entry_alignment_),
+                                kTopMargin + kBorderThickness,
+                                kBottomMargin + kBorderThickness,
+                                kBorderThickness,
+                                kBorderThickness);
+    } else {
+      gtk_alignment_set_padding(GTK_ALIGNMENT(location_entry_alignment_),
+                                kTopMargin + kBorderThickness,
+                                kBottomMargin + kBorderThickness,
+                                0, 0);
+    }
   }
 
   UpdateStarIcon();

@@ -366,6 +366,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
   scoped_ptr<AutocompleteEditViewGtk> location_entry_;
 
+  // Alignment used to wrap |location_entry_|.
+  GtkWidget* location_entry_alignment_;
+
   Profile* profile_;
   CommandUpdater* command_updater_;
   ToolbarModel* toolbar_model_;
