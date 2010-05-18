@@ -898,17 +898,6 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
                                      BrowserInit* browser_init) {
   DCHECK(profile);
   if (process_startup) {
-    const std::string popup_count_string =
-        command_line.GetSwitchValueASCII(switches::kOmniBoxPopupCount);
-    if (!popup_count_string.empty()) {
-      int count = 0;
-      if (StringToInt(popup_count_string, &count)) {
-        const int popup_count = std::max(0, count);
-        AutocompleteResult::set_max_matches(popup_count);
-        AutocompleteProvider::set_max_matches(popup_count / 2);
-      }
-    }
-
     if (command_line.HasSwitch(switches::kDisablePromptOnRepost))
       NavigationController::DisablePromptOnRepost();
 

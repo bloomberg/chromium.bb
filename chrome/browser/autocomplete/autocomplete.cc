@@ -547,7 +547,7 @@ void AutocompleteMatch::ValidateClassifications(
 // AutocompleteProvider -------------------------------------------------------
 
 // static
-size_t AutocompleteProvider::max_matches_ = 3;
+const size_t AutocompleteProvider::kMaxMatches = 3;
 
 AutocompleteProvider::~AutocompleteProvider() {
   Stop();
@@ -608,7 +608,7 @@ std::wstring AutocompleteProvider::StringForURLDisplay(
 // AutocompleteResult ---------------------------------------------------------
 
 // static
-size_t AutocompleteResult::max_matches_ = 6;
+const size_t AutocompleteResult::kMaxMatches = 6;
 
 void AutocompleteResult::Selection::Clear() {
   destination_url = GURL();
@@ -619,7 +619,7 @@ void AutocompleteResult::Selection::Clear() {
 AutocompleteResult::AutocompleteResult() {
   // Reserve space for the max number of matches we'll show. The +1 accounts
   // for the history shortcut match as it isn't included in max_matches.
-  matches_.reserve(max_matches() + 1);
+  matches_.reserve(kMaxMatches + 1);
 
   // It's probably safe to do this in the initializer list, but there's little
   // penalty to doing it here and it ensures our object is fully constructed
@@ -667,10 +667,10 @@ void AutocompleteResult::SortAndCull(const AutocompleteInput& input) {
                  matches_.end());
 
   // Find the top max_matches.
-  if (matches_.size() > max_matches()) {
-    std::partial_sort(matches_.begin(), matches_.begin() + max_matches(),
+  if (matches_.size() > kMaxMatches) {
+    std::partial_sort(matches_.begin(), matches_.begin() + kMaxMatches,
                       matches_.end(), &AutocompleteMatch::MoreRelevant);
-    matches_.erase(matches_.begin() + max_matches(), matches_.end());
+    matches_.erase(matches_.begin() + kMaxMatches, matches_.end());
   }
 
   // HistoryContentsProvider uses a negative relevance as a way to avoid

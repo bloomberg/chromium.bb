@@ -538,11 +538,11 @@ class AutocompleteProvider
   // NOTE: Remember to call OnProviderUpdate() if matches_ is updated.
   virtual void DeleteMatch(const AutocompleteMatch& match) {}
 
-  static void set_max_matches(size_t max_matches) {
-    max_matches_ = max_matches;
-  }
-
-  static size_t max_matches() { return max_matches_; }
+  // A suggested upper bound for how many matches a provider should return.
+  // TODO(pkasting): http://b/1111299 , http://b/933133 This should go away once
+  // we have good relevance heuristics; the controller should handle all
+  // culling.
+  static const size_t kMaxMatches;
 
  protected:
   friend class base::RefCountedThreadSafe<AutocompleteProvider>;
@@ -576,13 +576,7 @@ class AutocompleteProvider
   const char* name_;
 
  private:
-  // A suggested upper bound for how many matches a provider should return.
-  // TODO(pkasting): http://b/1111299 , http://b/933133 This should go away once
-  // we have good relevance heuristics; the controller should handle all
-  // culling.
-  static size_t max_matches_;
-
-  DISALLOW_EVIL_CONSTRUCTORS(AutocompleteProvider);
+  DISALLOW_COPY_AND_ASSIGN(AutocompleteProvider);
 };
 
 typedef AutocompleteProvider::ACProviderListener ACProviderListener;
@@ -627,11 +621,6 @@ class AutocompleteResult {
     // choosing the new "what you typed" entry and ignoring |destination_url|.
     bool is_history_what_you_typed_match;
   };
-
-  static void set_max_matches(size_t max_matches) {
-    max_matches_ = max_matches;
-  }
-  static size_t max_matches() { return max_matches_; }
 
   AutocompleteResult();
 
@@ -682,12 +671,12 @@ class AutocompleteResult {
   void Validate() const;
 #endif
 
- private:
   // Max number of matches we'll show from the various providers. We may end
   // up showing an additional shortcut for Destinations->History, see
   // AddHistoryContentsShortcut.
-  static size_t max_matches_;
+  static const size_t kMaxMatches;
 
+ private:
   ACMatches matches_;
 
   const_iterator default_match_;
@@ -701,7 +690,7 @@ class AutocompleteResult {
   // 'foo'" result, and this will contain "http://foo/".
   GURL alternate_nav_url_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(AutocompleteResult);
+  DISALLOW_COPY_AND_ASSIGN(AutocompleteResult);
 };
 
 // AutocompleteController -----------------------------------------------------
@@ -865,7 +854,7 @@ class AutocompleteController : public ACProviderListener {
   // fast or continuously the user is typing.
   base::RepeatingTimer<AutocompleteController> update_delay_timer_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(AutocompleteController);
+  DISALLOW_COPY_AND_ASSIGN(AutocompleteController);
 };
 
 // AutocompleteLog ------------------------------------------------------------

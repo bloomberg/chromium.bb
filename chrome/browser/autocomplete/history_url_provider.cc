@@ -152,14 +152,14 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
        ++i) {
     if (params->cancel)
       return;  // Canceled in the middle of a query, give up.
-    // We only need max_matches results in the end, but before we get there we
+    // We only need kMaxMatches results in the end, but before we get there we
     // need to promote lower-quality matches that are prefixes of
     // higher-quality matches, and remove lower-quality redirects.  So we ask
     // for more results than we need, of every prefix type, in hopes this will
     // give us far more than enough to work with.  CullRedirects() will then
-    // reduce the list to the best max_matches results.
+    // reduce the list to the best kMaxMatches results.
     db->AutocompleteForPrefix(i->prefix + params->input.text(),
-                              max_matches() * 2, &url_matches);
+                              kMaxMatches * 2, &url_matches);
     for (URLRowVector::const_iterator j(url_matches.begin());
          j != url_matches.end(); ++j) {
       const Prefix* best_prefix = BestPrefix(j->url(), std::wstring());
@@ -205,9 +205,9 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
     return;
 
   // Remove redirects and trim list to size.  We want to provide up to
-  // max_matches results plus the What You Typed result, if it was added to
+  // kMaxMatches results plus the What You Typed result, if it was added to
   // |history_matches| above.
-  CullRedirects(backend, &history_matches, max_matches() + exact_suggestion);
+  CullRedirects(backend, &history_matches, kMaxMatches + exact_suggestion);
 
   // Convert the history matches to autocomplete matches.
   for (size_t i = first_match; i < history_matches.size(); ++i) {

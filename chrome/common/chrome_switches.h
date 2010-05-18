@@ -167,7 +167,6 @@ extern const char kNoJsRandomness[];
 extern const char kNoProxyServer[];
 extern const char kNoReferrers[];
 extern const char kNoSandbox[];
-extern const char kOmniBoxPopupCount[];
 extern const char kOpenInNewWindow[];
 extern const char kPackExtension[];
 extern const char kPackExtensionKey[];

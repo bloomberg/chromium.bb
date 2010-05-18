@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -133,8 +133,8 @@ void KeywordProvider::Start(const AutocompleteInput& input,
                                                keyword.length(),
                                                remaining_input));
   } else {
-    if (keyword_matches.size() > max_matches()) {
-      keyword_matches.erase(keyword_matches.begin() + max_matches(),
+    if (keyword_matches.size() > kMaxMatches) {
+      keyword_matches.erase(keyword_matches.begin() + kMaxMatches,
                             keyword_matches.end());
     }
     for (std::vector<std::wstring>::const_iterator i(keyword_matches.begin());

@@ -578,9 +578,6 @@ const char kNoProxyServer[]                 = "no-proxy-server";
 // Runs the renderer outside the sandbox.
 const char kNoSandbox[]                     = "no-sandbox";
 
-// Number of entries to show in the omnibox popup.
-const char kOmniBoxPopupCount[]             = "omnibox-popup-count";
-
 // Launch URL in new browser window.
 const char kOpenInNewWindow[]               = "new-window";
 

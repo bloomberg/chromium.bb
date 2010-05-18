@@ -328,7 +328,7 @@ void SearchProvider::ScheduleHistoryQuery(TemplateURL::IDType search_id,
       profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   HistoryService::Handle request_handle =
       history_service->GetMostRecentKeywordSearchTerms(
-          search_id, text, static_cast<int>(max_matches()),
+          search_id, text, static_cast<int>(kMaxMatches),
           &history_request_consumer_,
           NewCallback(this,
                       &SearchProvider::OnGotMostRecentKeywordSearchTerms));
@@ -440,7 +440,7 @@ bool SearchProvider::ParseSuggestResults(Value* root_val,
       NavigationResults& navigation_results =
           is_keyword ? keyword_navigation_results_ :
                        default_navigation_results_;
-      if ((navigation_results.size() < max_matches()) &&
+      if ((navigation_results.size() < kMaxMatches) &&
           description_list && description_list->Get(i, &site_val) &&
           site_val->IsType(Value::TYPE_STRING) &&
           site_val->GetAsString(&site_name)) {
@@ -454,7 +454,7 @@ bool SearchProvider::ParseSuggestResults(Value* root_val,
     } else {
       // TODO(kochi): Currently we treat a calculator result as a query, but it
       // is better to have better presentation for caluculator results.
-      if (suggest_results->size() < max_matches())
+      if (suggest_results->size() < kMaxMatches)
         suggest_results->push_back(suggestion_str);
     }
   }
@@ -499,7 +499,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   AddNavigationResultsToMatches(keyword_navigation_results_, true);
   AddNavigationResultsToMatches(default_navigation_results_, false);
 
-  const size_t max_total_matches = max_matches() + 1;  // 1 for "what you typed"
+  const size_t max_total_matches = kMaxMatches + 1;  // 1 for "what you typed"
   std::partial_sort(matches_.begin(),
       matches_.begin() + std::min(max_total_matches, matches_.size()),
       matches_.end(), &AutocompleteMatch::MoreRelevant);

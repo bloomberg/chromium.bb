@@ -174,12 +174,12 @@ void HistoryContentsProvider::ConvertResults() {
   // This is done to avoid having the history search shortcut show
   // 'See 1 previously viewed ...'.
   //
-  // Note that AutocompleteResult::max_matches() (maximum size of the popup)
-  // is different than both max_matches (the provider's maximum) and
+  // Note that AutocompleteResult::kMaxMatches (maximum size of the popup)
+  // is different than both kMaxMatches (the provider's maximum) and
   // kMaxMatchCount (the number of items we want from the history).
-  size_t max_for_popup = std::min(AutocompleteResult::max_matches() + 1,
+  size_t max_for_popup = std::min(AutocompleteResult::kMaxMatches + 1,
                                   result_refs.size());
-  size_t max_for_provider = std::min(max_matches(), result_refs.size());
+  size_t max_for_provider = std::min(kMaxMatches, result_refs.size());
   std::partial_sort(result_refs.begin(), result_refs.begin() + max_for_popup,
                     result_refs.end(), &CompareMatchRelevance);
   matches_.clear();
@@ -265,7 +265,7 @@ void HistoryContentsProvider::QueryBookmarks(const AutocompleteInput& input) {
 
   TimeTicks start_time = TimeTicks::Now();
   std::vector<bookmark_utils::TitleMatch> matches;
-  bookmark_model->GetBookmarksWithTitlesMatching(input.text(), max_matches(),
+  bookmark_model->GetBookmarksWithTitlesMatching(input.text(), kMaxMatches,
                                                  &matches);
   for (size_t i = 0; i < matches.size(); ++i)
     AddBookmarkTitleMatchToResults(matches[i]);
