@@ -1423,6 +1423,27 @@ function getFunctionForItem(path, id, isDirectory) {
   return function() {};
 }
 
+/**
+ * Double click handler for items.
+ *
+ * @param {string} path The file path of the item.
+ * @param {string} id The id for this item.
+ * @param {boolean} isDirectory Whether this item is a directory.
+ * @return {Function} The function to handle the double click.
+ */
+function getDoubleClickForItem(path, id, isDirectory) {
+  if (isDirectory) {
+    return function() {};
+  }
+  if (inSelectMode) {
+     return function() {
+       selectItem(id, path);
+       dialogOkClick();
+     };
+  }
+  return function() {};
+}
+
 var elementIdCounter = 0;
 
 function createNewItem(title, path, isDirectory) {
@@ -1434,6 +1455,7 @@ function createNewItem(title, path, isDirectory) {
   var link;
   link = document.createElement('div');
   link.onclick = getFunctionForItem(path, element.id, isDirectory);
+  link.ondblclick = getDoubleClickForItem(path, element.id, isDirectory);
   link.className = 'rowlink';
 
   var icon = document.createElement('div');
