@@ -344,7 +344,7 @@ class AutoExceptionHandler {
   AutoExceptionHandler() {
     // Increment handler_stack_index_ so that if another Breakpad handler is
     // registered using this same HandleException function, and it needs to be
-    // called while this handler is running (either becaause this handler
+    // called while this handler is running (either because this handler
     // declines to handle the exception, or an exception occurs during
     // handling), HandleException will find the appropriate ExceptionHandler
     // object in handler_stack_ to deliver the exception to.
@@ -362,7 +362,6 @@ class AutoExceptionHandler {
     handler_ = ExceptionHandler::handler_stack_->at(
         ExceptionHandler::handler_stack_->size() -
         ++ExceptionHandler::handler_stack_index_);
-    LeaveCriticalSection(&ExceptionHandler::handler_stack_critical_section_);
 
     // In case another exception occurs while this handler is doing its thing,
     // it should be delivered to the previous filter.
@@ -381,7 +380,6 @@ class AutoExceptionHandler {
 #endif  // _MSC_VER >= 1400
     _set_purecall_handler(ExceptionHandler::HandlePureVirtualCall);
 
-    EnterCriticalSection(&ExceptionHandler::handler_stack_critical_section_);
     --ExceptionHandler::handler_stack_index_;
     LeaveCriticalSection(&ExceptionHandler::handler_stack_critical_section_);
   }
