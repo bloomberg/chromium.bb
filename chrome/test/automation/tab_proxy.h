@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -306,7 +306,7 @@ class TabProxy : public AutomationResourceProxy,
   // Retrieves the different security states for the current tab.
   bool GetSecurityState(SecurityStyle* security_style,
                         int* ssl_cert_status,
-                        int* mixed_content_state) WARN_UNUSED_RESULT;
+                        int* insecure_content_status) WARN_UNUSED_RESULT;
 
   // Returns the type of the page currently showing (normal, interstitial,
   // error).

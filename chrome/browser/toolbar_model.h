@@ -26,7 +26,7 @@ class ToolbarModel {
     EV_SECURE,         // HTTPS with valid EV cert
     SECURE,            // HTTPS (non-EV)
     SECURITY_WARNING,  // HTTPS, but unable to check certificate revocation
-                       // status or with mixed content on the page
+                       // status or with insecure content on the page
     SECURITY_ERROR,    // Attempted HTTPS and failed, page not authenticated
     NUM_SECURITY_LEVELS,
   };

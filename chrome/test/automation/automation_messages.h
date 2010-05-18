@@ -452,8 +452,8 @@ struct NavigationInfo {
   std::wstring title;
   GURL url;
   SecurityStyle security_style;
-  bool displayed_mixed_content;
-  bool ran_mixed_content;
+  bool displayed_insecure_content;
+  bool ran_insecure_content;
 };
 
 // Traits for NavigationInfo structure to pack/unpack.
@@ -467,8 +467,8 @@ struct ParamTraits<NavigationInfo> {
     WriteParam(m, p.title);
     WriteParam(m, p.url);
     WriteParam(m, p.security_style);
-    WriteParam(m, p.displayed_mixed_content);
-    WriteParam(m, p.ran_mixed_content);
+    WriteParam(m, p.displayed_insecure_content);
+    WriteParam(m, p.ran_insecure_content);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return ReadParam(m, iter, &p->navigation_type) &&
@@ -477,8 +477,8 @@ struct ParamTraits<NavigationInfo> {
            ReadParam(m, iter, &p->title) &&
            ReadParam(m, iter, &p->url) &&
            ReadParam(m, iter, &p->security_style) &&
-           ReadParam(m, iter, &p->displayed_mixed_content) &&
-           ReadParam(m, iter, &p->ran_mixed_content);
+           ReadParam(m, iter, &p->displayed_insecure_content) &&
+           ReadParam(m, iter, &p->ran_insecure_content);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"(");
@@ -494,9 +494,9 @@ struct ParamTraits<NavigationInfo> {
     l->append(L", ");
     LogParam(p.security_style, l);
     l->append(L", ");
-    LogParam(p.displayed_mixed_content, l);
+    LogParam(p.displayed_insecure_content, l);
     l->append(L", ");
-    LogParam(p.ran_mixed_content, l);
+    LogParam(p.ran_insecure_content, l);
     l->append(L")");
   }
 };

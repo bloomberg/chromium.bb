@@ -1,5 +1,5 @@
 <html>
-<head><title>Page that displays mixed content</title>
+<head><title>Page that displays insecure content</title>
 <script>
   function ImageWidth() {
     return document.getElementById("bad_image").width;
@@ -8,7 +8,7 @@
 </head>
 <body>
 This page contains an image which is served over an http connection,
-causing mixed contents (when this page is loaded over https).<br>
+causing insecure content (when this page is loaded over https).<br>
 <img id="bad_image" src="http://localhost:1337/files/ssl/google_files/logo.gif"/>
 
 </body>

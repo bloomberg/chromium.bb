@@ -34,14 +34,15 @@ class SSLUITest : public InProcessBrowserTest {
   }
 
   void CheckAuthenticatedState(TabContents* tab,
-                               bool displayed_mixed_content) {
+                               bool displayed_insecure_content) {
     NavigationEntry* entry = tab->controller().GetActiveEntry();
     ASSERT_TRUE(entry);
     EXPECT_EQ(NavigationEntry::NORMAL_PAGE, entry->page_type());
     EXPECT_EQ(SECURITY_STYLE_AUTHENTICATED, entry->ssl().security_style());
     EXPECT_EQ(0, entry->ssl().cert_status() & net::CERT_STATUS_ALL_ERRORS);
-    EXPECT_EQ(displayed_mixed_content, entry->ssl().displayed_mixed_content());
-    EXPECT_FALSE(entry->ssl().ran_mixed_content());
+    EXPECT_EQ(displayed_insecure_content,
+              entry->ssl().displayed_insecure_content());
+    EXPECT_FALSE(entry->ssl().ran_insecure_content());
   }
 
   void CheckUnauthenticatedState(TabContents* tab) {
@@ -50,13 +51,13 @@ class SSLUITest : public InProcessBrowserTest {
     EXPECT_EQ(NavigationEntry::NORMAL_PAGE, entry->page_type());
     EXPECT_EQ(SECURITY_STYLE_UNAUTHENTICATED, entry->ssl().security_style());
     EXPECT_EQ(0, entry->ssl().cert_status() & net::CERT_STATUS_ALL_ERRORS);
-    EXPECT_FALSE(entry->ssl().displayed_mixed_content());
-    EXPECT_FALSE(entry->ssl().ran_mixed_content());
+    EXPECT_FALSE(entry->ssl().displayed_insecure_content());
+    EXPECT_FALSE(entry->ssl().ran_insecure_content());
   }
 
   void CheckAuthenticationBrokenState(TabContents* tab,
                                       int error,
-                                      bool ran_mixed_content,
+                                      bool ran_insecure_content,
                                       bool interstitial) {
     NavigationEntry* entry = tab->controller().GetActiveEntry();
     ASSERT_TRUE(entry);
@@ -69,8 +70,8 @@ class SSLUITest : public InProcessBrowserTest {
     // to SECURITY_STYLE_AUTHENTICATION_BROKEN.
     ASSERT_NE(net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION, error);
     EXPECT_EQ(error, entry->ssl().cert_status() & net::CERT_STATUS_ALL_ERRORS);
-    EXPECT_FALSE(entry->ssl().displayed_mixed_content());
-    EXPECT_EQ(ran_mixed_content, entry->ssl().ran_mixed_content());
+    EXPECT_FALSE(entry->ssl().displayed_insecure_content());
+    EXPECT_EQ(ran_insecure_content, entry->ssl().ran_insecure_content());
   }
 
   void CheckWorkerLoadResult(TabContents* tab, bool expectLoaded) {
@@ -369,34 +370,34 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorWithNoNavEntry) {
 }
 
 //
-// Mixed contents
+// Insecure content
 //
 
-// Visits a page that displays mixed content.
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysMixedContent) {
+// Visits a page that displays insecure content.
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureContent) {
   scoped_refptr<HTTPSTestServer> https_server = GoodCertServer();
   ASSERT_TRUE(https_server.get() != NULL);
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
   ASSERT_TRUE(http_server.get() != NULL);
 
-  // Load a page that displays mixed content.
+  // Load a page that displays insecure content.
   ui_test_utils::NavigateToURL(browser(), https_server->TestServerPage(
-                               "files/ssl/page_displays_mixed_content.html"));
+      "files/ssl/page_displays_insecure_content.html"));
 
   CheckAuthenticatedState(browser()->GetSelectedTabContents(), true);
 }
 
-// Visits a page that runs mixed content and tries to suppress the mixed content
-// warnings by randomizing location.hash.
+// Visits a page that runs insecure content and tries to suppress the insecure
+// content warnings by randomizing location.hash.
 // Based on http://crbug.com/8706
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsMixedContentRandomizeHash) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsInsecuredContentRandomizeHash) {
   scoped_refptr<HTTPSTestServer> https_server = GoodCertServer();
   ASSERT_TRUE(https_server.get() != NULL);
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
   ASSERT_TRUE(http_server.get() != NULL);
 
-  ui_test_utils::NavigateToURL(browser(),
-      https_server->TestServerPage("files/ssl/page_runs_mixed_content.html"));
+  ui_test_utils::NavigateToURL(browser(), https_server->TestServerPage(
+      "files/ssl/page_runs_insecure_content.html"));
 
   CheckAuthenticationBrokenState(browser()->GetSelectedTabContents(), 0, true,
                                  false);
@@ -443,15 +444,16 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestUnsafeContents) {
   EXPECT_FALSE(js_result);
 }
 
-// Visits a page with mixed content loaded by JS (after the initial page load).
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysMixedContentLoadedFromJS) {
+// Visits a page with insecure content loaded by JS (after the initial page
+// load).
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureContentLoadedFromJS) {
   scoped_refptr<HTTPSTestServer> https_server = GoodCertServer();
   ASSERT_TRUE(https_server.get() != NULL);
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
   ASSERT_TRUE(http_server.get() != NULL);
 
   ui_test_utils::NavigateToURL(browser(), https_server->TestServerPage(
-      "files/ssl/page_with_dynamic_mixed_contents.html"));
+      "files/ssl/page_with_dynamic_insecure_content.html"));
 
   TabContents* tab = browser()->GetSelectedTabContents();
   CheckAuthenticatedState(tab, false);
@@ -462,14 +464,14 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysMixedContentLoadedFromJS) {
       tab->render_view_host(), std::wstring(), L"loadBadImage();", &js_result));
   EXPECT_TRUE(js_result);
 
-  // We should now have mixed-contents.
+  // We should now have insecure content.
   CheckAuthenticatedState(tab, true);
 }
 
-// Visits two pages from the same origin: one that displays mixed content and
-// one that doesn't.  The test checks that we do not propagate the mixed content
-// state from one to the other.
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysMixedContentTwoTabs) {
+// Visits two pages from the same origin: one that displays insecure content and
+// one that doesn't.  The test checks that we do not propagate the insecure
+// content state from one to the other.
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureContentTwoTabs) {
   scoped_refptr<HTTPSTestServer> https_server = GoodCertServer();
   ASSERT_TRUE(https_server.get() != NULL);
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
@@ -485,23 +487,23 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysMixedContentTwoTabs) {
 
   // Create a new tab.
   GURL url = https_server->TestServerPage(
-      "files/ssl/page_displays_mixed_content.html");
+      "files/ssl/page_displays_insecure_content.html");
   TabContents* tab2 = browser()->AddTabWithURL(url, GURL(),
       PageTransition::TYPED, 0, Browser::ADD_SELECTED, tab1->GetSiteInstance(),
       std::string());
   ui_test_utils::WaitForNavigation(&(tab2->controller()));
 
-  // The new tab has mixed content.
+  // The new tab has insecure content.
   CheckAuthenticatedState(tab2, true);
 
   // The original tab should not be contaminated.
   CheckAuthenticatedState(tab1, false);
 }
 
-// Visits two pages from the same origin: one that runs mixed content and one
-// that doesn't.  The test checks that we propagate the mixed content state from
-// one to the other.
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsMixedContentTwoTabs) {
+// Visits two pages from the same origin: one that runs insecure content and one
+// that doesn't.  The test checks that we propagate the insecure content state
+// from one to the other.
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsInsecureContentTwoTabs) {
   scoped_refptr<HTTPSTestServer> https_server = GoodCertServer();
   ASSERT_TRUE(https_server.get() != NULL);
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
@@ -517,59 +519,59 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsMixedContentTwoTabs) {
 
   // Create a new tab.
   GURL url =
-      https_server->TestServerPage("files/ssl/page_runs_mixed_content.html");
+      https_server->TestServerPage("files/ssl/page_runs_insecure_content.html");
   TabContents* tab2 = browser()->AddTabWithURL(url, GURL(),
       PageTransition::TYPED, 0, Browser::ADD_SELECTED, tab1->GetSiteInstance(),
       std::string());
   ui_test_utils::WaitForNavigation(&(tab2->controller()));
 
-  // The new tab has mixed content.
+  // The new tab has insecure content.
   CheckAuthenticationBrokenState(tab2, 0, true, false);
 
   // Which means the origin for the first tab has also been contaminated with
-  // mixed content.
+  // insecure content.
   CheckAuthenticationBrokenState(tab1, 0, true, false);
 }
 
 // Visits a page with an image over http.  Visits another page over https
 // referencing that same image over http (hoping it is coming from the webcore
 // memory cache).
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysCachedMixedContent) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysCachedInsecureContent) {
   scoped_refptr<HTTPSTestServer> https_server = GoodCertServer();
   ASSERT_TRUE(https_server.get() != NULL);
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
   ASSERT_TRUE(http_server.get() != NULL);
 
   ui_test_utils::NavigateToURL(browser(), http_server->TestServerPage(
-      "files/ssl/page_displays_mixed_content.html"));
+      "files/ssl/page_displays_insecure_content.html"));
   TabContents* tab = browser()->GetSelectedTabContents();
   CheckUnauthenticatedState(tab);
 
-  // Load again but over SSL.  It should be marked as displaying mixed content
-  // (even though the image comes from the WebCore memory cache).
+  // Load again but over SSL.  It should be marked as displaying insecure
+  // content (even though the image comes from the WebCore memory cache).
   ui_test_utils::NavigateToURL(browser(), https_server->TestServerPage(
-      "files/ssl/page_displays_mixed_content.html"));
+      "files/ssl/page_displays_insecure_content.html"));
   CheckAuthenticatedState(tab, true);
 }
 
 // Visits a page with script over http.  Visits another page over https
 // referencing that same script over http (hoping it is coming from the webcore
 // memory cache).
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsCachedMixedContent) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsCachedInsecureContent) {
   scoped_refptr<HTTPSTestServer> https_server = GoodCertServer();
   ASSERT_TRUE(https_server.get() != NULL);
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
   ASSERT_TRUE(http_server.get() != NULL);
 
   ui_test_utils::NavigateToURL(browser(),
-      http_server->TestServerPage("files/ssl/page_runs_mixed_content.html"));
+      http_server->TestServerPage("files/ssl/page_runs_insecure_content.html"));
   TabContents* tab = browser()->GetSelectedTabContents();
   CheckUnauthenticatedState(tab);
 
-  // Load again but over SSL.  It should be marked as displaying mixed content
-  // (even though the image comes from the WebCore memory cache).
-  ui_test_utils::NavigateToURL(browser(),
-      https_server->TestServerPage("files/ssl/page_runs_mixed_content.html"));
+  // Load again but over SSL.  It should be marked as displaying insecure
+  // content (even though the image comes from the WebCore memory cache).
+  ui_test_utils::NavigateToURL(browser(), https_server->TestServerPage(
+      "files/ssl/page_runs_insecure_content.html"));
   CheckAuthenticationBrokenState(tab, 0, true, false);
 }
 
@@ -808,8 +810,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestConnectToBadPort) {
 // - navigate to an OK HTTPS frame
 // - navigate to a bad HTTPS (expect unsafe content and filtered frame), then
 //   back
-// - navigate to HTTP (expect mixed content), then back
-IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestGoodFrameNavigation) {
+// - navigate to HTTP (expect insecure content), then back
+IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestGoodFrameNavigation) {
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
   ASSERT_TRUE(http_server.get() != NULL);
   scoped_refptr<HTTPSTestServer> good_https_server = GoodCertServer();
@@ -869,7 +871,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestGoodFrameNavigation) {
   EXPECT_TRUE(success);
   ui_test_utils::WaitForNavigation(&tab->controller());
 
-  // Our state should be mixed-content.
+  // Our state should be insecure.
   CheckAuthenticatedState(tab, true);
 
   // Go back, our state should be unchanged.
@@ -972,7 +974,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestUnsafeContentsInWorkerFiltered) {
   ui_test_utils::NavigateToURL(browser(), good_https_server->TestServerPage(
       "files/ssl/page_with_unsafe_worker.html"));
   TabContents* tab = browser()->GetSelectedTabContents();
-  // Expect Worker not to load mixed content.
+  // Expect Worker not to load insecure content.
   CheckWorkerLoadResult(tab, false);
   // The bad content is filtered, expect the state to be authenticated.
   CheckAuthenticatedState(tab, false);
@@ -997,11 +999,11 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestUnsafeContentsInWorker) {
                                  false);  // No Interstitial
 
   // Navigate to safe page that has Worker loading unsafe content.
-  // Expect content to load but be marked as auth broken due to running mixed
+  // Expect content to load but be marked as auth broken due to running insecure
   // content.
   ui_test_utils::NavigateToURL(browser(), good_https_server->TestServerPage(
       "files/ssl/page_with_unsafe_worker.html"));
-  CheckWorkerLoadResult(tab, true);  // Worker loads mixed content
+  CheckWorkerLoadResult(tab, true);  // Worker loads insecure content
   CheckAuthenticationBrokenState(tab, 0, true, false);
 }
 
@@ -1009,9 +1011,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestUnsafeContentsInWorker) {
 
 // Visit a page over https that contains a frame with a redirect.
 
-// XMLHttpRequest mixed in synchronous mode.
+// XMLHttpRequest insecure content in synchronous mode.
 
-// XMLHttpRequest mixed in asynchronous mode.
+// XMLHttpRequest insecure content in asynchronous mode.
 
 // XMLHttpRequest over bad ssl in synchronous mode.
 

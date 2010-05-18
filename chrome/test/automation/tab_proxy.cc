@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -564,8 +564,8 @@ bool TabProxy::WaitForTabToBeRestored(uint32 timeout_ms) {
 
 bool TabProxy::GetSecurityState(SecurityStyle* security_style,
                                 int* ssl_cert_status,
-                                int* mixed_content_state) {
-  DCHECK(security_style && ssl_cert_status && mixed_content_state);
+                                int* insecure_content_status) {
+  DCHECK(security_style && ssl_cert_status && insecure_content_status);
 
   if (!is_valid())
     return false;
@@ -574,7 +574,7 @@ bool TabProxy::GetSecurityState(SecurityStyle* security_style,
 
   sender_->Send(new AutomationMsg_GetSecurityState(
       0, handle_, &succeeded, security_style, ssl_cert_status,
-      mixed_content_state));
+      insecure_content_status));
 
   return succeeded;
 }

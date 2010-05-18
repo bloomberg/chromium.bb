@@ -172,7 +172,7 @@ TEST_F(PageInfoWindowMacTest, NoHistoryMixedSecurity) {
               ASCIIToUTF16("chrome.google.com"),
               IntToString16(1024)),
           l10n_util::GetStringUTF16(
-              IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_MIXED_CONTENT_WARNING)));
+              IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_WARNING)));
 
   bridge_->ModelChanged();
 

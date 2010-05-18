@@ -122,31 +122,27 @@ PageInfoModel::PageInfoModel(Profile* profile,
   description.clear();
   if (ssl.security_bits() <= 0) {
     state = false;
-    description.assign(
-        l10n_util::GetStringFUTF16(
-            IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
-            subject_name));
+    description.assign(l10n_util::GetStringFUTF16(
+        IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
+        subject_name));
   } else if (ssl.security_bits() < 80) {
     state = false;
-    description.assign(
-        l10n_util::GetStringFUTF16(
-            IDS_PAGE_INFO_SECURITY_TAB_WEAK_ENCRYPTION_CONNECTION_TEXT,
-            subject_name));
+    description.assign(l10n_util::GetStringFUTF16(
+        IDS_PAGE_INFO_SECURITY_TAB_WEAK_ENCRYPTION_CONNECTION_TEXT,
+        subject_name));
   } else {
-    description.assign(
-        l10n_util::GetStringFUTF16(
-            IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_CONNECTION_TEXT,
-            subject_name,
-            IntToString16(ssl.security_bits())));
-    if (ssl.displayed_mixed_content() || ssl.ran_mixed_content()) {
+    description.assign(l10n_util::GetStringFUTF16(
+        IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_CONNECTION_TEXT,
+        subject_name,
+        IntToString16(ssl.security_bits())));
+    if (ssl.displayed_insecure_content() || ssl.ran_insecure_content()) {
       state = false;
-      description.assign(
-          l10n_util::GetStringFUTF16(
-              IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK,
-              description,
-              l10n_util::GetStringUTF16(ssl.ran_mixed_content() ?
-                  IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_MIXED_CONTENT_ERROR :
-                  IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_MIXED_CONTENT_WARNING)));
+      description.assign(l10n_util::GetStringFUTF16(
+          IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK,
+          description,
+          l10n_util::GetStringUTF16(ssl.ran_insecure_content() ?
+              IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_ERROR :
+              IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_WARNING)));
     }
   }
   sections_.push_back(SectionInfo(

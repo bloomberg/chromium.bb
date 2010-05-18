@@ -124,11 +124,6 @@ const wchar_t kSearchSuggestEnabled[] = L"search.suggest_enabled";
 // 2 - block all cookies
 const wchar_t kCookieBehavior[] = L"security.cookie_behavior";
 
-// Boolean that is true if mixed content should be filtered.
-// TODO(jcampan): http://b/1084034: at some point this will become an enum
-//                 (int): don't filter, filter everything, filter images only.
-const wchar_t kMixedContentFiltering[] = L"security.mixed_content_filtering";
-
 // The URL (as understood by TemplateURLRef) the default search provider uses
 // for searches.
 const wchar_t kDefaultSearchProviderSearchURL[] =

@@ -96,7 +96,6 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   PasswordManager::RegisterUserPrefs(user_prefs);
   chrome_browser_net::RegisterUserPrefs(user_prefs);
   DownloadManager::RegisterUserPrefs(user_prefs);
-  SSLManager::RegisterUserPrefs(user_prefs);
   bookmark_utils::RegisterUserPrefs(user_prefs);
   TabContents::RegisterUserPrefs(user_prefs);
   TemplateURLPrepopulateData::RegisterUserPrefs(user_prefs);

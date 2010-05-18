@@ -23,12 +23,6 @@
 #include "net/base/cert_status_flags.h"
 
 // static
-void SSLManager::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterIntegerPref(prefs::kMixedContentFiltering,
-                             FilterPolicy::DONT_FILTER);
-}
-
-// static
 void SSLManager::OnSSLCertificateError(ResourceDispatcherHost* rdh,
                                        URLRequest* request,
                                        int cert_error,
@@ -256,11 +250,11 @@ void SSLManager::DidStartResourceResponse(ResourceRequestDetails* details) {
 }
 
 void SSLManager::DidReceiveResourceRedirect(ResourceRedirectDetails* details) {
-  // TODO(abarth): Make sure our redirect behavior is correct.  If we ever see
-  //               a non-HTTPS resource in the redirect chain, we want to
-  //               trigger mixed content, even if the redirect chain goes back
-  //               to HTTPS.  This is because the network attacker can redirect
-  //               the HTTP request to https://attacker.com/payload.js.
+  // TODO(abarth): Make sure our redirect behavior is correct.  If we ever see a
+  //               non-HTTPS resource in the redirect chain, we want to trigger
+  //               insecure content, even if the redirect chain goes back to
+  //               HTTPS.  This is because the network attacker can redirect the
+  //               HTTP request to https://attacker.com/payload.js.
 }
 
 void SSLManager::DidChangeSSLInternalState() {

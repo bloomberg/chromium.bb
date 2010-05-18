@@ -2441,19 +2441,19 @@ void AutomationProvider::WaitForTabToBeRestored(int tab_handle,
 void AutomationProvider::GetSecurityState(int handle, bool* success,
                                           SecurityStyle* security_style,
                                           int* ssl_cert_status,
-                                          int* mixed_content_status) {
+                                          int* insecure_content_status) {
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
     NavigationEntry* entry = tab->GetActiveEntry();
     *success = true;
     *security_style = entry->ssl().security_style();
     *ssl_cert_status = entry->ssl().cert_status();
-    *mixed_content_status = entry->ssl().content_status();
+    *insecure_content_status = entry->ssl().content_status();
   } else {
     *success = false;
     *security_style = SECURITY_STYLE_UNKNOWN;
     *ssl_cert_status = 0;
-    *mixed_content_status = 0;
+    *insecure_content_status = 0;
   }
 }
 

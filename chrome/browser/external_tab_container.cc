@@ -750,8 +750,9 @@ bool ExternalTabContainer::InitNavigationInfo(IPC::NavigationInfo* nav_info,
     nav_info->title = UTF8ToWide(nav_info->url.spec());
 
   nav_info->security_style = entry->ssl().security_style();
-  nav_info->displayed_mixed_content = entry->ssl().displayed_mixed_content();
-  nav_info->ran_mixed_content = entry->ssl().ran_mixed_content();
+  nav_info->displayed_insecure_content =
+      entry->ssl().displayed_insecure_content();
+  nav_info->ran_insecure_content = entry->ssl().ran_insecure_content();
   return true;
 }
 

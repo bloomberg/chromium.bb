@@ -642,10 +642,10 @@ void ChromeActiveDocument::UpdateNavigationState(
   bool is_title_changed = (navigation_info_.title != new_navigation_info.title);
   bool is_ssl_state_changed =
       (navigation_info_.security_style != new_navigation_info.security_style) ||
-      (navigation_info_.displayed_mixed_content !=
-          new_navigation_info.displayed_mixed_content) ||
-      (navigation_info_.ran_mixed_content !=
-          new_navigation_info.ran_mixed_content);
+      (navigation_info_.displayed_insecure_content !=
+          new_navigation_info.displayed_insecure_content) ||
+      (navigation_info_.ran_insecure_content !=
+          new_navigation_info.ran_insecure_content);
 
   if (is_ssl_state_changed) {
     int lock_status = SECURELOCK_SET_UNSECURE;
@@ -654,7 +654,7 @@ void ChromeActiveDocument::UpdateNavigationState(
         lock_status = SECURELOCK_SET_SECUREUNKNOWNBIT;
         break;
       case SECURITY_STYLE_AUTHENTICATED:
-        lock_status = new_navigation_info.displayed_mixed_content ?
+        lock_status = new_navigation_info.displayed_insecure_content ?
             SECURELOCK_SET_MIXED : SECURELOCK_SET_SECUREUNKNOWNBIT;
         break;
       default:

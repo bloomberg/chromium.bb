@@ -596,7 +596,7 @@ IPC_BEGIN_MESSAGES(Automation)
   //  - SecurityStyle: the security style of the tab.
   //  - int: the status of the server's ssl cert (0 means no errors or no ssl
   //         was used).
-  //  - int: the mixed content state, 0 means no mixed/unsafe contents.
+  //  - int: the insecure content state, 0 means no insecure contents.
 
   IPC_SYNC_MESSAGE_ROUTED1_4(AutomationMsg_GetSecurityState,
                              int,

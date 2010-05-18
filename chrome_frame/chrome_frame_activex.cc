@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -365,7 +365,7 @@ STDMETHODIMP ChromeFrameActivex::Load(IPropertyBag* bag, IErrorLog* error_log) {
   return hr;
 }
 
-const wchar_t g_activex_mixed_content_error[] = {
+const wchar_t g_activex_insecure_content_error[] = {
     L"data:text/html,<html><body><b>ChromeFrame Security Error<br><br>"
     L"Cannot navigate to HTTP url when document URL is HTTPS</body></html>"};
 
@@ -374,7 +374,7 @@ STDMETHODIMP ChromeFrameActivex::put_src(BSTR src) {
   if (document_url.SchemeIsSecure()) {
     GURL source_url(src);
     if (!source_url.SchemeIsSecure()) {
-      Base::put_src(ScopedBstr(g_activex_mixed_content_error));
+      Base::put_src(ScopedBstr(g_activex_insecure_content_error));
       return E_ACCESSDENIED;
     }
   }

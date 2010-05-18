@@ -796,7 +796,7 @@ void RenderThread::EnsureWebKitInitialized() {
   WebSecurityPolicy::registerURLSchemeAsLocal(chrome_ui_scheme);
   WebSecurityPolicy::registerURLSchemeAsNoAccess(chrome_ui_scheme);
 
-  // chrome-extension: resources shouldn't trigger mixed content warnings.
+  // chrome-extension: resources shouldn't trigger insecure content warnings.
   WebString extension_scheme(ASCIIToUTF16(chrome::kExtensionScheme));
   WebSecurityPolicy::registerURLSchemeAsSecure(extension_scheme);
 

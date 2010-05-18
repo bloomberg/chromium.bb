@@ -79,7 +79,7 @@ ToolbarModel::SecurityLevel ToolbarModel::GetSecurityLevel() const {
       return SECURITY_ERROR;
 
     case SECURITY_STYLE_AUTHENTICATED:
-      if (ssl.displayed_mixed_content())
+      if (ssl.displayed_insecure_content())
         return SECURITY_WARNING;
       if (net::IsCertStatusError(ssl.cert_status())) {
         DCHECK_EQ(ssl.cert_status() & net::CERT_STATUS_ALL_ERRORS,

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,10 +7,10 @@
 
 #include "base/basictypes.h"
 
-// When an insecure resource (mixed content or bad HTTPS) is loaded, the browser
-// can decide to filter it.  The filtering is done in the renderer.  This class
-// enumerates the different policy that can be used for the filtering.  It is
-// passed along with resource response messages.
+// When an insecure resource (insecure content or bad HTTPS) is loaded, the
+// browser can decide to filter it.  The filtering is done in the renderer.
+// This class enumerates the different policy that can be used for the
+// filtering.  It is passed along with resource response messages.
 // It can be used for content post-processing, like message replacement within
 // extension css files.
 class FilterPolicy {

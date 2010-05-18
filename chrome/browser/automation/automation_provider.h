@@ -548,7 +548,7 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   // Gets the security state for the tab associated to the specified |handle|.
   void GetSecurityState(int handle, bool* success,
                         SecurityStyle* security_style, int* ssl_cert_status,
-                        int* mixed_content_status);
+                        int* insecure_content_status);
 
   // Gets the page type for the tab associated to the specified |handle|.
   void GetPageType(int handle, bool* success,

@@ -49,7 +49,6 @@ extern const wchar_t kFormAutofillEnabled[];  // OBSOLETE
 extern const wchar_t kSafeBrowsingEnabled[];
 extern const wchar_t kSearchSuggestEnabled[];
 extern const wchar_t kCookieBehavior[];  // OBSOLETE
-extern const wchar_t kMixedContentFiltering[];
 extern const wchar_t kDefaultSearchProviderSearchURL[];
 extern const wchar_t kDefaultSearchProviderSuggestURL[];
 extern const wchar_t kDefaultSearchProviderName[];

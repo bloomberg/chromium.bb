@@ -38,8 +38,6 @@ class URLRequest;
 
 class SSLManager : public NotificationObserver {
  public:
-  static void RegisterUserPrefs(PrefService* prefs);
-
   // Entry point for SSLCertificateErrors.  This function begins the process
   // of resolving a certificate error during an SSL connection.  SSLManager
   // will adjust the security UI and either call |Cancel| or
@@ -84,7 +82,7 @@ class SSLManager : public NotificationObserver {
   // are notified of this event.
   void DidCommitProvisionalLoad(const NotificationDetails& details);
 
-  // Mixed content entry point.
+  // Insecure content entry point.
   void DidRunInsecureContent(const std::string& security_origin);
 
   // Called to determine if there were any processed SSL errors from request.

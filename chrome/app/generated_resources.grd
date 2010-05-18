@@ -5050,10 +5050,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT" desc="The text of the connection section when the connection is not encrypted.">
         Your connection to <ph name="DOMAIN">$1<ex>www.google.com</ex></ph> is not encrypted.
       </message>
-      <message name="IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_MIXED_CONTENT_WARNING" desc="Some extra text of the connection section when the connection is encrypted and the page contains mixed content which has been displayed (e.g. images, CSS).">
+      <message name="IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_WARNING" desc="Some extra text of the connection section when the connection is encrypted and the page contains insecure content which has been displayed (e.g. images, CSS).">
         However, this page includes other resources which are not secure. These resources can be viewed by others while in transit, and can be modified by an attacker to change the look of the page.
       </message>
-      <message name="IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_MIXED_CONTENT_ERROR" desc="Some extra text of the connection section when the connection is encrypted and the page contains mixed content which has been run (e.g. script).">
+      <message name="IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_ERROR" desc="Some extra text of the connection section when the connection is encrypted and the page contains insecure content which has been run (e.g. script).">
         However, this page includes other resources which are not secure. These resources can be viewed by others while in transit, and can be modified by an attacker to change the behavior of the page.
       </message>
       <message name="IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK" desc="Linking 2 sentences in 1 paragraph.">
@@ -5091,7 +5091,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_UNSAFE_FRAME_MESSAGE" desc="The text displayed in the content that is subsituted to an unsafe frame.">
         This frame was blocked because it contains some insecure content.
       </message>
-      <message name="IDS_MIXED_CONTENT_LOG_MESSAGE" desc="The text displayed in the log message of a page that contains insecure content.">
+      <message name="IDS_INSECURE_CONTENT_LOG_MESSAGE" desc="The text displayed in the log message of a page that contains insecure content.">
         The page at <ph name="SECURE_PAGE_URL">$1<ex>https://www.google.com/</ex></ph> contains insecure content from <ph name="INSECURE_RESOURCE_URL">$2<ex>http://www.google.com/</ex></ph>.
       </message>
 

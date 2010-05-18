@@ -125,13 +125,13 @@ void SSLPolicy::OnRequestStarted(SSLRequestInfo* info) {
 
     if (info->resource_type() != ResourceType::MAIN_FRAME &&
         info->resource_type() != ResourceType::SUB_FRAME) {
-      // The frame's origin now contains mixed content and therefore is broken.
+      // The frame's origin now contains insecure content.
       OriginRanInsecureContent(info->frame_origin(), info->child_id());
     }
 
     if (info->resource_type() != ResourceType::MAIN_FRAME) {
-      // The main frame now contains a frame with mixed content.  Therefore, we
-      // mark the main frame's origin as broken too.
+      // The main frame now contains a frame with insecure content.  Therefore,
+      // we mark the main frame's origin as broken too.
       OriginRanInsecureContent(info->main_frame_origin(), info->child_id());
     }
   }
@@ -165,17 +165,17 @@ void SSLPolicy::UpdateEntry(NavigationEntry* entry, TabContents* tab_contents) {
   SiteInstance* site_instance = entry->site_instance();
   // Note that |site_instance| can be NULL here because NavigationEntries don't
   // necessarily have site instances.  Without a process, the entry can't
-  // possibly have mixed content.  See bug http://crbug.com/12423.
+  // possibly have insecure content.  See bug http://crbug.com/12423.
   if (site_instance &&
       backend_->DidHostRunInsecureContent(entry->url().host(),
                                           site_instance->GetProcess()->id())) {
     entry->ssl().set_security_style(SECURITY_STYLE_AUTHENTICATION_BROKEN);
-    entry->ssl().set_ran_mixed_content();
+    entry->ssl().set_ran_insecure_content();
     return;
   }
 
   if (tab_contents->displayed_insecure_content())
-    entry->ssl().set_displayed_mixed_content();
+    entry->ssl().set_displayed_insecure_content();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
