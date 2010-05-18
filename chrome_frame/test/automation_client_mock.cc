@@ -5,6 +5,7 @@
 
 #include "base/callback.h"
 #include "net/base/net_errors.h"
+#include "chrome_frame/custom_sync_call_context.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 
 #define GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
@@ -79,11 +80,13 @@ ACTION_P3(HandleCreateTab, tab_handle, external_tab_container, tab_wnd) {
   // arg0 - message
   // arg1 - callback
   // arg2 - key
-  CallbackRunner<Tuple3<HWND, HWND, int> >* c =
-      reinterpret_cast<CallbackRunner<Tuple3<HWND, HWND, int> >*>(arg1);
-  c->Run(external_tab_container, tab_wnd, tab_handle);
-  delete c;
-  delete arg0;
+  CreateExternalTabContext::output_type input_args(tab_wnd,
+                                                   external_tab_container,
+                                                   tab_handle);
+  CreateExternalTabContext* context =
+      reinterpret_cast<CreateExternalTabContext*>(arg1);
+  DispatchToMethod(context, &CreateExternalTabContext::Completed, input_args);
+  delete context;
 }
 
 // We mock ChromeFrameDelegate only. The rest is with real AutomationProxy
@@ -343,8 +346,11 @@ class TestChromeFrameAutomationProxyImpl
   TestChromeFrameAutomationProxyImpl()
       : ChromeFrameAutomationProxyImpl(1) {  // 1 is an unneeded timeout.
   }
-  MOCK_METHOD3(SendAsAsync, void(IPC::SyncMessage* msg, void* callback,
-                                 void* key));
+  MOCK_METHOD3(
+      SendAsAsync,
+      void(IPC::SyncMessage* msg,
+           SyncMessageReplyDispatcher::SyncMessageCallContext* context,
+           void* key));
   void FakeChannelError() {
     reinterpret_cast<IPC::ChannelProxy::MessageFilter*>(message_filter_.get())->
         OnChannelError();
