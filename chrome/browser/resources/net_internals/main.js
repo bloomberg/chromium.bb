@@ -68,9 +68,7 @@ function onLoaded() {
                               "connectionTestsForm", "testSummary");
 
   var httpCacheView = new HttpCacheView("httpCacheTabContent",
-                                        "reloadHttpCacheListing",
-                                        "httpCacheStats",
-                                        "httpCacheListing");
+                                        "httpCacheStats");
 
   // Create a view which lets you tab between the different sub-views.
   var categoryTabSwitcher =
@@ -126,9 +124,9 @@ function BrowserBridge() {
   // List of observers for various bits of browser state.
   this.logObservers_ = [];
   this.connectionTestsObservers_ = [];
-  this.httpCacheInfoObservers_ = [];
   this.proxySettings_ = new PollableDataHelper('onProxySettingsChanged');
   this.badProxies_ = new PollableDataHelper('onBadProxiesChanged');
+  this.httpCacheInfo_ = new PollableDataHelper('onHttpCacheInfoChanged');
   this.hostResolverCache_ =
       new PollableDataHelper('onHostResolverCacheChanged');
 
@@ -272,8 +270,7 @@ BrowserBridge.prototype.receivedCompletedConnectionTestSuite = function() {
 };
 
 BrowserBridge.prototype.receivedHttpCacheInfo = function(info) {
-  for (var i = 0; i < this.httpCacheInfoObservers_.length; ++i)
-    this.httpCacheInfoObservers_[i].onHttpCacheInfoReceived(info);
+  this.httpCacheInfo_.update(info);
 };
 
 //------------------------------------------------------------------------------
@@ -343,10 +340,10 @@ BrowserBridge.prototype.addConnectionTestsObserver = function(observer) {
  * Adds a listener for the http cache info results.
  * The observer will be called back with:
  *
- *   observer.onHttpCacheInfoReceived(info);
+ *   observer.onHttpCacheInfoChanged(info);
  */
 BrowserBridge.prototype.addHttpCacheInfoObserver = function(observer) {
-  this.httpCacheInfoObservers_.push(observer);
+  this.httpCacheInfo_.addObserver(observer);
 };
 
 /**
@@ -388,6 +385,7 @@ BrowserBridge.prototype.doPolling_ = function() {
   this.sendGetProxySettings();
   this.sendGetBadProxies();
   this.sendGetHostResolverCache();
+  this.sendGetHttpCacheInfo();
 };
 
 /**

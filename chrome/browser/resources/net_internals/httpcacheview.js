@@ -6,15 +6,10 @@
  * This view displays information on the HTTP cache.
  *  @constructor
  */
-function HttpCacheView(mainBoxId, reloadButtonId, statsDivId,
-                       entryListingDivId) {
+function HttpCacheView(mainBoxId, statsDivId) {
   DivView.call(this, mainBoxId);
 
-  var reloadButton = document.getElementById(reloadButtonId);
-  reloadButton.onclick = this.reloadListing_.bind(this);
-
   this.statsDiv_ = document.getElementById(statsDivId);
-  this.entryListingDiv_ = document.getElementById(entryListingDivId);
 
   // Register to receive http cache info.
   g_browser.addHttpCacheInfoObserver(this);
@@ -22,8 +17,7 @@ function HttpCacheView(mainBoxId, reloadButtonId, statsDivId,
 
 inherits(HttpCacheView, DivView);
 
-HttpCacheView.prototype.onHttpCacheInfoReceived = function(info) {
-  this.entryListingDiv_.innerHTML = '';
+HttpCacheView.prototype.onHttpCacheInfoChanged = function(info) {
   this.statsDiv_.innerHTML = '';
 
   // Print the statistics.
@@ -32,21 +26,5 @@ HttpCacheView.prototype.onHttpCacheInfoReceived = function(info) {
     var li = addNode(statsUl, 'li');
     addTextNode(li, statName + ': ' + info.stats[statName]);
   }
-
-  // Print the entries.
-  var keysOl = addNode(this.entryListingDiv_, 'ol');
-  for (var i = 0; i < info.keys.length; ++i) {
-    var key = info.keys[i];
-    var li = addNode(keysOl, 'li');
-    var a = addNode(li, 'a');
-    addTextNode(a, key);
-    a.href = 'chrome://view-http-cache/' + key;
-    a.target = '_blank';
-  }
 };
 
-HttpCacheView.prototype.reloadListing_ = function() {
-  this.entryListingDiv_.innerHTML = 'Loading...';
-  this.statsDiv_.innerHTML = 'Loading...';
-  g_browser.sendGetHttpCacheInfo();
-};

@@ -116,6 +116,16 @@ DataView.prototype.onExportToText_ = function() {
 
   this.appendRequestsPrintedAsText_(text);
 
+  text.push('');
+  text.push('----------------------------------------------');
+  text.push(' Http cache stats');
+  text.push('----------------------------------------------');
+  text.push('');
+
+  var httpCacheStats = g_browser.httpCacheInfo_.currentData_.stats;
+  for (var statName in httpCacheStats)
+    text.push(statName + ': ' + httpCacheStats[statName]);
+
   // Open a new window to display this text.
   this.setText_(text.join('\n'));
 };

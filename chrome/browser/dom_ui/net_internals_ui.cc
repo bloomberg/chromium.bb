@@ -557,6 +557,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
   OnGetProxySettings(NULL);
   OnGetBadProxies(NULL);
   OnGetHostResolverCache(NULL);
+  OnGetHttpCacheInfo(NULL);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetProxySettings(
@@ -732,22 +733,12 @@ void NetInternalsMessageHandler::IOThreadImpl::OnStartConnectionTests(
 void NetInternalsMessageHandler::IOThreadImpl::OnGetHttpCacheInfo(
     const Value* value) {
   DictionaryValue* info_dict = new DictionaryValue();
-  ListValue* entry_keys = new ListValue();
   DictionaryValue* stats_dict = new DictionaryValue();
 
   disk_cache::Backend* disk_cache = GetDiskCacheBackend(
       context_getter_->GetURLRequestContext());
 
   if (disk_cache) {
-    // Iterate over all the entries in the cache, to discover the keys.
-    // WARNING: this can be slow! (and will block the IO thread).
-    void* iter = NULL;
-    disk_cache::Entry* entry;
-    while (disk_cache->OpenNextEntry(&iter, &entry)) {
-      entry_keys->Append(Value::CreateStringValue(entry->GetKey()));
-      entry->Close();
-    }
-
     // Extract the statistics key/value pairs from the backend.
     std::vector<std::pair<std::string, std::string> > stats;
     disk_cache->GetStats(&stats);
@@ -757,7 +748,6 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHttpCacheInfo(
     }
   }
 
-  info_dict->Set(L"keys", entry_keys);
   info_dict->Set(L"stats", stats_dict);
 
   CallJavascriptFunction(L"g_browser.receivedHttpCacheInfo", info_dict);
