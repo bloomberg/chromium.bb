@@ -906,40 +906,6 @@ TEST_F(GLES2DecoderWithShaderTest, GetActiveAttribBadSharedMemoryFails) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(GLES2DecoderWithShaderTest, GetShaderInfoLogValidArgs) {
-  const char* kInfo = "hello";
-  const uint32 kBucketId = 123;
-  CompileShader compile_cmd;
-  GetShaderInfoLog cmd;
-  EXPECT_CALL(*gl_, ShaderSource(kServiceShaderId, 1, _, _));
-  EXPECT_CALL(*gl_, CompileShader(kServiceShaderId));
-  EXPECT_CALL(*gl_, GetShaderiv(kServiceShaderId, GL_INFO_LOG_LENGTH, _))
-      .WillOnce(SetArgumentPointee<2>(strlen(kInfo) + 1))
-      .RetiresOnSaturation();
-  EXPECT_CALL(
-      *gl_, GetShaderInfoLog(kServiceShaderId, strlen(kInfo) + 1, _, _))
-      .WillOnce(DoAll(SetArgumentPointee<2>(strlen(kInfo)),
-                      SetArrayArgument<3>(kInfo, kInfo + strlen(kInfo) + 1)));
-  compile_cmd.Init(client_shader_id_);
-  cmd.Init(client_shader_id_, kBucketId);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(compile_cmd));
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  CommonDecoder::Bucket* bucket = decoder_->GetBucket(kBucketId);
-  ASSERT_TRUE(bucket != NULL);
-  EXPECT_EQ(strlen(kInfo) + 1, bucket->size());
-  EXPECT_EQ(0, memcmp(bucket->GetData(0, bucket->size()), kInfo,
-                      bucket->size()));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-TEST_F(GLES2DecoderWithShaderTest, GetShaderInfoLogInvalidArgs) {
-  const uint32 kBucketId = 123;
-  GetShaderInfoLog cmd;
-  cmd.Init(kInvalidClientId, kBucketId);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-}
-
 TEST_F(GLES2DecoderTest, CompileShaderValidArgs) {
   EXPECT_CALL(*gl_, ShaderSource(kServiceShaderId, 1, _, _));
   EXPECT_CALL(*gl_, CompileShader(kServiceShaderId));
