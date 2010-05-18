@@ -2219,6 +2219,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
 - (void)removeButton:(NSInteger)buttonIndex animate:(BOOL)animate {
   if (buttonIndex < (NSInteger)[buttons_ count]) {
+    // The button being removed is showing in the bar.
     BookmarkButton* oldButton = [buttons_ objectAtIndex:buttonIndex];
     NSRect poofFrame = [oldButton bounds];
     NSPoint poofPoint = NSMakePoint(NSMidX(poofFrame), NSMidY(poofFrame));
@@ -2243,6 +2244,11 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     }
     --displayedButtonCount_;
     [self reconfigureBookmarkBar];
+  } else if (folderController_) {
+    // The button being removed is in the OTS (off-the-side) and the OTS
+    // menu is showing so we need to remove the button.
+    NSInteger index = buttonIndex - displayedButtonCount_;
+    [folderController_ removeButton:index animate:YES];
   }
 }
 

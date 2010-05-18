@@ -1317,6 +1317,11 @@ TEST_F(BookmarkBarControllerTest, OffTheSideFolder) {
     model->AddURL(parent, parent->GetChildCount(),
                   L"medium-size-title", GURL("http://framma-lamma.com"));
   }
+  // Add a couple more so we can delete one and make sure its button goes away.
+  model->AddURL(parent, parent->GetChildCount(),
+                L"DELETE_ME", GURL("http://ashton-tate.com"));
+  model->AddURL(parent, parent->GetChildCount(),
+                L"medium-size-title", GURL("http://framma-lamma.com"));
 
   // Should no longer be hidden.
   EXPECT_FALSE([bar_ offTheSideButtonIsHidden]);
@@ -1340,6 +1345,13 @@ TEST_F(BookmarkBarControllerTest, OffTheSideFolder) {
       }
     }
   }
+
+  // Delete a bookmark in the off-the-side and verify it's gone.
+  BookmarkButton* button = [bbfc buttonWithTitleEqualTo:@"DELETE_ME"];
+  EXPECT_TRUE(button);
+  model->Remove(parent, parent->GetChildCount() - 2);
+  button = [bbfc buttonWithTitleEqualTo:@"DELETE_ME"];
+  EXPECT_FALSE(button);
 }
 
 TEST_F(BookmarkBarControllerTest, EventToExitCheck) {
