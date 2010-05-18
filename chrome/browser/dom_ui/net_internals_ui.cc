@@ -498,6 +498,32 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
     CallJavascriptFunction(L"g_browser.receivedLogEventTypeConstants", dict);
   }
 
+  // Tell the javascript about the relationship between load flag enums and
+  // their symbolic name.
+  {
+    DictionaryValue* dict = new DictionaryValue();
+
+#define LOAD_FLAG(label, value) \
+    dict->SetInteger(ASCIIToWide(# label), static_cast<int>(value));
+#include "net/base/load_flags_list.h"
+#undef LOAD_FLAG
+
+    CallJavascriptFunction(L"g_browser.receivedLoadFlagConstants", dict);
+  }
+
+  // Tell the javascript about the relationship between net error codes and
+  // their symbolic name.
+  {
+    DictionaryValue* dict = new DictionaryValue();
+
+#define NET_ERROR(label, value) \
+    dict->SetInteger(ASCIIToWide(# label), static_cast<int>(value));
+#include "net/base/net_error_list.h"
+#undef NET_ERROR
+
+    CallJavascriptFunction(L"g_browser.receivedNetErrorConstants", dict);
+  }
+
   // Tell the javascript about the relationship between event phase enums and
   // their symbolic name.
   {

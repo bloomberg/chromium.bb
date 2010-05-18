@@ -119,11 +119,53 @@ function getTextForExtraParams(entry) {
     default:
       var out = [];
       for (var k in entry.params) {
-        out.push(' --> ' + k + ' = ' +
-                 JSON.stringify(entry.params[k]));
+        var value = entry.params[k];
+        var paramStr = ' --> ' + k + ' = ' + JSON.stringify(value);
+
+        // Append the symbolic name for certain constants. (This relies
+        // on particular naming of event parameters to infer the type).
+        if (typeof value == 'number') {
+          if (k == 'net_error') {
+            paramStr += ' (' + getNetErrorSymbolicString(value) + ')';
+          } else if (k == 'load_flags') {
+            paramStr += ' (' + getLoadFlagSymbolicString(value) + ')';
+          }
+        }
+
+        out.push(paramStr);
       }
       return out.join('\n');
   }
+}
+
+/**
+ * Returns the name for netError.
+ *
+ * Example: getNetErrorSymbolicString(-105) would return
+ * "NAME_NOT_RESOLVED".
+ */
+function getNetErrorSymbolicString(netError) {
+  return getKeyWithValue(NetError, netError);
+}
+
+/**
+ * Returns the set of LoadFlags that make up the integer |loadFlag|.
+ * For example: getLoadFlagSymbolicString(
+ */
+function getLoadFlagSymbolicString(loadFlag) {
+  // Load flag of 0 means "NORMAL". Special case this, since and-ing with
+  // 0 is always going to be false.
+  if (loadFlag == 0)
+    return getKeyWithValue(LoadFlag, loadFlagNames);
+
+  var matchingLoadFlagNames = [];
+
+  for (var k in LoadFlag) {
+    if (loadFlag & LoadFlag[k])
+      matchingLoadFlagNames.push(k);
+  }
+
+  return matchingLoadFlagNames.join(' | ');
 }
 
 /**

@@ -8,6 +8,8 @@
 var LogEventType = null;
 var LogEventPhase = null;
 var LogSourceType = null;
+var NetError = null;
+var LoadFlag = null;
 
 /**
  * Object to communicate between the renderer and the browser.
@@ -216,6 +218,14 @@ function(constantsMap) {
 BrowserBridge.prototype.receivedLogSourceTypeConstants =
 function(constantsMap) {
   LogSourceType = constantsMap;
+};
+
+BrowserBridge.prototype.receivedLoadFlagConstants = function(constantsMap) {
+  LoadFlag = constantsMap;
+};
+
+BrowserBridge.prototype.receivedNetErrorConstants = function(constantsMap) {
+  NetError = constantsMap;
 };
 
 BrowserBridge.prototype.receivedTimeTickOffset = function(timeTickOffset) {
