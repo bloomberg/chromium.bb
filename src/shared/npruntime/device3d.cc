@@ -89,9 +89,9 @@ static NPError InitializeContext(NPP instance,
           NPPToWireFormat(instance),
           config3d->commandBufferSize,
           &shm_desc,
-          &context3d->commandBufferSize,
-          &context3d->getOffset,
-          &context3d->putOffset);
+          reinterpret_cast<int32_t *>(&context3d->commandBufferSize),
+          reinterpret_cast<int32_t *>(&context3d->getOffset),
+          reinterpret_cast<int32_t *>(&context3d->putOffset));
   if (NACL_SRPC_RESULT_OK != retval) {
     goto cleanup;
   }
@@ -188,8 +188,8 @@ static NPError FlushContext(NPP instance,
   NaClSrpcError retval =
       nav->Device3DFlush(NPPToWireFormat(instance),
                          context3d->putOffset,
-                         &context3d->getOffset,
-                         &context3d->token,
+                         reinterpret_cast<int32_t *>(&context3d->getOffset),
+                         reinterpret_cast<int32_t *>(&context3d->token),
                          &error);
   if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
@@ -254,7 +254,7 @@ NPError CreateBuffer(NPP instance,
           NPPToWireFormat(instance),
           static_cast<int32_t>(size),
           &shm_desc,
-          id);
+          reinterpret_cast<int32_t *>(id));
   if (NACL_SRPC_RESULT_OK != retval) {
     goto cleanup;
   }

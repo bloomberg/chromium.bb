@@ -555,8 +555,8 @@ nacl_libraries: ALWAYS
 	--- $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/pgl/pgl.h\n\
 	+++ $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/pgl/pgl.h\n\
 	@@ -8,2 +8,2 @@\n\
-	-#include \"npapi.h\"\n\
-	-#include \"npapi_extensions.h\"\n\
+	-#include <npapi.h>\n\
+	-#include <npapi_extensions.h>\n\
 	+#include <nacl/npapi.h>\n\
 	+#include <nacl/npapi_extensions.h>\n" |\
 	patch -p0 -N

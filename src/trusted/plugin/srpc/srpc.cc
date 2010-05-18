@@ -313,6 +313,7 @@ NPError SRPC_Plugin::GetValue(NPPVariable variable, void* value) {
     case NPPVpluginScriptableIID:
     case NPPVjavascriptPushCallerBool:
     case NPPVpluginKeepLibraryInMemory:
+    case NPPVpluginNativeAccessibleAtkPlugId:
     case NPPVpluginNeedsXEmbed:
     case NPPVformValue:
     case NPPVpluginUrlRequestsDisplayedBool:

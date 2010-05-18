@@ -25,7 +25,7 @@ command_buffer_client_srcs = [
     '$SOURCE_ROOT/gpu/command_buffer/client/gles2_cmd_helper.cc',
     '$SOURCE_ROOT/gpu/command_buffer/client/gles2_implementation.cc',
     '$SOURCE_ROOT/gpu/command_buffer/client/gles2_lib.cc',
-    '$SOURCE_ROOT/gpu/command_buffer/client/id_allocator.cc',
+    '$SOURCE_ROOT/gpu/command_buffer/client/ring_buffer.cc',
     ]
 
 command_buffer_srcs = command_buffer_common_srcs + command_buffer_client_srcs;

@@ -73,11 +73,11 @@ static NPError InitializeContext(NPP instance,
           channel,
           NPPToWireFormat(instance),
           &shm_desc,
-          &context2d->stride,
-          &context2d->dirty.left,
-          &context2d->dirty.top,
-          &context2d->dirty.right,
-          &context2d->dirty.bottom);
+          reinterpret_cast<int32_t *>(&context2d->stride),
+          reinterpret_cast<int32_t *>(&context2d->dirty.left),
+          reinterpret_cast<int32_t *>(&context2d->dirty.top),
+          reinterpret_cast<int32_t *>(&context2d->dirty.right),
+          reinterpret_cast<int32_t *>(&context2d->dirty.bottom));
   if (NACL_SRPC_RESULT_OK != retval) {
     goto cleanup;
   }
@@ -171,12 +171,12 @@ static NPError FlushContext(NPP instance,
   NPNavigator* nav = NPNavigator::GetNavigator();
   NaClSrpcError retval =
       Device2DRpcClient::Device2DFlush(nav->channel(),
-                                       NPPToWireFormat(instance),
-                                       &context2d->stride,
-                                       &context2d->dirty.left,
-                                       &context2d->dirty.top,
-                                       &context2d->dirty.right,
-                                       &context2d->dirty.bottom);
+          NPPToWireFormat(instance),
+          reinterpret_cast<int32_t *>(&context2d->stride),
+          reinterpret_cast<int32_t *>(&context2d->dirty.left),
+          reinterpret_cast<int32_t *>(&context2d->dirty.top),
+          reinterpret_cast<int32_t *>(&context2d->dirty.right),
+          reinterpret_cast<int32_t *>(&context2d->dirty.bottom));
   if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
   }
