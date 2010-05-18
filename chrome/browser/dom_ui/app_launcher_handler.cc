@@ -147,10 +147,10 @@ void AppLauncherHandler::HandleLaunchApp(const Value* value) {
 
   std::string extension_id;
   std::string launch_container;
-  int left;
-  int top;
-  int width;
-  int height;
+  int left = 0;
+  int top = 0;
+  int width = 0;
+  int height = 0;
 
   const ListValue* list = static_cast<const ListValue*>(value);
   if (!list->GetString(0, &extension_id) ||
