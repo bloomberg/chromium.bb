@@ -199,6 +199,21 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """Are we on Mac/Linux?"""
     return PyUITest.IsMac() or PyUITest.IsLinux()
 
+  @staticmethod
+  def EvalDataFrom(filename):
+    """Return eval of python code from given file.
+
+    The datastructure used in the file will be preserved.
+    """
+    data_file = os.path.join(filename)
+    contents = open(data_file).read()
+    try:
+      ret = eval(contents, {'__builtins__': None}, None)
+    except:
+      print >>sys.stderr, '%s is an invalid data file.' % data_file
+      raise
+    return ret
+
   def WaitUntil(self, function, timeout=-1, retry_sleep=0.25, args=[]):
     """Poll on a condition until timeout.
 

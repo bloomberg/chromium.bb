@@ -5,6 +5,7 @@
 # The filenames are provided as unicode strings so that this file can remain
 # ascii.
 # Used by: chrome/test/functional/downloads.py
+#          chrome/test/functional/omnibox.py
 
 [
   u'a_file_name.zip',

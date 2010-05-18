@@ -86,27 +86,14 @@ class DownloadsTest(pyauto.PyUITest):
       self.assertTrue(os.path.exists(filename))
       os.path.exists(filename) and os.remove(filename)
 
-  def _EvalDataFrom(self, filename):
-    """Return eval of python code from given file.
-
-    The datastructure used in the file will be preserved.
-    """
-    data_file = os.path.join(self.DataDir(), 'downloads', filename)
-    contents = open(data_file).read()
-    try:
-      ret = eval(contents, {'__builtins__': None}, None)
-    except:
-      print >>sys.stderr, '%s is an invalid data file.' % data_file
-      raise
-    return ret
-
   def testCrazyFilenames(self):
     """Test downloading with filenames containing special chars.
 
        The files are created on the fly and cleaned after use.
     """
     download_dir = self.GetDownloadDirectory().value()
-    crazy_filenames = self._EvalDataFrom('crazy_filenames.txt')
+    filename = os.path.join(self.DataDir(), 'downloads', 'crazy_filenames.txt')
+    crazy_filenames = self.EvalDataFrom(filename)
     logging.info('Testing with %d crazy filenames' % len(crazy_filenames))
 
     def _CreateFile(name):
