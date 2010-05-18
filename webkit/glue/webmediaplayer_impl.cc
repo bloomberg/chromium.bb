@@ -250,6 +250,9 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
   DCHECK(MessageLoop::current() == main_loop_);
   DCHECK(proxy_);
 
+  // Handle any volume changes that occured before load().
+  setVolume(GetClient()->volume());
+
   // Initialize the pipeline.
   SetNetworkState(WebKit::WebMediaPlayer::Loading);
   SetReadyState(WebKit::WebMediaPlayer::HaveNothing);
