@@ -12,9 +12,15 @@
 
 #if defined(UNIT_TEST)
   #include "gpu/command_buffer/service/gl_mock.h"
+  // OpenGL constants not defined in OpenGL ES 2.0 needed when compiling
+  // unit tests. For native OpenGL ES 2.0 backend these are not used. For OpenGL
+  // backend these must be defined by the local system.
   #if !defined(GL_VERTEX_PROGRAM_POINT_SIZE)
     #define GL_VERTEX_PROGRAM_POINT_SIZE 0x8642
   #endif
+  #define GL_MAX_FRAGMENT_UNIFORM_COMPONENTS 0x8B49
+  #define GL_MAX_VERTEX_UNIFORM_COMPONENTS 0x8B4A
+  #define GL_MAX_VARYING_FLOATS 0x8B4B
 #else
   #if defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
     #include <GLES2/gl2.h>  // NOLINT

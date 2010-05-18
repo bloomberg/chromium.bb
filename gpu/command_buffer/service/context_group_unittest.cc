@@ -27,6 +27,11 @@ TEST_F(ContextGroupTest, Basic) {
   // Test it starts off uninitialized.
   EXPECT_EQ(0u, group_.max_vertex_attribs());
   EXPECT_EQ(0u, group_.max_texture_units());
+  EXPECT_EQ(0u, group_.max_texture_image_units());
+  EXPECT_EQ(0u, group_.max_vertex_texture_image_units());
+  EXPECT_EQ(0u, group_.max_fragment_uniform_vectors());
+  EXPECT_EQ(0u, group_.max_varying_vectors());
+  EXPECT_EQ(0u, group_.max_vertex_uniform_vectors());
   EXPECT_TRUE(group_.buffer_manager() == NULL);
   EXPECT_TRUE(group_.framebuffer_manager() == NULL);
   EXPECT_TRUE(group_.renderbuffer_manager() == NULL);
