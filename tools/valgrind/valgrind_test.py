@@ -215,6 +215,7 @@ class ValgrindTool(BaseTool):
   def __init__(self):
     BaseTool.__init__(self)
     self.RegisterOptionParserHook(ValgrindTool.ExtendOptionParser)
+    self._indirect_analyze_results_file = ""
 
   def UseXML(self):
     # Override if tool prefers nonxml output
@@ -378,18 +379,14 @@ class ValgrindTool(BaseTool):
 
     logfilename = self.TMP_DIR + ("/%s." % tool_name) + "%p"
     if self.UseXML():
-      if os.system("valgrind --help | grep -q xml-file") == 0:
-        proc += ["--xml=yes", "--xml-file=" + logfilename]
-      else:
-        # TODO(dank): remove once valgrind-3.5 is deployed everywhere
-        proc += ["--xml=yes", "--log-file=" + logfilename]
+      proc += ["--xml=yes", "--xml-file=" + logfilename]
     else:
       proc += ["--log-file=" + logfilename]
 
     # The Valgrind command is constructed.
 
     if self._options.indirect:
-      self.CreateBrowserWrapper(" ".join(proc))
+      self.CreateBrowserWrapper(" ".join(proc), logfilename)
       proc = []
     proc += self._args
     return proc
@@ -403,13 +400,40 @@ class ValgrindTool(BaseTool):
       # Shutdown the Wine server.
       common.RunSubprocess([os.environ.get('WINESERVER'), '-k'])
 
-  def CreateBrowserWrapper(self, command):
+  def GetAnalyzeResultsIndirect(self):
+    assert self._indirect_analyze_results_file != ""
+    f = open(self._indirect_analyze_results_file)
+    if f:
+      if len([True for l in f.readlines() if "FAIL" in l]) > 0:
+        logging.error("There were some Valgrind reports in the tests!")
+        print "-------------------------------------------------------------"
+        print "The reports for the individual tests are placed in the output"
+        print "of the tests. Please search for \"FAIL!\" lines in this log."
+        print "-------------------------------------------------------------"
+        return 1
+    return 0
+
+  def CreateBrowserWrapper(self, command, logfiles):
     """The program being run invokes Python or something else
     that can't stand to be valgrinded, and also invokes
     the Chrome browser.  Set an environment variable to
     tell the program to prefix the Chrome commandline
     with a magic wrapper.  Build the magic wrapper here.
     """
+    # We'll be storing the analyzed results of individual tests
+    # in a temporary text file
+    self._indirect_analyze_results_file = tempfile.mkstemp(
+                                            dir=self.TMP_DIR,
+                                            prefix="valgrind_analyze.",
+                                            text=True)[1]
+
+    # 'logfiles' is a relative path mask like 'testing.tmp/TOOL.%p'
+    # We'll need an absolute path to tools/valgrind/TOOL_analyze.py since
+    # the current directory may be arbitrary when running UI tests.
+    analyze_script = os.path.join(self._source_dir, 'tools', 'valgrind',
+                                  self.ToolName() + '_analyze.py')
+
+    # Okay, now let's prepare the browser_wrapper file
     (fd, indirect_fname) = tempfile.mkstemp(dir=self.TMP_DIR,
                                             prefix="browser_wrapper.",
                                             text=True)
@@ -417,6 +441,15 @@ class ValgrindTool(BaseTool):
     f.write("#!/bin/sh\n")
     f.write(command)
     f.write(' "$@"\n')
+    f.write("EXITCODE=$?\n")
+
+    # Now run the analyze script and append its return code to TOOL_analyze
+    logs_list = logfiles.replace("%p", "*")
+    f.write("python %s %s || echo FAIL >>%s\n" \
+            % (analyze_script, logs_list, self._indirect_analyze_results_file))
+    f.write("rm %s\n" % logs_list)
+
+    f.write("exit $EXITCODE\n")
     f.close()
     os.chmod(indirect_fname, stat.S_IRUSR|stat.S_IXUSR)
     os.putenv("BROWSER_WRAPPER", indirect_fname)
@@ -459,6 +492,8 @@ class Memcheck(ValgrindTool):
     return ret
 
   def Analyze(self, check_sanity=False):
+    if self._options.indirect:
+      return self.GetAnalyzeResultsIndirect()
     # Glob all the files in the "valgrind.tmp" directory
     filenames = glob.glob(self.TMP_DIR + "/memcheck.*")
 
@@ -583,6 +618,8 @@ class ThreadSanitizerBase(object):
     return ret
 
   def Analyze(self, check_sanity=False):
+    if self._options.indirect:
+      return self.GetAnalyzeResultsIndirect()
     filenames = glob.glob(self.TMP_DIR + "/tsan.*")
     use_gdb = common.IsMac()
     analyzer = tsan_analyze.TsanAnalyze(self._source_dir, filenames,

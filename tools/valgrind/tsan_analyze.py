@@ -137,7 +137,7 @@ class TsanAnalyze:
 
     retcode = 0
     if len(self.races) > 0:
-      logging.error("Found %i race reports" % len(self.races))
+      logging.error("FAIL! Found %i race reports" % len(self.races))
       for report_list in self.races:
         report = ''
         for line in report_list:
