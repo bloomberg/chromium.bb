@@ -22,7 +22,11 @@ HostZoomMap::HostZoomMap(Profile* profile)
   Load();
   registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
                  Source<Profile>(profile));
-  profile_->GetPrefs()->AddPrefObserver(prefs::kPerHostZoomLevels, this);
+  // Don't observe pref changes (e.g. from sync) in Incognito; once we create
+  // the incognito window it should have no further connection to the main
+  // profile/prefs.
+  if (!profile_->IsOffTheRecord())
+    profile_->GetPrefs()->AddPrefObserver(prefs::kPerHostZoomLevels, this);
 }
 
 void HostZoomMap::Load() {
@@ -74,6 +78,11 @@ void HostZoomMap::SetZoomLevel(const GURL& url, int level) {
       host_zoom_levels_[host] = level;
   }
 
+  // If we're in incognito mode, don't persist changes to the prefs.  We'll keep
+  // them in memory only so they will be forgotten on exiting incognito.
+  if (profile_->IsOffTheRecord())
+    return;
+
   updating_preferences_ = true;
   {
     ScopedPrefUpdate update(profile_->GetPrefs(), prefs::kPerHostZoomLevels);
@@ -113,7 +122,8 @@ void HostZoomMap::Shutdown() {
   registrar_.Remove(this,
                     NotificationType::PROFILE_DESTROYED,
                     Source<Profile>(profile_));
-  profile_->GetPrefs()->RemovePrefObserver(prefs::kPerHostZoomLevels, this);
+  if (!profile_->IsOffTheRecord())
+    profile_->GetPrefs()->RemovePrefObserver(prefs::kPerHostZoomLevels, this);
   profile_ = NULL;
 }
 

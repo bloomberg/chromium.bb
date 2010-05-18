@@ -449,7 +449,9 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual HostZoomMap* GetHostZoomMap() {
-    return profile_->GetHostZoomMap();
+    if (!host_zoom_map_)
+      host_zoom_map_ = new HostZoomMap(this);
+    return host_zoom_map_.get();
   }
 
   virtual GeolocationContentSettingsMap* GetGeolocationContentSettingsMap() {
@@ -600,6 +602,9 @@ class OffTheRecordProfileImpl : public Profile,
 
   // We use a non-writable content settings map for OTR.
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
+
+  // Use a separate zoom map for OTR.
+  scoped_refptr<HostZoomMap> host_zoom_map_;
 
   // Use a special WebKit context for OTR browsing.
   scoped_refptr<WebKitContext> webkit_context_;

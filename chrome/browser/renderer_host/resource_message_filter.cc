@@ -1081,12 +1081,14 @@ void ResourceMessageFilter::UpdateHostZoomLevelsOnUIThread(
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   host_zoom_map_->SetZoomLevel(url, zoom_level);
 
-  // Notify renderers.
+  // Notify renderers from this profile.
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
     RenderProcessHost* render_process_host = i.GetCurrentValue();
-    render_process_host->Send(
-        new ViewMsg_SetZoomLevelForCurrentURL(url, zoom_level));
+    if (render_process_host->profile() == profile_) {
+      render_process_host->Send(
+          new ViewMsg_SetZoomLevelForCurrentURL(url, zoom_level));
+    }
   }
 }
 
