@@ -196,16 +196,17 @@ class CandidateWindowView : public views::View {
 
   // The candidate area is where candidates are rendered.
   views::View* candidate_area_;
-  // The footer area is where some status messages are shown if needed.
+  // The footer area is where the auxiliary text is shown, if the
+  // orientation is vertical. Usually the auxiliary text is used for
+  // showing candidate number information like 2/19.
   views::View* footer_area_;
   // We use this when we show something in the footer area.
   scoped_ptr<views::View> footer_area_contents_;
   // We use this when we show nothing in the footer area.
   scoped_ptr<views::View> footer_area_place_holder_;
   // The header area is where the auxiliary text is shown, if the
-  // auxiliary text is provided. If it is not provided, we show nothing.
-  // For instance, we show pinyin text like "zhong'guo", but we show
-  // nothing with Japanese input method.
+  // orientation is horizontal. If the auxiliary text is not provided, we
+  // show nothing.  For instance, we show pinyin text like "zhong'guo".
   views::View* header_area_;
   // We use this when we show something in the header area.
   scoped_ptr<views::View> header_area_contents_;
@@ -213,8 +214,8 @@ class CandidateWindowView : public views::View {
   scoped_ptr<views::View> header_area_place_holder_;
   // The candidate views are used for rendering candidates.
   std::vector<CandidateView*> candidate_views_;
-  // The auxiliary text label is shown in the auxiliary text area.
-  views::Label* auxiliary_text_label_;
+  // The header label is shown in the header area.
+  views::Label* header_label_;
   // The footer label is shown in the footer area.
   views::Label* footer_label_;
 };
@@ -510,7 +511,7 @@ CandidateWindowView::CandidateWindowView(
       candidate_area_(NULL),
       footer_area_(NULL),
       header_area_(NULL),
-      auxiliary_text_label_(NULL),
+      header_label_(NULL),
       footer_label_(NULL) {
 }
 
@@ -548,21 +549,33 @@ void CandidateWindowView::Init() {
 }
 
 void CandidateWindowView::HideAuxiliaryText() {
-  // Put the place holder to the header area.
-  header_area_->RemoveAllChildViews(false);  // Don't delete child views.
-  header_area_->AddChildView(header_area_place_holder_.get());
+  views::View* target_area = (orientation_ == kHorizontal ?
+                              header_area_ : footer_area_);
+  views::View* target_place_holder = (orientation_ == kHorizontal ?
+                                      header_area_place_holder_.get() :
+                                      footer_area_place_holder_.get());
+  // Put the place holder to the target display area.
+  target_area->RemoveAllChildViews(false);  // Don't delete child views.
+  target_area->AddChildView(target_place_holder);
   ResizeAndSchedulePaint();
 }
 
 void CandidateWindowView::ShowAuxiliaryText() {
-  // Put contents to the header area.
-  header_area_->RemoveAllChildViews(false);  // Don't delete child views.
-  header_area_->AddChildView(header_area_contents_.get());
+  views::View* target_area = (orientation_ == kHorizontal ?
+                              header_area_ : footer_area_);
+  views::View* target_contents = (orientation_ == kHorizontal ?
+                                  header_area_contents_.get() :
+                                  footer_area_contents_.get());
+  // Put contents to the target display area.
+  target_area->RemoveAllChildViews(false);  // Don't delete child views.
+  target_area->AddChildView(target_contents);
   ResizeAndSchedulePaint();
 }
 
 void CandidateWindowView::UpdateAuxiliaryText(const std::string& utf8_text) {
-  auxiliary_text_label_->SetText(UTF8ToWide(utf8_text));
+  views::Label* target_label = (orientation_ == kHorizontal ?
+                                header_label_ : footer_label_);
+  target_label->SetText(UTF8ToWide(utf8_text));
 }
 
 void CandidateWindowView::UpdateCandidates(
@@ -670,15 +683,15 @@ views::View* CandidateWindowView::CreateHeaderArea() {
   header_area_place_holder_.reset(new views::View);
   header_area_place_holder_->set_parent_owned(false);  // Won't be owened.
 
-  // |auxiliary_text_label_| will be owned by |header_area_contents_|.
-  auxiliary_text_label_ = new views::Label;
-  auxiliary_text_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  // |header_label_| will be owned by |header_area_contents_|.
+  header_label_ = new views::Label;
+  header_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
 
   const gfx::Insets kHeaderInsets(2, 2, 2, 4);
   // |header_area_contents_| will not be owned by another view.
   // See a comment at |header_area_place_holder_| for why.
   header_area_contents_.reset(
-      WrapWithPadding(auxiliary_text_label_, kHeaderInsets));
+      WrapWithPadding(header_label_, kHeaderInsets));
   header_area_contents_->set_parent_owned(false);  // Won't be owened.
   header_area_contents_->set_border(
       views::Border::CreateSolidBorder(1, kFrameColor));
@@ -746,22 +759,6 @@ void CandidateWindowView::SelectCandidateAt(int index_in_page) {
 
   // Update the cursor indexes in the model.
   lookup_table_.cursor_absolute_index = cursor_absolute_index;
-
-  // Update the footer area.
-  footer_area_->RemoveAllChildViews(false);  // Don't delete child views.
-  if (orientation_ == kVertical) {
-    // Show information about the cursor and the page in the footer area.
-    // TODO(satorux): This only works with engines that return all
-    // candidates (i.e. ibus-anthy).
-    footer_label_->SetText(
-        StringPrintf(L"%d/%d",
-                     lookup_table_.cursor_absolute_index + 1,
-                     lookup_table_.candidates.size()));
-    footer_area_->AddChildView(footer_area_contents_.get());
-  } else {
-    // Show nothing in the footer area if the orientation is horizontal.
-    footer_area_->AddChildView(footer_area_place_holder_.get());
-  }
 
   ResizeAndSchedulePaint();
 }
@@ -943,19 +940,6 @@ void CandidateWindowController::OnUpdateAuxiliaryText(
     bool visible) {
   CandidateWindowController* controller =
       static_cast<CandidateWindowController*>(input_method_library);
-  // HACK for ibus-anthy: ibus-anthy sends us page information like
-  // "( 1 / 19 )" as auxiliary text. We should ignore this as we show the
-  // same information in the footer area (i.e. don't want to show the same
-  // information in two places).
-  //
-  // TODO(satorux): Remove this once we remove ibus-anthy from Chromium OS.
-  if (utf8_text.size() >= 2 &&
-      utf8_text[0] == '(' && utf8_text[utf8_text.size() -1] == ')') {
-    // Hide the auxiliary text in case something is shown already.
-    controller->candidate_window_->HideAuxiliaryText();
-    return;  // Ignore the given auxiliary text.
-  }
-
   // If it's not visible, hide the auxiliary text and return.
   if (!visible) {
     controller->candidate_window_->HideAuxiliaryText();
