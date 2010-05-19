@@ -27,18 +27,13 @@ struct AtomInfo {
 
 // Each value from the Atom enum must be present here.
 static const AtomInfo kAtomInfos[] = {
+  { WmIpc::ATOM_CHROME_LOGGED_IN,        "_CHROME_LOGGED_IN" },
   { WmIpc::ATOM_CHROME_WINDOW_TYPE,      "_CHROME_WINDOW_TYPE" },
   { WmIpc::ATOM_CHROME_WM_MESSAGE,       "_CHROME_WM_MESSAGE" },
   { WmIpc::ATOM_MANAGER,                 "MANAGER" },
-  { WmIpc::ATOM_NET_SUPPORTING_WM_CHECK, "_NET_SUPPORTING_WM_CHECK" },
-  { WmIpc::ATOM_NET_WM_NAME,             "_NET_WM_NAME" },
-  { WmIpc::ATOM_PRIMARY,                 "PRIMARY" },
   { WmIpc::ATOM_STRING,                  "STRING" },
   { WmIpc::ATOM_UTF8_STRING,             "UTF8_STRING" },
-  { WmIpc::ATOM_WM_NORMAL_HINTS,         "WM_NORMAL_HINTS" },
   { WmIpc::ATOM_WM_S0,                   "WM_S0" },
-  { WmIpc::ATOM_WM_STATE,                "WM_STATE" },
-  { WmIpc::ATOM_WM_TRANSIENT_FOR,        "WM_TRANSIENT_FOR" },
   { WmIpc::ATOM_WM_SYSTEM_METRICS,       "WM_SYSTEM_METRICS" },
 };
 
@@ -213,6 +208,14 @@ void WmIpc::HandleNonChromeClientMessageEvent(const GdkEventClient& event) {
       static_cast<Atom>(event.data.l[1]) == wm_s0_atom) {
     InitWmInfo();
   }
+}
+
+void WmIpc::SetLoggedInProperty(bool logged_in) {
+  std::vector<int> values;
+  values.push_back(static_cast<int>(logged_in));
+  SetIntProperty(gdk_x11_get_default_root_xwindow(),
+                 type_to_atom_[ATOM_CHROME_LOGGED_IN],
+                 values);
 }
 
 WmIpc::WmIpc() {

@@ -454,6 +454,10 @@ namespace browser {
 void ShowLoginWizard(const std::string& first_screen_name,
                      const gfx::Size& size) {
   LOG(INFO) << "showing login" << first_screen_name;
+
+  // Tell the window manager that the user isn't logged in.
+  chromeos::WmIpc::instance()->SetLoggedInProperty(false);
+
   gfx::Rect screen_bounds(CalculateScreenBounds(size));
 
   if (first_screen_name.empty() &&

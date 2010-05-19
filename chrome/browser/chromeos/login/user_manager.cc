@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user_image_downloader.h"
+#include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/notification_service.h"
 #include "grit/theme_resources.h"
@@ -126,6 +127,9 @@ void UserManager::UserLoggedIn(const std::string& email) {
       NotificationType::LOGIN_USER_CHANGED,
       Source<UserManager>(this),
       Details<const User>(&logged_in_user_));
+
+  // Let the window manager know that we're logged in now.
+  WmIpc::instance()->SetLoggedInProperty(true);
 }
 
 void UserManager::DownloadUserImage(const std::string& username) {

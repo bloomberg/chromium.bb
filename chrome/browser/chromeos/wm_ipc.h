@@ -22,18 +22,13 @@ namespace chromeos {
 class WmIpc {
  public:
   enum AtomType {
-    ATOM_CHROME_WINDOW_TYPE = 0,
+    ATOM_CHROME_LOGGED_IN = 0,
+    ATOM_CHROME_WINDOW_TYPE,
     ATOM_CHROME_WM_MESSAGE,
     ATOM_MANAGER,
-    ATOM_NET_SUPPORTING_WM_CHECK,
-    ATOM_NET_WM_NAME,
-    ATOM_PRIMARY,
     ATOM_STRING,
     ATOM_UTF8_STRING,
-    ATOM_WM_NORMAL_HINTS,
     ATOM_WM_S0,
-    ATOM_WM_STATE,
-    ATOM_WM_TRANSIENT_FOR,
     ATOM_WM_SYSTEM_METRICS,
     kNumAtoms,
   };
@@ -86,7 +81,7 @@ class WmIpc {
   // Returns the single instance of WmIpc.
   static WmIpc* instance();
 
-  // Get or set a property describing a window's type.
+  // Gets or sets a property describing a window's type.
   // WmIpcMessageType is defined in chromeos_wm_ipc_enums.h.  Type-specific
   // parameters may also be supplied.  The caller is responsible for trapping
   // errors from the X server.
@@ -111,11 +106,15 @@ class WmIpc {
   // returned. If false is returned, |event| is not a valid StringMessage.
   bool DecodeStringMessage(const GdkEventProperty& event, std::string* msg);
 
-  // Handle ClientMessage events that weren't decodable using DecodeMessage().
+  // Handles ClientMessage events that weren't decodable using DecodeMessage().
   // Specifically, this catches messages about the WM_S0 selection that get sent
   // when a window manager process starts (so that we can re-run InitWmInfo()).
   // See ICCCM 2.8 for more info about MANAGER selections.
   void HandleNonChromeClientMessageEvent(const GdkEventClient& event);
+
+  // Sets a _CHROME_LOGGED_IN property on the root window describing whether
+  // the user is currently logged in or not.
+  void SetLoggedInProperty(bool logged_in);
 
  private:
   friend struct DefaultSingletonTraits<WmIpc>;
