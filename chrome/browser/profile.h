@@ -25,6 +25,10 @@ namespace chrome_common_net {
 class NetworkChangeNotifierThread;
 }
 
+namespace history {
+class TopSites;
+}
+
 namespace net {
 class TransportSecurityState;
 class SSLConfigService;
@@ -154,6 +158,10 @@ class Profile {
 
   // Returns a pointer to the DatabaseTracker instance for this profile.
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker() = 0;
+
+  // Returns a pointer to the TopSites (thumbnail manager) instance
+  // for this profile.
+  virtual history::TopSites* GetTopSites() = 0;
 
   // Retrieves a pointer to the VisitedLinkMaster associated with this
   // profile.  The VisitedLinkMaster is lazily created the first time
@@ -469,6 +477,7 @@ class ProfileImpl : public Profile,
   virtual void DestroyOffTheRecordProfile();
   virtual Profile* GetOriginalProfile();
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker();
+  virtual history::TopSites* GetTopSites();
   virtual VisitedLinkMaster* GetVisitedLinkMaster();
   virtual UserScriptMaster* GetUserScriptMaster();
   virtual SSLHostState* GetSSLHostState();
@@ -651,6 +660,8 @@ class ProfileImpl : public Profile,
   // The main database tracker for this profile.
   // Should be used only on the file thread.
   scoped_refptr<webkit_database::DatabaseTracker> db_tracker_;
+
+  scoped_refptr<history::TopSites> top_sites_;  // For history and thumbnails.
 
 #if defined(OS_CHROMEOS)
   chromeos::Preferences chromeos_preferences_;

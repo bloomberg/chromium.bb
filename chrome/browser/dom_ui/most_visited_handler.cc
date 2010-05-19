@@ -8,6 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/md5.h"
 #include "base/singleton.h"
 #include "base/utf_string_conversions.h"
@@ -20,9 +21,11 @@
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/pref_names.h"
@@ -126,7 +129,37 @@ void MostVisitedHandler::HandleGetMostVisited(const Value* value) {
   }
 }
 
+// Set a DictionaryValue |dict| from a MostVisitedURL.
+void SetDictionaryValue(const history::MostVisitedURL& url,
+                        DictionaryValue& dict) {
+  NewTabUI::SetURLTitleAndDirection(&dict, url.title, url.url);
+  dict.SetString(L"url", url.url.spec());
+  dict.SetString(L"faviconUrl", url.favicon_url.spec());
+  // TODO(Nik): Need thumbnailUrl?
+  // TODO(Nik): Add pinned and blacklisted URLs.
+  dict.SetBoolean(L"pinned", false);
+}
+
+void MostVisitedHandler::SetPagesValue(const
+                                       history::MostVisitedURLList& urls) {
+  pages_value_.reset(new ListValue);
+  for (size_t i = 0; i < urls.size(); i++) {
+    // Owned by pages_value_.
+    DictionaryValue* value = new DictionaryValue;
+    SetDictionaryValue(urls[i], *value);
+    pages_value_->Append(value);
+  }
+}
+
 void MostVisitedHandler::StartQueryForMostVisited() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites)) {
+    // Use TopSites.
+    history::MostVisitedURLList top_urls =
+        dom_ui_->GetProfile()->GetTopSites()->GetMostVisitedURLs();
+    SetPagesValue(top_urls);
+    return;
+  }
+
   const int page_count = kMostVisitedPages;
   // Let's query for the number of items we want plus the blacklist size as
   // we'll be filtering-out the returned list with the blacklist URLs.

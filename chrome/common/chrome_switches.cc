@@ -780,9 +780,9 @@ const char kTestType[]                      = "test-type";
 // testing-related messages on IPC channel with the given ID.
 const char kTestingChannelID[]              = "testing-channel";
 
-// Enables using ThumbnailStore instead of ThumbnailDatabase for setting and
-// getting thumbnails for the new tab page.
-const char kThumbnailStore[]                = "thumbnail-store";
+// Enables using TopSites instead of ThumbnailDatabase (and
+// ThumbnailStore) for getting thumbnails for the new tab page.
+const char kTopSites[]                      = "top-sites";
 
 // Excludes these plugins from the plugin sandbox.
 // This is a comma-separated list of plugin library names.

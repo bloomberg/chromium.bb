@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/lock.h"
+#include "base/timer.h"
 #include "base/ref_counted.h"
 #include "base/ref_counted_memory.h"
 #include "chrome/browser/cancelable_request.h"
@@ -55,8 +56,8 @@ class TopSites : public base::RefCountedThreadSafe<TopSites> {
     virtual ~MockHistoryService() {}
   };
 
-  // Initializes this component, returning true on success.
-  bool Init();
+  // Initializes TopSites.
+  void Init();
 
   // Sets the given thumbnail for the given URL. Returns true if the thumbnail
   // was updated. False means either the URL wasn't known to us, or we felt
@@ -65,10 +66,12 @@ class TopSites : public base::RefCountedThreadSafe<TopSites> {
                         const SkBitmap& thumbnail,
                         const ThumbnailScore& score);
 
+  // Returns a list of most visited URLs or an empty list if it's not
+  // cached yet.
   MostVisitedURLList GetMostVisitedURLs();
 
-  // TODO(brettw): write this.
-  // bool GetPageThumbnail(const GURL& url, RefCountedBytes** data) const;
+  // Get a thumbnail for a given page. Returns true iff we have the thumbnail.
+  bool GetPageThumbnail(const GURL& url, RefCountedBytes** data) const;
 
  private:
   friend class base::RefCountedThreadSafe<TopSites>;
@@ -151,6 +154,9 @@ class TopSites : public base::RefCountedThreadSafe<TopSites> {
   // Generated from the redirects to and from the most visited pages, this
   // maps the redirects to the index into top_sites_ that contains it.
   std::map<GURL, size_t> canonical_urls_;
+
+  // Timer for updating TopSites data.
+  base::OneShotTimer<TopSites> timer_;
 
   // TODO(brettw): use the blacklist.
   // std::set<GURL> blacklist_;

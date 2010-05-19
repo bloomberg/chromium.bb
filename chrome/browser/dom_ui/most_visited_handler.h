@@ -10,6 +10,7 @@
 
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
+#include "chrome/browser/history/history_types.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -90,6 +91,9 @@ class MostVisitedHandler : public DOMMessageHandler,
 
   void AddPinnedURL(const MostVisitedPage& page, int index);
   void RemovePinnedURL(const GURL& url);
+
+  // Sets pages_value_ from MostVisitedURLs.
+  void SetPagesValue(const history::MostVisitedURLList& urls);
 
   // Returns true if we should treat this as the first run of the new tab page.
   bool IsFirstRun();

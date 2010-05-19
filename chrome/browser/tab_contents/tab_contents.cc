@@ -36,6 +36,7 @@
 #include "chrome/browser/download/download_request_manager.h"
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/find_bar_state.h"
 #include "chrome/browser/google_util.h"
@@ -2407,10 +2408,9 @@ void TabContents::UpdateThumbnail(const GURL& url,
                                   const SkBitmap& bitmap,
                                   const ThumbnailScore& score) {
   // Tell History about this thumbnail
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kThumbnailStore)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites)) {
     if (!profile()->IsOffTheRecord())
-      profile()->GetThumbnailStore()->SetPageThumbnail(url, bitmap,
-                                                       score, true);
+      profile()->GetTopSites()->SetPageThumbnail(url, bitmap, score);
   } else {
     HistoryService* hs;
     if (!profile()->IsOffTheRecord() &&

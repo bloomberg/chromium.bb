@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/thumbnail_store.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
@@ -25,22 +26,17 @@ DOMUIThumbnailSource::DOMUIThumbnailSource(Profile* profile)
 void DOMUIThumbnailSource::StartDataRequest(const std::string& path,
                                             bool is_off_the_record,
                                             int request_id) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kThumbnailStore)) {
-    scoped_refptr<ThumbnailStore> store_ = profile_->GetThumbnailStore();
-
-    if (!store_->IsReady()) {
-      // Register to be notified when the ThumbnailStore is ready.
-      if (registrar_.IsEmpty()) {
-        registrar_.Add(this, NotificationType::THUMBNAIL_STORE_READY,
-            Source<ThumbnailStore>(store_.get()));
-      }
-      // Insert into pending_requests.
-      pending_requests_.push_back(std::make_pair(path, request_id));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites)) {
+    scoped_refptr<history::TopSites> top_sites = profile_->GetTopSites();
+    RefCountedBytes* data = NULL;
+    if (top_sites->GetPageThumbnail(GURL(path), &data)) {
+      // We have the thumbnail.
+      SendResponse(request_id, data);
     } else {
-      DoDataRequest(path, request_id);
+      SendResponse(request_id, NULL);
     }
     return;
-  }  // end --thumbnail-store switch
+  }  // end --top-sites switch
 
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   if (hs) {
@@ -56,6 +52,7 @@ void DOMUIThumbnailSource::StartDataRequest(const std::string& path,
   }
 }
 
+// TODO(Nik): remove. ThumbnailStore is to be replaced with TopSites.
 void DOMUIThumbnailSource::DoDataRequest(const std::string& path,
                                          int request_id) {
   RefCountedBytes* data = NULL;

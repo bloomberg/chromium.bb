@@ -217,7 +217,7 @@ extern const char kTestName[];
 extern const char kTestSandbox[];
 extern const char kTestType[];
 extern const char kTestingChannelID[];
-extern const char kThumbnailStore[];
+extern const char kTopSites[];
 extern const char kTrustedPlugins[];
 extern const char kTryChromeAgain[];
 extern const char kUninstall[];

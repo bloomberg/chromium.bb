@@ -37,6 +37,7 @@
 #include "chrome/browser/spellcheck_host.h"
 #include "chrome/browser/transport_security_persister.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
@@ -545,6 +546,10 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual ThumbnailStore* GetThumbnailStore() {
+    return NULL;
+  }
+
+  virtual history::TopSites* GetTopSites() {
     return NULL;
   }
 
@@ -1382,6 +1387,14 @@ ThumbnailStore* ProfileImpl::GetThumbnailStore() {
         GetPath().Append(chrome::kNewTabThumbnailsFilename), this);
   }
   return thumbnail_store_.get();
+}
+
+history::TopSites* ProfileImpl::GetTopSites() {
+  if (!top_sites_.get()) {
+    top_sites_ = new history::TopSites(this);
+    top_sites_->Init();
+  }
+  return top_sites_;
 }
 
 void ProfileImpl::ResetTabRestoreService() {

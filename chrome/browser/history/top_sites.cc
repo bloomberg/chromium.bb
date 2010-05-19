@@ -15,6 +15,8 @@ namespace history {
 // How many top sites to store in the cache.
 static const int kTopSitesNumber = 20;
 static const int kDaysOfHistory = 90;
+static const int64 kUpdateIntervalSecs = 15;  // TODO(Nik): come up
+                                              // with an algorithm for timing.
 
 TopSites::TopSites(Profile* profile) : profile_(profile),
                                        mock_history_service_(NULL) {
@@ -23,9 +25,12 @@ TopSites::TopSites(Profile* profile) : profile_(profile),
 TopSites::~TopSites() {
 }
 
-bool TopSites::Init() {
+void TopSites::Init() {
   // TODO(brettw) read the database here.
-  return true;
+
+  // Start the one-shot timer.
+  timer_.Start(base::TimeDelta::FromSeconds(kUpdateIntervalSecs), this,
+               &TopSites::StartQueryForMostVisited);
 }
 
 bool TopSites::SetPageThumbnail(const GURL& url,
@@ -68,6 +73,16 @@ bool TopSites::SetPageThumbnail(const GURL& url,
 MostVisitedURLList TopSites::GetMostVisitedURLs() {
   AutoLock lock(lock_);
   return top_sites_;
+}
+
+bool TopSites::GetPageThumbnail(const GURL& url, RefCountedBytes** data) const {
+  std::map<GURL, Images>::const_iterator found = top_images_.find(url);
+  if (found == top_images_.end())
+    return false;  // No thumbnail for this URL.
+
+  Images image = found->second;
+  *data = image.thumbnail.get();
+  return true;
 }
 
 void TopSites::StoreMostVisited(MostVisitedURLList* most_visited) {
