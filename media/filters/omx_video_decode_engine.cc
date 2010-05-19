@@ -35,19 +35,12 @@ OmxVideoDecodeEngine::OmxVideoDecodeEngine()
 OmxVideoDecodeEngine::~OmxVideoDecodeEngine() {
 }
 
-void OmxVideoDecodeEngine::Initialize(
-    MessageLoop* message_loop,
-    AVStream* av_stream,
-    EmptyThisBufferCallback* empty_buffer_callback,
-    FillThisBufferCallback* fill_buffer_callback,
-    Task* done_cb) {
+void OmxVideoDecodeEngine::Initialize(AVStream* stream, Task* done_cb) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
-  fill_this_buffer_callback_.reset(fill_buffer_callback);
 
   AutoTaskRunner done_runner(done_cb);
-  omx_codec_ = new media::OmxCodec(message_loop);
+  omx_codec_ = new media::OmxCodec(message_loop_);
 
-  AVStream* stream = av_stream;
   width_ = stream->codec->width;
   height_ = stream->codec->height;
 
@@ -82,8 +75,26 @@ void OmxVideoDecodeEngine::OnHardwareError() {
   state_ = kError;
 }
 
-void OmxVideoDecodeEngine::EmptyThisBuffer(scoped_refptr<Buffer> buffer) {
-  if ( state_ != kNormal ) return; // discard the buffer.
+// This method assumes the input buffer contains exactly one frame or is an
+// end-of-stream buffer. The logic of this method and in OnReadComplete() is
+// based on this assumation.
+//
+// For every input buffer received here, we submit one read request to the
+// decoder. So when a read complete callback is received, a corresponding
+// decode request must exist.
+void OmxVideoDecodeEngine::DecodeFrame(Buffer* buffer,
+                                       scoped_refptr<VideoFrame>* video_frame,
+                                       bool* got_result,
+                                       Task* done_cb) {
+  DCHECK_EQ(message_loop_, MessageLoop::current());
+  if (state_ != kNormal) {
+    *got_result = false;
+    *video_frame = NULL;
+    done_cb->Run();
+    delete done_cb;
+    return;
+  }
+
   if (!has_fed_on_eos_) {
     omx_codec_->Feed(buffer,
                      NewCallback(this, &OmxVideoDecodeEngine::OnFeedDone));
@@ -92,20 +103,10 @@ void OmxVideoDecodeEngine::EmptyThisBuffer(scoped_refptr<Buffer> buffer) {
       has_fed_on_eos_ = true;
     }
   }
-  DecodeFrame();
-}
 
-// This method assumes the input buffer contains exactly one frame or is an
-// end-of-stream buffer. The logic of this method and in OnReadComplete() is
-// based on this assumation.
-//
-// For every input buffer received here, we submit one read request to the
-// decoder. So when a read complete callback is received, a corresponding
-// decode request must exist.
-void OmxVideoDecodeEngine::DecodeFrame() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
-  if (state_ != kNormal)
-    return;
+  // Enqueue the decode request and the associated buffer.
+  decode_request_queue_.push_back(
+      DecodeRequest(video_frame, got_result, done_cb));
 
   // Submit a read request to the decoder.
   omx_codec_->Read(NewCallback(this, &OmxVideoDecodeEngine::OnReadComplete));
@@ -137,31 +138,41 @@ void OmxVideoDecodeEngine::OnReadComplete(
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_EQ(buffer->nFilledLen, width_*height_*3/2 );
 
+  // We assume that when we receive a read complete callback from
+  // OmxCodec there was a read request made.
+  CHECK(!decode_request_queue_.empty());
+  DecodeRequest request = decode_request_queue_.front();
+  decode_request_queue_.pop_front();
+  *request.got_result = false;
+
+  // Notify the read request to this object has been fulfilled.
+  AutoTaskRunner done_cb_runner(request.done_cb);
+
   if (!buffer)  // EOF signal by OmxCodec
     return;
 
-  scoped_refptr<VideoFrame> frame;
   VideoFrame::CreateFrame(GetSurfaceFormat(),
                           width_, height_,
                           StreamSample::kInvalidTimestamp,
                           StreamSample::kInvalidTimestamp,
-                          &frame);
-  if (!frame.get()) {
+                          request.frame);
+  if (!request.frame->get()) {
     // TODO(jiesun): this is also an error case handled as normal.
     return;
   }
 
+  // Now we had everything ready.
+  *request.got_result = true;
+
   // TODO(jiesun): Assume YUV 420 format.
   // TODO(jiesun): We will use VideoFrame to wrap OMX_BUFFERHEADTYPE.
   const int pixels = width_ * height_;
-  memcpy(frame->data(VideoFrame::kYPlane), buffer->pBuffer, pixels);
-  memcpy(frame->data(VideoFrame::kUPlane), buffer->pBuffer + pixels,
+  memcpy((*request.frame)->data(VideoFrame::kYPlane), buffer->pBuffer, pixels);
+  memcpy((*request.frame)->data(VideoFrame::kUPlane), buffer->pBuffer + pixels,
          pixels / 4);
-  memcpy(frame->data(VideoFrame::kVPlane),
+  memcpy((*request.frame)->data(VideoFrame::kVPlane),
          buffer->pBuffer + pixels + pixels /4,
          pixels / 4);
-
-  fill_this_buffer_callback_->Run(frame);
 }
 
 }  // namespace media

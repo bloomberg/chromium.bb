@@ -110,27 +110,9 @@ class DecoderBase : public Decoder {
   // Method that must be implemented by the derived class.  If the decode
   // operation produces one or more outputs, the derived class should call
   // the EnequeueResult() method from within this method.
-  virtual void DoDecode(Buffer* input) = 0;
+  virtual void DoDecode(Buffer* input, Task* done_cb) = 0;
 
   MediaFormat media_format_;
-
-  void OnDecodeComplete() {
-    // Attempt to fulfill a pending read callback and schedule additional reads
-    // if necessary.
-    bool fulfilled = FulfillPendingRead();
-
-    // Issue reads as necessary.
-    //
-    // Note that it's possible for us to decode but not produce a frame, in
-    // which case |pending_reads_| will remain less than |read_queue_| so we
-    // need to schedule an additional read.
-    DCHECK_LE(pending_reads_, read_queue_.size());
-    if (!fulfilled) {
-      DCHECK_LT(pending_reads_, read_queue_.size());
-      demuxer_stream_->Read(NewCallback(this, &DecoderBase::OnReadComplete));
-      ++pending_reads_;
-    }
-  }
 
  private:
   bool IsStopped() { return state_ == kStopped; }
@@ -251,7 +233,25 @@ class DecoderBase : public Decoder {
     }
 
     // Decode the frame right away.
-    DoDecode(buffer);
+    DoDecode(buffer, NewRunnableMethod(this, &DecoderBase::OnDecodeComplete));
+  }
+
+  void OnDecodeComplete() {
+    // Attempt to fulfill a pending read callback and schedule additional reads
+    // if necessary.
+    bool fulfilled = FulfillPendingRead();
+
+    // Issue reads as necessary.
+    //
+    // Note that it's possible for us to decode but not produce a frame, in
+    // which case |pending_reads_| will remain less than |read_queue_| so we
+    // need to schedule an additional read.
+    DCHECK_LE(pending_reads_, read_queue_.size());
+    if (!fulfilled) {
+      DCHECK_LT(pending_reads_, read_queue_.size());
+      demuxer_stream_->Read(NewCallback(this, &DecoderBase::OnReadComplete));
+      ++pending_reads_;
+    }
   }
 
   // Attempts to fulfill a single pending read by dequeuing a buffer and read

@@ -25,12 +25,10 @@ class FFmpegVideoDecodeEngine : public VideoDecodeEngine {
   virtual ~FFmpegVideoDecodeEngine();
 
   // Implementation of the VideoDecodeEngine Interface.
-  virtual void Initialize(MessageLoop* message_loop,
-                          AVStream* av_stream,
-                          EmptyThisBufferCallback* empty_buffer_callback,
-                          FillThisBufferCallback* fill_buffer_callback,
-                          Task* done_cb);
-  virtual void EmptyThisBuffer(scoped_refptr<Buffer> buffer);
+  virtual void Initialize(AVStream* stream, Task* done_cb);
+  virtual void DecodeFrame(Buffer* buffer,
+                           scoped_refptr<VideoFrame>* video_frame,
+                           bool* got_result, Task* done_cb);
   virtual void Flush(Task* done_cb);
   virtual VideoFrame::Format GetSurfaceFormat() const;
 
@@ -43,12 +41,9 @@ class FFmpegVideoDecodeEngine : public VideoDecodeEngine {
   }
 
  private:
-  void DecodeFrame(scoped_refptr<Buffer> buffer);
-
   AVCodecContext* codec_context_;
   State state_;
   scoped_ptr_malloc<AVFrame, ScopedPtrAVFree> av_frame_;
-  scoped_ptr<FillThisBufferCallback> fill_this_buffer_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegVideoDecodeEngine);
 };
