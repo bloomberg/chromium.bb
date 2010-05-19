@@ -25,8 +25,12 @@ const char kPreviousEngineConfigName[] = "previous_engine";
 // "Alt+Shift+Shift_L+Release" and "Alt+Shift+Meta_L+Release"
 // But unfortunately http://crbug.com/40754 prevents these release events
 // from taking effect.
+// TODO(yusukes): Check if the "Kana/Eisu" key in the Japanese keyboard for
+// Chrome OS actually generates Zenkaku_Hankaku when the keyboard gets ready.
+
+// ibus-daemon accepts up to 5 next-engine hot-keys.
 const wchar_t kHotkeyNextEngineInMenu[] =
-    L"Alt+Shift_L,Shift+Meta_L,Control+Shift+space";
+    L"Alt+Shift_L,Shift+Meta_L,Control+Shift+space,Zenkaku_Hankaku";
 // TODO(suzhe): Add more key bindings?
 const wchar_t kHotkeyPreviousEngine[] = L"Control+space";
 
