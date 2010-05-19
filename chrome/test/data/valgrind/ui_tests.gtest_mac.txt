@@ -58,12 +58,12 @@ NPAPIVisiblePluginTester.PluginReferrerTest
 NPAPIVisiblePluginTester.GetURLRequestFailWrite
 NPAPIIncognitoTester.PrivateEnabled
 NPAPITester.FLAKY_ManyPlugins
-NPAPITester.FLAKY_NPObjectProxy
+NPAPITester.NPObjectProxy
 NPAPITester.ScheduleTimer
 NPAPIVisiblePluginTester.SelfDeletePluginInNewStream
 NPAPIVisiblePluginTester.MultipleInstancesSyncCalls
 NPAPIVisiblePluginTester.PluginConvertPointTest
-NPAPIVisiblePluginTester.FLAKY_PluginConvertPointTest
+NPAPIVisiblePluginTester.PluginConvertPointTest
 
 # Possible timing related failure triggered only on mac valgrind bots.
 # http://crbug.com/39401
