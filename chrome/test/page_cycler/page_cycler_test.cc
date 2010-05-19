@@ -4,7 +4,6 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/eintr_wrapper.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -22,8 +21,6 @@
 #include "net/base/net_util.h"
 
 #if defined(OS_MACOSX)
-#include <errno.h>
-#include <fcntl.h>
 #include <string.h>
 #include <sys/resource.h>
 #endif
@@ -76,14 +73,16 @@ void SetFileDescriptorLimit(rlim_t max_descriptors) {
     PLOG(ERROR) << "Failed to get file descriptor limit";
   }
 }
+#endif  // OS_MACOSX
 
-void PopulateUBC(const FilePath &test_dir) {
-  // This will recursively walk the directory given and read all the files it
-  // finds.  This is done so the Mac UBC is likely to have as much loaded as
-  // possible.  Without this, the tests of this build gets one set of timings
-  // and then the reference build test, gets slightly faster ones (even if the
-  // reference build is the same binary).  The hope is by forcing all the
-  // possible data into the UBC we equalize the tests for comparing timing data.
+void PopulateBufferCache(const FilePath& test_dir) {
+  // This will recursively walk the directory given and read all the
+  // files it finds.  This is done so the system file cache is likely
+  // to have as much loaded as possible.  Without this, the tests of
+  // this build gets one set of timings and then the reference build
+  // test, gets slightly faster ones (even if the reference build is
+  // the same binary).  The hope is by forcing all the possible data
+  // into the cache we equalize the tests for comparing timing data.
 
   // We don't want to walk into .svn dirs, so we have to do the tree walk
   // ourselves.
@@ -104,7 +103,6 @@ void PopulateUBC(const FilePath &test_dir) {
     }
   }
 
-  char buf[1024];
   unsigned int loaded = 0;
 
   // We seem to have some files in the data dirs that are just there for
@@ -141,19 +139,14 @@ void PopulateUBC(const FilePath &test_dir) {
       if (should_skip)
         continue;
 
-      // Read the file to get it into the UBC
-      int fd = open(path.value().c_str(), O_RDONLY);
-      if (fd >= 0) {
+      // Read the file fully to get it into the cache.
+      // We don't care what the contents are.
+      if (file_util::ReadFileToString(path, NULL))
         ++loaded;
-        while (HANDLE_EINTR(read(fd, buf, sizeof(buf))) > 0) {
-        }
-        HANDLE_EINTR(close(fd));
-      }
     }
   }
-  LOG(INFO) << "UBC should be loaded with " << loaded << " files.";
+  LOG(INFO) << "Buffer cache should be primed with " << loaded << " files.";
 }
-#endif  // defined(OS_MACOSX)
 
 class PageCyclerTest : public UITest {
  protected:
@@ -208,9 +201,7 @@ class PageCyclerTest : public UITest {
     ASSERT_TRUE(file_util::DirectoryExists(test_path))
         << "Missing test directory " << test_path.value();
 
-#if defined(OS_MACOSX)
-    PopulateUBC(test_path);
-#endif
+    PopulateBufferCache(test_path);
 
     GURL test_url;
     if (use_http) {
