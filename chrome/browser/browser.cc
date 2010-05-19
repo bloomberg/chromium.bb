@@ -2905,6 +2905,8 @@ void Browser::Observe(NotificationType type,
     }
 
     case NotificationType::EXTENSION_LOADED: {
+      window()->GetLocationBar()->UpdatePageActions();
+
       // If any "This extension has crashed" InfoBarDelegates are around for
       // this extension, it means that it has been reloaded in another window
       // so just remove the remaining CrashedExtensionInfoBarDelegate objects.

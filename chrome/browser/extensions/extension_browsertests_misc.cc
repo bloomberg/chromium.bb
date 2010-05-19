@@ -274,6 +274,37 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UnloadPageAction) {
   ASSERT_TRUE(WaitForPageActionCountChangeTo(0));
 }
 
+// Tests that we can load page actions in the Omnibox.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionRefreshCrash) {
+  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+
+  size_t size_before = service->extensions()->size();
+
+  FilePath base_path = test_data_dir_.AppendASCII("browsertest")
+                                     .AppendASCII("crash_44415");
+  // Load extension A.
+  ASSERT_TRUE(LoadExtension(base_path.AppendASCII("ExtA")));
+  ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
+  ASSERT_EQ(size_before + 1, service->extensions()->size());
+  Extension* extensionA = service->extensions()->at(size_before);
+
+  // Load extension B.
+  ASSERT_TRUE(LoadExtension(base_path.AppendASCII("ExtB")));
+  ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(2));
+  ASSERT_EQ(size_before + 2, service->extensions()->size());
+  Extension* extensionB = service->extensions()->at(size_before + 1);
+
+  ReloadExtension(extensionA->id());
+  // ExtensionA has changed, so refetch it.
+  ASSERT_EQ(size_before + 2, service->extensions()->size());
+  extensionA = service->extensions()->at(size_before + 1);
+
+  ReloadExtension(extensionB->id());
+
+  // This is where it would crash, before http://crbug.com/44415 was fixed.
+  ReloadExtension(extensionA->id());
+}
+
 // Makes sure that the RSS detects RSS feed links, even when rel tag contains
 // more than just "alternate".
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSMultiRelLink) {

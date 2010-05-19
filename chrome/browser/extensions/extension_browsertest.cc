@@ -161,7 +161,7 @@ void ExtensionBrowserTest::ReloadExtension(const std::string& extension_id) {
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   service->ReloadExtension(extension_id);
   ui_test_utils::RegisterAndWait(this,
-                                 NotificationType::EXTENSION_PROCESS_CREATED,
+                                 NotificationType::EXTENSION_LOADED,
                                  NotificationService::AllSources());
 }
 
