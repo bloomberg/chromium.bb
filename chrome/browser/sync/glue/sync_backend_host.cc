@@ -15,6 +15,7 @@
 #include "chrome/browser/sync/glue/history_model_worker.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/http_bridge.h"
+#include "chrome/browser/sync/glue/password_model_worker.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
@@ -84,10 +85,13 @@ void SyncBackendHost::Initialize(
   // need to update routing_info_.
   registrar_.workers[GROUP_DB] = new DatabaseModelWorker();
   registrar_.workers[GROUP_HISTORY] =
-    new HistoryModelWorker(
-        profile_->GetHistoryService(Profile::IMPLICIT_ACCESS));
+      new HistoryModelWorker(
+          profile_->GetHistoryService(Profile::IMPLICIT_ACCESS));
   registrar_.workers[GROUP_UI] = new UIModelWorker(frontend_loop_);
   registrar_.workers[GROUP_PASSIVE] = new ModelSafeWorker();
+  registrar_.workers[GROUP_PASSWORD] =
+      new PasswordModelWorker(
+          profile_->GetPasswordStore(Profile::IMPLICIT_ACCESS));
 
   // Any datatypes that we want the syncer to pull down must
   // be in the routing_info map.  We set them to group passive, meaning that
@@ -153,10 +157,12 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
   registrar_.workers[GROUP_HISTORY] = NULL;
   registrar_.workers[GROUP_UI] = NULL;
   registrar_.workers[GROUP_PASSIVE] = NULL;
+  registrar_.workers[GROUP_PASSWORD] = NULL;
   registrar_.workers.erase(GROUP_DB);
   registrar_.workers.erase(GROUP_HISTORY);
   registrar_.workers.erase(GROUP_UI);
   registrar_.workers.erase(GROUP_PASSIVE);
+  registrar_.workers.erase(GROUP_PASSWORD);
   frontend_ = NULL;
   core_ = NULL;  // Releases reference to core_.
 }

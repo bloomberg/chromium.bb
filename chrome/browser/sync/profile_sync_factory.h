@@ -13,6 +13,7 @@
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
 
 class PersonalDataManager;
+class PasswordStore;
 class ProfileSyncService;
 class WebDatabase;
 
@@ -69,6 +70,14 @@ class ProfileSyncFactory {
   // by the caller.
   virtual SyncComponents CreateBookmarkSyncComponents(
       ProfileSyncService* profile_sync_service,
+      browser_sync::UnrecoverableErrorHandler* error_handler) = 0;
+
+  // Instantiates both a model associator and change processor for the
+  // password data type.  The pointers in the return struct are
+  // owned by the caller.
+  virtual SyncComponents CreatePasswordSyncComponents(
+      ProfileSyncService* profile_sync_service,
+      PasswordStore* password_store,
       browser_sync::UnrecoverableErrorHandler* error_handler) = 0;
 
   // Instantiates both a model associator and change processor for the

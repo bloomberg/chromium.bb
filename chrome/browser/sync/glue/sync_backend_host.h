@@ -188,6 +188,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     registrar_.routing_info[syncable::AUTOFILL] = GROUP_PASSIVE;
     registrar_.routing_info[syncable::THEMES] = GROUP_PASSIVE;
     registrar_.routing_info[syncable::TYPED_URLS] = GROUP_PASSIVE;
+    registrar_.routing_info[syncable::PASSWORD] = GROUP_PASSIVE;
 
     core_thread_.message_loop()->PostTask(FROM_HERE,
         NewRunnableMethod(core_.get(),

@@ -206,6 +206,7 @@ void ProfileSyncService::RegisterPreferences() {
 #endif
 
   pref_service->RegisterBooleanPref(prefs::kSyncBookmarks, true);
+  pref_service->RegisterBooleanPref(prefs::kSyncPasswords, enable_by_default);
   pref_service->RegisterBooleanPref(prefs::kSyncPreferences, enable_by_default);
   pref_service->RegisterBooleanPref(prefs::kSyncAutofill, enable_by_default);
   pref_service->RegisterBooleanPref(prefs::kSyncThemes, enable_by_default);
@@ -380,6 +381,8 @@ const wchar_t* ProfileSyncService::GetPrefNameForDataType(
   switch (data_type) {
     case syncable::BOOKMARKS:
       return prefs::kSyncBookmarks;
+    case syncable::PASSWORD:
+      return prefs::kSyncPasswords;
     case syncable::PREFERENCES:
       return prefs::kSyncPreferences;
     case syncable::AUTOFILL:

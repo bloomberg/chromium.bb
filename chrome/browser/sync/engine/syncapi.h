@@ -79,6 +79,7 @@ namespace sync_pb {
 class AutofillSpecifics;
 class BookmarkSpecifics;
 class EntitySpecifics;
+class PasswordSpecifics;
 class PreferenceSpecifics;
 class PasswordSpecifics;
 class PasswordSpecificsData;

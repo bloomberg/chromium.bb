@@ -23,6 +23,9 @@ enum ModelSafeGroup {
   GROUP_DB,            // Models that live on DB thread and are being synced.
   GROUP_HISTORY,       // Models that live on history thread and are being
                        // synced.
+  GROUP_PASSWORD,      // Models that live on the password thread and are
+                       // being synced.  On windows and linux, this runs on the
+                       // DB thread.
   MODEL_SAFE_GROUP_COUNT,
 };
 

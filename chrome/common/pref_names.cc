@@ -767,6 +767,7 @@ const wchar_t kSyncHasSetupCompleted[] = L"sync.has_setup_completed";
 // Booleans specifying whether the user has selected to sync the following
 // datatypes.
 const wchar_t kSyncBookmarks[] = L"sync.bookmarks";
+const wchar_t kSyncPasswords[] = L"sync.passwords";
 const wchar_t kSyncPreferences[] = L"sync.preferences";
 const wchar_t kSyncAutofill[] = L"sync.autofill";
 const wchar_t kSyncThemes[] = L"sync.themes";

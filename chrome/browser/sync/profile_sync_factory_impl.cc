@@ -13,6 +13,9 @@
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
 #include "chrome/browser/sync/glue/data_type_manager_impl.h"
+#include "chrome/browser/sync/glue/password_change_processor.h"
+#include "chrome/browser/sync/glue/password_data_type_controller.h"
+#include "chrome/browser/sync/glue/password_model_associator.h"
 #include "chrome/browser/sync/glue/preference_change_processor.h"
 #include "chrome/browser/sync/glue/preference_data_type_controller.h"
 #include "chrome/browser/sync/glue/preference_model_associator.h"
@@ -37,6 +40,9 @@ using browser_sync::BookmarkModelAssociator;
 using browser_sync::DataTypeController;
 using browser_sync::DataTypeManager;
 using browser_sync::DataTypeManagerImpl;
+using browser_sync::PasswordChangeProcessor;
+using browser_sync::PasswordDataTypeController;
+using browser_sync::PasswordModelAssociator;
 using browser_sync::PreferenceChangeProcessor;
 using browser_sync::PreferenceDataTypeController;
 using browser_sync::PreferenceModelAssociator;
@@ -80,6 +86,13 @@ ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService() {
   if (!command_line_->HasSwitch(switches::kDisableSyncBookmarks)) {
     pss->RegisterDataTypeController(
         new BookmarkDataTypeController(this, profile_, pss));
+  }
+
+  // Password sync is disabled by default.  Register only if
+  // explicitly enabled.
+  if (command_line_->HasSwitch(switches::kEnableSyncPasswords)) {
+    pss->RegisterDataTypeController(
+        new PasswordDataTypeController(this, profile_, pss));
   }
 
   // Preference sync is enabled by default.  Register unless explicitly
@@ -139,6 +152,22 @@ ProfileSyncFactoryImpl::CreateBookmarkSyncComponents(
                                   error_handler);
   BookmarkChangeProcessor* change_processor =
       new BookmarkChangeProcessor(model_associator,
+                                  error_handler);
+  return SyncComponents(model_associator, change_processor);
+}
+
+ProfileSyncFactory::SyncComponents
+ProfileSyncFactoryImpl::CreatePasswordSyncComponents(
+    ProfileSyncService* profile_sync_service,
+    PasswordStore* password_store,
+    UnrecoverableErrorHandler* error_handler) {
+  PasswordModelAssociator* model_associator =
+      new PasswordModelAssociator(profile_sync_service,
+                                  password_store,
+                                  error_handler);
+  PasswordChangeProcessor* change_processor =
+      new PasswordChangeProcessor(model_associator,
+                                  password_store,
                                   error_handler);
   return SyncComponents(model_associator, change_processor);
 }

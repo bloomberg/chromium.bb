@@ -41,6 +41,11 @@ class ProfileSyncFactoryImpl : public ProfileSyncFactory {
       ProfileSyncService* profile_sync_service,
       browser_sync::UnrecoverableErrorHandler* error_handler);
 
+  virtual SyncComponents CreatePasswordSyncComponents(
+      ProfileSyncService* profile_sync_service,
+      PasswordStore* password_store,
+      browser_sync::UnrecoverableErrorHandler* error_handler);
+
   virtual SyncComponents CreatePreferenceSyncComponents(
       ProfileSyncService* profile_sync_service,
       browser_sync::UnrecoverableErrorHandler* error_handler);
