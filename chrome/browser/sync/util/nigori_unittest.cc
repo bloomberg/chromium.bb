@@ -10,6 +10,20 @@
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+TEST(NigoriTest, Permute) {
+  browser_sync::Nigori nigori("example.com");
+  EXPECT_TRUE(nigori.Init("username", "password"));
+
+  std::string permuted;
+  EXPECT_TRUE(nigori.Permute(browser_sync::Nigori::Password, "test name",
+                             &permuted));
+
+  std::string expected =
+      "prewwdJj2PrGDczvmsHJEE5ndcCyVze8sY9kD5hjY/Tm"
+      "c5kOjXFK7zB3Ss4LlHjEDirMu+vh85JwHOnGrMVe+g==";
+  EXPECT_EQ(expected, permuted);
+}
+
 TEST(NigoriTest, PermuteIsConstant) {
   browser_sync::Nigori nigori1("example.com");
   EXPECT_TRUE(nigori1.Init("username", "password"));
@@ -44,6 +58,21 @@ TEST(NigoriTest, EncryptDifferentIv) {
   EXPECT_TRUE(nigori.Encrypt(plaintext, &encrypted2));
 
   EXPECT_NE(encrypted1, encrypted2);
+}
+
+TEST(NigoriTest, Decrypt) {
+  browser_sync::Nigori nigori("example.com");
+  EXPECT_TRUE(nigori.Init("username", "password"));
+
+  std::string encrypted =
+      "e7+JyS6ibj6F5qqvpseukNRTZ+oBpu5iuv2VYjOfrH1dNiFLNf7Ov0"
+      "kx/zicKFn0lJcbG1UmkNWqIuR4x+quDNVuLaZGbrJPhrJuj7cokCM=";
+
+  std::string plaintext;
+  EXPECT_TRUE(nigori.Decrypt(encrypted, &plaintext));
+
+  std::string expected("test, test, 1, 2, 3");
+  EXPECT_EQ(expected, plaintext);
 }
 
 TEST(NigoriTest, EncryptDecrypt) {
