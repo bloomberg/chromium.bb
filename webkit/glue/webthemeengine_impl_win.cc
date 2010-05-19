@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "webkit/glue/webthemeengine_impl_win.h"
 
@@ -115,17 +115,15 @@ void WebThemeEngineImpl::paintTrackbar(
 }
 
 void WebThemeEngineImpl::paintProgressBar(
-      WebKit::WebCanvas* canvas,
-      const WebKit::WebRect& barRect, 
-      int valuePart, const WebKit::WebRect& valueRect)
-
+    WebCanvas* canvas, const WebRect& barRect, const WebRect& valueRect,
+    bool determinate, double animatedSeconds)
 {
   HDC hdc = canvas->beginPlatformPaint();
   RECT native_bar_rect = WebRectToRECT(barRect);
   RECT native_value_rect = WebRectToRECT(valueRect);
   gfx::NativeTheme::instance()->PaintProgressBar(
-      hdc, &native_bar_rect, 
-      valuePart, &native_value_rect, canvas);
+      hdc, &native_bar_rect,
+      &native_value_rect, determinate, animatedSeconds, canvas);
   canvas->endPlatformPaint();
 }
 

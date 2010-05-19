@@ -210,8 +210,9 @@ class NativeTheme {
 
   HRESULT PaintProgressBar(HDC hdc,
                            RECT* bar_rect,
-                           int value_part_id,
                            RECT* value_rect,
+                           bool determinate,
+                           double animated_seconds,
                            skia::PlatformCanvas* canvas) const;
 
   bool IsThemingActive() const;

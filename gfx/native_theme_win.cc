@@ -478,46 +478,70 @@ HRESULT NativeTheme::PaintTrackbar(HDC hdc,
   return S_OK;
 }
 
-// A ScopedRegion wrapper to set/restore clipping region during the scope.
-class ScopedClipRegion {
- public:
-  explicit ScopedClipRegion(const HDC hdc)
-      : hdc_(hdc), clip_(NULL) {
-    RECT zero_rect = { 0 };
-    clip_ = CreateRectRgnIndirect(&zero_rect);
-    GetClipRgn(hdc_, clip_);
-  }
-
-  ~ScopedClipRegion() {
-    SelectClipRgn(hdc_, clip_);
-  }
-
- private:
-  HDC hdc_;
-  ScopedRegion clip_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedClipRegion);
-};
+//    <-a->
+// [  *****             ]
+//  ____ |              |
+//  <-a-> <------b----->
+// a: object_width
+// b: frame_width
+// *: animating object
+//
+// - the animation goes from "[" to "]" repeatedly.
+// - the animation offset is at first "|"
+//
+static int ComputeAnimationProgress(int frame_width,
+                                    int object_width,
+                                    int pixels_per_second,
+                                    double animated_seconds) {
+  int animation_width = frame_width + object_width;
+  double interval = static_cast<double>(animation_width) / pixels_per_second;
+  double ratio = fmod(animated_seconds, interval) / interval;
+  return static_cast<int>(animation_width * ratio) - object_width;
+}
 
 HRESULT NativeTheme::PaintProgressBar(HDC hdc,
                                       RECT* bar_rect,
-                                      int value_part_id,
                                       RECT* value_rect,
+                                      bool determinate,
+                                      double animated_seconds,
                                       skia::PlatformCanvas* canvas) const {
-  // For an indeterminate progress bar, we draw a moving highlight that's
-  // animated (by the caller) across the width of the bar.  The highlight part
-  // is always drawn as being as wide as the bar, to scale it properly.
-  // Therefore, we need to clip it against the bar rect, so that as it moves,
-  // it doesn't extend past the ends of the bar.  For a normal progress bar,
-  // we won't try to draw past the bar ends, so this clipping is useless,
-  // but harmless.
-  ScopedClipRegion clip(hdc);
-  IntersectClipRect(hdc, bar_rect->left, bar_rect->top,
-                    bar_rect->right, bar_rect->bottom);
+  // There is no documentation about the animation speed, frame-rate, nor
+  // size of moving overlay of the indeterminate progress bar.
+  // So we just observed real-world programs and guessed following parameters.
+  const int kDeteminateOverlayPixelsPerSecond = 300;
+  const int kDeteminateOverlayWidth = 120;
+  const int kIndeterminateOverlayPixelsPerSecond =  175;
+  const int kIndeterminateOverlayWidth = 120;
 
   HANDLE handle = GetThemeHandle(PROGRESS);
   if (handle && draw_theme_) {
     draw_theme_(handle, hdc, PP_BAR, 0, bar_rect, NULL);
-    draw_theme_(handle, hdc, value_part_id, 0, value_rect, NULL);
+
+    int bar_width = bar_rect->right - bar_rect->left;
+    if (determinate) {
+      draw_theme_(handle, hdc, PP_FILL, 0, value_rect, bar_rect);
+      int dx = ComputeAnimationProgress(bar_width,
+                                        kDeteminateOverlayWidth,
+                                        kDeteminateOverlayPixelsPerSecond,
+                                        animated_seconds);
+      RECT overlay_rect = *value_rect;
+      overlay_rect.left += dx;
+      overlay_rect.right = overlay_rect.left + kDeteminateOverlayWidth;
+      draw_theme_(handle, hdc, PP_MOVEOVERLAY, 0, &overlay_rect, value_rect);
+    } else {
+      // A glossy overlay for determinate progress bar as small pause
+      // during each interval. we emulate it using a margin value.
+      int width_with_margin = bar_width + kIndeterminateOverlayPixelsPerSecond;
+      int dx = ComputeAnimationProgress(width_with_margin,
+                                        kIndeterminateOverlayWidth,
+                                        kIndeterminateOverlayPixelsPerSecond,
+                                        animated_seconds);
+      RECT overlay_rect = *bar_rect;
+      overlay_rect.left += dx;
+      overlay_rect.right = overlay_rect.left + kIndeterminateOverlayWidth;
+      draw_theme_(handle, hdc, PP_MOVEOVERLAY, 0, &overlay_rect, bar_rect);
+    }
+
     return S_OK;
   }
 

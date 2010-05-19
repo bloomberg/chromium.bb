@@ -543,11 +543,12 @@ void Engine::paintTrackbar(WebCanvas* canvas, int part, int state,
 
 void Engine::paintProgressBar(WebKit::WebCanvas* canvas,
                               const WebKit::WebRect& barRect,
-                              int valuePart, const WebKit::WebRect& valueRect) {
-    Control::Type ctype = Control::kProgressBar_Type;
-    Control::State cstate = valuePart == PP_FILL ?
-        Control::kNormal_State : Control::kIndeterminate_State;
-    drawProgressBar(canvas, ctype, cstate, barRect, valueRect);
+                              const WebKit::WebRect& valueRect,
+                              bool determinate, double) {
+  Control::Type ctype = Control::kProgressBar_Type;
+  Control::State cstate =
+      determinate ? Control::kNormal_State : Control::kIndeterminate_State;
+  drawProgressBar(canvas, ctype, cstate, barRect, valueRect);
 }
 
 }  // namespace TestShellWebTheme

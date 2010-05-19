@@ -54,9 +54,9 @@ class Engine : public WebKit::WebThemeEngine {
       WebKit::WebCanvas*, int part, int state, int classic_state,
       const WebKit::WebRect&);
   virtual void paintProgressBar(
-      WebKit::WebCanvas*,
-      const WebKit::WebRect& barRect,
-      int valuePart, const WebKit::WebRect& valueRect);
+      WebKit::WebCanvas*, const WebKit::WebRect& barRect,
+      const WebKit::WebRect& valueRect,
+      bool determinate, double time);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Engine);
