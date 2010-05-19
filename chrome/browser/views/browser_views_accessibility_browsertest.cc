@@ -11,7 +11,9 @@
 #include "chrome/browser/views/bookmark_bar_view.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/toolbar_view.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"
+#include "chrome/test/ui_test_utils.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "views/accessibility/view_accessibility_wrapper.h"
@@ -126,7 +128,7 @@ class BrowserViewsAccessibilityTest : public InProcessBrowserTest {
 // Retrieve accessibility object for main window and verify accessibility info.
 // Fails, http://crbug.com/44486.
 IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
-                       FAILS_TestChromeWindowAccObj) {
+                       TestChromeWindowAccObj) {
   BrowserWindow* browser_window = browser()->window();
   ASSERT_TRUE(NULL != browser_window);
 
@@ -140,10 +142,11 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
   ASSERT_EQ(S_OK, hr);
   ASSERT_TRUE(NULL != acc_obj);
 
-  // TODO(ctguil): Fix. The window title could be "New Tab - Chromium" or
-  // "about:blank - Chromium"
-  TestAccessibilityInfo(acc_obj, l10n_util::GetString(IDS_PRODUCT_NAME),
-                        ROLE_SYSTEM_WINDOW);
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutBlankURL));
+  std::wstring title =
+      l10n_util::GetStringF(IDS_BROWSER_WINDOW_TITLE_FORMAT,
+      ASCIIToWide(chrome::kAboutBlankURL));
+  TestAccessibilityInfo(acc_obj, title, ROLE_SYSTEM_WINDOW);
 
   acc_obj->Release();
 }
