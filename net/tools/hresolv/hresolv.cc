@@ -51,7 +51,7 @@ static const FlagName kAddrinfoFlagNames[] = {
   {AI_V4MAPPED, "AI_V4MAPPED"},
   {AI_ALL, "AI_ALL"},
   {AI_ADDRCONFIG, "AI_ADDRCONFIG"},
-#if defined(OS_LINUX) || defined(OS_WIN)
+#if !defined(OS_MACOSX)
   {AI_NUMERICSERV, "AI_NUMERICSERV"},
 #endif
 };

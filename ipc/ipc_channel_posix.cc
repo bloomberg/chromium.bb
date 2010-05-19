@@ -273,7 +273,7 @@ Channel::ChannelImpl::ChannelImpl(const std::string& channel_id, Mode mode,
       server_listen_pipe_(-1),
       pipe_(-1),
       client_pipe_(-1),
-#if defined(OS_LINUX)
+#if !defined(OS_MACOSX)
       fd_pipe_(-1),
       remote_fd_pipe_(-1),
 #endif
@@ -384,7 +384,7 @@ bool Channel::ChannelImpl::CreatePipe(const std::string& channel_id,
   scoped_ptr<Message> msg(new Message(MSG_ROUTING_NONE,
                                       HELLO_MESSAGE_TYPE,
                                       IPC::Message::PRIORITY_NORMAL));
-  #if defined(OS_LINUX)
+  #if !defined(OS_MACOSX)
   if (!uses_fifo_) {
     // On Linux, the seccomp sandbox makes it very expensive to call
     // recvmsg() and sendmsg(). Often, we are perfectly OK with resorting to
@@ -460,7 +460,7 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
       // Read from pipe.
       // recvmsg() returns 0 if the connection has closed or EAGAIN if no data
       // is waiting on the pipe.
-#if defined(OS_LINUX)
+#if !defined(OS_MACOSX)
       if (fd_pipe_ >= 0) {
         bytes_read = HANDLE_EINTR(read(pipe_, input_buf_,
                                        Channel::kReadBufferSize));
@@ -592,7 +592,7 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
           if (m.header()->num_fds > num_fds - fds_i) {
             // the message has been completely received, but we didn't get
             // enough file descriptors.
-#if defined(OS_LINUX)
+#if !defined(OS_MACOSX)
             if (!uses_fifo_) {
               char dummy;
               struct iovec fd_pipe_iov = { &dummy, 1 };
@@ -682,9 +682,9 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
           if (!m.ReadInt(&iter, &pid)) {
             NOTREACHED();
           }
-#if defined(OS_LINUX)
+#if !defined(OS_MACOSX)
           if (mode_ == MODE_SERVER && !uses_fifo_) {
-            // On Linux, the Hello message from the client to the server
+            // On non-Mac, the Hello message from the client to the server
             // also contains the fd_pipe_, which  will be used for all
             // subsequent file descriptor passing.
             DCHECK_EQ(m.file_descriptor_set()->size(), 1);
@@ -745,7 +745,7 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
   while (!output_queue_.empty()) {
     Message* msg = output_queue_.front();
 
-#if defined(OS_LINUX)
+#if !defined(OS_MACOSX)
     scoped_ptr<Message> hello;
     if (remote_fd_pipe_ != -1 &&
         msg->routing_id() == MSG_ROUTING_NONE &&
@@ -806,7 +806,7 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
       // num_fds < MAX_DESCRIPTORS_PER_MESSAGE so no danger of overflow.
       msg->header()->num_fds = static_cast<uint16>(num_fds);
 
-#if defined(OS_LINUX)
+#if !defined(OS_MACOSX)
       if (!uses_fifo_ &&
           (msg->routing_id() != MSG_ROUTING_NONE ||
            msg->type() != HELLO_MESSAGE_TYPE)) {
@@ -828,7 +828,7 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
 
     if (bytes_written == 1) {
       fd_written = pipe_;
-#if defined(OS_LINUX)
+#if !defined(OS_MACOSX)
       if (mode_ != MODE_SERVER && !uses_fifo_ &&
           msg->routing_id() == MSG_ROUTING_NONE &&
           msg->type() == HELLO_MESSAGE_TYPE) {
@@ -999,7 +999,7 @@ void Channel::ChannelImpl::Close() {
     Singleton<PipeMap>()->RemoveAndClose(pipe_name_);
     client_pipe_ = -1;
   }
-#if defined(OS_LINUX)
+#if !defined(OS_MACOSX)
   if (fd_pipe_ != -1) {
     HANDLE_EINTR(close(fd_pipe_));
     fd_pipe_ = -1;

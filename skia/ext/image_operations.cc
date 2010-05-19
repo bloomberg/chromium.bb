@@ -269,9 +269,9 @@ SkBitmap ImageOperations::Resize(const SkBitmap& source,
 SkBitmap ImageOperations::ResizeSubpixel(const SkBitmap& source,
                                          int dest_width, int dest_height,
                                          const SkIRect& dest_subset) {
-  // Currently only works on Linux because this is the only platform where
-  // SkFontHost::GetSubpixelOrder is defined.
-#if defined(OS_LINUX)
+  // Currently only works on Linux/BSD because these are the only platforms
+  // where SkFontHost::GetSubpixelOrder is defined.
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Understand the display.
   const SkFontHost::LCDOrder order = SkFontHost::GetSubpixelOrder();
   const SkFontHost::LCDOrientation orientation =
@@ -361,7 +361,7 @@ SkBitmap ImageOperations::ResizeSubpixel(const SkBitmap& source,
   return result;
 #else
   return SkBitmap();
-#endif  // OS_LINUX
+#endif  // OS_POSIX && !OS_MACOSX
 }
 
 // static
