@@ -969,12 +969,12 @@ TEST_F(ExtensionsServiceTest, Reinstall) {
   loaded_.clear();
   ExtensionErrorReporter::GetInstance()->ClearErrors();
 
-  // Reinstall the same version, nothing should happen.
+  // Reinstall the same version, it should overwrite the previous one.
   service_->InstallExtension(path);
   loop_.RunAllPending();
 
-  ASSERT_FALSE(installed_);
-  ASSERT_EQ(0u, loaded_.size());
+  ASSERT_TRUE(installed_);
+  ASSERT_EQ(1u, loaded_.size());
   ASSERT_EQ(0u, GetErrors().size());
   ValidatePrefKeyCount(1);
   ValidateIntegerPref(good_crx, L"state", Extension::ENABLED);
@@ -1218,7 +1218,7 @@ TEST_F(ExtensionsServiceTest, UpdatePendingExtensionAlreadyInstalled) {
 
   UpdateExtension(good->id(), path, true, true, false);
 
-  EXPECT_TRUE(ContainsKey(service_->pending_extensions(), kGoodId));
+  EXPECT_FALSE(ContainsKey(service_->pending_extensions(), kGoodId));
 }
 
 // Test pref settings for blacklist and unblacklist extensions.

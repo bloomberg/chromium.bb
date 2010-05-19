@@ -15,100 +15,57 @@
 
 namespace keys = extension_manifest_keys;
 
-TEST(ExtensionFileUtil, MoveDirSafely) {
-  // Create a test directory structure with some data in it.
+TEST(ExtensionFileUtil, InstallUninstallGarbageCollect) {
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
-  FilePath src_path = temp.path().AppendASCII("src");
-  ASSERT_TRUE(file_util::CreateDirectory(src_path));
+  // Create a source extension.
+  std::string extension_id("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+  std::string version("1.0");
+  FilePath src = temp.path().AppendASCII(extension_id);
+  ASSERT_TRUE(file_util::CreateDirectory(src));
 
-  std::string data = "foobar";
-  ASSERT_TRUE(file_util::WriteFile(src_path.AppendASCII("data"),
-                                   data.c_str(), data.length()));
+  // Create a extensions tree.
+  FilePath all_extensions = temp.path().AppendASCII("extensions");
+  ASSERT_TRUE(file_util::CreateDirectory(all_extensions));
 
-  // Move it to a path that doesn't exist yet.
-  FilePath dest_path = temp.path().AppendASCII("dest").AppendASCII("dest");
-  ASSERT_TRUE(extension_file_util::MoveDirSafely(src_path, dest_path));
+  // Install in empty directory. Should create parent directories as needed.
+  FilePath version_1 = extension_file_util::InstallExtension(src,
+                                                             extension_id,
+                                                             version,
+                                                             all_extensions);
+  ASSERT_EQ(version_1.value(),
+            all_extensions.AppendASCII(extension_id).AppendASCII("1.0_0")
+                .value());
+  ASSERT_TRUE(file_util::DirectoryExists(version_1));
 
-  // The path should get created.
-  ASSERT_TRUE(file_util::DirectoryExists(dest_path));
+  // Should have moved the source.
+  ASSERT_FALSE(file_util::DirectoryExists(src));
 
-  // The data should match.
-  std::string data_out;
-  ASSERT_TRUE(file_util::ReadFileToString(dest_path.AppendASCII("data"),
-                                          &data_out));
-  ASSERT_EQ(data, data_out);
+  // Install again. Should create a new one with different name.
+  ASSERT_TRUE(file_util::CreateDirectory(src));
+  FilePath version_2 = extension_file_util::InstallExtension(src,
+                                                             extension_id,
+                                                             version,
+                                                             all_extensions);
+  ASSERT_EQ(version_2.value(),
+            all_extensions.AppendASCII(extension_id).AppendASCII("1.0_1")
+                .value());
+  ASSERT_TRUE(file_util::DirectoryExists(version_2));
 
-  // The src path should be gone.
-  ASSERT_FALSE(file_util::PathExists(src_path));
+  // Collect garbage. Should remove first one.
+  std::map<std::string, FilePath> extension_paths;
+  extension_paths[extension_id] =
+      FilePath().AppendASCII(extension_id).Append(version_2.BaseName());
+  extension_file_util::GarbageCollectExtensions(all_extensions,
+                                                extension_paths);
+  ASSERT_FALSE(file_util::DirectoryExists(version_1));
+  ASSERT_TRUE(file_util::DirectoryExists(version_2));
 
-  // Create some new test data.
-  ASSERT_TRUE(file_util::CopyDirectory(dest_path, src_path,
-                                       true));  // recursive
-  data = "hotdog";
-  ASSERT_TRUE(file_util::WriteFile(src_path.AppendASCII("data"),
-                                   data.c_str(), data.length()));
-
-  // Test again, overwriting the old path.
-  ASSERT_TRUE(extension_file_util::MoveDirSafely(src_path, dest_path));
-  ASSERT_TRUE(file_util::DirectoryExists(dest_path));
-
-  data_out.clear();
-  ASSERT_TRUE(file_util::ReadFileToString(dest_path.AppendASCII("data"),
-                                          &data_out));
-  ASSERT_EQ(data, data_out);
-  ASSERT_FALSE(file_util::PathExists(src_path));
-}
-
-TEST(ExtensionFileUtil, CompareToInstalledVersion) {
-  // Compare to an existing extension.
-  FilePath install_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
-  install_dir = install_dir.AppendASCII("extensions")
-      .AppendASCII("good")
-      .AppendASCII("Extensions");
-
-  const std::string kId = "behllobkkfkfnphdnhnkndlbkcpglgmj";
-  const std::string kCurrentVersion = "1.0.0.0";
-
-  FilePath version_dir;
-
-  ASSERT_EQ(Extension::UPGRADE,
-            extension_file_util::CompareToInstalledVersion(
-                install_dir, kId, kCurrentVersion, "1.0.0.1", &version_dir));
-
-  ASSERT_EQ(Extension::REINSTALL,
-            extension_file_util::CompareToInstalledVersion(
-                install_dir, kId, kCurrentVersion, "1.0.0.0", &version_dir));
-
-  ASSERT_EQ(Extension::REINSTALL,
-            extension_file_util::CompareToInstalledVersion(
-                install_dir, kId, kCurrentVersion, "1.0.0", &version_dir));
-
-  ASSERT_EQ(Extension::DOWNGRADE,
-            extension_file_util::CompareToInstalledVersion(
-                install_dir, kId, kCurrentVersion, "0.0.1.0", &version_dir));
-
-  // Compare to an extension that is missing its manifest file.
-  ScopedTempDir temp;
-  ASSERT_TRUE(temp.CreateUniqueTempDir());
-  FilePath src = install_dir.AppendASCII(kId).AppendASCII(kCurrentVersion);
-  FilePath dest = temp.path().AppendASCII(kId).AppendASCII(kCurrentVersion);
-  ASSERT_TRUE(file_util::CreateDirectory(dest.DirName()));
-  ASSERT_TRUE(file_util::CopyDirectory(src, dest, true));
-  ASSERT_TRUE(file_util::Delete(dest.AppendASCII("manifest.json"), false));
-
-  ASSERT_EQ(Extension::NEW_INSTALL,
-            extension_file_util::CompareToInstalledVersion(
-                temp.path(), kId, kCurrentVersion, "1.0.0", &version_dir));
-
-  // Compare to a non-existent extension.
-  const std::string kMissingVersion = "";
-  const std::string kBadId = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
-  ASSERT_EQ(Extension::NEW_INSTALL,
-            extension_file_util::CompareToInstalledVersion(
-                temp.path(), kBadId, kMissingVersion, "1.0.0", &version_dir));
+  // Uninstall. Should remove entire extension subtree.
+  extension_file_util::UninstallExtension(all_extensions, extension_id);
+  ASSERT_FALSE(file_util::DirectoryExists(version_2.DirName()));
+  ASSERT_TRUE(file_util::DirectoryExists(all_extensions));
 }
 
 TEST(ExtensionFileUtil, LoadExtensionWithValidLocales) {

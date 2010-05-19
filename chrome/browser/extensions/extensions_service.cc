@@ -57,35 +57,6 @@ namespace errors = extension_manifest_errors;
 
 namespace {
 
-// Helper class to collect the IDs of every extension listed in the prefs.
-class InstalledExtensionSet {
- public:
-  explicit InstalledExtensionSet(ExtensionPrefs* prefs) {
-    scoped_ptr<ExtensionPrefs::ExtensionsInfo> info(
-        prefs->GetInstalledExtensionsInfo());
-
-    for (size_t i = 0; i < info->size(); ++i) {
-      std::string version;
-      const DictionaryValue* manifest = info->at(i)->extension_manifest.get();
-      if (!manifest ||
-          !manifest->GetString(extension_manifest_keys::kVersion, &version)) {
-        // Without a version, the extension is invalid. Ignoring it here will
-        // cause it to get garbage collected.
-        continue;
-      }
-      extensions_.insert(info->at(i)->extension_id);
-      versions_[info->at(i)->extension_id] = version;
-    }
-  }
-
-  const std::set<std::string>& extensions() { return extensions_; }
-  const std::map<std::string, std::string>& versions() { return versions_; }
-
- private:
-  std::set<std::string> extensions_;
-  std::map<std::string, std::string> versions_;
-};
-
 static bool ShouldReloadExtensionManifest(const ExtensionInfo& info) {
   // Always reload LOAD extension manifests, because they can change on disk
   // independent of the manifest in our prefs.
@@ -365,8 +336,9 @@ void ExtensionsService::UninstallExtension(const std::string& extension_id,
     ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
       NewRunnableFunction(
-          &extension_file_util::UninstallExtension, extension_id_copy,
-          install_directory_));
+          &extension_file_util::UninstallExtension,
+          install_directory_,
+          extension_id_copy));
   }
 
   ClearExtensionData(extension_url);
@@ -766,12 +738,18 @@ void ExtensionsService::GarbageCollectExtensions() {
   if (extension_prefs_->pref_service()->read_only())
     return;
 
-  InstalledExtensionSet installed(extension_prefs_.get());
+  scoped_ptr<ExtensionPrefs::ExtensionsInfo> info(
+      extension_prefs_->GetInstalledExtensionsInfo());
+
+  std::map<std::string, FilePath> extension_paths;
+  for (size_t i = 0; i < info->size(); ++i)
+    extension_paths[info->at(i)->extension_id] = info->at(i)->extension_path;
+
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
       NewRunnableFunction(
           &extension_file_util::GarbageCollectExtensions, install_directory_,
-          installed.extensions(), installed.versions()));
+          extension_paths));
 }
 
 void ExtensionsService::OnLoadedInstalledExtensions() {
@@ -801,39 +779,30 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
       Extension::IsExternalLocation(extension->location())) {
     Extension* old = GetExtensionByIdInternal(extension->id(), true, true);
     if (old) {
-      if (extension->version()->CompareTo(*(old->version())) > 0) {
-        bool allow_silent_upgrade =
-            allow_privilege_increase || !Extension::IsPrivilegeIncrease(
-                old, extension);
+      // CrxInstaller should have guaranteed that we aren't downgrading.
+      CHECK(extension->version()->CompareTo(*(old->version())) >= 0);
 
-        // Extensions get upgraded if silent upgrades are allowed, otherwise
-        // they get disabled.
-        if (allow_silent_upgrade) {
-          old->set_being_upgraded(true);
-          extension->set_being_upgraded(true);
-        }
+      bool allow_silent_upgrade =
+          allow_privilege_increase || !Extension::IsPrivilegeIncrease(
+              old, extension);
 
-        // To upgrade an extension in place, unload the old one and
-        // then load the new one.
-        UnloadExtension(old->id());
-        old = NULL;
+      // Extensions get upgraded if silent upgrades are allowed, otherwise
+      // they get disabled.
+      if (allow_silent_upgrade) {
+        old->set_being_upgraded(true);
+        extension->set_being_upgraded(true);
+      }
 
-        if (!allow_silent_upgrade) {
-          // Extension has changed permissions significantly. Disable it. We
-          // send a notification below.
-          extension_prefs_->SetExtensionState(extension, Extension::DISABLED);
-          extension_prefs_->SetDidExtensionEscalatePermissions(extension, true);
-        }
-      } else {
-        // We already have the extension of the same or older version.
-        std::string error_message("Duplicate extension load attempt: ");
-        error_message += extension->id();
-        LOG(WARNING) << error_message;
-        ReportExtensionLoadError(extension->path(),
-                                 error_message,
-                                 NotificationType::EXTENSION_OVERINSTALL_ERROR,
-                                 false);
-        return;
+      // To upgrade an extension in place, unload the old one and
+      // then load the new one.
+      UnloadExtension(old->id());
+      old = NULL;
+
+      if (!allow_silent_upgrade) {
+        // Extension has changed permissions significantly. Disable it. We
+        // send a notification below.
+        extension_prefs_->SetExtensionState(extension, Extension::DISABLED);
+        extension_prefs_->SetDidExtensionEscalatePermissions(extension, true);
       }
     }
 
@@ -914,21 +883,6 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension,
   // Erase any pending extension.
   if (it != pending_extensions_.end()) {
     pending_extensions_.erase(it);
-  }
-}
-
-void ExtensionsService::OnExtensionOverinstallAttempted(const std::string& id) {
-  Extension* extension = GetExtensionById(id, false);
-  if (extension && extension->IsTheme()) {
-    NotificationService::current()->Notify(
-        NotificationType::THEME_INSTALLED,
-        Source<Profile>(profile_),
-        Details<Extension>(extension));
-  } else {
-    NotificationService::current()->Notify(
-      NotificationType::NO_THEME_DETECTED,
-      Source<Profile>(profile_),
-      NotificationService::NoDetails());
   }
 }
 

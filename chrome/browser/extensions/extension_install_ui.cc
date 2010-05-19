@@ -260,11 +260,6 @@ void ExtensionInstallUI::OnInstallFailure(const std::string& error) {
       UTF8ToUTF16(error));
 }
 
-void ExtensionInstallUI::OnOverinstallAttempted(Extension* extension) {
-  ShowThemeInfoBar(previous_theme_id_, previous_use_system_theme_,
-                   extension, profile_);
-}
-
 void ExtensionInstallUI::OnImageLoaded(
     SkBitmap* image, ExtensionResource resource, int index) {
   if (image)

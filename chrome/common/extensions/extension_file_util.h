@@ -20,52 +20,17 @@ namespace extension_file_util {
 // extension in.
 extern const char kInstallDirectoryName[];
 
-// The name of the file that contains the current version of an installed
-// extension.
-extern const char kCurrentVersionFileName[];
+// Copies |unpacked_source_dir| into the right location under |extensions_dir|.
+// The destination directiory is returned on success, or empty path is returned
+// on failure.
+FilePath InstallExtension(const FilePath& unpacked_source_dir,
+                          const std::string& id,
+                          const std::string& version,
+                          const FilePath& extensions_dir);
 
-// Move source_dir to dest_dir (it will actually be named dest_dir, not inside
-// dest_dir). If the parent path doesn't exist, create it. If something else is
-// already there, remove it.
-bool MoveDirSafely(const FilePath& source_dir, const FilePath& dest_dir);
-
-// Updates the Current Version file inside the installed extension.
-bool SetCurrentVersion(const FilePath& dest_dir,
-                       const std::string& version,
-                       std::string* error);
-
-// Reads the Current Version file.
-bool ReadCurrentVersion(const FilePath& dir, std::string* version_string);
-
-// Determine what type of install it is (new, upgrade, overinstall, downgrade)
-// given the current version and a newly installing version. |extensions_dir| is
-// the root directory containing all extensions in the user profile.
-// |extension_id| and |current_version_str| are the id and version of the
-// extension contained in |src_dir|, if any.
-//
-// Returns the full path to the destination version directory and the type of
-// install that was attempted.
-Extension::InstallType CompareToInstalledVersion(
-    const FilePath& extensions_dir,
-    const std::string& extension_id,
-    const std::string& current_version_str,
-    const std::string& new_version_str,
-    FilePath* version_dir);
-
-// Sanity check that the directory has the minimum files to be a working
-// extension.
-bool SanityCheckExtension(const FilePath& extension_root);
-
-// Installs an extension unpacked in |src_dir|.
-//
-// On failure, also returns an error message.
-//
-// NOTE: |src_dir| is not actually copied in the case of downgrades or
-// overinstall of previous verisons of the extension. In that case, the function
-// returns true and install_type is populated.
-bool InstallExtension(const FilePath& src_dir,
-                      const FilePath& version_dir,
-                      std::string* error);
+// Removes all versions of the extension with |id| from |extensions_dir|.
+void UninstallExtension(const FilePath& extensions_dir,
+                        const std::string& id);
 
 // Loads and validates an extension from the specified directory. Returns NULL
 // on failure, with a description of the error in |error|.
@@ -77,14 +42,18 @@ Extension* LoadExtension(const FilePath& extension_root,
 // Otherwise, a description of the error is returned in |error|.
 bool ValidateExtension(Extension* extension, std::string* error);
 
-// Uninstalls the extension |id| from the install directory |extensions_dir|.
-void UninstallExtension(const std::string& id, const FilePath& extensions_dir);
-
-// Clean up directories that aren't valid extensions from the install directory.
+// Cleans up the extension install directory. It can end up with garbage in it
+// if extensions can't initially be removed when they are uninstalled (eg if a
+// file is in use).
+//
+// |extensions_dir| is the install directory to look in. |extension_paths| is a
+// map from extension id to full installation path.
+//
+// Obsolete version directories are removed, as are directories that aren't
+// found in |extension_paths|.
 void GarbageCollectExtensions(
     const FilePath& extensions_dir,
-    const std::set<std::string>& installed_ids,
-    const std::map<std::string, std::string>& installed_versions);
+    const std::map<std::string, FilePath>& extension_paths);
 
 // Loads extension message catalogs and returns message bundle.
 // Returns NULL on error, or if extension is not localized.

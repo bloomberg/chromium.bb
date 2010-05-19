@@ -114,9 +114,6 @@ struct ParamTraits<AutomationMsg_ExtensionResponseValues> {
      case AUTOMATION_MSG_EXTENSION_INSTALL_FAILED:
       control = L"AUTOMATION_MSG_EXTENSION_INSTALL_FAILED";
       break;
-     case AUTOMATION_MSG_EXTENSION_ALREADY_INSTALLED:
-      control = L"AUTOMATION_MSG_EXTENSION_ALREADY_INSTALLED";
-      break;
      default:
       control = L"UNKNOWN";
       break;

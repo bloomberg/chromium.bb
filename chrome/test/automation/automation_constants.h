@@ -27,8 +27,7 @@ enum AutomationMsg_NavigationResponseValues {
 
 enum AutomationMsg_ExtensionResponseValues {
   AUTOMATION_MSG_EXTENSION_INSTALL_SUCCEEDED = 0,
-  AUTOMATION_MSG_EXTENSION_INSTALL_FAILED,
-  AUTOMATION_MSG_EXTENSION_ALREADY_INSTALLED,
+  AUTOMATION_MSG_EXTENSION_INSTALL_FAILED
 };
 
 // Used in the AutomationMsg_GetExtensionProperty to identify which extension

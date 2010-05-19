@@ -73,10 +73,6 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   // Installation failed. This is declared virtual for testing.
   virtual void OnInstallFailure(const std::string& error);
 
-  // The install was rejected because the same extension/version is already
-  // installed. This is declared virtual for testing.
-  virtual void OnOverinstallAttempted(Extension* extension);
-
   // ImageLoadingTracker::Observer overrides.
   virtual void OnImageLoaded(
       SkBitmap* image, ExtensionResource resource, int index);

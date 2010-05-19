@@ -97,8 +97,6 @@ class MockAbortExtensionInstallUI : public ExtensionInstallUI {
   virtual void OnInstallSuccess(Extension* extension) {}
 
   virtual void OnInstallFailure(const std::string& error) {}
-
-  virtual void OnOverinstallAttempted(Extension* extension) {}
 };
 
 bool ExtensionBrowserTest::InstallOrUpdateExtension(const std::string& id,
@@ -114,8 +112,6 @@ bool ExtensionBrowserTest::InstallOrUpdateExtension(const std::string& id,
     registrar.Add(this, NotificationType::EXTENSION_LOADED,
                   NotificationService::AllSources());
     registrar.Add(this, NotificationType::EXTENSION_UPDATE_DISABLED,
-                  NotificationService::AllSources());
-    registrar.Add(this, NotificationType::EXTENSION_OVERINSTALL_ERROR,
                   NotificationService::AllSources());
     registrar.Add(this, NotificationType::EXTENSION_INSTALL_ERROR,
                   NotificationService::AllSources());
@@ -298,11 +294,6 @@ void ExtensionBrowserTest::Observe(NotificationType type,
 
     case NotificationType::EXTENSION_INSTALL_ERROR:
       std::cout << "Got EXTENSION_INSTALL_ERROR notification.\n";
-      MessageLoopForUI::current()->Quit();
-      break;
-
-    case NotificationType::EXTENSION_OVERINSTALL_ERROR:
-      std::cout << "Got EXTENSION_OVERINSTALL_ERROR notification.\n";
       MessageLoopForUI::current()->Quit();
       break;
 

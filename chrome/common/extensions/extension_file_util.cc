@@ -30,81 +30,50 @@ namespace extension_file_util {
 static bool ValidateLocaleInfo(const Extension& extension, std::string* error);
 
 const char kInstallDirectoryName[] = "Extensions";
-// TODO(mpcomplete): obsolete. remove after migration period.
-// http://code.google.com/p/chromium/issues/detail?id=19733
-const char kCurrentVersionFileName[] = "Current Version";
 
-bool MoveDirSafely(const FilePath& source_dir, const FilePath& dest_dir) {
-  if (file_util::PathExists(dest_dir)) {
-    if (!file_util::Delete(dest_dir, true))
-      return false;
-  } else {
-    FilePath parent = dest_dir.DirName();
-    if (!file_util::DirectoryExists(parent)) {
-      if (!file_util::CreateDirectory(parent))
-        return false;
+FilePath InstallExtension(const FilePath& unpacked_source_dir,
+                          const std::string& id,
+                          const std::string& version,
+                          const FilePath& all_extensions_dir) {
+  FilePath extension_dir = all_extensions_dir.AppendASCII(id);
+  FilePath version_dir;
+
+  // Create the extension directory if it doesn't exist already.
+  if (!file_util::PathExists(extension_dir)) {
+    if (!file_util::CreateDirectory(extension_dir))
+      return FilePath();
+  }
+
+  // Try to find a free directory. There can be legitimate conflicts in the case
+  // of overinstallation of the same version.
+  const int kMaxAttempts = 100;
+  for (int i = 0; i < kMaxAttempts; ++i) {
+    FilePath candidate = extension_dir.AppendASCII(
+        StringPrintf("%s_%u", version.c_str(), i));
+    if (!file_util::PathExists(candidate)) {
+      version_dir = candidate;
+      break;
     }
   }
 
-  if (!file_util::Move(source_dir, dest_dir))
-    return false;
-
-  return true;
-}
-
-Extension::InstallType CompareToInstalledVersion(
-    const FilePath& extensions_dir,
-    const std::string& extension_id,
-    const std::string& current_version_str,
-    const std::string& new_version_str,
-    FilePath* version_dir) {
-  FilePath dest_dir = extensions_dir.AppendASCII(extension_id);
-  FilePath current_version_dir = dest_dir.AppendASCII(current_version_str);
-  *version_dir = dest_dir.AppendASCII(new_version_str);
-
-  if (current_version_str.empty())
-    return Extension::NEW_INSTALL;
-
-  scoped_ptr<Version> current_version(
-    Version::GetVersionFromString(current_version_str));
-  scoped_ptr<Version> new_version(
-    Version::GetVersionFromString(new_version_str));
-  int comp = new_version->CompareTo(*current_version);
-  if (comp > 0)
-    return Extension::UPGRADE;
-  if (comp < 0)
-    return Extension::DOWNGRADE;
-
-  // Same version. Treat corrupted existing installation as new install case.
-  if (!SanityCheckExtension(current_version_dir))
-    return Extension::NEW_INSTALL;
-
-  return Extension::REINSTALL;
-}
-
-bool SanityCheckExtension(const FilePath& dir) {
-  // Verify that the directory actually exists.
-  // TODO(erikkay): A further step would be to verify that the extension
-  // has actually loaded successfully.
-  FilePath manifest_file(dir.Append(Extension::kManifestFilename));
-  return file_util::PathExists(dir) && file_util::PathExists(manifest_file);
-}
-
-bool InstallExtension(const FilePath& src_dir,
-                      const FilePath& version_dir,
-                      std::string* error) {
-  // If anything fails after this, we want to delete the extension dir.
-  ScopedTempDir scoped_version_dir;
-  scoped_version_dir.Set(version_dir);
-
-  if (!MoveDirSafely(src_dir, version_dir)) {
-    *error = l10n_util::GetStringUTF8(
-        IDS_EXTENSION_MOVE_DIRECTORY_TO_PROFILE_FAILED);
-    return false;
+  if (version_dir.empty()) {
+    LOG(ERROR) << "Could not find a home for extension " << id << " with "
+               << "version " << version << ".";
+    return FilePath();
   }
 
-  scoped_version_dir.Take();
-  return true;
+  if (!file_util::Move(unpacked_source_dir, version_dir))
+    return FilePath();
+
+  return version_dir;
+}
+
+void UninstallExtension(const FilePath& extensions_dir,
+                        const std::string& id) {
+  // We don't care about the return value. If this fails (and it can, due to
+  // plugins that aren't unloaded yet, it will get cleaned up by
+  // ExtensionsService::GarbageCollectExtensions).
+  file_util::Delete(extensions_dir.AppendASCII(id), true);  // recursive.
 }
 
 Extension* LoadExtension(const FilePath& extension_path,
@@ -295,45 +264,14 @@ bool ValidateExtension(Extension* extension, std::string* error) {
   return true;
 }
 
-void UninstallExtension(const std::string& id, const FilePath& extensions_dir) {
-  // First, delete the Current Version file. If the directory delete fails, then
-  // at least the extension won't be loaded again.
-  FilePath extension_root = extensions_dir.AppendASCII(id);
-
-  if (!file_util::PathExists(extension_root)) {
-    LOG(WARNING) << "Asked to remove a non-existent extension " << id;
-    return;
-  }
-
-  FilePath current_version_file = extension_root.AppendASCII(
-      kCurrentVersionFileName);
-  if (!file_util::PathExists(current_version_file)) {
-    // This is OK, since we're phasing out the current version file.
-  } else {
-    if (!file_util::Delete(current_version_file, false)) {
-      LOG(WARNING) << "Could not delete Current Version file for extension "
-                   << id;
-      return;
-    }
-  }
-
-  // OK, now try and delete the entire rest of the directory. One major place
-  // this can fail is if the extension contains a plugin (stupid plugins). It's
-  // not a big deal though, because we'll notice next time we startup that the
-  // Current Version file is gone and finish the delete then.
-  if (!file_util::Delete(extension_root, true))
-    LOG(WARNING) << "Could not delete directory for extension " << id;
-}
-
 void GarbageCollectExtensions(
     const FilePath& install_directory,
-    const std::set<std::string>& installed_ids,
-    const std::map<std::string, std::string>& installed_versions) {
+    const std::map<std::string, FilePath>& extension_paths) {
   // Nothing to clean up if it doesn't exist.
   if (!file_util::DirectoryExists(install_directory))
     return;
 
-  LOG(INFO) << "Loading installed extensions...";
+  LOG(INFO) << "Garbage collecting extensions...";
   file_util::FileEnumerator enumerator(install_directory,
                                        false,  // Not recursive.
                                        file_util::FileEnumerator::DIRECTORIES);
@@ -343,21 +281,24 @@ void GarbageCollectExtensions(
     std::string extension_id = WideToASCII(
         extension_path.BaseName().ToWStringHack());
 
-    // If there is no entry in the prefs file, just delete the directory and
-    // move on. This can legitimately happen when an uninstall does not
-    // complete, for example, when a plugin is in use at uninstall time.
-    if (installed_ids.count(extension_id) == 0) {
-      LOG(INFO) << "Deleting unreferenced install for directory "
-                << WideToASCII(extension_path.ToWStringHack()) << ".";
-      file_util::Delete(extension_path, true);  // Recursive.
-      continue;
-    }
-
     // Delete directories that aren't valid IDs.
     if (!Extension::IdIsValid(extension_id)) {
       LOG(WARNING) << "Invalid extension ID encountered in extensions "
                       "directory: " << extension_id;
       LOG(INFO) << "Deleting invalid extension directory "
+                << WideToASCII(extension_path.ToWStringHack()) << ".";
+      file_util::Delete(extension_path, true);  // Recursive.
+      continue;
+    }
+
+    std::map<std::string, FilePath>::const_iterator iter =
+        extension_paths.find(extension_id);
+
+    // If there is no entry in the prefs file, just delete the directory and
+    // move on. This can legitimately happen when an uninstall does not
+    // complete, for example, when a plugin is in use at uninstall time.
+    if (iter == extension_paths.end()) {
+      LOG(INFO) << "Deleting unreferenced install for directory "
                 << WideToASCII(extension_path.ToWStringHack()) << ".";
       file_util::Delete(extension_path, true);  // Recursive.
       continue;
@@ -371,15 +312,7 @@ void GarbageCollectExtensions(
     for (FilePath version_dir = versions_enumerator.Next();
          !version_dir.value().empty();
          version_dir = versions_enumerator.Next()) {
-      std::map<std::string, std::string>::const_iterator installed_version =
-          installed_versions.find(extension_id);
-      if (installed_version == installed_versions.end()) {
-        NOTREACHED() << "No installed version found for " << extension_id;
-        continue;
-      }
-
-      std::string version = WideToASCII(version_dir.BaseName().ToWStringHack());
-      if (version != installed_version->second) {
+      if (version_dir.BaseName() != iter->second.BaseName()) {
         LOG(INFO) << "Deleting old version for directory "
                   << WideToASCII(version_dir.ToWStringHack()) << ".";
         file_util::Delete(version_dir, true);  // Recursive.

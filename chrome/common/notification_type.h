@@ -735,8 +735,7 @@ class NotificationType {
     // manager and the details are the download url.
     EXTENSION_READY_FOR_INSTALL,
 
-    // Sent on ExtensionOverinstallAttempted when no theme is detected. The
-    // source is a Profile.
+    // Sent when an extension install turns out to not be a theme.
     NO_THEME_DETECTED,
 
     // Sent when a new theme is installed. The details are an Extension, and the
@@ -750,10 +749,6 @@ class NotificationType {
     // An error occured during extension install. The details are a string with
     // details about why the install failed.
     EXTENSION_INSTALL_ERROR,
-
-    // An overinstall error occured during extension install. The details are a
-    // FilePath to the extension that was attempted to install.
-    EXTENSION_OVERINSTALL_ERROR,
 
     // Sent when an extension is unloaded. This happens when an extension is
     // uninstalled or disabled. The details are an Extension, and the source is

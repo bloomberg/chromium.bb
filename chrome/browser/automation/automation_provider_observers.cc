@@ -305,8 +305,6 @@ ExtensionInstallNotificationObserver::ExtensionInstallNotificationObserver(
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_INSTALL_ERROR,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::EXTENSION_OVERINSTALL_ERROR,
-                 NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UPDATE_DISABLED,
                  NotificationService::AllSources());
 }
@@ -324,9 +322,6 @@ void ExtensionInstallNotificationObserver::Observe(
     case NotificationType::EXTENSION_INSTALL_ERROR:
     case NotificationType::EXTENSION_UPDATE_DISABLED:
       SendResponse(AUTOMATION_MSG_EXTENSION_INSTALL_FAILED);
-      break;
-    case NotificationType::EXTENSION_OVERINSTALL_ERROR:
-      SendResponse(AUTOMATION_MSG_EXTENSION_ALREADY_INSTALLED);
       break;
     default:
       NOTREACHED();
@@ -372,8 +367,6 @@ ExtensionReadyNotificationObserver::ExtensionReadyNotificationObserver(
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_INSTALL_ERROR,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::EXTENSION_OVERINSTALL_ERROR,
-                 NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UPDATE_DISABLED,
                  NotificationService::AllSources());
 }
@@ -401,7 +394,6 @@ void ExtensionReadyNotificationObserver::Observe(
       break;
     case NotificationType::EXTENSION_INSTALL_ERROR:
     case NotificationType::EXTENSION_UPDATE_DISABLED:
-    case NotificationType::EXTENSION_OVERINSTALL_ERROR:
       success = false;
       break;
     default:

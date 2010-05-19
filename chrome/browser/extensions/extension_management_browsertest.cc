@@ -19,6 +19,11 @@ class ExtensionManagementTest : public ExtensionBrowserTest {
   // Helper method that returns whether the extension is at the given version.
   // This calls version(), which must be defined in the extension's bg page,
   // as well as asking the extension itself.
+  //
+  // Note that 'version' here means something different than the version field
+  // in the extension's manifest. We use the version as reported by the
+  // background page to test how overinstalling crx files with the same
+  // manifest version works.
   bool IsExtensionAtVersion(Extension* extension,
                             const std::string& expected_version) {
     // Test that the extension's version from the manifest and reported by the
@@ -71,20 +76,23 @@ class ExtensionManagementTest : public ExtensionBrowserTest {
   }
 };
 
-// Tests that installing the same version does not overwrite.
+// Tests that installing the same version overwrites.
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, InstallSameVersion) {
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   const size_t size_before = service->extensions()->size();
   ASSERT_TRUE(InstallExtension(
       test_data_dir_.AppendASCII("install/install.crx"), 1));
+  FilePath old_path = service->extensions()->back()->path();
 
-  // Install an extension with the same version. The previous install should
-  // be kept.
+  // Install an extension with the same version. The previous install should be
+  // overwritten.
   ASSERT_TRUE(InstallExtension(
       test_data_dir_.AppendASCII("install/install_same_version.crx"), 0));
+  FilePath new_path = service->extensions()->back()->path();
 
-  EXPECT_TRUE(IsExtensionAtVersion(service->extensions()->at(size_before),
-                                   "1.0"));
+  EXPECT_FALSE(IsExtensionAtVersion(service->extensions()->at(size_before),
+                                    "1.0"));
+  EXPECT_NE(old_path.value(), new_path.value());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, InstallOlderVersion) {

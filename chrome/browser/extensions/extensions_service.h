@@ -271,10 +271,6 @@ class ExtensionsService
   void OnExtensionInstalled(Extension* extension,
                             bool allow_privilege_increase);
 
-  // Called by the backend when an attempt was made to reinstall the same
-  // version of an existing extension.
-  void OnExtensionOverinstallAttempted(const std::string& id);
-
   // Called by the backend when an external extension is found.
   void OnExternalExtensionFound(const std::string& id,
                                 const std::string& version,

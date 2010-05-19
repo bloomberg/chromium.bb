@@ -24,6 +24,7 @@
 #include "chrome/common/notification_type.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {
@@ -213,27 +214,24 @@ void CrxInstaller::InstallUIAbort() {
 void CrxInstaller::CompleteInstall() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 
-  FilePath version_dir;
-  Extension::InstallType install_type =
-      extension_file_util::CompareToInstalledVersion(
-          install_directory_, extension_->id(), current_version_,
-          extension_->VersionString(), &version_dir);
-
-  if (install_type == Extension::DOWNGRADE) {
-    ReportFailureFromFileThread("Attempted to downgrade extension.");
-    return;
+  if (!current_version_.empty()) {
+    scoped_ptr<Version> current_version(
+        Version::GetVersionFromString(current_version_));
+    if (current_version->CompareTo(*(extension_->version())) > 0) {
+      ReportFailureFromFileThread("Attempted to downgrade extension.");
+      return;
+    }
   }
 
-  if (install_type == Extension::REINSTALL) {
-    // We use this as a signal to switch themes.
-    ReportOverinstallFromFileThread();
-    return;
-  }
-
-  std::string error_msg;
-  if (!extension_file_util::InstallExtension(unpacked_extension_root_,
-                                             version_dir, &error_msg)) {
-    ReportFailureFromFileThread(error_msg);
+  FilePath version_dir = extension_file_util::InstallExtension(
+      unpacked_extension_root_,
+      extension_->id(),
+      extension_->VersionString(),
+      install_directory_);
+  if (version_dir.empty()) {
+    ReportFailureFromFileThread(
+        l10n_util::GetStringUTF8(
+            IDS_EXTENSION_MOVE_DIRECTORY_TO_PROFILE_FAILED));
     return;
   }
 
@@ -294,27 +292,6 @@ void CrxInstaller::ReportFailureFromUIThread(const std::string& error) {
 
   if (client_)
     client_->OnInstallFailure(error);
-}
-
-void CrxInstaller::ReportOverinstallFromFileThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &CrxInstaller::ReportOverinstallFromUIThread));
-}
-
-void CrxInstaller::ReportOverinstallFromUIThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-
-  NotificationService* service = NotificationService::current();
-  service->Notify(NotificationType::EXTENSION_OVERINSTALL_ERROR,
-                  Source<CrxInstaller>(this),
-                  Details<const FilePath>(&extension_->path()));
-
-  if (client_)
-    client_->OnOverinstallAttempted(extension_.get());
-
-  frontend_->OnExtensionOverinstallAttempted(extension_->id());
 }
 
 void CrxInstaller::ReportSuccessFromFileThread() {

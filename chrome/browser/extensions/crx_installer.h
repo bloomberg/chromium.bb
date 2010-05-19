@@ -113,8 +113,6 @@ class CrxInstaller
   // Result reporting.
   void ReportFailureFromFileThread(const std::string& error);
   void ReportFailureFromUIThread(const std::string& error);
-  void ReportOverinstallFromFileThread();
-  void ReportOverinstallFromUIThread();
   void ReportSuccessFromFileThread();
   void ReportSuccessFromUIThread();
 
