@@ -1607,6 +1607,7 @@ void ExtensionsServiceTest::TestExternalProvider(
   provider->RemoveExtension(good_crx);
 
   loaded_.clear();
+  service_->UnloadAllExtensions();
   service_->LoadAllExtensions();
   loop_.RunAllPending();
   ASSERT_EQ(0u, loaded_.size());
@@ -1623,7 +1624,7 @@ void ExtensionsServiceTest::TestExternalProvider(
   loop_.RunAllPending();
 
   ASSERT_EQ(1u, loaded_.size());
-  ASSERT_EQ(1u, GetErrors().size());
+  ASSERT_EQ(0u, GetErrors().size());
 
   // User uninstalls.
   loaded_.clear();
