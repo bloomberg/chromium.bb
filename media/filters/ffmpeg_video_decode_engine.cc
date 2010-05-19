@@ -4,10 +4,12 @@
 
 #include "media/filters/ffmpeg_video_decode_engine.h"
 
+#include "base/command_line.h"
 #include "base/task.h"
 #include "media/base/buffers.h"
 #include "media/base/callback.h"
 #include "media/base/limits.h"
+#include "media/base/media_switches.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/ffmpeg/ffmpeg_util.h"
 #include "media/filters/ffmpeg_demuxer.h"
@@ -24,8 +26,9 @@ FFmpegVideoDecodeEngine::~FFmpegVideoDecodeEngine() {
 
 void FFmpegVideoDecodeEngine::Initialize(AVStream* stream, Task* done_cb) {
   AutoTaskRunner done_runner(done_cb);
+  CHECK(state_ == kCreated);
 
-  // Always try to use two threads for video decoding.  There is little reason
+  // Always try to use three threads for video decoding.  There is little reason
   // not to since current day CPUs tend to be multi-core and we measured
   // performance benefits on older machines such as P4s with hyperthreading.
   //
@@ -33,10 +36,10 @@ void FFmpegVideoDecodeEngine::Initialize(AVStream* stream, Task* done_cb) {
   // continue processing. Although it'd be nice to have the option of a single
   // decoding thread, FFmpeg treats having one thread the same as having zero
   // threads (i.e., avcodec_decode_video() will execute on the calling thread).
-  // Yet another reason for having two threads :)
-  static const int kDecodeThreads = 2;
+  // Yet another reason for having three threads :)
+  static const int kDecodeThreads = 3;
+  static const int kMaxDecodeThreads = 16;
 
-  CHECK(state_ == kCreated);
 
   codec_context_ = stream->codec;
   codec_context_->flags2 |= CODEC_FLAG2_FAST;  // Enable faster H264 decode.
@@ -47,9 +50,17 @@ void FFmpegVideoDecodeEngine::Initialize(AVStream* stream, Task* done_cb) {
 
   AVCodec* codec = avcodec_find_decoder(codec_context_->codec_id);
 
-  // TODO(fbarchard): On next ffmpeg roll, retest Theora multi-threading.
+  // TODO(fbarchard): Improve thread logic based on size / codec.
   int decode_threads = (codec_context_->codec_id == CODEC_ID_THEORA)
       ? 1 : kDecodeThreads;
+
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  std::string threads(cmd_line->GetSwitchValueASCII(switches::kVideoThreads));
+  if ((!threads.empty() &&
+      !StringToInt(threads, &decode_threads)) ||
+      decode_threads < 0 || decode_threads > kMaxDecodeThreads) {
+    decode_threads = kDecodeThreads;
+  }
 
   // We don't allocate AVFrame on the stack since different versions of FFmpeg
   // may change the size of AVFrame, causing stack corruption.  The solution is
@@ -66,10 +77,11 @@ void FFmpegVideoDecodeEngine::Initialize(AVStream* stream, Task* done_cb) {
   }
 }
 
+// TODO(fbarchard): Find way to remove this memcpy of the entire image.
 static void CopyPlane(size_t plane,
                       scoped_refptr<VideoFrame> video_frame,
                       const AVFrame* frame) {
-  DCHECK(video_frame->width() % 2 == 0);
+  DCHECK_EQ(video_frame->width() % 2, 0u);
   const uint8* source = frame->data[plane];
   const size_t source_stride = frame->linesize[plane];
   uint8* dest = video_frame->data(plane);

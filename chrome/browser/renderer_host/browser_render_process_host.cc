@@ -343,7 +343,7 @@ bool BrowserRenderProcessHost::Init(bool is_extensions_process,
     child_process_.reset(new ChildProcessLauncher(
 #if defined(OS_WIN)
         FilePath(),
-#elif defined(OS_POSIX)
+#elif defined(POSIX)
         renderer_prefix.empty(),
         base::environment_vector(),
         channel_->GetClientFileDescriptor(),
@@ -555,6 +555,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kDisableGeolocation,
     switches::kShowPaintRects,
     switches::kEnableOpenMax,
+    switches::kVideoThreads,
     switches::kEnableVideoLayering,
     switches::kEnableVideoLogging,
     switches::kEnableTouch,
