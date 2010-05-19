@@ -273,8 +273,9 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
                               ROLE_SYSTEM_TOOLBAR);
 }
 
+// Fails, http://crbug.com/44486.
 IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
-                       TestAboutChromeViewAccObj) {
+                       FAILS_TestAboutChromeViewAccObj) {
   //  Firstly, test that the WindowDelegate got updated.
   views::Window* aboutChromeWindow = GetBrowserView()->ShowAboutChromeDialog();
   EXPECT_STREQ(aboutChromeWindow->GetDelegate()->GetWindowTitle().c_str(),
