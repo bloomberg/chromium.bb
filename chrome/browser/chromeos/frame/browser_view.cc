@@ -455,6 +455,10 @@ bool BrowserView::ShouldOpenButtonOptions(
   return true;
 }
 
+void BrowserView::ExecuteBrowserCommand(int id) const {
+  browser()->ExecuteCommand(id);
+}
+
 void BrowserView::OpenButtonOptions(const views::View* button_view) const {
   if (button_view == status_area_->network_view()) {
     browser()->OpenInternetOptionsDialog();

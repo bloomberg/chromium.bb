@@ -74,6 +74,7 @@ class BrowserView : public ::BrowserView,
   virtual gfx::NativeWindow GetNativeWindow() const;
   virtual bool ShouldOpenButtonOptions(
       const views::View* button_view) const;
+  virtual void ExecuteBrowserCommand(int id) const;
   virtual void OpenButtonOptions(const views::View* button_view) const;
   virtual bool IsButtonVisible(const views::View* button_view) const;
   virtual bool IsBrowserMode() const;

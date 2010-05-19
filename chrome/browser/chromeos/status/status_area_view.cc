@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
+#include "chrome/browser/chromeos/status/feedback_menu_button.h"
 #include "chrome/browser/chromeos/status/language_menu_button.h"
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/status/power_menu_button.h"
@@ -28,6 +29,7 @@ StatusAreaView::OpenTabsMode StatusAreaView::open_tabs_mode_ =
 StatusAreaView::StatusAreaView(StatusAreaHost* host)
     : host_(host),
       clock_view_(NULL),
+      feedback_view_(NULL),
       language_view_(NULL),
       network_view_(NULL),
       power_view_(NULL) {
@@ -37,6 +39,10 @@ void StatusAreaView::Init() {
   // Language.
   language_view_ = new LanguageMenuButton(host_);
   AddChildView(language_view_);
+
+  // Feedback.
+  feedback_view_ = new FeedbackMenuButton(host_);
+  AddChildView(feedback_view_);
 
   // Network.
   network_view_ = new NetworkMenuButton(host_);

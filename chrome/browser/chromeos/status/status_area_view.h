@@ -11,6 +11,7 @@
 namespace chromeos {
 
 class ClockMenuButton;
+class FeedbackMenuButton;
 class LanguageMenuButton;
 class NetworkMenuButton;
 class PowerMenuButton;
@@ -44,6 +45,7 @@ class StatusAreaView : public views::View {
   static void SetOpenTabsMode(OpenTabsMode mode);
 
   ClockMenuButton* clock_view() { return clock_view_; }
+  FeedbackMenuButton* feedback_view() { return feedback_view_; }
   LanguageMenuButton* language_view() { return language_view_; }
   NetworkMenuButton* network_view() { return network_view_; }
   PowerMenuButton* power_view() { return power_view_; }
@@ -52,6 +54,7 @@ class StatusAreaView : public views::View {
   StatusAreaHost* host_;
 
   ClockMenuButton* clock_view_;
+  FeedbackMenuButton* feedback_view_;
   LanguageMenuButton* language_view_;
   NetworkMenuButton* network_view_;
   PowerMenuButton* power_view_;

@@ -47,6 +47,7 @@ class BackgroundView : public views::View, public StatusAreaHost {
   // Overridden from StatusAreaHost:
   virtual Profile* GetProfile() const { return NULL; }
   virtual gfx::NativeWindow GetNativeWindow() const;
+  virtual void ExecuteBrowserCommand(int id) const {}
   virtual bool ShouldOpenButtonOptions(
       const views::View* button_view) const;
   virtual void OpenButtonOptions(const views::View* button_view) const;
