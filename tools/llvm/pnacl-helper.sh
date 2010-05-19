@@ -18,11 +18,16 @@ readonly PNACL_ARM_ROOT=${PNACL_TOOLCHAIN_ROOT}/arm
 readonly PNACL_X8632_ROOT=${PNACL_TOOLCHAIN_ROOT}/x8632
 readonly PNACL_X8664_ROOT=${PNACL_TOOLCHAIN_ROOT}/x8664
 readonly PNACL_BITCODE_ROOT=${PNACL_TOOLCHAIN_ROOT}/bitcode
-readonly PNACL_HG_CLIENT=${PNACL_TOOLCHAIN_ROOT}/hg
 
-readonly LLVM_DIS=$(readlink -f toolchain/linux_arm-untrusted/arm-none-linux-gnueabi/llvm/bin/llvm-dis)
+readonly PNACL_HG_CLIENT=$(readlink -f ${PNACL_TOOLCHAIN_ROOT}/hg)
 
-readonly LLVM_AR=$(readlink -f toolchain/linux_arm-untrusted/arm-none-linux-gnueabi/llvm/bin/llvm-ar)
+readonly ARM_UNTRUSTED=$(readlink -f toolchain/linux_arm-untrusted)
+readonly LLVM_DIS=${ARM_UNTRUSTED}/arm-none-linux-gnueabi/llvm/bin/llvm-dis
+readonly LLVM_AR=${ARM_UNTRUSTED}/arm-none-linux-gnueabi/llvm/bin/llvm-ar
+
+# NOTE: temporary measure until we have a unified llc
+readonly SYMLINK_LLC_X86_32=${ARM_UNTRUSTED}/llc-x86-32-sfi
+readonly SYMLINK_LLC_X86_64=${ARM_UNTRUSTED}/llc-x86-64-sfi
 ######################################################################
 # Helpers
 ######################################################################
@@ -337,21 +342,38 @@ test-x86-64() {
 #@
 #@   checkout and build llc
 checkout-and-build-llc() {
+  # NOTE: work-around for a socket issue in hg which is unhappy
+  #       with long file names: we check-out the repo under /tmp
+  #       which results in a short pathname and move it to the final
+  #       location later.
+  PNACL_HG_CLIENT_TMP=/tmp/pnacl-xxx
   Banner "creating llvm client in ${PNACL_HG_CLIENT}"
   rm -rf ${PNACL_HG_CLIENT}
-  mkdir -p ${PNACL_HG_CLIENT}
-  cd ${PNACL_HG_CLIENT}
+  rm -rf ${PNACL_HG_CLIENT_TMP}
+  mkdir -p ${PNACL_HG_CLIENT_TMP}
+
+  echo "create intial hg repo in ${PNACL_HG_CLIENT_TMP}"
+  cd ${PNACL_HG_CLIENT_TMP}
   hg clone https://nacl-llvm-branches.googlecode.com/hg/ nacl-llvm-branches
-  cd  nacl-llvm-branches
+  cd nacl-llvm-branches
   hg up pnacl-sfi
-  cd llvm-trunk
+
+  echo "moving  ${PNACL_HG_CLIENT_TMP} ->  ${PNACL_HG_CLIENT}"
+  mv ${PNACL_HG_CLIENT_TMP} ${PNACL_HG_CLIENT}
+  cd  ${PNACL_HG_CLIENT}/nacl-llvm-branches/llvm-trunk
+
+  echo "configure + make"
   ./configure --disable-jit \
               --enable-optimized \
               --enable-targets=x86,x86_64 \
               --target=arm-none-linux-gnueabi
   make -j 6 tools-only
-  echo "TODO(robetrm): add symlinks expected by llvm-fake.py"
-  Banner "your llvm client can be found in ${PNACL_HG_CLIENT}"
+
+  # NOTE: temporary measure until we have a unified llc
+  echo "symlinking ${SYMLINK_LLC_X86_32} ${SYMLINK_LLC_X86_64}"
+  llc=$(readlink -f Release/bin/llc)
+  ln -sf ${llc} ${SYMLINK_LLC_X86_32}
+  ln -sf ${llc} ${SYMLINK_LLC_X86_64}
   exit 0
 }
 
