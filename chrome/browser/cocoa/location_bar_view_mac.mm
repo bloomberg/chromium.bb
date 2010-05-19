@@ -149,12 +149,6 @@ WindowOpenDisposition LocationBarViewMac::GetWindowOpenDisposition() const {
   return disposition_;
 }
 
-// TODO(thakis): Ping shess to verify what he wants to verify.
-// TODO(shess): Verify that this TODO is TODONE.
-// TODO(rohitrao): Fix this to return different types once autocomplete and
-// the onmibar are implemented.  For now, any URL that comes from the
-// LocationBar has to have been entered by the user, and thus is of type
-// PageTransition::TYPED.
 PageTransition::Type LocationBarViewMac::GetPageTransition() const {
   return transition_;
 }

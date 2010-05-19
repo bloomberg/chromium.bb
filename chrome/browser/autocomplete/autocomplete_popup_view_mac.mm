@@ -74,10 +74,6 @@ NSColor* HoveredBackgroundColor() {
   return [[NSColor controlHighlightColor] colorWithAlphaComponent:kPopupAlpha];
 }
 
-// TODO(shess): These are totally unprincipled.  I experimented with
-// +controlTextColor and the like, but found myself wondering whether
-// that was really appropriate.  Circle back after consulting with
-// someone more knowledgeable about the ins and outs of this.
 static const NSColor* ContentTextColor() {
   return [NSColor blackColor];
 }
@@ -268,9 +264,6 @@ AutocompletePopupViewMac::AutocompletePopupViewMac(
 }
 
 AutocompletePopupViewMac::~AutocompletePopupViewMac() {
-  // TODO(shess): Having to be aware of destructor ordering in this
-  // way seems brittle.  There must be a better way.
-
   // Destroy the popup model before this object is destroyed, because
   // it can call back to us in the destructor.
   model_.reset();
@@ -372,9 +365,8 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
 
   CreatePopupIfNeeded();
 
-  // The popup's font is a slightly smaller version of what |field_|
-  // uses.
-  NSFont* fieldFont = [field_ font];
+  // The popup's font is a slightly smaller version of the field's.
+  NSFont* fieldFont = AutocompleteEditViewMac::GetFieldFont();
   const CGFloat resultFontSize = [fieldFont pointSize] + kEditFontAdjust;
   gfx::Font resultFont = gfx::Font::CreateFont(
       base::SysNSStringToWide([fieldFont fontName]), (int)resultFontSize);
@@ -480,18 +472,11 @@ void AutocompletePopupViewMac::OpenURLForRow(int row, bool force_background) {
 // The default NSButtonCell drawing leaves the image flush left and
 // the title next to the image.  This spaces things out to line up
 // with the star button and autocomplete field.
-// TODO(shess): Determine if the star button can change size (other
-// than scaling coordinates), in which case this needs to be more
-// dynamic.
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView {
   [[self backgroundColor] set];
   NSRectFill(cellFrame);
 
   // Put the image centered vertically but in a fixed column.
-  // TODO(shess) Currently, the images are all 16x16 png files, so
-  // left-justified works out fine.  If that changes, it may be
-  // appropriate to align them on their centers instead of their
-  // left-hand sides.
   NSImage* image = [self image];
   if (image) {
     NSRect imageRect = cellFrame;

@@ -30,8 +30,6 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   virtual ~AutocompleteEditViewMac();
 
   // Implement the AutocompleteEditView interface.
-  // TODO(shess): See if this couldn't be simplified to:
-  //    virtual AEM* model() const { ... }
   virtual AutocompleteEditModel* model() { return model_.get(); }
   virtual const AutocompleteEditModel* model() const { return model_.get(); }
 
@@ -102,6 +100,10 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   // Helper to get appropriate contents from |clipboard|.  Returns
   // empty string if no appropriate data is found on |clipboard|.
   static std::wstring GetClipboardText(Clipboard* clipboard);
+
+  // Helper to get the font to use in the field, exposed for the
+  // popup.
+  static NSFont* GetFieldFont();
 
   // If |resource_id| has a PDF image which can be used, return it.
   // Otherwise return the PNG image from the resource bundle.

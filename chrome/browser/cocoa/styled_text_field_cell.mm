@@ -50,8 +50,8 @@
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   DCHECK([controlView isFlipped]);
 
-  // TODO(shess): This inset is also reflected in ToolbarController
-  // -autocompletePopupPosition.
+  // TODO(shess): This inset is also reflected by |kFieldVisualInset|
+  // in autocomplete_popup_view_mac.mm.
   NSRect frame = NSInsetRect(cellFrame, 0, 1);
   NSRect midFrame = NSInsetRect(frame, 0.5, 0.5);
   NSRect innerFrame = NSInsetRect(frame, 1, 1);

@@ -262,7 +262,6 @@ class Extension;
   }
   DCHECK_EQ(range.length, 0U);
 
-  // TODO(shess): Beep on empty?  I hate beeps, though.
   // NOTE: If |aString| is empty, this intentionally replaces the
   // selection with empty.  This seems consistent with the case where
   // the input contained a mixture of characters and the string ended

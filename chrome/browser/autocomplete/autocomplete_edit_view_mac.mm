@@ -160,10 +160,6 @@ NSImage* AutocompleteEditViewMac::ImageForResource(int resource_id) {
   return rb.GetNSImageNamed(resource_id);
 }
 
-// TODO(shess): AutocompletePopupViewMac doesn't really need an
-// NSTextField.  It wants to know where the position the popup, what
-// font to use, and it also needs to be able to attach the popup to
-// the window |field_| is in.
 AutocompleteEditViewMac::AutocompleteEditViewMac(
     AutocompleteEditController* controller,
     ToolbarModel* toolbar_model,
@@ -189,19 +185,14 @@ AutocompleteEditViewMac::AutocompleteEditViewMac(
   [field_ setAllowsEditingTextAttributes:YES];
 
   // Get the appropriate line height for the font that we use.
-  NSFont* font = ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::BaseFont).nativeFont();
   scoped_nsobject<NSLayoutManager>
       layoutManager([[NSLayoutManager alloc] init]);
   [layoutManager setUsesScreenFonts:YES];
-  line_height_ = [layoutManager defaultLineHeightForFont:font];
+  line_height_ = [layoutManager defaultLineHeightForFont:GetFieldFont()];
   DCHECK(line_height_ > 0);
 }
 
 AutocompleteEditViewMac::~AutocompleteEditViewMac() {
-  // TODO(shess): Having to be aware of destructor ordering in this
-  // way seems brittle.  There must be a better way.
-
   // Destroy popup view before this object in case it tries to call us
   // back in the destructor.  Likewise for destroying the model before
   // this object.
@@ -487,9 +478,7 @@ void AutocompleteEditViewMac::EmphasizeURLComponents() {
 
 void AutocompleteEditViewMac::ApplyTextAttributes(
     const std::wstring& display_text, NSMutableAttributedString* as) {
-  NSFont* font = ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::BaseFont).nativeFont();
-  [as addAttribute:NSFontAttributeName value:font
+  [as addAttribute:NSFontAttributeName value:GetFieldFont()
              range:NSMakeRange(0, [as length])];
 
   // Make a paragraph style locking in the standard line height as the maximum,
@@ -686,17 +675,12 @@ bool AutocompleteEditViewMac::OnDoCommandBySelector(SEL cmd) {
     return model_->OnEscapeKeyPressed();
   }
 
-  if (cmd == @selector(insertTab:)) {
+  if (cmd == @selector(insertTab:) ||
+      cmd == @selector(insertTabIgnoringFieldEditor:)) {
     if (model_->is_keyword_hint() && !model_->keyword().empty()) {
       model_->AcceptKeyword();
       return true;
     }
-  }
-
-  // TODO(shess): Option-tab, would normally insert a literal tab
-  // character.  Consider combining with -insertTab:
-  if (cmd == @selector(insertTabIgnoringFieldEditor:)) {
-    return true;
   }
 
   // |-noop:| is sent when the user presses Cmd+Return. Override the no-op
@@ -938,4 +922,10 @@ std::wstring AutocompleteEditViewMac::GetClipboardText(Clipboard* clipboard) {
   }
 
   return std::wstring();
+}
+
+// static
+NSFont* AutocompleteEditViewMac::GetFieldFont() {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  return rb.GetFont(ResourceBundle::BaseFont).nativeFont();
 }

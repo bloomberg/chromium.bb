@@ -49,10 +49,6 @@
   [subview setFrame:frame];
 
   // Make sure the selection remains visible.
-  // TODO(shess) This could be janky if it jerks the visible region
-  // around too much.  I believe that text fields only scroll in
-  // response to selection movement (continuing the selection past the
-  // edge, or arrowing the cursor around).
   [editor scrollRangeToVisible:[editor selectedRange]];
 }
 

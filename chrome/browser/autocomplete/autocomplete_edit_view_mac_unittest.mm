@@ -67,4 +67,8 @@ TEST(AutocompleteEditViewMacTest, GetClipboardText) {
   EXPECT_TRUE(text.empty());
 }
 
+TEST(AutocompleteEditViewMacTest, GetFieldFont) {
+  EXPECT_TRUE(AutocompleteEditViewMac::GetFieldFont());
+}
+
 }  // namespace
