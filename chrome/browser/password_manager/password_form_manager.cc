@@ -128,6 +128,12 @@ bool PasswordFormManager::IsNewLogin() {
   return is_new_login_;
 }
 
+bool PasswordFormManager::HasValidPasswordForm() {
+  DCHECK_EQ(state_, POST_MATCHING_PHASE);
+  return !observed_form_.username_element.empty() &&
+      !observed_form_.password_element.empty();
+}
+
 void PasswordFormManager::ProvisionallySave(const PasswordForm& credentials) {
   DCHECK_EQ(state_, POST_MATCHING_PHASE);
   DCHECK(DoesManage(credentials));

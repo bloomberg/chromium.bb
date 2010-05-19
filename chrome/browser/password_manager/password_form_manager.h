@@ -58,6 +58,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // managed by this.
   bool IsNewLogin();
 
+  // Checks if the form is a valid password form. Forms which lack either
+  // login or password field are not considered valid.
+  bool HasValidPasswordForm();
+
   // Determines if we need to autofill given the results of the query.
   void OnRequestDone(
       int handle, const std::vector<webkit_glue::PasswordForm*>& result);

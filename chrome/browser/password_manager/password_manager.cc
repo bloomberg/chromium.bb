@@ -106,6 +106,9 @@ void PasswordManager::DidStopLoading() {
 
   if (!delegate_->GetProfileForPasswordManager())
     return;
+  // Form is not completely valid - we do not support it.
+  if (!provisional_save_manager_->HasValidPasswordForm())
+    return;
   if (provisional_save_manager_->IsNewLogin()) {
     delegate_->AddSavePasswordInfoBar(provisional_save_manager_.release());
   } else {

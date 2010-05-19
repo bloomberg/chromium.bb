@@ -195,3 +195,36 @@ TEST_F(PasswordFormManagerTest, TestEmptyAction) {
   EXPECT_EQ(observed_form()->action,
             GetPendingCredentials(manager.get())->action);
 }
+
+TEST_F(PasswordFormManagerTest, TestValidForms) {
+  // User submits credentials for the observed form.
+  PasswordForm credentials = *observed_form();
+  credentials.username_value = saved_match()->username_value;
+  credentials.password_value = saved_match()->password_value;
+  credentials.preferred = true;
+
+  PasswordFormManager manager1(profile(), NULL, credentials, false);
+  SimulateMatchingPhase(&manager1, false);
+  manager1.ProvisionallySave(credentials);
+
+  // Valid form.
+  EXPECT_TRUE(manager1.HasValidPasswordForm());
+
+  credentials.username_element.clear();
+  PasswordFormManager manager2(profile(), NULL, credentials, false);
+  SimulateMatchingPhase(&manager2, false);
+  manager2.ProvisionallySave(credentials);
+
+  // Invalid form - no username.
+  EXPECT_FALSE(manager2.HasValidPasswordForm());
+
+  credentials.username_element = saved_match()->username_element;
+  credentials.password_element.clear();
+  PasswordFormManager manager3(profile(), NULL, credentials, false);
+  SimulateMatchingPhase(&manager3, false);
+  manager3.ProvisionallySave(credentials);
+
+  // Invalid form - no password.
+  EXPECT_FALSE(manager3.HasValidPasswordForm());
+}
+
