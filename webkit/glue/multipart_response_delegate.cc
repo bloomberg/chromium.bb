@@ -149,6 +149,18 @@ void MultipartResponseDelegate::OnReceivedData(const char* data,
       break;
     }
   }
+
+  // At this point, we should send over any data we have, but keep enough data
+  // buffered to handle a boundary that may have been truncated.
+  if (!processing_headers_ && data_.length() > boundary_.length()) {
+    // If the last character is a new line character, go ahead and just send
+    // everything we have buffered.  This matches an optimization in Gecko.
+    int send_length = data_.length() - boundary_.length();
+    if (data_[data_.length() - 1] == '\n')
+      send_length = data_.length();
+    client_->didReceiveData(loader_, data_.data(), send_length);
+    data_ = data_.substr(send_length);
+  }
 }
 
 void MultipartResponseDelegate::OnCompletedRequest() {

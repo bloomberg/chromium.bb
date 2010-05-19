@@ -237,8 +237,8 @@ TEST(MultipartResponseTest, MissingBoundaries) {
   delegate2.OnReceivedData(no_end_boundary.c_str(),
                           static_cast<int>(no_end_boundary.length()));
   EXPECT_EQ(1, client.received_response_);
-  EXPECT_EQ(0, client.received_data_);
-  EXPECT_EQ(string(), client.data_);
+  EXPECT_EQ(1, client.received_data_);
+  EXPECT_EQ("This is a sample response\n", client.data_);
 
   delegate2.OnCompletedRequest();
   EXPECT_EQ(1, client.received_response_);
@@ -255,8 +255,8 @@ TEST(MultipartResponseTest, MissingBoundaries) {
   delegate3.OnReceivedData(no_boundaries.c_str(),
                            static_cast<int>(no_boundaries.length()));
   EXPECT_EQ(1, client.received_response_);
-  EXPECT_EQ(0, client.received_data_);
-  EXPECT_EQ(string(), client.data_);
+  EXPECT_EQ(1, client.received_data_);
+  EXPECT_EQ("This is a sample response\n", client.data_);
 
   delegate3.OnCompletedRequest();
   EXPECT_EQ(1, client.received_response_);
@@ -355,20 +355,20 @@ TEST(MultipartResponseTest, BreakInBoundary) {
   // Break in first and second
   const TestChunk bound2[] = {
     { 0, 4, 0, 0, ""},
-    { 4, 55, 1, 0, "" },
-    { 55, 65, 1, 1, "datadatadatadatadata" },
-    { 65, 110, 2, 2, "foofoofoofoofoo" },
+    { 4, 55, 1, 1, "datadatadatadat" },
+    { 55, 65, 1, 2, "datadatadatadatadata" },
+    { 65, 110, 2, 3, "foofoofoofoofoo" },
   };
   VariousChunkSizesTest(bound2, arraysize(bound2),
-                        2, 2, "foofoofoofoofoo");
+                        2, 3, "foofoofoofoofoo");
 
   // Break in second only
   const TestChunk bound3[] = {
-    { 0, 55, 1, 0, "" },
-    { 55, 110, 2, 2, "foofoofoofoofoo" },
+    { 0, 55, 1, 1, "datadatadatadat" },
+    { 55, 110, 2, 3, "foofoofoofoofoo" },
   };
   VariousChunkSizesTest(bound3, arraysize(bound3),
-                        2, 2, "foofoofoofoofoo");
+                        2, 3, "foofoofoofoofoo");
 }
 
 TEST(MultipartResponseTest, BreakInHeaders) {
