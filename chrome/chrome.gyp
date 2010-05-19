@@ -694,6 +694,7 @@
         '../third_party/sqlite/sqlite.gyp:sqlite',
         'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
         'common_constants',
+        'common_net',
         'notifier',
         'sync',
       ],

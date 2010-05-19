@@ -239,10 +239,6 @@ class ServerConnectionManager {
   // Updates status and broadcasts events on change.
   bool CheckServerReachable();
 
-  // Updates server status to "unreachable" and broadcasts events if
-  // necessary.
-  void SetServerUnreachable();
-
   // Signal the shutdown event to notify listeners.
   virtual void kill();
 

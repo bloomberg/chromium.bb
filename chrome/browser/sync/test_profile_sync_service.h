@@ -25,10 +25,17 @@ class TestProfileSyncService : public ProfileSyncService {
                            bootstrap_sync_authentication),
         synchronous_backend_initialization_(
             synchronous_backend_initialization) {
+    fake_network_change_notifier_thread_.Start();
     RegisterPreferences();
     SetSyncSetupCompleted();
   }
   virtual ~TestProfileSyncService() {
+    // This needs to happen before
+    // |fake_network_change_notifier_thread_| is stopped.  This is
+    // also called again in ProfileSyncService's destructor, but
+    // calling it multiple times is okay.
+    Shutdown(false);
+    fake_network_change_notifier_thread_.Stop();
   }
 
   virtual void InitializeBackend(bool delete_sync_data_folder) {

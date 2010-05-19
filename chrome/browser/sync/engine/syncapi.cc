@@ -6,23 +6,6 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#include <iphlpapi.h>
-#elif defined(OS_MACOSX)
-#include <SystemConfiguration/SCNetworkReachability.h>
-#include "base/condition_variable.h"
-#include "base/scoped_cftyperef.h"
-#include "base/sys_string_conversions.h"
-#endif
-
-#if defined(OS_LINUX)
-#include <sys/socket.h>
-#include <asm/types.h>
-#include <linux/netlink.h>
-#include <linux/rtnetlink.h>
-#endif
-
 #include <iomanip>
 #include <list>
 #include <string>
@@ -66,13 +49,11 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/deprecated/event_sys.h"
 #include "chrome/common/net/gaia/gaia_authenticator.h"
+#include "chrome/common/net/network_change_notifier_proxy.h"
 #include "chrome/common/net/notifier/listener/notification_constants.h"
 #include "chrome/common/net/notifier/listener/talk_mediator.h"
 #include "chrome/common/net/notifier/listener/talk_mediator_impl.h"
-
-#if defined(OS_WIN)
-#pragma comment(lib, "iphlpapi.lib")
-#endif
+#include "net/base/network_change_notifier.h"
 
 using browser_sync::AllStatus;
 using browser_sync::AllStatusEvent;
@@ -99,238 +80,8 @@ using syncable::SPECIFICS;
 
 typedef GoogleServiceAuthError AuthError;
 
-#if defined(OS_WIN)
-static const int kServerReachablePollingIntervalMsec = 60000 * 60;
-#endif
 static const int kThreadExitTimeoutMsec = 60000;
 static const int kSSLPort = 443;
-
-struct AddressWatchTaskParams {
-  browser_sync::ServerConnectionManager* conn_mgr;
-#if defined(OS_WIN)
-  HANDLE exit_flag;
-
-  AddressWatchTaskParams() : conn_mgr(NULL), exit_flag() {}
-#elif defined(OS_MACOSX)
-  // Protects run_loop and run_loop_initialized.
-  Lock run_loop_lock;
-  // May be NULL if an error was encountered by the AddressWatchTask.
-  CFRunLoopRef run_loop;
-  bool run_loop_initialized;
-  // Signalled when run_loop and run_loop_initialized are set.
-  ConditionVariable params_set;
-
-  AddressWatchTaskParams()
-      : conn_mgr(NULL),
-        run_loop(NULL),
-        run_loop_initialized(false),
-        params_set(&run_loop_lock) {}
-#elif defined(OS_POSIX)
-  int exit_pipe[2];
-
-  AddressWatchTaskParams() : conn_mgr(NULL) {}
-#endif
-
- private:
-    DISALLOW_COPY_AND_ASSIGN(AddressWatchTaskParams);
-};
-
-#if defined(OS_MACOSX)
-CFStringRef NetworkReachabilityCopyDescription(const void *info) {
-  return base::SysUTF8ToCFStringRef(
-      StringPrintf("AddressWatchTask(0x%p)", info));
-}
-
-void NetworkReachabilityChangedCallback(SCNetworkReachabilityRef target,
-                                        SCNetworkConnectionFlags flags,
-                                        void* info) {
-  bool network_active = ((flags & (kSCNetworkFlagsReachable |
-                                   kSCNetworkFlagsConnectionRequired |
-                                   kSCNetworkFlagsConnectionAutomatic |
-                                   kSCNetworkFlagsInterventionRequired)) ==
-                         kSCNetworkFlagsReachable);
-  LOG(INFO) << "Network reachability changed: it is now "
-            << (network_active ? "active" : "inactive");
-  AddressWatchTaskParams* params =
-      static_cast<AddressWatchTaskParams*>(info);
-  if (network_active) {
-    params->conn_mgr->CheckServerReachable();
-  } else {
-    params->conn_mgr->SetServerUnreachable();
-  }
-  LOG(INFO) << "Network reachability callback finished";
-}
-
-SCNetworkReachabilityRef CreateAndScheduleNetworkReachability(
-    SCNetworkReachabilityContext* network_reachability_context,
-    const char* nodename) {
-  scoped_cftyperef<SCNetworkReachabilityRef> network_reachability(
-      SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, nodename));
-  if (!network_reachability.get()) {
-    LOG(WARNING) << "Could not create network reachability object";
-    return NULL;
-  }
-
-  if (!SCNetworkReachabilitySetCallback(network_reachability.get(),
-                                        &NetworkReachabilityChangedCallback,
-                                        network_reachability_context)) {
-    LOG(WARNING) << "Could not set network reachability callback";
-    return NULL;
-  }
-
-  if (!SCNetworkReachabilityScheduleWithRunLoop(network_reachability.get(),
-                                                CFRunLoopGetCurrent(),
-                                                kCFRunLoopDefaultMode)) {
-    LOG(WARNING) << "Could not schedule network reachability with run loop";
-    return NULL;
-  }
-
-  return network_reachability.release();
-}
-#endif
-
-// TODO(akalin): This code needs some serious refactoring.  At the
-// very least, all the gross platform-specific code should be put in
-// one place; ideally, the code shared between this and the network
-// status detector (in sync/notifier) will be put in one place.
-
-// This thread calls CheckServerReachable() whenever a change occurs in the
-// table that maps IP addresses to interfaces, for example when the user
-// unplugs his network cable.
-class AddressWatchTask : public Task {
- public:
-  explicit AddressWatchTask(AddressWatchTaskParams* params)
-      : params_(params) {}
-  virtual ~AddressWatchTask() {}
-
-  virtual void Run() {
-    LOG(INFO) << "starting the address watch thread";
-#if defined(OS_WIN)
-    OVERLAPPED overlapped = {0};
-    overlapped.hEvent = CreateEvent(NULL, FALSE, TRUE, NULL);
-    HANDLE file;
-    DWORD rc = WAIT_OBJECT_0;
-    while (true) {
-      // Only call NotifyAddrChange() after the IP address has changed or if
-      // this is the first time through the loop.
-      if (WAIT_OBJECT_0 == rc) {
-        ResetEvent(overlapped.hEvent);
-        DWORD notify_result = NotifyAddrChange(&file, &overlapped);
-        if (ERROR_IO_PENDING != notify_result) {
-          LOG(ERROR) << "NotifyAddrChange() returned unexpected result "
-              << hex << notify_result;
-          break;
-        }
-      }
-      HANDLE events[] = { overlapped.hEvent, params_->exit_flag };
-      rc = WaitForMultipleObjects(ARRAYSIZE(events), events, FALSE,
-                                  kServerReachablePollingIntervalMsec);
-
-      // If the exit flag was signaled, the thread will exit.
-      if (WAIT_OBJECT_0 + 1 == rc)
-        break;
-
-      params_->conn_mgr->CheckServerReachable();
-    }
-    CloseHandle(overlapped.hEvent);
-#elif defined(OS_LINUX)
-    struct sockaddr_nl socket_address;
-
-    memset(&socket_address, 0, sizeof(socket_address));
-    socket_address.nl_family = AF_NETLINK;
-    socket_address.nl_groups = RTMGRP_LINK | RTMGRP_IPV4_IFADDR;
-
-    // NETLINK_ROUTE is the protocol used to update the kernel routing table.
-    int fd = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
-    bind(fd, (struct sockaddr *) &socket_address, sizeof(socket_address));
-
-    while (true) {
-      fd_set rdfs;
-      FD_ZERO(&rdfs);
-      FD_SET(fd, &rdfs);
-      FD_SET(params_->exit_pipe[0], &rdfs);
-
-      int max_fd = fd > params_->exit_pipe[0] ? fd : params_->exit_pipe[0];
-
-      int result = select(max_fd + 1, &rdfs, NULL, NULL, NULL);
-
-      if (result < 0) {
-        LOG(ERROR) << "select() returned unexpected result " << result;
-        break;
-      }
-
-      // If exit_pipe was written to, we're done.
-      if (FD_ISSET(params_->exit_pipe[0], &rdfs)) {
-        break;
-      }
-
-      // If fd is set, the network address might have changed.
-      if (FD_ISSET(fd, &rdfs)) {
-        char buf[4096];
-        struct iovec iov = { buf, sizeof(buf) };
-        struct sockaddr_nl sa;
-
-        struct msghdr msg = { (void *)&sa, sizeof(sa), &iov, 1, NULL, 0, 0 };
-        recvmsg(fd, &msg, 0);
-
-        params_->conn_mgr->CheckServerReachable();
-      } else {
-        break;
-      }
-    }
-    close(params_->exit_pipe[0]);
-#elif defined(OS_MACOSX)
-    SCNetworkReachabilityContext network_reachability_context;
-    network_reachability_context.version = 0;
-    network_reachability_context.info = static_cast<void *>(params_);
-    network_reachability_context.retain = NULL;
-    network_reachability_context.release = NULL;
-    network_reachability_context.copyDescription =
-        &NetworkReachabilityCopyDescription;
-
-    std::string hostname = params_->conn_mgr->GetServerHost();
-    if (hostname.empty()) {
-      {
-        AutoLock auto_lock(params_->run_loop_lock);
-        params_->run_loop = NULL;
-        params_->run_loop_initialized = true;
-      }
-      params_->params_set.Signal();
-      LOG(INFO) << "Empty hostname -- stopping address watch thread";
-      return;
-    }
-    LOG(INFO) << "Monitoring connection to " << hostname;
-    scoped_cftyperef<SCNetworkReachabilityRef> network_reachability(
-        CreateAndScheduleNetworkReachability(
-            &network_reachability_context, hostname.c_str()));
-    if (!network_reachability.get()) {
-      {
-        AutoLock auto_lock(params_->run_loop_lock);
-        params_->run_loop = NULL;
-        params_->run_loop_initialized = true;
-      }
-      params_->params_set.Signal();
-      LOG(INFO) << "The address watch thread has stopped due to an error";
-      return;
-    }
-
-    CFRunLoopRef run_loop = CFRunLoopGetCurrent();
-    {
-      AutoLock auto_lock(params_->run_loop_lock);
-      params_->run_loop = run_loop;
-      params_->run_loop_initialized = true;
-    }
-    params_->params_set.Signal();
-
-    CFRunLoopRun();
-#endif
-    LOG(INFO) << "The address watch thread has stopped";
-  }
-
- private:
-  AddressWatchTaskParams* const params_;
-  DISALLOW_COPY_AND_ASSIGN(AddressWatchTask);
-};
 
 namespace sync_api {
 
@@ -1017,16 +768,15 @@ class BridgedGaiaAuthenticator : public gaia::GaiaAuthenticator {
 
 //////////////////////////////////////////////////////////////////////////
 // SyncManager's implementation: SyncManager::SyncInternal
-class SyncManager::SyncInternal {
+class SyncManager::SyncInternal
+    : public net::NetworkChangeNotifier::Observer {
   static const int kDefaultNudgeDelayMilliseconds;
   static const int kPreferencesNudgeDelayMilliseconds;
-
  public:
   explicit SyncInternal(SyncManager* sync_manager)
       : observer_(NULL),
         auth_problem_(AuthError::NONE),
         sync_manager_(sync_manager),
-        address_watch_thread_("SyncEngine_AddressWatcher"),
         registrar_(NULL),
         notification_pending_(false),
         initialized_(false),
@@ -1107,7 +857,7 @@ class SyncManager::SyncInternal {
   TalkMediator* talk_mediator() { return talk_mediator_.get(); }
   AuthWatcher* auth_watcher() { return auth_watcher_.get(); }
   AllStatus* allstatus() { return &allstatus_; }
-  void set_observer(Observer* observer) { observer_ = observer; }
+  void set_observer(SyncManager::Observer* observer) { observer_ = observer; }
   UserShare* GetUserShare() { return &share_; }
 
   // Return the currently active (validated) username for use with syncable
@@ -1146,6 +896,10 @@ class SyncManager::SyncInternal {
                                 const syncable::EntryKernel& original,
                                 bool existed_before,
                                 bool exists_now);
+
+  // Called only by our NetworkChangeNotifier.
+  virtual void OnIPAddressChanged();
+
  private:
   // Try to authenticate using a LSID cookie.
   void AuthenticateWithLsid(const std::string& lsid);
@@ -1253,7 +1007,7 @@ class SyncManager::SyncInternal {
 
   // Observer registered via SetObserver/RemoveObserver.
   // WARNING: This can be NULL!
-  Observer* observer_;
+  SyncManager::Observer* observer_;
 
   // The ServerConnectionManager used to abstract communication between the
   // client (the Syncer) and the sync server.
@@ -1303,9 +1057,9 @@ class SyncManager::SyncInternal {
   // The sync dir_manager to which we belong.
   SyncManager* const sync_manager_;
 
-  // Parameters for our thread listening to network status changes.
-  base::Thread address_watch_thread_;
-  AddressWatchTaskParams address_watch_params_;
+  // An object that notifies us whenever there is a network-related
+  // change (e.g., disconnections).
+  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
 
   // The entity that provides us with information about which types to sync.
   // The instance is shared between the SyncManager and the Syncer.
@@ -1429,41 +1183,16 @@ bool SyncManager::SyncInternal::Init(
       sync_server_and_path, port, use_ssl, user_agent, client_id,
       post_factory));
 
-  // TODO(timsteele): This is temporary windows crap needed to listen for
-  // network status changes. We should either pump this up to the embedder to
-  // do (and call us in CheckServerReachable, for ex), or at least make this
-  // platform independent in here.
-#if defined(OS_WIN)
-  HANDLE exit_flag = CreateEvent(NULL, TRUE /*manual reset*/, FALSE, NULL);
-  address_watch_params_.exit_flag = exit_flag;
-#elif defined(OS_LINUX)
-  if (pipe(address_watch_params_.exit_pipe) == -1) {
-    LOG(ERROR) << "Could not create pipe for exit signal.";
-    return false;
-  }
-#endif
-  address_watch_params_.conn_mgr = connection_manager();
-
-  bool address_watch_started = address_watch_thread_.Start();
-  DCHECK(address_watch_started);
-  address_watch_thread_.message_loop()->PostTask(FROM_HERE,
-      new AddressWatchTask(&address_watch_params_));
-
-#if defined(OS_MACOSX)
-  {
-    AutoLock auto_lock(address_watch_params_.run_loop_lock);
-    while (!address_watch_params_.run_loop_initialized) {
-      address_watch_params_.params_set.Wait();
-    }
-  }
-#endif
-
   // Watch various objects for aggregated status.
   allstatus()->WatchConnectionManager(connection_manager());
 
-  std::string gaia_url = gaia::kGaiaUrl;
-  const char* service_id = gaia_service_id ?
-      gaia_service_id : SYNC_SERVICE_NAME;
+  network_change_notifier_.reset(
+      new chrome_common_net::NetworkChangeNotifierProxy(
+          network_change_notifier_thread));
+  network_change_notifier_->AddObserver(this);
+  // TODO(akalin): CheckServerReachable() can block, which may cause
+  // jank if we try to shut down sync.  Fix this.
+  connection_manager()->CheckServerReachable();
 
   talk_mediator_.reset(new TalkMediatorImpl(
       network_change_notifier_thread, invalidate_xmpp_auth_token));
@@ -1481,6 +1210,10 @@ bool SyncManager::SyncInternal::Init(
       NewEventListenerHookup(talk_mediator_->channel(),
                              this,
                              &SyncInternal::HandleTalkMediatorEvent));
+
+  std::string gaia_url = gaia::kGaiaUrl;
+  const char* service_id = gaia_service_id ?
+      gaia_service_id : SYNC_SERVICE_NAME;
 
   BridgedGaiaAuthenticator* gaia_auth = new BridgedGaiaAuthenticator(
       gaia_source, service_id, gaia_url, auth_post_factory);
@@ -1669,6 +1402,11 @@ void SyncManager::SyncInternal::Shutdown() {
     LOG(INFO) << "P2P: Mediator destroyed.";
   }
 
+  if (network_change_notifier_.get()) {
+    network_change_notifier_->RemoveObserver(this);
+    network_change_notifier_.reset();
+  }
+
   if (dir_manager()) {
     dir_manager()->FinalSaveChangesForAll();
     dir_manager()->Close(username_for_share());
@@ -1683,34 +1421,13 @@ void SyncManager::SyncInternal::Shutdown() {
   dir_change_hookup_.reset();
   syncer_event_.reset();
   authwatcher_hookup_.reset();
+}
 
-#if defined(OS_WIN)
-  // Stop the address watch thread by signaling the exit flag.
-  // TODO(timsteele): Same as todo in Init().
-  SetEvent(address_watch_params_.exit_flag);
-#elif defined(OS_LINUX)
-  char data = 0;
-  // We can't ignore the return value on write(), since that generates a compile
-  // warning.  However, since we're exiting, there's nothing we can do if this
-  // fails except to log it.
-  if (write(address_watch_params_.exit_pipe[1], &data, 1) == -1) {
-    LOG(WARNING) << "Error sending error signal to AddressWatchTask";
-  }
-  close(address_watch_params_.exit_pipe[1]);
-#elif defined(OS_MACOSX)
-  {
-    AutoLock auto_lock(address_watch_params_.run_loop_lock);
-    if (address_watch_params_.run_loop) {
-      CFRunLoopStop(address_watch_params_.run_loop);
-    }
-  }
-#endif
-
-  address_watch_thread_.Stop();
-
-#if defined(OS_WIN)
-  CloseHandle(address_watch_params_.exit_flag);
-#endif
+void SyncManager::SyncInternal::OnIPAddressChanged() {
+  LOG(INFO) << "IP address change detected";
+  // TODO(akalin): CheckServerReachable() can block, which may cause
+  // jank if we try to shut down sync.  Fix this.
+  connection_manager()->CheckServerReachable();
 }
 
 // Listen to model changes, filter out ones initiated by the sync API, and

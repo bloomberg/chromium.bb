@@ -265,13 +265,6 @@ bool ServerConnectionManager::CheckServerReachable() {
   return server_is_reachable;
 }
 
-void ServerConnectionManager::SetServerUnreachable() {
-  if (server_reachable_) {
-    server_reachable_ = false;
-    NotifyStatusChanged();
-  }
-}
-
 void ServerConnectionManager::kill() {
   {
     AutoLock lock(terminate_all_io_mutex_);
