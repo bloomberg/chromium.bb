@@ -158,6 +158,8 @@ void PopupPageMenuModel::Build() {
   AddItemWithStringId(IDC_FORWARD, IDS_CONTENT_CONTEXT_FORWARD);
   AddItemWithStringId(IDC_RELOAD, IDS_APP_MENU_RELOAD);
   AddSeparator();
+  AddItemWithStringId(IDC_SHOW_AS_TAB, IDS_SHOW_AS_TAB);
+  AddSeparator();
   AddItemWithStringId(IDC_CUT, IDS_CUT);
   AddItemWithStringId(IDC_COPY, IDS_COPY);
   AddItemWithStringId(IDC_PASTE, IDS_PASTE);
