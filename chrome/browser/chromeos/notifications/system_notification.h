@@ -13,6 +13,7 @@
 #include "base/string16.h"
 #include "chrome/browser/chromeos/notifications/balloon_collection_impl.h"
 #include "chrome/browser/notifications/notification_delegate.h"
+#include "googleurl/src/gurl.h"
 
 class Profile;
 
@@ -25,19 +26,25 @@ class SystemNotification {
   // The profile is the current user profile. The id is any string used
   // to uniquely identify this notification. The title is the title of
   // the message to be displayed. On creation, the message is hidden.
-  SystemNotification(Profile* profile, std::string id, string16 title);
+  SystemNotification(Profile* profile, std::string id, int icon_resource_id,
+                     string16 title);
 
   ~SystemNotification();
 
   // Show will show or update the message for this notification
-  void Show(const string16& message);
+  // on a transition to urgent, the notification will be shown if it was
+  // previously hidden or minimized by the user.
+  void Show(const string16& message, bool urgent);
 
   // Hide will dismiss the notification, if the notification is already
   // hidden it does nothing
   void Hide();
 
-  // Current visibility state for this notification
+  // Current visibility state for this notification.
   bool visible() const { return visible_; }
+
+  // Current urgent state for this notification.
+  bool urgent() const { return urgent_; }
 
  private:
   class Delegate : public NotificationDelegate {
@@ -57,8 +64,10 @@ class SystemNotification {
   Profile* profile_;
   BalloonCollectionImpl* collection_;
   scoped_refptr<Delegate> delegate_;
+  GURL icon_;
   string16 title_;
   bool visible_;
+  bool urgent_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemNotification);
 };

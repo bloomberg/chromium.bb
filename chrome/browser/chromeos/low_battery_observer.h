@@ -25,7 +25,7 @@ class LowBatteryObserver : public PowerLibrary::Observer {
  private:
   virtual void PowerChanged(PowerLibrary* object);
 
-  void Show(base::TimeDelta remaining);
+  void Show(base::TimeDelta remaining, bool urgent);
   void Hide();
 
   SystemNotification notification_;
