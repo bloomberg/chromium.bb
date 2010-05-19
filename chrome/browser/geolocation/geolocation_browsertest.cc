@@ -387,15 +387,9 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_ErrorOnPermissionDenied) {
   CheckStringValueFromJavascript("1", "geoGetLastError()");
 }
 
-#if defined(OS_MACOSX)
 // TODO(bulach): investigate why this fails on mac. It may be related to:
-// http://crbug.com/29424
-#define MAYBE_NoInfobarForSecondTab DISABLED_NoInfobarForSecondTab
-#else
-#define MAYBE_NoInfobarForSecondTab NoInfobarForSecondTab
-#endif
-
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForSecondTab) {
+// http://crbug.com/29424. This also fails on Vista: http://crbug.com/44589
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DISABLED_NoInfobarForSecondTab) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   AddGeolocationWatch(true);
   SetInfobarResponse(current_url_, true);
