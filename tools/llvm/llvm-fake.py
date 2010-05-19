@@ -341,7 +341,7 @@ def PatchAbiVersionIntoElfHeader(filename, format, alignment):
 
 def FindObjectFilePos(argv):
   """Return argv index if there is and object file is being generated
-  by the commandline argv.
+  by the commandline argv. Both .o and .bc count as object files.
   Return None if no object file is generated.
   """
   if '-c' not in argv:
@@ -353,7 +353,7 @@ def FindObjectFilePos(argv):
   pos = 1 + argv.index('-o')
   assert pos < len(argv)
 
-  if not argv[pos].endswith('.o'):
+  if not argv[pos].endswith('.o') and not argv[pos].endswith('.bc'):
     return None
 
   return pos
