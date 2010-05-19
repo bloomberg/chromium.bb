@@ -102,9 +102,11 @@ class BalloonViewImpl : public BalloonView,
   // Initializes the options menu.
   void CreateOptionsMenu();
 
-  // How to mask the balloon contents to fit within the frame.
-  // Populates |path| with the outline.
+  // Masks the contents to fit within the frame.
   void GetContentsMask(const gfx::Rect& contents_rect, gfx::Path* path) const;
+
+  // Masks the frame for the rounded corners of the shadow-bubble.
+  void GetFrameMask(const gfx::Rect&, gfx::Path* path) const;
 
   // Adjust the contents window size to be appropriate for the frame.
   void SizeContentsWindow();
@@ -152,10 +154,6 @@ class BalloonViewImpl : public BalloonView,
 
   // The following factory is used to call methods at a later time.
   ScopedRunnableMethodFactory<BalloonViewImpl> method_factory_;
-
-  // Image painters for the frame of the toast.
-  scoped_ptr<views::Painter> shelf_background_;
-  scoped_ptr<views::Painter> balloon_background_;
 
   // Pointer to sub-view is owned by the View sub-class.
   views::ImageButton* close_button_;

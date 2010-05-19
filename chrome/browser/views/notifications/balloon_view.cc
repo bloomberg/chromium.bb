@@ -17,6 +17,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
+#include "chrome/browser/views/bubble_border.h"
 #include "chrome/browser/views/notifications/balloon_view_host.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
@@ -46,30 +47,30 @@ namespace {
 
 // How many pixels of overlap there is between the shelf top and the
 // balloon bottom.
-const int kTopMargin = 1;
+const int kTopMargin = 2;
 const int kBottomMargin = 0;
-const int kLeftMargin = 1;
-const int kRightMargin = 1;
+const int kLeftMargin = 4;
+const int kRightMargin = 4;
 const int kShelfBorderTopOverlap = 0;
 
 // Properties of the dismiss button.
 const int kDismissButtonWidth = 14;
 const int kDismissButtonHeight = 14;
-const int kDismissButtonTopMargin = 4;
-const int kDismissButtonRightMargin = 8;
+const int kDismissButtonTopMargin = 6;
+const int kDismissButtonRightMargin = 10;
 
 // Properties of the options menu.
-const int kOptionsMenuWidth = 55;
+const int kOptionsMenuWidth = 60;
 const int kOptionsMenuHeight = 20;
 
 // Properties of the origin label.
-const int kLeftLabelMargin = 5;
+const int kLeftLabelMargin = 10;
 
 // Size of the drop shadow.
-const int kLeftShadowWidth = 5;
-const int kRightShadowWidth = 5;
+const int kLeftShadowWidth = 0;
+const int kRightShadowWidth = 0;
 const int kTopShadowWidth = 0;
-const int kBottomShadowWidth = 5;
+const int kBottomShadowWidth = 6;
 
 // Optional animation.
 const bool kAnimateEnabled = true;
@@ -90,8 +91,6 @@ BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
       html_container_(NULL),
       html_contents_(NULL),
       method_factory_(this),
-      shelf_background_(NULL),
-      balloon_background_(NULL),
       close_button_(NULL),
       animation_(NULL),
       options_menu_contents_(NULL),
@@ -101,17 +100,8 @@ BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
   // as it is owned by the balloon.
   set_parent_owned(false);
 
-  // Load the sprites for the frames.
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  SkBitmap* shelf_bitmap = rb.GetBitmapNamed(IDR_BALLOON_SHELF);
-  SkBitmap* border_bitmap = rb.GetBitmapNamed(IDR_BALLOON_BORDER);
-
-  gfx::Insets shelf_insets(1, 9, 9, 9);
-  shelf_background_.reset(
-      views::Painter::CreateImagePainter(*shelf_bitmap, shelf_insets, true));
-  gfx::Insets border_insets(4, 9, 1, 9);
-  balloon_background_.reset(
-      views::Painter::CreateImagePainter(*border_bitmap, border_insets, false));
+  BubbleBorder* bubble_border = new BubbleBorder(BubbleBorder::FLOAT);
+  set_border(bubble_border);
 }
 
 BalloonViewImpl::~BalloonViewImpl() {
@@ -331,7 +321,8 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   close_button_->SetBounds(GetCloseButtonBounds());
 
   options_menu_button_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
-  options_menu_button_->SetIcon(*rb.GetBitmapNamed(IDR_BALLOON_OPTIONS_ARROW_HOVER));
+  options_menu_button_->SetIcon(
+      *rb.GetBitmapNamed(IDR_BALLOON_OPTIONS_ARROW_HOVER));
   options_menu_button_->SetHoverIcon(
       *rb.GetBitmapNamed(IDR_BALLOON_OPTIONS_ARROW_HOVER));
   options_menu_button_->set_alignment(views::TextButton::ALIGN_CENTER);
@@ -374,31 +365,59 @@ void BalloonViewImpl::CreateOptionsMenu() {
 
 void BalloonViewImpl::GetContentsMask(const gfx::Rect& rect,
                                       gfx::Path* path) const {
+  // This rounds the corners, and we also cut out a circle for the close
+  // button, since we can't guarantee the ordering of two top-most windows.
+  SkScalar radius = SkIntToScalar(BubbleBorder::GetCornerRadius());
+  SkScalar scaled_radius =
+      SkScalarMul(radius, (SK_ScalarSqrt2 - SK_Scalar1) * 4 / 3);
+  SkScalar width = SkIntToScalar(rect.width());
+  SkScalar height = SkIntToScalar(rect.height());
 
   gfx::Point cutout = GetCloseButtonBounds().CenterPoint();
   cutout = cutout.Subtract(GetContentsOffset());
-  // This needs to remove areas that look like the following from each corner:
-  //
-  //   xx
-  //   x
-  //
-  // We also cut out a circle for the close button, since we can't guarantee
-  // the ordering of two TOP_MOST windows.
-  path->moveTo(SkScalar(0.5), SkScalar(0));
-  path->lineTo(SkScalar(cutout.x() - 0.5), SkScalar(0));
-  path->addCircle(SkScalar(cutout.x() - 0.5), SkScalar(cutout.y() - 0.5),
-                  SkScalar(kDismissButtonWidth / 2.0));
-  path->lineTo(SkScalar(cutout.x() - 0.5), SkScalar(0));
-  // Upper right corner
-  path->arcTo(rect.width() - SkScalar(1.5), SkScalar(0),
-              rect.width() - SkScalar(0.5), SkScalar(1.5),
-              SkScalar(1));
-  // Lower right corner
-  path->lineTo(rect.width() - SkScalar(0.5), SkScalar(rect.height()));
-  // Lower left corner
-  path->lineTo(SkScalar(0), SkScalar(rect.height()));
-  // Upper left corner
-  path->arcTo(0, SkScalar(0.5), SkScalar(0.5), 0, SkScalar(1));
+  SkScalar cutout_x = SkIntToScalar(cutout.x()) - SkScalar(0.5);
+  SkScalar cutout_y = SkIntToScalar(cutout.y()) - SkScalar(0.5);
+  SkScalar cutout_radius = SkIntToScalar(kDismissButtonWidth) / SkScalar(2.0);
+
+  path->moveTo(radius, 0);
+  path->lineTo(cutout_x, 0);
+  path->addCircle(cutout_x, cutout_y, cutout_radius);
+  path->lineTo(cutout_x, 0);
+  path->lineTo(width - radius, 0);
+  path->cubicTo(width - radius + scaled_radius, 0,
+                width, radius - scaled_radius,
+                width, radius);
+  path->lineTo(width, height);
+  path->lineTo(0, height);
+  path->lineTo(0, radius);
+  path->cubicTo(0, radius - scaled_radius,
+                radius - scaled_radius, 0,
+                radius, 0);
+  path->close();
+}
+
+void BalloonViewImpl::GetFrameMask(const gfx::Rect& bounding_rect,
+                                   gfx::Path* path) const {
+  SkRect rect;
+  rect.set(SkIntToScalar(bounding_rect.x()),
+           SkIntToScalar(bounding_rect.y()),
+           SkIntToScalar(bounding_rect.right()),
+           SkIntToScalar(bounding_rect.bottom()));
+
+  SkScalar radius = SkIntToScalar(BubbleBorder::GetCornerRadius());
+  SkScalar scaled_radius =
+      SkScalarMul(radius, (SK_ScalarSqrt2 - SK_Scalar1) * 4 / 3);
+  path->moveTo(rect.fRight, rect.fTop);
+  path->lineTo(rect.fRight, rect.fBottom - radius);
+  path->cubicTo(rect.fRight, rect.fBottom - radius + scaled_radius,
+               rect.fRight - radius + scaled_radius, rect.fBottom,
+               rect.fRight - radius, rect.fBottom);
+  path->lineTo(rect.fLeft + radius, rect.fBottom);
+  path->cubicTo(rect.fLeft + radius - scaled_radius, rect.fBottom,
+               rect.fLeft, rect.fBottom - radius + scaled_radius,
+               rect.fLeft, rect.fBottom - radius);
+  path->lineTo(rect.fLeft, rect.fTop);
+  path->close();
 }
 
 gfx::Point BalloonViewImpl::GetContentsOffset() const {
@@ -439,17 +458,25 @@ gfx::Rect BalloonViewImpl::GetContentsRectangle() const {
 
 void BalloonViewImpl::Paint(gfx::Canvas* canvas) {
   DCHECK(canvas);
-  int background_width = GetTotalWidth();
-  int background_height = GetBalloonFrameHeight();
-  balloon_background_->Paint(background_width, background_height, canvas);
-  canvas->save();
-  SkScalar y_offset =
-      static_cast<SkScalar>(background_height - kShelfBorderTopOverlap);
-  canvas->translate(0, y_offset);
-  shelf_background_->Paint(background_width, GetShelfHeight(), canvas);
-  canvas->restore();
+  // Paint the menu bar area white, with proper rounded corners.
+  gfx::Path path;
+  gfx::Rect rect = GetLocalBounds(false);
+  rect.set_y(GetBalloonFrameHeight());
+  rect.set_height(GetShelfHeight() - kBottomShadowWidth);
+  GetFrameMask(rect, &path);
+
+  SkPaint paint;
+  paint.setAntiAlias(true);
+  paint.setColor(SK_ColorWHITE);
+  canvas->drawPath(path, paint);
+
+  // Draw a 1-pixel gray line between the content and the menu bar.
+  int line_width = GetTotalWidth() - kLeftMargin - kRightMargin;
+  canvas->FillRectInt(
+      SK_ColorLTGRAY, kLeftMargin, GetBalloonFrameHeight(), line_width, 1);
 
   View::Paint(canvas);
+  PaintBorder(canvas);
 }
 
 // menus::SimpleMenuModel::Delegate methods
