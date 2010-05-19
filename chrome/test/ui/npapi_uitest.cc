@@ -36,13 +36,7 @@ using npapi_test::kTestCompleteSuccess;
 static const FilePath::CharType* kTestDir = FILE_PATH_LITERAL("npapi");
 
 // Test passing arguments to a plugin.
-#if defined(OS_MACOSX)
-// http://crbug.com/42340 - fails on 10.6 most of the time
-#define MAYBE_Arguments FLAKY_Arguments
-#else
-#define MAYBE_Arguments Arguments
-#endif
-TEST_F(NPAPITester, MAYBE_Arguments) {
+TEST_F(NPAPITester, Arguments) {
   const FilePath test_case(FILE_PATH_LITERAL("arguments.html"));
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
@@ -99,13 +93,7 @@ TEST_F(NPAPITester, FLAKY_GetJavaScriptURL2) {
 // Tests that if an NPObject is proxies back to its original process, the
 // original pointer is returned and not a proxy.  If this fails the plugin
 // will crash.
-#if defined(OS_MACOSX)
-// http://crbug.com/42086 - fails on 10.6 most of the time
-#define MAYBE_NPObjectProxy FLAKY_NPObjectProxy
-#else
-#define MAYBE_NPObjectProxy NPObjectProxy
-#endif
-TEST_F(NPAPITester, MAYBE_NPObjectProxy) {
+TEST_F(NPAPITester, NPObjectProxy) {
   const FilePath test_case(FILE_PATH_LITERAL("npobject_proxy.html"));
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
