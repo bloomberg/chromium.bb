@@ -102,7 +102,7 @@ std::string CreateStringFromNPVariant(const NPVariant& variant) {
 }
 
 bool TestGetProperty(PluginObject* obj,
-                     const NPVariant* args, uint32 arg_count,
+                     const NPVariant* args, uint32_t arg_count,
                      NPVariant* result) {
   if (arg_count == 0)
     return false;
@@ -110,7 +110,7 @@ bool TestGetProperty(PluginObject* obj,
   NPObject *object;
   browser->getvalue(obj->npp(), NPNVWindowNPObject, &object);
 
-  for (uint32 i = 0; i < arg_count; i++) {
+  for (uint32_t i = 0; i < arg_count; i++) {
     assert(NPVARIANT_IS_STRING(args[i]));
     std::string property_string = CreateStringFromNPVariant(args[i]);
     NPIdentifier property_identifier =

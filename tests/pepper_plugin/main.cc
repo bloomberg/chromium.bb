@@ -144,15 +144,15 @@ NPError NPP_DestroyStream(NPP instance, NPStream* stream, NPReason reason) {
 void NPP_StreamAsFile(NPP instance, NPStream* stream, const char* fname) {
 }
 
-int32 NPP_Write(NPP instance,
+int32_t NPP_Write(NPP instance,
                 NPStream* stream,
-                int32 offset,
-                int32 len,
+                int32_t offset,
+                int32_t len,
                 void* buffer) {
   return 0;
 }
 
-int32 NPP_WriteReady(NPP instance, NPStream* stream) {
+int32_t NPP_WriteReady(NPP instance, NPStream* stream) {
   return 0;
 }
 
