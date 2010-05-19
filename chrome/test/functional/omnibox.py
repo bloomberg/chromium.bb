@@ -32,7 +32,7 @@ class OmniboxTest(pyauto.PyUITest):
     self.assertTrue(self.GetOmniboxInfo().Properties('has_focus'))
 
   def _GetOmniboxMatchesFor(self, text, windex=0, attr_dict=None):
-    """Fetch omnibox matches for the given query with the given properties.
+    """Fetch omnibox matches with the given attributes for the given query.
 
     Args:
       text: the query text to use
@@ -49,7 +49,6 @@ class OmniboxTest(pyauto.PyUITest):
     else:
       matches = self.GetOmniboxInfo(windex=windex).MatchesWithAttributes(
           attr_dict=attr_dict)
-    self.assertTrue(matches)
     return matches
 
   def testHistoryResult(self):
@@ -57,17 +56,26 @@ class OmniboxTest(pyauto.PyUITest):
     url = self.GetFileURLForPath(os.path.join(self.DataDir(), 'title2.html'))
     title = 'Title Of Awesomeness'
     self.AppendTab(pyauto.GURL(url))
-    def _VerifyResult(query_text, description):
-      """Verify result matching given description for given query_text."""
-      matches = self._GetOmniboxMatchesFor(
-          query_text, attr_dict={'description': description})
-      self.assertEqual(1, len(matches))
-      item = matches[0]
-      self.assertEqual(url, item['destination_url'])
-    # Query using URL
-    _VerifyResult(url, title)
-    # Query using title
-    _VerifyResult(title, title)
+    def _VerifyHistoryResult(query_list, description, windex=0):
+      """Verify result matching given description for given list of queries."""
+      for query_text in query_list:
+        matches = self._GetOmniboxMatchesFor(
+            query_text, windex=windex, attr_dict={'description': description})
+        self.assertTrue(matches)
+        self.assertEqual(1, len(matches))
+        item = matches[0]
+        self.assertEqual(url, item['destination_url'])
+    # Query using URL & title
+    _VerifyHistoryResult([url, title], title)
+    # Verify results in another tab
+    self.AppendTab(pyauto.GURL())
+    _VerifyHistoryResult([url, title], title)
+    # Verify results in another window
+    self.OpenNewBrowserWindow(True)
+    _VerifyHistoryResult([url, title], title, windex=1)
+    # Verify results in an incognito window
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    _VerifyHistoryResult([url, title], title, windex=2)
 
   def testSelect(self):
     """Verify omnibox popup selection."""
@@ -77,6 +85,7 @@ class OmniboxTest(pyauto.PyUITest):
     self.NavigateToURL(url1)
     self.NavigateToURL(url2)
     matches = self._GetOmniboxMatchesFor('file://')
+    self.assertTrue(matches)
     # Find the index of match for url1
     index = None
     for i, match in enumerate(matches):
@@ -95,6 +104,7 @@ class OmniboxTest(pyauto.PyUITest):
     url_re = 'http://www.google.com/search\?.*q=hello\+world.*'
     matches_description = self._GetOmniboxMatchesFor(
         search_text, attr_dict={'description': verify_str})
+    self.assertTrue(matches_description)
     self.assertEqual(1, len(matches_description))
     item = matches_description[0]
     self.assertTrue(re.search(url_re, item['destination_url']))
@@ -104,6 +114,7 @@ class OmniboxTest(pyauto.PyUITest):
     """Verify inline autocomplete for a pre-visited url."""
     self.NavigateToURL('http://www.google.com')
     matches = self._GetOmniboxMatchesFor('goog')
+    self.assertTrue(matches)
     # Omnibox should suggest auto completed url as the first item
     matches_description = matches[0]
     self.assertTrue('www.google.com' in matches_description['contents'])
@@ -152,11 +163,65 @@ class OmniboxTest(pyauto.PyUITest):
       for file_url in crazy_fileurls:
         matches = self._GetOmniboxMatchesFor(
             file_url, attr_dict={'type': 'url-what-you-typed',
-                                 'destination_url': file_url,
                                  'description': title})
+        self.assertTrue(matches)
         self.assertEqual(1, len(matches))
+        self.assertTrue(os.path.basename(file_url) in
+                        matches[0]['destination_url'])
     finally:
       shutil.rmtree(unicode(temp_dir))  # unicode so that win treats nicely.
+
+  def testSuggest(self):
+    """Verify suggest results in omnibox."""
+    matches = self._GetOmniboxMatchesFor('apple')
+    self.assertTrue(matches)
+    self.assertTrue([x for x in matches if x['type'] == 'navsuggest'])
+    self.assertTrue([x for x in matches if x['type'] == 'search-suggest'])
+
+  def testDifferentTypesOfResults(self):
+    """Verify different types of results from omnibox.
+
+    This includes history result, bookmark result, suggest results.
+
+    """
+    url = 'http://www.google.com/'
+    title = 'Google'
+    self.AddBookmarkURL(  # Add a bookmark
+        self.GetBookmarkModel().BookmarkBar()['id'], 0, title, url)
+    self.NavigateToURL(url)  # Build up history
+    matches = self._GetOmniboxMatchesFor('google')
+    self.assertTrue(matches)
+    # Verify starred result (indicating bookmarked url)
+    self.assertTrue([x for x in matches if x['starred'] == True])
+    for item_type in ('history-url', 'search-what-you-typed', 'navsuggest',
+                      'search-suggest',):
+      self.assertTrue([x for x in matches if x['type'] == item_type])
+
+  def testSuggestPref(self):
+    """Verify omnibox suggest-service enable/disable pref."""
+    self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kSearchSuggestEnabled))
+    matches = self._GetOmniboxMatchesFor('apple')
+    self.assertTrue(matches)
+    self.assertTrue([x for x in matches if x['type'] == 'navsuggest'])
+    self.assertTrue([x for x in matches if x['type'] == 'search-suggest'])
+    # Disable suggest-service
+    self.SetPrefs(pyauto.kSearchSuggestEnabled, False)
+    self.assertFalse(self.GetPrefsInfo().Prefs(pyauto.kSearchSuggestEnabled))
+    matches = self._GetOmniboxMatchesFor('apple')
+    self.assertTrue(matches)
+    # Verify there are no suggest results
+    self.assertFalse([x for x in matches if x['type'] == 'navsuggest'])
+    self.assertFalse([x for x in matches if x['type'] == 'search-suggest'])
+
+  def testSuggestCombinationOfWords(self):
+    """Verify that omnibox can suggest combinations of words."""
+    url = "http://presidentofindia.nic.in/"
+    matches = self._GetOmniboxMatchesFor(
+        'president of india', attr_dict={'type': 'navsuggest'})
+    self.assertTrue(matches)
+    # Should find a result with 'presidentofindia' as url
+    self.assertTrue([x for x in matches
+                     if 'presidentofindia' in x['destination_url']])
 
 
 if __name__ == '__main__':
