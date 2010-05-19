@@ -42,6 +42,11 @@ class GLES2DecoderTestBase : public testing::Test {
   static const GLint kMaxCubeMapTextureSize = 256;
   static const GLint kNumVertexAttribs = 16;
   static const GLint kNumTextureUnits = 8;
+  static const GLint kMaxTextureImageUnits = 8;
+  static const GLint kMaxVertexTextureImageUnits = 2;
+  static const GLint kMaxFragmentUniformVectors = 16;
+  static const GLint kMaxVaryingVectors = 8;
+  static const GLint kMaxVertexUniformVectors = 128;
 
   static const GLuint kServiceBlackTexture2dId = 701;
   static const GLuint kServiceBlackTextureCubemapId = 702;

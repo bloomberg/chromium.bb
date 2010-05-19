@@ -42,6 +42,26 @@ class ContextGroup {
     return max_texture_units_;
   }
 
+  uint32 max_texture_image_units() const {
+    return max_texture_image_units_;
+  }
+
+  uint32 max_vertex_texture_image_units() const {
+    return max_vertex_texture_image_units_;
+  }
+
+  uint32 max_fragment_uniform_vectors() const {
+    return max_fragment_uniform_vectors_;
+  }
+
+  uint32 max_varying_vectors() const {
+    return max_varying_vectors_;
+  }
+
+  uint32 max_vertex_uniform_vectors() const {
+    return max_vertex_uniform_vectors_;
+  }
+
   BufferManager* buffer_manager() const {
     return buffer_manager_.get();
   }
@@ -73,8 +93,12 @@ class ContextGroup {
   bool initialized_;
 
   uint32 max_vertex_attribs_;
-
   uint32 max_texture_units_;
+  uint32 max_texture_image_units_;
+  uint32 max_vertex_texture_image_units_;
+  uint32 max_fragment_uniform_vectors_;
+  uint32 max_varying_vectors_;
+  uint32 max_vertex_uniform_vectors_;
 
   scoped_ptr<BufferManager> buffer_manager_;
 

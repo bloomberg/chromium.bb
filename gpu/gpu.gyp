@@ -40,7 +40,6 @@
       'command_buffer/service/texture_manager.h',
       'command_buffer/service/texture_manager.cc',
     ],
-    'enable_shader_translation%': 0,
   },
   'targets': [
     {
@@ -270,7 +269,9 @@
             '../build/linux/system.gyp:gtk',
           ],
         }],
-        ['enable_shader_translation==1', {
+        # TODO(gman): Change this condition to be false if the backend is
+        # native OpenGL ES 2.0 and false if the backend is OpenGL.
+        ['1==1', {
           'defines': [
             'GLES2_GPU_SERVICE_TRANSLATE_SHADER',
           ],
