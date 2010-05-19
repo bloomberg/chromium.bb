@@ -574,6 +574,8 @@ class GitWrapper(SCMWrapper):
     # Returns name of current branch
     # Returns None if inside a (no branch)
     tokens = self._Run(['branch']).split()
+    if not '*' in tokens:
+      return None
     branch = tokens[tokens.index('*') + 1]
     if branch == '(no':
       return None
