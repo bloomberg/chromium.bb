@@ -620,8 +620,6 @@ class ThreadSanitizerBase(object):
     return ret
 
   def Analyze(self, check_sanity=False):
-    if self._options.indirect:
-      return self.GetAnalyzeResultsIndirect()
     filenames = glob.glob(self.TMP_DIR + "/tsan.*")
     use_gdb = common.IsMac()
     analyzer = tsan_analyze.TsanAnalyze(self._source_dir, filenames,
@@ -637,6 +635,11 @@ class ThreadSanitizerPosix(ThreadSanitizerBase, ValgrindTool):
   def __init__(self):
     ValgrindTool.__init__(self)
     ThreadSanitizerBase.__init__(self)
+
+  def Analyze(self, check_sanity=False):
+    if self._options.indirect:
+      return ValgrindTool.GetAnalyzeResultsIndirect(self)
+    return ThreadSanitizerBase.Analyze(self, check_sanity)
 
   def ToolSpecificFlags(self):
     proc = ThreadSanitizerBase.ToolSpecificFlags(self)
