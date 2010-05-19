@@ -11,6 +11,7 @@
 #import "chrome/app/breakpad_mac.h"
 #import "chrome/browser/app_controller_mac.h"
 #import "chrome/browser/cocoa/objc_method_swizzle.h"
+#import "chrome/browser/cocoa/objc_zombie.h"
 
 // The implementation of NSExceptions break various assumptions in the
 // Chrome code.  This category defines a replacement for
@@ -160,6 +161,12 @@ BOOL SwizzleNSExceptionInit() {
 }  // namespace
 
 @implementation BrowserCrApplication
+
++ (void)initialize {
+  // Turn all deallocated Objective-C objects into zombies, keeping
+  // the most recent 10,000 of them on the treadmill.
+  DCHECK(ObjcEvilDoers::ZombieEnable(YES, 10000));
+}
 
 - init {
   DCHECK(SwizzleNSExceptionInit());
