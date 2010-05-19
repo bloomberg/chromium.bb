@@ -146,37 +146,21 @@ void DOMMessageHandler::SetURLAndTitle(DictionaryValue* dictionary,
 bool DOMMessageHandler::ExtractIntegerValue(const Value* value, int* out_int) {
   if (value && value->GetType() == Value::TYPE_LIST) {
     const ListValue* list_value = static_cast<const ListValue*>(value);
-    Value* list_member;
-
-    // Get id.
-    if (list_value->Get(0, &list_member) &&
-        list_member->GetType() == Value::TYPE_STRING) {
-      const StringValue* string_value =
-          static_cast<const StringValue*>(list_member);
-      std::wstring wstring_value;
-      string_value->GetAsString(&wstring_value);
-      *out_int = StringToInt(WideToUTF16Hack(wstring_value));
+    std::string string_value;
+    if (list_value->GetString(0, &string_value)) {
+      *out_int = StringToInt(string_value);
       return true;
     }
   }
-
   return false;
 }
 
 std::wstring DOMMessageHandler::ExtractStringValue(const Value* value) {
   if (value && value->GetType() == Value::TYPE_LIST) {
     const ListValue* list_value = static_cast<const ListValue*>(value);
-    Value* list_member;
-
-    // Get id.
-    if (list_value->Get(0, &list_member) &&
-        list_member->GetType() == Value::TYPE_STRING) {
-      const StringValue* string_value =
-          static_cast<const StringValue*>(list_member);
-      std::wstring wstring_value;
-      string_value->GetAsString(&wstring_value);
+    std::wstring wstring_value;
+    if (list_value->GetString(0, &wstring_value))
       return wstring_value;
-    }
   }
   return std::wstring();
 }
