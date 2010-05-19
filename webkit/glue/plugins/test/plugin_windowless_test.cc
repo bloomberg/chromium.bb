@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #define STRSAFE_NO_DEPRECATE
+#include "base/string_util.h"
 #include "webkit/glue/plugins/test/plugin_windowless_test.h"
 #include "webkit/glue/plugins/test/plugin_client.h"
 
@@ -147,6 +148,17 @@ void WindowlessPluginTest::MultipleInstanceSyncCalls(NPNetscapeFuncs* browser) {
   SignalTestCompleted();
 }
 
+#if defined(OS_MACOSX)
+std::string StringForPoint(int x, int y) {
+  std::string point_string("(");
+  point_string.append(IntToString(x));
+  point_string.append(", ");
+  point_string.append(IntToString(y));
+  point_string.append(")");
+  return point_string;
+}
+#endif
+
 void WindowlessPluginTest::ConvertPoint(NPNetscapeFuncs* browser) {
 #if defined(OS_MACOSX)
   // First, just sanity-test that round trips work.
@@ -171,7 +183,7 @@ void WindowlessPluginTest::ConvertPoint(NPNetscapeFuncs* browser) {
         return;
       }
       if (round_trip_x != 0 || round_trip_y != 0) {
-        SetError("Round-trip conversion should give return the original point");
+        SetError("Round-trip conversion should return the original point");
         SignalTestCompleted();
         return;
       }
@@ -200,22 +212,35 @@ void WindowlessPluginTest::ConvertPoint(NPNetscapeFuncs* browser) {
   // at (100, 100), with a content area origin of (100, 100).
   // Y-coordinates are not checked exactly so that the test is robust against
   // toolbar changes, info bar visibility, etc.
+  std::string error_string;
   if (screen_x != flipped_screen_x)
-    SetError("Flipping screen coordinates shouldn't change x");
+    error_string = "Flipping screen coordinates shouldn't change x";
   else if (flipped_screen_y != main_display_bounds.size.height - screen_y)
-    SetError("Flipped screen coordinates should be flipped vertically!");
+    error_string = "Flipped screen coordinates should be flipped vertically";
   else if (screen_x != 200)
-    SetError("Screen x location is wrong");
+    error_string = "Screen x location is wrong";
   else if (flipped_screen_y < 200 || flipped_screen_y > 400)
-    SetError("Screen y location is wrong");
-  if (window_x != flipped_window_x)
-    SetError("Flipping window coordinates shouldn't change x");
+    error_string = "Screen y location is wrong";
+  else if (window_x != flipped_window_x)
+    error_string = "Flipping window coordinates shouldn't change x";
   else if (flipped_window_y != 600 - window_y)
-    SetError("Flipped window coordinates should be flipped vertically!");
+    error_string = "Flipped window coordinates should be flipped vertically";
   else if (window_x != 100)
-    SetError("Window x location is wrong");
+    error_string = "Window x location is wrong";
   else if (flipped_screen_y < 100 || flipped_screen_y > 300)
-    SetError("Window y location is wrong");
+    error_string = "Window y location is wrong";
+
+  if (!error_string.empty()) {
+    error_string.append(" - ");
+    error_string.append(StringForPoint(screen_x, screen_y));
+    error_string.append(" - ");
+    error_string.append(StringForPoint(flipped_screen_x, flipped_screen_y));
+    error_string.append(" - ");
+    error_string.append(StringForPoint(window_x, window_y));
+    error_string.append(" - ");
+    error_string.append(StringForPoint(flipped_window_x, flipped_window_y));
+    SetError(error_string);
+  }
 #else
   SetError("Unimplemented");
 #endif
