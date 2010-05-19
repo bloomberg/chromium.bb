@@ -48,7 +48,7 @@ class ScreenLockLibraryImpl : public ScreenLockLibrary {
  private:
   // This method is called when PowerManager requests to lock the screen.
   // This method is called on a background thread.
-  static void ScreenLockedHandler(void* object);
+  static void ScreenLockedHandler(void* object, ScreenLockEvent event);
 
   // This methods starts the monitoring of screen lock request.
   void Init();

@@ -68,7 +68,7 @@ void ScreenLockLibraryImpl::ScreenLocked() {
 }
 
 // static
-void ScreenLockLibraryImpl::ScreenLockedHandler(void* object) {
+void ScreenLockLibraryImpl::ScreenLockedHandler(void* object, ScreenLockEvent) {
   ScreenLockLibraryImpl* self = static_cast<ScreenLockLibraryImpl*>(object);
   self->ScreenLocked();
 }
