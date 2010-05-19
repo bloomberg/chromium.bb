@@ -22,3 +22,6 @@ DirectoryLister*
 
 # See http://crbug.com/41958
 HttpNetworkSessionTest.FlushOnNetworkChange
+
+# See http://crbug.com/44570
+HttpNetworkTransactionTest.StopsReading204
