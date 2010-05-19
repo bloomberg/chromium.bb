@@ -34,7 +34,10 @@ class VideoDecoderImpl : public DecoderBase<VideoDecoder, VideoFrame> {
   virtual void DoInitialize(DemuxerStream* demuxer_stream, bool* success,
                             Task* done_cb);
   virtual void DoSeek(base::TimeDelta time, Task* done_cb);
-  virtual void DoDecode(Buffer* buffer, Task* done_cb);
+  virtual void DoDecode(Buffer* input);
+
+ protected:
+  virtual void OnEmptyBufferDone();
 
  private:
   friend class FilterFactoryImpl1<VideoDecoderImpl, VideoDecodeEngine*>;
@@ -68,8 +71,8 @@ class VideoDecoderImpl : public DecoderBase<VideoDecoder, VideoFrame> {
   // Methods that pickup after the decode engine has finished its action.
   virtual void OnInitializeComplete(bool* success /* Not owned */,
                                     Task* done_cb);
-  virtual void OnDecodeComplete(scoped_refptr<VideoFrame>* video_frame,
-                                bool* got_frame, Task* done_cb);
+
+  virtual void OnDecodeComplete(scoped_refptr<VideoFrame> video_frame);
 
   // Attempt to get the PTS and Duration for this frame by examining the time
   // info provided via packet stream (stored in |pts_heap|), or the info

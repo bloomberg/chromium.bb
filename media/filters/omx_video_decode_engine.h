@@ -31,10 +31,12 @@ class OmxVideoDecodeEngine : public VideoDecodeEngine {
   virtual ~OmxVideoDecodeEngine();
 
   // Implementation of the VideoDecodeEngine Interface.
-  virtual void Initialize(AVStream* stream, Task* done_cb);
-  virtual void DecodeFrame(Buffer* buffer,
-                           scoped_refptr<VideoFrame>* video_frame,
-                           bool* got_result, Task* done_cb);
+  virtual void Initialize(MessageLoop* message_loop,
+                          AVStream* av_stream,
+                          EmptyThisBufferCallback* empty_buffer_callback,
+                          FillThisBufferCallback* fill_buffer_callback,
+                          Task* done_cb);
+  virtual void EmptyThisBuffer(scoped_refptr<Buffer> buffer);
   virtual void Flush(Task* done_cb);
   virtual VideoFrame::Format GetSurfaceFormat() const;
 
@@ -51,20 +53,7 @@ class OmxVideoDecodeEngine : public VideoDecodeEngine {
   };
 
  private:
-  // A struct to hold parameters of a decode request. Objects pointed by
-  // these parameters are owned by the caller.
-  struct DecodeRequest {
-    DecodeRequest(scoped_refptr<VideoFrame>* f, bool* b, Task* cb)
-        : frame(f),
-          got_result(b),
-          done_cb(cb) {
-    }
-
-    scoped_refptr<VideoFrame>* frame;
-    bool* got_result;
-    Task* done_cb;
-  };
-
+  void DecodeFrame();
   virtual void OnFeedDone(Buffer* buffer);
   virtual void OnHardwareError();
   virtual void OnReadComplete(OMX_BUFFERHEADERTYPE* buffer);
@@ -80,11 +69,11 @@ class OmxVideoDecodeEngine : public VideoDecodeEngine {
   bool has_fed_on_eos_;  // Used to avoid sending an end of stream to
   // OpenMax twice since OpenMax does not always
   // handle this nicely.
-  std::list<DecodeRequest> decode_request_queue_;
 
   scoped_refptr<media::OmxCodec> omx_codec_;
   scoped_ptr<media::OmxConfigurator> omx_configurator_;
   MessageLoop* message_loop_;
+  scoped_ptr<FillThisBufferCallback> fill_this_buffer_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(OmxVideoDecodeEngine);
 };
