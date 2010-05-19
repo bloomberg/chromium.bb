@@ -41,7 +41,6 @@ sources = [
     'read.c',
     'sbrk.c',
     'sched_yield.c',
-    'sleep.c',
     'srpc_get_fd.c',
     'srpc_init.c',
     'srpc_wait.c',
