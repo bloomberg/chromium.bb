@@ -179,9 +179,9 @@ void AccessibleChecker::CheckAccessibleChildren(IAccessible* parent) {
   }
 }
 
-// Flaky, http://crbug.com/44546.
+// Flaky and crashing, http://crbug.com/44546.
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       FLAKY_TestRendererAccessibilityTree) {
+                       DISABLED_TestRendererAccessibilityTree) {
   GURL tree_url(
       "data:text/html,<html><head><title>Accessibility Win Test</title></head>"
       "<body><input type='button' value='push' /><input type='checkbox' />"
