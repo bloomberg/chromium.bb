@@ -355,7 +355,8 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 - (BOOL)isEventAnExitEvent:(NSEvent*)event;
 - (id)folderTarget;
 - (int)displayedButtonCount;
-
+- (NSMenu*)buttonContextMenu;
+- (void)setButtonContextMenu:(id)menu;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_BOOKMARK_BAR_CONTROLLER_H_

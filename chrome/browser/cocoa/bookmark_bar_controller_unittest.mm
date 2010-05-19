@@ -1464,6 +1464,32 @@ TEST_F(BookmarkBarControllerTest, NodeDeletedWhileMenuIsOpen) {
   [bar_ openAllBookmarksIncognitoWindow:item];
 }
 
+TEST_F(BookmarkBarControllerTest, NodeDeletedWhileContextMenuIsOpen) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  [bar_ loaded:model];
+
+  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  const BookmarkNode* folder = model->AddGroup(parent,
+                                               parent->GetChildCount(),
+                                               L"group");
+  const BookmarkNode* framma = model->AddURL(folder, folder->GetChildCount(),
+                                             L"f1",
+                                             GURL("http://framma-lamma.com"));
+
+  // Mock in a menu
+  id origMenu = [bar_ buttonContextMenu];
+  id fakeMenu = [OCMockObject partialMockForObject:origMenu];
+  [[fakeMenu expect] cancelTracking];
+  [bar_ setButtonContextMenu:fakeMenu];
+
+  // Force a delete which should cancelTracking on the menu.
+  model->Remove(framma->GetParent(), framma->GetParent()->IndexOfChild(framma));
+
+  // Restore, then confirm cancelTracking was called.
+  [bar_ setButtonContextMenu:origMenu];
+  [fakeMenu verify];
+}
+
 TEST_F(BookmarkBarControllerTest, CloseFolderOnAnimate) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   const BookmarkNode* parent = model->GetBookmarkBarNode();

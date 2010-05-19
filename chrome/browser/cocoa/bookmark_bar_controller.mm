@@ -565,6 +565,16 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   return displayedButtonCount_;
 }
 
+- (NSMenu*)buttonContextMenu {
+  return buttonContextMenu_;
+}
+
+// Intentionally ignores ownership issues; used for testing and we try
+// to minimize touching the object passed in (likely a mock).
+- (void)setButtonContextMenu:(id)menu {
+  buttonContextMenu_ = menu;
+}
+
 // Keep the "no items" label centered in response to a frame size change.
 - (void)centerNoItemsLabel {
   // Note that this computation is done in the parent's coordinate system,
@@ -1790,8 +1800,19 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [self configureOffTheSideButtonContentsAndVisibility];
 }
 
+// To avoid problems with sync, changes that may impact the current
+// bookmark (e.g. deletion) make sure context menus are closed.  This
+// prevents deleting a node which no longer exists.
+- (void)cancelMenuTracking {
+  [buttonContextMenu_ cancelTracking];
+  [buttonFolderContextMenu_ cancelTracking];
+}
+
 - (void)nodeAdded:(BookmarkModel*)model
            parent:(const BookmarkNode*)newParent index:(int)newIndex {
+  // If a context menu is open, close it.
+  [self cancelMenuTracking];
+
   const BookmarkNode* newNode = newParent->GetChild(newIndex);
   id<BookmarkButtonControllerProtocol> newController =
       [self controllerForNode:newParent];
@@ -1803,6 +1824,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
 - (void)nodeRemoved:(BookmarkModel*)model
              parent:(const BookmarkNode*)oldParent index:(int)index {
+  // If a context menu is open, close it.
+  [self cancelMenuTracking];
+
   // Locate the parent node. The parent may not be showing, in which case
   // we do nothing.
   id<BookmarkButtonControllerProtocol> parentController =

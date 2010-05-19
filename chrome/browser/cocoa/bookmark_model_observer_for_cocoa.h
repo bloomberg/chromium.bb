@@ -33,6 +33,10 @@ class BookmarkModelObserverForCocoa : public BookmarkModelObserver {
   // IBOutlet.  The arg passed is nil.
   // Many notifications happen independently of node
   // (e.g. BeingDeleted), so |node| can be nil.
+  //
+  // |object| is NOT retained, since the expected use case is for
+  // ||object| to own the BookmarkModelObserverForCocoa and we don't
+  // want a retain cycle.
   BookmarkModelObserverForCocoa(const BookmarkNode* node,
                                 BookmarkModel* model,
                                 NSObject* object,
@@ -40,7 +44,7 @@ class BookmarkModelObserverForCocoa : public BookmarkModelObserver {
     DCHECK(model);
     node_ = node;
     model_ = model;
-    object_.reset([object retain]);
+    object_ = object;
     selector_ = selector;
     model_->AddObserver(this);
   }
@@ -69,7 +73,7 @@ class BookmarkModelObserverForCocoa : public BookmarkModelObserver {
   }
   virtual void BookmarkNodeChanged(BookmarkModel* model,
                                    const BookmarkNode* node) {
-    if (node_ == node)
+    if ((node_ == node) || (!node_))
       Notify();
   }
   virtual void BookmarkImportBeginning(BookmarkModel* model) {
@@ -98,7 +102,7 @@ class BookmarkModelObserverForCocoa : public BookmarkModelObserver {
  private:
   const BookmarkNode* node_;  // Weak; owned by a BookmarkModel.
   BookmarkModel* model_;  // Weak; it is owned by a Profile.
-  scoped_nsobject<NSObject> object_;
+  NSObject* object_; // Weak, like a delegate.
   SEL selector_;
 
   void Notify() {
