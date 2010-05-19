@@ -194,15 +194,18 @@ class MockClientSocketFactory : public ClientSocketFactory {
 
   MockClientSocketFactory()
       : allocation_count_(0), client_socket_type_(MOCK_CLIENT_SOCKET),
-        client_socket_types_(NULL), client_socket_index_(0) {}
+        client_socket_types_(NULL), client_socket_index_(0),
+        client_socket_index_max_(0) {}
 
   virtual ClientSocket* CreateTCPClientSocket(const AddressList& addresses,
                                               NetLog* /* net_log */) {
     allocation_count_++;
 
     ClientSocketType type = client_socket_type_;
-    if (client_socket_types_)
+    if (client_socket_types_ &&
+        client_socket_index_ < client_socket_index_max_) {
       type = client_socket_types_[client_socket_index_++];
+    }
 
     switch (type) {
       case MOCK_CLIENT_SOCKET:
@@ -240,9 +243,11 @@ class MockClientSocketFactory : public ClientSocketFactory {
   }
 
   // Set a list of ClientSocketTypes to be used.
-  void set_client_socket_types(ClientSocketType* type_list) {
+  void set_client_socket_types(ClientSocketType* type_list, int num_types) {
+    DCHECK_GT(num_types, 0);
     client_socket_types_ = type_list;
     client_socket_index_ = 0;
+    client_socket_index_max_ = num_types;
   }
 
  private:
@@ -250,6 +255,7 @@ class MockClientSocketFactory : public ClientSocketFactory {
   ClientSocketType client_socket_type_;
   ClientSocketType* client_socket_types_;
   int client_socket_index_;
+  int client_socket_index_max_;
 };
 
 class TCPClientSocketPoolTest : public ClientSocketPoolTest {
@@ -673,7 +679,7 @@ TEST_F(TCPClientSocketPoolTest, BackupSocketConnect) {
   };
 
   for (size_t index = 0; index < arraysize(cases); ++index) {
-    client_socket_factory_.set_client_socket_types(cases[index]);
+    client_socket_factory_.set_client_socket_types(cases[index], 2);
 
     EXPECT_EQ(0, pool_->IdleSocketCount());
 
@@ -762,7 +768,7 @@ TEST_F(TCPClientSocketPoolTest, BackupSocketFailAfterStall) {
     MockClientSocketFactory::MOCK_FAILING_CLIENT_SOCKET
   };
 
-  client_socket_factory_.set_client_socket_types(case_types);
+  client_socket_factory_.set_client_socket_types(case_types, 2);
 
   EXPECT_EQ(0, pool_->IdleSocketCount());
 
@@ -808,7 +814,7 @@ TEST_F(TCPClientSocketPoolTest, BackupSocketFailAfterDelay) {
     MockClientSocketFactory::MOCK_FAILING_CLIENT_SOCKET
   };
 
-  client_socket_factory_.set_client_socket_types(case_types);
+  client_socket_factory_.set_client_socket_types(case_types, 2);
 
   EXPECT_EQ(0, pool_->IdleSocketCount());
 
