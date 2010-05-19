@@ -61,12 +61,14 @@ Native Client has been tested with the following Linux configurations:
   </ul></li>
 <li> Browser
   <ul>
+  <li> Chrome </li>
   <li> Firefox 3 </li>
   </ul> </li>
 <li> Python
   <ul>
   <li> 2.4 </li>
   <li> 2.5 </li>
+  <li> <i> 2.6 cannot be used when building with <code>scons</code> </i> </li>
   </ul> </li>
 </ul>
 
@@ -162,21 +164,16 @@ with the following command:
 <kbd>sudo apt-get install texinfo</kbd>
 </pre>
 
-<p>
-If you're using a 64-bit system,
-you need to run a prep script.
-</p>
-
-<h3><a name="dev-64bit" id="dev-64bit"> </a> 64-bit Linux: prep script </h3>
+<h3><a name="dev-64bit" id="dev-64bit"> </a> 64-bit Linux</h3>
 
 <p>
-To build on 64-bit Linux, you first need to run the prep script.
-Run this script
-every time you download a new version of Native Client.
-(You could get away with running the script just once,
-but if the script changes,
-you should run it again.)
-Here's how to run the script:
+To build on 64-bit Linux, you first need to run the prep script.  Run this
+script every time you download a new version of Native Client.  (You could
+get away with running the script just once, but if the script changes, you
+should run it again.)  <b>Note:</b> The script is Ubuntu-specific &mdash;
+using <code>apt-get</code> and Ubuntu file locations, for example.  It might
+not work if you have another distribution of Linux.  Here's how to run the
+script:
 </p>
 
 <pre class="platform-linux">
@@ -184,14 +181,32 @@ Here's how to run the script:
 <kbd>./linux.x86_64.prep.sh</kbd>
 </pre>
 
+<h3><a name="dev-build-64bit" id="dev-build-64bit"> </a> Building 64-bit Linux</h3>
+
+<p>You can also build Native Client in 64-bit mode, which could then be used
+with 64-bit browsers.</p>
+
 <p>
-<b>Note:</b>
-The script is Ubuntu-specific &mdash;
-using <code>apt-get</code> and Ubuntu file locations, for example.
-It might not work
-if you have another distribution of Linux.
+You should be able to build some clients as 32-bit and some clients as 64-bit
+on the same 64-bit Linux machine.  Building a single client as both 32-bit
+and 64-bit is currently untested.  You must <b>not</b> build 32-bit and
+64-bit versions of the toolchain in the same client.
 </p>
 
+<ul>
+  <li>You need to add <code>platform=x86-64</code> to
+     your <code>./scons</code> command:
+    <pre class="platform-linux">
+      <kbd>./scons --mode=opt-linux,nacl <b>platform=x86-64</b></kbd>
+    </pre>
+  </li>
+
+  <li>If you get errors about SDL, you can install it with
+    <pre class="platform-linux">
+      <kbd>sudo apt-get install libsdl1.2-dev</kbd>
+    </pre>
+  </li>
+</ul>
 
 
 <p id="license">
