@@ -439,12 +439,14 @@ class ValgrindTool(BaseTool):
                                             text=True)
     f = os.fdopen(fd, "w")
     f.write("#!/bin/sh\n")
-    f.write(command)
+    # Add the PID of the browser wrapper to the logfile names to avoid a race
+    # on the logfiles from different browser wrapper instances.
+    f.write(command.replace("%p", "$$.%p"))
     f.write(' "$@"\n')
     f.write("EXITCODE=$?\n")
 
     # Now run the analyze script and append its return code to TOOL_analyze
-    logs_list = logfiles.replace("%p", "*")
+    logs_list = logfiles.replace("%p", "$$.*")
     f.write("python %s %s || echo FAIL >>%s\n" \
             % (analyze_script, logs_list, self._indirect_analyze_results_file))
     f.write("rm %s\n" % logs_list)
