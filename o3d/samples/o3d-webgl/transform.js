@@ -641,8 +641,8 @@ o3d.Transform.transformPointZOnly = function(m, v) {
   var m2 = m[2];
   var m3 = m[3];
 
-  var d = (v0 * m0[2] + v1 * m1[2] + v2 * m2[2] + m3[2]) /
-          (v0 * m0[3] + v1 * m1[3] + v2 * m2[3] + m3[3]);
+  return (v0 * m0[2] + v1 * m1[2] + v2 * m2[2] + m3[2]) /
+      (v0 * m0[3] + v1 * m1[3] + v2 * m2[3] + m3[3]);
 };
 
 

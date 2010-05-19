@@ -438,7 +438,17 @@ o3d.Client.prototype.render = function() {
     this.render_callback(render_event);
   }
   this.then_ = now;
+
+  this.gl.colorMask(true, true, true, true);
+
   this.renderTree(this.renderGraphRoot);
+
+  // When o3d finally draws to the webpage, the alpha channel should be all 1's
+  // So we clear with a color mask to set all alpha bytes to 1 before drawing.
+  // Before we draw again, the color mask gets set back to all true (above).
+  this.gl.colorMask(false, false, false, true);
+  this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 };
 
 

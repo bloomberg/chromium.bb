@@ -84,11 +84,11 @@ o3d.DrawList.comparePriority_ = function(drawElementInfoA, drawElementInfoB) {
  */
 o3d.DrawList.compareZ_ = function(drawElementInfoA, drawElementInfoB) {
   return o3d.Transform.transformPointZOnly(
-            drawElementInfoA.worldViewProjection,
-            drawElementInfoA.drawElement.owner.zSortPoint) -
-         o3d.Transform.transformPointZOnly(
             drawElementInfoB.worldViewProjection,
-            drawElementInfoB.drawElement.owner.zSortPoint);
+            drawElementInfoB.drawElement.owner.zSortPoint) -
+         o3d.Transform.transformPointZOnly(
+            drawElementInfoA.worldViewProjection,
+            drawElementInfoA.drawElement.owner.zSortPoint);
 };
 
 
