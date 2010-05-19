@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,18 +12,19 @@
 #include <vector>
 
 #include "app/gtk_signal.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/options_page_base.h"
+
+class DefaultEncodingComboboxModel;
 
 class FontsPageGtk : public OptionsPageBase {
  public:
   explicit FontsPageGtk(Profile* profile);
   virtual ~FontsPageGtk();
 
-  GtkWidget* get_page_widget() const {
-    return page_;
-  }
+  GtkWidget* get_page_widget() const { return page_; }
 
  private:
   void Init();
@@ -51,6 +52,7 @@ class FontsPageGtk : public OptionsPageBase {
 
   // The default encoding combobox widget.
   GtkWidget* default_encoding_combobox_;
+  scoped_ptr<DefaultEncodingComboboxModel> default_encoding_combobox_model_;
 
   // The widget containing the options for this page.
   GtkWidget* page_;
@@ -66,7 +68,6 @@ class FontsPageGtk : public OptionsPageBase {
 
   // Default encoding preference.
   StringPrefMember default_encoding_;
-  std::vector<CharacterEncoding::EncodingInfo> sorted_encoding_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FontsPageGtk);
 };

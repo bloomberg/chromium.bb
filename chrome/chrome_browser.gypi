@@ -887,6 +887,8 @@
         'browser/cross_site_request_manager.h',
         'browser/custom_home_pages_table_model.cc',
         'browser/custom_home_pages_table_model.h',
+        'browser/default_encoding_combo_model.cc',
+        'browser/default_encoding_combo_model.h',
         'browser/defaults.cc',
         'browser/defaults.h',
         'browser/diagnostics/diagnostics_main.cc',
