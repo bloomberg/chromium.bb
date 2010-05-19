@@ -58,8 +58,7 @@ static void NavigateTabHelper(TabContents* contents, const GURL& url) {
   EXPECT_EQ(url, contents->controller().GetLastCommittedEntry()->url());
 }
 
-// This test is flaky, see bug 42497.
-IN_PROC_BROWSER_TEST_F(AppApiTest, FLAKY_AppProcess) {
+IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(StartHTTPServer());
 

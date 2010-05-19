@@ -85,8 +85,8 @@ TEST_F(ProcessSingletonLinuxTest, CheckSocketFile) {
 // The following tests in linux/view does not pass without a window manager,
 // which is true in build/try bots.
 // See http://crbug.com/30953.
-#define NotifyOtherProcessSuccess FLAKY_NotifyOtherProcessSuccess
-#define NotifyOtherProcessHostChanged FLAKY_NotifyOtherProcessHostChanged
+#define NotifyOtherProcessSuccess FAILS_NotifyOtherProcessSuccess
+#define NotifyOtherProcessHostChanged FAILS_NotifyOtherProcessHostChanged
 #endif
 
 // TODO(james.su@gmail.com): port following tests to Windows.

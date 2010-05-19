@@ -124,8 +124,9 @@ class BrowserViewsAccessibilityTest : public InProcessBrowserTest {
 };
 
 // Retrieve accessibility object for main window and verify accessibility info.
+// Fails, http://crbug.com/44486.
 IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
-                       FLAKY_TestChromeWindowAccObj) {
+                       FAILS_TestChromeWindowAccObj) {
   BrowserWindow* browser_window = browser()->window();
   ASSERT_TRUE(NULL != browser_window);
 

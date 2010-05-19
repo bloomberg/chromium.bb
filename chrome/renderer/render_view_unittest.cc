@@ -532,7 +532,7 @@ TEST_F(RenderViewTest, OnPrintPageAsBitmap) {
 
 // Test that we can receive correct DOM events when we send input events
 // through the RenderWidget::OnHandleInputEvent() function.
-TEST_F(RenderViewTest, FLAKY_OnHandleKeyboardEvent) {
+TEST_F(RenderViewTest, OnHandleKeyboardEvent) {
 #if defined(OS_WIN) || defined(OS_LINUX)
   // Load an HTML page consisting of one <input> element and three
   // contentediable <div> elements.
@@ -880,8 +880,7 @@ TEST_F(RenderViewTest, InsertCharacters) {
 #endif
 }
 
-// TODO(tyoshino): After fixing flakiness, enable this test.
-TEST_F(RenderViewTest, FLAKY_DidFailProvisionalLoadWithErrorForError) {
+TEST_F(RenderViewTest, DidFailProvisionalLoadWithErrorForError) {
   GetMainFrame()->enableViewSourceMode(true);
   WebURLError error;
   error.domain.fromUTF8("test_domain");

@@ -105,8 +105,7 @@ TEST_F(AutomatedUITestBase, DISABLED_RestoreTab) {
   ASSERT_EQ(2, tab_count);
 }
 
-// http://code.google.com/p/chromium/issues/detail?id=14774
-TEST_F(AutomatedUITestBase, FLAKY_CloseTab) {
+TEST_F(AutomatedUITestBase, CloseTab) {
   int num_browser_windows;
   int tab_count;
   NewTab();
@@ -196,8 +195,7 @@ TEST_F(AutomatedUITestBase, OpenBrowserWindow) {
   ASSERT_EQ(1, num_browser_windows);
 }
 
-// http://code.google.com/p/chromium/issues/detail?id=14774
-TEST_F(AutomatedUITestBase, FLAKY_CloseBrowserWindow) {
+TEST_F(AutomatedUITestBase, CloseBrowserWindow) {
   int tab_count;
   NewTab();
   ASSERT_TRUE(active_browser()->GetTabCount(&tab_count));

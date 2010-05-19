@@ -161,8 +161,7 @@ TEST_F(PluginTest, FlashOctetStream) {
 }
 
 // http://crbug.com/16114
-// Flaky, http://crbug.com/21538
-TEST_F(PluginTest, FLAKY_FlashLayoutWhilePainting) {
+TEST_F(PluginTest, FlashLayoutWhilePainting) {
   TestPlugin("flash-layout-while-painting.html", action_max_timeout_ms(), true);
 }
 

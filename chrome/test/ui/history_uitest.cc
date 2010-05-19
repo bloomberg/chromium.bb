@@ -32,12 +32,7 @@ class HistoryTester : public UITest {
   }
 };
 
-// TODO(yuzo): Fix the following flaky (hence disabled) tests.
-// These tests are flaky because automatic and user-initiated transitions are
-// distinguished based on the interval between page load and redirect.
-
-// Flaky, http://crbug.com/39785.
-TEST_F(HistoryTester, FLAKY_VerifyHistoryLength1) {
+TEST_F(HistoryTester, VerifyHistoryLength1) {
   // Test the history length for the following page transitions.
   //   -open-> Page 1.
 
@@ -50,6 +45,9 @@ TEST_F(HistoryTester, FLAKY_VerifyHistoryLength1) {
 }
 
 // Disabled, http://crbug.com/39785.
+// TODO(yuzo): Fix the following flaky (hence disabled) tests.
+// These tests are flaky because automatic and user-initiated transitions are
+// distinguished based on the interval between page load and redirect.
 TEST_F(HistoryTester, DISABLED_VerifyHistoryLength2) {
   // Test the history length for the following page transitions.
   //   -open-> Page 2 -redirect-> Page 3.
@@ -77,8 +75,7 @@ TEST_F(HistoryTester, DISABLED_VerifyHistoryLength3) {
 }
 
 #if defined(OS_WIN) || defined(OS_LINUX)
-// Flaky, http://crbug.com/39785.
-TEST_F(HistoryTester, FLAKY_ConsiderRedirectAfterGestureAsUserInitiated) {
+TEST_F(HistoryTester, ConsiderRedirectAfterGestureAsUserInitiated) {
   // Test the history length for the following page transition.
   //
   // -open-> Page 11 -slow_redirect-> Page 12.
@@ -112,8 +109,7 @@ TEST_F(HistoryTester, FLAKY_ConsiderRedirectAfterGestureAsUserInitiated) {
 }
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 
-// Flaky, http://crbug.com/39785.
-TEST_F(HistoryTester, FLAKY_ConsiderSlowRedirectAsUserInitiated) {
+TEST_F(HistoryTester, ConsiderSlowRedirectAsUserInitiated) {
   // Test the history length for the following page transition.
   //
   // -open-> Page 21 -redirect-> Page 22.

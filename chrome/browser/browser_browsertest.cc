@@ -497,8 +497,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppTabRemovedWhenExtensionUninstalled) {
 #endif  // !defined(OS_MACOSX)
 
 // Tests that the CLD (Compact Language Detection) works properly.
-// Flaky, http://crbug.com/42095.
-IN_PROC_BROWSER_TEST_F(BrowserTest, FLAKY_PageLanguageDetection) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
   static const wchar_t kDocRoot[] = L"chrome/test/data";
   scoped_refptr<HTTPTestServer> server(
         HTTPTestServer::CreateServer(kDocRoot, NULL));
@@ -652,9 +651,6 @@ class BrowserAppRefocusTest : public ExtensionBrowserTest {
 
 #if defined(OS_WIN)
 
-// OpenTab hangs flakily.
-// http://code.google.com/p/chromium/issues/detail?id=44026
-#define MAYBE_OpenTab FLAKY_OpenTab
 #define MAYBE_OpenPanel OpenPanel
 #define MAYBE_OpenWindow OpenWindow
 #define MAYBE_WindowBeforeTab WindowBeforeTab
@@ -667,7 +663,6 @@ class BrowserAppRefocusTest : public ExtensionBrowserTest {
 
 // ChromeOS doesn't open extension based app windows correctly yet:
 // http://crbug.com/43061
-#define MAYBE_OpenTab DISABLED_OpenTab
 #define MAYBE_OpenPanel DISABLED_OpenPanel
 #define MAYBE_OpenWindow DISABLED_OpenWindow
 #define MAYBE_WindowBeforeTab DISABLED_WindowBeforeTab
@@ -677,7 +672,8 @@ class BrowserAppRefocusTest : public ExtensionBrowserTest {
 #endif
 
 // Test that launching an app refocuses a tab already hosting the app.
-IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenTab) {
+// Hangs flakily, http://crbug.com/44026.
+IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, DISABLED_OpenTab) {
   SetUpExtensionApp();
 
   ui_test_utils::NavigateToURL(browser(), url_);
