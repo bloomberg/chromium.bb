@@ -2245,6 +2245,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   if (buttonIndex < (NSInteger)[buttons_ count]) {
     // The button being removed is showing in the bar.
     BookmarkButton* oldButton = [buttons_ objectAtIndex:buttonIndex];
+    if (oldButton == [folderController_ parentButton]) {
+      // If we are deleting a button whose folder is currently open, close it!
+      [self closeAllBookmarkFolders];
+    }
     NSRect poofFrame = [oldButton bounds];
     NSPoint poofPoint = NSMakePoint(NSMidX(poofFrame), NSMidY(poofFrame));
     poofPoint = [oldButton convertPoint:poofPoint toView:nil];
