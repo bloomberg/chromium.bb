@@ -64,35 +64,36 @@ const struct {
   bool default_value;
   int message_id;
 } kPinyinBooleanPrefs[] = {
-  { prefs::kLanguagePinyinCorrectPinyin, "correct_pinyin", true,
+  { prefs::kLanguagePinyinCorrectPinyin, "CorrectPinyin", true,
     IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_CORRECT_PINYIN },
-  { prefs::kLanguagePinyinFuzzyPinyin, "fuzzy_pinyin", false,
+  { prefs::kLanguagePinyinFuzzyPinyin, "FuzzyPinyin", false,
     IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_FUZZY_PINYIN },
-  { prefs::kLanguagePinyinShiftSelectCandidate, "shift_select_candidate",
+  { prefs::kLanguagePinyinShiftSelectCandidate, "ShiftSelectCandidate",
     false, IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_SHIFT_SELECT_PINYIN },
-  { prefs::kLanguagePinyinMinusEqualPage, "minus_equal_page", true,
+  { prefs::kLanguagePinyinMinusEqualPage, "MinusEqualPage", true,
     IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_MINUS_EQUAL_PAGE },
-  { prefs::kLanguagePinyinCommaPeriodPage, "comma_period_page", true,
+  { prefs::kLanguagePinyinCommaPeriodPage, "CommaPeriodPage", true,
     IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_COMMA_PERIOD_PAGE },
-  { prefs::kLanguagePinyinAutoCommit, "auto_commit", false,
+  { prefs::kLanguagePinyinAutoCommit, "AutoCommit", false,
     IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_AUTO_COMMIT },
-  { prefs::kLanguagePinyinDoublePinyin, "double_pinyin", false,
+  { prefs::kLanguagePinyinDoublePinyin, "DoublePinyin", false,
     IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_DOUBLE_PINYIN },
-  { prefs::kLanguagePinyinInitChinese, "init_chinese", true,
+  { prefs::kLanguagePinyinInitChinese, "InitChinese", true,
     IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_INIT_CHINESE },
-  { prefs::kLanguagePinyinInitFull, "init_full", false,
+  { prefs::kLanguagePinyinInitFull, "InitFull", false,
     IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_INIT_FULL },
-  { prefs::kLanguagePinyinInitFullPunct, "init_full_punct", true,
+  { prefs::kLanguagePinyinInitFullPunct, "InitFullPunct", true,
     IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_INIT_FULL_PUNCT },
-  { prefs::kLanguagePinyinInitSimplifiedChinese, "init_simplified_chinese",
+  { prefs::kLanguagePinyinInitSimplifiedChinese, "InitSimplifiedChinese",
     true,
     IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_INIT_SIMPLIFIED_CHINESE },
-  { prefs::kLanguagePinyinTradCandidate, "trad_candidate", false,
+  { prefs::kLanguagePinyinTradCandidate, "TradCandidate", false,
     IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_TRAD_CANDIDATE },
   // TODO(yusukes): Support PINYIN_{INCOMPLETE,CORRECT,FUZZY}_... prefs (32
   // additional boolean prefs.)
 };
 const size_t kNumPinyinBooleanPrefs = ARRAYSIZE_UNSAFE(kPinyinBooleanPrefs);
+// TODO(yusukes): Support HalfWidthPuncts and IncompletePinyin prefs if needed.
 
 const struct {
   const wchar_t* pref_name;
@@ -100,9 +101,9 @@ const struct {
   int default_value;
   // TODO(yusukes): Add message_id if needed.
 } kPinyinIntegerPrefs[] = {
-  { prefs::kLanguagePinyinDoublePinyinSchema, "double_pinyin_schema", 0 },
+  { prefs::kLanguagePinyinDoublePinyinSchema, "DoublePinyinSchema", 0 },
   // TODO(yusukes): the type of lookup_table_page_size on ibus should be uint.
-  { prefs::kLanguagePinyinLookupTablePageSize, "lookup_table_page_size", 5 },
+  { prefs::kLanguagePinyinLookupTablePageSize, "LookupTablePageSize", 5 },
 };
 const size_t kNumPinyinIntegerPrefs = ARRAYSIZE_UNSAFE(kPinyinIntegerPrefs);
 
