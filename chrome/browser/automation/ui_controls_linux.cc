@@ -8,6 +8,7 @@
 #include <gdk/gdkkeysyms.h>
 
 #include "gfx/rect.h"
+#include "base/event_synthesis_gtk.h"
 #include "base/keyboard_code_conversion_gtk.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -82,34 +83,6 @@ class ClickTask : public Task {
   Task* followup_;
 };
 
-bool SendKeyEvent(GdkWindow* window, bool press, guint gdk_key, guint state) {
-  GdkEvent* event = gdk_event_new(press ? GDK_KEY_PRESS : GDK_KEY_RELEASE);
-
-  event->key.type = press ? GDK_KEY_PRESS : GDK_KEY_RELEASE;
-  event->key.window = window;
-  g_object_ref(event->key.window);
-  event->key.send_event = false;
-  event->key.time = gtk_util::XTimeNow();
-
-  event->key.state = state;
-  event->key.keyval = gdk_key;
-
-  GdkKeymapKey* keys;
-  gint n_keys;
-  if (!gdk_keymap_get_entries_for_keyval(gdk_keymap_get_default(),
-                                         event->key.keyval, &keys, &n_keys)) {
-    return false;
-  }
-  event->key.hardware_keycode = keys[0].keycode;
-  event->key.group = keys[0].group;
-  g_free(keys);
-
-  gdk_event_put(event);
-  // gdk_event_put appends a copy of the event.
-  gdk_event_free(event);
-  return true;
-}
-
 void FakeAMouseMotionEvent(gint x, gint y) {
   GdkEvent* event = gdk_event_new(GDK_MOTION_NOTIFY);
 
@@ -171,48 +144,17 @@ bool SendKeyPress(gfx::NativeWindow window,
     return false;
   }
 
-  bool rv = true;
-
-  if (control)
-    rv = rv && SendKeyEvent(event_window, true, GDK_Control_L, 0);
-
-  if (shift) {
-    rv = rv && SendKeyEvent(event_window, true, GDK_Shift_L,
-                            control ? GDK_CONTROL_MASK : 0);
+  std::vector<GdkEvent*> events;
+  base::SynthesizeKeyPressEvents(event_window, key, control, shift, alt,
+                                 &events);
+  for (std::vector<GdkEvent*>::iterator iter = events.begin();
+       iter != events.end(); ++iter) {
+    gdk_event_put(*iter);
+    // gdk_event_put appends a copy of the event.
+    gdk_event_free(*iter);
   }
 
-  if (alt) {
-    guint state = (control ? GDK_CONTROL_MASK : 0) |
-                  (shift ? GDK_SHIFT_MASK : 0);
-    rv = rv && SendKeyEvent(event_window, true, GDK_Alt_L, state);
-  }
-
-  // TODO(estade): handle other state flags besides control, shift, alt?
-  // For example caps lock.
-  guint state = (control ? GDK_CONTROL_MASK : 0) |
-                (shift ? GDK_SHIFT_MASK : 0) |
-                (alt ? GDK_MOD1_MASK : 0);
-
-  guint gdk_key = base::GdkKeyCodeForWindowsKeyCode(key, shift);
-  rv = rv && SendKeyEvent(event_window, true, gdk_key, state);
-  rv = rv && SendKeyEvent(event_window, false, gdk_key, state);
-
-  if (alt) {
-    guint state = (control ? GDK_CONTROL_MASK : 0) |
-                  (shift ? GDK_SHIFT_MASK : 0) | GDK_MOD1_MASK;
-    rv = rv && SendKeyEvent(event_window, false, GDK_Alt_L, state);
-  }
-
-  if (shift) {
-    rv = rv && SendKeyEvent(event_window, false, GDK_Shift_L,
-                            (control ? GDK_CONTROL_MASK : 0) | GDK_SHIFT_MASK);
-  }
-
-  if (control)
-    rv = rv && SendKeyEvent(event_window, false, GDK_Control_L,
-                            GDK_CONTROL_MASK);
-
-  return rv;
+  return true;
 }
 
 bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,

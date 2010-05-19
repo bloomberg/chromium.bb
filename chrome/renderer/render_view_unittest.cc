@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/keyboard_codes.h"
 #include "base/shared_memory.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/native_web_keyboard_event.h"
@@ -532,7 +533,7 @@ TEST_F(RenderViewTest, OnPrintPageAsBitmap) {
 // Test that we can receive correct DOM events when we send input events
 // through the RenderWidget::OnHandleInputEvent() function.
 TEST_F(RenderViewTest, FLAKY_OnHandleKeyboardEvent) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
   // Load an HTML page consisting of one <input> element and three
   // contentediable <div> elements.
   // The <input> element is used for sending keyboard events, and the <div>
@@ -592,11 +593,14 @@ TEST_F(RenderViewTest, FLAKY_OnHandleKeyboardEvent) {
     // result. (See the above comment for its format.)
     static const struct {
       MockKeyboard::Modifiers modifiers;
-      const wchar_t* expected_result;
+      const char* expected_result;
     } kModifierData[] = {
-      {MockKeyboard::NONE,       L"false,false,false"},
-      {MockKeyboard::LEFT_SHIFT, L"true,false,false"},
-      {MockKeyboard::RIGHT_ALT,  L"false,false,true"},
+      {MockKeyboard::NONE,       "false,false,false"},
+      {MockKeyboard::LEFT_SHIFT, "true,false,false"},
+#if defined(OS_WIN)
+      // TODO(estade): figure out why this one doesn't work on Linux.
+      {MockKeyboard::RIGHT_ALT,  "false,false,true"},
+#endif
     };
 
     MockKeyboard::Layout layout = kLayouts[i];
@@ -608,18 +612,21 @@ TEST_F(RenderViewTest, FLAKY_OnHandleKeyboardEvent) {
         'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
         'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
         'W', 'X', 'Y', 'Z',
-        VK_OEM_1,
-        VK_OEM_PLUS,
-        VK_OEM_COMMA,
-        VK_OEM_MINUS,
-        VK_OEM_PERIOD,
-        VK_OEM_2,
-        VK_OEM_3,
-        VK_OEM_4,
-        VK_OEM_5,
-        VK_OEM_6,
-        VK_OEM_7,
-        VK_OEM_8,
+        base::VKEY_OEM_1,
+        base::VKEY_OEM_PLUS,
+        base::VKEY_OEM_COMMA,
+        base::VKEY_OEM_MINUS,
+        base::VKEY_OEM_PERIOD,
+        base::VKEY_OEM_2,
+        base::VKEY_OEM_3,
+        base::VKEY_OEM_4,
+        base::VKEY_OEM_5,
+        base::VKEY_OEM_6,
+        base::VKEY_OEM_7,
+#if defined(OS_WIN)
+        // Not sure how to handle this key on Linux.
+        base::VKEY_OEM_8,
+#endif
       };
 
       MockKeyboard::Modifiers modifiers = kModifierData[j].modifiers;
@@ -637,21 +644,22 @@ TEST_F(RenderViewTest, FLAKY_OnHandleKeyboardEvent) {
         // code, and the modifier-key status.
         // We format a string that emulates a DOM-event string produced hy
         // our JavaScript function. (See the above comment for the format.)
-        static wchar_t expected_result[1024];
-        wsprintf(&expected_result[0],
-                 L"\x000A"       // texts in the <input> element
-                 L"%d,%s\x000A"  // texts in the first <div> element
-                 L"%d,%s\x000A"  // texts in the second <div> element
-                 L"%d,%s",       // texts in the third <div> element
-                 key_code, kModifierData[j].expected_result,
-                 char_code[0], kModifierData[j].expected_result,
-                 key_code, kModifierData[j].expected_result);
+        static char expected_result[1024];
+        expected_result[0] = NULL;
+        sprintf(&expected_result[0],
+                "\n"       // texts in the <input> element
+                "%d,%s\n"  // texts in the first <div> element
+                "%d,%s\n"  // texts in the second <div> element
+                "%d,%s",   // texts in the third <div> element
+                key_code, kModifierData[j].expected_result,
+                char_code[0], kModifierData[j].expected_result,
+                key_code, kModifierData[j].expected_result);
 
         // Retrieve the text in the test page and compare it with the expected
         // text created from a virtual-key code, a character code, and the
         // modifier-key status.
         const int kMaxOutputCharacters = 1024;
-        std::wstring output = UTF16ToWideHack(
+        std::string output = UTF16ToUTF8(
             GetMainFrame()->contentAsText(kMaxOutputCharacters));
         EXPECT_EQ(expected_result, output);
       }
@@ -832,18 +840,18 @@ TEST_F(RenderViewTest, InsertCharacters) {
         'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
         'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
         'W', 'X', 'Y', 'Z',
-        VK_OEM_1,
-        VK_OEM_PLUS,
-        VK_OEM_COMMA,
-        VK_OEM_MINUS,
-        VK_OEM_PERIOD,
-        VK_OEM_2,
-        VK_OEM_3,
-        VK_OEM_4,
-        VK_OEM_5,
-        VK_OEM_6,
-        VK_OEM_7,
-        VK_OEM_8,
+        base::VKEY_OEM_1,
+        base::VKEY_OEM_PLUS,
+        base::VKEY_OEM_COMMA,
+        base::VKEY_OEM_MINUS,
+        base::VKEY_OEM_PERIOD,
+        base::VKEY_OEM_2,
+        base::VKEY_OEM_3,
+        base::VKEY_OEM_4,
+        base::VKEY_OEM_5,
+        base::VKEY_OEM_6,
+        base::VKEY_OEM_7,
+        base::VKEY_OEM_8,
       };
 
       MockKeyboard::Modifiers modifiers = kModifiers[j];
