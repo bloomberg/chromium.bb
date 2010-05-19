@@ -51,8 +51,9 @@ struct nacl_abi_stat {  /* must be renamed when ABI is exported */
 };
 
 #ifdef __native_client__
-int stat(char const *path, struct nacl_abi_stat *stbuf);
-int fstat(int d, struct nacl_abi_stat *stbuf);
+extern int stat(char const *path, struct nacl_abi_stat *stbuf);
+extern int fstat(int d, struct nacl_abi_stat *stbuf);
+extern int mkdir(const char *path, nacl_abi_mode_t mode);
 #endif
 
 #ifdef __cplusplus
