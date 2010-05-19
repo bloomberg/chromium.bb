@@ -11,8 +11,7 @@
 #include "base/file_path.h"
 #include "base/native_library.h"
 #include "base/ref_counted.h"
-
-typedef struct _pp_Module PP_Module;
+#include "third_party/ppapi/c/pp_module.h"
 
 namespace pepper {
 

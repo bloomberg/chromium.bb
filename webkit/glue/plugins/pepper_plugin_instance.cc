@@ -158,13 +158,11 @@ const PPB_Instance* PluginInstance::GetInterface() {
 
 // static
 PluginInstance* PluginInstance::FromPPInstance(PP_Instance instance) {
-  return reinterpret_cast<PluginInstance*>(instance.id);
+  return reinterpret_cast<PluginInstance*>(instance);
 }
 
 PP_Instance PluginInstance::GetPPInstance() {
-  PP_Instance ret;
-  ret.id = reinterpret_cast<intptr_t>(this);
-  return ret;
+  return reinterpret_cast<intptr_t>(this);
 }
 
 void PluginInstance::Paint(WebKit::WebCanvas* canvas,

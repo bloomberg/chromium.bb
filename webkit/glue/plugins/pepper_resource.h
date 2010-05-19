@@ -35,10 +35,6 @@ class Resource : public base::RefCountedThreadSafe<Resource> {
   DISALLOW_COPY_AND_ASSIGN(Resource);
 };
 
-// Returns a "NULL" resource. This is just a helper function so callers
-// can avoid creating a resource with a 0 ID.
-PP_Resource NullPPResource();
-
 }  // namespace pepper
 
 #endif  // WEBKIT_GLUE_PLUGINS_PEPPER_RESOURCE_H_

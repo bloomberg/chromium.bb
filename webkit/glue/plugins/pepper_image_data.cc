@@ -30,17 +30,21 @@ ImageData* ResourceAsImageData(PP_Resource resource) {
   return image_resource->AsImageData();
 }
 
+PP_ImageDataFormat GetNativeImageDataFormat() {
+  return PP_IMAGEDATAFORMAT_BGRA_PREMUL;
+}
+
 PP_Resource Create(PP_Module module_id,
                    PP_ImageDataFormat format,
                    int32_t width, int32_t height,
                    bool init_to_zero) {
   PluginModule* module = PluginModule::FromPPModule(module_id);
   if (!module)
-    return NullPPResource();
+    return NULL;
 
   scoped_refptr<ImageData> data(new ImageData(module));
   if (!data->Init(format, width, height, init_to_zero))
-    return NullPPResource();
+    return NULL;
   data->AddRef();  // AddRef for the caller.
 
   return data->GetResource();
@@ -80,6 +84,7 @@ void Unmap(PP_Resource resource) {
 }
 
 const PPB_ImageData ppb_imagedata = {
+  &GetNativeImageDataFormat,
   &Create,
   &IsImageData,
   &Describe,

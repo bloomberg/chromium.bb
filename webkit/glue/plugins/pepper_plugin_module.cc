@@ -122,7 +122,7 @@ scoped_refptr<PluginModule> PluginModule::CreateModule(
 
 // static
 PluginModule* PluginModule::FromPPModule(PP_Module module) {
-  PluginModule* lib = reinterpret_cast<PluginModule*>(module.id);
+  PluginModule* lib = reinterpret_cast<PluginModule*>(module);
   if (GetLivePluginSet()->find(lib) == GetLivePluginSet()->end())
     return NULL;  // Invalid plugin.
   return lib;
@@ -166,9 +166,7 @@ bool PluginModule::Load() {
 }
 
 PP_Module PluginModule::GetPPModule() const {
-  PP_Module ret;
-  ret.id = reinterpret_cast<intptr_t>(this);
-  return ret;
+  return reinterpret_cast<intptr_t>(this);
 }
 
 PluginInstance* PluginModule::CreateInstance(PluginDelegate* delegate) {

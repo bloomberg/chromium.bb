@@ -27,7 +27,7 @@ ResourceTracker* ResourceTracker::Get() {
 
 scoped_refptr<Resource> ResourceTracker::GetResource(PP_Resource res) const {
   AutoLock lock(lock_);
-  Resource* resource = reinterpret_cast<Resource*>(res.id);
+  Resource* resource = reinterpret_cast<Resource*>(res);
   if (live_resources_.find(resource) == live_resources_.end())
     return scoped_refptr<Resource>();
   return scoped_refptr<Resource>(resource);

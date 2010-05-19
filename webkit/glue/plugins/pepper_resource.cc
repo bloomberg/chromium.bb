@@ -9,11 +9,6 @@
 
 namespace pepper {
 
-PP_Resource NullPPResource() {
-  PP_Resource ret = { 0 };
-  return ret;
-}
-
 Resource::Resource(PluginModule* module) : module_(module) {
   ResourceTracker::Get()->AddResource(this);
 }
@@ -23,9 +18,7 @@ Resource::~Resource() {
 }
 
 PP_Resource Resource::GetResource() const {
-  PP_Resource ret;
-  ret.id = reinterpret_cast<intptr_t>(this);
-  return ret;
+  return reinterpret_cast<intptr_t>(this);
 }
 
 }  // namespace pepper
