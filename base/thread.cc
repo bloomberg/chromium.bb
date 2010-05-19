@@ -120,7 +120,10 @@ void Thread::Stop() {
 
 void Thread::StopSoon() {
   // We should only be called on the same thread that started us.
-  DCHECK_NE(thread_id_, PlatformThread::CurrentId());
+
+  // Reading thread_id_ without a lock can lead to a benign data race
+  // with ThreadMain, so we annotate it to stay silent under ThreadSanitizer.
+  DCHECK_NE(ANNOTATE_UNPROTECTED_READ(thread_id_), PlatformThread::CurrentId());
 
   if (stopping_ || !message_loop_)
     return;
