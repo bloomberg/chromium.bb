@@ -22,6 +22,7 @@ class PrintDialogCloud {
 
  private:
   FRIEND_TEST(PrintDialogCloudTest, HandlersRegistered);
+  FRIEND_TEST(PrintDialogCloudTest, DISABLED_HandlersRegistered);
 
   explicit PrintDialogCloud(const FilePath& path_to_pdf);
   ~PrintDialogCloud();
