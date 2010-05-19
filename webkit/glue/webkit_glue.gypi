@@ -366,7 +366,7 @@
             'plugins/plugin_stubs.cc',
           ],
         }],
-        ['inside_chromium_build==1 and (OS=="mac" or OS=="win")', {
+        ['inside_chromium_build==1 and OS=="win"', {
           'dependencies': [
             '<(DEPTH)/webkit/default_plugin/default_plugin.gyp:default_plugin',
           ],

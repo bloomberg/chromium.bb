@@ -52,7 +52,7 @@ PluginInstallerImpl::~PluginInstallerImpl() {
 bool PluginInstallerImpl::Initialize(HINSTANCE module_handle, NPP instance,
                                      NPMIMEType mime_type, int16 argc,
                                      char* argn[], char* argv[]) {
-  DLOG(INFO) << __FUNCTION__ << " MIME Type : " << mime_type;
+  DLOG(INFO) << __FUNCTION__ << " Mime Type : " << mime_type;
   DCHECK(instance != NULL);
   DCHECK(module_handle != NULL);
 
@@ -287,8 +287,7 @@ std::wstring PluginInstallerImpl::ReplaceStringForPossibleEmptyReplacement(
   }
 }
 
-bool PluginInstallerImpl::NPP_SetWindow(NPWindow* window_info) {
-  HWND parent_window = reinterpret_cast<HWND>(window_info->window);
+bool PluginInstallerImpl::SetWindow(HWND parent_window) {
   if (!IsWindow(parent_window)) {
     // No window created yet. Ignore this call.
     if (!IsWindow(hwnd()))

@@ -74,9 +74,9 @@ class PluginInstallerImpl : public app::WindowImpl {
   // Displays the default plugin UI.
   //
   // Parameters:
-  // window_info
-  //   The window info passed to npapi.
-  bool NPP_SetWindow(NPWindow* window_info);
+  // parent_window
+  //   Handle to the parent window.
+  bool SetWindow(HWND parent_window);
 
   // Destroys the install dialog and the plugin window.
   void Shutdown();

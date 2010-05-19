@@ -207,10 +207,13 @@ bool GetPluginFinderURL(std::string* plugin_finder_url) {
 }
 
 bool IsDefaultPluginEnabled() {
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN)
   return true;
 #elif defined(OS_LINUX)
   // http://code.google.com/p/chromium/issues/detail?id=10952
+  return false;
+#elif defined(OS_MACOSX)
+  // http://code.google.com/p/chromium/issues/detail?id=17392
   return false;
 #endif
 }
