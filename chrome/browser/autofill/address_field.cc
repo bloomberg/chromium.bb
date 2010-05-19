@@ -387,14 +387,20 @@ AddressType AddressField::AddressTypeFromText(const string16 &text) {
   // Not all pages say "billing address" and "shipping address" explicitly;
   // for example, Craft Catalog1.html has "Bill-to Address" and
   // "Ship-to Address".
-  size_t bill = text.find_last_of(ASCIIToUTF16("bill"));
-  size_t ship = text.find_last_of(ASCIIToUTF16("ship"));
+  size_t bill = text.rfind(ASCIIToUTF16("bill"));
+  size_t ship = text.rfind(ASCIIToUTF16("ship"));
 
-  if (bill != string16::npos && bill > ship)
+  if (bill == string16::npos && ship == string16::npos)
+    return kGenericAddress;
+
+  if (bill != string16::npos && ship == string16::npos)
     return kBillingAddress;
 
-  if (ship != string16::npos)
+  if (bill == string16::npos && ship != string16::npos)
     return kShippingAddress;
 
-  return kGenericAddress;
+  if (bill > ship)
+    return kBillingAddress;
+
+  return kShippingAddress;
 }

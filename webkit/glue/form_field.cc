@@ -56,14 +56,23 @@ FormField::FormField(const string16& label,
 
 bool FormField::operator==(const FormField& field) const {
   // A FormField stores a value, but the value is not part of the identity of
-  // the field, so we don't want to compare the values.  Same goes for |size_|.
+  // the field, so we don't want to compare the values.
   return (label_ == field.label_ &&
           name_ == field.name_ &&
-          form_control_type_ == field.form_control_type_);
+          form_control_type_ == field.form_control_type_ &&
+          size_ == field.size_);
 }
 
 bool FormField::operator!=(const FormField& field) const {
   return !operator==(field);
+}
+
+bool FormField::StrictlyEqualsHack(const FormField& field) const {
+  return (label_ == field.label_ &&
+          name_ == field.name_ &&
+          value_ == field.value_ &&
+          form_control_type_ == field.form_control_type_ &&
+          size_ == field.size_);
 }
 
 std::ostream& operator<<(std::ostream& os, const FormField& field) {

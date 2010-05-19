@@ -35,8 +35,16 @@ class FormField {
   }
   void set_size(int size) { size_ = size; }
 
+  // Equality tests for identity which does not include |value_| or |size_|.
+  // Use |StrictlyEqualsHack| method to test all members.
+  // TODO(dhollowa): These operators need to be revised when we implement field
+  // ids.
   bool operator==(const FormField& field) const;
   bool operator!=(const FormField& field) const;
+
+  // Test equality of all data members.
+  // TODO(dhollowa): This will be removed when we implement field ids.
+  bool StrictlyEqualsHack(const FormField& field) const;
 
  private:
   string16 label_;

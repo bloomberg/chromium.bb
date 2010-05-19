@@ -244,6 +244,9 @@ bool AutoFillManager::FillAutoFillFormData(int query_id,
           autofill_type.group() == AutoFillType::CREDIT_CARD) {
         result.fields[i].set_value(
             credit_card->GetFieldText(autofill_type));
+      } else if (credit_card &&
+                 autofill_type.group() == AutoFillType::ADDRESS_BILLING) {
+        FillBillingFormField(credit_card, autofill_type, &result.fields[i]);
       } else if (profile) {
         FillFormField(profile, autofill_type, &result.fields[i]);
       }
@@ -462,6 +465,31 @@ void AutoFillManager::GetCreditCardSuggestions(const FormField& field,
         StartsWith(creditcard_field_value, field.value(), false)) {
       values->push_back(credit_card->ObfuscatedNumber());
       labels->push_back(credit_card->Label());
+    }
+  }
+}
+
+void AutoFillManager::FillBillingFormField(const CreditCard* credit_card,
+                                           AutoFillType type,
+                                           webkit_glue::FormField* field) {
+  DCHECK(credit_card);
+  DCHECK(type.group() == AutoFillType::ADDRESS_BILLING);
+  DCHECK(field);
+
+  string16 billing_address = credit_card->billing_address();
+  if (!billing_address.empty()) {
+    AutoFillProfile* profile = NULL;
+    const std::vector<AutoFillProfile*>& profiles = personal_data_->profiles();
+    for (std::vector<AutoFillProfile*>::const_iterator iter = profiles.begin();
+         iter != profiles.end(); ++iter) {
+      if ((*iter)->Label() == billing_address) {
+        profile = *iter;
+        break;
+      }
+    }
+
+    if (profile) {
+      FillFormField(profile, type, field);
     }
   }
 }

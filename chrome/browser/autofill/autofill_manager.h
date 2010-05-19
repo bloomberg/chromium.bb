@@ -115,6 +115,14 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
                                 std::vector<string16>* values,
                                 std::vector<string16>* labels);
 
+  // Set |field| argument's value based on |type| and contents of the
+  // |credit_card|.  The |type| field is expected to have main group type of
+  // ADDRESS_BILLING.  The address information is retrieved from the billing
+  // profile asscociated with the |credit_card|, if there is one set.
+  void FillBillingFormField(const CreditCard* credit_card,
+                            AutoFillType type,
+                            webkit_glue::FormField* field);
+
   // Set |field| argument's value based on |type| and contents of the |profile|.
   void FillFormField(const AutoFillProfile* profile,
                      AutoFillType type,

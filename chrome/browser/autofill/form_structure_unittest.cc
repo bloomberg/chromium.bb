@@ -410,17 +410,17 @@ TEST(FormStructureTest, HeuristicsSample8) {
   // Last name.
   EXPECT_EQ(NAME_LAST, form_structure->field(1)->heuristic_type());
   // Address.
-  EXPECT_EQ(ADDRESS_HOME_LINE1, form_structure->field(2)->heuristic_type());
+  EXPECT_EQ(ADDRESS_BILLING_LINE1, form_structure->field(2)->heuristic_type());
   // Address.
-  EXPECT_EQ(ADDRESS_HOME_LINE2, form_structure->field(3)->heuristic_type());
+  EXPECT_EQ(ADDRESS_BILLING_LINE2, form_structure->field(3)->heuristic_type());
   // City.
-  EXPECT_EQ(ADDRESS_HOME_CITY, form_structure->field(4)->heuristic_type());
+  EXPECT_EQ(ADDRESS_BILLING_CITY, form_structure->field(4)->heuristic_type());
   // State.
-  EXPECT_EQ(ADDRESS_HOME_STATE, form_structure->field(5)->heuristic_type());
+  EXPECT_EQ(ADDRESS_BILLING_STATE, form_structure->field(5)->heuristic_type());
   // Zip.
-  EXPECT_EQ(ADDRESS_HOME_ZIP, form_structure->field(6)->heuristic_type());
+  EXPECT_EQ(ADDRESS_BILLING_ZIP, form_structure->field(6)->heuristic_type());
   // Country.
-  EXPECT_EQ(ADDRESS_HOME_COUNTRY, form_structure->field(7)->heuristic_type());
+  EXPECT_EQ(ADDRESS_BILLING_COUNTRY, form_structure->field(7)->heuristic_type());
   // Phone.
   EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
       form_structure->field(8)->heuristic_type());

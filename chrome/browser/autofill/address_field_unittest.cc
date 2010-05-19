@@ -51,6 +51,46 @@ TEST_F(AddressFieldTest, ParseOneLineAddress) {
   iter_ = list_.begin();
   field_.reset(AddressField::Parse(&iter_, false));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
+  EXPECT_EQ(kGenericAddress, field_->FindType());
+  EXPECT_TRUE(field_->IsFullAddress());
+  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("addr1")) != field_type_map_.end());
+  EXPECT_EQ(ADDRESS_HOME_LINE1, field_type_map_[ASCIIToUTF16("addr1")]);
+}
+
+TEST_F(AddressFieldTest, ParseOneLineAddressBilling) {
+  list_.push_back(
+      new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Address"),
+                                               ASCIIToUTF16("billingAddress"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0),
+                        ASCIIToUTF16("addr1")));
+  list_.push_back(NULL);
+  iter_ = list_.begin();
+  field_.reset(AddressField::Parse(&iter_, false));
+  ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
+  EXPECT_EQ(kBillingAddress, field_->FindType());
+  EXPECT_TRUE(field_->IsFullAddress());
+  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("addr1")) != field_type_map_.end());
+  EXPECT_EQ(ADDRESS_HOME_LINE1, field_type_map_[ASCIIToUTF16("addr1")]);
+}
+
+TEST_F(AddressFieldTest, ParseOneLineAddressShipping) {
+  list_.push_back(
+      new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Address"),
+                                               ASCIIToUTF16("shippingAddress"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0),
+                        ASCIIToUTF16("addr1")));
+  list_.push_back(NULL);
+  iter_ = list_.begin();
+  field_.reset(AddressField::Parse(&iter_, false));
+  ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kShippingAddress, field_->FindType());
   EXPECT_TRUE(field_->IsFullAddress());
   ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
@@ -98,7 +138,7 @@ TEST_F(AddressFieldTest, ParseTwoLineAddress) {
   iter_ = list_.begin();
   field_.reset(AddressField::Parse(&iter_, false));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
-  EXPECT_EQ(kShippingAddress, field_->FindType());
+  EXPECT_EQ(kGenericAddress, field_->FindType());
   EXPECT_TRUE(field_->IsFullAddress());
   ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
   ASSERT_TRUE(
@@ -135,7 +175,7 @@ TEST_F(AddressFieldTest, ParseThreeLineAddress) {
   iter_ = list_.begin();
   field_.reset(AddressField::Parse(&iter_, false));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
-  EXPECT_EQ(kShippingAddress, field_->FindType());
+  EXPECT_EQ(kGenericAddress, field_->FindType());
   EXPECT_TRUE(field_->IsFullAddress());
   ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
   ASSERT_TRUE(
@@ -357,7 +397,7 @@ TEST_F(AddressFieldTest, ParseTwoLineAddressMissingLabel) {
   iter_ = list_.begin();
   field_.reset(AddressField::Parse(&iter_, false));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
-  EXPECT_EQ(kShippingAddress, field_->FindType());
+  EXPECT_EQ(kGenericAddress, field_->FindType());
   EXPECT_TRUE(field_->IsFullAddress());
   ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
   ASSERT_TRUE(
