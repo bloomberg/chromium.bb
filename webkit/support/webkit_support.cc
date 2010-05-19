@@ -95,7 +95,7 @@ void SetUpTestEnvironment() {
 
   BeforeInitialize();
   test_environment = new TestEnvironment;
-  AfterIniitalize();
+  AfterInitialize();
   // Load ICU data tables.  This has to run after TestEnvironment is created
   // because on Linux, we need base::AtExitManager.
   icu_util::Initialize();

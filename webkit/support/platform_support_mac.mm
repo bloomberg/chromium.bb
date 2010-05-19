@@ -93,7 +93,7 @@ static void SwizzleNSPasteboard() {
 #endif
 }
 
-void AfterIniitalize() {
+void AfterInitialize() {
   // Load a data pack.
   g_resource_data_pack = new base::DataPack;
   NSString* resource_path =

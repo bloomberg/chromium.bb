@@ -10,7 +10,7 @@ namespace webkit_support {
 void BeforeInitialize();
 
 // Called after WebKit::initialize().
-void AfterIniitalize();
+void AfterInitialize();
 
 // Called before WebKit::shutdown().
 void BeforeShutdown();

@@ -12,7 +12,7 @@ namespace webkit_support {
 void BeforeInitialize() {
 }
 
-void AfterIniitalize() {
+void AfterInitialize() {
 }
 
 void BeforeShutdown() {
