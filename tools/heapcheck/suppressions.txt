@@ -405,3 +405,15 @@
    fun:NetTestSuite::InitializeTestThread
    fun:NetTestSuite::Initialize
 }
+{
+   bug_44540
+   Heapcheck:Leak
+   ...
+   fun:browser_sync::TestHttpBridgeFactory::Create
+   fun:sync_api::SyncAPIBridgedPost::Init
+   fun:browser_sync::ServerConnectionManager::CheckTime
+   fun:browser_sync::ServerConnectionManager::IsServerReachable
+   fun:browser_sync::ServerConnectionManager::CheckServerReachable
+   fun:sync_api::SyncManager::SyncInternal::Init
+   fun:sync_api::SyncManager::Init
+}
