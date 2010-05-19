@@ -407,7 +407,9 @@ bool Upgrade::IsBrowserAlreadyRunning() {
 }
 
 bool Upgrade::RelaunchChromeBrowser(const CommandLine& command_line) {
-  ::SetEnvironmentVariable(google_update::kEnvProductVersionKey, NULL);
+  ::SetEnvironmentVariable(
+    BrowserDistribution::GetDistribution()->GetEnvVersionKey().c_str(),
+    NULL);
   return base::LaunchApp(command_line.command_line_string(),
                          false, false, NULL);
 }

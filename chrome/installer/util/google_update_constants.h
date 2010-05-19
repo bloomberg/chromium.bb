@@ -41,8 +41,6 @@ extern const wchar_t kRegVersionField[];
 extern const wchar_t kRegReferralField[];
 extern const wchar_t kRegEULAAceptedField[];
 
-extern const wchar_t kEnvProductVersionKey[];
-
 // last time that chrome ran in the Time internal format.
 extern const wchar_t kRegLastRunTimeField[];
 

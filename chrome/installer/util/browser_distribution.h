@@ -58,6 +58,8 @@ class BrowserDistribution {
 
   virtual std::wstring GetVersionKey();
 
+  virtual std::wstring GetEnvVersionKey();
+
   virtual bool CanSetAsDefault();
 
   virtual bool ShouldUseAlternateIcon();

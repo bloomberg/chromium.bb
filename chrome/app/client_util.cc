@@ -160,7 +160,9 @@ HMODULE MainDllLoader::Load(std::wstring* version, std::wstring* file) {
   if (dll)
     return dll;
 
-  if (!EnvQueryStr(google_update::kEnvProductVersionKey, version)) {
+  if (!EnvQueryStr(
+          BrowserDistribution::GetDistribution()->GetEnvVersionKey().c_str(),
+          version)) {
     std::wstring reg_path(GetRegistryPath());
     // Look into the registry to find the latest version.
     if (!GetVersion(dir.c_str(), reg_path.c_str(), version))
@@ -183,8 +185,9 @@ int MainDllLoader::Launch(HINSTANCE instance,
   if (!dll_)
     return ResultCodes::MISSING_DATA;
 
-  ::SetEnvironmentVariableW(google_update::kEnvProductVersionKey,
-                            version.c_str());
+  ::SetEnvironmentVariableW(
+      BrowserDistribution::GetDistribution()->GetEnvVersionKey().c_str(),
+      version.c_str());
 
   InitCrashReporterWithDllPath(file);
   OnBeforeLaunch(version);

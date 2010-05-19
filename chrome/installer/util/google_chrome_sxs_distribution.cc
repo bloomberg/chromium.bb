@@ -34,6 +34,10 @@ std::wstring GoogleChromeSxSDistribution::GetUninstallRegPath() {
       installer_util::kSxSSuffix);
 }
 
+std::wstring GoogleChromeSxSDistribution::GetEnvVersionKey() {
+  return L"CHROME_SXS_VERSION";
+}
+
 bool GoogleChromeSxSDistribution::CanSetAsDefault() {
   return false;
 }
