@@ -150,7 +150,8 @@ URLRequestJob* PrintDialogCloudTest::Factory(URLRequest* request,
   return new SimpleTestJob(request);
 }
 
-IN_PROC_BROWSER_TEST_F(PrintDialogCloudTest, HandlersRegistered) {
+// Crashy, http://crbug.com/44547.
+IN_PROC_BROWSER_TEST_F(PrintDialogCloudTest, DISABLED_HandlersRegistered) {
   BrowserList::SetLastActive(browser());
   ASSERT_TRUE(BrowserList::GetLastActive());
 
