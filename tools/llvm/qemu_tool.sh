@@ -11,7 +11,7 @@ set -o errexit
 #@ various commands to emulate arm code using qemu
 
 # From a qemu build based on qemu-0.10.1.tar.gz
-readonly SDK_ROOT=$(pwd)/toolchain/linux_arm-trusted
+readonly SDK_ROOT=$(dirname $0)
 readonly QEMU=${SDK_ROOT}/qemu-arm
 readonly QEMU_JAIL=${SDK_ROOT}/arm-2009q3/arm-none-linux-gnueabi/libc
 # NOTE: some useful debugging options for qemu:
@@ -42,14 +42,6 @@ Usage() {
 CheckPrerequisites () {
   if [[ ! -d ${QEMU_JAIL} ]] ; then
     echo "ERROR:  no proper root-jail directory found"
-    exit -1
-  fi
-
-  local MMAP_LIMIT=$(cat /proc/sys/vm/mmap_min_addr)
-  if [ ${MMAP_LIMIT} -ge 32000 ] ; then
-    # c.f. http://www.crashcourse.ca/wiki/index.php/QEMU_on_Fedora_11
-    echo "ERROR:"
-    Banner "You need to run 'echo 16384 > /proc/sys/vm/mmap_min_addr' as root"
     exit -1
   fi
 }
