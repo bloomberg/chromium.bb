@@ -96,10 +96,11 @@ class UserController : public views::ButtonListener,
                                        int controls_height);
   views::WidgetGtk* CreateLabelWindow(int index, WmIpcWindowType type);
 
-  // Sets specified image with desired size on the image window.
-  // Does not repaint the window so SchedulePaint is to be called explicitly
-  // when needed.
-  void SetImage(const SkBitmap& image, int desired_width, int desired_height);
+  // Sets specified image on the image window. If image's size is less than
+  // 75% of window size, image size is preserved to avoid blur. Otherwise,
+  // the image is resized to fit window size precisely. Image view repaints
+  // itself.
+  void SetImage(const SkBitmap& image);
 
   // Sets the enabled state of the password field to |enable|.
   void SetPasswordEnabled(bool enable);

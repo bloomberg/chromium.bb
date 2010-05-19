@@ -151,8 +151,7 @@ void UserController::Observe(
     return;
 
   user_.set_image(user->image());
-  SetImage(user_.image(), user_.image().width(), user_.image().height());
-  image_view_->SchedulePaint();
+  SetImage(user_.image());
 }
 
 void UserController::Login() {
@@ -204,15 +203,13 @@ WidgetGtk* UserController::CreateImageWindow(int index) {
   image_view_ = new views::ImageView();
   image_view_->set_background(
       views::Background::CreateSolidBackground(kBackgroundColor));
-  if (!is_guest_) {
-    SetImage(user_.image(), user_.image().width(), user_.image().height());
-  } else {
+  if (!is_guest_)
+    SetImage(user_.image());
+  else
     SetImage(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
-                 IDR_LOGIN_OTHER_USER),
-             kSize, kSize);
-  }
+                 IDR_LOGIN_OTHER_USER));
   WidgetGtk* window = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
-  window->Init(NULL, gfx::Rect());
+  window->Init(NULL, gfx::Rect(0, 0, kSize, kSize));
   window->SetContentsView(image_view_);
   std::vector<int> params;
   params.push_back(index);
@@ -220,7 +217,6 @@ WidgetGtk* UserController::CreateImageWindow(int index) {
       window->GetNativeView(),
       WM_IPC_WINDOW_LOGIN_IMAGE,
       &params);
-  window->SetBounds(gfx::Rect(0, 0, kSize, kSize));
   window->Show();
   return window;
 }
@@ -275,13 +271,13 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
   return window;
 }
 
-void UserController::SetImage(const SkBitmap& image,
-                              int desired_width,
-                              int desired_height) {
+void UserController::SetImage(const SkBitmap& image) {
+  int desired_size = std::min(image.width(), image.height());
+  // Desired size is not preserved if it's greater than 75% of kSize.
+  if (desired_size * 4 > 3 * kSize)
+    desired_size = kSize;
+  image_view_->SetImageSize(gfx::Size(desired_size, desired_size));
   image_view_->SetImage(image);
-  image_view_->SetImageSize(
-      gfx::Size(std::min(desired_width, kSize),
-                std::min(desired_height, kSize)));
 }
 
 gfx::Rect UserController::GetScreenBounds() const {
