@@ -410,7 +410,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 370439.
 IN_PROC_BROWSER_TEST_F(LiveSyncTestDefaultIEFavorites,
-    SC_BootStrapWithDefaultIEFavorites) {
+    DISABLED_SC_BootStrapWithDefaultIEFavorites) {
   ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
   scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
   BookmarkModel* model_one = profile1()->GetBookmarkModel();
@@ -427,7 +427,7 @@ IN_PROC_BROWSER_TEST_F(LiveSyncTestDefaultIEFavorites,
 
 // Test Scribe ID - 370441.
 IN_PROC_BROWSER_TEST_F(LiveSyncTestComplexHierarchy800BM,
-    SC_BootStrapWithComplexBMHierarchy) {
+    DISABLED_SC_BootStrapWithComplexBMHierarchy) {
   ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
   scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
   BookmarkModel* model_one = profile1()->GetBookmarkModel();
@@ -444,7 +444,7 @@ IN_PROC_BROWSER_TEST_F(LiveSyncTestComplexHierarchy800BM,
 
 // Test Scribe ID - 370442.
 IN_PROC_BROWSER_TEST_F(LiveSyncTestHugeHierarchy5500BM,
-    SC_BootStrapWithHugeBMs) {
+    DISABLED_SC_BootStrapWithHugeBMs) {
   ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
   scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
   BookmarkModel* model_one = profile1()->GetBookmarkModel();
@@ -461,7 +461,7 @@ IN_PROC_BROWSER_TEST_F(LiveSyncTestHugeHierarchy5500BM,
 
 // Test Scribe ID - 370489.
 IN_PROC_BROWSER_TEST_F(LiveSyncTestPrePopulatedHistory1K,
-    SC_AddFirstBMWithFavicon) {
+    DISABLED_SC_AddFirstBMWithFavicon) {
 
   ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
   scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
@@ -2267,7 +2267,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 373378.
 IN_PROC_BROWSER_TEST_F(LiveSyncTestBasicHierarchy50BM,
-    MC_PushExistingBMsToSecondClient) {
+    DISABLED_MC_PushExistingBMsToSecondClient) {
   ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
   scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
   BookmarkModel* model_one = profile1()->GetBookmarkModel();
@@ -2337,7 +2337,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 373507.
 IN_PROC_BROWSER_TEST_F(LiveSyncTestBasicHierarchy50BMBothClients,
-    MC_FirstUseExistingSameBMModelBothClients) {
+    DISABLED_MC_FirstUseExistingSameBMModelBothClients) {
   ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
   scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
   BookmarkModel* model_one = profile1()->GetBookmarkModel();
