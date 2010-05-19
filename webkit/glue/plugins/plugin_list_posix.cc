@@ -60,12 +60,12 @@ bool IsUndesirablePlugin(const WebPluginInfo& info) {
 // http://code.google.com/p/chromium/issues/detail?id=38229
 // The gecko-mediaplayer plugins also crashes the entire browser sometimes.
 // http://code.google.com/p/chromium/issues/detail?id=24507
-bool IsBlacklistedPlugin(const WebPluginInfo& info) {
+bool IsBlacklistedPlugin(const FilePath& path) {
   const char* kBlackListedPlugins[] = {
     "nppdf.so",           // Adobe PDF
     "gecko-mediaplayer",  // Gecko Media Player
   };
-  std::string filename = info.path.BaseName().value();
+  std::string filename = path.BaseName().value();
   for (size_t i = 0; i < arraysize(kBlackListedPlugins); i++) {
     if (filename.find(kBlackListedPlugins[i]) != std::string::npos) {
       return true;
@@ -166,6 +166,11 @@ void PluginList::LoadPluginsFromDir(const FilePath& dir_path,
     }
     visited_plugins->insert(path);
 
+    if (IsBlacklistedPlugin(path)) {
+      PLUG_LOG << "Skipping blacklisted plugin " << path.value();
+      continue;
+    }
+
     // Flash stops working if the containing directory involves 'netscape'.
     // No joke.  So use the other path if it's better.
     static const char kFlashPlayerFilename[] = "libflashplayer.so";
@@ -203,11 +208,6 @@ void PluginList::LoadPluginsFromDir(const FilePath& dir_path,
 bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
                                   std::vector<WebPluginInfo>* plugins) {
   PLUG_LOG << "Considering " << info.path.value() << " (" << info.name << ")";
-
-  if (IsBlacklistedPlugin(info)) {
-    PLUG_LOG << "Skipping blacklisted plugin " << info.path.value();
-    return false;
-  }
 
   if (IsUndesirablePlugin(info)) {
     PLUG_LOG << info.path.value() << " is undesirable.";
