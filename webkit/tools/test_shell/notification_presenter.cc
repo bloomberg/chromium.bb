@@ -26,23 +26,11 @@ void TestNotificationPresenter::grantPermission(const std::string& origin) {
 
 // The output from all these methods matches what DumpRenderTree produces.
 bool TestNotificationPresenter::show(const WebNotification& notification) {
-  if (!notification.replaceId().isEmpty()) {
-    std::string replace_id(notification.replaceId().utf8());
-    if (replacements_.find(replace_id) != replacements_.end())
-      printf("REPLACING NOTIFICATION %s\n",
-             replacements_.find(replace_id)->second.c_str());
-
-    WebString identifier = notification.isHTML() ?
-        notification.url().spec().utf16() : notification.title();
-    replacements_[replace_id] = identifier.utf8();
-  }
-
   if (notification.isHTML()) {
     printf("DESKTOP NOTIFICATION: contents at %s\n",
            notification.url().spec().data());
   } else {
-    printf("DESKTOP NOTIFICATION:%s icon %s, title %s, text %s\n",
-           notification.dir() == "rtl" ? "(RTL)" : "",
+    printf("DESKTOP NOTIFICATION: icon %s, title %s, text %s\n",
            notification.iconURL().isEmpty() ? "" :
                notification.iconURL().spec().data(),
            notification.title().isEmpty() ? "" :

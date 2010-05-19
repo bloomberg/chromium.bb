@@ -4,3 +4,8 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
+
+// temporarily mark these tests as failing until we can figure out why
+// r46500 (and wk 58765) seems to have caused a perf regression
+BUG43276 : fast/notifications/notifications-replace.html = FAIL
+BUG43276 : fast/notifications/notifications-rtl.html = FAIL
