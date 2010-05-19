@@ -918,7 +918,7 @@ END_MSG_MAP()
   // sent to the out of proc chromium instance.
   // Returns S_OK iff the accelerator was handled by the browser.
   HRESULT AllowFrameToTranslateAccelerator(const MSG& msg) {
-    static const int kMayTranslateAcceleratorOffset = 0x170;
+    static const int kMayTranslateAcceleratorOffset = 0x5c;
     // Although IBrowserService2 is officially deprecated, it's still alive
     // and well in IE7 and earlier.  We have to use it here to correctly give
     // the browser a chance to handle keyboard shortcuts.
@@ -941,7 +941,8 @@ END_MSG_MAP()
     // circumstances this vtable is actually used though.
     if (S_OK == DoQueryService(SID_STopLevelBrowser, m_spInPlaceSite,
                                bs2.Receive()) && bs2.get() &&
-                               (bs2 + kMayTranslateAcceleratorOffset)) {
+                               *(reinterpret_cast<long*>(bs2.get()) +
+                                   kMayTranslateAcceleratorOffset)) {
       hr = bs2->v_MayTranslateAccelerator(&accel_message);
     } else {
       // IE8 doesn't support IBrowserService2 unless you enable a special,
