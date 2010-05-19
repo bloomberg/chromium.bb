@@ -28,6 +28,7 @@
 #include "chrome_frame/chrome_active_document.h"
 #include "chrome_frame/chrome_frame_activex.h"
 #include "chrome_frame/chrome_frame_automation.h"
+#include "chrome_frame/exception_barrier.h"
 #include "chrome_frame/chrome_frame_reporting.h"
 #include "chrome_frame/chrome_launcher.h"
 #include "chrome_frame/chrome_protocol.h"
@@ -234,6 +235,13 @@ HRESULT RefreshElevationPolicy() {
   const wchar_t kIEFrameDll[] = L"ieframe.dll";
   const char kIERefreshPolicy[] = "IERefreshElevationPolicy";
   HRESULT hr = E_NOTIMPL;
+
+  // Stick an SEH in the chain to prevent the VEH from picking up on first
+  // chance exceptions caused by loading ieframe.dll. Use the vanilla
+  // ExceptionBarrier to report any exceptions that do make their way to us
+  // though.
+  ExceptionBarrier barrier;
+
   HMODULE ieframe_module = LoadLibrary(kIEFrameDll);
   if (ieframe_module) {
     typedef HRESULT (__stdcall *IERefreshPolicy)();
