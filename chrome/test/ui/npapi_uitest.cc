@@ -439,8 +439,7 @@ TEST_F(NPAPIVisiblePluginTester, PluginReferrerTest) {
 }
 
 #if defined(OS_MACOSX)
-// http://crbug.com/36670 - failes on 10.6
-TEST_F(NPAPIVisiblePluginTester, FLAKY_PluginConvertPointTest) {
+TEST_F(NPAPIVisiblePluginTester, PluginConvertPointTest) {
   if (UITest::in_process_renderer())
     return;
 
@@ -448,7 +447,7 @@ TEST_F(NPAPIVisiblePluginTester, FLAKY_PluginConvertPointTest) {
   ASSERT_TRUE(browser.get());
   scoped_refptr<WindowProxy> window(browser->GetWindow());
   ASSERT_TRUE(window.get());
-  window->SetBounds(gfx::Rect(100, 100, 600, 600));
+  window->SetBounds(gfx::Rect(50, 50, 400, 400));
 
   GURL url(URLRequestMockHTTPJob::GetMockUrl(
       FilePath(FILE_PATH_LITERAL("npapi/convert_point.html"))));

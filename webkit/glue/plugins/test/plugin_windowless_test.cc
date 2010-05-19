@@ -208,26 +208,36 @@ void WindowlessPluginTest::ConvertPoint(NPNetscapeFuncs* browser) {
 
   CGRect main_display_bounds = CGDisplayBounds(CGMainDisplayID());
 
-  // Check that all the coordinates are right. The plugin is in a 600x600 window
-  // at (100, 100), with a content area origin of (100, 100).
-  // Y-coordinates are not checked exactly so that the test is robust against
-  // toolbar changes, info bar visibility, etc.
+  // Check that all the coordinates are right. The constants below are based on
+  // the window frame set in the UI test and the content offset in the test
+  // html. Y-coordinates are not checked exactly so that the test is robust
+  // against toolbar changes, info and bookmark bar visibility, etc.
+  const int kWindowHeight = 400;
+  const int kWindowXOrigin = 50;
+  const int kWindowYOrigin = 50;
+  const int kPluginXContentOffset = 50;
+  const int kPluginYContentOffset = 50;
+  const int kChromeYTolerance = 200;
+
   std::string error_string;
   if (screen_x != flipped_screen_x)
     error_string = "Flipping screen coordinates shouldn't change x";
   else if (flipped_screen_y != main_display_bounds.size.height - screen_y)
     error_string = "Flipped screen coordinates should be flipped vertically";
-  else if (screen_x != 200)
+  else if (screen_x != kWindowXOrigin + kPluginXContentOffset)
     error_string = "Screen x location is wrong";
-  else if (flipped_screen_y < 200 || flipped_screen_y > 400)
+  else if (flipped_screen_y < kWindowYOrigin + kPluginYContentOffset ||
+           flipped_screen_y > kWindowYOrigin + kPluginYContentOffset +
+                              kChromeYTolerance)
     error_string = "Screen y location is wrong";
   else if (window_x != flipped_window_x)
     error_string = "Flipping window coordinates shouldn't change x";
-  else if (flipped_window_y != 600 - window_y)
+  else if (flipped_window_y != kWindowHeight - window_y)
     error_string = "Flipped window coordinates should be flipped vertically";
-  else if (window_x != 100)
+  else if (window_x != kPluginXContentOffset)
     error_string = "Window x location is wrong";
-  else if (flipped_screen_y < 100 || flipped_screen_y > 300)
+  else if (flipped_window_y < kPluginYContentOffset ||
+           flipped_window_y > kPluginYContentOffset + kChromeYTolerance)
     error_string = "Window y location is wrong";
 
   if (!error_string.empty()) {
