@@ -65,6 +65,11 @@ WidgetWin::~WidgetWin() {
 
 // static
 WidgetWin* WidgetWin::GetWidget(HWND hwnd) {
+  // TODO(jcivelli): http://crbug.com/44499 We need a way to test that hwnd is
+  //                 associated with a WidgetWin (it might be a pure
+  //                 WindowImpl).
+  if (!WindowImpl::IsWindowImpl(hwnd))
+    return NULL;
   return reinterpret_cast<WidgetWin*>(win_util::GetWindowUserData(hwnd));
 }
 

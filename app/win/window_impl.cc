@@ -152,6 +152,16 @@ HICON WindowImpl::GetDefaultWindowIcon() const {
   return NULL;
 }
 
+// static
+bool WindowImpl::IsWindowImpl(HWND hwnd) {
+  wchar_t tmp[128];
+  if (!::GetClassName(hwnd, tmp, 128))
+    return false;
+
+  std::wstring class_name(tmp);
+  return class_name.find(kBaseClassName) == 0;
+}
+
 LRESULT WindowImpl::OnWndProc(UINT message, WPARAM w_param, LPARAM l_param) {
   LRESULT result = 0;
 
