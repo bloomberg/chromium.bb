@@ -123,7 +123,7 @@ class ExtensionTestSimpleApiCall : public ExtensionUITest {
   DISALLOW_COPY_AND_ASSIGN(ExtensionTestSimpleApiCall);
 };
 
-TEST_F(ExtensionTestSimpleApiCall, RunTest) {
+TEST_F(ExtensionTestSimpleApiCall, FLAKY_RunTest) {
   namespace keys = extension_automation_constants;
 
   ASSERT_THAT(mock_, testing::NotNull());
