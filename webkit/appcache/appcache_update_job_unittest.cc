@@ -81,25 +81,6 @@ class MockFrontend : public AppCacheFrontend {
   std::vector<AppCacheHost*> update_hosts_;
 };
 
-// Helper class to let us call methods of AppCacheUpdateJobTest on a
-// thread of our choice.
-template <class Method>
-class WrapperTask : public Task {
- public:
-  WrapperTask(AppCacheUpdateJobTest* test, Method method)
-      : test_(test),
-        method_(method) {
-  }
-
-  virtual void Run() {
-    (test_->*method_)( );
-  }
-
- private:
-  AppCacheUpdateJobTest* test_;
-  Method method_;
-};
-
 // Helper factories to simulate redirected URL responses for tests.
 static URLRequestJob* RedirectFactory(URLRequest* request,
                                       const std::string& scheme) {
@@ -278,8 +259,7 @@ class AppCacheUpdateJobTest : public testing::Test,
   class MockAppCachePolicy : public AppCachePolicy {
    public:
     MockAppCachePolicy()
-        : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
-          can_create_return_value_(net::OK), return_immediately_(true),
+        : can_create_return_value_(net::OK), return_immediately_(true),
           callback_(NULL) {
     }
 
@@ -294,9 +274,8 @@ class AppCacheUpdateJobTest : public testing::Test,
       if (return_immediately_)
         return can_create_return_value_;
 
-      MessageLoop::current()->PostTask(FROM_HERE,
-          method_factory_.NewRunnableMethod(
-              &MockAppCachePolicy::CompleteCanCreateAppCache));
+      MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
+              this, &MockAppCachePolicy::CompleteCanCreateAppCache));
       return net::ERR_IO_PENDING;
     }
 
@@ -304,7 +283,6 @@ class AppCacheUpdateJobTest : public testing::Test,
       callback_->Run(can_create_return_value_);
     }
 
-    ScopedRunnableMethodFactory<MockAppCachePolicy> method_factory_;
     int can_create_return_value_;
     bool return_immediately_;
     GURL requested_manifest_url_;
@@ -313,8 +291,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
 
   AppCacheUpdateJobTest()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
-        do_checks_after_update_finished_(false),
+      : do_checks_after_update_finished_(false),
         expect_group_obsolete_(false),
         expect_group_has_cache_(false),
         expect_old_cache_(NULL),
@@ -364,7 +341,7 @@ class AppCacheUpdateJobTest : public testing::Test,
   void RunTestOnIOThread(Method method) {
     event_.reset(new base::WaitableEvent(false, false));
     io_thread_->message_loop()->PostTask(
-        FROM_HERE, new WrapperTask<Method>(this, method));
+        FROM_HERE, NewRunnableMethod(this, method));
 
     // Wait until task is done before exiting the test.
     event_->Wait();
@@ -2562,9 +2539,8 @@ class AppCacheUpdateJobTest : public testing::Test,
   void UpdateFinished() {
     // We unwind the stack prior to finishing up to let stack-based objects
     // get deleted.
-    MessageLoop::current()->PostTask(FROM_HERE,
-        method_factory_.NewRunnableMethod(
-            &AppCacheUpdateJobTest::UpdateFinishedUnwound));
+    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
+            this, &AppCacheUpdateJobTest::UpdateFinishedUnwound));
   }
 
   void UpdateFinishedUnwound() {
@@ -2876,7 +2852,6 @@ class AppCacheUpdateJobTest : public testing::Test,
   static HTTPTestServer* http_server_;
   static TestURLRequestContext* request_context_;
 
-  ScopedRunnableMethodFactory<AppCacheUpdateJobTest> method_factory_;
   scoped_ptr<MockAppCacheService> service_;
   scoped_refptr<AppCacheGroup> group_;
   scoped_refptr<AppCache> protect_newest_cache_;
@@ -3182,3 +3157,17 @@ TEST_F(AppCacheUpdateJobTest, MultipleHeadersRefetch) {
 }
 
 }  // namespace appcache
+
+// AppCacheUpdateJobTest is expected to always live longer than the
+// runnable methods.  This lets us call NewRunnableMethod on its instances.
+template<>
+struct RunnableMethodTraits<appcache::AppCacheUpdateJobTest> {
+  void RetainCallee(appcache::AppCacheUpdateJobTest* obj) { }
+  void ReleaseCallee(appcache::AppCacheUpdateJobTest* obj) { }
+};
+template<>
+struct RunnableMethodTraits<appcache::AppCacheUpdateJobTest::MockAppCachePolicy>
+{
+  void RetainCallee(appcache::AppCacheUpdateJobTest::MockAppCachePolicy* o) { }
+  void ReleaseCallee(appcache::AppCacheUpdateJobTest::MockAppCachePolicy* o) { }
+};

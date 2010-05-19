@@ -161,8 +161,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
   }
 
   AppCacheURLRequestJobTest()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
-        ALLOW_THIS_IN_INITIALIZER_LIST(read_callback_(
+      : ALLOW_THIS_IN_INITIALIZER_LIST(read_callback_(
             this, &AppCacheURLRequestJobTest::OnReadComplete)),
         ALLOW_THIS_IN_INITIALIZER_LIST(read_info_callback_(
             this, &AppCacheURLRequestJobTest::OnReadInfoComplete)),
@@ -226,8 +225,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
     // based objects get deleted.
     DCHECK(MessageLoop::current() == io_thread_->message_loop());
     MessageLoop::current()->PostTask(FROM_HERE,
-        method_factory_.NewRunnableMethod(
-            &AppCacheURLRequestJobTest::TestFinishedUnwound));
+        NewRunnableMethod(
+            this, &AppCacheURLRequestJobTest::TestFinishedUnwound));
   }
 
   void TestFinishedUnwound() {
@@ -271,8 +270,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
                      IOBuffer* body, int body_len) {
     DCHECK(body);
     scoped_refptr<IOBuffer> body_ref(body);
-    PushNextTask(method_factory_.NewRunnableMethod(
-        &AppCacheURLRequestJobTest::WriteResponseBody,
+    PushNextTask(NewRunnableMethod(
+        this, &AppCacheURLRequestJobTest::WriteResponseBody,
         body_ref, body_len));
     WriteResponseHead(head);
   }
@@ -448,8 +447,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
 
   void DeliverNetworkResponse() {
     // This test has async steps.
-    PushNextTask(method_factory_.NewRunnableMethod(
-       &AppCacheURLRequestJobTest::VerifyDeliverNetworkResponse));
+    PushNextTask(NewRunnableMethod(
+       this, &AppCacheURLRequestJobTest::VerifyDeliverNetworkResponse));
 
     AppCacheStorage* storage = service_->storage();
     request_.reset(
@@ -480,8 +479,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
 
   void DeliverErrorResponse() {
     // This test has async steps.
-    PushNextTask(method_factory_.NewRunnableMethod(
-       &AppCacheURLRequestJobTest::VerifyDeliverErrorResponse));
+    PushNextTask(NewRunnableMethod(
+       this, &AppCacheURLRequestJobTest::VerifyDeliverErrorResponse));
 
     AppCacheStorage* storage = service_->storage();
     request_.reset(
@@ -517,10 +516,10 @@ class AppCacheURLRequestJobTest : public testing::Test {
     // 2. Use URLRequest to retrieve it.
     // 3. Verify we received what we expected to receive.
 
-    PushNextTask(method_factory_.NewRunnableMethod(
-       &AppCacheURLRequestJobTest::VerifyDeliverSmallAppCachedResponse));
-    PushNextTask(method_factory_.NewRunnableMethod(
-       &AppCacheURLRequestJobTest::RequestAppCachedResource, false));
+    PushNextTask(NewRunnableMethod(
+       this, &AppCacheURLRequestJobTest::VerifyDeliverSmallAppCachedResponse));
+    PushNextTask(NewRunnableMethod(
+       this, &AppCacheURLRequestJobTest::RequestAppCachedResource, false));
 
     writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
     written_response_id_ = writer_->response_id();
@@ -583,10 +582,10 @@ class AppCacheURLRequestJobTest : public testing::Test {
     // 2. Use URLRequest to retrieve it.
     // 3. Verify we received what we expected to receive.
 
-    PushNextTask(method_factory_.NewRunnableMethod(
-       &AppCacheURLRequestJobTest::VerifyDeliverLargeAppCachedResponse));
-    PushNextTask(method_factory_.NewRunnableMethod(
-       &AppCacheURLRequestJobTest::RequestAppCachedResource, true));
+    PushNextTask(NewRunnableMethod(
+       this, &AppCacheURLRequestJobTest::VerifyDeliverLargeAppCachedResponse));
+    PushNextTask(NewRunnableMethod(
+       this, &AppCacheURLRequestJobTest::RequestAppCachedResource, true));
 
     writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
     written_response_id_ = writer_->response_id();
@@ -626,10 +625,10 @@ class AppCacheURLRequestJobTest : public testing::Test {
     // 2. Use URLRequest to retrieve it.
     // 3. Cancel the request after data starts coming in.
 
-    PushNextTask(method_factory_.NewRunnableMethod(
-       &AppCacheURLRequestJobTest::VerifyCancel));
-    PushNextTask(method_factory_.NewRunnableMethod(
-       &AppCacheURLRequestJobTest::RequestAppCachedResource, true));
+    PushNextTask(NewRunnableMethod(
+       this, &AppCacheURLRequestJobTest::VerifyCancel));
+    PushNextTask(NewRunnableMethod(
+       this, &AppCacheURLRequestJobTest::RequestAppCachedResource, true));
 
     writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
     written_response_id_ = writer_->response_id();
@@ -654,10 +653,10 @@ class AppCacheURLRequestJobTest : public testing::Test {
     // 2. Use URLRequest to retrieve it.
     // 3. Cancel the request after data starts coming in.
 
-    PushNextTask(method_factory_.NewRunnableMethod(
-       &AppCacheURLRequestJobTest::VerifyCancel));
-    PushNextTask(method_factory_.NewRunnableMethod(
-       &AppCacheURLRequestJobTest::RequestAppCachedResource, true));
+    PushNextTask(NewRunnableMethod(
+       this, &AppCacheURLRequestJobTest::VerifyCancel));
+    PushNextTask(NewRunnableMethod(
+       this, &AppCacheURLRequestJobTest::RequestAppCachedResource, true));
 
     writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
     written_response_id_ = writer_->response_id();
@@ -671,7 +670,6 @@ class AppCacheURLRequestJobTest : public testing::Test {
 
   // Data members --------------------------------------------------------
 
-  ScopedRunnableMethodFactory<AppCacheURLRequestJobTest> method_factory_;
   scoped_ptr<base::WaitableEvent> test_finished_event_;
   scoped_ptr<MockStorageDelegate> storage_delegate_;
   scoped_ptr<MockAppCacheService> service_;
@@ -744,3 +742,10 @@ TEST_F(AppCacheURLRequestJobTest, CancelRequestWithIOPending) {
 
 }  // namespace appcache
 
+// AppCacheURLRequestJobTest is expected to always live longer than the
+// runnable methods.  This lets us call NewRunnableMethod on its instances.
+template<>
+struct RunnableMethodTraits<appcache::AppCacheURLRequestJobTest> {
+  void RetainCallee(appcache::AppCacheURLRequestJobTest* obj) { }
+  void ReleaseCallee(appcache::AppCacheURLRequestJobTest* obj) { }
+};

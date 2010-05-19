@@ -103,8 +103,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
   // Test harness --------------------------------------------------
 
   AppCacheRequestHandlerTest()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
-        orig_http_factory_(NULL) {
+      : orig_http_factory_(NULL) {
   }
 
   template <class Method>
@@ -142,9 +141,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
     // We unwind the stack prior to finishing up to let stack
     // based objects get deleted.
     DCHECK(MessageLoop::current() == io_thread_->message_loop());
-    MessageLoop::current()->PostTask(FROM_HERE,
-        method_factory_.NewRunnableMethod(
-            &AppCacheRequestHandlerTest::TestFinishedUnwound));
+    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
+        this, &AppCacheRequestHandlerTest::TestFinishedUnwound));
   }
 
   void TestFinishedUnwound() {
@@ -169,8 +167,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
   // MainResource_Miss --------------------------------------------------
 
   void MainResource_Miss() {
-    PushNextTask(method_factory_.NewRunnableMethod(
-       &AppCacheRequestHandlerTest::Verify_MainResource_Miss));
+    PushNextTask(NewRunnableMethod(
+        this, &AppCacheRequestHandlerTest::Verify_MainResource_Miss));
 
     request_.reset(new MockURLRequest(GURL("http://blah/")));
     handler_.reset(host_->CreateRequestHandler(request_.get(), true));
@@ -207,8 +205,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
   // MainResource_Hit --------------------------------------------------
 
   void MainResource_Hit() {
-    PushNextTask(method_factory_.NewRunnableMethod(
-       &AppCacheRequestHandlerTest::Verify_MainResource_Hit));
+    PushNextTask(NewRunnableMethod(
+       this, &AppCacheRequestHandlerTest::Verify_MainResource_Hit));
 
     request_.reset(new MockURLRequest(GURL("http://blah/")));
     handler_.reset(host_->CreateRequestHandler(request_.get(), true));
@@ -246,8 +244,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
   // MainResource_Fallback --------------------------------------------------
 
   void MainResource_Fallback() {
-    PushNextTask(method_factory_.NewRunnableMethod(
-       &AppCacheRequestHandlerTest::Verify_MainResource_Fallback));
+    PushNextTask(NewRunnableMethod(
+       this, &AppCacheRequestHandlerTest::Verify_MainResource_Fallback));
 
     request_.reset(new MockURLRequest(GURL("http://blah/")));
     handler_.reset(host_->CreateRequestHandler(request_.get(), true));
@@ -573,7 +571,6 @@ class AppCacheRequestHandlerTest : public testing::Test {
 
   // Data members --------------------------------------------------
 
-  ScopedRunnableMethodFactory<AppCacheRequestHandlerTest> method_factory_;
   scoped_ptr<base::WaitableEvent> test_finished_event_;
   std::stack<Task*> task_stack_;
   scoped_ptr<MockAppCacheService> mock_service_;
@@ -655,3 +652,10 @@ TEST_F(AppCacheRequestHandlerTest, CanceledRequest) {
 
 }  // namespace appcache
 
+// AppCacheRequestHandlerTest is expected to always live longer than the
+// runnable methods.  This lets us call NewRunnableMethod on its instances.
+template<>
+struct RunnableMethodTraits<appcache::AppCacheRequestHandlerTest> {
+  void RetainCallee(appcache::AppCacheRequestHandlerTest* obj) { }
+  void ReleaseCallee(appcache::AppCacheRequestHandlerTest* obj) { }
+};

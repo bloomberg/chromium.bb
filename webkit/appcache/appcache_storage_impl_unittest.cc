@@ -213,8 +213,7 @@ class AppCacheStorageImplTest : public testing::Test {
   // Test harness --------------------------------------------------
 
   AppCacheStorageImplTest()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
-        ALLOW_THIS_IN_INITIALIZER_LIST(policy_(this)) {
+      : ALLOW_THIS_IN_INITIALIZER_LIST(policy_(this)) {
   }
 
   template <class Method>
@@ -248,8 +247,7 @@ class AppCacheStorageImplTest : public testing::Test {
     // based objects get deleted.
     DCHECK(MessageLoop::current() == io_thread->message_loop());
     MessageLoop::current()->PostTask(FROM_HERE,
-        method_factory_.NewRunnableMethod(
-            &AppCacheStorageImplTest::TestFinishedUnwound));
+        NewRunnableMethod(this, &AppCacheStorageImplTest::TestFinishedUnwound));
   }
 
   void TestFinishedUnwound() {
@@ -289,8 +287,8 @@ class AppCacheStorageImplTest : public testing::Test {
   void LoadCache_Miss() {
     // Attempt to load a cache that doesn't exist. Should
     // complete asyncly.
-    PushNextTask(method_factory_.NewRunnableMethod(
-       &AppCacheStorageImplTest::Verify_LoadCache_Miss));
+    PushNextTask(NewRunnableMethod(
+        this, &AppCacheStorageImplTest::Verify_LoadCache_Miss));
 
     storage()->LoadCache(111, delegate());
     EXPECT_NE(111, delegate()->loaded_cache_id_);
@@ -336,8 +334,8 @@ class AppCacheStorageImplTest : public testing::Test {
   void CreateGroupInPopulatedOrigin() {
     // Attempt to load a group that doesn't exist, one should
     // be created for us, but not stored.
-    PushNextTask(method_factory_.NewRunnableMethod(
-       &AppCacheStorageImplTest::Verify_CreateGroup));
+    PushNextTask(NewRunnableMethod(
+       this, &AppCacheStorageImplTest::Verify_CreateGroup));
 
     // Since the origin has groups, storage class will have to
     // consult the database and completion will be async.
@@ -367,8 +365,8 @@ class AppCacheStorageImplTest : public testing::Test {
     // Attempt to load a cache that is not currently in use
     // and does require loading from disk. This
     // load should complete asyncly.
-    PushNextTask(method_factory_.NewRunnableMethod(
-       &AppCacheStorageImplTest::Verify_LoadCache_Far_Hit));
+    PushNextTask(NewRunnableMethod(
+       this, &AppCacheStorageImplTest::Verify_LoadCache_Far_Hit));
 
     // Setup some preconditions. Create a group and newest cache that
     // appear to be "stored" and "not currently in use".
@@ -395,8 +393,8 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_FALSE(delegate()->loaded_group_);
 
     // Conduct the group load test, also complete asyncly.
-    PushNextTask(method_factory_.NewRunnableMethod(
-       &AppCacheStorageImplTest::Verify_LoadGroup_Far_Hit));
+    PushNextTask(NewRunnableMethod(
+       this, &AppCacheStorageImplTest::Verify_LoadGroup_Far_Hit));
 
     storage()->LoadOrCreateGroup(kManifestUrl, delegate());
   }
@@ -414,8 +412,8 @@ class AppCacheStorageImplTest : public testing::Test {
 
   void StoreNewGroup() {
     // Store a group and its newest cache. Should complete asyncly.
-    PushNextTask(method_factory_.NewRunnableMethod(
-       &AppCacheStorageImplTest::Verify_StoreNewGroup));
+    PushNextTask(NewRunnableMethod(
+       this, &AppCacheStorageImplTest::Verify_StoreNewGroup));
 
     // Setup some preconditions. Create a group and newest cache that
     // appear to be "unstored".
@@ -448,8 +446,8 @@ class AppCacheStorageImplTest : public testing::Test {
 
   void StoreExistingGroup() {
     // Store a group and its newest cache. Should complete asyncly.
-    PushNextTask(method_factory_.NewRunnableMethod(
-       &AppCacheStorageImplTest::Verify_StoreExistingGroup));
+    PushNextTask(NewRunnableMethod(
+       this, &AppCacheStorageImplTest::Verify_StoreExistingGroup));
 
     // Setup some preconditions. Create a group and old complete cache
     // that appear to be "stored"
@@ -496,8 +494,8 @@ class AppCacheStorageImplTest : public testing::Test {
     cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::MASTER, 1, 100));
     cache_->set_update_time(now);
 
-    PushNextTask(method_factory_.NewRunnableMethod(
-       &AppCacheStorageImplTest::Verify_StoreExistingGroupExistingCache,
+    PushNextTask(NewRunnableMethod(
+       this, &AppCacheStorageImplTest::Verify_StoreExistingGroupExistingCache,
        now));
 
     // Conduct the test.
@@ -535,8 +533,8 @@ class AppCacheStorageImplTest : public testing::Test {
 
   void MakeGroupObsolete() {
     // Make a group obsolete, should complete asyncly.
-    PushNextTask(method_factory_.NewRunnableMethod(
-       &AppCacheStorageImplTest::Verify_MakeGroupObsolete));
+    PushNextTask(NewRunnableMethod(
+       this, &AppCacheStorageImplTest::Verify_MakeGroupObsolete));
 
     // Setup some preconditions. Create a group and newest cache that
     // appears to be "stored" and "currently in use".
@@ -630,7 +628,7 @@ class AppCacheStorageImplTest : public testing::Test {
   // MarkEntryAsForeignWithLoadInProgress  -------------------------------
 
   void MarkEntryAsForeignWithLoadInProgress() {
-    PushNextTask(method_factory_.NewRunnableMethod(
+    PushNextTask(NewRunnableMethod(this,
        &AppCacheStorageImplTest::Verify_MarkEntryAsForeignWithLoadInProgress));
 
     // Setup some preconditions. Create a cache with an entry
@@ -674,8 +672,8 @@ class AppCacheStorageImplTest : public testing::Test {
   // FindNoMainResponse  -------------------------------
 
   void FindNoMainResponse() {
-    PushNextTask(method_factory_.NewRunnableMethod(
-       &AppCacheStorageImplTest::Verify_FindNoMainResponse));
+    PushNextTask(NewRunnableMethod(
+       this, &AppCacheStorageImplTest::Verify_FindNoMainResponse));
 
     // Conduct the test.
     storage()->FindResponseForMainRequest(kEntryUrl, delegate());
@@ -709,8 +707,8 @@ class AppCacheStorageImplTest : public testing::Test {
 
   void BasicFindMainResponse(bool drop_from_working_set,
                              bool block_with_policy_check) {
-    PushNextTask(method_factory_.NewRunnableMethod(
-       &AppCacheStorageImplTest::Verify_BasicFindMainResponse));
+    PushNextTask(NewRunnableMethod(
+       this, &AppCacheStorageImplTest::Verify_BasicFindMainResponse));
 
     policy_.can_load_return_value_ = !block_with_policy_check;
     service()->set_appcache_policy(&policy_);
@@ -765,8 +763,8 @@ class AppCacheStorageImplTest : public testing::Test {
   }
 
   void BasicFindMainFallbackResponse(bool drop_from_working_set) {
-    PushNextTask(method_factory_.NewRunnableMethod(
-       &AppCacheStorageImplTest::Verify_BasicFindMainFallbackResponse));
+    PushNextTask(NewRunnableMethod(
+       this, &AppCacheStorageImplTest::Verify_BasicFindMainFallbackResponse));
 
     // Setup some preconditions. Create a complete cache with a
     // fallback namespace and entry.
@@ -812,7 +810,7 @@ class AppCacheStorageImplTest : public testing::Test {
   // FindMainResponseWithMultipleHits  -------------------------------
 
   void FindMainResponseWithMultipleHits() {
-    PushNextTask(method_factory_.NewRunnableMethod(
+    PushNextTask(NewRunnableMethod(this,
         &AppCacheStorageImplTest::Verify_FindMainResponseWithMultipleHits));
 
     // Setup some preconditions. Create 2 complete caches with an entry
@@ -888,8 +886,8 @@ class AppCacheStorageImplTest : public testing::Test {
     }
 
     // We should not find anything for the foreign entry.
-    PushNextTask(method_factory_.NewRunnableMethod(
-        &AppCacheStorageImplTest::Verify_NotFound, kEntryUrl, false));
+    PushNextTask(NewRunnableMethod(
+        this, &AppCacheStorageImplTest::Verify_NotFound, kEntryUrl, false));
     storage()->FindResponseForMainRequest(kEntryUrl, delegate());
   }
 
@@ -904,7 +902,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
     if (!test_finished) {
       // We should not find anything for the online namespace.
-      PushNextTask(method_factory_.NewRunnableMethod(
+      PushNextTask(NewRunnableMethod(this,
           &AppCacheStorageImplTest::Verify_NotFound, kOnlineNamespace, true));
       storage()->FindResponseForMainRequest(kOnlineNamespace, delegate());
       return;
@@ -956,7 +954,6 @@ class AppCacheStorageImplTest : public testing::Test {
 
   // Data members --------------------------------------------------
 
-  ScopedRunnableMethodFactory<AppCacheStorageImplTest> method_factory_;
   scoped_ptr<base::WaitableEvent> test_finished_event_;
   std::stack<Task*> task_stack_;
   MockAppCachePolicy policy_;
@@ -1062,3 +1059,10 @@ TEST_F(AppCacheStorageImplTest, FindMainResponseExclusionsInWorkingSet) {
 
 }  // namespace appcache
 
+// AppCacheStorageImplTest is expected to always live longer than the
+// runnable methods.  This lets us call NewRunnableMethod on its instances.
+template<>
+struct RunnableMethodTraits<appcache::AppCacheStorageImplTest> {
+  void RetainCallee(appcache::AppCacheStorageImplTest* obj) { }
+  void ReleaseCallee(appcache::AppCacheStorageImplTest* obj) { }
+};

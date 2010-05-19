@@ -20,14 +20,6 @@
 }
 
 {
-  bug_24715
-  ThreadSanitizer:Race
-  fun:*base*internal*WeakReference*
-  ...
-  fun:*AppCache*Test*
-}
-
-{
   bug_25385 (2)
   ThreadSanitizer:Race
   ...
