@@ -10,6 +10,8 @@
 #include "webkit/glue/webkit_glue.h"
 
 namespace default_plugin {
+
+#if defined(OS_WIN)
 //
 // Forward declare the linker-provided pseudo variable for the
 // current module handle.
@@ -20,6 +22,7 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 inline HMODULE GetCurrentModuleHandle() {
   return reinterpret_cast<HINSTANCE>(&__ImageBase);
 }
+#endif
 
 // Initialized in NP_Initialize.
 NPNetscapeFuncs* g_browser = NULL;
@@ -71,12 +74,52 @@ void SignalTestResult(NPP instance) {
       static_cast<unsigned int>(script.length());
 
   NPVariant result_var;
-  NPError result = g_browser->evaluate(instance, window_obj,
-                                       &script_string, &result_var);
+  g_browser->evaluate(instance, window_obj,
+                      &script_string, &result_var);
   g_browser->releaseobject(window_obj);
 }
 
 }  // namespace CHROMIUM_DefaultPluginTest
+
+bool NegotiateModels(NPP instance) {
+#if defined(OS_MACOSX)
+  NPError err;
+  // Set drawing model to core graphics
+  NPBool supportsCoreGraphics = FALSE;
+  err = g_browser->getvalue(instance,
+                            NPNVsupportsCoreGraphicsBool,
+                            &supportsCoreGraphics);
+  if (err != NPERR_NO_ERROR || !supportsCoreGraphics) {
+    NOTREACHED();
+    return false;
+  }
+  err = g_browser->setvalue(instance,
+                            NPPVpluginDrawingModel,
+                            (void*)NPDrawingModelCoreGraphics);
+  if (err != NPERR_NO_ERROR) {
+    NOTREACHED();
+    return false;
+  }
+
+  // Set event model to cocoa
+  NPBool supportsCocoaEvents = FALSE;
+  err = g_browser->getvalue(instance,
+                            NPNVsupportsCocoaBool,
+                            &supportsCocoaEvents);
+  if (err != NPERR_NO_ERROR || !supportsCocoaEvents) {
+    NOTREACHED();
+    return false;
+  }
+  err = g_browser->setvalue(instance,
+                            NPPVpluginEventModel,
+                            (void*)NPEventModelCocoa);
+  if (err != NPERR_NO_ERROR) {
+    NOTREACHED();
+    return false;
+  }
+#endif
+  return true;
+}
 
 NPError NPP_New(NPMIMEType plugin_type, NPP instance, uint16 mode, int16 argc,
                 char* argn[], char* argv[], NPSavedData* saved) {
@@ -95,10 +138,19 @@ NPError NPP_New(NPMIMEType plugin_type, NPP instance, uint16 mode, int16 argc,
     return NPERR_GENERIC_ERROR;
   }
 
-
+  if (!NegotiateModels(instance))
+    return NPERR_INCOMPATIBLE_VERSION_ERROR;
+  
   PluginInstallerImpl* plugin_impl = new PluginInstallerImpl(mode);
-  plugin_impl->Initialize(GetCurrentModuleHandle(), instance, plugin_type, argc,
+  plugin_impl->Initialize(
+#if defined(OS_WIN)
+                          GetCurrentModuleHandle(),
+#else
+                          NULL,
+#endif
+                          instance, plugin_type, argc,
                           argn, argv);
+
   instance->pdata = reinterpret_cast<void*>(plugin_impl);
   return NPERR_NO_ERROR;
 }
@@ -139,8 +191,7 @@ NPError NPP_SetWindow(NPP instance, NPWindow* window_info) {
     return NPERR_GENERIC_ERROR;
   }
 
-  HWND window_handle = reinterpret_cast<HWND>(window_info->window);
-  if (!plugin_impl->SetWindow(window_handle)) {
+  if (!plugin_impl->NPP_SetWindow(window_info)) {
     delete plugin_impl;
     return NPERR_GENERIC_ERROR;
   }

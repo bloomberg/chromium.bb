@@ -9,9 +9,7 @@
 #include <vector>
 
 #include "third_party/npapi/bindings/npapi.h"
-// #include "webkit/default_plugin/install_dialog.h"
-// #include "webkit/default_plugin/plugin_database_handler.h"
-// #include "webkit/default_plugin/plugin_install_job_monitor.h"
+#include "gfx/native_widget_types.h"
 
 // Possible plugin installer states.
 enum PluginInstallerState {
@@ -58,14 +56,14 @@ class PluginInstallerImpl {
   bool Initialize(void *module_handle, NPP instance, NPMIMEType mime_type,
                   int16 argc, char* argn[], char* argv[]);
 
-  // Displays the default plugin UI.
+  // Informs the plugin of its window information.
   //
   // Parameters:
-  // parent_window
-  //   Handle to the parent window.
-  bool SetWindow(gfx::NativeView parent_view);
+  // window_info
+  //   The window info passed to npapi.
+  bool NPP_SetWindow(NPWindow* window_info);
 
-  // Destroys the install dialog and the plugin window.
+  // Destroys the install dialog.
   void Shutdown();
 
   // Starts plugin download. Spawns the plugin installer after it is
@@ -127,7 +125,9 @@ class PluginInstallerImpl {
   //   Describes why the notification was sent.
   void URLNotify(const char* url, NPReason reason);
 
-  // gfx::NativeView window() const { return m_hWnd; }
+  // Used by the renderer to indicate plugin install through the infobar.
+  int16 NPP_HandleEvent(void* event);
+
   const std::string& mime_type() const { return mime_type_; }
 
   // Replaces a resource string with the placeholder passed in as an argument
@@ -168,6 +168,8 @@ class PluginInstallerImpl {
   bool IsRTLLayout() const;
 
  protected:
+  int16 OnDrawRect(CGContextRef context, CGRect dirty_rect);
+
   // Displays the plugin install confirmation dialog.
   void ShowInstallDialog();
 
@@ -266,57 +268,15 @@ class PluginInstallerImpl {
 
   // The plugins opaque instance handle
   NPP instance_;
-  // If this is to install activex
-  bool is_activex_;
-  // The plugin instantiation mode (NP_FULL or NP_EMBED)
-  int16 mode_;
-  // The handle to the icon displayed in the plugin installation window.
-  // HICON icon_;
-  // The Get plugin link message string displayed at the top left corner of
-  // the plugin window.
-  std::wstring get_plugin_link_message_;
-  // The command string displayed in the plugin installation window.
-  std::wstring command_;
-  // An additional message displayed at times by the plugin.
-  std::wstring optional_additional_message_;
   // The current stream.
   NPStream* plugin_install_stream_;
-  // The plugin finder URL.
-  std::string plugin_finder_url_;
   // The desired mime type.
   std::string mime_type_;
-  // The desired language.
-  std::string desired_language_;
-  // The plugin name.
-  std::wstring plugin_name_;
-  // The actual download URL.
-  std::string plugin_download_url_;
-  // Indicates if the plugin download URL points to an exe.
-  bool plugin_download_url_for_display_;
   // The current state of the plugin installer.
   PluginInstallerState plugin_installer_state_;
-  // Used to display the UI for plugin installation.
-  // PluginInstallDialog install_dialog_;
-  // To enable auto refresh of the plugin window once the installation
-  // is complete, we spawn the installation process in a job, and monitor
-  // IO completion events on the job. When the active process count of the
-  // job falls to zero, we initiate an auto refresh of the plugin list
-  // which enables the downloaded plugin to be instantiated.
-  // The completion events from the job are monitored in an independent
-  // thread.
-  // scoped_refptr<PluginInstallationJobMonitorThread>
-     //  installation_job_monitor_thread_;
-  // This object handles download and parsing of the plugins database.
-  // PluginDatabaseHandler plugin_database_handler_;
-  // Indicates if the left click to download/refresh should be enabled or not.
-  bool enable_click_;
-  // Handles to the fonts used to display text in the plugin window.
-  // HFONT bold_font_;
-  // HFONT regular_font_;
-  // HFONT underline_font_;
-  // Tooltip Window.
-  gfx::NativeWindow tooltip_;
-
+  // Dimensions of the plugin
+  uint32_t width_;
+  uint32_t height_;
   DISALLOW_EVIL_CONSTRUCTORS(PluginInstallerImpl);
 };
 

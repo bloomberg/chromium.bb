@@ -1533,7 +1533,9 @@ void RenderView::OnMissingPluginStatus(
     }
   }
 #else
-  // TODO(port): plugins current not supported
+  // TODO(port): Implement the infobar that accompanies the default plugin.
+  // Linux: http://crbug.com/10952
+  // Mac: http://crbug.com/17392
   NOTIMPLEMENTED();
 #endif
 }
