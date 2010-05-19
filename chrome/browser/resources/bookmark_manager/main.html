@@ -43,18 +43,6 @@ found in the LICENSE file.
 <script src="js/bmm.js"></script>
 <script src="js/bmm/bookmark_list.js"></script>
 <script src="js/bmm/bookmark_tree.js"></script>
-
-<script>
-
-// Sometimes the extension API is not initialized.
-if (!chrome.bookmarks)
-  console.error('Bookmarks extension API is not avaiable');
-
-// Allow platform specific CSS rules.
-if (cr.isMac)
-  document.documentElement.setAttribute('os', 'mac');
-
-</script>
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 
@@ -68,7 +56,7 @@ if (cr.isMac)
 </div>
 
 <div class="summary">
-  <h3 i18n-content="title">Bookmark Manager</h3>
+  <h3 i18n-content="title"></h3>
   <button menu="#organize-menu" tabindex="-1" i18n-content="organize_menu"></button>
 </div>
 
@@ -80,6 +68,71 @@ if (cr.isMac)
   <list id=list tabindex=2></list>
 </div>
 
+<!-- Organize menu -->
+<command i18n-values=".label:rename_folder" id="rename-folder-command"></command>
+<command i18n-values=".label:edit" id="edit-command"></command>
+<command i18n-values=".label:show_in_folder" id="show-in-folder-command"></command>
+<command i18n-values=".label:cut" id="cut-command"></command>
+<command i18n-values=".label:copy" id="copy-command"></command>
+<command i18n-values=".label:paste" id="paste-command"></command>
+<command i18n-values=".label:delete" id="delete-command"></command>
+<command i18n-values=".label:sort" id="sort-command"></command>
+<command i18n-values=".label:add_new_bookmark" id="add-new-bookmark-command"></command>
+<command i18n-values=".label:new_folder" id="new-folder-command"></command>
+
+<!-- Tools menu -->
+<command i18n-values=".label:import_menu" id="import-menu-command"></command>
+<command i18n-values=".label:export_menu" id="export-menu-command"></command>
+
+<!-- open * are handled in canExecute handler -->
+<command id="open-in-new-tab-command"></command>
+<command id="open-in-background-tab-command"></command>
+<command id="open-in-new-window-command"></command>
+<command id="open-incognito-window-command"></command>
+<command id="open-in-same-window-command"></command>
+
+<!-- TODO(arv): I think the commands might be better created in code? -->
+
+<menu id="organize-menu">
+  <button command="#add-new-bookmark-command"></button>
+  <button command="#new-folder-command"></button>
+  <hr>
+  <button command="#rename-folder-command"></button>
+  <button command="#edit-command"></button>
+  <button command="#show-in-folder-command"></button>
+  <hr>
+  <button command="#cut-command"></button>
+  <button command="#copy-command"></button>
+  <button command="#paste-command"></button>
+  <hr>
+  <button command="#delete-command"></button>
+  <hr>
+  <button command="#sort-command"></button>
+  <hr>
+  <button command="#import-menu-command"></button>
+  <button command="#export-menu-command"></button>
+</menu>
+
+<menu id="context-menu">
+  <button command="#open-in-new-tab-command"></button>
+  <button command="#open-in-new-window-command"></button>
+  <button command="#open-incognito-window-command"></button>
+  <hr>
+  <button command="#rename-folder-command"></button>
+  <button command="#edit-command"></button>
+  <button command="#show-in-folder-command"></button>
+  <hr>
+  <button command="#cut-command"></button>
+  <button command="#copy-command"></button>
+  <button command="#paste-command"></button>
+  <hr>
+  <button command="#delete-command"></button>
+  <hr>
+  <button command="#add-new-bookmark-command"></button>
+  <button command="#new-folder-command"></button>
+</menu>
+
+<div id="drop-overlay"></div>
 
 <script>
 
@@ -88,6 +141,39 @@ const BookmarkTree = bmm.BookmarkTree;
 const ListItem = cr.ui.ListItem;
 const TreeItem = cr.ui.TreeItem;
 const LinkKind = cr.LinkKind;
+const Command = cr.ui.Command;
+const CommandBinding = cr.ui.CommandBinding;
+const Menu = cr.ui.Menu;
+const MenuButton  = cr.ui.MenuButton;
+const Promise = cr.Promise;
+
+// Sometimes the extension API is not initialized.
+if (!chrome.bookmarks)
+  console.error('Bookmarks extension API is not avaiable');
+
+// Allow platform specific CSS rules.
+if (cr.isMac)
+  document.documentElement.setAttribute('os', 'mac');
+
+/**
+ * The local strings object which is used to do the translation.
+ * @type {!LocalStrings}
+ */
+var localStrings = new LocalStrings;
+
+// Get the localized strings from the backend.
+chrome.experimental.bookmarkManager.getStrings(function(data) {
+  // The strings may contain & which we need to strip.
+  for (var key in data) {
+    data[key] = data[key].replace(/&/, '');
+  }
+
+  localStrings.templateData = data;
+  i18nTemplate.process(document, data);
+
+  recentTreeItem.label = localStrings.getString('recent');
+  searchTreeItem.label = localStrings.getString('search');
+});
 
 /**
  * The id of the bookmark root.
@@ -934,81 +1020,7 @@ var dnd = {
 
 dnd.init();
 
-</script>
-
-<!-- Organize menu -->
-<command i18n-values=".label:rename_folder" id="rename-folder-command"></command>
-<command i18n-values=".label:edit" id="edit-command"></command>
-<command i18n-values=".label:show_in_folder" id="show-in-folder-command"></command>
-<command i18n-values=".label:cut" id="cut-command"></command>
-<command i18n-values=".label:copy" id="copy-command"></command>
-<command i18n-values=".label:paste" id="paste-command"></command>
-<command i18n-values=".label:delete" id="delete-command"></command>
-<command i18n-values=".label:sort" id="sort-command"></command>
-<command i18n-values=".label:add_new_bookmark" id="add-new-bookmark-command"></command>
-<command i18n-values=".label:new_folder" id="new-folder-command"></command>
-
-<!-- Tools menu -->
-<command i18n-values=".label:import_menu" id="import-menu-command"></command>
-<command i18n-values=".label:export_menu" id="export-menu-command"></command>
-
-<!-- open * are handled in canExecute handler -->
-<command id="open-in-new-tab-command"></command>
-<command id="open-in-background-tab-command"></command>
-<command id="open-in-new-window-command"></command>
-<command id="open-incognito-window-command"></command>
-<command id="open-in-same-window-command"></command>
-
-<!-- TODO(arv): I think the commands might be better created in code? -->
-
-<menu id="organize-menu">
-  <button command="#add-new-bookmark-command"></button>
-  <button command="#new-folder-command"></button>
-  <hr>
-  <button command="#rename-folder-command"></button>
-  <button command="#edit-command"></button>
-  <button command="#show-in-folder-command"></button>
-  <hr>
-  <button command="#cut-command"></button>
-  <button command="#copy-command"></button>
-  <button command="#paste-command"></button>
-  <hr>
-  <button command="#delete-command"></button>
-  <hr>
-  <button command="#sort-command"></button>
-  <hr>
-  <button command="#import-menu-command"></button>
-  <button command="#export-menu-command"></button>
-</menu>
-
-<menu id="context-menu">
-  <button command="#open-in-new-tab-command"></button>
-  <button command="#open-in-new-window-command"></button>
-  <button command="#open-incognito-window-command"></button>
-  <hr>
-  <button command="#rename-folder-command"></button>
-  <button command="#edit-command"></button>
-  <button command="#show-in-folder-command"></button>
-  <hr>
-  <button command="#cut-command"></button>
-  <button command="#copy-command"></button>
-  <button command="#paste-command"></button>
-  <hr>
-  <button command="#delete-command"></button>
-  <hr>
-  <button command="#add-new-bookmark-command"></button>
-  <button command="#new-folder-command"></button>
-</menu>
-
-<script>
-
 // Commands
-
-const Command = cr.ui.Command;
-const CommandBinding = cr.ui.CommandBinding;
-const Menu = cr.ui.Menu;
-const MenuButton  = cr.ui.MenuButton;
-const Promise = cr.Promise;
 
 cr.ui.decorate('menu', Menu);
 cr.ui.decorate('button[menu]', MenuButton);
@@ -1592,29 +1604,7 @@ tree.addEventListener('command', handleCommand);
   });
 })();
 
-/**
- * The local strings object which is used to do the translation.
- * @type {!LocalStrings}
- */
-var localStrings = new LocalStrings;
-
-// Get the localized strings from the backend.
-chrome.experimental.bookmarkManager.getStrings(function(data) {
-  // The strings may contain & which we need to strip.
-  for (var key in data) {
-    data[key] = data[key].replace(/&/, '');
-  }
-
-  localStrings.templateData = data;
-  i18nTemplate.process(document, data);
-
-  recentTreeItem.label = localStrings.getString('recent');
-  searchTreeItem.label = localStrings.getString('search');
-});
-
 </script>
-
-<div id="drop-overlay"></div>
 
 </body>
 </html>
