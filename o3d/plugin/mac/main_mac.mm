@@ -56,6 +56,7 @@
 #include "plugin/cross/whitelist.h"
 #include "plugin/mac/plugin_mac.h"
 #include "plugin/mac/graphics_utils_mac.h"
+#include "plugin/mac/fullscreen_window_mac.h"
 #import "plugin/mac/o3d_layer.h"
 
 
@@ -69,6 +70,7 @@ using glue::StreamManager;
 using o3d::Bitmap;
 using o3d::DisplayWindowMac;
 using o3d::Event;
+using o3d::FullscreenWindowMac;
 using o3d::Renderer;
 
 namespace {
@@ -305,9 +307,8 @@ void HandleMouseEvent(PluginObject* obj,
   int x, y;
   // now make x and y plugin relative coords
   if (obj->GetFullscreenMacWindow()) {
-    Rect  wBounds;
-    GetWindowBounds(obj->GetFullscreenMacWindow(), kWindowGlobalPortRgn,
-                    &wBounds);
+    Rect wBounds = o3d::CGRect2Rect(
+        obj->GetFullscreenMacWindow()->GetWindowBounds());
     x = screen_x - wBounds.left;
     y = screen_y - wBounds.top;
     in_plugin = true;
@@ -470,7 +471,7 @@ EventModifiers CocoaToEventRecordModifiers(NSUInteger inMods) {
 // This API will also be required for a carbon-free 64 bit version for 10.6.
 bool HandleCocoaEvent(NPP instance, NPCocoaEvent* the_event) {
   PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
-  WindowRef fullscreen_window = obj->GetFullscreenMacWindow();
+  FullscreenWindowMac* fullscreen_window = obj->GetFullscreenMacWindow();
   bool handled = false;
 
   if (g_logger) g_logger->UpdateLogging();
@@ -552,7 +553,7 @@ bool HandleCocoaEvent(NPP instance, NPCocoaEvent* the_event) {
       // because another app has been called to the front.
       // TODO: We'll have problems with this when dealing with e.g.
       // Japanese text input IME windows.
-      if (fullscreen_window && fullscreen_window != ActiveNonFloatingWindow()) {
+      if (fullscreen_window && !fullscreen_window->IsActive()) {
         obj->CancelFullscreenDisplay();
       }
 
@@ -846,7 +847,7 @@ NPError PlatformNPPGetValue(NPP instance, NPPVariable variable, void *value) {
 bool HandleMacEvent(EventRecord* the_event, NPP instance) {
   PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
   bool handled = false;
-  WindowRef fullscreen_window = obj->GetFullscreenMacWindow();
+  FullscreenWindowMac* fullscreen_window = obj->GetFullscreenMacWindow();
 
   if (g_logger) g_logger->UpdateLogging();
 
@@ -877,7 +878,7 @@ bool HandleMacEvent(EventRecord* the_event, NPP instance) {
       // of the fullscreen window and we need to exit fullscreen mode.
       // This can happen because another browser window has come forward, or
       // because another app has been called to the front.
-      if (fullscreen_window && fullscreen_window != ActiveNonFloatingWindow()) {
+      if (fullscreen_window && !fullscreen_window->IsActive()) {
         obj->CancelFullscreenDisplay();
       }
 

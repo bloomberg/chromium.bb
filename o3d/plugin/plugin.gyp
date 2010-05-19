@@ -161,8 +161,12 @@
             ],
             'sources': [
               'mac/config_mac.mm',
+              'mac/fullscreen_window_mac.h',
+              'mac/fullscreen_window_mac.mm',
               'mac/o3d_layer.mm',
               'mac/o3d_plugin.r',
+              'mac/overlay_window_mac.h',
+              'mac/overlay_window_mac.mm',
               'mac/plugin_logging-mac.mm',
               'mac/plugin_mac.h',
               'mac/plugin_mac.mm',

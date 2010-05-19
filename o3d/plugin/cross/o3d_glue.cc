@@ -124,16 +124,11 @@ PluginObject::PluginObject(NPP npp)
       painted_once_(false),
 #endif
 #ifdef OS_MACOSX
-      mac_fullscreen_state_(NULL),
       renderer_is_software_(false),
       scroll_is_in_progress_(false),
       drawing_model_(NPDrawingModelQuickDraw),
       event_model_(NPEventModelCarbon),
       mac_window_(0),
-      mac_fullscreen_window_(0),
-#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
-      mac_fullscreen_overlay_window_(0),
-#endif
       mac_window_selected_tab_(0),
       mac_cocoa_window_(0),
       mac_surface_hidden_(0),
@@ -143,9 +138,6 @@ PluginObject::PluginObject(NPP npp)
       mac_cgl_pbuffer_(0),
       last_mac_event_time_(0),
       gl_layer_(NULL),
-#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
-      time_to_hide_overlay_(0.0),
-#endif
 #endif  // OS_MACOSX
 #ifdef OS_LINUX
       display_(NULL),

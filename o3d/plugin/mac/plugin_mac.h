@@ -43,6 +43,8 @@
 
 namespace o3d {
 
+class DisplayMode;
+
 // RenderTimer maintains an animation timer (nominally running at 60fps)
 //
 // Keeps track of the current NPP instances running in the browser and then
@@ -83,6 +85,7 @@ void ReleaseSafariBrowserWindow(void* browserWindow);
 
 // Some miscellaneous helper functions...
 
+void GetCurrentDisplayMode(DisplayMode *mode);
 
 void CFReleaseIfNotNull(CFTypeRef cf);
 

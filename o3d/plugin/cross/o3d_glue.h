@@ -70,6 +70,9 @@
 #include "core/cross/texture.h"
 #include "plugin/cross/main_thread_task_poster.h"
 #include "plugin/cross/np_v8_bridge.h"
+#ifdef OS_MACOSX
+#include "plugin/mac/fullscreen_window_mac.h"
+#endif
 #include "client_glue.h"
 #include "third_party/nixysa/static_glue/npapi/common.h"
 
@@ -134,6 +137,9 @@ using o3d::RenderSurface;
 using o3d::RenderDepthStencilSurface;
 using o3d::ServiceLocator;
 using o3d::Texture2D;
+#ifdef OS_MACOSX
+using o3d::FullscreenWindowMac;
+#endif
 
 class NPAPIObject: public NPObject {
   NPP npp_;
@@ -233,22 +239,18 @@ class PluginObject: public NPObject {
                        GdkEvent *configure);
   void SetDisplay(Display *display);
 #elif defined(OS_MACOSX)
-#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
-  void SetFullscreenOverlayMacWindow(WindowRef window) {
-    mac_fullscreen_overlay_window_ = window;
+  FullscreenWindowMac* GetFullscreenMacWindow() {
+    return mac_fullscreen_window_.get();
   }
 
-  WindowRef GetFullscreenOverlayMacWindow() {
-    return mac_fullscreen_overlay_window_;
-  }
-#endif
-
-  void SetFullscreenMacWindow(WindowRef window) {
-    mac_fullscreen_window_ = window;
+  // Assumes ownership of the passed pointer. Passing NULL deletes the
+  // last non-NULL value set.
+  void SetFullscreenMacWindow(FullscreenWindowMac* window) {
+    mac_fullscreen_window_.reset(window);
   }
 
-  WindowRef GetFullscreenMacWindow() {
-    return mac_fullscreen_window_;
+  WindowRef GetMacWindow() {
+    return mac_window_;
   }
 
   bool ScrollIsInProgress() { return scroll_is_in_progress_; }
@@ -258,6 +260,10 @@ class PluginObject: public NPObject {
   bool RendererIsSoftware() {return renderer_is_software_;}
   bool SetRendererIsSoftware(bool state);
   bool renderer_is_software_;
+
+  AGLContext GetMacAGLContext() {
+    return mac_agl_context_;
+  }
 
   NPDrawingModel drawing_model_;
   NPEventModel event_model_;
@@ -281,19 +287,8 @@ class PluginObject: public NPObject {
   CGLPBufferObj mac_cgl_pbuffer_;
 
   // Fullscreen related stuff.
-
-#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
-  // FullscreenIdle gets repeatedly called while we are in fullscreen mode.
-  // Currently its only task is to hide the fullscreen message at the right
-  // time.
-  void FullscreenIdle();
-  double time_to_hide_overlay_;
-#endif
-  WindowRef mac_fullscreen_window_;  // NULL if not in fullscreen modee
-#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
-  WindowRef mac_fullscreen_overlay_window_;  // NULL if not in fullscreen mode
-#endif
-  Ptr mac_fullscreen_state_;
+  // NULL if not in fullscreen mode.
+  scoped_ptr<FullscreenWindowMac> mac_fullscreen_window_;
 
 #endif  //  OS_MACOSX
 #ifdef OS_LINUX
