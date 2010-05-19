@@ -24,7 +24,7 @@ typedef struct Stats {
   std::string disk;
 
   Stats() : uptime(std::string()), disk(std::string()) {}
-};
+} Stats;
 
 }
 
