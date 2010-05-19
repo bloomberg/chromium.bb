@@ -139,15 +139,19 @@ base::ProcessHandle LaunchExecutable(const std::wstring& executable,
   if (path.empty()) {
     path = FormatCommandForApp(executable, argument);
     if (path.empty()) {
-      DLOG(ERROR) << "Failed to find executable: " << executable;
+      LOG(ERROR) << "Failed to find executable: " << executable;
     } else {
       CommandLine cmdline = CommandLine::FromString(path);
-      base::LaunchApp(cmdline, false, false, &process);
+      if (!base::LaunchApp(cmdline, false, false, &process)) {
+        LOG(ERROR) << "LaunchApp failed: " << ::GetLastError();
+      }
     }
   } else {
     CommandLine cmdline((FilePath(path)));
     cmdline.AppendLooseValue(argument);
-    base::LaunchApp(cmdline, false, false, &process);
+    if (!base::LaunchApp(cmdline, false, false, &process)) {
+      LOG(ERROR) << "LaunchApp failed: " << ::GetLastError();
+    }
   }
   return process;
 }
@@ -198,13 +202,19 @@ base::ProcessHandle LaunchIEOnVista(const std::wstring& url) {
   PROCESS_INFORMATION pi = {0};
   IELAUNCHURLINFO  info = {sizeof info, 0};
   HMODULE h = LoadLibrary(L"ieframe.dll");
-  if (!h)
+  if (!h) {
+    LOG(ERROR) << "Failed to load ieframe.dll: " << ::GetLastError();
     return NULL;
+  }
   launch = reinterpret_cast<IELaunchURLPtr>(GetProcAddress(h, "IELaunchURL"));
+  CHECK(launch);
   HRESULT hr = launch(url.c_str(), &pi, &info);
   FreeLibrary(h);
-  if (SUCCEEDED(hr))
+  if (SUCCEEDED(hr)) {
     CloseHandle(pi.hThread);
+  } else {
+    LOG(ERROR) << ::StringPrintf("IELaunchURL failed: 0x%08X", hr);
+  }
   return pi.hProcess;
 }
 
@@ -286,8 +296,8 @@ BOOL LowIntegrityToken::Impersonate() {
     return ok;
   }
 
-  // TODO: sandbox/src/restricted_token_utils.cc has SetTokenIntegrityLevel
-  // function already.
+  // TODO(stoyan): sandbox/src/restricted_token_utils.cc has
+  // SetTokenIntegrityLevel function already.
   ScopedHandle impersonation_token(impersonation_token_handle);
   PSID integrity_sid = NULL;
   TOKEN_MANDATORY_LABEL tml = {0};
@@ -500,7 +510,7 @@ void WebBrowserEventSink::Uninitialize() {
         base::TimeDelta elapsed = base::Time::Now() - start;
         ULARGE_INTEGER ms;
         ms.QuadPart = elapsed.InMilliseconds();
-        DCHECK(ms.HighPart == 0);
+        DCHECK_EQ(ms.HighPart, 0U);
         if (ms.LowPart > max_wait) {
           DLOG(ERROR) << "Wait for IE timed out (2)";
           break;
@@ -765,7 +775,7 @@ HRESULT WebBrowserEventSink::SetWebBrowser(IWebBrowser2* web_browser2) {
 }
 
 HRESULT WebBrowserEventSink::CloseWebBrowser() {
-  DCHECK(process_id_to_wait_for_ == 0);
+  DCHECK_EQ(process_id_to_wait_for_, 0);
   if (!web_browser2_)
     return E_FAIL;
 
