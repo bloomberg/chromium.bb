@@ -273,10 +273,6 @@ class ChromeFrameAutomationClient
   // For IDeleteBrowsingHistorySupport
   void RemoveBrowsingData(int remove_mask);
 
-  ChromeFrameAutomationProxy* automation_server() {
-    return automation_server_;
-  }
-
  protected:
   // ChromeFrameAutomationProxy::LaunchDelegate implementation.
   virtual void LaunchComplete(ChromeFrameAutomationProxy* proxy,
@@ -316,6 +312,7 @@ class ChromeFrameAutomationClient
 
   void* automation_server_id_;
   ChromeFrameAutomationProxy* automation_server_;
+
   HWND chrome_window_;
   scoped_refptr<TabProxy> tab_;
   ChromeFrameDelegate* chrome_frame_delegate_;

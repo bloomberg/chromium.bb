@@ -90,10 +90,12 @@ class CreateExternalTabContext
   }
 
   void Completed(HWND chrome_window, HWND tab_window, int tab_handle) {
+    client_->CreateExternalTabComplete(chrome_window, tab_window, tab_handle);
     client_->PostTask(FROM_HERE,
-                      NewRunnableMethod(client_.get(),
-                      &ChromeFrameAutomationClient::CreateExternalTabComplete,
-                      chrome_window, tab_window, tab_handle));
+                      NewRunnableMethod(
+                          client_.get(),
+                          &ChromeFrameAutomationClient::InitializeComplete,
+                          AUTOMATION_SUCCESS));
   }
 
  private:

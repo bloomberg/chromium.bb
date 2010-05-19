@@ -832,8 +832,6 @@ void ChromeFrameAutomationClient::CreateExternalTabComplete(HWND chrome_window,
     tab_->AddObserver(this);
     tab_handle_ = tab_handle;
   }
-
-  InitializeComplete(launch_result);
 }
 
 void ChromeFrameAutomationClient::SetEnableExtensionAutomation(
@@ -1100,19 +1098,21 @@ void ChromeFrameAutomationClient::ReleaseAutomationServer() {
     // calling ReleaseAutomationServer.  The reason we do this is that
     // we must cancel pending messages before we release the automation server.
     // Furthermore, while ReleaseAutomationServer is running, we could get
-    // a callback to LaunchComplete which is where we normally get our pointer
-    // to the automation server and there we check the server id for NULLness
-    // and do nothing if it is NULL.
+    // a callback to LaunchComplete which could cause an external tab to be
+    // created. Ideally the callbacks should be dropped.
+    // TODO(ananta)
+    // Refactor the ChromeFrameAutomationProxy code to not depend on
+    // AutomationProxy and simplify the whole mess.
     void* server_id = automation_server_id_;
     automation_server_id_ = NULL;
 
     if (automation_server_) {
       // Make sure to clean up any pending sync messages before we go away.
       automation_server_->CancelAsync(this);
-      automation_server_ = NULL;
     }
 
     proxy_factory_->ReleaseAutomationServer(server_id);
+    automation_server_ = NULL;
 
     // automation_server_ must not have been set to non NULL.
     // (if this regresses, start by looking at LaunchComplete()).
