@@ -695,7 +695,7 @@ InstallDriver() {
 
 # NOTE: we do not expect the assembler or linker to be used to build newlib.a
 STD_ENV_FOR_NEWLIB=(
-    CFLAGS_FOR_TARGET="${CFLAGS_FOR_SFI_TARGET} -DHAVE_NANOSLEEP=1"
+    CFLAGS_FOR_TARGET="${CFLAGS_FOR_SFI_TARGET}"
     CPPFLAGS_FOR_TARGET="${CXXFLAGS_FOR_SFI_TARGET}"
     CC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
     GCC_FOR_TARGET="${CC_FOR_SFI_TARGET}"

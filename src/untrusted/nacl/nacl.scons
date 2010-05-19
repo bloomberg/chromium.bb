@@ -51,6 +51,9 @@ sources = [
     'write.c',
     ]
 
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  sources.append('sleep.c')
+
 env.ComponentLibrary('libnacl', sources)
 
 env.AddLibraryToSdk(['libnacl'])
