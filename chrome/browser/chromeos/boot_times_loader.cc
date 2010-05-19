@@ -17,13 +17,29 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/chrome_switches.h"
 
+namespace {
+
+typedef struct Stats {
+  std::string uptime;
+  std::string disk;
+
+  Stats() : uptime(std::string()), disk(std::string()) {}
+};
+
+}
+
 namespace chromeos {
 
 // File uptime logs are located in.
 static const char kLogPath[] = "/tmp";
-
+// Prefix for the time measurement files.
+static const char kUptimePrefix[] = "uptime-";
+// Prefix for the disk usage files.
+static const char kDiskPrefix[] = "disk-";
+// Name of the time that Chrome's main() is called.
+static const char kChromeMain[] = "chrome-main";
 // Delay in milliseconds between file read attempts.
-static const int64 kReadAttemptDelayMs = 500;
+static const int64 kReadAttemptDelayMs = 250;
 
 BootTimesLoader::BootTimesLoader() : backend_(new Backend()) {
 }
@@ -55,37 +71,9 @@ BootTimesLoader::Handle BootTimesLoader::GetBootTimes(
   return request->handle();
 }
 
-// Executes command within a shell, allowing IO redirection. Searches
-// for a whitespace delimited string prefixed by prefix in the output and
-// returns it.
-static std::string ExecuteInShell(
-    const std::string& command, const std::string& prefix) {
-  std::vector<std::string> args;
-  args.push_back("/bin/sh");
-  args.push_back("-c");
-  args.push_back(command);
-  CommandLine cmd(args);
-  std::string out;
-
-  if (base::GetAppOutput(cmd, &out)) {
-    size_t index = out.find(prefix);
-    if (index != std::string::npos) {
-      size_t value_index = index + prefix.size();
-      size_t whitespace_index = out.find(' ', value_index);
-      size_t chars_left = std::string::npos;
-      if (whitespace_index == std::string::npos)
-        whitespace_index = out.find('\n', value_index);
-      if (whitespace_index != std::string::npos)
-        chars_left = whitespace_index - value_index;
-      return out.substr(value_index, chars_left);
-    }
-  }
-  return std::string();
-}
-
 // Extracts the uptime value from files located in /tmp, returning the
 // value as a double in value.
-static bool GetUptime(const std::string& log, double* value) {
+static bool GetTime(const std::string& log, double* value) {
   FilePath log_dir(kLogPath);
   FilePath log_file = log_dir.Append(log);
   std::string contents;
@@ -102,15 +90,13 @@ static bool GetUptime(const std::string& log, double* value) {
 
 void BootTimesLoader::Backend::GetBootTimes(
     scoped_refptr<GetBootTimesRequest> request) {
-  const char* kInitialTSCCommand = "dmesg | grep 'Initial TSC value:'";
-  const char* kInitialTSCPrefix = "TSC value: ";
-  const char* kClockSpeedCommand = "dmesg | grep -e 'Detected.*processor'";
-  const char* kClockSpeedPrefix = "Detected ";
-  const char* kPreStartup = "uptime-pre-startup";
-  const char* kChromeExec = "uptime-chrome-exec";
-  const char* kChromeMain = "uptime-chrome-main";
-  const char* kXStarted = "uptime-x-started";
-  const char* kLoginPromptReady = "uptime-login-prompt-ready";
+  const char* kFirmwareBootTime = "firmware-boot-time";
+  const char* kPreStartup = "pre-startup";
+  const char* kChromeExec = "chrome-exec";
+  const char* kChromeMain = "chrome-main";
+  const char* kXStarted = "x-started";
+  const char* kLoginPromptReady = "login-prompt-ready";
+  std::string uptime_prefix = kUptimePrefix;
 
   if (request->canceled())
     return;
@@ -128,27 +114,67 @@ void BootTimesLoader::Backend::GetBootTimes(
   }
 
   BootTimes boot_times;
-  std::string tsc_value = ExecuteInShell(kInitialTSCCommand, kInitialTSCPrefix);
-  std::string speed_value =
-      ExecuteInShell(kClockSpeedCommand, kClockSpeedPrefix);
-  boot_times.firmware = 0;
-  if (!tsc_value.empty() && !speed_value.empty()) {
-    int64 tsc = 0;
-    double speed = 0;
-    if (StringToInt64(tsc_value, &tsc) &&
-        StringToDouble(speed_value, &speed) &&
-        speed > 0) {
-      boot_times.firmware = static_cast<double>(tsc) / (speed * 1000000);
-    }
-  }
-  GetUptime(kPreStartup, &boot_times.pre_startup);
-  GetUptime(kXStarted, &boot_times.x_started);
-  GetUptime(kChromeExec, &boot_times.chrome_exec);
-  GetUptime(kChromeMain, &boot_times.chrome_main);
-  GetUptime(kLoginPromptReady, &boot_times.login_prompt_ready);
+
+  GetTime(kFirmwareBootTime, &boot_times.firmware);
+  GetTime(uptime_prefix + kPreStartup, &boot_times.pre_startup);
+  GetTime(uptime_prefix + kXStarted, &boot_times.x_started);
+  GetTime(uptime_prefix + kChromeExec, &boot_times.chrome_exec);
+  GetTime(uptime_prefix + kChromeMain, &boot_times.chrome_main);
+  GetTime(uptime_prefix + kLoginPromptReady, &boot_times.login_prompt_ready);
 
   request->ForwardResult(
       GetBootTimesCallback::TupleType(request->handle(), boot_times));
+}
+
+static void RecordStatsDelayed(
+    const std::string& name,
+    const std::string& uptime,
+    const std::string& disk) {
+  const FilePath log_path(kLogPath);
+  std::string disk_prefix = kDiskPrefix;
+  const FilePath uptime_output =
+      log_path.Append(FilePath(kUptimePrefix + name));
+  const FilePath disk_output = log_path.Append(FilePath(kDiskPrefix + name));
+
+  // Write out the files, ensuring that they don't exist already.
+  if (!file_util::PathExists(uptime_output))
+    file_util::WriteFile(uptime_output, uptime.data(), uptime.size());
+  if (!file_util::PathExists(disk_output))
+    file_util::WriteFile(disk_output, disk.data(), disk.size());
+}
+
+static void RecordStats(
+    const std::string& name, const Stats& stats) {
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableFunction(RecordStatsDelayed, name, stats.uptime, stats.disk));
+}
+
+static Stats GetCurrentStats() {
+  const FilePath kProcUptime("/proc/uptime");
+  const FilePath kDiskStat("/sys/block/sda/stat");
+  Stats stats;
+
+  file_util::ReadFileToString(kProcUptime, &stats.uptime);
+  file_util::ReadFileToString(kDiskStat, &stats.disk);
+  return stats;
+}
+
+// static
+void BootTimesLoader::RecordCurrentStats(const std::string& name) {
+  Stats stats = GetCurrentStats();
+  RecordStats(name, stats);
+}
+
+// Used to hold the stats at main().
+static Stats chrome_main_stats_;
+
+void BootTimesLoader::SaveChromeMainStats() {
+  chrome_main_stats_ = GetCurrentStats();
+}
+
+void BootTimesLoader::RecordChromeMainStats() {
+  RecordStats(kChromeMain, chrome_main_stats_);
 }
 
 }  // namespace chromeos

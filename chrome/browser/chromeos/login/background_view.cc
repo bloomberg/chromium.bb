@@ -158,18 +158,18 @@ void BackgroundView::InitStatusArea() {
 }
 
 void BackgroundView::InitInfoLabels() {
-  const SkColor kVersionColor = 0xFFFFFFFF;
+  const SkColor kVersionColor = 0xff8eb1f4;
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
   os_version_label_ = new views::Label();
   os_version_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   os_version_label_->SetColor(kVersionColor);
-  os_version_label_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
+  os_version_label_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
   AddChildView(os_version_label_);
   boot_times_label_ = new views::Label();
   boot_times_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   boot_times_label_->SetColor(kVersionColor);
-  boot_times_label_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
+  boot_times_label_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
   AddChildView(boot_times_label_);
 
   if (CrosLibrary::Get()->EnsureLoaded()) {

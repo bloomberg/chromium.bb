@@ -90,6 +90,10 @@
 #include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/boot_times_loader.h"
+#endif
+
 extern int BrowserMain(const MainFunctionParams&);
 extern int RendererMain(const MainFunctionParams&);
 extern int GpuMain(const MainFunctionParams&);
@@ -408,12 +412,7 @@ DLLEXPORT int __cdecl ChromeMain(HINSTANCE instance,
 int ChromeMain(int argc, char** argv) {
 #endif
 #if defined(OS_CHROMEOS)
-  // Output our start times.  Save the result to appease warn_unused_result.
-  int result = 0;
-  result = system("if [ ! -f /tmp/uptime-chrome-main ]; "
-                  "then cat /proc/uptime > /tmp/uptime-chrome-main ; fi");
-  result = system("if [ ! -f /tmp/disk-chrome-main ]; "
-                  "then cat /sys/block/sda/stat > /tmp/disk-chrome-main ; fi");
+  chromeos::BootTimesLoader::SaveChromeMainStats();
 #endif
 #if defined(OS_MACOSX)
   // TODO(mark): Some of these things ought to be handled in chrome_exe_main.mm.

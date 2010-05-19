@@ -96,6 +96,10 @@
 #include "chrome/browser/gtk/gtk_util.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/boot_times_loader.h"
+#endif
+
 // TODO(port): several win-only methods have been pulled out of this, but
 // BrowserMain() as a whole needs to be broken apart so that it's usable by
 // other platforms. For now, it's just a stub. This is a serious work in
@@ -732,7 +736,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   // Register the main thread by instantiating it, but don't call any methods.
   ChromeThread main_thread(ChromeThread::UI, MessageLoop::current());
-
 #if defined(OS_POSIX)
   int pipefd[2];
   int ret = pipe(pipefd);
@@ -902,6 +905,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #endif
 
   CreateChildThreads(browser_process.get());
+
+#if defined(OS_CHROMEOS)
+  // Now that the file thread exists we can record our stats.
+  chromeos::BootTimesLoader::RecordChromeMainStats();
+#endif
 
   // Record last shutdown time into a histogram.
   browser_shutdown::ReadLastShutdownInfo();

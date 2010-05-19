@@ -54,6 +54,20 @@ class BootTimesLoader : public CancelableRequestProvider {
       CancelableRequestConsumerBase* consumer,
       GetBootTimesCallback* callback);
 
+  // Records current uptime and disk usage for metrics use.
+  // Posts task to file thread.
+  // name will be used as part of file names in /tmp.
+  // Existing stats files will not be overwritten.
+  static void RecordCurrentStats(const std::string& name);
+
+  // Saves away the stats at main, so the can be recorded later. At main() time
+  // the necessary threads don't exist yet for recording the data.
+  static void SaveChromeMainStats();
+
+  // Records the data previously saved by SaveChromeMainStats(), using the
+  // file thread. Existing stats files will not be overwritten.
+  static void RecordChromeMainStats();
+
  private:
   // BootTimesLoader calls into the Backend on the file thread to load
   // and extract the boot times.
