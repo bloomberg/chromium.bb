@@ -374,12 +374,20 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestStepOver) {
   RunTest("testStepOver", kDebuggerStepTestPage);
 }
 
+#if defined(OS_CHROMEOS)
+// See http://crbug.com/43479
+#define MAYBE_TestStepOut FLAKY_TestStepOut
+#else
+#define MAYBE_TestStepOut TestStepOut
+#endif
+
 // Tests step out functionality in the debugger.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestStepOut) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestStepOut) {
   RunTest("testStepOut", kDebuggerStepTestPage);
 }
 
 #if defined(OS_CHROMEOS)
+// See http://crbug.com/43479
 #define MAYBE_TestStepIn FLAKY_TestStepIn
 #else
 #define MAYBE_TestStepIn TestStepIn
