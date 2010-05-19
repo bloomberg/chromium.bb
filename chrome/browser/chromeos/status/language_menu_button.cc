@@ -136,6 +136,7 @@ LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
       ResourceBundle::BaseFont).DeriveFont(1, gfx::Font::BOLD));
   SetEnabledColor(0xB3FFFFFF);  // White with 70% Alpha
   SetDisabledColor(0x4DFFFFFF);  // White with 30% Alpha
+  SetEnabled(false);  // Disable the button until the first FocusIn comes in.
   SetShowHighlighted(false);
   // Update the model
   RebuildModel();
@@ -144,6 +145,9 @@ LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
   // Display the default input method name.
   const std::wstring name
       = FormatInputLanguage(input_method_descriptors_->at(0), false);
+  // TODO(yusukes): The assumption that the input method at index 0 is enabled
+  // by default is not always true. We should fix the logic once suzhe's patches
+  // for issue 2627 (get/set ibus state without focus) are submitted.
   UpdateIcon(name);
   CrosLibrary::Get()->GetLanguageLibrary()->AddObserver(this);
 }
