@@ -78,23 +78,8 @@ int ExtensionTabUtil::GetTabId(const TabContents* tab_contents) {
   return tab_contents->controller().session_id().id();
 }
 
-ExtensionTabUtil::TabStatus ExtensionTabUtil::GetTabStatus(
-    const TabContents* tab_contents) {
-  return tab_contents->is_loading() ? TAB_LOADING : TAB_COMPLETE;
-}
-
-std::string ExtensionTabUtil::GetTabStatusText(TabStatus status) {
-  std::string text;
-  switch (status) {
-    case TAB_LOADING:
-      text = keys::kStatusValueLoading;
-      break;
-    case TAB_COMPLETE:
-      text = keys::kStatusValueComplete;
-      break;
-  }
-
-  return text;
+std::string ExtensionTabUtil::GetTabStatusText(bool is_loading) {
+  return is_loading ? keys::kStatusValueLoading : keys::kStatusValueComplete;
 }
 
 int ExtensionTabUtil::GetWindowIdOfTab(const TabContents* tab_contents) {
@@ -130,22 +115,20 @@ ListValue* ExtensionTabUtil::CreateTabList(const Browser* browser) {
 
 DictionaryValue* ExtensionTabUtil::CreateTabValue(
     const TabContents* contents, TabStripModel* tab_strip, int tab_index) {
-  TabStatus status = GetTabStatus(contents);
-
   DictionaryValue* result = new DictionaryValue();
   result->SetInteger(keys::kIdKey, ExtensionTabUtil::GetTabId(contents));
   result->SetInteger(keys::kIndexKey, tab_index);
   result->SetInteger(keys::kWindowIdKey,
                      ExtensionTabUtil::GetWindowIdOfTab(contents));
   result->SetString(keys::kUrlKey, contents->GetURL().spec());
-  result->SetString(keys::kStatusKey, GetTabStatusText(status));
+  result->SetString(keys::kStatusKey, GetTabStatusText(contents->is_loading()));
   result->SetBoolean(keys::kSelectedKey,
                      tab_strip && tab_index == tab_strip->selected_index());
   result->SetString(keys::kTitleKey, UTF16ToWide(contents->GetTitle()));
   result->SetBoolean(keys::kIncognitoKey,
                      contents->profile()->IsOffTheRecord());
 
-  if (status != TAB_LOADING) {
+  if (!contents->is_loading()) {
     NavigationEntry* entry = contents->controller().GetActiveEntry();
     if (entry) {
       if (entry->favicon().is_valid())

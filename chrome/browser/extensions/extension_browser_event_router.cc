@@ -22,61 +22,39 @@ namespace tab_keys = extension_tabs_module_constants;
 namespace page_action_keys = extension_page_actions_module_constants;
 
 ExtensionBrowserEventRouter::TabEntry::TabEntry()
-    : state_(ExtensionTabUtil::TAB_COMPLETE),
-      pending_navigate_(false),
+    : complete_waiting_on_load_(false),
       url_() {
-}
-
-ExtensionBrowserEventRouter::TabEntry::TabEntry(const TabContents* contents)
-    : state_(ExtensionTabUtil::TAB_COMPLETE),
-      pending_navigate_(false),
-      url_(contents->GetURL()) {
-  UpdateLoadState(contents);
 }
 
 DictionaryValue* ExtensionBrowserEventRouter::TabEntry::UpdateLoadState(
     const TabContents* contents) {
-  ExtensionTabUtil::TabStatus old_state = state_;
-  state_ = ExtensionTabUtil::GetTabStatus(contents);
-
-  if (old_state == state_)
-    return false;
-
-  if (state_ == ExtensionTabUtil::TAB_LOADING) {
-    // Do not send "loading" state changed now. Wait for navigate so the new
-    // url is available.
-    pending_navigate_ = true;
+  // The tab may go in & out of loading (for instance if iframes navigate).
+  // We only want to respond to the first change from loading to !loading after
+  // the NAV_ENTRY_COMMITTED was fired.
+  if (!complete_waiting_on_load_ || contents->is_loading())
     return NULL;
 
-  } else if (state_ == ExtensionTabUtil::TAB_COMPLETE) {
-    // Send "complete" state change.
-    DictionaryValue* changed_properties = new DictionaryValue();
-    changed_properties->SetString(tab_keys::kStatusKey,
-        tab_keys::kStatusValueComplete);
-    return changed_properties;
-
-  } else {
-    NOTREACHED();
-    return NULL;
-  }
+  // Send "complete" state change.
+  complete_waiting_on_load_ = false;
+  DictionaryValue* changed_properties = new DictionaryValue();
+  changed_properties->SetString(tab_keys::kStatusKey,
+      tab_keys::kStatusValueComplete);
+  return changed_properties;
 }
 
 DictionaryValue* ExtensionBrowserEventRouter::TabEntry::DidNavigate(
     const TabContents* contents) {
-  if (!pending_navigate_)
-    return NULL;
-
+  // Send "loading" state change.
+  complete_waiting_on_load_ = true;
   DictionaryValue* changed_properties = new DictionaryValue();
   changed_properties->SetString(tab_keys::kStatusKey,
       tab_keys::kStatusValueLoading);
 
-  GURL new_url = contents->GetURL();
-  if (new_url != url_) {
-    url_ = new_url;
+  if (contents->GetURL() != url_) {
+    url_ = contents->GetURL();
     changed_properties->SetString(tab_keys::kUrlKey, url_.spec());
   }
 
-  pending_navigate_ = false;
   return changed_properties;
 }
 
@@ -133,7 +111,7 @@ void ExtensionBrowserEventRouter::Init() {
       for (int i = 0; i < browser->tabstrip_model()->count(); ++i) {
         TabContents* contents = browser->tabstrip_model()->GetTabContentsAt(i);
         int tab_id = ExtensionTabUtil::GetTabId(contents);
-        tab_entries_[tab_id] = TabEntry(contents);
+        tab_entries_[tab_id] = TabEntry();
       }
     }
   }
@@ -225,7 +203,7 @@ void ExtensionBrowserEventRouter::TabInsertedAt(TabContents* contents,
   // If tab is new, send created event.
   int tab_id = ExtensionTabUtil::GetTabId(contents);
   if (tab_entries_.find(tab_id) == tab_entries_.end()) {
-    tab_entries_[tab_id] = TabEntry(contents);
+    tab_entries_[tab_id] = TabEntry();
 
     TabCreatedAt(contents, index, foreground);
     return;

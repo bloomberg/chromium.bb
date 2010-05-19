@@ -37,3 +37,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleTab) {
 
   ASSERT_TRUE(RunExtensionTest("tabs/capture_visible_tab")) << message_;
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsOnUpdated) {
+  ASSERT_TRUE(StartHTTPServer());
+
+  ASSERT_TRUE(RunExtensionTest("tabs/on_updated")) << message_;
+}

@@ -115,13 +115,6 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
     // std::map<> by value.
     TabEntry();
 
-    // Create a new tab entry whose initial state is derived from the given
-    // tab contents.
-    explicit TabEntry(const TabContents* contents);
-
-    // Returns the current state of the tab.
-    ExtensionTabUtil::TabStatus state() const { return state_; }
-
     // Update the load state of the tab based on its TabContents.  Returns true
     // if the state changed, false otherwise.  Whether the state has changed or
     // not is used to determine if events needs to be sent to extensions during
@@ -136,13 +129,11 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
     DictionaryValue* DidNavigate(const TabContents* contents);
 
    private:
-    // Tab state used for last notification to extensions.
-    ExtensionTabUtil::TabStatus state_;
-
-    // Remember that the LOADING state has been captured, but not yet reported
-    // because it is waiting on the navigation event to know what the
-    // destination url is.
-    bool pending_navigate_;
+    // Whether we are waiting to fire the 'complete' status change. This will
+    // occur the first time the TabContents stops loading after the
+    // NAV_ENTRY_COMMITTED was fired. The tab may go back into and out of the
+    // loading state subsequently, but we will ignore those changes.
+    bool complete_waiting_on_load_;
 
     GURL url_;
   };

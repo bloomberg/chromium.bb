@@ -21,17 +21,9 @@ class TabStripModel;
 
 class ExtensionTabUtil {
  public:
-  // Possible tab states.  These states are used to calculate the "status"
-  // property of the Tab object that is used in the extension tab API.
-  enum TabStatus {
-    TAB_LOADING,  // Waiting for the DOM to load.
-    TAB_COMPLETE  // Tab loading and rendering is complete.
-  };
-
   static int GetWindowId(const Browser* browser);
   static int GetTabId(const TabContents* tab_contents);
-  static TabStatus GetTabStatus(const TabContents* tab_contents);
-  static std::string GetTabStatusText(TabStatus status);
+  static std::string GetTabStatusText(bool is_loading);
   static int GetWindowIdOfTab(const TabContents* tab_contents);
   static ListValue* CreateTabList(const Browser* browser);
   static DictionaryValue* CreateTabValue(const TabContents* tab_contents);
