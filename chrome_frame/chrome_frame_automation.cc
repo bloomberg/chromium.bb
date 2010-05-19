@@ -484,7 +484,7 @@ bool ChromeFrameAutomationClient::Initialize(
   ui_thread_id_ = PlatformThread::CurrentId();
 #ifndef NDEBUG
   // In debug mode give more time to work with a debugger.
-  if (0 && IsDebuggerPresent()) {
+  if (IsDebuggerPresent()) {
     // Don't use INFINITE (which is -1) or even MAXINT since we will convert
     // from milliseconds to microseconds when stored in a base::TimeDelta,
     // thus * 1000. An hour should be enough.
@@ -813,13 +813,13 @@ void ChromeFrameAutomationClient::CreateExternalTab() {
                                   this);
 }
 
-void ChromeFrameAutomationClient::CreateExternalTabComplete(HWND chrome_window,
-    HWND tab_window, int tab_handle) {
+AutomationLaunchResult ChromeFrameAutomationClient::CreateExternalTabComplete(
+    HWND chrome_window, HWND tab_window, int tab_handle) {
   if (!automation_server_) {
     // If we receive this notification while shutting down, do nothing.
     DLOG(ERROR) << "CreateExternalTabComplete called when automation server "
                 << "was null!";
-    return;
+    return AUTOMATION_CREATE_TAB_FAILED;
   }
 
   AutomationLaunchResult launch_result = AUTOMATION_SUCCESS;
@@ -832,6 +832,7 @@ void ChromeFrameAutomationClient::CreateExternalTabComplete(HWND chrome_window,
     tab_->AddObserver(this);
     tab_handle_ = tab_handle;
   }
+  return launch_result;
 }
 
 void ChromeFrameAutomationClient::SetEnableExtensionAutomation(

@@ -282,8 +282,9 @@ class ChromeFrameAutomationClient
   virtual void OnChannelError(TabProxy* tab);
 
   void CreateExternalTab();
-  void CreateExternalTabComplete(HWND chrome_window, HWND tab_window,
-                                 int tab_handle);
+  AutomationLaunchResult CreateExternalTabComplete(HWND chrome_window,
+                                                   HWND tab_window,
+                                                   int tab_handle);
   // Called in UI thread. Here we fire event to the client notifying for
   // the result of Initialize() method call.
   void InitializeComplete(AutomationLaunchResult result);
