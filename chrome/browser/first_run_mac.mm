@@ -10,7 +10,7 @@
 #import "chrome/browser/cocoa/first_run_dialog.h"
 #import "chrome/browser/cocoa/import_progress_dialog.h"
 #include "chrome/browser/importer/importer.h"
-#include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/common/importer_data_types.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/installer/util/google_update_constants.h"

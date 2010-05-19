@@ -7,7 +7,7 @@
 #include "app/l10n_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/common/importer_data_types.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "views/controls/button/checkbox.h"

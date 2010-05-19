@@ -13,7 +13,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "chrome/browser/importer/importer.h"
-#include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/common/importer_data_types.h"
 #include "googleurl/src/gurl.h"
 
 struct sqlite3;

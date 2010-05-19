@@ -6,7 +6,7 @@
 
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/common/importer_data_types.h"
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/profile.h"
 
@@ -121,7 +121,8 @@ bool importSettingsDialogVisible = false;
   NSMutableArray* browserProfiles =
       [NSMutableArray arrayWithCapacity:profilesCount];
   for (int i = 0; i < profilesCount; ++i) {
-    const importer::ProfileInfo& sourceProfile = importerList.GetSourceProfileInfoAt(i);
+    const importer::ProfileInfo& sourceProfile =
+        importerList.GetSourceProfileInfoAt(i);
     NSString* browserName =
         base::SysWideToNSString(sourceProfile.description);
     uint16 browserServices = sourceProfile.services_supported;

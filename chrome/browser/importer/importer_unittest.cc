@@ -23,7 +23,7 @@
 #include "chrome/browser/importer/ie_importer.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_bridge.h"
-#include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/common/importer_data_types.h"
 #include "chrome/browser/password_manager/ie7_password.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"

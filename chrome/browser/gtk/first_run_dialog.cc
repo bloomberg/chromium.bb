@@ -10,7 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/common/importer_data_types.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/shell_integration.h"

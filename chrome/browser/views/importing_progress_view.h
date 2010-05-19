@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_VIEWS_IMPORTING_PROGRESS_VIEW_H_
 
 #include "chrome/browser/importer/importer.h"
-#include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/common/importer_data_types.h"
 #include "views/view.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"

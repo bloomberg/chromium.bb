@@ -26,7 +26,7 @@
 #include "base/win_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/importer/importer_bridge.h"
-#include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/common/importer_data_types.h"
 #include "chrome/browser/password_manager/ie7_password.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/time_format.h"

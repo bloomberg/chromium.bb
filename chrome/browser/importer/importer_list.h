@@ -10,7 +10,7 @@
 
 #include "build/build_config.h"
 #include "base/basictypes.h"
-#include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/common/importer_data_types.h"
 
 class Importer;
 
@@ -38,7 +38,8 @@ class ImporterList {
   const importer::ProfileInfo& GetSourceProfileInfoAt(int index) const;
 
   // Returns the ProfileInfo with the given browser type.
-  const importer::ProfileInfo& GetSourceProfileInfoForBrowserType(int browser_type) const;
+  const importer::ProfileInfo& GetSourceProfileInfoForBrowserType(
+      int browser_type) const;
 
   // Helper methods for detecting available profiles.
 #if defined(OS_WIN)

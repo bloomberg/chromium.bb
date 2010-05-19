@@ -15,7 +15,7 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
-#include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/common/importer_data_types.h"
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/importer/profile_writer.h"
 #include "chrome/common/notification_registrar.h"
