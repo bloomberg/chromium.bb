@@ -3,7 +3,6 @@
   "version": "3",
   "icons": { "24": "24.png", "128": "128.png" },
   "launch": {
-    "container": "tab",
     "web_url": "http://maps.google.com/"
   },
   "permissions": ["geolocation"],
