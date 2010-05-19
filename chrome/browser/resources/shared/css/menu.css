@@ -2,18 +2,19 @@
 menu {
   display: none;
   position: absolute;
-  border: 1px solid #999;
-  -webkit-box-shadow: 2px 2px 3px hsla(0, 0%, 0%, .3);
+  border: 1px solid rgba(0, 0, 0, .50);
+  -webkit-box-shadow: 0px 2px 4px rgba(0, 0, 0, .50);
   color: black;
-  background-color: white;
+  background: -webkit-gradient(linear, 0 0, 0 100%, from(#fff), to(#eee));
   left: 0;
   white-space: nowrap;
   z-index: 2;
-  padding: 2px;
+  padding: 8px 0;
   margin: 0;
   cursor: default;
-  border-radius: 4px;
+  border-radius: 3px;
 }
+
 
 menu > * {
   display: block;
@@ -27,15 +28,22 @@ menu > :not(hr) {
   background: transparent;
   font: inherit;
   border: 0;
-  padding: 3px 8px;
+  line-height: 18px;
+  padding: 0 19px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 menu > hr {
+  background: -webkit-gradient(linear, 0 0, 96% 0, from(rgba(0, 0, 0, .10)),
+                               to(rgba(0, 0, 0, .02)));
   border: 0;
-  border-top: 1px solid rgb(153, 153, 153);
-  margin: 2px 0;
+  height: 1px;
+  margin: 8px 0;
+}
+
+menu > [disabled] {
+  color: rgba(0, 0, 0, .3);
 }
 
 menu > [hidden] {
@@ -43,6 +51,10 @@ menu > [hidden] {
 }
 
 menu > [selected] {
-  background-color: hsl(213, 66%, 57%);
-  color: white;
+  background-color: #dce5fa;
+}
+
+menu > [selected]:active {
+  background-color: #426dc9;
+  color: #fff;
 }
