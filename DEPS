@@ -7,7 +7,7 @@ vars = {
   "chromium_git": "http://src.chromium.org/git",
   "swig_revision": "40423",
   "nacl_revision": "2235",
-  "libvpx_revision": "47701",
+  "libvpx_revision": "47824",
 }
 
 deps = {
