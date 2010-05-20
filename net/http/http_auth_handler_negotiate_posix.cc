@@ -16,7 +16,7 @@ namespace net {
 // Negotiate without requiring conditional compilation.
 
 HttpAuthHandlerNegotiate::HttpAuthHandlerNegotiate(
-    const URLSecurityManager* url_security_manager)
+    URLSecurityManager* url_security_manager)
     : url_security_manager_(url_security_manager) {
 }
 

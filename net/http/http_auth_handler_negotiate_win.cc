@@ -16,7 +16,7 @@ namespace net {
 HttpAuthHandlerNegotiate::HttpAuthHandlerNegotiate(
     SSPILibrary* library,
     ULONG max_token_length,
-    const URLSecurityManager* url_security_manager,
+    URLSecurityManager* url_security_manager,
     bool disable_cname_lookup,
     bool use_port)
     : auth_sspi_(library, "Negotiate", NEGOSSP_NAME, max_token_length),
