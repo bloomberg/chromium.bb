@@ -5509,16 +5509,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <message name="IDS_AUTOFILL_INFOBAR_TEXT" desc="Text to show in the AutoFill request infobar.">
-        AutoFill can use your information to fill in web forms with a single click.
+        AutoFill will use this information to fill in forms with a single click.
       </message>
       <message name="IDS_OPTIONS_AUTOFILL_ENABLE" desc="The label of the 'Ask me to enable AutoFill' radio button">
-        Enable AutoFill to fill in web forms with a single click
+        Enable AutoFill to make it easier to fill in forms
       </message>
       <message name="IDS_OPTIONS_AUTOFILL_DISABLE" desc="The label of the 'Disable AutoFill' radio button">
         Disable AutoFill
       </message>
-      <message name="IDS_OPTIONS_AUTOFILL_SETTINGS" desc="The label of the 'Change AutoFill settings' button">
-        Change AutoFill settings
+      <message name="IDS_OPTIONS_AUTOFILL_SETTINGS" desc="The label of the 'Show AutoFill profiles' button">
+        Show AutoFill profiles
       </message>
       <message name="IDS_AUTOFILL_INFOBAR_ACCEPT" desc="Text to show for the AutoFill request infobar accept button.">
         Configure...
@@ -6483,7 +6483,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_BOOKMARK_MANAGER_SEARCH" desc="In Title Case: The label for the tree item that shows the search results for the bookmarks.">
           Search
-        </message>        
+        </message>
       </if>
 
       <message name="IDS_DEFAULT_FILENAME" desc="Default name for saved files when we have no idea what they could be.">
