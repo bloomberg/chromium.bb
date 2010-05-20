@@ -190,6 +190,7 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
       prefs->GetBoolean(prefs::kWebKitShrinksStandaloneImagesToFit);
   web_prefs.inspector_settings = WideToUTF8(
       prefs->GetString(prefs::kWebKitInspectorSettings));
+  web_prefs.tabs_to_links = prefs->GetBoolean(prefs::kWebkitTabsToLinks);
 
   {  // Command line switches are used for preferences with no user interface.
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();

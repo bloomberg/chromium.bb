@@ -342,6 +342,7 @@ CGFloat AutoSizeUnderTheHoodContent(NSView* view,
 - (void)setMetricsRecording:(BOOL)value;
 - (void)setAskForSaveLocation:(BOOL)value;
 - (void)setTranslateEnabled:(BOOL)value;
+- (void)setTabsToLinks:(BOOL)value;
 - (void)displayPreferenceViewForPage:(OptionsPage)page
                              animate:(BOOL)animate;
 @end
@@ -698,6 +699,7 @@ class PrefObserverBridge : public NotificationObserver,
   dnsPrefetch_.Init(prefs::kDnsPrefetchingEnabled, prefs_, observer_.get());
   safeBrowsing_.Init(prefs::kSafeBrowsingEnabled, prefs_, observer_.get());
   translateEnabled_.Init(prefs::kEnableTranslate, prefs_, observer_.get());
+  tabsToLinks_.Init(prefs::kWebkitTabsToLinks, prefs_, observer_.get());
 
   // During unit tests, there is no local state object, so we fall back to
   // the prefs object (where we've explicitly registered this pref so we
@@ -1317,6 +1319,8 @@ const int kDisabledIndex = 1;
   }
   else if (*prefName == prefs::kEnableTranslate) {
     [self setTranslateEnabled:translateEnabled_.GetValue() ? YES : NO];
+  } else if (*prefName == prefs::kWebkitTabsToLinks) {
+    [self setTabsToLinks:tabsToLinks_.GetValue() ? YES : NO];
   }
 }
 
@@ -1546,6 +1550,19 @@ const int kDisabledIndex = 1;
     [self recordUserAction:UserMetricsAction("Options_Translate_Disable")];
   }
   translateEnabled_.SetValue(value);
+}
+
+- (BOOL)tabsToLinks {
+  return tabsToLinks_.GetValue();
+}
+
+- (void)setTabsToLinks:(BOOL)value {
+  if (value) {
+    [self recordUserAction:UserMetricsAction("Options_TabsToLinks_Enable")];
+  } else {
+    [self recordUserAction:UserMetricsAction("Options_TabsToLinks_Disable")];
+  }
+  tabsToLinks_.SetValue(value);
 }
 
 - (void)fontAndLanguageEndSheet:(NSWindow*)sheet

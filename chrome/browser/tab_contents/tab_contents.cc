@@ -167,6 +167,7 @@ const wchar_t* kPrefsToObserve[] = {
   prefs::kWebKitFixedFontFamily,
   prefs::kWebKitDefaultFontSize,
   prefs::kWebKitDefaultFixedFontSize,
+  prefs::kWebkitTabsToLinks,
   prefs::kDefaultCharset
   // kWebKitStandardFontIsSerif needs to be added
   // if we let users pick which font to use, serif or sans-serif when
@@ -443,6 +444,8 @@ void TabContents::RegisterUserPrefs(PrefService* prefs) {
                              pref_defaults.text_areas_are_resizable);
   prefs->RegisterBooleanPref(prefs::kWebKitJavaEnabled,
                              pref_defaults.java_enabled);
+  prefs->RegisterBooleanPref(prefs::kWebkitTabsToLinks,
+                             pref_defaults.tabs_to_links);
 
   prefs->RegisterLocalizedStringPref(prefs::kAcceptLanguages,
                                      IDS_ACCEPT_LANGUAGES);

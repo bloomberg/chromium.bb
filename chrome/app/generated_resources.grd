@@ -6295,6 +6295,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Use a suggestion service to help complete searches and URLs typed in the address bar
       </message>
 
+      <message name="IDS_OPTIONS_TABS_TO_LINKS_PREF" desc="The documentation string of the 'Tabs to Links' preference">
+        Pressing Tab on a webpage highlights links, as well as form fields
+      </message>
+
       <message name="IDS_OPTIONS_FONTSETTINGS_INFO" desc="Information text about font and language options for web pages">
         Change the default font and language for webpages.
       </message>

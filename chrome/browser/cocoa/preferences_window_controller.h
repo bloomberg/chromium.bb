@@ -108,6 +108,7 @@ class ProfileSyncService;
   StringPrefMember defaultDownloadLocation_;
   BooleanPrefMember askForSaveLocation_;
   BooleanPrefMember translateEnabled_;
+  BooleanPrefMember tabsToLinks_;
   FontLanguageSettingsController* fontLanguageSettings_;
   StringPrefMember currentTheme_;
   IBOutlet NSButton* enableLoggingCheckbox_;

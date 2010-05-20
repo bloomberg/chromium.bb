@@ -66,6 +66,7 @@ void OptionsUtil::ResetToDefaults(Profile* profile) {
     prefs::kWebKitPluginsEnabled,
     prefs::kWebKitSansSerifFontFamily,
     prefs::kWebKitSerifFontFamily,
+    prefs::kWebkitTabsToLinks,
   };
   profile->GetDownloadManager()->ResetAutoOpenFiles();
   profile->GetHostContentSettingsMap()->ResetToDefaults();
