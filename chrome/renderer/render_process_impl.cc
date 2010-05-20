@@ -39,6 +39,8 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
+#elif defined(OS_WIN)
+#include "base/iat_patch.h"
 #endif
 
 namespace {
@@ -68,6 +70,24 @@ bool LaunchNaClProcess(const char* url,
 }  // namespace
 
 //-----------------------------------------------------------------------------
+
+#if defined(OS_WIN)
+
+static iat_patch::IATPatchFunction g_iat_patch_createdca;
+HDC WINAPI CreateDCAPatch(LPCSTR driver_name,
+                          LPCSTR device_name,
+                          LPCSTR output,
+                          const void* init_data) {
+  DCHECK(std::string("DISPLAY") == std::string(driver_name));
+  DCHECK(!device_name);
+  DCHECK(!output);
+  DCHECK(!init_data);
+
+  // CreateDC fails behind the sandbox, but not CreateCompatibleDC.
+  return CreateCompatibleDC(NULL);
+}
+
+#endif
 
 RenderProcessImpl::RenderProcessImpl()
     : ALLOW_THIS_IN_INITIALIZER_LIST(shared_mem_cache_cleaner_(
@@ -143,18 +163,26 @@ RenderProcessImpl::RenderProcessImpl()
 #endif
 
   // Load the pdf plugin before the sandbox is turned on.
-  FilePath pdf;
-  if (PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf)) {
-    static scoped_refptr<NPAPI::PluginLib> pdf_lib =
-        NPAPI::PluginLib::CreatePluginLib(pdf);
-    // Actually load the plugin.
-    pdf_lib->NP_Initialize();
-    // Keep an instance around to prevent the plugin unloading after a pdf is
-    // closed.
-    // Don't use scoped_ptr here because then get asserts on process shut down
-    // when running in --single-process.
-    static NPAPI::PluginInstance* instance = pdf_lib->CreateInstance("");
-    instance->plugin_lib();  // Quiet unused variable warnings in gcc.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInternalPDF)) {
+    FilePath pdf;
+    if (PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf)) {
+      static scoped_refptr<NPAPI::PluginLib> pdf_lib =
+          NPAPI::PluginLib::CreatePluginLib(pdf);
+      // Actually load the plugin.
+      pdf_lib->NP_Initialize();
+      // Keep an instance around to prevent the plugin unloading after a pdf is
+      // closed.
+      // Don't use scoped_ptr here because then get asserts on process shut down
+      // when running in --single-process.
+      static NPAPI::PluginInstance* instance = pdf_lib->CreateInstance("");
+      instance->plugin_lib();  // Quiet unused variable warnings in gcc.
+
+#if defined(OS_WIN)
+      g_iat_patch_createdca.Patch(
+          pdf_lib->plugin_info().path.value().c_str(),
+          "gdi32.dll", "CreateDCA", CreateDCAPatch);
+#endif
+    }
   }
 }
 
