@@ -9,7 +9,6 @@
   <release seq="1">
     <includes>
       <include name="IDR_BROKENIMAGE_TESTSHELL" file="resources\missingImage.gif" type="BINDATA" />
-      <include name="IDR_FEED_PREVIEW_TESTSHELL" file="resources\feed.html" type="BINDATA" />
       <include name="IDR_TEXTAREA_RESIZER_TESTSHELL" file="resources\textAreaResizeCorner.png" type="BINDATA" />
 
       <include name="IDR_AHEM_FONT" file="resources\AHEM____.TTF" type="BINDATA" />
