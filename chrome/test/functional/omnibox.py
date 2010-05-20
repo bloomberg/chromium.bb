@@ -175,7 +175,6 @@ class OmniboxTest(pyauto.PyUITest):
     """Verify suggest results in omnibox."""
     matches = self._GetOmniboxMatchesFor('apple')
     self.assertTrue(matches)
-    self.assertTrue([x for x in matches if x['type'] == 'navsuggest'])
     self.assertTrue([x for x in matches if x['type'] == 'search-suggest'])
 
   def testDifferentTypesOfResults(self):
@@ -193,7 +192,7 @@ class OmniboxTest(pyauto.PyUITest):
     self.assertTrue(matches)
     # Verify starred result (indicating bookmarked url)
     self.assertTrue([x for x in matches if x['starred'] == True])
-    for item_type in ('history-url', 'search-what-you-typed', 'navsuggest',
+    for item_type in ('history-url', 'search-what-you-typed',
                       'search-suggest',):
       self.assertTrue([x for x in matches if x['type'] == item_type])
 
@@ -202,7 +201,6 @@ class OmniboxTest(pyauto.PyUITest):
     self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kSearchSuggestEnabled))
     matches = self._GetOmniboxMatchesFor('apple')
     self.assertTrue(matches)
-    self.assertTrue([x for x in matches if x['type'] == 'navsuggest'])
     self.assertTrue([x for x in matches if x['type'] == 'search-suggest'])
     # Disable suggest-service
     self.SetPrefs(pyauto.kSearchSuggestEnabled, False)
@@ -210,18 +208,7 @@ class OmniboxTest(pyauto.PyUITest):
     matches = self._GetOmniboxMatchesFor('apple')
     self.assertTrue(matches)
     # Verify there are no suggest results
-    self.assertFalse([x for x in matches if x['type'] == 'navsuggest'])
     self.assertFalse([x for x in matches if x['type'] == 'search-suggest'])
-
-  def testSuggestCombinationOfWords(self):
-    """Verify that omnibox can suggest combinations of words."""
-    url = "http://presidentofindia.nic.in/"
-    matches = self._GetOmniboxMatchesFor(
-        'president of india', attr_dict={'type': 'navsuggest'})
-    self.assertTrue(matches)
-    # Should find a result with 'presidentofindia' as url
-    self.assertTrue([x for x in matches
-                     if 'presidentofindia' in x['destination_url']])
 
 
 if __name__ == '__main__':
