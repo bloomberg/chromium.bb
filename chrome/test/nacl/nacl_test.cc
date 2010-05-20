@@ -118,75 +118,42 @@ void NaClTest::TearDown() {
   UITest::TearDown();
 }
 
-// http://crbug.com/44371
-#if defined(OS_WIN)
-TEST_F(NaClTest, DISABLED_ServerTest) {
-#else
 TEST_F(NaClTest, ServerTest) {
-#endif
   FilePath test_file(kServerHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
 
-#if defined(OS_WIN)
-TEST_F(NaClTest, DISABLED_SrpcHelloWorld) {
-#else
 TEST_F(NaClTest, SrpcHelloWorld) {
-#endif
   FilePath test_file(kSrpcHwHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
 
-#if defined(OS_WIN)
-TEST_F(NaClTest, DISABLED_SrpcBasicTest) {
-#else
 TEST_F(NaClTest, SrpcBasicTest) {
-#endif
   FilePath test_file(kSrpcBasicHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
 
-#if defined(OS_WIN)
-TEST_F(NaClTest, DISABLED_SrpcSockAddrTest) {
-#else
 TEST_F(NaClTest, SrpcSockAddrTest) {
-#endif
   FilePath test_file(kSrpcSockAddrHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
 
-#if defined(OS_WIN)
-TEST_F(NaClTest, DISABLED_SrpcShmTest) {
-#else
 TEST_F(NaClTest, SrpcShmTest) {
-#endif
   FilePath test_file(kSrpcShmHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
 
-#if defined(OS_WIN)
-TEST_F(NaClTest, DISABLED_SrpcPluginTest) {
-#else
 TEST_F(NaClTest, SrpcPluginTest) {
-#endif
   FilePath test_file(kSrpcPluginHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
 
-#if defined(OS_WIN)
-TEST_F(NaClTest, DISABLED_SrpcNrdXferTest) {
-#else
 TEST_F(NaClTest, SrpcNrdXferTest) {
-#endif
   FilePath test_file(kSrpcNrdXferHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
 
-#if defined(OS_WIN)
-TEST_F(NaClTest, DISABLED_NpapiHwTest) {
-#else
 TEST_F(NaClTest, NpapiHwTest) {
-#endif
   FilePath test_file(kNpapiHwHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }

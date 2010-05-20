@@ -20,7 +20,8 @@ namespace installer_util {
 bool GetDistroBooleanPreference(const DictionaryValue* prefs,
                                 const std::wstring& name,
                                 bool* value) {
-  NOTREACHED();
+  // This function is called by InstallUtil::IsChromeFrameProcess()
+  // We return false because GetInstallPreferences returns an empty value below.
   return false;
 }
 
@@ -32,8 +33,9 @@ bool GetDistroIntegerPreference(const DictionaryValue* prefs,
 }
 
 DictionaryValue* GetInstallPreferences(const CommandLine& cmd_line) {
-  NOTREACHED();
-  return NULL;
+  // This function is called by InstallUtil::IsChromeFrameProcess()
+  // so we cannot make it NOTREACHED()
+  return new DictionaryValue();;
 }
 
 DictionaryValue* ParseDistributionPreferences(
