@@ -39,6 +39,7 @@ bool SyncAPIBridgedPost::Init(const char* path, const string& auth_token,
   if (!http->MakeSynchronousPost(&os_error_code, &response_code)) {
     LOG(INFO) << "Http POST failed, error returns: " << os_error_code;
     response->server_status = HttpResponse::IO_ERROR;
+    factory_->Destroy(http);
     return false;
   }
 

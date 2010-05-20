@@ -61,7 +61,9 @@ class TestHttpBridgeFactory : public sync_api::HttpPostProviderFactory {
   virtual sync_api::HttpPostProviderInterface* Create() {
     return new TestHttpBridge();
   }
-  virtual void Destroy(sync_api::HttpPostProviderInterface* http) {}
+  virtual void Destroy(sync_api::HttpPostProviderInterface* http) {
+    delete http;
+  }
 };
 
 }  // namespace browser_sync
