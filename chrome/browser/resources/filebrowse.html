@@ -1056,7 +1056,8 @@ function downloadUpdated(results) {
           pauseDiv.id = 'downloaditem' + results[x].id;
           element.appendChild(pauseDiv);
         }
-        if (results[x].percent < 100) {
+        if (results[x].percent < 100 &&
+            results[x].state != 'DANGEROUS') {
           progressDiv.textContent = results[x].progress_status_text;
         }
 
