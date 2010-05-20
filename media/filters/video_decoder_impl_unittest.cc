@@ -60,6 +60,8 @@ class MockVideoDecodeEngine : public VideoDecodeEngine {
   MOCK_METHOD1(Flush, void(Task* done_cb));
   MOCK_CONST_METHOD0(state, State());
   MOCK_CONST_METHOD0(GetSurfaceFormat, VideoFrame::Format());
+
+  scoped_ptr<FillThisBufferCallback> fill_buffer_callback_;
 };
 
 // Class that just mocks the private functions.
@@ -206,6 +208,10 @@ TEST_F(VideoDecoderImplTest, Initialize_QueryInterfaceFails) {
   message_loop_.RunAllPending();
 }
 
+ACTION_P(SaveCallback, engine) {
+  engine->fill_buffer_callback_.reset(arg3);
+}
+
 TEST_F(VideoDecoderImplTest, Initialize_EngineFails) {
   // Test successful initialization.
   AVStreamProvider* av_stream_provider = demuxer_;
@@ -215,7 +221,7 @@ TEST_F(VideoDecoderImplTest, Initialize_EngineFails) {
       .WillOnce(Return(&stream_));
 
   EXPECT_CALL(*engine_, Initialize(_, _, _, _, _))
-      .WillOnce(WithArg<4>(InvokeRunnable()));
+      .WillOnce(DoAll(SaveCallback(engine_), WithArg<4>(InvokeRunnable())));
   EXPECT_CALL(*engine_, state())
       .WillOnce(Return(VideoDecodeEngine::kError));
 
@@ -237,7 +243,7 @@ TEST_F(VideoDecoderImplTest, Initialize_Successful) {
       .WillOnce(Return(&stream_));
 
   EXPECT_CALL(*engine_, Initialize(_, _, _, _, _))
-      .WillOnce(WithArg<4>(InvokeRunnable()));
+      .WillOnce(DoAll(SaveCallback(engine_), WithArg<4>(InvokeRunnable())));
   EXPECT_CALL(*engine_, state())
       .WillOnce(Return(VideoDecodeEngine::kNormal));
 
