@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,11 +14,15 @@
 #include "base/sys_info.h"
 #endif
 #include "base/scoped_ptr.h"
-
 #include "chrome/browser/userfeedback/proto/common.pb.h"
 #include "chrome/browser/userfeedback/proto/extension.pb.h"
 #include "chrome/browser/userfeedback/proto/math.pb.h"
 #include "gfx/rect.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros/syslogs_library.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#endif
 
 class Profile;
 class TabContents;
@@ -52,11 +56,17 @@ class BugReportUtil {
       const std::string& page_title_text,
       int problem_type,
       const std::string& page_url_text,
+      const std::string& user_email_text,
       const std::string& description,
       const char* png_data,
       int png_data_length,
       int png_width,
+#if defined(OS_CHROMEOS)
+      int png_height,
+      const chromeos::LogDictionaryType* const sys_info);
+#else
       int png_height);
+#endif
 
   // Redirects the user to Google's phishing reporting page.
   static void ReportPhishing(TabContents* currentTab,

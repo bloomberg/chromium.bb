@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@ class PowerLibrary;
 class ScreenLockLibrary;
 class SpeechSynthesisLibrary;
 class SynapticsLibrary;
+class SyslogsLibrary;
 
 // This class handles access to sub-parts of ChromeOS library. it provides
 // a level of indirection so individual libraries that it exposes can
@@ -55,6 +56,8 @@ class CrosLibrary {
     void SetSpeechSynthesisLibrary(SpeechSynthesisLibrary* library, bool own);
     // Setter for SynapticsLibrary.
     void SetSynapticsLibrary(SynapticsLibrary* library, bool own);
+    // Setter for SyslogsLibrary.
+    void SetSyslogsLibrary(SyslogsLibrary* library, bool own);
 
    private:
     friend class CrosLibrary;
@@ -92,6 +95,9 @@ class CrosLibrary {
   // This gets the singleton SynapticsLibrary.
   SynapticsLibrary* GetSynapticsLibrary();
 
+  // This gets the singleton SyslogsLibrary.
+  SyslogsLibrary* GetSyslogsLibrary();
+
   // Getter for Test API that gives access to internal members of this class.
   TestApi* GetTestApi();
 
@@ -121,6 +127,7 @@ class CrosLibrary {
   ScreenLockLibrary* screen_lock_lib_;
   SpeechSynthesisLibrary* speech_synthesis_lib_;
   SynapticsLibrary* synaptics_lib_;
+  SyslogsLibrary* syslogs_lib_;
 
   bool own_library_loader_;
   bool own_cryptohome_lib_;
@@ -132,6 +139,7 @@ class CrosLibrary {
   bool own_screen_lock_lib_;
   bool own_speech_synthesis_lib_;
   bool own_synaptics_lib_;
+  bool own_syslogs_lib_;
 
   // True if libcros was successfully loaded.
   bool loaded_;

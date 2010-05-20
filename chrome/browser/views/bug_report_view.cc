@@ -6,17 +6,23 @@
 
 #include "app/combobox_model.h"
 #include "app/l10n_util.h"
+#include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/file_version_info.h"
+#include "base/path_service.h"
 #include "base/utf_string_conversions.h"
+#include "base/waitable_event.h"
 #include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/bug_report_util.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
@@ -38,12 +44,19 @@
 #include "app/win_util.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
+
 using views::ColumnSet;
 using views::GridLayout;
 
 // Report a bug data version.
 static const int kBugReportVersion = 1;
 static const int kScreenImageRadioGroup = 2;
+static const char kScreenshotsRelativePath[] = "/Screenshots";
+static const char kScreenshotPattern[] = "*.png";
+static const char kAboutBlank[] = "about:blank";
 
 
 // Number of lines description field can display at one time.
@@ -90,6 +103,73 @@ class BugReportComboBoxModel : public ComboboxModel {
   DISALLOW_COPY_AND_ASSIGN(BugReportComboBoxModel);
 };
 
+namespace {
+
+#if defined(OS_CHROMEOS)
+class LastScreenshotTask : public Task {
+ public:
+  LastScreenshotTask(std::string* image_str,
+                     base::WaitableEvent* task_waitable)
+      : image_str_(image_str),
+        task_waitable_(task_waitable) {
+  }
+
+ private:
+  void Run() {
+    FilePath fileshelf_path;
+    // TODO(rkc): Change this to use FilePath.Append() once the cros
+    // issue with with it is fixed
+    if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS,
+                          &fileshelf_path)) {
+      *image_str_ = "";
+      task_waitable_->Signal();
+    }
+
+    FilePath screenshots_path(fileshelf_path.value() +
+                              std::string(kScreenshotsRelativePath));
+    file_util::FileEnumerator screenshots(screenshots_path, false,
+                                          file_util::FileEnumerator::FILES,
+                                          std::string(kScreenshotPattern));
+    FilePath screenshot = screenshots.Next();
+    FilePath latest("");
+    time_t last_mtime = 0;
+    while (!screenshot.empty()) {
+      file_util::FileEnumerator::FindInfo info;
+      screenshots.GetFindInfo(&info);
+      if (info.stat.st_mtime > last_mtime) {
+        last_mtime = info.stat.st_mtime;
+        latest = screenshot;
+      }
+      screenshot = screenshots.Next();
+    }
+
+    if (!file_util::ReadFileToString(latest, image_str_))
+      *image_str_ = "";
+    task_waitable_->Signal();
+  }
+ private:
+  std::string* image_str_;
+  base::WaitableEvent* task_waitable_;
+};
+#endif
+
+bool GetLastScreenshot(std::string* image_str) {
+#if defined(OS_CHROMEOS)
+  base::WaitableEvent task_waitable(true, false);
+  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+                         new LastScreenshotTask(image_str, &task_waitable));
+  task_waitable.Wait();
+  if (*image_str == "")
+    return false;
+  else
+    return true;
+#else
+  return false;
+#endif
+}
+
+} // namespace
+
 namespace browser {
 
 // Global "display this dialog" function declared in browser_dialogs.h.
@@ -97,6 +177,10 @@ void ShowBugReportView(views::Window* parent,
                        Profile* profile,
                        TabContents* tab) {
   BugReportView* view = new BugReportView(profile, tab);
+
+  // Get the size of the parent window to capture screenshot dimensions
+  gfx::Rect screen_size = parent->GetBounds();
+  view->set_screen_size(screen_size);
 
   // Grab an exact snapshot of the window that the user is seeing (i.e. as
   // rendered--do not re-render, and include windowed plugins).
@@ -108,25 +192,38 @@ void ShowBugReportView(views::Window* parent,
   win_util::GrabWindowSnapshot(parent->GetNativeWindow(), screenshot_png);
 #endif
 
-  // Get the size of the parent window to capture screenshot dimensions
-  gfx::Rect screenshot_size = parent->GetBounds();
+  // The BugReportView takes ownership of the image data, and will dispose of
+  // it in its destructor
+  view->set_captured_image(screenshot_png);
 
+#if defined(OS_CHROMEOS)
+  // Get last screenshot taken
+  std::string image_str;
+  bool have_last_image = false;
+  if (GetLastScreenshot(&image_str)) {
+    // reuse screenshot_png; previous pointer now owned by BugReportView
+    screenshot_png = new std::vector<unsigned char>(image_str.begin(),
+                                                    image_str.end());
+    have_last_image = true;
+  } else {
+    // else set it to be an empty vector
+    screenshot_png = new std::vector<unsigned char>;
+  }
+  view->set_last_image(screenshot_png);
 
-  // The BugReportView takes ownership of the png data, and will dispose of
-  // it in its destructor.
-  view->set_png_data(screenshot_png);
-  view->set_screenshot_size(screenshot_size);
-
-  // Create and show the dialog.
+  // Create and show the dialog
   views::Window::CreateChromeWindow(parent->GetNativeWindow(), gfx::Rect(),
                                     view)->Show();
+  if (!have_last_image)
+    view->DisableLastImageRadio();
+  view->DisableSystemInformationCheckbox();
+#endif
 }
 
 }  // namespace browser
 
 // BugReportView - create and submit a bug report from the user.
 // This is separate from crash reporting, which is handled by Breakpad.
-//
 BugReportView::BugReportView(Profile* profile, TabContents* tab)
     : include_page_source_checkbox_(NULL),
       include_page_image_checkbox_(NULL),
@@ -143,6 +240,19 @@ BugReportView::BugReportView(Profile* profile, TabContents* tab)
         tab->controller().GetActiveEntry()->url().spec()));
   }
 
+#if defined(OS_CHROMEOS)
+  // Get and set the gaia e-mail
+  chromeos::UserManager* manager = chromeos::UserManager::Get();
+  if (!manager) {
+    user_email_text_->SetText(UTF8ToUTF16(std::string("")));
+  } else {
+    const std::string& email = manager->logged_in_user().email();
+    user_email_text_->SetText(UTF8ToUTF16(email));
+    if (!email.empty())
+      user_email_text_->SetEnabled(false);
+  }
+#endif
+
   // Retrieve the application version info.
   scoped_ptr<FileVersionInfo> version_info(
       chrome_app::GetChromeVersionInfo());
@@ -151,6 +261,23 @@ BugReportView::BugReportView(Profile* profile, TabContents* tab)
         version_info->file_version() +
         L" (" + version_info->last_change() + L")";
   }
+
+
+  FilePath tmpfilename;
+
+#if defined(OS_CHROMEOS)
+  chromeos::SyslogsLibrary* syslogs_lib =
+      chromeos::CrosLibrary::Get()->GetSyslogsLibrary();
+  if (syslogs_lib) {
+    sys_info_.reset(syslogs_lib->GetSyslogs(&tmpfilename));
+    if (sys_info_.get())
+      system_information_url_ = std::string("file://") + tmpfilename.value();
+    else
+      system_information_url_ = std::string(kAboutBlank);
+  } else {
+    system_information_url_ = std::string(kAboutBlank);
+  }
+#endif
 }
 
 BugReportView::~BugReportView() {
@@ -176,6 +303,15 @@ void BugReportView::SetupControl() {
   page_url_text_->SetController(this);
   page_url_text_->SetAccessibleName(page_url_label_->GetText());
 
+#if defined(OS_CHROMEOS)
+  user_email_label_ = new views::Label(
+      l10n_util::GetString(IDS_BUGREPORT_USER_EMAIL_LABEL));
+  // user_email_text_'s text (if any) is filled in after dialog creation.
+  user_email_text_ = new views::Textfield;
+  user_email_text_->SetController(this);
+  user_email_text_->SetAccessibleName(user_email_label_->GetText());
+#endif
+
   description_label_ = new views::Label(
       l10n_util::GetString(IDS_BUGREPORT_DESCRIPTION_LABEL));
 #if defined(OS_LINUX)
@@ -196,19 +332,22 @@ void BugReportView::SetupControl() {
   include_last_screen_image_radio_ = new views::RadioButton(
       l10n_util::GetString(IDS_BUGREPORT_INCLUDE_LAST_SCREEN_IMAGE),
       kScreenImageRadioGroup);
-  last_screenshot_iv_ = new views::ImageView();
 
   include_new_screen_image_radio_ = new views::RadioButton(
       l10n_util::GetString(IDS_BUGREPORT_INCLUDE_NEW_SCREEN_IMAGE),
       kScreenImageRadioGroup);
 
+  include_no_screen_image_radio_ = new views::RadioButton(
+      l10n_util::GetString(IDS_BUGREPORT_INCLUDE_NO_SCREEN_IMAGE),
+      kScreenImageRadioGroup);
+
   include_system_information_checkbox_ = new views::Checkbox(
       l10n_util::GetString(IDS_BUGREPORT_INCLUDE_SYSTEM_INFORMATION_CHKBOX));
-  system_information_url_ = new views::Link(
+  system_information_url_control_ = new views::Link(
       l10n_util::GetString(IDS_BUGREPORT_SYSTEM_INFORMATION_URL_TEXT));
-  system_information_url_->SetController(this);
+  system_information_url_control_->SetController(this);
 
-  include_last_screen_image_radio_->SetChecked(true);
+  include_new_screen_image_radio_->SetChecked(true);
   include_system_information_checkbox_->SetChecked(true);
 #endif
   include_page_image_checkbox_ = new views::Checkbox(
@@ -251,6 +390,13 @@ void BugReportView::SetupControl() {
                   GridLayout::LEADING);
   layout->AddView(description_text_, 1, 1, GridLayout::FILL,
                   GridLayout::LEADING);
+#if defined(OS_CHROMEOS)
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  // Page URL and text field.
+  layout->StartRow(0, column_set_id);
+  layout->AddView(user_email_label_);
+  layout->AddView(user_email_text_);
+#endif
   layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
 
   // Checkboxes.
@@ -259,24 +405,34 @@ void BugReportView::SetupControl() {
   // layout->SkipColumns(1);
   // layout->AddView(include_page_source_checkbox_);
   // layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-    layout->StartRow(0, column_set_id);
-    layout->SkipColumns(1);
+  layout->StartRow(0, column_set_id);
+  layout->SkipColumns(1);
 #if defined(OS_CHROMEOS)
-    // Radio boxes to select last screen shot or,
-    layout->AddView(include_last_screen_image_radio_);
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-    // new screenshot
-    layout->StartRow(0, column_set_id);
-    layout->SkipColumns(1);
-    layout->AddView(include_new_screen_image_radio_);
-    layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
+  // Radio boxes to select last screen shot or,
 
-    // Checkbox for system information
-    layout->StartRow(0, column_set_id);
-    layout->SkipColumns(1);
-    layout->AddView(include_system_information_checkbox_);
+  // new screenshot
+  layout->AddView(include_new_screen_image_radio_);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  // last screenshot taken
+  layout->StartRow(0, column_set_id);
+  layout->SkipColumns(1);
+  layout->AddView(include_last_screen_image_radio_);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  // no screenshot
+  layout->StartRow(0, column_set_id);
+  layout->SkipColumns(1);
+  layout->AddView(include_no_screen_image_radio_);
+  layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
 
-    // TODO(rkc): Add a link once we're pulling system info, to it
+  // Checkbox for system information
+  layout->StartRow(0, column_set_id);
+  layout->SkipColumns(1);
+  layout->AddView(include_system_information_checkbox_);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+
+  layout->StartRow(0, column_set_id);
+  layout->SkipColumns(1);
+  layout->AddView(system_information_url_control_);
 #else
   if (include_page_image_checkbox_) {
     layout->StartRow(0, column_set_id);
@@ -294,7 +450,6 @@ gfx::Size BugReportView::GetPreferredSize() {
       IDS_BUGREPORT_DIALOG_HEIGHT_LINES));
 }
 
-
 void BugReportView::UpdateReportingControls(bool is_phishing_report) {
   // page source, screen/page images, system information
   // are not needed if it's a phishing report
@@ -303,13 +458,11 @@ void BugReportView::UpdateReportingControls(bool is_phishing_report) {
   include_page_source_checkbox_->SetChecked(!is_phishing_report);
 
 #if defined(OS_CHROMEOS)
-  include_last_screen_image_radio_->SetEnabled(!is_phishing_report);
   include_new_screen_image_radio_->SetEnabled(!is_phishing_report);
-
-  include_system_information_checkbox_->SetEnabled(!is_phishing_report);
+  if (!last_image_->empty())
+    include_last_screen_image_radio_->SetEnabled(!is_phishing_report);
+  include_no_screen_image_radio_->SetEnabled(!is_phishing_report);
   include_system_information_checkbox_->SetChecked(!is_phishing_report);
-
-  system_information_url_->SetEnabled(!is_phishing_report);
 #else
   if (include_page_image_checkbox_) {
     include_page_image_checkbox_->SetEnabled(!is_phishing_report);
@@ -390,25 +543,53 @@ std::wstring BugReportView::GetWindowTitle() const {
   return l10n_util::GetString(IDS_BUGREPORT_TITLE);
 }
 
+
 bool BugReportView::Accept() {
   if (IsDialogButtonEnabled(MessageBoxFlags::DIALOGBUTTON_OK)) {
-    if (problem_type_ == BugReportUtil::PHISHING_PAGE)
+    if (problem_type_ == BugReportUtil::PHISHING_PAGE) {
       BugReportUtil::ReportPhishing(tab_,
           UTF16ToUTF8(page_url_text_->text()));
-    else
+    } else {
+      char* image_data = NULL;
+      size_t image_data_size = 0;
+#if defined(OS_CHROMEOS)
+      if (include_new_screen_image_radio_->checked() &&
+          !captured_image_->empty()) {
+        image_data = reinterpret_cast<char *>(&captured_image_->front());
+        image_data_size = captured_image_->size();
+      } else if (include_last_screen_image_radio_->checked() &&
+                 !last_image_->empty()) {
+        image_data = reinterpret_cast<char *>(&last_image_->front());
+        image_data_size = last_image_->size();
+      }
+#else
+      if (include_page_image_checkbox_->checked() && captured_image_.get() &&
+          !captured_image_->empty()) {
+        image_data = reinterpret_cast<char *>(&captured_image_->front());
+        image_data_size = captured_image_->size();
+      }
+#endif
+#if defined(OS_CHROMEOS)
       BugReportUtil::SendReport(profile_,
           WideToUTF8(page_title_text_->GetText()),
           problem_type_,
           UTF16ToUTF8(page_url_text_->text()),
+          UTF16ToUTF8(user_email_text_->text()),
           UTF16ToUTF8(description_text_->text()),
-#if defined(OS_CHROMEOS)
-          include_new_screen_image_radio_->checked() && png_data_.get() ?
+          image_data, image_data_size,
+          screen_size_.width(), screen_size_.height(),
+          sys_info_.get());
 #else
-          include_page_image_checkbox_->checked() && png_data_.get() ?
+      BugReportUtil::SendReport(profile_,
+          WideToUTF8(page_title_text_->GetText()),
+          problem_type_,
+          UTF16ToUTF8(page_url_text_->text()),
+          std::string(),
+          UTF16ToUTF8(description_text_->text()),
+          image_data, image_data_size,
+          screen_size_.width(), screen_size_.height());
 #endif
-              reinterpret_cast<const char *>(&((*png_data_.get())[0])) : NULL,
-          png_data_->size(), screenshot_size_.width(),
-          screenshot_size_.height());
+    }
   }
   return true;
 }
@@ -417,15 +598,16 @@ bool BugReportView::Accept() {
 void BugReportView::LinkActivated(views::Link* source,
                                     int event_flags) {
   GURL url;
-  if (source == system_information_url_) {
-    url = GURL(l10n_util::GetStringUTF16(IDS_BUGREPORT_SYSTEM_INFORMATION_URL));
+  if (source == system_information_url_control_) {
+    url = GURL(system_information_url_);
   } else {
     NOTREACHED() << "Unknown link source";
     return;
   }
 
   Browser* browser = BrowserList::GetLastActive();
-  browser->OpenURL(url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+  if (browser)
+    browser->OpenURL(url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
 }
 #endif
 

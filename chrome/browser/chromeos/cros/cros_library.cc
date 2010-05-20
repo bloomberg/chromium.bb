@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/cros/speech_synthesis_library.h"
 #include "chrome/browser/chromeos/cros/synaptics_library.h"
+#include "chrome/browser/chromeos/cros/syslogs_library.h"
 
 namespace chromeos {
 
@@ -27,6 +28,7 @@ CrosLibrary::CrosLibrary() : library_loader_(NULL),
                              screen_lock_lib_(NULL),
                              speech_synthesis_lib_(NULL),
                              synaptics_lib_(NULL),
+                             syslogs_lib_(NULL),
                              own_library_loader_(true),
                              own_cryptohome_lib_(true),
                              own_language_lib_(true),
@@ -37,6 +39,7 @@ CrosLibrary::CrosLibrary() : library_loader_(NULL),
                              own_screen_lock_lib_(true),
                              own_speech_synthesis_lib_(true),
                              own_synaptics_lib_(true),
+                             own_syslogs_lib_(true),
                              loaded_(false),
                              load_error_(false),
                              test_api_(NULL) {
@@ -64,6 +67,8 @@ CrosLibrary::~CrosLibrary() {
     delete speech_synthesis_lib_;
   if (own_synaptics_lib_)
     delete synaptics_lib_;
+  if (own_syslogs_lib_)
+    delete syslogs_lib_;
   delete test_api_;
 }
 
@@ -124,6 +129,12 @@ SynapticsLibrary* CrosLibrary::GetSynapticsLibrary() {
   if (!synaptics_lib_)
     synaptics_lib_ = new SynapticsLibraryImpl();
   return synaptics_lib_;
+}
+
+SyslogsLibrary* CrosLibrary::GetSyslogsLibrary() {
+  if (!syslogs_lib_)
+    syslogs_lib_ = new SyslogsLibraryImpl();
+  return syslogs_lib_;
 }
 
 bool CrosLibrary::EnsureLoaded() {
@@ -224,4 +235,12 @@ void CrosLibrary::TestApi::SetSynapticsLibrary(SynapticsLibrary* library,
   library_->synaptics_lib_ = library;
 }
 
-}   // end namespace.
+void CrosLibrary::TestApi::SetSyslogsLibrary(SyslogsLibrary* library,
+                                             bool own) {
+  if (library_->syslogs_lib_)
+    delete library_->syslogs_lib_;
+  library_->own_syslogs_lib_ = own;
+  library_->syslogs_lib_ = library;
+}
+
+} // namespace chromeos

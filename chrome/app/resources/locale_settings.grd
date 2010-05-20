@@ -317,7 +317,7 @@
         85
       </message>
       <message name="IDS_BUGREPORT_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        17
+        20
       </message>
 
       <!-- The width and height of the Clear Browsing Data dialog box in characters and -->

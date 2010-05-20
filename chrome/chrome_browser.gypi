@@ -369,6 +369,8 @@
         'browser/chromeos/cros/speech_synthesis_library.h',
         'browser/chromeos/cros/synaptics_library.cc',
         'browser/chromeos/cros/synaptics_library.h',
+        'browser/chromeos/cros/syslogs_library.cc',
+        'browser/chromeos/cros/syslogs_library.h',
         'browser/chromeos/external_cookie_handler.cc',
         'browser/chromeos/external_cookie_handler.h',
         'browser/chromeos/external_metrics.cc',
