@@ -56,10 +56,10 @@ int WriteContext(URLContext* h, unsigned char* buf, int size) {
 }
 
 int64 SeekContext(URLContext* h, int64 offset, int whence) {
-  COMPILE_ASSERT(sizeof(off_t) == 8, off_t_not_64_bit);
 #if defined(OS_WIN)
   return _lseeki64(GetHandle(h), static_cast<__int64>(offset), whence);
 #else
+  COMPILE_ASSERT(sizeof(off_t) == 8, off_t_not_64_bit);
   return lseek(GetHandle(h), static_cast<off_t>(offset), whence);
 #endif
 }
