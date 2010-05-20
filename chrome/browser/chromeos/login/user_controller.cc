@@ -164,6 +164,8 @@ void UserController::Login() {
 void UserController::IsActiveChanged(bool active) {
   if (active)
     delegate_->OnUserSelected(this);
+  else
+    delegate_->ClearErrors();
 }
 
 WidgetGtk* UserController::CreateControlsWindow(int index, int* height) {

@@ -89,8 +89,7 @@ void ExistingUserController::Init() {
 }
 
 ExistingUserController::~ExistingUserController() {
-  if (bubble_)
-    bubble_->Close();
+  ClearErrors();
 
   if (background_window_)
     background_window_->Close();
@@ -189,11 +188,7 @@ void ExistingUserController::OnLoginFailure(const std::string& error) {
 
 void ExistingUserController::ShowError(int error_id,
                                        const std::string& details) {
-  // Close bubble before showing anything new.
-  // bubble_ will be set to NULL in callback.
-  if (bubble_)
-    bubble_->Close();
-
+  ClearErrors();
   std::wstring error_text = l10n_util::GetString(error_id);
   if (!details.empty())
     error_text += L"\n" + ASCIIToWide(details);
