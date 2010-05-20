@@ -23,18 +23,4 @@ time64 GetCurrent100NSTime() {
   return retval;
 }
 
-time64 TmToTime64(const struct tm& tm) {
-  struct tm tm_temp;
-  memcpy(&tm_temp, &tm, sizeof(struct tm));
-  time_t t = timegm(&tm_temp);
-  return t * kSecsTo100ns;
-}
-
-bool Time64ToTm(time64 t, struct tm* tm) {
-  DCHECK(tm);
-  time_t secs = t / kSecsTo100ns;
-  gmtime_r(&secs, tm);
-  return true;
-}
-
 }  // namespace notifier

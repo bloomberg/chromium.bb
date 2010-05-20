@@ -4,7 +4,6 @@
 
 #include "chrome/common/net/notifier/communicator/auto_reconnect.h"
 
-#include "chrome/common/net/notifier/base/time.h"
 #include "chrome/common/net/notifier/base/timer.h"
 #include "talk/base/common.h"
 
@@ -27,21 +26,6 @@ void AutoReconnect::NetworkStateChanged(bool is_alive) {
     // spikey behavior on network hiccups).
     StartReconnectTimerWithInterval((rand() % 9 + 1) * kSecsTo100ns);
   }
-}
-
-int AutoReconnect::seconds_until() const {
-  if (!is_retrying() || !reconnect_timer_->get_timeout_time()) {
-    return 0;
-  }
-  int64 time_until_100ns =
-      reconnect_timer_->get_timeout_time() - GetCurrent100NSTime();
-  if (time_until_100ns < 0) {
-    return 0;
-  }
-
-  // Do a ceiling on the value (to avoid returning before its time).
-  int64 result = (time_until_100ns + kSecsTo100ns - 1) / kSecsTo100ns;
-  return static_cast<int>(result);
 }
 
 void AutoReconnect::StartReconnectTimer() {

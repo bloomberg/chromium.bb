@@ -239,10 +239,6 @@ buzz::XmppClient* Login::xmpp_client() {
   return single_attempt_->xmpp_client();
 }
 
-int Login::seconds_until_reconnect() const {
-  return auto_reconnect_->seconds_until();
-}
-
 void Login::UseNextConnection() {
   if (!single_attempt_) {
     // Just in case, there is an obscure case that causes this to get called

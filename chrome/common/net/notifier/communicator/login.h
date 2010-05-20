@@ -99,8 +99,6 @@ class Login : public net::NetworkChangeNotifier::Observer,
   // Do not call until StartConnection has been called.
   const talk_base::ProxyInfo& proxy() const;
 
-  int seconds_until_reconnect() const;
-
   virtual void OnIPAddressChanged();
 
   // SignalClientStateChange(ConnectionState new_state);

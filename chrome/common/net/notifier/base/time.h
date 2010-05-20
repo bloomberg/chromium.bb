@@ -43,16 +43,6 @@ namespace notifier {
 // the value since Jan 1, 1601.
 time64 GetCurrent100NSTime();
 
-// Convert from struct tm to time64.
-time64 TmToTime64(const struct tm& tm);
-
-// Convert from time64 to struct tm.
-bool Time64ToTm(time64 t, struct tm* tm);
-
-// Returns the local time as a string suitable for logging.
-// Note: This is *not* threadsafe, so only call it from the main thread.
-char* GetLocalTimeAsString();
-
 }  // namespace notifier
 
 #endif  // CHROME_COMMON_NET_NOTIFIER_BASE_TIME_H_

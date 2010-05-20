@@ -40,7 +40,6 @@ class AutoReconnect : public sigslot::has_slots<> {
     return reconnect_timer_ != NULL;
   }
 
-  int seconds_until() const;
   sigslot::signal0<> SignalTimerStartStop;
   sigslot::signal0<> SignalStartConnection;
 
