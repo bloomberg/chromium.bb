@@ -130,7 +130,8 @@ class BookmarkStorage::LoadTask : public Task {
 BookmarkStorage::BookmarkStorage(Profile* profile, BookmarkModel* model)
     : profile_(profile),
       model_(model),
-      writer_(profile->GetPath().Append(chrome::kBookmarksFileName)),
+      writer_(profile->GetPath().Append(chrome::kBookmarksFileName),
+              ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
       tmp_history_path_(
           profile->GetPath().Append(chrome::kHistoryBookmarksFileName)) {
   writer_.set_commit_interval(base::TimeDelta::FromMilliseconds(kSaveDelayMS));

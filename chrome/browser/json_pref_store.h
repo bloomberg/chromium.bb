@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/scoped_ptr.h"
-#include "chrome/browser/important_file_writer.h"
 #include "chrome/browser/pref_store.h"
+#include "chrome/common/important_file_writer.h"
 
 class DictionaryValue;
 class FilePath;

@@ -1511,8 +1511,6 @@
         'browser/idle_win.cc',
         'browser/ime_input.cc',
         'browser/ime_input.h',
-        'browser/important_file_writer.cc',
-        'browser/important_file_writer.h',
         'browser/importer/firefox2_importer.cc',
         'browser/importer/firefox2_importer.h',
         'browser/importer/firefox3_importer.cc',

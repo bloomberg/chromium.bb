@@ -8,6 +8,7 @@
 
 #include "base/file_util.h"
 #include "base/values.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/common/json_value_serializer.h"
 
 namespace {
@@ -21,7 +22,9 @@ JsonPrefStore::JsonPrefStore(const FilePath& filename)
     : path_(filename),
       prefs_(new DictionaryValue()),
       read_only_(false),
-      writer_(filename) { }
+      writer_(filename,
+              ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)) {
+}
 
 JsonPrefStore::~JsonPrefStore() {
   if (writer_.HasPendingWrite() && !read_only_)

@@ -201,6 +201,8 @@
         'common/gears_api.h',
         'common/gpu_plugin.cc',
         'common/gpu_plugin.h',
+        'common/important_file_writer.cc',
+        'common/important_file_writer.h',
         'common/jstemplate_builder.cc',
         'common/jstemplate_builder.h',
         'common/libxml_utils.cc',

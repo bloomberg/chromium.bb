@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_IMPORTANT_FILE_WRITER_H_
-#define CHROME_BROWSER_IMPORTANT_FILE_WRITER_H_
+#ifndef CHROME_COMMON_IMPORTANT_FILE_WRITER_H_
+#define CHROME_COMMON_IMPORTANT_FILE_WRITER_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/non_thread_safe.h"
+#include "base/ref_counted.h"
 #include "base/time.h"
 #include "base/timer.h"
 
 namespace base {
+class MessageLoopProxy;
 class Thread;
 }
 
@@ -49,8 +51,11 @@ class ImportantFileWriter : public NonThreadSafe {
 
   // Initialize the writer.
   // |path| is the name of file to write.
+  // |file_message_loop_proxy| is the MessageLoopProxy for a thread on which
+  // file I/O can be done.
   // All non-const methods, ctor and dtor must be called on the same thread.
-  explicit ImportantFileWriter(const FilePath& path);
+  ImportantFileWriter(const FilePath& path,
+                      base::MessageLoopProxy* file_message_loop_proxy);
 
   // You have to ensure that there are no pending writes at the moment
   // of destruction.
@@ -89,6 +94,9 @@ class ImportantFileWriter : public NonThreadSafe {
   // Path being written to.
   const FilePath path_;
 
+  // MessageLoopProxy for the thread on which file I/O can be done.
+  scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy_;
+
   // Timer used to schedule commit after ScheduleWrite.
   base::OneShotTimer<ImportantFileWriter> timer_;
 
@@ -101,4 +109,4 @@ class ImportantFileWriter : public NonThreadSafe {
   DISALLOW_COPY_AND_ASSIGN(ImportantFileWriter);
 };
 
-#endif  // CHROME_BROWSER_IMPORTANT_FILE_WRITER_H_
+#endif  // CHROME_COMMON_IMPORTANT_FILE_WRITER_H_

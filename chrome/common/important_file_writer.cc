@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/important_file_writer.h"
+#include "chrome/common/important_file_writer.h"
 
 #include <stdio.h>
 
@@ -12,12 +12,11 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/thread.h"
 #include "base/time.h"
-#include "chrome/browser/chrome_thread.h"
 
 using base::TimeDelta;
 
@@ -53,7 +52,8 @@ class WriteToDiskTask : public Task {
     }
     if (bytes_written < data_.length()) {
       file_util::Delete(tmp_file_path, false);
-      LogFailure("error writing, bytes_written=" + UintToString(bytes_written));
+      LogFailure("error writing, bytes_written=" + UintToString(
+          static_cast<unsigned int>(bytes_written)));
       return;
     }
 
@@ -84,11 +84,15 @@ class WriteToDiskTask : public Task {
 
 }  // namespace
 
-ImportantFileWriter::ImportantFileWriter(const FilePath& path)
-    : path_(path),
-      serializer_(NULL),
-      commit_interval_(TimeDelta::FromMilliseconds(kDefaultCommitIntervalMs)) {
+ImportantFileWriter::ImportantFileWriter(
+    const FilePath& path, base::MessageLoopProxy* file_message_loop_proxy)
+        : path_(path),
+          file_message_loop_proxy_(file_message_loop_proxy),
+          serializer_(NULL),
+          commit_interval_(TimeDelta::FromMilliseconds(
+              kDefaultCommitIntervalMs)) {
   DCHECK(CalledOnValidThread());
+  DCHECK(file_message_loop_proxy_.get());
 }
 
 ImportantFileWriter::~ImportantFileWriter() {
@@ -109,8 +113,10 @@ void ImportantFileWriter::WriteNow(const std::string& data) {
   if (HasPendingWrite())
     timer_.Stop();
 
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE, new WriteToDiskTask(path_, data));
+  // TODO(sanjeevr): Add a DCHECK for the return value of PostTask.
+  // (Some tests fail if we add the DCHECK and they need to be fixed first).
+  file_message_loop_proxy_->PostTask(FROM_HERE,
+                                     new WriteToDiskTask(path_, data));
 }
 
 void ImportantFileWriter::ScheduleWrite(DataSerializer* serializer) {

@@ -826,7 +826,6 @@
         'browser/history/visit_tracker_unittest.cc',
         'browser/host_content_settings_map_unittest.cc',
         'browser/host_zoom_map_unittest.cc',
-        'browser/important_file_writer_unittest.cc',
         'browser/importer/firefox_importer_unittest.cc',
         'browser/importer/firefox_importer_unittest_messages_internal.h',
         'browser/importer/firefox_importer_unittest_utils.h',
@@ -983,6 +982,7 @@
         'common/extensions/update_manifest_unittest.cc',
         'common/extensions/url_pattern_unittest.cc',
         'common/extensions/user_script_unittest.cc',
+        'common/important_file_writer_unittest.cc',
         'common/json_value_serializer_unittest.cc',
         'common/mru_cache_unittest.cc',
         # TODO(sanjeevr): Move the 2 below files to common_net_unit_tests
