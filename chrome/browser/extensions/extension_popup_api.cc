@@ -16,6 +16,7 @@
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/window_sizer.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
@@ -25,6 +26,7 @@
 #include "gfx/point.h"
 
 #if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/views/bubble_border.h"
 #include "chrome/browser/views/extensions/extension_popup.h"
 #include "views/view.h"
 #include "views/focus/focus_manager.h"
@@ -57,6 +59,35 @@ const wchar_t kBorderStyleKey[] = L"borderStyle";
 
 // chrome enumeration values
 const char kRectangleChrome[] = "rectangle";
+
+#if defined(TOOLKIT_VIEWS)
+// Returns an updated arrow location, conditioned on the type of intersection
+// between the popup window, and the screen.  |location| is the current position
+// of the arrow on the popup.  |intersection| is the rect representing the
+// intersection between the popup view and its working screen.  |popup_rect|
+// is the rect of the popup window in screen space coordinates.
+// The returned location will be horizontally or vertically inverted based on
+// if the popup has been clipped horizontally or vertically.
+BubbleBorder::ArrowLocation ToggleArrowLocation(
+    BubbleBorder::ArrowLocation location, const gfx::Rect& intersection,
+    const gfx::Rect& popup_rect) {
+  // If the popup has been clipped horizontally, flip the right-left position
+  // of the arrow.
+  if (intersection.right() != popup_rect.right() ||
+      intersection.x() != popup_rect.x()) {
+    location = BubbleBorder::horizontal_mirror(location);
+  }
+
+  // If the popup has been clipped vertically, flip the bottom-top position
+  // of the arrow.
+  if (intersection.y() != popup_rect.y() ||
+      intersection.bottom() != popup_rect.bottom()) {
+    location = BubbleBorder::vertical_mirror(location);
+  }
+
+  return location;
+}
+#endif  // TOOLKIT_VIEWS
 
 };  // namespace
 
@@ -122,6 +153,45 @@ class ExtensionPopupHost : public ExtensionPopup::Observer,
         GetRoutingFromDispatcher(dispatcher_);
     if (router)
       router->RegisterRenderViewHost(host->render_view_host());
+  }
+
+  virtual void ExtensionPopupResized(ExtensionPopup* popup) {
+    // Reposition the location of the arrow on the popup so that the popup
+    // better fits on the working monitor.
+    gfx::Rect popup_rect = popup->GetOuterBounds();
+    if (popup_rect.IsEmpty())
+      return;
+
+    scoped_ptr<WindowSizer::MonitorInfoProvider> monitor_provider(
+        WindowSizer::CreateDefaultMonitorInfoProvider());
+    gfx::Rect monitor_bounds(
+        monitor_provider->GetMonitorWorkAreaMatching(popup_rect));
+    gfx::Rect intersection = monitor_bounds.Intersect(popup_rect);
+
+    // If the popup is totally out of the bounds of the monitor, then toggling
+    // the arrow location will not result in an un-clipped window.
+    if (intersection.IsEmpty())
+      return;
+
+    if (!intersection.Equals(popup_rect)) {
+      // The popup was clipped by the monitor.  Toggle the arrow position
+      // to see if that improves visibility.  Note:  The assignment and
+      // re-assignment of the arrow-position will not trigger an intermittent
+      // display.
+      BubbleBorder::ArrowLocation previous_location = popup->arrow_position();
+      BubbleBorder::ArrowLocation flipped_location = ToggleArrowLocation(
+          previous_location, intersection, popup_rect);
+      popup->SetArrowPosition(flipped_location);
+
+      // Double check that toggling the position actually improved the
+      // situation - the popup will be contained entirely in its working monitor
+      // bounds.
+      gfx::Rect flipped_bounds = popup->GetOuterBounds();
+      gfx::Rect updated_monitor_bounds =
+          monitor_provider->GetMonitorWorkAreaMatching(flipped_bounds);
+      if (!updated_monitor_bounds.Contains(flipped_bounds))
+        popup->SetArrowPosition(previous_location);
+    }
   }
 
   virtual void DispatchPopupClosedEvent() {

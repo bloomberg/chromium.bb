@@ -41,10 +41,14 @@ const int ExtensionPopup::kMinHeight = 25;
 const int ExtensionPopup::kMaxWidth = 800;
 const int ExtensionPopup::kMaxHeight = 600;
 
+namespace {
+
 // The width, in pixels, of the black-border on a popup.
 const int kPopupBorderWidth = 1;
 
 const int kPopupBubbleCornerRadius = BubbleBorder::GetCornerRadius() / 2;
+
+}  // namespace
 
 ExtensionPopup::ExtensionPopup(ExtensionHost* host,
                                views::Widget* frame,
@@ -138,6 +142,16 @@ ExtensionPopup::~ExtensionPopup() {
     border_widget_->Close();
 }
 
+void ExtensionPopup::SetArrowPosition(
+    BubbleBorder::ArrowLocation arrow_location) {
+  DCHECK_NE(BubbleBorder::NONE, arrow_location) <<
+    "Extension popups must be positioned relative to an arrow.";
+
+  anchor_position_ = arrow_location;
+  if (border_)
+    border_->set_arrow_location(anchor_position_);
+}
+
 void ExtensionPopup::Hide() {
   BrowserBubble::Hide();
   if (border_widget_)
@@ -162,19 +176,14 @@ void ExtensionPopup::Show(bool activate) {
 }
 
 void ExtensionPopup::ResizeToView() {
-  // We'll be sizing ourselves to this size shortly, but wait until we
-  // know our position to do it.
-  gfx::Size new_size = view()->size();
+  if (observer_)
+    observer_->ExtensionPopupResized(this);
 
-  // Convert rect to screen coordinates.
-  gfx::Rect rect = relative_to_;
+  gfx::Rect rect = GetOuterBounds();
+
   gfx::Point origin = rect.origin();
-  views::View::ConvertPointToScreen(frame_->GetRootView(), &origin);
-  rect.set_origin(origin);
-
-  rect = GetOuterBounds(rect, new_size);
-  origin = rect.origin();
   views::View::ConvertPointToView(NULL, frame_->GetRootView(), &origin);
+
   if (border_widget_) {
     // Set the bubble-chrome widget according to the outer bounds of the entire
     // popup.
@@ -189,6 +198,7 @@ void ExtensionPopup::ResizeToView() {
     origin.set_x(origin.x() + border_insets.left() + kPopupBubbleCornerRadius);
     origin.set_y(origin.y() + border_insets.top() + kPopupBubbleCornerRadius);
 
+    gfx::Size new_size = view()->size();
     SetBounds(origin.x(), origin.y(), new_size.width(), new_size.height());
   } else {
     SetBounds(origin.x(), origin.y(), rect.width(), rect.height());
@@ -296,8 +306,14 @@ void ExtensionPopup::OnExtensionPreferredSizeChanged(ExtensionView* view) {
   ResizeToView();
 }
 
-gfx::Rect ExtensionPopup::GetOuterBounds(const gfx::Rect& position_relative_to,
-                                         const gfx::Size& contents_size) const {
+gfx::Rect ExtensionPopup::GetOuterBounds() const {
+  gfx::Rect relative_rect = relative_to_;
+  gfx::Point origin = relative_rect.origin();
+  views::View::ConvertPointToScreen(frame_->GetRootView(), &origin);
+  relative_rect.set_origin(origin);
+
+  gfx::Size contents_size = view()->size();
+
   // If the popup has a bubble-chrome, then let the BubbleBorder compute
   // the bounds.
   if (BUBBLE_CHROME == popup_chrome_) {
@@ -305,23 +321,25 @@ gfx::Rect ExtensionPopup::GetOuterBounds(const gfx::Rect& position_relative_to,
     // claim. Since we can't clip the ExtensionView's corners, we need to
     // increase the inset by half the corner radius as well as lying about the
     // size of the contents size to compensate.
-    gfx::Size adjusted_size = contents_size;
-    adjusted_size.Enlarge(2 * kPopupBubbleCornerRadius,
+    contents_size.Enlarge(2 * kPopupBubbleCornerRadius,
                           2 * kPopupBubbleCornerRadius);
-    return border_->GetBounds(position_relative_to, adjusted_size);
+    return border_->GetBounds(relative_rect, contents_size);
   }
 
   // Position the bounds according to the location of the |anchor_position_|.
   int y;
-  if ((anchor_position_ == BubbleBorder::TOP_LEFT) ||
-      (anchor_position_ == BubbleBorder::TOP_RIGHT)) {
-    y = position_relative_to.bottom();
-  } else {
-    y = position_relative_to.y() - contents_size.height();
-  }
+  if (BubbleBorder::is_arrow_on_top(anchor_position_))
+    y = relative_rect.bottom();
+  else
+    y = relative_rect.y() - contents_size.height();
 
-  return gfx::Rect(position_relative_to.x(), y, contents_size.width(),
-                   contents_size.height());
+  int x;
+  if (BubbleBorder::is_arrow_on_left(anchor_position_))
+    x = relative_rect.x();
+  else
+    x = relative_rect.x() - contents_size.width();
+
+  return gfx::Rect(x, y, contents_size.width(), contents_size.height());
 }
 
 // static

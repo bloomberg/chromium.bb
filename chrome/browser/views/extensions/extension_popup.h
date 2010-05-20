@@ -43,6 +43,11 @@ class ExtensionPopup : public BrowserBubble,
     // into the popup.  An example use is for automation resource routing in
     // Chrome-Frame.  See extension_popup_api.cc.
     virtual void ExtensionHostCreated(ExtensionHost* host) {}
+
+    // Called when the ExtensionPopup is resized.  Note that the popup may have
+    // an empty bounds, if a popup is repositioned before the hosted content
+    // has loaded.
+    virtual void ExtensionPopupResized(ExtensionPopup* popup) {}
   };
 
   enum PopupChrome {
@@ -100,6 +105,18 @@ class ExtensionPopup : public BrowserBubble,
 
   ExtensionHost* host() const { return extension_host_.get(); }
 
+  // Assigns the arrow location of the popup view, and updates the popup
+  // border widget, if necessary.
+  void SetArrowPosition(BubbleBorder::ArrowLocation arrow_location);
+  BubbleBorder::ArrowLocation arrow_position() const {
+    return anchor_position_;
+  }
+
+  // Gives the desired bounds (in screen coordinates) given the rect to point
+  // to and the size of the contained contents.  Includes all of the
+  // border-chrome surrounding the pop-up as well.
+  gfx::Rect GetOuterBounds() const;
+
   // BrowserBubble overrides.
   virtual void Hide();
   virtual void Show(bool activate);
@@ -137,12 +154,6 @@ class ExtensionPopup : public BrowserBubble,
                  bool inspect_with_devtools,
                  PopupChrome chrome,
                  Observer* observer);
-
-  // Gives the desired bounds (in screen coordinates) given the rect to point
-  // to and the size of the contained contents.  Includes all of the
-  // border-chrome surrounding the pop-up as well.
-  gfx::Rect GetOuterBounds(const gfx::Rect& position_relative_to,
-                           const gfx::Size& contents_size) const;
 
   // The area on the screen that the popup should be positioned relative to.
   gfx::Rect relative_to_;
