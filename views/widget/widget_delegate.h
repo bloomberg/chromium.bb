@@ -14,11 +14,14 @@ class WidgetDelegate {
   virtual ~WidgetDelegate() {}
 
   // Called with the display changes (color depth or resolution).
-  virtual void DisplayChanged() = 0;
+  virtual void DisplayChanged() {}
+
+  // Called when widget active state has changed.
+  virtual void IsActiveChanged(bool active) {}
 
   // Called when the work area (the desktop area minus taskbars,
   // menubars, etc.) changes in size.
-  virtual void WorkAreaChanged() = 0;
+  virtual void WorkAreaChanged() {}
 };
 
 }  // namespace views

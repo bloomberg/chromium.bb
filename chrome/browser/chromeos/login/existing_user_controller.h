@@ -66,6 +66,7 @@ class ExistingUserController : public WmMessageListener::Observer,
   // UserController::Delegate:
   virtual void Login(UserController* source, const string16& password);
   virtual void ClearErrors();
+  virtual void OnUserSelected(UserController* source);
 
   // LoginStatusConsumer:
   virtual void OnLoginFailure(const std::string& error);
@@ -98,8 +99,8 @@ class ExistingUserController : public WmMessageListener::Observer,
   // Used for logging in.
   scoped_refptr<Authenticator> authenticator_;
 
-  // Index of view loggin in.
-  size_t index_of_view_logging_in_;
+  // Index of selected view (user).
+  size_t selected_view_index_;
 
   // See comment in ProcessWmMessage.
   base::OneShotTimer<ExistingUserController> delete_timer_;

@@ -130,7 +130,7 @@ class WidgetGtk
   void SetFocusTraversableParentView(View* parent_view);
 
   // Invoked when the active status changes.
-  virtual void IsActiveChanged() {}
+  virtual void IsActiveChanged();
 
   // Sets initial focus on a new window. On X11/Gtk, window creation
   // is asynchronous and a focus request has to be made after a window

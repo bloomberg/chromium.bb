@@ -12,6 +12,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "views/controls/button/button.h"
 #include "views/controls/textfield/textfield.h"
+#include "views/widget/widget_delegate.h"
 
 namespace views {
 class ImageView;
@@ -25,6 +26,7 @@ namespace chromeos {
 // user. ExistingUserController creates the nececessary set of UserControllers.
 class UserController : public views::ButtonListener,
                        public views::Textfield::Controller,
+                       public views::WidgetDelegate,
                        public NotificationObserver {
  public:
   class Delegate {
@@ -32,6 +34,7 @@ class UserController : public views::ButtonListener,
     virtual void Login(UserController* source,
                        const string16& password) = 0;
     virtual void ClearErrors() = 0;
+    virtual void OnUserSelected(UserController* source) = 0;
    protected:
     virtual ~Delegate() {}
   };
@@ -70,6 +73,9 @@ class UserController : public views::ButtonListener,
                                const string16& new_contents) {}
   virtual bool HandleKeystroke(views::Textfield* sender,
                                const views::Textfield::Keystroke& keystroke);
+
+  // views::WidgetDelegate:
+  virtual void IsActiveChanged(bool active);
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,

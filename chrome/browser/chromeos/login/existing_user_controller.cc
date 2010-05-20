@@ -38,7 +38,7 @@ namespace {
 const size_t kMaxUsers = 6;
 
 // Used to indicate no user has been selected.
-const size_t kNoLogin = -1;
+const size_t kNotSelected = -1;
 
 }  // namespace
 
@@ -48,7 +48,7 @@ ExistingUserController::ExistingUserController(
     : background_bounds_(background_bounds),
       background_window_(NULL),
       background_view_(NULL),
-      index_of_view_logging_in_(kNoLogin),
+      selected_view_index_(kNotSelected),
       bubble_(NULL) {
   DCHECK(!users.empty());  // There must be at least one user when using
                            // ExistingUserController.
@@ -129,7 +129,7 @@ void ExistingUserController::Login(UserController* source,
   std::vector<UserController*>::const_iterator i =
       std::find(controllers_.begin(), controllers_.end(), source);
   DCHECK(i != controllers_.end());
-  index_of_view_logging_in_ = i - controllers_.begin();
+  selected_view_index_ = i - controllers_.begin();
 
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
   Profile* profile = g_browser_process->profile_manager()->GetWizardProfile();
@@ -138,7 +138,7 @@ void ExistingUserController::Login(UserController* source,
       NewRunnableMethod(authenticator_.get(),
                         &Authenticator::AuthenticateToLogin,
                         profile,
-                        controllers_[index_of_view_logging_in_]->user().email(),
+                        controllers_[selected_view_index_]->user().email(),
                         UTF16ToUTF8(password)));
 
   // Disable clicking on other windows.
@@ -151,6 +151,18 @@ void ExistingUserController::ClearErrors() {
   // bubble_ will be set to NULL in callback.
   if (bubble_)
     bubble_->Close();
+}
+
+void ExistingUserController::OnUserSelected(UserController* source) {
+  std::vector<UserController*>::const_iterator i =
+      std::find(controllers_.begin(), controllers_.end(), source);
+  DCHECK(i != controllers_.end());
+  size_t new_selected_index = i - controllers_.begin();
+  if (new_selected_index != selected_view_index_ &&
+      selected_view_index_ != kNotSelected) {
+    controllers_[selected_view_index_]->ClearAndEnablePassword();
+  }
+  selected_view_index_ = new_selected_index;
 }
 
 void ExistingUserController::OnLoginFailure(const std::string& error) {
@@ -167,7 +179,7 @@ void ExistingUserController::OnLoginFailure(const std::string& error) {
     ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
   }
 
-  controllers_[index_of_view_logging_in_]->ClearAndEnablePassword();
+  controllers_[selected_view_index_]->ClearAndEnablePassword();
 
   // Reenable clicking on other windows.
   WmIpc::Message message(WM_IPC_MESSAGE_WM_SET_LOGIN_STATE);
@@ -186,8 +198,8 @@ void ExistingUserController::ShowError(int error_id,
   if (!details.empty())
     error_text += L"\n" + ASCIIToWide(details);
   bubble_ = MessageBubble::Show(
-      controllers_[index_of_view_logging_in_]->controls_window(),
-      controllers_[index_of_view_logging_in_]->GetScreenBounds(),
+      controllers_[selected_view_index_]->controls_window(),
+      controllers_[selected_view_index_]->GetScreenBounds(),
       BubbleBorder::BOTTOM_LEFT,
       ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_WARNING),
       error_text,

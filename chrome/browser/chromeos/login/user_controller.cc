@@ -161,6 +161,11 @@ void UserController::Login() {
   delegate_->Login(this, password_field_->text());
 }
 
+void UserController::IsActiveChanged(bool active) {
+  if (active)
+    delegate_->OnUserSelected(this);
+}
+
 WidgetGtk* UserController::CreateControlsWindow(int index, int* height) {
   password_field_ = new views::Textfield(views::Textfield::STYLE_PASSWORD);
   password_field_->set_text_to_display_when_empty(
@@ -186,6 +191,7 @@ WidgetGtk* UserController::CreateControlsWindow(int index, int* height) {
   window->MakeTransparent();
   window->Init(NULL, gfx::Rect());
   window->SetContentsView(control_view);
+  window->SetWidgetDelegate(this);
   gfx::Size pref = control_view->GetPreferredSize();
   *height = pref.height();
   std::vector<int> params;

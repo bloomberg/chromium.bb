@@ -25,6 +25,7 @@
 #include "views/widget/gtk_views_fixed.h"
 #include "views/widget/root_view.h"
 #include "views/widget/tooltip_manager_gtk.h"
+#include "views/widget/widget_delegate.h"
 #include "views/window/window_gtk.h"
 
 namespace {
@@ -410,6 +411,11 @@ void WidgetGtk::SetFocusTraversableParent(FocusTraversable* parent) {
 
 void WidgetGtk::SetFocusTraversableParentView(View* parent_view) {
   root_view_->SetFocusTraversableParentView(parent_view);
+}
+
+void WidgetGtk::IsActiveChanged() {
+  if (GetWidgetDelegate())
+    GetWidgetDelegate()->IsActiveChanged(IsActive());
 }
 
 // static
