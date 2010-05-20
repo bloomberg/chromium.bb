@@ -16,6 +16,7 @@ import unittest
 
 from grit import tclib
 
+from grit import exception
 import grit.extern.tclib
 
 
@@ -157,6 +158,7 @@ class TclibUnittest(unittest.TestCase):
   def testPlaceholderNameChecking(self):
     try:
       ph = tclib.Placeholder('BINGO BONGO', 'bla', 'bla')
+      raise Exception("We shouldn't get here")
     except exception.InvalidPlaceholderName:
       pass  # Expect exception to be thrown because presentation contained space
 

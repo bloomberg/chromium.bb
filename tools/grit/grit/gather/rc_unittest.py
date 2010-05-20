@@ -20,7 +20,7 @@ from grit import util
 
 class RcUnittest(unittest.TestCase):
 
-  part_we_want = '''IDC_KLONKACC ACCELERATORS
+  part_we_want = '''IDC_KLONKACC ACCELERATORS 
 BEGIN
     "?",            IDM_ABOUT,              ASCII,  ALT
     "/",            IDM_ABOUT,              ASCII,  ALT

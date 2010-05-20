@@ -78,7 +78,7 @@ END'''.strip())
     build.RcBuilder.ProcessNode(root, DummyOutput('rc_all', 'en'), buf)
     output = buf.getvalue()
     self.failUnless(output.strip() == u'''
-IDC_KLONKMENU MENU
+IDC_KLONKMENU MENU 
 BEGIN
     POPUP "&File"
     BEGIN
