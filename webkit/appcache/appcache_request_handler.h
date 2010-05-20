@@ -8,6 +8,7 @@
 #include "net/url_request/url_request.h"
 #include "webkit/appcache/appcache_entry.h"
 #include "webkit/appcache/appcache_host.h"
+#include "webkit/glue/resource_type.h"
 
 class URLRequest;
 class URLRequestJob;
@@ -35,11 +36,16 @@ class AppCacheRequestHandler : public URLRequest::UserData,
 
   void GetExtraResponseInfo(int64* cache_id, GURL* manifest_url);
 
+  static bool IsMainResourceType(ResourceType::Type type) {
+    return ResourceType::IsFrame(type) ||
+           ResourceType::IsSharedWorker(type);
+  }
+
  private:
   friend class AppCacheHost;
 
   // Callers should use AppCacheHost::CreateRequestHandler.
-  AppCacheRequestHandler(AppCacheHost* host, bool is_main_resource);
+  AppCacheRequestHandler(AppCacheHost* host, ResourceType::Type resource_type);
 
   // AppCacheHost::Observer override
   virtual void OnDestructionImminent(AppCacheHost* host);
@@ -52,9 +58,14 @@ class AppCacheRequestHandler : public URLRequest::UserData,
   void DeliverErrorResponse();
 
   // Helper to retrieve a pointer to the storage object.
-  AppCacheStorage* storage();
+  AppCacheStorage* storage() const;
+
+  bool is_main_resource() const {
+    return IsMainResourceType(resource_type_);
+  }
 
   // Main-resource loading -------------------------------------
+  // Frame and SharedWorker main resources are handled here.
 
   void MaybeLoadMainResource(URLRequest* request);
 
@@ -66,6 +77,7 @@ class AppCacheRequestHandler : public URLRequest::UserData,
       bool was_blocked_by_policy);
 
   // Sub-resource loading -------------------------------------
+  // Dedicated worker and all manner of sub-resources are handled here.
 
   void MaybeLoadSubResource(URLRequest* request);
   void ContinueMaybeLoadSubResource();
@@ -78,8 +90,8 @@ class AppCacheRequestHandler : public URLRequest::UserData,
   // What host we're servicing a request for.
   AppCacheHost* host_;
 
-  // Main vs subresource loads are somewhat different.
-  bool is_main_request_;
+  // Frame vs subresource vs sharedworker loads are somewhat different.
+  ResourceType::Type resource_type_;
 
   // Subresource requests wait until after cache selection completes.
   bool is_waiting_for_cache_selection_;

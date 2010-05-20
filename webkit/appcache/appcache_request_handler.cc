@@ -12,8 +12,8 @@
 namespace appcache {
 
 AppCacheRequestHandler::AppCacheRequestHandler(AppCacheHost* host,
-                                               bool is_main_resource)
-    : host_(host), is_main_request_(is_main_resource),
+                                               ResourceType::Type resource_type)
+    : host_(host), resource_type_(resource_type),
       is_waiting_for_cache_selection_(false), found_cache_id_(0),
       found_network_namespace_(false) {
   DCHECK(host_);
@@ -27,7 +27,7 @@ AppCacheRequestHandler::~AppCacheRequestHandler() {
   }
 }
 
-AppCacheStorage* AppCacheRequestHandler::storage() {
+AppCacheStorage* AppCacheRequestHandler::storage() const {
   DCHECK(host_);
   return host_->service()->storage();
 }
@@ -66,7 +66,7 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadResource(
   found_manifest_url_ = GURL();
   found_network_namespace_ = false;
 
-  if (is_main_request_)
+  if (is_main_resource())
     MaybeLoadMainResource(request);
   else
     MaybeLoadSubResource(request);
@@ -86,7 +86,7 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadFallbackForRedirect(
     URLRequest* request, const GURL& location) {
   if (!host_ || !IsSchemeAndMethodSupported(request))
     return NULL;
-  if (is_main_request_)
+  if (is_main_resource())
     return NULL;
   if (request->url().GetOrigin() == location.GetOrigin())
     return NULL;
@@ -189,20 +189,26 @@ void AppCacheRequestHandler::OnMainResponseFound(
     int64 cache_id, const GURL& manifest_url,
     bool was_blocked_by_policy) {
   DCHECK(host_);
-  DCHECK(is_main_request_);
+  DCHECK(is_main_resource());
   DCHECK(!entry.IsForeign());
   DCHECK(!fallback_entry.IsForeign());
   DCHECK(!(entry.has_response_id() && fallback_entry.has_response_id()));
 
-  if (was_blocked_by_policy)
-    host_->NotifyMainResourceBlocked();
+  if (ResourceType::IsFrame(resource_type_)) {
+    if (was_blocked_by_policy)
+      host_->NotifyMainResourceBlocked();
 
-  if (cache_id != kNoCacheId) {
-    // AppCacheHost loads and holds a reference to the main resource cache
-    // for two reasons, firstly to preload the cache into the working set
-    // in advance of subresource loads happening, secondly to prevent the
-    // AppCache from falling out of the working set on frame navigations.
-    host_->LoadMainResourceCache(cache_id);
+    if (cache_id != kNoCacheId) {
+      // AppCacheHost loads and holds a reference to the main resource cache
+      // for two reasons, firstly to preload the cache into the working set
+      // in advance of subresource loads happening, secondly to prevent the
+      // AppCache from falling out of the working set on frame navigations.
+      host_->LoadMainResourceCache(cache_id);
+    }
+  } else {
+    DCHECK(ResourceType::IsSharedWorker(resource_type_));
+    if (was_blocked_by_policy)
+      host_->frontend()->OnContentBlocked(host_->host_id());
   }
 
   // 6.11.1 Navigating across documents, steps 10 and 14.
@@ -294,7 +300,7 @@ void AppCacheRequestHandler::ContinueMaybeLoadSubResource() {
 
 void AppCacheRequestHandler::OnCacheSelectionComplete(AppCacheHost* host) {
   DCHECK(host == host_);
-  if (is_main_request_)
+  if (is_main_resource())
     return;
   if (!is_waiting_for_cache_selection_)
     return;

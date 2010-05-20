@@ -6,13 +6,15 @@
 
 #include "base/logging.h"
 #include "webkit/appcache/appcache.h"
+#include "webkit/appcache/appcache_backend_impl.h"
 #include "webkit/appcache/appcache_request_handler.h"
 
 namespace appcache {
 
 AppCacheHost::AppCacheHost(int host_id, AppCacheFrontend* frontend,
                            AppCacheService* service)
-    : host_id_(host_id), pending_main_resource_cache_id_(kNoCacheId),
+    : host_id_(host_id), parent_host_id_(kNoHostId), parent_process_id_(0),
+      pending_main_resource_cache_id_(kNoCacheId),
       pending_selected_cache_id_(kNoCacheId),
       frontend_(frontend), service_(service),
       pending_get_status_callback_(NULL), pending_start_update_callback_(NULL),
@@ -90,6 +92,31 @@ void AppCacheHost::SelectCache(const GURL& document_url,
 
   // TODO(michaeln): If there was a manifest URL, the user agent may report
   // to the user that it was ignored, to aid in application development.
+  FinishCacheSelection(NULL, NULL);
+}
+
+void AppCacheHost::SelectCacheForWorker(int parent_process_id,
+                                        int parent_host_id) {
+  DCHECK(!pending_start_update_callback_ &&
+         !pending_swap_cache_callback_ &&
+         !pending_get_status_callback_ &&
+         !is_selection_pending());
+
+  parent_process_id_ = parent_process_id;
+  parent_host_id_ = parent_host_id;
+  FinishCacheSelection(NULL, NULL);
+}
+
+void AppCacheHost::SelectCacheForSharedWorker(int64 appcache_id) {
+  DCHECK(!pending_start_update_callback_ &&
+         !pending_swap_cache_callback_ &&
+         !pending_get_status_callback_ &&
+         !is_selection_pending());
+
+  if (appcache_id != kNoCacheId) {
+    LoadSelectedCache(appcache_id);
+    return;
+  }
   FinishCacheSelection(NULL, NULL);
 }
 
@@ -197,15 +224,28 @@ void AppCacheHost::DoPendingSwapCache() {
   pending_callback_param_ = NULL;
 }
 
+AppCacheHost* AppCacheHost::GetParentAppCacheHost() const {
+  DCHECK(is_for_dedicated_worker());
+  AppCacheBackendImpl* backend = service_->GetBackend(parent_process_id_);
+  return backend ? backend->GetHost(parent_host_id_) : NULL;
+}
+
 AppCacheRequestHandler* AppCacheHost::CreateRequestHandler(
                                           URLRequest* request,
-                                          bool is_main_request) {
-  if (is_main_request)
-    return new AppCacheRequestHandler(this, true);
+                                          ResourceType::Type resource_type) {
+  if (is_for_dedicated_worker()) {
+    AppCacheHost* parent_host = GetParentAppCacheHost();
+    if (parent_host)
+      return parent_host->CreateRequestHandler(request, resource_type);
+    return NULL;
+  }
+
+  if (AppCacheRequestHandler::IsMainResourceType(resource_type))
+    return new AppCacheRequestHandler(this, resource_type);
 
   if ((associated_cache() && associated_cache()->is_complete()) ||
       is_selection_pending()) {
-    return new AppCacheRequestHandler(this, false);
+    return new AppCacheRequestHandler(this, resource_type);
   }
   return NULL;
 }

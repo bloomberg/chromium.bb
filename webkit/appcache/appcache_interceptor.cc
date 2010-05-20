@@ -39,12 +39,9 @@ void AppCacheInterceptor::SetExtraRequestInfo(
   if (!host)
     return;
 
-  // TODO(michaeln): SHARED_WORKER type too
-  bool is_main_request = ResourceType::IsFrame(resource_type);
-
   // Create a handler for this request and associate it with the request.
   AppCacheRequestHandler* handler =
-      host->CreateRequestHandler(request, is_main_request);
+      host->CreateRequestHandler(request, resource_type);
   if (handler)
     SetHandler(request, handler);
 }

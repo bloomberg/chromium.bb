@@ -4,8 +4,10 @@
 
 #include "base/callback.h"
 #include "base/scoped_ptr.h"
+#include "net/url_request/url_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/appcache.h"
+#include "webkit/appcache/appcache_backend_impl.h"
 #include "webkit/appcache/appcache_group.h"
 #include "webkit/appcache/appcache_host.h"
 #include "webkit/appcache/mock_appcache_service.h"
@@ -299,6 +301,40 @@ TEST_F(AppCacheHostTest, SetSwappableCache) {
   host.OnUpdateComplete(group2);
   EXPECT_FALSE(host.group_being_updated_);
   EXPECT_FALSE(host.swappable_cache_.get());  // group2 had no newest cache
+}
+
+TEST_F(AppCacheHostTest, ForDedicatedWorker) {
+  const int kMockProcessId = 1;
+  const int kParentHostId = 1;
+  const int kWorkerHostId = 2;
+
+  AppCacheBackendImpl backend_impl;
+  backend_impl.Initialize(&service_, &mock_frontend_, kMockProcessId);
+  backend_impl.RegisterHost(kParentHostId);
+  backend_impl.RegisterHost(kWorkerHostId);
+
+  AppCacheHost* parent_host = backend_impl.GetHost(kParentHostId);
+  EXPECT_FALSE(parent_host->is_for_dedicated_worker());
+
+  AppCacheHost* worker_host = backend_impl.GetHost(kWorkerHostId);
+  worker_host->SelectCacheForWorker(kParentHostId, kMockProcessId);
+  EXPECT_TRUE(worker_host->is_for_dedicated_worker());
+  EXPECT_EQ(parent_host, worker_host->GetParentAppCacheHost());
+
+  // We should have received an OnCacheSelected msg for the worker_host.
+  // The host for workers always indicates 'no cache selected' regardless
+  // of its parent's state. This is OK because the worker cannot access
+  // the scriptable interface, the only function available is resource
+  // loading (see appcache_request_handler_unittests those tests).
+  EXPECT_EQ(kWorkerHostId, mock_frontend_.last_host_id_);
+  EXPECT_EQ(kNoCacheId, mock_frontend_.last_cache_id_);
+  EXPECT_EQ(UNCACHED, mock_frontend_.last_status_);
+
+  // Simulate the parent being torn down.
+  backend_impl.UnregisterHost(kParentHostId);
+  parent_host = NULL;
+  EXPECT_EQ(NULL, backend_impl.GetHost(kParentHostId));
+  EXPECT_EQ(NULL, worker_host->GetParentAppCacheHost());
 }
 
 }  // namespace appcache
