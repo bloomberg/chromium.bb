@@ -1,6 +1,15 @@
 // Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// Run WebSocket live experiment to collect metrics about WebSocket
+// availability in the real Internet.
+// It tries to open WebSocket connection to websocket-experiment.chromium.org,
+// send/receive some static content over the connection, and see how it works
+// well.
+// It must be started only if the user permits metrics reporting with the
+// checkbox in the prefs.
+// For more detail what the experiment is, see websocket_experiment_task.h.
 
 #ifndef CHROME_BROWSER_NET_WEBSOCKET_EXPERIMENT_WEBSOCKET_EXPERIMENT_RUNNER_H_
 #define CHROME_BROWSER_NET_WEBSOCKET_EXPERIMENT_WEBSOCKET_EXPERIMENT_RUNNER_H_

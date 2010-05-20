@@ -497,8 +497,11 @@ MetricsService* InitializeMetrics(const CommandLine& parsed_command_line,
 #if defined(GOOGLE_CHROME_BUILD)
     bool enabled = local_state->GetBoolean(prefs::kMetricsReportingEnabled);
     metrics->SetUserPermitsUpload(enabled);
-    if (enabled)
+    if (enabled) {
       metrics->Start();
+      chrome_browser_net_websocket_experiment::
+          WebSocketExperimentRunner::Start();
+    }
 #endif
   }
 
@@ -1156,7 +1159,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   sdch_manager.EnableSdchSupport(sdch_supported_domain);
 
   MetricsService* metrics = InitializeMetrics(parsed_command_line, local_state);
-  chrome_browser_net_websocket_experiment::WebSocketExperimentRunner::Start();
   InstallJankometer(parsed_command_line);
 
 #if defined(OS_WIN) && !defined(GOOGLE_CHROME_BUILD)
