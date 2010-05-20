@@ -24,9 +24,16 @@ FFmpegVideoDecodeEngine::FFmpegVideoDecodeEngine()
 FFmpegVideoDecodeEngine::~FFmpegVideoDecodeEngine() {
 }
 
-void FFmpegVideoDecodeEngine::Initialize(AVStream* stream, Task* done_cb) {
+void FFmpegVideoDecodeEngine::Initialize(
+    MessageLoop* message_loop,
+    AVStream* av_stream,
+    EmptyThisBufferCallback* empty_buffer_callback,
+    FillThisBufferCallback* fill_buffer_callback,
+    Task* done_cb) {
   AutoTaskRunner done_runner(done_cb);
   CHECK(state_ == kCreated);
+  // TODO(jiesun): empty_buffer_callback is not used yet until we had path to re
+  fill_this_buffer_callback_.reset(fill_buffer_callback);
 
   // Always try to use three threads for video decoding.  There is little reason
   // not to since current day CPUs tend to be multi-core and we measured
@@ -41,6 +48,7 @@ void FFmpegVideoDecodeEngine::Initialize(AVStream* stream, Task* done_cb) {
   static const int kMaxDecodeThreads = 16;
 
 
+  AVStream* stream = av_stream;
   codec_context_ = stream->codec;
   codec_context_->flags2 |= CODEC_FLAG2_FAST;  // Enable faster H264 decode.
   // Enable motion vector search (potentially slow), strong deblocking filter
@@ -102,15 +110,14 @@ static void CopyPlane(size_t plane,
   }
 }
 
-// Decodes one frame of video with the given buffer.
-void FFmpegVideoDecodeEngine::DecodeFrame(
-    Buffer* buffer,
-    scoped_refptr<VideoFrame>* video_frame,
-    bool* got_frame,
-    Task* done_cb) {
-  AutoTaskRunner done_runner(done_cb);
-  *got_frame = false;
-  *video_frame = NULL;
+void FFmpegVideoDecodeEngine::EmptyThisBuffer(
+    scoped_refptr<Buffer> buffer) {
+  DecodeFrame(buffer);
+}
+
+// Try to decode frame when both input and output are ready.
+void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
+  scoped_refptr<VideoFrame> video_frame;
 
   // Create a packet for input data.
   // Due to FFmpeg API changes we no longer have const read-only pointers.
@@ -136,13 +143,13 @@ void FFmpegVideoDecodeEngine::DecodeFrame(
               << buffer->GetDuration().InMicroseconds() << " us"
               << " , packet size: "
               << buffer->GetDataSize() << " bytes";
-    *got_frame = false;
+    fill_this_buffer_callback_->Run(video_frame);
     return;
   }
 
   // If frame_decoded == 0, then no frame was produced.
-  *got_frame = frame_decoded != 0;
-  if (!*got_frame) {
+  if (frame_decoded == 0) {
+    fill_this_buffer_callback_->Run(video_frame);
     return;
   }
 
@@ -153,7 +160,7 @@ void FFmpegVideoDecodeEngine::DecodeFrame(
       !av_frame_->data[VideoFrame::kUPlane] ||
       !av_frame_->data[VideoFrame::kVPlane]) {
     // TODO(jiesun): this is also an error case handled as normal.
-    *got_frame = false;
+    fill_this_buffer_callback_->Run(video_frame);
     return;
   }
 
@@ -175,10 +182,10 @@ void FFmpegVideoDecodeEngine::DecodeFrame(
                           codec_context_->height,
                           timestamp,
                           duration,
-                          video_frame);
-  if (!video_frame->get()) {
+                          &video_frame);
+  if (!video_frame.get()) {
     // TODO(jiesun): this is also an error case handled as normal.
-    *got_frame = false;
+    fill_this_buffer_callback_->Run(video_frame);
     return;
   }
 
@@ -187,9 +194,11 @@ void FFmpegVideoDecodeEngine::DecodeFrame(
   // avcodec_decode_video() call.
   // TODO(scherkus): figure out pre-allocation/buffer cycling scheme.
   // TODO(scherkus): is there a cleaner way to figure out the # of planes?
-  CopyPlane(VideoFrame::kYPlane, video_frame->get(), av_frame_.get());
-  CopyPlane(VideoFrame::kUPlane, video_frame->get(), av_frame_.get());
-  CopyPlane(VideoFrame::kVPlane, video_frame->get(), av_frame_.get());
+  CopyPlane(VideoFrame::kYPlane, video_frame.get(), av_frame_.get());
+  CopyPlane(VideoFrame::kUPlane, video_frame.get(), av_frame_.get());
+  CopyPlane(VideoFrame::kVPlane, video_frame.get(), av_frame_.get());
+
+  fill_this_buffer_callback_->Run(video_frame);
 }
 
 void FFmpegVideoDecodeEngine::Flush(Task* done_cb) {

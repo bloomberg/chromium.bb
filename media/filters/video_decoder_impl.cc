@@ -59,7 +59,10 @@ void VideoDecoderImpl::DoInitialize(DemuxerStream* demuxer_stream,
   media_format_.SetAsInteger(MediaFormat::kHeight, height_);
 
   decode_engine_->Initialize(
+      message_loop(),
       av_stream,
+      NULL,
+      NewCallback(this, &VideoDecoderImpl::OnDecodeComplete),
       NewRunnableMethod(this,
                         &VideoDecoderImpl::OnInitializeComplete,
                         success,
@@ -87,9 +90,7 @@ void VideoDecoderImpl::DoSeek(base::TimeDelta time, Task* done_cb) {
   decode_engine_->Flush(done_cb);
 }
 
-void VideoDecoderImpl::DoDecode(Buffer* buffer, Task* done_cb) {
-  AutoTaskRunner done_runner(done_cb);
-
+void VideoDecoderImpl::DoDecode(Buffer* buffer) {
   // TODO(ajwong): This DoDecode() and OnDecodeComplete() set of functions is
   // too complicated to easily unittest.  The test becomes fragile. Try to
   // find a way to reorganize into smaller units for testing.
@@ -122,6 +123,7 @@ void VideoDecoderImpl::DoDecode(Buffer* buffer, Task* done_cb) {
   // If the decoding is finished, we just always return empty frames.
   if (state_ == kDecodeFinished) {
     EnqueueEmptyFrame();
+    OnEmptyBufferDone();
     return;
   }
 
@@ -141,31 +143,14 @@ void VideoDecoderImpl::DoDecode(Buffer* buffer, Task* done_cb) {
   }
 
   // Otherwise, attempt to decode a single frame.
-  bool* got_frame = new bool;
-  scoped_refptr<VideoFrame>* video_frame = new scoped_refptr<VideoFrame>(NULL);
-  decode_engine_->DecodeFrame(
-      buffer,
-      video_frame,
-      got_frame,
-      NewRunnableMethod(this,
-                        &VideoDecoderImpl::OnDecodeComplete,
-                        video_frame,
-                        got_frame,
-                        done_runner.release()));
+  decode_engine_->EmptyThisBuffer(buffer);
 }
 
-void VideoDecoderImpl::OnDecodeComplete(scoped_refptr<VideoFrame>* video_frame,
-                                        bool* got_frame, Task* done_cb) {
-  // Note: The |done_runner| must be declared *last* to ensure proper
-  // destruction order.
-  scoped_ptr<bool> got_frame_deleter(got_frame);
-  scoped_ptr<scoped_refptr<VideoFrame> > video_frame_deleter(video_frame);
-  AutoTaskRunner done_runner(done_cb);
-
-  // If we actually got data back, enqueue a frame.
-  if (*got_frame) {
+void VideoDecoderImpl::OnDecodeComplete(scoped_refptr<VideoFrame> video_frame) {
+  if (video_frame.get()) {
+    // If we actually got data back, enqueue a frame.
     last_pts_ = FindPtsAndDuration(*time_base_, pts_heap_, last_pts_,
-                                   video_frame->get());
+                                   video_frame.get());
 
     // Pop off a pts on a successful decode since we are "using up" one
     // timestamp.
@@ -181,9 +166,9 @@ void VideoDecoderImpl::OnDecodeComplete(scoped_refptr<VideoFrame>* video_frame,
       NOTREACHED() << "Attempting to decode more frames than were input.";
     }
 
-    (*video_frame)->SetTimestamp(last_pts_.timestamp);
-    (*video_frame)->SetDuration(last_pts_.duration);
-    EnqueueVideoFrame(*video_frame);
+    video_frame->SetTimestamp(last_pts_.timestamp);
+    video_frame->SetDuration(last_pts_.duration);
+    EnqueueVideoFrame(video_frame);
   } else {
     // When in kFlushCodec, any errored decode, or a 0-lengthed frame,
     // is taken as a signal to stop decoding.
@@ -192,6 +177,14 @@ void VideoDecoderImpl::OnDecodeComplete(scoped_refptr<VideoFrame>* video_frame,
       EnqueueEmptyFrame();
     }
   }
+
+  OnEmptyBufferDone();
+}
+
+void VideoDecoderImpl::OnEmptyBufferDone() {
+  // TODO(jiesun): what |DecodeBase::OnDecodeComplete| done is just
+  // what should be done in EmptyThisBufferCallback.
+  DecoderBase<VideoDecoder, VideoFrame>::OnDecodeComplete();
 }
 
 void VideoDecoderImpl::EnqueueVideoFrame(

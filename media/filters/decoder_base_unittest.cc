@@ -54,7 +54,7 @@ class MockDecoderImpl : public media::DecoderBase<
                     Task* done_cb));
   MOCK_METHOD0(DoStop, void());
   MOCK_METHOD2(DoSeek, void(base::TimeDelta time, Task* done_cb));
-  MOCK_METHOD2(DoDecode, void(media::Buffer* input, Task* done_cb));
+  MOCK_METHOD1(DoDecode, void(media::Buffer* input));
 
  private:
   FRIEND_TEST(media::DecoderBaseTest, FlowControl);
@@ -83,7 +83,7 @@ ACTION(Initialize) {
 
 ACTION_P(SaveDecodeRequest, list) {
   scoped_refptr<Buffer> buffer = arg0;
-  list->push_back(arg1);
+  list->push_back(buffer);
 }
 
 ACTION(CompleteDemuxRequest) {
@@ -121,11 +121,11 @@ TEST(DecoderBaseTest, FlowControl) {
 
   // Read.
   StrictMock<MockDecoderReadCallback> read_callback;
-  std::vector<Task*> decode_requests;
+  std::vector<scoped_refptr<Buffer> > decode_requests;
   EXPECT_CALL(*demuxer_stream, Read(NotNull()))
       .Times(2)
       .WillRepeatedly(CompleteDemuxRequest());
-  EXPECT_CALL(*decoder, DoDecode(NotNull(), NotNull()))
+  EXPECT_CALL(*decoder, DoDecode(NotNull()))
       .Times(2)
       .WillRepeatedly(SaveDecodeRequest(&decode_requests));
   decoder->Read(
@@ -140,7 +140,7 @@ TEST(DecoderBaseTest, FlowControl) {
   EXPECT_CALL(read_callback, ReadCallback(NotNull())).Times(2);
   for (size_t i = 0; i < decode_requests.size(); ++i) {
     decoder->EnqueueResult(new MockDecoderOutput());
-    AutoTaskRunner done_cb(decode_requests[i]);
+    decoder->OnDecodeComplete();
   }
   decode_requests.clear();
   message_loop.RunAllPending();
