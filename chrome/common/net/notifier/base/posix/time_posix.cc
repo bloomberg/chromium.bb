@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
 
+#include "base/logging.h"
 #include "chrome/common/net/notifier/base/time.h"
 
 namespace notifier {
@@ -31,7 +31,7 @@ time64 TmToTime64(const struct tm& tm) {
 }
 
 bool Time64ToTm(time64 t, struct tm* tm) {
-  assert(tm != NULL);
+  DCHECK(tm);
   time_t secs = t / kSecsTo100ns;
   gmtime_r(&secs, tm);
   return true;

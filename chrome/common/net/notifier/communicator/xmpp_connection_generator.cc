@@ -46,9 +46,9 @@ XmppConnectionGenerator::XmppConnectionGenerator(
       first_dns_error_(0),
       options_(options),
       parent_(parent) {
-  assert(parent);
-  assert(options);
-  assert(server_count_ > 0);
+  DCHECK(parent);
+  DCHECK(options);
+  DCHECK_GT(server_count_, 0);
   for (int i = 0; i < server_count_; ++i) {
     server_list_[i] = server_list[i];
   }
@@ -59,7 +59,7 @@ XmppConnectionGenerator::~XmppConnectionGenerator() {
 }
 
 const talk_base::ProxyInfo& XmppConnectionGenerator::proxy() const {
-  assert(settings_list_.get());
+  DCHECK(settings_list_.get());
   if (settings_index_ >= settings_list_->GetCount()) {
     return settings_list_->proxy();
   }
@@ -165,7 +165,7 @@ void XmppConnectionGenerator::OnServerDNSResolved(
   }
 
   // Build the ip list.
-  assert(settings_list_.get());
+  DCHECK(settings_list_.get());
   settings_index_ = -1;
   settings_list_->ClearPermutations();
   settings_list_->AddPermutations(

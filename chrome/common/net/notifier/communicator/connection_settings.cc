@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/logging.h"
 #include "chrome/common/net/notifier/communicator/connection_settings.h"
 #include "talk/base/helpers.h"
 #include "talk/xmpp/xmppclientsettings.h"
@@ -22,7 +23,7 @@ class RandomGenerator {
 
 void ConnectionSettings::FillXmppClientSettings(
     buzz::XmppClientSettings* xcs) const {
-  assert(xcs);
+  DCHECK(xcs);
   xcs->set_protocol(protocol_);
   xcs->set_server(server_);
   xcs->set_proxy(proxy_.type);
@@ -89,7 +90,7 @@ void ConnectionSettingsList::PermuteForAddress(
     bool special_port_magic,
     bool proxy_only,
     std::deque<ConnectionSettings>* list_temp) {
-  assert(list_temp);
+  DCHECK(list_temp);
   *(template_.mutable_server()) = server;
 
   // Use all of the original settings
