@@ -1,4 +1,3 @@
-
 menu {
   display: none;
   position: absolute;
@@ -15,8 +14,8 @@ menu {
   border-radius: 3px;
 }
 
-
 menu > * {
+  -webkit-box-sizing: border-box;
   display: block;
   margin: 0;
   width: 100%;

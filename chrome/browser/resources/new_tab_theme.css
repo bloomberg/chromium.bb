@@ -73,11 +73,6 @@ body {
   -webkit-mask-image: url(chrome://theme/newtab_menu_mask);
 }
 
-#option-menu > [selected] {
-  background-color: $7; /* color_header_gradient_light */
-  color: white;
-}
-
 #recently-closed {
   color: $8; /* COLOR_NTP_TEXT */
 }

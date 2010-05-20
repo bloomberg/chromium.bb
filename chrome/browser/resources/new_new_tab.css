@@ -181,12 +181,6 @@ html[dir=rtl] .item {
   border-radius: 4px;
 }
 
-.window-menu > hr {
-  border: 0;
-  border-top: 1px solid rgb(153, 153, 153);
-  margin: 2px 0;
-}
-
 /* Made to look like a tooltip using vista/win7 look and feel.
    TODO(arv): Replace with -webkit-appearance once issue 17371 is fixed
  */
@@ -322,15 +316,8 @@ html[dir=rtl] .item {
 }
 
 #option-menu {
-  -webkit-user-select: none;
-  position: absolute;
   right: 0;
   left: auto;
-  top: 33px; /* Position this below the option button. The option button
-                is positioned 15px from the top and has a height of 17px. We add
-                one to get some spacing there as well: 15 + 17 + 1 = 33 */
-  cursor: default;
-  pointer-events: all;
   min-width: 175px;
 }
 
@@ -339,24 +326,19 @@ html[dir=rtl] #option-menu {
   left: 0;
 }
 
-#option-menu > div {
-  padding: 3px 8px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-#option-menu > [selected] {
-  background-color: hsl(213, 66%, 57%);
-  color: white;
+#option-menu > * {
+  /* Work around rendering bug. */
+  outline: 1px solid transparent;
 }
 
 #option-menu > [command=show]:before,
 #option-menu > [command=hide]:before {
-  display: inline-block;
-  width: 12px;
+  -webkit-margin-start: -14px;
   content: '\00a0'; /* non breaking space */
+  display: inline-block;
   background-position: 0 50%;
   background-repeat: no-repeat;
+  width: 14px;
 }
 
 html[dir=rtl] #option-menu > [command=show]:before,
@@ -368,7 +350,7 @@ html[dir=rtl] #option-menu > [command=hide]:before {
   background-image: url(chrome://theme/newtab_checkbox_black);
 }
 
-#option-menu > [selected][command=hide]:before {
+#option-menu > [selected][command=hide]:active:before {
   background-image: url(chrome://theme/newtab_checkbox_white);
 }
 
