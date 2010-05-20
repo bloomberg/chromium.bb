@@ -109,7 +109,8 @@ TEST_F(BrowserEncodingTest, TestEncodingAliasMapping) {
   }
 }
 
-TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
+// Marked as flaky: see  http://crbug.com/44668
+TEST_F(BrowserEncodingTest, FLAKY_TestOverrideEncoding) {
   const char* const kTestFileName = "gb18030_with_iso88591_meta.html";
   const char* const kExpectedFileName =
       "expected_gb18030_saved_from_iso88591_meta.html";
