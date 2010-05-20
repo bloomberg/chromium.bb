@@ -13,7 +13,7 @@
 #include "base/string16.h"
 
 #include "chrome/browser/importer/importer.h"
-#include "chrome/common/importer_data_types.h"
+#include "chrome/browser/importer/importer_data_types.h"
 // TODO: remove this, see friend declaration in ImporterBridge.
 #include "chrome/browser/importer/toolbar_importer.h"
 

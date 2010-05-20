@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "chrome/browser/importer/importer.h"
-#include "chrome/common/importer_data_types.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 

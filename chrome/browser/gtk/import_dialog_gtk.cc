@@ -11,7 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/common/importer_data_types.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 

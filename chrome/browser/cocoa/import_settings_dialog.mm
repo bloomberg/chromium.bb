@@ -6,7 +6,7 @@
 
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/common/importer_data_types.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/profile.h"
 

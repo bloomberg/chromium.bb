@@ -13,7 +13,7 @@
 
 #include "base/file_path.h"
 #include "chrome/common/sqlite_utils.h"
-#include "chrome/common/importer_data_types.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 #if __OBJC__

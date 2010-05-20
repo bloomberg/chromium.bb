@@ -10,7 +10,7 @@
 
 #include "build/build_config.h"
 #include "base/basictypes.h"
-#include "chrome/common/importer_data_types.h"
+#include "chrome/browser/importer/importer_data_types.h"
 
 class Importer;
 

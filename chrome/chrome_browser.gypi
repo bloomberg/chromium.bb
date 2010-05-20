@@ -1532,6 +1532,7 @@
         'browser/importer/importer.h',
         'browser/importer/importer_bridge.cc',
         'browser/importer/importer_bridge.h',
+        'browser/importer/importer_data_types.h',
         'browser/importer/importer_list.cc',
         'browser/importer/importer_list.h',
         'browser/importer/mork_reader.cc',

@@ -8,7 +8,7 @@
 #include <gtk/gtk.h>
 
 #include "chrome/browser/importer/importer.h"
-#include "chrome/common/importer_data_types.h"
+#include "chrome/browser/importer/importer_data_types.h"
 
 class Profile;
 
