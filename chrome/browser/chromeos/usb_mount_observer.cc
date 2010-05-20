@@ -91,7 +91,7 @@ void USBMountObserver::MountChanged(chromeos::MountLibrary* obj,
   } else if (evt == chromeos::DISK_CHANGED) {
     BrowserIterator iter = FindBrowserForPath(path);
     LOG(INFO) << "Got changed mount:" << path;
-    if (iter == browsers_.end() && iter->browser) {
+    if (iter == browsers_.end()) {
       // We don't currently have this one, so it must have been
       // mounted
       const chromeos::MountLibrary::DiskVector& disks = obj->disks();
