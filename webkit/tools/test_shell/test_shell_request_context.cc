@@ -24,14 +24,14 @@
 #endif
 #include "webkit/glue/webkit_glue.h"
 
-TestShellRequestContext::TestShellRequestContext() {
+TestShellRequestContext::TestShellRequestContext() : cache_thread_("cache") {
   Init(FilePath(), net::HttpCache::NORMAL, false);
 }
 
 TestShellRequestContext::TestShellRequestContext(
     const FilePath& cache_path,
     net::HttpCache::Mode cache_mode,
-    bool no_proxy) {
+    bool no_proxy) : cache_thread_("cache") {
   Init(cache_path, cache_mode, no_proxy);
 }
 
@@ -78,9 +78,13 @@ void TestShellRequestContext::Init(
   base::EnsureNSPRInit();
 #endif
 
+  if (!cache_path.empty())
+    CHECK(cache_thread_.StartWithOptions(
+              base::Thread::Options(MessageLoop::TYPE_IO, 0)));
+
   net::HttpCache::DefaultBackend* backend = new net::HttpCache::DefaultBackend(
       cache_path.empty() ? net::MEMORY_CACHE : net::DISK_CACHE,
-      cache_path, 0, NULL);
+      cache_path, 0, cache_thread_.message_loop_proxy());
 
   net::HttpCache* cache =
       new net::HttpCache(NULL, host_resolver_, proxy_service_,

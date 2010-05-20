@@ -5,6 +5,7 @@
 #ifndef WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_REQUEST_CONTEXT_H__
 #define WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_REQUEST_CONTEXT_H__
 
+#include "base/thread.h"
 #include "net/http/http_cache.h"
 #include "net/url_request/url_request_context.h"
 
@@ -29,6 +30,8 @@ class TestShellRequestContext : public URLRequestContext {
 
   void Init(const FilePath& cache_path, net::HttpCache::Mode cache_mode,
             bool no_proxy);
+
+  base::Thread cache_thread_;
 };
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_REQUEST_CONTEXT_H__
