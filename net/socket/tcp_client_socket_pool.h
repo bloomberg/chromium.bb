@@ -15,6 +15,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/host_resolver.h"
 #include "net/socket/client_socket_pool_base.h"
+#include "net/socket/client_socket_pool_histograms.h"
 #include "net/socket/client_socket_pool.h"
 
 namespace net {
@@ -114,7 +115,7 @@ class TCPClientSocketPool : public ClientSocketPool {
   TCPClientSocketPool(
       int max_sockets,
       int max_sockets_per_group,
-      const std::string& name,
+      const scoped_refptr<ClientSocketPoolHistograms>& histograms,
       HostResolver* host_resolver,
       ClientSocketFactory* client_socket_factory,
       NetworkChangeNotifier* network_change_notifier);
@@ -149,7 +150,9 @@ class TCPClientSocketPool : public ClientSocketPool {
     return base_.ConnectionTimeout();
   }
 
-  virtual const std::string& name() const { return base_.name(); }
+  virtual scoped_refptr<ClientSocketPoolHistograms> histograms() const {
+    return base_.histograms();
+  }
 
  protected:
   virtual ~TCPClientSocketPool();

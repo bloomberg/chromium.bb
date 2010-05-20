@@ -14,6 +14,7 @@
 #include "net/socket/client_socket.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
+#include "net/socket/client_socket_pool_histograms.h"
 #include "net/socket/socket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -264,10 +265,11 @@ class TCPClientSocketPoolTest : public ClientSocketPoolTest {
   TCPClientSocketPoolTest()
       : ignored_socket_params_(
             HostPortPair("ignored", 80), MEDIUM, GURL(), false),
+        histograms_(new ClientSocketPoolHistograms("TCPUnitTest")),
         host_resolver_(new MockHostResolver),
         pool_(new TCPClientSocketPool(kMaxSockets,
                                       kMaxSocketsPerGroup,
-                                      "TCPUnitTest",
+                                      histograms_,
                                       host_resolver_,
                                       &client_socket_factory_,
                                       &notifier_)) {
@@ -279,6 +281,7 @@ class TCPClientSocketPoolTest : public ClientSocketPoolTest {
   }
 
   TCPSocketParams ignored_socket_params_;
+  scoped_refptr<ClientSocketPoolHistograms> histograms_;
   scoped_refptr<MockHostResolver> host_resolver_;
   MockClientSocketFactory client_socket_factory_;
   MockNetworkChangeNotifier notifier_;
@@ -740,7 +743,7 @@ TEST_F(TCPClientSocketPoolTest, BackupSocketConnect) {
 
     pool_ = new TCPClientSocketPool(kMaxSockets,
                                     kMaxSocketsPerGroup,
-                                    "TCPUnitTest",
+                                    histograms_,
                                     host_resolver_,
                                     &client_socket_factory_,
                                     NULL);

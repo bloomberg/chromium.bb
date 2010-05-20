@@ -175,11 +175,11 @@ base::TimeDelta
 TCPClientSocketPool::TCPClientSocketPool(
     int max_sockets,
     int max_sockets_per_group,
-    const std::string& name,
+    const scoped_refptr<ClientSocketPoolHistograms>& histograms,
     HostResolver* host_resolver,
     ClientSocketFactory* client_socket_factory,
     NetworkChangeNotifier* network_change_notifier)
-    : base_(max_sockets, max_sockets_per_group, name,
+    : base_(max_sockets, max_sockets_per_group, histograms,
             base::TimeDelta::FromSeconds(kUnusedIdleSocketTimeout),
             base::TimeDelta::FromSeconds(kUsedIdleSocketTimeout),
             new TCPConnectJobFactory(client_socket_factory, host_resolver),
