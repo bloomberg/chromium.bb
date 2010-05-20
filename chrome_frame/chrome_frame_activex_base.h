@@ -260,6 +260,7 @@ END_MSG_MAP()
                                               IE_8,
                                               IE_8 + 1);
     }
+    url_fetcher_.set_container(static_cast<IDispatch*>(this));
     return S_OK;
   }
 

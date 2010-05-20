@@ -52,7 +52,6 @@ class UrlmonUrlRequestManager
 
   // Returns a copy of the url privacy information for this instance.
   PrivacyInfo privacy_info() {
-    AutoLock lock(privacy_info_lock_);
     return privacy_info_;
   }
 
@@ -69,6 +68,10 @@ class UrlmonUrlRequestManager
   // privileged mode.
   void set_privileged_mode(bool privileged_mode) {
     privileged_mode_ = privileged_mode;
+  }
+
+  void set_container(IUnknown* container) {
+    container_ = container;
   }
 
  private:
@@ -115,12 +118,14 @@ class UrlmonUrlRequestManager
   bool stopping_;
   int calling_delegate_;  // re-entrancy protection (debug only check)
 
-  Lock privacy_info_lock_;
   PrivacyInfo privacy_info_;
   // The window to be used to fire notifications on.
   HWND notification_window_;
   // Set to true if the ChromeFrame instance is running in privileged mode.
   bool privileged_mode_;
+  // A pointer to the containing object. We maintain a weak reference to avoid
+  // lifetime issues.
+  IUnknown* container_;
 };
 
 #endif  // CHROME_FRAME_URLMON_URL_REQUEST_H_
