@@ -488,8 +488,6 @@
         'browser/chromeos/status/browser_status_area_view.h',
         'browser/chromeos/status/clock_menu_button.cc',
         'browser/chromeos/status/clock_menu_button.h',
-        'browser/chromeos/status/feedback_menu_button.cc',
-        'browser/chromeos/status/feedback_menu_button.h',
         'browser/chromeos/status/language_menu_button.cc',
         'browser/chromeos/status/language_menu_button.h',
         'browser/chromeos/status/language_menu_l10n_util.cc',

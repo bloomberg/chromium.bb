@@ -34,9 +34,6 @@ class StatusAreaHost {
   // Opens options dialog related to the button specified.
   virtual void OpenButtonOptions(const views::View* button_view) const = 0;
 
-  // Executes browser command.
-  virtual void ExecuteBrowserCommand(int id) const = 0;
-
   // Indicates if the button specified should be visible at the moment.
   virtual bool IsButtonVisible(const views::View* button_view) const = 0;
 

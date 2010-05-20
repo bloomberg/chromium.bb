@@ -490,9 +490,6 @@
         <include name="IDR_STATUSBAR_NETWORK_WIRED_PRESSED" file="statusbar_network_wired_pressed.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WIRED" file="statusbar_wired.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WIRED_BLACK" file="statusbar_wiredb.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_FEEDBACK" file="statusbar_feedback.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_FEEDBACK_PRESSED" file="statusbar_feedback_pressed.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_WIRED_BLACK" file="statusbar_wiredb.png" type="BINDATA" />
         <include name="IDR_FILEBROWSER_BACK" file="filebrowse_back.png" type="BINDATA" />
         <include name="IDR_FILEBROWSER_FWD" file="filebrowse_forward.png" type="BINDATA" />
         <include name="IDR_ICON_APP" file="icon_app.png" type="BINDATA" />
