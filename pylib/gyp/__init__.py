@@ -265,6 +265,9 @@ def main(args):
                     help='do not read options from environment variables')
   parser.add_option('--check', dest='check', action='store_true',
                     help='check format of gyp files')
+  parser.add_option('--toplevel-dir', dest='toplevel_dir', action='store',
+                    default=None, metavar='DIR', type='path',
+                    help='directory to use as the root of the source tree')
   # --no-circular-check disables the check for circular relationships between
   # .gyp files.  These relationships should not exist, but they've only been
   # observed to be harmful with the Xcode generator.  Chromium's .gyp files
@@ -293,7 +296,7 @@ def main(args):
 
   # TODO(thomasvl): add support for ~/.gyp/defaults
 
-  (options, build_files_arg) = parser.parse_args(args)
+  options, build_files_arg = parser.parse_args(args)
   build_files = build_files_arg
 
   if not options.formats:
@@ -327,7 +330,7 @@ def main(args):
   # Do an extra check to avoid work when we're not debugging.
   if DEBUG_GENERAL in gyp.debug.keys():
     DebugOutput(DEBUG_GENERAL, 'running with these options:')
-    for (option, value) in options.__dict__.items():
+    for option, value in sorted(options.__dict__.items()):
       if option[0] == '_':
         continue
       if isinstance(value, basestring):
@@ -369,6 +372,11 @@ def main(args):
             'Could not automatically locate src directory.  This is a ' + \
             'temporary Chromium feature that will be removed.  Use ' + \
             '--depth as a workaround.'
+
+  # If toplevel-dir is not set, we assume that depth is the root of our source
+  # tree.
+  if not options.toplevel_dir:
+    options.toplevel_dir = options.depth
 
   # -D on the command line sets variable defaults - D isn't just for define,
   # it's for default.  Perhaps there should be a way to force (-F?) a

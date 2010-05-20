@@ -1,16 +1,17 @@
 GENERAL: running with these options:
-GENERAL:   msvs_version: None
-GENERAL:   suffix: ''
-GENERAL:   includes: None
-GENERAL:   use_environment: False
+GENERAL:   check: None
+GENERAL:   circular_check: True
+GENERAL:   debug: ['variables', 'general']
+GENERAL:   defines: None
 GENERAL:   depth: '.'
+GENERAL:   formats: ['gypd']
 GENERAL:   generator_flags: []
 GENERAL:   generator_output: None
-GENERAL:   formats: ['gypd']
-GENERAL:   debug: ['variables', 'general']
-GENERAL:   circular_check: True
-GENERAL:   check: None
-GENERAL:   defines: None
+GENERAL:   includes: None
+GENERAL:   msvs_version: None
+GENERAL:   suffix: ''
+GENERAL:   toplevel_dir: None
+GENERAL:   use_environment: False
 GENERAL: cmdline_default_variables: {}
 GENERAL: generator_flags: {}
 VARIABLES: Expanding '0' to 0
