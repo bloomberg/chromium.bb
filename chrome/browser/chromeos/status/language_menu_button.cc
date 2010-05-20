@@ -21,7 +21,7 @@
 //
 //   (1) input method names. The size of the list is always >= 1.
 //   (2) input method properties. This list might be empty.
-//   (3) "Configure IME..." button.
+//   (3) "Customize language and input..." button.
 //
 // Example of the menu (Japanese):
 //
@@ -36,7 +36,7 @@
 // [*] Roman
 // [ ] Kana
 // ------------------------------ (separator)
-// Configure IME...               (index = 11)
+// Customize language and input...(index = 11)
 // ============================== (border of the popup window)
 //
 // Example of the menu (Simplified Chinese):
@@ -49,7 +49,7 @@
 // Switch to full letter mode     (The property has 2 command buttons)
 // Switch to half punctuation mode
 // ------------------------------ (separator)
-// Configure IME...
+// Customize language and input...
 // ============================== (border of the popup window)
 //
 
@@ -59,7 +59,7 @@ namespace {
 enum {
   COMMAND_ID_INPUT_METHODS = 0,  // English, Chinese, Japanese, Arabic, ...
   COMMAND_ID_IME_PROPERTIES,  // Hiragana, Katakana, ...
-  COMMAND_ID_CONFIGURE_IME,  // The "Configure IME..." button.
+  COMMAND_ID_CUSTOMIZE_LANGUAGE,  // "Customize language and input..." button.
 };
 
 // A group ID for IME properties starts from 0. We use the huge value for the
@@ -191,7 +191,7 @@ bool LanguageMenuButton::IsItemCheckedAt(int index) const {
     return property_list.at(index).is_selection_item_checked;
   }
 
-  // Separator(s) or the "Configure IME" button.
+  // Separator(s) or the "Customize language and input..." button.
   return false;
 }
 
@@ -252,7 +252,7 @@ menus::MenuModel::ItemType LanguageMenuButton::GetTypeAt(int index) const {
   DCHECK_GE(index, 0);
 
   if (IndexPointsToConfigureImeMenuItem(index)) {
-    return menus::MenuModel::TYPE_COMMAND;  // "Configure IME"
+    return menus::MenuModel::TYPE_COMMAND;  // "Customize language and input"
   }
 
   if (IndexIsInInputMethodList(index)) {
@@ -275,8 +275,10 @@ string16 LanguageMenuButton::GetLabelAt(int index) const {
   DCHECK_GE(index, 0);
   DCHECK(input_method_descriptors_.get());
 
+  // We use IDS_OPTIONS_SETTINGS_LANGUAGES_CUSTOMIZE here as the button
+  // opens the same dialog that is opened from the main options dialog.
   if (IndexPointsToConfigureImeMenuItem(index)) {
-    return l10n_util::GetStringUTF16(IDS_STATUSBAR_IME_CONFIGURE);
+    return l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_LANGUAGES_CUSTOMIZE);
   }
 
   std::wstring name;
@@ -419,7 +421,8 @@ void LanguageMenuButton::RebuildModel() {
     // other items even if an item is not actually a radio item.
     if (need_separator)
       model_->AddSeparator();
-    model_->AddRadioItem(COMMAND_ID_CONFIGURE_IME, dummy_label, 0 /* dummy */);
+    model_->AddRadioItem(COMMAND_ID_CUSTOMIZE_LANGUAGE, dummy_label,
+                         0 /* dummy */);
   }
 }
 
@@ -466,7 +469,7 @@ bool LanguageMenuButton::IndexPointsToConfigureImeMenuItem(int index) const {
   }
 
   return ((model_->GetTypeAt(index) == menus::MenuModel::TYPE_RADIO) &&
-          (model_->GetCommandIdAt(index) == COMMAND_ID_CONFIGURE_IME));
+          (model_->GetCommandIdAt(index) == COMMAND_ID_CUSTOMIZE_LANGUAGE));
 }
 
 }  // namespace chromeos
