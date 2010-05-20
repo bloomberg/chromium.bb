@@ -204,9 +204,8 @@ int mmInit ( ESContext *esContext )
       "   v_texCoord = a_texCoord;  \n"
       "}                            \n";
    
-   // TODO(alokp): Shaders containing "precision" do not compile.
    GLbyte fShaderStr[] =  
-      "//precision mediump float;                            \n"
+      "precision mediump float;                            \n"
       "varying vec2 v_texCoord;                            \n"
       "uniform sampler2D s_texture;                        \n"
       "void main()                                         \n"
