@@ -21,6 +21,10 @@ class XmppEngine;
 class XmppClientSettings;
 }  // namespace buzz
 
+namespace net {
+class HostResolver;
+}  // namespace net
+
 namespace talk_base {
 class FirewallManager;
 struct ProxyInfo;
@@ -48,6 +52,7 @@ class Login : public net::NetworkChangeNotifier::Observer,
         const buzz::XmppClientSettings& user_settings,
         const ConnectionOptions& options,
         std::string lang,
+        net::HostResolver* host_resolver,
         ServerInformation* server_list,
         int server_count,
         net::NetworkChangeNotifier* network_change_notifier,

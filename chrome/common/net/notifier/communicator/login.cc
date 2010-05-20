@@ -14,6 +14,7 @@
 #include "chrome/common/net/notifier/communicator/login_settings.h"
 #include "chrome/common/net/notifier/communicator/product_info.h"
 #include "chrome/common/net/notifier/communicator/single_login_attempt.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/network_change_notifier.h"
 #include "talk/base/common.h"
 #include "talk/base/firewallsocketserver.h"
@@ -39,6 +40,7 @@ Login::Login(talk_base::Task* parent,
              const buzz::XmppClientSettings& user_settings,
              const ConnectionOptions& options,
              std::string lang,
+             net::HostResolver* host_resolver,
              ServerInformation* server_list,
              int server_count,
              net::NetworkChangeNotifier* network_change_notifier,
@@ -49,6 +51,7 @@ Login::Login(talk_base::Task* parent,
       login_settings_(new LoginSettings(user_settings,
                                         options,
                                         lang,
+                                        host_resolver,
                                         server_list,
                                         server_count,
                                         firewall,
@@ -98,10 +101,8 @@ void Login::StartConnection() {
   // If there is a server redirect, use it.
   if (GetCurrent100NSTime() < redirect_time_ns_ + kRedirectTimeoutNs) {
     // Override server/port with redirect values.
-    talk_base::SocketAddress server_override;
-    server_override.SetIP(redirect_server_, false);
     DCHECK_NE(redirect_port_, 0);
-    server_override.SetPort(redirect_port_);
+    net::HostPortPair server_override(redirect_server_, redirect_port_);
     login_settings_->set_server_override(server_override);
   } else {
     login_settings_->clear_server_override();

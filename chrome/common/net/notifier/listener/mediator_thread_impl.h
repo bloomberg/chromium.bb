@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/net/notifier/communicator/login.h"
 #include "chrome/common/net/notifier/communicator/login_failure.h"
@@ -37,6 +38,7 @@ class NetworkChangeNotifierThread;
 }  // namespace chrome_common_net
 
 namespace net {
+class HostResolver;
 class NetworkChangeNotifier;
 }  // namespace net
 
@@ -148,14 +150,16 @@ class MediatorThreadImpl
 
   buzz::XmppClient* xmpp_client();
 
+  chrome_common_net::NetworkChangeNotifierThread*
+      network_change_notifier_thread_;
+  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
+  scoped_refptr<net::HostResolver> host_resolver_;
+
   // All buzz::XmppClients are owned by their parent.  The root parent is the
   // SingleLoginTask created by the notifier::Login object.  This in turn is
   // owned by the TaskPump.  They are destroyed either when processing is
   // complete or the pump shuts down.
   scoped_ptr<notifier::TaskPump> pump_;
-  chrome_common_net::NetworkChangeNotifierThread*
-      network_change_notifier_thread_;
-  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_ptr<notifier::Login> login_;
   DISALLOW_COPY_AND_ASSIGN(MediatorThreadImpl);
 };
