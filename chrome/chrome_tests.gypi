@@ -286,6 +286,7 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libxml/libxml.gyp:libxml',
         # run time dependencies
+        '../third_party/ppapi/ppapi.gyp:ppapi_tests',
         '../webkit/webkit.gyp:npapi_layout_test_plugin',
       ],
       'include_dirs': [
@@ -338,6 +339,7 @@
         'test/ui/npapi_uitest.cc',
         'test/ui/omnibox_uitest.cc',
         'test/ui/pepper_uitest.cc',
+        'test/ui/ppapi_uitest.cc',
         'test/ui/sandbox_uitests.cc',
         'test/ui/sunspider_uitest.cc',
         'test/ui/v8_benchmark_uitest.cc',
