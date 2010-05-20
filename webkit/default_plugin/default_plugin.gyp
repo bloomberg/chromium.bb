@@ -3,10 +3,13 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'chromium_code': 1,
+   },
   'targets': [
   ],
   'conditions': [
-    ['OS=="win"', {
+    ['OS=="win" or OS=="mac"', {
       'targets': [
         {
           'target_name': 'default_plugin',
@@ -17,8 +20,6 @@
             '../../third_party/icu/icu.gyp:icuuc',
             '../../third_party/libxml/libxml.gyp:libxml',
             '../../third_party/npapi/npapi.gyp:npapi',
-            '../support/webkit_support.gyp:webkit_resources',
-            '../support/webkit_support.gyp:webkit_strings',
           ],
           'include_dirs': [
             '../..',
@@ -26,28 +27,42 @@
             # TODO(bradnelson): this should fall out of the dependencies.
             '<(SHARED_INTERMEDIATE_DIR)/webkit',
           ],
-          'msvs_guid': '5916D37D-8C97-424F-A904-74E52594C2D6',
           'sources': [
-            'default_plugin.cc',
-            'default_plugin_resources.h',
             'default_plugin_shared.h',
-            'install_dialog.cc',
-            'install_dialog.h',
-            'plugin_database_handler.cc',
-            'plugin_database_handler.h',
+            'plugin_impl_mac.h',
+            'plugin_impl_mac.mm',
             'plugin_impl_win.cc',
             'plugin_impl_win.h',
-            'plugin_install_job_monitor.cc',
-            'plugin_install_job_monitor.h',
             'plugin_main.cc',
             'plugin_main.h',
           ],
-          'link_settings': {
-            'libraries': ['-lurlmon.lib'],
-          },
+          'conditions': [
+             ['OS=="win"', {
+                'dependencies': [
+                  # TODO(thakis): These throw a CircularException on mac.
+                  # Figure out why once they're needed.
+                  '../support/webkit_support.gyp:webkit_resources',
+                  '../support/webkit_support.gyp:webkit_strings',
+                ],
+                'msvs_guid': '5916D37D-8C97-424F-A904-74E52594C2D6',
+                'link_settings': {
+                  'libraries': ['-lurlmon.lib'],
+                },
+                'sources': [
+                  'default_plugin.cc',
+                  'default_plugin_resources.h',
+                  'install_dialog.cc',
+                  'install_dialog.h',
+                  'plugin_database_handler.cc',
+                  'plugin_database_handler.h',
+                  'plugin_install_job_monitor.cc',
+                  'plugin_install_job_monitor.h',
+                ],
+             }],
+          ],
         },
       ],
-    },],
+    }],
   ],
 }
 

@@ -141,7 +141,7 @@ PluginList::PluginList()
     : plugins_loaded_(false), plugins_need_refresh_(false) {
   PlatformInit();
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   const PluginVersionInfo default_plugin = {
     FilePath(kDefaultPluginLibraryName),
     L"Default Plug-in",
