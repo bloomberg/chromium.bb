@@ -328,6 +328,10 @@
                 'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_armv5te.S',
                 'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_armv6.S',
               ],
+              # TODO(scherkus): Temporary until libvpx compiles on ARM.
+              'sources!': [
+                'source/patched-ffmpeg-mt/libavcodec/libvpxdec.c',
+              ],
               'conditions': [
                 ['arm_neon==1', {
                   'sources': [
@@ -386,9 +390,14 @@
                 ],
                 'libraries': [
                   '-lz',
-                  '-lvpx',
                 ],
                 'conditions': [
+                  ['target_arch!="arm"', {
+                    'libraries': [
+                      # TODO(scherkus): Temporary until libvpx compiles on ARM.
+                      '-lvpx',
+                    ],
+                  }],
                   ['ffmpeg_asm_lib==1', {
                     'libraries': [
                       # TODO(ajwong): When scons is dead, collapse this with the
