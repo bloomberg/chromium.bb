@@ -116,7 +116,8 @@ class TCPClientSocketPool : public ClientSocketPool {
       int max_sockets_per_group,
       const std::string& name,
       HostResolver* host_resolver,
-      ClientSocketFactory* client_socket_factory);
+      ClientSocketFactory* client_socket_factory,
+      NetworkChangeNotifier* network_change_notifier);
 
   // ClientSocketPool methods:
 

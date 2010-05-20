@@ -177,11 +177,13 @@ TCPClientSocketPool::TCPClientSocketPool(
     int max_sockets_per_group,
     const std::string& name,
     HostResolver* host_resolver,
-    ClientSocketFactory* client_socket_factory)
+    ClientSocketFactory* client_socket_factory,
+    NetworkChangeNotifier* network_change_notifier)
     : base_(max_sockets, max_sockets_per_group, name,
             base::TimeDelta::FromSeconds(kUnusedIdleSocketTimeout),
             base::TimeDelta::FromSeconds(kUsedIdleSocketTimeout),
-            new TCPConnectJobFactory(client_socket_factory, host_resolver)) {
+            new TCPConnectJobFactory(client_socket_factory, host_resolver),
+            network_change_notifier) {
   base_.enable_backup_jobs();
 }
 
