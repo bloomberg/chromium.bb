@@ -38,9 +38,12 @@ class IconLabelBubbleView : public views::View {
   virtual void Layout();
 
  protected:
+  void SetElideInMiddle(bool elide_in_middle);
   gfx::Size GetNonLabelSize();
 
  private:
+  int GetNonLabelWidth();
+
   // For painting the background.
   views::HorizontalPainter background_painter_;
 

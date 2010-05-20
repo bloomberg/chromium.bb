@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -441,14 +441,14 @@ TEST_F(AutocompletePopupViewMacTest, ElideString) {
 
   // When elided, result is the same as ElideText().
   ret = AutocompletePopupViewMac::ElideString(as, wideContents, font_, kNarrow);
-  std::wstring elided(ElideText(wideContents, font_, kNarrow));
+  std::wstring elided(ElideText(wideContents, font_, kNarrow, false));
   EXPECT_TRUE(ret == as);
   EXPECT_FALSE([[as string] isEqualToString:contents]);
   EXPECT_TRUE([[as string] isEqualToString:base::SysWideToNSString(elided)]);
 
   // When elided, result is the same as ElideText().
   ret = AutocompletePopupViewMac::ElideString(as, wideContents, font_, 0.0);
-  elided = ElideText(wideContents, font_, 0.0);
+  elided = ElideText(wideContents, font_, 0.0, false);
   EXPECT_TRUE(ret == as);
   EXPECT_FALSE([[as string] isEqualToString:contents]);
   EXPECT_TRUE([[as string] isEqualToString:base::SysWideToNSString(elided)]);

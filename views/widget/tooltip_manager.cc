@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,7 +57,7 @@ void TooltipManager::TrimTooltipToFit(std::wstring* text,
   std::wstring result;
   for (std::vector<std::wstring>::iterator i = lines.begin(); i != lines.end();
        ++i) {
-    std::wstring elided_text = gfx::ElideText(*i, font, available_width);
+    std::wstring elided_text = gfx::ElideText(*i, font, available_width, false);
     *max_width = std::max(*max_width, font.GetStringWidth(elided_text));
     if (i == lines.begin() && i + 1 == lines.end()) {
       *text = elided_text;

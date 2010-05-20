@@ -10,6 +10,7 @@ EVBubbleView::EVBubbleView(const int background_images[],
                            const LocationBarView* location_bar)
     : IconLabelBubbleView(background_images, contained_image, color),
       ALLOW_THIS_IN_INITIALIZER_LIST(click_handler_(this, location_bar)) {
+  SetElideInMiddle(true);
 }
 
 EVBubbleView::~EVBubbleView() {

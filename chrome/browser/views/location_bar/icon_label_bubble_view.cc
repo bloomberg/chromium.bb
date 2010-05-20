@@ -59,14 +59,21 @@ gfx::Size IconLabelBubbleView::GetPreferredSize() {
 void IconLabelBubbleView::Layout() {
   image_->SetBounds(kImageOffset, 0, image_->GetPreferredSize().width(),
                     height());
-  gfx::Size label_size(label_->GetPreferredSize());
+  const int label_height = label_->GetPreferredSize().height();
   label_->SetBounds(image_->x() + image_->width() + kLabelOffset,
-                    (height() - label_size.height()) / 2, label_size.width(),
-                    label_size.height());
+                    (height() - label_height) / 2, width() - GetNonLabelWidth(),
+                    label_height);
+}
+
+void IconLabelBubbleView::SetElideInMiddle(bool elide_in_middle) {
+  label_->SetElideInMiddle(elide_in_middle);
 }
 
 gfx::Size IconLabelBubbleView::GetNonLabelSize() {
-  return gfx::Size(kImageOffset + image_->GetPreferredSize().width() +
-      kLabelOffset + kLabelPadding, background_painter_.height());
+  return gfx::Size(GetNonLabelWidth(), background_painter_.height());
 }
 
+int IconLabelBubbleView::GetNonLabelWidth() {
+  return kImageOffset + image_->GetPreferredSize().width() + kLabelOffset +
+      kLabelPadding;
+}

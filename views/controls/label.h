@@ -107,7 +107,7 @@ class Label : public View {
   // is set. Otherwise, the label's alignment specified as a parameter will be
   // flipped in RTL locales. Please see the comments in SetRTLAlignmentMode for
   // more information.
-  void SetHorizontalAlignment(Alignment a);
+  void SetHorizontalAlignment(Alignment alignment);
 
   Alignment horizontal_alignment() const { return horiz_alignment_; }
 
@@ -125,14 +125,19 @@ class Label : public View {
 
   // Set whether the label text can wrap on multiple lines.
   // Default is false.
-  void SetMultiLine(bool f);
+  void SetMultiLine(bool multi_line);
 
   // Return whether the label text can wrap on multiple lines.
   bool is_multi_line() const { return is_multi_line_; }
 
   // Set whether the label text can be split on words.
   // Default is false. This only works when is_multi_line is true.
-  void SetAllowCharacterBreak(bool f);
+  void SetAllowCharacterBreak(bool allow_character_break);
+
+  // Set whether the label text should be elided in the middle (if necessary).
+  // The default is to elide at the end.
+  // NOTE: This is not supported for multi-line strings.
+  void SetElideInMiddle(bool elide_in_middle);
 
   // Sets the tooltip text.  Default behavior for a label (single-line) is to
   // show the full text if it is wider than its bounds.  Calling this overrides
@@ -233,6 +238,7 @@ class Label : public View {
   mutable bool text_size_valid_;
   bool is_multi_line_;
   bool allow_character_break_;
+  bool elide_in_middle_;
   bool url_set_;
   Alignment horiz_alignment_;
   std::wstring tooltip_text_;

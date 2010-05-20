@@ -189,6 +189,7 @@ TEST(TextEliderTest, TestFilenameEliding) {
 TEST(TextEliderTest, ElideTextLongStrings) {
   const std::wstring kEllipsisStr(kEllipsis);
   std::wstring data_scheme(L"data:text/plain,");
+  size_t data_scheme_length = data_scheme.length();
 
   std::wstring ten_a(10, L'a');
   std::wstring hundred_a(100, L'a');
@@ -197,31 +198,54 @@ TEST(TextEliderTest, ElideTextLongStrings) {
   std::wstring hundred_thousand_a(100000, L'a');
   std::wstring million_a(1000000, L'a');
 
-  WideTestcase testcases[] = {
-     {data_scheme + ten_a,
-      data_scheme + ten_a},
-     {data_scheme + hundred_a,
-      data_scheme + hundred_a},
-     {data_scheme + thousand_a,
-      data_scheme + std::wstring(156, L'a') + kEllipsisStr},
-     {data_scheme + ten_thousand_a,
-      data_scheme + std::wstring(156, L'a') + kEllipsisStr},
-     {data_scheme + hundred_thousand_a,
-      data_scheme + std::wstring(156, L'a') + kEllipsisStr},
-     {data_scheme + million_a,
-      data_scheme + std::wstring(156, L'a') + kEllipsisStr},
+  size_t number_of_as = 156;
+  std::wstring long_string_end(
+      data_scheme + std::wstring(number_of_as, L'a') + kEllipsisStr);
+  WideTestcase testcases_end[] = {
+     {data_scheme + ten_a,              data_scheme + ten_a},
+     {data_scheme + hundred_a,          data_scheme + hundred_a},
+     {data_scheme + thousand_a,         long_string_end},
+     {data_scheme + ten_thousand_a,     long_string_end},
+     {data_scheme + hundred_thousand_a, long_string_end},
+     {data_scheme + million_a,          long_string_end},
   };
 
   const gfx::Font font;
   int ellipsis_width = font.GetStringWidth(kEllipsisStr);
-  for (size_t i = 0; i < arraysize(testcases); ++i) {
+  for (size_t i = 0; i < arraysize(testcases_end); ++i) {
     // Compare sizes rather than actual contents because if the test fails,
     // output is rather long.
-    EXPECT_EQ(testcases[i].output.size(),
-              ElideText(testcases[i].input, font,
-                        font.GetStringWidth(testcases[i].output)).size());
+    EXPECT_EQ(testcases_end[i].output.size(),
+              ElideText(testcases_end[i].input, font,
+                        font.GetStringWidth(testcases_end[i].output),
+                        false).size());
     EXPECT_EQ(kEllipsisStr,
-              ElideText(testcases[i].input, font, ellipsis_width));
+              ElideText(testcases_end[i].input, font, ellipsis_width, false));
+  }
+
+  size_t number_of_trailing_as = (data_scheme_length + number_of_as) / 2;
+  std::wstring long_string_middle(data_scheme +
+      std::wstring(number_of_as - number_of_trailing_as, L'a') + kEllipsisStr +
+      std::wstring(number_of_trailing_as, L'a'));
+  WideTestcase testcases_middle[] = {
+     {data_scheme + ten_a,              data_scheme + ten_a},
+     {data_scheme + hundred_a,          data_scheme + hundred_a},
+     {data_scheme + thousand_a,         long_string_middle},
+     {data_scheme + ten_thousand_a,     long_string_middle},
+     {data_scheme + hundred_thousand_a, long_string_middle},
+     {data_scheme + million_a,          long_string_middle},
+  };
+
+  for (size_t i = 0; i < arraysize(testcases_middle); ++i) {
+    // Compare sizes rather than actual contents because if the test fails,
+    // output is rather long.
+    EXPECT_EQ(testcases_middle[i].output.size(),
+              ElideText(testcases_middle[i].input, font,
+                        font.GetStringWidth(testcases_middle[i].output),
+                        false).size());
+    EXPECT_EQ(kEllipsisStr,
+              ElideText(testcases_middle[i].input, font, ellipsis_width,
+                        false));
   }
 }
 

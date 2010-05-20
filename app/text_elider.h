@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_GFX_TEXT_ELIDER_H_
-#define APP_GFX_TEXT_ELIDER_H_
+#ifndef APP_TEXT_ELIDER_H_
+#define APP_TEXT_ELIDER_H_
 
 #include <unicode/coll.h>
 #include <unicode/uchar.h>
@@ -36,9 +36,13 @@ std::wstring ElideUrl(const GURL& url,
                       int available_pixel_width,
                       const std::wstring& languages);
 
+// Elides |text| to fit in |available_pixel_width|.  If |elide_in_middle| is
+// set the ellipsis is placed in the middle of the string; otherwise it is
+// placed at the end.
 std::wstring ElideText(const std::wstring& text,
                        const gfx::Font& font,
-                       int available_pixel_width);
+                       int available_pixel_width,
+                       bool elide_in_middle);
 
 // Elide a filename to fit a given pixel width, with an emphasis on not hiding
 // the extension unless we have to. If filename contains a path, the path will
@@ -84,4 +88,4 @@ class SortedDisplayURL {
 
 } // namespace gfx.
 
-#endif  // APP_GFX_TEXT_ELIDER_H_
+#endif  // APP_TEXT_ELIDER_H_

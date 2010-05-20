@@ -530,7 +530,7 @@ void AutocompleteResultView::Elide(Runs* runs, int remaining_width) const {
 
       // Can we fit at least an ellipsis?
       std::wstring elided_text(
-          gfx::ElideText(j->text, *j->font, remaining_width));
+          gfx::ElideText(j->text, *j->font, remaining_width, false));
       Classifications::reverse_iterator prior_classification(j);
       ++prior_classification;
       const bool on_first_classification =

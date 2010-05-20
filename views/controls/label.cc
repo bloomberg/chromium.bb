@@ -131,30 +131,40 @@ const GURL Label::GetURL() const {
   return url_set_ ? url_ : GURL(WideToUTF8(text_));
 }
 
-void Label::SetHorizontalAlignment(Alignment a) {
+void Label::SetHorizontalAlignment(Alignment alignment) {
   // If the View's UI layout is right-to-left and rtl_alignment_mode_ is
   // USE_UI_ALIGNMENT, we need to flip the alignment so that the alignment
   // settings take into account the text directionality.
   if (base::i18n::IsRTL() && (rtl_alignment_mode_ == USE_UI_ALIGNMENT) &&
-      (a != ALIGN_CENTER))
-    a = (a == ALIGN_LEFT) ? ALIGN_RIGHT : ALIGN_LEFT;
-  if (horiz_alignment_ != a) {
-    horiz_alignment_ = a;
+      (alignment != ALIGN_CENTER))
+    alignment = (alignment == ALIGN_LEFT) ? ALIGN_RIGHT : ALIGN_LEFT;
+  if (horiz_alignment_ != alignment) {
+    horiz_alignment_ = alignment;
     SchedulePaint();
   }
 }
 
-void Label::SetMultiLine(bool f) {
-  if (f != is_multi_line_) {
-    is_multi_line_ = f;
+void Label::SetMultiLine(bool multi_line) {
+  DCHECK(!multi_line || !elide_in_middle_);
+  if (multi_line != is_multi_line_) {
+    is_multi_line_ = multi_line;
     text_size_valid_ = false;
     SchedulePaint();
   }
 }
 
-void Label::SetAllowCharacterBreak(bool f) {
-  if (f != allow_character_break_) {
-    allow_character_break_ = f;
+void Label::SetAllowCharacterBreak(bool allow_character_break) {
+  if (allow_character_break != allow_character_break_) {
+    allow_character_break_ = allow_character_break;
+    text_size_valid_ = false;
+    SchedulePaint();
+  }
+}
+
+void Label::SetElideInMiddle(bool elide_in_middle) {
+  DCHECK(!elide_in_middle || !is_multi_line_);
+  if (elide_in_middle != elide_in_middle_) {
+    elide_in_middle_ = elide_in_middle;
     text_size_valid_ = false;
     SchedulePaint();
   }
@@ -285,6 +295,7 @@ void Label::Init(const std::wstring& text, const gfx::Font& font) {
   horiz_alignment_ = ALIGN_CENTER;
   is_multi_line_ = false;
   allow_character_break_ = false;
+  elide_in_middle_ = false;
   collapse_when_hidden_ = false;
   rtl_alignment_mode_ = USE_UI_ALIGNMENT;
   paint_as_focused_ = false;
@@ -311,6 +322,8 @@ void Label::CalculateDrawStringParams(std::wstring* paint_text,
     // as an LTR string, even if its containing view does not use an RTL UI
     // layout.
     base::i18n::GetDisplayStringInLTRDirectionality(paint_text);
+  } else if (elide_in_middle_) {
+    *paint_text = gfx::ElideText(text_, font_, width(), true);
   } else {
     *paint_text = text_;
   }

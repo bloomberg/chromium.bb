@@ -377,6 +377,15 @@ void LocationBarView::Layout() {
     ev_bubble_view_->SetVisible(true);
     ev_bubble_view_->SetLabel(model_->GetEVCertName());
     ev_bubble_width = ev_bubble_view_->GetPreferredSize().width();
+
+    // Try to elide the bubble to be no larger than half the total available
+    // space, but never elide it any smaller than 150 px.
+    static const int kMinElidedBubbleWidth = 150;
+    static const double kMaxBubbleFraction = 0.5;
+    ev_bubble_width = std::min(ev_bubble_width, std::max(kMinElidedBubbleWidth,
+        static_cast<int>((entry_width - kBubblePadding - kViewPadding) *
+        kMaxBubbleFraction)));
+
     entry_width -= kBubblePadding + ev_bubble_width + kViewPadding;
   } else {
     location_icon_view_->SetVisible(true);

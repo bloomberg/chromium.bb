@@ -145,7 +145,7 @@ NSMutableAttributedString* AutocompletePopupViewMac::ElideString(
   }
 
   // If ElideText() decides to do nothing, nothing to be done.
-  const std::wstring elided(ElideText(originalString, font, width));
+  const std::wstring elided(ElideText(originalString, font, width, false));
   if (0 == elided.compare(originalString)) {
     return aString;
   }
