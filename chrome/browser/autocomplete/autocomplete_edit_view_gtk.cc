@@ -1215,8 +1215,6 @@ void AutocompleteEditViewGtk::HandleCopyOrCutClipboard(bool copy) {
   model_->AdjustTextForCopy(selection.selection_min(), IsSelectAll(), &text,
                             &url, &write_url);
 
-  OwnPrimarySelection(WideToUTF8(text));
-
   if (write_url) {
     ScopedClipboardWriter scw(g_browser_process->clipboard());
     string16 text16(WideToUTF16(text));
@@ -1233,7 +1231,12 @@ void AutocompleteEditViewGtk::HandleCopyOrCutClipboard(bool copy) {
     g_signal_stop_emission(text_view_,
                            copy ? copy_signal_id : cut_signal_id,
                            0);
+
+    if (!copy)
+      gtk_text_buffer_delete_selection(text_buffer_, true, true);
   }
+
+  OwnPrimarySelection(WideToUTF8(text));
 }
 
 void AutocompleteEditViewGtk::OwnPrimarySelection(const std::string& text) {
