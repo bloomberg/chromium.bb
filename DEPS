@@ -2,11 +2,12 @@ vars = {
   "webkit_trunk":
   "http://svn.webkit.org/repository/webkit/trunk",
   "webkit_revision": "59772",
-  "ffmpeg_revision": "46128",
+  "ffmpeg_revision": "47712",
   "skia_revision": "562",
   "chromium_git": "http://src.chromium.org/git",
   "swig_revision": "40423",
   "nacl_revision": "2235",
+  "libvpx_revision": "47701",
 }
 
 deps = {
@@ -141,6 +142,13 @@ deps = {
   "src/third_party/ffmpeg/source/patched-ffmpeg-mt":
     "/trunk/deps/third_party/ffmpeg/patched-ffmpeg-mt@" +
     Var("ffmpeg_revision"),
+
+  "src/third_party/libvpx/include":
+    "/trunk/deps/third_party/libvpx/include@" +
+    Var("libvpx_revision"),
+  "src/third_party/libvpx/lib":
+    "/trunk/deps/third_party/libvpx/lib@" +
+    Var("libvpx_revision"),
 
   "src/third_party/ppapi":
     "http://ppapi.googlecode.com/svn/trunk@44",

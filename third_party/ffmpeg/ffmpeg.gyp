@@ -56,6 +56,16 @@
       ['target_arch=="arm"', {
         'ffmpeg_asm_lib': 0,
       }],
+
+      # libvpx location.
+      # TODO(scherkus): libvpx_hack_dir is a hack to make -L work on linux.
+      ['OS=="mac" or OS=="win"', {
+        'libvpx_dir': '../libvpx',
+        'libvpx_hack_dir': '../libvpx',
+      }, {
+        'libvpx_dir': '../libvpx',
+        'libvpx_hack_dir': 'third_party/libvpx',
+      }],
     ],
     'ffmpeg_variant%': '<(target_arch)',
 
@@ -86,6 +96,7 @@
             'source/patched-ffmpeg-mt/libavcodec/golomb.c',
             'source/patched-ffmpeg-mt/libavcodec/imgconvert.c',
             'source/patched-ffmpeg-mt/libavcodec/jrevdct.c',
+            'source/patched-ffmpeg-mt/libavcodec/libvpxdec.c',
             'source/patched-ffmpeg-mt/libavcodec/mdct.c',
             'source/patched-ffmpeg-mt/libavcodec/mpeg12data.c',
             'source/patched-ffmpeg-mt/libavcodec/mpeg4audio.c',
@@ -109,6 +120,8 @@
             'source/patched-ffmpeg-mt/libavformat/cutils.c',
             'source/patched-ffmpeg-mt/libavformat/id3v1.c',
             'source/patched-ffmpeg-mt/libavformat/isom.c',
+            'source/patched-ffmpeg-mt/libavformat/matroska.c',
+            'source/patched-ffmpeg-mt/libavformat/matroskadec.c',
             'source/patched-ffmpeg-mt/libavformat/metadata.c',
             'source/patched-ffmpeg-mt/libavformat/metadata_compat.c',
             'source/patched-ffmpeg-mt/libavformat/oggdec.c',
@@ -117,12 +130,16 @@
             'source/patched-ffmpeg-mt/libavformat/oggparsevorbis.c',
             'source/patched-ffmpeg-mt/libavformat/options.c',
             'source/patched-ffmpeg-mt/libavformat/riff.c',
+            'source/patched-ffmpeg-mt/libavformat/rm.c',
+            'source/patched-ffmpeg-mt/libavformat/rmdec.c',
             'source/patched-ffmpeg-mt/libavformat/utils.c',
             'source/patched-ffmpeg-mt/libavformat/vorbiscomment.c',
             'source/patched-ffmpeg-mt/libavutil/avstring.c',
+            'source/patched-ffmpeg-mt/libavutil/base64.c',
             'source/patched-ffmpeg-mt/libavutil/crc.c',
             'source/patched-ffmpeg-mt/libavutil/intfloat_readwrite.c',
             'source/patched-ffmpeg-mt/libavutil/log.c',
+            'source/patched-ffmpeg-mt/libavutil/lzo.c',
             'source/patched-ffmpeg-mt/libavutil/mathematics.c',
             'source/patched-ffmpeg-mt/libavutil/mem.c',
             'source/patched-ffmpeg-mt/libavutil/pixdesc.c',
@@ -135,6 +152,7 @@
             'source/config/<(ffmpeg_branding)/<(OS)/<(ffmpeg_config)',
             'source/patched-ffmpeg-mt',
             'source/config',
+            '<(libvpx_dir)/include',
           ],
           'defines': [
             'HAVE_AV_CONFIG_H',
@@ -364,9 +382,11 @@
                 'ldflags': [
                   '-Wl,-Bsymbolic',
                   '-L<(shared_generated_dir)',
+                  '-L<(libvpx_hack_dir)/lib/<(OS)/<(target_arch)',
                 ],
                 'libraries': [
                   '-lz',
+                  '-lvpx',
                 ],
                 'conditions': [
                   ['ffmpeg_asm_lib==1', {
@@ -386,6 +406,7 @@
                 #
                 # http://code.google.com/p/gyp/issues/detail?id=108
                 '<(shared_generated_dir)/<(STATIC_LIB_PREFIX)<(asm_library)<(STATIC_LIB_SUFFIX)',
+                '<(libvpx_hack_dir)/lib/<(OS)/<(target_arch)/libvpx.a',
               ],
               'link_settings': {
                 'libraries': [
@@ -413,7 +434,8 @@
                   # butterflies still exist...as do rainbows, sunshine,
                   # tulips, etc., etc...but not kittens. Those went away
                   # with this flag.
-                  '-Wl,-read_only_relocs,suppress'
+                  '-Wl,-read_only_relocs,suppress',
+                  '-L<(libvpx_hack_dir)/lib/mac/ia32'
                 ],
               },
             }],  # OS=="mac"

@@ -41,7 +41,7 @@ TestShellWebMimeRegistryImpl::supportsMediaMIMEType(
 
   // If we don't recognize the codec, it's possible we support it.
   std::vector<std::string> parsed_codecs;
-  net::ParseCodecString(ToASCIIOrEmpty(codecs).c_str(), &parsed_codecs);
+  net::ParseCodecString(ToASCIIOrEmpty(codecs).c_str(), &parsed_codecs, true);
   if (!AreSupportedMediaCodecs(parsed_codecs))
     return MayBeSupported;
 
