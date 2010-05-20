@@ -17,8 +17,7 @@ namespace notifier {
 
 LoginSettings::LoginSettings(const buzz::XmppClientSettings& user_settings,
                              const ConnectionOptions& options,
-                             const std::string& lang,
-                             net::HostResolver* host_resolver,
+                             std::string lang,
                              ServerInformation* server_list,
                              int server_count,
                              talk_base::FirewallManager* firewall,
@@ -26,14 +25,12 @@ LoginSettings::LoginSettings(const buzz::XmppClientSettings& user_settings,
     :  proxy_only_(proxy_only),
        firewall_(firewall),
        lang_(lang),
-       host_resolver_(host_resolver),
        server_list_(new ServerInformation[server_count]),
        server_count_(server_count),
        user_settings_(new buzz::XmppClientSettings(user_settings)),
        connection_options_(new ConnectionOptions(options)) {
   // Note: firewall may be NULL.
   DCHECK(server_list);
-  DCHECK(host_resolver);
   DCHECK_GT(server_count, 0);
   for (int i = 0; i < server_count_; ++i) {
     server_list_[i] = server_list[i];
@@ -46,7 +43,7 @@ LoginSettings::~LoginSettings() {
 }
 
 void LoginSettings::set_server_override(
-    const net::HostPortPair& server) {
+    const talk_base::SocketAddress& server) {
   server_override_.reset(new ServerInformation());
   server_override_->server = server;
   server_override_->special_port_magic = server_list_[0].special_port_magic;

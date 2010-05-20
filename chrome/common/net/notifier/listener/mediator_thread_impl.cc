@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "base/platform_thread.h"
 #include "chrome/common/net/network_change_notifier_proxy.h"
+#include "chrome/common/net/notifier/base/async_dns_lookup.h"
 #include "chrome/common/net/notifier/base/task_pump.h"
 #include "chrome/common/net/notifier/communicator/connection_options.h"
 #include "chrome/common/net/notifier/communicator/const_communicator.h"
@@ -15,8 +16,6 @@
 #include "chrome/common/net/notifier/listener/listen_task.h"
 #include "chrome/common/net/notifier/listener/send_update_task.h"
 #include "chrome/common/net/notifier/listener/subscribe_task.h"
-#include "net/base/host_port_pair.h"
-#include "net/base/host_resolver.h"
 #include "talk/base/thread.h"
 #include "talk/xmpp/xmppclient.h"
 #include "talk/xmpp/xmppclientsettings.h"
@@ -137,27 +136,24 @@ void MediatorThreadImpl::DoLogin(LoginData* login_data) {
   LOG(INFO) << "P2P: Thread logging into talk network.";
   buzz::XmppClientSettings& user_settings = login_data->user_settings;
 
+  // Start a new pump for the login.
+  login_.reset();
   network_change_notifier_.reset(
       new chrome_common_net::NetworkChangeNotifierProxy(
           network_change_notifier_thread_));
-  // TODO(akalin): Use an existing HostResolver from somewhere (maybe
-  // the IOThread one).
-  host_resolver_ =
-      net::CreateSystemHostResolver(network_change_notifier_.get());
-
-  // Start a new pump for the login.
-  login_.reset();
   pump_.reset(new notifier::TaskPump());
 
   notifier::ServerInformation server_list[2];
   int server_list_count = 2;
 
   // The default servers know how to serve over port 443 (that's the magic).
-  server_list[0].server = net::HostPortPair("talk.google.com",
-                                            notifier::kDefaultXmppPort);
+  server_list[0].server = talk_base::SocketAddress("talk.google.com",
+                                                   notifier::kDefaultXmppPort,
+                                                   true);  // Use DNS.
   server_list[0].special_port_magic = true;
-  server_list[1].server = net::HostPortPair("talkx.l.google.com",
-                                            notifier::kDefaultXmppPort);
+  server_list[1].server = talk_base::SocketAddress("talkx.l.google.com",
+                                                   notifier::kDefaultXmppPort,
+                                                   true);  // Use DNS.
   server_list[1].special_port_magic = true;
 
   // Autodetect proxy is on by default.
@@ -169,7 +165,6 @@ void MediatorThreadImpl::DoLogin(LoginData* login_data) {
                                    user_settings,
                                    options,
                                    lang,
-                                   host_resolver_.get(),
                                    server_list,
                                    server_list_count,
                                    network_change_notifier_.get(),
@@ -204,12 +199,10 @@ void MediatorThreadImpl::OnOutputDebug(const char* msg, int length) {
 void MediatorThreadImpl::DoDisconnect() {
   LOG(INFO) << "P2P: Thread logging out of talk network.";
   login_.reset();
+  network_change_notifier_.reset();
   // Delete the old pump while on the thread to ensure that everything is
   // cleaned-up in a predicatable manner.
   pump_.reset();
-
-  host_resolver_ = NULL;
-  network_change_notifier_.reset();
 }
 
 void MediatorThreadImpl::DoSubscribeForUpdates(

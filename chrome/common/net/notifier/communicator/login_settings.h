@@ -13,11 +13,6 @@ namespace buzz {
 class XmppClientSettings;
 }
 
-namespace net {
-struct HostPortPair;
-class HostResolver;
-}
-
 namespace talk_base {
 class FirewallManager;
 class SocketAddress;
@@ -31,8 +26,7 @@ class LoginSettings {
  public:
   LoginSettings(const buzz::XmppClientSettings& user_settings,
                 const ConnectionOptions& options,
-                const std::string& lang,
-                net::HostResolver* host_resolver,
+                std::string lang,
                 ServerInformation* server_list,
                 int server_count,
                 talk_base::FirewallManager* firewall,
@@ -56,10 +50,6 @@ class LoginSettings {
     return lang_;
   }
 
-  net::HostResolver* host_resolver() {
-    return host_resolver_;
-  }
-
   const ServerInformation* server_list() const {
     return server_override_.get() ? server_override_.get() : server_list_.get();
   }
@@ -80,7 +70,7 @@ class LoginSettings {
     return *connection_options_.get();
   }
 
-  void set_server_override(const net::HostPortPair& server);
+  void set_server_override(const talk_base::SocketAddress& server);
   void clear_server_override();
 
  private:
@@ -88,7 +78,6 @@ class LoginSettings {
   talk_base::FirewallManager* firewall_;
   std::string lang_;
 
-  net::HostResolver* host_resolver_;
   talk_base::scoped_array<ServerInformation> server_list_;
   int server_count_;
   // Used to handle redirects

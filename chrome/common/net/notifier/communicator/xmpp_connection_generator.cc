@@ -12,23 +12,14 @@
 
 #include "chrome/common/net/notifier/communicator/xmpp_connection_generator.h"
 
-#if defined(OS_WIN)
-#include <winsock2.h>
-#elif defined(OS_POSIX)
-#include <arpa/inet.h>
-#endif
-
 #include <vector>
 
-#include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "chrome/common/net/notifier/base/async_dns_lookup.h"
 #include "chrome/common/net/notifier/base/signal_thread_task.h"
 #include "chrome/common/net/notifier/communicator/connection_options.h"
 #include "chrome/common/net/notifier/communicator/connection_settings.h"
 #include "chrome/common/net/notifier/communicator/product_info.h"
-#include "net/base/net_errors.h"
-#include "net/base/sys_addrinfo.h"
 #include "talk/base/autodetectproxy.h"
 #include "talk/base/httpcommon-inl.h"
 #include "talk/base/task.h"
@@ -41,17 +32,11 @@ namespace notifier {
 
 XmppConnectionGenerator::XmppConnectionGenerator(
     talk_base::Task* parent,
-    const scoped_refptr<net::HostResolver>& host_resolver,
     const ConnectionOptions* options,
     bool proxy_only,
     const ServerInformation* server_list,
     int server_count)
-    : host_resolver_(host_resolver),
-      resolve_callback_(
-          ALLOW_THIS_IN_INITIALIZER_LIST(
-              NewCallback(this,
-                          &XmppConnectionGenerator::OnServerDNSResolved))),
-      settings_list_(new ConnectionSettingsList()),
+    : settings_list_(new ConnectionSettingsList()),
       settings_index_(0),
       server_list_(new ServerInformation[server_count]),
       server_count_(server_count),
@@ -61,7 +46,6 @@ XmppConnectionGenerator::XmppConnectionGenerator(
       first_dns_error_(0),
       options_(options),
       parent_(parent) {
-  DCHECK(host_resolver_);
   DCHECK(parent);
   DCHECK(options);
   DCHECK_GT(server_count_, 0);
@@ -95,8 +79,8 @@ void XmppConnectionGenerator::StartGenerating() {
     // Pretend the xmpp server is https, when detecting whether a proxy is
     // required to connect.
     talk_base::Url<char> host_url("/",
-                                  server_list_[0].server.host.c_str(),
-                                  server_list_[0].server.port);
+                                  server_list_[0].server.IPAsString().c_str(),
+                                  server_list_[0].server.port());
     host_url.set_secure(true);
     proxy_detect->set_server_url(host_url.url());
   } else if (options_->proxy_host().length()) {
@@ -129,79 +113,55 @@ void XmppConnectionGenerator::OnProxyDetect(
 }
 
 void XmppConnectionGenerator::UseNextConnection() {
-  // Loop until we can use a connection or we run out of connections
-  // to try.
-  while (true) {
-    // Iterate to the next possible connection.
-    settings_index_++;
-    if (settings_index_ < settings_list_->GetCount()) {
-      // We have more connection settings in the settings_list_ to
-      // try, kick off the next one.
-      UseCurrentConnection();
-      return;
-    }
+  // Trying to connect.
 
-    // Iterate to the next possible server.
-    server_index_++;
-    if (server_index_ >= server_count_) {
-      // All out of possibilities.
-      HandleExhaustedConnections();
-      return;
-    }
-
-    // Resolve the server.
-    const net::HostPortPair& server =
-        server_list_[server_index_].server;
-    net::HostResolver::RequestInfo request_info(
-        server.host, server.port);
-    int status =
-        host_resolver_.Resolve(
-            request_info, &address_list_, resolve_callback_.get(),
-            bound_net_log_);
-    if (status == net::ERR_IO_PENDING) {
-      // resolve_callback_ will call us when it's called.
-      return;
-    }
-    HandleServerDNSResolved(status);
-  }
-}
-
-void XmppConnectionGenerator::OnServerDNSResolved(int status) {
-  DCHECK_NE(status, net::ERR_IO_PENDING);
-  HandleServerDNSResolved(status);
-  // Reenter loop.
-  UseNextConnection();
-}
-
-void XmppConnectionGenerator::HandleServerDNSResolved(int status) {
-  DCHECK_NE(status, net::ERR_IO_PENDING);
-  LOG(INFO) << "XmppConnectionGenerator::HandleServerDNSResolved";
-  // Print logging info.
-  LOG(INFO) << "  server: "
-            << server_list_[server_index_].server.ToString()
-            << ", error: " << status;
-  if (status != net::OK) {
-    if (first_dns_error_ == 0) {
-      first_dns_error_ = status;
-    }
+  // Iterate to the next possible connection.
+  settings_index_++;
+  if (settings_index_ < settings_list_->GetCount()) {
+    // We have more connection settings in the settings_list_ to try, kick off
+    // the next one.
+    UseCurrentConnection();
     return;
   }
 
-  // Slurp the addresses into a vector.
-  std::vector<uint32> ip_list;
-  for (const addrinfo* addr = address_list_.head();
-       addr != NULL; addr = addr->ai_next) {
-    const sockaddr_in& sockaddr =
-        *reinterpret_cast<const sockaddr_in*>(addr->ai_addr);
-    uint32 ip = ntohl(sockaddr.sin_addr.s_addr);
-    ip_list.push_back(ip);
+  // Iterate to the next possible server.
+  server_index_++;
+  if (server_index_ < server_count_) {
+    AsyncDNSLookup* dns_lookup = new AsyncDNSLookup(
+        server_list_[server_index_].server);
+    SignalThreadTask<AsyncDNSLookup>* wrapper_task =
+        new SignalThreadTask<AsyncDNSLookup>(parent_, &dns_lookup);
+    wrapper_task->SignalWorkDone.connect(
+        this,
+        &XmppConnectionGenerator::OnServerDNSResolved);
+    wrapper_task->Start();
+    return;
   }
-  successfully_resolved_dns_ = !ip_list.empty();
 
-  for (int i = 0; i < static_cast<int>(ip_list.size()); ++i) {
+  // All out of possibilities.
+  HandleExhaustedConnections();
+}
+
+void XmppConnectionGenerator::OnServerDNSResolved(
+    AsyncDNSLookup* dns_lookup) {
+  LOG(INFO) << "XmppConnectionGenerator::OnServerDNSResolved";
+
+  // Print logging info.
+  LOG(INFO) << "  server: " <<
+      server_list_[server_index_].server.ToString() <<
+      "  error: " << dns_lookup->error();
+  if (first_dns_error_ == 0 && dns_lookup->error() != 0) {
+    first_dns_error_ = dns_lookup->error();
+  }
+
+  if (!successfully_resolved_dns_ && dns_lookup->ip_list().size() > 0) {
+    successfully_resolved_dns_ = true;
+  }
+
+  for (int i = 0; i < static_cast<int>(dns_lookup->ip_list().size()); ++i) {
     LOG(INFO)
         << "  ip " << i << " : "
-        << talk_base::SocketAddress::IPToString(ip_list[i]);
+        << talk_base::SocketAddress::IPToString(dns_lookup->ip_list()[i]);
   }
 
   // Build the ip list.
@@ -209,11 +169,13 @@ void XmppConnectionGenerator::HandleServerDNSResolved(int status) {
   settings_index_ = -1;
   settings_list_->ClearPermutations();
   settings_list_->AddPermutations(
-      server_list_[server_index_].server.host,
-      ip_list,
-      server_list_[server_index_].server.port,
+      server_list_[server_index_].server.IPAsString(),
+      dns_lookup->ip_list(),
+      server_list_[server_index_].server.port(),
       server_list_[server_index_].special_port_magic,
       proxy_only_);
+
+  UseNextConnection();
 }
 
 static const char* const PROTO_NAMES[cricket::PROTO_LAST + 1] = {

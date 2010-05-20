@@ -124,7 +124,6 @@ SingleLoginAttempt::SingleLoginAttempt(talk_base::Task* parent,
 #endif
   connection_generator_.reset(new XmppConnectionGenerator(
                                   this,
-                                  login_settings_->host_resolver(),
                                   &login_settings_->connection_options(),
                                   login_settings_->proxy_only(),
                                   login_settings_->server_list(),
