@@ -18,7 +18,7 @@ bool ComMessageEvent::Initialize(IOleContainer* container,
                                  const std::string& message,
                                  const std::string& origin,
                                  const std::string& event_type) {
-  DCHECK(container);
+  DLOG_IF(WARNING, !container) << __FUNCTION__ << " no container";
   message_ = message;
   origin_ = origin;
   type_ = event_type;
@@ -27,8 +27,10 @@ bool ComMessageEvent::Initialize(IOleContainer* container,
   ScopedComPtr<IHTMLEventObj> basic_event;
   ScopedComPtr<IHTMLDocument2> doc;
 
-  // Fetching doc may fail in non-IE containers.
-  container->QueryInterface(doc.Receive());
+  // Fetching doc may fail in non-IE containers
+  // and container might be NULL in some applications.
+  if (container)
+    container->QueryInterface(doc.Receive());
   if (doc) {
     ScopedComPtr<IHTMLDocument4> doc4;
     doc4.QueryFrom(doc);
