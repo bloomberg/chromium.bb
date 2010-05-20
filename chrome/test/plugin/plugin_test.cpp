@@ -144,7 +144,7 @@ TEST_F(PluginTest, Quicktime) {
 }
 
 // Disabled on Release bots - http://crbug.com/44662
-#if !defined(NDEBUG)
+#if defined(NDEBUG)
 #define MediaPlayerNew DISABLED_MediaPlayerNew
 #endif
 TEST_F(PluginTest, MediaPlayerNew) {
@@ -156,7 +156,7 @@ TEST_F(PluginTest, DISABLED_MediaPlayerOld) {
   TestPlugin("wmp_old.html", action_max_timeout_ms(), false);
 }
 
-#if !defined(NDEBUG)
+#if defined(NDEBUG)
 #define Real DISABLED_Real
 #endif
 // Disabled on Release bots - http://crbug.com/44673
