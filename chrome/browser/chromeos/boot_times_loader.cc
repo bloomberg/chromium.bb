@@ -19,12 +19,12 @@
 
 namespace {
 
-typedef struct Stats {
+struct Stats {
   std::string uptime;
   std::string disk;
 
   Stats() : uptime(std::string()), disk(std::string()) {}
-} Stats;
+};
 
 }
 
@@ -103,7 +103,7 @@ void BootTimesLoader::Backend::GetBootTimes(
 
   // Wait until login_prompt_ready is output by reposting.
   FilePath log_dir(kLogPath);
-  FilePath log_file = log_dir.Append(kLoginPromptReady);
+  FilePath log_file = log_dir.Append(uptime_prefix + kLoginPromptReady);
   if (!file_util::PathExists(log_file)) {
     ChromeThread::PostDelayedTask(
         ChromeThread::FILE,

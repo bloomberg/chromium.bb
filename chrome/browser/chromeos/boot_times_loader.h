@@ -70,7 +70,7 @@ class BootTimesLoader : public CancelableRequestProvider {
 
  private:
   // BootTimesLoader calls into the Backend on the file thread to load
-  // and extract the boot times.
+  // the boot times.
   class Backend : public base::RefCountedThreadSafe<Backend> {
    public:
     Backend() {}
