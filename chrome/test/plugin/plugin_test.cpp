@@ -143,7 +143,7 @@ TEST_F(PluginTest, Quicktime) {
   TestPlugin("quicktime.html", action_max_timeout_ms(), false);
 }
 
-TEST_F(PluginTest, MediaPlayerNew) {
+TEST_F(PluginTest, DISABLED_MediaPlayerNew) {
   TestPlugin("wmp_new.html", action_max_timeout_ms(), false);
 }
 
