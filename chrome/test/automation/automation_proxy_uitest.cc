@@ -926,7 +926,8 @@ TEST_F(ExternalTabUITest, IncognitoMode) {
   tab = NULL;
 }
 
-TEST_F(ExternalTabUITest, TabPostMessage) {
+// FLAKY: http://crbug.com/44617
+TEST_F(ExternalTabUITest, FLAKY_TabPostMessage) {
   scoped_refptr<TabProxy> tab;
   TimedMessageLoopRunner loop(MessageLoop::current());
   ASSERT_THAT(mock_, testing::NotNull());
