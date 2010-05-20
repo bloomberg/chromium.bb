@@ -88,6 +88,8 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
     HttpAuth::ChallengeTokenizer* challenge,
     HttpAuth::Target target,
     const GURL& origin,
+    CreateReason reason,
+    int digest_nonce_count,
     scoped_refptr<HttpAuthHandler>* handler) {
   return ERR_UNSUPPORTED_AUTH_SCHEME;
 }
