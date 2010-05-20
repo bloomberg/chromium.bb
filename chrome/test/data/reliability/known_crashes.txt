@@ -183,9 +183,3 @@ PREFIX : views::view::propagatenativeviewhierarchychanged___views::rootview::not
 
 # 44220
 SUBSTRING : webcore::renderinline::destroy
-
-# 44612
-SUBSTRING :
-v8::internal::top::global_context
-v8::context::getcurrent
-webcore::state<webcore::v8binding>::getactivewindow
