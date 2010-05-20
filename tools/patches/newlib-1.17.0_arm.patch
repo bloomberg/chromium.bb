@@ -1,3 +1,23 @@
+diff -rub newlib-1.17.0/newlib/configure.host newlib-1.17.0_arm/newlib/configure.host
+--- newlib-1.17.0/newlib/configure.host	2009-12-10 18:12:11.000000000 +0100
++++ newlib-1.17.0_arm/newlib/configure.host	2010-02-13 05:24:28.000000000 +0100
+@@ -332,7 +332,16 @@
+ # including crt0.
+ # THIS TABLE IS ALPHA SORTED.  KEEP IT THAT WAY.
+ 
++# Horrible, horrible hack: NaCl for ARM uses arm-none-linux-gnueabi as "host"!
+ case "${host}" in
++  arm-none-linux-gnueabi)
++	newlib_cflags="${newlib_cflags} -DHAVE_NANOSLEEP"
++	sys_dir=arm
++	posix_dir=posix
++	if [ "x${newlib_may_supply_syscalls}" = "xno" ] ; then
++	  have_crt0="no"
++	fi
++	;;
+   *-*-cygwin*)
+ 	posix_dir=posix
+ 	stdio64_dir=stdio64
 diff -rub newlib-1.17.0/newlib/libc/include/sys/lock.h newlib-1.17.0_arm/newlib/libc/include/sys/lock.h
 --- newlib-1.17.0/newlib/libc/include/sys/lock.h	2008-12-11 12:27:55.000000000 -0500
 +++ newlib-1.17.0_arm/newlib/libc/include/sys/lock.h	2009-12-04 16:19:09.000000000 -0500

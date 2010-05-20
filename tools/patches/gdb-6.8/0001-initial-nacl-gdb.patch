@@ -8371,12 +8371,6 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/ui-out.h gdb-6.8/gdb/ui-out.h
  extern void ui_out_field_string (struct ui_out * uiout, const char *fldname,
  				 const char *string);
  
-diff -Naur ../PRISTINE/gdb-6.8/gdb/version.in gdb-6.8/gdb/version.in
---- ../PRISTINE/gdb-6.8/gdb/version.in	2008-03-27 11:06:49.000000000 -0700
-+++ gdb-6.8/gdb/version.in	2009-04-21 00:34:48.000000000 -0700
-@@ -1 +1 @@
--6.8
-+6.8-nacl-beta1
 diff -Naur ../PRISTINE/gdb-6.8/include/elf/common.h gdb-6.8/include/elf/common.h
 --- ../PRISTINE/gdb-6.8/include/elf/common.h	2008-01-16 14:01:42.000000000 -0800
 +++ gdb-6.8/include/elf/common.h	2009-04-21 00:34:48.000000000 -0700

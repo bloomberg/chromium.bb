@@ -149,6 +149,12 @@ BUILD/binutils-$(BINUTILS_VERSION): | BUILD
 	if ( [ ! -x /usr/bin/bison ] ) || ( [ ! -x /usr/bin/flex ] ) ; then \
 	  cd BUILD && ( patch -p0 < ../patches/binutils-$(BINUTILS_VERSION).ly.patch || true ) ; \
 	fi
+	printf -- "--- BUILD/binutils-$(BINUTILS_VERSION)/bfd/version.h\n\
+	+++ BUILD/binutils-$(BINUTILS_VERSION)/bfd/version.h\n\
+	@@ -3 +3 @@\n\
+	-#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@\n\
+	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \" `svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \(....\)-\(..\)-\(..\).*+\1\2\3+'` (Native Client r`svn info | grep 'Last Changed Rev' | sed -e s'+Last Changed Rev: ++'`)\"\n" |\
+	patch -p0
 
 # create binutils source directory, and mark that we've done that
 BUILD/stamp-binutils-$(BINUTILS_VERSION): Makefile
@@ -220,6 +226,8 @@ BUILD/gcc-$(GCC_VERSION): | BUILD
 	  for i in ../patches/???-gcc-$(GCC_VERSION).patch ; do \
 	    patch -p0 < "$$i" ; \
 	  done
+	printf -- "`svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \(....\)-\(..\)-\(..\).*+\1\2\3+'`" > BUILD/gcc-$(GCC_VERSION)/gcc/DATESTAMP
+	printf -- "Native Client r`svn info | grep 'Last Changed Rev' | sed -e s'+Last Changed Rev: ++'`" > BUILD/gcc-$(GCC_VERSION)/gcc/DEV-PHASE
 
 # create gcc source directory, and mark that we've done that
 BUILD/stamp-gcc-$(GCC_VERSION): Makefile
@@ -235,6 +243,12 @@ BUILD/gdb-$(GDB_VERSION): | BUILD
 	  for i in ../patches/gdb-$(GDB_VERSION)/????-*.patch ; do \
 	    patch -p0 < "$$i" ; \
 	  done
+	printf -- "--- BUILD/gdb-$(GDB_VERSION)/gdb/version.in\n\
+	+++ BUILD/gdb-$(GDB_VERSION)/gdb/version.in\n\
+	@@ -1 +1 @@\n\
+	-$(GDB_VERSION)\n\
+	+$(GDB_VERSION) `svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \(....\)-\(..\)-\(..\).*+\1\2\3+'` (Native Client r`svn info | grep 'Last Changed Rev' | sed -e s'+Last Changed Rev: ++'`)\n" |\
+	patch -p0
 
 # create gdb source directory, and mark that we've done that
 BUILD/stamp-gdb-$(GDB_VERSION): #Makefile
