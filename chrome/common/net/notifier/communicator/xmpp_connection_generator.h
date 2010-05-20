@@ -7,9 +7,14 @@
 
 #include <vector>
 
+#include "base/ref_counted.h"
+#include "net/base/address_list.h"
+#include "net/base/completion_callback.h"
+#include "net/base/host_port_pair.h"
+#include "net/base/host_resolver.h"
+#include "net/base/net_log.h"
 #include "talk/base/scoped_ptr.h"
 #include "talk/base/sigslot.h"
-#include "talk/base/socketaddress.h"
 
 namespace talk_base {
 class AutoDetectProxy;
@@ -20,13 +25,12 @@ class Task;
 
 namespace notifier {
 
-class AsyncDNSLookup;
 class ConnectionOptions;
 class ConnectionSettings;
 class ConnectionSettingsList;
 
 struct ServerInformation {
-  talk_base::SocketAddress server;
+  net::HostPortPair server;
   bool special_port_magic;
 };
 
@@ -39,11 +43,13 @@ class XmppConnectionGenerator : public sigslot::has_slots<> {
   // proxy.
   // server_list is the list of connections to attempt in priority order.
   // server_count is the number of items in the server list.
-  XmppConnectionGenerator(talk_base::Task* parent,
-                          const ConnectionOptions* options,
-                          bool proxy_only,
-                          const ServerInformation* server_list,
-                          int server_count);
+  XmppConnectionGenerator(
+      talk_base::Task* parent,
+      const scoped_refptr<net::HostResolver>& host_resolver,
+      const ConnectionOptions* options,
+      bool proxy_only,
+      const ServerInformation* server_list,
+      int server_count);
   ~XmppConnectionGenerator();
 
   // Only call this once. Create a new XmppConnectionGenerator and delete the
@@ -63,9 +69,14 @@ class XmppConnectionGenerator : public sigslot::has_slots<> {
 
  private:
   void OnProxyDetect(talk_base::AutoDetectProxy* proxy_detect);
-  void OnServerDNSResolved(AsyncDNSLookup* dns_lookup);
+  void OnServerDNSResolved(int status);
+  void HandleServerDNSResolved(int status);
   void HandleExhaustedConnections();
 
+  net::SingleRequestHostResolver host_resolver_;
+  scoped_ptr<net::CompletionCallback> resolve_callback_;
+  net::AddressList address_list_;
+  net::BoundNetLog bound_net_log_;
   talk_base::scoped_ptr<ConnectionSettingsList> settings_list_;
   int settings_index_;  // The setting that is currently being used.
   talk_base::scoped_array<ServerInformation> server_list_;
