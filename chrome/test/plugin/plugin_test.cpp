@@ -143,7 +143,11 @@ TEST_F(PluginTest, Quicktime) {
   TestPlugin("quicktime.html", action_max_timeout_ms(), false);
 }
 
-TEST_F(PluginTest, DISABLED_MediaPlayerNew) {
+// Disabled on Release bots - http://crbug.com/44662
+#if !defined(NDEBUG)
+#define MediaPlayerNew DISABLED_MediaPlayerNew
+#endif
+TEST_F(PluginTest, MediaPlayerNew) {
   TestPlugin("wmp_new.html", action_max_timeout_ms(), false);
 }
 
@@ -152,6 +156,10 @@ TEST_F(PluginTest, DISABLED_MediaPlayerOld) {
   TestPlugin("wmp_old.html", action_max_timeout_ms(), false);
 }
 
+#if !defined(NDEBUG)
+#define Real DISABLED_Real
+#endif
+// Disabled on Release bots - http://crbug.com/44673
 TEST_F(PluginTest, Real) {
   TestPlugin("real.html", action_max_timeout_ms(), false);
 }
