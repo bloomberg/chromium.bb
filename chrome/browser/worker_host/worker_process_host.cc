@@ -14,6 +14,8 @@
 #include "base/string_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/child_process_security_policy.h"
+#include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/database_dispatcher_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
@@ -417,6 +419,17 @@ void WorkerProcessHost::UpdateTitle() {
     // Use the host name if the domain is empty, i.e. localhost or IP address.
     if (title.empty())
       title = i->url().host();
+
+    // Check if it's an extension-created worker, in which case we want to use
+    // the name of the extension.
+    std::string extension_name = static_cast<ChromeURLRequestContext*>(
+        Profile::GetDefaultRequestContext()->GetURLRequestContext())->
+        GetNameForExtension(title);
+    if (!extension_name.empty()) {
+      titles.insert(extension_name);
+      continue;
+    }
+
     // If the host name is empty, i.e. file url, use the path.
     if (title.empty())
       title = i->url().path();

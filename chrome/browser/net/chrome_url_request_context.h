@@ -47,12 +47,14 @@ class ChromeURLRequestContext : public URLRequestContext {
   // could be immutable and ref-counted so that we could use them directly from
   // both threads. There is only a small amount of mutable state in Extension.
   struct ExtensionInfo {
-    ExtensionInfo(const FilePath& path, const std::string& default_locale,
+    ExtensionInfo(const std::string& name, const FilePath& path,
+                  const std::string& default_locale,
                   const ExtensionExtent& extent,
                   const std::vector<std::string>& api_permissions)
-        : path(path), default_locale(default_locale),
+        : name(name), path(path), default_locale(default_locale),
           extent(extent), api_permissions(api_permissions) {
     }
+    const std::string name;
     FilePath path;
     std::string default_locale;
     ExtensionExtent extent;
@@ -63,6 +65,9 @@ class ChromeURLRequestContext : public URLRequestContext {
   typedef std::map<std::string, linked_ptr<ExtensionInfo> > ExtensionInfoMap;
 
   ChromeURLRequestContext();
+
+  // Gets the name for the specified extension.
+  std::string GetNameForExtension(const std::string& id);
 
   // Gets the path to the directory for the specified extension.
   FilePath GetPathForExtension(const std::string& id);

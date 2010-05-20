@@ -743,6 +743,15 @@ ChromeURLRequestContext::~ChromeURLRequestContext() {
   cookie_policy_ = NULL;
 }
 
+std::string ChromeURLRequestContext::GetNameForExtension(
+    const std::string& id) {
+  ExtensionInfoMap::iterator iter = extension_info_.find(id);
+  if (iter != extension_info_.end())
+    return iter->second->name;
+  else
+    return std::string();
+}
+
 FilePath ChromeURLRequestContext::GetPathForExtension(const std::string& id) {
   ExtensionInfoMap::iterator iter = extension_info_.find(id);
   if (iter != extension_info_.end())
@@ -955,6 +964,7 @@ ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
       extension_info_[(*iter)->id()] =
           linked_ptr<ChromeURLRequestContext::ExtensionInfo>(
               new ChromeURLRequestContext::ExtensionInfo(
+                  (*iter)->name(),
                   (*iter)->path(),
                   (*iter)->default_locale(),
                   (*iter)->web_extent(),

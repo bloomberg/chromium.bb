@@ -148,6 +148,7 @@ void PostExtensionLoadedToContextGetter(ChromeURLRequestContextGetter* getter,
                         &ChromeURLRequestContextGetter::OnNewExtensions,
                         extension->id(),
                         new ChromeURLRequestContext::ExtensionInfo(
+                        extension->name(),
                         extension->path(),
                         extension->default_locale(),
                         extension->web_extent(),
