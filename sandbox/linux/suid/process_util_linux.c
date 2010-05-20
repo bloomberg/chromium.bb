@@ -5,6 +5,8 @@
 // The following is the C version of code from base/process_utils_linux.cc.
 // We shouldn't link against C++ code in a setuid binary.
 
+#define _GNU_SOURCE  // needed for O_DIRECTORY
+
 #include "process_util.h"
 
 #include <fcntl.h>
@@ -21,24 +23,33 @@ bool AdjustOOMScore(pid_t process, int score) {
   if (score < 0 || score > 15)
     return false;
 
-  char oom_adj[35];  // "/proc/" + log_10(2**64) + "/oom_adj\0"
-                     //    6     +       20     +     9         = 35
+  char oom_adj[27];  // "/proc/" + log_10(2**64) + "\0"
+                     //    6     +       20     +     1         = 27
   snprintf(oom_adj, sizeof(oom_adj), "/proc/%" PRIdMAX, (intmax_t)process);
 
-  struct stat statbuf;
-  if (stat(oom_adj, &statbuf) < 0)
-    return false;
-  if (getuid() != statbuf.st_uid)
+  const int dirfd = open(oom_adj, O_RDONLY | O_DIRECTORY);
+  if (dirfd < 0)
     return false;
 
-  strcat(oom_adj, "/oom_adj");
-  int fd = open(oom_adj, O_WRONLY);
+  struct stat statbuf;
+  if (fstat(dirfd, &statbuf) < 0) {
+    close(dirfd);
+    return false;
+  }
+  if (getuid() != statbuf.st_uid) {
+    close(dirfd);
+    return false;
+  }
+
+  const int fd = openat(dirfd, "oom_adj", O_WRONLY);
+  close(dirfd);
+
   if (fd < 0)
     return false;
 
   char buf[3];  // 0 <= |score| <= 15;
   snprintf(buf, sizeof(buf), "%d", score);
-  ssize_t len = strlen(buf);
+  size_t len = strlen(buf);
 
   ssize_t bytes_written = write(fd, buf, len);
   close(fd);
