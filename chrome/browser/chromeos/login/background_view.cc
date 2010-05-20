@@ -140,6 +140,8 @@ void BackgroundView::OpenButtonOptions(const views::View* button_view) const {
 }
 
 bool BackgroundView::IsButtonVisible(const views::View* button_view) const {
+  if (button_view == status_area_->feedback_view())
+    return false;
   return true;
 }
 
@@ -156,6 +158,7 @@ void BackgroundView::InitStatusArea() {
   DCHECK(status_area_ == NULL);
   status_area_ = new StatusAreaView(this);
   status_area_->Init();
+  status_area_->Update();
   AddChildView(status_area_);
 }
 
