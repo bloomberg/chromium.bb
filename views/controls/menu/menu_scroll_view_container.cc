@@ -186,15 +186,13 @@ void MenuScrollViewContainer::Paint(gfx::Canvas* canvas) {
       NativeTheme::MENU, dc, MENU_POPUPBACKGROUND, 0, &bounds);
   canvas->endPlatformPaint();
 #elif defined(OS_CHROMEOS)
-  static const SkColor kGradientColors[3] = {
+  static const SkColor kGradientColors[2] = {
       SK_ColorWHITE,
-      SK_ColorWHITE,
-      SkColorSetRGB(0xD8, 0xD8, 0xD8)
+      SkColorSetRGB(0xF0, 0xF0, 0xF0)
   };
 
-  static const SkScalar kGradientPoints[3] = {
+  static const SkScalar kGradientPoints[2] = {
       SkIntToScalar(0),
-      SkDoubleToScalar(0.5),
       SkIntToScalar(1)
   };
 
