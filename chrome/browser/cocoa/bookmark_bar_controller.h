@@ -319,15 +319,15 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 @interface BookmarkBarController(BridgeRedirect)
 - (void)loaded:(BookmarkModel*)model;
 - (void)beingDeleted:(BookmarkModel*)model;
+- (void)nodeAdded:(BookmarkModel*)model
+           parent:(const BookmarkNode*)oldParent index:(int)index;
+- (void)nodeChanged:(BookmarkModel*)model
+               node:(const BookmarkNode*)node;
 - (void)nodeMoved:(BookmarkModel*)model
         oldParent:(const BookmarkNode*)oldParent oldIndex:(int)oldIndex
         newParent:(const BookmarkNode*)newParent newIndex:(int)newIndex;
-- (void)nodeAdded:(BookmarkModel*)model
-           parent:(const BookmarkNode*)oldParent index:(int)index;
 - (void)nodeRemoved:(BookmarkModel*)model
              parent:(const BookmarkNode*)oldParent index:(int)index;
-- (void)nodeChanged:(BookmarkModel*)model
-               node:(const BookmarkNode*)node;
 - (void)nodeFavIconLoaded:(BookmarkModel*)model
                      node:(const BookmarkNode*)node;
 - (void)nodeChildrenReordered:(BookmarkModel*)model
@@ -336,29 +336,30 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
 // These APIs should only be used by unit tests (or used internally).
 @interface BookmarkBarController(InternalOrTestingAPI)
-- (void)openURL:(GURL)url disposition:(WindowOpenDisposition)disposition;
-- (NSCell*)cellForBookmarkNode:(const BookmarkNode*)node;
-- (void)clearBookmarkBar;
 - (BookmarkBarView*)buttonView;
 - (NSMutableArray*)buttons;
+- (NSMenu*)offTheSideMenu;
+- (NSButton*)offTheSideButton;
+- (BOOL)offTheSideButtonIsHidden;
+- (NSButton*)otherBookmarksButton;
+- (BookmarkBarFolderController*)folderController;
+- (id)folderTarget;
+- (int)displayedButtonCount;
+- (void)openURL:(GURL)url disposition:(WindowOpenDisposition)disposition;
+- (void)clearBookmarkBar;
+- (NSCell*)cellForBookmarkNode:(const BookmarkNode*)node;
 - (NSRect)frameForBookmarkButtonFromCell:(NSCell*)cell xOffset:(int*)xOffset;
 - (void)checkForBookmarkButtonGrowth:(NSButton*)button;
 - (void)frameDidChange;
-- (BOOL)offTheSideButtonIsHidden;
-- (NSMenu *)menuForFolderNode:(const BookmarkNode*)node;
 - (int64)nodeIdFromMenuTag:(int32)tag;
 - (int32)menuTagFromNodeId:(int64)menuid;
-- (void)buildOffTheSideMenuIfNeeded;
-- (NSMenu*)offTheSideMenu;
-- (NSButton*)offTheSideButton;
-- (NSButton*)otherBookmarksButton;
 - (const BookmarkNode*)nodeFromMenuItem:(id)sender;
 - (void)updateTheme:(ThemeProvider*)themeProvider;
-- (BookmarkBarFolderController*)folderController;
 - (BookmarkButton*)buttonForDroppingOnAtPoint:(NSPoint)point;
 - (BOOL)isEventAnExitEvent:(NSEvent*)event;
-- (id)folderTarget;
-- (int)displayedButtonCount;
+
+// The following are for testing purposes only and are not used internally.
+- (NSMenu *)menuForFolderNode:(const BookmarkNode*)node;
 - (NSMenu*)buttonContextMenu;
 - (void)setButtonContextMenu:(id)menu;
 // Set to YES in order to prevent animations.
