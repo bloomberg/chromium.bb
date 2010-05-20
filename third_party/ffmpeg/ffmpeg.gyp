@@ -328,6 +328,10 @@
                 'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_armv5te.S',
                 'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_armv6.S',
               ],
+              # TODO(scherkus): Temporary until libvpx compiles on ARM.
+              'sources!': [
+                'source/patched-ffmpeg-mt/libavcodec/libvpxdec.c',
+              ],
               'conditions': [
                 ['arm_neon==1', {
                   'sources': [
@@ -382,13 +386,18 @@
                 'ldflags': [
                   '-Wl,-Bsymbolic',
                   '-L<(shared_generated_dir)',
-                  '-L<(libvpx_hack_dir)/lib/<(OS)/<(ffmpeg_config)',
+                  '-L<(libvpx_hack_dir)/lib/<(OS)/<(target_arch)',
                 ],
                 'libraries': [
-                  '-lvpx',
                   '-lz',
                 ],
                 'conditions': [
+                  ['target_arch!="arm"', {
+                    'libraries': [
+                      # TODO(scherkus): Temporary until libvpx compiles on ARM.
+                      '-lvpx',
+                    ],
+                  }],
                   ['ffmpeg_asm_lib==1', {
                     'libraries': [
                       # TODO(ajwong): When scons is dead, collapse this with the
@@ -406,7 +415,7 @@
                 #
                 # http://code.google.com/p/gyp/issues/detail?id=108
                 '<(shared_generated_dir)/<(STATIC_LIB_PREFIX)<(asm_library)<(STATIC_LIB_SUFFIX)',
-                '<(libvpx_hack_dir)/lib/<(OS)/<(ffmpeg_config)/libvpx.a',
+                '<(libvpx_hack_dir)/lib/<(OS)/<(target_arch)/libvpx.a',
               ],
               'link_settings': {
                 'libraries': [
