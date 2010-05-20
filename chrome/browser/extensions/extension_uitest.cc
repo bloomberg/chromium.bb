@@ -259,7 +259,9 @@ private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionTestRoundtripApiCall);
 };
 
-TEST_F(ExtensionTestRoundtripApiCall, RunTest) {
+// This is flaky on XP Tests (dbg)(2) bot.
+// http://code.google.com/p/chromium/issues/detail?id=44650
+TEST_F(ExtensionTestRoundtripApiCall, FLAKY_RunTest) {
   namespace keys = extension_automation_constants;
 
   ASSERT_THAT(mock_, testing::NotNull());
