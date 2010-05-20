@@ -168,7 +168,8 @@ TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
 
 // For Hebrew, the expected encoding value is ISO-8859-8-I. See
 // http://crbug.com/2927 for more details.
-TEST_F(BrowserEncodingTest, TestEncodingAutoDetect) {
+// FLAKY: see http://crbug.com/44666
+TEST_F(BrowserEncodingTest, FLAKY_TestEncodingAutoDetect) {
   struct EncodingAutoDetectTestData {
     const char* test_file_name;   // File name of test data.
     const char* expected_result;  // File name of expected results.
