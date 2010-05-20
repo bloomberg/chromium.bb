@@ -527,6 +527,7 @@ TEST_F(BookmarkBarControllerTest, NoItemContainerGoesAway) {
 // Confirm off the side button only enabled when reasonable.
 TEST_F(BookmarkBarControllerTest, OffTheSideButtonHidden) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  [bar_ setIgnoreAnimations:YES];
 
   [bar_ loaded:model];
   EXPECT_TRUE([bar_ offTheSideButtonIsHidden]);
@@ -551,6 +552,9 @@ TEST_F(BookmarkBarControllerTest, OffTheSideButtonHidden) {
   NSButton* offTheSideButton = [bar_ offTheSideButton];
   // Open "off the side" menu.
   [bar_ openBookmarkFolderFromButton:offTheSideButton];
+  BookmarkBarFolderController* bbfc = [bar_ folderController];
+  EXPECT_TRUE(bbfc);
+  [bbfc setIgnoreAnimations:YES];
   while (parent->GetChildCount()) {
     // We've completed the job so we're done.
     if ([bar_ offTheSideButtonIsHidden])

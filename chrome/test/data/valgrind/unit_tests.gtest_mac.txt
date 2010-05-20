@@ -41,6 +41,3 @@ BookmarkAllTabsControllerTest.BookmarkAllTabs
 
 # Already has suppressions, but new variants keep popping up. crbug.com/39282
 BookmarkFolderTargetTest.*
-
-# Fails only under Valgrind. http://crbug.com/44563.
-BookmarkBarControllerTest.OffTheSideButtonHidden

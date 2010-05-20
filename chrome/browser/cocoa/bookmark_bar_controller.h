@@ -227,6 +227,10 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   // the window losing focus, a click somewhere other than in the bar
   // or a folder menu.
   BOOL showFolderMenus_;
+
+  // Set to YES to prevent any node animations. Useful for unit testing so that
+  // incomplete animations do not cause valgrind complaints.
+  BOOL ignoreAnimations_;
 }
 
 @property(readonly, nonatomic) bookmarks::VisualState visualState;
@@ -357,6 +361,8 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 - (int)displayedButtonCount;
 - (NSMenu*)buttonContextMenu;
 - (void)setButtonContextMenu:(id)menu;
+// Set to YES in order to prevent animations.
+- (void)setIgnoreAnimations:(BOOL)ignore;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_BOOKMARK_BAR_CONTROLLER_H_

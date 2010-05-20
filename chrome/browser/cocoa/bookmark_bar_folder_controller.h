@@ -107,6 +107,10 @@
   // We need to know the size of the vertical scrolling arrows so we
   // can obscure/unobscure them.
   CGFloat verticalScrollArrowHeight_;
+
+  // Set to YES to prevent any node animations. Useful for unit testing so that
+  // incomplete animations do not cause valgrind complaints.
+  BOOL ignoreAnimations_;
 }
 
 // Designated initializer.
@@ -158,6 +162,8 @@
 - (id)folderTarget;
 - (void)configureWindowLevel;
 - (void)performOneScroll:(CGFloat)delta;
+// Set to YES in order to prevent animations.
+- (void)setIgnoreAnimations:(BOOL)ignore;
 
 // Return YES if we can scroll up or down.
 - (BOOL)canScrollUp;

@@ -601,7 +601,7 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   poofPoint = [oldButton convertPoint:poofPoint toView:nil];
   poofPoint = [[oldButton window] convertBaseToScreen:poofPoint];
   [oldButton removeFromSuperview];
-  if (animate)
+  if (animate && !ignoreAnimations_)
     NSShowAnimationEffect(NSAnimationEffectDisappearingItemDefault, poofPoint,
                           NSZeroSize, nil, nil, nil);
   [buttons_ removeObjectAtIndex:buttonIndex];
@@ -1259,6 +1259,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     [button removeFromSuperview];
   [buttons_ removeAllObjects];
   [self configureWindow];
+}
+
+- (void)setIgnoreAnimations:(BOOL)ignore {
+  ignoreAnimations_ = ignore;
 }
 
 #pragma mark Methods Forwarded to BookmarkBarController

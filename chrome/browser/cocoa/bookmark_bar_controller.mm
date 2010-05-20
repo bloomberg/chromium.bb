@@ -606,7 +606,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 
 // (Private)
 - (void)showBookmarkBarWithAnimation:(BOOL)animate {
-  if (animate) {
+  if (animate && !ignoreAnimations_) {
     // If |-doBookmarkBarAnimation| does the animation, we're done.
     if ([self doBookmarkBarAnimation])
       return;
@@ -1943,7 +1943,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   visualState_ = nextVisualState;
 
   // Animate only if told to and if bar is enabled.
-  if (animate && barIsEnabled_) {
+  if (animate && !ignoreAnimations_ && barIsEnabled_) {
     [self closeAllBookmarkFolders];
     // Take care of any animation cases we know how to handle.
 
@@ -1975,7 +1975,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       [BookmarkBarController visualStateToShowNormalBar:showNormalBar
                                         showDetachedBar:showDetachedBar];
   [self moveToVisualState:newVisualState
-            withAnimation:animate];
+            withAnimation:animate && !ignoreAnimations_];
 }
 
 // (Private)
@@ -2255,7 +2255,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     poofPoint = [[oldButton window] convertBaseToScreen:poofPoint];
     NSRect oldFrame = [oldButton frame];
     [oldButton removeFromSuperview];
-    if (animate)
+    if (animate && !ignoreAnimations_)
       NSShowAnimationEffect(NSAnimationEffectDisappearingItemDefault, poofPoint,
                             NSZeroSize, nil, nil, nil);
     CGFloat xOffset = NSWidth(oldFrame) + bookmarks::kBookmarkHorizontalPadding;
@@ -2278,6 +2278,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     NSInteger index = buttonIndex - displayedButtonCount_;
     [folderController_ removeButton:index animate:YES];
   }
+}
+
+- (void)setIgnoreAnimations:(BOOL)ignore {
+  ignoreAnimations_ = ignore;
 }
 
 @end
