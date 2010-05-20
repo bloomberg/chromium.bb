@@ -576,11 +576,16 @@ TEST_F(RenderViewTest, OnHandleKeyboardEvent) {
   render_thread_.sink().ClearMessages();
 
   static const MockKeyboard::Layout kLayouts[] = {
+#if defined(OS_WIN)
+    // Since we ignore the mock keyboard layout on Linux and instead just use
+    // the screen's keyboard layout, these trivially pass. They are commented
+    // out to avoid the illusion that they work.
     MockKeyboard::LAYOUT_ARABIC,
     MockKeyboard::LAYOUT_CANADIAN_FRENCH,
     MockKeyboard::LAYOUT_FRENCH,
     MockKeyboard::LAYOUT_HEBREW,
     MockKeyboard::LAYOUT_RUSSIAN,
+#endif
     MockKeyboard::LAYOUT_UNITED_STATES,
   };
 
@@ -598,7 +603,6 @@ TEST_F(RenderViewTest, OnHandleKeyboardEvent) {
       {MockKeyboard::NONE,       "false,false,false"},
       {MockKeyboard::LEFT_SHIFT, "true,false,false"},
 #if defined(OS_WIN)
-      // TODO(estade): figure out why this one doesn't work on Linux.
       {MockKeyboard::RIGHT_ALT,  "false,false,true"},
 #endif
     };
@@ -675,7 +679,7 @@ TEST_F(RenderViewTest, OnHandleKeyboardEvent) {
 // This test is for preventing regressions caused only when we use non-US
 // keyboards, such as Issue 10846.
 TEST_F(RenderViewTest, InsertCharacters) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
   static const struct {
     MockKeyboard::Layout layout;
     const wchar_t* expected_result;
@@ -723,6 +727,10 @@ TEST_F(RenderViewTest, InsertCharacters) {
      L"\x003b\x005d\x005c\x005b\x002c"
     },
 #endif
+#if defined(OS_WIN)
+    // On Linux, the only way to test alternate keyboard layouts is to change
+    // the keyboard layout of the whole screen. I'm worried about the side
+    // effects this may have on the buildbots.
     {MockKeyboard::LAYOUT_CANADIAN_FRENCH,
      L"\x0030\x0031\x0032\x0033\x0034\x0035\x0036\x0037"
      L"\x0038\x0039\x0061\x0062\x0063\x0064\x0065\x0066"
@@ -781,6 +789,7 @@ TEST_F(RenderViewTest, InsertCharacters) {
      L"\x043d\x044f\x0436\x003d\x0431\x002d\x044e\x002e"
      L"\x0451\x0445\x005c\x044a\x044d"
     },
+#endif  // defined(OS_WIN)
     {MockKeyboard::LAYOUT_UNITED_STATES,
      L"\x0030\x0031\x0032\x0033\x0034\x0035\x0036\x0037"
      L"\x0038\x0039\x0061\x0062\x0063\x0064\x0065\x0066"
@@ -793,13 +802,17 @@ TEST_F(RenderViewTest, InsertCharacters) {
      L"\x0048\x0049\x004a\x004b\x004c\x004d\x004e\x004f"
      L"\x0050\x0051\x0052\x0053\x0054\x0055\x0056\x0057"
      L"\x0058\x0059\x005a\x003a\x002b\x003c\x005f\x003e"
-     L"\x003f\x007e\x007b\x007c\x007d\x0022\x0030\x0031"
-     L"\x0032\x0033\x0034\x0035\x0036\x0037\x0038\x0039"
-     L"\x0061\x0062\x0063\x0064\x0065\x0066\x0067\x0068"
-     L"\x0069\x006a\x006b\x006c\x006d\x006e\x006f\x0070"
-     L"\x0071\x0072\x0073\x0074\x0075\x0076\x0077\x0078"
-     L"\x0079\x007a\x003b\x003d\x002c\x002d\x002e\x002f"
-     L"\x0060\x005b\x005c\x005d\x0027"
+     L"\x003f\x007e\x007b\x007c\x007d\x0022"
+#if defined(OS_WIN)
+     // This is ifdefed out for Linux to correspond to the fact that we don't
+     // test alt+keystroke for now.
+     L"\x0030\x0031\x0032\x0033\x0034\x0035\x0036\x0037"
+     L"\x0038\x0039\x0061\x0062\x0063\x0064\x0065\x0066"
+     L"\x0067\x0068\x0069\x006a\x006b\x006c\x006d\x006e"
+     L"\x006f\x0070\x0071\x0072\x0073\x0074\x0075\x0076"
+     L"\x0077\x0078\x0079\x007a\x003b\x003d\x002c\x002d"
+     L"\x002e\x002f\x0060\x005b\x005c\x005d\x0027"
+#endif
     },
   };
 
@@ -828,7 +841,9 @@ TEST_F(RenderViewTest, InsertCharacters) {
     static const MockKeyboard::Modifiers kModifiers[] = {
       MockKeyboard::NONE,
       MockKeyboard::LEFT_SHIFT,
+#if defined(OS_WIN)
       MockKeyboard::RIGHT_ALT,
+#endif
     };
 
     MockKeyboard::Layout layout = kLayouts[i].layout;
@@ -851,7 +866,10 @@ TEST_F(RenderViewTest, InsertCharacters) {
         base::VKEY_OEM_5,
         base::VKEY_OEM_6,
         base::VKEY_OEM_7,
+#if defined(OS_WIN)
+        // Unclear how to handle this on Linux.
         base::VKEY_OEM_8,
+#endif
       };
 
       MockKeyboard::Modifiers modifiers = kModifiers[j];
