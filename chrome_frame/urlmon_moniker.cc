@@ -146,6 +146,25 @@ bool ShouldWrapCallback(IMoniker* moniker, REFIID iid, IBindCtx* bind_context) {
     return false;
   }
 
+  // Check whether request comes from MSHTML by checking for IInternetBindInfo.
+  // We prefer to avoid wrapping if BindToStorage is called from AcroPDF.dll
+  // (as a result of OnObjectAvailable)
+  ScopedComPtr<IUnknown> bscb_holder;
+  if (S_OK == bind_context->GetObjectParam(L"_BSCB_Holder_",
+                                           bscb_holder.Receive())) {
+    ScopedComPtr<IBindStatusCallback> bscb;
+    if (S_OK != DoQueryService(IID_IBindStatusCallback, bscb_holder,
+                               bscb.Receive()))
+      return false;
+
+    if (!bscb.get())
+      return false;
+
+    ScopedComPtr<IInternetBindInfo> bind_info;
+    if (S_OK != bind_info.QueryFrom(bscb))
+      return false;
+  }
+
   // TODO(ananta)
   // Use the IsSubFrameRequest function to determine if a request is a top
   // level request. Something like this.
