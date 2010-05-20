@@ -110,12 +110,9 @@ class StatusBubbleViews::StatusView : public views::Label,
   };
 
   // Set the bubble text to a certain value, hides the bubble if text is
-  // an empty string.  Do not trigger animation sequence.
-  void SetText(const std::wstring& text);
-
-  // Set the bubble text to a certain value, or hide the bubble if text is
-  // an empty string. Start animation sequence.
-  void SetTextAndAnimate(const std::wstring& text);
+  // an empty string.  Trigger animation sequence to display if
+  // |should_animate_open|.
+  void SetText(const std::wstring& text, bool should_animate_open);
 
   BubbleStage GetState() const { return stage_; }
 
@@ -179,20 +176,16 @@ class StatusBubbleViews::StatusView : public views::Label,
   ThemeProvider* theme_provider_;
 };
 
-void StatusBubbleViews::StatusView::SetText(const std::wstring& text) {
-  text_ = text;
-  SchedulePaint();
-}
-
-void StatusBubbleViews::StatusView::SetTextAndAnimate(
-    const std::wstring& text) {
+void StatusBubbleViews::StatusView::SetText(
+    const std::wstring& text, bool should_animate_open) {
   if (text.empty()) {
     // The string was empty.
     StartHiding();
   } else {
     // We want to show the string.
     text_ = text;
-    StartShowing();
+    if (should_animate_open)
+      StartShowing();
   }
 
   SchedulePaint();
@@ -512,7 +505,7 @@ void StatusBubbleViews::StatusViewExpander::AnimateToState(double state) {
 void StatusBubbleViews::StatusViewExpander::AnimationEnded(
     const Animation* animation) {
   SetBubbleWidth(expansion_end_);
-  status_view_->SetText(expanded_text_);
+  status_view_->SetText(expanded_text_, false);
 }
 
 void StatusBubbleViews::StatusViewExpander::StartExpansion(
@@ -613,7 +606,7 @@ void StatusBubbleViews::SetStatus(const std::wstring& status_text) {
   if (size_.IsEmpty())
     return;  // We have no bounds, don't attempt to show the popup.
 
-  if (status_text_ == status_text)
+  if (status_text_ == status_text && !status_text.empty())
     return;
 
   if (!IsFrameVisible())
@@ -622,12 +615,12 @@ void StatusBubbleViews::SetStatus(const std::wstring& status_text) {
   Init();
   status_text_ = status_text;
   if (!status_text_.empty()) {
-    view_->SetTextAndAnimate(status_text);
+    view_->SetText(status_text, true);
     view_->Show();
   } else if (!url_text_.empty()) {
-    view_->SetTextAndAnimate(url_text_);
+    view_->SetText(url_text_, true);
   } else {
-    view_->SetTextAndAnimate(std::wstring());
+    view_->SetText(std::wstring(), true);
   }
 }
 
@@ -644,7 +637,7 @@ void StatusBubbleViews::SetURL(const GURL& url, const std::wstring& languages) {
   if (url.is_empty() && !status_text_.empty()) {
     url_text_ = std::wstring();
     if (IsFrameVisible())
-      view_->SetTextAndAnimate(status_text_);
+      view_->SetText(status_text_, true);
     return;
   }
 
@@ -670,7 +663,7 @@ void StatusBubbleViews::SetURL(const GURL& url, const std::wstring& languages) {
   base::i18n::GetDisplayStringInLTRDirectionality(&url_text_);
 
   if (IsFrameVisible()) {
-    view_->SetTextAndAnimate(url_text_);
+    view_->SetText(url_text_, true);
 
     CancelExpandTimer();
 
