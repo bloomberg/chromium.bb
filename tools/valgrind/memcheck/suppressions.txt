@@ -3016,3 +3016,9 @@
    fun:_ZN3net18SSLClientSocketNSS14DoPayloadWriteEv
    ...
 }
+{
+   bug_44667
+   Memcheck:Leak
+   ...
+   fun:_ZN5media16VideoDecoderImpl12DoInitializeEPNS_13DemuxerStreamEPbP4Task
+}
