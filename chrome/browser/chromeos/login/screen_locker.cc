@@ -40,8 +40,16 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
     }
   }
 
-  virtual void ScreenLocked(chromeos::ScreenLockLibrary* obj) {
+  virtual void LockScreen(chromeos::ScreenLockLibrary* obj) {
     chromeos::ScreenLocker::Show();
+  }
+
+  virtual void UnlockScreen(chromeos::ScreenLockLibrary* obj) {
+    chromeos::ScreenLocker::Hide();
+  }
+
+  virtual void UnlockScreenFailed(chromeos::ScreenLockLibrary* obj) {
+    chromeos::ScreenLocker::UnlockScreenFailed();
   }
 
  private:
@@ -110,7 +118,7 @@ ScreenLocker::~ScreenLocker() {
   // lock_widget_ will be deleted by gtk's destroy signal.
   screen_locker_ = NULL;
   if (CrosLibrary::Get()->EnsureLoaded())
-    CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenUnlocked();
+    CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenUnlockCompleted();
 }
 
 void ScreenLocker::Init(const gfx::Rect& bounds) {
@@ -145,16 +153,15 @@ void ScreenLocker::SetAuthenticator(Authenticator* authenticator) {
 
 void ScreenLocker::OnLoginFailure(const std::string& error) {
   DLOG(INFO) << "OnLoginFailure";
-  screen_lock_view_->SetEnabled(true);
-  screen_lock_view_->ClearAndSetFocusToPassword();
+  EnableInput();
 }
 
 void ScreenLocker::OnLoginSuccess(const std::string& username,
                                   const std::string& credentials) {
   DLOG(INFO) << "OnLoginSuccess";
-  gdk_keyboard_ungrab(GDK_CURRENT_TIME);
-  gdk_pointer_ungrab(GDK_CURRENT_TIME);
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+
+  if (CrosLibrary::Get()->EnsureLoaded())
+    CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenUnlockRequested();
 }
 
 void ScreenLocker::Authenticate(const string16& password) {
@@ -167,23 +174,48 @@ void ScreenLocker::Authenticate(const string16& password) {
                         UTF16ToUTF8(password)));
 }
 
+void ScreenLocker::EnableInput() {
+  screen_lock_view_->SetEnabled(true);
+  screen_lock_view_->ClearAndSetFocusToPassword();
+}
+
 // static
 void ScreenLocker::Show() {
   DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
-  if (screen_locker_) {
-    LOG(INFO) << "ScreenLocker is already open. Ignoring request.";
-    return;
-  }
+  DCHECK(!screen_locker_);
   gfx::Rect bounds(views::Screen::GetMonitorWorkAreaNearestWindow(NULL));
-
-  ScreenLocker* locker = new ScreenLocker(UserManager::Get()->logged_in_user());
+  ScreenLocker* locker =
+      new ScreenLocker(UserManager::Get()->logged_in_user());
   locker->Init(bounds);
-
   // TODO(oshima): Wait for a message from WM to complete the process.
   if (CrosLibrary::Get()->EnsureLoaded())
     CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenLockCompleted();
 }
 
+// static
+void ScreenLocker::Hide() {
+  DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
+  DCHECK(screen_locker_);
+  gdk_keyboard_ungrab(GDK_CURRENT_TIME);
+  gdk_pointer_ungrab(GDK_CURRENT_TIME);
+  MessageLoop::current()->DeleteSoon(FROM_HERE, screen_locker_);
+}
+
+// static
+void ScreenLocker::UnlockScreenFailed() {
+  DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
+  if (screen_locker_) {
+    screen_locker_->EnableInput();
+  } else {
+    // This can happen when a user requested unlock, but PowerManager
+    // rejected because the computer is closed, then PowerManager unlocked
+    // because it's open again and the above failure message arrives.
+    // This'd be extremely rare, but may still happen.
+    LOG(INFO) << "Screen is unlocked";
+  }
+}
+
+// static
 void ScreenLocker::InitClass() {
   Singleton<ScreenLockObserver>::get();
 }

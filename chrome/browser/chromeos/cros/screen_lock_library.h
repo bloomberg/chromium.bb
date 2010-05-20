@@ -17,7 +17,9 @@ class ScreenLockLibrary {
   class Observer {
    public:
     virtual ~Observer() {}
-    virtual void ScreenLocked(ScreenLockLibrary* obj) = 0;
+    virtual void LockScreen(ScreenLockLibrary* obj) = 0;
+    virtual void UnlockScreen(ScreenLockLibrary* obj) = 0;
+    virtual void UnlockScreenFailed(ScreenLockLibrary* obj) = 0;
   };
   ScreenLockLibrary() {}
   virtual ~ScreenLockLibrary() {}
@@ -29,7 +31,9 @@ class ScreenLockLibrary {
   // Notifies PowerManager that a user requested to lock the screen.
   virtual void NotifyScreenLockRequested() = 0;
   // Notifies PowerManager that a user unlocked the screen.
-  virtual void NotifyScreenUnlocked() = 0;
+  virtual void NotifyScreenUnlockRequested() = 0;
+  // Notifies PowerManager that screen is unlocked.
+  virtual void NotifyScreenUnlockCompleted() = 0;
 };
 
 // This class handles the interaction with the ChromeOS screen lock APIs.
@@ -41,9 +45,10 @@ class ScreenLockLibraryImpl : public ScreenLockLibrary {
   // ScreenLockLibrary implementations:
   virtual void AddObserver(Observer* observer);
   virtual void RemoveObserver(Observer* observer);
-  virtual void NotifyScreenLockCompleted();
   virtual void NotifyScreenLockRequested();
-  virtual void NotifyScreenUnlocked();
+  virtual void NotifyScreenLockCompleted();
+  virtual void NotifyScreenUnlockRequested();
+  virtual void NotifyScreenUnlockCompleted();
 
  private:
   // This method is called when PowerManager requests to lock the screen.
@@ -54,8 +59,16 @@ class ScreenLockLibraryImpl : public ScreenLockLibrary {
   void Init();
 
   // Called by the handler to notify the screen lock request from
-  // PowerManager.
-  void ScreenLocked();
+  // SessionManager.
+  void LockScreen();
+
+  // Called by the handler to notify the screen unlock request from
+  // SessionManager.
+  void UnlockScreen();
+
+  // Called by the handler to notify the screen unlock request has been
+  // failed.
+  void UnlockScreenFailed();
 
   ObserverList<Observer> observers_;
 

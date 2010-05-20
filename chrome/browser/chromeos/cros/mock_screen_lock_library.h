@@ -17,9 +17,10 @@ class MockScreenLockLibrary : public ScreenLockLibrary {
   MOCK_METHOD1(AddObserver, void(Observer*));
   MOCK_METHOD1(RemoveObserver, void(Observer*));
 
-  MOCK_METHOD0(NotifyScreenLockCompleted, void());
   MOCK_METHOD0(NotifyScreenLockRequested, void());
-  MOCK_METHOD0(NotifyScreenUnlocked, void());
+  MOCK_METHOD0(NotifyScreenLockCompleted, void());
+  MOCK_METHOD0(NotifyScreenUnlockRequested, void());
+  MOCK_METHOD0(NotifyScreenUnlockCompleted, void());
 };
 
 }  // namespace chromeos

@@ -46,6 +46,9 @@ class ScreenLocker : public LoginStatusConsumer {
   // Authenticates the user with given |password| and authenticator.
   void Authenticate(const string16& password);
 
+  // (Re)enable input field.
+  void EnableInput();
+
   // Returns the user to authenticate.
   const UserManager::User& user() const {
     return user_;
@@ -56,8 +59,14 @@ class ScreenLocker : public LoginStatusConsumer {
   // lock event only after a user is logged in.
   static void InitClass();
 
-  // Show the screen locker. Does nothing if it's already opened.
+  // Show the screen locker.
   static void Show();
+
+  // Hide the screen locker.
+  static void Hide();
+
+  // Notifies that PowerManager rejected UnlockScreen request.
+  static void UnlockScreenFailed();
 
   // Returns the tester
   static test::ScreenLockerTester* GetTester();

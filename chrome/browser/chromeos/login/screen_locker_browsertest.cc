@@ -29,10 +29,9 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
     EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenLockCompleted())
         .Times(1)
         .RetiresOnSaturation();
-    EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenUnlocked())
+    EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenUnlockRequested())
         .Times(1)
         .RetiresOnSaturation();
-
     // Expectations for the status are on the screen lock window.
     SetStatusAreaMocksExpectations();
     // Expectations for the status area on the browser window.
@@ -52,6 +51,13 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_TRUE(tester->IsOpen());
   tester->EnterPassword("pass");
+  ui_test_utils::RunAllPendingInMessageLoop();
+  // Successful authentication simply send a unlock request to PowerManager.
+  EXPECT_TRUE(tester->IsOpen());
+
+  // Emulate LockScreen request from PowerManager (via SessionManager).
+  // TODO(oshima): Find out better way to handle this in mock.
+  ScreenLocker::Hide();
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_TRUE(!tester->IsOpen());
 }

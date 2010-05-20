@@ -39,16 +39,20 @@ void ScreenLockLibraryImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void ScreenLockLibraryImpl::NotifyScreenLockCompleted() {
-  chromeos::NotifyScreenLockCompleted();
-}
-
 void ScreenLockLibraryImpl::NotifyScreenLockRequested() {
   chromeos::NotifyScreenLockRequested();
 }
 
-void ScreenLockLibraryImpl::NotifyScreenUnlocked() {
-  chromeos::NotifyScreenUnlocked();
+void ScreenLockLibraryImpl::NotifyScreenLockCompleted() {
+  chromeos::NotifyScreenLockCompleted();
+}
+
+void ScreenLockLibraryImpl::NotifyScreenUnlockRequested() {
+  chromeos::NotifyScreenUnlockRequested();
+}
+
+void ScreenLockLibraryImpl::NotifyScreenUnlockCompleted() {
+  chromeos::NotifyScreenUnlockCompleted();
 }
 
 void ScreenLockLibraryImpl::Init() {
@@ -56,21 +60,56 @@ void ScreenLockLibraryImpl::Init() {
       &ScreenLockedHandler, this);
 }
 
-void ScreenLockLibraryImpl::ScreenLocked() {
+void ScreenLockLibraryImpl::LockScreen() {
   // Make sure we run on UI thread.
   if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &ScreenLockLibraryImpl::ScreenLocked));
+        NewRunnableMethod(this, &ScreenLockLibraryImpl::LockScreen));
     return;
   }
-  FOR_EACH_OBSERVER(Observer, observers_, ScreenLocked(this));
+  FOR_EACH_OBSERVER(Observer, observers_, LockScreen(this));
+}
+
+void ScreenLockLibraryImpl::UnlockScreen() {
+  // Make sure we run on UI thread.
+  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &ScreenLockLibraryImpl::UnlockScreen));
+    return;
+  }
+  FOR_EACH_OBSERVER(Observer, observers_, UnlockScreen(this));
+}
+
+void ScreenLockLibraryImpl::UnlockScreenFailed() {
+  // Make sure we run on UI thread.
+  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &ScreenLockLibraryImpl::UnlockScreenFailed));
+    return;
+  }
+  FOR_EACH_OBSERVER(Observer, observers_, UnlockScreenFailed(this));
 }
 
 // static
-void ScreenLockLibraryImpl::ScreenLockedHandler(void* object, ScreenLockEvent) {
+void ScreenLockLibraryImpl::ScreenLockedHandler(void* object,
+                                                ScreenLockEvent event) {
   ScreenLockLibraryImpl* self = static_cast<ScreenLockLibraryImpl*>(object);
-  self->ScreenLocked();
+  switch (event) {
+    case chromeos::LockScreen:
+      self->LockScreen();
+      break;
+    case chromeos::UnlockScreen:
+      self->UnlockScreen();
+      break;
+    case chromeos::UnlockScreenFailed:
+      self->UnlockScreenFailed();
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 }  // namespace chromeos
