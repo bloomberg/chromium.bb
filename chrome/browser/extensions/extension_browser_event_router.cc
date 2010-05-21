@@ -15,6 +15,7 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/notification_service.h"
 
 namespace events = extension_event_names;
@@ -120,7 +121,8 @@ void ExtensionBrowserEventRouter::Init() {
 }
 
 ExtensionBrowserEventRouter::ExtensionBrowserEventRouter()
-    : initialized_(false) { }
+    : initialized_(false),
+      focused_window_id_(extension_misc::kUnknownWindowId) { }
 
 void ExtensionBrowserEventRouter::OnBrowserAdded(const Browser* browser) {
   RegisterForBrowserNotifications(browser);
@@ -184,8 +186,14 @@ void ExtensionBrowserEventRouter::OnBrowserRemoving(const Browser* browser) {
 
 void ExtensionBrowserEventRouter::OnBrowserSetLastActive(
     const Browser* browser) {
+
+  int window_id = ExtensionTabUtil::GetWindowId(browser);
+  if (focused_window_id_ == window_id)
+    return;
+
+  focused_window_id_ = window_id;
   DispatchSimpleBrowserEvent(browser->profile(),
-                             ExtensionTabUtil::GetWindowId(browser),
+                             focused_window_id_,
                              events::kOnWindowFocusedChanged);
 }
 

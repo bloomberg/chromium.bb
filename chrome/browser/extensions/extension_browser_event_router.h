@@ -140,6 +140,10 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
 
   std::map<int, TabEntry> tab_entries_;
 
+  // The currently focused window. We keep this so as to avoid sending multiple
+  // windows.onFocusChanged events with the same windowId.
+  int focused_window_id_;
+
   DISALLOW_COPY_AND_ASSIGN(ExtensionBrowserEventRouter);
 };
 
