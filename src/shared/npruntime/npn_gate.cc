@@ -608,24 +608,24 @@ class BlockingCallClosure : public NPClosure {
   bool is_valid_;
 };
 
-bool NPN_PluginBlockingAsyncCall(NPP instance,
-                                 void (*func)(void* invocation_user_data),
-                                 void* user_data) {
+}  // namespace nacl
+
+bool NPN_BlockingPluginThreadAsyncCall(NPP instance,
+                                       void (*func)(void* invocation_user_data),
+                                       void* user_data) {
   // Set up the closure that will invoke the user function and signal
   // its completion.
-  BlockingCallClosure data(func, user_data);
+  nacl::BlockingCallClosure data(func, user_data);
   // Check for successful construction.
   if (!data.is_valid()) {
     return false;
   }
   // Enqueue the thunk on the main thread.
   NPN_PluginThreadAsyncCall(instance,
-                            BlockingCallClosure::NpapiThunk,
+                            nacl::BlockingCallClosure::NpapiThunk,
                             reinterpret_cast<void*>(&data));
   // Wait for the closure to signal completion of the user function.
   data.Wait();
   // Signal success to the caller.
-  return false;
+  return true;
 }
-
-}  // namespace nacl

@@ -33,9 +33,9 @@ extern "C" {
  * completed.  Returns true if the enqueued thunk executed and signalled
  * this thread.  Returns false otherwise.
  */
-  bool NPN_BlockingThreadAsyncCall(NPP instance,
-                                   void (*func)(void* user_instance_data),
-                                   void* user_data);
+  bool NPN_BlockingPluginThreadAsyncCall(NPP instance,
+                                         void (*func)(void* user_instance_data),
+                                         void* user_data);
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
