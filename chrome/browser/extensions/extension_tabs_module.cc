@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/extension_tabs_module.h"
 
-#include "base/histogram.h"
 #include "base/base64.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
@@ -58,14 +57,11 @@ static bool GetTabById(int tab_id, Profile* profile,
 // or invalid. If |url_string| is not directly interpretable as a valid (it is
 // likely a relative URL) an attempt is made to resolve it. |extension| is
 // provided so it can be resolved relative to its extension base
-// (chrome-extension://<id>/). |source_url| is provided so that we can test
-// whether |url_string| resolves differently relative to the source frame url.
-// Using the source frame url would be more correct, but because the api shipped
-// with urls resolved relative to their extension base, we must first measure
-// how much of an inpact making the change would have.
+// (chrome-extension://<id>/). Using the source frame url would be more correct,
+// but because the api shipped with urls resolved relative to their extension
+// base, we decided it wasn't worth breaking existing extensions to fix.
 static GURL ResolvePossiblyRelativeURL(std::string url_string,
-                                       Extension* extension,
-                                       const GURL& source_url);
+                                       Extension* extension);
 
 // Return the type name for a browser window type.
 static std::string GetWindowTypeText(Browser::Type type);
@@ -294,8 +290,7 @@ bool CreateWindowFunction::RunImpl() {
     if (args->HasKey(keys::kUrlKey)) {
       EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kUrlKey,
                                                   &url_string));
-      url = ResolvePossiblyRelativeURL(url_string, GetExtension(),
-          source_url());
+      url = ResolvePossiblyRelativeURL(url_string, GetExtension());
       if (!url.is_valid()) {
         error_ = ExtensionErrorUtils::FormatErrorMessage(
             keys::kInvalidUrlError, url_string);
@@ -535,7 +530,7 @@ bool CreateTabFunction::RunImpl() {
   if (args->HasKey(keys::kUrlKey)) {
     EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kUrlKey,
                                                 &url_string));
-    url = ResolvePossiblyRelativeURL(url_string, GetExtension(), source_url());
+    url = ResolvePossiblyRelativeURL(url_string, GetExtension());
     if (!url.is_valid()) {
       error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kInvalidUrlError,
                                                        url_string);
@@ -644,8 +639,7 @@ bool UpdateTabFunction::RunImpl() {
   if (update_props->HasKey(keys::kUrlKey)) {
     EXTENSION_FUNCTION_VALIDATE(update_props->GetString(
         keys::kUrlKey, &url_string));
-    GURL url = ResolvePossiblyRelativeURL(url_string, GetExtension(),
-        source_url());
+    GURL url = ResolvePossiblyRelativeURL(url_string, GetExtension());
 
     if (!url.is_valid()) {
       error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kInvalidUrlError,
@@ -1091,37 +1085,11 @@ static std::string GetWindowTypeText(Browser::Type type) {
   return keys::kWindowTypeValueNormal;
 }
 
-// These are histogram buckets passed to UMA in the following test of relative
-// URL use in the tabs & windows API.
-enum ExtensionAPIRelativeURLUse {
-  ABSOLUTE_URL,
-  RELATIVE_URL_RESOLUTIONS_DIFFER,
-  RELATIVE_URL_RESOLUTIONS_AGREE,
-  EXTENSION_API_RELATIVE_URL_USE_MAX_VALUE
-};
-
 static GURL ResolvePossiblyRelativeURL(std::string url_string,
-                                       Extension* extension,
-                                       const GURL& source_url) {
-  ExtensionAPIRelativeURLUse use_type = ABSOLUTE_URL;
-
+                                       Extension* extension) {
   GURL url = GURL(url_string);
-  if (!url.is_valid()) {
+  if (!url.is_valid())
     url = extension->GetResourceURL(url_string);
-    GURL resolved_url = source_url.Resolve(url_string);
-
-    // Note: It's possible that GetResourceURL() returned an invalid URL
-    // meaning that the url_string contained some kind of invalid characters.
-    // The first test for url.is_valid on the next line puts this case into
-    // the resolutions agree bucket -- in the sense that both resolutions would
-    // have resulted in an invald URL and thus an error being returned to the
-    // caller.
-    use_type = url.is_valid() && (url != resolved_url) ?
-        RELATIVE_URL_RESOLUTIONS_DIFFER : RELATIVE_URL_RESOLUTIONS_AGREE;
-  }
-
-  UMA_HISTOGRAM_ENUMERATION("Extensions.APIUse_RelativeURL", use_type,
-      EXTENSION_API_RELATIVE_URL_USE_MAX_VALUE);
 
   return url;
 }
