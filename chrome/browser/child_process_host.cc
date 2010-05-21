@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/singleton.h"
+#include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/chrome_thread.h"
@@ -128,6 +129,13 @@ void ChildProcessHost::SetCrashReporterCommandLine(CommandLine* command_line) {
     command_line->AppendSwitchWithValue(switches::kEnableCrashReporter,
                                         ASCIIToWide(google_update::posix_guid));
 #endif  // OS_MACOSX
+}
+
+// static
+void ChildProcessHost::TerminateAll() {
+  // Make a copy since the ChildProcessHost dtor mutates the original list.
+  ChildProcessList copy = *(Singleton<ChildProcessList>::get());
+  STLDeleteElements(&copy);
 }
 
 void ChildProcessHost::Launch(

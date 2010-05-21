@@ -146,6 +146,11 @@ void IOThread::Init() {
 }
 
 void IOThread::CleanUp() {
+  // If any child processes are still running, terminate them and
+  // and delete the ChildProcessHost instances to release whatever
+  // IO thread only resources they are referencing.
+  ChildProcessHost::TerminateAll();
+
   // Not initialized in Init().  May not be initialized.
   if (dns_master_) {
     DCHECK(prefetch_observer_);

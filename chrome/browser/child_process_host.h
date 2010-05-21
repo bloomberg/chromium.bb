@@ -54,6 +54,9 @@ class ChildProcessHost : public ResourceDispatcherHost::Receiver,
   // currently-executing process.  This function is a no-op on Windows.
   static void SetCrashReporterCommandLine(CommandLine* command_line);
 
+  // Terminates all child processes and deletes each ChildProcessHost instance.
+  static void TerminateAll();
+
   // ResourceDispatcherHost::Receiver implementation:
   virtual bool Send(IPC::Message* msg);
 
