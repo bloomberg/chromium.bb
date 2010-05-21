@@ -423,7 +423,8 @@ void MenuGtk::SetMenuItemInfo(GtkWidget* widget, gpointer userdata) {
 
   menus::MenuModel* model = ModelForMenuItem(GTK_MENU_ITEM(widget));
   if (!model) {
-    NOTREACHED();
+    // If we're not providing the sub menu, then there's no model.  For
+    // example, the IME submenu doesn't have a model.
     return;
   }
 
