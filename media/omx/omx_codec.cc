@@ -47,14 +47,17 @@ OmxCodec::~OmxCodec() {
   DCHECK_EQ(0u, output_buffers_.size());
   DCHECK(available_input_buffers_.empty());
   DCHECK(pending_input_queue_.empty());
-  DCHECK(output_queue_.empty());
   DCHECK(processing_input_queue_.empty());
 }
 
-void OmxCodec::Setup(OmxConfigurator* configurator) {
+void OmxCodec::Setup(OmxConfigurator* configurator,
+                     FeedDoneCallback* feed_done_callback,
+                     FillDoneCallback* fill_done_callback) {
   DCHECK_EQ(kEmpty, state_);
   CHECK(configurator);
   configurator_ = configurator;
+  feed_done_callback_.reset(feed_done_callback);
+  fill_done_callback_.reset(fill_done_callback);
 }
 
 void OmxCodec::SetErrorCallback(Callback* callback) {
@@ -81,18 +84,10 @@ void OmxCodec::Stop(Callback* callback) {
       NewRunnableMethod(this, &OmxCodec::StopTask, callback));
 }
 
-void OmxCodec::Read(ReadCallback* callback) {
+void OmxCodec::Feed(scoped_refptr<Buffer> buffer) {
   message_loop_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &OmxCodec::ReadTask, callback));
-}
-
-void OmxCodec::Feed(Buffer* buffer, FeedCallback* callback) {
-  scoped_refptr<Buffer> buffer_ref = buffer;
-  message_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &OmxCodec::FeedTask, buffer_ref,
-                        callback));
+      NewRunnableMethod(this, &OmxCodec::FeedTask, buffer));
 }
 
 void OmxCodec::Flush(Callback* callback) {
@@ -133,7 +128,6 @@ void OmxCodec::StopTask(Callback* callback) {
   }
 
   FreeInputQueue();
-  FreeOutputQueue();
 
   // TODO(hclam): We should wait for all output buffers to come back from
   // output sink to proceed to stop. The proper way to do this is
@@ -153,39 +147,16 @@ void OmxCodec::StopTask(Callback* callback) {
     StateTransitionTask(kEmpty);
 }
 
-void OmxCodec::ReadTask(ReadCallback* callback) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
-
-  // Don't accept read request on error state.
-  if (!CanAcceptOutput()) {
-    callback->Run(static_cast<OMX_BUFFERHEADERTYPE*>(NULL));
-    delete callback;
-    return;
-  }
-
-  // If output has been reached then enqueue an end-of-stream buffer.
-  if (output_eos_)
-    output_buffers_ready_.push(kEosBuffer);
-
-  // Queue this request.
-  output_queue_.push(callback);
-
-  // Make our best effort to serve the request.
-  FulfillOneRead();
-}
-
-void OmxCodec::FeedTask(scoped_refptr<Buffer> buffer,
-                        FeedCallback* callback) {
+void OmxCodec::FeedTask(scoped_refptr<Buffer> buffer) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   if (!CanAcceptInput()) {
-    callback->Run(buffer);
-    delete callback;
+    feed_done_callback_->Run(buffer);
     return;
   }
 
   // Queue this input buffer.
-  pending_input_queue_.push(std::make_pair(buffer, callback));
+  pending_input_queue_.push(buffer);
 
   // Try to feed buffers into the decoder.
   EmptyBufferTask();
@@ -262,24 +233,13 @@ void OmxCodec::FreeInputQueue() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   while (!pending_input_queue_.empty()) {
-    scoped_refptr<Buffer> buffer = pending_input_queue_.front().first;
-    FeedCallback* callback = pending_input_queue_.front().second;
-    callback->Run(buffer);
-    delete callback;
+    scoped_refptr<Buffer> buffer = pending_input_queue_.front();
+    feed_done_callback_->Run(buffer);
     pending_input_queue_.pop();
   }
 
   while (!processing_input_queue_.empty()) {
     processing_input_queue_.pop();
-  }
-}
-
-void OmxCodec::FreeOutputQueue() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
-
-  while (!output_queue_.empty()) {
-    delete output_queue_.front();
-    output_queue_.pop();
   }
 }
 
@@ -714,9 +674,8 @@ void OmxCodec::Transition_Error() {
   FreeInputBuffers();
   FreeOutputBuffers();
 
-  // Free input and output queues.
+  // Free input queues.
   FreeInputQueue();
-  FreeOutputQueue();
 
   // Free decoder handle.
   if (component_handle_) {
@@ -966,23 +925,19 @@ void OmxCodec::EmptyBufferCompleteTask(OMX_BUFFERHEADERTYPE* buffer) {
   if (!CanEmptyBuffer())
     return;
 
-  scoped_refptr<Buffer> stored_buffer = processing_input_queue_.front().first;
-  FeedCallback* callback = processing_input_queue_.front().second;
+  scoped_refptr<Buffer> stored_buffer = processing_input_queue_.front();
   processing_input_queue_.pop();
 
   DCHECK_EQ(const_cast<OMX_U8*>(stored_buffer.get()->GetData()),
             buffer->pBuffer);
 
-  callback->Run(stored_buffer);
-  delete callback;
+  feed_done_callback_->Run(stored_buffer);
 
   // Enqueue the available buffer beacuse the decoder has consumed it.
   available_input_buffers_.push(buffer);
 
   // Try to feed more data into the decoder.
   EmptyBufferTask();
-
-  FulfillOneRead();
 }
 
 void OmxCodec::EmptyBufferTask() {
@@ -996,10 +951,9 @@ void OmxCodec::EmptyBufferTask() {
   while (!pending_input_queue_.empty() &&
          !available_input_buffers_.empty() &&
          !input_eos_) {
-    InputUnit input_unit = pending_input_queue_.front();
+    scoped_refptr<Buffer> buffer = pending_input_queue_.front();
     pending_input_queue_.pop();
-    processing_input_queue_.push(input_unit);
-    scoped_refptr<Buffer> buffer = input_unit.first;
+    processing_input_queue_.push(buffer);
 
     OMX_BUFFERHEADERTYPE* omx_buffer = available_input_buffers_.front();
     available_input_buffers_.pop();
@@ -1072,27 +1026,18 @@ void OmxCodec::FillBufferCompleteTask(OMX_BUFFERHEADERTYPE* buffer) {
 void OmxCodec::FulfillOneRead() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
-  if (!output_queue_.empty() && !output_buffers_ready_.empty()) {
+  if (!output_buffers_ready_.empty()) {
     int buffer_id = output_buffers_ready_.front();
     output_buffers_ready_.pop();
-    ReadCallback* callback = output_queue_.front();
-    output_queue_.pop();
 
     // If the buffer is real then save it to the in-use list.
     // Otherwise if it is an end-of-stream buffer then just drop it.
     if (buffer_id != kEosBuffer) {
-      callback->Run(output_buffers_[buffer_id]);
+      fill_done_callback_->Run(output_buffers_[buffer_id]);
       BufferUsedCallback(buffer_id); //hack, we will change this really soon.
     } else {
-      callback->Run(static_cast<OMX_BUFFERHEADERTYPE*>(NULL));
+      fill_done_callback_->Run(static_cast<OMX_BUFFERHEADERTYPE*>(NULL));
     }
-    delete callback;
-  } else if (!output_queue_.empty() &&
-             !available_input_buffers_.empty() && !input_eos_) {
-    ReadCallback* callback = output_queue_.front();
-    output_queue_.pop();
-    callback->Run(static_cast<OMX_BUFFERHEADERTYPE*>(NULL));
-    delete callback;
   }
 }
 

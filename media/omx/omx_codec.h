@@ -154,8 +154,8 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   typedef Callback2<
       const OmxConfigurator::MediaFormat&,
       const OmxConfigurator::MediaFormat&>::Type FormatCallback;
-  typedef Callback1<Buffer*>::Type FeedCallback;
-  typedef Callback1<OMX_BUFFERHEADERTYPE*>::Type ReadCallback;
+  typedef Callback1<scoped_refptr<Buffer> >::Type FeedDoneCallback;
+  typedef Callback1<OMX_BUFFERHEADERTYPE*>::Type FillDoneCallback;
   typedef Callback0::Type Callback;
 
   // Initialize an OmxCodec object that runs on |message_loop|. It is
@@ -165,7 +165,9 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
 
   // Setup OmxCodec using |configurator|. |configurator| and |output_sink|
   // are not owned by this class and should be cleaned up externally.
-  void Setup(OmxConfigurator* configurator);
+  void Setup(OmxConfigurator* configurator,
+             FeedDoneCallback* feed_done_callback,
+             FillDoneCallback* fill_done_callback);
 
   // Set the error callback. In case of error the callback will be called.
   void SetErrorCallback(Callback* callback);
@@ -181,21 +183,9 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   // is called.
   void Stop(Callback* callback);
 
-  // Read decoded buffer from the decoder. When there is decoded data
-  // ready to be consumed |callback| is called.
-  // The callback will be called with two parameters:
-  // 1. Buffer ID.
-  //    To identify the buffer which contains the decoded frame. If
-  //    the value is kEosBuffer then end-of-stream has been reached.
-  // 2. Buffer used callback
-  //    When the buffer is used, client should call this callback
-  //    with the given buffer id to return the buffer to OmxCodec.
-  //    This callback can be made from any thread.
-  void Read(ReadCallback* callback);
-
   // Feed the decoder with |buffer|. When the decoder has consumed the
-  // buffer |callback| is called with |buffer| being the parameter.
-  void Feed(Buffer* buffer, FeedCallback* callback);
+  // buffer |feed_done_callback_| is called with |buffer|.
+  void Feed(scoped_refptr<Buffer> buffer);
 
   // Flush the decoder and reset its end-of-stream state.
   void Flush(Callback* callback);
@@ -226,9 +216,7 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   // public methods.
   void StartTask();
   void StopTask(Callback* callback);
-  void ReadTask(ReadCallback* callback);
-  void FeedTask(scoped_refptr<Buffer> buffer,
-                FeedCallback* callback);
+  void FeedTask(scoped_refptr<Buffer> buffer);
 
   // Helper method to perform tasks when this object is stopped.
   void DoneStop();
@@ -253,7 +241,6 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   void FreeInputBuffers();
   void FreeOutputBuffers();
   void FreeInputQueue();
-  void FreeOutputQueue();
 
   // Transition methods define the specific tasks needs to be done
   // in order transition to the next state.
@@ -372,21 +359,18 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   scoped_ptr<FormatCallback> format_callback_;
   scoped_ptr<Callback> stop_callback_;
   scoped_ptr<Callback> error_callback_;
-
-  typedef std::pair<scoped_refptr<Buffer>, FeedCallback*> InputUnit;
+  scoped_ptr<FeedDoneCallback> feed_done_callback_;
+  scoped_ptr<FillDoneCallback> fill_done_callback_;
 
   // Input queue for encoded data.
   // The input buffers will be sent to OMX component via OMX_EmptyThisBuffer()
-  std::queue<InputUnit> pending_input_queue_;
+  std::queue<scoped_refptr<Buffer> > pending_input_queue_;
 
   // Input queue for encoded data.
   // Those buffers have been sent to OMX component, but not returned
   // by EmptyBufferDone callback. Once returned from OMX component, they
   // will be returned to owner.
-  std::queue<InputUnit> processing_input_queue_;
-
-  // Output queue for decoded frames.
-  std::queue<ReadCallback*> output_queue_;
+  std::queue<scoped_refptr<Buffer> > processing_input_queue_;
 
   // Available input OpenMAX buffers that we can use to issue
   // OMX_EmptyThisBuffer() call.

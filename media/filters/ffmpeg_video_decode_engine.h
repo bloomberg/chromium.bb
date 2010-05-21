@@ -49,6 +49,7 @@ class FFmpegVideoDecodeEngine : public VideoDecodeEngine {
   State state_;
   scoped_ptr_malloc<AVFrame, ScopedPtrAVFree> av_frame_;
   scoped_ptr<FillThisBufferCallback> fill_this_buffer_callback_;
+  scoped_ptr<EmptyThisBufferCallback> empty_this_buffer_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegVideoDecodeEngine);
 };

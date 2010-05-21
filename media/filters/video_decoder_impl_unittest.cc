@@ -62,6 +62,7 @@ class MockVideoDecodeEngine : public VideoDecodeEngine {
   MOCK_CONST_METHOD0(GetSurfaceFormat, VideoFrame::Format());
 
   scoped_ptr<FillThisBufferCallback> fill_buffer_callback_;
+  scoped_ptr<EmptyThisBufferCallback> empty_buffer_callback_;
 };
 
 // Class that just mocks the private functions.
@@ -80,7 +81,7 @@ class DecoderPrivateMock : public VideoDecoderImpl {
       const TimeTuple& last_pts,
       const VideoFrame* frame));
   MOCK_METHOD0(SignalPipelineError, void());
-  MOCK_METHOD0(OnEmptyBufferDone, void());
+  MOCK_METHOD1(OnEmptyBufferDone, void(scoped_refptr<Buffer> buffer));
 
   // change access qualifier for test: used in actions.
   void OnDecodeComplete(scoped_refptr<VideoFrame> video_frame) {
@@ -208,8 +209,12 @@ TEST_F(VideoDecoderImplTest, Initialize_QueryInterfaceFails) {
   message_loop_.RunAllPending();
 }
 
-ACTION_P(SaveCallback, engine) {
+ACTION_P(SaveFillCallback, engine) {
   engine->fill_buffer_callback_.reset(arg3);
+}
+
+ACTION_P(SaveEmptyCallback, engine) {
+  engine->empty_buffer_callback_.reset(arg2);
 }
 
 TEST_F(VideoDecoderImplTest, Initialize_EngineFails) {
@@ -221,7 +226,9 @@ TEST_F(VideoDecoderImplTest, Initialize_EngineFails) {
       .WillOnce(Return(&stream_));
 
   EXPECT_CALL(*engine_, Initialize(_, _, _, _, _))
-      .WillOnce(DoAll(SaveCallback(engine_), WithArg<4>(InvokeRunnable())));
+      .WillOnce(DoAll(SaveFillCallback(engine_),
+                      SaveEmptyCallback(engine_),
+                      WithArg<4>(InvokeRunnable())));
   EXPECT_CALL(*engine_, state())
       .WillOnce(Return(VideoDecodeEngine::kError));
 
@@ -243,7 +250,9 @@ TEST_F(VideoDecoderImplTest, Initialize_Successful) {
       .WillOnce(Return(&stream_));
 
   EXPECT_CALL(*engine_, Initialize(_, _, _, _, _))
-      .WillOnce(DoAll(SaveCallback(engine_), WithArg<4>(InvokeRunnable())));
+      .WillOnce(DoAll(SaveFillCallback(engine_),
+                      SaveEmptyCallback(engine_),
+                      WithArg<4>(InvokeRunnable())));
   EXPECT_CALL(*engine_, state())
       .WillOnce(Return(VideoDecodeEngine::kNormal));
 
@@ -362,6 +371,7 @@ TEST_F(VideoDecoderImplTest, DoDecode_TestStateTransition) {
   MockVideoDecodeEngine* mock_engine = new StrictMock<MockVideoDecodeEngine>();
   scoped_refptr<DecoderPrivateMock> mock_decoder =
       new StrictMock<DecoderPrivateMock>(mock_engine);
+  mock_decoder->set_message_loop(&message_loop_);
 
   // Setup decoder to buffer one frame, decode one frame, fail one frame,
   // decode one more, and then fail the last one to end decoding.
@@ -380,7 +390,7 @@ TEST_F(VideoDecoderImplTest, DoDecode_TestStateTransition) {
       .Times(3);
   EXPECT_CALL(*mock_decoder, EnqueueEmptyFrame())
       .Times(1);
-  EXPECT_CALL(*mock_decoder, OnEmptyBufferDone())
+  EXPECT_CALL(*mock_decoder, OnEmptyBufferDone(_))
       .Times(6);
 
   // Setup initial state and check that it is sane.
@@ -445,7 +455,7 @@ TEST_F(VideoDecoderImplTest, DoDecode_FinishEnqueuesEmptyFrames) {
   // Expect 2 calls, make two calls.  If kDecodeFinished is set, the buffer is
   // not even examined.
   EXPECT_CALL(*mock_decoder, EnqueueEmptyFrame()).Times(3);
-  EXPECT_CALL(*mock_decoder, OnEmptyBufferDone()).Times(3);
+  EXPECT_CALL(*mock_decoder, OnEmptyBufferDone(_)).Times(3);
 
   mock_decoder->DoDecode(NULL);
   mock_decoder->DoDecode(buffer_);

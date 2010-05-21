@@ -98,7 +98,7 @@ class TestApp {
                              input_format.video_header.height);
   }
 
-  void FeedCallback(Buffer* buffer) {
+  void FeedCompleteCallback(scoped_refptr<Buffer> buffer) {
     // We receive this callback when the decoder has consumed an input buffer.
     // In this case, delete the previous buffer and enqueue a new one.
     // There are some conditions we don't want to enqueue, for example when
@@ -124,9 +124,6 @@ class TestApp {
       return;
     }
 
-    // Read one more from the decoder.
-    codec_->Read(NewCallback(this, &TestApp::ReadCompleteCallback));
-
     if (file_sink_.get())
       file_sink_->BufferReady(buffer->nFilledLen, buffer->pBuffer);
 
@@ -138,8 +135,7 @@ class TestApp {
     uint8* data;
     int read;
     file_reader_->Read(&data, &read);
-    codec_->Feed(new DataBuffer(data, read),
-                 NewCallback(this, &TestApp::FeedCallback));
+    codec_->Feed(new DataBuffer(data, read));
   }
 
   void Run() {
@@ -148,7 +144,9 @@ class TestApp {
     // Setup the |codec_| with the message loop of the current thread. Also
     // setup component name, codec format and callbacks.
     codec_ = new OmxCodec(&message_loop_);
-    codec_->Setup(configurator_.get());
+    codec_->Setup(configurator_.get(),
+                  NewCallback(this, &TestApp::FeedCompleteCallback),
+                  NewCallback(this, &TestApp::ReadCompleteCallback));
     codec_->SetErrorCallback(NewCallback(this, &TestApp::ErrorCallback));
     codec_->SetFormatCallback(NewCallback(this, &TestApp::FormatCallback));
 
@@ -156,7 +154,6 @@ class TestApp {
     codec_->Start();
     for (int i = 0; i < 20; ++i)
       FeedInputBuffer();
-    codec_->Read(NewCallback(this, &TestApp::ReadCompleteCallback));
 
     // Execute the message loop so that we can run tasks on it. This call
     // will return when we call message_loop_.Quit().

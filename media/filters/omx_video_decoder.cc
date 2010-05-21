@@ -59,12 +59,6 @@ void OmxVideoDecoder::DoInitialize(DemuxerStream* demuxer_stream,
   VideoDecoderImpl::DoInitialize(demuxer_stream, success, done_cb);
 }
 
-void OmxVideoDecoder::set_message_loop(MessageLoop* message_loop) {
-  // TODO(ajwong): Is there a way around needing to propogate the message loop?
-  VideoDecoderImpl::set_message_loop(message_loop);
-  omx_engine_->set_message_loop(message_loop);
-}
-
 void OmxVideoDecoder::Stop() {
   // TODO(ajwong): This is a total hack. Make async.
   base::WaitableEvent event(false, false);

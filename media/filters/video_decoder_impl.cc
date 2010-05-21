@@ -61,7 +61,7 @@ void VideoDecoderImpl::DoInitialize(DemuxerStream* demuxer_stream,
   decode_engine_->Initialize(
       message_loop(),
       av_stream,
-      NULL,
+      NewCallback(this, &VideoDecoderImpl::OnEmptyBufferDone),
       NewCallback(this, &VideoDecoderImpl::OnDecodeComplete),
       NewRunnableMethod(this,
                         &VideoDecoderImpl::OnInitializeComplete,
@@ -123,7 +123,7 @@ void VideoDecoderImpl::DoDecode(Buffer* buffer) {
   // If the decoding is finished, we just always return empty frames.
   if (state_ == kDecodeFinished) {
     EnqueueEmptyFrame();
-    OnEmptyBufferDone();
+    OnEmptyBufferDone(NULL);
     return;
   }
 
@@ -178,12 +178,13 @@ void VideoDecoderImpl::OnDecodeComplete(scoped_refptr<VideoFrame> video_frame) {
     }
   }
 
-  OnEmptyBufferDone();
+  OnEmptyBufferDone(NULL);
 }
 
-void VideoDecoderImpl::OnEmptyBufferDone() {
+void VideoDecoderImpl::OnEmptyBufferDone(scoped_refptr<Buffer> buffer) {
   // TODO(jiesun): what |DecodeBase::OnDecodeComplete| done is just
   // what should be done in EmptyThisBufferCallback.
+  // Currently we just ignore the returned buffer.
   DecoderBase<VideoDecoder, VideoFrame>::OnDecodeComplete();
 }
 

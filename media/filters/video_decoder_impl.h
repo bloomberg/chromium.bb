@@ -37,7 +37,7 @@ class VideoDecoderImpl : public DecoderBase<VideoDecoder, VideoFrame> {
   virtual void DoDecode(Buffer* input);
 
  protected:
-  virtual void OnEmptyBufferDone();
+  virtual void OnEmptyBufferDone(scoped_refptr<Buffer> buffer);
 
  private:
   friend class FilterFactoryImpl1<VideoDecoderImpl, VideoDecodeEngine*>;

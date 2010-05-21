@@ -27,9 +27,7 @@
 namespace media {
 
 OmxVideoDecodeEngine::OmxVideoDecodeEngine()
-    : state_(kCreated),
-      has_fed_on_eos_(false),
-      message_loop_(NULL) {
+    : state_(kCreated){
 }
 
 OmxVideoDecodeEngine::~OmxVideoDecodeEngine() {
@@ -41,8 +39,8 @@ void OmxVideoDecodeEngine::Initialize(
     EmptyThisBufferCallback* empty_buffer_callback,
     FillThisBufferCallback* fill_buffer_callback,
     Task* done_cb) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
   fill_this_buffer_callback_.reset(fill_buffer_callback);
+  empty_this_buffer_callback_.reset(empty_buffer_callback);
 
   AutoTaskRunner done_runner(done_cb);
   omx_codec_ = new media::OmxCodec(message_loop);
@@ -59,7 +57,9 @@ void OmxVideoDecodeEngine::Initialize(
   output_format.codec = OmxConfigurator::kCodecRaw;
   omx_configurator_.reset(
       new OmxDecoderConfigurator(input_format, output_format));
-  omx_codec_->Setup(omx_configurator_.get());
+  omx_codec_->Setup(omx_configurator_.get(),
+                    NewCallback(this, &OmxVideoDecodeEngine::OnFeedDone),
+                    NewCallback(this, &OmxVideoDecodeEngine::OnReadComplete));
   omx_codec_->SetErrorCallback(
       NewCallback(this, &OmxVideoDecodeEngine::OnHardwareError));
   omx_codec_->SetFormatCallback(
@@ -71,53 +71,25 @@ void OmxVideoDecodeEngine::Initialize(
 void OmxVideoDecodeEngine::OnFormatChange(
     const OmxConfigurator::MediaFormat& input_format,
     const OmxConfigurator::MediaFormat& output_format) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
   // TODO(jiesun): We should not need this for here, because width and height
   // are already known from upper layer of the stack.
 }
 
 
 void OmxVideoDecodeEngine::OnHardwareError() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
   state_ = kError;
 }
 
 void OmxVideoDecodeEngine::EmptyThisBuffer(scoped_refptr<Buffer> buffer) {
   if ( state_ != kNormal ) return; // discard the buffer.
-  if (!has_fed_on_eos_) {
-    omx_codec_->Feed(buffer,
-                     NewCallback(this, &OmxVideoDecodeEngine::OnFeedDone));
-
-    if (buffer->IsEndOfStream()) {
-      has_fed_on_eos_ = true;
-    }
-  }
-  DecodeFrame();
+  omx_codec_->Feed(buffer);
 }
 
-// This method assumes the input buffer contains exactly one frame or is an
-// end-of-stream buffer. The logic of this method and in OnReadComplete() is
-// based on this assumation.
-//
-// For every input buffer received here, we submit one read request to the
-// decoder. So when a read complete callback is received, a corresponding
-// decode request must exist.
-void OmxVideoDecodeEngine::DecodeFrame() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
-  if (state_ != kNormal)
-    return;
-
-  // Submit a read request to the decoder.
-  omx_codec_->Read(NewCallback(this, &OmxVideoDecodeEngine::OnReadComplete));
-}
-
-void OmxVideoDecodeEngine::OnFeedDone(Buffer* buffer) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
-  // TODO(ajwong): Add a DoNothingCallback or similar.
+void OmxVideoDecodeEngine::OnFeedDone(scoped_refptr<Buffer> buffer) {
+  empty_this_buffer_callback_->Run(buffer);
 }
 
 void OmxVideoDecodeEngine::Flush(Task* done_cb) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
   omx_codec_->Flush(TaskToCallbackAdapter::NewCallback(done_cb));
 }
 
@@ -134,7 +106,6 @@ void OmxVideoDecodeEngine::Stop(Callback0::Type* done_cb) {
 
 void OmxVideoDecodeEngine::OnReadComplete(
   OMX_BUFFERHEADERTYPE* buffer) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_EQ(buffer->nFilledLen, width_*height_*3/2 );
 
   if (!buffer)  // EOF signal by OmxCodec

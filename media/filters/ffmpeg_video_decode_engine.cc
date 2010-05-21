@@ -32,8 +32,10 @@ void FFmpegVideoDecodeEngine::Initialize(
     Task* done_cb) {
   AutoTaskRunner done_runner(done_cb);
   CHECK(state_ == kCreated);
-  // TODO(jiesun): empty_buffer_callback is not used yet until we had path to re
+  // TODO(jiesun): |empty_buffer_callback| is not used yet until we had path to
+  // recycle input buffer.
   fill_this_buffer_callback_.reset(fill_buffer_callback);
+  empty_this_buffer_callback_.reset(empty_buffer_callback);
 
   // Always try to use three threads for video decoding.  There is little reason
   // not to since current day CPUs tend to be multi-core and we measured

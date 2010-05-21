@@ -23,7 +23,6 @@ class OmxVideoDecoder : public VideoDecoderImpl {
   OmxVideoDecoder(OmxVideoDecodeEngine* engine);
   virtual ~OmxVideoDecoder();
 
-  virtual void set_message_loop(MessageLoop* message_loop);
   virtual void Stop();
 
  protected:

@@ -23,8 +23,6 @@ struct AVStream;
 
 namespace media {
 
-// TODO(hclam):
-// Extract the OmxOutputSink implementation to a strategy class.
 class OmxVideoDecodeEngine : public VideoDecodeEngine {
  public:
   OmxVideoDecodeEngine();
@@ -48,13 +46,8 @@ class OmxVideoDecodeEngine : public VideoDecodeEngine {
   // promote to the abstract interface.
   virtual void Stop(Callback0::Type* done_cb);
 
-  virtual void set_message_loop(MessageLoop* message_loop) {
-    message_loop_ = message_loop;
-  };
-
  private:
-  void DecodeFrame();
-  virtual void OnFeedDone(Buffer* buffer);
+  virtual void OnFeedDone(scoped_refptr<Buffer> buffer);
   virtual void OnHardwareError();
   virtual void OnReadComplete(OMX_BUFFERHEADERTYPE* buffer);
   virtual void OnFormatChange(
@@ -65,14 +58,9 @@ class OmxVideoDecodeEngine : public VideoDecodeEngine {
   size_t width_;
   size_t height_;
 
-  // TODO(hclam): We should let OmxCodec handle this case.
-  bool has_fed_on_eos_;  // Used to avoid sending an end of stream to
-  // OpenMax twice since OpenMax does not always
-  // handle this nicely.
-
   scoped_refptr<media::OmxCodec> omx_codec_;
   scoped_ptr<media::OmxConfigurator> omx_configurator_;
-  MessageLoop* message_loop_;
+  scoped_ptr<EmptyThisBufferCallback> empty_this_buffer_callback_;
   scoped_ptr<FillThisBufferCallback> fill_this_buffer_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(OmxVideoDecodeEngine);
