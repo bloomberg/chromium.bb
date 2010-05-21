@@ -5,10 +5,13 @@
 #ifndef CHROME_SERVICE_SERVICE_PROCESS_H_
 #define CHROME_SERVICE_SERVICE_PROCESS_H_
 
+#include <vector>
+
 #include "base/ref_counted.h"
 #include "base/thread.h"
 
 class CloudPrintProxy;
+class JsonPrefStore;
 class ServiceNetworkChangeNotifierThread;
 
 // The ServiceProcess does not inherit from ChildProcess because this
@@ -42,7 +45,7 @@ class ServiceProcess {
   base::Thread* file_thread() const {
     return file_thread_.get();
   }
-  CloudPrintProxy* cloud_print_proxy();
+  CloudPrintProxy* CreateCloudPrintProxy(JsonPrefStore* service_prefs);
   ServiceNetworkChangeNotifierThread* network_change_notifier_thread() const {
     return network_change_notifier_thread_.get();
   }
@@ -50,7 +53,7 @@ class ServiceProcess {
  private:
   scoped_ptr<base::Thread> io_thread_;
   scoped_ptr<base::Thread> file_thread_;
-  scoped_ptr<CloudPrintProxy> cloud_print_proxy_;
+  std::vector<CloudPrintProxy*> cloud_print_proxy_list_;
   scoped_refptr<ServiceNetworkChangeNotifierThread>
       network_change_notifier_thread_;
 

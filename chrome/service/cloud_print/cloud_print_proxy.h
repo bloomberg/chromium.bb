@@ -8,31 +8,34 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/non_thread_safe.h"
 #include "base/scoped_ptr.h"
 #include "chrome/service/cloud_print/cloud_print_proxy_backend.h"
 
+class JsonPrefStore;
+
 // CloudPrintProxy is the layer between the service process UI thread
 // and the cloud print proxy backend.
-class CloudPrintProxy : public CloudPrintProxyFrontend {
+class CloudPrintProxy : public CloudPrintProxyFrontend,
+                        public NonThreadSafe {
  public:
-  explicit CloudPrintProxy();
+  CloudPrintProxy();
   virtual ~CloudPrintProxy();
 
   // Initializes the object. This should be called every time an object of this
   // class is constructed.
-  void Initialize();
+  void Initialize(JsonPrefStore* service_prefs);
 
   // Enables/disables cloud printing for the user
-  virtual void EnableForUser(const std::string& lsid,
-                             const std::string& proxy_id);
+  virtual void EnableForUser(const std::string& lsid);
   virtual void DisableForUser();
 
-  // Notification received from the server for a particular printer.
-  // We need to inform the backend to look for jobs for this printer.
-  void HandlePrinterNotification(const std::string& printer_id);
-
   // Notification methods from the backend. Called on UI thread.
-  void OnPrinterListAvailable(const cloud_print::PrinterList& printer_list);
+  virtual void OnPrinterListAvailable(
+      const cloud_print::PrinterList& printer_list);
+  virtual void OnAuthenticated(const std::string& cloud_print_token,
+                               const std::string& cloud_print_xmpp_token,
+                               const std::string& email);
 
  protected:
   void Shutdown();
@@ -40,6 +43,9 @@ class CloudPrintProxy : public CloudPrintProxyFrontend {
   // Our asynchronous backend to communicate with sync components living on
   // other threads.
   scoped_ptr<CloudPrintProxyBackend> backend_;
+  // This class does not own this. It is guaranteed to remain valid for the
+  // lifetime of this class.
+  JsonPrefStore* service_prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintProxy);
 };

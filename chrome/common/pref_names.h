@@ -296,8 +296,9 @@ extern const wchar_t kLoginDatabaseMigrated[];
 
 extern const wchar_t kCloudPrintServiceURL[];
 extern const wchar_t kCloudPrintProxyId[];
-extern const wchar_t kCloudPrintProxyName[];
 extern const wchar_t kCloudPrintAuthToken[];
+extern const wchar_t kCloudPrintXMPPAuthToken[];
+extern const wchar_t kCloudPrintEmail[];
 
 }  // namespace prefs
 

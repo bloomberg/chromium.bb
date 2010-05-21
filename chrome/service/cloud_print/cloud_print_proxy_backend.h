@@ -27,6 +27,11 @@ class CloudPrintProxyFrontend {
   // There is a list of printers available that can be registered.
   virtual void OnPrinterListAvailable(
       const cloud_print::PrinterList& printer_list) = 0;
+  // We successfully authenticated with the cloud print server. This callback
+  // allows the frontend to persist the tokens.
+  virtual void OnAuthenticated(const std::string& cloud_print_token,
+                               const std::string& cloud_print_xmpp_token,
+                               const std::string& email) = 0;
 
  protected:
   // Don't delete through SyncFrontend interface.
@@ -41,7 +46,11 @@ class CloudPrintProxyBackend {
   explicit CloudPrintProxyBackend(CloudPrintProxyFrontend* frontend);
   ~CloudPrintProxyBackend();
 
-  bool Initialize(const std::string& lsid, const std::string& proxy_id);
+  bool InitializeWithLsid(const std::string& lsid, const std::string& proxy_id);
+  bool InitializeWithToken(const std::string cloud_print_token,
+                           const std::string cloud_print_xmpp_token,
+                           const std::string email,
+                           const std::string& proxy_id);
   void Shutdown();
   void RegisterPrinters(const cloud_print::PrinterList& printer_list);
   void HandlePrinterNotification(const std::string& printer_id);

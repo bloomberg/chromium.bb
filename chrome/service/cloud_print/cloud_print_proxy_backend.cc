@@ -36,8 +36,15 @@ class CloudPrintProxyBackend::Core
   // (and potentially blocking) syncapi operations.
   //
   // Called on the CloudPrintProxyBackend core_thread_ to perform
-  // initialization
-  void DoInitialize(const std::string& lsid, const std::string& proxy_id);
+  // initialization. When we are passed in an LSID we authenticate using that
+  // and retrieve new auth tokens.
+  void DoInitializeWithLsid(const std::string& lsid,
+                            const std::string& proxy_id);
+  void DoInitializeWithToken(const std::string cloud_print_token,
+                             const std::string cloud_print_xmpp_token,
+                             const std::string email,
+                             const std::string& proxy_id);
+
   // Called on the CloudPrintProxyBackend core_thread_ to perform
   // shutdown.
   void DoShutdown();
@@ -64,12 +71,6 @@ class CloudPrintProxyBackend::Core
                                    const std::string& printer_id);
 
  protected:
-  // FrontendNotification defines parameters for NotifyFrontend. Each enum
-  // value corresponds to the one CloudPrintProcyService method that
-  // NotifyFrontend should invoke.
-  enum FrontendNotification {
-    PRINTER_LIST_AVAILABLE,  // OnPrinterListAvailable
-  };
   // Prototype for a response handler.
   typedef void (CloudPrintProxyBackend::Core::*ResponseHandler)(
       const URLFetcher* source, const GURL& url,
@@ -89,9 +90,14 @@ class CloudPrintProxyBackend::Core
                                      const std::string& data);
   // End response handlers
 
-  // NotifyFrontend is how the Core communicates with the frontend across
+  // NotifyXXX is how the Core communicates with the frontend across
   // threads.
-  void NotifyFrontend(FrontendNotification notification);
+  void NotifyPrinterListAvailable(
+      const cloud_print::PrinterList& printer_list);
+  void NotifyAuthenticated(
+    const std::string& cloud_print_token,
+    const std::string& cloud_print_xmpp_token,
+    const std::string& email);
   // Starts a new printer registration process.
   void StartRegistration();
   // Ends the printer registration process.
@@ -164,14 +170,28 @@ CloudPrintProxyBackend::~CloudPrintProxyBackend() {
   DCHECK(!core_);
 }
 
-bool CloudPrintProxyBackend::Initialize(const std::string& lsid,
-                                        const std::string& proxy_id) {
+bool CloudPrintProxyBackend::InitializeWithLsid(const std::string& lsid,
+                                                const std::string& proxy_id) {
   if (!core_thread_.Start())
     return false;
   core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(
-        core_.get(), &CloudPrintProxyBackend::Core::DoInitialize, lsid,
+        core_.get(), &CloudPrintProxyBackend::Core::DoInitializeWithLsid, lsid,
         proxy_id));
+  return true;
+}
+
+bool CloudPrintProxyBackend::InitializeWithToken(
+    const std::string cloud_print_token,
+    const std::string cloud_print_xmpp_token,
+    const std::string email,
+    const std::string& proxy_id) {
+  if (!core_thread_.Start())
+    return false;
+  core_thread_.message_loop()->PostTask(FROM_HERE,
+      NewRunnableMethod(
+        core_.get(), &CloudPrintProxyBackend::Core::DoInitializeWithToken,
+        cloud_print_token, cloud_print_xmpp_token, email, proxy_id));
   return true;
 }
 
@@ -206,8 +226,8 @@ CloudPrintProxyBackend::Core::Core(CloudPrintProxyBackend* backend)
      next_response_handler_(NULL), new_printers_available_(false) {
 }
 
-void CloudPrintProxyBackend::Core::DoInitialize(const std::string& lsid,
-                                                const std::string& proxy_id) {
+void CloudPrintProxyBackend::Core::DoInitializeWithLsid(
+    const std::string& lsid, const std::string& proxy_id) {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   // Since Talk does not accept a Cloud Print token, for now, we make 2 auth
   // requests, one for the chromiumsync service and another for print. This is
@@ -230,21 +250,35 @@ void CloudPrintProxyBackend::Core::DoInitialize(const std::string& lsid,
             g_service_process->io_thread()->message_loop_proxy());
     gaia_auth_for_print->set_message_loop(MessageLoop::current());
     if (gaia_auth_for_print->AuthenticateWithLsid(lsid, true)) {
-      auth_token_ = gaia_auth_for_print->auth_token();
-      talk_mediator_.reset(new notifier::TalkMediatorImpl(
-          g_service_process->network_change_notifier_thread(), false));
-      talk_mediator_->AddSubscribedServiceUrl(kCloudPrintTalkServiceUrl);
-      talk_mediator_hookup_.reset(
-          NewEventListenerHookup(
-              talk_mediator_->channel(),
-              this,
-              &CloudPrintProxyBackend::Core::HandleTalkMediatorEvent));
-      talk_mediator_->SetAuthToken(gaia_auth_for_talk->email(),
-                                   gaia_auth_for_talk->auth_token(),
-                                   kSyncGaiaServiceId);
-      talk_mediator_->Login();
+      // Let the frontend know that we have authenticated.
+      backend_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+          &Core::NotifyAuthenticated, gaia_auth_for_print->auth_token(),
+          gaia_auth_for_talk->auth_token(), gaia_auth_for_talk->email()));
+      DoInitializeWithToken(gaia_auth_for_print->auth_token(),
+                            gaia_auth_for_talk->auth_token(),
+                            gaia_auth_for_talk->email(),
+                            proxy_id);
     }
   }
+}
+
+void CloudPrintProxyBackend::Core::DoInitializeWithToken(
+    const std::string cloud_print_token,
+    const std::string cloud_print_xmpp_token,
+    const std::string email, const std::string& proxy_id) {
+  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
+  // TODO(sanjeevr): Validate the tokens.
+  auth_token_ = cloud_print_token;
+  talk_mediator_.reset(new notifier::TalkMediatorImpl(
+      g_service_process->network_change_notifier_thread(), false));
+  talk_mediator_->AddSubscribedServiceUrl(kCloudPrintTalkServiceUrl);
+  talk_mediator_hookup_.reset(
+      NewEventListenerHookup(
+          talk_mediator_->channel(), this,
+          &CloudPrintProxyBackend::Core::HandleTalkMediatorEvent));
+  talk_mediator_->SetAuthToken(email, cloud_print_xmpp_token,
+                               kSyncGaiaServiceId);
+  talk_mediator_->Login();
   printer_change_notifier_.StartWatching(std::string(), this);
   proxy_id_ = proxy_id;
   StartRegistration();
@@ -381,16 +415,17 @@ void CloudPrintProxyBackend::Core::OnURLFetchComplete(
                                   cookies, data);
 }
 
-void CloudPrintProxyBackend::Core::NotifyFrontend(
-    FrontendNotification notification) {
-  switch (notification) {
-    case PRINTER_LIST_AVAILABLE:
-      backend_->frontend_->OnPrinterListAvailable(printer_list_);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
+void CloudPrintProxyBackend::Core::NotifyPrinterListAvailable(
+    const cloud_print::PrinterList& printer_list) {
+  backend_->frontend_->OnPrinterListAvailable(printer_list);
+}
+
+void CloudPrintProxyBackend::Core::NotifyAuthenticated(
+    const std::string& cloud_print_token,
+    const std::string& cloud_print_xmpp_token,
+    const std::string& email) {
+  backend_->frontend_->OnAuthenticated(cloud_print_token,
+                                       cloud_print_xmpp_token, email);
 }
 
 void CloudPrintProxyBackend::Core::HandlePrinterListResponse(
@@ -431,7 +466,7 @@ void CloudPrintProxyBackend::Core::HandlePrinterListResponse(
     if (!printer_list_.empty()) {
       // Let the frontend know that we have a list of printers available.
       backend_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-          &Core::NotifyFrontend, PRINTER_LIST_AVAILABLE));
+          &Core::NotifyPrinterListAvailable, printer_list_));
     } else {
       // No more work to be done here.
       MessageLoop::current()->PostTask(

@@ -4,6 +4,7 @@
 
 #include "chrome/service/service_process.h"
 
+#include "base/stl_util-inl.h"
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
 #include "chrome/service/net/service_network_change_notifier_thread.h"
 
@@ -35,19 +36,21 @@ bool ServiceProcess::Teardown() {
   network_change_notifier_thread_ = NULL;
   io_thread_.reset();
   file_thread_.reset();
+  STLDeleteElements(&cloud_print_proxy_list_);
   return true;
 }
 
-CloudPrintProxy* ServiceProcess::cloud_print_proxy() {
-  if (!cloud_print_proxy_.get()) {
-    cloud_print_proxy_.reset(new CloudPrintProxy());
-    cloud_print_proxy_->Initialize();
-  }
-  return cloud_print_proxy_.get();
+CloudPrintProxy* ServiceProcess::CreateCloudPrintProxy(
+    JsonPrefStore* service_prefs) {
+  CloudPrintProxy* cloud_print_proxy = new CloudPrintProxy();
+  cloud_print_proxy->Initialize(service_prefs);
+  cloud_print_proxy_list_.push_back(cloud_print_proxy);
+  return cloud_print_proxy;
 }
 
 ServiceProcess::~ServiceProcess() {
   Teardown();
+  DCHECK(cloud_print_proxy_list_.size() == 0);
   g_service_process = NULL;
 }
 

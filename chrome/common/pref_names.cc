@@ -794,10 +794,18 @@ const wchar_t kLoginDatabaseMigrated[] = L"login_database.migrated";
 
 // The root URL of the cloud print service.
 const wchar_t kCloudPrintServiceURL[] = L"cloud_print.service_url";
+
+// *************** SERVICE PREFS ***************
+// These are attached to the service process.
+
 // The unique id for this instance of the cloud print proxy.
 const wchar_t kCloudPrintProxyId[] = L"cloud_print.proxy_id";
-// The human-readable name of the Cloud Print proxy. User-supplied.
-const wchar_t kCloudPrintProxyName[] = L"cloud_print.proxy_name";
-// The GAIA auth token (we may need to move it outside of prefs)
-const wchar_t kCloudPrintAuthToken[] = L"cloud_print_auth_token";
+// The GAIA auth token for Cloud Print
+const wchar_t kCloudPrintAuthToken[] = L"cloud_print.auth_token";
+// The GAIA auth token used by Cloud Print to authenticate with the XMPP server
+// This should eventually go away because the above token should work for both.
+const wchar_t kCloudPrintXMPPAuthToken[] = L"cloud_print.xmpp_auth_token";
+// The email address of the account used to authenticate with the Cloud Print
+// server.
+extern const wchar_t kCloudPrintEmail[] = L"cloud_print.email";
 }  // namespace prefs
