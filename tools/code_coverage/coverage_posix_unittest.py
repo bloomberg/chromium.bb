@@ -54,17 +54,18 @@ class CoveragePosixTest(unittest.TestCase):
     """Setup and process arg parsing."""
     self.parser = coverage.CoverageOptionParser()
     (self.options, self.args) = self.parser.parse_args()
+    self.options.directory = '.'
 
   def testSanity(self):
     """Sanity check we're able to actually run the tests.
 
     Simply creating a Coverage instance checks a few things (e.g. on
     Windows that the coverage tools can be found)."""
-    c = coverage.Coverage('.', self.options, self.args)
+    c = coverage.Coverage(self.options, self.args)
 
   def testRunBasicProcess(self):
     """Test a simple run of a subprocess."""
-    c = coverage.Coverage('.', self.options, self.args)
+    c = coverage.Coverage(self.options, self.args)
     for code in range(2):
       retcode = c.Run([sys.executable, '-u', '-c',
                        'import sys; sys.exit(%d)' % code],
@@ -78,7 +79,7 @@ class CoveragePosixTest(unittest.TestCase):
     trickle in keeping things alive.
     """
     self.options.timeout = 2.5
-    c = coverage.Coverage('.', self.options, self.args)
+    c = coverage.Coverage(self.options, self.args)
     slowscript = ('import sys, time\n'
                   'for x in range(10):\n'
                   '  time.sleep(0.5)\n'
@@ -94,7 +95,7 @@ class CoveragePosixTest(unittest.TestCase):
     should be killed.
     """
     self.options.timeout = 2.5
-    c = coverage.Coverage('.', self.options, self.args)
+    c = coverage.Coverage(self.options, self.args)
     slowscript = ('import time\n'
                   'for x in range(1,10):\n'
                   '  print "sleeping for %d" % x\n'
@@ -107,7 +108,7 @@ class CoveragePosixTest(unittest.TestCase):
     """Test finding of tests passed as args."""
     self.args += '--'
     self.args += self.sample_test_names
-    c = coverage.Coverage('.', self.options, self.args)
+    c = coverage.Coverage(self.options, self.args)
     c.FindTests()
     self.confirmSampleTestsArePresent(c.tests)
 
@@ -118,7 +119,7 @@ class CoveragePosixTest(unittest.TestCase):
     f.write(str(self.sample_test_names))
     f.close()
     self.options.bundles = filename
-    c = coverage.Coverage('.', self.options, self.args)
+    c = coverage.Coverage(self.options, self.args)
     c.FindTests()
     self.confirmSampleTestsArePresent(c.tests)
     os.unlink(filename)

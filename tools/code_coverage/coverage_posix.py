@@ -24,7 +24,9 @@ Linux:
 
 --directory=DIR: specify directory that contains gcda files, and where
   a "coverage" directory will be created containing the output html.
-  Example name:   ..../chromium/src/xcodebuild/Debug
+  Example name:   ..../chromium/src/xcodebuild/Debug.
+  If not specified (e.g. buildbot) we will try and figure it out based on
+  other options (e.g. --target and --build-dir; see below).
 
 --genhtml: generate html output.  If not specified only lcov is generated.
 
@@ -49,9 +51,27 @@ Linux:
   assume it's a hang.  Kill it and give up.
 
 --bundles=BUNDLEFILE: a file containing a python list of coverage
-  bundles to be eval'd.  E.g.
+  bundles to be eval'd.  Example contents of the bundlefile:
     ['../base/base.gyp:base_unittests']
   This is used as part of the coverage bot.
+  If no other bundlefile-finding args are used (--target,
+  --build-dir), this is assumed to be an absolute path.
+  If those args are used, find BUNDLEFILE in a way consistent with
+  other scripts launched by buildbot.  Example of another script
+  launched by buildbot:
+  http://src.chromium.org/viewvc/chrome/trunk/tools/buildbot/scripts/slave/runtest.py
+
+--target=NAME: specify the build target (e.g. 'Debug' or 'Release').
+  This is used by buildbot scripts to help us find the output directory.
+  Must be used with --build-dir.
+
+--build-dir=DIR: According to buildbot comments, this is the name of
+  the directory within the buildbot working directory in which the
+  solution, Debug, and Release directories are found.
+  It's usually "src/build", but on mac it's $DIR/../xcodebuild and on
+  Linux it's $DIR/../sconsbuild or $DIR/sconsbuild or $DIR/out.
+  This is used by buildbot scripts to help us find the output directory.
+  Must be used with --target.
 
 Strings after all options are considered tests to run.  Test names
 have all text before a ':' stripped to help with gyp compatibility.
@@ -137,11 +157,12 @@ class RunProgramThread(threading.Thread):
 
     Should be called in the PARENT thread; we do not self-kill.
     Returns the return code of the process.
-    Safe to call even if the process is dead."""
+    Safe to call even if the process is dead.
+    """
     if not self._process:
       return self._retcode
     if 'kill' in os.__all__:  # POSIX
-      os.kill(self._process.pid, signal.SIGTERM)
+      os.kill(self._process.pid, signal.SIGKILL)
     else:
       subprocess.call(['taskkill.exe', '/PID', self._process.pid])
     self._retcode = self._process.wait()
@@ -150,7 +171,8 @@ class RunProgramThread(threading.Thread):
   def retcode(self):
     """Return the return value of the subprocess.
 
-    Kill it if needed."""
+    Kill it if needed.
+    """
     return self.kill()
 
   def RunUntilCompletion(self, timeout):
@@ -158,7 +180,8 @@ class RunProgramThread(threading.Thread):
 
     Start the thread.  Let it run until completion, or until we've
     spent TIMEOUT without seeing output.  On timeout throw
-    RunTooLongException."""
+    RunTooLongException.
+    """
     self.start()
     while True:
       try:
@@ -166,6 +189,8 @@ class RunProgramThread(threading.Thread):
         if x == RunProgramThread.DIED:
           return self.retcode()
       except Queue.Empty, e:  # timed out
+        logging.info('TIMEOUT (%d seconds exceeded with no output): killing' %
+                     timeout)
         self.kill()
         raise RunTooLongException()
 
@@ -173,12 +198,13 @@ class RunProgramThread(threading.Thread):
 class Coverage(object):
   """Doitall class for code coverage."""
 
-  def __init__(self, directory, options, args):
+  def __init__(self, options, args):
     super(Coverage, self).__init__()
     logging.basicConfig(level=logging.DEBUG)
-    self.directory = directory
+    self.directory = options.directory
     self.options = options
     self.args = args
+    self.ConfirmDirectory()
     self.directory_parent = os.path.dirname(self.directory)
     self.output_directory = os.path.join(self.directory, 'coverage')
     if not os.path.exists(self.output_directory):
@@ -230,11 +256,83 @@ class Coverage(object):
         sys.exit(1)
       self.programs = [self.perf, self.instrument, self.analyzer]
 
+  def PlatformBuildPrefix(self):
+    """Return a platform specific build directory prefix.
+
+    This prefix is prepended to the build target (Debug, Release) to
+    identify output as relative to the build directory.
+    These values are specific to Chromium's use of gyp.
+    """
+    if self.IsMac():
+      return '../xcodebuild'
+    if self.IsWindows():
+      return  ''
+    else:  # Linux
+      return 'out'  # assumes make, unlike runtest.py
+
+  def ConfirmDirectory(self):
+    """Confirm correctness of self.directory.
+
+    If it exists, happiness.  If not, try and figure it out in a
+    manner similar to FindBundlesFile().  The 'figure it out' case
+    happens with buildbot where the directory isn't specified
+    explicitly.
+    """
+    if (not self.directory and
+        not (self.options.target and self.options.build_dir)):
+      logging.fatal('Must use --directory or (--target and --build-dir)')
+      sys.exit(1)
+
+    if not self.directory:
+      self.directory = os.path.join(self.options.build_dir,
+                                    self.PlatformBuildPrefix(),
+                                    self.options.target)
+
+    if os.path.exists(self.directory):
+      logging.info('Directory: ' + self.directory)
+      return
+    else:
+      logging.fatal('Directory ' +
+                    self.directory + ' doesn\'t exist')
+      sys.exit(1)
+
+
+  def FindBundlesFile(self):
+    """Find the bundlesfile.
+
+    The 'bundles' file can be either absolute path, or (if we are run
+    from buildbot) we need to find it based on other hints (--target,
+    --build-dir, etc).
+    """
+    # If no bundle file, no problem!
+    if not self.options.bundles:
+      return
+    # If true, we're buildbot.  Form a path.
+    # Else assume absolute.
+    if self.options.target and self.options.build_dir:
+      fullpath = os.path.join(self.options.build_dir,
+                              self.PlatformBuildPrefix(),
+                              self.options.target,
+                              self.options.bundles)
+      self.options.bundles = fullpath
+
+    if os.path.exists(self.options.bundles):
+      logging.info('BundlesFile: ' + self.options.bundles)
+      return
+    else:
+      logging.fatal('bundlefile ' +
+                    self.options.bundles + ' doesn\'t exist')
+      sys.exit(1)
+
+
   def FindTests(self):
     """Find unit tests to run; set self.tests to this list.
 
     Assume all non-option items in the arg list are tests to be run.
     """
+    # Before we begin, find the bundles file if not an absolute path.
+    self.FindBundlesFile()
+
     # Small tests: can be run in the "chromium" directory.
     # If asked, run all we can find.
     if self.options.all_unittests:
@@ -411,7 +509,9 @@ class Coverage(object):
       self.BeforeRunOneTest(fulltest)
       logging.info('Running test ' + str(cmdlist))
       try:
-        retcode = subprocess.call(cmdlist)
+        retcode = self.Run(cmdlist)
+      except SystemExit:  # e.g. sys.exit() was called somewhere in here
+        raise
       except:  # can't "except WindowsError" since script runs on non-Windows
         logging.info('EXCEPTION while running a unit test')
         logging.info(traceback.format_exc())
@@ -603,14 +703,24 @@ def CoverageOptionParser():
   parser.add_option('-T',
                     '--timeout',
                     dest='timeout',
-                    default=9.9 * 60.0,
+                    default=5.0 * 60.0,
                     help='Timeout before bailing if a subprocess has no output.'
-                    '  Default is a hair under 10min  (Buildbot is 10min.)')
+                    '  Default is 5min  (Buildbot is 10min.)')
   parser.add_option('-B',
                     '--bundles',
                     dest='bundles',
                     default=None,
                     help='Filename of bundles for coverage.')
+  parser.add_option('--build-dir',
+                    dest='build_dir',
+                    default=None,
+                    help=('Working directory for buildbot build.'
+                          'used for finding bundlefile.'))
+  parser.add_option('--target',
+                    dest='target',
+                    default=None,
+                    help=('Buildbot build target; '
+                          'used for finding bundlefile (e.g. Debug)'))
   return parser
 
 
@@ -618,14 +728,13 @@ def main():
   # Print out the args to help someone do it by hand if needed
   print >>sys.stderr, sys.argv
 
-  # Try and clean up nice if we're killed by buildbot
+  # Try and clean up nice if we're killed by buildbot, Ctrl-C, ...
+  signal.signal(signal.SIGINT, TerminateSignalHandler)
   signal.signal(signal.SIGTERM, TerminateSignalHandler)
 
   parser = CoverageOptionParser()
   (options, args) = parser.parse_args()
-  if not options.directory:
-    parser.error('Directory not specified')
-  coverage = Coverage(options.directory, options, args)
+  coverage = Coverage(options, args)
   coverage.ClearData()
   coverage.FindTests()
   if options.trim:
