@@ -118,6 +118,7 @@ void AppCacheStorageImpl::DatabaseTask::CallRunCompleted() {
     DCHECK(storage_->scheduled_database_tasks_.front() == this);
     storage_->scheduled_database_tasks_.pop_front();
     RunCompleted();
+    delegates_.clear();
   }
 }
 
