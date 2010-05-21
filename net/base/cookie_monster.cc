@@ -142,6 +142,8 @@ void CookieMonster::InitStore() {
 }
 
 void CookieMonster::EnsureCookiesMapIsValid() {
+  lock_.AssertAcquired();
+
   int num_duplicates_trimmed = 0;
 
   // Iterate through all the of the cookies, grouped by host.
@@ -174,6 +176,7 @@ int CookieMonster::TrimDuplicateCookiesForHost(
     const std::string& key,
     CookieMap::iterator begin,
     CookieMap::iterator end) {
+  lock_.AssertAcquired();
 
   // Two cookies are considered equivalent if they have the same name and path.
   typedef std::pair<std::string, std::string> CookieSignature;
@@ -528,6 +531,8 @@ static Time CanonExpiration(const CookieMonster::ParsedCookie& pc,
 }
 
 bool CookieMonster::HasCookieableScheme(const GURL& url) {
+  lock_.AssertAcquired();
+
   // Make sure the request is on a cookie-able url scheme.
   for (size_t i = 0; i < cookieable_schemes_.size(); ++i) {
     // We matched a scheme.
@@ -544,6 +549,8 @@ bool CookieMonster::HasCookieableScheme(const GURL& url) {
 
 void CookieMonster::SetCookieableSchemes(
     const char* schemes[], size_t num_schemes) {
+  AutoLock autolock(lock_);
+
   cookieable_schemes_.clear();
   cookieable_schemes_.insert(cookieable_schemes_.end(),
                              schemes, schemes + num_schemes);
@@ -554,11 +561,12 @@ bool CookieMonster::SetCookieWithCreationTimeAndOptions(
     const std::string& cookie_line,
     const Time& creation_time_or_null,
     const CookieOptions& options) {
+  AutoLock autolock(lock_);
+
   if (!HasCookieableScheme(url)) {
     return false;
   }
 
-  AutoLock autolock(lock_);
   InitIfNecessary();
 
   COOKIE_DLOG(INFO) << "SetCookie() line: " << cookie_line;
@@ -608,8 +616,6 @@ bool CookieMonster::SetCookieWithDetails(
     const GURL& url, const std::string& name, const std::string& value,
     const std::string& domain, const std::string& path,
     const base::Time& expiration_time, bool secure, bool http_only) {
-  if (!HasCookieableScheme(url))
-    return false;
 
   // Expect a valid domain attribute with no illegal characters.
   std::string parsed_domain = ParsedCookie::ParseValueString(domain);
@@ -620,6 +626,10 @@ bool CookieMonster::SetCookieWithDetails(
     return false;
 
   AutoLock autolock(lock_);
+
+  if (!HasCookieableScheme(url))
+    return false;
+
   InitIfNecessary();
 
   Time creation_time = CurrentTime();
@@ -668,6 +678,8 @@ bool CookieMonster::SetCanonicalCookie(scoped_ptr<CanonicalCookie>* cc,
 void CookieMonster::InternalInsertCookie(const std::string& key,
                                          CanonicalCookie* cc,
                                          bool sync_to_store) {
+  lock_.AssertAcquired();
+
   if (cc->IsPersistent() && store_ && sync_to_store)
     store_->AddCookie(key, *cc);
   cookies_.insert(CookieMap::value_type(key, cc));
@@ -676,6 +688,8 @@ void CookieMonster::InternalInsertCookie(const std::string& key,
 }
 
 void CookieMonster::InternalUpdateCookieAccessTime(CanonicalCookie* cc) {
+  lock_.AssertAcquired();
+
   // Based off the Mozilla code.  When a cookie has been accessed recently,
   // don't bother updating its access time again.  This reduces the number of
   // updates we do during pageload, which in turn reduces the chance our storage
@@ -691,6 +705,8 @@ void CookieMonster::InternalUpdateCookieAccessTime(CanonicalCookie* cc) {
 
 void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
                                          bool sync_to_store) {
+  lock_.AssertAcquired();
+
   CanonicalCookie* cc = it->second;
   COOKIE_DLOG(INFO) << "InternalDeleteCookie() cc: " << cc->DebugString();
   if (cc->IsPersistent() && store_ && sync_to_store)
@@ -704,6 +720,8 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
 bool CookieMonster::DeleteAnyEquivalentCookie(const std::string& key,
                                               const CanonicalCookie& ecc,
                                               bool skip_httponly) {
+  lock_.AssertAcquired();
+
   bool found_equivalent_cookie = false;
   bool skipped_httponly = false;
   for (CookieMapItPair its = cookies_.equal_range(key);
@@ -730,6 +748,8 @@ bool CookieMonster::DeleteAnyEquivalentCookie(const std::string& key,
 
 int CookieMonster::GarbageCollect(const Time& current,
                                   const std::string& key) {
+  lock_.AssertAcquired();
+
   int num_deleted = 0;
 
   // Collect garbage for this key.
@@ -766,6 +786,8 @@ int CookieMonster::GarbageCollectRange(const Time& current,
                                        const CookieMapItPair& itpair,
                                        size_t num_max,
                                        size_t num_purge) {
+  lock_.AssertAcquired();
+
   // First, delete anything that's expired.
   std::vector<CookieMap::iterator> cookie_its;
   int num_deleted = GarbageCollectExpired(current, itpair, &cookie_its);
@@ -792,6 +814,8 @@ int CookieMonster::GarbageCollectExpired(
     const Time& current,
     const CookieMapItPair& itpair,
     std::vector<CookieMap::iterator>* cookie_its) {
+  lock_.AssertAcquired();
+
   int num_deleted = 0;
   for (CookieMap::iterator it = itpair.first, end = itpair.second; it != end;) {
     CookieMap::iterator curit = it;
@@ -854,6 +878,7 @@ int CookieMonster::DeleteAllForURL(const GURL& url,
                                    bool sync_to_store) {
   AutoLock autolock(lock_);
   InitIfNecessary();
+
   CookieList cookies = InternalGetAllCookiesForURL(url);
   int num_deleted = 0;
   for (CookieMap::iterator it = cookies_.begin(); it != cookies_.end();) {
@@ -911,6 +936,9 @@ bool CookieMonster::SetCookieWithOptions(const GURL& url,
 // should be fast and simple enough for now.
 std::string CookieMonster::GetCookiesWithOptions(const GURL& url,
                                                  const CookieOptions& options) {
+  AutoLock autolock(lock_);
+  InitIfNecessary();
+
   if (!HasCookieableScheme(url)) {
     return std::string();
   }
@@ -940,6 +968,9 @@ std::string CookieMonster::GetCookiesWithOptions(const GURL& url,
 
 void CookieMonster::DeleteCookie(const GURL& url,
                                  const std::string& cookie_name) {
+  AutoLock autolock(lock_);
+  InitIfNecessary();
+
   if (!HasCookieableScheme(url))
     return;
 
@@ -993,6 +1024,7 @@ CookieMonster::CookieList CookieMonster::GetAllCookies() {
 CookieMonster::CookieList CookieMonster::GetAllCookiesForURL(const GURL& url) {
   AutoLock autolock(lock_);
   InitIfNecessary();
+
   return InternalGetAllCookiesForURL(url);
 }
 
@@ -1000,8 +1032,7 @@ void CookieMonster::FindCookiesForHostAndDomain(
     const GURL& url,
     const CookieOptions& options,
     std::vector<CanonicalCookie*>* cookies) {
-  AutoLock autolock(lock_);
-  InitIfNecessary();
+  lock_.AssertAcquired();
 
   const Time current_time(CurrentTime());
 
@@ -1035,6 +1066,8 @@ void CookieMonster::FindCookiesForKey(
     const CookieOptions& options,
     const Time& current,
     std::vector<CanonicalCookie*>* cookies) {
+  lock_.AssertAcquired();
+
   bool secure = url.SchemeIsSecure();
 
   for (CookieMapItPair its = cookies_.equal_range(key);
@@ -1071,6 +1104,8 @@ void CookieMonster::FindRawCookies(const std::string& key,
                                    bool include_secure,
                                    const std::string& path,
                                    CookieList* list) {
+  lock_.AssertAcquired();
+
   for (CookieMapItPair its = cookies_.equal_range(key);
        its.first != its.second; ++its.first) {
     CanonicalCookie* cc = its.first->second;
@@ -1084,6 +1119,8 @@ void CookieMonster::FindRawCookies(const std::string& key,
 
 CookieMonster::CookieList CookieMonster::InternalGetAllCookiesForURL(
     const GURL& url) {
+  lock_.AssertAcquired();
+
   // Do not return removed cookies.
   GarbageCollectExpired(Time::Now(),
                         CookieMapItPair(cookies_.begin(), cookies_.end()),
