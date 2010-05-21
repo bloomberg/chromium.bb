@@ -18,6 +18,7 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/version.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
@@ -241,7 +242,11 @@ ExtensionsServiceTestBase::~ExtensionsServiceTestBase() {
 void ExtensionsServiceTestBase::InitializeExtensionsService(
     const FilePath& pref_file, const FilePath& extensions_install_dir) {
   ExtensionTestingProfile* profile = new ExtensionTestingProfile();
-  prefs_.reset(new PrefService(new JsonPrefStore(pref_file)));
+  prefs_.reset(new PrefService(
+      new JsonPrefStore(
+          pref_file,
+          ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE))));
+
   Profile::RegisterUserPrefs(prefs_.get());
   browser::RegisterUserPrefs(prefs_.get());
   profile_.reset(profile);

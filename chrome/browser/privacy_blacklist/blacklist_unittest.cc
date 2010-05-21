@@ -9,10 +9,11 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_prefs.h"
-#include "chrome/browser/json_pref_store.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/json_pref_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class BlacklistTest : public testing::Test {
@@ -23,7 +24,10 @@ class BlacklistTest : public testing::Test {
     source_path = source_path.AppendASCII("profiles")
         .AppendASCII("blacklist_prefs").AppendASCII("Preferences");
 
-    prefs_.reset(new PrefService(new JsonPrefStore(source_path)));
+    prefs_.reset(new PrefService(
+        new JsonPrefStore(
+            source_path,
+            ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE))));
     Profile::RegisterUserPrefs(prefs_.get());
     browser::RegisterAllPrefs(prefs_.get(), prefs_.get());
   }

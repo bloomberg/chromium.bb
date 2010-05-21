@@ -41,7 +41,6 @@
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
-#include "chrome/browser/json_pref_store.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -68,6 +67,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/json_pref_store.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -987,7 +987,10 @@ net::TransportSecurityState*
 
 PrefService* ProfileImpl::GetPrefs() {
   if (!prefs_.get()) {
-    prefs_.reset(new PrefService(new JsonPrefStore(GetPrefFilePath())));
+    prefs_.reset(new PrefService(
+        new JsonPrefStore(
+            GetPrefFilePath(),
+            ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE))));
 
     // The Profile class and ProfileManager class may read some prefs so
     // register known prefs as soon as possible.

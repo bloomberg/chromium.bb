@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/pref_store.h"
+#include "chrome/common/pref_store.h"
 
 class DummyPrefStore : public PrefStore {
  public:

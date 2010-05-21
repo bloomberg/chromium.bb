@@ -40,7 +40,6 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/jankometer.h"
-#include "chrome/browser/json_pref_store.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/net/dns_global.h"
@@ -61,6 +60,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/json_pref_store.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/net/net_resource_provider.h"
@@ -440,7 +440,10 @@ PrefService* InitializeLocalState(const CommandLine& parsed_command_line,
       parsed_command_line.HasSwitch(switches::kParentProfile)) {
     FilePath parent_profile =
         parsed_command_line.GetSwitchValuePath(switches::kParentProfile);
-    PrefService parent_local_state(new JsonPrefStore(parent_profile));
+    PrefService parent_local_state(
+      new JsonPrefStore(
+          parent_profile,
+          ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)));
     parent_local_state.RegisterStringPref(prefs::kApplicationLocale,
                                           std::wstring());
     // Right now, we only inherit the locale setting from the parent profile.

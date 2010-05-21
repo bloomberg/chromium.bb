@@ -5,13 +5,14 @@
 #include "app/test/data/resource.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/json_pref_store.h"
+#include "chrome/common/json_pref_store.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,6 +20,7 @@
 class JsonPrefStoreTest : public testing::Test {
  protected:
   virtual void SetUp() {
+    message_loop_proxy_ = base::MessageLoopProxy::CreateForCurrentThread();
     // Name a subdirectory of the temp directory.
     ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &test_dir_));
     test_dir_ = test_dir_.AppendASCII("JsonPrefStoreTest");
@@ -42,13 +44,16 @@ class JsonPrefStoreTest : public testing::Test {
   FilePath test_dir_;
   // the path to the directory where the test data is stored
   FilePath data_dir_;
+  // A message loop that we can use as the file thread message loop.
+  MessageLoop message_loop_;
+  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
 };
 
 // Test fallback behavior for a nonexistent file.
 TEST_F(JsonPrefStoreTest, NonExistentFile) {
   FilePath bogus_input_file = data_dir_.AppendASCII("read.txt");
   ASSERT_FALSE(file_util::PathExists(bogus_input_file));
-  JsonPrefStore pref_store(bogus_input_file);
+  JsonPrefStore pref_store(bogus_input_file, message_loop_proxy_.get());
   EXPECT_EQ(PrefStore::PREF_READ_ERROR_NO_FILE, pref_store.ReadPrefs());
   EXPECT_FALSE(pref_store.ReadOnly());
   EXPECT_TRUE(pref_store.prefs()->empty());
@@ -59,7 +64,7 @@ TEST_F(JsonPrefStoreTest, InvalidFile) {
   FilePath invalid_file_original = data_dir_.AppendASCII("invalid.json");
   FilePath invalid_file = test_dir_.AppendASCII("invalid.json");
   ASSERT_TRUE(file_util::CopyFile(invalid_file_original, invalid_file));
-  JsonPrefStore pref_store(invalid_file);
+  JsonPrefStore pref_store(invalid_file, message_loop_proxy_.get());
   EXPECT_EQ(PrefStore::PREF_READ_ERROR_JSON_PARSE, pref_store.ReadPrefs());
   EXPECT_FALSE(pref_store.ReadOnly());
   EXPECT_TRUE(pref_store.prefs()->empty());
@@ -79,7 +84,7 @@ TEST_F(JsonPrefStoreTest, Basic) {
   // Test that the persistent value can be loaded.
   FilePath input_file = test_dir_.AppendASCII("write.json");
   ASSERT_TRUE(file_util::PathExists(input_file));
-  JsonPrefStore pref_store(input_file);
+  JsonPrefStore pref_store(input_file, message_loop_proxy_.get());
   ASSERT_EQ(PrefStore::PREF_READ_ERROR_NONE, pref_store.ReadPrefs());
   ASSERT_FALSE(pref_store.ReadOnly());
   DictionaryValue* prefs = pref_store.prefs();
@@ -135,9 +140,6 @@ TEST_F(JsonPrefStoreTest, Basic) {
   EXPECT_EQ(214748364842LL, StringToInt64(WideToUTF16Hack(string_value)));
 
   // Serialize and compare to expected output.
-  // SavePersistentPrefs uses ImportantFileWriter which needs a file thread.
-  MessageLoop message_loop;
-  ChromeThread file_thread(ChromeThread::FILE, &message_loop);
   FilePath output_file = input_file;
   FilePath golden_output_file = data_dir_.AppendASCII("write.golden.json");
   ASSERT_TRUE(file_util::PathExists(golden_output_file));

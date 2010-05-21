@@ -30,7 +30,6 @@
 #include "chrome/browser/in_process_webkit/dom_storage_context.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/json_pref_store.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
@@ -49,6 +48,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
+#include "chrome/common/json_pref_store.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -408,7 +408,10 @@ void BrowserProcessImpl::CreateLocalState() {
 
   FilePath local_state_path;
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
-  local_state_.reset(new PrefService(new JsonPrefStore(local_state_path)));
+  local_state_.reset(new PrefService(
+      new JsonPrefStore(
+          local_state_path,
+          ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE))));
 }
 
 void BrowserProcessImpl::CreateIconManager() {

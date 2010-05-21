@@ -51,7 +51,11 @@ class TabContentsTestingProfile : public TestingProfile {
       source_path = source_path.AppendASCII("profiles")
           .AppendASCII("chrome_prefs").AppendASCII("Preferences");
 
-      prefs_.reset(new PrefService(new JsonPrefStore(source_path)));
+      prefs_.reset(new PrefService(
+          new JsonPrefStore(
+              source_path,
+              ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE))));
+
       Profile::RegisterUserPrefs(prefs_.get());
       browser::RegisterAllPrefs(prefs_.get(), prefs_.get());
     }

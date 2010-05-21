@@ -1593,8 +1593,6 @@
         'browser/js_modal_dialog_mac.mm',
         'browser/js_modal_dialog_win.cc',
         'browser/jsmessage_box_client.h',
-        'browser/json_pref_store.cc',
-        'browser/json_pref_store.h',
         'browser/keychain_mac.cc',
         'browser/keychain_mac.h',
         'browser/language_combobox_model.cc',

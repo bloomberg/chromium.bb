@@ -200,6 +200,8 @@
         'common/gpu_plugin.h',
         'common/important_file_writer.cc',
         'common/important_file_writer.h',
+        'common/json_pref_store.cc',
+        'common/json_pref_store.h',
         'common/jstemplate_builder.cc',
         'common/jstemplate_builder.h',
         'common/libxml_utils.cc',

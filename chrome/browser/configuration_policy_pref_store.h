@@ -11,7 +11,7 @@
 #include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/configuration_policy_store.h"
-#include "chrome/browser/pref_store.h"
+#include "chrome/common/pref_store.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class ConfigurationPolicyProvider;

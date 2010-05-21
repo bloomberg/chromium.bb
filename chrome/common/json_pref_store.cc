@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/json_pref_store.h"
+#include "chrome/common/json_pref_store.h"
 
 #include <algorithm>
 
 #include "base/file_util.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_thread.h"
 #include "chrome/common/json_value_serializer.h"
 
 namespace {
@@ -18,12 +17,12 @@ const FilePath::CharType* kBadExtension = FILE_PATH_LITERAL("bad");
 
 }  // namespace
 
-JsonPrefStore::JsonPrefStore(const FilePath& filename)
+JsonPrefStore::JsonPrefStore(const FilePath& filename,
+                             base::MessageLoopProxy* file_message_loop_proxy)
     : path_(filename),
       prefs_(new DictionaryValue()),
       read_only_(false),
-      writer_(filename,
-              ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)) {
+      writer_(filename, file_message_loop_proxy) {
 }
 
 JsonPrefStore::~JsonPrefStore() {

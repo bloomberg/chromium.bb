@@ -9,10 +9,10 @@
 #include "base/message_loop.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/json_pref_store.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/json_pref_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TestExtensionPrefs::TestExtensionPrefs() {
@@ -37,7 +37,11 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
     file_loop.RunAllPending();
   }
 
-  pref_service_.reset(new PrefService(new JsonPrefStore(preferences_file_)));
+  pref_service_.reset(new PrefService(
+      new JsonPrefStore(
+          preferences_file_,
+          ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE))));
+
   ExtensionPrefs::RegisterUserPrefs(pref_service_.get());
   prefs_.reset(new ExtensionPrefs(pref_service_.get(), temp_dir_.path()));
 }

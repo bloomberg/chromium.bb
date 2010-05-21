@@ -6,8 +6,9 @@
 
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/json_pref_store.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/pref_service.h"
+#include "chrome/common/json_pref_store.h"
 #include "chrome/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,7 +16,10 @@ class ShownSectionsHandlerTest : public testing::Test {
 };
 
 TEST_F(ShownSectionsHandlerTest, MigrateUserPrefs) {
-  PrefService pref(new JsonPrefStore(FilePath()));
+  PrefService pref(
+      new JsonPrefStore(
+          FilePath(),
+          ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)));
 
   // Set an *old* value
   pref.RegisterIntegerPref(prefs::kNTPShownSections, 0);
@@ -33,7 +37,10 @@ TEST_F(ShownSectionsHandlerTest, MigrateUserPrefs) {
 }
 
 TEST_F(ShownSectionsHandlerTest, MigrateUserPrefs1To2) {
-  PrefService pref(new JsonPrefStore(FilePath()));
+  PrefService pref(
+      new JsonPrefStore(
+          FilePath(),
+          ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)));
 
   // Set an *old* value
   pref.RegisterIntegerPref(prefs::kNTPShownSections, 0);

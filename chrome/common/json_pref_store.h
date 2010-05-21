@@ -2,14 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_JSON_PREF_STORE_H_
-#define CHROME_BROWSER_JSON_PREF_STORE_H_
+#ifndef CHROME_COMMON_JSON_PREF_STORE_H_
+#define CHROME_COMMON_JSON_PREF_STORE_H_
 
 #include <string>
 
 #include "base/scoped_ptr.h"
-#include "chrome/browser/pref_store.h"
+#include "chrome/common/pref_store.h"
 #include "chrome/common/important_file_writer.h"
+
+namespace base {
+class MessageLoopProxy;
+}
 
 class DictionaryValue;
 class FilePath;
@@ -17,7 +21,10 @@ class FilePath;
 class JsonPrefStore : public PrefStore,
                       public ImportantFileWriter::DataSerializer {
  public:
-  explicit JsonPrefStore(const FilePath& pref_filename);
+  // |file_message_loop_proxy| is the MessageLoopProxy for a thread on which
+  // file I/O can be done.
+  JsonPrefStore(const FilePath& pref_filename,
+                base::MessageLoopProxy* file_message_loop_proxy);
   virtual ~JsonPrefStore();
 
   // PrefStore methods:
@@ -45,4 +52,5 @@ class JsonPrefStore : public PrefStore,
   ImportantFileWriter writer_;
 };
 
-#endif  // CHROME_BROWSER_JSON_PREF_STORE_H_
+#endif  // CHROME_COMMON_JSON_PREF_STORE_H_
+
