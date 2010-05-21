@@ -67,3 +67,14 @@ for basename in ['hello_world', 'exit', 'fib', 'switch', 'vtable', 'regs']:
       command=[env.File(nexe)],
       exit_status='55',)
   env.AddNodeToTestSuite(node, ['small_tests', 'sel_ldr_tests'], test)
+
+# a test that the validador can handle an empty segment after the last
+# real segment. The gold linker produces files this
+if env['BUILD_ARCHITECTURE'] == 'arm':
+  nexe = '${SCONSTRUCT_DIR}/tests/prebuilt/arm/gold-barebones_hello_world.nexe'
+  node = env.CommandSelLdrTestNacl(
+      'gold-barebones_hello_world.out',
+      command=[env.File(nexe)],
+      exit_status='55',)
+  env.AddNodeToTestSuite(node, ['small_tests', 'sel_ldr_tests'],
+                         'run_old-barebones_hello_world_test')

@@ -316,27 +316,27 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
           if (*max_vaddr < php->p_vaddr + php->p_memsz) {
             *max_vaddr = php->p_vaddr + php->p_memsz;
           }
-        }
 
-        switch (nacl_phdr_check_data[j].action) {
-          case PCA_NONE:
-            break;
-          case PCA_TEXT_CHECK:
-            if (0 == php->p_memsz) {
-              return LOAD_BAD_ELF_TEXT;
-            }
-            *static_text_end = NACL_TRAMPOLINE_END + php->p_filesz;
-            break;
-          case PCA_RODATA:
-            *rodata_start = php->p_vaddr;
-            *rodata_end = php->p_vaddr + php->p_memsz;
-            break;
-          case PCA_DATA:
-            *data_start = php->p_vaddr;
-            *data_end = php->p_vaddr + php->p_memsz;
-            break;
-          case PCA_IGNORE:
-            break;
+          switch (nacl_phdr_check_data[j].action) {
+            case PCA_NONE:
+              break;
+            case PCA_TEXT_CHECK:
+              if (0 == php->p_memsz) {
+                return LOAD_BAD_ELF_TEXT;
+              }
+              *static_text_end = NACL_TRAMPOLINE_END + php->p_filesz;
+              break;
+            case PCA_RODATA:
+              *rodata_start = php->p_vaddr;
+              *rodata_end = php->p_vaddr + php->p_memsz;
+              break;
+            case PCA_DATA:
+              *data_start = php->p_vaddr;
+              *data_end = php->p_vaddr + php->p_memsz;
+              break;
+            case PCA_IGNORE:
+              break;
+          }
         }
         goto next_seg;
       }
