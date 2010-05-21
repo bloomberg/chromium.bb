@@ -4698,6 +4698,11 @@ void RenderView::didChangeAccessibilityObjectState(
 }
 
 void RenderView::SendPasswordForms(WebFrame* frame, bool only_visible) {
+  // Make sure that this security origin is allowed to use password manager.
+  WebSecurityOrigin security_origin = frame->securityOrigin();
+  if (!security_origin.canAccessPasswordManager())
+    return;
+
   WebVector<WebFormElement> forms;
   frame->forms(forms);
 
