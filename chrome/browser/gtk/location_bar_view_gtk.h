@@ -284,6 +284,8 @@ class LocationBarViewGtk : public AutocompleteEditController,
                        GdkDragContext*);
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, void, OnIconDragEnd,
                        GdkDragContext*);
+  CHROMEGTK_CALLBACK_1(LocationBarViewGtk, void, OnHboxSizeAllocate,
+                       GtkAllocation*);
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, void, OnEntryBoxSizeAllocate,
                        GtkAllocation*);
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, OnStarButtonPress,
@@ -292,6 +294,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // Updates the site type area: changes the icon and shows/hides the EV
   // certificate information.
   void UpdateSiteTypeArea();
+
+  // Updates the maximum size of the EV certificate label.
+  void UpdateEVCertificateLabelSize();
 
   // Sets the text that should be displayed in the info label and its associated
   // tooltip text.  Call with an empty string if the info label should be
@@ -353,6 +358,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
   OwnedWidgetGtk page_action_hbox_;
   ScopedVector<PageActionViewGtk> page_action_views_;
 
+  // The widget that contains our tab hints and the location bar.
+  GtkWidget* entry_box_;
+
   // Area on the left shown when in tab to search mode.
   GtkWidget* tab_to_search_box_;
   GtkWidget* tab_to_search_full_label_;
@@ -396,6 +404,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
   GtkThemeProvider* theme_provider_;
 
   NotificationRegistrar registrar_;
+
+  // Width of the main |hbox_|. Used to properly elide the EV certificate.
+  int hbox_width_;
 
   // Width of the hbox that holds |tab_to_search_box_|, |location_entry_| and
   // |tab_to_search_hint_|.

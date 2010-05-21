@@ -172,6 +172,7 @@ LocationBarViewGtk::LocationBarViewGtk(Browser* browser)
       first_run_bubble_(this),
       popup_window_mode_(false),
       theme_provider_(NULL),
+      hbox_width_(0),
       entry_box_width_(0),
       show_selected_keyword_(false),
       show_keyword_hint_(false) {
@@ -214,14 +215,14 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   // Put |tab_to_search_box_|, |location_entry_|, and |tab_to_search_hint_| into
   // a sub hbox, so that we can make this part horizontally shrinkable without
   // affecting other elements in the location bar.
-  GtkWidget* entry_box = gtk_hbox_new(FALSE, kInnerPadding);
-  gtk_widget_show(entry_box);
-  gtk_widget_set_size_request(entry_box, 0, -1);
-  gtk_box_pack_start(GTK_BOX(hbox_.get()), entry_box, TRUE, TRUE, 0);
+  entry_box_ = gtk_hbox_new(FALSE, kInnerPadding);
+  gtk_widget_show(entry_box_);
+  gtk_widget_set_size_request(entry_box_, 0, -1);
+  gtk_box_pack_start(GTK_BOX(hbox_.get()), entry_box_, TRUE, TRUE, 0);
 
   // We need to adjust the visibility of the search hint widgets according to
-  // the horizontal space in the |entry_box|.
-  g_signal_connect(entry_box, "size-allocate",
+  // the horizontal space in the |entry_box_|.
+  g_signal_connect(entry_box_, "size-allocate",
                    G_CALLBACK(&OnEntryBoxSizeAllocateThunk), this);
 
   // Tab to search (the keyword box on the left hand side).
@@ -254,12 +255,12 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   gtk_widget_show_all(tab_to_search_box_);
   gtk_widget_hide(tab_to_search_box_);
   gtk_widget_hide(tab_to_search_partial_label_);
-  gtk_box_pack_start(GTK_BOX(entry_box), tab_to_search_box_, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(entry_box_), tab_to_search_box_, FALSE, FALSE, 0);
 
   location_entry_alignment_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
   gtk_container_add(GTK_CONTAINER(location_entry_alignment_),
                     location_entry_->GetNativeView());
-  gtk_box_pack_start(GTK_BOX(entry_box), location_entry_alignment_,
+  gtk_box_pack_start(GTK_BOX(entry_box_), location_entry_alignment_,
                      TRUE, TRUE, 0);
 
   // Tab to search notification (the hint on the right hand side).
@@ -285,7 +286,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   gtk_widget_hide(tab_to_search_hint_);
   // tab_to_search_hint_ gets hidden initially in OnChanged.  Hiding it here
   // doesn't work, someone is probably calling show_all on our parent box.
-  gtk_box_pack_end(GTK_BOX(entry_box), tab_to_search_hint_, FALSE, FALSE, 0);
+  gtk_box_pack_end(GTK_BOX(entry_box_), tab_to_search_hint_, FALSE, FALSE, 0);
 
   // We don't show the star in popups, app windows, etc.
   if (!ShouldOnlyShowLocation()) {
@@ -314,6 +315,12 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   gtk_box_pack_end(GTK_BOX(hbox_.get()), page_action_hbox_.get(),
                    FALSE, FALSE, 0);
 
+  // Now that we've created the widget hierarchy, connect to the main |hbox_|'s
+  // size-allocate so we can do proper resizing and eliding on
+  // |security_info_label_|.
+  g_signal_connect(hbox_.get(), "size-allocate",
+                   G_CALLBACK(&OnHboxSizeAllocateThunk), this);
+
   registrar_.Add(this,
                  NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
@@ -327,6 +334,8 @@ void LocationBarViewGtk::BuildSiteTypeArea() {
   gtk_widget_show(location_icon_image_);
 
   security_info_label_ = gtk_label_new(NULL);
+  gtk_label_set_ellipsize(GTK_LABEL(security_info_label_),
+                          PANGO_ELLIPSIZE_MIDDLE);
   gtk_widget_modify_fg(GTK_WIDGET(security_info_label_), GTK_STATE_NORMAL,
                        &kEvSecureTextColor);
   gtk_widget_set_name(security_info_label_,
@@ -842,6 +851,9 @@ void LocationBarViewGtk::UpdateSiteTypeArea() {
     std::wstring info_text = toolbar_model_->GetEVCertName();
     gtk_label_set_text(GTK_LABEL(security_info_label_),
                        WideToUTF8(info_text).c_str());
+
+    UpdateEVCertificateLabelSize();
+
     gtk_widget_show(GTK_WIDGET(security_info_label_));
   } else {
     if (gtk_util::IsActingAsRoundedWindow(site_type_event_box_)) {
@@ -857,6 +869,30 @@ void LocationBarViewGtk::UpdateSiteTypeArea() {
   gtk_widget_show(site_type_area());
 
   SetSiteTypeDragSource();
+}
+
+void LocationBarViewGtk::UpdateEVCertificateLabelSize() {
+  // Figure out the width of the average character.
+  PangoLayout* layout = gtk_label_get_layout(GTK_LABEL(security_info_label_));
+  PangoContext* context = pango_layout_get_context(layout);
+  PangoFontMetrics* metrics = pango_context_get_metrics(
+      context,
+      gtk_widget_get_style(security_info_label_)->font_desc,
+      pango_context_get_language(context));
+  int char_width =
+      pango_font_metrics_get_approximate_char_width(metrics) / PANGO_SCALE;
+
+  // The EV label should never take up more than half the hbox. We try to
+  // correct our inaccurate measurement units ("the average character width")
+  // by dividing more than an even 2.
+  int text_area = security_info_label_->allocation.width +
+                  entry_box_->allocation.width;
+  int max_chars = static_cast<int>(static_cast<float>(text_area) /
+                                   static_cast<float>(char_width) / 2.75);
+  // Don't let the label be smaller than 10 characters so that the country
+  // code is always visible.
+  gtk_label_set_max_width_chars(GTK_LABEL(security_info_label_),
+                                std::max(10, max_chars));
 }
 
 void LocationBarViewGtk::SetKeywordLabel(const std::wstring& keyword) {
@@ -995,6 +1031,14 @@ void LocationBarViewGtk::OnIconDragEnd(GtkWidget* sender,
                                        GdkDragContext* context) {
   gtk_widget_destroy(drag_icon_);
   drag_icon_ = NULL;
+}
+
+void LocationBarViewGtk::OnHboxSizeAllocate(GtkWidget* sender,
+                                            GtkAllocation* allocation) {
+  if (hbox_width_ != allocation->width) {
+    hbox_width_ = allocation->width;
+    UpdateEVCertificateLabelSize();
+  }
 }
 
 void LocationBarViewGtk::OnEntryBoxSizeAllocate(GtkWidget* sender,
