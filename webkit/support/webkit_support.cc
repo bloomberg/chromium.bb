@@ -44,19 +44,24 @@ namespace {
 
 class TestEnvironment {
  public:
-  explicit TestEnvironment() {}
+  explicit TestEnvironment(bool unit_test_mode) {
+    if (!unit_test_mode)
+      at_exit_manager_.reset(new base::AtExitManager);
+    main_message_loop_.reset(new MessageLoopForUI);
+    // TestWebKitClient must be instantiated after the MessageLoopForUI.
+    webkit_client_.reset(new TestWebKitClient);
+  }
 
   ~TestEnvironment() {
     SimpleResourceLoaderBridge::Shutdown();
   }
 
-  WebKit::WebKitClient* webkit_client() { return &webkit_client_; }
+  WebKit::WebKitClient* webkit_client() { return webkit_client_.get(); }
 
  private:
-  base::AtExitManager at_exit_manager_;
-  MessageLoopForUI main_message_loop_;
-  // TestWebKitClient must be instantiated after the MessageLoopForUI.
-  TestWebKitClient webkit_client_;
+  scoped_ptr<base::AtExitManager> at_exit_manager_;
+  scoped_ptr<MessageLoopForUI> main_message_loop_;
+  scoped_ptr<TestWebKitClient> webkit_client_;
 };
 
 class WebPluginImplWithPageDelegate
@@ -80,6 +85,10 @@ namespace webkit_support {
 static TestEnvironment* test_environment;
 
 void SetUpTestEnvironment() {
+  SetUpTestEnvironment(false);
+}
+
+void SetUpTestEnvironment(bool unit_test_mode) {
   base::EnableTerminationOnHeapCorruption();
 
   // Initialize the singleton CommandLine with fixed values.  Some code refer to
@@ -94,11 +103,13 @@ void SetUpTestEnvironment() {
   CommandLine::Init(arraysize(kFixedArguments), kFixedArguments);
 
   BeforeInitialize();
-  test_environment = new TestEnvironment;
+  test_environment = new TestEnvironment(unit_test_mode);
   AfterInitialize();
-  // Load ICU data tables.  This has to run after TestEnvironment is created
-  // because on Linux, we need base::AtExitManager.
-  icu_util::Initialize();
+  if (!unit_test_mode) {
+    // Load ICU data tables.  This has to run after TestEnvironment is created
+    // because on Linux, we need base::AtExitManager.
+    icu_util::Initialize();
+  }
 }
 
 void TearDownTestEnvironment() {
@@ -159,6 +170,17 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(WebFrame* frame,
 WebKit::WebApplicationCacheHost* CreateApplicationCacheHost(
     WebFrame*, WebKit::WebApplicationCacheHostClient* client) {
   return SimpleAppCacheSystem::CreateApplicationCacheHost(client);
+}
+
+WebKit::WebString GetWebKitRootDir() {
+  FilePath sourcePath;
+  PathService::Get(base::DIR_SOURCE_ROOT, &sourcePath);
+  FilePath path = sourcePath.Append(FILE_PATH_LITERAL("third_party/WebKit"));
+  if (!file_util::PathExists(path)) {
+      path = sourcePath.Append(FILE_PATH_LITERAL("../.."));
+      DCHECK(file_util::PathExists(path));
+  }
+  return WebKit::WebString::fromUTF8(WideToUTF8(path.ToWStringHack()).c_str());
 }
 
 // Wrapper for debug_util

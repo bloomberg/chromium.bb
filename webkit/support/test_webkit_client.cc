@@ -51,7 +51,7 @@
 
 using WebKit::WebScriptController;
 
-TestWebKitClient::TestWebKitClient() {
+TestWebKitClient::TestWebKitClient() : url_loader_factory_(NULL) {
   v8::V8::SetCounterFunction(StatsTable::FindLocation);
 
   WebKit::initialize(this);
@@ -191,6 +191,12 @@ WebKit::WebMessagePortChannel* TestWebKitClient::createMessagePortChannel() {
 }
 
 void TestWebKitClient::prefetchHostName(const WebKit::WebString&) {
+}
+
+WebKit::WebURLLoader* TestWebKitClient::createURLLoader() {
+  if (url_loader_factory_)
+    return url_loader_factory_->createURLLoader();
+  return webkit_glue::WebKitClientImpl::createURLLoader();
 }
 
 WebKit::WebData TestWebKitClient::loadResource(const char* name) {

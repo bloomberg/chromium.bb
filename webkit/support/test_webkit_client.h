@@ -13,6 +13,14 @@
 #include "webkit/tools/test_shell/simple_webcookiejar_impl.h"
 #include "webkit/tools/test_shell/test_shell_webmimeregistry_impl.h"
 
+class WebURLLoaderFactory {
+ public:
+  virtual WebKit::WebURLLoader* createURLLoader() = 0;
+
+ protected:
+  virtual ~WebURLLoaderFactory() {}
+};
+
 // An implementation of WebKitClient for tests.
 class TestWebKitClient : public webkit_glue::WebKitClientImpl {
  public:
@@ -38,6 +46,7 @@ class TestWebKitClient : public webkit_glue::WebKitClientImpl {
   virtual bool isLinkVisited(unsigned long long linkHash);
   virtual WebKit::WebMessagePortChannel* createMessagePortChannel();
   virtual void prefetchHostName(const WebKit::WebString&);
+  virtual WebKit::WebURLLoader* createURLLoader();
   virtual WebKit::WebData loadResource(const char* name);
   virtual WebKit::WebString defaultLocale();
   virtual WebKit::WebStorageNamespace* createLocalStorageNamespace(
@@ -56,6 +65,13 @@ class TestWebKitClient : public webkit_glue::WebKitClientImpl {
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
   virtual WebKit::WebGraphicsContext3D* createGraphicsContext3D();
 
+  // Sets the factory used to create WebURLLoader instances.
+  // The caller owns the WebURLLoaderFactory and is responsible for calling this
+  // method again with NULL when it's done.
+  void set_url_loader_factory(WebURLLoaderFactory* url_loader_factory) {
+    url_loader_factory_ = url_loader_factory;
+  }
+
  private:
   TestShellWebMimeRegistryImpl mime_registry_;
   MockWebClipboardImpl mock_clipboard_;
@@ -64,6 +80,11 @@ class TestWebKitClient : public webkit_glue::WebKitClientImpl {
   SimpleAppCacheSystem appcache_system_;
   SimpleDatabaseSystem database_system_;
   SimpleWebCookieJarImpl cookie_jar_;
+
+  // Used to create WebURLLoader.
+  // If NULL, the class defers to webkit_glue::WebKitClientImpl for creating the
+  // WebURLLoader.
+  WebURLLoaderFactory* url_loader_factory_;
 
 #if defined(OS_WIN)
   WebKit::WebThemeEngine* active_theme_engine_;

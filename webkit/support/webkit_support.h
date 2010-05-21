@@ -31,9 +31,15 @@ struct WebPluginParams;
 namespace webkit_support {
 
 // Initializes or terminates a test environment.
+// |unit_test_mode| should be set to true when running in a TestSuite, in which
+// case no AtExitManager is created and ICU is not initialized (as it is already
+// done by the TestSuite).
 // SetUpTestEnvironment() calls WebKit::initialize().
 // TearDownTestEnvironment() calls WebKit::shutdown().
+// TODO(jcivelli): remove the next method once DumpRenderTree.cpp is not using
+//                 it anymore upstream.
 void SetUpTestEnvironment();
+void SetUpTestEnvironment(bool unit_test_mode);
 void TearDownTestEnvironment();
 
 // Returns a pointer to a WebKitClient implementation for DumpRenderTree.
@@ -53,6 +59,8 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(WebKit::WebFrame* frame,
 WebKit::WebApplicationCacheHost* CreateApplicationCacheHost(
     WebKit::WebFrame* frame, WebKit::WebApplicationCacheHostClient* client);
 
+// Returns the root directory of the WebKit code.
+WebKit::WebString GetWebKitRootDir();
 
 // Wrappers to minimize dependecy.
 
