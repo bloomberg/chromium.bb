@@ -15,6 +15,10 @@
 #     When set to zero will build Chromium against the patched ffmpegsumo
 #     headers, but not build ffmpegsumo itself.  Users are expected to build
 #     and provide their own version of ffmpegsumo.  Default value is 1.
+#  use_system_vpx
+#     When set to non-zero, will build Chromium against the system libvpx.
+#     libvpx doesn't currently supply a pkg-config file, so we assume that
+#     -lvpx is sufficient.
 
 {
   'target_defaults': {
@@ -38,6 +42,7 @@
   'variables': {
     # Allow overridding the selection of which FFmpeg binaries to copy via an
     # environment variable.  Affects the ffmpeg_binaries target.
+
     'conditions': [
       ['chromeos==1', {
         'ffmpeg_branding%': '<(branding)OS',
@@ -60,10 +65,10 @@
       # libvpx location.
       # TODO(scherkus): libvpx_hack_dir is a hack to make -L work on linux.
       ['OS=="mac" or OS=="win"', {
-        'libvpx_dir': '../libvpx',
+        'libvpx_incl_dir': '../libvpx/include',
         'libvpx_hack_dir': '../libvpx',
       }, {
-        'libvpx_dir': '../libvpx',
+        'libvpx_incl_dir': '../libvpx/include',
         'libvpx_hack_dir': 'third_party/libvpx',
       }],
     ],
@@ -72,6 +77,7 @@
     'use_system_ffmpeg%': 0,
     'use_system_yasm%': 0,
     'build_ffmpegsumo%': 1,
+    'use_system_vpx%': 0,
 
     # Locations for generated artifacts.
     'shared_generated_dir': '<(SHARED_INTERMEDIATE_DIR)/third_party/ffmpeg',
@@ -152,7 +158,6 @@
             'source/config/<(ffmpeg_branding)/<(OS)/<(ffmpeg_config)',
             'source/patched-ffmpeg-mt',
             'source/config',
-            '<(libvpx_dir)/include',
           ],
           'defines': [
             'HAVE_AV_CONFIG_H',
@@ -386,7 +391,6 @@
                 'ldflags': [
                   '-Wl,-Bsymbolic',
                   '-L<(shared_generated_dir)',
-                  '-L<(libvpx_hack_dir)/lib/<(OS)/<(target_arch)',
                 ],
                 'libraries': [
                   '-lz',
@@ -404,6 +408,11 @@
                       # absolute path entry inside the OS="mac" conditional, and
                       # move it out of the conditionals block altogether.
                       '-l<(asm_library)',
+                    ],
+                  }],
+                  ['use_system_vpx==0', {
+                    'ldflags': [
+                      '-L<(libvpx_hack_dir)/lib/<(OS)/<(target_arch)',
                     ],
                   }],
                 ],
@@ -448,6 +457,17 @@
                 ],
               },
             }],  # OS=="mac"
+            ['use_system_vpx==0', {
+                'include_dirs': [
+                  '<(libvpx_incl_dir)',
+                ],
+              }, {
+                # Using libvpx provided by the system.
+                'include_dirs': [
+                  '/usr/include/vpx',
+                ],
+              }
+            ],
           ],
           'actions': [
             {
