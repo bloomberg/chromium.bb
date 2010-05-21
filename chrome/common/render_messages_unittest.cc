@@ -14,11 +14,9 @@ TEST(RenderMessagesUnittest, WebAccessibility) {
   input.id = 123;
   input.name = ASCIIToUTF16("name");
   input.value = ASCIIToUTF16("value");
-  input.action = ASCIIToUTF16("action");
-  input.description = ASCIIToUTF16("description");
-  input.help = ASCIIToUTF16("help");
-  input.shortcut = ASCIIToUTF16("shortcut");
-  input.role = webkit_glue::WebAccessibility::ROLE_CHECKBUTTON;
+  string16 help = ASCIIToUTF16("help");
+  input.attributes[webkit_glue::WebAccessibility::ATTR_HELP] = help;
+  input.role = webkit_glue::WebAccessibility::ROLE_CHECKBOX;
   input.state =
       (1 << webkit_glue::WebAccessibility::STATE_CHECKED) |
       (1 << webkit_glue::WebAccessibility::STATE_FOCUSED);
@@ -33,10 +31,8 @@ TEST(RenderMessagesUnittest, WebAccessibility) {
   EXPECT_EQ(input.id, output.id);
   EXPECT_EQ(input.name, output.name);
   EXPECT_EQ(input.value, output.value);
-  EXPECT_EQ(input.action, output.action);
-  EXPECT_EQ(input.description, output.description);
-  EXPECT_EQ(input.help, output.help);
-  EXPECT_EQ(input.shortcut, output.shortcut);
+  EXPECT_EQ(static_cast<size_t>(1), input.attributes.size());
+  EXPECT_EQ(help, input.attributes[webkit_glue::WebAccessibility::ATTR_HELP]);
   EXPECT_EQ(input.role, output.role);
   EXPECT_EQ(input.state, output.state);
   EXPECT_EQ(input.location, output.location);
@@ -52,13 +48,13 @@ TEST(RenderMessagesUnittest, WebAccessibility) {
   webkit_glue::WebAccessibility outer;
   outer.id = 1000;
   outer.name = ASCIIToUTF16("outer_name");
-  outer.role = webkit_glue::WebAccessibility::ROLE_GROUPING;
+  outer.role = webkit_glue::WebAccessibility::ROLE_GROUP;
   outer.state = 0;
   outer.location = WebKit::WebRect(0, 0, 1000, 1000);
   webkit_glue::WebAccessibility inner1;
   inner1.id = 1001;
   inner1.name = ASCIIToUTF16("inner1_name");
-  inner1.role = webkit_glue::WebAccessibility::ROLE_RADIOBUTTON;
+  inner1.role = webkit_glue::WebAccessibility::ROLE_RADIO_BUTTON;
   inner1.state =
       (1 << webkit_glue::WebAccessibility::STATE_CHECKED) |
       (1 << webkit_glue::WebAccessibility::STATE_FOCUSED);
@@ -67,7 +63,7 @@ TEST(RenderMessagesUnittest, WebAccessibility) {
   webkit_glue::WebAccessibility inner2;
   inner2.id = 1002;
   inner2.name = ASCIIToUTF16("inner2_name");
-  inner2.role = webkit_glue::WebAccessibility::ROLE_RADIOBUTTON;
+  inner2.role = webkit_glue::WebAccessibility::ROLE_RADIO_BUTTON;
   inner2.state = (1 << webkit_glue::WebAccessibility::STATE_CHECKED);
   inner2.location = WebKit::WebRect(10, 500, 900, 400);
   outer.children.push_back(inner2);

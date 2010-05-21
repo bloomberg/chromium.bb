@@ -465,9 +465,6 @@ class RenderViewHost : public RenderWidgetHost {
   // changed.
   void EnablePreferredSizeChangedMode();
 
-  // Requests a snapshot of an accessible DOM tree from the renderer.
-  void RequestAccessibilityTree();
-
  protected:
   // RenderWidgetHost protected overrides.
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,

@@ -685,6 +685,9 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_TranslatePage, OnTranslatePage)
     IPC_MESSAGE_HANDLER(ViewMsg_RevertTranslation, OnRevertTranslation)
     IPC_MESSAGE_HANDLER(ViewMsg_GetAccessibilityTree, OnGetAccessibilityTree)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetAccessibilityFocus, OnSetAccessibilityFocus)
+    IPC_MESSAGE_HANDLER(ViewMsg_AccessibilityDoDefaultAction,
+                        OnAccessibilityDoDefaultAction)
 
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(RenderWidget::OnMessageReceived(message))
@@ -3929,15 +3932,37 @@ void RenderView::OnUpdateBrowserWindowId(int window_id) {
 }
 
 void RenderView::OnGetAccessibilityTree() {
-  if (accessibility_.get()) {
+  if (accessibility_.get())
     accessibility_->clear();
-  }
     accessibility_.reset(WebAccessibilityCache::create());
     accessibility_->initialize(webview());
 
   WebAccessibilityObject src_tree = webview()->accessibilityObject();
   webkit_glue::WebAccessibility dst_tree(src_tree, accessibility_.get());
   Send(new ViewHostMsg_AccessibilityTree(routing_id_, dst_tree));
+}
+
+void RenderView::OnSetAccessibilityFocus(int acc_obj_id) {
+  if (!accessibility_.get())
+    return;
+  if (accessibility_->isValidId(acc_obj_id)) {
+    // TODO(dmazzoni) fix the cache so that id=1000 is not a magic number.
+    // By convention, calling SetFocus on the root of the tree (id = 1000)
+    // should clear the current focus. Otherwise set the focus to the new
+    // node.
+    if (acc_obj_id == 1000)
+      webview()->clearFocusedNode();
+    else
+      accessibility_->getObjectById(acc_obj_id).setFocused(true);
+  }
+}
+
+void RenderView::OnAccessibilityDoDefaultAction(int acc_obj_id) {
+  if (!accessibility_.get())
+    return;
+  if (accessibility_->isValidId(acc_obj_id)) {
+    accessibility_->getObjectById(acc_obj_id).performDefaultAction();
+  }
 }
 
 void RenderView::OnGetAllSavableResourceLinksForCurrentPage(

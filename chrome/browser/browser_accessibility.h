@@ -31,12 +31,16 @@ class ATL_NO_VTABLE BrowserAccessibility
   : public CComObjectRootEx<CComMultiThreadModel>,
     public IDispatchImpl<IAccessible2, &IID_IAccessible2,
                          &LIBID_IAccessible2Lib>,
+    public IAccessibleImage,
+    public IAccessibleText,
     public IServiceProvider {
  public:
   BEGIN_COM_MAP(BrowserAccessibility)
     COM_INTERFACE_ENTRY2(IDispatch, IAccessible2)
     COM_INTERFACE_ENTRY2(IAccessible, IAccessible2)
     COM_INTERFACE_ENTRY(IAccessible2)
+    COM_INTERFACE_ENTRY(IAccessibleImage)
+    COM_INTERFACE_ENTRY(IAccessibleText)
     COM_INTERFACE_ENTRY(IServiceProvider)
   END_COM_MAP()
 
@@ -71,7 +75,8 @@ class ATL_NO_VTABLE BrowserAccessibility
   BrowserAccessibility* GetNextSibling();
 
   // Accessors
-  LONG child_id() { return child_id_; }
+  LONG child_id() const { return child_id_; }
+  int32 renderer_id() const { return renderer_id_; }
 
   // Add one to the reference count and return the same object. Always
   // use this method when returning a BrowserAccessibility object as
@@ -161,6 +166,10 @@ class ATL_NO_VTABLE BrowserAccessibility
   // Returns the state bitmask from a larger set of possible states.
   STDMETHODIMP get_states(AccessibleStates* states);
 
+  // Returns the attributes specific to this IAccessible2 object,
+  // such as a cell's formula.
+  STDMETHODIMP get_attributes(BSTR* attributes);
+
   // Get the unique ID of this object so that the client knows if it's
   // been encountered previously.
   STDMETHODIMP get_uniqueID(LONG* unique_id);
@@ -184,7 +193,7 @@ class ATL_NO_VTABLE BrowserAccessibility
   }
   STDMETHODIMP get_relations(LONG max_relations,
                              IAccessibleRelation** relations,
-                             LONG *n_relations) {
+                             LONG* n_relations) {
     return E_NOTIMPL;
   }
   STDMETHODIMP scrollTo(enum IA2ScrollType scroll_type) {
@@ -219,7 +228,98 @@ class ATL_NO_VTABLE BrowserAccessibility
   STDMETHODIMP get_locale(IA2Locale* locale) {
     return E_NOTIMPL;
   }
-  STDMETHODIMP get_attributes(BSTR* attributes) {
+
+  //
+  // IAccessibleImage methods.
+  //
+
+  STDMETHODIMP get_description(BSTR* description);
+
+  STDMETHODIMP get_imagePosition(enum IA2CoordinateType coordinate_type,
+                                 long* x, long* y);
+
+  STDMETHODIMP get_imageSize(long* height, long* width);
+
+  //
+  // IAccessibleText methods.
+  //
+
+  STDMETHODIMP get_nCharacters(long* n_characters);
+
+  STDMETHODIMP get_text(long start_offset, long end_offset, BSTR* text);
+
+  STDMETHODIMP get_caretOffset(long* offset);
+
+  // IAccessibleText methods not implemented.
+  STDMETHODIMP addSelection(long start_offset, long end_offset) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_attributes(long offset, long* start_offset, long* end_offset,
+                              BSTR* text_attributes) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_characterExtents(long offset,
+                                    enum IA2CoordinateType coord_type,
+                                    long* x, long* y,
+                                    long* width, long* height) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_nSelections(long* n_selections) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_offsetAtPoint(long x, long y,
+                             enum IA2CoordinateType coord_type,
+                             long* offset) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_selection(long selection_index,
+                         long* start_offset,
+                         long* end_offset) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_textBeforeOffset(long offset,
+                                enum IA2TextBoundaryType boundary_type,
+                                long* start_offset, long* end_offset,
+                                BSTR* text) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_textAfterOffset(long offset,
+                               enum IA2TextBoundaryType boundary_type,
+                               long* start_offset, long* end_offset,
+                               BSTR* text) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_textAtOffset(long offset,
+                            enum IA2TextBoundaryType boundary_type,
+                            long* start_offset, long* end_offset,
+                            BSTR* text) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP removeSelection(long selection_index) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP setCaretOffset(long offset) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP setSelection(long selection_index,
+                            long start_offset,
+                            long end_offset) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP scrollSubstringTo(long start_index,
+                                 long end_index,
+                                 enum IA2ScrollType scroll_type) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP scrollSubstringToPoint(long start_index, long end_index,
+                                      enum IA2CoordinateType coordinate_type,
+                                      long x, long y) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_newText(IA2TextSegment* new_text) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_oldText(IA2TextSegment* old_text) {
     return E_NOTIMPL;
   }
 
@@ -229,6 +329,15 @@ class ATL_NO_VTABLE BrowserAccessibility
 
   STDMETHODIMP QueryService(REFGUID guidService, REFIID riid, void** object);
 
+  //
+  // CComObjectRootEx methods.
+  //
+
+  HRESULT WINAPI InternalQueryInterface(void* this_ptr,
+                                        const _ATL_INTMAP_ENTRY* entries,
+                                        REFIID iid,
+                                        void** object);
+
  private:
   // Many MSAA methods take a var_id parameter indicating that the operation
   // should be performed on a particular child ID, rather than this object.
@@ -237,13 +346,17 @@ class ATL_NO_VTABLE BrowserAccessibility
   // Does not return a new reference.
   BrowserAccessibility* GetTargetFromChildID(const VARIANT& var_id);
 
-  // Returns a conversion from the BrowserAccessibilityRole (as defined in
-  // webkit/glue/webaccessibility.h) to an MSAA role.
-  LONG MSAARole(LONG browser_accessibility_role);
+  // Initialize the role and state metadata from the role enum and state
+  // bitmasks defined in webkit/glue/webaccessibility.h.
+  void InitRoleAndState(LONG web_accessibility_role,
+                        LONG web_accessibility_state);
 
-  // Returns a conversion from the BrowserAccessibilityState (as defined in
-  // webkit/glue/webaccessibility.h) to MSAA states set.
-  LONG MSAAState(LONG browser_accessibility_state);
+  // Return true if this attribute is in the attributes map.
+  bool HasAttribute(WebAccessibility::Attribute attribute);
+
+  // Retrieve the string value of an attribute from the attribute map and
+  // returns true if found.
+  bool GetAttribute(WebAccessibility::Attribute attribute, string16* value);
 
   // The manager of this tree of accessibility objects; needed for
   // global operations like focus tracking.
@@ -264,12 +377,13 @@ class ATL_NO_VTABLE BrowserAccessibility
   // events.
   string16 name_;
   string16 value_;
-  string16 action_;
-  string16 description_;
-  string16 help_;
-  string16 shortcut_;
+  std::map<int32, string16> attributes_;
+
   LONG role_;
   LONG state_;
+  string16 role_name_;
+  LONG ia2_role_;
+  LONG ia2_state_;
   WebKit::WebRect location_;
 
   // COM objects are reference-counted. When we're done with this object

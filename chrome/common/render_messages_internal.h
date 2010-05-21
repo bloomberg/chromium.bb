@@ -946,6 +946,16 @@ IPC_BEGIN_MESSAGES(View)
 
   // Request a tree of Accessibility data from the render process.
   IPC_MESSAGE_ROUTED0(ViewMsg_GetAccessibilityTree)
+
+  // Relay a request from assistive technology to set focus to a given node.
+  IPC_MESSAGE_ROUTED1(ViewMsg_SetAccessibilityFocus,
+                      int /* object id */)
+
+  // Relay a request from assistive technology to perform the default action
+  // on a given node.
+  IPC_MESSAGE_ROUTED1(ViewMsg_AccessibilityDoDefaultAction,
+                      int /* object id */)
+
 IPC_END_MESSAGES(View)
 
 

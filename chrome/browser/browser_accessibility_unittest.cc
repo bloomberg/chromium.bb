@@ -47,13 +47,13 @@ TEST(BrowserAccessibilityTest, TestNoLeaks) {
   WebAccessibility button;
   button.id = 2;
   button.name = L"Button";
-  button.role = WebAccessibility::ROLE_PUSHBUTTON;
+  button.role = WebAccessibility::ROLE_BUTTON;
   button.state = 0;
 
   WebAccessibility checkbox;
   checkbox.id = 3;
   checkbox.name = L"Checkbox";
-  checkbox.role = WebAccessibility::ROLE_CHECKBUTTON;
+  checkbox.role = WebAccessibility::ROLE_CHECKBOX;
   checkbox.state = 0;
 
   WebAccessibility root;
@@ -71,7 +71,8 @@ TEST(BrowserAccessibilityTest, TestNoLeaks) {
   CountedBrowserAccessibility::global_obj_count_ = 0;
   BrowserAccessibilityManager* manager =
       new BrowserAccessibilityManager(
-          GetDesktopWindow(), root, new CountedBrowserAccessibilityFactory());
+          GetDesktopWindow(), root, NULL,
+          new CountedBrowserAccessibilityFactory());
   ASSERT_EQ(3, CountedBrowserAccessibility::global_obj_count_);
 
   // Delete the manager and test that all 3 instances are deleted.
@@ -81,7 +82,8 @@ TEST(BrowserAccessibilityTest, TestNoLeaks) {
   // Construct a manager again, and this time use the IAccessible interface
   // to get new references to two of the three nodes in the tree.
   manager = new BrowserAccessibilityManager(
-      GetDesktopWindow(), root, new CountedBrowserAccessibilityFactory());
+      GetDesktopWindow(), root, NULL,
+      new CountedBrowserAccessibilityFactory());
   ASSERT_EQ(3, CountedBrowserAccessibility::global_obj_count_);
   BrowserAccessibility* root_accessible = manager->GetRoot();
   IDispatch* root_iaccessible = NULL;

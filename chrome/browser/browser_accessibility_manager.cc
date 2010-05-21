@@ -30,9 +30,12 @@ LONG BrowserAccessibilityManager::next_child_id_ = -1;
 BrowserAccessibilityManager::BrowserAccessibilityManager(
     HWND parent_hwnd,
     const webkit_glue::WebAccessibility& src,
+    BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
     : parent_hwnd_(parent_hwnd),
-      factory_(factory) {
+      delegate_(delegate),
+      factory_(factory),
+      focus_(NULL) {
   HRESULT hr = ::CreateStdAccessibleObject(
       parent_hwnd_, OBJID_WINDOW, IID_IAccessible,
       reinterpret_cast<void **>(&window_iaccessible_));
@@ -80,6 +83,17 @@ BrowserAccessibility* BrowserAccessibilityManager::GetFocus(
     return focus_;
 
   return NULL;
+}
+
+void BrowserAccessibilityManager::SetFocus(const BrowserAccessibility& node) {
+  if (delegate_)
+    delegate_->SetAccessibilityFocus(node.renderer_id());
+}
+
+void BrowserAccessibilityManager::DoDefaultAction(
+    const BrowserAccessibility& node) {
+  if (delegate_)
+    delegate_->AccessibilityDoDefaultAction(node.renderer_id());
 }
 
 void BrowserAccessibilityManager::OnAccessibilityFocusChange(int renderer_id) {

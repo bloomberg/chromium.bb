@@ -676,10 +676,6 @@ bool RenderViewHost::SuddenTerminationAllowed() const {
   return sudden_termination_allowed_ || process()->sudden_termination_allowed();
 }
 
-void RenderViewHost::RequestAccessibilityTree() {
-  Send(new ViewMsg_GetAccessibilityTree(routing_id()));
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // RenderViewHost, IPC message handlers:
 

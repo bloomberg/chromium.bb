@@ -1480,7 +1480,7 @@ LRESULT RenderWidgetHostViewWin::OnMouseActivate(UINT, WPARAM, LPARAM,
 void RenderWidgetHostViewWin::UpdateAccessibilityTree(
     const webkit_glue::WebAccessibility& tree) {
   browser_accessibility_manager_.reset(
-      new BrowserAccessibilityManager(m_hWnd, tree));
+      new BrowserAccessibilityManager(m_hWnd, tree, this));
 }
 
 void RenderWidgetHostViewWin::OnAccessibilityFocusChange(int acc_obj_id) {
@@ -1514,6 +1514,28 @@ void RenderWidgetHostViewWin::Observe(NotificationType type,
   // clear the BrowserAccessibilityManager, because the renderer is
   // dead and any accessibility information we have is now stale.
   browser_accessibility_manager_.reset(NULL);
+}
+
+void RenderWidgetHostViewWin::SetAccessibilityFocus(int acc_obj_id) {
+  if (!browser_accessibility_manager_.get() ||
+      !render_widget_host_ ||
+      !render_widget_host_->process() ||
+      !render_widget_host_->process()->HasConnection()) {
+    return;
+  }
+
+  render_widget_host_->SetAccessibilityFocus(acc_obj_id);
+}
+
+void RenderWidgetHostViewWin::AccessibilityDoDefaultAction(int acc_obj_id) {
+  if (!browser_accessibility_manager_.get() ||
+      !render_widget_host_ ||
+      !render_widget_host_->process() ||
+      !render_widget_host_->process()->HasConnection()) {
+    return;
+  }
+
+  render_widget_host_->AccessibilityDoDefaultAction(acc_obj_id);
 }
 
 LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,

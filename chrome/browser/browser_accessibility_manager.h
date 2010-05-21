@@ -29,12 +29,21 @@ class BrowserAccessibilityFactory {
   virtual BrowserAccessibility* Create();
 };
 
+// Class that can perform actions on behalf of the BrowserAccessibilityManager.
+class BrowserAccessibilityDelegate {
+ public:
+  virtual ~BrowserAccessibilityDelegate() {}
+  virtual void SetAccessibilityFocus(int acc_obj_id) = 0;
+  virtual void AccessibilityDoDefaultAction(int acc_obj_id) = 0;
+};
+
 // Manages a tree of BrowserAccessibility objects.
 class BrowserAccessibilityManager {
  public:
   BrowserAccessibilityManager(
       HWND parent_hwnd,
       const webkit_glue::WebAccessibility& src,
+      BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
 
   virtual ~BrowserAccessibilityManager();
@@ -57,6 +66,12 @@ class BrowserAccessibilityManager {
   // given root (inclusive). Does not make a new reference.
   BrowserAccessibility* GetFocus(BrowserAccessibility* root);
 
+  // Tell the renderer to set focus to this node.
+  void SetFocus(const BrowserAccessibility& node);
+
+  // Tell the renderer to do the default action for this node.
+  void DoDefaultAction(const BrowserAccessibility& node);
+
   // Called when the renderer process has notified us of a focus or state
   // change. Send a notification to MSAA clients of the change.
   void OnAccessibilityFocusChange(int acc_obj_id);
@@ -72,6 +87,9 @@ class BrowserAccessibilityManager {
 
   // The parent window.
   HWND parent_hwnd_;
+
+  // The object that can perform actions on our behalf.
+  BrowserAccessibilityDelegate* delegate_;
 
   // Factory to create BrowserAccessibility objects (for dependency injection).
   scoped_ptr<BrowserAccessibilityFactory> factory_;

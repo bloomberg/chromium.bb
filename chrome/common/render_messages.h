@@ -2598,23 +2598,16 @@ struct ParamTraits<webkit_glue::WebAccessibility> {
     WriteParam(m, p.id);
     WriteParam(m, p.name);
     WriteParam(m, p.value);
-    WriteParam(m, p.action);
-    WriteParam(m, p.description);
-    WriteParam(m, p.help);
-    WriteParam(m, p.shortcut);
     WriteParam(m, static_cast<int>(p.role));
     WriteParam(m, static_cast<int>(p.state));
     WriteParam(m, p.location);
+    WriteParam(m, p.attributes);
     WriteParam(m, p.children);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     bool ret = ReadParam(m, iter, &p->id);
     ret = ret && ReadParam(m, iter, &p->name);
     ret = ret && ReadParam(m, iter, &p->value);
-    ret = ret && ReadParam(m, iter, &p->action);
-    ret = ret && ReadParam(m, iter, &p->description);
-    ret = ret && ReadParam(m, iter, &p->help);
-    ret = ret && ReadParam(m, iter, &p->shortcut);
     int role = -1;
     ret = ret && ReadParam(m, iter, &role);
     if (role >= webkit_glue::WebAccessibility::ROLE_NONE &&
@@ -2627,6 +2620,7 @@ struct ParamTraits<webkit_glue::WebAccessibility> {
     ret = ret && ReadParam(m, iter, &state);
     p->state = static_cast<webkit_glue::WebAccessibility::State>(state);
     ret = ret && ReadParam(m, iter, &p->location);
+    ret = ret && ReadParam(m, iter, &p->attributes);
     ret = ret && ReadParam(m, iter, &p->children);
     return ret;
   }
@@ -2638,19 +2632,13 @@ struct ParamTraits<webkit_glue::WebAccessibility> {
     l->append(L", ");
     LogParam(p.value, l);
     l->append(L", ");
-    LogParam(p.action, l);
-    l->append(L", ");
-    LogParam(p.description, l);
-    l->append(L", ");
-    LogParam(p.help, l);
-    l->append(L", ");
-    LogParam(p.shortcut, l);
-    l->append(L", ");
     LogParam(static_cast<int>(p.role), l);
     l->append(L", ");
     LogParam(static_cast<int>(p.state), l);
     l->append(L", ");
     LogParam(p.location, l);
+    l->append(L", ");
+    LogParam(p.attributes, l);
     l->append(L", ");
     LogParam(p.children, l);
     l->append(L")");

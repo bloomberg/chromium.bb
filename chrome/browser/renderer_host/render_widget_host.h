@@ -364,6 +364,17 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // Makes an IPC call to tell webkit to advance to the next misspelling.
   void AdvanceToNextMisspelling();
 
+  // Requests a snapshot of an accessible DOM tree from the renderer.
+  void RequestAccessibilityTree();
+
+  // Relays a request from assistive technology to set focus to the
+  // node with this accessibility object id.
+  void SetAccessibilityFocus(int acc_obj_id);
+
+  // Relays a request from assistive technology to perform the default action
+  // on a node with this accessibility object id.
+  void AccessibilityDoDefaultAction(int acc_obj_id);
+
   // Sets the active state (i.e., control tints).
   virtual void SetActive(bool active);
 

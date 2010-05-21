@@ -1076,6 +1076,18 @@ void RenderWidgetHost::AdvanceToNextMisspelling() {
   Send(new ViewMsg_AdvanceToNextMisspelling(routing_id_));
 }
 
+void RenderWidgetHost::RequestAccessibilityTree() {
+  Send(new ViewMsg_GetAccessibilityTree(routing_id()));
+}
+
+void RenderWidgetHost::SetAccessibilityFocus(int acc_obj_id) {
+  Send(new ViewMsg_SetAccessibilityFocus(routing_id(), acc_obj_id));
+}
+
+void RenderWidgetHost::AccessibilityDoDefaultAction(int acc_obj_id) {
+  Send(new ViewMsg_AccessibilityDoDefaultAction(routing_id(), acc_obj_id));
+}
+
 void RenderWidgetHost::ProcessKeyboardEventAck(int type, bool processed) {
   if (key_queue_.size() == 0) {
     LOG(ERROR) << "Got a KeyEvent back from the renderer but we "

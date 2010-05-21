@@ -58,7 +58,8 @@ class RenderWidgetHostViewWin
                          CWindow,
                          RenderWidgetHostHWNDTraits>,
       public RenderWidgetHostView,
-      public NotificationObserver {
+      public NotificationObserver,
+      public BrowserAccessibilityDelegate {
  public:
   // The view will associate itself with the given widget.
   explicit RenderWidgetHostViewWin(RenderWidgetHost* widget);
@@ -153,6 +154,10 @@ class RenderWidgetHostViewWin
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
+
+  // Implementation of BrowserAccessibilityDelegate:
+  virtual void SetAccessibilityFocus(int acc_obj_id);
+  virtual void AccessibilityDoDefaultAction(int acc_obj_id);
 
  protected:
   // Windows Message Handlers

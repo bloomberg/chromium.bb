@@ -36,18 +36,18 @@ void BrowserAccessibility::Initialize(
   renderer_id_ = src.id;
   name_ = src.name;
   value_ = src.value;
-  action_ = src.action;
-  description_ = src.description;
-  help_ = src.help;
-  shortcut_ = src.shortcut;
-  role_ = MSAARole(src.role);
-  state_ = MSAAState(src.state);
+  attributes_ = src.attributes;
   location_ = src.location;
+  InitRoleAndState(src.role, src.state);
+
+  // If this object doesn't have a name but it does have a description,
+  // use the description as its name - because some screen readers only
+  // announce the name.
+  if (name_.empty() && HasAttribute(WebAccessibility::ATTR_DESCRIPTION)) {
+    GetAttribute(WebAccessibility::ATTR_DESCRIPTION, &name_);
+  }
 
   instance_active_ = true;
-
-  // Focused is a dynamic state, only one node will be focused at a time.
-  state_ &= ~STATE_SYSTEM_FOCUSED;
 }
 
 void BrowserAccessibility::AddChild(BrowserAccessibility* child) {
@@ -106,22 +106,28 @@ BrowserAccessibility* BrowserAccessibility::NewReference() {
 //
 // IAccessible methods.
 //
+// Conventions:
+// * Always test for instance_active_ first and return E_FAIL if it's false.
+// * Always check for invalid arguments first, even if they're unused.
+// * Return S_FALSE if the only output is a string argument and it's empty.
+//
 
 HRESULT BrowserAccessibility::accDoDefaultAction(VARIANT var_id) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
+  if (!instance_active_)
     return E_FAIL;
-  }
 
-  return E_NOTIMPL;
+  BrowserAccessibility* target = GetTargetFromChildID(var_id);
+  if (!target)
+    return E_INVALIDARG;
+
+  manager_->DoDefaultAction(*target);
+  return S_OK;
 }
 
 STDMETHODIMP BrowserAccessibility::accHitTest(LONG x_left, LONG y_top,
                                               VARIANT* child) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
+  if (!instance_active_)
     return E_FAIL;
-  }
 
   if (!child)
     return E_INVALIDARG;
@@ -132,10 +138,8 @@ STDMETHODIMP BrowserAccessibility::accHitTest(LONG x_left, LONG y_top,
 STDMETHODIMP BrowserAccessibility::accLocation(LONG* x_left, LONG* y_top,
                                                LONG* width, LONG* height,
                                                VARIANT var_id) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
+  if (!instance_active_)
     return E_FAIL;
-  }
 
   if (!x_left || !y_top || !width || !height)
     return E_INVALIDARG;
@@ -170,28 +174,28 @@ STDMETHODIMP BrowserAccessibility::accNavigate(
     return E_INVALIDARG;
   }
 
-  BrowserAccessibility* result;
+  BrowserAccessibility* result = NULL;
   switch (nav_dir) {
     case NAVDIR_DOWN:
     case NAVDIR_UP:
     case NAVDIR_LEFT:
     case NAVDIR_RIGHT:
-    // These directions are not implemented, matching Mozilla and IE.
-    return E_NOTIMPL;
-  case NAVDIR_FIRSTCHILD:
-    if (target->children_.size() > 0)
-      result = target->children_[0];
-    break;
-  case NAVDIR_LASTCHILD:
-    if (target->children_.size() > 0)
-      result = target->children_[target->children_.size() - 1];
-    break;
-  case NAVDIR_NEXT:
-    result = target->GetNextSibling();
-    break;
-  case NAVDIR_PREVIOUS:
-    result = target->GetPreviousSibling();
-    break;
+      // These directions are not implemented, matching Mozilla and IE.
+      return E_NOTIMPL;
+    case NAVDIR_FIRSTCHILD:
+      if (target->children_.size() > 0)
+        result = target->children_[0];
+      break;
+    case NAVDIR_LASTCHILD:
+      if (target->children_.size() > 0)
+        result = target->children_[target->children_.size() - 1];
+      break;
+    case NAVDIR_NEXT:
+      result = target->GetNextSibling();
+      break;
+    case NAVDIR_PREVIOUS:
+      result = target->GetPreviousSibling();
+      break;
   }
 
   if (!result) {
@@ -206,10 +210,8 @@ STDMETHODIMP BrowserAccessibility::accNavigate(
 
 STDMETHODIMP BrowserAccessibility::get_accChild(VARIANT var_child,
                                                 IDispatch** disp_child) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
+  if (!instance_active_)
     return E_FAIL;
-  }
 
   if (!disp_child)
     return E_INVALIDARG;
@@ -225,10 +227,8 @@ STDMETHODIMP BrowserAccessibility::get_accChild(VARIANT var_child,
 }
 
 STDMETHODIMP BrowserAccessibility::get_accChildCount(LONG* child_count) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
+  if (!instance_active_)
     return E_FAIL;
-  }
 
   if (!child_count)
     return E_INVALIDARG;
@@ -239,10 +239,8 @@ STDMETHODIMP BrowserAccessibility::get_accChildCount(LONG* child_count) {
 
 STDMETHODIMP BrowserAccessibility::get_accDefaultAction(VARIANT var_id,
                                                         BSTR* def_action) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
+  if (!instance_active_)
     return E_FAIL;
-  }
 
   if (!def_action)
     return E_INVALIDARG;
@@ -251,11 +249,14 @@ STDMETHODIMP BrowserAccessibility::get_accDefaultAction(VARIANT var_id,
   if (!target)
     return E_INVALIDARG;
 
-  // Return false if the string is empty.
-  if (target->action_.size() == 0)
+  string16 action;
+  if (!target->GetAttribute(WebAccessibility::ATTR_SHORTCUT, &action))
     return S_FALSE;
 
-  *def_action = SysAllocString(target->action_.c_str());
+  if (action.empty())
+    return S_FALSE;
+
+  *def_action = SysAllocString(action.c_str());
 
   DCHECK(*def_action);
   return S_OK;
@@ -263,10 +264,8 @@ STDMETHODIMP BrowserAccessibility::get_accDefaultAction(VARIANT var_id,
 
 STDMETHODIMP BrowserAccessibility::get_accDescription(VARIANT var_id,
                                                       BSTR* desc) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
+  if (!instance_active_)
     return E_FAIL;
-  }
 
   if (!desc)
     return E_INVALIDARG;
@@ -275,21 +274,22 @@ STDMETHODIMP BrowserAccessibility::get_accDescription(VARIANT var_id,
   if (!target)
     return E_INVALIDARG;
 
-  // Return false if the string is empty.
-  if (target->description_.size() == 0)
+  string16 description;
+  if (!target->GetAttribute(WebAccessibility::ATTR_DESCRIPTION, &description))
     return S_FALSE;
 
-  *desc = SysAllocString(target->description_.c_str());
+  if (description.empty())
+    return S_FALSE;
+
+  *desc = SysAllocString(description.c_str());
 
   DCHECK(*desc);
   return S_OK;
 }
 
 STDMETHODIMP BrowserAccessibility::get_accFocus(VARIANT* focus_child) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
+  if (!instance_active_)
     return E_FAIL;
-  }
 
   if (!focus_child)
     return E_INVALIDARG;
@@ -309,10 +309,8 @@ STDMETHODIMP BrowserAccessibility::get_accFocus(VARIANT* focus_child) {
 }
 
 STDMETHODIMP BrowserAccessibility::get_accHelp(VARIANT var_id, BSTR* help) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
+  if (!instance_active_)
     return E_FAIL;
-  }
 
   if (!help)
     return E_INVALIDARG;
@@ -321,11 +319,14 @@ STDMETHODIMP BrowserAccessibility::get_accHelp(VARIANT var_id, BSTR* help) {
   if (!target)
     return E_INVALIDARG;
 
-  // Return false if the string is empty.
-  if (target->help_.size() == 0)
+  string16 help_str;
+  if (!target->GetAttribute(WebAccessibility::ATTR_HELP, &help_str))
     return S_FALSE;
 
-  *help = SysAllocString(target->help_.c_str());
+  if (help_str.empty())
+    return S_FALSE;
+
+  *help = SysAllocString(help_str.c_str());
 
   DCHECK(*help);
   return S_OK;
@@ -333,10 +334,8 @@ STDMETHODIMP BrowserAccessibility::get_accHelp(VARIANT var_id, BSTR* help) {
 
 STDMETHODIMP BrowserAccessibility::get_accKeyboardShortcut(VARIANT var_id,
                                                            BSTR* acc_key) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
+  if (!instance_active_)
     return E_FAIL;
-  }
 
   if (!acc_key)
     return E_INVALIDARG;
@@ -345,21 +344,22 @@ STDMETHODIMP BrowserAccessibility::get_accKeyboardShortcut(VARIANT var_id,
   if (!target)
     return E_INVALIDARG;
 
-  // Return false if the string is empty.
-  if (target->shortcut_.size() == 0)
+  string16 shortcut;
+  if (!target->GetAttribute(WebAccessibility::ATTR_SHORTCUT, &shortcut))
     return S_FALSE;
 
-  *acc_key = SysAllocString(target->shortcut_.c_str());
+  if (shortcut.empty())
+    return S_FALSE;
+
+  *acc_key = SysAllocString(shortcut.c_str());
 
   DCHECK(*acc_key);
   return S_OK;
 }
 
 STDMETHODIMP BrowserAccessibility::get_accName(VARIANT var_id, BSTR* name) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
+  if (!instance_active_)
     return E_FAIL;
-  }
 
   if (!name)
     return E_INVALIDARG;
@@ -368,8 +368,7 @@ STDMETHODIMP BrowserAccessibility::get_accName(VARIANT var_id, BSTR* name) {
   if (!target)
     return E_INVALIDARG;
 
-  // Return false if the string is empty.
-  if (target->name_.size() == 0)
+  if (target->name_.empty())
     return S_FALSE;
 
   *name = SysAllocString(target->name_.c_str());
@@ -379,10 +378,8 @@ STDMETHODIMP BrowserAccessibility::get_accName(VARIANT var_id, BSTR* name) {
 }
 
 STDMETHODIMP BrowserAccessibility::get_accParent(IDispatch** disp_parent) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
+  if (!instance_active_)
     return E_FAIL;
-  }
 
   if (!disp_parent)
     return E_INVALIDARG;
@@ -400,10 +397,8 @@ STDMETHODIMP BrowserAccessibility::get_accParent(IDispatch** disp_parent) {
 }
 
 STDMETHODIMP BrowserAccessibility::get_accRole(VARIANT var_id, VARIANT* role) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
+  if (!instance_active_)
     return E_FAIL;
-  }
 
   if (!role)
     return E_INVALIDARG;
@@ -412,17 +407,20 @@ STDMETHODIMP BrowserAccessibility::get_accRole(VARIANT var_id, VARIANT* role) {
   if (!target)
     return E_INVALIDARG;
 
-  role->vt = VT_I4;
-  role->lVal = target->role_;
+  if (!target->role_name_.empty()) {
+    role->vt = VT_BSTR;
+    role->bstrVal = SysAllocString(target->role_name_.c_str());
+  } else {
+    role->vt = VT_I4;
+    role->lVal = target->role_;
+  }
   return S_OK;
 }
 
 STDMETHODIMP BrowserAccessibility::get_accState(VARIANT var_id,
                                                 VARIANT* state) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
+  if (!instance_active_)
     return E_FAIL;
-  }
 
   if (!state)
     return E_INVALIDARG;
@@ -440,10 +438,8 @@ STDMETHODIMP BrowserAccessibility::get_accState(VARIANT var_id,
 }
 
 STDMETHODIMP BrowserAccessibility::get_accValue(VARIANT var_id, BSTR* value) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
+  if (!instance_active_)
     return E_FAIL;
-  }
 
   if (!value)
     return E_INVALIDARG;
@@ -465,21 +461,22 @@ STDMETHODIMP BrowserAccessibility::get_accHelpTopic(BSTR* help_file,
 }
 
 STDMETHODIMP BrowserAccessibility::get_accSelection(VARIANT* selected) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
+  if (!instance_active_)
     return E_FAIL;
-  }
 
   return E_NOTIMPL;
 }
 
 STDMETHODIMP BrowserAccessibility::accSelect(LONG flags_sel, VARIANT var_id) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
+  if (!instance_active_)
     return E_FAIL;
+
+  if (flags_sel & SELFLAG_TAKEFOCUS) {
+    manager_->SetFocus(*this);
+    return S_OK;
   }
 
-  return E_NOTIMPL;
+  return S_FALSE;
 }
 
 //
@@ -487,38 +484,42 @@ STDMETHODIMP BrowserAccessibility::accSelect(LONG flags_sel, VARIANT var_id) {
 //
 
 STDMETHODIMP BrowserAccessibility::role(LONG* role) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
+  if (!instance_active_)
     return E_FAIL;
-  }
 
   if (!role)
     return E_INVALIDARG;
 
-  *role = role_;
+  *role = ia2_role_;
 
   return S_OK;
 }
 
-STDMETHODIMP BrowserAccessibility::get_states(AccessibleStates* states) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
+STDMETHODIMP BrowserAccessibility::get_attributes(BSTR* attributes) {
+  if (!instance_active_)
     return E_FAIL;
-  }
+
+  if (!attributes)
+    return E_INVALIDARG;
+
+  return S_FALSE;
+}
+
+STDMETHODIMP BrowserAccessibility::get_states(AccessibleStates* states) {
+  if (!instance_active_)
+    return E_FAIL;
 
   if (!states)
     return E_INVALIDARG;
 
-  *states = state_;
+  *states = ia2_state_;
 
   return S_OK;
 }
 
 STDMETHODIMP BrowserAccessibility::get_uniqueID(LONG* unique_id) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
+  if (!instance_active_)
     return E_FAIL;
-  }
 
   if (!unique_id)
     return E_INVALIDARG;
@@ -528,10 +529,8 @@ STDMETHODIMP BrowserAccessibility::get_uniqueID(LONG* unique_id) {
 }
 
 STDMETHODIMP BrowserAccessibility::get_windowHandle(HWND* window_handle) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
+  if (!instance_active_)
     return E_FAIL;
-  }
 
   if (!window_handle)
     return E_INVALIDARG;
@@ -541,10 +540,8 @@ STDMETHODIMP BrowserAccessibility::get_windowHandle(HWND* window_handle) {
 }
 
 STDMETHODIMP BrowserAccessibility::get_indexInParent(LONG* index_in_parent) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
+  if (!instance_active_)
     return E_FAIL;
-  }
 
   if (!index_in_parent)
     return E_INVALIDARG;
@@ -554,21 +551,147 @@ STDMETHODIMP BrowserAccessibility::get_indexInParent(LONG* index_in_parent) {
 }
 
 //
+// IAccessibleImage methods.
+//
+
+STDMETHODIMP BrowserAccessibility::get_description(BSTR* desc) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!desc)
+    return E_INVALIDARG;
+
+  string16 description;
+  if (!GetAttribute(WebAccessibility::ATTR_DESCRIPTION, &description))
+    return S_FALSE;
+
+  if (description.empty())
+    return S_FALSE;
+
+  *desc = SysAllocString(description.c_str());
+
+  DCHECK(*desc);
+  return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibility::get_imagePosition(
+    enum IA2CoordinateType coordinate_type, long* x, long* y) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!x || !y)
+    return E_INVALIDARG;
+
+  if (coordinate_type == IA2_COORDTYPE_SCREEN_RELATIVE) {
+    HWND parent_hwnd = manager_->GetParentHWND();
+    POINT top_left = {0, 0};
+    ::ClientToScreen(parent_hwnd, &top_left);
+    *x = location_.x + top_left.x;
+    *y = location_.y + top_left.y;
+  } else if (coordinate_type == IA2_COORDTYPE_PARENT_RELATIVE) {
+    *x = location_.x;
+    *y = location_.y;
+    if (parent_) {
+      *x -= parent_->location_.x;
+      *y -= parent_->location_.y;
+    }
+  } else {
+    return E_INVALIDARG;
+  }
+
+  return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibility::get_imageSize(long* height, long* width) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!height || !width)
+    return E_INVALIDARG;
+
+  *height = location_.height;
+  *width = location_.width;
+  return S_OK;
+}
+
+//
+// IAccessibleText methods.
+//
+
+STDMETHODIMP BrowserAccessibility::get_nCharacters(long* n_characters) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!n_characters)
+    return E_INVALIDARG;
+
+  *n_characters = name_.length();
+  return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibility::get_text(
+    long start_offset, long end_offset, BSTR* text) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!text)
+    return E_INVALIDARG;
+
+  long len = name_.length();
+  if (start_offset < 0)
+    start_offset = 0;
+  if (end_offset > len)
+    end_offset = len;
+
+  *text = SysAllocString(
+      name_.substr(start_offset, end_offset - start_offset).c_str());
+  return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibility::get_caretOffset(long* offset) {
+  *offset = 0;
+  return S_OK;
+}
+
+//
 // IServiceProvider methods.
 //
 
 STDMETHODIMP BrowserAccessibility::QueryService(
     REFGUID guidService, REFIID riid, void** object) {
-  if (!instance_active_) {
-    // Instance no longer active, fail gracefully.
+  if (!instance_active_)
     return E_FAIL;
-  }
 
   if (guidService == IID_IAccessible || guidService == IID_IAccessible2)
     return QueryInterface(riid, object);
 
   *object = NULL;
   return E_FAIL;
+}
+
+//
+// CComObjectRootEx methods.
+//
+
+HRESULT WINAPI BrowserAccessibility::InternalQueryInterface(
+    void* this_ptr,
+    const _ATL_INTMAP_ENTRY* entries,
+    REFIID iid,
+    void** object) {
+  if (iid == IID_IAccessibleText) {
+    if (role_ != ROLE_SYSTEM_LINK) {
+      *object = NULL;
+      return E_NOINTERFACE;
+    }
+  } else if (iid == IID_IAccessibleImage) {
+    if (role_ != ROLE_SYSTEM_GRAPHIC) {
+      *object = NULL;
+      return E_NOINTERFACE;
+    }
+  }
+
+  return CComObjectRootBase::InternalQueryInterface(
+      this_ptr, entries, iid, object);
 }
 
 //
@@ -590,119 +713,301 @@ BrowserAccessibility* BrowserAccessibility::GetTargetFromChildID(
   return manager_->GetFromChildID(child_id);
 }
 
-LONG BrowserAccessibility::MSAARole(LONG browser_accessibility_role) {
-  switch (browser_accessibility_role) {
-    case WebAccessibility::ROLE_APPLICATION:
-      return ROLE_SYSTEM_APPLICATION;
-    case WebAccessibility::ROLE_CELL:
-      return ROLE_SYSTEM_CELL;
-    case WebAccessibility::ROLE_CHECKBUTTON:
-      return ROLE_SYSTEM_CHECKBUTTON;
-    case WebAccessibility::ROLE_COLUMN:
-      return ROLE_SYSTEM_COLUMN;
-    case WebAccessibility::ROLE_COLUMNHEADER:
-      return ROLE_SYSTEM_COLUMNHEADER;
-    case WebAccessibility::ROLE_DOCUMENT:
-      return ROLE_SYSTEM_DOCUMENT;
-    case WebAccessibility::ROLE_GRAPHIC:
-      return ROLE_SYSTEM_GRAPHIC;
-    case WebAccessibility::ROLE_GROUPING:
-      return ROLE_SYSTEM_GROUPING;
-    case WebAccessibility::ROLE_LINK:
-      return ROLE_SYSTEM_LINK;
-    case WebAccessibility::ROLE_LIST:
-    case WebAccessibility::ROLE_LISTBOX:
-      return ROLE_SYSTEM_LIST;
-    case WebAccessibility::ROLE_LISTITEM:
-      return ROLE_SYSTEM_LISTITEM;
-    case WebAccessibility::ROLE_MENUBAR:
-      return ROLE_SYSTEM_MENUBAR;
-    case WebAccessibility::ROLE_MENUITEM:
-      return ROLE_SYSTEM_MENUITEM;
-    case WebAccessibility::ROLE_MENUPOPUP:
-      return ROLE_SYSTEM_MENUPOPUP;
-    case WebAccessibility::ROLE_OUTLINE:
-      return ROLE_SYSTEM_OUTLINE;
-    case WebAccessibility::ROLE_PAGETABLIST:
-      return ROLE_SYSTEM_PAGETABLIST;
-    case WebAccessibility::ROLE_PROGRESSBAR:
-      return ROLE_SYSTEM_PROGRESSBAR;
-    case WebAccessibility::ROLE_PUSHBUTTON:
-      return ROLE_SYSTEM_PUSHBUTTON;
-    case WebAccessibility::ROLE_RADIOBUTTON:
-      return ROLE_SYSTEM_RADIOBUTTON;
-    case WebAccessibility::ROLE_ROW:
-      return ROLE_SYSTEM_ROW;
-    case WebAccessibility::ROLE_ROWHEADER:
-      return ROLE_SYSTEM_ROWHEADER;
-    case WebAccessibility::ROLE_SEPARATOR:
-      return ROLE_SYSTEM_SEPARATOR;
-    case WebAccessibility::ROLE_SLIDER:
-      return ROLE_SYSTEM_SLIDER;
-    case WebAccessibility::ROLE_STATICTEXT:
-      return ROLE_SYSTEM_STATICTEXT;
-    case WebAccessibility::ROLE_STATUSBAR:
-      return ROLE_SYSTEM_STATUSBAR;
-    case WebAccessibility::ROLE_TABLE:
-      return ROLE_SYSTEM_TABLE;
-    case WebAccessibility::ROLE_TEXT:
-      return ROLE_SYSTEM_TEXT;
-    case WebAccessibility::ROLE_TOOLBAR:
-      return ROLE_SYSTEM_TOOLBAR;
-    case WebAccessibility::ROLE_TOOLTIP:
-      return ROLE_SYSTEM_TOOLTIP;
-    case WebAccessibility::ROLE_CLIENT:
-    default:
-      // This is the default role for MSAA.
-      return ROLE_SYSTEM_CLIENT;
-  }
+bool BrowserAccessibility::HasAttribute(WebAccessibility::Attribute attribute) {
+  return (attributes_.find(attribute) != attributes_.end());
 }
 
-LONG BrowserAccessibility::MSAAState(LONG browser_accessibility_state) {
-  LONG state = 0;
-
-  if ((browser_accessibility_state >> WebAccessibility::STATE_CHECKED) & 1)
-    state |= STATE_SYSTEM_CHECKED;
-
-  if ((browser_accessibility_state >> WebAccessibility::STATE_FOCUSABLE) & 1)
-    state |= STATE_SYSTEM_FOCUSABLE;
-
-  if ((browser_accessibility_state >> WebAccessibility::STATE_FOCUSED) & 1)
-    state |= STATE_SYSTEM_FOCUSED;
-
-  if ((browser_accessibility_state >> WebAccessibility::STATE_HOTTRACKED) & 1)
-    state |= STATE_SYSTEM_HOTTRACKED;
-
-  if ((browser_accessibility_state >>
-       WebAccessibility::STATE_INDETERMINATE) & 1) {
-    state |= STATE_SYSTEM_INDETERMINATE;
+bool BrowserAccessibility::GetAttribute(
+    WebAccessibility::Attribute attribute, string16* value) {
+  std::map<int32, string16>::iterator iter = attributes_.find(attribute);
+  if (iter != attributes_.end()) {
+    *value = iter->second;
+    return true;
   }
 
-  if ((browser_accessibility_state >> WebAccessibility::STATE_LINKED) & 1)
-    state |= STATE_SYSTEM_LINKED;
+  return false;
+}
 
-  if ((browser_accessibility_state >>
-       WebAccessibility::STATE_MULTISELECTABLE) & 1) {
-    state |= STATE_SYSTEM_MULTISELECTABLE;
+void BrowserAccessibility::InitRoleAndState(LONG web_role,
+                                            LONG web_state) {
+  state_ = 0;
+  ia2_state_ = IA2_STATE_OPAQUE;
+
+  if ((web_state >> WebAccessibility::STATE_CHECKED) & 1)
+    state_ |= STATE_SYSTEM_CHECKED;
+  if ((web_state >> WebAccessibility::STATE_FOCUSABLE) & 1)
+    state_ |= STATE_SYSTEM_FOCUSABLE;
+  if ((web_state >> WebAccessibility::STATE_HOTTRACKED) & 1)
+    state_ |= STATE_SYSTEM_HOTTRACKED;
+  if ((web_state >> WebAccessibility::STATE_INDETERMINATE) & 1)
+    state_ |= STATE_SYSTEM_INDETERMINATE;
+  if ((web_state >> WebAccessibility::STATE_LINKED) & 1)
+    state_ |= STATE_SYSTEM_LINKED;
+  if ((web_state >> WebAccessibility::STATE_MULTISELECTABLE) & 1)
+    state_ |= STATE_SYSTEM_MULTISELECTABLE;
+  if ((web_state >> WebAccessibility::STATE_OFFSCREEN) & 1)
+    state_ |= STATE_SYSTEM_OFFSCREEN;
+  if ((web_state >> WebAccessibility::STATE_PRESSED) & 1)
+    state_ |= STATE_SYSTEM_PRESSED;
+  if ((web_state >> WebAccessibility::STATE_PROTECTED) & 1)
+    state_ |= STATE_SYSTEM_PROTECTED;
+  if ((web_state >> WebAccessibility::STATE_READONLY) & 1)
+    state_ |= STATE_SYSTEM_READONLY;
+  if ((web_state >> WebAccessibility::STATE_TRAVERSED) & 1)
+    state_ |= STATE_SYSTEM_TRAVERSED;
+  if ((web_state >> WebAccessibility::STATE_UNAVAILABLE) & 1)
+    state_ |= STATE_SYSTEM_UNAVAILABLE;
+
+  role_ = 0;
+  ia2_role_ = 0;
+  switch (web_role) {
+    case WebAccessibility::ROLE_ALERT:
+    case WebAccessibility::ROLE_ALERT_DIALOG:
+      role_ = ROLE_SYSTEM_ALERT;
+      break;
+    case WebAccessibility::ROLE_APPLICATION:
+      role_ = ROLE_SYSTEM_APPLICATION;
+      break;
+    case WebAccessibility::ROLE_ARTICLE:
+      role_ = ROLE_SYSTEM_GROUPING;
+      ia2_role_ = IA2_ROLE_SECTION;
+      break;
+    case WebAccessibility::ROLE_BUTTON:
+      role_ = ROLE_SYSTEM_PUSHBUTTON;
+      break;
+    case WebAccessibility::ROLE_CELL:
+      role_ = ROLE_SYSTEM_CELL;
+      break;
+    case WebAccessibility::ROLE_CHECKBOX:
+      role_ = ROLE_SYSTEM_CHECKBUTTON;
+      break;
+    case WebAccessibility::ROLE_COLOR_WELL:
+      role_ = ROLE_SYSTEM_CLIENT;
+      ia2_role_ = IA2_ROLE_COLOR_CHOOSER;
+      break;
+    case WebAccessibility::ROLE_COLUMN:
+      role_ = ROLE_SYSTEM_COLUMN;
+      break;
+    case WebAccessibility::ROLE_COLUMN_HEADER:
+      role_ = ROLE_SYSTEM_COLUMNHEADER;
+      break;
+    case WebAccessibility::ROLE_COMBO_BOX:
+      role_ = ROLE_SYSTEM_COMBOBOX;
+      break;
+    case WebAccessibility::ROLE_DEFINITION_LIST_DEFINITION:
+      role_name_ = L"dd";
+      ia2_role_ = IA2_ROLE_PARAGRAPH;
+      break;
+    case WebAccessibility::ROLE_DEFINITION_LIST_TERM:
+      role_ = ROLE_SYSTEM_LISTITEM;
+      break;
+    case WebAccessibility::ROLE_DIALOG:
+      role_ = ROLE_SYSTEM_DIALOG;
+      break;
+    case WebAccessibility::ROLE_DOCUMENT:
+    case WebAccessibility::ROLE_WEB_AREA:
+      role_ = ROLE_SYSTEM_DOCUMENT;
+      state_ |= STATE_SYSTEM_READONLY;
+      state_ |= STATE_SYSTEM_FOCUSABLE;
+      break;
+    case WebAccessibility::ROLE_EDITABLE_TEXT:
+      role_ = ROLE_SYSTEM_TEXT;
+      ia2_state_ |= IA2_STATE_SINGLE_LINE;
+      ia2_state_ |= IA2_STATE_EDITABLE;
+      break;
+    case WebAccessibility::ROLE_GRID:
+      role_ = ROLE_SYSTEM_TABLE;
+      break;
+    case WebAccessibility::ROLE_GROUP:
+      role_name_ = L"div";
+      ia2_role_ = IA2_ROLE_SECTION;
+      break;
+    case WebAccessibility::ROLE_HEADING:
+      // TODO(dmazzoni): support all heading levels
+      role_name_ = L"h1";
+      ia2_role_ = IA2_ROLE_HEADING;
+      break;
+    case WebAccessibility::ROLE_IMAGE:
+      role_ = ROLE_SYSTEM_GRAPHIC;
+      break;
+    case WebAccessibility::ROLE_IMAGE_MAP:
+      role_name_ = L"map";
+      ia2_role_ = IA2_ROLE_IMAGE_MAP;
+      break;
+    case WebAccessibility::ROLE_IMAGE_MAP_LINK:
+      role_ = ROLE_SYSTEM_LINK;
+      state_ |= STATE_SYSTEM_LINKED;
+      break;
+    case WebAccessibility::ROLE_LANDMARK_APPLICATION:
+    case WebAccessibility::ROLE_LANDMARK_BANNER:
+    case WebAccessibility::ROLE_LANDMARK_COMPLEMENTARY:
+    case WebAccessibility::ROLE_LANDMARK_CONTENTINFO:
+    case WebAccessibility::ROLE_LANDMARK_MAIN:
+    case WebAccessibility::ROLE_LANDMARK_NAVIGATION:
+    case WebAccessibility::ROLE_LANDMARK_SEARCH:
+      role_ = ROLE_SYSTEM_GROUPING;
+      ia2_role_ = IA2_ROLE_SECTION;
+      break;
+    case WebAccessibility::ROLE_LINK:
+    case WebAccessibility::ROLE_WEBCORE_LINK:
+      role_ = ROLE_SYSTEM_LINK;
+      state_ |= STATE_SYSTEM_LINKED;
+      break;
+    case WebAccessibility::ROLE_LIST:
+      role_ = ROLE_SYSTEM_LIST;
+      break;
+    case WebAccessibility::ROLE_LISTBOX:
+      role_ = ROLE_SYSTEM_LIST;
+      break;
+    case WebAccessibility::ROLE_LISTBOX_OPTION:
+    case WebAccessibility::ROLE_LIST_ITEM:
+    case WebAccessibility::ROLE_LIST_MARKER:
+      role_ = ROLE_SYSTEM_LISTITEM;
+      break;
+    case WebAccessibility::ROLE_MENU:
+    case WebAccessibility::ROLE_MENU_BUTTON:
+      role_ = ROLE_SYSTEM_MENUPOPUP;
+      break;
+    case WebAccessibility::ROLE_MENU_BAR:
+      role_ = ROLE_SYSTEM_MENUBAR;
+      break;
+    case WebAccessibility::ROLE_MENU_ITEM:
+    case WebAccessibility::ROLE_MENU_LIST_OPTION:
+      role_ = ROLE_SYSTEM_MENUITEM;
+      break;
+    case WebAccessibility::ROLE_MENU_LIST_POPUP:
+      role_ = ROLE_SYSTEM_MENUPOPUP;
+      break;
+    case WebAccessibility::ROLE_NOTE:
+      role_ = ROLE_SYSTEM_GROUPING;
+      ia2_role_ = IA2_ROLE_NOTE;
+      break;
+    case WebAccessibility::ROLE_OUTLINE:
+      role_ = ROLE_SYSTEM_OUTLINE;
+      break;
+    case WebAccessibility::ROLE_POPUP_BUTTON:
+      role_ = ROLE_SYSTEM_COMBOBOX;
+      break;
+    case WebAccessibility::ROLE_PROGRESS_INDICATOR:
+      role_ = ROLE_SYSTEM_PROGRESSBAR;
+      break;
+    case WebAccessibility::ROLE_RADIO_BUTTON:
+      role_ = ROLE_SYSTEM_RADIOBUTTON;
+      break;
+    case WebAccessibility::ROLE_RADIO_GROUP:
+      role_ = ROLE_SYSTEM_GROUPING;
+      ia2_role_ = IA2_ROLE_SECTION;
+      break;
+    case WebAccessibility::ROLE_REGION:
+      role_ = ROLE_SYSTEM_GROUPING;
+      ia2_role_ = IA2_ROLE_SECTION;
+      break;
+    case WebAccessibility::ROLE_ROW:
+      role_ = ROLE_SYSTEM_ROW;
+      break;
+    case WebAccessibility::ROLE_ROW_HEADER:
+      role_ = ROLE_SYSTEM_ROWHEADER;
+      break;
+    case WebAccessibility::ROLE_RULER:
+      role_ = ROLE_SYSTEM_CLIENT;
+      ia2_role_ = IA2_ROLE_RULER;
+      break;
+    case WebAccessibility::ROLE_SCROLLAREA:
+      role_ = ROLE_SYSTEM_CLIENT;
+      ia2_role_ = IA2_ROLE_SCROLL_PANE;
+      break;
+    case WebAccessibility::ROLE_SCROLLBAR:
+      role_ = ROLE_SYSTEM_SCROLLBAR;
+      break;
+    case WebAccessibility::ROLE_SLIDER:
+      role_ = ROLE_SYSTEM_SLIDER;
+      break;
+    case WebAccessibility::ROLE_SPLIT_GROUP:
+      role_ = ROLE_SYSTEM_CLIENT;
+      ia2_role_ = IA2_ROLE_SPLIT_PANE;
+      break;
+    case WebAccessibility::ROLE_ANNOTATION:
+    case WebAccessibility::ROLE_STATIC_TEXT:
+      role_ = ROLE_SYSTEM_TEXT;
+      break;
+    case WebAccessibility::ROLE_STATUS:
+      role_ = ROLE_SYSTEM_STATUSBAR;
+      break;
+    case WebAccessibility::ROLE_TAB:
+      role_ = ROLE_SYSTEM_PAGETAB;
+      break;
+    case WebAccessibility::ROLE_TABLE:
+      role_ = ROLE_SYSTEM_TABLE;
+      break;
+    case WebAccessibility::ROLE_TABLE_HEADER_CONTAINER:
+      role_ = ROLE_SYSTEM_GROUPING;
+      ia2_role_ = IA2_ROLE_SECTION;
+      break;
+    case WebAccessibility::ROLE_TAB_GROUP:
+    case WebAccessibility::ROLE_TAB_LIST:
+    case WebAccessibility::ROLE_TAB_PANEL:
+      role_ = ROLE_SYSTEM_PAGETABLIST;
+      break;
+    case WebAccessibility::ROLE_TEXTAREA:
+      role_ = ROLE_SYSTEM_TEXT;
+      ia2_state_ |= IA2_STATE_MULTI_LINE;
+      ia2_state_ |= IA2_STATE_EDITABLE;
+      break;
+    case WebAccessibility::ROLE_TEXT_FIELD:
+      role_ = ROLE_SYSTEM_TEXT;
+      ia2_state_ |= IA2_STATE_SINGLE_LINE;
+      ia2_state_ |= IA2_STATE_EDITABLE;
+      break;
+    case WebAccessibility::ROLE_TOOLBAR:
+      role_ = ROLE_SYSTEM_TOOLBAR;
+      break;
+    case WebAccessibility::ROLE_TOOLTIP:
+      role_ = ROLE_SYSTEM_TOOLTIP;
+      break;
+    case WebAccessibility::ROLE_TREE:
+      role_ = ROLE_SYSTEM_OUTLINE;
+      break;
+    case WebAccessibility::ROLE_TREE_GRID:
+      role_ = ROLE_SYSTEM_OUTLINE;
+      break;
+    case WebAccessibility::ROLE_TREE_ITEM:
+      role_ = ROLE_SYSTEM_OUTLINEITEM;
+      break;
+    case WebAccessibility::ROLE_WINDOW:
+      role_ = ROLE_SYSTEM_WINDOW;
+      break;
+
+    // TODO(dmazzoni): figure out the proper MSAA role for all of these.
+    case WebAccessibility::ROLE_BROWSER:
+    case WebAccessibility::ROLE_BUSY_INDICATOR:
+    case WebAccessibility::ROLE_DIRECTORY:
+    case WebAccessibility::ROLE_DISCLOSURE_TRIANGLE:
+    case WebAccessibility::ROLE_DRAWER:
+    case WebAccessibility::ROLE_GROW_AREA:
+    case WebAccessibility::ROLE_HELP_TAG:
+    case WebAccessibility::ROLE_IGNORED:
+    case WebAccessibility::ROLE_INCREMENTOR:
+    case WebAccessibility::ROLE_LOG:
+    case WebAccessibility::ROLE_MARQUEE:
+    case WebAccessibility::ROLE_MATH:
+    case WebAccessibility::ROLE_MATTE:
+    case WebAccessibility::ROLE_RULER_MARKER:
+    case WebAccessibility::ROLE_SHEET:
+    case WebAccessibility::ROLE_SLIDER_THUMB:
+    case WebAccessibility::ROLE_SPLITTER:
+    case WebAccessibility::ROLE_SYSTEM_WIDE:
+    case WebAccessibility::ROLE_TIMER:
+    case WebAccessibility::ROLE_VALUE_INDICATOR:
+    default:
+      role_ = ROLE_SYSTEM_CLIENT;
+      break;
   }
 
-  if ((browser_accessibility_state >> WebAccessibility::STATE_OFFSCREEN) & 1)
-    state |= STATE_SYSTEM_OFFSCREEN;
+  // The role should always be set.
+  DCHECK(!role_name_.empty() || role_);
 
-  if ((browser_accessibility_state >> WebAccessibility::STATE_PRESSED) & 1)
-    state |= STATE_SYSTEM_PRESSED;
-
-  if ((browser_accessibility_state >> WebAccessibility::STATE_PROTECTED) & 1)
-    state |= STATE_SYSTEM_PROTECTED;
-
-  if ((browser_accessibility_state >> WebAccessibility::STATE_READONLY) & 1)
-    state |= STATE_SYSTEM_READONLY;
-
-  if ((browser_accessibility_state >> WebAccessibility::STATE_TRAVERSED) & 1)
-    state |= STATE_SYSTEM_TRAVERSED;
-
-  if ((browser_accessibility_state >> WebAccessibility::STATE_UNAVAILABLE) & 1)
-    state |= STATE_SYSTEM_UNAVAILABLE;
-
-  return state;
+  // If we didn't explicitly set the IAccessible2 role, make it the same
+  // as the MSAA role.
+  if (!ia2_role_)
+    ia2_role_ = role_;
 }

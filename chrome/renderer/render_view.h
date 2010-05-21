@@ -497,6 +497,8 @@ class RenderView : public RenderWidget,
   void OnUserScriptIdleTriggered(WebKit::WebFrame* frame);
 
   void OnGetAccessibilityTree();
+  void OnSetAccessibilityFocus(int acc_obj_id);
+  void OnAccessibilityDoDefaultAction(int acc_obj_id);
 
 #if defined(OS_MACOSX)
   // Helper routines for GPU plugin support. Used by the

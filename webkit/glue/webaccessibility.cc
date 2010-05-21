@@ -20,79 +20,197 @@ namespace webkit_glue {
 // WebAccessibilityRole (except for default role).
 WebAccessibility::Role ConvertRole(WebKit::WebAccessibilityRole role) {
   switch (role) {
-    case WebKit::WebAccessibilityRoleLandmarkApplication:
+    case WebKit::WebAccessibilityRoleAnnotation:
+      return WebAccessibility::ROLE_ANNOTATION;
+    case WebKit::WebAccessibilityRoleApplication:
       return WebAccessibility::ROLE_APPLICATION;
+    case WebKit::WebAccessibilityRoleApplicationAlert:
+      return WebAccessibility::ROLE_ALERT;
+    case WebKit::WebAccessibilityRoleApplicationAlertDialog:
+      return WebAccessibility::ROLE_ALERT_DIALOG;
+    case WebKit::WebAccessibilityRoleApplicationDialog:
+      return WebAccessibility::ROLE_DIALOG;
+    case WebKit::WebAccessibilityRoleApplicationLog:
+      return WebAccessibility::ROLE_LOG;
+    case WebKit::WebAccessibilityRoleApplicationMarquee:
+      return WebAccessibility::ROLE_MARQUEE;
+    case WebKit::WebAccessibilityRoleApplicationStatus:
+      return WebAccessibility::ROLE_STATUS;
+    case WebKit::WebAccessibilityRoleApplicationTimer:
+      return WebAccessibility::ROLE_TIMER;
+    case WebKit::WebAccessibilityRoleBrowser:
+      return WebAccessibility::ROLE_BROWSER;
+    case WebKit::WebAccessibilityRoleBusyIndicator:
+      return WebAccessibility::ROLE_BUSY_INDICATOR;
+    case WebKit::WebAccessibilityRoleButton:
+      return WebAccessibility::ROLE_BUTTON;
     case WebKit::WebAccessibilityRoleCell:
       return WebAccessibility::ROLE_CELL;
     case WebKit::WebAccessibilityRoleCheckBox:
-      return WebAccessibility::ROLE_CHECKBUTTON;
+      return WebAccessibility::ROLE_CHECKBOX;
+    case WebKit::WebAccessibilityRoleColorWell:
+      return WebAccessibility::ROLE_COLOR_WELL;
     case WebKit::WebAccessibilityRoleColumn:
       return WebAccessibility::ROLE_COLUMN;
     case WebKit::WebAccessibilityRoleColumnHeader:
-      return WebAccessibility::ROLE_COLUMNHEADER;
-    case WebKit::WebAccessibilityRoleDocumentArticle:
-    case WebKit::WebAccessibilityRoleWebArea:
+      return WebAccessibility::ROLE_COLUMN_HEADER;
+    case WebKit::WebAccessibilityRoleComboBox:
+      return WebAccessibility::ROLE_COMBO_BOX;
+    case WebKit::WebAccessibilityRoleDefinitionListDefinition:
+      return WebAccessibility::ROLE_DEFINITION_LIST_DEFINITION;
+    case WebKit::WebAccessibilityRoleDefinitionListTerm:
+      return WebAccessibility::ROLE_DEFINITION_LIST_TERM;
+    case WebKit::WebAccessibilityRoleDirectory:
+      return WebAccessibility::ROLE_DIRECTORY;
+    case WebKit::WebAccessibilityRoleDisclosureTriangle:
+      return WebAccessibility::ROLE_DISCLOSURE_TRIANGLE;
+    case WebKit::WebAccessibilityRoleDocument:
       return WebAccessibility::ROLE_DOCUMENT;
-    case WebKit::WebAccessibilityRoleImageMap:
-    case WebKit::WebAccessibilityRoleImage:
-      return WebAccessibility::ROLE_GRAPHIC;
+    case WebKit::WebAccessibilityRoleDocumentArticle:
+      return WebAccessibility::ROLE_ARTICLE;
+    case WebKit::WebAccessibilityRoleDocumentMath:
+      return WebAccessibility::ROLE_MATH;
+    case WebKit::WebAccessibilityRoleDocumentNote:
+      return WebAccessibility::ROLE_NOTE;
     case WebKit::WebAccessibilityRoleDocumentRegion:
-    case WebKit::WebAccessibilityRoleRadioGroup:
+      return WebAccessibility::ROLE_REGION;
+    case WebKit::WebAccessibilityRoleDrawer:
+      return WebAccessibility::ROLE_DRAWER;
+    case WebKit::WebAccessibilityRoleEditableText:
+      return WebAccessibility::ROLE_EDITABLE_TEXT;
+    case WebKit::WebAccessibilityRoleGrid:
+      return WebAccessibility::ROLE_GRID;
     case WebKit::WebAccessibilityRoleGroup:
-      return WebAccessibility::ROLE_GROUPING;
+      return WebAccessibility::ROLE_GROUP;
+    case WebKit::WebAccessibilityRoleGrowArea:
+      return WebAccessibility::ROLE_GROW_AREA;
+    case WebKit::WebAccessibilityRoleHeading:
+      return WebAccessibility::ROLE_HEADING;
+    case WebKit::WebAccessibilityRoleHelpTag:
+      return WebAccessibility::ROLE_HELP_TAG;
+    case WebKit::WebAccessibilityRoleIgnored:
+      return WebAccessibility::ROLE_IGNORED;
+    case WebKit::WebAccessibilityRoleImage:
+      return WebAccessibility::ROLE_IMAGE;
+    case WebKit::WebAccessibilityRoleImageMap:
+      return WebAccessibility::ROLE_IMAGE_MAP;
+    case WebKit::WebAccessibilityRoleImageMapLink:
+      return WebAccessibility::ROLE_IMAGE_MAP_LINK;
+    case WebKit::WebAccessibilityRoleIncrementor:
+      return WebAccessibility::ROLE_INCREMENTOR;
+    case WebKit::WebAccessibilityRoleLandmarkApplication:
+      return WebAccessibility::ROLE_LANDMARK_APPLICATION;
+    case WebKit::WebAccessibilityRoleLandmarkBanner:
+      return WebAccessibility::ROLE_LANDMARK_BANNER;
+    case WebKit::WebAccessibilityRoleLandmarkComplementary:
+      return WebAccessibility::ROLE_LANDMARK_COMPLEMENTARY;
+    case WebKit::WebAccessibilityRoleLandmarkContentInfo:
+      return WebAccessibility::ROLE_LANDMARK_CONTENTINFO;
+    case WebKit::WebAccessibilityRoleLandmarkMain:
+      return WebAccessibility::ROLE_LANDMARK_MAIN;
+    case WebKit::WebAccessibilityRoleLandmarkNavigation:
+      return WebAccessibility::ROLE_LANDMARK_NAVIGATION;
+    case WebKit::WebAccessibilityRoleLandmarkSearch:
+      return WebAccessibility::ROLE_LANDMARK_SEARCH;
     case WebKit::WebAccessibilityRoleLink:
-    case WebKit::WebAccessibilityRoleWebCoreLink:
       return WebAccessibility::ROLE_LINK;
     case WebKit::WebAccessibilityRoleList:
       return WebAccessibility::ROLE_LIST;
     case WebKit::WebAccessibilityRoleListBox:
       return WebAccessibility::ROLE_LISTBOX;
     case WebKit::WebAccessibilityRoleListBoxOption:
-      return WebAccessibility::ROLE_LISTITEM;
-    case WebKit::WebAccessibilityRoleMenuBar:
-      return WebAccessibility::ROLE_MENUBAR;
-    case WebKit::WebAccessibilityRoleMenuButton:
-    case WebKit::WebAccessibilityRoleMenuItem:
-      return WebAccessibility::ROLE_MENUITEM;
+      return WebAccessibility::ROLE_LISTBOX_OPTION;
+    case WebKit::WebAccessibilityRoleListItem:
+      return WebAccessibility::ROLE_LIST_ITEM;
+    case WebKit::WebAccessibilityRoleListMarker:
+      return WebAccessibility::ROLE_LIST_MARKER;
+    case WebKit::WebAccessibilityRoleMatte:
+      return WebAccessibility::ROLE_MATTE;
     case WebKit::WebAccessibilityRoleMenu:
-      return WebAccessibility::ROLE_MENUPOPUP;
+      return WebAccessibility::ROLE_MENU;
+    case WebKit::WebAccessibilityRoleMenuBar:
+      return WebAccessibility::ROLE_MENU_BAR;
+    case WebKit::WebAccessibilityRoleMenuButton:
+      return WebAccessibility::ROLE_MENU_BUTTON;
+    case WebKit::WebAccessibilityRoleMenuItem:
+      return WebAccessibility::ROLE_MENU_ITEM;
+    case WebKit::WebAccessibilityRoleMenuListOption:
+      return WebAccessibility::ROLE_MENU_LIST_OPTION;
+    case WebKit::WebAccessibilityRoleMenuListPopup:
+      return WebAccessibility::ROLE_MENU_LIST_POPUP;
     case WebKit::WebAccessibilityRoleOutline:
       return WebAccessibility::ROLE_OUTLINE;
-    case WebKit::WebAccessibilityRoleTabGroup:
-      return WebAccessibility::ROLE_PAGETABLIST;
+    case WebKit::WebAccessibilityRolePopUpButton:
+      return WebAccessibility::ROLE_POPUP_BUTTON;
     case WebKit::WebAccessibilityRoleProgressIndicator:
-      return WebAccessibility::ROLE_PROGRESSBAR;
-    case WebKit::WebAccessibilityRoleButton:
-      return WebAccessibility::ROLE_PUSHBUTTON;
+      return WebAccessibility::ROLE_PROGRESS_INDICATOR;
     case WebKit::WebAccessibilityRoleRadioButton:
-      return WebAccessibility::ROLE_RADIOBUTTON;
+      return WebAccessibility::ROLE_RADIO_BUTTON;
+    case WebKit::WebAccessibilityRoleRadioGroup:
+      return WebAccessibility::ROLE_RADIO_GROUP;
     case WebKit::WebAccessibilityRoleRow:
       return WebAccessibility::ROLE_ROW;
     case WebKit::WebAccessibilityRoleRowHeader:
-      return WebAccessibility::ROLE_ROWHEADER;
-    case WebKit::WebAccessibilityRoleSplitter:
-      return WebAccessibility::ROLE_SEPARATOR;
+      return WebAccessibility::ROLE_ROW_HEADER;
+    case WebKit::WebAccessibilityRoleRuler:
+      return WebAccessibility::ROLE_RULER;
+    case WebKit::WebAccessibilityRoleRulerMarker:
+      return WebAccessibility::ROLE_RULER_MARKER;
+    case WebKit::WebAccessibilityRoleScrollArea:
+      return WebAccessibility::ROLE_SCROLLAREA;
+    case WebKit::WebAccessibilityRoleScrollBar:
+      return WebAccessibility::ROLE_SCROLLBAR;
+    case WebKit::WebAccessibilityRoleSheet:
+      return WebAccessibility::ROLE_SHEET;
     case WebKit::WebAccessibilityRoleSlider:
       return WebAccessibility::ROLE_SLIDER;
+    case WebKit::WebAccessibilityRoleSliderThumb:
+      return WebAccessibility::ROLE_SLIDER_THUMB;
+    case WebKit::WebAccessibilityRoleSplitGroup:
+      return WebAccessibility::ROLE_SPLIT_GROUP;
+    case WebKit::WebAccessibilityRoleSplitter:
+      return WebAccessibility::ROLE_SPLITTER;
     case WebKit::WebAccessibilityRoleStaticText:
-      return WebAccessibility::ROLE_STATICTEXT;
-    case WebKit::WebAccessibilityRoleApplicationStatus:
-      return WebAccessibility::ROLE_STATUSBAR;
+      return WebAccessibility::ROLE_STATIC_TEXT;
+    case WebKit::WebAccessibilityRoleSystemWide:
+      return WebAccessibility::ROLE_SYSTEM_WIDE;
+    case WebKit::WebAccessibilityRoleTab:
+      return WebAccessibility::ROLE_TAB;
+    case WebKit::WebAccessibilityRoleTabGroup:
+      return WebAccessibility::ROLE_TAB_GROUP;
+    case WebKit::WebAccessibilityRoleTabList:
+      return WebAccessibility::ROLE_TAB_LIST;
+    case WebKit::WebAccessibilityRoleTabPanel:
+      return WebAccessibility::ROLE_TAB_PANEL;
     case WebKit::WebAccessibilityRoleTable:
       return WebAccessibility::ROLE_TABLE;
-    case WebKit::WebAccessibilityRoleListMarker:
-    case WebKit::WebAccessibilityRoleTextField:
+    case WebKit::WebAccessibilityRoleTableHeaderContainer:
+      return WebAccessibility::ROLE_TABLE_HEADER_CONTAINER;
     case WebKit::WebAccessibilityRoleTextArea:
-      return WebAccessibility::ROLE_TEXT;
+      return WebAccessibility::ROLE_TEXTAREA;
+    case WebKit::WebAccessibilityRoleTextField:
+      return WebAccessibility::ROLE_TEXT_FIELD;
     case WebKit::WebAccessibilityRoleToolbar:
       return WebAccessibility::ROLE_TOOLBAR;
+    case WebKit::WebAccessibilityRoleTreeGrid:
+      return WebAccessibility::ROLE_TREE_GRID;
+    case WebKit::WebAccessibilityRoleTreeItemRole:
+      return WebAccessibility::ROLE_TREE_ITEM;
+    case WebKit::WebAccessibilityRoleTreeRole:
+      return WebAccessibility::ROLE_TREE;
     case WebKit::WebAccessibilityRoleUserInterfaceTooltip:
       return WebAccessibility::ROLE_TOOLTIP;
-    case WebKit::WebAccessibilityRoleDocument:
-    case WebKit::WebAccessibilityRoleUnknown:
+    case WebKit::WebAccessibilityRoleValueIndicator:
+      return WebAccessibility::ROLE_VALUE_INDICATOR;
+    case WebKit::WebAccessibilityRoleWebArea:
+      return WebAccessibility::ROLE_WEB_AREA;
+    case WebKit::WebAccessibilityRoleWebCoreLink:
+      return WebAccessibility::ROLE_WEBCORE_LINK;
+    case WebKit::WebAccessibilityRoleWindow:
+      return WebAccessibility::ROLE_WINDOW;
+
     default:
-        // This is the default role.
-      return WebAccessibility::ROLE_CLIENT;
+      return WebAccessibility::ROLE_UNKNOWN;
   }
 }
 
@@ -155,13 +273,18 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
                             WebKit::WebAccessibilityCache* cache) {
   name = src.title();
   value = src.stringValue();
-  action = src.actionVerb();
-  description = src.accessibilityDescription();
-  help = src.helpText();
-  shortcut = src.keyboardShortcut();
   role = ConvertRole(src.roleValue());
   state = ConvertState(src);
   location = src.boundingBoxRect();
+
+  if (src.actionVerb().length())
+    attributes[ATTR_ACTION] = src.actionVerb();
+  if (src.accessibilityDescription().length())
+    attributes[ATTR_DESCRIPTION] = src.accessibilityDescription();
+  if (src.helpText().length())
+    attributes[ATTR_HELP] = src.helpText();
+  if (src.keyboardShortcut().length())
+    attributes[ATTR_SHORTCUT] = src.keyboardShortcut();
 
   // Add the source object to the cache and store its id.
   id = cache->addOrGetId(src);
