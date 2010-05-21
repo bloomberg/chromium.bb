@@ -47,12 +47,16 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       delete_end_(delete_end),
       ALLOW_THIS_IN_INITIALIZER_LIST(database_cleared_callback_(
           this, &BrowsingDataRemover::OnClearedDatabases)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(cache_callback_(
+          this, &BrowsingDataRemover::DoClearCache)),
       ALLOW_THIS_IN_INITIALIZER_LIST(appcache_got_info_callback_(
           this, &BrowsingDataRemover::OnGotAppCacheInfo)),
       ALLOW_THIS_IN_INITIALIZER_LIST(appcache_deleted_callback_(
           this, &BrowsingDataRemover::OnAppCacheDeleted)),
       request_context_getter_(profile->GetRequestContext()),
       appcaches_to_be_deleted_count_(0),
+      next_cache_state_(STATE_NONE),
+      cache_(NULL),
       waiting_for_clear_databases_(false),
       waiting_for_clear_history_(false),
       waiting_for_clear_cache_(false),
@@ -68,12 +72,16 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       delete_end_(delete_end),
       ALLOW_THIS_IN_INITIALIZER_LIST(database_cleared_callback_(
           this, &BrowsingDataRemover::OnClearedDatabases)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(cache_callback_(
+          this, &BrowsingDataRemover::DoClearCache)),
       ALLOW_THIS_IN_INITIALIZER_LIST(appcache_got_info_callback_(
           this, &BrowsingDataRemover::OnGotAppCacheInfo)),
       ALLOW_THIS_IN_INITIALIZER_LIST(appcache_deleted_callback_(
           this, &BrowsingDataRemover::OnAppCacheDeleted)),
       request_context_getter_(profile->GetRequestContext()),
       appcaches_to_be_deleted_count_(0),
+      next_cache_state_(STATE_NONE),
+      cache_(NULL),
       waiting_for_clear_databases_(false),
       waiting_for_clear_history_(false),
       waiting_for_clear_cache_(false),
@@ -201,24 +209,12 @@ void BrowsingDataRemover::Remove(int remove_mask) {
     UserMetrics::RecordAction(UserMetricsAction("ClearBrowsingData_Cache"),
                               profile_);
 
-    URLRequestContextGetter* main_context_getter =
-        profile_->GetRequestContext();
-    URLRequestContextGetter* media_context_getter =
-        profile_->GetRequestContextForMedia();
-
-    // Balanced in ClearCacheOnIOThread().
-    main_context_getter->AddRef();
-    media_context_getter->AddRef();
+    main_context_getter_ = profile_->GetRequestContext();
+    media_context_getter_ = profile_->GetRequestContextForMedia();
 
     ChromeThread::PostTask(
         ChromeThread::IO, FROM_HERE,
-        NewRunnableMethod(
-            this,
-            &BrowsingDataRemover::ClearCacheOnIOThread,
-            main_context_getter,
-            media_context_getter,
-            delete_begin_,
-            delete_end_));
+        NewRunnableMethod(this, &BrowsingDataRemover::ClearCacheOnIOThread));
   }
 
   NotifyAndDeleteIfDone();
@@ -298,48 +294,75 @@ void BrowsingDataRemover::ClearedCache() {
   NotifyAndDeleteIfDone();
 }
 
-void BrowsingDataRemover::ClearCacheOnIOThread(
-    URLRequestContextGetter* main_context_getter,
-    URLRequestContextGetter* media_context_getter,
-    base::Time delete_begin,
-    base::Time delete_end) {
+void BrowsingDataRemover::ClearCacheOnIOThread() {
   // This function should be called on the IO thread.
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK_EQ(STATE_NONE, next_cache_state_);
+  DCHECK(main_context_getter_);
+  DCHECK(media_context_getter_);
 
-  // Get a pointer to the cache.
-  net::HttpTransactionFactory* factory =
-      main_context_getter->GetURLRequestContext()->http_transaction_factory();
-  disk_cache::Backend* cache = factory->GetCache()->GetBackend();
+  next_cache_state_ = STATE_CREATE_MAIN;
+  DoClearCache(net::OK);
+}
 
-  // |cache| can be null if it cannot be initialized.
-  if (cache) {
-    if (delete_begin.is_null())
-      cache->DoomAllEntries();
-    else
-      cache->DoomEntriesBetween(delete_begin, delete_end);
+// The expected state sequence is STATE_NONE --> STATE_CREATE_MAIN -->
+// STATE_DELETE_MAIN --> STATE_CREATE_MEDIA --> STATE_DELETE_MEDIA -->
+// STATE_DONE, and any errors are ignored.
+void BrowsingDataRemover::DoClearCache(int rv) {
+  DCHECK_NE(STATE_NONE, next_cache_state_);
+
+  while (rv != net::ERR_IO_PENDING && next_cache_state_ != STATE_NONE) {
+    switch (next_cache_state_) {
+      case STATE_CREATE_MAIN:
+      case STATE_CREATE_MEDIA: {
+        // Get a pointer to the cache.
+        URLRequestContextGetter* getter =
+            (next_cache_state_ == STATE_CREATE_MAIN) ?
+                main_context_getter_ : media_context_getter_;
+        net::HttpTransactionFactory* factory =
+            getter->GetURLRequestContext()->http_transaction_factory();
+
+        rv = factory->GetCache()->GetBackend(&cache_, &cache_callback_);
+        next_cache_state_ = (next_cache_state_ == STATE_CREATE_MAIN) ?
+                                STATE_DELETE_MAIN : STATE_DELETE_MEDIA;
+        break;
+      }
+      case STATE_DELETE_MAIN:
+      case STATE_DELETE_MEDIA: {
+        // |cache_| can be null if it cannot be initialized.
+        if (cache_) {
+          if (delete_begin_.is_null()) {
+            rv = cache_->DoomAllEntries(&cache_callback_);
+          } else {
+            rv = cache_->DoomEntriesBetween(delete_begin_, delete_end_,
+                                            &cache_callback_);
+          }
+          cache_ = NULL;
+        }
+        next_cache_state_ = (next_cache_state_ == STATE_DELETE_MAIN) ?
+                                STATE_CREATE_MEDIA : STATE_DONE;
+        break;
+      }
+      case STATE_DONE: {
+        main_context_getter_ = NULL;
+        media_context_getter_ = NULL;
+        cache_ = NULL;
+
+        // Notify the UI thread that we are done.
+        ChromeThread::PostTask(
+            ChromeThread::UI, FROM_HERE,
+            NewRunnableMethod(this, &BrowsingDataRemover::ClearedCache));
+
+        next_cache_state_ = STATE_NONE;
+        break;
+      }
+      default: {
+        NOTREACHED() << "bad state";
+        next_cache_state_ = STATE_NONE;  // Stop looping.
+        break;
+      }
+    }
   }
-
-  // Get a pointer to the media cache.
-  factory = media_context_getter->GetURLRequestContext()->
-      http_transaction_factory();
-  cache = factory->GetCache()->GetBackend();
-
-  // |cache| can be null if it cannot be initialized.
-  if (cache) {
-    if (delete_begin.is_null())
-      cache->DoomAllEntries();
-    else
-      cache->DoomEntriesBetween(delete_begin, delete_end);
-  }
-
-  // Balance the AddRef()s done on the UI thread by Remove().
-  main_context_getter->Release();
-  media_context_getter->Release();
-
-  // Notify the UI thread that we are done.
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &BrowsingDataRemover::ClearedCache));
 }
 
 void BrowsingDataRemover::OnClearedDatabases(int rv) {

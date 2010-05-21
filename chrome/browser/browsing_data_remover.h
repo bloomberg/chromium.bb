@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,10 @@
 
 class Profile;
 class URLRequestContextGetter;
+
+namespace disk_cache {
+class Backend;
+}
 
 // BrowsingDataRemover is responsible for removing data related to browsing:
 // visits in url database, downloads, cookies ...
@@ -72,6 +76,15 @@ class BrowsingDataRemover : public NotificationObserver {
   static bool is_removing() { return removing_; }
 
  private:
+  enum CacheState {
+    STATE_NONE,
+    STATE_CREATE_MAIN,
+    STATE_CREATE_MEDIA,
+    STATE_DELETE_MAIN,
+    STATE_DELETE_MEDIA,
+    STATE_DONE
+  };
+
   // BrowsingDataRemover deletes itself (using DeleteTask) and is not supposed
   // to be deleted by other objects so make destructor private and DeleteTask
   // a friend.
@@ -93,10 +106,10 @@ class BrowsingDataRemover : public NotificationObserver {
   void ClearedCache();
 
   // Invoked on the IO thread to delete from the cache.
-  void ClearCacheOnIOThread(URLRequestContextGetter* main_context_getter,
-                            URLRequestContextGetter* media_context_getter,
-                            base::Time delete_begin,
-                            base::Time delete_end);
+  void ClearCacheOnIOThread();
+
+  // Performs the actual work to delete the cache.
+  void DoClearCache(int rv);
 
   // Callback when HTML5 databases have been deleted. Invokes
   // NotifyAndDeleteIfDone.
@@ -145,6 +158,7 @@ class BrowsingDataRemover : public NotificationObserver {
   scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;
 
   net::CompletionCallbackImpl<BrowsingDataRemover> database_cleared_callback_;
+  net::CompletionCallbackImpl<BrowsingDataRemover> cache_callback_;
 
   // Used to clear the appcache.
   net::CompletionCallbackImpl<BrowsingDataRemover> appcache_got_info_callback_;
@@ -152,6 +166,12 @@ class BrowsingDataRemover : public NotificationObserver {
   scoped_refptr<appcache::AppCacheInfoCollection> appcache_info_;
   scoped_refptr<URLRequestContextGetter> request_context_getter_;
   int appcaches_to_be_deleted_count_;
+
+  // Used to delete data from the HTTP caches.
+  CacheState next_cache_state_;
+  disk_cache::Backend* cache_;
+  scoped_refptr<URLRequestContextGetter> main_context_getter_;
+  scoped_refptr<URLRequestContextGetter> media_context_getter_;
 
   // True if we're waiting for various data to be deleted.
   bool waiting_for_clear_databases_;
