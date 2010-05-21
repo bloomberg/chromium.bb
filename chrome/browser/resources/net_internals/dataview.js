@@ -39,9 +39,12 @@ DataView.prototype.onExportToText_ = function() {
   text.push('Number of actively captured events: ' +
             g_browser.getAllActivelyCapturedEvents().length);
   text.push('');
-  // TODO(eroman): fill this with proper values.
-  text.push('Chrome version: ' + 'TODO');
-  text.push('Command line switches: ' + 'TODO');
+
+  text.push('Chrome version: ' + ClientInfo.version +
+            ' (' + ClientInfo.official +
+            ' ' + ClientInfo.cl +
+            ') ' + ClientInfo.version_mod);
+  text.push('Command line switches: ' + ClientInfo.command_line);
 
   text.push('');
   text.push('----------------------------------------------');

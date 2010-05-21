@@ -7,6 +7,7 @@
  */
 var LogEventType = null;
 var LogEventPhase = null;
+var ClientInfo = null;
 var LogSourceType = null;
 var NetError = null;
 var LoadFlag = null;
@@ -208,6 +209,11 @@ BrowserBridge.prototype.receivedLogEntry = function(logEntry,
 
 BrowserBridge.prototype.receivedLogEventTypeConstants = function(constantsMap) {
   LogEventType = constantsMap;
+};
+
+BrowserBridge.prototype.receivedClientInfo =
+function(info) {
+  ClientInfo = info;
 };
 
 BrowserBridge.prototype.receivedLogEventPhaseConstants =

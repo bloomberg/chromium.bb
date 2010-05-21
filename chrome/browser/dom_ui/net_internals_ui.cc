@@ -9,8 +9,11 @@
 #include <string>
 #include <vector>
 
+#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/file_version_info.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/singleton.h"
@@ -18,6 +21,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
@@ -26,10 +30,12 @@
 #include "chrome/browser/net/connection_tester.h"
 #include "chrome/browser/net/passive_log_collector.h"
 #include "chrome/browser/net/url_fixer_upper.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/url_constants.h"
+#include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/host_resolver_impl.h"
 #include "net/base/net_errors.h"
@@ -496,6 +502,40 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
     }
 
     CallJavascriptFunction(L"g_browser.receivedLogEventTypeConstants", dict);
+  }
+
+  // Tell the javascript about the version of the client and its
+  // command line arguments.
+  {
+    DictionaryValue* dict = new DictionaryValue();
+
+    scoped_ptr<FileVersionInfo> version_info(
+        chrome_app::GetChromeVersionInfo());
+
+    if (version_info == NULL) {
+      DLOG(ERROR) << "Unable to create FileVersionInfo object";
+
+    } else {
+      // We have everything we need to send the right values.
+      dict->SetString(L"version", version_info->file_version());
+      dict->SetString(L"cl", version_info->last_change());
+      dict->SetStringFromUTF16(L"version_mod",
+          platform_util::GetVersionStringModifier());
+
+      if (version_info->is_official_build()) {
+        dict->SetString(L"official",
+            l10n_util::GetString(IDS_ABOUT_VERSION_OFFICIAL));
+      } else {
+        dict->SetString(L"official",
+            l10n_util::GetString(IDS_ABOUT_VERSION_UNOFFICIAL));
+      }
+
+      dict->SetString(L"command_line",
+          CommandLine::ForCurrentProcess()->command_line_string());
+    }
+
+    CallJavascriptFunction(L"g_browser.receivedClientInfo",
+                           dict);
   }
 
   // Tell the javascript about the relationship between load flag enums and
