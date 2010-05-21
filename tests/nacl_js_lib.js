@@ -22,7 +22,7 @@ NaclLib.prototype.getMessage = function() {
 
 NaclLib.prototype.cleanUp = function() {
   if (this.handler_) {
-     clearInterval(this._handler);
+     clearInterval(this.handler_);
      this.handler_ = null;
   }
 };
