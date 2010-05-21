@@ -64,6 +64,57 @@ void SplitUrlAndTitle(const std::wstring& str,
   }
 }
 
+bool GetFileUrl(IDataObject* data_object, std::wstring* url,
+                std::wstring* title) {
+  STGMEDIUM store;
+  if (SUCCEEDED(data_object->GetData(ClipboardUtil::GetFilenameWFormat(),
+                                     &store))) {
+    bool success = false;
+    {
+      // filename using unicode
+      ScopedHGlobal<wchar_t> data(store.hGlobal);
+      if (data.get() && data.get()[0] &&
+          (PathFileExists(data.get()) || PathIsUNC(data.get()))) {
+        wchar_t file_url[INTERNET_MAX_URL_LENGTH];
+        DWORD file_url_len = arraysize(file_url);
+        if (SUCCEEDED(::UrlCreateFromPathW(data.get(), file_url, &file_url_len,
+                                           0))) {
+          url->assign(file_url);
+          title->assign(file_url);
+          success = true;
+        }
+      }
+    }
+    ReleaseStgMedium(&store);
+    if (success)
+      return true;
+  }
+
+  if (SUCCEEDED(data_object->GetData(ClipboardUtil::GetFilenameFormat(),
+                                     &store))) {
+    bool success = false;
+    {
+      // filename using ascii
+      ScopedHGlobal<char> data(store.hGlobal);
+      if (data.get() && data.get()[0] && (PathFileExistsA(data.get()) ||
+                                          PathIsUNCA(data.get()))) {
+        char file_url[INTERNET_MAX_URL_LENGTH];
+        DWORD file_url_len = arraysize(file_url);
+        if (SUCCEEDED(::UrlCreateFromPathA(data.get(), file_url, &file_url_len,
+                                           0))) {
+          url->assign(UTF8ToWide(file_url));
+          title->assign(*url);
+          success = true;
+        }
+      }
+    }
+    ReleaseStgMedium(&store);
+    if (success)
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 
@@ -182,7 +233,7 @@ bool ClipboardUtil::HasPlainText(IDataObject* data_object) {
 
 
 bool ClipboardUtil::GetUrl(IDataObject* data_object,
-    std::wstring* url, std::wstring* title) {
+    std::wstring* url, std::wstring* title, bool convert_filenames) {
   DCHECK(data_object && url && title);
   if (!HasUrl(data_object))
     return false;
@@ -213,51 +264,11 @@ bool ClipboardUtil::GetUrl(IDataObject* data_object,
     return true;
   }
 
-  if (SUCCEEDED(data_object->GetData(GetFilenameWFormat(), &store))) {
-    bool success = false;
-    {
-      // filename using unicode
-      ScopedHGlobal<wchar_t> data(store.hGlobal);
-      if (data.get() && data.get()[0] &&
-          (PathFileExists(data.get()) || PathIsUNC(data.get()))) {
-        wchar_t file_url[INTERNET_MAX_URL_LENGTH];
-        DWORD file_url_len = arraysize(file_url);
-        if (SUCCEEDED(::UrlCreateFromPathW(data.get(), file_url, &file_url_len,
-                                           0))) {
-          url->assign(file_url);
-          title->assign(file_url);
-          success = true;
-        }
-      }
-    }
-    ReleaseStgMedium(&store);
-    if (success)
-      return true;
+  if (convert_filenames) {
+    return GetFileUrl(data_object, url, title);
+  } else {
+    return false;
   }
-
-  if (SUCCEEDED(data_object->GetData(GetFilenameFormat(), &store))) {
-    bool success = false;
-    {
-      // filename using ascii
-      ScopedHGlobal<char> data(store.hGlobal);
-      if (data.get() && data.get()[0] && (PathFileExistsA(data.get()) ||
-                                          PathIsUNCA(data.get()))) {
-        char file_url[INTERNET_MAX_URL_LENGTH];
-        DWORD file_url_len = arraysize(file_url);
-        if (SUCCEEDED(::UrlCreateFromPathA(data.get(), file_url, &file_url_len,
-                                           0))) {
-          url->assign(UTF8ToWide(file_url));
-          title->assign(*url);
-          success = true;
-        }
-      }
-    }
-    ReleaseStgMedium(&store);
-    if (success)
-      return true;
-  }
-
-  return false;
 }
 
 bool ClipboardUtil::GetFilenames(IDataObject* data_object,
@@ -320,7 +331,7 @@ bool ClipboardUtil::GetPlainText(IDataObject* data_object,
   // If a file is dropped on the window, it does not provide either of the
   // plain text formats, so here we try to forcibly get a url.
   std::wstring title;
-  return GetUrl(data_object, plain_text, &title);
+  return GetUrl(data_object, plain_text, &title, false);
 }
 
 bool ClipboardUtil::GetHtml(IDataObject* data_object,

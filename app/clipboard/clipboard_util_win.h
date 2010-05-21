@@ -44,7 +44,7 @@ class ClipboardUtil {
   // Helper methods to extract information from an IDataObject.  These methods
   // return true if the requested data type is found in |data_object|.
   static bool GetUrl(IDataObject* data_object,
-      std::wstring* url, std::wstring* title);
+      std::wstring* url, std::wstring* title, bool convert_filenames);
   static bool GetFilenames(IDataObject* data_object,
                            std::vector<std::wstring>* filenames);
   static bool GetPlainText(IDataObject* data_object, std::wstring* plain_text);

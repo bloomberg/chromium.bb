@@ -370,7 +370,7 @@ bool OSExchangeDataProviderWin::GetString(std::wstring* data) const {
 bool OSExchangeDataProviderWin::GetURLAndTitle(GURL* url,
                                                std::wstring* title) const {
   std::wstring url_str;
-  bool success = ClipboardUtil::GetUrl(source_object_, &url_str, title);
+  bool success = ClipboardUtil::GetUrl(source_object_, &url_str, title, true);
   if (success) {
     GURL test_url(url_str);
     if (test_url.is_valid()) {

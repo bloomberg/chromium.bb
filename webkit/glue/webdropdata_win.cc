@@ -15,7 +15,8 @@
 void WebDropData::PopulateWebDropData(IDataObject* data_object,
                                       WebDropData* drop_data) {
   std::wstring url_str;
-  if (ClipboardUtil::GetUrl(data_object, &url_str, &drop_data->url_title)) {
+  if (ClipboardUtil::GetUrl(data_object, &url_str, &drop_data->url_title,
+                            false)) {
     GURL test_url(url_str);
     if (test_url.is_valid())
       drop_data->url = test_url;
