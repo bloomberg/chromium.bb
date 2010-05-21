@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/options/language_pinyin_config_view.h"
 #include "chrome/browser/chromeos/options/options_window_view.h"
 #include "chrome/browser/chromeos/preferences.h"
-#include "chrome/browser/language_combobox_model.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/restart_message_box.h"
@@ -28,7 +27,6 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "views/controls/button/radio_button.h"
-#include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"
 #include "views/fill_layout.h"
 #include "views/standard_layout.h"
@@ -40,7 +38,9 @@ using views::GridLayout;
 
 namespace {
 
-const char kDefaultLanguageCode[] = "eng";
+// The code should be compatible with one of codes used for UI languages,
+// defined in app/l10_util.cc.
+const char kDefaultLanguageCode[] = "en-US";
 
 // Creates the LanguageHangulConfigView. The function is used to create
 // the object via a function pointer. See also InitInputMethodConfigViewMap().
@@ -53,7 +53,6 @@ views::DialogDelegate* CreateLanguagePinyinConfigView(Profile* profile) {
 
 // The tags are used to identify buttons in ButtonPressed().
 enum ButtonTag {
-  kAddLanguageButton,
   kChangeUiLanguageButton,
   kConfigureInputMethodButton,
   kRemoveLanguageButton,
@@ -67,118 +66,57 @@ const int kPerLanguageSingleColumnSetId = 3;
 
 }  // namespace
 
-// This is a LanguageComboboxModel that can handle the special language
-// code used for input methods that don't fall under any other languages.
-class LanguageComboboxModelWithOthers : public LanguageComboboxModel {
- public:
-  LanguageComboboxModelWithOthers(Profile* profile,
-                                  const std::vector<std::string>& locale_codes)
-      : LanguageComboboxModel(profile, locale_codes) {
-  }
+AddLanguageComboboxModel::AddLanguageComboboxModel(
+    Profile* profile,
+    const std::vector<std::string>& locale_codes)
+    : LanguageComboboxModel(profile, locale_codes) {
+}
 
-  virtual std::wstring GetItemAt(int index) {
-    return LanguageConfigView::MaybeRewriteLanguageName(
-        GetLanguageNameAt(index));
-  }
-};
+int AddLanguageComboboxModel::GetItemCount() {
+  // +1 for "Add language".
+  return get_languages_count() + 1 - ignore_set_.size();
+}
 
-// The view implements a dialog for adding a language.
-class AddLanguageView : public views::View,
-                        public views::Combobox::Listener,
-                        public views::DialogDelegate {
- public:
-  explicit AddLanguageView(LanguageConfigView* parent_view)
-      : parent_view_(parent_view),
-        language_combobox_(NULL),
-        contents_(NULL),
-        selected_index_(0) {
-  }
-
-  // views::DialogDelegate overrides:
-  virtual bool Accept() {
-    std::string language_selected = language_combobox_model_->
-        GetLocaleFromIndex(selected_index_);
-    parent_view_->OnAddLanguage(language_selected);
-    return true;
-  }
-
-  virtual std::wstring GetWindowTitle() const {
+std::wstring AddLanguageComboboxModel::GetItemAt(int index) {
+  // Show "Add language" as the first item.
+  if (index == 0) {
     return l10n_util::GetString(
-        IDS_OPTIONS_SETTINGS_LANGUAGES_LANGUAGES);
+        IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_LANGUAGE_COMBOBOX);
   }
+  return LanguageConfigView::MaybeRewriteLanguageName(
+      GetLanguageNameAt(GetLanguageIndex(index)));
+}
 
-  // views::WindowDelegate overrides:
-  virtual bool IsModal() const { return true; }
-  virtual views::View* GetContentsView() { return this; }
-
-  // views::Combobox::Listener overrides:
-  virtual void ItemChanged(views::Combobox* combobox,
-                           int prev_index,
-                           int new_index) {
-    selected_index_ = new_index;
+int AddLanguageComboboxModel::GetLanguageIndex(int index) const {
+  // The adjusted_index is counted while ignoring languages in ignore_set_.
+  int adjusted_index = 0;
+  for (int i = 0; i < get_languages_count(); ++i) {
+    if (ignore_set_.count(GetLocaleFromIndex(i)) > 0) {
+      continue;
+    }
+    // -1 for "Add language".
+    if (adjusted_index == index - 1) {
+      return i;
+    }
+    ++adjusted_index;
   }
+  return 0;
+}
 
-  // views::View overrides:
-  gfx::Size GetPreferredSize() {
-    return gfx::Size(views::Window::GetLocalizedContentsSize(
-        IDS_LANGUAGES_INPUT_DIALOG_WIDTH_CHARS,
-        IDS_LANGUAGES_INPUT_DIALOG_HEIGHT_LINES));
+void AddLanguageComboboxModel::SetIgnored(
+    const std::string& language_code, bool ignored) {
+  if (ignored) {
+    // Add to the ignore_set_ if the language code is known (i.e. reject
+    // unknown language codes just in case).
+    if (GetIndexFromLocale(language_code) != -1) {
+      ignore_set_.insert(language_code);
+    } else {
+      LOG(ERROR) << "Unknown language code: " << language_code;
+    }
+  } else {
+    ignore_set_.erase(language_code);
   }
-
-  virtual void Layout() {
-    // Not sure why but this is needed to show contents in the dialog.
-    contents_->SetBounds(0, 0, width(), height());
-  }
-
-  virtual void ViewHierarchyChanged(bool is_add, views::View* parent,
-                                    views::View* child) {
-    if (is_add && child == this)
-      Init();
-  }
-
- private:
-  void Init() {
-    contents_ = new views::View;
-    AddChildView(contents_);
-
-    GridLayout* layout = new GridLayout(contents_);
-    contents_->SetLayoutManager(layout);
-    layout->SetInsets(kPanelVertMargin, kPanelHorizMargin,
-                      kPanelVertMargin, kPanelHorizMargin);
-
-    // Set up column sets for the grid layout.
-    const int kColumnSetId = 1;
-    ColumnSet* column_set = layout->AddColumnSet(kColumnSetId);
-    column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
-                          GridLayout::USE_PREF, 0, 0);
-
-    language_combobox_model_.reset(CreateLanguageComboboxModel());
-    language_combobox_ = new views::Combobox(language_combobox_model_.get());
-    language_combobox_->SetSelectedItem(selected_index_);
-    language_combobox_->set_listener(this);
-    layout->StartRow(0, kColumnSetId);
-    layout->AddView(language_combobox_);
-  }
-
-  // Creates the language combobox model from the supported languages.
-  LanguageComboboxModel* CreateLanguageComboboxModel() {
-    std::vector<std::string> language_codes;
-    parent_view_->GetSupportedLanguageCodes(&language_codes);
-    // LanguageComboboxModel sorts languages by their display names.
-    return new LanguageComboboxModelWithOthers(NULL, language_codes);
-  }
-
-  LanguageConfigView* parent_view_;
-
-  // Combobox and its corresponding model.
-  scoped_ptr<LanguageComboboxModel> language_combobox_model_;
-  views::Combobox* language_combobox_;
-  views::View* contents_;
-  // The index of the selected item in the combobox.
-  int selected_index_;
-
-  DISALLOW_COPY_AND_ASSIGN(AddLanguageView);
-};
+}
 
 // This is a native button associated with input method information.
 class InputMethodButton : public views::NativeButton {
@@ -250,21 +188,8 @@ LanguageConfigView::~LanguageConfigView() {
 
 void LanguageConfigView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
-  if (sender->tag() == kAddLanguageButton) {
-    views::Window* window = views::Window::CreateChromeWindow(
-        GetOptionsViewParent(), gfx::Rect(), new AddLanguageView(this));
-    window->SetIsAlwaysOnTop(true);
-    window->Show();
-  } else if (sender->tag() == kRemoveLanguageButton) {
-    const int row = preferred_language_table_->GetFirstSelectedRow();
-    const std::string& language_code = preferred_language_codes_[row];
-    DeactivateInputMethodsFor(language_code);
-    // Remove the language code and the row from the table.
-    preferred_language_codes_.erase(preferred_language_codes_.begin() + row);
-    preferred_language_table_->OnItemsRemoved(row, 1);
-    // Switch to the previous row, or the first row.
-    // There should be at least one row in the table.
-    preferred_language_table_->SelectRow(std::max(row - 1, 0));
+  if (sender->tag() == kRemoveLanguageButton) {
+    OnRemoveLanguage();
   } else if (sender->tag() == kSelectInputMethodButton) {
     InputMethodRadioButton* radio_button =
         static_cast<InputMethodRadioButton*>(sender);
@@ -537,14 +462,17 @@ void LanguageConfigView::InitControlLayout() {
                          kPanelVertMargin, kPanelHorizMargin);
 
   // Set up column sets for the grid layout.
-  const int kRootColumnSetId = 0;
-  ColumnSet* column_set = root_layout->AddColumnSet(kRootColumnSetId);
+  const int kMainColumnSetId = 0;
+  ColumnSet* column_set = root_layout->AddColumnSet(kMainColumnSetId);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
                         GridLayout::FIXED, 250, 0);
   column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0,
                         GridLayout::USE_PREF, 0, 0);
-  root_layout->StartRow(1 /* expand */, kRootColumnSetId);
+  const int kBottomColumnSetId = 1;
+  column_set = root_layout->AddColumnSet(kBottomColumnSetId);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
+                        GridLayout::USE_PREF, 0, 0);
 
   // Initialize the language codes currently activated.
   NotifyPrefChanged();
@@ -556,8 +484,14 @@ void LanguageConfigView::InitControlLayout() {
   right_container_->AddChildView(new views::View);
 
   // Add the contents on the left and the right.
+  root_layout->StartRow(1 /* expand */, kMainColumnSetId);
   root_layout->AddView(CreateContentsOnLeft());
   root_layout->AddView(right_container_);
+
+  // Add the contents on the bottom.
+  root_layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  root_layout->StartRow(0, kBottomColumnSetId);
+  root_layout->AddView(CreateContentsOnBottom());
 
   // Select the first row in the language table.
   // There should be at least one language in the table.
@@ -606,16 +540,9 @@ views::View* LanguageConfigView::CreateContentsOnLeft() {
   contents->SetLayoutManager(layout);
 
   // Set up column sets for the grid layout.
-  const int kTableColumnSetId = 1;
+  const int kTableColumnSetId = 0;
   ColumnSet* column_set = layout->AddColumnSet(kTableColumnSetId);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                        GridLayout::USE_PREF, 0, 0);
-
-  const int kButtonsColumnSetId = 2;
-  column_set = layout->AddColumnSet(kButtonsColumnSetId);
-  column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
-                        GridLayout::USE_PREF, 0, 0);
-  column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
                         GridLayout::USE_PREF, 0, 0);
 
   // Create the language table.
@@ -639,11 +566,41 @@ views::View* LanguageConfigView::CreateContentsOnLeft() {
   layout->StartRow(1 /* expand vertically */, kTableColumnSetId);
   layout->AddView(preferred_language_table_);
 
-  // Create the add and remove buttons.
-  views::NativeButton* add_language_button = new views::NativeButton(
-      this, l10n_util::GetString(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_BUTTON));
-  add_language_button->set_tag(kAddLanguageButton);
+  return contents;
+}
+
+views::View* LanguageConfigView::CreateContentsOnBottom() {
+  views::View* contents = new views::View;
+  GridLayout* layout = new GridLayout(contents);
+  contents->SetLayoutManager(layout);
+
+  // Set up column sets for the grid layout.
+  const int kButtonsColumnSetId = 0;
+  ColumnSet* column_set = layout->AddColumnSet(kButtonsColumnSetId);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
+                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
+                        GridLayout::USE_PREF, 0, 0);
+
+  // Create the add language combobox model.
+  std::vector<std::string> language_codes;
+  GetSupportedLanguageCodes(&language_codes);
+  // LanguageComboboxModel sorts languages by their display names.
+  add_language_combobox_model_.reset(
+      new AddLanguageComboboxModel(NULL, language_codes));
+  // Mark the existing preferred languages to be ignored.
+  for (size_t i = 0; i < preferred_language_codes_.size(); ++i) {
+    add_language_combobox_model_->SetIgnored(preferred_language_codes_[i],
+                                             true);
+  }
+  // Create the add language combobox.
+  add_language_combobox_
+      = new views::Combobox(add_language_combobox_model_.get());
+  add_language_combobox_->set_listener(this);
+  ResetAddLanguageCombobox();
+
+  // Create the remove button.
   remove_language_button_ = new views::NativeButton(
       this, l10n_util::GetString(
           IDS_OPTIONS_SETTINGS_LANGUAGES_REMOVE_BUTTON));
@@ -651,34 +608,69 @@ views::View* LanguageConfigView::CreateContentsOnLeft() {
 
   // Add the add and remove buttons.
   layout->StartRow(0, kButtonsColumnSetId);
-  layout->AddView(add_language_button);
+  layout->AddView(add_language_combobox_);
   layout->AddView(remove_language_button_);
 
   return contents;
 }
 
 void LanguageConfigView::OnAddLanguage(const std::string& language_code) {
+  // Skip if the language is already in the preferred_language_codes_.
   if (std::find(preferred_language_codes_.begin(),
                 preferred_language_codes_.end(),
-                language_code) == preferred_language_codes_.end()) {
-    // Activate the first input language associated with the language. We have
-    // to call this before the OnItemsAdded() call below so the radio button
-    // for the first input language gets checked.
-    std::vector<std::string> input_method_ids;
-    GetSupportedInputMethodIds(&input_method_ids);
-    for (size_t i = 0; i < input_method_ids.size(); ++i) {
-      if (GetLanguageCodeFromId(input_method_ids[i]) == language_code) {
-        SetInputMethodActivated(input_method_ids[i], true);
-        break;
-      }
-    }
-
-    // Append the language to the list of language codes.
-    preferred_language_codes_.push_back(language_code);
-    // Update the language table accordingly.
-    preferred_language_table_->OnItemsAdded(RowCount() - 1, 1);
-    preferred_language_table_->SelectRow(RowCount() - 1);
+                language_code) != preferred_language_codes_.end()) {
+    return;
   }
+  // Activate the first input language associated with the language. We have
+  // to call this before the OnItemsAdded() call below so the radio button
+  // for the first input language gets checked.
+  std::vector<std::string> input_method_ids;
+  GetSupportedInputMethodIds(&input_method_ids);
+  for (size_t i = 0; i < input_method_ids.size(); ++i) {
+    if (GetLanguageCodeFromId(input_method_ids[i]) == language_code) {
+      SetInputMethodActivated(input_method_ids[i], true);
+      break;
+    }
+  }
+
+  // Append the language to the list of language codes.
+  preferred_language_codes_.push_back(language_code);
+  // Update the language table accordingly.
+  preferred_language_table_->OnItemsAdded(RowCount() - 1, 1);
+  preferred_language_table_->SelectRow(RowCount() - 1);
+
+  // Mark the language to be ignored.
+  add_language_combobox_model_->SetIgnored(language_code, true);
+  ResetAddLanguageCombobox();
+}
+
+void LanguageConfigView::OnRemoveLanguage() {
+  const int row = preferred_language_table_->GetFirstSelectedRow();
+  const std::string& language_code = preferred_language_codes_[row];
+  // Mark the language not to be ignored.
+  add_language_combobox_model_->SetIgnored(language_code, false);
+  ResetAddLanguageCombobox();
+  // Deactivate the associated input methods.
+  DeactivateInputMethodsFor(language_code);
+  // Remove the language code and the row from the table.
+  preferred_language_codes_.erase(preferred_language_codes_.begin() + row);
+  preferred_language_table_->OnItemsRemoved(row, 1);
+  // Switch to the previous row, or the first row.
+  // There should be at least one row in the table.
+  preferred_language_table_->SelectRow(std::max(row - 1, 0));
+}
+
+void LanguageConfigView::ResetAddLanguageCombobox() {
+  // -1 to ignore "Add language". If there are more than one language,
+  // enable the combobox. Otherwise, disable it.
+  if (add_language_combobox_model_->GetItemCount() - 1 > 0) {
+    add_language_combobox_->SetEnabled(true);
+  } else {
+    add_language_combobox_->SetEnabled(false);
+  }
+  // Go back to the initial "Add language" state.
+  add_language_combobox_->ModelChanged();
+  add_language_combobox_->SetSelectedItem(0);
 }
 
 void LanguageConfigView::DeactivateInputMethodsFor(
@@ -714,6 +706,20 @@ void LanguageConfigView::Observe(NotificationType type,
   if (type == NotificationType::PREF_CHANGED) {
     NotifyPrefChanged();
   }
+}
+
+void LanguageConfigView::ItemChanged(views::Combobox* combobox,
+                                     int prev_index,
+                                     int new_index) {
+  // Ignore the first item used for showing "Add language".
+  if (new_index <= 0) {
+    return;
+  }
+  // Get the language selected.
+  std::string language_selected = add_language_combobox_model_->
+      GetLocaleFromIndex(
+          add_language_combobox_model_->GetLanguageIndex(new_index));
+  OnAddLanguage(language_selected);
 }
 
 void LanguageConfigView::SetInputMethodActivated(

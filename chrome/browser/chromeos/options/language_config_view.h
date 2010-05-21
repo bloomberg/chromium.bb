@@ -11,9 +11,11 @@
 #include <vector>
 
 #include "app/table_model.h"
+#include "chrome/browser/language_combobox_model.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/views/options/options_page_view.h"
 #include "views/controls/button/native_button.h"
+#include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"
 #include "views/controls/table/table_view2.h"
 #include "views/controls/table/table_view_observer.h"
@@ -27,9 +29,37 @@ namespace chromeos {
 class InputMethodButton;
 class InputMethodRadioButton;
 class PreferredLanguageTableModel;
+
+// The combobox model is used for adding languages in the language config
+// view.
+class AddLanguageComboboxModel : public LanguageComboboxModel {
+ public:
+  AddLanguageComboboxModel(Profile* profile,
+                           const std::vector<std::string>& locale_codes);
+  // LanguageComboboxModel overrides.
+  virtual int GetItemCount();
+  virtual std::wstring GetItemAt(int index);
+
+  // Converts the given index (index of the items in the combobox) to the
+  // index of the internal language list. The returned index can be used
+  // for GetLocaleFromIndex() and GetLanguageNameAt().
+  int GetLanguageIndex(int index) const;
+
+  // Marks the given language code to be ignored. Ignored languages won't
+  // be shown in the combobox. It would be simpler if we could remove and
+  // add language codes from the model, but ComboboxModel does not allow
+  // items to be added/removed. Thus we use |ignore_set_| instead.
+  void SetIgnored(const std::string& language_code, bool ignored);
+
+ private:
+  std::set<std::string> ignore_set_;
+  DISALLOW_COPY_AND_ASSIGN(AddLanguageComboboxModel);
+};
+
 // A dialog box for configuring the languages.
 class LanguageConfigView : public TableModel,
                            public views::ButtonListener,
+                           public views::Combobox::Listener,
                            public views::DialogDelegate,
                            public views::TableViewObserver,
                            public OptionsPageView {
@@ -67,8 +97,14 @@ class LanguageConfigView : public TableModel,
   virtual void SetObserver(TableModelObserver* observer);
   virtual int RowCount();
 
-  // Invoked when a language is added from the add button.
+  // Invoked when a language is added by the add combobox.
   void OnAddLanguage(const std::string& language_code);
+
+  // Invoked when a language is removed by the remove button.
+  void OnRemoveLanguage();
+
+  // Resets the add language combobox to the initial "Add language" state.
+  void ResetAddLanguageCombobox();
 
   // OptionsPageView overrides.
   virtual void InitControlLayout();
@@ -77,6 +113,11 @@ class LanguageConfigView : public TableModel,
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
+
+  // views::Combobox::Listener overrides:
+  virtual void ItemChanged(views::Combobox* combobox,
+                           int prev_index,
+                           int new_index);
 
   // Gets the list of supported language codes like "en" and "ja".
   void GetSupportedLanguageCodes(
@@ -104,6 +145,9 @@ class LanguageConfigView : public TableModel,
 
   // Creates the contents on the left, including the language table.
   views::View* CreateContentsOnLeft();
+
+  // Creates the contents on the bottom, including the add language button.
+  views::View* CreateContentsOnBottom();
 
   // Creates the per-language config view.
   views::View* CreatePerLanguageConfigView(const std::string& language_code);
@@ -171,6 +215,8 @@ class LanguageConfigView : public TableModel,
   views::View* right_container_;
   views::NativeButton* remove_language_button_;
   views::TableView2* preferred_language_table_;
+  scoped_ptr<AddLanguageComboboxModel> add_language_combobox_model_;
+  views::Combobox* add_language_combobox_;
 
   StringPrefMember preload_engines_;
   std::map<std::string, std::string> id_to_language_code_map_;
