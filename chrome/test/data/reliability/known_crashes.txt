@@ -171,15 +171,9 @@ renderviewhost::onmessagereceived___browserrenderprocesshost::onmessagereceived
 SUBSTRING :
 wtf::hashtable<webcore::atomicstring,std::pair<webcore::atomicstring,webcore::string>,wtf::pairfirstextractor<std::pair<webcore::atomicstring,webcore::string> >,webcore::casefoldinghash,wtf::pairhashtraits<wtf::hashtraits<webcore::atomicstring>,wtf::hashtraits<webcore::string> >,wtf::hashtraits<webcore::atomicstring> >::add<webcore::atomicstring,webcore::string,wtf::hashmaptranslator<std::pair<webcore::atomicstring,webcore::string>,wtf::pairhashtraits<wtf::hashtraits<webcore::atomicstring>,wtf::hashtraits<webcore::string> >,webcore::casefoldinghash> >___webkit::weburlresponse::addhttpheaderfield___webkit_glue::`anonymous namespace'::populateurlresponse___webkit_glue::weburlloaderimpl::context::onreceivedresponse___resourcedispatcher::onreceivedresponse
 
-# 44064
-SUBSTRING :
-webcore::htmlparser::popblock
-
 # 44065
 PREFIX : webcore::reportfatalerrorinv8___v8::internal::v8::fatalprocessoutofmemory___v8::internal::setelement___v8::internal::runtime::setobjectproperty___v8::internal::runtime_setproperty
 
 # 44066
 PREFIX : views::view::propagatenativeviewhierarchychanged___views::rootview::notifynativeviewhierarchychanged___views::nativeviewhostwin::nativeviewdetaching___views::nativeviewhost::detach
 
-# 44220
-SUBSTRING : webcore::renderinline::destroy
