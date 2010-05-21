@@ -86,8 +86,6 @@ void GConfTitlebarListener::OnChangeNotification(GConfClient* client,
   if (strcmp(gconf_entry_get_key(entry), kButtonLayoutKey) == 0) {
     GConfValue* gconf_value = gconf_entry_get_value(entry);
     ParseAndStoreValue(gconf_value);
-    if (gconf_value)
-      gconf_value_free(gconf_value);
 
     // Broadcast the new configuration to all windows:
     for (std::set<BrowserTitlebar*>::const_iterator it = titlebars_.begin();
