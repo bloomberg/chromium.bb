@@ -205,14 +205,15 @@ bool Client::Tick() {
   last_tick_time_ = timer.GetElapsedTimeAndReset();
 
   texture_on_hold_ |= has_new_texture;
-  int max_fps = renderer_->max_fps();
-  if (max_fps > 0 &&
-      texture_on_hold_ &&
-      render_mode() == RENDERMODE_ON_DEMAND &&
-      render_elapsed_time_timer_.GetElapsedTimeWithoutClearing()
+  if (texture_on_hold_ && renderer_.IsAvailable()) {
+    int max_fps = renderer_->max_fps();
+    if (max_fps > 0 &&
+        render_mode() == RENDERMODE_ON_DEMAND &&
+        render_elapsed_time_timer_.GetElapsedTimeWithoutClearing()
         > 1.0/max_fps) {
-    renderer_->set_need_to_render(true);
-    texture_on_hold_ = false;
+      renderer_->set_need_to_render(true);
+      texture_on_hold_ = false;
+    }
   }
 
   return message_check_ok;
