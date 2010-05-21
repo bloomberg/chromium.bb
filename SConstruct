@@ -1500,6 +1500,7 @@ if not ARGUMENTS.get('nocpp'):
   nacl_extra_sdk_env.Append(
       BUILD_SCONSCRIPTS = [
         ####  ALPHABETICALLY SORTED ####
+        'src/third_party/protobuf/nacl.scons',
         'src/untrusted/gpu/nacl.scons',
         'src/shared/imc/nacl.scons',
         'src/shared/npruntime/nacl.scons',
@@ -1514,7 +1515,6 @@ nacl_extra_sdk_env.Append(
       'src/include/nacl/nacl.scons',
       'src/shared/gio/nacl.scons',
       'src/shared/srpc/nacl.scons',
-      'src/third_party/protobuf/nacl.scons',
       'src/untrusted/av/nacl.scons',
       'src/untrusted/nacl/nacl.scons',
       'src/untrusted/pthread/nacl.scons',
