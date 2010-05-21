@@ -5,10 +5,11 @@
 #ifndef CHROME_SERVICE_SERVICE_PROCESS_H_
 #define CHROME_SERVICE_SERVICE_PROCESS_H_
 
-
+#include "base/ref_counted.h"
 #include "base/thread.h"
 
 class CloudPrintProxy;
+class ServiceNetworkChangeNotifierThread;
 
 // The ServiceProcess does not inherit from ChildProcess because this
 // process can live independently of the browser process.
@@ -42,11 +43,16 @@ class ServiceProcess {
     return file_thread_.get();
   }
   CloudPrintProxy* cloud_print_proxy();
+  ServiceNetworkChangeNotifierThread* network_change_notifier_thread() const {
+    return network_change_notifier_thread_.get();
+  }
 
  private:
   scoped_ptr<base::Thread> io_thread_;
   scoped_ptr<base::Thread> file_thread_;
   scoped_ptr<CloudPrintProxy> cloud_print_proxy_;
+  scoped_refptr<ServiceNetworkChangeNotifierThread>
+      network_change_notifier_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceProcess);
 };

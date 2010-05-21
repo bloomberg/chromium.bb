@@ -15,6 +15,7 @@
 #include "chrome/common/deprecated/event_sys-inl.h"
 #include "chrome/common/net/notifier/listener/talk_mediator_impl.h"
 #include "chrome/service/gaia/service_gaia_authenticator.h"
+#include "chrome/service/net/service_network_change_notifier_thread.h"
 #include "chrome/service/service_process.h"
 
 #include "googleurl/src/gurl.h"
@@ -230,8 +231,8 @@ void CloudPrintProxyBackend::Core::DoInitialize(const std::string& lsid,
     gaia_auth_for_print->set_message_loop(MessageLoop::current());
     if (gaia_auth_for_print->AuthenticateWithLsid(lsid, true)) {
       auth_token_ = gaia_auth_for_print->auth_token();
-      talk_mediator_.reset(
-          new notifier::TalkMediatorImpl(false));
+      talk_mediator_.reset(new notifier::TalkMediatorImpl(
+          g_service_process->network_change_notifier_thread(), false));
       talk_mediator_->AddSubscribedServiceUrl(kCloudPrintTalkServiceUrl);
       talk_mediator_hookup_.reset(
           NewEventListenerHookup(

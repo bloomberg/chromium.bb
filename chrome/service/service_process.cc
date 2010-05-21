@@ -5,6 +5,7 @@
 #include "chrome/service/service_process.h"
 
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
+#include "chrome/service/net/service_network_change_notifier_thread.h"
 
 ServiceProcess* g_service_process = NULL;
 
@@ -24,10 +25,14 @@ bool ServiceProcess::Initialize() {
     Teardown();
     return false;
   }
+  network_change_notifier_thread_ =
+      new ServiceNetworkChangeNotifierThread(io_thread_->message_loop());
+  network_change_notifier_thread_->Initialize();
   return true;
 }
 
 bool ServiceProcess::Teardown() {
+  network_change_notifier_thread_ = NULL;
   io_thread_.reset();
   file_thread_.reset();
   return true;

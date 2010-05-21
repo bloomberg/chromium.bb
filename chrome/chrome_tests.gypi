@@ -515,6 +515,7 @@
         'common_net_test_support',
         'debugger',
         'renderer',
+        'service',
         'test_support_unit',
         'utility',
         '../app/app.gyp:app_base',
@@ -551,7 +552,7 @@
       },
       'sources': [
         'app/breakpad_mac_stubs.mm',
-        # All unittests in browser, common, and renderer.
+        # All unittests in browser, common, renderer and service.
         'browser/app_controller_mac_unittest.mm',
         'browser/app_menu_model_unittest.cc',
         'browser/autocomplete/autocomplete_edit_unittest.cc',
@@ -1024,6 +1025,7 @@
         'renderer/spellchecker/spellcheck_unittest.cc',
         'renderer/spellchecker/spellcheck_worditerator_unittest.cc',
         'renderer/translate_helper_unittest.cc',
+        'service/net/service_network_change_notifier_thread_unittest.cc',
         'test/browser_with_test_window_test.cc',
         'test/browser_with_test_window_test.h',
         'test/file_test_utils.cc',

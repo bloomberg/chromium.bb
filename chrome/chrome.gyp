@@ -990,6 +990,8 @@
         'service/cloud_print/printer_job_handler.h',
         'service/gaia/service_gaia_authenticator.cc',
         'service/gaia/service_gaia_authenticator.h',
+        'service/net/service_network_change_notifier_thread.cc',
+        'service/net/service_network_change_notifier_thread.h',
         'service/net/service_url_request_context.cc',
         'service/net/service_url_request_context.h',
       ],
