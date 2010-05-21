@@ -1,0 +1,7 @@
+{
+  "name": "chrome.tabs test",
+  "version": "0.1",
+  "description": "end-to-end browser test for chrome.tabs API getCurrent()",
+  "background_page": "background.html",
+  "permissions": ["tabs"]
+}

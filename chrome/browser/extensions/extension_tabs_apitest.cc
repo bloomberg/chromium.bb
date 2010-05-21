@@ -9,8 +9,8 @@
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 
-// Disabled due to timeouts, see http://crbug.com/39843, http://crbug.com/43440.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Tabs) {
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Tabs) {
   ASSERT_TRUE(StartHTTPServer());
 
   // The test creates a tab and checks that the URL of the new tab
@@ -22,19 +22,30 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Tabs) {
   ASSERT_TRUE(RunExtensionTest("tabs/basics")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Tabs2) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabGetCurrent) {
   ASSERT_TRUE(StartHTTPServer());
+  ASSERT_TRUE(RunExtensionTest("tabs/get_current")) << message_;
+}
 
-  // This test runs through additional tabs functionality.
-  browser()->profile()->GetPrefs()->SetBoolean(
-      prefs::kHomePageIsNewTabPage, true);
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabConnect) {
+  ASSERT_TRUE(StartHTTPServer());
+  ASSERT_TRUE(RunExtensionTest("tabs/connect")) << message_;
+}
 
-  ASSERT_TRUE(RunExtensionTest("tabs/basics2")) << message_;
+#if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
+// The way ChromeOs deals with browser windows breaks this test.
+// http://crbug.com/43440.
+#define MAYBE_TabOnRemoved DISABLED_TabOnRemoved
+#else
+#define MAYBE_TabOnRemoved TabOnRemoved
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabOnRemoved) {
+  ASSERT_TRUE(StartHTTPServer());
+  ASSERT_TRUE(RunExtensionTest("tabs/on_removed")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleTab) {
   ASSERT_TRUE(StartHTTPServer());
-
   ASSERT_TRUE(RunExtensionTest("tabs/capture_visible_tab")) << message_;
 }
 

@@ -22,6 +22,7 @@ chrome.test.runTests([
 
   function openedTabGetCurrentTab() {
     chrome.tabs.create({url: pageUrl("a")});
-    // Completes with onCompleteGetCurrentTab.
+    // Completes with onCompleteGetCurrentTab, which is triggered by
+    // the onload of a.html .
   }
 ]);

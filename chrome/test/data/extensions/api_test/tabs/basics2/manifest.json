@@ -1,7 +1,0 @@
-{
-  "name": "chrome.tabs2",
-  "version": "0.1",
-  "description": "the second end-to-end browser test for chrome.tabs API",
-  "background_page": "background.html",
-  "permissions": ["tabs"]
-}
