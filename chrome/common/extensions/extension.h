@@ -421,7 +421,10 @@ class Extension {
   // The extension's version.
   scoped_ptr<Version> version_;
 
-  // The extension's human-readable name.
+  // The extension's human-readable name. Name is used for display purpose. It
+  // might be wrapped with unicode bidi control characters so that it is
+  // displayed correctly in RTL context.
+  // NOTE: Name is UTF-8 and may contain non-ascii characters.
   std::string name_;
 
   // An optional longer description of the extension.

@@ -528,14 +528,6 @@ TaskManagerExtensionProcessResource::TaskManagerExtensionProcessResource(
   pid_ = base::GetProcId(process_handle_);
   std::wstring extension_name(UTF8ToWide(GetExtension()->name()));
   DCHECK(!extension_name.empty());
-  // Since the extension_name will be concatenated with a prefix, we need
-  // to explicitly set the extension_name to be LTR format if there is no
-  // strong RTL charater in it. Otherwise, if the prefix is an RTL word,
-  // the concatenated result might be wrong. For extension named
-  // "Great Extension!" the concatenated result would be something like
-  // "!Great Extension :NOISNETXE", in which capital letters "NOISNETXE"
-  // stand for the Hebrew word for "extension".
-  base::i18n::AdjustStringForLocaleDirection(extension_name, &extension_name);
   title_ = l10n_util::GetStringF(IDS_TASK_MANAGER_EXTENSION_PREFIX,
                                  extension_name);
 }

@@ -14,6 +14,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/third_party/nss/blapi.h"
@@ -971,10 +972,13 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
   }
 
   // Initialize name.
-  if (!source.GetString(keys::kName, &name_)) {
+  std::wstring localized_name;
+  if (!source.GetString(keys::kName, &localized_name)) {
     *error = errors::kInvalidName;
     return false;
   }
+  base::i18n::AdjustStringForLocaleDirection(localized_name, &localized_name);
+  name_ = WideToUTF8(localized_name);
 
   // Initialize description (if present).
   if (source.HasKey(keys::kDescription)) {
@@ -1586,7 +1590,7 @@ Extension::Icons Extension::GetIconPathAllowLargerSize(
 
 // We support http:// and https:// as well as chrome://favicon//.
 // chrome://resources/ is supported but only for component extensions.
-bool Extension::CanAccessURL(const URLPattern pattern) const{
+bool Extension::CanAccessURL(const URLPattern pattern) const {
   if (pattern.scheme() == chrome::kHttpScheme ||
       pattern.scheme() == chrome::kHttpsScheme) {
     return true;

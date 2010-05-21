@@ -447,7 +447,7 @@ std::wstring DesktopNotificationService::DisplayNameForOrigin(
     if (ext_service) {
       Extension* extension = ext_service->GetExtensionByURL(origin);
       if (extension)
-        return ASCIIToWide(extension->name());
+        return UTF8ToWide(extension->name());
     }
   }
   return UTF8ToWide(origin.host());

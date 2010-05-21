@@ -4,11 +4,18 @@
 
 #include "chrome/common/extensions/extension.h"
 
+#if defined(TOOLKIT_GTK)
+#include <gtk/gtk.h>
+#endif
+
+#include "app/l10n_util.h"
 #include "base/format_macros.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "base/path_service.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -86,7 +93,7 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
   EXPECT_EQ(errors::kInvalidVersion, error);
 
-  // Test missing and invalid names
+  // Test missing and invalid names.
   input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
   input_value->Remove(keys::kName, NULL);
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
@@ -331,6 +338,51 @@ TEST(ExtensionTest, InitFromValueValid) {
   EXPECT_TRUE(extension.InitFromValue(input_value, false, &error));
   EXPECT_EQ("", error);
   // The minimum chrome version is not stored in the Extension object.
+#endif
+}
+
+TEST(ExtensionTest, InitFromValueValidNameInRTL) {
+#if defined(TOOLKIT_GTK)
+  GtkTextDirection gtk_dir = gtk_widget_get_default_direction();
+  gtk_widget_set_default_direction(GTK_TEXT_DIR_RTL);
+#else
+  std::string locale = l10n_util::GetApplicationLocale(std::wstring());
+  base::i18n::SetICUDefaultLocale("he");
+#endif
+
+#if defined(OS_WIN)
+  FilePath path(FILE_PATH_LITERAL("C:\\foo"));
+#elif defined(OS_POSIX)
+  FilePath path(FILE_PATH_LITERAL("/foo"));
+#endif
+  Extension extension(path);
+  std::string error;
+  DictionaryValue input_value;
+
+  input_value.SetString(keys::kVersion, "1.0.0.0");
+  // No strong RTL characters in name.
+  std::wstring name(L"Dictionary (by Google)");
+  input_value.SetString(keys::kName, name);
+  EXPECT_TRUE(extension.InitFromValue(input_value, false, &error));
+  EXPECT_EQ("", error);
+  std::wstring localized_name(name);
+  base::i18n::AdjustStringForLocaleDirection(localized_name, &localized_name);
+  EXPECT_EQ(localized_name, UTF8ToWide(extension.name()));
+
+  // Strong RTL characters in name.
+  name = L"Dictionary (\x05D1\x05D2"L" Google)";
+  input_value.SetString(keys::kName, name);
+  EXPECT_TRUE(extension.InitFromValue(input_value, false, &error));
+  EXPECT_EQ("", error);
+  localized_name = name;
+  base::i18n::AdjustStringForLocaleDirection(localized_name, &localized_name);
+  EXPECT_EQ(localized_name, UTF8ToWide(extension.name()));
+
+  // Reset locale.
+#if defined(TOOLKIT_GTK)
+  gtk_widget_set_default_direction(gtk_dir);
+#else
+  base::i18n::SetICUDefaultLocale(locale);
 #endif
 }
 
@@ -775,7 +827,7 @@ TEST(ExtensionTest, IsPrivilegeIncrease) {
     { "plugin2", false },  // plugin -> none
     { "plugin3", true },  // none -> plugin
     { "storage", false },  // none -> storage
-    { "notifications", false } // none -> notifications
+    { "notifications", false }  // none -> notifications
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
