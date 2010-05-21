@@ -1,0 +1,106 @@
+# -*- python -*-
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+# protobuf sources have numerous warnings we need to filter out.
+
+if env.Bit('windows'):
+  env.FilterOut(CCFLAGS=['/WX'])
+else:
+  env.FilterOut(CCFLAGS=['-Werror', '-pedantic', '-Wswitch-enum'])
+  env.Append(CCFLAGS=['-Wno-deprecated',
+                      '-Wno-sign-compare',
+                      '-Wno-unused-parameter'])
+
+env.Append(CPPPATH=['src/src'])
+# The following is to get config.h
+if env.Bit('windows'):
+  env.Append(CPPPATH=['src/vsprojects'])
+else:
+  env.Append(CPPPATH=['.'])
+
+env.FilterOut(CPPDEFINES=['WIN32_LEAN_AND_MEAN'])
+env.Append(CPPDEFINES=['GOOGLE_PROTOBUF_NO_RTTI'])
+
+common_objects = env.ComponentObject([
+    'src/src/google/protobuf/stubs/common.cc',
+    'src/src/google/protobuf/stubs/once.cc',
+    'src/src/google/protobuf/stubs/hash.cc',
+    'src/src/google/protobuf/extension_set.cc',
+    'src/src/google/protobuf/generated_message_util.cc',
+    'src/src/google/protobuf/message_lite.cc',
+    'src/src/google/protobuf/repeated_field.cc',
+    'src/src/google/protobuf/wire_format_lite.cc',
+    'src/src/google/protobuf/io/coded_stream.cc',
+    'src/src/google/protobuf/io/zero_copy_stream.cc',
+    'src/src/google/protobuf/io/zero_copy_stream_impl_lite.cc',
+])
+
+env.ComponentLibrary('protobuf_lite', common_objects)
+
+protobuf_objects = env.ComponentObject([
+    'src/src/google/protobuf/stubs/strutil.cc',
+    'src/src/google/protobuf/stubs/substitute.cc',
+    'src/src/google/protobuf/stubs/structurally_valid.cc',
+    'src/src/google/protobuf/descriptor.cc',
+    'src/src/google/protobuf/descriptor.pb.cc',
+    'src/src/google/protobuf/descriptor_database.cc',
+    'src/src/google/protobuf/dynamic_message.cc',
+    'src/src/google/protobuf/extension_set_heavy.cc',
+    'src/src/google/protobuf/generated_message_reflection.cc',
+    'src/src/google/protobuf/message.cc',
+    'src/src/google/protobuf/reflection_ops.cc',
+    'src/src/google/protobuf/service.cc',
+    'src/src/google/protobuf/text_format.cc',
+    'src/src/google/protobuf/unknown_field_set.cc',
+    'src/src/google/protobuf/wire_format.cc',
+    # This file pulls in zlib, but it's not actually used by protoc, so
+    # instead of compiling zlib for the host, let's just exclude this.
+    # 'src/src/google/protobuf/io/gzip_stream.cc',
+    'src/src/google/protobuf/io/printer.cc',
+    'src/src/google/protobuf/io/tokenizer.cc',
+    'src/src/google/protobuf/io/zero_copy_stream_impl.cc',
+    'src/src/google/protobuf/compiler/importer.cc',
+    'src/src/google/protobuf/compiler/parser.cc',
+])
+
+env.ComponentLibrary('protobuf', common_objects + protobuf_objects)
+
+protoc_sources = [
+    'src/src/google/protobuf/compiler/code_generator.cc',
+    'src/src/google/protobuf/compiler/command_line_interface.cc',
+    'src/src/google/protobuf/compiler/plugin.cc',
+    'src/src/google/protobuf/compiler/plugin.pb.cc',
+    'src/src/google/protobuf/compiler/subprocess.cc',
+    'src/src/google/protobuf/compiler/zip_writer.cc',
+    'src/src/google/protobuf/compiler/cpp/cpp_enum.cc',
+    'src/src/google/protobuf/compiler/cpp/cpp_enum_field.cc',
+    'src/src/google/protobuf/compiler/cpp/cpp_extension.cc',
+    'src/src/google/protobuf/compiler/cpp/cpp_field.cc',
+    'src/src/google/protobuf/compiler/cpp/cpp_file.cc',
+    'src/src/google/protobuf/compiler/cpp/cpp_generator.cc',
+    'src/src/google/protobuf/compiler/cpp/cpp_helpers.cc',
+    'src/src/google/protobuf/compiler/cpp/cpp_message.cc',
+    'src/src/google/protobuf/compiler/cpp/cpp_message_field.cc',
+    'src/src/google/protobuf/compiler/cpp/cpp_primitive_field.cc',
+    'src/src/google/protobuf/compiler/cpp/cpp_service.cc',
+    'src/src/google/protobuf/compiler/cpp/cpp_string_field.cc',
+    'src/src/google/protobuf/compiler/java/java_enum.cc',
+    'src/src/google/protobuf/compiler/java/java_enum_field.cc',
+    'src/src/google/protobuf/compiler/java/java_extension.cc',
+    'src/src/google/protobuf/compiler/java/java_field.cc',
+    'src/src/google/protobuf/compiler/java/java_file.cc',
+    'src/src/google/protobuf/compiler/java/java_generator.cc',
+    'src/src/google/protobuf/compiler/java/java_helpers.cc',
+    'src/src/google/protobuf/compiler/java/java_message.cc',
+    'src/src/google/protobuf/compiler/java/java_message_field.cc',
+    'src/src/google/protobuf/compiler/java/java_primitive_field.cc',
+    'src/src/google/protobuf/compiler/java/java_service.cc',
+    'src/src/google/protobuf/compiler/python/python_generator.cc',
+    'src/src/google/protobuf/compiler/main.cc',
+]
+
+env.ComponentProgram('protoc', protoc_sources, EXTRA_LIBS=['protobuf'])

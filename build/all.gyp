@@ -15,6 +15,7 @@
 #        '../src/shared/platform/platform_tests.gyp:*',
         '../src/shared/srpc/srpc.gyp:*',
         '../src/shared/utils/utils.gyp:*',
+        '../src/third_party/protobuf/protobuf.gyp:*',
         '../src/trusted/debug_stub/debug_stub.gyp:*',
         '../src/trusted/desc/desc.gyp:*',
         '../src/trusted/nacl_breakpad/nacl_breakpad.gyp:*',

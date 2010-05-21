@@ -1,0 +1,74 @@
+# -*- python -*-
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+# protobuf sources have numerous warnings we need to filter out.
+
+env.FilterOut(CCFLAGS=['-Werror',
+                       '-pedantic',
+                       '-Wsign-compare',
+                       '-Wswitch-enum'])
+env.Append(CCFLAGS=['-Wno-sign-compare',
+                    '-Wno-unused-parameter',
+                    '-Wno-long-long',
+                    '-Wno-deprecated'])
+
+env.Append(CPPPATH=['src/src'])
+# The following is to get config.h
+if env.Bit('windows'):
+  env.Append(CPPPATH=['src/vsprojects'])
+else:
+  env.Append(CPPPATH=['.'])
+
+env.FilterOut(CPPDEFINES=['WIN32_LEAN_AND_MEAN'])
+env.Append(CPPDEFINES=['GOOGLE_PROTOBUF_NO_RTTI'])
+# To avoid having to patch the source, we add this ugliness.
+env.Append(CPPDEFINES=['INT_MAX=0x7fffffff'])
+
+common_objects = env.ComponentObject([
+    'src/src/google/protobuf/stubs/common.cc',
+    'src/src/google/protobuf/stubs/once.cc',
+    'src/src/google/protobuf/stubs/hash.cc',
+    'src/src/google/protobuf/extension_set.cc',
+    'src/src/google/protobuf/generated_message_util.cc',
+    'src/src/google/protobuf/message_lite.cc',
+    'src/src/google/protobuf/repeated_field.cc',
+    'src/src/google/protobuf/wire_format_lite.cc',
+    'src/src/google/protobuf/io/coded_stream.cc',
+    'src/src/google/protobuf/io/zero_copy_stream.cc',
+    'src/src/google/protobuf/io/zero_copy_stream_impl_lite.cc',
+])
+
+env.ComponentLibrary('nacl_protobuf_lite', common_objects)
+
+protobuf_objects = env.ComponentObject([
+    'src/src/google/protobuf/stubs/strutil.cc',
+    'src/src/google/protobuf/stubs/substitute.cc',
+    'src/src/google/protobuf/stubs/structurally_valid.cc',
+    'src/src/google/protobuf/descriptor.cc',
+    'src/src/google/protobuf/descriptor.pb.cc',
+    'src/src/google/protobuf/descriptor_database.cc',
+    'src/src/google/protobuf/dynamic_message.cc',
+    'src/src/google/protobuf/extension_set_heavy.cc',
+    'src/src/google/protobuf/generated_message_reflection.cc',
+    'src/src/google/protobuf/message.cc',
+    'src/src/google/protobuf/reflection_ops.cc',
+    'src/src/google/protobuf/service.cc',
+    'src/src/google/protobuf/text_format.cc',
+    'src/src/google/protobuf/unknown_field_set.cc',
+    'src/src/google/protobuf/wire_format.cc',
+    # This file pulls in zlib, but it's not actually used by protoc, so
+    # instead of compiling zlib for the host, let's just exclude this.
+    # 'src/src/google/protobuf/io/gzip_stream.cc',
+    'src/src/google/protobuf/io/printer.cc',
+    'src/src/google/protobuf/io/tokenizer.cc',
+    'src/src/google/protobuf/io/zero_copy_stream_impl.cc',
+    'src/src/google/protobuf/compiler/importer.cc',
+    'src/src/google/protobuf/compiler/parser.cc',
+])
+
+env.ComponentLibrary('google_nacl_protobuf', common_objects + protobuf_objects)
+env.AddLibraryToSdk(['google_nacl_protobuf'])
