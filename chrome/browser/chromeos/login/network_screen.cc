@@ -57,7 +57,8 @@ std::wstring NetworkScreen::GetItemAt(int index) {
 void NetworkScreen::ItemChanged(views::Combobox* sender,
                                 int prev_index,
                                 int new_index) {
-  if (new_index == prev_index || new_index < 0 || prev_index < 0)
+  // Corner case: item with index 0 is "No selection". Just select it.
+  if (new_index == prev_index || new_index <= 0 || prev_index < 0)
     return;
 
   if (networks_.IsEmpty())
