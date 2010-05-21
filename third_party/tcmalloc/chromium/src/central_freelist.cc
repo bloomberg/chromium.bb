@@ -266,7 +266,8 @@ void CentralFreeList::Populate() {
   Span* span;
   {
     SpinLockHolder h(Static::pageheap_lock());
-    span = Static::pageheap()->New(npages, size_class_, kPageSize);
+    span = Static::pageheap()->New(npages);
+    if (span) Static::pageheap()->RegisterSizeClass(span, size_class_);
   }
   if (span == NULL) {
     MESSAGE("tcmalloc: allocation failed", npages << kPageShift);
@@ -274,6 +275,12 @@ void CentralFreeList::Populate() {
     return;
   }
   ASSERT(span->length == npages);
+  // Cache sizeclass info eagerly.  Locking is not necessary.
+  // (Instead of being eager, we could just replace any stale info
+  // about this span, but that seems to be no better in practice.)
+  for (int i = 0; i < npages; i++) {
+    Static::pageheap()->CacheSizeClass(span->start + i, size_class_);
+  }
 
   // Split the block into pieces and add to the free-list
   // TODO: coloring of objects to avoid cache conflicts?

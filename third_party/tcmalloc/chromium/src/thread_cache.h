@@ -79,9 +79,7 @@ class ThreadCache {
   // Total byte size in cache
   size_t Size() const { return size_; }
 
-  // Allocate an object of the given size and class. The size given
-  // must be the same as the size of the class in the size map.
-  void* Allocate(size_t size, size_t cl);
+  void* Allocate(size_t size);
   void Deallocate(void* ptr, size_t size_class);
 
   void Scavenge();
@@ -295,18 +293,15 @@ class ThreadCache {
   // across all ThreadCaches.  Protected by Static::pageheap_lock.
   static ssize_t unclaimed_cache_space_;
 
-  // This class is laid out with the most frequently used fields
-  // first so that hot elements are placed on the same cache line.
+  // Warning: the offset of list_ affects performance.  On general
+  // principles, we don't like list_[x] to span multiple L1 cache
+  // lines.  However, merely placing list_ at offset 0 here seems to
+  // cause cache conflicts.
 
   size_t        size_;                  // Combined size of data
   size_t        max_size_;              // size_ > max_size_ --> Scavenge()
-
-  // We sample allocations, biased by the size of the allocation
-  Sampler       sampler_;               // A sampler
-
-  FreeList      list_[kNumClasses];     // Array indexed by size-class
-
   pthread_t     tid_;                   // Which thread owns it
+  FreeList      list_[kNumClasses];     // Array indexed by size-class
   bool          in_setspecific_;        // In call to pthread_setspecific?
 
   // Allocate a new heap. REQUIRES: Static::pageheap_lock is held.
@@ -318,10 +313,9 @@ class ThreadCache {
   static void DeleteCache(ThreadCache* heap);
   static void RecomputePerThreadCacheSize();
 
-  // Ensure that this class is cacheline-aligned. This is critical for
-  // performance, as false sharing would negate many of the benefits
-  // of a per-thread cache.
-} CACHELINE_ALIGNED;
+  // We sample allocations, biased by the size of the allocation
+  Sampler       sampler_;               // A sampler
+};
 
 // Allocator for thread heaps
 // This is logically part of the ThreadCache class, but MSVC, at
@@ -337,15 +331,15 @@ inline bool ThreadCache::SampleAllocation(size_t k) {
   return sampler_.SampleAllocation(k);
 }
 
-inline void* ThreadCache::Allocate(size_t size, size_t cl) {
+inline void* ThreadCache::Allocate(size_t size) {
   ASSERT(size <= kMaxSize);
-  ASSERT(size == Static::sizemap()->ByteSizeForClass(cl));
-
+  const size_t cl = Static::sizemap()->SizeClass(size);
+  const size_t alloc_size = Static::sizemap()->ByteSizeForClass(cl);
   FreeList* list = &list_[cl];
   if (list->empty()) {
-    return FetchFromCentralCache(cl, size);
+    return FetchFromCentralCache(cl, alloc_size);
   }
-  size_ -= size;
+  size_ -= alloc_size;
   return list->Pop();
 }
 

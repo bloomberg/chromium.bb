@@ -56,11 +56,12 @@ static void test_other_thread() {
 
   int i, m;
   char b[128];
-  MutexLock ml(&mutex);
   for (m = 0; m < 1000000; ++m) {          // run millions of times
     for (i = 0; i < g_iters; ++i ) {
+      MutexLock ml(&mutex);
       result ^= i;
     }
+    MutexLock ml(&mutex);
     snprintf(b, sizeof(b), "%d", result);  // get some libc action
   }
 #endif
@@ -69,11 +70,12 @@ static void test_other_thread() {
 static void test_main_thread() {
   int i, m;
   char b[128];
-  MutexLock ml(&mutex);
   for (m = 0; m < 1000000; ++m) {          // run millions of times
     for (i = 0; i < g_iters; ++i ) {
+      MutexLock ml(&mutex);
       result ^= i;
     }
+    MutexLock ml(&mutex);
     snprintf(b, sizeof(b), "%d", result);  // get some libc action
   }
 }
