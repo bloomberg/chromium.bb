@@ -176,9 +176,11 @@ class ATL_NO_VTABLE ChromeFrameActivexBase :  // NOLINT
   ChromeFrameActivexBase()
       : ready_state_(READYSTATE_UNINITIALIZED) {
     m_bWindowOnly = TRUE;
+    url_fetcher_.set_container(static_cast<IDispatch*>(this));
   }
 
   ~ChromeFrameActivexBase() {
+    url_fetcher_.set_container(NULL);
   }
 
 DECLARE_OLEMISC_STATUS(OLEMISC_RECOMPOSEONRESIZE | OLEMISC_CANTLINKINSIDE |
@@ -260,7 +262,6 @@ END_MSG_MAP()
                                               IE_8,
                                               IE_8 + 1);
     }
-    url_fetcher_.set_container(static_cast<IDispatch*>(this));
     return S_OK;
   }
 
