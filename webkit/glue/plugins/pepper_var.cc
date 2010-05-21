@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "third_party/ppapi/c/pp_var.h"
 #include "third_party/ppapi/c/ppb_var.h"
+#include "third_party/ppapi/c/ppp_class.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
 #include "webkit/glue/plugins/pepper_string.h"
 #include "v8/include/v8.h"
@@ -22,6 +23,7 @@ namespace pepper {
 
 namespace {
 
+void Release(PP_Var var);
 PP_Var VarFromUtf8(const char* data, uint32_t len);
 
 // ---------------------------------------------------------------------------
@@ -78,6 +80,12 @@ String* GetStringUnchecked(PP_Var var) {
   return reinterpret_cast<String*>(var.value.as_id);
 }
 
+String* GetString(PP_Var var) {
+  if (var.type != PP_VarType_String)
+    return NULL;
+  return GetStringUnchecked(var);
+}
+
 NPObject* GetNPObjectUnchecked(PP_Var var) {
   return reinterpret_cast<NPObject*>(var.value.as_id);
 }
@@ -90,7 +98,7 @@ NPObject* GetNPObject(PP_Var var) {
 
 // Returns a PP_Var that corresponds to the given NPVariant.  The contents of
 // the NPVariant will be copied unless the NPVariant corresponds to an object.
-PP_Var NPVariantToPPVar(NPVariant* variant) {
+PP_Var NPVariantToPPVar(const NPVariant* variant) {
   switch (variant->type) {
     case NPVariantType_Void:
       return PP_MakeVoid();
@@ -195,6 +203,272 @@ NPIdentifier PPVarToNPIdentifier(PP_Var var) {
   }
 }
 
+PP_Var NPIdentifierToPPVar(NPIdentifier id) {
+  const NPUTF8* string_value = NULL;
+  int32_t int_value = 0;
+  bool is_string = false;
+  WebBindings::extractIdentifierData(id, string_value, int_value, is_string);
+  if (is_string)
+    return VarFromUtf8(string_value, strlen(string_value));
+
+  return PP_MakeInt32(int_value);
+}
+
+PP_Var NPIdentifierToPPVarString(NPIdentifier id) {
+  PP_Var var = NPIdentifierToPPVar(id);
+  if (var.type == PP_VarType_String)
+    return var;
+  DCHECK(var.type == PP_VarType_Int32);
+  const std::string& str = IntToString(var.value.as_int);
+  return VarFromUtf8(str.data(), str.size());
+}
+
+void ThrowException(NPObject* object, PP_Var exception) {
+  String* str = GetString(exception);
+  if (str)
+    WebBindings::setException(object, str->value().c_str());
+}
+
+// ---------------------------------------------------------------------------
+// NPObject implementation in terms of PPP_Class
+
+struct WrapperObject : NPObject {
+  const PPP_Class* ppp_class;
+  void* ppp_class_data;
+};
+
+static WrapperObject* ToWrapper(NPObject* object) {
+  return static_cast<WrapperObject*>(object);
+}
+
+NPObject* WrapperClass_Allocate(NPP npp, NPClass* unused) {
+  return new WrapperObject;
+}
+
+void WrapperClass_Deallocate(NPObject* object) {
+  WrapperObject* wrapper = ToWrapper(object);
+  wrapper->ppp_class->Deallocate(wrapper->ppp_class_data);
+  delete object;
+}
+
+void WrapperClass_Invalidate(NPObject* object) {
+  // TODO(darin): Do I need to do something here?
+}
+
+bool WrapperClass_HasMethod(NPObject* object, NPIdentifier method_name) {
+  WrapperObject* wrapper = ToWrapper(object);
+
+  PP_Var method_name_var = NPIdentifierToPPVarString(method_name);
+  PP_Var exception = PP_MakeVoid();
+  bool rv = wrapper->ppp_class->HasMethod(wrapper->ppp_class_data,
+                                          method_name_var,
+                                          &exception);
+  Release(method_name_var);
+
+  if (exception.type != PP_VarType_Void) {
+    ThrowException(object, exception);
+    Release(exception);
+    return false;
+  }
+  return rv;
+}
+
+bool WrapperClass_Invoke(NPObject* object, NPIdentifier method_name,
+                         const NPVariant* argv, uint32_t argc,
+                         NPVariant* result) {
+  WrapperObject* wrapper = ToWrapper(object);
+
+  scoped_array<PP_Var> args;
+  if (argc) {
+    args.reset(new PP_Var[argc]);
+    for (uint32_t i = 0; i < argc; ++i)
+      args[i] = NPVariantToPPVar(&argv[i]);
+  }
+  PP_Var method_name_var = NPIdentifierToPPVarString(method_name);
+  PP_Var exception = PP_MakeVoid();
+  PP_Var result_var = wrapper->ppp_class->Call(wrapper->ppp_class_data,
+                                               method_name_var, argc,
+                                               args.get(), &exception);
+  Release(method_name_var);
+  for (uint32_t i = 0; i < argc; ++i)
+    Release(args[i]);
+
+  bool rv;
+  if (exception.type == PP_VarType_Void) {
+    rv = true;
+    *result = PPVarToNPVariant(result_var);
+  } else {
+    rv = false;
+    ThrowException(object, exception);
+    Release(exception);
+  }
+  Release(result_var);
+  return rv;
+}
+
+bool WrapperClass_InvokeDefault(NPObject* object, const NPVariant* argv,
+                                uint32_t argc, NPVariant* result) {
+  WrapperObject* wrapper = ToWrapper(object);
+
+  scoped_array<PP_Var> args;
+  if (argc) {
+    args.reset(new PP_Var[argc]);
+    for (uint32_t i = 0; i < argc; ++i)
+      args[i] = NPVariantToPPVar(&argv[i]);
+  }
+  PP_Var exception = PP_MakeVoid();
+  PP_Var result_var = wrapper->ppp_class->Call(wrapper->ppp_class_data,
+                                               PP_MakeVoid(), argc, args.get(),
+                                               &exception);
+  for (uint32_t i = 0; i < argc; ++i)
+    Release(args[i]);
+
+  bool rv;
+  if (exception.type == PP_VarType_Void) {
+    rv = true;
+    *result = PPVarToNPVariant(result_var);
+  } else {
+    rv = false;
+    ThrowException(object, exception);
+    Release(exception);
+  }
+  Release(result_var);
+  return rv;
+}
+
+bool WrapperClass_HasProperty(NPObject* object, NPIdentifier property_name) {
+  WrapperObject* wrapper = ToWrapper(object);
+
+  PP_Var property_name_var = NPIdentifierToPPVar(property_name);
+  PP_Var exception = PP_MakeVoid();
+  bool rv = wrapper->ppp_class->HasProperty(wrapper->ppp_class_data,
+                                            property_name_var,
+                                            &exception);
+  Release(property_name_var);
+
+  if (exception.type != PP_VarType_Void) {
+    ThrowException(object, exception);
+    Release(exception);
+    return false;
+  }
+  return rv;
+}
+
+bool WrapperClass_GetProperty(NPObject* object, NPIdentifier property_name,
+                              NPVariant* result) {
+  WrapperObject* wrapper = ToWrapper(object);
+
+  PP_Var property_name_var = NPIdentifierToPPVar(property_name);
+  PP_Var exception = PP_MakeVoid();
+  PP_Var result_var = wrapper->ppp_class->GetProperty(wrapper->ppp_class_data,
+                                                      property_name_var,
+                                                      &exception);
+  Release(property_name_var);
+
+  bool rv;
+  if (exception.type == PP_VarType_Void) {
+    rv = true;
+    *result = PPVarToNPVariant(result_var);
+  } else {
+    rv = false;
+    ThrowException(object, exception);
+    Release(exception);
+  }
+  Release(result_var);
+  return rv;
+}
+
+bool WrapperClass_SetProperty(NPObject* object, NPIdentifier property_name,
+                              const NPVariant* value) {
+  WrapperObject* wrapper = ToWrapper(object);
+
+  PP_Var property_name_var = NPIdentifierToPPVar(property_name);
+  PP_Var value_var = NPVariantToPPVar(value);
+  PP_Var exception = PP_MakeVoid();
+  wrapper->ppp_class->SetProperty(wrapper->ppp_class_data, property_name_var,
+                                  value_var, &exception);
+  Release(value_var);
+  Release(property_name_var);
+
+  if (exception.type != PP_VarType_Void) {
+    ThrowException(object, exception);
+    Release(exception);
+    return false;
+  }
+  return true;
+}
+
+bool WrapperClass_RemoveProperty(NPObject* object, NPIdentifier property_name) {
+  WrapperObject* wrapper = ToWrapper(object);
+
+  PP_Var property_name_var = NPIdentifierToPPVar(property_name);
+  PP_Var exception = PP_MakeVoid();
+  wrapper->ppp_class->RemoveProperty(wrapper->ppp_class_data, property_name_var,
+                                     &exception);
+  Release(property_name_var);
+
+  if (exception.type != PP_VarType_Void) {
+    ThrowException(object, exception);
+    Release(exception);
+    return false;
+  }
+  return true;
+}
+
+bool WrapperClass_Enumerate(NPObject* object, NPIdentifier** values,
+                            uint32_t* count) {
+  // TODO(darin): Implement this method!
+  WebBindings::setException(object, kUnableToGetAllPropertiesException);
+  return false;
+}
+
+bool WrapperClass_Construct(NPObject* object, const NPVariant* argv,
+                            uint32_t argc, NPVariant* result) {
+  WrapperObject* wrapper = ToWrapper(object);
+
+  scoped_array<PP_Var> args;
+  if (argc) {
+    args.reset(new PP_Var[argc]);
+    for (uint32_t i = 0; i < argc; ++i)
+      args[i] = NPVariantToPPVar(&argv[i]);
+  }
+
+  PP_Var exception = PP_MakeVoid();
+  PP_Var result_var = wrapper->ppp_class->Construct(wrapper->ppp_class_data,
+                                                    argc, args.get(),
+                                                    &exception);
+  for (uint32_t i = 0; i < argc; ++i)
+    Release(args[i]);
+
+  bool rv;
+  if (exception.type == PP_VarType_Void) {
+    rv = true;
+    *result = PPVarToNPVariant(result_var);
+  } else {
+    rv = false;
+    ThrowException(object, exception);
+    Release(exception);
+  }
+  Release(result_var);
+  return rv;
+}
+
+const NPClass wrapper_class = {
+  NP_CLASS_STRUCT_VERSION,
+  WrapperClass_Allocate,
+  WrapperClass_Deallocate,
+  WrapperClass_Invalidate,
+  WrapperClass_HasMethod,
+  WrapperClass_Invoke,
+  WrapperClass_InvokeDefault,
+  WrapperClass_HasProperty,
+  WrapperClass_GetProperty,
+  WrapperClass_SetProperty,
+  WrapperClass_RemoveProperty,
+  WrapperClass_Enumerate,
+  WrapperClass_Construct
+};
+
 // ---------------------------------------------------------------------------
 // PPB_Var methods
 
@@ -257,6 +531,28 @@ bool HasProperty(PP_Var var,
   }
 
   return WebBindings::hasProperty(NULL, object, identifier);
+}
+
+bool HasMethod(PP_Var var,
+               PP_Var name,
+               PP_Var* exception) {
+  TryCatch try_catch(exception);
+  if (try_catch.HasException())
+    return false;
+
+  NPObject* object = GetNPObject(var);
+  if (!object) {
+    try_catch.SetException(kInvalidObjectException);
+    return false;
+  }
+
+  NPIdentifier identifier = PPVarToNPIdentifier(name);
+  if (!identifier) {
+    try_catch.SetException(kInvalidPropertyException);
+    return false;
+  }
+
+  return WebBindings::hasMethod(NULL, object, identifier);
 }
 
 PP_Var GetProperty(PP_Var var,
@@ -444,9 +740,32 @@ PP_Var Construct(PP_Var var,
   return ret;
 }
 
-PP_Var CreateObject(const PPP_Class* object_class,
-                    void* object_data) {
-  return PP_MakeVoid();  // TODO(darin): Implement this method!
+bool IsInstanceOf(PP_Var var, const PPP_Class* ppp_class,
+                  void** ppp_class_data) {
+  NPObject* object = GetNPObject(var);
+  if (!object)
+    return false;
+
+  if (object->_class != &wrapper_class)
+    return false;
+
+  WrapperObject* wrapper = ToWrapper(object);
+  if (wrapper->ppp_class != ppp_class)
+    return false;
+
+  if (ppp_class_data)
+    *ppp_class_data = wrapper->ppp_class_data;
+  return true;
+}
+
+PP_Var CreateObject(const PPP_Class* ppp_class, void* ppp_class_data) {
+  NPObject* object =
+      WebBindings::createObject(NULL, const_cast<NPClass*>(&wrapper_class));
+  static_cast<WrapperObject*>(object)->ppp_class = ppp_class;
+  static_cast<WrapperObject*>(object)->ppp_class_data = ppp_class_data;
+  PP_Var ret = NPObjectToPPVar(object);
+  WebBindings::releaseObject(object);  // Release reference from createObject
+  return ret;
 }
 
 const PPB_Var var_interface = {
@@ -455,12 +774,14 @@ const PPB_Var var_interface = {
   &VarFromUtf8,
   &VarToUtf8,
   &HasProperty,
+  &HasMethod,
   &GetProperty,
   &GetAllPropertyNames,
   &SetProperty,
   &RemoveProperty,
   &Call,
   &Construct,
+  &IsInstanceOf,
   &CreateObject
 };
 
