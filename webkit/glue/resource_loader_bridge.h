@@ -124,6 +124,9 @@ class ResourceLoaderBridge {
 
     // True if the response was delivered using SPDY.
     bool was_fetched_via_spdy;
+
+    // True if the response was delivered after NPN is negotiated.
+    bool was_npn_negotiated;
   };
 
   // See the SyncLoad method declared below.  (The name of this struct is not

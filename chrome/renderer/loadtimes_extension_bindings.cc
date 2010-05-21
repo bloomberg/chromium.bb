@@ -131,6 +131,9 @@ class LoadTimesExtensionWrapper : public v8::Extension {
         load_times->Set(
             v8::String::New("wasFetchedViaSpdy"),
             v8::Boolean::New(navigation_state->was_fetched_via_spdy()));
+        load_times->Set(
+            v8::String::New("wasNpnNegotiated"),
+            v8::Boolean::New(navigation_state->was_npn_negotiated()));
         return load_times;
       }
     }

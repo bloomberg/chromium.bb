@@ -50,7 +50,6 @@
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
-#include "net/http/http_network_layer.h"
 #include "net/url_request/url_request.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -1006,12 +1005,6 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
       CreateAutomationProvider<AutomationProvider>(automation_channel_id,
                                                    profile, expected_tabs);
     }
-  }
-
-  if (command_line.HasSwitch(switches::kUseSpdy)) {
-    std::string spdy_mode =
-        command_line.GetSwitchValueASCII(switches::kUseSpdy);
-    net::HttpNetworkLayer::EnableSpdy(spdy_mode);
   }
 
   if (command_line.HasSwitch(switches::kExplicitlyAllowedPorts)) {

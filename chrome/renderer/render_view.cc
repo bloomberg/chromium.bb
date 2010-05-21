@@ -2875,11 +2875,18 @@ void RenderView::didReceiveResponse(
   if (frame->isViewSourceModeEnabled())
     return;
 
+  NavigationState* navigation_state =
+      NavigationState::FromDataSource(frame->provisionalDataSource());
+  CHECK(navigation_state);
+
   // Record that this was a page loaded over SPDY.
   if (response.wasFetchedViaSPDY()) {
-    NavigationState* navigation_state =
-        NavigationState::FromDataSource(frame->provisionalDataSource());
     navigation_state->set_was_fetched_via_spdy(true);
+  }
+
+  // Record that npn protocol was negotiated when fetching this page.
+  if (response.wasNpnNegotiated()) {
+    navigation_state->set_was_npn_negotiated(true);
   }
 
   // Consider loading an alternate error page for 404 responses.
@@ -2890,8 +2897,6 @@ void RenderView::didReceiveResponse(
   if (!GetAlternateErrorPageURL(response.url(), HTTP_404).is_valid())
     return;
 
-  NavigationState* navigation_state =
-      NavigationState::FromDataSource(frame->provisionalDataSource());
   navigation_state->set_postpone_loading_data(true);
   navigation_state->clear_postponed_data();
 }
@@ -4555,6 +4560,27 @@ void RenderView::DumpLoadHistograms() const {
         "Renderer4.BeginToFinishDoc_LinkLoad", "CacheSize"),
         begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
         kBeginToFinishDocBucketCount);
+
+  static bool use_spdy_histogram(FieldTrialList::Find("SpdyImpact") &&
+      !FieldTrialList::Find("SpdyImpact")->group_name().empty());
+  if (use_spdy_histogram) {
+    switch (load_type) {
+      case NavigationState::LINK_LOAD_NORMAL:
+        if (navigation_state->was_npn_negotiated()) {
+          DCHECK(FieldTrialList::Find("SpdyImpact")->group_name() ==
+                 "_npn_with_http" ||
+                 FieldTrialList::Find("SpdyImpact")->group_name() ==
+                 "_npn_with_spdy");
+          UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
+              "Renderer4.BeginToFinish_LinkLoadNormal_SpdyTrial", "SpdyImpact"),
+              begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
+              kBeginToFinishBucketCount);
+        }
+        break;
+      default:
+        break;
+    }
+  }
 
   UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.StartToFinish",
       finish - start, kBeginToFinishMin,

@@ -163,6 +163,7 @@ void PopulateResourceResponse(URLRequest* request,
   request->GetMimeType(&response->response_head.mime_type);
   response->response_head.was_fetched_via_spdy =
       request->was_fetched_via_spdy();
+  response->response_head.was_npn_negotiated = request->was_npn_negotiated();
   appcache::AppCacheInterceptor::GetExtraResponseInfo(
       request,
       &response->response_head.appcache_id,

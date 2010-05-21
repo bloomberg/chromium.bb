@@ -220,6 +220,9 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   void set_was_fetched_via_spdy(bool value) { was_fetched_via_spdy_ = value; }
   bool was_fetched_via_spdy() const { return was_fetched_via_spdy_; }
 
+  void set_was_npn_negotiated(bool value) { was_npn_negotiated_ = value; }
+  bool was_npn_negotiated() const { return was_npn_negotiated_; }
+
   // Whether the frame text contents was translated to a different language.
   void set_was_translated(bool value) { was_translated_ = value; }
   bool was_translated() const { return was_translated_; }
@@ -243,6 +246,7 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
         cache_policy_override_(WebKit::WebURLRequest::UseProtocolCachePolicy),
         user_script_idle_scheduler_(NULL),
         was_fetched_via_spdy_(false),
+        was_npn_negotiated_(false),
         was_translated_(false) {
   }
 
@@ -274,6 +278,8 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   scoped_ptr<UserScriptIdleScheduler> user_script_idle_scheduler_;
 
   bool was_fetched_via_spdy_;
+
+  bool was_npn_negotiated_;
 
   bool was_translated_;
 

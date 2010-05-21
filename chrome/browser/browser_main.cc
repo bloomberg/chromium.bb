@@ -73,6 +73,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/net_module.h"
+#include "net/http/http_network_layer.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_network_transaction.h"
 #include "net/socket/client_socket_pool_base.h"
@@ -707,9 +708,52 @@ int BrowserMain(const MainFunctionParams& parameters) {
   net::EnsureWinsockInit();
 #endif  // defined(OS_WIN)
 
+  // Initialize statistical testing infrastructure for entire browser.
+  FieldTrialList field_trial;
+
+  // When --use-spdy not set, users will be in A/B test for spdy.
+  // group A (_npn_with_spdy): this means npn and spdy are enabled. In
+  // case server supports spdy, browser will use spdy.
+  // group B (_npn_with_http): this means npn is enabled but spdy
+  // won't be used. Http is still used for all requests.
+  // default group: no npn or spdy is involved. The "old" non-spdy chrome
+  // behavior.
+  bool is_spdy_trial = false;
+  if (parsed_command_line.HasSwitch(switches::kUseSpdy)) {
+    std::string spdy_mode =
+        parsed_command_line.GetSwitchValueASCII(switches::kUseSpdy);
+    net::HttpNetworkLayer::EnableSpdy(spdy_mode);
+  } else {
+    const FieldTrial::Probability kSpdyDivisor = 1000;
+    // TODO(lzheng): Increase these values to enable more spdy tests.
+    // To enable 100% npn_with_spdy, set kNpnHttpProbability = 0 and set
+    // kNpnSpdyProbability = FieldTrial::kAllRemainingProbability.
+    const FieldTrial::Probability kNpnHttpProbability = 0;  // 0.0%
+    const FieldTrial::Probability kNpnSpdyProbability = 0;  // 0.0%
+    scoped_refptr<FieldTrial> trial =
+        new FieldTrial("SpdyImpact", kSpdyDivisor);
+    // npn with only http support, no spdy.
+    int npn_http_grp =
+        trial->AppendGroup("_npn_with_http", kNpnHttpProbability);
+    // npn with spdy support.
+    int npn_spdy_grp =
+        trial->AppendGroup("_npn_with_spdy", kNpnSpdyProbability);
+    int trial_grp = trial->group();
+    if (trial_grp == npn_http_grp) {
+      is_spdy_trial = true;
+      net::HttpNetworkLayer::EnableSpdy("npn-http");
+    } else if (trial_grp == npn_spdy_grp) {
+      is_spdy_trial = true;
+      net::HttpNetworkLayer::EnableSpdy("npn");
+    } else {
+      CHECK(!is_spdy_trial);
+    }
+  }
+
 #if defined(OS_WIN)
   if (!parsed_command_line.HasSwitch(switches::kUseSChannel) ||
-      parsed_command_line.HasSwitch(switches::kUseSpdy)) {
+      parsed_command_line.HasSwitch(switches::kUseSpdy) ||
+      is_spdy_trial) {
     net::ClientSocketFactory::SetSSLClientSocketFactory(
         net::SSLClientSocketNSSFactory);
     // We want to be sure to init NSPR on the main thread.
@@ -726,9 +770,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   SystemMonitor system_monitor;
   HighResolutionTimerManager hi_res_timer_manager;
-
-  // Initialize statistical testing infrastructure for entire browser.
-  FieldTrialList field_trial;
 
   std::wstring app_name = chrome::kBrowserAppName;
   std::string thread_name_string = WideToASCII(app_name + L"_BrowserMain");
