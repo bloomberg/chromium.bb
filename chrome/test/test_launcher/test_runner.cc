@@ -26,8 +26,7 @@ const char kGTestOutputFlag[] = "gtest_output";
 const char kGTestFilterFlag[] = "gtest_filter";
 
 // The default output file for XML output.
-static const FilePath::CharType kDefaultOutputFile[] = FILE_PATH_LITERAL(
-  "test_detail.xml");
+static const FilePath::StringType kDefaultOutputFile = "test_detail.xml";
 
 // A helper class to output results.
 // Note: as currently XML is the only supported format by gtest, we don't
