@@ -37,7 +37,7 @@ DOMUI::~DOMUI() {
 // DOMUI, public: -------------------------------------------------------------
 
 void DOMUI::ProcessDOMUIMessage(const std::string& message,
-                                const Value* content,
+                                const ListValue* content,
                                 const GURL& source_url,
                                 int request_id,
                                 bool has_callback) {

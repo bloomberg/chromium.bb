@@ -2526,7 +2526,7 @@ void TabContents::DomOperationResponse(const std::string& json_string,
 }
 
 void TabContents::ProcessDOMUIMessage(const std::string& message,
-                                      const Value* content,
+                                      const ListValue* content,
                                       const GURL& source_url,
                                       int request_id,
                                       bool has_callback) {

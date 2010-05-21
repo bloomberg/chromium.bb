@@ -18,11 +18,11 @@ class Extension;
 class ExtensionDOMUI;
 class ExtensionFunction;
 class ExtensionHost;
+class ListValue;
 class Profile;
 class RenderViewHost;
 class RenderViewHostDelegate;
 class TabContents;
-class Value;
 
 // A factory function for creating new ExtensionFunction instances.
 typedef ExtensionFunction* (*ExtensionFunctionFactory)();
@@ -95,7 +95,7 @@ class ExtensionFunctionDispatcher {
   Delegate* delegate() { return delegate_; }
 
   // Handle a request to execute an extension function.
-  void HandleRequest(const std::string& name, const Value* args,
+  void HandleRequest(const std::string& name, const ListValue* args,
                      const GURL& source_url, int request_id, bool has_callback);
 
   // Send a response to a function.

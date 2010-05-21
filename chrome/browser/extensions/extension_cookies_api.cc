@@ -62,8 +62,8 @@ bool CookiesFunction::ParseCookieStore(const DictionaryValue* details,
 }
 
 bool GetCookieFunction::RunImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  const DictionaryValue* details = args_as_dictionary();
+  DictionaryValue* details;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
   DCHECK(details);
 
   // Read/validate input parameters.
@@ -103,8 +103,8 @@ bool GetCookieFunction::RunImpl() {
 }
 
 bool GetAllCookiesFunction::RunImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  const DictionaryValue* details = args_as_dictionary();
+  DictionaryValue* details;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
 
   // Read/validate input parameters.
   GURL url;
@@ -125,8 +125,8 @@ bool GetAllCookiesFunction::RunImpl() {
 }
 
 bool SetCookieFunction::RunImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  const DictionaryValue* details = args_as_dictionary();
+  DictionaryValue* details;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
 
   // Read/validate input parameters.
   GURL url;
@@ -195,8 +195,8 @@ bool SetCookieFunction::RunImpl() {
 }
 
 bool RemoveCookieFunction::RunImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  const DictionaryValue* details = args_as_dictionary();
+  DictionaryValue* details;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
 
   // Read/validate input parameters.
   GURL url;

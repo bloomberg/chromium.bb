@@ -182,7 +182,7 @@ void ExtensionAccessibilityEventRouter::DispatchEvent(
 
 bool SetAccessibilityEnabledFunction::RunImpl() {
   bool enabled;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetAsBoolean(&enabled));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &enabled));
   ExtensionAccessibilityEventRouter::GetInstance()
       ->SetAccessibilityEnabled(enabled);
   return true;

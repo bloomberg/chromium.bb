@@ -29,11 +29,10 @@ class Mapper : public QuotaLimitHeuristic::BucketMapper {
  public:
   Mapper() {}
   virtual ~Mapper() { STLDeleteValues(&buckets_); }
-  virtual void GetBucketsForArgs(const Value* args, BucketList* buckets) {
-    const ListValue* v = static_cast<const ListValue*>(args);
-    for (size_t i = 0; i < v->GetSize(); i++) {
+  virtual void GetBucketsForArgs(const ListValue* args, BucketList* buckets) {
+    for (size_t i = 0; i < args->GetSize(); i++) {
       int id;
-      ASSERT_TRUE(v->GetInteger(i, &id));
+      ASSERT_TRUE(args->GetInteger(i, &id));
       if (buckets_.find(id) == buckets_.end())
         buckets_[id] = new Bucket();
       buckets->push_back(buckets_[id]);
@@ -47,13 +46,13 @@ class Mapper : public QuotaLimitHeuristic::BucketMapper {
 
 class MockMapper : public QuotaLimitHeuristic::BucketMapper {
  public:
-  virtual void GetBucketsForArgs(const Value* args, BucketList* buckets) {}
+  virtual void GetBucketsForArgs(const ListValue* args, BucketList* buckets) {}
 };
 
 class MockFunction : public ExtensionFunction {
  public:
   explicit MockFunction(const std::string& name) { set_name(name); }
-  virtual void SetArgs(const Value* args) {}
+  virtual void SetArgs(const ListValue* args) {}
   virtual const std::string GetError() { return std::string(); }
   virtual const std::string GetResult() { return std::string(); }
   virtual void Run() {}

@@ -1915,7 +1915,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // request. The browser will always respond with a ViewMsg_ExtensionResponse.
   IPC_MESSAGE_ROUTED5(ViewHostMsg_ExtensionRequest,
                       std::string /* name */,
-                      ListValue /* argument */,
+                      ListValue /* arguments */,
                       GURL /* source_url */,
                       int /* callback id */,
                       bool /* has_callback */)

@@ -43,7 +43,7 @@ class ExtensionsQuotaService {
   // Returns true if the request is fine and can proceed, false if the request
   // should be throttled and an error returned to the extension.
   bool Assess(const std::string& extension_id, ExtensionFunction* function,
-              const Value* args, const base::TimeTicks& event_time);
+              const ListValue* args, const base::TimeTicks& event_time);
  private:
   friend class ExtensionTestQuotaResetFunction;
   typedef std::map<std::string, QuotaLimitHeuristics> FunctionHeuristicsMap;
@@ -136,7 +136,8 @@ class QuotaLimitHeuristic {
     // occurs while parsing |args|, the function aborts - buckets may be non-
     // empty). The expectation is that invalid args and associated errors are
     // handled by the ExtensionFunction itself so we don't concern ourselves.
-    virtual void GetBucketsForArgs(const Value* args, BucketList* buckets) = 0;
+    virtual void GetBucketsForArgs(const ListValue* args,
+                                   BucketList* buckets) = 0;
   };
 
   // Ownership of |mapper| is given to the new QuotaLimitHeuristic.
@@ -148,7 +149,7 @@ class QuotaLimitHeuristic {
   // implementation of a derived class) to perform an operation with |args|,
   // based on the history of similar operations with similar arguments (which
   // is retrieved using the BucketMapper).
-  bool ApplyToArgs(const Value* args, const base::TimeTicks& event_time);
+  bool ApplyToArgs(const ListValue* args, const base::TimeTicks& event_time);
 
  protected:
   const Config& config() { return config_; }

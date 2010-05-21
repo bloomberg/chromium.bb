@@ -72,9 +72,8 @@ class ExtensionAPIClientTest : public RenderViewTest {
     ViewHostMsg_ExtensionRequest::Read(request_msg, &params);
     ASSERT_EQ(function.c_str(), params.a) << js;
 
-    Value* args = NULL;
     ASSERT_TRUE(params.b.IsType(Value::TYPE_LIST));
-    ASSERT_TRUE(static_cast<const ListValue*>(&params.b)->Get(0, &args));
+    ListValue* args = &params.b;
 
     base::JSONReader reader;
     scoped_ptr<Value> arg1_value(reader.JsonToValue(arg1, false, false));
@@ -157,7 +156,7 @@ TEST_F(ExtensionAPIClientTest, GetWindow) {
                "Expected 'function' but got 'integer'.");
 
   ExpectJsPass("chrome.windows.get(2, function(){})",
-               "windows.get", "2");
+               "windows.get", "[2]");
 }
 
 // This test flakily crashes (http://crbug.com/22248)
@@ -242,11 +241,11 @@ TEST_F(ExtensionAPIClientTest, CreateWindow) {
                "  height:200"
                "})",
                "windows.create",
-               "{\"url\":\"http://www.google.com/\","
+               "[{\"url\":\"http://www.google.com/\","
                "\"left\":0,"
                "\"top\":10,"
                "\"width\":100,"
-               "\"height\":200}");
+               "\"height\":200}]");
 }
 
 TEST_F(ExtensionAPIClientTest, UpdateWindow) {
@@ -291,10 +290,10 @@ TEST_F(ExtensionAPIClientTest, RemoveWindow) {
                "Expected 'function' but got 'integer'.");
 
   ExpectJsPass("chrome.windows.remove(2, function(){})",
-               "windows.remove", "2");
+               "windows.remove", "[2]");
 
   ExpectJsPass("chrome.windows.remove(2)",
-               "windows.remove", "2");
+               "windows.remove", "[2]");
 }
 
 // Tab API tests
@@ -315,7 +314,7 @@ TEST_F(ExtensionAPIClientTest, GetTab) {
                "Expected 'function' but got 'integer'.");
 
   ExpectJsPass("chrome.tabs.get(2, function(){})",
-               "tabs.get", "2");
+               "tabs.get", "[2]");
 }
 
 TEST_F(ExtensionAPIClientTest, GetCurrentTab) {
@@ -330,7 +329,7 @@ TEST_F(ExtensionAPIClientTest, GetCurrentTab) {
                "Expected 'function' but got 'string'.");
 
   ExpectJsPass("chrome.tabs.getCurrent(function(){})",
-               "tabs.getCurrent", "null");
+               "tabs.getCurrent", "[]");
 }
 
 TEST_F(ExtensionAPIClientTest, DetectTabLanguage) {
@@ -346,7 +345,7 @@ TEST_F(ExtensionAPIClientTest, DetectTabLanguage) {
                "Expected 'function' but got 'integer'.");
 
   ExpectJsPass("chrome.tabs.detectLanguage(null, function(){})",
-               "tabs.detectLanguage", "null");
+               "tabs.detectLanguage", "[null]");
 }
 
 TEST_F(ExtensionAPIClientTest, GetSelectedTab) {
@@ -365,10 +364,10 @@ TEST_F(ExtensionAPIClientTest, GetSelectedTab) {
                "Expected 'function' but got 'integer'.");
 
   ExpectJsPass("chrome.tabs.getSelected(2, function(){})",
-               "tabs.getSelected", "2");
+               "tabs.getSelected", "[2]");
 
   ExpectJsPass("chrome.tabs.getSelected(null, function(){})",
-               "tabs.getSelected", "null");
+               "tabs.getSelected", "[null]");
 }
 
 
@@ -388,10 +387,10 @@ TEST_F(ExtensionAPIClientTest, GetAllTabsInWindow) {
                "Expected 'integer' but got 'string'.");
 
   ExpectJsPass("chrome.tabs.getAllInWindow(32, function(){})",
-               "tabs.getAllInWindow", "32");
+               "tabs.getAllInWindow", "[32]");
 
   ExpectJsPass("chrome.tabs.getAllInWindow(undefined, function(){})",
-               "tabs.getAllInWindow", "null");
+               "tabs.getAllInWindow", "[null]");
 }
 
 TEST_F(ExtensionAPIClientTest, CreateTab) {
@@ -412,10 +411,10 @@ TEST_F(ExtensionAPIClientTest, CreateTab) {
                "  windowId:4"
                "})",
                "tabs.create",
-               "{\"url\":\"http://www.google.com/\","
+               "[{\"url\":\"http://www.google.com/\","
                "\"selected\":true,"
                "\"index\":2,"
-               "\"windowId\":4}");
+               "\"windowId\":4}]");
 }
 
 TEST_F(ExtensionAPIClientTest, UpdateTab) {
@@ -472,10 +471,10 @@ TEST_F(ExtensionAPIClientTest, RemoveTab) {
                "Expected 'function' but got 'integer'.");
 
   ExpectJsPass("chrome.tabs.remove(2, function(){})",
-               "tabs.remove", "2");
+               "tabs.remove", "[2]");
 
   ExpectJsPass("chrome.tabs.remove(2)",
-               "tabs.remove", "2");
+               "tabs.remove", "[2]");
 }
 
 TEST_F(ExtensionAPIClientTest, CaptureVisibleTab) {
@@ -556,16 +555,16 @@ TEST_F(ExtensionAPIClientTest, CreateBookmark) {
   ExpectJsPass(
       "chrome.bookmarks.create({parentId:'0', title:'x'}, function(){})",
       "bookmarks.create",
-      "{\"parentId\":\"0\",\"title\":\"x\"}");
+      "[{\"parentId\":\"0\",\"title\":\"x\"}]");
 }
 
 TEST_F(ExtensionAPIClientTest, GetBookmarks) {
   ExpectJsPass("chrome.bookmarks.get('0', function(){});",
                "bookmarks.get",
-               "\"0\"");
+               "[\"0\"]");
   ExpectJsPass("chrome.bookmarks.get(['0','1','2','3'], function(){});",
                "bookmarks.get",
-               "[\"0\",\"1\",\"2\",\"3\"]");
+               "[[\"0\",\"1\",\"2\",\"3\"]]");
   ExpectJsFail("chrome.bookmarks.get(null, function(){});",
                "Uncaught Error: Parameter 0 is required.");
   // TODO(erikkay) This is succeeding, when it should fail.
@@ -580,37 +579,37 @@ TEST_F(ExtensionAPIClientTest, GetBookmarks) {
 TEST_F(ExtensionAPIClientTest, GetBookmarkChildren) {
   ExpectJsPass("chrome.bookmarks.getChildren('42', function(){});",
                "bookmarks.getChildren",
-               "\"42\"");
+               "[\"42\"]");
 }
 
 TEST_F(ExtensionAPIClientTest, GetBookmarkRecent) {
   ExpectJsPass("chrome.bookmarks.getRecent(5, function(){});",
     "bookmarks.getRecent",
-    "5");
+    "[5]");
 }
 
 TEST_F(ExtensionAPIClientTest, GetBookmarkTree) {
   ExpectJsPass("chrome.bookmarks.getTree(function(){});",
                "bookmarks.getTree",
-               "null");
+               "[]");
 }
 
 TEST_F(ExtensionAPIClientTest, SearchBookmarks) {
   ExpectJsPass("chrome.bookmarks.search('hello',function(){});",
                "bookmarks.search",
-               "\"hello\"");
+               "[\"hello\"]");
 }
 
 TEST_F(ExtensionAPIClientTest, RemoveBookmark) {
   ExpectJsPass("chrome.bookmarks.remove('42');",
                "bookmarks.remove",
-               "\"42\"");
+               "[\"42\"]");
 }
 
 TEST_F(ExtensionAPIClientTest, RemoveBookmarkTree) {
   ExpectJsPass("chrome.bookmarks.removeTree('42');",
                "bookmarks.removeTree",
-               "\"42\"");
+               "[\"42\"]");
 }
 
 TEST_F(ExtensionAPIClientTest, MoveBookmark) {
@@ -649,14 +648,14 @@ TEST_F(ExtensionAPIClientTest, EnablePageAction) {
 TEST_F(ExtensionAPIClientTest, ExpandToolstrip) {
   ExpectJsPass("chrome.toolstrip.expand({height:100, url:'http://foo/'})",
                "toolstrip.expand",
-               "{\"height\":100,\"url\":\"http://foo/\"}");
+               "[{\"height\":100,\"url\":\"http://foo/\"}]");
   ExpectJsPass("chrome.toolstrip.expand({height:100}, null)",
                "toolstrip.expand",
-               "{\"height\":100}");
+               "[{\"height\":100}]");
   ExpectJsPass("chrome.toolstrip.expand({height:100,url:'http://foo/'}, "
                    "function(){})",
                "toolstrip.expand",
-               "{\"height\":100,\"url\":\"http://foo/\"}");
+               "[{\"height\":100,\"url\":\"http://foo/\"}]");
 
 
   ExpectJsFail("chrome.toolstrip.expand()",
@@ -679,13 +678,13 @@ TEST_F(ExtensionAPIClientTest, ExpandToolstrip) {
 TEST_F(ExtensionAPIClientTest, CollapseToolstrip) {
   ExpectJsPass("chrome.toolstrip.collapse({url:'http://foo/'})",
                "toolstrip.collapse",
-               "{\"url\":\"http://foo/\"}");
+               "[{\"url\":\"http://foo/\"}]");
   ExpectJsPass("chrome.toolstrip.collapse(null)",
                "toolstrip.collapse",
-               "null");
+               "[null]");
   ExpectJsPass("chrome.toolstrip.collapse({url:'http://foo/'}, function(){})",
                "toolstrip.collapse",
-               "{\"url\":\"http://foo/\"}");
+               "[{\"url\":\"http://foo/\"}]");
 
   ExpectJsFail("chrome.toolstrip.collapse(1)",
                "Uncaught Error: Invalid value for argument 0. "
@@ -711,7 +710,7 @@ TEST_F(ExtensionAPIClientTest, GetAcceptLanguages) {
                "Expected 'function' but got 'string'.");
 
   ExpectJsPass("chrome.i18n.getAcceptLanguages(function(){})",
-               "i18n.getAcceptLanguages", "null");
+               "i18n.getAcceptLanguages", "[]");
 }
 
 // TODO(cira): re-enable when we get validation going for

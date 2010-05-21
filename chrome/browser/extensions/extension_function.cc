@@ -16,9 +16,9 @@ Extension* ExtensionFunction::GetExtension() {
   return service->GetExtensionById(extension_id_, false);
 }
 
-void AsyncExtensionFunction::SetArgs(const Value* args) {
+void AsyncExtensionFunction::SetArgs(const ListValue* args) {
   DCHECK(!args_.get());  // Should only be called once.
-  args_.reset(args->DeepCopy());
+  args_.reset(static_cast<ListValue*>(args->DeepCopy()));
 }
 
 const std::string AsyncExtensionFunction::GetResult() {
@@ -40,8 +40,6 @@ void AsyncExtensionFunction::SendResponse(bool success) {
 }
 
 bool AsyncExtensionFunction::HasOptionalArgument(size_t index) {
-  DCHECK(args_->IsType(Value::TYPE_LIST));
-  ListValue* args_list = static_cast<ListValue*>(args_.get());
   Value* value;
-  return args_list->Get(index, &value) && !value->IsType(Value::TYPE_NULL);
+  return args_->Get(index, &value) && !value->IsType(Value::TYPE_NULL);
 }

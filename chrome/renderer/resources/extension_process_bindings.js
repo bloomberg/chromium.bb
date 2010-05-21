@@ -159,16 +159,9 @@ var chrome = chrome || {};
       --argCount;
     }
 
-    // Calls with one argument expect singular argument. Calls with multiple
-    // expect a list.
-    if (argCount == 1) {
-      request.args = args[0];
-    }
-    if (argCount > 1) {
-      request.args = [];
-      for (var k = 0; k < argCount; k++) {
-        request.args[k] = args[k];
-      }
+    request.args = [];
+    for (var k = 0; k < argCount; k++) {
+      request.args[k] = args[k];
     }
 
     return request;

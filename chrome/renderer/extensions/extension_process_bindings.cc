@@ -409,7 +409,7 @@ class ExtensionImpl : public ExtensionBase {
   // Common code for starting an API request to the browser. |value_args|
   // contains the request's arguments.
   static v8::Handle<v8::Value> StartRequestCommon(
-      const v8::Arguments& args, Value* value_args) {
+      const v8::Arguments& args, ListValue* value_args) {
     // Get the current RenderView so that we can send a routed IPC message from
     // the correct source.
     RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
@@ -434,18 +434,13 @@ class ExtensionImpl : public ExtensionBase {
     int request_id = args[2]->Int32Value();
     bool has_callback = args[3]->BooleanValue();
 
-    // Put the args in a 1-element list for easier serialization. Maybe all
-    // requests should have a list of args?
-    ListValue args_holder;
-    args_holder.Append(value_args);
-
     v8::Persistent<v8::Context> current_context =
         v8::Persistent<v8::Context>::New(v8::Context::GetCurrent());
     DCHECK(!current_context.IsEmpty());
     GetPendingRequestMap()[request_id].reset(new PendingRequest(
         current_context, name));
 
-    renderview->SendExtensionRequest(name, args_holder, source_url,
+    renderview->SendExtensionRequest(name, *value_args, source_url,
                                      request_id, has_callback);
 
     return v8::Undefined();
@@ -460,12 +455,12 @@ class ExtensionImpl : public ExtensionBase {
 
     // Since we do the serialization in the v8 extension, we should always get
     // valid JSON.
-    if (!value_args) {
+    if (!value_args || !value_args->IsType(Value::TYPE_LIST)) {
       NOTREACHED() << "Invalid JSON passed to StartRequest.";
       return v8::Undefined();
     }
 
-    return StartRequestCommon(args, value_args);
+    return StartRequestCommon(args, static_cast<ListValue*>(value_args));
   }
 
   // A special request for setting the extension action icon. This function
@@ -473,7 +468,9 @@ class ExtensionImpl : public ExtensionBase {
   // before sending the request to the browser.
   static v8::Handle<v8::Value> SetExtensionActionIcon(
       const v8::Arguments& args) {
-    v8::Local<v8::Object> details = args[1]->ToObject();
+    v8::Local<v8::Object> extension_args = args[1]->ToObject();
+    v8::Local<v8::Object> details =
+        extension_args->Get(v8::String::New("0"))->ToObject();
     v8::Local<v8::Object> image_data =
         details->Get(v8::String::New("imageData"))->ToObject();
     v8::Local<v8::Object> data =
@@ -516,7 +513,10 @@ class ExtensionImpl : public ExtensionBase {
                        details->Get(v8::String::New("tabId"))->Int32Value());
     }
 
-    return StartRequestCommon(args, dict);
+    ListValue* list_value = new ListValue();
+    list_value->Append(dict);
+
+    return StartRequestCommon(args, list_value);
   }
 
   static v8::Handle<v8::Value> GetRenderViewId(const v8::Arguments& args) {

@@ -20,8 +20,8 @@
 namespace keys = extension_infobar_module_constants;
 
 bool ShowInfoBarFunction::RunImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  const DictionaryValue* args = args_as_dictionary();
+  DictionaryValue* args;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
 
   std::string html_path;
   EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kHtmlPath, &html_path));

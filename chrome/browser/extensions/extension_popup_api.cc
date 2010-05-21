@@ -329,14 +329,11 @@ bool PopupShowFunction::RunImpl() {
     return false;
   }
 
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_LIST));
-  const ListValue* args = args_as_list();
-
   std::string url_string;
-  EXTENSION_FUNCTION_VALIDATE(args->GetString(0, &url_string));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url_string));
 
   DictionaryValue* show_details = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args->GetDictionary(1, &show_details));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &show_details));
 
   DictionaryValue* dom_anchor = NULL;
   EXTENSION_FUNCTION_VALIDATE(show_details->GetDictionary(kDomAnchorKey,

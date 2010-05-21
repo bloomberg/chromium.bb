@@ -1241,7 +1241,7 @@ void RenderViewHost::OnMsgDOMUISend(
   scoped_ptr<Value> value;
   if (!content.empty()) {
     value.reset(base::JSONReader::Read(content, false));
-    if (!value.get()) {
+    if (!value.get() || !value->IsType(Value::TYPE_LIST)) {
       // The page sent us something that we didn't understand.
       // This probably indicates a programming error.
       NOTREACHED() << "Invalid JSON argument in OnMsgDOMUISend.";
@@ -1249,8 +1249,11 @@ void RenderViewHost::OnMsgDOMUISend(
     }
   }
 
-  delegate_->ProcessDOMUIMessage(message, value.get(), source_url,
-                                 kRequestId, kHasCallback);
+  delegate_->ProcessDOMUIMessage(message,
+                                 static_cast<const ListValue*>(value.get()),
+                                 source_url,
+                                 kRequestId,
+                                 kHasCallback);
 }
 
 void RenderViewHost::OnMsgForwardMessageToExternalHost(
@@ -1754,7 +1757,7 @@ void RenderViewHost::OnRequestNotificationPermission(
 }
 
 void RenderViewHost::OnExtensionRequest(const std::string& name,
-                                        const ListValue& args_holder,
+                                        const ListValue& args,
                                         const GURL& source_url,
                                         int request_id,
                                         bool has_callback) {
@@ -1766,16 +1769,7 @@ void RenderViewHost::OnExtensionRequest(const std::string& name,
     return;
   }
 
-  // The renderer sends the args in a 1-element list to make serialization
-  // easier.
-  Value* args = NULL;
-  if (!args_holder.IsType(Value::TYPE_LIST) ||
-      !static_cast<const ListValue*>(&args_holder)->Get(0, &args)) {
-    NOTREACHED();
-    return;
-  }
-
-  delegate_->ProcessDOMUIMessage(name, args, source_url, request_id,
+  delegate_->ProcessDOMUIMessage(name, &args, source_url, request_id,
       has_callback);
 }
 

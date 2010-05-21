@@ -18,7 +18,7 @@ const char kNoTabError[] = "No tab with id: *.";
 
 bool ClipboardFunction::RunImpl() {
   int tab_id;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetAsInteger(&tab_id));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &tab_id));
 
   TabContents* contents = NULL;
   if (!ExtensionTabUtil::GetTabById(tab_id, profile(), include_incognito(),

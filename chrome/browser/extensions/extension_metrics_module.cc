@@ -29,8 +29,7 @@ std::string BuildMetricName(const std::string& name,
 
 bool MetricsRecordUserActionFunction::RunImpl() {
   std::string name;
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_STRING));
-  EXTENSION_FUNCTION_VALIDATE(args_->GetAsString(&name));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &name));
 
   name = BuildMetricName(name, GetExtension());
   UserMetrics::RecordComputedAction(name, profile());
@@ -39,11 +38,8 @@ bool MetricsRecordUserActionFunction::RunImpl() {
 
 bool MetricsHistogramHelperFunction::GetNameAndSample(std::string* name,
                                                       int* sample) {
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_LIST));
-  const ListValue* args = args_as_list();
-
-  EXTENSION_FUNCTION_VALIDATE(args->GetString(0, name));
-  EXTENSION_FUNCTION_VALIDATE(args->GetInteger(1, sample));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, name));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(1, sample));
   return true;
 }
 
@@ -74,15 +70,12 @@ bool MetricsHistogramHelperFunction::RecordValue(const std::string& name,
 }
 
 bool MetricsRecordValueFunction::RunImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_LIST));
-  const ListValue* args = args_as_list();
-
   int sample;
-  EXTENSION_FUNCTION_VALIDATE(args->GetInteger(1, &sample));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(1, &sample));
 
   // Get the histogram parameters from the metric type object.
   DictionaryValue* metric_type;
-  EXTENSION_FUNCTION_VALIDATE(args->GetDictionary(0, &metric_type));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &metric_type));
 
   std::string name;
   std::string type;

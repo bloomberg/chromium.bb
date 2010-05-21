@@ -137,7 +137,7 @@ void ExtensionIdlePollingTask::Run() {
 
 bool ExtensionIdleQueryStateFunction::RunImpl() {
   int threshold;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetAsInteger(&threshold));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &threshold));
   threshold = CheckThresholdBounds(threshold);
   IdleState state = ThrottledCalculateIdleState(threshold, profile());
   result_.reset(CreateIdleValue(state));

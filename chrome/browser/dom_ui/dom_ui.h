@@ -16,6 +16,7 @@
 class DictionaryValue;
 class DOMMessageHandler;
 class GURL;
+class ListValue;
 class Profile;
 class RenderViewHost;
 class Value;
@@ -41,7 +42,7 @@ class DOMUI {
 
   // Called from TabContents.
   virtual void ProcessDOMUIMessage(const std::string& message,
-                                   const Value* content,
+                                   const ListValue* content,
                                    const GURL& source_url,
                                    int request_id,
                                    bool has_callback);

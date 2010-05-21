@@ -206,8 +206,8 @@ void HistoryFunctionWithCallback::SendResponseToCallback() {
 }
 
 bool GetVisitsHistoryFunction::RunAsyncImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  const DictionaryValue* json = args_as_dictionary();
+  DictionaryValue* json;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &json));
 
   Value* value;
   EXTENSION_FUNCTION_VALIDATE(json->Get(keys::kUrlKey, &value));
@@ -243,8 +243,8 @@ void GetVisitsHistoryFunction::QueryComplete(
 }
 
 bool SearchHistoryFunction::RunAsyncImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  const DictionaryValue* json = args_as_dictionary();
+  DictionaryValue* json;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &json));
 
   // Initialize the HistoryQuery
   std::wstring search_text;
@@ -293,8 +293,8 @@ void SearchHistoryFunction::SearchComplete(
 }
 
 bool AddUrlHistoryFunction::RunImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  const DictionaryValue* json = args_as_dictionary();
+  DictionaryValue* json;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &json));
 
   Value* value;
   EXTENSION_FUNCTION_VALIDATE(json->Get(keys::kUrlKey, &value));
@@ -311,8 +311,8 @@ bool AddUrlHistoryFunction::RunImpl() {
 }
 
 bool DeleteUrlHistoryFunction::RunImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  const DictionaryValue* json = args_as_dictionary();
+  DictionaryValue* json;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &json));
 
   Value* value;
   EXTENSION_FUNCTION_VALIDATE(json->Get(keys::kUrlKey, &value));
@@ -329,8 +329,8 @@ bool DeleteUrlHistoryFunction::RunImpl() {
 }
 
 bool DeleteRangeHistoryFunction::RunAsyncImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  const DictionaryValue* json = args_as_dictionary();
+  DictionaryValue* json;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &json));
 
   Value* value = NULL;
   EXTENSION_FUNCTION_VALIDATE(json->Get(keys::kStartTimeKey, &value));

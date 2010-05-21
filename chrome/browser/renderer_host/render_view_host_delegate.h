@@ -26,6 +26,7 @@ class BookmarkNode;
 struct ContextMenuParams;
 class FilePath;
 class GURL;
+class ListValue;
 struct NativeWebKeyboardEvent;
 class NavigationEntry;
 class OSExchangeData;
@@ -38,7 +39,6 @@ class ResourceRequestDetails;
 class SkBitmap;
 class TabContents;
 struct ThumbnailScore;
-class Value;
 struct ViewHostMsg_DidPrintPage_Params;
 struct ViewHostMsg_FrameNavigate_Params;
 struct ViewHostMsg_RunFileChooser_Params;
@@ -554,7 +554,7 @@ class RenderViewHostDelegate {
   // A message was sent from HTML-based UI.
   // By default we ignore such messages.
   virtual void ProcessDOMUIMessage(const std::string& message,
-                                   const Value* content,
+                                   const ListValue* content,
                                    const GURL& source_url,
                                    int request_id,
                                    bool has_callback) {}

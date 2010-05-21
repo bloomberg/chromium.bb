@@ -29,7 +29,7 @@ ExtensionsQuotaService::~ExtensionsQuotaService() {
 }
 
 bool ExtensionsQuotaService::Assess(const std::string& extension_id,
-    ExtensionFunction* function, const Value* args,
+    ExtensionFunction* function, const ListValue* args,
     const base::TimeTicks& event_time) {
   // Lookup function list for extension.
   FunctionHeuristicsMap& functions = function_heuristics_[extension_id];
@@ -83,7 +83,7 @@ void QuotaLimitHeuristic::Bucket::Reset(const Config& config,
   expiration_ = start + config.refill_interval;
 }
 
-bool QuotaLimitHeuristic::ApplyToArgs(const Value* args,
+bool QuotaLimitHeuristic::ApplyToArgs(const ListValue* args,
     const base::TimeTicks& event_time) {
   BucketList buckets;
   bucket_mapper_->GetBucketsForArgs(args, &buckets);

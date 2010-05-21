@@ -124,7 +124,7 @@ class RemoveBookmarkFunction : public BookmarksFunction {
  public:
   // Returns true on successful parse and sets invalid_id to true if conversion
   // from id string to int64 failed.
-  static bool ExtractIds(const Value* args, std::list<int64>* ids,
+  static bool ExtractIds(const ListValue* args, std::list<int64>* ids,
                          bool* invalid_id);
   virtual bool RunImpl();
   virtual void GetQuotaLimitHeuristics(
@@ -148,7 +148,7 @@ class CreateBookmarkFunction : public BookmarksFunction {
 
 class MoveBookmarkFunction : public BookmarksFunction {
  public:
-  static bool ExtractIds(const Value* args, std::list<int64>* ids,
+  static bool ExtractIds(const ListValue* args, std::list<int64>* ids,
                          bool* invalid_id);
   virtual void GetQuotaLimitHeuristics(
       std::list<QuotaLimitHeuristic*>* heuristics) const;
@@ -159,7 +159,7 @@ class MoveBookmarkFunction : public BookmarksFunction {
 
 class UpdateBookmarkFunction : public BookmarksFunction {
  public:
-  static bool ExtractIds(const Value* args, std::list<int64>* ids,
+  static bool ExtractIds(const ListValue* args, std::list<int64>* ids,
                          bool* invalid_id);
   virtual void GetQuotaLimitHeuristics(
       std::list<QuotaLimitHeuristic*>* heuristics) const;

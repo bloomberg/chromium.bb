@@ -378,7 +378,7 @@ Browser* ExtensionFunctionDispatcher::GetCurrentBrowser(
 }
 
 void ExtensionFunctionDispatcher::HandleRequest(const std::string& name,
-                                                const Value* args,
+                                                const ListValue* args,
                                                 const GURL& source_url,
                                                 int request_id,
                                                 bool has_callback) {

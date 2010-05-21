@@ -228,8 +228,10 @@ void ExtensionBookmarkEventRouter::BookmarkImportEnding(BookmarkModel* model) {
 bool GetBookmarksFunction::RunImpl() {
   BookmarkModel* model = profile()->GetBookmarkModel();
   scoped_ptr<ListValue> json(new ListValue());
-  if (args_->IsType(Value::TYPE_LIST)) {
-    const ListValue* ids = args_as_list();
+  Value* arg0;
+  EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &arg0));
+  if (arg0->IsType(Value::TYPE_LIST)) {
+    const ListValue* ids = static_cast<const ListValue*>(arg0);
     size_t count = ids->GetSize();
     EXTENSION_FUNCTION_VALIDATE(count > 0);
     for (size_t i = 0; i < count; ++i) {
@@ -249,7 +251,7 @@ bool GetBookmarksFunction::RunImpl() {
   } else {
     int64 id;
     std::string id_string;
-    EXTENSION_FUNCTION_VALIDATE(args_->GetAsString(&id_string));
+    EXTENSION_FUNCTION_VALIDATE(arg0->GetAsString(&id_string));
     if (!GetBookmarkIdAsInt64(id_string, &id))
       return false;
     const BookmarkNode* node = model->GetNodeByID(id);
@@ -268,7 +270,7 @@ bool GetBookmarkChildrenFunction::RunImpl() {
   BookmarkModel* model = profile()->GetBookmarkModel();
   int64 id;
   std::string id_string;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetAsString(&id_string));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &id_string));
   if (!GetBookmarkIdAsInt64(id_string, &id))
     return false;
   scoped_ptr<ListValue> json(new ListValue());
@@ -288,9 +290,8 @@ bool GetBookmarkChildrenFunction::RunImpl() {
 }
 
 bool GetBookmarkRecentFunction::RunImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_INTEGER));
   int number_of_items;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetAsInteger(&number_of_items));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &number_of_items));
   if (number_of_items < 1)
     return false;
 
@@ -317,10 +318,8 @@ bool GetBookmarkTreeFunction::RunImpl() {
 }
 
 bool SearchBookmarksFunction::RunImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_STRING));
-
   std::wstring query;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetAsString(&query));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &query));
 
   BookmarkModel* model = profile()->GetBookmarkModel();
   ListValue* json = new ListValue();
@@ -340,35 +339,17 @@ bool SearchBookmarksFunction::RunImpl() {
 }
 
 // static
-bool RemoveBookmarkFunction::ExtractIds(const Value* args,
-    std::list<int64>* ids, bool* invalid_id) {
+bool RemoveBookmarkFunction::ExtractIds(const ListValue* args,
+                                        std::list<int64>* ids,
+                                        bool* invalid_id) {
   std::string id_string;
-  if (args->IsType(Value::TYPE_STRING) &&
-      args->GetAsString(&id_string)) {
-    int64 id;
-    if (StringToInt64(id_string, &id))
-      ids->push_back(id);
-    else
-      *invalid_id = true;
-  } else {
-    if (!args->IsType(Value::TYPE_LIST))
-      return false;
-    const ListValue* ids_list = static_cast<const ListValue*>(args);
-    size_t count = ids_list->GetSize();
-    if (count <= 0)
-      return false;
-    for (size_t i = 0; i < count; ++i) {
-      if (!ids_list->GetString(i, &id_string))
-        return false;
-      int64 id;
-      if (StringToInt64(id_string, &id)) {
-        ids->push_back(id);
-      } else {
-        *invalid_id = true;
-        break;
-      }
-    }
-  }
+  if (!args->GetString(0, &id_string))
+    return false;
+  int64 id;
+  if (StringToInt64(id_string, &id))
+    ids->push_back(id);
+  else
+    *invalid_id = true;
   return true;
 }
 
@@ -395,8 +376,9 @@ bool RemoveBookmarkFunction::RunImpl() {
 }
 
 bool CreateBookmarkFunction::RunImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  const DictionaryValue* json = args_as_dictionary();
+  DictionaryValue* json;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &json));
+  EXTENSION_FUNCTION_VALIDATE(json != NULL);
 
   BookmarkModel* model = profile()->GetBookmarkModel();
   int64 parentId;
@@ -460,7 +442,7 @@ bool CreateBookmarkFunction::RunImpl() {
 }
 
 // static
-bool MoveBookmarkFunction::ExtractIds(const Value* args,
+bool MoveBookmarkFunction::ExtractIds(const ListValue* args,
                                       std::list<int64>* ids,
                                       bool* invalid_id) {
   // For now, Move accepts ID parameters in the same way as an Update.
@@ -476,10 +458,9 @@ bool MoveBookmarkFunction::RunImpl() {
     return false;
   }
   EXTENSION_FUNCTION_VALIDATE(ids.size() == 1);
-  const ListValue* args = args_as_list();
 
   DictionaryValue* destination;
-  EXTENSION_FUNCTION_VALIDATE(args->GetDictionary(1, &destination));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &destination));
 
   BookmarkModel* model = profile()->GetBookmarkModel();
   const BookmarkNode* node = model->GetNodeByID(ids.front());
@@ -540,21 +521,11 @@ bool MoveBookmarkFunction::RunImpl() {
 }
 
 // static
-bool UpdateBookmarkFunction::ExtractIds(const Value* args,
+bool UpdateBookmarkFunction::ExtractIds(const ListValue* args,
                                         std::list<int64>* ids,
                                         bool* invalid_id) {
-  std::string id_string;
-  if (!args->IsType(Value::TYPE_LIST))
-    return false;
-  const ListValue* args_list = static_cast<const ListValue*>(args);
-  if (!args_list->GetString(0, &id_string))
-    return false;
-  int64 id;
-  if (StringToInt64(id_string, &id))
-    ids->push_back(id);
-  else
-    *invalid_id = true;
-  return true;
+  // For now, Update accepts ID parameters in the same way as an Remove.
+  return RemoveBookmarkFunction::ExtractIds(args, ids, invalid_id);
 }
 
 bool UpdateBookmarkFunction::RunImpl() {
@@ -567,9 +538,8 @@ bool UpdateBookmarkFunction::RunImpl() {
   }
   EXTENSION_FUNCTION_VALIDATE(ids.size() == 1);
 
-  const ListValue* args = args_as_list();
   DictionaryValue* updates;
-  EXTENSION_FUNCTION_VALIDATE(args->GetDictionary(1, &updates));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &updates));
 
   std::wstring title;
   std::string url_string;
@@ -636,12 +606,12 @@ class CreateBookmarkBucketMapper : public BookmarkBucketMapper<std::string> {
   explicit CreateBookmarkBucketMapper(Profile* profile) : profile_(profile) {}
   // TODO(tim): This should share code with CreateBookmarkFunction::RunImpl,
   // but I can't figure out a good way to do that with all the macros.
-  virtual void GetBucketsForArgs(const Value* args, BucketList* buckets) {
-    if (!args->IsType(Value::TYPE_DICTIONARY))
+  virtual void GetBucketsForArgs(const ListValue* args, BucketList* buckets) {
+    DictionaryValue* json;
+    if (!args->GetDictionary(0, &json))
       return;
 
     std::string parent_id;
-    const DictionaryValue* json = static_cast<const DictionaryValue*>(args);
     if (json->HasKey(keys::kParentIdKey)) {
       if (!json->GetString(keys::kParentIdKey, &parent_id))
         return;
@@ -671,7 +641,7 @@ class CreateBookmarkBucketMapper : public BookmarkBucketMapper<std::string> {
 class RemoveBookmarksBucketMapper : public BookmarkBucketMapper<std::string> {
  public:
   explicit RemoveBookmarksBucketMapper(Profile* profile) : profile_(profile) {}
-  virtual void GetBucketsForArgs(const Value* args, BucketList* buckets) {
+  virtual void GetBucketsForArgs(const ListValue* args, BucketList* buckets) {
     typedef std::list<int64> IdList;
     IdList ids;
     bool invalid_id = false;
@@ -705,7 +675,7 @@ template <class FunctionType>
 class BookmarkIdMapper : public BookmarkBucketMapper<int64> {
  public:
   typedef std::list<int64> IdList;
-  virtual void GetBucketsForArgs(const Value* args, BucketList* buckets) {
+  virtual void GetBucketsForArgs(const ListValue* args, BucketList* buckets) {
     IdList ids;
     bool invalid_id = false;
     if (!FunctionType::ExtractIds(args, &ids, &invalid_id) || invalid_id)

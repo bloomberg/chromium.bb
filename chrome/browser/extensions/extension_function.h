@@ -58,7 +58,7 @@ class ExtensionFunction : public base::RefCounted<ExtensionFunction> {
   std::string extension_id() const { return extension_id_; }
 
   // Specifies the raw arguments to the function, as a JSON value.
-  virtual void SetArgs(const Value* args) = 0;
+  virtual void SetArgs(const ListValue* args) = 0;
 
   // Retrieves the results of the function as a JSON-encoded string (may
   // be empty).
@@ -165,7 +165,7 @@ class AsyncExtensionFunction : public ExtensionFunction {
  public:
   AsyncExtensionFunction() : args_(NULL), bad_message_(false) {}
 
-  virtual void SetArgs(const Value* args);
+  virtual void SetArgs(const ListValue* args);
   virtual const std::string GetResult();
   virtual const std::string GetError() { return error_; }
   virtual void Run() {
@@ -182,19 +182,12 @@ class AsyncExtensionFunction : public ExtensionFunction {
 
   void SendResponse(bool success);
 
-  const ListValue* args_as_list() {
-    return static_cast<ListValue*>(args_.get());
-  }
-  const DictionaryValue* args_as_dictionary() {
-    return static_cast<DictionaryValue*>(args_.get());
-  }
-
   // Return true if the argument to this function at |index| was provided and
   // is non-null.
   bool HasOptionalArgument(size_t index);
 
   // The arguments to the API. Only non-null if argument were specified.
-  scoped_ptr<Value> args_;
+  scoped_ptr<ListValue> args_;
 
   // The result of the API. This should be populated by the derived class before
   // SendResponse() is called.

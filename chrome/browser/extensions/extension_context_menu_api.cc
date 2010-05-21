@@ -135,8 +135,8 @@ bool ExtensionContextMenuFunction::GetParent(
 }
 
 bool CreateContextMenuFunction::RunImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  const DictionaryValue* properties = args_as_dictionary();
+  DictionaryValue* properties;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &properties));
   EXTENSION_FUNCTION_VALIDATE(properties != NULL);
 
   std::string title;
@@ -201,10 +201,8 @@ bool CreateContextMenuFunction::RunImpl() {
 }
 
 bool UpdateContextMenuFunction::RunImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_LIST));
-  const ListValue* args = args_as_list();
   int item_id = 0;
-  EXTENSION_FUNCTION_VALIDATE(args->GetInteger(0, &item_id));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &item_id));
 
   ExtensionsService* service = profile()->GetExtensionsService();
   ExtensionMenuManager* manager = service->menu_manager();
@@ -215,7 +213,7 @@ bool UpdateContextMenuFunction::RunImpl() {
   }
 
   DictionaryValue *properties = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args->GetDictionary(1, &properties));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &properties));
   EXTENSION_FUNCTION_VALIDATE(properties != NULL);
 
   ExtensionMenuManager* menu_manager =
@@ -273,9 +271,8 @@ bool UpdateContextMenuFunction::RunImpl() {
 }
 
 bool RemoveContextMenuFunction::RunImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_INTEGER));
   int id = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetAsInteger(&id));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &id));
   ExtensionsService* service = profile()->GetExtensionsService();
   ExtensionMenuManager* manager = service->menu_manager();
 
