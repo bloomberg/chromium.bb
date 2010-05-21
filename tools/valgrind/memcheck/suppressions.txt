@@ -466,7 +466,9 @@
   Memcheck:Value4
   ...
   fun:inflate
-  fun:_ZN4spdy10SpdyFramer15DecompressFrameEPKNS_9SpdyFrameE
+  fun:_ZN4spdy10SpdyFramer26DecompressFrameWithZStreamERKNS_9SpdyFrameEP10z_stream_s
+  fun:_ZN4spdy10SpdyFramer22DecompressControlFrameERKNS_16SpdyControlFrameE
+  fun:_ZN4spdy10SpdyFramer15DecompressFrameERKNS_9SpdyFrameE
 }
 {
   # zlib is smarter than we are:
@@ -482,7 +484,9 @@
    Memcheck:Cond
    ...
    fun:inflate
-   fun:_ZN4spdy10SpdyFramer15DecompressFrameEPKNS_9SpdyFrameE
+   fun:_ZN4spdy10SpdyFramer26DecompressFrameWithZStreamERKNS_9SpdyFrameEP10z_stream_s
+   fun:_ZN4spdy10SpdyFramer22DecompressControlFrameERKNS_16SpdyControlFrameE
+   fun:_ZN4spdy10SpdyFramer15DecompressFrameERKNS_9SpdyFrameE
 }
 #-- end of zlib filters
 {
