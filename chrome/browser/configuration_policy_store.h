@@ -17,7 +17,7 @@ class ConfigurationPolicyStore {
   enum PolicyType {
     kPolicyHomePage,
     kPolicyHomepageIsNewTabPage,
-    kPolicyCookiesEnabled
+    kPolicyCookiesMode
   };
 
   // A |ConfigurationPolicyProvider| specifes the value of a policy setting

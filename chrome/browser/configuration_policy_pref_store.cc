@@ -14,7 +14,7 @@ ConfigurationPolicyPrefStore::simple_policy_map_[] = {
   { Value::TYPE_STRING, kPolicyHomePage,  prefs::kHomePage },
   { Value::TYPE_BOOLEAN, kPolicyHomepageIsNewTabPage,
       prefs::kHomePageIsNewTabPage },
-  { Value::TYPE_INTEGER, kPolicyCookiesEnabled, prefs::kCookieBehavior }
+  { Value::TYPE_INTEGER, kPolicyCookiesMode, prefs::kCookieBehavior }
 };
 
 ConfigurationPolicyPrefStore::ConfigurationPolicyPrefStore(

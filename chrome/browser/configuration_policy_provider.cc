@@ -20,8 +20,8 @@ const PolicyValueTreeMappingEntry kPolicyValueTreeMapping[] = {
     Value::TYPE_STRING, L"homepage" },
   { ConfigurationPolicyStore::kPolicyHomepageIsNewTabPage,
     Value::TYPE_BOOLEAN, L"homepage_is_newtabpage" },
-  { ConfigurationPolicyStore::kPolicyCookiesEnabled,
-    Value::TYPE_BOOLEAN, L"cookies_enabled" }
+  { ConfigurationPolicyStore::kPolicyCookiesMode,
+    Value::TYPE_INTEGER, L"cookies_enabled" }
 };
 
 }

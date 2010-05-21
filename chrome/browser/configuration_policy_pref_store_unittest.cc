@@ -56,7 +56,7 @@ TEST(ConfigurationPolicyPrefStoreTest, TestSettingCookiesEnabledDefault) {
 
 TEST(ConfigurationPolicyPrefStoreTest, TestSettingCookiesEnabledOverride) {
   ConfigurationPolicyPrefStore store(0);
-  store.Apply(ConfigurationPolicyPrefStore::kPolicyCookiesEnabled,
+  store.Apply(ConfigurationPolicyPrefStore::kPolicyCookiesMode,
               Value::CreateIntegerValue(2));
   int result = 0;
   store.prefs()->GetInteger(prefs::kCookieBehavior, &result);

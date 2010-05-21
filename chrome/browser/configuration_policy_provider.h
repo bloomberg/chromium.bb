@@ -22,7 +22,7 @@ class ConfigurationPolicyProvider {
   // provider-specific policy decisions. The preference service
   // invokes this |Provide| method when it needs a policy
   // provider to specify its policy choices. In |Provide|,
-  // the ConfigurationPolicyProvider must make calls to the
+  // the |ConfigurationPolicyProvider| must make calls to the
   // |Apply| method of |store| to apply specific policies.
   // Returns true if the policy could be provided, otherwise false.
   virtual bool Provide(ConfigurationPolicyStore* store) = 0;
@@ -38,3 +38,4 @@ void DecodePolicyValueTree(DictionaryValue* policies,
                            ConfigurationPolicyStore* store);
 
 #endif  // CHROME_BROWSER_CONFIGURATION_POLICY_PROVIDER_H_
+

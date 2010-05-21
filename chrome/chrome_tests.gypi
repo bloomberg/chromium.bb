@@ -761,6 +761,7 @@
         'browser/config_dir_policy_provider_unittest.cc',
         'browser/command_updater_unittest.cc',
         'browser/configuration_policy_pref_store_unittest.cc',
+        'browser/configuration_policy_provider_win_unittest.cc',
         'browser/cookies_tree_model_unittest.cc',
         'browser/debugger/devtools_manager_unittest.cc',
         'browser/dom_ui/dom_ui_theme_source_unittest.cc',
