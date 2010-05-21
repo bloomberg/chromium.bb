@@ -7615,9 +7615,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_KATAKANA" desc="In the language menu button, this shows a character set in use is set to KATAKANA.">
         Katakana
       </message>
-      <message name="IDS_STATUSBAR_IME_JAPANESE_IME_INPUT_MODE_KANA" desc="In the language menu button, this shows the input mode.">
-        Kana
-      </message>
     </if>
     <if expr="pp_ifdef('chromeos') and lang != 'ja'">
       <message translateable="false" name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_HIRAGANA" desc="">
@@ -7626,11 +7623,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message translateable="false" name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_KATAKANA" desc="">
         Katakana
       </message>
-      <message translateable="false" name="IDS_STATUSBAR_IME_JAPANESE_IME_INPUT_MODE_KANA" desc="">
-        Kana
-      </message>
     </if>
     <if expr="pp_ifdef('chromeos')">
+      <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_DIRECT_INPUT" desc="In the language menu button, this shows a character set in use is set to 'direct input' mode.">
+	Direct input
+      </message>
       <!-- "Half width" part is translateable. -->
       <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_HALF_WIDTH_KATAKANA" desc="In the language menu button, this shows a character set in use is set to half width Katakana.">
 	Half width Katakana
@@ -7640,9 +7637,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_WIDE_LATIN" desc="In the language menu button, this shows a character set in use is set to wide Latin.">
 	Wide Latin
-      </message>
-      <message name="IDS_STATUSBAR_IME_JAPANESE_IME_INPUT_MODE_ROMAN" desc="In the language menu button, this shows the input mode.">
-	Roman
       </message>
       <message name="IDS_STATUSBAR_IME_KOREAN_HANJA_MODE" desc="In the language menu button, this shows the input mode.">
 	Enable/Disable Hanja mode

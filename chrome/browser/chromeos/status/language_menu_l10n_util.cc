@@ -15,17 +15,14 @@ const struct EnglishToResouceId {
   const char* english_string_from_ibus;
   int resource_id;
 } kEnglishToResourceIdArray[] = {
-  // For both ibus-anthy and ibus-google-japanese-input.
-  // - ibus-anthy: third_party/ibus-anthy/files/po/
-  // - ibus-google-japanese-input: TBD
+  // For ibus-mozc: third_party/ibus-mozc/files/src/unix/ibus/.
+  { "Direct input", IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_DIRECT_INPUT },
   { "Hiragana", IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_HIRAGANA },
   { "Katakana", IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_KATAKANA },
   { "Half width katakana",  // small k is not a typo.
-  IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_HALF_WIDTH_KATAKANA },
+    IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_HALF_WIDTH_KATAKANA },
   { "Latin", IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_LATIN },
   { "Wide Latin", IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_WIDE_LATIN },
-  { "Roman", IDS_STATUSBAR_IME_JAPANESE_IME_INPUT_MODE_ROMAN },
-  { "Kana", IDS_STATUSBAR_IME_JAPANESE_IME_INPUT_MODE_KANA },
 
   // For ibus-hangul: third_party/ibus-hangul/files/po/.
   { "Enable/Disable Hanja mode", IDS_STATUSBAR_IME_KOREAN_HANJA_MODE },

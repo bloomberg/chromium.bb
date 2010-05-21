@@ -11,7 +11,7 @@ namespace chromeos {
 TEST(LanguageMenuL10nUtilTest, FindLocalizedStringTest) {
   EXPECT_TRUE(LanguageMenuL10nUtil::StringIsSupported("Hiragana"));
   EXPECT_TRUE(LanguageMenuL10nUtil::StringIsSupported("Latin"));
-  EXPECT_TRUE(LanguageMenuL10nUtil::StringIsSupported("Kana"));
+  EXPECT_TRUE(LanguageMenuL10nUtil::StringIsSupported("Direct input"));
   EXPECT_FALSE(LanguageMenuL10nUtil::StringIsSupported(
       "####THIS_STRING_IS_NOT_SUPPORTED####"));
 }
