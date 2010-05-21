@@ -904,7 +904,7 @@ void FilebrowseHandler::HandleGetDownloads(const Value* value) {
 
 void FilebrowseHandler::ModelChanged() {
   ClearDownloadItems();
-  download_manager_->GetDownloads(this, std::wstring());
+  download_manager_->GetAllDownloads(this, FilePath());
 }
 
 void FilebrowseHandler::SetDownloads(std::vector<DownloadItem*>& downloads) {
