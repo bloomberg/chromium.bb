@@ -35,7 +35,8 @@
 
 namespace {
 // Menu commands
-const int kRevokePermissionCommand = 0;
+const int kNoopCommand = 0;
+const int kRevokePermissionCommand = 1;
 
 // Vertical margin between close button and menu button.
 const int kControlButtonsMargin = 6;
@@ -162,7 +163,7 @@ class NotificationControlView : public views::View,
     options_menu_contents_.reset(new menus::SimpleMenuModel(this));
     // TODO(oshima): Showing the source info in the menu for now.
     // Figure out where to show the source info.
-    options_menu_contents_->AddItem(-1, source_label_text);
+    options_menu_contents_->AddItem(kNoopCommand, source_label_text);
     options_menu_contents_->AddItem(kRevokePermissionCommand, label_text);
 
     options_menu_menu_.reset(new views::Menu2(options_menu_contents_.get()));
