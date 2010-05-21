@@ -577,7 +577,7 @@ void AppendToPythonPath(const FilePath& dir) {
     ::SetEnvironmentVariableW(kPythonPath, dir.value().c_str());
   } else if (!wcsstr(oldpath, dir.value().c_str())) {
     std::wstring newpath(oldpath);
-    newpath.append(L":");
+    newpath.append(L";");
     newpath.append(dir.value());
     SetEnvironmentVariableW(kPythonPath, newpath.c_str());
   }
@@ -600,6 +600,7 @@ void AppendToPythonPath(const FilePath& dir) {
 TestWebSocketServer::TestWebSocketServer(const FilePath& root_directory) {
   scoped_ptr<CommandLine> cmd_line(CreateWebSocketServerCommandLine());
   cmd_line->AppendSwitchWithValue("server", "start");
+  cmd_line->AppendSwitch("chromium");
   cmd_line->AppendSwitch("register_cygwin");
   cmd_line->AppendSwitchWithValue("root", root_directory.ToWStringHack());
   temp_dir_.CreateUniqueTempDir();
@@ -646,6 +647,7 @@ CommandLine* TestWebSocketServer::CreateWebSocketServerCommandLine() {
 TestWebSocketServer::~TestWebSocketServer() {
   scoped_ptr<CommandLine> cmd_line(CreateWebSocketServerCommandLine());
   cmd_line->AppendSwitchWithValue("server", "stop");
+  cmd_line->AppendSwitch("chromium");
   cmd_line->AppendSwitchWithValue("pidfile",
                                   websocket_pid_file_.ToWStringHack());
   base::LaunchApp(*cmd_line.get(), true, false, NULL);
