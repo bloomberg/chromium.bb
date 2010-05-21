@@ -106,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
 
   // Click on the location bar so that Find box loses focus.
   ClickOnView(VIEW_ID_LOCATION_BAR);
-#if defined(TOOLKIT_VIEWS) || defined(OS_WIN)
+#if defined(OS_WIN)
   // Check the location bar is focused.
   EXPECT_EQ(VIEW_ID_LOCATION_BAR, GetFocusedViewID());
 #endif
