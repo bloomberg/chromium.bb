@@ -1287,7 +1287,10 @@ void Browser::NewTab() {
 void Browser::CloseTab() {
   UserMetrics::RecordAction(UserMetricsAction("CloseTab_Accelerator"),
                             profile_);
-  tabstrip_model_.CloseTabContentsAt(tabstrip_model_.selected_index());
+  tabstrip_model_.CloseTabContentsAt(
+      tabstrip_model_.selected_index(),
+      TabStripModel::CLOSE_USER_GESTURE |
+      TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
 }
 
 void Browser::SelectNextTab() {
@@ -2548,7 +2551,9 @@ void Browser::CloseContents(TabContents* source) {
     NOTREACHED() << "CloseContents called for tab not in our strip";
     return;
   }
-  tabstrip_model_.CloseTabContentsAt(index);
+  tabstrip_model_.CloseTabContentsAt(
+      index,
+      TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
 }
 
 void Browser::MoveContents(TabContents* source, const gfx::Rect& pos) {
@@ -2670,12 +2675,15 @@ void Browser::BeforeUnloadFired(TabContents* tab,
                                 bool* proceed_to_fire_unload) {
   if (!is_attempting_to_close_browser_) {
     *proceed_to_fire_unload = proceed;
+    if (!proceed)
+      tab->set_closed_by_user_gesture(false);
     return;
   }
 
   if (!proceed) {
     CancelWindowClose();
     *proceed_to_fire_unload = false;
+    tab->set_closed_by_user_gesture(false);
     return;
   }
 

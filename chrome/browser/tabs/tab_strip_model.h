@@ -287,6 +287,19 @@ class TabStripModel : public NotificationObserver {
     INSERT_BEFORE,
   };
 
+  // Used to specify what should happen when the tab is closed.
+  enum CloseTypes {
+    CLOSE_NONE                     = 0,
+
+    // Indicates the tab was closed by the user. If true,
+    // TabContents::set_closed_by_user_gesture(true) is invoked.
+    CLOSE_USER_GESTURE             = 1 << 0,
+
+    // If true the history is recorded so that the tab can be reopened later.
+    // You almost always want to set this.
+    CLOSE_CREATE_HISTORICAL_TAB    = 1 << 1,
+  };
+
   static const int kNoTab = -1;
 
   // Construct a TabStripModel with a delegate to help it do certain things
@@ -365,11 +378,11 @@ class TabStripModel : public NotificationObserver {
 
   // Closes the TabContents at the specified index. This causes the TabContents
   // to be destroyed, but it may not happen immediately (e.g. if it's a
-  // TabContents).
+  // TabContents). |close_types| is a bitmask of CloseTypes.
   // Returns true if the TabContents was closed immediately, false if it was not
   // closed (we may be waiting for a response from an onunload handler, or
   // waiting for the user to confirm closure).
-  bool CloseTabContentsAt(int index);
+  bool CloseTabContentsAt(int index, uint32 close_types);
 
   // Replaces the entire state of a the tab at index by switching in a
   // different NavigationController. This is used through the recently
@@ -612,24 +625,23 @@ class TabStripModel : public NotificationObserver {
   bool IsNewTabAtEndOfTabStrip(TabContents* contents) const;
 
   // Closes the TabContents at the specified indices. This causes the
-  // TabContents to be destroyed, but it may not happen immediately.
-  // If the page in question has an unload event the
-  // TabContents will not be destroyed until after the event has completed,
-  // which will then call back into this method.
-  //
-  // The boolean parameter create_historical_tab controls whether to
-  // record these tabs and their history for reopening recently closed
-  // tabs.
+  // TabContents to be destroyed, but it may not happen immediately.  If the
+  // page in question has an unload event the TabContents will not be destroyed
+  // until after the event has completed, which will then call back into this
+  // method.
   //
   // Returns true if the TabContents were closed immediately, false if we are
   // waiting for the result of an onunload handler.
-  bool InternalCloseTabs(std::vector<int> indices,
-                         bool create_historical_tabs);
+  bool InternalCloseTabs(const std::vector<int>& indices, uint32 close_types);
 
   // Invoked from InternalCloseTabs and when an extension is removed for an app
   // tab. Notifies observers of TabClosingAt and deletes |contents|. If
   // |create_historical_tabs| is true, CreateHistoricalTab is invoked on the
   // delegate.
+  //
+  // The boolean parameter create_historical_tab controls whether to
+  // record these tabs and their history for reopening recently closed
+  // tabs.
   void InternalCloseTab(TabContents* contents,
                         int index,
                         bool create_historical_tabs);

@@ -591,7 +591,10 @@ private:
       NSView* lastTab = [self viewAtIndex:numberOfOpenTabs - 1];
       availableResizeWidth_ = NSMaxX([lastTab frame]);
     }
-    tabStripModel_->CloseTabContentsAt(index);
+    tabStripModel_->CloseTabContentsAt(
+        index,
+        TabStripModel::CLOSE_USER_GESTURE |
+        TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
   } else {
     // Use the standard window close if this is the last tab
     // this prevents the tab from being removed from the model until after

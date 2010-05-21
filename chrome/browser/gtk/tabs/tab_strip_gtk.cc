@@ -1113,7 +1113,9 @@ void TabStripGtk::CloseTab(TabGtk* tab) {
     // the mouse is outside of the tabstrip.  We unhook once the resize layout
     // animation is started.
     AddMessageLoopObserver();
-    model_->CloseTabContentsAt(tab_index);
+    model_->CloseTabContentsAt(tab_index,
+                               TabStripModel::CLOSE_USER_GESTURE |
+                               TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
   }
 }
 

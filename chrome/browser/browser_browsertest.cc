@@ -118,7 +118,7 @@ class BrowserTest : public ExtensionBrowserTest {
     ui_test_utils::NavigateToURL(browser(), url);
 
     // Close the first, which should make it a phantom.
-    model->CloseTabContentsAt(0);
+    model->CloseTabContentsAt(0, TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
 
     // There should still be two tabs.
     ASSERT_EQ(2, browser()->tab_count());

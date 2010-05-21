@@ -160,7 +160,7 @@ void TabStripModel::ReplaceNavigationControllerAt(
   InsertTabContentsAt(index + 1, controller->tab_contents(), true, true);
   std::vector<int> closing_tabs;
   closing_tabs.push_back(index);
-  InternalCloseTabs(closing_tabs, false);
+  InternalCloseTabs(closing_tabs, CLOSE_NONE);
 }
 
 TabContents* TabStripModel::DetachTabContentsAt(int index) {
@@ -263,13 +263,13 @@ void TabStripModel::CloseAllTabs() {
   std::vector<int> closing_tabs;
   for (int i = count() - 1; i >= 0; --i)
     closing_tabs.push_back(i);
-  InternalCloseTabs(closing_tabs, true);
+  InternalCloseTabs(closing_tabs, CLOSE_CREATE_HISTORICAL_TAB);
 }
 
-bool TabStripModel::CloseTabContentsAt(int index) {
+bool TabStripModel::CloseTabContentsAt(int index, uint32 close_types) {
   std::vector<int> closing_tabs;
   closing_tabs.push_back(index);
-  return InternalCloseTabs(closing_tabs, true);
+  return InternalCloseTabs(closing_tabs, close_types);
 }
 
 bool TabStripModel::TabsAreLoading() const {
@@ -527,7 +527,7 @@ void TabStripModel::AddTabContents(TabContents* contents,
 }
 
 void TabStripModel::CloseSelectedTab() {
-  CloseTabContentsAt(selected_index_);
+  CloseTabContentsAt(selected_index_, CLOSE_CREATE_HISTORICAL_TAB);
 }
 
 void TabStripModel::SelectNextTab() {
@@ -641,14 +641,15 @@ void TabStripModel::ExecuteContextMenuCommand(
     case CommandCloseTab:
       UserMetrics::RecordAction(UserMetricsAction("TabContextMenu_CloseTab"),
                                 profile_);
-      CloseTabContentsAt(context_index);
+      CloseTabContentsAt(context_index, CLOSE_CREATE_HISTORICAL_TAB |
+                         CLOSE_USER_GESTURE);
       break;
     case CommandCloseOtherTabs: {
       UserMetrics::RecordAction(
           UserMetricsAction("TabContextMenu_CloseOtherTabs"),
           profile_);
       InternalCloseTabs(GetIndicesClosedByCommand(context_index, command_id),
-                        true);
+                        CLOSE_CREATE_HISTORICAL_TAB);
       break;
     }
     case CommandCloseTabsToRight: {
@@ -656,7 +657,7 @@ void TabStripModel::ExecuteContextMenuCommand(
           UserMetricsAction("TabContextMenu_CloseTabsToRight"),
           profile_);
       InternalCloseTabs(GetIndicesClosedByCommand(context_index, command_id),
-                        true);
+                        CLOSE_CREATE_HISTORICAL_TAB);
       break;
     }
     case CommandCloseTabsOpenedBy: {
@@ -664,7 +665,7 @@ void TabStripModel::ExecuteContextMenuCommand(
           UserMetricsAction("TabContextMenu_CloseTabsOpenedBy"),
           profile_);
       InternalCloseTabs(GetIndicesClosedByCommand(context_index, command_id),
-                        true);
+                        CLOSE_CREATE_HISTORICAL_TAB);
       break;
     }
     case CommandRestoreTab: {
@@ -792,8 +793,8 @@ bool TabStripModel::IsNewTabAtEndOfTabStrip(TabContents* contents) const {
       contents->controller().entry_count() == 1;
 }
 
-bool TabStripModel::InternalCloseTabs(std::vector<int> indices,
-                                      bool create_historical_tabs) {
+bool TabStripModel::InternalCloseTabs(const std::vector<int>& indices,
+                                      uint32 close_types) {
   bool retval = true;
 
   // We only try the fast shutdown path if the whole browser process is *not*
@@ -833,13 +834,27 @@ bool TabStripModel::InternalCloseTabs(std::vector<int> indices,
     TabContents* detached_contents = GetContentsAt(indices[i]);
     detached_contents->OnCloseStarted();
 
-    if (!delegate_->CanCloseContentsAt(indices[i]) ||
-        delegate_->RunUnloadListenerBeforeClosing(detached_contents)) {
+    if (!delegate_->CanCloseContentsAt(indices[i])) {
       retval = false;
       continue;
     }
 
-    InternalCloseTab(detached_contents, indices[i], create_historical_tabs);
+    // Update the explicitly closed state. If the unload handlers cancel the
+    // close the state is reset in Browser. We don't update the explicitly
+    // closed state if already marked as explicitly closed as unload handlers
+    // call back to this if the close is allowed.
+    if (!detached_contents->closed_by_user_gesture()) {
+      detached_contents->set_closed_by_user_gesture(
+          close_types & CLOSE_USER_GESTURE);
+    }
+
+    if (delegate_->RunUnloadListenerBeforeClosing(detached_contents)) {
+      retval = false;
+      continue;
+    }
+
+    InternalCloseTab(detached_contents, indices[i],
+                     (close_types & CLOSE_CREATE_HISTORICAL_TAB) != 0);
   }
 
   return retval;

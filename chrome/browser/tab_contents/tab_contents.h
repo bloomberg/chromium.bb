@@ -673,6 +673,15 @@ class TabContents : public PageNavigator,
   // The caller owns the returned object.
   TabContents* CloneAndMakePhantom();
 
+  // Indicates if this tab was explicitly closed by the user (control-w, close
+  // tab menu item...). This is false for actions that indirectly close the tab,
+  // such as closing the window.  The setter is maintained by TabStripModel, and
+  // the getter only useful from within TAB_CLOSED notification
+  void set_closed_by_user_gesture(bool value) {
+    closed_by_user_gesture_ = value;
+  }
+  bool closed_by_user_gesture() const { return closed_by_user_gesture_; }
+
   // JavaScriptMessageBoxClient ------------------------------------------------
   virtual std::wstring GetMessageBoxTitle(const GURL& frame_url,
                                           bool is_alert);
@@ -1275,6 +1284,9 @@ class TabContents : public PageNavigator,
   // Keep track of if we've already requested the accessibility tree so
   // we don't do it more than once.
   bool requested_accessibility_tree_;
+
+  // See description above setter.
+  bool closed_by_user_gesture_;
 
   // ---------------------------------------------------------------------------
 

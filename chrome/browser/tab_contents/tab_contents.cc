@@ -295,7 +295,8 @@ TabContents::TabContents(Profile* profile,
       opener_dom_ui_type_(DOMUIFactory::kNoDOMUI),
       language_state_(&controller_),
       geolocation_settings_state_(profile),
-      requested_accessibility_tree_(false) {
+      requested_accessibility_tree_(false),
+      closed_by_user_gesture_(false) {
   ClearBlockedContentSettings();
   renderer_preferences_util::UpdateFromSystemSettings(
       &renderer_preferences_, profile);
