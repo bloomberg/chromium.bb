@@ -949,7 +949,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
     // new one. NotifyOtherProcess will currently give the other process up to
     // 20 seconds to respond. Note that this needs to be done before we attempt
     // to read the profile.
-    switch (process_singleton.NotifyOtherProcessOrCreate()) {
+    switch (process_singleton.NotifyOtherProcess()) {
       case ProcessSingleton::PROCESS_NONE:
         // No process already running, fall through to starting a new one.
         break;
@@ -962,14 +962,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
         return ResultCodes::NORMAL_EXIT;
 
       case ProcessSingleton::PROFILE_IN_USE:
-        return ResultCodes::PROFILE_IN_USE;
-
-      case ProcessSingleton::LOCK_ERROR:
-        LOG(ERROR) << "Failed to create a ProcessSingleton for your profile "
-                      "directory. This means that running multiple instances "
-                      "would start multiple browser processes rather than "
-                      "opening a new window in the existing process. Aborting "
-                      "now to avoid profile corruption.";
         return ResultCodes::PROFILE_IN_USE;
 
       default:
@@ -1035,6 +1027,15 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // processes etc).
   if (CheckMachineLevelInstall())
     return ResultCodes::MACHINE_LEVEL_INSTALL_EXISTS;
+
+  if (!process_singleton.Create()) {
+    LOG(ERROR) << "Failed to create a ProcessSingleton for your profile "
+                  "directory. This means that running multiple instances "
+                  "would start multiple browser processes rather than opening "
+                  "a new window in the existing process. Aborting now to "
+                  "avoid profile corruption.";
+    return ResultCodes::PROFILE_IN_USE;
+  }
 
   // Create the TranslateManager singleton.
   Singleton<TranslateManager>::get();

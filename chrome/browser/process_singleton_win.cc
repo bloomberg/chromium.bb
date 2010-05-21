@@ -156,13 +156,6 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
   return PROCESS_NONE;
 }
 
-ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessOrCreate() {
-  NotifyResult result = NotifyOtherProcess();
-  if (result != PROCESS_NONE)
-    return result;
-  return Create() ? PROCESS_NONE : PROFILE_IN_USE;
-}
-
 // For windows, there is no need to call Create() since the call is made in
 // the constructor but to avoid having more platform specific code in
 // browser_main.cc we tolerate a second call which will do nothing.

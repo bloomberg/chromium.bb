@@ -32,7 +32,6 @@ TabRestoreUITest.*
 # See http://crbug.com/25176
 ProcessSingletonLinuxTest.NotifyOtherProcessFailure
 ProcessSingletonLinuxTest.NotifyOtherProcessDifferingHost
-ProcessSingletonLinuxTest.NotifyOtherProcessOrCreate_DifferingHost
 
 # These tests fail under valgrind.
 # See http://crbug.com/29579.

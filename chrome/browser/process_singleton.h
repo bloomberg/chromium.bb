@@ -37,7 +37,6 @@ class ProcessSingleton : public NonThreadSafe {
     PROCESS_NONE,
     PROCESS_NOTIFIED,
     PROFILE_IN_USE,
-    LOCK_ERROR,
   };
 
   explicit ProcessSingleton(const FilePath& user_data_dir);
@@ -53,20 +52,11 @@ class ProcessSingleton : public NonThreadSafe {
   // first one, so this function won't find it.
   NotifyResult NotifyOtherProcess();
 
-  // Notify another process, if available.  Otherwise sets ourselves as the
-  // singleton instance.  Returns PROCESS_NONE if we became the singleton
-  // instance.
-  NotifyResult NotifyOtherProcessOrCreate();
-
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Exposed for testing.  We use a timeout on Linux, and in tests we want
   // this timeout to be short.
   NotifyResult NotifyOtherProcessWithTimeout(const CommandLine& command_line,
-                                             int timeout_seconds,
-                                             bool kill_unresponsive);
-  NotifyResult NotifyOtherProcessWithTimeoutOrCreate(
-      const CommandLine& command_line,
-      int timeout_seconds);
+                                             int timeout_seconds);
 #endif
 
   // Sets ourself up as the singleton instance.  Returns true on success.  If

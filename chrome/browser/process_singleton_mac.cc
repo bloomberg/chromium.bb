@@ -32,11 +32,6 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
   return PROCESS_NONE;
 }
 
-ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessOrCreate() {
-  // This space intentionally left blank.
-  return PROCESS_NONE;
-}
-
 bool ProcessSingleton::Create() {
   // This space intentionally left blank.
   return true;
