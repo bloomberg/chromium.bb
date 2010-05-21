@@ -85,12 +85,6 @@ class CandidateView;
 // CandidateWindowView is the main container of the candidate window UI.
 class CandidateWindowView : public views::View {
  public:
-  // Should we show candidates vertically or horizontally?
-  enum Orientation {
-    kVertical,
-    kHorizontal,
-  };
-
   // The object can be monitored by the observer.
   class Observer {
    public:
@@ -139,8 +133,7 @@ class CandidateWindowView : public views::View {
 
   // Updates candidates of the candidate window from |lookup_table|.
   // Candidates are arranged per |orientation|.
-  void UpdateCandidates(const InputMethodLookupTable& lookup_table,
-                        Orientation orientation);
+  void UpdateCandidates(const InputMethodLookupTable& lookup_table);
 
   // Resizes the parent frame and schedules painting. This needs to be
   // called when the visible contents of the candidate window are
@@ -162,8 +155,9 @@ class CandidateWindowView : public views::View {
 
  private:
   // Initializes the candidate views if needed.
-  void MaybeInitializeCandidateViews(int num_views,
-                                     Orientation orientation);
+  void MaybeInitializeCandidateViews(
+      int num_views,
+      InputMethodLookupTable::Orientation orientation);
 
   // Creates the footer area, where we show status information.
   // For instance, we show a cursor position like 2/19.
@@ -171,9 +165,6 @@ class CandidateWindowView : public views::View {
 
   // Creates the header area, where we show auxiliary text.
   views::View* CreateHeaderArea();
-
-  // The orientation of the candidate window.
-  Orientation orientation_;
 
   // The lookup table (candidates).
   InputMethodLookupTable lookup_table_;
@@ -225,7 +216,7 @@ class CandidateView : public views::View {
  public:
   CandidateView(CandidateWindowView* parent_candidate_window,
                 int index_in_page,
-                CandidateWindowView::Orientation orientation);
+                InputMethodLookupTable::Orientation orientation);
   virtual ~CandidateView() {}
   void Init();
 
@@ -262,7 +253,7 @@ class CandidateView : public views::View {
   int index_in_page_;
 
   // The orientation of the candidate view.
-  CandidateWindowView::Orientation orientation_;
+  InputMethodLookupTable::Orientation orientation_;
 
   // The parent candidate window that contains this view.
   CandidateWindowView* parent_candidate_window_;
@@ -370,7 +361,7 @@ class CandidateWindowController : public CandidateWindowView::Observer {
 CandidateView::CandidateView(
     CandidateWindowView* parent_candidate_window,
     int index_in_page,
-    CandidateWindowView::Orientation orientation)
+    InputMethodLookupTable::Orientation orientation)
     : index_in_page_(index_in_page),
       orientation_(orientation),
       parent_candidate_window_(parent_candidate_window),
@@ -399,9 +390,10 @@ void CandidateView::Init() {
   // Wrap it with padding.
   const gfx::Insets kVerticalShortcutLabelInsets(1, 6, 1, 6);
   const gfx::Insets kHorizontalShortcutLabelInsets(1, 1, 1, 1);
-  const gfx::Insets insets = (orientation_ == CandidateWindowView::kVertical ?
-                              kVerticalShortcutLabelInsets :
-                              kHorizontalShortcutLabelInsets);
+  const gfx::Insets insets =
+      (orientation_ == InputMethodLookupTable::kVertical ?
+       kVerticalShortcutLabelInsets :
+       kHorizontalShortcutLabelInsets);
   views::View* wrapped_shortcut_label =
       WrapWithPadding(shortcut_label_, insets);
   // We'll use a bigger font size, so Chinese characters are more readable
@@ -414,7 +406,7 @@ void CandidateView::Init() {
   // candidate_label, like Chinese font for Chinese input method?
 
   // Add decoration based on the orientation.
-  if (orientation_ == CandidateWindowView::kVertical) {
+  if (orientation_ == InputMethodLookupTable::kVertical) {
     // Set the background color.
     wrapped_shortcut_label->set_background(
         views::Background::CreateSolidBackground(
@@ -424,7 +416,7 @@ void CandidateView::Init() {
 
   // Create the candidate label. The label will be added to |this| as a
   // child view, hence it's deleted when |this| is deleted.
-  if (orientation_ == CandidateWindowView::kVertical) {
+  if (orientation_ == InputMethodLookupTable::kVertical) {
     candidate_label_ = new VerticalCandidateLabel;
   } else {
     candidate_label_ = new views::Label;
@@ -504,8 +496,7 @@ void CandidateView::OnMouseReleased(const views::MouseEvent& event,
 
 CandidateWindowView::CandidateWindowView(
     views::Widget* parent_frame)
-    : orientation_(kVertical),
-      current_page_index_(0),
+    : current_page_index_(0),
       selected_candidate_index_in_page_(0),
       parent_frame_(parent_frame),
       candidate_area_(NULL),
@@ -549,11 +540,13 @@ void CandidateWindowView::Init() {
 }
 
 void CandidateWindowView::HideAuxiliaryText() {
-  views::View* target_area = (orientation_ == kHorizontal ?
-                              header_area_ : footer_area_);
-  views::View* target_place_holder = (orientation_ == kHorizontal ?
-                                      header_area_place_holder_.get() :
-                                      footer_area_place_holder_.get());
+  views::View* target_area = (
+      lookup_table_.orientation == InputMethodLookupTable::kHorizontal ?
+      header_area_ : footer_area_);
+  views::View* target_place_holder = (
+      lookup_table_.orientation == InputMethodLookupTable::kHorizontal ?
+      header_area_place_holder_.get() :
+      footer_area_place_holder_.get());
   // Put the place holder to the target display area.
   target_area->RemoveAllChildViews(false);  // Don't delete child views.
   target_area->AddChildView(target_place_holder);
@@ -561,11 +554,13 @@ void CandidateWindowView::HideAuxiliaryText() {
 }
 
 void CandidateWindowView::ShowAuxiliaryText() {
-  views::View* target_area = (orientation_ == kHorizontal ?
-                              header_area_ : footer_area_);
-  views::View* target_contents = (orientation_ == kHorizontal ?
-                                  header_area_contents_.get() :
-                                  footer_area_contents_.get());
+  views::View* target_area = (
+      lookup_table_.orientation == InputMethodLookupTable::kHorizontal ?
+      header_area_ : footer_area_);
+  views::View* target_contents = (
+      lookup_table_.orientation == InputMethodLookupTable::kHorizontal ?
+      header_area_contents_.get() :
+      footer_area_contents_.get());
   // Put contents to the target display area.
   target_area->RemoveAllChildViews(false);  // Don't delete child views.
   target_area->AddChildView(target_contents);
@@ -573,19 +568,18 @@ void CandidateWindowView::ShowAuxiliaryText() {
 }
 
 void CandidateWindowView::UpdateAuxiliaryText(const std::string& utf8_text) {
-  views::Label* target_label = (orientation_ == kHorizontal ?
-                                header_label_ : footer_label_);
+  views::Label* target_label = (
+      lookup_table_.orientation == InputMethodLookupTable::kHorizontal ?
+      header_label_ : footer_label_);
   target_label->SetText(UTF8ToWide(utf8_text));
 }
 
 void CandidateWindowView::UpdateCandidates(
-    const InputMethodLookupTable& lookup_table,
-    Orientation orientation) {
+    const InputMethodLookupTable& lookup_table) {
   // Initialize candidate views if necessary.
   MaybeInitializeCandidateViews(lookup_table.page_size,
-                                orientation);
+                                lookup_table.orientation);
   lookup_table_ = lookup_table;
-  orientation_ = orientation;
 
   // Compute the index of the current page.
   current_page_index_ =
@@ -614,11 +608,11 @@ void CandidateWindowView::UpdateCandidates(
 
 void CandidateWindowView::MaybeInitializeCandidateViews(
     int num_views,
-    Orientation orientation) {
+    InputMethodLookupTable::Orientation orientation) {
   // If the requested number of views matches the number of current views,
   // just reuse these.
   if (num_views == static_cast<int>(candidate_views_.size()) &&
-      orientation == orientation_) {
+      orientation == lookup_table_.orientation) {
     return;
   }
 
@@ -633,7 +627,7 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
   candidate_area_->SetLayoutManager(layout);
   // Initialize the column set.
   views::ColumnSet* column_set = layout->AddColumnSet(0);
-  if (orientation == kVertical) {
+  if (orientation == InputMethodLookupTable::kVertical) {
     column_set->AddColumn(views::GridLayout::FILL,
                           views::GridLayout::FILL,
                           0, views::GridLayout::USE_PREF, 0, 0);
@@ -656,14 +650,14 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
                     kCandidateAreaInsets.right());
 
   // Add views to the candidate area.
-  if (orientation == kHorizontal) {
+  if (orientation == InputMethodLookupTable::kHorizontal) {
     layout->StartRow(0, 0);
   }
   for (int i = 0; i < num_views; ++i) {
     CandidateView* candidate_row = new CandidateView(this, i, orientation);
     candidate_row->Init();
     candidate_views_.push_back(candidate_row);
-    if (orientation == kVertical) {
+    if (orientation == InputMethodLookupTable::kVertical) {
       layout->StartRow(0, 0);
     }
     // |candidate_row| will be owned by candidate_area_|.
@@ -961,17 +955,7 @@ void CandidateWindowController::OnUpdateLookupTable(
     return;
   }
 
-  // HACK: ibus-pinyin sets page_size to 5. For now, we use the magic
-  // number here to determine the orientation.
-  // TODO(satorux): We should get the orientation information from
-  // lookup_table.
-  CandidateWindowView::Orientation orientation =
-      CandidateWindowView::kVertical;
-  if (lookup_table.page_size == 5) {
-    orientation = CandidateWindowView::kHorizontal;
-  }
-  controller->candidate_window_->UpdateCandidates(lookup_table,
-                                                  orientation);
+  controller->candidate_window_->UpdateCandidates(lookup_table);
   controller->frame_->Show();
   // If the orientation is vertical, move the candidate window with the
   // horizontal offset.
@@ -979,7 +963,7 @@ void CandidateWindowController::OnUpdateLookupTable(
   // Note that we should call MoveCandidateWindow() after
   // controller->frame_->Show(), as GetHorizontalOffset() returns a valid
   // value only after the Show() method is called.
-  if (orientation == CandidateWindowView::kVertical) {
+  if (lookup_table.orientation == InputMethodLookupTable::kVertical) {
     // Temporarily disabled the window position adjustment since it does not
     // work fine with ibus-mozc.  TODO(satorux): re-enable the feature.
     //
