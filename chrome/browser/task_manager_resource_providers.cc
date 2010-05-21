@@ -587,6 +587,8 @@ void TaskManagerExtensionProcessResourceProvider::StartUpdating() {
        it != profile_manager->end(); ++it) {
       ExtensionProcessManager* process_manager =
           (*it)->GetExtensionProcessManager();
+      if (!process_manager)
+        continue;
       ExtensionProcessManager::const_iterator jt;
       for (jt = process_manager->begin(); jt != process_manager->end(); ++jt)
         AddToTaskManager(*jt);

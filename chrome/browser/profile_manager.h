@@ -83,11 +83,6 @@ class ProfileManager : public NonThreadSafe,
   // Same as instance method but provides the default user_data_dir as well.
   static Profile* GetDefaultProfile();
 
-#if defined(OS_CHROMEOS)
-  // Returns the default profile with extensions turned off
-  static Profile* GetWizardProfile();
-#endif
-
   // Returns a profile for a specific profile directory within the user data
   // dir. This will return an existing profile it had already been created,
   // otherwise it will create and manage it.

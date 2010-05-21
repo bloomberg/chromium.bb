@@ -660,6 +660,8 @@ void BrowserRenderProcessHost::SendExtensionExtentsUpdate() {
   }
 
   ExtensionsService* service = profile()->GetExtensionsService();
+  if (!service)
+    return;
   ViewMsg_ExtensionExtentsUpdated_Params params;
   for (size_t i = 0; i < service->extensions()->size(); ++i) {
     Extension* extension = service->extensions()->at(i);

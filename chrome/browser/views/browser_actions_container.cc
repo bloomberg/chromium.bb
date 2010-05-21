@@ -373,9 +373,10 @@ BrowserActionsContainer::BrowserActionsContainer(
       ALLOW_THIS_IN_INITIALIZER_LIST(show_menu_task_factory_(this)) {
   SetID(VIEW_ID_BROWSER_ACTION_TOOLBAR);
 
-  model_ = profile_->GetExtensionsService()->toolbar_model();
-  model_->AddObserver(this);
-
+  if (profile_->GetExtensionsService()) {
+    model_ = profile_->GetExtensionsService()->toolbar_model();
+    model_->AddObserver(this);
+  }
   resize_animation_.reset(new SlideAnimation(this));
   resize_gripper_ = new views::ResizeGripper(this);
   resize_gripper_->SetAccessibleName(
@@ -402,12 +403,14 @@ BrowserActionsContainer::BrowserActionsContainer(
         profile_->GetPrefs()->GetInteger(prefs::kBrowserActionContainerWidth);
     if (predefined_width != 0) {
       int icon_width = (kButtonSize + kBrowserActionButtonPadding);
-      model_->SetVisibleIconCount(
-          (predefined_width - WidthOfNonIconArea()) / icon_width);
+      if (model_) {
+        model_->SetVisibleIconCount(
+            (predefined_width - WidthOfNonIconArea()) / icon_width);
+      }
     }
   }
 
-  if (model_->extensions_initialized())
+  if (model_ && model_->extensions_initialized())
     SetContainerWidth();
 
   SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_EXTENSIONS));
@@ -486,6 +489,9 @@ void BrowserActionsContainer::SetDropIndicator(int x_pos) {
 
 void BrowserActionsContainer::CreateBrowserActionViews() {
   DCHECK(browser_action_views_.empty());
+  if (!model_)
+    return;
+
   for (ExtensionList::iterator iter = model_->begin();
        iter != model_->end(); ++iter) {
     if (!ShouldDisplayBrowserAction(*iter))
@@ -783,6 +789,7 @@ int BrowserActionsContainer::OnPerformDrop(
   // Make sure we have the same view as we started with.
   DCHECK(browser_action_views_[data.index()]->button()->extension()->id() ==
          data.id());
+  DCHECK(model_);
 
   Extension* dragging =
       browser_action_views_[data.index()]->button()->extension();
@@ -828,9 +835,11 @@ bool BrowserActionsContainer::GetAccessibleRole(
 void BrowserActionsContainer::MoveBrowserAction(
     const std::string& extension_id, size_t new_index) {
   ExtensionsService* service = profile_->GetExtensionsService();
-  Extension* extension = service->GetExtensionById(extension_id, false);
-  model_->MoveBrowserAction(extension, new_index);
-  SchedulePaint();
+  if (service) {
+    Extension* extension = service->GetExtensionById(extension_id, false);
+    model_->MoveBrowserAction(extension, new_index);
+    SchedulePaint();
+  }
 }
 
 void BrowserActionsContainer::RunMenu(View* source, const gfx::Point& pt) {

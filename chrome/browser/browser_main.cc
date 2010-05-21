@@ -1018,10 +1018,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Profile creation ----------------------------------------------------------
 
 #if defined(OS_CHROMEOS)
-  // todo(davemoore) this is a hack to get the ProfileManager to register
-  // for the user logged in notification before we send it. This needs to be
-  // redone in a cleaner way.
-  ProfileManager::GetDefaultProfile();
+  // This forces the ProfileManager to be created and register for the
+  // notification it needs to track the logged in user.
+  g_browser_process->profile_manager()->GetDefaultProfile();
 
   if (parsed_command_line.HasSwitch(switches::kLoginUser)) {
     std::string username =
@@ -1223,9 +1222,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
   metrics->StartExternalMetrics();
 #endif
 
-  // This will initialize bookmarks. Call it after bookmark import is done.
-  // See issue 40144.
-  profile->GetExtensionsService()->InitEventRouters();
+  if (profile->GetExtensionsService()) {
+    // This will initialize bookmarks. Call it after bookmark import is done.
+    // See issue 40144.
+    profile->GetExtensionsService()->InitEventRouters();
+  }
 
 #if defined(OS_WIN)
   // We check this here because if the profile is OTR (chromeos possibility)

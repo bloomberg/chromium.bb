@@ -288,7 +288,7 @@ void LoginManagerView::Login() {
     username_field_->SetText(UTF8ToUTF16(username));
   }
 
-  Profile* profile = g_browser_process->profile_manager()->GetWizardProfile();
+  Profile* profile = g_browser_process->profile_manager()->GetDefaultProfile();
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
       NewRunnableMethod(authenticator_.get(),

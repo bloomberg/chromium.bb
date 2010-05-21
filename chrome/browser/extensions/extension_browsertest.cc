@@ -25,6 +25,10 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/test/ui_test_utils.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/common/chrome_switches.h"
+#endif
+
 ExtensionBrowserTest::ExtensionBrowserTest()
     : target_page_action_count_(-1),
       target_visible_page_action_count_(-1) {
@@ -44,6 +48,17 @@ void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   // selectively enabling each of them, enable toolstrips for all extension
   // tests.
   command_line->AppendSwitch(switches::kEnableExtensionToolstrips);
+
+#if defined(OS_CHROMEOS)
+  // This makes sure that we create the Default profile first, with no
+  // ExtensionsService and then the real profile with one, as we do when
+  // running on chromeos.
+  command_line->AppendSwitchWithValue(
+      switches::kLoginUser, "TestUser@gmail.com");
+  command_line->AppendSwitchWithValue(switches::kLoginProfile, "user");
+  command_line->AppendSwitch(switches::kNoFirstRun);
+#endif
+
 }
 
 bool ExtensionBrowserTest::LoadExtensionImpl(const FilePath& path,
