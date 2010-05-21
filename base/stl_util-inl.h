@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,8 +57,7 @@ template<class T> void STLReserveIfNeeded(T* obj, int new_size) {
 // advanced, which could result in the hash function trying to deference a
 // stale pointer.
 template <class ForwardIterator>
-void STLDeleteContainerPointers(ForwardIterator begin,
-                                ForwardIterator end) {
+void STLDeleteContainerPointers(ForwardIterator begin, ForwardIterator end) {
   while (begin != end) {
     ForwardIterator temp = begin;
     ++begin;
@@ -190,13 +189,10 @@ inline char* string_as_array(std::string* str) {
 // differed.
 
 template <class HashSet>
-inline bool
-HashSetEquality(const HashSet& set_a,
-                const HashSet& set_b) {
+inline bool HashSetEquality(const HashSet& set_a, const HashSet& set_b) {
   if (set_a.size() != set_b.size()) return false;
   for (typename HashSet::const_iterator i = set_a.begin();
-       i != set_a.end();
-       ++i) {
+       i != set_a.end(); ++i) {
     if (set_b.find(*i) == set_b.end())
       return false;
   }
@@ -204,9 +200,7 @@ HashSetEquality(const HashSet& set_a,
 }
 
 template <class HashMap>
-inline bool
-HashMapEquality(const HashMap& map_a,
-                const HashMap& map_b) {
+inline bool HashMapEquality(const HashMap& map_a, const HashMap& map_b) {
   if (map_a.size() != map_b.size()) return false;
   for (typename HashMap::const_iterator i = map_a.begin();
        i != map_a.end(); ++i) {

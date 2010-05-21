@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/stl_util-inl.h"
 #include "gfx/insets.h"
 #include "views/standard_layout.h"
 #include "views/view.h"
@@ -379,10 +380,7 @@ ColumnSet::ColumnSet(int id) : id_(id) {
 }
 
 ColumnSet::~ColumnSet() {
-  for (std::vector<Column*>::iterator i = columns_.begin();
-       i != columns_.end(); ++i) {
-    delete *i;
-  }
+  STLDeleteElements(&columns_);
 }
 
 void ColumnSet::AddPaddingColumn(float resize_percent, int width) {
@@ -673,18 +671,9 @@ GridLayout::GridLayout(View* host)
 }
 
 GridLayout::~GridLayout() {
-  for (std::vector<ColumnSet*>::iterator i = column_sets_.begin();
-       i != column_sets_.end(); ++i) {
-    delete *i;
-  }
-  for (std::vector<ViewState*>::iterator i = view_states_.begin();
-       i != view_states_.end(); ++i) {
-    delete *i;
-  }
-  for (std::vector<Row*>::iterator i = rows_.begin();
-       i != rows_.end(); ++i) {
-    delete *i;
-  }
+  STLDeleteElements(&column_sets_);
+  STLDeleteElements(&view_states_);
+  STLDeleteElements(&rows_);
 }
 
 void GridLayout::SetInsets(int top, int left, int bottom, int right) {
