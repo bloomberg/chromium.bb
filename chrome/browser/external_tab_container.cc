@@ -183,6 +183,7 @@ void ExternalTabContainer::Uninitialize() {
 
   if (focus_manager_) {
     focus_manager_->UnregisterAccelerators(this);
+    focus_manager_ = NULL;
   }
 
   request_context_ = NULL;
