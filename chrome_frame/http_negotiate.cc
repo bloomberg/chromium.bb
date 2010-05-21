@@ -13,6 +13,7 @@
 #include "base/string_util.h"
 
 #include "chrome_frame/bho.h"
+#include "chrome_frame/exception_barrier.h"
 #include "chrome_frame/html_utils.h"
 #include "chrome_frame/urlmon_url_request.h"
 #include "chrome_frame/urlmon_moniker.h"
@@ -31,13 +32,10 @@ const char kUACompatibleHttpHeader[] = "x-ua-compatible";
 const int LOCAL_BINDSTATUS_SERVER_MIMETYPEAVAILABLE = 54;
 
 static const int kHttpNegotiateBeginningTransactionIndex = 3;
-static const int kHttpNegotiateOnResponseTransactionIndex = 4;
 
 BEGIN_VTABLE_PATCHES(IHttpNegotiate)
   VTABLE_PATCH_ENTRY(kHttpNegotiateBeginningTransactionIndex,
                      HttpNegotiatePatch::BeginningTransaction)
-  VTABLE_PATCH_ENTRY(kHttpNegotiateOnResponseTransactionIndex,
-                     HttpNegotiatePatch::OnResponse)
 END_VTABLE_PATCHES()
 
 static const int kBindStatusCallbackStartBindingIndex = 3;
@@ -287,17 +285,6 @@ HRESULT HttpNegotiatePatch::BeginningTransaction(
 }
 
 // static
-HRESULT HttpNegotiatePatch::OnResponse(IHttpNegotiate_OnResponse_Fn original,
-    IHttpNegotiate* me, DWORD response_code, LPCWSTR response_header,
-    LPCWSTR request_header, LPWSTR* additional_request_headers) {
-  DLOG(INFO) << __FUNCTION__ << " headers: " << std::endl << response_header;
-
-  HRESULT hr = original(me, response_code, response_header, request_header,
-                        additional_request_headers);
-  return hr;
-}
-
-// static
 HRESULT HttpNegotiatePatch::StartBinding(
     IBindStatusCallback_StartBinding_Fn original,
     IBindStatusCallback* me, DWORD reserved, IBinding* binding) {
@@ -334,6 +321,8 @@ HRESULT HttpNegotiatePatch::ReportProgress(
     ULONG status_code, LPCWSTR status_text) {
   DLOG(INFO) << __FUNCTION__
       << StringPrintf(" %i %ls", status_code, status_text);
+  bool updated_mime_type = false;
+
   if (status_code == BINDSTATUS_MIMETYPEAVAILABLE ||
       status_code == BINDSTATUS_VERIFIEDMIMETYPEAVAILABLE ||
       status_code == LOCAL_BINDSTATUS_SERVER_MIMETYPEAVAILABLE) {
@@ -396,11 +385,22 @@ HRESULT HttpNegotiatePatch::ReportProgress(
       if (IsTextHtmlMimeType(status_text)) {
         DLOG(INFO) << "- changing mime type to " << kChromeMimeType;
         status_text = kChromeMimeType;
+        updated_mime_type = true;
       } else {
         DLOG(INFO) << "- don't want to render " << status_text << " in cf";
       }
     }
   }
 
-  return original(me, status_code, status_text);
+  if (updated_mime_type) {
+    // Report all crashes in the exception handler as we updated the mime type.
+    // Note that this avoids having the VEH report a crash if an SEH earlier in
+    // the chain handles the exception.
+    ExceptionBarrier barrier;
+    return original(me, status_code, status_text);
+  } else {
+    // Only report exceptions caused within ChromeFrame in this context.
+    ExceptionBarrierReportOnlyModule barrier;
+    return original(me, status_code, status_text);
+  }
 }

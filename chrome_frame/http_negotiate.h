@@ -49,10 +49,6 @@ class HttpNegotiatePatch {
   static STDMETHODIMP BeginningTransaction(
       IHttpNegotiate_BeginningTransaction_Fn original, IHttpNegotiate* me,
       LPCWSTR url, LPCWSTR headers, DWORD reserved, LPWSTR* additional_headers);
-  static STDMETHODIMP OnResponse(
-      IHttpNegotiate_OnResponse_Fn original, IHttpNegotiate* me,
-      DWORD response_code, LPCWSTR response_header, LPCWSTR request_header,
-      LPWSTR* additional_request_headers);
 
   // IBindStatusCallback patch methods
   static STDMETHODIMP StartBinding(IBindStatusCallback_StartBinding_Fn original,
