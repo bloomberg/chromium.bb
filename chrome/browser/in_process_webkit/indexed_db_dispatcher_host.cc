@@ -12,9 +12,11 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBDatabase.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBDatabaseError.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIndexedDatabase.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
 
 using WebKit::WebIDBDatabase;
 using WebKit::WebIDBDatabaseError;
+using WebKit::WebSecurityOrigin;
 
 IndexedDBDispatcherHost::IndexedDBDispatcherHost(
     IPC::Message::Sender* sender, WebKitContext* webkit_context)
@@ -131,7 +133,8 @@ void IndexedDBDispatcherHost::OnIndexedDatabaseOpen(
   Context()->GetIndexedDatabase()->open(
       params.name_, params.description_, params.modify_database_,
       new IndexedDatabaseOpenCallbacks(this, params.response_id_),
-      params.origin_, NULL, exception_code);
+      WebSecurityOrigin::createFromDatabaseIdentifier(params.origin_), NULL,
+      exception_code);
   // ViewHostMsg_IndexedDatabaseOpen is async because we assume the exception
   // code is always 0 in the renderer side.
   DCHECK(exception_code == 0);

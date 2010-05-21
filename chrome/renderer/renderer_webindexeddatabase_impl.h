@@ -11,6 +11,7 @@
 namespace WebKit {
 class WebFrame;
 class WebIDBDatabase;
+class WebSecurityOrigin;
 class WebString;
 }
 
@@ -23,7 +24,7 @@ class RendererWebIndexedDatabaseImpl : public WebKit::WebIndexedDatabase {
   virtual void open(
       const WebKit::WebString& name, const WebKit::WebString& description,
       bool modify_database, WebKit::WebIDBCallbacks* callbacks,
-      const WebKit::WebString& origin, WebKit::WebFrame* web_frame,
+      const WebKit::WebSecurityOrigin& origin, WebKit::WebFrame* web_frame,
       int& exception_code);
 };
 
