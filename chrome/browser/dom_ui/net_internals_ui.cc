@@ -578,18 +578,13 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
 
   // Tell the javascript about the relationship between source type enums and
   // their symbolic name.
-  // TODO(eroman): Don't duplicate the values, it will never stay up to date!
   {
     DictionaryValue* dict = new DictionaryValue();
 
-    dict->SetInteger(L"NONE", net::NetLog::SOURCE_NONE);
-    dict->SetInteger(L"URL_REQUEST", net::NetLog::SOURCE_URL_REQUEST);
-    dict->SetInteger(L"SOCKET_STREAM", net::NetLog::SOURCE_SOCKET_STREAM);
-    dict->SetInteger(L"INIT_PROXY_RESOLVER",
-                     net::NetLog::SOURCE_INIT_PROXY_RESOLVER);
-    dict->SetInteger(L"CONNECT_JOB", net::NetLog::SOURCE_CONNECT_JOB);
-    dict->SetInteger(L"SOCKET", net::NetLog::SOURCE_SOCKET);
-    dict->SetInteger(L"SPDY_SESSION", net::NetLog::SOURCE_SPDY_SESSION);
+    int i = 0;
+#define SOURCE_TYPE(label) dict->SetInteger(ASCIIToWide(# label), i++);
+#include "net/base/net_log_source_type_list.h"
+#undef SOURCE_TYPE
 
     CallJavascriptFunction(L"g_browser.receivedLogSourceTypeConstants", dict);
   }
