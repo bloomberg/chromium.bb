@@ -139,6 +139,13 @@ class TestRenderViewHost : public RenderViewHost {
   // This is a helper function for simulating the most common types of loads.
   void SendNavigate(int page_id, const GURL& url);
 
+  // Calls OnMsgNavigate on the RenderViewHost with the given information,
+  // including a custom PageTransition::Type.  Sets the rest of the parameters
+  // in the message to the "typical" values.
+  // This is a helper function for simulating the most common types of loads.
+  void SendNavigateWithTransition(int page_id, const GURL& url,
+                                  PageTransition::Type transition);
+
   // If set, *delete_counter is incremented when this object destructs.
   void set_delete_counter(int* delete_counter) {
     delete_counter_ = delete_counter;
@@ -149,6 +156,12 @@ class TestRenderViewHost : public RenderViewHost {
   // check whether the RenderView has crashed or not.
   void set_render_view_created(bool created) {
     render_view_created_ = created;
+  }
+
+  // Returns whether the RenderViewHost is currently waiting to hear the result
+  // of a before unload handler from the renderer.
+  bool is_waiting_for_beforeunload_ack() const {
+    return is_waiting_for_beforeunload_ack_;
   }
 
   // RenderViewHost overrides --------------------------------------------------

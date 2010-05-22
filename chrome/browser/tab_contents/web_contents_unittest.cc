@@ -501,13 +501,17 @@ TEST_F(TabContentsTest, CrossSiteUnloadHandlers) {
   // Navigate to new site, but simulate an onbeforeunload denial.
   const GURL url2("http://www.yahoo.com");
   controller().LoadURL(url2, GURL(), PageTransition::TYPED);
+  EXPECT_TRUE(orig_rvh->is_waiting_for_beforeunload_ack());
   orig_rvh->TestOnMessageReceived(ViewHostMsg_ShouldClose_ACK(0, false));
+  EXPECT_FALSE(orig_rvh->is_waiting_for_beforeunload_ack());
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(orig_rvh, contents()->render_view_host());
 
   // Navigate again, but simulate an onbeforeunload approval.
   controller().LoadURL(url2, GURL(), PageTransition::TYPED);
+  EXPECT_TRUE(orig_rvh->is_waiting_for_beforeunload_ack());
   orig_rvh->TestOnMessageReceived(ViewHostMsg_ShouldClose_ACK(0, true));
+  EXPECT_FALSE(orig_rvh->is_waiting_for_beforeunload_ack());
   EXPECT_TRUE(contents()->cross_navigation_pending());
   TestRenderViewHost* pending_rvh = static_cast<TestRenderViewHost*>(
       contents()->pending_rvh());
@@ -547,6 +551,7 @@ TEST_F(TabContentsTest, CrossSiteNavigationPreempted) {
   // Navigate to new site, simulating an onbeforeunload approval.
   const GURL url2("http://www.yahoo.com");
   controller().LoadURL(url2, GURL(), PageTransition::TYPED);
+  EXPECT_TRUE(orig_rvh->is_waiting_for_beforeunload_ack());
   orig_rvh->TestOnMessageReceived(ViewHostMsg_ShouldClose_ACK(0, true));
   EXPECT_TRUE(contents()->cross_navigation_pending());
 
@@ -554,11 +559,44 @@ TEST_F(TabContentsTest, CrossSiteNavigationPreempted) {
   orig_rvh->SendNavigate(2, GURL("http://www.google.com/foo"));
 
   // Verify that the pending navigation is cancelled.
+  EXPECT_FALSE(orig_rvh->is_waiting_for_beforeunload_ack());
   SiteInstance* instance2 = contents()->GetSiteInstance();
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(orig_rvh, rvh());
   EXPECT_EQ(instance1, instance2);
   EXPECT_TRUE(contents()->pending_rvh() == NULL);
+}
+
+// Test that during a slow cross-site navigation, a sub-frame navigation in the
+// original renderer will not cancel the slow navigation (bug 42029).
+TEST_F(TabContentsTest, CrossSiteNavigationNotPreemptedByFrame) {
+  contents()->transition_cross_site = true;
+  TestRenderViewHost* orig_rvh = rvh();
+
+  // Navigate to URL.  First URL should use first RenderViewHost.
+  const GURL url("http://www.google.com");
+  controller().LoadURL(url, GURL(), PageTransition::TYPED);
+  ViewHostMsg_FrameNavigate_Params params1;
+  InitNavigateParams(&params1, 1, url);
+  contents()->TestDidNavigate(orig_rvh, params1);
+  EXPECT_FALSE(contents()->cross_navigation_pending());
+  EXPECT_EQ(orig_rvh, contents()->render_view_host());
+
+  // Start navigating to new site.
+  const GURL url2("http://www.yahoo.com");
+  controller().LoadURL(url2, GURL(), PageTransition::TYPED);
+
+  // Simulate a sub-frame navigation arriving and ensure the RVH is still
+  // waiting for a before unload response.
+  orig_rvh->SendNavigateWithTransition(1, GURL("http://google.com/frame"),
+                                       PageTransition::AUTO_SUBFRAME);
+  EXPECT_TRUE(orig_rvh->is_waiting_for_beforeunload_ack());
+
+  // Now simulate the onbeforeunload approval and verify the navigation is
+  // not canceled.
+  orig_rvh->TestOnMessageReceived(ViewHostMsg_ShouldClose_ACK(0, true));
+  EXPECT_FALSE(orig_rvh->is_waiting_for_beforeunload_ack());
+  EXPECT_TRUE(contents()->cross_navigation_pending());
 }
 
 // Test that the original renderer can preempt a cross-site navigation while the

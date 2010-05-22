@@ -48,12 +48,17 @@ void TestRenderViewHost::TestOnMessageReceived(const IPC::Message& msg) {
 }
 
 void TestRenderViewHost::SendNavigate(int page_id, const GURL& url) {
+  SendNavigateWithTransition(page_id, url, PageTransition::LINK);
+}
+
+void TestRenderViewHost::SendNavigateWithTransition(
+    int page_id, const GURL& url, PageTransition::Type transition) {
   ViewHostMsg_FrameNavigate_Params params;
 
   params.page_id = page_id;
   params.url = url;
   params.referrer = GURL();
-  params.transition = PageTransition::LINK;
+  params.transition = transition;
   params.redirects = std::vector<GURL>();
   params.should_update_history = true;
   params.searchable_form_url = GURL();
