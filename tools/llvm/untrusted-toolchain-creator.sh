@@ -26,7 +26,6 @@
 set -o nounset
 set -o errexit
 
-
 # NOTE: gcc and llvm have to be synchronized
 #       we have chosen toolchains which both are based on gcc-4.2.1
 
