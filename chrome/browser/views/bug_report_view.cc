@@ -314,15 +314,10 @@ void BugReportView::SetupControl() {
 
   description_label_ = new views::Label(
       l10n_util::GetString(IDS_BUGREPORT_DESCRIPTION_LABEL));
-#if defined(OS_LINUX)
-  // TODO(davemoore) Remove this when gtk textfields support multiline.
-  description_text_ = new views::Textfield;
-#else
   description_text_ =
       new views::Textfield(views::Textfield::STYLE_MULTILINE);
   description_text_->SetHeightInLines(kDescriptionLines);
   description_text_->SetAccessibleName(description_label_->GetText());
-#endif
 
   include_page_source_checkbox_ = new views::Checkbox(
       l10n_util::GetString(IDS_BUGREPORT_INCLUDE_PAGE_SOURCE_CHKBOX));

@@ -201,6 +201,8 @@
         'controls/table/table_view_observer.h',
         'controls/textfield/gtk_views_entry.cc',
         'controls/textfield/gtk_views_entry.h',
+        'controls/textfield/gtk_views_textview.cc',
+        'controls/textfield/gtk_views_textview.h',
         'controls/textfield/textfield.cc',
         'controls/textfield/textfield.h',
         'controls/textfield/native_textfield_gtk.cc',

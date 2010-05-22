@@ -24,6 +24,7 @@ class NativeTextfieldGtk : public NativeControlGtk,
 
   // Returns the inner border of the entry.
   static gfx::Insets GetEntryInnerBorder(GtkEntry* entry);
+  static gfx::Insets GetTextViewInnerBorder(GtkTextView* text_view);
 
   // Overridden from NativeTextfieldWrapper:
   virtual string16 GetText() const;
