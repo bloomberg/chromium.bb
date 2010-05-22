@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (c) 2009 Google Inc. All rights reserved.
+# Copyright (c) 2010 Google Inc. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -94,6 +94,20 @@ base_non_configuration_keys = [
   'variables',
 ]
 non_configuration_keys = []
+
+# Keys that do not belong inside a configuration dictionary.
+invalid_configuration_keys = [
+  'actions',
+  'all_dependent_settings',
+  'configurations',
+  'dependencies',
+  'direct_dependent_settings',
+  'libraries',
+  'link_settings',
+  'sources',
+  'target_name',
+  'type',
+]
 
 # Controls how the generator want the build file paths.
 absolute_build_file_paths = False
@@ -1783,6 +1797,15 @@ def SetUpConfigurations(target, target_dict):
       delete_keys.append(key)
   for key in delete_keys:
     del target_dict[key]
+
+  # Check the configurations to see if they contain invalid keys.
+  for configuration in target_dict['configurations'].keys():
+    configuration_dict = target_dict['configurations'][configuration]
+    for key in configuration_dict.keys():
+      if key in invalid_configuration_keys:
+        raise KeyError, ('%s not allowed in the %s configuration, found in '
+                         'target %s' % (key, configuration, target))
+
 
 
 def ProcessListFiltersInDict(name, the_dict):
