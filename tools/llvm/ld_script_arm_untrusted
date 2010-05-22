@@ -8,7 +8,8 @@ SEARCH_DIR("=/usr/local/lib"); SEARCH_DIR("=/lib"); SEARCH_DIR("=/usr/lib");
 /* @LOCALMOD-BEGIN */
 PHDRS
 {
-  headers PT_PHDR FILEHDR PHDRS ;  /* put the headers in a non-loadable seg */
+  headers PT_PHDR FILEHDR PHDRS FLAGS(4);  /* put the headers in a non-loadable
+                                              seg */
   text    PT_LOAD FLAGS(5) ;       /* read + execute */
   rodata  PT_LOAD FLAGS(4) ;       /* read */
   data    PT_LOAD FLAGS(6) ;       /* read + write */

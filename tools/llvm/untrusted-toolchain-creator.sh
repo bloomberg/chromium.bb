@@ -59,6 +59,8 @@ readonly BINUTILS_GAS_VCVT_PATCH=${PATCH_DIR}/binutils-2.20-gas-vcvt.patch
 readonly BINUTILS_GAS_VMRS_PATCH=${PATCH_DIR}/binutils-2.20-gas-vmrs.patch
 readonly BINUTILS_GAS_VNMLA_PATCH=${PATCH_DIR}/binutils-2.20-gas-vnmla.patch
 readonly BINUTILS_GAS_VMLS_PATCH=${PATCH_DIR}/binutils-2.20-gas-vmls.patch
+readonly BINUTILS_GOLD_UPDATE_PATCH=${PATCH_DIR}/gold-update.patch
+readonly BINUTILS_GOLD_TLS_PATCH=${PATCH_DIR}/gold-tls.patch
 
 # TODO(robertm): get the code from a repo rather than use tarball + patch
 readonly NEWLIB_TARBALL=$(pwd)/../third_party/newlib/newlib-1.17.0.tar.gz
@@ -729,6 +731,8 @@ BuildAndInstallBinutils() {
   patch -p1 < ${BINUTILS_GAS_VCVT_PATCH}
   patch -p1 < ${BINUTILS_GAS_VMRS_PATCH}
   patch -p1 < ${BINUTILS_GAS_VMLS_PATCH}
+  patch -p1 < ${BINUTILS_GOLD_UPDATE_PATCH}
+  patch -p1 < ${BINUTILS_GOLD_TLS_PATCH}
   cd ../../build
 
   # --enable-checking is to avoid a build failure:
@@ -737,9 +741,11 @@ BuildAndInstallBinutils() {
     env -i \
     PATH="/usr/bin:/bin" \
     CC=${CC32} \
+    CXX=${CXX32} \
     ../src/binutils-2.20/configure --prefix=${BINUTILS_INSTALL_DIR} \
                                    --target=${CROSS_TARGET} \
                                    --enable-checking \
+                                   --enable-gold \
                                    --with-sysroot=${NEWLIB_INSTALL_DIR}
 
   RunWithLog "Make binutils" ${TMP}/binutils.make.log \
