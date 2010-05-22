@@ -163,26 +163,24 @@ RenderProcessImpl::RenderProcessImpl()
 #endif
 
   // Load the pdf plugin before the sandbox is turned on.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInternalPDF)) {
-    FilePath pdf;
-    if (PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf)) {
-      static scoped_refptr<NPAPI::PluginLib> pdf_lib =
-          NPAPI::PluginLib::CreatePluginLib(pdf);
-      // Actually load the plugin.
-      pdf_lib->NP_Initialize();
-      // Keep an instance around to prevent the plugin unloading after a pdf is
-      // closed.
-      // Don't use scoped_ptr here because then get asserts on process shut down
-      // when running in --single-process.
-      static NPAPI::PluginInstance* instance = pdf_lib->CreateInstance("");
-      instance->plugin_lib();  // Quiet unused variable warnings in gcc.
+  FilePath pdf;
+  if (PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf)) {
+    static scoped_refptr<NPAPI::PluginLib> pdf_lib =
+        NPAPI::PluginLib::CreatePluginLib(pdf);
+    // Actually load the plugin.
+    pdf_lib->NP_Initialize();
+    // Keep an instance around to prevent the plugin unloading after a pdf is
+    // closed.
+    // Don't use scoped_ptr here because then get asserts on process shut down
+    // when running in --single-process.
+    static NPAPI::PluginInstance* instance = pdf_lib->CreateInstance("");
+    instance->plugin_lib();  // Quiet unused variable warnings in gcc.
 
 #if defined(OS_WIN)
-      g_iat_patch_createdca.Patch(
-          pdf_lib->plugin_info().path.value().c_str(),
-          "gdi32.dll", "CreateDCA", CreateDCAPatch);
+    g_iat_patch_createdca.Patch(
+        pdf_lib->plugin_info().path.value().c_str(),
+        "gdi32.dll", "CreateDCA", CreateDCAPatch);
 #endif
-    }
   }
 }
 

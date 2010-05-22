@@ -540,7 +540,6 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kSimpleDataSource,
     switches::kEnableBenchmarking,
     switches::kInternalNaCl,
-    switches::kInternalPDF,
     switches::kInternalPepper,
     switches::kRegisterPepperPlugins,
     switches::kDisableByteRangeSupport,

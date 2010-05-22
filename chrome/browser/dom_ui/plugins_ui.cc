@@ -318,4 +318,5 @@ void PluginsUI::RegisterUserPrefs(PrefService* prefs) {
                               internal_dir);
 
   prefs->RegisterListPref(prefs::kPluginsPluginsList);
+  prefs->RegisterBooleanPref(prefs::kPluginsEnabledInternalPDF, false);
 }

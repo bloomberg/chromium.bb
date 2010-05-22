@@ -51,6 +51,7 @@ static void NotifyPluginsOfActivation() {
 
 // static
 bool PluginService::enable_chrome_plugins_ = true;
+bool PluginService::enable_internal_pdf_ = false;
 
 // static
 void PluginService::InitGlobalInstance(Profile* profile) {
@@ -60,12 +61,30 @@ void PluginService::InitGlobalInstance(Profile* profile) {
   FilePath last_internal_dir =
       profile->GetPrefs()->GetFilePath(prefs::kPluginsLastInternalDirectory);
   FilePath cur_internal_dir;
-  if (PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &cur_internal_dir))
-    update_internal_dir = (cur_internal_dir != last_internal_dir);
+  if (PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &cur_internal_dir) &&
+      cur_internal_dir != last_internal_dir) {
+    update_internal_dir = true;
+    profile->GetPrefs()->SetFilePath(
+        prefs::kPluginsLastInternalDirectory, cur_internal_dir);
+  }
+
+  bool found_internal_pdf = false;
+  bool force_enable_internal_pdf = false;
+  FilePath pdf_path;
+  PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
+  FilePath::StringType pdf_path_str = pdf_path.value();
+  if (enable_internal_pdf_ &&
+      !profile->GetPrefs()->GetBoolean(prefs::kPluginsEnabledInternalPDF)) {
+    // We switched to the internal pdf plugin being on by default, and so we
+    // need to force it to be enabled.  We only want to do it this once though,
+    // i.e. we don't want to enable it again if the user disables it afterwards.
+    profile->GetPrefs()->SetBoolean(prefs::kPluginsEnabledInternalPDF, true);
+    force_enable_internal_pdf = true;
+  }
 
   // Disable plugins listed as disabled in prefs.
-  if (const ListValue* saved_plugins_list =
-          profile->GetPrefs()->GetList(prefs::kPluginsPluginsList)) {
+  if (ListValue* saved_plugins_list =
+          profile->GetPrefs()->GetMutableList(prefs::kPluginsPluginsList)) {
     for (ListValue::const_iterator it = saved_plugins_list->begin();
          it != saved_plugins_list->end();
          ++it) {
@@ -76,21 +95,37 @@ void PluginService::InitGlobalInstance(Profile* profile) {
 
       DictionaryValue* plugin = static_cast<DictionaryValue*>(*it);
       FilePath::StringType path;
+      if (!plugin->GetString(L"path", &path))
+        continue;
+
       bool enabled = true;
       plugin->GetBoolean(L"enabled", &enabled);
-      if (!enabled && plugin->GetString(L"path", &path)) {
-        FilePath plugin_path(path);
-        NPAPI::PluginList::Singleton()->DisablePlugin(plugin_path);
 
-        // If the internal plugin directory has changed and if the plugin looks
-        // internal, also disable it in the current internal plugins directory.
-        if (update_internal_dir &&
-            plugin_path.DirName() == last_internal_dir) {
-          NPAPI::PluginList::Singleton()->DisablePlugin(
-              cur_internal_dir.Append(plugin_path.BaseName()));
+      if (path == pdf_path_str) {
+        found_internal_pdf = true;
+        if (!enabled && force_enable_internal_pdf) {
+          enabled = true;
+          plugin->SetBoolean(L"enabled", true);
         }
       }
+
+      FilePath plugin_path(path);
+      if (update_internal_dir && plugin_path.DirName() == last_internal_dir) {
+        // If the internal plugin directory has changed and if the plugin looks
+        // internal, update its path in the prefs.
+        plugin_path = cur_internal_dir.Append(plugin_path.BaseName());
+        plugin->SetString(L"path", plugin_path.value());
+      }
+
+      if (!enabled)
+        NPAPI::PluginList::Singleton()->DisablePlugin(plugin_path);
     }
+  }
+
+  if (!enable_internal_pdf_ && !found_internal_pdf) {
+    // The internal PDF plugin is disabled by default, and the user hasn't
+    // overridden the default.
+    NPAPI::PluginList::Singleton()->DisablePlugin(pdf_path);
   }
 
   // Have Chrome plugins write their data to the profile directory.
@@ -116,15 +151,18 @@ PluginService::PluginService()
   // Load the one specified on the command line as well.
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   FilePath path = command_line->GetSwitchValuePath(switches::kLoadPlugin);
-  if (!path.empty()) {
+  if (!path.empty())
+    NPAPI::PluginList::Singleton()->AddExtraPluginPath(path);
+
+  // Register the internal Flash and PDF, if available.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableInternalFlash) &&
+      PathService::Get(chrome::FILE_FLASH_PLUGIN, &path)) {
     NPAPI::PluginList::Singleton()->AddExtraPluginPath(path);
   }
 
-  FilePath pdf;
-  if (command_line->HasSwitch(switches::kInternalPDF) &&
-      PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf)) {
-    NPAPI::PluginList::Singleton()->AddExtraPluginPath(pdf);
-  }
+  if (PathService::Get(chrome::FILE_PDF_PLUGIN, &path))
+    NPAPI::PluginList::Singleton()->AddExtraPluginPath(path);
 
 #ifndef DISABLE_NACL
   if (command_line->HasSwitch(switches::kInternalNaCl))

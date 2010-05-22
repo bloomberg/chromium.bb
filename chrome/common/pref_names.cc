@@ -328,6 +328,10 @@ const wchar_t kPluginsLastInternalDirectory[] =
 // List pref containing information (dictionaries) on plugins.
 const wchar_t kPluginsPluginsList[] = L"plugins.plugins_list";
 
+// When first shipped, the pdf plugin will be disabled by default.  When we
+// enable it by default, we'll want to do so only once.
+const wchar_t kPluginsEnabledInternalPDF[] = L"plugins.enabled_internal_pdf";
+
 // Boolean that indicates whether we should check if we are the default browser
 // on start-up.
 const wchar_t kCheckDefaultBrowser[] = L"browser.check_default_browser";

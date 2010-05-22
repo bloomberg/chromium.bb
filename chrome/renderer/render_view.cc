@@ -16,6 +16,7 @@
 #include "base/compiler_specific.h"
 #include "base/field_trial.h"
 #include "base/histogram.h"
+#include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/singleton.h"
 #include "base/string_piece.h"
@@ -25,8 +26,9 @@
 #include "chrome/common/appcache/appcache_dispatcher.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/child_process_logging.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/page_zoom.h"
@@ -3114,6 +3116,9 @@ webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
   if (path.value().empty())
     return NULL;
 
+  FilePath internal_pdf_path;
+  PathService::Get(chrome::FILE_PDF_PLUGIN, &internal_pdf_path);
+
   const std::string* mime_type_to_use;
   if (!actual_mime_type->empty())
     mime_type_to_use = actual_mime_type;
@@ -3133,9 +3138,7 @@ webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
       // In process Pepper plugins must be explicitly enabled.
       return NULL;
     }
-  } else if (CommandLine::ForCurrentProcess()->
-                HasSwitch(switches::kInternalPDF) &&
-             StartsWithASCII(*mime_type_to_use, "application/pdf", true)) {
+  } else if (path == internal_pdf_path) {
     in_process_plugin = true;
     use_pepper_host = true;
   }
