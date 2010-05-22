@@ -569,7 +569,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, ProfileSteady) {
   expected_profiles.push_back(new AutoFillProfile(string16(), 0));
   FillProfile(MARION, expected_profiles[1]);
   AddProfile(pdm2_, *expected_profiles[1]);
-  EXPECT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  EXPECT_TRUE(client2()->AwaitMutualSyncCycleCompletion(client1()));
 
   EXPECT_TRUE(CompareAutoFillProfiles(expected_profiles,
                                       GetAllAutoFillProfiles(pdm1_)));
@@ -593,7 +593,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, ProfileSteady) {
   delete expected_profiles.front();
   expected_profiles.erase(expected_profiles.begin());
   RemoveProfile(pdm2_, ASCIIToUTF16("Shipping"));
-  EXPECT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  EXPECT_TRUE(client2()->AwaitMutualSyncCycleCompletion(client1()));
 
   EXPECT_TRUE(CompareAutoFillProfiles(expected_profiles,
                                       GetAllAutoFillProfiles(pdm1_)));
@@ -618,7 +618,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, ProfileSteady) {
   STLDeleteElements(&expected_profiles);
   RemoveProfile(pdm2_, ASCIIToUTF16("Billing"));
   RemoveProfile(pdm2_, ASCIIToUTF16("Billing2"));
-  EXPECT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  EXPECT_TRUE(client2()->AwaitMutualSyncCycleCompletion(client1()));
 
   EXPECT_TRUE(CompareAutoFillProfiles(expected_profiles,
                                       GetAllAutoFillProfiles(pdm1_)));
