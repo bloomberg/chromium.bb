@@ -17,11 +17,6 @@ SyncResourceHandler::SyncResourceHandler(
 }
 
 SyncResourceHandler::~SyncResourceHandler() {
-  if (!result_message_)
-    return;
-
-  result_message_->set_reply_error();
-  receiver_->Send(result_message_);
 }
 
 bool SyncResourceHandler::OnUploadProgress(int request_id,
@@ -90,4 +85,10 @@ bool SyncResourceHandler::OnResponseCompleted(
 }
 
 void SyncResourceHandler::OnRequestClosed() {
+  if (!result_message_)
+    return;
+
+  result_message_->set_reply_error();
+  receiver_->Send(result_message_);
+  receiver_ = NULL;  // URLRequest is gone, and perhaps also the receiver.
 }
