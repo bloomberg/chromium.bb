@@ -1104,7 +1104,7 @@ bool SyncManager::Init(const FilePath& database_location,
                        const char* lsid,
                        browser_sync::NotificationMethod notification_method) {
   DCHECK(post_factory);
-
+  LOG(INFO) << "SyncManager starting Init...";
   string server_string(sync_server_and_path);
   return data_->Init(database_location,
                      server_string,
@@ -1165,6 +1165,9 @@ bool SyncManager::SyncInternal::Init(
     const char* user_agent,
     const std::string& lsid,
     browser_sync::NotificationMethod notification_method) {
+
+  LOG(INFO) << "Starting SyncInternal initialization.";
+
   notification_method_ = notification_method;
   // Set up UserSettings, creating the db if necessary. We need this to
   // instantiate a URLFactory to give to the Syncer.
@@ -1175,6 +1178,8 @@ bool SyncManager::SyncInternal::Init(
     return false;
 
   registrar_ = model_safe_worker_registrar;
+
+  LOG(INFO) << "Initialized sync user settings. Starting DirectoryManager.";
 
   share_.dir_manager.reset(new DirectoryManager(database_location));
 
@@ -1217,6 +1222,8 @@ bool SyncManager::SyncInternal::Init(
 
   BridgedGaiaAuthenticator* gaia_auth = new BridgedGaiaAuthenticator(
       gaia_source, service_id, gaia_url, auth_post_factory);
+
+  LOG(INFO) << "Sync is bringing up authwatcher and SyncSessionContext.";
 
   auth_watcher_ = new AuthWatcher(dir_manager(),
                                   connection_manager(),

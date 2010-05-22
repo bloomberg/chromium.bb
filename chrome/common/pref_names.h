@@ -283,7 +283,6 @@ extern const wchar_t kSyncPreferences[];
 extern const wchar_t kSyncAutofill[];
 extern const wchar_t kSyncThemes[];
 extern const wchar_t kSyncTypedUrls[];
-extern const wchar_t kSyncBootstrappedAuth[];
 
 extern const wchar_t kWebAppCreateOnDesktop[];
 extern const wchar_t kWebAppCreateInAppsMenu[];

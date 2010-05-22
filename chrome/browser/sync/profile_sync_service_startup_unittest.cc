@@ -150,20 +150,10 @@ TEST_F(ProfileSyncServiceStartupBootstrapTest, SKIP_MACOSX(StartFirstTime)) {
   EXPECT_CALL(*data_type_manager, state()).
       WillOnce(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
-  EXPECT_CALL(observer_, OnStateChanged()).Times(5);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(4);
 
   profile_.GetPrefs()->ClearPref(prefs::kSyncHasSetupCompleted);
   // Will start sync even though setup hasn't been completed (since
   // setup is bypassed when bootstrapping is enabled).
-  service_->Initialize();
-}
-
-TEST_F(ProfileSyncServiceStartupBootstrapTest, SKIP_MACOSX(StartUserDisabled)) {
-  EXPECT_CALL(observer_, OnStateChanged()).Times(1);
-
-  profile_.GetPrefs()->ClearPref(prefs::kSyncHasSetupCompleted);
-  profile_.GetPrefs()->SetBoolean(prefs::kSyncBootstrappedAuth, true);
-  // Will not start sync because it is currently disabled, but was bootstrapped
-  // before.
   service_->Initialize();
 }

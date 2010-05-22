@@ -120,22 +120,22 @@ ProfileSyncService::~ProfileSyncService() {
 }
 
 void ProfileSyncService::Initialize() {
+  LOG(INFO) << "Starting ProfileSyncService.";
   InitSettings();
   RegisterPreferences();
 
   if (!profile()->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted)) {
     DisableForUser();  // Clean up in case of previous crash / setup abort.
-    // If the LSID is empty, we're in a UI test that is not testing sync
-    // behavior, so we don't want the sync service to start.
-    if (bootstrap_sync_authentication_ &&
-        !profile()->GetPrefs()->GetBoolean(prefs::kSyncBootstrappedAuth) &&
-        !GetLsidForAuthBootstraping().empty()) {
-      // If we're under Chromium OS and have never bootstrapped the
-      // authentication (ie. this is the first time we start sync for this
-      // profile,) then bootstrap it.
+
+    // Automatically start sync in Chromium OS.
+    if (bootstrap_sync_authentication_) {
+      // If the LSID is empty, we're in a CrOS UI test that is not testing sync
+      // behavior, so we don't want the sync service to start.
+      if (GetLsidForAuthBootstraping().empty()) {
+        LOG(WARNING) << "Skipping CrOS sync startup, no LSID present.";
+        return;
+      }
       StartUp();
-      profile()->GetPrefs()->SetBoolean(prefs::kSyncBootstrappedAuth, true);
-      FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
     }
   } else {
     StartUp();
@@ -211,12 +211,6 @@ void ProfileSyncService::RegisterPreferences() {
   pref_service->RegisterBooleanPref(prefs::kSyncAutofill, enable_by_default);
   pref_service->RegisterBooleanPref(prefs::kSyncThemes, enable_by_default);
   pref_service->RegisterBooleanPref(prefs::kSyncTypedUrls, enable_by_default);
-
-  // TODO(albertb): Consider getting rid of this preference once we have a UI
-  // for per-data type disabling.
-  if (bootstrap_sync_authentication_ &&
-      !pref_service->FindPreference(prefs::kSyncBootstrappedAuth))
-    pref_service->RegisterBooleanPref(prefs::kSyncBootstrappedAuth, false);
 }
 
 void ProfileSyncService::ClearPreferences() {
@@ -282,8 +276,12 @@ void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
 
 void ProfileSyncService::StartUp() {
   // Don't start up multiple times.
-  if (backend_.get())
+  if (backend_.get()) {
+    LOG(INFO) << "Skipping bringing up backend host.";
     return;
+  }
+
+  LOG(INFO) << "ProfileSyncSerivce bringing up backend host.";
 
   last_synced_time_ = base::Time::FromInternalValue(
       profile_->GetPrefs()->GetInt64(prefs::kSyncLastSyncedTime));
@@ -350,6 +348,9 @@ void ProfileSyncService::DisableForUser() {
     // TODO(timsteele): Focus wizard.
     return;
   }
+
+  LOG(INFO) << "Clearing Sync DB.";
+
   // Clear prefs (including  SyncSetupHasCompleted) before shutting down so
   // PSS clients don't think we're set up while we're shutting down.
   ClearPreferences();
