@@ -4,12 +4,13 @@ vars = {
   # When updating the chromium rev, you must also update the nss and sqlite
   # revs to match the version pulled-in by Chromium's own DEPS in the new rev.
   "chromium_rev": "37758",
+  "chromium_breakpad_rev": "47985",
   "o3d_code_rev": "190",
   "skia_rev": "488",
   "gyp_rev": "820",
   "gtest_rev": "359",
   "gflags_rev": "30",
-  "breakpad_rev": "391",
+  "breakpad_rev": "603",
   "v8_rev": "3608",
   "nacl_rev": "1434",
 }
@@ -113,7 +114,7 @@ deps = {
     Var("chromium_trunk") + "/src/skia@" + Var("chromium_rev"),
 
   "breakpad":
-    Var("chromium_trunk") + "/src/breakpad@" + Var("chromium_rev"),
+    Var("chromium_trunk") + "/src/breakpad@" + Var("chromium_breakpad_rev"),
 
   "base":
     Var("chromium_trunk") + "/src/base@" + Var("chromium_rev"),

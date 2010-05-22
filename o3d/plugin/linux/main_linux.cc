@@ -40,6 +40,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "o3d/breakpad/linux/breakpad.h"
 #include "plugin/cross/main.h"
 #include "plugin/cross/out_of_memory.h"
 #include "plugin/cross/whitelist.h"
@@ -60,6 +61,8 @@ namespace {
 base::AtExitManager g_at_exit_manager;
 
 bool g_xembed_support = false;
+
+o3d::Breakpad g_breakpad;
 
 #ifdef O3D_PLUGIN_ENV_VARS_FILE
 static const char *kEnvVarsFilePath = O3D_PLUGIN_ENV_VARS_FILE;
@@ -622,6 +625,10 @@ NPError InitializePlugin() {
   if (!o3d::SetupOutOfMemoryHandler())
     return NPERR_MODULE_LOAD_FAILED_ERROR;
 
+  // Setup breakpad
+  g_breakpad.Initialize();
+  g_breakpad.set_version(O3D_PLUGIN_VERSION);
+
   CommandLine::Init(0, NULL);
   InitLogging("debug.log",
               logging::LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG,
@@ -681,6 +688,8 @@ NPError EXPORT_SYMBOL OSCALL NP_Shutdown(void) {
   DLOG(INFO) << "NP_Shutdown";
 
   CommandLine::Reset();
+
+  g_breakpad.Shutdown();
 
   return NPERR_NO_ERROR;
 }

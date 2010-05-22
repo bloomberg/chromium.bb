@@ -68,6 +68,25 @@
         ],
       },
     ],
+    ['OS=="linux"',
+      {
+        'targets': [
+          {
+            'target_name': 'o3dBreakpad',
+            'type': 'static_library',
+            'sources': [
+              'linux/breakpad.cc',
+              'linux/breakpad.h',
+            ],
+            'direct_dependent_settings': {
+              'include_dirs': [
+                '../../breakpad/src',
+              ],
+            },
+          },
+        ],
+      },
+    ],
   ],
 }
 
