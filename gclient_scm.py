@@ -1,4 +1,4 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -682,7 +682,7 @@ class SVNWrapper(SCMWrapper):
       # We need to checkout.
       command = ['checkout', url, checkout_path]
       if revision:
-        command.extend(['--revision', str(revision)])
+        command.extend(['--revision', str(revision).strip()])
       scm.SVN.RunAndGetFileList(options, command, self._root_dir, file_list)
       return
 
@@ -740,7 +740,7 @@ class SVNWrapper(SCMWrapper):
         # We need to checkout.
         command = ['checkout', url, checkout_path]
         if revision:
-          command.extend(['--revision', str(revision)])
+          command.extend(['--revision', str(revision).strip()])
         scm.SVN.RunAndGetFileList(options, command, self._root_dir, file_list)
         return
 
@@ -754,7 +754,7 @@ class SVNWrapper(SCMWrapper):
 
     command = ["update", checkout_path]
     if revision:
-      command.extend(['--revision', str(revision)])
+      command.extend(['--revision', str(revision).strip()])
     scm.SVN.RunAndGetFileList(options, command, self._root_dir, file_list)
 
   def updatesingle(self, options, args, file_list):
@@ -783,7 +783,7 @@ class SVNWrapper(SCMWrapper):
       command = ["export", os.path.join(self.url, filename),
                  os.path.join(checkout_path, filename)]
       if options.revision:
-        command.extend(['--revision', str(options.revision)])
+        command.extend(['--revision', str(options.revision).strip()])
       scm.SVN.Run(command, self._root_dir)
 
   def revert(self, options, args, file_list):
