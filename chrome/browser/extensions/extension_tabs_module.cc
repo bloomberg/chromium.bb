@@ -282,12 +282,13 @@ bool GetAllWindowsFunction::RunImpl() {
 
 bool CreateWindowFunction::RunImpl() {
   GURL url;
+  DictionaryValue* args = NULL;
 
-  // Look for optional url.
-  if (HasOptionalArgument(0)) {
-    DictionaryValue* args;
+  if (HasOptionalArgument(0))
     EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
 
+  // Look for optional url.
+  if (args) {
     std::string url_string;
     if (args->HasKey(keys::kUrlKey)) {
       EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kUrlKey,
@@ -317,10 +318,7 @@ bool CreateWindowFunction::RunImpl() {
   Profile* window_profile = profile();
   Browser::Type window_type = Browser::TYPE_NORMAL;
 
-  if (!args_->empty()) {
-    DictionaryValue* args;
-    EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
-
+  if (args) {
     // Any part of the bounds can optionally be set by the caller.
     int bounds_val;
     if (args->HasKey(keys::kLeftKey)) {
