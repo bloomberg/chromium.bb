@@ -1,5 +1,5 @@
 diff --git a/gold/arm.cc b/gold/arm.cc
-index 3dc2f22..5fa7b5e 100644
+index 3dc2f22..c937c36 100644
 --- a/gold/arm.cc
 +++ b/gold/arm.cc
 @@ -6800,13 +6800,13 @@ Arm_output_data_got<big_endian>::do_write(Output_file* of)
@@ -66,14 +66,14 @@ index 3dc2f22..5fa7b5e 100644
 +	    align_address(ARM_TCB_SIZE, tls_section->addralign());
  
 +	  Output_section *relocated_sec = relocated_section(relinfo, rel, gsym);
-+	  Arm_address section_offset = tls_section->address() -
-+              relocated_sec->address();
++	  Arm_address section_offset = relocated_sec->address() -
++              tls_section->address();
 +	  RelocFuncs::rel32(view, section_offset + value + aligned_tcb_size);
          }
        return ArmRelocFuncs::STATUS_OKAY;
      
 diff --git a/gold/layout.cc b/gold/layout.cc
-index 36cfa8b..0c99ced 100644
+index 36cfa8b..ed842ce 100644
 --- a/gold/layout.cc
 +++ b/gold/layout.cc
 @@ -174,6 +174,7 @@ Layout::Layout(int number_of_input_files, Script_options* script_options)
@@ -104,7 +104,7 @@ index 36cfa8b..0c99ced 100644
 +    if (sec->addralign() > align)
 +      align = sec->addralign();
 +    if (this->tls_section_ == NULL ||
-+        sec->address() > this->tls_section_->address())
++        sec->address() < this->tls_section_->address())
 +      this->tls_section_ = sec;
 +  }
 +  gold_assert(this->tls_section_);
