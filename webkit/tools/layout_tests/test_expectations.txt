@@ -10,4 +10,4 @@
 BUG43276 : fast/notifications/notifications-replace.html = FAIL
 BUG43276 : fast/notifications/notifications-rtl.html = FAIL
 // This test gets deleted at a later revision.
-BUGJPARENT : inspector/arobens-test.html = TIMEOUT
+BUGJPARENT SKIP : inspector/arobens-test.html = TIMEOUT FAIL CRASH
