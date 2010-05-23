@@ -9,5 +9,3 @@
 // r46500 (and wk 58765) seems to have caused a perf regression
 BUG43276 : fast/notifications/notifications-replace.html = FAIL
 BUG43276 : fast/notifications/notifications-rtl.html = FAIL
-// This test gets deleted at a later revision.
-BUGJPARENT SKIP : inspector/arobens-test.html = TIMEOUT FAIL CRASH
