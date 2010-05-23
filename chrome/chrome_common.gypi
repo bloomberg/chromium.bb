@@ -195,6 +195,8 @@
         'common/dom_storage_common.h',
         'common/deprecated/event_sys-inl.h',
         'common/deprecated/event_sys.h',
+        'common/font_loader_mac.h',
+        'common/font_loader_mac.mm',
         'common/gears_api.h',
         'common/gpu_plugin.cc',
         'common/gpu_plugin.h',

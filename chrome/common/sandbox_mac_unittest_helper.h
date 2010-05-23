@@ -81,22 +81,23 @@ class MacSandboxTestCase {
   
   // The data that's passed in the |user_data| parameter of
   // RunTest[s]InSandbox() is passed to this function.
-  virtual void SetTestData(const char* test_data) {}
+  virtual void SetTestData(const char* test_data) { test_data_ = test_data; }
+
+ protected:
+  std::string test_data_;
 };
 
 // Plumbing to support the REGISTER_SANDBOX_TEST_CASE macro.
 namespace internal {
 
-typedef std::map<std::string,MacSandboxTestCase*> SandboxTestMap;
-
-// A function that returns a common map from string -> test case class.
-SandboxTestMap& GetSandboxTestMap();
+// Register a test case with a given name.
+void AddSandboxTestCase(const char* test_name, MacSandboxTestCase* test_class);
 
 // Construction of this class causes a new entry to be placed in a global
 // map.
 template <class T> struct RegisterSandboxTest {
   RegisterSandboxTest(const char* test_name) {
-    GetSandboxTestMap()[test_name] = new T;
+    AddSandboxTestCase(test_name, new T);
   }
 };
 

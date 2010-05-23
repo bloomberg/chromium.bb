@@ -17,12 +17,16 @@ extern "C" {
 #include "chrome/common/sandbox_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// Tests to exercise directory-access-related restrictions of Mac sandbox.
+
 namespace sandbox {
 
 bool QuotePlainString(const std::string& str_utf8, std::string* dst);
 bool QuoteStringForRegex(const std::string& str_utf8, std::string* dst);
 
 }  // namespace sandbox
+
+namespace {
 
 static const char* kSandboxAccessPathKey = "sandbox_dir";
 
@@ -242,3 +246,5 @@ MULTIPROCESS_TEST_MAIN(mac_sandbox_path_access) {
 
   return 0;
 }
+
+}  // namespace

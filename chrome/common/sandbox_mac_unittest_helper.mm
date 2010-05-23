@@ -24,9 +24,21 @@ namespace sandboxtest {
 // Support infrastructure for REGISTER_SANDBOX_TEST_CASE macro.
 namespace internal {
 
+typedef std::map<std::string,MacSandboxTestCase*> SandboxTestMap;
+
+// A function that returns a common map from string -> test case class.
 SandboxTestMap& GetSandboxTestMap() {
   static SandboxTestMap test_map;
   return test_map;
+}
+
+void AddSandboxTestCase(const char* test_name, MacSandboxTestCase* test_class) {
+  SandboxTestMap& test_map = GetSandboxTestMap();
+  if (test_map.find(test_name) != test_map.end()) {
+    LOG(ERROR) << "Trying to register duplicate test" << test_name;
+    NOTREACHED();
+  }
+  test_map[test_name] = test_class;
 }
 
 }  // namespace internal
