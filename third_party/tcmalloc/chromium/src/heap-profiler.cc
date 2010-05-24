@@ -524,9 +524,9 @@ extern "C" void HeapProfilerStart(const char* prefix) {
   filename_prefix[prefix_length] = '\0';
 }
 
-extern "C" int IsHeapProfilerRunning() {
+extern "C" bool IsHeapProfilerRunning() {
   SpinLockHolder l(&heap_lock);
-  return is_on ? 1 : 0;   // return an int, because C code doesn't have bool
+  return is_on;
 }
 
 extern "C" void HeapProfilerStop() {

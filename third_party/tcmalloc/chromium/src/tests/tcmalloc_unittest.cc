@@ -977,7 +977,7 @@ static int RunAllTests(int argc, char** argv) {
   }
 
   // This code stresses some of the memory allocation via STL.
-  // It may call operator delete(void*, nothrow_t).
+  // In particular, it calls operator delete(void*, nothrow_t).
   fprintf(LOGSTREAM, "Testing STL use\n");
   {
     std::vector<int> v;
