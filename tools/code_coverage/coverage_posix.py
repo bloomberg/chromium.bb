@@ -268,7 +268,7 @@ class Coverage(object):
     if self.IsWindows():
       return  ''
     else:  # Linux
-      return 'out'  # assumes make, unlike runtest.py
+      return '../out'  # assumes make, unlike runtest.py
 
   def ConfirmDirectory(self):
     """Confirm correctness of self.directory.
