@@ -4,6 +4,9 @@
 
 #include "chrome/renderer/mock_render_thread.h"
 
+#include <fcntl.h>
+
+#include "base/file_util.h"
 #include "base/process_util.h"
 #include "chrome/common/render_messages.h"
 #include "ipc/ipc_message_utils.h"
@@ -59,7 +62,7 @@ bool MockRenderThread::Send(IPC::Message* msg) {
     }
   } else {
     if (msg->is_sync()) {
-      // We actually need to handle deleting the reply dersializer for sync
+      // We actually need to handle deleting the reply deserializer for sync
       // messages.
       reply_deserializer_.reset(
           static_cast<IPC::SyncMessage*>(msg)->GetReplyDeserializer());
@@ -83,14 +86,14 @@ void MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   bool msg_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(MockRenderThread, msg, msg_is_ok)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnMsgCreateWidget);
+    IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnMsgCreateWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenChannelToExtension,
-                        OnMsgOpenChannelToExtension);
+                        OnMsgOpenChannelToExtension)
 #if defined(OS_WIN) || defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetDefaultPrintSettings,
-                        OnGetDefaultPrintSettings);
+                        OnGetDefaultPrintSettings)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ScriptedPrint,
-                        OnScriptedPrint);
+                        OnScriptedPrint)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidGetPrintedPagesCount,
                         OnDidGetPrintedPagesCount)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidPrintPage, OnDidPrintPage)
@@ -101,6 +104,12 @@ void MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllocatePDFTransport,
                         OnAllocatePDFTransport)
+#endif
+#if defined(OS_LINUX)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateTempFileForPrinting,
+                        OnAllocateTempFileForPrinting)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_TempFileForPrintingWritten,
+                        OnTempFileForPrintingWritten)
 #endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
@@ -142,6 +151,26 @@ void MockRenderThread::OnAllocatePDFTransport(
     return;
   }
   shared_buf.GiveToProcess(base::GetCurrentProcessHandle(), handle);
+}
+#endif
+
+#if defined(OS_LINUX)
+void MockRenderThread::OnAllocateTempFileForPrinting(
+    base::FileDescriptor* renderer_fd,
+    int* browser_fd) {
+  renderer_fd->fd = *browser_fd = -1;
+  renderer_fd->auto_close = false;
+
+  FilePath path;
+  if (file_util::CreateTemporaryFile(&path)) {
+    int fd = open(path.value().c_str(), O_WRONLY);
+    DCHECK_GE(fd, 0);
+    renderer_fd->fd = *browser_fd = fd;
+  }
+}
+
+void MockRenderThread::OnTempFileForPrintingWritten(int browser_fd) {
+  close(browser_fd);
 }
 #endif
 

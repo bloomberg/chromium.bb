@@ -139,7 +139,7 @@ bool PdfPsMetafile::Init(const void* src_buffer, uint32 src_buffer_size) {
     return false;
 
   data_ = std::string(reinterpret_cast<const char*>(src_buffer),
-                           src_buffer_size);
+                      src_buffer_size);
 
   return true;
 }

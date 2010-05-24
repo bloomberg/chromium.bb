@@ -101,6 +101,12 @@ class MockRenderThread : public RenderThreadBase {
                               base::SharedMemoryHandle* handle);
 #endif
 
+#if defined(OS_LINUX)
+  void OnAllocateTempFileForPrinting(base::FileDescriptor* renderer_fd,
+                                     int* browser_fd);
+  void OnTempFileForPrintingWritten(int browser_fd);
+#endif
+
   // The RenderView expects default print settings.
   void OnGetDefaultPrintSettings(ViewMsg_Print_Params* setting);
 

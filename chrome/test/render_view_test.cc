@@ -224,3 +224,37 @@ void RenderViewTest::SendNativeKeyEvent(
                            sizeof(WebKit::WebKeyboardEvent));
   view_->OnHandleInputEvent(*input_message);
 }
+
+void RenderViewTest::VerifyPageCount(int count) {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  const IPC::Message* page_cnt_msg =
+      render_thread_.sink().GetUniqueMessageMatching(
+          ViewHostMsg_DidGetPrintedPagesCount::ID);
+  ASSERT_TRUE(page_cnt_msg);
+  ViewHostMsg_DidGetPrintedPagesCount::Param post_page_count_param;
+  ViewHostMsg_DidGetPrintedPagesCount::Read(page_cnt_msg,
+                                            &post_page_count_param);
+  EXPECT_EQ(count, post_page_count_param.b);
+#elif defined(OS_LINUX)
+  // The DidGetPrintedPagesCount message isn't sent on Linux. Right now we
+  // always print all pages, and there are checks to that effect built into
+  // the print code.
+#endif
+}
+
+void RenderViewTest::VerifyPagesPrinted() {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  const IPC::Message* did_print_msg =
+      render_thread_.sink().GetUniqueMessageMatching(
+          ViewHostMsg_DidPrintPage::ID);
+  ASSERT_TRUE(did_print_msg);
+  ViewHostMsg_DidPrintPage::Param post_did_print_page_param;
+  ViewHostMsg_DidPrintPage::Read(did_print_msg, &post_did_print_page_param);
+  EXPECT_EQ(0, post_did_print_page_param.a.page_number);
+#elif defined(OS_LINUX)
+  const IPC::Message* did_print_msg =
+      render_thread_.sink().GetUniqueMessageMatching(
+          ViewHostMsg_TempFileForPrintingWritten::ID);
+  ASSERT_TRUE(did_print_msg);
+#endif
+}
