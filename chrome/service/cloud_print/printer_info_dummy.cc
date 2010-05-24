@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// This is dummy implementation for all configurations where print system
+// for cloud print is not available.
+#if !defined(CP_PRINT_SYSTEM_AVAILABLE)
+
 #include "chrome/service/cloud_print/printer_info.h"
 
 #include "base/logging.h"
 
-// TODO(sanjeevr): Implement the Mac interfaces.
 namespace cloud_print {
 
 void EnumeratePrinters(PrinterList* printer_list) {
@@ -77,4 +80,6 @@ bool PrinterChangeNotifier::GetCurrentPrinterInfo(
   return false;
 }
 }  // namespace cloud_print
+
+#endif  // CP_PRINT_SYSTEM_AVAILABLE
 

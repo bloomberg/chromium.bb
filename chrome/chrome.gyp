@@ -984,9 +984,7 @@
         'service/cloud_print/cloud_print_proxy_backend.h',
         'service/cloud_print/job_status_updater.cc',
         'service/cloud_print/job_status_updater.h',
-        'service/cloud_print/printer_info_linux.cc',
-        'service/cloud_print/printer_info_mac.cc',
-        'service/cloud_print/printer_info_win.cc',
+        'service/cloud_print/printer_info_dummy.cc',
         'service/cloud_print/printer_info.h',
         'service/cloud_print/printer_job_handler.cc',
         'service/cloud_print/printer_job_handler.h',
@@ -1001,9 +999,34 @@
         '..',
       ],
       'conditions': [
+        ['OS=="win"', {
+          'defines': [
+            # CP_PRINT_SYSTEM_AVAILABLE disables default dummy implementation
+            # of cloud print system, and allows to use custom implementaiton.
+            'CP_PRINT_SYSTEM_AVAILABLE',
+          ],
+          'sources': [
+            'service/cloud_print/printer_info_win.cc',
+          ],
+        }],
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
+          ],
+        }],
+        ['OS=="linux" and chromeos==0 and target_arch!="arm"', {
+          'link_settings': {
+            'libraries': [
+              '-lcups',
+            ],
+          },
+          'defines': [
+            # CP_PRINT_SYSTEM_AVAILABLE disables default dummy implementation
+            # of cloud print system, and allows to use custom implementaiton.
+            'CP_PRINT_SYSTEM_AVAILABLE',
+          ],
+          'sources': [
+            'service/cloud_print/printer_info_cups.cc',
           ],
         }],
       ],
