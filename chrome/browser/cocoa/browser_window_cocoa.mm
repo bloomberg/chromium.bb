@@ -339,6 +339,8 @@ void BrowserWindowCocoa::ShowThemeInstallBubble() {
 // We allow closing the window here since the real quit decision on Mac is made
 // in [AppController quit:].
 void BrowserWindowCocoa::ConfirmBrowserCloseWithPendingDownloads() {
+  // Call InProgressDownloadResponse asynchronously to avoid a crash when the
+  // browser window is closed here (http://crbug.com/44454).
   MessageLoop::current()->PostTask(
       FROM_HERE,
       confirm_close_factory_.NewRunnableMethod(
