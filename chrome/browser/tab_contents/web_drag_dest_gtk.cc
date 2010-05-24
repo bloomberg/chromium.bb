@@ -76,6 +76,11 @@ gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
     bookmark_drag_data_.Clear();
     is_drop_target_ = false;
 
+    // text/plain must come before text/uri-list. This is a hack that works in
+    // conjunction with OnDragDataReceived. Since some file managers populate
+    // text/plain with file URLs when dragging files, we want to handle
+    // text/uri-list after text/plain so that the plain text can be cleared if
+    // it's a file drag.
     static int supported_targets[] = {
       gtk_dnd_util::TEXT_PLAIN,
       gtk_dnd_util::TEXT_URI_LIST,
@@ -135,15 +140,24 @@ void WebDragDestGtk::OnDragDataReceived(
                gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::TEXT_URI_LIST)) {
       gchar** uris = gtk_selection_data_get_uris(data);
       if (uris) {
+        drop_data_->url = GURL();
         for (gchar** uri_iter = uris; *uri_iter; uri_iter++) {
+          // Most file managers populate text/uri-list with file URLs when
+          // dragging files. To avoid exposing file system paths to web content,
+          // file URLs are never set as the URL content for the drop.
           // TODO(estade): Can the filenames have a non-UTF8 encoding?
           FilePath file_path;
-          if (net::FileURLToFilePath(GURL(*uri_iter), &file_path))
+          if (net::FileURLToFilePath(GURL(*uri_iter), &file_path)) {
             drop_data_->filenames.push_back(UTF8ToUTF16(file_path.value()));
+            // This is a hack. Some file managers also populate text/plain with
+            // a file URL when dragging files, so we clear it to avoid exposing
+            // it to the web content.
+            drop_data_->plain_text.clear();
+          } else if (!drop_data_->url.is_valid()) {
+            // Also set the first non-file URL as the URL content for the drop.
+            drop_data_->url = GURL(*uri_iter);
+          }
         }
-        // Also, write the first URI as the URL.
-        if (uris[0])
-          drop_data_->url = GURL(uris[0]);
         g_strfreev(uris);
       }
     } else if (data->target ==
