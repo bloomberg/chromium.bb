@@ -67,7 +67,10 @@ void AcceleratedSurfaceContainerMac::MoveTo(
   x_ = geom.window_rect.x();
   y_ = geom.window_rect.y();
   // TODO(kbr): may need to pay attention to cutout rects.
-  clipRect_ = geom.clip_rect;
+  if (geom.visible)
+    clipRect_ = geom.clip_rect;
+  else
+    clipRect_ = gfx::Rect();
 }
 
 void AcceleratedSurfaceContainerMac::Draw(CGLContextObj context) {
