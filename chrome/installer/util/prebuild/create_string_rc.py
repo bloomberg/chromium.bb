@@ -36,6 +36,7 @@ from google import path_utils
 
 # Quick hack to fix the path.
 sys.path.append(os.path.abspath('../../tools/grit/grit/extern'))
+sys.path.append(os.path.abspath('../tools/grit/grit/extern'))
 import FP
 
 # The IDs of strings we want to import from generated_resources.grd and include
