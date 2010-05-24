@@ -1050,17 +1050,13 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
 }
 
 bool Browser::OpenAppsPanelAsNewTab() {
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if defined(OS_WIN)
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableAppsPanel) ||
-      (!browser_defaults::kShowAppsPanelForNewTab &&
-           !command_line->HasSwitch(switches::kAppsPanel))) {
-    return false;
+  if (command_line->HasSwitch(switches::kAppsPanel)) {
+    AppLauncher::ShowForNewTab(this, std::string());
+    return true;
   }
-  AppLauncher::ShowForNewTab(this, std::string());
-  return true;
-#endif  // OS_CHROMEOS || OS_WIN
-
+#endif
   return false;
 }
 
@@ -2084,7 +2080,7 @@ void Browser::ExecuteCommand(int id) {
 TabContents* Browser::AddBlankTab(bool foreground) {
   // To make a more "launchy" experience, try to reuse an existing NTP if there
   // is one.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableApps)) {
+  if (Extension::AppsAreEnabled()) {
     for (int i = tabstrip_model_.count() - 1; i >= 0; --i) {
       TabContents* contents = tabstrip_model_.GetTabContentsAt(i);
       if (StartsWithASCII(contents->GetURL().spec(),

@@ -130,10 +130,6 @@ UITestBase::UITestBase()
       terminate_timeout_ms_(kWaitForTerminateMsec) {
   PathService::Get(chrome::DIR_APP, &browser_directory_);
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_);
-  // TODO(jcivelli): http://crbug.com/44089 We disable the app launcher on new
-  //                 tab behavior for now until it is the default behavior on
-  //                 all platforms.
-  launch_arguments_.AppendSwitch(switches::kDisableAppsPanel);
 }
 
 UITestBase::UITestBase(MessageLoop::Type msg_loop_type)
@@ -160,10 +156,6 @@ UITestBase::UITestBase(MessageLoop::Type msg_loop_type)
       terminate_timeout_ms_(kWaitForTerminateMsec) {
   PathService::Get(chrome::DIR_APP, &browser_directory_);
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_);
-  // TODO(jcivelli): http://crbug.com/44089 We disable the app launcher on new
-  //                 tab behavior for now until it is the default behavior on
-  //                 all platforms.
-  launch_arguments_.AppendSwitch(switches::kDisableAppsPanel);
 }
 
 UITestBase::~UITestBase() {

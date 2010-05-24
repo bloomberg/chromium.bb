@@ -67,9 +67,6 @@ extern const bool kBootstrapSyncAuthentication;
 // Should other browsers be shown in about:memory page?
 extern const bool kShowOtherBrowsersInAboutMemory;
 
-// Should we show the app panel when a new tab is created?
-extern const bool kShowAppsPanelForNewTab;
-
 }  // namespace browser_defaults
 
 #endif  // CHROME_BROWSER_DEFAULTS_H_

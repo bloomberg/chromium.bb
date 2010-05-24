@@ -45,7 +45,6 @@ extern const char kDebugPrint[];
 extern const char kDiagnostics[];
 extern const char kDisableAltWinstation[];
 extern const char kDisableApplicationCache[];
-extern const char kDisableAppsPanel[];
 extern const char kDisableAudio[];
 extern const char kDisableAuthNegotiateCnameLookup[];
 extern const char kDisableBackingStoreLimit[];
