@@ -70,6 +70,17 @@ diff -r c06933b0e3e6 llvm-trunk/lib/CodeGen/SelectionDAG/DAGCombiner.cpp
            (TLI.getOperationAction(ISD::ConstantFP, N2.getValueType()) !=
             TargetLowering::Legal) &&
            // If both constants have multiple uses, then we won't need to do an
+diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARM.h
+--- a/llvm-trunk/lib/Target/ARM/ARM.h
++++ b/llvm-trunk/lib/Target/ARM/ARM.h
+@@ -105,6 +105,7 @@
+ FunctionPass *createARMLoadStoreOptimizationPass(bool PreAlloc = false);
+ FunctionPass *createARMExpandPseudoPass();
+ FunctionPass *createARMConstantIslandPass();
++FunctionPass *createARMSFIPlacementPass();
+ FunctionPass *createNEONPreAllocPass();
+ FunctionPass *createNEONMoveFixPass();
+ FunctionPass *createThumb2ITBlockPass();
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMBaseInstrInfo.cpp
 --- a/llvm-trunk/lib/Target/ARM/ARMBaseInstrInfo.cpp
 +++ b/llvm-trunk/lib/Target/ARM/ARMBaseInstrInfo.cpp
@@ -371,16 +382,21 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMConstantIslandPass.cpp
    }
  }
  
-@@ -698,6 +860,9 @@
- /// an unconditional branch.  Update data structures and renumber blocks to
- /// account for this change and returns the newly created block.
- MachineBasicBlock *ARMConstantIslands::SplitBlockBeforeInstr(MachineInstr *MI) {
-+  // @LOCALMOD-start
-+  assert(0 && "splitting not yet supported");
-+  // @LOCALMOD-end
-   MachineBasicBlock *OrigBB = MI->getParent();
-   MachineFunction &MF = *OrigBB->getParent();
- 
+@@ -763,9 +925,12 @@
+   // contain a constpool_entry or tablejump.)
+   unsigned NewBBSize = 0;
+   for (MachineBasicBlock::iterator I = NewBB->begin(), E = NewBB->end();
+-       I != E; ++I)
++       I != E; ++I) {
++    // @LOCALMOD-START
++    NewBBSize += GetFudge(I, NewBBSize, false, false, 0);
++    // @LOCALMOD-END
+     NewBBSize += TII->GetInstSizeInBytes(I);
+-
++  }
+   unsigned OrigBBI = OrigBB->getNumber();
+   unsigned NewBBI = NewBB->getNumber();
+   // Set the size of NewBB in BBSizes.
 @@ -882,9 +1047,19 @@
  void ARMConstantIslands::AdjustBBOffsetsAfter(MachineBasicBlock *BB,
                                                int delta) {
@@ -401,18 +417,44 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMConstantIslandPass.cpp
      // If some existing blocks have padding, adjust the padding as needed, a
      // bit tricky.  delta can be negative so don't use % on that.
      if (!isThumb)
-@@ -1106,6 +1281,10 @@
-     BBSizes[UserMBB->getNumber()] += delta;
-     AdjustBBOffsetsAfter(UserMBB, delta);
-   } else {
-+    // @LOCALMOD-START
-+    assert(0 && "fix up split bbl not implemented");
-+    // @LOCALMOD-END
-+
-     // What a big block.  Find a place within the block to split it.
-     // This is a little tricky on Thumb1 since instructions are 2 bytes
-     // and constant pool entries are 4 bytes: if instruction I references
-@@ -1354,6 +1533,9 @@
+@@ -1122,7 +1297,15 @@
+     // The 4 in the following is for the unconditional branch we'll be
+     // inserting (allows for long branch on Thumb1).  Alignment of the
+     // island is handled inside OffsetIsInRange.
+-    unsigned BaseInsertOffset = UserOffset + U.MaxDisp -4;
++     // @LOCALMOD-START
++     unsigned BaseInsertOffset = UserOffset - 4;
++     if (FlagSfiCpFudge) {
++       BaseInsertOffset += U.MaxDisp * FlagSfiCpFudgePercent / 100;
++     } else {
++       BaseInsertOffset += U.MaxDisp;
++     }
++     // @LOCALMOD-END
++     
+     // This could point off the end of the block if we've already got
+     // constant pool entries following this block; only the last one is
+     // in the water list.  Back past any possible branches (allow for a
+@@ -1135,10 +1318,17 @@
+     MachineBasicBlock::iterator MI = UserMI;
+     ++MI;
+     unsigned CPUIndex = CPUserIndex+1;
++    // @LOCALMOD: TODO: GetInstSizeInBytes() should be replaced with
++    //                  our estimator
+     for (unsigned Offset = UserOffset+TII->GetInstSizeInBytes(UserMI);
+          Offset < BaseInsertOffset;
+-         Offset += TII->GetInstSizeInBytes(MI),
+-            MI = next(MI)) {
++         // @LOCALMOD-START
++         Offset +=  GetFudge(MI, Offset, false, false, false) +
++                           TII->GetInstSizeInBytes(MI),
++        // @LOCALMOD-END 
++         MI = next(MI)) {
++      
++      assert(MI != UserMBB->end() && "getting out of range"); // @LOCALMOD
+       if (CPUIndex < CPUsers.size() && CPUsers[CPUIndex].MI == MI) {
+         CPUser &U = CPUsers[CPUIndex];
+         if (!OffsetIsInRange(Offset, EndInsertOffset,
+@@ -1354,6 +1544,9 @@
  /// Otherwise, add an intermediate branch instruction to a branch.
  bool
  ARMConstantIslands::FixUpUnconditionalBr(MachineFunction &MF, ImmBranch &Br) {
@@ -422,7 +464,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMConstantIslandPass.cpp
    MachineInstr *MI = Br.MI;
    MachineBasicBlock *MBB = MI->getParent();
    if (!isThumb1)
-@@ -1377,6 +1559,9 @@
+@@ -1377,6 +1570,9 @@
  /// conditional branch + an unconditional branch to the destination.
  bool
  ARMConstantIslands::FixUpConditionalBr(MachineFunction &MF, ImmBranch &Br) {
@@ -985,7 +1027,19 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMInstrInfo.td
  // addrmode4 := reg, <mode|W>
  //
  def addrmode4 : Operand<i32>,
-@@ -645,8 +650,12 @@
+@@ -568,6 +573,11 @@
+            [(ARMcallseq_start timm:$amt)]>;
+ }
+ 
++def SFISTRMASK :
++PseudoInst<(outs GPR:$dst), (ins GPR:$a, pred:$p), NoItinerary,
++           "sfi_store_preamble $dst, $p",
++           []>;
++
+ def DWARF_LOC :
+ PseudoInst<(outs), (ins i32imm:$line, i32imm:$col, i32imm:$file), NoItinerary,
+            ".loc $file, $line, $col",
+@@ -645,8 +655,12 @@
  //
  
  let isReturn = 1, isTerminator = 1, isBarrier = 1 in
@@ -999,7 +1053,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMInstrInfo.td
    let Inst{7-4}   = 0b0001;
    let Inst{19-8}  = 0b111111111111;
    let Inst{27-20} = 0b00010010;
-@@ -654,7 +663,11 @@
+@@ -654,7 +668,11 @@
  
  // Indirect branches
  let isBranch = 1, isTerminator = 1, isBarrier = 1, isIndirectBranch = 1 in {
@@ -1012,7 +1066,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMInstrInfo.td
                    [(brind GPR:$dst)]> {
      let Inst{7-4}   = 0b0001;
      let Inst{19-8}  = 0b111111111111;
-@@ -678,20 +691,29 @@
+@@ -678,20 +696,29 @@
            D16, D17, D18, D19, D20, D21, D22, D23,
            D24, D25, D26, D27, D28, D29, D30, D31, CPSR, FPSCR] in {
    def BL  : ABXI<0b1011, (outs), (ins i32imm:$func, variable_ops),
@@ -1045,7 +1099,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMInstrInfo.td
                  [(ARMcall GPR:$func)]>,
              Requires<[IsARM, HasV5T, IsNotDarwin]> {
      let Inst{7-4}   = 0b0011;
-@@ -701,7 +723,11 @@
+@@ -701,7 +728,11 @@
  
    // ARMv4T
    def BX : ABXIx2<(outs), (ins GPR:$func, variable_ops),
@@ -1058,7 +1112,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMInstrInfo.td
                    [(ARMcall_nolink GPR:$func)]>,
             Requires<[IsARM, IsNotDarwin]> {
      let Inst{7-4}   = 0b0001;
-@@ -717,19 +743,28 @@
+@@ -717,19 +748,28 @@
            D16, D17, D18, D19, D20, D21, D22, D23,
            D24, D25, D26, D27, D28, D29, D30, D31, CPSR, FPSCR] in {
    def BLr9  : ABXI<0b1011, (outs), (ins i32imm:$func, variable_ops),
@@ -1090,7 +1144,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMInstrInfo.td
                  [(ARMcall GPR:$func)]>, Requires<[IsARM, HasV5T, IsDarwin]> {
      let Inst{7-4}   = 0b0011;
      let Inst{19-8}  = 0b111111111111;
-@@ -738,7 +773,11 @@
+@@ -738,7 +778,11 @@
  
    // ARMv4T
    def BXr9 : ABXIx2<(outs), (ins GPR:$func, variable_ops),
@@ -1103,113 +1157,15 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMInstrInfo.td
                    [(ARMcall_nolink GPR:$func)]>, Requires<[IsARM, IsDarwin]> {
      let Inst{7-4}   = 0b0001;
      let Inst{19-8}  = 0b111111111111;
-@@ -874,64 +913,95 @@
+@@ -874,6 +918,7 @@
  
  // Store
  def STR  : AI2stw<(outs), (ins GPR:$src, addrmode2:$addr), StFrm, IIC_iStorer,
--               "str", "\t$src, $addr",
-+// @LOCALMOD-START
 +// c.f.:  ARMAsmPrinter::printAddrMode2Operand
-+//               "str", "\t$src, $addr",
-+               "${addr:sfi}str", "\t$src, $addr",
-+// @LOCALMOD-END
+                "str", "\t$src, $addr",
                 [(store GPR:$src, addrmode2:$addr)]>;
  
- // Stores with truncate
- def STRH : AI3sth<(outs), (ins GPR:$src, addrmode3:$addr), StMiscFrm, IIC_iStorer,
--               "strh", "\t$src, $addr",
-+// @LOCALMOD-START
-+//               "strh", "\t$src, $addr",
-+               "${addr:sfi}strh", "\t$src, $addr",
-+// @LOCALMOD-END
-                [(truncstorei16 GPR:$src, addrmode3:$addr)]>;
- 
- def STRB : AI2stb<(outs), (ins GPR:$src, addrmode2:$addr), StFrm, IIC_iStorer,
--               "strb", "\t$src, $addr",
-+// @LOCALMOD-START
-+//               "strb", "\t$src, $addr",
-+               "${addr:sfi}strb", "\t$src, $addr",
-+// @LOCALMOD-END
-                [(truncstorei8 GPR:$src, addrmode2:$addr)]>;
- 
- // Store doubleword
- let mayStore = 1, hasExtraSrcRegAllocReq = 1 in
- def STRD : AI3std<(outs), (ins GPR:$src1, GPR:$src2, addrmode3:$addr),
-                StMiscFrm, IIC_iStorer,
--               "strd", "\t$src1, $addr", []>, Requires<[IsARM, HasV5TE]>;
-+// @LOCALMOD-START
-+//               "strd", "\t$src1, $addr", []>, Requires<[IsARM, HasV5TE]>;
-+               "${addr:sfi}strd", "\t$src1, $addr", []>, Requires<[IsARM, HasV5TE]>;
-+// @LOCALMOD-END
- 
- // Indexed stores
- def STR_PRE  : AI2stwpr<(outs GPR:$base_wb),
-                      (ins GPR:$src, GPR:$base, am2offset:$offset), 
-                      StFrm, IIC_iStoreru,
--                    "str", "\t$src, [$base, $offset]!", "$base = $base_wb",
-+// @LOCALMOD-START
-+//                    "str", "\t$src, [$base, $offset]!", "$base = $base_wb",
-+                    "${offset:sfi}str", "\t$src, [$base, $offset]!", "$base = $base_wb",
-+// @LOCALMOD-END
-                     [(set GPR:$base_wb,
-                       (pre_store GPR:$src, GPR:$base, am2offset:$offset))]>;
- 
- def STR_POST : AI2stwpo<(outs GPR:$base_wb),
-                      (ins GPR:$src, GPR:$base,am2offset:$offset), 
-                      StFrm, IIC_iStoreru,
--                    "str", "\t$src, [$base], $offset", "$base = $base_wb",
-+// @LOCALMOD-START
-+//                    "str", "\t$src, [$base], $offset", "$base = $base_wb",
-+                    "${offset:sfi}str", "\t$src, [$base], $offset", "$base = $base_wb",
-+// @LOCALMOD-END
-                     [(set GPR:$base_wb,
-                       (post_store GPR:$src, GPR:$base, am2offset:$offset))]>;
- 
- def STRH_PRE : AI3sthpr<(outs GPR:$base_wb),
-                      (ins GPR:$src, GPR:$base,am3offset:$offset), 
-                      StMiscFrm, IIC_iStoreru,
--                     "strh", "\t$src, [$base, $offset]!", "$base = $base_wb",
-+// @LOCALMOD-START
-+//                     "strh", "\t$src, [$base, $offset]!", "$base = $base_wb",
-+                     "${offset:sfi}strh", "\t$src, [$base, $offset]!", "$base = $base_wb",
-+// @LOCALMOD-END
-                     [(set GPR:$base_wb,
-                       (pre_truncsti16 GPR:$src, GPR:$base,am3offset:$offset))]>;
- 
- def STRH_POST: AI3sthpo<(outs GPR:$base_wb),
-                      (ins GPR:$src, GPR:$base,am3offset:$offset), 
-                      StMiscFrm, IIC_iStoreru,
--                     "strh", "\t$src, [$base], $offset", "$base = $base_wb",
-+// @LOCALMOD-START
-+//                     "strh", "\t$src, [$base], $offset", "$base = $base_wb",
-+                     "${offset:sfi}strh", "\t$src, [$base], $offset", "$base = $base_wb",
-+// @LOCALMOD-END
-                     [(set GPR:$base_wb, (post_truncsti16 GPR:$src,
-                                          GPR:$base, am3offset:$offset))]>;
- 
- def STRB_PRE : AI2stbpr<(outs GPR:$base_wb),
-                      (ins GPR:$src, GPR:$base,am2offset:$offset), 
-                      StFrm, IIC_iStoreru,
--                     "strb", "\t$src, [$base, $offset]!", "$base = $base_wb",
-+// @LOCALMOD-START
-+//                     "strb", "\t$src, [$base, $offset]!", "$base = $base_wb",
-+                     "${offset:sfi}strb", "\t$src, [$base, $offset]!", "$base = $base_wb",
-+// @LOCALMOD-END
-                     [(set GPR:$base_wb, (pre_truncsti8 GPR:$src,
-                                          GPR:$base, am2offset:$offset))]>;
- 
- def STRB_POST: AI2stbpo<(outs GPR:$base_wb),
-                      (ins GPR:$src, GPR:$base,am2offset:$offset), 
-                      StFrm, IIC_iStoreru,
--                     "strb", "\t$src, [$base], $offset", "$base = $base_wb",
-+// @LOCALMOD-START
-+//                     "strb", "\t$src, [$base], $offset", "$base = $base_wb",
-+                     "${offset:sfi}strb", "\t$src, [$base], $offset", "$base = $base_wb",
-+// @LOCALMOD-END
-                     [(set GPR:$base_wb, (post_truncsti8 GPR:$src,
-                                          GPR:$base, am2offset:$offset))]>;
- 
-@@ -948,7 +1018,11 @@
+@@ -948,7 +993,11 @@
  let mayStore = 1, hasExtraSrcRegAllocReq = 1 in
  def STM : AXI4st<(outs),
                 (ins addrmode4:$addr, pred:$p, reglist:$wb, variable_ops),
@@ -1222,7 +1178,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMInstrInfo.td
                 []>;
  
  //===----------------------------------------------------------------------===//
-@@ -1087,6 +1161,17 @@
+@@ -1087,6 +1136,17 @@
  defm SUB  : AsI1_bin_irs<0b0010, "sub",
                           BinOpFrag<(sub  node:$LHS, node:$RHS)>>;
  
@@ -1240,7 +1196,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMInstrInfo.td
  // ADD and SUB with 's' bit set.
  defm ADDS : AI1_bin_s_irs<0b0100, "adds",
                            BinOpFrag<(addc node:$LHS, node:$RHS)>, 1>;
-@@ -1551,7 +1636,10 @@
+@@ -1551,7 +1611,10 @@
  let isCall = 1,
    Defs = [R0, R12, LR, CPSR] in {
    def TPsoft : ABXI<0b1011, (outs), (ins), IIC_Br,
@@ -1255,50 +1211,14 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMInstrInfo.td
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMInstrVFP.td
 --- a/llvm-trunk/lib/Target/ARM/ARMInstrVFP.td
 +++ b/llvm-trunk/lib/Target/ARM/ARMInstrVFP.td
-@@ -65,11 +65,11 @@
- } // canFoldAsLoad
- 
- def VSTRD  : ADI5<0b1101, 0b00, (outs), (ins DPR:$src, addrmode5:$addr),
--                 IIC_fpStore64, "vstr", ".64\t$src, $addr",
-+                 IIC_fpStore64, "${addr:sfi}vstr", ".64\t$src, $addr",
-                  [(store DPR:$src, addrmode5:$addr)]>;
- 
- def VSTRS  : ASI5<0b1101, 0b00, (outs), (ins SPR:$src, addrmode5:$addr),
--                 IIC_fpStore32, "vstr", ".32\t$src, $addr",
-+                 IIC_fpStore32, "${addr:sfi}vstr", ".32\t$src, $addr",
-                  [(store SPR:$src, addrmode5:$addr)]>;
- 
- //===----------------------------------------------------------------------===//
-@@ -92,21 +92,27 @@
+@@ -91,6 +91,7 @@
+   let Inst{20} = 1;
  }
  } // mayLoad, hasExtraDefRegAllocReq
- 
 +
-+// @LOCALMOD-START
+ 
  let mayStore = 1, hasExtraSrcRegAllocReq = 1 in {
  def VSTMD : AXDI5<(outs), (ins addrmode5:$addr, pred:$p, reglist:$wb,
-                            variable_ops), IIC_fpStorem,
--                 "vstm${addr:submode}${p}\t${addr:base}, $wb",
-+//                 "vstm${addr:submode}${p}\t${addr:base}, $wb",
-+                 "sfi_store_preamble ${addr:basereg}, ${p}\n\tvstm${addr:submode}${p}\t${addr:base}, $wb",
-                  []> {
-   let Inst{20} = 0;
- }
- 
- def VSTMS : AXSI5<(outs), (ins addrmode5:$addr, pred:$p, reglist:$wb,
-                            variable_ops), IIC_fpStorem,
--                 "vstm${addr:submode}${p}\t${addr:base}, $wb",
-+//                 "vstm${addr:submode}${p}\t${addr:base}, $wb",
-+                 "sfi_store_preamble ${addr:basereg}, ${p}\n\tvstm${addr:submode}${p}\t${addr:base}, $wb",
-                  []> {
-   let Inst{20} = 0;
- }
- } // mayStore, hasExtraSrcRegAllocReq
-+
-+// @LOCALMOD-END
- 
- // FLDMX, FSTMX - mixing S/D registers for pre-armv6 cores
- 
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMLoadStoreOptimizer.cpp
 --- a/llvm-trunk/lib/Target/ARM/ARMLoadStoreOptimizer.cpp
 +++ b/llvm-trunk/lib/Target/ARM/ARMLoadStoreOptimizer.cpp
@@ -1367,6 +1287,169 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMLoadStoreOptimizer.cpp
    if (MBB.empty()) return false;
  
    MachineBasicBlock::iterator MBBI = prior(MBB.end());
+diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMSFIPlacement.cpp
+--- /dev/null
++++ b/llvm-trunk/lib/Target/ARM/ARMSFIPlacement.cpp
+@@ -0,0 +1,159 @@
++//===-- ARMSFIPlacement.cpp - Place SFI mask instructions ---------*- C++ -*-=//
++//
++//                     The LLVM Compiler Infrastructure
++//
++// This file is distributed under the University of Illinois Open Source
++// License. See LICENSE.TXT for details.
++//
++//===----------------------------------------------------------------------===//
++//
++// This file contains a pass that places mask instructions ahead of all stores.
++// This must be run as late in the game as possible -- after all scheduling and
++// constant island placement.  (This is set up in ARMTargetMachine.cpp.)
++//
++//===----------------------------------------------------------------------===//
++
++#define DEBUG_TYPE "arm-pseudo"
++#include "ARM.h"
++#include "ARMBaseInstrInfo.h"
++#include "llvm/CodeGen/MachineFunctionPass.h"
++#include "llvm/CodeGen/MachineInstrBuilder.h"
++
++#include <stdio.h>
++
++using namespace llvm;
++
++namespace {
++  class ARMSFIPlacement : public MachineFunctionPass {
++  public:
++    static char ID;
++    ARMSFIPlacement() : MachineFunctionPass(&ID) {}
++
++    const TargetInstrInfo *TII;
++
++    virtual bool runOnMachineFunction(MachineFunction &Fn);
++
++    virtual const char *getPassName() const {
++      return "ARM SFI mask placement";
++    }
++
++  private:
++    bool PlaceMBB(MachineBasicBlock &MBB);
++    void InsertBicMask(MachineBasicBlock &MBB,
++                       MachineBasicBlock::iterator MBBI,
++                       MachineInstr &MI,
++                       int AddrOperand);
++  };
++  char ARMSFIPlacement::ID = 0;
++}
++
++static ARMCC::CondCodes GetPredicate(MachineInstr &MI) {
++  int PIdx = MI.findFirstPredOperandIdx();
++  if (PIdx != -1) {
++      return (ARMCC::CondCodes)MI.getOperand(PIdx).getImm();
++  } else {
++    return ARMCC::AL;
++  }
++}
++
++/*
++ * Inserts a single BIC-based mask instruction immediately before the given
++ * instruction/iterator position.
++ */
++void ARMSFIPlacement::InsertBicMask(MachineBasicBlock &MBB,
++                                    MachineBasicBlock::iterator MBBI,
++                                    MachineInstr &MI,
++                                    int AddrOperand) {
++  ARMCC::CondCodes Pred = GetPredicate(MI);
++
++  MachineOperand &Addr = MI.getOperand(AddrOperand);
++
++  BuildMI(MBB, MBBI, MI.getDebugLoc(),
++          TII->get(ARM::SFISTRMASK))
++    .addOperand(Addr)        // rD
++    .addReg(0)               // apparently unused source register?
++    .addImm((int64_t) Pred)  // predicate condition
++    .addReg(ARM::CPSR);      // predicate source register (CPSR)
++
++  /*
++   * This pseudo-instruction is intended to generate something resembling the
++   * following, but with alignment enforced.
++   * TODO(cbiffle): move alignment into this function, use the code below.
++   *
++   *  // bic<cc> Addr, Addr, #0xC0000000
++   *  BuildMI(MBB, MBBI, MI.getDebugLoc(),
++   *          TII->get(ARM::BICri))
++   *    .addOperand(Addr)        // rD
++   *    .addOperand(Addr)        // rN
++   *    .addImm(0xC0000000)      // imm
++   *    .addImm((int64_t) Pred)  // predicate condition
++   *    .addReg(ARM::CPSR)       // predicate source register (CPSR)
++   *    .addReg(0);              // flag output register (0 == no flags)
++   */
++}
++
++bool IsStoreRequiringMask(const MachineInstr &MI, int *AddrOperand) {
++  unsigned Opcode = MI.getOpcode();
++  switch (Opcode) {
++  default: return false;
++
++  // Instructions with base address register in position 0...
++  case ARM::VSTMD:
++  case ARM::VSTMS:
++    *AddrOperand = 0;
++    return true;
++
++  // Instructions with base address register in position 1...
++  case ARM::STR:
++  case ARM::STRB:
++  case ARM::STRH:
++  case ARM::VSTRS:
++  case ARM::VSTRD:
++    *AddrOperand = 1;
++    return true;
++
++  // Instructions with base address register in position 2...
++  case ARM::STR_PRE:
++  case ARM::STR_POST:
++  case ARM::STRB_PRE:
++  case ARM::STRB_POST:
++  case ARM::STRH_PRE:
++  case ARM::STRH_POST:
++  case ARM::STRD:
++    *AddrOperand = 2;
++    return true;
++  }
++}
++
++bool ARMSFIPlacement::PlaceMBB(MachineBasicBlock &MBB) {
++  bool Modified = false;
++
++  for (MachineBasicBlock::iterator MBBI = MBB.begin(), E = MBB.end();
++       MBBI != E;
++       MBBI = next(MBBI)) {
++    MachineInstr &MI = *MBBI;
++
++    int AddrOperand;
++    if (IsStoreRequiringMask(MI, &AddrOperand)) {
++      InsertBicMask(MBB, MBBI, MI, AddrOperand);
++      Modified = true;
++    }
++  }
++
++  return Modified;
++}
++
++bool ARMSFIPlacement::runOnMachineFunction(MachineFunction &MF) {
++  TII = MF.getTarget().getInstrInfo();
++
++  bool Modified = false;
++  for (MachineFunction::iterator MFI = MF.begin(), E = MF.end(); MFI != E;
++       ++MFI)
++    Modified |= PlaceMBB(*MFI);
++  return Modified;
++}
++
++/// createARMSFIPlacementPass - returns an instance of the SFI placement pass.
++FunctionPass *llvm::createARMSFIPlacementPass() {
++  return new ARMSFIPlacement();
++}
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMSubtarget.cpp
 --- a/llvm-trunk/lib/Target/ARM/ARMSubtarget.cpp
 +++ b/llvm-trunk/lib/Target/ARM/ARMSubtarget.cpp
@@ -1421,6 +1504,33 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMSubtarget.h
  };
  } // End llvm namespace
  
+diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMTargetMachine.cpp
+--- a/llvm-trunk/lib/Target/ARM/ARMTargetMachine.cpp
++++ b/llvm-trunk/lib/Target/ARM/ARMTargetMachine.cpp
+@@ -19,7 +19,11 @@
+ #include "llvm/Support/FormattedStream.h"
+ #include "llvm/Target/TargetOptions.h"
+ #include "llvm/Target/TargetRegistry.h"
++#include "llvm/Support/CommandLine.h" // @LOCALMOD
+ using namespace llvm;
++
++extern cl::opt<bool> FlagSfiStore; // @LOCALMOD
++
+ 
+ static const MCAsmInfo *createMCAsmInfo(const Target &T, StringRef TT) {
+   Triple TheTriple(TT);
+@@ -128,6 +132,11 @@
+   }
+ 
+   PM.add(createARMConstantIslandPass());
++
++  if (FlagSfiStore) {
++    PM.add(createARMSFIPlacementPass());
++  }
++
+   return true;
+ }
+ 
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
 --- a/llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
 +++ b/llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
@@ -1438,7 +1548,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
  
  STATISTIC(EmittedInsts, "Number of machine instrs printed");
  
-@@ -94,10 +100,29 @@
+@@ -94,10 +100,12 @@
  
      void printOperand(const MachineInstr *MI, int OpNum,
                        const char *Modifier = 0);
@@ -1448,27 +1558,10 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
      void printSORegOperand(const MachineInstr *MI, int OpNum);
      void printAddrMode2Operand(const MachineInstr *MI, int OpNum);
 +
-+    // @LOCALMOD-START
-+    // NOTE: we force the extra Modifier argument in the .td file
-+    void printAddrModeHelper(const MachineInstr *MI,
-+                             int base,
-+                             int pred,
-+                             const char* Modifier);
-+
-+    void printAddrMode2Operand(const MachineInstr *MI, int OpNo,
-+                               const char* Modifier);
-+    void printAddrMode3Operand(const MachineInstr *MI, int OpNo,
-+                               const char* Modifier);
-+
-+    void printAddrMode2OffsetOperand(const MachineInstr *MI, int OpNo,
-+                                     const char* Modifier);
-+    void printAddrMode3OffsetOperand(const MachineInstr *MI, int OpNo,
-+                                     const char* Modifier);
-+    // @LOCALMOD-END
      void printAddrMode2OffsetOperand(const MachineInstr *MI, int OpNum);
      void printAddrMode3Operand(const MachineInstr *MI, int OpNum);
      void printAddrMode3OffsetOperand(const MachineInstr *MI, int OpNum);
-@@ -170,6 +195,7 @@
+@@ -170,6 +178,7 @@
      /// EmitMachineConstantPoolValue - Print a machine constantpool value to
      /// the .s file.
      virtual void EmitMachineConstantPoolValue(MachineConstantPoolValue *MCPV) {
@@ -1476,7 +1569,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
        printDataDirective(MCPV->getType());
  
        ARMConstantPoolValue *ACPV = static_cast<ARMConstantPoolValue*>(MCPV);
-@@ -180,6 +206,10 @@
+@@ -180,6 +189,10 @@
          raw_svector_ostream(LSDAName) << MAI->getPrivateGlobalPrefix() <<
            "_LSDA_" << getFunctionNumber();
          Name = LSDAName.str();
@@ -1487,7 +1580,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
        } else if (ACPV->isBlockAddress()) {
          Name = GetBlockAddressSymbol(ACPV->getBlockAddress())->getName();
        } else if (ACPV->isGlobalValue()) {
-@@ -231,6 +261,15 @@
+@@ -231,6 +244,15 @@
    };
  } // end of anonymous namespace
  
@@ -1503,7 +1596,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
  #include "ARMGenAsmWriter.inc"
  
  /// runOnMachineFunction - This uses the printInstruction()
-@@ -247,7 +286,6 @@
+@@ -247,7 +269,6 @@
  
    // NOTE: we don't print out constant pools here, they are handled as
    // instructions.
@@ -1511,7 +1604,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
    O << '\n';
  
    // Print out labels for the function.
-@@ -287,7 +325,15 @@
+@@ -287,7 +308,15 @@
        O << "\t" << CurrentFnName;
      O << "\n";
    } else {
@@ -1528,7 +1621,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
    }
  
    O << CurrentFnName << ":\n";
-@@ -304,6 +350,46 @@
+@@ -304,6 +333,46 @@
        O << "\tnop\n";
    }
  
@@ -1575,7 +1668,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
    // Print out code for the function.
    for (MachineFunction::const_iterator I = MF.begin(), E = MF.end();
         I != E; ++I) {
-@@ -319,6 +405,12 @@
+@@ -319,6 +388,12 @@
  
    if (MAI->hasDotTypeDotSizeDirective())
      O << "\t.size " << CurrentFnName << ", .-" << CurrentFnName << "\n";
@@ -1588,73 +1681,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
  
    // Emit post-function debug information.
    DW->EndFunction(&MF);
-@@ -507,6 +599,65 @@
-   O << "]";
- }
- 
-+// @LOCALMOD-START
-+
-+// This hack prepends a line of the form:
-+// sfi_store <basereg>, <pr>
-+// before sandboxed store instructions
-+void ARMAsmPrinter::printAddrModeHelper(const MachineInstr *MI,
-+                                        int base,
-+                                        int pred,
-+                                        const char* Modifier) {
-+  assert(0 == strcmp("sfi", Modifier));
-+
-+  const char *base_reg = getRegisterName(MI->getOperand(base).getReg());
-+  // NOTE: sfi_store_preamble is aware of sp
-+  O << "sfi_store_preamble " << base_reg << ", ";
-+  printPredicateOperand(MI, pred);
-+  O << "\n\t";
-+}
-+
-+void ARMAsmPrinter::printAddrMode2Operand(const MachineInstr *MI, int Op,
-+                                          const char *Modifier) {
-+  if (!FlagSfiStore) return;
-+
-+  printAddrModeHelper(MI, Op, Op + 3, Modifier);
-+
-+  const MachineOperand &MO2 = MI->getOperand(Op+1);
-+  if (MO2.getReg()) {
-+    O << "BAD BAD BAD FORBIDDEN ADDR MODE\n";
-+    assert(0);
-+  }
-+}
-+
-+void ARMAsmPrinter::printAddrMode3Operand(const MachineInstr *MI, int Op,
-+                                          const char *Modifier) {
-+  if (!FlagSfiStore) return;
-+
-+  printAddrModeHelper(MI, Op, Op + 3, Modifier);
-+
-+  const MachineOperand &MO2 = MI->getOperand(Op+1);
-+  if (MO2.getReg()) {
-+    O << "BAD BAD BAD FORBIDDEN ADDR MODE\n";
-+    assert(0);
-+  }
-+}
-+
-+void ARMAsmPrinter::printAddrMode2OffsetOperand(const MachineInstr *MI,
-+                                                int Op,
-+                                                const char *Modifier) {
-+  if (!FlagSfiStore) return;
-+  printAddrModeHelper(MI, Op - 1, Op + 2, Modifier);
-+}
-+
-+void ARMAsmPrinter::printAddrMode3OffsetOperand(const MachineInstr *MI,
-+                                                int Op,
-+                                                const char *Modifier) {
-+  if (!FlagSfiStore) return;
-+  printAddrModeHelper(MI, Op - 1, Op + 2, Modifier);
-+}
-+// @LOCALMOD-END
-+
- void ARMAsmPrinter::printAddrMode2OffsetOperand(const MachineInstr *MI, int Op){
-   const MachineOperand &MO1 = MI->getOperand(Op);
-   const MachineOperand &MO2 = MI->getOperand(Op+1);
-@@ -588,6 +739,10 @@
+@@ -588,6 +663,10 @@
      ARM_AM::AMSubMode Mode = ARM_AM::getAM4SubMode(MO2.getImm());
      if (Mode == ARM_AM::ia)
        O << ".w";
@@ -1665,15 +1692,12 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
    } else {
      printOperand(MI, Op);
      if (ARM_AM::getAM4WBFlag(MO2.getImm()))
-@@ -618,6 +773,17 @@
+@@ -618,6 +697,14 @@
        O << "!";
      return;
    }
 +  //@LOCALMOD-START
-+   else if (Modifier && strcmp(Modifier, "sfi") == 0) {
-+     printAddrModeHelper(MI, Op, Op + 2, Modifier);
-+     return;
-+   } else if (Modifier && strcmp(Modifier, "basereg") == 0) {
++   else if (Modifier && strcmp(Modifier, "basereg") == 0) {
 +     O << getRegisterName(MO1.getReg());
 +     return;
 +   }
@@ -1683,7 +1707,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
  
    O << "[" << getRegisterName(MO1.getReg());
  
-@@ -880,7 +1046,25 @@
+@@ -880,7 +967,25 @@
    assert(Modifier && "This operand only works with a modifier!");
    // There are two aspects to a CONSTANTPOOL_ENTRY operand, the label and the
    // data itself.
@@ -1709,7 +1733,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
      unsigned ID = MI->getOperand(OpNum).getImm();
      O << MAI->getPrivateGlobalPrefix() << "CPI" << getFunctionNumber()
        << '_' << ID << ":\n";
-@@ -891,6 +1075,9 @@
+@@ -891,6 +996,9 @@
      const MachineConstantPoolEntry &MCPE = MCP->getConstants()[CPI];
  
      if (MCPE.isMachineConstantPoolEntry()) {
@@ -1719,7 +1743,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
        EmitMachineConstantPoolValue(MCPE.Val.MachineCPVal);
      } else {
        EmitGlobalConstant(MCPE.Val.ConstVal);
-@@ -915,6 +1102,7 @@
+@@ -915,6 +1023,7 @@
    const std::vector<MachineBasicBlock*> &JTBBs = JT[JTI].MBBs;
    bool UseSet= MAI->getSetDirective() && TM.getRelocationModel() == Reloc::PIC_;
    SmallPtrSet<MachineBasicBlock*, 8> JTSets;
@@ -1727,7 +1751,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
    for (unsigned i = 0, e = JTBBs.size(); i != e; ++i) {
      MachineBasicBlock *MBB = JTBBs[i];
      bool isNew = JTSets.insert(MBB);
-@@ -1158,6 +1346,255 @@
+@@ -1158,6 +1267,255 @@
  
      // FIXME: Should we signal R9 usage?
    }
@@ -1983,7 +2007,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
  }
  
  void ARMAsmPrinter::PrintGlobalVariable(const GlobalVariable* GVar) {
-@@ -1345,6 +1782,7 @@
+@@ -1345,6 +1703,7 @@
      // generates code that does this, it is always safe to set.
      OutStreamer.EmitAssemblerFlag(MCStreamer::SubsectionsViaSymbols);
    }
@@ -1991,7 +2015,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
  }
  
  //===----------------------------------------------------------------------===//
-@@ -1519,4 +1957,3 @@
+@@ -1519,4 +1878,3 @@
    TargetRegistry::RegisterMCInstPrinter(TheARMTarget, createARMMCInstPrinter);
    TargetRegistry::RegisterMCInstPrinter(TheThumbTarget, createARMMCInstPrinter);
  }
@@ -2015,76 +2039,6 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMInstPrinter.cpp
  
  // Include the auto-generated portion of the assembly writer.
  #define MachineInstr MCInst
-@@ -161,6 +168,69 @@
-     << " #" << ShImm;
-   O << "]";
- }  
-+
-+// @LOCALMOD-START
-+// NOTE: THIS IS UNTESTED CODE
-+// This hack prepends a line of the form:
-+// sfi_store <basereg>, <pr>
-+// before sandboxed store instructions
-+void ARMInstPrinter::printAddrModeHelper(const MCInst *MI,
-+                                         int base,
-+                                         int pred,
-+                                         const char* Modifier) {
-+  assert(0 == strcmp("sfi", Modifier));
-+
-+  const char *base_reg = getRegisterName(MI->getOperand(base).getReg());
-+  // NOTE: sfi_store_preamble is aware of sp
-+  O << "sfi_store_preamble " << base_reg << ", ";
-+  printPredicateOperand(MI, pred);
-+  O << "\n\t";
-+}
-+
-+void ARMInstPrinter::printAddrMode2Operand(const MCInst *MI,
-+                                           unsigned Op,
-+                                           const char *Modifier) {
-+  if (!FlagSfiStore) return;
-+
-+  printAddrModeHelper(MI, Op, Op + 3, Modifier);
-+
-+  const MCOperand &MO2 = MI->getOperand(Op+1);
-+  if (MO2.getReg()) {
-+    O << "BAD BAD BAD FORBIDDEN ADDR MODE\n";
-+    assert(0);
-+  }
-+}
-+
-+void ARMInstPrinter::printAddrMode3Operand(const MCInst *MI,
-+                                           unsigned Op,
-+                                          const char *Modifier) {
-+  if (!FlagSfiStore) return;
-+
-+  printAddrModeHelper(MI, Op, Op + 3, Modifier);
-+
-+  const MCOperand &MO2 = MI->getOperand(Op+1);
-+  if (MO2.getReg()) {
-+    O << "BAD BAD BAD FORBIDDEN ADDR MODE\n";
-+    assert(0);
-+  }
-+}
-+
-+void ARMInstPrinter::printAddrMode2OffsetOperand(const MCInst *MI,
-+                                                unsigned Op,
-+                                                const char *Modifier) {
-+  if (!FlagSfiStore) return;
-+  printAddrModeHelper(MI, Op, Op + 3, Modifier);
-+}
-+
-+void ARMInstPrinter::printAddrMode3OffsetOperand(const MCInst *MI,
-+                                                unsigned Op,
-+                                                const char *Modifier) {
-+  if (!FlagSfiStore) return;
-+  printAddrModeHelper(MI, Op, Op + 3, Modifier);
-+
-+}
-+// @LOCALMOD-END
-+
- 
- void ARMInstPrinter::printAddrMode2OffsetOperand(const MCInst *MI,
-                                                  unsigned OpNum) {
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMInstPrinter.h
 --- a/llvm-trunk/lib/Target/ARM/AsmPrinter/ARMInstPrinter.h
 +++ b/llvm-trunk/lib/Target/ARM/AsmPrinter/ARMInstPrinter.h
@@ -2108,3 +2062,14 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMInstPrinter.h
    void printAddrMode3OffsetOperand(const MCInst *MI, unsigned OpNum);
    void printAddrMode4Operand(const MCInst *MI, unsigned OpNum,
                               const char *Modifier = 0);
+diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/CMakeLists.txt
+--- a/llvm-trunk/lib/Target/ARM/CMakeLists.txt
++++ b/llvm-trunk/lib/Target/ARM/CMakeLists.txt
+@@ -25,6 +25,7 @@
+   ARMLoadStoreOptimizer.cpp
+   ARMMCAsmInfo.cpp
+   ARMRegisterInfo.cpp
++  ARMSFIPlacement.cpp
+   ARMSubtarget.cpp
+   ARMTargetMachine.cpp
+   NEONMoveFix.cpp
