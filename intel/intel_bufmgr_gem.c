@@ -1662,13 +1662,15 @@ drm_intel_gem_bo_set_tiling(drm_intel_bo *bo, uint32_t * tiling_mode,
 			    DRM_IOCTL_I915_GEM_SET_TILING,
 			    &set_tiling);
 	} while (ret == -1 && errno == EINTR);
-	bo_gem->tiling_mode = set_tiling.tiling_mode;
-	bo_gem->swizzle_mode = set_tiling.swizzle_mode;
-
-	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem);
+	if (ret == 0) {
+		bo_gem->tiling_mode = set_tiling.tiling_mode;
+		bo_gem->swizzle_mode = set_tiling.swizzle_mode;
+		drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem);
+	} else
+		ret = -errno;
 
 	*tiling_mode = bo_gem->tiling_mode;
-	return ret == 0 ? 0 : -errno;
+	return ret;
 }
 
 static int
