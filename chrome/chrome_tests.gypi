@@ -792,6 +792,7 @@
         'browser/find_backend_unittest.cc',
         'browser/geolocation/fake_access_token_store.h',
         'browser/geolocation/geolocation_content_settings_map_unittest.cc',
+        'browser/geolocation/geolocation_content_settings_table_model_unittest.cc',
         'browser/geolocation/geolocation_permission_context_unittest.cc',
         'browser/geolocation/geolocation_settings_state_unittest.cc',
         'browser/geolocation/location_arbitrator_unittest.cc',

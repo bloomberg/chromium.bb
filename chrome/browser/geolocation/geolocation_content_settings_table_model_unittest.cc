@@ -1,0 +1,146 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/geolocation/geolocation_content_settings_table_model.h"
+
+#include "chrome/browser/renderer_host/test/test_render_view_host.h"
+#include "chrome/test/testing_profile.h"
+#include "grit/generated_resources.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+std::wstring OriginToWString(const GURL& origin) {
+  return UTF8ToWide(GeolocationContentSettingsMap::OriginToString(origin));
+}
+const GURL kUrl0("http://www.example.com");
+const GURL kUrl1("http://www.example1.com");
+const GURL kUrl2("http://www.example2.com");
+}  // namespace
+
+class GeolocationContentSettingsTableModelTest
+  : public RenderViewHostTestHarness {
+ public:
+  GeolocationContentSettingsTableModelTest()
+     : ui_thread_(ChromeThread::UI, MessageLoop::current()) {
+
+  }
+
+  virtual ~GeolocationContentSettingsTableModelTest() {
+  }
+
+  virtual void SetUp() {
+    RenderViewHostTestHarness::SetUp();
+    ResetModel();
+  }
+
+  virtual void TearDown() {
+    model_.reset(NULL);
+    RenderViewHostTestHarness::TearDown();
+  }
+
+  virtual void ResetModel() {
+    model_.reset(new GeolocationContentSettingsTableModel(
+        profile()->GetGeolocationContentSettingsMap()));
+  }
+
+  void CreateAllowedSamples() {
+    scoped_refptr<GeolocationContentSettingsMap> map =
+        profile()->GetGeolocationContentSettingsMap();
+    map->SetContentSetting(kUrl0, kUrl0, CONTENT_SETTING_ALLOW);
+    map->SetContentSetting(kUrl0, kUrl1, CONTENT_SETTING_ALLOW);
+    map->SetContentSetting(kUrl0, kUrl2, CONTENT_SETTING_ALLOW);
+    ResetModel();
+    EXPECT_EQ(3, model_->RowCount());
+  }
+
+ protected:
+  ChromeThread ui_thread_;
+  scoped_ptr<GeolocationContentSettingsTableModel> model_;
+};
+
+TEST_F(GeolocationContentSettingsTableModelTest, CanRemoveException) {
+  EXPECT_EQ(0, model_->RowCount());
+
+  scoped_refptr<GeolocationContentSettingsMap> map =
+      profile()->GetGeolocationContentSettingsMap();
+
+  // Ensure a single entry can be removed.
+  map->SetContentSetting(kUrl0, kUrl0, CONTENT_SETTING_ALLOW);
+  ResetModel();
+  EXPECT_EQ(1, model_->RowCount());
+  GeolocationContentSettingsTableModel::Rows rows;
+  rows.insert(0U);
+  EXPECT_TRUE(model_->CanRemoveExceptions(rows));
+
+
+  // Ensure an entry with children can't be removed.
+  map->SetContentSetting(kUrl0, kUrl0, CONTENT_SETTING_DEFAULT);
+  map->SetContentSetting(kUrl0, kUrl1, CONTENT_SETTING_ALLOW);
+  map->SetContentSetting(kUrl0, kUrl2, CONTENT_SETTING_BLOCK);
+  ResetModel();
+  EXPECT_EQ(3, model_->RowCount());
+  EXPECT_FALSE(model_->CanRemoveExceptions(rows));
+
+  // Ensure it can be removed if removing all children.
+  rows.clear();
+  rows.insert(1U);
+  rows.insert(2U);
+  EXPECT_TRUE(model_->CanRemoveExceptions(rows));
+}
+
+TEST_F(GeolocationContentSettingsTableModelTest, RemoveExceptions) {
+  CreateAllowedSamples();
+  scoped_refptr<GeolocationContentSettingsMap> map =
+      profile()->GetGeolocationContentSettingsMap();
+
+  // Test removing parent exception.
+  GeolocationContentSettingsTableModel::Rows rows;
+  rows.insert(0U);
+  model_->RemoveExceptions(rows);
+  EXPECT_EQ(CONTENT_SETTING_ASK, map->GetContentSetting(kUrl0, kUrl0));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, map->GetContentSetting(kUrl0, kUrl1));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, map->GetContentSetting(kUrl0, kUrl2));
+
+  ResetModel();
+  EXPECT_EQ(3, model_->RowCount());
+
+  // Test removing remaining children.
+  rows.clear();
+  rows.insert(1U);
+  rows.insert(2U);
+  model_->RemoveExceptions(rows);
+  EXPECT_EQ(0, model_->RowCount());
+  EXPECT_EQ(CONTENT_SETTING_ASK, map->GetContentSetting(kUrl0, kUrl0));
+  EXPECT_EQ(CONTENT_SETTING_ASK, map->GetContentSetting(kUrl0, kUrl1));
+  EXPECT_EQ(CONTENT_SETTING_ASK, map->GetContentSetting(kUrl0, kUrl2));
+}
+
+TEST_F(GeolocationContentSettingsTableModelTest, RemoveAll) {
+  CreateAllowedSamples();
+  scoped_refptr<GeolocationContentSettingsMap> map =
+      profile()->GetGeolocationContentSettingsMap();
+
+  model_->RemoveAll();
+  EXPECT_EQ(CONTENT_SETTING_ASK, map->GetContentSetting(kUrl0, kUrl0));
+  EXPECT_EQ(CONTENT_SETTING_ASK, map->GetContentSetting(kUrl0, kUrl1));
+  EXPECT_EQ(CONTENT_SETTING_ASK, map->GetContentSetting(kUrl0, kUrl2));
+  EXPECT_EQ(0, model_->RowCount());
+}
+
+TEST_F(GeolocationContentSettingsTableModelTest, GetText) {
+  CreateAllowedSamples();
+
+  // Ensure the parent doesn't have any indentation.
+  std::wstring text(model_->GetText(0, IDS_EXCEPTIONS_HOSTNAME_HEADER));
+  EXPECT_EQ(OriginToWString(kUrl0), text);
+
+  // Ensure there's some indentation on the children nodes.
+  text = model_->GetText(1, IDS_EXCEPTIONS_HOSTNAME_HEADER);
+  EXPECT_NE(OriginToWString(kUrl1), text);
+  EXPECT_NE(std::wstring::npos, text.find(OriginToWString(kUrl1)));
+
+  text = model_->GetText(2, IDS_EXCEPTIONS_HOSTNAME_HEADER);
+  EXPECT_NE(OriginToWString(kUrl2), text);
+  EXPECT_NE(std::wstring::npos, text.find(OriginToWString(kUrl2)));
+}
