@@ -206,7 +206,7 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumber) {
 
 // This scenario of explicitly labeled "prefix" and "suffix" phone numbers
 // encountered in http://crbug.com/40694 with page
-// https://www.wrapables.com/jsp/Signup.jsp
+// https://www.wrapables.com/jsp/Signup.jsp.
 TEST_F(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix) {
   list_.push_back(
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Phone:"),
