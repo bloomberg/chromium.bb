@@ -28,6 +28,7 @@ class Profile;
 namespace history {
 
 class TopSitesBackend;
+class TopSitesDatabase;
 class TopSitesTest;
 
 typedef std::vector<MostVisitedURL> MostVisitedURLList;
@@ -56,6 +57,14 @@ class TopSites : public base::RefCountedThreadSafe<TopSites> {
     virtual ~MockHistoryService() {}
   };
 
+  struct Images {
+    scoped_refptr<RefCountedBytes> thumbnail;
+    ThumbnailScore thumbnail_score;
+
+    // TODO(brettw): this will eventually store the favicon.
+    // scoped_refptr<RefCountedBytes> favicon;
+  };
+
   // Initializes TopSites.
   void Init();
 
@@ -77,16 +86,15 @@ class TopSites : public base::RefCountedThreadSafe<TopSites> {
   friend class base::RefCountedThreadSafe<TopSites>;
   friend class TopSitesTest;
   friend class TopSitesTest_GetMostVisited_Test;
+  friend class TopSitesTest_ReadDatabase_Test;
 
   ~TopSites();
 
-  struct Images {
-    scoped_refptr<RefCountedBytes> thumbnail;
-    ThumbnailScore thumbnail_score;
-
-    // TODO(brettw): this will eventually store the favicon.
-    // scoped_refptr<RefCountedBytes> favicon;
-  };
+  // Called by the public SetPageThumbnail. Takes RefCountedBytes
+  // rather than a SkBitmap.
+  bool SetPageThumbnail(const GURL& url,
+                        const RefCountedBytes* thumbnail_data,
+                        const ThumbnailScore& score);
 
   void StartQueryForMostVisited();
 
@@ -94,9 +102,10 @@ class TopSites : public base::RefCountedThreadSafe<TopSites> {
   void OnTopSitesAvailable(CancelableRequestProvider::Handle handle,
                            MostVisitedURLList data);
 
+  // Updates the top sites list and writes the difference to disk.
+  void UpdateMostVisited(MostVisitedURLList* most_visited);
   // Saves the set of the top URLs visited by this user. The 0th item is the
   // most popular.
-  //
   // DANGER! This will clear all data from the input argument.
   void StoreMostVisited(MostVisitedURLList* most_visited);
 
@@ -132,6 +141,10 @@ class TopSites : public base::RefCountedThreadSafe<TopSites> {
                               std::vector<size_t>* deleted_urls,
                               std::vector<size_t>* moved_urls);
 
+  // Reads the database from disk. Called on startup to get the last
+  // known top sites.
+  void ReadDatabase();
+
   // For testing with a HistoryService mock.
   void SetMockHistoryService(MockHistoryService* mhs);
 
@@ -157,6 +170,8 @@ class TopSites : public base::RefCountedThreadSafe<TopSites> {
 
   // Timer for updating TopSites data.
   base::OneShotTimer<TopSites> timer_;
+
+  scoped_ptr<TopSitesDatabase> db_;
 
   // TODO(brettw): use the blacklist.
   // std::set<GURL> blacklist_;
