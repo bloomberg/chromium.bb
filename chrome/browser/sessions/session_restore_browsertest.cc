@@ -12,12 +12,6 @@
 
 typedef InProcessBrowserTest SessionRestoreTest;
 
-#if !defined(OS_WIN)
-// http://crbug.com/39476
-#define RestoreOnNewWindowWithNoTabbedBrowsers \
-        DISABLED_RestoreOnNewWindowWithNoTabbedBrowsers
-#endif
-
 // Makes sure when session restore is triggered in the same process we don't end
 // up with an extra tab.
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
