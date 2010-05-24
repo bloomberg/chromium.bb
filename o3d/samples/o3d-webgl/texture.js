@@ -70,6 +70,20 @@ o3d.Texture = function() {
    */
   this.texture_target_ = 0;
 
+  /**
+   * The width of the underlying webgl texture.
+   * @type {number}
+   * private
+   */
+  this.texture_width_ = 0;
+
+  /**
+   * The width of the underlying webgl texture.
+   * @type {number}
+   * private
+   */
+  this.texture_height_ = 0;
+
  /**
   * When texParameters get set, this keeps track of what they are so we don't
   * set them again next time if we don't have to.
@@ -140,8 +154,79 @@ o3d.Texture.DXT5 = 8;
  */
 o3d.Texture.prototype.generateMips =
     function(source_level, num_levels) {
-  this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture_);
-  this.gl.generateMipmap(this.gl.TEXTURE_2D);
+  this.gl.bindTexture(this.texture_target_, this.texture_);
+  this.gl.generateMipmap(this.texture_target_);
+};
+
+
+/**
+ * Indicates whether the given number is a power of two.
+ * @param {number} value The number.
+ * @private
+ */
+o3d.Texture.isPowerOfTwo_ = function(value) {
+  return (value & (value - 1)) == 0;
+};
+
+
+/**
+ * Computes the smallest power of two that is greater than or equal to the
+ * the given number.
+ * @param {number} value The number.
+ * @private
+ */
+o3d.Texture.nextHighestPowerOfTwo_ = function(value) {
+  var r = 1;
+  while (r < value) {
+    r *= 2;
+  }
+  return r;
+};
+
+
+/**
+ * Creates a webgl texture from the given image object rescaling to the
+ * smallest power of 2 in each dimension still no smaller than the original
+ * size.
+ * @param {HTMLCanvas} canvas The canvas to load into the texture.
+ * @param {boolean} resize_to_pot Whether or not to resize to a power of two
+ *     size.
+ * @param {boolean} generate_mips Whether or not to generate mips.
+ *
+ * @private
+ */
+o3d.Texture.prototype.setFromCanvas_ =
+    function(canvas, resize_to_pot, flip, generate_mips, face) {
+  this.gl.bindTexture(this.texture_target_, this.texture_);
+
+  if (resize_to_pot && (!o3d.Texture.isPowerOfTwo_(canvas.width) ||
+      !o3d.Texture.isPowerOfTwo_(canvas.height))) {
+    // Get a scratch canvas.
+    var scratch = o3d.Bitmap.getScratchCanvas_();
+    // Set the size of the canvas to the power-of-two size.
+    scratch.width = o3d.Texture.nextHighestPowerOfTwo_(canvas.width);
+    scratch.height = o3d.Texture.nextHighestPowerOfTwo_(canvas.height);
+    // Draw the given canvas into that scratch canvas.
+    scratch.getContext("2d").drawImage(canvas,
+        0, 0, canvas.width, canvas.height,
+        0, 0, scratch.width, scratch.height);
+    canvas = scratch;
+  }
+
+  var target = this.texture_target_;
+  if (target == this.gl.TEXTURE_CUBE_MAP) {
+    target = this.gl.TEXTURE_CUBE_MAP_POSITIVE_X + face;
+  }
+
+  this.gl.texImage2D(target, 0 /*level*/, canvas, flip);
+  this.texture_width_ = canvas.width;
+  this.texture_height_ = canvas.height;
+
+  if (generate_mips) {
+    // The texture target is already bound so why bind it again by calling
+    // this.generateMip.
+    this.gl.generateMipmap(this.texture_target_);
+  }
 };
 
 
@@ -178,6 +263,45 @@ o3d.inherit('Texture2D', 'Texture');
 
 o3d.ParamObject.setUpO3DParam_(o3d.Texture2D, 'width', 'ParamInteger');
 o3d.ParamObject.setUpO3DParam_(o3d.Texture2D, 'height', 'ParamInteger');
+
+
+/**
+ * Initializes this Texture2D object of the specified size and format and
+ * reserves the necessary resources for it.
+ *
+ * Note: If enable_render_surfaces is true, then the dimensions must be a
+ * power of two.
+ *
+ * @param {number} width The width of the texture area in texels (max = 2048)
+ * @param {number} height The height of the texture area in texels (max = 2048)
+ * @param {o3d.Texture.Format} format The memory format of each texel
+ * @param {number} levels The number of mipmap levels.  Use zero to create the
+ *     compelete mipmap chain.
+ * @param {boolean} enable_render_surfaces If true, the texture object will
+ *     expose RenderSurface objects through GetRenderSurface(...).
+ * @return {!o3d.Texture2D}  The Texture2D object.
+ */
+o3d.Texture2D.prototype.init_ =
+    function(width, height, format, levels, enable_render_surfaces) {
+  this.width = width;
+  this.height = height;
+  this.levels = levels;
+  this.texture_ = this.gl.createTexture();
+  this.texture_target_ = this.gl.TEXTURE_2D;
+
+  if (width != undefined && height != undefined) {
+    this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture_);
+
+    // TODO(petersont): remove this allocation once Firefox supports
+    // passing null as argument to this form of ... some function.
+    var t = new WebGLUnsignedByteArray(width * height * 4);
+    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, width, height,
+        0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, t);
+    this.texture_width_ = width;
+    this.texture_height_ = height;
+  }
+};
+
 
 /**
  * Returns a RenderSurface object associated with a mip_level of a texture.
@@ -281,50 +405,13 @@ o3d.Texture2D.prototype.getRect =
  *
  * @param {o3d.Bitmap} bitmap The bitmap to copy data from.
  */
-o3d.Texture2D.prototype.setFromBitmap =
-    function(bitmap) {
-  this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture_);
-  this.gl.texImage2D(this.gl.TEXTURE_2D,
-                     0,  // Level.
-                     bitmap.canvas_,
-                     bitmap.defer_flip_vertically_to_texture_);
-  this.setupRepeatModes_(bitmap.canvas_.width, bitmap.canvas_.height);
-  if (bitmap.defer_mipmaps_to_texture_) {
-    this.generateMips();
-  }
-};
-
-
-/**
- * Sets up the repeat modes for the given width and height.
- * Assumes the texture is already bound to the TEXTURE_2D binding point.
- * @private
- */
-o3d.Texture2D.prototype.setupRepeatModes_ = function(width, height) {
-  // OpenGL ES 2.0 and consequently WebGL don't support anything but
-  // CLAMP_TO_EDGE for NPOT textures.
-  if (o3d.Texture2D.isPowerOfTwo_(width) &&
-      o3d.Texture2D.isPowerOfTwo_(height)) {
-    this.gl.texParameteri(this.gl.TEXTURE_2D,
-        this.gl.TEXTURE_WRAP_S, this.gl.REPEAT);
-    this.gl.texParameteri(this.gl.TEXTURE_2D,
-        this.gl.TEXTURE_WRAP_T, this.gl.REPEAT);
-  } else {
-    this.gl.texParameteri(this.gl.TEXTURE_2D,
-        this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
-    this.gl.texParameteri(this.gl.TEXTURE_2D,
-        this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
-  }
-};
-
-/**
- * Indicates whether the given number is a power of two.
- * @private
- */
-o3d.Texture2D.isPowerOfTwo_ = function(value) {
-  if (value == undefined)
-    return false;
-  return (value & (value - 1)) == 0;
+o3d.Texture2D.prototype.setFromBitmap = function(bitmap) {
+  // Whether resize the texture to power-of-two size
+  var resize_to_pot = bitmap.defer_mipmaps_to_texture_;
+  this.setFromCanvas_(bitmap.canvas_,
+                      resize_to_pot,
+                      bitmap.defer_flip_vertically_to_texture_,
+                      bitmap.defer_mipmaps_to_texture_);
 };
 
 
@@ -371,6 +458,8 @@ o3d.Texture2D.prototype.drawImage =
   // Firefox supports it.
   this.gl.texImage2D(this.gl.TEXTURE_2D, 0, canvas);
   // this.gl.texSubImage2D(this.gl.TEXTURE_2D, 0, 0, 0, canvas);
+  this.texture_width_ = canvas.width;
+  this.texture_height_ = canvas.height;
 };
 
 
@@ -390,6 +479,17 @@ o3d.TextureCUBE = function() {
    * @type {number}
    */
   this.edgeLength = 0;
+
+  /**
+   * Keeps track of whether the faces of the cube map have been set to a
+   * bitmap of some sort.  Used to prolong the generation of mipmaps until the
+   * last cube face has been set to something.
+   * @type {!Object}
+   * @private
+   */
+   this.faces_set_ = {
+     0: false, 1: false, 2: false, 3: false, 4: false, 5: false
+   };
 };
 o3d.inherit('TextureCUBE', 'Texture');
 
@@ -419,6 +519,44 @@ o3d.TextureCUBE.FACE_POSITIVE_Z = 4;
 o3d.TextureCUBE.FACE_NEGATIVE_Z = 5;
 
 o3d.ParamObject.setUpO3DParam_(o3d.TextureCUBE, 'edgeLength', 'ParamInteger');
+
+
+/**
+ * Initializes this TextureCUBE object of the specified size and format and
+ * reserves the necessary resources for it.
+ * Note:  If enable_render_surfaces is true, then the dimensions must be a
+ * power of two.
+ *
+ * @param {number} edgeLength The edge of the texture area in texels
+ *     (max = 2048)
+ * @param {o3d.Texture.Format} format The memory format of each texel.
+ * @param {number} levels The number of mipmap levels.   Use zero to create
+ *     the compelete mipmap chain.
+ * @param {boolean} enableRenderSurfaces If true, the texture object
+ *     will expose RenderSurface objects through GetRenderSurface(...).
+ * @private
+ */
+o3d.TextureCUBE.prototype.init_ =
+    function(edgeLength, format, levels, enableRenderSurfaces) {
+  this.edgeLength = edgeLength;
+  this.texture_ = this.gl.createTexture();
+  this.texture_target_ = this.gl.TEXTURE_CUBE_MAP;
+  this.texture_width_ = edgeLength;
+  this.texture_height_ = edgeLength;
+
+  this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.texture_);
+  // TODO(petersont): remove this allocation once Firefox supports
+  // passing null as argument to this form of texImage2D.
+  var t = new WebGLUnsignedByteArray(edgeLength * edgeLength * 4);
+  for (var ii = 0; ii < 6; ++ii) {
+    this.gl.texImage2D(this.gl.TEXTURE_CUBE_MAP_POSITIVE_X + ii,
+                       0, this.gl.RGBA, edgeLength, edgeLength, 0,
+                       this.gl.RGBA, this.gl.UNSIGNED_BYTE, t);
+  }
+
+  this.texture_width_ = edgeLength;
+  this.texture_height_ = edgeLength;
+};
 
 
 /**
@@ -511,17 +649,21 @@ o3d.TextureCUBE.prototype.getRect =
  */
 o3d.TextureCUBE.prototype.setFromBitmap =
     function(face, bitmap) {
-  this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.texture_);
-  this.gl.texImage2D(this.gl.TEXTURE_CUBE_MAP_POSITIVE_X + face,
-                     0,  // Level.
-                     bitmap.canvas_,
-                     false); // Do not flip cube maps' faces.
-  // TODO(petersont): figure out when we should call generateMipmaps.
-  // TODO(petersont): move generateMips to Texture2D / TextureCUBE
-  // classes because the target needs to differ.
-  //  if (bitmap.defer_mipmaps_to_texture_) {
-  //    this.generateMips();
-  //  }
+
+  var generate_mipmaps = bitmap.defer_mipmaps_to_texture_;
+  for (var f in this.faces_set_) {
+    generate_mipmaps = generate_mipmaps &&
+        (this.faces_set_[f] || f==face);
+  }
+
+  var resize_to_pot = bitmap.defer_mipmaps_to_texture_;
+  this.setFromCanvas_(bitmap.canvas_,
+                      resize_to_pot,
+                      false, // Never flip cube maps.
+                      generate_mipmaps,
+                      face);
+
+  this.faces_set_[face] = true;
 };
 
 
@@ -568,6 +710,12 @@ o3d.Texture.prototype.bindAndSetParameters_ =
     function(addressModeU, addressModeV, minFilter, magFilter) {
   var target = this.texture_target_;
   this.gl.bindTexture(target, this.texture_);
+
+  if (!(o3d.Texture.isPowerOfTwo_(this.texture_width_) &&
+        o3d.Texture.isPowerOfTwo_(this.texture_height_)) ||
+        this.texture_target_ == this.gl.TEXTURE_CUBE_MAP) {
+    addressModeU = addressModeV = this.gl.CLAMP_TO_EDGE;
+  }
 
   if (this.parameter_cache_.addressModeU != addressModeU) {
     this.gl.texParameteri(target, this.gl.TEXTURE_WRAP_S, addressModeU);

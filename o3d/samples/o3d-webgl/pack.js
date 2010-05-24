@@ -202,21 +202,7 @@ o3d.Pack.prototype.createObject =
 o3d.Pack.prototype.createTexture2D =
     function(width, height, format, levels, enable_render_surfaces) {
   var texture = this.createObject('Texture2D');
-  texture.width = width;
-  texture.height = height;
-  texture.levels = levels;
-  texture.texture_ = this.gl.createTexture();
-  texture.texture_target_ = this.gl.TEXTURE_2D;
-
-  if (width != undefined && height != undefined) {
-    this.gl.bindTexture(this.gl.TEXTURE_2D, texture.texture_);
-    // TODO(petersont): remove this allocation once Firefox supports
-    // passing null as argument to this form of texImage2D.
-    var t = new WebGLUnsignedByteArray(width * height * 4);
-    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, width, height,
-        0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, t);
-  }
-
+  texture.init_(width, height, format, levels, enable_render_surfaces);
   return texture;
 };
 
@@ -238,30 +224,9 @@ o3d.Pack.prototype.createTexture2D =
  */
 o3d.Pack.prototype.createTextureCUBE =
     function(edgeLength, format, levels, enableRenderSurfaces) {
-  var texture = this.createObject('TextureCUBE');
-  texture.edgeLength = edgeLength;
-  texture.texture_ = this.gl.createTexture();
-  texture.texture_target_ = this.gl.TEXTURE_CUBE_MAP;
-
-  this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, texture.texture_);
-  // TODO(petersont): remove this allocation once Firefox supports
-  // passing null as argument to this form of texImage2D.
-  var t = new WebGLUnsignedByteArray(edgeLength * edgeLength * 4);
-  for (var ii = 0; ii < 6; ++ii) {
-    this.gl.texImage2D(this.gl.TEXTURE_CUBE_MAP_POSITIVE_X + ii,
-                       0, this.gl.RGBA, edgeLength, edgeLength, 0,
-                       this.gl.RGBA, this.gl.UNSIGNED_BYTE, t);
-  }
-  this.gl.texParameteri(this.gl.TEXTURE_CUBE_MAP,
-    this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
-  this.gl.texParameteri(this.gl.TEXTURE_CUBE_MAP,
-    this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
-  this.gl.texParameteri(this.gl.TEXTURE_CUBE_MAP,
-    this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
-  this.gl.texParameteri(this.gl.TEXTURE_CUBE_MAP,
-    this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
-
-  return texture;
+  var textureCube = this.createObject('TextureCUBE');
+  textureCube.init_(edgeLength, format, levels, enableRenderSurfaces);
+  return textureCube;
 };
 
 
@@ -419,7 +384,7 @@ o3d.Pack.prototype.createBitmapsFromRawData =
   // Most images require a vertical flip.
   bitmap.flipVerticallyLazily_();
 
-  // TODO(petersont): I'm not sure how to get the format.
+  // TODO(petersont): Find out if any other formats are possible at this point.
   bitmap.format = o3d.Texture.ARGB8;
   bitmap.numMipmaps = 1;
 
