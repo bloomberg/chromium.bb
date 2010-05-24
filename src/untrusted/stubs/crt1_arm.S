@@ -85,9 +85,15 @@ _start:
     nop
     bl __av_wait
 
+    /* TODO(robertm): We should be doing this in sel_ldr. */
     ldr r0, [sp] /* get argc */
-    mov r1, sp  /* get argv */
-    add r1, #4
+    add r1, sp, #4 /* get argv */
+    bic r2, sp, #7 /* aligned stack value in r2 */
+    teq r2, sp  /* update sp until sp == r2*/
+
+    pushne {r1}
+    teq r2, sp
+    pushne {r1}
     bl main
 
     str r0, [sp] /* save return value from main().
