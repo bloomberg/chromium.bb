@@ -893,6 +893,8 @@ void LocationBarViewGtk::UpdateEVCertificateLabelSize() {
   // code is always visible.
   gtk_label_set_max_width_chars(GTK_LABEL(security_info_label_),
                                 std::max(10, max_chars));
+
+  pango_font_metrics_unref(metrics);
 }
 
 void LocationBarViewGtk::SetKeywordLabel(const std::wstring& keyword) {
