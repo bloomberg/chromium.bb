@@ -16,6 +16,7 @@
 namespace {
 
 const char kGTestListTestsFlag[] = "gtest_list_tests";
+const char kGTestOutputFlag[] = "gtest_output";
 const char kGTestHelpFlag[]   = "gtest_help";
 const char kSingleProcessTestsFlag[]   = "single_process";
 const char kSingleProcessTestsAndChromeFlag[]   = "single-process";
@@ -42,12 +43,17 @@ class OutOfProcTestRunner : public tests::TestRunner {
   // Returns true if the test succeeded, false if it failed.
   bool RunTest(const std::string& test_name) {
     const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-#if defined(OS_WIN)
-    CommandLine new_cmd_line =
-        CommandLine::FromString(cmd_line->command_line_string());
-#else
-    CommandLine new_cmd_line(cmd_line->argv());
-#endif
+    // Construct the new command line.  Strip out gtest_output flag if
+    // it has been given because otherwise each test outputs the same file
+    // over and over overriding the previous one every time.
+    // We will generate the final output file later in RunTests().
+    CommandLine new_cmd_line(cmd_line->GetProgram());
+    CommandLine::SwitchMap switches = cmd_line->GetSwitches();
+    switches.erase(kGTestOutputFlag);
+    for (CommandLine::SwitchMap::const_iterator iter = switches.begin();
+         iter != switches.end(); ++iter) {
+      new_cmd_line.AppendSwitchWithValue((*iter).first, (*iter).second);
+    }
 
     // Always enable disabled tests.  This method is not called with disabled
     // tests unless this flag was specified to the browser test executable.
