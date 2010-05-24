@@ -36,6 +36,7 @@
 #include "views/controls/button/button.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/menu/menu_2.h"
+#include "views/screen.h"
 #include "views/widget/root_view.h"
 #include "views/window/hit_test.h"
 #include "views/window/window.h"
@@ -424,6 +425,19 @@ views::LayoutManager* BrowserView::CreateLayoutManager() const {
 void BrowserView::ChildPreferredSizeChanged(View* child) {
   Layout();
   SchedulePaint();
+}
+
+bool BrowserView::GetSavedWindowBounds(gfx::Rect* bounds) const {
+  if ((browser()->type() & Browser::TYPE_POPUP) == 0) {
+    // Typically we don't request a full screen size. This means we'll request a
+    // non-full screen size, layout/paint at that size, then the window manager
+    // will snap us to full screen size. This results in an ugly
+    // resize/paint. To avoid this we always request a full screen size.
+    *bounds = views::Screen::GetMonitorWorkAreaNearestWindow(
+        GTK_WIDGET(GetWindow()->GetNativeWindow()));
+    return true;
+  }
+  return ::BrowserView::GetSavedWindowBounds(bounds);
 }
 
 // views::ContextMenuController overrides.

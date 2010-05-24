@@ -63,6 +63,7 @@ class BrowserView : public ::BrowserView,
   virtual void ToggleCompactNavigationBar();
   virtual views::LayoutManager* CreateLayoutManager() const;
   virtual void ChildPreferredSizeChanged(View* child);
+  virtual bool GetSavedWindowBounds(gfx::Rect* bounds) const;
 
   // views::ContextMenuController overrides.
   virtual void ShowContextMenu(views::View* source,
