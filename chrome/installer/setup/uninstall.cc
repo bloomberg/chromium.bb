@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -139,20 +139,21 @@ bool ScheduleParentAndGrandparentForDeletion(const FilePath& path) {
 }
 
 // Deletes empty parent & empty grandparent dir of given path.
-bool DeleteEmptyParentDir(const std::wstring& path) {
+bool DeleteEmptyParentDir(const FilePath& path) {
   bool ret = true;
-  std::wstring parent_dir = file_util::GetDirectoryFromPath(path);
-  if (!parent_dir.empty() && file_util::IsDirectoryEmpty(parent_dir)) {
+  FilePath parent_dir = path.DirName();
+  if (!parent_dir.empty() && file_util::IsDirectoryEmpty(parent_dir.value())) {
     if (!file_util::Delete(parent_dir, true)) {
       ret = false;
-      LOG(ERROR) << "Failed to delete folder: " << parent_dir;
+      LOG(ERROR) << "Failed to delete folder: " << parent_dir.value();
     }
 
-    parent_dir = file_util::GetDirectoryFromPath(parent_dir);
-    if (!parent_dir.empty() && file_util::IsDirectoryEmpty(parent_dir)) {
+    parent_dir = parent_dir.DirName();
+    if (!parent_dir.empty() &&
+        file_util::IsDirectoryEmpty(parent_dir.value())) {
       if (!file_util::Delete(parent_dir, true)) {
         ret = false;
-        LOG(ERROR) << "Failed to delete folder: " << parent_dir;
+        LOG(ERROR) << "Failed to delete folder: " << parent_dir.value();
       }
     }
   }
@@ -257,7 +258,7 @@ DeleteResult DeleteFilesAndFolders(const std::wstring& exe_path,
     if (result == DELETE_REQUIRES_REBOOT) {
       ScheduleParentAndGrandparentForDeletion(user_local_state);
     } else {
-      DeleteEmptyParentDir(user_local_state.value());
+      DeleteEmptyParentDir(user_local_state);
     }
   }
 
@@ -269,7 +270,7 @@ DeleteResult DeleteFilesAndFolders(const std::wstring& exe_path,
   } else {
     // Now check and delete if the parent directories are empty
     // For example Google\Chrome or Chromium
-    DeleteEmptyParentDir(install_path);
+    DeleteEmptyParentDir(FilePath(install_path));
   }
   return result;
 }

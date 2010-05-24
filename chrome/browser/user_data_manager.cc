@@ -258,16 +258,16 @@ bool UserDataManager::CreateShortcutForProfileInFolder(
     const FilePath& folder,
     const std::wstring& profile_name) const {
 #if defined(OS_WIN)
-  std::wstring exe_path;
+  FilePath exe_path;
   if (!PathService::Get(base::FILE_EXE, &exe_path))
     return false;
 
   // Working directory.
-  std::wstring exe_folder = file_util::GetDirectoryFromPath(exe_path);
+  FilePath exe_folder = exe_path.DirName();
 
   // Command and arguments.
   std::wstring cmd;
-  cmd = StringPrintf(L"\"%ls\"", exe_path.c_str());
+  cmd = StringPrintf(L"\"%ls\"", exe_path.value().c_str());
   std::wstring user_data_dir = GetUserDataFolderForProfile(profile_name);
   std::wstring args = CommandLine::PrefixedSwitchStringWithValue(
       switches::kUserDataDir,
@@ -288,10 +288,10 @@ bool UserDataManager::CreateShortcutForProfileInFolder(
   return file_util::CreateShortcutLink(
       cmd.c_str(),
       shortcut_path.value().c_str(),
-      exe_folder.c_str(),
+      exe_folder.value().c_str(),
       args.c_str(),
       NULL,
-      exe_path.c_str(),
+      exe_path.value().c_str(),
       0,
       ShellIntegration::GetChromiumAppId(profile_path).c_str());
 #else

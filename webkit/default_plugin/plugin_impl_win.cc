@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -583,14 +583,13 @@ LRESULT PluginInstallerImpl::OnCopyData(UINT message, WPARAM wparam,
     std::wstring file_path =
         reinterpret_cast<const wchar_t*>(download_file_info->lpData);
 
-    std::wstring current_directory =
-        file_util::GetDirectoryFromPath(file_path);
+    FilePath current_directory = FilePath(file_path).DirName();
 
     SHELLEXECUTEINFO shell_execute_info = {0};
     shell_execute_info.cbSize = sizeof(shell_execute_info);
     shell_execute_info.fMask = SEE_MASK_NOCLOSEPROCESS;
     shell_execute_info.lpFile = file_path.c_str();
-    shell_execute_info.lpDirectory = current_directory.c_str();
+    shell_execute_info.lpDirectory = current_directory.value().c_str();
     shell_execute_info.nShow = SW_SHOW;
 
     if (!ShellExecuteEx(&shell_execute_info)) {

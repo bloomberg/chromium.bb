@@ -355,14 +355,14 @@ bool CreateShortcutTask::CreateShortcut() {
     return false;
   }
 
-  std::wstring chrome_exe;
+  FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
     NOTREACHED();
     return false;
   }
 
   // Working directory.
-  std::wstring chrome_folder = file_util::GetDirectoryFromPath(chrome_exe);
+  FilePath chrome_folder = chrome_exe.DirName();
 
   std::string switches =
      ShellIntegration::GetCommandLineArgumentsCommon(shortcut_info_.url,
@@ -393,9 +393,9 @@ bool CreateShortcutTask::CreateShortcut() {
       download_util::AppendNumberToPath(&shortcut_file, unique_number);
     }
 
-    success &= file_util::CreateShortcutLink(chrome_exe.c_str(),
+    success &= file_util::CreateShortcutLink(chrome_exe.value().c_str(),
         shortcut_file.value().c_str(),
-        chrome_folder.c_str(),
+        chrome_folder.value().c_str(),
         wide_switchs.c_str(),
         shortcut_info_.description.c_str(),
         icon_file.value().c_str(),
