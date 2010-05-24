@@ -85,17 +85,18 @@ _start:
     nop
     bl __av_wait
 
-    pop {r0}    /* get argc */
+    ldr r0, [sp] /* get argc */
     mov r1, sp  /* get argv */
-    nop
+    add r1, #4
     bl main
 
-    push {r0} /* save return value from main() */
+    str r0, [sp] /* save return value from main().
+                    this memory location used to contain argc */
     nop
     nop
     bl __srpc_wait
 
-    pop {r0}  /* restore return value */
+    ldr r0, [sp]  /* restore return value from main() */
     nop
     nop
     bl exit    /* from newlib */
