@@ -317,8 +317,10 @@ void RenderWidgetHostViewMac::SetIsLoading(bool is_loading) {
 void RenderWidgetHostViewMac::IMEUpdateStatus(int control,
                                               const gfx::Rect& caret_rect) {
   // Reset the IME state and finish an ongoing composition in the renderer.
-  if (control == IME_DISABLE || control == IME_COMPLETE_COMPOSITION)
+  if (control == IME_DISABLE || control == IME_COMPLETE_COMPOSITION ||
+      control == IME_CANCEL_COMPOSITION) {
     [cocoa_view_ cancelComposition];
+  }
 
   // We need to convert the coordinate of the cursor rectangle sent from the
   // renderer and save it. Our IME backend uses a coordinate system whose
