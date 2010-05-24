@@ -4,6 +4,7 @@
 
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/cocoa/web_drop_target.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
@@ -59,26 +60,30 @@ TEST_F(WebDropTargetTest, Flip) {
   NSPoint screenPoint =
       [drop_target_ flipWindowPointToScreen:windowPoint
                                view:[window contentView]];
-  EXPECT_EQ(viewPoint.x, 0);
-  EXPECT_EQ(viewPoint.y, 600);
-  EXPECT_EQ(screenPoint.x, 0);
+  EXPECT_EQ(0, viewPoint.x);
+  EXPECT_EQ(600, viewPoint.y);
+  EXPECT_EQ(0, screenPoint.x);
   // We can't put a value on the screen size since everyone will have a
   // different one.
-  EXPECT_NE(screenPoint.y, 0);
+  EXPECT_NE(0, screenPoint.y);
 }
 
 TEST_F(WebDropTargetTest, URL) {
   NSPasteboard* pboard = nil;
   NSString* url = nil;
   NSString* title = nil;
-  WebDropData data;
+  GURL result_url;
+  string16 result_title;
 
   // Put a URL on the pasteboard and check it.
   pboard = [NSPasteboard pasteboardWithUniqueName];
   url = @"http://www.google.com/";
   PutURLOnPasteboard(url, pboard);
-  EXPECT_TRUE([drop_target_ populateURLAndTitle:&data fromPasteboard:pboard]);
-  EXPECT_EQ(data.url.spec(), base::SysNSStringToUTF8(url));
+  EXPECT_TRUE([drop_target_ populateURL:&result_url
+                               andTitle:&result_title
+                         fromPasteboard:pboard
+                    convertingFilenames:NO]);
+  EXPECT_EQ(base::SysNSStringToUTF8(url), result_url.spec());
   [pboard releaseGlobally];
 
   // Put a 'url ' and 'urln' on the pasteboard and check it.
@@ -86,9 +91,12 @@ TEST_F(WebDropTargetTest, URL) {
   url = @"http://www.google.com/";
   title = @"Title of Awesomeness!",
   PutCoreURLAndTitleOnPasteboard(url, title, pboard);
-  EXPECT_TRUE([drop_target_ populateURLAndTitle:&data fromPasteboard:pboard]);
-  EXPECT_EQ(data.url.spec(), base::SysNSStringToUTF8(url));
-  EXPECT_EQ(data.url_title, base::SysNSStringToUTF16(title));
+  EXPECT_TRUE([drop_target_ populateURL:&result_url
+                               andTitle:&result_title
+                         fromPasteboard:pboard
+                    convertingFilenames:NO]);
+  EXPECT_EQ(base::SysNSStringToUTF8(url), result_url.spec());
+  EXPECT_EQ(base::SysNSStringToUTF16(title), result_title);
   [pboard releaseGlobally];
 
   // Also check that it passes file:// via 'url '/'urln' properly.
@@ -96,9 +104,12 @@ TEST_F(WebDropTargetTest, URL) {
   url = @"file:///tmp/dont_delete_me.txt";
   title = @"very important";
   PutCoreURLAndTitleOnPasteboard(url, title, pboard);
-  EXPECT_TRUE([drop_target_ populateURLAndTitle:&data fromPasteboard:pboard]);
-  EXPECT_EQ(data.url.spec(), base::SysNSStringToUTF8(url));
-  EXPECT_EQ(data.url_title, base::SysNSStringToUTF16(title));
+  EXPECT_TRUE([drop_target_ populateURL:&result_url
+                               andTitle:&result_title
+                         fromPasteboard:pboard
+                    convertingFilenames:NO]);
+  EXPECT_EQ(base::SysNSStringToUTF8(url), result_url.spec());
+  EXPECT_EQ(base::SysNSStringToUTF16(title), result_title);
   [pboard releaseGlobally];
 
   // And javascript:.
@@ -106,9 +117,30 @@ TEST_F(WebDropTargetTest, URL) {
   url = @"javascript:open('http://www.youtube.com/')";
   title = @"kill some time";
   PutCoreURLAndTitleOnPasteboard(url, title, pboard);
-  EXPECT_TRUE([drop_target_ populateURLAndTitle:&data fromPasteboard:pboard]);
-  EXPECT_EQ(data.url.spec(), base::SysNSStringToUTF8(url));
-  EXPECT_EQ(data.url_title, base::SysNSStringToUTF16(title));
+  EXPECT_TRUE([drop_target_ populateURL:&result_url
+                               andTitle:&result_title
+                         fromPasteboard:pboard
+                    convertingFilenames:NO]);
+  EXPECT_EQ(base::SysNSStringToUTF8(url), result_url.spec());
+  EXPECT_EQ(base::SysNSStringToUTF16(title), result_title);
+  [pboard releaseGlobally];
+
+  pboard = [NSPasteboard pasteboardWithUniqueName];
+  url = @"/bin/sh";
+  [pboard declareTypes:[NSArray arrayWithObject:NSFilenamesPboardType]
+                 owner:nil];
+  [pboard setPropertyList:[NSArray arrayWithObject:url]
+                  forType:NSFilenamesPboardType];
+  EXPECT_FALSE([drop_target_ populateURL:&result_url
+                                andTitle:&result_title
+                          fromPasteboard:pboard
+                    convertingFilenames:NO]);
+  EXPECT_TRUE([drop_target_ populateURL:&result_url
+                               andTitle:&result_title
+                         fromPasteboard:pboard
+                    convertingFilenames:YES]);
+  EXPECT_EQ("file://localhost/bin/sh", result_url.spec());
+  EXPECT_EQ("sh", UTF16ToUTF8(result_title));
   [pboard releaseGlobally];
 }
 
@@ -126,8 +158,8 @@ TEST_F(WebDropTargetTest, Data) {
   [pboard setString:textString forType:NSStringPboardType];
   [drop_target_ populateWebDropData:&data fromPasteboard:pboard];
   EXPECT_EQ(data.url.spec(), "http://www.google.com/");
-  EXPECT_EQ(data.plain_text, base::SysNSStringToUTF16(textString));
-  EXPECT_EQ(data.text_html, base::SysNSStringToUTF16(htmlString));
+  EXPECT_EQ(base::SysNSStringToUTF16(textString), data.plain_text);
+  EXPECT_EQ(base::SysNSStringToUTF16(htmlString), data.text_html);
 
   [pboard releaseGlobally];
 }

@@ -951,7 +951,7 @@ TEST_F(BookmarkBarControllerTest, DropBookmarks) {
     "http://qwantz.com",
     "http://xkcd.com",
     "javascript:alert('lolwut')",
-    "/tmp/local-file.txt"  // As if dragged from the desktop.
+    "file://localhost/tmp/local-file.txt"  // As if dragged from the desktop.
   };
   std::wstring titles[] = {
     std::wstring(L"Philosophoraptor"),

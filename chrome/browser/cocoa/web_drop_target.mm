@@ -159,9 +159,12 @@ using WebKit::WebDragOperationsMask;
   if ([self onlyAllowsNavigation]) {
     NSPasteboard* pboard = [info draggingPasteboard];
     if ([pboard containsURLData]) {
-      WebDropData data;
-      [self populateURLAndTitle:&data fromPasteboard:pboard];
-      tabContents_->OpenURL(data.url, GURL(), CURRENT_TAB,
+      GURL url;
+      [self populateURL:&url
+          andTitle:NULL
+          fromPasteboard:pboard
+          convertingFilenames:YES];
+      tabContents_->OpenURL(url, GURL(), CURRENT_TAB,
                             PageTransition::AUTO_BOOKMARK);
       return YES;
     }
@@ -189,42 +192,41 @@ using WebKit::WebDragOperationsMask;
   return YES;
 }
 
-// Populate the URL portion of |data|. There may be more than one, but we only
-// handle dropping the first. |data| must not be |NULL|. Returns |YES| if URL
-// data was obtained from the pasteboard, |NO| otherwise.
-- (BOOL)populateURLAndTitle:(WebDropData*)data
-             fromPasteboard:(NSPasteboard*)pboard {
-  DCHECK(data);
+// Populate the |url| and |title| with URL data in |pboard|. There may be more
+// than one, but we only handle dropping the first. |url| must not be |NULL|;
+// |title| is an optional parameter. Returns |YES| if URL data was obtained from
+// the pasteboard, |NO| otherwise. If |convertFilenames| is |YES|, the function
+// will also attempt to convert filenames in |pboard| to file URLs.
+- (BOOL)populateURL:(GURL*)url
+    andTitle:(string16*)title
+    fromPasteboard:(NSPasteboard*)pboard
+    convertingFilenames:(BOOL)convertFilenames {
+  DCHECK(url);
+  DCHECK(title);
 
   // Bail out early if there's no URL data.
   if (![pboard containsURLData])
     return NO;
 
-  // |-getURLs:andTitles:| will already validate URIs so we don't need to again.
-  // However, if the URI is a local file, it won't be prefixed with file://,
-  // which is what GURL expects. We can detect that case because the resulting
-  // URI will have no valid scheme, and we'll assume it's a local file. The
-  // arrays returned are both of NSString's.
+  // |-getURLs:andTitles:convertingFilenames:| will already validate URIs so we
+  // don't need to again. The arrays returned are both of NSString's.
   NSArray* urls = nil;
   NSArray* titles = nil;
-  [pboard getURLs:&urls andTitles:&titles];
+  [pboard getURLs:&urls andTitles:&titles convertingFilenames:convertFilenames];
   DCHECK_EQ([urls count], [titles count]);
   // It's possible that no URLs were actually provided!
   if (![urls count])
     return NO;
   NSString* urlString = [urls objectAtIndex:0];
   if ([urlString length]) {
-    NSURL* url = [NSURL URLWithString:urlString];
-    if (![url scheme])
-      urlString = [[NSURL fileURLWithPath:urlString] absoluteString];
     // Check again just to make sure to not assign NULL into a std::string,
     // which throws an exception.
     const char* utf8Url = [urlString UTF8String];
     if (utf8Url) {
-      data->url = GURL(utf8Url);
+      *url = GURL(utf8Url);
       // Extra paranoia check.
-      if ([titles count])
-        data->url_title = base::SysNSStringToUTF16([titles objectAtIndex:0]);
+      if (title && [titles count])
+        *title = base::SysNSStringToUTF16([titles objectAtIndex:0]);
     }
   }
   return YES;
@@ -238,8 +240,12 @@ using WebKit::WebDragOperationsMask;
   DCHECK(pboard);
   NSArray* types = [pboard types];
 
-  // Get URL if possible.
-  [self populateURLAndTitle:data fromPasteboard:pboard];
+  // Get URL if possible. To avoid exposing file system paths to web content,
+  // filenames in the drag are not converted to file URLs.
+  [self populateURL:&data->url
+      andTitle:&data->url_title
+      fromPasteboard:pboard
+      convertingFilenames:NO];
 
   // Get plain text.
   if ([types containsObject:NSStringPboardType]) {

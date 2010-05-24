@@ -166,13 +166,15 @@ NSString* const kWebURLsWithTitlesPboardType  = @"WebURLsWithTitlesPboardType"; 
   }
 }
 
-//
-// Get the set of URLs and their corresponding titles from the clipboards
+// Get the set of URLs and their corresponding titles from the pasteboard.
 // If there are no URLs in a format we understand on the pasteboard empty
 // arrays will be returned. The two arrays will always be the same size.
-// The arrays returned are on the auto release pool.
-//
-- (void) getURLs:(NSArray**)outUrls andTitles:(NSArray**)outTitles
+// The arrays returned are on the auto release pool. If |convertFilenames|
+// is YES, then the function will attempt to convert filenames in the drag
+// to file URLs.
+- (void) getURLs:(NSArray**)outUrls
+    andTitles:(NSArray**)outTitles
+    convertingFilenames:(BOOL)convertFilenames
 {
   NSArray* types = [self types];
   NSURL* urlFromNSURL = nil;  // Used below in getting an URL from the NSURLPboardType.
@@ -206,10 +208,13 @@ NSString* const kWebURLsWithTitlesPboardType  = @"WebURLsWithTitlesPboardType"; 
         }
       }
       
-      // Use the filename if not a .webloc or .url file, or if either of the
-      // functions returns nil.
       if (!urlString) {
-        urlString = file;
+        if (!convertFilenames) {
+          continue;
+        }
+        // Use the filename if not a .webloc or .url file, or if either of the
+        // functions returns nil.
+        urlString = [[NSURL fileURLWithPath:file] absoluteString];
         title     = [file lastPathComponent];
       }
 

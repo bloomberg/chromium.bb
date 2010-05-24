@@ -158,7 +158,7 @@
 
   NSArray* urls = nil;
   NSArray* titles = nil;
-  [pboard getURLs:&urls andTitles:&titles];
+  [pboard getURLs:&urls andTitles:&titles convertingFilenames:YES];
 
   return [[self controller] addURLs:urls
                          withTitles:titles

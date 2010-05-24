@@ -62,7 +62,7 @@
   if ([pboard containsURLData]) {
     NSArray* urls = nil;
     NSArray* titles;  // discarded
-    [pboard getURLs:&urls andTitles:&titles];
+    [pboard getURLs:&urls andTitles:&titles convertingFilenames:YES];
 
     if ([urls count]) {
       // Tell the window controller about the dropped URL(s).

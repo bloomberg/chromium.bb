@@ -4,6 +4,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/string16.h"
+
+class GURL;
 class RenderViewHost;
 class TabContents;
 class WebDropData;
@@ -53,11 +56,15 @@ typedef RenderViewHost* RenderViewHostIdentifier;
 
 // Public use only for unit tests.
 @interface WebDropTarget(Testing)
-// Populate the URL portion of |data|. There may be more than one, but we only
-// handle dropping the first. |data| must not be |NULL|. Returns |YES| if URL
-// data was obtained from the pasteboard, |NO| otherwise.
-- (BOOL)populateURLAndTitle:(WebDropData*)data
-             fromPasteboard:(NSPasteboard*)pboard;
+// Populate the |url| and |title| with URL data in |pboard|. There may be more
+// than one, but we only handle dropping the first. |url| must not be |NULL|;
+// |title| is an optional parameter. Returns |YES| if URL data was obtained from
+// the pasteboard, |NO| otherwise. If |convertFilenames| is |YES|, the function
+// will also attempt to convert filenames in |pboard| to file URLs.
+- (BOOL)populateURL:(GURL*)url
+    andTitle:(string16*)title
+    fromPasteboard:(NSPasteboard*)pboard
+    convertingFilenames:(BOOL)convertFilenames;
 // Given |data|, which should not be nil, fill it in using the contents of the
 // given pasteboard.
 - (void)populateWebDropData:(WebDropData*)data

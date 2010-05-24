@@ -51,7 +51,9 @@ extern NSString* const kWebURLsWithTitlesPboardType;
 - (void) setDataForURL:(NSString*)url title:(NSString*)title;
 
 - (void) setURLs:(NSArray*)inUrls withTitles:(NSArray*)inTitles;
-- (void) getURLs:(NSArray**)outUrls andTitles:(NSArray**)outTitles;
+- (void) getURLs:(NSArray**)outUrls
+    andTitles:(NSArray**)outTitles
+    convertingFilenames:(BOOL)convertFilenames;
 - (BOOL) containsURLData;
 
 @end

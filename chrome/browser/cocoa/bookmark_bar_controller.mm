@@ -2132,15 +2132,11 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     // Create and add the new bookmark nodes.
     size_t urlCount = [urls count];
     for (size_t i = 0; i < urlCount; ++i) {
-      // URLs come in several forms (see NSPasteboard+Utils.mm).
       GURL gurl;
       const char* string = [[urls objectAtIndex:i] UTF8String];
       if (string)
         gurl = GURL(string);
-      if (!gurl.is_valid() && string) {
-        gurl = GURL([[NSString stringWithFormat:@"file://%s", string]
-                     UTF8String]);
-      }
+      // We only expect to receive valid URLs.
       DCHECK(gurl.is_valid());
       if (gurl.is_valid()) {
         bookmarkModel_->AddURL(destParent,

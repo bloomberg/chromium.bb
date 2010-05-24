@@ -42,7 +42,7 @@
                         name:kBrowserThemeDidChangeNotification
                       object:nil];
 
-  DCHECK(controller_ && "Expected this to be hooked up via Interface Builder");
+  DCHECK(controller_) << "Expected this to be hooked up via Interface Builder";
   NSArray* types = [NSArray arrayWithObjects:
                     NSStringPboardType,
                     NSHTMLPboardType,
@@ -200,7 +200,7 @@
 
   NSArray* urls = nil;
   NSArray* titles = nil;
-  [pboard getURLs:&urls andTitles:&titles];
+  [pboard getURLs:&urls andTitles:&titles convertingFilenames:YES];
 
   return [controller_ addURLs:urls
                    withTitles:titles

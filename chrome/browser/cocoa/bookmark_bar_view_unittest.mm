@@ -111,7 +111,9 @@ namespace {
   return YES;
 }
 
-- (void)getURLs:(NSArray**)outUrls andTitles:(NSArray**)outTitles {
+- (void)getURLs:(NSArray**)outUrls
+    andTitles:(NSArray**)outTitles
+    convertingFilenames:(BOOL)convertFilenames {
 }
 
 - (BOOL)dragBookmarkData:(id<NSDraggingInfo>)info {
