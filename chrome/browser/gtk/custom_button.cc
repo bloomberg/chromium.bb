@@ -27,7 +27,8 @@ CustomDrawButtonBase::CustomDrawButtonBase(GtkThemeProvider* theme_provider,
       highlight_id_(highlight_id),
       depressed_id_(depressed_id),
       button_background_id_(background_id),
-      theme_provider_(theme_provider) {
+      theme_provider_(theme_provider),
+      flipped_(false) {
   for (int i = 0; i < (GTK_STATE_INSENSITIVE + 1); ++i)
     surfaces_[i].reset(new CairoCachedSurface);
   background_image_.reset(new CairoCachedSurface);
@@ -88,6 +89,12 @@ gboolean CustomDrawButtonBase::OnExpose(GtkWidget* widget,
 
   cairo_t* cairo_context = gdk_cairo_create(GDK_DRAWABLE(widget->window));
   cairo_translate(cairo_context, widget->allocation.x, widget->allocation.y);
+
+  if (flipped_) {
+    // Horizontally flip the image for non-LTR/RTL reasons.
+    cairo_translate(cairo_context, widget->allocation.width, 0.0f);
+    cairo_scale(cairo_context, -1.0f, 1.0f);
+  }
 
   // The widget might be larger than the pixbuf. Paint the pixbuf flush with the
   // start of the widget (left for LTR, right for RTL) and its bottom.

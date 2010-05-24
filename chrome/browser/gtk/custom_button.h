@@ -39,6 +39,10 @@ class CustomDrawButtonBase : public NotificationObserver {
 
   ~CustomDrawButtonBase();
 
+  // Flip the image horizontally. Not to be used for RTL/LTR reasons. (In RTL
+  // mode, this will unflip the image.)
+  void set_flipped(bool flipped) { flipped_ = flipped; }
+
   // Returns the dimensions of the first surface.
   int Width() const;
   int Height() const;
@@ -78,6 +82,11 @@ class CustomDrawButtonBase : public NotificationObserver {
   int depressed_id_;
   int button_background_id_;
   GtkThemeProvider* theme_provider_;
+
+  // Whether the button is flipped horizontally. Not used for RTL (we get
+  // flipped versions from the theme provider). Used for the flipped window
+  // buttons.
+  bool flipped_;
 
   // Used to listen for theme change notifications.
   NotificationRegistrar registrar_;
@@ -139,6 +148,10 @@ class CustomDrawButton : public NotificationObserver {
   ~CustomDrawButton();
 
   void Init();
+
+  // Flip the image horizontally. Not to be used for RTL/LTR reasons. (In RTL
+  // mode, this will unflip the image.)
+  void set_flipped(bool flipped) { button_base_.set_flipped(flipped); }
 
   GtkWidget* widget() const { return widget_.get(); }
 

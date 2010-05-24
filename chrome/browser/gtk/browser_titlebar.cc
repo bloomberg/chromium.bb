@@ -346,6 +346,7 @@ void BrowserTitlebar::BuildButtons(const std::string& button_string) {
             BuildTitlebarButton(IDR_CLOSE, IDR_CLOSE_P,
                                 IDR_CLOSE_H, parent_box,
                                 IDS_XPFRAME_CLOSE_TOOLTIP));
+        close_button_->set_flipped(left_side);
 
         gtk_widget_size_request(close_button_->widget(), &close_button_req_);
       }
