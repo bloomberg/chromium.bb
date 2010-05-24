@@ -190,7 +190,7 @@
             '../build/linux/system.gyp:gtk',
             'packed_resources',
             # Needed to use the master_preferences functions
-            'installer/installer.gyp:installer_util',
+            'installer_util',
           ],
           'sources': [
             'app/chrome_dll_main.cc',
@@ -433,7 +433,7 @@
           'conditions': [
             ['branding=="Chrome"', {
               'dependencies': [
-                'installer/installer.gyp:linux_installer_configs',
+                'linux_installer_configs',
               ],
             }],
             ['selinux==0', {
@@ -473,8 +473,8 @@
         }],
         ['OS=="win"', {
           'dependencies': [
-            'installer/installer.gyp:installer_util',
-            'installer/installer.gyp:installer_util_strings',
+            'installer_util',
+            'installer_util_strings',
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../breakpad/breakpad.gyp:breakpad_sender',
             '../sandbox/sandbox.gyp:sandbox',
@@ -568,7 +568,7 @@
             # which contains all of the library code with Chromium
             # functionality.
             'chrome_dll_nacl_win64',
-            'installer/installer.gyp:installer_util_nacl_win64',
+            'installer_util_nacl_win64',
             'common_constants_win64',
             '../breakpad/breakpad.gyp:breakpad_handler_win64',
             '../breakpad/breakpad.gyp:breakpad_sender_win64',

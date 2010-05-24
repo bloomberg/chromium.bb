@@ -79,7 +79,7 @@
                 # up actual Chromium functionality into this .dll.
                 'chrome_dll_version',
                 'chrome_resources',
-                'installer/installer.gyp:installer_util_strings',
+                'installer_util_strings',
                 'worker',
                 '../printing/printing.gyp:printing',
                 '../net/net.gyp:net_resources',

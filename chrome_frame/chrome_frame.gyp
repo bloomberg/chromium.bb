@@ -181,7 +181,7 @@
           'dependencies': [
             # TODO(slightlyoff): Get automation targets working on OS X
             '../chrome/chrome.gyp:automation',
-            '../chrome/installer/installer.gyp:installer_util',
+            '../chrome/chrome.gyp:installer_util',
             '../google_update/google_update.gyp:google_update',
           ],
           'configurations': {
@@ -285,7 +285,7 @@
           },
           'dependencies': [
             '../chrome/chrome.gyp:automation',
-            '../chrome/installer/installer.gyp:installer_util',
+            '../chrome/chrome.gyp:installer_util',
             '../google_update/google_update.gyp:google_update',
           ]
         }],
@@ -338,11 +338,10 @@
       'conditions': [
         ['OS=="win"', {
           'dependencies': [
-            '../chrome/chrome.gyp:automation',
             '../breakpad/breakpad.gyp:breakpad_handler',
-            '../chrome/installer/installer.gyp:installer_util',
+            '../chrome/chrome.gyp:automation',
+            '../chrome/chrome.gyp:installer_util',
             '../google_update/google_update.gyp:google_update',
-            '../chrome/installer/installer.gyp:installer_util',
           ],
           'sources': [
             '../base/test/test_file_util_win.cc',
@@ -408,7 +407,7 @@
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../chrome/chrome.gyp:automation',
             '../chrome/chrome.gyp:chrome_dll_version',
-            '../chrome/installer/installer.gyp:installer_util',
+            '../chrome/chrome.gyp:installer_util',
             '../google_update/google_update.gyp:google_update',
           ],
           'configurations': {
@@ -475,7 +474,7 @@
           'dependencies': [
             # TODO(slightlyoff): Get automation targets working on OS X
             '../chrome/chrome.gyp:automation',
-            '../chrome/installer/installer.gyp:installer_util',
+            '../chrome/chrome.gyp:installer_util',
             '../google_update/google_update.gyp:google_update',
           ]
         }],
@@ -708,7 +707,7 @@
             # Make the archive build happy.
             '../chrome/chrome.gyp:syncapi',
             # Installer
-            '../chrome/installer/installer.gyp:installer_util',
+            '../chrome/chrome.gyp:installer_util',
             '../google_update/google_update.gyp:google_update',
             # Crash Reporting
             'crash_reporting/crash_reporting.gyp:crash_report',
@@ -798,7 +797,7 @@
             # Make the archive build happy.
             '../chrome/chrome.gyp:syncapi',
             # Installer
-            '../chrome/installer/installer.gyp:installer_util',
+            '../chrome/chrome.gyp:installer_util',
             '../google_update/google_update.gyp:google_update',
             # Crash Reporting
             'crash_reporting/crash_reporting.gyp:crash_report',

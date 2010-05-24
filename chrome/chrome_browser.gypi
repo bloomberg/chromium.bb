@@ -2815,7 +2815,7 @@
           ],
         }, { # OS != mac
           'dependencies': [
-            'installer/installer.gyp:installer_util',
+            'installer_util',
           ],
         }],
         ['OS=="win"', {

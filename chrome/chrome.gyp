@@ -37,7 +37,7 @@
     'nacl_win64_dependencies': [
       'common_nacl_win64',
       'common_constants_win64',
-      'installer/installer.gyp:installer_util_nacl_win64',
+      'installer_util_nacl_win64',
     ],
     'allocator_target': '../base/allocator/allocator.gyp:allocator',
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
@@ -124,6 +124,8 @@
     'chrome_common.gypi',
     'chrome_dll.gypi',
     'chrome_exe.gypi',
+    'chrome_installer.gypi',
+    'chrome_installer_util.gypi',
     'chrome_renderer.gypi',
     'chrome_tests.gypi',
     'common_constants.gypi',
@@ -225,7 +227,7 @@
           # will always get built before installer_util.
           'type': 'dummy_executable',
           'dependencies': ['../build/win/system.gyp:cygwin',
-                           'installer/installer.gyp:installer_util_strings',],
+                           'installer_util_strings',],
         }, {
           'type': 'none',
         }],
@@ -1361,7 +1363,6 @@
           'type': 'none',
           'dependencies': [
             'installer/mini_installer.gyp:*',
-            'installer/installer.gyp:*',
             '../app/app.gyp:*',
             '../base/base.gyp:*',
             '../chrome_frame/chrome_frame.gyp:*',
@@ -1551,7 +1552,7 @@
           'msvs_guid': '89C1C190-A5D1-4EC4-BD6A-67FF2195C7CC',
           'dependencies': [
             'common_constants',
-            'installer/installer.gyp:installer_util',
+            'installer_util',
             '../base/base.gyp:base',
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../breakpad/breakpad.gyp:breakpad_sender',

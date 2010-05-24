@@ -1181,7 +1181,7 @@
           ],
           'dependencies': [
             'chrome_dll_version',
-            'installer/installer.gyp:installer_util_strings',
+            'installer_util_strings',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             'test_chrome_plugin',  # run time dependency
             '<(allocator_target)',
@@ -1408,7 +1408,7 @@
           ],
           'dependencies': [
             'chrome_dll_version',
-            'installer/installer.gyp:installer_util_strings',
+            'installer_util_strings',
             '<(allocator_target)',
           ],
           'configurations': {
@@ -2023,7 +2023,7 @@
           ],
           'dependencies': [
             'chrome_dll_version',
-            'installer/installer.gyp:installer_util_strings',
+            'installer_util_strings',
             '../views/views.gyp:views',
             '<(allocator_target)',
           ],

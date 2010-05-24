@@ -15,7 +15,7 @@
           '../chrome.gyp:chrome_nacl_win64',
           '../chrome.gyp:chrome_dll',
           '../chrome.gyp:default_extensions',
-          'installer.gyp:setup',
+          '../chrome.gyp:setup',
         ],
         'include_dirs': [
           '../..',

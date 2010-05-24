@@ -108,7 +108,7 @@
         '<(DEPTH)/app/app.gyp:app_resources',
         '<(DEPTH)/chrome/chrome.gyp:chrome_dll_version',
         '<(DEPTH)/chrome/chrome.gyp:crash_service',  # run time dependency
-        '<(DEPTH)/chrome/installer/installer.gyp:installer_util_strings',
+        '<(DEPTH)/chrome/chrome.gyp:installer_util_strings',
       ],
       'sources': [
         '<(DEPTH)/webkit/glue/resources/aliasb.cur',
