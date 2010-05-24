@@ -33,6 +33,12 @@
 #if !defined(CLONE_NEWPID)
 #define CLONE_NEWPID 0x20000000
 #endif
+#if !defined(CLONE_NEWNET)
+#define CLONE_NEWNET 0x40000000
+#endif
+#if !defined(CLONE_NEWNS)
+#define CLONE_NEWNS 0x00020000
+#endif
 
 #if !defined(BTRFS_SUPER_MAGIC)
 #define BTRFS_SUPER_MAGIC 0x9123683E
@@ -260,23 +266,32 @@ static bool SpawnChrootHelper() {
   return true;
 }
 
-static bool MoveToNewPIDNamespace() {
-  const pid_t pid = syscall(
-      __NR_clone, CLONE_NEWPID | SIGCHLD, 0, 0, 0);
+static bool MoveToNewNamespaces() {
+  // These are the sets of flags which we'll try, in order.
+  const int kCloneExtraFlags[] = {
+    CLONE_NEWPID | CLONE_NEWNET | CLONE_NEWNS,
+    CLONE_NEWPID | CLONE_NEWNET,
+    CLONE_NEWPID,
+  };
 
-  if (pid == -1) {
-    if (errno == EINVAL) {
-      // System doesn't support NEWPID. We carry on anyway.
-      return true;
+  for (size_t i = 0;
+       i < sizeof(kCloneExtraFlags) / sizeof(kCloneExtraFlags[0]);
+       i++) {
+    pid_t pid = syscall(__NR_clone, SIGCHLD | kCloneExtraFlags[i], 0, 0, 0);
+
+    if (pid > 0)
+      _exit(0);
+
+    if (pid == 0)
+      break;
+
+    if (errno != EINVAL) {
+      perror("Failed to move to new PID namespace");
+      return false;
     }
-
-    perror("Failed to move to new PID namespace");
-    return false;
   }
 
-  if (pid)
-    _exit(0);
-
+  // If the system doesn't support NEWPID then we carry on anyway.
   return true;
 }
 
@@ -349,7 +364,7 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  // In the SUID sandbox, if we succeed in calling MoveToNewPIDNamespace()
+  // In the SUID sandbox, if we succeed in calling MoveToNewNamespaces()
   // below, then the zygote and all the renderers are in an alternate PID
   // namespace and do not know their real PIDs. As such, they report the wrong
   // PIDs to the task manager.
@@ -389,7 +404,7 @@ int main(int argc, char **argv) {
     return AdjustOOMScore(pid, score);
   }
 
-  if (!MoveToNewPIDNamespace())
+  if (!MoveToNewNamespaces())
     return 1;
   if (!SpawnChrootHelper())
     return 1;
