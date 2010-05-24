@@ -509,7 +509,7 @@ class Coverage(object):
       self.BeforeRunOneTest(fulltest)
       logging.info('Running test ' + str(cmdlist))
       try:
-        retcode = self.Run(cmdlist)
+        retcode = self.Run(cmdlist, ignore_retcode=True)
       except SystemExit:  # e.g. sys.exit() was called somewhere in here
         raise
       except:  # can't "except WindowsError" since script runs on non-Windows
