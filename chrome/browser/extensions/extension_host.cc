@@ -712,7 +712,8 @@ void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
       extension_host_type_ == ViewType::EXTENSION_MOLE ||
       extension_host_type_ == ViewType::EXTENSION_POPUP ||
       extension_host_type_ == ViewType::EXTENSION_INFOBAR) {
-    render_view_host->EnablePreferredSizeChangedMode();
+    render_view_host->EnablePreferredSizeChangedMode(
+        kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow);
   }
 }
 

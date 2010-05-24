@@ -1816,8 +1816,8 @@ void RenderViewHost::SendContentSettings(const GURL& url,
   Send(new ViewMsg_SetContentSettingsForCurrentURL(url, settings));
 }
 
-void RenderViewHost::EnablePreferredSizeChangedMode() {
-  Send(new ViewMsg_EnablePreferredSizeChangedMode(routing_id()));
+void RenderViewHost::EnablePreferredSizeChangedMode(int flags) {
+  Send(new ViewMsg_EnablePreferredSizeChangedMode(routing_id(), flags));
 }
 
 void RenderViewHost::OnExtensionPostMessage(

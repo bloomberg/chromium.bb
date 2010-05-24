@@ -763,7 +763,7 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_ROUTED0(ViewMsg_Move_ACK)
 
   // Used to instruct the RenderView to send back updates to the preferred size.
-  IPC_MESSAGE_ROUTED0(ViewMsg_EnablePreferredSizeChangedMode)
+  IPC_MESSAGE_ROUTED1(ViewMsg_EnablePreferredSizeChangedMode, int /*flags*/)
 
   // Used to tell the renderer not to add scrollbars with height and
   // width below a threshold.

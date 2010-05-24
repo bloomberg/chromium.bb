@@ -15,6 +15,7 @@
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/url_constants.h"
 
@@ -57,7 +58,8 @@ void BalloonHost::Close(RenderViewHost* render_view_host) {
 }
 
 void BalloonHost::RenderViewCreated(RenderViewHost* render_view_host) {
-  render_view_host->EnablePreferredSizeChangedMode();
+  render_view_host->EnablePreferredSizeChangedMode(
+      kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow);
 }
 
 void BalloonHost::RenderViewReady(RenderViewHost* render_view_host) {

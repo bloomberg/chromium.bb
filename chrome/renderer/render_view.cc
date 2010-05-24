@@ -3875,13 +3875,21 @@ void RenderView::OnEnableViewSourceMode() {
   main_frame->enableViewSourceMode(true);
 }
 
-void RenderView::OnEnablePreferredSizeChangedMode() {
+void RenderView::OnEnablePreferredSizeChangedMode(int flags) {
+  DCHECK(flags != kPreferredSizeNothing);
   if (send_preferred_size_changes_)
     return;
-
   send_preferred_size_changes_ = true;
-  preferred_size_change_timer_.Start(TimeDelta::FromMilliseconds(10), this,
-                                     &RenderView::CheckPreferredSize);
+
+  // WebKit doesn't send a notification of the effective height of the page
+  // changes, so poll for it.
+  // TODO: Add a notification for this to WebKit, remove polling. After that's
+  // done, rename kPreferredSizeHeightThisIsSlow to kPreferredSizeHeight.
+  // http://crbug.com/44850
+  if (flags & kPreferredSizeHeightThisIsSlow) {
+    preferred_size_change_timer_.Start(TimeDelta::FromMilliseconds(10), this,
+                                       &RenderView::CheckPreferredSize);
+  }
 }
 
 void RenderView::OnDisableScrollbarsForSmallWindows(

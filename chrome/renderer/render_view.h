@@ -722,7 +722,7 @@ class RenderView : public RenderWidget,
   void OnInstallMissingPlugin();
   void OnFileChooserResponse(const std::vector<FilePath>& paths);
   void OnEnableViewSourceMode();
-  void OnEnablePreferredSizeChangedMode();
+  void OnEnablePreferredSizeChangedMode(int flags);
   void OnDisableScrollbarsForSmallWindows(
       const gfx::Size& disable_scrollbars_size_limit);
   void OnSetRendererPrefs(const RendererPreferences& renderer_prefs);

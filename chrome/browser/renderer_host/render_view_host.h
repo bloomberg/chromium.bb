@@ -462,8 +462,10 @@ class RenderViewHost : public RenderWidgetHost {
                            const ContentSettings& settings);
 
   // Tells the renderer to notify us when the page contents preferred size
-  // changed.
-  void EnablePreferredSizeChangedMode();
+  // changed. |flags| is a combination of
+  // |ViewHostMsg_EnablePreferredSizeChangedMode_Flags| values, which is defined
+  // in render_messages.h.
+  void EnablePreferredSizeChangedMode(int flags);
 
  protected:
   // RenderWidgetHost protected overrides.
