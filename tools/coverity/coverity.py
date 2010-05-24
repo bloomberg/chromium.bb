@@ -33,7 +33,7 @@ import time
 # TODO(wtc): Change these constants to command-line flags, particularly the
 # ones that are paths.  Set default values for the flags.
 
-CHROMIUM_SOURCE_DIR = 'E:\\chromium.latest'
+CHROMIUM_SOURCE_DIR = 'C:\\chromium.latest'
 
 # Relative to CHROMIUM_SOURCE_DIR.
 CHROMIUM_SOLUTION_FILE = 'src\\chrome\\chrome.sln'
@@ -41,11 +41,9 @@ CHROMIUM_SOLUTION_FILE = 'src\\chrome\\chrome.sln'
 # Relative to CHROMIUM_SOURCE_DIR.
 CHROMIUM_SOLUTION_DIR = 'src\\chrome'
 
-COVERITY_BIN_DIR = 'C:\\coverity\\prevent-mingw-4.4.0\\bin'
+COVERITY_BIN_DIR = 'C:\\coverity\\prevent-win32-4.5.1\\bin'
 
 COVERITY_INTERMEDIATE_DIR = 'C:\\coverity\\cvbuild\\cr_int'
-
-COVERITY_DATABASE_DIR = 'C:\\coverity\\cvbuild\\db'
 
 COVERITY_ANALYZE_OPTIONS = ('--cxx --security --concurrency '
                             '--enable ATOMICITY '
@@ -57,9 +55,18 @@ COVERITY_ANALYZE_OPTIONS = ('--cxx --security --concurrency '
                             '--enable-constraint-fpp '
                             '--enable-callgraph-metrics')
 
+# Might need to be changed to FQDN
+COVERITY_REMOTE = 'chromecoverity-linux1'
+
+COVERITY_PORT = '5467'
+
 COVERITY_PRODUCT = 'Chromium'
 
+COVERITY_TARGET = 'Windows'
+
 COVERITY_USER = 'admin'
+
+CHROMIUM_PASSWORD = 'xxxxxxxx'
 
 # Relative to CHROMIUM_SOURCE_DIR.  Contains the pid of this script.
 LOCK_FILE = 'coverity.lock'
@@ -119,10 +126,16 @@ def main(options, args):
   _RunCommand(cmd, options.dry_run)
   print 'Elapsed time: %ds' % (time.time() - start_time)
 
-  cmd = ('%s\\cov-commit-defects.exe --dir %s --datadir %s --product %s '
-         '--user %s') % (COVERITY_BIN_DIR, COVERITY_INTERMEDIATE_DIR,
-                         COVERITY_DATABASE_DIR, COVERITY_PRODUCT,
-                         COVERITY_USER)
+  cmd = ('%s\\cov-commit-defects.exe --dir %s --remote %s --port %s'
+         '--product %s '
+         '--target %s '
+         '--user %s '
+         '--password %s') % (COVERITY_BIN_DIR,
+                                   COVERITY_INTERMEDIATE_DIR,
+                                   COVERITY_REMOTE, COVERITY_PORT,
+                                   COVERITY_PRODUCT,
+                                   COVERITY_TARGET, COVERITY_USER,
+                                   CHROMIUM_PASSWORD)
   _RunCommand(cmd, options.dry_run)
 
   print 'Total time: %ds' % (time.time() - start_time)
