@@ -1681,6 +1681,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     [oldController removeButton:oldIndex animate:NO];
     [newController addButtonForNode:movedNode atIndex:newIndex];
   }
+  // If the bar is one of the parents we may need to update the visibility
+  // of the "bookmarks go here" presentation.
+  [self showOrHideNoItemContainerForNode:model->GetBookmarkBarNode()];
   // If we moved the only item on the "off the side" menu somewhere
   // else, we may no longer need to show it.
   [self configureOffTheSideButtonContentsAndVisibility];

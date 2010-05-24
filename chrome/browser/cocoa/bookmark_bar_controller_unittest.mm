@@ -507,7 +507,7 @@ TEST_F(BookmarkBarControllerTest, FrameChangeNotification) {
 // bookmark, and comes back when we delete the bookmark.
 TEST_F(BookmarkBarControllerTest, NoItemContainerGoesAway) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
-  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  const BookmarkNode* bar = model->GetBookmarkBarNode();
 
   [bar_ loaded:model];
   BookmarkBarView* view = [bar_ buttonView];
@@ -516,11 +516,24 @@ TEST_F(BookmarkBarControllerTest, NoItemContainerGoesAway) {
   DCHECK(noItemContainer);
 
   EXPECT_FALSE([noItemContainer isHidden]);
-  const BookmarkNode* node = model->AddURL(parent, parent->GetChildCount(),
+  const BookmarkNode* node = model->AddURL(bar, bar->GetChildCount(),
                                            L"title",
                                            GURL("http://www.google.com"));
   EXPECT_TRUE([noItemContainer isHidden]);
-  model->Remove(parent, parent->IndexOfChild(node));
+  model->Remove(bar, bar->IndexOfChild(node));
+  EXPECT_FALSE([noItemContainer isHidden]);
+
+  // Now try it using a bookmark from the Other Bookmarks.
+  const BookmarkNode* otherBookmarks = model->other_node();
+  node = model->AddURL(otherBookmarks, otherBookmarks->GetChildCount(),
+                       L"TheOther",
+                       GURL("http://www.other.com"));
+  EXPECT_FALSE([noItemContainer isHidden]);
+  // Move it from Other Bookmarks to the bar.
+  model->Move(node, bar, 0);
+  EXPECT_TRUE([noItemContainer isHidden]);
+  // Move it back to Other Bookmarks from the bar.
+  model->Move(node, otherBookmarks, 0);
   EXPECT_FALSE([noItemContainer isHidden]);
 }
 
