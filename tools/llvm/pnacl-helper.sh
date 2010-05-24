@@ -340,8 +340,10 @@ test-x86-64() {
 #@
 #@ checkout-and-build-llc
 #@
-#@   checkout and build llc
+#@   Checkout and build llc from the pnacl-sfi branch
+#@   the tree is placed in ${PNACL_HG_CLIENT}.
 checkout-and-build-llc() {
+  local saved_dir=$(pwd)
   # NOTE: work-around for a socket issue in hg which is unhappy
   #       with long file names: we check-out the repo under /tmp
   #       which results in a short pathname and move it to the final
@@ -369,13 +371,27 @@ checkout-and-build-llc() {
               --target=arm-none-linux-gnueabi
   make -j 6 tools-only
 
-  # NOTE: temporary measure until we have a unified llc
-  echo "symlinking ${SYMLINK_LLC_X86_32} ${SYMLINK_LLC_X86_64}"
+  cd ${saved_dir}
+  llc-symlinking
+  exit 0
+}
+
+
+#@
+#@ llc-symlinking
+#@
+#@   Symlink release-llc-binary from ${PNACL_HG_CLIENT}
+#@   to be accessible by the driver script.
+#@   This is a temporary measure until we have a unified llc.
+llc-symlinking() {
+  cd ${PNACL_HG_CLIENT}/nacl-llvm-branches/llvm-trunk
   llc=$(readlink -f Release/bin/llc)
   ln -sf ${llc} ${SYMLINK_LLC_X86_32}
   ln -sf ${llc} ${SYMLINK_LLC_X86_64}
   exit 0
+
 }
+
 
 ######################################################################
 # Main
