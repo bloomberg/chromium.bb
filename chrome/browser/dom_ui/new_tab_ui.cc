@@ -505,7 +505,7 @@ NewTabUI::NewTabUI(TabContents* contents)
     if (ProfileSyncService::IsSyncEnabled()) {
       AddMessageHandler((new NewTabPageSyncHandler())->Attach(this));
     }
-    if (Extension::AppsAreEnabled()) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableApps)) {
       ExtensionsService* service = GetProfile()->GetExtensionsService();
       AddMessageHandler((new AppLauncherHandler(service))->Attach(this));
     }

@@ -766,7 +766,7 @@ void ProfileImpl::InitExtensions() {
 
   // Some sample apps to make our lives easier while we are developing extension
   // apps. This way we don't have to constantly install these over and over.
-  if (Extension::AppsAreEnabled()) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableApps)) {
 #if defined(OS_WIN)
     std::string user_domain;
     if (base::EnvVarGetter::Create()->GetEnv("USERDOMAIN", &user_domain) &&

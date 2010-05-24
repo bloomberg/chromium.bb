@@ -273,8 +273,13 @@ void ExtensionInstallUI::OnImageLoaded(
 
   switch (prompt_type_) {
     case INSTALL_PROMPT: {
-      // TODO(jcivelli): http://crbug.com/44771 We should not show an install
-      //                 dialog when installing an app from the gallery.
+      if (extension_->GetFullLaunchURL().is_valid()) {
+        // Special case extension apps to not show the install dialog.
+        // TODO(finnur): http://crbug.com/42443: Don't do this for all apps.
+        delegate_->InstallUIProceed(false);  // |create_app_shortcut|.
+        return;
+      }
+
       NotificationService* service = NotificationService::current();
       service->Notify(NotificationType::EXTENSION_WILL_SHOW_CONFIRM_DIALOG,
           Source<ExtensionInstallUI>(this),
