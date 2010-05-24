@@ -24,14 +24,6 @@
     DISABLED_OpenCloseBrowserWindowWithAccelerator
 #endif
 
-// Automation pieces are not implemented for these on platforms other than
-// Windows.
-#if defined(OS_WIN)
-#define MAYBE_ShowBookmarkBar ShowBookmarkBar
-#else
-#define MAYBE_ShowBookmarkBar DISABLED_ShowBookmarkBar
-#endif
-
 // FindBarTesting not implemented on mac.
 #if defined(OS_MACOSX)
 #define MAYBE_FindInPage DISABLED_FindInPage
@@ -366,7 +358,7 @@ TEST_F(AutomatedUITestBase, SelectTab) {
   ASSERT_EQ(2, active_tab_index);
 }
 
-TEST_F(AutomatedUITestBase, MAYBE_ShowBookmarkBar) {
+TEST_F(AutomatedUITestBase, ShowBookmarkBar) {
   ASSERT_TRUE(ShowBookmarkBar());
   bool is_visible;
   bool is_animating;
