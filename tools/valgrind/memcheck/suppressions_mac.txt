@@ -1188,3 +1188,10 @@
    fun:_ZN11MessageLoop11RunInternalEv
    fun:_ZN11MessageLoop10RunHandlerEv
 }
+{
+   bug_44879
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN12_GLOBAL__N_113ExtensionImpl12StartRequestERKN2v89ArgumentsE
+}
