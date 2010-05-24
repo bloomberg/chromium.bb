@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_COCOA_BROWSER_WINDOW_COCOA_H_
 #define CHROME_BROWSER_COCOA_BROWSER_WINDOW_COCOA_H_
 
+#include "base/task.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/common/notification_registrar.h"
@@ -126,6 +127,7 @@ class BrowserWindowCocoa : public BrowserWindow,
   NotificationRegistrar registrar_;
   Browser* browser_;  // weak, owned by controller
   BrowserWindowController* controller_;  // weak, owns us
+  ScopedRunnableMethodFactory<Browser> confirm_close_factory_;
 };
 
 #endif  // CHROME_BROWSER_COCOA_BROWSER_WINDOW_COCOA_H_

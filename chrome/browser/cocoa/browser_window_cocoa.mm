@@ -7,9 +7,11 @@
 #include "app/l10n_util_mac.h"
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/bug_report_window_controller.h"
@@ -26,7 +28,6 @@
 #include "chrome/browser/cocoa/status_bubble_mac.h"
 #include "chrome/browser/cocoa/task_manager_mac.h"
 #import "chrome/browser/cocoa/theme_install_bubble_view.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/pref_service.h"
@@ -42,7 +43,8 @@ BrowserWindowCocoa::BrowserWindowCocoa(Browser* browser,
                                        BrowserWindowController* controller,
                                        NSWindow* window)
   : browser_(browser),
-    controller_(controller) {
+    controller_(controller),
+    confirm_close_factory_(browser) {
   // This pref applies to all windows, so all must watch for it.
   registrar_.Add(this, NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
                  NotificationService::AllSources());
@@ -337,7 +339,11 @@ void BrowserWindowCocoa::ShowThemeInstallBubble() {
 // We allow closing the window here since the real quit decision on Mac is made
 // in [AppController quit:].
 void BrowserWindowCocoa::ConfirmBrowserCloseWithPendingDownloads() {
-  browser_->InProgressDownloadResponse(true);
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      confirm_close_factory_.NewRunnableMethod(
+          &Browser::InProgressDownloadResponse,
+          true));
 }
 
 void BrowserWindowCocoa::ShowHTMLDialog(HtmlDialogUIDelegate* delegate,

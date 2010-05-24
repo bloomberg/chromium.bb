@@ -492,4 +492,25 @@ TEST_F(DownloadTest, FLAKY_CloseNewTab3) {
   CheckDownload(file);
 }
 
+// Regression test for http://crbug.com/44454
+TEST_F(DownloadTest, NewWindow) {
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
+  int window_count = 0;
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  ASSERT_EQ(1, window_count);
+  EXPECT_EQ(1, GetTabCount());
+
+  scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
+  ASSERT_TRUE(tab_proxy.get());
+
+  FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
+  ASSERT_TRUE(tab_proxy->NavigateToURLAsyncWithDisposition(
+    URLRequestMockHTTPJob::GetMockUrl(file), NEW_WINDOW));
+
+  ASSERT_TRUE(automation()->WaitForWindowCountToBecome(1));
+
+  CheckDownload(file);
+}
+
 }  // namespace
