@@ -827,8 +827,8 @@ void ResourceMessageFilter::OnCreateWorker(
   WorkerService::GetInstance()->CreateWorker(
       params.url, params.is_shared, off_the_record(), params.name,
       params.document_id, id(), params.render_view_route_id, this, *route_id,
-      db_dispatcher_host_->database_tracker(),
-      GetRequestContextForURL(params.url)->host_content_settings_map());
+      static_cast<ChromeURLRequestContext*>(
+          request_context_->GetURLRequestContext()));
 }
 
 void ResourceMessageFilter::OnLookupSharedWorker(

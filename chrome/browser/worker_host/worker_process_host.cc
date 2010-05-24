@@ -12,6 +12,7 @@
 #include "base/debug_util.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "chrome/browser/appcache/appcache_dispatcher_host.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -54,17 +55,18 @@ class WorkerCrashTask : public Task {
   int render_view_id_;
 };
 
-
 WorkerProcessHost::WorkerProcessHost(
     ResourceDispatcherHost* resource_dispatcher_host,
-    webkit_database::DatabaseTracker *db_tracker,
-    HostContentSettingsMap *host_content_settings_map)
+    ChromeURLRequestContext *request_context)
     : ChildProcessHost(WORKER_PROCESS, resource_dispatcher_host),
-      host_content_settings_map_(host_content_settings_map) {
+      request_context_(request_context),
+      appcache_dispatcher_host_(
+          new AppCacheDispatcherHost(request_context)) {
   next_route_id_callback_.reset(NewCallbackWithReturnValue(
       WorkerService::GetInstance(), &WorkerService::next_worker_route_id));
-  db_dispatcher_host_ =
-      new DatabaseDispatcherHost(db_tracker, this, host_content_settings_map);
+  db_dispatcher_host_ = new DatabaseDispatcherHost(
+      request_context->database_tracker(), this,
+      request_context_->host_content_settings_map());
 }
 
 WorkerProcessHost::~WorkerProcessHost() {
@@ -242,7 +244,7 @@ bool WorkerProcessHost::FilterMessage(const IPC::Message& message,
 URLRequestContext* WorkerProcessHost::GetRequestContext(
     uint32 request_id,
     const ViewHostMsg_Resource_Request& request_data) {
-  return NULL;
+  return request_context_;
 }
 
 // Sent to notify the browser process when a worker context invokes close(), so
@@ -261,7 +263,9 @@ void WorkerProcessHost::OnWorkerContextClosed(int worker_route_id) {
 
 void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
   bool msg_is_ok = true;
-  bool handled = db_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
+  bool handled =
+      appcache_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
+      db_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
       MessagePortDispatcher::GetInstance()->OnMessageReceived(
           message, this, next_route_id_callback_.get(), &msg_is_ok);
 
@@ -310,6 +314,7 @@ void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
 
 void WorkerProcessHost::OnProcessLaunched() {
   db_dispatcher_host_->Init(handle());
+  appcache_dispatcher_host_->Initialize(this, id(), handle());
 }
 
 CallbackWithReturnValue<int>::Type* WorkerProcessHost::GetNextRouteIdCallback(
@@ -480,7 +485,7 @@ void WorkerProcessHost::OnCreateWorker(
       params.url, params.is_shared, instances_.front().off_the_record(),
       params.name, params.document_id, first_parent->renderer_id(),
       first_parent->render_view_route_id(), this, *route_id,
-      database_tracker(), host_content_settings_map_);
+      request_context_);
 }
 
 void WorkerProcessHost::OnCancelCreateDedicatedWorker(int route_id) {
@@ -511,23 +516,23 @@ void WorkerProcessHost::DocumentDetached(IPC::Message::Sender* parent,
   }
 }
 
-webkit_database::DatabaseTracker*
-    WorkerProcessHost::database_tracker() const {
-  return db_dispatcher_host_->database_tracker();
-}
-
-WorkerProcessHost::WorkerInstance::WorkerInstance(const GURL& url,
-                                                  bool shared,
-                                                  bool off_the_record,
-                                                  const string16& name,
-                                                  int worker_route_id)
+WorkerProcessHost::WorkerInstance::WorkerInstance(
+    const GURL& url,
+    bool shared,
+    bool off_the_record,
+    const string16& name,
+    int worker_route_id,
+    ChromeURLRequestContext* request_context)
     : url_(url),
       shared_(shared),
       off_the_record_(off_the_record),
       closed_(false),
       name_(name),
       worker_route_id_(worker_route_id),
+      request_context_(request_context),
       worker_document_set_(new WorkerDocumentSet()) {
+  DCHECK(!request_context ||
+         (off_the_record == request_context->is_off_the_record()));
 }
 
 // Compares an instance based on the algorithm in the WebWorkers spec - an

@@ -15,6 +15,7 @@
 #include "webkit/appcache/appcache_backend_impl.h"
 
 class ChromeAppCacheService;
+class URLRequestContext;
 class URLRequestContextGetter;
 
 // Handles appcache related messages sent to the main browser process from
@@ -23,6 +24,11 @@ class URLRequestContextGetter;
 // an instance and delegates calls to it.
 class AppCacheDispatcherHost {
  public:
+  // Constructor for use on the IO thread.
+  explicit AppCacheDispatcherHost(
+      URLRequestContext* request_context);
+
+  // Constructor for use on the UI thread.
   explicit AppCacheDispatcherHost(
       URLRequestContextGetter* request_context_getter);
 
@@ -61,6 +67,7 @@ class AppCacheDispatcherHost {
 
   // Temporary until Initialize() can be called from the IO thread,
   // which will extract the AppCacheService from the URLRequestContext.
+  scoped_refptr<URLRequestContext> request_context_;
   scoped_refptr<URLRequestContextGetter> request_context_getter_;
 
   // This is only valid once Initialize() has been called.

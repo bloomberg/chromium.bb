@@ -2377,6 +2377,8 @@ struct ParamTraits<ViewHostMsg_CreateWorker_Params> {
     WriteParam(m, p.document_id);
     WriteParam(m, p.render_view_route_id);
     WriteParam(m, p.route_id);
+    WriteParam(m, p.parent_appcache_host_id);
+    WriteParam(m, p.script_resource_appcache_id);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return
@@ -2385,7 +2387,9 @@ struct ParamTraits<ViewHostMsg_CreateWorker_Params> {
         ReadParam(m, iter, &p->name) &&
         ReadParam(m, iter, &p->document_id) &&
         ReadParam(m, iter, &p->render_view_route_id) &&
-        ReadParam(m, iter, &p->route_id);
+        ReadParam(m, iter, &p->route_id) &&
+        ReadParam(m, iter, &p->parent_appcache_host_id) &&
+        ReadParam(m, iter, &p->script_resource_appcache_id);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"(");
@@ -2398,8 +2402,12 @@ struct ParamTraits<ViewHostMsg_CreateWorker_Params> {
     LogParam(p.document_id, l);
     l->append(L", ");
     LogParam(p.render_view_route_id, l);
-    l->append(L")");
+    l->append(L",");
     LogParam(p.route_id, l);
+    l->append(L", ");
+    LogParam(p.parent_appcache_host_id, l);
+    l->append(L",");
+    LogParam(p.script_resource_appcache_id, l);
     l->append(L")");
   }
 };

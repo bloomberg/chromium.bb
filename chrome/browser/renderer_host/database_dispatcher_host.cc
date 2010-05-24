@@ -62,6 +62,7 @@ void DatabaseDispatcherHost::Shutdown() {
   shutdown_ = true;
   message_sender_ = NULL;
   if (observer_added_) {
+    observer_added_ = false;
     ChromeThread::PostTask(
         ChromeThread::FILE, FROM_HERE,
         NewRunnableMethod(this, &DatabaseDispatcherHost::RemoveObserver));

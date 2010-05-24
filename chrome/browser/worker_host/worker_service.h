@@ -14,10 +14,8 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"
 
-class DatabaseTracker;
-class HostContentSettingsMap;
+class ChromeURLRequestContext;
 class ResourceDispatcherHost;
-class WorkerProcessHost;
 
 class WorkerService : public NotificationObserver {
  public:
@@ -37,8 +35,7 @@ class WorkerService : public NotificationObserver {
                     int render_view_route_id,
                     IPC::Message::Sender* sender,
                     int sender_route_id,
-                    webkit_database::DatabaseTracker* db_tracker,
-                    HostContentSettingsMap* host_content_settings_map);
+                    ChromeURLRequestContext* request_context);
 
   // Validates the passed URL and checks for the existence of matching shared
   // worker. Returns true if the url was found, and sets the url_mismatch out
@@ -92,10 +89,7 @@ class WorkerService : public NotificationObserver {
   ~WorkerService();
 
   // Given a WorkerInstance, create an associated worker process.
-  bool CreateWorkerFromInstance(
-      WorkerProcessHost::WorkerInstance instance,
-      webkit_database::DatabaseTracker* db_tracker,
-      HostContentSettingsMap* host_content_settings_map);
+  bool CreateWorkerFromInstance(WorkerProcessHost::WorkerInstance instance);
 
   // Returns a WorkerProcessHost object if one exists for the given domain, or
   // NULL if there are no such workers yet.

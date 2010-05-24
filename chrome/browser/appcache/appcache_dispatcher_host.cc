@@ -11,9 +11,16 @@
 #include "chrome/common/render_messages.h"
 
 AppCacheDispatcherHost::AppCacheDispatcherHost(
+    URLRequestContext* request_context)
+    : request_context_(request_context),
+      process_handle_(0) {
+  DCHECK(request_context_.get());
+}
+
+AppCacheDispatcherHost::AppCacheDispatcherHost(
     URLRequestContextGetter* request_context_getter)
-        : request_context_getter_(request_context_getter),
-          process_handle_(0) {
+    : request_context_getter_(request_context_getter),
+      process_handle_(0) {
   DCHECK(request_context_getter_.get());
 }
 
@@ -21,14 +28,17 @@ void AppCacheDispatcherHost::Initialize(IPC::Message::Sender* sender,
     int process_id, base::ProcessHandle process_handle) {
   DCHECK(sender);
   DCHECK(process_handle && !process_handle_);
-  DCHECK(request_context_getter_.get());
+  DCHECK(request_context_.get() || request_context_getter_.get());
 
   process_handle_ = process_handle;
 
   // Get the AppCacheService (it can only be accessed from IO thread).
-  URLRequestContext* context = request_context_getter_->GetURLRequestContext();
+  URLRequestContext* context = request_context_.get();
+  if (!context)
+    context = request_context_getter_->GetURLRequestContext();
   appcache_service_ =
       static_cast<ChromeURLRequestContext*>(context)->appcache_service();
+  request_context_ = NULL;
   request_context_getter_ = NULL;
 
   frontend_proxy_.set_sender(sender);

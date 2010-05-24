@@ -2126,6 +2126,8 @@ WebSharedWorker* RenderView::createSharedWorker(
   params.document_id = document_id;
   params.render_view_route_id = routing_id_;
   params.route_id = MSG_ROUTING_NONE;
+  params.parent_appcache_host_id = 0;
+  params.script_resource_appcache_id = 0;
   Send(new ViewHostMsg_LookupSharedWorker(
       params, &exists, &route_id, &url_mismatch));
   if (url_mismatch) {
