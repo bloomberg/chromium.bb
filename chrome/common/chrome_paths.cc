@@ -242,7 +242,7 @@ bool PathProvider(int key, FilePath* result) {
 #if defined(OS_WIN)
       cur = cur.Append(FILE_PATH_LITERAL("pdf.dll"));
 #elif defined(OS_MACOSX)
-      NOTIMPLEMENTED();
+      // http://crbug.com/44900
       return false;
 #else  // Linux and Chrome OS
       cur = cur.Append(FILE_PATH_LITERAL("libpdf.so"));
