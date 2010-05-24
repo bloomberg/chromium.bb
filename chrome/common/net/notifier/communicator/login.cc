@@ -328,7 +328,7 @@ void Login::CheckConnection() {
       !socket->Connect(talk_base::SocketAddress("talk.google.com", 5222));
   LOG(INFO) << "Network is " << (alive ? "alive" : "not alive");
   if (alive) {
-    // Our connection has come back up. If we have a disconnect timer going,
+    // Our connection is up. If we have a disconnect timer going,
     // abort it so we don't disconnect.
     if (disconnect_timer_) {
       disconnect_timer_->Abort();
@@ -336,13 +336,15 @@ void Login::CheckConnection() {
       disconnect_timer_ = NULL;
     }
   } else {
-    // Our network connection just went down. Setup a timer to disconnect.
-    // Don't disconnect immediately to avoid constant
-    // connection/disconnection due to flaky network interfaces.
-    DCHECK(disconnect_timer_ == NULL);
-    disconnect_timer_ = new Timer(parent_, kDisconnectionDelaySecs, false);
-    disconnect_timer_->SignalTimeout.connect(this,
-                                             &Login::OnDisconnectTimeout);
+    // Our connection is down. Setup a timer to disconnect if there
+    // isn't one already.  Don't disconnect immediately to avoid
+    // constant connection/disconnection due to flaky network
+    // interfaces.
+    if (!disconnect_timer_) {
+      disconnect_timer_ = new Timer(parent_, kDisconnectionDelaySecs, false);
+      disconnect_timer_->SignalTimeout.connect(this,
+                                               &Login::OnDisconnectTimeout);
+    }
   }
   auto_reconnect_->NetworkStateChanged(alive);
 }
