@@ -1150,6 +1150,90 @@ TEST_F(NavigationControllerTest, InPage_Replace) {
   EXPECT_EQ(1, controller().entry_count());
 }
 
+// Tests for http://crbug.com/40395
+// Simulates this:
+//   <script>
+//     window.location.replace("#a");
+//     window.location='http://foo3/';
+//   </script>
+TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
+  TestNotificationTracker notifications;
+  RegisterForAllNavNotifications(&notifications, &controller());
+
+  // Load an initial page.
+  {
+    const GURL url("http://foo/");
+    rvh()->SendNavigate(0, url);
+    EXPECT_TRUE(notifications.Check1AndReset(
+        NotificationType::NAV_ENTRY_COMMITTED));
+  }
+
+  // Navigate to a new page.
+  {
+    const GURL url("http://foo2/");
+    rvh()->SendNavigate(1, url);
+    controller().DocumentLoadedInFrame();
+    EXPECT_TRUE(notifications.Check1AndReset(
+        NotificationType::NAV_ENTRY_COMMITTED));
+  }
+
+  // Navigate within the page.
+  {
+    const GURL url("http://foo2/#a");
+    ViewHostMsg_FrameNavigate_Params params = {0};
+    params.page_id = 1;  // Same page_id
+    params.url = url;
+    params.transition = PageTransition::LINK;
+    params.redirects.push_back(url);
+    params.should_update_history = true;
+    params.gesture = NavigationGestureUnknown;
+    params.is_post = false;
+
+    // This should NOT generate a new entry.
+    NavigationController::LoadCommittedDetails details;
+    controller().OnUserGesture();
+    EXPECT_TRUE(controller().RendererDidNavigate(params, 0, &details));
+    EXPECT_TRUE(notifications.Check2AndReset(
+        NotificationType::NAV_LIST_PRUNED,
+        NotificationType::NAV_ENTRY_COMMITTED));
+    EXPECT_TRUE(details.is_in_page);
+    EXPECT_TRUE(details.did_replace_entry);
+    EXPECT_EQ(2, controller().entry_count());
+  }
+
+  // Perform a client redirect to a new page.
+  {
+    const GURL url("http://foo3/");
+    ViewHostMsg_FrameNavigate_Params params = {0};
+    params.page_id = 2;  // New page_id
+    params.url = url;
+    params.transition = PageTransition::CLIENT_REDIRECT;
+    params.redirects.push_back(GURL("http://foo2/#a"));
+    params.redirects.push_back(url);
+    params.should_update_history = true;
+    params.gesture = NavigationGestureUnknown;
+    params.is_post = false;
+
+    // This SHOULD generate a new entry.
+    NavigationController::LoadCommittedDetails details;
+    EXPECT_TRUE(controller().RendererDidNavigate(params, 0, &details));
+    EXPECT_TRUE(notifications.Check1AndReset(
+        NotificationType::NAV_ENTRY_COMMITTED));
+    EXPECT_FALSE(details.is_in_page);
+    EXPECT_EQ(3, controller().entry_count());
+  }
+
+  // Verify that BACK brings us back to http://foo2/.
+  {
+    const GURL url("http://foo2/");
+    controller().GoBack();
+    rvh()->SendNavigate(1, url);
+    EXPECT_TRUE(notifications.Check1AndReset(
+        NotificationType::NAV_ENTRY_COMMITTED));
+    EXPECT_EQ(url, controller().GetActiveEntry()->url());
+  }
+}
+
 // NotificationObserver implementation used in verifying we've received the
 // NotificationType::NAV_LIST_PRUNED method.
 class PrunedListener : public NotificationObserver {

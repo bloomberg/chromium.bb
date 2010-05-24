@@ -586,8 +586,6 @@ bool NavigationController::RendererDidNavigate(
   details->http_status_code = params.http_status_code;
   NotifyNavigationEntryCommitted(details, extra_invalidate_flags);
 
-  user_gesture_observed_ = false;
-
   return true;
 }
 
@@ -1016,6 +1014,13 @@ void NavigationController::InsertOrReplaceEntry(NavigationEntry* entry,
 
   // This is a new page ID, so we need everybody to know about it.
   tab_contents_->UpdateMaxPageID(entry->page_id());
+
+  // When an entry is inserted, clear the user gesture observed flag.
+  // This is not done when replacing an entry (for example navigating within a
+  // page) because once a user has interacted with a page, we never want to
+  // mistake a subsequent navigation for an auto navigation.
+  if (!replace)
+    user_gesture_observed_ = false;
 }
 
 void NavigationController::SetWindowID(const SessionID& id) {
