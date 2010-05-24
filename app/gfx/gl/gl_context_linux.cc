@@ -157,7 +157,7 @@ static bool InitializeOneOff() {
 
 bool ViewGLContext::Initialize(bool multisampled) {
   if (multisampled) {
-    DLOG(WARNING) << "Multisampling not implemented.";
+    LOG(WARNING) << "Multisampling not implemented.";
   }
 
   Display* display = x11_util::GetXDisplay();
@@ -179,13 +179,13 @@ bool ViewGLContext::Initialize(bool multisampled) {
       break;
   }
   if (!context_) {
-    DLOG(ERROR) << "Couldn't create GL context.";
+    LOG(ERROR) << "Couldn't create GL context.";
     return false;
   }
 
   if (!MakeCurrent()) {
     Destroy();
-    DLOG(ERROR) << "Couldn't make context current for initialization.";
+    LOG(ERROR) << "Couldn't make context current for initialization.";
     return false;
   }
 
@@ -225,7 +225,7 @@ bool ViewGLContext::MakeCurrent() {
   if (glXMakeCurrent(display, window_, context_) != True) {
     glXDestroyContext(display, context_);
     context_ = 0;
-    DLOG(ERROR) << "Couldn't make context current.";
+    LOG(ERROR) << "Couldn't make context current.";
     return false;
   }
 
@@ -281,7 +281,7 @@ bool PbufferGLContext::Initialize(void* shared_handle) {
       !glXCreateNewContext ||
       !glXCreatePbuffer ||
       !glXDestroyPbuffer) {
-    DLOG(ERROR) << "Pbuffer support not available.";
+    LOG(ERROR) << "Pbuffer support not available.";
     return false;
   }
 
@@ -302,11 +302,11 @@ bool PbufferGLContext::Initialize(void* shared_handle) {
   scoped_ptr_malloc<GLXFBConfig, ScopedPtrXFree> config(
       glXChooseFBConfig(display, 0, config_attributes, &nelements));
   if (!config.get()) {
-    DLOG(ERROR) << "glXChooseFBConfig failed.";
+    LOG(ERROR) << "glXChooseFBConfig failed.";
     return false;
   }
   if (!nelements) {
-    DLOG(ERROR) << "glXChooseFBConfig returned 0 elements.";
+    LOG(ERROR) << "glXChooseFBConfig returned 0 elements.";
     return false;
   }
   context_ = glXCreateNewContext(display,
@@ -315,7 +315,7 @@ bool PbufferGLContext::Initialize(void* shared_handle) {
                                  static_cast<GLContextHandle>(shared_handle),
                                  True);
   if (!context_) {
-    DLOG(ERROR) << "glXCreateNewContext failed.";
+    LOG(ERROR) << "glXCreateNewContext failed.";
     return false;
   }
   static const int pbuffer_attributes[] = {
@@ -329,13 +329,13 @@ bool PbufferGLContext::Initialize(void* shared_handle) {
                               config.get()[0], pbuffer_attributes);
   if (!pbuffer_) {
     Destroy();
-    DLOG(ERROR) << "glXCreatePbuffer failed.";
+    LOG(ERROR) << "glXCreatePbuffer failed.";
     return false;
   }
 
   if (!MakeCurrent()) {
     Destroy();
-    DLOG(ERROR) << "Couldn't make context current for initialization.";
+    LOG(ERROR) << "Couldn't make context current for initialization.";
     return false;
   }
 
@@ -378,7 +378,7 @@ bool PbufferGLContext::MakeCurrent() {
   if (glXMakeCurrent(display, pbuffer_, context_) != True) {
     glXDestroyContext(display, context_);
     context_ = NULL;
-    DLOG(ERROR) << "Couldn't make context current.";
+    LOG(ERROR) << "Couldn't make context current.";
     return false;
   }
 
@@ -408,11 +408,11 @@ void* PbufferGLContext::GetHandle() {
 }
 
 bool PixmapGLContext::Initialize(void* shared_handle) {
-  DLOG(INFO) << "GL context: using pixmaps.";
+  LOG(INFO) << "GL context: using pixmaps.";
   if (!glXChooseVisual ||
       !glXCreateGLXPixmap ||
       !glXDestroyGLXPixmap) {
-    DLOG(ERROR) << "Pixmap support not available.";
+    LOG(ERROR) << "Pixmap support not available.";
     return false;
   }
 
@@ -428,33 +428,33 @@ bool PixmapGLContext::Initialize(void* shared_handle) {
       glXChooseVisual(display, screen, attributes));
 
   if (!visual_info.get()) {
-    DLOG(ERROR) << "glXChooseVisual failed.";
+    LOG(ERROR) << "glXChooseVisual failed.";
     return false;
   }
   context_ = glXCreateContext(display, visual_info.get(),
                               static_cast<GLContextHandle>(shared_handle),
                               True);
   if (!context_) {
-    DLOG(ERROR) << "glXCreateContext failed.";
+    LOG(ERROR) << "glXCreateContext failed.";
     return false;
   }
 
   pixmap_ = XCreatePixmap(display, RootWindow(display, screen), 1, 1,
                           visual_info->depth);
   if (!pixmap_) {
-    DLOG(ERROR) << "XCreatePixmap failed.";
+    LOG(ERROR) << "XCreatePixmap failed.";
     return false;
   }
 
   glx_pixmap_ = glXCreateGLXPixmap(display, visual_info.get(), pixmap_);
   if (!glx_pixmap_) {
-    DLOG(ERROR) << "XCreatePixmap failed.";
+    LOG(ERROR) << "XCreatePixmap failed.";
     return false;
   }
 
   if (!MakeCurrent()) {
     Destroy();
-    DLOG(ERROR) << "Couldn't make context current for initialization.";
+    LOG(ERROR) << "Couldn't make context current for initialization.";
     return false;
   }
 
@@ -502,7 +502,7 @@ bool PixmapGLContext::MakeCurrent() {
   if (glXMakeCurrent(display, glx_pixmap_, context_) != True) {
     glXDestroyContext(display, context_);
     context_ = NULL;
-    DLOG(ERROR) << "Couldn't make context current.";
+    LOG(ERROR) << "Couldn't make context current.";
     return false;
   }
 
