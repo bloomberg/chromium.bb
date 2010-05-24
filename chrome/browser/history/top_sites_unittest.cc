@@ -4,6 +4,7 @@
 
 #include "base/string_util.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/history/top_sites_database.h"
 #include "chrome/test/testing_profile.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,8 +60,8 @@ class TopSitesTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(TopSitesTest);
 };
 
-class MockHistoryServiceImpl: public TopSites::MockHistoryService {
-  // A mockup of a HistoryService used for testing TopSites.
+// A mockup of a HistoryService used for testing TopSites.
+class MockHistoryServiceImpl : public TopSites::MockHistoryService {
  public:
   // Calls the callback directly with the results.
   HistoryService::Handle QueryMostVisitedURLs(
@@ -87,6 +88,67 @@ class MockHistoryServiceImpl: public TopSites::MockHistoryService {
   MostVisitedURLList most_visited_urls_;
 };
 
+
+// A mockup of a TopSitesDatabase used for testing TopSites.
+class MockTopSitesDatabaseImpl : public TopSitesDatabase {
+ public:
+  virtual MostVisitedURLList GetTopURLs() {
+    // Return a copy of the vector.
+    return top_sites_list_;
+  }
+
+  virtual void SetPageThumbnail(const MostVisitedURL& url, int url_rank,
+                                const TopSites::Images thumbnail) {
+    // Update the list of URLs
+    // Check if this url is in the list, and at which position.
+    MostVisitedURLList::iterator pos = std::find(top_sites_list_.begin(),
+                                                 top_sites_list_.end(),
+                                                 url);
+    if (pos == top_sites_list_.end()) {
+      // Add it to the list.
+      top_sites_list_.insert(top_sites_list_.begin() + url_rank, url);
+    } else {
+      // Is it in the right position?
+      int rank = pos - top_sites_list_.begin();
+      if (rank != url_rank) {
+        // Move the URL to a new position.
+        top_sites_list_.erase(pos);
+        top_sites_list_.insert(top_sites_list_.begin() + url_rank, url);
+      }
+    }
+    // Update thubmnail
+    thumbnails_map_[url.url] = thumbnail;
+  }
+
+  // Get a thumbnail for a given page. Returns true iff we have the thumbnail.
+  virtual bool GetPageThumbnail(const MostVisitedURL& url,
+                                TopSites::Images* thumbnail) const {
+    std::map<GURL, TopSites::Images>::const_iterator found =
+        thumbnails_map_.find(url.url);
+    if (found == thumbnails_map_.end())
+      return false;  // No thumbnail for this URL.
+    TopSites::Images* result = new TopSites::Images(found->second);
+    thumbnail = result;
+    return true;
+  }
+
+  virtual bool RemoveURL(const MostVisitedURL& url) {
+    // Comparison by url.
+    MostVisitedURLList::iterator pos = std::find(top_sites_list_.begin(),
+                                                 top_sites_list_.end(),
+                                                 url);
+    if (pos == top_sites_list_.end()) {
+      return false;
+    }
+    top_sites_list_.erase(pos);
+    thumbnails_map_.erase(url.url);
+    return true;
+  }
+
+ private:
+  MostVisitedURLList top_sites_list_;  // Keeps the URLs sorted by score (rank).
+  std::map<GURL, TopSites::Images> thumbnails_map_;
+};
 
 
 // Helper function for appending a URL to a vector of "most visited" URLs,
@@ -239,6 +301,63 @@ TEST_F(TopSitesTest, GetMostVisited) {
   EXPECT_EQ(2u, results.size());
   EXPECT_EQ(news, results[0].url);
   EXPECT_EQ(google, results[1].url);
+}
+
+TEST_F(TopSitesTest, ReadDatabase) {
+  MockTopSitesDatabaseImpl* db = new MockTopSitesDatabaseImpl;
+  // |db| is destroyed when the top_sites is destroyed in TearDown.
+  top_sites().db_.reset(db);
+  MostVisitedURL url;
+  GURL asdf_url("http://asdf.com");
+  string16 asdf_title(ASCIIToUTF16("ASDF"));
+  GURL google_url("http://google.com");
+  string16 google_title(ASCIIToUTF16("Google"));
+  GURL news_url("http://news.google.com");
+  string16 news_title(ASCIIToUTF16("Google News"));
+
+  url.url = asdf_url;
+  url.title = asdf_title;
+  url.redirects.push_back(url.url);
+  TopSites::Images thumbnail;
+  db->SetPageThumbnail(url, 0, thumbnail);
+
+  top_sites().ReadDatabase();
+
+  MostVisitedURLList result = top_sites().GetMostVisitedURLs();
+  EXPECT_EQ(1u, result.size());
+  EXPECT_EQ(asdf_url, result[0].url);
+  EXPECT_EQ(asdf_title, result[0].title);
+
+  MostVisitedURL url2;
+  url2.url = google_url;
+  url2.title = google_title;
+  url2.redirects.push_back(url2.url);
+
+  // Add new thumbnail at rank 0 and shift the other result to 1.
+  db->SetPageThumbnail(url2, 0, thumbnail);
+
+  top_sites().ReadDatabase();
+
+  result = top_sites().GetMostVisitedURLs();
+  EXPECT_EQ(2u, result.size());
+  EXPECT_EQ(google_url, result[0].url);
+  EXPECT_EQ(google_title, result[0].title);
+  EXPECT_EQ(asdf_url, result[1].url);
+  EXPECT_EQ(asdf_title, result[1].title);
+
+  MockHistoryServiceImpl hs;
+  // Add one old, one new URL to the history.
+  hs.AppendMockPage(google_url, google_title);
+  hs.AppendMockPage(news_url, news_title);
+  top_sites().SetMockHistoryService(&hs);
+
+  // This writes the new data to the DB.
+  top_sites().StartQueryForMostVisited();
+
+  result = db->GetTopURLs();
+  EXPECT_EQ(2u, result.size());
+  EXPECT_EQ(google_title, result[0].title);
+  EXPECT_EQ(news_title, result[1].title);
 }
 
 }  // namespace history
