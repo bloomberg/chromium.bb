@@ -108,14 +108,8 @@ o3d.Field.prototype.setAt =
  */
 o3d.Field.prototype.getAt =
     function(start_index, num_elements) {
-  var values = [];
-  for (var i = 0; i < num_elements; ++i) {
-    for (var c = 0; c < this.numComponents; ++c) {
-      values.push(this.buffer.array_[(start_index + i) *
-          this.buffer.totalComponents + this.offset_ + c]);
-    }
-  }
-  return values;
+  return this.buffer.getAtHelper_(start_index, num_elements, this.offset_,
+      this.numComponents);
 };
 
 
