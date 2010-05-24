@@ -35,6 +35,7 @@
 #endif
 #include "third_party/npapi/bindings/npapi_extensions.h"
 #include "third_party/npapi/bindings/npapi_extensions_private.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_instance.h"
@@ -364,6 +365,64 @@ bool WebPluginDelegatePepper::ChooseFile(const char* mime_types,
 
 NPWidgetExtensions* WebPluginDelegatePepper::GetWidgetExtensions() {
   return PepperWidget::GetWidgetExtensions();
+}
+
+#define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, np_name) \
+    COMPILE_ASSERT(int(WebCursorInfo::webkit_name) == int(np_name), \
+                   mismatching_enums)
+
+COMPILE_ASSERT_MATCHING_ENUM(TypePointer, NPCursorTypePointer);
+COMPILE_ASSERT_MATCHING_ENUM(TypeCross, NPCursorTypeCross);
+COMPILE_ASSERT_MATCHING_ENUM(TypeHand, NPCursorTypeHand);
+COMPILE_ASSERT_MATCHING_ENUM(TypeIBeam, NPCursorTypeIBeam);
+COMPILE_ASSERT_MATCHING_ENUM(TypeWait, NPCursorTypeWait);
+COMPILE_ASSERT_MATCHING_ENUM(TypeHelp, NPCursorTypeHelp);
+COMPILE_ASSERT_MATCHING_ENUM(TypeEastResize, NPCursorTypeEastResize);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNorthResize, NPCursorTypeNorthResize);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNorthEastResize, NPCursorTypeNorthEastResize);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNorthWestResize, NPCursorTypeNorthWestResize);
+COMPILE_ASSERT_MATCHING_ENUM(TypeSouthResize, NPCursorTypeSouthResize);
+COMPILE_ASSERT_MATCHING_ENUM(TypeSouthEastResize, NPCursorTypeSouthEastResize);
+COMPILE_ASSERT_MATCHING_ENUM(TypeSouthWestResize, NPCursorTypeSouthWestResize);
+COMPILE_ASSERT_MATCHING_ENUM(TypeWestResize, NPCursorTypeWestResize);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNorthSouthResize,
+                             NPCursorTypeNorthSouthResize);
+COMPILE_ASSERT_MATCHING_ENUM(TypeEastWestResize, NPCursorTypeEastWestResize);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNorthEastSouthWestResize,
+                             NPCursorTypeNorthEastSouthWestResize);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNorthWestSouthEastResize,
+                             NPCursorTypeNorthWestSouthEastResize);
+COMPILE_ASSERT_MATCHING_ENUM(TypeColumnResize, NPCursorTypeColumnResize);
+COMPILE_ASSERT_MATCHING_ENUM(TypeRowResize, NPCursorTypeRowResize);
+COMPILE_ASSERT_MATCHING_ENUM(TypeMiddlePanning, NPCursorTypeMiddlePanning);
+COMPILE_ASSERT_MATCHING_ENUM(TypeEastPanning, NPCursorTypeEastPanning);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNorthPanning, NPCursorTypeNorthPanning);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNorthEastPanning,
+                             NPCursorTypeNorthEastPanning);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNorthWestPanning,
+                             NPCursorTypeNorthWestPanning);
+COMPILE_ASSERT_MATCHING_ENUM(TypeSouthPanning, NPCursorTypeSouthPanning);
+COMPILE_ASSERT_MATCHING_ENUM(TypeSouthEastPanning,
+                             NPCursorTypeSouthEastPanning);
+COMPILE_ASSERT_MATCHING_ENUM(TypeSouthWestPanning,
+                             NPCursorTypeSouthWestPanning);
+COMPILE_ASSERT_MATCHING_ENUM(TypeWestPanning, NPCursorTypeWestPanning);
+COMPILE_ASSERT_MATCHING_ENUM(TypeMove, NPCursorTypeMove);
+COMPILE_ASSERT_MATCHING_ENUM(TypeVerticalText, NPCursorTypeVerticalText);
+COMPILE_ASSERT_MATCHING_ENUM(TypeCell, NPCursorTypeCell);
+COMPILE_ASSERT_MATCHING_ENUM(TypeContextMenu, NPCursorTypeContextMenu);
+COMPILE_ASSERT_MATCHING_ENUM(TypeAlias, NPCursorTypeAlias);
+COMPILE_ASSERT_MATCHING_ENUM(TypeProgress, NPCursorTypeProgress);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNoDrop, NPCursorTypeNoDrop);
+COMPILE_ASSERT_MATCHING_ENUM(TypeCopy, NPCursorTypeCopy);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNone, NPCursorTypeNone);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNotAllowed, NPCursorTypeNotAllowed);
+COMPILE_ASSERT_MATCHING_ENUM(TypeZoomIn, NPCursorTypeZoomIn);
+COMPILE_ASSERT_MATCHING_ENUM(TypeZoomOut, NPCursorTypeZoomOut);
+
+bool WebPluginDelegatePepper::SetCursor(NPCursorType type) {
+  cursor_.reset(new WebCursorInfo(static_cast<WebCursorInfo::Type>(type)));
+  return true;
 }
 
 void WebPluginDelegatePepper::Zoom(int factor) {
@@ -1310,7 +1369,10 @@ bool WebPluginDelegatePepper::HandleInputEvent(const WebInputEvent& event,
       // NOTIMPLEMENTED();
       break;
   }
-  return instance()->NPP_HandleEvent(&npevent) != 0;
+  bool rv = instance()->NPP_HandleEvent(&npevent) != 0;
+  if (cursor_.get())
+    *cursor_info = *cursor_;
+  return rv;
 }
 
 #if defined(ENABLE_GPU)

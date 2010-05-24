@@ -579,6 +579,55 @@ typedef NPError (*NPChooseFilePtr)(
     NPChooseFileCallback callback,
     void* userData);
 
+typedef enum {
+  NPCursorTypePointer = 0,
+  NPCursorTypeCross = 1,
+  NPCursorTypeHand = 2,
+  NPCursorTypeIBeam = 3,
+  NPCursorTypeWait = 4,
+  NPCursorTypeHelp = 5,
+  NPCursorTypeEastResize = 6,
+  NPCursorTypeNorthResize = 7,
+  NPCursorTypeNorthEastResize = 8,
+  NPCursorTypeNorthWestResize = 9,
+  NPCursorTypeSouthResize = 10,
+  NPCursorTypeSouthEastResize = 11,
+  NPCursorTypeSouthWestResize = 12,
+  NPCursorTypeWestResize = 13,
+  NPCursorTypeNorthSouthResize = 14,
+  NPCursorTypeEastWestResize = 15,
+  NPCursorTypeNorthEastSouthWestResize = 16,
+  NPCursorTypeNorthWestSouthEastResize = 17,
+  NPCursorTypeColumnResize = 18,
+  NPCursorTypeRowResize = 19,
+  NPCursorTypeMiddlePanning = 20,
+  NPCursorTypeEastPanning = 21,
+  NPCursorTypeNorthPanning = 22,
+  NPCursorTypeNorthEastPanning = 23,
+  NPCursorTypeNorthWestPanning = 24,
+  NPCursorTypeSouthPanning = 25,
+  NPCursorTypeSouthEastPanning = 26,
+  NPCursorTypeSouthWestPanning = 27,
+  NPCursorTypeWestPanning = 28,
+  NPCursorTypeMove = 29,
+  NPCursorTypeVerticalText = 30,
+  NPCursorTypeCell = 31,
+  NPCursorTypeContextMenu = 32,
+  NPCursorTypeAlias = 33,
+  NPCursorTypeProgress = 34,
+  NPCursorTypeNoDrop = 35,
+  NPCursorTypeCopy = 36,
+  NPCursorTypeNone = 37,
+  NPCursorTypeNotAllowed = 38,
+  NPCursorTypeZoomIn = 39,
+  NPCursorTypeZoomOut = 40,
+} NPCursorType;
+
+// Temporary SetCursor API.
+typedef NPError (*NPSetCursorPtr)(
+    NPP instance,
+    NPCursorType type);
+
 /* Pepper extensions */
 struct NPNExtensions {
   /* Device interface acquisition */
@@ -592,6 +641,8 @@ struct NPNExtensions {
   NPChooseFilePtr chooseFile;
   /* Widget */
   NPGetWidgetExtensionsPtr getWidgetExtensions;
+  /* Cursor */
+  NPSetCursorPtr setCursor;
 };
 
 /* 3D -----------------------------------------------------------------------*/

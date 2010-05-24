@@ -1321,13 +1321,13 @@ HCURSOR WINAPI WebPluginDelegateImpl::SetCursorPatch(HCURSOR cursor) {
   if (!g_current_plugin_instance) {
     HCURSOR current_cursor = GetCursor();
     if (current_cursor != cursor) {
-      SetCursor(cursor);
+      ::SetCursor(cursor);
     }
     return current_cursor;
   }
 
   if (!g_current_plugin_instance->IsWindowless()) {
-    return SetCursor(cursor);
+    return ::SetCursor(cursor);
   }
 
   // It is ok to pass NULL here to GetCursor as we are not looking for cursor

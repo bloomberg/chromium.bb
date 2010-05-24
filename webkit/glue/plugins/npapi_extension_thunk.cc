@@ -515,6 +515,15 @@ static NPWidgetExtensions* GetWidgetExtensions(NPP id) {
   return plugin->webplugin()->delegate()->GetWidgetExtensions();
 }
 
+static NPError NPSetCursor(NPP id, NPCursorType type) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (!plugin)
+    return NPERR_GENERIC_ERROR;
+
+  return plugin->webplugin()->delegate()->SetCursor(type) ?
+      NPERR_NO_ERROR : NPERR_GENERIC_ERROR;
+}
+
 namespace NPAPI {
 
 NPError GetPepperExtensionsFunctions(void* value) {
@@ -525,6 +534,7 @@ NPError GetPepperExtensionsFunctions(void* value) {
     &SelectedFindResultChanged,
     &ChooseFile,
     &GetWidgetExtensions,
+    &NPSetCursor,
   };
 
   // Return a pointer to the canonical function table.

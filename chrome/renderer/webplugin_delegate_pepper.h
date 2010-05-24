@@ -93,6 +93,7 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate,
                           NPChooseFileCallback callback,
                           void* user_data);
   virtual NPWidgetExtensions* GetWidgetExtensions();
+  virtual bool SetCursor(NPCursorType type);
 
   virtual void Zoom(int factor);
 
@@ -300,6 +301,8 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate,
   // pointer to the callback specified by the plugin. Will be NULL otherwise.
   NPChooseFileCallback current_choose_file_callback_;
   void* current_choose_file_user_data_;
+
+  scoped_ptr<WebKit::WebCursorInfo> cursor_;
 
   DISALLOW_COPY_AND_ASSIGN(WebPluginDelegatePepper);
 };
