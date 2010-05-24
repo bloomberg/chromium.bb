@@ -124,6 +124,10 @@ class LoginManagerView : public views::View,
 
   void FocusFirstField();
 
+  // Delete and recreate native controls that fail to update preferred size
+  // after string update.
+  void RecreateNativeControls();
+
   views::Textfield* username_field_;
   views::Textfield* password_field_;
   views::Label* title_label_;

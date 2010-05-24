@@ -116,9 +116,6 @@ void LoginManagerView::Init() {
   password_field_ = new views::Textfield(views::Textfield::STYLE_PASSWORD);
   AddChildView(password_field_);
 
-  sign_in_button_ = new views::NativeButton(this, std::wstring());
-  AddChildView(sign_in_button_);
-
   create_account_link_ = new views::Link(std::wstring());
   create_account_link_->SetController(this);
   AddChildView(create_account_link_);
@@ -159,7 +156,19 @@ bool LoginManagerView::AcceleratorPressed(
   return false;
 }
 
+void LoginManagerView::RecreateNativeControls() {
+  // There is no way to get native button preferred size after the button was
+  // sized so delete and recreate the button on text update.
+  delete sign_in_button_;
+  sign_in_button_ = new views::NativeButton(this, std::wstring());
+  AddChildView(sign_in_button_);
+  if (!CrosLibrary::Get()->EnsureLoaded())
+    sign_in_button_->SetEnabled(false);
+}
+
 void LoginManagerView::UpdateLocalizedStrings() {
+  RecreateNativeControls();
+
   title_label_->SetText(l10n_util::GetString(IDS_LOGIN_TITLE));
   username_field_->set_text_to_display_when_empty(
       l10n_util::GetStringUTF16(IDS_LOGIN_USERNAME));
