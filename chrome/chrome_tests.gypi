@@ -1091,6 +1091,7 @@
         ['OS=="linux" and toolkit_views==1', {
           'sources': [
             '<@(views_unit_tests_sources)',
+            '../views/focus/accelerator_handler_gtk_unittest.cc',
           ],
           # We must use 'sources/' instead of 'source!' as there is a
           # target-default 'sources/' including gtk_unittest and 'source/' takes
