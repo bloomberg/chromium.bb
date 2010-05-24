@@ -59,35 +59,34 @@ const char kPinyinSectionName[] = "engine/Pinyin";
 // We have to sync the |ibus_config_name|s with those in
 // ibus-pinyin/files/src/Config.cc.
 const struct {
-  const wchar_t* pref_name;
+  const wchar_t* pref_name;  // Chrome preference name.
+  bool default_pref_value;
   const char* ibus_config_name;
-  bool default_value;
   int message_id;
 } kPinyinBooleanPrefs[] = {
-  { prefs::kLanguagePinyinCorrectPinyin, "CorrectPinyin", true,
+  { prefs::kLanguagePinyinCorrectPinyin, true, "CorrectPinyin",
     IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_CORRECT_PINYIN },
-  { prefs::kLanguagePinyinFuzzyPinyin, "FuzzyPinyin", false,
+  { prefs::kLanguagePinyinFuzzyPinyin, false, "FuzzyPinyin",
     IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_FUZZY_PINYIN },
-  { prefs::kLanguagePinyinShiftSelectCandidate, "ShiftSelectCandidate",
-    false, IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_SHIFT_SELECT_PINYIN },
-  { prefs::kLanguagePinyinMinusEqualPage, "MinusEqualPage", true,
+  { prefs::kLanguagePinyinShiftSelectCandidate, false, "ShiftSelectCandidate",
+    IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_SHIFT_SELECT_PINYIN },
+  { prefs::kLanguagePinyinMinusEqualPage, true, "MinusEqualPage",
     IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_MINUS_EQUAL_PAGE },
-  { prefs::kLanguagePinyinCommaPeriodPage, "CommaPeriodPage", true,
+  { prefs::kLanguagePinyinCommaPeriodPage, true, "CommaPeriodPage",
     IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_COMMA_PERIOD_PAGE },
-  { prefs::kLanguagePinyinAutoCommit, "AutoCommit", false,
+  { prefs::kLanguagePinyinAutoCommit, false, "AutoCommit",
     IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_AUTO_COMMIT },
-  { prefs::kLanguagePinyinDoublePinyin, "DoublePinyin", false,
+  { prefs::kLanguagePinyinDoublePinyin, false, "DoublePinyin",
     IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_DOUBLE_PINYIN },
-  { prefs::kLanguagePinyinInitChinese, "InitChinese", true,
+  { prefs::kLanguagePinyinInitChinese, true, "InitChinese",
     IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_INIT_CHINESE },
-  { prefs::kLanguagePinyinInitFull, "InitFull", false,
+  { prefs::kLanguagePinyinInitFull, false, "InitFull",
     IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_INIT_FULL },
-  { prefs::kLanguagePinyinInitFullPunct, "InitFullPunct", true,
+  { prefs::kLanguagePinyinInitFullPunct, true, "InitFullPunct",
     IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_INIT_FULL_PUNCT },
-  { prefs::kLanguagePinyinInitSimplifiedChinese, "InitSimplifiedChinese",
-    true,
+  { prefs::kLanguagePinyinInitSimplifiedChinese, true, "InitSimplifiedChinese",
     IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_INIT_SIMPLIFIED_CHINESE },
-  { prefs::kLanguagePinyinTradCandidate, "TradCandidate", false,
+  { prefs::kLanguagePinyinTradCandidate, false, "TradCandidate",
     IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_TRAD_CANDIDATE },
   // TODO(yusukes): Support PINYIN_{INCOMPLETE,CORRECT,FUZZY}_... prefs (32
   // additional boolean prefs.)
@@ -96,22 +95,84 @@ const size_t kNumPinyinBooleanPrefs = ARRAYSIZE_UNSAFE(kPinyinBooleanPrefs);
 // TODO(yusukes): Support HalfWidthPuncts and IncompletePinyin prefs if needed.
 
 const struct {
-  const wchar_t* pref_name;
+  const wchar_t* pref_name;  // Chrome preference name.
+  int default_pref_value;
   const char* ibus_config_name;
-  int default_value;
   // TODO(yusukes): Add message_id if needed.
 } kPinyinIntegerPrefs[] = {
-  { prefs::kLanguagePinyinDoublePinyinSchema, "DoublePinyinSchema", 0 },
+  { prefs::kLanguagePinyinDoublePinyinSchema, 0, "DoublePinyinSchema" },
   // TODO(yusukes): the type of lookup_table_page_size on ibus should be uint.
-  { prefs::kLanguagePinyinLookupTablePageSize, "LookupTablePageSize", 5 },
+  { prefs::kLanguagePinyinLookupTablePageSize, 5, "LookupTablePageSize" },
 };
 const size_t kNumPinyinIntegerPrefs = ARRAYSIZE_UNSAFE(kPinyinIntegerPrefs);
 
-// For Traditional Chinese input method (ibus-chewing)
-
 // For Japanese input method (ibus-mozc)
+const char kMozcSectionName[] = "engine/Mozc";
 
-// TODO(yusukes): Add constants for these components.
+const struct MozcMultipleChoicePreference {
+  const wchar_t* pref_name;  // Chrome preference name.
+  const wchar_t* default_pref_value;
+  // The config names and values have to be matched with protobuf member names
+  // in chromiumos/src/third_party/ibus-mozc/files/src/session/config.proto
+  // since ibus-mozc uses protobuf reflection APIs to pass prefs to the Mozc
+  // Japanese converter.
+  const char* ibus_config_name;
+  // Currently we have 4 combobox items at most.
+  static const size_t kMaxItems = 4;
+  struct {
+    const char* ibus_config_value;
+    int item_message_id;  // Resource grd ID for the combobox item.
+  } values_and_ids[kMaxItems];
+  int label_message_id;  // Resource grd ID for the label.
+
+} kMozcMultipleChoicePrefs[] = {
+  { prefs::kLanguageMozcPreeditMethod,
+    L"ROMAN",
+    "preedit_method",
+    {{ "ROMAN", IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PREEDIT_METHOD_ROMAN },
+     { "KANA", IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PREEDIT_METHOD_KANA }},
+    IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PREEDIT_METHOD,
+  },
+  { prefs::kLanguageMozcSessionKeymap,
+    L"MSIME",
+    "session_keymap",
+    {{ "ATOK", IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SESSION_KEYMAP_ATOK },
+     { "MSIME", IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SESSION_KEYMAP_MSIME },
+     { "KOTOERI", IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SESSION_KEYMAP_KOTOERI }},
+    // TODO: Support "CUSTOM" keymap.
+    IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SESSION_KEYMAP,
+  },
+  { prefs::kLanguageMozcPunctuationMethod,
+    L"KUTEN_TOTEN",
+    "punctuation_method",
+    {{ "KUTEN_TOUTEN",
+       IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PUNCTUATION_METHOD_KUTEN_TOUTEN },
+     { "COMMA_PERIOD",
+       IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PUNCTUATION_METHOD_COMMA_PERIOD },
+     { "KUTEN_PERIOD",
+       IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PUNCTUATION_METHOD_KUTEN_PERIOD },
+     { "COMMA_TOUTEN",
+       IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PUNCTUATION_METHOD_COMMA_TOUTEN }},
+    IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PUNCTUATION_METHOD,
+  },
+  { prefs::kLanguageMozcSymbolMethod,
+    L"CORNER_BRACKET_MIDDLE_DOT",
+    "symbol_method",
+    {{ "CORNER_BRACKET_MIDDLE_DOT",
+       IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SYMBOL_CORNER_BRACKET_MIDDLE_DOT },
+     { "SQUARE_BRACKET_SLASH",
+       IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SYMBOL_SQUARE_BRACKET_SLASH },
+     { "CORNER_BRACKET_SLASH",
+       IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SYMBOL_CORNER_BRACKET_SLASH },
+     { "SQUARE_BRACKET_MIDDLE_DOT",
+       IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SYMBOL_SQUARE_BRACKET_MIDDLE_DOT }},
+    IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SYMBOL_METHOD,
+  },
+};
+const size_t kNumMozcMultipleChoicePrefs = arraysize(kMozcMultipleChoicePrefs);
+
+// For Traditional Chinese input methods (ibus-pinyin-bopomofo and ibus-chewing)
+// TODO(yusukes): Add constants for Traditional Chinese input methods.
 }  // chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LANGUAGE_PREFERENCES_H_

@@ -56,8 +56,8 @@ std::wstring LanguagePinyinConfigView::GetWindowTitle() const {
 gfx::Size LanguagePinyinConfigView::GetPreferredSize() {
   // TODO(satorux): Create our own localized content size once the UI is done.
   return gfx::Size(views::Window::GetLocalizedContentsSize(
-      IDS_FONTSLANG_DIALOG_WIDTH_CHARS,
-      IDS_FONTSLANG_DIALOG_HEIGHT_LINES));
+      IDS_LANGUAGES_INPUT_DIALOG_WIDTH_CHARS,
+      IDS_LANGUAGES_INPUT_DIALOG_HEIGHT_LINES));
 }
 
 void LanguagePinyinConfigView::InitControlLayout() {

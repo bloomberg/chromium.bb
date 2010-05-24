@@ -7505,6 +7505,86 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The checkbox label for a Pinyin input method preference">
 	Display candidates in Traditional Chinese
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SETTINGS_TITLE"
+               desc="The title for the Mozc Japanese input settings dialog">
+        Japanese Input Settings
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PREEDIT_METHOD"
+               desc="The combobox description for the Mozc input method preference">
+	Input Method
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PREEDIT_METHOD_ROMAN"
+               desc="The combobox value for the Mozc input method preference">
+	Romaji
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PREEDIT_METHOD_KANA"
+               desc="The combobox value for the Mozc input method preference">
+	Kana
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SESSION_KEYMAP"
+               desc="The combobox description for the Mozc input method preference">
+	Keymap style
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SESSION_KEYMAP_ATOK"
+               desc="The combobox value for the Mozc input method preference (might be non-translateable?)">
+	ATOK
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SESSION_KEYMAP_MSIME"
+               desc="The combobox value for the Mozc input method preference (might be non-translateable?)">
+	MS-IME
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SESSION_KEYMAP_KOTOERI"
+               desc="The combobox value for the Mozc input method preference. When lang is ja, it should be written in Hiragana">
+	Kotoeri
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PUNCTUATION_METHOD"
+               desc="The combobox description for the Mozc input method preference">
+	Punctuation style
+      </message>
+      <message translateable="false"
+               name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PUNCTUATION_METHOD_KUTEN_TOUTEN"
+               desc="The combobox value for the Mozc input method preference">
+	&#x3001;&#x3002;
+      </message>
+      <message translateable="false"
+               name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PUNCTUATION_METHOD_COMMA_PERIOD"
+               desc="The combobox value for the Mozc input method preference">
+	&#xff0c;&#xff0e;
+      </message>
+      <message translateable="false"
+               name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PUNCTUATION_METHOD_KUTEN_PERIOD"
+               desc="The combobox value for the Mozc input method preference">
+	&#x3001;&#xff0e;
+      </message>
+      <message translateable="false"
+               name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PUNCTUATION_METHOD_COMMA_TOUTEN"
+               desc="The combobox value for the Mozc input method preference">
+	&#xff0c;&#x3002;
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SYMBOL_METHOD"
+               desc="The combobox description for the Mozc input method preference">
+	Symbol style
+      </message>
+      <message translateable="false"
+	       name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SYMBOL_CORNER_BRACKET_MIDDLE_DOT"
+               desc="The combobox value for the Mozc input method preference">
+	&#x300c;&#x300d;&#x30fb;
+      </message>
+      <message translateable="false"
+	       name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SYMBOL_SQUARE_BRACKET_SLASH"
+               desc="The combobox value for the Mozc input method preference">
+	&#xff3b;&#xff3d;&#xff0f;
+      </message>
+      <message translateable="false"
+	       name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SYMBOL_CORNER_BRACKET_SLASH"
+               desc="The combobox value for the Mozc input method preference">
+	&#x300c;&#x300d;&#xff0f;
+      </message>
+      <message translateable="false"
+	       name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SYMBOL_SQUARE_BRACKET_MIDDLE_DOT"
+               desc="The combobox value for the Mozc input method preference">
+	&#xff3b;&#xff3d;&#x30fb;
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CONFIGURE"
                desc="The label for the configure button for input methods">
         Configure...

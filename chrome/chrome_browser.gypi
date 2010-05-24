@@ -466,6 +466,8 @@
         'browser/chromeos/options/language_hangul_config_view.h',
         'browser/chromeos/options/language_pinyin_config_view.cc',
         'browser/chromeos/options/language_pinyin_config_view.h',
+        'browser/chromeos/options/language_mozc_config_view.cc',
+        'browser/chromeos/options/language_mozc_config_view.h',
         'browser/chromeos/options/network_config_view.cc',
         'browser/chromeos/options/network_config_view.h',
         'browser/chromeos/options/options_window_view.cc',

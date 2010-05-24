@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_OPTIONS_LANGUAGE_HANGUL_CONFIG_VIEW_H_
-#define CHROME_BROWSER_CHROMEOS_OPTIONS_LANGUAGE_HANGUL_CONFIG_VIEW_H_
+#ifndef CHROME_BROWSER_CHROMEOS_OPTIONS_LANGUAGE_MOZC_CONFIG_VIEW_H_
+#define CHROME_BROWSER_CHROMEOS_OPTIONS_LANGUAGE_MOZC_CONFIG_VIEW_H_
 
 #include <string>
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/language_library.h"
+#include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/views/options/options_page_view.h"
 #include "views/controls/combobox/combobox.h"
@@ -17,15 +18,16 @@
 
 namespace chromeos {
 
-class HangulKeyboardComboboxModel;
+class MozcCombobox;
+class MozcComboboxModel;
 
-// A dialog box for showing Korean input method preferences.
-class LanguageHangulConfigView : public views::Combobox::Listener,
-                                 public views::DialogDelegate,
-                                 public OptionsPageView {
+// A dialog box for showing Mozc (Japanese input method) preferences.
+class LanguageMozcConfigView : public views::Combobox::Listener,
+                               public views::DialogDelegate,
+                               public OptionsPageView {
  public:
-  explicit LanguageHangulConfigView(Profile* profile);
-  virtual ~LanguageHangulConfigView();
+  explicit LanguageMozcConfigView(Profile* profile);
+  virtual ~LanguageMozcConfigView();
 
   // views::Combobox::Listener overrides.
   virtual void ItemChanged(views::Combobox* sender,
@@ -50,19 +52,20 @@ class LanguageHangulConfigView : public views::Combobox::Listener,
                        const NotificationDetails& details);
 
  private:
-  // Updates the hangul keyboard combobox.
+  // Updates the mozc keyboard combobox.
   void NotifyPrefChanged();
 
-  StringPrefMember keyboard_pref_;
   views::View* contents_;
 
-  // A combobox for Hangul keyboard layouts and its model.
-  views::Combobox* hangul_keyboard_combobox_;
-  scoped_ptr<HangulKeyboardComboboxModel> hangul_keyboard_combobox_model_;
+  struct MozcPrefAndAssociatedCombobox {
+    StringPrefMember multiple_choice_pref;
+    MozcComboboxModel* combobox_model;
+    MozcCombobox* combobox;
+  } prefs_and_comboboxes_[kNumMozcMultipleChoicePrefs];
 
-  DISALLOW_COPY_AND_ASSIGN(LanguageHangulConfigView);
+  DISALLOW_COPY_AND_ASSIGN(LanguageMozcConfigView);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_OPTIONS_LANGUAGE_HANGUL_CONFIG_VIEW_H_
+#endif  // CHROME_BROWSER_CHROMEOS_OPTIONS_LANGUAGE_MOZC_CONFIG_VIEW_H_

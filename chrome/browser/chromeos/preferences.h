@@ -89,6 +89,8 @@ class Preferences : public NotificationObserver {
   StringPrefMember language_hangul_keyboard_;
   BooleanPrefMember language_pinyin_boolean_prefs_[kNumPinyinBooleanPrefs];
   IntegerPrefMember language_pinyin_int_prefs_[kNumPinyinIntegerPrefs];
+  StringPrefMember language_mozc_multiple_choice_prefs_[
+      kNumMozcMultipleChoicePrefs];
 
   DISALLOW_COPY_AND_ASSIGN(Preferences);
 };

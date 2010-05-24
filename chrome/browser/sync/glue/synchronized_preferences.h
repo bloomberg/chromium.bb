@@ -115,6 +115,12 @@ static const wchar_t* kSynchronizedPreferences[] = {
   prefs::kLanguagePinyinShiftSelectCandidate,
   prefs::kLanguagePinyinTradCandidate,
   prefs::kLanguagePreloadEngines,
+  // TODO(yusukes): Add prefs for ibus-mozc (Japanese input method).
+  //   prefs::kLanguageMozcPreeditMethod,
+  //   prefs::kLanguageMozcSessionKeymap,
+  //   prefs::kLanguageMozcPunctuationMethod,
+  //   prefs::kLanguageMozcSymbolMethod,
+  //
   // We don't sync the following IME prefs since they are not user-configurable
   // (yet):
   //   prefs::kLanguageHotkeyNextEngineInMenu,

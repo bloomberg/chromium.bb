@@ -242,6 +242,18 @@ const wchar_t kLanguagePinyinDoublePinyinSchema[] =
     L"settings.language.pinyin_double_pinyin_schema";
 const wchar_t kLanguagePinyinLookupTablePageSize[] =
     L"settings.language.pinyin_lookup_table_page_size";
+
+// A string prefs for ibus-mozc Japanese input method.
+// ibus-mozc converts the string values to protobuf enum values defined in
+// third_party/ibus-mozc/files/src/session/config.proto.
+const wchar_t kLanguageMozcPreeditMethod[] =
+    L"settings.language.mozc_preedit_method";
+const wchar_t kLanguageMozcSessionKeymap[] =
+    L"settings.language.mozc_sessoin_keymap";
+const wchar_t kLanguageMozcPunctuationMethod[] =
+    L"settings.language.mozc_punctuation_method";
+const wchar_t kLanguageMozcSymbolMethod[] =
+    L"settings.language.mozc_symbol_method";
 #endif
 
 // The disabled messages in IPC logging.

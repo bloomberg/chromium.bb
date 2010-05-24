@@ -91,6 +91,10 @@ extern const wchar_t kLanguagePinyinInitFull[];
 extern const wchar_t kLanguagePinyinInitFullPunct[];
 extern const wchar_t kLanguagePinyinInitSimplifiedChinese[];
 extern const wchar_t kLanguagePinyinTradCandidate[];
+extern const wchar_t kLanguageMozcPreeditMethod[];
+extern const wchar_t kLanguageMozcSessionKeymap[];
+extern const wchar_t kLanguageMozcPunctuationMethod[];
+extern const wchar_t kLanguageMozcSymbolMethod[];
 #endif
 extern const wchar_t kIpcDisabledMessages[];
 extern const wchar_t kShowHomeButton[];

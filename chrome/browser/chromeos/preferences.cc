@@ -34,11 +34,15 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
                             kHangulKeyboardNameIDPairs[0].keyboard_id);
   for (size_t i = 0; i < kNumPinyinBooleanPrefs; ++i) {
     prefs->RegisterBooleanPref(kPinyinBooleanPrefs[i].pref_name,
-                               kPinyinBooleanPrefs[i].default_value);
+                               kPinyinBooleanPrefs[i].default_pref_value);
   }
   for (size_t i = 0; i < kNumPinyinIntegerPrefs; ++i) {
     prefs->RegisterIntegerPref(kPinyinIntegerPrefs[i].pref_name,
-                               kPinyinIntegerPrefs[i].default_value);
+                               kPinyinIntegerPrefs[i].default_pref_value);
+  }
+  for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
+    prefs->RegisterStringPref(kMozcMultipleChoicePrefs[i].pref_name,
+                              kMozcMultipleChoicePrefs[i].default_pref_value);
   }
 }
 
@@ -61,6 +65,10 @@ void Preferences::Init(PrefService* prefs) {
   for (size_t i = 0; i < kNumPinyinIntegerPrefs; ++i) {
     language_pinyin_int_prefs_[i].Init(
         kPinyinIntegerPrefs[i].pref_name, prefs, this);
+  }
+  for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
+    language_mozc_multiple_choice_prefs_[i].Init(
+        kMozcMultipleChoicePrefs[i].pref_name, prefs, this);
   }
 
   // Initialize touchpad settings to what's saved in user preferences.
@@ -128,6 +136,14 @@ void Preferences::NotifyPrefChanged(const std::wstring* pref_name) {
       SetLanguageConfigInteger(kPinyinSectionName,
                                kPinyinIntegerPrefs[i].ibus_config_name,
                                language_pinyin_int_prefs_[i].GetValue());
+    }
+  }
+  for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
+    if (!pref_name || *pref_name == kMozcMultipleChoicePrefs[i].pref_name) {
+      SetLanguageConfigString(
+          kMozcSectionName,
+          kMozcMultipleChoicePrefs[i].ibus_config_name,
+          language_mozc_multiple_choice_prefs_[i].GetValue());
     }
   }
 }

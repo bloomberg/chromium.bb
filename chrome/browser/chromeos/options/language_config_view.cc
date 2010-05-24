@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/language_library.h"
 #include "chrome/browser/chromeos/options/language_hangul_config_view.h"
+#include "chrome/browser/chromeos/options/language_mozc_config_view.h"
 #include "chrome/browser/chromeos/options/language_pinyin_config_view.h"
 #include "chrome/browser/chromeos/options/options_window_view.h"
 #include "chrome/browser/chromeos/preferences.h"
@@ -49,6 +50,9 @@ views::DialogDelegate* CreateLanguageHangulConfigView(Profile* profile) {
 }
 views::DialogDelegate* CreateLanguagePinyinConfigView(Profile* profile) {
   return new LanguagePinyinConfigView(profile);
+}
+views::DialogDelegate* CreateLanguageMozcConfigView(Profile* profile) {
+  return new LanguageMozcConfigView(profile);
 }
 
 // The tags are used to identify buttons in ButtonPressed().
@@ -500,10 +504,13 @@ void LanguageConfigView::InitControlLayout() {
 }
 
 void LanguageConfigView::InitInputMethodConfigViewMap() {
-  input_method_config_view_map_["hangul"] =
-      CreateLanguageHangulConfigView;
-  input_method_config_view_map_["pinyin"] =
-      CreateLanguagePinyinConfigView;
+  input_method_config_view_map_["hangul"] = CreateLanguageHangulConfigView;
+  input_method_config_view_map_["pinyin"] = CreateLanguagePinyinConfigView;
+
+  // TODO(yusukes): Enable the following two mappings when ibus-mozc starts
+  //                supporting IBus style configs.
+  // input_method_config_view_map_["mozc"] = CreateLanguageMozcConfigView;
+  // input_method_config_view_map_["mozc-jp"] = CreateLanguageMozcConfigView;
 }
 
 void LanguageConfigView::InitInputMethodIdMaps() {
