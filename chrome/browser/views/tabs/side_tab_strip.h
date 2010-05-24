@@ -11,6 +11,9 @@ struct TabRendererData;
 
 class SideTabStrip : public BaseTabStrip {
  public:
+  // The tabs are inset by this much along all axis.
+  static const int kTabStripInset;
+
   explicit SideTabStrip(TabStripController* controller);
   virtual ~SideTabStrip();
 
@@ -20,7 +23,6 @@ class SideTabStrip : public BaseTabStrip {
   virtual bool IsPositionInWindowCaption(const gfx::Point& point);
   virtual void SetDraggedTabBounds(int tab_index,
                                    const gfx::Rect& tab_bounds);
-  virtual bool IsAnimating() const;
   virtual TabStrip* AsTabStrip();
 
   virtual void StartHighlight(int model_index);
@@ -33,6 +35,7 @@ class SideTabStrip : public BaseTabStrip {
 
   // views::View overrides:
   virtual gfx::Size GetPreferredSize();
+  virtual void PaintChildren(gfx::Canvas* canvas);
 
  protected:
   // BaseTabStrip overrides:
@@ -41,8 +44,7 @@ class SideTabStrip : public BaseTabStrip {
   virtual void StartInsertTabAnimation(int model_index, bool foreground);
   virtual void StartMoveTabAnimation();
   virtual void StopAnimating(bool layout);
-  virtual void StartedDraggingTab(BaseTab* tab) {}
-  virtual void StoppedDraggingTab(BaseTab* tab) {}
+  virtual void AnimateToIdealBounds();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SideTabStrip);

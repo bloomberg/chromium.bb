@@ -6,12 +6,16 @@
 
 #include "chrome/browser/views/tabs/side_tab.h"
 #include "chrome/browser/view_ids.h"
+#include "views/background.h"
 
 namespace {
 const int kVerticalTabSpacing = 2;
 const int kTabStripWidth = 140;
-const int kTabStripInset = 3;
+const SkColor kBackgroundColor = SkColorSetARGB(255, 209, 220, 248);
 }
+
+// static
+const int SideTabStrip::kTabStripInset = 3;
 
 ////////////////////////////////////////////////////////////////////////////////
 // SideTabStrip, public:
@@ -19,6 +23,7 @@ const int kTabStripInset = 3;
 SideTabStrip::SideTabStrip(TabStripController* controller)
     : BaseTabStrip(controller, BaseTabStrip::VERTICAL_TAB_STRIP) {
   SetID(VIEW_ID_TAB_STRIP);
+  set_background(views::Background::CreateSolidBackground(kBackgroundColor));
 }
 
 SideTabStrip::~SideTabStrip() {
@@ -43,10 +48,6 @@ void SideTabStrip::SetDraggedTabBounds(int tab_index,
                                        const gfx::Rect& tab_bounds) {
 }
 
-bool SideTabStrip::IsAnimating() const {
-  return false;
-}
-
 TabStrip* SideTabStrip::AsTabStrip() {
   return NULL;
 }
@@ -66,8 +67,7 @@ BaseTab* SideTabStrip::CreateTabForDragging() {
 }
 
 void SideTabStrip::RemoveTabAt(int model_index, bool initiated_close) {
-  RemoveAndDeleteTab(GetBaseTabAtModelIndex(model_index));
-  Layout();
+  StartRemoveTabAnimation(model_index);
 }
 
 void SideTabStrip::SelectTabAt(int old_model_index, int new_model_index) {
@@ -85,6 +85,22 @@ void SideTabStrip::SetTabData(int model_index, const TabRendererData& data) {
 
 gfx::Size SideTabStrip::GetPreferredSize() {
   return gfx::Size(kTabStripWidth, 0);
+}
+
+void SideTabStrip::PaintChildren(gfx::Canvas* canvas) {
+  // Make sure the dragged tab appears on top of all others by paint it last.
+  BaseTab* dragging_tab = NULL;
+
+  for (int i = tab_count() - 1; i >= 0; --i) {
+    BaseTab* tab = base_tab_at_tab_index(i);
+    if (tab->dragging())
+      dragging_tab = tab;
+    else
+      tab->ProcessPaint(canvas);
+  }
+
+  if (dragging_tab)
+    dragging_tab->ProcessPaint(canvas);
 }
 
 BaseTab* SideTabStrip::CreateTab() {
@@ -108,12 +124,45 @@ void SideTabStrip::GenerateIdealBounds() {
 }
 
 void SideTabStrip::StartInsertTabAnimation(int model_index, bool foreground) {
-  Layout();
+  PrepareForAnimation();
+
+  GenerateIdealBounds();
+
+  int tab_data_index = ModelIndexToTabIndex(model_index);
+  BaseTab* tab = base_tab_at_tab_index(tab_data_index);
+  if (model_index == 0) {
+    tab->SetBounds(ideal_bounds(tab_data_index).x(), 0,
+                   ideal_bounds(tab_data_index).width(), 0);
+  } else {
+    BaseTab* last_tab = base_tab_at_tab_index(tab_data_index - 1);
+    tab->SetBounds(last_tab->x(), last_tab->bounds().bottom(),
+                   ideal_bounds(tab_data_index).width(), 0);
+  }
+
+  AnimateToIdealBounds();
 }
 
 void SideTabStrip::StartMoveTabAnimation() {
-  Layout();
+  PrepareForAnimation();
+
+  GenerateIdealBounds();
+  AnimateToIdealBounds();
 }
 
 void SideTabStrip::StopAnimating(bool layout) {
+  if (!IsAnimating())
+    return;
+
+  bounds_animator().Cancel();
+
+  if (layout)
+    Layout();
+}
+
+void SideTabStrip::AnimateToIdealBounds() {
+  for (int i = 0; i < tab_count(); ++i) {
+    BaseTab* tab = base_tab_at_tab_index(i);
+    if (!tab->closing() && !tab->dragging())
+      bounds_animator().AnimateViewTo(tab, ideal_bounds(i));
+  }
 }

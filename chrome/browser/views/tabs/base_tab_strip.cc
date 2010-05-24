@@ -10,10 +10,117 @@
 #include "views/widget/root_view.h"
 #include "views/window/window.h"
 
+#if defined(OS_WIN)
+#include "app/win_util.h"
+#include "views/widget/widget_win.h"
+#endif
+
+namespace {
+
+// Animation delegate used when a dragged tab is released. When done sets the
+// dragging state to false.
+class ResetDraggingStateDelegate
+    : public views::BoundsAnimator::OwnedAnimationDelegate {
+ public:
+  explicit ResetDraggingStateDelegate(BaseTab* tab) : tab_(tab) {
+  }
+
+  virtual void AnimationEnded(const Animation* animation) {
+    tab_->set_dragging(false);
+  }
+
+  virtual void AnimationCanceled(const Animation* animation) {
+    tab_->set_dragging(false);
+  }
+
+ private:
+  BaseTab* tab_;
+
+  DISALLOW_COPY_AND_ASSIGN(ResetDraggingStateDelegate);
+};
+
+}  // namespace
+
+// AnimationDelegate used when removing a tab. Does the necessary cleanup when
+// done.
+class BaseTabStrip::RemoveTabDelegate
+    : public views::BoundsAnimator::OwnedAnimationDelegate {
+ public:
+  RemoveTabDelegate(BaseTabStrip* tab_strip, BaseTab* tab)
+      : tabstrip_(tab_strip),
+        tab_(tab) {
+  }
+
+  virtual void AnimationEnded(const Animation* animation) {
+    CompleteRemove();
+  }
+
+  virtual void AnimationCanceled(const Animation* animation) {
+    // We can be canceled for two interesting reasons:
+    // . The tab we reference was dragged back into the tab strip. In this case
+    //   we don't want to remove the tab (closing is false).
+    // . The drag was completed before the animation completed
+    //   (DestroyDraggedSourceTab). In this case we need to remove the tab
+    //   (closing is true).
+    if (tab_->closing())
+      CompleteRemove();
+  }
+
+ private:
+  void CompleteRemove() {
+    if (!tab_->closing()) {
+      // The tab was added back yet we weren't canceled. This shouldn't happen.
+      NOTREACHED();
+      return;
+    }
+    tabstrip_->RemoveAndDeleteTab(tab_);
+    HighlightCloseButton();
+  }
+
+  // When the animation completes, we send the Container a message to simulate
+  // a mouse moved event at the current mouse position. This tickles the Tab
+  // the mouse is currently over to show the "hot" state of the close button.
+  void HighlightCloseButton() {
+    if (tabstrip_->IsDragSessionActive() ||
+        !tabstrip_->ShouldHighlightCloseButtonAfterRemove()) {
+      // This function is not required (and indeed may crash!) for removes
+      // spawned by non-mouse closes and drag-detaches.
+      return;
+    }
+
+#if defined(OS_WIN)
+    views::Widget* widget = tabstrip_->GetWidget();
+    // This can be null during shutdown. See http://crbug.com/42737.
+    if (!widget)
+      return;
+    // Force the close button (that slides under the mouse) to highlight by
+    // saying the mouse just moved, but sending the same coordinates.
+    DWORD pos = GetMessagePos();
+    POINT cursor_point = {GET_X_LPARAM(pos), GET_Y_LPARAM(pos)};
+    MapWindowPoints(NULL, widget->GetNativeView(), &cursor_point, 1);
+
+    static_cast<views::WidgetWin*>(widget)->ResetLastMouseMoveFlag();
+    // Return to message loop - otherwise we may disrupt some operation that's
+    // in progress.
+    SendMessage(widget->GetNativeView(), WM_MOUSEMOVE, 0,
+                MAKELPARAM(cursor_point.x, cursor_point.y));
+#else
+    NOTIMPLEMENTED();
+#endif
+  }
+
+  BaseTabStrip* tabstrip_;
+  BaseTab* tab_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemoveTabDelegate);
+};
+
 BaseTabStrip::BaseTabStrip(TabStripController* controller, Type type)
     : controller_(controller),
       type_(type),
-      attaching_dragged_tab_(false) {
+      attaching_dragged_tab_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(bounds_animator_(this)) {
+  bounds_animator_.set_observer(this);
 }
 
 BaseTabStrip::~BaseTabStrip() {
@@ -21,6 +128,10 @@ BaseTabStrip::~BaseTabStrip() {
 
 void BaseTabStrip::UpdateLoadingAnimations() {
   controller_->UpdateLoadingAnimations();
+}
+
+bool BaseTabStrip::IsAnimating() const {
+  return bounds_animator_.IsAnimating();
 }
 
 BaseTab* BaseTabStrip::GetSelectedBaseTab() const {
@@ -196,6 +307,31 @@ void BaseTabStrip::OnMouseReleased(const views::MouseEvent& event,
   EndDrag(canceled);
 }
 
+void BaseTabStrip::StartRemoveTabAnimation(int model_index) {
+  PrepareForAnimation();
+
+  // Mark the tab as closing.
+  BaseTab* tab = GetBaseTabAtModelIndex(model_index);
+  tab->set_closing(true);
+
+  // Start an animation for the tabs.
+  GenerateIdealBounds();
+  AnimateToIdealBounds();
+
+  // Animate the tab being closed to 0x0.
+  gfx::Rect tab_bounds = tab->bounds();
+  if (type() == HORIZONTAL_TAB_STRIP)
+    tab_bounds.set_width(0);
+  else
+    tab_bounds.set_height(0);
+  bounds_animator_.AnimateViewTo(tab, tab_bounds);
+
+  // Register delegate to do cleanup when done, BoundsAnimator takes
+  // ownership of RemoveTabDelegate.
+  bounds_animator_.SetAnimationDelegate(tab, new RemoveTabDelegate(this, tab),
+                                        true);
+}
+
 void BaseTabStrip::RemoveAndDeleteTab(BaseTab* tab) {
   int tab_data_index = TabIndexOfTab(tab);
 
@@ -218,4 +354,54 @@ int BaseTabStrip::TabIndexOfTab(BaseTab* tab) const {
 void BaseTabStrip::DestroyDragController() {
   if (IsDragSessionActive())
     drag_controller_.reset(NULL);
+}
+
+void BaseTabStrip::StartedDraggingTab(BaseTab* tab) {
+  PrepareForAnimation();
+
+  // Reset the dragging state of all other tabs. We do this as the painting code
+  // only handles one tab being dragged at a time. If another tab is marked as
+  // dragging, it should also be closing.
+  for (int i = 0; i < tab_count(); ++i)
+    base_tab_at_tab_index(i)->set_dragging(false);
+
+  tab->set_dragging(true);
+
+  // Stop any animations on the tab.
+  bounds_animator_.StopAnimatingView(tab);
+
+  // Move the tab to its ideal bounds.
+  GenerateIdealBounds();
+  int tab_data_index = TabIndexOfTab(tab);
+  DCHECK(tab_data_index != -1);
+  tab->SetBounds(ideal_bounds(tab_data_index));
+  SchedulePaint();
+}
+
+void BaseTabStrip::StoppedDraggingTab(BaseTab* tab) {
+  int tab_data_index = TabIndexOfTab(tab);
+  if (tab_data_index == -1) {
+    // The tab was removed before the drag completed. Don't do anything.
+    return;
+  }
+
+  PrepareForAnimation();
+
+  // Animate the view back to its correct position.
+  GenerateIdealBounds();
+  AnimateToIdealBounds();
+  bounds_animator_.AnimateViewTo(tab, ideal_bounds(TabIndexOfTab(tab)));
+
+  // Install a delegate to reset the dragging state when done. We have to leave
+  // dragging true for the tab otherwise it'll draw beneath the new tab button.
+  bounds_animator_.SetAnimationDelegate(tab,
+                                        new ResetDraggingStateDelegate(tab),
+                                        true);
+}
+
+void BaseTabStrip::PrepareForAnimation() {
+  if (!IsDragSessionActive()) {
+    for (int i = 0; i < tab_count(); ++i)
+      base_tab_at_tab_index(i)->set_dragging(false);
+  }
 }

@@ -17,6 +17,9 @@ class SideTab : public BaseTab {
   explicit SideTab(TabController* controller);
   virtual ~SideTab();
 
+  // Returns the preferred height of side tabs.
+  static int GetPreferredHeight();
+
   // views::View Overrides:
   virtual void Layout();
   virtual void Paint(gfx::Canvas* canvas);
@@ -26,7 +29,8 @@ class SideTab : public BaseTab {
   virtual const gfx::Rect& title_bounds() const { return title_bounds_; }
 
  private:
-  void FillTabShapePath(gfx::Path* path);
+  // Returns true if the icon should be shown.
+  bool ShouldShowIcon() const;
 
   gfx::Rect icon_bounds_;
   gfx::Rect title_bounds_;

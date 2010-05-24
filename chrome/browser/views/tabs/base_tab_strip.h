@@ -10,6 +10,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/views/tabs/base_tab.h"
 #include "chrome/browser/views/tabs/tab_controller.h"
+#include "views/animation/bounds_animator.h"
 #include "views/view.h"
 
 class BaseTab;
@@ -20,6 +21,7 @@ class ThemeProvider;
 
 // Base class for the view tab strip implementations.
 class BaseTabStrip : public views::View,
+                     public views::BoundsAnimatorObserver,
                      public TabController {
  public:
   enum Type {
@@ -54,7 +56,7 @@ class BaseTabStrip : public views::View,
 
   // Returns true if Tabs in this TabStrip are currently changing size or
   // position.
-  virtual bool IsAnimating() const = 0;
+  virtual bool IsAnimating() const;
 
   // Returns this object as a TabStrip if it is one.
   virtual TabStrip* AsTabStrip() = 0;
@@ -154,6 +156,9 @@ class BaseTabStrip : public views::View,
     gfx::Rect ideal_bounds;
   };
 
+  // BoundsAnimator::Observer overrides:
+  virtual void OnBoundsAnimatorDone(views::BoundsAnimator* animator) {}
+
   // View overrides.
   virtual bool OnMouseDragged(const views::MouseEvent& event);
   virtual void OnMouseReleased(const views::MouseEvent& event,
@@ -169,6 +174,17 @@ class BaseTabStrip : public views::View,
   // Invoked from |MoveTab| after |tab_data_| has been updated to animate the
   // move.
   virtual void StartMoveTabAnimation() = 0;
+
+  // Starts the remove tab animation.
+  virtual void StartRemoveTabAnimation(int model_index);
+
+  // Returns whether the highlight button should be highlighted after a remove.
+  virtual bool ShouldHighlightCloseButtonAfterRemove() { return true; }
+
+  // Animates all the views to their ideal bounds.
+  // NOTE: this does *not* invoke GenerateIdealBounds, it uses the bounds
+  // currently set in ideal_bounds.
+  virtual void AnimateToIdealBounds() = 0;
 
   // Cleans up the Tab from the TabStrip. This is called from the tab animation
   // code and is not a general-purpose method.
@@ -193,13 +209,20 @@ class BaseTabStrip : public views::View,
   void DestroyDragController();
 
   // Used by DraggedTabController when the user starts or stops dragging a tab.
-  virtual void StartedDraggingTab(BaseTab* tab) = 0;
-  virtual void StoppedDraggingTab(BaseTab* tab) = 0;
+  void StartedDraggingTab(BaseTab* tab);
+  void StoppedDraggingTab(BaseTab* tab);
 
   // See description above field for details.
   bool attaching_dragged_tab() const { return attaching_dragged_tab_; }
 
+  views::BoundsAnimator& bounds_animator() { return bounds_animator_; }
+
+  // Invoked prior to starting a new animation.
+  virtual void PrepareForAnimation();
+
  private:
+  class RemoveTabDelegate;
+
   friend class DraggedTabController;
 
   // See description above field for details.
@@ -218,6 +241,8 @@ class BaseTabStrip : public views::View,
   // If true, the insert is a result of a drag attaching the tab back to the
   // model.
   bool attaching_dragged_tab_;
+
+  views::BoundsAnimator bounds_animator_;
 };
 
 #endif  // CHROME_BROWSER_VIEWS_TABS_BASE_TAB_STRIP_H_

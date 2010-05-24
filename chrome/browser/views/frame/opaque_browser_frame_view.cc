@@ -200,7 +200,8 @@ gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
     int y = CaptionButtonY() + minimize_button_->GetPreferredSize().height() +
         2;
     gfx::Size ps = tabstrip->GetPreferredSize();
-    return gfx::Rect(0, y, ps.width(), browser_view_->height());
+    return gfx::Rect(NonClientBorderThickness(), y, ps.width(),
+                     browser_view_->height());
   }
 
   int tabstrip_y = NonClientTopBorderHeight();

@@ -12,7 +12,6 @@
 #include "chrome/browser/views/tabs/base_tab_strip.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
-#include "views/animation/bounds_animator.h"
 #include "views/controls/button/image_button.h"
 
 class Tab;
@@ -41,8 +40,7 @@ class WidgetWin;
 ///////////////////////////////////////////////////////////////////////////////
 class TabStrip : public BaseTabStrip,
                  public views::ButtonListener,
-                 public MessageLoopForUI::Observer,
-                 public views::BoundsAnimatorObserver {
+                 public MessageLoopForUI::Observer {
  public:
   explicit TabStrip(TabStripController* controller);
   virtual ~TabStrip();
@@ -102,8 +100,9 @@ class TabStrip : public BaseTabStrip,
   virtual BaseTab* CreateTab();
   virtual void StartInsertTabAnimation(int model_index, bool foreground);
   virtual void StartMoveTabAnimation();
-  virtual void StartedDraggingTab(BaseTab* tab);
-  virtual void StoppedDraggingTab(BaseTab* tab);
+  virtual void AnimateToIdealBounds();
+  virtual bool ShouldHighlightCloseButtonAfterRemove();
+  virtual void PrepareForAnimation();
 
   // views::View implementation:
   virtual void ViewHierarchyChanged(bool is_add,
@@ -133,8 +132,6 @@ class TabStrip : public BaseTabStrip,
   static const int extra_gap_for_nano_;
 
  private:
-  class RemoveTabDelegate;
-
   friend class DraggedTabController;
 
   // AnimationType used for tracking animations that require additional
@@ -280,11 +277,6 @@ class TabStrip : public BaseTabStrip,
   void NewTabAnimation1Done();
   void NewTabAnimation2Done();
 
-  // Animates all the views to their ideal bounds.
-  // NOTE: this does *not* invoke GenerateIdealBounds, it uses the bounds
-  // currently set in ideal_bounds.
-  void AnimateToIdealBounds();
-
   // Returns true if a new tab inserted at specified index should start the
   // new tab animation. See description above AnimationType for details on
   // this animation.
@@ -294,7 +286,6 @@ class TabStrip : public BaseTabStrip,
   void StartResizeLayoutAnimation();
   void StartInsertTabAnimationAtEnd();
   void StartInsertTabAnimationImpl(int model_index);
-  void StartRemoveTabAnimation(int model_index);
   void StartMoveTabAnimation(int from_model_index,
                              int to_model_index);
   void StartMiniTabAnimation();
@@ -370,8 +361,6 @@ class TabStrip : public BaseTabStrip,
   // To ensure all tabs pulse at the same time they share the same animation
   // container. This is that animation container.
   scoped_refptr<AnimationContainer> animation_container_;
-
-  views::BoundsAnimator bounds_animator_;
 
   // Used for stage 1 of new tab animation.
   base::OneShotTimer<TabStrip> new_tab_timer_;

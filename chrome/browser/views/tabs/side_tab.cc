@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/canvas.h"
+#include "gfx/favicon_size.h"
 #include "gfx/path.h"
 #include "gfx/skia_util.h"
 #include "grit/app_resources.h"
@@ -17,12 +18,15 @@
 
 namespace {
 const int kVerticalTabHeight = 27;
-const int kIconSize = 16;
-const int kIconTitleSpacing = 4;
 const int kTitleCloseSpacing = 4;
-const SkScalar kRoundRectRadius = 5;
+const SkScalar kRoundRectRadius = 4;
 const SkColor kTabBackgroundColor = SK_ColorWHITE;
-const SkAlpha kBackgroundTabAlpha = 170;
+
+// Padding between the edge and the icon.
+const int kIconLeftPadding = 5;
+
+// Location the title starts at.
+const int kTitleX = kIconLeftPadding + kFavIconSize + 5;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -35,83 +39,67 @@ SideTab::SideTab(TabController* controller)
 SideTab::~SideTab() {
 }
 
+// static
+int SideTab::GetPreferredHeight() {
+  return 27;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // SideTab, views::View overrides:
 
 void SideTab::Layout() {
-  int icon_y;
-  int icon_x = icon_y = (height() - kIconSize) / 2;
-  // TODO(sky): big mini icons.
-  icon_bounds_.SetRect(icon_x, icon_y, kIconSize, kIconSize);
+  if (ShouldShowIcon()) {
+    int icon_x = kIconLeftPadding;
+    int icon_y = (height() - kFavIconSize) / 2;
+    int icon_size =
+        !data().favicon.empty() ? data().favicon.width() : kFavIconSize;
+    if (icon_size != kFavIconSize) {
+      icon_x -= (icon_size - kFavIconSize) / 2;
+      icon_y -= (icon_size - kFavIconSize) / 2;
+    }
+    icon_bounds_.SetRect(icon_x, icon_y, icon_size, icon_size);
+  } else {
+    icon_bounds_ = gfx::Rect();
+  }
 
   gfx::Size ps = close_button()->GetPreferredSize();
   int close_y = (height() - ps.height()) / 2;
   close_button()->SetBounds(
-      std::max(0, width() - ps.width() - close_y),
+      std::max(0, width() - ps.width() -
+               (GetPreferredHeight() - ps.height()) / 2),
       close_y,
       ps.width(),
       ps.height());
 
   int title_y = (height() - font_height()) / 2;
-  int title_x = icon_bounds_.right() + kIconTitleSpacing;
   title_bounds_.SetRect(
-      title_x,
+      kTitleX,
       title_y,
-      std::max(0, close_button()->x() - kTitleCloseSpacing - title_x),
+      std::max(0, close_button()->x() - kTitleCloseSpacing - kTitleX),
       font_height());
 }
 
 void SideTab::Paint(gfx::Canvas* canvas) {
-  SkPaint paint;
-  paint.setColor(kTabBackgroundColor);
-  paint.setAntiAlias(true);
-  gfx::Path tab_shape;
-  FillTabShapePath(&tab_shape);
-  canvas->drawPath(tab_shape, paint);
-
-  PaintIcon(canvas, icon_bounds_.x(), icon_bounds_.y());
-  PaintTitle(canvas, SK_ColorBLACK);
-
-  if (!IsSelected() && GetThemeProvider()->ShouldUseNativeFrame()) {
-    // Make sure un-selected tabs are somewhat transparent.
+  if (IsSelected() || !controller()) {
     SkPaint paint;
-
-    SkAlpha opacity = kBackgroundTabAlpha;
-    if (hover_animation() && hover_animation()->is_animating()) {
-      opacity =
-          static_cast<SkAlpha>(hover_animation()->GetCurrentValue() * 255);
-    }
-
-    paint.setColor(SkColorSetARGB(kBackgroundTabAlpha, 255, 255, 255));
-    paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
-    paint.setStyle(SkPaint::kFill_Style);
+    paint.setColor(kTabBackgroundColor);
     paint.setAntiAlias(true);
-    canvas->FillRectInt(0, 0, width(), height(), paint);
+    SkRect border_rect = { SkIntToScalar(0), SkIntToScalar(0),
+                           SkIntToScalar(width()), SkIntToScalar(height()) };
+    canvas->drawRoundRect(border_rect, SkIntToScalar(kRoundRectRadius),
+                          SkIntToScalar(kRoundRectRadius), paint);
   }
+
+  if (ShouldShowIcon())
+    PaintIcon(canvas, icon_bounds_.x(), icon_bounds_.y());
+
+  PaintTitle(canvas, SK_ColorBLACK);
 }
 
 gfx::Size SideTab::GetPreferredSize() {
-  return gfx::Size(0, 27);
+  return gfx::Size(0, GetPreferredHeight());
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// SideTab, private:
-
-#define CUBIC_ARC_FACTOR    ((SK_ScalarSqrt2 - SK_Scalar1) * 4 / 3)
-
-void SideTab::FillTabShapePath(gfx::Path* path) {
-  SkScalar s = SkScalarMul(kRoundRectRadius, CUBIC_ARC_FACTOR);
-  path->moveTo(SkIntToScalar(kRoundRectRadius), 0);
-  path->cubicTo(SkIntToScalar(kRoundRectRadius) - s, 0, 0,
-                SkIntToScalar(kRoundRectRadius) - s, 0,
-                SkIntToScalar(kRoundRectRadius));
-  path->lineTo(0, SkIntToScalar(height() - kRoundRectRadius));
-  path->cubicTo(0, SkIntToScalar(height() - kRoundRectRadius) + s,
-                SkIntToScalar(kRoundRectRadius) - s, SkIntToScalar(height()),
-                SkIntToScalar(kRoundRectRadius),
-                SkIntToScalar(height()));
-  path->lineTo(SkIntToScalar(width()), SkIntToScalar(height()));
-  path->lineTo(SkIntToScalar(width()), 0);
-  path->lineTo(SkIntToScalar(kRoundRectRadius), 0);
-  path->close();
+bool SideTab::ShouldShowIcon() const {
+  return data().mini || data().show_icon;
 }

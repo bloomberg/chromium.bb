@@ -105,28 +105,6 @@ class NewTabAlphaDelegate
   DISALLOW_COPY_AND_ASSIGN(NewTabAlphaDelegate);
 };
 
-// Animation delegate used when a dragged tab is released. When done sets the
-// dragging state to false.
-class ResetDraggingStateDelegate
-    : public views::BoundsAnimator::OwnedAnimationDelegate {
- public:
-  explicit ResetDraggingStateDelegate(BaseTab* tab) : tab_(tab) {
-  }
-
-  virtual void AnimationEnded(const Animation* animation) {
-    tab_->set_dragging(false);
-  }
-
-  virtual void AnimationCanceled(const Animation* animation) {
-    tab_->set_dragging(false);
-  }
-
- private:
-  BaseTab* tab_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResetDraggingStateDelegate);
-};
-
 ///////////////////////////////////////////////////////////////////////////////
 // NewTabButton
 //
@@ -172,80 +150,6 @@ class NewTabButton : public views::ImageButton {
 
 }  // namespace
 
-// AnimationDelegate used when removing a tab. Does the necessary cleanup when
-// done.
-class TabStrip::RemoveTabDelegate
-    : public views::BoundsAnimator::OwnedAnimationDelegate {
- public:
-  RemoveTabDelegate(TabStrip* tab_strip, Tab* tab)
-      : tabstrip_(tab_strip),
-        tab_(tab) {
-  }
-
-  virtual void AnimationEnded(const Animation* animation) {
-    CompleteRemove();
-  }
-
-  virtual void AnimationCanceled(const Animation* animation) {
-    // We can be canceled for two interesting reasons:
-    // . The tab we reference was dragged back into the tab strip. In this case
-    //   we don't want to remove the tab (closing is false).
-    // . The drag was completed before the animation completed
-    //   (DestroyDraggedSourceTab). In this case we need to remove the tab
-    //   (closing is true).
-    if (tab_->closing())
-      CompleteRemove();
-  }
-
- private:
-  void CompleteRemove() {
-    if (!tab_->closing()) {
-      // The tab was added back yet we weren't canceled. This shouldn't happen.
-      NOTREACHED();
-      return;
-    }
-    tabstrip_->RemoveAndDeleteTab(tab_);
-    HighlightCloseButton();
-  }
-
-  // When the animation completes, we send the Container a message to simulate
-  // a mouse moved event at the current mouse position. This tickles the Tab
-  // the mouse is currently over to show the "hot" state of the close button.
-  void HighlightCloseButton() {
-    if (tabstrip_->available_width_for_tabs_ == -1 ||
-        tabstrip_->IsDragSessionActive()) {
-      // This function is not required (and indeed may crash!) for removes
-      // spawned by non-mouse closes and drag-detaches.
-      return;
-    }
-
-#if defined(OS_WIN)
-    views::Widget* widget = tabstrip_->GetWidget();
-    // This can be null during shutdown. See http://crbug.com/42737.
-    if (!widget)
-      return;
-    // Force the close button (that slides under the mouse) to highlight by
-    // saying the mouse just moved, but sending the same coordinates.
-    DWORD pos = GetMessagePos();
-    POINT cursor_point = {GET_X_LPARAM(pos), GET_Y_LPARAM(pos)};
-    MapWindowPoints(NULL, widget->GetNativeView(), &cursor_point, 1);
-
-    static_cast<views::WidgetWin*>(widget)->ResetLastMouseMoveFlag();
-    // Return to message loop - otherwise we may disrupt some operation that's
-    // in progress.
-    SendMessage(widget->GetNativeView(), WM_MOUSEMOVE, 0,
-                MAKELPARAM(cursor_point.x, cursor_point.y));
-#else
-    NOTIMPLEMENTED();
-#endif
-  }
-
-  TabStrip* tabstrip_;
-  Tab* tab_;
-
-  DISALLOW_COPY_AND_ASSIGN(RemoveTabDelegate);
-};
-
 ///////////////////////////////////////////////////////////////////////////////
 // TabStrip, public:
 
@@ -264,7 +168,6 @@ TabStrip::TabStrip(TabStripController* controller)
       current_selected_width_(Tab::GetStandardSize().width()),
       available_width_for_tabs_(-1),
       animation_container_(new AnimationContainer()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(bounds_animator_(this)),
       animation_type_(ANIMATION_DEFAULT),
       new_tab_button_enabled_(true),
       cancelling_animation_(false) {
@@ -343,7 +246,7 @@ void TabStrip::SetDraggedTabBounds(int tab_index, const gfx::Rect& tab_bounds) {
 }
 
 bool TabStrip::IsAnimating() const {
-  return bounds_animator_.IsAnimating() || new_tab_timer_.IsRunning();
+  return BaseTabStrip::IsAnimating() || new_tab_timer_.IsRunning();
 }
 
 TabStrip* TabStrip::AsTabStrip() {
@@ -659,44 +562,31 @@ void TabStrip::StartInsertTabAnimation(int model_index, bool foreground) {
 }
 
 void TabStrip::StartMoveTabAnimation() {
-  ResetAnimationState(true);
+  PrepareForAnimation();
 
   GenerateIdealBounds();
   AnimateToIdealBounds();
 }
 
-void TabStrip::StartedDraggingTab(BaseTab* tab) {
-  tab->set_dragging(true);
-
-  // Stop any animations on the tab.
-  bounds_animator_.StopAnimatingView(tab);
-
-  // Move the tab to its ideal bounds.
-  GenerateIdealBounds();
-  int tab_data_index = TabIndexOfTab(tab);
-  DCHECK(tab_data_index != -1);
-  tab->SetBounds(ideal_bounds(tab_data_index));
-  SchedulePaint();
-}
-
-void TabStrip::StoppedDraggingTab(BaseTab* tab) {
-  int tab_data_index = TabIndexOfTab(tab);
-  if (tab_data_index == -1) {
-    // The tab was removed before the drag completed. Don't do anything.
-    return;
+void TabStrip::AnimateToIdealBounds() {
+  for (int i = 0; i < tab_count(); ++i) {
+    Tab* tab = GetTabAtTabDataIndex(i);
+    if (!tab->closing() && !tab->dragging())
+      bounds_animator().AnimateViewTo(tab, ideal_bounds(i));
   }
 
-  // Animate the view back to its correct position.
-  ResetAnimationState(true);
-  GenerateIdealBounds();
-  AnimateToIdealBounds();
-  bounds_animator_.AnimateViewTo(tab, ideal_bounds(TabIndexOfTab(tab)));
+  if (animation_type_ != ANIMATION_NEW_TAB_3) {
+    bounds_animator().AnimateViewTo(newtab_button_, newtab_button_bounds_);
+  }
+}
 
-  // Install a delegate to reset the dragging state when done. We have to leave
-  // dragging true for the tab otherwise it'll draw beneath the new tab button.
-  bounds_animator_.SetAnimationDelegate(tab,
-                                        new ResetDraggingStateDelegate(tab),
-                                        true);
+bool TabStrip::ShouldHighlightCloseButtonAfterRemove() {
+  return available_width_for_tabs_ != -1;
+}
+
+void TabStrip::PrepareForAnimation() {
+  BaseTabStrip::PrepareForAnimation();
+  ResetAnimationState(true);
 }
 
 void TabStrip::ViewHierarchyChanged(bool is_add,
@@ -797,7 +687,6 @@ void TabStrip::Init() {
     drop_indicator_width = drop_image->width();
     drop_indicator_height = drop_image->height();
   }
-  bounds_animator_.set_observer(this);
 }
 
 void TabStrip::LoadNewTabButtonImage() {
@@ -1251,8 +1140,8 @@ void TabStrip::NewTabAnimation1Done() {
   tab->set_alpha(0);
 
   // BoundsAnimator takes ownership of NewTabAlphaDelegate.
-  bounds_animator_.SetAnimationDelegate(tab, new NewTabAlphaDelegate(tab),
-                                        true);
+  bounds_animator().SetAnimationDelegate(tab, new NewTabAlphaDelegate(tab),
+                                         true);
 }
 
 void TabStrip::NewTabAnimation2Done() {
@@ -1267,20 +1156,8 @@ void TabStrip::NewTabAnimation2Done() {
   animation->SetTweenType(Tween::EASE_IN_OUT);
 
   // BoundsAnimator takes ownership of animation.
-  bounds_animator_.SetAnimationForView(
+  bounds_animator().SetAnimationForView(
       GetTabAtTabDataIndex(tab_count() - 1), animation);
-}
-
-void TabStrip::AnimateToIdealBounds() {
-  for (int i = 0; i < tab_count(); ++i) {
-    Tab* tab = GetTabAtTabDataIndex(i);
-    if (!tab->closing() && !tab->dragging())
-      bounds_animator_.AnimateViewTo(tab, ideal_bounds(i));
-  }
-
-  if (animation_type_ != ANIMATION_NEW_TAB_3) {
-    bounds_animator_.AnimateViewTo(newtab_button_, newtab_button_bounds_);
-  }
 }
 
 bool TabStrip::ShouldStartIntertTabAnimationAtEnd(int model_index,
@@ -1290,13 +1167,13 @@ bool TabStrip::ShouldStartIntertTabAnimationAtEnd(int model_index,
 }
 
 void TabStrip::StartResizeLayoutAnimation() {
-  ResetAnimationState(true);
+  PrepareForAnimation();
   GenerateIdealBounds();
   AnimateToIdealBounds();
 }
 
 void TabStrip::StartInsertTabAnimationAtEnd() {
-  ResetAnimationState(true);
+  PrepareForAnimation();
 
   // The TabStrip can now use its entire width to lay out Tabs.
   available_width_for_tabs_ = -1;
@@ -1319,7 +1196,7 @@ void TabStrip::StartInsertTabAnimationAtEnd() {
 }
 
 void TabStrip::StartInsertTabAnimationImpl(int model_index) {
-  ResetAnimationState(true);
+  PrepareForAnimation();
 
   // The TabStrip can now use its entire width to lay out Tabs.
   available_width_for_tabs_ = -1;
@@ -1341,30 +1218,8 @@ void TabStrip::StartInsertTabAnimationImpl(int model_index) {
   AnimateToIdealBounds();
 }
 
-void TabStrip::StartRemoveTabAnimation(int model_index) {
-  ResetAnimationState(true);
-
-  // Mark the tab as closing.
-  Tab* tab = GetTabAtModelIndex(model_index);
-  tab->set_closing(true);
-
-  // Start an animation for the tabs.
-  GenerateIdealBounds();
-  AnimateToIdealBounds();
-
-  // Animate the tab being closed to 0x0.
-  gfx::Rect tab_bounds = tab->bounds();
-  tab_bounds.set_width(0);
-  bounds_animator_.AnimateViewTo(tab, tab_bounds);
-
-  // Register delegate to do cleanup when done, BoundsAnimator takes
-  // ownership of RemoveTabDelegate.
-  bounds_animator_.SetAnimationDelegate(tab, new RemoveTabDelegate(this, tab),
-                                        true);
-}
-
 void TabStrip::StartMiniTabAnimation() {
-  ResetAnimationState(true);
+  PrepareForAnimation();
 
   GenerateIdealBounds();
   AnimateToIdealBounds();
@@ -1376,11 +1231,11 @@ void TabStrip::StopAnimating(bool layout) {
 
   new_tab_timer_.Stop();
 
-  if (bounds_animator_.IsAnimating()) {
+  if (bounds_animator().IsAnimating()) {
     // Cancelling the animation triggers OnBoundsAnimatorDone, which invokes
     // ResetAnimationState.
     cancelling_animation_ = true;
-    bounds_animator_.Cancel();
+    bounds_animator().Cancel();
     cancelling_animation_ = false;
   } else {
     ResetAnimationState(false);

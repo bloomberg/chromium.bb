@@ -80,8 +80,8 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
     BaseTabStrip* tabstrip) const {
   if (browser_view_->UseVerticalTabs()) {
     gfx::Size ps = tabstrip->GetPreferredSize();
-    return gfx::Rect(0, NonClientTopBorderHeight(), ps.width(),
-                     browser_view_->height());
+    return gfx::Rect(NonClientBorderThickness(), NonClientTopBorderHeight(),
+                     ps.width(), browser_view_->height());
   }
   int minimize_button_offset = frame_->GetMinimizeButtonOffset();
   int tabstrip_x = browser_view_->ShouldShowOffTheRecordAvatar() ?

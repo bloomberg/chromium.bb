@@ -153,20 +153,6 @@ class DraggedTabController : public TabContentsDelegate,
   // Handles dragging a tab while the tab is attached.
   void MoveAttachedTab(const gfx::Point& screen_point);
 
-  // Adjusts the model as necessary for a move when the attached tab strip is
-  // horizontal.
-  void MoveAttachedTabHorizontalTabStrip(const gfx::Point& screen_point,
-                                         TabStripModel* model,
-                                         const gfx::Point& dragged_view_point,
-                                         int from_index);
-
-  // Adjusts the model as necessary for a move when the attached tab strip is
-  // vertical.
-  void MoveAttachedTabVerticalTabStrip(const gfx::Point& screen_point,
-                                       TabStripModel* model,
-                                       const gfx::Point& dragged_view_point,
-                                       int from_index);
-
   // Handles dragging while the tab is detached.
   void MoveDetachedTab(const gfx::Point& screen_point);
 
@@ -313,9 +299,9 @@ class DraggedTabController : public TabContentsDelegate,
 
   bool in_destructor_;
 
-  // The horizontal position of the mouse cursor in screen coordinates at the
-  // time of the last re-order event.
-  int last_move_screen_x_;
+  // The position along the major axis of the mouse cursor in screen coordinates
+  // at the time of the last re-order event.
+  int last_move_screen_loc_;
 
   DockInfo dock_info_;
 
