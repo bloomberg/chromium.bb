@@ -3227,8 +3227,6 @@
                 '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
                 #'../third_party/protobuf2/protobuf.gyp:protobuf',
                 '../third_party/protobuf2/protobuf.gyp:protoc#host',
-                '../third_party/chromeos_login_manager/chromeos_login_manager/chromeos_login_manager.gyp:session',
-                '../third_party/chromeos_login_manager/chromeos_login_manager/chromeos_login_manager.gyp:emit_login_prompt_ready',
                 '../third_party/cros/cros_api.gyp:cros_api',
               ],
               'actions': [
