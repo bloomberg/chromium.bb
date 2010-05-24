@@ -3764,15 +3764,15 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: translateEnabled</string>
+						<string key="label">value: tabsToLinks</string>
 						<reference key="source" ref="596669929"/>
 						<reference key="destination" ref="1001"/>
 						<object class="NSNibBindingConnector" key="connector">
 							<reference key="NSSource" ref="596669929"/>
 							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">value: translateEnabled</string>
+							<string key="NSLabel">value: tabsToLinks</string>
 							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">translateEnabled</string>
+							<string key="NSKeyPath">tabsToLinks</string>
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>
