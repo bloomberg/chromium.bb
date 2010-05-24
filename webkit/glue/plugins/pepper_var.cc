@@ -14,9 +14,6 @@
 #include "webkit/glue/plugins/pepper_string.h"
 #include "v8/include/v8.h"
 
-// Uncomment to enable catching JS exceptions
-// #define HAVE_WEBBINDINGS_EXCEPTION_HANDLER 1
-
 using WebKit::WebBindings;
 
 namespace pepper {
@@ -32,15 +29,11 @@ PP_Var VarFromUtf8(const char* data, uint32_t len);
 class TryCatch {
  public:
   TryCatch(PP_Var* exception) : exception_(exception) {
-#ifdef HAVE_WEBBINDINGS_EXCEPTION_HANDLER
     WebBindings::pushExceptionHandler(&TryCatch::Catch, this);
-#endif
   }
 
   ~TryCatch() {
-#ifdef HAVE_WEBBINDINGS_EXCEPTION_HANDLER
     WebBindings::popExceptionHandler();
-#endif
   }
 
   bool HasException() const {
@@ -88,12 +81,6 @@ String* GetString(PP_Var var) {
 
 NPObject* GetNPObjectUnchecked(PP_Var var) {
   return reinterpret_cast<NPObject*>(var.value.as_id);
-}
-
-NPObject* GetNPObject(PP_Var var) {
-  if (var.type != PP_VarType_Object)
-    return NULL;
-  return GetNPObjectUnchecked(var);
 }
 
 // Returns a PP_Var that corresponds to the given NPVariant.  The contents of
@@ -417,9 +404,39 @@ bool WrapperClass_RemoveProperty(NPObject* object, NPIdentifier property_name) {
 
 bool WrapperClass_Enumerate(NPObject* object, NPIdentifier** values,
                             uint32_t* count) {
-  // TODO(darin): Implement this method!
-  WebBindings::setException(object, kUnableToGetAllPropertiesException);
-  return false;
+  WrapperObject* wrapper = ToWrapper(object);
+
+  uint32_t property_count = 0;
+  PP_Var* properties = NULL;
+  PP_Var exception = PP_MakeVoid();
+  wrapper->ppp_class->GetAllPropertyNames(wrapper->ppp_class_data,
+                                          &property_count,
+                                          &properties,
+                                          &exception);
+
+  bool rv;
+  if (exception.type == PP_VarType_Void) {
+    rv = true;
+    if (property_count == 0) {
+      *values = NULL;
+      *count = 0;
+    } else {
+      *values = static_cast<NPIdentifier*>(
+          malloc(sizeof(NPIdentifier) * property_count));
+      *count = property_count;
+      for (uint32_t i = 0; i < property_count; ++i)
+        (*values)[i] = PPVarToNPIdentifier(properties[i]);
+    }
+  } else {
+    rv = false;
+    ThrowException(object, exception);
+    Release(exception);
+  }
+
+  for (uint32_t i = 0; i < property_count; ++i)
+    Release(properties[i]);
+  free(properties);
+  return rv;
 }
 
 bool WrapperClass_Construct(NPObject* object, const NPVariant* argv,
@@ -591,12 +608,35 @@ void GetAllPropertyNames(PP_Var var,
                          uint32_t* property_count,
                          PP_Var** properties,
                          PP_Var* exception) {
+  *properties = NULL;
+  *property_count = 0;
+
   TryCatch try_catch(exception);
   if (try_catch.HasException())
     return;
 
-  // TODO(darin): Implement this method!
-  try_catch.SetException(kUnableToGetAllPropertiesException);
+  NPObject* object = GetNPObject(var);
+  if (!object) {
+    try_catch.SetException(kInvalidObjectException);
+    return;
+  }
+
+  NPIdentifier* identifiers = NULL;
+  uint32_t count = 0;
+  if (!WebBindings::enumerate(NULL, object, &identifiers, &count)) {
+    if (!try_catch.HasException())
+      try_catch.SetException(kUnableToGetAllPropertiesException);
+    return;
+  }
+
+  if (count == 0)
+    return;
+
+  *property_count = count;
+  *properties = static_cast<PP_Var*>(malloc(sizeof(PP_Var) * count));
+  for (uint32_t i = 0; i < count; ++i)
+    (*properties)[i] = NPIdentifierToPPVar(identifiers[i]);
+  free(identifiers);
 }
 
 void SetProperty(PP_Var var,
@@ -797,6 +837,12 @@ PP_Var NPObjectToPPVar(NPObject* object) {
   ret.value.as_id = reinterpret_cast<intptr_t>(object);
   WebBindings::retainObject(object);
   return ret;
+}
+
+NPObject* GetNPObject(PP_Var var) {
+  if (var.type != PP_VarType_Object)
+    return NULL;
+  return GetNPObjectUnchecked(var);
 }
 
 }  // namespace pepper

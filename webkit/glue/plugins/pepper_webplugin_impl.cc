@@ -6,10 +6,12 @@
 
 #include "base/file_path.h"
 #include "base/message_loop.h"
+#include "third_party/ppapi/c/pp_var.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
+#include "webkit/glue/plugins/pepper_var.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebPluginContainer;
@@ -69,8 +71,7 @@ void WebPluginImpl::destroy() {
 }
 
 NPObject* WebPluginImpl::scriptableObject() {
-  // TODO(brettw): implement getting this from the plugin instance.
-  return NULL;
+  return GetNPObject(instance_->GetInstanceObject());
 }
 
 void WebPluginImpl::paint(WebCanvas* canvas, const WebRect& rect) {

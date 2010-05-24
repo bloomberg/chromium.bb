@@ -22,6 +22,11 @@ const PPB_Var* GetVarInterface();
 // function multiple times given the same NPObject results in the same PP_Var.
 PP_Var NPObjectToPPVar(NPObject* object);
 
+// Returns the NPObject corresponding to the PP_Var.  This pointer has not been
+// retained, so you should not call WebBindings::releaseObject unless you first
+// call WebBindings::retainObject.
+NPObject* GetNPObject(PP_Var var);
+
 }  // namespace pepper
 
 #endif  // WEBKIT_GLUE_PLUGINS_PEPPER_VAR_H_

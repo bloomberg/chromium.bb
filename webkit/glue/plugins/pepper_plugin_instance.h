@@ -67,6 +67,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
                   const std::vector<std::string>& arg_values);
   bool HandleInputEvent(const WebKit::WebInputEvent& event,
                         WebKit::WebCursorInfo* cursor_info);
+  PP_Var GetInstanceObject();
   void ViewChanged(const gfx::Rect& position, const gfx::Rect& clip);
 
  private:

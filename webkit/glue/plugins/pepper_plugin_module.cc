@@ -6,8 +6,10 @@
 
 #include <set>
 
+#include "base/message_loop_proxy.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "base/time.h"
 #include "third_party/ppapi/c/ppb_core.h"
 #include "third_party/ppapi/c/ppb_device_context_2d.h"
 #include "third_party/ppapi/c/ppb_image_data.h"
@@ -40,6 +42,12 @@ PluginModuleSet* GetLivePluginSet() {
   return &live_plugin_libs;
 }
 
+base::MessageLoopProxy* GetMainThreadMessageLoop() {
+  static scoped_refptr<base::MessageLoopProxy> proxy(
+      base::MessageLoopProxy::CreateForCurrentThread());
+  return proxy.get();
+}
+
 // PPB_Core --------------------------------------------------------------------
 
 void AddRefResource(PP_Resource resource) {
@@ -60,9 +68,32 @@ void ReleaseResource(PP_Resource resource) {
   res->Release();
 }
 
+void* MemAlloc(size_t num_bytes) {
+  return malloc(num_bytes);
+}
+
+void MemFree(void* ptr) {
+  free(ptr);
+}
+
+double GetTime() {
+  return base::Time::Now().ToDoubleT();
+}
+
+void CallOnMainThread(int delay_in_msec, void (*func)(void*), void* context) {
+  GetMainThreadMessageLoop()->PostDelayedTask(
+      FROM_HERE,
+      NewRunnableFunction(func, context),
+      delay_in_msec);
+}
+
 const PPB_Core core_interface = {
   &AddRefResource,
   &ReleaseResource,
+  &MemAlloc,
+  &MemFree,
+  &GetTime,
+  &CallOnMainThread
 };
 
 // GetInterface ----------------------------------------------------------------
@@ -88,6 +119,7 @@ PluginModule::PluginModule(const FilePath& filename)
       initialized_(false),
       library_(0),
       ppp_get_interface_(NULL) {
+  GetMainThreadMessageLoop();  // Initialize the main thread message loop.
   GetLivePluginSet()->insert(this);
 }
 

@@ -264,6 +264,10 @@ bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
   return instance_interface_->HandleEvent(GetPPInstance(), &pp_event);
 }
 
+PP_Var PluginInstance::GetInstanceObject() {
+  return instance_interface_->GetInstanceObject(GetPPInstance());
+}
+
 void PluginInstance::ViewChanged(const gfx::Rect& position,
                                  const gfx::Rect& clip) {
   PP_Rect pp_position, pp_clip;
