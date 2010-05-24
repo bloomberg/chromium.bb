@@ -101,7 +101,7 @@ void PluginService::InitGlobalInstance(Profile* profile) {
       bool enabled = true;
       plugin->GetBoolean(L"enabled", &enabled);
 
-      if (path == pdf_path_str) {
+      if (FilePath::CompareIgnoreCase(path, pdf_path_str) == 0) {
         found_internal_pdf = true;
         if (!enabled && force_enable_internal_pdf) {
           enabled = true;
@@ -110,7 +110,9 @@ void PluginService::InitGlobalInstance(Profile* profile) {
       }
 
       FilePath plugin_path(path);
-      if (update_internal_dir && plugin_path.DirName() == last_internal_dir) {
+      if (update_internal_dir &&
+          FilePath::CompareIgnoreCase(plugin_path.DirName().value(),
+              last_internal_dir.value()) == 0) {
         // If the internal plugin directory has changed and if the plugin looks
         // internal, update its path in the prefs.
         plugin_path = cur_internal_dir.Append(plugin_path.BaseName());
