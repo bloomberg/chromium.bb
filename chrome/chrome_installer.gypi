@@ -150,14 +150,14 @@
             '<(DEPTH)',
           ],
           'sources': [
-            'installer/test/mini_installer_test/run_all_unittests.cc',
-            'installer/test/mini_installer_test/chrome_mini_installer.cc',
-            'installer/test/mini_installer_test/chrome_mini_installer.h',
-            'installer/test/mini_installer_test/mini_installer_test_constants.cc',
-            'installer/test/mini_installer_test/mini_installer_test_constants.h',
-            'installer/test/mini_installer_test/mini_installer_test_util.cc',
-            'installer/test/mini_installer_test/mini_installer_test_util.h',
-            'installer/test/mini_installer_test/test.cc',
+            'test/mini_installer_test/run_all_unittests.cc',
+            'test/mini_installer_test/chrome_mini_installer.cc',
+            'test/mini_installer_test/chrome_mini_installer.h',
+            'test/mini_installer_test/mini_installer_test_constants.cc',
+            'test/mini_installer_test/mini_installer_test_constants.h',
+            'test/mini_installer_test/mini_installer_test_util.cc',
+            'test/mini_installer_test/mini_installer_test_util.h',
+            'test/mini_installer_test/test.cc',
           ],
           'msvs_settings': {
             'VCManifestTool': {
