@@ -73,6 +73,12 @@ Linux:
   This is used by buildbot scripts to help us find the output directory.
   Must be used with --target.
 
+--no_exclusions: Do NOT use the exclusion list.  This script keeps a
+  list of tests known to be problematic under coverage.  For example,
+  ProcessUtilTest.SpawnChild will crash inside __gcov_fork() when
+  using the MacOS 10.6 SDK.  Use of --no_exclusions prevents the use
+  of this exclusion list.
+
 Strings after all options are considered tests to run.  Test names
 have all text before a ':' stripped to help with gyp compatibility.
 For example, ../base/base.gyp:base_unittests is interpreted as a test
@@ -95,6 +101,28 @@ import traceback
 
 """Global list of child PIDs to kill when we die."""
 gChildPIDs = []
+
+"""Exclusion list.  Format is
+   { platform: { testname: (exclusion1, exclusion2, ... ), ... } }
+
+   Platform is a match for sys.platform and can be a list.
+   Matching code does an 'if sys.platform in (the key):'.
+   Similarly, matching does an 'if testname in thefulltestname:'
+
+   The Chromium convention has traditionally been to place the
+   exclusion list in a distinct file.  Unlike valgrind (which has
+   frequent changes when things break and are fixed), the expectation
+   here is that exclusions remain relatively constant (e.g. OS bugs).
+   If that changes, revisit the decision to place inclusions in this
+   script.
+
+   Details:
+     ProcessUtilTest.SpawnChild: chokes in __gcov_fork on 10.6
+"""
+gTestExclusions = {
+  'darwin2': { 'base_unittests': ('ProcessUtilTest.SpawnChild',) }
+}
+
 
 def TerminateSignalHandler(sig, stack):
   """When killed, try and kill our child processes."""
@@ -487,6 +515,28 @@ class Coverage(object):
     if self.IsLinux() and self.options.xvfb:
       self.StartXvfb()
 
+  def GtestFilter(self, fulltest, excl=None):
+    """Return a --gtest_filter=BLAH for this test.
+
+    Args:
+      fulltest: full name of test executable
+      exclusions: the exclusions list.  Only set in a unit test;
+        else uses gTestExclusions.
+    Returns:
+      String of the form '--gtest_filter=BLAH', or None.
+    """
+    if self.options.no_exclusions:
+      return
+    exclusions = excl or gTestExclusions
+    excldict = exclusions.get(sys.platform)
+    if excldict:
+      for test in excldict.keys():
+        # example: if base_unittests in ../blah/blah/base_unittests.exe
+        if test in fulltest:
+          gfilter = '--gtest_filter=-' + ':-'.join(excldict[test])
+          return gfilter
+    return None
+
   def RunTests(self):
     """Run all unit tests and generate appropriate lcov files."""
     self.BeforeRunAllTests()
@@ -506,7 +556,13 @@ class Coverage(object):
         # cmdlist.append('--gtest_filter=CommandLine*')
         cmdlist.append('--gtest_filter=C*')
 
+      # Possibly add a test-specific --gtest_filter
+      filter = self.GtestFilter(fulltest)
+      if filter:
+        cmdlist.append(filter)
+
       self.BeforeRunOneTest(fulltest)
+
       logging.info('Running test ' + str(cmdlist))
       try:
         retcode = self.Run(cmdlist, ignore_retcode=True)
@@ -721,6 +777,10 @@ def CoverageOptionParser():
                     default=None,
                     help=('Buildbot build target; '
                           'used for finding bundlefile (e.g. Debug)'))
+  parser.add_option('--no_exclusions',
+                    dest='no_exclusions',
+                    default=None,
+                    help=('Disable the exclusion list.'))
   return parser
 
 

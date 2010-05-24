@@ -124,6 +124,19 @@ class CoveragePosixTest(unittest.TestCase):
     self.confirmSampleTestsArePresent(c.tests)
     os.unlink(filename)
 
+  def testExclusionList(self):
+    """Test the gtest_filter exclusion list."""
+    c = coverage.Coverage(self.options, self.args)
+    self.assertFalse(c.GtestFilter('doesnotexist_test'))
+    fake_exclusions = { sys.platform: { 'foobar':
+                                        ('a','b'),
+                                        'doesnotexist_test':
+                                        ('Evil.Crash','Naughty.Test') } }
+    self.assertFalse(c.GtestFilter('barfoo'))
+    filter = c.GtestFilter('doesnotexist_test', fake_exclusions)
+    self.assertEquals('--gtest_filter=-Evil.Crash:-Naughty.Test', filter)
+
+
 
 if __name__ == '__main__':
   unittest.main()
