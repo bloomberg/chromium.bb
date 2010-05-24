@@ -5,6 +5,7 @@
 {
   'variables': {
     'chromium_code': 1,
+    'seccomp_intermediate_dir': '<(INTERMEDIATE_DIR)/seccomp-sandbox',
   },
   'targets': [
     {
@@ -50,6 +51,35 @@
         'trusted_thread.cc',
         'x86_decode.cc',
         'x86_decode.h',
+      ],
+    },
+    {
+      'target_name': 'seccomp_tests',
+      'type': 'executable',
+      'sources': [
+        'tests/test_syscalls.cc',
+      ],
+      'include_dirs': [
+         '.',
+         '<(seccomp_intermediate_dir)',
+      ],
+      'dependencies': [
+        'seccomp_sandbox',
+      ],
+      'libraries': [
+        '-lpthread',
+        '-lutil', # For openpty()
+      ],
+      'actions': [
+        {
+          'action_name': 'make_test_list',
+          'inputs': [
+            'tests/list_tests.py',
+            'tests/test_syscalls.cc',
+          ],
+          'outputs': ['<(seccomp_intermediate_dir)/test-list.h'],
+          'action': ['sh', '-c', 'python <(_inputs) > <(_outputs)'],
+        },
       ],
     },
     {
