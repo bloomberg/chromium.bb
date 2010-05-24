@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 
 // scoped_nsobject<> is patterned after scoped_ptr<>, but maintains ownership
 // of an NSObject subclass object.  Style deviations here are solely for
@@ -72,7 +73,7 @@ class scoped_nsobject {
   // scoped_nsobject<>::release() is like scoped_ptr<>::release.  It is NOT
   // a wrapper for [object_ release].  To force a scoped_nsobject<> object to
   // call [object_ release], use scoped_nsobject<>::reset().
-  NST* release() {
+  NST* release() WARN_UNUSED_RESULT {
     NST* temp = object_;
     object_ = nil;
     return temp;
@@ -133,7 +134,7 @@ class scoped_nsobject<id> {
   // scoped_nsobject<>::release() is like scoped_ptr<>::release.  It is NOT
   // a wrapper for [object_ release].  To force a scoped_nsobject<> object to
   // call [object_ release], use scoped_nsobject<>::reset().
-  id release() {
+  id release() WARN_UNUSED_RESULT {
     id temp = object_;
     object_ = nil;
     return temp;

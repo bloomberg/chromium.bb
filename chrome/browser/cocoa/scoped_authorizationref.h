@@ -8,6 +8,7 @@
 #include <Security/Authorization.h>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 
 // scoped_AuthorizationRef maintains ownership of an AuthorizationRef.  It is
 // patterned after the scoped_ptr interface.
@@ -63,7 +64,7 @@ class scoped_AuthorizationRef {
   // NOT a wrapper for AuthorizationFree().  To force a
   // scoped_AuthorizationRef object to call AuthorizationFree(), use
   // scoped_AuthorizaitonRef::reset().
-  AuthorizationRef release() {
+  AuthorizationRef release() WARN_UNUSED_RESULT {
     AuthorizationRef temp = authorization_;
     authorization_ = NULL;
     return temp;

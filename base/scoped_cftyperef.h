@@ -7,6 +7,7 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 
 // scoped_cftyperef<> is patterned after scoped_ptr<>, but maintains ownership
 // of a CoreFoundation object: any object that can be represented as a
@@ -63,7 +64,7 @@ class scoped_cftyperef {
   // scoped_cftyperef<>::release() is like scoped_ptr<>::release.  It is NOT
   // a wrapper for CFRelease().  To force a scoped_cftyperef<> object to call
   // CFRelease(), use scoped_cftyperef<>::reset().
-  CFT release() {
+  CFT release() WARN_UNUSED_RESULT {
     CFT temp = object_;
     object_ = NULL;
     return temp;
