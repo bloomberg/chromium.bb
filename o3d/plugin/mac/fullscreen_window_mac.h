@@ -64,6 +64,8 @@ class FullscreenWindowMac {
 
   virtual CGRect GetWindowBounds() const = 0;
   virtual bool IsActive() const = 0;
+  virtual void PrepareToRender() const = 0;
+  virtual void FinishRendering() const = 0;
 
  protected:
   FullscreenWindowMac() {}

@@ -39,6 +39,7 @@
 #include "plugin/cross/o3d_glue.h"
 #include "plugin/cross/main.h"
 #include "core/mac/display_window_mac.h"
+#include "core/cross/gl/renderer_gl.h"
 #include "plugin/mac/graphics_utils_mac.h"
 #import "plugin/mac/o3d_layer.h"
 
@@ -238,19 +239,24 @@ void RenderTimer::TimerCallback(CFRunLoopTimerRef timer, void* info) {
     NPP instance = instances_[i];
     PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
 
-    if (obj->drawing_model_ == NPDrawingModelCoreAnimation) {
+    bool in_fullscreen = obj->GetFullscreenMacWindow();
+
+    if (obj->drawing_model_ == NPDrawingModelCoreAnimation &&
+        !in_fullscreen) {
       O3DLayer* o3dLayer = static_cast<O3DLayer*>(obj->gl_layer_);
       if (o3dLayer) {
         obj->client()->Tick();
         [o3dLayer setNeedsDisplay];
       }
-      return;
+      continue;
     }
 
     ManageSafariTabSwitching(obj);
     obj->client()->Tick();
 
-    bool in_fullscreen = obj->GetFullscreenMacWindow();
+    // It's possible that event processing may have torn down the
+    // full-screen window in the call above.
+    in_fullscreen = obj->GetFullscreenMacWindow();
 
     if (in_fullscreen) {
       obj->GetFullscreenMacWindow()->IdleCallback();
@@ -286,7 +292,13 @@ void RenderTimer::TimerCallback(CFRunLoopTimerRef timer, void* info) {
           rect.right = obj->width();
           NPN_InvalidateRect(instance, &rect);
         } else {
+          if (in_fullscreen) {
+            obj->GetFullscreenMacWindow()->PrepareToRender();
+          }
           obj->client()->RenderClient(true);
+          if (in_fullscreen) {
+            obj->GetFullscreenMacWindow()->FinishRendering();
+          }
         }
       }
     }
@@ -528,6 +540,11 @@ bool PluginObject::RequestFullscreenDisplay() {
     }
   }
 
+  was_offscreen_ = IsOffscreenRenderingEnabled();
+  if (was_offscreen_) {
+    DisableOffscreenRendering();
+  }
+
   FullscreenWindowMac* fullscreen_window =
       FullscreenWindowMac::Create(this, target_width, target_height);
   SetFullscreenMacWindow(fullscreen_window);
@@ -543,15 +560,25 @@ bool PluginObject::RequestFullscreenDisplay() {
 }
 
 void PluginObject::CancelFullscreenDisplay() {
+  FullscreenWindowMac* window = GetFullscreenMacWindow();
+
   // if not in fullscreen mode, do nothing
-  if (!GetFullscreenMacWindow())
+  if (!window)
     return;
 
-  GetFullscreenMacWindow()->Shutdown(last_buffer_rect_);
+  // The focus change during closing of the fullscreen window may
+  // cause the plugin to become reentrant. Store the full-screen
+  // window on the stack to prevent attempting to shut down twice.
   SetFullscreenMacWindow(NULL);
+  window->Shutdown(last_buffer_rect_);
+  delete window;
   renderer_->Resize(prev_width_, prev_height_);
   fullscreen_ = false;
   client()->SendResizeEvent(prev_width_, prev_height_, false);
+
+  if (was_offscreen_) {
+    EnableOffscreenRendering();
+  }
 
   // Somehow the browser window does not automatically activate again
   // when we close the fullscreen window, so explicitly reactivate it.
@@ -560,6 +587,102 @@ void PluginObject::CancelFullscreenDisplay() {
     [browser_window makeKeyAndOrderFront:browser_window];
   } else if (mac_window_) {
     SelectWindow(mac_window_);
+  }
+}
+
+#define PFA(number) static_cast<NSOpenGLPixelFormatAttribute>(number)
+
+#define O3D_NSO_COLOR_AND_DEPTH_SETTINGS NSOpenGLPFAClosestPolicy, \
+                                     NSOpenGLPFAColorSize, PFA(24), \
+                                     NSOpenGLPFAAlphaSize, PFA(8),  \
+                                     NSOpenGLPFADepthSize, PFA(24), \
+                                     NSOpenGLPFADoubleBuffer,
+// The Core Animation code path on 10.6 core dumps if the
+// NSOpenGLPFAPixelBuffer and NSOpenGLPFAWindow attributes are
+// specified. It seems risky for the 10.5 code path if they aren't,
+// since this actual CGLPixelFormatObj is used to create the pbuffer's
+// context, but no ill effects have been seen there so leaving them
+// out for now.
+#define O3D_NSO_PBUFFER_SETTINGS
+#define O3D_NSO_STENCIL_SETTINGS NSOpenGLPFAStencilSize, PFA(8),
+#define O3D_NSO_HARDWARE_RENDERER \
+            NSOpenGLPFAAccelerated, NSOpenGLPFANoRecovery,
+#define O3D_NSO_MULTISAMPLE \
+            NSOpenGLPFAMultisample, NSOpenGLPFASamples, PFA(4),
+#define O3D_NSO_END PFA(0)
+
+CGLContextObj PluginObject::GetFullscreenShareContext() {
+  if (mac_fullscreen_nsopenglcontext_ == NULL) {
+    static const NSOpenGLPixelFormatAttribute attributes[] = {
+      O3D_NSO_COLOR_AND_DEPTH_SETTINGS
+      O3D_NSO_PBUFFER_SETTINGS
+      O3D_NSO_STENCIL_SETTINGS
+      O3D_NSO_HARDWARE_RENDERER
+      O3D_NSO_MULTISAMPLE
+      O3D_NSO_END
+    };
+    NSOpenGLPixelFormat* pixel_format =
+        [[NSOpenGLPixelFormat alloc] initWithAttributes:attributes];
+    if (!pixel_format) {
+      // Try a less capable set.
+      static const NSOpenGLPixelFormatAttribute low_end_attributes[] = {
+        O3D_NSO_COLOR_AND_DEPTH_SETTINGS
+        O3D_NSO_PBUFFER_SETTINGS
+        O3D_NSO_STENCIL_SETTINGS
+        O3D_NSO_HARDWARE_RENDERER
+        O3D_NSO_END
+      };
+      pixel_format =
+          [[NSOpenGLPixelFormat alloc] initWithAttributes:low_end_attributes];
+    }
+    if (pixel_format) {
+      mac_fullscreen_nsopenglpixelformat_ = pixel_format;
+
+      NSOpenGLContext* context =
+          [[NSOpenGLContext alloc] initWithFormat:pixel_format
+                                     shareContext:nil];
+      mac_fullscreen_nsopenglcontext_ = context;
+    } else {
+      DLOG(ERROR) << "Error choosing NSOpenGLPixelFormat.";
+    }
+  }
+
+  NSOpenGLContext* context = (NSOpenGLContext*) mac_fullscreen_nsopenglcontext_;
+  return (CGLContextObj) [context CGLContextObj];
+}
+
+void* PluginObject::GetFullscreenNSOpenGLContext() {
+  return mac_fullscreen_nsopenglcontext_;
+}
+
+CGLPixelFormatObj PluginObject::GetFullscreenCGLPixelFormatObj() {
+  NSOpenGLPixelFormat* pixel_format =
+      (NSOpenGLPixelFormat*) mac_fullscreen_nsopenglpixelformat_;
+  if (pixel_format == nil) {
+    return NULL;
+  }
+  return (CGLPixelFormatObj) [pixel_format CGLPixelFormatObj];
+}
+
+void PluginObject::CleanupFullscreenOpenGLContext() {
+  NSOpenGLContext* context =
+      (NSOpenGLContext*) mac_fullscreen_nsopenglcontext_;
+  mac_fullscreen_nsopenglcontext_ = NULL;
+  if (context) {
+    [context release];
+  }
+  NSOpenGLPixelFormat* format =
+      (NSOpenGLPixelFormat*) mac_fullscreen_nsopenglpixelformat_;
+  mac_fullscreen_nsopenglpixelformat_ = NULL;
+  if (format) {
+    [format release];
+  }
+}
+
+void PluginObject::SetMacCGLContext(CGLContextObj context) {
+  mac_cgl_context_ = context;
+  if (renderer_) {
+    ((o3d::RendererGL*) renderer_)->set_mac_cgl_context(context);
   }
 }
 

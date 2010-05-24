@@ -556,7 +556,8 @@ RendererGL::RendererGL(ServiceLocator* service_locator)
       stencil_ref_(0),
       polygon_offset_changed_(true),
       polygon_offset_factor_(0.f),
-      polygon_offset_bias_(0.f) {
+      polygon_offset_bias_(0.f),
+      must_reset_context_(false) {
   DLOG(INFO) << "RendererGL Construct";
 
   // Setup default state values.
@@ -716,46 +717,7 @@ Renderer::InitStatus RendererGL::InitCommonGL() {
   // create a Cg Runtime.
   cg_context_ = cgCreateContext();
   DLOG_CG_ERROR("Creating Cg context");
-  // NOTE: the first CGerror number after the recreation of a
-  // CGcontext (the second time through) seems to be trashed. Please
-  // ignore any "CG ERROR: Invalid context handle." message on this
-  // function - Invalid context handle isn't one of therror states of
-  // cgCreateContext().
-  DLOG(INFO) << "OpenGL Vendor: " << ::glGetString(GL_VENDOR);
-  DLOG(INFO) << "OpenGL Renderer: " << ::glGetString(GL_RENDERER);
-  DLOG(INFO) << "OpenGL Version: " << ::glGetString(GL_VERSION);
-  DLOG(INFO) << "Cg Version: " << cgGetString(CG_VERSION);
-  cg_vertex_profile_ = cgGLGetLatestProfile(CG_GL_VERTEX);
-  cgGLSetOptimalOptions(cg_vertex_profile_);
-  DLOG(INFO) << "Best Cg vertex profile = "
-             << cgGetProfileString(cg_vertex_profile_);
-  cg_fragment_profile_ = cgGLGetLatestProfile(CG_GL_FRAGMENT);
-  cgGLSetOptimalOptions(cg_fragment_profile_);
-  DLOG(INFO) << "Best Cg fragment profile = "
-             << cgGetProfileString(cg_fragment_profile_);
-  // Set up all Cg State Assignments for OpenGL.
-  cgGLRegisterStates(cg_context_);
-  DLOG_CG_ERROR("Registering GL StateAssignments");
-  cgGLSetDebugMode(CG_FALSE);
-  // Enable the profiles we use.
-  cgGLEnableProfile(CG_PROFILE_ARBVP1);
-  cgGLEnableProfile(CG_PROFILE_ARBFP1);
-  // get some limits for this profile.
-  GLint max_vertex_attribs = 0;
-  ::glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attribs);
-  DLOG(INFO) << "Max Vertex Attribs = " << max_vertex_attribs;
-  // Initialize global GL settings.
-  // Tell GL that texture buffers can be single-byte aligned.
-  ::glPixelStorei(GL_PACK_ALIGNMENT, 1);
-  ::glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-  ::glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-  ::glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
-  CHECK_GL_ERROR();
-
-  GLint viewport[4];
-  ::glGetIntegerv(GL_VIEWPORT, &viewport[0]);
-  SetClientSize(viewport[2], viewport[3]);
-  CHECK_GL_ERROR();
+  SetupCgAndOpenGLContext();
 
   ::glGenFramebuffersEXT(1, &render_surface_framebuffer_);
   CHECK_GL_ERROR();
@@ -1282,6 +1244,10 @@ bool RendererGL::PlatformSpecificStartRendering() {
   DLOG_FIRST_N(INFO, 10) << "RendererGL StartRendering";
   MakeCurrentLazy();
 
+  if (must_reset_context_) {
+    SetupCgAndOpenGLContext();
+  }
+
   // Currently always returns true.
   // Should be modified if current behavior changes.
   CHECK_GL_ERROR();
@@ -1557,6 +1523,74 @@ const int* RendererGL::GetRGBAUByteNSwizzleTable() {
 // we're implementing GL, we only ever return a GL renderer.
 Renderer* Renderer::CreateDefaultRenderer(ServiceLocator* service_locator) {
   return RendererGL::CreateDefault(service_locator);
+}
+
+#ifdef OS_MACOSX
+void RendererGL::set_mac_cgl_context(CGLContextObj obj) {
+  bool changed = (mac_cgl_context_ != obj);
+  mac_cgl_context_ = obj;
+  if (changed) {
+    // We need to reset all of the OpenGL state when the context changes.
+    alpha_function_ref_changed_ = true;
+    alpha_blend_settings_changed_ = true;
+    stencil_settings_changed_ = true;
+    polygon_offset_changed_ = true;
+    must_reset_context_ = true;
+  }
+}
+#endif
+
+void RendererGL::SetupCgAndOpenGLContext() {
+  // NOTE: the first CGerror number after the recreation of a
+  // CGcontext (the second time through) seems to be trashed. Please
+  // ignore any "CG ERROR: Invalid context handle." message on this
+  // function - Invalid context handle isn't one of therror states of
+  // cgCreateContext().
+  DLOG(INFO) << "OpenGL Vendor: " << ::glGetString(GL_VENDOR);
+  DLOG(INFO) << "OpenGL Renderer: " << ::glGetString(GL_RENDERER);
+  DLOG(INFO) << "OpenGL Version: " << ::glGetString(GL_VERSION);
+  DLOG(INFO) << "Cg Version: " << cgGetString(CG_VERSION);
+  cg_vertex_profile_ = cgGLGetLatestProfile(CG_GL_VERTEX);
+  cgGLSetOptimalOptions(cg_vertex_profile_);
+  DLOG(INFO) << "Best Cg vertex profile = "
+             << cgGetProfileString(cg_vertex_profile_);
+  cg_fragment_profile_ = cgGLGetLatestProfile(CG_GL_FRAGMENT);
+  cgGLSetOptimalOptions(cg_fragment_profile_);
+  DLOG(INFO) << "Best Cg fragment profile = "
+             << cgGetProfileString(cg_fragment_profile_);
+  // Set up all Cg State Assignments for OpenGL.
+  cgGLRegisterStates(cg_context_);
+  DLOG_CG_ERROR("Registering GL StateAssignments");
+  cgGLSetDebugMode(CG_FALSE);
+  // Enable the profiles we use.
+  cgGLEnableProfile(CG_PROFILE_ARBVP1);
+  cgGLEnableProfile(CG_PROFILE_ARBFP1);
+  // get some limits for this profile.
+  GLint max_vertex_attribs = 0;
+  ::glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attribs);
+  DLOG(INFO) << "Max Vertex Attribs = " << max_vertex_attribs;
+  // Initialize global GL settings.
+  // Tell GL that texture buffers can be single-byte aligned.
+  ::glPixelStorei(GL_PACK_ALIGNMENT, 1);
+  ::glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+  ::glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+  ::glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+  CHECK_GL_ERROR();
+
+  GLint viewport[4];
+  ::glGetIntegerv(GL_VIEWPORT, &viewport[0]);
+  SetClientSize(viewport[2], viewport[3]);
+  CHECK_GL_ERROR();
+
+  // We need to initialize the front face definition in each context.
+  SetBackBufferPlatformSpecific();
+
+  if (must_reset_context_) {
+    // Apply the initial rendering states to the newly set context.
+    SetInitialStates();
+  }
+
+  must_reset_context_ = false;
 }
 
 }  // namespace o3d

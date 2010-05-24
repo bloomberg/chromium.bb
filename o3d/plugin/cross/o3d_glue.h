@@ -240,13 +240,11 @@ class PluginObject: public NPObject {
   void SetDisplay(Display *display);
 #elif defined(OS_MACOSX)
   FullscreenWindowMac* GetFullscreenMacWindow() {
-    return mac_fullscreen_window_.get();
+    return mac_fullscreen_window_;
   }
 
-  // Assumes ownership of the passed pointer. Passing NULL deletes the
-  // last non-NULL value set.
   void SetFullscreenMacWindow(FullscreenWindowMac* window) {
-    mac_fullscreen_window_.reset(window);
+    mac_fullscreen_window_ = window;
   }
 
   WindowRef GetMacWindow() {
@@ -264,6 +262,17 @@ class PluginObject: public NPObject {
   AGLContext GetMacAGLContext() {
     return mac_agl_context_;
   }
+
+  CGLContextObj GetMacCGLContext() {
+    return mac_cgl_context_;
+  }
+
+  void SetMacCGLContext(CGLContextObj obj);
+
+  CGLContextObj GetFullscreenShareContext();
+  CGLPixelFormatObj GetFullscreenCGLPixelFormatObj();
+  void* GetFullscreenNSOpenGLContext();
+  void CleanupFullscreenOpenGLContext();
 
   NPDrawingModel drawing_model_;
   NPEventModel event_model_;
@@ -288,7 +297,24 @@ class PluginObject: public NPObject {
 
   // Fullscreen related stuff.
   // NULL if not in fullscreen mode.
-  scoped_ptr<FullscreenWindowMac> mac_fullscreen_window_;
+  // Must not be a scoped_ptr due to reentrancy during termination.
+  FullscreenWindowMac* mac_fullscreen_window_;
+  // When rendering using CGL, we need to use an NSOpenGLContext to
+  // implement full-screen support. In order to share textures and
+  // other resources between the core CGL context and the full-screen
+  // one, we need to allocate the NSOpenGLContext first, because with
+  // pre-10.6 APIs it isn't possible to make an NSOpenGLContext share
+  // resources with a preexisting CGLContextObj.
+  void* mac_fullscreen_nsopenglcontext_;
+  // On 10.5 (Core Graphics drawing model) it appears that we need to
+  // forcibly reuse the CGLContextObj from the NSOpenGLPixelFormat
+  // that we use to create the NSOpenGLContext for full-screen, or
+  // the share context is reported invalid.
+  void* mac_fullscreen_nsopenglpixelformat_;
+  // Indication when we transition to full-screen mode of whether we
+  // were using off-screen rendering (Core Graphics drawing model, in
+  // particular).
+  bool was_offscreen_;
 
 #endif  //  OS_MACOSX
 #ifdef OS_LINUX

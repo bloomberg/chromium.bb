@@ -138,6 +138,10 @@ PluginObject::PluginObject(NPP npp)
       mac_cgl_pbuffer_(0),
       last_mac_event_time_(0),
       gl_layer_(NULL),
+      mac_fullscreen_window_(NULL),
+      mac_fullscreen_nsopenglcontext_(NULL),
+      mac_fullscreen_nsopenglpixelformat_(NULL),
+      was_offscreen_(false),
 #endif  // OS_MACOSX
 #ifdef OS_LINUX
       display_(NULL),
@@ -224,6 +228,7 @@ void PluginObject::TearDown() {
   ClearPluginProperty(hWnd_);
 #elif defined(OS_MACOSX)
   o3d::ReleaseSafariBrowserWindow(mac_cocoa_window_);
+  CleanupFullscreenOpenGLContext();
 #elif defined(OS_LINUX)
   SetDisplay(NULL);
 #endif  // OS_WIN
@@ -1143,6 +1148,10 @@ bool PluginObject::AllocateOffscreenRenderSurfaces(int width, int height) {
 }
 
 void PluginObject::DeallocateOffscreenRenderSurfaces() {
+  if (client_) {
+    client_->SetOffscreenRenderingSurfaces(RenderSurface::Ref(),
+                                           RenderDepthStencilSurface::Ref());
+  }
   offscreen_render_surface_.Reset();
   offscreen_depth_render_surface_.Reset();
   offscreen_readback_bitmap_.Reset();

@@ -463,108 +463,6 @@ EventModifiers CocoaToEventRecordModifiers(NSUInteger inMods) {
   return outMods;
 }
 
-// Handle an NPCocoaEvent style event. The Cocoa event interface is
-// a recent addition to the NAPI spec.
-// See https://wiki.mozilla.org/Mac:NPAPI_Event_Models for further details.
-// The principle advantages are that we can get scrollwheel messages,
-// mouse-moved messages, and can tell which mouse button was pressed.
-// This API will also be required for a carbon-free 64 bit version for 10.6.
-bool HandleCocoaEvent(NPP instance, NPCocoaEvent* the_event) {
-  PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
-  FullscreenWindowMac* fullscreen_window = obj->GetFullscreenMacWindow();
-  bool handled = false;
-
-  if (g_logger) g_logger->UpdateLogging();
-
-  obj->MacEventReceived();
-  switch (the_event->type) {
-    case NPCocoaEventDrawRect:
-      // We need to call the render callback from here if we are rendering
-      // off-screen because it doesn't get called anywhere else.
-      if (obj->drawing_model_ == NPDrawingModelCoreAnimation) {
-        O3DLayer* layer = ObjO3DLayer(obj);
-        if (layer) {
-          [layer setNeedsDisplay];
-        }
-      } else {
-        DrawPlugin(obj,
-                   obj->IsOffscreenRenderingEnabled(),
-                   the_event->data.draw.context);
-      }
-      handled = true;
-      break;
-    case NPCocoaEventMouseDown:
-    case NPCocoaEventMouseUp:
-    case NPCocoaEventMouseMoved:
-    case NPCocoaEventMouseDragged:
-    case NPCocoaEventMouseEntered:
-    case NPCocoaEventMouseExited:
-    case NPCocoaEventScrollWheel:
-      HandleCocoaMouseEvent(obj, the_event);
-      break;
-    case NPCocoaEventKeyDown:
-      // Hard-coded trapdoor to get out of fullscreen mode if user hits escape.
-      if (fullscreen_window) {
-        NSString *chars =
-            (NSString*) the_event->data.key.charactersIgnoringModifiers;
-
-        if (chars == NULL || [chars length] == 0) {
-          break;
-        }
-
-        if ([chars characterAtIndex:0] == '\e') {
-          obj->CancelFullscreenDisplay();
-          break;
-        }
-      }  // otherwise fall through
-    case NPCocoaEventKeyUp: {
-      EventKind eventKind = (the_event->type == NPCocoaEventKeyUp) ? keyUp :
-                            (the_event->data.key.isARepeat) ? autoKey : keyDown;
-
-      EventModifiers modifiers =
-          CocoaToEventRecordModifiers(the_event->data.key.modifierFlags);
-
-      NSString *chars =
-          (NSString*) the_event->data.key.charactersIgnoringModifiers;
-
-      if (chars == NULL || [chars length] == 0) {
-        break;
-      }
-
-      DispatchKeyboardEvent(obj,
-                            eventKind,
-                            [chars characterAtIndex:0],
-                            the_event->data.key.keyCode,
-                            modifiers);
-      break;
-    }
-    case NPCocoaEventFlagsChanged:
-    case NPCocoaEventFocusChanged:
-    case NPCocoaEventWindowFocusChanged:
-      // Safari tab switching recovery code.
-      if (obj->mac_surface_hidden_) {
-        obj->mac_surface_hidden_ = false;
-        NPN_ForceRedraw(instance);  // invalidate to cause a redraw
-      }
-
-      // Auto-recovery for any situation where another window comes in front
-      // of the fullscreen window and we need to exit fullscreen mode.
-      // This can happen because another browser window has come forward, or
-      // because another app has been called to the front.
-      // TODO: We'll have problems with this when dealing with e.g.
-      // Japanese text input IME windows.
-      if (fullscreen_window && !fullscreen_window->IsActive()) {
-        obj->CancelFullscreenDisplay();
-      }
-
-      break;
-    case NPCocoaEventTextInput:
-      break;
-  }
-
-  return handled;
-}
-
 // List of message types from mozilla's nsplugindefs.h, which is more
 // complete than the list in NPAPI.h.
 enum nsPluginEventType {
@@ -934,6 +832,108 @@ bool HandleMacEvent(EventRecord* the_event, NPP instance) {
   return handled;
 }
 
+// Handle an NPCocoaEvent style event. The Cocoa event interface is
+// a recent addition to the NAPI spec.
+// See https://wiki.mozilla.org/Mac:NPAPI_Event_Models for further details.
+// The principle advantages are that we can get scrollwheel messages,
+// mouse-moved messages, and can tell which mouse button was pressed.
+// This API will also be required for a carbon-free 64 bit version for 10.6.
+bool HandleCocoaEvent(NPP instance, NPCocoaEvent* the_event) {
+  PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
+  FullscreenWindowMac* fullscreen_window = obj->GetFullscreenMacWindow();
+  bool handled = false;
+
+  if (g_logger) g_logger->UpdateLogging();
+
+  obj->MacEventReceived();
+  switch (the_event->type) {
+    case NPCocoaEventDrawRect:
+      // We need to call the render callback from here if we are rendering
+      // off-screen because it doesn't get called anywhere else.
+      if (obj->drawing_model_ == NPDrawingModelCoreAnimation) {
+        O3DLayer* layer = ObjO3DLayer(obj);
+        if (layer) {
+          [layer setNeedsDisplay];
+        }
+      } else {
+        DrawPlugin(obj,
+                   obj->IsOffscreenRenderingEnabled(),
+                   the_event->data.draw.context);
+      }
+      handled = true;
+      break;
+    case NPCocoaEventMouseDown:
+    case NPCocoaEventMouseUp:
+    case NPCocoaEventMouseMoved:
+    case NPCocoaEventMouseDragged:
+    case NPCocoaEventMouseEntered:
+    case NPCocoaEventMouseExited:
+    case NPCocoaEventScrollWheel:
+      HandleCocoaMouseEvent(obj, the_event);
+      break;
+    case NPCocoaEventKeyDown:
+      // Hard-coded trapdoor to get out of fullscreen mode if user hits escape.
+      if (fullscreen_window) {
+        NSString *chars =
+            (NSString*) the_event->data.key.charactersIgnoringModifiers;
+
+        if (chars == NULL || [chars length] == 0) {
+          break;
+        }
+
+        if ([chars characterAtIndex:0] == '\e') {
+          obj->CancelFullscreenDisplay();
+          break;
+        }
+      }  // otherwise fall through
+    case NPCocoaEventKeyUp: {
+      EventKind eventKind = (the_event->type == NPCocoaEventKeyUp) ? keyUp :
+                            (the_event->data.key.isARepeat) ? autoKey : keyDown;
+
+      EventModifiers modifiers =
+          CocoaToEventRecordModifiers(the_event->data.key.modifierFlags);
+
+      NSString *chars =
+          (NSString*) the_event->data.key.charactersIgnoringModifiers;
+
+      if (chars == NULL || [chars length] == 0) {
+        break;
+      }
+
+      DispatchKeyboardEvent(obj,
+                            eventKind,
+                            [chars characterAtIndex:0],
+                            the_event->data.key.keyCode,
+                            modifiers);
+      break;
+    }
+    case NPCocoaEventFlagsChanged:
+    case NPCocoaEventFocusChanged:
+    case NPCocoaEventWindowFocusChanged:
+      // Safari tab switching recovery code.
+      if (obj->mac_surface_hidden_) {
+        obj->mac_surface_hidden_ = false;
+        NPN_ForceRedraw(instance);  // invalidate to cause a redraw
+      }
+
+      // Auto-recovery for any situation where another window comes in front
+      // of the fullscreen window and we need to exit fullscreen mode.
+      // This can happen because another browser window has come forward, or
+      // because another app has been called to the front.
+      // TODO: We'll have problems with this when dealing with e.g.
+      // Japanese text input IME windows.
+      if (fullscreen_window && !fullscreen_window->IsActive()) {
+        obj->CancelFullscreenDisplay();
+      }
+
+      break;
+    case NPCocoaEventTextInput:
+      break;
+  }
+
+  return handled;
+}
+
 NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, int16 argc,
                 char* argn[], char* argv[], NPSavedData* saved) {
   HANDLE_CRASHES;
@@ -982,6 +982,8 @@ NPError NPP_Destroy(NPP instance, NPSavedData** save) {
 #if defined(CFTIMER)
     o3d::gRenderTimer.RemoveInstance(instance);
 #endif
+
+    // TODO(maf) / TODO(kbr): are we leaking AGL / CGL contexts?
 
     obj->TearDown();
     NPN_ReleaseObject(obj);
@@ -1071,41 +1073,28 @@ NPError NPP_SetWindow(NPP instance, NPWindow* window) {
     // CGL context rendering to a 1x1 pbuffer. Later we use the O3D
     // RenderSurface APIs to set up the framebuffer object which is used
     // for rendering.
-    static const CGLPixelFormatAttribute attribs[] = {
-      (CGLPixelFormatAttribute) kCGLPFAPBuffer,
-      (CGLPixelFormatAttribute) 0
-    };
-    CGLPixelFormatObj pixelFormat;
-    GLint numPixelFormats;
-    if (CGLChoosePixelFormat(attribs,
-                             &pixelFormat,
-                             &numPixelFormats) != kCGLNoError) {
-      DLOG(ERROR) << "Error choosing pixel format.";
-      return NPERR_GENERIC_ERROR;
-    }
-    if (!pixelFormat) {
-      DLOG(ERROR) << "Unable to find pbuffer compatible pixel format.";
-      return NPERR_GENERIC_ERROR;
-    }
+    CGLContextObj share_context = obj->GetFullscreenShareContext();
+    CGLPixelFormatObj pixel_format = obj->GetFullscreenCGLPixelFormatObj();
+    DCHECK(share_context);
+    CGLError result;
     CGLContextObj context;
-    CGLError res = CGLCreateContext(pixelFormat, 0, &context);
-    CGLDestroyPixelFormat(pixelFormat);
-    if (res != kCGLNoError) {
-      DLOG(ERROR) << "Error creating context.";
+    result = CGLCreateContext(pixel_format, share_context, &context);
+    if (result != kCGLNoError) {
+      DLOG(ERROR) << "Error " << result << " creating context.";
       return NPERR_GENERIC_ERROR;
     }
     CGLPBufferObj pbuffer;
-    if (CGLCreatePBuffer(1, 1,
-                         GL_TEXTURE_2D, GL_RGBA,
-                         0, &pbuffer) != kCGLNoError) {
+    if ((result = CGLCreatePBuffer(1, 1,
+                                   GL_TEXTURE_2D, GL_RGBA,
+                                   0, &pbuffer)) != kCGLNoError) {
       CGLDestroyContext(context);
-      DLOG(ERROR) << "Error creating pbuffer.";
+      DLOG(ERROR) << "Error " << result << " creating pbuffer.";
       return NPERR_GENERIC_ERROR;
     }
-    if (CGLSetPBuffer(context, pbuffer, 0, 0, 0) != kCGLNoError) {
+    if ((result = CGLSetPBuffer(context, pbuffer, 0, 0, 0)) != kCGLNoError) {
       CGLDestroyContext(context);
       CGLDestroyPBuffer(pbuffer);
-      DLOG(ERROR) << "Error attaching pbuffer to context.";
+      DLOG(ERROR) << "Error " << result << " attaching pbuffer to context.";
       return NPERR_GENERIC_ERROR;
     }
     // Must make the context current for renderer creation to succeed

@@ -98,6 +98,8 @@ char* CreatePosixFilePathFromHFSFilePath(const char* hfsPath);
 
 bool HandleMacEvent(EventRecord* the_event, NPP instance);
 
+bool HandleCocoaEvent(NPP instance, NPCocoaEvent* the_event);
+
 o3d::Event::Button MacOSMouseButtonNumberToO3DButton(int inButton);
 
 bool GetBrowserVersionInfo(int *returned_major,

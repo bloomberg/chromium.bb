@@ -161,6 +161,12 @@ class RendererGL : public Renderer {
   inline CGprofile cg_vertex_profile() const { return cg_vertex_profile_; }
   inline CGprofile cg_fragment_profile() const { return cg_fragment_profile_; }
 
+#ifdef OS_MACOSX
+  // We need to be able to reset the CGLContextObj when we go into and
+  // out of full-screen mode.
+  void set_mac_cgl_context(CGLContextObj obj);
+#endif
+
  protected:
   // Keep the constructor protected so only factory methods can create
   // renderers.
@@ -232,6 +238,9 @@ class RendererGL : public Renderer {
 
   // Platform-independent GL destruction
   void DestroyCommonGL();
+
+  // Per-OpenGL context initialization
+  void SetupCgAndOpenGLContext();
 
   // Updates the helper constant used to remap D3D clip coordinates to GL ones.
   void UpdateHelperConstant(float width, float height);
@@ -325,6 +334,9 @@ class RendererGL : public Renderer {
   bool polygon_offset_changed_;
   float polygon_offset_factor_;
   float polygon_offset_bias_;
+
+  // Dirty flag indicating portions of context state need to be reset.
+  bool must_reset_context_;
 
   // Sets the stencils states for either front, back or both facing polys.
   void SetStencilStates(GLenum face, const StencilStates& stencil_states);
