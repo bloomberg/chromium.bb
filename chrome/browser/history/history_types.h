@@ -518,10 +518,6 @@ struct MostVisitedURL {
   string16 title;
 
   RedirectList redirects;
-
-  bool operator==(const MostVisitedURL& other) {
-    return url == other.url;
-  }
 };
 
 typedef std::vector<MostVisitedURL> MostVisitedURLList;

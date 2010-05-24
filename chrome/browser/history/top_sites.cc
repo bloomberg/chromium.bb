@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/history/top_sites_database.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "gfx/codec/jpeg_codec.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -27,51 +26,15 @@ TopSites::~TopSites() {
 }
 
 void TopSites::Init() {
-  if (db_.get())
-    ReadDatabase();
+  // TODO(brettw) read the database here.
 
   // Start the one-shot timer.
   timer_.Start(base::TimeDelta::FromSeconds(kUpdateIntervalSecs), this,
                &TopSites::StartQueryForMostVisited);
 }
 
-void TopSites::ReadDatabase() {
-  DCHECK(db_.get());
-  {
-    AutoLock lock(lock_);
-    MostVisitedURLList top_urls = db_->GetTopURLs();
-    StoreMostVisited(&top_urls);
-  }  // Lock is released here.
-
-  for (size_t i = 0; i < top_sites_.size(); i++) {
-    MostVisitedURL url = top_sites_[i];
-    Images thumbnail;
-    if (db_->GetPageThumbnail(url, &thumbnail)) {
-      SetPageThumbnail(url.url, thumbnail.thumbnail, thumbnail.thumbnail_score);
-    }
-  }
-}
-
-// Public wrapper that encodes the bitmap into RefCountedBytes.
 bool TopSites::SetPageThumbnail(const GURL& url,
                                 const SkBitmap& thumbnail,
-                                const ThumbnailScore& score) {
-  RefCountedBytes* thumbnail_data = new RefCountedBytes;
-  SkAutoLockPixels thumbnail_lock(thumbnail);
-  bool encoded = gfx::JPEGCodec::Encode(
-      reinterpret_cast<unsigned char*>(thumbnail.getAddr32(0, 0)),
-      gfx::JPEGCodec::FORMAT_BGRA, thumbnail.width(),
-      thumbnail.height(),
-      static_cast<int>(thumbnail.rowBytes()), 90,
-      &thumbnail_data->data);
-  if (!encoded)
-    return false;
-  return SetPageThumbnail(url, thumbnail_data, score);
-}
-
-// private
-bool TopSites::SetPageThumbnail(const GURL& url,
-                                const RefCountedBytes* thumbnail_data,
                                 const ThumbnailScore& score) {
   AutoLock lock(lock_);
 
@@ -92,8 +55,16 @@ bool TopSites::SetPageThumbnail(const GURL& url,
                                   new_score_with_redirects))
     return false;  // The one we already have is better.
 
-  // Take ownership of the thumbnail data.
-  image.thumbnail = const_cast<RefCountedBytes*>(thumbnail_data);
+  image.thumbnail = new RefCountedBytes;
+  SkAutoLockPixels thumbnail_lock(thumbnail);
+  bool encoded = gfx::JPEGCodec::Encode(
+      reinterpret_cast<unsigned char*>(thumbnail.getAddr32(0, 0)),
+      gfx::JPEGCodec::FORMAT_BGRA, thumbnail.width(),
+      thumbnail.height(),
+      static_cast<int>(thumbnail.rowBytes()), 90,
+      &image.thumbnail->data);
+  if (!encoded)
+    return false;
   image.thumbnail_score = new_score_with_redirects;
 
   return true;
@@ -114,47 +85,27 @@ bool TopSites::GetPageThumbnail(const GURL& url, RefCountedBytes** data) const {
   return true;
 }
 
-void TopSites::UpdateMostVisited(MostVisitedURLList* most_visited) {
+void TopSites::StoreMostVisited(MostVisitedURLList* most_visited) {
   lock_.AssertAcquired();
   // TODO(brettw) filter for blacklist!
 
   if (!top_sites_.empty()) {
-    std::vector<size_t> added;    // Indices into most_visited.
-    std::vector<size_t> deleted;  // Indices into top_sites_.
-    std::vector<size_t> moved;    // Indices into most_visited.
+    std::vector<size_t> added;
+    std::vector<size_t> deleted;
+    std::vector<size_t> moved;
     DiffMostVisited(top_sites_, *most_visited, &added, &deleted, &moved);
 
-    // Process the diff: delete from images and disk, add to disk.
     // Delete all the thumbnails associated with URLs that were deleted.
     for (size_t i = 0; i < deleted.size(); i++) {
-      MostVisitedURL deleted_url = top_sites_[deleted[i]];
       std::map<GURL, Images>::iterator found =
-          top_images_.find(deleted_url.url);
+          top_images_.find(top_sites_[deleted[i]].url);
       if (found != top_images_.end())
         top_images_.erase(found);
-
-      // Delete from disk.
-      if (db_.get())
-        db_->RemoveURL(deleted_url);
     }
 
-    if (db_.get()) {
-      // Write both added and moved urls.
-      for (size_t i = 0; i < added.size(); i++) {
-        MostVisitedURL added_url = (*most_visited)[added[i]];
-        db_->SetPageThumbnail(added_url, added[i], Images());
-      }
-      for (size_t i = 0; i < moved.size(); i++) {
-        MostVisitedURL moved_url = (*most_visited)[moved[i]];
-        db_->SetPageThumbnail(moved_url, moved[i], Images());
-      }
-    }
+    // TODO(brettw) write the new data to disk.
   }
-  StoreMostVisited(most_visited);
-}
 
-void TopSites::StoreMostVisited(MostVisitedURLList* most_visited) {
-  lock_.AssertAcquired();
   // Take ownership of the most visited data.
   top_sites_.clear();
   top_sites_.swap(*most_visited);
@@ -271,7 +222,7 @@ void TopSites::OnTopSitesAvailable(
     CancelableRequestProvider::Handle handle,
     MostVisitedURLList pages) {
   AutoLock lock(lock_);
-  UpdateMostVisited(&pages);
+  StoreMostVisited(&pages);
 }
 
 void TopSites::SetMockHistoryService(MockHistoryService* mhs) {
