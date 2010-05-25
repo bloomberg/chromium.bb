@@ -17,14 +17,22 @@
 #include "printing/image.h"
 #include "printing/native_metafile.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLError.h"
+#include "webkit/glue/form_data.h"
+#include "webkit/glue/form_field.h"
 
 using WebKit::WebCompositionCommand;
+using WebKit::WebDocument;
 using WebKit::WebFrame;
+using WebKit::WebInputElement;
 using WebKit::WebString;
 using WebKit::WebTextDirection;
 using WebKit::WebURLError;
+using webkit_glue::FormData;
+using webkit_glue::FormField;
 
 static WebCompositionCommand ToCompositionCommand(int string_type) {
   switch (string_type) {
@@ -936,4 +944,89 @@ TEST_F(RenderViewTest, UpdateTargetURLWithInvalidURL) {
   const GURL invalid_gurl("http://");
   view_->setMouseOverURL(WebKit::WebURL(invalid_gurl));
   EXPECT_EQ(invalid_gurl, view_->target_url_);
+}
+
+TEST_F(RenderViewTest, SendForms) {
+  // Don't want any delay for form state sync changes. This will still post a
+  // message so updates will get coalesced, but as soon as we spin the message
+  // loop, it will generate an update.
+  view_->set_send_content_state_immediately(true);
+
+  LoadHTML("\
+    <html>\
+      <body>\
+        <form method=\"POST\">\
+          <input type=\"text\" id=\"firstname\" name=\"First Name\"/>\
+          <input type=\"text\" name=\"Middle Name\" autoComplete=\"off\"/>\
+          <input type=\"hidden\" name=\"Last Name\"/>\
+        </form>\
+      </body>\
+    </html>\
+  ");
+
+  // Verify that "FormsSeen" sends the expected number of fields.
+  ProcessPendingMessages();
+  const IPC::Message* message = render_thread_.sink().GetUniqueMessageMatching(
+      ViewHostMsg_FormsSeen::ID);
+  ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
+  ViewHostMsg_FormsSeen::Param params;
+  ViewHostMsg_FormsSeen::Read(message, &params);
+  const std::vector<FormData>& forms = params.a;
+  ASSERT_EQ(1UL, forms.size());
+  ASSERT_EQ(3UL, forms[0].fields.size());
+  EXPECT_TRUE(forms[0].fields[0].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("First Name"),
+                string16(),
+                ASCIIToUTF16("text"),
+                20))) << forms[0].fields[0];
+  EXPECT_TRUE(forms[0].fields[1].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("Middle Name"),
+                string16(),
+                ASCIIToUTF16("text"),
+                20))) << forms[0].fields[1];
+  EXPECT_TRUE(forms[0].fields[2].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("Last Name"),
+                string16(),
+                ASCIIToUTF16("hidden"),
+                0))) << forms[0].fields[2];
+
+  // Verify that |didAcceptAutoFillSuggestion()| sends the expected number of
+  // fields.
+  WebFrame* web_frame = GetMainFrame();
+  WebDocument document = web_frame->document();
+  WebInputElement firstname =
+      document.getElementById("firstname").to<WebInputElement>();
+  view_->didAcceptAutoFillSuggestion(firstname,
+                                    WebKit::WebString(),
+                                    WebKit::WebString());
+
+  ProcessPendingMessages();
+  const IPC::Message* message2 = render_thread_.sink().GetUniqueMessageMatching(
+      ViewHostMsg_FillAutoFillFormData::ID);
+  ASSERT_NE(static_cast<IPC::Message*>(NULL), message2);
+  ViewHostMsg_FillAutoFillFormData::Param params2;
+  ViewHostMsg_FillAutoFillFormData::Read(message2, &params2);
+  const FormData& form2 = params2.b;
+  ASSERT_EQ(3UL, form2.fields.size());
+  EXPECT_TRUE(form2.fields[0].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("First Name"),
+                string16(),
+                ASCIIToUTF16("text"),
+                20))) << form2.fields[0];
+  EXPECT_TRUE(form2.fields[1].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("Middle Name"),
+                string16(),
+                ASCIIToUTF16("text"),
+                20))) << form2.fields[1];
+  EXPECT_TRUE(form2.fields[2].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("Last Name"),
+                string16(),
+                ASCIIToUTF16("hidden"),
+                0))) << form2.fields[2];
 }

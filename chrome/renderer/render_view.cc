@@ -4722,12 +4722,8 @@ void RenderView::SendForms(WebFrame* frame) {
     const WebFormElement& web_form = web_forms[i];
 
     FormData form;
-    FormManager::RequirementsMask requirements =
-      static_cast<FormManager::RequirementsMask>(
-          FormManager::REQUIRE_AUTOCOMPLETE |
-          FormManager::REQUIRE_ELEMENTS_ENABLED);
     if (FormManager::WebFormElementToFormData(
-            web_form, requirements, false, &form))
+            web_form, FormManager::REQUIRE_NONE, false, &form))
         forms.push_back(form);
   }
 
