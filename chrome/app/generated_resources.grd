@@ -7615,6 +7615,82 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The label for a language that is currently used for UI">
         <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> is displayed in this language
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD"
+               desc="The label for a input method">
+        Standard input method
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_PERSIAN_ISIRI_2901_INPUT_METHOD"
+               desc="The label for the Persian (Farsi) input method">
+        Persian input method (ISIRI 2901 layout)
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_THAI_KESMANEE_INPUT_METHOD"
+               desc="The label for the Thai input method">
+        Thai input method (Kesmanee keyboard)
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_THAI_TIS820_INPUT_METHOD"
+               desc="The label for the Thai input method">
+        Thai input method (TIS-820.2538 keyboard)
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_THAI_PATTACHOTE_INPUT_METHOD"
+               desc="The label for the Thai input method">
+        Thai input method (Pattachote keyboard)
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_VIETNAMESE_TCVN_INPUT_METHOD"
+               desc="The label for the Vietnamese input method">
+        Vietnamese input method (TCVN6064)
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_VIETNAMESE_TELEX_INPUT_METHOD"
+               desc="The label for the Vietnamese input method">
+        Vietnamese input method (TELEX)
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_VIETNAMESE_VIQR_INPUT_METHOD"
+               desc="The label for the Vietnamese input method">
+        Vietnamese input method (VIQR)
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_VIETNAMESE_VNI_INPUT_METHOD"
+               desc="The label for the Vietnamese input method">
+        Vietnamese input method (VNI)
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_LATIN_POST_INPUT_METHOD"
+               desc="The label for the 'latn-post' input method">
+        Latin input method using postfix modifiers
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_LATIN_PRE_INPUT_METHOD"
+               desc="The label for the 'latn-pre' input method">
+        Latin input method using prefix modifiers
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_BOPOMOFO_INPUT_METHOD"
+               desc="The label for the Bopomofo (Zhuyin) traditional Chinese input method">
+	Bopomofo input method
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_INPUT_METHOD"
+               desc="The label for the Chewing traditional Chinese input method">
+	Chewing input method
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_INPUT_METHOD"
+               desc="The label for the Pinyin simplified Chinese input method">
+	Pinyin input method
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_MOZC_US_INPUT_METHOD"
+               desc="The label for the Japanese input method for US keyboard">
+	Japanese input method (for US keyboard)
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_MOZC_JP_INPUT_METHOD"
+               desc="The label for the Japanese input method for Japanese keyboard">
+	Japanese input method (for Japanese keyboard)
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_GOOGLE_US_INPUT_METHOD"
+               desc="The label for the Google Japanese Input input method for US keyboard">
+	Google Japanese Input (for US keyboard)
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_GOOGLE_JP_INPUT_METHOD"
+               desc="The label for the Google Japanese Input input method for Japanese keyboard">
+	Google Japanese Input (for Japanese keyboard)
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KOREAN_INPUT_METHOD"
+               desc="The label for the Korean input method">
+	Korean input method
+      </message>
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET" desc="The ethernet network device.">
         Ethernet
       </message>

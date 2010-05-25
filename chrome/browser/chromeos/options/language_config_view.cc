@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/options/language_pinyin_config_view.h"
 #include "chrome/browser/chromeos/options/options_window_view.h"
 #include "chrome/browser/chromeos/preferences.h"
+#include "chrome/browser/chromeos/status/language_menu_l10n_util.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/restart_message_box.h"
@@ -524,7 +525,8 @@ void LanguageConfigView::InitInputMethodIdMaps() {
     id_to_language_code_map_.insert(
         std::make_pair(input_method.id, language_code));
     id_to_display_name_map_.insert(
-        std::make_pair(input_method.id, input_method.display_name));
+        std::make_pair(input_method.id, LanguageMenuL10nUtil::GetStringUTF8(
+            input_method.display_name)));
   }
 }
 
