@@ -11,12 +11,10 @@
     'browser_tests_sources_win_specific': [
       'browser/extensions/extension_shelf_model_browsertest.cc',
       'browser/extensions/extension_popup_apitest.cc',
-      'browser/accessibility_win_browsertest.cc',
       # TODO(jam): http://crbug.com/15101 These tests fail on Linux and Mac.
       'browser/child_process_security_policy_browsertest.cc',
       'browser/renderer_host/test/web_cache_manager_browsertest.cc',
       'browser/renderer_host/test/render_view_host_manager_browsertest.cc',
-      'browser/views/browser_views_accessibility_browsertest.cc',
     ],
     # TODO(jcampan): move these vars to views.gyp.
     'views_unit_tests_sources': [

@@ -136,6 +136,9 @@
         '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
+
+        '<(DEPTH)/chrome/browser/accessibility_win_browsertest.cc',
+        '<(DEPTH)/chrome/browser/views/browser_views_accessibility_browsertest.cc',
       ],
       'conditions': [
         ['win_use_allocator_shim==1', {
