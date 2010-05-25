@@ -126,6 +126,7 @@ TEST_F(NPAPITester, FLAKY_SelfDeletePluginInvoke) {
 
 // Tests if a plugin executing a self deleting script using Invoke with
 // a modal dialog showing works without crashing or hanging
+// http://crbug.com/44958
 TEST_F(NPAPITester, DISABLED_SelfDeletePluginInvokeAlert) {
   const FilePath test_case(
       FILE_PATH_LITERAL("self_delete_plugin_invoke_alert.html"));
@@ -146,8 +147,9 @@ TEST_F(NPAPITester, DISABLED_SelfDeletePluginInvokeAlert) {
 #if defined(OS_WIN) || defined(OS_MACOSX)
 // Tests if a plugin executing a self deleting script in the context of
 // a synchronous paint event works correctly
+// http://crbug.com/44960
 TEST_F(NPAPIVisiblePluginTester,
-       DISABLED_SelfDeletePluginInvokeInSynchronousPaint) {
+       FLAKY_SelfDeletePluginInvokeInSynchronousPaint) {
   if (UITest::in_process_renderer())
     return;
 
