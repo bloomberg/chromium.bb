@@ -390,6 +390,11 @@
             'test/ui/fast_shutdown_uitest.cc',
             'test/ui/layout_plugin_uitest.cc',
           ],
+          # See the comment in this section of the unit_tests target for an
+          # explanation (crbug.com/43791 - libwebcore.a is too large to mmap).
+          'dependencies+++': [
+            '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
+          ],
         }],
         ['OS=="win"', {
           'include_dirs': [
