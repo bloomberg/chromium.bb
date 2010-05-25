@@ -680,6 +680,8 @@ std::wstring TabContents::GetStatusText() const {
   switch (load_state_) {
     case net::LOAD_STATE_WAITING_FOR_CACHE:
       return l10n_util::GetString(IDS_LOAD_STATE_WAITING_FOR_CACHE);
+    case net::LOAD_STATE_ESTABLISHING_PROXY_TUNNEL:
+      return l10n_util::GetString(IDS_LOAD_STATE_ESTABLISHING_PROXY_TUNNEL);
     case net::LOAD_STATE_RESOLVING_PROXY_FOR_URL:
       return l10n_util::GetString(IDS_LOAD_STATE_RESOLVING_PROXY_FOR_URL);
     case net::LOAD_STATE_RESOLVING_HOST:
