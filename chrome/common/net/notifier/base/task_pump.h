@@ -5,26 +5,26 @@
 #ifndef CHROME_COMMON_NET_NOTIFIER_BASE_TASK_PUMP_H_
 #define CHROME_COMMON_NET_NOTIFIER_BASE_TASK_PUMP_H_
 
-#include "talk/base/messagequeue.h"
+#include "base/task.h"
 #include "talk/base/taskrunner.h"
 
 namespace notifier {
 
-class TaskPump : public talk_base::MessageHandler,
-                 public talk_base::TaskRunner {
+class TaskPump : public talk_base::TaskRunner {
  public:
   TaskPump();
 
-  // MessageHandler interface.
-  virtual void OnMessage(talk_base::Message* msg);
+  virtual ~TaskPump();
 
-  // TaskRunner interface.
+  // talk_base::TaskRunner implementation.
   virtual void WakeTasks();
   virtual int64 CurrentTime();
 
  private:
-  int timeout_change_count_;
-  bool posted_;
+  void CheckAndRunTasks();
+
+  ScopedRunnableMethodFactory<TaskPump> scoped_runnable_method_factory_;
+  bool posted_wake_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskPump);
 };

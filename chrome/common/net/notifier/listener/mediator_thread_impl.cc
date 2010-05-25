@@ -41,19 +41,12 @@ void MediatorThreadImpl::Start() {
 
 void MediatorThreadImpl::Run() {
   PlatformThread::SetName("Notifier_MediatorThread");
-  // For win32, this sets up the win32socketserver. Note that it needs to
-  // dispatch windows messages since that is what the win32 socket server uses.
-
   MessageLoop message_loop;
-
   Post(this, CMD_PUMP_AUXILIARY_LOOPS);
   ProcessMessages(talk_base::kForever);
 }
 
 void MediatorThreadImpl::PumpAuxiliaryLoops() {
-  if (pump_.get() && pump_->HasPendingTimeoutTask()) {
-    pump_->WakeTasks();
-  }
   MessageLoop::current()->RunAllPending();
   // We want to pump auxiliary loops every 100ms until this thread is stopped,
   // at which point this call will do nothing.
@@ -271,19 +264,19 @@ void MediatorThreadImpl::OnLoginFailureMessage(
 }
 
 void MediatorThreadImpl::OnClientStateChangeMessage(
-    notifier::Login::ConnectionState state) {
+    LoginConnectionState state) {
   switch (state) {
-    case notifier::Login::STATE_CLOSED:
+    case STATE_CLOSED:
       SignalStateChange(MSG_LOGGED_OUT);
       break;
-    case notifier::Login::STATE_RETRYING:
-    case notifier::Login::STATE_OPENING:
+    case STATE_RETRYING:
+    case STATE_OPENING:
       LOG(INFO) << "P2P: Thread trying to connect.";
       // Maybe first time logon, maybe intermediate network disruption. Assume
       // the server went down, and lost our subscription for updates.
       SignalStateChange(MSG_SUBSCRIPTION_FAILURE);
       break;
-    case notifier::Login::STATE_OPENED:
+    case STATE_OPENED:
       SignalStateChange(MSG_LOGGED_IN);
       break;
     default:

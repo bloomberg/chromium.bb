@@ -2,40 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop.h"
 #include "chrome/common/net/notifier/base/task_pump.h"
-#include "chrome/common/net/notifier/base/time.h"
-#include "talk/base/common.h"
-#include "talk/base/thread.h"
 
 namespace notifier {
 
-// Don't add any messages because there are cleared and thrown away.
-enum { MSG_WAKE_UP = 1, MSG_TIMED_WAKE_UP };
+TaskPump::TaskPump()
+    : scoped_runnable_method_factory_(
+        ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      posted_wake_(false) {}
 
-TaskPump::TaskPump() : timeout_change_count_(0), posted_(false) {
-}
-
-void TaskPump::OnMessage(talk_base::Message* msg) {
-  posted_ = false;
-
-  // If a task timed out, ensure that it is not blocked, so it will be deleted.
-  // This may result in a WakeTasks if a task is timed out.
-  PollTasks();
-
-  // Run tasks and handle timeouts.
-  RunTasks();
-}
+TaskPump::~TaskPump() {}
 
 void TaskPump::WakeTasks() {
-  if (!posted_) {
+  if (!posted_wake_) {
     // Do the requested wake up.
-    talk_base::Thread::Current()->Post(this, MSG_WAKE_UP);
-    posted_ = true;
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        scoped_runnable_method_factory_.NewRunnableMethod(
+            &TaskPump::CheckAndRunTasks));
+    posted_wake_ = true;
   }
 }
 
 int64 TaskPump::CurrentTime() {
-  return GetCurrent100NSTime();
+  // Only timeout tasks rely on this function.  Since we're not using
+  // libjingle tasks for timeout, it's safe to return 0 here.
+  return 0;
+}
+
+void TaskPump::CheckAndRunTasks() {
+  posted_wake_ = false;
+  // We shouldn't be using libjingle for timeout tasks, so we should
+  // have no timeout tasks at all.
+  DCHECK(!HasTimeoutTask());
+  RunTasks();
 }
 
 }  // namespace notifier

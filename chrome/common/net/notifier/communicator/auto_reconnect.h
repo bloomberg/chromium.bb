@@ -7,24 +7,19 @@
 
 #include <string>
 
-#include "chrome/common/net/notifier/base/time.h"
-#include "chrome/common/net/notifier/communicator/login.h"
+#include "base/time.h"
+#include "base/timer.h"
+#include "chrome/common/net/notifier/communicator/login_connection_state.h"
 #include "talk/base/sigslot.h"
-
-namespace talk_base {
-class Task;
-}
 
 namespace notifier {
 
-class Timer;
-
 class AutoReconnect : public sigslot::has_slots<> {
  public:
-  explicit AutoReconnect(talk_base::Task* parent);
+  AutoReconnect();
   void StartReconnectTimer();
   void StopReconnectTimer();
-  void OnClientStateChange(Login::ConnectionState state);
+  void OnClientStateChange(LoginConnectionState state);
 
   void NetworkStateChanged(bool is_alive);
 
@@ -37,23 +32,23 @@ class AutoReconnect : public sigslot::has_slots<> {
 
   // Returns true if the auto-retry is to be done (pending a countdown).
   bool is_retrying() const {
-    return reconnect_timer_ != NULL;
+    return reconnect_timer_started_;
   }
 
   sigslot::signal0<> SignalTimerStartStop;
   sigslot::signal0<> SignalStartConnection;
 
  private:
-  void StartReconnectTimerWithInterval(time64 interval_ns);
+  void StartReconnectTimerWithInterval(base::TimeDelta interval);
   void DoReconnect();
   void ResetState();
   void SetupReconnectInterval();
   void StopDelayedResetTimer();
 
-  time64 reconnect_interval_ns_;
-  Timer* reconnect_timer_;
-  Timer* delayed_reset_timer_;
-  talk_base::Task* parent_;
+  base::TimeDelta reconnect_interval_;
+  bool reconnect_timer_started_;
+  base::OneShotTimer<AutoReconnect> reconnect_timer_;
+  base::OneShotTimer<AutoReconnect> delayed_reset_timer_;
 
   bool is_idle_;
   DISALLOW_COPY_AND_ASSIGN(AutoReconnect);

@@ -7,8 +7,7 @@
 #include "chrome/common/net/notifier/communicator/login.h"
 
 #include "base/logging.h"
-#include "chrome/common/net/notifier/base/time.h"
-#include "chrome/common/net/notifier/base/timer.h"
+#include "base/time.h"
 #include "chrome/common/net/notifier/communicator/auto_reconnect.h"
 #include "chrome/common/net/notifier/communicator/connection_options.h"
 #include "chrome/common/net/notifier/communicator/login_settings.h"
@@ -31,7 +30,7 @@
 namespace notifier {
 
 // Redirect valid for 5 minutes.
-static const time64 kRedirectTimeoutNs = 5 * kMinsTo100ns;
+static const int kRedirectTimeoutMinutes = 5;
 
 // Disconnect if network stays down for more than 10 seconds.
 static const int kDisconnectionDelaySecs = 10;
@@ -57,30 +56,26 @@ Login::Login(talk_base::Task* parent,
                                         firewall,
                                         proxy_only)),
       network_change_notifier_(network_change_notifier),
-      auto_reconnect_(new AutoReconnect(parent)),
       single_attempt_(NULL),
       successful_connection_(previous_login_successful),
       state_(STATE_OPENING),
-      redirect_time_ns_(0),
       redirect_port_(0),
       unexpected_disconnect_occurred_(false),
-      reset_unexpected_timer_(NULL),
       google_host_(user_settings.host()),
-      google_user_(user_settings.user()),
-      disconnect_timer_(NULL) {
+      google_user_(user_settings.user()) {
   DCHECK(network_change_notifier_);
   // Hook up all the signals and observers.
   network_change_notifier_->AddObserver(this);
-  auto_reconnect_->SignalStartConnection.connect(this,
-                                                 &Login::StartConnection);
-  auto_reconnect_->SignalTimerStartStop.connect(
+  auto_reconnect_.SignalStartConnection.connect(this,
+                                                &Login::StartConnection);
+  auto_reconnect_.SignalTimerStartStop.connect(
       this,
       &Login::OnAutoReconnectTimerChange);
-  SignalClientStateChange.connect(auto_reconnect_.get(),
+  SignalClientStateChange.connect(&auto_reconnect_,
                                   &AutoReconnect::OnClientStateChange);
-  SignalIdleChange.connect(auto_reconnect_.get(),
+  SignalIdleChange.connect(&auto_reconnect_,
                            &AutoReconnect::set_idle);
-  SignalPowerSuspended.connect(auto_reconnect_.get(),
+  SignalPowerSuspended.connect(&auto_reconnect_,
                                &AutoReconnect::OnPowerSuspend);
 
   // Then check the initial state of the connection.
@@ -99,7 +94,9 @@ Login::~Login() {
 
 void Login::StartConnection() {
   // If there is a server redirect, use it.
-  if (GetCurrent100NSTime() < redirect_time_ns_ + kRedirectTimeoutNs) {
+  if (base::Time::Now() <
+      (redirect_time_ +
+       base::TimeDelta::FromMinutes(kRedirectTimeoutMinutes))) {
     // Override server/port with redirect values.
     DCHECK_NE(redirect_port_, 0);
     net::HostPortPair server_override(redirect_server_, redirect_port_);
@@ -150,7 +147,7 @@ const talk_base::ProxyInfo& Login::proxy() const {
 }
 
 void Login::OnLoginFailure(const LoginFailure& failure) {
-  auto_reconnect_->StopReconnectTimer();
+  auto_reconnect_.StopReconnectTimer();
   HandleClientStateChange(STATE_CLOSED);
   SignalLoginFailure(failure);
 }
@@ -160,7 +157,7 @@ void Login::OnLogoff() {
 }
 
 void Login::OnClientStateChange(buzz::XmppEngine::State state) {
-  ConnectionState new_state = STATE_CLOSED;
+  LoginConnectionState new_state = STATE_CLOSED;
 
   switch (state) {
     case buzz::XmppEngine::STATE_NONE:
@@ -188,9 +185,9 @@ void Login::OnClientStateChange(buzz::XmppEngine::State state) {
   HandleClientStateChange(new_state);
 }
 
-void Login::HandleClientStateChange(ConnectionState new_state) {
+void Login::HandleClientStateChange(LoginConnectionState new_state) {
   // Do we need to transition between the retrying and closed states?
-  if (auto_reconnect_.get() && auto_reconnect_->is_retrying()) {
+  if (auto_reconnect_.is_retrying()) {
     if (new_state == STATE_CLOSED) {
       new_state = STATE_RETRYING;
     }
@@ -202,10 +199,7 @@ void Login::HandleClientStateChange(ConnectionState new_state) {
 
   if (new_state != state_) {
     state_ = new_state;
-    if (reset_unexpected_timer_) {
-      reset_unexpected_timer_->Abort();
-      reset_unexpected_timer_ = NULL;
-    }
+    reset_unexpected_timer_.Stop();
 
     if (state_ == STATE_OPENED) {
       successful_connection_ = true;
@@ -214,12 +208,9 @@ void Login::HandleClientStateChange(ConnectionState new_state) {
       google_user_ = single_attempt_->xmpp_client()->jid().node();
       proxy_info_ = single_attempt_->proxy();
 
-      reset_unexpected_timer_ = new Timer(parent_,
-                                          kResetReconnectInfoDelaySec,
-                                          false);  // Repeat.
-      reset_unexpected_timer_->SignalTimeout.connect(
-          this,
-          &Login::ResetUnexpectedDisconnect);
+      reset_unexpected_timer_.Start(
+          base::TimeDelta::FromSeconds(kResetReconnectInfoDelaySec),
+          this, &Login::ResetUnexpectedDisconnect);
     }
     SignalClientStateChange(state_);
   }
@@ -261,7 +252,7 @@ void Login::UseCurrentConnection() {
 void Login::OnRedirect(const std::string& redirect_server, int redirect_port) {
   DCHECK_NE(redirect_port_, 0);
 
-  redirect_time_ns_ = GetCurrent100NSTime();
+  redirect_time_ = base::Time::Now();
   redirect_server_ = redirect_server;
   redirect_port_ = redirect_port;
 
@@ -270,10 +261,7 @@ void Login::OnRedirect(const std::string& redirect_server, int redirect_port) {
 }
 
 void Login::OnUnexpectedDisconnect() {
-  if (reset_unexpected_timer_) {
-    reset_unexpected_timer_->Abort();
-    reset_unexpected_timer_ = NULL;
-  }
+  reset_unexpected_timer_.Stop();
 
   // Start the login process again.
   if (unexpected_disconnect_occurred_) {
@@ -289,7 +277,6 @@ void Login::OnUnexpectedDisconnect() {
 }
 
 void Login::ResetUnexpectedDisconnect() {
-  reset_unexpected_timer_ = NULL;
   unexpected_disconnect_occurred_ = false;
 }
 
@@ -301,7 +288,7 @@ void Login::DoAutoReconnect() {
   // transition to the CLOSED state (which would cause the reconnection timer
   // to reset and not double).
   if (allow_auto_reconnect) {
-    auto_reconnect_->StartReconnectTimer();
+    auto_reconnect_.StartReconnectTimer();
   }
 
   if (single_attempt_) {
@@ -329,29 +316,23 @@ void Login::CheckConnection() {
   LOG(INFO) << "Network is " << (alive ? "alive" : "not alive");
   if (alive) {
     // Our connection is up. If we have a disconnect timer going,
-    // abort it so we don't disconnect.
-    if (disconnect_timer_) {
-      disconnect_timer_->Abort();
-      // It will free itself.
-      disconnect_timer_ = NULL;
-    }
+    // stop it so we don't disconnect.
+    disconnect_timer_.Stop();
   } else {
-    // Our connection is down. Setup a timer to disconnect if there
-    // isn't one already.  Don't disconnect immediately to avoid
+    // Our network connection is down. Start the disconnect timer if
+    // it's not already going.  Don't disconnect immediately to avoid
     // constant connection/disconnection due to flaky network
     // interfaces.
-    if (!disconnect_timer_) {
-      disconnect_timer_ = new Timer(parent_, kDisconnectionDelaySecs, false);
-      disconnect_timer_->SignalTimeout.connect(this,
-                                               &Login::OnDisconnectTimeout);
+    if (!disconnect_timer_.IsRunning()) {
+      disconnect_timer_.Start(
+          base::TimeDelta::FromSeconds(kDisconnectionDelaySecs),
+          this, &Login::OnDisconnectTimeout);
     }
   }
-  auto_reconnect_->NetworkStateChanged(alive);
+  auto_reconnect_.NetworkStateChanged(alive);
 }
 
 void Login::OnDisconnectTimeout() {
-  disconnect_timer_ = NULL;
-
   if (state_ != STATE_OPENED) {
     return;
   }

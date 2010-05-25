@@ -7,8 +7,11 @@
 
 #include <string>
 
+#include "base/time.h"
+#include "base/timer.h"
 #include "chrome/common/net/notifier/base/sigslotrepeater.h"
-#include "chrome/common/net/notifier/base/time.h"
+#include "chrome/common/net/notifier/communicator/auto_reconnect.h"
+#include "chrome/common/net/notifier/communicator/login_connection_state.h"
 #include "net/base/network_change_notifier.h"
 #include "talk/base/proxyinfo.h"
 #include "talk/base/scoped_ptr.h"
@@ -33,13 +36,11 @@ class Task;
 
 namespace notifier {
 
-class AutoReconnect;
 class ConnectionOptions;
 class LoginFailure;
 class LoginSettings;
 struct ServerInformation;
 class SingleLoginAttempt;
-class Timer;
 
 // Does the login, keeps it alive (with refreshing cookies and reattempting
 // login when disconnected), figures out what actions to take on the various
@@ -61,16 +62,7 @@ class Login : public net::NetworkChangeNotifier::Observer,
         bool previous_login_successful);
   virtual ~Login();
 
-  enum ConnectionState {
-    STATE_CLOSED,
-    // Same as the closed state but indicates that a countdown is happening for
-    // auto-retrying the connection.
-    STATE_RETRYING,
-    STATE_OPENING,
-    STATE_OPENED,
-  };
-
-  ConnectionState connection_state() const {
+  LoginConnectionState connection_state() const {
     return state_;
   }
 
@@ -106,8 +98,7 @@ class Login : public net::NetworkChangeNotifier::Observer,
 
   virtual void OnIPAddressChanged();
 
-  // SignalClientStateChange(ConnectionState new_state);
-  sigslot::signal1<ConnectionState> SignalClientStateChange;
+  sigslot::signal1<LoginConnectionState> SignalClientStateChange;
 
   sigslot::signal1<const LoginFailure&> SignalLoginFailure;
   sigslot::repeater2<const char*, int> SignalLogInput;
@@ -128,7 +119,7 @@ class Login : public net::NetworkChangeNotifier::Observer,
   void OnLogoff();
   void OnAutoReconnectTimerChange();
 
-  void HandleClientStateChange(ConnectionState new_state);
+  void HandleClientStateChange(LoginConnectionState new_state);
   void ResetUnexpectedDisconnect();
 
   void OnDisconnectTimeout();
@@ -136,23 +127,23 @@ class Login : public net::NetworkChangeNotifier::Observer,
   talk_base::Task* parent_;
   scoped_ptr<LoginSettings> login_settings_;
   net::NetworkChangeNotifier* network_change_notifier_;
-  scoped_ptr<AutoReconnect> auto_reconnect_;
+  AutoReconnect auto_reconnect_;
   SingleLoginAttempt* single_attempt_;
   bool successful_connection_;
 
-  ConnectionState state_;
+  LoginConnectionState state_;
 
   // server redirect information
-  time64 redirect_time_ns_;
+  base::Time redirect_time_;
   std::string redirect_server_;
   int redirect_port_;
   bool unexpected_disconnect_occurred_;
-  Timer* reset_unexpected_timer_;
+  base::OneShotTimer<Login> reset_unexpected_timer_;
   std::string google_host_;
   std::string google_user_;
   talk_base::ProxyInfo proxy_info_;
 
-  Timer* disconnect_timer_;
+  base::OneShotTimer<Login> disconnect_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(Login);
 };

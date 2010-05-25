@@ -100,9 +100,6 @@ class XmppNotificationClient : public sigslot::has_slots<> {
     should_exit_ = false;
     while (!should_exit_) {
       current_thread->ProcessMessages(100);
-      if (task_pump_.HasPendingTimeoutTask()) {
-        task_pump_.WakeTasks();
-      }
       MessageLoop::current()->RunAllPending();
     }
     // xmpp_client_ is invalid here.

@@ -143,7 +143,7 @@ class MediatorThreadImpl
       const IncomingNotificationData& notification_data);
   void OnUpdateNotificationSent(bool success);
   void OnLoginFailureMessage(const notifier::LoginFailure& failure);
-  void OnClientStateChangeMessage(notifier::Login::ConnectionState state);
+  void OnClientStateChangeMessage(LoginConnectionState state);
   void OnSubscriptionStateChange(bool success);
   void OnInputDebug(const char* msg, int length);
   void OnOutputDebug(const char* msg, int length);
