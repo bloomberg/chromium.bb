@@ -21,11 +21,13 @@ PrinterJobHandler::PrinterJobHandler(
     const std::string& printer_id,
     const std::string& caps_hash,
     const std::string& auth_token,
+    const GURL& cloud_print_server_url,
     Delegate* delegate)
     : printer_info_(printer_info),
       printer_id_(printer_id),
       auth_token_(auth_token),
       last_caps_hash_(caps_hash),
+      cloud_print_server_url_(cloud_print_server_url),
       delegate_(delegate),
       local_job_id_(-1),
       next_response_handler_(NULL),
@@ -74,7 +76,8 @@ void PrinterJobHandler::Start() {
         printer_delete_pending_ = false;
         task_in_progress_ = true;
         MakeServerRequest(
-            CloudPrintHelpers::GetUrlForPrinterDelete(printer_id_),
+            CloudPrintHelpers::GetUrlForPrinterDelete(cloud_print_server_url_,
+                                                      printer_id_),
             &PrinterJobHandler::HandlePrinterDeleteResponse);
       }
       if (!task_in_progress_ && printer_update_pending_) {
@@ -85,8 +88,10 @@ void PrinterJobHandler::Start() {
         task_in_progress_ = true;
         server_job_available_ = false;
         // We need to fetch any pending jobs for this printer
-        MakeServerRequest(CloudPrintHelpers::GetUrlForJobFetch(printer_id_),
-                          &PrinterJobHandler::HandleJobMetadataResponse);
+        MakeServerRequest(
+            CloudPrintHelpers::GetUrlForJobFetch(
+                cloud_print_server_url_, printer_id_),
+            &PrinterJobHandler::HandleJobMetadataResponse);
       }
     }
   }
@@ -161,7 +166,8 @@ bool PrinterJobHandler::UpdatePrinterInfo() {
     std::string mime_type("multipart/form-data; boundary=");
     mime_type += mime_boundary;
     request_.reset(
-        new URLFetcher(CloudPrintHelpers::GetUrlForPrinterUpdate(printer_id_),
+        new URLFetcher(CloudPrintHelpers::GetUrlForPrinterUpdate(
+                           cloud_print_server_url_, printer_id_),
                        URLFetcher::POST, this));
     CloudPrintHelpers::PrepCloudPrintRequest(request_.get(), auth_token_);
     request_->set_upload_data(mime_type, post_data);
@@ -466,7 +472,8 @@ void PrinterJobHandler::UpdateJobStatus(cloud_print::PrintJobStatus status,
             &PrinterJobHandler::HandleFailureStatusUpdateResponse;
       }
       MakeServerRequest(
-          CloudPrintHelpers::GetUrlForJobStatusUpdate(job_details_.job_id_,
+          CloudPrintHelpers::GetUrlForJobStatusUpdate(cloud_print_server_url_,
+                                                      job_details_.job_id_,
                                                       status),
           response_handler);
     }
@@ -486,7 +493,8 @@ bool PrinterJobHandler::HandleSuccessStatusUpdateResponse(
   // that monitors the status of the job and updates the server.
   scoped_refptr<JobStatusUpdater> job_status_updater =
       new JobStatusUpdater(printer_info_.printer_name, job_details_.job_id_,
-                           local_job_id_, auth_token_, this);
+                           local_job_id_, auth_token_, cloud_print_server_url_,
+                           this);
   job_status_updater_list_.push_back(job_status_updater);
   MessageLoop::current()->PostTask(
       FROM_HERE, NewRunnableMethod(job_status_updater.get(),

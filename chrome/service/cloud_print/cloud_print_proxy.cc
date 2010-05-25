@@ -7,6 +7,7 @@
 #include "base/values.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/json_pref_store.h"
+#include "chrome/service/cloud_print/cloud_print_consts.h"
 
 CloudPrintProxy::CloudPrintProxy() {
 }
@@ -26,7 +27,6 @@ void CloudPrintProxy::EnableForUser(const std::string& lsid) {
   if (backend_.get())
     return;
 
-  backend_.reset(new CloudPrintProxyBackend(this));
   std::string proxy_id;
   service_prefs_->prefs()->GetString(prefs::kCloudPrintProxyId, &proxy_id);
   if (proxy_id.empty()) {
@@ -34,6 +34,18 @@ void CloudPrintProxy::EnableForUser(const std::string& lsid) {
     service_prefs_->prefs()->SetString(prefs::kCloudPrintProxyId, proxy_id);
     service_prefs_->WritePrefs();
   }
+
+  // Check if there is an override for the cloud print server URL.
+  std::string cloud_print_server_url_str;
+  service_prefs_->prefs()->GetString(prefs::kCloudPrintServiceURL,
+                                     &cloud_print_server_url_str);
+  if (cloud_print_server_url_str.empty()) {
+    cloud_print_server_url_str = kDefaultCloudPrintServerUrl;
+  }
+
+  GURL cloud_print_server_url(cloud_print_server_url_str.c_str());
+  DCHECK(cloud_print_server_url.is_valid());
+  backend_.reset(new CloudPrintProxyBackend(this, cloud_print_server_url));
   // If we have been passed in an LSID, we want to use this to authenticate.
   // Else we will try and retrieve the last used auth tokens from prefs.
   if (!lsid.empty()) {

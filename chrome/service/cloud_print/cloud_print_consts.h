@@ -25,7 +25,7 @@ extern const wchar_t kJobListValue[];
 extern const wchar_t kTitleValue[];
 extern const wchar_t kPrinterCapsHashValue[];
 
-extern const char kCloudPrintServerUrl[];
+extern const char kDefaultCloudPrintServerUrl[];
 extern const char kCloudPrintTalkServiceUrl[];
 extern const char kGaiaUrl[];
 extern const char kCloudPrintGaiaServiceId[];

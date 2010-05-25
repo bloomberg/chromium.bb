@@ -28,7 +28,8 @@ class CloudPrintProxyBackend::Core
       public cloud_print::PrinterChangeNotifierDelegate,
       public PrinterJobHandlerDelegate {
  public:
-  explicit Core(CloudPrintProxyBackend* backend);
+  explicit Core(CloudPrintProxyBackend* backend,
+                const GURL& cloud_print_server_url);
   // Note:
   //
   // The Do* methods are the various entry points from CloudPrintProxyBackend
@@ -120,6 +121,8 @@ class CloudPrintProxyBackend::Core
 
   // Our parent CloudPrintProxyBackend
   CloudPrintProxyBackend* backend_;
+
+  GURL cloud_print_server_url_;
   // The list of printers to be registered with the cloud print server.
   // To begin with,this list is initialized with the list of local and network
   // printers available. Then we query the server for the list of printers
@@ -158,12 +161,12 @@ class CloudPrintProxyBackend::Core
 };
 
 CloudPrintProxyBackend::CloudPrintProxyBackend(
-    CloudPrintProxyFrontend* frontend)
+    CloudPrintProxyFrontend* frontend, const GURL& cloud_print_server_url)
       : core_thread_("Chrome_CloudPrintProxyCoreThread"),
         frontend_loop_(MessageLoop::current()),
         frontend_(frontend) {
   DCHECK(frontend_);
-  core_ = new Core(this);
+  core_ = new Core(this, cloud_print_server_url);
 }
 
 CloudPrintProxyBackend::~CloudPrintProxyBackend() {
@@ -221,8 +224,10 @@ void CloudPrintProxyBackend::HandlePrinterNotification(
           printer_id));
 }
 
-CloudPrintProxyBackend::Core::Core(CloudPrintProxyBackend* backend)
-    : backend_(backend), next_upload_index_(0), server_error_count_(0),
+CloudPrintProxyBackend::Core::Core(CloudPrintProxyBackend* backend,
+                                   const GURL& cloud_print_server_url)
+    : backend_(backend), cloud_print_server_url_(cloud_print_server_url),
+      next_upload_index_(0), server_error_count_(0),
      next_response_handler_(NULL), new_printers_available_(false) {
 }
 
@@ -329,8 +334,10 @@ void CloudPrintProxyBackend::Core::DoHandlePrinterNotification(
 
 void CloudPrintProxyBackend::Core::GetRegisteredPrinters() {
   request_.reset(
-      new URLFetcher(CloudPrintHelpers::GetUrlForPrinterList(proxy_id_),
-                     URLFetcher::GET, this));
+      new URLFetcher(
+          CloudPrintHelpers::GetUrlForPrinterList(cloud_print_server_url_,
+                                                  proxy_id_),
+          URLFetcher::GET, this));
   CloudPrintHelpers::PrepCloudPrintRequest(request_.get(), auth_token_);
   next_response_handler_ =
       &CloudPrintProxyBackend::Core::HandlePrinterListResponse;
@@ -388,8 +395,10 @@ void CloudPrintProxyBackend::Core::RegisterNextPrinter() {
       std::string mime_type("multipart/form-data; boundary=");
       mime_type += mime_boundary;
       request_.reset(
-          new URLFetcher(CloudPrintHelpers::GetUrlForPrinterRegistration(),
-                         URLFetcher::POST, this));
+          new URLFetcher(
+              CloudPrintHelpers::GetUrlForPrinterRegistration(
+                  cloud_print_server_url_),
+              URLFetcher::POST, this));
       CloudPrintHelpers::PrepCloudPrintRequest(request_.get(), auth_token_);
       request_->set_upload_data(mime_type, post_data);
       next_response_handler_ =
@@ -497,7 +506,8 @@ void CloudPrintProxyBackend::Core::InitJobHandlerForPrinter(
     printer_data->GetString(kPrinterCapsHashValue, &caps_hash);
     scoped_refptr<PrinterJobHandler> job_handler;
     job_handler = new PrinterJobHandler(printer_info, printer_id, caps_hash,
-                                        auth_token_, this);
+                                        auth_token_, cloud_print_server_url_,
+                                        this);
     job_handler_map_[printer_id] = job_handler;
     job_handler->Initialize();
   }

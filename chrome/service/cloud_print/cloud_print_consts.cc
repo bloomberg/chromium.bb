@@ -24,9 +24,7 @@ const wchar_t kJobListValue[] = L"jobs";
 const wchar_t kTitleValue[] = L"title";
 const wchar_t kPrinterCapsHashValue[] = L"capsHash";
 
-// TODO(sanjeevr): Change this to a real one. Also read this from prefs instead
-// of hardcoding.
-const char kCloudPrintServerUrl[] = "http://<TBD>";
+const char kDefaultCloudPrintServerUrl[] = "https://www.google.com/cloudprint";
 // TODO(sanjeevr): Change this to a real one.
 const char kCloudPrintTalkServiceUrl[] = "http://www.google.com/printing";
 const char kGaiaUrl[] = "https://www.google.com/accounts/ClientLogin";

@@ -11,6 +11,7 @@
 #include "base/thread.h"
 #include "chrome/service/cloud_print/printer_info.h"
 #include "chrome/common/net/url_fetcher.h"
+#include "googleurl/src/gurl.h"
 
 class CloudPrintProxyService;
 class DictionaryValue;
@@ -43,7 +44,8 @@ class CloudPrintProxyFrontend {
 
 class CloudPrintProxyBackend {
  public:
-  explicit CloudPrintProxyBackend(CloudPrintProxyFrontend* frontend);
+  explicit CloudPrintProxyBackend(CloudPrintProxyFrontend* frontend,
+                                  const GURL& cloud_print_server_url);
   ~CloudPrintProxyBackend();
 
   bool InitializeWithLsid(const std::string& lsid, const std::string& proxy_id);

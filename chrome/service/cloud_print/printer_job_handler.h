@@ -14,6 +14,7 @@
 #include "chrome/service/cloud_print/job_status_updater.h"
 #include "chrome/service/cloud_print/printer_info.h"
 #include "chrome/common/net/url_fetcher.h"
+#include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
 
 // A class that handles cloud print jobs for a particular printer. This class
@@ -94,6 +95,7 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
                   const std::string& printer_id,
                   const std::string& caps_hash,
                   const std::string& auth_token,
+                  const GURL& cloud_print_server_url,
                   Delegate* delegate);
   ~PrinterJobHandler();
   bool Initialize();
@@ -201,6 +203,7 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   std::string printer_id_;
   std::string auth_token_;
   std::string last_caps_hash_;
+  GURL cloud_print_server_url_;
   std::string print_data_url_;
   JobDetails job_details_;
   Delegate* delegate_;

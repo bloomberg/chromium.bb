@@ -36,49 +36,101 @@ std::string StringFromJobStatus(cloud_print::PrintJobStatus status) {
   return ret;
 }
 
-GURL CloudPrintHelpers::GetUrlForPrinterRegistration() {
-  return GURL(StringPrintf("%s/printing/register", kCloudPrintServerUrl));
+// Appends a relative path to the url making sure to append a '/' if the
+// URL's path does not end with a slash. It is assumed that |path| does not
+// begin with a '/'.
+// NOTE: Since we ALWAYS want to append here, we simply append the path string
+// instead of calling url_utils::ResolveRelative. The input |url| may or may not
+// contain a '/' at the end.
+std::string AppendPathToUrl(const GURL& url, const std::string& path) {
+  DCHECK(path[0] != '/');
+  std::string ret = url.path();
+  if (url.has_path() && (ret[ret.length() - 1] != '/')) {
+    ret += '/';
+  }
+  ret += path;
+  return ret;
 }
 
-GURL CloudPrintHelpers::GetUrlForPrinterUpdate(const std::string& printer_id) {
-  return GURL(StringPrintf("%s/printing/update?printerid=%s",
-                           kCloudPrintServerUrl, printer_id.c_str()));
+GURL CloudPrintHelpers::GetUrlForPrinterRegistration(
+    const GURL& cloud_print_server_url) {
+  std::string path(AppendPathToUrl(cloud_print_server_url, "register"));
+  GURL::Replacements replacements;
+  replacements.SetPathStr(path);
+  return cloud_print_server_url.ReplaceComponents(replacements);
 }
 
-GURL CloudPrintHelpers::GetUrlForPrinterDelete(const std::string& printer_id) {
-  return GURL(StringPrintf("%s/printing/delete?printerid=%s",
-                           kCloudPrintServerUrl, printer_id.c_str()));
+GURL CloudPrintHelpers::GetUrlForPrinterUpdate(
+    const GURL& cloud_print_server_url, const std::string& printer_id) {
+  std::string path(AppendPathToUrl(cloud_print_server_url, "update"));
+  GURL::Replacements replacements;
+  replacements.SetPathStr(path);
+  std::string query = StringPrintf("printerid=%s", printer_id.c_str());
+  replacements.SetQueryStr(query);
+  return cloud_print_server_url.ReplaceComponents(replacements);
 }
 
-GURL CloudPrintHelpers::GetUrlForPrinterList(const std::string& proxy_id) {
-  return GURL(StringPrintf(
-              "%s/printing/list?proxy=%s",
-              kCloudPrintServerUrl, proxy_id.c_str()));
+GURL CloudPrintHelpers::GetUrlForPrinterDelete(
+    const GURL& cloud_print_server_url, const std::string& printer_id) {
+  std::string path(AppendPathToUrl(cloud_print_server_url, "delete"));
+  GURL::Replacements replacements;
+  replacements.SetPathStr(path);
+  std::string query = StringPrintf("printerid=%s", printer_id.c_str());
+  replacements.SetQueryStr(query);
+  return cloud_print_server_url.ReplaceComponents(replacements);
 }
 
-GURL CloudPrintHelpers::GetUrlForJobFetch(const std::string& printer_id) {
-  return GURL(StringPrintf(
-              "%s/printing/fetch?printerid=%s",
-              kCloudPrintServerUrl, printer_id.c_str()));
+GURL CloudPrintHelpers::GetUrlForPrinterList(const GURL& cloud_print_server_url,
+                                             const std::string& proxy_id) {
+  std::string path(AppendPathToUrl(cloud_print_server_url, "list"));
+  GURL::Replacements replacements;
+  replacements.SetPathStr(path);
+  std::string query = StringPrintf("proxy=%s", proxy_id.c_str());
+  replacements.SetQueryStr(query);
+  return cloud_print_server_url.ReplaceComponents(replacements);
+}
+
+GURL CloudPrintHelpers::GetUrlForJobFetch(const GURL& cloud_print_server_url,
+                                          const std::string& printer_id) {
+  std::string path(AppendPathToUrl(cloud_print_server_url, "fetch"));
+  GURL::Replacements replacements;
+  replacements.SetPathStr(path);
+  std::string query = StringPrintf("printerid=%s", printer_id.c_str());
+  replacements.SetQueryStr(query);
+  return cloud_print_server_url.ReplaceComponents(replacements);
 }
 
 GURL CloudPrintHelpers::GetUrlForJobStatusUpdate(
-    const std::string& job_id, cloud_print::PrintJobStatus status) {
+    const GURL& cloud_print_server_url, const std::string& job_id,
+    cloud_print::PrintJobStatus status) {
   std::string status_string = StringFromJobStatus(status);
-  return GURL(StringPrintf(
-              "%s/printing/control?jobid=%s&status=%s",
-              kCloudPrintServerUrl, job_id.c_str(), status_string.c_str()));
+  std::string path(AppendPathToUrl(cloud_print_server_url, "control"));
+  GURL::Replacements replacements;
+  replacements.SetPathStr(path);
+  std::string query = StringPrintf("jobid=%s&status=%s",
+                                   job_id.c_str(), status_string.c_str());
+  replacements.SetQueryStr(query);
+  return cloud_print_server_url.ReplaceComponents(replacements);
 }
 
 GURL CloudPrintHelpers::GetUrlForJobStatusUpdate(
-    const std::string& job_id, const cloud_print::PrintJobDetails& details) {
+    const GURL& cloud_print_server_url, const std::string& job_id,
+    const cloud_print::PrintJobDetails& details) {
   std::string status_string = StringFromJobStatus(details.status);
-  return GURL(StringPrintf(
-              "%s/printing/control?jobid=%s&status=%s&code=%d&message=%s"
-              "&numpages=%d&pagesprinted=%d",
-              kCloudPrintServerUrl, job_id.c_str(), status_string.c_str(),
-              details.platform_status_flags, details.status_message.c_str(),
-              details.total_pages, details.pages_printed));
+  std::string path(AppendPathToUrl(cloud_print_server_url, "control"));
+  GURL::Replacements replacements;
+  replacements.SetPathStr(path);
+  std::string query =
+      StringPrintf("jobid=%s&status=%s&code=%d&message=%s"
+                   "&numpages=%d&pagesprinted=%d",
+                   job_id.c_str(),
+                   status_string.c_str(),
+                   details.platform_status_flags,
+                   details.status_message.c_str(),
+                   details.total_pages,
+                   details.pages_printed);
+  replacements.SetQueryStr(query);
+  return cloud_print_server_url.ReplaceComponents(replacements);
 }
 
 bool CloudPrintHelpers::ParseResponseJSON(

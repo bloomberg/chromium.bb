@@ -16,9 +16,11 @@ JobStatusUpdater::JobStatusUpdater(const std::string& printer_name,
                                    const std::string& job_id,
                                    cloud_print::PlatformJobId& local_job_id,
                                    const std::string& auth_token,
+                                   const GURL& cloud_print_server_url,
                                    Delegate* delegate)
     : printer_name_(printer_name), job_id_(job_id),
       local_job_id_(local_job_id), auth_token_(auth_token),
+      cloud_print_server_url_(cloud_print_server_url),
       delegate_(delegate), stopped_(false) {
   DCHECK(delegate_);
 }
@@ -53,7 +55,7 @@ void JobStatusUpdater::UpdateStatus() {
     }
     if (need_update) {
       GURL update_url = CloudPrintHelpers::GetUrlForJobStatusUpdate(
-          job_id_, last_job_details_);
+          cloud_print_server_url_, job_id_, last_job_details_);
       request_.reset(new URLFetcher(update_url, URLFetcher::GET, this));
       CloudPrintHelpers::PrepCloudPrintRequest(request_.get(), auth_token_);
       request_->Start();

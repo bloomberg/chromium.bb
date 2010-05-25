@@ -17,15 +17,21 @@ class URLFetcher;
 // Helper methods for the cloud print proxy code.
 class CloudPrintHelpers {
  public:
-  static GURL GetUrlForPrinterRegistration();
-  static GURL GetUrlForPrinterUpdate(const std::string& printer_id);
-  static GURL GetUrlForPrinterDelete(const std::string& printer_id);
-  static GURL GetUrlForPrinterList(const std::string& proxy_id);
-  static GURL GetUrlForJobFetch(const std::string& printer_id);
-  static GURL GetUrlForJobStatusUpdate(const std::string& job_id,
+  static GURL GetUrlForPrinterRegistration(const GURL& cloud_print_server_url);
+  static GURL GetUrlForPrinterUpdate(const GURL& cloud_print_server_url,
+                                     const std::string& printer_id);
+  static GURL GetUrlForPrinterDelete(const GURL& cloud_print_server_url,
+                                     const std::string& printer_id);
+  static GURL GetUrlForPrinterList(const GURL& cloud_print_server_url,
+                                   const std::string& proxy_id);
+  static GURL GetUrlForJobFetch(const GURL& cloud_print_server_url,
+                                const std::string& printer_id);
+  static GURL GetUrlForJobStatusUpdate(const GURL& cloud_print_server_url,
+                                       const std::string& job_id,
                                        cloud_print::PrintJobStatus status);
   static GURL GetUrlForJobStatusUpdate(
-      const std::string& job_id, const cloud_print::PrintJobDetails& details);
+      const GURL& cloud_print_server_url, const std::string& job_id,
+      const cloud_print::PrintJobDetails& details);
   // Parses the response data for any cloud print server request. The method
   // returns false if there was an error in parsing the JSON. The succeeded
   // value returns the value of the "success" value in the response JSON.
