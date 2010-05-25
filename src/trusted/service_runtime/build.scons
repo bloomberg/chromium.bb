@@ -166,6 +166,14 @@ elif env.Bit('linux'):
       'linux/arm/sel_segments.c',
     ]
 
+# TODO(mseaborn): Extend nacl_signal.c to cover other cases.
+if (env.Bit('linux') and
+    env['BUILD_ARCHITECTURE'] == 'x86' and
+    env['BUILD_SUBARCH'] == '32'):
+  ldr_inputs += ['linux/x86_32/nacl_signal.c']
+else:
+  ldr_inputs += ['generic/nacl_signal.c']
+
 # ----------------------------------------------------------
 # SDL hacks
 # NOTE: there are some more sdl hacks in native_client//SConstruct

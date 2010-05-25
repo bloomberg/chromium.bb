@@ -1,0 +1,33 @@
+# -*- python -*-
+# Copyright 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+
+Import('env')
+
+trusted_env = env.get('TRUSTED_ENV')
+if not (trusted_env.Bit('linux') and
+        env['BUILD_ARCHITECTURE'] == 'x86' and
+        env['BUILD_SUBARCH'] == '32'):
+  Return()
+
+env.ComponentProgram('crash_test.nexe', 'crash_test.c')
+
+nodes = []
+
+# Test that crashes in untrusted code are recognised as such.
+nodes.append(env.CommandSelLdrTestNacl(
+        'sig.out', command=[env.File('crash_test.nexe')],
+        stderr_golden=env.File('untrusted-fault.stderr'),
+        exit_status='segfault'))
+
+# Test that crashes in trusted code are recognised as such.
+crash_env = env.Clone()
+crash_env['ENV']['NACL_CRASH_TEST'] = '1'
+nodes.append(crash_env.CommandSelLdrTestNacl(
+        'sig2.out', command=[env.File('crash_test.nexe')],
+        stderr_golden=env.File('trusted-fault.stderr'),
+        exit_status='segfault'))
+
+env.AddNodeToTestSuite(nodes, ['small_tests'], 'run_signal_handler_test')

@@ -13,6 +13,7 @@
 
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/trusted/service_runtime/nacl_bottom_half.h"
+#include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 
 
@@ -127,6 +128,9 @@ struct NaClAppThread {
    * user's sp translated to system address, used for accessing syscall
    * arguments
    */
+
+  /* Stack for signal handling, registered with sigaltstack(). */
+  void                      *signal_stack;
 };
 
 int NaClAppThreadCtor(struct NaClAppThread  *natp,

@@ -13,6 +13,7 @@
 #include "native_client/src/trusted/nacl_breakpad/nacl_breakpad.h"
 #include "native_client/src/trusted/service_runtime/nacl_audio_video.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
+#include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
 #include "native_client/src/trusted/service_runtime/nacl_thread_nice.h"
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
@@ -36,10 +37,12 @@ void  NaClAllModulesInit(void) {
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
   NaClHandlePassLdrInit();
 #endif
+  NaClSignalHandlerInit();
 }
 
 
 void NaClAllModulesFini(void) {
+  NaClSignalHandlerFini();
 #if defined(HAVE_SDL)
   NaClMultimediaModuleFini();
 #endif

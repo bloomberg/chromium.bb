@@ -20,14 +20,15 @@
 
 
 void WINAPI NaClThreadLauncher(void *state) {
-  struct NaClAppThread  *natp;
+  struct NaClAppThread *natp = (struct NaClAppThread *) state;
+  NaClLog(4, "NaClThreadLauncher: entered\n");
 
 #ifdef NACL_BREAKPAD
   NaClBreakpadInit();
 #endif
 
-  NaClLog(4, "NaClThreadLauncher: entered\n");
-  natp = (struct NaClAppThread *) state;
+  NaClSignalStackRegister(natp->signal_stack);
+
   NaClLog(4, "      natp = 0x%016"NACL_PRIxPTR"\n", (uintptr_t) natp);
   NaClLog(4, " prog_ctr  = 0x%016"NACL_PRIxNACL_REG"\n", natp->user.prog_ctr);
   NaClLog(4, "stack_ptr  = 0x%016"NACL_PRIxPTR"\n",
@@ -77,6 +78,7 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
   NaClThreadContextCtor(&natp->user, nap, usr_entry, usr_stack_ptr, tls_idx);
 
   effp = NULL;
+  natp->signal_stack = NULL;
 
   if (!NaClMutexCtor(&natp->mu)) {
     return 0;
@@ -105,6 +107,10 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
   natp->effp = (struct NaClDescEffector *) effp;
   effp = NULL;
 
+  if (!NaClSignalStackAllocate(&natp->signal_stack)) {
+    goto cleanup_cv;
+  }
+
   natp->holding_sr_locks = 0;
   natp->state = NACL_APP_THREAD_ALIVE;
 
@@ -122,7 +128,7 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
                       (void *) natp,
                       NACL_KERN_STACK_SIZE);
   if (rv != 0) {
-    return rv;
+    return rv; /* Success */
   }
   NaClClosureResultDtor(&natp->result);
  cleanup_cv:
@@ -131,6 +137,10 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
   NaClMutexDtor(&natp->mu);
   free(effp);
   natp->effp = NULL;
+  if (NULL != natp->signal_stack) {
+    NaClSignalStackFree(&natp->signal_stack);
+    natp->signal_stack = NULL;
+  }
   return 0;
 }
 
@@ -140,6 +150,9 @@ void NaClAppThreadDtor(struct NaClAppThread *natp) {
    * the thread must not be still running, else this crashes the system
    */
   NaClThreadDtor(&natp->thread);
+  NaClSignalStackUnregister();
+  NaClSignalStackFree(natp->signal_stack);
+  natp->signal_stack = NULL;
   NaClClosureResultDtor(&natp->result);
   (*natp->effp->vtbl->Dtor)(natp->effp);
   free(natp->effp);

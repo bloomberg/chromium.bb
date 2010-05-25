@@ -168,6 +168,16 @@
                 }],
               ],
             }],
+            ['OS=="linux" and target_arch=="ia32"', {
+              'sources': [
+                'linux/x86_32/nacl_signal.c',
+              ],
+             }, {
+              'sources': [
+                'generic/nacl_signal.c',
+              ],
+             }
+            ],
           ],
         }],
       ],
