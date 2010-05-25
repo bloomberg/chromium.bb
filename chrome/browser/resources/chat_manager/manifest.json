@@ -15,17 +15,20 @@
     ],
     "run_at": "document_end",
     "all_frames": true
-  }, {
-    "js": [
-      "js/chatbridgeeventtypes.js",
-      "js/gmailbridgehook.js"
-    ],
-    "matches": [
-      "http://mail.google.com/*",
-      "https://mail.google.com/*"
-    ],
-    "run_at": "document_end"
-  }, {
+  },
+  // TODO(scherkus): enable this in the future.
+  //{
+  //  "js": [
+  //    "js/chatbridgeeventtypes.js",
+  //    "js/gmailbridgehook.js"
+  //  ],
+  //  "matches": [
+  //    "http://mail.google.com/*",
+  //    "https://mail.google.com/*"
+  //  ],
+  //  "run_at": "document_end"
+  //},
+  {
     "js": [
       "js/chatbridgeeventtypes.js",
       "js/centralrosterhook.js"
