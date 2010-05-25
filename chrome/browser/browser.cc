@@ -3618,6 +3618,12 @@ void Browser::OpenURLAtIndex(TabContents* source,
     delegate->OnUserGesture();
   }
 
+  if (current_tab && IsPinned(current_tab) &&
+      transition == PageTransition::AUTO_BOOKMARK &&
+      disposition == CURRENT_TAB) {
+    disposition = NEW_FOREGROUND_TAB;
+  }
+
   if (HandleCrossAppNavigation(current_tab, url, referrer, &disposition,
                                transition)) {
     // If the source tab was brand new, we can be left with an empty tab which
@@ -3855,4 +3861,13 @@ bool Browser::RunUnloadEventsHelper(TabContents* contents) {
     return true;
   }
   return false;
+}
+
+bool Browser::IsPinned(TabContents* source) {
+  int index = tabstrip_model_.GetIndexOfTabContents(source);
+  if (index == TabStripModel::kNoTab) {
+    NOTREACHED() << "IsPinned called for tab not in our strip";
+    return false;
+  }
+  return tabstrip_model_.IsTabPinned(index);
 }

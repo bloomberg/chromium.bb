@@ -624,6 +624,8 @@ class Browser : public TabStripModelDelegate,
     DETACH_TYPE_EMPTY
   };
 
+  bool IsPinned(TabContents* source);
+
   // Overridden from TabStripModelDelegate:
   virtual TabContents* AddBlankTab(bool foreground);
   virtual TabContents* AddBlankTabAt(int index, bool foreground);
