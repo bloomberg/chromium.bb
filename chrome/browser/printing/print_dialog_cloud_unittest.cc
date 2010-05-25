@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/values.h"
+#include "base/weak_ptr.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/notification_details.h"
@@ -16,6 +17,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -23,7 +25,10 @@
 using testing::A;
 using testing::AtLeast;
 using testing::HasSubstr;
+using testing::IsNull;
+using testing::NotNull;
 using testing::Return;
+using testing::StrEq;
 using testing::_;
 
 static const char* const kPDFTestFile = "printing/cloud_print_unittest.pdf";
@@ -55,14 +60,20 @@ char* GetTestData() {
 
 namespace internal_cloud_print_helpers {
 
-class MockCloudPrintFlowHandler : public CloudPrintFlowHandler {
+class MockCloudPrintFlowHandler
+    : public CloudPrintFlowHandler,
+      public base::SupportsWeakPtr<MockCloudPrintFlowHandler> {
  public:
-  MOCK_METHOD0(RegisterMessages,
-               void());
+  explicit MockCloudPrintFlowHandler(const FilePath& path)
+      : CloudPrintFlowHandler(path) {};
+  MOCK_METHOD0(DestructorCalled, void());
+  MOCK_METHOD0(RegisterMessages, void());
   MOCK_METHOD3(Observe,
                void(NotificationType type,
                     const NotificationSource& source,
                     const NotificationDetails& details));
+  MOCK_METHOD1(SetDialogDelegate,
+               void(CloudPrintHtmlDialogDelegate* delegate));
   MOCK_METHOD0(CreateCloudPrintDataSender,
                scoped_refptr<CloudPrintDataSender>());
 };
@@ -222,6 +233,61 @@ TEST_F(CloudPrintDataSenderTest, EmptyFile) {
 
 // Testing for CloudPrintHtmlDialogDelegate needs a mock
 // CloudPrintFlowHandler.
+
+using internal_cloud_print_helpers::MockCloudPrintFlowHandler;
+using internal_cloud_print_helpers::CloudPrintHtmlDialogDelegate;
+
+class CloudPrintHtmlDialogDelegateTest : public testing::Test {
+ public:
+  CloudPrintHtmlDialogDelegateTest()
+      : ui_thread_(ChromeThread::UI, &message_loop_) {}
+
+ protected:
+  virtual void SetUp() {
+    FilePath mock_path;
+    MockCloudPrintFlowHandler* handler =
+        new MockCloudPrintFlowHandler(mock_path);
+    mock_flow_handler_ = handler->AsWeakPtr();
+    EXPECT_CALL(*mock_flow_handler_.get(), SetDialogDelegate(_));
+    EXPECT_CALL(*mock_flow_handler_.get(), SetDialogDelegate(NULL));
+    delegate_.reset(new CloudPrintHtmlDialogDelegate(
+        mock_flow_handler_.get(), 100, 100, std::string()));
+  }
+
+  virtual void TearDown() {
+    delegate_.reset();
+    if (mock_flow_handler_)
+      delete mock_flow_handler_.get();
+  }
+
+  MessageLoopForUI message_loop_;
+  ChromeThread ui_thread_;
+  base::WeakPtr<MockCloudPrintFlowHandler> mock_flow_handler_;
+  scoped_ptr<CloudPrintHtmlDialogDelegate> delegate_;
+};
+
+TEST_F(CloudPrintHtmlDialogDelegateTest, BasicChecks) {
+  EXPECT_TRUE(delegate_->IsDialogModal());
+  EXPECT_THAT(delegate_->GetDialogContentURL().spec(),
+              StrEq(chrome::kCloudPrintResourcesURL));
+  EXPECT_THAT(delegate_->GetDialogTitle(), HasSubstr(L"Print"));
+
+  bool close_dialog = false;
+  delegate_->OnCloseContents(NULL, &close_dialog);
+  EXPECT_TRUE(close_dialog);
+}
+
+TEST_F(CloudPrintHtmlDialogDelegateTest, OwnedFlowDestroyed) {
+  delegate_.reset();
+  EXPECT_THAT(mock_flow_handler_.get(), IsNull());
+}
+
+TEST_F(CloudPrintHtmlDialogDelegateTest, UnownedFlowLetGo) {
+  std::vector<DOMMessageHandler*> handlers;
+  delegate_->GetDOMMessageHandlers(&handlers);
+  delegate_.reset();
+  EXPECT_THAT(mock_flow_handler_.get(), NotNull());
+}
 
 // Testing for ExternalHtmlDialogUI needs a mock TabContents, mock
 // CloudPrintHtmlDialogDelegate (provided through the mock

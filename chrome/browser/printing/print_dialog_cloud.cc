@@ -415,7 +415,7 @@ CloudPrintHtmlDialogDelegate::CloudPrintHtmlDialogDelegate(
     int width, int height,
     const std::string& json_arguments)
     : flow_handler_(flow_handler),
-      owns_flow_handler_(false) {
+      owns_flow_handler_(true) {
   Init(width, height, json_arguments);
 }
 
@@ -475,6 +475,12 @@ std::string CloudPrintHtmlDialogDelegate::GetDialogArgs() const {
 void CloudPrintHtmlDialogDelegate::OnDialogClosed(
     const std::string& json_retval) {
   delete this;
+}
+
+void CloudPrintHtmlDialogDelegate::OnCloseContents(TabContents* source,
+                                                   bool* out_close_dialog) {
+  if (out_close_dialog)
+    *out_close_dialog = true;
 }
 
 }  // end of namespace internal_cloud_print_helpers

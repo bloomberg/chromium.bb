@@ -18,6 +18,7 @@
 
 class GURL;
 class StringValue;
+class CloudPrintHtmlDialogDelegateTest;
 
 namespace internal_cloud_print_helpers {
 
@@ -126,7 +127,7 @@ class CloudPrintFlowHandler : public DOMMessageHandler,
   // way to get the debugger going.
   void ShowDebugger();
 
-  void SetDialogDelegate(CloudPrintHtmlDialogDelegate *delegate);
+  virtual void SetDialogDelegate(CloudPrintHtmlDialogDelegate *delegate);
   void CancelAnyRunningTask();
 
  private:
@@ -150,7 +151,7 @@ class CloudPrintHtmlDialogDelegate : public HtmlDialogUIDelegate {
   CloudPrintHtmlDialogDelegate(const FilePath& path_to_pdf,
                                int width, int height,
                                const std::string& json_arguments);
-  ~CloudPrintHtmlDialogDelegate();
+  virtual ~CloudPrintHtmlDialogDelegate();
 
   // HTMLDialogUIDelegate implementation:
   virtual bool IsDialogModal() const;
@@ -161,9 +162,11 @@ class CloudPrintHtmlDialogDelegate : public HtmlDialogUIDelegate {
   virtual void GetDialogSize(gfx::Size* size) const;
   virtual std::string GetDialogArgs() const;
   virtual void OnDialogClosed(const std::string& json_retval);
-  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog) { }
+  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog);
 
  private:
+  friend class ::CloudPrintHtmlDialogDelegateTest;
+
   CloudPrintHtmlDialogDelegate(CloudPrintFlowHandler* flow_handler,
                                int width, int height,
                                const std::string& json_arguments);
