@@ -19,6 +19,35 @@ TEST(LanguageConfigViewTest, MaybeRewriteLanguageName) {
             LanguageConfigView::MaybeRewriteLanguageName(L"t"));
 }
 
+TEST(LanguageConfigViewTest, GetLanguageDisplayNameFromCode) {
+  EXPECT_EQ(L"French",
+            LanguageConfigView::GetLanguageDisplayNameFromCode("fr"));
+  // MaybeRewriteLanguageName() should be applied.
+  EXPECT_EQ(l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_OTHERS),
+            LanguageConfigView::GetLanguageDisplayNameFromCode("t"));
+}
+
+TEST(LanguageConfigViewTest, SortLanguageCodesByNames) {
+  std::vector<std::string> language_codes;
+  language_codes.push_back("ja");
+  language_codes.push_back("fr");
+  language_codes.push_back("t");
+  LanguageConfigView::SortLanguageCodesByNames(&language_codes);
+  ASSERT_EQ(3, static_cast<int>(language_codes.size()));
+  ASSERT_EQ("fr", language_codes[0]);  // French
+  ASSERT_EQ("ja", language_codes[1]);  // Japanese
+  ASSERT_EQ("t",  language_codes[2]);  // Others
+
+  // Add a duplicate entry and see if it works.
+  language_codes.push_back("ja");
+  LanguageConfigView::SortLanguageCodesByNames(&language_codes);
+  ASSERT_EQ(4, static_cast<int>(language_codes.size()));
+  ASSERT_EQ("fr", language_codes[0]);  // French
+  ASSERT_EQ("ja", language_codes[1]);  // Japanese
+  ASSERT_EQ("ja", language_codes[2]);  // Japanese
+  ASSERT_EQ("t",  language_codes[3]);  // Others
+}
+
 TEST(LanguageConfigViewTest, AddLanguageComboboxModel) {
   std::vector<std::string> language_codes;
   language_codes.push_back("de");

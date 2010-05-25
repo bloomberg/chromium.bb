@@ -5,10 +5,12 @@
 #include "chrome/browser/chromeos/options/language_config_view.h"
 
 #include <algorithm>
+#include <functional>
 #include <utility>
 #include <vector>
 
 #include "app/l10n_util.h"
+#include "app/l10n_util_collator.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -201,7 +203,8 @@ void LanguageConfigView::ButtonPressed(
     const std::string& input_method_id = radio_button->input_method_id();
     if (radio_button->checked()) {
       // Deactivate all input methods first, then activate one that checked.
-      DeactivateInputMethodsFor(GetLanguageCodeFromId(input_method_id));
+      DeactivateInputMethodsFor(GetLanguageCodeFromInputMethodId(
+          input_method_id));
       SetInputMethodActivated(input_method_id, true);
     }
   } else if (sender->tag() == kConfigureInputMethodButton) {
@@ -347,7 +350,7 @@ void LanguageConfigView::AddInputMethodSection(
   bool should_show_keyboard_layouts = true;
   for (size_t i = 0; i < input_method_ids.size(); ++i) {
     const std::string candidate_language_code =
-        GetLanguageCodeFromId(input_method_ids[i]);
+        GetLanguageCodeFromInputMethodId(input_method_ids[i]);
     if (language_code == candidate_language_code &&
         !LanguageLibrary::IsKeyboardLayout(input_method_ids[i])) {
       should_show_keyboard_layouts = false;
@@ -358,8 +361,9 @@ void LanguageConfigView::AddInputMethodSection(
   for (size_t i = 0; i < input_method_ids.size(); ++i) {
     const std::string& input_method_id = input_method_ids[i];
     const std::string candidate_language_code =
-        GetLanguageCodeFromId(input_method_id);
-    const std::string display_name = GetDisplayNameFromId(input_method_id);
+        GetLanguageCodeFromInputMethodId(input_method_id);
+    const std::string display_name = GetInputMethodDisplayNameFromId(
+        input_method_id);
     if (language_code == candidate_language_code) {
       if (LanguageLibrary::IsKeyboardLayout(input_method_id)
           && !should_show_keyboard_layouts) {
@@ -416,11 +420,7 @@ void LanguageConfigView::OnSelectionChanged() {
 
 std::wstring LanguageConfigView::GetText(int row, int column_id) {
   if (row >= 0 && row < static_cast<int>(preferred_language_codes_.size())) {
-    string16 language_name16 = l10n_util::GetDisplayNameForLocale(
-        preferred_language_codes_[row],
-        g_browser_process->GetApplicationLocale(),
-        true);
-    return MaybeRewriteLanguageName(UTF16ToWide(language_name16));
+    return GetLanguageDisplayNameFromCode(preferred_language_codes_[row]);
   }
   NOTREACHED();
   return L"";
@@ -636,7 +636,8 @@ void LanguageConfigView::OnAddLanguage(const std::string& language_code) {
   std::vector<std::string> input_method_ids;
   GetSupportedInputMethodIds(&input_method_ids);
   for (size_t i = 0; i < input_method_ids.size(); ++i) {
-    if (GetLanguageCodeFromId(input_method_ids[i]) == language_code) {
+    if (GetLanguageCodeFromInputMethodId(input_method_ids[i]) ==
+        language_code) {
       SetInputMethodActivated(input_method_ids[i], true);
       break;
     }
@@ -644,9 +645,26 @@ void LanguageConfigView::OnAddLanguage(const std::string& language_code) {
 
   // Append the language to the list of language codes.
   preferred_language_codes_.push_back(language_code);
-  // Update the language table accordingly.
-  preferred_language_table_->OnItemsAdded(RowCount() - 1, 1);
-  preferred_language_table_->SelectRow(RowCount() - 1);
+  // Sort the language codes by names. This is not efficient, but
+  // acceptable as the language list is about 40 item long at most.  In
+  // theory, we could find the position to insert rather than sorting, but
+  // it would be complex as we need to use unicode string comparator.
+  SortLanguageCodesByNames(&preferred_language_codes_);
+  // Find the language code just added in the sorted language codes.
+  const int added_at =
+      std::distance(preferred_language_codes_.begin(),
+                    std::find(preferred_language_codes_.begin(),
+                              preferred_language_codes_.end(),
+                              language_code));
+  // Notify the table that the new row added at |added_at|.
+  preferred_language_table_->OnItemsAdded(added_at, 1);
+  // For some reason, OnItemsAdded() alone does not redraw the table. Need
+  // to tell the table that items are changed. TODO(satorux): Investigate
+  // if it's a bug in TableView2.
+  preferred_language_table_->OnItemsChanged(
+      0, preferred_language_codes_.size());
+  // Switch to the row added.
+  preferred_language_table_->SelectRow(added_at);
 
   // Mark the language to be ignored.
   add_language_combobox_model_->SetIgnored(language_code, true);
@@ -687,7 +705,8 @@ void LanguageConfigView::DeactivateInputMethodsFor(
   std::vector<std::string> input_method_ids;
   GetSupportedInputMethodIds(&input_method_ids);
   for (size_t i = 0; i < input_method_ids.size(); ++i) {
-    if (GetLanguageCodeFromId(input_method_ids[i]) == language_code) {
+    if (GetLanguageCodeFromInputMethodId(input_method_ids[i]) ==
+        language_code) {
       // What happens if we disable the input method currently active?
       // IBus should take care of it, so we don't do anything special
       // here. See crosbug.com/2443.
@@ -792,7 +811,7 @@ void LanguageConfigView::GetSupportedLanguageCodes(
       language_code_set.begin(), language_code_set.end());
 }
 
-std::string LanguageConfigView::GetLanguageCodeFromId(
+std::string LanguageConfigView::GetLanguageCodeFromInputMethodId(
     const std::string& input_method_id) const {
   std::map<std::string, std::string>::const_iterator iter
       = id_to_language_code_map_.find(input_method_id);
@@ -802,10 +821,10 @@ std::string LanguageConfigView::GetLanguageCodeFromId(
       kDefaultLanguageCode : iter->second;
 }
 
-std::string LanguageConfigView::GetDisplayNameFromId(
+std::string LanguageConfigView::GetInputMethodDisplayNameFromId(
     const std::string& input_method_id) const {
   // |kDefaultDisplayName| is not for Chrome OS. See the comment above.
-  static const char kDefaultDisplayName[] = "English";
+  static const char kDefaultDisplayName[] = "USA";
   std::map<std::string, std::string>::const_iterator iter
       = id_to_display_name_map_.find(input_method_id);
   return (iter == id_to_display_name_map_.end()) ?
@@ -819,13 +838,14 @@ void LanguageConfigView::NotifyPrefChanged() {
   std::set<std::string> language_code_set;
   for (size_t i = 0; i < input_method_ids.size(); ++i) {
     const std::string language_code =
-        GetLanguageCodeFromId(input_method_ids[i]);
+        GetLanguageCodeFromInputMethodId(input_method_ids[i]);
     language_code_set.insert(language_code);
   }
 
   preferred_language_codes_.clear();
   preferred_language_codes_.assign(
       language_code_set.begin(), language_code_set.end());
+  SortLanguageCodesByNames(&preferred_language_codes_);
 }
 
 std::wstring LanguageConfigView::MaybeRewriteLanguageName(
@@ -837,6 +857,52 @@ std::wstring LanguageConfigView::MaybeRewriteLanguageName(
         IDS_OPTIONS_SETTINGS_LANGUAGES_OTHERS);
   }
   return language_name;
+}
+
+std::wstring LanguageConfigView::GetLanguageDisplayNameFromCode(
+    const std::string& language_code) {
+  return MaybeRewriteLanguageName(UTF16ToWide(
+      l10n_util::GetDisplayNameForLocale(
+          language_code, g_browser_process->GetApplicationLocale(),
+          true)));
+}
+
+namespace {
+// The comparator is used for sorting language codes by their
+// corresponding language names, using the ICU collator.
+struct CompareByLanguageName : std::binary_function<const std::string&,
+                                                    const std::string&,
+                                                    bool> {
+  CompareByLanguageName(icu::Collator* collator)
+      : collator_(collator) {
+  }
+
+  // Calling GetLanguageDisplayNameFromCode() in the comparator is not
+  // efficient, but acceptable as the function is cheap, and the language
+  // list is short (about 40 at most).
+  bool operator()(const std::string& s1, const std::string& s2) const {
+    const std::wstring key1 =
+            LanguageConfigView::GetLanguageDisplayNameFromCode(s1);
+    const std::wstring key2 =
+            LanguageConfigView::GetLanguageDisplayNameFromCode(s2);
+    return l10n_util::StringComparator<std::wstring>(collator_)(key1, key2);
+  }
+  icu::Collator* collator_;
+};
+}  // namespace
+
+void LanguageConfigView::SortLanguageCodesByNames(
+    std::vector<std::string>* language_codes) {
+  // We should build collator outside of the comparator. We cannot have
+  // scoped_ptr<> in the comparator for a subtle STL reason.
+  UErrorCode error = U_ZERO_ERROR;
+  icu::Locale locale(g_browser_process->GetApplicationLocale().c_str());
+  scoped_ptr<icu::Collator> collator(
+      icu::Collator::createInstance(locale, error));
+  if (U_FAILURE(error))
+    collator.reset();
+  std::sort(language_codes->begin(), language_codes->end(),
+            CompareByLanguageName(collator.get()));
 }
 
 }  // namespace chromeos

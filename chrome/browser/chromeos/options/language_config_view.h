@@ -130,6 +130,19 @@ class LanguageConfigView : public TableModel,
   static std::wstring MaybeRewriteLanguageName(
       const std::wstring& language_name);
 
+  // Converts a language code to a language display name, using the
+  // current application locale. MaybeRewriteLanguageName() is called
+  // internally.
+  // Examples: "fr"    => "French"
+  //           "en-US" => "English (United States)"
+  static std::wstring GetLanguageDisplayNameFromCode(
+      const std::string& language_code);
+
+  // Sorts the given language codes by their corresponding language names,
+  // using the unicode string comparator.
+  static void SortLanguageCodesByNames(
+      std::vector<std::string>* language_codes);
+
   // Shows the language config dialog in a new window.
   static void Show(Profile* profile, gfx::NativeWindow parent);
 
@@ -185,13 +198,15 @@ class LanguageConfigView : public TableModel,
   // Converts an input method ID to a language code of the IME. Returns "Eng"
   // when |input_method_id| is unknown.
   // Example: "hangul" => "ko"
-  std::string GetLanguageCodeFromId(const std::string& input_method_id) const;
+  std::string GetLanguageCodeFromInputMethodId(
+      const std::string& input_method_id) const;
 
-  // Converts an input method ID to a display name of the IME. Returns "English"
-  // when |input_method_id| is unknown.
+  // Converts an input method ID to a display name of the IME. Returns
+  // "USA" (US keyboard) when |input_method_id| is unknown.
   // Examples: "pinyin" => "Pinyin"
   //           "m17n:ar:kbd" => "kbd (m17n)"
-  std::string GetDisplayNameFromId(const std::string& input_method_id) const;
+  std::string GetInputMethodDisplayNameFromId(
+      const std::string& input_method_id) const;
 
   // Callback for |preload_engines_| pref updates. Initializes the preferred
   // language codes based on the updated pref value.
