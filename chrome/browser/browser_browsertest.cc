@@ -649,7 +649,7 @@ class BrowserAppRefocusTest : public ExtensionBrowserTest {
   GURL url_;
 };
 
-#if defined(OS_WIN) or defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_LINUX)
 
 #define MAYBE_OpenPanel OpenPanel
 #define MAYBE_OpenWindow OpenWindow
