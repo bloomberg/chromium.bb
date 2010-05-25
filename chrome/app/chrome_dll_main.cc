@@ -152,12 +152,12 @@ void PureCall() {
   __debugbreak();
 }
 
-#pragma warning( push )
+#pragma warning(push)
 // Disables warning 4748 which is: "/GS can not protect parameters and local
 // variables from local buffer overrun because optimizations are disabled in
 // function."  GetStats() will not overflow the passed-in buffer and this
 // function never returns.
-#pragma warning( disable : 4748 )
+#pragma warning(disable : 4748)
 void OnNoMemory() {
 #if defined(USE_TCMALLOC)
   // Try to get some information on the stack to make the crash easier to
@@ -172,7 +172,7 @@ void OnNoMemory() {
   // address 0 for an attacker to utilize.
   __debugbreak();
 }
-#pragma warning( pop )
+#pragma warning(pop)
 
 // Handlers to silently dump the current process when there is an assert in
 // chrome.
@@ -478,15 +478,15 @@ int ChromeMain(int argc, char** argv) {
   std::string process_type =
       parsed_command_line.GetSwitchValueASCII(switches::kProcessType);
 
+#if defined(OS_MACOSX)
+  mac_util::SetOverrideAppBundlePath(chrome::GetFrameworkBundlePath());
+#endif  // OS_MACOSX
+
   // If we are in diagnostics mode this is the end of the line. After the
   // diagnostics are run the process will invariably exit.
   if (parsed_command_line.HasSwitch(switches::kDiagnostics)) {
     return DiagnosticsMain(parsed_command_line);
   }
-
-#if defined(OS_MACOSX)
-  mac_util::SetOverrideAppBundlePath(chrome::GetFrameworkBundlePath());
-#endif  // OS_MACOSX
 
 #if defined(OS_WIN)
   // Must do this before any other usage of command line!
