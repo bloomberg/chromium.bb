@@ -7,10 +7,9 @@
     <script language=javascript>
       function onLoad() {
         if (isRunningInChrome()) {
-          if (/unload_success/.test(document.cookie)) {
+          if (window.localStorage.unload_success == 1) {
             window.externalHost.postMessage("Unload success");
           }
-          eraseCookie("unload_success");
         }
       }
     </script>

@@ -8,8 +8,8 @@
     <script type="text/javascript">
       var new_window;
       function ValidateUserAgent() {
-        eraseCookie("unload_success");
         if (isRunningInChrome()) {
+          window.localStorage.unload_success = 0;
           new_window = window.open("fulltab_before_unload_event_main.html",
                                    "_self");
         }
@@ -17,7 +17,7 @@
 
       function onBeforeUnload() {
         if (isRunningInChrome()) {
-          createCookie("unload_success", 1, 1);
+          new_window.localStorage.unload_success = 1;
         }
       }
     </script>
