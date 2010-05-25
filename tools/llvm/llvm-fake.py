@@ -353,10 +353,11 @@ def FindObjectFilePos(argv):
   pos = 1 + argv.index('-o')
   assert pos < len(argv)
 
-  if not argv[pos].endswith('.o') and not argv[pos].endswith('.bc'):
-    return None
+  if argv[pos].endswith('.o') or argv[pos].endswith('.bc'):
+    return pos
 
-  return pos
+  return None
+
 
 
 def FindAssemblerFilePos(argv):
@@ -379,7 +380,7 @@ def FindLinkPos(argv):
   pos = 1 + argv.index('-o')
   assert pos < len(argv)
 
-  if argv[pos].endswith('.o'):
+  if argv[pos].endswith('.o') or argv[pos].endswith('.bc'):
     return None
 
   return pos
@@ -450,7 +451,7 @@ def Compile(argv, llvm_binary, mode):
   argv[0] = llvm_binary
 
   if FindLinkPos(argv):
-    # NOTE: this happens when using the toolchain builer scripts
+    # NOTE: this happens when using the toolchain builder scripts
     LogInfo('found .o -> exe compilation')
     Run(argv)
 
@@ -461,7 +462,7 @@ def Compile(argv, llvm_binary, mode):
       #LogWarning('diagnostic mode:' + StringifyCommand(argv))
       Run(argv)
     else:
-      LogFatal('weird invocation ' + StringifyCommand(argv))
+      LogFatal('weird invocation without .o:' + StringifyCommand(argv))
     return
 
   # TODO(robertm): remove support for .S files
