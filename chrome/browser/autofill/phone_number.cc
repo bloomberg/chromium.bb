@@ -228,21 +228,21 @@ bool PhoneNumber::FindInfoMatchesHelper(const FieldTypeSubGroup& subgroup,
 }
 
 bool PhoneNumber::IsNumber(const string16& text) const {
-  if (text.length() <= number_.length())
+  if (text.length() > number_.length())
     return false;
 
   return StartsWith(number_, text, false);
 }
 
 bool PhoneNumber::IsCityCode(const string16& text) const {
-  if (text.length() <= city_code_.length())
+  if (text.length() > city_code_.length())
     return false;
 
   return StartsWith(city_code_, text, false);
 }
 
 bool PhoneNumber::IsCountryCode(const string16& text) const {
-  if (text.length() <= country_code_.length())
+  if (text.length() > country_code_.length())
     return false;
 
   return StartsWith(country_code_, text, false);

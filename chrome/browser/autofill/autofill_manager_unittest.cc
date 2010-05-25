@@ -33,6 +33,15 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   virtual void InitializeIfNeeded() {}
 
+  AutoFillProfile* GetLabeledProfile(const char* label) {
+    for (std::vector<AutoFillProfile *>::iterator it = web_profiles_.begin();
+         it != web_profiles_.end(); ++it) {
+       if (!(*it)->Label().compare(ASCIIToUTF16(label)))
+         return *it;
+    }
+    return NULL;
+  }
+
  private:
   void CreateTestAutoFillProfiles(ScopedVector<AutoFillProfile>* profiles) {
     AutoFillProfile* profile = new AutoFillProfile;
@@ -82,6 +91,10 @@ class TestAutoFillManager : public AutoFillManager {
   }
 
   virtual bool IsAutoFillEnabled() const { return true; }
+
+  AutoFillProfile* GetLabeledProfile(const char* label) {
+    return test_personal_data_.GetLabeledProfile(label);
+  }
 
  private:
   TestPersonalDataManager test_personal_data_;
@@ -449,6 +462,71 @@ TEST_F(AutoFillManagerTest, FillCreditCardForm) {
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[13]));
   CreateTestFormField("", "ccyear", "2012", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[14]));
+}
+
+TEST_F(AutoFillManagerTest, FillPhoneNumberTest) {
+  FormData form;
+
+  form.name = ASCIIToUTF16("MyPhoneForm");
+  form.method = ASCIIToUTF16("POST");
+  form.origin = GURL("http://myform.com/phone_form.html");
+  form.action = GURL("http://myform.com/phone_submit.html");
+
+  webkit_glue::FormField field;
+
+  CreateTestFormField("country code", "country code", "", "text", &field);
+  field.set_size(1);
+  form.fields.push_back(field);
+  CreateTestFormField("area code", "area code", "", "text", &field);
+  field.set_size(3);
+  form.fields.push_back(field);
+  CreateTestFormField("phone", "phone prefix", "1", "text", &field);
+  field.set_size(3);
+  form.fields.push_back(field);
+  CreateTestFormField("-", "phone suffix", "", "text", &field);
+  field.set_size(4);
+  form.fields.push_back(field);
+  CreateTestFormField("Phone Extension", "ext", "", "text", &field);
+  field.set_size(3);
+  form.fields.push_back(field);
+
+  // Set up our FormStructures.
+  std::vector<FormData> forms;
+  forms.push_back(form);
+  autofill_manager_->FormsSeen(forms);
+
+  AutoFillProfile *work_profile = autofill_manager_->GetLabeledProfile("Work");
+  EXPECT_TRUE(work_profile != NULL);
+  const AutoFillType phone_type(PHONE_HOME_NUMBER);
+  string16 saved_phone = work_profile->GetFieldText(phone_type);
+
+  char test_data[] = "1234567890123456";
+  for (int i = arraysize(test_data) - 1; i >= 0; --i) {
+    test_data[i] = 0;
+    work_profile->SetInfo(phone_type, ASCIIToUTF16(test_data));
+    // The page ID sent to the AutoFillManager from the RenderView, used to send
+    // an IPC message back to the renderer.
+    int page_id = 100 - i;
+    process()->sink().ClearMessages();
+    EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(page_id,
+         form,
+         ASCIIToUTF16(test_data),
+         ASCIIToUTF16("Work")));
+    page_id = 0;
+    FormData results;
+    EXPECT_TRUE(GetAutoFillFormDataFilledMessage(&page_id, &results));
+
+    if (i != 7) {
+      EXPECT_EQ(ASCIIToUTF16(test_data), results.fields[2].value());
+      EXPECT_EQ(ASCIIToUTF16(test_data), results.fields[3].value());
+    } else {
+      // The only size that is parsed and split, right now is 7:
+      EXPECT_EQ(ASCIIToUTF16("123"), results.fields[2].value());
+      EXPECT_EQ(ASCIIToUTF16("4567"), results.fields[3].value());
+    }
+  }
+
+  work_profile->SetInfo(phone_type, saved_phone);
 }
 
 TEST_F(AutoFillManagerTest, FillCreditCardFormWithBilling) {

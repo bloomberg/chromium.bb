@@ -39,6 +39,9 @@ class PhoneNumber : public FormGroup {
   explicit PhoneNumber(const PhoneNumber& phone_number);
 
  private:
+  // For test.
+  friend class PhoneNumberTest;
+
   void operator=(const PhoneNumber& phone_number);
 
   const string16& country_code() const { return country_code_; }
