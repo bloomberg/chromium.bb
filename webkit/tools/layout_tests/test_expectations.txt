@@ -9,5 +9,3 @@
 // r46500 (and wk 58765) seems to have caused a perf regression
 BUG43276 : fast/notifications/notifications-replace.html = FAIL
 BUG43276 : fast/notifications/notifications-rtl.html = FAIL
-
-BUG44969 DEBUG : fast/js/console-non-string-values.html = CRASH
