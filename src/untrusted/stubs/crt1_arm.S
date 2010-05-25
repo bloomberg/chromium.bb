@@ -88,11 +88,11 @@ _start:
     /* TODO(robertm): We should be doing this in sel_ldr. */
     ldr r0, [sp] /* get argc */
     add r1, sp, #4 /* get argv */
-    bic r2, sp, #7 /* aligned stack value in r2 */
-    teq r2, sp  /* update sp until sp == r2*/
+    add r2, r1, r0, lsl #2 /* get envp */
+    add r2, r2, #4
 
-    pushne {r1}
-    teq r2, sp
+    bic r3, sp, #7 /* aligned stack value in r3 */
+    teq r3, sp  /* update sp if sp != r3, this will make it 8 aligned  */
     pushne {r1}
     bl main
 
