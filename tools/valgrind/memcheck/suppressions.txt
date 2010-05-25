@@ -3020,9 +3020,53 @@
    fun:main
 }
 {
-   bug_44975
+   bug_44966
    Memcheck:Addr4
    fun:event_del
    ...
    fun:_ZN61MessageLoopTest_FileDescriptorWatcherOutlivesMessageLoop_Test8TestBodyEv
+}
+{
+   bug_44979
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z11NewCallbackIN7history8TopSitesEiSt6vectorINS0_14MostVisitedURLESaIS3_EEEPN9Callback2IT0_T1_E4TypeEPT_MSC_FvS7_S8_E
+   fun:_ZN7history8TopSites24StartQueryForMostVisitedEv
+   fun:_ZN7history30TopSitesTest_ReadDatabase_Test8TestBodyEv
+   fun:_ZN7testing4Test3RunEv
+   fun:_ZN7testing8internal12TestInfoImpl3RunEv
+   fun:_ZN7testing8TestCase3RunEv
+   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
+   fun:_ZN7testing8UnitTest3RunEv
+   fun:_ZN9TestSuite3RunEv
+   fun:main
+}
+{
+   bug_44979
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7history8TopSites16SetPageThumbnailERK4GURLRK8SkBitmapRK14ThumbnailScore
+   fun:_ZN7history34TopSitesTest_SetPageThumbnail_Test8TestBodyEv
+   fun:_ZN7testing4Test3RunEv
+   fun:_ZN7testing8internal12TestInfoImpl3RunEv
+   fun:_ZN7testing8TestCase3RunEv
+   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
+   fun:_ZN7testing8UnitTest3RunEv
+   fun:_ZN9TestSuite3RunEv
+   fun:main
+}
+{
+   bug_44979
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNK7history24MockTopSitesDatabaseImpl16GetPageThumbnailERKNS_14MostVisitedURLEPNS_8TopSites6ImagesE
+   fun:_ZN7history8TopSites12ReadDatabaseEv
+   fun:_ZN7history30TopSitesTest_ReadDatabase_Test8TestBodyEv
+   fun:_ZN7testing4Test3RunEv
+   fun:_ZN7testing8internal12TestInfoImpl3RunEv
+   fun:_ZN7testing8TestCase3RunEv
+   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
+   fun:_ZN7testing8UnitTest3RunEv
+   fun:_ZN9TestSuite3RunEv
+   fun:main
 }
