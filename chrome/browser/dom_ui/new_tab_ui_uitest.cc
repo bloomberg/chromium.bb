@@ -51,6 +51,10 @@ TEST_F(NewTabUITest, NTPHasThumbnails) {
       action_max_timeout_ms()));
 }
 
+// Fails about 5% of the time on XP. http://crbug.com/45001
+#if defined(OS_WIN)
+#define ChromeInternalLoadsNTP FLAKY_ChromeInternalLoadsNTP
+#endif
 TEST_F(NewTabUITest, ChromeInternalLoadsNTP) {
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(window.get());
