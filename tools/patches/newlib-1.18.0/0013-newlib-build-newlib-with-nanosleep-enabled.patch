@@ -1,0 +1,24 @@
+From 0094f64e8baa088b7c68f26aa011af810c24a56a Mon Sep 17 00:00:00 2001
+From: Egor Pasko <pasko@google.com>
+Date: Tue, 25 May 2010 11:53:13 +0200
+Subject: [PATCH 13/13] [newlib] build newlib with nanosleep enabled
+
+---
+ newlib/newlib/configure.host |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/newlib/newlib/configure.host b/newlib/newlib/configure.host
+index 791bbdf..0829489 100644
+--- a/newlib/newlib/configure.host
++++ b/newlib/newlib/configure.host
+@@ -351,6 +351,7 @@ case "${host}" in
+ 	stdio64_dir=stdio64
+ 	;;
+   *-*-nacl*)
++	newlib_cflags="${newlib_cflags} -DHAVE_NANOSLEEP"
+ 	sys_dir=nacl
+ 	posix_dir=posix
+ 	;;
+-- 
+1.7.0.1
+
