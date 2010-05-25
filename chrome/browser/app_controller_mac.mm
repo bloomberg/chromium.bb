@@ -137,8 +137,6 @@ void RecordLastRunAppBundlePath() {
 
 @interface AppController(Private)
 - (void)initMenuState;
-- (void)handleQuitEvent:(NSAppleEventDescriptor*)event
-              withReply:(NSAppleEventDescriptor*)reply;
 - (void)openUrls:(const std::vector<GURL>&)urls;
 - (void)getUrl:(NSAppleEventDescriptor*)event
      withReply:(NSAppleEventDescriptor*)reply;
@@ -221,22 +219,7 @@ void RecordLastRunAppBundlePath() {
 // (NSApplicationDelegate protocol) This is the Apple-approved place to override
 // the default handlers.
 - (void)applicationWillFinishLaunching:(NSNotification*)notification {
-  NSAppleEventManager* em = [NSAppleEventManager sharedAppleEventManager];
-  [em setEventHandler:self
-          andSelector:@selector(handleQuitEvent:withReply:)
-        forEventClass:kCoreEventClass
-           andEventID:kAEQuitApplication];
-}
-
-// (NSApplicationDelegate protocol) Our mechanism for application termination
-// does not go through |-applicationShouldTerminate:|, so it should not be
-// called. In a release build, cancelling termination will prevent a crash (but
-// if things go really wrong, the user may have to force-terminate the
-// application).
-- (NSApplicationTerminateReply)applicationShouldTerminate:
-    (NSApplication*)sender {
-  NOTREACHED();
-  return NSTerminateCancel;
+  // Nothing here right now.
 }
 
 - (BOOL)tryToTerminateApplication:(NSApplication*)app {
@@ -858,13 +841,6 @@ void RecordLastRunAppBundlePath() {
     return *g_browser_process->profile_manager()->begin();
 
   return NULL;
-}
-
-// (Private) Never call |-applicationShouldTerminate:|; just make everything go
-// through |-terminate:|.
-- (void)handleQuitEvent:(NSAppleEventDescriptor*)event
-              withReply:(NSAppleEventDescriptor*)reply {
-  [NSApp terminate:nil];
 }
 
 // Various methods to open URLs that we get in a native fashion. We use
