@@ -42,7 +42,7 @@ std::wstring GetSystemLanguage(const bool use_omaha_language) {
   }
   length = GetLocaleInfo(id, LOCALE_SISO639LANGNAME,
                          WriteInto(&language, length), length);
-  DCHECK(length == language.length() + 1);
+  DCHECK(length == static_cast<int>(language.length() + 1));
   StringToLowerASCII(&language);
 
   // Add the country if we need it.
@@ -51,7 +51,7 @@ std::wstring GetSystemLanguage(const bool use_omaha_language) {
   if (0 != length) {
     length = GetLocaleInfo(id, LOCALE_SISO3166CTRYNAME,
                            WriteInto(&country, length), length);
-    DCHECK(length == country.length() + 1);
+    DCHECK(length == static_cast<int>(country.length() + 1));
     StringToLowerASCII(&country);
     if (L"en" == language) {
       if (L"gb" == country) {
