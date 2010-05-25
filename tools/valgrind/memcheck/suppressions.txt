@@ -499,8 +499,6 @@
    fun:_PR_ImplicitInitialization
    ...
    fun:_ZN4base14EnsureNSPRInitEv
-   fun:ChromeMain
-   fun:main
 }
 {
    bug_33394_b
@@ -512,8 +510,6 @@
    fun:_PR_ImplicitInitialization
    ...
    fun:_ZN4base14EnsureNSPRInitEv
-   fun:ChromeMain
-   fun:main
 }
 {
    # Looks like a leak in gtk's code when loading the im context module.
@@ -690,13 +686,6 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN58ChromeThreadTest_NotReleasedIfTargetThreadNonExistent_Test8TestBodyEv
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
 }
 {
    # A callback object that may or may not be called on exit.
@@ -759,8 +748,6 @@
    Memcheck:Addr4
    fun:_Z33HandleRendererErrorTestParametersRK11CommandLine
    fun:_Z12RendererMainRK18MainFunctionParams
-   fun:ChromeMain
-   fun:main
 }
 {
    # The InvalidRead error in rc4_wordconv is intentional.
@@ -1158,8 +1145,6 @@
    fun:_ZN17ExtensionsService4InitEv
    fun:_ZN11ProfileImpl14InitExtensionsEv
    fun:_Z11BrowserMainRK18MainFunctionParams
-   fun:ChromeMain
-   fun:main
 }
 {
    bug_20113
@@ -1928,8 +1913,6 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_Z11BrowserMainRK18MainFunctionParams
-   fun:ChromeMain
-   fun:main
 }
 {
    bug_30346
@@ -2344,8 +2327,6 @@
   fun:_PR_ImplicitInitialization
   ...
   fun:_ZN4base14EnsureNSPRInitEv
-  fun:ChromeMain
-  fun:main
 }
 {
   bug_34554
@@ -2363,13 +2344,6 @@
   fun:_ZNK20URLRequestJobManager9CreateJobEP10URLRequest
   fun:_ZN10URLRequest5StartEv
   fun:_ZN49URLRequestTest_CancelTest_DuringCookiePolicy_Test8TestBodyEv
-  fun:_ZN7testing4Test3RunEv
-  fun:_ZN7testing8internal12TestInfoImpl3RunEv
-  fun:_ZN7testing8TestCase3RunEv
-  fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-  fun:_ZN7testing8UnitTest3RunEv
-  fun:_ZN9TestSuite3RunEv
-  fun:main
 }
 {
    bug_35182
@@ -2533,14 +2507,6 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN19UserScriptSlaveTest9SerializeERK10UserScript
-   ...
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
 }
 {
    bug_40877
@@ -2548,13 +2514,6 @@
    fun:_Znw*
    fun:_ZN25ActiveNotificationTracker20RegisterNotificationERKN6WebKit15WebNotificationE
    fun:_ZN53ActiveNotificationTrackerTest_TestLookupAndClear_Test8TestBodyEv
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
 }
 {
    bug_41177
@@ -2838,8 +2797,6 @@
    fun:_ZNSsC1EPKcRKSaIcE
    fun:_ZN17RenderProcessImplC1Ev
    fun:_Z12RendererMainRK18MainFunctionParams
-   fun:ChromeMain
-   fun:main
 }
 {
    bug_43471
@@ -2930,13 +2887,6 @@
    Memcheck:Leak
    ...
    fun:_ZN7history32TopSitesTest_*
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
 }
 {
    bug_44341
@@ -3011,13 +2961,6 @@
    fun:_ZN4base19MessagePumpLibevent21FileDescriptorWatcher26StopWatchingFileDescriptorEv
    fun:_ZN4base19MessagePumpLibevent21FileDescriptorWatcherD1Ev
    fun:_ZN61MessageLoopTest_FileDescriptorWatcherOutlivesMessageLoop_Test8TestBodyEv
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
 }
 {
    bug_44966
@@ -3033,13 +2976,6 @@
    fun:_Z11NewCallbackIN7history8TopSitesEiSt6vectorINS0_14MostVisitedURLESaIS3_EEEPN9Callback2IT0_T1_E4TypeEPT_MSC_FvS7_S8_E
    fun:_ZN7history8TopSites24StartQueryForMostVisitedEv
    fun:_ZN7history30TopSitesTest_ReadDatabase_Test8TestBodyEv
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
 }
 {
    bug_44979
@@ -3047,13 +2983,6 @@
    fun:_Znw*
    fun:_ZN7history8TopSites16SetPageThumbnailERK4GURLRK8SkBitmapRK14ThumbnailScore
    fun:_ZN7history34TopSitesTest_SetPageThumbnail_Test8TestBodyEv
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
 }
 {
    bug_44979
@@ -3062,11 +2991,4 @@
    fun:_ZNK7history24MockTopSitesDatabaseImpl16GetPageThumbnailERKNS_14MostVisitedURLEPNS_8TopSites6ImagesE
    fun:_ZN7history8TopSites12ReadDatabaseEv
    fun:_ZN7history30TopSitesTest_ReadDatabase_Test8TestBodyEv
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
 }
