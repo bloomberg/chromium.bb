@@ -3,6 +3,7 @@
 CookieMonsterTest.TestLastAccess
 SpdyNetwork*Error*
 SpdyNetwork*Get*
+SpdyNetworkTransactionTest.SynReplyHeadersVary
 X509CertificateTest.UnoSoftCertParsing
 URLRequestTest.DoNotSaveCookies
 URLRequestTest.QuitTest
