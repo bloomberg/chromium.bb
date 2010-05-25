@@ -131,7 +131,7 @@ def TerminateSignalHandler(sig, stack):
     if 'kill' in os.__all__:  # POSIX
       os.kill(pid, sig)
     else:
-      subprocess.call(['taskkill.exe', '/PID', pid])
+      subprocess.call(['taskkill.exe', '/PID', str(pid)])
   sys.exit(0)
 
 
@@ -188,20 +188,21 @@ class RunProgramThread(threading.Thread):
     Safe to call even if the process is dead.
     """
     if not self._process:
-      return self._retcode
+      return self.retcode()
     if 'kill' in os.__all__:  # POSIX
       os.kill(self._process.pid, signal.SIGKILL)
     else:
-      subprocess.call(['taskkill.exe', '/PID', self._process.pid])
-    self._retcode = self._process.wait()
-    return self._retcode
+      subprocess.call(['taskkill.exe', '/PID', str(self._process.pid)])
+    return self.retcode()
 
   def retcode(self):
     """Return the return value of the subprocess.
 
-    Kill it if needed.
+    Waits for process to die but does NOT kill it explicitly.
     """
-    return self.kill()
+    if self._retcode == None:  # must be none, not 0/False
+      self._retcode = self._process.wait()
+    return self._retcode
 
   def RunUntilCompletion(self, timeout):
     """Run thread until completion or timeout (in seconds).
