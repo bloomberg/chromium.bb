@@ -155,9 +155,17 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_EQ(orig_site_instance, noref_site_instance);
 }
 
+// Hangs flakily in Win, http://crbug.com/45040.
+#if defined(OS_WIN)
+#define MAYBE_ChromeURLAfterDownload DISABLED_ChromeURLAfterDownload
+#else
+#defne MAYBE_ChromeURLAfterDownload ChromeURLAfterDownload
+#endif  // defined(OS_WIN)
+
 // Test for crbug.com/14505. This tests that chrome:// urls are still functional
 // after download of a file while viewing another chrome://.
-IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, ChromeURLAfterDownload) {
+IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
+                       MAYBE_ChromeURLAfterDownload) {
   GURL downloads_url("chrome://downloads");
   GURL extensions_url("chrome://extensions");
   FilePath zip_download;
