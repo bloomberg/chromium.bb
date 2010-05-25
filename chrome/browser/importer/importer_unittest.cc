@@ -122,7 +122,7 @@ const int kMaxPathSize = 5;
 
 typedef struct {
   const bool in_toolbar;
-  const int path_size;
+  const size_t path_size;
   const wchar_t* path[kMaxPathSize];
   const wchar_t* title;
   const char* url;
@@ -184,7 +184,7 @@ bool FindBookmarkEntry(const ProfileWriter::BookmarkEntry& entry,
         list[i].url == entry.url.spec() &&
         list[i].title == entry.title) {
       bool equal = true;
-      for (int k = 0; k < list[i].path_size; ++k)
+      for (size_t k = 0; k < list[i].path_size; ++k)
         if (list[i].path[k] != entry.path[k]) {
           equal = false;
           break;

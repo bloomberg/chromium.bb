@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -183,7 +183,7 @@ bool SendKeyPressImpl(base::KeyboardCode key,
 
   INPUT input[8] = { 0 }; // 8, assuming all the modifiers are activated
 
-  int i = 0;
+  UINT i = 0;
   if (control) {
     if (!FillKeyboardInput(base::VKEY_CONTROL, &input[i], false))
       return false;
@@ -228,9 +228,7 @@ bool SendKeyPressImpl(base::KeyboardCode key,
     i++;
   }
 
-  unsigned int rv = ::SendInput(i, input, sizeof(INPUT));
-
-  if (rv != i)
+  if (::SendInput(i, input, sizeof(INPUT) != i))
     return false;
 
   if (dispatcher.get())

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,8 +83,8 @@ std::wstring SelectProfileDialog::GetWindowTitle() const {
 }
 
 bool SelectProfileDialog::Accept() {
-  int index = profile_combobox_->selected_item();
-  if (index < 0) {
+  size_t index = profile_combobox_->selected_item();
+  if (index > profiles_.size()) {
     NOTREACHED();
     return true;
   }
@@ -93,11 +93,10 @@ bool SelectProfileDialog::Accept() {
   // new profile dialog to the user.
   if (index == profiles_.size()) {
     NewProfileDialog::RunDialog();
-    return true;
+  } else {
+    std::wstring profile_name = profiles_[index];
+    UserDataManager::Get()->LaunchChromeForProfile(profile_name);
   }
-
-  std::wstring profile_name = profiles_[index];
-  UserDataManager::Get()->LaunchChromeForProfile(profile_name);
   return true;
 }
 
@@ -116,10 +115,11 @@ int SelectProfileDialog::GetItemCount() {
 }
 
 std::wstring SelectProfileDialog::GetItemAt(int index) {
-  DCHECK(index >= 0 && index <= static_cast<int>(profiles_.size()));
+  size_t index_size_t = index;
+  DCHECK_LE(index_size_t, profiles_.size());
   // For the last item in the drop down, return the <New Profile> text,
   // otherwise return the corresponding profile name from the vector.
-  return index == profiles_.size() ?
+  return index_size_t == profiles_.size() ?
       l10n_util::GetString(IDS_SELECT_PROFILE_DIALOG_NEW_PROFILE_ENTRY) :
       profiles_[index];
 }

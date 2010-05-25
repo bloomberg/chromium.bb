@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,7 @@ bool LockImpl::Try() {
 #ifndef NDEBUG
     // ONLY access data after locking.
     owning_thread_id_ = PlatformThread::CurrentId();
-    DCHECK_NE(owning_thread_id_, 0);
+    DCHECK_NE(owning_thread_id_, 0u);
     recursion_count_shadow_++;
     if (2 == recursion_count_shadow_ && !recursion_used_) {
       recursion_used_ = true;
@@ -46,7 +46,7 @@ void LockImpl::Lock() {
 #ifndef NDEBUG
   // ONLY access data after locking.
   owning_thread_id_ = PlatformThread::CurrentId();
-  DCHECK_NE(owning_thread_id_, 0);
+  DCHECK_NE(owning_thread_id_, 0u);
   recursion_count_shadow_++;
   if (2 == recursion_count_shadow_ && !recursion_used_) {
     recursion_used_ = true;

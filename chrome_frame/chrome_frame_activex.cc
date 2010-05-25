@@ -128,11 +128,11 @@ HRESULT ChromeFrameActivex::FinalConstruct() {
 
 ChromeFrameActivex::~ChromeFrameActivex() {
   // We expect these to be released during a call to SetClientSite(NULL).
-  DCHECK_EQ(0, onmessage_.size());
-  DCHECK_EQ(0, onloaderror_.size());
-  DCHECK_EQ(0, onload_.size());
-  DCHECK_EQ(0, onreadystatechanged_.size());
-  DCHECK_EQ(0, onextensionready_.size());
+  DCHECK_EQ(0u, onmessage_.size());
+  DCHECK_EQ(0u, onloaderror_.size());
+  DCHECK_EQ(0u, onload_.size());
+  DCHECK_EQ(0u, onreadystatechanged_.size());
+  DCHECK_EQ(0u, onextensionready_.size());
 
   if (chrome_wndproc_hook_) {
     BOOL unhook_success = ::UnhookWindowsHookEx(chrome_wndproc_hook_);

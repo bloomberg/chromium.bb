@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,6 +89,10 @@ bool DiskDumper::CreateEntry(const std::string& key,
 #ifdef WIN32_LARGE_FILENAME_SUPPORT
   entry_ = CreateFileW(file.c_str(), GENERIC_WRITE|GENERIC_READ, 0, 0,
                        CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+  if (entry_ == INVALID_HANDLE_VALUE) {
+    wprintf(L"CreateFileW (%s) failed: %d\n", file.c_str(), GetLastError());
+    return false;
+  }
   return entry_ != INVALID_HANDLE_VALUE;
 #else
   entry_ = file_util::OpenFile(entry_path_, "w+");
@@ -184,7 +188,7 @@ bool DiskDumper::WriteEntry(disk_cache::Entry* entry, int index, int offset,
 #ifdef WIN32_LARGE_FILENAME_SUPPORT
   DWORD bytes;
   DWORD rv = WriteFile(entry_, data, len, &bytes, 0);
-  return rv == TRUE && bytes == len;
+  return rv == TRUE && bytes == static_cast<DWORD>(len);
 #else
   int bytes = fwrite(data, 1, len, entry_);
   return bytes == len;

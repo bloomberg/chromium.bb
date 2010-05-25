@@ -370,7 +370,7 @@ void TableView::OnItemsRemoved(int start, int length) {
 }
 
 void TableView::AddColumn(const TableColumn& col) {
-  DCHECK_EQ(0, all_columns_.count(col.id));
+  DCHECK_EQ(0u, all_columns_.count(col.id));
   all_columns_[col.id] = col;
 }
 

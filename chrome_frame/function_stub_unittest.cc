@@ -74,13 +74,15 @@ class FunctionStubTest: public testing::Test {
   static uintptr_t CALLBACK FooCallback0(FunctionStubTest* test) {
     return test->Foo0();
   }
-  static uintptr_t CALLBACK FooCallback1(FunctionStubTest* test, uintptr_t arg) {
+  static uintptr_t CALLBACK FooCallback1(FunctionStubTest* test,
+                                         uintptr_t arg) {
     return test->Foo1(arg);
   }
   static uintptr_t CALLBACK BarCallback0(FunctionStubTest* test) {
     return test->Foo0();
   }
-  static uintptr_t CALLBACK BarCallback1(FunctionStubTest* test, uintptr_t arg) {
+  static uintptr_t CALLBACK BarCallback1(FunctionStubTest* test,
+                                         uintptr_t arg) {
     return test->Foo1(arg);
   }
 
@@ -119,10 +121,10 @@ TEST_F(FunctionStubTest, Accessors) {
 
   // Check that the stub code is executable.
   MEMORY_BASIC_INFORMATION info = {};
-  EXPECT_NE(0, ::VirtualQuery(stub_->code(), &info, sizeof(info)));
+  EXPECT_NE(0u, ::VirtualQuery(stub_->code(), &info, sizeof(info)));
   const DWORD kExecutableMask = PAGE_EXECUTE | PAGE_EXECUTE_READ |
       PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY;
-  EXPECT_NE(0, info.Protect & kExecutableMask);
+  EXPECT_NE(0u, info.Protect & kExecutableMask);
 
   EXPECT_EQ(argument, stub_->argument());
   EXPECT_TRUE(stub_->bypass_address() != NULL);

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "chrome_frame/test/perf/chrome_frame_perftest.h"
@@ -508,7 +508,7 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
          chrome_frame_memory_test_instance_->PrintResult(
              "ws_final_browser", "", trace_name + "_ws_b",
              working_set_size_ / 1024, "KB", false /* not important */);
-      } else if (process_id_ == GetCurrentProcessId()) {
+      } else if (process_id_ == base::GetCurrentProcId()) {
         chrome_frame_memory_test_instance_->PrintResult(
             "vm_current_process", "", trace_name + "_vm_c",
             virtual_size_ / 1024, "KB", false /* not important */);
@@ -520,7 +520,7 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
       printf("\n");
     }
 
-    int process_id_;
+    base::ProcessId process_id_;
     size_t virtual_size_;
     size_t working_set_size_;
     // Set to true if this is the chrome browser process.

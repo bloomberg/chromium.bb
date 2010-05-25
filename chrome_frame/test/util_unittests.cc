@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,8 +24,8 @@ TEST(UtilTests, GetModuleVersionTest) {
   // Use the method that doesn't go to disk
   uint32 low = 0, high = 0;
   EXPECT_TRUE(GetModuleVersion(mod, &high, &low));
-  EXPECT_NE(high, 0);
-  EXPECT_NE(low, 0);
+  EXPECT_NE(high, 0u);
+  EXPECT_NE(low, 0u);
 
   // Make sure they give the same results.
   FileVersionInfoWin* base_info_win =

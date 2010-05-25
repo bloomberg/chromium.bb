@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -342,15 +342,13 @@ std::string GetDefaultUserAgent() {
     } else if (SUCCEEDED(hr)) {
       // Truncate the extra allocation.
       DCHECK(size > 0);  // NOLINT
-      ret.resize(size - sizeof(char));  // NOLINT
+      ret.resize(size - 1);  // NOLINT
     }
   }
 
   if (FAILED(hr)) {
     NOTREACHED() << StringPrintf("ObtainUserAgentString==0x%08X", hr);
-    return "";
-  } else {
-    DCHECK(ret.length() == lstrlenA(ret.c_str()));
+    return std::string();
   }
 
   return ret;
@@ -362,7 +360,8 @@ bool HasFrameBustingHeader(const std::string& http_headers) {
   while (it.GetNext()) {
     if (lstrcmpiA(it.name().c_str(), kXFrameOptionsHeader) == 0) {
       std::string allow_all(kXFrameOptionsValueAllowAll);
-      if (it.values_end() - it.values_begin() != allow_all.length() ||
+      if (it.values_end() - it.values_begin() !=
+          static_cast<int>(allow_all.length()) ||
           !std::equal(it.values_begin(), it.values_end(),
               allow_all.begin(),
               CaseInsensitiveCompareASCII<const char>())) {

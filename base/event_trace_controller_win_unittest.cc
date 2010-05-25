@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -62,9 +62,9 @@ TEST(EtwTracePropertiesTest, Initialization) {
   EtwTraceProperties prop;
 
   EVENT_TRACE_PROPERTIES* p = prop.get();
-  EXPECT_NE(0, p->Wnode.BufferSize);
-  EXPECT_EQ(0, p->Wnode.ProviderId);
-  EXPECT_EQ(0, p->Wnode.HistoricalContext);
+  EXPECT_NE(0u, p->Wnode.BufferSize);
+  EXPECT_EQ(0u, p->Wnode.ProviderId);
+  EXPECT_EQ(0u, p->Wnode.HistoricalContext);
 
   EXPECT_TRUE(kGuidNull == p->Wnode.Guid);
   EXPECT_EQ(0, p->Wnode.ClientContext);
@@ -86,8 +86,8 @@ TEST(EtwTracePropertiesTest, Initialization) {
   EXPECT_EQ(0, p->LogBuffersLost);
   EXPECT_EQ(0, p->RealTimeBuffersLost);
   EXPECT_EQ(0, p->LoggerThreadId);
-  EXPECT_NE(0, p->LogFileNameOffset);
-  EXPECT_NE(0, p->LoggerNameOffset);
+  EXPECT_NE(0u, p->LogFileNameOffset);
+  EXPECT_NE(0u, p->LoggerNameOffset);
 }
 
 TEST(EtwTracePropertiesTest, Strings) {

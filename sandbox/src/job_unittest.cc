@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@ TEST(JobTest, TestCreation) {
     // check if the job exists.
     HANDLE job_handle = ::OpenJobObjectW(GENERIC_ALL, FALSE,
                                          L"my_test_job_name");
-    ASSERT_NE(NULL, reinterpret_cast<ULONG_PTR>(job_handle));
+    ASSERT_NE(reinterpret_cast<HANDLE>(NULL), job_handle);
 
     if (job_handle)
       CloseHandle(job_handle);
@@ -28,7 +28,7 @@ TEST(JobTest, TestCreation) {
 
   // Check if the job is destroyed when the object goes out of scope.
   HANDLE job_handle = ::OpenJobObjectW(GENERIC_ALL, FALSE, L"my_test_job_name");
-  ASSERT_EQ(NULL, reinterpret_cast<ULONG_PTR>(job_handle));
+  ASSERT_EQ(reinterpret_cast<HANDLE>(NULL), job_handle);
   ASSERT_EQ(ERROR_FILE_NOT_FOUND, ::GetLastError());
 }
 
@@ -42,14 +42,14 @@ TEST(JobTest, TestDetach) {
     ASSERT_EQ(ERROR_SUCCESS, job.Init(JOB_LOCKDOWN, L"my_test_job_name", 0));
 
     job_handle = job.Detach();
-    ASSERT_NE(NULL, reinterpret_cast<ULONG_PTR>(job_handle));
+    ASSERT_NE(reinterpret_cast<HANDLE>(NULL), job_handle);
   }
 
   // Check to be sure that the job is still alive even after the object is gone
   // out of scope.
   HANDLE job_handle_dup = ::OpenJobObjectW(GENERIC_ALL, FALSE,
                                            L"my_test_job_name");
-  ASSERT_NE(NULL, reinterpret_cast<ULONG_PTR>(job_handle_dup));
+  ASSERT_NE(reinterpret_cast<HANDLE>(NULL), job_handle_dup);
 
   // Remove all references.
   if (job_handle_dup)
@@ -60,7 +60,7 @@ TEST(JobTest, TestDetach) {
 
   // Check if the jbo is really dead.
   job_handle = ::OpenJobObjectW(GENERIC_ALL, FALSE, L"my_test_job_name");
-  ASSERT_EQ(NULL, reinterpret_cast<ULONG_PTR>(job_handle));
+  ASSERT_EQ(reinterpret_cast<HANDLE>(NULL), job_handle);
   ASSERT_EQ(ERROR_FILE_NOT_FOUND, ::GetLastError());
 }
 
@@ -75,7 +75,7 @@ TEST(JobTest, TestExceptions) {
                                       JOB_OBJECT_UILIMIT_READCLIPBOARD));
 
     job_handle = job.Detach();
-    ASSERT_NE(NULL, reinterpret_cast<ULONG_PTR>(job_handle));
+    ASSERT_NE(reinterpret_cast<HANDLE>(NULL), job_handle);
 
     JOBOBJECT_BASIC_UI_RESTRICTIONS jbur = {0};
     DWORD size = sizeof(jbur);
@@ -95,7 +95,7 @@ TEST(JobTest, TestExceptions) {
     ASSERT_EQ(ERROR_SUCCESS, job.Init(JOB_LOCKDOWN, L"my_test_job_name", 0));
 
     job_handle = job.Detach();
-    ASSERT_NE(NULL, reinterpret_cast<ULONG_PTR>(job_handle));
+    ASSERT_NE(reinterpret_cast<HANDLE>(NULL), job_handle);
 
     JOBOBJECT_BASIC_UI_RESTRICTIONS jbur = {0};
     DWORD size = sizeof(jbur);
@@ -124,7 +124,7 @@ TEST(JobTest, NoInit) {
   Job job;
   ASSERT_EQ(ERROR_NO_DATA, job.UserHandleGrantAccess(NULL));
   ASSERT_EQ(ERROR_NO_DATA, job.AssignProcessToJob(NULL));
-  ASSERT_EQ(NULL, reinterpret_cast<ULONG_PTR>(job.Detach()));
+  ASSERT_EQ(reinterpret_cast<HANDLE>(NULL), job.Detach());
 }
 
 // Tests the initialization of the job with different security level.
