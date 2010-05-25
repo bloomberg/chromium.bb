@@ -26,7 +26,7 @@ class PrefService;
 class WebCacheManager {
   // Unit tests are our friends.
   friend class WebCacheManagerTest;
-  FRIEND_TEST(WebCacheManagerBrowserTest, DISABLED_CrashOnceOnly);
+  FRIEND_TEST(WebCacheManagerBrowserTest, FLAKY_CrashOnceOnly);
 
  public:
   static void RegisterPrefs(PrefService* prefs);
