@@ -228,8 +228,9 @@ extern "C" {
       ATTRIBUTE_SECTION(google_malloc);
   void* tc_newarray_nothrow(size_t size, const std::nothrow_t&) __THROW
       ATTRIBUTE_SECTION(google_malloc);
-  // Surprisingly, compilers use a nothrow-delete internally.  See, eg:
-  //   http://www.dinkumware.com/manuals/?manual=compleat&page=new.html
+  // Surprisingly, standard C++ library implementations use a
+  // nothrow-delete internally. See, eg:
+  // http://www.dinkumware.com/manuals/?manual=compleat&page=new.html
   void tc_delete_nothrow(void* ptr, const std::nothrow_t&) __THROW
       ATTRIBUTE_SECTION(google_malloc);
   void tc_deletearray_nothrow(void* ptr, const std::nothrow_t&) __THROW
@@ -253,9 +254,9 @@ extern "C" {
   // NOTE: we make many of these symbols weak, but do so in the makefile
   //       (via objcopy -W) and not here.  That ends up being more portable.
 # define ALIAS(x) __attribute__ ((alias (x)))
-void* operator new(size_t size)                  ALIAS("tc_new");
+void* operator new(size_t size) throw (std::bad_alloc) ALIAS("tc_new");
 void operator delete(void* p) __THROW            ALIAS("tc_delete");
-void* operator new[](size_t size)                ALIAS("tc_newarray");
+void* operator new[](size_t size) throw (std::bad_alloc) ALIAS("tc_newarray");
 void operator delete[](void* p) __THROW          ALIAS("tc_deletearray");
 void* operator new(size_t size, const std::nothrow_t&) __THROW
                                                  ALIAS("tc_new_nothrow");
@@ -264,7 +265,7 @@ void* operator new[](size_t size, const std::nothrow_t&) __THROW
 void operator delete(void* size, const std::nothrow_t&) __THROW
                                                  ALIAS("tc_delete_nothrow");
 void operator delete[](void* size, const std::nothrow_t&) __THROW
-                                                 ALIAS("tc_deletearray_nothrow");
+                                                ALIAS("tc_deletearray_nothrow");
 extern "C" {
   void* malloc(size_t size) __THROW              ALIAS("tc_malloc");
   void  free(void* ptr) __THROW                  ALIAS("tc_free");
@@ -804,7 +805,17 @@ TCMallocGuard::TCMallocGuard() {
     tc_free(tc_malloc(1));
     ThreadCache::InitTSD();
     tc_free(tc_malloc(1));
-    MallocExtension::Register(new TCMallocImplementation);
+    // Either we, or debugallocation.cc, or valgrind will control memory
+    // management. We register our extension if we're the winner.
+#ifdef TCMALLOC_FOR_DEBUGALLOCATION
+    // Let debugallocation register its extension.
+#else
+    if (RunningOnValgrind()) {
+      // Let Valgrind uses its own malloc (so don't register our extension).
+    } else {
+      MallocExtension::Register(new TCMallocImplementation);
+    }
+#endif
   }
 }
 
@@ -826,7 +837,25 @@ static TCMallocGuard module_enter_exit_hook;
 // Helpers for the exported routines below
 //-------------------------------------------------------------------
 
-static Span* DoSampledAllocation(size_t size) {
+static inline bool CheckCachedSizeClass(void *ptr) {
+  PageID p = reinterpret_cast<uintptr_t>(ptr) >> kPageShift;
+  size_t cached_value = Static::pageheap()->GetSizeClassIfCached(p);
+  return cached_value == 0 ||
+      cached_value == Static::pageheap()->GetDescriptor(p)->sizeclass;
+}
+
+static inline void* CheckedMallocResult(void *result) {
+  ASSERT(result == NULL || CheckCachedSizeClass(result));
+  return result;
+}
+
+static inline void* SpanToMallocResult(Span *span) {
+  Static::pageheap()->CacheSizeClass(span->start, 0);
+  return
+      CheckedMallocResult(reinterpret_cast<void*>(span->start << kPageShift));
+}
+
+static void* DoSampledAllocation(size_t size) {
   // Grab the stack trace outside the heap lock
   StackTrace tmp;
   tmp.depth = GetStackTrace(tmp.stack, tcmalloc::kMaxStackDepth, 1);
@@ -851,26 +880,7 @@ static Span* DoSampledAllocation(size_t size) {
   span->objects = stack;
   tcmalloc::DLL_Prepend(Static::sampled_objects(), span);
 
-  return span;
-}
-
-static inline bool CheckCachedSizeClass(void *ptr) {
-  PageID p = reinterpret_cast<uintptr_t>(ptr) >> kPageShift;
-  size_t cached_value = Static::pageheap()->GetSizeClassIfCached(p);
-  return cached_value == 0 ||
-      cached_value == Static::pageheap()->GetDescriptor(p)->sizeclass;
-}
-
-static inline void* CheckedMallocResult(void *result)
-{
-  ASSERT(result == 0 || CheckCachedSizeClass(result));
-  return result;
-}
-
-static inline void* SpanToMallocResult(Span *span) {
-  Static::pageheap()->CacheSizeClass(span->start, 0);
-  return
-      CheckedMallocResult(reinterpret_cast<void*>(span->start << kPageShift));
+  return SpanToMallocResult(span);
 }
 
 // Copy of FLAGS_tcmalloc_large_alloc_report_threshold with
@@ -916,24 +926,38 @@ inline void* do_memalign_or_cpp_memalign(size_t align, size_t size) {
   return tc_new_mode ? cpp_memalign(align, size) : do_memalign(align, size);
 }
 
+// Must be called with the page lock held.
+inline bool should_report_large(Length num_pages) {
+  const int64 threshold = large_alloc_threshold;
+  if (threshold > 0 && num_pages >= (threshold >> kPageShift)) {
+    // Increase the threshold by 1/8 every time we generate a report.
+    // We cap the threshold at 8GB to avoid overflow problems.
+    large_alloc_threshold = (threshold + threshold/8 < 8ll<<30
+                             ? threshold + threshold/8 : 8ll<<30);
+    return true;
+  }
+  return false;
+}
+
 // Helper for do_malloc().
-inline void* do_malloc_pages(Length num_pages) {
-  Span *span;
-  bool report_large = false;
-  {
+inline void* do_malloc_pages(ThreadCache* heap, size_t size) {
+  void* result;
+  bool report_large;
+
+  Length num_pages = tcmalloc::pages(size);
+  size = num_pages << kPageShift;
+  if ((FLAGS_tcmalloc_sample_parameter > 0) && heap->SampleAllocation(size)) {
+    result = DoSampledAllocation(size);
+
     SpinLockHolder h(Static::pageheap_lock());
-    span = Static::pageheap()->New(num_pages);
-    const int64 threshold = large_alloc_threshold;
-    if (threshold > 0 && num_pages >= (threshold >> kPageShift)) {
-      // Increase the threshold by 1/8 every time we generate a report.
-      // We cap the threshold at 8GB to avoid overflow problems.
-      large_alloc_threshold = (threshold + threshold/8 < 8ll<<30
-                               ? threshold + threshold/8 : 8ll<<30);
-      report_large = true;
-    }
+    report_large = should_report_large(num_pages);
+  } else {
+    SpinLockHolder h(Static::pageheap_lock());
+    Span* span = Static::pageheap()->New(num_pages);
+    result = (span == NULL ? NULL : SpanToMallocResult(span));
+    report_large = should_report_large(num_pages);
   }
 
-  void* result = (span == NULL ? NULL : SpanToMallocResult(span));
   if (report_large) {
     ReportLargeAlloc(num_pages, result);
   }
@@ -945,17 +969,19 @@ inline void* do_malloc(size_t size) {
 
   // The following call forces module initialization
   ThreadCache* heap = ThreadCache::GetCache();
-  if ((FLAGS_tcmalloc_sample_parameter > 0) && heap->SampleAllocation(size)) {
-    Span* span = DoSampledAllocation(size);
-    if (span != NULL) {
-      ret = SpanToMallocResult(span);
+  if (size <= kMaxSize) {
+    size_t cl = Static::sizemap()->SizeClass(size);
+    size = Static::sizemap()->class_to_size(cl);
+
+    if ((FLAGS_tcmalloc_sample_parameter > 0) && heap->SampleAllocation(size)) {
+      ret = DoSampledAllocation(size);
+    } else {
+      // The common case, and also the simplest. This just pops the
+      // size-appropriate freelist, after replenishing it if it's empty.
+      ret = CheckedMallocResult(heap->Allocate(size, cl));
     }
-  } else if (size <= kMaxSize) {
-    // The common case, and also the simplest.  This just pops the
-    // size-appropriate freelist, after replenishing it if it's empty.
-    ret = CheckedMallocResult(heap->Allocate(size));
   } else {
-    ret = do_malloc_pages(tcmalloc::pages(size));
+    ret = do_malloc_pages(heap, size);
   }
   if (ret == NULL) errno = ENOMEM;
   return ret;
@@ -1136,8 +1162,8 @@ void* do_memalign(size_t align, size_t size) {
     }
     if (cl < kNumClasses) {
       ThreadCache* heap = ThreadCache::GetCache();
-      return CheckedMallocResult(heap->Allocate(
-                                     Static::sizemap()->class_to_size(cl)));
+      size = Static::sizemap()->class_to_size(cl);
+      return CheckedMallocResult(heap->Allocate(size, cl));
     }
   }
 
@@ -1392,8 +1418,7 @@ extern "C" PERFTOOLS_DLL_DECL void* tc_new(size_t size) {
   return p;
 }
 
-extern "C" PERFTOOLS_DLL_DECL void* tc_new_nothrow(
-    size_t size, const std::nothrow_t&) __THROW {
+extern "C" PERFTOOLS_DLL_DECL void* tc_new_nothrow(size_t size, const std::nothrow_t&) __THROW {
   void* p = cpp_alloc(size, true);
   MallocHook::InvokeNewHook(p, size);
   return p;
@@ -1404,10 +1429,10 @@ extern "C" PERFTOOLS_DLL_DECL void tc_delete(void* p) __THROW {
   do_free(p);
 }
 
-// Compilers define and use this (via ::operator delete(ptr, nothrow)).
+// Standard C++ library implementations define and use this
+// (via ::operator delete(ptr, nothrow)).
 // But it's really the same as normal delete, so we just do the same thing.
-extern "C" PERFTOOLS_DLL_DECL void tc_delete_nothrow(
-    void* p, const std::nothrow_t&) __THROW {
+extern "C" PERFTOOLS_DLL_DECL void tc_delete_nothrow(void* p, const std::nothrow_t&) __THROW {
   MallocHook::InvokeDeleteHook(p);
   do_free(p);
 }
@@ -1423,8 +1448,7 @@ extern "C" PERFTOOLS_DLL_DECL void* tc_newarray(size_t size) {
   return p;
 }
 
-extern "C" PERFTOOLS_DLL_DECL void* tc_newarray_nothrow(
-    size_t size, const std::nothrow_t&) __THROW {
+extern "C" PERFTOOLS_DLL_DECL void* tc_newarray_nothrow(size_t size, const std::nothrow_t&) __THROW {
   void* p = cpp_alloc(size, true);
   MallocHook::InvokeNewHook(p, size);
   return p;
@@ -1435,8 +1459,7 @@ extern "C" PERFTOOLS_DLL_DECL void tc_deletearray(void* p) __THROW {
   do_free(p);
 }
 
-extern "C" PERFTOOLS_DLL_DECL void tc_deletearray_nothrow(
-    void* p, const std::nothrow_t&) __THROW {
+extern "C" PERFTOOLS_DLL_DECL void tc_deletearray_nothrow(void* p, const std::nothrow_t&) __THROW {
   MallocHook::InvokeDeleteHook(p);
   do_free(p);
 }

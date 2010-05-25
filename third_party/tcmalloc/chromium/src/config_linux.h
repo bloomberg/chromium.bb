@@ -136,7 +136,7 @@
 /* Define to 1 if compiler supports __thread */
 #define HAVE_TLS 1
 
-/* Define to 1 if you have the <ucontext.h> header file. */
+/* <sys/ucontext.h> is broken on redhat 7 */
 #define HAVE_UCONTEXT_H 1
 
 /* Define to 1 if you have the <unistd.h> header file. */
@@ -144,6 +144,9 @@
 
 /* Define to 1 if you have the <unwind.h> header file. */
 #define HAVE_UNWIND_H 1
+
+/* Define to 1 if you have the <valgrind.h> header file. */
+#undef HAVE_VALGRIND_H
 
 /* define if your compiler has __attribute__ */
 #define HAVE___ATTRIBUTE__ 1
