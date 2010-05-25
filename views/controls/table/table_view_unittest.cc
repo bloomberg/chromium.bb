@@ -234,7 +234,7 @@ class NullModelTableViewTest : public TableViewTest {
 
 // Tests -----------------------------------------------------------------------
 
-// Several failing tests below: http://crbug.com/45015
+// Failing: http://crbug.com/45015
 // Tests various sorting permutations.
 TEST_F(TableViewTest, FAILS_Sort) {
   // Sort by first column descending.
@@ -262,6 +262,7 @@ TEST_F(TableViewTest, FAILS_Sort) {
     return;
 }
 
+// Failing: http://crbug.com/45015
 // Tests changing the model while sorted.
 TEST_F(TableViewTest, FAILS_SortThenChange) {
   // Sort by first column descending.
@@ -276,6 +277,7 @@ TEST_F(TableViewTest, FAILS_SortThenChange) {
   VeriyViewOrder(0, 2, 1, -1);
 }
 
+// Failing: http://crbug.com/45015
 // Tests adding to the model while sorted.
 TEST_F(TableViewTest, FAILS_AddToSorted) {
   // Sort by first column descending.
@@ -297,6 +299,7 @@ TEST_F(TableViewTest, FAILS_AddToSorted) {
   VeriyViewOrder(1, 4, 3, 2, 0, -1);
 }
 
+// Failing: http://crbug.com/45015
 // Tests selection on sort.
 TEST_F(TableViewTest, FAILS_PersistSelectionOnSort) {
   // Select row 0.
@@ -314,11 +317,13 @@ TEST_F(TableViewTest, FAILS_PersistSelectionOnSort) {
   EXPECT_EQ(0, table_->FirstSelectedRow());
 }
 
+// Failing: http://crbug.com/45015
 // Tests selection iterator with sort.
 TEST_F(TableViewTest, FAILS_PersistMultiSelectionOnSort) {
   SetUpMultiSelectTestState(true);
 }
 
+// Failing: http://crbug.com/45015
 // Tests selection persists after a change when sorted with iterator.
 TEST_F(TableViewTest, FAILS_PersistMultiSelectionOnChangeWithSort) {
   SetUpMultiSelectTestState(true);
@@ -330,6 +335,7 @@ TEST_F(TableViewTest, FAILS_PersistMultiSelectionOnChangeWithSort) {
   VerifySelectedRows(1, 0, -1);
 }
 
+// Failing: http://crbug.com/45015
 // Tests selection persists after a remove when sorted with iterator.
 TEST_F(TableViewTest, FAILS_PersistMultiSelectionOnRemoveWithSort) {
   SetUpMultiSelectTestState(true);
@@ -341,6 +347,7 @@ TEST_F(TableViewTest, FAILS_PersistMultiSelectionOnRemoveWithSort) {
   VerifySelectedRows(0, -1);
 }
 
+// Failing: http://crbug.com/45015
 // Tests selection persists after a add when sorted with iterator.
 TEST_F(TableViewTest, FAILS_PersistMultiSelectionOnAddWithSort) {
   SetUpMultiSelectTestState(true);
@@ -352,6 +359,7 @@ TEST_F(TableViewTest, FAILS_PersistMultiSelectionOnAddWithSort) {
   VerifySelectedRows(0, 1, -1);
 }
 
+// Failing: http://crbug.com/45015
 // Tests selection persists after a change with iterator.
 TEST_F(TableViewTest, FAILS_PersistMultiSelectionOnChange) {
   SetUpMultiSelectTestState(false);
@@ -363,6 +371,7 @@ TEST_F(TableViewTest, FAILS_PersistMultiSelectionOnChange) {
   VerifySelectedRows(1, 0, -1);
 }
 
+// Failing: http://crbug.com/45015
 // Tests selection persists after a remove with iterator.
 TEST_F(TableViewTest, FAILS_PersistMultiSelectionOnRemove) {
   SetUpMultiSelectTestState(false);
@@ -374,6 +383,7 @@ TEST_F(TableViewTest, FAILS_PersistMultiSelectionOnRemove) {
   VerifySelectedRows(0, -1);
 }
 
+// Failing: http://crbug.com/45015
 // Tests selection persists after a add with iterator.
 TEST_F(TableViewTest, FAILS_PersistMultiSelectionOnAdd) {
   SetUpMultiSelectTestState(false);
