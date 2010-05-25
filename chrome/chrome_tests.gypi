@@ -356,10 +356,6 @@
             '../build/linux/system.gyp:gtk',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
-          'sources!': [
-            # TODO(port)
-            'test/ui/layout_plugin_uitest.cc',
-          ],
         }, { # else: OS != "linux"
           'sources!': [
             'browser/process_singleton_linux_uitest.cc',
@@ -384,7 +380,6 @@
             'browser/sessions/session_restore_uitest.cc',
             'common/logging_chrome_uitest.cc',
             'test/ui/fast_shutdown_uitest.cc',
-            'test/ui/layout_plugin_uitest.cc',
           ],
           # See the comment in this section of the unit_tests target for an
           # explanation (crbug.com/43791 - libwebcore.a is too large to mmap).
