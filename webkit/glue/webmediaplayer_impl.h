@@ -188,6 +188,10 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   virtual void setVisible(bool visible);
   virtual bool setAutoBuffer(bool autoBuffer);
   virtual bool totalBytesKnown();
+  virtual const WebKit::WebTimeRanges& buffered();
+  // This is the prototype for the function we are replacing with the
+  // non-const version, but we keep it in so that we don't have to do a
+  // two-sided commit.
   virtual const WebKit::WebTimeRanges& buffered() const;
   virtual float maxTimeSeekable() const;
 

@@ -74,6 +74,12 @@ class FilterHost {
   // filters.
   virtual void DisableAudioRenderer() = 0;
 
+  // Sets the byte offset at which the client is requesting the video.
+  virtual void SetCurrentReadPosition(int64 offset) = 0;
+
+  // Gets the byte offset at which the client is requesting the video.
+  virtual int64 GetCurrentReadPosition() = 0;
+
  protected:
   virtual ~FilterHost() {}
 };

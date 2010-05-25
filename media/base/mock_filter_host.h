@@ -42,6 +42,8 @@ class MockFilterHost : public FilterHost {
   MOCK_METHOD1(SetNetworkActivity, void(bool network_activity));
   MOCK_METHOD0(NotifyEnded, void());
   MOCK_METHOD0(DisableAudioRenderer, void());
+  MOCK_METHOD1(SetCurrentReadPosition, void(int64 offset));
+  MOCK_METHOD0(GetCurrentReadPosition, int64());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockFilterHost);
