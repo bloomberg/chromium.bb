@@ -916,7 +916,7 @@
       {
         "name": "move",
         "type": "function",
-        "description": "Moves a tab to a new position within its window, or to a new window.",
+        "description": "Moves a tab to a new position within its window, or to a new window. Note that tabs can only be moved to and from normal (window.type === \"normal\") windows.",
         "parameters": [
           {"type": "integer", "name": "tabId", "minimum": 0},
           {

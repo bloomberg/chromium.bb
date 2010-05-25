@@ -712,6 +712,11 @@ bool MoveTabFunction::RunImpl() {
                   &tab_index, &error_))
     return false;
 
+  if (source_browser->type() != Browser::TYPE_NORMAL) {
+    error_ = keys::kCanOnlyMoveTabsWithinNormalWindowsError;
+    return false;
+  }
+
   if (update_props->HasKey(keys::kWindowIdKey)) {
     Browser* target_browser;
     int window_id;
@@ -721,6 +726,11 @@ bool MoveTabFunction::RunImpl() {
                                                include_incognito(), &error_);
     if (!target_browser)
       return false;
+
+    if (target_browser->type() != Browser::TYPE_NORMAL) {
+      error_ = keys::kCanOnlyMoveTabsWithinNormalWindowsError;
+      return false;
+    }
 
     // If windowId is different from the current window, move between windows.
     if (ExtensionTabUtil::GetWindowId(target_browser) !=

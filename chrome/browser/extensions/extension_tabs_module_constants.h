@@ -42,6 +42,7 @@ extern const wchar_t kIncognitoKey[];
 extern const wchar_t kWindowTypeKey[];
 
 // Value consts.
+extern const char kCanOnlyMoveTabsWithinNormalWindowsError[];
 extern const char kFormatValueJpeg[];
 extern const char kFormatValuePng[];
 extern const char kMimeTypeJpeg[];

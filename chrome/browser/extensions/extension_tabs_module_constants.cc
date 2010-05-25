@@ -50,6 +50,8 @@ const char kWindowTypeValueNormal[] = "normal";
 const char kWindowTypeValuePopup[] = "popup";
 const char kWindowTypeValueApp[] = "app";
 
+const char kCanOnlyMoveTabsWithinNormalWindowsError[] = "Tabs can only be "
+    "moved to and from normal windows.";
 const char kNoCurrentWindowError[] = "No current window";
 const char kNoLastFocusedWindowError[] = "No last-focused window";
 const char kWindowNotFoundError[] = "No window with id: *.";
