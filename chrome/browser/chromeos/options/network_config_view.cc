@@ -25,7 +25,8 @@ NetworkConfigView::NetworkConfigView(EthernetNetwork ethernet)
       flags_(FLAG_ETHERNET | FLAG_SHOW_IPCONFIG),
       ethernet_(ethernet),
       wificonfig_view_(NULL),
-      ipconfig_view_(NULL) {
+      ipconfig_view_(NULL),
+      delegate_(NULL) {
 }
 
 NetworkConfigView::NetworkConfigView(WifiNetwork wifi, bool login_only)
@@ -33,7 +34,8 @@ NetworkConfigView::NetworkConfigView(WifiNetwork wifi, bool login_only)
       flags_(FLAG_WIFI),
       wifi_(wifi),
       wificonfig_view_(NULL),
-      ipconfig_view_(NULL) {
+      ipconfig_view_(NULL),
+      delegate_(NULL) {
   if (login_only)
     flags_ |= FLAG_LOGIN_ONLY;
   else
@@ -45,14 +47,16 @@ NetworkConfigView::NetworkConfigView(CellularNetwork cellular)
       flags_(FLAG_CELLULAR | FLAG_SHOW_IPCONFIG),
       cellular_(cellular),
       wificonfig_view_(NULL),
-      ipconfig_view_(NULL) {
+      ipconfig_view_(NULL),
+      delegate_(NULL) {
 }
 
 NetworkConfigView::NetworkConfigView()
     : browser_mode_(true),
       flags_(FLAG_WIFI | FLAG_LOGIN_ONLY | FLAG_OTHER_NETWORK),
       wificonfig_view_(NULL),
-      ipconfig_view_(NULL) {
+      ipconfig_view_(NULL),
+      delegate_(NULL) {
 }
 
 gfx::NativeWindow NetworkConfigView::GetNativeWindow() const {
@@ -79,6 +83,8 @@ bool NetworkConfigView::IsDialogButtonEnabled(
 }
 
 bool NetworkConfigView::Cancel() {
+  if (delegate_)
+    delegate_->OnDialogCancelled();
   return true;
 }
 

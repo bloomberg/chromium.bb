@@ -28,6 +28,14 @@ class NetworkConfigView : public views::View,
                           public views::DialogDelegate,
                           views::TabbedPane::Listener {
  public:
+  class Delegate {
+   public:
+    // Called when dialog "Cancel" button is pressed.
+    virtual void OnDialogCancelled() = 0;
+   protected:
+     virtual ~Delegate() {}
+  };
+
   // Configure dialog for ethernet.
   explicit NetworkConfigView(EthernetNetwork ethernet);
   // Configure dialog for wifi. If |login_only|, then only show login tab.
@@ -70,6 +78,10 @@ class NetworkConfigView : public views::View,
     return browser_mode_;
   }
 
+  void set_delegate(Delegate* delegate) {
+    delegate_ = delegate;
+  }
+
  protected:
   // views::View overrides:
   virtual void Layout();
@@ -105,6 +117,8 @@ class NetworkConfigView : public views::View,
 
   WifiConfigView* wificonfig_view_;
   IPConfigView* ipconfig_view_;
+
+  Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConfigView);
 };

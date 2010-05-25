@@ -7307,6 +7307,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NETWORK_SELECTION_OFFLINE_BUTTON" desc="Text shown on work offline button">
         Work offline
       </message>
+      <message name="IDS_NETWORK_SELECTION_CONTINUE_BUTTON" desc="Text shown on continue button">
+        Continue >>
+      </message>
       <message name="IDS_LOGIN_TITLE">
         Sign in with your Google account
       </message>

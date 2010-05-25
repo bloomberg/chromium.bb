@@ -37,7 +37,7 @@ using views::WidgetGtk;
 namespace {
 
 const int kWelcomeLabelY = 150;
-const int kOfflineButtonX = 30;
+const int kContinueButtonSpacingX = 30;
 const int kSpacing = 25;
 const int kHorizontalSpacing = 25;
 const int kNetworkComboboxWidth = 250;
@@ -59,7 +59,7 @@ NetworkSelectionView::NetworkSelectionView(NetworkScreenDelegate* delegate)
       welcome_label_(NULL),
       select_network_label_(NULL),
       connecting_network_label_(NULL),
-      offline_button_(NULL),
+      continue_button_(NULL),
       throbber_(NULL),
       delegate_(delegate) {
 }
@@ -101,27 +101,25 @@ void NetworkSelectionView::Init() {
   languages_menubutton_ = new views::MenuButton(
       NULL, std::wstring(), delegate_->language_switch_model(), true);
 
-  offline_button_ = new views::NativeButton(delegate_, std::wstring());
-
   AddChildView(welcome_label_);
   AddChildView(select_network_label_);
   AddChildView(connecting_network_label_);
   AddChildView(network_combobox_);
   AddChildView(languages_menubutton_);
-  AddChildView(offline_button_);
 
   UpdateLocalizedStrings();
 }
 
 void NetworkSelectionView::UpdateLocalizedStrings() {
+  RecreateNativeControls();
   languages_menubutton_->SetText(
       delegate_->language_switch_model()->GetCurrentLocaleName());
   welcome_label_->SetText(l10n_util::GetStringF(IDS_NETWORK_SELECTION_TITLE,
                           l10n_util::GetString(IDS_PRODUCT_OS_NAME)));
   select_network_label_->SetText(
       l10n_util::GetString(IDS_NETWORK_SELECTION_SELECT));
-  offline_button_->SetLabel(
-      l10n_util::GetString(IDS_NETWORK_SELECTION_OFFLINE_BUTTON));
+  continue_button_->SetLabel(
+      l10n_util::GetString(IDS_NETWORK_SELECTION_CONTINUE_BUTTON));
   UpdateConnectingNetworkLabel();
 }
 
@@ -187,12 +185,13 @@ void NetworkSelectionView::Layout() {
   network_combobox_->SetBounds(select_network_x, y,
                                kNetworkComboboxWidth, kNetworkComboboxHeight);
 
-  y = height() - offline_button_->GetPreferredSize().height() - kSpacing;
-  offline_button_->SetBounds(
-      kOfflineButtonX,
+  y = height() - continue_button_->GetPreferredSize().height() - kSpacing;
+  continue_button_->SetBounds(
+      width() - kContinueButtonSpacingX -
+          continue_button_->GetPreferredSize().width(),
       y,
-      offline_button_->GetPreferredSize().width(),
-      offline_button_->GetPreferredSize().height());
+      continue_button_->GetPreferredSize().width(),
+      continue_button_->GetPreferredSize().height());
 
   int x = width() - kLanguagesMenuWidth - kHorizontalSpacing;
   y = kSpacing;
@@ -201,7 +200,7 @@ void NetworkSelectionView::Layout() {
 
   // Need to refresh combobox layout explicitly.
   network_combobox_->Layout();
-  offline_button_->Layout();
+  continue_button_->Layout();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -238,8 +237,22 @@ void NetworkSelectionView::ShowConnectingStatus(bool connecting,
   }
 }
 
+void NetworkSelectionView::EnableContinue(bool enabled) {
+  if (continue_button_)
+    continue_button_->SetEnabled(enabled);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkSelectionView, private:
+
+void NetworkSelectionView::RecreateNativeControls() {
+  // There is no way to get native button preferred size after the button was
+  // sized so delete and recreate the button on text update.
+  delete continue_button_;
+  continue_button_ = new views::NativeButton(delegate_, std::wstring());
+  continue_button_->SetEnabled(false);
+  AddChildView(continue_button_);
+}
 
 void NetworkSelectionView::UpdateConnectingNetworkLabel() {
   connecting_network_label_->SetText(l10n_util::GetStringF(

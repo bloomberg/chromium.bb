@@ -11,9 +11,10 @@
 
 namespace chromeos {
 
-NetworkList::NetworkList()
-    : connected_network_index_(-1),
-      connecting_network_index_(-1) {
+////////////////////////////////////////////////////////////////////////////////
+// NetworkList, public:
+
+NetworkList::NetworkList() {
 }
 
 NetworkList::NetworkItem* NetworkList::GetNetworkAt(int index) {
@@ -21,66 +22,39 @@ NetworkList::NetworkItem* NetworkList::GetNetworkAt(int index) {
       &networks_[index] : NULL;
 }
 
-const NetworkList::NetworkItem* NetworkList::GetNetworkById(NetworkType type,
-                                                      const string16& id) {
+const NetworkList::NetworkItem* NetworkList::GetNetworkById(
+    NetworkType type, const string16& id) {
   return GetNetworkAt(GetNetworkIndexById(type, id));
 }
 
 int NetworkList::GetNetworkIndexById(NetworkType type,
                                      const string16& id) const {
-  if (NETWORK_EMPTY == type || id.empty()) return -1;
+  if (type == NETWORK_EMPTY)
+    return -1;
   std::string network_id = UTF16ToASCII(id);
-  for (size_t i = 0; i < networks_.size(); i++) {
-    if (type == networks_[i].network_type) {
-      switch (type) {
-        case NETWORK_ETHERNET:
-          // Assuming that there's only single Ethernet network.
-          return i;
-
-        case NETWORK_WIFI:
-          if (network_id == networks_[i].wifi_network.name())
-            return i;
-          break;
-
-        case NETWORK_CELLULAR:
-          if (network_id == networks_[i].cellular_network.name())
-            return i;
-          break;
-
-        default:
-          break;
-      }
-    }
+  for (size_t i = 0; i < networks_.size(); ++i) {
+    if (IsSameNetwork(&networks_[i], type, network_id))
+      return i;
   }
   return -1;
 }
 
-// Returns currently connected network if there is one.
-const NetworkList::NetworkItem* NetworkList::ConnectedNetwork() const {
-  if (connected_network_index_ >= 0 &&
-      connected_network_index_ < static_cast<int>(networks_.size())) {
-    return &networks_[connected_network_index_];
-  } else {
-    return NULL;
-  }
+bool NetworkList::IsNetworkConnected(NetworkType type,
+                                     const string16& id) const {
+  return IsInNetworkList(connected_networks_, type, id);
 }
 
-// Returns currently connecting network if there is one.
-const NetworkList::NetworkItem* NetworkList::ConnectingNetwork() const {
-  if (connecting_network_index_ >= 0 &&
-      connecting_network_index_ < static_cast<int>(networks_.size())) {
-    return &networks_[connecting_network_index_];
-  } else {
-    return NULL;
-  }
+bool NetworkList::IsNetworkConnecting(NetworkType type,
+                                      const string16& id) const {
+  return IsInNetworkList(connecting_networks_, type, id);
 }
 
 void NetworkList::NetworkChanged(chromeos::NetworkLibrary* network_lib) {
-  connected_network_index_ = -1;
-  connecting_network_index_ = -1;
   networks_.clear();
+  connected_networks_.clear();
+  connecting_networks_.clear();
   // Index of the last added network item.
-  int index = 0;
+  size_t index = 0;
   if (!network_lib || !CrosLibrary::Get()->EnsureLoaded())
     return;
 
@@ -93,7 +67,7 @@ void NetworkList::NetworkChanged(chromeos::NetworkLibrary* network_lib) {
                                     label,
                                     WifiNetwork(),
                                     CellularNetwork()));
-    SetNetworksIndices(index++, ethernet_connected, ethernet_connecting);
+    AddNetworkIndexToList(index++, ethernet_connected, ethernet_connecting);
   }
 
   // TODO(nkostylev): Show public WiFi networks first.
@@ -105,9 +79,9 @@ void NetworkList::NetworkChanged(chromeos::NetworkLibrary* network_lib) {
                                     *it,
                                     CellularNetwork()));
     if (network_lib->wifi_name() == it->name()) {
-      SetNetworksIndices(index,
-                         network_lib->wifi_connected(),
-                         network_lib->wifi_connecting());
+      AddNetworkIndexToList(index,
+                            network_lib->wifi_connected(),
+                            network_lib->wifi_connecting());
     }
   }
 
@@ -119,25 +93,57 @@ void NetworkList::NetworkChanged(chromeos::NetworkLibrary* network_lib) {
                                     WifiNetwork(),
                                     *it));
     if (network_lib->cellular_name() == it->name()) {
-      SetNetworksIndices(index,
-                         network_lib->cellular_connected(),
-                         network_lib->cellular_connecting());
+      AddNetworkIndexToList(index,
+                            network_lib->cellular_connected(),
+                            network_lib->cellular_connecting());
     }
   }
 }
 
-void NetworkList::SetNetworksIndices(int index,
-                                     bool connected,
-                                     bool connecting) {
-  if (connected_network_index_  != -1 ||
-      connecting_network_index_ != -1 ||
-      index < 0 || index >= static_cast<int>(networks_.size()))
-    return;
+////////////////////////////////////////////////////////////////////////////////
+// NetworkList, private:
 
+bool NetworkList::IsInNetworkList(const NetworkIndexVector& list,
+                                  NetworkType type,
+                                  const string16& id) const {
+  if (type == NETWORK_EMPTY)
+    return false;
+  std::string network_id = UTF16ToASCII(id);
+  for (size_t i = 0; i < list.size(); ++i) {
+    if (IsSameNetwork(&networks_[list[i]], type, network_id))
+      return true;
+  }
+  return false;
+}
+
+bool NetworkList::IsSameNetwork(const NetworkList::NetworkItem* network,
+                                NetworkType type,
+                                const std::string& id) const {
+  if (type != network->network_type)
+    return false;
+  switch (type) {
+    case NETWORK_ETHERNET:
+      // Assuming that there's only single Ethernet network.
+      return true;
+    case NETWORK_WIFI:
+      return id == network->wifi_network.name();
+      break;
+    case NETWORK_CELLULAR:
+      return id == network->cellular_network.name();
+      break;
+    default:
+      return false;
+      break;
+  }
+}
+
+void NetworkList::AddNetworkIndexToList(size_t index,
+                                        bool connected,
+                                        bool connecting) {
   if (connected) {
-    connected_network_index_ = index;
+    connected_networks_.push_back(index);
   } else if (connecting) {
-    connecting_network_index_ = index;
+    connecting_networks_.push_back(index);
   }
 }
 
