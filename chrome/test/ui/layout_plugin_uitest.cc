@@ -20,14 +20,10 @@ static const char kTestPluginName[] = "TestNetscapePlugIn.plugin";
 static const char kTestPluginName[] = "libnpapi_layout_test_plugin.so";
 #endif
 
-namespace {
-
 class LayoutPluginTester : public NPAPITesterBase {
  protected:
   LayoutPluginTester() : NPAPITesterBase(kTestPluginName) {}
 };
-
-}  // namespace
 
 // Make sure that navigating away from a plugin referenced by JS doesn't
 // crash.
