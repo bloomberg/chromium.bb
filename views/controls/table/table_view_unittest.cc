@@ -174,7 +174,7 @@ void TableViewTest::VeriyViewOrder(int first, ...) {
   int value = first;
   int index = 0;
   for (int value = first, index = 0; value != -1; index++) {
-    ASSERT_EQ(value, table_->view_to_model(index));
+    ASSERT_EQ(value, table_->ViewToModel(index));
     value = va_arg(marker, int);
   }
   va_end(marker);

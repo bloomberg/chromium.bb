@@ -157,7 +157,7 @@ class TableView : public NativeControl,
                        const gfx::Rect& current);
 
   // Returns the number of rows in the TableView.
-  int RowCount();
+  int RowCount() const;
 
   // Returns the number of selected rows.
   int SelectedRowCount();
@@ -227,14 +227,10 @@ class TableView : public NativeControl,
   bool is_sorted() const { return !sort_descriptors_.empty(); }
 
   // Maps from the index in terms of the model to that of the view.
-  int model_to_view(int model_index) const {
-    return model_to_view_.get() ? model_to_view_[model_index] : model_index;
-  }
+  int ModelToView(int model_index) const;
 
   // Maps from the index in terms of the view to that of the model.
-  int view_to_model(int view_index) const {
-    return view_to_model_.get() ? view_to_model_[view_index] : view_index;
-  }
+  int ViewToModel(int view_index) const;
 
   // Sets the text to display on top of the table. This is useful if the table
   // is empty and you want to inform the user why.

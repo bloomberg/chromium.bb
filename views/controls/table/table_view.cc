@@ -141,7 +141,7 @@ void TableView::DidChangeBounds(const gfx::Rect& previous,
   SendMessage(list_view_, WM_SETREDRAW, static_cast<WPARAM>(TRUE), 0);
 }
 
-int TableView::RowCount() {
+int TableView::RowCount() const {
   if (!list_view_)
     return 0;
   return ListView_GetItemCount(list_view_);
@@ -165,7 +165,7 @@ void TableView::Select(int model_row) {
   ListView_SetItemState(list_view_, -1, 0, LVIS_SELECTED);
 
   // Select the specified item.
-  int view_row = model_to_view(model_row);
+  int view_row = ModelToView(model_row);
   ListView_SetItemState(list_view_, view_row, LVIS_SELECTED | LVIS_FOCUSED,
                         LVIS_SELECTED | LVIS_FOCUSED);
 
@@ -186,7 +186,7 @@ void TableView::SetSelectedState(int model_row, bool state) {
   ignore_listview_change_ = true;
 
   // Select the specified item.
-  ListView_SetItemState(list_view_, model_to_view(model_row),
+  ListView_SetItemState(list_view_, ModelToView(model_row),
                         state ? LVIS_SELECTED : 0,  LVIS_SELECTED);
 
   ignore_listview_change_ = false;
@@ -201,7 +201,7 @@ void TableView::SetFocusOnItem(int model_row) {
   ignore_listview_change_ = true;
 
   // Set the focus to the given item.
-  ListView_SetItemState(list_view_, model_to_view(model_row), LVIS_FOCUSED,
+  ListView_SetItemState(list_view_, ModelToView(model_row), LVIS_FOCUSED,
                         LVIS_FOCUSED);
 
   ignore_listview_change_ = false;
@@ -212,7 +212,7 @@ int TableView::FirstSelectedRow() {
     return -1;
 
   int view_row = ListView_GetNextItem(list_view_, -1, LVNI_ALL | LVIS_SELECTED);
-  return view_row == -1 ? -1 : view_to_model(view_row);
+  return view_row == -1 ? -1 : ViewToModel(view_row);
 }
 
 bool TableView::IsItemSelected(int model_row) {
@@ -220,7 +220,7 @@ bool TableView::IsItemSelected(int model_row) {
     return false;
 
   DCHECK(model_row >= 0 && model_row < RowCount());
-  return (ListView_GetItemState(list_view_, model_to_view(model_row),
+  return (ListView_GetItemState(list_view_, ModelToView(model_row),
                                 LVIS_SELECTED) == LVIS_SELECTED);
 }
 
@@ -229,7 +229,7 @@ bool TableView::ItemHasTheFocus(int model_row) {
     return false;
 
   DCHECK(model_row >= 0 && model_row < RowCount());
-  return (ListView_GetItemState(list_view_, model_to_view(model_row),
+  return (ListView_GetItemState(list_view_, ModelToView(model_row),
                                 LVIS_FOCUSED) == LVIS_FOCUSED);
 }
 
@@ -263,7 +263,7 @@ void TableView::OnItemsChanged(int start, int length) {
     lv_item.mask = LVIF_IMAGE;
     for (int i = start; i < start + length; ++i) {
       // Retrieve the current icon index.
-      lv_item.iItem = model_to_view(i);
+      lv_item.iItem = ModelToView(i);
       BOOL r = ListView_GetItem(list_view_, &lv_item);
       DCHECK(r);
       // Set the current icon index to the other image.
@@ -325,7 +325,7 @@ void TableView::OnItemsRemoved(int start, int length) {
       // Iterate through the elements, updating the view_to_model_ mapping
       // as well as collecting the rows that need to be deleted.
       for (int i = 0, removed_count = 0; i < old_row_count; ++i) {
-        int model_index = view_to_model(i);
+        int model_index = ViewToModel(i);
         if (model_index >= start) {
           if (model_index < start + length) {
             // This item was removed.
@@ -552,7 +552,7 @@ LRESULT CALLBACK TableView::TableWndProc(HWND window,
           int view_index =
               GetViewIndexFromPoint(window, gfx::Point(table_point));
           if (view_index != -1) {
-            int model_index = table_view->view_to_model(view_index);
+            int model_index = table_view->ViewToModel(view_index);
             if (!table_view->IsItemSelected(model_index))
               table_view->Select(model_index);
           }
@@ -613,7 +613,7 @@ LRESULT CALLBACK TableView::TableWndProc(HWND window,
       if (w_param == MK_MBUTTON) {
         int view_index = GetViewIndexFromPoint(window, gfx::Point(l_param));
         if (view_index != -1) {
-          int model_index = table_view->view_to_model(view_index);
+          int model_index = table_view->ViewToModel(view_index);
           // Clear all and select the row that was middle clicked.
           table_view->Select(model_index);
           table_view->OnMiddleClick();
@@ -630,7 +630,7 @@ LRESULT CALLBACK TableView::TableWndProc(HWND window,
         if (select_on_mouse_up) {
           int view_index = GetViewIndexFromPoint(window, gfx::Point(l_param));
           if (view_index != -1)
-            table_view->Select(table_view->view_to_model(view_index));
+            table_view->Select(table_view->ViewToModel(view_index));
         }
         return 0;
       }
@@ -657,7 +657,7 @@ LRESULT CALLBACK TableView::TableWndProc(HWND window,
           select_on_mouse_up = false;
           mouse_down_x = GET_X_LPARAM(l_param);
           mouse_down_y = GET_Y_LPARAM(l_param);
-          int model_index = table_view->view_to_model(view_index);
+          int model_index = table_view->ViewToModel(view_index);
           bool select = true;
           if (w_param & MK_CONTROL) {
             select = false;
@@ -686,7 +686,7 @@ LRESULT CALLBACK TableView::TableWndProc(HWND window,
               for (int i = std::min(view_index, mark_view_index),
                    max_i = std::max(view_index, mark_view_index); i <= max_i;
                    ++i) {
-                table_view->SetSelectedState(table_view->view_to_model(i),
+                table_view->SetSelectedState(table_view->ViewToModel(i),
                                              true);
               }
             }
@@ -893,7 +893,7 @@ void TableView::UpdateItemsLParams(int start, int length) {
   int row_count = RowCount();
   for (int i = 0; i < row_count; ++i) {
     item.iItem = i;
-    int model_index = view_to_model(i);
+    int model_index = ViewToModel(i);
     if (length > 0 && model_index >= start)
       model_index += length;
     item.lParam = static_cast<LPARAM>(model_index);
@@ -1084,7 +1084,7 @@ LRESULT TableView::OnNotify(int w_param, LPNMHDR hdr) {
       // disable all of the above behavior.
       NMLVGETINFOTIP* info_tip = reinterpret_cast<NMLVGETINFOTIP*>(hdr);
       std::wstring tooltip =
-          model_->GetTooltip(view_to_model(info_tip->iItem));
+          model_->GetTooltip(ViewToModel(info_tip->iItem));
       CHECK(info_tip->cchTextMax >= 2);
       if (tooltip.length() >= static_cast<size_t>(info_tip->cchTextMax)) {
         tooltip.erase(info_tip->cchTextMax - 2);  // Ellipsis + '\0'
@@ -1188,7 +1188,7 @@ LRESULT TableView::OnCustomDraw(NMLVCUSTOMDRAW* draw_info) {
         LOGFONT logfont;
         GetObject(GetWindowFont(list_view_), sizeof(logfont), &logfont);
 
-        if (GetCellColors(view_to_model(
+        if (GetCellColors(ViewToModel(
                               static_cast<int>(draw_info->nmcd.dwItemSpec)),
                           draw_info->iSubItem,
                           &foreground,
@@ -1219,7 +1219,7 @@ LRESULT TableView::OnCustomDraw(NMLVCUSTOMDRAW* draw_info) {
       // We get notifications for empty items, just ignore them.
       if (view_index >= model_->RowCount())
         return CDRF_DODEFAULT;
-      int model_index = view_to_model(view_index);
+      int model_index = ViewToModel(view_index);
       LRESULT r = CDRF_DODEFAULT;
       // First let's take care of painting the right icon.
       if (table_type_ == ICON_AND_TEXT) {
@@ -1377,6 +1377,24 @@ void TableView::SetPreferredSize(const gfx::Size& size) {
   PreferredSizeChanged();
 }
 
+int TableView::ModelToView(int model_index) const {
+  if (!model_to_view_.get())
+    return model_index;
+  DCHECK_GE(model_index, 0) << " negative model_index " << model_index;
+  DCHECK_LT(model_index, RowCount()) << " out of bounds model_index " <<
+      model_index;
+  return model_to_view_[model_index];
+}
+
+int TableView::ViewToModel(int view_index) const {
+  if (!view_to_model_.get())
+    return view_index;
+  DCHECK_GE(view_index, 0) << " negative view_index " << view_index;
+  DCHECK_LT(view_index, RowCount()) << " out of bounds view_index " <<
+      view_index;
+  return view_to_model_[view_index];
+}
+
 void TableView::SetAltText(const std::wstring& alt_text) {
   if (alt_text == alt_text_)
     return;
@@ -1419,7 +1437,7 @@ void TableView::UpdateListViewCache0(int start, int length, bool add) {
     int max_text_width = ListView_GetStringWidth(list_view_, col.title.c_str());
     for (int i = start; i < start + length; ++i) {
       // Set item.
-      item.iItem = add ? i : model_to_view(i);
+      item.iItem = add ? i : ModelToView(i);
       item.iSubItem = j;
       std::wstring text = model_->GetText(i, visible_columns_[j]);
       item.pszText = const_cast<LPWSTR>(text.c_str());
@@ -1490,7 +1508,7 @@ int TableView::PreviousSelectedViewIndex(int view_index) {
   // ListView_GetNextItem(list_view_,item, LVNI_SELECTED | LVNI_ABOVE)
   // fails on Vista (always returns -1), so we iterate through the indices.
   view_index = std::min(view_index, row_count);
-  while (--view_index >= 0 && !IsItemSelected(view_to_model(view_index)));
+  while (--view_index >= 0 && !IsItemSelected(ViewToModel(view_index)));
   return view_index;
 }
 
@@ -1573,7 +1591,7 @@ void TableSelectionIterator::UpdateModelIndexFromViewIndex() {
   if (view_index_ == -1)
     model_index_ = -1;
   else
-    model_index_ = table_view_->view_to_model(view_index_);
+    model_index_ = table_view_->ViewToModel(view_index_);
 }
 
 }  // namespace views
