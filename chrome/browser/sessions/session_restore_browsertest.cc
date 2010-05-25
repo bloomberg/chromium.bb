@@ -12,10 +12,19 @@
 
 typedef InProcessBrowserTest SessionRestoreTest;
 
+#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+// http://crbug.com/39476
+#define MAYBE_RestoreOnNewWindowWithNoTabbedBrowsers \
+        FAILS_RestoreOnNewWindowWithNoTabbedBrowsers
+#else
+#define MAYBE_RestoreOnNewWindowWithNoTabbedBrowsers \
+        RestoreOnNewWindowWithNoTabbedBrowsers
+#endif
+
 // Makes sure when session restore is triggered in the same process we don't end
 // up with an extra tab.
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
-                       RestoreOnNewWindowWithNoTabbedBrowsers) {
+                       MAYBE_RestoreOnNewWindowWithNoTabbedBrowsers) {
   if (browser_defaults::kRestorePopups)
     return;
 
