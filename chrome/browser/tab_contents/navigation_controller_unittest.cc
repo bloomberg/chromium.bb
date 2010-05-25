@@ -1679,6 +1679,40 @@ TEST_F(NavigationControllerTest, CloneOmitsInterstitials) {
   ASSERT_EQ(2, clone->controller().entry_count());
 }
 
+// Tests a subframe navigation while a toplevel navigation is pending.
+// http://crbug.com/43967
+TEST_F(NavigationControllerTest, SubframeWhilePending) {
+  // Load the first page.
+  const GURL url1("http://foo/");
+  NavigateAndCommit(url1);
+
+  // Now start a pending load to a totally different page, but don't commit it.
+  const GURL url2("http://bar/");
+  controller().LoadURL(url2, GURL(), PageTransition::TYPED);
+
+  // Send a subframe update from the first page, as if one had just
+  // automatically loaded. Auto subframes don't increment the page ID.
+  const GURL url1_sub("http://foo/subframe");
+  ViewHostMsg_FrameNavigate_Params params = {0};
+  params.page_id = controller().GetLastCommittedEntry()->page_id();
+  params.url = url1_sub;
+  params.transition = PageTransition::AUTO_SUBFRAME;
+  params.should_update_history = false;
+  params.gesture = NavigationGestureAuto;
+  params.is_post = false;
+  NavigationController::LoadCommittedDetails details;
+
+  // This should return false meaning that nothing was actually updated.
+  EXPECT_FALSE(controller().RendererDidNavigate(params, 0, &details));
+
+  // The notification should have updated the last committed one, and not
+  // the pending load.
+  EXPECT_EQ(url1, controller().GetLastCommittedEntry()->url());
+
+  // The active entry should be unchanged by the subframe load.
+  EXPECT_EQ(url2, controller().GetActiveEntry()->url());
+}
+
 /* TODO(brettw) These test pass on my local machine but fail on the XP buildbot
    (but not Vista) cleaning up the directory after they run.
    This should be fixed.

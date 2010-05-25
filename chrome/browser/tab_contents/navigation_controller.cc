@@ -645,6 +645,15 @@ NavigationType::Type NavigationController::ClassifyNavigation(
   }
   NavigationEntry* existing_entry = entries_[existing_entry_index].get();
 
+  if (!PageTransition::IsMainFrame(params.transition)) {
+    // All manual subframes would get new IDs and were handled above, so we
+    // know this is auto. Since the current page was found in the navigation
+    // entry list, we're guaranteed to have a last committed entry.
+    DCHECK(GetLastCommittedEntry());
+    return NavigationType::AUTO_SUBFRAME;
+  }
+
+  // Anything below here we know is a main frame navigation.
   if (pending_entry_ &&
       existing_entry != pending_entry_ &&
       pending_entry_->page_id() == -1) {
@@ -656,14 +665,6 @@ NavigationType::Type NavigationController::ClassifyNavigation(
     // this). In this case, we want to just ignore the pending entry and go
     // back to where we were (the "existing entry").
     return NavigationType::SAME_PAGE;
-  }
-
-  if (!PageTransition::IsMainFrame(params.transition)) {
-    // All manual subframes would get new IDs and were handled above, so we
-    // know this is auto. Since the current page was found in the navigation
-    // entry list, we're guaranteed to have a last committed entry.
-    DCHECK(GetLastCommittedEntry());
-    return NavigationType::AUTO_SUBFRAME;
   }
 
   // Any toplevel navigations with the same base (minus the reference fragment)
