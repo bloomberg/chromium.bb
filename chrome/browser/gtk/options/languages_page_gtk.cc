@@ -94,7 +94,7 @@ AddLanguageDialog::AddLanguageDialog(Profile* profile,
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroyThunk), this);
 
-  gtk_widget_show_all(dialog_);
+  gtk_util::ShowDialog(dialog_);
 }
 
 void AddLanguageDialog::OnResponse(GtkWidget* dialog, int response_id) {
