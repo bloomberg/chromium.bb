@@ -507,7 +507,7 @@ void GtkThemeProvider::LoadGtkValues() {
 
   GtkStyle* window_style = gtk_rc_get_style(fake_window_);
   GdkColor toolbar_color = window_style->bg[GTK_STATE_NORMAL];
-  GdkColor button_color = window_style->bg[GTK_STATE_SELECTED];
+  GdkColor button_color = window_style->fg[GTK_STATE_NORMAL];
 
   GtkStyle* label_style = gtk_rc_get_style(fake_label_.get());
   GdkColor label_color = label_style->fg[GTK_STATE_NORMAL];
@@ -546,24 +546,6 @@ void GtkThemeProvider::LoadGtkValues() {
     frame_color.red = SkColorGetR(shifted) * kSkiaToGDKMultiplier;
     frame_color.green = SkColorGetG(shifted) * kSkiaToGDKMultiplier;
     frame_color.blue = SkColorGetB(shifted) * kSkiaToGDKMultiplier;
-  }
-
-  // By default, the button tint color is the background selection color. But
-  // this can be unreadable in some dark themes, so we set a minimum contrast
-  // between the button color and the toolbar color.
-  color_utils::HSL button_hsl;
-  color_utils::SkColorToHSL(GdkToSkColor(&button_color), &button_hsl);
-  color_utils::HSL toolbar_hsl;
-  color_utils::SkColorToHSL(GdkToSkColor(&toolbar_color), &toolbar_hsl);
-  double hsl_difference = fabs(button_hsl.l - toolbar_hsl.l);
-  if (hsl_difference <= kMinimumLuminanceDifference) {
-    // Not enough contrast. Try the text color instead.
-    color_utils::HSL label_hsl;
-    color_utils::SkColorToHSL(GdkToSkColor(&label_color), &label_hsl);
-    double label_difference = fabs(label_hsl.l - toolbar_hsl.l);
-    if (label_difference >= kMinimumLuminanceDifference) {
-      button_color = label_color;
-    }
   }
 
   SetThemeTintFromGtk(BrowserThemeProvider::TINT_BUTTONS, &button_color);
@@ -658,7 +640,7 @@ void GtkThemeProvider::LoadGtkValues() {
                        link_color);
 
   // Generate the colors that we pass to WebKit.
-  focus_ring_color_ = GdkToSkColor(&button_color);
+  focus_ring_color_ = GdkToSkColor(&frame_color);
   GdkColor thumb_active_color, thumb_inactive_color, track_color;
   GtkThemeProvider::GetScrollbarColors(&thumb_active_color,
                                        &thumb_inactive_color,
@@ -757,22 +739,33 @@ SkBitmap* GtkThemeProvider::GenerateGtkThemeBitmap(int id) const {
       return GenerateFrameImage(
           BrowserThemeProvider::TINT_FRAME_INCOGNITO_INACTIVE);
     }
+    // Icons that sit inside the omnibox shouldn't receive TINT_BUTTONS and
+    // instead should tint based on the foreground text entry color in GTK+
+    // mode because some themes that try to be dark *and* light have very
+    // different colors between the omnibox and the normal background area.
+    case IDR_OMNIBOX_SEARCH:
+    case IDR_OMNIBOX_MORE:
+    case IDR_OMNIBOX_STAR:
+    case IDR_GEOLOCATION_ALLOWED_LOCATIONBAR_ICON:
+    case IDR_GEOLOCATION_DENIED_LOCATIONBAR_ICON: {
+      color_utils::HSL tint;
+      GetNormalEntryForegroundHSL(&tint);
+      return GenerateTintedIcon(id, tint);
+    }
     // Two sets of omnibox icons, the one for normal http and the one for
     // history, include white backgrounds (and are supposed to, for the windows
     // chrome-theme). On linux, where we have all sorts of wacky themes and
     // color combinations we need to deal with, switch them out with
     // transparent background versions.
     case IDR_OMNIBOX_HTTP: {
-      TintMap::const_iterator it = tints_.find(
-          BrowserThemeProvider::TINT_BUTTONS);
-      DCHECK(it != tints_.end());
-      return GenerateTintedIcon(IDR_OMNIBOX_HTTP_TRANSPARENT, it->second);
+      color_utils::HSL tint;
+      GetNormalEntryForegroundHSL(&tint);
+      return GenerateTintedIcon(IDR_OMNIBOX_HTTP_TRANSPARENT, tint);
     }
     case IDR_OMNIBOX_HISTORY: {
-      TintMap::const_iterator it = tints_.find(
-          BrowserThemeProvider::TINT_BUTTONS);
-      DCHECK(it != tints_.end());
-      return GenerateTintedIcon(IDR_OMNIBOX_HISTORY_TRANSPARENT, it->second);
+      color_utils::HSL tint;
+      GetNormalEntryForegroundHSL(&tint);
+      return GenerateTintedIcon(IDR_OMNIBOX_HISTORY_TRANSPARENT, tint);
     }
     // In GTK mode, the dark versions of the omnibox icons only ever appear in
     // the autocomplete popup and only against the current theme's GtkEntry
@@ -780,19 +773,19 @@ SkBitmap* GtkThemeProvider::GenerateGtkThemeBitmap(int id) const {
     // with the selected color.
     case IDR_OMNIBOX_HTTP_DARK: {
       color_utils::HSL tint;
-      GetEntryForegroundHSL(&tint);
+      GetSelectedEntryForegroundHSL(&tint);
       return GenerateTintedIcon(IDR_OMNIBOX_HTTP_DARK_TRANSPARENT, tint);
     }
     case IDR_OMNIBOX_HISTORY_DARK: {
       color_utils::HSL tint;
-      GetEntryForegroundHSL(&tint);
+      GetSelectedEntryForegroundHSL(&tint);
       return GenerateTintedIcon(IDR_OMNIBOX_HISTORY_DARK_TRANSPARENT, tint);
     }
     case IDR_OMNIBOX_SEARCH_DARK:
     case IDR_OMNIBOX_MORE_DARK:
     case IDR_OMNIBOX_STAR_DARK: {
       color_utils::HSL tint;
-      GetEntryForegroundHSL(&tint);
+      GetSelectedEntryForegroundHSL(&tint);
       return GenerateTintedIcon(id, tint);
     }
     default: {
@@ -829,7 +822,15 @@ SkBitmap* GtkThemeProvider::GenerateTintedIcon(int base_id,
       *button, tint));
 }
 
-void GtkThemeProvider::GetEntryForegroundHSL(color_utils::HSL* tint) const {
+void GtkThemeProvider::GetNormalEntryForegroundHSL(
+    color_utils::HSL* tint) const {
+  GtkStyle* style = gtk_rc_get_style(fake_entry_.get());
+  const GdkColor color = style->text[GTK_STATE_NORMAL];
+  color_utils::SkColorToHSL(GdkToSkColor(&color), tint);
+}
+
+void GtkThemeProvider::GetSelectedEntryForegroundHSL(
+    color_utils::HSL* tint) const {
   GtkStyle* style = gtk_rc_get_style(fake_entry_.get());
   const GdkColor color = style->text[GTK_STATE_SELECTED];
   color_utils::SkColorToHSL(GdkToSkColor(&color), tint);

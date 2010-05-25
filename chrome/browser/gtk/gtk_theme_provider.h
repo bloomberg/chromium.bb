@@ -167,9 +167,12 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // Tints an icon based on tint.
   SkBitmap* GenerateTintedIcon(int base_id, color_utils::HSL tint) const;
 
+  // Returns a tint that's the color of the current normal text in an entry.
+  void GetNormalEntryForegroundHSL(color_utils::HSL* tint) const;
+
   // Returns a tint that's the color of the current highlighted text in an
   // entry.
-  void GetEntryForegroundHSL(color_utils::HSL* tint) const;
+  void GetSelectedEntryForegroundHSL(color_utils::HSL* tint) const;
 
   // A notification from the GtkChromeButton GObject destructor that we should
   // remove it from our internal list.
