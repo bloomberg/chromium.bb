@@ -124,14 +124,18 @@ void TemplateURLFetcher::RequestDelegate::OnURLFetchComplete(
         !model || !model->loaded() ||
         !model->CanReplaceKeyword(keyword_, template_url->url()->url(),
                                   &existing_url)) {
-      // TODO(pamg): If we're coming from JS (not autodetected) and this URL
-      // already exists in the model, consider bringing up the
-      // EditKeywordController to edit it.  This would be helpful feedback in
+      if (autodetected_ || !model || !model->loaded()) {
+        fetcher_->RequestCompleted(this);
+        // WARNING: RequestCompleted deletes us.
+        return;
+      }
+      // If we're coming from JS (neither autodetected nor failure to load the
+      // template URL model) and this URL already exists in the model, we bring
+      // up the EditKeywordController to edit it.  This is helpful feedback in
       // the case of clicking a button twice, and annoying in the case of a
       // page that calls AddSearchProvider() in JS without a user action.
-      fetcher_->RequestCompleted(this);
-      // WARNING: RequestCompleted deletes us.
-      return;
+      keyword_.clear();
+      existing_url = NULL;
     }
 
     if (existing_url)
