@@ -319,6 +319,11 @@
       <message name="IDS_BUGREPORT_DIALOG_HEIGHT_LINES" use_name_for_id="true">
         20
       </message>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_CHROMEOS_BUGREPORT_DIALOG_HEIGHT_LINES" use_name_for_id="true">
+          25
+        </message>
+      </if>
 
       <!-- The width and height of the Clear Browsing Data dialog box in characters and -->
       <!-- lines (See above). -->

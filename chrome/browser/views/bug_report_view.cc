@@ -440,9 +440,14 @@ void BugReportView::SetupControl() {
 }
 
 gfx::Size BugReportView::GetPreferredSize() {
-  return gfx::Size(views::Window::GetLocalizedContentsSize(
+  gfx::Size size = views::Window::GetLocalizedContentsSize(
       IDS_BUGREPORT_DIALOG_WIDTH_CHARS,
-      IDS_BUGREPORT_DIALOG_HEIGHT_LINES));
+#if defined(OS_CHROMEOS)
+      IDS_CHROMEOS_BUGREPORT_DIALOG_HEIGHT_LINES);
+#else
+      IDS_BUGREPORT_DIALOG_HEIGHT_LINES);
+#endif
+ return size;
 }
 
 void BugReportView::UpdateReportingControls(bool is_phishing_report) {
