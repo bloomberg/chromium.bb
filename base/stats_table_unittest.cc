@@ -108,8 +108,8 @@ void StatsTableThread::Run() {
 }
 
 // Create a few threads and have them poke on their counters.
-// Disabled, http://crbug.com/10611.
-TEST_F(StatsTableTest, DISABLED_MultipleThreads) {
+// Flaky, http://crbug.com/10611.
+TEST_F(StatsTableTest, FLAKY_MultipleThreads) {
   // Create a stats table.
   const std::string kTableName = "MultipleThreadStatTable";
   const int kMaxThreads = 20;
