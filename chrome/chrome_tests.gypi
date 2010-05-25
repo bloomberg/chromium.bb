@@ -2358,8 +2358,11 @@
               'action_name': 'coverage',
               # Wish gyp had some basic builtin commands (e.g. 'touch').
               'action': [ 'python', '-c',
-                          "import os; open('<(PRODUCT_DIR)' + os.path.sep + " \
-                          "'coverage-build-and-run.stamp', 'w').close()" ],
+                          'import os; ' +
+                          'open(' +
+                          '\'<(PRODUCT_DIR)\' + os.path.sep + ' +
+                          '\'coverage-build-and-run.stamp\'' +
+                          ', \'w\').close()' ],
               # Use outputs of this action as inputs for the main target build.
               # Seems as a misnomer but makes this happy on Linux (scons).
               'process_outputs_as_sources': 1,
@@ -2424,10 +2427,15 @@
               'inputs': [ '../tools/code_coverage/coverage_posix.py' ],
               'outputs': [ '<(PRODUCT_DIR)/coverage_bundles.py' ],
               'action_name': 'coverage_build',
-              'action': [ "import os; " \
-                          "f = open('<(PRODUCT_DIR)' + os.path.sep + 'coverage_bundles.py', 'w'); " \
-                          "deplist = '' + '<@(_dependencies)'.split(' '); " \
-                          "f.write(str(deplist)); f.close()" ],
+              'action': [ 'python', '-c',
+                          'import os; '
+                          'f = open(' +
+                          '\'<(PRODUCT_DIR)\' + os.path.sep + ' +
+                          '\'coverage_bundles.py\'' +
+                          ', \'w\'); ' +
+                          'deplist = \'' + '<@(_dependencies)' + '\'.split(\' \'); ' +
+                          'f.write(str(deplist)); ' +
+                          'f.close()'],
               # Use outputs of this action as inputs for the main target build.
               # Seems as a misnomer but makes this happy on Linux (scons).
               'process_outputs_as_sources': 1,
