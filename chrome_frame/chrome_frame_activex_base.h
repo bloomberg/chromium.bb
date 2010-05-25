@@ -943,7 +943,7 @@ END_MSG_MAP()
     // circumstances this vtable is actually used though.
     if (S_OK == DoQueryService(SID_STopLevelBrowser, m_spInPlaceSite,
                                bs2.Receive()) && bs2.get() &&
-                               *(reinterpret_cast<long*>(bs2.get()) +
+                               *(*(reinterpret_cast<void***>(bs2.get())) +
                                    kMayTranslateAcceleratorOffset)) {
       hr = bs2->v_MayTranslateAccelerator(&accel_message);
     } else {
