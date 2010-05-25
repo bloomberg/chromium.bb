@@ -8,9 +8,6 @@ import os
 import stat
 import subprocess
 
-from cmd_env import read_file, write_file
-import cmd_env
-
 import dirtree
 
 
@@ -32,13 +29,13 @@ class TargetState(object):
 
   def GetState(self, default=None):
     if os.path.exists(self._filename):
-      return Unrepr(read_file(self._filename))
+      return Unrepr(dirtree.ReadFile(self._filename))
     else:
       return default
 
   def SetState(self, val):
     x = CheckedRepr(val)
-    write_file(self._filename, x)
+    dirtree.WriteFile(self._filename, x)
     fh = open("%s.log" % self._filename, "a")
     fh.write(x + "\n")
     fh.close()
@@ -160,7 +157,7 @@ def ResetDir(dest_dir):
 def SourceTarget(name, dest_dir, src_tree):
   def DoBuild():
     ResetDir(dest_dir)
-    src_tree.WriteTree(cmd_env.BasicEnv(), dest_dir)
+    src_tree.WriteTree(dest_dir)
   return BuildTarget(name, dest_dir, DoBuild, args=["source"], deps=[])
 
 
@@ -209,15 +206,17 @@ def AutoconfModule(name, install_dir, build_dir, prefix_obj, src,
   def DoBuild():
     ResetDir(install_dir)
     ResetDir(build_dir)
-    env = cmd_env.PrefixCmdEnv(
-        cmd_env.in_dir(build_dir) + ["env", GetPathVar(prefix_obj)],
-        cmd_env.BasicEnv())
-    env.cmd(["env"] + configure_env +
-            [os.path.join(src.dest_path, "configure"),
-             "--prefix=%s" % prefix_dir] + configure_opts)
-    env.cmd(make_cmd + ["-j2"])
+    prefix_cmd = ["env", GetPathVar(prefix_obj)]
+    subprocess.check_call(
+        prefix_cmd + ["env"] + configure_env +
+        [os.path.join(src.dest_path, "configure"),
+         "--prefix=%s" % prefix_dir] + configure_opts,
+        cwd=build_dir)
+    subprocess.check_call(prefix_cmd + make_cmd + ["-j2"], cwd=build_dir)
     def DoInstall(dest_dir):
-      env.cmd(install_cmd + ["DESTDIR=%s" % dest_dir])
+      subprocess.check_call(
+          prefix_cmd + install_cmd + ["DESTDIR=%s" % dest_dir],
+          cwd=build_dir)
     InstallDestdir(prefix_dir, install_dir, DoInstall)
   return BuildTarget(name, install_dir, DoBuild,
                      args=["autoconf", configure_opts, configure_env,
@@ -247,13 +246,13 @@ def SconsBuild(name, dest_dir, src_dir, prefix_obj, scons_args):
     # TODO(mseaborn): Get Scons to use a pristine build directory,
     # instead of reusing the contents of "scons-out".
     subprocess.check_call(
-        ["env", GetPathVar(prefix_obj)] +
-        cmd_env.in_dir(src_dir.dest_path) +
-        ["./scons",
+        ["env", GetPathVar(prefix_obj),
+         "./scons",
          "USE_ENVIRON=1",
          "naclsdk_mode=custom:%s" % dest_dir,
          "naclsdk_validate=0",
-         "--verbose"] + scons_args)
+         "--verbose"] + scons_args,
+        cwd=src_dir.dest_path)
     MungeMultilibDir(dest_dir)
   return BuildTarget(name, dest_dir, DoBuild,
                      args=[scons_args],
@@ -288,7 +287,7 @@ def UnionDir2(name, dest_dir, input_trees):
 def TestModule(name, dest_dir, prefix_obj, code):
   def DoBuild():
     ResetDir(dest_dir)
-    write_file(os.path.join(dest_dir, "prog.c"), code)
+    dirtree.WriteFile(os.path.join(dest_dir, "prog.c"), code)
     subprocess.check_call(
         ["env", GetPathVar(prefix_obj)] +
         ["nacl64-gcc", "-m32",

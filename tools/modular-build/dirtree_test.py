@@ -11,23 +11,6 @@ import tempfile
 import unittest
 
 import dirtree
-import cmd_env
-
-
-def ReadFile(filename):
-  fh = open(filename, "r")
-  try:
-    return fh.read()
-  finally:
-    fh.close()
-
-
-def WriteFile(filename, data):
-  fh = open(filename, "w")
-  try:
-    fh.write(data)
-  finally:
-    fh.close()
 
 
 # Public domain, from
@@ -54,14 +37,14 @@ class Dir(dirtree.DirTree):
   def __init__(self, entries=()):
     self._entries = entries
 
-  def WriteTree(self, env, dest_path):
+  def WriteTree(self, dest_path):
     for leafname, entry in self._entries:
       dest = os.path.join(dest_path, leafname)
       # This is cheating slightly.  DirTrees other than File assume
       # that the directory has already been created.
       if not isinstance(entry, File):
         os.mkdir(dest)
-      entry.WriteTree(env, dest)
+      entry.WriteTree(dest)
 
 
 class File(dirtree.DirTree):
@@ -69,8 +52,8 @@ class File(dirtree.DirTree):
   def __init__(self, data):
     self._data = data
 
-  def WriteTree(self, env, dest_path):
-    WriteFile(dest_path, self._data)
+  def WriteTree(self, dest_path):
+    dirtree.WriteFile(dest_path, self._data)
 
 
 example_tree = Dir([("foo-1.0", Dir([("README", File("hello"))]))])
@@ -83,7 +66,7 @@ class DirTreeTests(TempDirTestCase):
 
   def _RealizeTree(self, tree):
     temp_dir = self.MakeTempDir()
-    tree.WriteTree(cmd_env.BasicEnv(), temp_dir)
+    tree.WriteTree(temp_dir)
     return temp_dir
 
   def test_untar(self):
@@ -104,8 +87,8 @@ class DirTreeTests(TempDirTestCase):
     temp_dir = self.MakeTempDir()
     os.mkdir(os.path.join(temp_dir, "a"))
     os.mkdir(os.path.join(temp_dir, "b"))
-    tree1.WriteTree(cmd_env.BasicEnv(), os.path.join(temp_dir, "a"))
-    tree2.WriteTree(cmd_env.BasicEnv(), os.path.join(temp_dir, "b"))
+    tree1.WriteTree(os.path.join(temp_dir, "a"))
+    tree2.WriteTree(os.path.join(temp_dir, "b"))
     diff_file = os.path.join(temp_dir, "diff")
     rc = subprocess.call(["diff", "-urN", "a", "b"],
                          stdout=open(diff_file, "w"), cwd=temp_dir)
