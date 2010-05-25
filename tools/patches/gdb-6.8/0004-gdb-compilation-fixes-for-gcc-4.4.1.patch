@@ -1,7 +1,23 @@
-diff -Naur gdb-6.8.orig/gdb/cli/cli-cmds.c gdb-6.8/gdb/cli/cli-cmds.c
---- gdb-6.8.orig/gdb/cli/cli-cmds.c	2008-01-02 01:53:14.000000000 +0300
-+++ gdb-6.8/gdb/cli/cli-cmds.c	2010-03-31 00:22:28.400511999 +0400
-@@ -320,7 +320,7 @@
+From 29b471eb7e2446a50d1c1b248cd052ea3e487f7e Mon Sep 17 00:00:00 2001
+From: Egor Pasko <pasko@google.com>
+Date: Tue, 18 May 2010 15:29:20 +0200
+Subject: [PATCH 04/12] [gdb] compilation fixes for gcc 4.4.1
+
+---
+ gdb/gdb/cli/cli-cmds.c  |    2 +-
+ gdb/gdb/eval.c          |    1 +
+ gdb/gdb/inflow.c        |    6 +++---
+ gdb/gdb/main.c          |    2 +-
+ gdb/gdb/mi/mi-cmd-env.c |    2 +-
+ gdb/gdb/top.c           |    2 +-
+ gdb/gdb/utils.c         |    2 +-
+ 7 files changed, 9 insertions(+), 8 deletions(-)
+
+diff --git a/gdb/gdb/cli/cli-cmds.c b/gdb/gdb/cli/cli-cmds.c
+index 96abe8c..419fd1c 100644
+--- a/gdb/gdb/cli/cli-cmds.c
++++ b/gdb/gdb/cli/cli-cmds.c
+@@ -320,7 +320,7 @@ pwd_command (char *args, int from_tty)
  {
    if (args)
      error (_("The \"pwd\" command does not take an argument: %s"), args);
@@ -10,10 +26,11 @@ diff -Naur gdb-6.8.orig/gdb/cli/cli-cmds.c gdb-6.8/gdb/cli/cli-cmds.c
  
    if (strcmp (gdb_dirbuf, current_directory) != 0)
      printf_unfiltered (_("Working directory %s\n (canonically %s).\n"),
-diff -Naur gdb-6.8.orig/gdb/eval.c gdb-6.8/gdb/eval.c
---- gdb-6.8.orig/gdb/eval.c	2008-02-04 03:23:04.000000000 +0300
-+++ gdb-6.8/gdb/eval.c	2010-03-31 00:39:25.146751440 +0400
-@@ -1647,6 +1647,7 @@
+diff --git a/gdb/gdb/eval.c b/gdb/gdb/eval.c
+index efe1dc2..cb4cbe9 100644
+--- a/gdb/gdb/eval.c
++++ b/gdb/gdb/eval.c
+@@ -1647,6 +1647,7 @@ evaluate_subexp_standard (struct type *expect_type,
  	struct type *tmp_type;
  	int offset_item;	/* The array offset where the item lives */
  
@@ -21,10 +38,11 @@ diff -Naur gdb-6.8.orig/gdb/eval.c gdb-6.8/gdb/eval.c
  	if (nargs > MAX_FORTRAN_DIMS)
  	  error (_("Too many subscripts for F77 (%d Max)"), MAX_FORTRAN_DIMS);
  
-diff -Naur gdb-6.8.orig/gdb/inflow.c gdb-6.8/gdb/inflow.c
---- gdb-6.8.orig/gdb/inflow.c	2008-01-02 01:53:11.000000000 +0300
-+++ gdb-6.8/gdb/inflow.c	2010-03-31 00:50:48.935456353 +0400
-@@ -545,17 +545,17 @@
+diff --git a/gdb/gdb/inflow.c b/gdb/gdb/inflow.c
+index f7bf7d1..a194aef 100644
+--- a/gdb/gdb/inflow.c
++++ b/gdb/gdb/inflow.c
+@@ -545,17 +545,17 @@ new_tty (void)
    if (tty != 0)
      {
        close (0);
@@ -45,10 +63,11 @@ diff -Naur gdb-6.8.orig/gdb/inflow.c gdb-6.8/gdb/inflow.c
      }
    if (tty > 2)
      close (tty);
-diff -Naur gdb-6.8.orig/gdb/main.c gdb-6.8/gdb/main.c
---- gdb-6.8.orig/gdb/main.c	2010-03-31 01:11:00.054458951 +0400
-+++ gdb-6.8/gdb/main.c	2010-03-31 00:41:26.698456839 +0400
-@@ -192,7 +192,7 @@
+diff --git a/gdb/gdb/main.c b/gdb/gdb/main.c
+index 740b0bd..6aec4f5 100644
+--- a/gdb/gdb/main.c
++++ b/gdb/gdb/main.c
+@@ -192,7 +192,7 @@ captured_main (void *data)
    line[0] = '\0';		/* Terminate saved (now empty) cmd line */
    instream = stdin;
  
@@ -57,10 +76,11 @@ diff -Naur gdb-6.8.orig/gdb/main.c gdb-6.8/gdb/main.c
    current_directory = gdb_dirbuf;
  
    gdb_stdout = stdio_fileopen (stdout);
-diff -Naur gdb-6.8.orig/gdb/mi/mi-cmd-env.c gdb-6.8/gdb/mi/mi-cmd-env.c
---- gdb-6.8.orig/gdb/mi/mi-cmd-env.c	2008-01-02 01:53:14.000000000 +0300
-+++ gdb-6.8/gdb/mi/mi-cmd-env.c	2010-03-31 00:31:00.470455413 +0400
-@@ -78,7 +78,7 @@
+diff --git a/gdb/gdb/mi/mi-cmd-env.c b/gdb/gdb/mi/mi-cmd-env.c
+index aee7994..a92ecaa 100644
+--- a/gdb/gdb/mi/mi-cmd-env.c
++++ b/gdb/gdb/mi/mi-cmd-env.c
+@@ -78,7 +78,7 @@ mi_cmd_env_pwd (char *command, char **argv, int argc)
       
    /* Otherwise the mi level is 2 or higher.  */
  
@@ -69,10 +89,11 @@ diff -Naur gdb-6.8.orig/gdb/mi/mi-cmd-env.c gdb-6.8/gdb/mi/mi-cmd-env.c
    ui_out_field_string (uiout, "cwd", gdb_dirbuf);
  
    return MI_CMD_DONE;
-diff -Naur gdb-6.8.orig/gdb/top.c gdb-6.8/gdb/top.c
---- gdb-6.8.orig/gdb/top.c	2010-03-31 01:11:00.142459308 +0400
-+++ gdb-6.8/gdb/top.c	2010-03-31 00:43:53.446456912 +0400
-@@ -1636,7 +1636,7 @@
+diff --git a/gdb/gdb/top.c b/gdb/gdb/top.c
+index 6ef06fd..a4e087b 100644
+--- a/gdb/gdb/top.c
++++ b/gdb/gdb/top.c
+@@ -1636,7 +1636,7 @@ gdb_init (char *argv0)
  
    /* Run the init function of each source file */
  
@@ -81,10 +102,11 @@ diff -Naur gdb-6.8.orig/gdb/top.c gdb-6.8/gdb/top.c
    current_directory = gdb_dirbuf;
  
  #ifdef __MSDOS__
-diff -Naur gdb-6.8.orig/gdb/utils.c gdb-6.8/gdb/utils.c
---- gdb-6.8.orig/gdb/utils.c	2008-01-02 01:53:13.000000000 +0300
-+++ gdb-6.8/gdb/utils.c	2010-03-31 00:47:07.760280748 +0400
-@@ -704,7 +704,7 @@
+diff --git a/gdb/gdb/utils.c b/gdb/gdb/utils.c
+index 95761cc..f06f727 100644
+--- a/gdb/gdb/utils.c
++++ b/gdb/gdb/utils.c
+@@ -704,7 +704,7 @@ internal_vproblem (struct internal_problem *problem,
  	abort ();	/* NOTE: GDB has only three calls to abort().  */
        default:
  	dejavu = 3;
@@ -93,3 +115,6 @@ diff -Naur gdb-6.8.orig/gdb/utils.c gdb-6.8/gdb/utils.c
  	exit (1);
        }
    }
+-- 
+1.7.0.1
+

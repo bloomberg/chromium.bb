@@ -1,7 +1,16 @@
-Disable "bt" instruction even if optimization for size is used.
+From 966bf03910fed9bcce617a3b2a71af91012855c3 Mon Sep 17 00:00:00 2001
+From: Egor Pasko <pasko@google.com>
+Date: Tue, 18 May 2010 15:48:24 +0200
+Subject: [PATCH 10/12] [gcc] Disable "bt" instruction even if optimization for size is used.
 
---- gcc-4.4.3/gcc/config/i386/i386.md	2010-03-23 08:39:02.000000000 +0100
-+++ gcc-4.4.3/gcc/config/i386/i386.md	2010-03-23 16:23:14.000000000 +0100
+---
+ gcc/gcc/config/i386/i386.md |   24 ++++++++++++++++--------
+ 1 files changed, 16 insertions(+), 8 deletions(-)
+
+diff --git a/gcc/gcc/config/i386/i386.md b/gcc/gcc/config/i386/i386.md
+index 152151e..be28712 100644
+--- a/gcc/gcc/config/i386/i386.md
++++ b/gcc/gcc/config/i386/i386.md
 @@ -14485,7 +14485,8 @@
  	    (const_int 1)
  	    (match_operand:DI 1 "nonmemory_operand" "rN"))
@@ -22,7 +31,7 @@ Disable "bt" instruction even if optimization for size is used.
    "bt{l}\t{%1, %0|%0, %1}"
    [(set_attr "type" "alu1")])
  
-@@ -14775,7 +14775,8 @@
+@@ -14773,7 +14775,8 @@
  		      (label_ref (match_operand 3 "" ""))
  		      (pc)))
     (clobber (reg:CC FLAGS_REG))]
@@ -32,7 +41,7 @@ Disable "bt" instruction even if optimization for size is used.
    "#"
    "&& 1"
    [(set (reg:CCC FLAGS_REG)
-@@ -14808,7 +14809,8 @@
+@@ -14806,7 +14809,8 @@
  		      (label_ref (match_operand 4 "" ""))
  		      (pc)))
     (clobber (reg:CC FLAGS_REG))]
@@ -42,7 +51,7 @@ Disable "bt" instruction even if optimization for size is used.
     && (INTVAL (operands[3]) & 0x3f) == 0x3f"
    "#"
    "&& 1"
-@@ -14841,7 +14843,8 @@
+@@ -14839,7 +14843,8 @@
  		      (label_ref (match_operand 3 "" ""))
  		      (pc)))
     (clobber (reg:CC FLAGS_REG))]
@@ -52,7 +61,7 @@ Disable "bt" instruction even if optimization for size is used.
    "#"
    "&& 1"
    [(set (reg:CCC FLAGS_REG)
-@@ -14874,7 +14877,8 @@
+@@ -14872,7 +14877,8 @@
  		      (label_ref (match_operand 4 "" ""))
  		      (pc)))
     (clobber (reg:CC FLAGS_REG))]
@@ -62,7 +71,7 @@ Disable "bt" instruction even if optimization for size is used.
     && (INTVAL (operands[3]) & 0x1f) == 0x1f"
    "#"
    "&& 1"
-@@ -14903,7 +14907,8 @@
+@@ -14901,7 +14907,8 @@
  		      (label_ref (match_operand 3 "" ""))
  		      (pc)))
     (clobber (reg:CC FLAGS_REG))]
@@ -72,7 +81,7 @@ Disable "bt" instruction even if optimization for size is used.
    "#"
    "&& 1"
    [(set (reg:CCC FLAGS_REG)
-@@ -14940,7 +14945,8 @@
+@@ -14938,7 +14945,8 @@
  	  (label_ref (match_operand 4 "" ""))
  	  (pc)))
     (clobber (reg:CC FLAGS_REG))]
@@ -82,3 +91,6 @@ Disable "bt" instruction even if optimization for size is used.
     && (INTVAL (operands[3]) & 0x1f) == 0x1f"
    "#"
    "&& 1"
+-- 
+1.7.0.1
+

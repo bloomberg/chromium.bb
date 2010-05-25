@@ -1,7 +1,107 @@
-diff -Naur ../PRISTINE/gdb-6.8/bfd/Makefile.am gdb-6.8/bfd/Makefile.am
---- ../PRISTINE/gdb-6.8/bfd/Makefile.am	2008-02-14 07:20:24.000000000 -0800
-+++ gdb-6.8/bfd/Makefile.am	2009-04-21 00:34:47.000000000 -0700
-@@ -279,6 +279,7 @@
+From 79336f38043ff75441d3fa9a6d7693053b82ddd3 Mon Sep 17 00:00:00 2001
+From: Egor Pasko <pasko@google.com>
+Date: Mon, 24 May 2010 16:02:11 +0200
+Subject: [PATCH 03/12] [gdb] Initial NaCl gdb bulk
+
+---
+ gdb/bfd/Makefile.am                              |    6 +
+ gdb/bfd/Makefile.in                              |    6 +
+ gdb/bfd/config.bfd                               |    5 +
+ gdb/bfd/configure                                |   11 +
+ gdb/bfd/configure.in                             |   11 +
+ gdb/bfd/elf32-nacl.c                             | 4115 ++++++++++++++++++++++
+ gdb/bfd/targets.c                                |    1 +
+ gdb/config.sub                                   |    7 +
+ gdb/gdb/ChangeLog                                |    8 +
+ gdb/gdb/Makefile.in                              |   26 +
+ gdb/gdb/breakpoint.c                             |  200 +-
+ gdb/gdb/breakpoint.h                             |   10 +
+ gdb/gdb/config/i386/nacl-linux.mh                |   13 +
+ gdb/gdb/configure.host                           |    8 +-
+ gdb/gdb/configure.tgt                            |    8 +
+ gdb/gdb/defs.h                                   |    3 +
+ gdb/gdb/exec.c                                   |  180 +-
+ gdb/gdb/exec.h                                   |    3 +
+ gdb/gdb/i386-linux-nat.c                         |   22 +-
+ gdb/gdb/i386-linux-nat.h                         |   28 +
+ gdb/gdb/i386-linux-tdep.c                        |    2 +-
+ gdb/gdb/i386-nacl-nat.c                          |  203 ++
+ gdb/gdb/i386-nacl-tdep.c                         |  905 +++++
+ gdb/gdb/i386-nacl-tdep.h                         |  150 +
+ gdb/gdb/i386-nacl-thread.c                       |  230 ++
+ gdb/gdb/inf-ptrace.c                             |    2 +-
+ gdb/gdb/inf-ptrace.h                             |   10 +
+ gdb/gdb/infcmd.c                                 |   23 -
+ gdb/gdb/infrun.c                                 |   20 +
+ gdb/gdb/linux-nat.c                              |   92 +-
+ gdb/gdb/linux-nat.h                              |    4 +
+ gdb/gdb/linux-thread-db.c                        |   20 +
+ gdb/gdb/main.c                                   |   28 +-
+ gdb/gdb/osabi.c                                  |    9 +
+ gdb/gdb/printcmd.c                               |    8 +
+ gdb/gdb/proc-service.c                           |   17 +
+ gdb/gdb/regcache.c                               |   26 +
+ gdb/gdb/regcache.h                               |    8 +
+ gdb/gdb/solib.c                                  |   35 +
+ gdb/gdb/solist.h                                 |    6 +
+ gdb/gdb/symfile.c                                |   51 +
+ gdb/gdb/symfile.h                                |    3 +
+ gdb/gdb/symtab.c                                 |   37 +-
+ gdb/gdb/target.c                                 |   23 +
+ gdb/gdb/testsuite/config/nacl.exp                |   30 +
+ gdb/gdb/testsuite/gdb.arch/i386-gnu-cfi.exp      |    6 +
+ gdb/gdb/testsuite/gdb.arch/i386-prologue.exp     |    6 +
+ gdb/gdb/testsuite/gdb.arch/i386-signal.exp       |    6 +
+ gdb/gdb/testsuite/gdb.arch/i386-size-overlap.exp |    8 +-
+ gdb/gdb/testsuite/gdb.arch/i386-size.exp         |    8 +-
+ gdb/gdb/testsuite/gdb.arch/i386-sse.exp          |    6 +
+ gdb/gdb/testsuite/gdb.arch/i386-unwind.exp       |    6 +
+ gdb/gdb/testsuite/gdb.base/attach.exp            |    8 +-
+ gdb/gdb/testsuite/gdb.base/attach2.c             |   17 +
+ gdb/gdb/testsuite/gdb.base/break.exp             |    4 +-
+ gdb/gdb/testsuite/gdb.base/completion.exp        |    2 +-
+ gdb/gdb/testsuite/gdb.base/maint.exp             |    4 +-
+ gdb/gdb/testsuite/gdb.mi/mi-break.exp            |   11 +-
+ gdb/gdb/testsuite/gdb.mi/mi-cli.exp              |    2 +-
+ gdb/gdb/testsuite/gdb.mi/mi-simplerun.exp        |   14 +-
+ gdb/gdb/testsuite/gdb.mi/mi-stack.exp            |    2 +-
+ gdb/gdb/testsuite/gdb.mi/mi-stepi.exp            |    6 +-
+ gdb/gdb/testsuite/gdb.mi/mi-until.exp            |   15 +-
+ gdb/gdb/testsuite/gdb.mi/mi-var-display.exp      |   14 +-
+ gdb/gdb/testsuite/gdb.mi/mi2-break.exp           |   11 +-
+ gdb/gdb/testsuite/gdb.mi/mi2-cli.exp             |    2 +-
+ gdb/gdb/testsuite/gdb.mi/mi2-simplerun.exp       |   13 +-
+ gdb/gdb/testsuite/gdb.mi/mi2-stack.exp           |    2 +-
+ gdb/gdb/testsuite/gdb.mi/mi2-stepi.exp           |    6 +-
+ gdb/gdb/testsuite/gdb.mi/mi2-until.exp           |   15 +-
+ gdb/gdb/testsuite/gdb.mi/mi2-var-display.exp     |   12 +-
+ gdb/gdb/testsuite/gdb.threads/schedlock.exp      |    3 +
+ gdb/gdb/testsuite/lib/gdb.exp                    |    9 +-
+ gdb/gdb/testsuite/lib/mi-support.exp             |    3 +-
+ gdb/gdb/thread.c                                 |    8 +
+ gdb/gdb/top.c                                    |    8 +
+ gdb/gdb/ui-out.c                                 |   29 +
+ gdb/gdb/ui-out.h                                 |    5 +
+ gdb/include/elf/common.h                         |    1 +
+ gdb/include/elf/nacl.h                           |   33 +
+ gdb/opcodes/i386-opc.tbl                         |    6 +
+ gdb/opcodes/i386-tbl.h                           |   42 +
+ 82 files changed, 6769 insertions(+), 197 deletions(-)
+ create mode 100644 gdb/bfd/elf32-nacl.c
+ create mode 100644 gdb/gdb/config/i386/nacl-linux.mh
+ create mode 100644 gdb/gdb/i386-linux-nat.h
+ create mode 100644 gdb/gdb/i386-nacl-nat.c
+ create mode 100644 gdb/gdb/i386-nacl-tdep.c
+ create mode 100644 gdb/gdb/i386-nacl-tdep.h
+ create mode 100644 gdb/gdb/i386-nacl-thread.c
+ create mode 100644 gdb/gdb/testsuite/config/nacl.exp
+ create mode 100644 gdb/include/elf/nacl.h
+
+diff --git a/gdb/bfd/Makefile.am b/gdb/bfd/Makefile.am
+index 8e0a79c..0658b01 100644
+--- a/gdb/bfd/Makefile.am
++++ b/gdb/bfd/Makefile.am
+@@ -279,6 +279,7 @@ BFD32_BACKENDS = \
  	elf32-mips.lo \
  	elf32-mt.lo \
  	elf32-msp430.lo \
@@ -9,7 +109,7 @@ diff -Naur ../PRISTINE/gdb-6.8/bfd/Makefile.am gdb-6.8/bfd/Makefile.am
  	elf32-openrisc.lo \
  	elf32-or32.lo \
  	elf32-pj.lo \
-@@ -460,6 +461,7 @@
+@@ -460,6 +461,7 @@ BFD32_BACKENDS_CFILES = \
  	elf32-mips.c \
  	elf32-mt.c \
  	elf32-msp430.c \
@@ -17,7 +117,7 @@ diff -Naur ../PRISTINE/gdb-6.8/bfd/Makefile.am gdb-6.8/bfd/Makefile.am
  	elf32-openrisc.c \
  	elf32-or32.c \
  	elf32-pj.c \
-@@ -1492,6 +1494,10 @@
+@@ -1492,6 +1494,10 @@ elf32-msp430.lo: elf32-msp430.c $(INCDIR)/filenames.h \
    $(INCDIR)/elf/common.h $(INCDIR)/elf/internal.h $(INCDIR)/elf/external.h \
    $(INCDIR)/bfdlink.h $(INCDIR)/elf/msp430.h $(INCDIR)/elf/reloc-macros.h \
    elf32-target.h
@@ -28,10 +128,11 @@ diff -Naur ../PRISTINE/gdb-6.8/bfd/Makefile.am gdb-6.8/bfd/Makefile.am
  elf32-openrisc.lo: elf32-openrisc.c $(INCDIR)/filenames.h \
    $(INCDIR)/hashtab.h elf-bfd.h $(INCDIR)/elf/common.h \
    $(INCDIR)/elf/internal.h $(INCDIR)/elf/external.h $(INCDIR)/bfdlink.h \
-diff -Naur ../PRISTINE/gdb-6.8/bfd/Makefile.in gdb-6.8/bfd/Makefile.in
---- ../PRISTINE/gdb-6.8/bfd/Makefile.in	2008-02-14 07:20:24.000000000 -0800
-+++ gdb-6.8/bfd/Makefile.in	2009-04-21 00:34:47.000000000 -0700
-@@ -530,6 +530,7 @@
+diff --git a/gdb/bfd/Makefile.in b/gdb/bfd/Makefile.in
+index be000ae..977135d 100644
+--- a/gdb/bfd/Makefile.in
++++ b/gdb/bfd/Makefile.in
+@@ -530,6 +530,7 @@ BFD32_BACKENDS = \
  	elf32-mips.lo \
  	elf32-mt.lo \
  	elf32-msp430.lo \
@@ -39,7 +140,7 @@ diff -Naur ../PRISTINE/gdb-6.8/bfd/Makefile.in gdb-6.8/bfd/Makefile.in
  	elf32-openrisc.lo \
  	elf32-or32.lo \
  	elf32-pj.lo \
-@@ -711,6 +712,7 @@
+@@ -711,6 +712,7 @@ BFD32_BACKENDS_CFILES = \
  	elf32-mips.c \
  	elf32-mt.c \
  	elf32-msp430.c \
@@ -47,7 +148,7 @@ diff -Naur ../PRISTINE/gdb-6.8/bfd/Makefile.in gdb-6.8/bfd/Makefile.in
  	elf32-openrisc.c \
  	elf32-or32.c \
  	elf32-pj.c \
-@@ -2073,6 +2075,10 @@
+@@ -2073,6 +2075,10 @@ elf32-msp430.lo: elf32-msp430.c $(INCDIR)/filenames.h \
    $(INCDIR)/elf/common.h $(INCDIR)/elf/internal.h $(INCDIR)/elf/external.h \
    $(INCDIR)/bfdlink.h $(INCDIR)/elf/msp430.h $(INCDIR)/elf/reloc-macros.h \
    elf32-target.h
@@ -58,10 +159,11 @@ diff -Naur ../PRISTINE/gdb-6.8/bfd/Makefile.in gdb-6.8/bfd/Makefile.in
  elf32-openrisc.lo: elf32-openrisc.c $(INCDIR)/filenames.h \
    $(INCDIR)/hashtab.h elf-bfd.h $(INCDIR)/elf/common.h \
    $(INCDIR)/elf/internal.h $(INCDIR)/elf/external.h $(INCDIR)/bfdlink.h \
-diff -Naur ../PRISTINE/gdb-6.8/bfd/config.bfd gdb-6.8/bfd/config.bfd
---- ../PRISTINE/gdb-6.8/bfd/config.bfd	2008-02-14 07:20:24.000000000 -0800
-+++ gdb-6.8/bfd/config.bfd	2009-04-21 00:34:47.000000000 -0700
-@@ -584,6 +584,11 @@
+diff --git a/gdb/bfd/config.bfd b/gdb/bfd/config.bfd
+index 03ef1c3..4406e6a 100644
+--- a/gdb/bfd/config.bfd
++++ b/gdb/bfd/config.bfd
+@@ -584,6 +584,11 @@ case "${targ}" in
      targ_selvecs="i386linux_vec bfd_efi_app_ia32_vec bfd_efi_bsdrv_ia32_vec bfd_efi_rtdrv_ia32_vec"
      targ64_selvecs=bfd_elf64_x86_64_vec
      ;;
@@ -73,10 +175,11 @@ diff -Naur ../PRISTINE/gdb-6.8/bfd/config.bfd gdb-6.8/bfd/config.bfd
  #ifdef BFD64
    x86_64-*-elf*)
      targ_defvec=bfd_elf64_x86_64_vec
-diff -Naur ../PRISTINE/gdb-6.8/bfd/configure gdb-6.8/bfd/configure
---- ../PRISTINE/gdb-6.8/bfd/configure	2008-02-14 07:20:25.000000000 -0800
-+++ gdb-6.8/bfd/configure	2009-04-21 00:34:47.000000000 -0700
-@@ -17395,7 +17395,17 @@
+diff --git a/gdb/bfd/configure b/gdb/bfd/configure
+index 882b320..311be2a 100755
+--- a/gdb/bfd/configure
++++ b/gdb/bfd/configure
+@@ -17395,7 +17395,17 @@ fi
  COREFILE=
  COREFLAG=
  TRAD_HEADER=
@@ -94,7 +197,7 @@ diff -Naur ../PRISTINE/gdb-6.8/bfd/configure gdb-6.8/bfd/configure
    case "${host}" in
    alpha*-*-freebsd* | alpha*-*-kfreebsd*-gnu)
  	COREFILE=''
-@@ -19094,6 +19104,7 @@
+@@ -19094,6 +19104,7 @@ do
      bfd_elf32_mn10300_vec)	tb="$tb elf-m10300.lo elf32.lo $elf" ;;
      bfd_elf32_mt_vec)           tb="$tb elf32-mt.lo elf32.lo $elf" ;;
      bfd_elf32_msp430_vec)	tb="$tb elf32-msp430.lo elf32.lo $elf" ;;
@@ -102,10 +205,11 @@ diff -Naur ../PRISTINE/gdb-6.8/bfd/configure gdb-6.8/bfd/configure
      bfd_elf32_nbigmips_vec)	tb="$tb elfn32-mips.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
      bfd_elf32_nlittlemips_vec)	tb="$tb elfn32-mips.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
      bfd_elf32_ntradbigmips_vec)	tb="$tb elfn32-mips.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
-diff -Naur ../PRISTINE/gdb-6.8/bfd/configure.in gdb-6.8/bfd/configure.in
---- ../PRISTINE/gdb-6.8/bfd/configure.in	2008-02-14 07:20:26.000000000 -0800
-+++ gdb-6.8/bfd/configure.in	2009-04-21 00:34:47.000000000 -0700
-@@ -202,7 +202,17 @@
+diff --git a/gdb/bfd/configure.in b/gdb/bfd/configure.in
+index 99ea584..fe7d866 100644
+--- a/gdb/bfd/configure.in
++++ b/gdb/bfd/configure.in
+@@ -202,7 +202,17 @@ AC_CHECK_DECLS(vsnprintf)
  COREFILE=
  COREFLAG=
  TRAD_HEADER=
@@ -123,7 +227,7 @@ diff -Naur ../PRISTINE/gdb-6.8/bfd/configure.in gdb-6.8/bfd/configure.in
    case "${host}" in
    alpha*-*-freebsd* | alpha*-*-kfreebsd*-gnu)
  	COREFILE=''
-@@ -703,6 +713,7 @@
+@@ -703,6 +713,7 @@ do
      bfd_elf32_mn10300_vec)	tb="$tb elf-m10300.lo elf32.lo $elf" ;;
      bfd_elf32_mt_vec)           tb="$tb elf32-mt.lo elf32.lo $elf" ;;
      bfd_elf32_msp430_vec)	tb="$tb elf32-msp430.lo elf32.lo $elf" ;;
@@ -131,9 +235,11 @@ diff -Naur ../PRISTINE/gdb-6.8/bfd/configure.in gdb-6.8/bfd/configure.in
      bfd_elf32_nbigmips_vec)	tb="$tb elfn32-mips.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
      bfd_elf32_nlittlemips_vec)	tb="$tb elfn32-mips.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
      bfd_elf32_ntradbigmips_vec)	tb="$tb elfn32-mips.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
-diff -Naur ../PRISTINE/gdb-6.8/bfd/elf32-nacl.c gdb-6.8/bfd/elf32-nacl.c
---- ../PRISTINE/gdb-6.8/bfd/elf32-nacl.c	1969-12-31 16:00:00.000000000 -0800
-+++ gdb-6.8/bfd/elf32-nacl.c	2009-04-21 00:34:47.000000000 -0700
+diff --git a/gdb/bfd/elf32-nacl.c b/gdb/bfd/elf32-nacl.c
+new file mode 100644
+index 0000000..0ec3518
+--- /dev/null
++++ b/gdb/bfd/elf32-nacl.c
 @@ -0,0 +1,4115 @@
 +/* Intel 80386/80486-specific support for 32-bit ELF Native Client
 +   Copyright 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
@@ -4250,10 +4356,11 @@ diff -Naur ../PRISTINE/gdb-6.8/bfd/elf32-nacl.c gdb-6.8/bfd/elf32-nacl.c
 +}
 +
 +#include "elf32-target.h"
-diff -Naur ../PRISTINE/gdb-6.8/bfd/targets.c gdb-6.8/bfd/targets.c
---- ../PRISTINE/gdb-6.8/bfd/targets.c	2008-02-14 07:20:26.000000000 -0800
-+++ gdb-6.8/bfd/targets.c	2009-04-21 00:34:47.000000000 -0700
-@@ -628,6 +628,7 @@
+diff --git a/gdb/bfd/targets.c b/gdb/bfd/targets.c
+index dc644c2..16efc44 100644
+--- a/gdb/bfd/targets.c
++++ b/gdb/bfd/targets.c
+@@ -628,6 +628,7 @@ extern const bfd_target bfd_elf32_mn10200_vec;
  extern const bfd_target bfd_elf32_mn10300_vec;
  extern const bfd_target bfd_elf32_mt_vec;
  extern const bfd_target bfd_elf32_msp430_vec;
@@ -4261,10 +4368,11 @@ diff -Naur ../PRISTINE/gdb-6.8/bfd/targets.c gdb-6.8/bfd/targets.c
  extern const bfd_target bfd_elf32_nbigmips_vec;
  extern const bfd_target bfd_elf32_nlittlemips_vec;
  extern const bfd_target bfd_elf32_ntradbigmips_vec;
-diff -Naur ../PRISTINE/gdb-6.8/config.sub gdb-6.8/config.sub
---- ../PRISTINE/gdb-6.8/config.sub	2008-01-22 18:43:51.000000000 -0800
-+++ gdb-6.8/config.sub	2009-04-21 00:34:47.000000000 -0700
-@@ -306,6 +306,10 @@
+diff --git a/gdb/config.sub b/gdb/config.sub
+index 6759825..9418bba 100755
+--- a/gdb/config.sub
++++ b/gdb/config.sub
+@@ -306,6 +306,10 @@ case $basic_machine in
  	i*86 | x86_64)
  	  basic_machine=$basic_machine-pc
  	  ;;
@@ -4275,7 +4383,7 @@ diff -Naur ../PRISTINE/gdb-6.8/config.sub gdb-6.8/config.sub
  	# Object if more than one company name word.
  	*-*-*)
  		echo Invalid configuration \`$1\': machine \`$basic_machine\' not recognized 1>&2
-@@ -1270,6 +1274,9 @@
+@@ -1270,6 +1274,9 @@ case $os in
  			;;
  		esac
  		;;
@@ -4285,9 +4393,10 @@ diff -Naur ../PRISTINE/gdb-6.8/config.sub gdb-6.8/config.sub
  	-nto-qnx*)
  		;;
  	-nto*)
-diff -Naur ../PRISTINE/gdb-6.8/gdb/ChangeLog gdb-6.8/gdb/ChangeLog
---- ../PRISTINE/gdb-6.8/gdb/ChangeLog	2008-03-27 11:14:10.000000000 -0700
-+++ gdb-6.8/gdb/ChangeLog	2009-04-21 00:34:47.000000000 -0700
+diff --git a/gdb/gdb/ChangeLog b/gdb/gdb/ChangeLog
+index a9db051..f792a32 100644
+--- a/gdb/gdb/ChangeLog
++++ b/gdb/gdb/ChangeLog
 @@ -1,3 +1,11 @@
 +2008-08-09  Ulrich Weigand  <uweigand@de.ibm.com>
 +
@@ -4300,10 +4409,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/ChangeLog gdb-6.8/gdb/ChangeLog
  2008-03-27  Joel Brobecker  <brobecker@adacore.com>
  
  	* NEWS: Replace "Changes since GDB 6.7" into changes in GDB 6.8".
-diff -Naur ../PRISTINE/gdb-6.8/gdb/Makefile.in gdb-6.8/gdb/Makefile.in
---- ../PRISTINE/gdb-6.8/gdb/Makefile.in	2008-03-17 05:15:08.000000000 -0700
-+++ gdb-6.8/gdb/Makefile.in	2009-04-21 00:34:47.000000000 -0700
-@@ -3347,4 +3347,30 @@
+diff --git a/gdb/gdb/Makefile.in b/gdb/gdb/Makefile.in
+index 2373562..1b72dc5 100644
+--- a/gdb/gdb/Makefile.in
++++ b/gdb/gdb/Makefile.in
+@@ -3347,4 +3347,30 @@ tui-winsource.o: $(srcdir)/tui/tui-winsource.c $(defs_h) $(symtab_h) \
  	$(gdb_curses_h) $(gdb_assert_h)
  	$(CC) -c $(INTERNAL_CFLAGS) $(srcdir)/tui/tui-winsource.c
  
@@ -4334,9 +4444,10 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/Makefile.in gdb-6.8/gdb/Makefile.in
 +	$(i386_linux_tdep_h) i386-nacl-tdep.h
 +
  ### end of the gdb Makefile.in.
-diff -Naur ../PRISTINE/gdb-6.8/gdb/breakpoint.c gdb-6.8/gdb/breakpoint.c
---- ../PRISTINE/gdb-6.8/gdb/breakpoint.c	2008-02-26 00:14:11.000000000 -0800
-+++ gdb-6.8/gdb/breakpoint.c	2009-04-21 00:34:47.000000000 -0700
+diff --git a/gdb/gdb/breakpoint.c b/gdb/gdb/breakpoint.c
+index 019f4c8..fa22722 100644
+--- a/gdb/gdb/breakpoint.c
++++ b/gdb/gdb/breakpoint.c
 @@ -59,6 +59,10 @@
  #include "gdb-events.h"
  #include "mi/mi-common.h"
@@ -4348,7 +4459,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/breakpoint.c gdb-6.8/gdb/breakpoint.c
  /* Prototypes for local functions. */
  
  static void until_break_command_continuation (struct continuation_arg *arg);
-@@ -1084,6 +1088,26 @@
+@@ -1084,6 +1088,26 @@ Note: automatically using hardware breakpoints for read-only addresses.\n"));
  	  else
  	    val = target_insert_breakpoint (&bpt->target_info);
  	}
@@ -4375,7 +4486,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/breakpoint.c gdb-6.8/gdb/breakpoint.c
        else
  	{
  	  /* This breakpoint is in an overlay section.  
-@@ -1530,6 +1554,16 @@
+@@ -1530,6 +1554,16 @@ remove_breakpoint (struct bp_location *b, insertion_state_t is)
  	  else
  	    val = target_remove_breakpoint (&b->target_info);
  	}
@@ -4392,7 +4503,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/breakpoint.c gdb-6.8/gdb/breakpoint.c
        else
  	{
  	  /* This breakpoint is in an overlay section.  
-@@ -1808,6 +1842,34 @@
+@@ -1808,6 +1842,34 @@ software_breakpoint_inserted_here_p (CORE_ADDR pc)
    return 0;
  }
  
@@ -4427,7 +4538,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/breakpoint.c gdb-6.8/gdb/breakpoint.c
  /* breakpoint_thread_match (PC, PTID) returns true if the breakpoint at
     PC is valid for process/thread PTID.  */
  
-@@ -3437,10 +3499,16 @@
+@@ -3437,10 +3499,16 @@ print_one_breakpoint_location (struct breakpoint *b,
    strcpy (wrap_indent, "                           ");
    if (addressprint)
      {
@@ -4446,7 +4557,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/breakpoint.c gdb-6.8/gdb/breakpoint.c
      }
  
    if (b->ops != NULL && b->ops->print_one != NULL)
-@@ -3540,13 +3608,22 @@
+@@ -3540,13 +3608,22 @@ print_one_breakpoint_location (struct breakpoint *b,
        case bp_overlay_event:
  	if (addressprint)
  	  {
@@ -4470,7 +4581,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/breakpoint.c gdb-6.8/gdb/breakpoint.c
  	  }
  	annotate_field (5);
  	if (!header_of_multiple)
-@@ -3771,14 +3848,19 @@
+@@ -3771,14 +3848,19 @@ breakpoint_1 (int bnum, int allflag)
      annotate_field (3);
    ui_out_table_header (uiout, 3, ui_left, "enabled", "Enb");	/* 4 */
    if (addressprint)
@@ -4498,7 +4609,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/breakpoint.c gdb-6.8/gdb/breakpoint.c
    if (nr_printable_breakpoints > 0)
      annotate_field (5);
    ui_out_table_header (uiout, 40, ui_noalign, "what", "What");	/* 6 */
-@@ -4364,6 +4446,14 @@
+@@ -4364,6 +4446,14 @@ create_overlay_event_breakpoint (char *func_name)
  				  bp_overlay_event);
    b->addr_string = xstrdup (func_name);
  
@@ -4513,7 +4624,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/breakpoint.c gdb-6.8/gdb/breakpoint.c
    if (overlay_debugging == ovly_auto)
      {
        b->enable_state = bp_enabled;
-@@ -4481,11 +4571,16 @@
+@@ -4481,11 +4571,16 @@ disable_breakpoints_in_shlibs (void)
         to insert those breakpoints and fail.  */
      if (((b->type == bp_breakpoint) || (b->type == bp_hardware_breakpoint))
  	&& !loc->shlib_disabled
@@ -4524,15 +4635,15 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/breakpoint.c gdb-6.8/gdb/breakpoint.c
  #else
 -	&& solib_address (loc->address)
 +	  solib_address (loc->address)
-+#endif
+ #endif
 +#ifdef NATIVE_CLIENT
 +	  || (loc->section && nacl_section_p (loc->section))
- #endif
++#endif
 +	    )
  	)
        {
  	loc->shlib_disabled = 1;
-@@ -7204,6 +7299,25 @@
+@@ -7204,6 +7299,25 @@ update_breakpoint_locations (struct breakpoint *b,
        }
    }
  
@@ -4558,7 +4669,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/breakpoint.c gdb-6.8/gdb/breakpoint.c
    while (existing_locations)
      {
        struct bp_location *next = existing_locations->next;
-@@ -7250,6 +7364,20 @@
+@@ -7250,6 +7364,20 @@ breakpoint_re_set_one (void *bint)
  	  return 0;
  	}
  
@@ -4579,7 +4690,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/breakpoint.c gdb-6.8/gdb/breakpoint.c
        set_language (b->language);
        input_radix = b->input_radix;
        s = b->addr_string;
-@@ -7287,7 +7415,12 @@
+@@ -7287,7 +7415,12 @@ breakpoint_re_set_one (void *bint)
  	}
  
        if (not_found)
@@ -4593,7 +4704,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/breakpoint.c gdb-6.8/gdb/breakpoint.c
        
        gdb_assert (sals.nelts == 1);
        resolve_sal_pc (&sals.sals[0]);
-@@ -7310,6 +7443,11 @@
+@@ -7310,6 +7443,11 @@ breakpoint_re_set_one (void *bint)
        check_duplicates (b);
  
        xfree (sals.sals);
@@ -4605,7 +4716,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/breakpoint.c gdb-6.8/gdb/breakpoint.c
        break;
  
      case bp_watchpoint:
-@@ -7407,6 +7545,18 @@
+@@ -7407,6 +7545,18 @@ breakpoint_re_set (void)
    set_language (save_language);
    input_radix = save_input_radix;
  
@@ -4624,7 +4735,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/breakpoint.c gdb-6.8/gdb/breakpoint.c
    if (gdbarch_get_longjmp_target_p (current_gdbarch))
      {
        create_longjmp_breakpoint ("longjmp");
-@@ -7417,7 +7567,29 @@
+@@ -7417,7 +7567,29 @@ breakpoint_re_set (void)
      }
    
    create_overlay_event_breakpoint ("_ovly_debug_event");
@@ -4633,7 +4744,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/breakpoint.c gdb-6.8/gdb/breakpoint.c
 +    do_cleanups (my_cleanups);
 +  }
 +#endif
- }
++}
 +
 +#ifdef NATIVE_CLIENT
 +
@@ -4648,16 +4759,17 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/breakpoint.c gdb-6.8/gdb/breakpoint.c
 +  {
 +    b->section = NULL;
 +  }
-+}
+ }
 +
 +#endif
  
  /* Reset the thread number of this breakpoint:
  
-diff -Naur ../PRISTINE/gdb-6.8/gdb/breakpoint.h gdb-6.8/gdb/breakpoint.h
---- ../PRISTINE/gdb-6.8/gdb/breakpoint.h	2008-02-01 08:24:46.000000000 -0800
-+++ gdb-6.8/gdb/breakpoint.h	2009-04-21 00:34:47.000000000 -0700
-@@ -249,6 +249,11 @@
+diff --git a/gdb/gdb/breakpoint.h b/gdb/gdb/breakpoint.h
+index 41730c0..ce9162c 100644
+--- a/gdb/gdb/breakpoint.h
++++ b/gdb/gdb/breakpoint.h
+@@ -249,6 +249,11 @@ struct bp_location
    /* This location's address is in an unloaded solib, and so this
       location should not be inserted.  It will be automatically
       enabled when that solib is loaded.  */
@@ -4669,7 +4781,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/breakpoint.h gdb-6.8/gdb/breakpoint.h
    char shlib_disabled; 
  
    /* Is this particular location enabled.  */
-@@ -671,6 +676,11 @@
+@@ -671,6 +676,11 @@ extern int regular_breakpoint_inserted_here_p (CORE_ADDR);
  
  extern int software_breakpoint_inserted_here_p (CORE_ADDR);
  
@@ -4681,9 +4793,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/breakpoint.h gdb-6.8/gdb/breakpoint.h
  extern int breakpoint_thread_match (CORE_ADDR, ptid_t);
  
  extern void until_break_command (char *, int, int);
-diff -Naur ../PRISTINE/gdb-6.8/gdb/config/i386/nacl-linux.mh gdb-6.8/gdb/config/i386/nacl-linux.mh
---- ../PRISTINE/gdb-6.8/gdb/config/i386/nacl-linux.mh	1969-12-31 16:00:00.000000000 -0800
-+++ gdb-6.8/gdb/config/i386/nacl-linux.mh	2009-04-21 00:34:47.000000000 -0700
+diff --git a/gdb/gdb/config/i386/nacl-linux.mh b/gdb/gdb/config/i386/nacl-linux.mh
+new file mode 100644
+index 0000000..94cad9f
+--- /dev/null
++++ b/gdb/gdb/config/i386/nacl-linux.mh
 @@ -0,0 +1,13 @@
 +# Host: Intel 386 running NativeClient.
 +
@@ -4698,10 +4812,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/config/i386/nacl-linux.mh gdb-6.8/gdb/config/
 +# The dynamically loaded libthread_db needs access to symbols in the
 +# gdb executable.
 +LOADLIBES = -ldl -rdynamic
-diff -Naur ../PRISTINE/gdb-6.8/gdb/configure.host gdb-6.8/gdb/configure.host
---- ../PRISTINE/gdb-6.8/gdb/configure.host	2008-01-19 07:03:50.000000000 -0800
-+++ gdb-6.8/gdb/configure.host	2009-04-21 00:34:47.000000000 -0700
-@@ -92,7 +92,13 @@
+diff --git a/gdb/gdb/configure.host b/gdb/gdb/configure.host
+index 672920d..af51fd4 100644
+--- a/gdb/gdb/configure.host
++++ b/gdb/gdb/configure.host
+@@ -92,7 +92,13 @@ i[34567]86-*-mingw32*)	gdb_host=mingw
  			gdb_host_obs=mingw-hdep.o
  			;;
  i[34567]86-*-msdosdjgpp*) gdb_host=go32 ;;
@@ -4716,10 +4831,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/configure.host gdb-6.8/gdb/configure.host
  i[34567]86-*-gnu*)	gdb_host=i386gnu ;;
  i[3456]86-*-nto*) 	gdb_host=nto ;;
  i[34567]86-*-openbsd[0-2].* | i[34567]86-*-openbsd3.[0-3])
-diff -Naur ../PRISTINE/gdb-6.8/gdb/configure.tgt gdb-6.8/gdb/configure.tgt
---- ../PRISTINE/gdb-6.8/gdb/configure.tgt	2008-02-11 13:58:41.000000000 -0800
-+++ gdb-6.8/gdb/configure.tgt	2009-04-21 00:34:47.000000000 -0700
-@@ -199,6 +199,14 @@
+diff --git a/gdb/gdb/configure.tgt b/gdb/gdb/configure.tgt
+index 1dcb833..a4c9d45 100644
+--- a/gdb/gdb/configure.tgt
++++ b/gdb/gdb/configure.tgt
+@@ -199,6 +199,14 @@ i[34567]86-*-mingw32*)
  			solib-target.o corelow.o"
  	build_gdbserver=yes
  	;;
@@ -4734,10 +4850,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/configure.tgt gdb-6.8/gdb/configure.tgt
  i[34567]86-*-*)
  	# Target: i386
  	gdb_target_obs="i386-tdep.o i387-tdep.o"
-diff -Naur ../PRISTINE/gdb-6.8/gdb/defs.h gdb-6.8/gdb/defs.h
---- ../PRISTINE/gdb-6.8/gdb/defs.h	2008-01-18 09:07:39.000000000 -0800
-+++ gdb-6.8/gdb/defs.h	2009-04-21 00:34:48.000000000 -0700
-@@ -934,6 +934,9 @@
+diff --git a/gdb/gdb/defs.h b/gdb/gdb/defs.h
+index 3486df8..6266eeb 100644
+--- a/gdb/gdb/defs.h
++++ b/gdb/gdb/defs.h
+@@ -934,6 +934,9 @@ enum gdb_osabi
  
    GDB_OSABI_CYGWIN,
    GDB_OSABI_AIX,
@@ -4747,9 +4864,10 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/defs.h gdb-6.8/gdb/defs.h
  
    GDB_OSABI_INVALID		/* keep this last */
  };
-diff -Naur ../PRISTINE/gdb-6.8/gdb/exec.c gdb-6.8/gdb/exec.c
---- ../PRISTINE/gdb-6.8/gdb/exec.c	2008-01-11 05:34:14.000000000 -0800
-+++ gdb-6.8/gdb/exec.c	2009-04-21 00:34:48.000000000 -0700
+diff --git a/gdb/gdb/exec.c b/gdb/gdb/exec.c
+index 7648b03..255e95c 100644
+--- a/gdb/gdb/exec.c
++++ b/gdb/gdb/exec.c
 @@ -44,6 +44,10 @@
  
  #include "xcoffsolib.h"
@@ -4761,7 +4879,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/exec.c gdb-6.8/gdb/exec.c
  struct vmap *map_vmap (bfd *, bfd *);
  
  void (*deprecated_file_changed_hook) (char *);
-@@ -156,6 +160,107 @@
+@@ -156,6 +160,107 @@ exec_file_clear (int from_tty)
      printf_unfiltered (_("No executable file now.\n"));
  }
  
@@ -4869,7 +4987,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/exec.c gdb-6.8/gdb/exec.c
  /*  Process the first arg in ARGS as the new exec file.
  
     This function is intended to be behave essentially the same
-@@ -181,6 +286,11 @@
+@@ -181,6 +286,11 @@ exec_file_attach (char *filename, int from_tty)
    /* Remove any previous exec file.  */
    unpush_target (&exec_ops);
  
@@ -4881,7 +4999,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/exec.c gdb-6.8/gdb/exec.c
    /* Now open and digest the file the user requested, if any.  */
  
    if (!filename)
-@@ -192,75 +302,7 @@
+@@ -192,75 +302,7 @@ exec_file_attach (char *filename, int from_tty)
      }
    else
      {
@@ -4958,10 +5076,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/exec.c gdb-6.8/gdb/exec.c
  
        set_gdbarch_from_file (exec_bfd);
  
-diff -Naur ../PRISTINE/gdb-6.8/gdb/exec.h gdb-6.8/gdb/exec.h
---- ../PRISTINE/gdb-6.8/gdb/exec.h	2008-01-01 14:53:09.000000000 -0800
-+++ gdb-6.8/gdb/exec.h	2009-04-21 00:34:48.000000000 -0700
-@@ -37,4 +37,7 @@
+diff --git a/gdb/gdb/exec.h b/gdb/gdb/exec.h
+index 3b19d15..dd8341b 100644
+--- a/gdb/gdb/exec.h
++++ b/gdb/gdb/exec.h
+@@ -37,4 +37,7 @@ extern int build_section_table (struct bfd *, struct section_table **,
  /* Set the loaded address of a section.  */
  extern void exec_set_section_address (const char *, int, CORE_ADDR);
  
@@ -4969,9 +5088,10 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/exec.h gdb-6.8/gdb/exec.h
 +extern void exec_file_open (char *filename, int from_tty);
 +
  #endif
-diff -Naur ../PRISTINE/gdb-6.8/gdb/i386-linux-nat.c gdb-6.8/gdb/i386-linux-nat.c
---- ../PRISTINE/gdb-6.8/gdb/i386-linux-nat.c	2008-01-01 14:53:10.000000000 -0800
-+++ gdb-6.8/gdb/i386-linux-nat.c	2009-04-21 00:34:48.000000000 -0700
+diff --git a/gdb/gdb/i386-linux-nat.c b/gdb/gdb/i386-linux-nat.c
+index 4059926..5d6a3a1 100644
+--- a/gdb/gdb/i386-linux-nat.c
++++ b/gdb/gdb/i386-linux-nat.c
 @@ -65,6 +65,7 @@
  #include "i387-tdep.h"
  #include "i386-tdep.h"
@@ -4980,7 +5100,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/i386-linux-nat.c gdb-6.8/gdb/i386-linux-nat.c
  
  /* Defines ps_err_e, struct ps_prochandle.  */
  #include "gdb_proc_service.h"
-@@ -663,7 +664,7 @@
+@@ -663,7 +664,7 @@ i386_linux_dr_get_status (void)
    return i386_linux_dr_get (inferior_ptid, DR_STATUS);
  }
  
@@ -4989,7 +5109,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/i386-linux-nat.c gdb-6.8/gdb/i386-linux-nat.c
  i386_linux_new_thread (ptid_t ptid)
  {
    int i;
-@@ -812,8 +813,8 @@
+@@ -812,8 +813,8 @@ i386_linux_child_post_startup_inferior (ptid_t ptid)
    super_post_startup_inferior (ptid);
  }
  
@@ -5000,7 +5120,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/i386-linux-nat.c gdb-6.8/gdb/i386-linux-nat.c
  {
    struct target_ops *t;
  
-@@ -831,7 +832,22 @@
+@@ -831,7 +832,22 @@ _initialize_i386_linux_nat (void)
    t->to_fetch_registers = i386_linux_fetch_inferior_registers;
    t->to_store_registers = i386_linux_store_inferior_registers;
  
@@ -5023,9 +5143,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/i386-linux-nat.c gdb-6.8/gdb/i386-linux-nat.c
    linux_nat_set_new_thread (t, i386_linux_new_thread);
 +#endif
  }
-diff -Naur ../PRISTINE/gdb-6.8/gdb/i386-linux-nat.h gdb-6.8/gdb/i386-linux-nat.h
---- ../PRISTINE/gdb-6.8/gdb/i386-linux-nat.h	1969-12-31 16:00:00.000000000 -0800
-+++ gdb-6.8/gdb/i386-linux-nat.h	2009-04-21 00:34:48.000000000 -0700
+diff --git a/gdb/gdb/i386-linux-nat.h b/gdb/gdb/i386-linux-nat.h
+new file mode 100644
+index 0000000..4340f6b
+--- /dev/null
++++ b/gdb/gdb/i386-linux-nat.h
 @@ -0,0 +1,28 @@
 +/* Native-dependent code for GNU/Linux i386.
 +
@@ -5055,10 +5177,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/i386-linux-nat.h gdb-6.8/gdb/i386-linux-nat.h
 +void i386_linux_new_thread (ptid_t ptid);
 +
 +#endif /* I386_LINUX_NAT_H */
-diff -Naur ../PRISTINE/gdb-6.8/gdb/i386-linux-tdep.c gdb-6.8/gdb/i386-linux-tdep.c
---- ../PRISTINE/gdb-6.8/gdb/i386-linux-tdep.c	2008-01-01 14:53:11.000000000 -0800
-+++ gdb-6.8/gdb/i386-linux-tdep.c	2009-04-21 00:34:48.000000000 -0700
-@@ -402,7 +402,7 @@
+diff --git a/gdb/gdb/i386-linux-tdep.c b/gdb/gdb/i386-linux-tdep.c
+index add0306..fdc227d 100644
+--- a/gdb/gdb/i386-linux-tdep.c
++++ b/gdb/gdb/i386-linux-tdep.c
+@@ -402,7 +402,7 @@ static int i386_linux_sc_reg_offset[] =
    0 * 4				/* %gs */
  };
  
@@ -5067,9 +5190,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/i386-linux-tdep.c gdb-6.8/gdb/i386-linux-tdep
  i386_linux_init_abi (struct gdbarch_info info, struct gdbarch *gdbarch)
  {
    struct gdbarch_tdep *tdep = gdbarch_tdep (gdbarch);
-diff -Naur ../PRISTINE/gdb-6.8/gdb/i386-nacl-nat.c gdb-6.8/gdb/i386-nacl-nat.c
---- ../PRISTINE/gdb-6.8/gdb/i386-nacl-nat.c	1969-12-31 16:00:00.000000000 -0800
-+++ gdb-6.8/gdb/i386-nacl-nat.c	2009-04-21 00:34:48.000000000 -0700
+diff --git a/gdb/gdb/i386-nacl-nat.c b/gdb/gdb/i386-nacl-nat.c
+new file mode 100644
+index 0000000..51c9cfc
+--- /dev/null
++++ b/gdb/gdb/i386-nacl-nat.c
 @@ -0,0 +1,203 @@
 +/* Native-dependent code for NativeClient i386.
 +
@@ -5274,9 +5399,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/i386-nacl-nat.c gdb-6.8/gdb/i386-nacl-nat.c
 +     ??? Do we need a different version for nacl anyway?  */
 +  linux_nat_set_new_thread (t, i386_linux_new_thread);
 +}
-diff -Naur ../PRISTINE/gdb-6.8/gdb/i386-nacl-tdep.c gdb-6.8/gdb/i386-nacl-tdep.c
---- ../PRISTINE/gdb-6.8/gdb/i386-nacl-tdep.c	1969-12-31 16:00:00.000000000 -0800
-+++ gdb-6.8/gdb/i386-nacl-tdep.c	2009-04-21 00:34:48.000000000 -0700
+diff --git a/gdb/gdb/i386-nacl-tdep.c b/gdb/gdb/i386-nacl-tdep.c
+new file mode 100644
+index 0000000..000b51e
+--- /dev/null
++++ b/gdb/gdb/i386-nacl-tdep.c
 @@ -0,0 +1,905 @@
 +/* Target-dependent code for NativeClient i386.
 +
@@ -6183,9 +6310,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/i386-nacl-tdep.c gdb-6.8/gdb/i386-nacl-tdep.c
 +
 +  observer_attach_inferior_created (nacl_handle_inferior_created);
 +}
-diff -Naur ../PRISTINE/gdb-6.8/gdb/i386-nacl-tdep.h gdb-6.8/gdb/i386-nacl-tdep.h
---- ../PRISTINE/gdb-6.8/gdb/i386-nacl-tdep.h	1969-12-31 16:00:00.000000000 -0800
-+++ gdb-6.8/gdb/i386-nacl-tdep.h	2009-04-21 00:34:48.000000000 -0700
+diff --git a/gdb/gdb/i386-nacl-tdep.h b/gdb/gdb/i386-nacl-tdep.h
+new file mode 100644
+index 0000000..9198f91
+--- /dev/null
++++ b/gdb/gdb/i386-nacl-tdep.h
 @@ -0,0 +1,150 @@
 +/* Target-dependent code for NativeClient i386.
 +
@@ -6337,9 +6466,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/i386-nacl-tdep.h gdb-6.8/gdb/i386-nacl-tdep.h
 +set_sr_gdb_state (void);
 +
 +#endif /* i386-nacl-tdep.h */
-diff -Naur ../PRISTINE/gdb-6.8/gdb/i386-nacl-thread.c gdb-6.8/gdb/i386-nacl-thread.c
---- ../PRISTINE/gdb-6.8/gdb/i386-nacl-thread.c	1969-12-31 16:00:00.000000000 -0800
-+++ gdb-6.8/gdb/i386-nacl-thread.c	2009-04-21 00:34:48.000000000 -0700
+diff --git a/gdb/gdb/i386-nacl-thread.c b/gdb/gdb/i386-nacl-thread.c
+new file mode 100644
+index 0000000..bc7e52d
+--- /dev/null
++++ b/gdb/gdb/i386-nacl-thread.c
 @@ -0,0 +1,230 @@
 +/* Wrapper to linux-thread-db.c for i386-nacl.
 +
@@ -6571,10 +6702,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/i386-nacl-thread.c gdb-6.8/gdb/i386-nacl-thre
 +_initialize_i386_nacl_thread (void)
 +{
 +}
-diff -Naur ../PRISTINE/gdb-6.8/gdb/inf-ptrace.c gdb-6.8/gdb/inf-ptrace.c
---- ../PRISTINE/gdb-6.8/gdb/inf-ptrace.c	2008-01-01 14:53:11.000000000 -0800
-+++ gdb-6.8/gdb/inf-ptrace.c	2009-04-21 00:34:48.000000000 -0700
-@@ -431,7 +431,7 @@
+diff --git a/gdb/gdb/inf-ptrace.c b/gdb/gdb/inf-ptrace.c
+index 8acc690..a13b18a 100644
+--- a/gdb/gdb/inf-ptrace.c
++++ b/gdb/gdb/inf-ptrace.c
+@@ -431,7 +431,7 @@ inf_ptrace_wait (ptid_t ptid, struct target_waitstatus *ourstatus)
     inferior's OBJECT:ANNEX space and GDB's READBUF/WRITEBUF buffer.
     Return the number of bytes actually transferred.  */
  
@@ -6583,10 +6715,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/inf-ptrace.c gdb-6.8/gdb/inf-ptrace.c
  inf_ptrace_xfer_partial (struct target_ops *ops, enum target_object object,
  			 const char *annex, gdb_byte *readbuf,
  			 const gdb_byte *writebuf,
-diff -Naur ../PRISTINE/gdb-6.8/gdb/inf-ptrace.h gdb-6.8/gdb/inf-ptrace.h
---- ../PRISTINE/gdb-6.8/gdb/inf-ptrace.h	2008-01-01 14:53:11.000000000 -0800
-+++ gdb-6.8/gdb/inf-ptrace.h	2009-04-21 00:34:48.000000000 -0700
-@@ -33,4 +33,14 @@
+diff --git a/gdb/gdb/inf-ptrace.h b/gdb/gdb/inf-ptrace.h
+index c338311..14a66eb 100644
+--- a/gdb/gdb/inf-ptrace.h
++++ b/gdb/gdb/inf-ptrace.h
+@@ -33,4 +33,14 @@ extern struct target_ops *
    inf_ptrace_trad_target (CORE_ADDR (*register_u_offset)
  					(struct gdbarch *, int, int));
  
@@ -6601,10 +6734,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/inf-ptrace.h gdb-6.8/gdb/inf-ptrace.h
 +			 ULONGEST offset, LONGEST len);
 +
  #endif
-diff -Naur ../PRISTINE/gdb-6.8/gdb/infcmd.c gdb-6.8/gdb/infcmd.c
---- ../PRISTINE/gdb-6.8/gdb/infcmd.c	2008-01-31 05:37:21.000000000 -0800
-+++ gdb-6.8/gdb/infcmd.c	2009-04-21 00:34:48.000000000 -0700
-@@ -477,11 +477,6 @@
+diff --git a/gdb/gdb/infcmd.c b/gdb/gdb/infcmd.c
+index 972f9e2..c24f059 100644
+--- a/gdb/gdb/infcmd.c
++++ b/gdb/gdb/infcmd.c
+@@ -477,11 +477,6 @@ run_command_1 (char *args, int from_tty, int tbreak_at_main)
       this function should probably be moved into target_pre_inferior.  */
    target_pre_inferior (from_tty);
  
@@ -6616,7 +6750,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/infcmd.c gdb-6.8/gdb/infcmd.c
    /* The comment here used to read, "The exec file is re-read every
       time we do a generic_mourn_inferior, so we just have to worry
       about the symbol file."  The `generic_mourn_inferior' function
-@@ -1870,24 +1865,6 @@
+@@ -1870,24 +1865,6 @@ attach_command (char *args, int from_tty)
       this function should probably be moved into target_pre_inferior.  */
    target_pre_inferior (from_tty);
  
@@ -6641,9 +6775,10 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/infcmd.c gdb-6.8/gdb/infcmd.c
    target_attach (args, from_tty);
  
    /* Set up the "saved terminal modes" of the inferior
-diff -Naur ../PRISTINE/gdb-6.8/gdb/infrun.c gdb-6.8/gdb/infrun.c
---- ../PRISTINE/gdb-6.8/gdb/infrun.c	2008-01-29 14:47:19.000000000 -0800
-+++ gdb-6.8/gdb/infrun.c	2009-04-21 00:34:48.000000000 -0700
+diff --git a/gdb/gdb/infrun.c b/gdb/gdb/infrun.c
+index c863736..36cd3c2 100644
+--- a/gdb/gdb/infrun.c
++++ b/gdb/gdb/infrun.c
 @@ -49,6 +49,10 @@
  #include "gdb_assert.h"
  #include "mi/mi-common.h"
@@ -6655,7 +6790,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/infrun.c gdb-6.8/gdb/infrun.c
  /* Prototypes for local functions */
  
  static void signals_info (char *, int);
-@@ -1284,6 +1288,14 @@
+@@ -1284,6 +1288,14 @@ handle_inferior_event (struct execution_control_state *ecs)
    /* Always clear state belonging to the previous time we stopped.  */
    stop_stack_dummy = 0;
  
@@ -6670,7 +6805,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/infrun.c gdb-6.8/gdb/infrun.c
    adjust_pc_after_break (ecs);
  
    switch (ecs->infwait_state)
-@@ -2162,6 +2174,14 @@
+@@ -2162,6 +2174,14 @@ process_event_stop_test:
  	/* else fallthrough */
  
        case BPSTAT_WHAT_SINGLE:
@@ -6685,9 +6820,10 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/infrun.c gdb-6.8/gdb/infrun.c
          if (debug_infrun)
  	  fprintf_unfiltered (gdb_stdlog, "infrun: BPSTAT_WHAT_SINGLE\n");
  	ecs->stepping_over_breakpoint = 1;
-diff -Naur ../PRISTINE/gdb-6.8/gdb/linux-nat.c gdb-6.8/gdb/linux-nat.c
---- ../PRISTINE/gdb-6.8/gdb/linux-nat.c	2008-01-29 14:47:20.000000000 -0800
-+++ gdb-6.8/gdb/linux-nat.c	2009-04-21 00:40:22.000000000 -0700
+diff --git a/gdb/gdb/linux-nat.c b/gdb/gdb/linux-nat.c
+index b021db4..5e1aef3 100644
+--- a/gdb/gdb/linux-nat.c
++++ b/gdb/gdb/linux-nat.c
 @@ -29,6 +29,7 @@
  #include <sys/syscall.h>
  #endif
@@ -6696,7 +6832,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/linux-nat.c gdb-6.8/gdb/linux-nat.c
  #include "linux-nat.h"
  #include "linux-fork.h"
  #include "gdbthread.h"
-@@ -1355,23 +1356,83 @@
+@@ -1355,23 +1356,83 @@ linux_handle_extended_wait (struct lwp_info *lp, int status,
  		  _("unknown ptrace event %d"), event);
  }
  
@@ -6784,7 +6920,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/linux-nat.c gdb-6.8/gdb/linux-nat.c
        if (pid == -1 && errno == ECHILD)
  	{
  	  /* The thread has previously exited.  We need to delete it
-@@ -1400,7 +1461,7 @@
+@@ -1400,7 +1461,7 @@ wait_lwp (struct lwp_info *lp)
      }
  
    /* Check if the thread has exited.  */
@@ -6793,7 +6929,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/linux-nat.c gdb-6.8/gdb/linux-nat.c
      {
        thread_dead = 1;
        if (debug_linux_nat)
-@@ -2876,7 +2937,7 @@
+@@ -2876,7 +2937,7 @@ linux_nat_info_proc_cmd (char *args, int from_tty)
        sprintf (fname1, "/proc/%lld/cmdline", pid);
        if ((procfile = fopen (fname1, "r")) != NULL)
  	{
@@ -6802,7 +6938,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/linux-nat.c gdb-6.8/gdb/linux-nat.c
  	  printf_filtered ("cmdline = '%s'\n", buffer);
  	  fclose (procfile);
  	}
-@@ -3260,9 +3321,13 @@
+@@ -3260,9 +3321,13 @@ linux_trad_target (CORE_ADDR (*register_u_offset)(struct gdbarch *, int, int))
    return t;
  }
  
@@ -6818,7 +6954,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/linux-nat.c gdb-6.8/gdb/linux-nat.c
    /* Save the provided single-threaded target.  We save this in a separate
       variable because another target we've inherited from (e.g. inf-ptrace)
       may have saved a pointer to T; we want to use it for the final
-@@ -3282,6 +3347,17 @@
+@@ -3282,6 +3347,17 @@ linux_nat_add_target (struct target_ops *t)
    t->to_pid_to_str = linux_nat_pid_to_str;
    t->to_has_thread_control = tc_schedlock;
  
@@ -6836,10 +6972,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/linux-nat.c gdb-6.8/gdb/linux-nat.c
    /* We don't change the stratum; this target will sit at
       process_stratum and thread_db will set at thread_stratum.  This
       is a little strange, since this is a multi-threaded-capable
-diff -Naur ../PRISTINE/gdb-6.8/gdb/linux-nat.h gdb-6.8/gdb/linux-nat.h
---- ../PRISTINE/gdb-6.8/gdb/linux-nat.h	2008-01-23 03:26:28.000000000 -0800
-+++ gdb-6.8/gdb/linux-nat.h	2009-04-21 00:34:48.000000000 -0700
-@@ -111,6 +111,10 @@
+diff --git a/gdb/gdb/linux-nat.h b/gdb/gdb/linux-nat.h
+index 8ae5ab3..8f7bc46 100644
+--- a/gdb/gdb/linux-nat.h
++++ b/gdb/gdb/linux-nat.h
+@@ -111,6 +111,10 @@ struct target_ops * linux_target (void);
  struct target_ops *
  linux_trad_target (CORE_ADDR (*register_u_offset)(struct gdbarch *, int, int));
  
@@ -6850,9 +6987,10 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/linux-nat.h gdb-6.8/gdb/linux-nat.h
  /* Register the customized GNU/Linux target.  This should be used
     instead of calling add_target directly.  */
  void linux_nat_add_target (struct target_ops *);
-diff -Naur ../PRISTINE/gdb-6.8/gdb/linux-thread-db.c gdb-6.8/gdb/linux-thread-db.c
---- ../PRISTINE/gdb-6.8/gdb/linux-thread-db.c	2008-01-23 03:26:28.000000000 -0800
-+++ gdb-6.8/gdb/linux-thread-db.c	2009-04-21 00:34:48.000000000 -0700
+diff --git a/gdb/gdb/linux-thread-db.c b/gdb/gdb/linux-thread-db.c
+index a653bed..10edb01 100644
+--- a/gdb/gdb/linux-thread-db.c
++++ b/gdb/gdb/linux-thread-db.c
 @@ -40,6 +40,10 @@
  
  #include <signal.h>
@@ -6864,7 +7002,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/linux-thread-db.c gdb-6.8/gdb/linux-thread-db
  #ifdef HAVE_GNU_LIBC_VERSION_H
  #include <gnu/libc-version.h>
  #endif
-@@ -901,8 +905,11 @@
+@@ -901,8 +905,11 @@ thread_db_wait (ptid_t ptid, struct target_waitstatus *ourstatus)
  	 event gets postponed by other simultaneous events.  In such a
  	 case, we want to just ignore the event and continue on.  */
  
@@ -6876,7 +7014,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/linux-thread-db.c gdb-6.8/gdb/linux-thread-db
  
        ptid = thread_from_lwp (ptid);
        if (GET_PID (ptid) == -1)
-@@ -1136,6 +1143,16 @@
+@@ -1136,6 +1143,16 @@ init_thread_db_ops (void)
    thread_db_ops.to_magic = OPS_MAGIC;
  }
  
@@ -6893,7 +7031,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/linux-thread-db.c gdb-6.8/gdb/linux-thread-db
  void
  _initialize_thread_db (void)
  {
-@@ -1143,6 +1160,9 @@
+@@ -1143,6 +1160,9 @@ _initialize_thread_db (void)
    if (thread_db_load ())
      {
        init_thread_db_ops ();
@@ -6903,9 +7041,10 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/linux-thread-db.c gdb-6.8/gdb/linux-thread-db
        add_target (&thread_db_ops);
  
        /* Add ourselves to objfile event chain.  */
-diff -Naur ../PRISTINE/gdb-6.8/gdb/main.c gdb-6.8/gdb/main.c
---- ../PRISTINE/gdb-6.8/gdb/main.c	2008-01-05 08:49:53.000000000 -0800
-+++ gdb-6.8/gdb/main.c	2009-04-21 00:34:48.000000000 -0700
+diff --git a/gdb/gdb/main.c b/gdb/gdb/main.c
+index eb7ad5a..740b0bd 100644
+--- a/gdb/gdb/main.c
++++ b/gdb/gdb/main.c
 @@ -40,6 +40,10 @@
  #include "interps.h"
  #include "main.h"
@@ -6917,7 +7056,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/main.c gdb-6.8/gdb/main.c
  /* If nonzero, display time usage both at startup and for each command.  */
  
  int display_time;
-@@ -285,6 +289,9 @@
+@@ -285,6 +289,9 @@ captured_main (void *data)
        OPT_CD,
        OPT_ANNOTATE,
        OPT_STATISTICS,
@@ -6927,7 +7066,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/main.c gdb-6.8/gdb/main.c
        OPT_TUI,
        OPT_NOWINDOWS,
        OPT_WINDOWS
-@@ -350,6 +357,9 @@
+@@ -350,6 +357,9 @@ captured_main (void *data)
        {"args", no_argument, &set_args, 1},
       {"l", required_argument, 0, 'l'},
        {"return-child-result", no_argument, &return_child_result, 1},
@@ -6937,7 +7076,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/main.c gdb-6.8/gdb/main.c
        {0, no_argument, 0, 0}
      };
  
-@@ -533,6 +543,16 @@
+@@ -533,6 +543,16 @@ extern int gdbtk_test (char *);
  	    }
  	    break;
  
@@ -6954,7 +7093,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/main.c gdb-6.8/gdb/main.c
  	  case '?':
  	    fprintf_unfiltered (gdb_stderr,
  			_("Use `%s --help' for a complete list of options.\n"),
-@@ -938,6 +958,12 @@
+@@ -938,6 +958,12 @@ Options:\n\n\
    --interpreter=INTERP\n\
                       Select a specific interpreter / user interface\n\
  "), stream);
@@ -6967,7 +7106,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/main.c gdb-6.8/gdb/main.c
    fputs_unfiltered (_("\
    -l TIMEOUT         Set timeout in seconds for remote debugging.\n\
    --nw		     Do not use a window interface.\n\
-@@ -966,6 +992,6 @@
+@@ -966,6 +992,6 @@ Options:\n\n\
    fputs_unfiltered (_("\n\
  For more information, type \"help\" from within GDB, or consult the\n\
  GDB manual (available as on-line info or a printed manual).\n\
@@ -6975,10 +7114,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/main.c gdb-6.8/gdb/main.c
 +For further information see http://code.google.com/p/nativeclient/.\
  "), stream);
  }
-diff -Naur ../PRISTINE/gdb-6.8/gdb/osabi.c gdb-6.8/gdb/osabi.c
---- ../PRISTINE/gdb-6.8/gdb/osabi.c	2008-01-01 14:53:12.000000000 -0800
-+++ gdb-6.8/gdb/osabi.c	2009-04-21 00:34:48.000000000 -0700
-@@ -72,6 +72,9 @@
+diff --git a/gdb/gdb/osabi.c b/gdb/gdb/osabi.c
+index 04236fc..2dbcea2 100644
+--- a/gdb/gdb/osabi.c
++++ b/gdb/gdb/osabi.c
+@@ -72,6 +72,9 @@ static const char * const gdb_osabi_names[] =
  
    "Cygwin",
    "AIX",
@@ -6988,7 +7128,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/osabi.c gdb-6.8/gdb/osabi.c
  
    "<invalid>"
  };
-@@ -532,6 +535,12 @@
+@@ -532,6 +535,12 @@ generic_elf_osabi_sniffer (bfd *abfd)
  			     generic_elf_osabi_sniff_abi_tag_sections,
  			     &osabi);
        break;
@@ -7001,10 +7141,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/osabi.c gdb-6.8/gdb/osabi.c
      }
  
    if (osabi == GDB_OSABI_UNKNOWN)
-diff -Naur ../PRISTINE/gdb-6.8/gdb/printcmd.c gdb-6.8/gdb/printcmd.c
---- ../PRISTINE/gdb-6.8/gdb/printcmd.c	2008-01-30 11:19:51.000000000 -0800
-+++ gdb-6.8/gdb/printcmd.c	2009-04-21 00:34:48.000000000 -0700
-@@ -592,7 +592,15 @@
+diff --git a/gdb/gdb/printcmd.c b/gdb/gdb/printcmd.c
+index e73c511..dc926fd 100644
+--- a/gdb/gdb/printcmd.c
++++ b/gdb/gdb/printcmd.c
+@@ -592,7 +592,15 @@ build_address_symbolic (CORE_ADDR addr,  /* IN */
    if (overlay_debugging)
      {
        section = find_pc_overlay (addr);
@@ -7020,9 +7161,10 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/printcmd.c gdb-6.8/gdb/printcmd.c
  	{
  	  *unmapped = 1;
  	  addr = overlay_mapped_address (addr, section);
-diff -Naur ../PRISTINE/gdb-6.8/gdb/proc-service.c gdb-6.8/gdb/proc-service.c
---- ../PRISTINE/gdb-6.8/gdb/proc-service.c	2008-01-01 14:53:12.000000000 -0800
-+++ gdb-6.8/gdb/proc-service.c	2009-04-21 00:34:48.000000000 -0700
+diff --git a/gdb/gdb/proc-service.c b/gdb/gdb/proc-service.c
+index c135551..fa82acf 100644
+--- a/gdb/gdb/proc-service.c
++++ b/gdb/gdb/proc-service.c
 @@ -32,6 +32,10 @@
  
  /* Prototypes for supply_gregset etc.  */
@@ -7034,7 +7176,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/proc-service.c gdb-6.8/gdb/proc-service.c
  
  
  /* Fix-up some broken systems.  */
-@@ -261,7 +265,20 @@
+@@ -261,7 +265,20 @@ ps_lgetregs (gdb_ps_prochandle_t ph, lwpid_t lwpid, prgregset_t gregset)
    regcache = get_thread_regcache (inferior_ptid);
  
    target_fetch_registers (regcache, -1);
@@ -7055,10 +7197,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/proc-service.c gdb-6.8/gdb/proc-service.c
  
    do_cleanups (old_chain);
    return PS_OK;
-diff -Naur ../PRISTINE/gdb-6.8/gdb/regcache.c gdb-6.8/gdb/regcache.c
---- ../PRISTINE/gdb-6.8/gdb/regcache.c	2008-03-04 12:01:21.000000000 -0800
-+++ gdb-6.8/gdb/regcache.c	2009-04-21 00:34:48.000000000 -0700
-@@ -385,6 +385,16 @@
+diff --git a/gdb/gdb/regcache.c b/gdb/gdb/regcache.c
+index 85763c7..9172368 100644
+--- a/gdb/gdb/regcache.c
++++ b/gdb/gdb/regcache.c
+@@ -385,6 +385,16 @@ regcache_dup_no_passthrough (struct regcache *src)
    return newbuf;
  }
  
@@ -7075,7 +7218,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/regcache.c gdb-6.8/gdb/regcache.c
  int
  regcache_valid_p (const struct regcache *regcache, int regnum)
  {
-@@ -565,6 +575,22 @@
+@@ -565,6 +575,22 @@ regcache_raw_write_unsigned (struct regcache *regcache, int regnum,
    regcache_raw_write (regcache, regnum, buf);
  }
  
@@ -7098,10 +7241,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/regcache.c gdb-6.8/gdb/regcache.c
  void
  regcache_cooked_read (struct regcache *regcache, int regnum, gdb_byte *buf)
  {
-diff -Naur ../PRISTINE/gdb-6.8/gdb/regcache.h gdb-6.8/gdb/regcache.h
---- ../PRISTINE/gdb-6.8/gdb/regcache.h	2008-02-18 08:37:17.000000000 -0800
-+++ gdb-6.8/gdb/regcache.h	2009-04-21 00:34:48.000000000 -0700
-@@ -146,6 +146,14 @@
+diff --git a/gdb/gdb/regcache.h b/gdb/gdb/regcache.h
+index 1e4ee86..795bd0d 100644
+--- a/gdb/gdb/regcache.h
++++ b/gdb/gdb/regcache.h
+@@ -146,6 +146,14 @@ extern struct regcache *regcache_dup_no_passthrough (struct regcache *regcache);
  extern void regcache_cpy (struct regcache *dest, struct regcache *src);
  extern void regcache_cpy_no_passthrough (struct regcache *dest, struct regcache *src);
  
@@ -7116,9 +7260,10 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/regcache.h gdb-6.8/gdb/regcache.h
  extern void registers_changed (void);
  
  #endif /* REGCACHE_H */
-diff -Naur ../PRISTINE/gdb-6.8/gdb/solib.c gdb-6.8/gdb/solib.c
---- ../PRISTINE/gdb-6.8/gdb/solib.c	2008-01-07 07:19:58.000000000 -0800
-+++ gdb-6.8/gdb/solib.c	2009-04-21 00:34:48.000000000 -0700
+diff --git a/gdb/gdb/solib.c b/gdb/gdb/solib.c
+index 69680b4..1a55347 100644
+--- a/gdb/gdb/solib.c
++++ b/gdb/gdb/solib.c
 @@ -45,6 +45,10 @@
  #include "observer.h"
  #include "readline/readline.h"
@@ -7130,7 +7275,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/solib.c gdb-6.8/gdb/solib.c
  /* Architecture-specific operations.  */
  
  /* Per-architecture data key.  */
-@@ -399,6 +403,19 @@
+@@ -399,6 +403,19 @@ master_so_list (void)
    return so_list_head;
  }
  
@@ -7150,7 +7295,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/solib.c gdb-6.8/gdb/solib.c
  
  /* A small stub to get us past the arg-passing pinhole of catch_errors.  */
  
-@@ -945,6 +962,24 @@
+@@ -945,6 +962,24 @@ no_shared_libraries (char *ignored, int from_tty)
  {
    objfile_purge_solibs ();
    clear_solib ();
@@ -7175,10 +7320,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/solib.c gdb-6.8/gdb/solib.c
  }
  
  static void
-diff -Naur ../PRISTINE/gdb-6.8/gdb/solist.h gdb-6.8/gdb/solist.h
---- ../PRISTINE/gdb-6.8/gdb/solist.h	2008-01-07 07:19:58.000000000 -0800
-+++ gdb-6.8/gdb/solist.h	2009-04-21 00:34:48.000000000 -0700
-@@ -127,6 +127,12 @@
+diff --git a/gdb/gdb/solist.h b/gdb/gdb/solist.h
+index 01f734f..547dc0f 100644
+--- a/gdb/gdb/solist.h
++++ b/gdb/gdb/solist.h
+@@ -127,6 +127,12 @@ void free_so (struct so_list *so);
  /* Return address of first so_list entry in master shared object list.  */
  struct so_list *master_so_list (void);
  
@@ -7191,9 +7337,10 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/solist.h gdb-6.8/gdb/solist.h
  /* Find solib binary file and open it.  */
  extern int solib_open (char *in_pathname, char **found_pathname);
  
-diff -Naur ../PRISTINE/gdb-6.8/gdb/symfile.c gdb-6.8/gdb/symfile.c
---- ../PRISTINE/gdb-6.8/gdb/symfile.c	2008-01-29 14:47:20.000000000 -0800
-+++ gdb-6.8/gdb/symfile.c	2009-04-21 00:34:48.000000000 -0700
+diff --git a/gdb/gdb/symfile.c b/gdb/gdb/symfile.c
+index 5e554fe..3c4ef20 100644
+--- a/gdb/gdb/symfile.c
++++ b/gdb/gdb/symfile.c
 @@ -62,6 +62,9 @@
  #include <time.h>
  #include <sys/time.h>
@@ -7204,7 +7351,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/symfile.c gdb-6.8/gdb/symfile.c
  
  int (*deprecated_ui_load_progress_hook) (const char *section, unsigned long num);
  void (*deprecated_show_load_progress) (const char *section,
-@@ -1033,6 +1036,11 @@
+@@ -1033,6 +1036,11 @@ symbol_file_add_with_addrs_or_offsets (bfd *abfd, int from_tty,
        && !query ("Load new symbol table from \"%s\"? ", name))
      error (_("Not confirmed."));
  
@@ -7216,7 +7363,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/symfile.c gdb-6.8/gdb/symfile.c
    objfile = allocate_objfile (abfd, flags);
    discard_cleanups (my_cleanups);
  
-@@ -1136,6 +1144,14 @@
+@@ -1136,6 +1144,14 @@ symbol_file_add_with_addrs_or_offsets (bfd *abfd, int from_tty,
  
    do_cleanups (my_cleanups);
  
@@ -7231,7 +7378,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/symfile.c gdb-6.8/gdb/symfile.c
    if (objfile->sf == NULL)
      return objfile;	/* No symbols. */
  
-@@ -1218,11 +1234,19 @@
+@@ -1218,11 +1234,19 @@ symbol_file_clear (int from_tty)
         storage has just been released, we'd better wipe the solib
         descriptors as well.
       */
@@ -7251,7 +7398,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/symfile.c gdb-6.8/gdb/symfile.c
  }
  
  struct build_id
-@@ -2831,6 +2855,14 @@
+@@ -2831,6 +2855,14 @@ clear_symtab_users (void)
    clear_current_source_symtab_and_line ();
  
    clear_displays ();
@@ -7266,7 +7413,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/symfile.c gdb-6.8/gdb/symfile.c
    breakpoint_re_set ();
    set_default_breakpoint (0, 0, 0, 0);
    clear_pc_function_cache ();
-@@ -3244,6 +3276,18 @@
+@@ -3244,6 +3276,18 @@ section_is_overlay (asection *section)
  {
    /* FIXME: need bfd *, so we can use bfd_section_lma methods. */
  
@@ -7285,7 +7432,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/symfile.c gdb-6.8/gdb/symfile.c
    if (overlay_debugging)
      if (section && section->lma != 0 &&
  	section->vma != section->lma)
-@@ -3303,6 +3347,13 @@
+@@ -3303,6 +3347,13 @@ overlay_is_mapped (struct obj_section *osect)
        /* fall thru to manual case */
      case ovly_on:		/* overlay debugging manual */
        return osect->ovly_mapped == 1;
@@ -7299,10 +7446,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/symfile.c gdb-6.8/gdb/symfile.c
      }
  }
  
-diff -Naur ../PRISTINE/gdb-6.8/gdb/symfile.h gdb-6.8/gdb/symfile.h
---- ../PRISTINE/gdb-6.8/gdb/symfile.h	2008-02-03 14:13:29.000000000 -0800
-+++ gdb-6.8/gdb/symfile.h	2009-04-21 00:34:48.000000000 -0700
-@@ -308,6 +308,9 @@
+diff --git a/gdb/gdb/symfile.h b/gdb/gdb/symfile.h
+index 948cef7..7ff14d4 100644
+--- a/gdb/gdb/symfile.h
++++ b/gdb/gdb/symfile.h
+@@ -308,6 +308,9 @@ extern enum overlay_debugging_state
    ovly_off,
    ovly_on,
    ovly_auto
@@ -7312,10 +7460,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/symfile.h gdb-6.8/gdb/symfile.h
  } overlay_debugging;
  extern int overlay_cache_invalid;
  
-diff -Naur ../PRISTINE/gdb-6.8/gdb/symtab.c gdb-6.8/gdb/symtab.c
---- ../PRISTINE/gdb-6.8/gdb/symtab.c	2008-02-05 14:17:40.000000000 -0800
-+++ gdb-6.8/gdb/symtab.c	2009-04-21 00:34:48.000000000 -0700
-@@ -2492,12 +2492,26 @@
+diff --git a/gdb/gdb/symtab.c b/gdb/gdb/symtab.c
+index 40e31dc..9b6aa77 100644
+--- a/gdb/gdb/symtab.c
++++ b/gdb/gdb/symtab.c
+@@ -2492,12 +2492,26 @@ find_function_start_sal (struct symbol *sym, int funfirstline)
  {
    CORE_ADDR pc;
    struct symtab_and_line sal;
@@ -7343,7 +7492,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/symtab.c gdb-6.8/gdb/symtab.c
        /* If function is in an unmapped overlay, use its unmapped LMA
           address, so that gdbarch_skip_prologue has something unique to work
           on */
-@@ -2511,7 +2525,7 @@
+@@ -2511,7 +2525,7 @@ find_function_start_sal (struct symbol *sym, int funfirstline)
        /* For overlays, map pc back into its mapped VMA range */
        pc = overlay_mapped_address (pc, section);
      }
@@ -7352,7 +7501,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/symtab.c gdb-6.8/gdb/symtab.c
  
    /* Check if gdbarch_skip_prologue left us in mid-line, and the next
       line is still part of the same function.  */
-@@ -2521,8 +2535,18 @@
+@@ -2521,8 +2535,18 @@ find_function_start_sal (struct symbol *sym, int funfirstline)
      {
        /* First pc of next line */
        pc = sal.end;
@@ -7372,7 +7521,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/symtab.c gdb-6.8/gdb/symtab.c
      }
    sal.pc = pc;
  
-@@ -4232,7 +4256,14 @@
+@@ -4232,7 +4256,14 @@ append_expanded_sal (struct symtabs_and_lines *sal,
  			* (sal->nelts + 1));
    init_sal (sal->sals + sal->nelts);
    sal->sals[sal->nelts].symtab = symtab;
@@ -7387,9 +7536,10 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/symtab.c gdb-6.8/gdb/symtab.c
    sal->sals[sal->nelts].end = 0;
    sal->sals[sal->nelts].line = lineno;  
    sal->sals[sal->nelts].pc = pc;
-diff -Naur ../PRISTINE/gdb-6.8/gdb/target.c gdb-6.8/gdb/target.c
---- ../PRISTINE/gdb-6.8/gdb/target.c	2008-01-24 16:09:49.000000000 -0800
-+++ gdb-6.8/gdb/target.c	2009-04-21 00:34:48.000000000 -0700
+diff --git a/gdb/gdb/target.c b/gdb/gdb/target.c
+index 87ddf24..1f68de0 100644
+--- a/gdb/gdb/target.c
++++ b/gdb/gdb/target.c
 @@ -26,6 +26,7 @@
  #include "gdb_string.h"
  #include "target.h"
@@ -7398,7 +7548,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/target.c gdb-6.8/gdb/target.c
  #include "symtab.h"
  #include "inferior.h"
  #include "bfd.h"
-@@ -1009,6 +1010,9 @@
+@@ -1009,6 +1010,9 @@ memory_xfer_partial (struct target_ops *ops, void *readbuf, const void *writebuf
  	return xfer_memory (memaddr, readbuf, len, 0, NULL, ops);
      }
  
@@ -7408,7 +7558,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/target.c gdb-6.8/gdb/target.c
    /* Likewise for accesses to unmapped overlay sections.  */
    if (readbuf != NULL && overlay_debugging)
      {
-@@ -1016,6 +1020,7 @@
+@@ -1016,6 +1020,7 @@ memory_xfer_partial (struct target_ops *ops, void *readbuf, const void *writebuf
        if (pc_in_unmapped_range (memaddr, section))
  	return xfer_memory (memaddr, readbuf, len, 0, NULL, ops);
      }
@@ -7416,7 +7566,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/target.c gdb-6.8/gdb/target.c
  
    /* Try GDB's internal data cache.  */
    region = lookup_mem_region (memaddr);
-@@ -1612,6 +1617,24 @@
+@@ -1612,6 +1617,24 @@ target_info (char *args, int from_tty)
  void
  target_pre_inferior (int from_tty)
  {
@@ -7441,9 +7591,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/target.c gdb-6.8/gdb/target.c
    invalidate_target_mem_regions ();
  
    target_clear_description ();
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/config/nacl.exp gdb-6.8/gdb/testsuite/config/nacl.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/config/nacl.exp	1969-12-31 16:00:00.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/config/nacl.exp	2009-04-21 00:34:48.000000000 -0700
+diff --git a/gdb/gdb/testsuite/config/nacl.exp b/gdb/gdb/testsuite/config/nacl.exp
+new file mode 100644
+index 0000000..92baa79
+--- /dev/null
++++ b/gdb/gdb/testsuite/config/nacl.exp
 @@ -0,0 +1,30 @@
 +#   Copyright 2009
 +#   Free Software Foundation, Inc.
@@ -7475,10 +7627,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/config/nacl.exp gdb-6.8/gdb/testsui
 +verbose "gdb_prompt is now \"$gdb_prompt\"" 2
 +# Crap, we need to set both?  See ../lib/gdb.exp.
 +set_board_info gdb_prompt $gdb_prompt
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.arch/i386-gnu-cfi.exp gdb-6.8/gdb/testsuite/gdb.arch/i386-gnu-cfi.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.arch/i386-gnu-cfi.exp	2008-01-01 14:53:18.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/gdb.arch/i386-gnu-cfi.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -34,6 +34,12 @@
+diff --git a/gdb/gdb/testsuite/gdb.arch/i386-gnu-cfi.exp b/gdb/gdb/testsuite/gdb.arch/i386-gnu-cfi.exp
+index e00dc35..3fc2029 100644
+--- a/gdb/gdb/testsuite/gdb.arch/i386-gnu-cfi.exp
++++ b/gdb/gdb/testsuite/gdb.arch/i386-gnu-cfi.exp
+@@ -34,6 +34,12 @@ if ![istarget "i?86-*-*"] then {
      return
  }
  
@@ -7491,10 +7644,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.arch/i386-gnu-cfi.exp gdb-6.8/g
  set testfile "i386-gnu-cfi"
  set srcfilec ${testfile}.c
  set srcfileasm ${testfile}-asm.S
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.arch/i386-prologue.exp gdb-6.8/gdb/testsuite/gdb.arch/i386-prologue.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.arch/i386-prologue.exp	2008-01-01 14:53:18.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/gdb.arch/i386-prologue.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -32,6 +32,12 @@
+diff --git a/gdb/gdb/testsuite/gdb.arch/i386-prologue.exp b/gdb/gdb/testsuite/gdb.arch/i386-prologue.exp
+index e90c553..6d73efd 100644
+--- a/gdb/gdb/testsuite/gdb.arch/i386-prologue.exp
++++ b/gdb/gdb/testsuite/gdb.arch/i386-prologue.exp
+@@ -32,6 +32,12 @@ if ![istarget "i?86-*-*"] then {
      return
  }
  
@@ -7507,10 +7661,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.arch/i386-prologue.exp gdb-6.8/
  set testfile "i386-prologue"
  set srcfile ${testfile}.c
  set binfile ${objdir}/${subdir}/${testfile}
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.arch/i386-signal.exp gdb-6.8/gdb/testsuite/gdb.arch/i386-signal.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.arch/i386-signal.exp	2008-01-01 14:53:18.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/gdb.arch/i386-signal.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -20,6 +20,12 @@
+diff --git a/gdb/gdb/testsuite/gdb.arch/i386-signal.exp b/gdb/gdb/testsuite/gdb.arch/i386-signal.exp
+index 295dce5..769cb79 100644
+--- a/gdb/gdb/testsuite/gdb.arch/i386-signal.exp
++++ b/gdb/gdb/testsuite/gdb.arch/i386-signal.exp
+@@ -20,6 +20,12 @@ if { ![istarget "i?86-*-*"] && ![istarget "x86_64-*-*"] } then {
      return
  }
  
@@ -7523,10 +7678,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.arch/i386-signal.exp gdb-6.8/gd
  set testfile "i386-signal"
  set srcfile ${testfile}.c
  set binfile ${objdir}/${subdir}/${testfile}
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.arch/i386-size-overlap.exp gdb-6.8/gdb/testsuite/gdb.arch/i386-size-overlap.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.arch/i386-size-overlap.exp	2008-01-01 14:53:18.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/gdb.arch/i386-size-overlap.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -22,7 +22,13 @@
+diff --git a/gdb/gdb/testsuite/gdb.arch/i386-size-overlap.exp b/gdb/gdb/testsuite/gdb.arch/i386-size-overlap.exp
+index 81dfd94..b9d5c29 100644
+--- a/gdb/gdb/testsuite/gdb.arch/i386-size-overlap.exp
++++ b/gdb/gdb/testsuite/gdb.arch/i386-size-overlap.exp
+@@ -22,7 +22,13 @@ if $tracelevel {
  # Test that GDB can handle overlapping sizes of symbols.
  
  if ![istarget "i?86-*-*"] then {
@@ -7541,10 +7697,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.arch/i386-size-overlap.exp gdb-
      return
  }
  
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.arch/i386-size.exp gdb-6.8/gdb/testsuite/gdb.arch/i386-size.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.arch/i386-size.exp	2008-01-01 14:53:18.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/gdb.arch/i386-size.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -25,7 +25,13 @@
+diff --git a/gdb/gdb/testsuite/gdb.arch/i386-size.exp b/gdb/gdb/testsuite/gdb.arch/i386-size.exp
+index 026a84a..136d91f 100644
+--- a/gdb/gdb/testsuite/gdb.arch/i386-size.exp
++++ b/gdb/gdb/testsuite/gdb.arch/i386-size.exp
+@@ -25,7 +25,13 @@ if $tracelevel {
  # Test that GDB can see the sizes of symbols.
  
  if ![istarget "i?86-*-*"] then {
@@ -7559,10 +7716,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.arch/i386-size.exp gdb-6.8/gdb/
      return
  }
  
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.arch/i386-sse.exp gdb-6.8/gdb/testsuite/gdb.arch/i386-sse.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.arch/i386-sse.exp	2008-01-01 14:53:18.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/gdb.arch/i386-sse.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -30,6 +30,12 @@
+diff --git a/gdb/gdb/testsuite/gdb.arch/i386-sse.exp b/gdb/gdb/testsuite/gdb.arch/i386-sse.exp
+index 849b5fe..8ac52b7 100644
+--- a/gdb/gdb/testsuite/gdb.arch/i386-sse.exp
++++ b/gdb/gdb/testsuite/gdb.arch/i386-sse.exp
+@@ -30,6 +30,12 @@ if ![istarget "i?86-*-*"] then {
      return
  }
  
@@ -7575,10 +7733,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.arch/i386-sse.exp gdb-6.8/gdb/t
  set testfile "i386-sse"
  set srcfile ${testfile}.c
  set binfile ${objdir}/${subdir}/${testfile}
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.arch/i386-unwind.exp gdb-6.8/gdb/testsuite/gdb.arch/i386-unwind.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.arch/i386-unwind.exp	2008-01-01 14:53:18.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/gdb.arch/i386-unwind.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -32,6 +32,12 @@
+diff --git a/gdb/gdb/testsuite/gdb.arch/i386-unwind.exp b/gdb/gdb/testsuite/gdb.arch/i386-unwind.exp
+index 75ba87e..82a2eaa 100644
+--- a/gdb/gdb/testsuite/gdb.arch/i386-unwind.exp
++++ b/gdb/gdb/testsuite/gdb.arch/i386-unwind.exp
+@@ -32,6 +32,12 @@ if ![istarget "i?86-*-*"] then {
      return
  }
  
@@ -7591,10 +7750,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.arch/i386-unwind.exp gdb-6.8/gd
  set testfile "i386-unwind"
  set srcfile ${testfile}.c
  set binfile ${objdir}/${subdir}/${testfile}
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.base/attach.exp gdb-6.8/gdb/testsuite/gdb.base/attach.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.base/attach.exp	2008-01-01 14:53:18.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/gdb.base/attach.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -38,8 +38,12 @@
+diff --git a/gdb/gdb/testsuite/gdb.base/attach.exp b/gdb/gdb/testsuite/gdb.base/attach.exp
+index 82fe2c1..192ef4d 100644
+--- a/gdb/gdb/testsuite/gdb.base/attach.exp
++++ b/gdb/gdb/testsuite/gdb.base/attach.exp
+@@ -38,8 +38,12 @@ if { [istarget "spu*-*-*"] } {
  }
  
  # are we on a target board
@@ -7609,9 +7769,10 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.base/attach.exp gdb-6.8/gdb/tes
  }
  
  set testfile "attach"
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.base/attach2.c gdb-6.8/gdb/testsuite/gdb.base/attach2.c
---- ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.base/attach2.c	1999-06-28 16:02:40.000000000 -0700
-+++ gdb-6.8/gdb/testsuite/gdb.base/attach2.c	2009-04-21 00:34:48.000000000 -0700
+diff --git a/gdb/gdb/testsuite/gdb.base/attach2.c b/gdb/gdb/testsuite/gdb.base/attach2.c
+index a78037e..f1b1004 100644
+--- a/gdb/gdb/testsuite/gdb.base/attach2.c
++++ b/gdb/gdb/testsuite/gdb.base/attach2.c
 @@ -10,6 +10,23 @@
  
  int  should_exit = 0;
@@ -7636,10 +7797,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.base/attach2.c gdb-6.8/gdb/test
  int main ()
  {
    int  local_i = 0;
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.base/break.exp gdb-6.8/gdb/testsuite/gdb.base/break.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.base/break.exp	2008-02-26 00:14:11.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/gdb.base/break.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -461,7 +461,7 @@
+diff --git a/gdb/gdb/testsuite/gdb.base/break.exp b/gdb/gdb/testsuite/gdb.base/break.exp
+index 0ec70c9..1d77db4 100644
+--- a/gdb/gdb/testsuite/gdb.base/break.exp
++++ b/gdb/gdb/testsuite/gdb.base/break.exp
+@@ -461,7 +461,7 @@ gdb_expect {
    timeout {fail "(timeout) set to-be-silent break bp_location1"}
  }
  
@@ -7648,7 +7810,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.base/break.exp gdb-6.8/gdb/test
  send_gdb "silent\n"
  send_gdb "end\n"
  gdb_expect {
-@@ -470,7 +470,7 @@
+@@ -470,7 +470,7 @@ gdb_expect {
    timeout {fail "(timeout) set silent break bp_location1"}
  }
  
@@ -7657,10 +7819,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.base/break.exp gdb-6.8/gdb/test
  gdb_expect {
    -re "\[0-9\]*\[ \t\]*breakpoint.*:$bp_location1\r\n\[ \t\]*silent.*$gdb_prompt $"\
            {pass "info silent break bp_location1"}
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.base/completion.exp gdb-6.8/gdb/testsuite/gdb.base/completion.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.base/completion.exp	2008-01-01 14:53:18.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/gdb.base/completion.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -591,7 +591,7 @@
+diff --git a/gdb/gdb/testsuite/gdb.base/completion.exp b/gdb/gdb/testsuite/gdb.base/completion.exp
+index fe99591..844b6f2 100644
+--- a/gdb/gdb/testsuite/gdb.base/completion.exp
++++ b/gdb/gdb/testsuite/gdb.base/completion.exp
+@@ -591,7 +591,7 @@ gdb_expect  {
  	    -re "(There are $decimal possibilities\\.  Do you really\r\nwish to see them all.|Display all $decimal possibilities.) \\(y or n\\)$" {
  		send_gdb "n"
  		gdb_expect {
@@ -7669,10 +7832,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.base/completion.exp gdb-6.8/gdb
  			send_gdb "\n"
  			gdb_expect {
  			    -re "No symbol \"no_var_named_this\" in current context\\..*$gdb_prompt $" {
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.base/maint.exp gdb-6.8/gdb/testsuite/gdb.base/maint.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.base/maint.exp	2008-01-28 10:06:59.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/gdb.base/maint.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -483,9 +483,9 @@
+diff --git a/gdb/gdb/testsuite/gdb.base/maint.exp b/gdb/gdb/testsuite/gdb.base/maint.exp
+index af88e17..3d9fc45 100644
+--- a/gdb/gdb/testsuite/gdb.base/maint.exp
++++ b/gdb/gdb/testsuite/gdb.base/maint.exp
+@@ -483,9 +483,9 @@ set bp_location6 [gdb_get_line_number "set breakpoint 6 here"]
  
  send_gdb "maint info breakpoints\n"
  gdb_expect {
@@ -7684,10 +7848,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.base/maint.exp gdb-6.8/gdb/test
  		{ pass "maint info breakpoints (with shlib events)" }
  	-re ".*$gdb_prompt $"       { fail "maint info breakpoints" }
  	timeout         { fail "(timeout) maint info breakpoints" }
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-break.exp gdb-6.8/gdb/testsuite/gdb.mi/mi-break.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-break.exp	2008-02-01 08:24:47.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/gdb.mi/mi-break.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -62,6 +62,7 @@
+diff --git a/gdb/gdb/testsuite/gdb.mi/mi-break.exp b/gdb/gdb/testsuite/gdb.mi/mi-break.exp
+index 9f10364..5908e45 100644
+--- a/gdb/gdb/testsuite/gdb.mi/mi-break.exp
++++ b/gdb/gdb/testsuite/gdb.mi/mi-break.exp
+@@ -62,6 +62,7 @@ proc test_tbreak_creation_and_listing {} {
      global mi_gdb_prompt
      global srcfile
      global hex
@@ -7695,7 +7860,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-break.exp gdb-6.8/gdb/tes
      global line_callee4_head line_callee4_body
      global line_callee3_head line_callee3_body
      global line_callee2_head line_callee2_body
-@@ -79,24 +80,24 @@
+@@ -79,24 +80,24 @@ proc test_tbreak_creation_and_listing {} {
      # -break-list
  
      mi_gdb_test "222-break-insert -t main" \
@@ -7725,10 +7890,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-break.exp gdb-6.8/gdb/tes
                  "list of breakpoints"
  
      mi_gdb_test "777-break-delete" \
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-cli.exp gdb-6.8/gdb/testsuite/gdb.mi/mi-cli.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-cli.exp	2008-01-22 11:43:10.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/gdb.mi/mi-cli.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -84,7 +84,7 @@
+diff --git a/gdb/gdb/testsuite/gdb.mi/mi-cli.exp b/gdb/gdb/testsuite/gdb.mi/mi-cli.exp
+index ef674b0..9bcb5c3 100644
+--- a/gdb/gdb/testsuite/gdb.mi/mi-cli.exp
++++ b/gdb/gdb/testsuite/gdb.mi/mi-cli.exp
+@@ -84,7 +84,7 @@ mi_gdb_test "-interpreter-exec console \"break callee4\"" \
    "-interpreter-exec console \"break callee4\""
  
  mi_gdb_test "-interpreter-exec console \"info break\"" \
@@ -7737,10 +7903,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-cli.exp gdb-6.8/gdb/tests
    "-interpreter-exec console \"info break\""
  
  mi_gdb_test "-interpreter-exec console \"set listsize 1\"" \
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-simplerun.exp gdb-6.8/gdb/testsuite/gdb.mi/mi-simplerun.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-simplerun.exp	2008-01-01 14:53:20.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/gdb.mi/mi-simplerun.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -49,7 +49,7 @@
+diff --git a/gdb/gdb/testsuite/gdb.mi/mi-simplerun.exp b/gdb/gdb/testsuite/gdb.mi/mi-simplerun.exp
+index e62b922..897eb81 100644
+--- a/gdb/gdb/testsuite/gdb.mi/mi-simplerun.exp
++++ b/gdb/gdb/testsuite/gdb.mi/mi-simplerun.exp
+@@ -49,7 +49,7 @@ mi_gdb_load ${binfile}
  proc test_breakpoints_creation_and_listing {} {
      global mi_gdb_prompt
      global srcfile
@@ -7749,7 +7916,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-simplerun.exp gdb-6.8/gdb
  
      set line_callee4_head  [gdb_get_line_number "callee4 ("]
      set line_callee3_head  [gdb_get_line_number "callee3 ("]
-@@ -67,23 +67,23 @@
+@@ -67,23 +67,23 @@ proc test_breakpoints_creation_and_listing {} {
      # -break-info
  
      mi_gdb_test "200-break-insert main" \
@@ -7778,7 +7945,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-simplerun.exp gdb-6.8/gdb
                  "list of breakpoints"
  
      mi_gdb_test "205-break-disable 2 3 4" \
-@@ -112,7 +112,7 @@
+@@ -112,7 +112,7 @@ proc test_running_the_program {} {
      # The following is equivalent to a send_gdb "000-exec-run\n"
      mi_run_cmd
      gdb_expect {
@@ -7787,10 +7954,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-simplerun.exp gdb-6.8/gdb
  	    pass "run to main"
  	}
  	-re ".*$mi_gdb_prompt$" {
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-stack.exp gdb-6.8/gdb/testsuite/gdb.mi/mi-stack.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-stack.exp	2008-01-01 14:53:20.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/gdb.mi/mi-stack.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -175,7 +175,7 @@
+diff --git a/gdb/gdb/testsuite/gdb.mi/mi-stack.exp b/gdb/gdb/testsuite/gdb.mi/mi-stack.exp
+index f812734..848d2b9 100644
+--- a/gdb/gdb/testsuite/gdb.mi/mi-stack.exp
++++ b/gdb/gdb/testsuite/gdb.mi/mi-stack.exp
+@@ -175,7 +175,7 @@ set line_callee4_return_0 [gdb_get_line_number "return 0;"]
  # step until A, B, C, D have some reasonable values.
  send_gdb "-exec-next 4\n"
  gdb_expect {
@@ -7799,10 +7967,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-stack.exp gdb-6.8/gdb/tes
  	pass "next's in callee4"
      }
      timeout { fail "next in callee4 (timeout)" }
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-stepi.exp gdb-6.8/gdb/testsuite/gdb.mi/mi-stepi.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-stepi.exp	2008-01-01 14:53:20.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/gdb.mi/mi-stepi.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -49,7 +49,7 @@
+diff --git a/gdb/gdb/testsuite/gdb.mi/mi-stepi.exp b/gdb/gdb/testsuite/gdb.mi/mi-stepi.exp
+index 391cd75..93ac460 100644
+--- a/gdb/gdb/testsuite/gdb.mi/mi-stepi.exp
++++ b/gdb/gdb/testsuite/gdb.mi/mi-stepi.exp
+@@ -49,7 +49,7 @@ proc test_stepi_nexti {} {
  
      send_gdb "111-exec-step-instruction\n"
      gdb_expect {
@@ -7811,7 +7980,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-stepi.exp gdb-6.8/gdb/tes
  	    set line $expect_out(2,string)
  	    if { $line >= $line_main_body && $line <= $line_main_hello } {
  		pass "step-instruction at main"
-@@ -63,7 +63,7 @@
+@@ -63,7 +63,7 @@ proc test_stepi_nexti {} {
      }
      send_gdb "222-exec-next-instruction\n"
      gdb_expect {
@@ -7820,7 +7989,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-stepi.exp gdb-6.8/gdb/tes
  	    set line $expect_out(2,string)
  	    if { $line >= $line_main_body && $line <= $line_main_hello } {
  		pass "next-instruction at main"
-@@ -77,7 +77,7 @@
+@@ -77,7 +77,7 @@ proc test_stepi_nexti {} {
      }
      send_gdb "333-exec-next-instruction\n"
      gdb_expect {
@@ -7829,10 +7998,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-stepi.exp gdb-6.8/gdb/tes
  	    set line $expect_out(2,string)
  	    if { $line >= $line_main_body && $line <= $line_main_hello } {
  		pass "next-instruction at main"
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-until.exp gdb-6.8/gdb/testsuite/gdb.mi/mi-until.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-until.exp	2008-01-01 14:53:20.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/gdb.mi/mi-until.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -49,15 +49,16 @@
+diff --git a/gdb/gdb/testsuite/gdb.mi/mi-until.exp b/gdb/gdb/testsuite/gdb.mi/mi-until.exp
+index 3c2cb9c..be128d4 100644
+--- a/gdb/gdb/testsuite/gdb.mi/mi-until.exp
++++ b/gdb/gdb/testsuite/gdb.mi/mi-until.exp
+@@ -49,15 +49,16 @@ mi_gdb_load ${binfile}
  proc test_running_to_foo {} {
      global mi_gdb_prompt
      global hex
@@ -7851,7 +8021,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-until.exp gdb-6.8/gdb/tes
  	    pass "run to main"
  	}
  	-re ".*$mi_gdb_prompt$" {
-@@ -78,10 +79,10 @@
+@@ -78,10 +79,10 @@ proc test_until {} {
  
      send_gdb "111-exec-until\n"
      gdb_expect {
@@ -7864,7 +8034,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-until.exp gdb-6.8/gdb/tes
  	    kfail gdb/2104 "until after while loop (went backwards)"
  	}
  	timeout {
-@@ -91,7 +92,7 @@
+@@ -91,7 +92,7 @@ proc test_until {} {
  
      send_gdb "222-exec-until 15\n"
      gdb_expect {
@@ -7873,7 +8043,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-until.exp gdb-6.8/gdb/tes
  	    pass "until line number"
  	}
  	timeout {
-@@ -101,7 +102,7 @@
+@@ -101,7 +102,7 @@ proc test_until {} {
  
      send_gdb "333-exec-until until.c:17\n"
      gdb_expect {
@@ -7882,7 +8052,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-until.exp gdb-6.8/gdb/tes
  	    pass "until line number:file"
  	}
  	timeout {
-@@ -113,7 +114,7 @@
+@@ -113,7 +114,7 @@ proc test_until {} {
  
      send_gdb "444-exec-until until.c:25\n"
      gdb_expect {
@@ -7891,10 +8061,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-until.exp gdb-6.8/gdb/tes
  	    pass "until after current function"
  	}
  	timeout {
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-var-display.exp gdb-6.8/gdb/testsuite/gdb.mi/mi-var-display.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-var-display.exp	2008-01-22 22:20:57.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/gdb.mi/mi-var-display.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -43,13 +43,13 @@
+diff --git a/gdb/gdb/testsuite/gdb.mi/mi-var-display.exp b/gdb/gdb/testsuite/gdb.mi/mi-var-display.exp
+index c28e0ba..7b53b6b 100644
+--- a/gdb/gdb/testsuite/gdb.mi/mi-var-display.exp
++++ b/gdb/gdb/testsuite/gdb.mi/mi-var-display.exp
+@@ -43,13 +43,13 @@ mi_gdb_load ${binfile}
  set line_dct_end [gdb_get_line_number "{int a = 0;}"]
  
  mi_gdb_test "200-break-insert $srcfile:$line_dct_end" \
@@ -7910,7 +8081,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-var-display.exp gdb-6.8/g
  	pass "run to do_children_tests"
      }
      -re ".*$mi_gdb_prompt$" {fail "run to do_children_tests (2)"}
-@@ -328,12 +328,12 @@
+@@ -328,12 +328,12 @@ mi_gdb_test "-var-delete weird" \
  set line_dst_a_1 [gdb_get_line_number "a = 1;"]
  
  mi_gdb_test "200-break-insert do_special_tests" \
@@ -7925,7 +8096,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-var-display.exp gdb-6.8/g
  	pass "continue to do_special_tests"
      }
      timeout {
-@@ -589,14 +589,14 @@
+@@ -589,14 +589,14 @@ gdb_expect {
  set line_incr_a_b_a [gdb_get_line_number "b = a;"]
  
  mi_gdb_test "200-break-insert incr_a" \
@@ -7943,10 +8114,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi-var-display.exp gdb-6.8/g
  	fail "continue to incr_a (compiler debug info incorrect)"
      }
      -re "\\^running\r\n${mi_gdb_prompt}.*\r\n$mi_gdb_prompt$" {
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-break.exp gdb-6.8/gdb/testsuite/gdb.mi/mi2-break.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-break.exp	2008-01-01 14:53:20.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/gdb.mi/mi2-break.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -63,6 +63,7 @@
+diff --git a/gdb/gdb/testsuite/gdb.mi/mi2-break.exp b/gdb/gdb/testsuite/gdb.mi/mi2-break.exp
+index 9b102ae..a99b016 100644
+--- a/gdb/gdb/testsuite/gdb.mi/mi2-break.exp
++++ b/gdb/gdb/testsuite/gdb.mi/mi2-break.exp
+@@ -63,6 +63,7 @@ proc test_tbreak_creation_and_listing {} {
      global mi_gdb_prompt
      global srcfile
      global hex
@@ -7954,7 +8126,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-break.exp gdb-6.8/gdb/te
      global line_callee4_head line_callee4_body
      global line_callee3_head line_callee3_body
      global line_callee2_head line_callee2_body
-@@ -80,24 +81,24 @@
+@@ -80,24 +81,24 @@ proc test_tbreak_creation_and_listing {} {
      # -break-list
  
      mi_gdb_test "222-break-insert -t main" \
@@ -7984,10 +8156,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-break.exp gdb-6.8/gdb/te
                  "list of breakpoints"
  
      mi_gdb_test "777-break-delete" \
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-cli.exp gdb-6.8/gdb/testsuite/gdb.mi/mi2-cli.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-cli.exp	2008-01-22 11:43:10.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/gdb.mi/mi2-cli.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -84,7 +84,7 @@
+diff --git a/gdb/gdb/testsuite/gdb.mi/mi2-cli.exp b/gdb/gdb/testsuite/gdb.mi/mi2-cli.exp
+index 7879bd7..9bf41ad 100644
+--- a/gdb/gdb/testsuite/gdb.mi/mi2-cli.exp
++++ b/gdb/gdb/testsuite/gdb.mi/mi2-cli.exp
+@@ -84,7 +84,7 @@ mi_gdb_test "-interpreter-exec console \"break callee4\"" \
    "-interpreter-exec console \"break callee4\""
  
  mi_gdb_test "-interpreter-exec console \"info break\"" \
@@ -7996,10 +8169,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-cli.exp gdb-6.8/gdb/test
    "-interpreter-exec console \"info break\""
  
  mi_gdb_test "-interpreter-exec console \"set listsize 1\"" \
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-simplerun.exp gdb-6.8/gdb/testsuite/gdb.mi/mi2-simplerun.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-simplerun.exp	2008-01-01 14:53:20.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/gdb.mi/mi2-simplerun.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -50,6 +50,7 @@
+diff --git a/gdb/gdb/testsuite/gdb.mi/mi2-simplerun.exp b/gdb/gdb/testsuite/gdb.mi/mi2-simplerun.exp
+index 31d4384..9fe128b 100644
+--- a/gdb/gdb/testsuite/gdb.mi/mi2-simplerun.exp
++++ b/gdb/gdb/testsuite/gdb.mi/mi2-simplerun.exp
+@@ -50,6 +50,7 @@ proc test_breakpoints_creation_and_listing {} {
      global mi_gdb_prompt
      global srcfile
      global hex
@@ -8007,7 +8181,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-simplerun.exp gdb-6.8/gd
  
      set line_callee4_head  [gdb_get_line_number "callee4 ("]
      set line_callee3_head  [gdb_get_line_number "callee3 ("]
-@@ -67,23 +68,23 @@
+@@ -67,23 +68,23 @@ proc test_breakpoints_creation_and_listing {} {
      # -break-info
  
      mi_gdb_test "200-break-insert main" \
@@ -8036,7 +8210,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-simplerun.exp gdb-6.8/gd
                  "list of breakpoints"
  
      mi_gdb_test "205-break-disable 2 3 4" \
-@@ -112,7 +113,7 @@
+@@ -112,7 +113,7 @@ proc test_running_the_program {} {
      # The following is equivalent to a send_gdb "000-exec-run\n"
      mi_run_cmd
      gdb_expect {
@@ -8045,10 +8219,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-simplerun.exp gdb-6.8/gd
  	    pass "run to main"
  	}
  	-re ".*$mi_gdb_prompt$" {
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-stack.exp gdb-6.8/gdb/testsuite/gdb.mi/mi2-stack.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-stack.exp	2008-01-01 14:53:20.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/gdb.mi/mi2-stack.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -175,7 +175,7 @@
+diff --git a/gdb/gdb/testsuite/gdb.mi/mi2-stack.exp b/gdb/gdb/testsuite/gdb.mi/mi2-stack.exp
+index 4c7c17f..2966dd0 100644
+--- a/gdb/gdb/testsuite/gdb.mi/mi2-stack.exp
++++ b/gdb/gdb/testsuite/gdb.mi/mi2-stack.exp
+@@ -175,7 +175,7 @@ set line_callee4_return_0 [gdb_get_line_number "return 0;"]
  # step until A, B, C, D have some reasonable values.
  send_gdb "-exec-next 4\n"
  gdb_expect {
@@ -8057,10 +8232,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-stack.exp gdb-6.8/gdb/te
  	pass "next's in callee4"
      }
      timeout { fail "next in callee4 (timeout)" }
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-stepi.exp gdb-6.8/gdb/testsuite/gdb.mi/mi2-stepi.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-stepi.exp	2008-01-01 14:53:20.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/gdb.mi/mi2-stepi.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -49,7 +49,7 @@
+diff --git a/gdb/gdb/testsuite/gdb.mi/mi2-stepi.exp b/gdb/gdb/testsuite/gdb.mi/mi2-stepi.exp
+index e7b709d..4bf2e97 100644
+--- a/gdb/gdb/testsuite/gdb.mi/mi2-stepi.exp
++++ b/gdb/gdb/testsuite/gdb.mi/mi2-stepi.exp
+@@ -49,7 +49,7 @@ proc test_stepi_nexti {} {
  
      send_gdb "111-exec-step-instruction\n"
      gdb_expect {
@@ -8069,7 +8245,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-stepi.exp gdb-6.8/gdb/te
  	    set line $expect_out(2,string)
  	    if { $line >= $line_main_body && $line <= $line_main_hello } {
  		pass "step-instruction at main"
-@@ -63,7 +63,7 @@
+@@ -63,7 +63,7 @@ proc test_stepi_nexti {} {
      }
      send_gdb "222-exec-next-instruction\n"
      gdb_expect {
@@ -8078,7 +8254,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-stepi.exp gdb-6.8/gdb/te
  	    set line $expect_out(2,string)
  	    if { $line >= $line_main_body && $line <= $line_main_hello } {
  		pass "next-instruction at main"
-@@ -77,7 +77,7 @@
+@@ -77,7 +77,7 @@ proc test_stepi_nexti {} {
      }
      send_gdb "333-exec-next-instruction\n"
      gdb_expect {
@@ -8087,10 +8263,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-stepi.exp gdb-6.8/gdb/te
  	    set line $expect_out(2,string)
  	    if { $line >= $line_main_body && $line <= $line_main_hello } {
  		pass "next-instruction at main"
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-until.exp gdb-6.8/gdb/testsuite/gdb.mi/mi2-until.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-until.exp	2008-01-01 14:53:20.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/gdb.mi/mi2-until.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -50,15 +50,16 @@
+diff --git a/gdb/gdb/testsuite/gdb.mi/mi2-until.exp b/gdb/gdb/testsuite/gdb.mi/mi2-until.exp
+index 6e007a0..c20f8f2 100644
+--- a/gdb/gdb/testsuite/gdb.mi/mi2-until.exp
++++ b/gdb/gdb/testsuite/gdb.mi/mi2-until.exp
+@@ -50,15 +50,16 @@ mi_gdb_load ${binfile}
  proc test_running_to_foo {} {
      global mi_gdb_prompt
      global hex
@@ -8109,7 +8286,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-until.exp gdb-6.8/gdb/te
  	    pass "run to main"
  	}
  	-re ".*$mi_gdb_prompt$" {
-@@ -79,10 +80,10 @@
+@@ -79,10 +80,10 @@ proc test_until {} {
  
      send_gdb "111-exec-until\n"
      gdb_expect {
@@ -8122,7 +8299,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-until.exp gdb-6.8/gdb/te
  	    kfail gdb/2104 "until after while loop (went backwards)"
  	}
  	timeout {
-@@ -92,7 +93,7 @@
+@@ -92,7 +93,7 @@ proc test_until {} {
  
      send_gdb "222-exec-until 15\n"
      gdb_expect {
@@ -8131,7 +8308,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-until.exp gdb-6.8/gdb/te
  	    pass "until line number"
  	}
  	timeout {
-@@ -102,7 +103,7 @@
+@@ -102,7 +103,7 @@ proc test_until {} {
  
      send_gdb "333-exec-until until.c:17\n"
      gdb_expect {
@@ -8140,7 +8317,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-until.exp gdb-6.8/gdb/te
  	    pass "until line number:file"
  	}
  	timeout {
-@@ -114,7 +115,7 @@
+@@ -114,7 +115,7 @@ proc test_until {} {
  
      send_gdb "444-exec-until until.c:25\n"
      gdb_expect {
@@ -8149,10 +8326,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-until.exp gdb-6.8/gdb/te
  	    pass "until after current function"
  	}
  	timeout {
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-var-display.exp gdb-6.8/gdb/testsuite/gdb.mi/mi2-var-display.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-var-display.exp	2008-01-23 13:05:16.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/gdb.mi/mi2-var-display.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -43,13 +43,13 @@
+diff --git a/gdb/gdb/testsuite/gdb.mi/mi2-var-display.exp b/gdb/gdb/testsuite/gdb.mi/mi2-var-display.exp
+index a955029..7012309 100644
+--- a/gdb/gdb/testsuite/gdb.mi/mi2-var-display.exp
++++ b/gdb/gdb/testsuite/gdb.mi/mi2-var-display.exp
+@@ -43,13 +43,13 @@ mi_gdb_load ${binfile}
  set line_dct_end [gdb_get_line_number "{int a = 0;}"]
  
  mi_gdb_test "200-break-insert $srcfile:$line_dct_end" \
@@ -8168,7 +8346,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-var-display.exp gdb-6.8/
  	pass "run to do_children_tests"
      }
      -re ".*$mi_gdb_prompt$" {fail "run to do_children_tests (2)"}
-@@ -328,12 +328,12 @@
+@@ -328,12 +328,12 @@ mi_gdb_test "-var-delete weird" \
  set line_dst_a_1 [gdb_get_line_number "a = 1;"]
  
  mi_gdb_test "200-break-insert do_special_tests" \
@@ -8183,7 +8361,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-var-display.exp gdb-6.8/
  	pass "continue to do_special_tests"
      }
      timeout {
-@@ -589,11 +589,11 @@
+@@ -589,11 +589,11 @@ gdb_expect {
  set line_incr_a_b_a [gdb_get_line_number "b = a;"]
  
  mi_gdb_test "200-break-insert incr_a" \
@@ -8197,10 +8375,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.mi/mi2-var-display.exp gdb-6.8/
  	pass "continue to incr_a"
      }
      -re "\\^running\r\n${mi_gdb_prompt}\\*stopped,reason=\"breakpoint-hit\",bkptno=\"3\",thread-id=\"\[01\]\",frame=\{addr=\"$hex\",func=\"incr_a\",args=\\\[\{name=\"a\",value=\"\.*\"\}\\\],file=\".*var-cmd.c\",fullname=\"${fullname_syntax}${srcfile}\",line=\"([expr $line_incr_a_b_a - 2]|[expr $line_incr_a_b_a - 1]|$line_incr_a_b_a)\"\}\r\n$mi_gdb_prompt$" {
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.threads/schedlock.exp gdb-6.8/gdb/testsuite/gdb.threads/schedlock.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.threads/schedlock.exp	2008-01-01 14:53:22.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/gdb.threads/schedlock.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -116,6 +116,9 @@
+diff --git a/gdb/gdb/testsuite/gdb.threads/schedlock.exp b/gdb/gdb/testsuite/gdb.threads/schedlock.exp
+index f6b319c..4ca5ef7 100644
+--- a/gdb/gdb/testsuite/gdb.threads/schedlock.exp
++++ b/gdb/gdb/testsuite/gdb.threads/schedlock.exp
+@@ -116,6 +116,9 @@ proc my_continue { msg } {
    stop_process "stop all threads ($msg)"
  
    # Make sure we're in one of the non-main looping threads.
@@ -8210,10 +8389,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/gdb.threads/schedlock.exp gdb-6.8/g
    gdb_breakpoint [concat [gdb_get_line_number "schedlock.exp: main loop"] " if arg != 0"]
    gdb_continue_to_breakpoint "return to loop ($msg)"
    delete_breakpoints
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/lib/gdb.exp gdb-6.8/gdb/testsuite/lib/gdb.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/lib/gdb.exp	2008-01-22 22:20:34.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/lib/gdb.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -87,6 +87,9 @@
+diff --git a/gdb/gdb/testsuite/lib/gdb.exp b/gdb/gdb/testsuite/lib/gdb.exp
+index cbfa253..ed1ea19 100644
+--- a/gdb/gdb/testsuite/lib/gdb.exp
++++ b/gdb/gdb/testsuite/lib/gdb.exp
+@@ -87,6 +87,9 @@ if ![info exists env(EXEEXT)] {
  
  set octal "\[0-7\]+"
  
@@ -8223,7 +8403,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/lib/gdb.exp gdb-6.8/gdb/testsuite/l
  ### Only procedures should come after this point.
  
  #
-@@ -1154,7 +1157,7 @@
+@@ -1154,7 +1157,7 @@ proc default_gdb_start { } {
  	perror "Spawning $GDB failed."
  	return 1;
      }
@@ -8232,7 +8412,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/lib/gdb.exp gdb-6.8/gdb/testsuite/l
  	-re "\[\r\n\]$gdb_prompt $" {
  	    verbose "GDB initialized."
  	}
-@@ -1163,7 +1166,7 @@
+@@ -1163,7 +1166,7 @@ proc default_gdb_start { } {
  	    return -1
  	}
  	timeout	{
@@ -8241,7 +8421,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/lib/gdb.exp gdb-6.8/gdb/testsuite/l
  	    remote_close host;
  	    return -1
  	}
-@@ -2371,7 +2374,7 @@
+@@ -2371,7 +2374,7 @@ proc gdb_continue_to_end {mssg} {
      # Don't bother to check the output of the program, that may be
      # extremely tough for some remote systems.
      gdb_test "continue"\
@@ -8250,10 +8430,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/lib/gdb.exp gdb-6.8/gdb/testsuite/l
        "continue until exit at $mssg"
    }
  }
-diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/lib/mi-support.exp gdb-6.8/gdb/testsuite/lib/mi-support.exp
---- ../PRISTINE/gdb-6.8/gdb/testsuite/lib/mi-support.exp	2008-01-29 11:36:58.000000000 -0800
-+++ gdb-6.8/gdb/testsuite/lib/mi-support.exp	2009-04-21 00:34:48.000000000 -0700
-@@ -864,10 +864,11 @@
+diff --git a/gdb/gdb/testsuite/lib/mi-support.exp b/gdb/gdb/testsuite/lib/mi-support.exp
+index a67b0cc..3228b5e 100644
+--- a/gdb/gdb/testsuite/lib/mi-support.exp
++++ b/gdb/gdb/testsuite/lib/mi-support.exp
+@@ -864,10 +864,11 @@ proc mi_runto_helper {func run_or_continue} {
  
    global mi_gdb_prompt expect_out
    global hex decimal fullname_syntax
@@ -8266,9 +8447,10 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/testsuite/lib/mi-support.exp gdb-6.8/gdb/test
      "breakpoint at $func"
  
    if {![regexp {number="[0-9]+"} $expect_out(buffer) str]
-diff -Naur ../PRISTINE/gdb-6.8/gdb/thread.c gdb-6.8/gdb/thread.c
---- ../PRISTINE/gdb-6.8/gdb/thread.c	2008-03-12 15:22:06.000000000 -0700
-+++ gdb-6.8/gdb/thread.c	2009-04-21 00:34:48.000000000 -0700
+diff --git a/gdb/gdb/thread.c b/gdb/gdb/thread.c
+index 40b7b3d..27404a4 100644
+--- a/gdb/gdb/thread.c
++++ b/gdb/gdb/thread.c
 @@ -40,6 +40,10 @@
  #include <signal.h>
  #include "ui-out.h"
@@ -8280,7 +8462,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/thread.c gdb-6.8/gdb/thread.c
  /* Definition of struct thread_info exported to gdbthread.h */
  
  /* Prototypes for exported functions. */
-@@ -471,6 +475,10 @@
+@@ -471,6 +475,10 @@ switch_to_thread (ptid_t ptid)
    reinit_frame_cache ();
    registers_changed ();
    stop_pc = read_pc ();
@@ -8291,9 +8473,10 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/thread.c gdb-6.8/gdb/thread.c
  }
  
  static void
-diff -Naur ../PRISTINE/gdb-6.8/gdb/top.c gdb-6.8/gdb/top.c
---- ../PRISTINE/gdb-6.8/gdb/top.c	2008-01-01 14:53:13.000000000 -0800
-+++ gdb-6.8/gdb/top.c	2009-04-21 00:34:48.000000000 -0700
+diff --git a/gdb/gdb/top.c b/gdb/gdb/top.c
+index 9ad2f54..6ef06fd 100644
+--- a/gdb/gdb/top.c
++++ b/gdb/gdb/top.c
 @@ -63,6 +63,10 @@
  #include "ui-out.h"
  #include "cli-out.h"
@@ -8305,7 +8488,7 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/top.c gdb-6.8/gdb/top.c
  /* Default command line prompt.  This is overriden in some configs. */
  
  #ifndef DEFAULT_PROMPT
-@@ -1179,7 +1183,11 @@
+@@ -1179,7 +1183,11 @@ and \"show warranty\" for details.\n");
  char *
  get_prompt (void)
  {
@@ -8317,10 +8500,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/top.c gdb-6.8/gdb/top.c
  }
  
  void
-diff -Naur ../PRISTINE/gdb-6.8/gdb/ui-out.c gdb-6.8/gdb/ui-out.c
---- ../PRISTINE/gdb-6.8/gdb/ui-out.c	2008-01-11 05:34:15.000000000 -0800
-+++ gdb-6.8/gdb/ui-out.c	2009-04-21 00:34:48.000000000 -0700
-@@ -507,6 +507,35 @@
+diff --git a/gdb/gdb/ui-out.c b/gdb/gdb/ui-out.c
+index dfdb61d..94123ef 100644
+--- a/gdb/gdb/ui-out.c
++++ b/gdb/gdb/ui-out.c
+@@ -507,6 +507,35 @@ ui_out_field_core_addr (struct ui_out *uiout,
    ui_out_field_string (uiout, fldname, addstr);
  }
  
@@ -8356,10 +8540,11 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/ui-out.c gdb-6.8/gdb/ui-out.c
  void
  ui_out_field_stream (struct ui_out *uiout,
  		     const char *fldname,
-diff -Naur ../PRISTINE/gdb-6.8/gdb/ui-out.h gdb-6.8/gdb/ui-out.h
---- ../PRISTINE/gdb-6.8/gdb/ui-out.h	2008-01-01 14:53:13.000000000 -0800
-+++ gdb-6.8/gdb/ui-out.h	2009-04-21 00:34:48.000000000 -0700
-@@ -117,6 +117,11 @@
+diff --git a/gdb/gdb/ui-out.h b/gdb/gdb/ui-out.h
+index d62a86c..fb9b2e6 100644
+--- a/gdb/gdb/ui-out.h
++++ b/gdb/gdb/ui-out.h
+@@ -117,6 +117,11 @@ extern void ui_out_field_fmt_int (struct ui_out *uiout, int width,
  extern void ui_out_field_core_addr (struct ui_out *uiout, const char *fldname,
  				    CORE_ADDR address);
  
@@ -8371,9 +8556,10 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/ui-out.h gdb-6.8/gdb/ui-out.h
  extern void ui_out_field_string (struct ui_out * uiout, const char *fldname,
  				 const char *string);
  
-diff -Naur ../PRISTINE/gdb-6.8/include/elf/common.h gdb-6.8/include/elf/common.h
---- ../PRISTINE/gdb-6.8/include/elf/common.h	2008-01-16 14:01:42.000000000 -0800
-+++ gdb-6.8/include/elf/common.h	2009-04-21 00:34:48.000000000 -0700
+diff --git a/gdb/include/elf/common.h b/gdb/include/elf/common.h
+index b6d981f..a2feaa1 100644
+--- a/gdb/include/elf/common.h
++++ b/gdb/include/elf/common.h
 @@ -75,6 +75,7 @@
  #define ELFOSABI_NSK	     14	/* Hewlett-Packard Non-Stop Kernel */
  #define ELFOSABI_AROS	     15	/* Amiga Research OS */
@@ -8382,9 +8568,11 @@ diff -Naur ../PRISTINE/gdb-6.8/include/elf/common.h gdb-6.8/include/elf/common.h
  #define ELFOSABI_STANDALONE 255	/* Standalone (embedded) application */
  
  #define EI_ABIVERSION	8	/* ABI version */
-diff -Naur ../PRISTINE/gdb-6.8/include/elf/nacl.h gdb-6.8/include/elf/nacl.h
---- ../PRISTINE/gdb-6.8/include/elf/nacl.h	1969-12-31 16:00:00.000000000 -0800
-+++ gdb-6.8/include/elf/nacl.h	2009-04-21 00:34:48.000000000 -0700
+diff --git a/gdb/include/elf/nacl.h b/gdb/include/elf/nacl.h
+new file mode 100644
+index 0000000..5264a95
+--- /dev/null
++++ b/gdb/include/elf/nacl.h
 @@ -0,0 +1,33 @@
 +/* ix86 ELF support for BFD.
 +   Copyright 1998, 1999, 2000, 2002, 2004, 2005, 2006
@@ -8419,10 +8607,11 @@ diff -Naur ../PRISTINE/gdb-6.8/include/elf/nacl.h gdb-6.8/include/elf/nacl.h
 +#define EF_NACL_ABIVERSION  6
 +
 +#endif
-diff -Naur ../PRISTINE/gdb-6.8/opcodes/i386-opc.tbl gdb-6.8/opcodes/i386-opc.tbl
---- ../PRISTINE/gdb-6.8/opcodes/i386-opc.tbl	2008-02-23 09:29:17.000000000 -0800
-+++ gdb-6.8/opcodes/i386-opc.tbl	2009-04-21 00:34:48.000000000 -0700
-@@ -205,6 +205,12 @@
+diff --git a/gdb/opcodes/i386-opc.tbl b/gdb/opcodes/i386-opc.tbl
+index 2fec30a..2495cce 100644
+--- a/gdb/opcodes/i386-opc.tbl
++++ b/gdb/opcodes/i386-opc.tbl
+@@ -205,6 +205,12 @@ or, 2, 0x83, 0x1, 1, 0, Modrm|No_bSuf|No_sSuf|No_ldSuf, { Imm8S, Reg16|Reg32|Reg
  or, 2, 0xc, None, 1, 0, W|No_sSuf|No_ldSuf, { Imm8|Imm16|Imm32|Imm32S, Acc|Byte|Word|Dword|Qword }
  or, 2, 0x80, 0x1, 1, 0, W|Modrm|No_sSuf|No_ldSuf, { Imm8|Imm16|Imm32|Imm32S, Reg8|Reg16|Reg32|Reg64|Byte|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S }
  
@@ -8435,10 +8624,11 @@ diff -Naur ../PRISTINE/gdb-6.8/opcodes/i386-opc.tbl gdb-6.8/opcodes/i386-opc.tbl
  xor, 2, 0x30, None, 1, 0, D|W|Modrm|No_sSuf|No_ldSuf, { Reg8|Reg16|Reg32|Reg64, Reg8|Reg16|Reg32|Reg64|Byte|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S }
  xor, 2, 0x83, 0x6, 1, 0, Modrm|No_bSuf|No_sSuf|No_ldSuf, { Imm8S, Reg16|Reg32|Reg64|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S }
  xor, 2, 0x34, None, 1, 0, W|No_sSuf|No_ldSuf, { Imm8|Imm16|Imm32|Imm32S, Acc|Byte|Word|Dword|Qword }
-diff -Naur ../PRISTINE/gdb-6.8/opcodes/i386-tbl.h gdb-6.8/opcodes/i386-tbl.h
---- ../PRISTINE/gdb-6.8/opcodes/i386-tbl.h	2008-02-23 09:29:17.000000000 -0800
-+++ gdb-6.8/opcodes/i386-tbl.h	2009-04-21 00:34:48.000000000 -0700
-@@ -1432,6 +1432,48 @@
+diff --git a/gdb/opcodes/i386-tbl.h b/gdb/opcodes/i386-tbl.h
+index 5588ab2..1acd901 100644
+--- a/gdb/opcodes/i386-tbl.h
++++ b/gdb/opcodes/i386-tbl.h
+@@ -1432,6 +1432,48 @@ const template i386_optab[] =
        { { 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 
  	  1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 
  	  1, 0, 0 } } } },
@@ -8487,3 +8677,6 @@ diff -Naur ../PRISTINE/gdb-6.8/opcodes/i386-tbl.h gdb-6.8/opcodes/i386-tbl.h
    { "xor", 2, 0x30, None, 1,
      { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
          0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } },
+-- 
+1.7.0.1
+

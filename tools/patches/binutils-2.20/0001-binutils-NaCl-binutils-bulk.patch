@@ -1,7 +1,64 @@
-diff -Naur ../PRISTINE/binutils-2.20/bfd/Makefile.am binutils-2.20/bfd/Makefile.am
---- ../PRISTINE/binutils-2.20/bfd/Makefile.am	2009-10-16 04:47:44.000000000 -0700
-+++ binutils-2.20/bfd/Makefile.am	2010-01-05 13:21:03.270377000 -0800
-@@ -303,6 +303,7 @@
+From 9805244ebeb7806f12d26632042748d63a1e5bdc Mon Sep 17 00:00:00 2001
+From: Egor Pasko <pasko@google.com>
+Date: Tue, 18 May 2010 15:26:49 +0200
+Subject: [PATCH 01/12] [binutils] NaCl binutils bulk
+
+---
+ binutils/bfd/Makefile.am             |    4 +
+ binutils/bfd/Makefile.in             |    4 +
+ binutils/bfd/config.bfd              |   10 +
+ binutils/bfd/configure               |    2 +
+ binutils/bfd/configure.in            |    2 +
+ binutils/bfd/elf32-i386.c            |  194 +++++++++++-
+ binutils/bfd/elf32-nacl.c            |    2 +
+ binutils/bfd/elf64-nacl.c            |    2 +
+ binutils/bfd/elf64-x86-64.c          |  186 ++++++++++-
+ binutils/bfd/targets.c               |    2 +
+ binutils/binutils/readelf.c          |    1 +
+ binutils/config.sub                  |   11 +
+ binutils/gas/Makefile.in             |   18 +
+ binutils/gas/config/tc-i386-intel.c  |    2 +-
+ binutils/gas/config/tc-i386.c        |  575 ++++++++++++++++++++++++++++++--
+ binutils/gas/config/tc-i386.h        |    8 +
+ binutils/gas/config/tc-nacl.c        |    2 +
+ binutils/gas/config/tc-nacl.h        |   37 ++
+ binutils/gas/configure               |    2 +-
+ binutils/gas/configure.in            |    2 +-
+ binutils/gas/configure.tgt           |    3 +
+ binutils/gas/frags.c                 |   10 +
+ binutils/gas/frags.h                 |   12 +
+ binutils/gas/write.c                 |   45 +++-
+ binutils/include/elf/common.h        |    1 +
+ binutils/include/elf/nacl.h          |   34 ++
+ binutils/ld/Makefile.am              |    9 +
+ binutils/ld/Makefile.in              |   10 +
+ binutils/ld/configure.tgt            |    3 +
+ binutils/ld/emulparams/elf64_nacl.sh |    4 +
+ binutils/ld/emulparams/elf_nacl.sh   |    4 +
+ binutils/ld/genscripts.sh            |    7 +-
+ binutils/ld/ldexp.c                  |   40 +++
+ binutils/ld/ldfile.c                 |    2 +-
+ binutils/ld/ldgram.y                 |    6 +-
+ binutils/ld/ldlex.l                  |    2 +
+ binutils/ld/scripttempl/naclelf.sc   |  611 ++++++++++++++++++++++++++++++++++
+ binutils/opcodes/Makefile.am         |    2 +-
+ binutils/opcodes/Makefile.in         |    2 +-
+ binutils/opcodes/i386-opc.tbl        |   30 ++
+ 40 files changed, 1840 insertions(+), 63 deletions(-)
+ create mode 100644 binutils/bfd/elf32-nacl.c
+ create mode 100644 binutils/bfd/elf64-nacl.c
+ create mode 100644 binutils/gas/config/tc-nacl.c
+ create mode 100644 binutils/gas/config/tc-nacl.h
+ create mode 100644 binutils/include/elf/nacl.h
+ create mode 100644 binutils/ld/emulparams/elf64_nacl.sh
+ create mode 100644 binutils/ld/emulparams/elf_nacl.sh
+ create mode 100644 binutils/ld/scripttempl/naclelf.sc
+
+diff --git a/binutils/bfd/Makefile.am b/binutils/bfd/Makefile.am
+index a0c1eaa..5c736a5 100644
+--- a/binutils/bfd/Makefile.am
++++ b/binutils/bfd/Makefile.am
+@@ -303,6 +303,7 @@ BFD32_BACKENDS = \
  	elf32-moxie.lo \
  	elf32-msp430.lo \
  	elf32-mt.lo \
@@ -9,7 +66,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/Makefile.am binutils-2.20/bfd/Makefile.
  	elf32-openrisc.lo \
  	elf32-or32.lo \
  	elf32-pj.lo \
-@@ -486,6 +487,7 @@
+@@ -486,6 +487,7 @@ BFD32_BACKENDS_CFILES = \
  	elf32-moxie.c \
  	elf32-msp430.c \
  	elf32-mt.c \
@@ -17,7 +74,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/Makefile.am binutils-2.20/bfd/Makefile.
  	elf32-openrisc.c \
  	elf32-or32.c \
  	elf32-pj.c \
-@@ -598,6 +600,7 @@
+@@ -598,6 +600,7 @@ BFD64_BACKENDS = \
  	elf64-ia64.lo \
  	elf64-mips.lo \
  	elf64-mmix.lo \
@@ -25,7 +82,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/Makefile.am binutils-2.20/bfd/Makefile.
  	elf64-ppc.lo \
  	elf64-s390.lo \
  	elf64-sh64.lo \
-@@ -628,6 +631,7 @@
+@@ -628,6 +631,7 @@ BFD64_BACKENDS_CFILES = \
  	elf64-hppa.c \
  	elf64-mips.c \
  	elf64-mmix.c \
@@ -33,10 +90,11 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/Makefile.am binutils-2.20/bfd/Makefile.
  	elf64-ppc.c \
  	elf64-s390.c \
  	elf64-sh64.c \
-diff -Naur ../PRISTINE/binutils-2.20/bfd/Makefile.in binutils-2.20/bfd/Makefile.in
---- ../PRISTINE/binutils-2.20/bfd/Makefile.in	2009-10-16 04:47:48.000000000 -0700
-+++ binutils-2.20/bfd/Makefile.in	2010-01-05 13:21:03.292344000 -0800
-@@ -599,6 +599,7 @@
+diff --git a/binutils/bfd/Makefile.in b/binutils/bfd/Makefile.in
+index 6bebad7..4bba535 100644
+--- a/binutils/bfd/Makefile.in
++++ b/binutils/bfd/Makefile.in
+@@ -599,6 +599,7 @@ BFD32_BACKENDS = \
  	elf32-moxie.lo \
  	elf32-msp430.lo \
  	elf32-mt.lo \
@@ -44,7 +102,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/Makefile.in binutils-2.20/bfd/Makefile.
  	elf32-openrisc.lo \
  	elf32-or32.lo \
  	elf32-pj.lo \
-@@ -782,6 +783,7 @@
+@@ -782,6 +783,7 @@ BFD32_BACKENDS_CFILES = \
  	elf32-moxie.c \
  	elf32-msp430.c \
  	elf32-mt.c \
@@ -52,7 +110,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/Makefile.in binutils-2.20/bfd/Makefile.
  	elf32-openrisc.c \
  	elf32-or32.c \
  	elf32-pj.c \
-@@ -895,6 +897,7 @@
+@@ -895,6 +897,7 @@ BFD64_BACKENDS = \
  	elf64-ia64.lo \
  	elf64-mips.lo \
  	elf64-mmix.lo \
@@ -60,7 +118,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/Makefile.in binutils-2.20/bfd/Makefile.
  	elf64-ppc.lo \
  	elf64-s390.lo \
  	elf64-sh64.lo \
-@@ -925,6 +928,7 @@
+@@ -925,6 +928,7 @@ BFD64_BACKENDS_CFILES = \
  	elf64-hppa.c \
  	elf64-mips.c \
  	elf64-mmix.c \
@@ -68,10 +126,11 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/Makefile.in binutils-2.20/bfd/Makefile.
  	elf64-ppc.c \
  	elf64-s390.c \
  	elf64-sh64.c \
-diff -Naur ../PRISTINE/binutils-2.20/bfd/config.bfd binutils-2.20/bfd/config.bfd
---- ../PRISTINE/binutils-2.20/bfd/config.bfd	2009-08-06 10:38:00.000000000 -0700
-+++ binutils-2.20/bfd/config.bfd	2010-01-05 13:21:03.302338000 -0800
-@@ -603,6 +603,11 @@
+diff --git a/binutils/bfd/config.bfd b/binutils/bfd/config.bfd
+index e340251..6f61f59 100644
+--- a/binutils/bfd/config.bfd
++++ b/binutils/bfd/config.bfd
+@@ -603,6 +603,11 @@ case "${targ}" in
      targ_selvecs="i386linux_vec i386pei_vec"
      targ64_selvecs="bfd_elf64_x86_64_vec bfd_elf64_l1om_vec"
      ;;
@@ -83,7 +142,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/config.bfd binutils-2.20/bfd/config.bfd
  #ifdef BFD64
    x86_64-*-darwin*)
      targ_defvec=mach_o_le_vec
-@@ -641,6 +646,11 @@
+@@ -641,6 +646,11 @@ case "${targ}" in
      want64=true
      targ_underscore=yes
      ;;
@@ -95,10 +154,11 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/config.bfd binutils-2.20/bfd/config.bfd
  #endif
    i[3-7]86-*-lynxos*)
      targ_defvec=bfd_elf32_i386_vec
-diff -Naur ../PRISTINE/binutils-2.20/bfd/configure binutils-2.20/bfd/configure
---- ../PRISTINE/binutils-2.20/bfd/configure	2009-10-16 04:47:47.000000000 -0700
-+++ binutils-2.20/bfd/configure	2010-01-05 13:21:03.352266000 -0800
-@@ -14857,6 +14857,7 @@
+diff --git a/binutils/bfd/configure b/binutils/bfd/configure
+index dcc9bd9..6c18b6d 100755
+--- a/binutils/bfd/configure
++++ b/binutils/bfd/configure
+@@ -14857,6 +14857,7 @@ do
      bfd_elf32_mn10300_vec)	tb="$tb elf-m10300.lo elf32.lo $elf" ;;
      bfd_elf32_mt_vec)           tb="$tb elf32-mt.lo elf32.lo $elf" ;;
      bfd_elf32_msp430_vec)	tb="$tb elf32-msp430.lo elf32.lo $elf" ;;
@@ -106,7 +166,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/configure binutils-2.20/bfd/configure
      bfd_elf32_nbigmips_vec)	tb="$tb elfn32-mips.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
      bfd_elf32_nlittlemips_vec)	tb="$tb elfn32-mips.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
      bfd_elf32_ntradbigmips_vec)	tb="$tb elfn32-mips.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
-@@ -14914,6 +14915,7 @@
+@@ -14914,6 +14915,7 @@ do
      bfd_elf64_little_generic_vec) tb="$tb elf64-gen.lo elf64.lo $elf"; target_size=64 ;;
      bfd_elf64_littlemips_vec) 	tb="$tb elf64-mips.lo elf64.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
      bfd_elf64_mmix_vec) 	tb="$tb elf64-mmix.lo elf64.lo $elf" target_size=64 ;;
@@ -114,10 +174,11 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/configure binutils-2.20/bfd/configure
      bfd_elf64_powerpc_vec)	tb="$tb elf64-ppc.lo elf64-gen.lo elf64.lo $elf"; target_size=64 ;;
      bfd_elf64_powerpcle_vec)	tb="$tb elf64-ppc.lo elf64-gen.lo elf64.lo $elf" target_size=64 ;;
      bfd_elf64_s390_vec)		tb="$tb elf64-s390.lo elf64.lo $elf"; target_size=64 ;;
-diff -Naur ../PRISTINE/binutils-2.20/bfd/configure.in binutils-2.20/bfd/configure.in
---- ../PRISTINE/binutils-2.20/bfd/configure.in	2009-10-16 04:47:44.000000000 -0700
-+++ binutils-2.20/bfd/configure.in	2010-01-05 13:21:03.366256000 -0800
-@@ -745,6 +745,7 @@
+diff --git a/binutils/bfd/configure.in b/binutils/bfd/configure.in
+index d03a271..3869785 100644
+--- a/binutils/bfd/configure.in
++++ b/binutils/bfd/configure.in
+@@ -745,6 +745,7 @@ do
      bfd_elf32_mn10300_vec)	tb="$tb elf-m10300.lo elf32.lo $elf" ;;
      bfd_elf32_mt_vec)           tb="$tb elf32-mt.lo elf32.lo $elf" ;;
      bfd_elf32_msp430_vec)	tb="$tb elf32-msp430.lo elf32.lo $elf" ;;
@@ -125,7 +186,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/configure.in binutils-2.20/bfd/configur
      bfd_elf32_nbigmips_vec)	tb="$tb elfn32-mips.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
      bfd_elf32_nlittlemips_vec)	tb="$tb elfn32-mips.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
      bfd_elf32_ntradbigmips_vec)	tb="$tb elfn32-mips.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
-@@ -802,6 +803,7 @@
+@@ -802,6 +803,7 @@ do
      bfd_elf64_little_generic_vec) tb="$tb elf64-gen.lo elf64.lo $elf"; target_size=64 ;;
      bfd_elf64_littlemips_vec) 	tb="$tb elf64-mips.lo elf64.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
      bfd_elf64_mmix_vec) 	tb="$tb elf64-mmix.lo elf64.lo $elf" target_size=64 ;;
@@ -133,56 +194,10 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/configure.in binutils-2.20/bfd/configur
      bfd_elf64_powerpc_vec)	tb="$tb elf64-ppc.lo elf64-gen.lo elf64.lo $elf"; target_size=64 ;;
      bfd_elf64_powerpcle_vec)	tb="$tb elf64-ppc.lo elf64-gen.lo elf64.lo $elf" target_size=64 ;;
      bfd_elf64_s390_vec)		tb="$tb elf64-s390.lo elf64.lo $elf"; target_size=64 ;;
-diff -Naur ../PRISTINE/binutils-2.20/bfd/elf.c binutils-2.20/bfd/elf.c
---- ../PRISTINE/binutils-2.20/bfd/elf.c	2009-09-10 13:47:12.000000000 +0200
-+++ binutils-2.20/bfd/elf.c	2010-05-17 17:38:36.000000000 +0200
-@@ -7258,6 +7258,8 @@
-   return ret;
- }
- 
-+int _bfd_elf_set_section_contents_hlts = 0;
-+
- bfd_boolean
- _bfd_elf_set_section_contents (bfd *abfd,
- 			       sec_ptr section,
-@@ -7274,6 +7276,34 @@
- 
-   hdr = &elf_section_data (section)->this_hdr;
-   pos = hdr->sh_offset + offset;
-+
-+  /* TODO(khim): make the behaviour configurable */
-+  if (_bfd_elf_set_section_contents_hlts)
-+    {
-+      bfd_signed_vma hlts_pos = ((pos + count - 1) & ~0xFFFF) + 0xFFE0;
-+      static unsigned char HLTs[0x20] = {
-+        0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4,
-+        0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4,
-+        0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4,
-+        0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4
-+      };
-+      if (hlts_pos > pos)
-+        {
-+          if ((bfd_get_section_flags (abfd, section) & SEC_CODE) &&
-+              (bfd_seek (abfd, hlts_pos, SEEK_SET) != 0
-+               || bfd_bwrite(HLTs, 0x20, abfd) != 0x20))
-+           return FALSE;
-+        }
-+      else
-+        {
-+          bfd_size_type hlts_count = 0x20 + hlts_pos - pos;
-+          if ((bfd_get_section_flags (abfd, section) & SEC_CODE) &&
-+              (bfd_seek (abfd, pos, SEEK_SET) != 0
-+               || bfd_bwrite(HLTs, hlts_count, abfd) != hlts_count))
-+          return FALSE;
-+        }
-+    }
-+
-   if (bfd_seek (abfd, pos, SEEK_SET) != 0
-       || bfd_bwrite (location, count, abfd) != count)
-     return FALSE;
-diff -Naur ../PRISTINE/binutils-2.20/bfd/elf32-i386.c binutils-2.20/bfd/elf32-i386.c
---- ../PRISTINE/binutils-2.20/bfd/elf32-i386.c	2009-09-10 04:47:12.000000000 -0700
-+++ binutils-2.20/bfd/elf32-i386.c	2010-01-05 13:21:03.387256000 -0800
+diff --git a/binutils/bfd/elf32-i386.c b/binutils/bfd/elf32-i386.c
+index 9de1a6c..8e1f577 100644
+--- a/binutils/bfd/elf32-i386.c
++++ b/binutils/bfd/elf32-i386.c
 @@ -34,6 +34,10 @@
  
  #include "elf/i386.h"
@@ -194,7 +209,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/elf32-i386.c binutils-2.20/bfd/elf32-i3
  static reloc_howto_type elf_howto_table[]=
  {
    HOWTO(R_386_NONE, 0, 0, 0, FALSE, 0, complain_overflow_bitfield,
-@@ -523,44 +527,133 @@
+@@ -523,44 +527,133 @@ elf_i386_grok_psinfo (bfd *abfd, Elf_Internal_Note *note)
  
  /* The size in bytes of an entry in the procedure linkage table.  */
  
@@ -328,7 +343,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/elf32-i386.c binutils-2.20/bfd/elf32-i3
  static const bfd_byte elf_i386_pic_plt_entry[PLT_ENTRY_SIZE] =
  {
    0xff, 0xa3,	/* jmp *offset(%ebx) */
-@@ -570,6 +663,7 @@
+@@ -570,6 +663,7 @@ static const bfd_byte elf_i386_pic_plt_entry[PLT_ENTRY_SIZE] =
    0xe9,		/* jmp relative */
    0, 0, 0, 0	/* replaced with offset to start of .plt.  */
  };
@@ -336,7 +351,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/elf32-i386.c binutils-2.20/bfd/elf32-i3
  
  /* On VxWorks, the .rel.plt.unloaded section has absolute relocations
     for the PLTResolve stub and then for each PLT entry.  */
-@@ -822,7 +916,11 @@
+@@ -822,7 +916,11 @@ elf_i386_link_hash_table_create (bfd *abfd)
    ret->sym_cache.abfd = NULL;
    ret->is_vxworks = 0;
    ret->srelplt2 = NULL;
@@ -348,7 +363,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/elf32-i386.c binutils-2.20/bfd/elf32-i3
    ret->tls_module_base = NULL;
  
    ret->loc_hash_table = htab_try_create (1024,
-@@ -875,6 +973,11 @@
+@@ -875,6 +973,11 @@ elf_i386_create_dynamic_sections (bfd *dynobj, struct bfd_link_info *info)
        || (!info->shared && !htab->srelbss))
      abort ();
  
@@ -360,7 +375,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/elf32-i386.c binutils-2.20/bfd/elf32-i3
    if (htab->is_vxworks
        && !elf_vxworks_create_dynamic_sections (dynobj, info,
  					       &htab->srelplt2))
-@@ -4115,7 +4218,8 @@
+@@ -4115,7 +4218,8 @@ elf_i386_finish_dynamic_symbol (bfd *output_bfd,
  		      (gotplt->output_section->vma
  		       + gotplt->output_offset
  		       + got_offset),
@@ -370,7 +385,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/elf32-i386.c binutils-2.20/bfd/elf32-i3
  
  	  if (htab->is_vxworks)
  	    {
-@@ -4158,16 +4262,20 @@
+@@ -4158,16 +4262,20 @@ elf_i386_finish_dynamic_symbol (bfd *output_bfd,
  	  memcpy (plt->contents + h->plt.offset, elf_i386_pic_plt_entry,
  		  PLT_ENTRY_SIZE);
  	  bfd_put_32 (output_bfd, got_offset,
@@ -395,7 +410,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/elf32-i386.c binutils-2.20/bfd/elf32-i3
  	}
  
        /* Fill in the entry in the global offset table.  */
-@@ -4175,7 +4283,7 @@
+@@ -4175,7 +4283,7 @@ elf_i386_finish_dynamic_symbol (bfd *output_bfd,
  		  (plt->output_section->vma
  		   + plt->output_offset
  		   + h->plt.offset
@@ -404,7 +419,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/elf32-i386.c binutils-2.20/bfd/elf32-i3
  		  gotplt->contents + got_offset);
  
        /* Fill in the entry in the .rel.plt section.  */
-@@ -4458,12 +4566,12 @@
+@@ -4458,12 +4566,12 @@ elf_i386_finish_dynamic_sections (bfd *output_bfd,
  			  (htab->elf.sgotplt->output_section->vma
  			   + htab->elf.sgotplt->output_offset
  			   + 4),
@@ -419,7 +434,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/elf32-i386.c binutils-2.20/bfd/elf32-i3
  
  	      if (htab->is_vxworks)
  		{
-@@ -4591,11 +4699,23 @@
+@@ -4591,11 +4699,23 @@ elf_i386_add_symbol_hook (bfd * abfd ATTRIBUTE_UNUSED,
    return TRUE;
  }
  
@@ -443,7 +458,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/elf32-i386.c binutils-2.20/bfd/elf32-i3
  
  #define elf_backend_can_gc_sections	1
  #define elf_backend_can_refcount	1
-@@ -4640,6 +4760,63 @@
+@@ -4640,6 +4760,63 @@ elf_i386_add_symbol_hook (bfd * abfd ATTRIBUTE_UNUSED,
  #undef	elf_backend_post_process_headers
  #define	elf_backend_post_process_headers	_bfd_elf_set_osabi
  
@@ -507,26 +522,31 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/elf32-i386.c binutils-2.20/bfd/elf32-i3
  #include "elf32-target.h"
  
  /* FreeBSD support.  */
-@@ -4729,3 +4906,4 @@
+@@ -4729,3 +4906,4 @@ elf_i386_vxworks_link_hash_table_create (bfd *abfd)
  #define elf32_bed				elf32_i386_vxworks_bed
  
  #include "elf32-target.h"
 +#endif
-diff -Naur ../PRISTINE/binutils-2.20/bfd/elf32-nacl.c binutils-2.20/bfd/elf32-nacl.c
---- ../PRISTINE/binutils-2.20/bfd/elf32-nacl.c	1969-12-31 16:00:00.000000000 -0800
-+++ binutils-2.20/bfd/elf32-nacl.c	2010-01-05 13:21:03.426216000 -0800
+diff --git a/binutils/bfd/elf32-nacl.c b/binutils/bfd/elf32-nacl.c
+new file mode 100644
+index 0000000..f8c86ca
+--- /dev/null
++++ b/binutils/bfd/elf32-nacl.c
 @@ -0,0 +1,2 @@
 +#define ELF32_NACL_C
 +#include "elf32-i386.c"
-diff -Naur ../PRISTINE/binutils-2.20/bfd/elf64-nacl.c binutils-2.20/bfd/elf64-nacl.c
---- ../PRISTINE/binutils-2.20/bfd/elf64-nacl.c	1969-12-31 16:00:00.000000000 -0800
-+++ binutils-2.20/bfd/elf64-nacl.c	2010-01-05 13:21:03.438223000 -0800
+diff --git a/binutils/bfd/elf64-nacl.c b/binutils/bfd/elf64-nacl.c
+new file mode 100644
+index 0000000..58f2d71
+--- /dev/null
++++ b/binutils/bfd/elf64-nacl.c
 @@ -0,0 +1,2 @@
 +#define ELF64_NACL_C
 +#include "elf64-x86-64.c"
-diff -Naur ../PRISTINE/binutils-2.20/bfd/elf64-x86-64.c binutils-2.20/bfd/elf64-x86-64.c
---- ../PRISTINE/binutils-2.20/bfd/elf64-x86-64.c	2009-09-10 04:47:12.000000000 -0700
-+++ binutils-2.20/bfd/elf64-x86-64.c	2010-01-05 13:21:03.449227000 -0800
+diff --git a/binutils/bfd/elf64-x86-64.c b/binutils/bfd/elf64-x86-64.c
+index 4fb325a..063fa37 100644
+--- a/binutils/bfd/elf64-x86-64.c
++++ b/binutils/bfd/elf64-x86-64.c
 @@ -31,6 +31,10 @@
  
  #include "elf/x86-64.h"
@@ -538,7 +558,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/elf64-x86-64.c binutils-2.20/bfd/elf64-
  /* In case we're on a 32-bit machine, construct a 64-bit "-1" value.  */
  #define MINUS_ONE (~ (bfd_vma) 0)
  
-@@ -372,29 +376,100 @@
+@@ -372,29 +376,100 @@ elf64_x86_64_grok_psinfo (bfd *abfd, Elf_Internal_Note *note)
  
  /* The size in bytes of an entry in the procedure linkage table.  */
  
@@ -639,7 +659,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/elf64-x86-64.c binutils-2.20/bfd/elf64-
  
  /* x86-64 ELF linker hash entry.  */
  
-@@ -687,6 +762,11 @@
+@@ -687,6 +762,11 @@ elf64_x86_64_create_dynamic_sections (bfd *dynobj, struct bfd_link_info *info)
        || (!info->shared && !htab->srelbss))
      abort ();
  
@@ -651,7 +671,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/elf64-x86-64.c binutils-2.20/bfd/elf64-
    return TRUE;
  }
  
-@@ -3791,25 +3871,28 @@
+@@ -3791,25 +3871,28 @@ elf64_x86_64_finish_dynamic_symbol (bfd *output_bfd,
  		       - plt->output_section->vma
  		       - plt->output_offset
  		       - h->plt.offset
@@ -686,7 +706,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/elf64-x86-64.c binutils-2.20/bfd/elf64-
  		  gotplt->contents + got_offset);
  
        /* Fill in the entry in the .rela.plt section.  */
-@@ -4086,8 +4169,8 @@
+@@ -4086,8 +4169,8 @@ elf64_x86_64_finish_dynamic_sections (bfd *output_bfd, struct bfd_link_info *inf
  		       + 8
  		       - htab->elf.splt->output_section->vma
  		       - htab->elf.splt->output_offset
@@ -697,7 +717,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/elf64-x86-64.c binutils-2.20/bfd/elf64-
  	  /* Add offset for jmp *GOT+16(%rip). The 12 is the offset to
  	     the end of the instruction.  */
  	  bfd_put_32 (output_bfd,
-@@ -4096,8 +4179,9 @@
+@@ -4096,8 +4179,9 @@ elf64_x86_64_finish_dynamic_sections (bfd *output_bfd, struct bfd_link_info *inf
  		       + 16
  		       - htab->elf.splt->output_section->vma
  		       - htab->elf.splt->output_offset
@@ -709,7 +729,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/elf64-x86-64.c binutils-2.20/bfd/elf64-
  
  	  elf_section_data (htab->elf.splt->output_section)->this_hdr.sh_entsize =
  	    PLT_ENTRY_SIZE;
-@@ -4120,8 +4204,9 @@
+@@ -4120,8 +4204,9 @@ elf64_x86_64_finish_dynamic_sections (bfd *output_bfd, struct bfd_link_info *inf
  			   - htab->elf.splt->output_section->vma
  			   - htab->elf.splt->output_offset
  			   - htab->tlsdesc_plt
@@ -721,7 +741,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/elf64-x86-64.c binutils-2.20/bfd/elf64-
  	      /* Add offset for jmp *GOT+TDG(%rip), where TGD stands for
  		 htab->tlsdesc_got. The 12 is the offset to the end of
  		 the instruction.  */
-@@ -4132,8 +4217,10 @@
+@@ -4132,8 +4217,10 @@ elf64_x86_64_finish_dynamic_sections (bfd *output_bfd, struct bfd_link_info *inf
  			   - htab->elf.splt->output_section->vma
  			   - htab->elf.splt->output_offset
  			   - htab->tlsdesc_plt
@@ -734,7 +754,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/elf64-x86-64.c binutils-2.20/bfd/elf64-
  	    }
  	}
      }
-@@ -4397,13 +4484,26 @@
+@@ -4397,13 +4484,26 @@ static const struct bfd_elf_special_section
    { NULL,	                0,          0, 0,            0 }
  };
  
@@ -761,7 +781,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/elf64-x86-64.c binutils-2.20/bfd/elf64-
  
  #define elf_backend_can_gc_sections	    1
  #define elf_backend_can_refcount	    1
-@@ -4470,6 +4570,63 @@
+@@ -4470,6 +4570,63 @@ static const struct bfd_elf_special_section
  #undef  elf_backend_post_process_headers
  #define elf_backend_post_process_headers  _bfd_elf_set_osabi
  
@@ -825,15 +845,16 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/elf64-x86-64.c binutils-2.20/bfd/elf64-
  #include "elf64-target.h"
  
  /* FreeBSD support.  */
-@@ -4536,3 +4693,4 @@
+@@ -4536,3 +4693,4 @@ elf64_l1om_elf_object_p (bfd *abfd)
  #define elf_backend_post_process_headers  _bfd_elf_set_osabi
  
  #include "elf64-target.h"
 +#endif
-diff -Naur ../PRISTINE/binutils-2.20/bfd/targets.c binutils-2.20/bfd/targets.c
---- ../PRISTINE/binutils-2.20/bfd/targets.c	2009-09-10 04:47:13.000000000 -0700
-+++ binutils-2.20/bfd/targets.c	2010-01-05 13:21:03.456214000 -0800
-@@ -630,6 +630,7 @@
+diff --git a/binutils/bfd/targets.c b/binutils/bfd/targets.c
+index a33790b..2983c6b 100644
+--- a/binutils/bfd/targets.c
++++ b/binutils/bfd/targets.c
+@@ -630,6 +630,7 @@ extern const bfd_target bfd_elf32_mn10200_vec;
  extern const bfd_target bfd_elf32_mn10300_vec;
  extern const bfd_target bfd_elf32_mt_vec;
  extern const bfd_target bfd_elf32_msp430_vec;
@@ -841,7 +862,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/targets.c binutils-2.20/bfd/targets.c
  extern const bfd_target bfd_elf32_nbigmips_vec;
  extern const bfd_target bfd_elf32_nlittlemips_vec;
  extern const bfd_target bfd_elf32_ntradbigmips_vec;
-@@ -684,6 +685,7 @@
+@@ -684,6 +685,7 @@ extern const bfd_target bfd_elf64_ia64_vms_vec;
  extern const bfd_target bfd_elf64_little_generic_vec;
  extern const bfd_target bfd_elf64_littlemips_vec;
  extern const bfd_target bfd_elf64_mmix_vec;
@@ -849,10 +870,11 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/targets.c binutils-2.20/bfd/targets.c
  extern const bfd_target bfd_elf64_powerpc_vec;
  extern const bfd_target bfd_elf64_powerpcle_vec;
  extern const bfd_target bfd_elf64_s390_vec;
-diff -Naur ../PRISTINE/binutils-2.20/binutils/readelf.c binutils-2.20/binutils/readelf.c
---- ../PRISTINE/binutils-2.20/binutils/readelf.c	2009-09-22 08:40:59.000000000 -0700
-+++ binutils-2.20/binutils/readelf.c	2010-01-05 13:21:03.490215000 -0800
-@@ -2462,6 +2462,7 @@
+diff --git a/binutils/binutils/readelf.c b/binutils/binutils/readelf.c
+index 2bfb3f6..bafcc0c 100644
+--- a/binutils/binutils/readelf.c
++++ b/binutils/binutils/readelf.c
+@@ -2462,6 +2462,7 @@ get_osabi_name (unsigned int osabi)
      case ELFOSABI_AROS:		return "AROS";
      case ELFOSABI_STANDALONE:	return _("Standalone App");
      case ELFOSABI_ARM:		return "ARM";
@@ -860,10 +882,11 @@ diff -Naur ../PRISTINE/binutils-2.20/binutils/readelf.c binutils-2.20/binutils/r
      default:
        snprintf (buff, sizeof (buff), _("<unknown: %x>"), osabi);
        return buff;
-diff -Naur ../PRISTINE/binutils-2.20/config.sub binutils-2.20/config.sub
---- ../PRISTINE/binutils-2.20/config.sub	2009-08-16 21:10:29.000000000 -0700
-+++ binutils-2.20/config.sub	2010-01-05 13:21:03.496225000 -0800
-@@ -314,6 +314,14 @@
+diff --git a/binutils/config.sub b/binutils/config.sub
+index 32d764c..5375481 100755
+--- a/binutils/config.sub
++++ b/binutils/config.sub
+@@ -314,6 +314,14 @@ case $basic_machine in
  	i*86 | x86_64)
  	  basic_machine=$basic_machine-pc
  	  ;;
@@ -878,7 +901,7 @@ diff -Naur ../PRISTINE/binutils-2.20/config.sub binutils-2.20/config.sub
  	# Object if more than one company name word.
  	*-*-*)
  		echo Invalid configuration \`$1\': machine \`$basic_machine\' not recognized 1>&2
-@@ -1305,6 +1313,9 @@
+@@ -1305,6 +1313,9 @@ case $os in
  			;;
  		esac
  		;;
@@ -888,10 +911,11 @@ diff -Naur ../PRISTINE/binutils-2.20/config.sub binutils-2.20/config.sub
  	-nto-qnx*)
  		;;
  	-nto*)
-diff -Naur ../PRISTINE/binutils-2.20/gas/Makefile.in binutils-2.20/gas/Makefile.in
---- ../PRISTINE/binutils-2.20/gas/Makefile.in	2009-09-07 05:09:27.000000000 -0700
-+++ binutils-2.20/gas/Makefile.in	2010-01-05 13:21:03.507225000 -0800
-@@ -341,6 +341,7 @@
+diff --git a/binutils/gas/Makefile.in b/binutils/gas/Makefile.in
+index e313686..66d073a 100644
+--- a/binutils/gas/Makefile.in
++++ b/binutils/gas/Makefile.in
+@@ -341,6 +341,7 @@ CPU_TYPES = \
  	mn10300 \
  	msp430 \
  	mt \
@@ -899,7 +923,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/Makefile.in binutils-2.20/gas/Makefile.
  	ns32k \
  	openrisc \
  	or32 \
-@@ -542,6 +543,7 @@
+@@ -542,6 +543,7 @@ TARGET_CPU_CFILES = \
  	config/tc-moxie.c \
  	config/tc-msp430.c \
  	config/tc-mt.c \
@@ -907,7 +931,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/Makefile.in binutils-2.20/gas/Makefile.
  	config/tc-ns32k.c \
  	config/tc-openrisc.c \
  	config/tc-or32.c \
-@@ -604,6 +606,7 @@
+@@ -604,6 +606,7 @@ TARGET_CPU_HFILES = \
  	config/tc-mn10300.h \
  	config/tc-msp430.h \
  	config/tc-mt.h \
@@ -915,7 +939,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/Makefile.in binutils-2.20/gas/Makefile.
  	config/tc-ns32k.h \
  	config/tc-openrisc.h \
  	config/tc-or32.h \
-@@ -983,6 +986,7 @@
+@@ -983,6 +986,7 @@ distclean-compile:
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tc-moxie.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tc-msp430.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tc-mt.Po@am__quote@
@@ -923,7 +947,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/Makefile.in binutils-2.20/gas/Makefile.
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tc-ns32k.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tc-openrisc.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tc-or32.Po@am__quote@
-@@ -1562,6 +1566,20 @@
+@@ -1562,6 +1566,20 @@ tc-mt.obj: config/tc-mt.c
  @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
  @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tc-mt.obj `if test -f 'config/tc-mt.c'; then $(CYGPATH_W) 'config/tc-mt.c'; else $(CYGPATH_W) '$(srcdir)/config/tc-mt.c'; fi`
  
@@ -944,10 +968,11 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/Makefile.in binutils-2.20/gas/Makefile.
  tc-ns32k.o: config/tc-ns32k.c
  @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tc-ns32k.o -MD -MP -MF $(DEPDIR)/tc-ns32k.Tpo -c -o tc-ns32k.o `test -f 'config/tc-ns32k.c' || echo '$(srcdir)/'`config/tc-ns32k.c
  @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tc-ns32k.Tpo $(DEPDIR)/tc-ns32k.Po
-diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386-intel.c binutils-2.20/gas/config/tc-i386-intel.c
---- ../PRISTINE/binutils-2.20/gas/config/tc-i386-intel.c	2009-09-14 04:43:27.000000000 -0700
-+++ binutils-2.20/gas/config/tc-i386-intel.c	2010-01-05 13:21:03.548213000 -0800
-@@ -559,7 +559,7 @@
+diff --git a/binutils/gas/config/tc-i386-intel.c b/binutils/gas/config/tc-i386-intel.c
+index ff20874..6d9cc4f 100644
+--- a/binutils/gas/config/tc-i386-intel.c
++++ b/binutils/gas/config/tc-i386-intel.c
+@@ -559,7 +559,7 @@ i386_intel_operand (char *operand_string, int got_a_float)
  	  else if (!got_a_float)
  	    {
  	      if (flag_code == CODE_16BIT)
@@ -956,9 +981,10 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386-intel.c binutils-2.20/ga
  	      suffix = LONG_DOUBLE_MNEM_SUFFIX;
  	    }
  	  else
-diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/config/tc-i386.c
---- ../PRISTINE/binutils-2.20/gas/config/tc-i386.c	2009-09-14 04:43:27.000000000 -0700
-+++ binutils-2.20/gas/config/tc-i386.c	2010-01-05 13:21:03.560238000 -0800
+diff --git a/binutils/gas/config/tc-i386.c b/binutils/gas/config/tc-i386.c
+index a8dc7fc..4d87d29 100644
+--- a/binutils/gas/config/tc-i386.c
++++ b/binutils/gas/config/tc-i386.c
 @@ -33,6 +33,9 @@
  #include "dwarf2dbg.h"
  #include "dw2gencfi.h"
@@ -969,7 +995,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  #include "opcodes/i386-init.h"
  
  #ifndef REGISTER_WARNINGS
-@@ -178,6 +181,7 @@
+@@ -178,6 +181,7 @@ static void s_bss (int);
  #if defined (OBJ_ELF) || defined (OBJ_MAYBE_ELF)
  static void handle_large_common (int small ATTRIBUTE_UNUSED);
  #endif
@@ -977,7 +1003,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  
  static const char *default_arch = DEFAULT_ARCH;
  
-@@ -243,6 +247,13 @@
+@@ -243,6 +247,13 @@ struct _i386_insn
         explicit segment overrides are given.  */
      const seg_entry *seg[2];
  
@@ -991,7 +1017,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
      /* PREFIX holds all the given prefix opcodes (usually null).
         PREFIXES is the number of prefix opcodes.  */
      unsigned int prefixes;
-@@ -454,6 +465,14 @@
+@@ -454,6 +465,14 @@ unsigned int x86_dwarf2_return_column;
  /* The dwarf2 data alignment, adjusted for 32 or 64 bit.  */
  int x86_cie_data_alignment;
  
@@ -1006,7 +1032,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  /* Interface to relax_segment.
     There are 3 major relax states for 386 jump insns because the
     different types of jumps add different sizes to frags when we're
-@@ -976,7 +995,9 @@
+@@ -976,7 +995,9 @@ i386_align_code (fragS *fragP, int count)
      {
        const char *const *patt = NULL;
  
@@ -1017,7 +1043,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  	{
  	  /* PROCESSOR_UNKNOWN means that all ISAs may be used.  */
  	  switch (cpu_arch_tune)
-@@ -1782,7 +1803,7 @@
+@@ -1782,7 +1803,7 @@ offset_in_range (offsetT val, int size)
     class already exists, 1 if non rep/repne added, 2 if rep/repne
     added.  */
  static int
@@ -1026,7 +1052,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  {
    int ret = 1;
    unsigned int q;
-@@ -1842,7 +1863,7 @@
+@@ -1842,7 +1863,7 @@ add_prefix (unsigned int prefix)
  	++i.prefixes;
        i.prefix[q] |= prefix;
      }
@@ -1035,7 +1061,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
      as_bad (_("same type of prefix used twice"));
  
    return ret;
-@@ -2117,6 +2138,34 @@
+@@ -2117,6 +2138,34 @@ i386_mach ()
    else
      as_fatal (_("Unknown architecture"));
  }
@@ -1070,7 +1096,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  
  void
  md_begin ()
-@@ -2234,7 +2283,11 @@
+@@ -2234,7 +2283,11 @@ md_begin ()
  #if defined (OBJ_ELF) || defined (OBJ_MAYBE_ELF)
    if (IS_ELF)
      {
@@ -1082,7 +1108,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
        record_alignment (data_section, 2);
        record_alignment (bss_section, 2);
      }
-@@ -2250,6 +2303,8 @@
+@@ -2250,6 +2303,8 @@ md_begin ()
        x86_dwarf2_return_column = 8;
        x86_cie_data_alignment = -4;
      }
@@ -1091,7 +1117,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  }
  
  void
-@@ -2799,6 +2854,11 @@
+@@ -2799,6 +2854,11 @@ process_immext (void)
     machine dependent instruction.  This function is supposed to emit
     the frags/bytes it assembles to.  */
  
@@ -1103,7 +1129,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  void
  md_assemble (char *line)
  {
-@@ -2807,7 +2867,8 @@
+@@ -2807,7 +2867,8 @@ md_assemble (char *line)
    const insn_template *t;
  
    /* Initialize globals.  */
@@ -1113,7 +1139,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
    for (j = 0; j < MAX_OPERANDS; j++)
      i.reloc[j] = NO_RELOC;
    memset (disp_expressions, '\0', sizeof (disp_expressions));
-@@ -2819,7 +2880,7 @@
+@@ -2819,7 +2880,7 @@ md_assemble (char *line)
       start of a (possibly prefixed) mnemonic.  */
  
    line = parse_insn (line, mnemonic);
@@ -1122,7 +1148,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
      return;
  
    line = parse_operands (line, mnemonic);
-@@ -2897,7 +2958,7 @@
+@@ -2897,7 +2958,7 @@ md_assemble (char *line)
      }
  
    if (i.tm.opcode_modifier.fwait)
@@ -1131,7 +1157,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
        return;
  
    /* Check string instruction segment overrides.  */
-@@ -3012,7 +3073,7 @@
+@@ -3012,7 +3073,7 @@ md_assemble (char *line)
      }
  
    if (i.rex != 0)
@@ -1140,7 +1166,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  
    /* We are ready to output the insn.  */
    output_insn ();
-@@ -3027,6 +3088,8 @@
+@@ -3027,6 +3088,8 @@ parse_insn (char *line, char *mnemonic)
    int supported;
    const insn_template *t;
    char *dot_p = NULL;
@@ -1149,7 +1175,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  
    /* Non-zero if we found a prefix only acceptable with string insns.  */
    const char *expecting_string_instruction = NULL;
-@@ -3068,11 +3131,11 @@
+@@ -3068,11 +3131,11 @@ parse_insn (char *line, char *mnemonic)
        /* Look up instruction (or prefix) via hash table.  */
        current_templates = (const templates *) hash_find (op_hash, mnemonic);
  
@@ -1164,7 +1190,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  	  if (!cpu_flags_check_cpu64 (current_templates->start->cpu_flags))
  	    {
  	      as_bad ((flag_code != CODE_64BIT
-@@ -3083,7 +3146,8 @@
+@@ -3083,7 +3146,8 @@ parse_insn (char *line, char *mnemonic)
  	    }
  	  /* If we are in 16-bit mode, do not allow addr16 or data16.
  	     Similarly, in 32-bit mode, do not allow addr32 or data32.  */
@@ -1174,7 +1200,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  	       || current_templates->start->opcode_modifier.size32)
  	      && flag_code != CODE_64BIT
  	      && (current_templates->start->opcode_modifier.size32
-@@ -3093,17 +3157,35 @@
+@@ -3093,17 +3157,35 @@ parse_insn (char *line, char *mnemonic)
  		      current_templates->start->name);
  	      return NULL;
  	    }
@@ -1218,7 +1244,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  	}
        else
  	break;
-@@ -3183,13 +3265,13 @@
+@@ -3183,13 +3265,13 @@ check_suffix:
  	{
  	  if (l[2] == 't')
  	    {
@@ -1234,7 +1260,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  		return NULL;
  	      l += 3;
  	    }
-@@ -3416,6 +3498,12 @@
+@@ -3416,6 +3498,12 @@ swap_operands (void)
    if (i.mem_operands == 2)
      {
        const seg_entry *temp_seg;
@@ -1247,7 +1273,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
        temp_seg = i.seg[0];
        i.seg[0] = i.seg[1];
        i.seg[1] = temp_seg;
-@@ -4250,7 +4338,7 @@
+@@ -4250,7 +4338,7 @@ process_suffix (void)
  	       && i.op->regs[0].reg_type.bitfield.reg16)
  	      || (flag_code != CODE_32BIT
  		  && i.op->regs[0].reg_type.bitfield.reg32))
@@ -1256,7 +1282,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  	      return 0;
  	}
        else if (i.suffix != QWORD_MNEM_SUFFIX
-@@ -4266,7 +4354,7 @@
+@@ -4266,7 +4354,7 @@ process_suffix (void)
  	  if (i.tm.opcode_modifier.jumpbyte) /* jcxz, loop */
  	    prefix = ADDR_PREFIX_OPCODE;
  
@@ -1265,7 +1291,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  	    return 0;
  	}
  
-@@ -4320,6 +4408,12 @@
+@@ -4320,6 +4408,12 @@ check_byte_reg (void)
        if (i.tm.base_opcode == 0xf20f38f0)
  	continue;
  
@@ -1278,7 +1304,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
        if ((i.types[op].bitfield.reg16
  	   || i.types[op].bitfield.reg32
  	   || i.types[op].bitfield.reg64)
-@@ -4850,7 +4944,7 @@
+@@ -4850,7 +4944,7 @@ duplicate:
       always be used.  */
    if ((i.seg[0]) && (i.seg[0] != default_seg))
      {
@@ -1287,7 +1313,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  	return 0;
      }
    return 1;
-@@ -5048,7 +5142,7 @@
+@@ -5048,7 +5142,7 @@ build_modrm_byte (void)
  	      && !i.types[1].bitfield.control)
  	    abort ();
  	  i.rex &= ~(REX_R | REX_B);
@@ -1296,7 +1322,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  	}
      }
    else
-@@ -5560,19 +5654,264 @@
+@@ -5560,19 +5654,264 @@ output_interseg_jump (void)
  }
  
  static void
@@ -1562,7 +1588,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
    /* Output jumps.  */
    if (i.tm.opcode_modifier.jump)
      output_branch ();
-@@ -5612,10 +5951,10 @@
+@@ -5612,10 +5951,10 @@ check_prefix:
  		      if (prefix != REPE_PREFIX_OPCODE
  			  || (i.prefix[LOCKREP_PREFIX]
  			      != REPE_PREFIX_OPCODE))
@@ -1575,7 +1601,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  		}
  	      break;
  	    case 1:
-@@ -5624,6 +5963,31 @@
+@@ -5624,6 +5963,31 @@ check_prefix:
  	      abort ();
  	    }
  
@@ -1607,7 +1633,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  	  /* The prefix bytes.  */
  	  for (j = ARRAY_SIZE (i.prefix), q = i.prefix; j > 0; j--, q++)
  	    if (*q)
-@@ -5700,10 +6064,18 @@
+@@ -5700,10 +6064,18 @@ check_prefix:
  	}
  
        if (i.disp_operands)
@@ -1626,7 +1652,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
      }
  
  #ifdef DEBUG386
-@@ -5712,6 +6084,74 @@
+@@ -5712,6 +6084,74 @@ check_prefix:
        pi ("" /*line*/, &i);
      }
  #endif /* DEBUG386  */
@@ -1701,7 +1727,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  }
  
  /* Return the size of the displacement operand N.  */
-@@ -6858,8 +7298,44 @@
+@@ -6858,8 +7298,44 @@ i386_att_operand (char *operand_string)
      }
    else if (*op_string == REGISTER_PREFIX)
      {
@@ -1748,7 +1774,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
      }
    else if (*op_string == IMMEDIATE_PREFIX)
      {
-@@ -7725,6 +8201,8 @@
+@@ -7725,6 +8201,8 @@ const char *md_shortopts = "qn";
  #define OPTION_MOLD_GCC (OPTION_MD_BASE + 9)
  #define OPTION_MSSE2AVX (OPTION_MD_BASE + 10)
  #define OPTION_MSSE_CHECK (OPTION_MD_BASE + 11)
@@ -1757,7 +1783,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  
  struct option md_longopts[] =
  {
-@@ -7743,6 +8221,8 @@
+@@ -7743,6 +8221,8 @@ struct option md_longopts[] =
    {"mold-gcc", no_argument, NULL, OPTION_MOLD_GCC},
    {"msse2avx", no_argument, NULL, OPTION_MSSE2AVX},
    {"msse-check", required_argument, NULL, OPTION_MSSE_CHECK},
@@ -1766,7 +1792,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
    {NULL, no_argument, NULL, 0}
  };
  size_t md_longopts_size = sizeof (md_longopts);
-@@ -7953,6 +8433,20 @@
+@@ -7953,6 +8433,20 @@ md_parse_option (int c, char *arg)
  	as_fatal (_("Invalid -msse-check= option: `%s'"), arg);
        break;
  
@@ -1787,7 +1813,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
      default:
        return 0;
      }
-@@ -8597,4 +9091,19 @@
+@@ -8597,4 +9091,25 @@ handle_large_common (int small ATTRIBUTE_UNUSED)
        bss_section = saved_bss_section;
      }
  }
@@ -1795,7 +1821,13 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
 +void nacl_elf_final_processing(void)
 +{
 +  elf_elfheader (stdoutput)->e_ident[EI_OSABI] = ELFOSABI_NACL;
-+  elf_elfheader (stdoutput)->e_ident[EI_ABIVERSION] = EF_NACL_ABIVERSION;
++  if (flag_code == CODE_64BIT)
++    {
++      /* Until we reach a stable version on x86-64, leave it as zero. */
++      elf_elfheader (stdoutput)->e_ident[EI_ABIVERSION] = 0;
++    }
++  else
++    elf_elfheader (stdoutput)->e_ident[EI_ABIVERSION] = EF_NACL_ABIVERSION;
 +
 +  elf_elfheader (stdoutput)->e_flags &= ~EF_NACL_ALIGN_MASK;
 +  if (nacl_library_mode)
@@ -1807,10 +1839,11 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
 +}
 +#endif
  #endif /* OBJ_ELF || OBJ_MAYBE_ELF */
-diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.h binutils-2.20/gas/config/tc-i386.h
---- ../PRISTINE/binutils-2.20/gas/config/tc-i386.h	2009-09-02 00:24:20.000000000 -0700
-+++ binutils-2.20/gas/config/tc-i386.h	2010-01-05 13:21:03.566222000 -0800
-@@ -297,4 +297,12 @@
+diff --git a/binutils/gas/config/tc-i386.h b/binutils/gas/config/tc-i386.h
+index 9b9bc61..db8582b 100644
+--- a/binutils/gas/config/tc-i386.h
++++ b/binutils/gas/config/tc-i386.h
+@@ -297,4 +297,12 @@ void tc_pe_dwarf2_emit_offset (symbolS *, unsigned int);
  /* X_add_symbol:X_op_symbol (Intel mode only) */
  #define O_full_ptr O_md2
  
@@ -1823,15 +1856,19 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.h binutils-2.20/gas/conf
 +extern int nacl_library_mode;
 +
  #endif /* TC_I386 */
-diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-nacl.c binutils-2.20/gas/config/tc-nacl.c
---- ../PRISTINE/binutils-2.20/gas/config/tc-nacl.c	1969-12-31 16:00:00.000000000 -0800
-+++ binutils-2.20/gas/config/tc-nacl.c	2010-01-05 13:21:03.622222000 -0800
+diff --git a/binutils/gas/config/tc-nacl.c b/binutils/gas/config/tc-nacl.c
+new file mode 100644
+index 0000000..e78b177
+--- /dev/null
++++ b/binutils/gas/config/tc-nacl.c
 @@ -0,0 +1,2 @@
 +#define TC_NACL_C
 +#include "tc-i386.c"
-diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-nacl.h binutils-2.20/gas/config/tc-nacl.h
---- ../PRISTINE/binutils-2.20/gas/config/tc-nacl.h	1969-12-31 16:00:00.000000000 -0800
-+++ binutils-2.20/gas/config/tc-nacl.h	2010-01-05 13:21:03.635214000 -0800
+diff --git a/binutils/gas/config/tc-nacl.h b/binutils/gas/config/tc-nacl.h
+new file mode 100644
+index 0000000..62398c0
+--- /dev/null
++++ b/binutils/gas/config/tc-nacl.h
 @@ -0,0 +1,37 @@
 +/* tc-nacl.h -- Header file for tc-nacl.c
 +   Copyright 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
@@ -1870,10 +1907,11 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-nacl.h binutils-2.20/gas/conf
 +extern void nacl_elf_final_processing PARAMS ((void));
 +
 +#endif /* TC_NACL */
-diff -Naur ../PRISTINE/binutils-2.20/gas/configure binutils-2.20/gas/configure
---- ../PRISTINE/binutils-2.20/gas/configure	2009-09-07 05:09:27.000000000 -0700
-+++ binutils-2.20/gas/configure	2010-01-05 13:21:03.659215000 -0800
-@@ -12019,7 +12019,7 @@
+diff --git a/binutils/gas/configure b/binutils/gas/configure
+index a0d1763..2c24c23 100755
+--- a/binutils/gas/configure
++++ b/binutils/gas/configure
+@@ -12019,7 +12019,7 @@ _ACEOF
          using_cgen=yes
  	;;
  
@@ -1882,10 +1920,11 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/configure binutils-2.20/gas/configure
  	if test $this_target = $target ; then
  
  cat >>confdefs.h <<_ACEOF
-diff -Naur ../PRISTINE/binutils-2.20/gas/configure.in binutils-2.20/gas/configure.in
---- ../PRISTINE/binutils-2.20/gas/configure.in	2009-09-07 02:16:07.000000000 -0700
-+++ binutils-2.20/gas/configure.in	2010-01-05 13:21:03.665226000 -0800
-@@ -347,7 +347,7 @@
+diff --git a/binutils/gas/configure.in b/binutils/gas/configure.in
+index 2c456e0..47a8ef2 100644
+--- a/binutils/gas/configure.in
++++ b/binutils/gas/configure.in
+@@ -347,7 +347,7 @@ changequote([,])dnl
          using_cgen=yes
  	;;
  
@@ -1894,10 +1933,11 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/configure.in binutils-2.20/gas/configur
  	if test $this_target = $target ; then
  	  AC_DEFINE_UNQUOTED(DEFAULT_ARCH, "${arch}", [Default architecture.])
  	fi
-diff -Naur ../PRISTINE/binutils-2.20/gas/configure.tgt binutils-2.20/gas/configure.tgt
---- ../PRISTINE/binutils-2.20/gas/configure.tgt	2009-09-09 01:13:28.000000000 -0700
-+++ binutils-2.20/gas/configure.tgt	2010-01-05 13:21:03.670223000 -0800
-@@ -59,6 +59,8 @@
+diff --git a/binutils/gas/configure.tgt b/binutils/gas/configure.tgt
+index 054f2b8..1ec16fa 100644
+--- a/binutils/gas/configure.tgt
++++ b/binutils/gas/configure.tgt
+@@ -59,6 +59,8 @@ case ${cpu} in
    mips*el)		cpu_type=mips endian=little ;;
    mips*)		cpu_type=mips endian=big ;;
    mt)                   cpu_type=mt endian=big ;;
@@ -1906,7 +1946,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/configure.tgt binutils-2.20/gas/configu
    or32*)		cpu_type=or32 endian=big ;;
    pjl*)			cpu_type=pj endian=little ;;
    pj*)			cpu_type=pj endian=big ;;
-@@ -203,6 +205,7 @@
+@@ -203,6 +205,7 @@ case ${generic_target} in
    i386-*-linux*coff*)			fmt=coff em=linux ;;
    i386-*-linux-*)			fmt=elf em=linux ;;
    i386-*-lynxos*)			fmt=elf em=lynx ;;
@@ -1914,10 +1954,11 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/configure.tgt binutils-2.20/gas/configu
    i386-*-sysv[45]*)			fmt=elf ;;
    i386-*-solaris*)			fmt=elf em=solaris ;;
    i386-*-freebsdaout*)			fmt=aout em=386bsd ;;
-diff -Naur ../PRISTINE/binutils-2.20/gas/frags.c binutils-2.20/gas/frags.c
---- ../PRISTINE/binutils-2.20/gas/frags.c	2009-09-14 04:43:26.000000000 -0700
-+++ binutils-2.20/gas/frags.c	2010-01-05 13:21:03.676214000 -0800
-@@ -69,6 +69,16 @@
+diff --git a/binutils/gas/frags.c b/binutils/gas/frags.c
+index fe3b4cc..ea45bb5 100644
+--- a/binutils/gas/frags.c
++++ b/binutils/gas/frags.c
+@@ -69,6 +69,16 @@ frag_alloc (struct obstack *ob)
    (void) obstack_alloc (ob, 0);
    oalign = obstack_alignment_mask (ob);
    obstack_alignment_mask (ob) = 0;
@@ -1934,10 +1975,11 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/frags.c binutils-2.20/gas/frags.c
    ptr = (fragS *) obstack_alloc (ob, SIZEOF_STRUCT_FRAG);
    obstack_alignment_mask (ob) = oalign;
    memset (ptr, 0, SIZEOF_STRUCT_FRAG);
-diff -Naur ../PRISTINE/binutils-2.20/gas/frags.h binutils-2.20/gas/frags.h
---- ../PRISTINE/binutils-2.20/gas/frags.h	2007-07-03 04:01:03.000000000 -0700
-+++ binutils-2.20/gas/frags.h	2010-01-05 13:21:03.680220000 -0800
-@@ -77,10 +77,22 @@
+diff --git a/binutils/gas/frags.h b/binutils/gas/frags.h
+index a14e3a2..07f2af0 100644
+--- a/binutils/gas/frags.h
++++ b/binutils/gas/frags.h
+@@ -77,10 +77,22 @@ struct frag {
    unsigned int has_code:1;
    unsigned int insn_addr:6;
  
@@ -1960,10 +2002,11 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/frags.h binutils-2.20/gas/frags.h
  #ifdef USING_CGEN
    /* Don't include this unless using CGEN to keep frag size down.  */
    struct {
-diff -Naur ../PRISTINE/binutils-2.20/gas/write.c binutils-2.20/gas/write.c
---- ../PRISTINE/binutils-2.20/gas/write.c	2009-09-14 04:43:27.000000000 -0700
-+++ binutils-2.20/gas/write.c	2010-01-05 13:21:03.695232000 -0800
-@@ -158,6 +158,8 @@
+diff --git a/binutils/gas/write.c b/binutils/gas/write.c
+index 8adb87b..02ff0ef 100644
+--- a/binutils/gas/write.c
++++ b/binutils/gas/write.c
+@@ -158,6 +158,8 @@ fix_new_internal (fragS *frag,		/* Which frag?  */
  
    fixP = (fixS *) obstack_alloc (&notes, sizeof (fixS));
  
@@ -1972,7 +2015,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/write.c binutils-2.20/gas/write.c
    fixP->fx_frag = frag;
    fixP->fx_where = where;
    fixP->fx_size = size;
-@@ -422,6 +424,38 @@
+@@ -422,6 +424,38 @@ chain_frchains_together (bfd *abfd ATTRIBUTE_UNUSED,
  }
  
  static void
@@ -2011,7 +2054,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/write.c binutils-2.20/gas/write.c
  cvt_frag_to_fill (segT sec ATTRIBUTE_UNUSED, fragS *fragP)
  {
    switch (fragP->fr_type)
-@@ -445,6 +479,10 @@
+@@ -445,6 +479,10 @@ cvt_frag_to_fill (segT sec ATTRIBUTE_UNUSED, fragS *fragP)
  			(long) fragP->fr_offset);
  	  fragP->fr_offset = 0;
  	}
@@ -2022,7 +2065,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/write.c binutils-2.20/gas/write.c
        fragP->fr_type = rs_fill;
        break;
  
-@@ -1177,6 +1215,8 @@
+@@ -1177,6 +1215,8 @@ write_relocs (bfd *abfd, asection *sec, void *xxx ATTRIBUTE_UNUSED)
      {
        int j;
        int fx_size, slack;
@@ -2031,7 +2074,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/write.c binutils-2.20/gas/write.c
        offsetT loc;
  
        if (fixp->fx_done)
-@@ -1187,7 +1227,10 @@
+@@ -1187,7 +1227,10 @@ write_relocs (bfd *abfd, asection *sec, void *xxx ATTRIBUTE_UNUSED)
        if (slack > 0)
  	fx_size = fx_size > slack ? fx_size - slack : 0;
        loc = fixp->fx_where + fx_size;
@@ -2043,9 +2086,10 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/write.c binutils-2.20/gas/write.c
  	as_bad_where (fixp->fx_file, fixp->fx_line,
  		      _("internal error: fixup not contained within frag"));
  
-diff -Naur ../PRISTINE/binutils-2.20/include/elf/common.h binutils-2.20/include/elf/common.h
---- ../PRISTINE/binutils-2.20/include/elf/common.h	2009-08-09 06:42:26.000000000 -0700
-+++ binutils-2.20/include/elf/common.h	2010-01-05 13:21:03.720222000 -0800
+diff --git a/binutils/include/elf/common.h b/binutils/include/elf/common.h
+index 3788395..6b3ab78 100644
+--- a/binutils/include/elf/common.h
++++ b/binutils/include/elf/common.h
 @@ -75,6 +75,7 @@
  #define ELFOSABI_NSK	     14	/* Hewlett-Packard Non-Stop Kernel */
  #define ELFOSABI_AROS	     15	/* AROS */
@@ -2054,9 +2098,11 @@ diff -Naur ../PRISTINE/binutils-2.20/include/elf/common.h binutils-2.20/include/
  #define ELFOSABI_STANDALONE 255	/* Standalone (embedded) application */
  
  #define EI_ABIVERSION	8	/* ABI version */
-diff -Naur ../PRISTINE/binutils-2.20/include/elf/nacl.h binutils-2.20/include/elf/nacl.h
---- ../PRISTINE/binutils-2.20/include/elf/nacl.h	1969-12-31 16:00:00.000000000 -0800
-+++ binutils-2.20/include/elf/nacl.h	2010-01-05 13:21:03.732217000 -0800
+diff --git a/binutils/include/elf/nacl.h b/binutils/include/elf/nacl.h
+new file mode 100644
+index 0000000..a0b3471
+--- /dev/null
++++ b/binutils/include/elf/nacl.h
 @@ -0,0 +1,34 @@
 +/* ix86 ELF support for BFD.
 +   Copyright 1998, 1999, 2000, 2002, 2004, 2005, 2006
@@ -2092,10 +2138,11 @@ diff -Naur ../PRISTINE/binutils-2.20/include/elf/nacl.h binutils-2.20/include/el
 +/* For x86-64 the version number is still zero, until a stable point. */
 +
 +#endif
-diff -Naur ../PRISTINE/binutils-2.20/ld/Makefile.am binutils-2.20/ld/Makefile.am
---- ../PRISTINE/binutils-2.20/ld/Makefile.am	2009-09-01 13:56:51.000000000 -0700
-+++ binutils-2.20/ld/Makefile.am	2010-01-05 13:21:03.742217000 -0800
-@@ -221,6 +221,7 @@
+diff --git a/binutils/ld/Makefile.am b/binutils/ld/Makefile.am
+index 7c4444b..e9509e7 100644
+--- a/binutils/ld/Makefile.am
++++ b/binutils/ld/Makefile.am
+@@ -221,6 +221,7 @@ ALL_EMULATIONS = \
  	eelf_i386_fbsd.o \
  	eelf_i386_ldso.o \
  	eelf_i386_vxworks.o \
@@ -2103,7 +2150,7 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/Makefile.am binutils-2.20/ld/Makefile.am
  	eelf_s390.o \
  	egld960.o \
  	egld960coff.o \
-@@ -1072,6 +1073,10 @@
+@@ -1072,6 +1073,10 @@ eelf64_ia64_fbsd.c: $(srcdir)/emulparams/elf64_ia64_fbsd.sh \
    $(srcdir)/emultempl/needrelax.em \
    $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
  	${GENSCRIPTS} elf64_ia64_fbsd "$(tdir_elf64_ia64_fbsd)"
@@ -2114,7 +2161,7 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/Makefile.am binutils-2.20/ld/Makefile.am
  eelf64_s390.c: $(srcdir)/emulparams/elf64_s390.sh \
    $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
  	${GENSCRIPTS} elf64_s390 "$(tdir_elf64_s390)"
-@@ -1110,6 +1115,10 @@
+@@ -1110,6 +1115,10 @@ eelf64ltsmip.c: $(srcdir)/emulparams/elf64ltsmip.sh \
  eelf_i386.c: $(srcdir)/emulparams/elf_i386.sh \
    $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
  	${GENSCRIPTS} elf_i386 "$(tdir_elf_i386)"
@@ -2125,10 +2172,11 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/Makefile.am binutils-2.20/ld/Makefile.am
  eelf_x86_64.c: $(srcdir)/emulparams/elf_x86_64.sh \
    $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
  	${GENSCRIPTS} elf_x86_64 "$(tdir_elf_x86_64)"
-diff -Naur ../PRISTINE/binutils-2.20/ld/Makefile.in binutils-2.20/ld/Makefile.in
---- ../PRISTINE/binutils-2.20/ld/Makefile.in	2009-09-07 05:10:24.000000000 -0700
-+++ binutils-2.20/ld/Makefile.in	2010-01-05 13:21:03.751216000 -0800
-@@ -507,6 +507,7 @@
+diff --git a/binutils/ld/Makefile.in b/binutils/ld/Makefile.in
+index 8aabafb..2234c29 100644
+--- a/binutils/ld/Makefile.in
++++ b/binutils/ld/Makefile.in
+@@ -507,6 +507,7 @@ ALL_EMULATIONS = \
  	eelf_i386_fbsd.o \
  	eelf_i386_ldso.o \
  	eelf_i386_vxworks.o \
@@ -2136,7 +2184,7 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/Makefile.in binutils-2.20/ld/Makefile.in
  	eelf_s390.o \
  	egld960.o \
  	egld960coff.o \
-@@ -709,6 +710,7 @@
+@@ -709,6 +710,7 @@ ALL_64_EMULATIONS = \
  	eelf_x86_64_fbsd.o \
  	eelf_l1om.o \
  	eelf_l1om_fbsd.o \
@@ -2144,7 +2192,7 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/Makefile.in binutils-2.20/ld/Makefile.in
  	eelf64_s390.o \
  	eelf64_sparc.o \
  	eelf64_sparc_fbsd.o \
-@@ -2413,6 +2415,10 @@
+@@ -2413,6 +2415,10 @@ eelf64_ia64_fbsd.c: $(srcdir)/emulparams/elf64_ia64_fbsd.sh \
    $(srcdir)/emultempl/needrelax.em \
    $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
  	${GENSCRIPTS} elf64_ia64_fbsd "$(tdir_elf64_ia64_fbsd)"
@@ -2155,7 +2203,7 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/Makefile.in binutils-2.20/ld/Makefile.in
  eelf64_s390.c: $(srcdir)/emulparams/elf64_s390.sh \
    $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
  	${GENSCRIPTS} elf64_s390 "$(tdir_elf64_s390)"
-@@ -2451,6 +2457,10 @@
+@@ -2451,6 +2457,10 @@ eelf64ltsmip.c: $(srcdir)/emulparams/elf64ltsmip.sh \
  eelf_i386.c: $(srcdir)/emulparams/elf_i386.sh \
    $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
  	${GENSCRIPTS} elf_i386 "$(tdir_elf_i386)"
@@ -2166,10 +2214,11 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/Makefile.in binutils-2.20/ld/Makefile.in
  eelf_x86_64.c: $(srcdir)/emulparams/elf_x86_64.sh \
    $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
  	${GENSCRIPTS} elf_x86_64 "$(tdir_elf_x86_64)"
-diff -Naur ../PRISTINE/binutils-2.20/ld/configure.tgt binutils-2.20/ld/configure.tgt
---- ../PRISTINE/binutils-2.20/ld/configure.tgt	2009-08-06 10:38:03.000000000 -0700
-+++ binutils-2.20/ld/configure.tgt	2010-01-05 13:21:03.757202000 -0800
-@@ -230,6 +230,9 @@
+diff --git a/binutils/ld/configure.tgt b/binutils/ld/configure.tgt
+index d6d86ab..ce77aa6 100644
+--- a/binutils/ld/configure.tgt
++++ b/binutils/ld/configure.tgt
+@@ -230,6 +230,9 @@ i[3-7]86-*-netbsdpe*)	targ_emul=i386pe
  			targ_extra_ofiles="deffilep.o pe-dll.o" ;;
  i[3-7]86-*-netbsd*)	targ_emul=i386nbsd
  			targ_extra_emuls=elf_i386 ;;
@@ -2179,28 +2228,31 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/configure.tgt binutils-2.20/ld/configure
  x86_64-*-netbsd*)	targ_emul=elf_x86_64
  			targ_extra_emuls="elf_i386 i386nbsd elf_l1om"
  			tdir_elf_i386=`echo ${targ_alias} | \
-diff -Naur ../PRISTINE/binutils-2.20/ld/emulparams/elf64_nacl.sh binutils-2.20/ld/emulparams/elf64_nacl.sh
---- ../PRISTINE/binutils-2.20/ld/emulparams/elf64_nacl.sh	1969-12-31 16:00:00.000000000 -0800
-+++ binutils-2.20/ld/emulparams/elf64_nacl.sh	2010-01-05 13:21:03.785168000 -0800
-@@ -0,0 +1,5 @@
+diff --git a/binutils/ld/emulparams/elf64_nacl.sh b/binutils/ld/emulparams/elf64_nacl.sh
+new file mode 100644
+index 0000000..6b10f67
+--- /dev/null
++++ b/binutils/ld/emulparams/elf64_nacl.sh
+@@ -0,0 +1,4 @@
 +. ${srcdir}/emulparams/elf_x86_64.sh
 +SCRIPT_NAME=naclelf
 +OUTPUT_FORMAT="elf64-nacl"
 +TEXT_START_ADDR=0x00020000
-+SEGMENT_SIZE=0x10000
-diff -Naur ../PRISTINE/binutils-2.20/ld/emulparams/elf_nacl.sh binutils-2.20/ld/emulparams/elf_nacl.sh
---- ../PRISTINE/binutils-2.20/ld/emulparams/elf_nacl.sh	1969-12-31 16:00:00.000000000 -0800
-+++ binutils-2.20/ld/emulparams/elf_nacl.sh	2010-01-05 13:21:03.798157000 -0800
-@@ -0,0 +1,5 @@
+diff --git a/binutils/ld/emulparams/elf_nacl.sh b/binutils/ld/emulparams/elf_nacl.sh
+new file mode 100644
+index 0000000..e7b5a59
+--- /dev/null
++++ b/binutils/ld/emulparams/elf_nacl.sh
+@@ -0,0 +1,4 @@
 +. ${srcdir}/emulparams/elf_i386.sh
 +SCRIPT_NAME=naclelf
 +OUTPUT_FORMAT="elf32-nacl"
 +TEXT_START_ADDR=0x00020000
-+SEGMENT_SIZE=0x10000
-diff -Naur ../PRISTINE/binutils-2.20/ld/genscripts.sh binutils-2.20/ld/genscripts.sh
---- ../PRISTINE/binutils-2.20/ld/genscripts.sh	2009-09-02 00:25:35.000000000 -0700
-+++ binutils-2.20/ld/genscripts.sh	2010-01-05 13:21:03.805147000 -0800
-@@ -418,9 +418,10 @@
+diff --git a/binutils/ld/genscripts.sh b/binutils/ld/genscripts.sh
+index c86631b..646a6ff 100755
+--- a/binutils/ld/genscripts.sh
++++ b/binutils/ld/genscripts.sh
+@@ -418,9 +418,10 @@ if test -n "$GENERATE_AUTO_IMPORT_SCRIPT"; then
    ) | sed -e '/^ *$/d;s/[ 	]*$//' > ldscripts/${EMULATION_NAME}.xa
  fi
  
@@ -2214,9 +2266,10 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/genscripts.sh binutils-2.20/ld/genscript
  
  # PR ld/5652:
  # Determine if the shell has support for the variable BASH_LINENO.
-diff -Naur ../PRISTINE/binutils-2.20/ld/ldexp.c binutils-2.20/ld/ldexp.c
---- ../PRISTINE/binutils-2.20/ld/ldexp.c	2009-09-14 04:43:29.000000000 -0700
-+++ binutils-2.20/ld/ldexp.c	2010-01-05 13:21:03.816161000 -0800
+diff --git a/binutils/ld/ldexp.c b/binutils/ld/ldexp.c
+index 2d03828..353036c 100644
+--- a/binutils/ld/ldexp.c
++++ b/binutils/ld/ldexp.c
 @@ -46,6 +46,8 @@
  static void exp_fold_tree_1 (etree_type *);
  static void exp_fold_tree_no_dot (etree_type *);
@@ -2226,7 +2279,7 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/ldexp.c binutils-2.20/ld/ldexp.c
  
  segment_type *segments;
  
-@@ -272,6 +274,20 @@
+@@ -272,6 +274,20 @@ fold_unary (etree_type *tree)
  	    expld.result.valid_p = FALSE;
  	  break;
  
@@ -2247,7 +2300,7 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/ldexp.c binutils-2.20/ld/ldexp.c
  	default:
  	  FAIL ();
  	  break;
-@@ -1161,3 +1177,27 @@
+@@ -1161,3 +1177,27 @@ align_n (bfd_vma value, bfd_vma align)
    value = (value + align - 1) / align;
    return value * align;
  }
@@ -2275,10 +2328,11 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/ldexp.c binutils-2.20/ld/ldexp.c
 +    return value - 1;
 +  }
 +}
-diff -Naur ../PRISTINE/binutils-2.20/ld/ldfile.c binutils-2.20/ld/ldfile.c
---- ../PRISTINE/binutils-2.20/ld/ldfile.c	2009-08-29 15:11:01.000000000 -0700
-+++ binutils-2.20/ld/ldfile.c	2010-01-05 13:21:03.822130000 -0800
-@@ -608,7 +608,7 @@
+diff --git a/binutils/ld/ldfile.c b/binutils/ld/ldfile.c
+index a6844c1..c0509f5 100644
+--- a/binutils/ld/ldfile.c
++++ b/binutils/ld/ldfile.c
+@@ -608,7 +608,7 @@ ldfile_open_command_file (const char *name)
  void
  ldfile_open_default_command_file (const char *name)
  {
@@ -2287,10 +2341,11 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/ldfile.c binutils-2.20/ld/ldfile.c
  }
  
  void
-diff -Naur ../PRISTINE/binutils-2.20/ld/ldgram.y binutils-2.20/ld/ldgram.y
---- ../PRISTINE/binutils-2.20/ld/ldgram.y	2009-09-02 00:25:35.000000000 -0700
-+++ binutils-2.20/ld/ldgram.y	2010-01-05 13:21:03.829129000 -0800
-@@ -136,7 +136,7 @@
+diff --git a/binutils/ld/ldgram.y b/binutils/ld/ldgram.y
+index aa639a1..bdb56c0 100644
+--- a/binutils/ld/ldgram.y
++++ b/binutils/ld/ldgram.y
+@@ -136,7 +136,7 @@ static int error_index;
  %token NOLOAD DSECT COPY INFO OVERLAY
  %token DEFINED TARGET_K SEARCH_DIR MAP ENTRY
  %token <integer> NEXT
@@ -2299,7 +2354,7 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/ldgram.y binutils-2.20/ld/ldgram.y
  %token STARTUP HLL SYSLIB FLOAT NOFLOAT NOCROSSREFS
  %token ORIGIN FILL
  %token LENGTH CREATE_OBJECT_SYMBOLS INPUT GROUP OUTPUT CONSTRUCTORS
-@@ -893,6 +893,10 @@
+@@ -893,6 +893,10 @@ exp	:
  			{ $$ = exp_binop (MAX_K, $3, $5 ); }
  	|	MIN_K '(' exp ',' exp ')'
  			{ $$ = exp_binop (MIN_K, $3, $5 ); }
@@ -2310,10 +2365,11 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/ldgram.y binutils-2.20/ld/ldgram.y
  	|	ASSERT_K '(' exp ',' NAME ')'
  			{ $$ = exp_assert ($3, $5); }
  	|	ORIGIN '(' NAME ')'
-diff -Naur ../PRISTINE/binutils-2.20/ld/ldlex.l binutils-2.20/ld/ldlex.l
---- ../PRISTINE/binutils-2.20/ld/ldlex.l	2009-10-14 07:51:32.000000000 -0700
-+++ binutils-2.20/ld/ldlex.l	2010-01-05 13:21:03.834120000 -0800
-@@ -254,6 +254,8 @@
+diff --git a/binutils/ld/ldlex.l b/binutils/ld/ldlex.l
+index ef09eb0..32811c0 100644
+--- a/binutils/ld/ldlex.l
++++ b/binutils/ld/ldlex.l
+@@ -254,6 +254,8 @@ V_IDENTIFIER [*?.$_a-zA-Z\[\]\-\!\^\\]([*?.$_a-zA-Z0-9\[\]\-\!\^\\]|::)*
  <EXPRESSION,BOTH,SCRIPT>"ALIGNOF"	{ RTOKEN(ALIGNOF); }
  <EXPRESSION,BOTH>"MAX"			{ RTOKEN(MAX_K); }
  <EXPRESSION,BOTH>"MIN"			{ RTOKEN(MIN_K); }
@@ -2322,31 +2378,12 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/ldlex.l binutils-2.20/ld/ldlex.l
  <EXPRESSION,BOTH,SCRIPT>"ASSERT"	{ RTOKEN(ASSERT_K); }
  <BOTH,SCRIPT>"ENTRY"			{ RTOKEN(ENTRY);}
  <BOTH,SCRIPT,MRI>"EXTERN"		{ RTOKEN(EXTERN);}
-diff -Naur ../PRISTINE/binutils-2.20/ld/ldmain.c binutils-2.20/ld/ldmain.c
---- ../PRISTINE/binutils-2.20/ld/ldmain.c	2009-09-14 13:43:29.000000000 +0200
-+++ binutils-2.20/ld/ldmain.c	2010-05-18 23:27:07.000000000 +0200
-@@ -179,6 +179,8 @@
-     }
- }
- 
-+extern int _bfd_elf_set_section_contents_hlts;
-+
- int
- main (int argc, char **argv)
- {
-@@ -278,6 +280,8 @@
- 
-   ldfile_add_arch ("");
-   emulation = get_emulation (argc, argv);
-+  if (!strcmp(emulation, "elf_nacl") || !strcmp(emulation, "elf64_nacl"))
-+    _bfd_elf_set_section_contents_hlts = 1;
-   ldemul_choose_mode (emulation);
-   default_target = ldemul_choose_target (argc, argv);
-   config.maxpagesize = bfd_emul_get_maxpagesize (default_target);
-diff -Naur ../PRISTINE/binutils-2.20/ld/scripttempl/naclelf.sc binutils-2.20/ld/scripttempl/naclelf.sc
---- ../PRISTINE/binutils-2.20/ld/scripttempl/naclelf.sc	1969-12-31 16:00:00.000000000 -0800
-+++ binutils-2.20/ld/scripttempl/naclelf.sc	2010-01-05 13:21:03.846110000 -0800
-@@ -0,0 +1,606 @@
+diff --git a/binutils/ld/scripttempl/naclelf.sc b/binutils/ld/scripttempl/naclelf.sc
+new file mode 100644
+index 0000000..7d13e91
+--- /dev/null
++++ b/binutils/ld/scripttempl/naclelf.sc
+@@ -0,0 +1,611 @@
 +#
 +# Unusual variables checked by this code:
 +#	NOP - four byte opcode for no-op (defaults to 0)
@@ -2450,9 +2487,14 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/scripttempl/naclelf.sc binutils-2.20/ld/
 +test -z "$CREATE_SHLIB$CREATE_PIE" && test -n "$DATA_ADDR" && COMMONPAGESIZE=""
 +test -n "$RELRO_NOW" && unset SEPARATE_GOTPLT
 +test -z "$ATTRS_SECTIONS" && ATTRS_SECTIONS=".gnu.attributes 0 : { KEEP (*(.gnu.attributes)) }"
-+DATA_SEGMENT_ALIGN="ALIGN(${SEGMENT_SIZE}) + (. & (${COMMONPAGESIZE} - 1))"
++DATA_SEGMENT_ALIGN="ALIGN(${SEGMENT_SIZE}) + (. & (${MAXPAGESIZE} - 1))"
 +DATA_SEGMENT_RELRO_END=""
 +DATA_SEGMENT_END=""
++if test -n "${COMMONPAGESIZE}"; then
++  DATA_SEGMENT_ALIGN="ALIGN (${SEGMENT_SIZE}) - ((${MAXPAGESIZE} - .) & (${MAXPAGESIZE} - 1)); . = DATA_SEGMENT_ALIGN (${MAXPAGESIZE}, ${COMMONPAGESIZE})"
++  DATA_SEGMENT_END=". = DATA_SEGMENT_END (.);"
++  DATA_SEGMENT_RELRO_END=". = DATA_SEGMENT_RELRO_END (${SEPARATE_GOTPLT-0}, .);"
++fi
 +if test -z "${INITIAL_READONLY_SECTIONS}${CREATE_SHLIB}"; then
 +  INITIAL_READONLY_SECTIONS=".interp       ${RELOCATING-0} : { *(.interp) }"
 +fi
@@ -2535,11 +2577,11 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/scripttempl/naclelf.sc binutils-2.20/ld/
 +    *(LARGE_COMMON)
 +  }"
 +test "${LARGE_SECTIONS}" = "yes" && LARGE_SECTIONS="
-+  .lrodata ${RELOCATING-0} ${RELOCATING+ALIGN(${COMMONPAGESIZE}) + (. & (${COMMONPAGESIZE} - 1))} :
++  .lrodata ${RELOCATING-0} ${RELOCATING+ALIGN(${MAXPAGESIZE}) + (. & (${MAXPAGESIZE} - 1))} :
 +  {
 +    *(.lrodata${RELOCATING+ .lrodata.* .gnu.linkonce.lr.*})
 +  }
-+  .ldata ${RELOCATING-0} ${RELOCATING+ALIGN(${COMMONPAGESIZE}) + (. & (${COMMONPAGESIZE} - 1))} :
++  .ldata ${RELOCATING-0} ${RELOCATING+ALIGN(${MAXPAGESIZE}) + (. & (${MAXPAGESIZE} - 1))} :
 +  {
 +    *(.ldata${RELOCATING+ .ldata.* .gnu.linkonce.l.*})
 +    ${RELOCATING+. = ALIGN(. != 0 ? ${ALIGNMENT} : 1);}
@@ -2765,7 +2807,7 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/scripttempl/naclelf.sc binutils-2.20/ld/
 +                          DEFINED (__executable_start) ?
 +                            NACL_MASK (. - __executable_start) : 0xffffffff);}
 +  . = . + 32; /* reserve space for HLTs */
-+  . = ALIGN(CONSTANT (COMMONPAGESIZE)); /* nacl wants page alignment */
++  . = ALIGN(CONSTANT (MAXPAGESIZE)); /* nacl wants page alignment */
 +  ${WRITABLE_RODATA-${RODATA}} :rodata
 +  .rodata1      ${RELOCATING-0} : { *(.rodata1) }
 +  .nacl_rpc_methods : { *(.nacl_rpc_methods) }
@@ -2838,7 +2880,7 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/scripttempl/naclelf.sc binutils-2.20/ld/
 +
 +  ${DATA_PLT+${PLT_BEFORE_GOT-${PLT}}}
 +
-+  ${RELOCATING+. = ALIGN(${COMMONPAGESIZE});} /* nacl wants page alignment */
++  ${RELOCATING+. = ALIGN(${MAXPAGESIZE});} /* nacl wants page alignment */
 +  .data         ${RELOCATING-0} :
 +  {
 +    ${RELOCATING+${DATA_START_SYMBOLS}}
@@ -2953,10 +2995,11 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/scripttempl/naclelf.sc binutils-2.20/ld/
 +  ${RELOCATING+${DISCARDED}}
 +}
 +EOF
-diff -uNr binutils-2.20.orig/opcodes/Makefile.am binutils-2.20/opcodes/Makefile.am
---- binutils-2.20.orig/opcodes/Makefile.am	2009-09-07 14:07:53.000000000 +0200
-+++ binutils-2.20/opcodes/Makefile.am	2010-01-06 20:21:21.000000000 +0100
-@@ -465,7 +465,7 @@
+diff --git a/binutils/opcodes/Makefile.am b/binutils/opcodes/Makefile.am
+index 43db72a..ccccb49 100644
+--- a/binutils/opcodes/Makefile.am
++++ b/binutils/opcodes/Makefile.am
+@@ -465,7 +465,7 @@ i386-gen.o: i386-gen.c i386-opc.h $(srcdir)/../include/opcode/i386.h \
  $(srcdir)/i386-tbl.h: $(srcdir)/i386-init.h 
  	@echo $@
  
@@ -2965,10 +3008,11 @@ diff -uNr binutils-2.20.orig/opcodes/Makefile.am binutils-2.20/opcodes/Makefile.
  	./i386-gen$(EXEEXT_FOR_BUILD) --srcdir $(srcdir)
  
  i386-opc.lo: $(srcdir)/i386-tbl.h
-diff -uNr binutils-2.20.orig/opcodes/Makefile.in binutils-2.20/opcodes/Makefile.in
---- binutils-2.20.orig/opcodes/Makefile.in	2009-09-07 14:08:03.000000000 +0200
-+++ binutils-2.20/opcodes/Makefile.in	2010-01-06 20:21:30.000000000 +0100
-@@ -1304,7 +1304,7 @@
+diff --git a/binutils/opcodes/Makefile.in b/binutils/opcodes/Makefile.in
+index 5b4721a..0cdf0a0 100644
+--- a/binutils/opcodes/Makefile.in
++++ b/binutils/opcodes/Makefile.in
+@@ -1304,7 +1304,7 @@ i386-gen.o: i386-gen.c i386-opc.h $(srcdir)/../include/opcode/i386.h \
  $(srcdir)/i386-tbl.h: $(srcdir)/i386-init.h 
  	@echo $@
  
@@ -2977,10 +3021,11 @@ diff -uNr binutils-2.20.orig/opcodes/Makefile.in binutils-2.20/opcodes/Makefile.
  	./i386-gen$(EXEEXT_FOR_BUILD) --srcdir $(srcdir)
  
  i386-opc.lo: $(srcdir)/i386-tbl.h
-diff -Naur ../PRISTINE/binutils-2.20/opcodes/i386-opc.tbl binutils-2.20/opcodes/i386-opc.tbl
---- ../PRISTINE/binutils-2.20/opcodes/i386-opc.tbl	2009-07-24 08:41:20.000000000 -0700
-+++ binutils-2.20/opcodes/i386-opc.tbl	2010-01-05 13:21:03.861105000 -0800
-@@ -209,6 +209,36 @@
+diff --git a/binutils/opcodes/i386-opc.tbl b/binutils/opcodes/i386-opc.tbl
+index 4cf07b6..7d0a1bd 100644
+--- a/binutils/opcodes/i386-opc.tbl
++++ b/binutils/opcodes/i386-opc.tbl
+@@ -209,6 +209,36 @@ or, 2, 0x83, 0x1, 1, 0, Modrm|No_bSuf|No_sSuf|No_ldSuf, { Imm8S, Reg16|Reg32|Reg
  or, 2, 0xc, None, 1, 0, W|No_sSuf|No_ldSuf, { Imm8|Imm16|Imm32|Imm32S, Acc|Byte|Word|Dword|Qword }
  or, 2, 0x80, 0x1, 1, 0, W|Modrm|No_sSuf|No_ldSuf, { Imm8|Imm16|Imm32|Imm32S, Reg8|Reg16|Reg32|Reg64|Byte|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S }
  
@@ -3000,7 +3045,7 @@ diff -Naur ../PRISTINE/binutils-2.20/opcodes/i386-opc.tbl binutils-2.20/opcodes/
 +naclrestbp, 2, 0x01, None, 1, Cpu64, W|Modrm|No_sSuf|No_ldSuf, { Unspecified|BaseIndex|Disp8|Disp32S|Reg32, Reg64 }
 +naclrestsp, 2, 0x01, None, 1, Cpu64, W|Modrm|No_sSuf|No_ldSuf, { Unspecified|BaseIndex|Disp8|Disp32S|Reg32, Reg64 }
 +
-+// Native client string operations.
++// Native client string operations
 +cmps, 3, 0xa6, None, 1, Cpu64, W|No_sSuf|No_ldSuf|IsString, { Byte|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S|EsSeg, Byte|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S, Reg64 }
 +scmp, 3, 0xa6, None, 1, Cpu64, W|No_sSuf|No_ldSuf|IsString, { Byte|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S|EsSeg, Byte|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S, Reg64 }
 +ins, 3, 0x6c, None, 1, Cpu64, W|No_sSuf|No_qSuf|No_ldSuf|IsString, { InOutPortReg, Byte|Word|Dword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S|EsSeg, Reg64 }
@@ -3017,3 +3062,6 @@ diff -Naur ../PRISTINE/binutils-2.20/opcodes/i386-opc.tbl binutils-2.20/opcodes/
  xor, 2, 0x30, None, 1, 0, D|W|Modrm|No_sSuf|No_ldSuf, { Reg8|Reg16|Reg32|Reg64, Reg8|Reg16|Reg32|Reg64|Byte|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S }
  xor, 2, 0x83, 0x6, 1, 0, Modrm|No_bSuf|No_sSuf|No_ldSuf, { Imm8S, Reg16|Reg32|Reg64|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S }
  xor, 2, 0x34, None, 1, 0, W|No_sSuf|No_ldSuf, { Imm8|Imm16|Imm32|Imm32S, Acc|Byte|Word|Dword|Qword }
+-- 
+1.7.0.1
+

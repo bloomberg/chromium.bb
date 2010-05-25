@@ -29,20 +29,9 @@
 
 ##################################################################
 #  Description: Main makefile for NativeClient toolchain.
-#  This is currently incomplete, because it does not build app_lib
-#  and move it to the proper location.
-#  TODO(sehr): Consolidate with app_lib build.
 ##################################################################
 
 default: build
-
-##################################################################
-# Describe where to find the sources, where the SDK goes, etc.
-# SDKROOT has to exist, which requires some extra work, especially
-# on Linux.
-# TODO(sehr): Figure out how to get SDKROOT not to be absolute
-#             while keeping prefix set correctly.
-##################################################################
 
 THISMAKEFILE := $(lastword $(MAKEFILE_LIST))
 
@@ -135,53 +124,96 @@ MPFR_VERSION=2.4.1
 GDB_VERSION=6.8
 
 ##################################################################
-# Copying the sources, applying patches, etc.
+# Unpacking the sources, applying patches, etc.
 ##################################################################
-# Create the BUILD subdirectory:
-BUILD:
-	mkdir BUILD
 
-# copy binutils, apply patches
-BUILD/binutils-$(BINUTILS_VERSION): | BUILD
+# Create the SRC subdirectory.
+SRC:
+	mkdir SRC
+
+unpack-src: stamp-src
+
+# Prepare all sources.
+stamp-src: SRC/stamp-binutils SRC/stamp-gcc SRC/stamp-newlib SRC/stamp-gdb | SRC
+	touch stamp-src
+
+# Prepare source directory from Git for building.
+prepare-git-src: ALWAYS
+	$(MAKE) -f $(THISMAKEFILE) unpack-gcc-extras
+	touch SRC/stamp-binutils
+	touch SRC/stamp-gcc
+	touch SRC/stamp-newlib
+	touch SRC/stamp-gdb
+	touch stamp-src
+
+# Unpack binutils, apply patches.
+SRC/binutils: | SRC
 	@echo "Unpacking binutils-$(BINUTILS_VERSION)"
-	cd BUILD && tar xf $(SRCDIR)/binutils/binutils-$(BINUTILS_VERSION).tar.bz2
-	cd BUILD && patch -p0 < ../patches/binutils-$(BINUTILS_VERSION).patch
+	rm -rf SRC/binutils-$(BINUTILS_VERSION)
+	cd SRC && tar xf $(SRCDIR)/binutils/binutils-$(BINUTILS_VERSION).tar.bz2
+	mv SRC/binutils-$(BINUTILS_VERSION) SRC/binutils
 	if ( [ ! -x /usr/bin/bison ] ) || ( [ ! -x /usr/bin/flex ] ) ; then \
-	  cd BUILD && ( patch -p0 < ../patches/binutils-$(BINUTILS_VERSION).ly.patch || true ) ; \
+	  cd SRC/binutils && ( patch -p1 < ../../patches/binutils-$(BINUTILS_VERSION).ly.patch || true ) ; \
 	fi
-	printf -- "--- BUILD/binutils-$(BINUTILS_VERSION)/bfd/version.h\n\
-	+++ BUILD/binutils-$(BINUTILS_VERSION)/bfd/version.h\n\
+	printf -- "--- SRC/binutils/bfd/version.h\n\
+	+++ SRC/binutils/bfd/version.h\n\
 	@@ -3 +3 @@\n\
 	-#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@\n\
 	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \" `svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \(....\)-\(..\)-\(..\).*+\1\2\3+'` (Native Client r`svn info | grep 'Last Changed Rev' | sed -e s'+Last Changed Rev: ++'`)\"\n" |\
 	patch -p0
+	set -e; cd SRC && \
+	  for i in ../patches/binutils-$(BINUTILS_VERSION)/????-*.patch ; do \
+	    patch -p1 < "$$i" ; \
+	  done
 
-# create binutils source directory, and mark that we've done that
-BUILD/stamp-binutils-$(BINUTILS_VERSION): Makefile
-	rm -rf BUILD/binutils-$(BINUTILS_VERSION)
-	$(MAKE) -f $(THISMAKEFILE) BUILD/binutils-$(BINUTILS_VERSION)
+# Create binutils source directory, and mark that we've done that.
+SRC/stamp-binutils: | SRC
+	rm -rf SRC/binutils
+	$(MAKE) -f $(THISMAKEFILE) SRC/binutils
 	touch $@
 
-# copy newlib, apply patches
-BUILD/newlib-$(NEWLIB_VERSION): | BUILD
+# Unpack newlib, apply patches.
+SRC/newlib: | SRC
 	@echo "Unpacking newlib-$(NEWLIB_VERSION)"
-	cd BUILD && tar xf $(SRCDIR)/newlib/newlib-$(NEWLIB_VERSION).tar.gz
-	cd BUILD && patch -p0 < ../patches/newlib-$(NEWLIB_VERSION).patch
-	cd BUILD && patch -p0 < ../patches/newlib-$(NEWLIB_VERSION)_nosys.patch
+	rm -rf SRC/newlib-$(NEWLIB_VERSION)
+	cd SRC && tar xf $(SRCDIR)/newlib/newlib-$(NEWLIB_VERSION).tar.gz
+	mv SRC/newlib-$(NEWLIB_VERSION) SRC/newlib
+	set -e; cd SRC && \
+	  for i in ../patches/newlib-$(NEWLIB_VERSION)/????-*.patch ; do \
+	    patch -p1 < "$$i" ; \
+	  done
 
-# create newlib source directory, and mark that we've done that
-BUILD/stamp-newlib-$(NEWLIB_VERSION): Makefile
-	rm -rf BUILD/newlib-$(NEWLIB_VERSION)
-	$(MAKE) -f $(THISMAKEFILE) BUILD/newlib-$(NEWLIB_VERSION)
+# Create newlib source directory, and mark that we've done that.
+SRC/stamp-newlib: | SRC
+	rm -rf SRC/newlib
+	$(MAKE) -f $(THISMAKEFILE) SRC/newlib
 	touch $@
 
-# copy gcc, apply patches
-BUILD/gcc-$(GCC_VERSION): | BUILD
+# Unpack gcc, apply patches.
+SRC/gcc: | SRC
 	@echo "Unpacking gcc-$(GCC_VERSION)"
-	cd BUILD && tar xf $(SRCDIR)/gcc/gcc-core-$(GCC_VERSION).tar.bz2
-	cd BUILD && tar xf $(SRCDIR)/gcc/gcc-g++-$(GCC_VERSION).tar.bz2
-	cd BUILD && tar xf $(SRCDIR)/gcc/gcc-fortran-$(GCC_VERSION).tar.bz2
-	cd BUILD && tar xf $(SRCDIR)/gcc/gcc-testsuite-$(GCC_VERSION).tar.bz2
+	rm -rf SRC/gcc-$(GCC_VERSION)
+	cd SRC && tar xf $(SRCDIR)/gcc/gcc-core-$(GCC_VERSION).tar.bz2
+	cd SRC && tar xf $(SRCDIR)/gcc/gcc-g++-$(GCC_VERSION).tar.bz2
+	cd SRC && tar xf $(SRCDIR)/gcc/gcc-fortran-$(GCC_VERSION).tar.bz2
+	cd SRC && tar xf $(SRCDIR)/gcc/gcc-testsuite-$(GCC_VERSION).tar.bz2
+	mv SRC/gcc-$(GCC_VERSION) SRC/gcc
+	$(MAKE) -f $(THISMAKEFILE) unpack-gcc-extras
+	printf -- "`svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \(....\)-\(..\)-\(..\).*+\1\2\3+'`" > SRC/gcc/gcc/DATESTAMP
+	printf -- "Native Client r`svn info | grep 'Last Changed Rev' | sed -e s'+Last Changed Rev: ++'`" > SRC/gcc/gcc/DEV-PHASE
+	set -e; cd SRC && \
+	  for i in ../patches/gcc-$(GCC_VERSION)/????-*.patch ; do \
+	    patch -p1 < "$$i" ; \
+	  done
+
+# Create gcc source directory, and mark that we've done that.
+SRC/stamp-gcc: | SRC
+	rm -rf SRC/gcc
+	$(MAKE) -f $(THISMAKEFILE) SRC/gcc
+	touch $@
+
+# Unpack GCC libs (GMP, MPFR) from tarballs if they are not in the system.
+unpack-gcc-extras: ALWAYS | SRC
 	GNU_MP_MAJOR=0 ; \
 	if [ -f /usr/include/gmp.h ] ; then \
 	  GNU_MP_MAJOR="`grep '#[ 	]*define[ 	]*__GNU_MP_VERSION ' /usr/include/gmp.h | sed -e s'@[ 	]*#define[ 	]*__GNU_MP_VERSION[ 	]*@@'`" ; \
@@ -194,14 +226,15 @@ BUILD/gcc-$(GCC_VERSION): | BUILD
 	   ( [ "$$GNU_MP_MAJOR" -eq 4 ] && \
 	     [ "$$GNU_MP_MINOR" -eq 3 ] && \
 	     [ "$$GNU_MP_PATCHLEVEL" -lt 1 ] ) ; then \
-	  cd BUILD && \
+	  cd SRC && \
+	    rm -rf gmp-$(GMP_VERSION) && \
 	    tar xf $(SRCDIR)/gmp/gmp-$(GMP_VERSION).tar.bz2 && \
-	    mv gmp-$(GMP_VERSION) gcc-$(GCC_VERSION)/gmp && \
-	    cp gcc-$(GCC_VERSION)/gmp/configure \
-	        gcc-$(GCC_VERSION)/gmp/configure.old && \
-	    cat gcc-$(GCC_VERSION)/gmp/configure.old | \
+	    mv gmp-$(GMP_VERSION) gcc/gmp && \
+	    cp gcc/gmp/configure \
+	        gcc/gmp/configure.old && \
+	    cat gcc/gmp/configure.old | \
 	        sed -e 's/M4=m4-not-needed/: # no m4/g' \
-	        >gcc-$(GCC_VERSION)/gmp/configure && \
+	        >gcc/gmp/configure && \
 	  cd .. ; \
 	fi ; \
 	MPFR_VERSION_MAJOR=0 ; \
@@ -217,44 +250,39 @@ BUILD/gcc-$(GCC_VERSION): | BUILD
 	   ( [ "$$MPFR_VERSION_MAJOR" -eq 2 ] && \
 	     [ "$$MPFR_VERSION_MINOR" -eq 4 ] && \
 	     [ "$$MPFR_VERSION_PATCHLEVEL" -lt 1 ] ) ; then \
-	  cd BUILD && \
+	  cd SRC && \
+	    rm -rf mpfr-$(MPFR_VERSION) && \
 	    tar xf $(SRCDIR)/mpfr/mpfr-$(MPFR_VERSION).tar.bz2 && \
-	    mv mpfr-$(MPFR_VERSION) gcc-$(GCC_VERSION)/mpfr && \
+	    mv mpfr-$(MPFR_VERSION) gcc/mpfr && \
 	  cd .. ; \
 	fi ;
-	set -e; cd BUILD && \
-	  for i in ../patches/???-gcc-$(GCC_VERSION).patch ; do \
-	    patch -p0 < "$$i" ; \
-	  done
-	printf -- "`svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \(....\)-\(..\)-\(..\).*+\1\2\3+'`" > BUILD/gcc-$(GCC_VERSION)/gcc/DATESTAMP
-	printf -- "Native Client r`svn info | grep 'Last Changed Rev' | sed -e s'+Last Changed Rev: ++'`" > BUILD/gcc-$(GCC_VERSION)/gcc/DEV-PHASE
 
-# create gcc source directory, and mark that we've done that
-BUILD/stamp-gcc-$(GCC_VERSION): Makefile
-	rm -rf BUILD/gcc-$(GCC_VERSION)
-	$(MAKE) -f $(THISMAKEFILE) BUILD/gcc-$(GCC_VERSION)
-	touch $@
-
-# copy gdb, apply patches
-BUILD/gdb-$(GDB_VERSION): | BUILD
+# Unpack gdb, apply patches.
+SRC/gdb: | SRC
 	@echo "Unpacking gdb-$(GDB_VERSION)"
-	cd BUILD && tar xf $(SRCDIR)/gdb/gdb-$(GDB_VERSION).tar.bz2
-	set -e; cd BUILD && \
-	  for i in ../patches/gdb-$(GDB_VERSION)/????-*.patch ; do \
-	    patch -p0 < "$$i" ; \
-	  done
-	printf -- "--- BUILD/gdb-$(GDB_VERSION)/gdb/version.in\n\
-	+++ BUILD/gdb-$(GDB_VERSION)/gdb/version.in\n\
+	rm -rf SRC/gdb-$(GDB_VERSION)
+	cd SRC && tar xf $(SRCDIR)/gdb/gdb-$(GDB_VERSION).tar.bz2
+	mv SRC/gdb-$(GDB_VERSION) SRC/gdb
+	printf -- "--- SRC/gdb/gdb/version.in\n\
+	+++ SRC/gdb/gdb/version.in\n\
 	@@ -1 +1 @@\n\
 	-$(GDB_VERSION)\n\
 	+$(GDB_VERSION) `svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \(....\)-\(..\)-\(..\).*+\1\2\3+'` (Native Client r`svn info | grep 'Last Changed Rev' | sed -e s'+Last Changed Rev: ++'`)\n" |\
 	patch -p0
+	set -e; cd SRC && \
+	  for i in ../patches/gdb-$(GDB_VERSION)/????-*.patch ; do \
+	    patch -p1 < "$$i" ; \
+	  done
 
-# create gdb source directory, and mark that we've done that
-BUILD/stamp-gdb-$(GDB_VERSION): #Makefile
-	rm -rf BUILD/gdb-$(GDB_VERSION)
-	$(MAKE) -f $(THISMAKEFILE) BUILD/gdb-$(GDB_VERSION)
+# Create gdb source directory, and mark that we've done that.
+SRC/stamp-gdb: | SRC
+	rm -rf SRC/gdb
+	$(MAKE) -f $(THISMAKEFILE) SRC/gdb
 	touch $@
+
+# Create the build directories for compiled binaries.
+BUILD:
+	mkdir BUILD
 
 ##################################################################
 # Create the SDK output directories.
@@ -280,14 +308,14 @@ sdkdirs:
 # binutils:
 # Builds the cross assembler, linker, archiver, etc.
 ##################################################################
-BUILD/stamp-binutils: BUILD/stamp-binutils-$(BINUTILS_VERSION) Makefile
+BUILD/stamp-binutils: SRC/stamp-binutils | BUILD
 	rm -rf BUILD/build-binutils-$(CROSSARCH)
 	mkdir BUILD/build-binutils-$(CROSSARCH)
 	cd BUILD/build-binutils-$(CROSSARCH) && \
 	  CC="gcc" \
 	  CFLAGS="-m32 -O2 -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)" \
 	  LDFLAGS="-s" \
-	  ../binutils-$(BINUTILS_VERSION)/configure \
+	  ../../SRC/binutils/configure \
 	    --prefix=$(SDKROOT) \
 	    --target=${CROSSARCH}
 	$(MAKE) -C BUILD/build-binutils-$(CROSSARCH) all
@@ -302,14 +330,14 @@ binutils: BUILD/stamp-binutils
 # pregcc:
 # Builds the cross gcc used to build the libraries.
 ##################################################################
-BUILD/stamp-pregcc: BUILD/stamp-gcc-$(GCC_VERSION) Makefile
+BUILD/stamp-pregcc: SRC/stamp-gcc | BUILD
 	rm -rf BUILD/build-pregcc-$(CROSSARCH)
 	mkdir BUILD/build-pregcc-$(CROSSARCH)
 	cd BUILD/build-pregcc-$(CROSSARCH) && \
 	  PATH=$(BUILDPATH) CC="gcc" \
 		CFLAGS="-m32 -Dinhibit_libc -D__gthr_posix_h -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)" \
 	  LDFLAGS="-s" \
-	    ../gcc-$(GCC_VERSION)/configure \
+	    ../../SRC/gcc/configure \
 	      --prefix=$(SDKROOT) \
 	      --without-headers \
 	      --disable-libmudflap \
@@ -347,7 +375,7 @@ pregcc: BUILD/stamp-pregcc
 # NOTE: removes the default pthread.h to enable correct install
 # by the Native Client threads package build.
 ##################################################################
-BUILD/stamp-newlib: BUILD/stamp-newlib-$(NEWLIB_VERSION) Makefile
+BUILD/stamp-newlib: SRC/stamp-newlib | BUILD
 	rm -rf BUILD/build-newlib-$(CROSSARCH)
 	mkdir BUILD/build-newlib-$(CROSSARCH)
 	(cd $(DESTDIR)$(SDKROOT)/$(CROSSARCH) ; \
@@ -359,12 +387,12 @@ BUILD/stamp-newlib: BUILD/stamp-newlib-$(NEWLIB_VERSION) Makefile
 	    ln -s ../nacl64/lib/32 lib; \
 	    ln -s ../nacl64/include; )
 	../src/trusted/service_runtime/export_header.py ../src/trusted/service_runtime/include \
-		BUILD/newlib-$(NEWLIB_VERSION)/newlib/libc/sys/nacl
+		SRC/newlib/newlib/libc/sys/nacl
 	if [ "x$(CROSSARCH)" = "xnacl64" ] ; then \
 	  cd BUILD/build-newlib-$(CROSSARCH) && \
 	    PATH=$(BUILDPATH) \
 		  CFLAGS="-O2" \
-	      ../newlib-$(NEWLIB_VERSION)/configure \
+	      ../../SRC/newlib/configure \
 			  --disable-libgloss \
 			  --enable-newlib-iconv \
 			  --enable-newlib-io-long-long \
@@ -384,7 +412,7 @@ BUILD/stamp-newlib: BUILD/stamp-newlib-$(NEWLIB_VERSION) Makefile
 	  cd BUILD/build-newlib-$(CROSSARCH) && \
 	    PATH=$(BUILDPATH) \
 		  CFLAGS="-O2" \
-	      ../newlib-$(NEWLIB_VERSION)/configure \
+	      ../../SRC/newlib/configure \
 			  --disable-libgloss \
 			  --enable-newlib-iconv \
 			  --enable-newlib-io-long-long \
@@ -413,7 +441,7 @@ newlib: BUILD/stamp-newlib
 # gcc:
 # Builds the gcc that will be used to build applications.
 ##################################################################
-BUILD/stamp-gcc: BUILD/stamp-gcc-$(GCC_VERSION) Makefile
+BUILD/stamp-gcc: SRC/stamp-gcc | BUILD
 	rm -rf BUILD/build-gcc-$(CROSSARCH)
 	mkdir BUILD/build-gcc-$(CROSSARCH)
 ifeq ($(CYGWIN17), 1)
@@ -429,16 +457,16 @@ endif
 		CFLAGS_FOR_TARGET="-O2 -g" \
 		CXXFLAGS_FOR_TARGET="-O2 -g" \
 	  LDFLAGS="-s" \
-	    ../gcc-$(GCC_VERSION)/configure \
+	    ../../SRC/gcc/configure \
 	      --prefix=$(SDKROOT) \
-				--with-newlib \
+	      --with-newlib \
 	      --enable-threads=nacl \
 	      --enable-tls \
 	      --disable-libmudflap \
 	      --disable-decimal-float \
 	      --disable-libssp \
 	      --disable-shared \
-				--disable-libgomp \
+	      --disable-libgomp \
 	      --disable-libstdcxx-pch \
 	      --enable-languages="c,c++" \
 	      --target=$(CROSSARCH) ;
@@ -497,8 +525,8 @@ gcc: BUILD/stamp-gcc
 ##################################################################
 # TODO: Add 64-bit support.
 # Only linux is supported.
-BUILD/stamp-gdb: BUILD/stamp-gdb-$(GDB_VERSION) #Makefile
-	case $$(BUILD/gdb-$(GDB_VERSION)/config.guess) in \
+BUILD/stamp-gdb: SRC/stamp-gdb | BUILD
+	case $$(SRC/gdb/config.guess) in \
 	*-linux*) ;; \
 	*) echo "Unsupported host" >&2 ; false ;; \
 	esac
@@ -506,13 +534,13 @@ BUILD/stamp-gdb: BUILD/stamp-gdb-$(GDB_VERSION) #Makefile
 	mkdir BUILD/build-gdb-$(CROSSARCH)
 	CC=gcc ; \
 	BUILD= ; \
-	case $$(BUILD/gdb-$(GDB_VERSION)/config.guess) in \
+	case $$(SRC/gdb/config.guess) in \
 	x86_64-*) CC="gcc -m32" ; BUILD=--build=i686-linux ;; \
 	esac ; \
 	cd BUILD/build-gdb-$(CROSSARCH) && \
 	  CC="$${CC}" \
 	  LDFLAGS="-s" \
-	  ../gdb-$(GDB_VERSION)/configure \
+	  ../../SRC/gdb/configure \
 	    --prefix=$(SDKROOT) \
 	    $${BUILD} \
 	    --target=nacl
@@ -629,7 +657,7 @@ else
 endif
 
 ##################################################################
-# Build the entire sdk
+# Build the entire toolchain.
 ##################################################################
 
 build: ALWAYS
@@ -642,7 +670,7 @@ build: ALWAYS
 	# We need libnacl.a for gfortran, but we don't have a c++ yet
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries_nocpp
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-gcc
-	case $$(BUILD/binutils-$(BINUTILS_VERSION)/config.guess) in \
+	case $$(SRC/binutils/config.guess) in \
 	*-linux*) $(MAKE) -f $(THISMAKEFILE) BUILD/stamp-gdb ;; \
 	esac
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries
@@ -663,54 +691,17 @@ check: ALWAYS
 	  SELLDR="../scons-out/dbg-linux-x86-$(BITSPLATFORM)/staging/sel_ldr"
 
 ##################################################################
-# Build an updated set of patches from the current build versions.
-##################################################################
-
-PRISTINE:
-	mkdir PRISTINE
-	cd PRISTINE && tar xf $(SRCDIR)/binutils/binutils-$(BINUTILS_VERSION).tar.bz2
-	cd PRISTINE && tar xf $(SRCDIR)/newlib/newlib-$(NEWLIB_VERSION).tar.gz
-	cd PRISTINE && tar xf $(SRCDIR)/gcc/gcc-core-$(GCC_VERSION).tar.bz2
-	cd PRISTINE && tar xf $(SRCDIR)/gcc/gcc-g++-$(GCC_VERSION).tar.bz2
-	cd PRISTINE && tar xf $(SRCDIR)/gdb/gdb-$(GDB_VERSION).tar.bz2
-
-BUILD/binutils_patchfile: | PRISTINE
-	-(cd BUILD; \
-    diff -Naur ../PRISTINE/binutils-$(BINUTILS_VERSION) \
-				binutils-$(BINUTILS_VERSION) >  binutils_patchfile)
-
-BUILD/newlib_patchfile: | PRISTINE
-	-(cd BUILD; \
-    diff -Naur ../PRISTINE/newlib-$(NEWLIB_VERSION) \
-				newlib-$(NEWLIB_VERSION) >  newlib_patchfile)
-
-BUILD/gcc_patchfile: | PRISTINE
-	-(cd BUILD; \
-    diff -Naur ../PRISTINE/gcc-$(GCC_VERSION) \
-				gcc-$(GCC_VERSION) >  gcc_patchfile)
-
-BUILD/gdb_patchfile: | PRISTINE
-	-(cd BUILD; \
-    diff -Naur ../PRISTINE/gdb-$(GDB_VERSION) \
-				gdb-$(GDB_VERSION) >  gdb_patchfile)
-
-patches: BUILD/binutils_patchfile \
-				 BUILD/newlib_patchfile \
-				 BUILD/gcc_patchfile \
-				 BUILD/gdb_patchfile
-
-##################################################################
-# Build an SDK tarball.
+# Build a tarball.
 ##################################################################
 TARBALL_FILE=$(shell pwd)/BUILD/$(SDKNAME).tar
 tarball:
 	(cd $(SDKLOC); tar -cvhf $(TARBALL_FILE) $(SDKNAME); gzip $(TARBALL_FILE))
 
 ##################################################################
-# Remove the BUILD directory and PRISTINE versions used for patches.
+# Remove the BUILD directory.
 # Library builds are maintained by scons.
 ##################################################################
 clean:
-	-rm -rf BUILD PRISTINE
+	-rm -rf BUILD
 
 .PHONY: ALWAYS
