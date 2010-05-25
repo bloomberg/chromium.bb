@@ -1110,7 +1110,6 @@ END_MSG_MAP()
 
     web_browser2->Navigate2(url.AsInput(), &flags, &empty, &empty,
                             http_headers.AsInput());
-    web_browser2->put_Visible(VARIANT_TRUE);
   }
 
   ScopedBstr url_;
