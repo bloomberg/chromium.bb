@@ -3019,3 +3019,10 @@
    fun:_ZN9TestSuite3RunEv
    fun:main
 }
+{
+   bug_44975
+   Memcheck:Addr4
+   fun:event_del
+   ...
+   fun:_ZN61MessageLoopTest_FileDescriptorWatcherOutlivesMessageLoop_Test8TestBodyEv
+}
