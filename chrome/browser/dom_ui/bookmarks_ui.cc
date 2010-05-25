@@ -8,12 +8,9 @@
 #include "base/message_loop.h"
 #include "base/ref_counted_memory.h"
 #include "base/singleton.h"
-#include "base/string_piece.h"
-#include "base/string_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
-#include "grit/browser_resources.h"
 #include "grit/theme_resources.h"
 
 ////////////////////////////////////////////////////////////////////////////////
