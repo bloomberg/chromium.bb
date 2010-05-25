@@ -11,6 +11,7 @@
 
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
+#include "base/scoped_ptr.h"
 #include "base/singleton.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_switches.h"
@@ -409,7 +410,7 @@ class ExtensionImpl : public ExtensionBase {
   // Common code for starting an API request to the browser. |value_args|
   // contains the request's arguments.
   static v8::Handle<v8::Value> StartRequestCommon(
-      const v8::Arguments& args, ListValue* value_args) {
+      const v8::Arguments& args, const ListValue& value_args) {
     // Get the current RenderView so that we can send a routed IPC message from
     // the correct source.
     RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
@@ -440,7 +441,7 @@ class ExtensionImpl : public ExtensionBase {
     GetPendingRequestMap()[request_id].reset(new PendingRequest(
         current_context, name));
 
-    renderview->SendExtensionRequest(name, *value_args, source_url,
+    renderview->SendExtensionRequest(name, value_args, source_url,
                                      request_id, has_callback);
 
     return v8::Undefined();
@@ -451,16 +452,18 @@ class ExtensionImpl : public ExtensionBase {
   static v8::Handle<v8::Value> StartRequest(const v8::Arguments& args) {
     std::string str_args = *v8::String::Utf8Value(args[1]);
     base::JSONReader reader;
-    Value* value_args = reader.JsonToValue(str_args, false, false);
+    scoped_ptr<Value> value_args;
+    value_args.reset(reader.JsonToValue(str_args, false, false));
 
     // Since we do the serialization in the v8 extension, we should always get
     // valid JSON.
-    if (!value_args || !value_args->IsType(Value::TYPE_LIST)) {
+    if (!value_args.get() || !value_args->IsType(Value::TYPE_LIST)) {
       NOTREACHED() << "Invalid JSON passed to StartRequest.";
       return v8::Undefined();
     }
 
-    return StartRequestCommon(args, static_cast<ListValue*>(value_args));
+    return StartRequestCommon(args, static_cast<const ListValue&>(
+        *value_args.get()));
   }
 
   // A special request for setting the extension action icon. This function
@@ -513,8 +516,8 @@ class ExtensionImpl : public ExtensionBase {
                        details->Get(v8::String::New("tabId"))->Int32Value());
     }
 
-    ListValue* list_value = new ListValue();
-    list_value->Append(dict);
+    ListValue list_value;
+    list_value.Append(dict);
 
     return StartRequestCommon(args, list_value);
   }
