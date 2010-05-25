@@ -11,8 +11,8 @@
 
 // Note: On Linux, this test currently only fully works on Debug builds.
 // See comments in the #ifdef soup if you intend to change this.
-// TODO(jar): BUG: 32070: Test is disabled... should be enabled.
-TEST(StackTrace, DISABLED_OutputToStream) {
+// Flaky, crbug.com/32070.
+TEST(StackTrace, FLAKY_OutputToStream) {
   StackTrace trace;
 
   // Dump the trace into a string.
@@ -92,17 +92,15 @@ TEST(StackTrace, DISABLED_OutputToStream) {
 #endif  // define(OS_MACOSX)
 }
 
-// The test is used for manual testing (i.e. see the raw output).
-// To run the test use the flags:
-// --gtest_filter='*DebugOutputToStream' --gtest_also_run_disabled_tests
-TEST(StackTrace, DISABLED_DebugOutputToStream) {
+// The test is used for manual testing, e.g., to see the raw output.
+TEST(StackTrace, DebugOutputToStream) {
   StackTrace trace;
   std::ostringstream os;
   trace.OutputToStream(&os);
   LOG(INFO) << os.str();
 }
 
-// The test is used for manual testing. See the comment above.
-TEST(StackTrace, DISABLED_DebugPrintBacktrace) {
+// The test is used for manual testing, e.g., to see the raw output.
+TEST(StackTrace, DebugPrintBacktrace) {
   StackTrace().PrintBacktrace();
 }
