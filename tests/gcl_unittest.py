@@ -34,8 +34,8 @@ class GclUnittest(GclTestsBase):
         'CODEREVIEW_SETTINGS', 'CODEREVIEW_SETTINGS_FILE',
         'CMDchange', 'CMDchanges', 'CMDcommit', 'CMDdelete', 'CMDdeleteempties',
         'CMDdescription', 'CMDdiff', 'CMDhelp', 'CMDlint', 'CMDnothave',
-        'CMDopened', 'CMDpresubmit', 'CMDrename', 'CMDsettings', 'CMDstatus',
-        'CMDtry', 'CMDupload',
+        'CMDopened', 'CMDpassthru', 'CMDpresubmit', 'CMDrename', 'CMDsettings',
+        'CMDstatus', 'CMDtry', 'CMDupload',
         'ChangeInfo', 'DEFAULT_LINT_IGNORE_REGEX',
         'DEFAULT_LINT_REGEX', 'CheckHomeForFile',
         'DoPresubmitChecks', 'ErrorExit', 'FILES_CACHE', 'FilterFlag',
@@ -48,9 +48,9 @@ class GclUnittest(GclTestsBase):
         'OptionallyDoPresubmitChecks', 'REPOSITORY_ROOT',
         'RunShell', 'RunShellWithReturnCode', 'SVN',
         'SendToRietveld', 'TryChange', 'UnknownFiles', 'Warn',
-        'breakpad', 'gclient_utils', 'getpass', 'main', 'os', 'random', 're',
-        'shutil', 'string', 'subprocess', 'sys', 'tempfile', 'time', 'upload',
-        'urllib2',
+        'breakpad', 'gclient_utils', 'getpass', 'main', 'need_change', 'os',
+        'random', 're', 'shutil', 'string', 'subprocess', 'sys', 'tempfile',
+        'time', 'upload', 'urllib2',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(gcl, members)
@@ -88,7 +88,7 @@ class GclUnittest(GclTestsBase):
     gcl.sys.stdout.write(mox.StrContains('GCL is a wrapper for Subversion'))
     gcl.sys.stdout.write('\n')
     self.mox.ReplayAll()
-    gcl.CMDhelp()
+    gcl.CMDhelp([])
 
 
 class ChangeInfoUnittest(GclTestsBase):
@@ -185,6 +185,7 @@ class CMDuploadUnittest(GclTestsBase):
     self.mox.StubOutWithMock(gcl, 'GetRepositoryRoot')
     self.mox.StubOutWithMock(gcl, 'SendToRietveld')
     self.mox.StubOutWithMock(gcl, 'TryChange')
+    self.mox.StubOutWithMock(gcl.ChangeInfo, 'Load')
 
   def testNew(self):
     change_info = self.mox.CreateMock(gcl.ChangeInfo)
@@ -195,7 +196,6 @@ class CMDuploadUnittest(GclTestsBase):
     change_info.files = [('A', 'aa'), ('M', 'bb')]
     change_info.patch = None
     files = [item[1] for item in change_info.files]
-    args = ['--foo=bar']
     gcl.CheckHomeForFile('.gcl_upload_no_try').AndReturn(None)
     gcl.DoPresubmitChecks(change_info, False, True).AndReturn(True)
     gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
@@ -205,24 +205,28 @@ class CMDuploadUnittest(GclTestsBase):
     gcl.os.chdir('proout')
     change_info.GetFileNames().AndReturn(files)
     gcl.GenerateDiff(files)
-    gcl.upload.RealMain(['upload.py', '-y', '--server=my_server', '--foo=bar',
-        "--message=''", '--issue=1'], change_info.patch).AndReturn(("1",
+    gcl.upload.RealMain(['upload.py', '-y', '--server=my_server',
+                         '-r', 'georges@example.com',
+                         '--message=\'\'', '--issue=1'],
+                         change_info.patch).AndReturn(("1",
                                                                     "2"))
     gcl.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=0.5)
     gcl.GetCodeReviewSetting('TRY_ON_UPLOAD').AndReturn('True')
     gcl.TryChange(change_info, [], swallow_exception=True)
     gcl.os.chdir('somewhere')
     change_info.Save()
+    gcl.GetRepositoryRoot().AndReturn(self.fake_root_dir)
+    gcl.ChangeInfo.Load('naame', self.fake_root_dir, True, True
+        ).AndReturn(change_info)
     self.mox.ReplayAll()
 
-    gcl.CMDupload(change_info, args)
+    gcl.CMDupload(['naame', '-r', 'georges@example.com'])
 
   def testServerOverride(self):
     change_info = gcl.ChangeInfo('naame', 0, 0, 'deescription',
                                  [('A', 'aa'), ('M', 'bb')],
                                 self.fake_root_dir)
     self.mox.StubOutWithMock(change_info, 'Save')
-    args = ['--server=a', '--no_watchlists']
     change_info.Save()
     gcl.CheckHomeForFile('.gcl_upload_no_try').AndReturn(None)
     gcl.DoPresubmitChecks(change_info, False, True).AndReturn(True)
@@ -241,16 +245,18 @@ class CMDuploadUnittest(GclTestsBase):
     gcl.os.remove('descfile')
     gcl.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=0.5)
     gcl.os.chdir('somewhere')
+    gcl.GetRepositoryRoot().AndReturn(self.fake_root_dir)
+    gcl.ChangeInfo.Load('naame', self.fake_root_dir, True, True
+        ).AndReturn(change_info)
     self.mox.ReplayAll()
 
-    gcl.CMDupload(change_info, args)
+    gcl.CMDupload(['naame', '--server=a', '--no_watchlists'])
 
   def testNoTry(self):
     change_info = gcl.ChangeInfo('naame', 0, 0, 'deescription',
                                  [('A', 'aa'), ('M', 'bb')],
                                  self.fake_root_dir)
     change_info.Save = self.mox.CreateMockAnything()
-    args = ['--no-try', '--no_watchlists']
     change_info.Save()
     gcl.DoPresubmitChecks(change_info, False, True).AndReturn(True)
     gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
@@ -268,16 +274,18 @@ class CMDuploadUnittest(GclTestsBase):
     gcl.os.remove('descfile')
     gcl.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=0.5)
     gcl.os.chdir('somewhere')
+    gcl.GetRepositoryRoot().AndReturn(self.fake_root_dir)
+    gcl.ChangeInfo.Load('naame', self.fake_root_dir, True, True
+        ).AndReturn(change_info)
     self.mox.ReplayAll()
 
-    gcl.CMDupload(change_info, args)
+    gcl.CMDupload(['naame', '--no-try', '--no_watchlists'])
 
   def testNormal(self):
     change_info = gcl.ChangeInfo('naame', 0, 0, 'deescription',
                                  [('A', 'aa'), ('M', 'bb')],
                                  self.fake_root_dir)
     self.mox.StubOutWithMock(change_info, 'Save')
-    args = ['--no_watchlists']
     change_info.Save()
     gcl.CheckHomeForFile('.gcl_upload_no_try').AndReturn(None)
     gcl.DoPresubmitChecks(change_info, False, True).AndReturn(True)
@@ -298,9 +306,12 @@ class CMDuploadUnittest(GclTestsBase):
     gcl.GetCodeReviewSetting('TRY_ON_UPLOAD').AndReturn('True')
     gcl.TryChange(change_info, [], swallow_exception=True)
     gcl.os.chdir('somewhere')
+    gcl.GetRepositoryRoot().AndReturn(self.fake_root_dir)
+    gcl.ChangeInfo.Load('naame', self.fake_root_dir, True, True
+        ).AndReturn(change_info)
     self.mox.ReplayAll()
 
-    gcl.CMDupload(change_info, args)
+    gcl.CMDupload(['naame', '--no_watchlists'])
     self.assertEquals(change_info.issue, 1)
     self.assertEquals(change_info.patchset, 2)
 
