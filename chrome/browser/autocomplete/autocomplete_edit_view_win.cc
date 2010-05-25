@@ -1735,7 +1735,27 @@ void AutocompleteEditViewWin::HandleKeystroke(UINT message,
                                               UINT flags) {
   ScopedFreeze freeze(this, GetTextObjectModel());
   OnBeforePossibleChange();
-  DefWindowProc(message, key, MAKELPARAM(repeat_count, flags));
+
+  if (key == base::VKEY_HOME || key == base::VKEY_END) {
+    // DefWindowProc() might reset the keyboard layout when it receives a
+    // keydown event for VKEY_HOME or VKEY_END. When the window was created
+    // with WS_EX_LAYOUTRTL and the current keyboard layout is not a RTL one,
+    // if the input text is pure LTR text, the layout changes to the first RTL
+    // keyboard layout in keyboard layout queue; if the input text is
+    // bidirectional text, the layout changes to the keyboard layout of the
+    // first RTL character in input text. When the window was created without
+    // WS_EX_LAYOUTRTL and the current keyboard layout is not a LTR one, if the
+    // input text is pure RTL text, the layout changes to English; if the input
+    // text is bidirectional text, the layout changes to the keyboard layout of
+    // the first LTR character in input text. Such keyboard layout change
+    // behavior is surprising and inconsistent with keyboard behavior
+    // elsewhere, so reset the layout in this case.
+    HKL layout = GetKeyboardLayout(0);
+    DefWindowProc(message, key, MAKELPARAM(repeat_count, flags));
+    ActivateKeyboardLayout(layout, KLF_REORDER);
+  } else {
+    DefWindowProc(message, key, MAKELPARAM(repeat_count, flags));
+  }
 
   // CRichEditCtrl automatically turns on IMF_AUTOKEYBOARD when the user
   // inputs an RTL character, making it difficult for the user to control
