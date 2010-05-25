@@ -382,8 +382,6 @@
             'browser/metrics/metrics_service_uitest.cc',
             # leaves an extra window on screen after test completes.
             'browser/sessions/session_restore_uitest.cc',
-            # puts up modal dialogs.
-            'browser/unload_uitest.cc',
             'common/logging_chrome_uitest.cc',
             'test/ui/fast_shutdown_uitest.cc',
             'test/ui/layout_plugin_uitest.cc',

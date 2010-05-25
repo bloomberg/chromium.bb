@@ -176,8 +176,7 @@ class UnloadTest : public UITest {
     EXPECT_TRUE((button & available_buttons) != 0);
     EXPECT_TRUE(automation()->ClickAppModalDialogButton(button));
 #else
-    // TODO(port): port this function if and when the tests that use it are
-    // enabled (currently they are not being run even on windows).
+    // TODO(port): port this function to Mac.
     NOTIMPLEMENTED();
 #endif
   }
@@ -286,9 +285,21 @@ TEST_F(UnloadTest, BrowserCloseUnload) {
   LoadUrlAndQuitBrowser(UNLOAD_HTML, L"unload");
 }
 
+#if defined(OS_LINUX)
+// Hangs on Linux: http://crbug.com/45021
+#define BrowserCloseBeforeUnloadOK DISABLED_BrowserCloseBeforeUnloadOK
+#define BrowserCloseBeforeUnloadCancel DISABLED_BrowserCloseBeforeUnloadCancel
+#define BrowserCloseWithInnerFocusedFrame \
+    DISABLED_BrowserCloseWithInnerFocusedFrame
+#elif defined(OS_MACOSX)
+// ClickModalDialogButton doesn't work on Mac: http://crbug.com/45031
+#define BrowserCloseBeforeUnloadOK DISABLED_BrowserCloseBeforeUnloadOK
+#define BrowserCloseBeforeUnloadCancel DISABLED_BrowserCloseBeforeUnloadCancel
+#define BrowserCloseWithInnerFocusedFrame \
+    DISABLED_BrowserCloseWithInnerFocusedFrame
+#endif
 // Tests closing the browser with a beforeunload handler and clicking
 // OK in the beforeunload confirm dialog.
-#if !defined(OS_LINUX)
 TEST_F(UnloadTest, BrowserCloseBeforeUnloadOK) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
@@ -331,7 +342,6 @@ TEST_F(UnloadTest, BrowserCloseWithInnerFocusedFrame) {
   WaitForBrowserClosed();
   EXPECT_FALSE(IsBrowserRunning());
 }
-#endif  // !defined(OS_LINUX)
 
 // Tests closing the browser with a beforeunload handler that takes
 // two seconds to run.
