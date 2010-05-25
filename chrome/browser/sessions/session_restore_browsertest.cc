@@ -13,9 +13,9 @@
 typedef InProcessBrowserTest SessionRestoreTest;
 
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
-// http://crbug.com/39476
+// Crashes on Linux Views: http://crbug.com/39476
 #define MAYBE_RestoreOnNewWindowWithNoTabbedBrowsers \
-        FAILS_RestoreOnNewWindowWithNoTabbedBrowsers
+        DISABLED_RestoreOnNewWindowWithNoTabbedBrowsers
 #else
 #define MAYBE_RestoreOnNewWindowWithNoTabbedBrowsers \
         RestoreOnNewWindowWithNoTabbedBrowsers
