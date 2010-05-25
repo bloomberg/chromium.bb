@@ -92,7 +92,6 @@ class NavigationTest(pyauto.PyUITest):
    # Open many tabs in 1st window
     num_tabs = 20
     orig_num_tabs = self.GetTabCount(windex)
-    print 'orig_num_tabs', orig_num_tabs
     for tindex in range(1, num_tabs):
       self.AppendTab(pyauto.GURL(urls[0]))
       self.assertEqual(orig_num_tabs + tindex, self.GetTabCount())

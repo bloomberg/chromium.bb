@@ -15,14 +15,19 @@
 #      example: 'test_basic.SimpleTest'
 # 3. or as an individual test
 #      example: 'test_basic.SimpleTest.testCanOpenGoogle'
+#
+# Tests beginning with '-' will be excluded.  This can be used to enforce
+# exclusions for a particular platform.
 
 {
   'all': [
+    'bookmark_bar',
     'bookmarks',
     'browser',
     'downloads',
     'history',
     'navigation',
+    'omnibox',
     'plugins',
     'prefs',
     'special_tabs',
@@ -31,21 +36,14 @@
 
   'win': [
     # testBookmarkBarVisible fails on windows. crbug.com/42823
-    # 'bookmark_bar.BookmarkBarTest.testBookmarkBarVisible',
-    'bookmark_bar.BookmarkBarTest.testBookmarkBarVisibleWait',
-    'omnibox',
+    '-bookmark_bar.BookmarkBarTest.testBookmarkBarVisible',
   ],
 
   'mac': [
-    'bookmark_bar.BookmarkBarTest.testBookmarkBarVisibleWait',
-    'bookmark_bar.BookmarkBarTest.testBookmarkBarVisibleWait',
-    'omnibox',
   ],
 
   'linux': [
-    'bookmark_bar.BookmarkBarTest.testBookmarkBarVisibleWait',
-    'bookmark_bar.BookmarkBarTest.testBookmarkBarVisibleWait',
-    # 'omnibox',  # http://crbug.com/44203
+    '-omnibox',  # http://crbug.com/44203
   ],
 
   # TODO(nirnimesh): Add a ChromeOS section

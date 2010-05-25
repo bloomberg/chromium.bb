@@ -634,32 +634,76 @@ class Main(object):
     """
     return os.path.dirname(__file__)
 
-  def _ListMissingTests(self):
-    """Print tests missing from PYAUTO_TESTS."""
-    def _GetTestsFrom(module_string):
-      try:
-        module = __import__(module_string)
-      except ImportError:  # Probably just a test script
-        return [module_string]
+  @staticmethod
+  def _GetTestsFromName(name):
+    """Get a list of all test names from the given string.
+
+    Args:
+      name: dot-separated string for a module, a test case or a test method.
+            Examples: omnibox  (a module)
+                      omnibox.OmniboxTest  (a test case)
+                      omnibox.OmniboxTest.testA  (a test method)
+
+    Returns:
+      [omnibox.OmniboxTest.testA, omnibox.OmniboxTest.testB, ...]
+    """
+    def _GetTestsFromTestCase(class_obj):
+      """Return all test method names from given class object."""
+      return [class_obj.__name__ + '.' + x for x in dir(class_obj) if
+              x.startswith('test')]
+
+    def _GetTestsFromModule(module):
+      """Return all test method names from the given module object."""
       tests = []
       for name in dir(module):
         obj = getattr(module, name)
         if (isinstance(obj, (type, types.ClassType)) and
             issubclass(obj, PyUITest) and obj != PyUITest):
-          tests += [module_string + "." + obj.__name__ + "." + x for x in \
-                    filter(lambda x: x.startswith('test'), dir(obj))]
+          tests.extend([module.__name__ + '.' + x for x in
+                        _GetTestsFromTestCase(obj)])
       return tests
+
+    module = None
+    # Locate the module
+    parts = name.split('.')
+    parts_copy = parts[:]
+    while parts_copy:
+      try:
+        module = __import__('.'.join(parts_copy))
+        break
+      except ImportError:
+        del parts_copy[-1]
+        if not parts_copy: raise
+    # We have the module. Pick the exact test method or class asked for.
+    parts = parts[1:]
+    obj = module
+    for part in parts:
+      obj = getattr(obj, part)
+
+    if type(obj) == types.ModuleType:
+      return _GetTestsFromModule(obj)
+    elif (isinstance(obj, (type, types.ClassType)) and
+          issubclass(obj, PyUITest) and obj != PyUITest):
+      return [module.__name__ + '.' + x for x in _GetTestsFromTestCase(obj)]
+    elif type(obj) == types.UnboundMethodType:
+      return [name]
+    else:
+      logging.warn('No tests in "%s"' % name)
+      return []
+
+  def _ListMissingTests(self):
+    """Print tests missing from PYAUTO_TESTS."""
     # Fetch tests from all test scripts
     all_test_files = filter(lambda x: x.endswith('.py'),
                             os.listdir(self.TestsDir()))
     all_tests_modules = [os.path.splitext(x)[0] for x in all_test_files]
     all_tests = reduce(lambda x, y: x + y,
-                       map(_GetTestsFrom, all_tests_modules))
+                       map(self._GetTestsFromName, all_tests_modules))
     # Fetch tests included by PYAUTO_TESTS
     pyauto_tests_file = os.path.join(self.TestsDir(), self._tests_filename)
     pyauto_tests = reduce(lambda x, y: x + y,
-                          map(_GetTestsFrom,
-                              self._GetTestNamesFrom(pyauto_tests_file)))
+                          map(self._GetTestsFromName,
+                              self._LoadTestNamesFrom(pyauto_tests_file)))
     for a_test in all_tests:
       if a_test not in pyauto_tests:
         print a_test
@@ -695,17 +739,28 @@ class Main(object):
         if not os.path.exists(pyauto_tests_file):
           logging.warn("%s missing. Cannot load tests." % pyauto_tests_file)
         else:
-          args = self._GetTestNamesFrom(pyauto_tests_file)
+          args = self._LoadTestNamesFrom(pyauto_tests_file)
     args = args * self._options.repeat
     logging.debug("Loading tests from %s", args)
     loaded_tests = unittest.defaultTestLoader.loadTestsFromNames(args)
     return loaded_tests
 
-  def _GetTestNamesFrom(self, filename):
-    contents = open(filename).read()
-    modules = eval(contents, {'__builtins__': None}, None)
-    args = modules.get('all', []) + \
-           modules.get(self._platform_map[sys.platform], [])
+  def _LoadTestNamesFrom(self, filename):
+    modules= PyUITest.EvalDataFrom(filename)
+    all_names = modules.get('all', []) + \
+                modules.get(self._platform_map[sys.platform], [])
+    args = []
+    excluded = []
+    # Find all excluded tests.  Excluded tests begin with '-'.
+    for name in all_names:
+      if name.startswith('-'):  # Exclude
+        excluded.extend(self._GetTestsFromName(name[1:]))
+      else:
+        args.extend(self._GetTestsFromName(name))
+    for name in excluded:
+      args.remove(name)
+    if excluded:
+      logging.debug('Excluded %d test(s): %s' % (len(excluded), excluded))
     return args
 
   def _Run(self):
