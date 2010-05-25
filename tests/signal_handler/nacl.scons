@@ -7,7 +7,8 @@
 Import('env')
 
 trusted_env = env.get('TRUSTED_ENV')
-if not (trusted_env.Bit('linux') and
+if not (trusted_env is not None and
+        trusted_env.Bit('linux') and
         env['BUILD_ARCHITECTURE'] == 'x86' and
         env['BUILD_SUBARCH'] == '32'):
   Return()
