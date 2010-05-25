@@ -334,6 +334,12 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                       int64 id,
                       bool* success);
 
+  // Set window dimensions.
+  // Uses the JSON interface for input/output.
+  void SetWindowDimensions(Browser* browser,
+                           DictionaryValue* args,
+                           IPC::Message* reply_message);
+
   // Get info about the chromium/chrome in use.
   // This includes things like version, executable name, executable path.
   // Uses the JSON interface for input/output.

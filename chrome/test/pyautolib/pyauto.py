@@ -434,24 +434,86 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     self.assertTrue(self.WaitUntil(
         lambda: len(self.GetDownloadsInfo().Downloads()) == num_downloads + 1))
 
+  def SetWindowDimensions(
+      self, x=None, y=None, width=None, height=None, windex=0):
+    """Set window dimensions.
+
+    All args are optional and current values will be preserved.
+    Arbitrarily large values will be handled gracefully by the browser.
+
+    Args:
+      x: window origin x
+      y: window origin y
+      width: window width
+      height: window height
+      windex: window index to work on. Defaults to 0 (first window)
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'SetWindowDimensions',
+    }
+    if x:
+      cmd_dict['x'] = x
+    if y:
+      cmd_dict['y'] = y
+    if width:
+      cmd_dict['width'] = width
+    if height:
+      cmd_dict['height'] = height
+    ret_dict = json.loads(self._SendJSONRequest(0, json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
+    return ret_dict
+
   def GetBrowserInfo(self):
     """Return info about the browser.
 
     This includes things like the version number, the executable name,
-    executable path, and so on.
+    executable path, pid info about the renderer/plugin/extension processes,
+    window dimensions. (See sample below)
 
     Returns:
-      a dictionary of properties about the browser
+      a dictionary
+
       Sample:
-        { u'BrowserProcessExecutableName': u'Chromium',
-          u'BrowserProcessExecutablePath': u'Chromium.app/Contents/'
-                                            'MacOS/Chromium',
-          u'ChromeVersion': u'6.0.401.0',
+      { u'browser_pid': 93737,
+        # Child processes are the processes for plugins and other workers.
+        u'child_process_path': u'.../Chromium.app/Contents/'
+                                'Versions/6.0.412.0/Chromium Helper.app/'
+                                'Contents/MacOS/Chromium Helper',
+        u'child_processes': [ { u'name': u'Shockwave Flash',
+                                u'pid': 93766,
+                                u'type': u'Plug-in'}],
+        # There's one extension process per extension.
+        u'extension_processes': [
+          { u'name': u'Webpage Screenshot', u'pid': 93938},
+          { u'name': u'Google Voice (by Google)', u'pid': 93852}],
+        u'properties': {
+          u'BrowserProcessExecutableName': u'Chromium',
+          u'BrowserProcessExecutablePath': u'Chromium.app/Contents/MacOS/'
+                                            'Chromium',
+          u'ChromeVersion': u'6.0.412.0',
           u'HelperProcessExecutableName': u'Chromium Helper',
           u'HelperProcessExecutablePath': u'Chromium Helper.app/Contents/'
-                                           'MacOS/Chromium Helper',
-          u'command_line_string': "command_line_string --with-flags"
-        }
+                                            'MacOS/Chromium Helper',
+          u'command_line_string': "COMMAND_LINE_STRING --WITH-FLAGS"},
+        # The order of the windows and tabs listed here will be the same as
+        # what shows up on screen.
+        u'windows': [ { u'index': 0,
+                        u'height': 1134,
+                        u'incognito': False,
+                        u'is_fullscreen': False,
+                        u'selected_tab': 0,
+                        u'tabs': [ { u'index': 0,
+                                     u'num_infobars': 0,
+                                     u'renderer_pid': 93747,
+                                     u'url': u'http://www.google.com/'},
+                                   { u'index': 1,
+                                     u'num_infobars': 0,
+                                     u'renderer_pid': 93919,
+                                     u'url': u'https://chrome.google.com/'}],
+                        u'width': 925,
+                        u'x': 26,
+                        u'y': 44}]}
 
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
@@ -462,7 +524,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     ret_dict = json.loads(self._SendJSONRequest(0, json.dumps(cmd_dict)))
     if ret_dict.has_key('error'):
       raise JSONInterfaceError(ret_dict['error'])
-    return ret_dict['properties']
+    return ret_dict
 
   def GetHistoryInfo(self, search_text=''):
     """Return info about browsing history.

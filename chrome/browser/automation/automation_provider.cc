@@ -34,6 +34,7 @@
 #include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_storage.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/browsing_data_remover.h"
@@ -46,6 +47,7 @@
 #include "chrome/browser/download/save_package.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
+#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
@@ -1592,6 +1594,30 @@ void AutomationProvider::RemoveBookmark(int handle,
   *success = false;
 }
 
+// Sample json input: { "command": "SetWindowDimensions",
+//                      "x": 20,         # optional
+//                      "y": 20,         # optional
+//                      "width": 800,    # optional
+//                      "height": 600 }  # optional
+void AutomationProvider::SetWindowDimensions(Browser* browser,
+                                             DictionaryValue* args,
+                                             IPC::Message* reply_message) {
+  gfx::Rect rect = browser->window()->GetRestoredBounds();
+  int x, y, width, height;
+  if (args->GetInteger(L"x", &x))
+    rect.set_x(x);
+  if (args->GetInteger(L"y", &y))
+    rect.set_y(y);
+  if (args->GetInteger(L"width", &width))
+    rect.set_width(width);
+  if (args->GetInteger(L"height", &height))
+    rect.set_height(height);
+  browser->window()->SetBounds(rect);
+  AutomationMsg_SendJSONRequest::WriteReplyParams(
+      reply_message, std::string("{}"), true);
+  Send(reply_message);
+}
+
 // Sample json input: { "command": "GetBrowserInfo" }
 // Refer to GetBrowserInfo() in chrome/test/pyautolib/pyauto.py for
 // sample json output.
@@ -1615,16 +1641,97 @@ void AutomationProvider::GetBrowserInfo(Browser* browser,
   properties->SetString(L"command_line_string",
       CommandLine::ForCurrentProcess()->command_line_string());
 #elif defined(OS_POSIX)
-  std::string command_line_string;
-  const std::vector<std::string>& argv =
-      CommandLine::ForCurrentProcess()->argv();
-  for (uint i = 0; i < argv.size(); ++i)
-    command_line_string += argv[i] + " ";
-  properties->SetString(L"command_line_string", command_line_string);
+  properties->SetString(L"command_line_string",
+      JoinString(CommandLine::ForCurrentProcess()->argv(), ' '));
 #endif
 
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   return_value->Set(L"properties", properties);
+
+  return_value->SetInteger(L"browser_pid", base::GetCurrentProcId());
+  // Add info about all windows in a list of dictionaries, one dictionary
+  // item per window.
+  ListValue* windows = new ListValue;
+  int windex = 0;
+  for (BrowserList::const_iterator it = BrowserList::begin();
+       it != BrowserList::end();
+       ++it, ++windex) {
+    DictionaryValue* browser_item = new DictionaryValue;
+    browser = *it;
+    browser_item->SetInteger(L"index", windex);
+    // Window properties
+    gfx::Rect rect = browser->window()->GetRestoredBounds();
+    browser_item->SetInteger(L"x", rect.x());
+    browser_item->SetInteger(L"y", rect.y());
+    browser_item->SetInteger(L"width", rect.width());
+    browser_item->SetInteger(L"height", rect.height());
+    browser_item->SetBoolean(L"fullscreen",
+                             browser->window()->IsFullscreen());
+    browser_item->SetInteger(L"selected_tab", browser->selected_index());
+    browser_item->SetBoolean(L"incognito",
+                             browser->profile()->IsOffTheRecord());
+    // For each window, add info about all tabs in a list of dictionaries,
+    // one dictionary item per tab.
+    ListValue* tabs = new ListValue;
+    for (int i = 0; i < browser->tab_count(); ++i) {
+      TabContents* tc = browser->GetTabContentsAt(i);
+      DictionaryValue* tab = new DictionaryValue;
+      tab->SetInteger(L"index", i);
+      tab->SetString(L"url", tc->GetURL().spec());
+      tab->SetInteger(L"renderer_pid",
+                      base::GetProcId(tc->GetRenderProcessHost()->GetHandle()));
+      tab->SetInteger(L"num_infobars", tc->infobar_delegate_count());
+      tabs->Append(tab);
+    }
+    browser_item->Set(L"tabs", tabs);
+
+    windows->Append(browser_item);
+  }
+  return_value->Set(L"windows", windows);
+
+  return_value->SetString(L"child_process_path",
+                          ChildProcessHost::GetChildPath(true).value());
+  // Child processes are the processes for plugins and other workers.
+  // Add all child processes in a list of dictionaries, one dictionary item
+  // per child process.
+  ListValue* child_processes = new ListValue;
+  for (ChildProcessHost::Iterator iter; !iter.Done(); ++iter) {
+    // Only add processes which are already started, since we need their handle.
+    if ((*iter)->handle() != base::kNullProcessHandle) {
+      ChildProcessInfo* info = *iter;
+      DictionaryValue* item = new DictionaryValue;
+      item->SetString(L"name", info->name());
+      item->SetString(L"type",
+                      ChildProcessInfo::GetTypeNameInEnglish(info->type()));
+      item->SetInteger(L"pid", base::GetProcId(info->handle()));
+      child_processes->Append(item);
+    }
+  }
+  return_value->Set(L"child_processes", child_processes);
+
+  // Add all extension processes in a list of dictionaries, one dictionary
+  // item per extension process.
+  ListValue* extension_processes = new ListValue;
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  for (ProfileManager::const_iterator it = profile_manager->begin();
+       it != profile_manager->end(); ++it) {
+    ExtensionProcessManager* process_manager =
+        (*it)->GetExtensionProcessManager();
+    ExtensionProcessManager::const_iterator jt;
+    for (jt = process_manager->begin(); jt != process_manager->end(); ++jt) {
+      ExtensionHost* ex_host = *jt;
+      // Don't add dead extension processes.
+      if (!ex_host->IsRenderViewLive())
+        continue;
+      DictionaryValue* item = new DictionaryValue;
+      item->SetString(L"name", ex_host->extension()->name());
+      item->SetInteger(
+          L"pid",
+          base::GetProcId(ex_host->render_process_host()->GetHandle()));
+      extension_processes->Append(item);
+    }
+  }
+  return_value->Set(L"extension_processes", extension_processes);
 
   base::JSONWriter::Write(return_value.get(), false, &json_return);
   AutomationMsg_SendJSONRequest::WriteReplyParams(
@@ -2135,6 +2242,8 @@ void AutomationProvider::SendJSONRequest(int handle,
 
   handler_map["GetPrefsInfo"] = &AutomationProvider::GetPrefsInfo;
   handler_map["SetPrefs"] = &AutomationProvider::SetPrefs;
+
+  handler_map["SetWindowDimensions"] = &AutomationProvider::SetWindowDimensions;
 
   handler_map["GetDownloadsInfo"] = &AutomationProvider::GetDownloadsInfo;
   handler_map["WaitForAllDownloadsToComplete"] =

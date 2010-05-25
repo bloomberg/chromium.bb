@@ -44,6 +44,7 @@
 
   'linux': [
     '-omnibox',  # http://crbug.com/44203
+    '-browser.BrowserTest.testWindowResize',  # crbug.com/44963
   ],
 
   # TODO(nirnimesh): Add a ChromeOS section
