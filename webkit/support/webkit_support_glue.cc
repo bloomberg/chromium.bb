@@ -45,7 +45,7 @@ bool IsProtocolSupportedForMedia(const GURL& url) {
   return false;
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MACOSX) && !defined(OS_WIN)
 // These functions should be implemented in platform_support_*.cc
 string16 GetLocalizedString(int message_id) {
   // TODO(tkent): implement this.
