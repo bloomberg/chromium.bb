@@ -138,11 +138,6 @@ void InProcessBrowserTest::SetUp() {
   // Don't show the first run ui.
   command_line->AppendSwitch(switches::kNoFirstRun);
 
-  // TODO(jcivelli): http://crbug.com/44089 We disable the app launcher on new
-  //                 tab behavior for now until it is the default behavior on
-  //                 all platforms.
-  command_line->AppendSwitch(switches::kDisableAppsPanel);
-
   // This is a Browser test.
   command_line->AppendSwitchWithValue(switches::kTestType,
                                       ASCIIToWide(kBrowserTestType));

@@ -505,9 +505,12 @@ NewTabUI::NewTabUI(TabContents* contents)
     if (ProfileSyncService::IsSyncEnabled()) {
       AddMessageHandler((new NewTabPageSyncHandler())->Attach(this));
     }
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableApps)) {
+    if (Extension::AppsAreEnabled()) {
       ExtensionsService* service = GetProfile()->GetExtensionsService();
-      AddMessageHandler((new AppLauncherHandler(service))->Attach(this));
+      // We might not have an ExtensionsService (on ChromeOS when not logged in
+      // for example).
+      if (service)
+        AddMessageHandler((new AppLauncherHandler(service))->Attach(this));
     }
 
     AddMessageHandler((new NewTabPageSetHomePageHandler())->Attach(this));

@@ -76,6 +76,12 @@ class ManifestTest : public testing::Test {
 };
 
 TEST_F(ManifestTest, AppsDisabledByDefault) {
+#if defined(OS_CHROMEOS)
+  // On ChromeOS, apps are enabled by default.
+  if (Extension::AppsAreEnabled())
+    return;
+#endif
+
   enable_apps_ = false;
   LoadAndExpectError("web_content_disabled.json", errors::kAppsNotEnabled);
   LoadAndExpectError("launch_local_path.json", errors::kAppsNotEnabled);

@@ -103,14 +103,6 @@ const char kDisableAltWinstation[]          = "disable-winsta";
 // Disable the ApplicationCache.
 const char kDisableApplicationCache[]       = "disable-application-cache";
 
-// Disables the app launcher popup when a new tab is created, directly creates
-// a tab instead. Takes precedence over kAppLauncherForNewTab.
-// TODO(jcivelli): http://crbug.com/44089 this flag is required for some tests
-//                 to work, as showing the app launcher is the default on
-//                 ChromeOS but not on other platforms. Tests should be fixed
-//                 once it becomes the default behavior on all platforms.
-const char kDisableAppsPanel[]              = "disable-apps-panel";
-
 // Replaces the audio IPC layer for <audio> and <video> with a mock audio
 // device, useful when using remote desktop or machines without sound cards.
 // This is temporary until we fix the underlying problem.
