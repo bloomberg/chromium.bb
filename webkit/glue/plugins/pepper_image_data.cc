@@ -136,9 +136,6 @@ void ImageData::Describe(PP_ImageDataDesc* desc) const {
 }
 
 void* ImageData::Map() {
-  if (!is_valid())
-    return NULL;
-
   if (!mapped_canvas_.get()) {
     mapped_canvas_.reset(platform_image_->Map());
     if (!mapped_canvas_.get())
@@ -161,9 +158,10 @@ void ImageData::Unmap() {
   // in the future to save some memory.
 }
 
-const SkBitmap& ImageData::GetMappedBitmap() const {
-  DCHECK(is_valid());
-  return mapped_canvas_->getTopPlatformDevice().accessBitmap(false);
+const SkBitmap* ImageData::GetMappedBitmap() const {
+  if (!mapped_canvas_.get())
+    return NULL;
+  return &mapped_canvas_->getTopPlatformDevice().accessBitmap(false);
 }
 
 void ImageData::Swap(ImageData* other) {

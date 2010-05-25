@@ -69,6 +69,10 @@ class PPAPITest : public UITest {
   }
 };
 
-TEST_F(PPAPITest, DISABLED_Test) {
+TEST_F(PPAPITest, DISABLED_DeviceContext2D) {
+  RunTest(FILE_PATH_LITERAL("test_device_context_2d.html"));
+}
+
+TEST_F(PPAPITest, DISABLED_ImageData) {
   RunTest(FILE_PATH_LITERAL("test_image_data.html"));
 }

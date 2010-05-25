@@ -70,6 +70,15 @@ PP_Resource Create(PP_Module module_id, int32_t width, int32_t height,
   return context->GetResource();
 }
 
+bool Describe(PP_Resource device_context,
+              int32_t* width, int32_t* height, bool* is_always_opaque) {
+  scoped_refptr<DeviceContext2D> context(
+      ResourceTracker::Get()->GetAsDeviceContext2D(device_context));
+  if (!context.get())
+    return false;
+  return context->Describe(width, height, is_always_opaque);
+}
+
 bool PaintImageData(PP_Resource device_context,
                     PP_Resource image,
                     int32_t x, int32_t y,
@@ -109,12 +118,24 @@ bool Flush(PP_Resource device_context,
   return context->Flush(callback, callback_data);
 }
 
+bool ReadImageData(PP_Resource device_context,
+                   PP_Resource image,
+                   int32_t x, int32_t y) {
+  scoped_refptr<DeviceContext2D> context(
+      ResourceTracker::Get()->GetAsDeviceContext2D(device_context));
+  if (!context.get())
+    return false;
+  return context->ReadImageData(image, x, y);
+}
+
 const PPB_DeviceContext2D ppb_devicecontext2d = {
   &Create,
+  &Describe,
   &PaintImageData,
   &Scroll,
   &ReplaceContents,
-  &Flush
+  &Flush,
+  &ReadImageData
 };
 
 }  // namespace
@@ -161,6 +182,7 @@ const PPB_DeviceContext2D* DeviceContext2D::GetInterface() {
 }
 
 bool DeviceContext2D::Init(int width, int height, bool is_always_opaque) {
+  // The underlying ImageData will validate the dimensions.
   image_data_ = new ImageData(module());
   if (!image_data_->Init(PP_IMAGEDATAFORMAT_BGRA_PREMUL, width, height, true) ||
       !image_data_->Map()) {
@@ -171,32 +193,38 @@ bool DeviceContext2D::Init(int width, int height, bool is_always_opaque) {
   return true;
 }
 
+bool DeviceContext2D::Describe(int32_t* width, int32_t* height,
+                               bool* is_always_opaque) {
+  *width = image_data_->width();
+  *height = image_data_->height();
+  *is_always_opaque = false;  // TODO(brettw) implement this.
+  return true;
+}
+
 bool DeviceContext2D::PaintImageData(PP_Resource image,
                                      int32_t x, int32_t y,
                                      const PP_Rect* src_rect) {
   scoped_refptr<ImageData> image_resource(
       ResourceTracker::Get()->GetAsImageData(image));
-  if (!image_resource.get() || !image_resource->is_valid())
+  if (!image_resource.get())
     return false;
-
-  const SkBitmap& new_image_bitmap = image_resource->GetMappedBitmap();
 
   QueuedOperation operation(QueuedOperation::PAINT);
   operation.paint_image = image_resource;
-  if (!ValidateAndConvertRect(src_rect, new_image_bitmap.width(),
-                              new_image_bitmap.height(),
+  if (!ValidateAndConvertRect(src_rect, image_resource->width(),
+                              image_resource->height(),
                               &operation.paint_src_rect))
     return false;
 
-  // Validate the bitmap position using the previously-validated rect.
-  if (x < 0 ||
-      static_cast<int64>(x) +
-      static_cast<int64>(operation.paint_src_rect.right()) >
+  // Validate the bitmap position using the previously-validated rect, there
+  // should be no painted area outside of the image.
+  int64 x64 = static_cast<int64>(x), y64 = static_cast<int64>(y);
+  if (x64 + static_cast<int64>(operation.paint_src_rect.x()) < 0 ||
+      x64 + static_cast<int64>(operation.paint_src_rect.right()) >
       image_data_->width())
     return false;
-  if (y < 0 ||
-      static_cast<int64>(y) +
-      static_cast<int64>(operation.paint_src_rect.bottom()) >
+  if (y64 + static_cast<int64>(operation.paint_src_rect.y()) < 0 ||
+      y64 + static_cast<int64>(operation.paint_src_rect.bottom()) >
       image_data_->height())
     return false;
   operation.paint_x = x;
@@ -231,7 +259,9 @@ bool DeviceContext2D::Scroll(const PP_Rect* clip_rect,
 bool DeviceContext2D::ReplaceContents(PP_Resource image) {
   scoped_refptr<ImageData> image_resource(
       ResourceTracker::Get()->GetAsImageData(image));
-  if (!image_resource.get() || !image_resource->is_valid())
+  if (!image_resource.get())
+    return false;
+  if (image_resource->format() != PP_IMAGEDATAFORMAT_BGRA_PREMUL)
     return false;
 
   if (image_resource->width() != image_data_->width() ||
@@ -239,17 +269,10 @@ bool DeviceContext2D::ReplaceContents(PP_Resource image) {
     return false;
 
   QueuedOperation operation(QueuedOperation::REPLACE);
-  operation.replace_image = new ImageData(image_resource->module());
+  operation.replace_image = image_resource;
   queued_operations_.push_back(operation);
 
-  // Swap the input image data with the new one we just made in the
-  // QueuedOperation. This way the plugin still gets to manage the reference
-  // count of the old object without having memory released out from under it.
-  // But it ensures that after this, if the plugin does try to use the image
-  // it gave us, those operations will fail.
-  operation.replace_image->Swap(image_resource.get());
-
-  return false;
+  return true;
 }
 
 bool DeviceContext2D::Flush(PPB_DeviceContext2D_FlushCallback callback,
@@ -293,11 +316,51 @@ bool DeviceContext2D::Flush(PPB_DeviceContext2D_FlushCallback callback,
   return true;
 }
 
+bool DeviceContext2D::ReadImageData(PP_Resource image, int32_t x, int32_t y) {
+  // Get and validate the image object to paint into.
+  scoped_refptr<ImageData> image_resource(
+      ResourceTracker::Get()->GetAsImageData(image));
+  if (!image_resource.get())
+    return false;
+  if (image_resource->format() != PP_IMAGEDATAFORMAT_BGRA_PREMUL)
+    return false;  // Must be in the right format.
+
+  // Validate the bitmap position.
+  if (x < 0 ||
+      static_cast<int64>(x) + static_cast<int64>(image_resource->width()) >
+      image_data_->width())
+    return false;
+  if (y < 0 ||
+      static_cast<int64>(y) + static_cast<int64>(image_resource->height()) >
+      image_data_->height())
+    return false;
+
+  ImageDataAutoMapper auto_mapper(image_resource.get());
+  if (!auto_mapper.is_valid())
+    return false;
+  skia::PlatformCanvas* dest_canvas = image_resource->mapped_canvas();
+
+  SkIRect src_irect = { x, y,
+                        x + image_resource->width(),
+                        y + image_resource->height() };
+  SkRect dest_rect = { SkIntToScalar(0),
+                       SkIntToScalar(0),
+                       SkIntToScalar(image_resource->width()),
+                       SkIntToScalar(image_resource->height()) };
+
+  // We want to replace the contents of the bitmap rather than blend.
+  SkPaint paint;
+  paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+  dest_canvas->drawBitmapRect(*image_data_->GetMappedBitmap(),
+                              &src_irect, dest_rect, &paint);
+  return true;
+}
+
 void DeviceContext2D::Paint(WebKit::WebCanvas* canvas,
                             const gfx::Rect& plugin_rect,
                             const gfx::Rect& paint_rect) {
   // We're guaranteed to have a mapped canvas since we mapped it in Init().
-  const SkBitmap& backing_bitmap = image_data_->GetMappedBitmap();
+  const SkBitmap& backing_bitmap = *image_data_->GetMappedBitmap();
 
 #if defined(OS_MACOSX)
   SkAutoLockPixels lock(backing_bitmap);
@@ -337,8 +400,7 @@ void DeviceContext2D::Paint(WebKit::WebCanvas* canvas,
 #endif
 }
 
-
-void DeviceContext2D::ExecutePaintImageData(const ImageData* image,
+void DeviceContext2D::ExecutePaintImageData(ImageData* image,
                                             int x, int y,
                                             const gfx::Rect& src_rect) {
   // Portion within the source image to cut out.
@@ -354,10 +416,15 @@ void DeviceContext2D::ExecutePaintImageData(const ImageData* image,
   // We're guaranteed to have a mapped canvas since we mapped it in Init().
   skia::PlatformCanvas* backing_canvas = image_data_->mapped_canvas();
 
+  // Ensure the source image is mapped to read from it.
+  ImageDataAutoMapper auto_mapper(image);
+  if (!auto_mapper.is_valid())
+    return;
+
   // We want to replace the contents of the bitmap rather than blend.
   SkPaint paint;
   paint.setXfermodeMode(SkXfermode::kSrc_Mode);
-  backing_canvas->drawBitmapRect(image->GetMappedBitmap(),
+  backing_canvas->drawBitmapRect(*image->GetMappedBitmap(),
                                  &src_irect, dest_rect, &paint);
 }
 

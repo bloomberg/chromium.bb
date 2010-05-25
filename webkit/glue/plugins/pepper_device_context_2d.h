@@ -38,6 +38,7 @@ class DeviceContext2D : public Resource {
   virtual DeviceContext2D* AsDeviceContext2D() { return this; }
 
   // PPB_DeviceContext2D functions.
+  bool Describe(int32_t* width, int32_t* height, bool* is_always_opaque);
   bool PaintImageData(PP_Resource image,
                       int32_t x, int32_t y,
                       const PP_Rect* src_rect);
@@ -45,6 +46,7 @@ class DeviceContext2D : public Resource {
   bool ReplaceContents(PP_Resource image);
   bool Flush(PPB_DeviceContext2D_FlushCallback callback,
              void* callback_data);
+  bool ReadImageData(PP_Resource image, int32_t x, int32_t y);
 
   void Paint(WebKit::WebCanvas* canvas,
              const gfx::Rect& plugin_rect,
@@ -53,7 +55,7 @@ class DeviceContext2D : public Resource {
  private:
   // Called internally to execute the different queued commands. The
   // parameters to these functions will have already been validated.
-  void ExecutePaintImageData(const ImageData* image,
+  void ExecutePaintImageData(ImageData* image,
                              int x, int y,
                              const gfx::Rect& src_rect);
   void ExecuteScroll(const gfx::Rect& clip, int dx, int dy);
