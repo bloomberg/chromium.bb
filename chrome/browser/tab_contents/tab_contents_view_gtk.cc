@@ -42,10 +42,6 @@ using WebKit::WebDragOperationsMask;
 
 namespace {
 
-// TODO(erg): I have no idea how to programatically figure out how wide the
-// vertical scrollbar is. Hack it with a hardcoded value for now.
-const int kScrollbarWidthHack = 25;
-
 // Called when the content view gtk widget is tabbed to, or after the call to
 // gtk_widget_child_focus() in TakeFocus(). We return true
 // and grab focus if we don't have it. The call to
