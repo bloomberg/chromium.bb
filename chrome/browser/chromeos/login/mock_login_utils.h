@@ -13,6 +13,7 @@
 class MockLoginUtils : public chromeos::LoginUtils {
  public:
   virtual ~MockLoginUtils() {}
+  MOCK_METHOD0(ShouldWaitForWifi, bool(void));
   MOCK_METHOD2(CompleteLogin, void(const std::string& username,
                                    std::vector<std::string> cookies));
   MOCK_METHOD1(CreateAuthenticator,

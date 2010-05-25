@@ -42,6 +42,9 @@ class MockNetworkLibrary : public NetworkLibrary {
                      const CellularNetworkVector&(void));
 
   MOCK_METHOD0(RequestWifiScan, void(void));
+  MOCK_METHOD0(ConnectToPreferredNetworkIfAvailable, bool(void));
+  MOCK_METHOD0(PreferredNetworkConnected, bool(void));
+  MOCK_METHOD0(PreferredNetworkFailed, bool(void));
   MOCK_METHOD4(ConnectToWifiNetwork, void(WifiNetwork, const string16&,
                                           const string16&, const string16&));
   MOCK_METHOD5(ConnectToWifiNetwork, void(const string16&, const string16&,

@@ -238,6 +238,18 @@ class NetworkLibrary {
   // Request a scan for new wifi networks.
   virtual void RequestWifiScan() = 0;
 
+  // Attempt to connect to the preferred network if available and it is set up.
+  // This call will return true if connection is started.
+  // If the preferred network is not available or not setup, returns false.
+  // Note: For dogfood purposes, we hardcode the preferred network to Google-A.
+  virtual bool ConnectToPreferredNetworkIfAvailable() = 0;
+
+  // Returns true if we are currently connected to the preferred network.
+  virtual bool PreferredNetworkConnected() = 0;
+
+  // Returns true if we failed to connect to the preferred network.
+  virtual bool PreferredNetworkFailed() = 0;
+
   // Connect to the specified wireless network with password.
   virtual void ConnectToWifiNetwork(WifiNetwork network,
                                     const string16& password,
@@ -351,6 +363,9 @@ class NetworkLibraryImpl : public NetworkLibrary,
   }
 
   virtual void RequestWifiScan();
+  virtual bool ConnectToPreferredNetworkIfAvailable();
+  virtual bool PreferredNetworkConnected();
+  virtual bool PreferredNetworkFailed();
   virtual void ConnectToWifiNetwork(WifiNetwork network,
                                     const string16& password,
                                     const string16& identity,
@@ -416,6 +431,10 @@ class NetworkLibraryImpl : public NetworkLibrary,
   // This methods loads the initial list of networks on startup and starts the
   // monitoring of network changes.
   void Init();
+
+  // Gets the WifiNetwork with the given name. Returns whether the wifi network
+  // was found or not.
+  bool GetWifiNetworkByName(const std::string& name, WifiNetwork* wifi);
 
   // Enables/disables the specified network device.
   void EnableNetworkDeviceType(ConnectionType device, bool enable);

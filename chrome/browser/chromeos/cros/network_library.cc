@@ -22,6 +22,8 @@ struct RunnableMethodTraits<chromeos::NetworkLibraryImpl> {
 
 namespace chromeos {
 
+static const std::string kGoogleAWifi = "Google-A";
+
 // Helper function to wrap Html with <th> tag.
 static std::string WrapWithTH(std::string text) {
   return "<th>" + text + "</th>";
@@ -253,6 +255,57 @@ void NetworkLibraryImpl::RequestWifiScan() {
   if (CrosLibrary::Get()->EnsureLoaded()) {
     RequestScan(TYPE_WIFI);
   }
+}
+
+bool NetworkLibraryImpl::ConnectToPreferredNetworkIfAvailable() {
+  // TODO(chocobo): Add the concept of preferred network to libcros.
+  // So that we don't have to hard-code Google-A here.
+  if (CrosLibrary::Get()->EnsureLoaded()) {
+    LOG(INFO) << "Attempting to auto-connect to Google-A wifi.";
+
+    // If ethernet is connected, then don't bother.
+    if (ethernet_connected()) {
+      LOG(INFO) << "Ethernet connected, so don't need Google-A.";
+      return false;
+    }
+
+    // Find Google-A network.
+    WifiNetwork wifi;
+    bool found = GetWifiNetworkByName(kGoogleAWifi, &wifi);
+    if (!found) {
+      LOG(INFO) << "Google-A wifi not found.";
+      return false;
+    }
+
+    // See if identity and certpath are available.
+    if (wifi.identity().empty() || wifi.cert_path().empty()) {
+      LOG(INFO) << "Google-A wifi not set up.";
+      return false;
+    }
+
+    // Make sure we want to auto-connect.
+    if (!wifi.auto_connect()) {
+      LOG(INFO) << "Google-A wifi is set to not auto-connect.";
+      return false;
+    }
+
+    // Connect to Google-A.
+    ConnectToNetwork(wifi.service_path().c_str(), NULL);
+    return true;
+  }
+  return false;
+}
+
+bool NetworkLibraryImpl::PreferredNetworkConnected() {
+  WifiNetwork wifi;
+  bool found = GetWifiNetworkByName(kGoogleAWifi, &wifi);
+  return found && wifi.connected();
+}
+
+bool NetworkLibraryImpl::PreferredNetworkFailed() {
+  WifiNetwork wifi;
+  bool found = GetWifiNetworkByName(kGoogleAWifi, &wifi);
+  return !found || wifi.failed();
 }
 
 void NetworkLibraryImpl::ConnectToWifiNetwork(WifiNetwork network,
@@ -503,6 +556,17 @@ void NetworkLibraryImpl::Init() {
   // Now, register to receive updates on network status.
   network_status_connection_ = MonitorNetwork(&NetworkStatusChangedHandler,
                                               this);
+}
+
+bool NetworkLibraryImpl::GetWifiNetworkByName(const std::string& name,
+                                              WifiNetwork* wifi) {
+  for (size_t i = 0; i < wifi_networks_.size(); ++i) {
+    if (wifi_networks_[i].name().compare(name) == 0) {
+      *wifi = wifi_networks_[i];
+      return true;
+    }
+  }
+  return false;
 }
 
 void NetworkLibraryImpl::EnableNetworkDeviceType(ConnectionType device,

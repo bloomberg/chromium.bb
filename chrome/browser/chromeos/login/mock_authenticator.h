@@ -81,6 +81,10 @@ class MockLoginUtils : public LoginUtils {
         expected_password_(expected_password) {
   }
 
+  virtual bool ShouldWaitForWifi() {
+    return false;
+  }
+
   virtual void CompleteLogin(const std::string& username,
                              const std::string& cookies) {
     EXPECT_EQ(expected_username_, username);

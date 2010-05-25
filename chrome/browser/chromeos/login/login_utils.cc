@@ -11,13 +11,16 @@
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
+#include "base/time.h"
 #include "chrome/browser/browser_init.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/external_cookie_handler.h"
 #include "chrome/browser/chromeos/login/cookie_fetcher.h"
 #include "chrome/browser/chromeos/login/google_authenticator.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
@@ -34,15 +37,19 @@
 
 namespace chromeos {
 
+static const int kWifiTimeoutInMS = 15000;
+
 class LoginUtilsImpl : public LoginUtils,
                        public NotificationObserver {
  public:
-  LoginUtilsImpl() {
+  LoginUtilsImpl() : wifi_connecting_(false) {
     registrar_.Add(
         this,
         NotificationType::LOGIN_USER_CHANGED,
         NotificationService::AllSources());
   }
+
+  virtual bool ShouldWaitForWifi();
 
   // Invoked after the user has successfully logged in. This launches a browser
   // and does other bookkeeping after logging in.
@@ -60,6 +67,8 @@ class LoginUtilsImpl : public LoginUtils,
 
  private:
   NotificationRegistrar registrar_;
+  bool wifi_connecting_;
+  base::Time wifi_connect_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsImpl);
 };
@@ -86,6 +95,29 @@ class LoginUtilsWrapper {
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsWrapper);
 };
 
+bool LoginUtilsImpl::ShouldWaitForWifi() {
+  // If we are connecting to the preferred network,
+  // wait kWifiTimeoutInMS until connection is made or failed.
+  if (wifi_connecting_) {
+    NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+    if (cros->PreferredNetworkConnected()) {
+      LOG(INFO) << "Wifi connection successful.";
+      return false;
+    } else if (cros->PreferredNetworkFailed()) {
+      LOG(INFO) << "Wifi connection failed.";
+      return false;
+    } else {
+      base::TimeDelta diff = base::Time::Now() - wifi_connect_start_time_;
+      // Keep waiting if we have not timed out yet.
+      bool timedout = (diff.InMilliseconds() > kWifiTimeoutInMS);
+      if (timedout)
+        LOG(INFO) << "Wifi connection timed out.";
+      return !timedout;
+    }
+  }
+  return false;
+}
+
 void LoginUtilsImpl::CompleteLogin(const std::string& username,
                                    const std::string& credentials) {
   LOG(INFO) << "Completing login for " << username;
@@ -94,6 +126,12 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
     CrosLibrary::Get()->GetLoginLibrary()->StartSession(username, "");
 
   UserManager::Get()->UserLoggedIn(username);
+
+  // This will attempt to connect to the preferred network if available.
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  wifi_connecting_ = cros->ConnectToPreferredNetworkIfAvailable();
+  if (wifi_connecting_)
+    wifi_connect_start_time_ = base::Time::Now();
 
   // Now launch the initial browser window.
   FilePath user_data_dir;
@@ -134,6 +172,14 @@ void LoginUtils::Set(LoginUtils* mock) {
 }
 
 void LoginUtils::DoBrowserLaunch(Profile* profile) {
+  // If we should wait for wifi connection, post this task with a 100ms delay.
+  if (LoginUtils::Get()->ShouldWaitForWifi()) {
+    ChromeThread::PostDelayedTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableFunction(&LoginUtils::DoBrowserLaunch, profile), 100);
+    return;
+  }
+
   std::vector<UserManager::User> users = UserManager::Get()->GetUsers();
   if (!users.empty())
     UserManager::Get()->DownloadUserImage(users[0].email());
