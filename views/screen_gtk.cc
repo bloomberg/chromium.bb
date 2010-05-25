@@ -37,6 +37,7 @@ gfx::Rect static GetPrimaryMonitorBounds() {
     top_left_y = data[1];
     width = data[2];
     height = data[3];
+    g_free(raw_data);
   } else {
     // If there's no window manager, we can ask X for Monitor info directly.
     XWindowAttributes attributes;

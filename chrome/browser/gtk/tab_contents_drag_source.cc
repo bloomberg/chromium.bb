@@ -228,6 +228,7 @@ void TabContentsDragSource::OnDragDataGet(GtkWidget* sender,
         // Convert from the file url to the file path.
         GURL file_url(std::string(reinterpret_cast<char*>(file_url_value),
                                   file_url_len));
+        g_free(file_url_value);
         FilePath file_path;
         if (net::FileURLToFilePath(file_url, &file_path)) {
           // Open the file as a stream.
