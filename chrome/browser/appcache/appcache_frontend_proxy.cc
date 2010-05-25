@@ -18,7 +18,15 @@ void AppCacheFrontendProxy::OnStatusChanged(const std::vector<int>& host_ids,
 
 void AppCacheFrontendProxy::OnEventRaised(const std::vector<int>& host_ids,
                                           appcache::EventID event_id) {
+  DCHECK(event_id != appcache::PROGRESS_EVENT);  // See OnProgressEventRaised.
   sender_->Send(new AppCacheMsg_EventRaised(host_ids, event_id));
+}
+
+void AppCacheFrontendProxy::OnProgressEventRaised(
+    const std::vector<int>& host_ids,
+    const GURL& url, int num_total, int num_complete) {
+  sender_->Send(new AppCacheMsg_ProgressEventRaised(
+      host_ids, url, num_total, num_complete));
 }
 
 void AppCacheFrontendProxy::OnContentBlocked(int host_id) {

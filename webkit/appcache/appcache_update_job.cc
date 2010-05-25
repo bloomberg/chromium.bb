@@ -96,6 +96,16 @@ class HostNotifier {
     }
   }
 
+  void SendProgressNotifications(
+      const GURL& url, int num_total, int num_complete) {
+    for (NotifyHostMap::iterator it = hosts_to_notify.begin();
+         it != hosts_to_notify.end(); ++it) {
+      AppCacheFrontend* frontend = it->first;
+      frontend->OnProgressEventRaised(it->second, url,
+                                      num_total, num_complete);
+    }
+  }
+
  private:
   NotifyHostMap hosts_to_notify;
 };
@@ -575,6 +585,7 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLRequest* request) {
 
   const GURL& url = request->original_url();
   pending_url_fetches_.erase(url);
+  NotifyProgress(url);
   ++url_fetches_completed_;
 
   int response_code = request->status().is_success()
@@ -817,28 +828,42 @@ void AppCacheUpdateJob::NotifyAllPendingMasterHosts(EventID event_id) {
 }
 
 void AppCacheUpdateJob::NotifyAllAssociatedHosts(EventID event_id) {
+  HostNotifier host_notifier;
+  AddAllAssociatedHostsToNotifier(&host_notifier);
+  host_notifier.SendNotifications(event_id);
+}
+
+void AppCacheUpdateJob::NotifyProgress(const GURL& url) {
+  HostNotifier host_notifier;
+  AddAllAssociatedHostsToNotifier(&host_notifier);
+  host_notifier.SendProgressNotifications(
+      url, url_file_list_.size(), url_fetches_completed_);
+}
+
+void AppCacheUpdateJob::NotifyFinalProgress() {
+  DCHECK(url_file_list_.size() == url_fetches_completed_);
+  NotifyProgress(GURL());
+}
+
+void AppCacheUpdateJob::AddAllAssociatedHostsToNotifier(
+    HostNotifier* host_notifier) {
   // Collect hosts so we only send one notification per frontend.
   // A host can only be associated with a single cache so no need to worry
   // about duplicate hosts being added to the notifier.
-  HostNotifier host_notifier;
   if (inprogress_cache_) {
     DCHECK(internal_state_ == DOWNLOADING || internal_state_ == CACHE_FAILURE);
-    host_notifier.AddHosts(inprogress_cache_->associated_hosts());
+    host_notifier->AddHosts(inprogress_cache_->associated_hosts());
   }
 
   AppCacheGroup::Caches old_caches = group_->old_caches();
   for (AppCacheGroup::Caches::const_iterator it = old_caches.begin();
        it != old_caches.end(); ++it) {
-    host_notifier.AddHosts((*it)->associated_hosts());
+    host_notifier->AddHosts((*it)->associated_hosts());
   }
 
   AppCache* newest_cache = group_->newest_complete_cache();
   if (newest_cache)
-    host_notifier.AddHosts(newest_cache->associated_hosts());
-
-  // TODO(jennb): if progress event, also pass params lengthComputable=true,
-  // total = url_file_list_.size(), loaded=url_fetches_completed_.
-  host_notifier.SendNotifications(event_id);
+    host_notifier->AddHosts(newest_cache->associated_hosts());
 }
 
 void AppCacheUpdateJob::OnDestructionImminent(AppCacheHost* host) {
@@ -925,10 +950,6 @@ void AppCacheUpdateJob::FetchUrls() {
   // each fetch completes.
   while (pending_url_fetches_.size() < kMaxConcurrentUrlFetches &&
          !urls_to_fetch_.empty()) {
-    // Notify about progress first to ensure it starts from 0% in case any
-    // entries are skipped.
-    NotifyAllAssociatedHosts(PROGRESS_EVENT);
-
     const GURL url = urls_to_fetch_.front().first;
     bool storage_checked = urls_to_fetch_.front().second;
     urls_to_fetch_.pop_front();
@@ -937,8 +958,10 @@ void AppCacheUpdateJob::FetchUrls() {
     DCHECK(it != url_file_list_.end());
     AppCacheEntry& entry = it->second;
     if (ShouldSkipUrlFetch(entry)) {
+      NotifyProgress(url);
       ++url_fetches_completed_;
     } else if (AlreadyFetchedEntry(url, entry.types())) {
+      NotifyProgress(url);
       ++url_fetches_completed_;  // saved a URL request
     } else if (!storage_checked && MaybeLoadFromNewestCache(url, entry)) {
       // Continues asynchronously after data is loaded from newest cache.
@@ -1164,6 +1187,7 @@ void AppCacheUpdateJob::OnResponseInfoLoaded(
       entry.set_response_id(response_id);
       entry.set_response_size(copy_me->response_size());
       inprogress_cache_->AddOrModifyEntry(url, entry);
+      NotifyProgress(url);
       ++url_fetches_completed_;
     }
   }
@@ -1213,6 +1237,7 @@ void AppCacheUpdateJob::MaybeCompleteUpdate() {
       break;
     case REFETCH_MANIFEST:
       DCHECK(stored_state_ == STORED);
+      NotifyFinalProgress();
       if (update_type_ == CACHE_ATTEMPT)
         NotifyAllAssociatedHosts(CACHED_EVENT);
       else

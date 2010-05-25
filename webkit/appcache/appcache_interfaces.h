@@ -53,6 +53,9 @@ class AppCacheFrontend {
                                Status status) = 0;
   virtual void OnEventRaised(const std::vector<int>& host_ids,
                              EventID event_id) = 0;
+  virtual void OnProgressEventRaised(const std::vector<int>& host_ids,
+                                     const GURL& url,
+                                     int num_total, int num_complete) = 0;
   virtual void OnContentBlocked(int host_id) = 0;
 
   virtual ~AppCacheFrontend() {}

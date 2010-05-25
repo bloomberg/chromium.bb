@@ -25,6 +25,7 @@
 namespace appcache {
 
 class UpdateJobInfo;
+class HostNotifier;
 
 // Application cache Update algorithm and state.
 class AppCacheUpdateJob : public URLRequest::Delegate,
@@ -144,6 +145,9 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   void NotifySingleHost(AppCacheHost* host, EventID event_id);
   void NotifyAllPendingMasterHosts(EventID event_id);
   void NotifyAllAssociatedHosts(EventID event_id);
+  void NotifyProgress(const GURL& url);
+  void NotifyFinalProgress();
+  void AddAllAssociatedHostsToNotifier(HostNotifier* notifier);
 
   // Checks if manifest is byte for byte identical with the manifest
   // in the newest application cache.

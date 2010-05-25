@@ -33,6 +33,7 @@ class WebApplicationCacheHostImpl : public WebKit::WebApplicationCacheHost {
   void OnCacheSelected(int64 selected_cache_id, appcache::Status status);
   void OnStatusChanged(appcache::Status);
   void OnEventRaised(appcache::EventID);
+  void OnProgressEventRaised(const GURL& url, int num_total, int num_complete);
   virtual void OnContentBlocked() {}
 
   // WebApplicationCacheHost methods

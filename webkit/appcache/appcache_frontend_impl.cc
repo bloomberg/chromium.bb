@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "webkit/appcache/appcache_frontend_impl.h"
+
+#include "base/logging.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 
 namespace appcache {
@@ -31,11 +33,23 @@ void AppCacheFrontendImpl::OnStatusChanged(const std::vector<int>& host_ids,
 
 void AppCacheFrontendImpl::OnEventRaised(const std::vector<int>& host_ids,
                                          EventID event_id) {
+  DCHECK(event_id != PROGRESS_EVENT);  // See OnProgressEventRaised.
   for (std::vector<int>::const_iterator i = host_ids.begin();
        i != host_ids.end(); ++i) {
     WebApplicationCacheHostImpl* host = GetHost(*i);
     if (host)
       host->OnEventRaised(event_id);
+  }
+}
+
+void AppCacheFrontendImpl::OnProgressEventRaised(
+    const std::vector<int>& host_ids,
+    const GURL& url, int num_total, int num_complete) {
+  for (std::vector<int>::const_iterator i = host_ids.begin();
+       i != host_ids.end(); ++i) {
+    WebApplicationCacheHostImpl* host = GetHost(*i);
+    if (host)
+      host->OnProgressEventRaised(url, num_total, num_complete);
   }
 }
 

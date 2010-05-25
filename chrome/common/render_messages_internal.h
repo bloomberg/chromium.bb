@@ -613,10 +613,18 @@ IPC_BEGIN_MESSAGES(View)
                        std::vector<int> /* host_ids */,
                        appcache::Status)
 
-  // Notifies the renderer of an AppCache event.
+  // Notifies the renderer of an AppCache event other than the
+  // progress event which has a seperate message.
   IPC_MESSAGE_CONTROL2(AppCacheMsg_EventRaised,
                        std::vector<int> /* host_ids */,
                        appcache::EventID)
+
+  // Notifies the renderer of an AppCache progress event.
+  IPC_MESSAGE_CONTROL4(AppCacheMsg_ProgressEventRaised,
+                       std::vector<int> /* host_ids */,
+                       GURL /* url being processed */,
+                       int /* total */,
+                       int /* complete */)
 
   // Notifies the renderer of the fact that AppCache access was blocked.
   IPC_MESSAGE_CONTROL1(AppCacheMsg_ContentBlocked,

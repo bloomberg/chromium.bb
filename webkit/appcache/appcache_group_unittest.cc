@@ -33,6 +33,11 @@ class TestAppCacheFrontend : public appcache::AppCacheFrontend {
                              appcache::EventID event_id) {
   }
 
+  virtual void OnProgressEventRaised(const std::vector<int>& host_ids,
+                                     const GURL& url,
+                                     int num_total, int num_complete) {
+  }
+
   virtual void OnContentBlocked(int host_id) {
   }
 

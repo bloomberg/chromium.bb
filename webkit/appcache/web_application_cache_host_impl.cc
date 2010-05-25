@@ -75,14 +75,21 @@ void WebApplicationCacheHostImpl::OnStatusChanged(appcache::Status status) {
 }
 
 void WebApplicationCacheHostImpl::OnEventRaised(appcache::EventID event_id) {
+  DCHECK(event_id != PROGRESS_EVENT);  // See OnProgressEventRaised.
   // Most events change the status. Clear out what we know so that the latest
   // status will be obtained from the backend.
-  if (PROGRESS_EVENT != event_id) {
-    has_status_ = false;
-    has_cached_status_ = false;
-  }
-
+  has_status_ = false;
+  has_cached_status_ = false;
   client_->notifyEventListener(static_cast<EventID>(event_id));
+}
+
+void WebApplicationCacheHostImpl::OnProgressEventRaised(
+    const GURL& url, int num_total, int num_complete) {
+  // TODO(michaeln): Widen the webkit api to accept the additional data.
+  // Also send the 'final' event once webkit layout tests have been updated.
+  // See https://bugs.webkit.org/show_bug.cgi?id=37602
+  if (num_complete < num_total)
+    client_->notifyEventListener(WebApplicationCacheHost::ProgressEvent);
 }
 
 void WebApplicationCacheHostImpl::willStartMainResourceRequest(

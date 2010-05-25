@@ -99,6 +99,22 @@ class SimpleFrontendProxy
       NOTREACHED();
   }
 
+  virtual void OnProgressEventRaised(const std::vector<int>& host_ids,
+                                     const GURL& url,
+                                     int num_total, int num_complete) {
+    if (!system_)
+      return;
+    if (system_->is_io_thread())
+      system_->ui_message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
+          this, &SimpleFrontendProxy::OnProgressEventRaised,
+          host_ids, url, num_total, num_complete));
+    else if (system_->is_ui_thread())
+      system_->frontend_impl_.OnProgressEventRaised(
+          host_ids, url, num_total, num_complete);
+    else
+      NOTREACHED();
+  }
+
   virtual void OnContentBlocked(int host_id) {}
 
  private:
