@@ -56,7 +56,7 @@ void TopSites::ReadDatabase() {
 bool TopSites::SetPageThumbnail(const GURL& url,
                                 const SkBitmap& thumbnail,
                                 const ThumbnailScore& score) {
-  RefCountedBytes* thumbnail_data = new RefCountedBytes;
+  scoped_refptr<RefCountedBytes> thumbnail_data = new RefCountedBytes;
   SkAutoLockPixels thumbnail_lock(thumbnail);
   bool encoded = gfx::JPEGCodec::Encode(
       reinterpret_cast<unsigned char*>(thumbnail.getAddr32(0, 0)),

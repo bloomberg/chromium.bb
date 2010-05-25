@@ -70,6 +70,7 @@ class MockHistoryServiceImpl : public TopSites::MockHistoryService {
       HistoryService::QueryMostVisitedURLsCallback* callback) {
     callback->Run(CancelableRequestProvider::Handle(0),  // Handle is unused.
                   most_visited_urls_);
+    delete callback;
     return 0;
   }
 
@@ -127,8 +128,9 @@ class MockTopSitesDatabaseImpl : public TopSitesDatabase {
         thumbnails_map_.find(url.url);
     if (found == thumbnails_map_.end())
       return false;  // No thumbnail for this URL.
-    TopSites::Images* result = new TopSites::Images(found->second);
-    thumbnail = result;
+
+    thumbnail->thumbnail = found->second.thumbnail;
+    thumbnail->thumbnail_score = found->second.thumbnail_score;
     return true;
   }
 
