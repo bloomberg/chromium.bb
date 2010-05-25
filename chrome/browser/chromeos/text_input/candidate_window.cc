@@ -90,7 +90,7 @@ class CandidateWindowView : public views::View {
    public:
     virtual ~Observer() {}
     // The function is called when a candidate is committed.
-    // See comments at NotifyCandidateClicke() in chromeos_ime.h for
+    // See comments at NotifyCandidateClicke() in chromeos_input_method_ui.h for
     // details about the parameters.
     virtual void OnCandidateCommitted(int index, int button, int flag) = 0;
   };

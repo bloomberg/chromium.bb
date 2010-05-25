@@ -30,8 +30,8 @@ bool FindAndUpdateProperty(const chromeos::ImeProperty& new_prop,
     chromeos::ImeProperty& prop = prop_list->at(i);
     if (prop.key == new_prop.key) {
       const int saved_id = prop.selection_item_id;
-      // Update the list except the radio id. As written in chromeos_language.h,
-      // |prop.selection_item_id| is dummy.
+      // Update the list except the radio id. As written in
+      // chromeos_input_method.h, |prop.selection_item_id| is dummy.
       prop = new_prop;
       prop.selection_item_id = saved_id;
       return true;
