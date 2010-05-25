@@ -2986,7 +2986,14 @@
    Memcheck:Leak
    fun:_Znw*
    ...
-   fun:_ZN85_GLOBAL__N_chrome_renderer_extensions_extension_process_bindings.cc_00000000_889370D813ExtensionImpl12StartRequestERKN2v89ArgumentsE
+   fun:_ZN85_GLOBAL__N_chrome_renderer_extensions_extension_process_bindings.cc_00000000_FEADAD0F13ExtensionImpl12StartRequestERKN2v89ArgumentsE
+}
+{
+   bug_44879
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN85_GLOBAL__N_chrome_renderer_extensions_extension_process_bindings.cc_00000000_F8ABDBBA13ExtensionImpl12StartRequestERKN2v89ArgumentsE
 }
 {
    bug_44945
