@@ -235,7 +235,7 @@ class NullModelTableViewTest : public TableViewTest {
 // Tests -----------------------------------------------------------------------
 
 // Tests various sorting permutations.
-TEST_F(TableViewTest, Sort) {
+TEST_F(TableViewTest, DISABLED_Sort) {
   // Sort by first column descending.
   TableView::SortDescriptors sort;
   sort.push_back(TableView::SortDescriptor(0, false));
@@ -262,7 +262,7 @@ TEST_F(TableViewTest, Sort) {
 }
 
 // Tests changing the model while sorted.
-TEST_F(TableViewTest, SortThenChange) {
+TEST_F(TableViewTest, DISABLED_SortThenChange) {
   // Sort by first column descending.
   TableView::SortDescriptors sort;
   sort.push_back(TableView::SortDescriptor(0, false));
@@ -276,7 +276,7 @@ TEST_F(TableViewTest, SortThenChange) {
 }
 
 // Tests adding to the model while sorted.
-TEST_F(TableViewTest, AddToSorted) {
+TEST_F(TableViewTest, DISABLED_AddToSorted) {
   // Sort by first column descending.
   TableView::SortDescriptors sort;
   sort.push_back(TableView::SortDescriptor(0, false));
@@ -297,7 +297,7 @@ TEST_F(TableViewTest, AddToSorted) {
 }
 
 // Tests selection on sort.
-TEST_F(TableViewTest, PersistSelectionOnSort) {
+TEST_F(TableViewTest, DISABLED_PersistSelectionOnSort) {
   // Select row 0.
   table_->Select(0);
 
@@ -330,7 +330,7 @@ TEST_F(TableViewTest, PersistMultiSelectionOnChangeWithSort) {
 }
 
 // Tests selection persists after a remove when sorted with iterator.
-TEST_F(TableViewTest, PersistMultiSelectionOnRemoveWithSort) {
+TEST_F(TableViewTest, DISABLED_PersistMultiSelectionOnRemoveWithSort) {
   SetUpMultiSelectTestState(true);
   if (HasFatalFailure())
     return;
@@ -341,7 +341,7 @@ TEST_F(TableViewTest, PersistMultiSelectionOnRemoveWithSort) {
 }
 
 // Tests selection persists after a add when sorted with iterator.
-TEST_F(TableViewTest, PersistMultiSelectionOnAddWithSort) {
+TEST_F(TableViewTest, DISABLED_PersistMultiSelectionOnAddWithSort) {
   SetUpMultiSelectTestState(true);
   if (HasFatalFailure())
     return;
@@ -352,7 +352,7 @@ TEST_F(TableViewTest, PersistMultiSelectionOnAddWithSort) {
 }
 
 // Tests selection persists after a change with iterator.
-TEST_F(TableViewTest, PersistMultiSelectionOnChange) {
+TEST_F(TableViewTest, DISABLED_PersistMultiSelectionOnChange) {
   SetUpMultiSelectTestState(false);
   if (HasFatalFailure())
     return;
@@ -363,7 +363,7 @@ TEST_F(TableViewTest, PersistMultiSelectionOnChange) {
 }
 
 // Tests selection persists after a remove with iterator.
-TEST_F(TableViewTest, PersistMultiSelectionOnRemove) {
+TEST_F(TableViewTest, DISABLED_PersistMultiSelectionOnRemove) {
   SetUpMultiSelectTestState(false);
   if (HasFatalFailure())
     return;
@@ -374,7 +374,7 @@ TEST_F(TableViewTest, PersistMultiSelectionOnRemove) {
 }
 
 // Tests selection persists after a add with iterator.
-TEST_F(TableViewTest, PersistMultiSelectionOnAdd) {
+TEST_F(TableViewTest, DISABLED_PersistMultiSelectionOnAdd) {
   SetUpMultiSelectTestState(false);
   if (HasFatalFailure())
     return;
