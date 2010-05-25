@@ -177,6 +177,11 @@ void GtkIMContextWrapper::UpdateStatus(int control,
       gtk_im_context_focus_out(context_);
       is_enabled_ = false;
     }
+  } else if (control == IME_CANCEL_COMPOSITION) {
+    preedit_text_.clear();
+    preedit_cursor_position_ = 0;
+    gtk_im_context_reset(context_simple_);
+    gtk_im_context_reset(context_);
   } else {
     // Enable the GtkIMContext object if it's not enabled yet.
     if (!is_enabled_) {
