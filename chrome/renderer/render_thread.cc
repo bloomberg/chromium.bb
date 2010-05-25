@@ -800,11 +800,6 @@ void RenderThread::EnsureWebKitInitialized() {
   WebString extension_scheme(ASCIIToUTF16(chrome::kExtensionScheme));
   WebSecurityPolicy::registerURLSchemeAsSecure(extension_scheme);
 
-  // print: pages should be not accessible by normal context.
-  WebString print_ui_scheme(ASCIIToUTF16(chrome::kPrintScheme));
-  WebSecurityPolicy::registerURLSchemeAsLocal(print_ui_scheme);
-  WebSecurityPolicy::registerURLSchemeAsNoAccess(print_ui_scheme);
-
 #if defined(OS_WIN)
   // We don't yet support Gears on non-Windows, so don't tell pages that we do.
   WebScriptController::registerExtension(extensions_v8::GearsExtension::Get());

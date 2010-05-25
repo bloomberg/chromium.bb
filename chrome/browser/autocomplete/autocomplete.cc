@@ -133,8 +133,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
     // should still claim to handle them.
     if (LowerCaseEqualsASCII(parsed_scheme, chrome::kViewSourceScheme) ||
         LowerCaseEqualsASCII(parsed_scheme, chrome::kJavaScriptScheme) ||
-        LowerCaseEqualsASCII(parsed_scheme, chrome::kDataScheme) ||
-        LowerCaseEqualsASCII(parsed_scheme, chrome::kPrintScheme))
+        LowerCaseEqualsASCII(parsed_scheme, chrome::kDataScheme))
       return URL;
 
     // Finally, check and see if the user has explicitly opened this scheme as
@@ -318,12 +317,11 @@ void AutocompleteInput::ParseForEmphasizeComponents(
   *host = parts.host;
 
   int after_scheme_and_colon = parts.scheme.end() + 1;
-  // For the view-source and print schemes, we should emphasize the scheme and
-  // host of the URL qualified by the scheme prefix.
-  if ((LowerCaseEqualsASCII(scheme_str, chrome::kViewSourceScheme) ||
-       LowerCaseEqualsASCII(scheme_str, chrome::kPrintScheme)) &&
+  // For the view-source scheme, we should emphasize the scheme and host of the
+  // URL qualified by the view-source prefix.
+  if (LowerCaseEqualsASCII(scheme_str, chrome::kViewSourceScheme) &&
       (static_cast<int>(text.length()) > after_scheme_and_colon)) {
-    // Obtain the URL prefixed by scheme and parse it.
+    // Obtain the URL prefixed by view-source and parse it.
     std::wstring real_url(text.substr(after_scheme_and_colon));
     url_parse::Parsed real_parts;
     AutocompleteInput::Parse(real_url, desired_tld, &real_parts, NULL);

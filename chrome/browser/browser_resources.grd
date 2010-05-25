@@ -57,9 +57,6 @@ without changes to the corresponding grd file. paaaae -->
       <include name="IDR_EXTENSIONS_INFOBAR_CSS" file="resources\extensions_infobar.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_EXTENSIONS_TOOLSTRIP_THEME_CSS" file="resources\extensions_toolstrip.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_PLUGINS_HTML" file="resources\plugins.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_PRINT_TAB_HTML" file="resources\print_tab.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_PRINT_TAB_CSS" file="resources\print_tab.css" type="BINDATA" />
-      <include name="IDR_PRINT_TAB_JS" file="resources\print_tab.js" type="BINDATA" />
       <include name="IDR_ABOUT_SYNC_HTML" file="sync\resources\about_sync.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_GAIA_LOGIN_HTML" file="sync\resources\gaia_login.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SYNC_SETUP_FLOW_HTML" file="sync\resources\setup_flow.html" flattenhtml="true" type="BINDATA" />

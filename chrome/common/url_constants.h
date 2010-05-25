@@ -23,7 +23,6 @@ extern const char kHttpsScheme[];
 extern const char kJavaScriptScheme[];
 extern const char kMailToScheme[];
 extern const char kMetadataScheme[];
-extern const char kPrintScheme[];
 extern const char kUserScriptScheme[];
 extern const char kViewSourceScheme[];
 

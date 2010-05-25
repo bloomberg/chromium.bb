@@ -2284,8 +2284,7 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
     if (CrossesExtensionExtents(frame, url) ||
         BindingsPolicy::is_dom_ui_enabled(enabled_bindings_) ||
         frame->isViewSourceModeEnabled() ||
-        url.SchemeIs(chrome::kViewSourceScheme) ||
-        url.SchemeIs(chrome::kPrintScheme)) {
+        url.SchemeIs(chrome::kViewSourceScheme)) {
       OpenURL(url, GURL(), default_policy);
       return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
     }

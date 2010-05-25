@@ -15,7 +15,6 @@
 #include "chrome/browser/dom_ui/net_internals_ui.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/dom_ui/plugins_ui.h"
-#include "chrome/browser/dom_ui/print_ui.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extensions_ui.h"
@@ -63,12 +62,6 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(const GURL& url) {
 
   if (url.SchemeIs(chrome::kExtensionScheme))
     return &NewDOMUI<ExtensionDOMUI>;
-
-// TODO(mhm) Make sure this ifdef is removed once print is complete.
-#if !defined(GOOGLE_CHROME_BUILD)
-  if (url.SchemeIs(chrome::kPrintScheme))
-    return &NewDOMUI<PrintUI>;
-#endif
 
   // All platform builds of Chrome will need to have a cloud printing
   // dialog as backup.  It's just that on Chrome OS, it's the only
@@ -131,8 +124,7 @@ DOMUITypeID DOMUIFactory::GetDOMUIType(const GURL& url) {
 bool DOMUIFactory::HasDOMUIScheme(const GURL& url) {
   return url.SchemeIs(chrome::kChromeInternalScheme) ||
          url.SchemeIs(chrome::kChromeUIScheme) ||
-         url.SchemeIs(chrome::kExtensionScheme) ||
-         url.SchemeIs(chrome::kPrintScheme);
+         url.SchemeIs(chrome::kExtensionScheme);
 }
 
 // static
