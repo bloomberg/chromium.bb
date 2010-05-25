@@ -13,7 +13,9 @@
 #include "app/app_paths.h"
 #include "app/resource_bundle.h"
 #include "base/at_exit.h"
+#include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/logging.h"
 #include "base/observer_list.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
@@ -993,6 +995,22 @@ int main(int argc, char** argv) {
   app::RegisterPathProvider();
   CommandLine::Init(argc, argv);
   ResourceBundle::InitSharedInstance(L"en-US");
+
+  // Write logs to a file for debugging, if --logtofile=FILE_NAME is given.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  std::string log_file_name = command_line.GetSwitchValueASCII("logtofile");
+  if (!log_file_name.empty()) {
+    logging::SetMinLogLevel(logging::LOG_INFO);
+    logging::InitLogging(log_file_name.c_str(),
+                         logging::LOG_ONLY_TO_FILE,
+                         logging::DONT_LOCK_LOG_FILE,
+                         logging::APPEND_TO_OLD_LOG_FILE);
+    // Redirect stderr to log_file_name. This is neeed to capture the
+    // logging from libcros.so.
+    if (!freopen(log_file_name.c_str(), "a", stderr)) {
+      LOG(INFO) << "Failed to redirect stderr to " << log_file_name.c_str();
+    }
+  }
 
   // Load libcros.
   chrome::RegisterPathProvider();  // for libcros.so.
