@@ -1,10 +1,10 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/default_plugin/plugin_impl_mac.h"
+#include "webkit/default_plugin/plugin_impl_gtk.h"
 
-#import <Cocoa/Cocoa.h>
+#include <gdk/gdkx.h>
 
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -16,13 +16,16 @@
 #include "webkit/default_plugin/plugin_main.h"
 #include "webkit/glue/webkit_glue.h"
 
-// TODO(thakis): Most methods in this class are stubbed out and need to be
+// TODO(thakis): Most methods in this class are stubbed out an need to be
 // implemented.
 
-PluginInstallerImpl::PluginInstallerImpl(int16 mode) {
+PluginInstallerImpl::PluginInstallerImpl(int16 mode)
+  : container_(NULL) {
 }
 
 PluginInstallerImpl::~PluginInstallerImpl() {
+  if (container_)
+    gtk_widget_destroy(container_);
 }
 
 bool PluginInstallerImpl::Initialize(void* module_handle, NPP instance,
@@ -44,8 +47,18 @@ bool PluginInstallerImpl::Initialize(void* module_handle, NPP instance,
 }
 
 bool PluginInstallerImpl::NPP_SetWindow(NPWindow* window_info) {
-  width_ = window_info->width;
-  height_ = window_info->height;
+  if (container_)
+    gtk_widget_destroy(container_);
+  container_ = gtk_plug_new(reinterpret_cast<XID>(window_info->window));
+
+  // Add label.
+  GtkWidget* box = gtk_vbox_new(FALSE, 0);
+  GtkWidget* label = gtk_label_new("Missing Plug-in");
+  gtk_box_pack_start(GTK_BOX(box), label, TRUE, TRUE, 0);
+  gtk_container_add(GTK_CONTAINER(container_), box);
+
+  gtk_widget_show_all(container_);
+
   return true;
 }
 
@@ -97,16 +110,6 @@ void PluginInstallerImpl::URLNotify(const char* url, NPReason reason) {
 }
 
 int16 PluginInstallerImpl::NPP_HandleEvent(void* event) {
-  NPCocoaEvent* npp_event = static_cast<NPCocoaEvent*>(event);
-
-  if (npp_event->type == NPCocoaEventDrawRect) {
-    CGContextRef context = npp_event->data.draw.context;
-    CGRect rect = CGRectMake(npp_event->data.draw.x,
-                             npp_event->data.draw.y,
-                             npp_event->data.draw.width,
-                             npp_event->data.draw.height);
-    return OnDrawRect(context, rect);
-  }
   return 0;
 }
 
@@ -123,49 +126,6 @@ void PluginInstallerImpl::DownloadPlugin() {
 void PluginInstallerImpl::DownloadCancelled() {
   DisplayAvailablePluginStatus();
 }
-
-int16 PluginInstallerImpl::OnDrawRect(CGContextRef context, CGRect dirty_rect) {
-  const NSString* text = @"Missing Plug-in";
-  const float kTextMarginX = 6;
-  const float kTextMarginY = 1;
-  NSSize bounds = NSMakeSize(width_, height_);
-
-  [NSGraphicsContext saveGraphicsState];
-  NSGraphicsContext* ns_context = [NSGraphicsContext
-      graphicsContextWithGraphicsPort:context flipped:YES];
-  [NSGraphicsContext setCurrentContext:ns_context];
-
-  NSShadow* shadow = [[[NSShadow alloc] init] autorelease];
-  [shadow setShadowColor:[NSColor colorWithDeviceWhite:0.0 alpha:0.5]];
-  [shadow setShadowOffset:NSMakeSize(0, -1)];
-  NSFont* font = [NSFont boldSystemFontOfSize:[NSFont smallSystemFontSize]];
-  NSDictionary* attributes = [NSDictionary dictionaryWithObjectsAndKeys:
-      font, NSFontAttributeName,
-      [NSColor whiteColor], NSForegroundColorAttributeName,
-      shadow, NSShadowAttributeName,
-      nil];
-
-  NSSize text_size = [text sizeWithAttributes:attributes];
-  NSRect text_rect;
-  text_rect.size.width = text_size.width + 2*kTextMarginX;
-  text_rect.size.height = text_size.height + 2*kTextMarginY;
-  text_rect.origin.x = (bounds.width - NSWidth(text_rect))/2;
-  text_rect.origin.y = (bounds.height - NSHeight(text_rect))/2;
-
-  [[NSColor colorWithCalibratedWhite:0.52 alpha:1.0] setFill];
-  [[NSBezierPath bezierPathWithRoundedRect:text_rect
-                                   xRadius:NSHeight(text_rect)/2
-                                   yRadius:NSHeight(text_rect)/2] fill];
-
-  NSPoint label_point = NSMakePoint(
-      roundf(text_rect.origin.x + (text_rect.size.width - text_size.width)/2),
-      roundf(text_rect.origin.y + (text_rect.size.height - text_size.height)/2));
-  [text drawAtPoint:label_point withAttributes:attributes];
-  
-  [NSGraphicsContext restoreGraphicsState];
-  return 1;
-}
-
 
 void PluginInstallerImpl::ShowInstallDialog() {
 }
