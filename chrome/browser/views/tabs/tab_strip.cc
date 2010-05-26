@@ -1248,8 +1248,14 @@ void TabStrip::StopAnimating(bool layout) {
 }
 
 void TabStrip::ResetAnimationState(bool stop_new_tab_timer) {
-  if (animation_type_ == ANIMATION_NEW_TAB_2)
+  if (animation_type_ == ANIMATION_NEW_TAB_2) {
     newtab_button_->SchedulePaint();
+    if (tab_count() > 0) {
+      // Paint the last tab as it's visual appearance changes when transitioning
+      // between ANIMATION_NEW_TAB_2 and ANIMATION_NEW_TAB_3.
+      GetTabAtTabDataIndex(tab_count() - 1)->SchedulePaint();
+    }
+  }
 
   if (stop_new_tab_timer)
     new_tab_timer_.Stop();
