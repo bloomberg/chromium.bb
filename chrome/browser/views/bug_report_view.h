@@ -90,11 +90,6 @@ class BugReportView : public views::View,
     include_last_screen_image_radio_->SetEnabled(false);
   }
 
-  // Disable the include system information checkbox
-  void DisableSystemInformationCheckbox() {
-    include_system_information_checkbox_->SetEnabled(false);
-  }
-
   // NOTE: set_last_image takes ownership of the vector
   void set_last_image(std::vector<unsigned char>* png_data) {
     last_image_.reset(png_data);
@@ -145,7 +140,6 @@ class BugReportView : public views::View,
   views::RadioButton* include_new_screen_image_radio_;
   views::RadioButton* include_last_screen_image_radio_;
   views::RadioButton* include_no_screen_image_radio_;
-  views::Checkbox* include_system_information_checkbox_;
   views::Link* system_information_url_control_;
 
   std::string system_information_url_;

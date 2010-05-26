@@ -29,6 +29,23 @@ class TabContents;
 
 class BugReportUtil {
  public:
+#if defined(OS_CHROMEOS)
+  enum BugType {
+    PAGE_FORMATTING = 0,
+    PAGE_WONT_LOAD,
+    PHISHING_PAGE,
+    PLUGIN_ISSUE,
+    TABS_WINDOW_OVERVIEW_ISSUE,
+    CONNECTION_ISSUE,
+    SYNC_ISSUE,
+    CRASH_ISSUE,
+    EXTENSION_ISSUE,
+    APP_LAUNCHER_ISSUE,
+    PANEL_ISSUE,
+    POWER_ISSUE,
+    OTHER_PROBLEM
+  };
+#else
   enum BugType {
     PAGE_WONT_LOAD = 0,
     PAGE_LOOKS_ODD,
@@ -39,6 +56,7 @@ class BugReportUtil {
     BROWSER_CRASH,
     OTHER_PROBLEM
   };
+#endif
 
   // SetOSVersion copies the maj.minor.build + servicePack_string
   // into a string. We currently have:

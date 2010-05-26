@@ -76,6 +76,39 @@ class BugReportComboBoxModel : public ComboboxModel {
   }
 
   static std::wstring GetItemAtIndex(int index) {
+#if defined(OS_CHROMEOS)
+    switch (index) {
+      case BugReportUtil::PAGE_FORMATTING:
+        return l10n_util::GetString(IDS_BUGREPORT_PAGE_FORMATTING);
+      case BugReportUtil::PAGE_WONT_LOAD:
+        return l10n_util::GetString(IDS_BUGREPORT_PAGE_WONT_LOAD);
+      case BugReportUtil::PHISHING_PAGE:
+        return l10n_util::GetString(IDS_BUGREPORT_PHISHING_PAGE);
+      case BugReportUtil::PLUGIN_ISSUE:
+        return l10n_util::GetString(IDS_BUGREPORT_PLUGIN_ISSUE);
+      case BugReportUtil::TABS_WINDOW_OVERVIEW_ISSUE:
+        return l10n_util::GetString(IDS_BUGREPORT_TABS_WINDOW_OVERVIEW_ISSUE);
+      case BugReportUtil::CONNECTION_ISSUE:
+        return l10n_util::GetString(IDS_BUGREPORT_CONNECTION_ISSUE);
+      case BugReportUtil::SYNC_ISSUE:
+        return l10n_util::GetString(IDS_BUGREPORT_SYNC_ISSUE);
+      case BugReportUtil::CRASH_ISSUE:
+        return l10n_util::GetString(IDS_BUGREPORT_CRASH_ISSUE);
+      case BugReportUtil::EXTENSION_ISSUE:
+        return l10n_util::GetString(IDS_BUGREPORT_EXTENSION_ISSUE);
+      case BugReportUtil::APP_LAUNCHER_ISSUE:
+        return l10n_util::GetString(IDS_BUGREPORT_APP_LAUNCHER_ISSUE);
+      case BugReportUtil::PANEL_ISSUE:
+        return l10n_util::GetString(IDS_BUGREPORT_PANEL_ISSUE);
+      case BugReportUtil::POWER_ISSUE:
+        return l10n_util::GetString(IDS_BUGREPORT_POWER_ISSUE);
+      case BugReportUtil::OTHER_PROBLEM:
+        return l10n_util::GetString(IDS_BUGREPORT_OTHER_PROBLEM);
+      default:
+        NOTREACHED();
+        return std::wstring();
+    }
+#else
     switch (index) {
       case BugReportUtil::PAGE_WONT_LOAD:
         return l10n_util::GetString(IDS_BUGREPORT_PAGE_WONT_LOAD);
@@ -97,6 +130,7 @@ class BugReportComboBoxModel : public ComboboxModel {
         NOTREACHED();
         return std::wstring();
     }
+#endif
   }
 
  private:
@@ -216,7 +250,6 @@ void ShowBugReportView(views::Window* parent,
                                     view)->Show();
   if (!have_last_image)
     view->DisableLastImageRadio();
-  view->DisableSystemInformationCheckbox();
 #endif
 }
 
@@ -336,14 +369,11 @@ void BugReportView::SetupControl() {
       l10n_util::GetString(IDS_BUGREPORT_INCLUDE_NO_SCREEN_IMAGE),
       kScreenImageRadioGroup);
 
-  include_system_information_checkbox_ = new views::Checkbox(
-      l10n_util::GetString(IDS_BUGREPORT_INCLUDE_SYSTEM_INFORMATION_CHKBOX));
   system_information_url_control_ = new views::Link(
       l10n_util::GetString(IDS_BUGREPORT_SYSTEM_INFORMATION_URL_TEXT));
   system_information_url_control_->SetController(this);
 
   include_new_screen_image_radio_->SetChecked(true);
-  include_system_information_checkbox_->SetChecked(true);
 #endif
   include_page_image_checkbox_ = new views::Checkbox(
       l10n_util::GetString(IDS_BUGREPORT_INCLUDE_PAGE_IMAGE_CHKBOX));
@@ -419,15 +449,10 @@ void BugReportView::SetupControl() {
   layout->AddView(include_no_screen_image_radio_);
   layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
 
-  // Checkbox for system information
   layout->StartRow(0, column_set_id);
   layout->SkipColumns(1);
-  layout->AddView(include_system_information_checkbox_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-
-  layout->StartRow(0, column_set_id);
-  layout->SkipColumns(1);
-  layout->AddView(system_information_url_control_);
+  layout->AddView(system_information_url_control_, 1, 1, GridLayout::LEADING,
+                  GridLayout::CENTER);
 #else
   if (include_page_image_checkbox_) {
     layout->StartRow(0, column_set_id);
@@ -462,7 +487,6 @@ void BugReportView::UpdateReportingControls(bool is_phishing_report) {
   if (!last_image_->empty())
     include_last_screen_image_radio_->SetEnabled(!is_phishing_report);
   include_no_screen_image_radio_->SetEnabled(!is_phishing_report);
-  include_system_information_checkbox_->SetChecked(!is_phishing_report);
 #else
   if (include_page_image_checkbox_) {
     include_page_image_checkbox_->SetEnabled(!is_phishing_report);
