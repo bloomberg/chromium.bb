@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_DEFAULT_PLUGIN_PLUGIN_IMPL_MAC_H_
-#define WEBKIT_DEFAULT_PLUGIN_PLUGIN_IMPL_MAC_H_
+#ifndef WEBKIT_DEFAULT_PLUGIN_PLUGIN_IMPL_GTK_H_
+#define WEBKIT_DEFAULT_PLUGIN_PLUGIN_IMPL_GTK_H_
 
 #include <string>
 #include <vector>
+
+#include <gtk/gtk.h>
 
 #include "gfx/native_widget_types.h"
 #include "third_party/npapi/bindings/npapi.h"
@@ -168,8 +170,6 @@ class PluginInstallerImpl {
   bool IsRTLLayout() const;
 
  protected:
-  int16 OnDrawRect(CGContextRef context, CGRect dirty_rect);
-
   // Displays the plugin install confirmation dialog.
   void ShowInstallDialog();
 
@@ -274,12 +274,10 @@ class PluginInstallerImpl {
   std::string mime_type_;
   // The current state of the plugin installer.
   PluginInstallerState plugin_installer_state_;
-  // Dimensions of the plugin
-  uint32_t width_;
-  uint32_t height_;
+  // GtkPlug containing everything in the plugin.
+  GtkWidget* container_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInstallerImpl);
 };
 
-
-#endif  // WEBKIT_DEFAULT_PLUGIN_PLUGIN_IMPL_MAC_H_
+#endif  // WEBKIT_DEFAULT_PLUGIN_PLUGIN_IMPL_GTK_H_
