@@ -190,12 +190,6 @@ base::StringPiece GetDataResource(int resource_id) {
     }
     return broken_image_data;
   }
-  case IDR_FEED_PREVIEW:
-    // It is necessary to return a feed preview template that contains
-    // a {{URL}} substring where the feed URL should go; see the code
-    // that computes feed previews in feed_preview.cc:MakeFeedPreview.
-    // This fixes issue #932714.
-    return "Feed preview for {{URL}}";
   case IDR_TEXTAREA_RESIZER: {
     // Use webkit's text area resizer image.
     static std::string resize_corner_data;

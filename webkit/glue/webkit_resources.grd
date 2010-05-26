@@ -11,7 +11,6 @@
     <includes>
       <include name="IDR_BROKENIMAGE" file="resources\broken-image.gif" type="BINDATA" />
       <include name="IDR_TICKMARK_DASH" file="resources\dash.png" type="BINDATA" />
-      <include name="IDR_FEED_PREVIEW" file="resources\feed.html" type="BINDATA" />
       <include name="IDR_PAN_SCROLL_ICON" file="resources\pan_icon.png" type="BINDATA" />
       <include name="IDR_SEARCH_CANCEL" file="resources\search_cancel.png" type="BINDATA" />
       <include name="IDR_SEARCH_CANCEL_PRESSED" file="resources\search_cancel_pressed.png" type="BINDATA" />
