@@ -122,9 +122,6 @@ class WebPageView : public views::View {
   // Called by start_timer_. Shows throbber and waiting label.
   void ShowWaitingControls();
 
-  // Screen border insets. Used for layout.
-  gfx::Insets insets_;
-
   // Throbber shown during page load.
   views::Throbber* throbber_;
 

@@ -173,26 +173,7 @@ class RoundedRectBorder : public views::Border {
 
 void RoundedRectBorder::Paint(const views::View& view,
                               gfx::Canvas* canvas) const {
-  gfx::Rect clip_rect;
-  if (!canvas->GetClipRect(&clip_rect))
-    return;  // Empty clip rectangle, nothing to paint.
-
-  int w = view.width();
-  int h = view.height();
-
-  gfx::Insets insets;
-  GetInsets(&insets);
-  SkRect remove;
-  remove.set(SkIntToScalar(insets.left()),
-             SkIntToScalar(insets.top()),
-             SkIntToScalar(w - insets.right()),
-             SkIntToScalar(h - insets.bottom()));
-  canvas->clipRect(remove, SkRegion::kDifference_Op);
-
-  if (canvas->IntersectsClipRectInt(0, 0, w, h)) {
-    DrawRectWithBorder(w, h, border_, canvas);
-  }
-  canvas->clipRect(remove, SkRegion::kIntersect_Op);
+  // Don't paint anything. RoundedRectBorder is used to provide insets only.
 }
 
 void RoundedRectBorder::GetInsets(gfx::Insets* insets) const {

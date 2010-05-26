@@ -94,12 +94,11 @@ void WebPageDomView::SetTabContentsDelegate(
 // WebPageView, public:
 
 void WebPageView::Init() {
-  chromeos::CreateWizardBorder(
-      &chromeos::BorderDefinition::kScreenBorder)->GetInsets(&insets_);
   views::Painter* painter = CreateWizardPainter(
       &BorderDefinition::kScreenBorder);
   set_background(
       views::Background::CreateBackgroundPainter(true, painter));
+  set_border(CreateWizardBorder(&BorderDefinition::kScreenBorder));
   dom_view()->SetVisible(false);
   AddChildView(dom_view());
 
@@ -166,10 +165,7 @@ void WebPageView::ShowWaitingControls() {
 // WebPageView, views::View implementation:
 
 void WebPageView::Layout() {
-  dom_view()->SetBounds(insets_.left(),
-                        insets_.top(),
-                        bounds().width() - insets_.left() - insets_.right(),
-                        bounds().height() - insets_.top() - insets_.bottom());
+  dom_view()->SetBounds(GetLocalBounds(false));
   int y = height() / 2  - throbber_->GetPreferredSize().height() / 2;
   throbber_->SetBounds(
       width() / 2 - throbber_->GetPreferredSize().width() / 2,
