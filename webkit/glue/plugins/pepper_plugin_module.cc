@@ -14,6 +14,7 @@
 #include "third_party/ppapi/c/ppb_device_context_2d.h"
 #include "third_party/ppapi/c/ppb_image_data.h"
 #include "third_party/ppapi/c/ppb_instance.h"
+#include "third_party/ppapi/c/ppb_testing.h"
 #include "third_party/ppapi/c/ppb_var.h"
 #include "third_party/ppapi/c/ppp.h"
 #include "third_party/ppapi/c/ppp_instance.h"
@@ -96,6 +97,22 @@ const PPB_Core core_interface = {
   &CallOnMainThread
 };
 
+// PPB_Testing -----------------------------------------------------------------
+
+bool ReadImageData(PP_Resource device_context_2d,
+                   PP_Resource image,
+                   int32_t x, int32_t y) {
+  scoped_refptr<DeviceContext2D> context(
+      ResourceTracker::Get()->GetAsDeviceContext2D(device_context_2d));
+  if (!context.get())
+    return false;
+  return context->ReadImageData(image, x, y);
+}
+
+const PPB_Testing testing_interface = {
+  &ReadImageData
+};
+
 // GetInterface ----------------------------------------------------------------
 
 const void* GetInterface(const char* name) {
@@ -109,6 +126,8 @@ const void* GetInterface(const char* name) {
     return ImageData::GetInterface();
   if (strcmp(name, PPB_DEVICECONTEXT2D_INTERFACE) == 0)
     return DeviceContext2D::GetInterface();
+  if (strcmp(name, PPB_TESTING_INTERFACE) == 0)
+    return &testing_interface;
   return NULL;
 }
 

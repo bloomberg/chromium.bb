@@ -22,14 +22,6 @@ namespace pepper {
 
 namespace {
 
-ImageData* ResourceAsImageData(PP_Resource resource) {
-  scoped_refptr<Resource> image_resource =
-      ResourceTracker::Get()->GetResource(resource);
-  if (!image_resource.get())
-    return NULL;
-  return image_resource->AsImageData();
-}
-
 PP_ImageDataFormat GetNativeImageDataFormat() {
   return PP_IMAGEDATAFORMAT_BGRA_PREMUL;
 }

@@ -118,24 +118,13 @@ bool Flush(PP_Resource device_context,
   return context->Flush(callback, callback_data);
 }
 
-bool ReadImageData(PP_Resource device_context,
-                   PP_Resource image,
-                   int32_t x, int32_t y) {
-  scoped_refptr<DeviceContext2D> context(
-      ResourceTracker::Get()->GetAsDeviceContext2D(device_context));
-  if (!context.get())
-    return false;
-  return context->ReadImageData(image, x, y);
-}
-
 const PPB_DeviceContext2D ppb_devicecontext2d = {
   &Create,
   &Describe,
   &PaintImageData,
   &Scroll,
   &ReplaceContents,
-  &Flush,
-  &ReadImageData
+  &Flush
 };
 
 }  // namespace
