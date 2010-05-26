@@ -58,8 +58,8 @@ class LanguageMenuButton : public views::MenuButton,
   // views::ViewMenuDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
 
-  // Update the status area with |name|.
-  void UpdateIcon(const std::wstring& name);
+  // Updates the status area with |name| and tooltip with |tooltip|.
+  void UpdateIcon(const std::wstring& name, const std::wstring& tooltip);
 
   // Rebuilds |model_|. This function should be called whenever
   // |input_method_descriptors_| is updated, or ImePropertiesChanged() is

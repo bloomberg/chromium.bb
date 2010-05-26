@@ -112,6 +112,19 @@ std::wstring FormatInputLanguage(
   return formatted;
 }
 
+// Returns localized language name + display name for the |input_method|.
+// For example, "Hebrew: Standard input method" would be returned for the Hebrew
+// input method in US locale, and "Japanese: Google Japanese Input" for Japanese
+// in the locale.
+std::wstring GetTooltipText(
+    const chromeos::InputMethodDescriptor& input_method) {
+  const std::wstring tooltip =
+      FormatInputLanguage(input_method, true) + L": " +
+      chromeos::LanguageMenuL10nUtil::GetString(input_method.display_name);
+  // TODO(yusukes): it might be better to add "intra-IME" status to the tooltip.
+  return tooltip;
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -141,14 +154,14 @@ LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
   // Update the model
   RebuildModel();
   // Grab the real estate.
-  UpdateIcon(kSpacer);
+  UpdateIcon(kSpacer, L"" /* no tooltip */);
   // Display the default input method name.
   const std::wstring name
       = FormatInputLanguage(input_method_descriptors_->at(0), false);
   // TODO(yusukes): The assumption that the input method at index 0 is enabled
   // by default is not always true. We should fix the logic once suzhe's patches
   // for issue 2627 (get/set ibus state without focus) are submitted.
-  UpdateIcon(name);
+  UpdateIcon(name, L"" /* no tooltip */);
   CrosLibrary::Get()->GetLanguageLibrary()->AddObserver(this);
 }
 
@@ -358,9 +371,11 @@ void LanguageMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
 // LanguageLibrary::Observer implementation:
 
 void LanguageMenuButton::InputMethodChanged(LanguageLibrary* obj) {
-  const std::wstring name = FormatInputLanguage(
-      obj->current_input_method(), false);
-  UpdateIcon(name);
+  const chromeos::InputMethodDescriptor& input_method =
+      obj->current_input_method();
+  const std::wstring name = FormatInputLanguage(input_method, false);
+  const std::wstring tooltip = ::GetTooltipText(input_method);
+  UpdateIcon(name, tooltip);
 }
 
 void LanguageMenuButton::ImePropertiesChanged(LanguageLibrary* obj) {
@@ -370,9 +385,11 @@ void LanguageMenuButton::ImePropertiesChanged(LanguageLibrary* obj) {
 // views::View implementation:
 
 void LanguageMenuButton::LocaleChanged() {
-  std::wstring name = FormatInputLanguage(
-      CrosLibrary::Get()->GetLanguageLibrary()->current_input_method(), false);
-  UpdateIcon(name);
+  const chromeos::InputMethodDescriptor& input_method =
+      CrosLibrary::Get()->GetLanguageLibrary()->current_input_method();
+  const std::wstring name = FormatInputLanguage(input_method, false);
+  const std::wstring tooltip = ::GetTooltipText(input_method);
+  UpdateIcon(name, tooltip);
   Layout();
   SchedulePaint();
 }
@@ -383,7 +400,11 @@ void LanguageMenuButton::FocusChanged(LanguageLibrary* obj) {
   SchedulePaint();
 }
 
-void LanguageMenuButton::UpdateIcon(const std::wstring& name) {
+void LanguageMenuButton::UpdateIcon(
+    const std::wstring& name, const std::wstring& tooltip) {
+  if (!tooltip.empty()) {
+    SetTooltipText(tooltip);
+  }
   SetText(name);
   set_alignment(TextButton::ALIGN_RIGHT);
   SchedulePaint();
