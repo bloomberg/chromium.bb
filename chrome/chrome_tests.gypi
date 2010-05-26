@@ -376,8 +376,6 @@
             # TODO(port)
             'app/chrome_main_uitest.cc',
             'browser/metrics/metrics_service_uitest.cc',
-            # leaves an extra window on screen after test completes.
-            'browser/sessions/session_restore_uitest.cc',
             'common/logging_chrome_uitest.cc',
             'test/ui/fast_shutdown_uitest.cc',
           ],
