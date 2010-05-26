@@ -3284,6 +3284,7 @@
         {
           'destination': '<(PRODUCT_DIR)/resources/shared/css',
           'files': [
+            'browser/resources/shared/css/button.css',
             'browser/resources/shared/css/list.css',
             'browser/resources/shared/css/menu.css',
             'browser/resources/shared/css/tree.css',
