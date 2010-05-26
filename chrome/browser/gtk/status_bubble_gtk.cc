@@ -89,6 +89,11 @@ void StatusBubbleGtk::SetURL(const GURL& url, const std::wstring& languages) {
 
 void StatusBubbleGtk::SetStatusTextToURL() {
   GtkWidget* parent = gtk_widget_get_parent(container_.get());
+
+  // It appears that parent can be NULL (probably only during shutdown).
+  if (!parent || !GTK_WIDGET_REALIZED(parent))
+    return;
+
   int desired_width = parent->allocation.width;
   if (!expanded()) {
     expand_timer_.Stop();
@@ -105,7 +110,6 @@ void StatusBubbleGtk::SetStatusTextToURL() {
                          languages_));
   SetStatusTextTo(url_text_);
 }
-
 
 void StatusBubbleGtk::Show() {
   // If we were going to hide, stop.
