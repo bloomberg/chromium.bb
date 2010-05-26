@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,10 +52,10 @@ void BasicBstrTests() {
   EXPECT_TRUE(b2.ByteLength() == 100);
   EXPECT_TRUE(b2.Length() == 100 / sizeof(kTestString1[0]));
   lstrcpyW(static_cast<BSTR>(b2), kTestString1);
-  EXPECT_TRUE(lstrlen(b2) == static_cast<int>(test1_len));
+  EXPECT_TRUE(lstrlen(b2) == test1_len);
   EXPECT_TRUE(b2.Length() == 100 / sizeof(kTestString1[0]));
   b2.SetByteLen(lstrlen(b2) * sizeof(kTestString2[0]));
-  EXPECT_TRUE(lstrlen(b2) == static_cast<int>(b2.Length()));
+  EXPECT_TRUE(lstrlen(b2) == b2.Length());
 
   EXPECT_TRUE(b1.Allocate(kTestString2) != NULL);
   EXPECT_TRUE(b1.Length() == test2_len);

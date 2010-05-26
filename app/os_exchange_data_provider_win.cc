@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,7 +84,7 @@ class FormatEtcEnumerator : public IEnumFORMATETC {
   std::vector<FORMATETC*> contents_;
 
   // The cursor of the active enumeration - an index into |contents_|.
-  size_t cursor_;
+  int cursor_;
 
   LONG ref_count_;
 
@@ -125,8 +125,9 @@ STDMETHODIMP FormatEtcEnumerator::Next(
     DCHECK(count == 1);
 
   // This method copies count elements into |elements_array|.
-  ULONG index = 0;
-  while (cursor_ < contents_.size() && index < count) {
+  int index = 0;
+  while (cursor_ < static_cast<int>(contents_.size()) &&
+         static_cast<ULONG>(index) < count) {
     CloneFormatEtc(contents_.at(cursor_), &elements_array[index]);
     ++cursor_;
     ++index;
@@ -143,7 +144,7 @@ STDMETHODIMP FormatEtcEnumerator::Skip(ULONG skip_count) {
   cursor_ += skip_count;
   // MSDN implies it's OK to leave the enumerator trashed.
   // "Whatever you say, boss"
-  return cursor_ <= contents_.size() ? S_OK : S_FALSE;
+  return cursor_ <= static_cast<int>(contents_.size()) ? S_OK : S_FALSE;
 }
 
 STDMETHODIMP FormatEtcEnumerator::Reset() {

@@ -64,7 +64,7 @@ class ScopedCAPIHandle {
   CAPIHandle get() const { return handle_; }
 
   CAPIHandle* receive() {
-    CHECK(handle_ == NULL);
+    CHECK_EQ(NULL, handle_);
     return &handle_;
   }
 

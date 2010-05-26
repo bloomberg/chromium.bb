@@ -23,11 +23,11 @@ TEST(RestrictedTokenTest, InvalidHandle) {
 // Tests the initialization with NULL as parameter.
 TEST(RestrictedTokenTest, DefaultInit) {
   // Get the current process token.
-  HANDLE token_handle = INVALID_HANDLE_VALUE;
+  HANDLE token_handle = NULL;
   ASSERT_TRUE(::OpenProcessToken(::GetCurrentProcess(), TOKEN_ALL_ACCESS,
                                  &token_handle));
 
-  ASSERT_NE(INVALID_HANDLE_VALUE, token_handle);
+  ASSERT_NE(NULL, reinterpret_cast<ULONG_PTR>(token_handle));
 
   ATL::CAccessToken access_token;
   access_token.Attach(token_handle);
@@ -62,11 +62,11 @@ TEST(RestrictedTokenTest, DefaultInit) {
 // Tests the initialization with a custom token as parameter.
 TEST(RestrictedTokenTest, CustomInit) {
   // Get the current process token.
-  HANDLE token_handle = INVALID_HANDLE_VALUE;
+  HANDLE token_handle = NULL;
   ASSERT_TRUE(::OpenProcessToken(::GetCurrentProcess(), TOKEN_ALL_ACCESS,
                                  &token_handle));
 
-  ASSERT_NE(INVALID_HANDLE_VALUE, token_handle);
+  ASSERT_NE(NULL, reinterpret_cast<ULONG_PTR>(token_handle));
 
   ATL::CAccessToken access_token;
   access_token.Attach(token_handle);

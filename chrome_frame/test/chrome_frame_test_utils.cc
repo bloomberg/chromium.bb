@@ -775,7 +775,7 @@ HRESULT WebBrowserEventSink::SetWebBrowser(IWebBrowser2* web_browser2) {
 }
 
 HRESULT WebBrowserEventSink::CloseWebBrowser() {
-  DCHECK_EQ(process_id_to_wait_for_, 0u);
+  DCHECK_EQ(process_id_to_wait_for_, 0);
   if (!web_browser2_)
     return E_FAIL;
 

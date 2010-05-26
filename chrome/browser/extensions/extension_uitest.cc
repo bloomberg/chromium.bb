@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -163,7 +163,7 @@ TEST_F(ExtensionTestSimpleApiCall, FLAKY_RunTest) {
 
   int callback_id = 0xBAADF00D;
   message_dict->GetInteger(keys::kAutomationRequestIdKey, &callback_id);
-  EXPECT_NE(callback_id, static_cast<int>(0xBAADF00D));
+  EXPECT_NE(callback_id, 0xBAADF00D);
 
   bool has_callback = true;
   EXPECT_TRUE(message_dict->GetBoolean(keys::kAutomationHasCallbackKey,
@@ -246,7 +246,7 @@ public:
 
       std::string args;
       EXPECT_TRUE(request_dict->GetString(keys::kAutomationArgsKey, &args));
-      EXPECT_NE(std::string::npos, args.find("42"));
+      EXPECT_NE(args.find("42"), -1);
       loop_.Quit();
     } else {
       FAIL();

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -586,13 +586,12 @@ void Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
       size_t num_erased = 0;
       kernel_->flushed_metahandles.Push(entry->ref(META_HANDLE));
       num_erased = kernel_->ids_index->erase(entry);
-      DCHECK_EQ(1u, num_erased);
+      DCHECK(1 == num_erased);
       num_erased = kernel_->metahandles_index->erase(entry);
-      DCHECK_EQ(1u, num_erased);
+      DCHECK(1 == num_erased);
 
-      // Might not be in it
-      num_erased = kernel_->client_tag_index->erase(entry);
-      DCHECK_EQ(entry->ref(UNIQUE_CLIENT_TAG).empty(), !num_erased);
+      num_erased = kernel_->client_tag_index->erase(entry);  // Might not be in it
+      DCHECK(!entry->ref(UNIQUE_CLIENT_TAG).empty() == num_erased);
       delete entry;
     }
   }

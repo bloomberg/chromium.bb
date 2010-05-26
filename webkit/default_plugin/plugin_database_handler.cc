@@ -144,13 +144,13 @@ int32 PluginDatabaseHandler::Write(NPStream* stream, int32 offset,
     }
   }
 
-  DWORD bytes_written = 0;
+  unsigned long bytes_written = 0;
   if (0 == lstrcmpiA(stream->url, plugin_finder_url_.c_str())) {
     DCHECK(plugin_downloads_file_ != INVALID_HANDLE_VALUE);
 
     WriteFile(plugin_downloads_file_, buffer, buffer_length, &bytes_written,
               NULL);
-    DCHECK_EQ(buffer_length, static_cast<int32>(bytes_written));
+    DCHECK(buffer_length == bytes_written);
   }
   return bytes_written;
 }

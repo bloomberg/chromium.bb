@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,7 +65,7 @@ class WindowImpl : public MessageMapInterface {
   // Sets the class style to use. The default is CS_DBLCLKS.
   void set_initial_class_style(UINT class_style) {
     // We dynamically generate the class name, so don't register it globally!
-    DCHECK_EQ((class_style & CS_GLOBALCLASS), 0u);
+    DCHECK_EQ((class_style & CS_GLOBALCLASS), 0);
     class_style_ = class_style;
   }
   UINT initial_class_style() const { return class_style_; }

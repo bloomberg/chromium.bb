@@ -14,8 +14,8 @@ TEST(WinUtils, IsReparsePoint) {
   // Create a temp file because we need write access to it.
   wchar_t temp_directory[MAX_PATH];
   wchar_t my_folder[MAX_PATH];
-  ASSERT_NE(::GetTempPath(MAX_PATH, temp_directory), 0u);
-  ASSERT_NE(::GetTempFileName(temp_directory, L"test", 0, my_folder), 0u);
+  ASSERT_NE(::GetTempPath(MAX_PATH, temp_directory), 0);
+  ASSERT_NE(::GetTempFileName(temp_directory, L"test", 0, my_folder), 0);
 
   // Delete the file and create a directory instead.
   ASSERT_TRUE(::DeleteFile(my_folder));

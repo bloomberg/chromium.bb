@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,20 +37,20 @@ void WalkBuffer(void* buffer, size_t size, int* num_dlls, int* num_functions,
   DllPatchInfo *dll = &memory->dll_list[0];
 
   for (int i = 0; i < memory->num_intercepted_dlls; i++) {
-    ASSERT_NE(0u, wcslen(dll->dll_name));
-    ASSERT_EQ(0u, dll->record_bytes % sizeof(size_t));
-    ASSERT_EQ(0u, dll->offset_to_functions % sizeof(size_t));
+    ASSERT_NE(0, wcslen(dll->dll_name));
+    ASSERT_EQ(0, dll->record_bytes % sizeof(size_t));
+    ASSERT_EQ(0, dll->offset_to_functions % sizeof(size_t));
     ASSERT_NE(0, dll->num_functions);
 
     FunctionInfo *function = reinterpret_cast<FunctionInfo*>(
       reinterpret_cast<char*>(dll) + dll->offset_to_functions);
 
     for (int j = 0; j < dll->num_functions; j++) {
-      ASSERT_EQ(0u, function->record_bytes % sizeof(size_t));
+      ASSERT_EQ(0, function->record_bytes % sizeof(size_t));
 
       char* name = function->function;
       size_t length = strlen(name);
-      ASSERT_NE(0u, length);
+      ASSERT_NE(0, length);
       name += length + 1;
 
       // look for overflows
@@ -77,7 +77,7 @@ void WalkBuffer(void* buffer, size_t size, int* num_dlls, int* num_functions,
 
 TEST(InterceptionManagerTest, BufferLayout1) {
   wchar_t exe_name[MAX_PATH];
-  ASSERT_NE(0u, GetModuleFileName(NULL, exe_name, MAX_PATH - 1));
+  ASSERT_NE(0, GetModuleFileName(NULL, exe_name, MAX_PATH - 1));
 
   TargetProcess *target = MakeTestTargetProcess(::GetCurrentProcess(),
                                                 ::GetModuleHandle(exe_name));
@@ -164,7 +164,7 @@ TEST(InterceptionManagerTest, BufferLayout1) {
 
 TEST(InterceptionManagerTest, BufferLayout2) {
   wchar_t exe_name[MAX_PATH];
-  ASSERT_NE(0u, GetModuleFileName(NULL, exe_name, MAX_PATH - 1));
+  ASSERT_NE(0, GetModuleFileName(NULL, exe_name, MAX_PATH - 1));
 
   TargetProcess *target = MakeTestTargetProcess(::GetCurrentProcess(),
                                                 ::GetModuleHandle(exe_name));

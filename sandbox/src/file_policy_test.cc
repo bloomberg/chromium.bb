@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -262,8 +262,8 @@ TEST(FilePolicyTest, AllowReadOnly) {
   // Create a temp file because we need write access to it.
   wchar_t temp_directory[MAX_PATH];
   wchar_t temp_file_name[MAX_PATH];
-  ASSERT_NE(::GetTempPath(MAX_PATH, temp_directory), 0u);
-  ASSERT_NE(::GetTempFileName(temp_directory, L"test", 0, temp_file_name), 0u);
+  ASSERT_NE(::GetTempPath(MAX_PATH, temp_directory), 0);
+  ASSERT_NE(::GetTempFileName(temp_directory, L"test", 0, temp_file_name), 0);
 
   EXPECT_TRUE(runner.AddFsRule(TargetPolicy::FILES_ALLOW_READONLY,
                                temp_file_name));
@@ -292,8 +292,8 @@ TEST(FilePolicyTest, AllowWildcard) {
   // Create a temp file because we need write access to it.
   wchar_t temp_directory[MAX_PATH];
   wchar_t temp_file_name[MAX_PATH];
-  ASSERT_NE(::GetTempPath(MAX_PATH, temp_directory), 0u);
-  ASSERT_NE(::GetTempFileName(temp_directory, L"test", 0, temp_file_name), 0u);
+  ASSERT_NE(::GetTempPath(MAX_PATH, temp_directory), 0);
+  ASSERT_NE(::GetTempFileName(temp_directory, L"test", 0, temp_file_name), 0);
 
   wcscat_s(temp_directory, MAX_PATH, L"*");
   EXPECT_TRUE(runner.AddFsRule(TargetPolicy::FILES_ALLOW_ANY, temp_directory));
@@ -384,15 +384,15 @@ TEST(FilePolicyTest, TestRename) {
   wchar_t temp_file_name6[MAX_PATH];
   wchar_t temp_file_name7[MAX_PATH];
   wchar_t temp_file_name8[MAX_PATH];
-  ASSERT_NE(::GetTempPath(MAX_PATH, temp_directory), 0u);
-  ASSERT_NE(::GetTempFileName(temp_directory, L"test", 0, temp_file_name1), 0u);
-  ASSERT_NE(::GetTempFileName(temp_directory, L"test", 0, temp_file_name2), 0u);
-  ASSERT_NE(::GetTempFileName(temp_directory, L"test", 0, temp_file_name3), 0u);
-  ASSERT_NE(::GetTempFileName(temp_directory, L"test", 0, temp_file_name4), 0u);
-  ASSERT_NE(::GetTempFileName(temp_directory, L"test", 0, temp_file_name5), 0u);
-  ASSERT_NE(::GetTempFileName(temp_directory, L"test", 0, temp_file_name6), 0u);
-  ASSERT_NE(::GetTempFileName(temp_directory, L"test", 0, temp_file_name7), 0u);
-  ASSERT_NE(::GetTempFileName(temp_directory, L"test", 0, temp_file_name8), 0u);
+  ASSERT_NE(::GetTempPath(MAX_PATH, temp_directory), 0);
+  ASSERT_NE(::GetTempFileName(temp_directory, L"test", 0, temp_file_name1), 0);
+  ASSERT_NE(::GetTempFileName(temp_directory, L"test", 0, temp_file_name2), 0);
+  ASSERT_NE(::GetTempFileName(temp_directory, L"test", 0, temp_file_name3), 0);
+  ASSERT_NE(::GetTempFileName(temp_directory, L"test", 0, temp_file_name4), 0);
+  ASSERT_NE(::GetTempFileName(temp_directory, L"test", 0, temp_file_name5), 0);
+  ASSERT_NE(::GetTempFileName(temp_directory, L"test", 0, temp_file_name6), 0);
+  ASSERT_NE(::GetTempFileName(temp_directory, L"test", 0, temp_file_name7), 0);
+  ASSERT_NE(::GetTempFileName(temp_directory, L"test", 0, temp_file_name8), 0);
 
 
   // Add rules to make file1->file2 succeed.
@@ -500,8 +500,8 @@ TEST(FilePolicyTest, TestReparsePoint) {
   // Create a temp file because we need write access to it.
   wchar_t temp_directory[MAX_PATH];
   wchar_t temp_file_name[MAX_PATH];
-  ASSERT_NE(::GetTempPath(MAX_PATH, temp_directory), 0u);
-  ASSERT_NE(::GetTempFileName(temp_directory, L"test", 0, temp_file_name), 0u);
+  ASSERT_NE(::GetTempPath(MAX_PATH, temp_directory), 0);
+  ASSERT_NE(::GetTempFileName(temp_directory, L"test", 0, temp_file_name), 0);
 
   // Delete the file and create a directory instead.
   ASSERT_TRUE(::DeleteFile(temp_file_name));

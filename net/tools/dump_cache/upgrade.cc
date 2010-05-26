@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -367,11 +367,11 @@ void MasterSM::DoGetKey(int bytes_read) {
     return Fail();
 
   std::string key(input_->buffer);
-  DCHECK(key.size() == static_cast<size_t>(input_->msg.buffer_bytes - 1));
+  DCHECK(key.size() == input_->msg.buffer_bytes - 1);
 
   if (!writer_->CreateEntry(key,
                             reinterpret_cast<disk_cache::Entry**>(&entry_))) {
-    printf("Skipping entry \"%s\": %d\n", key.c_str(), GetLastError());
+    printf("Skipping entry \"%s\" (name conflict!)\n", key.c_str());
     return SendGetPrevEntry();
   }
 
@@ -698,7 +698,7 @@ void SlaveSM::DoGetKey() {
     msg.buffer_bytes = std::min(key.size() + 1,
                                 static_cast<size_t>(kBufferSize));
     memcpy(output_->buffer, key.c_str(), msg.buffer_bytes);
-    if (msg.buffer_bytes != static_cast<int32>(key.size() + 1)) {
+    if (msg.buffer_bytes != key.size() + 1) {
       // We don't support moving this entry. Just tell the master.
       msg.result = RESULT_NAME_OVERFLOW;
     } else {

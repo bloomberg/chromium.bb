@@ -873,11 +873,11 @@ bool ChromeActiveDocument::HandleContextMenuCommand(UINT cmd,
   ScopedComPtr<IWebBrowser2> web_browser2;
   DoQueryService(SID_SWebBrowserApp, m_spClientSite, web_browser2.Receive());
 
-  if (cmd == static_cast<UINT>(context_menu_IDC_BACK)) {
+  if (cmd == context_menu_IDC_BACK) {
     web_browser2->GoBack();
-  } else if (cmd == static_cast<UINT>(context_menu_IDC_FORWARD)) {
+  } else if (cmd == context_menu_IDC_FORWARD) {
     web_browser2->GoForward();
-  } else if (cmd == static_cast<UINT>(context_menu_IDC_RELOAD)) {
+  } else if (cmd == context_menu_IDC_RELOAD) {
     web_browser2->Refresh();
   } else {
     return BaseActiveX::HandleContextMenuCommand(cmd, params);
