@@ -2961,3 +2961,23 @@
    fun:_ZN61MessageLoopTest_FileDescriptorWatcherOutlivesMessageLoop_Test8TestBodyEv
 }
 
+{
+   bug_45133
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN23ExtensionMessageService24DispatchEventToRenderersERKSsS1_bRK4GURL
+   fun:_Z13DispatchEventP7ProfilePKcSs
+   fun:_ZN27ExtensionBrowserEventRouter13TabSelectedAtEP11TabContentsS1_ib
+   fun:_ZN13TabStripModel26ChangeSelectedContentsFromEP11TabContentsib
+   fun:_ZN13TabStripModel19InsertTabContentsAtEiP11TabContentsbbb
+   fun:_ZN13TabStripModel19InsertTabContentsAtEiP11TabContentsbb
+   fun:_ZN13TabStripModel14AddTabContentsEP11TabContentsibjb
+   fun:_ZN7Browser13AddTabWithURLERK4GURLS2_jiiP12SiteInstanceRKSs
+   fun:_ZN11BrowserInit17LaunchWithProfile17OpenTabsInBrowserEP7BrowserbRKSt6vectorINS0_3TabESaIS4_EE
+   fun:_ZN11BrowserInit17LaunchWithProfile17OpenURLsInBrowserEP7BrowserbRKSt6vectorI4GURLSaIS4_EE
+   fun:_ZN11BrowserInit17LaunchWithProfile17ProcessLaunchURLsEbRKSt6vectorI4GURLSaIS2_EE
+   fun:_ZN11BrowserInit17LaunchWithProfile6LaunchEP7Profileb
+   fun:_ZN11BrowserInit13LaunchBrowserERK11CommandLineP7ProfileRKSbIwSt11char_traitsIwESaIwEEbPi
+   fun:_ZN11BrowserInit18ProcessCmdLineImplERK11CommandLineRKSbIwSt11char_traitsIwESaIwEEbP7ProfilePiPS_
+}
