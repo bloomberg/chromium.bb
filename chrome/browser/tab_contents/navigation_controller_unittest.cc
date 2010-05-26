@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,7 +105,8 @@ class NavigationControllerHistoryTest : public NavigationControllerTest {
 
   void GetLastSession() {
     profile()->GetSessionService()->TabClosed(controller().window_id(),
-                                              controller().session_id());
+                                              controller().session_id(),
+                                              false);
 
     ReopenDatabase();
     Time close_time;

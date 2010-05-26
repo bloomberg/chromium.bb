@@ -88,11 +88,14 @@ class SessionService : public BaseSessionService,
                       const SessionID& tab_id,
                       bool is_pinned);
 
-  // Notification that a tab has been closed.
+  // Notification that a tab has been closed. |closed_by_user_gesture| comes
+  // from |TabContents::closed_by_user_gesture|; see it for details.
   //
   // Note: this is invoked from the NavigationController's destructor, which is
   // after the actual tab has been removed.
-  void TabClosed(const SessionID& window_id, const SessionID& tab_id);
+  void TabClosed(const SessionID& window_id,
+                 const SessionID& tab_id,
+                 bool closed_by_user_gesture);
 
   // Notification the window is about to close.
   void WindowClosing(const SessionID& window_id);
@@ -415,7 +418,7 @@ class SessionService : public BaseSessionService,
   // If true and a new tabbed browser is created and there are no opened tabbed
   // browser (has_open_trackable_browsers_ is false), then the current session
   // is made the previous session. See description above class for details on
-  // current/previou session.
+  // current/previous session.
   bool move_on_new_browser_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionService);

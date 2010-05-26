@@ -205,7 +205,8 @@ void SessionService::SetPinnedState(const SessionID& window_id,
 }
 
 void SessionService::TabClosed(const SessionID& window_id,
-                               const SessionID& tab_id) {
+                               const SessionID& tab_id,
+                               bool closed_by_user_gesture) {
   if (!ShouldTrackChangesToWindow(window_id))
     return;
 
@@ -221,10 +222,13 @@ void SessionService::TabClosed(const SessionID& window_id,
     pending_tab_close_ids_.insert(tab_id.id());
   } else if (find(window_closing_ids_.begin(), window_closing_ids_.end(),
                   window_id.id()) != window_closing_ids_.end() ||
-             !IsOnlyOneTabLeft()) {
-    // Tab closure is the result of a window close (and it isn't the last
-    // window), or closing a tab and there are other windows/tabs open. Mark the
-    // tab as closed.
+             !IsOnlyOneTabLeft() ||
+             closed_by_user_gesture) {
+    // Close is the result of one of the following:
+    // . window close (and it isn't the last window).
+    // . closing a tab and there are other windows/tabs open.
+    // . closed by a user gesture.
+    // In all cases we need to mark the tab as explicitly closed.
     ScheduleCommand(CreateTabClosedCommand(tab_id.id()));
   } else {
     // User closed the last tab in the last tabbed browser. Don't mark the
@@ -504,7 +508,8 @@ void SessionService::Observe(NotificationType type,
     case NotificationType::TAB_CLOSED: {
       NavigationController* controller =
           Source<NavigationController>(source).ptr();
-      TabClosed(controller->window_id(), controller->session_id());
+      TabClosed(controller->window_id(), controller->session_id(),
+                controller->tab_contents()->closed_by_user_gesture());
       break;
     }
 

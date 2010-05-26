@@ -187,7 +187,7 @@ TEST_F(SessionServiceTest, ClosingTabStaysClosed) {
 
   helper_.PrepareTabInWindow(window_id, tab2_id, 1, false);
   UpdateNavigation(window_id, tab2_id, nav2, 0, true);
-  service()->TabClosed(window_id, tab2_id);
+  service()->TabClosed(window_id, tab2_id, false);
 
   ScopedVector<SessionWindow> windows;
   ReadWindows(&(windows.get()));
@@ -382,7 +382,7 @@ TEST_F(SessionServiceTest, WindowCloseCommittedAfterNavigate) {
   UpdateNavigation(window2_id, tab2_id, nav2, 0, true);
 
   service()->WindowClosing(window2_id);
-  service()->TabClosed(window2_id, tab2_id);
+  service()->TabClosed(window2_id, tab2_id, false);
   service()->WindowClosed(window2_id);
 
   ScopedVector<SessionWindow> windows;
@@ -616,4 +616,24 @@ TEST_F(SessionServiceTest, GetCurrentSession) {
   GetCurrentSessionCallbackHandler handler;
   service()->GetCurrentSession(&consumer,
       NewCallback(&handler, &GetCurrentSessionCallbackHandler::OnGotSession));
+}
+
+// Makes sure a tab closed by a user gesture is not restored.
+TEST_F(SessionServiceTest, CloseTabUserGesture) {
+  SessionID tab_id;
+  ASSERT_NE(window_id.id(), tab_id.id());
+
+  TabNavigation nav1(0, GURL("http://google.com"),
+                     GURL("http://www.referrer.com"),
+                     ASCIIToUTF16("abc"), "def",
+                     PageTransition::QUALIFIER_MASK);
+
+  helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
+  UpdateNavigation(window_id, tab_id, nav1, 0, true);
+  service()->TabClosed(window_id, tab_id, true);
+
+  ScopedVector<SessionWindow> windows;
+  ReadWindows(&(windows.get()));
+
+  ASSERT_TRUE(windows->empty());
 }
