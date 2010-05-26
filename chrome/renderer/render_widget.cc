@@ -734,9 +734,11 @@ void RenderWidget::OnImeSetComposition(WebCompositionCommand command,
     return;
   ime_control_busy_ = true;
   if (!webwidget_->handleCompositionEvent(command, cursor_position,
-      target_start, target_end, ime_string)) {
-    // If the composition event can't be handled, let the browser process
-    // know so it can update it's state.
+      target_start, target_end, ime_string) &&
+      command == WebKit::WebCompositionCommandSet) {
+    // If the composition event can't be handled while we were trying to update
+    // the composition, let the browser process know so it can update it's
+    // state.
     Send(new ViewHostMsg_ImeUpdateStatus(routing_id(), IME_CANCEL_COMPOSITION,
                                          WebRect()));
   }
