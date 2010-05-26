@@ -464,6 +464,22 @@
         ]
       },
     },
+    # ----------------------------------------------------------------------
+    {
+      'target_name': 'ncdis',
+      'type': 'executable',
+      'sources': [
+        'ncdis.c'
+      ],
+      'dependencies': [
+        'ncdis_util',
+        'nchelper',
+        'ncopcode_utils',
+        'ncopcode_utils_gen',
+        'ncvalidate',
+        '<(DEPTH)/native_client/src/shared/utils/utils.gyp:utils'
+      ],
+    },
   ],
   'conditions': [
     ['OS=="win"', {
