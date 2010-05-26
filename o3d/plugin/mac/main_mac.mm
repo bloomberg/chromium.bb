@@ -502,28 +502,35 @@ NPError InitializePlugin() {
   return NPERR_NO_ERROR;
 }
 
-// When to prefer Core Animation, currently that's only on Safari and 10.6+
-// but that will change as we use this model in more browsers.
+// When to prefer Core Animation. Safari's support in 10.5 was too
+// buggy to attempt to use.
 static bool PreferCoreAnimation() {
   bool isSafari = o3d::metric_browser_type.value() == o3d::BROWSER_NAME_SAFARI;
-  return (o3d::IsMacOSTenSixOrHigher() && isSafari);
+  return (!isSafari || o3d::IsMacOSTenSixOrHigher());
 }
   
-// Negotiates the best plugin event model, sets the browser to use that,
-// and updates the PluginObject so we can remember which one we chose.
-// We favor the newer Cocoa-based model, but can cope with browsers that
-// only support the original event model, or indeed can't even understand
-// what we are asking for.
-// However, right at the minute, we shun the Cocoa event model because its
-// NPP_SetWindow messages don't contain a WindowRef or NSWindow so we would
-// not get enough info to create our AGL context. We'll go back to
-// preferring Cocoa once we have worked out how to deal with that.
-// Cannot actually fail -
-void Mac_SetBestEventModel(NPP instance, PluginObject* obj) {
+// Negotiates the best plugin drawing and event model, sets the
+// browser to use that, and updates the PluginObject so we can
+// remember which one we chose. We prefer these combinations in the
+// given order:
+//  - Core Animation drawing model, Cocoa event model
+//  - QuickDraw drawing model, Carbon event model
+//  - Core Graphics drawing model, Cocoa event model
+// If the browser doesn't even understand the question, we use the
+// QuickDraw drawing model and Carbon event model for best backward
+// compatibility.
+//
+// This ordering provides the best forward-looking behavior while
+// still providing compatibility with older browsers.
+//
+// Returns NPERR_NO_ERROR (0) if successful, otherwise an NPError code.
+NPError Mac_SetBestEventAndDrawingModel(NPP instance, PluginObject* obj) {
   NPError err = NPERR_NO_ERROR;
-  NPEventModel model_to_use = NPEventModelCarbon;
   NPBool supportsCocoaEventModel = FALSE;
   NPBool supportsCarbonEventModel = FALSE;
+  NPBool supportsCoreGraphics = FALSE;
+  NPBool supportsQuickDraw = FALSE;
+  NPBool supportsCoreAnimation = FALSE;
 
   // See if browser supports Cocoa event model.
   err = NPN_GetValue(instance,
@@ -543,105 +550,77 @@ void Mac_SetBestEventModel(NPP instance, PluginObject* obj) {
     err = NPERR_NO_ERROR;
   }
 
-  // Now we've collected our data, the decision phase begins.
-
-  // If we didn't successfully get TRUE for either question, the browser
-  // just does not know about the new switchable event models, so must only
-  // support the old Carbon event model.
-  if (!(supportsCocoaEventModel || supportsCarbonEventModel)) {
-    supportsCarbonEventModel = TRUE;
-    obj->event_model_ = NPEventModelCarbon;
-  }
-
-  
-  if (PreferCoreAnimation()) {  
-    // If we're building for Core Animation then we prefer the Cocoa event 
-    // model.
-    model_to_use =
-    (supportsCocoaEventModel) ? NPEventModelCocoa : NPEventModelCarbon;
-    NPN_SetValue(instance, NPPVpluginEventModel,
-                 reinterpret_cast<void*>(model_to_use));
-  } else {
-    // Default to Carbon event model, because the new version of the
-    // Cocoa event model spec does not supply sufficient window
-    // information in its Cocoa NPP_SetWindow calls for us to bind an
-    // AGL context to the browser window.
-    model_to_use =
-    (supportsCarbonEventModel) ? NPEventModelCarbon : NPEventModelCocoa;
-    if (o3d::gIsChrome) {
-      if (supportsCocoaEventModel) {
-        model_to_use = NPEventModelCocoa;
-      }
-    }
-  }
-  NPN_SetValue(instance, NPPVpluginEventModel,
-               reinterpret_cast<void*>(model_to_use));
-
-
-  obj->event_model_ = model_to_use;
-}
-
-
-// Negotiates the best plugin drawing model, sets the browser to use that,
-// and updates the PluginObject so we can remember which one we chose.
-// Returns NPERR_NO_ERROR (0) if successful, otherwise an NPError code.
-NPError Mac_SetBestDrawingModel(NPP instance, PluginObject* obj) {
-  NPError err = NPERR_NO_ERROR;
-  NPBool supportsCoreGraphics = FALSE;
-  NPBool supportsQuickDraw = FALSE;
-  NPBool supportsCoreAnimation = FALSE;
-  NPDrawingModel drawing_model = NPDrawingModelQuickDraw;
-
-  // test for QuickDraw support
+  // Test for QuickDraw support.
   err = NPN_GetValue(instance,
                      NPNVsupportsQuickDrawBool,
                      &supportsQuickDraw);
   if (err != NPERR_NO_ERROR)
     supportsQuickDraw = FALSE;
 
-  // Test for Core Graphics support
+  // Test for Core Graphics support.
   err = NPN_GetValue(instance,
                      NPNVsupportsCoreGraphicsBool,
                      &supportsCoreGraphics);
   if (err != NPERR_NO_ERROR)
     supportsCoreGraphics = FALSE;
 
+  // Test for Core Animation support.
   err = NPN_GetValue(instance,
                      NPNVsupportsCoreAnimationBool,
                      &supportsCoreAnimation);
   if (err != NPERR_NO_ERROR)
     supportsCoreAnimation = FALSE;
 
-  // In order of preference. Preference is now determined by compatibility,
-  // not by modernity, and so is the opposite of the order I first used.
-  if (supportsQuickDraw && !(obj->event_model_ == NPEventModelCocoa)) {
-    drawing_model = NPDrawingModelQuickDraw;
-  } else if (supportsCoreAnimation && PreferCoreAnimation()) {
-    drawing_model = NPDrawingModelCoreAnimation;
-  // In the Chrome browser we currently want to prefer the CoreGraphics
-  // drawing model, read back the frame buffer into system memory and draw
-  // the results to the screen using CG.
-  //
-  } else if (o3d::gIsChrome && supportsCoreGraphics) {
-    drawing_model = NPDrawingModelCoreGraphics;
-  } else {
-    if (supportsCoreGraphics) {
-      drawing_model = NPDrawingModelCoreGraphics;
-    } else {
-      // This case is for browsers that didn't even understand the question
-      // eg FF2, so drawing models are not supported, just assume QuickDraw.
-      obj->drawing_model_ = NPDrawingModelQuickDraw;
-      return NPERR_NO_ERROR;
-    }
-  }      
+  // Fix up values for older browsers which don't even understand
+  // these questions.
+  if (!supportsCarbonEventModel && !supportsCocoaEventModel) {
+    supportsCarbonEventModel = TRUE;
+  }
 
+  if (!supportsQuickDraw && !supportsCoreGraphics && !supportsCoreAnimation) {
+    // Must be a very old browser such as FF2. Avoid calling
+    // NPN_SetValue for the event or drawing models at all.
+    obj->drawing_model_ = NPDrawingModelQuickDraw;
+    obj->event_model_ = NPEventModelCarbon;
+    return NPERR_NO_ERROR;
+  }
+
+  // Now that we have our information, decide on the appropriate combination.
+  NPDrawingModel drawing_model = NPDrawingModelQuickDraw;
+  NPEventModel event_model = NPEventModelCarbon;
+
+  if (supportsCoreAnimation && supportsCocoaEventModel &&
+      PreferCoreAnimation()) {
+    drawing_model = NPDrawingModelCoreAnimation;
+    event_model = NPEventModelCocoa;
+    DLOG(INFO) << "Core Animation drawing model";
+  } else if (supportsQuickDraw && supportsCarbonEventModel) {
+    drawing_model = NPDrawingModelQuickDraw;
+    event_model = NPEventModelCarbon;
+    DLOG(INFO) << "QuickDraw drawing model";
+  } else if (supportsCoreGraphics && supportsCocoaEventModel) {
+    drawing_model = NPDrawingModelCoreGraphics;
+    event_model = NPEventModelCocoa;
+    DLOG(INFO) << "Core Graphics drawing model";
+  } else {
+    // If all of the above tests failed, we are running on a browser
+    // which we don't know how to handle.
+    return NPERR_GENERIC_ERROR;
+  }
+
+  // Earlier versions of this code did not check the return value of
+  // the call to set the event model.
+  NPN_SetValue(instance, NPPVpluginEventModel,
+               reinterpret_cast<void*>(event_model));
   err = NPN_SetValue(instance, NPPVpluginDrawingModel,
                      reinterpret_cast<void*>(drawing_model));
-  if (err != NPERR_NO_ERROR)
+
+  if (err != NPERR_NO_ERROR) {
     return err;
+  }
 
   obj->drawing_model_ = drawing_model;
-
+  obj->event_model_ = event_model;
   return NPERR_NO_ERROR;
 }
 }  // end anonymous namespace
@@ -960,11 +939,9 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, int16 argc,
   glue::_o3d::InitializeGlue(instance);
   pluginObject->Init(argc, argn, argv);
 
-  Mac_SetBestEventModel(instance,
-                        static_cast<PluginObject*>(instance->pdata));
-
-  err = Mac_SetBestDrawingModel(
-      instance, static_cast<PluginObject*>(instance->pdata));
+  err = Mac_SetBestEventAndDrawingModel(instance,
+                                        static_cast<PluginObject*>(
+                                            instance->pdata));
   if (err != NPERR_NO_ERROR)
     return err;
 #ifdef CFTIMER
@@ -1067,12 +1044,10 @@ NPError NPP_SetWindow(NPP instance, NPWindow* window) {
       CGLSetCurrentContext(obj->mac_cgl_context_);
     }
   } else if (obj->drawing_model_ == NPDrawingModelCoreGraphics &&
-             o3d::gIsChrome &&
              obj->mac_cgl_pbuffer_ == NULL) {
-    // This code path is only taken for Chrome. We initialize things with a
-    // CGL context rendering to a 1x1 pbuffer. Later we use the O3D
-    // RenderSurface APIs to set up the framebuffer object which is used
-    // for rendering.
+    // We initialize things with a CGL context rendering to a 1x1
+    // pbuffer. Later we use the O3D RenderSurface APIs to set up the
+    // framebuffer object which is used for rendering.
     CGLContextObj share_context = obj->GetFullscreenShareContext();
     CGLPixelFormatObj pixel_format = obj->GetFullscreenCGLPixelFormatObj();
     DCHECK(share_context);

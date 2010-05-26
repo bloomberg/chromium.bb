@@ -57,8 +57,6 @@ using o3d::DisplayWindowMac;
 
 namespace o3d {
 
-bool gIsChrome = false;
-
 // Returns the version number of the running Mac browser, as parsed from
 // the short version string in the plist of the app's bundle.
 bool GetBrowserVersionInfo(int *returned_major,

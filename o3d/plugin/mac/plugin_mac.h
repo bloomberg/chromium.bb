@@ -70,7 +70,6 @@ class RenderTimer {
 };
 
 extern RenderTimer gRenderTimer;
-extern bool gIsChrome;
 
 void InitializeBreakpad();
 void ShutdownBreakpad();
