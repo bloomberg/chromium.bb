@@ -108,6 +108,7 @@ extern const char kEnableNaCl[];
 extern const char kEnableNativeWebWorkers[];
 extern const char kEnablePreparsedJsCaching[];
 extern const char kEnablePreconnect[];
+extern const char kEnablePrintPreview[];
 extern const char kEnablePrivacyBlacklists[];
 extern const char kEnableRendererAccessibility[];
 extern const char kEnableStatsTable[];

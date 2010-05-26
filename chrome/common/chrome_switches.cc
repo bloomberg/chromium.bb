@@ -327,6 +327,9 @@ const char kEnablePreconnect[]              = "enable-preconnect";
 // Enable caching of pre-parsed JS script data.  See http://crbug.com/32407.
 const char kEnablePreparsedJsCaching[]      = "enable-preparsed-js-caching";
 
+// Enable print preview (work in progress).
+const char kEnablePrintPreview[]            = "enable-print-preview";
+
 // Enable Privacy Blacklists.
 const char kEnablePrivacyBlacklists[]       = "enable-privacy-blacklists";
 
