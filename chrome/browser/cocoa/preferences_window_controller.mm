@@ -796,18 +796,19 @@ class PrefObserverBridge : public NotificationObserver,
 // Basics panel
 
 // Sets the home page preferences for kNewTabPageIsHomePage and kHomePage. If a
-// blank string is passed in we revert to using NewTab page as the Home page.
-// When setting the Home Page to NewTab page, we preserve the old value of
-// kHomePage (we don't overwrite it). Note: using SetValue() causes the
-// observers not to fire, which is actually a good thing as we could end up in a
-// state where setting the homepage to an empty url would automatically reset
-// the prefs back to using the NTP, so we'd be never be able to change it.
-- (void)setHomepage:(const std::string&)homepage {
-  if (homepage.empty() || homepage == GetNewTabUIURLString()) {
+// blank or null-host URL is passed in we revert to using NewTab page
+// as the Home page. Note: using SetValue() causes the observers not to fire,
+// which is actually a good thing as we could end up in a state where setting
+// the homepage to an empty url would automatically reset the prefs back to
+// using the NTP, so we'd be never be able to change it.
+- (void)setHomepage:(const GURL&)homepage {
+  if (!homepage.is_valid() || homepage.spec() == GetNewTabUIURLString()) {
     newTabPageIsHomePage_.SetValue(true);
+    if (!homepage.has_host())
+      homepage_.SetValue(std::wstring());
   } else {
     newTabPageIsHomePage_.SetValue(false);
-    homepage_.SetValue(UTF8ToWide(homepage));
+    homepage_.SetValue(UTF8ToWide(homepage.spec()));
   }
 }
 
@@ -1013,9 +1014,7 @@ enum { kHomepageNewTabPage, kHomepageURL };
   // to something valid ("http://google.com").
   std::string unfixedURL = urlString ? base::SysNSStringToUTF8(urlString) :
                                        chrome::kChromeUINewTabURL;
-  std::string fixedURL = URLFixerUpper::FixupURL(unfixedURL, std::string());
-  if (GURL(fixedURL).is_valid())
-    [self setHomepage:fixedURL];
+  [self setHomepage:GURL(URLFixerUpper::FixupURL(unfixedURL, std::string()))];
 }
 
 // Returns whether the home button should be checked based on the preference.

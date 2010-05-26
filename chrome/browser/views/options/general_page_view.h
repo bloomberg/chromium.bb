@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,10 +105,9 @@ class GeneralPageView : public OptionsPageView,
                            const GURL& url);
 
   // Sets the home page preferences for kNewTabPageIsHomePage and kHomePage.
-  // If a blank string is passed in we revert to using NewTab page as the Home
-  // page. When setting the Home Page to NewTab page, we preserve the old value
-  // of kHomePage (we don't overwrite it).
-  void SetHomepage(const std::wstring& homepage);
+  // If an empty or null-host GURL is passed in we revert to using NewTab
+  // page as the Homepage.
+  void SetHomepage(const GURL& homepage);
 
   // Invoked when the selection of the table view changes. Updates the enabled
   // property of the remove button.

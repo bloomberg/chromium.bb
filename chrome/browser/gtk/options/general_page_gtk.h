@@ -67,9 +67,8 @@ class GeneralPageGtk : public OptionsPageBase,
   void EnableDefaultSearchEngineComboBox(bool enable);
 
   // Sets the home page preferences for kNewTabPageIsHomePage and kHomePage.
-  // If a blank string is passed in we revert to using NewTab page as the Home
-  // page. When setting the Home Page to NewTab page, we preserve the old value
-  // of kHomePage (we don't overwrite it).
+  // If an invalid URL is passed in we revert to using NewTab page as the Home
+  // page.
   void SetHomepage(const GURL& homepage);
 
   // Sets the home page pref using the value in the entry box

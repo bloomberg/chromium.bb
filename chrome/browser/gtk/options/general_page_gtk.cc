@@ -628,6 +628,8 @@ void GeneralPageGtk::EnableDefaultSearchEngineComboBox(bool enable) {
 void GeneralPageGtk::SetHomepage(const GURL& homepage) {
   if (!homepage.is_valid() || homepage.spec() == chrome::kChromeUINewTabURL) {
     new_tab_page_is_home_page_.SetValue(true);
+    if (!homepage.has_host())
+      homepage_.SetValue(std::wstring());
   } else {
     new_tab_page_is_home_page_.SetValue(false);
     homepage_.SetValue(UTF8ToWide(homepage.spec()));

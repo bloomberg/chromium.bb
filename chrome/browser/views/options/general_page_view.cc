@@ -232,12 +232,12 @@ void GeneralPageView::ButtonPressed(
   } else if (sender == homepage_use_newtab_radio_) {
     UserMetricsRecordAction(UserMetricsAction("Options_Homepage_UseNewTab"),
                             profile()->GetPrefs());
-    SetHomepage(GetNewTabUIURLString());
+    SetHomepage(GURL());
     EnableHomepageURLField(false);
   } else if (sender == homepage_use_url_radio_) {
     UserMetricsRecordAction(UserMetricsAction("Options_Homepage_UseURL"),
                             profile()->GetPrefs());
-    SetHomepage(homepage_use_url_textfield_->text());
+    SetHomepage(GURL(homepage_use_url_textfield_->text()));
     EnableHomepageURLField(true);
   } else if (sender == homepage_show_home_button_checkbox_) {
     bool show_button = homepage_show_home_button_checkbox_->checked();
@@ -285,11 +285,10 @@ void GeneralPageView::ContentsChanged(views::Textfield* sender,
   if (sender == homepage_use_url_textfield_) {
     // If the text field contains a valid URL, sync it to prefs. We run it
     // through the fixer upper to allow input like "google.com" to be converted
-    // to something valid ("http://google.com").
-    std::string url_string = URLFixerUpper::FixupURL(
-        UTF16ToUTF8(homepage_use_url_textfield_->text()), std::string());
-    if (GURL(url_string).is_valid())
-      SetHomepage(UTF8ToWide(url_string));
+    // to something valid ("http://google.com"). If the field contains an
+    // empty or null-host URL, a blank homepage is synced to prefs.
+    SetHomepage(GURL(URLFixerUpper::FixupURL(
+        UTF16ToUTF8(homepage_use_url_textfield_->text()), std::string())));
   }
 }
 
@@ -745,12 +744,15 @@ void GeneralPageView::AddBookmark(UrlPicker* dialog,
   SaveStartupPref();
 }
 
-void GeneralPageView::SetHomepage(const std::wstring& homepage) {
-  if (homepage.empty() || homepage == GetNewTabUIURLString()) {
+void GeneralPageView::SetHomepage(const GURL& homepage) {
+  if (!homepage.is_valid() ||
+      UTF8ToWide(homepage.spec()) == GetNewTabUIURLString()) {
     new_tab_page_is_home_page_.SetValue(true);
+    if (!homepage.has_host())
+      homepage_.SetValue(std::wstring());
   } else {
     new_tab_page_is_home_page_.SetValue(false);
-    homepage_.SetValue(homepage);
+    homepage_.SetValue(UTF8ToWide(homepage.spec()));
   }
 }
 
