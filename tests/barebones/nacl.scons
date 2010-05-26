@@ -45,6 +45,7 @@ env.Replace(LIBS=[],
             EXTRA_LIBS=[],
             LINKFLAGS=LINK_FLAGS_MULTILIB)
 
+env.Append(CFLAGS='-Wno-long-long')
 
 # TODO(robertm): fix this. The regualar version of 'barebones_regs
 #                triggers a well-known llvm bug
@@ -54,7 +55,16 @@ if env['BUILD_ARCHITECTURE'] == 'arm':
 # NOTE: the x86 linker wants _start() to be the very first function
 FAKE_STARTUP = env.ComponentObject('fake_startup', 'fake_startup.c')
 
-for basename in ['hello_world', 'exit', 'fib', 'switch', 'vtable', 'regs']:
+for basename in ['hello_world',
+                 'exit',
+                 'fib',
+                 'switch',
+                 'vtable',
+                 'vaarg',
+                 'regs']:
+  # TODO(robertm): fix this ASAP
+  if env['BUILD_ARCHITECTURE'] == 'arm' and basename == 'vaarg': continue
+
   src = 'barebones_' + basename + '.c'
   nexe = 'barebones_' + basename + '.nexe'
   out = 'barebones_' + basename + '.out'
