@@ -191,11 +191,13 @@ TEST_F(WorkerTest, IncognitoSharedWorkers) {
 
 const wchar_t kDocRoot[] = L"chrome/test/data/workers";
 
-// http://crbug.com/36630 termination issues, disabled on all platforms.
+#if defined(OS_WIN)
 // http://crbug.com/33344 - NavigateAndWaitForAuth times out on the Windows
 // build bots.
+#define WorkerHttpAuth DISABLED_WorkerHttpAuth
+#endif
 // Make sure that auth dialog is displayed from worker context.
-TEST_F(WorkerTest, DISABLED_WorkerHttpAuth) {
+TEST_F(WorkerTest, WorkerHttpAuth) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
@@ -207,11 +209,13 @@ TEST_F(WorkerTest, DISABLED_WorkerHttpAuth) {
   EXPECT_TRUE(NavigateAndWaitForAuth(tab, url));
 }
 
-// http://crbug.com/36630 termination issues, disabled on all platforms.
+#if defined(OS_WIN)
 // http://crbug.com/33344 - NavigateAndWaitForAuth times out on the Windows
 // build bots.
+#define SharedWorkerHttpAuth DISABLED_SharedWorkerHttpAuth
+#endif
 // Make sure that auth dialog is displayed from shared worker context.
-TEST_F(WorkerTest, DISABLED_SharedWorkerHttpAuth) {
+TEST_F(WorkerTest, SharedWorkerHttpAuth) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
@@ -314,8 +318,7 @@ TEST_F(WorkerTest, WorkerScriptError) {
   RunWorkerFastLayoutTest("worker-script-error.html");
 }
 
-// http://crbug.com/36630.
-TEST_F(WorkerTest, DISABLED_WorkerTerminate) {
+TEST_F(WorkerTest, WorkerTerminate) {
   RunWorkerFastLayoutTest("worker-terminate.html");
 }
 
@@ -329,64 +332,63 @@ TEST_F(WorkerTest, WorkerTimeout) {
 // http://crbug.com/27636 - incorrect URL_MISMATCH exceptions sometimes get
 // generated on the windows try bots. FLAKY on Win.
 // http://crbug.com/28445 - flakiness on mac
-// http://crbug.com/36630 - termination issues, disabled on all platforms.
-TEST_F(WorkerTest, DISABLED_SharedWorkerFastConstructor) {
+TEST_F(WorkerTest, FLAKY_SharedWorkerFastConstructor) {
   RunWorkerFastLayoutTest("shared-worker-constructor.html");
 }
 
-TEST_F(WorkerTest,  DISABLED_SharedWorkerFastContextGC) {
+TEST_F(WorkerTest, FLAKY_SharedWorkerFastContextGC) {
   RunWorkerFastLayoutTest("shared-worker-context-gc.html");
 }
 
-TEST_F(WorkerTest,  DISABLED_SharedWorkerFastEventListener) {
+TEST_F(WorkerTest, FLAKY_SharedWorkerFastEventListener) {
   RunWorkerFastLayoutTest("shared-worker-event-listener.html");
 }
 
-TEST_F(WorkerTest,  DISABLED_SharedWorkerFastException) {
+TEST_F(WorkerTest, FLAKY_SharedWorkerFastException) {
   RunWorkerFastLayoutTest("shared-worker-exception.html");
 }
 
-TEST_F(WorkerTest,  DISABLED_SharedWorkerFastGC) {
+TEST_F(WorkerTest, FLAKY_SharedWorkerFastGC) {
   RunWorkerFastLayoutTest("shared-worker-gc.html");
 }
 
-TEST_F(WorkerTest, DISABLED_SharedWorkerFastInIframe) {
+TEST_F(WorkerTest, FLAKY_SharedWorkerFastInIframe) {
   RunWorkerFastLayoutTest("shared-worker-in-iframe.html");
 }
 
-TEST_F(WorkerTest,  DISABLED_SharedWorkerFastLoadError) {
+TEST_F(WorkerTest, FLAKY_SharedWorkerFastLoadError) {
   RunWorkerFastLayoutTest("shared-worker-load-error.html");
 }
 
-TEST_F(WorkerTest,  DISABLED_SharedWorkerFastLocation) {
+TEST_F(WorkerTest, FLAKY_SharedWorkerFastLocation) {
   RunWorkerFastLayoutTest("shared-worker-location.html");
 }
 
-TEST_F(WorkerTest,  DISABLED_SharedWorkerFastName) {
+TEST_F(WorkerTest, FLAKY_SharedWorkerFastName) {
   RunWorkerFastLayoutTest("shared-worker-name.html");
 }
 
-TEST_F(WorkerTest,  DISABLED_SharedWorkerFastNavigator) {
+TEST_F(WorkerTest, FLAKY_SharedWorkerFastNavigator) {
   RunWorkerFastLayoutTest("shared-worker-navigator.html");
 }
 
-TEST_F(WorkerTest,  DISABLED_SharedWorkerFastReplaceGlobalConstructor) {
+TEST_F(WorkerTest, FLAKY_SharedWorkerFastReplaceGlobalConstructor) {
   RunWorkerFastLayoutTest("shared-worker-replace-global-constructor.html");
 }
 
-TEST_F(WorkerTest,  DISABLED_SharedWorkerFastReplaceSelf) {
+TEST_F(WorkerTest, FLAKY_SharedWorkerFastReplaceSelf) {
   RunWorkerFastLayoutTest("shared-worker-replace-self.html");
 }
 
-TEST_F(WorkerTest,  DISABLED_SharedWorkerFastScriptError) {
+TEST_F(WorkerTest, FLAKY_SharedWorkerFastScriptError) {
   RunWorkerFastLayoutTest("shared-worker-script-error.html");
 }
 
-TEST_F(WorkerTest,  DISABLED_SharedWorkerFastShared) {
+TEST_F(WorkerTest, FLAKY_SharedWorkerFastShared) {
   RunWorkerFastLayoutTest("shared-worker-shared.html");
 }
 
-TEST_F(WorkerTest,  DISABLED_SharedWorkerFastSimple) {
+TEST_F(WorkerTest, FLAKY_SharedWorkerFastSimple) {
   RunWorkerFastLayoutTest("shared-worker-simple.html");
 }
 
@@ -521,10 +523,11 @@ TEST_F(WorkerTest, FLAKY_MessagePorts) {
     RunLayoutTest(kLayoutTestFiles[i], kNoHttpPort);
 }
 
-// http://crbug.com/30307, disabled on Linux
+#if defined(OS_WIN)
 // This has been flaky on Windows since r39931. http://crbug.com/36800
-// http://crbug.com/36630. Termination issues, disabled on all platforms.
-TEST_F(WorkerTest, DISABLED_LimitPerPage) {
+#define LimitPerPage FLAKY_LimitPerPage
+#endif
+TEST_F(WorkerTest, LimitPerPage) {
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir),
                                        FilePath(kManyWorkersFile));
@@ -535,10 +538,12 @@ TEST_F(WorkerTest, DISABLED_LimitPerPage) {
 }
 
 // Doesn't crash, but on all platforms, it sometimes fails.
-// http://crbug.com/28445. Made FLAKY
-// http://crbug.com/36630. Termination issues, disabled on all platforms.
-TEST_F(WorkerTest, DISABLED_LimitTotal) {
-#if !defined(OS_LINUX)
+// Flaky on all platforms: http://crbug.com/28445
+#if defined(OS_LINUX)
+// Hangs on Linux: http://30332
+#define FLAKY_LimitTotal DISABLED_LimitTotal
+#endif
+TEST_F(WorkerTest, FLAKY_LimitTotal) {
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
   int total_workers = WorkerService::kMaxWorkersWhenSeparate;
 
@@ -566,7 +571,6 @@ TEST_F(WorkerTest, DISABLED_LimitTotal) {
                                                    FilePath(kGoogleFile))));
 
   ASSERT_TRUE(WaitForProcessCountToBe(tab_count, total_workers));
-#endif
 }
 
 TEST_F(WorkerTest, WorkerClose) {
@@ -633,8 +637,7 @@ TEST_F(WorkerTest, FLAKY_MultipleTabsQueuedSharedWorker) {
   ASSERT_TRUE(WaitForProcessCountToBe(3, max_workers_per_tab));
 }
 
-// http://crbug.com/36630 termination issues, disabled on all paltforms.
-TEST_F(WorkerTest, DISABLED_QueuedSharedWorkerStartedFromOtherTab) {
+TEST_F(WorkerTest, QueuedSharedWorkerStartedFromOtherTab) {
   // Tests to make sure that queued shared workers are started up when
   // an instance is launched from another tab.
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
