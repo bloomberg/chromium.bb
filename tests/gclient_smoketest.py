@@ -131,7 +131,7 @@ class GClientSmoke(GClientSmokeBase):
   def testCommands(self):
     """This test is to make sure no new command was added."""
     result = self.gclient(['help'])
-    self.assertEquals(1197, len(result[0]))
+    self.assertEquals(3189, len(result[0]))
     self.assertEquals(0, len(result[1]))
     self.assertEquals(0, result[2])
 
