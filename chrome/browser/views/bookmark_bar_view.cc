@@ -459,11 +459,8 @@ void BookmarkBarView::SetPageNavigator(PageNavigator* navigator) {
 }
 
 gfx::Size BookmarkBarView::GetPreferredSize() {
-  // We don't want the bookmark bar view in the app launcher new tab page.
-  bool hide_bookmark_bar =
-      (Extension::AppsAreEnabled() && OnNewTabPage()) || OnAppsPage();
-
-  if (!hide_bookmark_bar)
+  // Extension apps don't show the bookmark bar.
+  if (!OnAppsPage())
     return LayoutItems(true);
   else
     return gfx::Size();
