@@ -457,8 +457,6 @@ class AutocompleteEditViewWin
   // every time we paint.  |font_y_adjustment_| is the number of pixels we need
   // to shift the font vertically in order to make its baseline be at our
   // desired baseline in the edit.
-  int font_ascent_;
-  int font_descent_;
   int font_x_height_;
   int font_y_adjustment_;
 
