@@ -13,6 +13,7 @@
 #include "skia/ext/platform_device.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScrollbar.h"
 #include "webkit/glue/plugins/plugin_instance.h"
+#include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;
@@ -123,11 +124,7 @@ void PepperScrollbarWidget::Paint(Graphics2DDeviceContext* context,
                                   const NPRect& dirty) {
   gfx::Rect rect(dirty.left, dirty.top, dirty.right - dirty.left,
                  dirty.bottom - dirty.top);
-#if defined(OS_WIN) || defined(OS_LINUX)
-  scrollbar_->paint(context->canvas(), rect);
-#elif defined(OS_MACOSX)
-  // TODO(port)
-#endif
+  scrollbar_->paint(webkit_glue::ToWebCanvas(context->canvas()), rect);
   dirty_rect_ = dirty_rect_.Subtract(rect);
 }
 

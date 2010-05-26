@@ -237,13 +237,12 @@ bool PathProvider(int key, FilePath* result) {
         return false;
       break;
     case chrome::FILE_PDF_PLUGIN:
-      if (!PathService::Get(base::DIR_MODULE, &cur))
+      if (!GetInternalPluginsDirectory(&cur))
         return false;
 #if defined(OS_WIN)
       cur = cur.Append(FILE_PATH_LITERAL("pdf.dll"));
 #elif defined(OS_MACOSX)
-      // http://crbug.com/44900
-      return false;
+      cur = cur.Append(FILE_PATH_LITERAL("PDF.plugin"));
 #else  // Linux and Chrome OS
       cur = cur.Append(FILE_PATH_LITERAL("libpdf.so"));
 #endif

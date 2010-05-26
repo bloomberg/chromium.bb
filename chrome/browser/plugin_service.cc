@@ -51,7 +51,13 @@ static void NotifyPluginsOfActivation() {
 
 // static
 bool PluginService::enable_chrome_plugins_ = true;
+// Disable on Windows by default initially, but not on other platforms since
+// there's no alternative there at this point.
+#if defined(OS_WIN)
 bool PluginService::enable_internal_pdf_ = false;
+#else
+bool PluginService::enable_internal_pdf_ = true;
+#endif
 
 // static
 void PluginService::InitGlobalInstance(Profile* profile) {
