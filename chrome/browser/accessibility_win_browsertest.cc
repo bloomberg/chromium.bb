@@ -33,6 +33,7 @@ class AccessibilityWinBrowserTest : public InProcessBrowserTest {
 class AccessibleChecker {
  public:
   AccessibleChecker(std::wstring expected_name, int32 expected_role);
+  AccessibleChecker(std::wstring expected_name, std::wstring expected_role);
 
   // Append an AccessibleChecker that verifies accessibility information for
   // a child IAccessible. Order is important.
@@ -55,7 +56,7 @@ class AccessibleChecker {
   std::wstring name_;
 
   // Expected accessible role. Checked against IAccessible::get_accRole.
-  int32 role_;
+  CComVariant role_;
 
   // Expected accessible children. Checked using IAccessible::get_accChildCount
   // and ::AccessibleChildren.
@@ -113,6 +114,12 @@ AccessibleChecker::AccessibleChecker(
     role_(expected_role) {
 }
 
+AccessibleChecker::AccessibleChecker(
+    std::wstring expected_name, std::wstring expected_role) :
+    name_(expected_name),
+    role_(expected_role.c_str()) {
+}
+
 void AccessibleChecker::AppendExpectedChild(
     AccessibleChecker* expected_child) {
   children_.push_back(expected_child);
@@ -146,20 +153,13 @@ void AccessibleChecker::CheckAccessibleRole(IAccessible* accessible) {
   HRESULT hr =
       accessible->get_accRole(CreateI4Variant(CHILDID_SELF), &var_role);
   EXPECT_EQ(hr, S_OK);
-  EXPECT_EQ(V_VT(&var_role), VT_I4);
-  EXPECT_EQ(V_I4(&var_role), role_);
+  ASSERT_TRUE(role_ == var_role);
 }
 
 void AccessibleChecker::CheckAccessibleChildren(IAccessible* parent) {
   LONG child_count = 0;
   HRESULT hr = parent->get_accChildCount(&child_count);
   EXPECT_EQ(hr, S_OK);
-
-  // TODO(dmazzoni): remove as soon as test passes on build bot
-  printf("CheckAccessibleChildren: actual=%d expected=%d\n",
-         static_cast<int>(child_count),
-         static_cast<int>(children_.size()));
-
   ASSERT_EQ(child_count, children_.size());
 
   std::auto_ptr<VARIANT> child_array(new VARIANT[child_count]);
@@ -179,9 +179,8 @@ void AccessibleChecker::CheckAccessibleChildren(IAccessible* parent) {
   }
 }
 
-// Flaky http://crbug.com/44546.
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       FAILS_TestRendererAccessibilityTree) {
+                       TestRendererAccessibilityTree) {
   GURL tree_url(
       "data:text/html,<html><head><title>Accessibility Win Test</title></head>"
       "<body><input type='button' value='push' /><input type='checkbox' />"
@@ -197,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   AccessibleChecker button_checker(L"push", ROLE_SYSTEM_PUSHBUTTON);
   AccessibleChecker checkbox_checker(L"", ROLE_SYSTEM_CHECKBUTTON);
 
-  AccessibleChecker grouping_checker(L"", ROLE_SYSTEM_GROUPING);
+  AccessibleChecker grouping_checker(L"", L"div");
   grouping_checker.AppendExpectedChild(&button_checker);
   grouping_checker.AppendExpectedChild(&checkbox_checker);
 
