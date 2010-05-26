@@ -139,7 +139,7 @@ void BackingStoreWin::PaintToBackingStore(
   BITMAPINFOHEADER hdr;
   gfx::CreateBitmapHeader(bitmap_rect.width(), bitmap_rect.height(), &hdr);
   // Account for a bitmap_rect that exceeds the bounds of our view
-  gfx::Rect view_rect(0, 0, size().width(), size().height());
+  gfx::Rect view_rect(size());
 
   for (size_t i = 0; i < copy_rects.size(); i++) {
     gfx::Rect paint_rect = view_rect.Intersect(copy_rects[i]);

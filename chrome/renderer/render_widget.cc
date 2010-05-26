@@ -537,7 +537,7 @@ void RenderWidget::didInvalidateRect(const WebRect& rect) {
   bool update_pending = paint_aggregator_.HasPendingUpdate();
 
   // The invalidated rect might be outside the bounds of the view.
-  gfx::Rect view_rect(0, 0, size_.width(), size_.height());
+  gfx::Rect view_rect(size_);
   gfx::Rect damaged_rect = view_rect.Intersect(rect);
   if (damaged_rect.IsEmpty())
     return;
@@ -566,7 +566,7 @@ void RenderWidget::didScrollRect(int dx, int dy, const WebRect& clip_rect) {
   bool update_pending = paint_aggregator_.HasPendingUpdate();
 
   // The scrolled rect might be outside the bounds of the view.
-  gfx::Rect view_rect(0, 0, size_.width(), size_.height());
+  gfx::Rect view_rect(size_);
   gfx::Rect damaged_rect = view_rect.Intersect(clip_rect);
   if (damaged_rect.IsEmpty())
     return;
@@ -780,10 +780,10 @@ void RenderWidget::OnMsgPaintAtSize(const TransportDIB::Handle& dib_handle,
   float y_scale = static_cast<float>(desired_size.height()) /
                   static_cast<float>(canvas_size.height());
 
-  gfx::Rect orig_bounds(gfx::Point(0,0), canvas_size);
+  gfx::Rect orig_bounds(canvas_size);
   canvas_size.set_width(static_cast<int>(canvas_size.width() * x_scale));
   canvas_size.set_height(static_cast<int>(canvas_size.height() * y_scale));
-  gfx::Rect bounds(gfx::Point(0,0), canvas_size);
+  gfx::Rect bounds(canvas_size);
 
   scoped_ptr<skia::PlatformCanvas> canvas(
       paint_at_scale_buffer->GetPlatformCanvas(canvas_size.width(),

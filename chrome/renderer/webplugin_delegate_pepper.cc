@@ -1076,7 +1076,7 @@ bool WebPluginDelegatePepper::PrintPage(int page_number,
   scoped_ptr<Graphics2DDeviceContext> g2d(new Graphics2DDeviceContext(this));
   NPDeviceContext2DConfig config;
   NPDeviceContext2D context;
-  gfx::Rect surface_rect(gfx::Point(0, 0), size_in_pixels);
+  gfx::Rect surface_rect(size_in_pixels);
   NPError err = g2d->Initialize(surface_rect, &config, &context);
   if (err != NPERR_NO_ERROR) {
     NOTREACHED();

@@ -1084,8 +1084,7 @@ void WebPluginDelegateProxy::OnInvalidateRect(const gfx::Rect& rect) {
 
   // Clip the invalidation rect to the plugin bounds; the plugin may have been
   // resized since the invalidate message was sent.
-  const gfx::Rect clipped_rect(rect.Intersect(
-      gfx::Rect(0, 0, plugin_rect_.width(), plugin_rect_.height())));
+  const gfx::Rect clipped_rect(rect.Intersect(gfx::Rect(plugin_rect_.size())));
 
   invalidate_pending_ = true;
   CopyFromTransportToBacking(clipped_rect);
@@ -1412,7 +1411,7 @@ bool WebPluginDelegateProxy::BindFakePluginWindowHandle(bool opaque) {
   webkit_glue::WebPluginGeometry geom;
   geom.window = fake_window;
   geom.window_rect = plugin_rect_;
-  geom.clip_rect = gfx::Rect(0, 0, plugin_rect_.width(), plugin_rect_.height());
+  geom.clip_rect = gfx::Rect(plugin_rect_.size());
   geom.rects_valid = true;
   geom.visible = true;
   render_view_->DidMovePlugin(geom);

@@ -43,7 +43,7 @@ void WmOverviewSnapshot::Init(const gfx::Size& size,
   snapshot_view_->set_border(
       views::Border::CreateSolidBorder(1, SkColorSetRGB(176, 176, 176)));
 
-  WidgetGtk::Init(NULL, gfx::Rect(gfx::Point(0,0), size));
+  WidgetGtk::Init(NULL, gfx::Rect(size));
 
   SetContentsView(snapshot_view_);
 

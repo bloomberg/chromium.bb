@@ -1216,8 +1216,7 @@ bool AeroPeekManager::GetTabPreview(int tab_id, SkBitmap* preview) {
   // Create a copy of this BackingStore image.
   // This code is just copied from "thumbnail_generator.cc".
   skia::PlatformCanvas canvas;
-  if (!backing_store->CopyFromBackingStore(gfx::Rect(gfx::Point(0, 0),
-                                                     backing_store->size()),
+  if (!backing_store->CopyFromBackingStore(gfx::Rect(backing_store->size()),
                                            &canvas))
     return false;
 

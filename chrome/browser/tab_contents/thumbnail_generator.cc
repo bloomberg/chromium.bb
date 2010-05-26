@@ -102,8 +102,7 @@ SkBitmap GetThumbnailForBackingStore(BackingStore* backing_store) {
   // allocation and we can tolerate failure here, so give up if the allocation
   // fails.
   skia::PlatformCanvas temp_canvas;
-  if (!backing_store->CopyFromBackingStore(gfx::Rect(gfx::Point(0, 0),
-                                                     backing_store->size()),
+  if (!backing_store->CopyFromBackingStore(gfx::Rect(backing_store->size()),
                                            &temp_canvas))
     return result;
   const SkBitmap& bmp = temp_canvas.getTopPlatformDevice().accessBitmap(false);

@@ -156,8 +156,7 @@ void DraggedTabGtk::AnimationCanceled(const Animation* animation) {
 
 void DraggedTabGtk::Layout() {
   if (attached_) {
-    gfx::Size prefsize = GetPreferredSize();
-    renderer_->SetBounds(gfx::Rect(0, 0, prefsize.width(), prefsize.height()));
+    renderer_->SetBounds(gfx::Rect(GetPreferredSize()));
   } else {
     int left = 0;
     if (base::i18n::IsRTL())
