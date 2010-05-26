@@ -7,8 +7,9 @@
 #ifndef CHROME_BROWSER_AUTOMATION_AUTOMATION_EXTENSION_FUNCTION_H_
 #define CHROME_BROWSER_AUTOMATION_AUTOMATION_EXTENSION_FUNCTION_H_
 
-#include <string>
 #include <map>
+#include <string>
+#include <vector>
 
 #include "chrome/browser/extensions/extension_function.h"
 
@@ -22,7 +23,7 @@ class AutomationExtensionFunction : public AsyncExtensionFunction {
   AutomationExtensionFunction() { }
 
   // ExtensionFunction implementation.
-  virtual void SetArgs(const Value* args);
+  virtual void SetArgs(const ListValue* args);
   virtual const std::string GetResult();
   virtual bool RunImpl();
 
