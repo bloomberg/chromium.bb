@@ -110,15 +110,17 @@ bool LanguageLibrary::IsKeyboardLayout(const std::string& input_method_id) {
 
 std::string LanguageLibrary::GetLanguageCodeFromDescriptor(
     const InputMethodDescriptor& descriptor) {
-  // Special-case Chewing/Bopomofo/Pinyin. Handle these as zh-TW/zh-TW/zh-CN,
-  // rather than zh.
+  // Handle some Chinese input methods as zh-CN/zh-TW, rather than zh.
   // TODO: we should fix this issue in engines rather than here.
-  if (descriptor.id == "chewing" && descriptor.language_code == "zh") {
-    return "zh-TW";
-  } else if (descriptor.id == "bopomofo" && descriptor.language_code == "zh") {
-    return "zh-TW";
-  } else if (descriptor.id == "pinyin" && descriptor.language_code == "zh") {
-    return "zh-CN";
+  if (descriptor.language_code == "zh") {
+    if (descriptor.id == "pinyin") {
+      return "zh-CN";
+    } else if (descriptor.id == "bopomofo" ||
+               descriptor.id == "chewing" ||
+               descriptor.id == "m17n:zh:cangjie" ||
+               descriptor.id == "m17n:zh:quick") {
+      return "zh-TW";
+    }
   }
 
   std::string language_code =

@@ -40,6 +40,10 @@ TEST(LanguageLibraryTest, GetLanguageCodeFromDescriptor) {
       InputMethodDescriptor("chewing", "Chewing", "us", "zh")));
   EXPECT_EQ("zh-TW", LanguageLibrary::GetLanguageCodeFromDescriptor(
       InputMethodDescriptor("bopomofo", "Bopomofo(Zhuyin)", "us", "zh")));
+  EXPECT_EQ("zh-TW", LanguageLibrary::GetLanguageCodeFromDescriptor(
+      InputMethodDescriptor("m17n:zh:cangjie", "Cangjie", "us", "zh")));
+  EXPECT_EQ("zh-TW", LanguageLibrary::GetLanguageCodeFromDescriptor(
+      InputMethodDescriptor("m17n:zh:quick", "Quick", "us", "zh")));
   EXPECT_EQ("zh-CN", LanguageLibrary::GetLanguageCodeFromDescriptor(
       InputMethodDescriptor("pinyin", "Pinyin", "us", "zh")));
   EXPECT_EQ("en-US", LanguageLibrary::GetLanguageCodeFromDescriptor(
