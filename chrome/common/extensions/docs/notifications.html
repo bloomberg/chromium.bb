@@ -15,7 +15,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>Override - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
+  <title>Desktop Notifications - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
       </div>
@@ -135,9 +135,9 @@
               <li>Browser UI
                 <ul>
                   <li><a href="browserAction.html">Browser Actions</a></li>
-                  <li><a href="notifications.html">Desktop Notifications</a></li>
+                  <li class="leftNavSelected">Desktop Notifications</li>
                   <li><a href="options.html">Options Pages</a></li>
-                  <li class="leftNavSelected">Override Pages</li>
+                  <li><a href="override.html">Override Pages</a></li>
                   <li><a href="pageAction.html">Page Actions</a></li>
                   <li><a href="themes.html">Themes</a></li>
                 </ul>
@@ -196,35 +196,21 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">Override</h1>
+        <h1 class="page_title">Desktop Notifications</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
-        <div id="toc">
+        <div id="toc" style="display: none; ">
           <h2>Contents</h2>
           <ol>
             <li>
-              <a href="#manifest">Manifest</a>
+              <a>h2Name</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
-              </ol>
-            </li><li>
-              <a href="#tips">Tips</a>
-              <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
-              </ol>
-            </li><li>
-              <a href="#examples"> Examples </a>
-              <ol>
-                <li style="display: none; ">
+                <li>
                   <a>h3Name</a>
                 </li>
               </ol>
             </li>
-              <li style="display: none; ">
+              <li>
                 <a href="#apiReference">API reference</a>
                 <ol>
                   <li>
@@ -266,179 +252,118 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><style>
-#pics {
-  margin:2em 1em 1.5em;
-}
+        <div id="static"><div id="pageData-name" class="pageData">Desktop Notifications</div>
 
-#pics td {
-  text-align:center;
-  width:50%!important;
-  border:none;
-  padding:0 1em;
-  font-size:90%;
-}
-
-#pics img {
-  width:188;
-  height:246;
-  border:none;
-}
-</style>
-
-<div id="pageData-title" class="pageData">Override Pages</div>
-<div id="pageData-showTOC" class="pageData">true</div>
-
+<!-- BEGIN AUTHORED CONTENT -->
 <p>
-Override pages are a way to substitute an HTML file from your extension
-for a page that Google Chrome normally provides.
-In addition to HTML,
-an override page usually has CSS and JavaScript code.
+Use desktop notifications to notify users that something
+important has happened.
+Notifications appear outside the browser window.
+As the following snapshots show,
+the details of how notifications look
+and where they're shown depend on the platform.
 </p>
 
-<p>
-An extension can replace any one of the following pages:
-</p><ul>
-  <li> <b>Bookmark Manager:</b>
-  The page that appears when the user chooses
-  the Bookmark Manager menu item
-  from the Tools (wrench) menu or, on Mac,
-  the Bookmark Manager item from the Bookmarks menu.
-  You can also get to this page by entering the URL
-  <b>chrome://bookmarks</b>.
-  </li>
-
-  <li> <b>History:</b>
-  The page that appears when the user
-  chooses the History menu item
-  from the Tools (wrench) menu or, on Mac,
-  the Show Full History item from the History menu.
-  You can also get to this page by entering the URL
-  <b>chrome://history</b>.
-  </li>
-
-  <li> <b>New Tab:</b>
-  The page that appears when the user creates a new tab or window.
-  You can also get to this page by entering the URL
-  <b>chrome://newtab</b>.
-  </li>
-</ul>
-<p></p>
-
-<p class="note">
-<b>Note:</b>
-A single extension can override
-only one page.
-</p>
+<img src="images/notification-windows.png" width="28%" style="margin:2em 0.5em 1em; border:1px solid black;" alt="Notifications on Microsoft Windows">
+<img src="images/notification-mac.png" width="28%" style="margin:2em 0.5em 1em; border:1px solid black;" alt="Notifications on Mac OS X">
+<img src="images/notification-linux.png" width="28%" style="margin:2em 0.5em 1em; border:1px solid black;" alt="Notifications on Ubuntu Linux">
 
 <p>
-The following screenshots show the default New Tab page
-next to a custom New Tab page.
+You create the notification window
+using a bit of JavaScript and, optionally,
+an HTML page packaged inside your extension.
 </p>
 
-<table id="pics">
-  <tbody><tr>
-    <td> <b>The default New Tab page</b> </td>
-    <td> <b>An alternative New Tab page</b> </td>
-  </tr>
-  <tr>
-    <td>
-      <img src="images/ntp-default.png" alt="default New Tab page" width="200" height="173">
-    </td>
-    <td>
-      <img src="images/ntp-blank.png" alt="a blank New Tab page" width="200" height="173">
-    </td>
-  </tr>
-</tbody></table>
 
 <h2 id="manifest">Manifest</h2>
 
 <p>
-Register an override page in the
-<a href="manifest.html">extension manifest</a> like this:
+You can request the notification permission
+in the <a href="manifest.html">extension manifest</a>,
+like this:
 </p>
 
 <pre>{
   "name": "My extension",
   ...
-
-<b>  "chrome_url_overrides" : {
-    "<em>pageToOverride</em>": "<em>myPage.html</em>"
-  }</b>,
+<b>  "permissions": [
+    "notifications"
+  ]</b>,
   ...
 }</pre>
 
-<p>
-For <code><em>pageToOverride</em></code>, substitute one of the following:
+<p class="note">
+<b>Note:</b> Extensions that declare
+the <code>notifications</code> permission
+are always allowed to create notifications.
+There is no need to call
+<code>webkitNotifications.checkPermission()</code>.
 </p>
 
-<ul>
-  <li> <code>bookmarks</code>
-  </li><li> <code>history</code>
-  </li><li> <code>newtab</code>
-</li></ul>
-
-
-<h2 id="tips">Tips</h2>
+<h2 id="api">API</h2>
 
 <p>
-For an effective override page, follow these guidelines:
+The desktop notification API for extensions
+is the same one that
+is available to normal web pages.
+As the following code shows,
+you first create either a simple text notification
+or an HTML notification,
+and then you show the notification.
 </p>
 
-<ul>
-  <li>
-    <p>
-    <b>Make your page quick and small.</b> <br>
-    Users expect built-in browser pages to open instantly.
-    Avoid doing things that might take a long time.
-    For example, avoid synchronous fetches of network or database resources.
-    </p>
-  </li>
-  <li>
-    <p>
-    <b>Include a title in your page.</b> <br>
-    Otherwise people might see the URL of the page,
-    which could be confusing.
-    Here's an example of specifying the title:
-    <code>&lt;title&gt;New&nbsp;Tab&lt;/title&gt;</code>
-    </p>
-  </li>
-  <li>
-    <p>
-    <b>Don't rely on the page having the keyboard focus.</b> <br>
-    The address bar always gets the focus first
-    when the user creates a new tab.
-    </p>
-  </li>
-  <li>
-    <p>
-    <b>Don't try to emulate the default New Tab page.</b> <br>
-    The APIs necessary to create
-    a slightly modified version of the default New Tab page —
-    with top pages,
-    recently closed pages,
-    tips,
-    a theme background image,
-    and so on —
-    don't exist yet.
-    Until they do,
-    you're better off trying to make something completely different.
-    </p>
-  </li>
-</ul>
+<pre>// Create a simple text notification:
+var notification = webkitNotifications.createNotification(
+  '48.png',  // icon url - can be relative
+  'Hello!',  // notification title
+  'Lorem ipsum...'  // notification body text
+);
+
+// Or create an HTML notification:
+var notification = webkitNotifications.createHTMLNotification(
+  'notification.html'  // html url - can be relative
+);
+
+// Then show the notification.
+notification.show();
+</pre>
+
+<p>For complete API details,
+see the <a href="http://dev.chromium.org/developers/design-documents/desktop-notifications/api-specification">Desktop notifications draft specification</a>.</p>.
+
+
+<h2 id="communication">Communicating with other views</h2>
+
+<p>
+You can communicate between a notification
+and other views in your extension using
+<a href="extension.html#method-getBackgroundPage">getBackgroundPage()</a> and
+<a href="extension.html#method-getViews">getViews()</a>. For example:
+</p>
+
+<pre>// Inside a notification...
+chrome.extension.getBackgroundPage().doThing();
+
+// From the background page...
+chrome.extension.getViews({type:"notification"}).forEach(function(win) {
+  win.doOtherThing();
+});
+</pre>
+
 
 <h2 id="examples"> Examples </h2>
 
 <p>
-You can find simple examples of defining override pages in the
-<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/override/">examples/api/override</a>
+You can find a simple example
+of using notifications in the
+<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/notifications/">examples/api/notifications</a>
 directory.
-For other examples and for help in viewing the source code, see
-<a href="samples.html">Samples</a>.
+For other examples
+and for help in viewing the source code,
+see <a href="samples.html">Samples</a>.
 </p>
 
-
-<!-- [PENDING: Maybe have a gallery of NTPs?] -->
+<!-- END AUTHORED CONTENT -->
 </div>
 
         <!-- API PAGE -->
