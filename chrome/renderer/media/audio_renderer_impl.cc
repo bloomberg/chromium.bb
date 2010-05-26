@@ -101,7 +101,7 @@ void AudioRendererImpl::OnReadComplete(media::Buffer* buffer_in) {
   // TODO(hclam): handle end of stream here.
 
   // Use the base class to queue the buffer.
-  AudioRendererBase::OnReadComplete(buffer_in);
+  AudioRendererBase::OnFillBufferDone(buffer_in);
 
   // Post a task to render thread to notify a packet reception.
   io_loop_->PostTask(FROM_HERE,

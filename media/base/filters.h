@@ -265,10 +265,24 @@ class VideoDecoder : public MediaFilter {
   // Returns the MediaFormat for this filter.
   virtual const MediaFormat& media_format() = 0;
 
-  // Schedules a read.  Decoder takes ownership of the callback.
-  //
-  // TODO(scherkus): switch Read() callback to scoped_refptr<>.
-  virtual void Read(Callback1<VideoFrame*>::Type* read_callback) = 0;
+  // |set_fill_buffer_done_callback| install permanent callback from downstream
+  // filter (i.e. Renderer). The callback is used to deliver video frames at
+  // runtime to downstream filter
+  typedef Callback1<scoped_refptr<VideoFrame> >::Type FillBufferDoneCallback;
+  void set_fill_buffer_done_callback(FillBufferDoneCallback* callback) {
+    fill_buffer_done_callback_.reset(callback);
+  }
+  FillBufferDoneCallback* fill_buffer_done_callback() {
+    return fill_buffer_done_callback_.get();
+  }
+
+  // Render provides an output buffer for Decoder to write to. These buffers
+  // will be recycled to renderer by fill_buffer_done_callback_;
+  // We could also pass empty pointer here to let decoder provide buffers pool.
+  virtual void FillThisBuffer(scoped_refptr<VideoFrame> frame) = 0;
+
+ private:
+  scoped_ptr<FillBufferDoneCallback> fill_buffer_done_callback_;
 };
 
 
@@ -289,10 +303,24 @@ class AudioDecoder : public MediaFilter {
   // Returns the MediaFormat for this filter.
   virtual const MediaFormat& media_format() = 0;
 
-  // Schedules a read.  Decoder takes ownership of the callback.
-  //
-  // TODO(scherkus): switch Read() callback to scoped_refptr<>.
-  virtual void Read(Callback1<Buffer*>::Type* read_callback) = 0;
+  // |set_fill_buffer_done_callback| install permanent callback from downstream
+  // filter (i.e. Renderer). The callback is used to deliver buffers at
+  // runtime to downstream filter.
+  typedef Callback1<scoped_refptr<Buffer> >::Type FillBufferDoneCallback;
+  void set_fill_buffer_done_callback(FillBufferDoneCallback* callback) {
+    fill_buffer_done_callback_.reset(callback);
+  }
+  FillBufferDoneCallback* fill_buffer_done_callback() {
+     return fill_buffer_done_callback_.get();
+   }
+
+  // Render provides an output buffer for Decoder to write to. These buffers
+  // will be recycled to renderer by fill_buffer_done_callback_;
+  // We could also pass empty pointer here to let decoder provide buffers pool.
+  virtual void FillThisBuffer(scoped_refptr<Buffer> buffer) = 0;
+
+ private:
+  scoped_ptr<FillBufferDoneCallback> fill_buffer_done_callback_;
 };
 
 

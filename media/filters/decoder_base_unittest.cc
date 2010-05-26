@@ -9,6 +9,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::_;
 using ::testing::NotNull;
 using ::testing::StrictMock;
 
@@ -25,8 +26,6 @@ class MockDecoderOutput : public media::StreamSample {
   MOCK_CONST_METHOD0(IsEndOfStream, bool());
 };
 
-class MockDecoder : public media::MediaFilter {};
-
 class MockBuffer : public media::Buffer {
  public:
   MockBuffer() {}
@@ -36,6 +35,24 @@ class MockBuffer : public media::Buffer {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockBuffer);
+};
+
+class MockDecoder : public media::MediaFilter {
+ public:
+  typedef Callback1<scoped_refptr<MockDecoderOutput> >::Type
+      FillBufferDoneCallback;
+  void set_fill_buffer_done_callback_(FillBufferDoneCallback* callback) {
+    fill_buffer_done_callback_.reset(callback);
+  }
+  FillBufferDoneCallback* fill_buffer_done_callback() {
+    return fill_buffer_done_callback_.get();
+  }
+  scoped_ptr<FillBufferDoneCallback> fill_buffer_done_callback_;
+};
+
+class MockDecoderCallback {
+ public:
+  MOCK_METHOD1(OnReadComplete, void(scoped_refptr<MockDecoderOutput> output));
 };
 
 class MockDecoderImpl : public media::DecoderBase<
@@ -60,16 +77,6 @@ class MockDecoderImpl : public media::DecoderBase<
   FRIEND_TEST(media::DecoderBaseTest, FlowControl);
 
   DISALLOW_COPY_AND_ASSIGN(MockDecoderImpl);
-};
-
-class MockDecoderReadCallback {
- public:
-  MockDecoderReadCallback() {}
-  virtual ~MockDecoderReadCallback() {}
-  MOCK_METHOD1(ReadCallback, void(MockDecoderOutput* output));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockDecoderReadCallback);
 };
 
 }  // namespace
@@ -107,6 +114,9 @@ ACTION(CompleteDemuxRequest) {
 TEST(DecoderBaseTest, FlowControl) {
   MessageLoop message_loop;
   scoped_refptr<MockDecoderImpl> decoder = new MockDecoderImpl();
+  MockDecoderCallback read_callback;
+  decoder->set_fill_buffer_done_callback_(
+      NewCallback(&read_callback, &MockDecoderCallback::OnReadComplete));
   scoped_refptr<MockDemuxerStream> demuxer_stream = new MockDemuxerStream();
   StrictMock<MockFilterCallback> callback;
   decoder->set_message_loop(&message_loop);
@@ -120,7 +130,6 @@ TEST(DecoderBaseTest, FlowControl) {
   message_loop.RunAllPending();
 
   // Read.
-  StrictMock<MockDecoderReadCallback> read_callback;
   std::vector<scoped_refptr<Buffer> > decode_requests;
   EXPECT_CALL(*demuxer_stream, Read(NotNull()))
       .Times(2)
@@ -128,16 +137,13 @@ TEST(DecoderBaseTest, FlowControl) {
   EXPECT_CALL(*decoder, DoDecode(NotNull()))
       .Times(2)
       .WillRepeatedly(SaveDecodeRequest(&decode_requests));
-  decoder->Read(
-      NewCallback(reinterpret_cast<MockDecoderReadCallback*>(&read_callback),
-                  &MockDecoderReadCallback::ReadCallback));
-  decoder->Read(
-      NewCallback(reinterpret_cast<MockDecoderReadCallback*>(&read_callback),
-                  &MockDecoderReadCallback::ReadCallback));
+  scoped_refptr<MockDecoderOutput> output;
+  decoder->FillThisBuffer(output);
+  decoder->FillThisBuffer(output);
   message_loop.RunAllPending();
 
   // Fulfill the decode request.
-  EXPECT_CALL(read_callback, ReadCallback(NotNull())).Times(2);
+  EXPECT_CALL(read_callback, OnReadComplete(_)).Times(2);
   for (size_t i = 0; i < decode_requests.size(); ++i) {
     decoder->EnqueueResult(new MockDecoderOutput());
     decoder->OnDecodeComplete();

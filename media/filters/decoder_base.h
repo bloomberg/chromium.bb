@@ -52,14 +52,15 @@ class DecoderBase : public Decoder {
   virtual const MediaFormat& media_format() { return media_format_; }
 
   // Audio or video decoder.
-  virtual void Read(ReadCallback* read_callback) {
+  virtual void FillThisBuffer(scoped_refptr<Output> output) {
     this->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &DecoderBase::ReadTask, read_callback));
+        NewRunnableMethod(this, &DecoderBase::ReadTask, output));
   }
 
  protected:
   DecoderBase()
       : pending_reads_(0),
+        pending_requests_(0),
         expecting_discontinuous_(false),
         state_(kUninitialized) {
   }
@@ -67,7 +68,6 @@ class DecoderBase : public Decoder {
   virtual ~DecoderBase() {
     DCHECK(state_ == kUninitialized || state_ == kStopped);
     DCHECK(result_queue_.empty());
-    DCHECK(read_queue_.empty());
   }
 
   // This method is called by the derived class from within the OnDecode method.
@@ -124,9 +124,9 @@ class DecoderBase : public Decoder {
     // Note that it's possible for us to decode but not produce a frame, in
     // which case |pending_reads_| will remain less than |read_queue_| so we
     // need to schedule an additional read.
-    DCHECK_LE(pending_reads_, read_queue_.size());
+    DCHECK_LE(pending_reads_, pending_requests_);
     if (!fulfilled) {
-      DCHECK_LT(pending_reads_, read_queue_.size());
+      DCHECK_LT(pending_reads_, pending_requests_);
       demuxer_stream_->Read(NewCallback(this, &DecoderBase::OnReadComplete));
       ++pending_reads_;
     }
@@ -154,14 +154,13 @@ class DecoderBase : public Decoder {
 
     // Throw away all buffers in all queues.
     result_queue_.clear();
-    STLDeleteElements(&read_queue_);
     state_ = kStopped;
   }
 
   void SeekTask(base::TimeDelta time, FilterCallback* callback) {
     DCHECK_EQ(MessageLoop::current(), this->message_loop());
     DCHECK_EQ(0u, pending_reads_) << "Pending reads should have completed";
-    DCHECK(read_queue_.empty()) << "Read requests should be empty";
+    DCHECK_EQ(0u, pending_requests_) << "Pending requests should be empty";
 
     // Delegate to the subclass first.
     //
@@ -215,17 +214,16 @@ class DecoderBase : public Decoder {
     }
   }
 
-  void ReadTask(ReadCallback* read_callback) {
+  void ReadTask(scoped_refptr<Output> output) {
     DCHECK_EQ(MessageLoop::current(), this->message_loop());
 
     // TODO(scherkus): should reply with a null operation (empty buffer).
-    if (IsStopped()) {
-      delete read_callback;
+    if (IsStopped())
       return;
-    }
 
-    // Enqueue the callback and attempt to fulfill it immediately.
-    read_queue_.push_back(read_callback);
+    ++pending_requests_;
+
+    // Try to fulfill it immediately.
     if (FulfillPendingRead())
       return;
 
@@ -260,24 +258,25 @@ class DecoderBase : public Decoder {
   // Return true if one read request is fulfilled.
   bool FulfillPendingRead() {
     DCHECK_EQ(MessageLoop::current(), this->message_loop());
-    if (read_queue_.empty() || result_queue_.empty()) {
+    if (!pending_requests_ || result_queue_.empty()) {
       return false;
     }
 
     // Dequeue a frame and read callback pair.
     scoped_refptr<Output> output = result_queue_.front();
-    scoped_ptr<ReadCallback> read_callback(read_queue_.front());
     result_queue_.pop_front();
-    read_queue_.pop_front();
 
     // Execute the callback!
-    read_callback->Run(output);
+    --pending_requests_;
+    Decoder::fill_buffer_done_callback()->Run(output);
     return true;
   }
 
   // Tracks the number of asynchronous reads issued to |demuxer_stream_|.
   // Using size_t since it is always compared against deque::size().
   size_t pending_reads_;
+  // Tracks the number of asynchronous reads issued from renderer.
+  size_t pending_requests_;
 
   // A flag used for debugging that we expect our next read to be discontinuous.
   bool expecting_discontinuous_;
@@ -295,10 +294,6 @@ class DecoderBase : public Decoder {
   // we need this extra queue.
   typedef std::deque<scoped_refptr<Output> > ResultQueue;
   ResultQueue result_queue_;
-
-  // Queue of callbacks supplied by the renderer through the Read() method.
-  typedef std::deque<ReadCallback*> ReadQueue;
-  ReadQueue read_queue_;
 
   // Pause callback.
   scoped_ptr<FilterCallback> pause_callback_;
