@@ -12,6 +12,10 @@
 #include "webkit/glue/plugins/webplugin.h"
 #include "webkit/glue/plugins/webplugin_delegate.h"
 
+#if defined(OS_WIN)
+#include "base/win_util.h"
+#endif
+
 static int g_next_id;
 typedef base::hash_map<int, PepperWidget*> WidgetMap;
 static base::LazyInstance<WidgetMap> g_widgets(base::LINKER_INITIALIZED);
@@ -58,6 +62,14 @@ NPError NPPaintWidget(NPP instance,
       static_cast<WebPluginDelegatePepper*>(plugin->webplugin()->delegate());
   Graphics2DDeviceContext* gdc = delegate->GetGraphicsContext(context);
   iter->second->Paint(gdc, *dirty);
+
+#if defined(OS_WIN)
+  if (win_util::GetWinVersion() == win_util::WINVERSION_XP) {
+    gdc->canvas()->getTopPlatformDevice().makeOpaque(
+        dirty->left, dirty->top, dirty->right - dirty->left,
+        dirty->bottom - dirty->top);
+  }
+#endif
   return NPERR_NO_ERROR;
 }
 
