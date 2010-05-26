@@ -431,10 +431,10 @@ void CandidateView::Init() {
 
   // Initialize the column set with two columns.
   views::ColumnSet* column_set = layout->AddColumnSet(0);
-  column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                         0, views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, 4);
-  column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                         0, views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, 4);
 
@@ -1004,7 +1004,7 @@ int main(int argc, char** argv) {
     logging::InitLogging(log_file_name.c_str(),
                          logging::LOG_ONLY_TO_FILE,
                          logging::DONT_LOCK_LOG_FILE,
-                         logging::APPEND_TO_OLD_LOG_FILE);
+                         logging::DELETE_OLD_LOG_FILE);
     // Redirect stderr to log_file_name. This is neeed to capture the
     // logging from libcros.so.
     if (!freopen(log_file_name.c_str(), "a", stderr)) {
