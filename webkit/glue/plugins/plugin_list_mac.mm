@@ -40,23 +40,14 @@ void GetPluginPrivateDirectory(std::vector<FilePath>* plugin_dirs) {
 
 // Returns true if the plugin should be prevented from loading.
 bool IsBlacklistedPlugin(const WebPluginInfo& info) {
-  std::string plugin_name = WideToUTF8(info.name);
-  // Non-functional, so it's better to let PDFs be downloaded.
-  if (plugin_name == "PDF Browser Plugin")
-    return true;
-
-  // We blacklist a couple of plugins by included MIME type, since those are
-  // more stable than their names. Be careful about adding any more plugins to
-  // this list though, since it's easy to accidentally blacklist plugins that
-  // support lots of MIME types.
+  // We blacklist Gears by included MIME type, since that is more stable than
+  // its name. Be careful about adding any more plugins to this list though,
+  // since it's easy to accidentally blacklist plugins that support lots of
+  // MIME types.
   for (std::vector<WebPluginMimeType>::const_iterator i =
            info.mime_types.begin(); i != info.mime_types.end(); ++i) {
     // The Gears plugin is Safari-specific, so don't load it.
     if (i->mime_type == "application/x-googlegears")
-      return true;
-    // The current version of O3D doesn't work (and overrealeases our dummy
-    // window). Waiting for a new release with recent fixes.
-    if (i->mime_type == "application/vnd.o3d.auto")
       return true;
   }
 
