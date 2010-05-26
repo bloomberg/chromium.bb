@@ -5,6 +5,7 @@
 #ifndef WEBKIT_TOOLS_TEST_SHELL_NOTIFICATION_PRESENTER_H_
 #define WEBKIT_TOOLS_TEST_SHELL_NOTIFICATION_PRESENTER_H_
 
+#include <map>
 #include <set>
 #include <string>
 
@@ -40,6 +41,9 @@ class TestNotificationPresenter : public WebKit::WebNotificationPresenter {
 
   // List of allowed origins.
   std::set<std::string> allowed_origins_;
+
+  // Map of active replacement IDs to the titles of those notifications
+  std::map<std::string, std::string> replacements_;
 };
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_NOTIFICATION_PRESENTER_H_
