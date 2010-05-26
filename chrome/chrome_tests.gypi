@@ -2420,7 +2420,23 @@
               # src/chrome.
               'message': 'Compiling coverage bundles.',
               # MSVS must have an input file and an output file.
-              'inputs': [ '<@(_dependencies)' ],
+              #
+              # TODO(jrg):
+              # Technically I want inputs to be the list of
+              # executables created in <@(_dependencies) but use of
+              # that variable lists the dep by dep name, not their
+              # output executable name.
+              # Is there a better way to force this action to run, always?
+              #
+              # If a test bundle is added to this coverage_build target it
+              # necessarily means this file (chrome_tests.gypi) is changed,
+              # so the action is run (coverage_bundles.py is generated).
+              # Exceptions to that rule are theoretically possible 
+              # (e.g. re-gyp with a GYP_DEFINES set).
+              # Else it's the same list of bundles as last time.  They are
+              # built (since on the deps list) but the action may not run.
+              # For now, things work, but it's less than ideal.
+              'inputs': [ 'chrome_tests.gypi' ],
               'outputs': [ '<(PRODUCT_DIR)/coverage_bundles.py' ],
               'action_name': 'coverage_build',
               'action': [ 'python', '-c',
