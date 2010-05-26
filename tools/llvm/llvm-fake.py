@@ -45,7 +45,10 @@ OUT.append(open('/tmp/fake.log', 'a'))
 # e.g. $NACL/toolchain/linux_arm-untrusted
 BASE = os.path.dirname(os.path.dirname(sys.argv[0]))
 
-LD_SCRIPT_ARM = BASE + '/arm-none-linux-gnueabi/ld_script_arm_untrusted'
+BASE_ARM = BASE + '/arm-none-linux-gnueabi'
+
+
+LD_SCRIPT_ARM = BASE_ARM + '/ld_script_arm_untrusted'
 
 # NOTE: derived from
 # toolchain/linux_x86/sdk/nacl-sdk/nacl64/lib/ldscripts/elf_nacl.x
@@ -55,13 +58,13 @@ LD_SCRIPT_X8632 = BASE + '/../../tools/llvm/ld_script_x8632_untrusted'
 LD_SCRIPT_X8664 = BASE + '/../../tools/llvm/ld_script_x8664_untrusted'
 
 # arm libstdc++
-LIBDIR_ARM_3 = BASE + '/arm-none-linux-gnueabi/llvm-gcc-4.2/lib'
+LIBDIR_ARM_3 = BASE_ARM + '/llvm-gcc-4.2/lib'
 
 # arm startup code + libs (+ bitcode when in bitcode mode)
 LIBDIR_ARM_2 = BASE + '/arm-newlib/arm-none-linux-gnueabi/lib'
 
 # arm libgcc
-LIBDIR_ARM_1 = BASE + '/arm-none-linux-gnueabi/llvm-gcc-4.2/lib/gcc/arm-none-linux-gnueabi/4.2.1/'
+LIBDIR_ARM_1 = BASE_ARM + '/llvm-gcc-4.2/lib/gcc/arm-none-linux-gnueabi/4.2.1/'
 
 PNACL_ARM_ROOT =  BASE + '/../pnacl-untrusted/arm'
 
@@ -72,35 +75,38 @@ PNACL_X8664_ROOT = BASE + '/../pnacl-untrusted/x8664'
 PNACL_BITCODE_ROOT = BASE + '/../pnacl-untrusted/bitcode'
 
 ######################################################################
-# FLAGS
+# FLAGS (can be overwritten by
 ######################################################################
-
-AS_FLAGS_ARM = [
+global_config_flags = {
+  'AS_ARM': [
     '-march=armv6',
     '-mfpu=vfp',
     # Possible other settings:
     #'-march=armv7',
     #'-mcpu=cortex-a8',
-    ]
+  ],
 
-AS_FLAGS_X8632 = [
+
+  'AS_X8632': [
     '--32',
     '--nacl-align', '5',
     # turn off nop
     '-n',
     '-march=pentium4',
     '-mtune=i386',
-    ]
+  ],
 
-AS_FLAGS_X8664 = [
+
+  'AS_X8664': [
     '--64',
     '--nacl-align', '5',
     # turn off nop
     '-n',
     '-mtune=core2',
-    ]
+  ],
 
-LLVM_GCC_COMPILE_FLAGS = [
+
+  'LLVM_GCC_COMPILE': [
     '-nostdinc',
     '-D__native_client__=1',
     '-DNACL_TARGET_ARCH=arm',
@@ -109,39 +115,36 @@ LLVM_GCC_COMPILE_FLAGS = [
     '-DNACL_LINUX=1',
     '-ffixed-r9',
     '-march=armv6',
-    ]
+  ],
 
-BASE_ARM = BASE + '/arm-none-linux-gnueabi'
 
-BASE_ARM_GCC = BASE + '/arm-none-linux-gnueabi/llvm-gcc-4.2'
-
-LLVM_GCC_COMPILE_FLAGS_HEADERS = [
+  'LLVM_GCC_COMPILE_HEADERS': [
     # NOTE: the two competing approaches here
     #       make the gcc driver "right" or
     #       put all the logic/knowloedge into this driver.
     #       Currently, we have a messy mixture.
     '-isystem',
-    BASE_ARM_GCC + '/lib/gcc/arm-none-linux-gnueabi/4.2.1/include',
+    BASE_ARM + '/llvm-gcc-4.2/lib/gcc/arm-none-linux-gnueabi/4.2.1/include',
     '-isystem',
-    BASE_ARM_GCC + '/lib/gcc/arm-none-linux-gnueabi/4.2.1/install-tools/include',
+    BASE_ARM +
+    '/llvm-gcc-4.2/lib/gcc/arm-none-linux-gnueabi/4.2.1/install-tools/include',
     '-isystem',
-    BASE_ARM_GCC + '/include/c++/4.2.1',
+    BASE_ARM + '/llvm-gcc-4.2/include/c++/4.2.1',
     '-isystem',
-    BASE_ARM_GCC + '/include/c++/4.2.1/arm-none-linux-gnueabi',
+    BASE_ARM + '/llvm-gcc-4.2/include/c++/4.2.1/arm-none-linux-gnueabi',
     '-isystem',
-    BASE_ARM_GCC + '/arm-none-linux-gnueabi/include',
-
+    BASE_ARM + '/llvm-gcc-4.2/arm-none-linux-gnueabi/include',
     # NOTE: order important
-#    '-isystem',
-#    BASE + '/arm-newlib/arm-none-linux-gnueabi/usr/include/nacl/abi',
+    # '-isystem',
+    # BASE + '/arm-newlib/arm-none-linux-gnueabi/usr/include/nacl/abi',
     '-isystem',
     BASE + '/arm-newlib/arm-none-linux-gnueabi/include',
-#    '-isystem',
-#    BASE + '/arm-newlib/arm-none-linux-gnueabi/usr/include',
-    ]
+    # '-isystem',
+    #  BASE + '/arm-newlib/arm-none-linux-gnueabi/usr/include',
+  ],
 
 
-LLC_SHARED_FLAGS_ARM = [
+  'LLC_SHARED_ARM': [
     '-march=arm',
     # c.f. lib/Target/ARM/ARMGenSubtarget.inc
     '-mcpu=arm1156t2f-s',
@@ -149,21 +152,23 @@ LLC_SHARED_FLAGS_ARM = [
     '-mtriple=armv6-*-*eabi*',
     #'-mtriple=armv7a-*-*eabi*',
     '-arm-reserve-r9',
-    ]
+  ],
 
 
-LLC_SHARED_FLAGS_X8632 = [
+  'LLC_SHARED_X8632': [
     '-march=x86',
     '-mcpu=pentium4',
-    ]
+  ],
 
-LLC_SHARED_FLAGS_X8664 = [
+
+
+  'LLC_SHARED_X8664': [
     '-march=x86-64',
     '-mcpu=core2',
-    ]
+  ],
 
 
-LLC_SFI_SANDBOXING_FLAGS = [
+  'LLC_SFI_SANDBOXING': [
     # The following options might come in hand and are left
     # here as comments:
     # TODO(robertm): describe their purpose
@@ -171,7 +176,7 @@ LLC_SFI_SANDBOXING_FLAGS = [
     #     '-aeabi-calls '
     #     '-sfi-zero-mask',
     '-sfi-cp-fudge',
-  # NOTE: we need a fairly high fudge factor because of
+    # NOTE: we need a fairly high fudge factor because of
     # some vfp instructions which only have a 9bit offset
     '-sfi-cp-fudge-percent=80',
     '-sfi-store',
@@ -179,48 +184,50 @@ LLC_SFI_SANDBOXING_FLAGS = [
     '-sfi-branch',
     '-sfi-data',
     '-no-inline-jumptables'
-    ]
+  ],
 
 
-OPT_FLAGS = [
+  'OPT': [
     '-O3',
     '-std-compile-opts'
-    ]
+  ],
 
 
-# Our linker scripts ensure that the section layout follows the nacl abi
-LD_FLAGS_ARM = [
+    # Our linker scripts ensure that the section layout follows the nacl abi
+  'LD_ARM': [
     '-nostdlib',
     '-T', LD_SCRIPT_ARM,
     '-static',
-    ]
+  ],
 
 
-LD_FLAGS_X8632 = [
+  'LD_X8632': [
     '-nostdlib',
     '-T', LD_SCRIPT_X8632,
 #    '-melf_nacl',
     '-static',
-    ]
+  ],
 
 
-LD_FLAGS_X8664 = [
+
+  'LD_X8664': [
     '-nostdlib',
     '-T', LD_SCRIPT_X8664,
     '-static',
-    ]
+  ],
+}
 
 ######################################################################
 # Executables invoked by this driver
 ######################################################################
 
-LLVM_GCC = BASE + '/arm-none-linux-gnueabi/llvm-gcc-4.2/bin/llvm-gcc'
+LLVM_GCC = BASE_ARM + '/llvm-gcc-4.2/bin/llvm-gcc'
 
-LLVM_GXX = BASE + '/arm-none-linux-gnueabi/llvm-gcc-4.2/bin/llvm-g++'
+LLVM_GXX = BASE_ARM + '/llvm-gcc-4.2/bin/llvm-g++'
 
-LLC_ARM = BASE + '/arm-none-linux-gnueabi/llvm/bin/llc'
+LLC_ARM = BASE_ARM + '/llvm/bin/llc'
 
-LLC_SFI_ARM = BASE + '/arm-none-linux-gnueabi/llvm/bin/llc-sfi'
+LLC_SFI_ARM = BASE_ARM + '/llvm/bin/llc-sfi'
 
 # NOTE: this is currently a user provided binary
 LLC_SFI_X8632 = BASE + '/llc-x86-32-sfi'
@@ -228,18 +235,18 @@ LLC_SFI_X8632 = BASE + '/llc-x86-32-sfi'
 # NOTE: this is currently a user provided binary
 LLC_SFI_X8664 = BASE + '/llc-x86-64-sfi'
 
-LLVM_LINK = BASE + '/arm-none-linux-gnueabi/llvm/bin/llvm-link'
+LLVM_LINK = BASE_ARM + '/llvm/bin/llvm-link'
 
-LLVM_LD = BASE + '/arm-none-linux-gnueabi/llvm/bin/llvm-ld'
+LLVM_LD = BASE_ARM + '/llvm/bin/llvm-ld'
 
-OPT = BASE + '/arm-none-linux-gnueabi/llvm/bin/opt'
+OPT = BASE_ARM + '/llvm/bin/opt'
 
-AS_ARM = BASE + '/arm-none-linux-gnueabi/llvm-gcc-4.2/bin/arm-none-linux-gnueabi-as'
+AS_ARM = BASE_ARM + '/llvm-gcc-4.2/bin/arm-none-linux-gnueabi-as'
 
 # NOTE: hack, assuming presence of x86/32 toolchain (used for both 32/64)
 AS_X86 = BASE + '/../linux_x86/sdk/nacl-sdk/bin/nacl64-as'
 
-LD_ARM = BASE + '/arm-none-linux-gnueabi/llvm-gcc-4.2/bin/arm-none-linux-gnueabi-ld'
+LD_ARM = BASE_ARM + '/llvm-gcc-4.2/bin/arm-none-linux-gnueabi-ld'
 
 # NOTE: hack, assuming presence of x86/32 toolchain expected
 # TODO(robertm): clean this up - we may not need separate linkers
@@ -261,7 +268,6 @@ def LogInfo(m):
   if VERBOSE:
     for o in OUT:
       print >> o, m
-
 
 def LogFatal(m, ret=-1):
   for o in OUT:
@@ -299,13 +305,15 @@ def SfiCompile(argv, out_pos, mode):
   argv.append('--emit-llvm')
   Run(argv)
 
-  Run([OPT] + OPT_FLAGS + [filename + '.bc', '-f', '-o', filename + '.opt.bc'])
+  Run([OPT] +
+      global_config_flags['OPT'] +
+      [filename + '.bc', '-f', '-o', filename + '.opt.bc'])
 
   if mode == 'sfi':
-    llc = [LLC_SFI_ARM] + LLC_SFI_SANDBOXING_FLAGS
+    llc = [LLC_SFI_ARM] + global_config_flags['LLC_SFI_SANDBOXING']
   else:
     llc = [LLC_ARM]
-  llc += LLC_SHARED_FLAGS_ARM
+  llc += global_config_flags['LLC_SHARED_ARM']
   llc += ['-f', filename + '.opt.bc', '-o', filename + '.s']
   Run(llc)
 
@@ -435,15 +443,15 @@ def Assemble(asm, flags, argv):
 
 
 def AssembleArm(argv):
-  Assemble(AS_ARM, AS_FLAGS_ARM, argv)
+  Assemble(AS_ARM, global_config_flags['AS_ARM'], argv)
 
 
 def AssembleX8632(argv):
-  Assemble(AS_X86, AS_FLAGS_X8632, argv)
+  Assemble(AS_X86, global_config_flags['AS_X8632'], argv)
 
 
 def AssembleX8664(argv):
-  Assemble(AS_X86, AS_FLAGS_X8664, argv)
+  Assemble(AS_X86, global_config_flags['AS_X8664'], argv)
 
 
 def Compile(argv, llvm_binary, mode):
@@ -481,10 +489,10 @@ def Compile(argv, llvm_binary, mode):
   if '-raw-mode' in  argv:
     argv.remove('-raw-mode')
   elif '-nostdinc' in argv:
-    argv += LLVM_GCC_COMPILE_FLAGS
+    argv += global_config_flags['LLVM_GCC_COMPILE']
   else:
-    argv += LLVM_GCC_COMPILE_FLAGS
-    argv += LLVM_GCC_COMPILE_FLAGS_HEADERS
+    argv += global_config_flags['LLVM_GCC_COMPILE']
+    argv += global_config_flags['LLVM_GCC_COMPILE_HEADERS']
 
   if mode == 'bitcode':
     argv.append('--emit-llvm')
@@ -546,7 +554,7 @@ def Incarnation_illegal(argv):
 
 
 def MassageFinalLinkCommandArm(args):
-  out = LD_FLAGS_ARM
+  out = global_config_flags['LD_ARM']
 
   # add init code
   if '-nostdlib' not in args:
@@ -675,15 +683,15 @@ def GenerateCombinedBitcodeFile(argv):
   # TODO(espindola): Give a pointer to a doc explaining how/why these are used.
   # TODO(espindola): Check if a gold plugin can be used to do the right thing
   # automatically.
-  public_functions = ['atexit',
-                      'exit',
-                      'main',
-                      'raise',
-                      '__av_wait',
-                      '__pthread_initialize',
-                      '__pthread_shutdown',
-                      '__srpc_init',
-                      '__srpc_wait']
+#   public_functions = ['atexit',
+#                       'exit',
+#                       'main',
+#                       'raise',
+#                       '__av_wait',
+#                       '__pthread_initialize',
+#                       '__pthread_shutdown',
+#                       '__srpc_init',
+#                       '__srpc_wait']
 
   Run([LLVM_LD] + args_bit_ld +
       [# TODO(espindola): this does not seem to work yet
@@ -722,11 +730,12 @@ def BitcodeToNative(argv, llc, llc_flags, ascom, as_flags, ld, ld_flags, root):
 def Incarnation_bcldarm(argv):
   output = BitcodeToNative(argv,
                            LLC_SFI_ARM,
-                           LLC_SHARED_FLAGS_ARM + LLC_SFI_SANDBOXING_FLAGS,
+                           global_config_flags['LLC_SHARED_ARM'] +
+                           global_config_flags['LLC_SFI_SANDBOXING'],
                            AS_ARM,
-                           AS_FLAGS_ARM,
+                           global_config_flags['AS_ARM'],
                            LD_ARM,
-                           LD_FLAGS_ARM,
+                           global_config_flags['LD_ARM'],
                            PNACL_ARM_ROOT)
   PatchAbiVersionIntoElfHeader(output, ELF32_EHDR, alignment=16)
 
@@ -734,11 +743,11 @@ def Incarnation_bcldarm(argv):
 def Incarnation_bcldx8632(argv):
   output = BitcodeToNative(argv,
                            LLC_SFI_X8632,
-                           LLC_SHARED_FLAGS_X8632,
+                           global_config_flags['LLC_SHARED_X8632'],
                            AS_X86,
-                           AS_FLAGS_X8632,
+                           global_config_flags['AS_X8632'],
                            LD_X8632,
-                           LD_FLAGS_X8632,
+                           global_config_flags['LD_X8632'],
                            PNACL_X8632_ROOT)
   PatchAbiVersionIntoElfHeader(output, ELF32_EHDR, alignment=32)
 
@@ -746,11 +755,11 @@ def Incarnation_bcldx8632(argv):
 def Incarnation_bcldx8664(argv):
   output = BitcodeToNative(argv,
                            LLC_SFI_X8664,
-                           LLC_SHARED_FLAGS_X8664,
+                           global_config_flags['LLC_SHARED_X8664'],
                            AS_X86,
-                           AS_FLAGS_X8664,
+                           global_config_flags['AS_X8664'],
                            LD_X8664,
-                           LD_FLAGS_X8664,
+                           global_config_flags['LD_X8664'],
                            PNACL_X8664_ROOT)
   PatchAbiVersionIntoElfHeader(output, ELF64_EHDR, alignment=32)
 
@@ -804,6 +813,21 @@ def main(argv):
   for pos, arg in enumerate(argv):
     if arg == '--pnacl-driver-verbose':
       VERBOSE = 1
+      del argv[pos]
+
+  # mechanism to overwrite some global settings, e.g.:
+  #  --pnacl-driver-set-AS_X8632=-a,-b,3
+  # NOTE: this currently is lacking a proper escaping mechanism for commas
+  global global_config_flags
+  for pos, arg in enumerate(argv):
+    electric_prefix = '--pnacl-driver-set-'
+    if arg.startswith(electric_prefix):
+      tag, value = arg.split('=', 1)
+      tag = tag[len(electric_prefix):]
+      if ',' in value:
+        value = value.split(',')
+      assert tag in global_config_flags
+      global_config_flags[tag] = value
       del argv[pos]
 
   LogInfo('\nRUNNNG\n ' + StringifyCommand(argv))
