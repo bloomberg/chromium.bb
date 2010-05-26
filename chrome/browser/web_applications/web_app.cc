@@ -709,6 +709,7 @@ bool IsValidUrl(const GURL& url) {
       chrome::kFtpScheme,
       chrome::kHttpScheme,
       chrome::kHttpsScheme,
+      chrome::kExtensionScheme,
   };
 
   for (size_t i = 0; i < arraysize(kValidUrlSchemes); ++i) {
