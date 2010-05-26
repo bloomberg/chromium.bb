@@ -166,6 +166,18 @@ void PostExtensionUnloadedToContextGetter(ChromeURLRequestContextGetter* getter,
                         extension->id()));
 }
 
+// Returns true if the default apps should be loaded (so that the app panel is
+// not empty).
+bool IncludeDefaultApps() {
+#if defined(OS_WIN)
+  std::string user_domain;
+  return base::EnvVarGetter::Create()->GetEnv("USERDOMAIN", &user_domain) &&
+      user_domain == "GOOGLE";
+#elif defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
+  return true;
+#endif
+  return false;
+}
 }  // namespace
 
 // A pointer to the request context for the default profile.  See comments on
@@ -766,16 +778,10 @@ void ProfileImpl::InitExtensions() {
 
   // Some sample apps to make our lives easier while we are developing extension
   // apps. This way we don't have to constantly install these over and over.
-  if (Extension::AppsAreEnabled()) {
-#if defined(OS_WIN)
-    std::string user_domain;
-    if (base::EnvVarGetter::Create()->GetEnv("USERDOMAIN", &user_domain) &&
-        user_domain == "GOOGLE") {
-      component_extensions["gmail_app"] = IDR_GMAIL_APP_MANIFEST;
-      component_extensions["calendar_app"] = IDR_CALENDAR_APP_MANIFEST;
-      component_extensions["docs_app"] = IDR_DOCS_APP_MANIFEST;
-    }
-#endif
+  if (Extension::AppsAreEnabled() && IncludeDefaultApps()) {
+    component_extensions["gmail_app"] = IDR_GMAIL_APP_MANIFEST;
+    component_extensions["calendar_app"] = IDR_CALENDAR_APP_MANIFEST;
+    component_extensions["docs_app"] = IDR_DOCS_APP_MANIFEST;
   }
 
   for (std::map<std::string, int>::iterator iter = component_extensions.begin();
