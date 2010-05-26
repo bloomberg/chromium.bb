@@ -97,14 +97,16 @@ class MultiTarballTree(DirTree):
 
 class PatchedTree(DirTree):
 
-  def __init__(self, orig_tree, patch_files):
+  def __init__(self, orig_tree, patch_files, strip=1):
     self._orig_tree = orig_tree
     self._patch_files = patch_files
+    self._strip = strip
 
   def WriteTree(self, dest_dir):
     self._orig_tree.WriteTree(dest_dir)
     for patch_file in self._patch_files:
-      subprocess.check_call(["patch", "-d", dest_dir, "-p1", "-i", patch_file])
+      subprocess.check_call(["patch", "--forward", "--batch", "-d", dest_dir,
+                             "-p%i" % self._strip, "-i", patch_file])
 
 
 class CopyTree(DirTree):

@@ -98,6 +98,19 @@ class DirTreeTests(TempDirTestCase):
                           os.path.join(temp_dir, "b"), result_dir])
     self.assertEquals(rc, 0)
 
+    # Check that patch doesn't ask questions if we try re-applying a patch.
+    self.assertRaises(
+        subprocess.CalledProcessError,
+        lambda: self._RealizeTree(
+            dirtree.PatchedTree(tree2, [diff_file])))
+
+    # Check that patch doesn't ask questions if the patch fails to
+    # apply because a file is missing.
+    self.assertRaises(
+        subprocess.CalledProcessError,
+        lambda: self._RealizeTree(
+            dirtree.PatchedTree(dirtree.EmptyTree(), [diff_file])))
+
 
 if __name__ == "__main__":
   unittest.main()

@@ -37,23 +37,28 @@ def FindFile(name):
   raise Exception("Couldn't find %r in %r" % (name, search_path))
 
 
+def PatchGlob(name):
+  path = os.path.join(nacl_dir, "tools/patches", name, "*.patch")
+  patches = sorted(glob.glob(path))
+  if len(patches) == 0:
+    raise AssertionError("No patches found matching %r" % path)
+  return patches
+
+
 def GetSources():
-  gcc_patches = sorted(glob.glob(os.path.join(
-              nacl_dir, "tools/patches/*-gcc-4.4.3.patch")))
-  assert len(gcc_patches) > 0
   return {
     "binutils": dirtree.PatchedTree(
         dirtree.TarballTree(FindFile("binutils-2.20.tar.bz2")),
-        [FindFile("binutils-2.20.patch")]),
+        PatchGlob("binutils-2.20"), strip=2),
     "gcc": dirtree.PatchedTree(
         dirtree.MultiTarballTree(
             [FindFile("gcc-core-4.4.3.tar.bz2"),
              FindFile("gcc-g++-4.4.3.tar.bz2"),
              FindFile("gcc-testsuite-4.4.3.tar.bz2")]),
-        gcc_patches),
+        PatchGlob("gcc-4.4.3"), strip=2),
     "newlib": dirtree.PatchedTree(
         dirtree.TarballTree(FindFile("newlib-1.18.0.tar.gz")),
-        [FindFile("newlib-1.18.0.patch")]),
+        PatchGlob("newlib-1.18.0"), strip=2),
     }
 
 
