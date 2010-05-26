@@ -411,3 +411,9 @@
    fun:Callback1::Type* NewCallback
    fun:media::VideoDecoderImpl::DoInitialize
 }
+{
+   bug_45072
+   Heapcheck:Leak
+   fun:::RunTest_EnsureTaskDeletion*
+   fun:MessageLoopTest_*EnsureTaskDeletion_*::TestBody
+}
