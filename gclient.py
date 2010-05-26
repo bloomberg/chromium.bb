@@ -901,6 +901,9 @@ checked out tree via 'patch -p0 < patchfile'.
 
 def CMDstatus(parser, args):
   """Show modification status for every dependencies."""
+  parser.add_option("--deps", dest="deps_os", metavar="OS_LIST",
+                    help="sync deps for the specified (comma-separated) "
+                         "platform(s); 'all' will sync all platforms")
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
   if not client:
@@ -999,12 +1002,14 @@ def CMDdiff(parser, args):
 
 def CMDrevert(parser, args):
   """Revert all modifications in every dependencies."""
+  parser.add_option("--deps", dest="deps_os", metavar="OS_LIST",
+                    help="sync deps for the specified (comma-separated) "
+                         "platform(s); 'all' will sync all platforms")
   parser.add_option("--nohooks", action="store_true",
                     help="don't run hooks after the revert is complete")
   (options, args) = parser.parse_args(args)
   # --force is implied.
   options.force = True
-  options.deps_os = None
   client = GClient.LoadCurrentConfig(options)
   if not client:
     raise gclient_utils.Error("client not configured; see 'gclient config'")
@@ -1013,6 +1018,9 @@ def CMDrevert(parser, args):
 
 def CMDrunhooks(parser, args):
   """Runs hooks for files that have been modified in the local working copy."""
+  parser.add_option("--deps", dest="deps_os", metavar="OS_LIST",
+                    help="sync deps for the specified (comma-separated) "
+                         "platform(s); 'all' will sync all platforms")
   parser.add_option("--force", action="store_true", default=True,
                     help="Deprecated. No effect.")
   (options, args) = parser.parse_args(args)
@@ -1025,7 +1033,6 @@ def CMDrunhooks(parser, args):
     print(client.ConfigContent())
   options.force = True
   options.nohooks = False
-  options.deps_os = None
   return client.RunOnDeps('runhooks', args)
 
 

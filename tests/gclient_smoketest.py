@@ -274,7 +274,7 @@ class GClientSmokeSVN(GClientSmokeBase):
     self.gclient(['config', self.svn_base + 'trunk/src/'])
     # Tested in testSync.
     self.gclient(['sync', '--deps', 'mac'])
-    write(join(self.root_dir, 'src', 'third_party', 'foo', 'hi'), 'Hey!')
+    write(join(self.root_dir, 'src', 'other', 'hi'), 'Hey!')
 
     results = self.gclient(['status'])
     out = results[0].splitlines(False)
@@ -316,6 +316,55 @@ class GClientSmokeSVN(GClientSmokeBase):
     self.assertEquals(out[4], '?       hooked2')
     self.assertEquals(out[5], '?       third_party/foo')
     self.assertEquals(6, len(out))
+    self.checkString('', results[1])
+    self.assertEquals(0, results[2])
+
+  def testRevertAndStatusDepsOs(self):
+    self.gclient(['config', self.svn_base + 'trunk/src/'])
+    # Tested in testSync.
+    self.gclient(['sync', '--deps', 'mac', '--revision', 'src@1'])
+    write(join(self.root_dir, 'src', 'other', 'hi'), 'Hey!')
+
+    results = self.gclient(['status', '--deps', 'mac'])
+    out = results[0].splitlines(False)
+    self.assertEquals(out[0], '')
+    self.assertTrue(out[1].startswith('________ running \'svn status\' in \''))
+    self.assertEquals(out[2], '?       other')
+    self.assertEquals(out[3], '?       third_party/fpp')
+    self.assertEquals(out[4], '?       third_party/prout')
+    self.assertEquals(out[5], '')
+    self.assertTrue(out[6].startswith('________ running \'svn status\' in \''))
+    self.assertEquals(out[7], '?       hi')
+    self.assertEquals(8, len(out))
+    self.assertEquals('', results[1])
+    self.assertEquals(0, results[2])
+
+    # Revert implies --force implies running hooks without looking at pattern
+    # matching.
+    results = self.gclient(['revert', '--deps', 'mac'])
+    out = results[0].splitlines(False)
+    self.assertEquals(24, len(out))
+    self.checkString('', results[1])
+    self.assertEquals(0, results[2])
+    tree = mangle_svn_tree(
+        (join('trunk', 'src'), 'src', FAKE.svn_revs[1]),
+        (join('trunk', 'third_party', 'foo'), join('src', 'third_party', 'fpp'),
+            FAKE.svn_revs[2]),
+        (join('trunk', 'other'), join('src', 'other'), FAKE.svn_revs[2]),
+        (join('trunk', 'third_party', 'prout'),
+            join('src', 'third_party', 'prout'),
+            FAKE.svn_revs[2]),
+        )
+    self.assertTree(tree)
+
+    results = self.gclient(['status', '--deps', 'mac'])
+    out = results[0].splitlines(False)
+    self.assertEquals(out[0], '')
+    self.assertTrue(out[1].startswith('________ running \'svn status\' in \''))
+    self.assertEquals(out[2], '?       other')
+    self.assertEquals(out[3], '?       third_party/fpp')
+    self.assertEquals(out[4], '?       third_party/prout')
+    self.assertEquals(5, len(out))
     self.checkString('', results[1])
     self.assertEquals(0, results[2])
 
