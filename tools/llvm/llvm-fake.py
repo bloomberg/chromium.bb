@@ -798,6 +798,14 @@ INCARNATIONS = {
 
 
 def main(argv):
+  global VERBOSE
+  # NOTE: we do not hook onto the "--v" flags since it may have other uses
+  #       in connection with bootstrapping the gcc toolchain
+  for pos, arg in enumerate(argv):
+    if arg == '--pnacl-driver-verbose':
+      VERBOSE = 1
+      del argv[pos]
+
   LogInfo('\nRUNNNG\n ' + StringifyCommand(argv))
   basename = os.path.basename(argv[0])
   if basename not in INCARNATIONS:
