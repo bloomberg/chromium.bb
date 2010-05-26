@@ -370,8 +370,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEvalOnCallFrame) {
 }
 
 #if defined(OS_WIN)
-// See http://crbug.com/45080
-#define MAYBE_TestStepOver FLAKY_TestStepOver
+// Disabled because it times out. See http://crbug.com/45080
+#define MAYBE_TestStepOver DISABLED_TestStepOver
 #else
 #define MAYBE_TestStepOver TestStepOver
 #endif
