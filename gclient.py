@@ -834,9 +834,10 @@ URL.
   parser.add_option("--name",
                     help="overrides the default name for the solution")
   (options, args) = parser.parse_args(args)
-  if len(args) < 1 and not options.spec:
-    raise gclient_utils.Error("required argument missing; see 'gclient help "
-                              "config'")
+  if ((options.spec and args) or len(args) > 2 or
+      (not options.spec and not args)):
+    parser.error('Inconsistent arguments. Use either --spec or one or 2 args')
+
   if os.path.exists(options.config_filename):
     raise gclient_utils.Error("%s file already exists in the current directory"
                                   % options.config_filename)

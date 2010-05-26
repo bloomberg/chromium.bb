@@ -89,8 +89,9 @@ def commit_svn(repo):
 def commit_git(repo):
   """Commits the changes and returns the new hash."""
   check_call(['git', 'add', '-A', '-f'], cwd=repo)
-  out = Popen(['git', 'commit', '-m', 'foo'], cwd=repo).communicate()[0]
-  rev = re.search(r'^\[.*? ([a-f\d]+)\] ', out).group(1)
+  check_call(['git', 'commit', '-q', '--message', 'foo'], cwd=repo)
+  rev = Popen(['git', 'show-ref', '--head', 'HEAD'],
+              cwd=repo).communicate()[0].split(' ', 1)[0]
   logging.debug('At revision %s' % rev)
   return rev
 

@@ -134,9 +134,15 @@ class GClientSmokeBase(unittest.TestCase):
 
 
 class GClientSmoke(GClientSmokeBase):
-  def testCommands(self):
-    """This test is to make sure no new command was added."""
+  def testHelp(self):
+    """testHelp: make sure no new command was added."""
     result = self.gclient(['help'])
+    self.assertEquals(1197, len(result[0]))
+    self.assertEquals(0, len(result[1]))
+    self.assertEquals(0, result[2])
+
+  def testUnknown(self):
+    result = self.gclient(['foo'])
     self.assertEquals(1197, len(result[0]))
     self.assertEquals(0, len(result[1]))
     self.assertEquals(0, result[2])
@@ -154,10 +160,57 @@ class GClientSmoke(GClientSmokeBase):
     self.check(res, self.gclient(['sync']))
     self.check(res, self.gclient(['update']))
 
+  def testConfig(self):
+    p = join(self.root_dir, '.gclient')
+    def test(cmd, expected):
+      if os.path.exists(p):
+        os.remove(p)
+      results = self.gclient(cmd)
+      self.check(('', '', 0), results)
+      self.checkString(expected, open(p, 'rb').read())
+
+    test(['config', self.svn_base + 'trunk/src/'],
+         'solutions = [\n'
+         '  { "name"        : "src",\n'
+         '    "url"         : "svn://127.0.0.1/svn/trunk/src",\n'
+         '    "custom_deps" : {\n'
+         '    },\n'
+         '    "safesync_url": ""\n'
+         '  },\n]\n')
+
+    test(['config', self.git_base + 'repo_1', '--name', 'src'],
+         'solutions = [\n'
+         '  { "name"        : "src",\n'
+         '    "url"         : "git://127.0.0.1/git/repo_1",\n'
+         '    "custom_deps" : {\n'
+         '    },\n'
+         '    "safesync_url": ""\n'
+         '  },\n]\n')
+
+    test(['config', 'foo', 'faa'],
+         'solutions = [\n'
+         '  { "name"        : "foo",\n'
+         '    "url"         : "foo",\n'
+         '    "custom_deps" : {\n'
+         '    },\n'
+         '    "safesync_url": "faa"\n'
+         '  },\n]\n')
+
+    test(['config', '--spec', '["blah blah"]'], '["blah blah"]')
+
+    os.remove(p)
+    results = self.gclient(['config', 'foo', 'faa', 'fuu'])
+    err = ('Usage: gclient.py config [options] [url] [safesync url]\n\n'
+           'gclient.py: error: Inconsistent arguments. Use either --spec or one'
+           ' or 2 args\n')
+    self.check(('', err, 2), results)
+    self.assertFalse(os.path.exists(join(self.root_dir, '.gclient')))
+
 
 class GClientSmokeSVN(GClientSmokeBase):
-  """sync is the most important command. Hence test it more."""
   def testSync(self):
+    # TODO(maruel): safesync, multiple solutions, invalid@revisions,
+    # multiple revisions.
     self.gclient(['config', self.svn_base + 'trunk/src/'])
     # Test unversioned checkout.
     results = self.gclient(['sync', '--deps', 'mac'])
@@ -284,6 +337,24 @@ class GClientSmokeSVN(GClientSmokeBase):
     self.checkString('', results[1])
     self.assertEquals(0, results[2])
 
+  def testRunHooks(self):
+    self.gclient(['config', self.svn_base + 'trunk/src/'])
+    self.gclient(['sync', '--deps', 'mac'])
+    results = self.gclient(['runhooks'])
+    out = results[0].splitlines(False)
+    self.assertEquals(4, len(out))
+    self.assertEquals(out[0], '')
+    self.assertTrue(re.match(r'^________ running \'.*?python -c '
+      r'open\(\'src/hooked1\', \'w\'\)\.write\(\'hooked1\'\)\' in \'.*',
+      out[1]))
+    self.assertEquals(out[2], '')
+    # runhooks runs all hooks even if not matching by design.
+    self.assertTrue(re.match(r'^________ running \'.*?python -c '
+      r'open\(\'src/hooked2\', \'w\'\)\.write\(\'hooked2\'\)\' in \'.*',
+      out[3]))
+    self.checkString('', results[1])
+    self.assertEquals(0, results[2])
+
   def testRunHooksDepsOs(self):
     self.gclient(['config', self.svn_base + 'trunk/src/'])
     self.gclient(['sync', '--deps', 'mac', '--revision', 'src@1'])
@@ -304,6 +375,8 @@ class GClientSmokeSVN(GClientSmokeBase):
 
 class GClientSmokeGIT(GClientSmokeBase):
   def testSync(self):
+    # TODO(maruel): safesync, multiple solutions, invalid@revisions,
+    # multiple revisions.
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     # Test unversioned checkout.
     results = self.gclient(['sync', '--deps', 'mac'])
@@ -416,6 +489,22 @@ class GClientSmokeGIT(GClientSmokeBase):
       out[3]))
     self.checkString('', results[1])
     self.assertEquals(0, results[2])
+
+  def testRevInfo(self):
+    # TODO(maruel): Test multiple solutions.
+    self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
+    self.gclient(['sync', '--deps', 'mac'])
+    results = self.gclient(['revinfo'])
+    out = ('src: %(base)srepo_1@%(hash1)s;\n'
+           'src/repo2: %(base)srepo_2@%(hash2)s;\n'
+           'src/repo2/repo_renamed: %(base)srepo_3@%(hash3)s\n' %
+          {
+            'base': self.git_base,
+            'hash1': FAKE.git_hashes['repo_1'][1][0],
+            'hash2': FAKE.git_hashes['repo_2'][0][0],
+            'hash3': FAKE.git_hashes['repo_3'][1][0],
+          })
+    self.check((out, '', 0), results)
 
 
 if __name__ == '__main__':
