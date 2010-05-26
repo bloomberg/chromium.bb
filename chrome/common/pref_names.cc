@@ -705,6 +705,11 @@ const wchar_t kShutdownNumProcesses[] = L"shutdown.num_processes";
 // Number of processes that were shut down using the slow path.
 const wchar_t kShutdownNumProcessesSlow[] = L"shutdown.num_processes_slow";
 
+// Whether to restart the current Chrome session automatically as the last thing
+// before shutting everything down.
+const wchar_t kRestartLastSessionOnShutdown[] =
+    L"restart.last.session.on.shutdown";
+
 // Number of bookmarks/folders on the bookmark bar/other bookmark folder.
 const wchar_t kNumBookmarksOnBookmarkBar[] =
     L"user_experience_metrics.num_bookmarks_on_bookmark_bar";

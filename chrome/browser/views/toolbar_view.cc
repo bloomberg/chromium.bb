@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/bookmark_menu_button.h"
 #include "chrome/browser/views/browser_actions_container.h"
@@ -24,6 +25,7 @@
 #include "gfx/canvas.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "gfx/skbitmap_operations.h"
 #include "grit/theme_resources.h"
 #include "views/controls/button/button_dropdown.h"
 #include "views/focus/view_storage.h"
@@ -35,6 +37,16 @@ static const int kControlHorizOffset = 4;
 static const int kControlVertOffset = 6;
 static const int kControlIndent = 3;
 static const int kStatusBubbleWidth = 480;
+
+// The length of time to run the upgrade notification animation (the time it
+// takes one pulse to run its course and go back to its original brightness).
+static const int kPulseDuration = 2000;
+
+// How long to wait between pulsating the upgrade notifier.
+static const int kPulsateEveryMs = 8000;
+
+// The offset in pixels of the upgrade dot on the app menu.
+static const int kUpgradeDotOffset = 11;
 
 // Separation between the location bar and the menus.
 static const int kMenuButtonOffset = 3;
@@ -88,6 +100,12 @@ ToolbarView::ToolbarView(Browser* browser)
   if (!kPopupBackgroundEdge) {
     kPopupBackgroundEdge = ResourceBundle::GetSharedInstance().GetBitmapNamed(
         IDR_LOCATIONBG_POPUPMODE_EDGE);
+  }
+
+  if (!Singleton<UpgradeDetector>::get()->notify_upgrade()) {
+    registrar_.Add(this,
+        NotificationType::UPGRADE_RECOMMENDED,
+        NotificationService::AllSources());
   }
 }
 
@@ -280,6 +298,14 @@ void ToolbarView::OnInputInProgress(bool in_progress) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// ToolbarView, AnimationDelegate implementation:
+
+void ToolbarView::AnimationProgressed(const Animation* animation) {
+  app_menu_->SetIcon(GetAppMenuIcon());
+  SchedulePaint();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, CommandUpdater::CommandObserver implementation:
 
 void ToolbarView::EnabledStateChangedForCommand(int id, bool enabled) {
@@ -340,6 +366,8 @@ void ToolbarView::Observe(NotificationType type,
       Layout();
       SchedulePaint();
     }
+  } else if (type == NotificationType::UPGRADE_RECOMMENDED) {
+    ShowUpgradeReminder();
   }
 }
 
@@ -665,6 +693,10 @@ void ToolbarView::CreateRightSideControls(Profile* profile) {
     bookmark_menu_ = NULL;
   }
 
+  // Catch the case where the window is created after we detect a new version.
+  if (Singleton<UpgradeDetector>::get()->notify_upgrade())
+    ShowUpgradeReminder();
+
   LoadRightSideControlsImages();
 
   AddChildView(browser_actions_);
@@ -734,6 +766,77 @@ void ToolbarView::LoadCenterStackImages() {
       tp->GetBitmapNamed(IDR_GO_MASK));
 }
 
+void ToolbarView::ShowUpgradeReminder() {
+  update_reminder_animation_.reset(new SlideAnimation(this));
+  update_reminder_animation_->SetSlideDuration(kPulseDuration);
+
+  // Then start the recurring timer for pulsating it.
+  upgrade_reminder_pulse_timer_.Start(
+      base::TimeDelta::FromMilliseconds(kPulsateEveryMs),
+      this, &ToolbarView::PulsateUpgradeNotifier);
+}
+
+void ToolbarView::PulsateUpgradeNotifier() {
+  // Start the pulsating animation.
+  update_reminder_animation_->Reset(0.0);
+  update_reminder_animation_->Show();
+}
+
+SkBitmap ToolbarView::GetAppMenuIcon() {
+  ThemeProvider* tp = GetThemeProvider();
+
+  SkBitmap icon;
+
+  // We use different menu button images if the locale is right-to-left.
+  if (base::i18n::IsRTL())
+    icon = *tp->GetBitmapNamed(IDR_MENU_CHROME_RTL);
+  else
+    icon = *tp->GetBitmapNamed(IDR_MENU_CHROME);
+
+  if (!Singleton<UpgradeDetector>::get()->notify_upgrade())
+    return icon;
+
+  // Draw the chrome app menu icon onto the canvas.
+  scoped_ptr<gfx::Canvas> canvas(
+      new gfx::Canvas(icon.width(), icon.height(), false));
+  canvas->DrawBitmapInt(icon, 0, 0);
+
+  SkBitmap badge;
+
+  static bool has_faded_in = false;
+  if (!has_faded_in) {
+    SkBitmap* dot = tp->GetBitmapNamed(IDR_UPGRADE_DOT_INACTIVE);
+    SkBitmap transparent;
+    transparent.setConfig(dot->getConfig(), dot->width(), dot->height());
+    transparent.allocPixels();
+    transparent.eraseARGB(0, 0, 0, 0);
+    badge = SkBitmapOperations::CreateBlendedBitmap(
+        *dot, transparent, 1.0 - update_reminder_animation_->GetCurrentValue());
+    if (update_reminder_animation_->GetCurrentValue() == 1.0)
+      has_faded_in = true;
+  } else {
+    // Convert animation values that start from 0.0 and incrementally go
+    // up to 1.0 into values that start in 0.0, go to 1.0 and then back
+    // to 0.0 (to create a pulsing effect).
+    double value = 1.0 -
+                   abs(2.0 * update_reminder_animation_->GetCurrentValue() -
+                       1.0);
+
+    // Add the badge to it.
+    badge = SkBitmapOperations::CreateBlendedBitmap(
+        *tp->GetBitmapNamed(IDR_UPGRADE_DOT_INACTIVE),
+        *tp->GetBitmapNamed(IDR_UPGRADE_DOT_ACTIVE),
+        value);
+  }
+
+  int x_pos = kUpgradeDotOffset;
+  if (base::i18n::IsRTL())
+    x_pos = icon.width() - badge.width();
+  canvas->DrawBitmapInt(badge, x_pos, icon.height() - badge.height());
+
+  return canvas->ExtractBitmap();
+}
+
 void ToolbarView::LoadRightSideControlsImages() {
   ThemeProvider* tp = GetThemeProvider();
 
@@ -742,10 +845,8 @@ void ToolbarView::LoadRightSideControlsImages() {
     page_menu_->SetIcon(*tp->GetBitmapNamed(IDR_MENU_PAGE_RTL));
   else
     page_menu_->SetIcon(*tp->GetBitmapNamed(IDR_MENU_PAGE));
-  if (base::i18n::IsRTL())
-    app_menu_->SetIcon(*tp->GetBitmapNamed(IDR_MENU_CHROME_RTL));
-  else
-    app_menu_->SetIcon(*tp->GetBitmapNamed(IDR_MENU_CHROME));
+
+  app_menu_->SetIcon(GetAppMenuIcon());
 
   if (bookmark_menu_ != NULL)
     bookmark_menu_->SetIcon(*tp->GetBitmapNamed(IDR_MENU_BOOKMARK));
@@ -788,6 +889,9 @@ void ToolbarView::RunAppMenu(const gfx::Point& pt) {
     return;
 
   destroyed_flag_ = NULL;
+
+  // Stop pulsating the upgrade reminder on the app menu, if active.
+  upgrade_reminder_pulse_timer_.Stop();
 
   for (unsigned int i = 0; i < menu_listeners_.size(); i++) {
     app_menu_menu_->RemoveMenuListener(menu_listeners_[i]);

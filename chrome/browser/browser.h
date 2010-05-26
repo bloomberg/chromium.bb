@@ -532,6 +532,7 @@ class Browser : public TabStripModelDelegate,
   void OpenSyncMyBookmarksDialog();
   void OpenImportSettingsDialog();
   void OpenAboutChromeDialog();
+  void OpenUpdateChromeDialog();
   void OpenHelpTab();
   // Used by the "Get themes" link in the options dialog.
   void OpenThemeGalleryTabAndActivate();

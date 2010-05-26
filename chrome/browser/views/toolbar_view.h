@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "app/menus/simple_menu_model.h"
+#include "app/slide_animation.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/app_menu_model.h"
 #include "chrome/browser/back_forward_menu_model.h"
@@ -38,6 +39,7 @@ class ToolbarView : public AccessibleToolbarView,
                     public views::FocusChangeListener,
                     public menus::SimpleMenuModel::Delegate,
                     public LocationBarView::Delegate,
+                    public AnimationDelegate,
                     public NotificationObserver,
                     public CommandUpdater::CommandObserver,
                     public views::ButtonListener {
@@ -107,6 +109,9 @@ class ToolbarView : public AccessibleToolbarView,
   virtual TabContents* GetTabContents();
   virtual void OnInputInProgress(bool in_progress);
 
+  // Overridden from AnimationDelegate:
+  virtual void AnimationProgressed(const Animation* animation);
+
   // Overridden from CommandUpdater::CommandObserver:
   virtual void EnabledStateChangedForCommand(int id, bool enabled);
 
@@ -173,6 +178,17 @@ class ToolbarView : public AccessibleToolbarView,
   // was called.
   void RestoreLastFocusedView();
 
+  // Starts the recurring timer that periodically asks the upgrade notifier
+  // to pulsate.
+  void ShowUpgradeReminder();
+
+  // Show the reminder, tempting the user to upgrade by pulsating.
+  void PulsateUpgradeNotifier();
+
+  // Gets a canvas with the icon for the app menu. It will possibly contain
+  // an overlaid badge if an update is recommended.
+  SkBitmap GetAppMenuIcon();
+
   scoped_ptr<BackForwardMenuModel> back_menu_model_;
   scoped_ptr<BackForwardMenuModel> forward_menu_model_;
 
@@ -222,6 +238,13 @@ class ToolbarView : public AccessibleToolbarView,
   // Vector of listeners to receive callbacks when the menu opens.
   std::vector<views::MenuListener*> menu_listeners_;
 
+  // The animation that makes the update reminder pulse.
+  scoped_ptr<SlideAnimation> update_reminder_animation_;
+
+  // We periodically restart the animation after it has been showed
+  // once, to create a pulsating effect.
+  base::RepeatingTimer<ToolbarView> upgrade_reminder_pulse_timer_;
+
   // Are we in the menu bar emulation mode, where the app and page menu
   // are temporarily focusable?
   bool menu_bar_emulation_mode_;
@@ -229,7 +252,9 @@ class ToolbarView : public AccessibleToolbarView,
   // Used to post tasks to switch to the next/previous menu.
   ScopedRunnableMethodFactory<ToolbarView> method_factory_;
 
-  // If non-null the destuctor sets this to true. This is set to a non-null
+  NotificationRegistrar registrar_;
+
+  // If non-null the destructor sets this to true. This is set to a non-null
   // while the menu is showing and used to detect if the menu was deleted while
   // running.
   bool* destroyed_flag_;

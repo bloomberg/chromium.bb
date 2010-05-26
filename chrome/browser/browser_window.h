@@ -183,6 +183,9 @@ class BrowserWindow {
   // Shows the About Chrome dialog box.
   virtual views::Window* ShowAboutChromeDialog() = 0;
 
+  // Shows the Update Recommended dialog box.
+  virtual void ShowUpdateChromeDialog() = 0;
+
   // Shows the Task manager.
   virtual void ShowTaskManager() = 0;
 

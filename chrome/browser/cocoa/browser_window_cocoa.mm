@@ -259,6 +259,10 @@ views::Window* BrowserWindowCocoa::ShowAboutChromeDialog() {
   return NULL;
 }
 
+void BrowserWindowCocoa::ShowUpdateChromeDialog() {
+  NOTIMPLEMENTED();
+}
+
 void BrowserWindowCocoa::ShowTaskManager() {
   TaskManagerMac::Show();
 }

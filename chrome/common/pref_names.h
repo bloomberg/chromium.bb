@@ -251,6 +251,8 @@ extern const wchar_t kShutdownType[];
 extern const wchar_t kShutdownNumProcesses[];
 extern const wchar_t kShutdownNumProcessesSlow[];
 
+extern const wchar_t kRestartLastSessionOnShutdown[];
+
 extern const wchar_t kNumBookmarksOnBookmarkBar[];
 extern const wchar_t kNumFoldersOnBookmarkBar[];
 extern const wchar_t kNumBookmarksInOtherBookmarkFolder[];

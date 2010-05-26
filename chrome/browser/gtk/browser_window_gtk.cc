@@ -883,6 +883,10 @@ views::Window* BrowserWindowGtk::ShowAboutChromeDialog() {
   return NULL;
 }
 
+void BrowserWindowGtk::ShowUpdateChromeDialog() {
+  NOTIMPLEMENTED();
+}
+
 void BrowserWindowGtk::ShowTaskManager() {
   TaskManagerGtk::Show();
 }

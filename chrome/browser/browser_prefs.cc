@@ -43,6 +43,7 @@
 #if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port
 #include "chrome/browser/views/browser_actions_container.h"
 #include "chrome/browser/views/frame/browser_view.h"
+#include "chrome/browser/views/update_recommended_message_box.h"
 #endif
 
 #if defined(TOOLKIT_GTK)
@@ -78,6 +79,9 @@ void RegisterLocalState(PrefService* local_state) {
   PageInfoModel::RegisterPrefs(local_state);
 #if defined(TOOLKIT_VIEWS)
   BrowserView::RegisterBrowserViewPrefs(local_state);
+#endif
+#if defined(OS_WIN)
+  UpdateRecommendedMessageBox::RegisterUpdateRecommendedPrefs(local_state);
 #endif
   TaskManager::RegisterPrefs(local_state);
   CookiePromptModalDialog::RegisterPrefs(local_state);

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "app/l10n_util.h"
+#include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
@@ -14,9 +15,11 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
+#include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 
 AppMenuModel::AppMenuModel(menus::SimpleMenuModel::Delegate* delegate,
                            Browser* browser)
@@ -29,12 +32,33 @@ AppMenuModel::~AppMenuModel() {
 }
 
 bool AppMenuModel::IsLabelDynamicAt(int index) const {
-  return IsSyncItem(index) || SimpleMenuModel::IsLabelDynamicAt(index);
+  return IsDynamicItem(index) || SimpleMenuModel::IsLabelDynamicAt(index);
 }
 
 string16 AppMenuModel::GetLabelAt(int index) const {
-  return IsSyncItem(index) ?
-      GetSyncMenuLabel() : SimpleMenuModel::GetLabelAt(index);
+  if (!IsDynamicItem(index))
+    return SimpleMenuModel::GetLabelAt(index);
+
+  int command_id = GetCommandIdAt(index);
+
+  switch (command_id) {
+    case IDC_ABOUT: return GetAboutEntryMenuLabel(); break;
+    case IDC_SYNC_BOOKMARKS: return GetSyncMenuLabel(); break;
+    default:
+      NOTREACHED();
+      return string16();
+  }
+}
+
+bool AppMenuModel::GetIconAt(int index, SkBitmap* icon) const {
+  if (GetCommandIdAt(index) == IDC_ABOUT &&
+      Singleton<UpgradeDetector>::get()->notify_upgrade()) {
+    // Show the exclamation point next to the menu item.
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    *icon = *rb.GetBitmapNamed(IDR_UPDATE_AVAILABLE);
+    return true;
+  }
+  return false;
 }
 
 void AppMenuModel::Build() {
@@ -160,6 +184,17 @@ string16 AppMenuModel::GetSyncMenuLabel() const {
       browser_->profile()->GetOriginalProfile()->GetProfileSyncService());
 }
 
-bool AppMenuModel::IsSyncItem(int index) const {
-  return GetCommandIdAt(index) == IDC_SYNC_BOOKMARKS;
+string16 AppMenuModel::GetAboutEntryMenuLabel() const {
+  if (Singleton<UpgradeDetector>::get()->notify_upgrade()) {
+    return l10n_util::GetStringFUTF16(
+        IDS_UPDATE_NOW, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+  }
+  return l10n_util::GetStringFUTF16(
+      IDS_ABOUT, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+}
+
+bool AppMenuModel::IsDynamicItem(int index) const {
+  int command_id = GetCommandIdAt(index);
+  return command_id == IDC_SYNC_BOOKMARKS ||
+         command_id == IDC_ABOUT;
 }

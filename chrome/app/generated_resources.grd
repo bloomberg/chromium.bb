@@ -985,6 +985,9 @@ each locale. -->
         <message name="IDS_ABOUT" desc="The text label of the About Chrome menu item">
           About &amp;<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
         </message>
+        <message name="IDS_UPDATE_NOW" desc="The text label of the Update Chrome Now menu item">
+          Update &amp;<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
+        </message>
         <message name="IDS_EXIT" desc="The text label of the Exit menu item">
           E&amp;xit
         </message>
@@ -1019,6 +1022,9 @@ each locale. -->
         </message>
         <message name="IDS_ABOUT" desc="In Title Case: The text label of the About Chrome menu item">
           About &amp;<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
+        </message>
+        <message name="IDS_UPDATE_NOW" desc="The text label of the Update Chrome Now menu item">
+          Update &amp;<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
         </message>
         <message name="IDS_EXIT" desc="In Title Case: The text label of the Exit menu item">
           E&amp;xit
@@ -7208,6 +7214,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <!-- Theme UI -->
     <message name="IDS_THEME_LOADING_TITLE" desc="The text to be displayed in a window while a theme is loading.">
       Loading...
+    </message>
+
+    <!-- Update Recommended dialog -->
+    <message name="IDS_UPDATE_RECOMMENDED" desc="The main text of the Update Recommended dialog.">
+      Old school's not cool. <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is woefully out of date because it hasn't crashed or restarted in at least two weeks. Restart to apply update.
+    </message>
+    <message name="IDS_RESTART_AND_UPDATE" desc="The button label for restarting and updating Chrome.">
+      Restart and update
+    </message>
+    <message name="IDS_NOT_NOW" desc="The button label for delaying the restart and updating Chrome.">
+      Not now
     </message>
 
     <!-- Extra Mac UI Strings -->

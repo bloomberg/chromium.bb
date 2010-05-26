@@ -295,6 +295,7 @@ class BrowserView : public BrowserBubbleHost,
   virtual void ToggleBookmarkBar();
   virtual void ToggleExtensionShelf();
   virtual views::Window* ShowAboutChromeDialog();
+  virtual void ShowUpdateChromeDialog();
   virtual void ShowTaskManager();
   virtual void ShowBookmarkBubble(const GURL& url, bool already_bookmarked);
   virtual void SetDownloadShelfVisible(bool visible);
@@ -597,9 +598,9 @@ class BrowserView : public BrowserBubbleHost,
   UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
 
   scoped_ptr<AccessibleViewHelper> accessible_view_helper_;
- #if defined(OS_LINUX)
+#if defined(OS_LINUX)
   scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
- #endif
+#endif
 
   // Loads extension_app_icon_ asynchronously on the file thread.
   ImageLoadingTracker extension_app_icon_loader_;

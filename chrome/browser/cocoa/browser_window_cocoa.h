@@ -67,6 +67,7 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual void ToggleBookmarkBar();
   virtual void ToggleExtensionShelf();
   virtual views::Window* ShowAboutChromeDialog();
+  virtual void ShowUpdateChromeDialog();
   virtual void ShowTaskManager();
   virtual void ShowBookmarkBubble(const GURL& url, bool already_bookmarked);
   virtual bool IsDownloadShelfVisible() const;

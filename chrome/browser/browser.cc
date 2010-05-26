@@ -74,6 +74,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/tab_menu_model.h"
+#include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/window_sizer.h"
 #include "chrome/common/chrome_constants.h"
@@ -128,7 +129,6 @@ static const char* const kHelpContentUrl =
 static const std::string kBrokenPageUrl =
     "http://www.google.com/support/chrome/bin/request.py?contact_type="
     "broken_website&format=inproduct&p.page_title=$1&p.page_url=$2";
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1748,6 +1748,11 @@ void Browser::OpenAboutChromeDialog() {
   window_->ShowAboutChromeDialog();
 }
 
+void Browser::OpenUpdateChromeDialog() {
+  UserMetrics::RecordAction(UserMetricsAction("UpdateChrome"), profile_);
+  window_->ShowUpdateChromeDialog();
+}
+
 void Browser::OpenHelpTab() {
   GURL help_url = google_util::AppendGoogleLocaleParam(GURL(kHelpContentUrl));
   AddTabWithURL(help_url, GURL(), PageTransition::AUTO_BOOKMARK,
@@ -2025,7 +2030,12 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_VIEW_PASSWORDS:        OpenPasswordManager();         break;
     case IDC_CLEAR_BROWSING_DATA:   OpenClearBrowsingDataDialog(); break;
     case IDC_IMPORT_SETTINGS:       OpenImportSettingsDialog();    break;
-    case IDC_ABOUT:                 OpenAboutChromeDialog();       break;
+    case IDC_ABOUT:
+      if (Singleton<UpgradeDetector>::get()->notify_upgrade())
+        OpenUpdateChromeDialog();
+      else
+        OpenAboutChromeDialog();
+      break;
     case IDC_HELP_PAGE:             OpenHelpTab();                 break;
 #if defined(OS_CHROMEOS)
     case IDC_SYSTEM_OPTIONS:        OpenSystemOptionsDialog();     break;

@@ -42,6 +42,7 @@
 #include "chrome/browser/views/tabs/side_tab_strip.h"
 #include "chrome/browser/views/theme_install_bubble_view.h"
 #include "chrome/browser/views/toolbar_view.h"
+#include "chrome/browser/views/update_recommended_message_box.h"
 #include "chrome/browser/window_sizer.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -966,6 +967,12 @@ views::Window* BrowserView::ShowAboutChromeDialog() {
                                       browser_->profile());
 }
 
+void BrowserView::ShowUpdateChromeDialog() {
+#if defined(OS_WIN)
+  UpdateRecommendedMessageBox::ShowMessageBox(GetWindow()->GetNativeWindow());
+#endif
+}
+
 void BrowserView::ShowTaskManager() {
   browser::ShowTaskManager();
 }
@@ -980,9 +987,10 @@ void BrowserView::SetDownloadShelfVisible(bool visible) {
   if (browser_ == NULL)
     return;
 
-  if (visible && IsDownloadShelfVisible() != visible)
+  if (visible && IsDownloadShelfVisible() != visible) {
     // Invoke GetDownloadShelf to force the shelf to be created.
     GetDownloadShelf();
+  }
 
   if (browser_ != NULL)
     browser_->UpdateDownloadShelfVisibility(visible);

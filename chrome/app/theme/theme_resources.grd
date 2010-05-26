@@ -345,6 +345,11 @@
       <include name="IDR_SIDETABS_SHADOW_MIDDLE" file="sidetabs_shadow_middle.png" type="BINDATA" />
       <include name="IDR_SIDETABS_SHADOW_BOTTOM" file="sidetabs_shadow_bottom.png" type="BINDATA" />
 
+      <!-- Upgrade notification -->
+
+      <include name="IDR_UPGRADE_DOT_INACTIVE" file="upgrade_dot_inactive.png" type="BINDATA" />
+      <include name="IDR_UPGRADE_DOT_ACTIVE" file="upgrade_dot_active.png" type="BINDATA" />
+
       <!-- Geolocation -->
       <include name="IDR_GEOLOCATION_INFOBAR_ICON" file="geolocation_infobar_icon.png" type="BINDATA" />
       <include name="IDR_GEOLOCATION_ALLOWED_LOCATIONBAR_ICON" file="geolocation_allowed_locationbar_icon.png" type="BINDATA" />

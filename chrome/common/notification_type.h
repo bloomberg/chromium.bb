@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -888,6 +888,20 @@ class NotificationType {
     // Sent on the IO thread when the system should try to reduce the amount of
     // memory in use, no source or details are passed. See memory_purger.h .cc.
     PURGE_MEMORY,
+
+    // Upgrade notifications ---------------------------------------------------
+
+    // Sent when Chrome detects that it has been upgraded behind the scenes.
+    // NOTE: The detection mechanism is asynchronous, so this event may arrive
+    // quite some time after the upgrade actually happened. No details are
+    // expected.
+    UPGRADE_DETECTED,
+
+    // Sent when Chrome believes an update has been installed and available for
+    // long enough with the user shutting down to let it take effect. See
+    // upgrade_detector.cc for details on how long it waits. No details are
+    // expected.
+    UPGRADE_RECOMMENDED,
 
     // Accessibility Notifications ---------------------------------------------
 

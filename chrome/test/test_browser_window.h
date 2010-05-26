@@ -69,6 +69,7 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void ToggleBookmarkBar() {}
   virtual void ToggleExtensionShelf() {}
   virtual views::Window* ShowAboutChromeDialog() { return NULL; }
+  virtual void ShowUpdateChromeDialog() {}
   virtual void ShowTaskManager() {}
   virtual void ShowBookmarkManager() {}
   virtual void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {}

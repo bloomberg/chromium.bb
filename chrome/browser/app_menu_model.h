@@ -22,10 +22,11 @@ class AppMenuModel : public menus::SimpleMenuModel {
                         Browser* browser);
   virtual ~AppMenuModel();
 
-  // Override this to handle the sync menu item (whose label is
-  // updated dynamically).
+  // Overridden from menus::SimpleMenuModel:
   virtual bool IsLabelDynamicAt(int index) const;
   virtual string16 GetLabelAt(int index) const;
+  virtual bool HasIcons() const { return true; }
+  virtual bool GetIconAt(int index, SkBitmap* icon) const;
 
   // Build/update profile submenu. Return true if profiles submenu is built or
   // updated. False otherwise.
@@ -37,7 +38,8 @@ class AppMenuModel : public menus::SimpleMenuModel {
   bool ProfilesChanged(const std::vector<std::wstring>& profiles) const;
 
   string16 GetSyncMenuLabel() const;
-  bool IsSyncItem(int index) const;
+  string16 GetAboutEntryMenuLabel() const;
+  bool IsDynamicItem(int index) const;
 
   // Contents of the profiles menu to populate with profile names.
   scoped_ptr<menus::SimpleMenuModel> profiles_menu_contents_;
