@@ -380,8 +380,11 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestStepOver) {
   RunTest("testStepOver", kDebuggerStepTestPage);
 }
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_WIN)
-// See http://crbug.com/43479 and http://crbug.com/45080
+#if defined(OS_WIN)
+// Disabled because it times out. See http://crbug.com/45080
+#define MAYBE_TestStepOut DISABLED_TestStepOut
+#elif defined(OS_CHROMEOS) || defined(OS_LINUX)
+// See http://crbug.com/43479
 #define MAYBE_TestStepOut FLAKY_TestStepOut
 #else
 #define MAYBE_TestStepOut TestStepOut
@@ -391,8 +394,11 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestStepOut) {
   RunTest("testStepOut", kDebuggerStepTestPage);
 }
 
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
-// See http://crbug.com/43479 and http://crbug.com/45080
+#if defined(OS_WIN)
+// Disabled because it times out. See http://crbug.com/45080
+#define MAYBE_TestStepIn DISABLED_TestStepIn
+#elif defined(OS_CHROMEOS)
+// See http://crbug.com/43479
 #define MAYBE_TestStepIn FLAKY_TestStepIn
 #else
 #define MAYBE_TestStepIn TestStepIn
