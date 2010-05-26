@@ -36,6 +36,8 @@ button.action {
 
 button.action:focus {
   border: 2px solid #426dc9;
+  /* inset border emulated using a shadow */
+  -webkit-box-shadow: 1px 1px 0 #dbdbdb inset, -1px -1px 0 #dbdbdb inset;
 }
 
 button.action:active {
