@@ -329,7 +329,7 @@ TEST_F(SessionRestoreUITest, NormalAndPopup) {
 
 #if defined(OS_MACOSX)
 // Fails an SQL assertion on Mac: http://crbug.com/45108
-#define DontRestoreWhileIncognito FAILS_DontRestoreWhileIncognito
+#define DontRestoreWhileIncognito DISABLED_DontRestoreWhileIncognito
 #endif
 // Creates a browser, goes incognito, closes browser, launches and make sure
 // we don't restore.
@@ -406,7 +406,7 @@ TEST_F(SessionRestoreUITest, TwoWindowsCloseOneRestoreOnlyOne) {
 #if defined(OS_MACOSX)
 // Fails an SQL assertion on Mac: http://crbug.com/45108
 #define FLAKY_RestoreAfterClosingTabbedBrowserWithAppAndLaunching \
-    FAILS_RestoreAfterClosingTabbedBrowserWithAppAndLaunching
+    DISABLED_RestoreAfterClosingTabbedBrowserWithAppAndLaunching
 #endif
 // Launches an app window, closes tabbed browser, launches and makes sure
 // we restore the tabbed browser url.
