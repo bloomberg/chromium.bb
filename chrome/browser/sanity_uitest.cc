@@ -64,6 +64,7 @@ class EarlyReturnTest : public UITest {
   }
 };
 
-TEST_F(EarlyReturnTest, ToastCrasher) {
+// Flaky: http://crbug.com/45115
+TEST_F(EarlyReturnTest, FLAKEY_ToastCrasher) {
   // UITest will check if this crashed.
 }
