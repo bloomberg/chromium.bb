@@ -60,6 +60,7 @@
 #include "webkit/tools/test_shell/mock_spellcheck.h"
 #include "webkit/tools/test_shell/notification_presenter.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
+#include "webkit/tools/test_shell/test_geolocation_service.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 #include "webkit/tools/test_shell/test_shell.h"
 #include "webkit/tools/test_shell/test_web_worker.h"
@@ -627,6 +628,10 @@ WebNotificationPresenter* TestWebViewDelegate::notificationPresenter() {
   return shell_->notification_presenter();
 }
 
+WebKit::WebGeolocationService* TestWebViewDelegate::geolocationService() {
+  return GetTestGeolocationService();
+}
+
 // WebWidgetClient -----------------------------------------------------------
 
 void TestWebViewDelegate::didInvalidateRect(const WebRect& rect) {
@@ -1144,6 +1149,10 @@ void TestWebViewDelegate::WaitForPolicyDelegate() {
   policy_delegate_should_notify_done_ = true;
 }
 
+void TestWebViewDelegate::SetGeolocationPermission(bool allowed) {
+  GetTestGeolocationService()->SetGeolocationPermission(allowed);
+}
+
 // Private methods -----------------------------------------------------------
 
 void TestWebViewDelegate::UpdateAddressBar(WebView* webView) {
@@ -1262,6 +1271,12 @@ std::wstring TestWebViewDelegate::GetFrameDescription(WebFrame* webframe) {
     else
       return L"frame (anonymous)";
   }
+}
+
+TestGeolocationService* TestWebViewDelegate::GetTestGeolocationService() {
+  if (!test_geolocation_service_.get())
+    test_geolocation_service_.reset(new TestGeolocationService);
+  return test_geolocation_service_.get();
 }
 
 void TestWebViewDelegate::set_fake_window_rect(const WebRect& rect) {

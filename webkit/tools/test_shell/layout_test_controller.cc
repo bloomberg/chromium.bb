@@ -16,6 +16,7 @@
 #include "base/utf_string_conversions.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebGeolocationServiceMock.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScriptSource.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityPolicy.h"
@@ -169,6 +170,10 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("setTimelineProfilingEnabled", &LayoutTestController::setTimelineProfilingEnabled);
   BindMethod("evaluateInWebInspector", &LayoutTestController::evaluateInWebInspector);
   BindMethod("forceRedSelectionColors", &LayoutTestController::forceRedSelectionColors);
+
+  BindMethod("setGeolocationPermission", &LayoutTestController::setGeolocationPermission);
+  BindMethod("setMockGeolocationPosition", &LayoutTestController::setMockGeolocationPosition);
+  BindMethod("setMockGeolocationError", &LayoutTestController::setMockGeolocationError);
 
   // The fallback method is called when an unknown method is invoked.
   BindFallbackMethod(&LayoutTestController::fallbackMethod);
@@ -1284,4 +1289,29 @@ void LayoutTestController::addUserStyleSheet(const CppArgumentList& args,
   if (args.size() < 1 || !args[0].isString())
     return;
   shell_->webView()->addUserStyleSheet(WebString::fromUTF8(args[0].ToString()));
+}
+
+void LayoutTestController::setGeolocationPermission(const CppArgumentList& args,
+                                                    CppVariant* result) {
+  if (args.size() < 1 || !args[0].isBool())
+    return;
+  shell_->delegate()->SetGeolocationPermission(args[0].ToBoolean());
+}
+
+void LayoutTestController::setMockGeolocationPosition(
+    const CppArgumentList& args, CppVariant* result) {
+  if (args.size() < 3 ||
+      !args[0].isNumber() || !args[1].isNumber() || !args[2].isNumber())
+    return;
+  WebKit::WebGeolocationServiceMock::setMockGeolocationPosition(
+      args[0].ToDouble(), args[1].ToDouble(), args[2].ToDouble());
+}
+
+void LayoutTestController::setMockGeolocationError(const CppArgumentList& args,
+                                                   CppVariant* result) {
+  if (args.size() < 2 ||
+      !args[0].isInt32() || !args[1].isString())
+    return;
+  WebKit::WebGeolocationServiceMock::setMockGeolocationError(
+      args[0].ToInt32(), WebString::fromUTF8(args[1].ToString()));
 }

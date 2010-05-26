@@ -15,6 +15,7 @@
 #include "net/base/file_stream.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDatabase.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebGeolocationServiceMock.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIndexedDatabase.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
@@ -76,9 +77,8 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
     WebKit::WebRuntimeFeatures::enableMediaPlayer(
         PathService::Get(base::DIR_MODULE, &module_path) &&
         media::InitializeMediaLibrary(module_path));
-    // TODO(joth): Make a dummy geolocation service implemenation for
-    // test_shell, and set this to true. http://crbug.com/36451
-    WebKit::WebRuntimeFeatures::enableGeolocation(false);
+
+    WebKit::WebRuntimeFeatures::enableGeolocation(true);
 
     // Construct and initialize an appcache system for this scope.
     // A new empty temp directory is created to house any cached

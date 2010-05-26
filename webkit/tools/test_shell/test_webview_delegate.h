@@ -45,6 +45,7 @@
 
 struct WebPreferences;
 class GURL;
+class TestGeolocationService;
 class TestShell;
 class WebWidgetHost;
 
@@ -135,6 +136,7 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   virtual void focusAccessibilityObject(
       const WebKit::WebAccessibilityObject& object);
   virtual WebKit::WebNotificationPresenter* notificationPresenter();
+  virtual WebKit::WebGeolocationService* geolocationService();
 
   // WebKit::WebWidgetClient
   virtual void didInvalidateRect(const WebKit::WebRect& rect);
@@ -307,6 +309,8 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
     edit_command_value_.clear();
   }
 
+  void SetGeolocationPermission(bool allowed);
+
  private:
 
   // Called the title of the page changes.
@@ -350,6 +354,9 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
 
   // Get a string suitable for dumping a frame to the console.
   std::wstring GetFrameDescription(WebKit::WebFrame* webframe);
+
+  // Returns a TestGeolocationService owned by this delegate.
+  TestGeolocationService* GetTestGeolocationService();
 
   // Causes navigation actions just printout the intended navigation instead
   // of taking you to the page. This is used for cases like mailto, where you
@@ -426,6 +433,8 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
 
   // The mock spellchecker used in TestWebViewDelegate::spellCheck().
   MockSpellCheck mock_spellcheck_;
+
+  scoped_ptr<TestGeolocationService> test_geolocation_service_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebViewDelegate);
 };

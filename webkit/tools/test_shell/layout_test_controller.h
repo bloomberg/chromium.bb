@@ -268,6 +268,14 @@ class LayoutTestController : public CppBoundClass {
   void addUserScript(const CppArgumentList& args, CppVariant* result);
   void addUserStyleSheet(const CppArgumentList& args, CppVariant* result);
 
+  // Geolocation related functions.
+  void setGeolocationPermission(const CppArgumentList& args,
+                                CppVariant* result);
+  void setMockGeolocationPosition(const CppArgumentList& args,
+                                  CppVariant* result);
+  void setMockGeolocationError(const CppArgumentList& args,
+                               CppVariant* result);
+
  public:
   // The following methods are not exposed to JavaScript.
   void SetWorkQueueFrozen(bool frozen) { work_queue_.set_frozen(frozen); }
