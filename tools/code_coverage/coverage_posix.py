@@ -376,7 +376,7 @@ class Coverage(object):
       except IOError:
         logging.fatal('IO error in bundle file ' +
                       self.options.bundles + ' (doesn\'t exist?)')
-      except NameError, SyntaxError:
+      except (NameError, SyntaxError):
         logging.fatal('Parse or syntax error in bundle file ' +
                       self.options.bundles)
       if hasattr(tests_from_bundles, '__iter__'):

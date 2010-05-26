@@ -2420,7 +2420,7 @@
               # src/chrome.
               'message': 'Compiling coverage bundles.',
               # MSVS must have an input file and an output file.
-              'inputs': [ '../tools/code_coverage/coverage_posix.py' ],
+              'inputs': [ '<@(_dependencies)' ],
               'outputs': [ '<(PRODUCT_DIR)/coverage_bundles.py' ],
               'action_name': 'coverage_build',
               'action': [ 'python', '-c',
