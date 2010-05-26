@@ -46,6 +46,8 @@ bool DllRedirector::RegisterAsFirstCFModule() {
     if (hwnd) {
       HMODULE this_module = reinterpret_cast<HMODULE>(&__ImageBase);
       LONG_PTR lp = reinterpret_cast<LONG_PTR>(this_module);
+      // SetClassLongPtr doesn't call this on success, so we do it here first.
+      SetLastError(ERROR_SUCCESS);
       SetClassLongPtr(hwnd, 0, lp);
       // We need to check the GLE value since SetClassLongPtr returns 0 on
       // failure as well as on the first call.
