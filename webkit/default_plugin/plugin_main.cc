@@ -28,27 +28,20 @@ inline HMODULE GetCurrentModuleHandle() {
 NPNetscapeFuncs* g_browser = NULL;
 
 NPError API_CALL NP_GetEntryPoints(NPPluginFuncs* funcs) {
-  // Be explicit about the namespace, because all internal plugins have
-  // functions with these names and some might accidentally put them into the
-  // global namespace. In that case, the linker might prefer the global one.
   funcs->version = 11;
   funcs->size = sizeof(*funcs);
-  funcs->newp = default_plugin::NPP_New;
-  funcs->destroy = default_plugin::NPP_Destroy;
-  funcs->setwindow = default_plugin::NPP_SetWindow;
-  funcs->newstream = default_plugin::NPP_NewStream;
-  funcs->destroystream = default_plugin::NPP_DestroyStream;
-  funcs->writeready = default_plugin::NPP_WriteReady;
-  funcs->write = default_plugin::NPP_Write;
+  funcs->newp = NPP_New;
+  funcs->destroy = NPP_Destroy;
+  funcs->setwindow = NPP_SetWindow;
+  funcs->newstream = NPP_NewStream;
+  funcs->destroystream = NPP_DestroyStream;
+  funcs->writeready = NPP_WriteReady;
+  funcs->write = NPP_Write;
   funcs->asfile = NULL;
   funcs->print = NULL;
-  funcs->event = default_plugin::NPP_HandleEvent;
-  funcs->urlnotify = default_plugin::NPP_URLNotify;
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  funcs->getvalue = default_plugin::NPP_GetValue;
-#else
+  funcs->event = NPP_HandleEvent;
+  funcs->urlnotify = NPP_URLNotify;
   funcs->getvalue = NULL;
-#endif
   funcs->setvalue = NULL;
   return NPERR_NO_ERROR;
 }
@@ -58,18 +51,9 @@ NPError API_CALL NP_Initialize(NPNetscapeFuncs* funcs) {
   return 0;
 }
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-NPError API_CALL NP_Initialize(NPNetscapeFuncs* funcs, NPPluginFuncs* p_funcs) {
-  NPError err = NP_Initialize(funcs);
-  if (err != NPERR_NO_ERROR)
-    return err;
-  return NP_GetEntryPoints(p_funcs);
-}
-#endif
-
 NPError API_CALL NP_Shutdown(void) {
   g_browser = NULL;
-  return NPERR_NO_ERROR;
+  return 0;
 }
 
 namespace {
@@ -130,27 +114,6 @@ bool NegotiateModels(NPP instance) {
                             NPPVpluginEventModel,
                             (void*)NPEventModelCocoa);
   if (err != NPERR_NO_ERROR) {
-    NOTREACHED();
-    return false;
-  }
-#elif defined(OS_POSIX)
-  NPError err;
-  // Check that chrome still supports xembed.
-  NPBool supportsXEmbed = FALSE;
-  err = g_browser->getvalue(instance,
-                            NPNVSupportsXEmbedBool,
-                            &supportsXEmbed);
-  if (err != NPERR_NO_ERROR || !supportsXEmbed) {
-    NOTREACHED();
-    return false;
-  }
-
-  // Check that the toolkit is still gtk2.
-  NPNToolkitType toolkit;
-  err = g_browser->getvalue(instance,
-                            NPNVToolkit,
-                            &toolkit);
-  if (err != NPERR_NO_ERROR || toolkit != NPNVGtk2) {
     NOTREACHED();
     return false;
   }
@@ -316,18 +279,6 @@ void NPP_URLNotify(NPP instance, const char* url, NPReason reason,
     plugin_impl->URLNotify(url, reason);
   }
 }
-
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-NPError NPP_GetValue(NPP instance, NPPVariable variable, void* value) {
-  switch (variable) {
-    case NPPVpluginNeedsXEmbed:
-      *static_cast<NPBool*>(value) = TRUE;
-      return NPERR_NO_ERROR;
-    default:
-      return NPERR_INVALID_PARAM;
-  }
-}
-#endif
 
 int16 NPP_HandleEvent(NPP instance, void* event) {
   if (instance == NULL)

@@ -23,19 +23,12 @@ NPError NPP_DestroyStream(NPP instance, NPStream* stream, NPReason reason);
 int32 NPP_WriteReady(NPP instance, NPStream* stream);
 int32 NPP_Write(NPP instance, NPStream* stream, int32 offset, int32 len,
                 void* buffer);
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-NPError NPP_GetValue(NPP instance, NPPVariable variable, void* value);
-#endif
 void NPP_URLNotify(NPP instance, const char* url, NPReason reason,
                    void* notifyData);
 int16 NPP_HandleEvent(NPP instance, void* event);
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-NPError API_CALL NP_Initialize(NPNetscapeFuncs* funcs, NPPluginFuncs* p_funcs);
-#else
 NPError API_CALL NP_GetEntryPoints(NPPluginFuncs* funcs);
 NPError API_CALL NP_Initialize(NPNetscapeFuncs* funcs);
-#endif
 NPError API_CALL NP_Shutdown(void);
 
 }  // default_plugin

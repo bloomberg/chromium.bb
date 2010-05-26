@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "gfx/native_widget_types.h"
 #include "third_party/npapi/bindings/npapi.h"
+#include "gfx/native_widget_types.h"
 
 // Possible plugin installer states.
 enum PluginInstallerState {
@@ -53,7 +53,7 @@ class PluginInstallerImpl {
   // argv
   //   Pointer to the arguments.
   // Returns true on success.
-  bool Initialize(void* module_handle, NPP instance, NPMIMEType mime_type,
+  bool Initialize(void *module_handle, NPP instance, NPMIMEType mime_type,
                   int16 argc, char* argn[], char* argv[]);
 
   // Informs the plugin of its window information.
@@ -277,8 +277,7 @@ class PluginInstallerImpl {
   // Dimensions of the plugin
   uint32_t width_;
   uint32_t height_;
-
-  DISALLOW_COPY_AND_ASSIGN(PluginInstallerImpl);
+  DISALLOW_EVIL_CONSTRUCTORS(PluginInstallerImpl);
 };
 
 

@@ -639,8 +639,8 @@ bool PluginInstallerImpl::InitializeResources(HINSTANCE module_handle) {
 
 void PluginInstallerImpl::NotifyPluginStatus(int status) {
   default_plugin::g_browser->getvalue(
-      instance_,
-      static_cast<NPNVariable>(
-          default_plugin::kMissingPluginStatusStart + status),
-      NULL);
+    instance_,
+    static_cast<NPNVariable>(
+        default_plugin::kMissingPluginStatusStart + status),
+    NULL);
 }
