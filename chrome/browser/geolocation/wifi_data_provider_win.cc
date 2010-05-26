@@ -49,33 +49,33 @@ const int kNoChangePollingInterval = 120000;  // 2 mins
 const int kTwoNoChangePollingInterval = 600000;  // 10 mins
 
 // WlanOpenHandle
-typedef DWORD (WINAPI *WlanOpenHandleFunction)(DWORD dwClientVersion,
+typedef DWORD (WINAPI* WlanOpenHandleFunction)(DWORD dwClientVersion,
                                                PVOID pReserved,
                                                PDWORD pdwNegotiatedVersion,
                                                PHANDLE phClientHandle);
 
 // WlanEnumInterfaces
-typedef DWORD (WINAPI *WlanEnumInterfacesFunction)(
+typedef DWORD (WINAPI* WlanEnumInterfacesFunction)(
     HANDLE hClientHandle,
     PVOID pReserved,
-    PWLAN_INTERFACE_INFO_LIST *ppInterfaceList);
+    PWLAN_INTERFACE_INFO_LIST* ppInterfaceList);
 
 // WlanGetNetworkBssList
-typedef DWORD (WINAPI *WlanGetNetworkBssListFunction)(
+typedef DWORD (WINAPI* WlanGetNetworkBssListFunction)(
     HANDLE hClientHandle,
-    const GUID *pInterfaceGuid,
+    const GUID* pInterfaceGuid,
     const  PDOT11_SSID pDot11Ssid,
     DOT11_BSS_TYPE dot11BssType,
     BOOL bSecurityEnabled,
     PVOID pReserved,
-    PWLAN_BSS_LIST *ppWlanBssList
+    PWLAN_BSS_LIST* ppWlanBssList
 );
 
 // WlanFreeMemory
-typedef VOID (WINAPI *WlanFreeMemoryFunction)(PVOID pMemory);
+typedef VOID (WINAPI* WlanFreeMemoryFunction)(PVOID pMemory);
 
 // WlanCloseHandle
-typedef DWORD (WINAPI *WlanCloseHandleFunction)(HANDLE hClientHandle,
+typedef DWORD (WINAPI* WlanCloseHandleFunction)(HANDLE hClientHandle,
                                                 PVOID pReserved);
 
 
@@ -87,7 +87,7 @@ class WindowsWlanApi : public WifiDataProviderCommon::WlanApiInterface {
   static WindowsWlanApi* Create();
 
   // WlanApiInterface
-  virtual bool GetAccessPointData(WifiData::AccessPointDataSet *data);
+  virtual bool GetAccessPointData(WifiData::AccessPointDataSet* data);
 
  private:
   // Takes ownership of the library handle.
@@ -250,7 +250,7 @@ bool WindowsWlanApi::GetAccessPointData(
   DCHECK(wlan_handle);
 
   // Get the list of interfaces. WlanEnumInterfaces allocates interface_list.
-  WLAN_INTERFACE_INFO_LIST *interface_list = NULL;
+  WLAN_INTERFACE_INFO_LIST* interface_list = NULL;
   if ((*WlanEnumInterfaces_function_)(wlan_handle, NULL, &interface_list) !=
       ERROR_SUCCESS) {
     return false;
@@ -584,21 +584,21 @@ bool GetSystemDirectory(string16* path) {
   if (buffer_size == 0) {
     return false;
   }
-  char16 *buffer = new char16[buffer_size];
+  scoped_array<char16> buffer(new char16[buffer_size]);
 
   // Return value excludes terminating NULL.
-  int characters_written = ::GetSystemDirectory(buffer, buffer_size);
+  int characters_written = ::GetSystemDirectory(buffer.get(), buffer_size);
   if (characters_written == 0) {
     return false;
   }
-  DCHECK(characters_written == buffer_size - 1);
+  DCHECK_EQ(buffer_size - 1, characters_written);
 
-  path->assign(buffer);
-  delete[] buffer;
+  path->assign(buffer.get(), characters_written);
 
-  if (path->at(path->length() - 1) != L'\\') {
+  if (*path->rbegin() != L'\\') {
     path->append(L"\\");
   }
+  DCHECK_EQ(L'\\', *path->rbegin());
   return true;
 }
 }  // namespace
