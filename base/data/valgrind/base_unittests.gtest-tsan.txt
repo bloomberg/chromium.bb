@@ -5,3 +5,6 @@ ProcessUtilTest.GetAppOutputRestrictedNoZombies
 # corrupt memory.
 ToolsSanityTest.*Memory*
 ToolsSanityTest.*Delete*
+
+# TSan doesn't understand SharedMemory locks, see http://crbug.com/45083
+StatsTableTest.*MultipleThreads
