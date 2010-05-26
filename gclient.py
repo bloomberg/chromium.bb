@@ -1004,6 +1004,7 @@ def CMDrevert(parser, args):
   (options, args) = parser.parse_args(args)
   # --force is implied.
   options.force = True
+  options.deps_os = None
   client = GClient.LoadCurrentConfig(options)
   if not client:
     raise gclient_utils.Error("client not configured; see 'gclient config'")
