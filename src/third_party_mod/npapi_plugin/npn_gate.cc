@@ -54,6 +54,10 @@
 #define LOBYTE(W) ((W) & 0xFF)
 #endif
 
+#if XP_UNIX
+#pragma GCC visibility push(hidden)
+#endif
+
 extern NPNetscapeFuncs NPNFuncs;
 
 void NPN_Version(int* plugin_major, int* plugin_minor, int* netscape_major, int* netscape_minor)
@@ -359,3 +363,8 @@ void NPN_PluginThreadAsyncCall(NPP npp, void (*func)(void *), void *userData)
 
 #endif
 #endif
+
+#if XP_UNIX
+#pragma GCC visibility pop
+#endif
+
