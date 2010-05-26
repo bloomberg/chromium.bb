@@ -917,8 +917,10 @@ def TryChange(change_info, args, swallow_exception):
                              prog='gcl try')
 
 
-@need_change
-def CMDcommit(change_info):
+def CMDcommit(args):
+  if not args:
+    ErrorExit("You need to pass a change list name")
+  change_info = ChangeInfo.Load(args.pop(0), GetRepositoryRoot(), True, True)
   if not change_info.GetFiles():
     print "Nothing to commit, changelist is empty."
     return 1
