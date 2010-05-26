@@ -142,15 +142,14 @@ bool ScheduleParentAndGrandparentForDeletion(const FilePath& path) {
 bool DeleteEmptyParentDir(const FilePath& path) {
   bool ret = true;
   FilePath parent_dir = path.DirName();
-  if (!parent_dir.empty() && file_util::IsDirectoryEmpty(parent_dir.value())) {
+  if (!parent_dir.empty() && file_util::IsDirectoryEmpty(parent_dir)) {
     if (!file_util::Delete(parent_dir, true)) {
       ret = false;
       LOG(ERROR) << "Failed to delete folder: " << parent_dir.value();
     }
 
     parent_dir = parent_dir.DirName();
-    if (!parent_dir.empty() &&
-        file_util::IsDirectoryEmpty(parent_dir.value())) {
+    if (!parent_dir.empty() && file_util::IsDirectoryEmpty(parent_dir)) {
       if (!file_util::Delete(parent_dir, true)) {
         ret = false;
         LOG(ERROR) << "Failed to delete folder: " << parent_dir.value();
