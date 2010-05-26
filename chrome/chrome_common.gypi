@@ -90,7 +90,6 @@
           'common/task_queue.h',
           'common/time_format.cc',
           'common/time_format.h',
-          'common/transport_dib.h',
           'common/win_safe_util.cc',
           'common/win_safe_util.h',
         ],
