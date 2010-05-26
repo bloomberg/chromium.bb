@@ -9,12 +9,14 @@
 void SyncMessageReplyDispatcher::Push(IPC::SyncMessage* msg,
                                       SyncMessageCallContext* context,
                                       void* key) {
-  context->message_type_ = msg->type();
-  context->id_ = IPC::SyncMessage::GetMessageId(*msg);
-  context->key_ = key;
+  if (context) {
+    context->message_type_ = msg->type();
+    context->id_ = IPC::SyncMessage::GetMessageId(*msg);
+    context->key_ = key;
 
-  AutoLock lock(message_queue_lock_);
-  message_queue_.push_back(context);
+    AutoLock lock(message_queue_lock_);
+    message_queue_.push_back(context);
+  }
 }
 
 bool SyncMessageReplyDispatcher::HandleMessageType(
