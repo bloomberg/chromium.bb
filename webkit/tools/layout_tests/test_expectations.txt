@@ -9,3 +9,6 @@
 // r46500 (and wk 58765) seems to have caused a perf regression
 BUG43276 : fast/notifications/notifications-replace.html = FAIL
 BUG43276 : fast/notifications/notifications-rtl.html = FAIL
+
+// Temporarily mark this as flaky because it is failing so often on the console.
+BUG45106 : svg/clip-path/clip-path-evenodd-nonzero.svg = PASS FAIL
