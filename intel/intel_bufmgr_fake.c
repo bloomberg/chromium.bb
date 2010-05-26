@@ -299,9 +299,9 @@ _fence_wait_internal(drm_intel_bufmgr_fake *bufmgr_fake, int seq)
 		return;
 	}
 
-	DBG("wait 0x%08x\n", iw.irq_seq);
-
 	iw.irq_seq = seq;
+
+	DBG("wait 0x%08x\n", iw.irq_seq);
 
 	/* The kernel IRQ_WAIT implementation is all sorts of broken.
 	 * 1) It returns 1 to 0x7fffffff instead of using the full 32-bit
