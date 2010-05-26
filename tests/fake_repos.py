@@ -205,19 +205,14 @@ class FakeRepos(object):
     # - versioned and unversioned reference
     # - relative and full reference
     # - deps_os
+    # TODO(maruel):
     # - var
     # - hooks
-    # TODO(maruel):
     # - File
-    # - $matching_files
-    # - use_relative_paths
     self._commit_svn(file_system(1, """
-vars = {
-  'DummyVariable': 'third_party',
-}
 deps = {
   'src/other': 'svn://%(host)s/svn/trunk/other',
-  'src/third_party/fpp': '/trunk/' + Var('DummyVariable') + '/foo',
+  'src/third_party/fpp': '/trunk/third_party/foo',
 }
 deps_os = {
   'mac': {
@@ -230,21 +225,6 @@ deps = {
   'src/other': 'svn://%(host)s/svn/trunk/other',
   'src/third_party/foo': '/trunk/third_party/foo@1',
 }
-# I think this is wrong to have the hooks run from the base of the gclient
-# checkout. It's maybe a bit too late to change that behavior.
-hooks = [
-  {
-    'pattern': '.',
-    'action': ['python', '-c',
-               'open(\\'src/hooked1\\', \\'w\\').write(\\'hooked1\\')'],
-  },
-  {
-    # Should not be run.
-    'pattern': 'nonexistent',
-    'action': ['python', '-c',
-               'open(\\'src/hooked2\\', \\'w\\').write(\\'hooked2\\')'],
-  },
-]
 """ % { 'host': '127.0.0.1' }))
 
   def setUpGIT(self):
@@ -261,20 +241,15 @@ hooks = [
     # - versioned and unversioned reference
     # - relative and full reference
     # - deps_os
+    # TODO(maruel):
     # - var
     # - hooks
-    # TODO(maruel):
     # - File
-    # - $matching_files
-    # - use_relative_paths
     self._commit_git('repo_1', {
       'DEPS': """
-vars = {
-  'DummyVariable': 'repo',
-}
 deps = {
   'src/repo2': 'git://%(host)s/git/repo_2',
-  'src/repo2/repo3': '/' + Var('DummyVariable') + '_3',
+  'src/repo2/repo3': '/repo_3',
 }
 deps_os = {
   'mac': {
@@ -314,21 +289,6 @@ deps = {
   'src/repo2': 'git://%(host)s/git/repo_2@%(hash)s',
   'src/repo2/repo_renamed': '/repo_3',
 }
-# I think this is wrong to have the hooks run from the base of the gclient
-# checkout. It's maybe a bit too late to change that behavior.
-hooks = [
-  {
-    'pattern': '.',
-    'action': ['python', '-c',
-               'open(\\'src/hooked1\\', \\'w\\').write(\\'hooked1\\')'],
-  },
-  {
-    # Should not be run.
-    'pattern': 'nonexistent',
-    'action': ['python', '-c',
-               'open(\\'src/hooked2\\', \\'w\\').write(\\'hooked2\\')'],
-  },
-]
 """ % { 'host': '127.0.0.1', 'hash': self.git_hashes['repo_2'][0][0] },
       'origin': "git/repo_1@2\n"
     })
