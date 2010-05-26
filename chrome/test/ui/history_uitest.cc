@@ -44,11 +44,10 @@ TEST_F(HistoryTester, VerifyHistoryLength1) {
                 kTestCompleteSuccess, action_max_timeout_ms());
 }
 
-// Disabled, http://crbug.com/39785.
-// TODO(yuzo): Fix the following flaky (hence disabled) tests.
-// These tests are flaky because automatic and user-initiated transitions are
+// TODO(yuzo): Fix the following failing tests. http://crbug.com/39785
+// These tests are broken because automatic and user-initiated transitions are
 // distinguished based on the interval between page load and redirect.
-TEST_F(HistoryTester, DISABLED_VerifyHistoryLength2) {
+TEST_F(HistoryTester, FAILS_VerifyHistoryLength2) {
   // Test the history length for the following page transitions.
   //   -open-> Page 2 -redirect-> Page 3.
 
@@ -60,8 +59,8 @@ TEST_F(HistoryTester, DISABLED_VerifyHistoryLength2) {
                 kTestCompleteSuccess, action_max_timeout_ms());
 }
 
-// Disabled, http://crbug.com/39785.
-TEST_F(HistoryTester, DISABLED_VerifyHistoryLength3) {
+// Fails consistently: http://crbug.com/39785
+TEST_F(HistoryTester, FAILS_VerifyHistoryLength3) {
   // Test the history length for the following page transitions.
   //   -open-> Page 4 -navigate_backward-> Page 3 -navigate_backward->Page 1
   //   -navigate_forward-> Page 3 -navigate_forward-> Page 4
