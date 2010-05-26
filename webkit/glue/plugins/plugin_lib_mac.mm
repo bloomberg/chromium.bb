@@ -89,6 +89,13 @@ bool ReadPlistPluginInfo(const FilePath& filename, CFBundleRef bundle,
 
     WebPluginMimeType mime;
     mime.mime_type = base::SysNSStringToUTF8([mime_type lowercaseString]);
+    // Remove PDF from the list of types handled by QuickTime, since it provides
+    // a worse experience than just downloading the PDF.
+    if (mime.mime_type == "application/pdf" &&
+        StartsWithASCII(filename.BaseName().value(), "QuickTime", false)) {
+      continue;
+    }
+
     if (mime_desc)
       mime.description = base::SysNSStringToWide(mime_desc);
     for (NSString* ext in mime_exts)
