@@ -95,6 +95,10 @@
   return noItemTextfield_;
 }
 
+-(NSButton*)importBookmarksButton {
+  return importBookmarksButton_;
+}
+
 - (BookmarkBarController*)controller {
   return controller_;
 }

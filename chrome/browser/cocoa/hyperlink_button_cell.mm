@@ -81,15 +81,18 @@
   ];
 }
 
-// Override the drawing point for the cell so that the custom style attributes
-// can always be applied.
+// Override the drawing for the cell so that the custom style attributes
+// can always be applied and so that ellipses will appear when appropriate.
 - (NSRect)drawTitle:(NSAttributedString*)title
           withFrame:(NSRect)frame
              inView:(NSView*)controlView {
-  scoped_nsobject<NSAttributedString> attrString(
-      [[NSAttributedString alloc] initWithString:[title string]
-                                      attributes:[self linkAttributes]]);
-  return [super drawTitle:attrString.get() withFrame:frame inView:controlView];
+  NSDictionary* linkAttributes = [self linkAttributes];
+  NSString* plainTitle = [title string];
+  [plainTitle drawWithRect:frame
+                   options:(NSStringDrawingUsesLineFragmentOrigin |
+                            NSStringDrawingTruncatesLastVisibleLine)
+                attributes:linkAttributes];
+  return frame;
 }
 
 // Override the default behavior to draw the border. Instead, change the cursor.

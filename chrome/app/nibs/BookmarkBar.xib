@@ -58,8 +58,8 @@
 										<reference key="NSSuperview" ref="1023728927"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="NSTextFieldCell" key="NSCell" id="458754719">
-											<int key="NSCellFlags">605158976</int>
-											<int key="NSCellFlags2">272761856</int>
+											<int key="NSCellFlags">604110400</int>
+											<int key="NSCellFlags2">272762880</int>
 											<string key="NSContents">^IDS_BOOKMARKS_NO_ITEMS</string>
 											<object class="NSFont" key="NSSupport" id="26">
 												<string key="NSName">LucidaGrande</string>
@@ -94,8 +94,8 @@
 										<reference key="NSSuperview" ref="1023728927"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="NSButtonCell" key="NSCell" id="976310023">
-											<int key="NSCellFlags">67239424</int>
-											<int key="NSCellFlags2">134348800</int>
+											<int key="NSCellFlags">67239488</int>
+											<int key="NSCellFlags2">133120</int>
 											<string key="NSContents">^IDS_BOOKMARK_BAR_IMPORT_LINK</string>
 											<reference key="NSSupport" ref="26"/>
 											<reference key="NSControlView" ref="1020224577"/>
@@ -845,6 +845,14 @@
 					</object>
 					<int key="connectionID">135</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">importBookmarksButton_</string>
+						<reference key="source" ref="610146462"/>
+						<reference key="destination" ref="1020224577"/>
+					</object>
+					<int key="connectionID">136</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -1323,7 +1331,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">135</int>
+			<int key="maxID">136</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -1428,6 +1436,13 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">BookmarkBarController</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="1046231818">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/cocoa/bookmark_bar_unittest_helper.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">BookmarkBarToolbarView</string>
 					<string key="superclassName">AnimatableView</string>
 					<object class="NSMutableDictionary" key="outlets">
@@ -1447,12 +1462,14 @@
 						<object class="NSMutableArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>controller_</string>
+							<string>importBookmarksButton_</string>
 							<string>noItemContainer</string>
 							<string>noItemTextfield_</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>BookmarkBarController</string>
+							<string>NSButton</string>
 							<string>NSView</string>
 							<string>NSTextField</string>
 						</object>
@@ -1469,6 +1486,10 @@
 						<string key="majorKey">IBUserSource</string>
 						<string key="minorKey"/>
 					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">BookmarkButton</string>
+					<reference key="sourceIdentifier" ref="1046231818"/>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">BookmarkButton</string>
@@ -1620,6 +1641,13 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">../third_party/GTM/Foundation/GTMNSObject+KeyValueObserving.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/cocoa/objc_zombie.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

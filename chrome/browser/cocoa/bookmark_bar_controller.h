@@ -189,9 +189,12 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   // signal us to close the bookmark bar folder menus?
   BOOL watchingForExitEvent_;
 
-  IBOutlet BookmarkBarView* buttonView_;
+  IBOutlet BookmarkBarView* buttonView_;  // Contains 'no items' text fields.
   IBOutlet BookmarkButton* offTheSideButton_;  // aka the chevron.
   IBOutlet NSMenu* buttonContextMenu_;
+
+  NSRect originalNoItemsRect_;  // Original, pre-resized field rect.
+  NSRect originalImportBookmarksRect_;  // Original, pre-resized field rect.
 
   // "Other bookmarks" button on the right side.
   scoped_nsobject<NSButton> otherBookmarksButton_;
@@ -357,6 +360,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 - (void)updateTheme:(ThemeProvider*)themeProvider;
 - (BookmarkButton*)buttonForDroppingOnAtPoint:(NSPoint)point;
 - (BOOL)isEventAnExitEvent:(NSEvent*)event;
+- (BOOL)shrinkOrHideView:(NSView*)view forMaxX:(CGFloat)maxViewX;
 
 // The following are for testing purposes only and are not used internally.
 - (NSMenu *)menuForFolderNode:(const BookmarkNode*)node;

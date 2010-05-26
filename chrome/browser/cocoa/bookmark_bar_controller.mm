@@ -281,6 +281,11 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   // We are enabled by default.
   barIsEnabled_ = YES;
 
+  // Remember the original sizes of the 'no items' and 'import bookmarks'
+  // fields to aid in resizing when the window frame changes.
+  originalNoItemsRect_ = [[buttonView_ noItemTextfield] frame];
+  originalImportBookmarksRect_ = [[buttonView_ importBookmarksButton] frame];
+
   // To make life happier when the bookmark bar is floating, the chevron is a
   // child of the button view.
   [offTheSideButton_ removeFromSuperview];
@@ -1212,6 +1217,45 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   [self centerNoItemsLabel];
 }
 
+// Determine if the given |view| can completely fit within the constraint of
+// maximum x, given by |maxViewX|, and, if not, narrow the view up to a minimum
+// width. If the minimum width is not achievable then hide the view. Return YES
+// if the view was hidden.
+- (BOOL)shrinkOrHideView:(NSView*)view forMaxX:(CGFloat)maxViewX {
+  BOOL wasHidden = NO;
+  // See if the view needs to be narrowed.
+  NSRect frame = [view frame];
+  if (NSMaxX(frame) > maxViewX) {
+    // Resize if more than 30 pixels are showing, otherwise hide.
+    if (NSMinX(frame) + 30.0 < maxViewX) {
+      frame.size.width = maxViewX - NSMinX(frame);
+      [view setFrame:frame];
+    } else {
+      [view setHidden:YES];
+      wasHidden = YES;
+    }
+  }
+  return wasHidden;
+}
+
+// Adjust the horizontal width and the visibility of the "For quick access"
+// text field and "Import bookmarks..." button based on the current width
+// of the containing |buttonView_| (which is affected by window width).
+- (void)adjustNoItemContainerWidthsForMaxX:(CGFloat)maxViewX {
+  if (![[buttonView_ noItemContainer] isHidden]) {
+    // Reset initial frames for the two items, then adjust as necessary.
+    NSTextField* noItemTextfield = [buttonView_ noItemTextfield];
+    [noItemTextfield setFrame:originalNoItemsRect_];
+    [noItemTextfield setHidden:NO];
+    NSButton* importBookmarksButton = [buttonView_ importBookmarksButton];
+    [importBookmarksButton setFrame:originalImportBookmarksRect_];
+    [importBookmarksButton setHidden:NO];
+    // Check each to see if they need to be shrunk or hidden.
+    if ([self shrinkOrHideView:importBookmarksButton forMaxX:maxViewX])
+      [self shrinkOrHideView:noItemTextfield forMaxX:maxViewX];
+  }
+}
+
 - (void)redistributeButtonsOnBarAsNeeded {
   const BookmarkNode* node = bookmarkModel_->GetBookmarkBarNode();
   NSInteger barCount = node->GetChildCount();
@@ -1259,6 +1303,11 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
     [buttons_ addObject:button];
     [buttonView_ addSubview:button];
   }
+
+  // While we're here, adjust the horizontal width and the visibility
+  // of the "For quick access" and "Import bookmarks..." text fields.
+  if (![buttons_ count])
+    [self adjustNoItemContainerWidthsForMaxX:maxViewX];
 }
 
 #pragma mark Private Methods Exposed for Testing

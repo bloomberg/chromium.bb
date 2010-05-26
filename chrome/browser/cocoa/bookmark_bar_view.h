@@ -19,9 +19,11 @@
 
   IBOutlet BookmarkBarController* controller_;
   IBOutlet NSTextField* noItemTextfield_;
+  IBOutlet NSButton* importBookmarksButton_;
   NSView* noItemContainer_;
 }
 - (NSTextField*)noItemTextfield;
+- (NSButton*)importBookmarksButton;
 - (BookmarkBarController*)controller;
 
 @property (assign, nonatomic) IBOutlet NSView* noItemContainer;

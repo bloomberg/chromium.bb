@@ -1593,6 +1593,25 @@ TEST_F(BookmarkBarControllerTest, MoveRemoveAddButtons) {
   EXPECT_EQ(oldDisplayedButtons, [bar_ displayedButtonCount]);
 }
 
+TEST_F(BookmarkBarControllerTest, ShrinkOrHideView) {
+  NSRect viewFrame = NSMakeRect(0.0, 0.0, 500.0, 50.0);
+  NSView* view = [[[NSView alloc] initWithFrame:viewFrame] autorelease];
+  EXPECT_FALSE([view isHidden]);
+  [bar_ shrinkOrHideView:view forMaxX:500.0];
+  EXPECT_EQ(500.0, NSWidth([view frame]));
+  EXPECT_FALSE([view isHidden]);
+  [bar_ shrinkOrHideView:view forMaxX:450.0];
+  EXPECT_EQ(450.0, NSWidth([view frame]));
+  EXPECT_FALSE([view isHidden]);
+  [bar_ shrinkOrHideView:view forMaxX:40.0];
+  EXPECT_EQ(40.0, NSWidth([view frame]));
+  EXPECT_FALSE([view isHidden]);
+  [bar_ shrinkOrHideView:view forMaxX:31.0];
+  EXPECT_EQ(31.0, NSWidth([view frame]));
+  EXPECT_FALSE([view isHidden]);
+  [bar_ shrinkOrHideView:view forMaxX:29.0];
+  EXPECT_TRUE([view isHidden]);
+}
 
 class BookmarkBarControllerOpenAllTest : public BookmarkBarControllerTest {
 public:
