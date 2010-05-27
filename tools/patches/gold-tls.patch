@@ -1,8 +1,8 @@
 diff --git a/gold/arm.cc b/gold/arm.cc
-index 3dc2f22..c937c36 100644
+index 88102dc..165ac42 100644
 --- a/gold/arm.cc
 +++ b/gold/arm.cc
-@@ -6800,13 +6800,13 @@ Arm_output_data_got<big_endian>::do_write(Output_file* of)
+@@ -6895,13 +6895,13 @@ Arm_output_data_got<big_endian>::do_write(Output_file* of)
      convert_to_section_size_type(this->data_size());
    unsigned char* const oview = of->get_output_view(offset, oview_size);
  
@@ -19,12 +19,12 @@ index 3dc2f22..c937c36 100644
  
    for (size_t i = 0; i < this->static_relocs_.size(); ++i)
      {
-@@ -8679,6 +8679,23 @@ Target_arm<big_endian>::Relocate::relocate(
+@@ -8774,6 +8774,23 @@ Target_arm<big_endian>::Relocate::relocate(
    return true;
  }
  
 +template<bool big_endian>
-+Output_section *
++static Output_section *
 +relocated_section(const Relocate_info<32, big_endian>* relinfo,
 +                  const elfcpp::Rel<32, big_endian>& rel,
 +                  const Sized_symbol<32>* gsym)
@@ -43,7 +43,7 @@ index 3dc2f22..c937c36 100644
  // Perform a TLS relocation.
  
  template<bool big_endian>
-@@ -8697,7 +8714,6 @@ Target_arm<big_endian>::Relocate::relocate_tls(
+@@ -8792,7 +8809,6 @@ Target_arm<big_endian>::Relocate::relocate_tls(
  {
    typedef Arm_relocate_functions<big_endian> ArmRelocFuncs;
    typedef Relocate_functions<32, big_endian> RelocFuncs;
@@ -51,7 +51,7 @@ index 3dc2f22..c937c36 100644
  
    const Sized_relobj<32, big_endian>* object = relinfo->object;
  
-@@ -8797,14 +8813,16 @@ Target_arm<big_endian>::Relocate::relocate_tls(
+@@ -8892,14 +8908,16 @@ Target_arm<big_endian>::Relocate::relocate_tls(
        // have been created for this location, so do not apply it now.
        if (!parameters->options().shared())
          {
@@ -73,7 +73,7 @@ index 3dc2f22..c937c36 100644
        return ArmRelocFuncs::STATUS_OKAY;
      
 diff --git a/gold/layout.cc b/gold/layout.cc
-index 36cfa8b..ed842ce 100644
+index 36cfa8b..e867d50 100644
 --- a/gold/layout.cc
 +++ b/gold/layout.cc
 @@ -174,6 +174,7 @@ Layout::Layout(int number_of_input_files, Script_options* script_options)
@@ -84,10 +84,12 @@ index 36cfa8b..ed842ce 100644
      relro_segment_(NULL),
      increase_relro_(0),
      symtab_section_(NULL),
-@@ -1524,6 +1525,30 @@ Layout::prepare_for_relaxation()
+@@ -1524,6 +1525,32 @@ Layout::prepare_for_relaxation()
    this->record_output_section_data_from_script_ = true;
  }
  
++// Find the tls section with the lowest address.
++
 +Output_section*
 +Layout::compute_tls_section() const
 +{
@@ -95,16 +97,16 @@ index 36cfa8b..ed842ce 100644
 +  gold_assert(this->tls_section_ == NULL);
 +
 +  uint64_t align = 0;
-+  Layout::Section_list list = this->section_list();
-+  for (Section_list::iterator i = list.begin(); i != list.end(); ++i)
++  const Layout::Section_list& list(this->section_list());
++  for (Section_list::const_iterator i = list.begin(); i != list.end(); ++i)
 +  {
 +    Output_section* sec = *i;
-+    if (!(sec->flags() & elfcpp::SHF_TLS))
++    if ((sec->flags() & elfcpp::SHF_TLS) == 0)
 +      continue;
 +    if (sec->addralign() > align)
 +      align = sec->addralign();
-+    if (this->tls_section_ == NULL ||
-+        sec->address() < this->tls_section_->address())
++    if (this->tls_section_ == NULL
++        || sec->address() < this->tls_section_->address())
 +      this->tls_section_ = sec;
 +  }
 +  gold_assert(this->tls_section_);

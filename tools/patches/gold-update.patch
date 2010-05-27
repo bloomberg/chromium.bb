@@ -155,10 +155,44 @@ index 11b0726..b3d604b 100644
    DT_PREINIT_ARRAYSZ = 33,
    DT_LOOS = 0x6000000d,
 diff --git a/gold/ChangeLog b/gold/ChangeLog
-index cb32549..a18cf54 100644
+index cb32549..6358191 100644
 --- a/gold/ChangeLog
 +++ b/gold/ChangeLog
-@@ -1,3 +1,8 @@
+@@ -1,3 +1,42 @@
++2009-10-16  Doug Kwan  <dougkwan@google.com>
++
++	* expression.cc (class Segment_start_expression): New class definition.
++	(Segment_start_expression::value): New method definition.
++	(script_exp_function_segment_start): Return a new
++	Segment_start_expression.
++	* gold/script-c.h (script_saw_segment_start_expression): New function
++	prototype.
++	* script-sections.cc (Script_sections::Script_sections): Initialize
++	SAW_SEGMENT_START_EXPRESSION_ to false.
++	(Script_sections::set_section_addresses): Use -Ttext, -Tdata
++	and -Tbbs options to specify section addresses if given in
++	command line and no SEGMENT_START expression is seen in a script.
++	* script-sections.h (Script_sections::saw_segment_start_expression,
++	Script_sections::set_saw_segment_start_expression): New method
++	definition.
++	(Script_sections::saw_segment_start_expression_): New data member
++	declaration.
++	* script.cc (script_saw_segment_start_expression): New function.
++	* yyscript.y (SEGMENT_START): Call script_saw_segment_start_expression.
++	* testsuite/Makefile.am (check_SCRIPTS): Add script_test_6.sh,
++	script_test_7.sh and script_test_8.sh.
++	(check_DATA): Add script_test_6.stdout, script_test_7.stdout and
++	script_test_8.stdout.
++	(MOSTLYCLEANFILES): Add script_test_6, script_test_7 and script_test_8.
++	(script_test_6, script_test_6.stdout, script_test_7,
++	script_test_7.stdout, script_test_8, script_test_8.stdout): New rules.
++	* Makefile.in: Regenerate.
++	* testsuite/script_test_6.sh: New file.
++	* testsuite/script_test_6.t: Same.
++	* testsuite/script_test_7.sh: Same.
++	* testsuite/script_test_7.t: Same.
++	* testsuite/script_test_8.sh: Same.
++
 +2009-10-16  Doug Kwan  <dougkwan@google.com>
 +
 +	* output.cc (Output_segment::set_section_list_address): Cast
@@ -1263,7 +1297,7 @@ index 0000000..2caf371
 +RD(THM_TLS_DESCSEQ16 , STATIC  , N, THM16, NONE                   ,  N, -1, Y)
 +RD(THM_TLS_DESCSEQ32 , STATIC  , N, THM32, NONE                   ,  N, -1, Y)
 diff --git a/gold/arm.cc b/gold/arm.cc
-index dd5f67d..7d45851 100644
+index dd5f67d..820abc7 100644
 --- a/gold/arm.cc
 +++ b/gold/arm.cc
 @@ -1,8 +1,10 @@
@@ -4342,7 +4376,7 @@ index dd5f67d..7d45851 100644
    }
  
    // R_ARM_PREL: (S + A) | T - P
-@@ -891,191 +3223,784 @@ class Arm_relocate_functions : public Relocate_functions<32, big_endian>
+@@ -891,192 +3223,785 @@ class Arm_relocate_functions : public Relocate_functions<32, big_endian>
    prel31(unsigned char *view,
  	 const Sized_relobj<32, big_endian>* object,
  	 const Symbol_value<32>* psymval,
@@ -5215,20 +5249,23 @@ index dd5f67d..7d45851 100644
  					   (elfcpp::SHF_ALLOC
  					    | elfcpp::SHF_WRITE),
 -					   this->got_);
-+					   this->got_, false);
-       os->set_is_relro();
+-      os->set_is_relro();
++					   this->got_, false, true, true,
++					   false);
  
        // The old GNU linker creates a .got.plt section.  We just
-@@ -1086,7 +4011,7 @@ Target_arm<big_endian>::got_section(Symbol_table* symtab, Layout* layout)
+       // create another set of data in the .got section.  Note that we
+@@ -1086,14 +4011,15 @@ Target_arm<big_endian>::got_section(Symbol_table* symtab, Layout* layout)
        os = layout->add_output_section_data(".got", elfcpp::SHT_PROGBITS,
  					   (elfcpp::SHF_ALLOC
  					    | elfcpp::SHF_WRITE),
 -					   this->got_plt_);
-+					   this->got_plt_, false);
-       os->set_is_relro();
+-      os->set_is_relro();
++					   this->got_plt_, false, false,
++					   false, true);
  
        // The first three entries are reserved.
-@@ -1094,6 +4019,7 @@ Target_arm<big_endian>::got_section(Symbol_table* symtab, Layout* layout)
+       this->got_plt_->set_current_data_size(3 * 4);
  
        // Define _GLOBAL_OFFSET_TABLE_ at the start of the PLT.
        symtab->define_in_output_data("_GLOBAL_OFFSET_TABLE_", NULL,
@@ -5236,12 +5273,13 @@ index dd5f67d..7d45851 100644
  				    this->got_plt_,
  				    0, 0, elfcpp::STT_OBJECT,
  				    elfcpp::STB_LOCAL,
-@@ -1114,11 +4040,2610 @@ Target_arm<big_endian>::rel_dyn_section(Layout* layout)
+@@ -1114,11 +4040,2611 @@ Target_arm<big_endian>::rel_dyn_section(Layout* layout)
        gold_assert(layout != NULL);
        this->rel_dyn_ = new Reloc_section(parameters->options().combreloc());
        layout->add_output_section_data(".rel.dyn", elfcpp::SHT_REL,
 -				      elfcpp::SHF_ALLOC, this->rel_dyn_);
-+				      elfcpp::SHF_ALLOC, this->rel_dyn_, true);
++				      elfcpp::SHF_ALLOC, this->rel_dyn_, true,
++				      false, false, false);
      }
    return this->rel_dyn_;
  }
@@ -7848,16 +7886,17 @@ index dd5f67d..7d45851 100644
  // A class to handle the PLT data.
  
  template<bool big_endian>
-@@ -1186,7 +6711,7 @@ Output_data_plt_arm<big_endian>::Output_data_plt_arm(Layout* layout,
+@@ -1186,7 +6712,8 @@ Output_data_plt_arm<big_endian>::Output_data_plt_arm(Layout* layout,
  {
    this->rel_ = new Reloc_section(false);
    layout->add_output_section_data(".rel.plt", elfcpp::SHT_REL,
 -				  elfcpp::SHF_ALLOC, this->rel_);
-+				  elfcpp::SHF_ALLOC, this->rel_, true);
++				  elfcpp::SHF_ALLOC, this->rel_, true, false,
++				  false, false);
  }
  
  template<bool big_endian>
-@@ -1274,8 +6799,8 @@ Output_data_plt_arm<big_endian>::do_write(Output_file* of)
+@@ -1274,8 +6801,8 @@ Output_data_plt_arm<big_endian>::do_write(Output_file* of)
  						      got_size);
    unsigned char* pov = oview;
  
@@ -7868,12 +7907,12 @@ index dd5f67d..7d45851 100644
  
    // Write first PLT entry.  All but the last word are constants.
    const size_t num_first_plt_words = (sizeof(first_plt_entry)
-@@ -1348,11 +6873,95 @@ Target_arm<big_endian>::make_plt_entry(Symbol_table* symtab, Layout* layout,
+@@ -1348,11 +6875,95 @@ Target_arm<big_endian>::make_plt_entry(Symbol_table* symtab, Layout* layout,
        layout->add_output_section_data(".plt", elfcpp::SHT_PROGBITS,
  				      (elfcpp::SHF_ALLOC
  				       | elfcpp::SHF_EXECINSTR),
 -				      this->plt_);
-+				      this->plt_, false);
++				      this->plt_, false, false, false, false);
      }
    this->plt_->add_entry(gsym);
  }
@@ -7965,7 +8004,7 @@ index dd5f67d..7d45851 100644
  // Report an unsupported relocation against a local symbol.
  
  template<bool big_endian>
-@@ -1417,8 +7026,7 @@ Target_arm<big_endian>::Scan::check_non_pic(Relobj* object,
+@@ -1417,8 +7028,7 @@ Target_arm<big_endian>::Scan::check_non_pic(Relobj* object,
  
  template<bool big_endian>
  inline void
@@ -7975,7 +8014,7 @@ index dd5f67d..7d45851 100644
  				    Layout* layout,
  				    Target_arm* target,
  				    Sized_relobj<32, big_endian>* object,
-@@ -1426,12 +7034,15 @@ Target_arm<big_endian>::Scan::local(const General_options&,
+@@ -1426,12 +7036,15 @@ Target_arm<big_endian>::Scan::local(const General_options&,
  				    Output_section* output_section,
  				    const elfcpp::Rel<32, big_endian>& reloc,
  				    unsigned int r_type,
@@ -7992,7 +8031,7 @@ index dd5f67d..7d45851 100644
        break;
  
      case elfcpp::R_ARM_ABS32:
-@@ -1454,41 +7065,121 @@ Target_arm<big_endian>::Scan::local(const General_options&,
+@@ -1454,41 +7067,121 @@ Target_arm<big_endian>::Scan::local(const General_options&,
  	}
        break;
  
@@ -8127,7 +8166,7 @@ index dd5f67d..7d45851 100644
  	  target->got_section(symtab, layout);
  	unsigned int r_sym = elfcpp::elf_r_sym<32>(reloc.get_r_info());
  	if (got->add_local(object, r_sym, GOT_TYPE_STANDARD))
-@@ -1508,6 +7199,7 @@ Target_arm<big_endian>::Scan::local(const General_options&,
+@@ -1508,6 +7201,7 @@ Target_arm<big_endian>::Scan::local(const General_options&,
        break;
  
      case elfcpp::R_ARM_TARGET1:
@@ -8135,7 +8174,7 @@ index dd5f67d..7d45851 100644
        // This should have been mapped to another type already.
        // Fall through.
      case elfcpp::R_ARM_COPY:
-@@ -1520,6 +7212,116 @@ Target_arm<big_endian>::Scan::local(const General_options&,
+@@ -1520,6 +7214,116 @@ Target_arm<big_endian>::Scan::local(const General_options&,
  		 object->name().c_str(), r_type);
        break;
  
@@ -8252,7 +8291,7 @@ index dd5f67d..7d45851 100644
      default:
        unsupported_reloc_local(object, r_type);
        break;
-@@ -1540,13 +7342,10 @@ Target_arm<big_endian>::Scan::unsupported_reloc_global(
+@@ -1540,13 +7344,10 @@ Target_arm<big_endian>::Scan::unsupported_reloc_global(
  }
  
  // Scan a relocation for a global symbol.
@@ -8267,7 +8306,7 @@ index dd5f67d..7d45851 100644
  				     Layout* layout,
  				     Target_arm* target,
  				     Sized_relobj<32, big_endian>* object,
-@@ -1560,69 +7359,118 @@ Target_arm<big_endian>::Scan::global(const General_options&,
+@@ -1560,69 +7361,118 @@ Target_arm<big_endian>::Scan::global(const General_options&,
    switch (r_type)
      {
      case elfcpp::R_ARM_NONE:
@@ -8437,7 +8476,7 @@ index dd5f67d..7d45851 100644
        {
  	// Make a dynamic relocation if necessary.
  	int flags = Symbol::NON_PIC_REF;
-@@ -1644,37 +7492,27 @@ Target_arm<big_endian>::Scan::global(const General_options&,
+@@ -1644,37 +7494,27 @@ Target_arm<big_endian>::Scan::global(const General_options&,
        }
        break;
  
@@ -8493,7 +8532,7 @@ index dd5f67d..7d45851 100644
        // If the symbol is fully resolved, this is just a relative
        // local reloc.  Otherwise we need a PLT entry.
        if (gsym->final_value_is_known())
-@@ -1689,20 +7527,12 @@ Target_arm<big_endian>::Scan::global(const General_options&,
+@@ -1689,20 +7529,12 @@ Target_arm<big_endian>::Scan::global(const General_options&,
        target->make_plt_entry(symtab, layout, gsym);
        break;
  
@@ -8516,7 +8555,7 @@ index dd5f67d..7d45851 100644
  	  target->got_section(symtab, layout);
  	if (gsym->final_value_is_known())
  	  got->add_global(gsym, GOT_TYPE_STANDARD);
-@@ -1728,7 +7558,8 @@ Target_arm<big_endian>::Scan::global(const General_options&,
+@@ -1728,7 +7560,8 @@ Target_arm<big_endian>::Scan::global(const General_options&,
        break;
  
      case elfcpp::R_ARM_TARGET1:
@@ -8526,7 +8565,7 @@ index dd5f67d..7d45851 100644
        // Fall through.
      case elfcpp::R_ARM_COPY:
      case elfcpp::R_ARM_GLOB_DAT:
-@@ -1740,6 +7571,96 @@ Target_arm<big_endian>::Scan::global(const General_options&,
+@@ -1740,6 +7573,96 @@ Target_arm<big_endian>::Scan::global(const General_options&,
  		 object->name().c_str(), r_type);
        break;
  
@@ -8623,7 +8662,7 @@ index dd5f67d..7d45851 100644
      default:
        unsupported_reloc_global(object, r_type, gsym);
        break;
-@@ -1750,8 +7671,7 @@ Target_arm<big_endian>::Scan::global(const General_options&,
+@@ -1750,8 +7673,7 @@ Target_arm<big_endian>::Scan::global(const General_options&,
  
  template<bool big_endian>
  void
@@ -8633,7 +8672,7 @@ index dd5f67d..7d45851 100644
  					  Layout* layout,
  					  Sized_relobj<32, big_endian>* object,
  					  unsigned int data_shndx,
-@@ -1767,7 +7687,6 @@ Target_arm<big_endian>::gc_process_relocs(const General_options& options,
+@@ -1767,7 +7689,6 @@ Target_arm<big_endian>::gc_process_relocs(const General_options& options,
    typedef typename Target_arm<big_endian>::Scan Scan;
  
    gold::gc_process_relocs<32, big_endian, Arm, elfcpp::SHT_REL, Scan>(
@@ -8641,7 +8680,7 @@ index dd5f67d..7d45851 100644
      symtab,
      layout,
      this,
-@@ -1785,8 +7704,7 @@ Target_arm<big_endian>::gc_process_relocs(const General_options& options,
+@@ -1785,8 +7706,7 @@ Target_arm<big_endian>::gc_process_relocs(const General_options& options,
  
  template<bool big_endian>
  void
@@ -8651,7 +8690,7 @@ index dd5f67d..7d45851 100644
  				    Layout* layout,
  				    Sized_relobj<32, big_endian>* object,
  				    unsigned int data_shndx,
-@@ -1807,7 +7725,6 @@ Target_arm<big_endian>::scan_relocs(const General_options& options,
+@@ -1807,7 +7727,6 @@ Target_arm<big_endian>::scan_relocs(const General_options& options,
      }
  
    gold::scan_relocs<32, big_endian, Target_arm, elfcpp::SHT_REL, Scan>(
@@ -8659,7 +8698,7 @@ index dd5f67d..7d45851 100644
      symtab,
      layout,
      this,
-@@ -1825,8 +7742,69 @@ Target_arm<big_endian>::scan_relocs(const General_options& options,
+@@ -1825,8 +7744,69 @@ Target_arm<big_endian>::scan_relocs(const General_options& options,
  
  template<bool big_endian>
  void
@@ -8730,7 +8769,7 @@ index dd5f67d..7d45851 100644
    // Fill in some more dynamic tags.
    Output_data_dynamic* const odyn = layout->dynamic_data();
    if (odyn != NULL)
-@@ -1864,24 +7842,43 @@ Target_arm<big_endian>::do_finalize_sections(Layout* layout)
+@@ -1864,24 +7844,44 @@ Target_arm<big_endian>::do_finalize_sections(Layout* layout)
    if (this->copy_relocs_.any_saved_relocs())
      this->copy_relocs_.emit(this->rel_dyn_section(layout));
  
@@ -8779,11 +8818,12 @@ index dd5f67d..7d45851 100644
 +    new Output_attributes_section_data(*this->attributes_section_data_);
 +  layout->add_output_section_data(".ARM.attributes",
 +				  elfcpp::SHT_ARM_ATTRIBUTES, 0,
-+				  attributes_section, false);
++				  attributes_section, false, false, false,
++				  false);
  }
  
  // Return whether a direct absolute static relocation needs to be applied.
-@@ -1938,31 +7935,94 @@ Target_arm<big_endian>::Relocate::relocate(
+@@ -1938,31 +7938,94 @@ Target_arm<big_endian>::Relocate::relocate(
      const Sized_symbol<32>* gsym,
      const Symbol_value<32>* psymval,
      unsigned char* view,
@@ -8893,7 +8933,7 @@ index dd5f67d..7d45851 100644
    // Get the GOT offset if needed.
    // The GOT pointer points to the end of the GOT section.
    // We need to subtract the size of the GOT section to get
-@@ -1993,8 +8053,61 @@ Target_arm<big_endian>::Relocate::relocate(
+@@ -1993,8 +8056,61 @@ Target_arm<big_endian>::Relocate::relocate(
        break;
      }
  
@@ -8955,7 +8995,7 @@ index dd5f67d..7d45851 100644
    switch (r_type)
      {
      case elfcpp::R_ARM_NONE:
-@@ -2022,7 +8135,7 @@ Target_arm<big_endian>::Relocate::relocate(
+@@ -2022,7 +8138,7 @@ Target_arm<big_endian>::Relocate::relocate(
        if (should_apply_static_reloc(gsym, Symbol::ABSOLUTE_REF, true,
  				    output_section))
  	reloc_status = Arm_relocate_functions::abs32(view, object, psymval,
@@ -8964,7 +9004,7 @@ index dd5f67d..7d45851 100644
        break;
  
      case elfcpp::R_ARM_ABS32_NOI:
-@@ -2030,75 +8143,72 @@ Target_arm<big_endian>::Relocate::relocate(
+@@ -2030,75 +8146,72 @@ Target_arm<big_endian>::Relocate::relocate(
  				    output_section))
  	// No thumb bit for this relocation: (S + A)
  	reloc_status = Arm_relocate_functions::abs32(view, object, psymval,
@@ -9074,7 +9114,7 @@ index dd5f67d..7d45851 100644
        break;
  
      case elfcpp::R_ARM_THM_ABS5:
-@@ -2108,65 +8218,48 @@ Target_arm<big_endian>::Relocate::relocate(
+@@ -2108,65 +8221,48 @@ Target_arm<big_endian>::Relocate::relocate(
        break;
  
      case elfcpp::R_ARM_THM_CALL:
@@ -9165,7 +9205,7 @@ index dd5f67d..7d45851 100644
        }
        break;
  
-@@ -2180,7 +8273,7 @@ Target_arm<big_endian>::Relocate::relocate(
+@@ -2180,7 +8276,7 @@ Target_arm<big_endian>::Relocate::relocate(
        // Get the address origin for GOT PLT, which is allocated right
        // after the GOT section, to calculate an absolute address of
        // the symbol GOT entry (got_origin + got_offset).
@@ -9174,7 +9214,7 @@ index dd5f67d..7d45851 100644
        got_origin = target->got_plt_section()->address();
        reloc_status = Arm_relocate_functions::got_prel(view,
  						      got_origin + got_offset,
-@@ -2194,44 +8287,153 @@ Target_arm<big_endian>::Relocate::relocate(
+@@ -2194,44 +8290,153 @@ Target_arm<big_endian>::Relocate::relocate(
  		  || (gsym->is_defined()
  		      && !gsym->is_from_dynobj()
  		      && !gsym->is_preemptible()));
@@ -9351,7 +9391,7 @@ index dd5f67d..7d45851 100644
      }
  
    // Report any errors.
-@@ -2259,6 +8461,145 @@ Target_arm<big_endian>::Relocate::relocate(
+@@ -2259,6 +8464,145 @@ Target_arm<big_endian>::Relocate::relocate(
    return true;
  }
  
@@ -9497,7 +9537,7 @@ index dd5f67d..7d45851 100644
  // Relocate section data.
  
  template<bool big_endian>
-@@ -2271,13 +8612,35 @@ Target_arm<big_endian>::relocate_section(
+@@ -2271,13 +8615,35 @@ Target_arm<big_endian>::relocate_section(
      Output_section* output_section,
      bool needs_special_offset_handling,
      unsigned char* view,
@@ -9534,7 +9574,7 @@ index dd5f67d..7d45851 100644
    gold::relocate_section<32, big_endian, Target_arm, elfcpp::SHT_REL,
  			 Arm_relocate>(
      relinfo,
-@@ -2302,57 +8665,16 @@ Target_arm<big_endian>::Relocatable_size_for_reloc::get_size_for_reloc(
+@@ -2302,57 +8668,16 @@ Target_arm<big_endian>::Relocatable_size_for_reloc::get_size_for_reloc(
      Relobj* object)
  {
    r_type = get_real_reloc_type(r_type);
@@ -9601,7 +9641,7 @@ index dd5f67d..7d45851 100644
        return 0;
      }
  }
-@@ -2362,7 +8684,6 @@ Target_arm<big_endian>::Relocatable_size_for_reloc::get_size_for_reloc(
+@@ -2362,7 +8687,6 @@ Target_arm<big_endian>::Relocatable_size_for_reloc::get_size_for_reloc(
  template<bool big_endian>
  void
  Target_arm<big_endian>::scan_relocatable_relocs(
@@ -9609,7 +9649,7 @@ index dd5f67d..7d45851 100644
      Symbol_table* symtab,
      Layout* layout,
      Sized_relobj<32, big_endian>* object,
-@@ -2383,7 +8704,6 @@ Target_arm<big_endian>::scan_relocatable_relocs(
+@@ -2383,7 +8707,6 @@ Target_arm<big_endian>::scan_relocatable_relocs(
  
    gold::scan_relocatable_relocs<32, big_endian, elfcpp::SHT_REL,
        Scan_relocatable_relocs>(
@@ -9617,7 +9657,7 @@ index dd5f67d..7d45851 100644
      symtab,
      layout,
      object,
-@@ -2410,7 +8730,7 @@ Target_arm<big_endian>::relocate_for_relocatable(
+@@ -2410,7 +8733,7 @@ Target_arm<big_endian>::relocate_for_relocatable(
      off_t offset_in_output_section,
      const Relocatable_relocs* rr,
      unsigned char* view,
@@ -9626,7 +9666,7 @@ index dd5f67d..7d45851 100644
      section_size_type view_size,
      unsigned char* reloc_view,
      section_size_type reloc_view_size)
-@@ -2465,7 +8785,1836 @@ Target_arm<big_endian>::get_real_reloc_type (unsigned int r_type)
+@@ -2465,7 +8788,1836 @@ Target_arm<big_endian>::get_real_reloc_type (unsigned int r_type)
      }
  }
  
@@ -11464,7 +11504,7 @@ index dd5f67d..7d45851 100644
  
  template<bool big_endian>
  class Target_selector_arm : public Target_selector
-@@ -2481,6 +10630,52 @@ class Target_selector_arm : public Target_selector
+@@ -2481,6 +10633,52 @@ class Target_selector_arm : public Target_selector
    { return new Target_arm<big_endian>(); }
  };
  
@@ -12394,7 +12434,7 @@ index 0000000..7c4baf4
 +
 +#endif	// !defined(GOLD_ATTRIBUTES_H)
 diff --git a/gold/common.cc b/gold/common.cc
-index f90ae40..c701241 100644
+index f90ae40..c4ff047 100644
 --- a/gold/common.cc
 +++ b/gold/common.cc
 @@ -64,21 +64,26 @@ Allocate_commons_task::run(Workqueue*)
@@ -12578,12 +12618,13 @@ index f90ae40..c701241 100644
  
    // Place them in a newly allocated BSS section.
    elfcpp::Elf_Xword flags = elfcpp::SHF_WRITE | elfcpp::SHF_ALLOC;
-@@ -239,7 +292,7 @@ Symbol_table::do_allocate_commons_list(
+@@ -239,7 +292,8 @@ Symbol_table::do_allocate_commons_list(
    Output_data_space *poc = new Output_data_space(addralign, ds_name);
    Output_section *os = layout->add_output_section_data(name,
  						       elfcpp::SHT_NOBITS,
 -						       flags, poc);
-+						       flags, poc, false);
++						       flags, poc, false,
++						       false, false, false);
    if (os != NULL)
      {
        if (commons_section_type == COMMONS_SMALL)
@@ -12636,15 +12677,16 @@ index de6d4f9..0f3b1c3 100644
   targ_size=32
   targ_big_endian=false
 diff --git a/gold/copy-relocs.cc b/gold/copy-relocs.cc
-index 6ef72d3..345c0c6 100644
+index 6ef72d3..4a98f83 100644
 --- a/gold/copy-relocs.cc
 +++ b/gold/copy-relocs.cc
-@@ -138,7 +138,7 @@ Copy_relocs<sh_type, size, big_endian>::emit_copy_reloc(
+@@ -138,7 +138,8 @@ Copy_relocs<sh_type, size, big_endian>::emit_copy_reloc(
        layout->add_output_section_data(".bss",
  				      elfcpp::SHT_NOBITS,
  				      elfcpp::SHF_ALLOC | elfcpp::SHF_WRITE,
 -				      this->dynbss_);
-+				      this->dynbss_, false);
++				      this->dynbss_, false, false, false,
++				      false);
      }
  
    Output_data_space* dynbss = this->dynbss_;
@@ -12763,6 +12805,349 @@ index b14d06d..fe94f06 100644
  						    elfcpp::STT_OBJECT,
  						    elfcpp::STB_GLOBAL,
  						    elfcpp::STV_DEFAULT, 0,
+diff --git a/gold/expression.cc b/gold/expression.cc
+index 25f3ac3..134b0fa 100644
+--- a/gold/expression.cc
++++ b/gold/expression.cc
+@@ -66,6 +66,8 @@ struct Expression::Expression_eval_info
+   Output_section* dot_section;
+   // Points to where the section of the result should be stored.
+   Output_section** result_section_pointer;
++  // Pointer to where the alignment of the result should be stored.
++  uint64_t* result_alignment_pointer;
+ };
+ 
+ // Evaluate an expression.
+@@ -76,7 +78,7 @@ Expression::eval(const Symbol_table* symtab, const Layout* layout,
+ {
+   Output_section* dummy;
+   return this->eval_maybe_dot(symtab, layout, check_assertions,
+-			      false, 0, NULL, &dummy);
++			      false, 0, NULL, &dummy, NULL);
+ }
+ 
+ // Evaluate an expression which may refer to the dot symbol.
+@@ -85,10 +87,12 @@ uint64_t
+ Expression::eval_with_dot(const Symbol_table* symtab, const Layout* layout,
+ 			  bool check_assertions, uint64_t dot_value,
+ 			  Output_section* dot_section,
+-			  Output_section** result_section_pointer)
++			  Output_section** result_section_pointer,
++			  uint64_t* result_alignment_pointer)
+ {
+   return this->eval_maybe_dot(symtab, layout, check_assertions, true,
+-			      dot_value, dot_section, result_section_pointer);
++			      dot_value, dot_section, result_section_pointer,
++			      result_alignment_pointer);
+ }
+ 
+ // Evaluate an expression which may or may not refer to the dot
+@@ -98,7 +102,8 @@ uint64_t
+ Expression::eval_maybe_dot(const Symbol_table* symtab, const Layout* layout,
+ 			   bool check_assertions, bool is_dot_available,
+ 			   uint64_t dot_value, Output_section* dot_section,
+-			   Output_section** result_section_pointer)
++			   Output_section** result_section_pointer,
++			   uint64_t* result_alignment_pointer)
+ {
+   Expression_eval_info eei;
+   eei.symtab = symtab;
+@@ -113,6 +118,8 @@ Expression::eval_maybe_dot(const Symbol_table* symtab, const Layout* layout,
+   *result_section_pointer = NULL;
+   eei.result_section_pointer = result_section_pointer;
+ 
++  eei.result_alignment_pointer = result_alignment_pointer;
++
+   return this->value(&eei);
+ }
+ 
+@@ -247,7 +254,8 @@ class Unary_expression : public Expression
+ 				      eei->is_dot_available,
+ 				      eei->dot_value,
+ 				      eei->dot_section,
+-				      arg_section_pointer);
++				      arg_section_pointer,
++				      eei->result_alignment_pointer);
+   }
+ 
+   void
+@@ -317,26 +325,30 @@ class Binary_expression : public Expression
+  protected:
+   uint64_t
+   left_value(const Expression_eval_info* eei,
+-	     Output_section** section_pointer) const
++	     Output_section** section_pointer,
++	     uint64_t* alignment_pointer) const
+   {
+     return this->left_->eval_maybe_dot(eei->symtab, eei->layout,
+ 				       eei->check_assertions,
+ 				       eei->is_dot_available,
+ 				       eei->dot_value,
+ 				       eei->dot_section,
+-				       section_pointer);
++				       section_pointer,
++				       alignment_pointer);
+   }
+ 
+   uint64_t
+   right_value(const Expression_eval_info* eei,
+-	      Output_section** section_pointer) const
++	      Output_section** section_pointer,
++	      uint64_t* alignment_pointer) const
+   {
+     return this->right_->eval_maybe_dot(eei->symtab, eei->layout,
+ 					eei->check_assertions,
+ 					eei->is_dot_available,
+ 					eei->dot_value,
+ 					eei->dot_section,
+-					section_pointer);
++					section_pointer,
++					alignment_pointer);
+   }
+ 
+   void
+@@ -385,15 +397,27 @@ class Binary_expression : public Expression
+     value(const Expression_eval_info* eei)				\
+     {									\
+       Output_section* left_section;					\
+-      uint64_t left = this->left_value(eei, &left_section);		\
++      uint64_t left_alignment;						\
++      uint64_t left = this->left_value(eei, &left_section,		\
++				       &left_alignment);		\
+       Output_section* right_section;					\
+-      uint64_t right = this->right_value(eei, &right_section);		\
++      uint64_t right_alignment;						\
++      uint64_t right = this->right_value(eei, &right_section,		\
++					 &right_alignment);		\
+       if (KEEP_RIGHT && left_section == NULL && right_section != NULL)	\
+-	*eei->result_section_pointer = right_section;			\
++	{								\
++	  *eei->result_section_pointer = right_section;			\
++	  if (eei->result_alignment_pointer != NULL)			\
++	    *eei->result_alignment_pointer = right_alignment;		\
++	}								\
+       else if (KEEP_LEFT						\
+ 	       && left_section != NULL					\
+ 	       && right_section == NULL)				\
+-	*eei->result_section_pointer = left_section;			\
++	{								\
++	  *eei->result_section_pointer = left_section;			\
++	  if (eei->result_alignment_pointer != NULL)			\
++	    *eei->result_alignment_pointer = right_alignment;		\
++	}								\
+       else if ((WARN || left_section != right_section)			\
+ 	       && (left_section != NULL || right_section != NULL)	\
+ 	       && parameters->options().relocatable())			\
+@@ -469,31 +493,36 @@ class Trinary_expression : public Expression
+ 				       eei->is_dot_available,
+ 				       eei->dot_value,
+ 				       eei->dot_section,
+-				       section_pointer);
++				       section_pointer,
++				       NULL);
+   }
+ 
+   uint64_t
+   arg2_value(const Expression_eval_info* eei,
+-	     Output_section** section_pointer) const
++	     Output_section** section_pointer,
++	     uint64_t* alignment_pointer) const
+   {
+     return this->arg1_->eval_maybe_dot(eei->symtab, eei->layout,
+ 				       eei->check_assertions,
+ 				       eei->is_dot_available,
+ 				       eei->dot_value,
+ 				       eei->dot_section,
+-				       section_pointer);
++				       section_pointer,
++				       alignment_pointer);
+   }
+ 
+   uint64_t
+   arg3_value(const Expression_eval_info* eei,
+-	     Output_section** section_pointer) const
++	     Output_section** section_pointer,
++	     uint64_t* alignment_pointer) const
+   {
+     return this->arg1_->eval_maybe_dot(eei->symtab, eei->layout,
+ 				       eei->check_assertions,
+ 				       eei->is_dot_available,
+ 				       eei->dot_value,
+ 				       eei->dot_section,
+-				       section_pointer);
++				       section_pointer,
++				       alignment_pointer);
+   }
+ 
+   void
+@@ -529,8 +558,10 @@ class Trinary_cond : public Trinary_expression
+     Output_section* arg1_section;
+     uint64_t arg1 = this->arg1_value(eei, &arg1_section);
+     return (arg1
+-	    ? this->arg2_value(eei, eei->result_section_pointer)
+-	    : this->arg3_value(eei, eei->result_section_pointer));
++	    ? this->arg2_value(eei, eei->result_section_pointer,
++			       eei->result_alignment_pointer)
++	    : this->arg3_value(eei, eei->result_section_pointer,
++			       eei->result_alignment_pointer));
+   }
+ 
+   void
+@@ -565,14 +596,27 @@ class Max_expression : public Binary_expression
+   value(const Expression_eval_info* eei)
+   {
+     Output_section* left_section;
+-    uint64_t left = this->left_value(eei, &left_section);
++    uint64_t left_alignment;
++    uint64_t left = this->left_value(eei, &left_section, &left_alignment);
+     Output_section* right_section;
+-    uint64_t right = this->right_value(eei, &right_section);
++    uint64_t right_alignment;
++    uint64_t right = this->right_value(eei, &right_section, &right_alignment);
+     if (left_section == right_section)
+       *eei->result_section_pointer = left_section;
+     else if ((left_section != NULL || right_section != NULL)
+ 	     && parameters->options().relocatable())
+       gold_warning(_("max applied to section relative value"));
++    if (eei->result_alignment_pointer != NULL)
++      {
++	uint64_t ra = *eei->result_alignment_pointer;
++	if (left > right)
++	  ra = std::max(ra, left_alignment);
++	else if (right > left)
++	  ra = std::max(ra, right_alignment);
++	else
++	  ra = std::max(ra, std::max(left_alignment, right_alignment));
++	*eei->result_alignment_pointer = ra;
++      }
+     return std::max(left, right);
+   }
+ 
+@@ -600,14 +644,27 @@ class Min_expression : public Binary_expression
+   value(const Expression_eval_info* eei)
+   {
+     Output_section* left_section;
+-    uint64_t left = this->left_value(eei, &left_section);
++    uint64_t left_alignment;
++    uint64_t left = this->left_value(eei, &left_section, &left_alignment);
+     Output_section* right_section;
+-    uint64_t right = this->right_value(eei, &right_section);
++    uint64_t right_alignment;
++    uint64_t right = this->right_value(eei, &right_section, &right_alignment);
+     if (left_section == right_section)
+       *eei->result_section_pointer = left_section;
+     else if ((left_section != NULL || right_section != NULL)
+ 	     && parameters->options().relocatable())
+       gold_warning(_("min applied to section relative value"));
++    if (eei->result_alignment_pointer != NULL)
++      {
++	uint64_t ra = *eei->result_alignment_pointer;
++	if (left < right)
++	  ra = std::max(ra, left_alignment);
++	else if (right < left)
++	  ra = std::max(ra, right_alignment);
++	else
++	  ra = std::max(ra, std::max(left_alignment, right_alignment));
++	*eei->result_alignment_pointer = ra;
++      }
+     return std::min(left, right);
+   }
+ 
+@@ -734,12 +791,21 @@ class Align_expression : public Binary_expression
+   value(const Expression_eval_info* eei)
+   {
+     Output_section* align_section;
+-    uint64_t align = this->right_value(eei, &align_section);
++    uint64_t align = this->right_value(eei, &align_section, NULL);
+     if (align_section != NULL
+ 	&& parameters->options().relocatable())
+       gold_warning(_("aligning to section relative value"));
+ 
+-    uint64_t value = this->left_value(eei, eei->result_section_pointer);
++    if (eei->result_alignment_pointer != NULL
++	&& align > *eei->result_alignment_pointer)
++      {
++	uint64_t a = align;
++	while ((a & (a - 1)) != 0)
++	  a &= a - 1;
++	*eei->result_alignment_pointer = a;
++      }
++
++    uint64_t value = this->left_value(eei, eei->result_section_pointer, NULL);
+     if (align <= 1)
+       return value;
+     return ((value + align - 1) / align) * align;
+@@ -1113,17 +1179,62 @@ script_exp_function_sizeof_headers()
+   return new Sizeof_headers_expression();
+ }
+ 
+-// In the GNU linker SEGMENT_START basically returns the value for
+-// -Ttext, -Tdata, or -Tbss.  We could implement this by copying the
+-// values from General_options to Parameters.  But I doubt that
+-// anybody actually uses it.  The point of it for the GNU linker was
+-// because -Ttext set the address of the .text section rather than the
+-// text segment.  In gold -Ttext sets the text segment address anyhow.
++// SEGMENT_START.
++
++class Segment_start_expression : public Unary_expression
++{
++ public:
++  Segment_start_expression(const char* segment_name, size_t segment_name_len,
++			   Expression* default_value)
++    : Unary_expression(default_value),
++      segment_name_(segment_name, segment_name_len)
++  { }
++
++  uint64_t
++  value(const Expression_eval_info*);
++
++  void
++  print(FILE* f) const
++  {
++    fprintf(f, "SEGMENT_START(\"%s\", ", this->segment_name_.c_str());
++    this->arg_print(f);
++    fprintf(f, ")");
++  }
++
++ private:
++  std::string segment_name_;
++};
++
++uint64_t
++Segment_start_expression::value(const Expression_eval_info* eei)
++{
++  // Check for command line overrides.
++  if (parameters->options().user_set_Ttext()
++      && this->segment_name_ == ".text")
++    return parameters->options().Ttext();
++  else if (parameters->options().user_set_Tdata()
++	   && this->segment_name_ == ".data")
++    return parameters->options().Tdata();
++  else if (parameters->options().user_set_Tbss()
++	   && this->segment_name_ == ".bss")
++    return parameters->options().Tbss();
++  else
++    {
++      Output_section* dummy;
++      uint64_t ret = this->arg_value(eei, &dummy);
++      // Force the value to be absolute.
++      *eei->result_section_pointer = NULL;
++      return ret;
++    }
++}
+ 
+ extern "C" Expression*
+-script_exp_function_segment_start(const char*, size_t, Expression*)
++script_exp_function_segment_start(const char* segment_name,
++				  size_t segment_name_len,
++				  Expression* default_value)
+ {
+-  gold_fatal(_("SEGMENT_START not implemented"));
++  return new Segment_start_expression(segment_name, segment_name_len,
++				      default_value);
+ }
+ 
+ // Functions for memory regions.  These can not be implemented unless
 diff --git a/gold/gc.h b/gold/gc.h
 index 757a33d..4dd3507 100644
 --- a/gold/gc.h
@@ -13040,7 +13425,7 @@ index 3f514cd..5c98de0 100644
  
  #endif // !defined(GOLD_GOLD_H)
 diff --git a/gold/i386.cc b/gold/i386.cc
-index 445a7ac..a564e9f 100644
+index 445a7ac..91abd4e 100644
 --- a/gold/i386.cc
 +++ b/gold/i386.cc
 @@ -67,8 +67,7 @@ class Target_i386 : public Target_freebsd<32, false>
@@ -13113,60 +13498,71 @@ index 445a7ac..a564e9f 100644
  };
  
  // Get the GOT section, creating it if necessary.
-@@ -464,7 +461,7 @@ Target_i386::got_section(Symbol_table* symtab, Layout* layout)
+@@ -464,25 +461,25 @@ Target_i386::got_section(Symbol_table* symtab, Layout* layout)
        os = layout->add_output_section_data(".got", elfcpp::SHT_PROGBITS,
  					   (elfcpp::SHF_ALLOC
  					    | elfcpp::SHF_WRITE),
 -					   this->got_);
-+					   this->got_, false);
-       os->set_is_relro();
+-      os->set_is_relro();
++					   this->got_, false, true, true,
++					   false);
  
-       // The old GNU linker creates a .got.plt section.  We just
-@@ -475,7 +472,7 @@ Target_i386::got_section(Symbol_table* symtab, Layout* layout)
-       os = layout->add_output_section_data(".got", elfcpp::SHT_PROGBITS,
+-      // The old GNU linker creates a .got.plt section.  We just
+-      // create another set of data in the .got section.  Note that we
+-      // always create a PLT if we create a GOT, although the PLT
+-      // might be empty.
+       this->got_plt_ = new Output_data_space(4, "** GOT PLT");
+-      os = layout->add_output_section_data(".got", elfcpp::SHT_PROGBITS,
++      os = layout->add_output_section_data(".got.plt", elfcpp::SHT_PROGBITS,
  					   (elfcpp::SHF_ALLOC
  					    | elfcpp::SHF_WRITE),
 -					   this->got_plt_);
-+					   this->got_plt_, false);
-       os->set_is_relro();
+-      os->set_is_relro();
++					   this->got_plt_, false, false, false,
++					   true);
  
        // The first three entries are reserved.
-@@ -483,6 +480,7 @@ Target_i386::got_section(Symbol_table* symtab, Layout* layout)
+       this->got_plt_->set_current_data_size(3 * 4);
  
++      // Those bytes can go into the relro segment.
++      layout->increase_relro(3 * 4);
++
        // Define _GLOBAL_OFFSET_TABLE_ at the start of the PLT.
        symtab->define_in_output_data("_GLOBAL_OFFSET_TABLE_", NULL,
 +				    Symbol_table::PREDEFINED,
  				    this->got_plt_,
  				    0, 0, elfcpp::STT_OBJECT,
  				    elfcpp::STB_LOCAL,
-@@ -503,7 +501,7 @@ Target_i386::rel_dyn_section(Layout* layout)
+@@ -503,7 +500,8 @@ Target_i386::rel_dyn_section(Layout* layout)
        gold_assert(layout != NULL);
        this->rel_dyn_ = new Reloc_section(parameters->options().combreloc());
        layout->add_output_section_data(".rel.dyn", elfcpp::SHT_REL,
 -				      elfcpp::SHF_ALLOC, this->rel_dyn_);
-+				      elfcpp::SHF_ALLOC, this->rel_dyn_, true);
++				      elfcpp::SHF_ALLOC, this->rel_dyn_, true,
++				      false, false, false);
      }
    return this->rel_dyn_;
  }
-@@ -578,7 +576,7 @@ Output_data_plt_i386::Output_data_plt_i386(Layout* layout,
+@@ -578,7 +576,8 @@ Output_data_plt_i386::Output_data_plt_i386(Layout* layout,
  {
    this->rel_ = new Reloc_section(false);
    layout->add_output_section_data(".rel.plt", elfcpp::SHT_REL,
 -				  elfcpp::SHF_ALLOC, this->rel_);
-+				  elfcpp::SHF_ALLOC, this->rel_, true);
++				  elfcpp::SHF_ALLOC, this->rel_, true,
++				  false, false, false);
  }
  
  void
-@@ -763,7 +761,7 @@ Target_i386::make_plt_entry(Symbol_table* symtab, Layout* layout, Symbol* gsym)
+@@ -763,7 +762,7 @@ Target_i386::make_plt_entry(Symbol_table* symtab, Layout* layout, Symbol* gsym)
        layout->add_output_section_data(".plt", elfcpp::SHT_PROGBITS,
  				      (elfcpp::SHF_ALLOC
  				       | elfcpp::SHF_EXECINSTR),
 -				      this->plt_);
-+				      this->plt_, false);
++				      this->plt_, false, false, false, false);
      }
  
    this->plt_->add_entry(gsym);
-@@ -782,6 +780,7 @@ Target_i386::define_tls_base_symbol(Symbol_table* symtab, Layout* layout)
+@@ -782,6 +781,7 @@ Target_i386::define_tls_base_symbol(Symbol_table* symtab, Layout* layout)
      {
        bool is_exec = parameters->options().output_is_executable();
        symtab->define_in_output_segment("_TLS_MODULE_BASE_", NULL,
@@ -13174,7 +13570,7 @@ index 445a7ac..a564e9f 100644
  				       tls_segment, 0, 0,
  				       elfcpp::STT_TLS,
  				       elfcpp::STB_LOCAL,
-@@ -884,8 +883,7 @@ Target_i386::Scan::unsupported_reloc_local(Sized_relobj<32, false>* object,
+@@ -884,8 +884,7 @@ Target_i386::Scan::unsupported_reloc_local(Sized_relobj<32, false>* object,
  // Scan a relocation for a local symbol.
  
  inline void
@@ -13184,7 +13580,7 @@ index 445a7ac..a564e9f 100644
  			 Layout* layout,
  			 Target_i386* target,
  			 Sized_relobj<32, false>* object,
-@@ -1175,8 +1173,7 @@ Target_i386::Scan::unsupported_reloc_global(Sized_relobj<32, false>* object,
+@@ -1175,8 +1174,7 @@ Target_i386::Scan::unsupported_reloc_global(Sized_relobj<32, false>* object,
  // Scan a relocation for a global symbol.
  
  inline void
@@ -13194,7 +13590,7 @@ index 445a7ac..a564e9f 100644
  			  Layout* layout,
  			  Target_i386* target,
  			  Sized_relobj<32, false>* object,
-@@ -1492,8 +1489,7 @@ Target_i386::Scan::global(const General_options&,
+@@ -1492,8 +1490,7 @@ Target_i386::Scan::global(const General_options&,
  // Process relocations for gc.
  
  void
@@ -13204,7 +13600,7 @@ index 445a7ac..a564e9f 100644
                                 Layout* layout,
                                 Sized_relobj<32, false>* object,
                                 unsigned int data_shndx,
-@@ -1507,7 +1503,6 @@ Target_i386::gc_process_relocs(const General_options& options,
+@@ -1507,7 +1504,6 @@ Target_i386::gc_process_relocs(const General_options& options,
  {
    gold::gc_process_relocs<32, false, Target_i386, elfcpp::SHT_REL,
  		          Target_i386::Scan>(
@@ -13212,7 +13608,7 @@ index 445a7ac..a564e9f 100644
      symtab,
      layout,
      this,
-@@ -1524,8 +1519,7 @@ Target_i386::gc_process_relocs(const General_options& options,
+@@ -1524,8 +1520,7 @@ Target_i386::gc_process_relocs(const General_options& options,
  // Scan relocations for a section.
  
  void
@@ -13222,7 +13618,7 @@ index 445a7ac..a564e9f 100644
  			 Layout* layout,
  			 Sized_relobj<32, false>* object,
  			 unsigned int data_shndx,
-@@ -1546,7 +1540,6 @@ Target_i386::scan_relocs(const General_options& options,
+@@ -1546,7 +1541,6 @@ Target_i386::scan_relocs(const General_options& options,
  
    gold::scan_relocs<32, false, Target_i386, elfcpp::SHT_REL,
  		    Target_i386::Scan>(
@@ -13230,7 +13626,7 @@ index 445a7ac..a564e9f 100644
      symtab,
      layout,
      this,
-@@ -1563,7 +1556,10 @@ Target_i386::scan_relocs(const General_options& options,
+@@ -1563,7 +1557,10 @@ Target_i386::scan_relocs(const General_options& options,
  // Finalize the sections.
  
  void
@@ -13242,7 +13638,7 @@ index 445a7ac..a564e9f 100644
  {
    // Fill in some more dynamic tags.
    Output_data_dynamic* const odyn = layout->dynamic_data();
-@@ -2537,8 +2533,7 @@ Target_i386::Relocatable_size_for_reloc::get_size_for_reloc(
+@@ -2537,8 +2534,7 @@ Target_i386::Relocatable_size_for_reloc::get_size_for_reloc(
  // Scan the relocs during a relocatable link.
  
  void
@@ -13252,7 +13648,7 @@ index 445a7ac..a564e9f 100644
  				     Layout* layout,
  				     Sized_relobj<32, false>* object,
  				     unsigned int data_shndx,
-@@ -2558,7 +2553,6 @@ Target_i386::scan_relocatable_relocs(const General_options& options,
+@@ -2558,7 +2554,6 @@ Target_i386::scan_relocatable_relocs(const General_options& options,
  
    gold::scan_relocatable_relocs<32, false, elfcpp::SHT_REL,
        Scan_relocatable_relocs>(
@@ -13546,37 +13942,50 @@ index 0000000..b60e969
 +
 +#endif // !defined(GOLD_INT_ENCODING_H)
 diff --git a/gold/layout.cc b/gold/layout.cc
-index 028703a..77244ff 100644
+index 028703a..46a6a34 100644
 --- a/gold/layout.cc
 +++ b/gold/layout.cc
-@@ -388,11 +388,14 @@ Layout::find_output_segment(elfcpp::PT type, elfcpp::Elf_Word set,
+@@ -175,6 +175,7 @@ Layout::Layout(int number_of_input_files, Script_options* script_options)
+     section_headers_(NULL),
+     tls_segment_(NULL),
+     relro_segment_(NULL),
++    increase_relro_(0),
+     symtab_section_(NULL),
+     symtab_xindex_(NULL),
+     dynsym_section_(NULL),
+@@ -388,11 +389,18 @@ Layout::find_output_segment(elfcpp::PT type, elfcpp::Elf_Word set,
  
  // Return the output section to use for section NAME with type TYPE
  // and section flags FLAGS.  NAME must be canonicalized in the string
 -// pool, and NAME_KEY is the key.
 +// pool, and NAME_KEY is the key.  IS_INTERP is true if this is the
 +// .interp section.  IS_DYNAMIC_LINKER_SECTION is true if this section
-+// is used by the dynamic linker.
++// is used by the dynamic linker.  IS_RELRO is true for a relro
++// section.  IS_LAST_RELRO is true for the last relro section.
++// IS_FIRST_NON_RELRO is true for the first non-relro section.
  
  Output_section*
  Layout::get_output_section(const char* name, Stringpool::Key name_key,
 -			   elfcpp::Elf_Word type, elfcpp::Elf_Xword flags)
 +			   elfcpp::Elf_Word type, elfcpp::Elf_Xword flags,
-+			   bool is_interp, bool is_dynamic_linker_section)
++			   bool is_interp, bool is_dynamic_linker_section,
++			   bool is_relro, bool is_last_relro,
++			   bool is_first_non_relro)
  {
    elfcpp::Elf_Xword lookup_flags = flags;
  
-@@ -441,7 +444,8 @@ Layout::get_output_section(const char* name, Stringpool::Key name_key,
+@@ -441,7 +449,9 @@ Layout::get_output_section(const char* name, Stringpool::Key name_key,
  	}
  
        if (os == NULL)
 -	os = this->make_output_section(name, type, flags);
 +	os = this->make_output_section(name, type, flags, is_interp,
-+				       is_dynamic_linker_section);
++				       is_dynamic_linker_section, is_relro,
++				       is_last_relro, is_first_non_relro);
        ins.first->second = os;
        return os;
      }
-@@ -451,13 +455,16 @@ Layout::get_output_section(const char* name, Stringpool::Key name_key,
+@@ -451,13 +461,19 @@ Layout::get_output_section(const char* name, Stringpool::Key name_key,
  // RELOBJ, with type TYPE and flags FLAGS.  RELOBJ may be NULL for a
  // linker created section.  IS_INPUT_SECTION is true if we are
  // choosing an output section for an input section found in a input
@@ -13584,93 +13993,152 @@ index 028703a..77244ff 100644
 -// discarded.
 +// file.  IS_INTERP is true if this is the .interp section.
 +// IS_DYNAMIC_LINKER_SECTION is true if this section is used by the
-+// dynamic linker.  This will return NULL if the input section should
-+// be discarded.
++// dynamic linker.  IS_RELRO is true for a relro section.
++// IS_LAST_RELRO is true for the last relro section.
++// IS_FIRST_NON_RELRO is true for the first non-relro section.  This
++// will return NULL if the input section should be discarded.
  
  Output_section*
  Layout::choose_output_section(const Relobj* relobj, const char* name,
  			      elfcpp::Elf_Word type, elfcpp::Elf_Xword flags,
 -			      bool is_input_section)
 +			      bool is_input_section, bool is_interp,
-+			      bool is_dynamic_linker_section)
++			      bool is_dynamic_linker_section, bool is_relro,
++			      bool is_last_relro, bool is_first_non_relro)
  {
    // We should not see any input sections after we have attached
    // sections to segments.
-@@ -505,7 +512,9 @@ Layout::choose_output_section(const Relobj* relobj, const char* name,
+@@ -479,13 +495,27 @@ Layout::choose_output_section(const Relobj* relobj, const char* name,
+       Script_sections* ss = this->script_options_->script_sections();
+       const char* file_name = relobj == NULL ? NULL : relobj->name().c_str();
+       Output_section** output_section_slot;
+-      name = ss->output_section_name(file_name, name, &output_section_slot);
++      Script_sections::Section_type script_section_type;
++      name = ss->output_section_name(file_name, name, &output_section_slot,
++				     &script_section_type);
+       if (name == NULL)
+ 	{
+ 	  // The SECTIONS clause says to discard this input section.
+ 	  return NULL;
+ 	}
+ 
++      // We can only handle script section types ST_NONE and ST_NOLOAD.
++      switch (script_section_type)
++	{
++	case Script_sections::ST_NONE:
++	  break;
++	case Script_sections::ST_NOLOAD:
++	  flags &= elfcpp::SHF_ALLOC;
++	  break;
++	default:
++	  gold_unreachable();
++	}
++
+       // If this is an orphan section--one not mentioned in the linker
+       // script--then OUTPUT_SECTION_SLOT will be NULL, and we do the
+       // default processing below.
+@@ -505,8 +535,30 @@ Layout::choose_output_section(const Relobj* relobj, const char* name,
  
  	  name = this->namepool_.add(name, false, NULL);
  
 -	  Output_section* os = this->make_output_section(name, type, flags);
 +	  Output_section* os =
 +	    this->make_output_section(name, type, flags, is_interp,
-+				      is_dynamic_linker_section);
++				      is_dynamic_linker_section, is_relro,
++				      is_last_relro, is_first_non_relro);
  	  os->set_found_in_sections_clause();
++
++	  // Special handling for NOLOAD sections.
++	  if (script_section_type == Script_sections::ST_NOLOAD)
++	    {
++	      os->set_is_noload();
++
++	      // The constructor of Output_section sets addresses of non-ALLOC
++	      // sections to 0 by default.  We don't want that for NOLOAD
++	      // sections even if they have no SHF_ALLOC flag.
++	      if ((os->flags() & elfcpp::SHF_ALLOC) == 0
++		  && os->is_address_valid())
++		{
++		  gold_assert(os->address() == 0
++			      && !os->is_offset_valid()
++			      && !os->is_data_size_valid());
++		  os->reset_address_and_file_offset();
++		}
++	    }
++
  	  *output_section_slot = os;
  	  return os;
-@@ -528,7 +537,8 @@ Layout::choose_output_section(const Relobj* relobj, const char* name,
+ 	}
+@@ -528,7 +580,9 @@ Layout::choose_output_section(const Relobj* relobj, const char* name,
  
    // Find or make the output section.  The output section is selected
    // based on the section name, type, and flags.
 -  return this->get_output_section(name, name_key, type, flags);
 +  return this->get_output_section(name, name_key, type, flags, is_interp,
-+				  is_dynamic_linker_section);
++				  is_dynamic_linker_section, is_relro,
++				  is_last_relro, is_first_non_relro);
  }
  
  // Return the output section to use for input section SHNDX, with name
-@@ -561,12 +571,13 @@ Layout::layout(Sized_relobj<size, big_endian>* object, unsigned int shndx,
+@@ -561,12 +615,14 @@ Layout::layout(Sized_relobj<size, big_endian>* object, unsigned int shndx,
      {
        name = this->namepool_.add(name, true, NULL);
        os = this->make_output_section(name, shdr.get_sh_type(),
 -				     shdr.get_sh_flags());
-+				     shdr.get_sh_flags(), false, false);
++				     shdr.get_sh_flags(), false, false,
++				     false, false, false);
      }
    else
      {
        os = this->choose_output_section(object, name, shdr.get_sh_type(),
 -				       shdr.get_sh_flags(), true);
 +				       shdr.get_sh_flags(), true, false,
-+				       false);
++				       false, false, false, false);
        if (os == NULL)
  	return NULL;
      }
-@@ -617,7 +628,7 @@ Layout::layout_reloc(Sized_relobj<size, big_endian>* object,
+@@ -617,7 +673,8 @@ Layout::layout_reloc(Sized_relobj<size, big_endian>* object,
    Output_section* os = this->choose_output_section(object, name.c_str(),
  						   sh_type,
  						   shdr.get_sh_flags(),
 -						   false);
++						   false, false, false,
 +						   false, false, false);
  
    os->set_should_link_to_symtab();
    os->set_info_section(data_section);
-@@ -664,7 +675,8 @@ Layout::layout_group(Symbol_table* symtab,
+@@ -664,7 +721,9 @@ Layout::layout_group(Symbol_table* symtab,
    group_section_name = this->namepool_.add(group_section_name, true, NULL);
    Output_section* os = this->make_output_section(group_section_name,
  						 elfcpp::SHT_GROUP,
 -						 shdr.get_sh_flags());
 +						 shdr.get_sh_flags(),
++						 false, false, false,
 +						 false, false);
  
    // We need to find a symbol with the signature in the symbol table.
    // If we don't find one now, we need to look again later.
-@@ -718,7 +730,7 @@ Layout::layout_eh_frame(Sized_relobj<size, big_endian>* object,
+@@ -718,7 +777,8 @@ Layout::layout_eh_frame(Sized_relobj<size, big_endian>* object,
  						   name,
  						   elfcpp::SHT_PROGBITS,
  						   elfcpp::SHF_ALLOC,
 -						   false);
++						   false, false, false,
 +						   false, false, false);
    if (os == NULL)
      return NULL;
  
-@@ -734,7 +746,7 @@ Layout::layout_eh_frame(Sized_relobj<size, big_endian>* object,
+@@ -734,7 +794,8 @@ Layout::layout_eh_frame(Sized_relobj<size, big_endian>* object,
  					".eh_frame_hdr",
  					elfcpp::SHT_PROGBITS,
  					elfcpp::SHF_ALLOC,
 -					false);
++					false, false, false,
 +					false, false, false);
  
  	  if (hdr_os != NULL)
  	    {
-@@ -749,7 +761,7 @@ Layout::layout_eh_frame(Sized_relobj<size, big_endian>* object,
+@@ -749,7 +810,7 @@ Layout::layout_eh_frame(Sized_relobj<size, big_endian>* object,
  		  Output_segment* hdr_oseg;
  		  hdr_oseg = this->make_output_segment(elfcpp::PT_GNU_EH_FRAME,
  						       elfcpp::PF_R);
@@ -13679,39 +14147,46 @@ index 028703a..77244ff 100644
  		}
  
  	      this->eh_frame_data_->set_eh_frame_hdr(hdr_posd);
-@@ -800,10 +812,12 @@ Layout::layout_eh_frame(Sized_relobj<size, big_endian>* object,
+@@ -800,10 +861,16 @@ Layout::layout_eh_frame(Sized_relobj<size, big_endian>* object,
  Output_section*
  Layout::add_output_section_data(const char* name, elfcpp::Elf_Word type,
  				elfcpp::Elf_Xword flags,
 -				Output_section_data* posd)
 +				Output_section_data* posd,
-+				bool is_dynamic_linker_section)
++				bool is_dynamic_linker_section,
++				bool is_relro, bool is_last_relro,
++				bool is_first_non_relro)
  {
    Output_section* os = this->choose_output_section(NULL, name, type, flags,
 -						   false);
 +						   false, false,
-+						   is_dynamic_linker_section);
++						   is_dynamic_linker_section,
++						   is_relro, is_last_relro,
++						   is_first_non_relro);
    if (os != NULL)
      os->add_output_section_data(posd);
    return os;
-@@ -838,11 +852,14 @@ is_compressible_debug_section(const char* secname)
+@@ -838,11 +905,17 @@ is_compressible_debug_section(const char* secname)
  }
  
  // Make a new Output_section, and attach it to segments as
 -// appropriate.
 +// appropriate.  IS_INTERP is true if this is the .interp section.
 +// IS_DYNAMIC_LINKER_SECTION is true if this section is used by the
-+// dynamic linker.
++// dynamic linker.  IS_RELRO is true if this is a relro section.
++// IS_LAST_RELRO is true if this is the last relro section.
++// IS_FIRST_NON_RELRO is true if this is the first non relro section.
  
  Output_section*
  Layout::make_output_section(const char* name, elfcpp::Elf_Word type,
 -			    elfcpp::Elf_Xword flags)
 +			    elfcpp::Elf_Xword flags, bool is_interp,
-+			    bool is_dynamic_linker_section)
++			    bool is_dynamic_linker_section, bool is_relro,
++			    bool is_last_relro, bool is_first_non_relro)
  {
    Output_section* os;
    if ((flags & elfcpp::SHF_ALLOC) == 0
-@@ -850,7 +867,6 @@ Layout::make_output_section(const char* name, elfcpp::Elf_Word type,
+@@ -850,7 +923,6 @@ Layout::make_output_section(const char* name, elfcpp::Elf_Word type,
        && is_compressible_debug_section(name))
      os = new Output_compressed_section(&parameters->options(), name, type,
  				       flags);
@@ -13719,7 +14194,7 @@ index 028703a..77244ff 100644
    else if ((flags & elfcpp::SHF_ALLOC) == 0
             && parameters->options().strip_debug_non_line()
             && strcmp(".debug_abbrev", name) == 0)
-@@ -876,6 +892,11 @@ Layout::make_output_section(const char* name, elfcpp::Elf_Word type,
+@@ -876,6 +948,17 @@ Layout::make_output_section(const char* name, elfcpp::Elf_Word type,
        os = target->make_output_section(name, type, flags);
      }
  
@@ -13727,11 +14202,17 @@ index 028703a..77244ff 100644
 +    os->set_is_interp();
 +  if (is_dynamic_linker_section)
 +    os->set_is_dynamic_linker_section();
++  if (is_relro)
++    os->set_is_relro();
++  if (is_last_relro)
++    os->set_is_last_relro();
++  if (is_first_non_relro)
++    os->set_is_first_non_relro();
 +
    parameters->target().new_output_section(os);
  
    this->section_list_.push_back(os);
-@@ -971,6 +992,10 @@ Layout::attach_allocated_section_to_segment(Output_section* os)
+@@ -971,6 +1054,10 @@ Layout::attach_allocated_section_to_segment(Output_section* os)
  
    elfcpp::Elf_Word seg_flags = Layout::section_flags_to_segment(flags);
  
@@ -13742,7 +14223,7 @@ index 028703a..77244ff 100644
    // In general the only thing we really care about for PT_LOAD
    // segments is whether or not they are writable, so that is how we
    // search for them.  Large data sections also go into their own
-@@ -998,7 +1023,18 @@ Layout::attach_allocated_section_to_segment(Output_section* os)
+@@ -998,7 +1085,18 @@ Layout::attach_allocated_section_to_segment(Output_section* os)
        if (os->is_large_data_section() && !(*p)->is_large_data_segment())
  	continue;
  
@@ -13762,7 +14243,7 @@ index 028703a..77244ff 100644
        break;
      }
  
-@@ -1008,7 +1044,9 @@ Layout::attach_allocated_section_to_segment(Output_section* os)
+@@ -1008,7 +1106,9 @@ Layout::attach_allocated_section_to_segment(Output_section* os)
                                                         seg_flags);
        if (os->is_large_data_section())
  	oseg->set_is_large_data_segment();
@@ -13773,7 +14254,7 @@ index 028703a..77244ff 100644
      }
  
    // If we see a loadable SHT_NOTE section, we create a PT_NOTE
-@@ -1024,7 +1062,7 @@ Layout::attach_allocated_section_to_segment(Output_section* os)
+@@ -1024,7 +1124,7 @@ Layout::attach_allocated_section_to_segment(Output_section* os)
                && (((*p)->flags() & elfcpp::PF_W)
                    == (seg_flags & elfcpp::PF_W)))
              {
@@ -13782,7 +14263,7 @@ index 028703a..77244ff 100644
                break;
              }
          }
-@@ -1033,7 +1071,7 @@ Layout::attach_allocated_section_to_segment(Output_section* os)
+@@ -1033,7 +1133,7 @@ Layout::attach_allocated_section_to_segment(Output_section* os)
          {
            Output_segment* oseg = this->make_output_segment(elfcpp::PT_NOTE,
                                                             seg_flags);
@@ -13791,7 +14272,7 @@ index 028703a..77244ff 100644
          }
      }
  
-@@ -1043,7 +1081,7 @@ Layout::attach_allocated_section_to_segment(Output_section* os)
+@@ -1043,7 +1143,7 @@ Layout::attach_allocated_section_to_segment(Output_section* os)
      {
        if (this->tls_segment_ == NULL)
  	this->make_output_segment(elfcpp::PT_TLS, seg_flags);
@@ -13800,7 +14281,7 @@ index 028703a..77244ff 100644
      }
  
    // If -z relro is in effect, and we see a relro section, we create a
-@@ -1053,7 +1091,7 @@ Layout::attach_allocated_section_to_segment(Output_section* os)
+@@ -1053,19 +1153,27 @@ Layout::attach_allocated_section_to_segment(Output_section* os)
        gold_assert(seg_flags == (elfcpp::PF_R | elfcpp::PF_W));
        if (this->relro_segment_ == NULL)
  	this->make_output_segment(elfcpp::PT_GNU_RELRO, seg_flags);
@@ -13809,23 +14290,36 @@ index 028703a..77244ff 100644
      }
  }
  
-@@ -1064,7 +1102,8 @@ Layout::make_output_section_for_script(const char* name)
+ // Make an output section for a script.
+ 
+ Output_section*
+-Layout::make_output_section_for_script(const char* name)
++Layout::make_output_section_for_script(
++    const char* name,
++    Script_sections::Section_type section_type)
  {
    name = this->namepool_.add(name, false, NULL);
++  elfcpp::Elf_Xword sh_flags = elfcpp::SHF_ALLOC;
++  if (section_type == Script_sections::ST_NOLOAD)
++    sh_flags = 0;
    Output_section* os = this->make_output_section(name, elfcpp::SHT_PROGBITS,
 -						 elfcpp::SHF_ALLOC);
-+						 elfcpp::SHF_ALLOC, false,
-+						 false);
++						 sh_flags, false,
++						 false, false, false, false);
    os->set_found_in_sections_clause();
++  if (section_type == Script_sections::ST_NOLOAD)
++    os->set_is_noload();
    return os;
  }
-@@ -1134,10 +1173,11 @@ Layout::create_initial_dynamic_sections(Symbol_table* symtab)
+ 
+@@ -1134,10 +1242,11 @@ Layout::create_initial_dynamic_sections(Symbol_table* symtab)
  						       elfcpp::SHT_DYNAMIC,
  						       (elfcpp::SHF_ALLOC
  							| elfcpp::SHF_WRITE),
 -						       false);
-+						       false, false, true);
-   this->dynamic_section_->set_is_relro();
+-  this->dynamic_section_->set_is_relro();
++						       false, false, true,
++						       true, false, false);
  
 -  symtab->define_in_output_data("_DYNAMIC", NULL, this->dynamic_section_, 0, 0,
 +  symtab->define_in_output_data("_DYNAMIC", NULL, Symbol_table::PREDEFINED,
@@ -13833,7 +14327,7 @@ index 028703a..77244ff 100644
  				elfcpp::STT_OBJECT, elfcpp::STB_LOCAL,
  				elfcpp::STV_HIDDEN, 0, false, false);
  
-@@ -1158,19 +1198,17 @@ Layout::define_section_symbols(Symbol_table* symtab)
+@@ -1158,19 +1267,17 @@ Layout::define_section_symbols(Symbol_table* symtab)
         ++p)
      {
        const char* const name = (*p)->name();
@@ -13859,7 +14353,7 @@ index 028703a..77244ff 100644
  					*p,
  					0, // value
  					0, // symsize
-@@ -1183,6 +1221,7 @@ Layout::define_section_symbols(Symbol_table* symtab)
+@@ -1183,6 +1290,7 @@ Layout::define_section_symbols(Symbol_table* symtab)
  
  	  symtab->define_in_output_data(stop_name.c_str(),
  					NULL, // version
@@ -13867,7 +14361,7 @@ index 028703a..77244ff 100644
  					*p,
  					0, // value
  					0, // symsize
-@@ -1323,8 +1362,15 @@ Layout::clean_up_after_relaxation()
+@@ -1323,8 +1431,15 @@ Layout::clean_up_after_relaxation()
         p != this->section_list_.end();
         ++p)
      {
@@ -13884,7 +14378,7 @@ index 028703a..77244ff 100644
      }
    
    // Reset special output object address and file offsets.
-@@ -1425,6 +1471,14 @@ Layout::relaxation_loop_body(
+@@ -1425,6 +1540,14 @@ Layout::relaxation_loop_body(
  	      || load_seg != NULL
  	      || this->script_options_->saw_sections_clause());
  
@@ -13899,7 +14393,7 @@ index 028703a..77244ff 100644
    // Lay out the segment headers.
    if (!parameters->options().relocatable())
      {
-@@ -1509,7 +1563,7 @@ off_t
+@@ -1509,7 +1632,7 @@ off_t
  Layout::finalize(const Input_objects* input_objects, Symbol_table* symtab,
  		 Target* target, const Task* task)
  {
@@ -13908,161 +14402,205 @@ index 028703a..77244ff 100644
  
    this->count_local_symbols(task, input_objects);
  
-@@ -1732,7 +1786,8 @@ Layout::create_note(const char* name, int note_type,
+@@ -1732,7 +1855,8 @@ Layout::create_note(const char* name, int note_type,
      flags = elfcpp::SHF_ALLOC;
    Output_section* os = this->choose_output_section(NULL, section_name,
  						   elfcpp::SHT_NOTE,
 -						   flags, false);
 +						   flags, false, false,
-+						   false);
++						   false, false, false, false);
    if (os == NULL)
      return NULL;
  
-@@ -1811,7 +1866,8 @@ Layout::create_executable_stack_info()
+@@ -1811,7 +1935,8 @@ Layout::create_executable_stack_info()
        elfcpp::Elf_Xword flags = 0;
        if (is_stack_executable)
  	flags |= elfcpp::SHF_EXECINSTR;
 -      this->make_output_section(name, elfcpp::SHT_PROGBITS, flags);
 +      this->make_output_section(name, elfcpp::SHT_PROGBITS, flags, false,
-+				false);
++				false, false, false, false);
      }
    else
      {
-@@ -1971,7 +2027,8 @@ Layout::create_incremental_info_sections()
+@@ -1971,7 +2096,8 @@ Layout::create_incremental_info_sections()
      this->namepool_.add(".gnu_incremental_inputs", false, NULL);
    Output_section* inputs_os =
      this->make_output_section(incremental_inputs_name,
 -			      elfcpp::SHT_GNU_INCREMENTAL_INPUTS, 0);
 +			      elfcpp::SHT_GNU_INCREMENTAL_INPUTS, 0,
-+			      false, false);
++			      false, false, false, false, false);
    Output_section_data* posd =
        this->incremental_inputs_->create_incremental_inputs_section_data();
    inputs_os->add_output_section_data(posd);
-@@ -1981,7 +2038,7 @@ Layout::create_incremental_info_sections()
+@@ -1981,7 +2107,8 @@ Layout::create_incremental_info_sections()
      this->namepool_.add(".gnu_incremental_strtab", false, NULL);
    Output_section* strtab_os = this->make_output_section(incremental_strtab_name,
                                                          elfcpp::SHT_STRTAB,
 -                                                        0);
-+                                                        0, false, false);
++                                                        0, false, false,
++							false, false, false);
    Output_data_strtab* strtab_data =
      new Output_data_strtab(this->incremental_inputs_->get_stringpool());
    strtab_os->add_output_section_data(strtab_data);
-@@ -2593,7 +2650,7 @@ Layout::create_symtab_sections(const Input_objects* input_objects,
+@@ -2167,6 +2294,10 @@ Layout::set_segment_offsets(const Target* target, Output_segment* load_seg,
+ 	}
+     }
+ 
++  unsigned int increase_relro = this->increase_relro_;
++  if (this->script_options_->saw_sections_clause())
++    increase_relro = 0;
++
+   const bool check_sections = parameters->options().check_sections();
+   Output_segment* last_load_segment = NULL;
+ 
+@@ -2255,6 +2386,7 @@ Layout::set_segment_offsets(const Target* target, Output_segment* load_seg,
+ 
+ 	  unsigned int shndx_hold = *pshndx;
+ 	  uint64_t new_addr = (*p)->set_section_addresses(this, false, addr,
++							  increase_relro,
+                                                           &off, pshndx);
+ 
+ 	  // Now that we know the size of this segment, we may be able
+@@ -2281,6 +2413,7 @@ Layout::set_segment_offsets(const Target* target, Output_segment* load_seg,
+ 		  off = orig_off + ((addr - orig_addr) & (abi_pagesize - 1));
+ 		  off = align_file_offset(off, addr, abi_pagesize);
+ 		  new_addr = (*p)->set_section_addresses(this, true, addr,
++							 increase_relro,
+                                                          &off, pshndx);
+ 		}
+ 	    }
+@@ -2318,7 +2451,9 @@ Layout::set_segment_offsets(const Target* target, Output_segment* load_seg,
+        ++p)
+     {
+       if ((*p)->type() != elfcpp::PT_LOAD)
+-	(*p)->set_offset();
++	(*p)->set_offset((*p)->type() == elfcpp::PT_GNU_RELRO
++			 ? increase_relro
++			 : 0);
+     }
+ 
+   // Set the TLS offsets for each section in the PT_TLS segment.
+@@ -2593,7 +2728,8 @@ Layout::create_symtab_sections(const Input_objects* input_objects,
        const char* symtab_name = this->namepool_.add(".symtab", false, NULL);
        Output_section* osymtab = this->make_output_section(symtab_name,
  							  elfcpp::SHT_SYMTAB,
 -							  0);
-+							  0, false, false);
++							  0, false, false,
++							  false, false, false);
        this->symtab_section_ = osymtab;
  
        Output_section_data* pos = new Output_data_fixed_space(off - startoff,
-@@ -2614,7 +2671,8 @@ Layout::create_symtab_sections(const Input_objects* input_objects,
+@@ -2614,7 +2750,8 @@ Layout::create_symtab_sections(const Input_objects* input_objects,
  							       false, NULL);
  	  Output_section* osymtab_xindex =
  	    this->make_output_section(symtab_xindex_name,
 -				      elfcpp::SHT_SYMTAB_SHNDX, 0);
 +				      elfcpp::SHT_SYMTAB_SHNDX, 0, false,
-+				      false);
++				      false, false, false, false);
  
  	  size_t symcount = (off - startoff) / symsize;
  	  this->symtab_xindex_ = new Output_symtab_xindex(symcount);
-@@ -2636,7 +2694,7 @@ Layout::create_symtab_sections(const Input_objects* input_objects,
+@@ -2636,7 +2773,8 @@ Layout::create_symtab_sections(const Input_objects* input_objects,
        const char* strtab_name = this->namepool_.add(".strtab", false, NULL);
        Output_section* ostrtab = this->make_output_section(strtab_name,
  							  elfcpp::SHT_STRTAB,
 -							  0);
-+							  0, false, false);
++							  0, false, false,
++							  false, false, false);
  
        Output_section_data* pstr = new Output_data_strtab(&this->sympool_);
        ostrtab->add_output_section_data(pstr);
-@@ -2663,7 +2721,8 @@ Layout::create_shstrtab()
+@@ -2663,7 +2801,9 @@ Layout::create_shstrtab()
  
    const char* name = this->namepool_.add(".shstrtab", false, NULL);
  
 -  Output_section* os = this->make_output_section(name, elfcpp::SHT_STRTAB, 0);
 +  Output_section* os = this->make_output_section(name, elfcpp::SHT_STRTAB, 0,
-+						 false, false);
++						 false, false, false, false,
++						 false);
  
    // We can't write out this section until we've set all the section
    // names, and we don't set the names of compressed output sections
-@@ -2776,7 +2835,7 @@ Layout::create_dynamic_symtab(const Input_objects* input_objects,
+@@ -2776,7 +2916,8 @@ Layout::create_dynamic_symtab(const Input_objects* input_objects,
    Output_section* dynsym = this->choose_output_section(NULL, ".dynsym",
  						       elfcpp::SHT_DYNSYM,
  						       elfcpp::SHF_ALLOC,
 -						       false);
-+						       false, false, true);
++						       false, false, true,
++						       false, false, false);
  
    Output_section_data* odata = new Output_data_fixed_space(index * symsize,
  							   align,
-@@ -2806,7 +2865,7 @@ Layout::create_dynamic_symtab(const Input_objects* input_objects,
+@@ -2806,7 +2947,7 @@ Layout::create_dynamic_symtab(const Input_objects* input_objects,
  	this->choose_output_section(NULL, ".dynsym_shndx",
  				    elfcpp::SHT_SYMTAB_SHNDX,
  				    elfcpp::SHF_ALLOC,
 -				    false);
-+				    false, false, true);
++				    false, false, true, false, false, false);
  
        this->dynsym_xindex_ = new Output_symtab_xindex(index);
  
-@@ -2829,7 +2888,7 @@ Layout::create_dynamic_symtab(const Input_objects* input_objects,
+@@ -2829,7 +2970,8 @@ Layout::create_dynamic_symtab(const Input_objects* input_objects,
    Output_section* dynstr = this->choose_output_section(NULL, ".dynstr",
  						       elfcpp::SHT_STRTAB,
  						       elfcpp::SHF_ALLOC,
 -						       false);
-+						       false, false, true);
++						       false, false, true,
++						       false, false, false);
  
    Output_section_data* strdata = new Output_data_strtab(&this->dynpool_);
    dynstr->add_output_section_data(strdata);
-@@ -2855,7 +2914,7 @@ Layout::create_dynamic_symtab(const Input_objects* input_objects,
+@@ -2855,6 +2997,8 @@ Layout::create_dynamic_symtab(const Input_objects* input_objects,
        Output_section* hashsec = this->choose_output_section(NULL, ".hash",
  							    elfcpp::SHT_HASH,
  							    elfcpp::SHF_ALLOC,
--							    false);
-+							    false, false, true);
++							    false, false, true,
++							    false, false,
+ 							    false);
  
        Output_section_data* hashdata = new Output_data_const_buffer(phash,
- 								   hashlen,
-@@ -2880,7 +2939,7 @@ Layout::create_dynamic_symtab(const Input_objects* input_objects,
+@@ -2880,6 +3024,8 @@ Layout::create_dynamic_symtab(const Input_objects* input_objects,
        Output_section* hashsec = this->choose_output_section(NULL, ".gnu.hash",
  							    elfcpp::SHT_GNU_HASH,
  							    elfcpp::SHF_ALLOC,
--							    false);
-+							    false, false, true);
++							    false, false, true,
++							    false, false,
+ 							    false);
  
        Output_section_data* hashdata = new Output_data_const_buffer(phash,
- 								   hashlen,
-@@ -2978,7 +3037,7 @@ Layout::sized_create_version_sections(
+@@ -2978,7 +3124,8 @@ Layout::sized_create_version_sections(
    Output_section* vsec = this->choose_output_section(NULL, ".gnu.version",
  						     elfcpp::SHT_GNU_versym,
  						     elfcpp::SHF_ALLOC,
 -						     false);
-+						     false, false, true);
++						     false, false, true,
++						     false, false, false);
  
    unsigned char* vbuf;
    unsigned int vsize;
-@@ -3003,7 +3062,7 @@ Layout::sized_create_version_sections(
+@@ -3003,6 +3150,7 @@ Layout::sized_create_version_sections(
        vdsec= this->choose_output_section(NULL, ".gnu.version_d",
  					 elfcpp::SHT_GNU_verdef,
  					 elfcpp::SHF_ALLOC,
--					 false);
-+					 false, false, true);
++					 false, false, true, false, false,
+ 					 false);
  
        unsigned char* vdbuf;
-       unsigned int vdsize;
-@@ -3028,7 +3087,7 @@ Layout::sized_create_version_sections(
+@@ -3028,6 +3176,7 @@ Layout::sized_create_version_sections(
        vnsec = this->choose_output_section(NULL, ".gnu.version_r",
  					  elfcpp::SHT_GNU_verneed,
  					  elfcpp::SHF_ALLOC,
--					  false);
-+					  false, false, true);
++					  false, false, true, false, false,
+ 					  false);
  
        unsigned char* vnbuf;
-       unsigned int vnsize;
-@@ -3068,14 +3127,14 @@ Layout::create_interp(const Target* target)
+@@ -3068,14 +3217,15 @@ Layout::create_interp(const Target* target)
    Output_section* osec = this->choose_output_section(NULL, ".interp",
  						     elfcpp::SHT_PROGBITS,
  						     elfcpp::SHF_ALLOC,
 -						     false);
-+						     false, true, true);
++						     false, true, true,
++						     false, false, false);
    osec->add_output_section_data(odata);
  
    if (!this->script_options_->saw_phdrs_clause())
@@ -14074,7 +14612,7 @@ index 028703a..77244ff 100644
      }
  }
  
-@@ -3091,7 +3150,8 @@ Layout::finish_dynamic_section(const Input_objects* input_objects,
+@@ -3091,7 +3241,8 @@ Layout::finish_dynamic_section(const Input_objects* input_objects,
  						       (elfcpp::PF_R
  							| elfcpp::PF_W));
        oseg->add_output_section(this->dynamic_section_,
@@ -14084,7 +14622,7 @@ index 028703a..77244ff 100644
      }
  
    Output_data_dynamic* const odyn = this->dynamic_data_;
-@@ -3305,9 +3365,9 @@ const Layout::Section_name_mapping Layout::section_name_mapping[] =
+@@ -3305,9 +3456,9 @@ const Layout::Section_name_mapping Layout::section_name_mapping[] =
    MAPPING_INIT(".gnu.linkonce.lr.", ".lrodata"),
    MAPPING_INIT(".gnu.linkonce.l.", ".ldata"),
    MAPPING_INIT(".gnu.linkonce.lb.", ".lbss"),
@@ -14097,32 +14635,54 @@ index 028703a..77244ff 100644
  };
  #undef MAPPING_INIT
 diff --git a/gold/layout.h b/gold/layout.h
-index 675c658..71afa96 100644
+index 675c658..c509571 100644
 --- a/gold/layout.h
 +++ b/gold/layout.h
-@@ -360,11 +360,13 @@ class Layout
+@@ -360,11 +360,23 @@ class Layout
    layout_gnu_stack(bool seen_gnu_stack, uint64_t gnu_stack_flags);
  
    // Add an Output_section_data to the layout.  This is used for
 -  // special sections like the GOT section.
 +  // special sections like the GOT section.  IS_DYNAMIC_LINKER_SECTION
 +  // is true for sections which are used by the dynamic linker, such
-+  // as dynamic reloc sections.
++  // as dynamic reloc sections.  IS_RELRO is true for relro sections.
++  // IS_LAST_RELRO is true for the last relro section.
++  // IS_FIRST_NON_RELRO is true for the first section after the relro
++  // sections.
    Output_section*
    add_output_section_data(const char* name, elfcpp::Elf_Word type,
  			  elfcpp::Elf_Xword flags,
 -			  Output_section_data*);
-+			  Output_section_data*, bool is_dynamic_linker_section);
++			  Output_section_data*, bool is_dynamic_linker_section,
++			  bool is_relro, bool is_last_relro,
++			  bool is_first_non_relro);
++
++  // Increase the size of the relro segment by this much.
++  void
++  increase_relro(unsigned int s)
++  { this->increase_relro_ += s; }
  
    // Create dynamic sections if necessary.
    void
-@@ -745,18 +747,21 @@ class Layout
+@@ -574,7 +586,8 @@ class Layout
+ 
+   // Make a section for a linker script to hold data.
+   Output_section*
+-  make_output_section_for_script(const char* name);
++  make_output_section_for_script(const char* name,
++				 Script_sections::Section_type section_type);
+ 
+   // Make a segment.  This is used by the linker script code.
+   Output_segment*
+@@ -745,18 +758,25 @@ class Layout
    // Return the output section for NAME, TYPE and FLAGS.
    Output_section*
    get_output_section(const char* name, Stringpool::Key name_key,
 -		     elfcpp::Elf_Word type, elfcpp::Elf_Xword flags);
 +		     elfcpp::Elf_Word type, elfcpp::Elf_Xword flags,
-+		     bool is_interp, bool is_dynamic_linker_section);
++		     bool is_interp, bool is_dynamic_linker_section,
++		     bool is_relro, bool is_last_relro,
++		     bool is_first_non_relro);
  
    // Choose the output section for NAME in RELOBJ.
    Output_section*
@@ -14130,17 +14690,29 @@ index 675c658..71afa96 100644
  			elfcpp::Elf_Word type, elfcpp::Elf_Xword flags,
 -			bool is_input_section);
 +			bool is_input_section, bool is_interp,
-+			bool is_dynamic_linker_section);
++			bool is_dynamic_linker_section, bool is_relro,
++			bool is_last_relro, bool is_first_non_relro);
  
    // Create a new Output_section.
    Output_section*
    make_output_section(const char* name, elfcpp::Elf_Word type,
 -		      elfcpp::Elf_Xword flags);
 +		      elfcpp::Elf_Xword flags, bool is_interp,
-+		      bool is_dynamic_linker_section);
++		      bool is_dynamic_linker_section, bool is_relro,
++		      bool is_last_relro, bool is_first_non_relro);
  
    // Attach a section to a segment.
    void
+@@ -932,6 +952,9 @@ class Layout
+   Output_segment* tls_segment_;
+   // A pointer to the PT_GNU_RELRO segment if there is one.
+   Output_segment* relro_segment_;
++  // A backend may increase the size of the PT_GNU_RELRO segment if
++  // there is one.  This is the amount to increase it by.
++  unsigned int increase_relro_;
+   // The SHT_SYMTAB output section.
+   Output_section* symtab_section_;
+   // The SHT_SYMTAB_SHNDX for the regular symbol table if there is one.
 diff --git a/gold/object.cc b/gold/object.cc
 index e9826b0..66e08a7 100644
 --- a/gold/object.cc
@@ -14736,7 +15308,7 @@ index cbb45b5..95979e5 100644
  
  // The position-dependent options.  We use this to store the state of
 diff --git a/gold/output.cc b/gold/output.cc
-index e2d7585..8a0e9e7 100644
+index e2d7585..73bb7e5 100644
 --- a/gold/output.cc
 +++ b/gold/output.cc
 @@ -459,10 +459,7 @@ Output_file_header::do_sized_write(Output_file* of)
@@ -14751,8 +15323,12 @@ index e2d7585..8a0e9e7 100644
    oehdr.put_e_ehsize(elfcpp::Elf_sizes<size>::ehdr_size);
  
    if (this->segment_header_ == NULL)
-@@ -1800,13 +1797,17 @@ Output_section::Output_section(const char* name, elfcpp::Elf_Word type,
+@@ -1798,15 +1795,22 @@ Output_section::Output_section(const char* name, elfcpp::Elf_Word type,
+     attached_input_sections_are_sorted_(false),
+     is_relro_(false),
      is_relro_local_(false),
++    is_last_relro_(false),
++    is_first_non_relro_(false),
      is_small_section_(false),
      is_large_section_(false),
 +    is_interp_(false),
@@ -14760,6 +15336,7 @@ index e2d7585..8a0e9e7 100644
 +    generate_code_fills_at_write_(false),
 +    is_entsize_zero_(false),
 +    section_offsets_need_adjustment_(false),
++    is_noload_(false),
      tls_offset_(0),
      checkpoint_(NULL),
      merge_section_map_(),
@@ -14771,7 +15348,7 @@ index e2d7585..8a0e9e7 100644
  {
    // An unallocated section has no address.  Forcing this means that
    // we don't need special treatment for symbols defined in debug
-@@ -1825,10 +1826,15 @@ Output_section::~Output_section()
+@@ -1825,10 +1829,15 @@ Output_section::~Output_section()
  void
  Output_section::set_entsize(uint64_t v)
  {
@@ -14790,7 +15367,7 @@ index e2d7585..8a0e9e7 100644
  }
  
  // Add the input section SHNDX, with header SHDR, named SECNAME, in
-@@ -1864,8 +1870,6 @@ Output_section::add_input_section(Sized_relobj<size, big_endian>* object,
+@@ -1864,8 +1873,6 @@ Output_section::add_input_section(Sized_relobj<size, big_endian>* object,
      this->addralign_ = addralign;
  
    typename elfcpp::Elf_types<size>::Elf_WXword sh_flags = shdr.get_sh_flags();
@@ -14799,7 +15376,7 @@ index e2d7585..8a0e9e7 100644
    uint64_t entsize = shdr.get_sh_entsize();
  
    // .debug_str is a mergeable string section, but is not always so
-@@ -1876,6 +1880,9 @@ Output_section::add_input_section(Sized_relobj<size, big_endian>* object,
+@@ -1876,6 +1883,9 @@ Output_section::add_input_section(Sized_relobj<size, big_endian>* object,
        entsize = 1;
      }
  
@@ -14809,7 +15386,7 @@ index e2d7585..8a0e9e7 100644
    // If this is a SHF_MERGE section, we pass all the input sections to
    // a Output_data_merge.  We don't try to handle relocations for such
    // a section.  We don't try to handle empty merge sections--they
-@@ -1977,8 +1984,8 @@ Output_section::add_relaxed_input_section(Output_relaxed_input_section* poris)
+@@ -1977,8 +1987,8 @@ Output_section::add_relaxed_input_section(Output_relaxed_input_section* poris)
    this->add_output_section_data(&inp);
    if (this->is_relaxed_input_section_map_valid_)
      {
@@ -14820,7 +15397,7 @@ index e2d7585..8a0e9e7 100644
      }
  
    // For a relaxed section, we use the current data size.  Linker scripts
-@@ -2050,8 +2057,8 @@ Output_section::add_merge_input_section(Relobj* object, unsigned int shndx,
+@@ -2050,8 +2060,8 @@ Output_section::add_merge_input_section(Relobj* object, unsigned int shndx,
  		  && merge_section->addralign() == addralign);
  
        // Link input section to found merge section.
@@ -14831,7 +15408,7 @@ index e2d7585..8a0e9e7 100644
        return true;
      }
  
-@@ -2086,8 +2093,8 @@ Output_section::add_merge_input_section(Relobj* object, unsigned int shndx,
+@@ -2086,8 +2096,8 @@ Output_section::add_merge_input_section(Relobj* object, unsigned int shndx,
    // Add input section to new merge section and link input section to new
    // merge section in map.
    pomb->add_input_section(object, shndx);
@@ -14842,7 +15419,7 @@ index e2d7585..8a0e9e7 100644
  
    return true;
  }
-@@ -2106,15 +2113,15 @@ Output_section::build_relaxation_map(
+@@ -2106,15 +2116,15 @@ Output_section::build_relaxation_map(
        const Input_section& is(input_sections[i]);
        if (is.is_input_section() || is.is_relaxed_input_section())
  	{
@@ -14862,7 +15439,7 @@ index e2d7585..8a0e9e7 100644
  
  void
  Output_section::convert_input_sections_in_list_to_relaxed_sections(
-@@ -2125,8 +2132,8 @@ Output_section::convert_input_sections_in_list_to_relaxed_sections(
+@@ -2125,8 +2135,8 @@ Output_section::convert_input_sections_in_list_to_relaxed_sections(
    for (size_t i = 0; i < relaxed_sections.size(); ++i)
      {
        Output_relaxed_input_section* poris = relaxed_sections[i];
@@ -14873,7 +15450,7 @@ index e2d7585..8a0e9e7 100644
        gold_assert(p != map.end());
        gold_assert((*input_sections)[p->second].is_input_section());
        (*input_sections)[p->second] = Input_section(poris);
-@@ -2182,6 +2189,15 @@ Output_section::convert_input_sections_to_relaxed_sections(
+@@ -2182,6 +2192,15 @@ Output_section::convert_input_sections_to_relaxed_sections(
  	    relaxed_sections,
  	    map,
  	    &this->input_sections_);
@@ -14889,7 +15466,7 @@ index e2d7585..8a0e9e7 100644
  }
  
  // Update the output section flags based on input section flags.
-@@ -2200,6 +2216,22 @@ Output_section::update_flags_for_input_section(elfcpp::Elf_Xword flags)
+@@ -2200,6 +2219,22 @@ Output_section::update_flags_for_input_section(elfcpp::Elf_Xword flags)
  		   & (elfcpp::SHF_WRITE
  		      | elfcpp::SHF_ALLOC
  		      | elfcpp::SHF_EXECINSTR));
@@ -14912,7 +15489,7 @@ index e2d7585..8a0e9e7 100644
  }
  
  // Find the merge section into which an input section with index SHNDX in
-@@ -2209,9 +2241,9 @@ Output_section_data*
+@@ -2209,9 +2244,9 @@ Output_section_data*
  Output_section::find_merge_section(const Relobj* object,
  				   unsigned int shndx) const
  {
@@ -14924,7 +15501,7 @@ index e2d7585..8a0e9e7 100644
    if (p != this->merge_section_map_.end())
      {
        Output_section_data* posd = p->second;
-@@ -2225,7 +2257,7 @@ Output_section::find_merge_section(const Relobj* object,
+@@ -2225,7 +2260,7 @@ Output_section::find_merge_section(const Relobj* object,
  // Find an relaxed input section corresponding to an input section
  // in OBJECT with index SHNDX.
  
@@ -14933,7 +15510,7 @@ index e2d7585..8a0e9e7 100644
  Output_section::find_relaxed_input_section(const Relobj* object,
  					   unsigned int shndx) const
  {
-@@ -2240,16 +2272,16 @@ Output_section::find_relaxed_input_section(const Relobj* object,
+@@ -2240,16 +2275,16 @@ Output_section::find_relaxed_input_section(const Relobj* object,
  	   ++p)
  	if (p->is_relaxed_input_section())
  	  {
@@ -14955,7 +15532,19 @@ index e2d7585..8a0e9e7 100644
    if (p != this->relaxed_input_section_map_.end())
      return p->second;
    else
-@@ -2923,12 +2955,12 @@ Output_section::get_input_sections(
+@@ -2450,8 +2485,9 @@ Output_section::do_reset_address_and_file_offset()
+ {
+   // An unallocated section has no address.  Forcing this means that
+   // we don't need special treatment for symbols defined in debug
+-  // sections.  We do the same in the constructor.
+-  if ((this->flags_ & elfcpp::SHF_ALLOC) == 0)
++  // sections.  We do the same in the constructor.  This does not
++  // apply to NOLOAD sections though.
++  if (((this->flags_ & elfcpp::SHF_ALLOC) == 0) && !this->is_noload_)
+      this->set_address(0);
+ 
+   for (Input_section_list::iterator p = this->input_sections_.begin();
+@@ -2923,12 +2959,12 @@ Output_section::get_input_sections(
    return data_size;
  }
  
@@ -14972,7 +15561,7 @@ index e2d7585..8a0e9e7 100644
  {
    if (addralign > this->addralign_)
      this->addralign_ = addralign;
-@@ -2947,7 +2979,7 @@ Output_section::add_input_section_for_script(const Simple_input_section& sis,
+@@ -2947,7 +2983,7 @@ Output_section::add_input_section_for_script(const Simple_input_section& sis,
    this->input_sections_.push_back(is);
  }
  
@@ -14981,7 +15570,7 @@ index e2d7585..8a0e9e7 100644
  
  void
  Output_section::save_states()
-@@ -2963,6 +2995,19 @@ Output_section::save_states()
+@@ -2963,6 +2999,19 @@ Output_section::save_states()
  }
  
  void
@@ -15001,7 +15590,7 @@ index e2d7585..8a0e9e7 100644
  Output_section::restore_states()
  {
    gold_assert(this->checkpoint_ != NULL);
-@@ -2996,6 +3041,29 @@ Output_section::restore_states()
+@@ -2996,6 +3045,29 @@ Output_section::restore_states()
    this->is_relaxed_input_section_map_valid_ = false;
  }
  
@@ -15031,7 +15620,7 @@ index e2d7585..8a0e9e7 100644
  // Print to the map file.
  
  void
-@@ -3039,20 +3107,24 @@ Output_segment::Output_segment(elfcpp::Elf_Word type, elfcpp::Elf_Word flags)
+@@ -3039,20 +3111,24 @@ Output_segment::Output_segment(elfcpp::Elf_Word type, elfcpp::Elf_Word flags)
      are_addresses_set_(false),
      is_large_data_segment_(false)
  {
@@ -15059,7 +15648,7 @@ index e2d7585..8a0e9e7 100644
  
    Output_segment::Output_data_list* pdl;
    if (os->type() == elfcpp::SHT_NOBITS)
-@@ -3060,6 +3132,10 @@ Output_segment::add_output_section(Output_section* os,
+@@ -3060,6 +3136,10 @@ Output_segment::add_output_section(Output_section* os,
    else
      pdl = &this->output_data_;
  
@@ -15070,7 +15659,7 @@ index e2d7585..8a0e9e7 100644
    // So that PT_NOTE segments will work correctly, we need to ensure
    // that all SHT_NOTE sections are adjacent.  This will normally
    // happen automatically, because all the SHT_NOTE input sections
-@@ -3068,11 +3144,6 @@ Output_segment::add_output_section(Output_section* os,
+@@ -3068,11 +3148,6 @@ Output_segment::add_output_section(Output_section* os,
    // flags, and thus be in different output sections, but for the
    // different section flags to map into the same segment flags and
    // thus the same output segment.
@@ -15082,7 +15671,7 @@ index e2d7585..8a0e9e7 100644
    if (os->type() == elfcpp::SHT_NOTE && !pdl->empty())
      {
        Output_segment::Output_data_list::iterator p = pdl->end();
-@@ -3094,8 +3165,8 @@ Output_segment::add_output_section(Output_section* os,
+@@ -3094,8 +3169,8 @@ Output_segment::add_output_section(Output_section* os,
    // case: we group the SHF_TLS/SHT_NOBITS sections right after the
    // SHF_TLS/SHT_PROGBITS sections.  This lets us set up PT_TLS
    // correctly.  SHF_TLS sections get added to both a PT_LOAD segment
@@ -15093,7 +15682,75 @@ index e2d7585..8a0e9e7 100644
    if (this->type_ != elfcpp::PT_TLS
        && (os->flags() & elfcpp::SHF_TLS) != 0)
      {
-@@ -3225,6 +3296,67 @@ Output_segment::add_output_section(Output_section* os,
+@@ -3140,26 +3215,52 @@ Output_segment::add_output_section(Output_section* os,
+       // location in the section list.
+     }
+ 
+-  // For the PT_GNU_RELRO segment, we need to group relro sections,
+-  // and we need to put them before any non-relro sections.  Also,
+-  // relro local sections go before relro non-local sections.
+-  if (parameters->options().relro() && os->is_relro())
++  if (do_sort)
+     {
+-      gold_assert(pdl == &this->output_data_);
+-      Output_segment::Output_data_list::iterator p;
+-      for (p = pdl->begin(); p != pdl->end(); ++p)
++      // For the PT_GNU_RELRO segment, we need to group relro
++      // sections, and we need to put them before any non-relro
++      // sections.  Any relro local sections go before relro non-local
++      // sections.  One section may be marked as the last relro
++      // section.
++      if (os->is_relro())
+ 	{
+-	  if (!(*p)->is_section())
+-	    break;
++	  gold_assert(pdl == &this->output_data_);
++	  Output_segment::Output_data_list::iterator p;
++	  for (p = pdl->begin(); p != pdl->end(); ++p)
++	    {
++	      if (!(*p)->is_section())
++		break;
++
++	      Output_section* pos = (*p)->output_section();
++	      if (!pos->is_relro()
++		  || (os->is_relro_local() && !pos->is_relro_local())
++		  || (!os->is_last_relro() && pos->is_last_relro()))
++		break;
++	    }
+ 
+-	  Output_section* pos = (*p)->output_section();
+-	  if (!pos->is_relro()
+-	      || (os->is_relro_local() && !pos->is_relro_local()))
+-	    break;
++	  pdl->insert(p, os);
++	  return;
+ 	}
+ 
+-      pdl->insert(p, os);
+-      return;
++      // One section may be marked as the first section which follows
++      // the relro sections.
++      if (os->is_first_non_relro())
++	{
++	  gold_assert(pdl == &this->output_data_);
++	  Output_segment::Output_data_list::iterator p;
++	  for (p = pdl->begin(); p != pdl->end(); ++p)
++	    {
++	      if (!(*p)->is_section())
++		break;
++
++	      Output_section* pos = (*p)->output_section();
++	      if (!pos->is_relro())
++		break;
++	    }
++
++	  pdl->insert(p, os);
++	  return;
++	}
+     }
+ 
+   // Small data sections go at the end of the list of data sections.
+@@ -3225,6 +3326,67 @@ Output_segment::add_output_section(Output_section* os,
        gold_unreachable();
      }
  
@@ -15161,7 +15818,7 @@ index e2d7585..8a0e9e7 100644
    pdl->push_back(os);
  }
  
-@@ -3249,8 +3381,8 @@ Output_segment::remove_output_section(Output_section* os)
+@@ -3249,8 +3411,8 @@ Output_segment::remove_output_section(Output_section* os)
    gold_unreachable();
  }
  
@@ -15172,7 +15829,156 @@ index e2d7585..8a0e9e7 100644
  
  void
  Output_segment::add_initial_output_data(Output_data* od)
-@@ -3503,15 +3635,20 @@ Output_segment::set_section_list_addresses(const Layout* layout, bool reset,
+@@ -3286,19 +3448,6 @@ Output_segment::maximum_alignment()
+       if (addralign > this->max_align_)
+ 	this->max_align_ = addralign;
+ 
+-      // If -z relro is in effect, and the first section in this
+-      // segment is a relro section, then the segment must be aligned
+-      // to at least the common page size.  This ensures that the
+-      // PT_GNU_RELRO segment will start at a page boundary.
+-      if (this->type_ == elfcpp::PT_LOAD
+-	  && parameters->options().relro()
+-	  && this->is_first_section_relro())
+-	{
+-	  addralign = parameters->target().common_pagesize();
+-	  if (addralign > this->max_align_)
+-	    this->max_align_ = addralign;
+-	}
+-
+       this->is_max_align_known_ = true;
+     }
+ 
+@@ -3352,11 +3501,57 @@ Output_segment::dynamic_reloc_count_list(const Output_data_list* pdl) const
+ 
+ uint64_t
+ Output_segment::set_section_addresses(const Layout* layout, bool reset,
+-                                      uint64_t addr, off_t* poff,
++                                      uint64_t addr,
++				      unsigned int increase_relro,
++				      off_t* poff,
+ 				      unsigned int* pshndx)
+ {
+   gold_assert(this->type_ == elfcpp::PT_LOAD);
+ 
++  off_t orig_off = *poff;
++
++  // If we have relro sections, we need to pad forward now so that the
++  // relro sections plus INCREASE_RELRO end on a common page boundary.
++  if (parameters->options().relro()
++      && this->is_first_section_relro()
++      && (!this->are_addresses_set_ || reset))
++    {
++      uint64_t relro_size = 0;
++      off_t off = *poff;
++      for (Output_data_list::iterator p = this->output_data_.begin();
++	   p != this->output_data_.end();
++	   ++p)
++	{
++	  if (!(*p)->is_section())
++	    break;
++	  Output_section* pos = (*p)->output_section();
++	  if (!pos->is_relro())
++	    break;
++	  gold_assert(!(*p)->is_section_flag_set(elfcpp::SHF_TLS));
++	  if ((*p)->is_address_valid())
++	    relro_size += (*p)->data_size();
++	  else
++	    {
++	      // FIXME: This could be faster.
++	      (*p)->set_address_and_file_offset(addr + relro_size,
++						off + relro_size);
++	      relro_size += (*p)->data_size();
++	      (*p)->reset_address_and_file_offset();
++	    }
++	}
++      relro_size += increase_relro;
++
++      uint64_t page_align = parameters->target().common_pagesize();
++
++      // Align to offset N such that (N + RELRO_SIZE) % PAGE_ALIGN == 0.
++      uint64_t desired_align = page_align - (relro_size % page_align);
++      if (desired_align < *poff % page_align)
++	*poff += page_align - *poff % page_align;
++      *poff += desired_align - *poff % page_align;
++      addr += *poff - orig_off;
++      orig_off = *poff;
++    }
++
+   if (!reset && this->are_addresses_set_)
+     {
+       gold_assert(this->paddr_ == addr);
+@@ -3371,15 +3566,10 @@ Output_segment::set_section_addresses(const Layout* layout, bool reset,
+ 
+   bool in_tls = false;
+ 
+-  bool in_relro = (parameters->options().relro()
+-		   && this->is_first_section_relro());
+-
+-  off_t orig_off = *poff;
+   this->offset_ = orig_off;
+ 
+   addr = this->set_section_list_addresses(layout, reset, &this->output_data_,
+-					  addr, poff, pshndx, &in_tls,
+-					  &in_relro);
++					  addr, poff, pshndx, &in_tls);
+   this->filesz_ = *poff - orig_off;
+ 
+   off_t off = *poff;
+@@ -3387,7 +3577,7 @@ Output_segment::set_section_addresses(const Layout* layout, bool reset,
+   uint64_t ret = this->set_section_list_addresses(layout, reset,
+                                                   &this->output_bss_,
+ 						  addr, poff, pshndx,
+-                                                  &in_tls, &in_relro);
++                                                  &in_tls);
+ 
+   // If the last section was a TLS section, align upward to the
+   // alignment of the TLS segment, so that the overall size of the TLS
+@@ -3398,14 +3588,6 @@ Output_segment::set_section_addresses(const Layout* layout, bool reset,
+       *poff = align_address(*poff, segment_align);
+     }
+ 
+-  // If all the sections were relro sections, align upward to the
+-  // common page size.
+-  if (in_relro)
+-    {
+-      uint64_t page_align = parameters->target().common_pagesize();
+-      *poff = align_address(*poff, page_align);
+-    }
+-
+   this->memsz_ = *poff - orig_off;
+ 
+   // Ignore the file offset adjustments made by the BSS Output_data
+@@ -3423,7 +3605,7 @@ Output_segment::set_section_list_addresses(const Layout* layout, bool reset,
+                                            Output_data_list* pdl,
+ 					   uint64_t addr, off_t* poff,
+ 					   unsigned int* pshndx,
+-                                           bool* in_tls, bool* in_relro)
++                                           bool* in_tls)
+ {
+   off_t startoff = *poff;
+ 
+@@ -3474,19 +3656,6 @@ Output_segment::set_section_list_addresses(const Layout* layout, bool reset,
+                 }
+             }
+ 
+-	  // If this is a non-relro section after a relro section,
+-	  // align it to a common page boundary so that the dynamic
+-	  // linker has a page to mark as read-only.
+-	  if (*in_relro
+-	      && (!(*p)->is_section()
+-		  || !(*p)->output_section()->is_relro()))
+-	    {
+-	      uint64_t page_align = parameters->target().common_pagesize();
+-	      if (page_align > align)
+-		align = page_align;
+-	      *in_relro = false;
+-	    }
+-
+ 	  off = align_address(off, align);
+ 	  (*p)->set_address_and_file_offset(addr + (off - startoff), off);
+ 	}
+@@ -3503,15 +3672,20 @@ Output_segment::set_section_list_addresses(const Layout* layout, bool reset,
  	      else
  		{
  		  Output_section* os = (*p)->output_section();
@@ -15197,8 +16003,56 @@ index e2d7585..8a0e9e7 100644
  		}
  	    }
  	  (*p)->set_file_offset(off);
+@@ -3537,10 +3711,10 @@ Output_segment::set_section_list_addresses(const Layout* layout, bool reset,
+ }
+ 
+ // For a non-PT_LOAD segment, set the offset from the sections, if
+-// any.
++// any.  Add INCREASE to the file size and the memory size.
+ 
+ void
+-Output_segment::set_offset()
++Output_segment::set_offset(unsigned int increase)
+ {
+   gold_assert(this->type_ != elfcpp::PT_LOAD);
+ 
+@@ -3548,6 +3722,7 @@ Output_segment::set_offset()
+ 
+   if (this->output_data_.empty() && this->output_bss_.empty())
+     {
++      gold_assert(increase == 0);
+       this->vaddr_ = 0;
+       this->paddr_ = 0;
+       this->are_addresses_set_ = true;
+@@ -3589,6 +3764,9 @@ Output_segment::set_offset()
+ 		  + last->data_size()
+ 		  - this->vaddr_);
+ 
++  this->filesz_ += increase;
++  this->memsz_ += increase;
++
+   // If this is a TLS segment, align the memory size.  The code in
+   // set_section_list ensures that the section after the TLS segment
+   // is aligned to give us room.
+@@ -3598,16 +3776,6 @@ Output_segment::set_offset()
+       gold_assert(this->vaddr_ == align_address(this->vaddr_, segment_align));
+       this->memsz_ = align_address(this->memsz_, segment_align);
+     }
+-
+-  // If this is a RELRO segment, align the memory size.  The code in
+-  // set_section_list ensures that the section after the RELRO segment
+-  // is aligned to give us room.
+-  if (this->type_ == elfcpp::PT_GNU_RELRO)
+-    {
+-      uint64_t page_align = parameters->target().common_pagesize();
+-      gold_assert(this->vaddr_ == align_address(this->vaddr_, page_align));
+-      this->memsz_ = align_address(this->memsz_, page_align);
+-    }
+ }
+ 
+ // Set the TLS offsets of the sections in the PT_TLS segment.
 diff --git a/gold/output.h b/gold/output.h
-index bc10950..6f5ad31 100644
+index bc10950..5b02375 100644
 --- a/gold/output.h
 +++ b/gold/output.h
 @@ -47,71 +47,6 @@ class Sized_target;
@@ -15273,7 +16127,43 @@ index bc10950..6f5ad31 100644
  // An abtract class for data which has to go into the output file.
  
  class Output_data
-@@ -2387,6 +2322,27 @@ class Output_section : public Output_data
+@@ -2360,6 +2295,35 @@ class Output_section : public Output_data
+   set_is_relro_local()
+   { this->is_relro_local_ = true; }
+ 
++  // True if this must be the last relro section.
++  bool
++  is_last_relro() const
++  { return this->is_last_relro_; }
++
++  // Record that this must be the last relro section.
++  void
++  set_is_last_relro()
++  {
++    gold_assert(this->is_relro_);
++    this->is_last_relro_ = true;
++  }
++
++  // True if this must be the first section following the relro sections.
++  bool
++  is_first_non_relro() const
++  {
++    gold_assert(!this->is_relro_);
++    return this->is_first_non_relro_;
++  }
++
++  // Record that this must be the first non-relro section.
++  void
++  set_is_first_non_relro()
++  {
++    gold_assert(!this->is_relro_);
++    this->is_first_non_relro_ = true;
++  }
++
+   // True if this is a small section: a section which holds small
+   // variables.
+   bool
+@@ -2387,6 +2351,27 @@ class Output_section : public Output_data
    is_large_data_section()
    { return this->is_large_section_ && this->type_ != elfcpp::SHT_NOBITS; }
  
@@ -15301,7 +16191,7 @@ index bc10950..6f5ad31 100644
    // Return whether this section should be written after all the input
    // sections are complete.
    bool
-@@ -2554,10 +2510,10 @@ class Output_section : public Output_data
+@@ -2554,10 +2539,10 @@ class Output_section : public Output_data
    get_input_sections(uint64_t address, const std::string& fill,
  		     std::list<Simple_input_section>*);
  
@@ -15315,7 +16205,7 @@ index bc10950..6f5ad31 100644
  
    // Set the current size of the output section.
    void
-@@ -2580,11 +2536,35 @@ class Output_section : public Output_data
+@@ -2580,11 +2565,45 @@ class Output_section : public Output_data
    void
    restore_states();
  
@@ -15348,10 +16238,20 @@ index bc10950..6f5ad31 100644
 +  void
 +  adjust_section_offsets();
 +
++  // Whether this is a NOLOAD section.
++  bool
++  is_noload() const
++  { return this->is_noload_; }
++
++  // Set NOLOAD flag.
++  void
++  set_is_noload()
++  { this->is_noload_ = true; }
++
    // Print merge statistics to stderr.
    void
    print_merge_stats();
-@@ -3167,19 +3147,20 @@ class Output_section : public Output_data
+@@ -3167,19 +3186,20 @@ class Output_section : public Output_data
  			Merge_section_properties::equal_to>
      Merge_section_by_properties_map;
  
@@ -15382,7 +16282,7 @@ index bc10950..6f5ad31 100644
  
    // Add a new output section by Input_section.
    void
-@@ -3208,11 +3189,6 @@ class Output_section : public Output_data
+@@ -3208,11 +3228,6 @@ class Output_section : public Output_data
    Output_section_data*
    find_merge_section(const Relobj* object, unsigned int shndx) const;
  
@@ -15394,7 +16294,15 @@ index bc10950..6f5ad31 100644
    // Build a relaxation map.
    void
    build_relaxation_map(
-@@ -3327,6 +3303,17 @@ class Output_section : public Output_data
+@@ -3323,10 +3338,27 @@ class Output_section : public Output_data
+   bool is_relro_ : 1;
+   // True if this section holds relro local data.
+   bool is_relro_local_ : 1;
++  // True if this must be the last relro section.
++  bool is_last_relro_ : 1;
++  // True if this must be the first section after the relro sections.
++  bool is_first_non_relro_ : 1;
+   // True if this is a small section.
    bool is_small_section_ : 1;
    // True if this is a large section.
    bool is_large_section_ : 1;
@@ -15409,10 +16317,12 @@ index bc10950..6f5ad31 100644
 +  bool is_entsize_zero_ : 1;
 +  // Whether section offsets need adjustment due to relaxation.
 +  bool section_offsets_need_adjustment_ : 1;
++  // Whether this is a NOLOAD section.
++  bool is_noload_ : 1;
    // For SHT_TLS sections, the offset of this section relative to the base
    // of the TLS segment.
    uint64_t tls_offset_;
-@@ -3337,13 +3324,12 @@ class Output_section : public Output_data
+@@ -3337,13 +3369,12 @@ class Output_section : public Output_data
    // Map from merge section properties to merge_sections;
    Merge_section_by_properties_map merge_section_by_properties_map_;
    // Map from input sections to relaxed input sections.  This is mutable
@@ -15429,7 +16339,7 @@ index bc10950..6f5ad31 100644
  };
  
  // An output segment.  PT_LOAD segments are built from collections of
-@@ -3412,17 +3398,20 @@ class Output_segment
+@@ -3412,17 +3443,20 @@ class Output_segment
    uint64_t
    maximum_alignment();
  
@@ -15454,7 +16364,7 @@ index bc10950..6f5ad31 100644
    void
    add_initial_output_data(Output_data*);
  
-@@ -3454,6 +3443,17 @@ class Output_segment
+@@ -3454,6 +3488,17 @@ class Output_segment
      this->are_addresses_set_ = true;
    }
  
@@ -15472,6 +16382,42 @@ index bc10950..6f5ad31 100644
    // Set the segment flags.  This is only used if we have a PHDRS
    // clause which explicitly specifies the flags.
    void
+@@ -3468,19 +3513,23 @@ class Output_segment
+   // address of the immediately following segment.  Update *POFF and
+   // *PSHNDX.  This should only be called for a PT_LOAD segment.
+   uint64_t
+-  set_section_addresses(const Layout*, bool reset, uint64_t addr, off_t* poff,
++  set_section_addresses(const Layout*, bool reset, uint64_t addr,
++			unsigned int increase_relro, off_t* poff,
+ 			unsigned int* pshndx);
+ 
+   // Set the minimum alignment of this segment.  This may be adjusted
+   // upward based on the section alignments.
+   void
+   set_minimum_p_align(uint64_t align)
+-  { this->min_p_align_ = align; }
++  {
++    if (align > this->min_p_align_)
++      this->min_p_align_ = align;
++  }
+ 
+   // Set the offset of this segment based on the section.  This should
+   // only be called for a non-PT_LOAD segment.
+   void
+-  set_offset();
++  set_offset(unsigned int increase);
+ 
+   // Set the TLS offsets of the sections contained in the PT_TLS segment.
+   void
+@@ -3526,7 +3575,7 @@ class Output_segment
+   uint64_t
+   set_section_list_addresses(const Layout*, bool reset, Output_data_list*,
+                              uint64_t addr, off_t* poff, unsigned int* pshndx,
+-                             bool* in_tls, bool* in_relro);
++                             bool* in_tls);
+ 
+   // Return the number of Output_sections in an Output_data_list.
+   unsigned int
 diff --git a/gold/parameters.cc b/gold/parameters.cc
 index 2a53998..9cf7808 100644
 --- a/gold/parameters.cc
@@ -15489,7 +16435,7 @@ index 2a53998..9cf7808 100644
  void
  set_parameters_doing_static_link(bool doing_static_link)
 diff --git a/gold/powerpc.cc b/gold/powerpc.cc
-index 71f2ae4..3556cb2 100644
+index 71f2ae4..5988371 100644
 --- a/gold/powerpc.cc
 +++ b/gold/powerpc.cc
 @@ -65,8 +65,7 @@ class Target_powerpc : public Sized_target<size, big_endian>
@@ -15600,25 +16546,27 @@ index 71f2ae4..3556cb2 100644
        layout->add_output_section_data(".got", elfcpp::SHT_PROGBITS,
  				      elfcpp::SHF_ALLOC | elfcpp::SHF_WRITE,
 -				      this->got_);
-+				      this->got_, false);
++				      this->got_, false, false, false, false);
  
        // Create the GOT2 or TOC in the .got section.
        if (size == 32)
-@@ -722,7 +725,7 @@ Target_powerpc<size, big_endian>::got_section(Symbol_table* symtab,
+@@ -722,7 +725,8 @@ Target_powerpc<size, big_endian>::got_section(Symbol_table* symtab,
  	  layout->add_output_section_data(".got2", elfcpp::SHT_PROGBITS,
  					  elfcpp::SHF_ALLOC
  					  | elfcpp::SHF_WRITE,
 -					  this->got2_);
-+					  this->got2_, false);
++					  this->got2_, false, false, false,
++					  false);
  	}
        else
  	{
-@@ -730,11 +733,12 @@ Target_powerpc<size, big_endian>::got_section(Symbol_table* symtab,
+@@ -730,11 +734,13 @@ Target_powerpc<size, big_endian>::got_section(Symbol_table* symtab,
  	  layout->add_output_section_data(".toc", elfcpp::SHT_PROGBITS,
  					  elfcpp::SHF_ALLOC
  					  | elfcpp::SHF_WRITE,
 -					  this->toc_);
-+					  this->toc_, false);
++					  this->toc_, false, false, false,
++					  false);
  	}
  
        // Define _GLOBAL_OFFSET_TABLE_ at the start of the .got section.
@@ -15627,30 +16575,32 @@ index 71f2ae4..3556cb2 100644
  				    this->got_,
  				    0, 0, elfcpp::STT_OBJECT,
  				    elfcpp::STB_LOCAL,
-@@ -756,7 +760,7 @@ Target_powerpc<size, big_endian>::rela_dyn_section(Layout* layout)
+@@ -756,7 +762,8 @@ Target_powerpc<size, big_endian>::rela_dyn_section(Layout* layout)
        gold_assert(layout != NULL);
        this->rela_dyn_ = new Reloc_section(parameters->options().combreloc());
        layout->add_output_section_data(".rela.dyn", elfcpp::SHT_RELA,
 -				      elfcpp::SHF_ALLOC, this->rela_dyn_);
-+				      elfcpp::SHF_ALLOC, this->rela_dyn_, true);
++				      elfcpp::SHF_ALLOC, this->rela_dyn_, true,
++				      false, false, false);
      }
    return this->rela_dyn_;
  }
-@@ -816,7 +820,7 @@ Output_data_plt_powerpc<size, big_endian>::Output_data_plt_powerpc(Layout* layou
+@@ -816,7 +823,8 @@ Output_data_plt_powerpc<size, big_endian>::Output_data_plt_powerpc(Layout* layou
  {
    this->rel_ = new Reloc_section(false);
    layout->add_output_section_data(".rela.plt", elfcpp::SHT_RELA,
 -				  elfcpp::SHF_ALLOC, this->rel_);
-+				  elfcpp::SHF_ALLOC, this->rel_, true);
++				  elfcpp::SHF_ALLOC, this->rel_, true, false,
++				  false, false);
  }
  
  template<int size, bool big_endian>
-@@ -945,10 +949,11 @@ Target_powerpc<size, big_endian>::make_plt_entry(Symbol_table* symtab,
+@@ -945,10 +953,11 @@ Target_powerpc<size, big_endian>::make_plt_entry(Symbol_table* symtab,
  				      (elfcpp::SHF_ALLOC
  				       | elfcpp::SHF_EXECINSTR
  				       | elfcpp::SHF_WRITE),
 -				      this->plt_);
-+				      this->plt_, false);
++				      this->plt_, false, false, false, false);
  
        // Define _PROCEDURE_LINKAGE_TABLE_ at the start of the .plt section.
        symtab->define_in_output_data("_PROCEDURE_LINKAGE_TABLE_", NULL,
@@ -15658,7 +16608,7 @@ index 71f2ae4..3556cb2 100644
  				    this->plt_,
  				    0, 0, elfcpp::STT_OBJECT,
  				    elfcpp::STB_LOCAL,
-@@ -1113,7 +1118,6 @@ Target_powerpc<size, big_endian>::Scan::check_non_pic(Relobj* object,
+@@ -1113,7 +1122,6 @@ Target_powerpc<size, big_endian>::Scan::check_non_pic(Relobj* object,
  template<int size, bool big_endian>
  inline void
  Target_powerpc<size, big_endian>::Scan::local(
@@ -15666,7 +16616,7 @@ index 71f2ae4..3556cb2 100644
  			Symbol_table* symtab,
  			Layout* layout,
  			Target_powerpc<size, big_endian>* target,
-@@ -1248,7 +1252,6 @@ Target_powerpc<size, big_endian>::Scan::unsupported_reloc_global(
+@@ -1248,7 +1256,6 @@ Target_powerpc<size, big_endian>::Scan::unsupported_reloc_global(
  template<int size, bool big_endian>
  inline void
  Target_powerpc<size, big_endian>::Scan::global(
@@ -15674,7 +16624,7 @@ index 71f2ae4..3556cb2 100644
  				Symbol_table* symtab,
  				Layout* layout,
  				Target_powerpc<size, big_endian>* target,
-@@ -1444,7 +1447,6 @@ Target_powerpc<size, big_endian>::Scan::global(
+@@ -1444,7 +1451,6 @@ Target_powerpc<size, big_endian>::Scan::global(
  template<int size, bool big_endian>
  void
  Target_powerpc<size, big_endian>::gc_process_relocs(
@@ -15682,7 +16632,7 @@ index 71f2ae4..3556cb2 100644
  			Symbol_table* symtab,
  			Layout* layout,
  			Sized_relobj<size, big_endian>* object,
-@@ -1461,7 +1463,6 @@ Target_powerpc<size, big_endian>::gc_process_relocs(
+@@ -1461,7 +1467,6 @@ Target_powerpc<size, big_endian>::gc_process_relocs(
    typedef typename Target_powerpc<size, big_endian>::Scan Scan;
  
    gold::gc_process_relocs<size, big_endian, Powerpc, elfcpp::SHT_RELA, Scan>(
@@ -15690,7 +16640,7 @@ index 71f2ae4..3556cb2 100644
      symtab,
      layout,
      this,
-@@ -1480,7 +1481,6 @@ Target_powerpc<size, big_endian>::gc_process_relocs(
+@@ -1480,7 +1485,6 @@ Target_powerpc<size, big_endian>::gc_process_relocs(
  template<int size, bool big_endian>
  void
  Target_powerpc<size, big_endian>::scan_relocs(
@@ -15698,18 +16648,19 @@ index 71f2ae4..3556cb2 100644
  			Symbol_table* symtab,
  			Layout* layout,
  			Sized_relobj<size, big_endian>* object,
-@@ -1512,8 +1512,9 @@ Target_powerpc<size, big_endian>::scan_relocs(
+@@ -1512,8 +1516,10 @@ Target_powerpc<size, big_endian>::scan_relocs(
      Output_section* os = layout->add_output_section_data(".sdata", 0,
  							 elfcpp::SHF_ALLOC
  							 | elfcpp::SHF_WRITE,
 -							 sdata);
-+							 sdata, false);
++							 sdata, false,
++							 false, false, false);
      symtab->define_in_output_data("_SDA_BASE_", NULL,
 +				  Symbol_table::PREDEFINED,
  				  os,
  				  32768, 0,
  				  elfcpp::STT_OBJECT,
-@@ -1523,7 +1524,6 @@ Target_powerpc<size, big_endian>::scan_relocs(
+@@ -1523,7 +1529,6 @@ Target_powerpc<size, big_endian>::scan_relocs(
    }
  
    gold::scan_relocs<size, big_endian, Powerpc, elfcpp::SHT_RELA, Scan>(
@@ -15717,7 +16668,7 @@ index 71f2ae4..3556cb2 100644
      symtab,
      layout,
      this,
-@@ -1541,7 +1541,10 @@ Target_powerpc<size, big_endian>::scan_relocs(
+@@ -1541,7 +1546,10 @@ Target_powerpc<size, big_endian>::scan_relocs(
  
  template<int size, bool big_endian>
  void
@@ -15729,7 +16680,7 @@ index 71f2ae4..3556cb2 100644
  {
    // Fill in some more dynamic tags.
    Output_data_dynamic* const odyn = layout->dynamic_data();
-@@ -1897,7 +1900,6 @@ Target_powerpc<size, big_endian>::Relocatable_size_for_reloc::get_size_for_reloc
+@@ -1897,7 +1905,6 @@ Target_powerpc<size, big_endian>::Relocatable_size_for_reloc::get_size_for_reloc
  template<int size, bool big_endian>
  void
  Target_powerpc<size, big_endian>::scan_relocatable_relocs(
@@ -15737,7 +16688,7 @@ index 71f2ae4..3556cb2 100644
  			Symbol_table* symtab,
  			Layout* layout,
  			Sized_relobj<size, big_endian>* object,
-@@ -1918,7 +1920,6 @@ Target_powerpc<size, big_endian>::scan_relocatable_relocs(
+@@ -1918,7 +1925,6 @@ Target_powerpc<size, big_endian>::scan_relocatable_relocs(
  
    gold::scan_relocatable_relocs<size, big_endian, elfcpp::SHT_RELA,
        Scan_relocatable_relocs>(
@@ -16579,11 +17530,75 @@ index 82af9b4..086c7ca 100644
  template
  void
  Symbol_table::resolve<64, true>(
+diff --git a/gold/script-c.h b/gold/script-c.h
+index 37016b0..77b4aa4 100644
+--- a/gold/script-c.h
++++ b/gold/script-c.h
+@@ -61,6 +61,18 @@ typedef Expression* Expression_ptr;
+ typedef void* Expression_ptr;
+ #endif
+ 
++/* Script_section type.  */
++enum Script_section_type
++{
++  /* No section type.  */
++  SCRIPT_SECTION_TYPE_NONE,
++  SCRIPT_SECTION_TYPE_NOLOAD,
++  SCRIPT_SECTION_TYPE_DSECT,
++  SCRIPT_SECTION_TYPE_COPY,
++  SCRIPT_SECTION_TYPE_INFO,
++  SCRIPT_SECTION_TYPE_OVERLAY
++};
++
+ /* A constraint for whether to use a particular output section
+    definition.  */
+ 
+@@ -83,6 +95,8 @@ struct Parser_output_section_header
+ {
+   /* The address.  This may be NULL.  */
+   Expression_ptr address;
++  /* Section type.  May be NULL string.  */ 
++  enum Script_section_type section_type;
+   /* The load address, from the AT specifier.  This may be NULL.  */
+   Expression_ptr load_address;
+   /* The alignment, from the ALIGN specifier.  This may be NULL.  */
+@@ -389,6 +403,11 @@ script_data_segment_align(void* closure);
+ extern void
+ script_data_segment_relro_end(void* closure);
+ 
++/* Record the fact that a SEGMENT_START expression is seen.  */
++
++extern void
++script_saw_segment_start_expression(void* closure);
++
+ /* Called by the bison parser for expressions.  */
+ 
+ extern Expression_ptr
 diff --git a/gold/script-sections.cc b/gold/script-sections.cc
-index a541e9a..42192b0 100644
+index a541e9a..45e98b0 100644
 --- a/gold/script-sections.cc
 +++ b/gold/script-sections.cc
-@@ -406,7 +406,7 @@ class Sections_element_assignment : public Sections_element
+@@ -337,7 +337,8 @@ class Sections_element
+   // section name.  This only real implementation is in
+   // Output_section_definition.
+   virtual const char*
+-  output_section_name(const char*, const char*, Output_section***)
++  output_section_name(const char*, const char*, Output_section***,
++		      Script_sections::Section_type*)
+   { return NULL; }
+ 
+   // Initialize OSP with an output section.
+@@ -349,7 +350,8 @@ class Sections_element
+   // Set section addresses.  This includes applying assignments if the
+   // the expression is an absolute value.
+   virtual void
+-  set_section_addresses(Symbol_table*, Layout*, uint64_t*, uint64_t*)
++  set_section_addresses(Symbol_table*, Layout*, uint64_t*, uint64_t*,
++			uint64_t*)
+   { }
+ 
+   // Check a constraint (ONLY_IF_RO, etc.) on an output section.  If
+@@ -406,7 +408,7 @@ class Sections_element_assignment : public Sections_element
   public:
    Sections_element_assignment(const char* name, size_t namelen,
  			      Expression* val, bool provide, bool hidden)
@@ -16592,7 +17607,47 @@ index a541e9a..42192b0 100644
    { }
  
    // Add the symbol to the symbol table.
-@@ -593,7 +593,7 @@ class Output_section_element_assignment : public Output_section_element
+@@ -427,7 +429,7 @@ class Sections_element_assignment : public Sections_element
+   // absolute symbols when setting dot.
+   void
+   set_section_addresses(Symbol_table* symtab, Layout* layout,
+-			uint64_t* dot_value, uint64_t*)
++			uint64_t* dot_value, uint64_t*, uint64_t*)
+   {
+     this->assignment_.set_if_absolute(symtab, layout, true, *dot_value);
+   }
+@@ -464,17 +466,18 @@ class Sections_element_dot_assignment : public Sections_element
+     // to be absolute.
+     Output_section* dummy;
+     *dot_value = this->val_->eval_with_dot(symtab, layout, true, *dot_value,
+-					   NULL, &dummy);
++					   NULL, &dummy, NULL);
+   }
+ 
+   // Update the dot symbol while setting section addresses.
+   void
+   set_section_addresses(Symbol_table* symtab, Layout* layout,
+-			uint64_t* dot_value, uint64_t* load_address)
++			uint64_t* dot_value, uint64_t* dot_alignment,
++			uint64_t* load_address)
+   {
+     Output_section* dummy;
+     *dot_value = this->val_->eval_with_dot(symtab, layout, false, *dot_value,
+-					   NULL, &dummy);
++					   NULL, &dummy, dot_alignment);
+     *load_address = *dot_value;
+   }
+ 
+@@ -557,7 +560,7 @@ class Output_section_element
+   // the expression is an absolute value.
+   virtual void
+   set_section_addresses(Symbol_table*, Layout*, Output_section*, uint64_t,
+-			uint64_t*, Output_section**, std::string*,
++			uint64_t*, uint64_t*, Output_section**, std::string*,
+ 			Input_section_list*)
+   { }
+ 
+@@ -593,7 +596,7 @@ class Output_section_element_assignment : public Output_section_element
    Output_section_element_assignment(const char* name, size_t namelen,
  				    Expression* val, bool provide,
  				    bool hidden)
@@ -16601,7 +17656,114 @@ index a541e9a..42192b0 100644
    { }
  
    // Add the symbol to the symbol table.
-@@ -1409,9 +1409,9 @@ Output_section_element_input::set_section_addresses(
+@@ -615,8 +618,8 @@ class Output_section_element_assignment : public Output_section_element
+   // absolute symbols when setting dot.
+   void
+   set_section_addresses(Symbol_table* symtab, Layout* layout, Output_section*,
+-			uint64_t, uint64_t* dot_value, Output_section**,
+-			std::string*, Input_section_list*)
++			uint64_t, uint64_t* dot_value, uint64_t*,
++			Output_section**, std::string*, Input_section_list*)
+   {
+     this->assignment_.set_if_absolute(symtab, layout, true, *dot_value);
+   }
+@@ -648,14 +651,14 @@ class Output_section_element_dot_assignment : public Output_section_element
+ 		   uint64_t* dot_value, Output_section** dot_section)
+   {
+     *dot_value = this->val_->eval_with_dot(symtab, layout, true, *dot_value,
+-					   *dot_section, dot_section);
++					   *dot_section, dot_section, NULL);
+   }
+ 
+   // Update the dot symbol while setting section addresses.
+   void
+   set_section_addresses(Symbol_table* symtab, Layout* layout, Output_section*,
+-			uint64_t, uint64_t* dot_value, Output_section**,
+-			std::string*, Input_section_list*);
++			uint64_t, uint64_t* dot_value, uint64_t*,
++			Output_section**, std::string*, Input_section_list*);
+ 
+   // Print for debugging.
+   void
+@@ -679,13 +682,14 @@ Output_section_element_dot_assignment::set_section_addresses(
+     Output_section* output_section,
+     uint64_t,
+     uint64_t* dot_value,
++    uint64_t* dot_alignment,
+     Output_section** dot_section,
+     std::string* fill,
+     Input_section_list*)
+ {
+   uint64_t next_dot = this->val_->eval_with_dot(symtab, layout, false,
+ 						*dot_value, *dot_section,
+-						dot_section);
++						dot_section, dot_alignment);
+   if (next_dot < *dot_value)
+     gold_error(_("dot may not move backward"));
+   if (next_dot > *dot_value && output_section != NULL)
+@@ -787,7 +791,7 @@ Output_data_expression::do_write_to_buffer(unsigned char* buf)
+   Output_section* dummy;
+   uint64_t val = this->val_->eval_with_dot(this->symtab_, this->layout_,
+ 					   true, this->dot_value_,
+-					   this->dot_section_, &dummy);
++					   this->dot_section_, &dummy, NULL);
+ 
+   if (parameters->target().is_big_endian())
+     this->endian_write_to_buffer<true>(val, buf);
+@@ -848,8 +852,8 @@ class Output_section_element_data : public Output_section_element
+   // Store the value in the section.
+   void
+   set_section_addresses(Symbol_table*, Layout*, Output_section*, uint64_t,
+-			uint64_t* dot_value, Output_section**, std::string*,
+-			Input_section_list*);
++			uint64_t* dot_value, uint64_t*, Output_section**,
++			std::string*, Input_section_list*);
+ 
+   // Print for debugging.
+   void
+@@ -873,6 +877,7 @@ Output_section_element_data::set_section_addresses(
+     Output_section* os,
+     uint64_t,
+     uint64_t* dot_value,
++    uint64_t*,
+     Output_section** dot_section,
+     std::string*,
+     Input_section_list*)
+@@ -929,14 +934,14 @@ class Output_section_element_fill : public Output_section_element
+   // Update the fill value while setting section addresses.
+   void
+   set_section_addresses(Symbol_table* symtab, Layout* layout, Output_section*,
+-			uint64_t, uint64_t* dot_value,
++			uint64_t, uint64_t* dot_value, uint64_t*,
+ 			Output_section** dot_section,
+ 			std::string* fill, Input_section_list*)
+   {
+     Output_section* fill_section;
+     uint64_t fill_val = this->val_->eval_with_dot(symtab, layout, false,
+ 						  *dot_value, *dot_section,
+-						  &fill_section);
++						  &fill_section, NULL);
+     if (fill_section != NULL)
+       gold_warning(_("fill value is not absolute"));
+     // FIXME: The GNU linker supports fill values of arbitrary length.
+@@ -992,7 +997,7 @@ class Output_section_element_input : public Output_section_element
+   // Set the section address.
+   void
+   set_section_addresses(Symbol_table* symtab, Layout* layout, Output_section*,
+-			uint64_t subalign, uint64_t* dot_value,
++			uint64_t subalign, uint64_t* dot_value, uint64_t*,
+ 			Output_section**, std::string* fill,
+ 			Input_section_list*);
+ 
+@@ -1289,6 +1294,7 @@ Output_section_element_input::set_section_addresses(
+     Output_section* output_section,
+     uint64_t subalign,
+     uint64_t* dot_value,
++    uint64_t*,
+     Output_section** dot_section,
+     std::string* fill,
+     Input_section_list* input_sections)
+@@ -1409,9 +1415,9 @@ Output_section_element_input::set_section_addresses(
  	      layout->new_output_section_data_from_script(posd);
  	    }
  
@@ -16614,7 +17776,227 @@ index a541e9a..42192b0 100644
  
  	  dot = address + p->size();
  	}
-@@ -2107,13 +2107,16 @@ Output_section*
+@@ -1598,7 +1604,7 @@ class Output_section_definition : public Sections_element
+   // section name.
+   const char*
+   output_section_name(const char* file_name, const char* section_name,
+-		      Output_section***);
++		      Output_section***, Script_sections::Section_type*);
+ 
+   // Initialize OSP with an output section.
+   void
+@@ -1609,7 +1615,8 @@ class Output_section_definition : public Sections_element
+   // Set the section address.
+   void
+   set_section_addresses(Symbol_table* symtab, Layout* layout,
+-			uint64_t* dot_value, uint64_t* load_address);
++			uint64_t* dot_value, uint64_t*,
++			uint64_t* load_address);
+ 
+   // Check a constraint (ONLY_IF_RO, etc.) on an output section.  If
+   // this section is constrained, and the input sections do not match,
+@@ -1646,7 +1653,14 @@ class Output_section_definition : public Sections_element
+   void
+   print(FILE*) const;
+ 
++  // Return the output section type if specified or Script_sections::ST_NONE.
++  Script_sections::Section_type
++  section_type() const;
++
+  private:
++  static const char*
++  script_section_type_name(Script_section_type);
++
+   typedef std::vector<Output_section_element*> Output_section_elements;
+ 
+   // The output section name.
+@@ -1679,6 +1693,8 @@ class Output_section_definition : public Sections_element
+   uint64_t evaluated_addralign_;
+   // The output section is relro.
+   bool is_relro_;
++  // The output section type if specified.
++  enum Script_section_type script_section_type_;
+ };
+ 
+ // Constructor.
+@@ -1700,7 +1716,8 @@ Output_section_definition::Output_section_definition(
+     evaluated_address_(0),
+     evaluated_load_address_(0),
+     evaluated_addralign_(0),
+-    is_relro_(false)
++    is_relro_(false),
++    script_section_type_(header->section_type)
+ {
+ }
+ 
+@@ -1796,7 +1813,8 @@ Output_section_definition::create_sections(Layout* layout)
+       if ((*p)->needs_output_section())
+ 	{
+ 	  const char* name = this->name_.c_str();
+-	  this->output_section_ = layout->make_output_section_for_script(name);
++	  this->output_section_ =
++	    layout->make_output_section_for_script(name, this->section_type());
+ 	  return;
+ 	}
+     }
+@@ -1830,7 +1848,7 @@ Output_section_definition::finalize_symbols(Symbol_table* symtab,
+ 	  Output_section* dummy;
+ 	  address = this->address_->eval_with_dot(symtab, layout, true,
+ 						  *dot_value, NULL,
+-						  &dummy);
++						  &dummy, NULL);
+ 	}
+       if (this->align_ != NULL)
+ 	{
+@@ -1838,7 +1856,7 @@ Output_section_definition::finalize_symbols(Symbol_table* symtab,
+ 	  uint64_t align = this->align_->eval_with_dot(symtab, layout, true,
+ 						       *dot_value,
+ 						       NULL,
+-						       &dummy);
++						       &dummy, NULL);
+ 	  address = align_address(address, align);
+ 	}
+       *dot_value = address;
+@@ -1854,9 +1872,11 @@ Output_section_definition::finalize_symbols(Symbol_table* symtab,
+ // Return the output section name to use for an input section name.
+ 
+ const char*
+-Output_section_definition::output_section_name(const char* file_name,
+-					       const char* section_name,
+-					       Output_section*** slot)
++Output_section_definition::output_section_name(
++    const char* file_name,
++    const char* section_name,
++    Output_section*** slot,
++    Script_sections::Section_type *psection_type)
+ {
+   // Ask each element whether it matches NAME.
+   for (Output_section_elements::const_iterator p = this->elements_.begin();
+@@ -1868,6 +1888,7 @@ Output_section_definition::output_section_name(const char* file_name,
+ 	  // We found a match for NAME, which means that it should go
+ 	  // into this output section.
+ 	  *slot = &this->output_section_;
++	  *psection_type = this->section_type();
+ 	  return this->name_.c_str();
+ 	}
+     }
+@@ -1884,16 +1905,30 @@ void
+ Output_section_definition::set_section_addresses(Symbol_table* symtab,
+ 						 Layout* layout,
+ 						 uint64_t* dot_value,
++						 uint64_t* dot_alignment,
+                                                  uint64_t* load_address)
+ {
+   uint64_t address;
+-  if (this->address_ == NULL)
+-    address = *dot_value;
+-  else
++  uint64_t old_dot_value = *dot_value;
++  uint64_t old_load_address = *load_address;
++
++  // Check for --section-start.
++  bool is_address_set = false;
++  if (this->output_section_ != NULL)
++    is_address_set =
++      parameters->options().section_start(this->output_section_->name(),
++                                          &address);
++  if (!is_address_set)
+     {
+-      Output_section* dummy;
+-      address = this->address_->eval_with_dot(symtab, layout, true,
+-					      *dot_value, NULL, &dummy);
++      if (this->address_ == NULL)
++        address = *dot_value;
++      else
++        {
++          Output_section* dummy;
++          address = this->address_->eval_with_dot(symtab, layout, true,
++                                                  *dot_value, NULL, &dummy,
++                                                  dot_alignment);
++        }
+     }
+ 
+   uint64_t align;
+@@ -1908,7 +1943,7 @@ Output_section_definition::set_section_addresses(Symbol_table* symtab,
+     {
+       Output_section* align_section;
+       align = this->align_->eval_with_dot(symtab, layout, true, *dot_value,
+-					  NULL, &align_section);
++					  NULL, &align_section, NULL);
+       if (align_section != NULL)
+ 	gold_warning(_("alignment of section %s is not absolute"),
+ 		     this->name_.c_str());
+@@ -1922,10 +1957,11 @@ Output_section_definition::set_section_addresses(Symbol_table* symtab,
+ 
+   *dot_value = address;
+ 
+-  // The address of non-SHF_ALLOC sections is forced to zero,
+-  // regardless of what the linker script wants.
++  // Except for NOLOAD sections, the address of non-SHF_ALLOC sections is
++  // forced to zero, regardless of what the linker script wants.
+   if (this->output_section_ != NULL
+-      && (this->output_section_->flags() & elfcpp::SHF_ALLOC) != 0)
++      && ((this->output_section_->flags() & elfcpp::SHF_ALLOC) != 0
++	  || this->output_section_->is_noload()))
+     this->output_section_->set_address(address);
+ 
+   this->evaluated_address_ = address;
+@@ -1938,7 +1974,8 @@ Output_section_definition::set_section_addresses(Symbol_table* symtab,
+       Output_section* dummy;
+       uint64_t laddr =
+ 	this->load_address_->eval_with_dot(symtab, layout, true, *dot_value,
+-					   this->output_section_, &dummy);
++					   this->output_section_, &dummy,
++					   NULL);
+       if (this->output_section_ != NULL)
+         this->output_section_->set_load_address(laddr);
+       this->evaluated_load_address_ = laddr;
+@@ -1952,7 +1989,7 @@ Output_section_definition::set_section_addresses(Symbol_table* symtab,
+       Output_section* subalign_section;
+       subalign = this->subalign_->eval_with_dot(symtab, layout, true,
+ 						*dot_value, NULL,
+-						&subalign_section);
++						&subalign_section, NULL);
+       if (subalign_section != NULL)
+ 	gold_warning(_("subalign of section %s is not absolute"),
+ 		     this->name_.c_str());
+@@ -1966,8 +2003,8 @@ Output_section_definition::set_section_addresses(Symbol_table* symtab,
+       Output_section* fill_section;
+       uint64_t fill_val = this->fill_->eval_with_dot(symtab, layout, true,
+ 						     *dot_value,
+-						     NULL,
+-						     &fill_section);
++						     NULL, &fill_section,
++						     NULL);
+       if (fill_section != NULL)
+ 	gold_warning(_("fill of section %s is not absolute"),
+ 		     this->name_.c_str());
+@@ -1993,8 +2030,8 @@ Output_section_definition::set_section_addresses(Symbol_table* symtab,
+        p != this->elements_.end();
+        ++p)
+     (*p)->set_section_addresses(symtab, layout, this->output_section_,
+-				subalign, dot_value, &dot_section, &fill,
+-				&input_sections);
++				subalign, dot_value, dot_alignment,
++				&dot_section, &fill, &input_sections);
+ 
+   gold_assert(input_sections.empty());
+ 
+@@ -2010,6 +2047,13 @@ Output_section_definition::set_section_addresses(Symbol_table* symtab,
+ 	this->output_section_->set_is_relro();
+       else
+ 	this->output_section_->clear_is_relro();
++
++      // If this is a NOLOAD section, keep dot and load address unchanged.
++      if (this->output_section_->is_noload())
++	{
++	  *dot_value = old_dot_value;
++	  *load_address = old_load_address;
++	}
+     }
+ }
+ 
+@@ -2107,13 +2151,16 @@ Output_section*
  Output_section_definition::allocate_to_segment(String_list** phdrs_list,
  					       bool* orphan)
  {
@@ -16633,7 +18015,89 @@ index a541e9a..42192b0 100644
    return this->output_section_;
  }
  
-@@ -2315,7 +2318,7 @@ Orphan_output_section::set_section_addresses(Symbol_table*, Layout*,
+@@ -2167,6 +2214,10 @@ Output_section_definition::print(FILE* f) const
+       fprintf(f, " ");
+     }
+ 
++  if (this->script_section_type_ != SCRIPT_SECTION_TYPE_NONE)
++      fprintf(f, "(%s) ",
++	      this->script_section_type_name(this->script_section_type_));
++
+   fprintf(f, ": ");
+ 
+   if (this->load_address_ != NULL)
+@@ -2216,6 +2267,52 @@ Output_section_definition::print(FILE* f) const
+   fprintf(f, "\n");
+ }
+ 
++Script_sections::Section_type
++Output_section_definition::section_type() const
++{
++  switch (this->script_section_type_)
++    {
++    case SCRIPT_SECTION_TYPE_NONE:
++      return Script_sections::ST_NONE;
++    case SCRIPT_SECTION_TYPE_NOLOAD:
++      return Script_sections::ST_NOLOAD;
++    case SCRIPT_SECTION_TYPE_COPY:
++    case SCRIPT_SECTION_TYPE_DSECT:
++    case SCRIPT_SECTION_TYPE_INFO:
++    case SCRIPT_SECTION_TYPE_OVERLAY:
++      // There are not really support so we treat them as ST_NONE.  The
++      // parse should have issued errors for them already.
++      return Script_sections::ST_NONE;
++    default:
++      gold_unreachable();
++    }
++}
++
++// Return the name of a script section type.
++
++const char*
++Output_section_definition::script_section_type_name (
++    Script_section_type script_section_type)
++{
++  switch (script_section_type)
++    {
++    case SCRIPT_SECTION_TYPE_NONE:
++      return "NONE";
++    case SCRIPT_SECTION_TYPE_NOLOAD:
++      return "NOLOAD";
++    case SCRIPT_SECTION_TYPE_DSECT:
++      return "DSECT";
++    case SCRIPT_SECTION_TYPE_COPY:
++      return "COPY";
++    case SCRIPT_SECTION_TYPE_INFO:
++      return "INFO";
++    case SCRIPT_SECTION_TYPE_OVERLAY:
++      return "OVERLAY";
++    default:
++      gold_unreachable();
++    }
++}
++
+ // An output section created to hold orphaned input sections.  These
+ // do not actually appear in linker scripts.  However, for convenience
+ // when setting the output section addresses, we put a marker to these
+@@ -2244,7 +2341,8 @@ class Orphan_output_section : public Sections_element
+ 
+   // Set section addresses.
+   void
+-  set_section_addresses(Symbol_table*, Layout*, uint64_t*, uint64_t*);
++  set_section_addresses(Symbol_table*, Layout*, uint64_t*, uint64_t*,
++			uint64_t*);
+ 
+   // Get the list of segments to use for an allocated section when
+   // using a PHDRS clause.
+@@ -2273,6 +2371,7 @@ class Orphan_output_section : public Sections_element
+ void
+ Orphan_output_section::set_section_addresses(Symbol_table*, Layout*,
+ 					     uint64_t* dot_value,
++					     uint64_t*,
+                                              uint64_t* load_address)
+ {
+   typedef std::list<Output_section::Simple_input_section> Input_section_list;
+@@ -2315,7 +2414,7 @@ Orphan_output_section::set_section_addresses(Symbol_table*, Layout*,
        }
  
        address = align_address(address, addralign);
@@ -16642,7 +18106,160 @@ index a541e9a..42192b0 100644
        address += size;
      }
  
-@@ -3051,7 +3054,7 @@ Script_sections::create_segments(Layout* layout)
+@@ -2487,7 +2586,8 @@ Script_sections::Script_sections()
+     orphan_section_placement_(NULL),
+     data_segment_align_start_(),
+     saw_data_segment_align_(false),
+-    saw_relro_end_(false)
++    saw_relro_end_(false),
++    saw_segment_start_expression_(false)
+ {
+ }
+ 
+@@ -2704,16 +2804,19 @@ Script_sections::finalize_symbols(Symbol_table* symtab, const Layout* layout)
+ // and section name.
+ 
+ const char*
+-Script_sections::output_section_name(const char* file_name,
+-				     const char* section_name,
+-				     Output_section*** output_section_slot)
++Script_sections::output_section_name(
++    const char* file_name,
++    const char* section_name,
++    Output_section*** output_section_slot,
++    Script_sections::Section_type *psection_type)
+ {
+   for (Sections_elements::const_iterator p = this->sections_elements_->begin();
+        p != this->sections_elements_->end();
+        ++p)
+     {
+       const char* ret = (*p)->output_section_name(file_name, section_name,
+-						  output_section_slot);
++						  output_section_slot,
++						  psection_type);
+ 
+       if (ret != NULL)
+ 	{
+@@ -2722,6 +2825,7 @@ Script_sections::output_section_name(const char* file_name,
+ 	  if (strcmp(ret, "/DISCARD/") == 0)
+ 	    {
+ 	      *output_section_slot = NULL;
++	      *psection_type = Script_sections::ST_NONE;
+ 	      return NULL;
+ 	    }
+ 	  return ret;
+@@ -2732,6 +2836,7 @@ Script_sections::output_section_name(const char* file_name,
+   // gets the name of the input section.
+ 
+   *output_section_slot = NULL;
++  *psection_type = Script_sections::ST_NONE;
+ 
+   return section_name;
+ }
+@@ -2849,11 +2954,55 @@ Script_sections::set_section_addresses(Symbol_table* symtab, Layout* layout)
+ 
+   // For a relocatable link, we implicitly set dot to zero.
+   uint64_t dot_value = 0;
++  uint64_t dot_alignment = 0;
+   uint64_t load_address = 0;
++
++  // Check to see if we want to use any of -Ttext, -Tdata and -Tbss options
++  // to set section addresses.  If the script has any SEGMENT_START
++  // expression, we do not set the section addresses.
++  bool use_tsection_options =
++    (!this->saw_segment_start_expression_
++     && (parameters->options().user_set_Ttext()
++	 || parameters->options().user_set_Tdata()
++	 || parameters->options().user_set_Tbss()));
++
+   for (Sections_elements::iterator p = this->sections_elements_->begin();
+        p != this->sections_elements_->end();
+        ++p)
+-    (*p)->set_section_addresses(symtab, layout, &dot_value, &load_address);
++    {
++      Output_section* os = (*p)->get_output_section();
++
++      // Handle -Ttext, -Tdata and -Tbss options.  We do this by looking for
++      // the special sections by names and doing dot assignments. 
++      if (use_tsection_options
++	  && os != NULL
++	  && (os->flags() & elfcpp::SHF_ALLOC) != 0)
++	{
++	  uint64_t new_dot_value = dot_value;
++
++	  if (parameters->options().user_set_Ttext()
++	      && strcmp(os->name(), ".text") == 0)
++	    new_dot_value = parameters->options().Ttext();
++	  else if (parameters->options().user_set_Tdata()
++	      && strcmp(os->name(), ".data") == 0)
++	    new_dot_value = parameters->options().Tdata();
++	  else if (parameters->options().user_set_Tbss()
++	      && strcmp(os->name(), ".bss") == 0)
++	    new_dot_value = parameters->options().Tbss();
++
++	  // Update dot and load address if necessary.
++	  if (new_dot_value < dot_value)
++	    gold_error(_("dot may not move backward"));
++	  else if (new_dot_value != dot_value)
++	    {
++	      dot_value = new_dot_value;
++	      load_address = new_dot_value;
++	    }
++	}
++
++      (*p)->set_section_addresses(symtab, layout, &dot_value, &dot_alignment,
++				  &load_address);
++    } 
+ 
+   if (this->phdrs_elements_ != NULL)
+     {
+@@ -2863,7 +3012,7 @@ Script_sections::set_section_addresses(Symbol_table* symtab, Layout* layout)
+ 	(*p)->eval_load_address(symtab, layout);
+     }
+ 
+-  return this->create_segments(layout);
++  return this->create_segments(layout, dot_alignment);
+ }
+ 
+ // Sort the sections in order to put them into segments.
+@@ -2905,6 +3054,12 @@ Sort_output_sections::operator()(const Output_section* os1,
+   if (os1->type() == elfcpp::SHT_NOBITS && os2->type() == elfcpp::SHT_PROGBITS)
+     return false;
+ 
++  // Sort non-NOLOAD before NOLOAD.
++  if (os1->is_noload() && !os2->is_noload())
++    return true;
++  if (!os1->is_noload() && os2->is_noload())
++    return true;
++  
+   // Otherwise we don't care.
+   return false;
+ }
+@@ -2965,7 +3120,7 @@ Script_sections::header_size_adjustment(uint64_t lma,
+ // if any.
+ 
+ Output_segment*
+-Script_sections::create_segments(Layout* layout)
++Script_sections::create_segments(Layout* layout, uint64_t dot_alignment)
+ {
+   gold_assert(this->saw_sections_clause_);
+ 
+@@ -2973,7 +3128,7 @@ Script_sections::create_segments(Layout* layout)
+     return NULL;
+ 
+   if (this->saw_phdrs_clause())
+-    return create_segments_from_phdrs_clause(layout);
++    return create_segments_from_phdrs_clause(layout, dot_alignment);
+ 
+   Layout::Section_list sections;
+   layout->get_allocated_sections(&sections);
+@@ -3046,12 +3201,13 @@ Script_sections::create_segments(Layout* layout)
+ 	  current_seg = layout->make_output_segment(elfcpp::PT_LOAD,
+ 						    seg_flags);
+ 	  current_seg->set_addresses(vma, lma);
++	  current_seg->set_minimum_p_align(dot_alignment);
+ 	  if (first_seg == NULL)
+ 	    first_seg = current_seg;
  	  is_current_seg_readonly = true;
  	}
  
@@ -16651,7 +18268,7 @@ index a541e9a..42192b0 100644
  
        if (((*p)->flags() & elfcpp::SHF_WRITE) != 0)
  	is_current_seg_readonly = false;
-@@ -3130,7 +3133,7 @@ Script_sections::create_note_and_tls_segments(
+@@ -3130,7 +3286,7 @@ Script_sections::create_note_and_tls_segments(
  	    Layout::section_flags_to_segment((*p)->flags());
  	  Output_segment* oseg = layout->make_output_segment(elfcpp::PT_NOTE,
  							     seg_flags);
@@ -16660,7 +18277,7 @@ index a541e9a..42192b0 100644
  
  	  // Incorporate any subsequent SHT_NOTE sections, in the
  	  // hopes that the script is sensible.
-@@ -3139,7 +3142,7 @@ Script_sections::create_note_and_tls_segments(
+@@ -3139,7 +3295,7 @@ Script_sections::create_note_and_tls_segments(
  		 && (*pnext)->type() == elfcpp::SHT_NOTE)
  	    {
  	      seg_flags = Layout::section_flags_to_segment((*pnext)->flags());
@@ -16669,7 +18286,7 @@ index a541e9a..42192b0 100644
  	      p = pnext;
  	      ++pnext;
  	    }
-@@ -3154,14 +3157,14 @@ Script_sections::create_note_and_tls_segments(
+@@ -3154,14 +3310,14 @@ Script_sections::create_note_and_tls_segments(
  	    Layout::section_flags_to_segment((*p)->flags());
  	  Output_segment* oseg = layout->make_output_segment(elfcpp::PT_TLS,
  							     seg_flags);
@@ -16686,7 +18303,21 @@ index a541e9a..42192b0 100644
  	      p = pnext;
  	      ++pnext;
  	    }
-@@ -3315,7 +3318,7 @@ Script_sections::attach_sections_using_phdrs_clause(Layout* layout)
+@@ -3239,10 +3395,11 @@ Script_sections::expected_segment_count(const Layout* layout) const
+ // should hold the file header and program headers, if any.
+ 
+ Output_segment*
+-Script_sections::create_segments_from_phdrs_clause(Layout* layout)
++Script_sections::create_segments_from_phdrs_clause(Layout* layout,
++						   uint64_t dot_alignment)
+ {
+   this->attach_sections_using_phdrs_clause(layout);
+-  return this->set_phdrs_clause_addresses(layout);
++  return this->set_phdrs_clause_addresses(layout, dot_alignment);
+ }
+ 
+ // Create the segments from the PHDRS clause, and put the output
+@@ -3315,7 +3472,7 @@ Script_sections::attach_sections_using_phdrs_clause(Layout* layout)
  
  	      elfcpp::Elf_Word seg_flags =
  		Layout::section_flags_to_segment(os->flags());
@@ -16695,8 +18326,121 @@ index a541e9a..42192b0 100644
  
  	      if (r->second->type() == elfcpp::PT_LOAD)
  		{
+@@ -3336,7 +3493,8 @@ Script_sections::attach_sections_using_phdrs_clause(Layout* layout)
+ // if any.
+ 
+ Output_segment*
+-Script_sections::set_phdrs_clause_addresses(Layout* layout)
++Script_sections::set_phdrs_clause_addresses(Layout* layout,
++					    uint64_t dot_alignment)
+ {
+   Output_segment* load_seg = NULL;
+   for (Phdrs_elements::const_iterator p = this->phdrs_elements_->begin();
+@@ -3359,6 +3517,8 @@ Script_sections::set_phdrs_clause_addresses(Layout* layout)
+ 	  continue;
+ 	}
+ 
++      oseg->set_minimum_p_align(dot_alignment);
++
+       // The output sections should have addresses from the SECTIONS
+       // clause.  The addresses don't have to be in order, so find the
+       // one with the lowest load address.  Use that to set the
+diff --git a/gold/script-sections.h b/gold/script-sections.h
+index b326eae..f18b06c 100644
+--- a/gold/script-sections.h
++++ b/gold/script-sections.h
+@@ -52,6 +52,20 @@ class Script_sections
+   typedef std::list<Sections_element*> Sections_elements;
+ 
+  public:
++
++  // Logical script section types.  We map section types returned by the
++  // parser into these since some section types have the same semantics.
++  enum Section_type
++  {
++    // No section type specified.
++    ST_NONE,
++    // Section is NOLOAD.  We allocate space in the output but section
++    // is not loaded in runtime.
++    ST_NOLOAD,
++    // No space is allocated to section.
++    ST_NOALLOC
++  };
++
+   Script_sections();
+ 
+   // Start a SECTIONS clause.
+@@ -147,9 +161,13 @@ class Script_sections
+   // 3) If the input section is not mapped by the SECTIONS clause,
+   //    this returns SECTION_NAME, and sets *OUTPUT_SECTION_SLOT to
+   //    NULL.
++  // PSCRIPT_SECTION_TYPE points to a location for returning the section
++  // type specified in script.  This can be SCRIPT_SECTION_TYPE_NONE if
++  // no type is specified.
+   const char*
+   output_section_name(const char* file_name, const char* section_name,
+-		      Output_section*** output_section_slot);
++		      Output_section*** output_section_slot,
++		      Section_type* pscript_section_type);
+ 
+   // Place a marker for an orphan output section into the SECTIONS
+   // clause.
+@@ -191,6 +209,17 @@ class Script_sections
+   void
+   release_segments();
+ 
++  // Whether we ever saw a SEGMENT_START expression, the presence of which
++  // changes the behaviour of -Ttext, -Tdata and -Tbss options.
++  bool
++  saw_segment_start_expression() const
++  { return this->saw_segment_start_expression_; }
++
++  // Set the flag which indicates whether we saw a SEGMENT_START expression.
++  void
++  set_saw_segment_start_expression(bool value)
++  { this->saw_segment_start_expression_ = value; }
++
+   // Print the contents to the FILE.  This is for debugging.
+   void
+   print(FILE*) const;
+@@ -203,7 +232,7 @@ class Script_sections
+ 
+   // Create segments.
+   Output_segment*
+-  create_segments(Layout*);
++  create_segments(Layout*, uint64_t);
+ 
+   // Create PT_NOTE and PT_TLS segments.
+   void
+@@ -224,7 +253,7 @@ class Script_sections
+ 
+   // Create the segments from a PHDRS clause.
+   Output_segment*
+-  create_segments_from_phdrs_clause(Layout* layout);
++  create_segments_from_phdrs_clause(Layout* layout, uint64_t);
+ 
+   // Attach sections to segments from a PHDRS clause.
+   void
+@@ -232,7 +261,7 @@ class Script_sections
+ 
+   // Set addresses of segments from a PHDRS clause.
+   Output_segment*
+-  set_phdrs_clause_addresses(Layout*);
++  set_phdrs_clause_addresses(Layout*, uint64_t);
+ 
+   // True if we ever saw a SECTIONS clause.
+   bool saw_sections_clause_;
+@@ -253,6 +282,8 @@ class Script_sections
+   bool saw_data_segment_align_;
+   // Whether we have seen DATA_SEGMENT_RELRO_END.
+   bool saw_relro_end_;
++  // Whether we have seen SEGMENT_START.
++  bool saw_segment_start_expression_;
+ };
+ 
+ } // End namespace gold.
 diff --git a/gold/script.cc b/gold/script.cc
-index d0ffe41..674ae5a 100644
+index d0ffe41..279cf5f 100644
 --- a/gold/script.cc
 +++ b/gold/script.cc
 @@ -874,6 +874,9 @@ Symbol_assignment::add_to_table(Symbol_table* symtab)
@@ -16709,6 +18453,24 @@ index d0ffe41..674ae5a 100644
  					  0, // value
  					  0, // size
  					  elfcpp::STT_NOTYPE,
+@@ -952,7 +955,7 @@ Symbol_assignment::sized_finalize(Symbol_table* symtab, const Layout* layout,
+   uint64_t final_val = this->val_->eval_maybe_dot(symtab, layout, true,
+ 						  is_dot_available,
+ 						  dot_value, dot_section,
+-						  &section);
++						  &section, NULL);
+   Sized_symbol<size>* ssym = symtab->get_sized_symbol<size>(this->sym_);
+   ssym->set_value(final_val);
+   if (section != NULL)
+@@ -971,7 +974,7 @@ Symbol_assignment::set_if_absolute(Symbol_table* symtab, const Layout* layout,
+   Output_section* val_section;
+   uint64_t val = this->val_->eval_maybe_dot(symtab, layout, false,
+ 					    is_dot_available, dot_value,
+-					    NULL, &val_section);
++					    NULL, &val_section, NULL);
+   if (val_section != NULL)
+     return;
+ 
 @@ -1051,18 +1054,21 @@ Script_options::Script_options()
  
  void
@@ -16802,7 +18564,37 @@ index d0ffe41..674ae5a 100644
  
    if (yyparse(&closure) != 0)
      return false;
-@@ -2266,8 +2282,9 @@ script_set_symbol(void* closurev, const char* name, size_t length,
+@@ -1619,11 +1635,13 @@ script_keyword_parsecodes[] =
+   { "BYTE", BYTE },
+   { "CONSTANT", CONSTANT },
+   { "CONSTRUCTORS", CONSTRUCTORS },
++  { "COPY", COPY },
+   { "CREATE_OBJECT_SYMBOLS", CREATE_OBJECT_SYMBOLS },
+   { "DATA_SEGMENT_ALIGN", DATA_SEGMENT_ALIGN },
+   { "DATA_SEGMENT_END", DATA_SEGMENT_END },
+   { "DATA_SEGMENT_RELRO_END", DATA_SEGMENT_RELRO_END },
+   { "DEFINED", DEFINED },
++  { "DSECT", DSECT },
+   { "ENTRY", ENTRY },
+   { "EXCLUDE_FILE", EXCLUDE_FILE },
+   { "EXTERN", EXTERN },
+@@ -1633,6 +1651,7 @@ script_keyword_parsecodes[] =
+   { "GROUP", GROUP },
+   { "HLL", HLL },
+   { "INCLUDE", INCLUDE },
++  { "INFO", INFO },
+   { "INHIBIT_COMMON_ALLOCATION", INHIBIT_COMMON_ALLOCATION },
+   { "INPUT", INPUT },
+   { "KEEP", KEEP },
+@@ -1646,6 +1665,7 @@ script_keyword_parsecodes[] =
+   { "NEXT", NEXT },
+   { "NOCROSSREFS", NOCROSSREFS },
+   { "NOFLOAT", NOFLOAT },
++  { "NOLOAD", NOLOAD },
+   { "ONLY_IF_RO", ONLY_IF_RO },
+   { "ONLY_IF_RW", ONLY_IF_RW },
+   { "OPTION", OPTION },
+@@ -2266,8 +2286,9 @@ script_set_symbol(void* closurev, const char* name, size_t length,
    Parser_closure* closure = static_cast<Parser_closure*>(closurev);
    const bool provide = providei != 0;
    const bool hidden = hiddeni != 0;
@@ -16814,7 +18606,7 @@ index d0ffe41..674ae5a 100644
    closure->clear_skip_on_incompatible_target();
  }
  
-@@ -2362,7 +2379,7 @@ script_add_search_dir(void* closurev, const char* option, size_t length)
+@@ -2362,7 +2383,7 @@ script_add_search_dir(void* closurev, const char* option, size_t length)
      gold_warning(_("%s:%d:%d: ignoring SEARCH_DIR; SEARCH_DIR is only valid"
  		   " for scripts specified via -T/--script"),
  		 closure->filename(), closure->lineno(), closure->charpos());
@@ -16823,11 +18615,49 @@ index d0ffe41..674ae5a 100644
      {
        std::string s = "-L" + std::string(option, length);
        script_parse_option(closurev, s.c_str(), s.size());
+@@ -2739,3 +2760,11 @@ script_phdr_string_to_type(void* closurev, const char* name, size_t namelen)
+   yyerror(closurev, _("unknown PHDR type (try integer)"));
+   return elfcpp::PT_NULL;
+ }
++
++extern "C" void
++script_saw_segment_start_expression(void* closurev)
++{
++  Parser_closure* closure = static_cast<Parser_closure*>(closurev);
++  Script_sections* ss = closure->script_options()->script_sections();
++  ss->set_saw_segment_start_expression(true);
++}
 diff --git a/gold/script.h b/gold/script.h
-index 755bb79..7129565 100644
+index 755bb79..82a0648 100644
 --- a/gold/script.h
 +++ b/gold/script.h
-@@ -200,10 +200,10 @@ class Version_script_info
+@@ -84,11 +84,14 @@ class Expression
+   // value is defined.  If the value is absolute *RESULT_SECTION will
+   // be NULL.  Note that the returned value is still an absolute
+   // value; to get a section relative value the caller must subtract
+-  // the section address.
++  // the section address.  If RESULT_ALIGNMENT is not NULL, this sets
++  // *RESULT_ALIGNMENT to the alignment of the value of that alignment
++  // is larger than *RESULT_ALIGNMENT; this will only be non-zero if
++  // this is an ALIGN expression.
+   uint64_t
+   eval_with_dot(const Symbol_table*, const Layout*, bool check_assertions,
+ 		uint64_t dot_value, Output_section* dot_section,
+-		Output_section** result_section);
++		Output_section** result_section, uint64_t* result_alignment);
+ 
+   // Return the value of an expression which may or may not be
+   // permitted to refer to the dot symbol, depending on
+@@ -97,7 +100,7 @@ class Expression
+   eval_maybe_dot(const Symbol_table*, const Layout*, bool check_assertions,
+ 		 bool is_dot_available, uint64_t dot_value,
+ 		 Output_section* dot_section,
+-		 Output_section** result_section);
++		 Output_section** result_section, uint64_t* result_alignment);
+ 
+   // Print the expression to the FILE.  This is for debugging.
+   virtual void
+@@ -200,10 +203,10 @@ class Version_script_info
  class Symbol_assignment
  {
   public:
@@ -16842,7 +18672,7 @@ index 755bb79..7129565 100644
    { }
  
    // Add the symbol to the symbol table.
-@@ -246,6 +246,9 @@ class Symbol_assignment
+@@ -246,6 +249,9 @@ class Symbol_assignment
    std::string name_;
    // Expression to assign to symbol.
    Expression* val_;
@@ -16852,7 +18682,7 @@ index 755bb79..7129565 100644
    // Whether the assignment should be provided (only set if there is
    // an undefined reference to the symbol.
    bool provide_;
-@@ -298,8 +301,8 @@ class Script_options
+@@ -298,8 +304,8 @@ class Script_options
  
    // Add a symbol to be defined.
    void
@@ -16864,7 +18694,7 @@ index 755bb79..7129565 100644
    // Add an assertion.
    void
 diff --git a/gold/sparc.cc b/gold/sparc.cc
-index eac983f..f00a41b 100644
+index eac983f..c6eb28e 100644
 --- a/gold/sparc.cc
 +++ b/gold/sparc.cc
 @@ -67,8 +67,7 @@ class Target_sparc : public Sized_target<size, big_endian>
@@ -16953,8 +18783,9 @@ index eac983f..f00a41b 100644
  					   (elfcpp::SHF_ALLOC
  					    | elfcpp::SHF_WRITE),
 -					   this->got_);
-+					   this->got_, false);
-       os->set_is_relro();
+-      os->set_is_relro();
++					   this->got_, false, true, false,
++					   false);
  
        // Define _GLOBAL_OFFSET_TABLE_ at the start of the .got section.
        symtab->define_in_output_data("_GLOBAL_OFFSET_TABLE_", NULL,
@@ -16962,30 +18793,32 @@ index eac983f..f00a41b 100644
  				    this->got_,
  				    0, 0, elfcpp::STT_OBJECT,
  				    elfcpp::STB_LOCAL,
-@@ -1053,7 +1053,7 @@ Target_sparc<size, big_endian>::rela_dyn_section(Layout* layout)
+@@ -1053,7 +1053,8 @@ Target_sparc<size, big_endian>::rela_dyn_section(Layout* layout)
        gold_assert(layout != NULL);
        this->rela_dyn_ = new Reloc_section(parameters->options().combreloc());
        layout->add_output_section_data(".rela.dyn", elfcpp::SHT_RELA,
 -				      elfcpp::SHF_ALLOC, this->rela_dyn_);
-+				      elfcpp::SHF_ALLOC, this->rela_dyn_, true);
++				      elfcpp::SHF_ALLOC, this->rela_dyn_, true,
++				      false, false, false);
      }
    return this->rela_dyn_;
  }
-@@ -1155,7 +1155,7 @@ Output_data_plt_sparc<size, big_endian>::Output_data_plt_sparc(Layout* layout)
+@@ -1155,7 +1156,8 @@ Output_data_plt_sparc<size, big_endian>::Output_data_plt_sparc(Layout* layout)
  {
    this->rel_ = new Reloc_section(false);
    layout->add_output_section_data(".rela.plt", elfcpp::SHT_RELA,
 -				  elfcpp::SHF_ALLOC, this->rel_);
-+				  elfcpp::SHF_ALLOC, this->rel_, true);
++				  elfcpp::SHF_ALLOC, this->rel_, true,
++				  false, false, false);
  }
  
  template<int size, bool big_endian>
-@@ -1372,10 +1372,11 @@ Target_sparc<size, big_endian>::make_plt_entry(Symbol_table* symtab,
+@@ -1372,10 +1374,11 @@ Target_sparc<size, big_endian>::make_plt_entry(Symbol_table* symtab,
  				      (elfcpp::SHF_ALLOC
  				       | elfcpp::SHF_EXECINSTR
  				       | elfcpp::SHF_WRITE),
 -				      this->plt_);
-+				      this->plt_, false);
++				      this->plt_, false, false, false, false);
  
        // Define _PROCEDURE_LINKAGE_TABLE_ at the start of the .plt section.
        symtab->define_in_output_data("_PROCEDURE_LINKAGE_TABLE_", NULL,
@@ -16993,7 +18826,7 @@ index eac983f..f00a41b 100644
  				    this->plt_,
  				    0, 0, elfcpp::STT_OBJECT,
  				    elfcpp::STB_LOCAL,
-@@ -1600,7 +1601,6 @@ Target_sparc<size, big_endian>::Scan::check_non_pic(Relobj* object, unsigned int
+@@ -1600,7 +1603,6 @@ Target_sparc<size, big_endian>::Scan::check_non_pic(Relobj* object, unsigned int
  template<int size, bool big_endian>
  inline void
  Target_sparc<size, big_endian>::Scan::local(
@@ -17001,7 +18834,7 @@ index eac983f..f00a41b 100644
  			Symbol_table* symtab,
  			Layout* layout,
  			Target_sparc<size, big_endian>* target,
-@@ -1902,7 +1902,6 @@ Target_sparc<size, big_endian>::Scan::unsupported_reloc_global(
+@@ -1902,7 +1904,6 @@ Target_sparc<size, big_endian>::Scan::unsupported_reloc_global(
  template<int size, bool big_endian>
  inline void
  Target_sparc<size, big_endian>::Scan::global(
@@ -17009,7 +18842,7 @@ index eac983f..f00a41b 100644
  				Symbol_table* symtab,
  				Layout* layout,
  				Target_sparc<size, big_endian>* target,
-@@ -2250,7 +2249,6 @@ Target_sparc<size, big_endian>::Scan::global(
+@@ -2250,7 +2251,6 @@ Target_sparc<size, big_endian>::Scan::global(
  template<int size, bool big_endian>
  void
  Target_sparc<size, big_endian>::gc_process_relocs(
@@ -17017,7 +18850,7 @@ index eac983f..f00a41b 100644
  			Symbol_table* symtab,
  			Layout* layout,
  			Sized_relobj<size, big_endian>* object,
-@@ -2267,7 +2265,6 @@ Target_sparc<size, big_endian>::gc_process_relocs(
+@@ -2267,7 +2267,6 @@ Target_sparc<size, big_endian>::gc_process_relocs(
    typedef typename Target_sparc<size, big_endian>::Scan Scan;
  
    gold::gc_process_relocs<size, big_endian, Sparc, elfcpp::SHT_RELA, Scan>(
@@ -17025,7 +18858,7 @@ index eac983f..f00a41b 100644
      symtab,
      layout,
      this,
-@@ -2286,7 +2283,6 @@ Target_sparc<size, big_endian>::gc_process_relocs(
+@@ -2286,7 +2285,6 @@ Target_sparc<size, big_endian>::gc_process_relocs(
  template<int size, bool big_endian>
  void
  Target_sparc<size, big_endian>::scan_relocs(
@@ -17033,7 +18866,7 @@ index eac983f..f00a41b 100644
  			Symbol_table* symtab,
  			Layout* layout,
  			Sized_relobj<size, big_endian>* object,
-@@ -2310,7 +2306,6 @@ Target_sparc<size, big_endian>::scan_relocs(
+@@ -2310,7 +2308,6 @@ Target_sparc<size, big_endian>::scan_relocs(
      }
  
    gold::scan_relocs<size, big_endian, Sparc, elfcpp::SHT_RELA, Scan>(
@@ -17041,7 +18874,7 @@ index eac983f..f00a41b 100644
      symtab,
      layout,
      this,
-@@ -2328,7 +2323,10 @@ Target_sparc<size, big_endian>::scan_relocs(
+@@ -2328,7 +2325,10 @@ Target_sparc<size, big_endian>::scan_relocs(
  
  template<int size, bool big_endian>
  void
@@ -17053,7 +18886,7 @@ index eac983f..f00a41b 100644
  {
    // Fill in some more dynamic tags.
    Output_data_dynamic* const odyn = layout->dynamic_data();
-@@ -3149,7 +3147,6 @@ Target_sparc<size, big_endian>::Relocatable_size_for_reloc::get_size_for_reloc(
+@@ -3149,7 +3149,6 @@ Target_sparc<size, big_endian>::Relocatable_size_for_reloc::get_size_for_reloc(
  template<int size, bool big_endian>
  void
  Target_sparc<size, big_endian>::scan_relocatable_relocs(
@@ -17061,7 +18894,7 @@ index eac983f..f00a41b 100644
  			Symbol_table* symtab,
  			Layout* layout,
  			Sized_relobj<size, big_endian>* object,
-@@ -3170,7 +3167,6 @@ Target_sparc<size, big_endian>::scan_relocatable_relocs(
+@@ -3170,7 +3169,6 @@ Target_sparc<size, big_endian>::scan_relocatable_relocs(
  
    gold::scan_relocatable_relocs<size, big_endian, elfcpp::SHT_RELA,
        Scan_relocatable_relocs>(
@@ -18006,7 +19839,7 @@ index 67397c3..05ef97e 100644
  			  Sized_relobj<size, big_endian>* object,
  			  unsigned int data_shndx,
 diff --git a/gold/testsuite/Makefile.am b/gold/testsuite/Makefile.am
-index 09d7325..48ed036 100644
+index 09d7325..0771f2c 100644
 --- a/gold/testsuite/Makefile.am
 +++ b/gold/testsuite/Makefile.am
 @@ -128,6 +128,16 @@ gc_tls_test:gc_tls_test.o gcctestdir/ld
@@ -18026,7 +19859,40 @@ index 09d7325..48ed036 100644
  check_SCRIPTS += icf_test.sh
  check_DATA += icf_test.stdout
  MOSTLYCLEANFILES += icf_test
-@@ -1301,3 +1311,22 @@ MOSTLYCLEANFILES += split_x86_64_1 split_x86_64_2 split_x86_64_3 \
+@@ -1009,6 +1019,32 @@ script_test_5: script_test_5.o gcctestdir/ld $(srcdir)/script_test_5.t
+ script_test_5.stdout: script_test_5
+ 	$(TEST_READELF) -SW script_test_5 > script_test_5.stdout
+ 
++check_SCRIPTS += script_test_6.sh
++check_DATA += script_test_6.stdout
++MOSTLYCLEANFILES += script_test_6
++script_test_6: basic_test.o gcctestdir/ld $(srcdir)/script_test_6.t
++	$(CXXLINK) -Bgcctestdir/ basic_test.o -T $(srcdir)/script_test_6.t \
++	-Wl,-Ttext=0x10001000 -Wl,-Tdata=0x10200000 -Wl,-Tbss=0x10400000
++script_test_6.stdout: script_test_6
++	$(TEST_READELF) -SlW script_test_6 > script_test_6.stdout
++
++check_SCRIPTS += script_test_7.sh
++check_DATA += script_test_7.stdout
++MOSTLYCLEANFILES += script_test_7
++script_test_7: basic_test.o gcctestdir/ld $(srcdir)/script_test_7.t
++	$(CXXLINK) -Bgcctestdir/ basic_test.o -T $(srcdir)/script_test_7.t
++script_test_7.stdout: script_test_7
++	$(TEST_READELF) -SlW script_test_7 > script_test_7.stdout
++
++check_SCRIPTS += script_test_8.sh
++check_DATA += script_test_8.stdout
++MOSTLYCLEANFILES += script_test_8
++script_test_8: basic_test.o gcctestdir/ld $(srcdir)/script_test_7.t
++	$(CXXLINK) -Bgcctestdir/ basic_test.o -T $(srcdir)/script_test_7.t \
++	-Wl,-Ttext=0x20001000 -Wl,-Tdata=0x20200000 -Wl,-Tbss=0x20400000
++script_test_8.stdout: script_test_8
++	$(TEST_READELF) -SlW script_test_8 > script_test_8.stdout
++
+ # Test --dynamic-list, --dynamic-list-data, --dynamic-list-cpp-new,
+ # and --dynamic-list-cpp-typeinfo
+ 
+@@ -1301,3 +1337,22 @@ MOSTLYCLEANFILES += split_x86_64_1 split_x86_64_2 split_x86_64_3 \
  	split_x86_64_4 split_x86_64_r
  
  endif DEFAULT_TARGET_X86_64
@@ -18050,7 +19916,7 @@ index 09d7325..48ed036 100644
 +
 +endif DEFAULT_TARGET_ARM
 diff --git a/gold/testsuite/Makefile.in b/gold/testsuite/Makefile.in
-index 3f5459f..4aa8eba 100644
+index 3f5459f..fe193bc 100644
 --- a/gold/testsuite/Makefile.in
 +++ b/gold/testsuite/Makefile.in
 @@ -55,8 +55,10 @@ check_PROGRAMS = object_unittest$(EXEEXT) binary_unittest$(EXEEXT) \
@@ -18066,7 +19932,19 @@ index 3f5459f..4aa8eba 100644
  @GCC_TRUE@@NATIVE_LINKER_TRUE@	icf_keep_unique_test.sh \
  @GCC_TRUE@@NATIVE_LINKER_TRUE@	icf_safe_test.sh \
  @GCC_TRUE@@NATIVE_LINKER_TRUE@	two_file_shared.sh weak_plt.sh \
-@@ -75,8 +77,10 @@ check_PROGRAMS = object_unittest$(EXEEXT) binary_unittest$(EXEEXT) \
+@@ -67,7 +69,10 @@ check_PROGRAMS = object_unittest$(EXEEXT) binary_unittest$(EXEEXT) \
+ @GCC_TRUE@@NATIVE_LINKER_TRUE@	ver_matching_test.sh \
+ @GCC_TRUE@@NATIVE_LINKER_TRUE@	script_test_3.sh \
+ @GCC_TRUE@@NATIVE_LINKER_TRUE@	script_test_4.sh \
+-@GCC_TRUE@@NATIVE_LINKER_TRUE@	script_test_5.sh dynamic_list.sh
++@GCC_TRUE@@NATIVE_LINKER_TRUE@	script_test_5.sh \
++@GCC_TRUE@@NATIVE_LINKER_TRUE@	script_test_6.sh \
++@GCC_TRUE@@NATIVE_LINKER_TRUE@	script_test_7.sh \
++@GCC_TRUE@@NATIVE_LINKER_TRUE@	script_test_8.sh dynamic_list.sh
+ 
+ # Create the data files that debug_msg.sh analyzes.
+ 
+@@ -75,8 +80,10 @@ check_PROGRAMS = object_unittest$(EXEEXT) binary_unittest$(EXEEXT) \
  
  # We also want to make sure we do something reasonable when there's no
  # debug info available.  For the best test, we use .so's.
@@ -18078,9 +19956,13 @@ index 3f5459f..4aa8eba 100644
  @GCC_TRUE@@NATIVE_LINKER_TRUE@	icf_test.stdout \
  @GCC_TRUE@@NATIVE_LINKER_TRUE@	icf_keep_unique_test.stdout \
  @GCC_TRUE@@NATIVE_LINKER_TRUE@	icf_safe_test.stdout \
-@@ -93,8 +97,9 @@ check_PROGRAMS = object_unittest$(EXEEXT) binary_unittest$(EXEEXT) \
+@@ -92,9 +99,13 @@ check_PROGRAMS = object_unittest$(EXEEXT) binary_unittest$(EXEEXT) \
+ @GCC_TRUE@@NATIVE_LINKER_TRUE@	script_test_3.stdout \
  @GCC_TRUE@@NATIVE_LINKER_TRUE@	script_test_4.stdout \
  @GCC_TRUE@@NATIVE_LINKER_TRUE@	script_test_5.stdout \
++@GCC_TRUE@@NATIVE_LINKER_TRUE@	script_test_6.stdout \
++@GCC_TRUE@@NATIVE_LINKER_TRUE@	script_test_7.stdout \
++@GCC_TRUE@@NATIVE_LINKER_TRUE@	script_test_8.stdout \
  @GCC_TRUE@@NATIVE_LINKER_TRUE@	dynamic_list.stdout
 -@GCC_TRUE@@NATIVE_LINKER_TRUE@am__append_3 = gc_comdat_test \
 -@GCC_TRUE@@NATIVE_LINKER_TRUE@	gc_tls_test icf_test \
@@ -18090,7 +19972,21 @@ index 3f5459f..4aa8eba 100644
  @GCC_TRUE@@NATIVE_LINKER_TRUE@	icf_keep_unique_test \
  @GCC_TRUE@@NATIVE_LINKER_TRUE@	icf_safe_test \
  @GCC_TRUE@@NATIVE_LINKER_TRUE@	two_file_shared.dbg \
-@@ -406,6 +411,9 @@ check_PROGRAMS = object_unittest$(EXEEXT) binary_unittest$(EXEEXT) \
+@@ -242,9 +253,10 @@ check_PROGRAMS = object_unittest$(EXEEXT) binary_unittest$(EXEEXT) \
+ @GCC_TRUE@@NATIVE_LINKER_TRUE@	ver_matching_test.stdout \
+ @GCC_TRUE@@NATIVE_LINKER_TRUE@	script_test_3.stdout \
+ @GCC_TRUE@@NATIVE_LINKER_TRUE@	script_test_4 script_test_5 \
+-@GCC_TRUE@@NATIVE_LINKER_TRUE@	dynamic_list dynamic_list.stdout \
+-@GCC_TRUE@@NATIVE_LINKER_TRUE@	libthin1.a libthin3.a \
+-@GCC_TRUE@@NATIVE_LINKER_TRUE@	libthinall.a \
++@GCC_TRUE@@NATIVE_LINKER_TRUE@	script_test_6 script_test_7 \
++@GCC_TRUE@@NATIVE_LINKER_TRUE@	script_test_8 dynamic_list \
++@GCC_TRUE@@NATIVE_LINKER_TRUE@	dynamic_list.stdout libthin1.a \
++@GCC_TRUE@@NATIVE_LINKER_TRUE@	libthin3.a libthinall.a \
+ @GCC_TRUE@@NATIVE_LINKER_TRUE@	alt/thin_archive_test_2.o \
+ @GCC_TRUE@@NATIVE_LINKER_TRUE@	alt/thin_archive_test_4.o \
+ @GCC_TRUE@@NATIVE_LINKER_TRUE@	alt/libthin2.a alt/libthin4.a
+@@ -406,6 +418,9 @@ check_PROGRAMS = object_unittest$(EXEEXT) binary_unittest$(EXEEXT) \
  @DEFAULT_TARGET_X86_64_TRUE@am__append_37 = split_x86_64_1 split_x86_64_2 split_x86_64_3 \
  @DEFAULT_TARGET_X86_64_TRUE@	split_x86_64_4 split_x86_64_r
  
@@ -18100,7 +19996,7 @@ index 3f5459f..4aa8eba 100644
  subdir = testsuite
  DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
  ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-@@ -1451,15 +1459,16 @@ TEST_AS = $(top_builddir)/../gas/as-new
+@@ -1451,15 +1466,16 @@ TEST_AS = $(top_builddir)/../gas/as-new
  # the right choice for files 'make' builds that people rebuild.
  MOSTLYCLEANFILES = *.so *.syms *.stdout $(am__append_3) \
  	$(am__append_8) $(am__append_17) $(am__append_25) \
@@ -18120,7 +20016,7 @@ index 3f5459f..4aa8eba 100644
  BUILT_SOURCES = $(am__append_16)
  TESTS = $(check_SCRIPTS) $(check_PROGRAMS)
  
-@@ -2621,6 +2630,14 @@ uninstall-am:
+@@ -2621,6 +2637,14 @@ uninstall-am:
  @GCC_TRUE@@NATIVE_LINKER_TRUE@	$(CXXCOMPILE) -O0 -g -c -o $@ $<
  @GCC_TRUE@@NATIVE_LINKER_TRUE@flagstest_ndebug.o: constructor_test.cc
  @GCC_TRUE@@NATIVE_LINKER_TRUE@	$(CXXCOMPILE) -O0 -c -o $@ $<
@@ -18135,7 +20031,7 @@ index 3f5459f..4aa8eba 100644
  @GCC_TRUE@@NATIVE_LINKER_TRUE@gc_comdat_test_1.o: gc_comdat_test_1.cc 
  @GCC_TRUE@@NATIVE_LINKER_TRUE@	$(CXXCOMPILE) -O0 -c -ffunction-sections -g -o $@ $<
  @GCC_TRUE@@NATIVE_LINKER_TRUE@gc_comdat_test_2.o: gc_comdat_test_2.cc 
-@@ -2635,6 +2652,12 @@ uninstall-am:
+@@ -2635,6 +2659,12 @@ uninstall-am:
  @GCC_TRUE@@NATIVE_LINKER_TRUE@	$(CXXLINK) -Bgcctestdir/ -Wl,--gc-sections gc_tls_test.o
  @GCC_TRUE@@NATIVE_LINKER_TRUE@gc_tls_test.stdout: gc_tls_test
  @GCC_TRUE@@NATIVE_LINKER_TRUE@	$(TEST_NM) -C gc_tls_test > gc_tls_test.stdout
@@ -18148,7 +20044,28 @@ index 3f5459f..4aa8eba 100644
  @GCC_TRUE@@NATIVE_LINKER_TRUE@icf_test.o: icf_test.cc 
  @GCC_TRUE@@NATIVE_LINKER_TRUE@	$(CXXCOMPILE) -O0 -c -ffunction-sections -g -o $@ $<
  @GCC_TRUE@@NATIVE_LINKER_TRUE@icf_test: icf_test.o gcctestdir/ld
-@@ -3135,6 +3158,16 @@ uninstall-am:
+@@ -2972,6 +3002,20 @@ uninstall-am:
+ @GCC_TRUE@@NATIVE_LINKER_TRUE@	$(CXXLINK) -Bgcctestdir/ script_test_5.o -T $(srcdir)/script_test_5.t
+ @GCC_TRUE@@NATIVE_LINKER_TRUE@script_test_5.stdout: script_test_5
+ @GCC_TRUE@@NATIVE_LINKER_TRUE@	$(TEST_READELF) -SW script_test_5 > script_test_5.stdout
++@GCC_TRUE@@NATIVE_LINKER_TRUE@script_test_6: basic_test.o gcctestdir/ld $(srcdir)/script_test_6.t
++@GCC_TRUE@@NATIVE_LINKER_TRUE@	$(CXXLINK) -Bgcctestdir/ basic_test.o -T $(srcdir)/script_test_6.t \
++@GCC_TRUE@@NATIVE_LINKER_TRUE@	-Wl,-Ttext=0x10001000 -Wl,-Tdata=0x10200000 -Wl,-Tbss=0x10400000
++@GCC_TRUE@@NATIVE_LINKER_TRUE@script_test_6.stdout: script_test_6
++@GCC_TRUE@@NATIVE_LINKER_TRUE@	$(TEST_READELF) -SlW script_test_6 > script_test_6.stdout
++@GCC_TRUE@@NATIVE_LINKER_TRUE@script_test_7: basic_test.o gcctestdir/ld $(srcdir)/script_test_7.t
++@GCC_TRUE@@NATIVE_LINKER_TRUE@	$(CXXLINK) -Bgcctestdir/ basic_test.o -T $(srcdir)/script_test_7.t
++@GCC_TRUE@@NATIVE_LINKER_TRUE@script_test_7.stdout: script_test_7
++@GCC_TRUE@@NATIVE_LINKER_TRUE@	$(TEST_READELF) -SlW script_test_7 > script_test_7.stdout
++@GCC_TRUE@@NATIVE_LINKER_TRUE@script_test_8: basic_test.o gcctestdir/ld $(srcdir)/script_test_7.t
++@GCC_TRUE@@NATIVE_LINKER_TRUE@	$(CXXLINK) -Bgcctestdir/ basic_test.o -T $(srcdir)/script_test_7.t \
++@GCC_TRUE@@NATIVE_LINKER_TRUE@	-Wl,-Ttext=0x20001000 -Wl,-Tdata=0x20200000 -Wl,-Tbss=0x20400000
++@GCC_TRUE@@NATIVE_LINKER_TRUE@script_test_8.stdout: script_test_8
++@GCC_TRUE@@NATIVE_LINKER_TRUE@	$(TEST_READELF) -SlW script_test_8 > script_test_8.stdout
+ @GCC_TRUE@@NATIVE_LINKER_TRUE@dynamic_list: basic_test.o gcctestdir/ld $(srcdir)/dynamic_list.t
+ @GCC_TRUE@@NATIVE_LINKER_TRUE@	$(CXXLINK) -Bgcctestdir/ basic_test.o \
+ @GCC_TRUE@@NATIVE_LINKER_TRUE@	  -Wl,--dynamic-list $(srcdir)/dynamic_list.t \
+@@ -3135,6 +3179,16 @@ uninstall-am:
  @DEFAULT_TARGET_X86_64_TRUE@	$(TEST_OBJDUMP) -d $< > $@
  @DEFAULT_TARGET_X86_64_TRUE@split_x86_64_r.stdout: split_x86_64_1.o split_x86_64_n.o ../ld-new
  @DEFAULT_TARGET_X86_64_TRUE@	../ld-new -r split_x86_64_1.o split_x86_64_n.o -o split_x86_64_r > $@ 2>&1 || exit 0
@@ -18402,6 +20319,297 @@ index 0000000..6ce524d
 +}
 +
 +check gc_orphan_section_test.stdout
+diff --git a/gold/testsuite/relro_script_test.t b/gold/testsuite/relro_script_test.t
+index cacb84d..3a6e3e9 100644
+--- a/gold/testsuite/relro_script_test.t
++++ b/gold/testsuite/relro_script_test.t
+@@ -46,6 +46,8 @@ SECTIONS
+ 
+   . = DATA_SEGMENT_RELRO_END(0, .);
+ 
++  .got.plt : { *(.got.plt) }
++
+   .data : { *(.data .data.* .gnu.linkonce.d.*) }
+ 
+   . = DATA_SEGMENT_END (.);
+diff --git a/gold/testsuite/script_test_3.sh b/gold/testsuite/script_test_3.sh
+index cddb69a..d114edd 100755
+--- a/gold/testsuite/script_test_3.sh
++++ b/gold/testsuite/script_test_3.sh
+@@ -85,4 +85,18 @@ if test "$section_size" != "$segment_size"; then
+   exit 1
+ fi
+ 
++# At least one PT_LOAD segment should have an alignment >= 0x100000.
++found=no
++for a in `grep LOAD script_test_3.stdout | sed -e 's/^.* 0x/0x/'`; do
++  script="BEGIN { if ($a >= 0x100000) { print \"true\" } else { print \"false\" } }"
++  x=`awk "$script" < /dev/null`
++  if test "$x" = "true"; then
++    found=yes
++  fi
++done
++if test "$found" = "no"; then
++  echo "no LOAD segment has required alignment"
++  exit 1
++fi
++
+ exit 0
+diff --git a/gold/testsuite/script_test_3.t b/gold/testsuite/script_test_3.t
+index 9910349..c9572db 100644
+--- a/gold/testsuite/script_test_3.t
++++ b/gold/testsuite/script_test_3.t
+@@ -33,7 +33,7 @@ SECTIONS
+   .dynamic : { *(.dynamic) } :data :dynamic
+   .data : { *(.data) } :data
+   . += 0x100000;
+-  . = ALIGN(0x100);
++  . = ALIGN(0x100000);
+   .bss : { *(.bss) } :bss
+ }
+ 
+diff --git a/gold/testsuite/script_test_6.sh b/gold/testsuite/script_test_6.sh
+new file mode 100755
+index 0000000..bbc96d8
+--- /dev/null
++++ b/gold/testsuite/script_test_6.sh
+@@ -0,0 +1,43 @@
++#!/bin/sh
++
++# script_test_6.sh -- test for -Ttext, -Tdata and -Tbss with a script.
++
++# Copyright 2009 Free Software Foundation, Inc.
++# Written by Doug Kwan <dougkwan@google.com>.
++
++# This file is part of gold.
++
++# This program is free software; you can redistribute it and/or modify
++# it under the terms of the GNU General Public License as published by
++# the Free Software Foundation; either version 3 of the License, or
++# (at your option) any later version.
++
++# This program is distributed in the hope that it will be useful,
++# but WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++# GNU General Public License for more details.
++
++# You should have received a copy of the GNU General Public License
++# along with this program; if not, write to the Free Software
++# Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston,
++# MA 02110-1301, USA.
++
++# This file goes with script_test_4.t, which is a linker script which
++# starts the program at an unaligned address.
++
++check()
++{
++    if ! grep -q "$2" "$1"
++    then
++	echo "Did not find expected section in $1:"
++	echo "   $2"
++	echo ""
++	echo "Actual output below:"
++	cat "$1"
++	exit 1
++    fi
++}
++
++check script_test_6.stdout "\\.text[ 	]*PROGBITS[ 	]*0*10001000"
++check script_test_6.stdout "\\.data[ 	]*PROGBITS[ 	]*0*10200000"
++check script_test_6.stdout "\\.bss[ 	]*NOBITS[ 	]*0*10400000"
+diff --git a/gold/testsuite/script_test_6.t b/gold/testsuite/script_test_6.t
+new file mode 100644
+index 0000000..9676371
+--- /dev/null
++++ b/gold/testsuite/script_test_6.t
+@@ -0,0 +1,41 @@
++/* script_test_5.t -- linker script test 5 for gold
++
++   Copyright 2009 Free Software Foundation, Inc.
++   Written by Cary Coutant <ccoutant@google.com>.
++
++   This file is part of gold.
++
++   This program is free software; you can redistribute it and/or modify
++   it under the terms of the GNU General Public License as published by
++   the Free Software Foundation; either version 3 of the License, or
++   (at your option) any later version.
++
++   This program is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++   GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License
++   along with this program; if not, write to the Free Software
++   Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston,
++   MA 02110-1301, USA.  */
++
++/* We won't try to run this program, just ensure that it links
++   as expected.  */
++
++SECTIONS
++{
++  . = 0x10000000;
++
++  /* With luck this will be enough to get the program working.  */
++  .interp : { *(.interp) }
++  .text : { *(.text .text.*) }
++  .rodata : { *(.rodata .rodata.*) }
++  . += 0x100000;
++  . = ALIGN(0x100);
++  .dynamic : { *(.dynamic) }
++  .data : { *(.data) }
++  . += 0x100000;
++  . = ALIGN(0x100);
++  .bss : { *(.bss) }
++}
+diff --git a/gold/testsuite/script_test_7.sh b/gold/testsuite/script_test_7.sh
+new file mode 100755
+index 0000000..982a1c1
+--- /dev/null
++++ b/gold/testsuite/script_test_7.sh
+@@ -0,0 +1,43 @@
++#!/bin/sh
++
++# script_test_7.sh -- test for SEGMENT_START expressions.
++
++# Copyright 2009 Free Software Foundation, Inc.
++# Written by Doug Kwan <dougkwan@google.com>.
++
++# This file is part of gold.
++
++# This program is free software; you can redistribute it and/or modify
++# it under the terms of the GNU General Public License as published by
++# the Free Software Foundation; either version 3 of the License, or
++# (at your option) any later version.
++
++# This program is distributed in the hope that it will be useful,
++# but WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++# GNU General Public License for more details.
++
++# You should have received a copy of the GNU General Public License
++# along with this program; if not, write to the Free Software
++# Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston,
++# MA 02110-1301, USA.
++
++# This file goes with script_test_4.t, which is a linker script which
++# starts the program at an unaligned address.
++
++check()
++{
++    if ! grep -q "$2" "$1"
++    then
++	echo "Did not find expected section in $1:"
++	echo "   $2"
++	echo ""
++	echo "Actual output below:"
++	cat "$1"
++	exit 1
++    fi
++}
++
++check script_test_7.stdout "\\.interp[ 	]*PROGBITS[ 	]*0*10000100"
++check script_test_7.stdout "\\.data[ 	]*PROGBITS[ 	]*0*10200000"
++check script_test_7.stdout "\\.bss[ 	]*NOBITS[ 	]*0*10400..."
+diff --git a/gold/testsuite/script_test_7.t b/gold/testsuite/script_test_7.t
+new file mode 100644
+index 0000000..a4c4973
+--- /dev/null
++++ b/gold/testsuite/script_test_7.t
+@@ -0,0 +1,41 @@
++/* script_test_5.t -- linker script test 5 for gold
++
++   Copyright 2009 Free Software Foundation, Inc.
++   Written by Cary Coutant <ccoutant@google.com>.
++
++   This file is part of gold.
++
++   This program is free software; you can redistribute it and/or modify
++   it under the terms of the GNU General Public License as published by
++   the Free Software Foundation; either version 3 of the License, or
++   (at your option) any later version.
++
++   This program is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++   GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License
++   along with this program; if not, write to the Free Software
++   Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston,
++   MA 02110-1301, USA.  */
++
++/* We won't try to run this program, just ensure that it links
++   as expected.  */
++
++SECTIONS
++{
++  . = SEGMENT_START(".text", 0x10000100);
++
++  /* With luck this will be enough to get the program working.  */
++  .interp : { *(.interp) }
++  .text : { *(.text .text.*) }
++  .rodata : { *(.rodata .rodata.*) }
++  .dynamic : { *(.dynamic) }
++
++  . = SEGMENT_START(".data", 0x10200000);
++  .data : { *(.data) }
++
++  . = SEGMENT_START(".bss", 0x10400000);
++  .bss : { *(.bss) }
++}
+diff --git a/gold/testsuite/script_test_8.sh b/gold/testsuite/script_test_8.sh
+new file mode 100755
+index 0000000..83e8e72
+--- /dev/null
++++ b/gold/testsuite/script_test_8.sh
+@@ -0,0 +1,44 @@
++#!/bin/sh
++
++# script_test_8.sh -- test for SEGMENT_START expressions with
++# -Ttext, -Tdata and -Tbss in a script.
++
++# Copyright 2009 Free Software Foundation, Inc.
++# Written by Doug Kwan <dougkwan@google.com>.
++
++# This file is part of gold.
++
++# This program is free software; you can redistribute it and/or modify
++# it under the terms of the GNU General Public License as published by
++# the Free Software Foundation; either version 3 of the License, or
++# (at your option) any later version.
++
++# This program is distributed in the hope that it will be useful,
++# but WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++# GNU General Public License for more details.
++
++# You should have received a copy of the GNU General Public License
++# along with this program; if not, write to the Free Software
++# Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston,
++# MA 02110-1301, USA.
++
++# This file goes with script_test_4.t, which is a linker script which
++# starts the program at an unaligned address.
++
++check()
++{
++    if ! grep -q "$2" "$1"
++    then
++	echo "Did not find expected section in $1:"
++	echo "   $2"
++	echo ""
++	echo "Actual output below:"
++	cat "$1"
++	exit 1
++    fi
++}
++
++check script_test_8.stdout "\\.interp[ 	]*PROGBITS[ 	]*0*20001000"
++check script_test_8.stdout "\\.data[ 	]*PROGBITS[ 	]*0*20200000"
++check script_test_8.stdout "\\.bss[ 	]*NOBITS[ 	]*0*2040...."
 diff --git a/gold/testsuite/script_test_9.cc b/gold/testsuite/script_test_9.cc
 new file mode 100644
 index 0000000..84f12f6
@@ -18558,7 +20766,7 @@ index d66189a..7f53792 100644
  
  // The test targets.
 diff --git a/gold/x86_64.cc b/gold/x86_64.cc
-index 3562065..eed6a39 100644
+index 3562065..c46cdf6 100644
 --- a/gold/x86_64.cc
 +++ b/gold/x86_64.cc
 @@ -74,8 +74,7 @@ class Target_x86_64 : public Target_freebsd<64, false>
@@ -18631,60 +20839,71 @@ index 3562065..eed6a39 100644
  };
  
  // This is called when a new output section is created.  This is where
-@@ -472,7 +469,7 @@ Target_x86_64::got_section(Symbol_table* symtab, Layout* layout)
+@@ -472,25 +469,25 @@ Target_x86_64::got_section(Symbol_table* symtab, Layout* layout)
        os = layout->add_output_section_data(".got", elfcpp::SHT_PROGBITS,
  					   (elfcpp::SHF_ALLOC
  					    | elfcpp::SHF_WRITE),
 -					   this->got_);
-+					   this->got_, false);
-       os->set_is_relro();
+-      os->set_is_relro();
++					   this->got_, false, true, true,
++					   false);
  
-       // The old GNU linker creates a .got.plt section.  We just
-@@ -483,7 +480,7 @@ Target_x86_64::got_section(Symbol_table* symtab, Layout* layout)
-       os = layout->add_output_section_data(".got", elfcpp::SHT_PROGBITS,
+-      // The old GNU linker creates a .got.plt section.  We just
+-      // create another set of data in the .got section.  Note that we
+-      // always create a PLT if we create a GOT, although the PLT
+-      // might be empty.
+       this->got_plt_ = new Output_data_space(8, "** GOT PLT");
+-      os = layout->add_output_section_data(".got", elfcpp::SHT_PROGBITS,
++      os = layout->add_output_section_data(".got.plt", elfcpp::SHT_PROGBITS,
  					   (elfcpp::SHF_ALLOC
  					    | elfcpp::SHF_WRITE),
 -					   this->got_plt_);
-+					   this->got_plt_, false);
-       os->set_is_relro();
+-      os->set_is_relro();
++					   this->got_plt_, false, false,
++					   false, true);
  
        // The first three entries are reserved.
-@@ -491,6 +488,7 @@ Target_x86_64::got_section(Symbol_table* symtab, Layout* layout)
+       this->got_plt_->set_current_data_size(3 * 8);
  
++      // Those bytes can go into the relro segment.
++      layout->increase_relro(3 * 8);
++
        // Define _GLOBAL_OFFSET_TABLE_ at the start of the PLT.
        symtab->define_in_output_data("_GLOBAL_OFFSET_TABLE_", NULL,
 +				    Symbol_table::PREDEFINED,
  				    this->got_plt_,
  				    0, 0, elfcpp::STT_OBJECT,
  				    elfcpp::STB_LOCAL,
-@@ -511,7 +509,7 @@ Target_x86_64::rela_dyn_section(Layout* layout)
+@@ -511,7 +508,8 @@ Target_x86_64::rela_dyn_section(Layout* layout)
        gold_assert(layout != NULL);
        this->rela_dyn_ = new Reloc_section(parameters->options().combreloc());
        layout->add_output_section_data(".rela.dyn", elfcpp::SHT_RELA,
 -				      elfcpp::SHF_ALLOC, this->rela_dyn_);
-+				      elfcpp::SHF_ALLOC, this->rela_dyn_, true);
++				      elfcpp::SHF_ALLOC, this->rela_dyn_, true,
++				      false, false, false);
      }
    return this->rela_dyn_;
  }
-@@ -611,7 +609,7 @@ Output_data_plt_x86_64::Output_data_plt_x86_64(Layout* layout,
+@@ -611,7 +609,8 @@ Output_data_plt_x86_64::Output_data_plt_x86_64(Layout* layout,
  {
    this->rel_ = new Reloc_section(false);
    layout->add_output_section_data(".rela.plt", elfcpp::SHT_RELA,
 -				  elfcpp::SHF_ALLOC, this->rel_);
-+				  elfcpp::SHF_ALLOC, this->rel_, true);
++				  elfcpp::SHF_ALLOC, this->rel_, true,
++				  false, false, false);
  }
  
  void
-@@ -807,7 +805,7 @@ Target_x86_64::make_plt_section(Symbol_table* symtab, Layout* layout)
+@@ -807,7 +806,7 @@ Target_x86_64::make_plt_section(Symbol_table* symtab, Layout* layout)
        layout->add_output_section_data(".plt", elfcpp::SHT_PROGBITS,
  				      (elfcpp::SHF_ALLOC
  				       | elfcpp::SHF_EXECINSTR),
 -				      this->plt_);
-+				      this->plt_, false);
++				      this->plt_, false, false, false, false);
      }
  }
  
-@@ -839,6 +837,7 @@ Target_x86_64::define_tls_base_symbol(Symbol_table* symtab, Layout* layout)
+@@ -839,6 +838,7 @@ Target_x86_64::define_tls_base_symbol(Symbol_table* symtab, Layout* layout)
      {
        bool is_exec = parameters->options().output_is_executable();
        symtab->define_in_output_segment("_TLS_MODULE_BASE_", NULL,
@@ -18692,7 +20911,7 @@ index 3562065..eed6a39 100644
  				       tls_segment, 0, 0,
  				       elfcpp::STT_TLS,
  				       elfcpp::STB_LOCAL,
-@@ -1002,8 +1001,7 @@ Target_x86_64::Scan::check_non_pic(Relobj* object, unsigned int r_type)
+@@ -1002,8 +1002,7 @@ Target_x86_64::Scan::check_non_pic(Relobj* object, unsigned int r_type)
  // Scan a relocation for a local symbol.
  
  inline void
@@ -18702,7 +20921,7 @@ index 3562065..eed6a39 100644
                             Layout* layout,
                             Target_x86_64* target,
                             Sized_relobj<64, false>* object,
-@@ -1283,8 +1281,7 @@ Target_x86_64::Scan::unsupported_reloc_global(Sized_relobj<64, false>* object,
+@@ -1283,8 +1282,7 @@ Target_x86_64::Scan::unsupported_reloc_global(Sized_relobj<64, false>* object,
  // Scan a relocation for a global symbol.
  
  inline void
@@ -18712,7 +20931,7 @@ index 3562065..eed6a39 100644
                              Layout* layout,
                              Target_x86_64* target,
                              Sized_relobj<64, false>* object,
-@@ -1576,8 +1573,7 @@ Target_x86_64::Scan::global(const General_options&,
+@@ -1576,8 +1574,7 @@ Target_x86_64::Scan::global(const General_options&,
  }
  
  void
@@ -18722,7 +20941,7 @@ index 3562065..eed6a39 100644
                                   Layout* layout,
                                   Sized_relobj<64, false>* object,
                                   unsigned int data_shndx,
-@@ -1597,7 +1593,6 @@ Target_x86_64::gc_process_relocs(const General_options& options,
+@@ -1597,7 +1594,6 @@ Target_x86_64::gc_process_relocs(const General_options& options,
  
     gold::gc_process_relocs<64, false, Target_x86_64, elfcpp::SHT_RELA,
                             Target_x86_64::Scan>(
@@ -18730,7 +20949,7 @@ index 3562065..eed6a39 100644
      symtab,
      layout,
      this,
-@@ -1614,8 +1609,7 @@ Target_x86_64::gc_process_relocs(const General_options& options,
+@@ -1614,8 +1610,7 @@ Target_x86_64::gc_process_relocs(const General_options& options,
  // Scan relocations for a section.
  
  void
@@ -18740,7 +20959,7 @@ index 3562065..eed6a39 100644
                             Layout* layout,
                             Sized_relobj<64, false>* object,
                             unsigned int data_shndx,
-@@ -1636,7 +1630,6 @@ Target_x86_64::scan_relocs(const General_options& options,
+@@ -1636,7 +1631,6 @@ Target_x86_64::scan_relocs(const General_options& options,
  
    gold::scan_relocs<64, false, Target_x86_64, elfcpp::SHT_RELA,
        Target_x86_64::Scan>(
@@ -18748,7 +20967,7 @@ index 3562065..eed6a39 100644
      symtab,
      layout,
      this,
-@@ -1653,7 +1646,10 @@ Target_x86_64::scan_relocs(const General_options& options,
+@@ -1653,7 +1647,10 @@ Target_x86_64::scan_relocs(const General_options& options,
  // Finalize the sections.
  
  void
@@ -18760,7 +20979,7 @@ index 3562065..eed6a39 100644
  {
    // Fill in some more dynamic tags.
    Output_data_dynamic* const odyn = layout->dynamic_data();
-@@ -2526,8 +2522,7 @@ Target_x86_64::Relocatable_size_for_reloc::get_size_for_reloc(
+@@ -2526,8 +2523,7 @@ Target_x86_64::Relocatable_size_for_reloc::get_size_for_reloc(
  // Scan the relocs during a relocatable link.
  
  void
@@ -18770,7 +20989,7 @@ index 3562065..eed6a39 100644
  				       Layout* layout,
  				       Sized_relobj<64, false>* object,
  				       unsigned int data_shndx,
-@@ -2547,7 +2542,6 @@ Target_x86_64::scan_relocatable_relocs(const General_options& options,
+@@ -2547,7 +2543,6 @@ Target_x86_64::scan_relocatable_relocs(const General_options& options,
  
    gold::scan_relocatable_relocs<64, false, elfcpp::SHT_RELA,
        Scan_relocatable_relocs>(
@@ -18778,6 +20997,152 @@ index 3562065..eed6a39 100644
      symtab,
      layout,
      object,
+diff --git a/gold/yyscript.y b/gold/yyscript.y
+index 0d52882..f762536 100644
+--- a/gold/yyscript.y
++++ b/gold/yyscript.y
+@@ -77,6 +77,7 @@
+   struct Version_dependency_list* deplist;
+   struct Version_expression_list* versyms;
+   struct Version_tree* versnode;
++  enum Script_section_type section_type;
+ }
+ 
+ /* Operators, including a precedence table for expressions.  */
+@@ -121,11 +122,13 @@
+ %token BYTE
+ %token CONSTANT
+ %token CONSTRUCTORS
++%token COPY
+ %token CREATE_OBJECT_SYMBOLS
+ %token DATA_SEGMENT_ALIGN
+ %token DATA_SEGMENT_END
+ %token DATA_SEGMENT_RELRO_END
+ %token DEFINED
++%token DSECT
+ %token ENTRY
+ %token EXCLUDE_FILE
+ %token EXTERN
+@@ -137,6 +140,7 @@
+ %token HLL
+ %token INCLUDE
+ %token INHIBIT_COMMON_ALLOCATION
++%token INFO
+ %token INPUT
+ %token KEEP
+ %token LENGTH		/* LENGTH, l, len */
+@@ -150,6 +154,7 @@
+ %token NEXT
+ %token NOCROSSREFS
+ %token NOFLOAT
++%token NOLOAD
+ %token ONLY_IF_RO
+ %token ONLY_IF_RW
+ %token ORIGIN		/* ORIGIN, o, org */
+@@ -197,9 +202,10 @@
+ 
+ /* Non-terminal types, where needed.  */
+ 
+-%type <expr> parse_exp exp opt_address_and_section_type
++%type <expr> parse_exp exp
+ %type <expr> opt_at opt_align opt_subalign opt_fill
+-%type <output_section_header> section_header
++%type <output_section_header> section_header opt_address_and_section_type
++%type <section_type> section_type
+ %type <output_section_trailer> section_trailer
+ %type <constraint> opt_constraint
+ %type <string_list> opt_phdr
+@@ -343,7 +349,8 @@ section_header:
+ 	    { script_pop_lex_mode(closure); }
+ 	  opt_constraint
+ 	    {
+-	      $$.address = $2;
++	      $$.address = $2.address;
++	      $$.section_type = $2.section_type;
+ 	      $$.load_address = $3;
+ 	      $$.align = $4;
+ 	      $$.subalign = $5;
+@@ -356,18 +363,61 @@ section_header:
+    '(' in section_header.  */
+ 
+ opt_address_and_section_type:
+-	  ':'
+-	    { $$ = NULL; }
++	':'
++	    {
++	      $$.address = NULL;
++	      $$.section_type = SCRIPT_SECTION_TYPE_NONE;
++	    }
+ 	| '(' ')' ':'
+-	    { $$ = NULL; }
++	    {
++	      $$.address = NULL;
++	      $$.section_type = SCRIPT_SECTION_TYPE_NONE;
++	    }
+ 	| exp ':'
+-	    { $$ = $1; }
++	    {
++	      $$.address = $1;
++	      $$.section_type = SCRIPT_SECTION_TYPE_NONE;
++	    }
+ 	| exp '(' ')' ':'
+-	    { $$ = $1; }
+-	| exp '(' string ')' ':'
+ 	    {
+-	      yyerror(closure, "section types are not supported");
+-	      $$ = $1;
++	      $$.address = $1;
++	      $$.section_type = SCRIPT_SECTION_TYPE_NONE;
++	    }
++	| '(' section_type ')' ':'
++	    {
++	      $$.address = NULL;
++	      $$.section_type = $2;
++	    }
++	| exp '(' section_type ')' ':'
++	    {
++	      $$.address = $1;
++	      $$.section_type = $3;
++	    }
++	;
++
++/* We only support NOLOAD.  */
++section_type:
++	NOLOAD
++	    { $$ = SCRIPT_SECTION_TYPE_NOLOAD; }
++	| DSECT
++	    {
++	      yyerror(closure, "DSECT section type is unsupported");
++	      $$ = SCRIPT_SECTION_TYPE_DSECT;
++	    }
++	| COPY
++	    {
++	      yyerror(closure, "COPY section type is unsupported");
++	      $$ = SCRIPT_SECTION_TYPE_COPY;
++	    }
++	| INFO
++	    {
++	      yyerror(closure, "INFO section type is unsupported");
++	      $$ = SCRIPT_SECTION_TYPE_INFO;
++	    }
++	| OVERLAY
++	    {
++	      yyerror(closure, "OVERLAY section type is unsupported");
++	      $$ = SCRIPT_SECTION_TYPE_OVERLAY;
+ 	    }
+ 	;
+ 
+@@ -861,6 +911,10 @@ exp:
+ 	| SEGMENT_START '(' string ',' exp ')'
+ 	    {
+ 	      $$ = script_exp_function_segment_start($3.value, $3.length, $5);
++	      /* We need to take note of any SEGMENT_START expressions
++		 because they change the behaviour of -Ttext, -Tdata and
++		 -Tbss options.  */
++	      script_saw_segment_start_expression(closure);
+ 	    }
+ 	| ASSERT_K '(' exp ',' string ')'
+ 	    { $$ = script_exp_function_assert($3, $5.value, $5.length); }
 diff --git a/include/ChangeLog b/include/ChangeLog
 index 9e6fb59..244610a 100644
 --- a/include/ChangeLog

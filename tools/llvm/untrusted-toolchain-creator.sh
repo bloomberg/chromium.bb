@@ -736,6 +736,8 @@ BuildAndInstallBinutils() {
 
   # --enable-checking is to avoid a build failure:
   #   tc-arm.c:2489: warning: empty body in an if-statement
+  # For now nothing depends on gold. Remove --enable-gold if you think
+  # it is causing problems.
   RunWithLog "Configuring binutils"  ${TMP}/binutils.configure.log \
     env -i \
     PATH="/usr/bin:/bin" \
@@ -744,6 +746,7 @@ BuildAndInstallBinutils() {
     ../src/binutils-2.20/configure --prefix=${BINUTILS_INSTALL_DIR} \
                                    --target=${CROSS_TARGET} \
                                    --enable-checking \
+                                   --enable-gold \
                                    --with-sysroot=${NEWLIB_INSTALL_DIR}
 
   RunWithLog "Make binutils" ${TMP}/binutils.make.log \
