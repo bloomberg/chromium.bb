@@ -234,11 +234,29 @@ bool AutoFillManager::FillAutoFillFormData(int query_id,
     if (*form_structure != form)
       continue;
 
-    DCHECK_EQ(form_structure->field_count(), result.fields.size());
+    // The list of fields in |form_structure| and |result.fields| often match
+    // directly and we can fill these corresponding fields; however, when the
+    // |form_structure| and |result.fields| do not match directly we search
+    // ahead in the |form_structure| for the matching field.
+    // See unit tests: AutoFillManagerTest.FormChangesRemoveField and
+    // AutoFillManagerTest.FormChangesAddField for usage.
+    for (size_t i = 0, j = 0;
+         i < form_structure->field_count() && j < result.fields.size();
+         j++) {
+      size_t k = i;
 
-    for (size_t i = 0; i < form_structure->field_count(); ++i) {
-      const AutoFillField* field = form_structure->field(i);
+      // Search forward in the |form_structure| for a corresponding field.
+      while (k < form_structure->field_count() &&
+             *form_structure->field(k) != result.fields[j]) {
+        k++;
+      }
 
+      // If we've found a match then fill the |result| field with the found
+      // field in the |form_structure|.
+      if (k >= form_structure->field_count())
+        continue;
+
+      const AutoFillField* field = form_structure->field(k);
       AutoFillType autofill_type(field->type());
       if (credit_card &&
           autofill_type.group() == AutoFillType::CREDIT_CARD) {
@@ -246,10 +264,14 @@ bool AutoFillManager::FillAutoFillFormData(int query_id,
             credit_card->GetFieldText(autofill_type));
       } else if (credit_card &&
                  autofill_type.group() == AutoFillType::ADDRESS_BILLING) {
-        FillBillingFormField(credit_card, autofill_type, &result.fields[i]);
+        FillBillingFormField(credit_card, autofill_type, &result.fields[j]);
       } else if (profile) {
-        FillFormField(profile, autofill_type, &result.fields[i]);
+        FillFormField(profile, autofill_type, &result.fields[j]);
       }
+
+      // We found a matching field in the |form_structure| so we
+      // proceed to the next |result| field, and the next |form_structure|.
+      ++i;
     }
   }
 

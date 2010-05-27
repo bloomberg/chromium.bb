@@ -596,4 +596,120 @@ TEST_F(AutoFillManagerTest, FillCreditCardFormWithBilling) {
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[14]));
 }
 
+TEST_F(AutoFillManagerTest, FormChangesRemoveField) {
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.method = ASCIIToUTF16("POST");
+  form.origin = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+
+  webkit_glue::FormField field;
+  CreateTestFormField("First Name", "firstname", "", "text", &field);
+  form.fields.push_back(field);
+  CreateTestFormField("Middle Name", "middlename", "", "text", &field);
+  form.fields.push_back(field);
+  CreateTestFormField("Last Name", "lastname", "", "text", &field);
+  form.fields.push_back(field);
+  CreateTestFormField("Phone Number", "phonenumber", "", "text", &field);
+  form.fields.push_back(field);
+  CreateTestFormField("Email", "email", "", "text", &field);
+  form.fields.push_back(field);
+
+  // Set up our FormStructures.
+  std::vector<FormData> forms;
+  forms.push_back(form);
+  autofill_manager_->FormsSeen(forms);
+
+  // Now, after the call to |FormsSeen| we remove the phone number field before
+  // filling.
+  form.fields.erase(form.fields.begin() + 3);
+
+  // The page ID sent to the AutoFillManager from the RenderView, used to send
+  // an IPC message back to the renderer.
+  const int kPageID = 1;
+  EXPECT_TRUE(
+      autofill_manager_->FillAutoFillFormData(kPageID,
+                                              form,
+                                              ASCIIToUTF16("Elvis"),
+                                              ASCIIToUTF16("Home")));
+
+  int page_id = 0;
+  FormData results;
+  EXPECT_TRUE(GetAutoFillFormDataFilledMessage(&page_id, &results));
+  EXPECT_EQ(ASCIIToUTF16("MyForm"), results.name);
+  EXPECT_EQ(ASCIIToUTF16("POST"), results.method);
+  EXPECT_EQ(GURL("http://myform.com/form.html"), results.origin);
+  EXPECT_EQ(GURL("http://myform.com/submit.html"), results.action);
+  ASSERT_EQ(4U, results.fields.size());
+
+  CreateTestFormField("First Name", "firstname", "Elvis", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[0]));
+  CreateTestFormField("Middle Name", "middlename", "Aaron", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[1]));
+  CreateTestFormField("Last Name", "lastname", "Presley", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[2]));
+  CreateTestFormField(
+      "Email", "email", "theking@gmail.com", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[3]));
+}
+
+TEST_F(AutoFillManagerTest, FormChangesAddField) {
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.method = ASCIIToUTF16("POST");
+  form.origin = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+
+  webkit_glue::FormField field;
+  CreateTestFormField("First Name", "firstname", "", "text", &field);
+  form.fields.push_back(field);
+  CreateTestFormField("Middle Name", "middlename", "", "text", &field);
+  form.fields.push_back(field);
+  CreateTestFormField("Last Name", "lastname", "", "text", &field);
+  // Note: absent phone number.  Adding this below.
+  form.fields.push_back(field);
+  CreateTestFormField("Email", "email", "", "text", &field);
+  form.fields.push_back(field);
+
+  // Set up our FormStructures.
+  std::vector<FormData> forms;
+  forms.push_back(form);
+  autofill_manager_->FormsSeen(forms);
+
+  // Now, after the call to |FormsSeen| we add the phone number field before
+  // filling.
+  CreateTestFormField("Phone Number", "phonenumber", "", "text", &field);
+  form.fields.insert(form.fields.begin() + 3, field);
+
+  // The page ID sent to the AutoFillManager from the RenderView, used to send
+  // an IPC message back to the renderer.
+  const int kPageID = 1;
+  EXPECT_TRUE(
+      autofill_manager_->FillAutoFillFormData(kPageID,
+                                              form,
+                                              ASCIIToUTF16("Elvis"),
+                                              ASCIIToUTF16("Home")));
+
+  int page_id = 0;
+  FormData results;
+  EXPECT_TRUE(GetAutoFillFormDataFilledMessage(&page_id, &results));
+  EXPECT_EQ(ASCIIToUTF16("MyForm"), results.name);
+  EXPECT_EQ(ASCIIToUTF16("POST"), results.method);
+  EXPECT_EQ(GURL("http://myform.com/form.html"), results.origin);
+  EXPECT_EQ(GURL("http://myform.com/submit.html"), results.action);
+  ASSERT_EQ(5U, results.fields.size());
+
+  CreateTestFormField("First Name", "firstname", "Elvis", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[0]));
+  CreateTestFormField("Middle Name", "middlename", "Aaron", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[1]));
+  CreateTestFormField("Last Name", "lastname", "Presley", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[2]));
+  CreateTestFormField("Phone Number", "phonenumber", "", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[3]));
+  CreateTestFormField(
+      "Email", "email", "theking@gmail.com", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[4]));
+}
+
 }  // namespace

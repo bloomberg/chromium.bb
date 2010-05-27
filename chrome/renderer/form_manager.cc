@@ -46,30 +46,28 @@ namespace {
 const size_t kRequiredAutoFillFields = 3;
 
 // This is a helper function for the FindChildText() function.
-// Returns the node value of the descendant or sibling of |node| that is a
-// non-empty text node.  This is a faster alternative to |innerText()| for
+// Returns the aggregated values of the descendants or siblings of |node| that
+// are non-empty text nodes.  This is a faster alternative to |innerText()| for
 // performance critical operations.  It does a full depth-first search so
-// can be used when the structure is not directly known.  It does not aggregate
-// the text of multiple nodes, it just returns the value of the first found.
-// "Non-empty" in this case means non-empty after the whitespace has been
-// stripped.
+// can be used when the structure is not directly known.  The text is
+// accumulated after the whitespace has been stripped.
 string16 FindChildTextInner(const WebNode& node) {
   string16 element_text;
   if (node.isNull())
     return element_text;
 
-  element_text = node.nodeValue();
-  TrimWhitespace(element_text, TRIM_ALL, &element_text);
-  if (!element_text.empty())
-    return element_text;
+  string16 node_text = node.nodeValue();
+  TrimWhitespace(node_text, TRIM_ALL, &node_text);
+  if (!node_text.empty())
+    element_text = node_text;
 
-  element_text = FindChildTextInner(node.firstChild());
-  if (!element_text.empty())
-    return element_text;
+  string16 child_text = FindChildTextInner(node.firstChild());
+  if (!child_text.empty())
+    element_text = element_text + child_text;
 
-  element_text = FindChildTextInner(node.nextSibling());
-  if (!element_text.empty())
-    return element_text;
+  string16 sibling_text = FindChildTextInner(node.nextSibling());
+  if (!sibling_text.empty())
+    element_text = element_text + sibling_text;
 
   return element_text;
 }
@@ -80,6 +78,132 @@ string16 FindChildTextInner(const WebNode& node) {
 string16 FindChildText(const WebElement& element) {
   WebNode child = element.firstChild();
   return FindChildTextInner(child);
+}
+
+// Helper for |InferLabelForElement()| that infers a label, if possible, from
+// a previous node of |element|.
+string16 InferLabelFromPrevious(
+    const WebFormControlElement& element) {
+  string16 inferred_label;
+  WebNode previous = element.previousSibling();
+  if (!previous.isNull()) {
+    // Eg. Some Text<input ...>
+    if (previous.isTextNode()) {
+      inferred_label = previous.nodeValue();
+      TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
+    }
+
+    // If we didn't find text, check for previous paragraph.
+    // Eg. <p>Some Text</p><input ...>
+    // Note the lack of whitespace between <p> and <input> elements.
+    if (inferred_label.empty()) {
+      if (previous.isElementNode()) {
+        WebElement element = previous.to<WebElement>();
+        if (element.hasTagName("p")) {
+          inferred_label = FindChildText(element);
+        }
+      }
+    }
+
+    // If we didn't find paragraph, check for previous paragraph to this.
+    // Eg. <p>Some Text</p>   <input ...>
+    // Note the whitespace between <p> and <input> elements.
+    if (inferred_label.empty()) {
+      previous = previous.previousSibling();
+      if (!previous.isNull() && previous.isElementNode()) {
+        WebElement element = previous.to<WebElement>();
+        if (element.hasTagName("p")) {
+          inferred_label = FindChildText(element);
+        }
+      }
+    }
+
+    // Look for text node prior to <img> tag.
+    // Eg. Some Text<img/><input ...>
+    if (inferred_label.empty()) {
+      while (inferred_label.empty() && !previous.isNull()) {
+        if (previous.isTextNode()) {
+          inferred_label = previous.nodeValue();
+          TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
+        } else if (previous.isElementNode()) {
+          WebElement element = previous.to<WebElement>();
+          if (!element.hasTagName("img"))
+            break;
+        } else {
+          break;
+        }
+        previous = previous.previousSibling();
+      }
+    }
+  }
+
+  return inferred_label;
+}
+
+// Helper for |InferLabelForElement()| that infers a label, if possible, from
+// surrounding table structure.
+// Eg. <tr><td>Some Text</td><td><input ...></td></tr>
+// Eg. <tr><td><b>Some Text</b></td><td><b><input ...></b></td></tr>
+string16 InferLabelFromTable(
+    const WebFormControlElement& element) {
+  string16 inferred_label;
+  WebNode parent = element.parentNode();
+  while (!parent.isNull() && parent.isElementNode() &&
+         !parent.to<WebElement>().hasTagName("td"))
+    parent = parent.parentNode();
+
+  if (!parent.isNull() && parent.isElementNode()) {
+    WebElement element = parent.to<WebElement>();
+    if (element.hasTagName("td")) {
+      WebNode previous = parent.previousSibling();
+
+      // Skip by any intervening text nodes.
+      while (!previous.isNull() && previous.isTextNode())
+        previous = previous.previousSibling();
+
+      if (!previous.isNull() && previous.isElementNode()) {
+        element = previous.to<WebElement>();
+        if (element.hasTagName("td")) {
+          inferred_label = FindChildText(element);
+        }
+      }
+    }
+  }
+
+  return inferred_label;
+}
+
+// Helper for |InferLabelForElement()| that infers a label, if possible, from
+// a surrounding definition list.
+// Eg. <dl><dt>Some Text</dt><dd><input ...></dd></dl>
+// Eg. <dl><dt><b>Some Text</b></dt><dd><b><input ...></b></dd></dl>
+string16 InferLabelFromDefinitionList(
+    const WebFormControlElement& element) {
+  string16 inferred_label;
+  WebNode parent = element.parentNode();
+  while (!parent.isNull() && parent.isElementNode() &&
+         !parent.to<WebElement>().hasTagName("dd"))
+    parent = parent.parentNode();
+
+  if (!parent.isNull() && parent.isElementNode()) {
+    WebElement element = parent.to<WebElement>();
+    if (element.hasTagName("dd")) {
+      WebNode previous = parent.previousSibling();
+
+      // Skip by any intervening text nodes.
+      while (!previous.isNull() && previous.isTextNode())
+        previous = previous.previousSibling();
+
+      if (!previous.isNull() && previous.isElementNode()) {
+        element = previous.to<WebElement>();
+        if (element.hasTagName("dt")) {
+          inferred_label = FindChildText(element);
+        }
+      }
+    }
+  }
+
+  return inferred_label;
 }
 
 }  // namespace
@@ -427,62 +551,51 @@ bool FormManager::FillForm(const FormData& form) {
 
   for (size_t i = 0, j = 0;
        i < form_element->control_elements.size() && j < form.fields.size();
-       ++i, ++j) {
+       ++i) {
     // Once again, empty WebString != empty string16, so we have to explicitly
     // check for this case.
     if (form_element->control_elements[i].nameForAutofill().length() == 0 &&
         form.fields[j].name().empty())
       continue;
 
-    // We assume that the intersection of the fields in
-    // |form_element->control_elements| and |form.fields| is ordered, but it's
-    // possible that one or the other sets may have more fields than the other,
-    // so loop past non-matching fields in the set with more elements.
-    while (form_element->control_elements[i].nameForAutofill() !=
-           form.fields[j].name()) {
-      if (form_element->control_elements.size() > form.fields.size()) {
-        // We're at the end of the elements already.
-        if (i + 1 == form_element->control_elements.size())
-          break;
-        ++i;
-      } else if (form.fields.size() > form_element->control_elements.size()) {
-        // We're at the end of the elements already.
-        if (j + 1 == form.fields.size())
-          break;
-        ++j;
-      } else {
-        NOTREACHED();
-      }
-
-      continue;
+    size_t k = j;
+    while (k < form.fields.size() &&
+           form_element->control_elements[i].nameForAutofill() !=
+              form.fields[k].name()) {
+      k++;
     }
+    if (k >= form.fields.size())
+      continue;
 
     WebFormControlElement* element = &form_element->control_elements[i];
 
-    // It's possible that nameForAutofill() is empty if the form control element
-    // has no name or ID.  In that case, iter->nameForAutofill() must also be
-    // empty.
-    if (form.fields[j].name().empty())
+    // It's possible that nameForAutofill() is empty if the form control
+    // element has no name or ID.  In that case, iter->nameForAutofill() must
+    // also be empty.
+    if (form.fields[k].name().empty())
       DCHECK(element->nameForAutofill().isEmpty());
     else
-      DCHECK_EQ(form.fields[j].name(), element->nameForAutofill());
+      DCHECK_EQ(form.fields[k].name(), element->nameForAutofill());
 
-    if (!form.fields[j].value().empty() &&
+    if (!form.fields[k].value().empty() &&
         element->formControlType() != WebString::fromUTF8("submit")) {
       if (element->formControlType() == WebString::fromUTF8("text")) {
         WebInputElement input_element = element->to<WebInputElement>();
         // If the maxlength attribute contains a negative value, maxLength()
         // returns the default maxlength value.
         input_element.setValue(
-            form.fields[j].value().substr(0, input_element.maxLength()));
+            form.fields[k].value().substr(0, input_element.maxLength()));
         input_element.setAutofilled(true);
       } else if (element->formControlType() ==
                  WebString::fromUTF8("select-one")) {
         WebSelectElement select_element =
             element->to<WebSelectElement>();
-        select_element.setValue(form.fields[j].value());
+        select_element.setValue(form.fields[k].value());
       }
     }
+
+    // We found a matching form field so move on to the next.
+    ++j;
   }
 
   return true;
@@ -559,85 +672,18 @@ bool FormManager::FormElementToFormData(const WebFrame* frame,
 // static
 string16 FormManager::InferLabelForElement(
     const WebFormControlElement& element) {
-  string16 inferred_label;
-  WebNode previous = element.previousSibling();
-  if (!previous.isNull()) {
-    if (previous.isTextNode()) {
-      inferred_label = previous.nodeValue();
-      TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
-    }
+  string16 inferred_label = InferLabelFromPrevious(element);
 
-    // If we didn't find text, check for previous paragraph.
-    // Eg. <p>Some Text</p><input ...>
-    // Note the lack of whitespace between <p> and <input> elements.
-    if (inferred_label.empty()) {
-      if (previous.isElementNode()) {
-        WebElement element = previous.to<WebElement>();
-        if (element.hasTagName("p")) {
-          inferred_label = FindChildText(element);
-        }
-      }
-    }
-
-    // If we didn't find paragraph, check for previous paragraph to this.
-    // Eg. <p>Some Text</p>   <input ...>
-    // Note the whitespace between <p> and <input> elements.
-    if (inferred_label.empty()) {
-      previous = previous.previousSibling();
-      if (!previous.isNull() && previous.isElementNode()) {
-        WebElement element = previous.to<WebElement>();
-        if (element.hasTagName("p")) {
-          inferred_label = FindChildText(element);
-        }
-      }
-    }
-
-    // Look for text node prior to <img> tag.
-    // Eg. Some Text<img/><input ...>
-    if (inferred_label.empty()) {
-      while (inferred_label.empty() && !previous.isNull()) {
-        if (previous.isTextNode()) {
-          inferred_label = previous.nodeValue();
-          TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
-        } else if (previous.isElementNode()) {
-          WebElement element = previous.to<WebElement>();
-          if (!element.hasTagName("img"))
-            break;
-        } else {
-          break;
-        }
-        previous = previous.previousSibling();
-      }
-    }
+  // If we didn't find a label, check for table cell case.
+  if (inferred_label.empty()) {
+    inferred_label = InferLabelFromTable(element);
   }
 
-  // If we didn't find paragraph, check for table cell case.
-  // Eg. <tr><td>Some Text</td><td><input ...></td></tr>
-  // Eg. <tr><td><b>Some Text</b></td><td><b><input ...></b></td></tr>
+  // If we didn't find a label, check for definition list case.
   if (inferred_label.empty()) {
-    WebNode parent = element.parentNode();
-    while (!parent.isNull() && parent.isElementNode() &&
-           !parent.to<WebElement>().hasTagName("td"))
-      parent = parent.parentNode();
-
-    if (!parent.isNull() && parent.isElementNode()) {
-      WebElement element = parent.to<WebElement>();
-      if (element.hasTagName("td")) {
-        previous = parent.previousSibling();
-
-        // Skip by any intervening text nodes.
-        while (!previous.isNull() && previous.isTextNode())
-          previous = previous.previousSibling();
-
-        if (!previous.isNull() && previous.isElementNode()) {
-          element = previous.to<WebElement>();
-          if (element.hasTagName("td")) {
-            inferred_label = FindChildText(element);
-          }
-        }
-      }
-    }
+    inferred_label = InferLabelFromDefinitionList(element);
   }
 
   return inferred_label;
 }
+
