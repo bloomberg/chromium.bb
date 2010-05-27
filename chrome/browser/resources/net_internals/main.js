@@ -198,11 +198,9 @@ BrowserBridge.prototype.sendGetHttpCacheInfo = function() {
 // Messages received from the browser
 //------------------------------------------------------------------------------
 
-BrowserBridge.prototype.receivedLogEntry = function(logEntry,
-                                                    wasCapturedPassively) {
-  if (!wasCapturedPassively) {
+BrowserBridge.prototype.receivedLogEntry = function(logEntry) {
+  if (!logEntry.wasPassivelyCaptured)
     this.activelyCapturedEvents_.push(logEntry);
-  }
   for (var i = 0; i < this.logObservers_.length; ++i)
     this.logObservers_[i].onLogEntryAdded(logEntry);
 };
@@ -254,8 +252,11 @@ function(hostResolverCache) {
 BrowserBridge.prototype.receivedPassiveLogEntries = function(entries) {
   this.passivelyCapturedEvents_ =
       this.passivelyCapturedEvents_.concat(entries);
-  for (var i = 0; i < entries.length; ++i)
-    this.receivedLogEntry(entries[i], true);
+  for (var i = 0; i < entries.length; ++i) {
+    var entry = entries[i];
+    entry.wasPassivelyCaptured = true;
+    this.receivedLogEntry(entry);
+  }
 };
 
 

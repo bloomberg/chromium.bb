@@ -43,7 +43,9 @@ function canCollapseBeginWithEnd(beginEntry) {
          !beginEntry.orig.params &&
          beginEntry.end &&
          beginEntry.end.index == beginEntry.index + 1 &&
-         !beginEntry.end.orig.params;
+         !beginEntry.end.orig.params &&
+         beginEntry.orig.wasPassivelyCaptured ==
+             beginEntry.end.orig.wasPassivelyCaptured;
 }
 
 PrintSourceEntriesAsText = function(sourceEntries) {
@@ -59,6 +61,9 @@ PrintSourceEntriesAsText = function(sourceEntries) {
       continue;
 
     tablePrinter.addRow();
+
+    // Annotate this entry with "(P)" if it was passively captured.
+    tablePrinter.addCell(entry.orig.wasPassivelyCaptured ? '(P) ' : '');
 
     tablePrinter.addCell('t=');
     var tCell = tablePrinter.addCell(
@@ -95,6 +100,7 @@ PrintSourceEntriesAsText = function(sourceEntries) {
 
       for (var j = 0; j < extraParamsTextLines.length; ++j) {
         tablePrinter.addRow();
+        tablePrinter.addCell('');  // Empty passive annotation.
         tablePrinter.addCell('');  // No t=.
         tablePrinter.addCell('');
         tablePrinter.addCell('  ');
