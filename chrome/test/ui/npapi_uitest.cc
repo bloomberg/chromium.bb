@@ -45,8 +45,7 @@ TEST_F(NPAPITester, Arguments) {
 }
 
 // Test invoking many plugins within a single page.
-// Flaky, http://crbug.com/28372
-TEST_F(NPAPITester, FLAKY_ManyPlugins) {
+TEST_F(NPAPITester, ManyPlugins) {
   const FilePath test_case(FILE_PATH_LITERAL("many_plugins.html"));
   GURL url(ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case));
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
