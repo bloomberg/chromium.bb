@@ -49,7 +49,7 @@ const CGFloat kViewCornerRadius = 4.0;
 // Draw the arrows at the top and bottom of the folder window as a
 // visual indication that scrolling is possible.  We always draw the
 // scrolling arrows; when not relevant (e.g. when not scrollable), the
-// scroll view overlaps me and the arrows aren't visible.
+// scroll view overlaps the window and the arrows aren't visible.
 - (void)drawScrollArrows:(NSRect)rect {
   NSRect visibleRect = [self bounds];
 
