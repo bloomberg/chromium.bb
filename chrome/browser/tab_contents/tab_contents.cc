@@ -688,6 +688,8 @@ std::wstring TabContents::GetStatusText() const {
       return l10n_util::GetString(IDS_LOAD_STATE_RESOLVING_HOST);
     case net::LOAD_STATE_CONNECTING:
       return l10n_util::GetString(IDS_LOAD_STATE_CONNECTING);
+    case net::LOAD_STATE_SSL_HANDSHAKE:
+      return l10n_util::GetString(IDS_LOAD_STATE_SSL_HANDSHAKE);
     case net::LOAD_STATE_SENDING_REQUEST:
       if (upload_size_)
         return l10n_util::GetStringF(
