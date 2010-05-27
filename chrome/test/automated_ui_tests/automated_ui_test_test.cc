@@ -14,20 +14,10 @@
 #if defined(OS_MACOSX)
 // The window pops up, but doesn't close.
 #define MAYBE_IncognitoWindow DISABLED_IncognitoWindow
-#define MAYBE_OpenCloseBrowserWindowWithAccelerator \
-    DISABLED_OpenCloseBrowserWindowWithAccelerator
-#else
-// http://code.google.com/p/chromium/issues/detail?id=14731
-#define MAYBE_IncognitoWindow DISABLED_IncognitoWindow
-// http://crbug.com/19394
-#define MAYBE_OpenCloseBrowserWindowWithAccelerator \
-    DISABLED_OpenCloseBrowserWindowWithAccelerator
-#endif
-
 // FindBarTesting not implemented on mac.
-#if defined(OS_MACOSX)
 #define MAYBE_FindInPage DISABLED_FindInPage
-#else
+#else  // !defined(OS_MACOSX)
+#define MAYBE_IncognitoWindow IncognitoWindow
 #define MAYBE_FindInPage FindInPage
 #endif
 
@@ -78,7 +68,7 @@ TEST_F(AutomatedUITestBase, DuplicateTab) {
   ASSERT_EQ(3, tab_count);
 }
 
-TEST_F(AutomatedUITestBase, DISABLED_RestoreTab) {
+TEST_F(AutomatedUITestBase, RestoreTab) {
   int tab_count;
   ASSERT_TRUE(active_browser()->GetTabCount(&tab_count));
   ASSERT_EQ(1, tab_count);
@@ -256,7 +246,7 @@ TEST_F(AutomatedUITestBase, MAYBE_IncognitoWindow) {
   ASSERT_EQ(1, num_browser_windows);
 }
 
-TEST_F(AutomatedUITestBase, MAYBE_OpenCloseBrowserWindowWithAccelerator) {
+TEST_F(AutomatedUITestBase, OpenCloseBrowserWindowWithAccelerator) {
   // Note: we don't use RunCommand(IDC_OPEN/CLOSE_WINDOW) to open/close
   // browser window in automated ui tests. Instead we use
   // OpenAndActivateNewBrowserWindow and CloseActiveWindow.

@@ -292,8 +292,8 @@ TEST_F(DownloadTest, FLAKY_UnknownSize) {
               L"100% - " + filename.ToWStringHack());
 }
 
-// http://b/1158253
-TEST_F(DownloadTest, DISABLED_KnownSize) {
+// http://crbug.com/35275
+TEST_F(DownloadTest, FLAKY_KnownSize) {
   GURL url(URLRequestSlowDownloadJob::kKnownSizeUrl);
   FilePath filename;
   net::FileURLToFilePath(url, &filename);
