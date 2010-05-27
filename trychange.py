@@ -156,7 +156,7 @@ class SCM(object):
       filepath = os.path.join(self.checkout_root, filename)
       if os.path.isfile(filepath):
         logging.info('Found %s at %s' % (filename, self.checkout_root))
-        return gclient_util.FileRead(filepath)
+        return gclient_utils.FileRead(filepath)
       return None
     cur = os.path.abspath(self.checkout_root)
     if self.gclient_root:
