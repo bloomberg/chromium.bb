@@ -22,7 +22,7 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kTimeZone, L"US/Pacific");
   prefs->RegisterBooleanPref(prefs::kTapToClickEnabled, false);
   prefs->RegisterBooleanPref(prefs::kVertEdgeScrollEnabled, false);
-  prefs->RegisterIntegerPref(prefs::kTouchpadSpeedFactor, 5);
+  prefs->RegisterIntegerPref(prefs::kTouchpadSpeedFactor, 9);
   prefs->RegisterIntegerPref(prefs::kTouchpadSensitivity, 5);
   prefs->RegisterStringPref(prefs::kLanguageHotkeyNextEngineInMenu,
                             kHotkeyNextEngineInMenu);
