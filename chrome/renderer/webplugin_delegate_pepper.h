@@ -94,8 +94,8 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate,
                           void* user_data);
   virtual NPWidgetExtensions* GetWidgetExtensions();
   virtual bool SetCursor(NPCursorType type);
-
   virtual void Zoom(int factor);
+  virtual void Copy();
 
   // WebPlugin2DDeviceDelegate implementation.
   virtual NPError Device2DQueryCapability(int32 capability, int32* value);

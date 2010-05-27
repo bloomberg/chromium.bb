@@ -1088,6 +1088,12 @@ void RenderView::OnCopy() {
   if (!webview())
     return;
 
+  if (webview()->mainFrame()->document().isPluginDocument()) {
+    webkit_glue::WebPluginDelegate* delegate = GetDelegateForPluginDocument();
+    delegate->Copy();
+    return;
+  }
+
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Copy"));
   UserMetricsRecordAction("Copy");
 }

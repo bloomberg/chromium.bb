@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/file_util.h"
+#include "base/keyboard_codes.h"
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
 #endif
@@ -430,6 +431,13 @@ void WebPluginDelegatePepper::Zoom(int factor) {
   instance()->NPP_GetValue(NPPVPepperExtensions, &extensions);
   if (extensions && extensions->zoom)
     extensions->zoom(instance()->npp(), factor);
+}
+
+void WebPluginDelegatePepper::Copy() {
+  NPPExtensions* extensions = NULL;
+  instance()->NPP_GetValue(NPPVPepperExtensions, &extensions);
+  if (extensions && extensions->copy)
+    extensions->copy(instance()->npp());
 }
 
 NPError WebPluginDelegatePepper::Device2DQueryCapability(int32 capability,
@@ -1337,6 +1345,20 @@ void BuildMouseWheelEvent(const WebInputEvent* event, NPPepperEvent* npevent) {
 
 bool WebPluginDelegatePepper::HandleInputEvent(const WebInputEvent& event,
                                                WebCursorInfo* cursor_info) {
+  if (event.type == WebInputEvent::KeyDown) {
+    const WebKeyboardEvent* key_event =
+        reinterpret_cast<const WebKeyboardEvent*>(&event);
+#if defined(OS_MACOSX)
+    if (key_event->modifiers == NPEventModifier_MetaKey &&
+#else
+    if (key_event->modifiers == NPEventModifier_ControlKey &&
+#endif
+        key_event->windowsKeyCode == base::VKEY_C) {
+      Copy();
+      return true;
+    }
+  }
+
   NPPepperEvent npevent;
 
   npevent.type = ConvertEventTypes(event.type);

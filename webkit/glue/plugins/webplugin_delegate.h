@@ -156,6 +156,8 @@ class WebPluginDelegate : public WebPlugin2DDeviceDelegate,
   // Used for zooming of full page plugins.  0 means reset, while -1 means zoom
   // out and +1 means zoom in.
   virtual void Zoom(int factor) {}
+  // Copy the selected text.
+  virtual void Copy() {}
 };
 
 }  // namespace webkit_glue

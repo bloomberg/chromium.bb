@@ -956,11 +956,16 @@ typedef NPError (*NPPWidgetPropertyChangedPtr) (
     NPWidgetID id,
     NPWidgetProperty property);
 
+/* Tells the plugin to copy the selected text */
+typedef NPError (*NPPCopyPtr) (
+    NPP instance);
+
 typedef struct _NPPExtensions {
   NPPGetPrintExtensionsPtr getPrintExtensions;
   NPPGetFindExtensionsPtr getFindExtensions;
   NPPZoomPtr zoom;
   NPPWidgetPropertyChangedPtr widgetPropertyChanged;
+  NPPCopyPtr copy;
 } NPPExtensions;
 
 #endif  /* _NP_EXTENSIONS_H_ */
