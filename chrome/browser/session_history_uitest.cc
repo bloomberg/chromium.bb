@@ -268,6 +268,7 @@ TEST_F(SessionHistoryTest, FrameFormBackForward) {
 // document state"
 // Test that back/forward preserves POST data and document state when navigating
 // across frames (ie, from frame -> nonframe).
+// http://crbug.com/45058
 TEST_F(SessionHistoryTest, DISABLED_CrossFrameFormBackForward) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
@@ -466,7 +467,7 @@ TEST_F(SessionHistoryTest, JavascriptHistory) {
 }
 
 // This test is failing consistently. See http://crbug.com/22560
-TEST_F(SessionHistoryTest, DISABLED_LocationReplace) {
+TEST_F(SessionHistoryTest, FAILS_LocationReplace) {
   // Test that using location.replace doesn't leave the title of the old page
   // visible.
   scoped_refptr<HTTPTestServer> server =
