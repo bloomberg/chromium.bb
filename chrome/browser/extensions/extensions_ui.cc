@@ -567,17 +567,16 @@ void ExtensionsDOMHandler::ShowAlert(const std::string& message) {
 }
 
 void ExtensionsDOMHandler::HandlePackMessage(const Value* value) {
-  std::string extension_path;
-  std::string private_key_path;
+  std::wstring extension_path;
+  std::wstring private_key_path;
   CHECK(value->IsType(Value::TYPE_LIST));
   const ListValue* list = static_cast<const ListValue*>(value);
   CHECK(list->GetSize() == 2);
   CHECK(list->GetString(0, &extension_path));
   CHECK(list->GetString(1, &private_key_path));
 
-  FilePath root_directory = FilePath::FromWStringHack(ASCIIToWide(
-      extension_path));
-  FilePath key_file = FilePath::FromWStringHack(ASCIIToWide(private_key_path));
+  FilePath root_directory = FilePath::FromWStringHack(extension_path);
+  FilePath key_file = FilePath::FromWStringHack(private_key_path);
 
   if (root_directory.empty()) {
     if (extension_path.empty()) {
@@ -621,7 +620,7 @@ void ExtensionsDOMHandler::OnPackSuccess(const FilePath& crx_file,
 }
 
 void ExtensionsDOMHandler::OnPackFailure(const std::wstring& error) {
-  ShowAlert(WideToASCII(error));
+  ShowAlert(WideToUTF8(error));
 }
 
 void ExtensionsDOMHandler::HandleAutoUpdateMessage(const Value* value) {
