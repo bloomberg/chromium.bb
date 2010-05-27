@@ -167,6 +167,10 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // Tints an icon based on tint.
   SkBitmap* GenerateTintedIcon(int base_id, color_utils::HSL tint) const;
 
+  // Returns the tint for buttons that contrasts with the normal window
+  // background color.
+  void GetNormalButtonTintHSL(color_utils::HSL* tint) const;
+
   // Returns a tint that's the color of the current normal text in an entry.
   void GetNormalEntryForegroundHSL(color_utils::HSL* tint) const;
 
@@ -202,6 +206,11 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // caller while |use_gtk_| is true.
   ColorMap colors_;
   TintMap tints_;
+
+  // Colors used to tint certain icons.
+  color_utils::HSL button_tint_;
+  color_utils::HSL entry_tint_;
+  color_utils::HSL selected_entry_tint_;
 
   // Colors that we pass to WebKit. These are generated each time the theme
   // changes.

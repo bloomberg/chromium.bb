@@ -124,6 +124,69 @@ bool IsOverridableImage(int id) {
   return images.count(id) > 0;
 }
 
+// Picks a button tint from a set of background colors. While
+// |accent_gdk_color| will usually be the same color through a theme, this
+// function will get called with the normal GtkLabel |text_color|/GtkWindow
+// |background_color| pair and the GtkEntry |text_color|/|background_color|
+// pair. While 3/4 of the time the resulting tint will be the same, themes that
+// have a dark window background (with light text) and a light text entry (with
+// dark text) will get better icons with this separated out.
+void PickButtonTintFromColors(const GdkColor& accent_gdk_color,
+                              const GdkColor& text_color,
+                              const GdkColor& background_color,
+                              color_utils::HSL* tint) {
+  SkColor accent_color = GdkToSkColor(&accent_gdk_color);
+  color_utils::HSL accent_tint;
+  color_utils::SkColorToHSL(accent_color, &accent_tint);
+
+  color_utils::HSL text_tint;
+  color_utils::SkColorToHSL(GdkToSkColor(&text_color), &text_tint);
+
+  color_utils::HSL background_tint;
+  color_utils::SkColorToHSL(GdkToSkColor(&background_color), &background_tint);
+
+  // If the accent color is gray, then our normal HSL tomfoolery will bring out
+  // whatever color is oddly dominant (for example, in rgb space [125, 128,
+  // 125] will tint green instead of gray). Slight differences (+/-10 (4%) to
+  // all color components) should be interpreted as this color being gray and
+  // we should switch into a special grayscale mode.
+  int rb_diff = abs(SkColorGetR(accent_color) - SkColorGetB(accent_color));
+  int rg_diff = abs(SkColorGetR(accent_color) - SkColorGetG(accent_color));
+  int bg_diff = abs(SkColorGetB(accent_color) - SkColorGetG(accent_color));
+  if (rb_diff < 10 && rg_diff < 10 && bg_diff < 10) {
+    // Our accent is white/gray/black. Only the luminance of the accent color
+    // matters.
+    tint->h = -1;
+
+    // Use the saturation of the text.
+    tint->s = text_tint.s;
+
+    // Use the luminance of the accent color UNLESS there isn't enough
+    // luminance contrast between the accent color and the base color.
+    if (fabs(accent_tint.l - background_tint.l) > 0.3)
+      tint->l = accent_tint.l;
+    else
+      tint->l = text_tint.l;
+  } else {
+    // Our accent is a color.
+    tint->h = accent_tint.h;
+
+    // Don't modify the saturation; the amount of color doesn't matter.
+    tint->s = -1;
+
+    // If the text wants us to darken the icon, don't change the luminance (the
+    // icons are already dark enough). Otherwise, lighten the icon by no more
+    // than 0.9 since we don't want a pure-white icon even if the text is pure
+    // white.
+    if (text_tint.l < 0.5)
+      tint->l = -1;
+    else if (text_tint.l <= 0.9)
+      tint->l = text_tint.l;
+    else
+      tint->l = 0.9;
+  }
+}
+
 }  // namespace
 
 GtkWidget* GtkThemeProvider::icon_widget_ = NULL;
@@ -507,7 +570,7 @@ void GtkThemeProvider::LoadGtkValues() {
 
   GtkStyle* window_style = gtk_rc_get_style(fake_window_);
   GdkColor toolbar_color = window_style->bg[GTK_STATE_NORMAL];
-  GdkColor button_color = window_style->fg[GTK_STATE_NORMAL];
+  GdkColor button_color = window_style->bg[GTK_STATE_SELECTED];
 
   GtkStyle* label_style = gtk_rc_get_style(fake_label_.get());
   GdkColor label_color = label_style->fg[GTK_STATE_NORMAL];
@@ -547,6 +610,11 @@ void GtkThemeProvider::LoadGtkValues() {
     frame_color.green = SkColorGetG(shifted) * kSkiaToGDKMultiplier;
     frame_color.blue = SkColorGetB(shifted) * kSkiaToGDKMultiplier;
   }
+
+  // Build the various icon tints.
+  GetNormalButtonTintHSL(&button_tint_);
+  GetNormalEntryForegroundHSL(&entry_tint_);
+  GetSelectedEntryForegroundHSL(&selected_entry_tint_);
 
   SetThemeTintFromGtk(BrowserThemeProvider::TINT_BUTTONS, &button_color);
   SetThemeTintFromGtk(BrowserThemeProvider::TINT_FRAME, &frame_color);
@@ -748,9 +816,7 @@ SkBitmap* GtkThemeProvider::GenerateGtkThemeBitmap(int id) const {
     case IDR_OMNIBOX_STAR:
     case IDR_GEOLOCATION_ALLOWED_LOCATIONBAR_ICON:
     case IDR_GEOLOCATION_DENIED_LOCATIONBAR_ICON: {
-      color_utils::HSL tint;
-      GetNormalEntryForegroundHSL(&tint);
-      return GenerateTintedIcon(id, tint);
+      return GenerateTintedIcon(id, entry_tint_);
     }
     // Two sets of omnibox icons, the one for normal http and the one for
     // history, include white backgrounds (and are supposed to, for the windows
@@ -758,41 +824,30 @@ SkBitmap* GtkThemeProvider::GenerateGtkThemeBitmap(int id) const {
     // color combinations we need to deal with, switch them out with
     // transparent background versions.
     case IDR_OMNIBOX_HTTP: {
-      color_utils::HSL tint;
-      GetNormalEntryForegroundHSL(&tint);
-      return GenerateTintedIcon(IDR_OMNIBOX_HTTP_TRANSPARENT, tint);
+      return GenerateTintedIcon(IDR_OMNIBOX_HTTP_TRANSPARENT, entry_tint_);
     }
     case IDR_OMNIBOX_HISTORY: {
-      color_utils::HSL tint;
-      GetNormalEntryForegroundHSL(&tint);
-      return GenerateTintedIcon(IDR_OMNIBOX_HISTORY_TRANSPARENT, tint);
+      return GenerateTintedIcon(IDR_OMNIBOX_HISTORY_TRANSPARENT, entry_tint_);
     }
     // In GTK mode, the dark versions of the omnibox icons only ever appear in
     // the autocomplete popup and only against the current theme's GtkEntry
     // base[GTK_STATE_SELECTED] color, so tint the icons so they won't collide
     // with the selected color.
     case IDR_OMNIBOX_HTTP_DARK: {
-      color_utils::HSL tint;
-      GetSelectedEntryForegroundHSL(&tint);
-      return GenerateTintedIcon(IDR_OMNIBOX_HTTP_DARK_TRANSPARENT, tint);
+      return GenerateTintedIcon(IDR_OMNIBOX_HTTP_DARK_TRANSPARENT,
+                                selected_entry_tint_);
     }
     case IDR_OMNIBOX_HISTORY_DARK: {
-      color_utils::HSL tint;
-      GetSelectedEntryForegroundHSL(&tint);
-      return GenerateTintedIcon(IDR_OMNIBOX_HISTORY_DARK_TRANSPARENT, tint);
+      return GenerateTintedIcon(IDR_OMNIBOX_HISTORY_DARK_TRANSPARENT,
+                                selected_entry_tint_);
     }
     case IDR_OMNIBOX_SEARCH_DARK:
     case IDR_OMNIBOX_MORE_DARK:
     case IDR_OMNIBOX_STAR_DARK: {
-      color_utils::HSL tint;
-      GetSelectedEntryForegroundHSL(&tint);
-      return GenerateTintedIcon(id, tint);
+      return GenerateTintedIcon(id, selected_entry_tint_);
     }
     default: {
-      TintMap::const_iterator it = tints_.find(
-          BrowserThemeProvider::TINT_BUTTONS);
-      DCHECK(it != tints_.end());
-      return GenerateTintedIcon(id, it->second);
+      return GenerateTintedIcon(id, button_tint_);
     }
   }
 }
@@ -822,15 +877,35 @@ SkBitmap* GtkThemeProvider::GenerateTintedIcon(int base_id,
       *button, tint));
 }
 
+void GtkThemeProvider::GetNormalButtonTintHSL(
+    color_utils::HSL* tint) const {
+  GtkStyle* window_style = gtk_rc_get_style(fake_window_);
+  const GdkColor accent_gdk_color = window_style->bg[GTK_STATE_SELECTED];
+  const GdkColor base_color = window_style->base[GTK_STATE_NORMAL];
+
+  GtkStyle* label_style = gtk_rc_get_style(fake_label_.get());
+  const GdkColor text_color = label_style->fg[GTK_STATE_NORMAL];
+
+  PickButtonTintFromColors(accent_gdk_color, text_color, base_color, tint);
+}
+
 void GtkThemeProvider::GetNormalEntryForegroundHSL(
     color_utils::HSL* tint) const {
+  GtkStyle* window_style = gtk_rc_get_style(fake_window_);
+  const GdkColor accent_gdk_color = window_style->bg[GTK_STATE_SELECTED];
+
   GtkStyle* style = gtk_rc_get_style(fake_entry_.get());
-  const GdkColor color = style->text[GTK_STATE_NORMAL];
-  color_utils::SkColorToHSL(GdkToSkColor(&color), tint);
+  const GdkColor text_color = style->text[GTK_STATE_NORMAL];
+  const GdkColor base_color = style->base[GTK_STATE_NORMAL];
+
+  PickButtonTintFromColors(accent_gdk_color, text_color, base_color, tint);
 }
 
 void GtkThemeProvider::GetSelectedEntryForegroundHSL(
     color_utils::HSL* tint) const {
+  // The simplest of all the tints. We just use the selected text in the entry
+  // since the icons tinted this way will only be displayed against
+  // base[GTK_STATE_SELECTED].
   GtkStyle* style = gtk_rc_get_style(fake_entry_.get());
   const GdkColor color = style->text[GTK_STATE_SELECTED];
   color_utils::SkColorToHSL(GdkToSkColor(&color), tint);
