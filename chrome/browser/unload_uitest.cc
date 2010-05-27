@@ -105,21 +105,21 @@ class UnloadTest : public UITest {
 
   void WaitForBrowserClosed() {
     const int kCheckDelayMs = 100;
-    int max_wait_time = action_max_timeout_ms();
-    while (max_wait_time > 0) {
-      max_wait_time -= kCheckDelayMs;
-      PlatformThread::Sleep(kCheckDelayMs);
+    for (int max_wait_time = action_max_timeout_ms();
+         max_wait_time > 0; max_wait_time -= kCheckDelayMs) {
+      CrashAwareSleep(kCheckDelayMs);
       if (!IsBrowserRunning())
         break;
     }
+
+    EXPECT_FALSE(IsBrowserRunning());
   }
 
   void CheckTitle(const std::wstring& expected_title) {
     const int kCheckDelayMs = 100;
-    int max_wait_time = action_max_timeout_ms();
-    while (max_wait_time > 0) {
-      max_wait_time -= kCheckDelayMs;
-      PlatformThread::Sleep(kCheckDelayMs);
+    for (int max_wait_time = action_max_timeout_ms();
+         max_wait_time > 0; max_wait_time -= kCheckDelayMs) {
+      CrashAwareSleep(kCheckDelayMs);
       if (expected_title == GetActiveTabTitle())
         break;
     }
@@ -285,13 +285,7 @@ TEST_F(UnloadTest, BrowserCloseUnload) {
   LoadUrlAndQuitBrowser(UNLOAD_HTML, L"unload");
 }
 
-#if defined(OS_LINUX)
-// Hangs on Linux: http://crbug.com/45021
-#define BrowserCloseBeforeUnloadOK DISABLED_BrowserCloseBeforeUnloadOK
-#define BrowserCloseBeforeUnloadCancel DISABLED_BrowserCloseBeforeUnloadCancel
-#define BrowserCloseWithInnerFocusedFrame \
-    DISABLED_BrowserCloseWithInnerFocusedFrame
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
 // ClickModalDialogButton doesn't work on Mac: http://crbug.com/45031
 #define BrowserCloseBeforeUnloadOK DISABLED_BrowserCloseBeforeUnloadOK
 #define BrowserCloseBeforeUnloadCancel DISABLED_BrowserCloseBeforeUnloadCancel
@@ -308,7 +302,6 @@ TEST_F(UnloadTest, BrowserCloseBeforeUnloadOK) {
   CloseBrowserAsync(browser.get());
   ClickModalDialogButton(MessageBoxFlags::DIALOGBUTTON_OK);
   WaitForBrowserClosed();
-  EXPECT_FALSE(IsBrowserRunning());
 }
 
 // Tests closing the browser with a beforeunload handler and clicking
@@ -320,13 +313,14 @@ TEST_F(UnloadTest, BrowserCloseBeforeUnloadCancel) {
 
   CloseBrowserAsync(browser.get());
   ClickModalDialogButton(MessageBoxFlags::DIALOGBUTTON_CANCEL);
-  WaitForBrowserClosed();
-  EXPECT_TRUE(IsBrowserRunning());
+  // There's no real graceful way to wait for something _not_ to happen, so
+  // we just wait a short period.
+  CrashAwareSleep(500);
+  ASSERT_TRUE(IsBrowserRunning());
 
   CloseBrowserAsync(browser.get());
   ClickModalDialogButton(MessageBoxFlags::DIALOGBUTTON_OK);
   WaitForBrowserClosed();
-  EXPECT_FALSE(IsBrowserRunning());
 }
 
 // Tests closing the browser and clicking OK in the beforeunload confirm dialog
@@ -340,7 +334,6 @@ TEST_F(UnloadTest, BrowserCloseWithInnerFocusedFrame) {
   CloseBrowserAsync(browser.get());
   ClickModalDialogButton(MessageBoxFlags::DIALOGBUTTON_OK);
   WaitForBrowserClosed();
-  EXPECT_FALSE(IsBrowserRunning());
 }
 
 // Tests closing the browser with a beforeunload handler that takes
@@ -350,8 +343,6 @@ TEST_F(UnloadTest, BrowserCloseTwoSecondBeforeUnload) {
                         L"twosecondbeforeunload");
 }
 
-// TODO(estade): On linux, the renderer process doesn't seem to quit and pegs
-// CPU.
 // Tests closing the browser on a page with an unload listener registered where
 // the unload handler has an infinite loop.
 TEST_F(UnloadTest, BrowserCloseInfiniteUnload) {

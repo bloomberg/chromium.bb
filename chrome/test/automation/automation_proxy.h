@@ -115,7 +115,7 @@ class AutomationProxy : public IPC::Channel::Listener,
   bool GetShowingAppModalDialog(bool* showing_app_modal_dialog,
       MessageBoxFlags::DialogButton* button) WARN_UNUSED_RESULT;
 
-  // Simulates a click on a dialog button.
+  // Simulates a click on a dialog button. Synchronous.
   bool ClickAppModalDialogButton(
       MessageBoxFlags::DialogButton button) WARN_UNUSED_RESULT;
 
