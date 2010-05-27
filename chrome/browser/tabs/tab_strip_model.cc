@@ -679,8 +679,14 @@ void TabStripModel::ExecuteContextMenuCommand(
           UserMetricsAction("TabContextMenu_TogglePinned"),
           profile_);
 
-      SelectTabContentsAt(context_index, true);
-      SetTabPinned(context_index, !IsTabPinned(context_index));
+      if (IsPhantomTab(context_index)) {
+        // The tab is a phantom tab, close it.
+        CloseTabContentsAt(context_index,
+                           CLOSE_USER_GESTURE | CLOSE_CREATE_HISTORICAL_TAB);
+      } else {
+        SelectTabContentsAt(context_index, true);
+        SetTabPinned(context_index, !IsTabPinned(context_index));
+      }
       break;
     }
 
