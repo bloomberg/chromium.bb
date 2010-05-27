@@ -44,7 +44,13 @@ class DownloadShelf;
   BOOL barIsVisible_;
 
   scoped_ptr<DownloadShelf> bridge_;
-  float shelfHeight_;
+
+  // Height of the shelf when it's fully visible.
+  CGFloat maxShelfHeight_;
+
+  // Current height of the shelf. Changes while the shelf is animating in or
+  // out.
+  CGFloat currentShelfHeight_;
 
   // The download items we have added to our shelf.
   scoped_nsobject<NSMutableArray> downloadItemControllers_;

@@ -47,6 +47,7 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
 
 - (void)updateTheme;
 - (void)themeDidChangeNotification:(NSNotification*)notification;
+- (void)viewFrameDidChange:(NSNotification*)notification;
 @end
 
 
@@ -57,7 +58,8 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
   if ((self = [super initWithNibName:@"DownloadShelf"
                               bundle:mac_util::MainAppBundle()])) {
     resizeDelegate_ = resizeDelegate;
-    shelfHeight_ = [[self view] bounds].size.height;
+    maxShelfHeight_ = NSHeight([[self view] bounds]);
+    currentShelfHeight_ = maxShelfHeight_;
 
     // Reset the download shelf's frame height to zero.  It will be properly
     // positioned and sized the first time we try to set its height. (Just
@@ -83,7 +85,12 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
                       object:nil];
 
   [[self animatableView] setResizeDelegate:resizeDelegate_];
-
+  [[self view] setPostsFrameChangedNotifications:YES];
+  [defaultCenter addObserver:self
+                    selector:@selector(viewFrameDidChange:)
+                        name:NSViewFrameDidChangeNotification
+                      object:[self view]];
+  
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   NSImage* favicon = rb.GetNSImageNamed(IDR_DOWNLOADS_FAVICON);
   DCHECK(favicon);
@@ -101,6 +108,23 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
 // Called after the current theme has changed.
 - (void)themeDidChangeNotification:(NSNotification*)notification {
   [self updateTheme];
+}
+
+// Called after the frame's rect has changed; usually when the height is
+// animated.
+- (void)viewFrameDidChange:(NSNotification*)notification {
+  // Anchor subviews at the top of |view|, so that it looks like the shelf
+  // is sliding out.
+  CGFloat newShelfHeight = NSHeight([[self view] frame]);
+  if (newShelfHeight == currentShelfHeight_)
+    return;
+
+  for (NSView* view in [[self view] subviews]) {
+    NSRect frame = [view frame];
+    frame.origin.y -= currentShelfHeight_ - newShelfHeight;
+    [view setFrame:frame];
+  }
+  currentShelfHeight_ = newShelfHeight;
 }
 
 // Adapt appearance to the current theme. Called after theme changes and before
@@ -171,7 +195,7 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
   // smoother.
   AnimatableView* view = [self animatableView];
   if (enable)
-    [view setHeight:shelfHeight_];
+    [view setHeight:maxShelfHeight_];
   else
     [view animateToNewHeight:0 duration:kDownloadShelfCloseDuration];
 
@@ -206,7 +230,7 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
 }
 
 - (float)height {
-  return shelfHeight_;
+  return maxShelfHeight_;
 }
 
 // If |skipFirst| is true, the frame of the leftmost item is not set.

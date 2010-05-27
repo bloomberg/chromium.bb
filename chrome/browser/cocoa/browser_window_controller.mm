@@ -764,7 +764,7 @@
   // to "grow up" or "grow down."  The below call to |-layoutSubviews| will
   // position each view correctly.
   NSRect frame = [view frame];
-  if (frame.size.height == height)
+  if (NSHeight(frame) == height)
     return;
 
   // Grow or shrink the window by the amount of the height change.  We adjust
