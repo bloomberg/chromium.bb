@@ -21,7 +21,7 @@
 
 const wchar_t kChromeFrameDllName[] = L"npchrome_frame.dll";
 const wchar_t kChromeLauncherExeName[] = L"chrome_launcher.exe";
-const wchar_t kReferenceChromeFrameDllName[] = L"npchrome_tab.dll";
+const char kReferenceChromeFrameDllName[] = "npchrome_tab.dll";
 
 // Statics
 FilePath ScopedChromeFrameRegistrar::GetChromeFrameBuildPath() {
@@ -99,20 +99,21 @@ void ScopedChromeFrameRegistrar::UnregisterAtPath(
   ASSERT_TRUE(FreeLibrary(dll_handle));
 }
 
-std::wstring ScopedChromeFrameRegistrar::GetReferenceChromeFrameDllPath() {
-  std::wstring reference_build_dir;
+FilePath ScopedChromeFrameRegistrar::GetReferenceChromeFrameDllPath() {
+  FilePath reference_build_dir;
   PathService::Get(chrome::DIR_APP, &reference_build_dir);
 
-  file_util::UpOneDirectory(&reference_build_dir);
-  file_util::UpOneDirectory(&reference_build_dir);
+  reference_build_dir = reference_build_dir.DirName();
+  reference_build_dir = reference_build_dir.DirName();
 
-  file_util::AppendToPath(&reference_build_dir, L"chrome_frame");
-  file_util::AppendToPath(&reference_build_dir, L"tools");
-  file_util::AppendToPath(&reference_build_dir, L"test");
-  file_util::AppendToPath(&reference_build_dir, L"reference_build");
-  file_util::AppendToPath(&reference_build_dir, L"chrome");
-  file_util::AppendToPath(&reference_build_dir, L"servers");
-  file_util::AppendToPath(&reference_build_dir, kReferenceChromeFrameDllName);
+  reference_build_dir = reference_build_dir.AppendASCII("chrome_frame");
+  reference_build_dir = reference_build_dir.AppendASCII("tools");
+  reference_build_dir = reference_build_dir.AppendASCII("test");
+  reference_build_dir = reference_build_dir.AppendASCII("reference_build");
+  reference_build_dir = reference_build_dir.AppendASCII("chrome");
+  reference_build_dir = reference_build_dir.AppendASCII("servers");
+  reference_build_dir = reference_build_dir.AppendASCII(
+      kReferenceChromeFrameDllName);
   return reference_build_dir;
 }
 
@@ -125,7 +126,7 @@ ScopedChromeFrameRegistrar::ScopedChromeFrameRegistrar(
 }
 
 ScopedChromeFrameRegistrar::ScopedChromeFrameRegistrar() {
-  original_dll_path_ = GetChromeFrameBuildPath().ToWStringHack();
+  original_dll_path_ = GetChromeFrameBuildPath().value();
   RegisterChromeFrameAtPath(original_dll_path_);
 }
 
@@ -142,7 +143,7 @@ void ScopedChromeFrameRegistrar::RegisterChromeFrameAtPath(
 }
 
 void ScopedChromeFrameRegistrar::RegisterReferenceChromeFrameBuild() {
-  RegisterChromeFrameAtPath(GetReferenceChromeFrameDllPath());
+  RegisterChromeFrameAtPath(GetReferenceChromeFrameDllPath().value());
 }
 
 std::wstring ScopedChromeFrameRegistrar::GetChromeFrameDllPath() const {

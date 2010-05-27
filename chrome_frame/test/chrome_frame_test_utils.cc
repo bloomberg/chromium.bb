@@ -35,7 +35,7 @@ const wchar_t kIEBrokerImageName[] = L"ieuser.exe";
 const wchar_t kFirefoxImageName[] = L"firefox.exe";
 const wchar_t kOperaImageName[] = L"opera.exe";
 const wchar_t kSafariImageName[] = L"safari.exe";
-const wchar_t kChromeImageName[] = L"chrome.exe";
+const char kChromeImageName[] = "chrome.exe";
 const wchar_t kIEProfileName[] = L"iexplore";
 const wchar_t kChromeLauncher[] = L"chrome_launcher.exe";
 const int kChromeFrameLongNavigationTimeoutInSeconds = 10;
@@ -165,12 +165,11 @@ base::ProcessHandle LaunchSafari(const std::wstring& url) {
 }
 
 base::ProcessHandle LaunchChrome(const std::wstring& url) {
-  std::wstring path;
+  FilePath path;
   PathService::Get(base::DIR_MODULE, &path);
-  file_util::AppendToPath(&path, kChromeImageName);
+  path = path.AppendASCII(kChromeImageName);
 
-  FilePath exe_path(path);
-  CommandLine cmd(exe_path);
+  CommandLine cmd(path);
   std::wstring args = L"--";
   args += ASCIIToWide(switches::kNoFirstRun);
   args += L" ";

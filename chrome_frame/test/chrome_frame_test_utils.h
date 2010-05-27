@@ -51,7 +51,7 @@ extern const wchar_t kIEBrokerImageName[];
 extern const wchar_t kFirefoxImageName[];
 extern const wchar_t kOperaImageName[];
 extern const wchar_t kSafariImageName[];
-extern const wchar_t kChromeImageName[];
+extern const char kChromeImageName[];
 extern const wchar_t kChromeLauncher[];
 extern const int kChromeFrameLongNavigationTimeoutInSeconds;
 

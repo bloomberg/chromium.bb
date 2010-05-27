@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "chrome_frame/test/test_with_web_server.h"
@@ -39,8 +39,9 @@ void ChromeFrameTestWithWebServer::CloseAllBrowsers() {
   base::KillProcesses(chrome_frame_test::kSafariImageName, 0, NULL);
 
   // Endeavour to only kill off Chrome Frame derived Chrome processes.
-  KillAllNamedProcessesWithArgument(chrome_frame_test::kChromeImageName,
-                                    UTF8ToWide(switches::kChromeFrame));
+  KillAllNamedProcessesWithArgument(
+      UTF8ToWide(chrome_frame_test::kChromeImageName),
+      UTF8ToWide(switches::kChromeFrame));
   base::KillProcesses(chrome_frame_test::kChromeLauncher, 0, NULL);
 }
 
@@ -198,10 +199,10 @@ void ChromeFrameTestWithWebServer::OptionalBrowserTest(BrowserKind browser,
 
 void ChromeFrameTestWithWebServer::VersionTest(BrowserKind browser,
     const wchar_t* page, const wchar_t* result_file_to_check) {
-  std::wstring plugin_path;
+  FilePath plugin_path;
   PathService::Get(base::DIR_MODULE, &plugin_path);
-  file_util::AppendToPath(&plugin_path, L"servers");
-  file_util::AppendToPath(&plugin_path, kChromeFrameDllName);
+  plugin_path = plugin_path.AppendASCII("servers");
+  plugin_path = plugin_path.Append(kChromeFrameDllName);
 
   static FileVersionInfo* version_info =
       FileVersionInfo::CreateFileVersionInfo(plugin_path);

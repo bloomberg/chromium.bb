@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,34 +33,34 @@ class HtmlUtilUnittest : public testing::Test {
   HtmlUtilUnittest() {}
 
   // Returns the test path given a test case.
-  virtual bool GetTestPath(const std::wstring& test_case, std::wstring* path) {
+  virtual bool GetTestPath(const std::string& test_case, FilePath* path) {
     if (!path) {
       NOTREACHED();
       return false;
     }
 
-    std::wstring test_path;
+    FilePath test_path;
     if (!PathService::Get(base::DIR_SOURCE_ROOT, &test_path)) {
       NOTREACHED();
       return false;
     }
 
-    file_util::AppendToPath(&test_path, L"chrome_frame");
-    file_util::AppendToPath(&test_path, L"test");
-    file_util::AppendToPath(&test_path, L"html_util_test_data");
-    file_util::AppendToPath(&test_path, test_case);
+    test_path = test_path.AppendASCII("chrome_frame");
+    test_path = test_path.AppendASCII("test");
+    test_path = test_path.AppendASCII("html_util_test_data");
+    test_path = test_path.AppendASCII(test_case);
 
     *path = test_path;
     return true;
   }
 
-  virtual bool GetTestData(const std::wstring& test_case, std::wstring* data) {
+  virtual bool GetTestData(const std::string& test_case, std::wstring* data) {
     if (!data) {
       NOTREACHED();
       return false;
     }
 
-    std::wstring path;
+    FilePath path;
     if (!GetTestPath(test_case, &path)) {
       NOTREACHED();
       return false;
@@ -78,7 +78,7 @@ class HtmlUtilUnittest : public testing::Test {
 
 TEST_F(HtmlUtilUnittest, BasicTest) {
   std::wstring test_data;
-  GetTestData(L"basic_test.html", &test_data);
+  GetTestData("basic_test.html", &test_data);
 
   HTMLScanner scanner(test_data.c_str());
 
@@ -99,7 +99,7 @@ TEST_F(HtmlUtilUnittest, BasicTest) {
 
 TEST_F(HtmlUtilUnittest, QuotesTest) {
   std::wstring test_data;
-  GetTestData(L"quotes_test.html", &test_data);
+  GetTestData("quotes_test.html", &test_data);
 
   HTMLScanner scanner(test_data.c_str());
 
@@ -120,7 +120,7 @@ TEST_F(HtmlUtilUnittest, QuotesTest) {
 
 TEST_F(HtmlUtilUnittest, DegenerateCasesTest) {
   std::wstring test_data;
-  GetTestData(L"degenerate_cases_test.html", &test_data);
+  GetTestData("degenerate_cases_test.html", &test_data);
 
   HTMLScanner scanner(test_data.c_str());
 
@@ -133,7 +133,7 @@ TEST_F(HtmlUtilUnittest, DegenerateCasesTest) {
 
 TEST_F(HtmlUtilUnittest, MultipleTagsTest) {
   std::wstring test_data;
-  GetTestData(L"multiple_tags.html", &test_data);
+  GetTestData("multiple_tags.html", &test_data);
 
   HTMLScanner scanner(test_data.c_str());
 
