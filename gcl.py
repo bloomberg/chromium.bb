@@ -3,8 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Wrapper script around Rietveld's upload.py that groups files into
-changelists."""
+"""\
+Wrapper script around Rietveld's upload.py that simplifies working with groups
+of files.
+"""
 
 import getpass
 import os
@@ -27,7 +29,7 @@ __pychecker__ = ''
 from scm import SVN
 import gclient_utils
 
-__version__ = '1.1.4'
+__version__ = '1.2'
 
 
 CODEREVIEW_SETTINGS = {
@@ -82,14 +84,9 @@ def CheckHomeForFile(filename):
   return None
 
 
-def UnknownFiles(extra_args):
-  """Runs svn status and returns unknown files.
-
-  Any args in |extra_args| are passed to the tool to support giving alternate
-  code locations.
-  """
-  return [item[1] for item in SVN.CaptureStatus(extra_args)
-          if item[0][0] == '?']
+def UnknownFiles():
+  """Runs svn status and returns unknown files."""
+  return [item[1] for item in SVN.CaptureStatus([]) if item[0][0] == '?']
 
 
 def GetRepositoryRoot():
@@ -612,7 +609,7 @@ def ListFiles(show_unknown_files):
     for filename in files[cl_name]:
       print "".join(filename)
   if show_unknown_files:
-    unknown_files = UnknownFiles([])
+    unknown_files = UnknownFiles()
   if (files.get('') or (show_unknown_files and len(unknown_files))):
     print "\n--- Not in any changelist:"
     for item in files.get('', []):
@@ -620,105 +617,6 @@ def ListFiles(show_unknown_files):
     if show_unknown_files:
       for filename in unknown_files:
         print "?      %s" % filename
-  return 0
-
-
-def CMDopened(args):
-  """Lists modified files in the current directory down."""
-  if args:
-    ErrorExit("Doesn't support arguments")
-  return ListFiles(False)
-
-
-def CMDstatus(args):
-  """Lists modified and unknown files in the current directory down."""
-  if args:
-    ErrorExit("Doesn't support arguments")
-  return ListFiles(True)
-
-
-def CMDhelp(args):
-  """Prints this help or help for the given command."""
-  if args and len(args) > 2:
-    if args[2] == 'try':
-      return TryChange(None, ['--help'], swallow_exception=False)
-    if args[2] == 'upload':
-      upload.RealMain(['upload.py', '--help'])
-      return 0
-
-  print (
-"""GCL is a wrapper for Subversion that simplifies working with groups of files.
-version """ + __version__ + """
-
-Basic commands:
------------------------------------------
-   gcl change change_name
-      Add/remove files to a changelist. Only scans the current directory and
-      subdirectories.
-
-   gcl upload change_name [-r reviewer1@gmail.com,reviewer2@gmail.com,...]
-                          [--send_mail] [--no_try] [--no_presubmit]
-                          [--no_watchlists]
-      Uploads the changelist to the server for review.
-      (You can create the file '.gcl_upload_no_try' in your home dir to
-      skip the automatic tries.)
-
-   gcl commit change_name [--no_presubmit]
-      Commits the changelist to the repository.
-
-   gcl lint change_name
-      Check all the files in the changelist for possible style violations.
-
-Advanced commands:
------------------------------------------
-   gcl delete change_name
-      Deletes a changelist.
-
-   gcl diff change_name
-      Diffs all files in the changelist.
-
-   gcl presubmit change_name
-      Runs presubmit checks without uploading the changelist.
-
-   gcl diff
-      Diffs all files in the current directory and subdirectories that aren't in
-      a changelist.
-
-   gcl description
-      Prints the description of the specified change to stdout.
-
-   gcl changes
-      Lists all the the changelists and the files in them.
-
-   gcl rename <old-name> <new-name>
-      Renames an existing change.
-
-   gcl nothave [optional directory]
-      Lists files unknown to Subversion.
-
-   gcl opened
-      Lists modified files in the current directory and subdirectories.
-
-   gcl settings
-      Print the code review settings for this directory.
-
-   gcl status
-      Lists modified and unknown files in the current directory and
-      subdirectories.
-
-   gcl try change_name
-      Sends the change to the tryserver so a trybot can do a test run on your
-      code. To send multiple changes as one path, use a comma-separated list
-      of changenames.
-      --> Use 'gcl help try' for more information!
-
-   gcl deleteempties
-      Deletes all changelists that have no files associated with them. Careful,
-      you can lose your descriptions.
-
-   gcl help [command]
-      Print this help menu, or help for the given command if it exists.
-""")
   return 0
 
 
@@ -746,6 +644,13 @@ def OptionallyDoPresubmitChecks(change_info, committing, args):
   return DoPresubmitChecks(change_info, committing, True)
 
 
+def defer_attributes(a, b):
+  """Copy attributes from an object (like a function) to another."""
+  for x in dir(a):
+    if not getattr(b, x, None):
+      setattr(b, x, getattr(a, x))
+
+
 def need_change(function):
   """Converts args -> change_info."""
   def hook(args):
@@ -753,13 +658,63 @@ def need_change(function):
       ErrorExit("You need to pass a change list name")
     change_info = ChangeInfo.Load(args[0], GetRepositoryRoot(), True, True)
     return function(change_info)
+  defer_attributes(function, hook)
+  hook.need_change = True
+  hook.no_args = True
   return hook
 
 
-def CMDupload(args):
-  if not args:
-    ErrorExit("You need to pass a change list name")
-  change_info = ChangeInfo.Load(args.pop(0), GetRepositoryRoot(), True, True)
+def need_change_and_args(function):
+  """Converts args -> change_info."""
+  def hook(args):
+    change_info = ChangeInfo.Load(args.pop(0), GetRepositoryRoot(), True, True)
+    return function(change_info, args)
+  defer_attributes(function, hook)
+  hook.need_change = True
+  return hook
+
+
+def no_args(function):
+  """Make sure no args are passed."""
+  def hook(args):
+    if args:
+      ErrorExit("Doesn't support arguments")
+    return function()
+  defer_attributes(function, hook)
+  hook.no_args = True
+  return hook
+
+
+def attrs(**kwargs):
+  """Decorate a function with new attributes."""
+  def decorate(function):
+    for k in kwargs:
+      setattr(function, k, kwargs[k])
+    return function
+  return decorate
+
+
+@no_args
+def CMDopened():
+  """Lists modified files in the current directory down."""
+  return ListFiles(False)
+
+
+@no_args
+def CMDstatus():
+  """Lists modified and unknown files in the current directory down."""
+  return ListFiles(True)
+
+
+@need_change_and_args
+@attrs(usage='[--no_try] [--no_presubmit] [--clobber]\n'
+    '                          [--no_watchlists]')
+def CMDupload(change_info, args):
+  """Uploads the changelist to the server for review.
+
+  (You can create the file '.gcl_upload_no_try' in your home dir to
+  skip the automatic tries.)
+  """
   if not change_info.GetFiles():
     print "Nothing to upload, changelist is empty."
     return 0
@@ -768,11 +723,11 @@ def CMDupload(args):
   # Might want to support GetInfoDir()/GetRepositoryRoot() like
   # CheckHomeForFile() so the skip of tries can be per tree basis instead
   # of user global.
-  no_try = FilterFlag(args, "--no_try") or \
-           FilterFlag(args, "--no-try") or \
-           not (CheckHomeForFile(".gcl_upload_no_try") is None)
-  no_watchlists = FilterFlag(args, "--no_watchlists") or \
-                  FilterFlag(args, "--no-watchlists")
+  no_try = (FilterFlag(args, "--no_try") or
+            FilterFlag(args, "--no-try") or
+            not (CheckHomeForFile(".gcl_upload_no_try") is None))
+  no_watchlists = (FilterFlag(args, "--no_watchlists") or
+                   FilterFlag(args, "--no-watchlists"))
 
   # Map --send-mail to --send_mail
   if FilterFlag(args, "--send-mail"):
@@ -877,7 +832,10 @@ def CMDupload(args):
 
 @need_change
 def CMDpresubmit(change_info):
-  """Runs presubmit checks on the change."""
+  """Runs presubmit checks on the change.
+
+  The actual presubmit code is implemented in presubmit_support.py and looks
+  for PRESUBMIT.py files."""
   if not change_info.GetFiles():
     print "Nothing to presubmit check, changelist is empty."
     return 0
@@ -917,10 +875,10 @@ def TryChange(change_info, args, swallow_exception):
                              prog='gcl try')
 
 
-def CMDcommit(args):
-  if not args:
-    ErrorExit("You need to pass a change list name")
-  change_info = ChangeInfo.Load(args.pop(0), GetRepositoryRoot(), True, True)
+@need_change_and_args
+@attrs(usage='[--no_presubmit]')
+def CMDcommit(change_list, args):
+  """Commits the changelist to the repository."""
   if not change_info.GetFiles():
     print "Nothing to commit, changelist is empty."
     return 1
@@ -978,7 +936,9 @@ def CMDcommit(args):
 
 
 def CMDchange(args):
-  """Creates/edits a changelist."""
+  """Creates or edits a changelist.
+
+  Only scans the current directory and subdirectories."""
   if len(args) == 0:
     # Generate a random changelist name.
     changename = GenerateChangeName()
@@ -1098,9 +1058,12 @@ def CMDchange(args):
   return 0
 
 
-@need_change
-def CMDlint(change_info):
-  """Runs cpplint.py on all the files in |change_info|"""
+@need_change_and_args
+def CMDlint(change_info, args):
+  """Runs cpplint.py on all the files in the change list.
+
+  Checks all the files in the changelist for possible style violations.
+  """
   try:
     import cpplint
   except ImportError:
@@ -1158,10 +1121,9 @@ def DoPresubmitChecks(change_info, committing, may_prompt):
   return result
 
 
-def CMDchanges(args):
+@no_args
+def CMDchanges():
   """Lists all the changelists and their files."""
-  if args:
-    ErrorExit("Doesn't support arguments")
   for cl in GetCLs():
     change_info = ChangeInfo.Load(cl, GetRepositoryRoot(), True, True)
     print "\n--- Changelist " + change_info.name + ":"
@@ -1170,10 +1132,9 @@ def CMDchanges(args):
   return 0
 
 
-def CMDdeleteempties(args):
+@no_args
+def CMDdeleteempties():
   """Delete all changelists that have no files."""
-  if args:
-    ErrorExit("Doesn't support arguments")
   print "\n--- Deleting:"
   for cl in GetCLs():
     change_info = ChangeInfo.Load(cl, GetRepositoryRoot(), True, True)
@@ -1183,21 +1144,20 @@ def CMDdeleteempties(args):
   return 0
 
 
-def CMDnothave(args):
+@no_args
+def CMDnothave():
   """Lists files unknown to Subversion."""
-  if args:
-    ErrorExit("Doesn't support arguments")
-  for filename in UnknownFiles(args):
+  for filename in UnknownFiles():
     print "?      " + "".join(filename)
   return 0
 
 
+@attrs(usage='<svn options>')
 def CMDdiff(args):
-  """Diffs all files in the changelist."""
+  """Diffs all files in the changelist or all files that aren't in a CL."""
   files = None
   if args:
-    change_info = ChangeInfo.Load(args[0], GetRepositoryRoot(), True, True)
-    args.pop(0)
+    change_info = ChangeInfo.Load(args.pop(0), GetRepositoryRoot(), True, True)
     files = change_info.GetFileNames()
   else:
     files = GetFilesNotInCL()
@@ -1205,9 +1165,9 @@ def CMDdiff(args):
                                 print_output=True)[1]
 
 
-def CMDsettings(args):
-  """Prints code review settings."""
-  __pychecker__ = 'unusednames=args'
+@no_args
+def CMDsettings():
+  """Prints code review settings for this checkout."""
   # Force load settings
   GetCodeReviewSetting("UNKNOWN");
   del CODEREVIEW_SETTINGS['__just_initialized']
@@ -1231,8 +1191,7 @@ def CMDdelete(change_info):
 
 
 def CMDtry(args):
-  """Sends the change to the tryserver so a trybot can do a test run on your
-  code.
+  """Sends the change to the tryserver to do a test run on your code.
 
   To send multiple changes as one path, use a comma-separated list of
   changenames. Use 'gcl help try' for more information!"""
@@ -1255,6 +1214,7 @@ def CMDtry(args):
   return TryChange(change_info, args, swallow_exception=False)
 
 
+@attrs(usage='<old-name> <new-name>')
 def CMDrename(args):
   """Renames an existing change."""
   if len(args) != 2:
@@ -1272,9 +1232,10 @@ def CMDrename(args):
 
 
 def CMDpassthru(args):
-  # Everything else that is passed into gcl we redirect to svn, after adding
-  # the files.
-  # args is guaranteed to be len(args) >= 1
+  """Everything else that is passed into gcl we redirect to svn.
+
+  It assumes a change list name is passed and is converted with the files names.
+  """
   args = ["svn", args[0]]
   if len(args) > 1:
     root = GetRepositoryRoot()
@@ -1283,61 +1244,73 @@ def CMDpassthru(args):
   return RunShellWithReturnCode(args, print_output=True)[1]
 
 
+def Command(name):
+  return getattr(sys.modules[__name__], 'CMD' + name, None)
+
+
+def GenUsage(command):
+  """Modify an OptParse object with the function's documentation."""
+  obj = Command(command)
+  display = command
+  more = getattr(obj, 'usage', '')
+  if command == 'help':
+    display = '<command>'
+  need_change = ''
+  if getattr(obj, 'need_change', None):
+    need_change = ' <change_list>'
+  options = ' [options]'
+  if getattr(obj, 'no_args', None):
+    options = ''
+  res = 'Usage: gcl %s%s%s %s\n\n' % (display, need_change, options, more)
+  res += re.sub('\n  ', '\n', obj.__doc__)
+  return res
+
+
+def CMDhelp(args):
+  """Prints this help or help for the given command."""
+  if args and 'CMD' + args[0] in dir(sys.modules[__name__]):
+    print GenUsage(args[0])
+
+    # These commands defer to external tools so give this info too.
+    if args[0] == 'try':
+      TryChange(None, ['--help'], swallow_exception=False)
+    if args[0] == 'upload':
+      upload.RealMain(['upload.py', '--help'])
+    return 0
+
+  print GenUsage('help')
+  print sys.modules[__name__].__doc__
+  print 'version ' + __version__ + '\n'
+
+  print('Commands are:\n' + '\n'.join([
+        '  %-12s %s' % (fn[3:], Command(fn[3:]).__doc__.split('\n')[0].strip())
+        for fn in dir(sys.modules[__name__]) if fn.startswith('CMD')]))
+  return 0
+
+
 def main(argv):
-  __pychecker__ = 'maxreturns=0'
   try:
-    # Create the directories where we store information about changelists if it
-    # doesn't exist.
-    if not os.path.exists(GetInfoDir()):
-      os.mkdir(GetInfoDir())
-    if not os.path.exists(GetChangesDir()):
-      os.mkdir(GetChangesDir())
-    if not os.path.exists(GetCacheDir()):
-      os.mkdir(GetCacheDir())
+    GetRepositoryRoot()
   except gclient_utils.Error:
-    # Will throw an exception if not run in a svn checkout.
-    pass
+    print('To use gcl, you need to be in a subversion checkout.')
+    return 1
+
+  # Create the directories where we store information about changelists if it
+  # doesn't exist.
+  if not os.path.exists(GetInfoDir()):
+    os.mkdir(GetInfoDir())
+  if not os.path.exists(GetChangesDir()):
+    os.mkdir(GetChangesDir())
+  if not os.path.exists(GetCacheDir()):
+    os.mkdir(GetCacheDir())
 
   if not argv:
     argv = ['help']
-  # Commands that don't require an argument.
-  command = argv[0]
-  if command == "opened":
-    return CMDopened(argv[1:])
-  if command == "status":
-    return CMDstatus(argv[1:])
-  if command == "nothave":
-    return CMDnothave(argv[1:])
-  if command == "changes":
-    return CMDchanges(argv[1:])
-  if command == "help":
-    return CMDhelp(argv[1:])
-  if command == "diff":
-    return CMDdiff(argv[1:])
-  if command == "settings":
-    return CMDsettings(argv[1:])
-  if command == "deleteempties":
-    return CMDdeleteempties(argv[1:])
-  if command == "rename":
-    return CMDrename(argv[1:])
-  elif command == "change":
-    return CMDchange(argv[1:])
-  elif command == "description":
-    return CMDdescription(argv[1:])
-  elif command == "lint":
-    return CMDlint(argv[1:])
-  elif command == "upload":
-    return CMDupload(argv[1:])
-  elif command == "presubmit":
-    return CMDpresubmit(argv[1:])
-  elif command in ("commit", "submit"):
-    return CMDcommit(argv[1:])
-  elif command == "delete":
-    return CMDdelete(argv[1:])
-  elif command == "try":
-    return CMDtry(argv[1:])
-  else:
-    return CMDpassthru(argv)
+  command = Command(argv[0])
+  if command:
+    return command(argv[1:])
+  # Unknown command, try to pass that to svn
+  return CMDpassthru(argv)
 
 
 if __name__ == "__main__":

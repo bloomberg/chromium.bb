@@ -36,9 +36,9 @@ class GclUnittest(GclTestsBase):
         'CMDdescription', 'CMDdiff', 'CMDhelp', 'CMDlint', 'CMDnothave',
         'CMDopened', 'CMDpassthru', 'CMDpresubmit', 'CMDrename', 'CMDsettings',
         'CMDstatus', 'CMDtry', 'CMDupload',
-        'ChangeInfo', 'DEFAULT_LINT_IGNORE_REGEX',
-        'DEFAULT_LINT_REGEX', 'CheckHomeForFile',
-        'DoPresubmitChecks', 'ErrorExit', 'FILES_CACHE', 'FilterFlag',
+        'ChangeInfo', 'Command', 'DEFAULT_LINT_IGNORE_REGEX',
+        'DEFAULT_LINT_REGEX', 'CheckHomeForFile', 'DoPresubmitChecks',
+        'ErrorExit', 'FILES_CACHE', 'FilterFlag', 'GenUsage',
         'GenerateChangeName', 'GenerateDiff', 'GetCLs', 'GetCacheDir',
         'GetCachedFile', 'GetChangelistInfoFile', 'GetChangesDir',
         'GetCodeReviewSetting', 'GetEditor', 'GetFilesNotInCL', 'GetInfoDir',
@@ -48,7 +48,8 @@ class GclUnittest(GclTestsBase):
         'OptionallyDoPresubmitChecks', 'REPOSITORY_ROOT',
         'RunShell', 'RunShellWithReturnCode', 'SVN',
         'SendToRietveld', 'TryChange', 'UnknownFiles', 'Warn',
-        'breakpad', 'gclient_utils', 'getpass', 'main', 'need_change', 'os',
+        'attrs', 'breakpad', 'defer_attributes', 'gclient_utils', 'getpass',
+        'main', 'need_change', 'need_change_and_args', 'no_args', 'os',
         'random', 're', 'shutil', 'string', 'subprocess', 'sys', 'tempfile',
         'time', 'upload', 'urllib2',
     ]
@@ -85,8 +86,7 @@ class GclUnittest(GclTestsBase):
     self.assertEquals(gcl.GetRepositoryRoot(), root_path + '.~')
 
   def testHelp(self):
-    gcl.sys.stdout.write(mox.StrContains('GCL is a wrapper for Subversion'))
-    gcl.sys.stdout.write('\n')
+    gcl.sys.stdout.write = lambda x: None
     self.mox.ReplayAll()
     gcl.CMDhelp([])
 
