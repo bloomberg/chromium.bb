@@ -124,6 +124,8 @@
 #include "chrome/browser/views/user_data_dir_dialog.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/sandbox_policy.h"
+#include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/google_chrome_sxs_distribution.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
@@ -724,16 +726,25 @@ int BrowserMain(const MainFunctionParams& parameters) {
     // TODO(lzheng): Increase these values to enable more spdy tests.
     // To enable 100% npn_with_spdy, set kNpnHttpProbability = 0 and set
     // kNpnSpdyProbability = FieldTrial::kAllRemainingProbability.
-    const FieldTrial::Probability kNpnHttpProbability = 0;  // 0.0%
-    const FieldTrial::Probability kNpnSpdyProbability = 0;  // 0.0%
+    FieldTrial::Probability npnhttp_probability = 0;  // 0.0%
+    FieldTrial::Probability npnspdy_probability = 0;  // 0.0%
+#if defined(OS_WIN)
+    // Enable the A/B test for SxS. SxS is only available on windows
+    std::wstring channel;
+    if (BrowserDistribution::GetDistribution()->GetChromeChannel(&channel) &&
+        channel == GoogleChromeSxSDistribution::ChannelName()) {
+      npnhttp_probability = 500;
+      npnspdy_probability = 500;
+    }
+#endif
     scoped_refptr<FieldTrial> trial =
         new FieldTrial("SpdyImpact", kSpdyDivisor);
     // npn with only http support, no spdy.
     int npn_http_grp =
-        trial->AppendGroup("_npn_with_http", kNpnHttpProbability);
+        trial->AppendGroup("_npn_with_http", npnhttp_probability);
     // npn with spdy support.
     int npn_spdy_grp =
-        trial->AppendGroup("_npn_with_spdy", kNpnSpdyProbability);
+        trial->AppendGroup("_npn_with_spdy", npnspdy_probability);
     int trial_grp = trial->group();
     if (trial_grp == npn_http_grp) {
       is_spdy_trial = true;

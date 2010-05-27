@@ -26,7 +26,8 @@ class GoogleChromeSxSDistribution : public GoogleChromeDistribution {
   virtual bool CanSetAsDefault();
   virtual bool ShouldUseAlternateIcon();
   virtual bool GetChromeChannel(std::wstring* channel);
-
+  // returns the channel name for GoogleChromeSxSDistribution
+  static std::wstring ChannelName();
  private:
   friend class BrowserDistribution;
 
