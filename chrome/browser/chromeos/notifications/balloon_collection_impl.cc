@@ -143,19 +143,20 @@ void BalloonCollectionImpl::Observe(NotificationType type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
   DCHECK(type == NotificationType::BROWSER_CLOSED);
-  if (BrowserList::GetLastActive() == NULL) {
-    // When exitting, we need to shutdown all renderers in
-    // BalloonViewImpl before IO thread gets deleted in the
-    // BrowserProcessImpl's destructor.  See http://crbug.com/40810
-    // for details.
+  bool app_closing = *Details<bool>(details).ptr();
+  // When exitting, we need to shutdown all renderers in
+  // BalloonViewImpl before IO thread gets deleted in the
+  // BrowserProcessImpl's destructor.  See http://crbug.com/40810
+  // for details.
+  if(app_closing)
     Shutdown();
-  }
 }
 
 void BalloonCollectionImpl::Shutdown() {
   // We need to remove the panel first because deleting
   // views that are not owned by parent will not remove
   // themselves from the parent.
+  DLOG(INFO) << "Shutting down notification UI";
   notification_ui_.reset();
   STLDeleteElements(&balloons_);
 }

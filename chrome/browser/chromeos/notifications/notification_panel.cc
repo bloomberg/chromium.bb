@@ -550,12 +550,21 @@ void NotificationPanel::ResizeNotification(
                std::min(kBalloonMaxWidth, size.width())),
       std::max(kBalloonMinHeight,
                std::min(kBalloonMaxHeight, size.height())));
-  balloon->set_content_size(real_size);
-  GetBalloonViewOf(balloon)->Layout();
-  UpdatePanel(true);
-  if (scroll_to_ == balloon) {
-    ScrollBalloonToVisible(scroll_to_);
-    scroll_to_ = NULL;
+
+  // Don't allow balloons to shrink.  This avoids flickering
+  // which sometimes rapidly reports alternating sizes.  Special
+  // case for setting the minimum value.
+  gfx::Size old_size = balloon->content_size();
+  if (real_size.width() > old_size.width() ||
+      real_size.height() > old_size.height() ||
+      real_size == min_bounds_.size()) {
+    balloon->set_content_size(real_size);
+    GetBalloonViewOf(balloon)->Layout();
+    UpdatePanel(true);
+    if (scroll_to_ == balloon) {
+      ScrollBalloonToVisible(scroll_to_);
+      scroll_to_ = NULL;
+    }
   }
 }
 
