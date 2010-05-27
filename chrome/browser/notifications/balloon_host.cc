@@ -133,9 +133,11 @@ void BalloonHost::Init() {
   RenderViewHost* rvh = new RenderViewHost(site_instance_.get(),
                                            this, MSG_ROUTING_NONE,
                                            session_storage_namespace_id);
-  extension_function_dispatcher_.reset(
-      ExtensionFunctionDispatcher::Create(
-          rvh, this, balloon_->notification().content_url()));
+  if (GetProfile()->GetExtensionsService()) {
+    extension_function_dispatcher_.reset(
+        ExtensionFunctionDispatcher::Create(
+            rvh, this, balloon_->notification().content_url()));
+  }
   if (extension_function_dispatcher_.get()) {
     rvh->AllowBindings(BindingsPolicy::EXTENSION);
     rvh->set_is_extension_process(true);
