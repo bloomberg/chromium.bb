@@ -5,6 +5,7 @@
 #ifndef CHROME_SERVICE_CLOUD_PRINT_PRINTER_INFO_H_
 #define CHROME_SERVICE_CLOUD_PRINT_PRINTER_INFO_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -19,6 +20,7 @@ struct PrinterBasicInfo {
   std::string printer_name;
   std::string printer_description;
   int printer_status;
+  std::map<std::string, std::string> options;
   PrinterBasicInfo() : printer_status(0) {
   }
 };

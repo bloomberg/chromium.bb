@@ -12,6 +12,7 @@ const char kPrinterDescValue[] = "description";
 const char kPrinterCapsValue[] = "capabilities";
 const char kPrinterDefaultsValue[] = "defaults";
 const char kPrinterStatusValue[] = "status";
+const char kPrinterTagValue[] = "tag";
 
 // Values in the respone JSON from the cloud print server
 const wchar_t kPrinterListValue[] = L"printers";

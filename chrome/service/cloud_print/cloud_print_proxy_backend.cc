@@ -376,6 +376,20 @@ void CloudPrintProxyBackend::Core::RegisterNextPrinter() {
       CloudPrintHelpers::AddMultipartValueForUpload(
           kPrinterStatusValue, StringPrintf("%d", info.printer_status),
           mime_boundary, std::string(), &post_data);
+      // Add printer options as tags.
+      std::map<std::string, std::string>::const_iterator it;
+      for (it = info.options.begin(); it != info.options.end(); ++it) {
+        // TODO(gene) Escape '=' char from name. Warning for now.
+        if (it->first.find('=') != std::string::npos) {
+          LOG(WARNING) << "CUPS option name contains '=' character";
+          NOTREACHED();
+        }
+        std::string msg(it->first);
+        msg += "=";
+        msg += it->second;
+        CloudPrintHelpers::AddMultipartValueForUpload(
+            kPrinterTagValue, msg, mime_boundary, std::string(), &post_data);
+      }
       CloudPrintHelpers::AddMultipartValueForUpload(
           kPrinterCapsValue, last_uploaded_printer_info_.printer_capabilities,
           mime_boundary, last_uploaded_printer_info_.caps_mime_type,

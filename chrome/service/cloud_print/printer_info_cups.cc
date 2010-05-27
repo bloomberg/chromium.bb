@@ -32,29 +32,41 @@ void EnumeratePrinters(PrinterList* printer_list) {
   cups_dest_t* destinations = NULL;
   int num_dests = cupsGetDests(&destinations);
 
-  for (int i = 0; i < num_dests; i++) {
+  for (int printer_index = 0; printer_index < num_dests; printer_index++) {
+    const cups_dest_t& printer = destinations[printer_index];
+
     PrinterBasicInfo printer_info;
-    printer_info.printer_name = destinations[i].name;
+    printer_info.printer_name = printer.name;
 
     const char* info = cupsGetOption(kCUPSPrinterInfoOpt,
-        destinations[i].num_options, destinations[i].options);
+        printer.num_options, printer.options);
     if (info != NULL)
       printer_info.printer_description = info;
 
     const char* state = cupsGetOption(kCUPSPrinterStateOpt,
-        destinations[i].num_options, destinations[i].options);
+        printer.num_options, printer.options);
     if (state != NULL)
       StringToInt(state, &printer_info.printer_status);
+
+    // Store printer options.
+    for (int opt_index = 0; opt_index < printer.num_options; opt_index++) {
+      printer_info.options[printer.options[opt_index].name] =
+          printer.options[opt_index].value;
+    }
 
     printer_list->push_back(printer_info);
   }
 
   cupsFreeDests(num_dests, destinations);
+
+  DLOG(INFO) << "Enumerated " << printer_list->size() << " printers.";
 }
 
 bool GetPrinterCapsAndDefaults(const std::string& printer_name,
                                PrinterCapsAndDefaults* printer_info) {
   DCHECK(printer_info);
+
+  DLOG(INFO) << "Getting Caps and Defaults for:  " << printer_name;
 
   static Lock ppd_lock;
   // cupsGetPPD returns a filename stored in a static buffer in CUPS.
@@ -126,6 +138,8 @@ bool SpoolPrintJob(const std::string& print_ticket,
                    PlatformJobId* job_id_ret) {
   DCHECK(job_id_ret);
 
+  DLOG(INFO) << "Spooling print job for: " << printer_name;
+
   // We need to store options as char* string for the duration of the
   // cupsPrintFile call. We'll use map here to store options, since
   // Dictionary value from JSON parser returns wchat_t.
@@ -159,6 +173,10 @@ bool GetJobDetails(const std::string& printer_name,
                    PlatformJobId job_id,
                    PrintJobDetails *job_details) {
   DCHECK(job_details);
+
+  DLOG(INFO) << "Getting job details for: " << printer_name <<
+      " job_id: " << job_id;
+
   cups_job_t* jobs = NULL;
   int num_jobs = cupsGetJobs(&jobs, printer_name.c_str(), 1, -1);
 
@@ -196,6 +214,8 @@ bool GetJobDetails(const std::string& printer_name,
 
 bool GetPrinterInfo(const std::string& printer_name, PrinterBasicInfo* info) {
   DCHECK(info);
+
+  DLOG(INFO) << "Getting printer info for: " << printer_name;
 
   // This is not very efficient way to get specific printer info. CUPS 1.4
   // supports cupsGetNamedDest() function. However, CUPS 1.4 is not available

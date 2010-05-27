@@ -14,6 +14,7 @@ extern const char kPrinterDescValue[];
 extern const char kPrinterCapsValue[];
 extern const char kPrinterDefaultsValue[];
 extern const char kPrinterStatusValue[];
+extern const char kPrinterTagValue[];
 // Values in the respone JSON from the cloud print server
 extern const wchar_t kPrinterListValue[];
 extern const wchar_t kSuccessValue[];
