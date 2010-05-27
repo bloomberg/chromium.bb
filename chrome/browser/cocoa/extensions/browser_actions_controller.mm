@@ -65,7 +65,7 @@ const CGFloat kGrippyXOffset = 8.0;
 // Useful in the case of a Browser Action being added/removed from the middle of
 // the container, this method repositions each button according to the current
 // toolbar model.
-- (void)repositionActionButtonsAndAnimate:(BOOL)animate;
+- (void)positionActionButtonsAndAnimate:(BOOL)animate;
 
 // During container resizing, buttons become more transparent as they are pushed
 // off the screen. This method updates each button's opacity determined by the
@@ -459,15 +459,9 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   NSString* buttonKey = base::SysUTF8ToNSString(extension->id());
   if (!buttonKey)
     return;
-
   [buttons_ setObject:newButton forKey:buttonKey];
-  if (index < [self containerButtonCapacity]) {
-    [containerView_ addSubview:newButton];
-  } else {
-    [hiddenButtons_ addObject:newButton];
-    [newButton setAlphaValue:0.0];
-    [self updateOverflowMenu];
-  }
+
+  [self positionActionButtonsAndAnimate:NO];
 
   [[NSNotificationCenter defaultCenter]
       addObserver:self
@@ -475,7 +469,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
              name:kBrowserActionButtonDraggingNotification
            object:newButton];
 
-  [self repositionActionButtonsAndAnimate:NO];
+
   [containerView_ setMaxWidth:
       [self containerWidthWithButtonCount:[self buttonCount]]];
   [containerView_ setNeedsDisplay:YES];
@@ -506,14 +500,14 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
     // No more buttons? Hide the container.
     [containerView_ setHidden:YES];
   } else {
-    [self repositionActionButtonsAndAnimate:NO];
+    [self positionActionButtonsAndAnimate:NO];
   }
   [containerView_ setMaxWidth:
       [self containerWidthWithButtonCount:[self buttonCount]]];
   [containerView_ setNeedsDisplay:YES];
 }
 
-- (void)repositionActionButtonsAndAnimate:(BOOL)animate {
+- (void)positionActionButtonsAndAnimate:(BOOL)animate {
   NSUInteger i = 0;
   for (ExtensionList::iterator iter = toolbarModel_->begin();
        iter != toolbarModel_->end(); ++iter) {
@@ -659,7 +653,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
     if (intersectionWidth > dragThreshold && button != draggedButton &&
         ![button isAnimating] && index < [self visibleButtonCount]) {
       toolbarModel_->MoveBrowserAction([draggedButton extension], index);
-      [self repositionActionButtonsAndAnimate:YES];
+      [self positionActionButtonsAndAnimate:YES];
       return;
     }
     ++index;
@@ -668,7 +662,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 
 - (void)actionButtonDragFinished:(NSNotification*)notification {
   [self showChevronIfNecessaryInFrame:[containerView_ frame] animate:YES];
-  [self repositionActionButtonsAndAnimate:YES];
+  [self positionActionButtonsAndAnimate:YES];
 }
 
 - (void)moveButton:(BrowserActionButton*)button
@@ -679,6 +673,20 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   NSRect buttonFrame = [button frame];
   buttonFrame.origin.x = xOffset;
   [button setFrame:buttonFrame animate:animate];
+
+  if (index < [self containerButtonCapacity]) {
+    // Make sure the button is within the visible container.
+    if ([button superview] != containerView_) {
+      [containerView_ addSubview:button];
+      [button setAlphaValue:1.0];
+      [hiddenButtons_ removeObjectIdenticalTo:button];
+    }
+  } else if (![hiddenButtons_ containsObject:button]) {
+    [hiddenButtons_ addObject:button];
+    [button removeFromSuperview];
+    [button setAlphaValue:0.0];
+    [self updateOverflowMenu];
+  }
 }
 
 - (void)browserActionClicked:(BrowserActionButton*)button {
