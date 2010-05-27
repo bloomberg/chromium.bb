@@ -28,7 +28,7 @@ class SideTabStrip : public BaseTabStrip {
   virtual void StartHighlight(int model_index);
   virtual void StopAllHighlighting();
   virtual BaseTab* CreateTabForDragging();
-  virtual void RemoveTabAt(int model_index, bool initiated_close);
+  virtual void RemoveTabAt(int model_index);
   virtual void SelectTabAt(int old_model_index, int new_model_index);
   virtual void TabTitleChangedNotLoading(int model_index);
   virtual void SetTabData(int model_index, const TabRendererData& data);

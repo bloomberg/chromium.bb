@@ -66,7 +66,7 @@ BaseTab* SideTabStrip::CreateTabForDragging() {
   return tab;
 }
 
-void SideTabStrip::RemoveTabAt(int model_index, bool initiated_close) {
+void SideTabStrip::RemoveTabAt(int model_index) {
   StartRemoveTabAnimation(model_index);
 }
 

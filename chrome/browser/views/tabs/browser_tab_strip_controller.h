@@ -99,10 +99,6 @@ class BrowserTabStripController : public TabStripController,
   // If non-NULL it means we're showing a menu for the tab.
   scoped_ptr<TabContextMenuContents> context_menu_contents_;
 
-  // If true, we initiated the tab close. This is used to detect if the close
-  // was the result of a user gesture.
-  bool initiated_close_;
-
   DISALLOW_COPY_AND_ASSIGN(BrowserTabStripController);
 };
 

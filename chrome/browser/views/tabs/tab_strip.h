@@ -69,7 +69,8 @@ class TabStrip : public BaseTabStrip,
                                    const gfx::Rect& tab_bounds);
   virtual bool IsAnimating() const;
   virtual TabStrip* AsTabStrip();
-  virtual void RemoveTabAt(int model_index, bool initiated_close);
+  virtual void PrepareForCloseAt(int model_index);
+  virtual void RemoveTabAt(int model_index);
   virtual void SelectTabAt(int old_model_index, int new_model_index);
   virtual void TabTitleChangedNotLoading(int model_index);
   virtual void SetTabData(int model_index, const TabRendererData& data);
@@ -289,6 +290,7 @@ class TabStrip : public BaseTabStrip,
   void StartMoveTabAnimation(int from_model_index,
                              int to_model_index);
   void StartMiniTabAnimation();
+  void StartMouseInitiatedRemoveTabAnimation(int model_index);
 
   // Stops any ongoing animations. If |layout| is true and an animation is
   // ongoing this does a layout.
@@ -322,10 +324,6 @@ class TabStrip : public BaseTabStrip,
   // True if the TabStrip has already been added as a MessageLoop observer.
   bool added_as_message_loop_observer_;
 
-  // True if a resize layout animation should be run a short delay after the
-  // mouse exits the TabStrip.
-  bool needs_resize_layout_;
-
   // The "New Tab" button.
   views::ImageButton* newtab_button_;
 
@@ -347,6 +345,10 @@ class TabStrip : public BaseTabStrip,
   // back to this width, thus once again placing the last tab under the mouse
   // cursor.
   int available_width_for_tabs_;
+
+  // True if PrepareForCloseAt has been invoked. When true remove animations
+  // preserve current tab bounds.
+  bool in_tab_close_;
 
   // The size of the new tab button must be hardcoded because we need to be
   // able to lay it out before we are able to get its image from the

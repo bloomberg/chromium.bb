@@ -84,9 +84,14 @@ class BaseTabStrip : public views::View,
                 bool foreground,
                 const TabRendererData& data);
 
-  // Removes a tab at the specified index. If |initiated_close| is true, the
-  // close was initiated by the tab strip (such as clicking the close button).
-  virtual void RemoveTabAt(int model_index, bool initiated_close) = 0;
+  // Invoked from the controller when the close initiates from the TabController
+  // (the user clicked the tab close button or middle clicked the tab). This is
+  // invoked from Close. Because of unload handlers Close is not always
+  // immediately followed by RemoveTabAt.
+  virtual void PrepareForCloseAt(int model_index) {}
+
+  // Removes a tab at the specified index.
+  virtual void RemoveTabAt(int model_index) = 0;
 
   // Selects a tab at the specified index. |old_model_index| is the selected
   // index prior to the selection change.
@@ -219,6 +224,10 @@ class BaseTabStrip : public views::View,
 
   // Invoked prior to starting a new animation.
   virtual void PrepareForAnimation();
+
+  // Creates an AnimationDelegate that resets state after a remove animation
+  // completes. The caller owns the returned object.
+  AnimationDelegate* CreateRemoveTabDelegate(BaseTab* tab);
 
  private:
   class RemoveTabDelegate;

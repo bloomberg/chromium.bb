@@ -219,7 +219,17 @@ void BaseTabStrip::SelectTab(BaseTab* tab) {
 }
 
 void BaseTabStrip::CloseTab(BaseTab* tab) {
-  int model_index = GetModelIndexOfBaseTab(tab);
+  // Find the closest model index. We do this so that the user can rapdily close
+  // tabs and have the close click close the next tab.
+  int model_index = 0;
+  for (int i = 0; i < tab_count(); ++i) {
+    BaseTab* current_tab = base_tab_at_tab_index(i);
+    if (current_tab == tab)
+      break;
+    if (!current_tab->closing())
+      model_index++;
+  }
+
   if (IsValidModelIndex(model_index))
     controller_->CloseTab(model_index);
 }
@@ -404,4 +414,8 @@ void BaseTabStrip::PrepareForAnimation() {
     for (int i = 0; i < tab_count(); ++i)
       base_tab_at_tab_index(i)->set_dragging(false);
   }
+}
+
+AnimationDelegate* BaseTabStrip::CreateRemoveTabDelegate(BaseTab* tab) {
+  return new RemoveTabDelegate(this, tab);
 }

@@ -163,10 +163,10 @@ TabStrip::TabStrip(TabStripController* controller)
     : BaseTabStrip(controller, BaseTabStrip::HORIZONTAL_TAB_STRIP),
       resize_layout_factory_(this),
       added_as_message_loop_observer_(false),
-      needs_resize_layout_(false),
       current_unselected_width_(Tab::GetStandardSize().width()),
       current_selected_width_(Tab::GetStandardSize().width()),
       available_width_for_tabs_(-1),
+      in_tab_close_(false),
       animation_container_(new AnimationContainer()),
       animation_type_(ANIMATION_DEFAULT),
       new_tab_button_enabled_(true),
@@ -253,35 +253,39 @@ TabStrip* TabStrip::AsTabStrip() {
   return this;
 }
 
-void TabStrip::RemoveTabAt(int model_index, bool initiated_close) {
-  if (initiated_close) {
-    int model_count = GetModelCount();
-    if (model_index != model_count && model_count > 0) {
-      Tab* last_tab = GetTabAtModelIndex(model_count - 1);
-      // Limit the width available to the TabStrip for laying out Tabs, so that
-      // Tabs are not resized until a later time (when the mouse pointer leaves
-      // the TabStrip).
-      available_width_for_tabs_ = GetAvailableWidthForTabs(last_tab);
-      needs_resize_layout_ = true;
-      AddMessageLoopObserver();
-    } else if (model_count) {
-      Tab* last_tab = GetTabAtModelIndex(model_count);
-      // Limit the width available to the TabStrip for laying out Tabs, so that
-      // Tabs are not resized until a later time (when the mouse pointer leaves
-      // the TabStrip).
-      available_width_for_tabs_ = GetAvailableWidthForTabs(last_tab);
-      needs_resize_layout_ = true;
-      AddMessageLoopObserver();
-    }
+void TabStrip::PrepareForCloseAt(int model_index) {
+  if (!in_tab_close_ && IsAnimating()) {
+    // Cancel any current animations. We do this as remove uses the current
+    // ideal bounds and we need to know ideal bounds is in a good state.
+    StopAnimating(true);
   }
-  StartRemoveTabAnimation(model_index);
+
+  int model_count = GetModelCount();
+  if (model_index + 1 != model_count && model_count > 1) {
+    // The user is about to close a tab other than the last tab. Set
+    // available_width_for_tabs_ so that if we do a layout we don't position a
+    // tab past the end of the second to last tab. We do this so that as the
+    // user closes tabs with the mouse a tab continues to fall under the mouse.
+    available_width_for_tabs_ = GetAvailableWidthForTabs(
+        GetTabAtModelIndex(model_count - 2));
+  }
+
+  in_tab_close_ = true;
+  AddMessageLoopObserver();
+}
+
+void TabStrip::RemoveTabAt(int model_index) {
+  if (in_tab_close_ && model_index != GetModelCount())
+    StartMouseInitiatedRemoveTabAnimation(model_index);
+  else
+    StartRemoveTabAnimation(model_index);
 }
 
 void TabStrip::SelectTabAt(int old_model_index, int new_model_index) {
   // We have "tiny tabs" if the tabs are so tiny that the unselected ones are
   // a different size to the selected ones.
   bool tiny_tabs = current_unselected_width_ != current_selected_width_;
-  if (!IsAnimating() && (!needs_resize_layout_ || tiny_tabs)) {
+  if (!IsAnimating() && (!in_tab_close_ || tiny_tabs)) {
     Layout();
   } else {
     SchedulePaint();
@@ -581,7 +585,7 @@ void TabStrip::AnimateToIdealBounds() {
 }
 
 bool TabStrip::ShouldHighlightCloseButtonAfterRemove() {
-  return available_width_for_tabs_ != -1;
+  return in_tab_close_;
 }
 
 void TabStrip::PrepareForAnimation() {
@@ -828,6 +832,7 @@ void TabStrip::ResizeLayoutTabs() {
   // keep spying on messages forever.
   RemoveMessageLoopObserver();
 
+  in_tab_close_ = false;
   available_width_for_tabs_ = -1;
   int mini_tab_count = GetMiniTabCount();
   if (mini_tab_count == tab_count()) {
@@ -1101,7 +1106,7 @@ void TabStrip::GenerateIdealBounds() {
   int new_tab_y = browser_defaults::kSizeTabButtonToTopOfTabStrip ?
       0 : kNewTabButtonVOffset;
   if (abs(Round(unselected) - Tab::GetStandardSize().width()) > 1 &&
-      available_width_for_tabs_ == -1) {
+      !in_tab_close_) {
     // We're shrinking tabs, so we need to anchor the New Tab button to the
     // right edge of the TabStrip's bounds, rather than the right edge of the
     // right-most Tab, otherwise it'll bounce when animating.
@@ -1176,6 +1181,7 @@ void TabStrip::StartInsertTabAnimationAtEnd() {
   PrepareForAnimation();
 
   // The TabStrip can now use its entire width to lay out Tabs.
+  in_tab_close_ = false;
   available_width_for_tabs_ = -1;
 
   animation_type_ = ANIMATION_NEW_TAB_1;
@@ -1199,6 +1205,7 @@ void TabStrip::StartInsertTabAnimationImpl(int model_index) {
   PrepareForAnimation();
 
   // The TabStrip can now use its entire width to lay out Tabs.
+  in_tab_close_ = false;
   available_width_for_tabs_ = -1;
 
   GenerateIdealBounds();
@@ -1219,10 +1226,57 @@ void TabStrip::StartInsertTabAnimationImpl(int model_index) {
 }
 
 void TabStrip::StartMiniTabAnimation() {
+  in_tab_close_ = false;
+  available_width_for_tabs_ = -1;
+
   PrepareForAnimation();
 
   GenerateIdealBounds();
   AnimateToIdealBounds();
+}
+
+void TabStrip::StartMouseInitiatedRemoveTabAnimation(int model_index) {
+  // The user initiated the close. We want to persist the bounds of all the
+  // existing tabs, so we manually shift ideal_bounds then animate.
+  int tab_data_index = ModelIndexToTabIndex(model_index);
+  DCHECK(tab_data_index != tab_count());
+  BaseTab* tab_closing = base_tab_at_tab_index(tab_data_index);
+  int delta = tab_closing->width() + kTabHOffset;
+  if (tab_closing->data().mini && model_index + 1 < GetModelCount() &&
+      !GetBaseTabAtModelIndex(model_index + 1)->data().mini) {
+    delta += mini_to_non_mini_gap_;
+  }
+
+  for (int i = tab_data_index + 1; i < tab_count(); ++i) {
+    BaseTab* tab = base_tab_at_tab_index(i);
+    if (!tab->closing()) {
+      gfx::Rect bounds = ideal_bounds(i);
+      bounds.set_x(bounds.x() - delta);
+      set_ideal_bounds(i, bounds);
+    }
+  }
+
+  newtab_button_bounds_.set_x(newtab_button_bounds_.x() - delta);
+
+  PrepareForAnimation();
+
+  // Mark the tab as closing.
+  tab_closing->set_closing(true);
+
+  AnimateToIdealBounds();
+
+  gfx::Rect tab_bounds = tab_closing->bounds();
+  if (type() == HORIZONTAL_TAB_STRIP)
+    tab_bounds.set_width(0);
+  else
+    tab_bounds.set_height(0);
+  bounds_animator().AnimateViewTo(tab_closing, tab_bounds);
+
+  // Register delegate to do cleanup when done, BoundsAnimator takes
+  // ownership of RemoveTabDelegate.
+  bounds_animator().SetAnimationDelegate(tab_closing,
+                                         CreateRemoveTabDelegate(tab_closing),
+                                         true);
 }
 
 void TabStrip::StopAnimating(bool layout) {

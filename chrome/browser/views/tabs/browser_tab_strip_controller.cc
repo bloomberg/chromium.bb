@@ -113,8 +113,7 @@ class BrowserTabStripController::TabContextMenuContents
 
 BrowserTabStripController::BrowserTabStripController(TabStripModel* model)
     : model_(model),
-      tabstrip_(NULL),
-      initiated_close_(false) {
+      tabstrip_(NULL) {
   model_->AddObserver(this);
 }
 
@@ -197,7 +196,7 @@ void BrowserTabStripController::SelectTab(int model_index) {
 }
 
 void BrowserTabStripController::CloseTab(int model_index) {
-  AutoReset close_reset(&initiated_close_, true);
+  tabstrip_->PrepareForCloseAt(model_index);
   model_->CloseTabContentsAt(model_index,
                              TabStripModel::CLOSE_USER_GESTURE |
                              TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
@@ -288,7 +287,7 @@ void BrowserTabStripController::TabInsertedAt(TabContents* contents,
 
 void BrowserTabStripController::TabDetachedAt(TabContents* contents,
                                               int model_index) {
-  tabstrip_->RemoveTabAt(model_index, initiated_close_);
+  tabstrip_->RemoveTabAt(model_index);
 }
 
 void BrowserTabStripController::TabSelectedAt(TabContents* old_contents,
