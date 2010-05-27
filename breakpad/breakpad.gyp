@@ -236,12 +236,6 @@
                 'src/tools/linux/dump_syms/dump_syms.cc',
               ],
 
-              # Using this define, stabs_reader.h will include the right headers
-              # to work correctly on Linux.
-              'defines': [
-                'HAVE_A_OUT_H',
-              ],
-
               'include_dirs': [
                 'src',
                 '..',
