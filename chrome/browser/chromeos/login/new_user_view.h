@@ -2,25 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_MANAGER_VIEW_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_MANAGER_VIEW_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_NEW_USER_VIEW_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_NEW_USER_VIEW_H_
 
 #include <string>
 #include <vector>
 
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/language_switch_model.h"
-#include "chrome/browser/chromeos/login/login_status_consumer.h"
-#include "chrome/browser/views/info_bubble.h"
 #include "views/accelerator.h"
 #include "views/controls/button/button.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/link.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/view.h"
-#include "views/widget/widget_gtk.h"
 
 namespace views {
 class Label;
@@ -29,33 +25,44 @@ class NativeButton;
 
 namespace chromeos {
 
-class MessageBubble;
-class ScreenObserver;
-
-class LoginManagerView : public views::View,
-                         public LoginStatusConsumer,
-                         public views::Textfield::Controller,
-                         public views::LinkController,
-                         public views::ButtonListener,
-                         public InfoBubbleDelegate {
+// View that is used for new user login. It asks for username and password,
+// allows to specify language preferences or initiate new account creation.
+class NewUserView : public views::View,
+                    public views::Textfield::Controller,
+                    public views::LinkController,
+                    public views::ButtonListener {
  public:
-  explicit LoginManagerView(ScreenObserver* observer);
-  virtual ~LoginManagerView();
+  // Delegate class to get notifications from the view.
+  class Delegate {
+  public:
+    virtual ~Delegate() {}
+
+    // User provided |username|, |password| and initiated login.
+    virtual void OnLogin(const std::string& username,
+                         const std::string& password) = 0;
+
+    // User initiated new account creation.
+    virtual void OnCreateAccount() = 0;
+
+    // User started typing so clear all error messages.
+    virtual void ClearErrors() = 0;
+  };
+
+  // If |need_border| is true, RoundedRect border and background are required.
+  NewUserView(Delegate* delegate, bool need_border);
+  virtual ~NewUserView();
 
   // Initialize view layout.
   void Init();
-  // Overrides observer for testing.
-  void set_observer(ScreenObserver* observer) { observer_ = observer; }
-
-  // Returns pointer to Authenticator object. Caller shouldn't delete it.
-  // To be used in tests only.
-  Authenticator* authenticator() { return authenticator_.get(); }
-
-  // Returns error id for tests only.
-  int error_id() { return error_id_; }
 
   // Update strings from the resources. Executed on language change.
   void UpdateLocalizedStrings();
+
+  // Resets password text and sets the enabled state of the password.
+  void ClearAndEnablePassword();
+
+  // Returns bounds of password field in screen coordinates.
+  gfx::Rect GetPasswordBounds() const;
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
@@ -87,19 +94,6 @@ class LoginManagerView : public views::View,
 
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
 
-  // Overridden from LoginStatusConsumer.
-  virtual void OnLoginFailure(const std::string& error);
-  virtual void OnLoginSuccess(const std::string& username,
-                              const std::string& credentials);
-
-  // Overridden from views::InfoBubbleDelegate.
-  virtual void InfoBubbleClosing(InfoBubble* info_bubble,
-                                 bool closed_by_escape) {
-    bubble_ = NULL;
-  }
-  virtual bool CloseOnEscape() { return true; }
-  virtual bool FadeInOnShow() { return false; }
-
  protected:
   // views::View overrides:
   virtual void ViewHierarchyChanged(bool is_add, views::View *parent,
@@ -111,17 +105,6 @@ class LoginManagerView : public views::View,
   virtual void LocaleChanged();
 
  private:
-  // Given a |username| and |password|, this method attempts to authenticate to
-  // the Google accounts servers.
-  // Returns true upon success and false on failure.
-  bool Authenticate(const std::string& username,
-                    const std::string& password);
-
-  // Shows error message with the specified message id.
-  // -1 stands for no error. If |details| string is not empty, it specify
-  // additional error text provided by authenticator, it is not localized.
-  void ShowError(int error_id, const std::string& details);
-
   void FocusFirstField();
 
   // Delete and recreate native controls that fail to update preferred size
@@ -138,18 +121,12 @@ class LoginManagerView : public views::View,
   views::Accelerator accel_focus_user_;
   views::Accelerator accel_focus_pass_;
 
-  // Pointer to shown message bubble. We don't need to delete it because
-  // it will be deleted on bubble closing.
-  MessageBubble* bubble_;
-
   // Notifications receiver.
-  ScreenObserver* observer_;
+  Delegate* delegate_;
 
-  // String ID for the current error message.
-  // Set to -1 if no messages is shown.
-  int error_id_;
+  ScopedRunnableMethodFactory<NewUserView> focus_grabber_factory_;
 
-  ScopedRunnableMethodFactory<LoginManagerView> focus_grabber_factory_;
+  LanguageSwitchModel language_switch_model_;
 
   // Indicates that this view was created when focus manager was unavailable
   // (on the hidden tab, for example).
@@ -158,12 +135,12 @@ class LoginManagerView : public views::View,
   // True when login is in process.
   bool login_in_process_;
 
-  scoped_refptr<Authenticator> authenticator_;
-  LanguageSwitchModel language_switch_model_;
+  // If true, this view needs RoundedRect border and background.
+  bool need_border_;
 
-  DISALLOW_COPY_AND_ASSIGN(LoginManagerView);
+  DISALLOW_COPY_AND_ASSIGN(NewUserView);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_MANAGER_VIEW_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_NEW_USER_VIEW_H_

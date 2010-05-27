@@ -5,7 +5,7 @@
 #include "chrome/browser/automation/automation_provider.h"
 
 #include "chrome/browser/automation/automation_provider_observers.h"
-#include "chrome/browser/chromeos/login/login_manager_view.h"
+#include "chrome/browser/chromeos/login/login_screen.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "views/window/window_gtk.h"
@@ -14,15 +14,14 @@ void AutomationProvider::LoginWithUserAndPass(const std::string& username,
                                               const std::string& password,
                                               IPC::Message* reply_message) {
   WizardController* controller = WizardController::default_controller();
-  chromeos::LoginManagerView* login_manager_view =
-    reinterpret_cast<chromeos::LoginManagerView*>(
-        controller->GetLoginScreen()->view_);
+  chromeos::NewUserView* new_user_view =
+        controller->GetLoginScreen()->view();
 
-  login_manager_view->SetUsername(username);
-  login_manager_view->SetPassword(password);
+  new_user_view->SetUsername(username);
+  new_user_view->SetPassword(password);
 
   // Set up an observer (it will delete itself).
   new LoginManagerObserver(this, reply_message);
 
-  login_manager_view->Login();
+  new_user_view->Login();
 }

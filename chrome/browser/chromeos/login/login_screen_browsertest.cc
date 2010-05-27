@@ -7,7 +7,7 @@
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_login_library.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
-#include "chrome/browser/chromeos/login/login_manager_view.h"
+#include "chrome/browser/chromeos/login/login_screen.h"
 #include "chrome/browser/chromeos/login/mock_authenticator.h"
 #include "chrome/browser/chromeos/login/mock_screen_observer.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -26,9 +26,9 @@ using ::testing::Return;
 const char kUsername[] = "test_user@gmail.com";
 const char kPassword[] = "test_password";
 
-class LoginManagerViewTest : public WizardInProcessBrowserTest {
+class LoginScreenTest : public WizardInProcessBrowserTest {
  public:
-  LoginManagerViewTest(): WizardInProcessBrowserTest("login") {
+  LoginScreenTest(): WizardInProcessBrowserTest("login") {
   }
 
  protected:
@@ -57,7 +57,7 @@ class LoginManagerViewTest : public WizardInProcessBrowserTest {
  private:
   MockLoginLibrary* mock_login_library_;
 
-  DISALLOW_COPY_AND_ASSIGN(LoginManagerViewTest);
+  DISALLOW_COPY_AND_ASSIGN(LoginScreenTest);
 };
 
 static void Quit() {
@@ -65,7 +65,7 @@ static void Quit() {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE, new MessageLoop::QuitTask);
 }
-IN_PROC_BROWSER_TEST_F(LoginManagerViewTest, TestBasic) {
+IN_PROC_BROWSER_TEST_F(LoginScreenTest, TestBasic) {
   ASSERT_TRUE(controller() != NULL);
   ASSERT_EQ(controller()->current_screen(), controller()->GetLoginScreen());
 
@@ -75,8 +75,8 @@ IN_PROC_BROWSER_TEST_F(LoginManagerViewTest, TestBasic) {
               OnExit(ScreenObserver::LOGIN_SIGN_IN_SELECTED))
       .WillOnce(InvokeWithoutArgs(Quit));
 
-  LoginManagerView* login = controller()->GetLoginScreen()->view();
-  login->set_observer(mock_screen_observer.get());
+  controller()->set_observer(mock_screen_observer.get());
+  NewUserView* login = controller()->GetLoginScreen()->view();
   login->SetUsername(kUsername);
   login->SetPassword(kPassword);
 
@@ -85,23 +85,22 @@ IN_PROC_BROWSER_TEST_F(LoginManagerViewTest, TestBasic) {
   login->Login();
   MessageLoop::current()->Run();
   MessageLoop::current()->SetNestableTasksAllowed(old_state);
-
-  login->set_observer(NULL);
+  controller()->set_observer(NULL);
 }
 
-IN_PROC_BROWSER_TEST_F(LoginManagerViewTest, AuthenticationFailed) {
+IN_PROC_BROWSER_TEST_F(LoginScreenTest, AuthenticationFailed) {
   ASSERT_TRUE(controller() != NULL);
   ASSERT_EQ(controller()->current_screen(), controller()->GetLoginScreen());
 
   scoped_ptr<MockScreenObserver> mock_screen_observer(
       new MockScreenObserver());
+  controller()->set_observer(mock_screen_observer.get());
 
   EXPECT_CALL(*mock_network_library_, Connected())
       .Times(AnyNumber())
       .WillRepeatedly((Return(true)));
 
-  LoginManagerView* login = controller()->GetLoginScreen()->view();
-  login->set_observer(mock_screen_observer.get());
+  NewUserView* login = controller()->GetLoginScreen()->view();
   login->SetUsername(kUsername);
   login->SetPassword("wrong password");
 
@@ -112,8 +111,8 @@ IN_PROC_BROWSER_TEST_F(LoginManagerViewTest, AuthenticationFailed) {
   MessageLoop::current()->SetNestableTasksAllowed(old_state);
 
   ASSERT_EQ(controller()->current_screen(), controller()->GetLoginScreen());
-  ASSERT_EQ(login->error_id(), IDS_LOGIN_ERROR_AUTHENTICATING);
-  login->set_observer(NULL);
+  EXPECT_TRUE(controller()->GetLoginScreen()->IsErrorShown());
+  controller()->set_observer(NULL);
 }
 
 }  // namespace chromeos

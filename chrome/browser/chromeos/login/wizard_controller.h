@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class WizardContentsView;
 class WizardScreen;
@@ -18,6 +19,7 @@ class WizardScreen;
 namespace chromeos {
 class AccountScreen;
 class BackgroundView;
+class LoginScreen;
 class NetworkScreen;
 class UpdateScreen;
 }
@@ -68,7 +70,7 @@ class WizardController : public chromeos::ScreenObserver,
 
   // Lazy initializers and getters for screens.
   chromeos::NetworkScreen* GetNetworkScreen();
-  LoginScreen* GetLoginScreen();
+  chromeos::LoginScreen* GetLoginScreen();
   chromeos::AccountScreen* GetAccountScreen();
   chromeos::UpdateScreen* GetUpdateScreen();
 
@@ -135,7 +137,7 @@ class WizardController : public chromeos::ScreenObserver,
 
   // Screens.
   scoped_ptr<chromeos::NetworkScreen> network_screen_;
-  scoped_ptr<LoginScreen> login_screen_;
+  scoped_ptr<chromeos::LoginScreen> login_screen_;
   scoped_ptr<chromeos::AccountScreen> account_screen_;
   scoped_ptr<chromeos::UpdateScreen> update_screen_;
 

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_VIEW_SCREEN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_VIEW_SCREEN_H_
 
-#include "chrome/browser/chromeos/login/login_manager_view.h"
+#include "base/message_loop.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
 
 template <class V>
@@ -100,7 +100,5 @@ void ViewScreen<V>::CreateView() {
   view_->Init();
   view_->SetVisible(false);
 }
-
-typedef DefaultViewScreen<chromeos::LoginManagerView> LoginScreen;
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_VIEW_SCREEN_H_

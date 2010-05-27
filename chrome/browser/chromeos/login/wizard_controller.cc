@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/login/account_screen.h"
 #include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/login_screen.h"
 #include "chrome/browser/chromeos/login/network_screen.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/update_screen.h"
@@ -251,9 +252,9 @@ chromeos::NetworkScreen* WizardController::GetNetworkScreen() {
   return network_screen_.get();
 }
 
-LoginScreen* WizardController::GetLoginScreen() {
+chromeos::LoginScreen* WizardController::GetLoginScreen() {
   if (!login_screen_.get())
-    login_screen_.reset(new LoginScreen(this));
+    login_screen_.reset(new chromeos::LoginScreen(this));
   return login_screen_.get();
 }
 
@@ -329,7 +330,7 @@ void WizardController::OnAccountCreateBack() {
 
 void WizardController::OnAccountCreated() {
   ShowLoginScreen();
-  LoginScreen* login = GetLoginScreen();
+  chromeos::LoginScreen* login = GetLoginScreen();
   if (!username_.empty()) {
     login->view()->SetUsername(username_);
     if (!password_.empty()) {

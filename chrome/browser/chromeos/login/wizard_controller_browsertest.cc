@@ -6,6 +6,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/account_screen.h"
 #include "chrome/browser/chromeos/login/language_switch_model.h"
+#include "chrome/browser/chromeos/login/login_screen.h"
 #include "chrome/browser/chromeos/login/mock_update_screen.h"
 #include "chrome/browser/chromeos/login/network_screen.h"
 #include "chrome/browser/chromeos/login/network_selection_view.h"
@@ -103,7 +104,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
 
     // Set up the mocks for all screens.
     MOCK(mock_account_screen_, account_screen_, chromeos::AccountScreen);
-    MOCK(mock_login_screen_, login_screen_, LoginScreen);
+    MOCK(mock_login_screen_, login_screen_, chromeos::LoginScreen);
     MOCK(mock_network_screen_, network_screen_, chromeos::NetworkScreen);
     MOCK(mock_update_screen_, update_screen_, MockUpdateScreen);
 
@@ -116,7 +117,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
   }
 
   MockOutShowHide<chromeos::AccountScreen>* mock_account_screen_;
-  MockOutShowHide<LoginScreen>* mock_login_screen_;
+  MockOutShowHide<chromeos::LoginScreen>* mock_login_screen_;
   MockOutShowHide<chromeos::NetworkScreen>* mock_network_screen_;
   MockOutShowHide<MockUpdateScreen>* mock_update_screen_;
 
