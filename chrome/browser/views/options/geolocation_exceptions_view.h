@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/browser/geolocation/geolocation_content_settings_table_model.h"
+#include "chrome/browser/geolocation/geolocation_exceptions_table_model.h"
 #include "chrome/common/content_settings.h"
 #include "views/controls/button/button.h"
 #include "views/controls/table/table_view_observer.h"
@@ -22,7 +22,7 @@ class TableView;
 
 // GeolocationExceptionsView is responsible for showing the user the set of
 // site-specific geolocation permissions. The exceptions are shown in a table
-// view by way of a GeolocationContentSettingsTableModel. The user can remove
+// view by way of a GeolocationExceptionsTableModel. The user can remove
 // exceptions.
 // Use the ShowExceptionsWindow method to create and show a
 // GeolocationExceptionsView, which is deleted when the window closes.
@@ -68,7 +68,7 @@ class GeolocationExceptionsView : public views::View,
   void UpdateButtonState();
 
   // Returns the set of selected rows.
-  GeolocationContentSettingsTableModel::Rows GetSelectedRows() const;
+  GeolocationExceptionsTableModel::Rows GetSelectedRows() const;
 
   // Removes the selected item.
   void Remove();
@@ -77,7 +77,7 @@ class GeolocationExceptionsView : public views::View,
   void RemoveAll();
 
   // The model displayed in the table.
-  GeolocationContentSettingsTableModel model_;
+  GeolocationExceptionsTableModel model_;
 
   views::TableView* table_;
 

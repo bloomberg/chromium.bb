@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GEOLOCATION_GEOLOCATION_CONTENT_SETTINGS_TABLE_MODEL_H_
-#define CHROME_BROWSER_GEOLOCATION_GEOLOCATION_CONTENT_SETTINGS_TABLE_MODEL_H_
+#ifndef CHROME_BROWSER_GEOLOCATION_GEOLOCATION_EXCEPTIONS_TABLE_MODEL_H_
+#define CHROME_BROWSER_GEOLOCATION_GEOLOCATION_EXCEPTIONS_TABLE_MODEL_H_
 
 #include <set>
 #include <vector>
@@ -13,11 +13,11 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 
-class GeolocationContentSettingsTableModel : public TableModel {
+class GeolocationExceptionsTableModel : public TableModel {
  public:
   typedef std::set<size_t> Rows;
 
-  explicit GeolocationContentSettingsTableModel(
+  explicit GeolocationExceptionsTableModel(
       GeolocationContentSettingsMap* map);
 
   // Return whether the given set of rows can be removed.  A parent with setting
@@ -63,7 +63,7 @@ class GeolocationContentSettingsTableModel : public TableModel {
 
   TableModelObserver* observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(GeolocationContentSettingsTableModel);
+  DISALLOW_COPY_AND_ASSIGN(GeolocationExceptionsTableModel);
 };
 
-#endif  // CHROME_BROWSER_GEOLOCATION_GEOLOCATION_CONTENT_SETTINGS_TABLE_MODEL_H_
+#endif  // CHROME_BROWSER_GEOLOCATION_GEOLOCATION_EXCEPTIONS_TABLE_MODEL_H_

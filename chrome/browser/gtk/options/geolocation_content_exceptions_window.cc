@@ -63,7 +63,7 @@ GeolocationContentExceptionsWindow::GeolocationContentExceptionsWindow(
                    G_CALLBACK(OnTreeSelectionChangedThunk), this);
 
   // Bind |list_store_| to our C++ model.
-  model_.reset(new GeolocationContentSettingsTableModel(map));
+  model_.reset(new GeolocationExceptionsTableModel(map));
   model_adapter_.reset(new gtk_tree::TableAdapter(this, list_store_,
                                                   model_.get()));
   // Force a reload of everything to copy data into |list_store_|.
@@ -139,14 +139,14 @@ void GeolocationContentExceptionsWindow::UpdateButtonState() {
   int row_count = gtk_tree_model_iter_n_children(
       GTK_TREE_MODEL(list_store_), NULL);
 
-  GeolocationContentSettingsTableModel::Rows rows;
+  GeolocationExceptionsTableModel::Rows rows;
   GetSelectedRows(&rows);
   gtk_widget_set_sensitive(remove_button_, model_->CanRemoveExceptions(rows));
   gtk_widget_set_sensitive(remove_all_button_, row_count > 0);
 }
 
 void GeolocationContentExceptionsWindow::GetSelectedRows(
-    GeolocationContentSettingsTableModel::Rows* rows) {
+    GeolocationExceptionsTableModel::Rows* rows) {
   std::set<int> indices;
   gtk_tree::GetSelectedIndices(treeview_selection_, &indices);
   for (std::set<int>::iterator i = indices.begin(); i != indices.end(); ++i)
@@ -154,7 +154,7 @@ void GeolocationContentExceptionsWindow::GetSelectedRows(
 }
 
 void GeolocationContentExceptionsWindow::Remove(GtkWidget* widget) {
-  GeolocationContentSettingsTableModel::Rows rows;
+  GeolocationExceptionsTableModel::Rows rows;
   GetSelectedRows(&rows);
   model_->RemoveExceptions(rows);
   UpdateButtonState();

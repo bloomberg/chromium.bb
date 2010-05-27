@@ -12,13 +12,13 @@
 #import "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
-#include "chrome/browser/geolocation/geolocation_content_settings_table_model.h"
+#include "chrome/browser/geolocation/geolocation_exceptions_table_model.h"
 #include "grit/generated_resources.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 @interface GeolocationExceptionsWindowController (Private)
 - (id)initWithSettingsMap:(GeolocationContentSettingsMap*)settingsMap;
-- (void)selectedRows:(GeolocationContentSettingsTableModel::Rows*)rows;
+- (void)selectedRows:(GeolocationExceptionsTableModel::Rows*)rows;
 - (void)adjustEditingButtons;
 - (void)modelDidChange;
 @end
@@ -71,7 +71,7 @@ GeolocationExceptionsWindowController* g_exceptionWindow = nil;
                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     settingsMap_ = settingsMap;
-    model_.reset(new GeolocationContentSettingsTableModel(settingsMap_));
+    model_.reset(new GeolocationExceptionsTableModel(settingsMap_));
     tableObserver_.reset(new GeolocationObserverBridge(self));
     model_->SetObserver(tableObserver_.get());
 
@@ -154,7 +154,7 @@ GeolocationExceptionsWindowController* g_exceptionWindow = nil;
 }
 
 - (IBAction)removeException:(id)sender {
-  GeolocationContentSettingsTableModel::Rows rows;
+  GeolocationExceptionsTableModel::Rows rows;
   [self selectedRows:&rows];
   model_->RemoveExceptions(rows);
 }
@@ -196,7 +196,7 @@ GeolocationExceptionsWindowController* g_exceptionWindow = nil;
 // Private --------------------------------------------------------------------
 
 // Returns the selected rows.
-- (void)selectedRows:(GeolocationContentSettingsTableModel::Rows*)rows {
+- (void)selectedRows:(GeolocationExceptionsTableModel::Rows*)rows {
   NSIndexSet* selection = [tableView_ selectedRowIndexes];
   for (NSUInteger index = [selection lastIndex]; index != NSNotFound;
        index = [selection indexLessThanIndex:index])
@@ -206,7 +206,7 @@ GeolocationExceptionsWindowController* g_exceptionWindow = nil;
 // This method appropriately sets the enabled states on the table's editing
 // buttons.
 - (void)adjustEditingButtons {
-  GeolocationContentSettingsTableModel::Rows rows;
+  GeolocationExceptionsTableModel::Rows rows;
   [self selectedRows:&rows];
   [removeButton_ setEnabled:model_->CanRemoveExceptions(rows)];
   [removeAllButton_ setEnabled:([tableView_ numberOfRows] > 0)];

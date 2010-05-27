@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/geolocation/geolocation_content_settings_table_model.h"
+#include "chrome/browser/geolocation/geolocation_exceptions_table_model.h"
 
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/test/testing_profile.h"
@@ -18,15 +18,15 @@ const GURL kUrl1("http://www.example1.com");
 const GURL kUrl2("http://www.example2.com");
 }  // namespace
 
-class GeolocationContentSettingsTableModelTest
+class GeolocationExceptionsTableModelTest
   : public RenderViewHostTestHarness {
  public:
-  GeolocationContentSettingsTableModelTest()
+  GeolocationExceptionsTableModelTest()
      : ui_thread_(ChromeThread::UI, MessageLoop::current()) {
 
   }
 
-  virtual ~GeolocationContentSettingsTableModelTest() {
+  virtual ~GeolocationExceptionsTableModelTest() {
   }
 
   virtual void SetUp() {
@@ -40,7 +40,7 @@ class GeolocationContentSettingsTableModelTest
   }
 
   virtual void ResetModel() {
-    model_.reset(new GeolocationContentSettingsTableModel(
+    model_.reset(new GeolocationExceptionsTableModel(
         profile()->GetGeolocationContentSettingsMap()));
   }
 
@@ -56,10 +56,10 @@ class GeolocationContentSettingsTableModelTest
 
  protected:
   ChromeThread ui_thread_;
-  scoped_ptr<GeolocationContentSettingsTableModel> model_;
+  scoped_ptr<GeolocationExceptionsTableModel> model_;
 };
 
-TEST_F(GeolocationContentSettingsTableModelTest, CanRemoveException) {
+TEST_F(GeolocationExceptionsTableModelTest, CanRemoveException) {
   EXPECT_EQ(0, model_->RowCount());
 
   scoped_refptr<GeolocationContentSettingsMap> map =
@@ -69,7 +69,7 @@ TEST_F(GeolocationContentSettingsTableModelTest, CanRemoveException) {
   map->SetContentSetting(kUrl0, kUrl0, CONTENT_SETTING_ALLOW);
   ResetModel();
   EXPECT_EQ(1, model_->RowCount());
-  GeolocationContentSettingsTableModel::Rows rows;
+  GeolocationExceptionsTableModel::Rows rows;
   rows.insert(0U);
   EXPECT_TRUE(model_->CanRemoveExceptions(rows));
 
@@ -89,13 +89,13 @@ TEST_F(GeolocationContentSettingsTableModelTest, CanRemoveException) {
   EXPECT_TRUE(model_->CanRemoveExceptions(rows));
 }
 
-TEST_F(GeolocationContentSettingsTableModelTest, RemoveExceptions) {
+TEST_F(GeolocationExceptionsTableModelTest, RemoveExceptions) {
   CreateAllowedSamples();
   scoped_refptr<GeolocationContentSettingsMap> map =
       profile()->GetGeolocationContentSettingsMap();
 
   // Test removing parent exception.
-  GeolocationContentSettingsTableModel::Rows rows;
+  GeolocationExceptionsTableModel::Rows rows;
   rows.insert(0U);
   model_->RemoveExceptions(rows);
   EXPECT_EQ(CONTENT_SETTING_ASK, map->GetContentSetting(kUrl0, kUrl0));
@@ -116,7 +116,7 @@ TEST_F(GeolocationContentSettingsTableModelTest, RemoveExceptions) {
   EXPECT_EQ(CONTENT_SETTING_ASK, map->GetContentSetting(kUrl0, kUrl2));
 }
 
-TEST_F(GeolocationContentSettingsTableModelTest, RemoveAll) {
+TEST_F(GeolocationExceptionsTableModelTest, RemoveAll) {
   CreateAllowedSamples();
   scoped_refptr<GeolocationContentSettingsMap> map =
       profile()->GetGeolocationContentSettingsMap();
@@ -128,7 +128,7 @@ TEST_F(GeolocationContentSettingsTableModelTest, RemoveAll) {
   EXPECT_EQ(0, model_->RowCount());
 }
 
-TEST_F(GeolocationContentSettingsTableModelTest, GetText) {
+TEST_F(GeolocationExceptionsTableModelTest, GetText) {
   CreateAllowedSamples();
 
   // Ensure the parent doesn't have any indentation.

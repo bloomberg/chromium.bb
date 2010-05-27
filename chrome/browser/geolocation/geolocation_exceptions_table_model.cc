@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/geolocation/geolocation_content_settings_table_model.h"
+#include "chrome/browser/geolocation/geolocation_exceptions_table_model.h"
 
 #include "app/l10n_util.h"
 #include "app/l10n_util_collator.h"
@@ -46,7 +46,7 @@ int CompareOrigins(const GURL& origin1, const GURL& origin2) {
 }
 }  // namespace
 
-GeolocationContentSettingsTableModel::GeolocationContentSettingsTableModel(
+GeolocationExceptionsTableModel::GeolocationExceptionsTableModel(
     GeolocationContentSettingsMap* map)
     : map_(map),
       observer_(NULL) {
@@ -57,7 +57,7 @@ GeolocationContentSettingsTableModel::GeolocationContentSettingsTableModel(
     AddEntriesForOrigin(i->first, i->second);
 }
 
-bool GeolocationContentSettingsTableModel::CanRemoveExceptions(
+bool GeolocationExceptionsTableModel::CanRemoveExceptions(
     const Rows& rows) const {
   for (Rows::const_iterator i(rows.begin()); i != rows.end(); ++i) {
     const Entry& entry = entries_[*i];
@@ -73,7 +73,7 @@ bool GeolocationContentSettingsTableModel::CanRemoveExceptions(
   return !rows.empty();
 }
 
-void GeolocationContentSettingsTableModel::RemoveExceptions(const Rows& rows) {
+void GeolocationExceptionsTableModel::RemoveExceptions(const Rows& rows) {
   for (Rows::const_reverse_iterator i(rows.rbegin()); i != rows.rend(); ++i) {
     size_t row = *i;
     Entry* entry = &entries_[row];
@@ -109,7 +109,7 @@ void GeolocationContentSettingsTableModel::RemoveExceptions(const Rows& rows) {
   }
 }
 
-void GeolocationContentSettingsTableModel::RemoveAll() {
+void GeolocationExceptionsTableModel::RemoveAll() {
   int old_row_count = RowCount();
   entries_.clear();
   map_->ResetToDefault();
@@ -117,11 +117,11 @@ void GeolocationContentSettingsTableModel::RemoveAll() {
     observer_->OnItemsRemoved(0, old_row_count);
 }
 
-int GeolocationContentSettingsTableModel::RowCount() {
+int GeolocationExceptionsTableModel::RowCount() {
   return entries_.size();
 }
 
-std::wstring GeolocationContentSettingsTableModel::GetText(int row,
+std::wstring GeolocationExceptionsTableModel::GetText(int row,
                                                            int column_id) {
   const Entry& entry = entries_[row];
   if (column_id == IDS_EXCEPTIONS_HOSTNAME_HEADER) {
@@ -164,12 +164,12 @@ std::wstring GeolocationContentSettingsTableModel::GetText(int row,
   return std::wstring();
 }
 
-void GeolocationContentSettingsTableModel::SetObserver(
+void GeolocationExceptionsTableModel::SetObserver(
     TableModelObserver* observer) {
   observer_ = observer;
 }
 
-int GeolocationContentSettingsTableModel::CompareValues(int row1,
+int GeolocationExceptionsTableModel::CompareValues(int row1,
                                                         int row2,
                                                         int column_id) {
   DCHECK(row1 >= 0 && row1 < RowCount() &&
@@ -218,7 +218,7 @@ int GeolocationContentSettingsTableModel::CompareValues(int row1,
   return origin_comparison;
 }
 
-void GeolocationContentSettingsTableModel::AddEntriesForOrigin(
+void GeolocationExceptionsTableModel::AddEntriesForOrigin(
     const GURL& origin,
     const GeolocationContentSettingsMap::OneOriginSettings& settings) {
   GeolocationContentSettingsMap::OneOriginSettings::const_iterator parent =
@@ -240,7 +240,7 @@ void GeolocationContentSettingsTableModel::AddEntriesForOrigin(
 }
 
 // static
-GeolocationContentSettingsTableModel::Entry::Entry(
+GeolocationExceptionsTableModel::Entry::Entry(
     const GURL& in_origin, const GURL& in_embedding_origin,
     ContentSetting in_setting)
     : origin(in_origin),

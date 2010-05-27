@@ -155,9 +155,9 @@ void GeolocationExceptionsView::Init() {
   UpdateButtonState();
 }
 
-GeolocationContentSettingsTableModel::Rows
+GeolocationExceptionsTableModel::Rows
     GeolocationExceptionsView::GetSelectedRows() const {
-  GeolocationContentSettingsTableModel::Rows rows;
+  GeolocationExceptionsTableModel::Rows rows;
   for (views::TableView::iterator i(table_->SelectionBegin());
        i != table_->SelectionEnd(); ++i)
     rows.insert(*i);

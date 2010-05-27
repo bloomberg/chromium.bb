@@ -8,7 +8,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 
-class GeolocationContentSettingsTableModel;
+class GeolocationExceptionsTableModel;
 class GeolocationObserverBridge;
 
 // Controller for the geolocation exception dialog.
@@ -23,7 +23,7 @@ class GeolocationObserverBridge;
   IBOutlet NSButton* doneButton_;
 
   GeolocationContentSettingsMap* settingsMap_;  // weak
-  scoped_ptr<GeolocationContentSettingsTableModel> model_;
+  scoped_ptr<GeolocationExceptionsTableModel> model_;
   scoped_ptr<GeolocationObserverBridge> tableObserver_;
 }
 

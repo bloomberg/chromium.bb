@@ -11,7 +11,7 @@
 
 #include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/geolocation/geolocation_content_settings_table_model.h"
+#include "chrome/browser/geolocation/geolocation_exceptions_table_model.h"
 #include "chrome/browser/gtk/gtk_tree.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
@@ -41,7 +41,7 @@ class GeolocationContentExceptionsWindow
   // Updates which buttons are enabled.
   void UpdateButtonState();
 
-  void GetSelectedRows(GeolocationContentSettingsTableModel::Rows* rows);
+  void GetSelectedRows(GeolocationExceptionsTableModel::Rows* rows);
 
   // Callbacks for the buttons.
   CHROMEGTK_CALLBACK_0(GeolocationContentExceptionsWindow, void, Remove);
@@ -57,7 +57,7 @@ class GeolocationContentExceptionsWindow
 
   // The C++, views-ish, cross-platform model class that actually contains the
   // gold standard data.
-  scoped_ptr<GeolocationContentSettingsTableModel> model_;
+  scoped_ptr<GeolocationExceptionsTableModel> model_;
 
   // The adapter that ferries data back and forth between |model_| and
   // |list_store_| whenever either of them change.
