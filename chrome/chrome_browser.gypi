@@ -371,6 +371,8 @@
         'browser/chromeos/cros/synaptics_library.h',
         'browser/chromeos/cros/syslogs_library.cc',
         'browser/chromeos/cros/syslogs_library.h',
+        'browser/chromeos/customization_document.h',
+        'browser/chromeos/customization_document.cc',
         'browser/chromeos/external_cookie_handler.cc',
         'browser/chromeos/external_cookie_handler.h',
         'browser/chromeos/external_metrics.cc',
