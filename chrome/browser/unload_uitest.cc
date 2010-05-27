@@ -85,9 +85,9 @@ const std::string TWO_SECOND_BEFORE_UNLOAD_ALERT_HTML =
 
 const std::string CLOSE_TAB_WHEN_OTHER_TAB_HAS_LISTENER =
     "<html><head><title>only_one_unload</title></head>"
-    "<body onclick=\"window.open('data:text/html,"
+    "<body onload=\"window.open('data:text/html,"
     "<html><head><title>popup</title></head></body>')\" "
-    "onbeforeunload='return;'>"
+    "onbeforeunload='return;'"
     "</body></html>";
 
 class UnloadTest : public UITest {
@@ -292,7 +292,6 @@ TEST_F(UnloadTest, BrowserCloseUnload) {
 #define BrowserCloseWithInnerFocusedFrame \
     DISABLED_BrowserCloseWithInnerFocusedFrame
 #endif
-
 // Tests closing the browser with a beforeunload handler and clicking
 // OK in the beforeunload confirm dialog.
 TEST_F(UnloadTest, BrowserCloseBeforeUnloadOK) {
@@ -397,46 +396,42 @@ TEST_F(UnloadTest, BrowserCloseTwoSecondBeforeUnloadAlert) {
                         L"twosecondbeforeunloadalert");
 }
 
-#if defined(OS_MACOSX)
-// http://crbug.com/45162
-#define MAYBE_BrowserCloseTabWhenOtherTabHasListener \
-    DISABLED_BrowserCloseTabWhenOtherTabHasListener
-#else
-#define MAYBE_BrowserCloseTabWhenOtherTabHasListener \
-    BrowserCloseTabWhenOtherTabHasListener
-#endif
+// TODO(brettw) bug 12913 this test was broken by WebKit merge 42202:44252.
+// Apparently popup titles are broken somehow.
 
 // Tests that if there's a renderer process with two tabs, one of which has an
 // unload handler, and the other doesn't, the tab that doesn't have an unload
-// handler can be closed.
-TEST_F(UnloadTest, MAYBE_BrowserCloseTabWhenOtherTabHasListener) {
+// handler can be closed.  If this test fails, the Close() call will hang.
+TEST_F(UnloadTest, DISABLED_BrowserCloseTabWhenOtherTabHasListener) {
   NavigateToDataURL(CLOSE_TAB_WHEN_OTHER_TAB_HAS_LISTENER, L"only_one_unload");
+  int window_count;
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  ASSERT_EQ(2, window_count);
 
-  scoped_refptr<BrowserProxy> browser = automation()->GetBrowserWindow(0);
-  ASSERT_TRUE(browser.get());
-  scoped_refptr<WindowProxy> window = browser->GetWindow();
-  ASSERT_TRUE(window.get());
-
-  gfx::Rect tab_view_bounds;
-  ASSERT_TRUE(window->GetViewBounds(VIEW_ID_TAB_CONTAINER,
-              &tab_view_bounds, true));
-  // Simulate a click to force user_gesture to true; if we don't, the resulting
-  // popup will be constrained, which isn't what we want to test.
-  ASSERT_TRUE(window->SimulateOSClick(tab_view_bounds.CenterPoint(),
-                                      views::Event::EF_LEFT_BUTTON_DOWN));
-  ASSERT_TRUE(browser->WaitForTabCountToBecome(2, action_timeout_ms()));
-
-  scoped_refptr<TabProxy> popup_tab(browser->GetActiveTab());
+  scoped_refptr<BrowserProxy> popup_browser_proxy(
+      automation()->GetBrowserWindow(1));
+  ASSERT_TRUE(popup_browser_proxy.get());
+  int popup_tab_count;
+  EXPECT_TRUE(popup_browser_proxy->GetTabCount(&popup_tab_count));
+  EXPECT_EQ(1, popup_tab_count);
+  scoped_refptr<TabProxy> popup_tab(popup_browser_proxy->GetActiveTab());
   ASSERT_TRUE(popup_tab.get());
   std::wstring popup_title;
+  ASSERT_TRUE(popup_tab.get() != NULL);
   EXPECT_TRUE(popup_tab->GetTabTitle(&popup_title));
   EXPECT_EQ(std::wstring(L"popup"), popup_title);
   EXPECT_TRUE(popup_tab->Close(true));
 
-  ASSERT_TRUE(browser->WaitForTabCountToBecome(1, action_timeout_ms()));
-  scoped_refptr<TabProxy> main_tab(browser->GetActiveTab());
+  scoped_refptr<BrowserProxy> main_browser_proxy(
+      automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(main_browser_proxy.get());
+  int main_tab_count;
+  EXPECT_TRUE(main_browser_proxy->GetTabCount(&main_tab_count));
+  EXPECT_EQ(1, main_tab_count);
+  scoped_refptr<TabProxy> main_tab(main_browser_proxy->GetActiveTab());
   ASSERT_TRUE(main_tab.get());
   std::wstring main_title;
+  ASSERT_TRUE(main_tab.get() != NULL);
   EXPECT_TRUE(main_tab->GetTabTitle(&main_title));
   EXPECT_EQ(std::wstring(L"only_one_unload"), main_title);
 }
