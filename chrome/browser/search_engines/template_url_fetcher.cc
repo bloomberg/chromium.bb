@@ -16,6 +16,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
+#include "net/url_request/url_request_status.h"
 
 // RequestDelegate ------------------------------------------------------------
 class TemplateURLFetcher::RequestDelegate : public URLFetcher::Delegate,
@@ -93,8 +94,12 @@ void TemplateURLFetcher::RequestDelegate::OnURLFetchComplete(
     int response_code,
     const ResponseCookies& cookies,
     const std::string& data) {
-  // Make sure we can still replace the keyword.
-  if (response_code != 200) {
+  // Make sure we can still replace the keyword, i.e. the fetch was successful.
+  // If the OSDD file was loaded HTTP, we also have to check the response_code.
+  // For other schemes, e.g. when the OSDD file is bundled with an extension,
+  // the response_code is not applicable and should be -1.
+  if (!status.is_success() ||
+      ((response_code != -1) && (response_code != 200))) {
     fetcher_->RequestCompleted(this);
     // WARNING: RequestCompleted deletes us.
     return;
