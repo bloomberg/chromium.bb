@@ -1395,7 +1395,9 @@ void AutomationProvider::GetBookmarkBarVisibility(int handle,
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
     if (browser) {
-#if 0 // defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
+#if 0  // defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
+      // TODO(jrg): Was removed in rev43789 for perf. Need to investigate.
+
       // IsBookmarkBarVisible() line looks correct but is not
       // consistent across platforms.  Specifically, on Mac/Linux, it
       // returns false if the bar is hidden in a pref (even if visible
@@ -3300,7 +3302,8 @@ void AutomationProvider::GetEnabledExtensions(
     for (size_t i = 0; i < extensions->size(); ++i) {
       Extension* extension = (*extensions)[i];
       DCHECK(extension);
-      if (extension->location() == Extension::INTERNAL) {
+      if (extension->location() == Extension::INTERNAL ||
+          extension->location() == Extension::LOAD) {
         result->push_back(extension->path());
       }
     }
