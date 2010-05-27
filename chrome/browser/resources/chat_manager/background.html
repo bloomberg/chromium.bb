@@ -17,60 +17,9 @@ to route both incoming and outgoing chats through this central roster.
     src='central_roster.html'>Central Roster</iframe>
 <script src="js/chatbridgeeventtypes.js"></script>
 <script>
-  var centralRosterWindow;
   var centralRosterJid;
   var centralRosterPort;
   var centralJidListenerPorts = [];
-
-  // On loading central roster, reparent roster to viewer window.
-  function reparentCentralRosterToWindow() {
-    var backgroundDocument = centralRosterWindow.backgroundDocument;
-    if (backgroundDocument) {
-      var iframe = backgroundDocument.getElementById('centralRoster');
-      if (iframe) {
-        var windowDocument = centralRosterWindow.document;
-        if (windowDocument) {
-          if (windowDocument.adoptNode) {
-            windowDocument.adoptNode(iframe);
-          }
-          windowDocument.body.appendChild(iframe);
-        }
-      }
-    }
-  }
-
-  // On unloading central roster, reparent roster to background.
-  function reparentCenterRosterToBackground(event) {
-    var windowDocument = centralRosterWindow.document;
-    if (windowDocument) {
-      var iframe = windowDocument.getElementById('centralRoster');
-      if (iframe) {
-        var backgroundDocument = centralRosterWindow.backgroundDocument;
-        if (backgroundDocument) {
-          if (backgroundDocument.adoptNode) {
-            backgroundDocument.adoptNode(iframe);
-          }
-          backgroundDocument.body.appendChild(iframe);
-        }
-      }
-    }
-    centralRosterWindow = null;
-  }
-
-  // Open central roster or give it focus.
-  function openCentralRosterWindow() {
-    if (!centralRosterWindow) {
-      centralRosterWindow = window.open(
-          chrome.extension.getURL('central_roster_viewer.html'),
-          'centralRosterWindow',
-          'width=300,height=360,resizable=0,menubar=0,scrollbars=0');
-      centralRosterWindow.backgroundDocument = document;
-      centralRosterWindow.onload = reparentCentralRosterToWindow;
-      centralRosterWindow.onbeforeunload = reparentCenterRosterToBackground;
-    } else {
-      centralRosterWindow.focus();
-    }
-  }
 
   // Notify all port listeners of updated central roster jid.
   function forwardCentralRosterJidToPortListeners() {
@@ -142,9 +91,6 @@ to route both incoming and outgoing chats through this central roster.
           // listeners are updated with the current central roster jid.
           forwardCentralRosterJidToPortListeners();
         }
-        break;
-      case ChatBridgeEventTypes.OPEN_CENTRAL_ROSTER:
-        openCentralRosterWindow();
         break;
     }
   });

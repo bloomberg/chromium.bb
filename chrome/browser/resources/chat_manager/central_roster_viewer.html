@@ -20,8 +20,46 @@ found in the LICENSE file.
         height: 98%;
       }
     </style>
+    <script>
+      function reparentCentralRosterToWindow() {
+        var backgroundWindow = chrome.extension.getBackgroundPage();
+        if (backgroundWindow) {
+          var backgroundDocument = backgroundWindow.document;
+          if (backgroundDocument) {
+            var iframe = backgroundDocument.getElementById('centralRoster');
+            if (iframe) {
+              if (document) {
+                if (document.adoptNode) {
+                  document.adoptNode(iframe);
+                }
+                document.body.appendChild(iframe);
+              }
+            }
+          }
+        }
+      }
+      function reparentCentralRosterToBackground(event) {
+        if (document) {
+          var iframe = document.getElementById('centralRoster');
+          if (iframe) {
+            var backgroundWindow = chrome.extension.getBackgroundPage();
+            if (backgroundWindow) {
+              var backgroundDocument = backgroundWindow.document;
+              if (backgroundDocument) {
+                if (backgroundDocument.adoptNode) {
+                  backgroundDocument.adoptNode(iframe);
+                }
+                backgroundDocument.body.appendChild(iframe);
+              }
+            }
+          }
+        }
+      }
+    </script>
   </head>
-  <body topmargin='0' leftmargin='0'>
+  <body topmargin='0' leftmargin='0'
+        onload='reparentCentralRosterToWindow();'
+        onbeforeunload='reparentCentralRosterToBackground(event);'>
     <!-- Place for central roster -->
   </body>
 </html>

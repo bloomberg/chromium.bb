@@ -12,6 +12,5 @@ var ChatBridgeEventTypes = {
   START_VOICE: 'startVoice',
   CENTRAL_USER_SET: 'centralJidSet',
   CENTRAL_USER_UPDATE: 'centralJidUpdate',
-  CENTRAL_USER_WATCHER: 'getCentralJid',
-  OPEN_CENTRAL_ROSTER: 'openCentralRoster'
+  CENTRAL_USER_WATCHER: 'getCentralJid'
 };

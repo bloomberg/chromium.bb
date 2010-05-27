@@ -1,8 +1,14 @@
 {
   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDDrlwvcbUtVrbQvI7EPV1BTa63N8YkbBToHzxlMl0IzSBwOV+TUOsHE8vRq0HZWuwMAGeH8WdWVC3HRNdES8lScjlzxb1TsTQJAsF+hLXgcjgCUSSSGCfFzypvuvKsRQTx0d02yfWKJa47o0Ws5wL72NVtc7c51HujwWYg+Mz01wIDAQAB",
-  "name": "Chrome chat manager (by Google)",
+  "name": "Google Chat Manager",
   "version": "1.0",
-  "description": "Chrome chat manager",
+  "icons": {
+    "128": "128.png",
+    "24": "24.png",
+    "32": "32.png",
+    "48": "48.png"
+  },
+  "description": "Google Chat Manager",
   "background_page": "background.html",
   "content_scripts": [ {
     "js": [
@@ -15,34 +21,14 @@
     ],
     "run_at": "document_end",
     "all_frames": true
-  },
-  // TODO(scherkus): enable this in the future.
-  //{
-  //  "js": [
-  //    "js/chatbridgeeventtypes.js",
-  //    "js/gmailbridgehook.js"
-  //  ],
-  //  "matches": [
-  //    "http://mail.google.com/*",
-  //    "https://mail.google.com/*"
-  //  ],
-  //  "run_at": "document_end"
-  //},
-  {
-    "js": [
-      "js/chatbridgeeventtypes.js",
-      "js/centralrosterhook.js"
-    ],
-    "matches": [
-      "file:///*/*",
-      "http://*/*",
-      "https://*/*"
-    ],
-    "run_at": "document_end"
   }],
   "permissions": [
     "tabs",
     "http://talkgadget.google.com/*",
     "https://talkgadget.google.com/*"
-  ]
+  ],
+  "launch": {
+    "local_path": "central_roster_viewer.html",
+    "container": "panel"
+  }
 }
