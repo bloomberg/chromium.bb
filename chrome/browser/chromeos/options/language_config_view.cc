@@ -46,6 +46,9 @@ namespace {
 // defined in app/l10_util.cc.
 const char kDefaultLanguageCode[] = "en-US";
 
+// The width of the preferred language table shown on the left side.
+const int kPreferredLanguageTableWidth = 300;
+
 // Creates the LanguageHangulConfigView. The function is used to create
 // the object via a function pointer. See also InitInputMethodConfigViewMap().
 views::DialogDelegate* CreateLanguageHangulConfigView(Profile* profile) {
@@ -470,7 +473,7 @@ void LanguageConfigView::InitControlLayout() {
   const int kMainColumnSetId = 0;
   ColumnSet* column_set = root_layout->AddColumnSet(kMainColumnSetId);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
-                        GridLayout::FIXED, 250, 0);
+                        GridLayout::FIXED, kPreferredLanguageTableWidth, 0);
   column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0,
                         GridLayout::USE_PREF, 0, 0);
