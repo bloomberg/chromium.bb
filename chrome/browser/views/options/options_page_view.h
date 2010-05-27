@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,11 +40,13 @@ class OptionsPageView : public views::View,
                                     views::View* parent,
                                     views::View* child);
 
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+
  private:
   // Whether or not the control layout has been initialized for this page.
   bool initialized_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(OptionsPageView);
+  DISALLOW_COPY_AND_ASSIGN(OptionsPageView);
 };
 
 #endif  // CHROME_BROWSER_VIEWS_OPTIONS_OPTIONS_PAGE_VIEW_H__

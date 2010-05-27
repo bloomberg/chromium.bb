@@ -6,6 +6,7 @@
 
 #include "views/accessibility/view_accessibility_wrapper.h"
 #include "views/widget/widget.h"
+#include "views/widget/widget_win.h"
 
 const wchar_t kViewsUninitializeAccessibilityInstance[] =
   L"Views_Uninitialize_AccessibilityInstance";
@@ -285,7 +286,6 @@ STDMETHODIMP ViewAccessibility::get_accChild(VARIANT var_child,
   }
 
   views::View* child_view = NULL;
-  bool get_iaccessible = false;
 
   // Check to see if child is out-of-bounds.
   if (IsValidChild((var_child.lVal - 1), view_)) {
@@ -293,7 +293,6 @@ STDMETHODIMP ViewAccessibility::get_accChild(VARIANT var_child,
   } else {
     // Child is located elsewhere in the hierarchy, get ID and adjust for MSAA.
     child_view = view_->GetViewByID(static_cast<int>(var_child.lVal));
-    get_iaccessible = true;
   }
 
   if (!child_view) {
@@ -302,29 +301,35 @@ STDMETHODIMP ViewAccessibility::get_accChild(VARIANT var_child,
     return E_FAIL;
   }
 
-  if (get_iaccessible || child_view->GetChildViewCount() != 0) {
-    // Retrieve the IUnknown interface for the requested child view, and
-    // assign the IDispatch returned.
-    if ((GetViewAccessibilityWrapper(child_view))->
-        GetInstance(IID_IAccessible,
-                    reinterpret_cast<void**>(disp_child)) == S_OK) {
-      // Increment the reference count for the retrieved interface.
-      (*disp_child)->AddRef();
+  // First, check to see if the child is a native view.
+  if (child_view->GetClassName() == views::NativeViewHost::kViewClassName) {
+    views::NativeViewHost* native_host =
+        static_cast<views::NativeViewHost*>(child_view);
+    if (GetNativeIAccessibleInterface(native_host, disp_child) == S_OK)
       return S_OK;
-    } else {
-      // No interface, return failure.
-      return E_NOINTERFACE;
+  }
+
+  // Next, see if the child view is a widget container.
+  if (child_view->child_widget()) {
+    views::WidgetWin* native_widget =
+      reinterpret_cast<views::WidgetWin*>(child_view->child_widget());
+    if (GetNativeIAccessibleInterface(
+        native_widget->GetNativeView(), disp_child) == S_OK) {
+      return S_OK;
     }
+  }
+
+  // Finally, try our ViewAccessibility implementation.
+  // Retrieve the IUnknown interface for the requested child view, and
+  // assign the IDispatch returned.
+  HRESULT hr = GetViewAccessibilityWrapper(child_view)->
+      GetInstance(IID_IAccessible, reinterpret_cast<void**>(disp_child));
+  if (hr == S_OK) {
+    // Increment the reference count for the retrieved interface.
+    (*disp_child)->AddRef();
+    return S_OK;
   } else {
-    if (child_view->GetClassName() == views::NativeViewHost::kViewClassName) {
-      views::NativeViewHost* native_host =
-          static_cast<views::NativeViewHost*>(child_view);
-      if (GetNativeIAccessibleInterface(native_host, disp_child) == S_OK)
-        return S_OK;
-    }
-    // When at a leaf, children are handled by the parent object.
-    *disp_child = NULL;
-    return S_FALSE;
+    return E_NOINTERFACE;
   }
 }
 
@@ -697,9 +702,8 @@ void ViewAccessibility::SetState(VARIANT* msaa_state, views::View* view) {
 
   // Add on any view-specific states.
   AccessibilityTypes::State state;
-  view->GetAccessibleState(&state);
-
-  msaa_state->lVal |= MSAAState(state);
+  if (view->GetAccessibleState(&state))
+    msaa_state->lVal |= MSAAState(state);
 }
 
 // IAccessible functions not supported.
@@ -839,6 +843,11 @@ HRESULT ViewAccessibility::GetNativeIAccessibleInterface(
     native_view_window = native_host->native_view();
   }
 
+  return GetNativeIAccessibleInterface(native_view_window, disp_child);
+}
+
+HRESULT ViewAccessibility::GetNativeIAccessibleInterface(
+    HWND native_view_window , IDispatch** disp_child) {
   if (IsWindow(native_view_window)) {
     LRESULT ret = SendMessage(native_view_window, WM_GETOBJECT, 0,
                               OBJID_CLIENT);

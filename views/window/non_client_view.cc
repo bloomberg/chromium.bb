@@ -253,4 +253,9 @@ bool NonClientFrameView::ShouldPaintAsActive() const {
   return GetWindow()->IsActive() || paint_as_active_;
 }
 
+bool NonClientFrameView::GetAccessibleRole(AccessibilityTypes::Role* role) {
+  *role = AccessibilityTypes::ROLE_WINDOW;
+  return true;
+}
+
 }  // namespace views

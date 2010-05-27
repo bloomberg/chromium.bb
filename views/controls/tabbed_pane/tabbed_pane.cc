@@ -35,6 +35,7 @@ void TabbedPane::AddTabAtIndex(int index,
                                bool select_if_first_tab) {
   native_tabbed_pane_->AddTabAtIndex(index, title, contents,
                                      select_if_first_tab);
+  contents->SetAccessibleName(title);
 }
 
 int TabbedPane::GetSelectedTabIndex() {

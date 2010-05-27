@@ -53,6 +53,7 @@ class OptionsWindowView : public views::View,
   virtual void TabSelectedAt(int index);
 
   // views::View overrides:
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
   virtual void Layout();
   virtual gfx::Size GetPreferredSize();
 
@@ -170,6 +171,11 @@ void OptionsWindowView::TabSelectedAt(int index) {
 ///////////////////////////////////////////////////////////////////////////////
 // OptionsWindowView, views::View overrides:
 
+bool OptionsWindowView::GetAccessibleRole(AccessibilityTypes::Role* role) {
+  *role = AccessibilityTypes::ROLE_CLIENT;
+  return true;
+}
+
 void OptionsWindowView::Layout() {
   tabs_->SetBounds(kDialogPadding, kDialogPadding,
                    width() - (2 * kDialogPadding),
@@ -196,6 +202,8 @@ void OptionsWindowView::ViewHierarchyChanged(bool is_add,
 
 void OptionsWindowView::Init() {
   tabs_ = new views::TabbedPane;
+  tabs_->SetAccessibleName(l10n_util::GetStringF(IDS_OPTIONS_DIALOG_TITLE,
+                           l10n_util::GetString(IDS_PRODUCT_NAME)));
   tabs_->SetListener(this);
   AddChildView(tabs_);
 

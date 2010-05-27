@@ -141,6 +141,9 @@ class ATL_NO_VTABLE ViewAccessibility
   HRESULT GetNativeIAccessibleInterface(views::NativeViewHost* native_host,
                                         IDispatch** disp_child);
 
+  HRESULT GetNativeIAccessibleInterface(HWND native_view_window,
+                                        IDispatch** disp_child);
+
   // Member View needed for view-specific calls.
   views::View* view_;
 

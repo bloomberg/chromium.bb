@@ -265,6 +265,8 @@ class View : public AcceleratorTarget {
   // Returns whether the view is hot-tracked.
   virtual bool IsHotTracked() const { return false; }
 
+  virtual Widget* child_widget() { return NULL; }
+
   // Returns whether the view is pushed.
   virtual bool IsPushed() const { return false; }
 
@@ -562,9 +564,7 @@ class View : public AcceleratorTarget {
   // assistive technologies (ATs) use to determine what behavior to expect from
   // a given control. Sets the input Role appropriately, and returns true if
   // successful.
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role) {
-    return false;
-  }
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
 
   // Returns the accessibility state of the current view. Sets the input State
   // appropriately, and returns true if successful.
@@ -580,6 +580,8 @@ class View : public AcceleratorTarget {
   // which name will be associated with it until it is created to be a
   // certain type.
   void SetAccessibleName(const std::wstring& name);
+
+  void SetAccessibleRole(const AccessibilityTypes::Role role);
 
   // Returns an instance of a wrapper class implementing the (platform-specific)
   // accessibility interface for a given View. If one exists, it will be
@@ -1244,6 +1246,9 @@ class View : public AcceleratorTarget {
 
   // Name for this view, which can be retrieved by accessibility APIs.
   std::wstring accessible_name_;
+
+  // Role for this view, which can be retrieved by accessibility APIs.
+  AccessibilityTypes::Role accessible_role_;
 
   // Next view to be focused when the Tab key is pressed.
   View* next_focusable_view_;

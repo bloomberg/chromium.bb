@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,6 +46,10 @@ class NativeTabbedPaneWin : public NativeControlWin,
   virtual void Layout();
   virtual FocusTraversable* GetFocusTraversable();
   virtual void ViewHierarchyChanged(bool is_add, View *parent, View *child);
+
+  virtual Widget* child_widget() {
+    return reinterpret_cast<Widget*>(content_window_);
+  }
 
  private:
   // Called upon creation of native control to initialize tabs that are added

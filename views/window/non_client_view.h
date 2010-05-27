@@ -70,6 +70,8 @@ class NonClientFrameView : public View {
   // Overridden from View:
   virtual bool HitTest(const gfx::Point& l) const;
 
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+
  protected:
   virtual void DidChangeBounds(const gfx::Rect& previous,
                                const gfx::Rect& current);
