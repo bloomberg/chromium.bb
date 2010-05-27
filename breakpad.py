@@ -43,6 +43,6 @@ def CheckForException():
 
 
 if (not 'test' in sys.modules['__main__'].__file__ and
-    socket.gethostname().endswith('.google.com')):
+    socket.getfqdn().endswith('.google.com')):
   # Skip unit tests and we don't want anything from non-googler.
   atexit.register(CheckForException)
