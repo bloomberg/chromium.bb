@@ -32,11 +32,13 @@ static int kNotifyUserAfterMs = 0;
 UpgradeDetector::UpgradeDetector()
     : upgrade_detected_(false),
       notify_upgrade_(false) {
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if !defined(OS_WIN) || !defined(GOOGLE_CHROME_BUILD)
+  return;
+#endif
+
   detect_upgrade_timer_.Start(
       base::TimeDelta::FromMilliseconds(kCheckForUpgradeEveryMs),
       this, &UpgradeDetector::CheckForUpgrade);
-#endif
 }
 
 UpgradeDetector::~UpgradeDetector() {
