@@ -65,7 +65,9 @@ void LocationProviderBase::InformListenersOfMovement() {
   }
 }
 
-// Currently no platforms have a GPS location provider.
+// Currently only Linux has a GPS provider.
+#if !defined(OS_LINUX)
 LocationProviderBase* NewGpsLocationProvider() {
   return NULL;
 }
+#endif

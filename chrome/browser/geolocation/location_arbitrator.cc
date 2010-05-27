@@ -153,11 +153,14 @@ void GeolocationArbitratorImpl::OnAccessTokenStoresLoaded(
   if (g_provider_factory_function_for_test) {
     provider_.reset(g_provider_factory_function_for_test());
   } else {
-    // TODO(joth): When arbitration is implemented, iterate the whole
-    // set rather than cherry-pick our defaul url.
-    provider_.reset(NewNetworkLocationProvider(
-        access_token_store_.get(), context_getter_.get(), default_url_,
-        access_token_set[default_url_]));
+    provider_.reset(NewGpsLocationProvider());
+    if (provider_ == NULL) {
+      // TODO(joth): When arbitration is implemented, iterate the whole
+      // set rather than cherry-pick our default url.
+      provider_.reset(NewNetworkLocationProvider(
+          access_token_store_.get(), context_getter_.get(), default_url_,
+          access_token_set[default_url_]));
+    }
   }
   DCHECK(provider_ != NULL);
   provider_->RegisterListener(this);

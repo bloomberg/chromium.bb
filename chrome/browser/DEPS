@@ -22,6 +22,7 @@ include_rules = [
   "+media/base",
   "+third_party/cros",
   "+third_party/expat",
+  "+third_party/gpsd",
   "+third_party/sqlite",
   "+third_party/libevent", # For the remote V8 debugging server
   "+third_party/cld",
