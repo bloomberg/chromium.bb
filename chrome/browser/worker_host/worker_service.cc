@@ -46,8 +46,44 @@ void WorkerService::Initialize(ResourceDispatcherHost* rdh) {
 WorkerService::~WorkerService() {
 }
 
+bool WorkerService::CreateDedicatedWorker(
+    const GURL& url,
+    bool is_off_the_record,
+    unsigned long long document_id,
+    int renderer_pid,
+    int render_view_route_id,
+    IPC::Message::Sender* sender,
+    int sender_route_id,
+    int parent_process_id,
+    int parent_appcache_host_id,
+    ChromeURLRequestContext* request_context) {
+  return CreateWorker(url, false, is_off_the_record, string16(),
+                      document_id, renderer_pid, render_view_route_id,
+                      sender, sender_route_id,
+                      parent_process_id, parent_appcache_host_id, 0,
+                      request_context);
+}
+
+bool WorkerService::CreateSharedWorker(
+    const GURL& url,
+    bool is_off_the_record,
+    const string16& name,
+    unsigned long long document_id,
+    int renderer_pid,
+    int render_view_route_id,
+    IPC::Message::Sender* sender,
+    int sender_route_id,
+    int64 main_resource_appcache_id,
+    ChromeURLRequestContext* request_context) {
+  return CreateWorker(url, true, is_off_the_record, name,
+                      document_id, renderer_pid, render_view_route_id,
+                      sender, sender_route_id,
+                      0, 0, main_resource_appcache_id,
+                      request_context);
+}
+
 bool WorkerService::CreateWorker(
-    const GURL &url,
+    const GURL& url,
     bool is_shared,
     bool off_the_record,
     const string16& name,
@@ -56,6 +92,9 @@ bool WorkerService::CreateWorker(
     int render_view_route_id,
     IPC::Message::Sender* sender,
     int sender_route_id,
+    int parent_process_id,
+    int parent_appcache_host_id,
+    int64 main_resource_appcache_id,
     ChromeURLRequestContext* request_context) {
   // Generate a unique route id for the browser-worker communication that's
   // unique among all worker processes.  That way when the worker process sends
@@ -66,6 +105,9 @@ bool WorkerService::CreateWorker(
                                              off_the_record,
                                              name,
                                              next_worker_route_id(),
+                                             parent_process_id,
+                                             parent_appcache_host_id,
+                                             main_resource_appcache_id,
                                              request_context);
   instance.AddSender(sender, sender_route_id);
   instance.worker_document_set()->Add(
@@ -543,7 +585,7 @@ WorkerService::CreatePendingInstance(const GURL& url,
 
   // No existing pending worker - create a new one.
   WorkerProcessHost::WorkerInstance pending(
-      url, true, off_the_record, name, MSG_ROUTING_NONE, NULL);
+      url, true, off_the_record, name, MSG_ROUTING_NONE, 0, 0, 0, NULL);
   pending_shared_workers_.push_back(pending);
   return &pending_shared_workers_.back();
 }

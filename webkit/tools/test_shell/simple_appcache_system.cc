@@ -186,13 +186,13 @@ class SimpleBackendProxy
                            int host_id,
                            int parent_process_id,
                            int parent_host_id) {
-    NOTREACHED();  // Workers are not supported in test_shell.
+    NOTIMPLEMENTED();  // Workers are not supported in test_shell.
   }
 
   virtual void SelectCacheForSharedWorker(
                            int host_id,
                            int64 appcache_id) {
-    NOTREACHED();  // Workers are not supported in test_shell.
+    NOTIMPLEMENTED();  // Workers are not supported in test_shell.
   }
 
   virtual void MarkAsForeignEntry(int host_id, const GURL& document_url,

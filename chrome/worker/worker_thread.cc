@@ -42,9 +42,7 @@ WorkerThread::WorkerThread() {
   WebKit::WebRuntimeFeatures::enableDatabase(
       !command_line.HasSwitch(switches::kDisableDatabases));
 
-  // TODO(michaeln): Enable once the browser process is ready to receive
-  // the appcache messages.
-  WebKit::WebRuntimeFeatures::enableApplicationCache(false &&
+  WebKit::WebRuntimeFeatures::enableApplicationCache(
       !command_line.HasSwitch(switches::kDisableApplicationCache));
 
 #if defined(OS_WIN)

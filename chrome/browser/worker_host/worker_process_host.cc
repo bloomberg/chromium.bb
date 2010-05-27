@@ -211,9 +211,9 @@ void WorkerProcessHost::CreateWorker(const WorkerInstance& instance) {
   params.is_shared = instance.shared();
   params.name = instance.name();
   params.route_id = instance.worker_route_id();
-  params.creator_process_id = 0;  // TODO(michaeln): Set these param values.
-  params.creator_appcache_host_id = 0;
-  params.shared_worker_appcache_id = 0;
+  params.creator_process_id = instance.parent_process_id();
+  params.creator_appcache_host_id = instance.parent_appcache_host_id();
+  params.shared_worker_appcache_id = instance.main_resource_appcache_id();
   Send(new WorkerProcessMsg_CreateWorker(params));
 
   UpdateTitle();
@@ -481,11 +481,19 @@ void WorkerProcessHost::OnCreateWorker(
       instances_.front().worker_document_set()->documents().begin();
   *route_id = params.route_id == MSG_ROUTING_NONE ?
       WorkerService::GetInstance()->next_worker_route_id() : params.route_id;
-  WorkerService::GetInstance()->CreateWorker(
-      params.url, params.is_shared, instances_.front().off_the_record(),
-      params.name, params.document_id, first_parent->renderer_id(),
-      first_parent->render_view_route_id(), this, *route_id,
-      request_context_);
+
+  if (params.is_shared)
+    WorkerService::GetInstance()->CreateSharedWorker(
+        params.url, instances_.front().off_the_record(),
+        params.name, params.document_id, first_parent->renderer_id(),
+        first_parent->render_view_route_id(), this, *route_id,
+        params.script_resource_appcache_id, request_context_);
+  else
+    WorkerService::GetInstance()->CreateDedicatedWorker(
+        params.url, instances_.front().off_the_record(),
+        params.document_id, first_parent->renderer_id(),
+        first_parent->render_view_route_id(), this, *route_id,
+        id(), params.parent_appcache_host_id, request_context_);
 }
 
 void WorkerProcessHost::OnCancelCreateDedicatedWorker(int route_id) {
@@ -522,6 +530,9 @@ WorkerProcessHost::WorkerInstance::WorkerInstance(
     bool off_the_record,
     const string16& name,
     int worker_route_id,
+    int parent_process_id,
+    int parent_appcache_host_id,
+    int64 main_resource_appcache_id,
     ChromeURLRequestContext* request_context)
     : url_(url),
       shared_(shared),
@@ -529,6 +540,9 @@ WorkerProcessHost::WorkerInstance::WorkerInstance(
       closed_(false),
       name_(name),
       worker_route_id_(worker_route_id),
+      parent_process_id_(parent_process_id),
+      parent_appcache_host_id_(parent_appcache_host_id),
+      main_resource_appcache_id_(main_resource_appcache_id),
       request_context_(request_context),
       worker_document_set_(new WorkerDocumentSet()) {
   DCHECK(!request_context ||

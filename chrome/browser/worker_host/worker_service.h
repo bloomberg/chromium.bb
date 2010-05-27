@@ -25,17 +25,29 @@ class WorkerService : public NotificationObserver {
   // Initialize the WorkerService.  OK to be called multiple times.
   void Initialize(ResourceDispatcherHost* rdh);
 
-  // Creates a worker.  Returns true on success.
-  bool CreateWorker(const GURL &url,
-                    bool is_shared,
-                    bool is_off_the_record,
-                    const string16& name,
-                    unsigned long long document_id,
-                    int renderer_pid,
-                    int render_view_route_id,
-                    IPC::Message::Sender* sender,
-                    int sender_route_id,
-                    ChromeURLRequestContext* request_context);
+  // Creates a decidated worker.  Returns true on success.
+  bool CreateDedicatedWorker(const GURL &url,
+                             bool is_off_the_record,
+                             unsigned long long document_id,
+                             int renderer_pid,
+                             int render_view_route_id,
+                             IPC::Message::Sender* sender,
+                             int sender_route_id,
+                             int parent_process_id,
+                             int parent_appcache_host_id,
+                             ChromeURLRequestContext* request_context);
+
+  // Creates a shared worker.  Returns true on success.
+  bool CreateSharedWorker(const GURL &url,
+                          bool is_off_the_record,
+                          const string16& name,
+                          unsigned long long document_id,
+                          int renderer_pid,
+                          int render_view_route_id,
+                          IPC::Message::Sender* sender,
+                          int sender_route_id,
+                          int64 main_resource_appcache_id,
+                          ChromeURLRequestContext* request_context);
 
   // Validates the passed URL and checks for the existence of matching shared
   // worker. Returns true if the url was found, and sets the url_mismatch out
@@ -87,6 +99,20 @@ class WorkerService : public NotificationObserver {
 
   WorkerService();
   ~WorkerService();
+
+  bool CreateWorker(const GURL &url,
+                    bool is_shared,
+                    bool is_off_the_record,
+                    const string16& name,
+                    unsigned long long document_id,
+                    int renderer_pid,
+                    int render_view_route_id,
+                    IPC::Message::Sender* sender,
+                    int sender_route_id,
+                    int parent_process_id,
+                    int parent_appcache_host_id,
+                    int64 main_resource_appcache_id,
+                    ChromeURLRequestContext* request_context);
 
   // Given a WorkerInstance, create an associated worker process.
   bool CreateWorkerFromInstance(WorkerProcessHost::WorkerInstance instance);

@@ -824,11 +824,20 @@ void ResourceMessageFilter::OnCreateWorker(
     const ViewHostMsg_CreateWorker_Params& params, int* route_id) {
   *route_id = params.route_id != MSG_ROUTING_NONE ?
       params.route_id : render_widget_helper_->GetNextRoutingID();
-  WorkerService::GetInstance()->CreateWorker(
-      params.url, params.is_shared, off_the_record(), params.name,
-      params.document_id, id(), params.render_view_route_id, this, *route_id,
-      static_cast<ChromeURLRequestContext*>(
-          request_context_->GetURLRequestContext()));
+  if (params.is_shared)
+    WorkerService::GetInstance()->CreateSharedWorker(
+        params.url, off_the_record(), params.name,
+        params.document_id, id(), params.render_view_route_id, this, *route_id,
+        params.script_resource_appcache_id,
+        static_cast<ChromeURLRequestContext*>(
+            request_context_->GetURLRequestContext()));
+  else
+    WorkerService::GetInstance()->CreateDedicatedWorker(
+        params.url, off_the_record(),
+        params.document_id, id(), params.render_view_route_id, this, *route_id,
+        id(), params.parent_appcache_host_id,
+        static_cast<ChromeURLRequestContext*>(
+            request_context_->GetURLRequestContext()));
 }
 
 void ResourceMessageFilter::OnLookupSharedWorker(

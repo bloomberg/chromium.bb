@@ -63,6 +63,10 @@ bool AppCacheDispatcherHost::OnMessageReceived(const IPC::Message& msg,
     IPC_MESSAGE_HANDLER(AppCacheMsg_RegisterHost, OnRegisterHost);
     IPC_MESSAGE_HANDLER(AppCacheMsg_UnregisterHost, OnUnregisterHost);
     IPC_MESSAGE_HANDLER(AppCacheMsg_SelectCache, OnSelectCache);
+    IPC_MESSAGE_HANDLER(AppCacheMsg_SelectCacheForWorker,
+                        OnSelectCacheForWorker);
+    IPC_MESSAGE_HANDLER(AppCacheMsg_SelectCacheForSharedWorker,
+                        OnSelectCacheForSharedWorker);
     IPC_MESSAGE_HANDLER(AppCacheMsg_MarkAsForeignEntry, OnMarkAsForeignEntry);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AppCacheMsg_GetStatus, OnGetStatus);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AppCacheMsg_StartUpdate, OnStartUpdate);
@@ -98,6 +102,30 @@ void AppCacheDispatcherHost::OnSelectCache(
                                    opt_manifest_url)) {
       ReceivedBadMessage(AppCacheMsg_SelectCache::ID);
     }
+  } else {
+    frontend_proxy_.OnCacheSelected(
+        host_id, appcache::kNoCacheId, appcache::UNCACHED);
+  }
+}
+
+void AppCacheDispatcherHost::OnSelectCacheForWorker(
+    int host_id, int parent_process_id, int parent_host_id) {
+  if (appcache_service_.get()) {
+    if (!backend_impl_.SelectCacheForWorker(
+            host_id, parent_process_id, parent_host_id)) {
+      ReceivedBadMessage(AppCacheMsg_SelectCacheForWorker::ID);
+    }
+  } else {
+    frontend_proxy_.OnCacheSelected(
+        host_id, appcache::kNoCacheId, appcache::UNCACHED);
+  }
+}
+
+void AppCacheDispatcherHost::OnSelectCacheForSharedWorker(
+    int host_id, int64 appcache_id) {
+  if (appcache_service_.get()) {
+    if (!backend_impl_.SelectCacheForSharedWorker(host_id, appcache_id))
+      ReceivedBadMessage(AppCacheMsg_SelectCacheForSharedWorker::ID);
   } else {
     frontend_proxy_.OnCacheSelected(
         host_id, appcache::kNoCacheId, appcache::UNCACHED);

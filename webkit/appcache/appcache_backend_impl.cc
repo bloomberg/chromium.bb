@@ -61,6 +61,26 @@ bool AppCacheBackendImpl::SelectCache(
   return true;
 }
 
+bool AppCacheBackendImpl::SelectCacheForWorker(
+    int host_id, int parent_process_id, int parent_host_id) {
+  AppCacheHost* host = GetHost(host_id);
+  if (!host)
+    return false;
+
+  host->SelectCacheForWorker(parent_process_id, parent_host_id);
+  return true;
+}
+
+bool AppCacheBackendImpl::SelectCacheForSharedWorker(
+    int host_id, int64 appcache_id) {
+  AppCacheHost* host = GetHost(host_id);
+  if (!host)
+    return false;
+
+  host->SelectCacheForSharedWorker(appcache_id);
+  return true;
+}
+
 bool AppCacheBackendImpl::MarkAsForeignEntry(
     int host_id,
     const GURL& document_url,
