@@ -233,7 +233,8 @@ TEST_F(DomCheckerTest, File) {
   PrintResults(new_passes, new_failures);
 }
 
-TEST_F(DomCheckerTest, Http) {
+// TODO(arv): http://crbug.com/21321
+TEST_F(DomCheckerTest, FLAKY_Http) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDomCheckerTest))
     return;
 
