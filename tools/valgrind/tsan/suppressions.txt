@@ -251,12 +251,19 @@
 
 # fprintf is thread-safe. The benign races happen on the internal lock.
 {
-  Benign races below fprintf
+  Benign race below fprintf (1)
   ThreadSanitizer:Race
   ...
   fun:buffered_vfprintf
   ...
   fun:fprintf
+}
+
+{
+  Benign race below fprintf (2)
+  ThreadSanitizer:Race
+  fun:new_do_write
+  fun:vfprintf
 }
 
 # gethostbyname2_r is thread-safe, however ThreadSanitizer reports races inside it and
