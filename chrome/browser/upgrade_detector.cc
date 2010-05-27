@@ -29,7 +29,9 @@ static int kCheckForUpgradeEveryMs = 60 * 60 * 1000;  // 1 hour.
 // How long to wait before notifying the user about the upgrade.
 static int kNotifyUserAfterMs = 0;
 
-UpgradeDetector::UpgradeDetector() : upgrade_detected_(false) {
+UpgradeDetector::UpgradeDetector()
+    : upgrade_detected_(false),
+      notify_upgrade_(false) {
 #if !defined(OS_WIN)
   return;
 #endif
