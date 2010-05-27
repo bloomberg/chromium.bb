@@ -107,7 +107,7 @@ void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
   // Retrieve the default print settings to calculate the expected number of
   // pages.
   ViewMsg_Print_Params default_settings;
-  bool user_cancelled_print = false;
+  bool print_cancelled = false;
 
   IPC::SyncMessage* msg =
       new ViewHostMsg_GetDefaultPrintSettings(routing_id(), &default_settings);
@@ -135,53 +135,64 @@ void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
                                                     frame,
                                                     frame->view());
         expected_pages_count = prep_frame_view.GetExpectedPageCount();
-        DCHECK(expected_pages_count);
-        use_browser_overlays = prep_frame_view.ShouldUseBrowserOverlays();
+        if (expected_pages_count)
+          use_browser_overlays = prep_frame_view.ShouldUseBrowserOverlays();
       }
 
-      // Ask the browser to show UI to retrieve the final print settings.
-      ViewMsg_PrintPages_Params print_settings;
+      // Some full screen plugins can say they don't want to print.
+      if (expected_pages_count) {
+        // Ask the browser to show UI to retrieve the final print settings.
+        ViewMsg_PrintPages_Params print_settings;
 
-      ViewHostMsg_ScriptedPrint_Params params;
+        ViewHostMsg_ScriptedPrint_Params params;
 
-      // The routing id is sent across as it is needed to look up the
-      // corresponding RenderViewHost instance to signal and reset the
-      // pump messages event.
-      params.routing_id = routing_id();
-      // host_window_ may be NULL at this point if the current window is a popup
-      // and the print() command has been issued from the parent. The receiver
-      // of this message has to deal with this.
-      params.host_window_id = render_view_->host_window();
-      params.cookie = default_settings.document_cookie;
-      params.has_selection = frame->hasSelection();
-      params.expected_pages_count = expected_pages_count;
-      params.use_overlays = use_browser_overlays;
+        // The routing id is sent across as it is needed to look up the
+        // corresponding RenderViewHost instance to signal and reset the
+        // pump messages event.
+        params.routing_id = routing_id();
+        // host_window_ may be NULL at this point if the current window is a
+        // popup and the print() command has been issued from the parent. The
+        // receiver of this message has to deal with this.
+        params.host_window_id = render_view_->host_window();
+        params.cookie = default_settings.document_cookie;
+        params.has_selection = frame->hasSelection();
+        params.expected_pages_count = expected_pages_count;
+        params.use_overlays = use_browser_overlays;
 
-      msg = new ViewHostMsg_ScriptedPrint(routing_id(), params,
-                                          &print_settings);
-      msg->EnableMessagePumping();
-      if (Send(msg)) {
-        msg = NULL;
+        msg = new ViewHostMsg_ScriptedPrint(routing_id(), params,
+                                            &print_settings);
+        msg->EnableMessagePumping();
+        if (Send(msg)) {
+          msg = NULL;
 
-        // If the settings are invalid, early quit.
-        if (print_settings.params.dpi &&
-            print_settings.params.document_cookie) {
-          if (print_settings.params.selection_only) {
-            CopyAndPrint(print_settings, frame);
+          // If the settings are invalid, early quit.
+          if (print_settings.params.dpi &&
+              print_settings.params.document_cookie) {
+            if (print_settings.params.selection_only) {
+              CopyAndPrint(print_settings, frame);
+            } else {
+              // TODO: Always copy before printing.
+              PrintPages(print_settings, frame);
+            }
+
+            // Reset cancel counter on first successful print.
+            user_cancelled_scripted_print_count_ = 0;
+            return;  // All went well.
           } else {
-            // TODO: Always copy before printing.
-            PrintPages(print_settings, frame);
+            // User cancelled print.
+            print_cancelled = true;
+            if (script_initiated) {
+              ++user_cancelled_scripted_print_count_;
+              last_cancelled_script_print_ = base::Time::Now();
+            }
           }
-
-          // Reset cancel counter on first successful print.
-          user_cancelled_scripted_print_count_ = 0;
-          return;  // All went well.
         } else {
-          user_cancelled_print = true;
+          // Send() failed.
+          NOTREACHED();
         }
       } else {
-        // Send() failed.
-        NOTREACHED();
+        // Nothing to print.
+        print_cancelled = true;
       }
     } else {
       // Failed to get default settings.
@@ -191,18 +202,14 @@ void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
     // Send() failed.
     NOTREACHED();
   }
-  if (script_initiated && user_cancelled_print) {
-    ++user_cancelled_scripted_print_count_;
-    last_cancelled_script_print_ = base::Time::Now();
-  }
-  // When |user_cancelled_print| is true, we treat it as success so that
+  // When |print_cancelled| is true, we treat it as success so that
   // DidFinishPrinting() won't show any error alert.
-  // If |user_cancelled_print| is false and we reach here, there must be
+  // If |print_cancelled| is false and we reach here, there must be
   // something wrong and hence is not success, DidFinishPrinting() should show
   // an error alert.
   // In both cases, we have to call DidFinishPrinting() here to release
   // printing resources, since we don't need them anymore.
-  DidFinishPrinting(user_cancelled_print);
+  DidFinishPrinting(print_cancelled);
 }
 #endif  // OS_MACOSX || OS_WIN
 
