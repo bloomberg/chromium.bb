@@ -72,7 +72,7 @@ class BaseTab : public AnimationDelegate,
   }
 
   // Returns true if the tab is selected.
-  bool IsSelected() const;
+  virtual bool IsSelected() const;
 
   // views::View overrides:
   virtual void OnMouseEntered(const views::MouseEvent& event);

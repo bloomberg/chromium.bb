@@ -104,7 +104,7 @@ class BaseTabStrip : public views::View,
   virtual void TabTitleChangedNotLoading(int model_index) = 0;
 
   // Sets the tab data at the specified model index.
-  virtual void SetTabData(int model_index, const TabRendererData& data) = 0;
+  virtual void SetTabData(int model_index, const TabRendererData& data);
 
   // Returns the tab at the specified model index.
   virtual BaseTab* GetBaseTabAtModelIndex(int model_index) const;
@@ -182,6 +182,9 @@ class BaseTabStrip : public views::View,
 
   // Starts the remove tab animation.
   virtual void StartRemoveTabAnimation(int model_index);
+
+  // Starts the mini-tab animation.
+  virtual void StartMiniTabAnimation();
 
   // Returns whether the highlight button should be highlighted after a remove.
   virtual bool ShouldHighlightCloseButtonAfterRemove() { return true; }

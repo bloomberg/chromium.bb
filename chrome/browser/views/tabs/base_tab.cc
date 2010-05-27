@@ -248,6 +248,9 @@ void BaseTab::OnMouseExited(const views::MouseEvent& e) {
 }
 
 bool BaseTab::OnMousePressed(const views::MouseEvent& event) {
+  if (!controller())
+    return false;
+
   if (event.IsOnlyLeftMouseButton()) {
     // Store whether or not we were selected just now... we only want to be
     // able to drag foreground tabs, so we don't start dragging the tab if
@@ -261,11 +264,15 @@ bool BaseTab::OnMousePressed(const views::MouseEvent& event) {
 }
 
 bool BaseTab::OnMouseDragged(const views::MouseEvent& event) {
-  controller()->ContinueDrag(event);
+  if (controller())
+    controller()->ContinueDrag(event);
   return true;
 }
 
 void BaseTab::OnMouseReleased(const views::MouseEvent& event, bool canceled) {
+  if (!controller())
+    return;
+
   // Notify the drag helper that we're done with any potential drag operations.
   // Clean up the drag helper, which is re-created on the next mouse press.
   // In some cases, ending the drag will schedule the tab for destruction; if
@@ -413,7 +420,8 @@ void BaseTab::ButtonPressed(views::Button* sender, const views::Event& event) {
 void BaseTab::ShowContextMenu(views::View* source,
                               const gfx::Point& p,
                               bool is_mouse_gesture) {
-  controller()->ShowContextMenu(this, p);
+  if (controller())
+    controller()->ShowContextMenu(this, p);
 }
 
 void BaseTab::ThemeChanged() {

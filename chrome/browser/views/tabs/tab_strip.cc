@@ -303,20 +303,6 @@ void TabStrip::TabTitleChangedNotLoading(int model_index) {
     tab->StartMiniTabTitleAnimation();
 }
 
-void TabStrip::SetTabData(int model_index, const TabRendererData& data) {
-  Tab* tab = GetTabAtModelIndex(model_index);
-  bool mini_state_changed = tab->data().mini != data.mini;
-  tab->SetData(data);
-  tab->SchedulePaint();
-
-  if (mini_state_changed) {
-    if (GetWindow() && GetWindow()->IsVisible())
-      StartMiniTabAnimation();
-    else
-      Layout();
-  }
-}
-
 void TabStrip::StartHighlight(int model_index) {
   GetTabAtModelIndex(model_index)->StartPulse();
 }

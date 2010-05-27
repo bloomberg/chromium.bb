@@ -345,6 +345,8 @@
       <include name="IDR_SIDETABS_SHADOW_MIDDLE" file="sidetabs_shadow_middle.png" type="BINDATA" />
       <include name="IDR_SIDETABS_SHADOW_BOTTOM" file="sidetabs_shadow_bottom.png" type="BINDATA" />
 
+      <include name="IDR_SIDETABS_NEW_TAB" file="sidetabs_new_tab.png" type="BINDATA" />
+
       <!-- Upgrade notification -->
 
       <include name="IDR_UPGRADE_DOT_INACTIVE" file="upgrade_dot_inactive.png" type="BINDATA" />

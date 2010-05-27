@@ -172,6 +172,20 @@ void BaseTabStrip::MoveTab(int from_model_index, int to_model_index) {
   StartMoveTabAnimation();
 }
 
+void BaseTabStrip::SetTabData(int model_index, const TabRendererData& data) {
+  BaseTab* tab = GetBaseTabAtModelIndex(model_index);
+  bool mini_state_changed = tab->data().mini != data.mini;
+  tab->SetData(data);
+  tab->SchedulePaint();
+
+  if (mini_state_changed) {
+    if (GetWindow() && GetWindow()->IsVisible())
+      StartMiniTabAnimation();
+    else
+      Layout();
+  }
+}
+
 BaseTab* BaseTabStrip::GetBaseTabAtModelIndex(int model_index) const {
   return base_tab_at_tab_index(ModelIndexToTabIndex(model_index));
 }
@@ -340,6 +354,13 @@ void BaseTabStrip::StartRemoveTabAnimation(int model_index) {
   // ownership of RemoveTabDelegate.
   bounds_animator_.SetAnimationDelegate(tab, new RemoveTabDelegate(this, tab),
                                         true);
+}
+
+void BaseTabStrip::StartMiniTabAnimation() {
+  PrepareForAnimation();
+
+  GenerateIdealBounds();
+  AnimateToIdealBounds();
 }
 
 void BaseTabStrip::RemoveAndDeleteTab(BaseTab* tab) {

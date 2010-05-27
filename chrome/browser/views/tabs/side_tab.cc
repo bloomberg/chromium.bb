@@ -80,7 +80,7 @@ void SideTab::Layout() {
 }
 
 void SideTab::Paint(gfx::Canvas* canvas) {
-  if (IsSelected() || !controller()) {
+  if (ShouldPaintHighlight()) {
     SkPaint paint;
     paint.setColor(kTabBackgroundColor);
     paint.setAntiAlias(true);
@@ -98,6 +98,10 @@ void SideTab::Paint(gfx::Canvas* canvas) {
 
 gfx::Size SideTab::GetPreferredSize() {
   return gfx::Size(0, GetPreferredHeight());
+}
+
+bool SideTab::ShouldPaintHighlight() const {
+  return IsSelected() || !controller();
 }
 
 bool SideTab::ShouldShowIcon() const {

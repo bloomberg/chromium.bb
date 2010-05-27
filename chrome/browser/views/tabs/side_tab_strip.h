@@ -31,7 +31,6 @@ class SideTabStrip : public BaseTabStrip {
   virtual void RemoveTabAt(int model_index);
   virtual void SelectTabAt(int old_model_index, int new_model_index);
   virtual void TabTitleChangedNotLoading(int model_index);
-  virtual void SetTabData(int model_index, const TabRendererData& data);
 
   // views::View overrides:
   virtual gfx::Size GetPreferredSize();
@@ -45,8 +44,22 @@ class SideTabStrip : public BaseTabStrip {
   virtual void StartMoveTabAnimation();
   virtual void StopAnimating(bool layout);
   virtual void AnimateToIdealBounds();
+  virtual void Layout();
 
  private:
+  // The "New Tab" button.
+  views::View* newtab_button_;
+
+  // Ideal bounds of the new tab button.
+  gfx::Rect newtab_button_bounds_;
+
+  // Separator between mini-tabs and the new tab button. The separator is
+  // positioned above the visible area if there are no mini-tabs.
+  views::View* separator_;
+
+  // Bounds of the sepatator.
+  gfx::Rect separator_bounds_;
+
   DISALLOW_COPY_AND_ASSIGN(SideTabStrip);
 };
 

@@ -28,6 +28,9 @@ class SideTab : public BaseTab {
  protected:
   virtual const gfx::Rect& title_bounds() const { return title_bounds_; }
 
+  // Returns true if the selected highlight should be rendered.
+  virtual bool ShouldPaintHighlight() const;
+
  private:
   // Returns true if the icon should be shown.
   bool ShouldShowIcon() const;
