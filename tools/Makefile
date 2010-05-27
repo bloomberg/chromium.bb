@@ -27,9 +27,23 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-##################################################################
+##############################################################################
 #  Description: Main makefile for NativeClient toolchain.
-##################################################################
+#
+#  Usage:
+#    Option 1: Build by unpacking the tarballs and applying patches:
+#      make SDKLOC=/your/path clean build
+#    Option 2: Build by copying the sources from the Git repository:
+#      git clone http://git.chromium.org/git/nacl-toolchain.git SRC
+#      make prepare-git-src
+#      make SDKLOC=/your/path clean build
+#
+#  WARNING:
+#    This Makefile does *not* support incremental rebuilds of individial
+#  components (binutils, pregcc, gcc, newlib, gdb). Although you can force
+#  rebuilding one of the components by deleting their respective stamps, this
+#  does not always work. Use at your own risk.
+##############################################################################
 
 default: build
 
@@ -311,6 +325,10 @@ sdkdirs:
 BUILD/stamp-binutils: SRC/stamp-binutils | BUILD
 	rm -rf BUILD/build-binutils-$(CROSSARCH)
 	mkdir BUILD/build-binutils-$(CROSSARCH)
+	if ( [ -x /usr/bin/bison ] ) && ( [ -x /usr/bin/flex ] ) ; then \
+	  touch SRC/binutils/ld/ldgram.y ; \
+	  touch SRC/binutils/ld/ldlex.l ; \
+	fi
 	cd BUILD/build-binutils-$(CROSSARCH) && \
 	  CC="gcc" \
 	  CFLAGS="-m32 -O2 -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)" \
