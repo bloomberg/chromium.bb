@@ -8,7 +8,6 @@
 #include "app/resource_bundle.h"
 #include "base/thread.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/child_process_host.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -376,18 +375,12 @@ void DesktopNotificationService::PersistPermissionChange(
 }
 
 void DesktopNotificationService::RequestPermission(
-    const GURL& origin, int process_id, int route_id, int callback_context) {
+    const GURL& origin, int process_id, int route_id, int callback_context,
+    TabContents* tab) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  // Show an info bar requesting permission.
-  Browser* browser = BrowserList::GetLastActive();
-  if (!browser) {
-    // Reached during ui tests.
-    return;
-  }
-  TabContents* tab = browser->GetSelectedTabContents();
   if (!tab)
     return;
-
+  // Show an info bar requesting permission.
   std::wstring display_name = DisplayNameForOrigin(origin);
 
   tab->AddInfoBar(new NotificationPermissionInfoBarDelegate(
