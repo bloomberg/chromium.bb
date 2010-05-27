@@ -895,11 +895,6 @@ const char kLoginUser[]                     = "login-user";
 
 // Use the frame layout used in chromeos.
 const char kChromeosFrame[]                 = "chromeos-frame";
-
-// Specify startup customization manifest.
-// TODO(denisromanov): delete this once it's not needed for testing anymore.
-const char kStartupManifest[]               = "startup-manifest";
-
 #endif
 
 #if defined(OS_WIN)

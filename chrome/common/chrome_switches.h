@@ -256,7 +256,6 @@ extern const char kProfile[];
 extern const char kLoginProfile[];
 extern const char kLoginUser[];
 extern const char kChromeosFrame[];
-extern const char kStartupManifest[];
 #endif
 
 #if defined(OS_WIN)

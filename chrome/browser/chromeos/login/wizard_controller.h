@@ -22,7 +22,6 @@ class BackgroundView;
 class LoginScreen;
 class NetworkScreen;
 class UpdateScreen;
-class StartupCustomizationDocument;
 }
 
 namespace gfx {
@@ -87,11 +86,6 @@ class WizardController : public chromeos::ScreenObserver,
 
   // Overrides observer for testing.
   void set_observer(ScreenObserver* observer) { observer_ = observer; }
-
-  // Sets partner startup customization. WizardController takes ownership
-  // of the document object.
-  void SetCustomization(
-      const chromeos::StartupCustomizationDocument* customization);
 
   static const char kNetworkScreenName[];
   static const char kLoginScreenName[];
@@ -161,9 +155,6 @@ class WizardController : public chromeos::ScreenObserver,
 
   // Default WizardController.
   static WizardController* default_controller_;
-
-  // Partner startup customizations.
-  scoped_ptr<const chromeos::StartupCustomizationDocument> customization_;
 
   FRIEND_TEST(WizardControllerFlowTest, ControlFlowErrorNetwork);
   FRIEND_TEST(WizardControllerFlowTest, ControlFlowErrorUpdate);
