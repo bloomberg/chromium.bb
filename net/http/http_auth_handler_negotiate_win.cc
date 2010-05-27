@@ -83,9 +83,8 @@ bool HttpAuthHandlerNegotiate::NeedsCanonicalName() {
   return true;
 }
 
-int HttpAuthHandlerNegotiate::ResolveCanonicalName(HostResolver* resolver,
-                                                   CompletionCallback* callback,
-                                                   const BoundNetLog& net_log) {
+int HttpAuthHandlerNegotiate::ResolveCanonicalName(
+    HostResolver* resolver, CompletionCallback* callback) {
   // TODO(cbentzel): Add reverse DNS lookup for numeric addresses.
   DCHECK(!single_resolve_.get());
   DCHECK(!disable_cname_lookup_);
@@ -96,7 +95,7 @@ int HttpAuthHandlerNegotiate::ResolveCanonicalName(HostResolver* resolver,
   single_resolve_.reset(new SingleRequestHostResolver(resolver));
   int rv = single_resolve_->Resolve(info, &address_list_,
                                     &resolve_cname_callback_,
-                                    net_log);
+                                    net_log_);
   if (rv == ERR_IO_PENDING) {
     user_callback_ = callback;
     return rv;
@@ -197,6 +196,7 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
     const GURL& origin,
     CreateReason reason,
     int digest_nonce_count,
+    const BoundNetLog& net_log,
     scoped_refptr<HttpAuthHandler>* handler) {
   if (is_unsupported_ || reason == CREATE_PREEMPTIVE)
     return ERR_UNSUPPORTED_AUTH_SCHEME;
@@ -214,7 +214,7 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
       new HttpAuthHandlerNegotiate(sspi_library_, max_token_length_,
                                    url_security_manager(),
                                    disable_cname_lookup_, use_port_));
-  if (!tmp_handler->InitFromChallenge(challenge, target, origin))
+  if (!tmp_handler->InitFromChallenge(challenge, target, origin, net_log))
     return ERR_INVALID_RESPONSE;
   handler->swap(tmp_handler);
   return OK;

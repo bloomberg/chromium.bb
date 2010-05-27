@@ -69,9 +69,8 @@ bool HttpAuthHandlerNegotiate::NeedsCanonicalName() {
   return false;
 }
 
-int HttpAuthHandlerNegotiate::ResolveCanonicalName(HostResolver* host_resolver,
-                                                   CompletionCallback* callback,
-                                                   const BoundNetLog& net_log) {
+int HttpAuthHandlerNegotiate::ResolveCanonicalName(
+    HostResolver* host_resolver, CompletionCallback* callback) {
   NOTREACHED();
   LOG(ERROR) << ErrorToString(ERR_NOT_IMPLEMENTED);
   return ERR_NOT_IMPLEMENTED;
@@ -90,6 +89,7 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
     const GURL& origin,
     CreateReason reason,
     int digest_nonce_count,
+    const BoundNetLog& net_log,
     scoped_refptr<HttpAuthHandler>* handler) {
   return ERR_UNSUPPORTED_AUTH_SCHEME;
 }
