@@ -1185,3 +1185,17 @@
    fun:_dyld_start
    obj:*
 }
+
+{
+   Bug_45261_PluginProcessHost
+   Memcheck:Cond
+   fun:_ZN17PluginProcessHostD0Ev
+   fun:_Z26STLDeleteContainerPointersISt14_List_iteratorIP16ChildProcessHostEEvT_S4_
+   fun:_Z17STLDeleteElementsISt4listIP16ChildProcessHostSaIS2_EEEvPT_
+   fun:_ZN16ChildProcessHost12TerminateAllEv
+   fun:_ZN8IOThread7CleanUpEv
+   fun:_ZN4base6Thread10ThreadMainEv
+   fun:_ZL10ThreadFuncPv
+   fun:_pthread_start
+   fun:thread_start
+}
