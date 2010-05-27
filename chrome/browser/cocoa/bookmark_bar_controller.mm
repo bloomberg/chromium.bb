@@ -2286,7 +2286,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     poofPoint = [[oldButton window] convertBaseToScreen:poofPoint];
     NSRect oldFrame = [oldButton frame];
     [oldButton removeFromSuperview];
-    if (animate && !ignoreAnimations_)
+    if (animate && !ignoreAnimations_ && [self isVisible])
       NSShowAnimationEffect(NSAnimationEffectDisappearingItemDefault, poofPoint,
                             NSZeroSize, nil, nil, nil);
     CGFloat xOffset = NSWidth(oldFrame) + bookmarks::kBookmarkHorizontalPadding;
