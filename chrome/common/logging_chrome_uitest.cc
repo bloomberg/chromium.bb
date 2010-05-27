@@ -20,8 +20,6 @@
 #include "chrome/test/ui/ui_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
 class ChromeLoggingTest : public testing::Test {
  public:
   // Stores the current value of the log file name environment
@@ -53,7 +51,6 @@ class ChromeLoggingTest : public testing::Test {
 
  private:
   std::string environment_filename_;  // Saves real environment value.
-};
 };
 
 // Tests the log file name getter without an environment variable.
@@ -106,6 +103,9 @@ class AssertionTest : public UITest {
 #if defined(OS_WIN)
 // http://crbug.com/26715
 #define Assertion DISABLED_Assertion
+#elif defined(OS_MACOSX)
+// Crash service doesn't exist for the Mac yet: http://crbug.com/45243
+#define Assertion DISABLED_Assertion
 #endif
 TEST_F(AssertionTest, Assertion) {
   if (UITest::in_process_renderer()) {
@@ -137,6 +137,9 @@ class CheckFalseTest : public UITest {
 #if defined(OS_WIN)
 // http://crbug.com/38497
 #define CheckFails FLAKY_CheckFails
+#elif defined(OS_MACOSX)
+// Crash service doesn't exist for the Mac yet: http://crbug.com/45243
+#define CheckFails DISABLED_CheckFails
 #endif
 // Launch the app in assertion test mode, then close the app.
 TEST_F(CheckFalseTest, CheckFails) {
@@ -174,6 +177,9 @@ class RendererCrashTest : public UITest {
 #define Crash FLAKY_Crash
 #elif defined(OS_CHROMEOS)
 // http://crbug.com/43115
+#define Crash DISABLED_Crash
+#elif defined(OS_MACOSX)
+// Crash service doesn't exist for the Mac yet: http://crbug.com/45243
 #define Crash DISABLED_Crash
 #endif
 // Launch the app in renderer crash test mode, then close the app.

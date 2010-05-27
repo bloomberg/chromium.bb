@@ -39,6 +39,10 @@ TEST_F(ChromeMainTest, AppTestingInterface) {
   EXPECT_EQ(1, GetTabCount());
 }
 
+#if defined(OS_MACOSX)
+// Fails an SQL assertion on Mac: http://crbug.com/45108
+#define SecondLaunch DISABLED_SecondLaunch
+#endif
 // Make sure that the second invocation creates a new window.
 TEST_F(ChromeMainTest, SecondLaunch) {
   include_testing_id_ = false;
@@ -50,6 +54,11 @@ TEST_F(ChromeMainTest, SecondLaunch) {
   ASSERT_TRUE(automation()->WaitForWindowCountToBecome(2));
 }
 
+#if defined(OS_MACOSX)
+// Fails an SQL assertion on Mac: http://crbug.com/45108
+#define ReuseBrowserInstanceWhenOpeningFile \
+    DISABLED_ReuseBrowserInstanceWhenOpeningFile
+#endif
 TEST_F(ChromeMainTest, ReuseBrowserInstanceWhenOpeningFile) {
   include_testing_id_ = false;
   use_existing_browser_ = true;

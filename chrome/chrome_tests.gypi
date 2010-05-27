@@ -372,13 +372,6 @@
           ],
         }],
         ['OS=="mac"', {
-          'sources!': [
-            # TODO(port)
-            'app/chrome_main_uitest.cc',
-            'browser/metrics/metrics_service_uitest.cc',
-            'common/logging_chrome_uitest.cc',
-            'test/ui/fast_shutdown_uitest.cc',
-          ],
           # See the comment in this section of the unit_tests target for an
           # explanation (crbug.com/43791 - libwebcore.a is too large to mmap).
           'dependencies+++': [
