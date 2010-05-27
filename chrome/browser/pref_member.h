@@ -43,6 +43,9 @@ class PrefMemberBase : public NotificationObserver {
   void Init(const wchar_t* pref_name, PrefService* prefs,
             NotificationObserver* observer);
 
+  // See PrefMember<> for description.
+  bool IsManaged();
+
   // NotificationObserver
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
@@ -83,6 +86,13 @@ class PrefMember : public subtle::PrefMemberBase {
   void Init(const wchar_t* pref_name, PrefService* prefs,
             NotificationObserver* observer) {
     subtle::PrefMemberBase::Init(pref_name, prefs, observer);
+  }
+
+  // Check whether the pref is managed, i.e. controlled externally through
+  // enterprise configuration management (e.g. windows group policy). Returns
+  // false for unknown prefs.
+  bool IsManaged() {
+    return subtle::PrefMemberBase::IsManaged();
   }
 
   // Retrieve the value of the member variable.

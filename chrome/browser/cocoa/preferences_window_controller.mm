@@ -770,8 +770,12 @@ class PrefObserverBridge : public NotificationObserver,
   NSSet* paths = [super keyPathsForValuesAffectingValueForKey:key];
   if ([key isEqualToString:@"isHomepageURLEnabled"]) {
     paths = [paths setByAddingObject:@"newTabPageIsHomePageIndex"];
+    paths = [paths setByAddingObject:@"homepageURL"];
   } else if ([key isEqualToString:@"enableRestoreButtons"]) {
     paths = [paths setByAddingObject:@"restoreOnStartupIndex"];
+  } else if ([key isEqualToString:@"isHomepageManaged"]) {
+    paths = [paths setByAddingObject:@"newTabPageIsHomePageIndex"];
+    paths = [paths setByAddingObject:@"homepageURL"];
   } else if ([key isEqualToString:@"isDefaultBrowser"]) {
     paths = [paths setByAddingObject:@"defaultBrowser"];
   } else if ([key isEqualToString:@"defaultBrowserTextColor"]) {
@@ -802,13 +806,14 @@ class PrefObserverBridge : public NotificationObserver,
 // the homepage to an empty url would automatically reset the prefs back to
 // using the NTP, so we'd be never be able to change it.
 - (void)setHomepage:(const GURL&)homepage {
-  if (!homepage.is_valid() || homepage.spec() == GetNewTabUIURLString()) {
-    newTabPageIsHomePage_.SetValue(true);
-    if (!homepage.has_host())
-      homepage_.SetValue(std::wstring());
-  } else {
-    newTabPageIsHomePage_.SetValue(false);
-    homepage_.SetValue(UTF8ToWide(homepage.spec()));
+  if (!homepage_.IsManaged()) {
+    if (!homepage.is_valid() || homepage.spec() == GetNewTabUIURLString()) {
+      newTabPageIsHomePage_.SetValue(true);
+      if (!homepage.has_host())
+        homepage_.SetValue(std::wstring());
+    } else {
+      homepage_.SetValue(UTF8ToWide(homepage.spec()));
+    }
   }
 }
 
@@ -992,13 +997,21 @@ enum { kHomepageNewTabPage, kHomepageURL };
     [self recordUserAction:UserMetricsAction("Options_Homepage_UseNewTab")];
   else
     [self recordUserAction:UserMetricsAction("Options_Homepage_UseURL")];
-  newTabPageIsHomePage_.SetValue(useNewTabPage);
+  if (!newTabPageIsHomePage_.IsManaged())
+    newTabPageIsHomePage_.SetValue(useNewTabPage);
+}
+
+// Check whether the homepage settings are enabled, i.e. whether the
+// corresponding properties are not controlled by policy.
+- (BOOL)isHomepageManaged {
+  return newTabPageIsHomePage_.IsManaged() || homepage_.IsManaged();
 }
 
 // Returns whether or not the homepage URL text field should be enabled
 // based on if the new tab page is the home page.
 - (BOOL)isHomepageURLEnabled {
-  return newTabPageIsHomePage_.GetValue() ? NO : YES;
+  return newTabPageIsHomePage_.GetValue() || [self isHomepageManaged] ?
+         NO : YES;
 }
 
 // Returns the homepage URL.

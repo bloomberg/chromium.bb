@@ -77,19 +77,22 @@ bool PreferenceModelAssociator::AssociateModels() {
           node.GetPreferenceSpecifics());
       DCHECK_EQ(tag, preference.name());
 
-      scoped_ptr<Value> value(
-          reader.JsonToValue(preference.value(), false, false));
-      std::wstring pref_name = UTF8ToWide(preference.name());
-      if (!value.get()) {
-        LOG(ERROR) << "Failed to deserialize preference value: "
-                   << reader.GetErrorMessage();
-        return false;
-      }
+      if (!pref->IsManaged()) {
+        scoped_ptr<Value> value(
+            reader.JsonToValue(preference.value(), false, false));
+        std::wstring pref_name = UTF8ToWide(preference.name());
+        if (!value.get()) {
+          LOG(ERROR) << "Failed to deserialize preference value: "
+                     << reader.GetErrorMessage();
+          return false;
+        }
 
-      // Update the local preference based on what we got from the sync server.
-      pref_service->Set(pref_name.c_str(), *value);
+        // Update the local preference based on what we got from the sync
+        // server.
+        pref_service->Set(pref_name.c_str(), *value);
+      }
       Associate(pref, node.GetId());
-    } else {
+    } else if (!pref->IsManaged()) {
       sync_api::WriteNode node(&trans);
       if (!node.InitUniqueByCreation(syncable::PREFERENCES, root, tag)) {
         LOG(ERROR) << "Failed to create preference sync node.";
@@ -103,6 +106,7 @@ bool PreferenceModelAssociator::AssociateModels() {
         LOG(ERROR) << "Failed to serialize preference value.";
         return false;
       }
+
       sync_pb::PreferenceSpecifics preference;
       preference.set_name(tag);
       preference.set_value(serialized);

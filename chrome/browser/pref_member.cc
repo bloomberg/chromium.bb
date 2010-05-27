@@ -37,6 +37,13 @@ void PrefMemberBase::Init(const wchar_t* pref_name, PrefService* prefs,
   prefs_->AddPrefObserver(pref_name, this);
 }
 
+bool PrefMemberBase::IsManaged() {
+  DCHECK(!pref_name_.empty());
+  const PrefService::Preference* pref =
+      prefs_->FindPreference(pref_name_.c_str());
+  return pref && pref->IsManaged();
+}
+
 void PrefMemberBase::Observe(NotificationType type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {

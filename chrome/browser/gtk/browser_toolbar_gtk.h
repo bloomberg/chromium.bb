@@ -134,8 +134,8 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   GtkWidget* BuildToolbarMenuButton(const std::string& localized_tooltip,
                                     OwnedWidgetGtk* owner);
 
-  // Connect signals for dragging a url onto the home button.
-  void SetUpDragForHomeButton();
+  // Connect/Disconnect signals for dragging a url onto the home button.
+  void SetUpDragForHomeButton(bool enable);
 
   // Helper for the PageAppMenu event handlers. Pops down the currently active
   // meun and pops up the other menu.
@@ -167,6 +167,9 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   // ProfileSyncServiceObserver method.
   virtual void OnStateChanged();
+
+  // Updates preference-dependent state.
+  void NotifyPrefChanged(const std::wstring* pref);
 
   static void SetSyncMenuLabel(GtkWidget* widget, gpointer userdata);
 
@@ -234,6 +237,10 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // Controls whether or not a home button should be shown on the toolbar.
   BooleanPrefMember show_home_button_;
 
+  // Preferences controlling the configured home page.
+  StringPrefMember home_page_;
+  BooleanPrefMember home_page_is_new_tab_page_;
+
   NotificationRegistrar registrar_;
 
   // A GtkEntry that isn't part of the hierarchy. We keep this for native
@@ -241,6 +248,9 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   OwnedWidgetGtk offscreen_entry_;
 
   MenuBarHelper menu_bar_helper_;
+
+  // Manages the home button drop signal handler.
+  scoped_ptr<GtkSignalRegistrar> drop_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserToolbarGtk);
 };

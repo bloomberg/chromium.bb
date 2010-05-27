@@ -146,24 +146,26 @@ void GeneralPageGtk::NotifyPrefChanged(const std::wstring* pref_name) {
     startup_custom_pages_table_model_->SetURLs(startup_pref.urls);
   }
 
-  if (!pref_name || *pref_name == prefs::kHomePageIsNewTabPage) {
-    if (new_tab_page_is_home_page_.GetValue()) {
-      gtk_toggle_button_set_active(
-          GTK_TOGGLE_BUTTON(homepage_use_newtab_radio_), TRUE);
-      gtk_widget_set_sensitive(homepage_use_url_entry_, FALSE);
-    } else {
-      gtk_toggle_button_set_active(
-          GTK_TOGGLE_BUTTON(homepage_use_url_radio_), TRUE);
-      gtk_widget_set_sensitive(homepage_use_url_entry_, TRUE);
-    }
-  }
-
-  if (!pref_name || *pref_name == prefs::kHomePage) {
-    bool enabled = homepage_.GetValue() !=
-        UTF8ToWide(chrome::kChromeUINewTabURL);
-    if (enabled)
+  if (!pref_name ||
+      *pref_name == prefs::kHomePageIsNewTabPage ||
+      *pref_name == prefs::kHomePage) {
+    bool managed =
+        new_tab_page_is_home_page_.IsManaged() || homepage_.IsManaged();
+    bool homepage_valid =
+        homepage_.GetValue() != UTF8ToWide(chrome::kChromeUINewTabURL);
+    bool use_new_tab_page_for_homepage =
+        new_tab_page_is_home_page_.GetValue() || !homepage_valid;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(homepage_use_newtab_radio_),
+                                 use_new_tab_page_for_homepage);
+    gtk_widget_set_sensitive(homepage_use_newtab_radio_, !managed);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(homepage_use_url_radio_),
+                                 !use_new_tab_page_for_homepage);
+    gtk_widget_set_sensitive(homepage_use_url_radio_, !managed);
+    if (homepage_valid)
       gtk_entry_set_text(GTK_ENTRY(homepage_use_url_entry_),
                          WideToUTF8(homepage_.GetValue()).c_str());
+    gtk_widget_set_sensitive(homepage_use_url_entry_,
+                             !managed && !use_new_tab_page_for_homepage);
   }
 
   if (!pref_name || *pref_name == prefs::kShowHomeButton) {
@@ -171,6 +173,7 @@ void GeneralPageGtk::NotifyPrefChanged(const std::wstring* pref_name) {
         GTK_TOGGLE_BUTTON(homepage_show_home_button_checkbox_),
         show_home_button_.GetValue());
   }
+
   initializing_ = false;
 }
 

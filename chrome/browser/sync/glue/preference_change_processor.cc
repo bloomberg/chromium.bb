@@ -48,6 +48,14 @@ void PreferenceChangeProcessor::Observe(NotificationType type,
       pref_service_->FindPreference((*name).c_str());
   DCHECK(preference);
 
+  // TODO (mnissler) Detect preference->IsManaged() state changes here and call
+  // into PreferenceModelAssociator to associate/disassociate sync nodes when
+  // the state changes.
+
+  // Do not pollute sync data with values coming from policy.
+  if (preference->IsManaged())
+    return;
+
   sync_api::WriteTransaction trans(share_handle());
   sync_api::WriteNode node(&trans);
 
@@ -113,6 +121,13 @@ void PreferenceChangeProcessor::ApplyChangesFromSyncModel(
     // preferences.
     const wchar_t* pref_name = name.c_str();
     if (model_associator_->synced_preferences().count(pref_name) == 0)
+      continue;
+
+    // Don't try to overwrite preferences controlled by policy.
+    const PrefService::Preference* pref =
+        pref_service_->FindPreference(pref_name);
+    DCHECK(pref);
+    if (pref->IsManaged())
       continue;
 
     if (sync_api::SyncManager::ChangeRecord::ACTION_DELETE ==

@@ -65,8 +65,12 @@ void TipsHandler::HandleGetTips(const Value* content) {
         // Check to see whether the home page is set to NTP; if not, add tip
         // to set home page before resetting tip index to 0.
         current_tip_index = 0;
-        if (!dom_ui_->GetProfile()->GetPrefs()->GetBoolean(
-            prefs::kHomePageIsNewTabPage)) {
+        const PrefService::Preference* pref =
+            dom_ui_->GetProfile()->GetPrefs()->FindPreference(
+                prefs::kHomePageIsNewTabPage);
+        bool value;
+        if (pref && !pref->IsManaged() &&
+            pref->GetValue()->GetAsBoolean(&value) && !value) {
           SendTip(WideToUTF8(l10n_util::GetString(
               IDS_NEW_TAB_MAKE_THIS_HOMEPAGE)), L"set_homepage_tip",
               current_tip_index);

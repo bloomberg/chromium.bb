@@ -380,20 +380,22 @@ void GeneralPageView::NotifyPrefChanged(const std::wstring* pref_name) {
     startup_custom_pages_table_model_->SetURLs(startup_pref.urls);
   }
 
-  if (!pref_name || *pref_name == prefs::kHomePageIsNewTabPage) {
-    if (new_tab_page_is_home_page_.GetValue()) {
-      homepage_use_newtab_radio_->SetChecked(true);
-      EnableHomepageURLField(false);
-    } else {
-      homepage_use_url_radio_->SetChecked(true);
-      EnableHomepageURLField(true);
-    }
-  }
+  if (!pref_name ||
+      *pref_name == prefs::kHomePageIsNewTabPage ||
+      *pref_name == prefs::kHomePage) {
+    bool managed =
+        new_tab_page_is_home_page_.IsManaged() || homepage_.IsManaged();
+    bool homepage_valid = homepage_.GetValue() != GetNewTabUIURLString();
+    bool use_new_tab_page_for_homepage =
+        new_tab_page_is_home_page_.GetValue() || !homepage_valid;
+    homepage_use_newtab_radio_->SetChecked(use_new_tab_page_for_homepage);
+    homepage_use_newtab_radio_->SetEnabled(!managed);
+    homepage_use_url_radio_->SetChecked(!use_new_tab_page_for_homepage);
+    homepage_use_url_radio_->SetEnabled(!managed);
 
-  if (!pref_name || *pref_name == prefs::kHomePage) {
-    bool enabled = homepage_.GetValue() != GetNewTabUIURLString();
-    if (enabled)
+    if (homepage_valid)
       homepage_use_url_textfield_->SetText(homepage_.GetValue());
+    EnableHomepageURLField(!managed && !use_new_tab_page_for_homepage);
   }
 
   if (!pref_name || *pref_name == prefs::kShowHomeButton) {

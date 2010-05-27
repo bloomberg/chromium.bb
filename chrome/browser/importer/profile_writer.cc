@@ -44,8 +44,11 @@ void ProfileWriter::AddHomepage(const GURL& home_page) {
 
   PrefService* prefs = profile_->GetPrefs();
   // NOTE: We set the kHomePage value, but keep the NewTab page as the homepage.
-  prefs->SetString(prefs::kHomePage, ASCIIToWide(home_page.spec()));
-  prefs->ScheduleSavePersistentPrefs();
+  const PrefService::Preference* pref = prefs->FindPreference(prefs::kHomePage);
+  if (pref && !pref->IsManaged()) {
+    prefs->SetString(prefs::kHomePage, ASCIIToWide(home_page.spec()));
+    prefs->ScheduleSavePersistentPrefs();
+  }
 }
 
 void ProfileWriter::AddBookmarkEntry(

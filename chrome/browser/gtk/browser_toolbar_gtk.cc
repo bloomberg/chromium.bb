@@ -121,6 +121,9 @@ void BrowserToolbarGtk::Init(Profile* profile,
   offscreen_entry_.Own(gtk_entry_new());
 
   show_home_button_.Init(prefs::kShowHomeButton, profile->GetPrefs(), this);
+  home_page_.Init(prefs::kHomePage, profile->GetPrefs(), this);
+  home_page_is_new_tab_page_.Init(prefs::kHomePageIsNewTabPage,
+                                  profile->GetPrefs(), this);
 
   event_box_ = gtk_event_box_new();
   // Make the event box transparent so themes can use transparent toolbar
@@ -159,7 +162,6 @@ void BrowserToolbarGtk::Init(Profile* profile,
                                  l10n_util::GetStringUTF8(IDS_TOOLTIP_HOME),
                                  GTK_STOCK_HOME, kToolbarWidgetSpacing));
   gtk_util::SetButtonTriggersNavigation(home_->widget());
-  SetUpDragForHomeButton();
 
   reload_.reset(BuildToolbarButton(IDR_RELOAD, IDR_RELOAD_P, IDR_RELOAD_H, 0,
                                    IDR_RELOAD_MASK,
@@ -223,15 +225,11 @@ void BrowserToolbarGtk::Init(Profile* profile,
     gtk_widget_hide(go_->widget());
   } else {
     gtk_widget_show_all(event_box_);
-
-    if (show_home_button_.GetValue())
-      gtk_widget_show(home_->widget());
-    else
-      gtk_widget_hide(home_->widget());
-
     if (actions_toolbar_->button_count() == 0)
       gtk_widget_hide(actions_toolbar_->widget());
   }
+  // Initialize pref-dependent UI state.
+  NotifyPrefChanged(NULL);
 
   // Because the above does a recursive show all on all widgets we need to
   // update the icon visibility to hide them.
@@ -375,14 +373,7 @@ void BrowserToolbarGtk::Observe(NotificationType type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {
   if (type == NotificationType::PREF_CHANGED) {
-    std::wstring* pref_name = Details<std::wstring>(details).ptr();
-    if (*pref_name == prefs::kShowHomeButton) {
-      if (show_home_button_.GetValue() && !ShouldOnlyShowLocation()) {
-        gtk_widget_show(home_->widget());
-      } else {
-        gtk_widget_hide(home_->widget());
-      }
-    }
+    NotifyPrefChanged(Details<std::wstring>(details).ptr());
   } else if (type == NotificationType::BROWSER_THEME_CHANGED) {
     // Update the spacing around the menu buttons
     bool use_gtk = theme_provider_->UseGtkTheme();
@@ -494,15 +485,21 @@ GtkWidget* BrowserToolbarGtk::BuildToolbarMenuButton(
   return button;
 }
 
-void BrowserToolbarGtk::SetUpDragForHomeButton() {
-  gtk_drag_dest_set(home_->widget(), GTK_DEST_DEFAULT_ALL,
-                    NULL, 0, GDK_ACTION_COPY);
-  static const int targets[] = { gtk_dnd_util::TEXT_PLAIN,
-                                 gtk_dnd_util::TEXT_URI_LIST, -1 };
-  gtk_dnd_util::SetDestTargetList(home_->widget(), targets);
+void BrowserToolbarGtk::SetUpDragForHomeButton(bool enable) {
+  if (enable) {
+    gtk_drag_dest_set(home_->widget(), GTK_DEST_DEFAULT_ALL,
+                      NULL, 0, GDK_ACTION_COPY);
+    static const int targets[] = { gtk_dnd_util::TEXT_PLAIN,
+                                   gtk_dnd_util::TEXT_URI_LIST, -1 };
+    gtk_dnd_util::SetDestTargetList(home_->widget(), targets);
 
-  g_signal_connect(home_->widget(), "drag-data-received",
-                   G_CALLBACK(OnDragDataReceivedThunk), this);
+    drop_handler_.reset(new GtkSignalRegistrar());
+    drop_handler_->Connect(home_->widget(), "drag-data-received",
+                           G_CALLBACK(OnDragDataReceivedThunk), this);
+  } else {
+    gtk_drag_dest_unset(home_->widget());
+    drop_handler_.reset(NULL);
+  }
 }
 
 void BrowserToolbarGtk::ChangeActiveMenu(GtkWidget* active_menu,
@@ -719,11 +716,9 @@ void BrowserToolbarGtk::OnDragDataReceived(GtkWidget* widget,
     return;
 
   bool url_is_newtab = url.spec() == chrome::kChromeUINewTabURL;
-  profile_->GetPrefs()->SetBoolean(prefs::kHomePageIsNewTabPage,
-                                   url_is_newtab);
+  home_page_is_new_tab_page_.SetValue(url_is_newtab);
   if (!url_is_newtab) {
-    profile_->GetPrefs()->SetString(prefs::kHomePage,
-                                    UTF8ToWide(url.spec()));
+    home_page_.SetValue(UTF8ToWide(url.spec()));
   }
 }
 
@@ -732,6 +727,22 @@ void BrowserToolbarGtk::OnStateChanged() {
 
   std::string menu_label = UTF16ToUTF8(
       sync_ui_util::GetSyncMenuLabel(sync_service_));
+}
+
+void BrowserToolbarGtk::NotifyPrefChanged(const std::wstring* pref) {
+  if (!pref || *pref == prefs::kShowHomeButton) {
+    if (show_home_button_.GetValue() && !ShouldOnlyShowLocation()) {
+      gtk_widget_show(home_->widget());
+    } else {
+      gtk_widget_hide(home_->widget());
+    }
+  }
+
+  if (!pref ||
+      *pref == prefs::kHomePage ||
+      *pref == prefs::kHomePageIsNewTabPage)
+    SetUpDragForHomeButton(!home_page_.IsManaged() &&
+                           !home_page_is_new_tab_page_.IsManaged());
 }
 
 bool BrowserToolbarGtk::ShouldOnlyShowLocation() const {
