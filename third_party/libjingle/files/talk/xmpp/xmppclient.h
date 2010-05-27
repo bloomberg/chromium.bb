@@ -40,7 +40,6 @@ namespace buzz {
 
 class XmppTask;
 class PreXmppAuth;
-class SaslHandler;
 class CaptchaChallenge;
 
 // Just some non-colliding number.  Could have picked "1".
@@ -78,8 +77,7 @@ public:
   XmppReturnStatus Connect(const XmppClientSettings & settings,
                            const std::string & lang,
                            AsyncSocket * socket,
-                           PreXmppAuth * preauth,
-                           SaslHandler * sasl_handler);
+                           PreXmppAuth * preauth);
   
   virtual talk_base::Task* GetParent(int code);
   virtual int ProcessStart();

@@ -30,6 +30,7 @@
 
 #include "talk/base/cryptstring.h"
 #include "talk/base/sigslot.h"
+#include "talk/xmpp/saslhandler.h"
 
 namespace talk_base {
   class SocketAddress;
@@ -60,7 +61,7 @@ class CaptchaChallenge {
   std::string captcha_image_url_;
 };
 
-class PreXmppAuth {
+class PreXmppAuth : public SaslHandler {
 public:
   virtual ~PreXmppAuth() {}
   

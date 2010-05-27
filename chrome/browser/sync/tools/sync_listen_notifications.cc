@@ -92,7 +92,7 @@ class XmppNotificationClient : public sigslot::has_slots<> {
     // Transfers ownership of xmpp_socket_adapter.
     buzz::XmppReturnStatus connect_status =
         xmpp_client_->Connect(xmpp_client_settings_, "",
-                              xmpp_socket_adapter, NULL, NULL);
+                              xmpp_socket_adapter, NULL);
     CHECK_EQ(connect_status, buzz::XMPP_RETURN_OK);
     xmpp_client_->Start();
     talk_base::Thread* current_thread =

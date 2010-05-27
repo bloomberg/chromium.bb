@@ -30,7 +30,6 @@
 #include "talk/xmpp/xmppconstants.h"
 #include "talk/base/sigslot.h"
 #include "talk/xmpp/saslplainmechanism.h"
-#include "talk/xmpp/saslhandler.h"
 #include "talk/xmpp/prexmppauth.h"
 #include "talk/base/scoped_ptr.h"
 #include "talk/xmpp/plainsaslhandler.h"
@@ -67,7 +66,6 @@ public:
   scoped_ptr<AsyncSocket> socket_;
   scoped_ptr<XmppEngine> engine_;
   scoped_ptr<PreXmppAuth> pre_auth_;
-  scoped_ptr<SaslHandler> sasl_handler_;
   talk_base::CryptString pass_;
   std::string auth_cookie_;
   talk_base::SocketAddress server_;
@@ -95,8 +93,7 @@ XmppReturnStatus
 XmppClient::Connect(const XmppClientSettings & settings,
                     const std::string & lang,
                     AsyncSocket * socket,
-                    PreXmppAuth * pre_auth,
-                    SaslHandler * sasl_handler) {
+                    PreXmppAuth * pre_auth) {
   if (socket == NULL)
     return XMPP_RETURN_BADARGUMENT;
   if (d_->socket_.get() != NULL)
@@ -116,13 +113,19 @@ XmppClient::Connect(const XmppClientSettings & settings,
   }
   d_->engine_->SetUseTls(settings.use_tls());
 
-  if (sasl_handler) {
-    std::string tls_server_hostname, tls_server_domain;
-    if (sasl_handler->GetTlsServerInfo(settings.server(),
-                                       &tls_server_hostname,
-                                       &tls_server_domain)) {
-      d_->engine_->SetTlsServer(tls_server_hostname, tls_server_domain);
-    }
+  //
+  // The talk.google.com server expects you to use "gmail.com" in the
+  // stream, and expects the domain certificate to be "gmail.com" as well.
+  // For all other servers, we leave the strings empty, which causes
+  // the jid's domain to be used.  "foo@example.com" -> stream to="example.com"
+  // tls certificate for "example.com"
+  //
+  // This is only true when using Gaia auth, so let's say if there's
+  // no sasl_handler, we should use the actual server name
+  if ((settings.server().IPAsString() == buzz::STR_TALK_GOOGLE_COM ||
+      settings.server().IPAsString() == buzz::STR_TALKX_L_GOOGLE_COM) &&
+      pre_auth != NULL) {
+    d_->engine_->SetTlsServer(buzz::STR_GMAIL_COM, buzz::STR_GMAIL_COM);
   }
 
   // Set language
@@ -137,7 +140,6 @@ XmppClient::Connect(const XmppClientSettings & settings,
   d_->proxy_port_ = settings.proxy_port();
   d_->allow_plain_ = settings.allow_plain();
   d_->pre_auth_.reset(pre_auth);
-  d_->sasl_handler_.reset(sasl_handler);
 
   return XMPP_RETURN_OK;
 }
@@ -199,14 +201,6 @@ ForgetPassword(std::string & to_erase) {
 
 int
 XmppClient::ProcessStart() {
-  if (d_->sasl_handler_.get()) {
-    d_->engine_->SetSaslHandler(d_->sasl_handler_.release());
-  }
-  else {
-    d_->engine_->SetSaslHandler(new PlainSaslHandler(
-        d_->engine_->GetUser(), d_->pass_, d_->allow_plain_));
-  }
-
   if (d_->pre_auth_.get()) {
     d_->pre_auth_->SignalAuthDone.connect(this, &XmppClient::OnAuthDone);
     d_->pre_auth_->StartPreXmppAuth(
@@ -215,6 +209,8 @@ XmppClient::ProcessStart() {
     return STATE_PRE_XMPP_LOGIN;
   }
   else {
+    d_->engine_->SetSaslHandler(new PlainSaslHandler(
+              d_->engine_->GetUser(), d_->pass_, d_->allow_plain_));
     d_->pass_.Clear(); // done with this;
     return STATE_START_XMPP_LOGIN;
   }
@@ -257,6 +253,8 @@ XmppClient::ProcessCookieLogin() {
   // Save auth cookie as a result
   d_->auth_cookie_ = d_->pre_auth_->GetAuthCookie();
 
+  // transfer ownership of pre_auth_ to engine
+  d_->engine_->SetSaslHandler(d_->pre_auth_.release());
   return STATE_START_XMPP_LOGIN;
 }
 

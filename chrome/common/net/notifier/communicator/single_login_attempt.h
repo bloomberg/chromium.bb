@@ -15,7 +15,7 @@
 
 namespace buzz {
 class AsyncSocket;
-class SaslHandler;
+class PreXmppAuth;
 class XmppClient;
 class XmppClientSettings;
 class XmppClientSettings;
@@ -94,7 +94,7 @@ class SingleLoginAttempt : public talk_base::Task, public sigslot::has_slots<> {
  private:
   void DoLogin(const ConnectionSettings& connection_settings);
   buzz::AsyncSocket* CreateSocket(const buzz::XmppClientSettings& xcs);
-  static buzz::SaslHandler* CreateSaslHandler(
+  static buzz::PreXmppAuth* CreatePreXmppAuth(
       const buzz::XmppClientSettings& xcs);
 
   // Cleans up any xmpp client state to get ready for a new one.

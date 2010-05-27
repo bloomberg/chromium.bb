@@ -68,12 +68,6 @@ public:
     }
     return NULL;
   }
-
-  virtual bool GetTlsServerInfo(const talk_base::SocketAddress& server,
-                                std::string* tls_server_hostname,
-                                std::string* tls_server_domain) {
-    return false;
-  }
   
 private:
   Jid jid_;
