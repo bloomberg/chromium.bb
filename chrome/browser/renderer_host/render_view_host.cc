@@ -135,10 +135,6 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
 RenderViewHost::~RenderViewHost() {
   delegate()->RenderViewDeleted(this);
 
-  DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
-  if (devtools_manager)  // NULL in tests
-    devtools_manager->UnregisterDevToolsClientHostFor(this);
-
   // Be sure to clean up any leftover state from cross-site requests.
   Singleton<CrossSiteRequestManager>()->SetHasPendingCrossSiteRequest(
       process()->id(), routing_id(), false);
@@ -849,6 +845,11 @@ void RenderViewHost::Shutdown() {
     Send(run_modal_reply_msg_);
     run_modal_reply_msg_ = NULL;
   }
+
+  DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
+  if (devtools_manager)  // NULL in tests
+    devtools_manager->UnregisterDevToolsClientHostFor(this);
+
   RenderWidgetHost::Shutdown();
 }
 

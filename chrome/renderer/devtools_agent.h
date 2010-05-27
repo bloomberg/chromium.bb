@@ -47,6 +47,8 @@ class DevToolsAgent : public WebKit::WebDevToolsAgentClient {
                                           bool enabled);
   virtual WebKit::WebCString injectedScriptSource();
   virtual WebKit::WebCString injectedScriptDispatcherSource();
+  virtual WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop*
+      createClientMessageLoop();
 
   // Returns agent instance for its host id.
   static DevToolsAgent* FromHostId(int host_id);

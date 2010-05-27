@@ -111,8 +111,11 @@ void DevToolsManager::ActivateWindow(RenderViewHost* client_rvh) {
 
 void DevToolsManager::CloseWindow(RenderViewHost* client_rvh) {
   DevToolsClientHost* client_host = FindOnwerDevToolsClientHost(client_rvh);
-  if (client_host)
-    CloseWindow(client_host);
+  if (client_host) {
+    RenderViewHost* inspected_rvh = GetInspectedRenderViewHost(client_host);
+    DCHECK(inspected_rvh);
+    UnregisterDevToolsClientHostFor(inspected_rvh);
+  }
 }
 
 void DevToolsManager::RequestDockWindow(RenderViewHost* client_rvh) {
@@ -194,6 +197,7 @@ void DevToolsManager::UnregisterDevToolsClientHostFor(
   DevToolsClientHost* host = GetDevToolsClientHostFor(inspected_rvh);
   if (!host)
     return;
+  SendDetachToAgent(inspected_rvh);
   UnbindClientHost(inspected_rvh, host);
 
   if (inspected_rvh_for_reopen_ == inspected_rvh)
@@ -303,7 +307,6 @@ void DevToolsManager::SendDetachToAgent(RenderViewHost* inspected_rvh) {
 void DevToolsManager::ForceReopenWindow() {
   if (inspected_rvh_for_reopen_) {
     RenderViewHost* inspected_rvn = inspected_rvh_for_reopen_;
-    SendDetachToAgent(inspected_rvn);
     UnregisterDevToolsClientHostFor(inspected_rvn);
     OpenDevToolsWindow(inspected_rvn);
   }
@@ -362,17 +365,8 @@ void DevToolsManager::ToggleDevToolsWindow(RenderViewHost* inspected_rvh,
   if (!window->is_docked() || do_open) {
     AutoReset auto_reset_in_initial_show(&in_initial_show_, true);
     window->Show(open_console);
-  } else {
-    CloseWindow(host);
-  }
-}
-
-void DevToolsManager::CloseWindow(DevToolsClientHost* client_host) {
-  RenderViewHost* inspected_rvh = GetInspectedRenderViewHost(client_host);
-  DCHECK(inspected_rvh);
-  SendDetachToAgent(inspected_rvh);
-
-  UnregisterDevToolsClientHostFor(inspected_rvh);
+  } else
+    UnregisterDevToolsClientHostFor(inspected_rvh);
 }
 
 void DevToolsManager::BindClientHost(RenderViewHost* inspected_rvh,

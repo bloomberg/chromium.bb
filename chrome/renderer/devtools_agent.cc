@@ -17,11 +17,36 @@
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebDevToolsAgent;
+using WebKit::WebDevToolsAgentClient;
 using WebKit::WebPoint;
 using WebKit::WebString;
 using WebKit::WebCString;
 using WebKit::WebVector;
 using WebKit::WebView;
+
+namespace {
+
+class WebKitClientMessageLoopImpl
+    : public WebDevToolsAgentClient::WebKitClientMessageLoop {
+public:
+  WebKitClientMessageLoopImpl() : message_loop_(MessageLoop::current()) { }
+  virtual ~WebKitClientMessageLoopImpl() {
+    message_loop_ = NULL;
+  }
+  virtual void run() {
+    bool old_state = message_loop_->NestableTasksAllowed();
+    message_loop_->SetNestableTasksAllowed(true);
+    message_loop_->Run();
+    message_loop_->SetNestableTasksAllowed(old_state);
+  }
+  virtual void quitNow() {
+    message_loop_->QuitNow();
+  }
+private:
+  MessageLoop* message_loop_;
+};
+
+} //  namespace
 
 // static
 std::map<int, DevToolsAgent*> DevToolsAgent::agent_for_routing_id_;
@@ -92,6 +117,11 @@ WebCString DevToolsAgent::injectedScriptDispatcherSource() {
   base::StringPiece injectDispatchjs =
       webkit_glue::GetDataResource(IDR_DEVTOOLS_INJECT_DISPATCH_JS);
   return WebCString(injectDispatchjs.as_string().c_str());
+}
+
+WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop*
+    DevToolsAgent::createClientMessageLoop() {
+  return new WebKitClientMessageLoopImpl();
 }
 
 // static

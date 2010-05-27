@@ -107,8 +107,6 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
 
   void ReopenWindow(RenderViewHost* client_rvh, bool docked);
 
-  void CloseWindow(DevToolsClientHost* client_host);
-
   void BindClientHost(RenderViewHost* inspected_rvh,
                       DevToolsClientHost* client_host,
                       const RuntimeFeatures& runtime_features);
