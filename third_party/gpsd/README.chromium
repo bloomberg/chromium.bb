@@ -1,0 +1,17 @@
+URL: http://git.berlios.de/cgi-bin/gitweb.cgi?p=gpsd;a=summary
+InfoURL: http://gpsd.berlios.de/
+Version: 2.38, 2.94
+License: BSD
+
+Description:
+gpsd is a service daemon that monitors one or more GPSes or AIS receivers
+attached to a host computer through serial or USB ports, making all data on the
+location/course/velocity of the sensors available to be queried on TCP port
+2947 of the host computer. 
+
+Local Modifications:
+No modifications.
+Only the gps.h file is imported, as the client library (libgps.so) is
+dynamically loaded (where present). We import 2 versions as the older (2.38) is
+needed for Chrome OS and the newer for tip of tree builds (using the new client
+API that aims to maintain binary compatibility across future releases).
