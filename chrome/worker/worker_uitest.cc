@@ -523,7 +523,7 @@ TEST_F(WorkerTest, FLAKY_MessagePorts) {
     RunLayoutTest(kLayoutTestFiles[i], kNoHttpPort);
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 // This has been flaky on Windows since r39931. http://crbug.com/36800
 #define LimitPerPage FLAKY_LimitPerPage
 #endif
