@@ -141,7 +141,6 @@ PluginList::PluginList()
     : plugins_loaded_(false), plugins_need_refresh_(false) {
   PlatformInit();
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
   const PluginVersionInfo default_plugin = {
     FilePath(kDefaultPluginLibraryName),
     L"Default Plug-in",
@@ -151,14 +150,15 @@ PluginList::PluginList()
     L"",
     L"",
     {
+#if !defined(OS_POSIX) || defined(OS_MACOSX)
       default_plugin::NP_GetEntryPoints,
+#endif
       default_plugin::NP_Initialize,
       default_plugin::NP_Shutdown
     }
   };
 
   internal_plugins_.push_back(default_plugin);
-#endif
 }
 
 void PluginList::LoadPlugins(bool refresh) {
