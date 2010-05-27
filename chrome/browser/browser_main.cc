@@ -325,7 +325,6 @@ void SetFileDescriptorLimit(unsigned int max_descriptors) {
 }
 #endif
 
-#if !defined(OS_MACOSX)
 void AddFirstRunNewTabs(BrowserInit* browser_init,
                         const std::vector<GURL>& new_tabs) {
   for (std::vector<GURL>::const_iterator it = new_tabs.begin();
@@ -334,12 +333,6 @@ void AddFirstRunNewTabs(BrowserInit* browser_init,
       browser_init->AddFirstRunTab(*it);
   }
 }
-#else  // OS_MACOSX
-// TODO(cpu): implement first run experience for other platforms.
-void AddFirstRunNewTabs(BrowserInit* browser_init,
-                        const std::vector<GURL>& new_tabs) {
-}
-#endif
 
 #if defined(USE_LINUX_BREAKPAD)
 class GetLinuxDistroTask : public Task {
@@ -894,12 +887,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // On first run, we need to process the master preferences before the
   // browser's profile_manager object is created, but after ResourceBundle
   // is initialized.
-  FirstRun::MasterPrefs master_prefs = {0};
+  FirstRun::MasterPrefs master_prefs = { 0 };
   bool first_run_ui_bypass = false;  // True to skip first run UI.
   if (is_first_run) {
     first_run_ui_bypass =
-        !FirstRun::ProcessMasterPreferences(user_data_dir,
-                                            FilePath(), &master_prefs);
+        !FirstRun::ProcessMasterPreferences(user_data_dir, &master_prefs);
     AddFirstRunNewTabs(&browser_init, master_prefs.new_tabs);
 
     // If we are running in App mode, we do not want to show the importer

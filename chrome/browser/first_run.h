@@ -65,14 +65,12 @@ class FirstRun {
   static int ImportNow(Profile* profile, const CommandLine& cmdline);
 
   // The master preferences is a JSON file with the same entries as the
-  // 'Default\Preferences' file. This function locates this file from
-  // master_pref_path or if that path is empty from the default location
-  // which is '<path to chrome.exe>\master_preferences', and process it
-  // so it becomes the default preferences in profile pointed by user_data_dir.
-  // After processing the file, the function returns true if showing the
-  // first run dialog is needed, and returns false if skipping first run
-  // dialogs. The detailed settings in the preference file is reported via
-  // preference_details.
+  // 'Default\Preferences' file. This function locates this file from a standard
+  // location and processes it so it becomes the default preferences in the
+  // profile pointed to by |user_data_dir|. After processing the file, the
+  // function returns true if and only if showing the first run dialog is
+  // needed. The detailed settings in the preference file are reported via
+  // |preference_details|.
   //
   // This function destroys any existing prefs file and it is meant to be
   // invoked only on first run.
@@ -80,7 +78,6 @@ class FirstRun {
   // See chrome/installer/util/master_preferences.h for a description of
   // 'master_preferences' file.
   static bool ProcessMasterPreferences(const FilePath& user_data_dir,
-                                       const FilePath& master_prefs_path,
                                        MasterPrefs* out_prefs);
 
   // Returns true if this is the first time chrome is run for this user.

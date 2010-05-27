@@ -42,17 +42,14 @@ FilePath GetDefaultPrefFilePath(bool create_profile_dir,
 }
 
 bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
-                                        const FilePath& master_prefs_path,
                                         MasterPrefs* out_prefs) {
   DCHECK(!user_data_dir.empty());
-  FilePath master_prefs = master_prefs_path;
-  if (master_prefs.empty()) {
-    // The default location of the master prefs is next to the chrome binary.
-    if (!PathService::Get(base::DIR_EXE, &master_prefs))
-      return true;
-    master_prefs =
-        master_prefs.AppendASCII(installer_util::kDefaultMasterPrefs);
-  }
+
+  // The standard location of the master prefs is next to the chrome binary.
+  FilePath master_prefs;
+  if (!PathService::Get(base::DIR_EXE, &master_prefs))
+    return true;
+  master_prefs = master_prefs.AppendASCII(installer_util::kDefaultMasterPrefs);
 
   scoped_ptr<DictionaryValue> prefs(
       installer_util::ParseDistributionPreferences(master_prefs));

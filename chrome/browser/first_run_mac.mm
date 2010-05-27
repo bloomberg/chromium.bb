@@ -40,7 +40,6 @@ class FirstRunController : public ImportObserver {
   // first run tasks are done.
   void FirstRunDone();
 
-
   scoped_refptr<ImporterHost> importer_host_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunController);
@@ -55,6 +54,13 @@ bool OpenFirstRunDialog(Profile* profile,
                         ProcessSingleton* process_singleton) {
   FirstRunController* controller = new FirstRunController;
   return controller->DoFirstRun(profile, process_singleton);
+}
+
+bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
+                                        MasterPrefs* out_prefs) {
+  // TODO(jeremy,viettrungluu): http://crbug.com/44901
+  NOTIMPLEMENTED();
+  return true;
 }
 
 FirstRunController::FirstRunController()

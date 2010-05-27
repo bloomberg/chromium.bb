@@ -174,14 +174,6 @@ int FirstRun::ImportNow(Profile* profile, const CommandLine& cmdline) {
   return return_code;
 }
 
-#if defined(OS_MACOSX)
-bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
-    const FilePath& master_prefs_path, MasterPrefs* out_prefs) {
-  NOTIMPLEMENTED();
-  return true;
-}
-#endif
-
 int FirstRunImportObserver::import_result() const {
   return import_result_;
 }
