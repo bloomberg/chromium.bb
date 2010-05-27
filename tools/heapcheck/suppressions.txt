@@ -417,3 +417,15 @@
    fun:::RunTest_EnsureTaskDeletion*
    fun:MessageLoopTest_*EnsureTaskDeletion_*::TestBody
 }
+{
+  bug_44738
+  Heapcheck:Leak
+  ...
+  fun:Histogram
+  fun:Histogram::FactoryGet
+  fun:Histogram::FactoryGet
+  fun:ClientSocketPoolHistograms
+  fun:HttpNetworkSession
+  fun:net::HttpNetworkLayer::GetSession
+  fun:net::HttpNetworkLayer::CreateTransaction
+}
