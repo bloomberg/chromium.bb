@@ -29,7 +29,7 @@ void TestSEHChainSane() {
   MEMORY_BASIC_INFORMATION info = { 0 };
   // Note that we pass the address of the info struct just as a handy
   // moniker to anything at all inside our stack allocation
-  ASSERT_NE(0, ::VirtualQuery(&info, &info, sizeof(info)));
+  ASSERT_NE(0u, ::VirtualQuery(&info, &info, sizeof(info)));
 
   // The lower bound of our stack.
   // We use the address of info as a lower bound, this assumes that if this
@@ -60,9 +60,9 @@ void TestSEHChainSane() {
     ASSERT_EQ(0, (reinterpret_cast<UINT_PTR>(prev) & 0x00000003));
 
     // find the module hosting the handler
-    ASSERT_NE(0, ::VirtualQuery(curr->handler, &info, sizeof(info)));
+    ASSERT_NE(0u, ::VirtualQuery(curr->handler, &info, sizeof(info)));
     wchar_t module_filename[MAX_PATH];
-    ASSERT_NE(0, ::GetModuleFileName(
+    ASSERT_NE(0u, ::GetModuleFileName(
                     reinterpret_cast<HMODULE>(info.AllocationBase),
                     module_filename, ARRAYSIZE(module_filename)));
   }

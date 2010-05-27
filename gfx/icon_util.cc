@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -176,7 +176,7 @@ SkBitmap* IconUtil::CreateSkBitmapFromHICON(HICON icon, const gfx::Size& s) {
   if (!bitmap_has_alpha_channel) {
     unsigned int* p = static_cast<unsigned int*>(bitmap->getPixels());
     for (size_t i = 0; i < num_pixels; ++p, ++i) {
-      DCHECK_EQ((*p & 0xff000000), 0);
+      DCHECK_EQ((*p & 0xff000000), 0u);
       if (opaque[i])
         *p |= 0xff000000;
       else
@@ -259,7 +259,7 @@ bool IconUtil::CreateIconFileFromSkBitmap(const SkBitmap& bitmap,
   DWORD bytes_written;
   bool delete_file = false;
   if (!WriteFile(icon_file.Get(), buffer, buffer_size, &bytes_written, NULL) ||
-      bytes_written != buffer_size) {
+      static_cast<int>(bytes_written) != buffer_size) {
     delete_file = true;
   }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,7 +65,7 @@ CommandLine* CreateLaunchCommandLine() {
 }
 
 void SanitizeCommandLine(const CommandLine& original, CommandLine* sanitized) {
-  int num_sanitized_switches = 0;
+  size_t num_sanitized_switches = 0;
   for (int i = 0; i < arraysize(kAllowedSwitches); ++i) {
     const char* current_switch = kAllowedSwitches[i];
     if (original.HasSwitch(current_switch)) {

@@ -292,14 +292,14 @@ TEST_F(HtmlUtilUnittest, AddChromeFrameToUserAgentValue) {
 
 TEST_F(HtmlUtilUnittest, GetDefaultUserAgentHeaderWithCFTag) {
   std::string ua(http_utils::GetDefaultUserAgentHeaderWithCFTag());
-  EXPECT_NE(0, ua.length());
+  EXPECT_NE(0u, ua.length());
   EXPECT_NE(std::string::npos, ua.find("Mozilla"));
   EXPECT_NE(std::string::npos, ua.find(kChromeFrameUserAgent));
 }
 
 TEST_F(HtmlUtilUnittest, GetDefaultUserAgent) {
   std::string ua(http_utils::GetDefaultUserAgent());
-  EXPECT_NE(0, ua.length());
+  EXPECT_NE(0u, ua.length());
   EXPECT_NE(std::string::npos, ua.find("Mozilla"));
 }
 

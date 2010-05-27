@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -232,7 +232,7 @@ TEST_F(EtwTraceConsumerRealtimeTest, ConsumeEvent) {
                                                  INFINITE));
   ASSERT_HRESULT_SUCCEEDED(controller.Stop(NULL));
   ASSERT_HRESULT_SUCCEEDED(JoinConsumerThread());
-  ASSERT_NE(0, TestConsumer::events_.size());
+  ASSERT_NE(0u, TestConsumer::events_.size());
 }
 
 namespace {
