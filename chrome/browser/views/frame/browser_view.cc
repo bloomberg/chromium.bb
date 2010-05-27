@@ -1382,8 +1382,6 @@ bool BrowserView::IsCommandIdChecked(int command_id) const {
 }
 
 bool BrowserView::IsCommandIdEnabled(int command_id) const {
-  if (command_id == IDC_RESTORE_TAB)
-    return browser_->CanRestoreTab();
   return browser_->command_updater()->IsCommandEnabled(command_id);
 }
 

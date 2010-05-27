@@ -145,8 +145,6 @@ bool BrowserStatusAreaView::IsCommandIdChecked(int command_id) const {
 
 bool BrowserStatusAreaView::IsCommandIdEnabled(int command_id) const {
   Browser* browser = browser_view_->browser();
-  if (command_id == IDC_RESTORE_TAB)
-    return browser->CanRestoreTab();
   return browser->command_updater()->IsCommandEnabled(command_id);
 }
 

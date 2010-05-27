@@ -15,6 +15,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/sessions/session_id.h"
+#include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/tab_contents/page_navigator.h"
@@ -48,7 +49,8 @@ class Browser : public TabStripModelDelegate,
                 public PageNavigator,
                 public CommandUpdater::CommandUpdaterDelegate,
                 public NotificationObserver,
-                public SelectFileDialog::Listener {
+                public SelectFileDialog::Listener,
+                public TabRestoreService::Observer {
  public:
   // If you change the values in this enum you'll need to update browser_proxy.
   // TODO(sky): move into a common place that is referenced by both ui_tests
@@ -401,9 +403,6 @@ class Browser : public TabStripModelDelegate,
       bool from_last_session,
       const std::string& extension_app_id);
 
-  // Returns true if a tab can be restored.
-  virtual bool CanRestoreTab();
-
   // Navigate to an index in the tab history, opening a new tab depending on the
   // disposition.
   bool NavigateToIndexWithDisposition(int index, WindowOpenDisposition disp);
@@ -452,7 +451,6 @@ class Browser : public TabStripModelDelegate,
   void SelectNumberedTab(int index);
   void SelectLastTab();
   void DuplicateTab();
-  void RestoreTab();
   void WriteCurrentURLToClipboard();
   void ConvertPopupToTabbedBrowser();
   // In kiosk mode, the first toggle is valid, the rest is discarded.
@@ -609,6 +607,10 @@ class Browser : public TabStripModelDelegate,
   // Helper function to run unload listeners on a TabContents.
   static bool RunUnloadEventsHelper(TabContents* contents);
 
+  // TabRestoreService::Observer ///////////////////////////////////////////////
+  virtual void TabRestoreServiceChanged(TabRestoreService* service);
+  virtual void TabRestoreServiceDestroyed(TabRestoreService* service);
+
  private:
   FRIEND_TEST(BrowserTest, NoTabsInPopups);
 
@@ -655,6 +657,8 @@ class Browser : public TabStripModelDelegate,
   virtual void BookmarkAllTabs();
   virtual bool UseVerticalTabs() const;
   virtual void ToggleUseVerticalTabs();
+  virtual bool CanRestoreTab();
+  virtual void RestoreTab();
 
   // Overridden from TabStripModelObserver:
   virtual void TabInsertedAt(TabContents* contents,
@@ -1036,6 +1040,10 @@ class Browser : public TabStripModelDelegate,
 
   // Tracks the display mode of the tabstrip.
   mutable BooleanPrefMember use_vertical_tabs_;
+
+  // The profile's tab restore service. The service is owned by the profile,
+  // and we install ourselves as an observer.
+  TabRestoreService* tab_restore_service_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };

@@ -869,11 +869,6 @@
           // one tab.
           enable &= [self numberOfTabs] > 1 && [[self window] isKeyWindow];
           break;
-        case IDC_RESTORE_TAB:
-          // We have to ask the Browser manually if we can restore. The
-          // command updater doesn't know.
-          enable &= browser_->CanRestoreTab();
-          break;
         case IDC_FULLSCREEN: {
           enable &= [self supportsFullscreen];
           if ([static_cast<NSObject*>(item) isKindOfClass:[NSMenuItem class]]) {

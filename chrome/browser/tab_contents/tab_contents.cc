@@ -23,6 +23,7 @@
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/cert_store.h"

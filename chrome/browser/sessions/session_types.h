@@ -10,7 +10,7 @@
 
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
-#include "chrome/browser/browser.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/common/page_transition_types.h"
 #include "gfx/rect.h"
@@ -149,12 +149,8 @@ struct SessionTab {
 
 // Describes a saved window.
 struct SessionWindow {
-  SessionWindow()
-      : selected_tab_index(-1),
-        type(Browser::TYPE_NORMAL),
-        is_constrained(true),
-        is_maximized(false) {}
-  ~SessionWindow() { STLDeleteElements(&tabs); }
+  SessionWindow();
+  ~SessionWindow();
 
   // Identifier of the window.
   SessionID window_id;
@@ -173,7 +169,8 @@ struct SessionWindow {
 
   // Type of the browser. Currently we only store browsers of type
   // TYPE_NORMAL and TYPE_POPUP.
-  Browser::Type type;
+  // This would be Browser::Type, but that would cause a circular dependency.
+  int type;
 
   // If true, the window is constrained.
   //

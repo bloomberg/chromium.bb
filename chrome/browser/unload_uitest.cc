@@ -187,7 +187,7 @@ class UnloadTest : public UITest {
 // we don't get confused and think we're closing the tab.
 //
 // This test is flaky on the valgrind UI bots. http://crbug.com/39057
-TEST_F(UnloadTest, FLAKY_CrossSiteInfiniteUnloadAsync) {
+TEST_F(UnloadTest, DISABLED_CrossSiteInfiniteUnloadAsync) {
   // Tests makes no sense in single-process mode since the renderer is hung.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return;
@@ -219,8 +219,8 @@ TEST_F(UnloadTest, CrossSiteInfiniteUnloadSync) {
 // Then an async crosssite request followed by an input event to ensure that
 // the short unload timeout (not the long input event timeout) is used.
 // See crbug.com/11007.
-TEST_F(UnloadTest, DISABLED_CrossSiteInfiniteUnloadAsyncInputEvent) {
-  // Tests makes no sense in single-process mode since the renderer is hung.
+TEST_F(UnloadTest, FLAKY_CrossSiteInfiniteUnloadAsyncInputEvent) {
+  // Tests makes no sense in single-process mode since the renderer is hung.c
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return;
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/sessions/session_types.h"
 
 #include "base/string_util.h"
+#include "chrome/browser/browser.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 
@@ -36,4 +37,17 @@ void TabNavigation::SetFromNavigationEntry(const NavigationEntry& entry) {
   state_ = entry.content_state();
   transition_ = entry.transition_type();
   type_mask_ = entry.has_post_data() ? TabNavigation::HAS_POST_DATA : 0;
+}
+
+// SessionWindow ---------------------------------------------------------------
+
+SessionWindow::SessionWindow()
+    : selected_tab_index(-1),
+      type(Browser::TYPE_NORMAL),
+      is_constrained(true),
+      is_maximized(false) {
+}
+
+SessionWindow::~SessionWindow() {
+  STLDeleteElements(&tabs);
 }

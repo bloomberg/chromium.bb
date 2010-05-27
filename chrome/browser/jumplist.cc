@@ -20,6 +20,7 @@
 #include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
 #include "base/thread.h"
+#include "base/utf_string_conversions.h"
 #include "base/win_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/favicon_service.h"

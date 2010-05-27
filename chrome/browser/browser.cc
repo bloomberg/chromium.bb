@@ -64,7 +64,6 @@
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_types.h"
-#include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/status_bubble.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
@@ -232,6 +231,12 @@ Browser::Browser(Type type, Profile* profile)
     use_vertical_tabs_.SetValue(false);
   }
   UpdateTabStripModelInsertionPolicy();
+
+  tab_restore_service_ = profile->GetTabRestoreService();
+  if (tab_restore_service_) {
+    tab_restore_service_->AddObserver(this);
+    TabRestoreServiceChanged(tab_restore_service_);
+  }
 }
 
 Browser::~Browser() {
@@ -275,6 +280,8 @@ Browser::~Browser() {
   // away so they don't try and call back to us.
   if (select_file_dialog_.get())
     select_file_dialog_->ListenerDestroyed();
+
+  TabRestoreServiceDestroyed(tab_restore_service_);
 }
 
 // static
@@ -969,8 +976,7 @@ void Browser::ReplaceRestoredTab(
 }
 
 bool Browser::CanRestoreTab() {
-  TabRestoreService* service = profile_->GetTabRestoreService();
-  return service && !service->entries().empty();
+  return command_updater_.IsCommandEnabled(IDC_RESTORE_TAB);
 }
 
 bool Browser::NavigateToIndexWithDisposition(int index,
@@ -3005,6 +3011,7 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_NEW_TAB, true);
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_TAB, true);
   command_updater_.UpdateCommandEnabled(IDC_DUPLICATE_TAB, true);
+  command_updater_.UpdateCommandEnabled(IDC_RESTORE_TAB, false);
   command_updater_.UpdateCommandEnabled(IDC_FULLSCREEN, true);
   command_updater_.UpdateCommandEnabled(IDC_EXIT, true);
 
@@ -3111,8 +3118,6 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_6, normal_window);
   command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_7, normal_window);
   command_updater_.UpdateCommandEnabled(IDC_SELECT_LAST_TAB, normal_window);
-  command_updater_.UpdateCommandEnabled(IDC_RESTORE_TAB,
-                                        !profile_->IsOffTheRecord());
 
   // Page-related commands
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_PAGE, normal_window);
@@ -3879,6 +3884,20 @@ bool Browser::RunUnloadEventsHelper(TabContents* contents) {
     return true;
   }
   return false;
+}
+
+void Browser::TabRestoreServiceChanged(TabRestoreService* service) {
+  command_updater_.UpdateCommandEnabled(IDC_RESTORE_TAB,
+                                        !service->entries().empty());
+}
+
+void Browser::TabRestoreServiceDestroyed(TabRestoreService* service) {
+  if (!tab_restore_service_)
+    return;
+
+  DCHECK_EQ(tab_restore_service_, service);
+  tab_restore_service_->RemoveObserver(this);
+  tab_restore_service_ = NULL;
 }
 
 bool Browser::IsPinned(TabContents* source) {

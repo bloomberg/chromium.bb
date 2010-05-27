@@ -803,7 +803,8 @@ void SessionService::SortTabsBasedOnVisualOrderAndPrune(
   std::map<int, SessionWindow*>::iterator i = windows->begin();
   while (i != windows->end()) {
     if (i->second->tabs.empty() || i->second->is_constrained ||
-        !should_track_changes_for_browser_type(i->second->type)) {
+        !should_track_changes_for_browser_type(
+            static_cast<Browser::Type>(i->second->type))) {
       delete i->second;
       windows->erase(i++);
     } else {

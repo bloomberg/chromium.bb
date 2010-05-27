@@ -301,9 +301,7 @@ TEST_F(TabRestoreUITest, MAYBE_BasicRestoreFromClosedWindow) {
 }
 
 // Restore a tab then make sure it doesn't restore again.
-// Disabled because the command updater doesn't know the proper state of
-// the tab restore command. http://crbug.com/14428.
-TEST_F(TabRestoreUITest, DISABLED_DontLoadRestoredTab) {
+TEST_F(TabRestoreUITest, DontLoadRestoredTab) {
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser_proxy.get());
   CheckActiveWindow(browser_proxy.get());
