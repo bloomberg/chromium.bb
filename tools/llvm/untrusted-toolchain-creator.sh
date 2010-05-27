@@ -52,6 +52,7 @@ readonly LLVMGCC_SFI_PATCH3=${PATCH_DIR}/libstdcpp-eh_arm.patch
 # TODO(robertm): get the code from a repo rather than use tarball + patch
 readonly LLVM_TARBALL=$(pwd)/../third_party/llvm/llvm-88663.tar.bz2
 readonly LLVM_SFI_PATCH=${PATCH_DIR}/llvm-r88663.patch
+readonly LLVM_GCC_PATCH=${PATCH_DIR}/llvm-gcc-104753.patch
 
 readonly BINUTILS_GAS_PATCH=${PATCH_DIR}/binutils-2.20-gas.patch
 readonly BINUTILS_GAS_VCVT_PATCH=${PATCH_DIR}/binutils-2.20-gas-vcvt.patch
@@ -337,6 +338,11 @@ ConfigureAndBuildGccStage1() {
   Run "Patching2" \
     patch llvm-gcc-4.2/gcc/config/arm/libunwind.S ${LLVMGCC_SFI_PATCH2}
 
+  cd llvm-gcc-4.2
+  Run "Patching3" \
+    patch -p1 < ${LLVM_GCC_PATCH}
+  cd ..
+
   # NOTE: you cannot build llvm-gcc inside the source directory
   mkdir -p build
   cd build
@@ -511,6 +517,11 @@ ConfigureAndBuildGccStage2() {
 
   Run "Patching2" \
     patch llvm-gcc-4.2/gcc/config/arm/libunwind.S ${LLVMGCC_SFI_PATCH2}
+
+  cd llvm-gcc-4.2
+  Run "Patching3" \
+    patch -p1 < ${LLVM_GCC_PATCH}
+  cd ..
 
   # NOTE: you cannot build llvm-gcc inside the source directory
   mkdir -p build

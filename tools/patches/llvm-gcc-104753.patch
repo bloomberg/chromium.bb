@@ -1,0 +1,55 @@
+commit c6549618143d7292909bf3a41a74c835ca1efd53
+Author: rafael <rafael@91177308-0d34-0410-b5e6-96231b3b80d8>
+Date:   Wed May 26 22:05:04 2010 +0000
+
+    Set the calling convention when calling fabs.
+    
+    
+    git-svn-id: https://llvm.org/svn/llvm-project/llvm-gcc-4.2/trunk@104753 91177308-0d34-0410-b5e6-96231b3b80d8
+
+diff --git a/gcc/llvm-convert.cpp b/gcc/llvm-convert.cpp
+index 528c0ed..5331ad8 100644
+--- a/gcc/llvm-convert.cpp
++++ b/gcc/llvm-convert.cpp
+@@ -3550,20 +3550,38 @@ Value *TreeToLLVM::EmitABS_EXPR(tree exp) {
+   // Turn FP abs into fabs/fabsf.
+   const char *Name = 0;
+ 
++  tree ArgType;
+   switch (Op->getType()->getTypeID()) {
+   default: assert(0 && "Unknown FP type!");
+-  case Type::FloatTyID:  Name = "fabsf"; break;
+-  case Type::DoubleTyID: Name = "fabs"; break;
++  case Type::FloatTyID:
++    Name = "fabsf";
++    ArgType = float_type_node;
++    break;
++  case Type::DoubleTyID:
++    Name = "fabs";
++    ArgType = double_type_node;
++    break;
+   case Type::X86_FP80TyID:
+   case Type::PPC_FP128TyID:
+-  case Type::FP128TyID: Name = "fabsl"; break;
++  case Type::FP128TyID:
++    Name = "fabsl";
++    ArgType = long_double_type_node;
++    break;
+   }
+ 
+   Value *V = TheModule->getOrInsertFunction(Name, Op->getType(), Op->getType(),
+                                             NULL);
++  // Determine the calling convention.
++  CallingConv::ID CallingConvention = CallingConv::C;
++#ifdef TARGET_ADJUST_LLVM_CC
++  tree FunctionType = build_function_type_list(ArgType, ArgType ,NULL);
++  TARGET_ADJUST_LLVM_CC(CallingConvention, FunctionType);
++#endif
++
+   CallInst *Call = Builder.CreateCall(V, Op);
+   Call->setDoesNotThrow();
+   Call->setDoesNotAccessMemory();
++  Call->setCallingConv(CallingConvention);
+   return Call;
+ }
+ 
