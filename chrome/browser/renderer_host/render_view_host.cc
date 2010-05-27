@@ -15,7 +15,6 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/waitable_event.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/cross_site_request_manager.h"
 #include "chrome/browser/debugger/devtools_manager.h"
@@ -1755,16 +1754,8 @@ void RenderViewHost::OnRequestNotificationPermission(
     const GURL& source_origin, int callback_context) {
   DesktopNotificationService* service =
       process()->profile()->GetDesktopNotificationService();
-
-  Browser* browser = BrowserList::GetLastActive();
-  // We may not have a BrowserList if the chrome browser process is launched as
-  // a ChromeFrame process in which case we attempt to use the TabContents
-  // provided by the RenderViewHostDelegate.
-  TabContents* tab = browser ? browser->GetSelectedTabContents() :
-      delegate_->GetAsTabContents();
-
   service->RequestPermission(
-      source_origin, process()->id(), routing_id(), callback_context, tab);
+      source_origin, process()->id(), routing_id(), callback_context);
 }
 
 void RenderViewHost::OnExtensionRequest(const std::string& name,

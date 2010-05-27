@@ -19,7 +19,6 @@ class NotificationsPrefsCache;
 class PrefService;
 class Profile;
 class Task;
-class TabContents;
 
 // The DesktopNotificationService is an object, owned by the Profile,
 // which provides the creation of desktop "toasts" to web pages and workers.
@@ -40,8 +39,7 @@ class DesktopNotificationService : public NotificationObserver {
   void RequestPermission(const GURL& origin,
                          int process_id,
                          int route_id,
-                         int callback_context,
-                         TabContents* tab);
+                         int callback_context);
 
   // Takes a notification object and shows it in the UI.
   void ShowNotification(const Notification& notification);
