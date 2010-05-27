@@ -176,9 +176,16 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndProceed) {
 
 // Visits a page with https error and don't proceed (and ensure we can still
 // navigate at that point):
-// Marked as flaky, see bug 40932.
+#if defined(OS_WIN)
 // Disabled, flakily exceeds test timeout, http://crbug.com/43575.
-IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestHTTPSExpiredCertAndDontProceed) {
+#define MAYBE_TestHTTPSExpiredCertAndDontProceed \
+    DISABLED_TestHTTPSExpiredCertAndDontProceed
+#else
+// Marked as flaky, see bug 40932.
+#define MAYBE_TestHTTPSExpiredCertAndDontProceed \
+    FLAKY_TestHTTPSExpiredCertAndDontProceed
+#endif
+IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSExpiredCertAndDontProceed) {
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
   ASSERT_TRUE(http_server.get() != NULL);
   scoped_refptr<HTTPSTestServer> good_https_server = GoodCertServer();
