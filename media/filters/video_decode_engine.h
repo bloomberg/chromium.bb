@@ -32,7 +32,12 @@ class VideoDecodeEngine {
   VideoDecodeEngine() {}
   virtual ~VideoDecodeEngine() {}
 
+  // This calback is called by the decode engine to notify that the decode
+  // engine has consumed an input bufer in response to a EmptyThisBuffer() call.
   typedef Callback1<scoped_refptr<Buffer> >::Type EmptyThisBufferCallback;
+
+  // This callback is called by the decode engine to notify that a video
+  // frame is ready to be consumed in reaponse to a FillThisBuffer() call.
   typedef Callback1<scoped_refptr<VideoFrame> >::Type FillThisBufferCallback;
 
   // Initialized the engine.  On successful Initialization, state() should
@@ -55,7 +60,6 @@ class VideoDecodeEngine {
   // 2. Output buffers are provided from outside the engine, and feed into
   // engine through |FillThisBuffer|. Output buffers are returned to outside
   // by |FillThisBufferCallback|.
-
   virtual void EmptyThisBuffer(scoped_refptr<Buffer> buffer) = 0;
   virtual void FillThisBuffer(scoped_refptr<VideoFrame> frame) {
     NOTREACHED();

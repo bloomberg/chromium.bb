@@ -6,7 +6,10 @@
 
 #include "base/callback.h"
 #include "base/waitable_event.h"
+#include "media/base/factory.h"
+#include "media/base/filter_host.h"
 #include "media/ffmpeg/ffmpeg_common.h"
+#include "media/filters/ffmpeg_interfaces.h"
 #include "media/filters/omx_video_decode_engine.h"
 
 namespace media {
@@ -37,26 +40,35 @@ bool OmxVideoDecoder::IsMediaFormatSupported(const MediaFormat& format) {
 }
 
 OmxVideoDecoder::OmxVideoDecoder(OmxVideoDecodeEngine* engine)
-    : VideoDecoderImpl(engine),
-      omx_engine_(engine) {
+    : omx_engine_(engine) {
 #if defined(ENABLE_EGLIMAGE)
   supports_egl_image_ = true;
 #else
   supports_egl_image_ = false;
 #endif
+  DCHECK(omx_engine_.get());
 }
 
 OmxVideoDecoder::~OmxVideoDecoder() {
+  // TODO(hclam): Make sure OmxVideoDecodeEngine is stopped.
 }
 
-void OmxVideoDecoder::DoInitialize(DemuxerStream* demuxer_stream,
-                                   bool* success,
-                                   Task* done_cb) {
-  if (supports_egl_image_)
-    media_format_.SetAsString(MediaFormat::kMimeType,
-                              mime_type::kUncompressedVideoEglImage);
+void OmxVideoDecoder::Initialize(DemuxerStream* stream,
+                                 FilterCallback* callback) {
+  message_loop()->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this,
+                        &OmxVideoDecoder::DoInitialize,
+                        stream,
+                        callback));
+}
 
-  VideoDecoderImpl::DoInitialize(demuxer_stream, success, done_cb);
+void OmxVideoDecoder::FillThisBuffer(scoped_refptr<VideoFrame> frame) {
+  DCHECK(omx_engine_.get());
+  message_loop()->PostTask(
+     FROM_HERE,
+     NewRunnableMethod(omx_engine_.get(),
+                       &OmxVideoDecodeEngine::FillThisBuffer, frame));
 }
 
 void OmxVideoDecoder::Stop() {
@@ -64,6 +76,87 @@ void OmxVideoDecoder::Stop() {
   base::WaitableEvent event(false, false);
   omx_engine_->Stop(NewCallback(&event, &base::WaitableEvent::Signal));
   event.Wait();
+}
+
+void OmxVideoDecoder::DoInitialize(DemuxerStream* demuxer_stream,
+                                   FilterCallback* callback) {
+  DCHECK_EQ(message_loop(), MessageLoop::current());
+
+  // Sets the output format.
+  if (supports_egl_image_) {
+    media_format_.SetAsString(MediaFormat::kMimeType,
+                              mime_type::kUncompressedVideoEglImage);
+  }
+
+  // Savs the demuxer stream.
+  demuxer_stream_ = demuxer_stream;
+
+  // Get the AVStream by querying for the provider interface.
+  AVStreamProvider* av_stream_provider;
+  if (!demuxer_stream->QueryInterface(&av_stream_provider))
+    return;
+  AVStream* av_stream = av_stream_provider->GetAVStream();
+
+  // Initialize the decode engine.
+  omx_engine_->Initialize(
+      message_loop(),
+      av_stream,
+      NewCallback(this, &OmxVideoDecoder::EmptyBufferCallback),
+      NewCallback(this, &OmxVideoDecoder::FillBufferCallback),
+      NewRunnableMethod(this, &OmxVideoDecoder::InitCompleteTask, callback));
+}
+
+void OmxVideoDecoder::FillBufferCallback(scoped_refptr<VideoFrame> frame) {
+  DCHECK_EQ(message_loop(), MessageLoop::current());
+
+  // Invoke the FillBufferDoneCallback with the frame.
+  DCHECK(fill_buffer_done_callback());
+  fill_buffer_done_callback()->Run(frame);
+}
+
+void OmxVideoDecoder::EmptyBufferCallback(scoped_refptr<Buffer> buffer) {
+  DCHECK_EQ(message_loop(), MessageLoop::current());
+
+  // Issue more demux.
+  demuxer_stream_->Read(NewCallback(this, &OmxVideoDecoder::DemuxCompleteTask));
+}
+
+void OmxVideoDecoder::InitCompleteTask(FilterCallback* callback) {
+  DCHECK_EQ(message_loop(), MessageLoop::current());
+
+  // Check the status of the decode engine.
+  if (omx_engine_->state() == VideoDecodeEngine::kError)
+    host()->SetError(PIPELINE_ERROR_DECODE);
+  else
+    InitialDemux();
+
+  callback->Run();
+  delete callback;
+}
+
+void OmxVideoDecoder::DemuxCompleteTask(Buffer* buffer) {
+  // We simply delicate the buffer to the right message loop.
+  scoped_refptr<Buffer> ref_buffer = buffer;
+  DCHECK(omx_engine_.get());
+  message_loop()->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(omx_engine_.get(),
+                        &OmxVideoDecodeEngine::EmptyThisBuffer, ref_buffer));
+}
+
+void OmxVideoDecoder::InitialDemux() {
+  DCHECK_EQ(message_loop(), MessageLoop::current());
+
+  // This is the right time to issue read to the demuxer. The first thing we
+  // need to do here is to determine how many we should read from the
+  // demuxer.
+  // TODO(hclam): Query this number from |omx_engine_|.
+  const int kDemuxPackets = 2;
+  DCHECK(demuxer_stream_);
+  for (int i = 0; i < kDemuxPackets; ++i) {
+    demuxer_stream_->Read(
+        NewCallback(this, &OmxVideoDecoder::DemuxCompleteTask));
+  }
 }
 
 }  // namespace media

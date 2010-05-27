@@ -5,33 +5,59 @@
 #ifndef MEDIA_FILTERS_OMX_VIDEO_DECODER_H_
 #define MEDIA_FILTERS_OMX_VIDEO_DECODER_H_
 
-#include "media/filters/video_decoder_impl.h"
+#include <queue>
+
+#include "media/base/filters.h"
+#include "media/base/media_format.h"
 
 class MessageLoop;
 
 namespace media {
 
+class Buffer;
 class FilterFactory;
-class MediaFormat;
 class OmxVideoDecodeEngine;
+class VideoFrame;
 
-class OmxVideoDecoder : public VideoDecoderImpl {
+class OmxVideoDecoder : public VideoDecoder {
  public:
+  typedef Callback1<VideoFrame*>::Type ReadCallback;
+
   static FilterFactory* CreateFactory();
   static bool IsMediaFormatSupported(const MediaFormat& media_format);
 
   OmxVideoDecoder(OmxVideoDecodeEngine* engine);
   virtual ~OmxVideoDecoder();
 
+  virtual void Initialize(DemuxerStream* stream, FilterCallback* callback);
   virtual void Stop();
-
- protected:
-  void DoInitialize(DemuxerStream* demuxer_stream, bool* success,
-                    Task* done_cb);
+  virtual void FillThisBuffer(scoped_refptr<VideoFrame> frame);
+  virtual const MediaFormat& media_format() { return media_format_; }
 
  private:
+  virtual void DoInitialize(DemuxerStream* stream, FilterCallback* callback);
+
+  // Called after the decode engine has successfully decoded something.
+  void FillBufferCallback(scoped_refptr<VideoFrame> frame);
+
+  // Called after the decode engine has consumed an input buffer.
+  void EmptyBufferCallback(scoped_refptr<Buffer> buffer);
+
+  void InitCompleteTask(FilterCallback* callback);
+  // TODO(hclam): This is very ugly that we keep reference instead of
+  // scoped_refptr.
+  void DemuxCompleteTask(Buffer* buffer);
+
+  // Calls |omx_engine_|'s EmptyThisBuffer() method on the right thread.
+  void EmptyBufferTask(scoped_refptr<Buffer> buffer);
+
+  // Helper method to do the initial demuxing.
+  void InitialDemux();
+
+  DemuxerStream* demuxer_stream_;
   bool supports_egl_image_;
-  OmxVideoDecodeEngine* omx_engine_;
+  scoped_refptr<OmxVideoDecodeEngine> omx_engine_;
+  MediaFormat media_format_;
 
   DISALLOW_COPY_AND_ASSIGN(OmxVideoDecoder);
 };
