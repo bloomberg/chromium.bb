@@ -32,10 +32,12 @@
 #include <curl/types.h>
 #include <dlfcn.h>
 
+#include <iostream>
 #include <string>
 
 #include "common/linux/libcurl_wrapper.h"
-#include "third_party/linux/include/glog/logging.h"
+
+using std::string;
 
 namespace google_breakpad {
 LibcurlWrapper::LibcurlWrapper()
@@ -51,10 +53,10 @@ LibcurlWrapper::LibcurlWrapper()
     curl_lib_ = dlopen("libcurl.so.3", RTLD_NOW);
   }
   if (!curl_lib_) {
-    LOG(WARNING) << "Could not find libcurl via dlopen";
+    std::cout << "Could not find libcurl via dlopen";
     return;
   }
-  LOG(INFO) << "LibcurlWrapper init succeeded";
+  std::cout << "LibcurlWrapper init succeeded";
   init_ok_ = true;
   return;
 }
@@ -68,16 +70,16 @@ bool LibcurlWrapper::SetProxy(const std::string& proxy_host,
   if (!proxy_host.empty()) {
     (*easy_setopt_)(curl_, CURLOPT_PROXY, proxy_host.c_str());
   } else {
-    LOG(WARNING) << "SetProxy called with empty proxy host.";
+    std::cout << "SetProxy called with empty proxy host.";
     return false;
   }
   if (!proxy_userpwd.empty()) {
     (*easy_setopt_)(curl_, CURLOPT_PROXYUSERPWD, proxy_userpwd.c_str());
   } else {
-    LOG(WARNING) << "SetProxy called with empty proxy username/password.";
+    std::cout << "SetProxy called with empty proxy username/password.";
     return false;
   }
-  LOG(INFO) << "Set proxy host to " << proxy_host;
+  std::cout << "Set proxy host to " << proxy_host;
   return true;
 }
 
@@ -86,7 +88,7 @@ bool LibcurlWrapper::AddFile(const std::string& upload_file_path,
   if (!init_ok_) {
     return false;
   }
-  LOG(INFO) << "Adding " << upload_file_path << " to form upload.";
+  std::cout << "Adding " << upload_file_path << " to form upload.";
   // Add form file.
   (*formadd_)(&formpost_, &lastptr_,
               CURLFORM_COPYNAME, basename.c_str(),
@@ -151,12 +153,12 @@ bool LibcurlWrapper::SendRequest(const std::string& url,
 
 bool LibcurlWrapper::Init() {
   if (!init_ok_) {
-    LOG(WARNING) << "Init_OK was not true in LibcurlWrapper::Init(), check earlier log messages";
+    std::cout << "Init_OK was not true in LibcurlWrapper::Init(), check earlier log messages";
     return false;
   }
 
   if (!SetFunctionPointers()) {
-    LOG(WARNING) << "Could not find function pointers";
+    std::cout << "Could not find function pointers";
     init_ok_ = false;
     return false;
   }
@@ -167,7 +169,7 @@ bool LibcurlWrapper::Init() {
 
   if (!curl_) {
     dlclose(curl_lib_);
-    LOG(WARNING) << "Curl initialization failed";
+    std::cout << "Curl initialization failed";
     return false;
   }
 
@@ -182,7 +184,7 @@ bool LibcurlWrapper::Init() {
 #define SET_AND_CHECK_FUNCTION_POINTER(var, function_name, type) \
   var = reinterpret_cast<type>(dlsym(curl_lib_, function_name)); \
   if (!var) { \
-    LOG(WARNING) << "Could not find libcurl function " << function_name; \
+    std::cout << "Could not find libcurl function " << function_name; \
     init_ok_ = false; \
     return false; \
   }
