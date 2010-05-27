@@ -74,7 +74,7 @@ disk_cache::Backend* GetDiskCacheBackend(URLRequestContext* context) {
   if (!http_cache)
     return NULL;
 
-  return http_cache->GetBackend();
+  return http_cache->GetCurrentBackend();
 }
 
 // Serializes the specified event to a DictionaryValue.
