@@ -53,6 +53,7 @@ readonly LLVMGCC_SFI_PATCH3=${PATCH_DIR}/libstdcpp-eh_arm.patch
 readonly LLVM_TARBALL=$(pwd)/../third_party/llvm/llvm-88663.tar.bz2
 readonly LLVM_SFI_PATCH=${PATCH_DIR}/llvm-r88663.patch
 readonly LLVM_GCC_PATCH=${PATCH_DIR}/llvm-gcc-104753.patch
+readonly LLVM_GCC_PATCH2=${PATCH_DIR}/llvm-gcc-104870.patch
 
 readonly BINUTILS_GAS_PATCH=${PATCH_DIR}/binutils-2.20-gas.patch
 readonly BINUTILS_GAS_VCVT_PATCH=${PATCH_DIR}/binutils-2.20-gas-vcvt.patch
@@ -341,6 +342,7 @@ ConfigureAndBuildGccStage1() {
   cd llvm-gcc-4.2
   Run "Patching3" \
     patch -p1 < ${LLVM_GCC_PATCH}
+    patch -p1 < ${LLVM_GCC_PATCH2}
   cd ..
 
   # NOTE: you cannot build llvm-gcc inside the source directory
@@ -521,6 +523,7 @@ ConfigureAndBuildGccStage2() {
   cd llvm-gcc-4.2
   Run "Patching3" \
     patch -p1 < ${LLVM_GCC_PATCH}
+    patch -p1 < ${LLVM_GCC_PATCH2}
   cd ..
 
   # NOTE: you cannot build llvm-gcc inside the source directory

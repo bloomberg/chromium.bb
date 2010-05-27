@@ -1,0 +1,22 @@
+commit e536644cc4f70c52ca8ff8d57f8e6d668ca60182
+Author: rafael <rafael@91177308-0d34-0410-b5e6-96231b3b80d8>
+Date:   Thu May 27 19:06:03 2010 +0000
+
+    Set the calling convention both in the function prototype and in the call.
+    
+    
+    git-svn-id: https://llvm.org/svn/llvm-project/llvm-gcc-4.2/trunk@104870 91177308-0d34-0410-b5e6-96231b3b80d8
+
+diff --git a/gcc/llvm-convert.cpp b/gcc/llvm-convert.cpp
+index 6fa9f8f..21ce8ee 100644
+--- a/gcc/llvm-convert.cpp
++++ b/gcc/llvm-convert.cpp
+@@ -3578,6 +3578,8 @@ Value *TreeToLLVM::EmitABS_EXPR(tree exp) {
+   TARGET_ADJUST_LLVM_CC(CallingConvention, FunctionType);
+ #endif
+ 
++  Function *F = cast<Function>(V);
++  F->setCallingConv(CallingConvention);
+   CallInst *Call = Builder.CreateCall(V, Op);
+   Call->setDoesNotThrow();
+   Call->setDoesNotAccessMemory();
