@@ -3017,6 +3017,7 @@
 {
    Bug_45263_ForMisterStatistics
    Heapcheck:Leak
+   ...
    fun:LinearHistogram::FactoryGet
    fun:ClientSocketPoolHistograms
    fun:HttpNetworkSession
