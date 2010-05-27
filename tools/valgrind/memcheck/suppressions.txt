@@ -2981,3 +2981,21 @@
    fun:_ZN11BrowserInit13LaunchBrowserERK11CommandLineP7ProfileRKSbIwSt11char_traitsIwESaIwEEbPi
    fun:_ZN11BrowserInit18ProcessCmdLineImplERK11CommandLineRKSbIwSt11char_traitsIwESaIwEEbP7ProfilePiPS_
 }
+
+{
+   bug_45210
+   Memcheck:Leak
+   fun:malloc
+   obj:/usr/lib/libcairo.so.2.17.3
+   obj:/usr/lib/libcairo.so.2.17.3
+   fun:_ZN4skia20BitmapPlatformDevice6CreateEiibPh
+   fun:_ZN4skia14PlatformCanvas10initializeEiibPh
+   fun:_ZN12TransportDIB17GetPlatformCanvasEii
+   fun:_ZN17RenderProcessImpl16GetDrawingCanvasEPP12TransportDIBRKN3gfx4RectE
+   fun:_ZN12RenderWidget16DoDeferredUpdateEv
+   fun:_ZN12RenderWidget20CallDoDeferredUpdateEv
+   fun:_Z16DispatchToMethodI12RenderWidgetMS0_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN14RunnableMethodI12RenderWidgetMS0_FvvE6Tuple0E3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+}
+
