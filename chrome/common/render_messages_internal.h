@@ -2176,6 +2176,26 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IndexedDatabaseOpen,
                        ViewHostMsg_IndexedDatabaseOpen_Params)
 
+  // IDBDatabase::name() message.
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBDatabaseName,
+                              int32, /* idb_database_id */
+                              string16 /* vesion */)
+
+  // IDBDatabase::description() message.
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBDatabaseDescription,
+                              int32, /* idb_database_id */
+                              string16 /* description */)
+
+  // IDBDatabase::version() message.
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBDatabaseVersion,
+                              int32, /* idb_database_id */
+                              string16 /* vesion */)
+
+  // IDBDatabase::objectStores() message.
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBDatabaseObjectStores,
+                              int32, /* idb_database_id */
+                              std::vector<string16> /* objectStores */)
+
   // IDBDatabase::~IDBDatabase() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBDatabaseDestroyed,
                        int32 /* idb_database_id */)

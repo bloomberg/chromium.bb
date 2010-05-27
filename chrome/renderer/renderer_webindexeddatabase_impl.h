@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef CHROME_RENDERER_RENDERER_WEBINDEXEDDATABASE_IMPL_H_
 #define CHROME_RENDERER_RENDERER_WEBINDEXEDDATABASE_IMPL_H_
@@ -23,7 +23,7 @@ class RendererWebIndexedDatabaseImpl : public WebKit::WebIndexedDatabase {
   // See WebIndexedDatabase.h for documentation on these functions.
   virtual void open(
       const WebKit::WebString& name, const WebKit::WebString& description,
-      bool modify_database, WebKit::WebIDBCallbacks* callbacks,
+      WebKit::WebIDBCallbacks* callbacks,
       const WebKit::WebSecurityOrigin& origin, WebKit::WebFrame* web_frame,
       int& exception_code);
 };

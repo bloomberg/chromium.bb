@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef CHROME_RENDERER_RENDERER_WEBIDBDATABASE_IMPL_H_
 #define CHROME_RENDERER_RENDERER_WEBIDBDATABASE_IMPL_H_
@@ -13,6 +13,12 @@ class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
  public:
   explicit RendererWebIDBDatabaseImpl(int32 idb_database_id);
   virtual ~RendererWebIDBDatabaseImpl();
+
+  // WebKit::WebIDBDatabase
+  virtual WebKit::WebString name();
+  virtual WebKit::WebString description();
+  virtual WebKit::WebString version();
+  virtual WebKit::WebDOMStringList objectStores();
 
  private:
   int32 idb_database_id_;

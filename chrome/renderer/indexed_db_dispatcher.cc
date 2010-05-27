@@ -37,7 +37,7 @@ bool IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void IndexedDBDispatcher::RequestIndexedDatabaseOpen(
-    const string16& name, const string16& description, bool modify_database,
+    const string16& name, const string16& description,
     WebIDBCallbacks* callbacks_ptr, const string16& origin, WebFrame* web_frame,
     int* exception_code) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
@@ -56,7 +56,6 @@ void IndexedDBDispatcher::RequestIndexedDatabaseOpen(
   params.origin_ = origin;
   params.name_ = name;
   params.description_ = description;
-  params.modify_database_ = modify_database;
   RenderThread::current()->Send(new ViewHostMsg_IndexedDatabaseOpen(params));
 }
 

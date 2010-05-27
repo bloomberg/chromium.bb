@@ -26,7 +26,7 @@ class IndexedDBDispatcher {
   bool OnMessageReceived(const IPC::Message& msg);
 
   void RequestIndexedDatabaseOpen(
-      const string16& name, const string16& description, bool modify_database,
+      const string16& name, const string16& description,
       WebKit::WebIDBCallbacks* callbacks, const string16& origin,
       WebKit::WebFrame* web_frame, int* exception_code);
 

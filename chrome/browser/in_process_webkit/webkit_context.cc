@@ -26,6 +26,12 @@ WebKitContext::~WebKitContext() {
     // freeing the DOMStorageContext, so delete it manually.
     delete dom_storage_context;
   }
+
+  IndexedDBContext* indexed_db_context = indexed_db_context_.release();
+  if (!ChromeThread::DeleteSoon(
+          ChromeThread::WEBKIT, FROM_HERE, indexed_db_context)) {
+    delete indexed_db_context;
+  }
 }
 
 void WebKitContext::PurgeMemory() {

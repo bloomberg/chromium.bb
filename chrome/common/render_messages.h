@@ -543,9 +543,6 @@ struct ViewHostMsg_IndexedDatabaseOpen_Params {
 
   // The description of the database.
   string16 description_;
-
-  // Should the database be modified if it doesn't match the above params.
-  bool modify_database_;
 };
 
 // Allows an extension to execute code in a tab.
@@ -2338,7 +2335,6 @@ struct ParamTraits<ViewHostMsg_IndexedDatabaseOpen_Params> {
     WriteParam(m, p.origin_);
     WriteParam(m, p.name_);
     WriteParam(m, p.description_);
-    WriteParam(m, p.modify_database_);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return
@@ -2346,8 +2342,7 @@ struct ParamTraits<ViewHostMsg_IndexedDatabaseOpen_Params> {
         ReadParam(m, iter, &p->response_id_) &&
         ReadParam(m, iter, &p->origin_) &&
         ReadParam(m, iter, &p->name_) &&
-        ReadParam(m, iter, &p->description_) &&
-        ReadParam(m, iter, &p->modify_database_);
+        ReadParam(m, iter, &p->description_);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"(");
@@ -2360,8 +2355,6 @@ struct ParamTraits<ViewHostMsg_IndexedDatabaseOpen_Params> {
     LogParam(p.name_, l);
     l->append(L", ");
     LogParam(p.description_, l);
-    l->append(L", ");
-    LogParam(p.modify_database_, l);
     l->append(L")");
   }
 };

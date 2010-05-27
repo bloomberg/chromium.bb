@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_DISPATCHER_HOST_H_
 #define CHROME_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_DISPATCHER_HOST_H_
@@ -58,6 +58,14 @@ class IndexedDBDispatcherHost
   void OnIndexedDatabaseOpen(
       const ViewHostMsg_IndexedDatabaseOpen_Params& params);
   void OnIDBDatabaseDestroyed(int32 idb_database_id);
+  void OnIDBDatabaseName(int32 idb_database_id, IPC::Message* reply_msg);
+  void OnIDBDatabaseDescription(int32 idb_database_id, IPC::Message* reply_msg);
+  void OnIDBDatabaseVersion(int32 idb_database_id, IPC::Message* reply_msg);
+  void OnIDBDatabaseObjectStores(int32 idb_database_id,
+                                 IPC::Message* reply_msg);
+
+  WebKit::WebIDBDatabase* GetDatabaseOrTerminateProcess(
+      int32 idb_database_id, IPC::Message* reply_msg);
 
   // Only use on the IO thread.
   IPC::Message::Sender* sender_;
@@ -67,8 +75,8 @@ class IndexedDBDispatcherHost
 
   // Maps from IDs we pass to the renderer and the actual WebKit objects.
   // The map takes ownership and returns an ID.  That ID is passed to the
-  // renderer and used to reference it.
-  IDMap<WebKit::WebIDBDatabase, IDMapOwnPointer>
+  // renderer and used to reference it.  All access must be on WebKit thread.
+  scoped_ptr<IDMap<WebKit::WebIDBDatabase, IDMapOwnPointer> >
       idb_database_map_;
   // TODO(andreip/jorlow): Add other maps here.
 
