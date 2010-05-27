@@ -101,7 +101,19 @@ env.AddNodeToTestSuite(node,
                        'run_dump_env_test')
 
 
-#NOTE: this test currently fails for all platforms
+TEST_SET = ['small_tests']
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  TEST_SET = []
+env.ComponentProgram('misc_math.nexe', 'misc_math.c')
+node = env.CommandSelLdrTestNacl(
+     'misc_math_test.out',
+    command=[env.File('misc_math.nexe')],
+    )
+env.AddNodeToTestSuite(node, TEST_SET, 'run_misc_math_test')
+
+
+#NOTE: this test currently fails for some platforms, notably x86-32
+# TODO(robertm): enable this ASAP
 env.ComponentProgram('abi.nexe', 'abi.c')
 node = env.CommandSelLdrTestNacl(
     'abi_test.out',
