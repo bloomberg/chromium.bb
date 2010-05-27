@@ -877,7 +877,7 @@ def TryChange(change_info, args, swallow_exception):
 
 @need_change_and_args
 @attrs(usage='[--no_presubmit]')
-def CMDcommit(change_list, args):
+def CMDcommit(change_info, args):
   """Commits the changelist to the repository."""
   if not change_info.GetFiles():
     print "Nothing to commit, changelist is empty."
