@@ -279,6 +279,12 @@
             'src/common/string_conversion.h',
           ],
 
+          'link_settings': {
+            'libraries': [
+              '-ldl',
+            ],
+          },
+
           'include_dirs': [
             'src',
             'src/client',
