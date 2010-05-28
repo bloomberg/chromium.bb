@@ -30,7 +30,7 @@
 #include "chrome_frame/chrome_frame_automation.h"
 #include "chrome_frame/exception_barrier.h"
 #include "chrome_frame/chrome_frame_reporting.h"
-#include "chrome_frame/chrome_launcher.h"
+#include "chrome_frame/chrome_launcher_utils.h"
 #include "chrome_frame/chrome_protocol.h"
 #include "chrome_frame/module_utils.h"
 #include "chrome_frame/resource.h"

@@ -7,40 +7,45 @@
 
 #include <string>
 
-#include "base/file_path.h"
+// arraysize macro shamelessly stolen from base\basictypes.h
+template <typename T, size_t N>
+char (&ArraySizeHelper(T (&array)[N]))[N];
 
-class CommandLine;
+#define arraysize(array) (sizeof(ArraySizeHelper(array)))
 
 namespace chrome_launcher {
 
 // The base name of the chrome_launcher.exe file.
 extern const wchar_t kLauncherExeBaseName[];
 
-// Creates a command line suitable for launching Chrome.  You can add any
-// flags needed before launching.
-//
-// The command-line may use the Chrome executable directly, or use an in-between
-// process if needed for security/elevation purposes.  You must delete the
-// returned command line.
-CommandLine* CreateLaunchCommandLine();
-
-// Fills in a new command line from the flags on this process's command line
-// that we are allowing Low Integrity to invoke.
-//
-// Logs a warning for any flags that were passed that are not allowed to be
-// invoked by Low Integrity.
-void SanitizeCommandLine(const CommandLine& original, CommandLine* sanitized);
+// Returns true if command_line contains only flags that we allow through.
+// Returns false if command_line contains any unrecognized flags.
+bool IsValidCommandLine(const wchar_t* command_line);
 
 // Given a command-line without an initial program part, launch our associated
 // chrome.exe with a sanitized version of that command line. Returns true iff
 // successful.
 bool SanitizeAndLaunchChrome(const wchar_t* command_line);
 
-// Returns the full path to the Chrome executable.
-FilePath GetChromeExecutablePath();
+// Returns a pointer to the position in command_line the string right after the
+// name of the executable. This is equivalent to the second element of the
+// array returned by CommandLineToArgvW. Returns NULL if there are no further
+// arguments.
+const wchar_t* GetArgumentsStart(const wchar_t* command_line);
 
-// The type of the CfLaunchChrome entrypoint exported from this DLL.
-typedef int (__stdcall *CfLaunchChromeProc)();
+// Returns the full path to the Chrome executable.
+bool GetChromeExecutablePath(std::wstring* chrome_path);
+
+// Returns whether a given argument is considered a valid flag. Only accepts
+// flags of the forms:
+//   --foo
+//   --foo=bar
+bool IsValidArgument(const std::wstring& argument);
+
+// Returns a string that is equivalent in input_str without any leading
+// or trailing whitespace. Returns an empty string if input_str contained only
+// whitespace.
+std::wstring TrimWhiteSpace(const wchar_t* input_str);
 
 }  // namespace chrome_launcher
 

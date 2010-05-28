@@ -8,41 +8,66 @@
 #include "chrome_frame/chrome_launcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
-// Utility class to disable logging.  Required to disable DCHECKs that some
-// of our tests would otherwise trigger.
-class LogDisabler {
- public:
-  LogDisabler() {
-    initial_log_level_ = logging::GetMinLogLevel();
-    logging::SetMinLogLevel(logging::LOG_FATAL + 1);
-  }
-
-  ~LogDisabler() {
-    logging::SetMinLogLevel(initial_log_level_);
-  }
-
- private:
-  int initial_log_level_;
-};
-
-}  // namespace
-
-TEST(ChromeLauncher, SanitizeCommandLine) {
+TEST(ChromeLauncher, IsValidCommandLine) {
   CommandLine bad(FilePath(L"dummy.exe"));
   bad.AppendSwitch(switches::kNoFirstRun);  // in whitelist
-  bad.AppendSwitchWithValue(switches::kLoadExtension, L"foo");  // in whitelist
   bad.AppendSwitch("no-such-switch");  // does not exist
   bad.AppendSwitch(switches::kHomePage);  // exists but not in whitelist
 
-  LogDisabler no_dchecks;
+  EXPECT_FALSE(chrome_launcher::IsValidCommandLine(
+      bad.command_line_string().c_str()));
 
-  CommandLine sanitized(FilePath(L"dumbo.exe"));
-  chrome_launcher::SanitizeCommandLine(bad, &sanitized);
-  EXPECT_TRUE(sanitized.HasSwitch(switches::kNoFirstRun));
-  EXPECT_FALSE(sanitized.HasSwitch(switches::kLoadExtension));
-  EXPECT_FALSE(sanitized.HasSwitch("no-such-switch"));
-  EXPECT_FALSE(sanitized.HasSwitch(switches::kHomePage));
+  CommandLine good(FilePath(L"dummy.exe"));
+  good.AppendSwitch(switches::kNoFirstRun);  // in whitelist
+  good.AppendSwitchWithValue(switches::kUserDataDir, L"foo");  // in whitelist
+
+  EXPECT_TRUE(chrome_launcher::IsValidCommandLine(
+      good.command_line_string().c_str()));
+
+  CommandLine no_params(FilePath(L"dummy.exe"));
+  EXPECT_TRUE(chrome_launcher::IsValidCommandLine(
+      no_params.command_line_string().c_str()));
+
+  CommandLine empty(FilePath(L""));
+  EXPECT_TRUE(chrome_launcher::IsValidCommandLine(
+      empty.command_line_string().c_str()));
 }
 
+TEST(ChromeLauncher, TrimWhiteSpace) {
+  std::wstring trimmed(chrome_launcher::TrimWhiteSpace(L" \t  some text \n\t"));
+  EXPECT_STREQ(L"some text", trimmed.c_str());
+
+  std::wstring now_empty(chrome_launcher::TrimWhiteSpace(L"\t\t     \n\t"));
+  EXPECT_STREQ(L"", now_empty.c_str());
+
+  std::wstring empty(chrome_launcher::TrimWhiteSpace(L""));
+  EXPECT_STREQ(L"", empty.c_str());
+
+  std::wstring not_trimmed(chrome_launcher::TrimWhiteSpace(L"foo bar"));
+  EXPECT_STREQ(L"foo bar", not_trimmed.c_str());
+
+  std::wstring trimmed_right(chrome_launcher::TrimWhiteSpace(L"foo bar\t"));
+  EXPECT_STREQ(L"foo bar", trimmed_right.c_str());
+
+  std::wstring trimmed_left(chrome_launcher::TrimWhiteSpace(L"\nfoo bar"));
+  EXPECT_STREQ(L"foo bar", trimmed_right.c_str());
+}
+
+TEST(ChromeLauncher, IsValidArgument) {
+  EXPECT_TRUE(chrome_launcher::IsValidArgument(L"--chrome-frame"));
+  EXPECT_FALSE(chrome_launcher::IsValidArgument(L"--invalid-arg"));
+
+  EXPECT_TRUE(chrome_launcher::IsValidArgument(L"--chrome-frame="));
+  EXPECT_TRUE(chrome_launcher::IsValidArgument(L"--chrome-frame=foo"));
+  EXPECT_TRUE(chrome_launcher::IsValidArgument(L"--chrome-frame=foo=foo"));
+
+  EXPECT_FALSE(chrome_launcher::IsValidArgument(L"chrome-frame"));
+  EXPECT_FALSE(chrome_launcher::IsValidArgument(L"-chrome-frame"));
+  EXPECT_FALSE(chrome_launcher::IsValidArgument(L"---chrome-frame"));
+  EXPECT_FALSE(chrome_launcher::IsValidArgument(L" --chrome-frame"));
+  EXPECT_FALSE(chrome_launcher::IsValidArgument(L"--chrome-framefoobar"));
+  EXPECT_FALSE(chrome_launcher::IsValidArgument(L"foobar--chrome-frame"));
+  EXPECT_FALSE(chrome_launcher::IsValidArgument(L"--chrome-frames"));
+  EXPECT_FALSE(chrome_launcher::IsValidArgument(L"--Chrome-frame"));
+  EXPECT_FALSE(chrome_launcher::IsValidArgument(L""));
+}

@@ -1,140 +1,200 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome_frame/chrome_launcher.h"
 
-#include "base/base_switches.h"
-#include "base/command_line.h"
-#include "base/file_util.h"
-#include "base/logging.h"
-#include "base/path_service.h"
-#include "base/win_util.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome_frame/chrome_frame_automation.h"
-#include "chrome_frame/chrome_frame_reporting.h"
+#include <windows.h>
+#include <shellapi.h>
+#include <shlwapi.h>
 
-namespace chrome_launcher {
-
-const wchar_t kLauncherExeBaseName[] = L"chrome_launcher.exe";
+// Herein lies stuff selectively stolen from Chrome. We don't pull it in
+// directly because all of it results in many things we don't want being
+// included as well.
+namespace {
 
 // These are the switches we will allow (along with their values) in the
 // safe-for-Low-Integrity version of the Chrome command line.
-const char* kAllowedSwitches[] = {
-  switches::kAutomationClientChannelID,
-  switches::kChromeFrame,
-  switches::kEnableRendererAccessibility,
-  switches::kEnableExperimentalExtensionApis,
-  switches::kNoDefaultBrowserCheck,
-  switches::kNoErrorDialogs,
-  switches::kNoFirstRun,
-  switches::kUserDataDir,
-  switches::kDisablePopupBlocking,
-  switches::kFullMemoryCrashReport,
+// Including the chrome switch files pulls in a bunch of dependencies sadly, so
+// we redefine things here:
+const wchar_t* kAllowedSwitches[] = {
+  L"automation-channel",
+  L"chrome-frame",
+  L"enable-renderer-accessibility",
+  L"enable-experimental-extension-apis",
+  L"no-default-browser-check",
+  L"noerrdialogs",
+  L"no-first-run",
+  L"user-data-dir",
+  L"disable-popup-blocking",
+  L"full-memory-crash-report",
 };
 
-CommandLine* CreateLaunchCommandLine() {
-  // Shortcut for OS versions that don't need the integrity broker.
-  if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA) {
-    return new CommandLine(GetChromeExecutablePath());
+const wchar_t kWhitespaceChars[] = {
+  0x0009, /* <control-0009> to <control-000D> */
+  0x000A,
+  0x000B,
+  0x000C,
+  0x000D,
+  0x0020, /* Space */
+  0x0085, /* <control-0085> */
+  0x00A0, /* No-Break Space */
+  0x1680, /* Ogham Space Mark */
+  0x180E, /* Mongolian Vowel Separator */
+  0x2000, /* En Quad to Hair Space */
+  0x2001,
+  0x2002,
+  0x2003,
+  0x2004,
+  0x2005,
+  0x2006,
+  0x2007,
+  0x2008,
+  0x2009,
+  0x200A,
+  0x200C, /* Zero Width Non-Joiner */
+  0x2028, /* Line Separator */
+  0x2029, /* Paragraph Separator */
+  0x202F, /* Narrow No-Break Space */
+  0x205F, /* Medium Mathematical Space */
+  0x3000, /* Ideographic Space */
+  0
+};
+
+const wchar_t kLauncherExeBaseName[] = L"chrome_launcher.exe";
+const wchar_t kBrowserProcessExecutableName[] = L"chrome.exe";
+
+}  // end namespace
+
+
+namespace chrome_launcher {
+
+std::wstring TrimWhiteSpace(const wchar_t* input_str) {
+  std::wstring output;
+  if (input_str != NULL) {
+    std::wstring str(input_str);
+
+    const std::wstring::size_type first_good_char =
+        str.find_first_not_of(kWhitespaceChars);
+    const std::wstring::size_type last_good_char =
+        str.find_last_not_of(kWhitespaceChars);
+
+    if (first_good_char != std::wstring::npos &&
+        last_good_char != std::wstring::npos &&
+        last_good_char >= first_good_char) {
+      // + 1 because find_last_not_of returns the index, and we want the count
+      output = str.substr(first_good_char,
+                          last_good_char - first_good_char + 1);
+    }
   }
 
-  // The launcher EXE will be in the same directory as the Chrome Frame DLL,
-  // so create a full path to it based on this assumption.  Since our unit
-  // tests also use this function, and live in the directory above, we test
-  // existence of the file and try the path that includes the /servers/
-  // directory if needed.
-  FilePath module_path;
-  if (PathService::Get(base::FILE_MODULE, &module_path)) {
-    FilePath current_dir = module_path.DirName();
-    FilePath same_dir_path = current_dir.Append(kLauncherExeBaseName);
-    if (file_util::PathExists(same_dir_path)) {
-      return new CommandLine(same_dir_path);
-    } else {
-      FilePath servers_path =
-          current_dir.Append(L"servers").Append(kLauncherExeBaseName);
-      DCHECK(file_util::PathExists(servers_path)) <<
-          "What module is this? It's not in 'servers' or main output dir.";
-      return new CommandLine(servers_path);
-    }
-  } else {
-    NOTREACHED();
-    return NULL;
-  }
+  return output;
 }
 
-void SanitizeCommandLine(const CommandLine& original, CommandLine* sanitized) {
-  size_t num_sanitized_switches = 0;
+bool IsValidArgument(const std::wstring& arg) {
+  if (arg.length() < 2) {
+    return false;
+  }
+
   for (int i = 0; i < arraysize(kAllowedSwitches); ++i) {
-    const char* current_switch = kAllowedSwitches[i];
-    if (original.HasSwitch(current_switch)) {
-      ++num_sanitized_switches;
-      std::wstring switch_value = original.GetSwitchValue(current_switch);
-      if (0 == switch_value.length()) {
-        sanitized->AppendSwitch(current_switch);
-      } else {
-        sanitized->AppendSwitchWithValue(current_switch, switch_value);
+    size_t arg_length = lstrlenW(kAllowedSwitches[i]);
+    if (arg.find(kAllowedSwitches[i], 2) == 2) {
+      // The argument starts off right, now it must either end here, or be
+      // followed by an equals sign.
+      if (arg.length() == (arg_length + 2) ||
+          (arg.length() > (arg_length + 2) && arg[arg_length+2] == L'=')) {
+        return true;
       }
     }
   }
-  if (num_sanitized_switches != original.GetSwitchCount()) {
-    NOTREACHED();
-    LOG(ERROR) << "Original command line from Low Integrity had switches "
-        << "that are not on our whitelist.";
+
+  return false;
+}
+
+bool IsValidCommandLine(const wchar_t* command_line) {
+  if (command_line == NULL) {
+    return false;
   }
+
+  int num_args = 0;
+  wchar_t** args = NULL;
+  args = CommandLineToArgvW(command_line, &num_args);
+
+  bool success = true;
+  // Note that we skip args[0] since that is just our executable name and
+  // doesn't get passed through to Chrome.
+  for (int i = 1; i < num_args; ++i) {
+    std::wstring trimmed_arg = TrimWhiteSpace(args[i]);
+    if (!IsValidArgument(trimmed_arg.c_str())) {
+      success = false;
+      break;
+    }
+  }
+
+  return success;
 }
 
 bool SanitizeAndLaunchChrome(const wchar_t* command_line) {
-  std::wstring command_line_with_program(L"dummy.exe ");
-  command_line_with_program += command_line;
-  CommandLine original = CommandLine::FromString(command_line_with_program);
-  CommandLine sanitized(GetChromeExecutablePath());
-  SanitizeCommandLine(original, &sanitized);
+  bool success = false;
+  if (IsValidCommandLine(command_line)) {
+    std::wstring chrome_path;
+    if (GetChromeExecutablePath(&chrome_path)) {
+      const wchar_t* args = PathGetArgs(command_line);
+      if (args != NULL) {
+        chrome_path += L" ";
+        chrome_path += args;
+      }
 
-  DLOG(INFO) << sanitized.command_line_string();
-  sanitized.AppendSwitchWithValue("log-level", "0");
-
-  return base::LaunchApp(sanitized.command_line_string(), false, false, NULL);
-}
-
-FilePath GetChromeExecutablePath() {
-  FilePath cur_path;
-  PathService::Get(base::DIR_MODULE, &cur_path);
-  cur_path = cur_path.Append(chrome::kBrowserProcessExecutableName);
-
-  // The installation model for Chrome places the DLLs in a versioned
-  // sub-folder one down from the Chrome executable. If we fail to find
-  // chrome.exe in the current path, try looking one up and launching that
-  // instead.
-  if (!file_util::PathExists(cur_path)) {
-    PathService::Get(base::DIR_MODULE, &cur_path);
-    cur_path = cur_path.DirName().Append(chrome::kBrowserProcessExecutableName);
+      STARTUPINFO startup_info = {0};
+      startup_info.cb = sizeof(startup_info);
+      startup_info.dwFlags = STARTF_USESHOWWINDOW;
+      startup_info.wShowWindow = SW_SHOW;
+      PROCESS_INFORMATION process_info = {0};
+      if (CreateProcess(NULL, &chrome_path[0],
+                        NULL, NULL, FALSE, 0, NULL, NULL,
+                        &startup_info, &process_info)) {
+        // Close handles.
+        CloseHandle(process_info.hThread);
+        CloseHandle(process_info.hProcess);
+        success = true;
+      } else {
+        _ASSERT(FALSE);
+      }
+    }
   }
 
-  return cur_path;
+  return success;
+}
+
+bool GetChromeExecutablePath(std::wstring* chrome_path) {
+  _ASSERT(chrome_path);
+
+  wchar_t cur_path[MAX_PATH * 4] = {0};
+  // Assume that we are always built into an exe.
+  GetModuleFileName(NULL, cur_path, arraysize(cur_path) / 2);
+
+  PathRemoveFileSpec(cur_path);
+
+  bool success = false;
+  if (PathAppend(cur_path, kBrowserProcessExecutableName)) {
+    if (!PathFileExists(cur_path)) {
+      // The installation model for Chrome places the DLLs in a versioned
+      // sub-folder one down from the Chrome executable. If we fail to find
+      // chrome.exe in the current path, try looking one up and launching that
+      // instead. In practice, that means we back up two and append the
+      // executable name again.
+      PathRemoveFileSpec(cur_path);
+      PathRemoveFileSpec(cur_path);
+      PathAppend(cur_path, kBrowserProcessExecutableName);
+    }
+
+    if (PathFileExists(cur_path)) {
+      *chrome_path = cur_path;
+      success = true;
+    }
+  }
+
+  return success;
 }
 
 }  // namespace chrome_launcher
-
-// Entrypoint that implements the logic of chrome_launcher.exe.
-int CALLBACK CfLaunchChrome() {
-  int result = ERROR_OPEN_FAILED;
-
-  if (chrome_launcher::SanitizeAndLaunchChrome(::GetCommandLine())) {
-    result = ERROR_SUCCESS;
-  }
-
-  // Regardless of what just happened, shut down crash reporting now to avoid a
-  // hang when we are unloaded.
-  ShutdownCrashReporting();
-
-  return result;
-}
-
-// Compile-time check to see that the type CfLaunchChromeProc is correct.
-#ifndef NODEBUG
-namespace {
-chrome_launcher::CfLaunchChromeProc cf_launch_chrome = CfLaunchChrome;
-}  // namespace
-#endif  // NODEBUG

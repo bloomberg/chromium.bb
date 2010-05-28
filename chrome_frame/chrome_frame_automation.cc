@@ -22,7 +22,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/tab_proxy.h"
-#include "chrome_frame/chrome_launcher.h"
+#include "chrome_frame/chrome_launcher_utils.h"
 #include "chrome_frame/custom_sync_call_context.h"
 #include "chrome_frame/utils.h"
 

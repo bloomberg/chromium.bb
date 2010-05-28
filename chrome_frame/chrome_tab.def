@@ -10,6 +10,5 @@ EXPORTS
 	NP_Initialize         PRIVATE
 	NP_GetEntryPoints     PRIVATE
 	NP_Shutdown           PRIVATE
-	CfLaunchChrome        PRIVATE
 	RegisterNPAPIPlugin   PRIVATE
 	UnregisterNPAPIPlugin PRIVATE

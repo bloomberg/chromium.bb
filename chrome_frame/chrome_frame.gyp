@@ -137,6 +137,8 @@
         'chrome_frame_histograms.cc',
         'chrome_frame_npapi_unittest.cc',
         'chrome_frame_unittest_main.cc',
+        'chrome_launcher.cc',
+        'chrome_launcher.h',
         'chrome_launcher_unittest.cc',
         'function_stub_unittest.cc',
         'test/chrome_frame_test_utils.h',
@@ -498,7 +500,7 @@
         'chrome_frame_plugin.h',
         'chrome_frame_npapi.cc',
         'chrome_frame_npapi.h',
-        'custom_sync_call_context.h',        
+        'custom_sync_call_context.h',
         'ff_30_privilege_check.cc',
         'ff_privilege_check.h',
         'html_utils.cc',
@@ -523,40 +525,6 @@
         'utils.cc',
         'utils.h',
       ],
-    },
-    {
-      'target_name': 'chrome_launcher',
-      'type': 'executable',
-      'msvs_guid': 'B7E540C1-49D9-4350-ACBC-FB8306316D16',
-      'dependencies': [],
-      'sources': [
-        'chrome_launcher_main.cc',
-      ],
-      'msvs_settings': {
-        'VCLinkerTool': {
-          'OutputFile':
-              '$(OutDir)\\servers\\$(ProjectName).exe',
-          # Set /SUBSYSTEM:WINDOWS since this is not a command-line program.
-          'SubSystem': '2',
-          # We're going for minimal size, so no standard library (in release
-          # builds).
-          'IgnoreAllDefaultLibraries': "true",
-        },
-        'VCCLCompilerTool': {
-          # Requires standard library, so disable it.
-          'BufferSecurityCheck': "false",
-        },
-      },
-      'configurations': {
-        # Bring back the standard library in debug buidls.
-        'Debug_Base': {
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'IgnoreAllDefaultLibraries': "false",
-            },
-          },
-        },
-      },
     },
     {
       'target_name': 'chrome_frame_strings',
@@ -642,8 +610,8 @@
         'chrome_frame_reporting.h',
         'chrome_imported_resources.cc',
         'chrome_imported_resources.h',
-        'chrome_launcher.cc',
-        'chrome_launcher.h',
+        'chrome_launcher_utils.cc',
+        'chrome_launcher_utils.h',
         'chrome_protocol.cc',
         'chrome_protocol.h',
         'chrome_protocol.rgs',
@@ -752,8 +720,8 @@
         'chrome_frame_npapi',
         'chrome_frame_strings',
         'chrome_frame_utils',
-        'chrome_launcher',
         'xulrunner_sdk',
+        'chrome_frame_launcher.gyp:chrome_launcher',
         '../chrome/chrome.gyp:chrome_version_info',
         '../chrome/chrome.gyp:chrome_version_header',
         '../chrome/chrome.gyp:common',

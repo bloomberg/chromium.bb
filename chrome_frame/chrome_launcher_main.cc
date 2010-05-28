@@ -2,78 +2,92 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+
 #include <windows.h>
+#include <DbgHelp.h>
+#include <string>
 
 #include "chrome_frame/chrome_launcher.h"
+#include "breakpad/src/client/windows/handler/exception_handler.h"
 
-// We want to keep this EXE tiny, so we avoid all dependencies and link to no
-// libraries, and we do not use the C runtime.
-//
-// To catch errors in debug builds, we define an extremely simple assert macro.
-#ifndef NDEBUG
-#define CLM_ASSERT(x) do { if (!(x)) { ::DebugBreak(); } } while (false)
-#else
-#define CLM_ASSERT(x)
-#endif  // NDEBUG
+// TODO(robertshield): Much of the crash report init code is shared with CF and
+// probably Chrome too. If this pans out, consider refactoring it into a
+// common lib.
 
-// In release builds, we skip the standard library completely to minimize
-// size.  This is more work in debug builds, and unnecessary, hence the
-// different signatures.
-#ifndef NDEBUG
+namespace {
+
+// Possible names for Pipes:
+// Headless (testing) mode: "NamedPipe\ChromeCrashServices"
+// System-wide install: "NamedPipe\GoogleCrashServices\S-1-5-18"
+// Per-user install: "NamedPipe\GoogleCrashServices\<user SID>"
+const wchar_t kChromePipeName[] = L"\\\\.\\pipe\\ChromeCrashServices";
+const wchar_t kGoogleUpdatePipeName[] = L"\\\\.\\pipe\\GoogleCrashServices\\";
+const wchar_t kSystemPrincipalSid[] = L"S-1-5-18";
+
+// Assume this implies headless mode and use kChromePipeName if it shows
+// up in the command line.
+const wchar_t kFullMemoryCrashReport[] = L"full-memory-crash-report";
+
+const MINIDUMP_TYPE kLargerDumpType = static_cast<MINIDUMP_TYPE>(
+    MiniDumpWithProcessThreadData |  // Get PEB and TEB.
+    MiniDumpWithUnloadedModules |  // Get unloaded modules when available.
+    MiniDumpWithIndirectlyReferencedMemory);  // Get memory referenced by stack.
+
+}  // namespace
+
+google_breakpad::CustomClientInfo* GetCustomInfo() {
+  // TODO(robertshield): Populate this with actual data.
+  std::wstring product(L"ChromeFrame");
+  std::wstring version(L"0.1.0.0");
+  static google_breakpad::CustomInfoEntry ver_entry(L"ver", version.c_str());
+  static google_breakpad::CustomInfoEntry prod_entry(L"prod", product.c_str());
+  static google_breakpad::CustomInfoEntry plat_entry(L"plat", L"Win32");
+  static google_breakpad::CustomInfoEntry type_entry(L"ptype", L"chrome_frame");
+  static google_breakpad::CustomInfoEntry entries[] = {
+      ver_entry, prod_entry, plat_entry, type_entry };
+  static google_breakpad::CustomClientInfo custom_info = {
+      entries, arraysize(entries) };
+  return &custom_info;
+}
+
+google_breakpad::ExceptionHandler* InitializeCrashReporting(
+    const wchar_t* cmd_line) {
+  if (cmd_line == NULL) {
+    return NULL;
+  }
+
+  wchar_t temp_path[MAX_PATH + 1] = {0};
+  DWORD path_len = ::GetTempPath(MAX_PATH, temp_path);
+
+  std::wstring pipe_name;
+  if (wcsstr(cmd_line, kFullMemoryCrashReport) != NULL) {
+    pipe_name = kChromePipeName;
+  } else {
+    // TODO(robertshield): Figure out if we're a per-user install and connect
+    // to the per-user named pipe instead.
+    pipe_name = kGoogleUpdatePipeName;
+    pipe_name += kSystemPrincipalSid;
+  }
+
+  google_breakpad::ExceptionHandler* breakpad =
+      new google_breakpad::ExceptionHandler(
+          temp_path, NULL, NULL, NULL,
+          google_breakpad::ExceptionHandler::HANDLER_ALL, kLargerDumpType,
+          pipe_name.c_str(), GetCustomInfo());
+
+  return breakpad;
+}
+
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int) {
-#else
-extern "C" void __cdecl WinMainCRTStartup() {
-#endif  // NDEBUG
-  // This relies on the chrome_launcher.exe residing in the same directory
-  // as our DLL.  We build a full path to avoid loading it from any other
-  // directory in the DLL search path.
-  //
-  // The code is a bit verbose because we can't use the standard library.
-  const wchar_t kBaseName[] = L"npchrome_frame.dll";
-  wchar_t file_path[MAX_PATH + (sizeof(kBaseName) / sizeof(kBaseName[0])) + 1];
-  file_path[0] = L'\0';
-  ::GetModuleFileName(::GetModuleHandle(NULL), file_path, MAX_PATH);
+  const wchar_t* cmd_line = ::GetCommandLine();
 
-  // Find index of last slash, and null-terminate the string after it.
-  //
-  // Proof for security purposes, since we can't use the safe string
-  // manipulation functions from the runtime:
-  // - File_path is always null-terminated, by us initially and by
-  //   ::GetModuleFileName if it puts anything into the buffer.
-  // - If there is no slash in the path then it's a relative path, not an
-  //   absolute one, and the code ends up creating a relative path to
-  //   npchrome_frame.dll.
-  // - It's safe to use lstrcatW since we know the maximum length of both
-  //   parts we are concatenating, and we know the buffer will fit them in
-  //   the worst case.
-  int slash_index = lstrlenW(file_path);
-  // Invariant: 0 <= slash_index < MAX_PATH
-  CLM_ASSERT(slash_index > 0);
-  while (slash_index > 0 && file_path[slash_index] != L'\\')
-    --slash_index;
-  // Invariant: 0 <= slash_index < MAX_PATH and it is either the index of
-  // the last \ in the path, or 0.
-  if (slash_index != 0)
-    ++slash_index;  // don't remove the last '\'
-  file_path[slash_index] = L'\0';
-
-  lstrcatW(file_path, kBaseName);
+  google_breakpad::scoped_ptr<google_breakpad::ExceptionHandler> breakpad(
+      InitializeCrashReporting(cmd_line));
 
   UINT exit_code = ERROR_FILE_NOT_FOUND;
-  HMODULE chrome_tab = ::LoadLibrary(file_path);
-  CLM_ASSERT(chrome_tab);
-  if (chrome_tab) {
-    chrome_launcher::CfLaunchChromeProc proc =
-        reinterpret_cast<chrome_launcher::CfLaunchChromeProc>(
-            ::GetProcAddress(chrome_tab, "CfLaunchChrome"));
-    CLM_ASSERT(proc);
-    if (proc) {
-      exit_code = proc();
-    } else {
-      exit_code = ERROR_INVALID_FUNCTION;
-    }
-
-    ::FreeLibrary(chrome_tab);
+  if (chrome_launcher::SanitizeAndLaunchChrome(::GetCommandLine())) {
+    exit_code = ERROR_SUCCESS;
   }
-  ::ExitProcess(exit_code);
+
+  return exit_code;
 }
