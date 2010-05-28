@@ -95,6 +95,12 @@ void InProcessBrowserTest::SetUp() {
       "argument and try again.";
   ASSERT_TRUE(file_util::DieFileDie(user_data_dir, true));
 
+  // Recreate the user data dir. (PathService::Get guarantees that the directory
+  // exists if it returns true, but it only actually checks on the first call,
+  // the rest are cached.  Thus we need to recreate it ourselves to not break
+  // the PathService guarantee.)
+  ASSERT_TRUE(file_util::CreateDirectory(user_data_dir));
+
   // The unit test suite creates a testingbrowser, but we want the real thing.
   // Delete the current one. We'll install the testing one in TearDown.
   delete g_browser_process;

@@ -648,12 +648,14 @@ ProcessSingleton::~ProcessSingleton() {
 
 ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
   return NotifyOtherProcessWithTimeout(*CommandLine::ForCurrentProcess(),
-                                       kTimeoutInSeconds);
+                                       kTimeoutInSeconds,
+                                       true);
 }
 
 ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
     const CommandLine& cmd_line,
-    int timeout_seconds) {
+    int timeout_seconds,
+    bool kill_unresponsive) {
   DCHECK_GE(timeout_seconds, 0);
 
   int socket;
@@ -710,7 +712,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
 
     if (retries == timeout_seconds) {
       // Retries failed.  Kill the unresponsive chrome process and continue.
-      if (!KillProcessByLockPath(lock_path_.value()))
+      if (!kill_unresponsive || !KillProcessByLockPath(lock_path_.value()))
         return PROFILE_IN_USE;
       return PROCESS_NONE;
     }
@@ -741,7 +743,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
   // Send the message
   if (!WriteToSocket(socket, to_send.data(), to_send.length())) {
     // Try to kill the other process, because it might have been dead.
-    if (!KillProcessByLockPath(lock_path_.value()))
+    if (!kill_unresponsive || !KillProcessByLockPath(lock_path_.value()))
       return PROFILE_IN_USE;
     return PROCESS_NONE;
   }
@@ -757,7 +759,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
 
   // Failed to read ACK, the other process might have been frozen.
   if (len <= 0) {
-    if (!KillProcessByLockPath(lock_path_.value()))
+    if (!kill_unresponsive || !KillProcessByLockPath(lock_path_.value()))
       return PROFILE_IN_USE;
     return PROCESS_NONE;
   }
@@ -773,6 +775,34 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
 
   NOTREACHED() << "The other process returned unknown message: " << buf;
   return PROCESS_NOTIFIED;
+}
+
+ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessOrCreate() {
+  return NotifyOtherProcessWithTimeoutOrCreate(
+      *CommandLine::ForCurrentProcess(),
+      kTimeoutInSeconds);
+}
+
+ProcessSingleton::NotifyResult
+ProcessSingleton::NotifyOtherProcessWithTimeoutOrCreate(
+    const CommandLine& command_line,
+    int timeout_seconds) {
+  NotifyResult result = NotifyOtherProcessWithTimeout(command_line,
+                                                      timeout_seconds, true);
+  if (result != PROCESS_NONE)
+    return result;
+  if (Create())
+    return PROCESS_NONE;
+  // If the Create() failed, try again to notify. (It could be that another
+  // instance was starting at the same time and managed to grab the lock before
+  // we did.)
+  // This time, we don't want to kill anything if we aren't successful, since we
+  // aren't going to try to take over the lock ourselves.
+  result = NotifyOtherProcessWithTimeout(command_line, timeout_seconds, false);
+  if (result != PROCESS_NONE)
+    return result;
+
+  return LOCK_ERROR;
 }
 
 bool ProcessSingleton::Create() {
@@ -796,8 +826,6 @@ bool ProcessSingleton::Create() {
     if (ReadLink(lock_path_.value()) != symlink_content) {
       // If we failed to create the lock, most likely another instance won the
       // startup race.
-      // TODO(mattm): If the other instance is on the same host, we could try
-      // to notify it rather than just failing.
       errno = saved_errno;
       PLOG(ERROR) << "Failed to create " << lock_path_.value();
       return false;
