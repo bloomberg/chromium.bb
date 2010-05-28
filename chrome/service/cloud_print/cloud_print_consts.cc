@@ -26,10 +26,8 @@ const wchar_t kTitleValue[] = L"title";
 const wchar_t kPrinterCapsHashValue[] = L"capsHash";
 
 const char kDefaultCloudPrintServerUrl[] = "https://www.google.com/cloudprint";
-// TODO(sanjeevr): Change this to a real one.
-const char kCloudPrintTalkServiceUrl[] = "http://www.google.com/printing";
+const char kCloudPrintTalkServiceUrl[] = "http://www.google.com/cloudprint";
 const char kGaiaUrl[] = "https://www.google.com/accounts/ClientLogin";
-// TODO(sanjeevr): Change this to a real one once we get a GAIA service id.
-const char kCloudPrintGaiaServiceId[] = "print";
+const char kCloudPrintGaiaServiceId[] = "cloudprint";
 const char kSyncGaiaServiceId[] = "chromiumsync";
 
