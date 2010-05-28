@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/string16.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFormElement.h"
 
@@ -111,6 +112,10 @@ class FormManager {
   typedef std::map<const WebKit::WebFrame*, std::vector<FormElement*> >
       WebFrameFormElementMap;
 
+  // The callback type used by ForEachMatchingFormField().
+  typedef Callback2<WebKit::WebFormControlElement*,
+                    const webkit_glue::FormField*>::Type Callback;
+
   // Converts a FormElement to FormData storage.  Returns false if the form does
   // not meet all the requirements in the requirements mask.
   // TODO(jhawkins): Modify FormElement so we don't need |frame|.
@@ -120,10 +125,26 @@ class FormManager {
                                     webkit_glue::FormData* form);
 
   // Infers corresponding label for |element| from surrounding context in the
-  // DOM.  Contents of preceeding <p> tag or preceeding text element found in
+  // DOM.  Contents of preceding <p> tag or preceding text element found in
   // the form.
   static string16 InferLabelForElement(
       const WebKit::WebFormControlElement& element);
+
+  // Uses the data in |form| to find the cached FormElement.
+  bool FindCachedFormElement(const webkit_glue::FormData& form,
+                             FormElement** form_element);
+
+  // For each field in |form| that matches the corresponding field in the cached
+  // FormElement, |callback| is called with the actual WebFormControlElement and
+  // the FormField data from |form|. This method owns |callback|.
+  void ForEachMatchingFormField(FormElement* form,
+                                const webkit_glue::FormData& data,
+                                Callback* callback);
+
+  // A ForEachMatchingFormField() callback that sets |field|'s value using the
+  // value in |data|.
+  void FillFormField(WebKit::WebFormControlElement* field,
+                     const webkit_glue::FormField* data);
 
   // The map of form elements.
   WebFrameFormElementMap form_elements_map_;

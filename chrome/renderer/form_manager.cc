@@ -72,7 +72,7 @@ string16 FindChildTextInner(const WebNode& node) {
   return element_text;
 }
 
-// Returns the node value of the first decendant of |element| that is a
+// Returns the node value of the first descendant of |element| that is a
 // non-empty text node.  "Non-empty" in this case means non-empty after the
 // whitespace has been stripped.
 string16 FindChildText(const WebElement& element) {
@@ -516,87 +516,11 @@ bool FormManager::FindFormWithFormControlElement(
 
 bool FormManager::FillForm(const FormData& form) {
   FormElement* form_element = NULL;
-
-  for (WebFrameFormElementMap::iterator iter = form_elements_map_.begin();
-       iter != form_elements_map_.end(); ++iter) {
-    const WebFrame* frame = iter->first;
-
-    for (std::vector<FormElement*>::iterator form_iter = iter->second.begin();
-         form_iter != iter->second.end(); ++form_iter) {
-      // TODO(dhollowa): matching on form name here which is not guaranteed to
-      // be unique for the page, nor is it guaranteed to be non-empty.  Need to
-      // find a way to uniquely identify the form cross-process.  For now we'll
-      // check form name and form action for identity.
-      // http://crbug.com/37990 test file sample8.html.
-      // Also note that WebString() == WebString(string16()) does not seem to
-      // evaluate to |true| for some reason TBD, so forcing to string16.
-      string16 element_name((*form_iter)->form_element.name());
-      GURL action(
-          frame->document().completeURL((*form_iter)->form_element.action()));
-      if (element_name == form.name && action == form.action) {
-        form_element = *form_iter;
-        break;
-      }
-    }
-  }
-
-  if (!form_element)
+  if (!FindCachedFormElement(form, &form_element))
     return false;
 
-  // It's possible that the site has injected fields into the form after the
-  // page has loaded, so we can't assert that the size of the cached control
-  // elements is equal to the size of the fields in |form|.  Fortunately, the
-  // one case in the wild where this happens, paypal.com signup form, the fields
-  // are appended to the end of the form and are not visible.
-
-  for (size_t i = 0, j = 0;
-       i < form_element->control_elements.size() && j < form.fields.size();
-       ++i) {
-    // Once again, empty WebString != empty string16, so we have to explicitly
-    // check for this case.
-    if (form_element->control_elements[i].nameForAutofill().length() == 0 &&
-        form.fields[j].name().empty())
-      continue;
-
-    size_t k = j;
-    while (k < form.fields.size() &&
-           form_element->control_elements[i].nameForAutofill() !=
-              form.fields[k].name()) {
-      k++;
-    }
-    if (k >= form.fields.size())
-      continue;
-
-    WebFormControlElement* element = &form_element->control_elements[i];
-
-    // It's possible that nameForAutofill() is empty if the form control
-    // element has no name or ID.  In that case, iter->nameForAutofill() must
-    // also be empty.
-    if (form.fields[k].name().empty())
-      DCHECK(element->nameForAutofill().isEmpty());
-    else
-      DCHECK_EQ(form.fields[k].name(), element->nameForAutofill());
-
-    if (!form.fields[k].value().empty() &&
-        element->formControlType() != WebString::fromUTF8("submit")) {
-      if (element->formControlType() == WebString::fromUTF8("text")) {
-        WebInputElement input_element = element->to<WebInputElement>();
-        // If the maxlength attribute contains a negative value, maxLength()
-        // returns the default maxlength value.
-        input_element.setValue(
-            form.fields[k].value().substr(0, input_element.maxLength()));
-        input_element.setAutofilled(true);
-      } else if (element->formControlType() ==
-                 WebString::fromUTF8("select-one")) {
-        WebSelectElement select_element =
-            element->to<WebSelectElement>();
-        select_element.setValue(form.fields[k].value());
-      }
-    }
-
-    // We found a matching form field so move on to the next.
-    ++j;
-  }
+  ForEachMatchingFormField(
+      form_element, form, NewCallback(this, &FormManager::FillFormField));
 
   return true;
 }
@@ -687,3 +611,93 @@ string16 FormManager::InferLabelForElement(
   return inferred_label;
 }
 
+bool FormManager::FindCachedFormElement(const FormData& form,
+                                        FormElement** form_element) {
+  for (WebFrameFormElementMap::iterator iter = form_elements_map_.begin();
+       iter != form_elements_map_.end(); ++iter) {
+    const WebFrame* frame = iter->first;
+
+    for (std::vector<FormElement*>::iterator form_iter = iter->second.begin();
+         form_iter != iter->second.end(); ++form_iter) {
+      // TODO(dhollowa): matching on form name here which is not guaranteed to
+      // be unique for the page, nor is it guaranteed to be non-empty.  Need to
+      // find a way to uniquely identify the form cross-process.  For now we'll
+      // check form name and form action for identity.
+      // http://crbug.com/37990 test file sample8.html.
+      // Also note that WebString() == WebString(string16()) does not seem to
+      // evaluate to |true| for some reason TBD, so forcing to string16.
+      string16 element_name((*form_iter)->form_element.name());
+      GURL action(
+          frame->document().completeURL((*form_iter)->form_element.action()));
+      if (element_name == form.name && action == form.action) {
+        *form_element = *form_iter;
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+void FormManager::ForEachMatchingFormField(
+    FormElement* form, const FormData& data, Callback* callback) {
+  // It's possible that the site has injected fields into the form after the
+  // page has loaded, so we can't assert that the size of the cached control
+  // elements is equal to the size of the fields in |form|.  Fortunately, the
+  // one case in the wild where this happens, paypal.com signup form, the fields
+  // are appended to the end of the form and are not visible.
+  for (size_t i = 0, j = 0;
+       i < form->control_elements.size() && j < data.fields.size();
+       ++i) {
+    WebFormControlElement* element = &form->control_elements[i];
+    WebString element_name = element->nameForAutofill();
+
+    // Empty WebString != empty string16, so we have to explicitly
+    // check for this case.
+    if (element_name.isEmpty() && data.fields[j].name().empty())
+      continue;
+
+    // Search forward in the |form| for a corresponding field.
+    size_t k = j;
+    while (k < data.fields.size() && element_name != data.fields[k].name())
+      k++;
+
+    if (k >= data.fields.size())
+      continue;
+
+    DCHECK_EQ(data.fields[k].name(), element_name);
+    callback->Run(element, &data.fields[k]);
+
+    // We found a matching form field so move on to the next.
+    ++j;
+  }
+
+  delete callback;
+}
+
+void FormManager::FillFormField(WebKit::WebFormControlElement* field,
+                                const FormField* data) {
+  // Nothing to fill.
+  if (data->value().empty())
+    return;
+
+  if (field->formControlType() == WebString::fromUTF8("text")) {
+    WebInputElement input_element = field->to<WebInputElement>();
+
+    // Don't auto-fill a field with autocomplete=off.
+    if (!input_element.autoComplete())
+      return;
+
+    // Don't overwrite a pre-existing value in the field.
+    if (!input_element.value().isEmpty())
+      return;
+
+    // If the maxlength attribute contains a negative value, maxLength()
+    // returns the default maxlength value.
+    input_element.setValue(data->value().substr(0, input_element.maxLength()));
+    input_element.setAutofilled(true);
+  } else if (field->formControlType() == WebString::fromUTF8("select-one")) {
+    WebSelectElement select_element = field->to<WebSelectElement>();
+    select_element.setValue(data->value());
+  }
+}
