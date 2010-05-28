@@ -339,6 +339,10 @@ void Client::RenderClient(bool send_callback) {
   }
 }
 
+bool Client::IsRendering() {
+  return (renderer_.IsAvailable() && renderer_->rendering());
+}
+
 // Executes draw calls for all visible shapes in a subtree
 void Client::RenderTree(RenderNode *tree_root) {
   if (!renderer_.IsAvailable())

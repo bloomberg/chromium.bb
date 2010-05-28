@@ -237,6 +237,12 @@ void RenderTimer::TimerCallback(CFRunLoopTimerRef timer, void* info) {
     NPP instance = instances_[i];
     PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
 
+    // RenderClient() may cause events to be processed, leading to
+    // reentrant calling of this code. Detect and avoid this case.
+    if (obj->client()->IsRendering()) {
+      continue;
+    }
+
     bool in_fullscreen = obj->GetFullscreenMacWindow();
 
     if (obj->drawing_model_ == NPDrawingModelCoreAnimation &&

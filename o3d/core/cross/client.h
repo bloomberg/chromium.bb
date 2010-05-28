@@ -259,6 +259,11 @@ class Client {
   //       go.
   void RenderClient(bool send_callback);
 
+  // In some situations (on Mac OS X at least) calling the user's
+  // render callback can cause OS events to be dispatched which cause
+  // the plugin to become reentrant. Detect this at a higher level.
+  bool IsRendering();
+
   // Sets the texture to use when a Texture or Sampler is missing while
   // rendering. If you set it to NULL you'll get an error if you try to render
   // something that is missing a needed Texture, Sampler or ParamSampler

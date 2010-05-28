@@ -1043,39 +1043,40 @@ NPError NPP_SetWindow(NPP instance, NPWindow* window) {
     if (obj->mac_cgl_context_) {
       CGLSetCurrentContext(obj->mac_cgl_context_);
     }
-  } else if (obj->drawing_model_ == NPDrawingModelCoreGraphics &&
-             obj->mac_cgl_pbuffer_ == NULL) {
-    // We initialize things with a CGL context rendering to a 1x1
-    // pbuffer. Later we use the O3D RenderSurface APIs to set up the
-    // framebuffer object which is used for rendering.
-    CGLContextObj share_context = obj->GetFullscreenShareContext();
-    CGLPixelFormatObj pixel_format = obj->GetFullscreenCGLPixelFormatObj();
-    DCHECK(share_context);
-    CGLError result;
-    CGLContextObj context;
-    result = CGLCreateContext(pixel_format, share_context, &context);
-    if (result != kCGLNoError) {
-      DLOG(ERROR) << "Error " << result << " creating context.";
-      return NPERR_GENERIC_ERROR;
+  } else if (obj->drawing_model_ == NPDrawingModelCoreGraphics) {
+    if (obj->mac_cgl_pbuffer_ == NULL) {
+      // We initialize things with a CGL context rendering to a 1x1
+      // pbuffer. Later we use the O3D RenderSurface APIs to set up the
+      // framebuffer object which is used for rendering.
+      CGLContextObj share_context = obj->GetFullscreenShareContext();
+      CGLPixelFormatObj pixel_format = obj->GetFullscreenCGLPixelFormatObj();
+      DCHECK(share_context);
+      CGLError result;
+      CGLContextObj context;
+      result = CGLCreateContext(pixel_format, share_context, &context);
+      if (result != kCGLNoError) {
+        DLOG(ERROR) << "Error " << result << " creating context.";
+        return NPERR_GENERIC_ERROR;
+      }
+      CGLPBufferObj pbuffer;
+      if ((result = CGLCreatePBuffer(1, 1,
+                                     GL_TEXTURE_2D, GL_RGBA,
+                                     0, &pbuffer)) != kCGLNoError) {
+        CGLDestroyContext(context);
+        DLOG(ERROR) << "Error " << result << " creating pbuffer.";
+        return NPERR_GENERIC_ERROR;
+      }
+      if ((result = CGLSetPBuffer(context, pbuffer, 0, 0, 0)) != kCGLNoError) {
+        CGLDestroyContext(context);
+        CGLDestroyPBuffer(pbuffer);
+        DLOG(ERROR) << "Error " << result << " attaching pbuffer to context.";
+        return NPERR_GENERIC_ERROR;
+      }
+      // Must make the context current for renderer creation to succeed
+      CGLSetCurrentContext(context);
+      obj->mac_cgl_context_ = context;
+      obj->mac_cgl_pbuffer_ = pbuffer;
     }
-    CGLPBufferObj pbuffer;
-    if ((result = CGLCreatePBuffer(1, 1,
-                                   GL_TEXTURE_2D, GL_RGBA,
-                                   0, &pbuffer)) != kCGLNoError) {
-      CGLDestroyContext(context);
-      DLOG(ERROR) << "Error " << result << " creating pbuffer.";
-      return NPERR_GENERIC_ERROR;
-    }
-    if ((result = CGLSetPBuffer(context, pbuffer, 0, 0, 0)) != kCGLNoError) {
-      CGLDestroyContext(context);
-      CGLDestroyPBuffer(pbuffer);
-      DLOG(ERROR) << "Error " << result << " attaching pbuffer to context.";
-      return NPERR_GENERIC_ERROR;
-    }
-    // Must make the context current for renderer creation to succeed
-    CGLSetCurrentContext(context);
-    obj->mac_cgl_context_ = context;
-    obj->mac_cgl_pbuffer_ = pbuffer;
   } else if (!had_a_window && obj->mac_agl_context_ == NULL) {
     // setup AGL context
     AGLPixelFormat myAGLPixelFormat = NULL;
