@@ -28,6 +28,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -148,6 +149,8 @@ PluginService::PluginService()
     : main_message_loop_(MessageLoop::current()),
       resource_dispatcher_host_(NULL),
       ui_locale_(ASCIIToWide(g_browser_process->GetApplicationLocale())) {
+  RegisterPepperPlugins();
+
   // Have the NPAPI plugin list search for Chrome plugins as well.
   ChromePluginLib::RegisterPluginsWithNPAPI();
   // Load the one specified on the command line as well.
@@ -414,4 +417,22 @@ bool PluginService::PluginAllowedForURL(const FilePath& plugin_path,
   const GURL& required_url = it->second;
   return (url.scheme() == required_url.scheme() &&
           url.host() == required_url.host());
+}
+
+void PluginService::RegisterPepperPlugins() {
+  std::vector<PepperPluginInfo> plugins;
+  PepperPluginRegistry::GetList(&plugins);
+  for (size_t i = 0; i < plugins.size(); ++i) {
+    NPAPI::PluginVersionInfo info;
+    info.path = plugins[i].path;
+    info.product_name = plugins[i].path.BaseName().ToWStringHack();
+    info.mime_types = ASCIIToWide(JoinString(plugins[i].mime_types, '|'));
+
+    // These NPAPI entry points will never be called.  TODO(darin): Come up
+    // with a cleaner way to register pepper plugins with the NPAPI PluginList,
+    // or perhaps refactor the PluginList to be less specific to NPAPI.
+    memset(&info.entry_points, 0, sizeof(info.entry_points));
+
+    NPAPI::PluginList::Singleton()->RegisterInternalPlugin(info);
+  }
 }

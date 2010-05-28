@@ -411,9 +411,8 @@ class RenderView : public RenderWidget,
 
   // webkit_glue::WebPluginPageDelegate
   virtual webkit_glue::WebPluginDelegate* CreatePluginDelegate(
-      const GURL& url,
-      const std::string& mime_type,
-      std::string* actual_mime_type);
+      const FilePath& file_path,
+      const std::string& mime_type);
   virtual void CreatedPluginWindow(gfx::PluginWindowHandle handle);
   virtual void WillDestroyPluginWindow(gfx::PluginWindowHandle handle);
   virtual void DidMovePlugin(const webkit_glue::WebPluginGeometry& move);

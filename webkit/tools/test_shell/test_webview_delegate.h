@@ -222,9 +222,8 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
 
   // webkit_glue::WebPluginPageDelegate
   virtual webkit_glue::WebPluginDelegate* CreatePluginDelegate(
-      const GURL& url,
-      const std::string& mime_type,
-      std::string* actual_mime_type);
+      const FilePath& url,
+      const std::string& mime_type);
   virtual void CreatedPluginWindow(
       gfx::PluginWindowHandle handle);
   virtual void WillDestroyPluginWindow(
@@ -347,7 +346,7 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
 
   WebWidgetHost* GetWidgetHost();
 
-  void UpdateForCommittedLoad(WebKit::WebFrame* webframe, bool is_new_navigation);
+  void UpdateForCommittedLoad(WebKit::WebFrame* frame, bool is_new_navigation);
   void UpdateURL(WebKit::WebFrame* frame);
   void UpdateSessionHistory(WebKit::WebFrame* frame);
   void UpdateSelectionClipboard(bool is_empty_selection);

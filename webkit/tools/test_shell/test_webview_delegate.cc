@@ -30,6 +30,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebKitClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNotificationPresenter.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupMenu.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRange.h"
@@ -569,7 +570,8 @@ void TestWebViewDelegate::setStatusText(const WebString& text) {
   if (WebKit::layoutTestMode() &&
       shell_->layout_test_controller()->ShouldDumpStatusCallbacks()) {
     // When running tests, write to stdout.
-    printf("UI DELEGATE STATUS CALLBACK: setStatusText:%s\n", text.utf8().data());
+    printf("UI DELEGATE STATUS CALLBACK: setStatusText:%s\n",
+           text.utf8().data());
   }
 }
 
@@ -595,7 +597,8 @@ void TestWebViewDelegate::startDragging(
     //if (!drag_delegate_)
     //  drag_delegate_ = new TestDragDelegate(shell_->webViewWnd(),
     //                                        shell_->webView());
-    //const DWORD ok_effect = DROPEFFECT_COPY | DROPEFFECT_LINK | DROPEFFECT_MOVE;
+    //const DWORD ok_effect = DROPEFFECT_COPY | DROPEFFECT_LINK |
+    //                        DROPEFFECT_MOVE;
     //DWORD effect;
     //HRESULT res = DoDragDrop(drop_data.data_object, drag_delegate_.get(),
     //                         ok_effect, &effect);
@@ -666,7 +669,20 @@ WebScreenInfo TestWebViewDelegate::screenInfo() {
 
 WebPlugin* TestWebViewDelegate::createPlugin(
     WebFrame* frame, const WebPluginParams& params) {
-  return new webkit_glue::WebPluginImpl(frame, params, AsWeakPtr());
+  bool allow_wildcard = true;
+  WebPluginInfo info;
+  std::string actual_mime_type;
+  if (!NPAPI::PluginList::Singleton()->GetPluginInfo(
+          params.url, params.mimeType.utf8(), allow_wildcard, &info,
+          &actual_mime_type)) {
+    return NULL;
+  }
+
+  if (actual_mime_type.empty())
+    actual_mime_type = params.mimeType.utf8();
+
+  return new webkit_glue::WebPluginImpl(
+      frame, params, info.path, actual_mime_type, AsWeakPtr());
 }
 
 WebWorker* TestWebViewDelegate::createWorker(

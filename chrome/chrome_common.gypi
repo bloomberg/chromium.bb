@@ -220,6 +220,8 @@
         'common/page_transition_types.cc',
         'common/page_transition_types.h',
         'common/page_zoom.h',
+        'common/pepper_plugin_registry.cc',
+        'common/pepper_plugin_registry.h',
         'common/plugin_carbon_interpose_constants_mac.h',
         'common/plugin_carbon_interpose_constants_mac.cc',
         'common/plugin_messages.h',

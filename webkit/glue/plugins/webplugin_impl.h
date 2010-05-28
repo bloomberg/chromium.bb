@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
 #include "base/linked_ptr.h"
 #include "base/task.h"
 #include "base/weak_ptr.h"
@@ -50,6 +51,8 @@ class WebPluginImpl : public WebPlugin,
   WebPluginImpl(
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params,
+      const FilePath& file_path,
+      const std::string& mime_type,
       const base::WeakPtr<WebPluginPageDelegate>& page_delegate);
   virtual ~WebPluginImpl();
 
@@ -201,7 +204,8 @@ class WebPluginImpl : public WebPlugin,
   virtual void didReceiveData(WebKit::WebURLLoader* loader, const char *buffer,
                               int length);
   virtual void didFinishLoading(WebKit::WebURLLoader* loader);
-  virtual void didFail(WebKit::WebURLLoader* loader, const WebKit::WebURLError&);
+  virtual void didFail(WebKit::WebURLLoader* loader,
+                       const WebKit::WebURLError& error);
 
   // Helper function to remove the stored information about a resource
   // request given its index in m_clients.
@@ -305,6 +309,9 @@ class WebPluginImpl : public WebPlugin,
 
   // The current plugin geometry and clip rectangle.
   WebPluginGeometry geometry_;
+
+  // The location of the plugin on disk.
+  FilePath file_path_;
 
   // The mime type of the plugin.
   std::string mime_type_;

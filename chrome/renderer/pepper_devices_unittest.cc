@@ -168,7 +168,8 @@ void PepperDeviceTest::SetUp() {
   // sufficiently for the test).
   WebKit::WebPluginParams params;
   plugin_.reset(new webkit_glue::WebPluginImpl(
-      NULL, params, base::WeakPtr<webkit_glue::WebPluginPageDelegate>()));
+      NULL, params, FilePath(), std::string(),
+      base::WeakPtr<webkit_glue::WebPluginPageDelegate>()));
 
   // Create a pepper plugin for the RenderView.
   pepper_plugin_ = WebPluginDelegatePepper::Create(

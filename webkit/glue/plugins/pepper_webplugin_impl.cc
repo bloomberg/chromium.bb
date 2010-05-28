@@ -23,7 +23,6 @@ namespace pepper {
 
 WebPluginImpl::WebPluginImpl(
     PluginModule* plugin_module,
-    WebKit::WebFrame* frame,
     const WebPluginParams& params,
     const base::WeakPtr<PluginDelegate>& plugin_delegate)
     : init_data_(new InitData()) {

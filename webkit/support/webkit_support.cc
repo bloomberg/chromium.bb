@@ -18,6 +18,7 @@
 #include "base/weak_ptr.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPluginParams.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/glue/media/buffered_data_source.h"
 #include "webkit/glue/media/media_resource_loader_bridge_factory.h"
@@ -72,7 +73,8 @@ class WebPluginImplWithPageDelegate
   WebPluginImplWithPageDelegate(WebFrame* frame,
                                 const WebPluginParams& params)
       : webkit_support::TestWebPluginPageDelegate(),
-        webkit_glue::WebPluginImpl(frame, params, AsWeakPtr()) {}
+        webkit_glue::WebPluginImpl(
+            frame, params, FilePath(), params.mimeType.utf8(), AsWeakPtr()) {}
   virtual ~WebPluginImplWithPageDelegate() {}
  private:
   DISALLOW_COPY_AND_ASSIGN(WebPluginImplWithPageDelegate);

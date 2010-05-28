@@ -17,9 +17,8 @@ class TestWebPluginPageDelegate : public webkit_glue::WebPluginPageDelegate {
   virtual ~TestWebPluginPageDelegate() {}
 
   virtual webkit_glue::WebPluginDelegate* CreatePluginDelegate(
-      const GURL& url,
-      const std::string& mime_type,
-      std::string* actual_mime_type) { return NULL; }
+      const FilePath& file_path,
+      const std::string& mime_type) { return NULL; }
   virtual void CreatedPluginWindow(gfx::PluginWindowHandle handle) {}
   virtual void WillDestroyPluginWindow(gfx::PluginWindowHandle handle) {}
   virtual void DidMovePlugin(const webkit_glue::WebPluginGeometry& move) {}

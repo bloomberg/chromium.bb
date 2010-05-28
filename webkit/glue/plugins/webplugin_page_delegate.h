@@ -7,6 +7,7 @@
 
 #include "gfx/native_widget_types.h"
 
+class FilePath;
 class GURL;
 
 namespace WebKit {
@@ -25,9 +26,8 @@ class WebPluginPageDelegate {
   // new plugin is instanced.  See webkit_glue::CreateWebPluginDelegateHelper
   // for a default WebPluginDelegate implementation.
   virtual WebPluginDelegate* CreatePluginDelegate(
-      const GURL& url,
-      const std::string& mime_type,
-      std::string* actual_mime_type) = 0;
+      const FilePath& file_path,
+      const std::string& mime_type) = 0;
 
   // Called when a windowed plugin is created.
   // Lets the view delegate create anything it is using to wrap the plugin.

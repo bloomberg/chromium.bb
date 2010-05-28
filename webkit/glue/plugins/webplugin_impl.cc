@@ -208,11 +208,10 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
   if (!page_delegate_)
     return false;
 
-  std::string actual_mime_type;
   WebPluginDelegate* plugin_delegate = page_delegate_->CreatePluginDelegate(
-      plugin_url_, mime_type_, &actual_mime_type);
+      file_path_, mime_type_);
   if (!plugin_delegate)
-    return NULL;
+    return false;
 
   // Set the container before Initialize because the plugin may
   // synchronously call NPN_GetValue to get its container during its
@@ -225,8 +224,6 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
     return false;
   }
 
-  if (!actual_mime_type.empty())
-    mime_type_ = actual_mime_type;
   delegate_ = plugin_delegate;
 
   return true;
@@ -409,7 +406,10 @@ void WebPluginImpl::printEnd() {
 // -----------------------------------------------------------------------------
 
 WebPluginImpl::WebPluginImpl(
-    WebFrame* webframe, const WebPluginParams& params,
+    WebFrame* webframe,
+    const WebPluginParams& params,
+    const FilePath& file_path,
+    const std::string& mime_type,
     const base::WeakPtr<WebPluginPageDelegate>& page_delegate)
     : windowless_(false),
       window_(gfx::kNullPluginWindow),
@@ -422,7 +422,8 @@ WebPluginImpl::WebPluginImpl(
       load_manually_(params.loadManually),
       first_geometry_update_(true),
       ignore_response_error_(false),
-      mime_type_(params.mimeType.utf8()),
+      file_path_(file_path),
+      mime_type_(mime_type),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   DCHECK_EQ(params.attributeNames.size(), params.attributeValues.size());
   StringToLowerASCII(&mime_type_);
@@ -1148,11 +1149,10 @@ bool WebPluginImpl::ReinitializePluginForResponse(
   container_ = container_widget;
   webframe_ = webframe;
 
-  std::string actual_mime_type;
   WebPluginDelegate* plugin_delegate = page_delegate_->CreatePluginDelegate(
-      plugin_url_, mime_type_, &actual_mime_type);
+      file_path_, mime_type_);
 
-  bool ok = plugin_delegate->Initialize(
+  bool ok = plugin_delegate && plugin_delegate->Initialize(
       plugin_url_, arg_names_, arg_values_, this, load_manually_);
 
   if (!ok) {
@@ -1161,7 +1161,6 @@ bool WebPluginImpl::ReinitializePluginForResponse(
     return false;
   }
 
-  mime_type_ = actual_mime_type;
   delegate_ = plugin_delegate;
 
   // Force a geometry update to occur to ensure that the plugin becomes

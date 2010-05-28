@@ -201,25 +201,14 @@ void TestWebViewDelegate::runModal() {
 // WebPluginPageDelegate ------------------------------------------------------
 
 webkit_glue::WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
-    const GURL& url,
-    const std::string& mime_type,
-    std::string* actual_mime_type) {
-  bool allow_wildcard = true;
-  WebPluginInfo info;
-  if (!NPAPI::PluginList::Singleton()->GetPluginInfo(
-          url, mime_type, allow_wildcard, &info, actual_mime_type)) {
-    return NULL;
-  }
-
-  const std::string& mtype =
-      (actual_mime_type && !actual_mime_type->empty()) ? *actual_mime_type
-                                                       : mime_type;
+    const FilePath& path,
+    const std::string& mime_type) {
   // TODO(evanm): we probably shouldn't be doing this mapping to X ids at
   // this level.
   GdkNativeWindow plugin_parent =
       GDK_WINDOW_XWINDOW(shell_->webViewHost()->view_handle()->window);
 
-  return WebPluginDelegateImpl::Create(info.path, mtype, plugin_parent);
+  return WebPluginDelegateImpl::Create(path, mime_type, plugin_parent);
 }
 
 void TestWebViewDelegate::CreatedPluginWindow(

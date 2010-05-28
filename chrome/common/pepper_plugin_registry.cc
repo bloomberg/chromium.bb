@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/pepper_plugin_registry.h"
+#include "chrome/common/pepper_plugin_registry.h"
 
 #include "base/command_line.h"
 #include "base/string_util.h"
@@ -14,15 +14,8 @@ PepperPluginRegistry* PepperPluginRegistry::GetInstance() {
   return &registry;
 }
 
-pepper::PluginModule* PepperPluginRegistry::GetModule(
-    const std::string& mime_type) const {
-  ModuleMap::const_iterator it = modules_.find(mime_type);
-  if (it == modules_.end())
-    return NULL;
-  return it->second;
-}
-
-PepperPluginRegistry::PepperPluginRegistry() {
+// static
+void PepperPluginRegistry::GetList(std::vector<PepperPluginInfo>* plugins) {
   const std::wstring& value = CommandLine::ForCurrentProcess()->GetSwitchValue(
       switches::kRegisterPepperPlugins);
   if (value.empty())
@@ -42,20 +35,33 @@ PepperPluginRegistry::PepperPluginRegistry() {
       continue;
     }
 
-    const FilePath& file_path = FilePath::FromWStringHack(parts[0]);
-    ModuleHandle module = pepper::PluginModule::CreateModule(file_path);
+    PepperPluginInfo plugin;
+    plugin.path = FilePath::FromWStringHack(parts[0]);
+    for (size_t j = 1; j < parts.size(); ++j)
+      plugin.mime_types.push_back(WideToASCII(parts[j]));
+
+    plugins->push_back(plugin);
+  }
+}
+
+pepper::PluginModule* PepperPluginRegistry::GetModule(
+    const FilePath& path) const {
+  ModuleMap::const_iterator it = modules_.find(path);
+  if (it == modules_.end())
+    return NULL;
+  return it->second;
+}
+
+PepperPluginRegistry::PepperPluginRegistry() {
+  std::vector<PepperPluginInfo> plugins;
+  GetList(&plugins);
+  for (size_t i = 0; i < plugins.size(); ++i) {
+    const FilePath& path = plugins[i].path;
+    ModuleHandle module = pepper::PluginModule::CreateModule(path);
     if (!module) {
-      DLOG(ERROR) << "Failed to load pepper module: " << file_path.value();
+      DLOG(ERROR) << "Failed to load pepper module: " << path.value();
       continue;
     }
-
-    for (size_t j = 1; j < parts.size(); ++j) {
-      const std::string& mime_type = WideToASCII(parts[j]);
-      if (modules_.find(mime_type) != modules_.end()) {
-        DLOG(ERROR) << "Type is already registered";
-        continue;
-      }
-      modules_[mime_type] = module;
-    }
+    modules_[path] = module;
   }
 }

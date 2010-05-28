@@ -169,27 +169,14 @@ void TestWebViewDelegate::runModal() {
 // WebPluginPageDelegate ------------------------------------------------------
 
 webkit_glue::WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
-    const GURL& url,
-    const std::string& mime_type,
-    std::string* actual_mime_type) {
+    const FilePath& path,
+    const std::string& mime_type) {
   WebWidgetHost *host = GetWidgetHost();
   if (!host)
     return NULL;
+
   gfx::PluginWindowHandle containing_view = NULL;
-
-  bool allow_wildcard = true;
-  WebPluginInfo info;
-  if (!NPAPI::PluginList::Singleton()->GetPluginInfo(
-          url, mime_type,  allow_wildcard, &info, actual_mime_type)) {
-    return NULL;
-  }
-
-  if (actual_mime_type && !actual_mime_type->empty())
-    return WebPluginDelegateImpl::Create(info.path, *actual_mime_type,
-                                         containing_view);
-  else
-    return WebPluginDelegateImpl::Create(info.path, mime_type,
-                                         containing_view);
+  return WebPluginDelegateImpl::Create(path, mime_type, containing_view);
 }
 
 void TestWebViewDelegate::CreatedPluginWindow(

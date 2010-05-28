@@ -32,6 +32,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/page_zoom.h"
+#include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/thumbnail_score.h"
@@ -51,7 +52,6 @@
 #include "chrome/renderer/media/ipc_video_renderer.h"
 #include "chrome/renderer/navigation_state.h"
 #include "chrome/renderer/notification_provider.h"
-#include "chrome/renderer/pepper_plugin_registry.h"
 #include "chrome/renderer/plugin_channel_host.h"
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/renderer/render_process.h"
@@ -2101,13 +2101,26 @@ void RenderView::runModal() {
 
 WebPlugin* RenderView::createPlugin(
     WebFrame* frame, const WebPluginParams& params) {
+  FilePath path;
+  std::string actual_mime_type;
+  render_thread_->Send(new ViewHostMsg_GetPluginPath(
+      params.url, frame->top()->url(), params.mimeType.utf8(), &path,
+      &actual_mime_type));
+  if (path.value().empty())
+    return NULL;
+
+  if (actual_mime_type.empty())
+    actual_mime_type = params.mimeType.utf8();
+
   scoped_refptr<pepper::PluginModule> pepper_module =
-      PepperPluginRegistry::GetInstance()->GetModule(params.mimeType.utf8());
+      PepperPluginRegistry::GetInstance()->GetModule(path);
   if (pepper_module) {
-    return new pepper::WebPluginImpl(pepper_module, frame, params,
+    return new pepper::WebPluginImpl(pepper_module, params,
                                      pepper_delegate_.AsWeakPtr());
   }
-  return new webkit_glue::WebPluginImpl(frame, params, AsWeakPtr());
+
+  return new webkit_glue::WebPluginImpl(frame, params, path, actual_mime_type,
+                                        AsWeakPtr());
 }
 
 WebWorker* RenderView::createWorker(WebFrame* frame, WebWorkerClient* client) {
@@ -3106,37 +3119,16 @@ void RenderView::ReportNoFindInPageResults(int request_id) {
 // webkit_glue::WebPluginPageDelegate -----------------------------------------
 
 webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
-    const GURL& url,
-    const std::string& mime_type,
-    std::string* actual_mime_type) {
+    const FilePath& file_path,
+    const std::string& mime_type) {
   if (!PluginChannelHost::IsListening())
     return NULL;
-
-  GURL policy_url;
-  WebFrame* main_frame = webview()->mainFrame();
-  if (main_frame)
-    policy_url = main_frame->url();
-
-  FilePath path;
-  render_thread_->Send(new ViewHostMsg_GetPluginPath(
-      url, policy_url, mime_type, &path, actual_mime_type));
-  if (path.value().empty())
-    return NULL;
-
-  FilePath internal_pdf_path;
-  PathService::Get(chrome::FILE_PDF_PLUGIN, &internal_pdf_path);
-
-  const std::string* mime_type_to_use;
-  if (!actual_mime_type->empty())
-    mime_type_to_use = actual_mime_type;
-  else
-    mime_type_to_use = &mime_type;
 
   bool use_pepper_host = false;
   bool in_process_plugin = RenderProcess::current()->UseInProcessPlugins();
   // Check for trusted Pepper plugins.
   const char kPepperPrefix[] = "pepper-";
-  if (StartsWithASCII(*mime_type_to_use, kPepperPrefix, true)) {
+  if (StartsWithASCII(mime_type, kPepperPrefix, true)) {
     if (CommandLine::ForCurrentProcess()->
             HasSwitch(switches::kInternalPepper)) {
       in_process_plugin = true;
@@ -3145,10 +3137,15 @@ webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
       // In process Pepper plugins must be explicitly enabled.
       return NULL;
     }
-  } else if (path == internal_pdf_path) {
-    in_process_plugin = true;
-    use_pepper_host = true;
+  } else {
+    FilePath internal_pdf_path;
+    PathService::Get(chrome::FILE_PDF_PLUGIN, &internal_pdf_path);
+    if (file_path == internal_pdf_path) {
+      in_process_plugin = true;
+      use_pepper_host = true;
+    }
   }
+
   // Check for Native Client modules.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInternalNaCl)) {
     if (mime_type == "application/x-nacl-srpc") {
@@ -3156,17 +3153,17 @@ webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
       use_pepper_host = true;
     }
   }
+
   if (in_process_plugin) {
     if (use_pepper_host) {
       WebPluginDelegatePepper* pepper_plugin =
-           WebPluginDelegatePepper::Create(path, *mime_type_to_use,
-                                           AsWeakPtr());
+           WebPluginDelegatePepper::Create(file_path, mime_type, AsWeakPtr());
       current_pepper_plugins_.insert(pepper_plugin);
       return pepper_plugin;
     } else {
 #if defined(OS_WIN)  // In-proc plugins aren't supported on Linux or Mac.
       return WebPluginDelegateImpl::Create(
-          path, *mime_type_to_use, gfx::NativeViewFromId(host_window_));
+          file_path, mime_type, gfx::NativeViewFromId(host_window_));
 #else
       NOTIMPLEMENTED();
       return NULL;
@@ -3174,7 +3171,7 @@ webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
     }
   }
 
-  return new WebPluginDelegateProxy(*mime_type_to_use, AsWeakPtr());
+  return new WebPluginDelegateProxy(mime_type, AsWeakPtr());
 }
 
 void RenderView::CreatedPluginWindow(gfx::PluginWindowHandle window) {

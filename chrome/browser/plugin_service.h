@@ -117,6 +117,8 @@ class PluginService
   // the given URL.
   bool PluginAllowedForURL(const FilePath& plugin_path, const GURL& url);
 
+  void RegisterPepperPlugins();
+
   // mapping between plugin path and PluginProcessHost
   typedef base::hash_map<FilePath, PluginProcessHost*> PluginMap;
   PluginMap plugin_hosts_;

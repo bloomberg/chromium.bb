@@ -15,7 +15,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebPlugin.h"
 
 namespace WebKit {
-class WebFrame;
 struct WebPluginParams;
 }
 
@@ -28,7 +27,6 @@ class PluginModule;
 class WebPluginImpl : public WebKit::WebPlugin {
  public:
   WebPluginImpl(PluginModule* module,
-                WebKit::WebFrame* frame,
                 const WebKit::WebPluginParams& params,
                 const base::WeakPtr<PluginDelegate>& plugin_delegate);
 
