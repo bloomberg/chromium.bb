@@ -147,6 +147,34 @@ ExpectationSet MockWebBrowserEventSink::ExpectNewWindow(
   return new_window;
 }
 
+ExpectationSet MockWebBrowserEventSink::ExpectNavigationInIE(
+    const std::wstring& url) {
+  testing::InSequence sequence;
+  ExpectationSet navigation;
+  navigation += EXPECT_CALL(*this, OnBeforeNavigate2(_,
+                            testing::Field(&VARIANT::bstrVal,
+                            testing::StrCaseEq(url)), _, _, _, _, _));
+  navigation += EXPECT_CALL(*this, OnFileDownload(VARIANT_TRUE, _))
+      .Times(testing::AnyNumber());
+  navigation += EXPECT_CALL(*this, OnNavigateComplete2(_,
+                            testing::Field(&VARIANT::bstrVal,
+                            testing::StrCaseEq(url))));
+  return navigation;
+}
+
+ExpectationSet MockWebBrowserEventSink::ExpectNewWindowWithIE(
+    const std::wstring& url, MockWebBrowserEventSink* new_window_mock) {
+  DCHECK(new_window_mock);
+  ExpectationSet new_window;
+  new_window += EXPECT_CALL(*this, OnNewWindow3(_, _, _, _, _));
+  new_window += EXPECT_CALL(*this, OnNewBrowserWindow(_, _))
+      .WillOnce(testing::WithArgs<0>(testing::Invoke(CreateFunctor(
+                new_window_mock, &MockWebBrowserEventSink::Attach))));
+
+  new_window_mock->ExpectNavigationInIE(url);
+  return new_window;
+}
+
 }  // namespace chrome_frame_test
 
 ACTION_P3(DelayCloseBrowserMock, loop, delay, mock) {
@@ -180,27 +208,13 @@ ACTION_P4(DelaySendChar, loop, delay, c, mod) {
       simulate_input::SendCharA, c, mod), delay);
 }
 
-ACTION_P4(DelaySendScanCode, loop, delay, c, mod) {
-  loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(
-      simulate_input::SendScanCode, c, mod), delay);
-}
-
-ACTION_P5(SendExtendedKeysEnter, loop, delay, c, repeat, mod) {
-  const unsigned int kInterval = 25;
-  unsigned int next_delay = delay;
-  for (int i = 0; i < repeat; i++) {
-    loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(
-        simulate_input::SendExtendedKey, c, mod), next_delay);
-    next_delay += kInterval;
-  }
-
-  loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(
-    simulate_input::SendCharA, VK_RETURN, simulate_input::NONE), next_delay);
-}
-
 ACTION_P3(DelaySendString, loop, delay, str) {
   loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(
       simulate_input::SendStringW, str), delay);
+}
+
+ACTION_P5(SendExtendedKeysEnter, loop, delay, c, repeat, mod) {
+  chrome_frame_test::DelaySendExtendedKeysEnter(loop, delay, c, repeat, mod);
 }
 
 ACTION(DoCloseWindow) {

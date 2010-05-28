@@ -25,6 +25,7 @@
 #include "chrome_frame/test/simulate_input.h"
 #include "chrome_frame/test/window_watchdog.h"
 #include "chrome_frame/utils.h"
+#include "gmock/gmock.h"
 
 // Include without path to make GYP build see it.
 #include "chrome_tab.h"  // NOLINT
@@ -344,6 +345,18 @@ std::wstring GetExeVersion(const std::wstring& exe_path);
 
 // Returns the version of Internet Explorer on the machine.
 IEVersion GetInstalledIEVersion();
+
+// Posts a delayed task to send an extended keystroke |repeat| times with an
+// optional modifier via SendInput. Following this, the enter key is sent.
+void DelaySendExtendedKeysEnter(TimedMsgLoop* loop, int delay, char c,
+                                int repeat, simulate_input::Modifier mod);
+
+// Returns an action which posts a delayed task that sends the given
+// scan code via SendInput.
+ACTION_P4(DelaySendScanCode, loop, delay, c, mod) {
+  loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(
+      simulate_input::SendScanCode, c, mod), delay);
+}
 
 // A convenience class to close all open IE windows at the end
 // of a scope.  It's more convenient to do it this way than to
