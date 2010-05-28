@@ -446,6 +446,7 @@ class CocoaFullscreenWindowMac : public FullscreenWindowMac {
                              screen:mainScreen];
   if (self) {
     owner_ = owner;
+    [self setAcceptsMouseMovedEvents:YES];
     // We need to set ourselves as the delegate in order to receive
     // focus changed notifications.
     [self setDelegate:self];
