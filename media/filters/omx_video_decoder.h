@@ -58,6 +58,8 @@ class OmxVideoDecoder : public VideoDecoder {
   bool supports_egl_image_;
   scoped_refptr<OmxVideoDecodeEngine> omx_engine_;
   MediaFormat media_format_;
+  size_t width_;
+  size_t height_;
 
   DISALLOW_COPY_AND_ASSIGN(OmxVideoDecoder);
 };

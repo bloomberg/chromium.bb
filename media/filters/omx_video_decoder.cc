@@ -8,6 +8,7 @@
 #include "base/waitable_event.h"
 #include "media/base/factory.h"
 #include "media/base/filter_host.h"
+#include "media/base/limits.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/ffmpeg_interfaces.h"
 #include "media/filters/omx_video_decode_engine.h"
@@ -82,20 +83,36 @@ void OmxVideoDecoder::DoInitialize(DemuxerStream* demuxer_stream,
                                    FilterCallback* callback) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
+  // Get the AVStream by querying for the provider interface.
+  AVStreamProvider* av_stream_provider;
+  if (!demuxer_stream->QueryInterface(&av_stream_provider)) {
+    return;
+  }
+  AVStream* av_stream = av_stream_provider->GetAVStream();
+
+  width_ = av_stream->codec->width;
+  height_ = av_stream->codec->height;
+  if (width_ > Limits::kMaxDimension ||
+      height_ > Limits::kMaxDimension ||
+      (width_ * height_) > Limits::kMaxCanvas) {
+    return;
+  }
+
   // Sets the output format.
   if (supports_egl_image_) {
     media_format_.SetAsString(MediaFormat::kMimeType,
                               mime_type::kUncompressedVideoEglImage);
   }
+  else {
+    media_format_.SetAsString(MediaFormat::kMimeType,
+                              mime_type::kUncompressedVideo);
+  }
+
+  media_format_.SetAsInteger(MediaFormat::kWidth, width_);
+  media_format_.SetAsInteger(MediaFormat::kHeight, height_);
 
   // Savs the demuxer stream.
   demuxer_stream_ = demuxer_stream;
-
-  // Get the AVStream by querying for the provider interface.
-  AVStreamProvider* av_stream_provider;
-  if (!demuxer_stream->QueryInterface(&av_stream_provider))
-    return;
-  AVStream* av_stream = av_stream_provider->GetAVStream();
 
   // Initialize the decode engine.
   omx_engine_->Initialize(
