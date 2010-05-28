@@ -87,6 +87,26 @@ HDC WINAPI CreateDCAPatch(LPCSTR driver_name,
   return CreateCompatibleDC(NULL);
 }
 
+static iat_patch::IATPatchFunction g_iat_patch_get_font_data;
+DWORD WINAPI GetFontDataPatch(HDC hdc,
+                              DWORD table,
+                              DWORD offset,
+                              LPVOID buffer,
+                              DWORD length) {
+  int rv = GetFontData(hdc, table, offset, buffer, length);
+  if (rv == GDI_ERROR && hdc) {
+    HFONT font = static_cast<HFONT>(GetCurrentObject(hdc, OBJ_FONT));
+
+    LOGFONT logfont;
+    if (GetObject(font, sizeof(LOGFONT), &logfont)) {
+      std::vector<char> font_data;
+      if (RenderThread::current()->Send(new ViewHostMsg_PreCacheFont(logfont)))
+        rv = GetFontData(hdc, table, offset, buffer, length);
+    }
+  }
+  return rv;
+}
+
 #endif
 
 RenderProcessImpl::RenderProcessImpl()
@@ -180,6 +200,10 @@ RenderProcessImpl::RenderProcessImpl()
     g_iat_patch_createdca.Patch(
         pdf_lib->plugin_info().path.value().c_str(),
         "gdi32.dll", "CreateDCA", CreateDCAPatch);
+     g_iat_patch_get_font_data.Patch(
+         pdf_lib->plugin_info().path.value().c_str(),
+         "gdi32.dll", "GetFontData", GetFontDataPatch);
+
 #endif
   }
 }
