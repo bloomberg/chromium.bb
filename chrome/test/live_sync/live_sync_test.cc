@@ -53,7 +53,7 @@ class BookmarkLoadObserver : public BookmarkModelObserver {
   DISALLOW_COPY_AND_ASSIGN(BookmarkLoadObserver);
 };
 
-LiveSyncTest::LiveSyncTest() {
+LiveSyncTest::LiveSyncTest() : started_local_test_server_(false) {
 }
 
 LiveSyncTest::~LiveSyncTest() {

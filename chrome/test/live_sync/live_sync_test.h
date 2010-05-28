@@ -58,16 +58,32 @@ class LiveSyncTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
+  virtual void TearDown() {
+    // Allow the InProcessBrowserTest framework to perform its tear down.
+    InProcessBrowserTest::TearDown();
+
+    // Stop the local test sync server if one was used.
+    if (started_local_test_server_)
+      TearDownLocalTestServer();
+  }
+
   virtual void SetUpLocalTestServer() {
     bool success = server_.Start(net::TestServerLauncher::ProtoHTTP,
         server_.kHostName, server_.kOKHTTPSPort,
         FilePath(), FilePath(), std::wstring());
     ASSERT_TRUE(success);
 
+    started_local_test_server_ = true;
+
     CommandLine* cl = CommandLine::ForCurrentProcess();
     cl->AppendSwitchWithValue(switches::kSyncServiceURL,
         StringPrintf("http://%s:%d/chromiumsync", server_.kHostName,
             server_.kOKHTTPSPort));
+  }
+
+  virtual void TearDownLocalTestServer() {
+    bool success = server_.Stop();
+    ASSERT_TRUE(success);
   }
 
   // Append command line flag to enable sync.
@@ -100,6 +116,7 @@ class LiveSyncTest : public InProcessBrowserTest {
   scoped_ptr<net::ScopedDefaultHostResolverProc> mock_host_resolver_override_;
 
   net::TestServerLauncher server_;
+  bool started_local_test_server_;
 
   DISALLOW_COPY_AND_ASSIGN(LiveSyncTest);
 };
