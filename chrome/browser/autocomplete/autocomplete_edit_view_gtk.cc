@@ -1439,6 +1439,8 @@ void AutocompleteEditViewGtk::EmphasizeURLComponents() {
 
       gtk_text_buffer_apply_tag(text_buffer_, security_error_scheme_tag_,
                                 &start, &end);
+    } else if (security_level_ == ToolbarModel::SECURITY_WARNING) {
+      gtk_text_buffer_apply_tag(text_buffer_, faded_text_tag_, &start, &end);
     } else {
       gtk_text_buffer_apply_tag(text_buffer_, secure_scheme_tag_, &start, &end);
     }
