@@ -105,6 +105,7 @@ void OmxVideoDecodeEngine::Initialize(
 
   message_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this, &OmxVideoDecodeEngine::InitializeTask));
+  client_state_ = kClientInitializing;
 }
 
 // This method handles only input buffer, without coupling with output
@@ -238,12 +239,11 @@ void OmxVideoDecodeEngine::OnStopDone() {
 // Function sequence for initializing
 void OmxVideoDecodeEngine::InitializeTask() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
-  DCHECK_EQ(client_state_, kClientNotInitialized);
+  DCHECK_EQ(client_state_, kClientInitializing);
   DCHECK_EQ(il_state_, kIlNone);
 
   il_state_ = kIlNone;
   expected_il_state_ = kIlLoaded;
-  client_state_ = kClientInitializing;
   input_port_enabled_ = true;
   output_port_state_ = kPortEnabled;
   if (!CreateComponent()) {
