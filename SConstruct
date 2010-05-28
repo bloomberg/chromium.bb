@@ -192,20 +192,9 @@ bad_build_lists['dbg-win-64'] = ['ncval_test_call_long_dis',
                                  'run_srpc_basic_test',
                                  'run_srpc_bad_service_test']
 
-bad_build_lists['opt-mac-32'] = ['run_npapi_geturl_browser_test',
-                                 'run_npapi_runtime_browser_test',
-                                 'earth_browser_test']
+bad_build_lists['opt-mac-32'] = ['earth_browser_test']
 
-bad_build_lists['dbg-mac-32'] = ['run_npapi_geturl_browser_test',
-                                 'run_npapi_runtime_browser_test',
-                                 'run_srpc_basic_browser_test',
-                                 'run_srpc_plugin_browser_test',
-                                 'run_srpc_sockaddr_browser_test',
-                                 'run_srpc_shm_browser_test',
-                                 'run_srpc_nrd_xfer_browser_test',
-                                 'run_srpc_url_as_nacl_desc_test',
-                                 'run_srpc_url_as_nacl_desc_browser_test',
-                                 'earth_browser_test']
+bad_build_lists['dbg-mac-32'] = ['earth_browser_test']
 
 # ----------------------------------------------------------
 # Generic Test Wrapper
