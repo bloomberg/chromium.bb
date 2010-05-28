@@ -1075,8 +1075,11 @@ Browser* FileBrowseUI::GetPopupForPath(const std::string& path) {
   for (BrowserList::const_iterator it = BrowserList::begin();
        it != BrowserList::end(); ++it) {
     if ((*it)->type() == Browser::TYPE_POPUP) {
-      const GURL& url =
-          (*it)->GetTabContentsAt((*it)->selected_index())->GetURL();
+      TabContents* tab_contents = (*it)->GetSelectedTabContents();
+      DCHECK(tab_contents);
+      if (!tab_contents)
+          continue;
+      const GURL& url = tab_contents->GetURL();
 
       if (url.SchemeIs(chrome::kChromeUIScheme) &&
           url.host() == chrome::kChromeUIFileBrowseHost &&
