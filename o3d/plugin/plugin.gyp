@@ -302,15 +302,6 @@
               '<!@(pkg-config --libs-only-l xt)',
             ],
             'conditions' : [
-              ['target_arch=="ia32"',
-                { # Used by breakpad
-                  # TODO(zhurunz) Remove the deps on libglog.a
-                  'libraries': [
-                    '-Lbreakpad/src/third_party/linux/lib/glog',
-                    '-lglog',
-                  ],
-                },
-              ],
               ['plugin_rpath != ""',
                 {
                   'ldflags': [

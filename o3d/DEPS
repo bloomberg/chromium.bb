@@ -10,7 +10,7 @@ vars = {
   "gyp_rev": "820",
   "gtest_rev": "359",
   "gflags_rev": "30",
-  "breakpad_rev": "603",
+  "breakpad_rev": "604",
   "v8_rev": "3608",
   "nacl_rev": "1434",
 }
