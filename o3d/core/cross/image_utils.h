@@ -79,7 +79,7 @@ inline unsigned int ComputeMipMapCount(
 // Gets the smallest power-of-two value that is at least as high as
 // dimension. This is the POT dimension used in ScaleUpToPOT.
 inline unsigned int ComputePOTSize(unsigned int dimension) {
-  return 1 << base::bits::Log2Ceiling(dimension);
+  return (dimension == 0) ? 0 : 1 << base::bits::Log2Ceiling(dimension);
 }
 
 // Computes one dimension of a mip.
