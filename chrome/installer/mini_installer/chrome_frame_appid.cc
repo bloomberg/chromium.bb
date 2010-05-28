@@ -6,4 +6,5 @@
 
 namespace google_update {
 const wchar_t kAppGuid[] = L"{8BA986DA-5100-405E-AA35-86F34A02ACBF}";
+const wchar_t kSxSAppGuid[] = L"";
 }

@@ -150,10 +150,20 @@ bool ReadValueFromRegistry(HKEY root_key, const wchar_t *sub_key,
 void SetFullInstallerFlag(HKEY root_key) {
   HKEY key;
   wchar_t ap_registry_key[128];
+  const wchar_t* app_guid = google_update::kAppGuid;
+
+  int args_num;
+  wchar_t* cmd_line = ::GetCommandLine();
+  wchar_t** args = ::CommandLineToArgvW(cmd_line, &args_num);
+  for (int i = 1; i < args_num; ++i) {
+    if (0 == ::lstrcmpi(args[i], L"--chrome-sxs"))
+      app_guid = google_update::kSxSAppGuid;
+  }
+
   if (!SafeStrCopy(ap_registry_key, _countof(ap_registry_key),
                    kApRegistryKeyBase) ||
       !SafeStrCat(ap_registry_key, _countof(ap_registry_key),
-                  google_update::kAppGuid)) {
+                  app_guid)) {
     return;
   }
   if (::RegOpenKeyEx(root_key, ap_registry_key, NULL,
