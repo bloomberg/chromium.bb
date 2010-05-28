@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -232,8 +232,8 @@ END_COM_MAP()
 
 BEGIN_MSG_MAP(ChromeActiveDocument)
   MESSAGE_HANDLER(WM_FIRE_PRIVACY_CHANGE_NOTIFICATION, OnFirePrivacyChange)
-  COMMAND_ID_HANDLER(IDC_FORWARD, OnForward)
-  COMMAND_ID_HANDLER(IDC_BACK, OnBack)
+  COMMAND_ID_HANDLER(IDC_CHROMEFRAME_FORWARD, OnForward)
+  COMMAND_ID_HANDLER(IDC_CHROMEFRAME_BACK, OnBack)
   CHAIN_MSG_MAP(BaseActiveX)
 END_MSG_MAP()
 

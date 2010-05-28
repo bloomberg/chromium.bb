@@ -608,8 +608,6 @@
         'chrome_frame_histograms.h',
         'chrome_frame_reporting.cc',
         'chrome_frame_reporting.h',
-        'chrome_imported_resources.cc',
-        'chrome_imported_resources.h',
         'chrome_launcher_utils.cc',
         'chrome_launcher_utils.h',
         'chrome_protocol.cc',

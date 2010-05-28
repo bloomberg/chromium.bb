@@ -30,6 +30,7 @@
 #include "base/trace_event.h"
 
 #include "grit/generated_resources.h"
+#include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/navigation_types.h"
@@ -37,7 +38,6 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome_frame/bho.h"
 #include "chrome_frame/bind_context_info.h"
-#include "chrome_frame/chrome_imported_resources.h"
 #include "chrome_frame/utils.h"
 
 const wchar_t kChromeAttachExternalTabPrefix[] = L"attach_external_tab";
@@ -873,15 +873,14 @@ bool ChromeActiveDocument::HandleContextMenuCommand(UINT cmd,
   ScopedComPtr<IWebBrowser2> web_browser2;
   DoQueryService(SID_SWebBrowserApp, m_spClientSite, web_browser2.Receive());
 
-  if (cmd == static_cast<UINT>(context_menu_IDC_BACK)) {
+  if (cmd == IDC_BACK)
     web_browser2->GoBack();
-  } else if (cmd == static_cast<UINT>(context_menu_IDC_FORWARD)) {
+  else if (cmd == IDC_FORWARD)
     web_browser2->GoForward();
-  } else if (cmd == static_cast<UINT>(context_menu_IDC_RELOAD)) {
+  else if (cmd == IDC_RELOAD)
     web_browser2->Refresh();
-  } else {
+  else
     return BaseActiveX::HandleContextMenuCommand(cmd, params);
-  }
 
   return true;
 }
