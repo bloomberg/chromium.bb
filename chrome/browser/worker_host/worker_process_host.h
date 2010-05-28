@@ -153,7 +153,7 @@ class WorkerProcessHost : public ChildProcessHost {
       const ViewHostMsg_Resource_Request& request_data);
 
   // Called when a message arrives from the worker process.
-  void OnMessageReceived(const IPC::Message& message);
+  virtual void OnMessageReceived(const IPC::Message& message);
 
   // Called when the process has been launched successfully.
   virtual void OnProcessLaunched();

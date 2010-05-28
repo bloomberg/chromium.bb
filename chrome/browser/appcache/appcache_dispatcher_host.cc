@@ -13,24 +13,23 @@
 AppCacheDispatcherHost::AppCacheDispatcherHost(
     URLRequestContext* request_context)
     : request_context_(request_context),
-      process_handle_(0) {
+      receiver_(NULL) {
   DCHECK(request_context_.get());
 }
 
 AppCacheDispatcherHost::AppCacheDispatcherHost(
     URLRequestContextGetter* request_context_getter)
     : request_context_getter_(request_context_getter),
-      process_handle_(0) {
+      receiver_(NULL) {
   DCHECK(request_context_getter_.get());
 }
 
-void AppCacheDispatcherHost::Initialize(IPC::Message::Sender* sender,
-    int process_id, base::ProcessHandle process_handle) {
-  DCHECK(sender);
-  DCHECK(process_handle && !process_handle_);
+void AppCacheDispatcherHost::Initialize(
+    ResourceDispatcherHost::Receiver* receiver) {
+  DCHECK(receiver && !receiver_);
   DCHECK(request_context_.get() || request_context_getter_.get());
 
-  process_handle_ = process_handle;
+  receiver_ = receiver;
 
   // Get the AppCacheService (it can only be accessed from IO thread).
   URLRequestContext* context = request_context_.get();
@@ -41,10 +40,10 @@ void AppCacheDispatcherHost::Initialize(IPC::Message::Sender* sender,
   request_context_ = NULL;
   request_context_getter_ = NULL;
 
-  frontend_proxy_.set_sender(sender);
+  frontend_proxy_.set_sender(receiver);
   if (appcache_service_.get()) {
     backend_impl_.Initialize(
-        appcache_service_.get(), &frontend_proxy_, process_id);
+        appcache_service_.get(), &frontend_proxy_, receiver->id());
     get_status_callback_.reset(
         NewCallback(this, &AppCacheDispatcherHost::GetStatusCallback));
     start_update_callback_.reset(
@@ -56,7 +55,7 @@ void AppCacheDispatcherHost::Initialize(IPC::Message::Sender* sender,
 
 bool AppCacheDispatcherHost::OnMessageReceived(const IPC::Message& msg,
                                                bool *msg_ok) {
-  DCHECK(process_handle_);
+  DCHECK(receiver_);
   *msg_ok = true;
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(AppCacheDispatcherHost, msg, *msg_ok)
@@ -229,5 +228,5 @@ void AppCacheDispatcherHost::ReceivedBadMessage(uint32 msg_type) {
   // TODO(michaeln): Consider gathering UMA stats
   // http://code.google.com/p/chromium/issues/detail?id=24634
   BrowserRenderProcessHost::BadMessageTerminateProcess(
-      msg_type, process_handle_);
+      msg_type, receiver_->handle());
 }

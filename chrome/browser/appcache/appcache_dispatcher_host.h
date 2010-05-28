@@ -11,6 +11,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/appcache/appcache_frontend_proxy.h"
+#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "ipc/ipc_message.h"
 #include "webkit/appcache/appcache_backend_impl.h"
 
@@ -20,8 +21,8 @@ class URLRequestContextGetter;
 
 // Handles appcache related messages sent to the main browser process from
 // its child processes. There is a distinct host for each child process.
-// Messages are handled on the IO thread. The ResourceMessageFilter creates
-// an instance and delegates calls to it.
+// Messages are handled on the IO thread. The ResourceMessageFilter and
+// WorkerProcessHost create an instance and delegates calls to it.
 class AppCacheDispatcherHost {
  public:
   // Constructor for use on the IO thread.
@@ -32,8 +33,7 @@ class AppCacheDispatcherHost {
   explicit AppCacheDispatcherHost(
       URLRequestContextGetter* request_context_getter);
 
-  void Initialize(IPC::Message::Sender* sender, int process_id,
-                  base::ProcessHandle process_handle);
+  void Initialize(ResourceDispatcherHost::Receiver* receiver);
   bool OnMessageReceived(const IPC::Message& msg, bool* msg_is_ok);
 
   int process_id() const { return backend_impl_.process_id(); }
@@ -79,8 +79,9 @@ class AppCacheDispatcherHost {
   scoped_ptr<appcache::GetStatusCallback> get_status_callback_;
   scoped_ptr<appcache::StartUpdateCallback> start_update_callback_;
   scoped_ptr<appcache::SwapCacheCallback> swap_cache_callback_;
-  base::ProcessHandle process_handle_;
   scoped_ptr<IPC::Message> pending_reply_msg_;
+
+  ResourceDispatcherHost::Receiver* receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheDispatcherHost);
 };

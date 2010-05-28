@@ -67,6 +67,7 @@ WorkerProcessHost::WorkerProcessHost(
   db_dispatcher_host_ = new DatabaseDispatcherHost(
       request_context->database_tracker(), this,
       request_context_->host_content_settings_map());
+  appcache_dispatcher_host_->Initialize(this);
 }
 
 WorkerProcessHost::~WorkerProcessHost() {
@@ -314,7 +315,6 @@ void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
 
 void WorkerProcessHost::OnProcessLaunched() {
   db_dispatcher_host_->Init(handle());
-  appcache_dispatcher_host_->Initialize(this, id(), handle());
 }
 
 CallbackWithReturnValue<int>::Type* WorkerProcessHost::GetNextRouteIdCallback(
