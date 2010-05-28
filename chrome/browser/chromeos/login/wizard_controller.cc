@@ -16,6 +16,7 @@
 #include "base/logging.h"  // For NOTREACHED.
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
+#include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/account_screen.h"
 #include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -163,6 +164,7 @@ WizardController* WizardController::default_controller_ = NULL;
 
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, public:
+
 WizardController::WizardController()
     : widget_(NULL),
       background_widget_(NULL),
@@ -296,6 +298,11 @@ void WizardController::SetStatusAreaVisible(bool visible) {
   if (background_view_) {
     background_view_->SetStatusAreaVisible(visible);
   }
+}
+
+void WizardController::SetCustomization(
+    const chromeos::StartupCustomizationDocument* customization) {
+  customization_.reset(customization);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -474,7 +481,21 @@ void ShowLoginWizard(const std::string& first_screen_name,
     }
   }
 
+  // Load partner customization startup manifest if needed.
+  scoped_ptr<chromeos::StartupCustomizationDocument> customization;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kStartupManifest)) {
+    customization.reset(new chromeos::StartupCustomizationDocument());
+    FilePath manifest_path =
+        CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+            switches::kStartupManifest);
+    bool manifest_loaded = customization->LoadManifestFromFile(manifest_path);
+    DCHECK(manifest_loaded) << manifest_path.value();
+  }
+
+  // Create and show the wizard.
   WizardController* controller = new WizardController();
+  controller->SetCustomization(customization.release());
   controller->ShowBackground(screen_bounds);
   controller->Init(first_screen_name, screen_bounds, true);
   controller->Show();
