@@ -13,7 +13,6 @@
 #include "base/lock.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/util/sync_types.h"
-#include "chrome/common/net/gaia/signin.h"
 
 extern "C" struct sqlite3;
 
@@ -58,10 +57,6 @@ class UserSettings {
   bool GetLastUserAndServiceToken(const std::string& service_name,
                                   std::string* username,
                                   std::string* service_token);
-
-  void RememberSigninType(const std::string& signin, gaia::SignIn signin_type);
-  gaia::SignIn RecallSigninType(const std::string& signin,
-                                gaia::SignIn default_type);
 
   void RemoveAllGuestSettings();
 

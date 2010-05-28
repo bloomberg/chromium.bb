@@ -111,12 +111,11 @@ class AuthWatcher : public base::RefCountedThreadSafe<AuthWatcher> {
   // convenience in the common case so the token doesn't have to be plumbed
   // everywhere.
   void Authenticate(const std::string& email, const std::string& password,
-      const std::string& captcha_token, const std::string& captcha_value,
-      bool persist_creds_to_disk);
+      const std::string& captcha_token, const std::string& captcha_value);
 
   void Authenticate(const std::string& email, const std::string& password,
       bool persist_creds_to_disk) {
-    Authenticate(email, password, "", "", persist_creds_to_disk);
+    Authenticate(email, password, "", "");
   }
 
   // Use this to update only the token of the current email address.
@@ -150,8 +149,7 @@ class AuthWatcher : public base::RefCountedThreadSafe<AuthWatcher> {
   void HandleServerConnectionEvent(const ServerConnectionEvent& event);
 
   void SaveUserSettings(const std::string& username,
-                        const std::string& auth_token,
-                        const bool save_credentials);
+                        const std::string& auth_token);
 
   MessageLoop* message_loop() { return auth_backend_thread_.message_loop(); }
 

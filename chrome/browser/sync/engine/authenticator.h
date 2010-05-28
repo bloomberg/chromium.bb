@@ -69,14 +69,11 @@ class Authenticator {
   // any.
   AuthenticationResult Authenticate();
 
-  // If save_credentials is set we save the long-lived auth token to local disk.
-  // In all cases we save the username and password in memory (if given) so we
+  // We save the username and password in memory (if given) so we
   // can refresh the long-lived auth token if it expires.
   // Also we save a 10-bit hash of the password to allow offline login.
-  // TODO(sync): Make it work as described.
-  // TODO(sync): Arguments for desired domain.
-  AuthenticationResult Authenticate(std::string username, std::string password,
-                                    bool save_credentials);
+  AuthenticationResult Authenticate(std::string username, std::string password);
+
   // A version of the auth token to authenticate cookie portion of
   // authentication. It uses the new proto buffer based call instead of the HTTP
   // GET based one we currently use.

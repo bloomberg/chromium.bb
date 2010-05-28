@@ -71,11 +71,6 @@ class GaiaAuthMockForAuthWatcher : public gaia::GaiaAuthenticator {
     return true;
   }
 
-  bool LookupEmail(AuthResults* results) {
-    results->signin = gaia::GMAIL_SIGNIN;
-    return true;
-  }
-
   void RenewAuthToken(const std::string& auth_token) {
     renewed_token_ = auth_token;
   }
@@ -194,8 +189,8 @@ TEST_F(AuthWatcherTest, Construction) {
 TEST_F(AuthWatcherTest, AuthenticateGaiaAuthFailure) {
   auth_watcher()->Authenticate(kTestEmail, kWrongPassword,
       std::string(),  // captcha_token
-      std::string(),  // captcha_value
-      false);  // persist_creds_to_disk
+      std::string());  // captcha_value
+
   EXPECT_EQ(AuthWatcherEvent::AUTHENTICATION_ATTEMPT_START, ConsumeNextEvent());
   EXPECT_EQ(AuthWatcherEvent::GAIA_AUTH_FAILED, ConsumeNextEvent());
 }
@@ -203,14 +198,14 @@ TEST_F(AuthWatcherTest, AuthenticateGaiaAuthFailure) {
 TEST_F(AuthWatcherTest, AuthenticateBadAuthToken) {
   gaia_auth()->SendBadAuthTokenForNextRequest();
   auth_watcher()->Authenticate(kTestEmail, kCorrectPassword, std::string(),
-      std::string(), false);
+      std::string());
   EXPECT_EQ(AuthWatcherEvent::AUTHENTICATION_ATTEMPT_START, ConsumeNextEvent());
   EXPECT_EQ(AuthWatcherEvent::SERVICE_AUTH_FAILED, ConsumeNextEvent());
 }
 
 TEST_F(AuthWatcherTest, AuthenticateSuccess) {
   auth_watcher()->Authenticate(kTestEmail, kCorrectPassword, std::string(),
-      std::string(), false);
+      std::string());
   EXPECT_EQ(AuthWatcherEvent::AUTHENTICATION_ATTEMPT_START, ConsumeNextEvent());
   EXPECT_EQ(AuthWatcherEvent::AUTH_SUCCEEDED, ConsumeNextEvent());
 
@@ -233,7 +228,7 @@ TEST_F(AuthWatcherTest, AuthenticateWithTokenSuccess) {
 // Just check that the thread task was properly issued.
 TEST_F(AuthWatcherTest, RenewAuthToken) {
   auth_watcher()->Authenticate(kTestEmail, kCorrectPassword, std::string(),
-      std::string(), false);
+      std::string());
   EXPECT_EQ(AuthWatcherEvent::AUTHENTICATION_ATTEMPT_START, ConsumeNextEvent());
   EXPECT_EQ(AuthWatcherEvent::AUTH_SUCCEEDED, ConsumeNextEvent());
 

@@ -78,18 +78,14 @@ void AuthWatcher::PersistCredentials() {
   ClearAuthenticationData();
 
   user_settings_->StoreEmailForSignin(results.email, results.primary_email);
-  user_settings_->RememberSigninType(results.email, results.signin);
-  user_settings_->RememberSigninType(results.primary_email, results.signin);
   results.email = results.primary_email;
   gaia_->SetUsernamePassword(results.primary_email, results.password);
   if (!user_settings_->VerifyAgainstStoredHash(results.email, results.password))
     user_settings_->StoreHashedPassword(results.email, results.password);
 
-  if (gaia::PERSIST_TO_DISK == results.credentials_saved) {
-    user_settings_->SetAuthTokenForService(results.email,
-                                           SYNC_SERVICE_NAME,
-                                           gaia_->auth_token());
-  }
+  user_settings_->SetAuthTokenForService(results.email,
+                                         SYNC_SERVICE_NAME,
+                                         gaia_->auth_token());
 }
 
 // TODO(chron): Full integration test suite needed. http://crbug.com/35429
@@ -130,7 +126,7 @@ void AuthWatcher::DoAuthenticateWithLsid(const std::string& lsid) {
   AuthWatcherEvent event = { AuthWatcherEvent::AUTHENTICATION_ATTEMPT_START };
   NotifyListeners(&event);
 
-  if (gaia_->AuthenticateWithLsid(lsid, true)) {
+  if (gaia_->AuthenticateWithLsid(lsid)) {
     PersistCredentials();
     DoAuthenticateWithToken(gaia_->email(), gaia_->auth_token());
   } else {
@@ -159,9 +155,10 @@ void AuthWatcher::DoAuthenticateWithToken(const std::string& gaia_email,
     LOG(INFO) << "Auth returned email " << email << " for gaia email " <<
         gaia_email;
   }
+
   AuthWatcherEvent event = {AuthWatcherEvent::ILLEGAL_VALUE , 0};
   gaia_->SetUsername(email);
-  gaia_->SetAuthToken(auth_token, gaia::SAVE_IN_MEMORY_ONLY);
+  gaia_->SetAuthToken(auth_token);
   const bool was_authenticated = NOT_AUTHENTICATED != status_;
   switch (result) {
     case Authenticator::SUCCESS:
@@ -235,15 +232,11 @@ void AuthWatcher::ProcessGaiaAuthFailure() {
   if (LOCALLY_AUTHENTICATED == status_) {
     return;  // nothing todo
   } else if (AuthenticateLocally(results.email, results.password)) {
-    // We save the "Remember me" checkbox by putting a non-null auth
-    // token into the last_user table.  So if we're offline and the
-    // user checks the box, insert a bogus auth token.
-    if (gaia::PERSIST_TO_DISK == results.credentials_saved) {
-      const string auth_token("bogus");
-      user_settings_->SetAuthTokenForService(results.email,
-                                             SYNC_SERVICE_NAME,
-                                             auth_token);
-    }
+    // TODO(chron): Do we really want a bogus token?
+    const string auth_token("bogus");
+    user_settings_->SetAuthTokenForService(results.email,
+                                           SYNC_SERVICE_NAME,
+                                           auth_token);
     const bool unavailable =
         gaia::ConnectionUnavailable == results.auth_error ||
         gaia::Unknown == results.auth_error ||
@@ -263,11 +256,6 @@ void AuthWatcher::DoAuthenticate(const AuthRequest& request) {
 
   current_attempt_trigger_ = request.trigger;
 
-  gaia::SaveCredentials save = request.persist_creds_to_disk ?
-      gaia::PERSIST_TO_DISK : gaia::SAVE_IN_MEMORY_ONLY;
-  gaia::SignIn const signin = user_settings_->
-      RecallSigninType(request.email, gaia::GMAIL_SIGNIN);
-
   // We let the caller be lazy and try using the last captcha token seen by
   // the gaia authenticator if they haven't provided a token but have sent
   // a challenge response. Of course, if the captcha token is specified,
@@ -280,11 +268,10 @@ void AuthWatcher::DoAuthenticate(const AuthRequest& request) {
     bool authenticated = false;
     if (!captcha_token.empty()) {
       authenticated = gaia_->Authenticate(request.email, request.password,
-                                          save, captcha_token,
-                                          request.captcha_value, signin);
+                                          captcha_token,
+                                          request.captcha_value);
     } else {
-      authenticated = gaia_->Authenticate(request.email, request.password,
-                                          save, signin);
+      authenticated = gaia_->Authenticate(request.email, request.password);
     }
     if (authenticated) {
       PersistCredentials();
@@ -334,8 +321,6 @@ void AuthWatcher::DoHandleServerConnectionEvent(
     AuthRequest request = { authresults.email, authresults.password,
                             authresults.auth_token, std::string(),
                             std::string(),
-                            gaia::PERSIST_TO_DISK ==
-                                authresults.credentials_saved,
                             AuthWatcherEvent::EXPIRED_CREDENTIALS };
     DoAuthenticate(request);
   }
@@ -352,13 +337,12 @@ AuthWatcher::~AuthWatcher() {
 }
 
 void AuthWatcher::Authenticate(const string& email, const string& password,
-    const string& captcha_token, const string& captcha_value,
-    bool persist_creds_to_disk) {
+    const string& captcha_token, const string& captcha_value) {
   LOG(INFO) << "AuthWatcher::Authenticate called";
 
   string empty;
   AuthRequest request = { FormatAsEmailAddress(email), password, empty,
-                          captcha_token, captcha_value, persist_creds_to_disk,
+                          captcha_token, captcha_value,
                           AuthWatcherEvent::USER_INITIATED };
   message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
       &AuthWatcher::DoAuthenticate, request));

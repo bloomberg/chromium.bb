@@ -41,7 +41,7 @@ TEST(GaiaAuthenticatorTest, TestNewlineAtEndOfAuthTokenRemoved) {
   MessageLoop message_loop;
   mock_auth.set_message_loop(&message_loop);
   GaiaAuthenticator::AuthResults results;
-  EXPECT_TRUE(mock_auth.IssueAuthToken(&results, "sid", true));
+  EXPECT_TRUE(mock_auth.IssueAuthToken(&results, "sid"));
   EXPECT_EQ(0, results.auth_token.compare("body"));
 }
 

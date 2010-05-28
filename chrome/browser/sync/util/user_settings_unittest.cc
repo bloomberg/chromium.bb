@@ -23,6 +23,8 @@ using std::numeric_limits;
 
 static const FilePath::CharType kV10UserSettingsDB[] =
     FILE_PATH_LITERAL("Version10Settings.sqlite3");
+static const FilePath::CharType kV11UserSettingsDB[] =
+    FILE_PATH_LITERAL("Version11Settings.sqlite3");
 static const FilePath::CharType kOldStyleSyncDataDB[] =
     FILE_PATH_LITERAL("OldStyleSyncData.sqlite3");
 
@@ -36,7 +38,8 @@ class UserSettingsTest : public testing::Test {
     sqlite3* primer_handle = NULL;
     v10_user_setting_db_path_ =
         destination_directory.Append(FilePath(kV10UserSettingsDB));
-    ASSERT_EQ(SQLITE_OK, OpenSqliteDb(v10_user_setting_db_path_, &primer_handle));
+    ASSERT_EQ(SQLITE_OK, OpenSqliteDb(v10_user_setting_db_path_,
+        &primer_handle));
     old_style_sync_data_path_ =
         destination_directory.Append(FilePath(kOldStyleSyncDataDB));
 
@@ -49,7 +52,9 @@ class UserSettingsTest : public testing::Test {
     ExecOrDie(primer_handle, "CREATE TABLE settings"
               " (email, key, value, "
               "  PRIMARY KEY(email, key) ON CONFLICT REPLACE)");
-
+    // Add a blank signin table.
+    ExecOrDie(primer_handle, "CREATE TABLE signin_types"
+              " (signin, signin_type)");
     // Create and populate version table.
     ExecOrDie(primer_handle, "CREATE TABLE db_version ( version )");
     {
@@ -80,9 +85,55 @@ class UserSettingsTest : public testing::Test {
     sqlite3_close(primer_handle);
   }
 
+   // Creates and populates the V11 database file within
+  // |destination_directory|.
+  void SetUpVersion11Database(const FilePath& destination_directory) {
+    sqlite3* primer_handle = NULL;
+    v11_user_setting_db_path_ =
+        destination_directory.Append(FilePath(kV11UserSettingsDB));
+    ASSERT_EQ(SQLITE_OK, OpenSqliteDb(v11_user_setting_db_path_,
+        &primer_handle));
+
+    // Create settings table.
+    ExecOrDie(primer_handle, "CREATE TABLE settings"
+              " (email, key, value, "
+              "  PRIMARY KEY(email, key) ON CONFLICT REPLACE)");
+
+    // Create and populate version table.
+    ExecOrDie(primer_handle, "CREATE TABLE db_version ( version )");
+    {
+      SQLStatement statement;
+      const char query[] = "INSERT INTO db_version values ( ? )";
+      statement.prepare(primer_handle, query);
+      statement.bind_int(0, 11);
+      if (SQLITE_DONE != statement.step()) {
+        LOG(FATAL) << query << "\n" << sqlite3_errmsg(primer_handle);
+      }
+    }
+
+    ExecOrDie(primer_handle, "CREATE TABLE signin_types"
+              " (signin, signin_type)");
+
+    {
+      SQLStatement statement;
+      const char query[] = "INSERT INTO signin_types values ( ?, ? )";
+      statement.prepare(primer_handle, query);
+      statement.bind_string(0, "test");
+      statement.bind_string(1, "test");
+      if (SQLITE_DONE != statement.step()) {
+        LOG(FATAL) << query << "\n" << sqlite3_errmsg(primer_handle);
+      }
+    }
+
+    sqlite3_close(primer_handle);
+  }
+
   const std::string& sync_data() const { return sync_data_; }
   const FilePath& v10_user_setting_db_path() const {
     return v10_user_setting_db_path_;
+  }
+  const FilePath& v11_user_setting_db_path() const {
+    return v11_user_setting_db_path_;
   }
   const FilePath& old_style_sync_data_path() const {
     return old_style_sync_data_path_;
@@ -91,6 +142,9 @@ class UserSettingsTest : public testing::Test {
  private:
   FilePath v10_user_setting_db_path_;
   FilePath old_style_sync_data_path_;
+
+  FilePath v11_user_setting_db_path_;
+
   std::string sync_data_;
 };
 
@@ -117,7 +171,7 @@ TEST_F(UserSettingsTest, MigrateFromV10ToV11) {
     version_query.prepare(handle, "SELECT version FROM db_version");
     ASSERT_EQ(SQLITE_ROW, version_query.step());
     const int version = version_query.column_int(0);
-    EXPECT_EQ(11, version);
+    EXPECT_GE(version, 11);
   }
 
   EXPECT_FALSE(file_util::PathExists(old_style_sync_data_path()));
@@ -129,6 +183,31 @@ TEST_F(UserSettingsTest, MigrateFromV10ToV11) {
   ASSERT_TRUE(file_util::ReadFileToString(new_style_path, &contents));
   EXPECT_TRUE(sync_data() == contents);
   sqlite3_close(handle);
+}
+
+TEST_F(UserSettingsTest, MigrateFromV11ToV12) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  SetUpVersion11Database(temp_dir.path());
+  {
+    UserSettings settings;
+    settings.Init(v11_user_setting_db_path());
+  }
+  sqlite3* handle = NULL;
+  ASSERT_EQ(SQLITE_OK, OpenSqliteDb(v11_user_setting_db_path(), &handle));
+
+  {
+    SQLStatement version_query;
+    version_query.prepare(handle, "SELECT version FROM db_version");
+    ASSERT_EQ(SQLITE_ROW, version_query.step());
+    const int version = version_query.column_int(0);
+    EXPECT_GE(version, 12);
+
+    SQLStatement table_query;
+    table_query.prepare(handle, "SELECT name FROM sqlite_master "
+        "WHERE type='table' AND name='signin_types'");
+    ASSERT_NE(SQLITE_ROW, table_query.step());
+  }
 }
 
 TEST_F(UserSettingsTest, APEncode) {

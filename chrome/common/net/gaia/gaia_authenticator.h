@@ -24,8 +24,7 @@
 
 // TODO(sanjeevr): This class has been moved here from the bookmarks sync code.
 // While it is a generic class that handles GAIA authentication, there are some
-// artifacts of the sync code such as the SaveCredentials enum which needs to
-// be cleaned up.
+// artifacts of the sync code which needs to be cleaned up.
 #ifndef CHROME_COMMON_NET_GAIA_GAIA_AUTHENTICATOR_H_
 #define CHROME_COMMON_NET_GAIA_GAIA_AUTHENTICATOR_H_
 
@@ -33,7 +32,6 @@
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
-#include "chrome/common/net/gaia/signin.h"
 #include "chrome/common/deprecated/event_sys.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
@@ -42,16 +40,6 @@ namespace gaia {
 
 static const char kGaiaUrl[] =
     "https://www.google.com:443/accounts/ClientLogin";
-
-// Use of the following enum is odd. GaiaAuthenticator only looks at
-// and DONT_SAVE_CREDENTIALS and SAVE_IN_MEMORY_ONLY (PERSIST_TO_DISK is == to
-// SAVE_IN_MEMORY_ONLY for GaiaAuthenticator).
-
-enum SaveCredentials {
-  DONT_SAVE_CREDENTIALS,
-  SAVE_IN_MEMORY_ONLY,
-  PERSIST_TO_DISK // Saved in both memory and disk
-};
 
 // Error codes from Gaia. These will be set correctly for both Gaia V1
 // (/ClientAuth) and V2 (/ClientLogin)
@@ -117,19 +105,16 @@ class GaiaAuthenticator {
   // token via the respective accessors. Returns a boolean indicating whether
   // authentication succeeded or not.
   bool Authenticate(const std::string& user_name, const std::string& password,
-                    SaveCredentials should_save_credentials,
                     const std::string& captcha_token,
-                    const std::string& captcha_value,
-                    SignIn try_first);
+                    const std::string& captcha_value);
 
-  bool Authenticate(const std::string& user_name, const std::string& password,
-                    SaveCredentials should_save_credentials,
-                    SignIn try_first);
+  bool Authenticate(const std::string& user_name, const std::string& password);
 
   // Pass the LSID to authenticate with. If the authentication succeeds, you can
   // retrieve the authetication token via the respective accessors. Returns a
   // boolean indicating whether authentication succeeded or not.
-  bool AuthenticateWithLsid(const std::string& lsid, bool long_lived_token);
+  // Always returns a long lived token.
+  bool AuthenticateWithLsid(const std::string& lsid);
 
   // Resets all stored cookies to their default values.
   void ResetCredentials();
@@ -141,10 +126,9 @@ class GaiaAuthenticator {
 
   // Virtual for testing
   virtual void RenewAuthToken(const std::string& auth_token);
-  void SetAuthToken(const std::string& auth_token, SaveCredentials);
+  void SetAuthToken(const std::string& auth_token);
 
   struct AuthResults {
-    SaveCredentials credentials_saved;
     std::string email;
     std::string password;
 
@@ -161,16 +145,8 @@ class GaiaAuthenticator {
     std::string auth_error_url;
     std::string captcha_token;
     std::string captcha_url;
-    SignIn signin;
 
-    // TODO(skrul): When auth fails, the "signin" field of the results
-    // struct never gets set, which causes valgrind to complain.  Give
-    // this field a value here so the error is suppressed. It turns
-    // out that the signin field has only one possible value, so the
-    // correct fix here would be to to remove it entirely.
-    AuthResults() : credentials_saved(DONT_SAVE_CREDENTIALS),
-                    auth_error(None),
-                    signin(GMAIL_SIGNIN) { }
+    AuthResults() : auth_error(None) {}
   };
 
  protected:
@@ -178,21 +154,17 @@ class GaiaAuthenticator {
   struct AuthParams {
     GaiaAuthenticator* authenticator;
     uint32 request_id;
-    SaveCredentials should_save_credentials;
     std::string email;
     std::string password;
     std::string captcha_token;
     std::string captcha_value;
-    SignIn try_first;
   };
 
   // mutex_ must be entered before calling this function.
   AuthParams MakeParams(const std::string& user_name,
                         const std::string& password,
-                        SaveCredentials should_save_credentials,
                         const std::string& captcha_token,
-                        const std::string& captcha_value,
-                        SignIn try_first);
+                        const std::string& captcha_value);
 
   // The real Authenticate implementations.
   bool AuthenticateImpl(const AuthParams& params);
@@ -284,8 +256,7 @@ class GaiaAuthenticator {
   }
 
  private:
-  bool IssueAuthToken(AuthResults* results, const std::string& service_id,
-                      bool long_lived_token);
+  bool IssueAuthToken(AuthResults* results, const std::string& service_id);
 
   // Helper method to parse response when authentication succeeds.
   void ExtractTokensFrom(const std::string& response, AuthResults* results);

@@ -69,7 +69,7 @@ static const char PASSWORD_HASH[] = "password_hash2";
 static const char SALT[] = "salt2";
 
 static const int kSaltSize = 20;
-static const int kCurrentDBVersion = 11;
+static const int kCurrentDBVersion = 12;
 
 UserSettings::ScopedDBHandle::ScopedDBHandle(UserSettings* settings)
     : mutex_lock_(settings->dbhandle_mutex_), handle_(&settings->dbhandle_) {
@@ -138,6 +138,10 @@ void UserSettings::MigrateOldVersionsAsNeeded(sqlite3* const handle,
       ExecOrDie(handle, "DROP TABLE shares");
       ExecOrDie(handle, "UPDATE db_version SET version = 11");
     // FALL THROUGH
+    case 11:
+      ExecOrDie(handle, "DROP TABLE signin_types");
+      ExecOrDie(handle, "UPDATE db_version SET version = 12");
+    // FALL THROUGH
     case kCurrentDBVersion:
       // Nothing to migrate.
       return;
@@ -152,15 +156,6 @@ static void MakeCookiesTable(sqlite3* const dbhandle) {
             "CREATE TABLE cookies"
             " (email, service_name, service_token, "
             " PRIMARY KEY(email, service_name) ON CONFLICT REPLACE)");
-}
-
-static void MakeSigninTypesTable(sqlite3* const dbhandle) {
-  // With every successful gaia authentication, remember if it was
-  // a hosted domain or not.
-  ExecOrDie(dbhandle,
-            "CREATE TABLE signin_types"
-            " (signin, signin_type, "
-            " PRIMARY KEY(signin, signin_type) ON CONFLICT REPLACE)");
 }
 
 static void MakeClientIDTable(sqlite3* const dbhandle) {
@@ -247,7 +242,6 @@ bool UserSettings::Init(const FilePath& settings_path) {
 
       MakeSigninsTable(dbhandle.get());
       MakeCookiesTable(dbhandle.get());
-      MakeSigninTypesTable(dbhandle.get());
       MakeClientIDTable(dbhandle.get());
     }
     transaction.Commit();
@@ -427,35 +421,6 @@ void UserSettings::SwitchUser(const string& username) {
     AutoLock lock(mutex_);
     email_ = username;
   }
-}
-
-void UserSettings::RememberSigninType(const string& signin,
-                                      gaia::SignIn signin_type) {
-  ScopedDBHandle dbhandle(this);
-    SQLStatement statement;
-    statement.prepare(dbhandle.get(),
-                      "INSERT INTO signin_types(signin, signin_type)"
-                      " values ( ?, ? )");
-    statement.bind_string(0, signin);
-    statement.bind_int(1, static_cast<int>(signin_type));
-    if (SQLITE_DONE != statement.step()) {
-      LOG(FATAL) << sqlite3_errmsg(dbhandle.get());
-    }
-}
-
-gaia::SignIn UserSettings::RecallSigninType(const string& signin,
-                                            gaia::SignIn default_type) {
-  ScopedDBHandle dbhandle(this);
-  SQLStatement statement;
-  statement.prepare(dbhandle.get(),
-                    "SELECT signin_type from signin_types WHERE signin = ?");
-  statement.bind_string(0, signin);
-  int query_result = statement.step();
-  if (SQLITE_ROW == query_result) {
-    int signin_type = statement.column_int(0);
-    return static_cast<gaia::SignIn>(signin_type);
-  }
-  return default_type;
 }
 
 string UserSettings::GetClientId() {

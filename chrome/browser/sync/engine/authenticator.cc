@@ -30,16 +30,13 @@ Authenticator::AuthenticationResult Authenticator::Authenticate() {
 }
 
 Authenticator::AuthenticationResult Authenticator::Authenticate(
-    string username, string password, bool save_credentials) {
+    string username, string password) {
   // TODO(sync): need to figure out if this routine is used anywhere other
   // than the test code.
   gaia::GaiaAuthenticator auth_service("ChromiumBrowser", "chromiumsync",
       "https://www.google.com:443/accounts/ClientLogin");
   auth_service.set_message_loop(MessageLoop::current());
-  const gaia::SignIn signin_type =
-    settings_->RecallSigninType(username, gaia::GMAIL_SIGNIN);
-  if (!auth_service.Authenticate(username, password, gaia::SAVE_IN_MEMORY_ONLY,
-                                 signin_type)) {
+  if (!auth_service.Authenticate(username, password)) {
     return UNSPECIFIC_ERROR_RETURN;
   }
   CHECK(!auth_service.auth_token().empty());

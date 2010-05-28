@@ -18,7 +18,6 @@
 #include "chrome/browser/sync/util/sync_types.h"
 #include "chrome/common/deprecated/event_sys.h"
 #include "chrome/common/net/http_return.h"
-#include "chrome/common/net/gaia/signin.h"
 
 namespace syncable {
 class WriteTransaction;
@@ -253,8 +252,6 @@ class ServerConnectionManager {
   inline bool server_reachable() const { return server_reachable_; }
 
   const std::string client_id() const { return client_id_; }
-
-  void SetDomainFromSignIn(gaia::SignIn signin_type, const std::string& signin);
 
   // This changes the server info used by the connection manager. This allows
   // a single client instance to talk to different backing servers. This is

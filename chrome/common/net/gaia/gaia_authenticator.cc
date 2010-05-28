@@ -51,48 +51,39 @@ GaiaAuthenticator::~GaiaAuthenticator() {
 GaiaAuthenticator::AuthParams GaiaAuthenticator::MakeParams(
     const string& user_name,
     const string& password,
-    SaveCredentials should_save_credentials,
     const string& captcha_token,
-    const string& captcha_value,
-    SignIn try_first) {
+    const string& captcha_value) {
   AuthParams params;
   params.request_id = ++request_count_;
   params.email = user_name;
   params.password = password;
-  params.should_save_credentials = should_save_credentials;
   params.captcha_token = captcha_token;
   params.captcha_value = captcha_value;
   params.authenticator = this;
-  params.try_first = try_first;
   return params;
 }
 
 bool GaiaAuthenticator::Authenticate(const string& user_name,
                                      const string& password,
-                                     SaveCredentials should_save_credentials,
                                      const string& captcha_token,
-                                     const string& captcha_value,
-                                     SignIn try_first) {
+                                     const string& captcha_value) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
 
   AuthParams const params =
-    MakeParams(user_name, password, should_save_credentials, captcha_token,
-               captcha_value, try_first);
+      MakeParams(user_name, password, captcha_token, captcha_value);
   return AuthenticateImpl(params);
 }
 
-bool GaiaAuthenticator::AuthenticateWithLsid(const string& lsid,
-                                             bool long_lived) {
+bool GaiaAuthenticator::AuthenticateWithLsid(const string& lsid) {
   auth_results_.lsid = lsid;
   // We need to lookup the email associated with this LSID cookie in order to
   // update |auth_results_| with the correct values.
   if (LookupEmail(&auth_results_)) {
     auth_results_.email = auth_results_.primary_email;
-    return IssueAuthToken(&auth_results_, service_id_, long_lived);
+    return IssueAuthToken(&auth_results_, service_id_);
   }
   return false;
 }
-
 
 bool GaiaAuthenticator::AuthenticateImpl(const AuthParams& params) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
@@ -119,16 +110,9 @@ bool GaiaAuthenticator::AuthenticateImpl(const AuthParams& params) {
 bool GaiaAuthenticator::AuthenticateImpl(const AuthParams& params,
                                          AuthResults* results) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
-  results->credentials_saved = params.should_save_credentials;
   results->auth_error = ConnectionUnavailable;
-  // Save credentials if so requested.
-  if (params.should_save_credentials != DONT_SAVE_CREDENTIALS) {
-    results->email = params.email.data();
-    results->password = params.password;
-  } else {  // Explicitly clear previously-saved credentials.
-    results->email = "";
-    results->password = "";
-  }
+  results->email = params.email.data();
+  results->password = params.password;
 
   // The aim of this code is to start failing requests if due to a logic error
   // in the program we're hammering GAIA.
@@ -192,13 +176,9 @@ bool GaiaAuthenticator::PerformGaiaRequest(const AuthParams& params,
     return false;
   } else if (RC_REQUEST_OK == server_response_code) {
     ExtractTokensFrom(message_text, results);
-    const bool old_gaia =
-      results->auth_token.empty() && !results->lsid.empty();
-    const bool long_lived_token =
-      params.should_save_credentials == PERSIST_TO_DISK;
-    if ((old_gaia || long_lived_token) &&
-        !IssueAuthToken(results, service_id_, long_lived_token))
+    if (!IssueAuthToken(results, service_id_)) {
       return false;
+    }
 
     return LookupEmail(results);
   } else {
@@ -240,7 +220,6 @@ bool GaiaAuthenticator::LookupEmail(AuthResults* results) {
       if ("accountType" == i->first) {
         // We never authenticate an email as a hosted account.
         DCHECK_EQ("GOOGLE", i->second);
-        results->signin = GMAIL_SIGNIN;
       } else if ("email" == i->first) {
         results->primary_email = i->second;
       }
@@ -253,8 +232,7 @@ bool GaiaAuthenticator::LookupEmail(AuthResults* results) {
 // We need to call this explicitly when we need to obtain a long-lived session
 // token.
 bool GaiaAuthenticator::IssueAuthToken(AuthResults* results,
-                                       const string& service_id,
-                                       bool long_lived) {
+                                       const string& service_id) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   // Use the provided Gaia server, but change the path to what V1 expects.
   GURL url(gaia_url_);  // Gaia server.
@@ -268,9 +246,7 @@ bool GaiaAuthenticator::IssueAuthToken(AuthResults* results,
   post_body += "LSID=";
   post_body += EscapeUrlEncodedData(results->lsid);
   post_body += "&service=" + service_id;
-  if (long_lived) {
-    post_body += "&Session=true";
-  }
+  post_body += "&Session=true";
 
   unsigned long server_response_code;
   string message_text;
@@ -383,21 +359,17 @@ void GaiaAuthenticator::RenewAuthToken(const string& auth_token) {
   DCHECK(!this->auth_token().empty());
   auth_results_.auth_token = auth_token;
 }
-void GaiaAuthenticator::SetAuthToken(const string& auth_token,
-                                     SaveCredentials save) {
+void GaiaAuthenticator::SetAuthToken(const string& auth_token) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   auth_results_.auth_token = auth_token;
-  auth_results_.credentials_saved = save;
 }
 
 bool GaiaAuthenticator::Authenticate(const string& user_name,
-                                     const string& password,
-                                     SaveCredentials should_save_credentials,
-                                     SignIn try_first) {
+                                     const string& password) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   const string empty;
-  return Authenticate(user_name, password, should_save_credentials, empty,
-                      empty, try_first);
+  return Authenticate(user_name, password, empty,
+                      empty);
 }
 
 }  // namepace gaia
