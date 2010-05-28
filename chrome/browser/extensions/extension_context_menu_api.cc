@@ -175,7 +175,7 @@ bool CreateContextMenuFunction::RunImpl() {
   int id = 0;
   if (properties->HasKey(kParentIdKey)) {
     int parent_id = 0;
-    if (properties->GetInteger(kParentIdKey, &parent_id))
+    if (!properties->GetInteger(kParentIdKey, &parent_id))
       return false;
     ExtensionMenuItem* parent = menu_manager->GetItemById(parent_id);
     if (!parent) {

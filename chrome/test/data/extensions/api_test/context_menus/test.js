@@ -40,6 +40,17 @@ var tests = [
         chrome.contextMenu.removeAll(chrome.test.callbackPass());
       });
     });
+  },
+
+  function hasParent() {
+    chrome.contextMenu.create({"title":"parent"}, function(id) {
+      assertNoLastError();
+      chrome.contextMenu.create({"title":"child", "parentId":id},
+                                function(id2) {
+        assertNoLastError();
+        chrome.test.succeed();
+      });
+    });
   }
 ];
 
